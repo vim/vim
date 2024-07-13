@@ -402,14 +402,30 @@ export def FTharedoc()
   endif
 enddef
 
-# Distinguish between HTML, XHTML and Django
+# Distinguish between HTML, XHTML, Django and Angular
 export def FThtml()
   var n = 1
+
+  # Test if the filename follows the Angular component template convention
+  # Disabled for the reasons mentioned here: #13594
+  # if expand('%:t') =~ '^.*\.component\.html$'
+  #   setf htmlangular
+  #   return
+  # endif
+
   while n < 40 && n <= line("$")
+    # Check for Angular
+    if getline(n) =~ '@\(if\|for\|defer\|switch\)\|\*\(ngIf\|ngFor\|ngSwitch\|ngTemplateOutlet\)\|ng-template\|ng-content\|{{.*}}'
+      setf htmlangular
+      return
+    endif
+
+    # Check for XHTML
     if getline(n) =~ '\<DTD\s\+XHTML\s'
       setf xhtml
       return
     endif
+    # Check for Django
     if getline(n) =~ '{%\s*\(autoescape\|block\|comment\|csrf_token\|cycle\|debug\|extends\|filter\|firstof\|for\|if\|ifchanged\|include\|load\|lorem\|now\|query_string\|regroup\|resetcycle\|spaceless\|templatetag\|url\|verbatim\|widthratio\|with\)\>\|{#\s\+'
       setf htmldjango
       return
@@ -449,7 +465,7 @@ export def ProtoCheck(default: string)
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
     var lnum = getline(nextnonblank(1))
-    if lnum =~ '\<prolog\>' || lnum =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || lnum =~ ':-'
+    if lnum =~ '\<prolog\>' || lnum =~ '^\(:-\|%\|\/\*\)\|\.$'
       setf prolog
     else
       exe 'setf ' .. default

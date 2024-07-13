@@ -98,11 +98,45 @@ func Test_findfile()
 
   " Test upwards search with stop-directory.
   cd Xdir2
+  let l = findfile('bar', ';' . save_dir . '/Xfinddir1/Xdir2/Xdir3/', -1)
+  call assert_equal(1, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  let l = findfile('bar', ';' . save_dir . '/Xfinddir1/Xdir2/Xdir3', -1)
+  call assert_equal(1, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  let l = findfile('bar', ';../', -1)
+  call assert_equal(1, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  let l = findfile('bar', ';..', -1)
+  call assert_equal(1, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+
   let l = findfile('bar', ';' . save_dir . '/Xfinddir1/Xdir2/', -1)
+  call assert_equal(1, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  let l = findfile('bar', ';' . save_dir . '/Xfinddir1/Xdir2', -1)
+  call assert_equal(1, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  let l = findfile('bar', ';../../', -1)
+  call assert_equal(1, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  let l = findfile('bar', ';../..', -1)
   call assert_equal(1, len(l))
   call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
 
   let l = findfile('bar', ';' . save_dir . '/Xfinddir1/', -1)
+  call assert_equal(2, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  call assert_match('.*/Xfinddir1/bar',             l[1])
+  let l = findfile('bar', ';' . save_dir . '/Xfinddir1', -1)
+  call assert_equal(2, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  call assert_match('.*/Xfinddir1/bar',             l[1])
+  let l = findfile('bar', ';../../../', -1)
+  call assert_equal(2, len(l))
+  call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
+  call assert_match('.*/Xfinddir1/bar',             l[1])
+  let l = findfile('bar', ';../../..', -1)
   call assert_equal(2, len(l))
   call assert_match('.*/Xfinddir1/Xdir2/Xdir3/bar', l[0])
   call assert_match('.*/Xfinddir1/bar',             l[1])
@@ -133,6 +167,7 @@ func Test_finddir()
   let save_shellslash = &shellslash
   let save_dir = getcwd()
   set path=,,
+  set shellslash
   call CreateFiles()
   cd Xfinddir1
 

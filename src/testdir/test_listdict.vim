@@ -1147,6 +1147,19 @@ func Test_listdict_compare()
   call assert_fails('echo {} =~ {}', 'E736:')
 endfunc
 
+func Test_recursive_listdict_compare()
+  let l1 = [0, 1]
+  let l1[0] = l1
+  let l2 = [0, 1]
+  let l2[0] = l2
+  call assert_true(l1 == l2)
+  let d1 = {0: 0, 1: 1}
+  let d1[0] = d1
+  let d2 = {0: 0, 1: 1}
+  let d2[0] = d2
+  call assert_true(d1 == d2)
+endfunc
+
   " compare complex recursively linked list and dict
 func Test_listdict_compare_complex()
   let lines =<< trim END
@@ -1606,4 +1619,34 @@ func Test_deep_nested_listdict_compare()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+" Test for using id()
+def Test_id_with_dict()
+  # demonstate a way that "id(item)" differs from "string(item)"
+  var d1 = {one: 1}
+  var d2 = {one: 1}
+  var d3 = {one: 1}
+  var idDict: dict<any>
+  idDict[id(d1)] = d1
+  idDict[id(d2)] = d2
+  idDict[id(d3)] = d3
+  assert_equal(3, idDict->len())
+
+  var stringDict: dict<any>
+  stringDict[string(d1)] = d1
+  stringDict[string(d2)] = d2
+  stringDict[string(d3)] = d3
+  assert_equal(1, stringDict->len())
+
+  assert_equal('', id(3))
+
+  assert_equal('', id(null))
+  assert_equal('', id(null_blob))
+  assert_equal('', id(null_dict))
+  assert_equal('', id(null_function))
+  assert_equal('', id(null_list))
+  assert_equal('', id(null_partial))
+  assert_equal('', id(null_string))
+  assert_equal('', id(null_channel))
+  assert_equal('', id(null_job))
+enddef
 " vim: shiftwidth=2 sts=2 expandtab

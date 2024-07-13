@@ -5923,6 +5923,37 @@ func_tv2string(typval_T *tv, char_u **tofree, int echo_style)
 }
 
 /*
+ * Return a textual representation of the object method in "tv", a VAR_PARTIAL.
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * When "echo_style" is FALSE, put quotes around the function name as
+ * "function()", otherwise does not put quotes around function name.
+ * May return NULL.
+ */
+    static char_u *
+method_tv2string(typval_T *tv, char_u **tofree, int echo_style)
+{
+    char_u	buf[MAX_FUNC_NAME_LEN];
+    partial_T	*pt = tv->vval.v_partial;
+
+    size_t len = vim_snprintf((char *)buf, sizeof(buf), "<SNR>%d_%s.%s",
+			   pt->pt_func->uf_script_ctx.sc_sid,
+			   pt->pt_func->uf_class->class_name,
+			   pt->pt_func->uf_name);
+    if (len >= sizeof(buf))
+    {
+	if (echo_style)
+	{
+	    *tofree = NULL;
+	    return (char_u *)"function()";
+	}
+	else
+	    return *tofree = string_quote((char_u*)"", TRUE);
+    }
+
+    return *tofree = echo_style ? vim_strsave(buf) : string_quote(buf, TRUE);
+}
+
+/*
  * Return a textual representation of a partial in "tv".
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.  May return NULL.
@@ -6139,6 +6170,58 @@ class_tv2string(typval_T *tv, char_u **tofree)
 }
 
 /*
+ * Return a textual representation of an Object in "tv".
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * When "copyID" is not zero replace recursive object with "...".
+ * When "restore_copyID" is FALSE, repeated items in the object are
+ * replaced with "...".  May return NULL.
+ */
+    static char_u *
+object_tv2string(
+    typval_T	*tv,
+    char_u	**tofree,
+    int		copyID,
+    int		restore_copyID,
+    char_u	*numbuf,
+    int		echo_style,
+    int		composite_val)
+{
+    char_u	*r = NULL;
+
+    object_T	*obj = tv->vval.v_object;
+    if (obj == NULL || obj->obj_class == NULL)
+    {
+	*tofree = NULL;
+	r = (char_u *)"object of [unknown]";
+    }
+    else if (copyID != 0 && obj->obj_copyID == copyID
+            && obj->obj_class->class_obj_member_count != 0)
+    {
+	size_t n = 25 + strlen((char *)obj->obj_class->class_name);
+	r = alloc(n);
+	if (r != NULL)
+	    (void)vim_snprintf((char *)r, n, "object of %s {...}",
+						obj->obj_class->class_name);
+	*tofree = r;
+    }
+    else
+    {
+	int old_copyID;
+	if (restore_copyID)
+	    old_copyID = obj->obj_copyID;
+
+	obj->obj_copyID = copyID;
+	*tofree = object2string(obj, numbuf, copyID, echo_style,
+				restore_copyID, composite_val);
+	if (restore_copyID)
+	    obj->obj_copyID = old_copyID;
+	r = *tofree;
+    }
+
+    return r;
+}
+
+/*
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
@@ -6169,7 +6252,7 @@ echo_string_core(
 	{
 	    // Only give this message once for a recursive call to avoid
 	    // flooding the user with errors.  And stop iterating over lists
-	    // and dicts.
+	    // and dicts and objects.
 	    did_echo_string_emsg = TRUE;
 	    emsg(_(e_variable_nested_too_deep_for_displaying));
 	}
@@ -6189,7 +6272,11 @@ echo_string_core(
 	    break;
 
 	case VAR_PARTIAL:
-	    r = partial_tv2string(tv, tofree, numbuf, copyID);
+	    if (tv->vval.v_partial == NULL
+		    || tv->vval.v_partial->pt_obj == NULL)
+		r = partial_tv2string(tv, tofree, numbuf, copyID);
+	    else
+		r = method_tv2string(tv, tofree, echo_style);
 	    break;
 
 	case VAR_BLOB:
@@ -6227,9 +6314,8 @@ echo_string_core(
 	    break;
 
 	case VAR_OBJECT:
-	    *tofree = r = object2string(tv->vval.v_object, numbuf, copyID,
-					echo_style, restore_copyID,
-					composite_val);
+	    r = object_tv2string(tv, tofree, copyID, restore_copyID,
+					 numbuf, echo_style, composite_val);
 	    break;
 
 	case VAR_FLOAT:

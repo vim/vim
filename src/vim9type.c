@@ -934,6 +934,7 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
 		semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str_in_str),
 			where.wt_index, typename1, typename2, where.wt_func_name);
 	    break;
+	case WT_CAST:
 	case WT_UNKNOWN:
 	    if (where.wt_func_name == NULL)
 		semsg(_(e_type_mismatch_expected_str_but_got_str),
@@ -1090,7 +1091,15 @@ check_type_maybe(
 		    ret = FAIL;
 	    }
 	    else if (!class_instance_of(actual->tt_class, expected->tt_class))
-		ret = FAIL;
+	    {
+		// Check if this is an up-cast, if so we'll have to check the type at
+		// runtime.
+		if (where.wt_kind == WT_CAST &&
+			class_instance_of(expected->tt_class, actual->tt_class))
+		    ret = MAYBE;
+		else
+		    ret = FAIL;
+	    }
 	}
 
 	if (ret == FAIL && give_msg)

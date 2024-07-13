@@ -232,7 +232,11 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyObject_HasAttrString py3_PyObject_HasAttrString
 # define PyObject_SetAttrString py3_PyObject_SetAttrString
 # define PyObject_CallFunctionObjArgs py3_PyObject_CallFunctionObjArgs
-# define _PyObject_CallFunction_SizeT py3__PyObject_CallFunction_SizeT
+# if PY_VERSION_HEX >= 0x030d0000
+#  define PyObject_CallFunction py3_PyObject_CallFunction
+# else
+#  define _PyObject_CallFunction_SizeT py3__PyObject_CallFunction_SizeT
+# endif
 # define PyObject_Call py3_PyObject_Call
 # define PyEval_GetLocals py3_PyEval_GetLocals
 # define PyEval_GetGlobals py3_PyEval_GetGlobals
@@ -398,7 +402,11 @@ static PyObject* (*py3_PyObject_GetAttrString)(PyObject *, const char *);
 static int (*py3_PyObject_HasAttrString)(PyObject *, const char *);
 static int (*py3_PyObject_SetAttrString)(PyObject *, const char *, PyObject *);
 static PyObject* (*py3_PyObject_CallFunctionObjArgs)(PyObject *, ...);
+# if PY_VERSION_HEX >= 0x030d0000
+static PyObject* (*py3_PyObject_CallFunction)(PyObject *, char *, ...);
+# else
 static PyObject* (*py3__PyObject_CallFunction_SizeT)(PyObject *, char *, ...);
+# endif
 static PyObject* (*py3_PyObject_Call)(PyObject *, PyObject *, PyObject *);
 static PyObject* (*py3_PyEval_GetGlobals)(void);
 static PyObject* (*py3_PyEval_GetLocals)(void);
@@ -601,7 +609,11 @@ static struct
     {"PyObject_HasAttrString", (PYTHON_PROC*)&py3_PyObject_HasAttrString},
     {"PyObject_SetAttrString", (PYTHON_PROC*)&py3_PyObject_SetAttrString},
     {"PyObject_CallFunctionObjArgs", (PYTHON_PROC*)&py3_PyObject_CallFunctionObjArgs},
+# if PY_VERSION_HEX >= 0x030d0000
+    {"PyObject_CallFunction", (PYTHON_PROC*)&py3_PyObject_CallFunction},
+# else
     {"_PyObject_CallFunction_SizeT", (PYTHON_PROC*)&py3__PyObject_CallFunction_SizeT},
+# endif
     {"PyObject_Call", (PYTHON_PROC*)&py3_PyObject_Call},
     {"PyEval_GetGlobals", (PYTHON_PROC*)&py3_PyEval_GetGlobals},
     {"PyEval_GetLocals", (PYTHON_PROC*)&py3_PyEval_GetLocals},

@@ -1307,6 +1307,11 @@ ins_compl_build_pum(void)
 		    did_find_shown_match = TRUE;
 		    max_fuzzy_score = compl->cp_score;
 		    compl_shown_match = compl;
+		}
+
+		if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
+		{
+		    cur = i;
 		    shown_match_ok = TRUE;
 		}
 
@@ -1318,8 +1323,6 @@ ins_compl_build_pum(void)
 			&& (max_fuzzy_score > 0
 				|| (compl_leader == NULL || lead_len == 0)))
 		{
-		    shown_match_ok = TRUE;
-		    cur = 0;
 		    if (match_at_original_text(compl_shown_match))
 		      compl_shown_match = shown_compl;
 		}
@@ -1367,6 +1370,7 @@ ins_compl_build_pum(void)
 	// sort by the largest score of fuzzy match
 	qsort(compl_match_array, (size_t)compl_match_arraysize,
 				       sizeof(pumitem_T), ins_compl_fuzzy_cmp);
+	shown_match_ok = TRUE;
     }
 
     if (!shown_match_ok)    // no displayed match at all
@@ -4102,7 +4106,8 @@ find_comp_when_fuzzy(void)
 
     if ((is_forward && compl_selected_item == compl_match_arraysize - 1)
 	    || (is_backward && compl_selected_item == 0))
-	return compl_first_match;
+	return compl_first_match != compl_shown_match ? compl_first_match :
+	    (compl_first_match->cp_prev ? compl_first_match->cp_prev : NULL);
 
     if (is_forward)
 	target_idx = compl_selected_item + 1;
@@ -4507,11 +4512,6 @@ ins_compl_use_match(int c)
     static int
 get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 {
-    int		i;
-    int		char_len;
-    size_t	fuzzy_len;
-    char_u	*fuzzy_pattern;
-
     if ((compl_cont_status & CONT_SOL) || ctrl_x_mode_path_defines())
     {
 	if (!compl_status_adding())
@@ -4625,39 +4625,6 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
     }
 
     compl_patternlen = STRLEN(compl_pattern);
-
-    if ((get_cot_flags() & COT_FUZZYCOLLECT) != 0)
-    {
-	// Adjust size to avoid buffer overflow
-	fuzzy_len = (size_t)compl_length * 5 + 10;
-	// Allocate enough space
-	fuzzy_pattern = alloc(fuzzy_len);
-	if (fuzzy_pattern == NULL)
-	{
-	    compl_patternlen = 0;
-	    return FAIL;
-	}
-	// Use 'very magic' mode for simpler syntax
-	STRCPY(fuzzy_pattern, "\\v");
-	i = 2; // Start from 2 to skip "\\v"
-	while (i < compl_length + 2)
-	{
-	    // Append "\\k*" before each character
-	    STRNCAT(fuzzy_pattern, "\\k*", fuzzy_len - STRLEN(fuzzy_pattern) - 1);
-	    // Get length of current multi-byte character
-	    char_len = mb_ptr2len(compl_pattern + i);
-	    // Concatenate the character safely
-	    STRNCAT(fuzzy_pattern, compl_pattern + i, char_len);
-	    // Move to the next character
-	    i += char_len;
-	}
-	// Append "\\k*" at the end to match any characters after the pattern
-	STRNCAT(fuzzy_pattern, "\\k*", fuzzy_len - STRLEN(fuzzy_pattern) - 1);
-	vim_free(compl_pattern);
-	compl_pattern = fuzzy_pattern;
-	compl_patternlen = STRLEN(compl_pattern);
-    }
-
     return OK;
 }
 

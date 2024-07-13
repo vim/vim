@@ -107,21 +107,26 @@ runtime/compiler/zsh.vim		@dkearns
 runtime/doc/ft_hare.txt			@selenebun
 runtime/doc/ps1.txt			@heaths
 runtime/ftplugin/abaqus.vim		@costerwi
-runtime/ftplugin/apache.vim		@dubgeiser 
+runtime/ftplugin/antlr4.vim		@jiangyinzuo
+runtime/ftplugin/apache.vim		@dubgeiser
 runtime/ftplugin/arduino.vim		@k-takata
 runtime/ftplugin/astro.vim		@romainl
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
+runtime/ftplugin/cabal.vim		@ribru17
+runtime/ftplugin/cedar.vim		@ribru17
 runtime/ftplugin/cfg.vim		@chrisbra
 runtime/ftplugin/chatito.vim		@ObserverOfTime
 runtime/ftplugin/chicken.vim		@evhan
 runtime/ftplugin/clojure.vim		@axvr
+runtime/ftplugin/cmakecache.vim		@ribru17
 runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/csv.vim		@habamax
 runtime/ftplugin/cucumber.vim		@tpope
+runtime/ftplugin/cuda.vim		@ribru17
 runtime/ftplugin/dart.vim	@ribru17
 runtime/ftplugin/deb822sources.vim	@jamessan
 runtime/ftplugin/debchangelog.vim	@jamessan
@@ -129,6 +134,7 @@ runtime/ftplugin/debcontrol.vim		@jamessan
 runtime/ftplugin/debsources.vim		@jamessan
 runtime/ftplugin/desktop.vim		@e-kwsm
 runtime/ftplugin/dosbatch.vim		@mrdubya
+runtime/ftplugin/editorconfig.vim	@ribru17
 runtime/ftplugin/eiffel.vim		@dkearns
 runtime/ftplugin/elixir.vim		@mhanberg
 runtime/ftplugin/erlang.vim		@hcs42
@@ -160,6 +166,7 @@ runtime/ftplugin/hare.vim		@selenebun
 runtime/ftplugin/haredoc.vim		@selenebun
 runtime/ftplugin/heex.vim		@cvincent
 runtime/ftplugin/hgcommit.vim		@k-takata
+runtime/ftplugin/hlsplaylist.vim		@avidseeker
 runtime/ftplugin/hog.vim		@wtfbbqhax
 runtime/ftplugin/html.vim		@dkearns
 runtime/ftplugin/hyprlang.vim		@ribru17
@@ -169,6 +176,7 @@ runtime/ftplugin/indent.vim		@dkearns
 runtime/ftplugin/ishd.vim		@dkearns
 runtime/ftplugin/j.vim			@glts
 runtime/ftplugin/java.vim		@zzzyxwvut
+runtime/ftplugin/javacc.vim		@ribru17
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
 runtime/ftplugin/jj.vim			@gpanders
@@ -179,8 +187,11 @@ runtime/ftplugin/julia.vim		@carlobaldassi
 runtime/ftplugin/jq.vim	    	        @vito-c
 runtime/ftplugin/kconfig.vim		@chrisbra
 runtime/ftplugin/kdl.vim		@imsnif @jiangyinzuo
+runtime/ftplugin/kivy.vim		@ribru17
 runtime/ftplugin/kotlin.vim		@udalov
+runtime/ftplugin/ldapconf.vim		@ribru17
 runtime/ftplugin/less.vim		@genoma
+runtime/ftplugin/lex.vim		@ribru17
 runtime/ftplugin/liquid.vim		@tpope
 runtime/ftplugin/lua.vim		@dkearns
 runtime/ftplugin/lc.vim			@ribru17
@@ -191,6 +202,7 @@ runtime/ftplugin/markdown.vim		@tpope
 runtime/ftplugin/meson.vim		@Liambeguin
 runtime/ftplugin/modula2.vim		@dkearns
 runtime/ftplugin/modula3.vim		@dkearns
+runtime/ftplugin/mojo.vim		@ribru17
 runtime/ftplugin/nginx.vim		@chr4
 runtime/ftplugin/nim.vim		@ribru17
 runtime/ftplugin/nroff.vim		@a-vrma
@@ -233,6 +245,7 @@ runtime/ftplugin/snakemake.vim		@ribru17
 runtime/ftplugin/solidity.vim		@cothi
 runtime/ftplugin/solution.vim		@dkearns
 runtime/ftplugin/spec.vim		@ignatenkobrain
+runtime/ftplugin/squirrel.vim		@ribru17
 runtime/ftplugin/ssa.vim		@ObserverOfTime
 runtime/ftplugin/sshdconfig.vim		@jiangyinzuo
 runtime/ftplugin/svelte.vim		@igorlfs
@@ -241,6 +254,8 @@ runtime/ftplugin/systemverilog.vim	@Kocha
 runtime/ftplugin/swig.vim		@jmarrec
 runtime/ftplugin/tap.vim		@petdance
 runtime/ftplugin/tcsh.vim		@dkearns
+runtime/ftplugin/terraform.vim		@JannoTjarks
+runtime/ftplugin/tf.vim			@ribru17
 runtime/ftplugin/tidy.vim		@dkearns
 runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/toml.vim		@averms
@@ -258,6 +273,7 @@ runtime/ftplugin/wget2.vim		@dkearns
 runtime/ftplugin/xcompose.vim		@ObserverOfTime
 runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/xs.vim			@petdance
+runtime/ftplugin/yacc.vim		@ribru17
 runtime/ftplugin/zsh.vim		@chrisbra
 runtime/import/dist/vimhighlight.vim	@lacygoill
 runtime/indent/arduino.vim		@k-takata
@@ -308,6 +324,7 @@ runtime/indent/lua.vim			@marcuscf
 runtime/indent/make.vim			@dkearns
 runtime/indent/meson.vim		@Liambeguin
 runtime/indent/mma.vim			@dkearns
+runtime/indent/mojo.vim			@ribru17
 runtime/indent/nginx.vim		@chr4
 runtime/indent/nsis.vim			@k-takata
 runtime/indent/occam.vim		@dkearns
@@ -354,6 +371,7 @@ runtime/syntax/shared/hgcommitDiff.vim	@vegerot
 runtime/syntax/abaqus.vim		@costerwi
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/ant.vim			@dkearns
+runtime/syntax/antlr4.vim		@jiangyinzuo
 runtime/syntax/arduino.vim		@johshoff
 runtime/syntax/asciidoc.vim		@aerostitch
 runtime/syntax/asm.vim			@dkearns

@@ -9,7 +9,7 @@ SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
 xxd: xxd.exe
 
 xxd.exe: xxd.c
-	cl /nologo -DWIN32 xxd.c -link -subsystem:$(SUBSYSTEM)
+	cl /nologo /source-charset:utf-8 -DWIN32 xxd.c -link -subsystem:$(SUBSYSTEM)
 
 # This was for an older compiler
 #    cl /nologo -DWIN32 xxd.c /link setargv.obj

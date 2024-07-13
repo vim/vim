@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 9.1.  Last change: 2022 Sep 17
+*mlang.txt*     For Vim version 9.1.  Last change: 2024 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -59,7 +59,9 @@ use of "-" and "_".
 :lan[guage] tim[e] {name}
 :lan[guage] col[late] {name}
 			Set the current language (aka locale) to {name}.
-			The locale {name} must be a valid locale on your
+			The POSIX format of {name} is: >
+				language[_territory][.encoding]
+<			The locale {name} must be a valid locale on your
 			system.  Some systems accept aliases like "en" or
 			"en_US", but some only accept the full specification
 			like "en_US.ISO_8859-1".  On Unix systems you can use

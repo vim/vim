@@ -34,6 +34,7 @@ struct sign
     int		sn_text_hl;	// highlight ID for text
     int		sn_cul_hl;	// highlight ID for text on current line when 'cursorline' is set
     int		sn_num_hl;	// highlight ID for line number
+    int		sn_priority;	// default priority of this sign, -1 means SIGN_DEF_PRIO
 };
 
 static sign_T	*first_sign = NULL;
@@ -1047,7 +1048,8 @@ sign_define_by_name(
 	char_u	*text,
 	char_u	*texthl,
 	char_u	*culhl,
-	char_u	*numhl)
+	char_u	*numhl,
+	int	prio)
 {
     sign_T	*sp_prev;
     sign_T	*sp;
@@ -1082,6 +1084,8 @@ sign_define_by_name(
 
     if (text != NULL && (sign_define_init_text(sp, text) == FAIL))
 	return FAIL;
+
+    sp->sn_priority = prio;
 
     if (linehl != NULL)
     {
@@ -1205,6 +1209,10 @@ sign_place(
     }
     if (*sign_id == 0)
 	*sign_id = sign_group_get_next_signid(buf, sign_group);
+
+    // Use the default priority value for this sign.
+    if (prio == -1)
+	prio = (sp->sn_priority != -1) ? sp->sn_priority : SIGN_DEF_PRIO;
 
     if (lnum > 0)
 	// ":sign place {id} line={lnum} name={name} file={fname}":
@@ -1338,6 +1346,7 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
     char_u	*texthl = NULL;
     char_u	*culhl = NULL;
     char_u	*numhl = NULL;
+    int		prio = -1;
     int		failed = FALSE;
 
     // set values for a defined sign.
@@ -1377,6 +1386,11 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 	    arg += 6;
 	    numhl = vim_strnsave(arg, p - arg);
 	}
+	else if (STRNCMP(arg, "priority=", 9) == 0)
+	{
+	    arg += 9;
+	    prio = atoi((char *)arg);
+	}
 	else
 	{
 	    semsg(_(e_invalid_argument_str), arg);
@@ -1386,7 +1400,7 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
     }
 
     if (!failed)
-	sign_define_by_name(sign_name, icon, linehl, text, texthl, culhl, numhl);
+	sign_define_by_name(sign_name, icon, linehl, text, texthl, culhl, numhl, prio);
 
     vim_free(icon);
     vim_free(text);
@@ -1721,7 +1735,7 @@ ex_sign(exarg_T *eap)
 	linenr_T	lnum = -1;
 	char_u		*sign_name = NULL;
 	char_u		*group = NULL;
-	int		prio = SIGN_DEF_PRIO;
+	int		prio = -1;
 
 	// Parse command line arguments
 	if (parse_sign_cmd_args(idx, arg, &sign_name, &id, &group, &prio,
@@ -1750,6 +1764,8 @@ sign_getinfo(sign_T *sp, dict_T *retdict)
 	dict_add_string(retdict, "icon", sp->sn_icon);
     if (sp->sn_text != NULL)
 	dict_add_string(retdict, "text", sp->sn_text);
+    if (sp->sn_priority > 0)
+	dict_add_number(retdict, "priority", sp->sn_priority);
     if (sp->sn_line_hl > 0)
     {
 	p = get_highlight_name_ext(NULL, sp->sn_line_hl - 1, FALSE);
@@ -1913,6 +1929,7 @@ sign_gui_started(void)
 sign_list_defined(sign_T *sp)
 {
     char_u	*p;
+    char	lbuf[MSG_BUF_LEN];
 
     smsg("sign %s", sp->sn_name);
     if (sp->sn_icon != NULL)
@@ -1930,6 +1947,11 @@ sign_list_defined(sign_T *sp)
     {
 	msg_puts(" text=");
 	msg_outtrans(sp->sn_text);
+    }
+    if (sp->sn_priority > 0)
+    {
+	vim_snprintf(lbuf, MSG_BUF_LEN, " priority=%d", sp->sn_priority);
+	msg_puts(lbuf);
     }
     if (sp->sn_line_hl > 0)
     {
@@ -2088,7 +2110,8 @@ get_sign_name(expand_T *xp UNUSED, int idx)
 	{
 	    char *define_arg[] =
 	    {
-		"culhl=", "icon=", "linehl=", "numhl=", "text=", "texthl=", NULL
+		"culhl=", "icon=", "linehl=", "numhl=", "text=", "texthl=", "priority=",
+		NULL
 	    };
 	    return (char_u *)define_arg[idx];
 	}
@@ -2261,6 +2284,7 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
     char_u	*texthl = NULL;
     char_u	*culhl = NULL;
     char_u	*numhl = NULL;
+    int		prio = -1;
     int		retval = -1;
 
     if (name_arg == NULL)
@@ -2281,9 +2305,10 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
 	texthl = dict_get_string(dict, "texthl", TRUE);
 	culhl = dict_get_string(dict, "culhl", TRUE);
 	numhl = dict_get_string(dict, "numhl", TRUE);
+	prio = dict_get_number_def(dict, "priority", -1);
     }
 
-    if (sign_define_by_name(name, icon, linehl, text, texthl, culhl, numhl) == OK)
+    if (sign_define_by_name(name, icon, linehl, text, texthl, culhl, numhl, prio) == OK)
 	retval = 0;
 
 cleanup:
@@ -2511,7 +2536,7 @@ sign_place_from_dict(
     buf_T	*buf = NULL;
     dictitem_T	*di;
     linenr_T	lnum = 0;
-    int		prio = SIGN_DEF_PRIO;
+    int		prio = -1;
     int		notanum = FALSE;
     int		ret_sign_id = -1;
 

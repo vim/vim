@@ -33,7 +33,7 @@ static char *(p_briopt_values[]) = {"shift:", "min:", "sbr", "list:", "column:",
 static char *(p_dip_values[]) = {"filler", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", NULL};
 static char *(p_dip_algorithm_values[]) = {"myers", "minimal", "patience", "histogram", NULL};
 #endif
-static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", "unsigned", NULL};
+static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", "unsigned", "blank", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CLIPBOARD
 // Note: Keep this in sync with did_set_clipboard()
@@ -81,6 +81,8 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
 static char *(p_spk_values[]) = {"cursor", "screen", "topline", NULL};
 static char *(p_tc_values[]) = {"followic", "ignore", "match", "followscs", "smart", NULL};
+// Keep in sync with TCL_ flags in option.h
+static char *(p_tcl_values[]) = {"left", "uselast", NULL};
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
 static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL};
 #endif
@@ -118,7 +120,7 @@ static char *(p_fdm_values[]) = {"manual", "expr", "marker", "indent", "syntax",
 				NULL};
 static char *(p_fcl_values[]) = {"all", NULL};
 #endif
-static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "popup", "popuphidden", "noinsert", "noselect", "fuzzy", "fuzzycollect", NULL};
+static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "popup", "popuphidden", "noinsert", "noselect", "fuzzy", NULL};
 #ifdef BACKSLASH_IN_FILENAME
 static char *(p_csl_values[]) = {"slash", "backslash", NULL};
 #endif
@@ -166,6 +168,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_tbis, p_tbis_values, &tbis_flags, FALSE);
 #endif
     (void)opt_strings_flags(p_swb, p_swb_values, &swb_flags, TRUE);
+    (void)opt_strings_flags(p_tcl, p_tcl_values, &tcl_flags, TRUE);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -3665,6 +3668,26 @@ expand_set_switchbuf(optexpand_T *args, int *numMatches, char_u ***matches)
 	    args,
 	    p_swb_values,
 	    ARRAY_LENGTH(p_swb_values) - 1,
+	    numMatches,
+	    matches);
+}
+
+/*
+ * The 'tabclose' option is changed.
+ */
+    char *
+did_set_tabclose(optset_T *args UNUSED)
+{
+    return did_set_opt_flags(p_tcl, p_tcl_values, &tcl_flags, TRUE);
+}
+
+    int
+expand_set_tabclose(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_tcl_values,
+	    ARRAY_LENGTH(p_tcl_values) - 1,
 	    numMatches,
 	    matches);
 }

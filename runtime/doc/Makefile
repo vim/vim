@@ -7,7 +7,7 @@
 AWK = awk
 
 # Set to $(VIMTARGET) when executed from src/Makefile.
-VIMEXE = vim
+VIMPROG = ../../src/vim
 
 # include the config.mk from the source directory.  It's only needed to set
 # AWK, used for "make html".  Comment this out if the include gives problems.
@@ -25,7 +25,7 @@ all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled and installed.  Supports multiple languages.
 vimtags: $(DOCS)
-	@$(VIMEXE) --clean -esX -V1 -u doctags.vim
+	@$(VIMPROG) --clean -esX -V1 -u doctags.vim
 
 # Use "doctags" to generate the tags file.  Only works for English!
 tags: doctags $(DOCS)
@@ -57,7 +57,7 @@ uganda.nsis.txt : uganda.???
             $${dpn} | uniq > $${trg%txt}$${dpn##*.}; \
 	done
 # This files needs to be in dos fileformat for NSIS.
-	$(VIMEXE) -e -X -u NONE --cmd "set notitle noicon nocp noml viminfo=" \
+	$(VIMPROG) -e -X -u NONE --cmd "set notitle noicon nocp noml viminfo=" \
 	  -c "argdo write ++ff=dos" -c "qa" uganda.nsis.???
 
 # Awk version of .txt to .html conversion.
@@ -91,7 +91,7 @@ perlhtml: tags $(DOCS)
 
 # Check URLs in the help with "curl".
 test_urls:
-	$(VIMEXE) --clean -S test_urls.vim
+	$(VIMPROG) --clean -S test_urls.vim
 
 clean:
 	-rm -f doctags *.html tags.ref

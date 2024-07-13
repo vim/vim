@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jun 22
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jul 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1220,6 +1220,21 @@ tcsh.tcshrc, tcsh.login) will have filetype tcsh.  All other tcsh/csh scripts
 will be classified as tcsh, UNLESS the "filetype_csh" variable exists.  If the
 "filetype_csh" variable exists, the filetype will be set to the value of the
 variable.
+
+CSV							*ft-csv-syntax*
+
+If you change the delimiter of a CSV file, its syntax highlighting will no
+longer match the changed file content. You will need to unlet the following
+variable: >
+
+	:unlet b:csv_delimiter
+
+And afterwards save and reload the file: >
+
+	:w
+	:e
+
+Now the syntax engine should determine the newly changed CSV delimiter.
 
 
 CYNLIB						*cynlib.vim* *ft-cynlib-syntax*
@@ -2518,9 +2533,9 @@ PANDOC						*ft-pandoc-syntax*
 
 By default, markdown files will be detected as filetype "markdown".
 Alternatively, you may want them to be detected as filetype "pandoc" instead.
-To do so, set the following: >
+To do so, set the *g:filetype_md* var: >
 
-	:let g:markdown_md = 'pandoc'
+	:let g:filetype_md = 'pandoc'
 
 The pandoc syntax plugin uses |conceal| for pretty highlighting. Default is 1 >
 

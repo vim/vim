@@ -1355,17 +1355,17 @@ del_bytes(
     mch_memmove(newp + col, oldp + col + count, (size_t)movelen);
     if (alloc_newp)
 	ml_replace(lnum, newp, FALSE);
-#ifdef FEAT_PROP_POPUP
     else
     {
+#ifdef FEAT_PROP_POPUP
 	// Also move any following text properties.
 	if (oldlen + 1 < curbuf->b_ml.ml_line_len)
 	    mch_memmove(newp + newlen + 1, oldp + oldlen + 1,
 			       (size_t)curbuf->b_ml.ml_line_len - oldlen - 1);
+#endif
 	curbuf->b_ml.ml_line_len -= count;
 	curbuf->b_ml.ml_line_textlen = 0;
     }
-#endif
 
     // mark the buffer as changed and prepare for displaying
     inserted_bytes(lnum, col, -count);

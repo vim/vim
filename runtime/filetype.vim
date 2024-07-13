@@ -98,6 +98,13 @@ au BufNewFile,BufRead *.run			setf ampl
 " Ant
 au BufNewFile,BufRead build.xml			setf ant
 
+" ANTLR / PCCTS
+"au BufNewFile,BufRead *.g			setf antlr
+au BufNewFile,BufRead *.g			setf pccts
+
+" ANTLR 4
+au BufNewFile,BufRead *.g4			setf antlr4
+
 " Arduino
 au BufNewFile,BufRead *.ino,*.pde		setf arduino
 
@@ -256,6 +263,7 @@ au BufNewFile,BufRead named*.conf,rndc*.conf,rndc*.key	setf named
 
 " BIND zone
 au BufNewFile,BufRead named.root		setf bindzone
+au BufNewFile,BufRead *.zone			setf bindzone
 au BufNewFile,BufRead *.db			call dist#ft#BindzoneCheck('')
 
 " Blade
@@ -320,6 +328,9 @@ au BufNewFile,BufRead *.toc
 
 " Cdrdao config
 au BufNewFile,BufRead */etc/cdrdao.conf,*/etc/defaults/cdrdao,*/etc/default/cdrdao,.cdrdao	setf cdrdaoconf
+
+" Cedar
+au BufNewFile,BufRead *.cedar			setf cedar
 
 " Cfengine
 au BufNewFile,BufRead cfengine.conf		setf cfengine
@@ -1246,6 +1257,9 @@ au BufNewFile,BufRead */etc/limits,*/etc/*limits.conf,*/etc/*limits.d/*.conf	set
 " LambdaProlog or SML (see dist#ft#FTmod for *.mod)
 au BufNewFile,BufRead *.sig			call dist#ft#FTsig()
 
+" LDAP configuration
+au BufNewFile,BufRead ldaprc,.ldaprc,ldap.conf	setf ldapconf
+
 " LDAP LDIF
 au BufNewFile,BufRead *.ldif			setf ldif
 
@@ -1412,6 +1426,9 @@ au BufNewFile,BufRead *.mel			setf mel
 
 " mbsync
 au BufNewFile,BufRead .mbsyncrc			setf conf
+
+" mcmeta
+au BufNewFile,BufRead *.mcmeta			setf json
 
 " Mercurial (hg) commit file
 au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
@@ -1806,10 +1823,6 @@ au BufNewFile,BufRead *termcap
 
 " Prisma
 au BufRead,BufNewFile *.prisma			setf prisma
-
-" PCCTS / ANTLR
-"au BufNewFile,BufRead *.g			setf antlr
-au BufNewFile,BufRead *.g			setf pccts
 
 " PPWizard
 au BufNewFile,BufRead *.it,*.ih			setf ppwiz
@@ -2457,10 +2470,10 @@ au BufNewFile,BufRead *.thrift			setf thrift
 " Tidy config
 au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
 
-" TF mud client
+" TF (TinyFugue) mud client
 au BufNewFile,BufRead .tfrc,tfrc		setf tf
 
-" TF mud client or terraform
+" TF (TinyFugue) mud client or terraform
 au BufNewFile,BufRead *.tf			call dist#ft#FTtf()
 
 " TLA+

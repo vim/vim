@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Jun 03
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -512,10 +512,6 @@ Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
 spread out.  Make a section with copy/paste examples of script and pointers to
 more information.
 
-Problem that a previous silent ":throw" causes a following try/catch not to
-work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
-Also see #8487 for an example.
-
 Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
 (#8179)
 
@@ -543,7 +539,6 @@ SpellCap doesn't show below a closed fold. #12420
 - Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 - Problem with 'cdpath' on MS-Windows when a directory is equal to $HOME.
   (2006 Jul 26, Gary Johnson)
-- Completion of ":cd" doesn't use 'cdpath'. #374.
 
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558

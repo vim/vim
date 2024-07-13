@@ -144,6 +144,7 @@ let test_values = {
       \ 'splitkeep': [['cursor', 'screen', 'topline'], ['xxx']],
       \ 'swapsync': [['', 'sync', 'fsync'], ['xxx']],
       \ 'switchbuf': [['', 'useopen', 'split,newtab'], ['xxx']],
+      \ 'tabclose': [['', 'left', 'left,uselast'], ['xxx']],
       \ 'tagcase': [['smart', 'match'], ['', 'xxx', 'smart,match']],
       \ 'term': [[], []],
       \ 'termguicolors': [[], []],

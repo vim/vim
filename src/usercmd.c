@@ -102,6 +102,7 @@ static struct
     {EXPAND_BREAKPOINT, "breakpoint"},
     {EXPAND_SCRIPTNAMES, "scriptnames"},
 #endif
+    {EXPAND_DIRS_IN_CDPATH, "dir_in_path"},
     {0, NULL}
 };
 

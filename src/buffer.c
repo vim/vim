@@ -50,6 +50,7 @@ static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
 static int	bt_nofileread(buf_T *buf);
 static void	no_write_message_buf(buf_T *buf);
+static int	do_buffer_ext(int action, int start, int dir, int count, int flags);
 
 #ifdef UNIX
 # define dev_T dev_t
@@ -750,9 +751,15 @@ aucmd_abort:
      */
     if (wipe_buf)
     {
+	tabpage_T	*tp;
+	win_T		*wp;
+
 	// Do not wipe out the buffer if it is used in a window.
 	if (buf->b_nwindows > 0)
 	    return FALSE;
+
+	FOR_ALL_TAB_WINDOWS(tp, wp)
+	    mark_forget_file(wp, buf->b_fnum);
 
 	if (action == DOBUF_WIPE_REUSE)
 	{
@@ -1100,13 +1107,30 @@ goto_buffer(
 {
     bufref_T	old_curbuf;
     int		save_sea = swap_exists_action;
+    int		skip_help_buf;
+
+    switch (eap->cmdidx)
+    {
+	case CMD_bnext:
+	case CMD_sbnext:
+	case CMD_bNext:
+	case CMD_bprevious:
+	case CMD_sbNext:
+	case CMD_sbprevious:
+	    skip_help_buf = TRUE;
+	    break;
+	default:
+	    skip_help_buf = FALSE;
+	    break;
+    }
 
     set_bufref(&old_curbuf, curbuf);
 
     if (swap_exists_action == SEA_NONE)
 	swap_exists_action = SEA_DIALOG;
-    (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
-					     start, dir, count, eap->forceit);
+    (void)do_buffer_ext(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO, start, dir, count,
+	    (eap->forceit ? DOBUF_FORCEIT : 0) |
+	    (skip_help_buf ? DOBUF_SKIPHELP : 0));
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
 #if defined(FEAT_EVAL)
@@ -1337,8 +1361,11 @@ do_buffer_ext(
 		if (buf == NULL)
 		    buf = lastbuf;
 	    }
-	    // don't count unlisted buffers
-	    if (unload || buf->b_p_bl)
+	    // Don't count unlisted buffers.
+	    // Avoid non-help buffers if the starting point was a non-help buffer and
+	    // vice-versa.
+	    if (unload || (buf->b_p_bl
+			&& ((flags & DOBUF_SKIPHELP) == 0 || buf->b_help == bp->b_help)))
 	    {
 		 --count;
 		 bp = NULL;	// use this buffer as new starting point

@@ -40,7 +40,9 @@ VIMRUNTIME = ..\..\runtime
 PACKAGE = vim
 # Correct the following line for the where executeable file vim is
 # installed.  Please do not put the path in quotes.
-VIM = ..\vim.exe
+!IFNDEF VIMPROG
+VIMPROG = ..\vim.exe
+!ENDIF
 
 # Correct the following line for the directory where gettext et al is
 # installed.  Please do not put the path in quotes.
@@ -102,7 +104,7 @@ originals : $(MOFILES)
 converted: $(MOCONVERTED)
 
 .po.ck:
-	"$(VIM)" -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
+	"$(VIMPROG)" -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
 		-c "if error == 0 | q | else | num 2 | cq | endif" $<
 	$(TOUCH_TARGET)
 
@@ -496,27 +498,28 @@ files: $(PO_INPUTLIST)
 	$(LS) $(LSFLAGS) $(PO_INPUTLIST) > .\files
 
 first_time: files
-	"$(VIM)" -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
+	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
+	@ copy /a .\files+.\vim_to_js .\allfiles
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) \
-		--files-from=.\files $(PO_VIM_JSLIST)
-	"$(VIM)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
+		--files-from=.\allfiles
+	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
-	$(RM) *.js
+	$(RM) *.js .\vim_to_js
 
 $(PACKAGE).pot: files
-	"$(VIM)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
+	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
+	@ copy /a .\files+.\vim_to_js .\allfiles
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments $(XGETTEXT_KEYWORDS) \
-		--files-from=.\files $(PO_VIM_JSLIST)
-	$(MV) $(PACKAGE).po $(PACKAGE).pot
-	"$(VIM)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
+	$(XGETTEXT) --default-domain=$(PACKAGE) --output=$(PACKAGE).pot \
+		--add-comments $(XGETTEXT_KEYWORDS) --files-from=.\allfiles
+	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
-	$(RM) *.js
+	$(RM) *.js .\vim_to_js
 
 # Only original translations with default encoding should be updated.
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
@@ -541,16 +544,39 @@ install-all: all
 		"$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo"
 
 cleanup-po: $(LANGUAGE).po
-	"$(VIM)" -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po
+	"$(VIMPROG)" -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po
 
 cleanup-po-all: $(POFILES)
-	!"$(VIM)" -u NONE -e -X -S cleanup.vim -c wq $**
+	!"$(VIMPROG)" -u NONE -e -X -S cleanup.vim -c wq $**
+
+#######
+# For translations of plug-ins
+#######
+
+# Preparing the POT file of the plug-in package
+POT_PLUGPACKAGE_PATH = $(MAKEDIR)
+$(PLUGPACKAGE).pot : $(PO_PLUG_INPUTLIST)
+	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim \
+		$(PLUGPACKAGE).pot $**
+	$(XGETTEXT) --from-code=UTF-8 --default-domain=$(PLUGPACKAGE) \
+		--package-name=$(PLUGPACKAGE) \
+		--output-dir="$(POT_PLUGPACKAGE_PATH)" \
+		--output=$(PLUGPACKAGE).pot --files-from=.\vim_to_js
+	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim \
+		"$(POT_PLUGPACKAGE_PATH)\$(PLUGPACKAGE).pot" $**
+	$(RM) *.js .\vim_to_js
+
+# Converting the PO file of the plug-in package to the binary format of the MO file
+MO_PLUGPACKAGE_PATH = $(MAKEDIR)
+$(PLUGPACKAGE).mo : $(PO_PLUGPACKAGE)
+	$(MSGFMT) -o $(MO_PLUGPACKAGE_PATH)\$@ $?
+
 
 clean: checkclean
 	$(RM) *.mo
 	$(RM) *.pot
 	$(RM) *.orig
-	$(RM) files
+	$(RM) files allfiles
 	$(RM) sjiscorr.obj sjiscorr.exe
 #	$(RM) big5corr.obj big5corr.exe
 

@@ -1761,6 +1761,74 @@ def Test_disassemble_typecast()
         instr)
 enddef
 
+def Test_disassemble_object_cast()
+  # Downcasting.
+  var lines =<< trim END
+      vim9script
+      class A
+      endclass
+      class B extends A
+        var mylen: number
+      endclass
+      def F(o: A): number
+        return (<B>o).mylen
+      enddef
+
+      g:instr = execute('disassemble F')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('\<SNR>\d*_F\_s*' ..
+        'return (<B>o).mylen\_s*' ..
+        '0 LOAD arg\[-1\]\_s*' ..
+        '1 CHECKTYPE object<B> stack\[-1\]\_s*' ..
+        '2 OBJ_MEMBER 0\_s*' ..
+        '3 RETURN\_s*',
+        g:instr)
+
+  # Upcasting.
+  lines =<< trim END
+      vim9script
+      class A
+        var mylen: number
+      endclass
+      class B extends A
+      endclass
+      def F(o: B): number
+        return (<A>o).mylen
+      enddef
+
+      g:instr = execute('disassemble F')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('\<SNR>\d*_F\_s*' ..
+        'return (<A>o).mylen\_s*' ..
+        '0 LOAD arg\[-1\]\_s*' ..
+        '1 OBJ_MEMBER 0\_s*' ..
+        '2 RETURN\_s*',
+        g:instr)
+
+  # Casting, type is not statically known.
+  lines =<< trim END
+      vim9script
+      class A
+      endclass
+      class B extends A
+      endclass
+      def F(o: any): any
+        return <A>o
+      enddef
+
+      g:instr = execute('disassemble F')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('\<SNR>\d*_F\_s*' ..
+        'return <A>o\_s*' ..
+        '0 LOAD arg\[-1\]\_s*' ..
+        '1 CHECKTYPE object<A> stack\[-1\]\_s*' ..
+        '2 RETURN\_s*',
+        g:instr)
+enddef
+
 def s:Computing()
   var nr = 3
   var nrres = nr + 7
@@ -3493,6 +3561,28 @@ def Test_disassemble_compound_op_in_closure()
     '5 LOADOUTER level 0 $0\_s*' ..
     '6 STOREINDEX object\_s*' ..
     '7 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+def Test_disassemble_member_initializer()
+  var lines =<< trim END
+    vim9script
+    class A
+      var l: list<string> = []
+      var d: dict<string> = {}
+    endclass
+    g:instr = execute('disassemble A.new')
+  END
+  v9.CheckScriptSuccess(lines)
+  # Ensure SETTYPE is emitted and that matches the declared type.
+  assert_match('new\_s*' ..
+   '0 NEW A size \d\+\_s*' ..
+   '1 NEWLIST size 0\_s*' ..
+   '2 SETTYPE list<string>\_s*' ..
+   '3 STORE_THIS 0\_s*' ..
+   '4 NEWDICT size 0\_s*' ..
+   '5 SETTYPE dict<string>\_s*' ..
+   '6 STORE_THIS 1', g:instr)
   unlet g:instr
 enddef
 

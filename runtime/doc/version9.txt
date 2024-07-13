@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 20
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41574,6 +41574,18 @@ Changed~
 - the default for 'commentstring' contains whitespace padding to have
   automatic comments look nicer |comment-install|
 - 'completeopt' is now a |global-local| option.
+- 'nrformat' accepts the new "blank" suboption, to determine a signed or
+  unsigned number based on whitespace in front of a minus sign.
+- allow to specify a priority when defining a new sign |:sign-define|
+- provide information about function arguments using the get(func, "arity")
+  function |get()-func|
+- |:bwipe| also wipes jumplist and tagstack data
+- moving in the buffer list using |:bnext| and similar commands, behaves as
+  documented and skips help buffers (if not run from a help buffer, else 
+  moves to the next/previous help buffer).
+- allow to complete directories from 'cdpath' for |:cd| and similar commands,
+  add the "cd_in_path" completion type for e.g. |:command-complete| and
+  |getcompletion()|
 
 							*added-9.2*
 Added ~
@@ -41588,6 +41600,8 @@ Functions: ~
 |foreach()|		apply function to List items
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
+|id()|			get unique identifier for a Dict, List, Object,
+			Channel or Blob variable
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
 |popup_setbuf()|	switch to a different buffer in a popup
@@ -41596,6 +41610,7 @@ Functions: ~
 Autocommands: ~
 
 |CursorMovedC|		after the cursor was moved in the comamnd-line
+|KeyInputPre|		process any Key event in any mode
 |SessionWritePost|	after writing the session file |:mksession|
 |TermResponseAll|	after the terminal response to |t_RV| and others is
 			received
@@ -41617,6 +41632,7 @@ Commands: ~
 Options: ~
 
 'winfixbuf'		Keep buffer focused in a window
+'tabclose'		Which tab page to focus after closing a tab page
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
 
@@ -41639,8 +41655,8 @@ Improved visual highlighting.
 
 Python3 support in OpenVMS.
 
-Support for |fuzzy-matching| during |ins-completion| with the "fuzzy" and
-"fuzzycollect" values of the 'completeopt' setting
+Support for |fuzzy-matching| during |ins-completion| with the "fuzzy"
+values of the 'completeopt' setting
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-9.2*

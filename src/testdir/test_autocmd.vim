@@ -2099,21 +2099,30 @@ func Test_Cmdline()
 
   au! CursorMovedC : let g:pos += [getcmdpos()]
   let g:pos = []
+  call feedkeys(":foo bar baz\<C-W>\<C-W>\<C-W>\<Esc>", 'xt')
+  call assert_equal([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 9, 5, 1], g:pos)
+  let g:pos = []
+  call feedkeys(":hello\<C-B>\<Esc>", 'xt')
+  call assert_equal([2, 3, 4, 5, 6, 1], g:pos)
+  let g:pos = []
+  call feedkeys(":hello\<C-U>\<Esc>", 'xt')
+  call assert_equal([2, 3, 4, 5, 6, 1], g:pos)
+  let g:pos = []
   call feedkeys(":hello\<Left>\<C-R>=''\<CR>\<Left>\<Right>\<Esc>", 'xt')
-  call assert_equal([5, 4, 5], g:pos)
+  call assert_equal([2, 3, 4, 5, 6, 5, 4, 5], g:pos)
   let g:pos = []
   call feedkeys(":12345678\<C-R>=setcmdpos(3)??''\<CR>\<Esc>", 'xt')
-  call assert_equal([3], g:pos)
+  call assert_equal([2, 3, 4, 5, 6, 7, 8, 9, 3], g:pos)
   let g:pos = []
   call feedkeys(":12345678\<C-R>=setcmdpos(3)??''\<CR>\<Left>\<Esc>", 'xt')
-  call assert_equal([3, 2], g:pos)
+  call assert_equal([2, 3, 4, 5, 6, 7, 8, 9, 3, 2], g:pos)
   au! CursorMovedC
 
   " setcmdpos() is no-op inside an autocommand
   au! CursorMovedC : let g:pos += [getcmdpos()] | call setcmdpos(1)
   let g:pos = []
   call feedkeys(":hello\<Left>\<Left>\<Esc>", 'xt')
-  call assert_equal([5, 4], g:pos)
+  call assert_equal([2, 3, 4, 5, 6, 5, 4], g:pos)
   au! CursorMovedC
 
   unlet g:entered
@@ -4741,6 +4750,76 @@ func Test_BufEnter_botline()
   bwipe! Xxx2
   au! BufEnter Xxx1
   set hidden&vim
+endfunc
+
+func Test_KeyInputPre()
+  " Consume previous keys
+  call feedkeys('', 'ntx')
+
+  " KeyInputPre can record input keys.
+  let s:keys = []
+  au KeyInputPre n call add(s:keys, v:char)
+
+  call feedkeys('jkjkjjj', 'ntx')
+  call assert_equal(
+        \ ['j', 'k', 'j', 'k', 'j', 'j', 'j'],
+        \ s:keys)
+
+  unlet s:keys
+  au! KeyInputPre
+
+  " KeyInputPre can handle multibyte.
+  let s:keys = []
+  au KeyInputPre * call add(s:keys, v:char)
+  edit Xxx1
+
+  call feedkeys("iあ\<ESC>", 'ntx')
+  call assert_equal(['i', "あ", "\<ESC>"], s:keys)
+
+  bwipe! Xxx1
+  unlet s:keys
+  au! KeyInputPre
+
+  " KeyInputPre can change input keys.
+  au KeyInputPre i if v:char ==# 'a' | let v:char = 'b' | endif
+  edit Xxx1
+
+  call feedkeys("iaabb\<ESC>", 'ntx')
+  call assert_equal(getline('.'), 'bbbb')
+
+  bwipe! Xxx1
+  au! KeyInputPre
+
+  " KeyInputPre returns multiple characters.
+  au KeyInputPre i if v:char ==# 'a' | let v:char = 'cccc' | endif
+  edit Xxx1
+
+  call feedkeys("iaabb\<ESC>", 'ntx')
+  call assert_equal(getline('.'), 'ccbb')
+
+  bwipe! Xxx1
+  au! KeyInputPre
+
+  " KeyInputPre can use special keys.
+  au KeyInputPre i if v:char ==# 'a' | let v:char = "\<Ignore>" | endif
+  edit Xxx1
+
+  call feedkeys("iaabb\<ESC>", 'ntx')
+  call assert_equal(getline('.'), 'bb')
+
+  bwipe! Xxx1
+  au! KeyInputPre
+
+  " Test for v:event.typed
+  au KeyInputPre n call assert_true(v:event.typed)
+  call feedkeys('j', 'ntx')
+
+  au! KeyInputPre
+
+  au KeyInputPre n call assert_false(v:event.typed)
+  call feedkeys('j', 'nx')
+
+  au! KeyInputPre
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

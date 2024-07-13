@@ -527,7 +527,6 @@ EXTERN unsigned	cot_flags;	// flags from 'completeopt'
 #define COT_NOINSERT	    0x040   // FALSE: select & insert, TRUE: noinsert
 #define COT_NOSELECT	    0x080   // FALSE: select & insert, TRUE: noselect
 #define COT_FUZZY	    0x100   // TRUE: fuzzy match enabled
-#define COT_FUZZYCOLLECT    0x200   // TRUE: fuzzy collect enabled
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char_u	*p_csl;		// 'completeslash'
 #endif
@@ -956,7 +955,6 @@ EXTERN int	p_sol;		// 'startofline'
 EXTERN char_u	*p_su;		// 'suffixes'
 EXTERN char_u	*p_sws;		// 'swapsync'
 EXTERN char_u	*p_swb;		// 'switchbuf'
-EXTERN char_u	*p_spk;		// 'splitkeep'
 EXTERN unsigned	swb_flags;
 // Keep in sync with p_swb_values in optionstr.c
 #define SWB_USEOPEN		0x001
@@ -965,9 +963,14 @@ EXTERN unsigned	swb_flags;
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
 #define SWB_USELAST		0x020
+EXTERN char_u	*p_spk;		// 'splitkeep'
 #ifdef FEAT_SYN_HL
 EXTERN char_u	*p_syn;		// 'syntax'
 #endif
+EXTERN char_u	*p_tcl;		// 'tabclose'
+EXTERN unsigned	tcl_flags;	// flags from 'tabclose'
+#define TCL_LEFT		0x001
+#define TCL_USELAST		0x002
 EXTERN long	p_ts;		// 'tabstop'
 EXTERN int	p_tbs;		// 'tagbsearch'
 EXTERN char_u	*p_tc;		// 'tagcase'

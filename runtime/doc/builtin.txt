@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jun 23
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -68,7 +68,7 @@ balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
 bindtextdomain({package}, {path})
-				none	bind text domain to specied path
+				Bool	bind text domain to specified path
 blob2list({blob})		List	convert {blob} into a list of numbers
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
@@ -309,6 +309,7 @@ hlget([{name} [, {resolve}]])	List	get highlight group attributes
 hlset({list})			Number	set highlight group attributes
 hostname()			String	name of the machine Vim is running on
 iconv({expr}, {from}, {to})	String	convert encoding of {expr}
+id({item})			String	get unique identity string of item
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
@@ -1225,9 +1226,12 @@ bindtextdomain({package}, {path})			*bindtextdomain()*
 		Bind a specific {package} to a {path} so that the
 		|gettext()| function can be used to get language-specific
 		translations for a package.  {path} is the directory name
-		for the translations. See |package-create|.
+		for the translations. See |package-translation|.
 
-		Return type: none
+		Returns v:true on success and v:false on failure (out of
+		memory).
+
+		Return type: |vim9-boolean|
 
 blob2list({blob})					*blob2list()*
 		Return a List containing the number value of each byte in Blob
@@ -3574,7 +3578,7 @@ garbagecollect([{atexit}])				*garbagecollect()*
 		Return type: |String|
 
 
-get({list}, {idx} [, {default}])			*get()*
+get({list}, {idx} [, {default}])			*get()* *get()-list*
 		Get item {idx} from |List| {list}.  When this item is not
 		available return {default}.  Return zero when {default} is
 		omitted.
@@ -3583,7 +3587,7 @@ get({list}, {idx} [, {default}])			*get()*
 <
 		Return type: any, depending on {list}
 
-get({blob}, {idx} [, {default}])
+get({blob}, {idx} [, {default}])			*get()-blob*
 		Get byte {idx} from |Blob| {blob}.  When this byte is not
 		available return {default}.  Return -1 when {default} is
 		omitted.
@@ -3592,7 +3596,7 @@ get({blob}, {idx} [, {default}])
 <
 		Return type: |Number|
 
-get({dict}, {key} [, {default}])
+get({dict}, {key} [, {default}])			*get()-dict*
 		Get item with key {key} from |Dictionary| {dict}.  When this
 		item is not available return {default}.  Return zero when
 		{default} is omitted.  Useful example: >
@@ -3604,18 +3608,32 @@ get({dict}, {key} [, {default}])
 <
 		Return type: any, depending on {dict}
 
-get({func}, {what})
-		Get item {what} from Funcref {func}.  Possible values for
+get({func}, {what})					*get()-func*
+		Get item {what} from |Funcref| {func}.  Possible values for
 		{what} are:
-			"name"	The function name
-			"func"	The function
-			"dict"	The dictionary
-			"args"	The list with arguments
+		  "name"    The function name
+		  "func"    The function
+		  "dict"    The dictionary
+		  "args"    The list with arguments
+		  "arity"   A dictionary with information about the number of
+			    arguments accepted by the function (minus the
+			    {arglist}) with the following fields:
+				required    the number of positional arguments
+				optional    the number of optional arguments,
+					    in addition to the required ones
+				varargs     |TRUE| if the function accepts a
+					    variable number of arguments |...|
+
+				Note: There is no error, if the {arglist} of
+				the Funcref contains more arguments than the
+				Funcref expects, it's not validated.
+
 		Returns zero on error.
+
 		Preferably used as a |method|: >
 			myfunc->get(what)
 <
-		Return type: any, depending on {func}
+		Return type: any, depending on {func} and {what}
 
 							*getbufinfo()*
 getbufinfo([{buf}])
@@ -4047,6 +4065,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		customlist,{func} custom completion, defined via {func}
 		diff_buffer     |:diffget| and |:diffput| completion
 		dir		directory names
+		dir_in_path	directory names in |'cdpath'|
 		environment	environment variable names
 		event		autocommand events
 		expression	Vim expression
@@ -4990,17 +5009,18 @@ gettagstack([{winnr}])					*gettagstack()*
 
 gettext({text} [, {package}])				*gettext()*
 		Translate String {text} if possible.
-		This is mainly for use in the distributed Vim scripts.  When
-		generating message translations the {text} is extracted by
-		xgettext, the translator can add the translated message in the
-		.po file and Vim will lookup the translation when gettext() is
-		called.
+		This is intended for use in Vim scripts.  When generating
+		message translations the {text} is extracted by `xgettext`,
+		the translator can add translated messages into the .po file
+		and Vim will lookup the translation when gettext() is called.
 		For {text} double quoted strings are preferred, because
-		xgettext does not understand escaping in single quoted
-		strings.
+		`xgettext` does not support single quoted escaped text.
+
 		When the {package} is specified, the translation is looked up
-		for that specific package. You need to specify the path to
-		look for translations with the |bindtextdomain()| function.
+		for that specific package.  This is mainly required for
+		third-party Vim scripts.  You need to specify a path to the
+		translations with the |bindtextdomain()| function before
+		using the gettext() function.
 
 		Return type: |String|
 
@@ -5600,6 +5620,34 @@ iconv({string}, {from}, {to})				*iconv()*
 
 		Can also be used as a |method|: >
 			GetText()->iconv('latin1', 'utf-8')
+<
+		Return type: |String|
+
+
+id({item})							    *id()*
+		The result is a unique String associated with the {item} and
+		not with the {item}'s contents. It is only valid while the
+		{item} exists and is referenced. It is valid only in the
+		instance of vim that produces the result. The whole idea is
+		that `id({item})` does not change if the contents of {item}
+		changes. This is useful as a `key` for creating an identity
+		dictionary, rather than one based on equals.
+
+		This operation does not reference {item} and there is no
+		function to convert the `id` to the {item}. It may be useful to
+		have a map of `id` to {item}. The following >
+		    var referenceMap: dict<any>
+		    var id = item->id()
+		    referenceMap[id] = item
+<		prevents {item} from being garbage collected and provides a
+		way to get the {item} from the `id`.
+
+		{item} may be a List, Dictionary, Object, Job, Channel or
+		Blob. If the item is not a permitted type, or it is a null
+		value, then an empty String is returned.
+
+		Can also be used as a |method|: >
+			GetItem()->id()
 <
 		Return type: |String|
 

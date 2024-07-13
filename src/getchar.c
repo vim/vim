@@ -96,6 +96,9 @@ static void	closescript(void);
 static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
+#ifdef FEAT_EVAL
+static int	do_key_input_pre(int c);
+#endif
 
 /*
  * Free and clear a buffer.
@@ -2130,6 +2133,10 @@ vgetc(void)
     }
 #endif
 
+#ifdef FEAT_EVAL
+    c = do_key_input_pre(c);
+#endif
+
     // Need to process the character before we know it's safe to do something
     // else.
     if (c != K_IGNORE)
@@ -2137,6 +2144,74 @@ vgetc(void)
 
     return c;
 }
+
+#ifdef FEAT_EVAL
+/*
+ * Handle the InsertCharPre autocommand.
+ * "c" is the character that was typed.
+ * Return new input character.
+ */
+    static int
+do_key_input_pre(int c)
+{
+    int		res = c;
+    char_u	buf[MB_MAXBYTES + 1];
+    char_u	curr_mode[MODE_MAX_LENGTH];
+    int		save_State = State;
+    save_v_event_T save_v_event;
+    dict_T	*v_event;
+
+    // Return quickly when there is nothing to do.
+    if (!has_keyinputpre())
+	return res;
+
+    if (IS_SPECIAL(c))
+    {
+	buf[0] = K_SPECIAL;
+	buf[1] = KEY2TERMCAP0(c);
+	buf[2] = KEY2TERMCAP1(c);
+	buf[3] = NUL;
+    }
+    else
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
+
+    get_mode(curr_mode);
+
+    // Lock the text to avoid weird things from happening.
+    ++textlock;
+    set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
+
+    v_event = get_v_event(&save_v_event);
+    (void)dict_add_bool(v_event, "typed", KeyTyped);
+
+    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf)
+	&& STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
+    {
+	// Get the value of v:char.  It may be empty or more than one
+	// character.  Only use it when changed, otherwise continue with the
+	// original character.
+	char_u *v_char;
+
+	v_char = get_vim_var_str(VV_CHAR);
+
+	// Convert special bytes when it is special string.
+	if (STRLEN(v_char) >= 3 && v_char[0] == K_SPECIAL)
+	    res = TERMCAP2KEY(v_char[1], v_char[2]);
+	else if (STRLEN(v_char) > 0)
+	    res = PTR2CHAR(v_char);
+    }
+
+    restore_v_event(v_event, &save_v_event);
+
+    set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char
+    --textlock;
+
+    // Restore the State, it may have been changed.
+    State = save_State;
+
+    return res;
+}
+#endif
 
 /*
  * Like vgetc(), but never return a NUL when called recursively, get a key

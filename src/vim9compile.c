@@ -522,6 +522,8 @@ use_typecheck(type_T *actual, type_T *expected)
 		    (actual->tt_member == &t_void)
 					 == (expected->tt_member == &t_void))))
 	return TRUE;
+    if (actual->tt_type == VAR_OBJECT && expected->tt_type == VAR_OBJECT)
+	return TRUE;
     if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
 				       && actual->tt_type == expected->tt_type)
 	// This takes care of a nested list or dict.
@@ -3315,7 +3317,7 @@ obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
 		// the initialization expression type.
 		m->ocm_type = type;
 	    }
-	    else if (m->ocm_type->tt_type != type->tt_type)
+	    else
 	    {
 		// The type of the member initialization expression is
 		// determined at run time.  Add a runtime type check.
@@ -3329,6 +3331,15 @@ obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
 	}
 	else
 	    push_default_value(cctx, m->ocm_type->tt_type, FALSE, NULL);
+
+	if ((m->ocm_type->tt_type == VAR_DICT
+		    || m->ocm_type->tt_type == VAR_LIST)
+		&& m->ocm_type->tt_member != NULL
+		&& m->ocm_type->tt_member != &t_any
+		&& m->ocm_type->tt_member != &t_unknown)
+	    // Set the type in the list or dict, so that it can be checked,
+	    // also in legacy script.
+	    generate_SETTYPE(cctx, m->ocm_type);
 
 	generate_STORE_THIS(cctx, i);
     }

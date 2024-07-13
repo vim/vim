@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Jun 04
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Jul 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -854,16 +854,16 @@ accordingly.  Vim proceeds in this order:
 	I   The environment variable VIMINIT (see also |compatible-default|) (*)
 	    The value of $VIMINIT is used as an Ex command line.
 	II  The user vimrc file(s):
-		    "$HOME/.vimrc"		(for Unix) (*)
-		    "$HOME/.vim/vimrc"		(for Unix) (*)
-		    "$HOME/.config/vim/vimrc"	(for Unix) (*)
-		    "s:.vimrc"			(for Amiga) (*)
-		    "home:.vimrc"		(for Amiga) (*)
-		    "home:vimfiles:vimrc"	(for Amiga) (*)
-		    "$VIM/.vimrc"		(for Amiga) (*)
-		    "$HOME/_vimrc"		(for Win32) (*)
-		    "$HOME/vimfiles/vimrc"	(for Win32) (*)
-		    "$VIM/_vimrc"		(for Win32) (*)
+		    "$HOME/.vimrc"		  (for Unix) (*)
+		    "$HOME/.vim/vimrc"		  (for Unix) (*)
+		    "$XDG_CONFIG_HOME/vim/vimrc"  (for Unix) (*)
+		    "s:.vimrc"			  (for Amiga) (*)
+		    "home:.vimrc"		  (for Amiga) (*)
+		    "home:vimfiles:vimrc"	  (for Amiga) (*)
+		    "$VIM/.vimrc"		  (for Amiga) (*)
+		    "$HOME/_vimrc"		  (for Win32) (*)
+		    "$HOME/vimfiles/vimrc"	  (for Win32) (*)
+		    "$VIM/_vimrc"		  (for Win32) (*)
 		    "$HOME/config/settings/vim/vimrc"	(for Haiku) (*)
 
 		Note: For Unix and Amiga, when ".vimrc" does not exist,
@@ -1257,7 +1257,7 @@ To change it later, use a ":let" command like this: >
 In case you need the value of $VIMRUNTIME in a shell (e.g., for a script that
 greps in the help files) you might be able to use this: >
 
-	VIMRUNTIME=`vim -e -T dumb --cmd 'exe "set t_cm=\<C-M>"|echo $VIMRUNTIME|quit' | tr -d '\015' `
+	VIMRUNTIME=$(vim -es '+put=$VIMRUNTIME|print|quit!')
 
 Don't set $VIMRUNTIME to an empty value, some things may stop working.
 

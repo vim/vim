@@ -4003,6 +4003,8 @@ gen_expand_wildcards(
     int			add_pat;
     int			retval = OK;
     int			did_expand_in_path = FALSE;
+    char_u		*path_option = *curbuf->b_p_path == NUL ?
+					p_path : curbuf->b_p_path;
 
     /*
      * expand_env() is called to expand things like "~user".  If this fails,
@@ -4092,7 +4094,7 @@ gen_expand_wildcards(
 	     */
 	    if (mch_has_exp_wildcard(p) || (flags & EW_ICASE))
 	    {
-		if ((flags & EW_PATH)
+		if ((flags & (EW_PATH | EW_CDPATH))
 			&& !mch_isFullName(p)
 			&& !(p[0] == '.'
 			    && (vim_ispathsep(p[1])
@@ -4126,8 +4128,8 @@ gen_expand_wildcards(
 		vim_free(t);
 	}
 
-	if (did_expand_in_path && ga.ga_len > 0 && (flags & EW_PATH))
-	    uniquefy_paths(&ga, p);
+	if (did_expand_in_path && ga.ga_len > 0 && (flags & (EW_PATH | EW_CDPATH)))
+	    uniquefy_paths(&ga, p, path_option);
 	if (p != pat[i])
 	    vim_free(p);
     }

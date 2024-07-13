@@ -1460,8 +1460,13 @@ handle_did_throw(void)
     current_exception->throw_name = NULL;
 
     discard_current_exception();	// uses IObuff if 'verbose'
-    suppress_errthrow = TRUE;
-    force_abort = TRUE;
+
+    // If "silent!" is active the uncaught exception is not fatal.
+    if (emsg_silent == 0)
+    {
+	suppress_errthrow = TRUE;
+	force_abort = TRUE;
+    }
 
     if (messages != NULL)
     {
@@ -2336,12 +2341,7 @@ do_one_cmd(
     {
 	for (p = ea.arg; *p; ++p)
 	{
-	    // Remove one backslash before a newline, so that it's possible to
-	    // pass a newline to the shell and also a newline that is preceded
-	    // with a backslash.  This makes it impossible to end a shell
-	    // command in a backslash, but that doesn't appear useful.
-	    // Halving the number of backslashes is incompatible with previous
-	    // versions.
+	    // Remove one backslash before a newline
 	    if (*p == '\\' && p[1] == '\n')
 		STRMOVE(p, p + 1);
 	    else if (*p == '\n' && !(ea.argt & EX_EXPR_ARG))
@@ -2730,7 +2730,7 @@ ex_range_without_command(exarg_T *eap)
 {
     char *errormsg = NULL;
 
-    if ((*eap->cmd == '|' || (exmode_active && eap->line1 != eap->line2))
+    if ((*eap->cmd == '|' || exmode_active)
 #ifdef FEAT_EVAL
 	    && !in_vim9script()
 #endif

@@ -411,8 +411,8 @@ msgstr " 사용자 정의 완성 (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Omni 완성 (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " 단어 제안 (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " 단어 제안 (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " 낱말 로컬 완성 (^N^P)"

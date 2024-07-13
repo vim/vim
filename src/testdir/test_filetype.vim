@@ -95,6 +95,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     aml: ['file.aml'],
     ampl: ['file.run'],
     ant: ['build.xml'],
+    antlr4: ['parser.g4'],
     apache: ['.htaccess', '/etc/httpd/file.conf', '/etc/apache2/sites-2/file.com', '/etc/apache2/some.config', '/etc/apache2/conf.file/conf', '/etc/apache2/mods-some/file', '/etc/apache2/sites-some/file', '/etc/httpd/conf.d/file.config', '/etc/apache2/conf.file/file', '/etc/apache2/file.conf', '/etc/apache2/file.conf-file', '/etc/apache2/mods-file/file', '/etc/apache2/sites-file/file', '/etc/apache2/sites-file/file.com', '/etc/httpd/conf.d/file.conf', '/etc/httpd/conf.d/file.conf-file', 'access.conf', 'access.conf-file', 'any/etc/apache2/conf.file/file', 'any/etc/apache2/file.conf', 'any/etc/apache2/file.conf-file', 'any/etc/apache2/mods-file/file', 'any/etc/apache2/sites-file/file', 'any/etc/apache2/sites-file/file.com', 'any/etc/httpd/conf.d/file.conf', 'any/etc/httpd/conf.d/file.conf-file', 'any/etc/httpd/file.conf', 'apache.conf', 'apache.conf-file', 'apache2.conf', 'apache2.conf-file', 'httpd.conf', 'httpd.conf-file', 'srm.conf', 'srm.conf-file', '/etc/httpd/mods-some/file', '/etc/httpd/sites-some/file', '/etc/httpd/conf.file/conf'],
     apachestyle: ['/etc/proftpd/file.config,/etc/proftpd/conf.file/file', '/etc/proftpd/conf.file/file', '/etc/proftpd/file.conf', '/etc/proftpd/file.conf-file', 'any/etc/proftpd/conf.file/file', 'any/etc/proftpd/file.conf', 'any/etc/proftpd/file.conf-file', 'proftpd.conf', 'proftpd.conf-file'],
     applescript: ['file.scpt'],
@@ -121,7 +122,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     beancount: ['file.beancount'],
     bib: ['file.bib'],
     bicep: ['file.bicep', 'file.bicepparam'],
-    bindzone: ['named.root', '/bind/db.file', '/named/db.file', 'any/bind/db.file', 'any/named/db.file'],
+    bindzone: ['named.root', '/bind/db.file', '/named/db.file', 'any/bind/db.file', 'any/named/db.file', 'foobar.zone'],
     bitbake: ['file.bb', 'file.bbappend', 'file.bbclass', 'build/conf/local.conf', 'meta/conf/layer.conf', 'build/conf/bbappend.conf', 'meta-layer/conf/distro/foo.conf'],
     blade: ['file.blade.php'],
     blank: ['file.bl'],
@@ -142,6 +143,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cdl: ['file.cdl'],
     cdrdaoconf: ['/etc/cdrdao.conf', '/etc/defaults/cdrdao', '/etc/default/cdrdao', '.cdrdao', 'any/etc/cdrdao.conf', 'any/etc/default/cdrdao', 'any/etc/defaults/cdrdao'],
     cdrtoc: ['file.toc'],
+    cedar: ['file.cedar'],
     cf: ['file.cfm', 'file.cfi', 'file.cfc'],
     cfengine: ['cfengine.conf'],
     cfg: ['file.hgrc', 'filehgrc', 'hgrc', 'some-hgrc'],
@@ -333,6 +335,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     hoon: ['file.hoon'],
     hostconf: ['/etc/host.conf', 'any/etc/host.conf'],
     hostsaccess: ['/etc/hosts.allow', '/etc/hosts.deny', 'any/etc/hosts.allow', 'any/etc/hosts.deny'],
+    # file.component.html should be HTML, not Angular, see #13594
     html: ['file.html', 'file.htm', 'file.cshtml', 'file.component.html'],
     htmlm4: ['file.html.m4'],
     httest: ['file.htt', 'file.htb'],
@@ -365,7 +368,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     jq: ['file.jq'],
     jovial: ['file.jov', 'file.j73', 'file.jovial'],
     jproperties: ['file.properties', 'file.properties_xx', 'file.properties_xx_xx', 'some.properties_xx_xx_file', 'org.eclipse.xyz.prefs'],
-    json: ['file.json', 'file.jsonp', 'file.json-patch', 'file.geojson', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', 'file.jupyterlab-settings', '.prettierrc', '.firebaserc', '.stylelintrc', '.lintstagedrc', 'file.slnf', 'file.sublime-project', 'file.sublime-settings', 'file.sublime-workspace', 'file.bd', 'file.bda', 'file.xci', 'flake.lock'],
+    json: ['file.json', 'file.jsonp', 'file.json-patch', 'file.geojson', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', 'file.jupyterlab-settings', '.prettierrc', '.firebaserc', '.stylelintrc', '.lintstagedrc', 'file.slnf', 'file.sublime-project', 'file.sublime-settings', 'file.sublime-workspace', 'file.bd', 'file.bda', 'file.xci', 'flake.lock', 'pack.mcmeta'],
     json5: ['file.json5'],
     jsonc: ['file.jsonc', '.babelrc', '.eslintrc', '.jsfmtrc', '.jshintrc', '.jscsrc', '.vsconfig', '.hintrc', '.swrc', 'jsconfig.json', 'tsconfig.json', 'tsconfig.test.json', 'tsconfig-test.json', '.luaurc'],
     jsonl: ['file.jsonl'],
@@ -384,6 +387,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     lace: ['file.ace', 'file.ACE'],
     latte: ['file.latte', 'file.lte'],
     ld: ['file.ld', 'any/usr/lib/aarch64-xilinx-linux/ldscripts/aarch64elf32b.x'],
+    ldapconf: ['ldap.conf', '.ldaprc', 'ldaprc'],
     ldif: ['file.ldif'],
     lean: ['file.lean'],
     ledger: ['file.ldg', 'file.ledger', 'file.journal'],
@@ -1044,7 +1048,8 @@ func Test_emptybuf_ftdetect()
   call assert_equal('', &filetype)
   filetype detect
   call assert_equal('sh', &filetype)
-  close!
+  " close the swapfile
+  bw!
 endfunc
 
 " Test for ':filetype indent on' and ':filetype indent off' commands
@@ -1563,6 +1568,41 @@ func Test_hook_file()
   call writefile(['not pacman'], 'Xfile.hook')
   split Xfile.hook
   call assert_notequal('confini', &filetype)
+  bwipe!
+
+  filetype off
+endfunc
+
+func Test_html_file()
+  filetype on
+
+  " HTML Angular
+  let content = ['@for (item of items; track item.name) {', '  <li> {{ item.name }}</li>', '} @empty {', '  <li> There are no items.</li>', '}']
+  call writefile(content, 'Xfile.html', 'D')
+  split Xfile.html
+  call assert_equal('htmlangular', &filetype)
+  bwipe!
+
+  " Django Template
+  let content = ['{% if foobar %}',
+      \ '    <ul>',
+      \ '    {% for question in list %}',
+      \ '        <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>',
+      \ '    {% endfor %}',
+      \ '    </ul>',
+      \ '{% else %}',
+      \ '    <p>No polls are available.</p>',
+      \ '{% endif %}']
+  call writefile(content, 'Xfile.html', 'D')
+  split Xfile.html
+  call assert_equal('htmldjango', &filetype)
+  bwipe!
+
+  " regular HTML
+  let content = ['<!DOCTYPE html>', '<html>', '    <head>Foobar</head>', '    <body>Content', '    </body>', '</html>']
+  call writefile(content, 'Xfile.html', 'D')
+  split Xfile.html
+  call assert_equal('html', &filetype)
   bwipe!
 
   filetype off
@@ -2531,6 +2571,33 @@ func Test_uci_file()
   call writefile(['# Copyright Cool Cats 1997', 'config firewall'], 'any/etc/config/firewall', 'D')
   split any/etc/config/firewall
   call assert_equal('uci', &filetype)
+  bwipe!
+
+  filetype off
+endfunc
+
+func Test_pro_file()
+  filetype on
+
+  "Prolog
+  call writefile([':-module(test/1,'], 'Xfile.pro', 'D')
+  split Xfile.pro
+  call assert_equal('prolog', &filetype)
+  bwipe!
+
+  call writefile(['% comment'], 'Xfile.pro', 'D')
+  split Xfile.pro
+  call assert_equal('prolog', &filetype)
+  bwipe!
+
+  call writefile(['/* multiline comment'], 'Xfile.pro', 'D')
+  split Xfile.pro
+  call assert_equal('prolog', &filetype)
+  bwipe!
+
+  call writefile(['rule(test, 1.7).'], 'Xfile.pro', 'D')
+  split Xfile.pro
+  call assert_equal('prolog', &filetype)
   bwipe!
 
   filetype off

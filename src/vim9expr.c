@@ -2836,12 +2836,13 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	type_T	    *actual;
 	where_T	    where = WHERE_INIT;
 
+	where.wt_kind = WT_CAST;
 	generate_ppconst(cctx, ppconst);
 	actual = get_type_on_stack(cctx, 0);
 	if (check_type_maybe(want_type, actual, FALSE, where) != OK)
 	{
-	    if (need_type(actual, want_type, FALSE,
-					    -1, 0, cctx, FALSE, FALSE) == FAIL)
+	    if (need_type_where(actual, want_type, FALSE, -1, where, cctx, FALSE, FALSE)
+		    == FAIL)
 		return FAIL;
 	}
     }

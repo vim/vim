@@ -418,6 +418,7 @@ vim_findfile_init(
 	    {
 		char_u	*helper;
 		void	*ptr;
+		size_t	len;
 
 		helper = walker;
 		ptr = vim_realloc(search_ctx->ffsc_stopdirs_v,
@@ -428,18 +429,21 @@ vim_findfile_init(
 		    // ignore, keep what we have and continue
 		    break;
 		walker = vim_strchr(walker, ';');
-		if (walker)
+		len = walker ? (size_t)(walker - helper) : STRLEN(helper);
+		// "" means ascent till top of directory tree.
+		if (*helper != NUL && !vim_isAbsName(helper)
+							 && len + 1 < MAXPATHL)
 		{
+		    // Make the stop dir an absolute path name.
+		    vim_strncpy(ff_expand_buffer, helper, len);
 		    search_ctx->ffsc_stopdirs_v[dircount-1] =
-					 vim_strnsave(helper, walker - helper);
-		    walker++;
+					FullName_save(ff_expand_buffer, FALSE);
 		}
 		else
-		    // this might be "", which means ascent till top
-		    // of directory tree.
 		    search_ctx->ffsc_stopdirs_v[dircount-1] =
-							  vim_strsave(helper);
-
+						     vim_strnsave(helper, len);
+		if (walker)
+		    walker++;
 		dircount++;
 
 	    } while (walker != NULL);
@@ -1078,11 +1082,13 @@ vim_findfile(void *search_ctx_arg)
 		&& search_ctx->ffsc_stopdirs_v != NULL && !got_int)
 	{
 	    ff_stack_T  *sptr;
+	    // path_end may point to the NUL or the previous path separator
+	    int plen = (path_end - search_ctx->ffsc_start_dir)
+							  + (*path_end != NUL);
 
 	    // is the last starting directory in the stop list?
 	    if (ff_path_in_stoplist(search_ctx->ffsc_start_dir,
-		       (int)(path_end - search_ctx->ffsc_start_dir),
-		       search_ctx->ffsc_stopdirs_v) == TRUE)
+				    plen, search_ctx->ffsc_stopdirs_v) == TRUE)
 		break;
 
 	    // cut of last dir
@@ -1521,22 +1527,14 @@ ff_path_in_stoplist(char_u *path, int path_len, char_u **stopdirs_v)
 	return TRUE;
 
     for (i = 0; stopdirs_v[i] != NULL; i++)
-    {
-	if ((int)STRLEN(stopdirs_v[i]) > path_len)
-	{
-	    // match for parent directory. So '/home' also matches
-	    // '/home/rks'. Check for PATHSEP in stopdirs_v[i], else
-	    // '/home/r' would also match '/home/rks'
-	    if (fnamencmp(stopdirs_v[i], path, path_len) == 0
-		    && vim_ispathsep(stopdirs_v[i][path_len]))
-		return TRUE;
-	}
-	else
-	{
-	    if (fnamecmp(stopdirs_v[i], path) == 0)
-		return TRUE;
-	}
-    }
+	// match for parent directory. So '/home' also matches
+	// '/home/rks'. Check for PATHSEP in stopdirs_v[i], else
+	// '/home/r' would also match '/home/rks'
+	if (fnamencmp(stopdirs_v[i], path, path_len) == 0
+		&& ((int)STRLEN(stopdirs_v[i]) <= path_len
+		    || vim_ispathsep(stopdirs_v[i][path_len])))
+	    return TRUE;
+
     return FALSE;
 }
 
@@ -2213,10 +2211,11 @@ is_unique(char_u *maybe_unique, garray_T *gap, int i)
  * expanding each into their equivalent path(s).
  */
     static void
-expand_path_option(char_u *curdir, garray_T *gap)
+expand_path_option(
+	char_u		*curdir,
+	char_u		*path_option,	// p_path or p_cdpath
+	garray_T	*gap)
 {
-    char_u	*path_option = *curbuf->b_p_path == NUL
-						  ? p_path : curbuf->b_p_path;
     char_u	*buf;
     char_u	*p;
     int		len;
@@ -2331,7 +2330,10 @@ get_path_cutoff(char_u *fname, garray_T *gap)
  * that matches the pattern. Beware, this is at least O(n^2) wrt "gap->ga_len".
  */
     void
-uniquefy_paths(garray_T *gap, char_u *pattern)
+uniquefy_paths(
+	garray_T *gap,
+	char_u *pattern,
+	char_u *path_option)	// p_path or p_cdpath
 {
     int		i;
     int		len;
@@ -2374,7 +2376,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
     if ((curdir = alloc(MAXPATHL)) == NULL)
 	goto theend;
     mch_dirname(curdir, MAXPATHL);
-    expand_path_option(curdir, &path_ga);
+    expand_path_option(curdir, path_option, &path_ga);
 
     in_curdir = ALLOC_CLEAR_MULT(char_u *, gap->ga_len);
     if (in_curdir == NULL)
@@ -2522,13 +2524,17 @@ expand_in_path(
     garray_T	path_ga;
     char_u	*paths = NULL;
     int		glob_flags = 0;
+    char_u	*path_option = *curbuf->b_p_path == NUL ? p_path : curbuf->b_p_path;
 
     if ((curdir = alloc(MAXPATHL)) == NULL)
 	return 0;
     mch_dirname(curdir, MAXPATHL);
 
     ga_init2(&path_ga, sizeof(char_u *), 1);
-    expand_path_option(curdir, &path_ga);
+    if (flags & EW_CDPATH)
+	expand_path_option(curdir, p_cdpath, &path_ga);
+    else
+	expand_path_option(curdir, path_option, &path_ga);
     vim_free(curdir);
     if (path_ga.ga_len == 0)
 	return 0;
@@ -2542,7 +2548,7 @@ expand_in_path(
 	glob_flags |= WILD_ICASE;
     if (flags & EW_ADDSLASH)
 	glob_flags |= WILD_ADD_SLASH;
-    globpath(paths, pattern, gap, glob_flags, FALSE);
+    globpath(paths, pattern, gap, glob_flags, !!(flags & EW_CDPATH));
     vim_free(paths);
 
     return gap->ga_len;

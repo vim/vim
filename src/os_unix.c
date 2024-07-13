@@ -2699,6 +2699,9 @@ mch_FullName(
     if ((force || !mch_isFullName(fname))
 	    && ((p = vim_strrchr(fname, '/')) == NULL || p != fname))
     {
+	if (p == NULL && STRCMP(fname, "..") == 0)
+	    // Handle ".." without path separators.
+	    p = fname + 2;
 	/*
 	 * If the file name has a path, change to that directory for a moment,
 	 * and then get the directory (and get back to where we were).
@@ -2707,7 +2710,7 @@ mch_FullName(
 	if (p != NULL)
 	{
 	    if (STRCMP(p, "/..") == 0)
-		// for "/path/dir/.." include the "/.."
+		// For "/path/dir/.." include the "/..".
 		p += 3;
 
 #ifdef HAVE_FCHDIR
@@ -7721,6 +7724,37 @@ sig_sysmouse SIGDEFARG(sigarg)
     return;
 }
 #endif // FEAT_SYSMOUSE
+
+/*
+ * Fill the buffer 'buf' with 'len' random bytes.
+ * Returns FAIL if the OS PRNG is not available or something went wrong.
+ */
+    int
+mch_get_random(char_u *buf, int len)
+{
+    static int dev_urandom_state = NOTDONE;
+
+    if (dev_urandom_state == FAIL)
+	return FAIL;
+
+    int fd = open("/dev/urandom", O_RDONLY);
+
+    // Attempt reading /dev/urandom.
+    if (fd == -1)
+	dev_urandom_state = FAIL;
+    else if (read(fd, buf, len) == len)
+    {
+	dev_urandom_state = OK;
+	close(fd);
+    }
+    else
+    {
+	dev_urandom_state = FAIL;
+	close(fd);
+    }
+
+    return dev_urandom_state;
+}
 
 #if defined(FEAT_LIBCALL) || defined(PROTO)
 typedef char_u * (*STRPROCSTR)(char_u *);
