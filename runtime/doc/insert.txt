@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2024 Jul 12
+*insert.txt*    For Vim version 9.1.  Last change: 2024 Jul 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1995,6 +1995,16 @@ These two commands will keep on asking for lines, until you type a line
 containing only a ".".  Watch out for lines starting with a backslash, see
 |line-continuation|.
 
+Text typed after a "|" command separator is used first. So the following
+command in ex mode: >
+	:a|one
+	two
+	.
+	:visual
+<appends the following text, after the cursor line: >
+	one
+	two
+<
 NOTE: These commands cannot be used with |:global| or |:vglobal|.
 ":append" and ":insert" don't work properly in between ":if" and
 ":endif", ":for" and ":endfor", ":while" and ":endwhile".

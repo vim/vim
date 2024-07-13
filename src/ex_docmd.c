@@ -4698,6 +4698,7 @@ get_address(
 		if (n == MAXLNUM)
 		{
 		    emsg(_(e_line_number_out_of_range));
+		    cmd = NULL;
 		    goto error;
 		}
 	    }
@@ -4728,6 +4729,7 @@ get_address(
 		    if (lnum >= 0 && n >= LONG_MAX - lnum)
 		    {
 			emsg(_(e_line_number_out_of_range));
+			cmd = NULL;
 			goto error;
 		    }
 		    lnum += n;
@@ -5401,7 +5403,11 @@ separate_nextcmd(exarg_T *eap, int keep_backslash)
 		    && in_vim9script()
 		    && !(eap->argt & EX_NOTRLCOM)
 		    && p > eap->cmd && VIM_ISWHITE(p[-1]))
-		|| *p == '|' || *p == '\n')
+		|| (*p == '|'
+		    && eap->cmdidx != CMD_append
+		    && eap->cmdidx != CMD_change
+		    && eap->cmdidx != CMD_insert)
+		|| *p == '\n')
 	{
 	    /*
 	     * We remove the '\' before the '|', unless EX_CTRLV is used
