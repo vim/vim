@@ -4,6 +4,7 @@ vim9script
 # Language: gdscript (Godot game engine scripting language)
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-gdscript
+# Last Change: 2024 Jul 14
 
 if exists("b:did_ftplugin") | finish | endif
 
@@ -21,6 +22,11 @@ setlocal suffixesadd=.gd
 setlocal commentstring=#\ %s
 setlocal foldignore=
 setlocal foldexpr=GDScriptFoldLevel()
+
+if get(g:, 'gdscript_recommended_style', 1)
+    setlocal noexpandtab softtabstop=0 shiftwidth=0
+    let b:undo_ftplugin .= ' | setl et< sts< sw<'
+endif
 
 
 def GDScriptFoldLevel(): string
