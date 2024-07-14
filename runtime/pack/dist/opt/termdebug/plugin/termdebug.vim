@@ -522,7 +522,7 @@ def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
 
   # ---- gdb started. Next, let's set the MI interface. ---
   # Set arguments to be run.
-  if len(proc_args)
+  if !empty(proc_args)
     term_sendkeys(gdbbufnr, $"server set args {join(proc_args)}\r")
   endif
 
@@ -1321,12 +1321,8 @@ def DeleteCommands()
   endif
 
   sign_unplace('TermDebug')
-  breakpoints = {}
-  breakpoint_locations = {}
-
   sign_undefine('debugPC')
   sign_undefine(BreakpointSigns->map("'debugBreakpoint' .. v:val"))
-  BreakpointSigns = []
 enddef
 
 
@@ -1339,7 +1335,7 @@ def Until(at: string)
     ch_log('assume that program is running after this command')
 
     # Use the fname:lnum format
-    var AT = empty(at) ? $"{fnameescape(expand('%:p'))}:{line('.')}" : at
+    var AT = empty(at) ? $"\"{expand('%:p')}:{line('.')}\"" : at
     SendCommand($'-exec-until {AT}')
   else
     ch_log('dropping command, program is running: exec-until')
@@ -1358,7 +1354,7 @@ def SetBreakpoint(at: string, tbreak=false)
   endif
 
   # Use the fname:lnum format, older gdb can't handle --source.
-  var AT = empty(at) ? $"{fnameescape(expand('%:p'))}:{line('.')}" : at
+  var AT = empty(at) ? $"\"{expand('%:p')}:{line('.')}\"" : at
   var cmd = ''
   if tbreak
     cmd = $'-break-insert -t {AT}'
