@@ -2190,6 +2190,7 @@ do_key_input_pre(int c)
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
 
     typedchars[typedchars_pos] = NUL;
+    vim_unescape_csi(typedchars);
 
     get_mode(curr_mode);
 
