@@ -42,8 +42,10 @@ static buffheader_T recordbuff = {{NULL, {NUL}}, NULL, 0, 0};
 
 static int typeahead_char = 0;		// typeahead char that's not flushed
 
+#ifdef FEAT_EVAL
 static char_u typedchars[MAXMAPLEN + 1] = { NUL };  // typed chars before map
 static int typedchars_pos = 0;
+#endif
 
 /*
  * When block_redo is TRUE the redo buffer will not be changed.
@@ -1377,11 +1379,13 @@ gotchars(char_u *chars, int len)
         {
 	    updatescript(state.buf[i]);
 
+#ifdef FEAT_EVAL
 	    if (typedchars_pos < MAXMAPLEN)
 	    {
 		typedchars[typedchars_pos] = state.buf[i];
 		typedchars_pos++;
 	    }
+#endif
         }
 
 	if (reg_recording != 0)
