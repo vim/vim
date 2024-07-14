@@ -107,6 +107,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     asn: ['file.asn', 'file.asn1'],
     asterisk: ['asterisk/file.conf', 'asterisk/file.conf-file', 'some-asterisk/file.conf', 'some-asterisk/file.conf-file'],
     astro: ['file.astro'],
+    asy: ['file.asy'],
     atlas: ['file.atl', 'file.as'],
     authzed: ['schema.zed'],
     autohotkey: ['file.ahk'],
