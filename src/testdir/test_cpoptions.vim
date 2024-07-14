@@ -19,7 +19,7 @@ func Test_cpo_a()
   set cpo+=a
   read XfileCpoA
   call assert_equal('XfileCpoA', @#)
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -39,7 +39,7 @@ func Test_cpo_A()
   set cpo+=A
   write XcpoAfile2
   call assert_equal('XcpoAfile2', @#)
-  close!
+  bw!
   call delete('XcpoAfile2')
   let &cpo = save_cpo
 endfunc
@@ -81,7 +81,7 @@ func Test_cpo_B()
   call assert_equal('abd ', getline(1))
   call feedkeys(":imap <buffer> x\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"imap <buffer> x\k', @:)
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -96,7 +96,7 @@ func Test_cpo_c()
   set cpo-=c
   exe "normal gg/abab\<CR>"
   call assert_equal(5, searchcount().total)
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -143,7 +143,7 @@ func Test_cpo_D()
   exe "norm! 1gg0f\<c-k>!!"
   call assert_equal(1, col('.'))
   set cpo-=D
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -183,7 +183,7 @@ func Test_cpo_E()
   call assert_beeps('exe "normal v\<C-A>"')
   call assert_beeps('exe "normal v\<C-X>"')
   set cpo-=E
-  close!
+  bw!
 endfunc
 
 " Test for the 'f' flag in 'cpo' (read in an empty buffer sets the file name)
@@ -213,7 +213,7 @@ func Test_cpo_F()
   set cpo+=F
   write XfileCpoF
   call assert_equal('XfileCpoF', @%)
-  close!
+  bw!
   call delete('XfileCpoF')
   let &cpo = save_cpo
 endfunc
@@ -229,7 +229,7 @@ func Test_cpo_g()
   set cpo+=g
   edit
   call assert_equal(1, line('.'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -245,7 +245,7 @@ func Test_cpo_H()
   call setline(1, '    ')
   normal! Ia
   call assert_equal('   a ', getline(1))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -264,7 +264,7 @@ func Test_cpo_I()
   %d
   exe "normal i    one\<CR>\<Up>"
   call assert_equal('', getline(2))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -295,7 +295,7 @@ func Test_cpo_J()
     normal (
     call assert_equal(colnr, col('.'))
   endfor
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -317,7 +317,7 @@ func Test_cpo_l()
   set cpo+=l
   exe 'normal gg/[\t]' .. "\<CR>"
   call assert_equal([4, 10], [col('.'), virtcol('.')])
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -338,7 +338,7 @@ func Test_cpo_L()
   call setline(1, 'abcdefghijklmnopqr')
   exe "normal 0gR\<Tab>"
   call assert_equal("\<Tab>ijklmnopqr", getline(1))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -376,7 +376,7 @@ func Test_cpo_M()
   call cursor(2, 1)
   call assert_beeps('normal %')
 
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -392,7 +392,7 @@ func Test_cpo_n()
   set cpo+=n
   redraw!
   call assert_equal('aaaa', Screenline(2))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -409,7 +409,7 @@ func Test_cpo_o()
   exe "normal /one/+2\<CR>"
   normal n
   call assert_equal(5, line('.'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -424,7 +424,7 @@ func Test_cpo_O()
   set cpo+=O
   write
   call assert_equal(['one'], readfile('XfileCpoO'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -462,7 +462,7 @@ func Test_cpo_q()
   set cpo+=q
   normal gg4J
   call assert_equal(4, col('.'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -483,7 +483,7 @@ func Test_cpo_r()
   let @/ = 'three'
   normal 2G.
   call assert_equal('abc three four', getline(2))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -503,7 +503,7 @@ func Test_cpo_R()
   3mark r
   %!sort
   call assert_equal(0, line("'r"))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -530,8 +530,8 @@ func Test_cpo_S()
   wincmd p
   call assert_equal(0, &autoindent)
   wincmd t
-  close!
-  close!
+  bw!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -550,7 +550,7 @@ func Test_cpo_u()
   exe "normal iabc\<C-G>udef\<C-G>ughi"
   normal uu
   call assert_equal('abcdefghi', getline(1))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -574,7 +574,7 @@ func Test_cpo_w()
   call assert_equal('hereZZZare   some words', getline('.'))
   norm! 1gg2elcWYYY
   call assert_equal('hereZZZare   someYYYwords', getline('.'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -611,7 +611,7 @@ func Test_cpo_X()
   normal ggRy
   normal 4.
   call assert_equal('yyyyxxxaaaaa', getline(1))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -630,7 +630,7 @@ func Test_cpo_y()
   normal ggyy
   normal 2G.
   call assert_equal("two\n", @")
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -647,7 +647,7 @@ func Test_cpo_Z()
   setlocal readonly
   write!
   call assert_equal(1, &readonly)
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -700,7 +700,7 @@ func Test_cpo_percent()
   call assert_equal(15, col('.'))
   normal 22|%
   call assert_equal(27, col('.'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -716,7 +716,7 @@ func Test_cpo_minus()
   call assert_beeps('normal 10k')
   call assert_equal(3, line('.'))
   call assert_fails(10, 'E16:')
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -732,7 +732,7 @@ func Test_cpo_plus()
   set cpo+=+
   write X2
   call assert_equal(0, &modified)
-  close!
+  bw!
   call delete('X1')
   call delete('X2')
   let &cpo = save_cpo
@@ -749,7 +749,7 @@ func Test_cpo_star()
   set cpo+=*
   *a
   call assert_equal(1, x)
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -770,7 +770,7 @@ func Test_cpo_gt()
   normal gg"Rye
   normal "Rye
   call assert_equal("\none\none", @r)
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -803,7 +803,7 @@ func Test_cpo_semicolon()
   call assert_equal('bbb y', getline(4))
   call assert_equal('ccc', getline(5))
   call assert_equal('ddd yee y', getline(6))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -828,7 +828,7 @@ func Test_cpo_hash()
   call assert_equal(['', 'one', 'two', 'three'], getline(1, '$'))
   normal gg2Ozero
   call assert_equal(['zero', '', 'one', 'two', 'three'], getline(1, '$'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -858,7 +858,7 @@ func Test_cpo_backslash()
   set cpo+=\
   exe 'normal gg/[ \-]' .. "\<CR>n"
   call assert_equal(2, col('.'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -880,7 +880,7 @@ func Test_cpo_brace()
   call assert_equal(2, line('.'))
   normal G{
   call assert_equal(2, line('.'))
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
@@ -908,7 +908,7 @@ func Test_cpo_dot()
 
   call delete('Xfoo')
   set cpo&
-  close!
+  bw!
   let &cpo = save_cpo
 endfunc
 
