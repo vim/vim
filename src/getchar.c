@@ -1376,17 +1376,7 @@ gotchars(char_u *chars, int len)
 
 	// Handle one byte at a time; no translation to be done.
 	for (i = 0; i < state.buflen; ++i)
-        {
 	    updatescript(state.buf[i]);
-
-#ifdef FEAT_EVAL
-	    if (typedchars_pos < MAXMAPLEN)
-	    {
-		typedchars[typedchars_pos] = state.buf[i];
-		typedchars_pos++;
-	    }
-#endif
-        }
 
 	if (reg_recording != 0)
 	{
@@ -1724,6 +1714,13 @@ updatescript(int c)
 	ml_sync_all(c == 0, TRUE);
 	count = 0;
     }
+#ifdef FEAT_EVAL
+    if (typedchars_pos < MAXMAPLEN)
+    {
+	typedchars[typedchars_pos] = c;
+	typedchars_pos++;
+    }
+#endif
 }
 
 /*
