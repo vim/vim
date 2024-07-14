@@ -688,7 +688,7 @@ au BufNewFile,BufRead *.com			call dist#ft#BindzoneCheck('dcl')
 au BufNewFile,BufRead *.dot,*.gv		setf dot
 
 " Dune
-au BufNewFile,BufRead jbuild,dune,dune-project,dune-workspace setf dune
+au BufNewFile,BufRead jbuild,dune,dune-project,dune-workspace,dune-file setf dune
 
 " Dylan - lid files
 au BufNewFile,BufRead *.lid			setf dylanlid
@@ -1629,7 +1629,7 @@ au BufNewFile,BufRead *.xom,*.xin		setf omnimark
 au BufNewFile,BufRead .ondirrc			setf ondir
 
 " OPAM
-au BufNewFile,BufRead opam,*.opam,*.opam.template setf opam
+au BufNewFile,BufRead opam,*.opam,*.opam.template,opam.locked,*.opam.locked setf opam
 
 " OpenFOAM
 au BufNewFile,BufRead [a-zA-Z0-9]*Dict\(.*\)\=,[a-zA-Z]*Properties\(.*\)\=,*Transport\(.*\),fvSchemes,fvSolution,fvConstrains,fvModels,*/constant/g,*/0\(\.orig\)\=/* call dist#ft#FTfoam()
