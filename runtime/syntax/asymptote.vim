@@ -240,4 +240,4 @@ hi def link asyCSpecial             SpecialChar
 hi def link asyTodo                 Todo
 hi def link asyPathSpec             Statement
 
-let b:current_syntax = "asy"
+let b:current_syntax = "asymptote"
