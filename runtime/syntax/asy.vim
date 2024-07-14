@@ -1,16 +1,13 @@
 " Vim syntax file
 " Language:     Asymptote
-" Maintainer:   Andy Hammerlindl
+" Maintainer:   Avid Seeker <avidseeker7@protonmail.com>
+"               Andy Hammerlindl
 " Last Change:  2022 Jan 05
 
 " Hacked together from Bram Moolenaar's C syntax file, and Claudio Fleiner's
 " Java syntax file.
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syn clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
@@ -257,4 +254,4 @@ if version >= 508 || !exists("did_asy_syn_inits")
   delcommand HiLink
 endif
 
-let b:current_syntax = "c"
+let b:current_syntax = "asy"
