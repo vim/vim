@@ -10,7 +10,5 @@ endif
 let g:did_ftplugin = 1
 
 setlocal commentstring=/*\ %s\ */
-setlocal makeprg=asy\ %
-setlocal errorformat=%f:\ %l.%c:\ %m
 
-let b:undo_ftplugin = "setl commentstring< makeprg< errorformat<"
+let b:undo_ftplugin = "setl commentstring<"
