@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2024 Jun 23
+*change.txt*    For Vim version 9.1.  Last change: 2024 Jul 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -95,13 +95,14 @@ For inserting text see |insert.txt|.
 These commands delete text.  You can repeat them with the `.` command
 (except `:d`) and undo them.  Use Visual mode to delete blocks of text.  See
 |registers| for an explanation of registers.
-
+							*d-special*
 An exception for the d{motion} command: If the motion is not linewise, the
 start and end of the motion are not in the same line, and there are only
 blanks before the start and there are no non-blanks after the end of the
 motion, the delete becomes linewise.  This means that the delete also removes
 the line of blanks that you might expect to remain. Use the |o_v| operator to
-force the motion to be characterwise.
+force the motion to be characterwise or remove the "z" flag from 'cpoptions'
+(see |cpo-z|) to disable this peculiarity.
 
 Trying to delete an empty region of text (e.g., "d0" in the first column)
 is an error when 'cpoptions' includes the 'E' flag.
@@ -251,7 +252,7 @@ blank; this is probably a bug, because "dw" deletes all the blanks; use the
 
 If you prefer "cw" to include the space after a word, use this mapping: >
 	:map cw dwi
-Or use "caw" (see |aw|).
+Alternatively use "caw" (see also |aw| and |cpo-z|).
 
 							*:c* *:ch* *:change*
 :{range}c[hange][!]	Replace lines of text with some different text.

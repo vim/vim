@@ -6671,6 +6671,7 @@ cpo-v	options.txt	/*cpo-v*
 cpo-w	options.txt	/*cpo-w*
 cpo-x	options.txt	/*cpo-x*
 cpo-y	options.txt	/*cpo-y*
+cpo-z	options.txt	/*cpo-z*
 cpo-{	options.txt	/*cpo-{*
 cpp.vim	syntax.txt	/*cpp.vim*
 crash-recovery	recover.txt	/*crash-recovery*
@@ -6733,6 +6734,7 @@ cw	change.txt	/*cw*
 cweb.vim	syntax.txt	/*cweb.vim*
 cynlib.vim	syntax.txt	/*cynlib.vim*
 d	change.txt	/*d*
+d-special	change.txt	/*d-special*
 daB	motion.txt	/*daB*
 daW	motion.txt	/*daW*
 dab	motion.txt	/*dab*

@@ -912,4 +912,49 @@ func Test_cpo_dot()
   let &cpo = save_cpo
 endfunc
 
+" Test for the 'z' flag in 'cpo' (make cw and dw work similar and avoid
+" inconsistencies, see :h cpo-z)
+func Test_cpo_z()
+  let save_cpo = &cpo
+  new
+  " Test 1: dw behaves differently from cw
+  call setline(1, ['foo bar baz', 'one two three'])
+  call cursor(1, 1)
+  " dw does not delete the whitespace after the word
+  norm! wcwanother
+  set cpo-=z
+  " dw deletes the whitespace after the word
+  call cursor(2, 1)
+  norm! wcwfour
+  call assert_equal(['foo another baz', 'one fourthree'], getline(1, '$'))
+  " Test 2: d{motion} becomes linewise :h d-special
+  %d
+  call setline(1, ['one ', '     bar', '    e	        ', 'zwei'])
+  call cursor(2, 1)
+  set cpo+=z
+  " delete operation becomes linewise
+  call feedkeys("fbd/e\\zs\<cr>", 'tnx')
+  call assert_equal(['one ', 'zwei'], getline(1, '$'))
+  %d
+  call setline(1, ['one ', '     bar', '    e	        ', 'zwei'])
+  call cursor(2, 1)
+  call feedkeys("fbd2w", 'tnx')
+  call assert_equal(['one ', 'zwei'], getline(1, '$'))
+
+  " delete operation does not become line wise
+  set cpo-=z
+  call setline(1, ['one ', '     bar', '    e	        ', 'zwei'])
+  call cursor(2, 1)
+  call feedkeys("fbd/e\\zs\<cr>", 'tnx')
+  call assert_equal(['one ', '     	        ', 'zwei'], getline(1, '$')) " codestyle: ignore
+  %d
+  call setline(1, ['one ', '     bar', '    e	        ', 'zwei'])
+  call cursor(2, 1)
+  call feedkeys("fbd2w", 'tnx')
+  call assert_equal(['one ', '     ', 'zwei'], getline(1, '$'))
+
+  " clean up
+  bw!
+  let &cpo = save_cpo
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

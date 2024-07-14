@@ -676,6 +676,7 @@ op_delete(oparg_T *oap)
 	    && !oap->block_mode
 	    && oap->line_count > 1
 	    && oap->motion_force == NUL
+	    && (vim_strchr(p_cpo, CPO_WORD) != NULL)
 	    && oap->op_type == OP_DELETE)
     {
 	ptr = ml_get(oap->end.lnum) + oap->end.col;

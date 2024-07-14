@@ -6598,8 +6598,12 @@ nv_wordcmd(cmdarg_T *cap)
 		// "ce" will change until the end of the next word, but "cw"
 		// will change only one character! This is done by setting
 		// flag.
-		cap->oap->inclusive = TRUE;
-		word_end = TRUE;
+		// This can be configured using :set cpo-z
+		if (vim_strchr(p_cpo, CPO_WORD) != NULL)
+		{
+		    cap->oap->inclusive = TRUE;
+		    word_end = TRUE;
+		}
 		flag = TRUE;
 	    }
 	}
