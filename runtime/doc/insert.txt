@@ -2005,8 +2005,15 @@ command in ex mode: >
 	one
 	two
 <
-NOTE: These commands cannot be used with |:global| or |:vglobal|.
-":append" and ":insert" don't work properly in between ":if" and
+In |Ex-mode|, when these commands are used with |:global| or |:vglobal| then
+the lines are obtained from the text following the command.  Separate lines
+with a NL escaped with a backslash: >
+	:global/abc/insert\
+	one line\
+	another line
+The final "." is not needed then.
+
+NOTE: ":append" and ":insert" don't work properly in between ":if" and
 ":endif", ":for" and ":endfor", ":while" and ":endwhile".
 
 							*:start* *:startinsert*
