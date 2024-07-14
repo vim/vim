@@ -527,7 +527,7 @@ pum_screen_puts_with_attrs(
 	else
 #endif
 	    attr = attrs[col - col_start];
-        screen_puts_len(ptr, char_len, row, col, attr);
+	screen_puts_len(ptr, char_len, row, col, attr);
 	col += mb_ptr2cells(ptr);
 	ptr += char_len;
     }

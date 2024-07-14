@@ -2710,7 +2710,7 @@ ml_get_buf_len(buf_T *buf, linenr_T lnum)
     char_u	*line;
 
     if (*(line = ml_get_buf(buf, lnum, FALSE)) == NUL)
-        return 0;
+	return 0;
 
     if (buf->b_ml.ml_line_textlen <= 0)
 	buf->b_ml.ml_line_textlen = (int)STRLEN(line) + 1;

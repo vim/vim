@@ -3101,7 +3101,7 @@ class_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 	{
 	    ret_m = m;
 	    ret_idx = i;
-            break;
+	    break;
 	}
     }
     if (idx != NULL)
@@ -3184,11 +3184,11 @@ object_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 	    }
 	}
 	else if (STRCMP(name, m->ocm_name) == 0)
-        {
+	{
 	    ret_m = m;
 	    ret_idx = i;
-            break;
-        }
+	    break;
+	}
     }
     if (idx != NULL)
 	*idx = ret_idx;
@@ -3684,7 +3684,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     }
     else
 	semsg(_(e_method_not_found_on_class_str_str), method_name,
-	        cl->class_name);
+		cl->class_name);
     vim_free(method_name);
 }
 

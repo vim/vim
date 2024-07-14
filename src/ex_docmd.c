@@ -2860,9 +2860,8 @@ parse_command_modifiers(
     {
 	// The automatically inserted Visual area range is skipped, so that
 	// typing ":cmdmod cmd" in Visual mode works without having to move the
-	// range to after the modififiers. The command will be
-	// "'<,'>cmdmod cmd", parse "cmdmod cmd" and then put back "'<,'>"
-	// before "cmd" below.
+	// range to after the modifiers. The command will be "'<,'>cmdmod cmd",
+	// parse "cmdmod cmd" and then put back "'<,'>" before "cmd" below.
 	eap->cmd += 5;
 	cmd_start = eap->cmd;
 	has_visual_range = TRUE;
@@ -7267,7 +7266,7 @@ ex_resize(exarg_T *eap)
 ex_find(exarg_T *eap)
 {
     if (!check_can_set_curbuf_forceit(eap->forceit))
-        return;
+	return;
 
     char_u	*fname;
     int		count;
@@ -7359,7 +7358,7 @@ ex_edit(exarg_T *eap)
 	    // All other commands must obey 'winfixbuf' / ! rules
 	    && (is_other_file(0, ffname) && !check_can_set_curbuf_forceit(eap->forceit))
     )
-        return;
+	return;
 
     do_exedit(eap, NULL);
 }

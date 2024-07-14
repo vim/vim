@@ -797,8 +797,8 @@ draw_event(GtkWidget *widget UNUSED,
 # if GTK_CHECK_VERSION(3,10,0)
     static gboolean
 scale_factor_event(GtkWidget *widget,
-	           GParamSpec* pspec UNUSED,
-	           gpointer   user_data UNUSED)
+		   GParamSpec* pspec UNUSED,
+		   gpointer   user_data UNUSED)
 {
     if (gui.surface != NULL)
 	cairo_surface_destroy(gui.surface);

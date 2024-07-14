@@ -996,7 +996,7 @@ get_breakindent_win(
 # else
 	if (wp->w_briopt_vcol == 0)
 	    prev_indent = get_indent_str(line,
-				        (int)wp->w_buffer->b_p_ts, no_ts);
+					(int)wp->w_buffer->b_p_ts, no_ts);
 # endif
 	prev_tick = CHANGEDTICK(wp->w_buffer);
 	prev_listopt = wp->w_briopt_list;

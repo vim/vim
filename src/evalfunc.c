@@ -3127,8 +3127,8 @@ internal_func_check_arg_types(
     // functions, check the arguments are not types.
     if (!(func_allows_type(idx)))
     {
-        for (int i = 0; i < argcount; ++i)
-            if (check_type_is_value(types[i].type_curr) == FAIL)
+	for (int i = 0; i < argcount; ++i)
+	    if (check_type_is_value(types[i].type_curr) == FAIL)
 		return FAIL;
     }
 

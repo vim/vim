@@ -6195,7 +6195,7 @@ object_tv2string(
 	r = (char_u *)"object of [unknown]";
     }
     else if (copyID != 0 && obj->obj_copyID == copyID
-            && obj->obj_class->class_obj_member_count != 0)
+	    && obj->obj_class->class_obj_member_count != 0)
     {
 	size_t n = 25 + strlen((char *)obj->obj_class->class_name);
 	r = alloc(n);

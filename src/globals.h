@@ -131,8 +131,8 @@ EXTERN int	screen_Columns INIT(= 0);   // actual size of ScreenLines[]
  */
 EXTERN int	mod_mask INIT(= 0);		// current key modifiers
 
-// The value of "mod_mask" and the unomdified character before calling
-// merge_modifyOtherKeys().
+// The value of "mod_mask" and the unmodified character in vgetc() after it has
+// called vgetorpeek() enough times.
 EXTERN int	vgetc_mod_mask INIT(= 0);
 EXTERN int	vgetc_char INIT(= 0);
 
