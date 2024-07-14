@@ -207,51 +207,37 @@ syn region asyParen      transparent matchgroup=asyParen
                        \ start='\(for\s*\)\@<=(' end=')'
                        \ contains=TOP,asyParenError
 
-
 " Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_asy_syn_inits")
-  if version < 508
-    let did_asy_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  HiLink asyCommentL             asyComment
-  HiLink asyConditional          Conditional
-  HiLink asyRepeat               Repeat
-  HiLink asyNumber               Number
-  HiLink asyNumberError          asyError
-  HiLink asyCurlyError           asyError
-  HiLink asyBracketError         asyError
-  HiLink asyParenError           asyError
-  HiLink asyCommentError         asyError
-  HiLink asyCommentStartError    asyError
-  HiLink asyOperator             Operator
-  HiLink asyStructure            Structure
-  HiLink asyStorageClass         StorageClass
-  HiLink asyExternal             Include
-  HiLink asyDefine               Macro
-  HiLink asyError                Error
-  HiLink asyStatement            Statement
-  HiLink asyType                 Type
-  HiLink asyConstant             Constant
-  HiLink asyCommentString        asyString
-  HiLink asyCommentCString       asyString
-  HiLink asyCommentLString       asyString
-  HiLink asyCommentLCString      asyString
-  HiLink asyCommentSkip          asyComment
-  HiLink asyString               String
-  HiLink asyCString              String
-  HiLink asyComment              Comment
-  HiLink asySpecial              SpecialChar
-  HiLink asyCSpecial             SpecialChar
-  HiLink asyTodo                 Todo
-  HiLink asyPathSpec             Statement
-
-  delcommand HiLink
-endif
+hi def link asyCommentL             asyComment
+hi def link asyConditional          Conditional
+hi def link asyRepeat               Repeat
+hi def link asyNumber               Number
+hi def link asyNumberError          asyError
+hi def link asyCurlyError           asyError
+hi def link asyBracketError         asyError
+hi def link asyParenError           asyError
+hi def link asyCommentError         asyError
+hi def link asyCommentStartError    asyError
+hi def link asyOperator             Operator
+hi def link asyStructure            Structure
+hi def link asyStorageClass         StorageClass
+hi def link asyExternal             Include
+hi def link asyDefine               Macro
+hi def link asyError                Error
+hi def link asyStatement            Statement
+hi def link asyType                 Type
+hi def link asyConstant             Constant
+hi def link asyCommentString        asyString
+hi def link asyCommentCString       asyString
+hi def link asyCommentLString       asyString
+hi def link asyCommentLCString      asyString
+hi def link asyCommentSkip          asyComment
+hi def link asyString               String
+hi def link asyCString              String
+hi def link asyComment              Comment
+hi def link asySpecial              SpecialChar
+hi def link asyCSpecial             SpecialChar
+hi def link asyTodo                 Todo
+hi def link asyPathSpec             Statement
 
 let b:current_syntax = "asy"
