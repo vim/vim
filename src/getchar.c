@@ -2150,10 +2150,10 @@ vgetc(void)
 
 #ifdef FEAT_EVAL
     c = do_key_input_pre(c);
-#endif
 
     // Clear the next typedchars_pos
     typedchars_pos = 0;
+#endif
 
     // Need to process the character before we know it's safe to do something
     // else.
