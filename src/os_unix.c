@@ -7501,9 +7501,9 @@ gpm_open(void)
     {
 	Gpm_Close(); // We don't want to talk to xterm via gpm
 
-        // Gpm_Close fails to properly restore the WINCH and TSTP handlers,
-        // leading to Vim ignoring resize signals. We have to re-initialize
-        // these handlers again here.
+	// Gpm_Close fails to properly restore the WINCH and TSTP handlers,
+	// leading to Vim ignoring resize signals. We have to re-initialize
+	// these handlers again here.
 # ifdef SIGWINCH
 	mch_signal(SIGWINCH, sig_winch);
 # endif

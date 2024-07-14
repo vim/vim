@@ -3936,7 +3936,7 @@ vim_copyfile(char_u *from, char_u *to)
     ret = mch_lstat((char *)from, &st);
     if (ret >= 0 && S_ISLNK(st.st_mode))
     {
-        ret = FAIL;
+	ret = FAIL;
 
 	len = readlink((char *)from, linkbuf, MAXPATHL);
 	if (len > 0)

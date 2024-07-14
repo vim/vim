@@ -5106,11 +5106,11 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
     int		    j = 0;
 
     if (str == NULL || pat == NULL)
-        return NULL;
+	return NULL;
 
     match_positions = ALLOC_ONE(garray_T);
     if (match_positions == NULL)
-        return NULL;
+	return NULL;
     ga_init2(match_positions, sizeof(int_u), 10);
 
     if (!fuzzy_match(str, pat, FALSE, &score, matches, MAX_FUZZY_MATCHES)
