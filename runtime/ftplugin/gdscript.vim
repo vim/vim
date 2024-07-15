@@ -24,8 +24,8 @@ setlocal foldignore=
 setlocal foldexpr=GDScriptFoldLevel()
 
 if get(g:, 'gdscript_recommended_style', 1)
-    setlocal noexpandtab softtabstop=0 shiftwidth=0
-    let b:undo_ftplugin .= ' | setl et< sts< sw<'
+    setlocal noexpandtab tabstop=4 softtabstop=0 shiftwidth=0
+    let b:undo_ftplugin .= ' | setl et< ts< sts< sw<'
 endif
 
 
