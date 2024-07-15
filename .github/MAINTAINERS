@@ -478,6 +478,7 @@ runtime/syntax/make.vim			@rohieb
 runtime/syntax/mallard.vim		@jhradilek
 runtime/syntax/markdown.vim		@tpope
 runtime/syntax/mason.vim		@petdance
+runtime/syntax/mediawiki.vim		@avidseeker
 runtime/syntax/meson.vim		@Liambeguin
 runtime/syntax/modula2.vim		@dkearns
 runtime/syntax/modula2/opt/iso.vim	@trijezdci
