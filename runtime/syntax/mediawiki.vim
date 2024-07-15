@@ -247,7 +247,7 @@ if !exists("html_no_rendering")
 
   hi def link htmlLink Underlined
 
-  if !exists("html_my_rendering")
+  if !exists("html_style_rendering")
     hi def htmlBold                term=bold                  cterm=bold                  gui=bold
     hi def htmlBoldUnderline       term=bold,underline        cterm=bold,underline        gui=bold,underline
     hi def htmlBoldItalic          term=bold,italic           cterm=bold,italic           gui=bold,italic

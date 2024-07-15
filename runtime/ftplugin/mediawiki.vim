@@ -15,17 +15,13 @@ let g:did_ftplugin = 1
 setlocal wrap linebreak
 setlocal textwidth=0
 
-setlocal formatoptions-=tc formatoptions+=l
-
-" utf-8 should be set if not already done globally
-setlocal fileencoding=utf-8
+setlocal formatoptions-=tc formatoptions+=l formatoptions+=roq
 setlocal matchpairs+=<:>
 
 " Treat lists, indented text and tables as comment lines and continue with the
 " same formatting in the next line (i.e. insert the comment leader) when hitting
 " <CR> or using "o".
 setlocal comments=n:#,n:*,n:\:,s:{\|,m:\|,ex:\|}
-setlocal formatoptions+=roq
 
 " match HTML tags (taken directly from $VIM/ftplugin/html.vim)
 if exists("loaded_matchit")
@@ -41,5 +37,5 @@ endif
 setlocal foldexpr=getline(v:lnum)=~'^\\(=\\+\\)[^=]\\+\\1\\(\\s*<!--.*-->\\)\\=\\s*$'?\">\".(len(matchstr(getline(v:lnum),'^=\\+'))-1):\"=\"
 setlocal fdm=expr
 
-let b:undo_ftplugin += "setl commentstring< comments< formatoptions< foldexpr< fdm< fileencoding<"
-let b:undo_ftplugin += " matchpairs< formatoptions< linebreak< wrap< textwidth<"
+let b:undo_ftplugin = "setl commentstring< comments< formatoptions< foldexpr< fdm<"
+let b:undo_ftplugin += " matchpairs< linebreak< wrap< textwidth<"
