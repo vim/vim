@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2024 May 23
+*filetype.txt*	For Vim version 9.1.  Last change: 2024 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -886,6 +886,10 @@ You can change the default by defining the variable g:tex_flavor to the format
 	let g:tex_flavor = "latex"
 Currently no other formats are recognized.
 
+TYPST							*ft-typst-plugin*
+
+							*g:typst_conceal*
+When |TRUE| the Typst filetype plugin will set the 'conceallevel' option to 2.
 
 VIM							*ft-vim-plugin*
 

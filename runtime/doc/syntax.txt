@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jul 08
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3809,6 +3809,15 @@ are highlighted. To disable set it to zero in your .vimrc: >
 	let g:typescript_host_keyword = 0
 <
 The default value is 1.
+
+TYPST						    *ft-typst-syntax*
+
+						*g:typst_embedded_languages*
+Typst files can embed syntax highlighting for other languages by setting the
+|g:typst_embedded_languages| variable. This variable is a list of language
+names whose syntax definitions will be included in Typst files. Example: >
+
+    let g:typst_embedded_languages = ['python', 'r']
 
 VIM			*vim.vim*		*ft-vim-syntax*
 			*g:vimsyn_minlines*	*g:vimsyn_maxlines*
