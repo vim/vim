@@ -893,7 +893,7 @@ func Test_helpgrep()
 endfunc
 
 def Test_helpgrep_vim9_restore_cpo()
-  assert_equal('aABceFs', &cpo)
+  assert_equal('aABceFsz', &cpo)
 
   var rtp_save = &rtp
   var dir = 'Xruntime/after'
@@ -905,7 +905,7 @@ def Test_helpgrep_vim9_restore_cpo()
   cwindow
   silent helpgrep grail
 
-  assert_equal('aABceFs', &cpo)
+  assert_equal('aABceFsz', &cpo)
   &rtp = rtp_save
   cclose
   helpclose
