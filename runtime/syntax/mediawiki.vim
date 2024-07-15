@@ -1,13 +1,11 @@
 " mediawiki.vim (formerly named Wikipedia.vim)
 "
 " Vim syntax file
-" Language: MediaWiki, http://www.mediawiki.org/
-" Maintainer: This syntax file needs a maintainer in order to ship
-"     with Vim. Please contact [[User:Unforgettableid]] if you want
-"     to volunteer.
+" Language: MediaWiki
+" Maintainer: Avid Seeker <avidseeker7@protonmail.com>
 " Home: http://en.wikipedia.org/wiki/Wikipedia:Text_editor_support#Vim
-" Last Change: 2011 Sep 19
-" Credits: [[User:Aepd87]], [[User:Danny373]], [[User:Ingo Karkat]], et al.
+" Last Change: 2024 Jul 14
+" Credits: [[User:Unforgettableid]] [[User:Aepd87]], [[User:Danny373]], [[User:Ingo Karkat]], et al.
 "
 " Published on Wikipedia in 2003-04 and declared authorless.
 "
@@ -15,21 +13,13 @@
 " There may well be name collisions everywhere, but ignorance is bliss,
 " so they say.
 "
-" To do: plug-in support for downloading and uploading to the server.
 
-if !exists("main_syntax")
-  if version < 600
-    syntax clear
-  elseif exists("b:current_syntax")
-    finish
-  endif
-  let main_syntax = "mediawiki"
+if exists("b:current_syntax")
+  finish
 endif
 
 syntax case ignore
-if v:version >= 700
-  syntax spell toplevel
-endif
+syntax spell toplevel
 
 " Mark illegal characters
 sy match htmlError "[<>&]"
@@ -196,131 +186,107 @@ sy match wikiParaFormatChar /^[\:|\*|;|#]\+/
 sy match wikiParaFormatChar /^-----*/
 sy match wikiPre            /^\ .*$/         contains=wikiNowiki,wikiNowikiEndTag
 
-
 " HTML highlighting
 
-if version < 508
-  command! -nargs=+ HtmlHiLink hi link     <args>
-else
-  command! -nargs=+ HtmlHiLink hi def link <args>
-endif
+hi def link htmlTag            Function
+hi def link htmlEndTag         Identifier
+hi def link htmlArg            Type
+hi def link htmlTagName        htmlStatement
+hi def link htmlSpecialTagName Exception
+hi def link htmlValue          String
+hi def link htmlSpecialChar    Special
 
-if version >= 508 || !exists("did_html_syn_inits")
-  HtmlHiLink htmlTag            Function
-  HtmlHiLink htmlEndTag         Identifier
-  HtmlHiLink htmlArg            Type
-  HtmlHiLink htmlTagName        htmlStatement
-  HtmlHiLink htmlSpecialTagName Exception
-  HtmlHiLink htmlValue          String
-  HtmlHiLink htmlSpecialChar    Special
+if !exists("html_no_rendering")
+  hi def link htmlTitle Title
+  hi def link htmlH1    htmlTitle
+  hi def link htmlH2    htmlTitle
+  hi def link htmlH3    htmlTitle
+  hi def link htmlH4    htmlTitle
+  hi def link htmlH5    htmlTitle
+  hi def link htmlH6    htmlTitle
 
-  if !exists("html_no_rendering")
-    HtmlHiLink htmlTitle Title
-    HtmlHiLink htmlH1    htmlTitle
-    HtmlHiLink htmlH2    htmlTitle
-    HtmlHiLink htmlH3    htmlTitle
-    HtmlHiLink htmlH4    htmlTitle
-    HtmlHiLink htmlH5    htmlTitle
-    HtmlHiLink htmlH6    htmlTitle
+  hi def link htmlPreProc          PreProc
+  hi def link htmlHead             htmlPreProc
+  hi def link htmlPreProcAttrName  htmlPreProc
+  hi def link htmlPreStmt          htmlPreProc
 
-    HtmlHiLink htmlPreProc          PreProc
-    HtmlHiLink htmlHead             htmlPreProc
-    HtmlHiLink htmlPreProcAttrName  htmlPreProc
-    HtmlHiLink htmlPreStmt          htmlPreProc
+  hi def link htmlSpecial          Special
+  hi def link htmlCssDefinition    htmlSpecial
+  hi def link htmlEvent            htmlSpecial
+  hi def link htmlSpecialChar      htmlSpecial
 
-    HtmlHiLink htmlSpecial          Special
-    HtmlHiLink htmlCssDefinition    htmlSpecial
-    HtmlHiLink htmlEvent            htmlSpecial
-    HtmlHiLink htmlSpecialChar      htmlSpecial
+  hi def link htmlComment          Comment
+  hi def link htmlCommentPart      htmlComment
+  hi def link htmlCssStyleComment  htmlComment
 
-    HtmlHiLink htmlComment          Comment
-    HtmlHiLink htmlCommentPart      htmlComment
-    HtmlHiLink htmlCssStyleComment  htmlComment
+  hi def link htmlString           String
+  hi def link htmlPreAttr          htmlString
+  hi def link htmlValue            htmlString
 
-    HtmlHiLink htmlString           String
-    HtmlHiLink htmlPreAttr          htmlString
-    HtmlHiLink htmlValue            htmlString
+  hi def link htmlError            Error
+  hi def link htmlBadArg           htmlError
+  hi def link htmlBadTag           htmlError
+  hi def link htmlCommentError     htmlError
+  hi def link htmlPreError         htmlError
+  hi def link htmlPreProcAttrError htmlError
+  hi def link htmlTagError         htmlError
 
-    HtmlHiLink htmlError            Error
-    HtmlHiLink htmlBadArg           htmlError
-    HtmlHiLink htmlBadTag           htmlError
-    HtmlHiLink htmlCommentError     htmlError
-    HtmlHiLink htmlPreError         htmlError
-    HtmlHiLink htmlPreProcAttrError htmlError
-    HtmlHiLink htmlTagError         htmlError
+  hi def link htmlStatement        Statement
 
-    HtmlHiLink htmlStatement        Statement
+  hi def link htmlConstant         Constant
 
-    HtmlHiLink htmlConstant         Constant
+  hi def link htmlBoldItalicUnderline htmlBoldUnderlineItalic
+  hi def link htmlUnderlineItalicBold htmlBoldUnderlineItalic
+  hi def link htmlUnderlineBoldItalic htmlBoldUnderlineItalic
+  hi def link htmlItalicBoldUnderline htmlBoldUnderlineItalic
+  hi def link htmlItalicUnderlineBold htmlBoldUnderlineItalic
 
-    HtmlHiLink htmlBoldItalicUnderline htmlBoldUnderlineItalic
-    HtmlHiLink htmlUnderlineItalicBold htmlBoldUnderlineItalic
-    HtmlHiLink htmlUnderlineBoldItalic htmlBoldUnderlineItalic
-    HtmlHiLink htmlItalicBoldUnderline htmlBoldUnderlineItalic
-    HtmlHiLink htmlItalicUnderlineBold htmlBoldUnderlineItalic
+  hi def link htmlItalicBold          htmlBoldItalic
+  hi def link htmlItalicUnderline     htmlUnderlineItalic
+  hi def link htmlUnderlineBold       htmlBoldUnderline
 
-    HtmlHiLink htmlItalicBold          htmlBoldItalic
-    HtmlHiLink htmlItalicUnderline     htmlUnderlineItalic
-    HtmlHiLink htmlUnderlineBold       htmlBoldUnderline
+  hi def link htmlLink Underlined
 
-    HtmlHiLink htmlLink Underlined
-
-    if !exists("html_my_rendering")
-      hi def htmlBold                term=bold                  cterm=bold                  gui=bold
-      hi def htmlBoldUnderline       term=bold,underline        cterm=bold,underline        gui=bold,underline
-      hi def htmlBoldItalic          term=bold,italic           cterm=bold,italic           gui=bold,italic
-      hi def htmlBoldUnderlineItalic term=bold,italic,underline cterm=bold,italic,underline gui=bold,italic,underline
-      hi def htmlUnderline           term=underline             cterm=underline             gui=underline
-      hi def htmlUnderlineItalic     term=italic,underline      cterm=italic,underline      gui=italic,underline
-      hi def htmlItalic              term=italic                cterm=italic                gui=italic
-    endif
-
-  endif " !exists("html_no_rendering")
-
-  if version < 508
-    let did_html_syn_inits = 1
+  if !exists("html_my_rendering")
+    hi def htmlBold                term=bold                  cterm=bold                  gui=bold
+    hi def htmlBoldUnderline       term=bold,underline        cterm=bold,underline        gui=bold,underline
+    hi def htmlBoldItalic          term=bold,italic           cterm=bold,italic           gui=bold,italic
+    hi def htmlBoldUnderlineItalic term=bold,italic,underline cterm=bold,italic,underline gui=bold,italic,underline
+    hi def htmlUnderline           term=underline             cterm=underline             gui=underline
+    hi def htmlUnderlineItalic     term=italic,underline      cterm=italic,underline      gui=italic,underline
+    hi def htmlItalic              term=italic                cterm=italic                gui=italic
   endif
-
-endif " version >= 508 || !exists("did_html_syn_inits")
+endif
 
 " Wiki highlighting
 
-HtmlHiLink wikiItalic        htmlItalic
-HtmlHiLink wikiBold          htmlBold
-HtmlHiLink wikiBoldItalic    htmlBoldItalic
-HtmlHiLink wikiItalicBold    htmlBoldItalic
-HtmlHiLink wikiBoldAndItalic htmlBoldItalic
+hi def link wikiItalic        htmlItalic
+hi def link wikiBold          htmlBold
+hi def link wikiBoldItalic    htmlBoldItalic
+hi def link wikiItalicBold    htmlBoldItalic
+hi def link wikiBoldAndItalic htmlBoldItalic
 
-HtmlHiLink wikiH1 htmlTitle
-HtmlHiLink wikiH2 htmlTitle
-HtmlHiLink wikiH3 htmlTitle
-HtmlHiLink wikiH4 htmlTitle
-HtmlHiLink wikiH5 htmlTitle
-HtmlHiLink wikiH6 htmlTitle
+hi def link wikiH1 htmlTitle
+hi def link wikiH2 htmlTitle
+hi def link wikiH3 htmlTitle
+hi def link wikiH4 htmlTitle
+hi def link wikiH5 htmlTitle
+hi def link wikiH6 htmlTitle
 
-HtmlHiLink wikiLink           htmlLink
-HtmlHiLink wikiTemplate       htmlSpecial
-HtmlHiLink wikiTemplateParam  htmlSpecial
-HtmlHiLink wikiTemplateName   Type
-HtmlHiLink wikiParaFormatChar htmlSpecial
-HtmlHiLink wikiPre            htmlConstant
-HtmlHiLink wikiRef            htmlComment
+hi def link wikiLink           htmlLink
+hi def link wikiTemplate       htmlSpecial
+hi def link wikiTemplateParam  htmlSpecial
+hi def link wikiTemplateName   Type
+hi def link wikiParaFormatChar htmlSpecial
+hi def link wikiPre            htmlConstant
+hi def link wikiRef            htmlComment
 
-HtmlHiLink htmlPre            wikiPre
-HtmlHiLink wikiSource         wikiPre
-HtmlHiLink wikiSyntaxHL       wikiPre
+hi def link htmlPre            wikiPre
+hi def link wikiSource         wikiPre
+hi def link wikiSyntaxHL       wikiPre
 
-HtmlHiLink wikiTableSeparator Statement
-HtmlHiLink wikiTableFormatEnd wikiTableSeparator
-HtmlHiLink wikiTableHeadingCell htmlBold
-
+hi def link wikiTableSeparator Statement
+hi def link wikiTableFormatEnd wikiTableSeparator
+hi def link wikiTableHeadingCell htmlBold
 
 let b:current_syntax = "mediawiki"
-
-delcommand HtmlHiLink
-
-if main_syntax == "mediawiki"
-  unlet main_syntax
-endif
-
-" vim: set et sts=2 sw=2:
