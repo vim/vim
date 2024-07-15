@@ -230,11 +230,11 @@ def SanityCheck(): bool
     err = 'Cannot debug, +channel feature is not supported'
   elseif (way is Way.Prompt) && !exists('*prompt_setprompt')
     err = 'Cannot debug, missing prompt buffer support'
-  elseif (way is Way.Prompt) && !empty(glob(gdb_cmd))
+  elseif (way is Way.Prompt) && !empty(glob($'./{gdb_cmd}')) || !empty(glob($'./{gdb_cmd}/'))
     err = $"You have a file/folder named '{gdb_cmd}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
-  elseif !empty(glob(asmbufname))
+  elseif !empty(glob($'./{asmbufname}')) || !empty(glob($'./{asmbufname}/'))
     err = $"You have a file/folder named '{asmbufname}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
-  elseif !empty(glob(varbufname))
+  elseif !empty(glob($'./{varbufname}')) || !empty(glob($'./{varbufname}/'))
     err = $"You have a file/folder named '{varbufname}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
   elseif !executable(gdb_cmd)
     err = $"Cannot execute debugger program '{gdb_cmd}'"
