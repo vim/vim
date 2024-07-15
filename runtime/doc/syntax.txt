@@ -969,7 +969,7 @@ and for highlighting keywords related to 3D constructions: >
 
 	:let g:asy_syn_three = 1
 
-By default, Asymptote-defined color (e.g: lightblue) are highlighted. To
+By default, Asymptote-defined colors (e.g: lightblue) are highlighted. To
 highlight TeX-defined colors (e.g: BlueViolet) use: >
 
 	:let g:asy_syn_texcolors = 1
