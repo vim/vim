@@ -1427,8 +1427,7 @@ au BufNewFile,BufRead .mbsyncrc			setf conf
 au BufNewFile,BufRead *.mcmeta			setf json
 
 " MediaWiki
-au BufNewFile,BufRead *.wiki		setf mediawiki
-au BufNewFile,BufRead *.mw		setf mediawiki
+au BufNewFile,BufRead *.mw,*.wiki		setf mediawiki
 
 " Mercurial (hg) commit file
 au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
