@@ -1326,7 +1326,6 @@ ret_list_items(int argcount UNUSED,
     *decl_type = &t_list_any;
     return &t_list_list_any;
 }
-
     static type_T *
 ret_list_string_items(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
@@ -1334,6 +1333,14 @@ ret_list_string_items(int argcount UNUSED,
 {
     *decl_type = &t_list_any;
     return &t_list_list_string;
+}
+    static type_T *
+ret_list_regionpos(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type)
+{
+    *decl_type = &t_list_any;
+    return &t_list_list_list_number;
 }
     static type_T *
 ret_dict_any(int argcount UNUSED,
@@ -1968,11 +1975,11 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_diff_hlID},
     {"digraph_get",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_digraph_get},
-    {"digraph_getlist",0, 1, FEARG_1,	    arg1_bool,
+    {"digraph_getlist",	0, 1, FEARG_1,	    arg1_bool,
 			ret_list_string_items, f_digraph_getlist},
     {"digraph_set",	2, 2, FEARG_1,	    arg2_string,
 			ret_bool,	f_digraph_set},
-    {"digraph_setlist",1, 1, FEARG_1,	    arg1_list_string,
+    {"digraph_setlist",	1, 1, FEARG_1,	    arg1_list_string,
 			ret_bool,	    f_digraph_setlist},
     {"echoraw",		1, 1, FEARG_1,	    arg1_string,
 			ret_void,	    f_echoraw},
@@ -2144,8 +2151,8 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_getreginfo},
     {"getregion",	2, 3, FEARG_1,	    arg3_list_list_dict,
 			ret_list_string,    f_getregion},
-    {"getregionpos",   2, 3, FEARG_1,      arg3_list_list_dict,
-			ret_list_string,    f_getregionpos},
+    {"getregionpos",	2, 3, FEARG_1,      arg3_list_list_dict,
+			ret_list_regionpos, f_getregionpos},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
     {"getscriptinfo",	0, 1, 0,	    arg1_dict_any,

@@ -519,31 +519,37 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 #define t_list_list_any		(static_types[70])
 #define t_const_list_list_any	(static_types[71])
 
-#define t_list_list_string	(static_types[72])
-#define t_const_list_list_string (static_types[73])
+#define t_list_list_number	(static_types[72])
+#define t_const_list_list_number (static_types[73])
 
-#define t_dict_bool		(static_types[74])
-#define t_const_dict_bool	(static_types[75])
+#define t_list_list_string	(static_types[74])
+#define t_const_list_list_string (static_types[75])
 
-#define t_dict_number		(static_types[76])
-#define t_const_dict_number	(static_types[77])
+#define t_list_list_list_number	(static_types[76])
+#define t_const_list_list_list_number (static_types[77])
 
-#define t_dict_string		(static_types[78])
-#define t_const_dict_string	(static_types[79])
+#define t_dict_bool		(static_types[78])
+#define t_const_dict_bool	(static_types[79])
 
-#define t_super			(static_types[80])
-#define t_const_super		(static_types[81])
+#define t_dict_number		(static_types[80])
+#define t_const_dict_number	(static_types[81])
 
-#define t_object		(static_types[82])
-#define t_const_object		(static_types[83])
+#define t_dict_string		(static_types[82])
+#define t_const_dict_string	(static_types[83])
 
-#define t_class			(static_types[84])
-#define t_const_class		(static_types[85])
+#define t_super			(static_types[84])
+#define t_const_super		(static_types[85])
 
-#define t_typealias		(static_types[86])
-#define t_const_typealias	(static_types[87])
+#define t_object		(static_types[86])
+#define t_const_object		(static_types[87])
 
-EXTERN type_T static_types[88]
+#define t_class			(static_types[88])
+#define t_const_class		(static_types[89])
+
+#define t_typealias		(static_types[90])
+#define t_const_typealias	(static_types[91])
+
+EXTERN type_T static_types[92]
 #ifdef DO_INIT
 = {
     // 0: t_unknown
@@ -690,35 +696,43 @@ EXTERN type_T static_types[88]
     {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_any, NULL, NULL},
     {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_any, NULL, NULL},
 
-    // 72: t_list_list_string
+    // 74: t_list_list_number
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_number, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_number, NULL, NULL},
+
+    // 74: t_list_list_string
     {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_string, NULL, NULL},
     {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_string, NULL, NULL},
 
-    // 74: t_dict_bool
+    // 76: t_list_list_list_number
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_list_number, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_list_number, NULL, NULL},
+
+    // 78: t_dict_bool
     {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
     {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
 
-    // 76: t_dict_number
+    // 80: t_dict_number
     {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_number, NULL, NULL},
     {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL, NULL},
 
-    // 78: t_dict_string
+    // 82: t_dict_string
     {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_string, NULL, NULL},
     {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL, NULL},
 
-    // 80: t_super (VAR_CLASS with tt_member set to &t_bool
+    // 84: t_super (VAR_CLASS with tt_member set to &t_bool
     {VAR_CLASS, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
     {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
 
-    // 82: t_object
+    // 86: t_object
     {VAR_OBJECT, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
     {VAR_OBJECT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
-    // 84: t_class
+    // 88: t_class
     {VAR_CLASS, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
     {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
-    // 86: t_typealias
+    // 90: t_typealias
     {VAR_TYPEALIAS, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
     {VAR_TYPEALIAS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 }

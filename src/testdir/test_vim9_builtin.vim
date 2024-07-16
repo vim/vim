@@ -1969,6 +1969,17 @@ def Test_getreginfo()
   getreginfo('').regcontents->assert_equal(['D1E2F3'])
 enddef
 
+def Test_getregionpos()
+  var lines =<< trim END
+    cursor(1, 1)
+    var pos = getregionpos(getpos('.'), getpos('$'))
+    for p in pos
+      assert_equal(bufnr('%'), p[0][0])
+    endfor
+  END
+  v9.CheckSourceDefSuccess(lines)
+enddef
+
 def Test_getregtype()
   var lines = ['aaa', 'bbb', 'ccc']
   setreg('a', lines)
