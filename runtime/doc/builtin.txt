@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jul 11
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jul 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4804,6 +4804,8 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 <
 		Can also be used as a |method|: >
 			getpos('.')->getregion(getpos("'a"))
+<
+		Return type: list<string>
 
 <
 getregionpos({pos1}, {pos2} [, {opts}])            *getregionpos()*
@@ -4841,7 +4843,7 @@ getregionpos({pos1}, {pos2} [, {opts}])            *getregionpos()*
 		Can also be used as a |method|: >
 			getpos('.')->getregionpos(getpos("'a"))
 <
-		Return type: list<string>
+		Return type: list<list<list<number>>>
 
 
 getregtype([{regname}])					*getregtype()*
