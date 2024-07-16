@@ -1326,7 +1326,7 @@ def DeleteCommands()
 enddef
 
 def QuoteArg(x: string): string
-  # Find all the occurrences of " and \ and escape them and it double quote
+  # Find all the occurrences of " and \ and escape them and double quote
   # the resulting string.
   return printf('"%s"', x ->substitute('[\\"]', '\\&', 'g'))
 enddef
