@@ -21,7 +21,8 @@ setlocal matchpairs+=<:>
 " Treat lists, indented text and tables as comment lines and continue with the
 " same formatting in the next line (i.e. insert the comment leader) when hitting
 " <CR> or using "o".
-setlocal comments=n:#,n:*,n:\:,s:{\|,m:\|,ex:\|}
+setlocal comments=n:#,n:*,n:\:,s:{\|,m:\|,ex:\|},s:<!--,m:\ \ \ \ ,e:-->
+setlocal commentstring=<!--\ %s\ -->
 
 " match HTML tags (taken directly from $VIM/ftplugin/html.vim)
 if exists("loaded_matchit")
@@ -35,7 +36,7 @@ endif
 
 " Enable folding based on ==sections==
 setlocal foldexpr=getline(v:lnum)=~'^\\(=\\+\\)[^=]\\+\\1\\(\\s*<!--.*-->\\)\\=\\s*$'?\">\".(len(matchstr(getline(v:lnum),'^=\\+'))-1):\"=\"
-setlocal fdm=expr
+setlocal foldmethod=expr
 
-let b:undo_ftplugin = "setl commentstring< comments< formatoptions< foldexpr< fdm<"
+let b:undo_ftplugin = "setl commentstring< comments< formatoptions< foldexpr< foldmethod<"
 let b:undo_ftplugin += " matchpairs< linebreak< wrap< textwidth<"
