@@ -219,17 +219,24 @@ static void sb_pushline_from_row(VTermScreen *screen, int row)
   (screen->callbacks->sb_pushline)(screen->cols, screen->sb_buffer, screen->cbdata);
 }
 
-static int moverect_internal(VTermRect dest, VTermRect src, void *user)
+static int premove(VTermRect rect, void *user)
 {
   VTermScreen *screen = user;
 
   if(screen->callbacks && screen->callbacks->sb_pushline &&
-     dest.start_row == 0 && dest.start_col == 0 &&        // starts top-left corner
-     dest.end_col == screen->cols &&                      // full width
+     rect.start_row == 0 && rect.start_col == 0 &&        // starts top-left corner
+     rect.end_col == screen->cols &&                      // full width
      screen->buffer == screen->buffers[BUFIDX_PRIMARY]) { // not altscreen
-    for(int row = 0; row < src.start_row; row++)
+    for(int row = 0; row < rect.end_row; row++)
       sb_pushline_from_row(screen, row);
   }
+
+  return 1;
+}
+
+static int moverect_internal(VTermRect dest, VTermRect src, void *user)
+{
+  VTermScreen *screen = user;
 
   int cols = src.end_col - src.start_col;
   int downward = src.start_row - dest.start_row;
@@ -880,6 +887,7 @@ static VTermStateCallbacks state_cbs = {
   &resize, // resize
   &setlineinfo, // setlineinfo
   &sb_clear, //sb_clear
+  &premove, // premove
 };
 
 /*
@@ -927,6 +935,7 @@ static VTermScreen *screen_new(VTerm *vt)
   }
 
   vterm_state_set_callbacks(screen->state, &state_cbs, screen);
+  vterm_state_callbacks_has_premove(screen->state);
 
   return screen;
 }
