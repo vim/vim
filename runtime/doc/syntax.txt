@@ -958,8 +958,7 @@ For Visual Basic use: >
 	:let g:filetype_asa = "aspvbs"
 	:let g:filetype_asp = "aspvbs"
 
-ASY							*ft-asy-syntax*
-ASYMPTOTE						*ft-asymptote-syntax*
+ASYMPTOTE					*asy.vim* *ft-asy-syntax*
 
 By default, only basic Asymptote keywords are highlighted. To highlight
 extended geometry keywords: >

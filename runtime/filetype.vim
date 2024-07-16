@@ -112,7 +112,7 @@ au BufNewFile,BufRead *.ino,*.pde		setf arduino
 au BufNewFile,BufRead .ash_history		setf sh
 
 " Asymptote
-au BufNewFile,BufRead *.asy		setf asymptote
+au BufNewFile,BufRead *.asy		setf asy
 
 " Apache config file
 au BufNewFile,BufRead .htaccess,*/etc/httpd/*.conf		setf apache
