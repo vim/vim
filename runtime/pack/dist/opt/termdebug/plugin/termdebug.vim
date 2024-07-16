@@ -1326,10 +1326,9 @@ def DeleteCommands()
 enddef
 
 def QuoteArg(x: string): string
-  var x_escaped = x ->substitute('\\', '\\\\', 'g')
-    ->substitute('"', '\\"', 'g')
-
-  return  x_escaped[0] == '"' && x_escaped[-1 : ] == '"' ? x_escaped : $'"{x_escaped}"'
+  # Find all the occurrences of " and \ and escape them and it double quote
+  # the resulting string.
+  return printf('"%s"', x ->substitute('[\\"]', '\\&', 'g'))
 enddef
 
 # :Until - Execute until past a specified position or current line
