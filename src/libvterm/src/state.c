@@ -78,6 +78,7 @@ static VTermState *vterm_state_new(VTerm *vt)
 
   state->callbacks = NULL;
   state->cbdata    = NULL;
+  state->callbacks_has_premove = 0;
 
   state->selection.callbacks = NULL;
   state->selection.user      = NULL;
@@ -132,6 +133,33 @@ static void scroll(VTermState *state, VTermRect rect, int downward, int rightwar
     rightward = cols;
   else if(rightward < -cols)
     rightward = -cols;
+
+  if(state->callbacks_has_premove && state->callbacks && state->callbacks->premove) {
+    // TODO: technically this logic is wrong if both downward != 0 and rightward != 0
+
+    /* Work out what subsection of the destination area is about to be destroyed */
+    if(downward > 0)
+      /* about to destroy the top */
+      (*state->callbacks->premove)((VTermRect){
+          .start_row = rect.start_row, .end_row = rect.start_row + downward,
+          .start_col = rect.start_col, .end_col = rect.end_col}, state->cbdata);
+    else if(downward < 0)
+      /* about to destroy the bottom */
+      (*state->callbacks->premove)((VTermRect){
+          .start_row = rect.end_row + downward, .end_row = rect.end_row,
+          .start_col = rect.start_col,          .end_col = rect.end_col}, state->cbdata);
+
+    if(rightward > 0)
+      /* about to destroy the left */
+      (*state->callbacks->premove)((VTermRect){
+          .start_row = rect.start_row, .end_row = rect.end_row,
+          .start_col = rect.start_col, .end_col = rect.start_col + rightward}, state->cbdata);
+    else if(rightward < 0)
+      /* about to destroy the right */
+      (*state->callbacks->premove)((VTermRect){
+          .start_row = rect.start_row,           .end_row = rect.end_row,
+          .start_col = rect.end_col + rightward, .end_col = rect.end_col}, state->cbdata);
+  }
 
   // Update lineinfo if full line
   if(rect.start_col == 0 && rect.end_col == state->cols && rightward == 0) {
@@ -2314,6 +2342,11 @@ void vterm_state_set_callbacks(VTermState *state, const VTermStateCallbacks *cal
     state->callbacks = NULL;
     state->cbdata = NULL;
   }
+}
+
+void vterm_state_callbacks_has_premove(VTermState *state)
+{
+  state->callbacks_has_premove = 1;
 }
 
 void *vterm_state_get_cbdata(VTermState *state)

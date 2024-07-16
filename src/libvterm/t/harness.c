@@ -326,6 +326,18 @@ static int movecursor(VTermPos pos, VTermPos oldpos UNUSED, int visible UNUSED, 
   return 1;
 }
 
+static int want_premove = 0;
+static int premove(VTermRect rect, void *user)
+{
+  if(!want_premove)
+    return 0;
+
+  printf("premove %d..%d,%d..%d\n",
+      rect.start_row, rect.end_row, rect.start_col, rect.end_col);
+
+  return 1;
+}
+
 static int want_scrollrect = 0;
 static int scrollrect(VTermRect rect, int downward, int rightward, void *user UNUSED)
 {
@@ -509,6 +521,7 @@ VTermStateCallbacks state_cbs = {
   NULL, // resize
   state_setlineinfo, // setlineinfo
   state_sb_clear, // sb_clear
+  premove, // premove
 };
 
 static int selection_set(VTermSelectionMask mask, VTermStringFragment frag, void *user UNUSED)
@@ -689,6 +702,7 @@ int main(int argc UNUSED, char **argv UNUSED)
       if(!state) {
         state = vterm_obtain_state(vt);
         vterm_state_set_callbacks(state, &state_cbs, NULL);
+        vterm_state_callbacks_has_premove(state);
         /* In some tests we want to check the behaviour of overflowing the
          * buffer, so make it nicely small
          */
@@ -712,6 +726,9 @@ int main(int argc UNUSED, char **argv UNUSED)
           break;
         case 's':
           want_scrollrect = sense;
+          break;
+        case 'P':
+          want_premove = sense;
           break;
         case 'm':
           want_moverect = sense;

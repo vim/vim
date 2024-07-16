@@ -127,24 +127,28 @@ PUSH "\e[100;105r\eD"
 PUSH "\e[5;2r\eD"
 
 RESET
-WANTSTATE -s+me
+WANTSTATE -s+Pme
 
 !Scroll Down move+erase emulation
 PUSH "\e[S"
+  premove 0..1,0..80
   moverect 1..25,0..80 -> 0..24,0..80
   erase 24..25,0..80
   ?cursor = 0,0
 PUSH "\e[2S"
+  premove 0..2,0..80
   moverect 2..25,0..80 -> 0..23,0..80
   erase 23..25,0..80
   ?cursor = 0,0
 
 !Scroll Up move+erase emulation
 PUSH "\e[T"
+  premove 24..25,0..80
   moverect 0..24,0..80 -> 1..25,0..80
   erase 0..1,0..80
   ?cursor = 0,0
 PUSH "\e[2T"
+  premove 23..25,0..80
   moverect 0..23,0..80 -> 2..25,0..80
   erase 0..2,0..80
   ?cursor = 0,0
