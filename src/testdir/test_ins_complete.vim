@@ -2617,8 +2617,8 @@ func Test_complete_fuzzy_match()
   call assert_equal('xyz', getline('.'))
 
   " fuzzy on file
-  write fobar
-  write foobar
+  call writefile([''], 'fobar', 'D')
+  call writefile([''], 'foobar', 'D')
   call setline(1, ['fob'])
   call cursor(1, 1)
   call feedkeys("A\<C-X>\<C-f>\<Esc>0", 'tx!')
@@ -2649,8 +2649,6 @@ func Test_complete_fuzzy_match()
   call assert_equal('no one can save me but you', getline('.'))
 
   " clean up
-  call delete('fobar')
-  call delete('foobar')
   set omnifunc=
   bw!
   bw!
