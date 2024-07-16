@@ -113,6 +113,7 @@ runtime/ftplugin/antlr4.vim		@jiangyinzuo
 runtime/ftplugin/apache.vim		@dubgeiser
 runtime/ftplugin/arduino.vim		@k-takata
 runtime/ftplugin/astro.vim		@romainl
+runtime/ftplugin/asy.vim		@avidseeker
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
@@ -382,6 +383,7 @@ runtime/syntax/asm.vim			@dkearns
 runtime/syntax/asmh8300.vim		@dkearns
 runtime/syntax/asterisk.vim		@jaunis
 runtime/syntax/astro.vim		@wuelnerdotexe
+runtime/syntax/asy.vim		@avidseeker
 runtime/syntax/autohotkey.vim		@mmikeww
 runtime/syntax/awk.vim			@dkearns
 runtime/syntax/basic.vim		@dkearns

@@ -6065,6 +6065,7 @@ assert_notmatch()	testing.txt	/*assert_notmatch()*
 assert_report()	testing.txt	/*assert_report()*
 assert_true()	testing.txt	/*assert_true()*
 astro.vim	syntax.txt	/*astro.vim*
+asy.vim	syntax.txt	/*asy.vim*
 at	motion.txt	/*at*
 atan()	builtin.txt	/*atan()*
 atan2()	builtin.txt	/*atan2()*
@@ -7253,6 +7254,7 @@ ft-asmh8300-syntax	syntax.txt	/*ft-asmh8300-syntax*
 ft-aspperl-syntax	syntax.txt	/*ft-aspperl-syntax*
 ft-aspvbs-syntax	syntax.txt	/*ft-aspvbs-syntax*
 ft-astro-syntax	syntax.txt	/*ft-astro-syntax*
+ft-asy-syntax	syntax.txt	/*ft-asy-syntax*
 ft-awk-plugin	filetype.txt	/*ft-awk-plugin*
 ft-bash-syntax	syntax.txt	/*ft-bash-syntax*
 ft-basic-syntax	syntax.txt	/*ft-basic-syntax*
@@ -7299,7 +7301,9 @@ ft-fortran-syntax	syntax.txt	/*ft-fortran-syntax*
 ft-freebasic-plugin	filetype.txt	/*ft-freebasic-plugin*
 ft-freebasic-syntax	syntax.txt	/*ft-freebasic-syntax*
 ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
+ft-gdscript-plugin	filetype.txt	/*ft-gdscript-plugin*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
+ft-go-plugin	filetype.txt	/*ft-go-plugin*
 ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
@@ -7335,6 +7339,7 @@ ft-markdown-syntax	syntax.txt	/*ft-markdown-syntax*
 ft-masm-syntax	syntax.txt	/*ft-masm-syntax*
 ft-mathematica-syntax	syntax.txt	/*ft-mathematica-syntax*
 ft-matlab-indent	indent.txt	/*ft-matlab-indent*
+ft-mediawiki-syntax	syntax.txt	/*ft-mediawiki-syntax*
 ft-metafont	ft_mp.txt	/*ft-metafont*
 ft-metafont-intro	ft_mp.txt	/*ft-metafont-intro*
 ft-metafont-mappings	ft_mp.txt	/*ft-metafont-mappings*

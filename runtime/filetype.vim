@@ -111,6 +111,9 @@ au BufNewFile,BufRead *.ino,*.pde		setf arduino
 " Ash of busybox
 au BufNewFile,BufRead .ash_history		setf sh
 
+" Asymptote
+au BufNewFile,BufRead *.asy		setf asy
+
 " Apache config file
 au BufNewFile,BufRead .htaccess,*/etc/httpd/*.conf		setf apache
 au BufNewFile,BufRead */etc/apache2/sites-*/*.com		setf apache
