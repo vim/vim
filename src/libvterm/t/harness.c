@@ -603,7 +603,7 @@ static int screen_damage(VTermRect rect, void *user UNUSED)
 }
 
 static int want_screen_scrollback = 0;
-static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user UNUSED)
+static int screen_sb_pushline4(int cols, const VTermScreenCell *cells, int continuation, void *user UNUSED)
 {
   int eol;
   int c;
@@ -615,7 +615,7 @@ static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user
   while(eol && !cells[eol-1].chars[0])
     eol--;
 
-  printf("sb_pushline %d =", cols);
+  printf("sb_pushline %d%s =", cols, continuation ? " cont" : "");
   for(c = 0; c < eol; c++)
     printf(" %02X", cells[c].chars[0]);
   printf("\n");
@@ -660,9 +660,10 @@ VTermScreenCallbacks screen_cbs = {
   settermprop, // settermprop
   NULL, // bell
   NULL, // resize
-  screen_sb_pushline, // sb_pushline
+  NULL, // sb_pushline
   screen_sb_popline, // sb_popline
   screen_sb_clear, // sb_clear
+  screen_sb_pushline4, // sb_pushline4
 };
 
 int main(int argc UNUSED, char **argv UNUSED)
@@ -757,6 +758,7 @@ int main(int argc UNUSED, char **argv UNUSED)
       if(!screen)
         screen = vterm_obtain_screen(vt);
       vterm_screen_set_callbacks(screen, &screen_cbs, NULL);
+      vterm_screen_callbacks_has_pushline4(screen);
 
       while(line[i] == ' ')
         i++;
