@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jul 15
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jul 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2319,6 +2319,17 @@ have the following in your .vimrc: >
 
 	let filetype_m = "mma"
 
+MEDIAWIKI					*ft-mediawiki-syntax*
+
+Be default, syntax highlighting includes basic HTML tags like style and
+headers |html.vim|. For strict Mediawiki syntax highlighting: >
+
+	let g:html_no_rendering = 1
+
+If HTML highlighting is desired, terminal-based text formatting such as bold
+and italic is possible by: >
+
+	let g:html_style_rendering = 1
 
 MODULA2					*modula2.vim* *ft-modula2-syntax*
 
