@@ -223,7 +223,6 @@ enddef
 
 def SanityCheck(): bool
   var gdb_cmd = GetCommand()[0]
-  var cwd =
   var cwd = $'{getcwd()}/'
   if exists('+shellslash') && !&shellslash
     # on windows, need to handle backslash
