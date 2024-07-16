@@ -3512,7 +3512,7 @@ limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
  * Handle a line that is pushed off the top of the screen.
  */
     static int
-handle_pushline(int cols, const VTermScreenCell *cells, void *user)
+handle_pushline(int cols, const VTermScreenCell *cells, int continuation, void *user)
 {
     term_T	*term = (term_T *)user;
     garray_T	*gap;
@@ -3675,9 +3675,10 @@ static VTermScreenCallbacks screen_callbacks = {
     handle_settermprop,		// settermprop
     handle_bell,		// bell
     handle_resize,		// resize
-    handle_pushline,		// sb_pushline
+    NULL,			// sb_pushline
     NULL,			// sb_popline
-    NULL			// sb_clear
+    NULL,			// sb_clear
+    handle_pushline	// sb_pushline4
 };
 
 /*
@@ -4950,6 +4951,7 @@ create_vterm(term_T *term, int rows, int cols)
     }
 
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
+    vterm_screen_callbacks_has_pushline4(screen);
     // TODO: depends on 'encoding'.
     vterm_set_utf8(vterm, 1);
 
