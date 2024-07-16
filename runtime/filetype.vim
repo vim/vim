@@ -1418,8 +1418,8 @@ au BufNewFile,BufRead *.mason,*.mhtml,*.comp	setf mason
 " Mathematica, Matlab, Murphi, Objective C or Octave
 au BufNewFile,BufRead *.m			call dist#ft#FTm()
 
-" Mathematica notebook
-au BufNewFile,BufRead *.nb			setf mma
+" Mathematica notebook and package files
+au BufNewFile,BufRead *.nb,*.wl			setf mma
 
 " Maya Extension Language
 au BufNewFile,BufRead *.mel			setf mel
