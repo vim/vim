@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.1.  Last change: 2024 May 11
+*gui.txt*       For Vim version 9.1.  Last change: 2024 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -970,7 +970,7 @@ name and all existing submenus below it are affected.
 
 5.7 Examples for Menus					*menu-examples*
 
-Here is an example on how to add menu items with menu's!  You can add a menu
+Here is an example on how to add menu items with menus.  You can add a menu
 item for the keyword under the cursor.  The register "z" is used. >
 
   :nmenu Words.Add\ Var		wb"zye:menu! Words.<C-R>z <C-R>z<CR>
