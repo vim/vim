@@ -493,7 +493,7 @@ The GUI fully supports multibyte characters.  It is also possible in a
 terminal, if the terminal supports the same encoding that Vim uses.  Thus this
 is less flexible.
 
-For example, you can run Vim in a xterm with added multibyte support and/or
+For example, you can run Vim in an xterm with added multibyte support and/or
 |XIM|.  Examples are kterm (Kanji term) and hanterm (for Korean), Eterm
 (Enlightened terminal) and rxvt.
 
