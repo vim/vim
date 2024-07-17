@@ -6947,10 +6947,10 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 		Same as |matchadd()|, but requires a list of positions {pos}
 		instead of a pattern. This command is faster than |matchadd()|
-		because it does not require to handle regular expressions and
-		sets buffer line boundaries to redraw screen. It is supposed
-		to be used when fast match additions and deletions are
-		required, for example to highlight matching parentheses.
+		because it does not handle regular expressions and it sets
+		buffer line boundaries to redraw screen. It is supposed to be
+		used when fast match additions and deletions are required, for
+		example to highlight matching parentheses.
 
 		{pos} is a list of positions.  Each position can be one of
 		these:
@@ -10334,8 +10334,8 @@ spellsuggest({word} [, {max} [, {capital}]])		*spellsuggest()*
 
 split({string} [, {pattern} [, {keepempty}]])			*split()*
 		Make a |List| out of {string}.  When {pattern} is omitted or
-		empty each white-separated sequence of characters becomes an
-		item.
+		empty each whitespace-separated sequence of characters becomes
+		an item.
 		Otherwise the string is split where {pattern} matches,
 		removing the matched characters. 'ignorecase' is not used
 		here, add \c to ignore case. |/\c|

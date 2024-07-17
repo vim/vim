@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2024 Jun 17
+*testing.txt*	For Vim version 9.1.  Last change: 2024 Jul 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -513,9 +513,9 @@ assert_equal({expected}, {actual} [, {msg}])
 		Float 4.0.  The value of 'ignorecase' is not used here, case
 		always matters.
 		Example: >
-	assert_equal('foo', 'bar')
-<		Will result in a string to be added to |v:errors|:
-	test.vim line 12: Expected 'foo' but got 'bar' ~
+			call assert_equal('foo', 'bar')
+<		Will add the following to |v:errors|:
+			test.vim line 12: Expected 'foo' but got 'bar' ~
 
 		Can also be used as a |method|, the base is passed as the
 		second argument: >

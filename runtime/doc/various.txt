@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2024 Jun 17
+*various.txt*   For Vim version 9.1.  Last change: 2024 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,9 +19,8 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 							*:redr* *:redraw*
 :redr[aw][!]		Redraw the screen right now.  When ! is included it is
 			cleared first.
-			Useful to update the screen halfway executing a script
-			or function.  Also when halfway a mapping and
-			'lazyredraw' is set.
+			:redraw can be used to redraw the screen in a script
+			or function (or a mapping if |'lazyredraw'| is set).
 
 						*:redraws* *:redrawstatus*
 :redraws[tatus][!]	Redraw the status line of the current window.  When !
