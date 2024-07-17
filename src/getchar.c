@@ -42,6 +42,11 @@ static buffheader_T recordbuff = {{NULL, {NUL}}, NULL, 0, 0};
 
 static int typeahead_char = 0;		// typeahead char that's not flushed
 
+#ifdef FEAT_EVAL
+static char_u typedchars[MAXMAPLEN + 1] = { NUL };  // typed chars before map
+static int typedchars_pos = 0;
+#endif
+
 /*
  * When block_redo is TRUE the redo buffer will not be changed.
  * Used by edit() to repeat insertions.
@@ -1709,6 +1714,13 @@ updatescript(int c)
 	ml_sync_all(c == 0, TRUE);
 	count = 0;
     }
+#ifdef FEAT_EVAL
+    if (typedchars_pos < MAXMAPLEN)
+    {
+	typedchars[typedchars_pos] = c;
+	typedchars_pos++;
+    }
+#endif
 }
 
 /*
@@ -2135,6 +2147,9 @@ vgetc(void)
 
 #ifdef FEAT_EVAL
     c = do_key_input_pre(c);
+
+    // Clear the next typedchars_pos
+    typedchars_pos = 0;
 #endif
 
     // Need to process the character before we know it's safe to do something
@@ -2175,6 +2190,9 @@ do_key_input_pre(int c)
     else
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
 
+    typedchars[typedchars_pos] = NUL;
+    vim_unescape_csi(typedchars);
+
     get_mode(curr_mode);
 
     // Lock the text to avoid weird things from happening.
@@ -2183,6 +2201,7 @@ do_key_input_pre(int c)
 
     v_event = get_v_event(&save_v_event);
     (void)dict_add_bool(v_event, "typed", KeyTyped);
+    (void)dict_add_string(v_event, "typedchar", typedchars);
 
     if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf)
 	&& STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
