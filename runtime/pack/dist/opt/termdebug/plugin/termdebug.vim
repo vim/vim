@@ -1325,6 +1325,11 @@ def DeleteCommands()
   sign_undefine(BreakpointSigns->map("'debugBreakpoint' .. v:val"))
 enddef
 
+def QuoteArg(x: string): string
+  # Find all the occurrences of " and \ and escape them and double quote
+  # the resulting string.
+  return printf('"%s"', x ->substitute('[\\"]', '\\&', 'g'))
+enddef
 
 # :Until - Execute until past a specified position or current line
 def Until(at: string)
@@ -1335,7 +1340,7 @@ def Until(at: string)
     ch_log('assume that program is running after this command')
 
     # Use the fname:lnum format
-    var AT = empty(at) ? $"\"{expand('%:p')}:{line('.')}\"" : at
+    var AT = empty(at) ? QuoteArg($"{expand('%:p')}:{line('.')}") : at
     SendCommand($'-exec-until {AT}')
   else
     ch_log('dropping command, program is running: exec-until')
@@ -1354,7 +1359,7 @@ def SetBreakpoint(at: string, tbreak=false)
   endif
 
   # Use the fname:lnum format, older gdb can't handle --source.
-  var AT = empty(at) ? $"\"{expand('%:p')}:{line('.')}\"" : at
+  var AT = empty(at) ? QuoteArg($"{expand('%:p')}:{line('.')}") : at
   var cmd = ''
   if tbreak
     cmd = $'-break-insert -t {AT}'
