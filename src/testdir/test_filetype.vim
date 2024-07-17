@@ -2614,28 +2614,28 @@ func Test_pl_file()
 
   "Prolog
   call writefile([':-module(test/1,'], 'Xfile.pro', 'D')
-  split Xfile.pro
+  split Xfile.pl
   call assert_equal('prolog', &filetype)
   bwipe!
 
   call writefile(['% comment'], 'Xfile.pro', 'D')
-  split Xfile.pro
+  split Xfile.pl
   call assert_equal('prolog', &filetype)
   bwipe!
 
   call writefile(['/* multiline comment'], 'Xfile.pro', 'D')
-  split Xfile.pro
+  split Xfile.pl
   call assert_equal('prolog', &filetype)
   bwipe!
 
   call writefile(['rule(test, 1.7).'], 'Xfile.pro', 'D')
-  split Xfile.pro
+  split Xfile.pl
   call assert_equal('prolog', &filetype)
   bwipe!
 
   " Perl
   call writefile(['%data = (1, 2, 3);'], 'Xfile.pro', 'D')
-  split Xfile.pro
+  split Xfile.pl
   call assert_notequal('prolog', &filetype)
 
   filetype off
