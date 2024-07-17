@@ -203,6 +203,8 @@ static int	  compl_opt_suppress_empty = FALSE;
 
 static int	  compl_selected_item = -1;
 
+static int	  *compl_fuzzy_scores;
+
 static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
@@ -3322,7 +3324,8 @@ typedef struct
 process_next_cpt_value(
 	ins_compl_next_state_T *st,
 	int		*compl_type_arg,
-	pos_T		*start_match_pos)
+	pos_T		*start_match_pos,
+	int		in_fuzzy)
 {
     int	    compl_type = -1;
     int	    status = INS_COMPL_CPT_OK;
@@ -3338,7 +3341,7 @@ process_next_cpt_value(
 	st->first_match_pos = *start_match_pos;
 	// Move the cursor back one character so that ^N can match the
 	// word immediately after the cursor.
-	if (ctrl_x_mode_normal() && dec(&st->first_match_pos) < 0)
+	if (ctrl_x_mode_normal() && (!in_fuzzy && dec(&st->first_match_pos) < 0))
 	{
 	    // Move the cursor to after the last character in the
 	    // buffer, so that word at start of buffer is found
@@ -3506,6 +3509,18 @@ get_next_tag_completion(void)
 }
 
 /*
+ * Compare function for qsort
+ */
+static int compare_scores(const void *a, const void *b)
+{
+    int idx_a = *(const int *)a;
+    int idx_b = *(const int *)b;
+    int score_a = compl_fuzzy_scores[idx_a];
+    int score_b = compl_fuzzy_scores[idx_b];
+    return (score_a > score_b) ? -1 : (score_a < score_b) ? 1 : 0;
+}
+
+/*
  * Get the next set of filename matching "compl_pattern".
  */
     static void
@@ -3513,6 +3528,21 @@ get_next_filename_completion(void)
 {
     char_u	**matches;
     int		num_matches;
+    char_u	*ptr;
+    garray_T	fuzzy_indices;
+    int		i;
+    int		score;
+    char_u	*leader = ins_compl_leader();
+    int		leader_len = STRLEN(leader);
+    int		in_fuzzy = ((get_cot_flags() & COT_FUZZY) != 0 && leader_len > 0);
+    char_u	**sorted_matches;
+    int		*fuzzy_indices_data;
+
+    if (in_fuzzy)
+    {
+	vim_free(compl_pattern);
+	compl_pattern = vim_strsave((char_u *)"*");
+    }
 
     if (expand_wildcards(1, &compl_pattern, &num_matches, &matches,
 		EW_FILE|EW_DIR|EW_ADDSLASH|EW_SILENT) != OK)
@@ -3523,12 +3553,9 @@ get_next_filename_completion(void)
 #ifdef BACKSLASH_IN_FILENAME
     if (curbuf->b_p_csl[0] != NUL)
     {
-	int	    i;
-
 	for (i = 0; i < num_matches; ++i)
 	{
-	    char_u	*ptr = matches[i];
-
+	    ptr = matches[i];
 	    while (*ptr != NUL)
 	    {
 		if (curbuf->b_p_csl[0] == 's' && *ptr == '\\')
@@ -3540,6 +3567,41 @@ get_next_filename_completion(void)
 	}
     }
 #endif
+
+    if (in_fuzzy)
+    {
+	ga_init2(&fuzzy_indices, sizeof(int), 10);
+	compl_fuzzy_scores = (int *)alloc(sizeof(int) * num_matches);
+
+	for (i = 0; i < num_matches; i++)
+	{
+	    ptr = matches[i];
+	    score = fuzzy_match_str(ptr, leader);
+	    if (score > 0)
+	    {
+		if (ga_grow(&fuzzy_indices, 1) == OK)
+		{
+		    ((int *)fuzzy_indices.ga_data)[fuzzy_indices.ga_len] = i;
+		    compl_fuzzy_scores[i] = score;
+		    fuzzy_indices.ga_len++;
+		}
+	    }
+	}
+
+	fuzzy_indices_data = (int *)fuzzy_indices.ga_data;
+	qsort(fuzzy_indices_data, fuzzy_indices.ga_len, sizeof(int), compare_scores);
+
+	sorted_matches = (char_u **)alloc(sizeof(char_u *) * fuzzy_indices.ga_len);
+	for (i = 0; i < fuzzy_indices.ga_len; ++i)
+	    sorted_matches[i] = vim_strsave(matches[fuzzy_indices_data[i]]);
+
+	FreeWild(num_matches, matches);
+	matches = sorted_matches;
+	num_matches = fuzzy_indices.ga_len;
+	vim_free(compl_fuzzy_scores);
+	ga_clear(&fuzzy_indices);
+    }
+
     ins_compl_add_matches(num_matches, matches, p_fic || p_wic);
 }
 
@@ -3687,8 +3749,10 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
     int		save_p_scs;
     int		save_p_ws;
     int		looped_around = FALSE;
-    char_u	*ptr;
-    int		len;
+    char_u	*ptr = NULL;
+    int		len = 0;
+    int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0 && compl_length > 0;
+    char_u	*leader = ins_compl_leader();
 
     // If 'infercase' is set, don't use 'smartcase' here
     save_p_scs = p_scs;
@@ -3702,7 +3766,7 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
     save_p_ws = p_ws;
     if (st->ins_buf != curbuf)
 	p_ws = FALSE;
-    else if (*st->e_cpt == '.')
+    else if (*st->e_cpt == '.' && !in_fuzzy)
 	p_ws = TRUE;
     looped_around = FALSE;
     for (;;)
@@ -3713,9 +3777,13 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 
 	// ctrl_x_mode_line_or_eval() || word-wise search that
 	// has added a word that was at the beginning of the line
-	if (ctrl_x_mode_line_or_eval() || (compl_cont_status & CONT_SOL))
+	if ((ctrl_x_mode_whole_line() && !in_fuzzy) || ctrl_x_mode_eval() || (compl_cont_status & CONT_SOL))
 	    found_new_match = search_for_exact_line(st->ins_buf,
 			    st->cur_match_pos, compl_direction, compl_pattern);
+	else if (in_fuzzy)
+	     found_new_match = search_for_fuzzy_match(st->ins_buf,
+			    st->cur_match_pos, leader, compl_direction,
+			    start_pos, &len, &ptr, ctrl_x_mode_whole_line());
 	else
 	    found_new_match = searchit(NULL, st->ins_buf, st->cur_match_pos,
 				NULL, compl_direction, compl_pattern, compl_patternlen,
@@ -3764,8 +3832,9 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 		&& start_pos->col  == st->cur_match_pos->col)
 	    continue;
 
-	ptr = ins_compl_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
-							   &len, &cont_s_ipos);
+	if (!in_fuzzy)
+	    ptr = ins_compl_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
+							       &len, &cont_s_ipos);
 	if (ptr == NULL)
 	    continue;
 
@@ -3864,6 +3933,7 @@ ins_compl_get_exp(pos_T *ini)
     int		i;
     int		found_new_match;
     int		type = ctrl_x_mode;
+    int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
 
     if (!compl_started)
     {
@@ -3889,8 +3959,11 @@ ins_compl_get_exp(pos_T *ini)
 	st.ins_buf = curbuf;  // In case the buffer was wiped out.
 
     compl_old_match = compl_curr_match;	// remember the last current match
-    st.cur_match_pos = (compl_dir_forward())
-				? &st.last_match_pos : &st.first_match_pos;
+    if (in_fuzzy)
+	st.cur_match_pos = (compl_dir_forward())
+				    ? &st.last_match_pos : &st.first_match_pos;
+    else
+	st.cur_match_pos = &st.last_match_pos;
 
     // For ^N/^P loop over all the flags/windows/buffers in 'complete'.
     for (;;)
@@ -3904,7 +3977,7 @@ ins_compl_get_exp(pos_T *ini)
 	if ((ctrl_x_mode_normal() || ctrl_x_mode_line_or_eval())
 					&& (!compl_started || st.found_all))
 	{
-	    int status = process_next_cpt_value(&st, &type, ini);
+	    int status = process_next_cpt_value(&st, &type, ini, in_fuzzy);
 
 	    if (status == INS_COMPL_CPT_END)
 		break;
