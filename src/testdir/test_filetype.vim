@@ -2600,6 +2600,10 @@ func Test_pro_file()
   call assert_equal('prolog', &filetype)
   bwipe!
 
+  call writefile(['%data = (1, 2, 3);'], 'Xfile.pro', 'D')
+  split Xfile.pro
+  call assert_notequal('prolog', &filetype)
+
   filetype off
 endfunc
 

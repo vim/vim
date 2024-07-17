@@ -465,7 +465,7 @@ export def ProtoCheck(default: string)
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
     var lnum = getline(nextnonblank(1))
-    if lnum =~ '\<prolog\>' || lnum =~ '^\(:-\|%\|\/\*\)\|\.$'
+    if lnum =~ '\<prolog\>' || lnum =~ '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
       setf prolog
     else
       exe 'setf ' .. default
@@ -644,7 +644,7 @@ export def FTpl()
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
     var line = getline(nextnonblank(1))
-    if line =~ '\<prolog\>' || line =~ '^\(:-\|%\|\/\*\)\|\.$'
+    if line =~ '\<prolog\>' || line =~ '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
       setf prolog
     else
       setf perl
