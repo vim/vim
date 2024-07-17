@@ -2603,7 +2603,7 @@ func Test_pro_file()
   " IDL
   call writefile(['x = findgen(100)/10'], 'Xfile.pro', 'D')
   split Xfile.pro
-  call assert_equal('idl', &filetype)
+  call assert_equal('idlang', &filetype)
 
   filetype off
 endfunc
