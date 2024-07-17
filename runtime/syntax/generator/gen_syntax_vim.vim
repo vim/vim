@@ -299,8 +299,11 @@ function! s:get_vim_command_type(cmd_name)
 		enddef
 		endfunction
 		execute
+		final
+		for
 		function
 		insert
+		let
 		map
 		mapclear
 		match
@@ -316,6 +319,7 @@ function! s:get_vim_command_type(cmd_name)
 		substitute
 		syntax
 		throw
+		unlet
 		var
 		vim9script
 	EOL
