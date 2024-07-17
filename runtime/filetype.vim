@@ -510,6 +510,9 @@ au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 " Cue
 au BufNewFile,BufRead *.cue			setf cue
 
+" Debian devscripts
+au BufNewFile,BufRead devscripts.conf,.devscripts	setf sh
+
 " Dockerfile; Podman uses the same syntax with name Containerfile
 " Also see Dockerfile.* below.
 au BufNewFile,BufRead Containerfile,Dockerfile,dockerfile,*.[dD]ockerfile	setf dockerfile
