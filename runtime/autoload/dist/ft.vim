@@ -9,6 +9,8 @@ vim9script
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
 
+var prolog_pattern = '^\s*\(:-\|%\+\(\s\|$\)\|\/\*\)\|\.\s*$'
+
 export def Check_inp()
   if getline(1) =~ '%%'
     setf tex
@@ -465,7 +467,7 @@ export def ProtoCheck(default: string)
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
     var lnum = getline(nextnonblank(1))
-    if lnum =~ '\<prolog\>' || lnum =~ '^\(:-\|%\|\/\*\)\|\.$'
+    if lnum =~ '\<prolog\>' || lnum =~ prolog_pattern
       setf prolog
     else
       exe 'setf ' .. default
@@ -644,7 +646,7 @@ export def FTpl()
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
     var line = getline(nextnonblank(1))
-    if line =~ '\<prolog\>' || line =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || line =~ ':-'
+    if line =~ '\<prolog\>' || line =~ prolog_pattern
       setf prolog
     else
       setf perl

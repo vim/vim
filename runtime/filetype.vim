@@ -1719,7 +1719,7 @@ au BufNewFile,BufRead *.pcmk				setf pcmk
 " PEM (Privacy-Enhanced Mail)
 au BufNewFile,BufRead *.pem,*.cer,*.crt,*.csr		setf pem
 
-" Perl
+" Perl or Prolog
 if has("fname_case")
   au BufNewFile,BufRead *.pl,*.PL			call dist#ft#FTpl()
 else
