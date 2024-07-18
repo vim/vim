@@ -2627,6 +2627,8 @@ func Test_complete_fuzzy_match()
   call assert_equal('foobar', getline('.'))
   call feedkeys("S../\<C-X>\<C-f>\<Esc>0", 'tx!')
   call assert_match('../*', getline('.'))
+  call feedkeys("S../td\<C-X>\<C-f>\<Esc>0", 'tx!')
+  call assert_match('../testdir', getline('.'))
 
   " can get completion from other buffer
   set completeopt=fuzzy,menu,menuone
