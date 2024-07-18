@@ -1698,24 +1698,6 @@ typval_compare_blob(
 }
 
 /*
- * Compare "tv1" to "tv2" as classes according to "type".
- * Put the result, false or true, in "res".
- * Return FAIL and give an error message when the comparison can't be done.
- */
-    int
-typval_compare_class(
-	typval_T    *tv1,
-	typval_T    *tv2,
-	exprtype_T  type UNUSED,
-	int	    ic UNUSED,
-	int	    *res)
-{
-    // TODO: use "type"
-    *res = tv1->vval.v_class == tv2->vval.v_class;
-    return OK;
-}
-
-/*
  * Compare "tv1" to "tv2" as objects according to "type".
  * Put the result, false or true, in "res".
  * Return FAIL and give an error message when the comparison can't be done.
