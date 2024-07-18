@@ -1388,7 +1388,7 @@ update_cursor(term_T *term, int redraw)
 /*
  * Find the location of a scrollbackline in the buffer
  */
-    void
+    static void
 scrollbackline_pos_in_buf(term_T *term, int row, linenr_T *lnum, int *start_col, size_t *start_pos)
 {
     sb_line_T	*lines = (sb_line_T *)term->tl_scrollback.ga_data;
@@ -1442,7 +1442,7 @@ scrollbackline_pos_in_buf(term_T *term, int row, linenr_T *lnum, int *start_col,
 /*
  * Find the location of a buffer line in the scrollback
  */
-    void
+    static void
 bufline_pos_in_scrollback(term_T *term, linenr_T lnum, int col, int *row, int *wrapped_col)
 {
     buf_T	*buf = term->tl_buffer;
