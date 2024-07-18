@@ -68,7 +68,6 @@ int typval_compare(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic);
 int typval_compare_list(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_null(typval_T *tv1, typval_T *tv2);
 int typval_compare_blob(typval_T *tv1, typval_T *tv2, exprtype_T type, int *res);
-int typval_compare_class(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_object(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_dict(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
 int typval_compare_func(typval_T *tv1, typval_T *tv2, exprtype_T type, int ic, int *res);
