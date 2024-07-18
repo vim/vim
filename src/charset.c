@@ -1397,17 +1397,17 @@ win_lbr_chartabsize(
 		else if (max_head_vcol > vcol + head_prev + prev_rem)
 		    head += (max_head_vcol - (vcol + head_prev + prev_rem)
 					     + width2 - 1) / width2 * head_mid;
-#  ifdef FEAT_PROP_POPUP
 		else if (max_head_vcol < 0)
 		{
-		    int off = 0;
+		    int off = mb_added;
+#  ifdef FEAT_PROP_POPUP
 		    if (*s != NUL
 			     && ((State & MODE_NORMAL) || cts->cts_start_incl))
 			off += cts->cts_cur_text_width;
+#  endif
 		    if (off >= prev_rem)
 			head += (1 + (off - prev_rem) / width) * head_mid;
 		}
-#  endif
 	    }
 	}
 
