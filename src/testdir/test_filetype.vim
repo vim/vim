@@ -2636,7 +2636,7 @@ func Test_pl_file()
   " Perl
   call writefile(['%data = (1, 2, 3);'], 'Xfile.pl', 'D')
   split Xfile.pl
-  call assert_notequal('prolog', &filetype)
+  call assert_equal('perl', &filetype)
 
   filetype off
 endfunc
