@@ -327,7 +327,7 @@ static int movecursor(VTermPos pos, VTermPos oldpos UNUSED, int visible UNUSED, 
 }
 
 static int want_premove = 0;
-static int premove(VTermRect rect, void *user)
+static int premove(VTermRect rect, void *user UNUSED)
 {
   if(!want_premove)
     return 0;
