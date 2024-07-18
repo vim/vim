@@ -3588,16 +3588,21 @@ get_next_filename_completion(void)
 	    }
 	}
 
-	fuzzy_indices_data = (int *)fuzzy_indices.ga_data;
-	qsort(fuzzy_indices_data, fuzzy_indices.ga_len, sizeof(int), compare_scores);
+	// prevent qsort from deref NULL pointer
+	if (fuzzy_indices.ga_len > 0)
+	{
+	    fuzzy_indices_data = (int *)fuzzy_indices.ga_data;
+	    qsort(fuzzy_indices_data, fuzzy_indices.ga_len, sizeof(int), compare_scores);
 
-	sorted_matches = (char_u **)alloc(sizeof(char_u *) * fuzzy_indices.ga_len);
-	for (i = 0; i < fuzzy_indices.ga_len; ++i)
-	    sorted_matches[i] = vim_strsave(matches[fuzzy_indices_data[i]]);
+	    sorted_matches = (char_u **)alloc(sizeof(char_u *) * fuzzy_indices.ga_len);
+	    for (i = 0; i < fuzzy_indices.ga_len; ++i)
+		sorted_matches[i] = vim_strsave(matches[fuzzy_indices_data[i]]);
 
-	FreeWild(num_matches, matches);
-	matches = sorted_matches;
-	num_matches = fuzzy_indices.ga_len;
+	    FreeWild(num_matches, matches);
+	    matches = sorted_matches;
+	    num_matches = fuzzy_indices.ga_len;
+	}
+
 	vim_free(compl_fuzzy_scores);
 	ga_clear(&fuzzy_indices);
     }
