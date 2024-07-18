@@ -2625,6 +2625,8 @@ func Test_complete_fuzzy_match()
   call assert_equal('fobar', getline('.'))
   call feedkeys("Sfob\<C-X>\<C-f>\<C-N>\<Esc>0", 'tx!')
   call assert_equal('foobar', getline('.'))
+  call feedkeys("S../\<C-X>\<C-f>\<Esc>0", 'tx!')
+  call assert_match('../*', getline('.'))
 
   " can get completion from other buffer
   set completeopt=fuzzy,menu,menuone
@@ -2639,6 +2641,8 @@ func Test_complete_fuzzy_match()
   call assert_equal('Omnipotent', getline('.'))
   call feedkeys("Somp\<C-P>\<C-P>\<Esc>0", 'tx!')
   call assert_equal('Composite', getline('.'))
+  call feedkeys("S omp\<C-N>\<Esc>0", 'tx!')
+  call assert_equal(' completeness', getline('.'))
 
   " fuzzy on whole line completion
   call setline(1, ["world is on fire", "no one can save me but you", 'user can execute', ''])

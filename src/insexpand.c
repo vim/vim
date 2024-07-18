@@ -3538,7 +3538,8 @@ get_next_filename_completion(void)
     char_u	**sorted_matches;
     int		*fuzzy_indices_data;
 
-    if (in_fuzzy)
+    if (in_fuzzy && (vim_strchr(leader, '/') == NULL
+		&& vim_strchr(leader, '\\') == NULL))
     {
 	vim_free(compl_pattern);
 	compl_pattern = vim_strsave((char_u *)"*");
