@@ -705,7 +705,7 @@ def StartDebug_prompt(dict: dict<any>)
   SendCommand('set breakpoint pending on')
 
   # Set arguments to be run
-  if len(proc_args)
+  if !empty(proc_args)
     SendCommand($'set args {join(proc_args)}')
   endif
 
