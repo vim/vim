@@ -5,9 +5,6 @@ map! lhs rhs
 map 
 map lhs rhs
 
-call map(list, 'v:val')
-call map (list, 'v:val')
-
 mapclear  <buffer>
 mapclear! <buffer>
 nmapclear <buffer>
@@ -67,6 +64,27 @@ map l h s  rhs
 map lhs
   "\ comment (matches as RHS but harmless)
 echo "clear"
+
+
+" Differentiate map() from :map
+
+map ( :echo "open-paren"<CR>
+
+call map(list, 'v:val')
+call map (list, 'v:val')
+
+function Foo()
+  map ( :echo "open-paren"<CR>
+  call map(list, 'v:val')
+  call map (list, 'v:val')
+endfunction
+
+def Foo()
+  map ( :echo "open-paren"<CR>
+  map(list, 'v:val')
+  # :map LHS=(list, RHS='v:val')
+  map (list, 'v:val')
+enddef
 
 
 " Issue  #12672

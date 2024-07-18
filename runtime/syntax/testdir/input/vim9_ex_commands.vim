@@ -313,7 +313,6 @@ vim9script
 :lwindow
 :make
 :mapclear
-# requires trailing whitespace to distinguish from map()
 :map
 :mark
 :marks
@@ -902,8 +901,7 @@ Foo() | lwindow
 Foo() | make
 Foo() | mark
 Foo() | move
-# requires trailing whitespace to distinguish from map()
-Foo() | map 
+Foo() | map
 Foo() | mapclear
 Foo() | marks
 Foo() | match
