@@ -715,8 +715,6 @@ syn region  kconfigHelpText
       \ skip='^$'
       \ end='^\z1\@!'
 
-syn sync    match kconfigSyncHelp     grouphere kconfigHelpText 'help\|---help---'
-
 hi def link kconfigTodo         Todo
 hi def link kconfigComment      Comment
 hi def link kconfigKeyword      Keyword
