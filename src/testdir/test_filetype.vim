@@ -225,7 +225,7 @@ def s:GetFilenameChecks(): dict<list<string>>
              'psprint.conf', 'sofficerc', 'any/.config/lxqt/globalkeyshortcuts.conf', 'any/.config/screengrab/screengrab.conf',
              'any/.local/share/flatpak/repo/config', '.notmuch-config'],
     dot: ['file.dot', 'file.gv'],
-    dracula: ['file.drac', 'file.drc', 'filelvs', 'filelpe', 'drac.file', 'lpe', 'lvs', 'some-lpe', 'some-lvs'],
+    dracula: ['file.drac', 'file.drc', 'file.lvs', 'file.lpe', 'drac.file'],
     dtd: ['file.dtd'],
     dtrace: ['/usr/lib/dtrace/io.d'],
     dts: ['file.dts', 'file.dtsi', 'file.dtso', 'file.its', 'file.keymap'],
