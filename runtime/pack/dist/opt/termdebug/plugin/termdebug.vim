@@ -15,7 +15,7 @@ vim9script
 
 # There are two ways to run gdb:
 # - In a terminal window; used if possible, does not work on MS-Windows
-#   Not used when g:termdebug_use_prompt is set to 1.
+#   Not used when g:termdebug_use_prompt is set to true.
 # - Using a "prompt" buffer; may use a terminal window for the program
 
 # For both the current window is used to view source code and shows the
@@ -49,8 +49,8 @@ enddef
 # Variables to keep their status among multiple instances of Termdebug
 # Avoid to source the script twice.
 if exists('g:termdebug_loaded')
-    Echoerr('Termdebug already loaded.')
-    finish
+  Echoerr('Termdebug already loaded.')
+  finish
 endif
 g:termdebug_loaded = true
 g:termdebug_is_running = false
@@ -63,7 +63,7 @@ command -nargs=+ -complete=file -bang TermdebugCommand StartDebugCommand(<bang>0
 
 enum Way
   Prompt,
-  Terminal
+    Terminal
 endenum
 
 # Script variables declaration. These variables are re-initialized at every
@@ -90,7 +90,7 @@ var varbufname: string
 var asmbufnr: number
 var asmbufname: string
 var promptbufnr: number
-# This is for the "debugged-program" thing
+# 'pty' refers to the "debugged-program" pty
 var ptybufnr: number
 var ptybufname: string
 var commbufnr: number
@@ -276,6 +276,18 @@ def DeprecationWarnings()
           \ is deprecated and will be removed in the future. See ':h g:termdebug_config' for alternatives.")
   endif
 
+  # termdebug config types
+  if exists('g:termdebug_config') && !empty(g:termdebug_config)
+    for key in keys(g:termdebug_config)
+      if index(['disasm_window', 'variables_window', 'use_prompt', 'map_K', 'map_minus', 'map_plus'], key) != -1
+        if typename(g:termdebug_config[key]) == 'number'
+          var val = g:termdebug_config[key]
+          Echowarn($"Deprecation Warning: 'g:termdebug_config[\"{key}\"] = {val}' will be deprecated.
+                \ Please use 'g:termdebug_config[\"{key}\"] = {val != 0}'" )
+        endif
+      endif
+    endfor
+  endif
 enddef
 
 # Take a breakpoint number as used by GDB and turn it into an integer.
@@ -353,7 +365,7 @@ def StartDebug_internal(dict: dict<any>)
   endif
 
   # Uncomment this line to write logging in "debuglog".
-  # call ch_logfile('debuglog', 'w')
+  # ch_logfile('debuglog', 'w')
 
   # Assume current window is the source code window
   sourcewin = win_getid()
@@ -444,7 +456,7 @@ def CreateCommunicationPty(): string
   # Create a hidden terminal window to communicate with gdb
   commbufnr = term_start('NONE', {
     term_name: commbufname,
-    out_cb: function('CommOutput'),
+    out_cb: CommOutput,
     hidden: 1
   })
   if commbufnr == 0
@@ -489,9 +501,9 @@ def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
 
   ch_log($'executing "{join(gdb_cmd)}"')
   gdbbufnr = term_start(gdb_cmd, {
-        term_name: gdbbufname,
-        term_finish: 'close',
-        })
+    term_name: gdbbufname,
+    term_finish: 'close',
+  })
   if gdbbufnr == 0
     return 'Failed to open the gdb terminal window'
   endif
@@ -603,7 +615,7 @@ def StartDebug_term(dict: dict<any>)
     return
   endif
 
-  job_setoptions(term_getjob(gdbbufnr), {exit_cb: function('EndDebug')})
+  job_setoptions(term_getjob(gdbbufnr), {exit_cb: EndDebug})
 
   # Set the filetype, this can be used to add mappings.
   set filetype=termdebug
@@ -627,8 +639,8 @@ def StartDebug_prompt(dict: dict<any>)
   set buftype=prompt
   exe $"file {gdbbufname}"
 
-  prompt_setcallback(promptbufnr, function('PromptCallback'))
-  prompt_setinterrupt(promptbufnr, function('PromptInterrupt'))
+  prompt_setcallback(promptbufnr, PromptCallback)
+  prompt_setinterrupt(promptbufnr, PromptInterrupt)
 
   if vvertical
     # Assuming the source code window will get a signcolumn, use two more
@@ -655,8 +667,8 @@ def StartDebug_prompt(dict: dict<any>)
 
   ch_log($'executing "{join(gdb_cmd)}"')
   gdbjob = job_start(gdb_cmd, {
-    exit_cb: function('EndDebug'),
-    out_cb: function('GdbOutCallback'),
+    exit_cb: EndDebug,
+    out_cb: GdbOutCallback
   })
   if job_status(gdbjob) != "run"
     Echoerr('Failed to start gdb')
@@ -664,7 +676,7 @@ def StartDebug_prompt(dict: dict<any>)
     return
   endif
   exe $'au BufUnload <buffer={promptbufnr}> ++once ' ..
-       'call job_stop(gdbjob, ''kill'')'
+    'job_stop(gdbjob, ''kill'')'
   # Mark the buffer modified so that it's not easy to close.
   set modified
   gdb_channel = job_getchannel(gdbjob)
@@ -847,7 +859,7 @@ def GdbOutCallback(channel: channel, text: string)
   # Drop the gdb prompt, we have our own.
   # Drop status and echo'd commands.
   if text == '(gdb) ' || text == '^done' ||
-        (text[0] == '&' && text !~ '^&"disassemble')
+      (text[0] == '&' && text !~ '^&"disassemble')
     return
   endif
 
@@ -890,18 +902,18 @@ def DecodeMessage(quotedText: string, literal: bool): string
     return ''
   endif
   var msg = quotedText
-        ->substitute('^"\|[^\\]\zs".*', '', 'g')
-        ->substitute('\\"', '"', 'g')
-        #\ multi-byte characters arrive in octal form
-        #\ NULL-values must be kept encoded as those break the string otherwise
-        ->substitute('\\000', NullRepl, 'g')
-        ->substitute('\\\(\o\o\o\)', (m) => nr2char(str2nr(m[1], 8)), 'g')
-        # You could also  use ->substitute('\\\\\(\o\o\o\)', '\=nr2char(str2nr(submatch(1), 8))', "g")
-        #\ Note: GDB docs also mention hex encodings - the translations below work
-        #\       but we keep them out for performance-reasons until we actually see
-        #\       those in mi-returns
-        ->substitute('\\\\', '\', 'g')
-        ->substitute(NullRepl, '\\000', 'g')
+    ->substitute('^"\|[^\\]\zs".*', '', 'g')
+    ->substitute('\\"', '"', 'g')
+    #\ multi-byte characters arrive in octal form
+    #\ NULL-values must be kept encoded as those break the string otherwise
+    ->substitute('\\000', NullRepl, 'g')
+    ->substitute('\\\(\o\o\o\)', (m) => nr2char(str2nr(m[1], 8)), 'g')
+    # You could also  use ->substitute('\\\\\(\o\o\o\)', '\=nr2char(str2nr(submatch(1), 8))', "g")
+    #\ Note: GDB docs also mention hex encodings - the translations below work
+    #\       but we keep them out for performance-reasons until we actually see
+    #\       those in mi-returns
+    ->substitute('\\\\', '\', 'g')
+    ->substitute(NullRepl, '\\000', 'g')
   if !literal
     return msg
       ->substitute('\\t', "\t", 'g')
@@ -1039,11 +1051,11 @@ def HandleDisasmMsg(msg: string)
     endif
   elseif msg !~ '^&"disassemble'
     var value = substitute(msg, '^\~\"[ ]*', '', '')
-     ->substitute('^=>[ ]*', '', '')
-     ->substitute('\\n\"\r$', '', '')
-     ->substitute('\\n\"$', '', '')
-     ->substitute('\r', '', '')
-     ->substitute('\\t', ' ', 'g')
+      ->substitute('^=>[ ]*', '', '')
+      ->substitute('\\n\"\r$', '', '')
+      ->substitute('\\n\"$', '', '')
+      ->substitute('\r', '', '')
+      ->substitute('\\t', ' ', 'g')
 
     if value != '' || !empty(asm_lines)
       add(asm_lines, value)
@@ -1119,9 +1131,9 @@ def CommOutput(chan: channel, message: string)
       if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
         HandleCursor(msg)
       elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,'
-        HandleNewBreakpoint(msg, 0)
+        HandleNewBreakpoint(msg, false)
       elseif msg =~ '^=breakpoint-modified,'
-        HandleNewBreakpoint(msg, 1)
+        HandleNewBreakpoint(msg, true)
       elseif msg =~ '^=breakpoint-deleted,'
         HandleBreakpointDelete(msg)
       elseif msg =~ '^=thread-group-started'
@@ -1225,10 +1237,10 @@ def InstallCommands()
     if pup
       &mousemodel = 'popup_setpos'
       an 1.200 PopUp.-SEP3-	<Nop>
-      an 1.210 PopUp.Set\ breakpoint	:Break<CR>
-      an 1.220 PopUp.Clear\ breakpoint	:Clear<CR>
-      an 1.230 PopUp.Run\ until		:Until<CR>
-      an 1.240 PopUp.Evaluate		:Evaluate<CR>
+      an 1.210 PopUp.Set\ breakpoint	<cmd>Break<CR>
+      an 1.220 PopUp.Clear\ breakpoint	<cmd>Clear<CR>
+      an 1.230 PopUp.Run\ until		<cmd>Until<CR>
+      an 1.240 PopUp.Evaluate		<cmd>Evaluate<CR>
     endif
   endif
 
@@ -1311,7 +1323,6 @@ def DeleteCommands()
       endif
     endfor
     win_gotoid(curwinid)
-    # winbar_winids = []
 
     &mousemodel = saved_mousemodel
     try
@@ -1526,18 +1537,18 @@ enddef
 
 def HandleEvaluate(msg: string)
   var value = msg
-        ->substitute('.*value="\(.*\)"', '\1', '')
-        ->substitute('\\"', '"', 'g')
-        ->substitute('\\\\', '\\', 'g')
-        #\ multi-byte characters arrive in octal form, replace everything but NULL values
-        ->substitute('\\000', NullRepl, 'g')
-        ->substitute('\\\(\o\o\o\)', (m) => nr2char(str2nr(m[1], 8)), 'g')
-        #\ Note: GDB docs also mention hex encodings - the translations below work
-        #\       but we keep them out for performance-reasons until we actually see
-        #\       those in mi-returns
-        #\ ->substitute('\\0x00', NullRep, 'g')
-        #\ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
-        ->substitute(NullRepl, '\\000', 'g')
+    ->substitute('.*value="\(.*\)"', '\1', '')
+    ->substitute('\\"', '"', 'g')
+    ->substitute('\\\\', '\\', 'g')
+    #\ multi-byte characters arrive in octal form, replace everything but NULL values
+    ->substitute('\\000', NullRepl, 'g')
+    ->substitute('\\\(\o\o\o\)', (m) => nr2char(str2nr(m[1], 8)), 'g')
+    #\ Note: GDB docs also mention hex encodings - the translations below work
+    #\       but we keep them out for performance-reasons until we actually see
+    #\       those in mi-returns
+    #\ ->substitute('\\0x00', NullRep, 'g')
+    #\ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
+    ->substitute(NullRepl, '\\000', 'g')
   if evalFromBalloonExpr
     if empty(evalFromBalloonExprResult)
       evalFromBalloonExprResult = $'{evalexpr}: {value}'
@@ -1599,14 +1610,17 @@ def GotoSourcewinOrCreateIt()
 enddef
 
 
-def GetDisasmWindow(): number
-  if exists('g:termdebug_config')
-    return get(g:termdebug_config, 'disasm_window', 0)
+def GetDisasmWindow(): bool
+  # TODO Remove the deprecated features after 1 Jan 2025.
+  var val: any
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'disasm_window')
+    val = g:termdebug_config['disasm_window']
+  elseif exists('g:termdebug_disasm_window')
+    val = g:termdebug_disasm_window
+  else
+    val = false
   endif
-  if exists('g:termdebug_disasm_window')
-    return g:termdebug_disasm_window
-  endif
-  return 0
+  return typename(val) == 'number' ? val != 0 : val
 enddef
 
 def GetDisasmWindowHeight(): number
@@ -1669,14 +1683,17 @@ def GotoAsmwinOrCreateIt()
   endif
 enddef
 
-def GetVariablesWindow(): number
-  if exists('g:termdebug_config')
-    return get(g:termdebug_config, 'variables_window', 0)
+def GetVariablesWindow(): bool
+  # TODO Remove the deprecated features after 1 Jan 2025.
+  var val: any
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'variables_window')
+    val = g:termdebug_config['variables_window']
+  elseif exists('g:termdebug_variables_window')
+    val = g:termdebug_variables_window
+  else
+    val = false
   endif
-  if exists('g:termdebug_disasm_window')
-    return g:termdebug_variables_window
-  endif
-  return 0
+  return typename(val) == 'number' ? val != 0 : val
 enddef
 
 def GetVariablesWindowHeight(): number
@@ -1810,7 +1827,7 @@ def HandleCursor(msg: string)
       normal! zv
       sign_unplace('TermDebug', {id: pc_id})
       sign_place(pc_id, 'TermDebug', 'debugPC', fname,
-            {lnum: str2nr(lnum), priority: 110})
+        {lnum: str2nr(lnum), priority: 110})
       if !exists('b:save_signcolumn')
         b:save_signcolumn = &signcolumn
         add(signcolumn_buflist, bufnr())
@@ -1857,7 +1874,7 @@ enddef
 
 # Handle setting a breakpoint
 # Will update the sign that shows the breakpoint
-def HandleNewBreakpoint(msg: string, modifiedFlag: any)
+def HandleNewBreakpoint(msg: string, modifiedFlag: bool)
   var nr = ''
 
   if msg !~ 'fullname='

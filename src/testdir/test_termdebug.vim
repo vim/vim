@@ -160,7 +160,7 @@ func Test_termdebug_basic()
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
   call assert_equal([], sign_getplaced('', #{group: 'TermDebug'})[0].signs)
 
-  for use_prompt in [0, 1]
+  for use_prompt in [v:true, v:false]
     let g:termdebug_config = {}
     let g:termdebug_config['use_prompt'] = use_prompt
     TermdebugCommand ./XTD_basic arg args
@@ -365,7 +365,7 @@ function Test_termdebug_save_restore_variables()
 
   " We want termdebug to overwrite 'K' map but not '+' map.
   let g:termdebug_config = {}
-  let g:termdebug_config['map_K'] = 1
+  let g:termdebug_config['map_K'] = v:true
 
   Termdebug
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
@@ -394,7 +394,7 @@ function Test_termdebug_sanity_check()
 
   for key in keys(s:dict)
     let s:filename = s:dict[key]
-    let g:termdebug_config[key] = 1
+    let g:termdebug_config[key] = v:true
     let s:error_message = "You have a file/folder named '" .. s:filename .. "'"
 
     " Write dummy file with bad name
@@ -420,6 +420,51 @@ function Test_termdebug_double_termdebug_instances()
   quit!
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
   :%bw!
+endfunction
+
+function Test_termdebug_config_types()
+  " TODO Remove the deprecated features after 1 Jan 2025.
+  let g:termdebug_config = {}
+  let s:error_message = 'Deprecation Warning:'
+  call assert_true(maparg('K', 'n', 0, 1)->empty())
+
+  for key in ['disasm_window', 'variables_window', 'map_K']
+    for val in [0, 1, v:true, v:false]
+      let g:termdebug_config[key] = val
+      Termdebug
+
+      " Type check: warning is displayed
+      if typename(val) == 'number'
+        call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
+      endif
+
+      " Test on g:termdebug_config keys
+      if val && key != 'map_K'
+        call WaitForAssert({-> assert_equal(4, winnr('$'))})
+        call remove(g:termdebug_config, key)
+      else
+        call WaitForAssert({-> assert_equal(3, winnr('$'))})
+      endif
+
+      " Test on mapping
+      if key == 'map_K'
+        if val
+          call assert_equal(':Evaluate<CR>', maparg('K', 'n', 0, 1).rhs)
+        else
+          call assert_true(maparg('K', 'n', 0, 1)->empty())
+        endif
+      endif
+
+      " Shutoff termdebug
+      wincmd t
+      quit!
+      call WaitForAssert({-> assert_equal(1, winnr('$'))})
+      :%bw!
+
+    endfor
+  endfor
+
+  unlet g:termdebug_config
 endfunction
 
 " vim: shiftwidth=2 sts=2 expandtab
