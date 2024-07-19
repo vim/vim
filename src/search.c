@@ -5222,15 +5222,16 @@ search_for_fuzzy_match(
     if (whole_line)
 	current_pos.lnum += dir;
 
+    if (buf == curbuf)
+        circly_end = *start_pos;
+    else
+    {
+        circly_end.lnum = buf->b_ml.ml_line_count;
+        circly_end.col = 0;
+        circly_end.coladd = 0;
+    }
+
     do {
-	if (buf == curbuf)
-	    circly_end = *start_pos;
-	else
-	{
-	    circly_end.lnum = buf->b_ml.ml_line_count;
-	    circly_end.col = 0;
-	    circly_end.coladd = 0;
-	}
 
 	// Check if looped around and back to start position
 	if (looped_around && EQUAL_POS(current_pos, circly_end))
@@ -5255,6 +5256,8 @@ search_for_fuzzy_match(
 			*pos = current_pos;
 			break;
 		    }
+		    else if (looped_around && current_pos.lnum == circly_end.lnum)
+			break;
 		}
 		else
 		{
