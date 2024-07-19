@@ -713,7 +713,7 @@ if has("fname_case")
 endif
 
 " Dracula
-au BufNewFile,BufRead *.drac,*.drc,*lvs,*lpe	setf dracula
+au BufNewFile,BufRead *.drac,*.drc,*.lvs,*.lpe	setf dracula
 
 " Datascript
 au BufNewFile,BufRead *.ds			setf datascript
