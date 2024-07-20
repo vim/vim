@@ -24,7 +24,7 @@ not a number: [.nan, .NaN, .NAN]
 
 plain strings:
   - a b c
-  - a * b & c @ d# e : f # comment
+  - a:b & c @ d# e * f # comment
   - {{ f(' ') }} #8234
 double quoted strings:
   - ""
@@ -91,9 +91,10 @@ flow collection:
   inside block mapping:
     foo: {bar: baz}
     bar: ["foo": {baz: qux}]
-  flow collection: [foo # comment
+  flow:collection: [foo # comment
     , {bar: [{ # comment
-      baz: '
+      baz:
+      '
         qux # not comment
       ' # comment
     }]}]
