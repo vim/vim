@@ -63,7 +63,7 @@ command -nargs=+ -complete=file -bang TermdebugCommand StartDebugCommand(<bang>0
 
 enum Way
   Prompt,
-    Terminal
+  Terminal
 endenum
 
 # Script variables declaration. These variables are re-initialized at every
@@ -676,7 +676,7 @@ def StartDebug_prompt(dict: dict<any>)
     return
   endif
   exe $'au BufUnload <buffer={promptbufnr}> ++once ' ..
-    'job_stop(gdbjob, ''kill'')'
+    'call job_stop(gdbjob, ''kill'')'
   # Mark the buffer modified so that it's not easy to close.
   set modified
   gdb_channel = job_getchannel(gdbjob)
