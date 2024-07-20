@@ -240,8 +240,8 @@ shift_line(
 
     if (round)			// round off indent
     {
-	i = count / sw_val;	// number of 'shiftwidth' rounded down
-	j = count % sw_val;	// extra spaces
+	i = trim_to_int(count) / sw_val;	// number of 'shiftwidth' rounded down
+	j = trim_to_int(count) % sw_val;	// extra spaces
 	if (j && left)		// first remove extra spaces
 	    --amount;
 	if (left)

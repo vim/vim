@@ -3351,8 +3351,8 @@ syn_list_header(
 
     if (msg_col >= endcol)	// output at least one space
 	endcol = msg_col + 1;
-    if (Columns <= endcol)	// avoid hang for tiny window
-	endcol = Columns - 1;
+    if (Columns <= (long)endcol)	// avoid hang for tiny window
+	endcol = (int)(Columns - 1);
 
     msg_advance(endcol);
 

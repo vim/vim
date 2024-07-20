@@ -6434,7 +6434,13 @@ init_spellfile(void)
 		l = (int)STRLEN(buf);
 		vim_snprintf((char *)buf + l, MAXPATHL - l, "/spell");
 		if (filewritable(buf) != 2)
-		    vim_mkdir(buf, 0755);
+		{
+		    if (vim_mkdir(buf, 0755) != 0)
+		    {
+			vim_free(buf);
+			return;
+		    }
+		}
 
 		l = (int)STRLEN(buf);
 		vim_snprintf((char *)buf + l, MAXPATHL - l,
