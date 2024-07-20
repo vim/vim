@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jul 14
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jul 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1530,9 +1530,9 @@ in a buffer with 'buftype' set to "prompt".  This works slightly differently:
 
 						*termdebug_use_prompt*
 Prompt mode can be used even when the |+terminal| feature is present with: >
-	let g:termdebug_config['use_prompt'] = 1
+	let g:termdebug_config['use_prompt'] = v:true
 If there is no g:termdebug_config you can use: >
-	let g:termdebug_use_prompt = 1
+	let g:termdebug_use_prompt = v:true
 
 <
 However, the latter form will be deprecated in future releases.
@@ -1544,26 +1544,26 @@ are reset to their original values once the termdebug session concludes.
 					*termdebug_map_K* *termdebug-mappings*
 The K key is normally mapped to |:Evaluate| unless a buffer local (|:map-local|)
 mapping to K already exists.  If you do not want this use: >
-	let g:termdebug_config['map_K'] = 0
+	let g:termdebug_config['map_K'] = v:false
 If there is no g:termdebug_config you can use: >
-	let g:termdebug_map_K = 0
+	let g:termdebug_map_K = v:false
 <
 However, the latter form will be deprecated in future releases.
 
 						*termdebug_map_minus*
 The - key is normally mapped to |:Down| unless a buffer local mapping to the -
 key already exists.  If you do not want this use: >
-	let g:termdebug_config['map_minus'] = 0
+	let g:termdebug_config['map_minus'] = v:false
 <
 						*termdebug_map_plus*
 The + key is normally mapped to |:Up| unless a buffer local mapping to the +
 key already exists.  If you do not want this use: >
-	let g:termdebug_config['map_plus'] = 0
+	let g:termdebug_config['map_plus'] = v:false
 <
 						*termdebug_disasm_window*
 If you want the Asm window shown by default, set the "disasm_window" flag to
 1.  The "disasm_window_height" entry can be used to set the window height: >
-	let g:termdebug_config['disasm_window'] = 1
+	let g:termdebug_config['disasm_window'] = v:true
 	let g:termdebug_config['disasm_window_height'] = 15
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_disasm_window = 15
@@ -1579,7 +1579,7 @@ the height option won't be used).
 If you want the Var window shown by default, set the "variables_window" flag
 to 1.  The "variables_window_height" entry can be used to set the window
 height: >
-	let g:termdebug_config['variables_window'] = 1
+	let g:termdebug_config['variables_window'] = v:true
 	let g:termdebug_config['variables_window_height'] = 15
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_variables_window = 15
