@@ -28,6 +28,13 @@ def Test_source_files()
     g:ignoreSwapExists = 'e'
     exe 'edit ' .. fname
 
+    # Some files are generated files and may contain space errors.
+    if fname =~ 'dlldata.c'
+        || fname =~ 'if_ole.h'
+        || fname =~ 'iid_ole.c'
+      continue
+    endif
+
     PerformCheck(fname, ' \t', 'space before Tab', '')
 
     PerformCheck(fname, '\s$', 'trailing white space', '')
