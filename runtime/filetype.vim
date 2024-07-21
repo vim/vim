@@ -915,7 +915,9 @@ au BufNewFile,BufRead gkrellmrc,gkrellmrc_?	setf gkrellmrc
 au BufNewFile,BufRead *.gleam			setf gleam
 
 " GLSL
-au BufNewFile,BufRead *.glsl			setf glsl
+" Extensions supported by Khronos reference compiler (with one exception, ".glsl")
+" https://github.com/KhronosGroup/glslang
+au BufNewFile,BufRead *.vert,*.tesc,*.tese,*.glsl,*.geom,*.frag,*.comp,*.rgen,*.rmiss,*.rchit,*.rahit,*.rint,*.rcall	setf glsl
 
 " GN (generate ninja) files
 au BufNewFile,BufRead *.gn,*.gni		setf gn
@@ -1415,7 +1417,7 @@ au BufNewFile,BufRead *.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md
 	\ endif
 
 " Mason
-au BufNewFile,BufRead *.mason,*.mhtml,*.comp	setf mason
+au BufNewFile,BufRead *.mason,*.mhtml	setf mason
 
 " Mathematica, Matlab, Murphi, Objective C or Octave
 au BufNewFile,BufRead *.m			call dist#ft#FTm()
