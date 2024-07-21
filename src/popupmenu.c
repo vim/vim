@@ -510,7 +510,8 @@ pum_screen_puts_with_attrs(
     int		cells UNUSED,
     char_u	*text,
     int		textlen,
-    int		*attrs)
+    int		*attrs,
+    int		extra_attr)
 {
     int		col_start = col;
     char_u	*ptr = text;
@@ -527,6 +528,8 @@ pum_screen_puts_with_attrs(
 	else
 #endif
 	    attr = attrs[col - col_start];
+	if (extra_attr > 0)
+	    attr = hl_combine_attr(extra_attr, attr);
 	screen_puts_len(ptr, char_len, row, col, attr);
 	col += mb_ptr2cells(ptr);
 	ptr += char_len;
@@ -628,6 +631,8 @@ pum_redraw(void)
 	{
 	    hlf = hlfs[round];
 	    attr = highlight_attr[hlf];
+	    if (pum_array[idx].pum_extrahlattr > 0)
+		attr = hl_combine_attr(attr, pum_array[idx].pum_extrahlattr);
 	    width = 0;
 	    s = NULL;
 	    switch (round)
@@ -698,7 +703,8 @@ pum_redraw(void)
 				    else
 					pum_screen_puts_with_attrs(row,
 						    col - cells + 1, cells, rt,
-						       (int)STRLEN(rt), attrs);
+						       (int)STRLEN(rt), attrs,
+						       pum_array[idx].pum_extrahlattr);
 
 				    vim_free(rt_start);
 				}
@@ -732,7 +738,8 @@ pum_redraw(void)
 				    screen_puts_len(st, size, row, col, attr);
 				else
 				    pum_screen_puts_with_attrs(row, col, cells,
-							      st, size, attrs);
+							      st, size, attrs,
+							      pum_array[idx].pum_extrahlattr);
 
 				vim_free(st);
 			    }
