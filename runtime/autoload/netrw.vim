@@ -694,10 +694,13 @@ fun! netrw#Explore(indx,dosplit,style,...)
      \ ((isdirectory(s:NetrwFile(a:1))))?  'is a directory'           : 'is not a directory',
      \ '~'.expand("<slnum>"))
    if a:1 =~ "\\\s" && !filereadable(s:NetrwFile(a:1)) && !isdirectory(s:NetrwFile(a:1))
-"    call Decho("re-trying Explore with <".substitute(a:1,'\\\(\s\)','\1','g').">",'~'.expand("<slnum>"))
-    call netrw#Explore(a:indx,a:dosplit,a:style,substitute(a:1,'\\\(\s\)','\1','g'))
-"    call Dret("netrw#Explore : returning from retry")
-    return
+    let a1 = substitute(a:1, '\\\(\s\)', '\1', 'g')
+    if a1 != a:1
+"      call Decho($"re-trying Explore with <{a1}>", $"~{expand("<slnum>")}")
+      call netrw#Explore(a:indx, a:dosplit, a:style, a1)
+"      call Dret("netrw#Explore : returning from retry")
+      return
+    endif
 "   else " Decho
 "    call Decho("retry not needed",'~'.expand("<slnum>"))
    endif
