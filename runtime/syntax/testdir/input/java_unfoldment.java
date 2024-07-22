@@ -39,7 +39,7 @@ class UnfoldingTests {
 				break;
 			}
 			default: ;
-		};
+		}
 	}
 
 	{ Object bb = ((Object) new byte[]{}); }
