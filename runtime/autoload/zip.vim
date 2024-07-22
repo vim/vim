@@ -395,8 +395,8 @@ fun! zip#Extract()
   endif
 
   " extract the file mentioned under the cursor
-"  call Decho("system(".g:zip_extractcmd." ".shellescape(b:zipfile)." ".shellescape(shell).")")
-  call system(g:zip_extractcmd." ".shellescape(b:zipfile)." ".shellescape(shell))
+"  call Decho("system(".g:zip_extractcmd." ".shellescape(b:zipfile)." ".shellescape(fname).")")
+  call system($"{g:zip_extractcmd} {shellescape(b:zipfile)} {shellescape(fname)}")
 "  call Decho("zipfile<".b:zipfile.">")
   if v:shell_error != 0
    echohl Error | echo "***error*** ".g:zip_extractcmd." ".b:zipfile." ".fname.": failed!" | echohl NONE
