@@ -306,6 +306,7 @@ runtime/indent/freebasic.vim		@dkearns
 runtime/indent/gdscript.vim		@habamax
 runtime/indent/gitconfig.vim		@tpope
 runtime/indent/gitolite.vim		@sitaramc
+runtime/indent/glsl.vim		@gpanders
 runtime/indent/go.vim			@dbarnett
 runtime/indent/gyp.vim			@ObserverOfTime
 runtime/indent/haml.vim			@tpope
@@ -439,6 +440,7 @@ runtime/syntax/gitconfig.vim		@tpope
 runtime/syntax/gitignore.vim		@ObserverOfTime
 runtime/syntax/gitolite.vim		@sitaramc
 runtime/syntax/gitrebase.vim		@tpope
+runtime/syntax/glsl.vim		@gpanders
 runtime/syntax/go.vim			@bhcleek
 runtime/syntax/godoc.vim		@dbarnett
 runtime/syntax/gp.vim			@KBelabas
