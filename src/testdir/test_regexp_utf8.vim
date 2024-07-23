@@ -606,11 +606,15 @@ func Test_search_multibyte_match_ascii()
     let noic_match = matchbufline('%', '\C\%u17f\%u17f', 1, '$')->mapnew({idx, val -> val.text})
     let ic_match2 = matchbufline('%', '\c\%u17f\+', 1, '$')->mapnew({idx, val -> val.text})
     let noic_match2 = matchbufline('%', '\C\%u17f\+', 1, '$')->mapnew({idx, val -> val.text})
+    let ic_match3 = matchbufline('%', '\c[\u17f]\+', 1, '$')->mapnew({idx, val -> val.text})
+    let noic_match3 = matchbufline('%', '\C[\u17f]\+', 1, '$')->mapnew({idx, val -> val.text})
 
     call assert_equal(['ss', 'ſſ'], ic_match, "Ignorecase Regex-engine: " .. &re)
     call assert_equal(['ſſ'], noic_match, "No-Ignorecase Regex-engine: " .. &re)
     call assert_equal(['s', 'ss', 'ſſ', 'ſ'], ic_match2, "Ignorecase Regex-engine: " .. &re)
     call assert_equal(['ſſ','ſ'], noic_match2, "No-Ignorecase Regex-engine: " .. &re)
+    call assert_equal(['s', 'ss', 'ſſ', 'ſ'], ic_match3, "Ignorecase Collection Regex-engine: " .. &re)
+    call assert_equal(['ſſ','ſ'], noic_match3, "No-Ignorecase Collection Regex-engine: " .. &re)
   endfor
   bw!
 endfunc

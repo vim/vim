@@ -1812,7 +1812,7 @@ cstrncmp(char_u *s1, char_u *s2, int *n)
 cstrchr(char_u *s, int c)
 {
     char_u	*p;
-    int		cc;
+    int		cc, lc;
 
     if (!rex.reg_ic || (!enc_utf8 && mb_char2len(c) > 1))
 	return vim_strchr(s, c);
@@ -1821,26 +1821,35 @@ cstrchr(char_u *s, int c)
     // faster (esp. when using MS Visual C++!).
     // For UTF-8 need to use folded case.
     if (enc_utf8 && c > 0x80)
+    {
 	cc = utf_fold(c);
+	lc = cc;
+    }
     else
-	 if (MB_ISUPPER(c))
-	cc = MB_TOLOWER(c);
-    else if (MB_ISLOWER(c))
-	cc = MB_TOUPPER(c);
-    else
-	return vim_strchr(s, c);
+	if (MB_ISUPPER(c))
+	{
+	    cc = MB_TOLOWER(c);
+	    lc = cc;
+	}
+	else if (MB_ISLOWER(c))
+	{
+	    cc = MB_TOUPPER(c);
+	    lc = c;
+	}
+	else
+	    return vim_strchr(s, c);
 
     if (has_mbyte)
     {
 	for (p = s; *p != NUL; p += (*mb_ptr2len)(p))
 	{
-	    if (enc_utf8 && c > 0x80)
+	    int uc = utf_ptr2char(p);
+	    if (enc_utf8 && (c > 0x80 || uc > 0x80))
 	    {
-		int uc = utf_ptr2char(p);
-
 		// Do not match an illegal byte.  E.g. 0xff matches 0xc3 0xbf,
 		// not 0xff.
-		if ((uc < 0x80 || uc != *p) && utf_fold(uc) == cc)
+		// compare with lower case of the character
+		if ((uc < 0x80 || uc != *p) && utf_fold(uc) == lc)
 		    return p;
 	    }
 	    else if (*p == c || *p == cc)
