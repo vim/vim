@@ -2935,8 +2935,11 @@ handle_mapping(
 		    }
 		}
 		else
+		{
 		    // No match; may have to check for termcode at next
-		    // character.  If the first character that didn't match is
+		    // character.
+
+		    // If the first character that didn't match is
 		    // K_SPECIAL then check for a termcode.  This isn't perfect
 		    // but should work in most cases.
 		    if (max_mlen < mlen)
@@ -2946,6 +2949,12 @@ handle_mapping(
 		    }
 		    else if (max_mlen == mlen && mp->m_keys[mlen] == K_SPECIAL)
 			want_termcode = 1;
+
+		    // Check termcode for uppercase character to properly
+		    // process "ESC[27;2;<ascii code>~" control sequences.
+		    if (ASCII_ISUPPER(mp->m_keys[mlen]))
+			want_termcode = 1;
+		}
 	    }
 	}
 

@@ -2256,6 +2256,17 @@ func Test_modifyOtherKeys_mapped()
 
   iunmap '
   iunmap <C-W><C-A>
+
+  " clean buffer
+  %d _
+  imap B b
+  imap BBB blimp
+  let input = repeat(GetEscCodeCSI27('B', 2), 3)
+  call feedkeys("a" .. input .. "\<Esc>", 'Lx!')
+  call assert_equal('blimp', getline(1))
+  " cleanup
+  iunmap BBB
+  iunmap B
   set timeoutlen&
 endfunc
 

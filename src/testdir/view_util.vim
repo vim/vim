@@ -71,7 +71,7 @@ endfunc
 " than the raw code.
 
 " Return the modifyOtherKeys level 2 encoding for "key" with "modifier"
-" (number value, e.g. CTRL is 5).
+" (number value, e.g. CTRL is 5, Shift is 2, Alt is 3).
 func GetEscCodeCSI27(key, modifier)
   let key = printf("%d", char2nr(a:key))
   let mod = printf("%d", a:modifier)
