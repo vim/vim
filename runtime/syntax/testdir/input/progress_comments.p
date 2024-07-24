@@ -29,3 +29,17 @@ markers to return to actual code. */ */
 
 display customer_name.
 
+// This is the single-line comment syntax.
+
+//No space is required after the slashes. Also, a /* here does not begin a
+//new block comment.
+
+for each supplier no-lock:
+    /* However, a block comment can end inside (what looks like) a
+       single-line comment, because the slashes are just text as far as the
+       // block comment is concerned. */
+    display supplier.
+
+    // TODO: Observe that todo highlighting works in line comments too.
+end.
+
