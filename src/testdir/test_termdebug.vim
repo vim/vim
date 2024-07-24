@@ -63,6 +63,7 @@ func Test_termdebug_basic()
 
   edit XTD_basic.c
   Termdebug ./XTD_basic
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   let gdb_buf = winbufnr(1)
   wincmd b
@@ -164,6 +165,7 @@ func Test_termdebug_basic()
     let g:termdebug_config = {}
     let g:termdebug_config['use_prompt'] = use_prompt
     TermdebugCommand ./XTD_basic arg args
+    call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
     call WaitForAssert({-> assert_equal(3, winnr('$'))})
     wincmd t
     quit!
@@ -186,6 +188,7 @@ func Test_termdebug_tbreak()
   execute 'edit ' .. src_name
   execute 'Termdebug ./' .. bin_name
 
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   let gdb_buf = winbufnr(1)
   wincmd b
@@ -246,6 +249,7 @@ func Test_termdebug_mapping()
   call assert_true(maparg('-', 'n', 0, 1)->empty())
   call assert_true(maparg('+', 'n', 0, 1)->empty())
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd b
   call assert_false(maparg('K', 'n', 0, 1)->empty())
@@ -268,6 +272,7 @@ func Test_termdebug_mapping()
   nnoremap - :echom "-"<cr>
   nnoremap + :echom "+"<cr>
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd b
   call assert_false(maparg('K', 'n', 0, 1)->empty())
@@ -305,6 +310,7 @@ func Test_termdebug_mapping()
   " Start termdebug from foo
   buffer foo
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd b
   call assert_true(maparg('K', 'n', 0, 1).buffer)
@@ -368,6 +374,7 @@ function Test_termdebug_save_restore_variables()
   let g:termdebug_config['map_K'] = v:true
 
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   call WaitForAssert({-> assert_match(&mousemodel, 'popup_setpos')})
   wincmd t
@@ -398,7 +405,7 @@ function Test_termdebug_sanity_check()
     let s:error_message = "You have a file/folder named '" .. s:filename .. "'"
 
     " Write dummy file with bad name
-    call writefile(['This', 'is', 'a', 'test'], s:filename)
+    call writefile(['This', 'is', 'a', 'test'], s:filename, 'D')
     Termdebug
     call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
     call WaitForAssert({-> assert_equal(1, winnr('$'))})
@@ -413,6 +420,7 @@ endfunction
 function Test_termdebug_double_termdebug_instances()
   let s:error_message = 'Terminal debugger already running, cannot run two'
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   Termdebug
   call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})

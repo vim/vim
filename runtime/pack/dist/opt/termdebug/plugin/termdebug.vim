@@ -1535,6 +1535,12 @@ def CleanupExpr(passed_expr: string): string
   return expr
 enddef
 
+def Balloon_show(expr: string)
+  if has("+balloon_eval") || has("+balloon_eval_term")
+    balloon_show(expr)
+  endif
+enddef
+
 def HandleEvaluate(msg: string)
   var value = msg
     ->substitute('.*value="\(.*\)"', '\1', '')
@@ -1555,7 +1561,7 @@ def HandleEvaluate(msg: string)
     else
       evalFromBalloonExprResult ..= $' = {value}'
     endif
-    balloon_show(evalFromBalloonExprResult)
+    Balloon_show(evalFromBalloonExprResult)
   else
     echomsg $'"{evalexpr}": {value}'
   endif
