@@ -299,7 +299,7 @@ fun! zip#Write(fname)
 
   " place temporary files under .../_ZIPVIM_/
   if isdirectory("_ZIPVIM_")
-   call s:Rmdir("_ZIPVIM_")
+   call delete("_ZIPVIM_", "rf")
   endif
   call mkdir("_ZIPVIM_")
   cd _ZIPVIM_
@@ -362,9 +362,9 @@ fun! zip#Write(fname)
   
   " cleanup and restore current directory
   cd ..
-  call s:Rmdir("_ZIPVIM_")
+  call delete("_ZIPVIM_", "rf")
   call s:ChgDir(curdir,s:WARNING,"(zip#Write) unable to return to ".curdir."!")
-  call s:Rmdir(tmpdir)
+  call delete(tmpdir, "rf")
   setlocal nomod
 
   let &report= repkeep
@@ -454,18 +454,6 @@ fun! s:ChgDir(newdir,errlvl,errmsg)
 
 "  call Dret("ChgDir 0")
   return 0
-endfun
-
-" ---------------------------------------------------------------------
-" s:Rmdir: {{{2
-fun! s:Rmdir(fname)
-"  call Dfunc("Rmdir(fname<".a:fname.">)")
-  if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
-   call system("rmdir /S/Q ".s:Escape(a:fname,0))
-  else
-   call system("/bin/rm -rf ".s:Escape(a:fname,0))
-  endif
-"  call Dret("Rmdir")
 endfun
 
 " ------------------------------------------------------------------------
