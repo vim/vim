@@ -1196,7 +1196,7 @@ au BufNewFile,BufRead *.ipynb,*.jupyterlab-settings	setf json
 au BufNewFile,BufRead *.sublime-project,*.sublime-settings,*.sublime-workspace	setf json
 
 " Other files that look like json
-au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc,.lintstagedrc,flake.lock	setf json
+au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc,.lintstagedrc,flake.lock,deno.lock	setf json
 
 " JSONC (JSON with comments)
 au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc	setf jsonc
