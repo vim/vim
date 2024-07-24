@@ -136,7 +136,7 @@ class LambdaExpressions$Tests	// JDK 21+.
 			case String str_		-> str_;
 			}):			{ echo(str); break; }
 		case null: default:		{ echo("Other"); }
-		};
+		}
 
 		echo(switch (null) {
 			case String str when !"<empty>".equals(

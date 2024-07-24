@@ -55,7 +55,7 @@ class SwitchTests	// JDK 21+.
 		case null:		{ echo("null"); break; }
 		case Letters[] ll:	{ echo("SwitchTests$1Letters[]"); break; }
 		default:		{ echo("java.lang.Object"); break; }
-		};
+		}
 
 		echo(switch (o) {
 			case null		-> "null";
@@ -69,7 +69,7 @@ class SwitchTests	// JDK 21+.
 		case 'a':		{ echo('a'); break; }
 		case 'b':		{ echo('b'); break; }
 		default:		{ echo('\u0000'); break; }
-		};
+		}
 
 		echo(switch (ch) {
 			case 'a'	-> 'a';
@@ -83,7 +83,7 @@ class SwitchTests	// JDK 21+.
 		case ((byte) 0):	{ echo((byte) 0); break; }
 		case ((byte) 1):	{ echo((byte) 1); break; }
 		default:		{ echo((byte) -1); break; }
-		};
+		}
 
 		echo(switch (b) {
 			case ((byte) 0)	-> (byte) 0;
@@ -97,7 +97,7 @@ class SwitchTests	// JDK 21+.
 		case ((short) 0):	{ echo((short) 0); break; }
 		case ((short) 1):	{ echo((short) 1); break; }
 		default:		{ echo((short) -1); break; }
-		};
+		}
 
 		echo(switch (sh) {
 			case ((short) 0)	-> (short) 0;
@@ -111,7 +111,7 @@ class SwitchTests	// JDK 21+.
 		case 0b0__00___000:	{ echo(0); break; }
 		case 0x000___00__1:	{ echo(1); break; }
 		default:		{ echo(-1); break; }
-		};
+		}
 
 		echo(switch (i) {
 			case 0_0_0_0_0	-> 0;
