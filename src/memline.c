@@ -1975,7 +1975,7 @@ recover_names(
 		if (after_pathsep(dir_name, p) && len > 1 && p[-1] == p[-2])
 		{
 		    // Ends with '//', Use Full path for swap name
-		    tail = make_percent_swname(dir_name, fname_res);
+		    tail = make_percent_swname(dir_name, p, fname_res);
 		}
 		else
 #endif
@@ -2143,7 +2143,7 @@ recover_names(
  * removed.
  */
     char_u *
-make_percent_swname(char_u *dir, char_u *name)
+make_percent_swname(char_u *dir, char_u *dir_end, char_u *name)
 {
     char_u *d = NULL, *s, *f;
 
@@ -2159,7 +2159,7 @@ make_percent_swname(char_u *dir, char_u *name)
 	    if (vim_ispathsep(*d))
 		*d = '%';
 
-	dir[STRLEN(dir) - 1] = NUL;  // remove one trailing slash
+	dir_end[-1] = NUL;  // remove one trailing slash
 	d = concat_fnames(dir, s, TRUE);
 	vim_free(s);
     }
@@ -4676,7 +4676,7 @@ makeswapname(
     if (after_pathsep(dir_name, s) && len > 1 && s[-1] == s[-2])
     {			       // Ends with '//', Use Full path
 	r = NULL;
-	if ((s = make_percent_swname(dir_name, fname_res)) != NULL)
+	if ((s = make_percent_swname(dir_name, s, fname_res)) != NULL)
 	{
 	    r = modname(s, (char_u *)".swp", FALSE);
 	    vim_free(s);

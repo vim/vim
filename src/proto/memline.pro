@@ -11,7 +11,7 @@ void ml_close_notmod(void);
 void ml_timestamp(buf_T *buf);
 void ml_recover(int checkext);
 int recover_names(char_u *fname, int do_list, list_T *ret_list, int nr, char_u **fname_out);
-char_u *make_percent_swname(char_u *dir, char_u *name);
+char_u *make_percent_swname(char_u *dir, char_u *dir_end, char_u *name);
 void get_b0_dict(char_u *fname, dict_T *d);
 void ml_sync_all(int check_file, int check_char);
 void ml_preserve(buf_T *buf, int message);
