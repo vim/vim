@@ -1387,7 +1387,7 @@ au BufNewFile,BufRead */etc/mail/aliases,*/etc/aliases	setf mailaliases
 au BufNewFile,BufRead .mailcap,mailcap		setf mailcap
 
 " Makefile
-au BufNewFile,BufRead *[mM]akefile,*.mk,*.mak	setf make
+au BufNewFile,BufRead *[mM]akefile,*.mk,*.mak	call dist#ft#FTmake()
 au BufNewFile,BufRead Kbuild			setf make
 
 " MakeIndex
