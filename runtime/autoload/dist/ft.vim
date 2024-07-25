@@ -532,6 +532,25 @@ export def FTm()
   endif
 enddef
 
+export def FTmake()
+  # Check if it is a Microsoft Makefile
+  unlet! b:make_microsoft
+  var n = 1
+  while n < 1000 && n <= line('$')
+    var line = getline(n)
+    if line =~? '^\s*!\s*\(ifn\=\(def\)\=\|include\|message\|error\)\>'
+      b:make_microsoft = 1
+      break
+    elseif line =~ '^ *ifn\=\(eq\|def\)\>' || line =~ '^ *[-s]\=include\s'
+      break
+    elseif line =~ '^ *\w\+\s*[!?:+]='
+      break
+    endif
+    n += 1
+  endwhile
+  setf make
+enddef
+
 export def FTmms()
   var n = 1
   while n < 20
