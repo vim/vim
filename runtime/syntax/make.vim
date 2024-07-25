@@ -28,7 +28,7 @@ syn match makePreCondit "^!\s*\(cmdswitches\|error\|message\|include\|if\|ifdef\
 syn case match
 
 " identifiers
-if exists("make_microsoft")
+if exists("b:make_microsoft") || exists("make_microsoft")
   syn region makeIdent	start="\$(" end=")" contains=makeStatement,makeIdent
   syn region makeIdent	start="\${" end="}" contains=makeStatement,makeIdent
 else
@@ -84,7 +84,7 @@ syn match makeStatement contained "(\(abspath\|addprefix\|addsuffix\|and\|basena
 
 " Comment
 if !exists("make_no_comments")
-  if exists("make_microsoft")
+  if exists("b:make_microsoft") || exists("make_microsoft")
     syn match   makeComment	"#.*" contains=@Spell,makeTodo
   else
     syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=@Spell,makeTodo
