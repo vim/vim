@@ -114,6 +114,7 @@ runtime/ftplugin/apache.vim		@dubgeiser
 runtime/ftplugin/arduino.vim		@k-takata
 runtime/ftplugin/astro.vim		@romainl
 runtime/ftplugin/asy.vim		@avidseeker
+runtime/ftplugin/autohotkey.vim		@telemachus
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
