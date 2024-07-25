@@ -2849,7 +2849,6 @@ cursor_down_inner(win_T *wp, long n)
 	// count each sequence of folded lines as one logical line
 	while (n--)
 	{
-	    // Move to last line of fold, will fail if it's the end-of-file.
 	    if (hasFoldingWin(wp, lnum, NULL, &last, TRUE, NULL))
 		lnum = last + 1;
 	    else
@@ -2877,8 +2876,11 @@ cursor_down(
 {
     linenr_T	lnum = curwin->w_cursor.lnum;
     linenr_T	line_count = curwin->w_buffer->b_ml.ml_line_count;
-    // This fails if the cursor is already in the last line or would move
-    // beyond the last line and '-' is in 'cpoptions'
+    // This fails if the cursor is already in the last (folded) line, or would
+    // move beyond the last line and '-' is in 'cpoptions'.
+#ifdef FEAT_FOLDING
+    hasFoldingWin(curwin, lnum, NULL, &lnum, TRUE, NULL);
+#endif
     if (n > 0
 	    && (lnum >= line_count
 		|| (lnum + n > line_count
