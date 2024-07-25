@@ -114,7 +114,7 @@ struct compl_S
     int		cp_flags;	// CP_ values
     int		cp_number;	// sequence number
     int		cp_score;	// fuzzy match score
-    int		cp_extrahlattr;	// extra highlight group attr
+    int		cp_user_hlattr;	// highlight attribute to combine with
 };
 
 // values for cp_flags
@@ -206,7 +206,7 @@ static int	  compl_selected_item = -1;
 
 static int	  *compl_fuzzy_scores;
 
-static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int extrahl);
+static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int user_hlattr);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
@@ -780,7 +780,7 @@ ins_compl_add(
     int		cdir,
     int		flags_arg,
     int		adup,		    // accept duplicate match
-    int		extra_hlattr)
+    int		user_hlattr)
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -844,7 +844,7 @@ ins_compl_add(
     else
 	match->cp_fname = NULL;
     match->cp_flags = flags;
-    match->cp_extrahlattr = extra_hlattr;
+    match->cp_user_hlattr = user_hlattr;
 
     if (cptext != NULL)
     {
@@ -1341,7 +1341,7 @@ ins_compl_build_pum(void)
 	    compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
 	    compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
 	    compl_match_array[i].pum_score = compl->cp_score;
-	    compl_match_array[i].pum_extrahlattr = compl->cp_extrahlattr;
+	    compl_match_array[i].pum_user_hlattr = compl->cp_user_hlattr;
 	    if (compl->cp_text[CPT_MENU] != NULL)
 		compl_match_array[i++].pum_extra =
 		    compl->cp_text[CPT_MENU];
@@ -2860,8 +2860,8 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     char_u	*(cptext[CPT_COUNT]);
     typval_T	user_data;
     int		status;
-    char_u	*extra_hlname;
-    int		extra_hlattr = -1;
+    char_u	*user_hlname;
+    int		user_hlattr = -1;
 
     user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -2871,9 +2871,9 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict, "menu", FALSE);
 	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict, "kind", FALSE);
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
-	extra_hlname = dict_get_string(tv->vval.v_dict, "hl_group", FALSE);
-	if (extra_hlname != NULL && *extra_hlname != NUL)
-	    extra_hlattr = syn_name2attr(extra_hlname);
+	user_hlname = dict_get_string(tv->vval.v_dict, "hl_group", FALSE);
+	if (user_hlname != NULL && *user_hlname != NUL)
+	    user_hlattr = syn_name2attr(user_hlname);
 
 	dict_get_tv(tv->vval.v_dict, "user_data", &user_data);
 	if (dict_get_string(tv->vval.v_dict, "icase", FALSE) != NULL
@@ -2898,7 +2898,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	return FAIL;
     }
     status = ins_compl_add(word, -1, NULL, cptext,
-				    &user_data, dir, flags, dup, extra_hlattr);
+				     &user_data, dir, flags, dup, user_hlattr);
     if (status != OK)
 	clear_tv(&user_data);
     return status;
