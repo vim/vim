@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 15
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41588,6 +41588,8 @@ Changed~
   |getcompletion()|
 - add 'cpoptions' flag "z" |cpo-z|, to disable some (traditional) vi
   behaviour/inconsistency (see |d-special| and |cw|).
+- allow to specify additional attributes in the completion menu (allows to
+  mark deprecated attributes from LSP server) |complete-items|
 
 							*added-9.2*
 Added ~
