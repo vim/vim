@@ -41,7 +41,7 @@ converted: $(MOCONVERTED)
 
 .po.ck:
 	$(VIMPROG) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" \
-		-S check.vim -c "if error == 0 | q | else | num 2 | cq | endif" $<
+		-S check.vim -c "if error == 0 | q | else | num 2 | cq | endif" $< >/dev/null
 	touch $@
 
 check: $(CHECKFILES)
