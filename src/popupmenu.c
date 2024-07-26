@@ -425,7 +425,7 @@ pum_under_menu(int row, int col, int only_redrawing)
  * Returns attributes for every cell, or NULL if all attributes are the same.
  */
     static int *
-pum_compute_text_attrs(char_u *text, hlf_T hlf)
+pum_compute_text_attrs(char_u *text, hlf_T hlf, int extra_hlattr)
 {
     int		i;
     size_t	leader_len;
@@ -483,6 +483,9 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf)
 	else if (matched_start && ptr < text + leader_len)
 	    new_attr = highlight_attr[hlf == HLF_PSI ? HLF_PMSI : HLF_PMNI];
 
+	if (extra_hlattr > 0)
+	    new_attr = hl_combine_attr(new_attr, extra_hlattr);
+
 	char_cells = mb_ptr2cells(ptr);
 	for (i = 0; i < char_cells; i++)
 	    attrs[cell_idx + i] = new_attr;
@@ -510,8 +513,7 @@ pum_screen_puts_with_attrs(
     int		cells UNUSED,
     char_u	*text,
     int		textlen,
-    int		*attrs,
-    int		extra_attr)
+    int		*attrs)
 {
     int		col_start = col;
     char_u	*ptr = text;
@@ -528,8 +530,6 @@ pum_screen_puts_with_attrs(
 	else
 #endif
 	    attr = attrs[col - col_start];
-	if (extra_attr > 0)
-	    attr = hl_combine_attr(extra_attr, attr);
 	screen_puts_len(ptr, char_len, row, col, attr);
 	col += mb_ptr2cells(ptr);
 	ptr += char_len;
@@ -661,7 +661,8 @@ pum_redraw(void)
 			if (saved != NUL)
 			    *p = saved;
 
-			attrs = pum_compute_text_attrs(st, hlf);
+			int extra_hlattr = pum_array[idx].pum_extrahlattr;
+			attrs = pum_compute_text_attrs(st, hlf, extra_hlattr);
 
 #ifdef FEAT_RIGHTLEFT
 			if (pum_rl)
@@ -703,8 +704,7 @@ pum_redraw(void)
 				    else
 					pum_screen_puts_with_attrs(row,
 						    col - cells + 1, cells, rt,
-						       (int)STRLEN(rt), attrs,
-						       pum_array[idx].pum_extrahlattr);
+						       (int)STRLEN(rt), attrs);
 
 				    vim_free(rt_start);
 				}
@@ -738,8 +738,7 @@ pum_redraw(void)
 				    screen_puts_len(st, size, row, col, attr);
 				else
 				    pum_screen_puts_with_attrs(row, col, cells,
-							      st, size, attrs,
-							      pum_array[idx].pum_extrahlattr);
+							      st, size, attrs);
 
 				vim_free(st);
 			    }
