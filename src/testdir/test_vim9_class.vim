@@ -686,6 +686,19 @@ def Test_object_not_set()
     X()
   END
   v9.CheckSourceFailure(lines, 'E1324: Using an Object as a String', 2)
+
+  # Use a null object variable that vim wants to force to number.
+  lines =<< trim END
+    vim9script
+
+    def X()
+      var o = null_object
+      var l = [ 1, o]
+      sort(l, 'N')
+    enddef
+    X()
+  END
+  v9.CheckSourceFailure(lines, 'E1324: Using an Object as a String', 3)
 enddef
 
 " Null object assignment and comparison
