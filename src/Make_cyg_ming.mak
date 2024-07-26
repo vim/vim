@@ -184,7 +184,7 @@ ifeq ($(CROSS),yes)
  ifndef CROSS_COMPILE
 CROSS_COMPILE = i586-pc-mingw32msvc-
  endif
-DEL = rm
+DEL = rm -f
 MKDIR = mkdir -p
 DIRSLASH = /
 else
@@ -212,7 +212,7 @@ CROSS_COMPILE =
 # In this case, unix-like commands can be used.
 #
  ifneq (sh.exe, $(SHELL))
-DEL = rm
+DEL = rm -f
 MKDIR = mkdir -p
 DIRSLASH = /
  else

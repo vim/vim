@@ -29,7 +29,7 @@ LDFLAGS += -static-libgcc -static-libstdc++
 endif
 
 ifeq ($(CROSS),yes)
-DEL = rm
+DEL = rm -f
 ifeq ($(MINGWOLD),yes)
 CXXFLAGS := -O2 -fvtable-thunks
 else
@@ -38,7 +38,7 @@ endif
 else
 CXXFLAGS := -O2
 ifneq (sh.exe, $(SHELL))
-DEL = rm
+DEL = rm -f
 else
 DEL = del
 endif
