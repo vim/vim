@@ -130,7 +130,6 @@ ifndef STATIC_STDCPLUS
 STATIC_STDCPLUS=no
 endif
 
-
 # Link against the shared version of libwinpthread by default.  Set
 # STATIC_WINPTHREAD to "yes" to link against static version instead.
 ifndef STATIC_WINPTHREAD
@@ -139,6 +138,12 @@ endif
 # If you use TDM-GCC(-64), change HAS_GCC_EH to "no".
 # This is used when STATIC_STDCPLUS=yes.
 HAS_GCC_EH=yes
+
+# Reduce the size of the executables by using the --gc-sections linker
+# option.  Set USE_GC_SECTIONS to "no" if you see any issues with this.
+ifndef USE_GC_SECTIONS
+USE_GC_SECTIONS=yes
+endif
 
 # If the user doesn't want gettext, undefine it.
 ifeq (no, $(GETTEXT))
@@ -1091,6 +1096,16 @@ ifeq (yes, $(STATIC_WINPTHREAD))
 LIB += -lgcc_eh
  endif
 LIB += -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic
+endif
+
+# To reduce the file size
+ifeq (yes, $(USE_GC_SECTIONS))
+CFLAGS += -ffunction-sections -fno-asynchronous-unwind-tables
+CXXFLAGS += -fasynchronous-unwind-tables
+LFLAGS += -Wl,--gc-sections
+ ifeq (yes, $(VIMDLL))
+EXELFLAGS += -Wl,--gc-sections
+ endif
 endif
 
 ifeq (yes, $(MAP))
