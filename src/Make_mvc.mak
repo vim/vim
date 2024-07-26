@@ -1302,11 +1302,11 @@ $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 
 $(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
 	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe \
-		$(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
+		$(EXEOBJG) $(VIMDLLBASE).lib
 
 $(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
 	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe \
-		$(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
+		$(EXEOBJC) $(VIMDLLBASE).lib
 
 !else
 
@@ -1715,10 +1715,10 @@ $(OUTDIR)/os_w32dll.obj:	$(OUTDIR) os_w32dll.c
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 
 $(OUTDIR)/os_w32exec.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
-	$(CC) $(CFLAGS:-DFEAT_GUI_MSWIN=) /Fo$@ os_w32exe.c
+	$(CC) $(CFLAGS:-DFEAT_GUI_MSWIN=) /DUSE_OWNSTARTUP /GS- /Fo$@ os_w32exe.c
 
 $(OUTDIR)/os_w32exeg.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
-	$(CC) $(CFLAGS) /Fo$@ os_w32exe.c
+	$(CC) $(CFLAGS) /DUSE_OWNSTARTUP /GS- /Fo$@ os_w32exe.c
 
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PATHDEF_SRC)
