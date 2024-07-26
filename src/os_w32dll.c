@@ -7,7 +7,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 /*
- * Windows GUI: main program (DLL) entry point:
+ * Windows GUI/Console: main program (DLL) entry point:
  *
  * Ron Aaron <ronaharon@yahoo.com> wrote this and the DLL support code.
  * Adapted by Ken Takata.
