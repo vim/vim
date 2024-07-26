@@ -267,11 +267,16 @@ tv_get_bool_or_number_chk(
 	    break;
 	case VAR_OBJECT:
 	    {
-		class_T *cl = varp->vval.v_object->obj_class;
-		if (cl != NULL && IS_ENUM(cl))
-		    semsg(_(e_using_enum_str_as_number), cl->class_name);
+		if (varp->vval.v_object == NULL)
+		    emsg(_(e_using_object_as_string));
 		else
-		    emsg(_(e_using_object_as_number));
+		{
+		    class_T *cl = varp->vval.v_object->obj_class;
+		    if (cl != NULL && IS_ENUM(cl))
+			semsg(_(e_using_enum_str_as_number), cl->class_name);
+		    else
+			emsg(_(e_using_object_as_number));
+		}
 	    }
 	    break;
 	case VAR_VOID:
@@ -1146,11 +1151,16 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_OBJECT:
 	    {
-		class_T *cl = varp->vval.v_object->obj_class;
-		if (cl != NULL && IS_ENUM(cl))
-		    semsg(_(e_using_enum_str_as_string), cl->class_name);
-		else
+		if (varp->vval.v_object == NULL)
 		    emsg(_(e_using_object_as_string));
+		else
+		{
+		    class_T *cl = varp->vval.v_object->obj_class;
+		    if (cl != NULL && IS_ENUM(cl))
+			semsg(_(e_using_enum_str_as_string), cl->class_name);
+		    else
+			emsg(_(e_using_object_as_string));
+		}
 	    }
 	    break;
 	case VAR_JOB:

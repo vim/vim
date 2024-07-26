@@ -661,6 +661,44 @@ def Test_object_not_set()
     Func()
   END
   v9.CheckSourceFailure(lines, 'E1363: Incomplete type', 1)
+
+  # Reference a object variable through a null class object which is stored in a
+  # variable of type "any".
+  lines =<< trim END
+    vim9script
+
+    def Z()
+      var o: any = null_object
+      o.v = 4
+    enddef
+    Z()
+  END
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 2)
+
+  # Do "echom" of a null object variable.
+  lines =<< trim END
+    vim9script
+
+    def X()
+      var x = null_object
+      echom x
+    enddef
+    X()
+  END
+  v9.CheckSourceFailure(lines, 'E1324: Using an Object as a String', 2)
+
+  # Use a null object variable that vim wants to force to number.
+  lines =<< trim END
+    vim9script
+
+    def X()
+      var o = null_object
+      var l = [ 1, o]
+      sort(l, 'N')
+    enddef
+    X()
+  END
+  v9.CheckSourceFailure(lines, 'E1324: Using an Object as a String', 3)
 enddef
 
 " Null object assignment and comparison
@@ -7201,6 +7239,47 @@ def Test_null_object_method_call()
       C.Bar(o)
     enddef
     T()
+  END
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 2)
+
+  # Calling an object method defined in a class that is extended. This differs
+  # from the previous by invoking ISN_METHODCALL instead of ISN_DCALL.
+  lines =<< trim END
+    vim9script
+
+    class C0
+      def F()
+      enddef
+    endclass
+
+    class C extends C0
+    endclass
+
+    def X()
+      var o: C0 = null_object
+      o.F()
+    enddef
+    X()
+  END
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 2)
+
+  # Getting a function ref an object method.
+  lines =<< trim END
+    vim9script
+
+    class C0
+      def F()
+      enddef
+    endclass
+
+    class C extends C0
+    endclass
+
+    def X()
+      var o: C0 = null_object
+      var XXX = o.F
+    enddef
+    X()
   END
   v9.CheckSourceFailure(lines, 'E1360: Using a null object', 2)
 enddef
