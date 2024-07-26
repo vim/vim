@@ -1000,12 +1000,15 @@ VIMDLLBASE := vim32$(DEBUG_SUFFIX)
  endif
 TARGET = $(VIMDLLBASE).dll
 LFLAGS += -shared
-EXELFLAGS += -municode -nostdlib
+EXELFLAGS += -municode
  ifneq ($(DEBUG),yes)
 EXELFLAGS += -s
  endif
  ifeq ($(COVERAGE),yes)
 EXELFLAGS += --coverage
+ else
+EXELFLAGS += -nostdlib
+EXECFLAGS = -DUSE_OWNSTARTUP
  endif
 DEFINES += $(DEF_GUI) -DVIMDLL
 OBJ += $(GUIOBJ) $(CUIOBJ)
@@ -1137,12 +1140,14 @@ $(EXEOBJG): | $(OUTDIR)
 $(EXEOBJC): | $(OUTDIR)
 
 ifeq ($(VIMDLL),yes)
- ifeq ($(ARCH),x86-64)
+ ifneq ($(COVERAGE),yes)
+  ifeq ($(ARCH),x86-64)
 EXEENTRYC = -Wl,--entry=wmainCRTStartup
 EXEENTRYG = -Wl,--entry=wWinMainCRTStartup
- else ifeq ($(ARCH),i686)
+  else ifeq ($(ARCH),i686)
 EXEENTRYC = -Wl,--entry=_wmainCRTStartup
 EXEENTRYG = -Wl,--entry=_wWinMainCRTStartup@0
+  endif
  endif
 
 $(TARGET): $(OBJ)
@@ -1320,6 +1325,9 @@ $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL) version.h
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL)
 	$(CC) -c $(CFLAGS) if_cscope.c -o $@
 
+$(OUTDIR)/if_lua.o:	if_lua.c $(INCL)
+	$(CC) -c $(CFLAGS:-fno-asynchronous-unwind-tables=) if_lua.c -o $@
+
 $(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) $(MZSCHEME_INCL) $(MZ_EXTRA_DEP)
 	$(CC) -c $(CFLAGS) if_mzsch.c -o $@
 
@@ -1353,10 +1361,10 @@ $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $@
 
 $(OUTDIR)/os_w32exec.o:	os_w32exe.c $(INCL)
-	$(CC) -c $(CFLAGS) -UFEAT_GUI_MSWIN -DUSE_OWNSTARTUP os_w32exe.c -o $@
+	$(CC) -c $(CFLAGS) -UFEAT_GUI_MSWIN $(EXECFLAGS) os_w32exe.c -o $@
 
 $(OUTDIR)/os_w32exeg.o:	os_w32exe.c $(INCL)
-	$(CC) -c $(CFLAGS) -DUSE_OWNSTARTUP os_w32exe.c -o $@
+	$(CC) -c $(CFLAGS) $(EXECFLAGS) os_w32exe.c -o $@
 
 $(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
 	$(CC) -c $(CFLAGS) os_win32.c -o $@
