@@ -1606,11 +1606,11 @@ func Test_html_file()
   bwipe!
 
   " Super html layout
-  let content = ['<extend template="base.shtml>',
-        \ '   <title id="title" var="$page.title"></title>',
-        \ '   <head id="head"></head>',
-        \ '   <div id="content">',
-        \ '   </div>']
+  let content = ['<extend template="base.shtml">',
+        \ '<title id="title" var="$page.title"></title>',
+        \ '<head id="head"></head>',
+        \ '<div id="content">',
+        \ '</div>']
   call writefile(content, 'Xfile.shtml', 'D')
   split Xfile.shtml
   call assert_equal('superhtml', &filetype)
@@ -1630,7 +1630,8 @@ func Test_html_file()
         \ '    <div id="content">',
         \ '      <super>',
         \ '    </div>',
-        \ '  </body>']
+        \ '  </body>',
+        \ '</html>']
   call writefile(content, 'Xfile.shtml', 'D')
   split Xfile.shtml
   call assert_equal('superhtml', &filetype)
