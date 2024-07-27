@@ -1006,7 +1006,7 @@ EXELFLAGS += -s
  endif
  ifeq ($(COVERAGE),yes)
 EXELFLAGS += --coverage
- else
+ else ifndef MZSCHEME
 EXELFLAGS += -nostdlib
 EXECFLAGS = -DUSE_OWNSTARTUP
  endif
@@ -1141,12 +1141,14 @@ $(EXEOBJC): | $(OUTDIR)
 
 ifeq ($(VIMDLL),yes)
  ifneq ($(COVERAGE),yes)
-  ifeq ($(ARCH),x86-64)
+  ifndef MZSCHEME
+   ifeq ($(ARCH),x86-64)
 EXEENTRYC = -Wl,--entry=wmainCRTStartup
 EXEENTRYG = -Wl,--entry=wWinMainCRTStartup
-  else ifeq ($(ARCH),i686)
+   else ifeq ($(ARCH),i686)
 EXEENTRYC = -Wl,--entry=_wmainCRTStartup
 EXEENTRYG = -Wl,--entry=_wWinMainCRTStartup@0
+   endif
   endif
  endif
 

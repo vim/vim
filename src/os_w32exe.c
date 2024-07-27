@@ -70,3 +70,24 @@ wmainCRTStartup(void)
 }
 # endif
 #endif	// USE_OWNSTARTUP
+
+
+#if defined(VIMDLL) && defined(FEAT_MZSCHEME)
+
+# if defined(_MSC_VER)
+static __declspec(thread) void *tls_space;
+extern intptr_t _tls_index;
+# elif defined(__MINGW32__)
+static __thread void *tls_space;
+extern intptr_t _tls_index;
+# endif
+
+// Get TLS information that is needed for if_mzsch.
+    __declspec(dllexport) void
+get_tls_info(void ***ptls_space, intptr_t *ptls_index)
+{
+    *ptls_space = &tls_space;
+    *ptls_index = _tls_index;
+    return;
+}
+#endif
