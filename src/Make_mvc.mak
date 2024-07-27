@@ -801,6 +801,13 @@ OBJ = $(OBJ) $(OUTDIR)\os_w32dll.obj $(OUTDIR)\vimd.res
 EXEOBJC = $(OUTDIR)\os_w32exec.obj $(OUTDIR)\vimc.res
 EXEOBJG = $(OUTDIR)\os_w32exeg.obj $(OUTDIR)\vimg.res
 CFLAGS = $(CFLAGS) -DVIMDLL
+! ifdef MZSCHEME
+EXECFLAGS =
+EXELIBC = $(LIBC)
+! else
+EXECFLAGS = -DUSE_OWNSTARTUP /GS-
+EXELIBC =
+! endif
 !else
 OBJ = $(OBJ) $(OUTDIR)\os_w32exe.obj $(OUTDIR)\vim.res
 !endif
@@ -1302,11 +1309,11 @@ $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 
 $(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
 	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe \
-		$(EXEOBJG) $(VIMDLLBASE).lib
+		$(EXEOBJG) $(VIMDLLBASE).lib $(EXELIBC)
 
 $(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
 	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe \
-		$(EXEOBJC) $(VIMDLLBASE).lib
+		$(EXEOBJC) $(VIMDLLBASE).lib $(EXELIBC)
 
 !else
 
@@ -1380,12 +1387,16 @@ clean: testclean
 	- if exist $(OUTDIR)/nul $(DEL_TREE) $(OUTDIR)
 	- if exist *.obj del *.obj
 	- if exist $(VIM).exe del $(VIM).exe
+	- if exist $(VIM).exp del $(VIM).exp
+	- if exist $(VIM).lib del $(VIM).lib
 	- if exist $(VIM).ilk del $(VIM).ilk
 	- if exist $(VIM).pdb del $(VIM).pdb
 	- if exist $(VIM).map del $(VIM).map
 	- if exist $(VIM).ncb del $(VIM).ncb
 !if "$(VIMDLL)" == "yes"
 	- if exist $(GVIM).exe del $(GVIM).exe
+	- if exist $(GVIM).exp del $(GVIM).exp
+	- if exist $(GVIM).lib del $(GVIM).lib
 	- if exist $(GVIM).map del $(GVIM).map
 	- if exist $(VIMDLLBASE).dll del $(VIMDLLBASE).dll
 	- if exist $(VIMDLLBASE).ilk del $(VIMDLLBASE).ilk
@@ -1715,10 +1726,10 @@ $(OUTDIR)/os_w32dll.obj:	$(OUTDIR) os_w32dll.c
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 
 $(OUTDIR)/os_w32exec.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
-	$(CC) $(CFLAGS:-DFEAT_GUI_MSWIN=) /DUSE_OWNSTARTUP /GS- /Fo$@ os_w32exe.c
+	$(CC) $(CFLAGS:-DFEAT_GUI_MSWIN=) $(EXECFLAGS) /Fo$@ os_w32exe.c
 
 $(OUTDIR)/os_w32exeg.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
-	$(CC) $(CFLAGS) /DUSE_OWNSTARTUP /GS- /Fo$@ os_w32exe.c
+	$(CC) $(CFLAGS) $(EXECFLAGS) /Fo$@ os_w32exe.c
 
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PATHDEF_SRC)
