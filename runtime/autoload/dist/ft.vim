@@ -432,7 +432,7 @@ export def FThtml()
       return
     endif
     # Check for SuperHTML
-    if getline(n) =~ '\<extend\|\<super\>'
+    if getline(n) =~ '<extend\|<super>'
         setf superhtml
         return
     endif
