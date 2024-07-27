@@ -425,7 +425,7 @@ pum_under_menu(int row, int col, int only_redrawing)
  * Returns attributes for every cell, or NULL if all attributes are the same.
  */
     static int *
-pum_compute_text_attrs(char_u *text, hlf_T hlf, int extra_hlattr)
+pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
 {
     int		i;
     size_t	leader_len;
@@ -483,8 +483,8 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int extra_hlattr)
 	else if (matched_start && ptr < text + leader_len)
 	    new_attr = highlight_attr[hlf == HLF_PSI ? HLF_PMSI : HLF_PMNI];
 
-	if (extra_hlattr > 0)
-	    new_attr = hl_combine_attr(new_attr, extra_hlattr);
+	if (user_hlattr > 0)
+	    new_attr = hl_combine_attr(new_attr, user_hlattr);
 
 	char_cells = mb_ptr2cells(ptr);
 	for (i = 0; i < char_cells; i++)
@@ -631,8 +631,8 @@ pum_redraw(void)
 	{
 	    hlf = hlfs[round];
 	    attr = highlight_attr[hlf];
-	    if (pum_array[idx].pum_extrahlattr > 0)
-		attr = hl_combine_attr(attr, pum_array[idx].pum_extrahlattr);
+	    if (pum_array[idx].pum_user_hlattr > 0)
+		attr = hl_combine_attr(attr, pum_array[idx].pum_user_hlattr);
 	    width = 0;
 	    s = NULL;
 	    switch (round)
@@ -661,8 +661,8 @@ pum_redraw(void)
 			if (saved != NUL)
 			    *p = saved;
 
-			int extra_hlattr = pum_array[idx].pum_extrahlattr;
-			attrs = pum_compute_text_attrs(st, hlf, extra_hlattr);
+			int user_hlattr = pum_array[idx].pum_user_hlattr;
+			attrs = pum_compute_text_attrs(st, hlf, user_hlattr);
 
 #ifdef FEAT_RIGHTLEFT
 			if (pum_rl)

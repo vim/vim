@@ -4472,7 +4472,7 @@ typedef struct
     char_u	*pum_info;	  // extra info
     int		pum_score;	  // fuzzy match score
     int		pum_idx;	  // index of item before sorting by score
-    int		pum_extrahlattr;  // extra highlight group attr for combine
+    int		pum_user_hlattr;  // highlight attribute to combine with
 } pumitem_T;
 
 /*
