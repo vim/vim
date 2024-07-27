@@ -1,12 +1,5 @@
-<<<<<<< HEAD
-|a+0&#ffffff0|w|o|r|d|1> @68
-|a+8#ff404010#e0e0e08|w|o+0&&|r|d|1| |W| |e|x|t|r|a| |t|e|x|t| |1| | +0#4040ff13#ffffff0@52
-|a+8#0000e05#ffd7ff255|w|o+0#0000001&|r|d|2| |W| |e|x|t|r|a| |t|e|x|t| |2| | +0#4040ff13#ffffff0@52
-|你*0#ff404010#ffd7ff255|好| +&@2|W| |e|x|t|r|a| |t|e|x|t| |3| | +0#4040ff13#ffffff0@52
-=======
 |/+0&#ffffff0|n|o|n|_|e|x|i|t|_|f|o|l|d|e|r> @58
 |~+0#4040ff13&| @73
->>>>>>> 9d9e65916 (fix(completion): clear matches when have a folder leader but no fuzzy match)
 |~| @73
 |~| @73
 |~| @73
@@ -22,10 +15,6 @@
 |~| @73
 |~| @73
 |~| @73
-<<<<<<< HEAD
-|-+2#0000000&@1| |U|s|e|r| |d|e|f|i|n|e|d| |c|o|m|p|l|e|t|i|o|n| |(|^|U|^|N|^|P|)| |m+0#00e0003&|a|t|c|h| |1| |o|f| |3| +0#0000000&@26
-=======
 |~| @73
 |~| @73
 |-+2#0000000&@1| |F|i|l|e| |n|a|m|e| |c|o|m|p|l|e|t|i|o|n| |(|^|F|^|N|^|P|)| |P+0#ffffff16#e000002|a|t@1|e|r|n| |n|o|t| |f|o|u|n|d| +0#0000000#ffffff0@24
->>>>>>> 9d9e65916 (fix(completion): clear matches when have a folder leader but no fuzzy match)
