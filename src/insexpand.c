@@ -3581,6 +3581,7 @@ get_next_filename_completion(void)
 
 		// Move leader to the file part
 		leader = last_sep + 1;
+		leader_len = STRLEN(leader);
 	    }
 	}
     }
@@ -3643,12 +3644,18 @@ get_next_filename_completion(void)
 	    matches = sorted_matches;
 	    num_matches = fuzzy_indices.ga_len;
 	}
+	else if (leader_len > 0)
+	{
+	    FreeWild(num_matches, matches);
+	    num_matches = 0;
+	}
 
 	vim_free(compl_fuzzy_scores);
 	ga_clear(&fuzzy_indices);
     }
 
-    ins_compl_add_matches(num_matches, matches, p_fic || p_wic);
+    if (num_matches > 0)
+	ins_compl_add_matches(num_matches, matches, p_fic || p_wic);
 }
 
 /*
