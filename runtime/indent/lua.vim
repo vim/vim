@@ -2,7 +2,7 @@
 " Language:	Lua script
 " Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol.com.br>
 " First Author:	Max Ischenko <mfi 'at' ukr.net>
-" Last Change:	2017 Jun 13
+" Last Change:	2024 July 27
 "		2022 Sep 07: b:undo_indent added by Doug Kearns
 
 " Only load this indent file when no other was loaded.
@@ -46,12 +46,12 @@ function! GetLuaIndentIntern()
   endif
 
   " Add a 'shiftwidth' after lines that start a block:
-  " 'function', 'if', 'for', 'while', 'repeat', 'else', 'elseif', '{'
+  " 'function', 'if', 'for', 'while', 'repeat', 'else', 'elseif', '{', '('
   let ind = indent(prevlnum)
   let prevline = getline(prevlnum)
   let midx = match(prevline, '^\s*\%(if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\|then\>\)')
   if midx == -1
-    let midx = match(prevline, '{\s*\%(--\%([^[].*\)\?\)\?$')
+    let midx = match(prevline, '\%({\|(\)\s*\%(--\%([^[].*\)\?\)\?$')
     if midx == -1
       let midx = match(prevline, '\<function\>\s*\%(\k\|[.:]\)\{-}\s*(')
     endif
@@ -65,9 +65,9 @@ function! GetLuaIndentIntern()
     endif
   endif
 
-  " Subtract a 'shiftwidth' on end, else, elseif, until and '}'
+  " Subtract a 'shiftwidth' on end, else, elseif, until, '}' and ')'
   " This is the part that requires 'indentkeys'.
-  let midx = match(getline(v:lnum), '^\s*\%(end\>\|else\>\|elseif\>\|until\>\|}\)')
+  let midx = match(getline(v:lnum), '^\s*\%(end\>\|else\>\|elseif\>\|until\>\|}\|)\)')
   if midx != -1 && synIDattr(synID(v:lnum, midx + 1, 1), "name") != "luaComment"
     let ind = ind - shiftwidth()
   endif
