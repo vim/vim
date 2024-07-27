@@ -1612,7 +1612,7 @@ func Test_html_file()
         \ '   <div id="content">',
         \ '   </div>']
   call writefile(content, 'Xfile.shtml', 'D')
-  split Xfile.html
+  split Xfile.shtml
   call assert_equal('superhtml', &filetype)
   bwipe!
 
@@ -1632,7 +1632,7 @@ func Test_html_file()
         \ '    </div>',
         \ '  </body>']
   call writefile(content, 'Xfile.shtml', 'D')
-  split Xfile.html
+  split Xfile.shtml
   call assert_equal('superhtml', &filetype)
   bwipe!
 
