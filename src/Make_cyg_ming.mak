@@ -1188,10 +1188,13 @@ notags:
 
 clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
+	-$(DEL) $(OUTDIR)$(DIRSLASH)*.gcno
+	-$(DEL) $(OUTDIR)$(DIRSLASH)*.gcda
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.res
 	-$(DEL) $(OUTDIR)$(DIRSLASH)pathdef.c
 	-rmdir $(OUTDIR)
 	-$(DEL) $(MAIN_TARGET) vimrun.exe install.exe uninstall.exe
+	-$(DEL) *.gcno *.gcda
 	-$(DEL) *.map
 ifdef PERL
 	-$(DEL) if_perl.c
