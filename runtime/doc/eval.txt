@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 Jul 17
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3125,7 +3125,7 @@ text...
 				let lconst[1][0] = 'b'  " OK
 <							*E995*
 			It is an error to specify an existing variable with
-			:const. >
+			|:const|. >
 				:let x = 1
 				:const x = 1  " Error!
 <							*E996*

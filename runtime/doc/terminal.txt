@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jul 20
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1253,7 +1253,7 @@ Starting ~
 							*termdebug-starting*
 Load the plugin with this command: >
 	packadd termdebug
-<When loading the plugin from the |.vimrc| file, add the "!" attribute: >
+When loading the plugin from the |.vimrc| file, add the "!" attribute: >
 	packadd! termdebug
 <							*:Termdebug*
 To start debugging use `:Termdebug` or `:TermdebugCommand` followed by the

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2024 Jul 27
+*insert.txt*    For Vim version 9.1.  Last change: 2024 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2007,7 +2007,7 @@ command in ex mode: >
 	two
 	.
 	:visual
-<appends the following text, after the cursor line: >
+appends the following text, after the cursor line: >
 	one
 	two
 <

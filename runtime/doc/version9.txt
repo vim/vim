@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 25
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41581,7 +41581,7 @@ Changed~
   function |get()-func|
 - |:bwipe| also wipes jumplist and tagstack data
 - moving in the buffer list using |:bnext| and similar commands, behaves as
-  documented and skips help buffers (if not run from a help buffer, else 
+  documented and skips help buffers (if not run from a help buffer, else
   moves to the next/previous help buffer).
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
   add the "cd_in_path" completion type for e.g. |:command-complete| and
@@ -41614,7 +41614,7 @@ Functions: ~
 Autocommands: ~
 
 |CursorMovedC|		after the cursor was moved in the comamnd-line
-|KeyInputPre|		process any Key event in any mode
+|KeyInputPre|		before processing any key event in any mode
 |SessionWritePost|	after writing the session file |:mksession|
 |TermResponseAll|	after the terminal response to |t_RV| and others is
 			received

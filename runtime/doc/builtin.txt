@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jul 17
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -279,8 +279,7 @@ gettabvar({nr}, {varname} [, {def}])
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
 gettagstack([{nr}])		Dict	get the tag stack of window {nr}
-gettext({text} [, {package}])
-				String	lookup translation of {text}
+gettext({text} [, {package}])	String	lookup translation of {text}
 getwininfo([{winid}])		List	list of info about each window
 getwinpos([{timeout}])		List	X and Y coord in pixels of Vim window
 getwinposx()			Number	X coord in pixels of the Vim window
@@ -1226,7 +1225,7 @@ bindtextdomain({package}, {path})			*bindtextdomain()*
 		Bind a specific {package} to a {path} so that the
 		|gettext()| function can be used to get language-specific
 		translations for a package.  {path} is the directory name
-		for the translations. See |package-translation|.
+		for the translations.  See |package-translation|.
 
 		Returns v:true on success and v:false on failure (out of
 		memory).
@@ -8142,7 +8141,7 @@ pyxeval({expr})						*pyxeval()*
 		See also: |pyeval()|, |py3eval()|
 
 		Can also be used as a |method|: >
-	<		GetExpr()->pyxeval()
+			GetExpr()->pyxeval()
 <
 		Return type: any, depending on {expr}
 
@@ -9550,7 +9549,8 @@ setline({lnum}, {text})					*setline()*
 		Set line {lnum} of the current buffer to {text}.  To insert
 		lines use |append()|. To set lines in another buffer use
 		|setbufline()|.
-		Any text properties in {lnum} are cleared |text-prop-cleared|.
+		Any text properties in {lnum} are cleared.  See
+		|text-prop-cleared|
 
 		{lnum} is used like with |getline()|.
 		When {lnum} is just below the last line the {text} will be
@@ -11103,7 +11103,7 @@ synconcealed({lnum}, {col})				*synconcealed()*
 		Note: Doesn't consider |matchadd()| highlighting items,
 		since syntax and matching highlighting are two different
 		mechanisms |syntax-vs-match|.
-<
+
 		Return type: list<any>
 
 

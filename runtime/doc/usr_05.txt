@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 9.1.  Last change: 2024 Jun 19
+*usr_05.txt*	For Vim version 9.1.  Last change: 2024 Jun 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -455,7 +455,8 @@ Adding nohlsearch package				*nohlsearch-install*
 Load the plugin with this command: >
 	packadd nohlsearch
 <
-Automatically execute |:nohlsearch| after 'updatetime' or getting into |Insert| mode.
+Automatically execute |:nohlsearch| after 'updatetime' or getting into
+|Insert| mode.
 Thus assuming default updatetime, hlsearch would be suspended/turned off after
 4 seconds of idle time.
 

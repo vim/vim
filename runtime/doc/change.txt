@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2024 Jul 14
+*change.txt*    For Vim version 9.1.  Last change: 2024 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1414,7 +1414,7 @@ The next three commands always work on whole lines.
 :[range]m[ove] {address}			*:m* *:mo* *:move* *E134*
 			Move the lines given by [range] to below the line
 			given by {address}.
-			Any text properties in [range] are cleared
+			Any text properties in [range] are cleared.  See
 			|text-prop-cleared|.
 
 ==============================================================================
