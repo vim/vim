@@ -172,6 +172,7 @@ static pos_T	  compl_startpos;
 // Length in bytes of the text being completed (this is deleted to be replaced
 // by the match.)
 static int	  compl_length = 0;
+static linenr_T	  compl_lnum = 0;           // lnum where the completion start
 static colnr_T	  compl_col = 0;	    // column where the text starts
 					    // that is being completed
 static colnr_T	  compl_ins_end_col = 0;
@@ -226,6 +227,8 @@ static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
 static void show_pum(int prev_w_wrow, int prev_w_leftcol);
 static unsigned  quote_meta(char_u *dest, char_u *str, int len);
+static int ins_compl_has_multiple(void);
+static void ins_compl_expand_multiple(char_u *str);
 
 #ifdef FEAT_SPELL
 static void spell_back_to_badword(void);
@@ -919,18 +922,52 @@ ins_compl_insert_bytes(char_u *p, int len)
 /*
  * Checks if the column is within the currently inserted completion text
  * column range. If it is, it returns a special highlight attribute.
- * -1 mean normal item.
+ * -1 means normal item.
  */
     int
-ins_compl_col_range_attr(int col)
+ins_compl_col_range_attr(linenr_T lnum, int col)
 {
-    if ((get_cot_flags() & COT_FUZZY))
+    int	    start_col;
+    int	    attr;
+
+    if ((get_cot_flags() & COT_FUZZY)
+	    || (attr = syn_name2attr((char_u *)"ComplMatchIns")) == 0)
 	return -1;
 
-    if (col >= (compl_col + (int)ins_compl_leader_len()) && col < compl_ins_end_col)
-	return syn_name2attr((char_u *)"ComplMatchIns");
+    start_col = compl_col + (int)ins_compl_leader_len();
+    if (!ins_compl_has_multiple())
+	return (col >= start_col && col < compl_ins_end_col) ? attr : -1;
+
+    // Multiple lines
+    if ((lnum == compl_lnum && col >= start_col && col < MAXCOL) ||
+	(lnum > compl_lnum && lnum < curwin->w_cursor.lnum) ||
+	(lnum == curwin->w_cursor.lnum && col <= compl_ins_end_col))
+	return attr;
 
     return -1;
+}
+
+/*
+ * Returns TRUE if the current completion string contains newline characters,
+ * indicating it's a multi-line completion.
+ */
+    static int
+ins_compl_has_multiple(void)
+{
+    return vim_strchr(compl_shown_match->cp_str.string, '\n') != NULL;
+}
+
+/*
+ * Returns TRUE if the given line number falls within the range of a multi-line
+ * completion, i.e. between the starting line (compl_lnum) and current cursor
+ * line. Always returns FALSE for single-line completions.
+ */
+    int
+ins_compl_lnum_in_range(linenr_T lnum)
+{
+    if (!ins_compl_has_multiple())
+	return FALSE;
+    return lnum >= compl_lnum && lnum <= curwin->w_cursor.lnum;
 }
 
 /*
@@ -3120,6 +3157,7 @@ set_completion(colnr_T startcol, list_T *list)
     if (startcol > curwin->w_cursor.col)
 	startcol = curwin->w_cursor.col;
     compl_col = startcol;
+    compl_lnum = curwin->w_cursor.lnum;
     compl_length = (int)curwin->w_cursor.col - (int)startcol;
     // compl_pattern doesn't need to be set
     compl_orig_text.string = vim_strnsave(ml_get_curline() + compl_col,
@@ -4339,11 +4377,37 @@ ins_compl_delete(void)
     // In insert mode: Delete the typed part.
     // In replace mode: Put the old characters back, if any.
     int col = compl_col + (compl_status_adding() ? compl_length : 0);
+    char_u  *remaining = NULL;
+    int	    orig_col;
     int	has_preinsert = ins_compl_preinsert_effect();
     if (has_preinsert)
     {
 	col += ins_compl_leader_len();
 	curwin->w_cursor.col = compl_ins_end_col;
+    }
+
+    if (curwin->w_cursor.lnum > compl_lnum)
+    {
+	if (curwin->w_cursor.col < ml_get_curline_len())
+	{
+	    char_u *line = ml_get_curline();
+	    remaining = vim_strnsave(line + curwin->w_cursor.col,
+				(size_t)STRLEN(line + curwin->w_cursor.col));
+	    if (remaining == NULL)
+		return;
+	}
+	while (curwin->w_cursor.lnum > compl_lnum)
+	{
+	    if (ml_delete(curwin->w_cursor.lnum) == FAIL)
+	    {
+		if (remaining)
+		    VIM_CLEAR(remaining);
+		return;
+	    }
+	    curwin->w_cursor.lnum--;
+	}
+	// move cursor to end of line
+	curwin->w_cursor.col = ml_get_curline_len();
     }
 
     if ((int)curwin->w_cursor.col > col)
@@ -4354,6 +4418,13 @@ ins_compl_delete(void)
 	compl_ins_end_col = curwin->w_cursor.col;
     }
 
+    if (remaining != NULL)
+    {
+	orig_col = curwin->w_cursor.col;
+	ins_str(remaining);
+	curwin->w_cursor.col = orig_col;
+	vim_free(remaining);
+    }
     // TODO: is this sufficient for redrawing?  Redrawing everything causes
     // flicker, thus we can't do that.
     changed_cline_bef_curs();
@@ -4361,6 +4432,38 @@ ins_compl_delete(void)
     // clear v:completed_item
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
 #endif
+}
+
+/*
+ * Insert a completion string that contains newlines.
+ * The string is split and inserted line by line.
+ */
+    static void
+ins_compl_expand_multiple(char_u *str)
+{
+    char_u	*start = str;
+    char_u	*curr = str;
+
+    while (*curr != NUL)
+    {
+	if (*curr == '\n')
+	{
+	    // Insert the text chunk before newline
+	    if (curr > start)
+		ins_char_bytes(start, (int)(curr - start));
+
+	    // Handle newline
+	    open_line(FORWARD, OPENLINE_KEEPTRAIL, FALSE, NULL);
+	    start = curr + 1;
+	}
+	curr++;
+    }
+
+    // Handle remaining text after last newline (if any)
+    if (curr > start)
+	ins_char_bytes(start, (int)(curr - start));
+
+    compl_ins_end_col = curwin->w_cursor.col;
 }
 
 /*
@@ -4372,19 +4475,25 @@ ins_compl_delete(void)
     void
 ins_compl_insert(int in_compl_func, int move_cursor)
 {
-    int	    compl_len = get_compl_len();
-    int	    preinsert = ins_compl_has_preinsert();
-    char_u  *cp_str = compl_shown_match->cp_str.string;
-    size_t  cp_str_len = compl_shown_match->cp_str.length;
-    size_t  leader_len = ins_compl_leader_len();
+    int		compl_len = get_compl_len();
+    int		preinsert = ins_compl_has_preinsert();
+    char_u	*cp_str = compl_shown_match->cp_str.string;
+    size_t	cp_str_len = compl_shown_match->cp_str.length;
+    size_t	leader_len = ins_compl_leader_len();
+    char_u	*has_multiple = vim_strchr(cp_str, '\n');
 
     // Make sure we don't go over the end of the string, this can happen with
     // illegal bytes.
     if (compl_len < (int)cp_str_len)
     {
-	ins_compl_insert_bytes(cp_str + compl_len, -1);
-	if (preinsert && move_cursor)
-	    curwin->w_cursor.col -= (colnr_T)(cp_str_len - leader_len);
+	if (has_multiple)
+	    ins_compl_expand_multiple(cp_str + compl_len);
+	else
+	{
+	    ins_compl_insert_bytes(cp_str + compl_len, -1);
+	    if (preinsert && move_cursor)
+		curwin->w_cursor.col -= (colnr_T)(cp_str_len - leader_len);
+	}
     }
     if (match_at_original_text(compl_shown_match) || preinsert)
 	compl_used_match = FALSE;
@@ -5370,6 +5479,7 @@ ins_compl_start(void)
     line = ml_get(curwin->w_cursor.lnum);
     curs_col = curwin->w_cursor.col;
     compl_pending = 0;
+    compl_lnum = curwin->w_cursor.lnum;
 
     if ((compl_cont_status & CONT_INTRPT) == CONT_INTRPT
 	    && compl_cont_mode == ctrl_x_mode)
@@ -5420,6 +5530,7 @@ ins_compl_start(void)
 	    curbuf->b_p_com = old;
 	    compl_length = 0;
 	    compl_col = curwin->w_cursor.col;
+	    compl_lnum = curwin->w_cursor.lnum;
 	}
 	else if (ctrl_x_mode_normal() && in_fuzzy)
 	{
