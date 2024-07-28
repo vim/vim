@@ -1639,7 +1639,7 @@ compile_try(char_u *arg, cctx_T *cctx)
  * Compile "catch {expr}".
  */
     char_u *
-compile_catch(char_u *arg, cctx_T *cctx UNUSED)
+compile_catch(char_u *arg, cctx_T *cctx)
 {
     scope_T	*scope = cctx->ctx_scope;
     garray_T	*instr = &cctx->ctx_instr;
@@ -1923,7 +1923,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
  * compile "throw {expr}"
  */
     char_u *
-compile_throw(char_u *arg, cctx_T *cctx UNUSED)
+compile_throw(char_u *arg, cctx_T *cctx)
 {
     char_u *p = skipwhite(arg);
 

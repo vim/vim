@@ -6299,7 +6299,7 @@ f_term_getsize(typval_T *argvars, typval_T *rettv)
  * "term_setsize(buf, rows, cols)" function
  */
     void
-f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_term_setsize(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf;
     term_T	*term;

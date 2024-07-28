@@ -1037,7 +1037,7 @@ string_reduce(
  * Implementation of "byteidx()" and "byteidxcomp()" functions
  */
     static void
-byteidx_common(typval_T *argvars, typval_T *rettv, int comp UNUSED)
+byteidx_common(typval_T *argvars, typval_T *rettv, int comp)
 {
     rettv->vval.v_number = -1;
 

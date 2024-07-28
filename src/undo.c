@@ -3683,7 +3683,7 @@ u_eval_tree(buf_T *buf, u_header_T *first_uhp, list_T *list)
  * "undofile(name)" function
  */
     void
-f_undofile(typval_T *argvars UNUSED, typval_T *rettv)
+f_undofile(typval_T *argvars, typval_T *rettv)
 {
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
@@ -3738,7 +3738,7 @@ u_undofile_reset_and_delete(buf_T *buf)
  * "undotree(expr)" function
  */
     void
-f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
+f_undotree(typval_T *argvars, typval_T *rettv)
 {
     if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
 	return;
