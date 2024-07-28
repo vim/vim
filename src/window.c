@@ -1708,7 +1708,7 @@ win_count(void)
     int
 make_windows(
     int		count,
-    int		vertical UNUSED)  // split windows vertically if TRUE
+    int		vertical)  // split windows vertically if TRUE
 {
     int		maxcount;
     int		todo;
@@ -3486,7 +3486,7 @@ win_free_all(void)
     win_T *
 winframe_remove(
     win_T	*win,
-    int		*dirp UNUSED,	// set to 'v' or 'h' for direction if 'ea'
+    int		*dirp,		// set to 'v' or 'h' for direction if 'ea'
     tabpage_T	*tp,		// tab page "win" is in, NULL for current
     frame_T	**unflat_altfr)	// if not NULL, set to pointer of frame that got
 				// the space, and it is not flattened
@@ -4855,8 +4855,8 @@ tabpage_index(tabpage_T *ftp)
  */
     static int
 leave_tabpage(
-    buf_T	*new_curbuf UNUSED,    // what is going to be the new curbuf,
-				       // NULL if unknown
+    buf_T	*new_curbuf,		// what is going to be the new curbuf,
+					// NULL if unknown
     int		trigger_leave_autocmds)
 {
     tabpage_T	*tp = curtab;
@@ -4908,7 +4908,7 @@ leave_tabpage(
     static void
 enter_tabpage(
     tabpage_T	*tp,
-    buf_T	*old_curbuf UNUSED,
+    buf_T	*old_curbuf,
     int		trigger_enter_autocmds,
     int		trigger_leave_autocmds)
 {
@@ -7855,7 +7855,7 @@ get_win_number(win_T *wp, win_T *first_win)
 }
 
     int
-get_tab_number(tabpage_T *tp UNUSED)
+get_tab_number(tabpage_T *tp)
 {
     int		i = 1;
     tabpage_T	*t;

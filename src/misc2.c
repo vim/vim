@@ -72,7 +72,7 @@ coladvance_force(colnr_T wcol)
  * Get the screen position of character col with a coladd in the cursor line.
  */
     int
-getviscol2(colnr_T col, colnr_T coladd UNUSED)
+getviscol2(colnr_T col, colnr_T coladd)
 {
     colnr_T	x;
     pos_T	pos;

@@ -2665,7 +2665,7 @@ typealias_unref(typealias_T *ta)
  * Handle ":type".  Create an alias for a type specification.
  */
     void
-ex_type(exarg_T *eap UNUSED)
+ex_type(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
 

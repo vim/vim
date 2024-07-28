@@ -2214,7 +2214,7 @@ eval_number(
 	char_u	    **arg,
 	typval_T    *rettv,
 	int	    evaluate,
-	int	    want_string UNUSED)
+	int	    want_string)
 {
     int		len;
     int		skip_quotes = !in_old_script(4);

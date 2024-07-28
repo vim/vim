@@ -6119,10 +6119,10 @@ dict_tv2string(
  */
     static char_u *
 jobchan_tv2string(
-    typval_T	*tv,
-    char_u	**tofree,
-    char_u	*numbuf,
-    int		composite_val)
+    typval_T	*tv UNUSED,
+    char_u	**tofree UNUSED,
+    char_u	*numbuf UNUSED,
+    int		composite_val UNUSED)
 {
     char_u	*r = NULL;
 
