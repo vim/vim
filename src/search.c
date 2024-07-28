@@ -5265,7 +5265,7 @@ search_for_fuzzy_match(
 		    {
 			found_new_match = TRUE;
 			*pos = current_pos;
-			*len = STRLEN(*ptr);
+			*len = (int)STRLEN(*ptr);
 			break;
 		    }
 		}
