@@ -864,6 +864,8 @@ def s:GetFilenameChecks(): dict<list<string>>
     z8a: ['file.z8a'],
     zathurarc: ['zathurarc'],
     zig: ['file.zig', 'build.zig.zon'],
+    ziggy: ['file.ziggy'],
+    ziggy_schema: ['file.ziggy-schema'],
     zimbu: ['file.zu'],
     zimbutempl: ['file.zut'],
     zserio: ['file.zs'],

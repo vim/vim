@@ -2196,6 +2196,10 @@ au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias 
 " Zig and Zig Object Notation (ZON)
 au BufNewFile,BufRead *.zig,*.zon		setf zig
 
+" Ziggy and Ziggy Schema
+au BufNewFile,BufRead *.ziggy                   setf ziggy
+au BufNewFile,BufRead *.ziggy-schema            setf ziggy_schema
+
 " Zserio
 au BufNewFile,BufRead *.zs			setf zserio
 
