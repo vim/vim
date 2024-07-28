@@ -358,7 +358,9 @@ static PyObject *py_find_spec;
 #else
 static PyObject *py_load_module;
 #endif
+#if PY_VERSION_HEX < 0x30c00a7
 static PyObject *py_find_module;
+#endif
 
 static PyObject *VimError;
 

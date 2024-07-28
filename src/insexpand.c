@@ -3544,7 +3544,7 @@ get_next_filename_completion(void)
     int		i;
     int		score;
     char_u	*leader = ins_compl_leader();
-    int		leader_len = STRLEN(leader);
+    size_t	leader_len = STRLEN(leader);
     int		in_fuzzy = ((get_cot_flags() & COT_FUZZY) != 0 && leader_len > 0);
     char_u	**sorted_matches;
     int		*fuzzy_indices_data;
