@@ -1039,7 +1039,7 @@ au BufNewFile,BufRead *.t.html			setf tilde
 " Translate shell
 au BufNewFile,BufRead init.trans,*/etc/translate-shell,.trans	setf clojure
 
-" HTML (.shtml and .stm for server side)
+" HTML (.stm for server side, .shtml is server-side or superhtml)
 au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call dist#ft#FThtml()
 au BufNewFile,BufRead *.cshtml			setf html
 

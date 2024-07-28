@@ -421,7 +421,6 @@ export def FThtml()
       setf htmlangular
       return
     endif
-
     # Check for XHTML
     if getline(n) =~ '\<DTD\s\+XHTML\s'
       setf xhtml
@@ -431,6 +430,11 @@ export def FThtml()
     if getline(n) =~ '{%\s*\(autoescape\|block\|comment\|csrf_token\|cycle\|debug\|extends\|filter\|firstof\|for\|if\|ifchanged\|include\|load\|lorem\|now\|query_string\|regroup\|resetcycle\|spaceless\|templatetag\|url\|verbatim\|widthratio\|with\)\>\|{#\s\+'
       setf htmldjango
       return
+    endif
+    # Check for SuperHTML
+    if getline(n) =~ '<extend\|<super>'
+        setf superhtml
+        return
     endif
     n += 1
   endwhile
