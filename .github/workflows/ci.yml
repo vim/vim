@@ -330,15 +330,12 @@ jobs:
       - name: Install packages
         if: matrix.features == 'huge'
         run: |
-          brew install lua libtool
-          echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
-
-      - name: Install blackhole-2ch for macos-12
-        if: matrix.features == 'huge' && matrix.runner == 'macos-12'
-        run: |
-          # Install audio device for playing sound since some of macos-12 machines have no audio device installed.
-          if system_profiler -json SPAudioDataType | jq -er '.SPAudioDataType[]._items == []'; then
-            brew install blackhole-2ch
+          if [ $(uname -r | grep ^21 | cut -c1-2) ]; then
+            brew install lua blackhole-2ch
+            echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+          else
+            brew install lua libtool diffutils
+            echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
           fi
 
       - name: Grant microphone access for macos-14
@@ -388,11 +385,6 @@ jobs:
           "${SRCDIR}"/vim --version
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
-
-      - name: Install packages for testing
-        run: |
-          # Apple diff is broken. Use GNU diff instead. See #14032.
-          brew install diffutils
 
       - name: Test
         timeout-minutes: 20
