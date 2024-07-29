@@ -157,10 +157,10 @@
 # you can set DEFINES on the command line, e.g.,
 #	nmake -f Make_mvc.mvc "DEFINES=-DEMACS_TAGS"
 
-RM=		del /f /q
-PS=		powershell.exe
+RM =		del /f /q
+PS =		powershell.exe
 
-PSFLAGS=	-NoLogo -NoProfile -Command
+PSFLAGS =	-NoLogo -NoProfile -Command
 
 !IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\major.tmp' -InputObject \
 	\"MAJOR=$$(((Select-String -Pattern 'VIM_VERSION_MAJOR\s+\d{1,2}' \
@@ -171,7 +171,7 @@ PSFLAGS=	-NoLogo -NoProfile -Command
 ! ENDIF
 !ELSE
 # Change this value for the new version
-MAJOR=		9
+MAJOR =		9
 !ENDIF
 
 !IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\minor.tmp' -InputObject \
@@ -183,7 +183,7 @@ MAJOR=		9
 ! ENDIF
 !ELSE
 # Change this value for the new version
-MINOR=		1
+MINOR =		1
 !ENDIF
 
 !IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\patchlvl.tmp' -InputObject \
@@ -202,7 +202,7 @@ MINOR=		1
 TARGETOS = WINNT
 
 !IFDEF PATCHLEVEL
-RCFLAGS=	-DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
+RCFLAGS =	-DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
 !ENDIF
 
 
@@ -260,7 +260,7 @@ OBJDIR = $(OBJDIR)d
 !ifdef PROCESSOR_ARCHITECTURE
 # We're on Windows NT or using VC 6+
 ! ifdef CPU
-ASSEMBLY_ARCHITECTURE=$(CPU)
+ASSEMBLY_ARCHITECTURE = $(CPU)
 # Using I386 for $ASSEMBLY_ARCHITECTURE doesn't work for VC7.
 !  if "$(CPU)" == "I386"
 CPU = i386
@@ -288,7 +288,7 @@ CPU = ARM64
 # We're on Windows 95
 CPU = i386
 !endif # !PROCESSOR_ARCHITECTURE
-ASSEMBLY_ARCHITECTURE=$(CPU)
+ASSEMBLY_ARCHITECTURE = $(CPU)
 OBJDIR = $(OBJDIR)$(CPU)
 
 # Build a retail version by default
@@ -355,7 +355,7 @@ WINVER = 0x0601
 # Use multiprocess build
 USE_MP = yes
 
-!if "$(FEATURES)"==""
+!if "$(FEATURES)" == ""
 FEATURES = HUGE
 !endif
 
@@ -374,7 +374,7 @@ CSCOPE_DEFS  = -DFEAT_CSCOPE
 !endif
 
 !ifndef TERMINAL
-! if "$(FEATURES)"=="HUGE"
+! if "$(FEATURES)" == "HUGE"
 TERMINAL = yes
 ! else
 TERMINAL = no
@@ -403,7 +403,7 @@ TERM_DEPS = \
 !endif
 
 !ifndef SOUND
-! if "$(FEATURES)"=="HUGE"
+! if "$(FEATURES)" == "HUGE"
 SOUND = yes
 ! else
 SOUND = no
@@ -444,7 +444,7 @@ NETBEANS = $(GUI)
 !endif
 
 !ifndef CHANNEL
-! if "$(FEATURES)"=="HUGE" || "$(TERMINAL)"=="yes"
+! if "$(FEATURES)" == "HUGE" || "$(TERMINAL)" == "yes"
 CHANNEL = yes
 ! else
 CHANNEL = $(GUI)
@@ -549,8 +549,8 @@ CFLAGS = -c /W3 /GF /nologo -I. -Iproto -DHAVE_PATHDEF -DWIN32 -DHAVE_STDINT_H \
 
 DEL_TREE = rmdir /s /q
 
-INTDIR=$(OBJDIR)
-OUTDIR=$(OBJDIR)
+INTDIR = $(OBJDIR)
+OUTDIR = $(OBJDIR)
 
 ### Validate CPUNR
 !ifndef CPUNR
@@ -960,11 +960,9 @@ LUA_LIB = "$(LUA)\lib\lua$(LUA_VER).lib"
 ! endif
 !endif
 
-!ifdef PYTHON
-! ifdef PYTHON3
-DYNAMIC_PYTHON=yes
-DYNAMIC_PYTHON3=yes
-! endif
+!if defined(PYTHON) && defined(PYTHON3)
+DYNAMIC_PYTHON = yes
+DYNAMIC_PYTHON3 = yes
 !endif
 
 # PYTHON interface
@@ -1029,13 +1027,13 @@ PYTHON3_LIB = "$(PYTHON3)\libs\$(PYTHON3_NAME).lib"
 MZSCHEME_VER = 3m_a0solc
 ! endif
 ! ifndef MZSCHEME_COLLECTS
-MZSCHEME_COLLECTS=$(MZSCHEME)\collects
+MZSCHEME_COLLECTS = $(MZSCHEME)\collects
 ! endif
 CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I "$(MZSCHEME)\include"
 ! if EXIST("$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib")
-MZSCHEME_MAIN_LIB=mzsch
+MZSCHEME_MAIN_LIB = mzsch
 ! else
-MZSCHEME_MAIN_LIB=racket
+MZSCHEME_MAIN_LIB = racket
 ! endif
 ! if (EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll") \
      && !EXIST("$(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll")) \
@@ -1226,7 +1224,7 @@ LINK_PDB = /PDB:$(VIM).pdb -debug
 !message
 
 # CFLAGS with /Fo$(OUTDIR)/
-CFLAGS_OUTDIR=$(CFLAGS) /Fo$(OUTDIR)/
+CFLAGS_OUTDIR = $(CFLAGS) /Fo$(OUTDIR)/
 
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
 
@@ -1344,15 +1342,13 @@ CFLAGS_INST = /nologo /O2 -DNDEBUG -DWIN32 -DWINVER=$(WINVER) \
 	      -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
 
 !IFDEF PATCHLEVEL
-CFLAGS_INST=	$(CFLAGS_INST) -DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
+CFLAGS_INST = $(CFLAGS_INST) -DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
 !ENDIF
 
 install.exe: dosinst.c dosinst.h version.h
-	$(CC) $(CFLAGS_INST) dosinst.c kernel32.lib shell32.lib \
+	$(CC) $(CFLAGS_INST) /Fe$@ dosinst.c kernel32.lib shell32.lib \
 		user32.lib ole32.lib advapi32.lib uuid.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
-	- if exist install.exe del install.exe
-	ren dosinst.exe install.exe
 
 uninstall.exe: uninstall.c dosinst.h version.h
 	$(CC) $(CFLAGS_INST) uninstall.c shell32.lib advapi32.lib \
@@ -1631,8 +1627,7 @@ $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL)
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
 
-auto/if_perl.c : if_perl.xs typemap
-	-if not exist auto/nul mkdir auto
+auto/if_perl.c: if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
 		-typemap typemap if_perl.xs -output $@
 
