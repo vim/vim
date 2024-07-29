@@ -3451,6 +3451,10 @@ limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
 	    sizeof(sb_line_T) * gap->ga_len);
     if (update_buffer)
 	term->tl_scrollback_scrolled -= todo;
+
+    // make sure cursor is on a valid line
+    if (curbuf == term->tl_buffer)
+	check_cursor();
 }
 
 /*
