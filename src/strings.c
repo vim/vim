@@ -2497,7 +2497,8 @@ format_overflow_error(const char *pstart)
 get_unsigned_int(
     const char *pstart,
     const char **p,
-    unsigned int *uj)
+    unsigned int *uj,
+    int overflow_err)
 {
     *uj = **p - '0';
     ++*p;
@@ -2510,8 +2511,13 @@ get_unsigned_int(
 
     if (*uj > MAX_ALLOWED_STRING_WIDTH)
     {
-	format_overflow_error(pstart);
-	return FAIL;
+	if (overflow_err)
+	{
+	    format_overflow_error(pstart);
+	    return FAIL;
+	}
+	else
+	    *uj = MAX_ALLOWED_STRING_WIDTH;
     }
 
     return OK;
@@ -2584,7 +2590,7 @@ parse_fmt_types(
 		// Positional argument
 		unsigned int uj;
 
-		if (get_unsigned_int(pstart, &p, &uj) == FAIL)
+		if (get_unsigned_int(pstart, &p, &uj, tvs != NULL) == FAIL)
 		    goto error;
 
 		pos_arg = uj;
@@ -2625,7 +2631,7 @@ parse_fmt_types(
 		    // Positional argument field width
 		    unsigned int uj;
 
-		    if (get_unsigned_int(arg + 1, &p, &uj) == FAIL)
+		    if (get_unsigned_int(arg + 1, &p, &uj, tvs != NULL) == FAIL)
 			goto error;
 
 		    if (*p != '$')
@@ -2656,7 +2662,7 @@ parse_fmt_types(
 		const char *digstart = p;
 		unsigned int uj;
 
-		if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		if (get_unsigned_int(digstart, &p, &uj, tvs != NULL) == FAIL)
 		    goto error;
 
 		if (*p == '$')
@@ -2680,7 +2686,7 @@ parse_fmt_types(
 			// Parse precision
 			unsigned int uj;
 
-			if (get_unsigned_int(arg + 1, &p, &uj) == FAIL)
+			if (get_unsigned_int(arg + 1, &p, &uj, tvs != NULL) == FAIL)
 			    goto error;
 
 			if (*p == '$')
@@ -2712,7 +2718,7 @@ parse_fmt_types(
 		    const char *digstart = p;
 		    unsigned int uj;
 
-		    if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		    if (get_unsigned_int(digstart, &p, &uj, tvs != NULL) == FAIL)
 			goto error;
 
 		    if (*p == '$')
@@ -3025,7 +3031,7 @@ vim_vsnprintf_typval(
 		const char *digstart = p;
 		unsigned int uj;
 
-		if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		if (get_unsigned_int(digstart, &p, &uj, tvs != NULL) == FAIL)
 		    goto error;
 
 		pos_arg = uj;
@@ -3067,7 +3073,7 @@ vim_vsnprintf_typval(
 		    // Positional argument field width
 		    unsigned int uj;
 
-		    if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		    if (get_unsigned_int(digstart, &p, &uj, tvs != NULL) == FAIL)
 			goto error;
 
 		    arg_idx = uj;
@@ -3085,8 +3091,13 @@ vim_vsnprintf_typval(
 
 		if (j > MAX_ALLOWED_STRING_WIDTH)
 		{
-		    format_overflow_error(digstart);
-		    goto error;
+		    if (tvs != NULL)
+		    {
+			format_overflow_error(digstart);
+			goto error;
+		    }
+		    else
+			j = MAX_ALLOWED_STRING_WIDTH;
 		}
 
 		if (j >= 0)
@@ -3104,14 +3115,8 @@ vim_vsnprintf_typval(
 		const char *digstart = p;
 		unsigned int uj;
 
-		if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		if (get_unsigned_int(digstart, &p, &uj, tvs != NULL) == FAIL)
 		    goto error;
-
-		if (uj > MAX_ALLOWED_STRING_WIDTH)
-		{
-		    format_overflow_error(digstart);
-		    goto error;
-		}
 
 		min_field_width = uj;
 	    }
@@ -3129,14 +3134,8 @@ vim_vsnprintf_typval(
 		    const char *digstart = p;
 		    unsigned int uj;
 
-		    if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		    if (get_unsigned_int(digstart, &p, &uj, tvs != NULL) == FAIL)
 			goto error;
-
-		    if (uj > MAX_ALLOWED_STRING_WIDTH)
-		    {
-			format_overflow_error(digstart);
-			goto error;
-		    }
 
 		    precision = uj;
 		}
@@ -3152,7 +3151,7 @@ vim_vsnprintf_typval(
 			// positional argument
 			unsigned int uj;
 
-			if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+			if (get_unsigned_int(digstart, &p, &uj, tvs != NULL) == FAIL)
 			    goto error;
 
 			arg_idx = uj;
@@ -3170,8 +3169,13 @@ vim_vsnprintf_typval(
 
 		    if (j > MAX_ALLOWED_STRING_WIDTH)
 		    {
-			format_overflow_error(digstart);
-			goto error;
+			if (tvs != NULL)
+			{
+			    format_overflow_error(digstart);
+			    goto error;
+			}
+			else
+			    j = MAX_ALLOWED_STRING_WIDTH;
 		    }
 
 		    if (j >= 0)
