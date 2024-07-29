@@ -1140,15 +1140,14 @@ $(EXEOBJG): | $(OUTDIR)
 $(EXEOBJC): | $(OUTDIR)
 
 ifeq ($(VIMDLL),yes)
- ifneq ($(COVERAGE),yes)
-  ifndef MZSCHEME
-   ifeq ($(ARCH),x86-64)
+ ifneq ($(findstring -nostdlib,$(EXELFLAGS)),)
+  # -Wl,--entry needs to be specified when -nostdlib is used.
+  ifeq ($(ARCH),x86-64)
 EXEENTRYC = -Wl,--entry=wmainCRTStartup
 EXEENTRYG = -Wl,--entry=wWinMainCRTStartup
-   else ifeq ($(ARCH),i686)
+  else ifeq ($(ARCH),i686)
 EXEENTRYC = -Wl,--entry=_wmainCRTStartup
 EXEENTRYG = -Wl,--entry=_wWinMainCRTStartup@0
-   endif
   endif
  endif
 
