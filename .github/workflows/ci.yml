@@ -330,6 +330,10 @@ jobs:
       - name: Install packages
         if: matrix.features == 'huge'
         run: |
+          # Install lua required for features huge.
+          # Apple diff is broken. Use GNU diff instead. See #14032.
+          brew install lua diffutils
+          echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
           if [ $(uname -r | grep ^21 | cut -c1-2) == 21 ]; then
           # Install audio device (blackhole-2ch) for playing sound since some of macos-12 machines have no audio device installed.
             brew install blackhole-2ch
@@ -338,10 +342,6 @@ jobs:
           # Install libtool required for features huge.
             brew install libtool
           fi
-          # Install lua required for features huge.
-          # Apple diff is broken. Use GNU diff instead. See #14032.
-          brew install lua diffutils
-          echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
       - name: Grant microphone access for macos-14
         if: matrix.features == 'huge' && matrix.runner == 'macos-14'
