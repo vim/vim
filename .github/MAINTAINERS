@@ -261,6 +261,7 @@ runtime/ftplugin/tap.vim		@petdance
 runtime/ftplugin/tcsh.vim		@dkearns
 runtime/ftplugin/terraform.vim		@JannoTjarks
 runtime/ftplugin/tf.vim			@ribru17
+runtime/ftplugin/thrift.vim		@jiangyinzuo
 runtime/ftplugin/tidy.vim		@dkearns
 runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/toml.vim		@averms
@@ -355,6 +356,7 @@ runtime/indent/systemverilog.vim	@Kocha
 runtime/indent/tcl.vim			@dkearns
 runtime/indent/tcsh.vim			@dkearns
 runtime/indent/teraterm.vim		@k-takata
+runtime/indent/thrift.vim		@jiangyinzuo
 runtime/indent/typescript.vim		@HerringtonDarkholme
 runtime/indent/typst.vim		@gpanders
 runtime/indent/vroom.vim		@dbarnett
@@ -556,6 +558,7 @@ runtime/syntax/systemverilog.vim	@Kocha
 runtime/syntax/tap.vim			@petdance
 runtime/syntax/tcsh.vim			@dkearns
 runtime/syntax/teraterm.vim		@k-takata
+runtime/syntax/thrift.vim		@jiangyinzuo
 runtime/syntax/tidy.vim			@dkearns
 runtime/syntax/tmux.vim			@ericpruitt
 runtime/syntax/toml.vim			@averms
