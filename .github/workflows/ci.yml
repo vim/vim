@@ -334,13 +334,12 @@ jobs:
           # Install lua required for features huge.
           # Install audio device (blackhole-2ch) for playing sound since some of macos-12 machines have no audio device installed.
             brew install lua blackhole-2ch
-            echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
           else
           # Install lua and libtool required for features huge.
           # Apple diff is broken. Use GNU diff instead. See #14032.
             brew install lua libtool diffutils
-            echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
           fi
+          echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
       - name: Grant microphone access for macos-14
         if: matrix.features == 'huge' && matrix.runner == 'macos-14'
