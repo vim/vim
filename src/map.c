@@ -85,6 +85,8 @@ map_free(mapblock_T **mpp)
 
     mp = *mpp;
     vim_free(mp->m_keys);
+    if (mp->m_alt != NULL)
+	mp->m_alt->m_alt = NULL;
     vim_free(mp->m_str);
     vim_free(mp->m_orig_str);
     *mpp = mp->m_next;
@@ -213,7 +215,7 @@ theend:
     --map_locked;
 }
 
-    static int
+    static mapblock_T *
 map_add(
 	mapblock_T  **map_table,
 	mapblock_T  **abbr_table,
@@ -236,7 +238,7 @@ map_add(
     mapblock_T	*mp = ALLOC_CLEAR_ONE(mapblock_T);
 
     if (mp == NULL)
-	return FAIL;
+	return NULL;
 
     // If CTRL-C has been mapped, don't always use it for Interrupting.
     if (*keys == Ctrl_C)
@@ -256,7 +258,7 @@ map_add(
 	vim_free(mp->m_str);
 	vim_free(mp->m_orig_str);
 	vim_free(mp);
-	return FAIL;
+	return NULL;
     }
     mp->m_keylen = (int)STRLEN(mp->m_keys);
     mp->m_noremap = noremap;
@@ -292,7 +294,7 @@ map_add(
 	mp->m_next = map_table[n];
 	map_table[n] = mp;
     }
-    return OK;
+    return mp;
 }
 
 /*
@@ -444,6 +446,7 @@ do_map(
 {
     char_u	*keys;
     mapblock_T	*mp, **mpp;
+    mapblock_T	*mp_result[2] = {NULL, NULL};
     char_u	*rhs;
     char_u	*p;
     int		n;
@@ -844,6 +847,8 @@ do_map(
 					retval = 4;		// no mem
 					goto theend;
 				    }
+				    if (mp->m_alt != NULL)
+					mp->m_alt = mp->m_alt->m_alt = NULL;
 				    vim_free(mp->m_str);
 				    mp->m_str = newstr;
 				    vim_free(mp->m_orig_str);
@@ -858,6 +863,7 @@ do_map(
 				    mp->m_script_ctx = current_sctx;
 				    mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
+				    mp_result[keyround - 1] = mp;
 				    did_it = TRUE;
 				}
 			    }
@@ -921,16 +927,23 @@ do_map(
 	    continue;	// have added the new entry already
 
 	// Get here when adding a new entry to the maphash[] list or abbrlist.
-	if (map_add(map_table, abbr_table, keys, rhs, orig_rhs,
-		    noremap, nowait, silent, mode, abbrev,
+	mp_result[keyround - 1] = map_add(map_table, abbr_table, keys,
+		    rhs, orig_rhs, noremap, nowait, silent, mode, abbrev,
 #ifdef FEAT_EVAL
 		    expr, /* sid */ 0, /* scriptversion */ 0, /* lnum */ 0,
 #endif
-		    keyround1_simplified) == FAIL)
+		    keyround1_simplified);
+	if (mp_result[keyround - 1] == NULL)
 	{
 	    retval = 4;	    // no mem
 	    goto theend;
 	}
+    }
+
+    if (mp_result[0] != NULL && mp_result[1] != NULL)
+    {
+	mp_result[0]->m_alt = mp_result[1];
+	mp_result[1]->m_alt = mp_result[0];
     }
 
 theend:
@@ -2710,6 +2723,7 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     int		nowait;
     char_u	*arg;
     int		dict_only;
+    mapblock_T	*mp_result[2] = {NULL, NULL};
 
     // If first arg is a dict, then that's the only arg permitted.
     dict_only = argvars[0].v_type == VAR_DICT;
@@ -2806,12 +2820,20 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     do_map(MAPTYPE_UNMAP, arg, mode, is_abbr);
     vim_free(arg);
 
-    (void)map_add(map_table, abbr_table, lhsraw, rhs, orig_rhs, noremap,
-	    nowait, silent, mode, is_abbr, expr, sid, scriptversion, lnum, 0);
+    mp_result[0] = map_add(map_table, abbr_table, lhsraw, rhs, orig_rhs,
+			    noremap, nowait, silent, mode, is_abbr, expr, sid,
+			    scriptversion, lnum, 0);
     if (lhsrawalt != NULL)
-	(void)map_add(map_table, abbr_table, lhsrawalt, rhs, orig_rhs, noremap,
-		nowait, silent, mode, is_abbr, expr, sid, scriptversion,
-								      lnum, 1);
+	mp_result[1] = map_add(map_table, abbr_table, lhsrawalt, rhs, orig_rhs,
+			    noremap, nowait, silent, mode, is_abbr, expr, sid,
+			    scriptversion, lnum, 1);
+
+    if (mp_result[0] != NULL && mp_result[1] != NULL)
+    {
+	mp_result[0]->m_alt = mp_result[1];
+	mp_result[1]->m_alt = mp_result[0];
+    }
+
     vim_free(arg_buf);
 }
 #endif
