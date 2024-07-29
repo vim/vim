@@ -4445,7 +4445,8 @@ add_keyword(
 
     if (curwin->w_s->b_syn_ic)
     {
-	name_ic = str_foldcase(name, (int)namelen, name_folded, MAXKEYWLEN + 1);
+	name_ic = str_foldcase(name, (int)namelen,
+						 name_folded, MAXKEYWLEN + 1);
 	name_iclen = STRLEN(name_ic);
     }
     else
@@ -4880,11 +4881,15 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 		 */
 		for (kw = keyword_copy; --cnt >= 0; kw += kwlen + 1)
 		{
-		    kwlen = STRLEN(kw);
 		    for (p = vim_strchr(kw, '['); ; )
 		    {
-			if (p != NULL)
+			if (p == NULL)
+			    kwlen = STRLEN(kw);
+			else
+			{
 			    *p = NUL;
+			    kwlen = (size_t)(p - kw);
+			}
 			add_keyword(kw, kwlen, syn_id, syn_opt_arg.flags,
 				syn_opt_arg.cont_in_list,
 					 syn_opt_arg.next_list, conceal_char);
@@ -4904,6 +4909,7 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 				goto error;
 			    }
 			    kw = p + 1;		// skip over the "]"
+			    kwlen = 1;
 			    break;
 			}
 			if (has_mbyte)
