@@ -1346,11 +1346,9 @@ CFLAGS_INST = $(CFLAGS_INST) -DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
 !ENDIF
 
 install.exe: dosinst.c dosinst.h version.h
-	$(CC) $(CFLAGS_INST) dosinst.c kernel32.lib shell32.lib \
+	$(CC) $(CFLAGS_INST) /Fe$@ dosinst.c kernel32.lib shell32.lib \
 		user32.lib ole32.lib advapi32.lib uuid.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
-	- if exist install.exe del install.exe
-	ren dosinst.exe install.exe
 
 uninstall.exe: uninstall.c dosinst.h version.h
 	$(CC) $(CFLAGS_INST) uninstall.c shell32.lib advapi32.lib \
@@ -1629,8 +1627,7 @@ $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL)
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
 
-auto/if_perl.c : if_perl.xs typemap
-	-if not exist auto/nul mkdir auto
+auto/if_perl.c: if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
 		-typemap typemap if_perl.xs -output $@
 
