@@ -1268,6 +1268,32 @@ export def FTdat()
   endif
 enddef
 
+# Determine if a *.l file is Lex or PicoLisp (default to Lex)
+export def FTl()
+  if exists("g:filetype_l")
+    exe "setf " .. g:filetype_l
+    return
+  endif
+  for i in range(1, line("$"))
+    var line = trim(getline(i))
+    if line =~ "^%{.*$"
+      setf lex
+      return
+    elseif line =~ "^%%.*$"
+      setf lex
+      return
+    elseif line =~ "^#.*$"
+      setf picolisp
+      return
+    elseif line =~ "^\(.*$"
+      setf picolisp
+      return
+    endif
+  endfor
+  setf lex
+  return
+enddef 
+
 export def FTlsl()
   if exists("g:filetype_lsl")
     exe "setf " .. g:filetype_lsl
