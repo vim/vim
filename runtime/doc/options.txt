@@ -2044,7 +2044,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'writebackup'	+ on or off	depends on the |+writebackup| feature
 
 						*'complete'* *'cpt'* *E535*
-'complete' 'cpt'	string	(default: ".,w,b,u,t,i")
+'complete' 'cpt'	string	(default: ".,w,b,u,t,i"
+					  "i" removed in |defaults.vim|)
 			local to buffer
 	This option specifies how keyword completion |ins-completion| works
 	when CTRL-P or CTRL-N are used.  It is also used for whole-line
@@ -4039,7 +4040,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'guioptions'* *'go'*
 'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
-					   "t" is removed in |defaults.vim|),
+					 "egimrLT!" in |defaults.vim|),
 					 "aegimrLtT" (GTK and Motif),
 					 )
 			global
