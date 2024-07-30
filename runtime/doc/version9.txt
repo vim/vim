@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 28
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41590,6 +41590,8 @@ Changed~
   behaviour/inconsistency (see |d-special| and |cw|).
 - allow to specify additional attributes in the completion menu (allows to
   mark deprecated attributes from LSP server) |complete-items|
+- the regex engines match correctly case-insensitive multi-byte characters
+  (and apply proper case folding)
 
 							*added-9.2*
 Added ~
