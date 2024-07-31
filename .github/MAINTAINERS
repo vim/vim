@@ -191,7 +191,7 @@ runtime/ftplugin/julia.vim		@carlobaldassi
 runtime/ftplugin/jq.vim	    	        @vito-c
 runtime/ftplugin/kconfig.vim		@chrisbra
 runtime/ftplugin/kdl.vim		@imsnif @jiangyinzuo
-runtime/ftplugin/kivy.vim		@ribru17
+runtime/ftplugin/kivy.vim		@prophittcorey @ribru17
 runtime/ftplugin/kotlin.vim		@udalov
 runtime/ftplugin/ldapconf.vim		@ribru17
 runtime/ftplugin/less.vim		@genoma
