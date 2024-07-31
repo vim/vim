@@ -275,21 +275,13 @@ static short	*current_next_list = NULL; // when non-zero, nextgroup list
 static int	current_next_flags = 0; // flags for current_next_list
 static int	current_line_id = 0;	// unique number for current line
 
-static int	last_matchgroup;
-
 #define CUR_STATE(idx)	((stateitem_T *)(current_state.ga_data))[idx]
 
-static void clear_syn_state(synstate_T *p);
-static void clear_current_state(void);
 static void syn_sync(win_T *wp, linenr_T lnum, synstate_T *last_valid);
-static void save_chartab(char_u *chartab);
-static void restore_chartab(char_u *chartab);
 static int syn_match_linecont(linenr_T lnum);
 static void syn_start_line(void);
 static void syn_update_ends(int startofline);
-static void syn_stack_free_block(synblock_T *block);
 static void syn_stack_alloc(void);
-static void syn_stack_apply_changes_block(synblock_T *block, buf_T *buf);
 static int syn_stack_cleanup(void);
 static void syn_stack_free_entry(synblock_T *block, synstate_T *p);
 static synstate_T *syn_stack_find_entry(linenr_T lnum);
@@ -304,15 +296,15 @@ static int did_match_already(int idx, garray_T *gap);
 static stateitem_T *push_next_match(stateitem_T *cur_si);
 static void check_state_ends(void);
 static void update_si_attr(int idx);
-static void update_si_end(stateitem_T *sip, int startcol, int force);
 static void check_keepend(void);
+static void update_si_end(stateitem_T *sip, int startcol, int force);
+static short *copy_id_list(short *list);
+static int in_id_list(stateitem_T *item, short *cont_list, struct sp_syn *ssp, int contained);
 static int push_current_state(int idx);
 static void pop_current_state(void);
-static short *copy_id_list(short *list);
 #ifdef FEAT_PROFILE
-static void syn_clear_time(syn_time_T *st);
+static void syn_clear_time(syn_time_T *tt);
 static void syntime_clear(void);
-static int syn_compare_syntime(const void *v1, const void *v2);
 static void syntime_report(void);
 static int syn_time_on = FALSE;
 # define IF_SYN_TIME(p) (p)
@@ -321,6 +313,7 @@ static int syn_time_on = FALSE;
 typedef int syn_time_T;
 #endif
 
+static void syn_stack_apply_changes_block(synblock_T *block, buf_T *buf);
 static void find_endpos(int idx, lpos_T *startpos, lpos_T *m_endpos, lpos_T *hl_endpos, long *flagsp, lpos_T *end_endpos, int *end_idx, reg_extmatch_T *start_ext);
 
 static void limit_pos(lpos_T *pos, lpos_T *limit);
@@ -331,58 +324,27 @@ static char_u *syn_getcurline(void);
 static colnr_T syn_getcurline_len(void);
 static int syn_regexec(regmmatch_T *rmp, linenr_T lnum, colnr_T col, syn_time_T *st);
 static int check_keyword_id(char_u *line, int startcol, int *endcol, long *flags, short **next_list, stateitem_T *cur_si, int *ccharp);
-static void syn_cmd_conceal(exarg_T *eap UNUSED, int syncing UNUSED);
-static void syn_cmd_case(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_foldlevel(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_spell(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED);
-static void syntax_sync_clear(void);
 static void syn_remove_pattern(synblock_T *block, int idx);
 static void syn_clear_pattern(synblock_T *block, int i);
 static void syn_clear_cluster(synblock_T *block, int i);
 static void syn_clear_one(int id, int syncing);
-static void syn_cmd_on(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_enable(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_reset(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_manual(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_off(exarg_T *eap, int syncing UNUSED);
 static void syn_cmd_onoff(exarg_T *eap, char *name);
 static void syn_lines_msg(void);
 static void syn_match_msg(void);
 static void syn_list_one(int id, int syncing, int link_only);
-static void syn_list_flags(keyvalue_T *nlist, int nr_entries, int flags, int attr);
 static void syn_list_cluster(int id);
 static void put_id_list(char_u *name, short *list, int attr);
 static void put_pattern(char *s, int c, synpat_T *spp, int attr);
 static int syn_list_keywords(int id, hashtab_T *ht, int did_header, int attr);
 static void syn_clear_keyword(int id, hashtab_T *ht);
 static void clear_keywtab(hashtab_T *ht);
-static void add_keyword(char_u *name, size_t namelen, int id, int flags, short *cont_in_list, short *next_list, int conceal_char);
-static char_u *get_group_name(char_u *arg, char_u **name_end);
-static char_u *get_syn_options(char_u *start, syn_opt_arg_T *opt, int *conceal_char UNUSED, int skip);
-
-static void syn_incl_toplevel(int id, int *flagsp);
-static void syn_cmd_include(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_keyword(exarg_T *eap, int syncing UNUSED);
-static void syn_cmd_match(exarg_T *eap, int syncing);
-static void syn_cmd_region(exarg_T *eap, int syncing);
-static int syn_compare_stub(const void *v1, const void *v2);
-static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
-
-static int syn_scl_name2id(char_u *name);
 static int syn_scl_namen2id(char_u *linep, int len);
 static int syn_check_cluster(char_u *pp, int len);
 static int syn_add_cluster(char_u *name);
-static void syn_cmd_cluster(exarg_T *eap, int syncing UNUSED);
 static void init_syn_patterns(void);
 static char_u *get_syn_pattern(char_u *arg, synpat_T *ci);
-static void syn_cmd_sync(exarg_T *eap, int syncing UNUSED);
 static int get_id_list(char_u **arg, int keylen, short **list, int skip);
-static int in_id_list(stateitem_T *cur_si, short *list, struct sp_syn *ssp, int contained);
-
-#if defined(FEAT_FOLDING) || defined(PROTO)
-static int syn_cur_foldlevel(void);
-#endif
+static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
 
 /*
  * Start the syntax recognition for a line.  This function is normally called
@@ -3978,6 +3940,10 @@ syn_match_msg(void)
 	msg_puts(_(" line breaks"));
     }
 }
+
+static int  last_matchgroup;
+
+static void syn_list_flags(keyvalue_T *nlist, int nr_entries, int flags, int attr);
 
 /*
  * List one syntax item, for ":syntax" or "syntax list syntax_name".
