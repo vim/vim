@@ -474,6 +474,7 @@ runtime/syntax/jsonc.vim		@izhakjakov
 runtime/syntax/julia.vim		@carlobaldassi
 runtime/syntax/jq.vim		        @vito-c
 runtime/syntax/kconfig.vim		@chrisbra
+runtime/syntax/kivy.vim		@prophittcorey
 runtime/syntax/kotlin.vim		@udalov
 runtime/syntax/kdl.vim			@imsnif @jiangyinzuo
 runtime/syntax/krl.vim			@KnoP-01
