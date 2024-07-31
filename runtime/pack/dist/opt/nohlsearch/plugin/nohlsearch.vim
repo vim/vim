@@ -1,5 +1,5 @@
 " nohlsearch.vim: Auto turn off hlsearch
-" Last Change: 2024-06-19
+" Last Change: 2024-07-31
 " Maintainer: Maxim Kim <habamax@gmail.com>
 "
 " turn off hlsearch after:
