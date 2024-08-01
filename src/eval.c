@@ -3259,7 +3259,7 @@ may_call_simple_func(
 	char_u *p = STRNCMP(arg, "<SNR>", 5) == 0 ? skipdigits(arg + 5) : arg;
 
 	if (to_name_end(p, TRUE) == parens)
-	    r = call_simple_func(arg, (int)(parens - arg), rettv);
+	    r = call_simple_func(arg, (size_t)(parens - arg), rettv);
     }
     return r;
 }
