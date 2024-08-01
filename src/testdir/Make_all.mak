@@ -342,6 +342,7 @@ NEW_TESTS = \
 	test_writefile \
 	test_xdg \
 	test_xxd \
+	test_zip_plugin \
 	test_alot_latin \
 	test_alot_utf8 \
 	test_alot
@@ -583,6 +584,7 @@ NEW_TESTS_RES = \
 	test_writefile.res \
 	test_xdg.res \
 	test_xxd.res \
+	test_zip_plugin.res \
 	test_alot_latin.res \
 	test_alot_utf8.res \
 	test_alot.res
