@@ -4058,7 +4058,7 @@ theend:
     int
 call_simple_func(
     char_u	*funcname,	// name of the function
-    int		len,		// length of "name" or -1 to use strlen()
+    size_t	len,		// length of "name"
     typval_T	*rettv)		// return value goes here
 {
     int		ret = FAIL;
