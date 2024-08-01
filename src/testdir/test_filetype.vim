@@ -300,6 +300,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     gnash: ['gnashrc', '.gnashrc', 'gnashpluginrc', '.gnashpluginrc'],
     gnuplot: ['file.gpi', '.gnuplot', 'file.gnuplot', '.gnuplot_history'],
     go: ['file.go'],
+    goaccess: ['goaccess.conf'],
     gomod: ['go.mod'],
     gosum: ['go.sum', 'go.work.sum'],
     gowork: ['go.work'],

@@ -446,6 +446,7 @@ runtime/syntax/gitolite.vim		@sitaramc
 runtime/syntax/gitrebase.vim		@tpope
 runtime/syntax/glsl.vim		@gpanders
 runtime/syntax/go.vim			@bhcleek
+runtime/syntax/goaccess.vim		@meonkeys
 runtime/syntax/godoc.vim		@dbarnett
 runtime/syntax/gp.vim			@KBelabas
 runtime/syntax/gprof.vim		@dpelle
