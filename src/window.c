@@ -5837,10 +5837,7 @@ win_free(
     win_free_lsize(wp);
 
     for (i = 0; i < wp->w_tagstacklen; ++i)
-    {
-	vim_free(wp->w_tagstack[i].tagname);
-	vim_free(wp->w_tagstack[i].user_data);
-    }
+	tagstack_clear_entry(&wp->w_tagstack[i]);
     vim_free(wp->w_localdir);
     vim_free(wp->w_prevdir);
 
