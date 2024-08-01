@@ -1743,7 +1743,7 @@ cstrncmp(char_u *s1, char_u *s2, int *n)
     else if (enc_utf8)
     {
 	char_u *p = s1;
-	size_t n2 = 0;
+	int n2 = 0;
 	int n1 = *n;
 	// count the number of characters for byte-length of s1
 	while (n1 > 0 && *p != NUL)
@@ -1760,7 +1760,7 @@ cstrncmp(char_u *s1, char_u *s2, int *n)
 	n2 = p - s2;
 
 	result = MB_STRNICMP2(s1, s2, *n, n2);
-	if (result == 0 && (int)n2 < *n)
+	if (result == 0 && n2 < *n)
 	    *n = n2;
     }
     else
