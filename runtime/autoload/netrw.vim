@@ -729,42 +729,42 @@ fun! netrw#Explore(indx,dosplit,style,...)
 "    call Decho("style=0: Explore or Sexplore",'~'.expand("<slnum>"))
     let winsz= (winsz > 0)? (winsz*winheight(0))/100 : -winsz
     if winsz == 0|let winsz= ""|endif
-    exe "noswapfile ".winsz."wincmd s"
+    exe "noswapfile ".(g:netrw_alto ? "bel " : "abo ").winsz."wincmd s"
 "    call Decho("exe noswapfile ".winsz."wincmd s",'~'.expand("<slnum>"))
 
    elseif a:style == 1  "Explore!, Sexplore!
 "    call Decho("style=1: Explore! or Sexplore!",'~'.expand("<slnum>"))
     let winsz= (winsz > 0)? (winsz*winwidth(0))/100 : -winsz
     if winsz == 0|let winsz= ""|endif
-    exe "keepalt noswapfile ".winsz."wincmd v"
+    exe "keepalt noswapfile ".(g:netrw_altv ? "rightb " : "lefta ").winsz."wincmd v"
 "    call Decho("exe keepalt noswapfile ".winsz."wincmd v",'~'.expand("<slnum>"))
 
    elseif a:style == 2  " Hexplore
 "    call Decho("style=2: Hexplore",'~'.expand("<slnum>"))
     let winsz= (winsz > 0)? (winsz*winheight(0))/100 : -winsz
     if winsz == 0|let winsz= ""|endif
-    exe "keepalt noswapfile bel ".winsz."wincmd s"
+    exe "keepalt noswapfile ".(g:netrw_alto ? "bel " : "abo ").winsz."wincmd s"
 "    call Decho("exe keepalt noswapfile bel ".winsz."wincmd s",'~'.expand("<slnum>"))
 
    elseif a:style == 3  " Hexplore!
 "    call Decho("style=3: Hexplore!",'~'.expand("<slnum>"))
     let winsz= (winsz > 0)? (winsz*winheight(0))/100 : -winsz
     if winsz == 0|let winsz= ""|endif
-    exe "keepalt noswapfile abo ".winsz."wincmd s"
+    exe "keepalt noswapfile ".(!g:netrw_alto ? "bel " : "abo ").winsz."wincmd s"
 "    call Decho("exe keepalt noswapfile abo ".winsz."wincmd s",'~'.expand("<slnum>"))
 
    elseif a:style == 4  " Vexplore
 "    call Decho("style=4: Vexplore",'~'.expand("<slnum>"))
     let winsz= (winsz > 0)? (winsz*winwidth(0))/100 : -winsz
     if winsz == 0|let winsz= ""|endif
-    exe "keepalt noswapfile lefta ".winsz."wincmd v"
+    exe "keepalt noswapfile ".(g:netrw_altv ? "rightb " : "lefta ").winsz."wincmd v"
 "    call Decho("exe keepalt noswapfile lefta ".winsz."wincmd v",'~'.expand("<slnum>"))
 
    elseif a:style == 5  " Vexplore!
 "    call Decho("style=5: Vexplore!",'~'.expand("<slnum>"))
     let winsz= (winsz > 0)? (winsz*winwidth(0))/100 : -winsz
     if winsz == 0|let winsz= ""|endif
-    exe "keepalt noswapfile rightb ".winsz."wincmd v"
+    exe "keepalt noswapfile ".(!g:netrw_altv ? "rightb " : "lefta ").winsz."wincmd v"
 "    call Decho("exe keepalt noswapfile rightb ".winsz."wincmd v",'~'.expand("<slnum>"))
 
    elseif a:style == 6  " Texplore
