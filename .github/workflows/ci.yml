@@ -22,7 +22,7 @@ jobs:
     env:
       CC: ${{ matrix.compiler }}
       GCC_VER: 13
-      CLANG_VER: 18
+      CLANG_VER: 19
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
