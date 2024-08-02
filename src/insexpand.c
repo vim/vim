@@ -3552,9 +3552,34 @@ get_next_filename_completion(void)
     size_t	path_with_wildcard_len;
     char_u	*path_with_wildcard;
 
+#ifdef BACKSLASH_IN_FILENAME
+    char pathsep = (curbuf->b_p_csl[0] == 's') ?
+	'/' : (curbuf->b_p_csl[0] == 'b') ? '\\' : PATHSEP;
+#else
+    char pathsep = PATHSEP;
+#endif
+
     if (in_fuzzy)
     {
-	last_sep = vim_strrchr(leader, PATHSEP);
+#ifdef BACKSLASH_IN_FILENAME
+	if (curbuf->b_p_csl[0] == 's')
+	{
+	    for (i = 0; i < leader_len; i++)
+	    {
+		if (leader[i] == '\\')
+		    leader[i] = '/';
+	    }
+	}
+	else if (curbuf->b_p_csl[0] == 'b')
+	{
+	    for (i = 0; i < leader_len; i++)
+	    {
+		if (leader[i] == '/')
+		    leader[i] = '\\';
+	    }
+	}
+#endif
+	last_sep = vim_strrchr(leader, pathsep);
 	if (last_sep == NULL)
 	{
 	    // No path separator or separator is the last character,
