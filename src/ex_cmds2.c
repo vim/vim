@@ -197,11 +197,9 @@ dialog_changed(
 	// restore to empty when write failed
 	if (empty_bufname)
 	{
-	    // prevent double free
-	    if (buf->b_sfname != buf->b_ffname)
-		VIM_CLEAR(buf->b_sfname);
 	    buf->b_fname = NULL;
 	    VIM_CLEAR(buf->b_ffname);
+	    VIM_CLEAR(buf->b_sfname);
 	    unchanged(buf, TRUE, FALSE);
 	}
     }
