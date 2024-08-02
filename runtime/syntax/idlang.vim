@@ -16,7 +16,7 @@ syn match idlangStatement "^\s*function\s"
 syn keyword idlangStatement return continue mod do break
 syn keyword idlangStatement compile_opt forward_function goto
 syn keyword idlangStatement begin common end of
-syn keyword idlangStatement inherits on_ioerror begin
+syn keyword idlangStatement inherits on_error on_ioerror begin
 
 syn keyword idlangConditional if else then for while case switch
 syn keyword idlangConditional endcase endelse endfor endswitch
