@@ -953,6 +953,9 @@ au BufNewFile,BufRead *.go			setf go
 au BufNewFile,BufRead Gopkg.lock		setf toml
 au BufRead,BufNewFile go.work			setf gowork
 
+" GoAccess configuration
+au BufNewFile,BufRead goaccess.conf		setf goaccess
+
 " GrADS scripts
 au BufNewFile,BufRead *.gs			setf grads
 

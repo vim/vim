@@ -160,11 +160,12 @@ runtime/ftplugin/gitconfig.vim		@tpope
 runtime/ftplugin/gitignore.vim		@ObserverOfTime
 runtime/ftplugin/gitrebase.vim		@tpope
 runtime/ftplugin/gitsendemail.vim	@tpope
-runtime/ftplugin/graphql.vim	@ribru17
-runtime/ftplugin/gyp.vim		@ObserverOfTime
 runtime/ftplugin/go.vim			@dbarnett
+runtime/ftplugin/goaccess.vim		@meonkeys
 runtime/ftplugin/gomod.vim		@yu-yk
 runtime/ftplugin/gprof.vim		@dpelle
+runtime/ftplugin/graphql.vim	@ribru17
+runtime/ftplugin/gyp.vim		@ObserverOfTime
 runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hare.vim		@selenebun
 runtime/ftplugin/haredoc.vim		@selenebun
@@ -446,6 +447,7 @@ runtime/syntax/gitolite.vim		@sitaramc
 runtime/syntax/gitrebase.vim		@tpope
 runtime/syntax/glsl.vim		@gpanders
 runtime/syntax/go.vim			@bhcleek
+runtime/syntax/goaccess.vim		@meonkeys
 runtime/syntax/godoc.vim		@dbarnett
 runtime/syntax/gp.vim			@KBelabas
 runtime/syntax/gprof.vim		@dpelle
