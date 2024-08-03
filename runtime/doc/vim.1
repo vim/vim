@@ -1,4 +1,4 @@
-.TH VIM 1 "2024 Jun 04"
+.TH VIM 1 "2024 Aug 03"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -433,7 +433,10 @@ If the {scriptout} file exists, characters are appended.
 Like \-w, but an existing file is overwritten.
 .TP
 \-x
-Use encryption when writing files.  Will prompt for a crypt key.
+If
+.B Vim
+has been compiled with encryption support, use encryption when writing files.
+Will prompt for a crypt key.
 .TP
 \-X
 Don't connect to the X server.  Shortens startup time in a terminal, but the
