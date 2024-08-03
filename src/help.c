@@ -813,6 +813,8 @@ fix_help_buffer(void)
 			    f1 = fnames[i1];
 			    t1 = gettail(f1);
 			    e1 = vim_strrchr(t1, '.');
+			    if (e1 == NULL)
+				continue;
 			    if (fnamecmp(e1, ".txt") != 0
 					       && fnamecmp(e1, fname + 4) != 0)
 			    {
@@ -828,6 +830,8 @@ fix_help_buffer(void)
 				    continue;
 				t2 = gettail(f2);
 				e2 = vim_strrchr(t2, '.');
+				if (e2 == NULL)
+				    continue;
 				if (e1 - f1 != e2 - f2
 					    || fnamencmp(f1, f2, e1 - f1) != 0)
 				    continue;
