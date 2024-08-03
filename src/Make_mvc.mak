@@ -299,7 +299,9 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 LINK = link
 
 # Check VC version.
-!if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
+!if [echo MSVCVER=_MSC_VER> msvcver.c && \
+	echo MSVC_FULL=_MSC_FULL_VER>> msvcver.c && \
+	$(CC) /EP msvcver.c > msvcver.~ 2> nul]
 ! message *** ERROR
 ! message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
 ! message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
@@ -320,25 +322,17 @@ LINK = link
 MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
 MSVCRT_VER = ($(MSVCVER) / 100 * 10 - 50)
 
-# Calculate MSVC_FULL.
-!if [echo MSVC_FULL=_MSC_FULL_VER> msvcfullver.c && $(CC) /EP msvcfullver.c > msvcfullver.~ 2> nul]
-! message *** ERROR
-! message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
-! message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
-! error Make aborted.
-!else
-! include msvcfullver.~
-! if [del msvcfullver.c msvcfullver.~]
-! endif
-!endif
-
-
 # Calculate MSVCRT_VER
 !if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
 ! include msvcrtver.~
 ! if [del msvcrtver.~]
 ! endif
 !endif
+
+# Show the versions (for debugging).
+#!message _MSC_VER=$(MSVCVER)
+#!message _MSC_FULL_VER=$(MSVC_FULL)
+#!message MSVCRT_VER=$(MSVCRT_VER)
 
 # Base name of the msvcrXX.dll (vcruntimeXXX.dll)
 MSVCRT_NAME = vcruntime$(MSVCRT_VER)
