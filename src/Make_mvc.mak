@@ -158,14 +158,14 @@
 #	nmake -f Make_mvc.mvc "DEFINES=-DEMACS_TAGS"
 
 RM =		del /f /q
-PS =		powershell.exe
 
-PSFLAGS =	-NoLogo -NoProfile -Command
+# Read MAJOR and MINOR from version.h.
+!IF ![for /f "tokens=2,3" %I in (version.h) do \
+	@if "%I"=="VIM_VERSION_MAJOR" ( echo MAJOR=%J>.\major.tmp ) \
+	else if "%I"=="VIM_VERSION_MINOR" ( echo MINOR=%J>.\minor.tmp )]
+!ENDIF
 
-!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\major.tmp' -InputObject \
-	\"MAJOR=$$(((Select-String -Pattern 'VIM_VERSION_MAJOR\s+\d{1,2}' \
-	-Path '.\version.h').Line[-2..-1^]-join '').Trim())\"} \
-	catch{exit 1}]
+!IF EXIST(.\major.tmp)
 ! INCLUDE .\major.tmp
 ! IF [$(RM) .\major.tmp]
 ! ENDIF
@@ -174,10 +174,7 @@ PSFLAGS =	-NoLogo -NoProfile -Command
 MAJOR =		9
 !ENDIF
 
-!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\minor.tmp' -InputObject \
-	\"MINOR=$$(((Select-String -Pattern 'VIM_VERSION_MINOR\s+\d{1,2}' \
-	-Path '.\version.h').Line[-2..-1^]-join '').Trim())\"} \
-	catch{exit 1}]
+!IF EXIST(.\minor.tmp)
 ! INCLUDE .\minor.tmp
 ! IF [$(RM) .\minor.tmp]
 ! ENDIF
@@ -186,20 +183,18 @@ MAJOR =		9
 MINOR =		1
 !ENDIF
 
-!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\patchlvl.tmp' -InputObject \
-	\"PATCHLEVEL=$$([decimal^]((Get-Content -Path '.\version.c' \
-	-TotalCount ((Select-String -Pattern 'static int included_patches' \
-	-Path '.\version.c').LineNumber+3))[-1^]).Trim().TrimEnd(','))\"} \
-	catch{exit 1}]
+# Read PATCHLEVEL from version.c.
+!IF ![cmd.exe /V:ON /C "echo off && set LINE=0&& set FIND=0&& \
+	for /f "tokens=1,3 delims=,[ " %I in (version.c) do \
+	( set /A LINE+=1 > NUL && \
+	if "%J"=="included_patches" ( set /A FIND=LINE+3 > NUL ) \
+	else if "!LINE!"=="!FIND!" ( echo PATCHLEVEL=%I>.\patchlvl.tmp && exit ) )"]
+!ENDIF
+!IF EXIST(.\patchlvl.tmp)
 ! INCLUDE .\patchlvl.tmp
 ! IF [$(RM) .\patchlvl.tmp]
 ! ENDIF
 !ENDIF
-
-
-# Build on Windows NT/XP
-
-TARGETOS = WINNT
 
 !IFDEF PATCHLEVEL
 RCFLAGS =	-DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
