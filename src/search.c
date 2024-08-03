@@ -5219,6 +5219,8 @@ search_for_fuzzy_match(
     pos_T	circly_end;
     int		found_new_match = FAIL;
     int		looped_around = FALSE;
+    char_u	*next_word_end = NULL;
+    char_u	*match_word = NULL;
 
     if (whole_line)
 	current_pos.lnum += dir;
@@ -5254,6 +5256,35 @@ search_for_fuzzy_match(
 		    found_new_match = fuzzy_match_str_in_line(ptr, pattern, len, &current_pos);
 		    if (found_new_match)
 		    {
+			if (ctrl_x_mode_normal())
+			{
+			    match_word = vim_strnsave(*ptr, *len);
+			    if (STRCMP(match_word, pattern) == 0)
+			    {
+				next_word_end = find_word_start(*ptr + *len);
+				if (*next_word_end != NUL && *next_word_end != NL)
+				{
+				    // Find end of the word.
+				    if (has_mbyte)
+					while (*next_word_end != NUL)
+					{
+					    int l = (*mb_ptr2len)(next_word_end);
+
+					    if (l < 2 && !vim_iswordc(*next_word_end))
+						break;
+					    next_word_end += l;
+					}
+				    else
+				       next_word_end = find_word_end(next_word_end);
+				}
+				else if (looped_around)
+				    found_new_match = FALSE;
+
+				*len = next_word_end - *ptr;
+				current_pos.col = *len;
+			    }
+			    vim_free(match_word);
+			}
 			*pos = current_pos;
 			break;
 		    }
