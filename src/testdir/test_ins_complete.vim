@@ -2654,6 +2654,19 @@ func Test_complete_fuzzy_match()
   call feedkeys("Su\<C-X>\<C-L>\<C-P>\<Esc>0", 'tx!')
   call assert_equal('no one can save me but you', getline('.'))
 
+  " issue #15412
+  call setline(1, ['alpha bravio charlie'])
+  call feedkeys("Salpha\<C-X>\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('alpha bravio', getline('.'))
+  call setline(1, ['alpha bravio charlie', 'alpha another'])
+  call feedkeys("Salpha\<C-X>\<C-N>\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('alpha another', getline('.'))
+  call setline(1, ['你好 我好', '你好 他好'])
+  call feedkeys("S你好\<C-X>\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('你好 我好', getline('.'))
+  call feedkeys("S你好\<C-X>\<C-N>\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('你好 他好', getline('.'))
+
   " clean up
   set omnifunc=
   bw!
