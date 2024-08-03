@@ -127,10 +127,15 @@
 #
 #	Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
 #
-#	Processor Version: CPUNR=[any, i686, sse, sse2, avx, avx2] (default is
-#	sse2)
+#	Processor Version:
+#	 For x86: CPUNR=[any, i686, sse, sse2, avx, avx2, avx512]
+#	 For x64: CPUNR=[sse2, avx, avx2, avx512]
+#	                (default is sse2 (both x86 and x64))
 #	  avx is available on Visual C++ 2010 and after.
 #	  avx2 is available on Visual C++ 2013 Update 2 and after.
+#	  avx512 is available on Visual C++ 2017 and after.
+#	 For ARM64:
+#	  See: https://learn.microsoft.com/en-us/cpp/build/reference/arch-arm64
 #
 #	Version Support: WINVER=[0x0601, 0x0602, 0x0603, 0x0A00] (default is
 #	0x0601)
@@ -257,38 +262,29 @@ OBJDIR = $(OBJDIR)V
 OBJDIR = $(OBJDIR)d
 !endif
 
-!ifdef PROCESSOR_ARCHITECTURE
-# We're on Windows NT or using VC 6+
-! ifdef CPU
-ASSEMBLY_ARCHITECTURE = $(CPU)
-# Using I386 for $ASSEMBLY_ARCHITECTURE doesn't work for VC7.
-!  if "$(CPU)" == "I386"
+!ifdef CPU
+! if "$(CPU)" == "I386"
 CPU = i386
-!  endif
-! else  # !CPU
-CPU = i386
-!  ifndef PLATFORM
-!   ifdef TARGET_CPU
-PLATFORM = $(TARGET_CPU)
-!   elseif defined(VSCMD_ARG_TGT_ARCH)
-PLATFORM = $(VSCMD_ARG_TGT_ARCH)
-!   endif
-!  endif
-!  ifdef PLATFORM
-!   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
-CPU = AMD64
-!   elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
-CPU = ARM64
-!   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
-!    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
-!   endif
-!  endif  # !PLATFORM
 ! endif
-!else  # !PROCESSOR_ARCHITECTURE
-# We're on Windows 95
+!else  # !CPU
 CPU = i386
-!endif # !PROCESSOR_ARCHITECTURE
-ASSEMBLY_ARCHITECTURE = $(CPU)
+! ifndef PLATFORM
+!  ifdef TARGET_CPU
+PLATFORM = $(TARGET_CPU)
+!  elseif defined(VSCMD_ARG_TGT_ARCH)
+PLATFORM = $(VSCMD_ARG_TGT_ARCH)
+!  endif
+! endif
+! ifdef PLATFORM
+!  if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
+CPU = AMD64
+!  elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
+CPU = ARM64
+!  elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
+!   error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
+!  endif
+! endif  # !PLATFORM
+!endif
 OBJDIR = $(OBJDIR)$(CPU)
 
 # Build a retail version by default
@@ -553,40 +549,53 @@ INTDIR = $(OBJDIR)
 OUTDIR = $(OBJDIR)
 
 ### Validate CPUNR
-!ifndef CPUNR
+!if "$(CPU)" == "i386" || "$(CPU)" == "AMD64"
+! ifndef CPUNR
 # default to SSE2
 CPUNR = sse2
-!elseif "$(CPUNR)" == "i386" || "$(CPUNR)" == "i486" || "$(CPUNR)" == "i586"
+! elseif "$(CPU)" == "i386" \
+	&& ("$(CPUNR)" == "i386" || "$(CPUNR)" == "i486" || "$(CPUNR)" == "i586")
 # alias i386, i486 and i586 to i686
-! message *** WARNING CPUNR=$(CPUNR) is not a valid target architecture.
-! message Windows 7 is the minimum target OS, with a minimum target
-! message architecture of i686.
-! message Retargeting to i686
+!  message *** WARNING CPUNR=$(CPUNR) is not a valid target architecture.
+!  message Windows 7 is the minimum target OS, with a minimum target
+!  message architecture of i686.
+!  message Retargeting to i686
 CPUNR = i686
-!elseif "$(CPUNR)" == "pentium4"
+! elseif "$(CPUNR)" == "pentium4"
 # alias pentium4 to sse2
-! message *** WARNING CPUNR=pentium4 is deprecated in favour of sse2.
-! message Retargeting to sse2.
+!  message *** WARNING CPUNR=pentium4 is deprecated in favour of sse2.
+!  message Retargeting to sse2.
 CPUNR = sse2
-!elseif "$(CPUNR)" != "any" && "$(CPUNR)" != "i686" \
-	&& "$(CPUNR)" != "sse" && "$(CPUNR)" != "sse2" \
-	&& "$(CPUNR)" != "avx" && "$(CPUNR)" != "avx2"
-! error *** ERROR Unknown target architecture "$(CPUNR)". Make aborted.
+! elseif ("$(CPU)" != "i386" \
+		|| ("$(CPUNR)" != "any" && "$(CPUNR)" != "i686" \
+			&& "$(CPUNR)" != "sse" )) \
+	&& "$(CPUNR)" != "sse2" && "$(CPUNR)" != "avx" \
+	&& "$(CPUNR)" != "avx2" && "$(CPUNR)" != "avx512"
+!  error *** ERROR Unknown target architecture "$(CPUNR)". Make aborted.
+! endif
+!elseif "$(CPU)" == "ARM64"
+# TODO: Validate CPUNR.
 !endif
 
 # Convert processor ID to MVC-compatible number
+!if "$(CPU)" == "i386" || "$(CPU)" == "AMD64"
 # IA32/SSE/SSE2 are only supported on x86
-!if "$(ASSEMBLY_ARCHITECTURE)" == "i386" \
+! if "$(CPU)" == "i386" \
 	&& ("$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
 CPUARG = /arch:IA32
-!elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse"
+! elseif "$(CPU)" == "i386" && "$(CPUNR)" == "sse"
 CPUARG = /arch:SSE
-!elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse2"
+! elseif "$(CPU)" == "i386" && "$(CPUNR)" == "sse2"
 CPUARG = /arch:SSE2
-!elseif "$(CPUNR)" == "avx"
+! elseif "$(CPUNR)" == "avx"
 CPUARG = /arch:AVX
-!elseif "$(CPUNR)" == "avx2"
+! elseif "$(CPUNR)" == "avx2"
 CPUARG = /arch:AVX2
+! elseif "$(CPUNR)" == "avx512"
+CPUARG = /arch:AVX512
+! endif
+!elseif "$(CPU)" == "ARM64" && defined(CPUNR)
+CPUARG = /arch:$(CPUNR)
 !endif
 
 # Pass CPUARG to GvimExt, to avoid using version-dependent defaults
@@ -594,7 +603,7 @@ MAKEFLAGS_GVIMEXT = $(MAKEFLAGS_GVIMEXT) CPUARG="$(CPUARG)"
 
 !if "$(VIMDLL)" == "yes"
 VIMDLLBASE = vim
-! if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
+! if "$(CPU)" == "i386"
 VIMDLLBASE = $(VIMDLLBASE)32
 ! else
 VIMDLLBASE = $(VIMDLLBASE)64
