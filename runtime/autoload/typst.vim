@@ -18,6 +18,9 @@ function! typst#indentexpr() abort
     " Use last indent for block comments
     if l:synname == 'typstCommentBlock'
         return l:ind
+    " do not change the indents of bullet lists
+    elseif l:synname == 'typstMarkupBulletList'
+        return indent(l:lnum)
     endif
 
     if l:pline =~ '\v[{[(]\s*$'

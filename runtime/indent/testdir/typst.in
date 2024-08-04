@@ -1,0 +1,22 @@
+// vim: set ft=typst sw=2 et:
+
+// START_INDENT
+#let footer = [
+#set text(
+              fill: rgb(80, 80, 80),
+size: 8pt,
+)
+ last update time: #smallcaps[#datetime.today().display()]
+// #set text(
+  //   fill: white,
+//   size: 8pt,
+  // )
+]
+- Apple
+- Banana
+  - Banana1
+  - Banana2
+- Cherry
+
+#footer
+// END_INDENT
