@@ -1265,7 +1265,7 @@ decode_key_event(
 			    }
 			}
 			else if (pker->wVirtualKeyCode == VK_INSERT
-					&& (nModifs & SHIFT) != 0 
+					&& (nModifs & SHIFT) != 0
 					&& (nModifs & ~SHIFT) == 0)
 			{
 			    *pmodifiers = 0;
