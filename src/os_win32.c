@@ -1264,6 +1264,13 @@ decode_key_event(
 				}
 			    }
 			}
+			else if (pker->wVirtualKeyCode == VK_INSERT
+					&& (nModifs & SHIFT) != 0 
+					&& (nModifs & ~SHIFT) == 0)
+			{
+			    *pmodifiers = 0;
+			    *pch2 = VirtKeyMap[i].chShift;
+			}
 			else
 			{
 			    *pch2 = VirtKeyMap[i].chAlone;
