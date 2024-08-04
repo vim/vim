@@ -166,8 +166,11 @@ RM =		del /f /q
 
 # Read MAJOR and MINOR from version.h.
 !IF ![for /f "tokens=2,3" %I in (version.h) do \
-	@if "%I"=="VIM_VERSION_MAJOR" ( echo MAJOR=%J>.\major.tmp ) \
-	else if "%I"=="VIM_VERSION_MINOR" ( echo MINOR=%J>.\minor.tmp )]
+	@if "%I"=="VIM_VERSION_MAJOR" ( \
+		echo MAJOR=%J> .\major.tmp \
+	) else if "%I"=="VIM_VERSION_MINOR" ( \
+		echo MINOR=%J> .\minor.tmp && exit \
+	)]
 !ENDIF
 
 !IF EXIST(.\major.tmp)
@@ -189,11 +192,15 @@ MINOR =		1
 !ENDIF
 
 # Read PATCHLEVEL from version.c.
-!IF ![cmd.exe /V:ON /C "echo off && set LINE=0&& set FIND=0&& \
-	for /f "tokens=1,3 delims=,[ " %I in (version.c) do \
-	( set /A LINE+=1 > NUL && \
-	if "%J"=="included_patches" ( set /A FIND=LINE+3 > NUL ) \
-	else if "!LINE!"=="!FIND!" ( echo PATCHLEVEL=%I>.\patchlvl.tmp && exit ) )"]
+!IF ![cmd.exe /V:ON /Q /C "set LINE=0&& set FIND=0&& \
+	for /f "tokens=1,3 delims=, " %I in (version.c) do ( \
+		set /A LINE+=1 > NUL && \
+		if "%J"=="included_patches[^]" ( \
+			set /A FIND=LINE+3 > NUL \
+		) else if "!LINE!"=="!FIND!" ( \
+			echo PATCHLEVEL=%I> .\patchlvl.tmp && exit \
+		) \
+	)"]
 !ENDIF
 !IF EXIST(.\patchlvl.tmp)
 ! INCLUDE .\patchlvl.tmp
