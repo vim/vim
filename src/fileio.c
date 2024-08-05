@@ -3912,7 +3912,7 @@ vim_rename(char_u *from, char_u *to)
 
 /*
  * Create the new file with same permissions as the original.
- * Return -1 for failure, 0 for success.
+ * Return FAIL for failure, OK for success.
  */
     int
 vim_copyfile(char_u *from, char_u *to)
