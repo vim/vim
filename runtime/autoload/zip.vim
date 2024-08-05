@@ -29,9 +29,9 @@ if &cp || exists("g:loaded_zip")
  finish
 endif
 let g:loaded_zip= "v33"
-if v:version < 702
+if v:version < 900
  echohl WarningMsg
- echomsg "***warning*** this version of zip needs vim 7.2 or later"
+ echomsg "***warning*** this version of zip needs vim 9.0 or later"
  echohl Normal
  finish
 endif
