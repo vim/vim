@@ -394,7 +394,7 @@ fun! s:ChgDir(newdir,errlvl,errmsg)
 endfun
 
 " ---------------------------------------------------------------------
-" SetSaneOpts: {{{2
+" s:SetSaneOpts: {{{2
 fun! s:SetSaneOpts()
   let dict = {}
   let dict.report = &report
@@ -406,12 +406,13 @@ fun! s:SetSaneOpts()
   return dict
 endfun
 
-" s:RestoreOpts:: {{{2
+" ---------------------------------------------------------------------
+" s:RestoreOpts: {{{2
 fun! s:RestoreOpts(dict)
   for [key, val] in items(a:dict)
     exe $"let &{key} = {val}"
   endfor
-endfunc
+endfun
 
 " ------------------------------------------------------------------------
 " Modelines And Restoration: {{{1
