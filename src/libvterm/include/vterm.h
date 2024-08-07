@@ -452,6 +452,8 @@ typedef struct {
   int (*resize)(int rows, int cols, VTermStateFields *fields, void *user);
   int (*setlineinfo)(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user);
   int (*sb_clear)(void *user);
+  // ABI-compat only enabled if vterm_state_callbacks_has_premove() is invoked
+  int (*premove)(VTermRect dest, void *user);
 } VTermStateCallbacks;
 
 // VIM: added
@@ -487,6 +489,8 @@ VTermState *vterm_obtain_state(VTerm *vt);
 
 void  vterm_state_set_callbacks(VTermState *state, const VTermStateCallbacks *callbacks, void *user);
 void *vterm_state_get_cbdata(VTermState *state);
+
+void vterm_state_callbacks_has_premove(VTermState *state);
 
 void  vterm_state_set_unrecognised_fallbacks(VTermState *state, const VTermStateFallbacks *fallbacks, void *user);
 void *vterm_state_get_unrecognised_fbdata(VTermState *state);
@@ -578,6 +582,8 @@ typedef struct {
   int (*sb_pushline)(int cols, const VTermScreenCell *cells, void *user);
   int (*sb_popline)(int cols, VTermScreenCell *cells, void *user);
   int (*sb_clear)(void* user);
+  /* ABI-compat this is only used if vterm_screen_callbacks_has_pushline4() is called */
+  int (*sb_pushline4)(int cols, const VTermScreenCell *cells, int continuation, void *user);
 } VTermScreenCallbacks;
 
 // Return the screen of the vterm.
@@ -589,6 +595,8 @@ VTermScreen *vterm_obtain_screen(VTerm *vt);
  */
 void  vterm_screen_set_callbacks(VTermScreen *screen, const VTermScreenCallbacks *callbacks, void *user);
 void *vterm_screen_get_cbdata(VTermScreen *screen);
+
+void vterm_screen_callbacks_has_pushline4(VTermScreen *screen);
 
 void  vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermStateFallbacks *fallbacks, void *user);
 void *vterm_screen_get_unrecognised_fbdata(VTermScreen *screen);
