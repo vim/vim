@@ -1427,8 +1427,14 @@ add_classfuncs_objmethods(
 			where_T where = WHERE_INIT;
 			where.wt_func_name = (char *)pname;
 			where.wt_kind = WT_METHOD;
-			(void)check_type(pf->uf_func_type, cf->uf_func_type,
-								TRUE, where);
+			int ret = check_type_maybe(pf->uf_func_type,
+						   cf->uf_func_type,
+						   TRUE, where);
+			// Signature must be such that no runtime checks
+			// are required. Only this compile time check.
+			if (ret == MAYBE)
+			    type_mismatch_where(pf->uf_func_type,
+						cf->uf_func_type, where);
 		    }
 		}
 	    }

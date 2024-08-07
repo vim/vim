@@ -7554,6 +7554,24 @@ def Test_extended_obj_method_type_check()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1383: Method "F": type mismatch, expected func(...list<any>) but got func(list<any>)', 10)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+        def String(): string
+            return 'S'
+        enddef
+    endclass
+    class B extends A
+        def String(): any
+            return '?'
+        enddef
+    endclass
+
+    var o = B.new().String()
+  END
+  v9.CheckSourceFailure(lines, 'E1383: Method "String": type mismatch, expected func(): string but got func(): any', 12)
 enddef
 
 " Test type checking for class variable in assignments
