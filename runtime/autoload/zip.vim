@@ -68,8 +68,9 @@ fun! s:Mess(group, msg)
   echohl Normal
 endfun
 
-if v:version < 900
- call s:Mess('WarningMsg', "***warning*** this version of zip needs vim 9.0 or later")
+if v:version < 901
+ " required for defer
+ call s:Mess('WarningMsg', "***warning*** this version of zip needs vim 9.1 or later")
  finish
 endif
 if !dist#vim#IsSafeExecutable('zip', g:zip_unzipcmd)
