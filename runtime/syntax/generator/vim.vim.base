@@ -3,7 +3,7 @@
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
 " URL:	   https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	   2024 Jul 18
+" Last Change:	   2024 Jul 28
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -185,7 +185,7 @@ syn match	vimNumber	'\%(^\|\A\)\zs#\x\{6}'		skipwhite nextgroup=vimGlobal,vimSub
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDef,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimFor,vimFunction,vimGlobal,vimHighlight,vimLet,vimMap,vimMark,vimMatch,vimNotFunc,vimNorm,vimSet,vimSleep,vimSyntax,vimThrow,vimUnlet,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate,@vim9CmdList
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDef,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimImport,vimIsCommand,vimExtCmd,vimFor,vimFunction,vimGlobal,vimHighlight,vimLet,vimMap,vimMark,vimMatch,vimNotFunc,vimNorm,vimSet,vimSleep,vimSyntax,vimThrow,vimUnlet,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate,@vim9CmdList
 syn cluster vim9CmdList	contains=vim9Const,vim9Final,vim9For,vim9Var
 syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
 syn match vimIsCommand	"\<\%(\h\w*\|[23]mat\%[ch]\)\>"	contains=vimCommand
@@ -235,6 +235,11 @@ if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_vimFTError")
 endif
 syn keyword vimFTCmd    contained	filet[ype]
 syn keyword vimFTOption contained	detect indent off on plugin
+
+" Import {{{2
+" ======
+syn keyword	vimAutoload	contained	autoload	
+syn keyword	vimImport	imp[ort]	skipwhite nextgroup=vimAutoload
 
 " Augroup : vimAugroupError removed because long augroups caused sync'ing problems. {{{2
 " ======= : Trade-off: Increasing synclines with slower editing vs augroup END error checking.
@@ -1111,6 +1116,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimAutoCmd	vimCommand
  hi def link vimAutoEvent	Type
  hi def link vimAutoCmdMod	Special
+ hi def link vimAutoload	vimImport
  hi def link vimBang	vimOper
  hi def link vimBehaveBang	vimBang
  hi def link vimBehaveModel	vimBehave
@@ -1179,6 +1185,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimHiStartStop	vimHiTerm
  hi def link vimHiTerm	Type
  hi def link vimHLGroup	vimGroup
+ hi def link vimImport	vimCommand
  hi def link vimInsert	vimString
  hi def link vimIskSep	Delimiter
  hi def link vim9KeymapLineComment	vimKeymapLineComment

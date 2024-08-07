@@ -303,6 +303,7 @@ function! s:get_vim_command_type(cmd_name)
 		final
 		for
 		function
+		import
 		insert
 		let
 		map
