@@ -1,6 +1,6 @@
 " Vim indent file
 " Language:	Protobuf
-" Maintainer:	Johannes Zellner <johannes@zellner.org>
+" Maintainer:	David Pedersen <limero@me.com>
 " Last Change:	2024 Aug 07
 
 " Only load this indent file when no other was loaded.
