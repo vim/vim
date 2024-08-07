@@ -3,7 +3,7 @@
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
 " URL:	   https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	   2024 Jul 23
+" Last Change:	   2024 Jul 25
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -516,8 +516,8 @@ syn match	vimString	"[^(,]'[^']\{-}\zs'"
 
 " Marks, Registers, Addresses, Filters: {{{2
 syn match	vimMark	"'[a-zA-Z0-9]\ze[-+,!]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
-syn match	vimMark	"'[<>]\ze[-+,!]"		nextgroup=vimFilter,vimMarkNumber,vimSubst1
-syn match	vimMark	",\zs'[<>]\ze"		nextgroup=vimFilter,vimMarkNumber,vimSubst1
+syn match	vimMark	"'[\[\]<>]\ze[-+,!]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
+syn match	vimMark	",\zs'[\[\]<>]\ze"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
 syn match	vimMark	"[!,:]\zs'[a-zA-Z0-9]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
 syn match	vimMark	"\<norm\%[al]\s\zs'[a-zA-Z0-9]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
 syn match	vimMarkNumber	"[-+]\d\+"		contained contains=vimOper nextgroup=vimSubst1
