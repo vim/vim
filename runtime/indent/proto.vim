@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Protobuf
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	2002 Mar 15
+" Last Change:	2024 Aug 07
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -14,6 +14,6 @@ setlocal cindent
 setlocal expandtab
 setlocal shiftwidth=2
 
-let b:undo_indent = "setl cin<"
+let b:undo_indent = "setlocal cindent< expandtab< shiftwidth<"
 
 " vim: sw=2 sts=2 et
