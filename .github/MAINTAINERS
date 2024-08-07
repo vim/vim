@@ -341,6 +341,7 @@ runtime/indent/perl.vim			@petdance
 runtime/indent/php.vim			@2072
 runtime/indent/postscr.vim		@mrdubya
 runtime/indent/prolog.vim		@dkearns
+runtime/indent/proto.vim		@Limero
 runtime/indent/ps1.vim			@heaths
 runtime/indent/qb64.vim			@dkearns
 runtime/indent/qml.vim			@ChaseKnowlden
