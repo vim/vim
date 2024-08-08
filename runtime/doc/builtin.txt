@@ -2534,7 +2534,8 @@ executable({expr})					*executable()*
 		arguments.
 
 		executable() uses the value of $PATH and/or the normal
-		searchpath for programs.		*PATHEXT*
+		searchpath for programs.
+							*PATHEXT*
 		On MS-Windows the ".exe", ".bat", etc. can optionally be
 		included.  Then the extensions in $PATHEXT are tried.  Thus if
 		"foo.exe" does not exist, "foo.exe.bat" can be found.  If
