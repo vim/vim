@@ -190,6 +190,7 @@ static int do_unlet_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, vo
 static int do_lock_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
 static void list_one_var(dictitem_T *v, char *prefix, int *first);
 static void list_one_var_a(char *prefix, char_u *name, int type, char_u *string, int *first);
+static int var_check_ro_or_locked(dictitem_T *di, char_u *name);
 
 /*
  * Initialize global and vim special variables
@@ -4104,7 +4105,7 @@ set_var_const(
 			&& ((flags & ASSIGN_COMPOUND_OP) == 0
 			    || !type_inplace_modifiable))
 				 ? var_check_permission(di, name) == FAIL
-				 : var_check_ro(di->di_flags, name, FALSE))
+				 : var_check_ro_or_locked(di, name) == FAIL)
 		goto failed;
 	}
 	else
@@ -4243,6 +4244,15 @@ var_check_permission(dictitem_T *di, char_u *name)
     if (var_check_ro(di->di_flags, name, FALSE)
 		    || value_check_lock(di->di_tv.v_lock, name, FALSE)
 		    || var_check_lock(di->di_flags, name, FALSE))
+	return FAIL;
+    return OK;
+}
+
+    static int
+var_check_ro_or_locked(dictitem_T *di, char_u *name)
+{
+    if (var_check_ro(di->di_flags, name, FALSE)
+	    || value_check_lock(di->di_tv.v_lock, name, FALSE))
 	return FAIL;
     return OK;
 }
