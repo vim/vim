@@ -6129,6 +6129,27 @@ def Test_abstract_method()
     assert_equal('foo', A.Foo())
   END
   v9.CheckSourceSuccess(lines)
+
+  # Invoke method returning a value through the abstract class. See #15432.
+  lines =<< trim END
+    vim9script
+
+    abstract class A
+        abstract def String(): string
+    endclass
+
+    class B extends A
+        def String(): string
+            return 'B'
+        enddef
+    endclass
+
+    def F(o: A)
+        assert_equal('B', o.String())
+    enddef
+    F(B.new())
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for calling a class method from a subclass
