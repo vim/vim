@@ -287,6 +287,7 @@ function! s:get_vim_command_type(cmd_name)
 		behave
 		call
 		catch
+		class
 		def
 		doautoall
 		doautocmd
@@ -297,12 +298,18 @@ function! s:get_vim_command_type(cmd_name)
 		echomsg
 		echon
 		echowindow
+		endclass
 		enddef
+		endenum
 		endfunction
+		endinterface
+		enum
 		execute
+		export
 		final
 		for
 		function
+		interface
 		insert
 		let
 		map
@@ -312,12 +319,14 @@ function! s:get_vim_command_type(cmd_name)
 		new
 		normal
 		popup
+		public
 		set
 		setglobal
 		setlocal
 		sleep
 		smagic
 		snomagic
+		static
 		substitute
 		syntax
 		throw
