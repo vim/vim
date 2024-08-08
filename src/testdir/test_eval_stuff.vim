@@ -2,6 +2,7 @@
 
 source view_util.vim
 source shared.vim
+import './vim9.vim' as v9
 
 function s:foo() abort
   try
@@ -126,7 +127,31 @@ func Test_for_invalid()
   call assert_fails("for x in 99", 'E1098:')
   call assert_fails("for x in function('winnr')", 'E1098:')
   call assert_fails("for x in {'a': 9}", 'E1098:')
-  call assert_fails("for v:maxcol in range(1)", 'E46:')
+
+  let lines =<< trim END
+    for v:maxcol in range(5)
+    endfor
+  END
+
+  let save_v_maxcol = v:maxcol
+  call v9.CheckLegacyAndVim9Failure(lines, 'E46:')
+  call assert_equal(save_v_maxcol, v:maxcol)
+
+  let lines =<< trim END
+    for g:constvar in range(5)
+    endfor
+  END
+
+  const g:constvar = 10
+  call v9.CheckLegacyAndVim9Failure(lines, 'E741:')
+  call assert_equal(10, g:constvar)
+  unlet g:constvar
+
+  let g:constvar = 10
+  lockvar 0 g:constvar
+  call v9.CheckLegacyAndVim9Failure(lines, 'E1122:')
+  call assert_equal(10, g:constvar)
+  unlet g:constvar
 
   if 0
     /1/5/2/s/\n
