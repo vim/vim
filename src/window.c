@@ -4607,6 +4607,11 @@ free_tabpage(tabpage_T *tp)
  * It will edit the current buffer, like after ":split".
  * When "after" is 0 put it just after the current Tab page.
  * Otherwise put it just before tab page "after".
+ *
+ * Does not trigger WinNewPre, since the window structures
+ * are not completly setup yet and could cause dereferencing
+ * NULL pointers
+ *
  * Return FAIL or OK.
  */
     int
@@ -4639,8 +4644,6 @@ win_new_tabpage(int after)
 
     newtp->tp_localdir = (tp->tp_localdir == NULL)
 				    ? NULL : vim_strsave(tp->tp_localdir);
-
-    trigger_winnewpre();
 
     // Create a new empty window.
     if (win_alloc_firstwin(tp->tp_curwin) == OK)
