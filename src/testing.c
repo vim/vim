@@ -99,7 +99,7 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
 	return;
     }
 
-    for (p = str; *p != NUL; ++p)
+    for (p = str; *p != NUL; )
     {
 	same_len = 1;
 	s = p;
@@ -118,10 +118,13 @@ ga_concat_shorten_esc(garray_T *gap, char_u *str)
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%d", same_len);
 	    ga_concat(gap, buf);
 	    ga_concat(gap, (char_u *)" times]");
-	    p = s - 1;
+	    p = s;
 	}
 	else
+	{
 	    ga_concat_esc(gap, p, clen);
+	    p += clen;
+	}
     }
 }
 
