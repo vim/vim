@@ -105,7 +105,7 @@ syn match dosbatchColonCommentErr contained "\s*:\s*:[^)]*\(\(\n\s*\)\?)\)\@="
 syn region dosbatchCodeBlock	transparent start=+(+ end=+)+ contains=dosbatchString,dosbatchVariable,dosBatchArgument,@dosbatchNumber,dosbatchImplicit,dosbatchStatement,dosbatchConditional,dosbatchRepeat,dosbatchOperator,dosbatchIfOperator,@dosbatchCodeBlockComment,dosbatchColonCommentErr,dosbatchCodeBlock
 syn match dosbatchCodeBlockErr	")"
 
-syn sync match dosbatchSyncCodeBlock grouphere NONE "^\s*)\s*$"
+syn sync match dosbatchSyncCodeBlock grouphere NONE "^)\s*$"
 
 syn keyword dosbatchImplicit    append assoc at attrib break cacls cd chcp chdir
 syn keyword dosbatchImplicit    chkdsk chkntfs cls cmd color comp compact convert copy
