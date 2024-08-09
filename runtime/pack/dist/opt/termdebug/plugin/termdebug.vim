@@ -101,7 +101,6 @@ var gdb_channel: channel
 # These changes because they relate to windows
 var pid: number
 var gdbwin: number
-var varwin: number
 var asmwin: number
 var ptywin: number
 var sourcewin: number
@@ -182,7 +181,6 @@ def InitScriptVariables()
   # These changes because they relate to windows
   pid = 0
   gdbwin = 0
-  varwin = 0
   asmwin = 0
   ptywin = 0
   sourcewin = 0
@@ -1082,28 +1080,24 @@ def ParseVarinfo(varinfo: string): dict<any>
 enddef
 
 def HandleVariablesMsg(msg: string)
-  var curwinid = win_getid()
-  if win_gotoid(varwin)
-    silent! :%delete _
-    var spaceBuffer = 20
-    var spaces = repeat(' ', 16)
-    setline(1, $'Type{spaces}Name{spaces}Value')
-    var cnt = 1
-    var capture = '{name=".\{-}",\%(arg=".\{-}",\)\{0,1\}type=".\{-}"\%(,value=".\{-}"\)\{0,1\}}'
-    var varinfo = matchstr(msg, capture, 0, cnt)
+  deletebufline(varbufname, 1, '$')
+  var spaceBuffer = 20
+  var spaces = repeat(' ', 16)
+  setbufline(varbufnr, 1, $'Type{spaces}Name{spaces}Value')
+  var cnt = 1
+  var capture = '{name=".\{-}",\%(arg=".\{-}",\)\{0,1\}type=".\{-}"\%(,value=".\{-}"\)\{0,1\}}'
+  var varinfo = matchstr(msg, capture, 0, cnt)
 
-    while varinfo != ''
-      var vardict = ParseVarinfo(varinfo)
-      setline(cnt + 1, vardict['type'] ..
-        repeat(' ', max([20 - len(vardict['type']), 1])) ..
-        vardict['name'] ..
-        repeat(' ', max([20 - len(vardict['name']), 1])) ..
-        vardict['value'])
-      cnt += 1
-      varinfo = matchstr(msg, capture, 0, cnt)
-    endwhile
-  endif
-  win_gotoid(curwinid)
+  while varinfo != ''
+    var vardict = ParseVarinfo(varinfo)
+    setbufline(varbufnr, cnt + 1, vardict['type'] ..
+      repeat(' ', max([20 - len(vardict['type']), 1])) ..
+      vardict['name'] ..
+      repeat(' ', max([20 - len(vardict['name']), 1])) ..
+      vardict['value'])
+    cnt += 1
+    varinfo = matchstr(msg, capture, 0, cnt)
+  endwhile
 enddef
 
 
@@ -1715,39 +1709,42 @@ enddef
 
 def GotoVariableswinOrCreateIt()
   var mdf = ''
-  if !win_gotoid(varwin)
+  var varwin = bufwinid(varbufname)
+  if varwin < 0
     if win_gotoid(sourcewin)
       # 60 is approx spaceBuffer * 3
       if winwidth(0) > (78 + 60)
         mdf = 'vert'
-        exe $'{mdf} :60new'
+        exe $'{mdf} :60split'
       else
-        exe 'rightbelow new'
+        exe 'rightbelow split'
       endif
     else
-      exe 'new'
+      exe 'split'
     endif
-
-    varwin = win_getid()
-
-    setlocal nowrap
-    setlocal noswapfile
-    setlocal buftype=nofile
-    setlocal bufhidden=wipe
-    setlocal signcolumn=no
-    setlocal modifiable
 
     # If exists, then open, otherwise create
     if varbufnr > 0 && bufexists(varbufnr)
       exe $'buffer {varbufnr}'
     else
+      enew
       exe $"silent file {varbufname}"
       varbufnr = bufnr(varbufname)
+
+      setbufvar(varbufname, "&wrap", false)
+      setbufvar(varbufname, "&swapfile", false)
+      setbufvar(varbufname, "&bufhidden", 'hide')
+      setbufvar(varbufname, "&buftype", 'nofile')
+      setbufvar(varbufname, "&buflisted", false)
+      setbufvar(varbufname, "&signcolumn", 'no')
+      setbufvar(varbufname, "&modifiable", true)
     endif
 
     if mdf != 'vert' && GetVariablesWindowHeight() > 0
       exe $'resize {GetVariablesWindowHeight()}'
     endif
+  else
+    win_gotoid(varwin)
   endif
 
   if running
