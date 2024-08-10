@@ -80,7 +80,7 @@
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory]
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
-#	  PYTHON3_VER=[Python3 version, eg 30, 31]  (default is 36)
+#	  PYTHON3_VER=[Python3 version, eg 30, 31]  (default is 38)
 #
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory]
@@ -994,8 +994,13 @@ PYTHON_LIB = "$(PYTHON)\libs\python$(PYTHON_VER).lib"
 
 # PYTHON3 interface
 !ifdef PYTHON3
+! ifndef DYNAMIC_PYTHON3_STABLE_ABI
+!  if "$(DYNAMIC_PYTHON3)" == "yes"
+DYNAMIC_PYTHON3_STABLE_ABI = yes
+!  endif
+! endif
 ! ifndef PYTHON3_VER
-PYTHON3_VER = 36
+PYTHON3_VER = 38
 ! endif
 ! if "$(DYNAMIC_PYTHON3_STABLE_ABI)" == "yes"
 PYTHON3_NAME = python3

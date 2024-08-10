@@ -1575,7 +1575,7 @@ Optional Packages:
   --with-python-command=NAME  name of the Python 2 command (default: python2 or python)
   --with-python-config-dir=PATH  Python's config directory (deprecated)
   --with-python3-command=NAME  name of the Python 3 command (default: python3 or python)
-  --with-python3-stable-abi=VERSION  stable ABI version to target (e.g. 3.8)
+  --with-python3-stable-abi=VERSION  stable ABI version to target (default: 3.8)
   --with-python3-config-dir=PATH  Python's config directory (deprecated)
   --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)
   --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
@@ -7083,21 +7083,30 @@ printf %s "checking Python is 3.0 or better... " >&6; }
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yep" >&5
 printf "%s\n" "yep" >&6; }
 
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-python3-stable-abi argument" >&5
+            python3_stable_abi_default=3.8
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-python3-stable-abi argument" >&5
 printf %s "checking --with-python3-stable-abi argument... " >&6; }
 
 
 # Check whether --with-python3-stable-abi was given.
 if test ${with_python3_stable_abi+y}
 then :
-  withval=$with_python3_stable_abi; vi_cv_var_python3_stable_abi="$withval"; { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_var_python3_stable_abi" >&5
+  withval=$with_python3_stable_abi;
+	 if test "X$withval" = "Xyes"; then
+	   vi_cv_var_python3_stable_abi=$python3_stable_abi_default
+	 else
+	   vi_cv_var_python3_stable_abi="$withval"
+	 fi
+	 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_var_python3_stable_abi" >&5
 printf "%s\n" "$vi_cv_var_python3_stable_abi" >&6; }
 else $as_nop
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
+
+	 vi_cv_var_python3_stable_abi=$python3_stable_abi_default
+	 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no. defaults to $python3_stable_abi_default." >&5
+printf "%s\n" "no. defaults to $python3_stable_abi_default." >&6; }
 fi
 
-      if test "X$vi_cv_var_python3_stable_abi" != "X"; then
+      if test "X$vi_cv_var_python3_stable_abi" != "Xno"; then
         if test ${vi_cv_var_python3_stable_abi_hex+y}
 then :
   printf %s "(cached) " >&6
