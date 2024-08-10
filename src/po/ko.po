@@ -1,8 +1,8 @@
-# Generated from ko.UTF-8.po, DO NOT EDIT
+# Korean translation for Vim
 #
 # FIRST AUTHOR SungHyun Nam <goweol@gmail.com>, 2000-2018
 #
-# Original translations.
+# Generated from ko.UTF-8.po, DO NOT EDIT.
 #
 msgid ""
 msgstr ""
@@ -14,7 +14,7 @@ msgstr ""
 "Language-Team: Korean\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=euc-kr\n"
+"Content-Type: text/plain; charset=EUC-KR\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
