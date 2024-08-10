@@ -453,7 +453,7 @@ files: $(PO_INPUTLIST)
 first_time: files
 	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
-	@ copy /a .\files+.\vim_to_js .\allfiles
+	@ copy /b .\files+.\vim_to_js .\allfiles
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) \
@@ -465,7 +465,7 @@ first_time: files
 $(PACKAGE).pot: files
 	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
-	@ copy /a .\files+.\vim_to_js .\allfiles
+	@ copy /b .\files+.\vim_to_js .\allfiles
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(PACKAGE) --output=$(PACKAGE).pot \
