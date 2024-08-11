@@ -124,6 +124,31 @@ verify that the tests fail.  Then you know your changes are covered by the
 test.
 
 
+Viewing generated screendumps
+-----------------------------
+
+You may also wish to look at the whole batch of failed screendumps after
+running "make test".  Source the "viewdumps.vim" script for this task:
+
+	[VIMRUNTIME=../..] \
+	../../src/vim --clean -S testdir/viewdumps.vim \
+				[testdir/dumps/java_*.dump ...]
+
+By default, all screendumps found in the "failed" directory will be added to
+the argument list and then the first one will be loaded.  Loaded screendumps
+that bear filenames of screendumps found in the "dumps" directory will be
+rendering the contents of any such pair of files and the difference between
+them (:help term_dumpdiff()); otherwise, they will be rendering own contents
+(:help term_dumpload()).  Remember to execute :edit when occasionally you see
+raw file contents instead of rendered.
+
+At any time, you can add, list, and abandon other screendumps:
+
+	:$argedit testdir/dumps/java_*.dump
+	:args
+	:qall
+
+The listing of argument commands can be found under :help buffer-list.
 
 
 TODO: run test for one specific filetype

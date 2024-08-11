@@ -409,6 +409,12 @@ func RunTest()
   call Message('OK: ' .. ok_count)
   call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
   call Message('skipped: ' .. skipped_count)
+
+  if !empty(failed_tests)
+    call Message('')
+    call Message('View generated screendumps with "../../src/vim --clean -S testdir/viewdumps.vim"')
+  endif
+
   call AppendMessages('== SUMMARY ==')
 
   if len(failed_tests) > 0
