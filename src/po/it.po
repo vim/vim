@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-28 09:50+0200\n"
-"PO-Revision-Date: 2024-03-06 15:00+0100\n"
+"POT-Creation-Date: 2024-08-11 10:10+0200\n"
+"PO-Revision-Date: 2024-08-11 10:36+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -583,16 +583,16 @@ msgid "Greetings, Vim user!"
 msgstr "Salve, utente Vim!"
 
 msgid "Already only one tab page"
-msgstr "C'è già un'unica pagina di linguette"
+msgstr "C'è già un'unica pagina di schede"
 
 msgid "Edit File in new tab page"
-msgstr "Apri il File in una nuova pagina di linguette"
+msgstr "Apri il File in una nuova pagina di schede"
 
 msgid "Edit File in new window"
 msgstr "Apri il File in una nuova finestra"
 
 msgid "Tab page %d"
-msgstr "Pagina di linguette %d"
+msgstr "Pagina di schede %d"
 
 msgid "No swap file"
 msgstr "Non posso creare un file di swap"
@@ -895,13 +895,13 @@ msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: Ricevuta richiesta \"die\" dal Session Manager\n"
 
 msgid "Close tab"
-msgstr "Chiudi linguetta"
+msgstr "Chiudi scheda"
 
 msgid "New tab"
-msgstr "Nuova linguetta"
+msgstr "Nuova scheda"
 
 msgid "Open Tab..."
-msgstr "Apri linguetta..."
+msgstr "Apri scheda..."
 
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: Finestra principale distrutta inaspettatamente\n"
@@ -946,7 +946,7 @@ msgid "&Undo"
 msgstr "&U Disfa"
 
 msgid "Open tab..."
-msgstr "Apri linguetta..."
+msgstr "Apri scheda..."
 
 msgid "Find string"
 msgstr "Trova stringa"
@@ -1287,8 +1287,8 @@ msgstr " Completamento definito dall'utente (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Completamento globale (^O^N^P)"
 
-msgid " Spelling suggestion (^S^N^P)"
-msgstr " Suggerimento ortografico (^S^N^P)"
+msgid " Spelling suggestion (^s^N^P)"
+msgstr " Suggerimento ortografico (^s^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Completamento Parola Locale (^N^P)"
@@ -1604,7 +1604,7 @@ msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tNon caricare script plugin"
 
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
-msgstr "-o[N]\t\tApri N pagine di linguette (predefinito: una per ogni file)"
+msgstr "-o[N]\t\tApri N pagine di schede (predefinito: una per ogni file)"
 
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\tApri N finestre (predefinito: una per ogni file)"
@@ -1667,7 +1667,7 @@ msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
 "--remote-tab[-wait][-silent] <file>  Come --remote, ma apre una pagina di "
-"linguette per file"
+"schede per file"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <tasti>\tInvia <tasti> a un server Vim ed esci"
@@ -5538,9 +5538,6 @@ msgstr "E612: Troppi 'sign' definiti"
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Carattere di stampa sconosciuto: %s"
 
-msgid "E614: Class required"
-msgstr "E614: Classe richiesta"
-
 msgid "E616: Object required for argument %d"
 msgstr "E616: Object richiesto per argomento %d"
 
@@ -6045,7 +6042,7 @@ msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: Carattere duplicato nell'elemento MAP"
 
 msgid "E784: Cannot close last tab page"
-msgstr "E784: Non posso chiudere l'ultima pagina di linguette"
+msgstr "E784: Non posso chiudere l'ultima pagina di schede"
 
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() può essere usata solo in modalità inserimento"
@@ -6747,7 +6744,7 @@ msgid "E996: Cannot lock a register"
 msgstr "E996: Non posso bloccare un registro"
 
 msgid "E997: Tabpage not found: %d"
-msgstr "E997: Pagina-di-linguette non trovata: %d"
+msgstr "E997: Pagina-di-schede non trovata: %d"
 
 msgid "E998: Reduce of an empty %s with no initial value"
 msgstr ""
@@ -7715,7 +7712,7 @@ msgstr "E1307: Argomento %d: Tenta di modificare la costante %s"
 
 msgid "E1308: Cannot resize a window in another tab page"
 msgstr ""
-"E1308: Non posso ridimensionare una finestra in un'altra pagine di linguette"
+"E1308: Non posso ridimensionare una finestra in un'altra pagine di schede"
 
 msgid "E1309: Cannot change mappings while listing"
 msgstr "E1309: Non posso modificare mappature mentre le sto elencando"
@@ -7749,20 +7746,11 @@ msgstr "E1317: Dichiarazione di variabile Object non valida: %s"
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: Comando non valido in una Classe: %s"
 
-msgid "E1319: Using a Class as a Number"
-msgstr "E1319: Uso di una Classe come un Numero"
-
 msgid "E1320: Using an Object as a Number"
 msgstr "E1320: Uso di un Object come un Numero"
 
-msgid "E1321: Using a Class as a Float"
-msgstr "E1321: Uso di una Classe come un Numero-a-virgola-mobile"
-
 msgid "E1322: Using an Object as a Float"
 msgstr "E1322: Uso di un Object come un Numero-a-virgola-mobile"
-
-msgid "E1323: Using a Class as a String"
-msgstr "E1323: Uso di una Classe come una Stringa"
 
 msgid "E1324: Using an Object as a String"
 msgstr "E1324: Uso di un Object come una Stringa"
@@ -7794,8 +7782,8 @@ msgstr ""
 
 msgid "E1332: public variable name cannot start with underscore: %s"
 msgstr ""
-"E1332: Il nome di un elemento public non può iniziare con il trattino "
-"basso: %s"
+"E1332: Il nome di un elemento public non può iniziare con il trattino basso: "
+"%s"
 
 msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
 msgstr ""
@@ -8004,9 +7992,6 @@ msgstr "E1393: Il Tipo può essere definito solo negli script Vim9"
 msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: Il nome di un Tipo deve iniziare con una lettera maiuscola: %s"
 
-msgid "E1395: Type alias \"%s\" cannot be modified"
-msgstr "E1395: Il Tipo alias \"%s\" non può essere modificato"
-
 msgid "E1396: Type alias \"%s\" already exists"
 msgstr "E1396: Il Tipo alias \"%s\" esiste già"
 
@@ -8019,15 +8004,6 @@ msgstr "E1398: Manca il tipo del Tipo alias"
 msgid "E1399: Type can only be used in a script"
 msgstr "E1399: \"Tipo\" si può usare solo in uno script"
 
-msgid "E1400: Using type alias \"%s\" as a Number"
-msgstr "E1400: Uso del Tipo alias \"%s\" come un Numero"
-
-msgid "E1401: Using type alias \"%s\" as a Float"
-msgstr "E1401: Uso del Tipo alias \"%s\" come un Numero-a-virgola-mobile"
-
-msgid "E1402: Using type alias \"%s\" as a String"
-msgstr "E1402: Uso del Tipo alias \"%s\" come una Stringa"
-
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr "E1403: Impossibile usare il Tipo alias \"%s\" come valore"
 
@@ -8036,9 +8012,6 @@ msgstr "E1404: Impossibile usare \"Abstract\" in un'Interfaccia"
 
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: Impossibile usare Classe \"%s\" come valore"
-
-msgid "E1406: Cannot use a Class as a variable or value"
-msgstr "E1406: Impossibile usare una Classe come variabile o valore"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: Impossibile usare un Tipo alias come variabile o valore"
@@ -8158,8 +8131,8 @@ msgid "E1512: Wrong character width for field \"%s\""
 msgstr "E1512: Larghezza carattere errata per campo \"%s\""
 
 msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
-msgstr "E1513: Non riesco a passare a un altro buffer. Opzione "
-"'winfixbuf' attiva"
+msgstr ""
+"E1513: Non riesco a passare a un altro buffer. Opzione 'winfixbuf' attiva"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -8362,10 +8335,10 @@ msgid "unable to unset option %s which does not have global value"
 msgstr "impossibile rimuovere l'opzione %s che non ha un valore globale"
 
 msgid "attempt to refer to deleted tab page"
-msgstr "tentativo di riferimento a pagina di linguette cancellata"
+msgstr "tentativo di riferimento a pagina di schede cancellata"
 
 msgid "no such tab page"
-msgstr "pagina di linguette inesistente"
+msgstr "pagina di schede inesistente"
 
 msgid "attempt to refer to deleted window"
 msgstr "tentativo di riferimento a una finestra cancellata"
@@ -8399,7 +8372,7 @@ msgstr "atteso Object vim.Window, ottenuto %s"
 
 msgid "failed to find window in the current tab page"
 msgstr ""
-"non è stato possibile trovare la finestra nella pagina di linguette corrente"
+"non è stato possibile trovare la finestra nella pagina di schede corrente"
 
 msgid "did not switch to the specified window"
 msgstr "passaggio alla finestra specificata non effettuato"
@@ -8408,7 +8381,7 @@ msgid "expected vim.TabPage object, but got %s"
 msgstr "atteso Object vim.TabPage, ottenuto %s"
 
 msgid "did not switch to the specified tab page"
-msgstr "passaggio alla pagina di linguette specificata non effettuato"
+msgstr "passaggio alla pagina di schede specificata non effettuato"
 
 msgid "failed to run the code"
 msgstr "esecuzione del codice non riuscita"
@@ -8988,24 +8961,28 @@ msgid "name of the winpty dynamic library"
 msgstr "nome della libreria dinamica winpty"
 
 msgid "multiple tab pages"
-msgstr "più di una pagina di linguette"
+msgstr "più di una pagina di schede"
 
 msgid "0, 1 or 2; when to use a tab pages line"
-msgstr "0, 1 o 2; utilizzo della riga che descrive pagine di linguette"
+msgstr "0, 1 o 2; utilizzo della riga che descrive pagine di schede"
+
+msgid "behaviour when closing tab pages: left, uselast or empty"
+msgstr ""
+"comportamento alla chiusura di pagine di schede: left, uselast o empty"
 
 msgid "maximum number of tab pages to open for -p and \"tab all\""
 msgstr ""
-"massimo numero di pagine di linguette da aprire\n"
+"massimo numero di pagine di schede da aprire\n"
 "per -p e \"tab all\""
 
 msgid "custom tab pages line"
-msgstr "personalizzazione riga che descrive le pagine di linguette"
+msgstr "personalizzazione riga che descrive le pagine di schede"
 
 msgid "custom tab page label for the GUI"
-msgstr "personalizzazione etichetta per le pagine di linguette nella GUI"
+msgstr "personalizzazione etichetta per le pagine di schede nella GUI"
 
 msgid "custom tab page tooltip for the GUI"
-msgstr "personalizzazione suggerimento per le pagine di linguette nella GUI"
+msgstr "personalizzazione suggerimento per le pagine di schede nella GUI"
 
 msgid "terminal"
 msgstr "terminale"
