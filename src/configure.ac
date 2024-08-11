@@ -1539,12 +1539,21 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
       AC_MSG_RESULT(yep)
 
       dnl -- get the stable ABI version if passed in
+      python3_stable_abi_default=3.8
       AC_MSG_CHECKING(--with-python3-stable-abi argument)
       AC_SUBST(vi_cv_var_python3_stable_abi)
-      AC_ARG_WITH(python3-stable-abi, [  --with-python3-stable-abi=VERSION  stable ABI version to target (e.g. 3.8)],
-        vi_cv_var_python3_stable_abi="$withval"; AC_MSG_RESULT($vi_cv_var_python3_stable_abi),
-        AC_MSG_RESULT(no))
-      if test "X$vi_cv_var_python3_stable_abi" != "X"; then
+      AC_ARG_WITH(python3-stable-abi, [  --with-python3-stable-abi=VERSION  stable ABI version to target (default: 3.8)],
+        [
+	 if test "X$withval" = "Xyes"; then
+	   vi_cv_var_python3_stable_abi=$python3_stable_abi_default
+	 else
+	   vi_cv_var_python3_stable_abi="$withval"
+	 fi
+	 AC_MSG_RESULT($vi_cv_var_python3_stable_abi)],
+        [
+	 vi_cv_var_python3_stable_abi=$python3_stable_abi_default
+	 AC_MSG_RESULT(no. defaults to $python3_stable_abi_default.)])
+      if test "X$vi_cv_var_python3_stable_abi" != "Xno"; then
         AC_CACHE_VAL(vi_cv_var_python3_stable_abi_hex,
         [
          vi_cv_var_python3_stable_abi_hex=`

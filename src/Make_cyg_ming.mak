@@ -391,14 +391,19 @@ endif
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
-#	  PYTHON3_VER=[Python3 version, eg 31, 32] (default is 36)
+#	  PYTHON3_VER=[Python3 version, eg 31, 32] (default is 38)
 ifdef PYTHON3
  ifndef DYNAMIC_PYTHON3
 DYNAMIC_PYTHON3=yes
  endif
+ ifndef DYNAMIC_PYTHON3_STABLE_ABI
+  ifeq (yes,$(DYNAMIC_PYTHON3))
+DYNAMIC_PYTHON3_STABLE_ABI=yes
+  endif
+ endif
 
  ifndef PYTHON3_VER
-PYTHON3_VER=36
+PYTHON3_VER=38
  endif
  ifeq ($(DYNAMIC_PYTHON3_STABLE_ABI),yes)
 PYTHON3_NAME=python3
