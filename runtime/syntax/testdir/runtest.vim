@@ -118,7 +118,7 @@ func RunTest()
 
   if exists("$VIM_SYNTAX_SELF_TESTING")
     let dirpath = 'input/selftestdir/'
-    let fnames = readdir(dirpath, {fname -> fname !~ '^README.txt$'})
+    let fnames = readdir(dirpath, {fname -> fname !~ '^README\.txt$'})
   else
     let dirpath = 'input/'
     let fnames = readdir(dirpath, {fname -> fname !~ '\~$' && fname =~ '^.\+\..\+$'})
