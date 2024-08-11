@@ -51,7 +51,7 @@ msgstr ""
 "Language-Team: Hung-Te Lin <piaip@csie.ntu.edu.tw>, Cecil Sheng "
 "<b7506022@csie.ntu.edu.tw>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=big5\n"
+"Content-Type: text/plain; charset=BIG5\n"
 "Content-Transfer-Encoding: 8-bit\n"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
