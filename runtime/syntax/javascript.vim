@@ -110,7 +110,7 @@ hi def link javaScriptBranch		Conditional
 hi def link javaScriptOperator		Operator
 hi def link javaScriptType			Type
 hi def link javaScriptStatement		Statement
-hi def link javaScriptFunction		Function
+hi def link javaScriptFunction		Keyword
 hi def link javaScriptBraces		Function
 hi def link javaScriptError		Error
 hi def link javaScrParenError		javaScriptError
