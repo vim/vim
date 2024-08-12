@@ -5,7 +5,7 @@
 " Last Change:	2024-08-12
 " Original version based on syntax/muttrc.vim
 
-" This file covers NeoMutt 2022-04-08
+" This file covers NeoMutt 2024-08-12
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -146,7 +146,7 @@ function! s:escapesConditionals(baseName, sequence, padding, conditional)
 	endif
 endfunction
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " Ref: alias_format_str() in alias/dlg_alias.c
 call s:escapesConditionals('AliasFormat', '[acfnrt]', 1, 0)
 " Ref: attach_format_str() in attach/dlg_attach.c
@@ -202,7 +202,7 @@ syntax match muttrcVarEqualsStrftimeFmt   contained skipwhite "=" nextgroup=mutt
 
 syntax match muttrcVPrefix contained /[?&]/ nextgroup=muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of the different screens in NeoMutt (see MenuNames in menu/type.c)
 syntax keyword muttrcMenu contained alias attach autocrypt browser compose editor generic index key_select_pgp key_select_smime mix pager pgp postpone query smime
 syntax match muttrcMenuList "\S\+" contained contains=muttrcMenu
@@ -239,7 +239,7 @@ syntax match muttrcEscapedVariable	contained "\\\$[a-zA-Z_-]\+"
 syntax match muttrcBadAction	contained "[^<>]\+" contains=muttrcEmail
 syntax match muttrcAction		contained "<[^>]\{-}>" contains=muttrcBadAction,muttrcFunction,muttrcKeyName
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " First, hooks that take regular expressions:
 syntax match  muttrcRXHookNot	contained /!\s*/ skipwhite nextgroup=muttrcRXHookString,muttrcRXHookStringNL
 syntax match  muttrcRXHooks	/\<\%(account\|append\|close\|crypt\|folder\|mbox\|open\|pgp\)-hook\>/ skipwhite nextgroup=muttrcRXHookNot,muttrcRXHookString,muttrcRXHookStringNL
@@ -300,7 +300,7 @@ syntax match muttrcAliasNL		contained /\s*\\$/ skipwhite skipnl nextgroup=muttrc
 syntax match muttrcUnAliasKey	contained "\s*\w\+\s*" skipwhite nextgroup=muttrcUnAliasKey,muttrcUnAliasNL
 syntax match muttrcUnAliasNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcUnAliasKey,muttrcUnAliasNL
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of letters in Flags in pattern/flags.c
 " Parameter: none
 syntax match muttrcSimplePat contained "!\?\^\?[~][ADEFGgklNOPpQRSTUuVv#$=]"
@@ -374,7 +374,7 @@ syntax keyword muttrcMonoAttrib	contained bold none normal reverse standout unde
 syntax keyword muttrcMono	contained mono		skipwhite nextgroup=muttrcColorField,muttrcColorCompose
 syntax match   muttrcMonoLine	"^\s*mono\s\+\S\+"	skipwhite nextgroup=muttrcMonoAttrib contains=muttrcMono
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of fields in ColorFields in color/commmand.c
 syntax keyword muttrcColorField skipwhite contained
 	\ attachment attach_headers body bold error hdrdefault header index index_author
@@ -388,7 +388,7 @@ syntax match   muttrcColorField	contained "\<quoted\d\=\>"
 
 syntax match muttrcColorCompose skipwhite contained /\s*compose\s*/ nextgroup=muttrcColorComposeField
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of fields in ComposeColorFields in color/command.c
 syntax keyword muttrcColorComposeField skipwhite contained
 	\ header security_both security_encrypt security_none security_sign
@@ -416,7 +416,7 @@ function! s:boolQuadGen(type, vars, deprecated)
 
 endfunction
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of DT_BOOL in MuttVars in mutt_config.c
 call s:boolQuadGen('Bool', [
 	\ 'abort_backspace', 'allow_8bit', 'allow_ansi', 'arrow_cursor', 'ascii_chars', 'ask_bcc',
@@ -469,7 +469,7 @@ call s:boolQuadGen('Bool', [
 	\ 'virtual_spool_file', 'wait_key', 'weed', 'wrap_search', 'write_bcc', 'x_comment_to'
 	\ ], 0)
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " Deprecated Bools
 " List of DT_SYNONYM or DT_DEPRECATED Bools in MuttVars in mutt_config.c
 call s:boolQuadGen('Bool', [
@@ -484,7 +484,7 @@ call s:boolQuadGen('Bool', [
 	\ 'use_8bitmime', 'virtual_spoolfile', 'xterm_set_titles'
 	\ ], 1)
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of DT_QUAD in MuttVars in mutt_config.c
 call s:boolQuadGen('Quad', [
 	\ 'abort_noattach', 'abort_nosubject', 'abort_unmodified', 'bounce', 'catchup_newsgroup',
@@ -494,17 +494,17 @@ call s:boolQuadGen('Quad', [
 	\ 'post_moderated', 'print', 'quit', 'recall', 'reply_to', 'ssl_starttls', 
 	\ ], 0)
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " Deprecated Quads
 " List of DT_SYNONYM or DT_DEPRECATED Quads in MuttVars in mutt_config.c
 call s:boolQuadGen('Quad', [
 	\ 'mime_fwd', 'pgp_encrypt_self', 'pgp_verify_sig', 'smime_encrypt_self'
 	\ ], 1)
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of DT_NUMBER or DT_LONG in MuttVars in mutt_config.c
 syntax keyword muttrcVarNum	skipwhite contained
-	\ connect_timeout debug_level header_cache_compress_level history imap_fetch_chunk_size
+	\ socket_timeout debug_level header_cache_compress_level history imap_fetch_chunk_size
 	\ imap_keep_alive imap_pipeline_depth imap_poll_timeout mail_check mail_check_stats_interval
 	\ menu_context net_inc nm_db_limit nm_open_timeout nm_query_window_current_position
 	\ nm_query_window_duration nntp_context nntp_poll pager_context pager_index_lines
@@ -514,12 +514,12 @@ syntax keyword muttrcVarNum	skipwhite contained
 	\ smime_timeout ssl_min_dh_prime_bits timeout time_inc toggle_quoted_show_levels wrap
 	\ wrap_headers write_inc
 	\ nextgroup=muttrcSetNumAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " Deprecated Numbers
 syntax keyword muttrcVarDeprecatedNum	contained skipwhite
-	\ header_cache_pagesize imap_keepalive pop_checkinterval skip_quoted_offset
+	\ connect_timeout header_cache_pagesize imap_keepalive pop_checkinterval skip_quoted_offset 
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of DT_STRING in MuttVars in mutt_config.c
 " Special cases first, and all the rest at the end
 " Formats themselves must be updated in their respective groups
@@ -528,8 +528,8 @@ syntax match muttrcVarStr	contained skipwhite 'my_[a-zA-Z0-9_]\+' nextgroup=mutt
 syntax keyword muttrcVarStr	contained skipwhite alias_format nextgroup=muttrcVarEqualsAliasFmt
 syntax keyword muttrcVarStr	contained skipwhite attach_format nextgroup=muttrcVarEqualsAttachFmt
 syntax keyword muttrcVarStr	contained skipwhite compose_format nextgroup=muttrcVarEqualsComposeFmt
-syntax keyword muttrcVarStr	contained skipwhite folder_format vfolder_format nextgroup=muttrcVarEqualsFolderFmt
-syntax keyword muttrcVarStr	contained skipwhite attribution forward_format index_format message_format pager_format nextgroup=muttrcVarEqualsIdxFmt
+syntax keyword muttrcVarStr	contained skipwhite folder_format nextgroup=muttrcVarEqualsFolderFmt
+syntax keyword muttrcVarStr	contained skipwhite attribution_intro forward_format index_format message_format pager_format nextgroup=muttrcVarEqualsIdxFmt
 syntax keyword muttrcVarStr	contained skipwhite mix_entry_format nextgroup=muttrcVarEqualsMixFmt
 syntax keyword muttrcVarStr	contained skipwhite pattern_format nextgroup=muttrcVarEqualsPatternFmt
 syntax keyword muttrcVarStr	contained skipwhite
@@ -555,7 +555,7 @@ syntax keyword muttrcVarStr	contained skipwhite
 	\ default_hook dsn_notify dsn_return empty_subject forward_attribution_intro
 	\ forward_attribution_trailer greeting header_cache_backend header_cache_compress_method
 	\ hidden_tags hostname imap_authenticators imap_delim_chars imap_headers imap_login
-	\ imap_pass imap_user indent_string mailcap_path mark_macro_prefix mh_seq_flagged
+	\ imap_pass imap_user indent_string mailbox_folder_format mailcap_path mark_macro_prefix mh_seq_flagged
 	\ mh_seq_replied mh_seq_unseen newsgroups_charset news_server nm_default_url nm_exclude_tags
 	\ nm_flagged_tag nm_query_type nm_query_window_current_search nm_query_window_or_terms
 	\ nm_query_window_timebase nm_record_tags nm_replied_tag nm_unread_tag nntp_authenticators
@@ -569,12 +569,13 @@ syntax keyword muttrcVarStr	contained skipwhite
 
 " Deprecated strings
 syntax keyword muttrcVarDeprecatedStr
-	\ abort_noattach_regexp attach_keyword escape forw_format hdr_format indent_str
+	\ abort_noattach_regexp attribution attach_keyword escape forw_format hdr_format indent_str
 	\ message_cachedir  msg_format nm_default_uri pgp_clearsign_command pgp_getkeys_command
 	\ pgp_self_encrypt_as post_indent_str post_indent_string print_cmd quote_regexp realname
 	\ reply_regexp smime_self_encrypt_as spoolfile visual xterm_icon xterm_title tmpdir
+	\ sidebar_whitelist unsidebar_whitelist vfolder_format
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of DT_ADDRESS
 syntax keyword muttrcVarStr	contained skipwhite envelope_from_address from nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 " List of DT_ENUM
@@ -582,24 +583,24 @@ syntax keyword muttrcVarStr	contained skipwhite mbox_type use_threads nextgroup=
 " List of DT_MBTABLE
 syntax keyword muttrcVarStr	contained skipwhite crypt_chars flag_chars from_chars status_chars to_chars nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of DT_PATH or DT_MAILBOX
 syntax keyword muttrcVarStr	contained skipwhite
 	\ alias_file attach_save_dir autocrypt_dir certificate_file debug_file
 	\ entropy_file folder header_cache history_file mbox message_cache_dir newsrc
-	\ news_cache_dir postponed record signature smime_ca_location
+	\ news_cache_dir nm_config_file nm_config_profile postponed record signature smime_ca_location
 	\ smime_certificates smime_keys spool_file ssl_ca_certificates_file ssl_client_cert
 	\ tmp_dir trash
 	\ nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 " List of DT_COMMAND (excluding pgp_*_command and smime_*_command)
 syntax keyword muttrcVarStr	contained skipwhite
-	\ display_filter editor inews ispell mixmaster new_mail_command pager
+	\ account_command display_filter editor inews ispell mixmaster new_mail_command pager
 	\ print_command query_command sendmail shell external_search_command
-	\ imap_oauth_refresh_command pop_oauth_refresh_command
+	\ imap_oauth_refresh_command imap_send_id pop_oauth_refresh_command
 	\ mime_type_query_command smtp_oauth_refresh_command tunnel
 	\ nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of DT_REGEX
 syntax keyword muttrcVarStr	contained skipwhite
 	\ abort_noattach_regex gecos_mask mask pgp_decryption_okay pgp_good_sign quote_regex 
@@ -610,7 +611,7 @@ syntax keyword muttrcVarStr	contained skipwhite
 	\ pgp_sort_keys sidebar_sort_method sort sort_alias sort_aux sort_browser
 	\ nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of commands in mutt_commands in mutt_commands.c
 " Remember to remove hooks, they have already been dealt with
 syntax keyword muttrcCommand	skipwhite alias nextgroup=muttrcAliasGroupDef,muttrcAliasKey,muttrcAliasNL
@@ -625,10 +626,10 @@ syntax keyword muttrcCommand	skipwhite unhook nextgroup=muttrcHooks
 syntax keyword muttrcCommand	skipwhite
 	\ alternative_order attachments auto_view cd echo finish hdr_order ifdef ifndef ignore lua
 	\ lua-source mailboxes mailto_allow mime_lookup my_hdr named-mailboxes push score setenv
-	\ sidebar_whitelist source subjectrx subscribe-to tag-formats tag-transforms
+	\ sidebar_pin source subjectrx subscribe-to tag-formats tag-transforms
 	\ unalternative_order unattachments unauto_view unbind uncolor unhdr_order unignore unmacro
 	\ unmailboxes unmailto_allow unmime_lookup unmono unmy_hdr unscore unsetenv
-	\ unsidebar_whitelist unsubjectrx unsubscribe-from unvirtual-mailboxes virtual-mailboxes
+	\ sidebar_unpin unsubjectrx unsubscribe-from unvirtual-mailboxes virtual-mailboxes
 
 function! s:genFunctions(functions)
 	for f in a:functions
@@ -636,7 +637,7 @@ function! s:genFunctions(functions)
 	endfor
 endfunction
 
-" CHECKED 2022-04-08
+" CHECKED 2024-08-12
 " List of functions in functions.c
 " Note: 'noop' is included but is elsewhere in the source
 call s:genFunctions(['noop',
