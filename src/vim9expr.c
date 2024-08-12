@@ -349,6 +349,11 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	else
 	{
 	    // type->tt_type == VAR_OBJECT: method call
+	    // When compiling Func and doing "super.SomeFunc()", must be in the
+	    // class context that defines Func.
+	    if (is_super)
+		cl = cctx->ctx_ufunc->uf_defclass;
+
 	    function_count = cl->class_obj_method_count;
 	    child_count = cl->class_obj_method_count_child;
 	    functions = cl->class_obj_methods;
@@ -419,8 +424,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    return generate_PCALL(cctx, argcount, name, ocm->ocm_type, TRUE);
 	if (type->tt_type == VAR_OBJECT
 		     && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
-	    return generate_CALL(cctx, ufunc, cl, fi, argcount);
-	return generate_CALL(cctx, ufunc, NULL, 0, argcount);
+	    return generate_CALL(cctx, ufunc, cl, fi, argcount, is_super);
+	return generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
     }
 
     if (type->tt_type == VAR_OBJECT)
@@ -1035,7 +1040,7 @@ compile_builtin_method_call(cctx_T *cctx, class_builtin_T builtin_method)
 	ufunc_T *uf = class_get_builtin_method(type->tt_class, builtin_method,
 							&method_idx);
 	if (uf != NULL)
-	    res = generate_CALL(cctx, uf, type->tt_class, method_idx, 0);
+	    res = generate_CALL(cctx, uf, type->tt_class, method_idx, 0, FALSE);
     }
 
     return res;
@@ -1238,7 +1243,7 @@ compile_call(
 	{
 	    if (!func_is_global(ufunc))
 	    {
-		res = generate_CALL(cctx, ufunc, NULL, 0, argcount);
+		res = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
 		goto theend;
 	    }
 	    if (!has_g_namespace
@@ -1257,7 +1262,7 @@ compile_call(
 	    if (cctx->ctx_ufunc->uf_defclass == cl)
 	    {
 		res = generate_CALL(cctx, cl->class_class_functions[mi], NULL,
-							0, argcount);
+							0, argcount, FALSE);
 	    }
 	    else
 	    {
@@ -1285,7 +1290,7 @@ compile_call(
     // If we can find a global function by name generate the right call.
     if (ufunc != NULL)
     {
-	res = generate_CALL(cctx, ufunc, NULL, 0, argcount);
+	res = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
 	goto theend;
     }
 

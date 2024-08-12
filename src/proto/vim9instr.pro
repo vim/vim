@@ -58,7 +58,7 @@ int check_internal_func_args(cctx_T *cctx, int func_idx, int argcount, int metho
 int generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call);
 int generate_LISTAPPEND(cctx_T *cctx);
 int generate_BLOBAPPEND(cctx_T *cctx);
-int generate_CALL(cctx_T *cctx, ufunc_T *ufunc, class_T *cl, int mi, int pushed_argcount);
+int generate_CALL(cctx_T *cctx, ufunc_T *ufunc, class_T *cl, int mi, int pushed_argcount, int is_super);
 int generate_UCALL(cctx_T *cctx, char_u *name, int argcount);
 int check_func_args_from_type(cctx_T *cctx, type_T *type, int argcount, int at_top, char_u *name);
 int generate_PCALL(cctx_T *cctx, int argcount, char_u *name, type_T *type, int at_top);
