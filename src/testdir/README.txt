@@ -119,3 +119,10 @@ tests are successful, then this file will be an empty file.
 - To cleanup the temporary files after running the tests:
 
     $ make clean
+
+# ANALYZE FAILED SCREENDUMPS FROM CI:
+
+See the file ../../runtime/syntax/testdir/README.txt section
+"Viewing generated screendumps" on how to analyze failed screen dumps
+(from CI or locally) using the provided Vim script
+../../runtime/syntax/testdir/viewdumps.vim in a more automatic way.

@@ -118,7 +118,7 @@ func RunTest()
 
   if exists("$VIM_SYNTAX_SELF_TESTING")
     let dirpath = 'input/selftestdir/'
-    let fnames = readdir(dirpath, {fname -> fname !~ '^README.txt$'})
+    let fnames = readdir(dirpath, {fname -> fname !~ '^README\.txt$'})
   else
     let dirpath = 'input/'
     let fnames = readdir(dirpath, {fname -> fname !~ '\~$' && fname =~ '^.\+\..\+$'})
@@ -409,6 +409,12 @@ func RunTest()
   call Message('OK: ' .. ok_count)
   call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
   call Message('skipped: ' .. skipped_count)
+
+  if !empty(failed_tests)
+    call Message('')
+    call Message('View generated screendumps with "../../src/vim --clean -S testdir/viewdumps.vim"')
+  endif
+
   call AppendMessages('== SUMMARY ==')
 
   if len(failed_tests) > 0

@@ -1,13 +1,13 @@
 name: 'screendump'
-description: "Upload failed syntax tests"
+description: "Upload failed screendump tests"
 runs:
   using: "composite"
   steps:
-    - name: Upload failed syntax tests
+    - name: Upload failed tests
       uses: actions/upload-artifact@v4
       with:
         # Name of the artifact to upload.
-        name: ${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
+        name: ${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-tests
 
         # A file, directory or wildcard pattern that describes what
         # to upload.
