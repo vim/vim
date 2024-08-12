@@ -2260,7 +2260,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cpoptions'* *'cpo'* *cpo*
 'cpoptions' 'cpo'	string	(Vim default: "aABceFsz",
 				 Vi default:  all flags, except "#{|&/\."
-                                 |$VIM_POSIX|:  all flags)
+				 |$VIM_POSIX|:  all flags)
 			global
 	A sequence of single character flags.  When a character is present
 	this indicates Vi-compatible behavior.  This is used for things where

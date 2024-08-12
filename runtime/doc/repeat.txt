@@ -793,7 +793,8 @@ messages: >
 	:echo gettext("Hello", "foobar")
 <
 Where:
-  "Hello"	the message "Hello" to be translated into the user's language |:lang|
+  "Hello"	the message "Hello" to be translated into the user's language
+		|:lang|
   "foobar"	the package identifier, which was previously defined using the
 		|bindtextdomain()| function.
 
