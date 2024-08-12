@@ -251,7 +251,7 @@ barline_writestring(FILE *fd, char_u *s, int remaining_start)
 viminfo_readstring(
     vir_T	*virp,
     int		off,		    // offset for virp->vir_line
-    int		convert UNUSED)	    // convert the string
+    int		convert)	    // convert the string
 {
     char_u	*retval = NULL;
     char_u	*s, *d;

@@ -296,6 +296,7 @@ func Test_gd_string()
       return x;
     }
   [CODE]
+
   call XTest_goto_decl('gd', lines, 4, 7)
 endfunc
 
@@ -320,14 +321,16 @@ func Test_set_options_keep_col()
   let pos = getcurpos()
   normal j
   set invhlsearch spell spelllang=en,cjk spelloptions=camel textwidth=80
-  set cursorline cursorcolumn cursorlineopt=line colorcolumn=+1
+  set cursorline cursorcolumn cursorlineopt=line colorcolumn=+1 winfixbuf
+  set comments=:# commentstring=#%s define=function
   set background=dark
   set background=light
   normal k
   call assert_equal(pos, getcurpos())
   bwipe!
   set hlsearch& spell& spelllang& spelloptions& textwidth&
-  set cursorline& cursorcolumn& cursorlineopt& colorcolumn&
+  set cursorline& cursorcolumn& cursorlineopt& colorcolumn& winfixbuf&
+  set comments& commentstring& define&
   set background&
 endfunc
 

@@ -4,7 +4,7 @@ vim9script
 
 scriptencoding utf-8
 
-let b:keymap_name = "syntax-test"
+b:keymap_name = "syntax-test"
 
 loadkeymap
 

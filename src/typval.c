@@ -267,11 +267,16 @@ tv_get_bool_or_number_chk(
 	    break;
 	case VAR_OBJECT:
 	    {
-		class_T *cl = varp->vval.v_object->obj_class;
-		if (cl != NULL && IS_ENUM(cl))
-		    semsg(_(e_using_enum_str_as_number), cl->class_name);
+		if (varp->vval.v_object == NULL)
+		    emsg(_(e_using_object_as_string));
 		else
-		    emsg(_(e_using_object_as_number));
+		{
+		    class_T *cl = varp->vval.v_object->obj_class;
+		    if (cl != NULL && IS_ENUM(cl))
+			semsg(_(e_using_enum_str_as_number), cl->class_name);
+		    else
+			emsg(_(e_using_object_as_number));
+		}
 	    }
 	    break;
 	case VAR_VOID:
@@ -1146,11 +1151,16 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_OBJECT:
 	    {
-		class_T *cl = varp->vval.v_object->obj_class;
-		if (cl != NULL && IS_ENUM(cl))
-		    semsg(_(e_using_enum_str_as_string), cl->class_name);
-		else
+		if (varp->vval.v_object == NULL)
 		    emsg(_(e_using_object_as_string));
+		else
+		{
+		    class_T *cl = varp->vval.v_object->obj_class;
+		    if (cl != NULL && IS_ENUM(cl))
+			semsg(_(e_using_enum_str_as_string), cl->class_name);
+		    else
+			emsg(_(e_using_object_as_string));
+		}
 	    }
 	    break;
 	case VAR_JOB:
@@ -1698,24 +1708,6 @@ typval_compare_blob(
 }
 
 /*
- * Compare "tv1" to "tv2" as classes according to "type".
- * Put the result, false or true, in "res".
- * Return FAIL and give an error message when the comparison can't be done.
- */
-    int
-typval_compare_class(
-	typval_T    *tv1,
-	typval_T    *tv2,
-	exprtype_T  type UNUSED,
-	int	    ic UNUSED,
-	int	    *res)
-{
-    // TODO: use "type"
-    *res = tv1->vval.v_class == tv2->vval.v_class;
-    return OK;
-}
-
-/*
  * Compare "tv1" to "tv2" as objects according to "type".
  * Put the result, false or true, in "res".
  * Return FAIL and give an error message when the comparison can't be done.
@@ -2222,7 +2214,7 @@ eval_number(
 	char_u	    **arg,
 	typval_T    *rettv,
 	int	    evaluate,
-	int	    want_string UNUSED)
+	int	    want_string)
 {
     int		len;
     int		skip_quotes = !in_old_script(4);

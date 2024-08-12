@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 9.1.  Last change: 2024 Jul 11
+*repeat.txt*    For Vim version 9.1.  Last change: 2024 Aug 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -793,7 +793,8 @@ messages: >
 	:echo gettext("Hello", "foobar")
 <
 Where:
-  "Hello"	the message "Hello" to be translated into the user's language |:lang|
+  "Hello"	the message "Hello" to be translated into the user's language
+		|:lang|
   "foobar"	the package identifier, which was previously defined using the
 		|bindtextdomain()| function.
 

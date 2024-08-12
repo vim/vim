@@ -3370,7 +3370,7 @@ ex_append(exarg_T *eap)
 	{
 	    // No getline() function, use the lines that follow. This ends
 	    // when there is no more.
-	    if (eap->nextcmd == NULL || *eap->nextcmd == NUL)
+	    if (eap->nextcmd == NULL)
 		break;
 	    p = vim_strchr(eap->nextcmd, NL);
 	    if (p == NULL)
@@ -3378,6 +3378,8 @@ ex_append(exarg_T *eap)
 	    theline = vim_strnsave(eap->nextcmd, p - eap->nextcmd);
 	    if (*p != NUL)
 		++p;
+	    else
+		p = NULL;
 	    eap->nextcmd = p;
 	}
 	else

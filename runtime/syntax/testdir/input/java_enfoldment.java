@@ -39,7 +39,7 @@ class FoldingTests {
 				break;
 			}
 			default: ;
-		};
+		}
 	}
 
 	{ Object bb = ((Object) new byte[]{}); }

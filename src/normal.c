@@ -4462,7 +4462,7 @@ nv_brackets(cmdarg_T *cap)
 			    SAFE_islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
 		cap->cmdchar == ']' ? curwin->w_cursor.lnum + 1 : (linenr_T)1,
 		(linenr_T)MAXLNUM,
-	        FALSE);
+		FALSE);
 	    vim_free(ptr);
 	    curwin->w_set_curswant = TRUE;
 	}
@@ -6598,8 +6598,12 @@ nv_wordcmd(cmdarg_T *cap)
 		// "ce" will change until the end of the next word, but "cw"
 		// will change only one character! This is done by setting
 		// flag.
-		cap->oap->inclusive = TRUE;
-		word_end = TRUE;
+		// This can be configured using :set cpo-z
+		if (vim_strchr(p_cpo, CPO_WORD) != NULL)
+		{
+		    cap->oap->inclusive = TRUE;
+		    word_end = TRUE;
+		}
 		flag = TRUE;
 	    }
 	}

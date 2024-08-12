@@ -80,7 +80,7 @@
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory]
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
-#	  PYTHON3_VER=[Python3 version, eg 30, 31]  (default is 36)
+#	  PYTHON3_VER=[Python3 version, eg 30, 31]  (default is 38)
 #
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory]
@@ -127,10 +127,15 @@
 #
 #	Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
 #
-#	Processor Version: CPUNR=[any, i686, sse, sse2, avx, avx2] (default is
-#	sse2)
+#	Processor Version:
+#	 For x86: CPUNR=[any, i686, sse, sse2, avx, avx2, avx512]
+#	 For x64: CPUNR=[sse2, avx, avx2, avx512]
+#	                (default is sse2 (both x86 and x64))
 #	  avx is available on Visual C++ 2010 and after.
 #	  avx2 is available on Visual C++ 2013 Update 2 and after.
+#	  avx512 is available on Visual C++ 2017 and after.
+#	 For ARM64:
+#	  See: https://learn.microsoft.com/en-us/cpp/build/reference/arch-arm64
 #
 #	Version Support: WINVER=[0x0601, 0x0602, 0x0603, 0x0A00] (default is
 #	0x0601)
@@ -157,53 +162,56 @@
 # you can set DEFINES on the command line, e.g.,
 #	nmake -f Make_mvc.mvc "DEFINES=-DEMACS_TAGS"
 
-RM=		del /f /q
-PS=		powershell.exe
+RM =		del /f /q
 
-PSFLAGS=	-NoLogo -NoProfile -Command
+# Read MAJOR and MINOR from version.h.
+!IF ![for /f "tokens=2,3" %I in (version.h) do \
+	@if "%I"=="VIM_VERSION_MAJOR" ( \
+		echo MAJOR=%J> .\major.tmp \
+	) else if "%I"=="VIM_VERSION_MINOR" ( \
+		echo MINOR=%J> .\minor.tmp && exit \
+	)]
+!ENDIF
 
-!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\major.tmp' -InputObject \
-	\"MAJOR=$$(((Select-String -Pattern 'VIM_VERSION_MAJOR\s+\d{1,2}' \
-	-Path '.\version.h').Line[-2..-1^]-join '').Trim())\"} \
-	catch{exit 1}]
+!IF EXIST(.\major.tmp)
 ! INCLUDE .\major.tmp
 ! IF [$(RM) .\major.tmp]
 ! ENDIF
 !ELSE
 # Change this value for the new version
-MAJOR=		9
+MAJOR =		9
 !ENDIF
 
-!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\minor.tmp' -InputObject \
-	\"MINOR=$$(((Select-String -Pattern 'VIM_VERSION_MINOR\s+\d{1,2}' \
-	-Path '.\version.h').Line[-2..-1^]-join '').Trim())\"} \
-	catch{exit 1}]
+!IF EXIST(.\minor.tmp)
 ! INCLUDE .\minor.tmp
 ! IF [$(RM) .\minor.tmp]
 ! ENDIF
 !ELSE
 # Change this value for the new version
-MINOR=		1
+MINOR =		1
 !ENDIF
 
-!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\patchlvl.tmp' -InputObject \
-	\"PATCHLEVEL=$$([decimal^]((Get-Content -Path '.\version.c' \
-	-TotalCount ((Select-String -Pattern 'static int included_patches' \
-	-Path '.\version.c').LineNumber+3))[-1^]).Trim().TrimEnd(','))\"} \
-	catch{exit 1}]
+# Read PATCHLEVEL from version.c.
+!IF ![cmd.exe /V:ON /Q /C "set LINE=0&& set FIND=0&& \
+	for /f "tokens=1,3 delims=, " %I in (version.c) do ( \
+		set /A LINE+=1 > NUL && \
+		if "%J"=="included_patches[^]" ( \
+			set /A FIND=LINE+3 > NUL \
+		) else if "!LINE!"=="!FIND!" ( \
+			echo PATCHLEVEL=%I> .\patchlvl.tmp && exit \
+		) \
+	)"]
+!ENDIF
+!IF EXIST(.\patchlvl.tmp)
 ! INCLUDE .\patchlvl.tmp
 ! IF [$(RM) .\patchlvl.tmp]
 ! ENDIF
 !ENDIF
 
-
-# Build on Windows NT/XP
-
-TARGETOS = WINNT
-
 !IFDEF PATCHLEVEL
-RCFLAGS=	-DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
+RCFLAGS =	-DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
 !ENDIF
+!message Vim version: $(MAJOR).$(MINOR).$(PATCHLEVEL)
 
 
 !if "$(VIMDLL)" == "yes"
@@ -257,38 +265,29 @@ OBJDIR = $(OBJDIR)V
 OBJDIR = $(OBJDIR)d
 !endif
 
-!ifdef PROCESSOR_ARCHITECTURE
-# We're on Windows NT or using VC 6+
-! ifdef CPU
-ASSEMBLY_ARCHITECTURE=$(CPU)
-# Using I386 for $ASSEMBLY_ARCHITECTURE doesn't work for VC7.
-!  if "$(CPU)" == "I386"
+!ifdef CPU
+! if "$(CPU)" == "I386"
 CPU = i386
-!  endif
-! else  # !CPU
-CPU = i386
-!  ifndef PLATFORM
-!   ifdef TARGET_CPU
-PLATFORM = $(TARGET_CPU)
-!   elseif defined(VSCMD_ARG_TGT_ARCH)
-PLATFORM = $(VSCMD_ARG_TGT_ARCH)
-!   endif
-!  endif
-!  ifdef PLATFORM
-!   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
-CPU = AMD64
-!   elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
-CPU = ARM64
-!   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
-!    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
-!   endif
-!  endif  # !PLATFORM
 ! endif
-!else  # !PROCESSOR_ARCHITECTURE
-# We're on Windows 95
+!else  # !CPU
 CPU = i386
-!endif # !PROCESSOR_ARCHITECTURE
-ASSEMBLY_ARCHITECTURE=$(CPU)
+! ifndef PLATFORM
+!  ifdef TARGET_CPU
+PLATFORM = $(TARGET_CPU)
+!  elseif defined(VSCMD_ARG_TGT_ARCH)
+PLATFORM = $(VSCMD_ARG_TGT_ARCH)
+!  endif
+! endif
+! ifdef PLATFORM
+!  if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
+CPU = AMD64
+!  elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
+CPU = ARM64
+!  elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
+!   error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
+!  endif
+! endif  # !PLATFORM
+!endif
 OBJDIR = $(OBJDIR)$(CPU)
 
 # Build a retail version by default
@@ -303,7 +302,9 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 LINK = link
 
 # Check VC version.
-!if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
+!if [echo MSVCVER=_MSC_VER> msvcver.c && \
+	echo MSVC_FULL=_MSC_FULL_VER>> msvcver.c && \
+	$(CC) /EP msvcver.c > msvcver.~ 2> nul]
 ! message *** ERROR
 ! message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
 ! message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
@@ -324,25 +325,17 @@ LINK = link
 MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
 MSVCRT_VER = ($(MSVCVER) / 100 * 10 - 50)
 
-# Calculate MSVC_FULL.
-!if [echo MSVC_FULL=_MSC_FULL_VER> msvcfullver.c && $(CC) /EP msvcfullver.c > msvcfullver.~ 2> nul]
-! message *** ERROR
-! message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
-! message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
-! error Make aborted.
-!else
-! include msvcfullver.~
-! if [del msvcfullver.c msvcfullver.~]
-! endif
-!endif
-
-
 # Calculate MSVCRT_VER
 !if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
 ! include msvcrtver.~
 ! if [del msvcrtver.~]
 ! endif
 !endif
+
+# Show the versions (for debugging).
+#!message _MSC_VER=$(MSVCVER)
+#!message _MSC_FULL_VER=$(MSVC_FULL)
+#!message MSVCRT_VER=$(MSVCRT_VER)
 
 # Base name of the msvcrXX.dll (vcruntimeXXX.dll)
 MSVCRT_NAME = vcruntime$(MSVCRT_VER)
@@ -355,7 +348,7 @@ WINVER = 0x0601
 # Use multiprocess build
 USE_MP = yes
 
-!if "$(FEATURES)"==""
+!if "$(FEATURES)" == ""
 FEATURES = HUGE
 !endif
 
@@ -374,7 +367,7 @@ CSCOPE_DEFS  = -DFEAT_CSCOPE
 !endif
 
 !ifndef TERMINAL
-! if "$(FEATURES)"=="HUGE"
+! if "$(FEATURES)" == "HUGE"
 TERMINAL = yes
 ! else
 TERMINAL = no
@@ -403,7 +396,7 @@ TERM_DEPS = \
 !endif
 
 !ifndef SOUND
-! if "$(FEATURES)"=="HUGE"
+! if "$(FEATURES)" == "HUGE"
 SOUND = yes
 ! else
 SOUND = no
@@ -444,7 +437,7 @@ NETBEANS = $(GUI)
 !endif
 
 !ifndef CHANNEL
-! if "$(FEATURES)"=="HUGE" || "$(TERMINAL)"=="yes"
+! if "$(FEATURES)" == "HUGE" || "$(TERMINAL)" == "yes"
 CHANNEL = yes
 ! else
 CHANNEL = $(GUI)
@@ -549,44 +542,57 @@ CFLAGS = -c /W3 /GF /nologo -I. -Iproto -DHAVE_PATHDEF -DWIN32 -DHAVE_STDINT_H \
 
 DEL_TREE = rmdir /s /q
 
-INTDIR=$(OBJDIR)
-OUTDIR=$(OBJDIR)
+INTDIR = $(OBJDIR)
+OUTDIR = $(OBJDIR)
 
 ### Validate CPUNR
-!ifndef CPUNR
+!if "$(CPU)" == "i386" || "$(CPU)" == "AMD64"
+! ifndef CPUNR
 # default to SSE2
 CPUNR = sse2
-!elseif "$(CPUNR)" == "i386" || "$(CPUNR)" == "i486" || "$(CPUNR)" == "i586"
+! elseif "$(CPU)" == "i386" \
+	&& ("$(CPUNR)" == "i386" || "$(CPUNR)" == "i486" || "$(CPUNR)" == "i586")
 # alias i386, i486 and i586 to i686
-! message *** WARNING CPUNR=$(CPUNR) is not a valid target architecture.
-! message Windows 7 is the minimum target OS, with a minimum target
-! message architecture of i686.
-! message Retargeting to i686
+!  message *** WARNING CPUNR=$(CPUNR) is not a valid target architecture.
+!  message Windows 7 is the minimum target OS, with a minimum target
+!  message architecture of i686.
+!  message Retargeting to i686
 CPUNR = i686
-!elseif "$(CPUNR)" == "pentium4"
+! elseif "$(CPUNR)" == "pentium4"
 # alias pentium4 to sse2
-! message *** WARNING CPUNR=pentium4 is deprecated in favour of sse2.
-! message Retargeting to sse2.
+!  message *** WARNING CPUNR=pentium4 is deprecated in favour of sse2.
+!  message Retargeting to sse2.
 CPUNR = sse2
-!elseif "$(CPUNR)" != "any" && "$(CPUNR)" != "i686" \
-	&& "$(CPUNR)" != "sse" && "$(CPUNR)" != "sse2" \
-	&& "$(CPUNR)" != "avx" && "$(CPUNR)" != "avx2"
-! error *** ERROR Unknown target architecture "$(CPUNR)". Make aborted.
+! elseif ("$(CPU)" != "i386" \
+		|| ("$(CPUNR)" != "any" && "$(CPUNR)" != "i686" \
+			&& "$(CPUNR)" != "sse" )) \
+	&& "$(CPUNR)" != "sse2" && "$(CPUNR)" != "avx" \
+	&& "$(CPUNR)" != "avx2" && "$(CPUNR)" != "avx512"
+!  error *** ERROR Unknown target architecture "$(CPUNR)". Make aborted.
+! endif
+!elseif "$(CPU)" == "ARM64"
+# TODO: Validate CPUNR.
 !endif
 
 # Convert processor ID to MVC-compatible number
+!if "$(CPU)" == "i386" || "$(CPU)" == "AMD64"
 # IA32/SSE/SSE2 are only supported on x86
-!if "$(ASSEMBLY_ARCHITECTURE)" == "i386" \
+! if "$(CPU)" == "i386" \
 	&& ("$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
 CPUARG = /arch:IA32
-!elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse"
+! elseif "$(CPU)" == "i386" && "$(CPUNR)" == "sse"
 CPUARG = /arch:SSE
-!elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse2"
+! elseif "$(CPU)" == "i386" && "$(CPUNR)" == "sse2"
 CPUARG = /arch:SSE2
-!elseif "$(CPUNR)" == "avx"
+! elseif "$(CPUNR)" == "avx"
 CPUARG = /arch:AVX
-!elseif "$(CPUNR)" == "avx2"
+! elseif "$(CPUNR)" == "avx2"
 CPUARG = /arch:AVX2
+! elseif "$(CPUNR)" == "avx512"
+CPUARG = /arch:AVX512
+! endif
+!elseif "$(CPU)" == "ARM64" && defined(CPUNR)
+CPUARG = /arch:$(CPUNR)
 !endif
 
 # Pass CPUARG to GvimExt, to avoid using version-dependent defaults
@@ -594,7 +600,7 @@ MAKEFLAGS_GVIMEXT = $(MAKEFLAGS_GVIMEXT) CPUARG="$(CPUARG)"
 
 !if "$(VIMDLL)" == "yes"
 VIMDLLBASE = vim
-! if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
+! if "$(CPU)" == "i386"
 VIMDLLBASE = $(VIMDLLBASE)32
 ! else
 VIMDLLBASE = $(VIMDLLBASE)64
@@ -801,6 +807,13 @@ OBJ = $(OBJ) $(OUTDIR)\os_w32dll.obj $(OUTDIR)\vimd.res
 EXEOBJC = $(OUTDIR)\os_w32exec.obj $(OUTDIR)\vimc.res
 EXEOBJG = $(OUTDIR)\os_w32exeg.obj $(OUTDIR)\vimg.res
 CFLAGS = $(CFLAGS) -DVIMDLL
+! ifdef MZSCHEME
+EXECFLAGS =
+EXELIBC = $(LIBC)
+! else
+EXECFLAGS = -DUSE_OWNSTARTUP /GS-
+EXELIBC =
+! endif
 !else
 OBJ = $(OBJ) $(OUTDIR)\os_w32exe.obj $(OUTDIR)\vim.res
 !endif
@@ -953,11 +966,9 @@ LUA_LIB = "$(LUA)\lib\lua$(LUA_VER).lib"
 ! endif
 !endif
 
-!ifdef PYTHON
-! ifdef PYTHON3
-DYNAMIC_PYTHON=yes
-DYNAMIC_PYTHON3=yes
-! endif
+!if defined(PYTHON) && defined(PYTHON3)
+DYNAMIC_PYTHON = yes
+DYNAMIC_PYTHON3 = yes
 !endif
 
 # PYTHON interface
@@ -983,8 +994,13 @@ PYTHON_LIB = "$(PYTHON)\libs\python$(PYTHON_VER).lib"
 
 # PYTHON3 interface
 !ifdef PYTHON3
+! ifndef DYNAMIC_PYTHON3_STABLE_ABI
+!  if "$(DYNAMIC_PYTHON3)" == "yes"
+DYNAMIC_PYTHON3_STABLE_ABI = yes
+!  endif
+! endif
 ! ifndef PYTHON3_VER
-PYTHON3_VER = 36
+PYTHON3_VER = 38
 ! endif
 ! if "$(DYNAMIC_PYTHON3_STABLE_ABI)" == "yes"
 PYTHON3_NAME = python3
@@ -1022,13 +1038,13 @@ PYTHON3_LIB = "$(PYTHON3)\libs\$(PYTHON3_NAME).lib"
 MZSCHEME_VER = 3m_a0solc
 ! endif
 ! ifndef MZSCHEME_COLLECTS
-MZSCHEME_COLLECTS=$(MZSCHEME)\collects
+MZSCHEME_COLLECTS = $(MZSCHEME)\collects
 ! endif
 CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I "$(MZSCHEME)\include"
 ! if EXIST("$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib")
-MZSCHEME_MAIN_LIB=mzsch
+MZSCHEME_MAIN_LIB = mzsch
 ! else
-MZSCHEME_MAIN_LIB=racket
+MZSCHEME_MAIN_LIB = racket
 ! endif
 ! if (EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll") \
      && !EXIST("$(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll")) \
@@ -1219,7 +1235,7 @@ LINK_PDB = /PDB:$(VIM).pdb -debug
 !message
 
 # CFLAGS with /Fo$(OUTDIR)/
-CFLAGS_OUTDIR=$(CFLAGS) /Fo$(OUTDIR)/
+CFLAGS_OUTDIR = $(CFLAGS) /Fo$(OUTDIR)/
 
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
 
@@ -1302,11 +1318,11 @@ $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 
 $(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
 	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe \
-		$(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
+		$(EXEOBJG) $(VIMDLLBASE).lib $(EXELIBC)
 
 $(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
 	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe \
-		$(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
+		$(EXEOBJC) $(VIMDLLBASE).lib $(EXELIBC)
 
 !else
 
@@ -1337,15 +1353,13 @@ CFLAGS_INST = /nologo /O2 -DNDEBUG -DWIN32 -DWINVER=$(WINVER) \
 	      -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
 
 !IFDEF PATCHLEVEL
-CFLAGS_INST=	$(CFLAGS_INST) -DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
+CFLAGS_INST = $(CFLAGS_INST) -DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
 !ENDIF
 
 install.exe: dosinst.c dosinst.h version.h
-	$(CC) $(CFLAGS_INST) dosinst.c kernel32.lib shell32.lib \
+	$(CC) $(CFLAGS_INST) /Fe$@ dosinst.c kernel32.lib shell32.lib \
 		user32.lib ole32.lib advapi32.lib uuid.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
-	- if exist install.exe del install.exe
-	ren dosinst.exe install.exe
 
 uninstall.exe: uninstall.c dosinst.h version.h
 	$(CC) $(CFLAGS_INST) uninstall.c shell32.lib advapi32.lib \
@@ -1380,12 +1394,16 @@ clean: testclean
 	- if exist $(OUTDIR)/nul $(DEL_TREE) $(OUTDIR)
 	- if exist *.obj del *.obj
 	- if exist $(VIM).exe del $(VIM).exe
+	- if exist $(VIM).exp del $(VIM).exp
+	- if exist $(VIM).lib del $(VIM).lib
 	- if exist $(VIM).ilk del $(VIM).ilk
 	- if exist $(VIM).pdb del $(VIM).pdb
 	- if exist $(VIM).map del $(VIM).map
 	- if exist $(VIM).ncb del $(VIM).ncb
 !if "$(VIMDLL)" == "yes"
 	- if exist $(GVIM).exe del $(GVIM).exe
+	- if exist $(GVIM).exp del $(GVIM).exp
+	- if exist $(GVIM).lib del $(GVIM).lib
 	- if exist $(GVIM).map del $(GVIM).map
 	- if exist $(VIMDLLBASE).dll del $(VIMDLLBASE).dll
 	- if exist $(VIMDLLBASE).ilk del $(VIMDLLBASE).ilk
@@ -1620,8 +1638,7 @@ $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL)
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
 
-auto/if_perl.c : if_perl.xs typemap
-	-if not exist auto/nul mkdir auto
+auto/if_perl.c: if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
 		-typemap typemap if_perl.xs -output $@
 
@@ -1715,10 +1732,10 @@ $(OUTDIR)/os_w32dll.obj:	$(OUTDIR) os_w32dll.c
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 
 $(OUTDIR)/os_w32exec.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
-	$(CC) $(CFLAGS:-DFEAT_GUI_MSWIN=) /Fo$@ os_w32exe.c
+	$(CC) $(CFLAGS:-DFEAT_GUI_MSWIN=) $(EXECFLAGS) /Fo$@ os_w32exe.c
 
 $(OUTDIR)/os_w32exeg.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
-	$(CC) $(CFLAGS) /Fo$@ os_w32exe.c
+	$(CC) $(CFLAGS) $(EXECFLAGS) /Fo$@ os_w32exe.c
 
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PATHDEF_SRC)

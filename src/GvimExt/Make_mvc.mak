@@ -19,25 +19,24 @@ WINVER = 0x0601
 NODEBUG = 1
 !endif
 
-!ifdef PROCESSOR_ARCHITECTURE
-# On Windows NT
-! ifndef CPU
+!ifndef CPU
 CPU = i386
-!  if !defined(PLATFORM) && defined(TARGET_CPU)
+! ifndef PLATFORM
+!  ifdef TARGET_CPU
 PLATFORM = $(TARGET_CPU)
-!  endif
-!  ifdef PLATFORM
-!   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
-CPU = AMD64
-!   elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
-CPU = ARM64
-!   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
-!    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
-!   endif
+!  elseif defined(VSCMD_ARG_TGT_ARCH)
+PLATFORM = $(VSCMD_ARG_TGT_ARCH)
 !  endif
 ! endif
-!else
-CPU = i386
+! ifdef PLATFORM
+!  if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
+CPU = AMD64
+!  elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
+CPU = ARM64
+!  elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
+!   error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
+!  endif
+! endif
 !endif
 
 !ifdef SDK_INCLUDE_DIR
@@ -80,7 +79,6 @@ all: gvimext.dll
 gvimext.dll:    gvimext.obj	\
 		gvimext.res
 	$(link) $(lflags) -dll -def:gvimext.def -base:$(OFFSET) -out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib -subsystem:$(SUBSYSTEM)
-	if exist $*.dll.manifest mt -nologo -manifest $*.dll.manifest -outputresource:$*.dll;2
 
 gvimext.obj: gvimext.h
 
@@ -96,4 +94,3 @@ clean:
 	- if exist gvimext.exp del gvimext.exp
 	- if exist gvimext.obj del gvimext.obj
 	- if exist gvimext.res del gvimext.res
-	- if exist gvimext.dll.manifest del gvimext.dll.manifest

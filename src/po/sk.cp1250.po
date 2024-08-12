@@ -15,7 +15,7 @@ msgstr ""
 "Last-Translator: Lubomir Host <rajo@platon.sk>\n"
 "Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=cp1250\n"
+"Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Vim 7.x\n"
 

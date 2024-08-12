@@ -3259,7 +3259,7 @@ may_call_simple_func(
 	char_u *p = STRNCMP(arg, "<SNR>", 5) == 0 ? skipdigits(arg + 5) : arg;
 
 	if (to_name_end(p, TRUE) == parens)
-	    r = call_simple_func(arg, (int)(parens - arg), rettv);
+	    r = call_simple_func(arg, (size_t)(parens - arg), rettv);
     }
     return r;
 }
@@ -6119,10 +6119,10 @@ dict_tv2string(
  */
     static char_u *
 jobchan_tv2string(
-    typval_T	*tv,
-    char_u	**tofree,
-    char_u	*numbuf,
-    int		composite_val)
+    typval_T	*tv UNUSED,
+    char_u	**tofree UNUSED,
+    char_u	*numbuf UNUSED,
+    int		composite_val UNUSED)
 {
     char_u	*r = NULL;
 
@@ -6195,7 +6195,7 @@ object_tv2string(
 	r = (char_u *)"object of [unknown]";
     }
     else if (copyID != 0 && obj->obj_copyID == copyID
-            && obj->obj_class->class_obj_member_count != 0)
+	    && obj->obj_class->class_obj_member_count != 0)
     {
 	size_t n = 25 + strlen((char *)obj->obj_class->class_name);
 	r = alloc(n);

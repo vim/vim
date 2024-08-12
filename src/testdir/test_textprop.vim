@@ -2901,6 +2901,10 @@ func Test_prop_inserts_text_before_double_width_wrap()
   call writefile(lines, 'XscriptPropsBeforeDoubleWidthWrap', 'D')
   let buf = RunVimInTerminal('-S XscriptPropsBeforeDoubleWidthWrap', #{rows: 3, cols: 50})
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_double_width_wrap_1', {})
+  call term_sendkeys(buf, 'g0')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_double_width_wrap_2', {})
+  call term_sendkeys(buf, ":set showbreak=+++\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_double_width_wrap_3', {})
 
   call StopVimInTerminal(buf)
 endfunc

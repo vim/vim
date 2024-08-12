@@ -212,6 +212,7 @@ typedef enum {
 #define CPO_REPLCNT	'X'	// "R" with a count only deletes chars once
 #define CPO_YANK	'y'
 #define CPO_KEEPRO	'Z'	// don't reset 'readonly' on ":w!"
+#define CPO_WORD	'z'	// do not special-case word motions cw and dw
 #define CPO_DOLLAR	'$'
 #define CPO_FILTER	'!'
 #define CPO_MATCH	'%'
@@ -231,9 +232,9 @@ typedef enum {
 #define CPO_SCOLON	';'	// using "," and ";" will skip over char if
 				// cursor would not move
 // default values for Vim, Vi and POSIX
-#define CPO_VIM		"aABceFs"
-#define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>;"
-#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\\.;"
+#define CPO_VIM		"aABceFsz"
+#define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZz$!%*-+<>;"
+#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZz$!%*-+<>#{|&/\\.;"
 
 // characters for p_ww option:
 #define WW_ALL		"bshl<>[]~"

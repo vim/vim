@@ -2277,7 +2277,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 	{
 	    int timeout;
 #ifdef MSWIN
-	    timeout = GetTickCount() > chanpart->ch_deadline;
+	    timeout = (int)(GetTickCount() - chanpart->ch_deadline) > 0;
 #else
 	    {
 		struct timeval now_tv;

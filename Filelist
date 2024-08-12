@@ -218,6 +218,7 @@ SRC_ALL =	\
 		src/testdir/samples/*.txt \
 		src/testdir/samples/*.vim \
 		src/testdir/samples/test000 \
+		src/testdir/samples/test.zip \
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
@@ -835,6 +836,7 @@ RT_SCRIPTS =	\
 		runtime/syntax/Makefile \
 		runtime/syntax/testdir/README.txt \
 		runtime/syntax/testdir/runtest.vim \
+		runtime/syntax/testdir/viewdumps.vim \
 		runtime/syntax/testdir/ftplugin/*.* \
 		runtime/syntax/testdir/input/*.* \
 		runtime/syntax/testdir/input/selftestdir/* \

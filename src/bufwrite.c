@@ -1350,7 +1350,7 @@ buf_write(
 		p = copybuf + STRLEN(copybuf);
 		if (after_pathsep(copybuf, p) && p[-1] == p[-2])
 		    // Ends with '//', use full path
-		    if ((p = make_percent_swname(copybuf, fname)) != NULL)
+		    if ((p = make_percent_swname(copybuf, p, fname)) != NULL)
 		    {
 			backup = modname(p, backup_ext, FALSE);
 			vim_free(p);
@@ -1564,7 +1564,7 @@ buf_write(
 		p = IObuff + STRLEN(IObuff);
 		if (after_pathsep(IObuff, p) && p[-1] == p[-2])
 		    // path ends with '//', use full path
-		    if ((p = make_percent_swname(IObuff, fname)) != NULL)
+		    if ((p = make_percent_swname(IObuff, p, fname)) != NULL)
 		    {
 			backup = modname(p, backup_ext, FALSE);
 			vim_free(p);

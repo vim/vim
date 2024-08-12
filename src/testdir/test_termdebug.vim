@@ -63,6 +63,7 @@ func Test_termdebug_basic()
 
   edit XTD_basic.c
   Termdebug ./XTD_basic
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   let gdb_buf = winbufnr(1)
   wincmd b
@@ -123,13 +124,13 @@ func Test_termdebug_basic()
   " 60 is approx spaceBuffer * 3
   if winwidth(0) <= 78 + 60
     Var
-    call assert_equal(winnr(), winnr('$'))
-    call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['leaf', 1000], ['leaf', 1003 + cn]]])
+    call assert_equal(winnr('$'), winnr())
+    call assert_equal(['col', [['leaf', 1002], ['leaf', 1001], ['leaf', 1000], ['leaf', 1003 + cn]]], winlayout())
     let cn += 1
     bw!
     Asm
-    call assert_equal(winnr(), winnr('$'))
-    call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['leaf', 1000], ['leaf', 1003 + cn]]])
+    call assert_equal(winnr('$'), winnr())
+    call assert_equal(['col', [['leaf', 1002], ['leaf', 1001], ['leaf', 1000], ['leaf', 1003 + cn]]], winlayout())
     let cn += 1
     bw!
   endif
@@ -138,16 +139,16 @@ func Test_termdebug_basic()
   let winw = winwidth(0)
   Var
   if winwidth(0) < winw
-    call assert_equal(winnr(), winnr('$') - 1)
-    call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['row', [['leaf', 1003 + cn], ['leaf', 1000]]]]])
+    call assert_equal(winnr('$') - 1, winnr())
+    call assert_equal(['col', [['leaf', 1002], ['leaf', 1001], ['row', [['leaf', 1003 + cn], ['leaf', 1000]]]]], winlayout())
     let cn += 1
     bw!
   endif
   let winw = winwidth(0)
   Asm
   if winwidth(0) < winw
-    call assert_equal(winnr(), winnr('$') - 1)
-    call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['row', [['leaf', 1003 + cn], ['leaf', 1000]]]]])
+    call assert_equal(winnr('$') - 1, winnr())
+    call assert_equal(['col', [['leaf', 1002], ['leaf', 1001], ['row', [['leaf', 1003 + cn], ['leaf', 1000]]]]], winlayout())
     let cn += 1
     bw!
   endif
@@ -159,6 +160,19 @@ func Test_termdebug_basic()
   redraw!
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
   call assert_equal([], sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+
+  for use_prompt in [v:true, v:false]
+    let g:termdebug_config = {}
+    let g:termdebug_config['use_prompt'] = use_prompt
+    TermdebugCommand ./XTD_basic arg args
+    call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
+    call WaitForAssert({-> assert_equal(3, winnr('$'))})
+    wincmd t
+    quit!
+    redraw!
+    call WaitForAssert({-> assert_equal(1, winnr('$'))})
+    unlet g:termdebug_config
+  endfor
 
   call s:cleanup_files(bin_name)
   %bw!
@@ -174,6 +188,7 @@ func Test_termdebug_tbreak()
   execute 'edit ' .. src_name
   execute 'Termdebug ./' .. bin_name
 
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   let gdb_buf = winbufnr(1)
   wincmd b
@@ -234,6 +249,7 @@ func Test_termdebug_mapping()
   call assert_true(maparg('-', 'n', 0, 1)->empty())
   call assert_true(maparg('+', 'n', 0, 1)->empty())
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd b
   call assert_false(maparg('K', 'n', 0, 1)->empty())
@@ -256,6 +272,7 @@ func Test_termdebug_mapping()
   nnoremap - :echom "-"<cr>
   nnoremap + :echom "+"<cr>
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd b
   call assert_false(maparg('K', 'n', 0, 1)->empty())
@@ -293,6 +310,7 @@ func Test_termdebug_mapping()
   " Start termdebug from foo
   buffer foo
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd b
   call assert_true(maparg('K', 'n', 0, 1).buffer)
@@ -353,9 +371,10 @@ function Test_termdebug_save_restore_variables()
 
   " We want termdebug to overwrite 'K' map but not '+' map.
   let g:termdebug_config = {}
-  let g:termdebug_config['map_K'] = 1
+  let g:termdebug_config['map_K'] = v:true
 
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   call WaitForAssert({-> assert_match(&mousemodel, 'popup_setpos')})
   wincmd t
@@ -382,11 +401,11 @@ function Test_termdebug_sanity_check()
 
   for key in keys(s:dict)
     let s:filename = s:dict[key]
-    let g:termdebug_config[key] = 1
+    let g:termdebug_config[key] = v:true
     let s:error_message = "You have a file/folder named '" .. s:filename .. "'"
 
     " Write dummy file with bad name
-    call writefile(['This', 'is', 'a', 'test'], s:filename)
+    call writefile(['This', 'is', 'a', 'test'], s:filename, 'D')
     Termdebug
     call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
     call WaitForAssert({-> assert_equal(1, winnr('$'))})
@@ -401,6 +420,7 @@ endfunction
 function Test_termdebug_double_termdebug_instances()
   let s:error_message = 'Terminal debugger already running, cannot run two'
   Termdebug
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   Termdebug
   call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
@@ -408,6 +428,51 @@ function Test_termdebug_double_termdebug_instances()
   quit!
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
   :%bw!
+endfunction
+
+function Test_termdebug_config_types()
+  " TODO Remove the deprecated features after 1 Jan 2025.
+  let g:termdebug_config = {}
+  let s:error_message = 'Deprecation Warning:'
+  call assert_true(maparg('K', 'n', 0, 1)->empty())
+
+  for key in ['disasm_window', 'variables_window', 'map_K']
+    for val in [0, 1, v:true, v:false]
+      let g:termdebug_config[key] = val
+      Termdebug
+
+      " Type check: warning is displayed
+      if typename(val) == 'number'
+        call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
+      endif
+
+      " Test on g:termdebug_config keys
+      if val && key != 'map_K'
+        call WaitForAssert({-> assert_equal(4, winnr('$'))})
+        call remove(g:termdebug_config, key)
+      else
+        call WaitForAssert({-> assert_equal(3, winnr('$'))})
+      endif
+
+      " Test on mapping
+      if key == 'map_K'
+        if val
+          call assert_equal(':Evaluate<CR>', maparg('K', 'n', 0, 1).rhs)
+        else
+          call assert_true(maparg('K', 'n', 0, 1)->empty())
+        endif
+      endif
+
+      " Shutoff termdebug
+      wincmd t
+      quit!
+      call WaitForAssert({-> assert_equal(1, winnr('$'))})
+      :%bw!
+
+    endfor
+  endfor
+
+  unlet g:termdebug_config
 endfunction
 
 " vim: shiftwidth=2 sts=2 expandtab

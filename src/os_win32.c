@@ -1264,6 +1264,13 @@ decode_key_event(
 				}
 			    }
 			}
+			else if (pker->wVirtualKeyCode == VK_INSERT
+					&& (nModifs & SHIFT) != 0
+					&& (nModifs & ~SHIFT) == 0)
+			{
+			    *pmodifiers = 0;
+			    *pch2 = VirtKeyMap[i].chShift;
+			}
 			else
 			{
 			    *pch2 = VirtKeyMap[i].chAlone;
@@ -3554,6 +3561,10 @@ mch_exit_c(int r)
     vtp_exit();
 
     stoptermcap();
+    // Switch back to main screen buffer.
+    if (use_alternate_screen_buffer)
+	vtp_printf("\033[?1049l");
+
     if (g_fWindInitCalled)
 	settmode(TMODE_COOK);
 
@@ -6326,10 +6337,6 @@ termcap_mode_end(void)
 # endif
     RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
-
-    // Switch back to main screen buffer.
-    if (exiting && use_alternate_screen_buffer)
-	vtp_printf("\033[?1049l");
 
     if (!USE_WT && (p_rs || exiting))
     {

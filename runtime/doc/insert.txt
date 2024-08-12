@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2024 Jul 13
+*insert.txt*    For Vim version 9.1.  Last change: 2024 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1183,6 +1183,12 @@ items:
 	user_data	custom data which is associated with the item and
 			available in |v:completed_item|; it can be any type;
 			defaults to an empty string
+	hl_group	an additional highlight group whose attributes are
+			combined with |hl-PmenuSel| and |hl-Pmenu| or
+			|hl-PmenuMatchSel| and |hl-PmenuMatch| highlight
+			attributes in the popup menu to apply cterm and gui
+			properties (with higher priority) like strikethrough
+			to the completion items
 
 All of these except "icase", "equal", "dup" and "empty" must be a string.  If
 an item does not meet these requirements then an error message is given and
@@ -2001,12 +2007,19 @@ command in ex mode: >
 	two
 	.
 	:visual
-<appends the following text, after the cursor line: >
+appends the following text, after the cursor line: >
 	one
 	two
 <
-NOTE: These commands cannot be used with |:global| or |:vglobal|.
-":append" and ":insert" don't work properly in between ":if" and
+In |Ex-mode|, when these commands are used with |:global| or |:vglobal| then
+the lines are obtained from the text following the command.  Separate lines
+with a NL escaped with a backslash: >
+	:global/abc/insert\
+	one line\
+	another line
+The final "." is not needed then.
+
+NOTE: ":append" and ":insert" don't work properly in between ":if" and
 ":endif", ":for" and ":endfor", ":while" and ":endwhile".
 
 							*:start* *:startinsert*

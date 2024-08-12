@@ -240,8 +240,8 @@ shift_line(
 
     if (round)			// round off indent
     {
-	i = count / sw_val;	// number of 'shiftwidth' rounded down
-	j = count % sw_val;	// extra spaces
+	i = trim_to_int(count) / sw_val;	// number of 'shiftwidth' rounded down
+	j = trim_to_int(count) % sw_val;	// extra spaces
 	if (j && left)		// first remove extra spaces
 	    --amount;
 	if (left)
@@ -676,6 +676,7 @@ op_delete(oparg_T *oap)
 	    && !oap->block_mode
 	    && oap->line_count > 1
 	    && oap->motion_force == NUL
+	    && (vim_strchr(p_cpo, CPO_WORD) != NULL)
 	    && oap->op_type == OP_DELETE)
     {
 	ptr = ml_get(oap->end.lnum) + oap->end.col;

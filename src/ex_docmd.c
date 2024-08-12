@@ -19,10 +19,6 @@ static int	ex_pressedreturn = FALSE;
 # define ex_hardcopy	ex_ni
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-static int cmp_cmdmod_info(const void *a, const void *b);
-#endif
-
 #ifdef FEAT_EVAL
 static char_u	*do_one_cmd(char_u **, int, cstack_T *, char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 #else
@@ -2722,6 +2718,12 @@ ex_errmsg(char *msg, char_u *arg)
 }
 
 /*
+ * The "+" string used in place of an empty command in Ex mode.
+ * This string is used in pointer comparison.
+ */
+static char exmode_plus[] = "+";
+
+/*
  * Handle a range without a command.
  * Returns an error message on failure.
  */
@@ -2730,7 +2732,8 @@ ex_range_without_command(exarg_T *eap)
 {
     char *errormsg = NULL;
 
-    if ((*eap->cmd == '|' || exmode_active)
+    if ((*eap->cmd == '|' ||
+		(exmode_active && eap->cmd != (char_u *)exmode_plus + 1))
 #ifdef FEAT_EVAL
 	    && !in_vim9script()
 #endif
@@ -2860,9 +2863,8 @@ parse_command_modifiers(
     {
 	// The automatically inserted Visual area range is skipped, so that
 	// typing ":cmdmod cmd" in Visual mode works without having to move the
-	// range to after the modififiers. The command will be
-	// "'<,'>cmdmod cmd", parse "cmdmod cmd" and then put back "'<,'>"
-	// before "cmd" below.
+	// range to after the modifiers. The command will be "'<,'>cmdmod cmd",
+	// parse "cmdmod cmd" and then put back "'<,'>" before "cmd" below.
 	eap->cmd += 5;
 	cmd_start = eap->cmd;
 	has_visual_range = TRUE;
@@ -3213,7 +3215,7 @@ parse_command_modifiers(
 		eap->cmd = orig_cmd;
     }
     else if (use_plus_cmd)
-	eap->cmd = (char_u *)"+";
+	eap->cmd = (char_u *)exmode_plus;
 
     return OK;
 }
@@ -4044,16 +4046,6 @@ static cmdmod_info_T cmdmod_info_tab[] = {
     {"vim9cmd", 4, FALSE}
 };	// cmdmod_info_tab
 
-// compare two cmdmod_info_T structs by case sensitive name with length
-    static int
-cmp_cmdmod_info(const void *a, const void *b)
-{
-    cmdmod_info_T *cm1 = (cmdmod_info_T *)a;
-    cmdmod_info_T *cm2 = (cmdmod_info_T *)b;
-
-    return STRNCMP(cm1->name, cm2->name, cm2->minlen);
-}
-
 /*
  * Return length of a command modifier (including optional count).
  * Return zero when it's not a modifier.
@@ -4061,36 +4053,20 @@ cmp_cmdmod_info(const void *a, const void *b)
     int
 modifier_len(char_u *cmd)
 {
+    int		i, j;
     char_u	*p = cmd;
-    cmdmod_info_T	target;
-    cmdmod_info_T	*entry;
 
     if (VIM_ISDIGIT(*cmd))
 	p = skipwhite(skipdigits(cmd + 1));
-
-    // only lowercase characters can match
-    if (!ASCII_ISLOWER(*p))
-	return 0;
-
-    target.name = (char *)p;
-    target.minlen = 0;		// not used, see cmp_cmdmod_info()
-    target.has_count = FALSE;
-
-    entry = (cmdmod_info_T *)bsearch(&target, &cmdmod_info_tab, ARRAY_LENGTH(cmdmod_info_tab), sizeof(cmdmod_info_tab[0]), cmp_cmdmod_info);
-    if (entry != NULL)
+    for (i = 0; i < (int)ARRAY_LENGTH(cmdmod_info_tab); ++i)
     {
-	int i;
-
-	for (i = entry->minlen; p[i] != NUL; ++i)
-	{
-	    if (p[i] != entry->name[i])
+	for (j = 0; p[j] != NUL; ++j)
+	    if (p[j] != cmdmod_info_tab[i].name[j])
 		break;
-	}
-
-	if (!ASCII_ISALPHA(p[i]) && i >= entry->minlen && (p == cmd || entry->has_count))
-	    return i + (int)(p - cmd);
+	if (!ASCII_ISALPHA(p[j]) && j >= cmdmod_info_tab[i].minlen
+					&& (p == cmd || cmdmod_info_tab[i].has_count))
+	    return j + (int)(p - cmd);
     }
-
     return 0;
 }
 
@@ -4104,33 +4080,18 @@ cmd_exists(char_u *name)
 {
     exarg_T	ea;
     int		full = FALSE;
+    int		i;
+    int		j;
     char_u	*p;
 
-    // only lowercase characters can match
-    if (ASCII_ISLOWER(*name))
+    // Check command modifiers.
+    for (i = 0; i < (int)ARRAY_LENGTH(cmdmod_info_tab); ++i)
     {
-	cmdmod_info_T	target;
-	cmdmod_info_T	*entry;
-
-	target.name = (char *)name;
-	target.minlen = 0;		// not used, see cmp_cmdmod_info()
-	target.has_count = FALSE;
-
-	// Check command modifiers.
-	entry = (cmdmod_info_T *)bsearch(&target, &cmdmod_info_tab, ARRAY_LENGTH(cmdmod_info_tab), sizeof(cmdmod_info_tab[0]), cmp_cmdmod_info);
-	if (entry != NULL)
-	{
-	    int i;
-
-	    for (i = entry->minlen; name[i] != NUL; ++i)
-	    {
-		if (name[i] != entry->name[i])
-		    break;
-	    }
-
-	    if (name[i] == NUL && i >= entry->minlen)
-		return (entry->name[i] == NUL ? 2 : 1);
-	}
+	for (j = 0; name[j] != NUL; ++j)
+	    if (name[j] != cmdmod_info_tab[i].name[j])
+		break;
+	if (name[j] == NUL && j >= cmdmod_info_tab[i].minlen)
+	    return (cmdmod_info_tab[i].name[j] == NUL ? 2 : 1);
     }
 
     // Check built-in commands and user defined commands.
@@ -5987,6 +5948,10 @@ get_command_name(expand_T *xp UNUSED, int idx)
 {
     if (idx >= (int)CMD_SIZE)
 	return expand_user_command_name(idx);
+    // the following are no real commands
+    if (STRNCMP(cmdnames[idx].cmd_name, "{", 1) == 0 ||
+        STRNCMP(cmdnames[idx].cmd_name, "}", 1) == 0)
+	return (char_u *)"";
     return cmdnames[idx].cmd_name;
 }
 
@@ -7267,7 +7232,7 @@ ex_resize(exarg_T *eap)
 ex_find(exarg_T *eap)
 {
     if (!check_can_set_curbuf_forceit(eap->forceit))
-        return;
+	return;
 
     char_u	*fname;
     int		count;
@@ -7359,7 +7324,7 @@ ex_edit(exarg_T *eap)
 	    // All other commands must obey 'winfixbuf' / ! rules
 	    && (is_other_file(0, ffname) && !check_can_set_curbuf_forceit(eap->forceit))
     )
-        return;
+	return;
 
     do_exedit(eap, NULL);
 }

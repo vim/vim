@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2024 May 23
+*filetype.txt*	For Vim version 9.1.  Last change: 2024 Jul 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -623,11 +623,33 @@ any #lang directive overrides, use the following command: >
 	let g:freebasic_lang = "fblite"
 
 
+GDSCRIPT						*ft-gdscript-plugin*
+
+By default the following options are set, based on Godot official docs: >
+
+	setlocal noexpandtab softtabstop=0 shiftwidth=0
+
+To disable this behavior, set the following variable in your vimrc: >
+
+	let g:gdscript_recommended_style = 0
+
+
 GIT COMMIT                                              *ft-gitcommit-plugin*
 
 One command, :DiffGitCached, is provided to show a diff of the current commit
 in the preview window.  It is equivalent to calling "git diff --cached" plus
 any arguments given to the command.
+
+
+GO							*ft-go-plugin*
+
+By default the following options are set, based on Golang official docs: >
+
+	setlocal noexpandtab softtabstop=0 shiftwidth=0
+
+To disable this behavior, set the following variable in your vimrc: >
+
+	let g:go_recommended_style = 0
 
 
 GPROF							*ft-gprof-plugin*
@@ -886,6 +908,10 @@ You can change the default by defining the variable g:tex_flavor to the format
 	let g:tex_flavor = "latex"
 Currently no other formats are recognized.
 
+TYPST							*ft-typst-plugin*
+
+							*g:typst_conceal*
+When |TRUE| the Typst filetype plugin will set the 'conceallevel' option to 2.
 
 VIM							*ft-vim-plugin*
 

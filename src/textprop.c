@@ -2060,7 +2060,7 @@ list_types(hashtab_T *ht, list_T *l)
  * prop_type_list([{bufnr}])
  */
     void
-f_prop_type_list(typval_T *argvars, typval_T *rettv UNUSED)
+f_prop_type_list(typval_T *argvars, typval_T *rettv)
 {
     buf_T *buf = NULL;
 

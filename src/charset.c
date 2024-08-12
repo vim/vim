@@ -827,20 +827,20 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
 
     if (cts.cts_text_prop_count)
     {
-      int write_idx = 0;
-      for (int read_idx = 0; read_idx < cts.cts_text_prop_count; read_idx++)
-      {
-          textprop_T *tp = &cts.cts_text_props[read_idx];
-          if (tp->tp_col != MAXCOL)
-          {
-              if (read_idx != write_idx)
-                  cts.cts_text_props[write_idx] = *tp;
-              write_idx++;
-          }
-      }
-      cts.cts_text_prop_count = write_idx;
-      if (cts.cts_text_prop_count == 0)
-          VIM_CLEAR(cts.cts_text_props);
+	int write_idx = 0;
+	for (int read_idx = 0; read_idx < cts.cts_text_prop_count; read_idx++)
+	{
+	    textprop_T *tp = &cts.cts_text_props[read_idx];
+	    if (tp->tp_col != MAXCOL)
+	    {
+		if (read_idx != write_idx)
+		    cts.cts_text_props[write_idx] = *tp;
+		write_idx++;
+	    }
+	}
+	cts.cts_text_prop_count = write_idx;
+	if (cts.cts_text_prop_count == 0)
+	    VIM_CLEAR(cts.cts_text_props);
     }
 
     win_linetabsize_cts(&cts, (colnr_T)MAXCOL);
@@ -1397,17 +1397,17 @@ win_lbr_chartabsize(
 		else if (max_head_vcol > vcol + head_prev + prev_rem)
 		    head += (max_head_vcol - (vcol + head_prev + prev_rem)
 					     + width2 - 1) / width2 * head_mid;
-#  ifdef FEAT_PROP_POPUP
 		else if (max_head_vcol < 0)
 		{
-		    int off = 0;
+		    int off = mb_added;
+#  ifdef FEAT_PROP_POPUP
 		    if (*s != NUL
 			     && ((State & MODE_NORMAL) || cts->cts_start_incl))
 			off += cts->cts_cur_text_width;
+#  endif
 		    if (off >= prev_rem)
 			head += (1 + (off - prev_rem) / width) * head_mid;
 		}
-#  endif
 	    }
 	}
 

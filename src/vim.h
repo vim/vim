@@ -1769,6 +1769,7 @@ void *vim_memset(void *, int, size_t);
 
 # define MB_STRICMP(d, s)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)MAXCOL)
 # define MB_STRNICMP(d, s, n)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)(n))
+# define MB_STRNICMP2(d, s, n1, n2)	mb_strnicmp2((char_u *)(d), (char_u *)(s), (n1), (n2))
 
 #define STRCAT(d, s)	    strcat((char *)(d), (char *)(s))
 #define STRNCAT(d, s, n)    strncat((char *)(d), (char *)(s), (size_t)(n))

@@ -425,7 +425,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
     if (type->tt_type == VAR_OBJECT)
     {
-        ocmember_T *m = object_member_lookup(cl, name, len, &m_idx);
+	ocmember_T *m = object_member_lookup(cl, name, len, &m_idx);
 	if (m_idx >= 0)
 	{
 	    if (*name == '_' && !inside_class(cctx, cl))

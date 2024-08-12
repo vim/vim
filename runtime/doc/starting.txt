@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Jul 08
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Aug 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -540,6 +540,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		not needed when reading a file, because there is a check if
 		the file that is being read has been encrypted, and Vim asks
 		for a key automatically. |encryption|
+		{only available when compiled with the |+cryptv| feature}
 
 							*-X*
 -X		Do not try connecting to the X server to get the current

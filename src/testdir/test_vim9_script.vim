@@ -4007,7 +4007,7 @@ def Test_restoring_cpo()
   edit XanotherScript
   so %
   assert_equal('aABceFsMny>', &cpo)
-  assert_equal('aABceFs', g:cpoval)
+  assert_equal('aABceFsz', g:cpoval)
   :1del
   setline(1, 'let g:cpoval = &cpo')
   w
@@ -4048,10 +4048,10 @@ def Test_restoring_cpo()
     exe "silent !" .. cmd
 
     assert_equal([
-        'before: aABceFs',
-        'after: aABceFsM',
-        'later: aABceFsM',
-        'vim9: aABceFs'], readfile('Xrporesult'))
+        'before: aABceFsz',
+        'after: aABceFszM',
+        'later: aABceFszM',
+        'vim9: aABceFsz'], readfile('Xrporesult'))
 
     $HOME = save_HOME
     delete('Xrporesult')

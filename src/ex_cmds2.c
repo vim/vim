@@ -197,7 +197,7 @@ dialog_changed(
 	// restore to empty when write failed
 	if (empty_bufname)
 	{
-	    VIM_CLEAR(buf->b_fname);
+	    buf->b_fname = NULL;
 	    VIM_CLEAR(buf->b_ffname);
 	    VIM_CLEAR(buf->b_sfname);
 	    unchanged(buf, TRUE, FALSE);

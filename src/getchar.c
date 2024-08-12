@@ -42,6 +42,11 @@ static buffheader_T recordbuff = {{NULL, {NUL}}, NULL, 0, 0};
 
 static int typeahead_char = 0;		// typeahead char that's not flushed
 
+#ifdef FEAT_EVAL
+static char_u typedchars[MAXMAPLEN + 1] = { NUL };  // typed chars before map
+static int typedchars_pos = 0;
+#endif
+
 /*
  * When block_redo is TRUE the redo buffer will not be changed.
  * Used by edit() to repeat insertions.
@@ -1709,6 +1714,13 @@ updatescript(int c)
 	ml_sync_all(c == 0, TRUE);
 	count = 0;
     }
+#ifdef FEAT_EVAL
+    if (typedchars_pos < MAXMAPLEN)
+    {
+	typedchars[typedchars_pos] = c;
+	typedchars_pos++;
+    }
+#endif
 }
 
 /*
@@ -2036,8 +2048,8 @@ vgetc(void)
 		vgetc_char = c;
 	    }
 
-	    // a keypad or special function key was not mapped, use it like
-	    // its ASCII equivalent
+	    // A keypad or special function key was not mapped, use it like
+	    // its ASCII equivalent.
 	    switch (c)
 	    {
 		case K_KPLUS:	c = '+'; break;
@@ -2135,6 +2147,9 @@ vgetc(void)
 
 #ifdef FEAT_EVAL
     c = do_key_input_pre(c);
+
+    // Clear the next typedchars_pos
+    typedchars_pos = 0;
 #endif
 
     // Need to process the character before we know it's safe to do something
@@ -2175,6 +2190,9 @@ do_key_input_pre(int c)
     else
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
 
+    typedchars[typedchars_pos] = NUL;
+    vim_unescape_csi(typedchars);
+
     get_mode(curr_mode);
 
     // Lock the text to avoid weird things from happening.
@@ -2183,6 +2201,7 @@ do_key_input_pre(int c)
 
     v_event = get_v_event(&save_v_event);
     (void)dict_add_bool(v_event, "typed", KeyTyped);
+    (void)dict_add_string(v_event, "typedchar", typedchars);
 
     if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf)
 	&& STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
@@ -2916,8 +2935,11 @@ handle_mapping(
 		    }
 		}
 		else
+		{
 		    // No match; may have to check for termcode at next
-		    // character.  If the first character that didn't match is
+		    // character.
+
+		    // If the first character that didn't match is
 		    // K_SPECIAL then check for a termcode.  This isn't perfect
 		    // but should work in most cases.
 		    if (max_mlen < mlen)
@@ -2927,6 +2949,12 @@ handle_mapping(
 		    }
 		    else if (max_mlen == mlen && mp->m_keys[mlen] == K_SPECIAL)
 			want_termcode = 1;
+
+		    // Check termcode for uppercase character to properly
+		    // process "ESC[27;2;<ascii code>~" control sequences.
+		    if (ASCII_ISUPPER(mp->m_keys[mlen]))
+			want_termcode = 1;
+		}
 	    }
 	}
 
@@ -3128,6 +3156,8 @@ handle_mapping(
 	int	save_m_noremap;
 	int	save_m_silent;
 	char_u	*save_m_keys;
+	char_u	*save_alt_m_keys;
+	int	save_alt_m_keylen;
 #else
 # define save_m_noremap mp->m_noremap
 # define save_m_silent mp->m_silent
@@ -3176,6 +3206,8 @@ handle_mapping(
 	save_m_noremap = mp->m_noremap;
 	save_m_silent = mp->m_silent;
 	save_m_keys = NULL;  // only saved when needed
+	save_alt_m_keys = NULL;  // only saved when needed
+	save_alt_m_keylen = mp->m_alt != NULL ? mp->m_alt->m_keylen : 0;
 
 	/*
 	 * Handle ":map <expr>": evaluate the {rhs} as an expression.  Also
@@ -3192,7 +3224,10 @@ handle_mapping(
 	    vgetc_busy = 0;
 	    may_garbage_collect = FALSE;
 
-	    save_m_keys = vim_strsave(mp->m_keys);
+	    save_m_keys = vim_strnsave(mp->m_keys, (size_t)mp->m_keylen);
+	    save_alt_m_keys = mp->m_alt != NULL
+				    ? vim_strnsave(mp->m_alt->m_keys,
+					     (size_t)save_alt_m_keylen) : NULL;
 	    map_str = eval_map_expr(mp, NUL);
 
 	    // The mapping may do anything, but we expect it to take care of
@@ -3250,15 +3285,20 @@ handle_mapping(
 		noremap = save_m_noremap;
 	    else if (
 #ifdef FEAT_EVAL
-		STRNCMP(map_str, save_m_keys != NULL ? save_m_keys : mp->m_keys,
-								(size_t)keylen)
-#else
-		STRNCMP(map_str, mp->m_keys, (size_t)keylen)
+		save_m_expr ?
+		(save_m_keys != NULL
+			&& STRNCMP(map_str, save_m_keys, (size_t)keylen) == 0)
+		|| (save_alt_m_keys != NULL
+			&& STRNCMP(map_str, save_alt_m_keys,
+					    (size_t)save_alt_m_keylen) == 0) :
 #endif
-		   != 0)
-		noremap = REMAP_YES;
-	    else
+		STRNCMP(map_str, mp->m_keys, (size_t)keylen) == 0
+		|| (mp->m_alt != NULL
+			&& STRNCMP(map_str, mp->m_alt->m_keys,
+					    (size_t)mp->m_alt->m_keylen) == 0))
 		noremap = REMAP_SKIP;
+	    else
+		noremap = REMAP_YES;
 	    i = ins_typebuf(map_str, noremap,
 					 0, TRUE, cmd_silent || save_m_silent);
 #ifdef FEAT_EVAL
@@ -3268,6 +3308,7 @@ handle_mapping(
 	}
 #ifdef FEAT_EVAL
 	vim_free(save_m_keys);
+	vim_free(save_alt_m_keys);
 #endif
 	*keylenp = keylen;
 	if (i == FAIL)

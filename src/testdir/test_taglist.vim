@@ -100,9 +100,9 @@ func Test_tagfiles()
 
   help
   let tf = tagfiles()
-  " if 'helplang includes another language, then we may find
-  " 2 tagfiles (e.g.: for EN and RU)
-  " we may need to adjust this, if further translated help files are included
+  " If 'helplang' includes another language, then we may find 2 tagfiles
+  " (e.g.: for EN and RU).
+  " We may need to adjust this, if further translated help files are included.
   call assert_inrange(1, 2, len(tf))
   call assert_equal(fnamemodify(expand('$VIMRUNTIME/doc/tags'), ':p:gs?\\?/?'),
 	\           fnamemodify(tf[0], ':p:gs?\\?/?'))

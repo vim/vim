@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Jun 16
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Aug 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1006,7 +1006,7 @@ Another option is using 'makeencoding'.
 ==============================================================================
 5. Using :vimgrep and :grep				*grep* *lid*
 
-Vim has two ways to find matches for a pattern: Internal and external.  The
+Vim has two ways to find matches for a pattern: internal and external.  The
 advantage of the internal grep is that it works on all systems and uses the
 powerful Vim search patterns.  An external grep program can be used when the
 Vim grep does not do what you want.
@@ -1035,7 +1035,7 @@ commands can be combined to create a NewGrep command: >
         command! -nargs=+ NewGrep execute 'silent grep! <args>' | copen 42
 
 
-5.1 using Vim's internal grep
+5.1 Using Vim's internal grep
 
 					*:vim* *:vimgrep* *E682* *E683*
 :vim[grep][!] /{pattern}/[g][j][f] {file} ...
@@ -1092,8 +1092,8 @@ commands can be combined to create a NewGrep command: >
 
 :vim[grep][!] {pattern} {file} ...
 			Like above, but instead of enclosing the pattern in a
-			non-ID character use a white-separated pattern.  The
-			pattern must start with an ID character.
+			non-ID character use a white space separated pattern.
+			The pattern must start with an ID character.
 			Example: >
 				:vimgrep Error *.c
 <
@@ -1413,6 +1413,17 @@ from |errorformat-LaTeX| is too complex to keep it working for different
 shells and OSes and also does not allow to use other available TeX options,
 if any.  If your TeX doesn't support "-interaction=nonstopmode", please
 report it with different means to express \nonstopmode from the command line.
+
+TYPST COMPILER						*compiler-typst*
+
+Vim includes a compiler plugin for Typst files. This compiler is enabled
+automatically in Typst buffers by the Typst filetype plugin |ft-typst-plugin|.
+Run |:make| to compile the current Typst file.
+
+							*g:typst_cmd*
+By default Vim will use "typst" as the command to run the Typst compiler. This
+can be changed by setting the |g:typst_cmd| variable: >
+	let g:typst_cmd = "/path/to/other/command"
 
 =============================================================================
 7. The error format					*error-file-format*

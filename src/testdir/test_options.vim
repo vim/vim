@@ -1728,7 +1728,7 @@ func Test_VIM_POSIX()
     qall
   [CODE]
   if RunVim([], after, '')
-    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\.;',
+    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZz$!%*-+<>#{|&/\.;',
           \            'AS'], readfile('X_VIM_POSIX'))
   endif
 
@@ -1738,7 +1738,7 @@ func Test_VIM_POSIX()
     qall
   [CODE]
   if RunVim([], after, '')
-    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>;',
+    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZz$!%*-+<>;',
           \            'S'], readfile('X_VIM_POSIX'))
   endif
 

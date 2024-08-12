@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 9.1.  Last change: 2024 Jun 09
+*mbyte.txt*     For Vim version 9.1.  Last change: 2024 Jul 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -493,7 +493,7 @@ The GUI fully supports multibyte characters.  It is also possible in a
 terminal, if the terminal supports the same encoding that Vim uses.  Thus this
 is less flexible.
 
-For example, you can run Vim in a xterm with added multibyte support and/or
+For example, you can run Vim in an xterm with added multibyte support and/or
 |XIM|.  Examples are kterm (Kanji term) and hanterm (for Korean), Eterm
 (Enlightened terminal) and rxvt.
 
@@ -1379,7 +1379,7 @@ Motif.  Use the ":hi Menu font={fontname}" command for this. |:highlight|
 TYPING UTF-8						*utf-8-typing*
 
 If you are using X-Windows, you should find an input method that supports
-UTF-8.
+the UTF-8 encoding.
 
 If your system does not provide support for typing UTF-8, you can use the
 'keymap' feature.  This allows writing a keymap file, which defines a UTF-8

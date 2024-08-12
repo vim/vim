@@ -178,12 +178,6 @@ There used to be a KDE version of Vim, using Qt libraries, but since it didn't
 work very well and there was no maintainer it was dropped.
 
 
-Unix: COMPILING ON LINUX
-
-On Linux, when using -g to compile (which is default for gcc), the executable
-will probably be statically linked.  If you don't want this, remove the -g
-option from CFLAGS.
-
 Unix: PUTTING vimrc IN /etc
 
 Some Linux distributions prefer to put the global vimrc file in /etc, and the

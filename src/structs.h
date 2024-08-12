@@ -1309,6 +1309,9 @@ typedef struct mapblock mapblock_T;
 struct mapblock
 {
     mapblock_T	*m_next;	// next mapblock in list
+    mapblock_T	*m_alt;		// pointer to mapblock of the same mapping
+				// with an alternative form of m_keys, or NULL
+				// if there is no such mapblock
     char_u	*m_keys;	// mapped from, lhs
     char_u	*m_str;		// mapped to, rhs
     char_u	*m_orig_str;	// rhs as entered by the user
@@ -4466,12 +4469,13 @@ typedef struct
  */
 typedef struct
 {
-    char_u	*pum_text;	// main menu text
-    char_u	*pum_kind;	// extra kind text (may be truncated)
-    char_u	*pum_extra;	// extra menu text (may be truncated)
-    char_u	*pum_info;	// extra info
-    int		pum_score;	// fuzzy match score
-    int		pum_idx;	// index of item before sorting by score
+    char_u	*pum_text;	  // main menu text
+    char_u	*pum_kind;	  // extra kind text (may be truncated)
+    char_u	*pum_extra;	  // extra menu text (may be truncated)
+    char_u	*pum_info;	  // extra info
+    int		pum_score;	  // fuzzy match score
+    int		pum_idx;	  // index of item before sorting by score
+    int		pum_user_hlattr;  // highlight attribute to combine with
 } pumitem_T;
 
 /*

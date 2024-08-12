@@ -219,6 +219,17 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyObject_GetItem py3_PyObject_GetItem
 # define PyObject_IsTrue py3_PyObject_IsTrue
 # define PyModule_GetDict py3_PyModule_GetDict
+# if defined(USE_LIMITED_API) \
+    && (Py_LIMITED_API+0 >= 0x030c0000 || defined(Py_REF_DEBUG))
+#  undef Py_INCREF
+#  if Py_LIMITED_API+0 >= 0x030a00A7
+#   define _Py_IncRef py3__Py_IncRef
+#   define Py_INCREF _Py_IncRef
+#  else
+#   define Py_IncRef py3_Py_IncRef
+#   define Py_INCREF Py_IncRef
+#  endif
+# endif
 # ifdef USE_LIMITED_API
 #  define Py_CompileString py3_Py_CompileString
 #  define PyEval_EvalCode py3_PyEval_EvalCode
@@ -391,6 +402,15 @@ static void (*py3_Py_Finalize)(void);
 static void (*py3_PyErr_SetString)(PyObject *, const char *);
 static void (*py3_PyErr_SetObject)(PyObject *, PyObject *);
 static int (*py3_PyErr_ExceptionMatches)(PyObject *);
+# if defined(USE_LIMITED_API) \
+    && (Py_LIMITED_API+0 >= 0x030c0000 || defined(Py_REF_DEBUG))
+#  if Py_LIMITED_API+0 >= 0x030a00A7
+#   define _Py_IncRef py3__Py_IncRef
+static void (*py3__Py_IncRef)(PyObject *);
+#  else
+static void (*py3_Py_IncRef)(PyObject *);
+#  endif
+# endif
 # ifdef USE_LIMITED_API
 static PyObject* (*py3_Py_CompileString)(const char *, const char *, int);
 static PyObject* (*py3_PyEval_EvalCode)(PyObject *co, PyObject *globals, PyObject *locals);
@@ -598,6 +618,14 @@ static struct
     {"PyErr_SetString", (PYTHON_PROC*)&py3_PyErr_SetString},
     {"PyErr_SetObject", (PYTHON_PROC*)&py3_PyErr_SetObject},
     {"PyErr_ExceptionMatches", (PYTHON_PROC*)&py3_PyErr_ExceptionMatches},
+# if defined(USE_LIMITED_API) \
+    && (Py_LIMITED_API+0 >= 0x030c0000 || defined(Py_REF_DEBUG))
+#  if Py_LIMITED_API+0 >= 0x030a00A7
+    {"_Py_IncRef", (PYTHON_PROC*)&py3__Py_IncRef},
+#  else
+    {"Py_IncRef", (PYTHON_PROC*)&py3_Py_IncRef},
+#  endif
+# endif
 # ifdef USE_LIMITED_API
     {"Py_CompileString", (PYTHON_PROC*)&py3_Py_CompileString},
     {"PyEval_EvalCode", (PYTHON_PROC*)&PyEval_EvalCode},
@@ -772,6 +800,20 @@ py3__Py_XDECREF(PyObject *op)
 
 #  undef Py_XDECREF
 #  define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
+# endif
+
+# if defined(USE_LIMITED_API) \
+    && (Py_LIMITED_API+0 >= 0x030c0000 || defined(Py_REF_DEBUG))
+    static inline void
+py3__Py_XINCREF(PyObject *op)
+{
+    if (op != NULL)
+    {
+	Py_INCREF(op);
+    }
+}
+#  undef Py_XINCREF
+#  define Py_XINCREF(op) py3__Py_XINCREF(_PyObject_CAST(op))
 # endif
 
 # if PY_VERSION_HEX >= 0x030900b0
@@ -1079,7 +1121,7 @@ static int python_end_called = FALSE;
 
 #ifdef USE_LIMITED_API
 # define DESTRUCTOR_FINISH(self) \
-    ((freefunc)PyType_GetSlot(Py_TYPE(self), Py_tp_free))((PyObject*)self)
+    ((freefunc)PyType_GetSlot(Py_TYPE((PyObject*)self), Py_tp_free))((PyObject*)self)
 #else
 # define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self)
 #endif

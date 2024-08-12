@@ -2651,6 +2651,8 @@ f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
 	return;
 
     c = *key;
+    if (c == CAR && need_wait_return)
+	return;
     if (c == K_SPECIAL && key[1] != NUL)
 	c = TO_SPECIAL(key[1], key[2]);
 

@@ -2254,26 +2254,35 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	{
 	    // Need to get the member index now that the class is known.
 	    object_T *obj = tv_dest->vval.v_object;
-	    class_T *cl = obj->obj_class;
-	    char_u  *member = tv_idx->vval.v_string;
-
-	    int		m_idx;
-	    ocmember_T *m = object_member_lookup(cl, member, 0, &m_idx);
-	    if (m != NULL)
+	    if (obj == NULL)
 	    {
-		if (*member == '_')
-		{
-		    emsg_var_cl_define(e_cannot_access_protected_variable_str,
-							m->ocm_name, 0, cl);
-		    status = FAIL;
-		}
-
-		lidx = m_idx;
+		emsg(_(e_using_null_object));
+		status = FAIL;
 	    }
 	    else
 	    {
-		member_not_found_msg(cl, VAR_OBJECT, member, 0);
-		status = FAIL;
+		class_T *cl = obj->obj_class;
+		char_u  *member = tv_idx->vval.v_string;
+
+		int		m_idx;
+		ocmember_T *m = object_member_lookup(cl, member, 0, &m_idx);
+		if (m != NULL)
+		{
+		    if (*member == '_')
+		    {
+			emsg_var_cl_define(
+					e_cannot_access_protected_variable_str,
+					m->ocm_name, 0, cl);
+			status = FAIL;
+		    }
+
+		    lidx = m_idx;
+		}
+		else
+		{
+		    member_not_found_msg(cl, VAR_OBJECT, member, 0);
+		    status = FAIL;
+		}
 	    }
 	}
 	else if ((dest_type == VAR_LIST || dest_type == VAR_OBJECT)
@@ -3567,7 +3576,10 @@ exec_instructions(ectx_T *ectx)
 				p = tv_get_string_buf(tv, buf);
 			}
 			else
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
 			    p = tv_stringify(tv, buf);
+			}
 
 			len = (int)STRLEN(p);
 			if (GA_GROW_FAILS(&ga, len + 2))
@@ -4380,7 +4392,14 @@ exec_instructions(ectx_T *ectx)
 			object_required_error(tv);
 			goto on_error;
 		    }
+
 		    object_T *obj = tv->vval.v_object;
+		    if (obj == NULL)
+		    {
+			emsg(_(e_using_null_object));
+			goto on_error;
+		    }
+
 		    class_T *cl = obj->obj_class;
 
 		    // convert the interface index to the object index
@@ -4536,12 +4555,21 @@ exec_instructions(ectx_T *ectx)
 			    tv = STACK_TV_BOT(-1);
 			    if (tv->v_type != VAR_OBJECT)
 			    {
+				SOURCING_LNUM = iptr->isn_lnum;
 				object_required_error(tv);
 				vim_free(pt);
 				goto on_error;
 			    }
 
 			    object_T *obj = tv->vval.v_object;
+			    if (obj == NULL)
+			    {
+				SOURCING_LNUM = iptr->isn_lnum;
+				emsg(_(e_using_null_object));
+				vim_free(pt);
+				goto on_error;
+			    }
+
 			    cl = obj->obj_class;
 			    // drop the value from the stack
 			    clear_tv(tv);

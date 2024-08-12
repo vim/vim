@@ -98,7 +98,6 @@
 :checkpath
 :checktime
 :chistory
-:class
 :clast
 :clearjumps
 :clist
@@ -172,7 +171,6 @@
 :else
 :elseif
 :emenu
-:endclass
 :enddef
 :endif
 :endfor
@@ -184,7 +182,6 @@
 :ex
 :execute
 :exit
-:export
 :exusage
 :file
 :files
@@ -313,8 +310,7 @@
 :move
 :mark
 :make
-" requires trailing whitespace to distinguish from map()
-:map 
+:map
 :mapclear
 :marks
 :match
@@ -553,12 +549,10 @@
 :unsilent
 :update
 :vglobal/.../
-:var
 :version
 :verbose
 :vertical
 :vim9cmd
-" :vim9script
 :vimgrep
 :vimgrepadd
 :visual
@@ -691,7 +685,6 @@ call Foo() | chdir
 call Foo() | checkpath
 call Foo() | checktime
 call Foo() | chistory
-call Foo() | class
 call Foo() | clast
 call Foo() | clearjumps
 call Foo() | clist
@@ -765,7 +758,6 @@ call Foo() | echowindow
 call Foo() | else
 call Foo() | elseif
 call Foo() | emenu
-call Foo() | endclass
 call Foo() | enddef
 call Foo() | endif
 call Foo() | endfor
@@ -777,7 +769,6 @@ call Foo() | eval
 call Foo() | ex
 call Foo() | execute
 call Foo() | exit
-call Foo() | export
 call Foo() | exusage
 call Foo() | file
 call Foo() | files
@@ -907,8 +898,7 @@ call Foo() | lwindow
 call Foo() | move
 call Foo() | mark
 call Foo() | make
-" requires trailing whitespace to distinguish from map()
-call Foo() | map 
+call Foo() | map
 call Foo() | mapclear
 call Foo() | marks
 call Foo() | match
@@ -1147,12 +1137,10 @@ call Foo() | unmenu
 call Foo() | unsilent
 call Foo() | update
 call Foo() | vglobal/.../
-call Foo() | var
 call Foo() | version
 call Foo() | verbose
 call Foo() | vertical
 call Foo() | vim9cmd
-" call Foo() | vim9script
 call Foo() | vimgrep
 call Foo() | vimgrepadd
 call Foo() | visual
@@ -1193,3 +1181,39 @@ call Foo() | xunmap
 call Foo() | xunmenu
 call Foo() | yank
 call Foo() | z
+
+
+" Vim9-script only
+
+:abstract
+:class
+:defcompile
+:disassemble
+:endclass
+:endinterface
+:endenum
+:enum
+:export
+:final
+:interface
+:public
+:static
+:type
+:var
+
+Foo() | abstract
+Foo() | class
+Foo() | defcompile
+Foo() | disassemble
+Foo() | endclass
+Foo() | endenum
+Foo() | endinterface
+Foo() | enum
+Foo() | export
+Foo() | final
+Foo() | interface
+Foo() | public
+Foo() | static
+Foo() | type
+Foo() | var
+

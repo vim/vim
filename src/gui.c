@@ -460,7 +460,7 @@ gui_init_check(void)
     // and in that case we don't want to overwrite ligatures map that has already
     // been correctly populated (as that would lead to a cleared ligatures maps).
     if (*p_guiligatures == NUL)
-        CLEAR_FIELD(gui.ligatures_map);
+	CLEAR_FIELD(gui.ligatures_map);
 #endif
 
 #if defined(ALWAYS_USE_GUI) || defined(VIMDLL)

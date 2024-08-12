@@ -6,7 +6,6 @@
 
 AWK = awk
 
-# Set to $(VIMTARGET) when executed from src/Makefile.
 VIMPROG = ../../src/vim
 
 # include the config.mk from the source directory.  It's only needed to set
@@ -23,7 +22,7 @@ include Make_all.mak
 all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 
 # Use Vim to generate the tags file.  Can only be used when Vim has been
-# compiled and installed.  Supports multiple languages.
+# compiled.  Supports multiple languages.
 vimtags: $(DOCS)
 	@$(VIMPROG) --clean -esX -V1 -u doctags.vim
 

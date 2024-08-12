@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 9.1.  Last change: 2024 Jun 13
+*channel.txt*      For Vim version 9.1.  Last change: 2024 Jul 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -981,8 +981,9 @@ job_start({command} [, {options}])			*job_start()*
 		invoked.
 
 		{command} can be a String.  This works best on MS-Windows.  On
-		Unix it is split up in white-separated parts to be passed to
-		execvp().  Arguments in double quotes can contain white space.
+		Unix it is split up in white space separated parts to be
+		passed to execvp().  Arguments in double quotes can contain
+		white space.
 
 		{command} can be a List, where the first item is the executable
 		and further items are the arguments.  All items are converted

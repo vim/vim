@@ -1,7 +1,5 @@
 VIM(1)                      General Commands Manual                     VIM(1)
 
-
-
 NAME
        vim - Vi IMproved, a programmer's text editor
 
@@ -38,11 +36,11 @@ DESCRIPTION
             vim [options] [filelist]
 
        If the filelist is missing, the editor will start with an empty buffer.
-       Otherwise exactly one out of the following four may be used  to  choose
+       Otherwise  exactly  one out of the following four may be used to choose
        one or more files to be edited.
 
-       file ..     A  list  of  filenames.   The first one will be the current
-                   file and read into the buffer.  The cursor  will  be  posi‐
+       file ..     A list of filenames.  The first one  will  be  the  current
+                   file  and  read  into the buffer.  The cursor will be posi‐
                    tioned on the first line of the buffer.  You can get to the
                    other files with the ":next" command.  To edit a file  that
                    starts with a dash, precede the filelist with "--".
@@ -51,18 +49,18 @@ DESCRIPTION
                    from stderr, which should be a tty.
 
        -t {tag}    The file to edit and the initial cursor position depends on
-                   a  "tag",  a sort of goto label.  {tag} is looked up in the
+                   a "tag", a sort of goto label.  {tag} is looked up  in  the
                    tags file, the associated file becomes the current file and
                    the  associated  command  is executed.  Mostly this is used
                    for C programs, in which case {tag}  could  be  a  function
                    name.  The effect is that the file containing that function
-                   becomes the current file and the cursor  is  positioned  on
+                   becomes  the  current  file and the cursor is positioned on
                    the start of the function.  See ":help tag-commands".
 
        -q [errorfile]
-                   Start  in  quickFix mode.  The file [errorfile] is read and
-                   the first error is displayed.  If [errorfile]  is  omitted,
-                   the  filename  is obtained from the 'errorfile' option (de‐
+                   Start in quickFix mode.  The file [errorfile] is  read  and
+                   the  first  error is displayed.  If [errorfile] is omitted,
+                   the filename is obtained from the 'errorfile'  option  (de‐
                    faults to "AztecC.Err" for the Amiga, "errors.err" on other
                    systems).   Further  errors can be jumped to with the ":cn"
                    command.  See ":help quickfix".
@@ -72,10 +70,10 @@ DESCRIPTION
 
        vim       The "normal" way, everything is default.
 
-       ex        Start  in Ex mode.  Go to Normal mode with the ":vi" command.
+       ex        Start in Ex mode.  Go to Normal mode with the ":vi"  command.
                  Can also be done with the "-e" argument.
 
-       view      Start in read-only mode.  You will be protected from  writing
+       view      Start  in read-only mode.  You will be protected from writing
                  the files.  Can also be done with the "-R" argument.
 
        gvim gview
@@ -119,20 +117,20 @@ OPTIONS
                    (only works when -S is the last argument).
 
        --cmd {command}
-                   Like  using  "-c",  but the command is executed just before
-                   processing any vimrc file.  You can use up to 10  of  these
+                   Like using "-c", but the command is  executed  just  before
+                   processing  any  vimrc file.  You can use up to 10 of these
                    commands, independently from "-c" commands.
 
-       -A          If  Vim  has  been compiled with ARABIC support for editing
-                   right-to-left oriented files and Arabic  keyboard  mapping,
-                   this  option  starts  Vim  in Arabic mode, i.e. 'arabic' is
+       -A          If Vim has been compiled with ARABIC  support  for  editing
+                   right-to-left  oriented  files and Arabic keyboard mapping,
+                   this option starts Vim in Arabic  mode,  i.e.  'arabic'  is
                    set.  Otherwise an error message is given and Vim aborts.
 
-       -b          Binary mode.  A few options will be set that makes it  pos‐
+       -b          Binary  mode.  A few options will be set that makes it pos‐
                    sible to edit a binary or executable file.
 
-       -C          Compatible.   Set  the 'compatible' option.  This will make
-                   Vim behave mostly like Vi, even though a  .vimrc  file  ex‐
+       -C          Compatible.  Set the 'compatible' option.  This  will  make
+                   Vim  behave  mostly  like Vi, even though a .vimrc file ex‐
                    ists.
 
        -d          Start in diff mode.  There should between two to eight file
@@ -162,13 +160,13 @@ OPTIONS
        --nofork    Foreground.  For the GUI version, Vim will not fork and de‐
                    tach from the shell it was started in.
 
-       -F          If  Vim  has  been  compiled with FKMAP support for editing
-                   right-to-left oriented files and  Farsi  keyboard  mapping,
-                   this  option  starts  Vim  in  Farsi mode, i.e. 'fkmap' and
-                   'rightleft' are set.  Otherwise an error message  is  given
+       -F          If Vim has been compiled with  FKMAP  support  for  editing
+                   right-to-left  oriented  files  and Farsi keyboard mapping,
+                   this option starts Vim in  Farsi  mode,  i.e.  'fkmap'  and
+                   'rightleft'  are  set.  Otherwise an error message is given
                    and Vim aborts.
 
-       -g          If  Vim has been compiled with GUI support, this option en‐
+       -g          If Vim has been compiled with GUI support, this option  en‐
                    ables the GUI.  If no GUI support was compiled in, an error
                    message is given and Vim aborts.
 
@@ -230,9 +228,9 @@ OPTIONS
                    each file.
 
        -P {parent-title}
-                   Win32  GUI  only:  Specify the title of the parent applica‐
-                   tion.  When possible, Vim will run in an MDI window  inside
-                   the  application.  {parent-title} must appear in the window
+                   Win32 GUI only: Specify the title of  the  parent  applica‐
+                   tion.   When possible, Vim will run in an MDI window inside
+                   the application. {parent-title} must appear in  the  window
                    title of the parent application.  Make sure that it is spe‐
                    cific  enough. Note that the implementation is still primi‐
                    tive.  It won't work with all  applications  and  the  menu
@@ -254,12 +252,12 @@ OPTIONS
                    filename as the text file with ".swp" appended.  See ":help
                    recovery".
 
-       -s          Silent  mode.   Only  when started as "Ex" or when the "-e"
+       -s          Silent mode.  Only when started as "Ex" or  when  the  "-e"
                    option was given before the "-s" option.
 
        -s {scriptin}
-                   The script file {scriptin} is read.  The characters in  the
-                   file  are  interpreted  as if you had typed them.  The same
+                   The  script file {scriptin} is read.  The characters in the
+                   file are interpreted as if you had typed  them.   The  same
                    can be done with the command ":source! {scriptin}".  If the
                    end of the file is reached before the editor exits, further
                    characters are read from the keyboard.
@@ -296,12 +294,12 @@ OPTIONS
 
        -V[N]{filename}
                    Like -V and set 'verbosefile' to {filename}.  The result is
-                   that  messages  are  not  displayed but written to the file
+                   that messages are not displayed but  written  to  the  file
                    {filename}.  {filename} must not start with a digit.
 
        --log {filename}
-                   If Vim has been compiled with  eval  and  channel  feature,
-                   start  logging  and write entries to {filename}. This works
+                   If  Vim  has  been  compiled with eval and channel feature,
+                   start logging and write entries to {filename}.  This  works
                    like calling ch_logfile({filename}, 'ao') very early during
                    startup.
 
@@ -321,11 +319,11 @@ OPTIONS
        -W {scriptout}
                    Like -w, but an existing file is overwritten.
 
-       -x          Use encryption when writing files.  Will prompt for a crypt
-                   key.
+       -x          If Vim has been compiled with encryption support,  use  en‐
+                   cryption when writing files.  Will prompt for a crypt key.
 
-       -X          Don't connect to the X server.  Shortens startup time in  a
-                   terminal,  but  the  window title and clipboard will not be
+       -X          Don't  connect to the X server.  Shortens startup time in a
+                   terminal, but the window title and clipboard  will  not  be
                    used.
 
        -y          Start Vim in easy mode, just like the executable was called
@@ -378,7 +376,7 @@ OPTIONS
                    List the names of all Vim servers that can be found.
 
        --servername {name}
-                   Use  {name}  as the server name.  Used for the current Vim,
+                   Use {name} as the server name.  Used for the  current  Vim,
                    unless used with a --remote argument, then it's the name of
                    the server to connect to.
 
@@ -405,12 +403,12 @@ ON-LINE HELP
 
 FILES
        /usr/local/share/vim/vim??/doc/*.txt
-                      The Vim documentation files.  Use ":help  doc-file-list"
+                      The  Vim documentation files.  Use ":help doc-file-list"
                       to get the complete list.
                       vim??  is short version number, like vim91 for Vim 9.1
 
        /usr/local/share/vim/vim??/doc/tags
-                      The  tags file used for finding information in the docu‐
+                      The tags file used for finding information in the  docu‐
                       mentation files.
 
        /usr/local/share/vim/vim??/syntax/syntax.vim
@@ -423,18 +421,18 @@ FILES
                       System wide Vim initializations.
 
        ~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
-                      Your personal Vim initializations (first  one  found  is
+                      Your  personal  Vim  initializations (first one found is
                       used).
 
        /usr/local/share/vim/gvimrc
                       System wide gvim initializations.
 
        ~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
-                      Your  personal  gvim initializations (first one found is
+                      Your personal gvim initializations (first one  found  is
                       used).
 
        /usr/local/share/vim/vim??/optwin.vim
-                      Script used for the ":options" command, a  nice  way  to
+                      Script  used  for  the ":options" command, a nice way to
                       view and set options.
 
        /usr/local/share/vim/vim??/menu.vim
@@ -444,11 +442,11 @@ FILES
                       Script to generate a bug report.  See ":help bugs".
 
        /usr/local/share/vim/vim??/filetype.vim
-                      Script  to  detect  the type of a file by its name.  See
+                      Script to detect the type of a file by  its  name.   See
                       ":help 'filetype'".
 
        /usr/local/share/vim/vim??/scripts.vim
-                      Script to detect the type of a  file  by  its  contents.
+                      Script  to  detect  the  type of a file by its contents.
                       See ":help 'filetype'".
 
        /usr/local/share/vim/vim??/print/*.ps
@@ -476,6 +474,4 @@ BUGS
        vi_diff.txt  when  in  Vim).   Also have a look at the 'compatible' and
        'cpoptions' options.
 
-
-
-                                  2024 Jun 04                           VIM(1)
+                                  2024 Aug 03                           VIM(1)

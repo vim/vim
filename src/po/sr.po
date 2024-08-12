@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-25 12:55+0400\n"
-"PO-Revision-Date: 2024-04-25 13:09+0400\n"
+"POT-Creation-Date: 2024-07-19 10:23+0400\n"
+"PO-Revision-Date: 2024-07-19 10:39+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -447,10 +447,6 @@ msgstr "катакана"
 msgid "Bopomofo"
 msgstr "бопомофо"
 
-msgid "Not enough memory to set references, garbage collection aborted!"
-msgstr ""
-"Нема довољно меморије за постављање референци, прекинуто је скупљање отпада"
-
 msgid ""
 "\n"
 "\tLast set from "
@@ -879,6 +875,10 @@ msgstr[0] "+-%s%3ld линија: "
 msgstr[1] "+-%s%3ld линије: "
 msgstr[2] "+-%s%3ld линија: "
 
+msgid "Not enough memory to set references, garbage collection aborted!"
+msgstr ""
+"Нема довољно меморије за постављање референци, прекинуто је скупљање отпада"
+
 msgid "No match at cursor, finding next"
 msgstr "Нема подударања на месту курсора, тражи се даље"
 
@@ -1261,15 +1261,6 @@ msgstr "linenr је ван опсега"
 
 msgid "not allowed in the Vim sandbox"
 msgstr "није дозвољено унутар Vim sandbox"
-
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: Библиотека %s није могла да се учита"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"Жао нам је, ова команда је онемогућена: Perl библиотека није могла да се "
-"учита."
 
 msgid "invalid buffer number"
 msgstr "неисправан број бафера"
@@ -3886,6 +3877,15 @@ msgstr "Уписивање viminfo фајла „%s”"
 msgid "Already only one window"
 msgstr "Већ постоји само један прозор"
 
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: Библиотека %s није могла да се учита"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"Жао нам је, ова команда је онемогућена: Perl библиотека није могла да се "
+"учита."
+
 msgid "Edit with Vim using &tabpages"
 msgstr "Уређуј програмом Vim у новој &картици"
 
@@ -5938,9 +5938,6 @@ msgstr "E612: Дефинисано је превише знакова"
 #, c-format
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Непознат фонт штампача: %s"
-
-msgid "E614: Class required"
-msgstr "E614: Потребна је класа"
 
 #, c-format
 msgid "E616: Object required for argument %d"
@@ -8421,20 +8418,11 @@ msgstr "E1317: Неисправна декларација променљиве 
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: Команда не важи у класи: %s"
 
-msgid "E1319: Using a Class as a Number"
-msgstr "E1319: Класа се користи као Број"
-
 msgid "E1320: Using an Object as a Number"
 msgstr "E1320: Објекат се користи као Број"
 
-msgid "E1321: Using a Class as a Float"
-msgstr "E1321: Класа се користи као Покретни"
-
 msgid "E1322: Using an Object as a Float"
 msgstr "E1322: Објекат се користи као Покретни"
-
-msgid "E1323: Using a Class as a String"
-msgstr "E1323: Класа се користи као Стринг"
 
 msgid "E1324: Using an Object as a String"
 msgstr "E1324: Објекат се користи као Стринг"
@@ -8703,10 +8691,6 @@ msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: Име типа мора да почне великим словом: %s"
 
 #, c-format
-msgid "E1395: Type alias \"%s\" cannot be modified"
-msgstr "E1395: Алијас типа „%s” не може да се измени"
-
-#, c-format
 msgid "E1396: Type alias \"%s\" already exists"
 msgstr "E1396: Алијас типа „%s” већ постоји"
 
@@ -8720,18 +8704,6 @@ msgid "E1399: Type can only be used in a script"
 msgstr "E1399: Тип може да се употреби само у скрипти"
 
 #, c-format
-msgid "E1400: Using type alias \"%s\" as a Number"
-msgstr "E1400: Алијас типа „%s” се користи као Број"
-
-#, c-format
-msgid "E1401: Using type alias \"%s\" as a Float"
-msgstr "E1401: Алијас типа „%s” се користи као Покретни"
-
-#, c-format
-msgid "E1402: Using type alias \"%s\" as a String"
-msgstr "E1402: Алијас типа „%s” се користи као Стринг"
-
-#, c-format
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr "E1403: Алијас типа „%s” не може да се користи као вредност"
 
@@ -8741,9 +8713,6 @@ msgstr "E1404: Abstract не може да се користи у интерфе
 #, c-format
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: Класа „%s” не може да се користи као вредност"
-
-msgid "E1406: Cannot use a Class as a variable or value"
-msgstr "E1406: Класа не може да се користи као променљива или вредност"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: Алијас типа не може да се користи као променљива или вредност"
@@ -9700,6 +9669,9 @@ msgstr "вишеструке картице"
 
 msgid "0, 1 or 2; when to use a tab pages line"
 msgstr "0, 1 или 2; када се користи линија са картицама"
+
+msgid "behaviour when closing tab pages: left, uselast or empty"
+msgstr "понашање приликом затварања картице: left, uselast или празно"
 
 msgid "maximum number of tab pages to open for -p and \"tab all\""
 msgstr "максимални број картица које се отварају за -p и „tab all”"
