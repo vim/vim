@@ -271,6 +271,8 @@ void mbyte_im_set_active(int active_arg);
 // Not generated automatically so that we can add an extra attribute.
 void ch_log(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 void ch_error(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+void vch_log(channel_T *ch, const char *fmt, va_list ap);
+void vch_error(channel_T *ch, const char *fmt, va_list ap);
 # endif
 
 # if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
