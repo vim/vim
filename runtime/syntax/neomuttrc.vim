@@ -425,6 +425,7 @@ call s:boolQuadGen('Bool', [
 	\ 'beep', 'beep_new', 'bounce_delivered', 'braille_friendly',
 	\ 'browser_abbreviate_mailboxes', 'change_folder_next', 'check_mbox_size', 'check_new',
 	\ 'collapse_all', 'collapse_flagged', 'collapse_unread', 'compose_show_user_headers',
+	\ 'compose_confirm_detach_first',
 	\ 'confirm_append', 'confirm_create', 'copy_decode_weed', 'count_alternatives',
 	\ 'crypt_auto_encrypt', 'crypt_auto_pgp', 'crypt_auto_sign', 'crypt_auto_smime',
 	\ 'crypt_confirm_hook', 'crypt_opportunistic_encrypt',
@@ -554,7 +555,7 @@ syntax keyword muttrcVarStr	contained skipwhite
 	\ autocrypt_acct_format charset config_charset content_type crypt_protected_headers_subject
 	\ default_hook dsn_notify dsn_return empty_subject forward_attribution_intro
 	\ forward_attribution_trailer greeting header_cache_backend header_cache_compress_method
-	\ hidden_tags hostname imap_authenticators imap_delim_chars imap_headers imap_login
+	\ hidden_tags history_format hostname imap_authenticators imap_delim_chars imap_headers imap_login
 	\ imap_pass imap_user indent_string mailbox_folder_format mailcap_path mark_macro_prefix mh_seq_flagged
 	\ mh_seq_replied mh_seq_unseen newsgroups_charset news_server nm_default_url nm_exclude_tags
 	\ nm_flagged_tag nm_query_type nm_query_window_current_search nm_query_window_or_terms
@@ -599,6 +600,7 @@ syntax keyword muttrcVarStr	contained skipwhite
 	\ imap_oauth_refresh_command imap_send_id pop_oauth_refresh_command
 	\ mime_type_query_command smtp_oauth_refresh_command tunnel
 	\ nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
+	\ browser_sort_dirs_first
 
 " CHECKED 2024-08-12
 " List of DT_REGEX
