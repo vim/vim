@@ -2,7 +2,7 @@
 " Language:	NeoMutt setup files
 " Maintainer:	Richard Russon <rich@flatcap.org>
 " Previous Maintainer:	Guillaume Brogi <gui-gui@netcourrier.com>
-" Last Change:	2022-04-08
+" Last Change:	2024-08-12
 " Original version based on syntax/muttrc.vim
 
 " This file covers NeoMutt 2022-04-08
@@ -420,7 +420,7 @@ endfunction
 " List of DT_BOOL in MuttVars in mutt_config.c
 call s:boolQuadGen('Bool', [
 	\ 'abort_backspace', 'allow_8bit', 'allow_ansi', 'arrow_cursor', 'ascii_chars', 'ask_bcc',
-	\ 'ask_cc', 'ask_follow_up', 'ask_x_comment_to', 'attach_save_without_prompting',
+	\ 'ask_cc', 'ask_followup_to', 'ask_x_comment_to', 'attach_save_without_prompting',
 	\ 'attach_split', 'autocrypt', 'autocrypt_reply', 'auto_edit', 'auto_subscribe', 'auto_tag',
 	\ 'beep', 'beep_new', 'bounce_delivered', 'braille_friendly',
 	\ 'browser_abbreviate_mailboxes', 'change_folder_next', 'check_mbox_size', 'check_new',
@@ -439,7 +439,7 @@ call s:boolQuadGen('Bool', [
 	\ 'history_remove_dups', 'honor_disposition', 'idn_decode', 'idn_encode',
 	\ 'ignore_list_reply_to', 'imap_check_subscribed', 'imap_condstore', 'imap_deflate',
 	\ 'imap_idle', 'imap_list_subscribed', 'imap_passive', 'imap_peek', 'imap_qresync',
-	\ 'imap_rfc5161', 'imap_server_noise', 'implicit_autoview', 'include_encrypted',
+	\ 'imap_rfc5161', 'imap_server_noise', 'implicit_auto_view', 'include_encrypted',
 	\ 'include_only_first', 'keep_flagged', 'local_date_header', 'mailcap_sanitize',
 	\ 'maildir_check_cur', 'maildir_header_cache_verify', 'maildir_trash', 'mail_check_recent',
 	\ 'mail_check_stats', 'markers', 'mark_old', 'menu_move_off', 'menu_scroll',
@@ -473,14 +473,14 @@ call s:boolQuadGen('Bool', [
 " Deprecated Bools
 " List of DT_SYNONYM or DT_DEPRECATED Bools in MuttVars in mutt_config.c
 call s:boolQuadGen('Bool', [
-	\ 'askbcc', 'askcc', 'autoedit', 'confirmappend', 'confirmcreate', 'crypt_autoencrypt',
+	\ 'askbcc', 'askcc', 'ask_follow_up', 'autoedit', 'confirmappend', 'confirmcreate', 'crypt_autoencrypt',
 	\ 'crypt_autopgp', 'crypt_autosign', 'crypt_autosmime', 'crypt_confirmhook',
 	\ 'crypt_replyencrypt', 'crypt_replysign', 'crypt_replysignencrypted', 'edit_hdrs',
 	\ 'envelope_from', 'forw_decode', 'forw_decrypt', 'forw_quote', 'header_cache_compress',
-	\ 'ignore_linear_white_space', 'imap_servernoise', 'include_onlyfirst', 'metoo',
-	\ 'mime_subject', 'pgp_autoencrypt', 'pgp_autoinline', 'pgp_autosign',
-	\ 'pgp_auto_traditional', 'pgp_create_traditional', 'pgp_replyencrypt', 'pgp_replyinline',
-	\ 'pgp_replysign', 'pgp_replysignencrypted', 'reverse_realname', 'ssl_usesystemcerts',
+	\ 'implicit_autoview', 'ignore_linear_white_space', 'imap_servernoise', 'include_onlyfirst',
+	\ 'metoo', 'mime_subject', 'pgp_autoencrypt', 'pgp_autoinline', 'pgp_autosign', \
+	\ 'pgp_auto_traditional', 'pgp_create_traditional', 'pgp_replyencrypt', 'pgp_replyinline', \
+	\ 'pgp_replysign', 'pgp_replysignencrypted', 'reverse_realname', 'ssl_usesystemcerts', \
 	\ 'use_8bitmime', 'virtual_spoolfile', 'xterm_set_titles'
 	\ ], 1)
 
@@ -505,7 +505,7 @@ call s:boolQuadGen('Quad', [
 " List of DT_NUMBER or DT_LONG in MuttVars in mutt_config.c
 syntax keyword muttrcVarNum	skipwhite contained
 	\ connect_timeout debug_level header_cache_compress_level history imap_fetch_chunk_size
-	\ imap_keepalive imap_pipeline_depth imap_poll_timeout mail_check mail_check_stats_interval
+	\ imap_keep_alive imap_pipeline_depth imap_poll_timeout mail_check mail_check_stats_interval
 	\ menu_context net_inc nm_db_limit nm_open_timeout nm_query_window_current_position
 	\ nm_query_window_duration nntp_context nntp_poll pager_context pager_index_lines
 	\ pager_read_delay pager_skip_quoted_context pgp_timeout pop_check_interval read_inc
@@ -517,7 +517,7 @@ syntax keyword muttrcVarNum	skipwhite contained
 " CHECKED 2022-04-08
 " Deprecated Numbers
 syntax keyword muttrcVarDeprecatedNum	contained skipwhite
-	\ header_cache_pagesize pop_checkinterval skip_quoted_offset
+	\ header_cache_pagesize imap_keepalive pop_checkinterval skip_quoted_offset
 
 " CHECKED 2022-04-08
 " List of DT_STRING in MuttVars in mutt_config.c
@@ -560,7 +560,7 @@ syntax keyword muttrcVarStr	contained skipwhite
 	\ nm_flagged_tag nm_query_type nm_query_window_current_search nm_query_window_or_terms
 	\ nm_query_window_timebase nm_record_tags nm_replied_tag nm_unread_tag nntp_authenticators
 	\ nntp_pass nntp_user pgp_default_key pgp_sign_as pipe_sep pop_authenticators pop_host
-	\ pop_pass pop_user postpone_encrypt_as post_indent_string preconnect preferred_languages
+	\ pop_pass pop_user postpone_encrypt_as attribution_trailer preconnect preferred_languages
 	\ real_name send_charset show_multipart_alternative sidebar_delim_chars sidebar_divider_char
 	\ sidebar_indent_string simple_search smime_default_key smime_encrypt_with smime_sign_as
 	\ smime_sign_digest_alg smtp_authenticators smtp_pass smtp_url smtp_user spam_separator
@@ -569,10 +569,10 @@ syntax keyword muttrcVarStr	contained skipwhite
 
 " Deprecated strings
 syntax keyword muttrcVarDeprecatedStr
-	\ abort_noattach_regexp attach_keyword escape forw_format hdr_format indent_str msg_format
-	\ nm_default_uri pgp_clearsign_command pgp_getkeys_command pgp_self_encrypt_as
-	\ post_indent_str print_cmd quote_regexp realname reply_regexp smime_self_encrypt_as
-	\ spoolfile visual xterm_icon xterm_title
+	\ abort_noattach_regexp attach_keyword escape forw_format hdr_format indent_str
+	\ message_cachedir  msg_format nm_default_uri pgp_clearsign_command pgp_getkeys_command
+	\ pgp_self_encrypt_as post_indent_str post_indent_string print_cmd quote_regexp realname
+	\ reply_regexp smime_self_encrypt_as spoolfile visual xterm_icon xterm_title tmpdir
 
 " CHECKED 2022-04-08
 " List of DT_ADDRESS
@@ -586,10 +586,10 @@ syntax keyword muttrcVarStr	contained skipwhite crypt_chars flag_chars from_char
 " List of DT_PATH or DT_MAILBOX
 syntax keyword muttrcVarStr	contained skipwhite
 	\ alias_file attach_save_dir autocrypt_dir certificate_file debug_file
-	\ entropy_file folder header_cache history_file mbox message_cachedir newsrc
+	\ entropy_file folder header_cache history_file mbox message_cache_dir newsrc
 	\ news_cache_dir postponed record signature smime_ca_location
 	\ smime_certificates smime_keys spool_file ssl_ca_certificates_file ssl_client_cert
-	\ tmpdir trash
+	\ tmp_dir trash
 	\ nextgroup=muttrcSetStrAssignment,muttrcVPrefix,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcVarStr
 " List of DT_COMMAND (excluding pgp_*_command and smime_*_command)
 syntax keyword muttrcVarStr	contained skipwhite
