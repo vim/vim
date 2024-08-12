@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Aug 10
+*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Aug 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1428,8 +1428,8 @@ WinLeave			Before leaving a window.  If the window to be
 WinNewPre			Before creating a new window. Triggered
 				before commands that modify window layout by
 				creating a split.
-				Not done for creating tabs or for the first
-				window, as the window structure is not
+				Not done when creating tab pages and for the
+				first window, as the window structure is not
 				initialized yet and so is generally not safe.
 				It is not allowed to modify window layout
 				while executing commands for the WinNewPre
