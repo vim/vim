@@ -1,4 +1,4 @@
-.TH VIMTUTOR 1 "2001 April 2"
+.TH VIMTUTOR 1 "2024 August 12"
 .SH NAME
 vimtutor \- the Vim tutor
 .SH SYNOPSIS
@@ -19,7 +19,7 @@ is useful for people that want to learn their first
 commands.
 .PP
 The optional argument \-g starts vimtutor with gvim rather than vim, if the
-GUI version of vim is available, or falls back to Vim if gvim is not found.
+GUI version of Vim is available, or falls back to vim if gvim is not found.
 .PP
 The optional [language] argument is the two-letter name of a language, like
 "it" or "es".
@@ -32,12 +32,16 @@ Otherwise the English version will be used.
 is always started in Vi compatible mode.
 .SH FILES
 .TP 15
-/usr/local/lib/vim/tutor/tutor[.language]
+/usr/local/share/vim/vim??/tutor/tutor[.language]
 The
 .B Vimtutor
 text file(s).
+.br
+.I vim??
+is short version number, like vim91 for
+.B Vim 9.1
 .TP 15
-/usr/local/lib/vim/tutor/tutor.vim
+/usr/local/share/vim/vim??/tutor/tutor.vim
 The Vim script used to copy the
 .B Vimtutor
 text file.
