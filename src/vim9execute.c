@@ -4400,14 +4400,23 @@ exec_instructions(ectx_T *ectx)
 			goto on_error;
 		    }
 
-		    class_T *cl = obj->obj_class;
+		    ufunc_T *ufunc;
+		    if (mfunc->cmf_is_super)
+			// Doing "super.Func", use the specific ufunc.
+			ufunc = mfunc->cmf_itf->class_obj_methods[
+							    mfunc->cmf_idx];
+		    else
+		    {
+			class_T *cl = obj->obj_class;
 
-		    // convert the interface index to the object index
-		    int idx = object_index_from_itf_index(mfunc->cmf_itf,
-						    TRUE, mfunc->cmf_idx, cl);
+			// convert the interface index to the object index
+			int idx = object_index_from_itf_index(mfunc->cmf_itf,
+						     TRUE, mfunc->cmf_idx, cl);
+			ufunc = cl->class_obj_methods[idx];
+		    }
 
-		    if (call_ufunc(cl->class_obj_methods[idx], NULL,
-				mfunc->cmf_argcount, ectx, NULL, NULL) == FAIL)
+		    if (call_ufunc(ufunc, NULL, mfunc->cmf_argcount, ectx,
+							   NULL, NULL) == FAIL)
 			goto on_error;
 		}
 		break;

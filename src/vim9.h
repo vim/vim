@@ -238,8 +238,9 @@ typedef struct {
 // arguments to ISN_METHODCALL
 typedef struct {
     class_T *cmf_itf;	    // interface used
-    int	    cmf_idx;	    // index in "def_functions" for ISN_DCALL
+    int	    cmf_idx;	    // index in "def_functions" for ISN_METHODCALL
     int	    cmf_argcount;   // number of arguments on top of stack
+    int	    cmf_is_super;   // doing "super.Func", use cmf_itf, not cmf_idx
 } cmfunc_T;
 
 // arguments to ISN_PCALL

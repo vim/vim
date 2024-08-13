@@ -1805,6 +1805,8 @@ generate_BLOBAPPEND(cctx_T *cctx)
  * Generate an ISN_DCALL, ISN_UCALL or ISN_METHODCALL instruction.
  * When calling a method on an object, of which we know the interface only,
  * then "cl" is the interface and "mi" the method index on the interface.
+ * save is_super in the "isn->isn_arg"; it flags execution to use mfunc
+ * directly to determine ufunc.
  * Return FAIL if the number of arguments is wrong.
  */
     int
@@ -1813,7 +1815,8 @@ generate_CALL(
 	ufunc_T	    *ufunc,
 	class_T	    *cl,
 	int	    mi,
-	int	    pushed_argcount)
+	int	    pushed_argcount,
+	int	    is_super)
 {
     isn_T	*isn;
     int		regular_args = ufunc->uf_args.ga_len;
@@ -1898,6 +1901,7 @@ generate_CALL(
 	++cl->class_refcount;
 	isn->isn_arg.mfunc->cmf_idx = mi;
 	isn->isn_arg.mfunc->cmf_argcount = argcount;
+	isn->isn_arg.mfunc->cmf_is_super = is_super;
     }
     else if (isn->isn_type == ISN_DCALL)
     {
