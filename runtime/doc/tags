@@ -7574,6 +7574,9 @@ g:html_use_encoding	syntax.txt	/*g:html_use_encoding*
 g:html_use_input_for_pc	syntax.txt	/*g:html_use_input_for_pc*
 g:html_use_xhtml	syntax.txt	/*g:html_use_xhtml*
 g:html_whole_filler	syntax.txt	/*g:html_whole_filler*
+g:markdown_fenced_languages	syntax.txt	/*g:markdown_fenced_languages*
+g:markdown_minlines	syntax.txt	/*g:markdown_minlines*
+g:markdown_syntax_conceal	syntax.txt	/*g:markdown_syntax_conceal*
 g:netrw_altfile	pi_netrw.txt	/*g:netrw_altfile*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
@@ -7734,6 +7737,8 @@ g:typst_embedded_languages	syntax.txt	/*g:typst_embedded_languages*
 g:var	eval.txt	/*g:var*
 g:vim_indent	indent.txt	/*g:vim_indent*
 g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
+g:vim_json_conceal	syntax.txt	/*g:vim_json_conceal*
+g:vim_json_warnings	syntax.txt	/*g:vim_json_warnings*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
 g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
 g:vimsyn_comment_strings	syntax.txt	/*g:vimsyn_comment_strings*
