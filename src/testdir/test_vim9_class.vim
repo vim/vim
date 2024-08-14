@@ -3252,6 +3252,141 @@ def Test_using_base_class()
   v9.CheckSourceSuccess(lines)
 enddef
 
+def Test_super_dispatch()
+  # See #15448 and #15463
+  var lines =<< trim END
+    vim9script
+
+    class A
+        def String(): string
+            return 'A'
+        enddef
+    endclass
+
+    class B extends A
+        def String(): string
+            return super.String()
+        enddef
+    endclass
+
+    class C extends B
+    endclass
+
+    assert_equal('A', C.new().String())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+        def F(): string
+            return 'AA'
+        enddef
+    endclass
+
+    class B extends A
+        def F(): string
+            return 'BB'
+        enddef
+        def S(): string
+            return super.F()
+        enddef
+        def S0(): string
+            return this.S()
+        enddef
+    endclass
+
+    class C extends B
+        def F(): string
+            return 'CC'
+        enddef
+        def ToB(): string
+            return super.F()
+        enddef
+    endclass
+
+    assert_equal('AA', B.new().S())
+    assert_equal('AA', C.new().S())
+    assert_equal('AA', B.new().S0())
+    assert_equal('AA', C.new().S0())
+
+    assert_equal('BB', C.new().ToB())
+
+    assert_equal('CC', C.new().F())
+    assert_equal('BB', B.new().F())
+    assert_equal('AA', A.new().F())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    var call_chain: list<string>
+
+    abstract class A
+        abstract def _G(): string
+
+        def F(): string
+            call_chain->add('A.F()')
+            return this._G()
+        enddef
+        def _H(): string
+            call_chain->add('A._H()')
+            return this.F()
+        enddef
+    endclass
+
+    class B extends A
+        def _G(): string
+            call_chain->add('B.G()')
+            return 'BBB'
+        enddef
+        def SF(): string
+            call_chain->add('B.SF()')
+            return super._H()
+        enddef
+    endclass
+
+    class C extends B
+    endclass
+
+    class D extends C
+        def SF(): string
+            call_chain->add('D.SF()')
+            return super.SF()
+        enddef
+    endclass
+
+    class E extends D
+        def SF(): string
+            call_chain->add('E.SF()')
+            return super.SF()
+        enddef
+    endclass
+
+    class F extends E
+        def _G(): string
+            call_chain->add('F._G()')
+            return 'FFF'
+        enddef
+    endclass
+
+    # E.new() -> A.F() -> B._G()
+    call_chain = []
+    var o1 = E.new()
+    assert_equal('BBB', o1.F())
+    assert_equal(['A.F()', 'B.G()'], call_chain)
+
+    # F.new() -> E.SF() -> D.SF() -> B.SF() -> A._H() -> A.F() -> F._G()
+    call_chain = []
+    var o2 = F.new()
+    assert_equal('FFF', o2.SF())
+    assert_equal(['E.SF()', 'D.SF()', 'B.SF()', 'A._H()', 'A.F()', 'F._G()'], call_chain)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_class_import()
   var lines =<< trim END
     vim9script
