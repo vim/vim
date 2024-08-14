@@ -1536,7 +1536,7 @@ def CleanupExpr(passed_expr: string): string
 enddef
 
 def Balloon_show(expr: string)
-  if has("+balloon_eval") || has("+balloon_eval_term")
+  if has("balloon_eval") || has("balloon_eval_term")
     balloon_show(expr)
   endif
 enddef
