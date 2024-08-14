@@ -15,8 +15,8 @@ below or visit the ICCF web site, available at these URLs:
 	https://www.vim.org/iccf/
 	https://www.iccf.nl/
 
-You can also sponsor the development of Vim.  Vim sponsors can vote for
-features.  See |sponsor|.  The money goes to Uganda anyway.
+You can also sponsor the development of Vim, see |sponsor|.  The money goes to
+Uganda anyway.
 
 The Open Publication License applies to the Vim documentation, see
 |manual-copyright|.

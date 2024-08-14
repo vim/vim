@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 9.1.  Last change: 2024 Apr 22
+*sponsor.txt*   For Vim version 9.1.  Last change: 2024 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -76,16 +76,14 @@ How much money should I send?
 
 That is up to you.  The more you give, the more children will be helped.
 An indication for individuals that use Vim at home: 10 Euro per year.  For
-professional use: 30 Euro per year per person.  Send at least 10 euro to be
-able to vote for features.
+professional use: 30 Euro per year per person.
 
 
 How do I become a Vim sponsor or registered Vim user?
 
 Send money, as explained above |send-money| and include your e-mail address.
 When the money has been received you will receive a unique registration key.
-This key can be used on the Vim website to activate voting on your Vim
-account.  You will then get an extra page where you can vote for features and
+This key can be used on the Vim website to get an extra page where you can
 choose whether others will be able to see that you donated.  There is a link
 to this page on your "My Account" page.
 
@@ -127,8 +125,7 @@ the developer |maillist|, for reporting bugs see |bugs|.
 How about Charityware?
 
 Currently the Vim donations go to |uganda| anyway.  Thus it doesn't matter if
-you sponsor Vim or ICCF.  Except that Vim sponsoring will allow you to vote
-for features.
+you sponsor Vim or ICCF.
 
 
 I donated $$$, now please add feature XYZ!
