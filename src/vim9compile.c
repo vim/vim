@@ -4120,9 +4120,8 @@ compile_def_function(
     ufunc->uf_args_visible = ufunc->uf_args.ga_len;
 
     // Compiling a function in an interface is done to get the function type.
-    // No code is actually compiled. Same goes for an abstract method.
-    if ((ufunc->uf_class != NULL && IS_INTERFACE(ufunc->uf_class))
-	|| IS_ABSTRACT_METHOD(ufunc))
+    // No code is actually compiled.
+    if (ufunc->uf_class != NULL && IS_INTERFACE(ufunc->uf_class))
     {
 	ufunc->uf_def_status = UF_NOT_COMPILED;
 	ret = OK;
