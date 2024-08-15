@@ -3777,6 +3777,7 @@ ex_substitute(exarg_T *eap)
     int		endcolumn = FALSE;	// cursor in last column when done
     pos_T	old_cursor = curwin->w_cursor;
     int		start_nsubs;
+    int		keeppatterns = cmdmod.cmod_flags & CMOD_KEEPPATTERNS;
 #ifdef FEAT_EVAL
     int		save_ma = 0;
     int		save_sandbox = 0;
@@ -3876,7 +3877,7 @@ ex_substitute(exarg_T *eap)
 		    // out of memory
 		    return;
 	    }
-	    else
+	    else if (!keeppatterns)
 	    {
 		vim_free(old_sub);
 		old_sub = vim_strsave(sub);
@@ -3940,7 +3941,7 @@ ex_substitute(exarg_T *eap)
 	    ex_may_print(eap);
 	}
 
-	if ((cmdmod.cmod_flags & CMOD_KEEPPATTERNS) == 0)
+	if (!keeppatterns)
 	    save_re_pat(RE_SUBST, pat, patlen, magic_isset());
 	// put pattern in history
 	add_to_history(HIST_SEARCH, pat, patlen, TRUE, NUL);
