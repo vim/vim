@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 30
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41592,6 +41592,7 @@ Changed~
   mark deprecated attributes from LSP server) |complete-items|
 - the regex engines match correctly case-insensitive multi-byte characters
   (and apply proper case folding)
+- |:keeppatterns| preserves the last substitute pattern when used with |:s|
 
 							*added-9.2*
 Added ~
