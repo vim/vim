@@ -2929,6 +2929,35 @@ def Test_call_interface_method()
   v9.CheckSourceSuccess(lines)
 enddef
 
+def Test_class_inherits_interface()
+  # Check dynamic dispatching. See https://github.com/vim/vim/issues/15484.
+  var lines =<< trim END
+    vim9script
+
+    interface I
+      def F(): string
+    endinterface
+
+    class A implements I
+      def F(): string
+        return 'A'
+      enddef
+    endclass
+
+    class C extends A
+      def F(): string
+        return 'C'
+      enddef
+    endclass
+
+    def TestI(i: I): string
+      return i.F()
+    enddef
+    assert_equal('C', TestI(C.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_class_used_as_type()
   var lines =<< trim END
     vim9script

@@ -24,6 +24,14 @@
 static class_T *first_class = NULL;
 static class_T *next_nonref_class = NULL;
 
+// For logging class dispatch related stuff.
+#define LOG_CLASS
+#ifdef LOG_CLASS
+#define LOG_CL(...) do { ch_log(NULL, "CLASS: " __VA_ARGS__); smsg(__VA_ARGS__); } while(0)
+#else
+#define LOG_CL(...)
+#endif
+
 /*
  * Call this function when a class has been created.  It will be added to the
  * list headed by "first_class".
@@ -255,6 +263,8 @@ add_members_to_class(
     int
 object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
 {
+    LOG_CL("object_index_from_itf_index: itf: '%s', is_method %d, idx %d, cl '%s'",
+	   itf->class_name, is_method, idx, cl->class_name);
     if (idx >= (is_method ? itf->class_obj_method_count
 				   : itf->class_obj_member_count))
     {
@@ -272,14 +282,20 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
     int			searching = TRUE;
     int			method_offset = 0;
 
+    LOG_CL("   method_offset: %d", method_offset);
+    LOG_CL("   === outer for");
     for (class_T *super = cl; super != NULL && searching;
 						super = super->class_extends)
     {
+	LOG_CL("      super: '%s'", super->class_name);
+	LOG_CL("      === inner for");
 	for (i2c = itf->class_itf2class; i2c != NULL; i2c = i2c->i2c_next)
 	{
+	    LOG_CL("         class '%s', is_method: %d", i2c->i2c_class->class_name, is_method);
 	    if (i2c->i2c_class == super && i2c->i2c_is_method == is_method)
 	    {
 		searching = FALSE;
+		LOG_CL("         break-found");
 		break;
 	    }
 	}
@@ -287,6 +303,7 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
 	    // The parent class methods are stored after the current class
 	    // methods.
 	    method_offset += super->class_obj_method_count_child;
+	LOG_CL("      method_offset: %d", method_offset);
     }
     if (i2c == NULL)
     {
@@ -780,8 +797,9 @@ validate_interface_methods(
  * "objmembers_gap" respectively.
  */
     static int
-validate_implements_classes(
-    garray_T	*impl_gap,
+validate_implements_class_by_name(
+    char_u	*impl,
+    int		idx,
     class_T	**intf_classes,
     garray_T	*objmethods_gap,
     garray_T	*objmembers_gap,
@@ -789,9 +807,7 @@ validate_implements_classes(
 {
     int		success = TRUE;
 
-    for (int i = 0; i < impl_gap->ga_len && success; ++i)
-    {
-	char_u *impl = ((char_u **)impl_gap->ga_data)[i];
+    do {
 	typval_T tv;
 	tv.v_type = VAR_UNKNOWN;
 	if (eval_variable_import(impl, &tv) == FAIL)
@@ -812,7 +828,7 @@ validate_implements_classes(
 	}
 
 	class_T *ifcl = tv.vval.v_class;
-	intf_classes[i] = ifcl;
+	intf_classes[idx] = ifcl;
 	++ifcl->class_refcount;
 
 	// check the variables of the interface match the members of the class
@@ -825,7 +841,124 @@ validate_implements_classes(
 	    success = validate_interface_methods(impl, ifcl, objmethods_gap,
 								extends_cl);
 	clear_tv(&tv);
+    } while (FALSE);
+
+    return success;
+}
+
+static int check_class_implements_missing(
+			      char_u *impl, int idx, class_T **intf_classes);
+
+    static int
+validate_implements_classes(
+    garray_T	*impl_gap,
+    class_T	**intf_classes,
+    garray_T	*objmethods_gap,
+    garray_T	*objmembers_gap,
+    class_T	*extends_cl)
+{
+    int		success = TRUE;
+
+    int idx;
+    for (idx = 0; idx < impl_gap->ga_len && success; ++idx)
+    {
+	char_u *impl = ((char_u **)impl_gap->ga_data)[idx];
+	LOG_CL("validate_implements: adding interface'%s'", impl);
+	success = validate_implements_class_by_name(impl, idx, intf_classes,
+				   objmethods_gap, objmembers_gap, extends_cl);
+	if (!success)
+	    break;
     }
+    if (!success
+	    || extends_cl == NULL || extends_cl->class_interface_count == 0)
+	return success;
+
+    // Examine the class that is being extended and add the the interfaces
+    // from the extended class. See https://github.com/vim/vim/issues/15484.
+    for (int i = 0; i < extends_cl->class_interface_count; ++i)
+    {
+	char_u *impl = extends_cl->class_interfaces[i];
+	int missing = check_class_implements_missing(impl, idx, intf_classes);
+	LOG_CL("validate... inherited: check '%s', missing %d", impl, missing);
+	if (missing)
+	{
+	    // If impl name is already in the list, then bail.
+	    // TODO: bailing wrong, add function so it is found, by what name?
+	    int found_name = FALSE;
+	    for (int j = 0; j < impl_gap->ga_len && success; ++j)
+	    {
+		char_u *already = ((char_u **)impl_gap->ga_data)[j];
+		if (STRCMP(impl, already) == 0)
+		{
+		    found_name = TRUE;
+		    break;
+		}
+	    }
+	    if (found_name)
+	    {
+		LOG_CL("   Name already present. THIS IS A BUG");
+		continue;
+	    }
+
+	    // Got an additional interface, add the name and validate it.
+	    LOG_CL("   Adding inherited interface '%s'.", impl);
+	    impl = vim_strsave(impl);
+	    if (impl == NULL || ga_add_string(impl_gap, impl) == FAIL)
+	    {
+	        success = FAIL;
+	        break;
+	    }
+	    // TODO: It was already in super. Really need to validate?
+	    success = validate_implements_class_by_name(impl, idx, intf_classes,
+				   objmethods_gap, objmembers_gap, extends_cl);
+	    if (!success)
+		break;
+	    LOG_CL("   ... ADDED '%s'.", impl);
+	    ++idx;
+	}
+    }
+
+    return success;
+}
+
+/*
+ * Lookup impl; if interface found and not in "intf_classes" return TRUE.
+ * "idx" is the number of valid entries in "intf_classes"
+ * Note that no errors are ever reported.
+ */
+    static int
+check_class_implements_missing(
+    char_u	*impl,
+    int		idx,
+    class_T	**intf_classes)
+{
+    int success = TRUE;
+
+    typval_T tv;
+    tv.v_type = VAR_UNKNOWN;
+
+    // Assuming the extended class is in the same file.
+    // TODO: handle an imported file, need to pass in the "i_import.xxx"
+    if (eval_variable_import(impl, &tv) == FAIL)
+	return FALSE;
+
+    if (tv.v_type != VAR_CLASS
+	    || tv.vval.v_class == NULL
+	    || !IS_INTERFACE(tv.vval.v_class))
+	success = FALSE;
+    else
+    {
+	// Found an interface. Not missing if already there.
+	class_T *ifcl = tv.vval.v_class;
+	for (int i = 0; i < idx; i++)
+	    if (ifcl == intf_classes[i])
+	    {
+		success = FALSE;
+		break;
+	    }
+    }
+
+    clear_tv(&tv);
 
     return success;
 }
@@ -1946,6 +2079,7 @@ early_ret:
     cl->class_type.tt_class = cl;
     cl->class_object_type.tt_type = VAR_OBJECT;
     cl->class_object_type.tt_class = cl;
+    LOG_CL(":class: created '%s'", cl->class_name);
 
     // Add the class to the script-local variables.
     // TODO: handle other context, e.g. in a function
@@ -2424,10 +2558,13 @@ early_ret:
 	success = validate_abstract_class_methods(&classfunctions,
 						&objmethods, extends_cl);
 
-    // Check all "implements" entries are valid.
-    if (success && ga_impl.ga_len > 0)
+    // Check all "implements" entries are valid. Leave room for inherited.
+    int n_extends_impl
+	      = extends_cl != NULL ? extends_cl->class_interface_count : 0;
+    if (success && (ga_impl.ga_len > 0 || n_extends_impl > 0))
     {
-	intf_classes = ALLOC_CLEAR_MULT(class_T *, ga_impl.ga_len);
+	intf_classes = ALLOC_CLEAR_MULT(class_T *,
+					    ga_impl.ga_len + n_extends_impl);
 
 	success = validate_implements_classes(&ga_impl, intf_classes,
 					&objmethods, &objmembers, extends_cl);

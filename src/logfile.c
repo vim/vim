@@ -106,13 +106,20 @@ ch_log(channel_T *ch, const char *fmt, ...)
 {
     if (log_fd == NULL)
 	return;
-
     va_list ap;
+    va_start(ap, fmt);
+    vch_log(ch, fmt, ap);
+    va_end(ap);
+}
+
+    void
+vch_log(channel_T *ch, const char *fmt, va_list ap)
+{
+    if (log_fd == NULL)
+	return;
 
     ch_log_lead("", ch, PART_COUNT);
-    va_start(ap, fmt);
     vfprintf(log_fd, fmt, ap);
-    va_end(ap);
     fputc('\n', log_fd);
     fflush(log_fd);
     did_repeated_msg = 0;
@@ -123,13 +130,20 @@ ch_error(channel_T *ch, const char *fmt, ...)
 {
     if (log_fd == NULL)
 	return;
-
     va_list ap;
+    va_start(ap, fmt);
+    vch_error(ch, fmt, ap);
+    va_end(ap);
+}
+
+    void
+vch_error(channel_T *ch, const char *fmt, va_list ap)
+{
+    if (log_fd == NULL)
+	return;
 
     ch_log_lead("ERR ", ch, PART_COUNT);
-    va_start(ap, fmt);
     vfprintf(log_fd, fmt, ap);
-    va_end(ap);
     fputc('\n', log_fd);
     fflush(log_fd);
     did_repeated_msg = 0;
