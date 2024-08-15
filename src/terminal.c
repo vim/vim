@@ -3680,10 +3680,10 @@ term_after_channel_closed(term_T *term)
 		if (is_aucmd_win(curwin))
 		    do_set_w_closing = TRUE;
 		if (do_set_w_closing)
-		    curwin->w_closing = TRUE;
+		    curwin->w_locked = TRUE;
 		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
 		if (do_set_w_closing)
-		    curwin->w_closing = FALSE;
+		    curwin->w_locked = FALSE;
 		aucmd_restbuf(&aco);
 	    }
 #ifdef FEAT_PROP_POPUP

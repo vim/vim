@@ -1484,7 +1484,7 @@ do_buffer_ext(
 	// (unless it's the only window).  Repeat this so long as we end up in
 	// a window with this buffer.
 	while (buf == curbuf
-		   && !(curwin->w_closing || curwin->w_buffer->b_locked > 0)
+		   && !(win_locked(curwin) || curwin->w_buffer->b_locked > 0)
 		   && (!ONE_WINDOW || first_tabpage->tp_next != NULL))
 	{
 	    if (win_close(curwin, FALSE) == FAIL)
@@ -5470,7 +5470,7 @@ ex_buffer_all(exarg_T *eap)
 			    : wp->w_width != Columns)
 			|| (had_tab > 0 && wp != firstwin))
 		    && !ONE_WINDOW
-		    && !(wp->w_closing || wp->w_buffer->b_locked > 0)
+		    && !(win_locked(wp) || wp->w_buffer->b_locked > 0)
 		    && !win_unlisted(wp))
 	    {
 		if (win_close(wp, FALSE) == FAIL)

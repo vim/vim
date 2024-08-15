@@ -2511,7 +2511,7 @@ close_windows(
     for (wp = firstwin; wp != NULL && !ONE_WINDOW; )
     {
 	if (wp->w_buffer == buf && (!keep_curwin || wp != curwin)
-		&& !(wp->w_closing || wp->w_buffer->b_locked > 0))
+		&& !(win_locked(wp) || wp->w_buffer->b_locked > 0))
 	{
 	    if (win_close(wp, FALSE) == FAIL)
 		// If closing the window fails give up, to avoid looping
@@ -2532,7 +2532,7 @@ close_windows(
 	if (tp != curtab)
 	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 		if (wp->w_buffer == buf
-		    && !(wp->w_closing || wp->w_buffer->b_locked > 0))
+		    && !(win_locked(wp) || wp->w_buffer->b_locked > 0))
 		{
 		    win_close_othertab(wp, FALSE, tp);
 
@@ -2654,10 +2654,10 @@ win_close_buffer(win_T *win, int action, int abort_if_last)
 	bufref_T    bufref;
 
 	set_bufref(&bufref, curbuf);
-	win->w_closing = TRUE;
+	win->w_locked = TRUE;
 	close_buffer(win, win->w_buffer, action, abort_if_last, TRUE);
 	if (win_valid_any_tab(win))
-	    win->w_closing = FALSE;
+	    win->w_locked = FALSE;
 	// Make sure curbuf is valid. It can become invalid if 'bufhidden' is
 	// "wipe".
 	if (!bufref_valid(&bufref))
@@ -2705,7 +2705,7 @@ win_close(win_T *win, int free_buf)
     if (window_layout_locked(CMD_close))
 	return FAIL;
 
-    if (win->w_closing || (win->w_buffer != NULL
+    if (win_locked(win) || (win->w_buffer != NULL
 					       && win->w_buffer->b_locked > 0))
 	return FAIL; // window is already being closed
     if (win_unlisted(win))
@@ -2754,19 +2754,19 @@ win_close(win_T *win, int free_buf)
 	    other_buffer = TRUE;
 	    if (!win_valid(win))
 		return FAIL;
-	    win->w_closing = TRUE;
+	    win->w_locked = TRUE;
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
 	    if (!win_valid(win))
 		return FAIL;
-	    win->w_closing = FALSE;
+	    win->w_locked = FALSE;
 	    if (last_window())
 		return FAIL;
 	}
-	win->w_closing = TRUE;
+	win->w_locked = TRUE;
 	apply_autocmds(EVENT_WINLEAVE, NULL, NULL, FALSE, curbuf);
 	if (!win_valid(win))
 	    return FAIL;
-	win->w_closing = FALSE;
+	win->w_locked = FALSE;
 	if (last_window())
 	    return FAIL;
 #ifdef FEAT_EVAL
@@ -3346,7 +3346,7 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 
     // Get here with win->w_buffer == NULL when win_close() detects the tab
     // page changed.
-    if (win->w_closing || (win->w_buffer != NULL
+    if (win_locked(win) || (win->w_buffer != NULL
 					       && win->w_buffer->b_locked > 0))
 	return; // window is already being closed
 
@@ -7999,4 +7999,13 @@ skip:
 get_last_winid(void)
 {
     return last_win_id;
+}
+
+/*
+ * Don't let autocommands close the given window
+ */
+   int
+win_locked(win_T *wp)
+{
+    return wp->w_locked;
 }

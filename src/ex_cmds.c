@@ -2840,7 +2840,7 @@ do_ecmd(
 
 		// Set the w_closing flag to avoid that autocommands close the
 		// window.  And set b_locked for the same reason.
-		the_curwin->w_closing = TRUE;
+		the_curwin->w_locked = TRUE;
 		++buf->b_locked;
 
 		if (curbuf == old_curbuf.br_buf)
@@ -2854,7 +2854,7 @@ do_ecmd(
 
 		// Autocommands may have closed the window.
 		if (win_valid(the_curwin))
-		    the_curwin->w_closing = FALSE;
+		    the_curwin->w_locked = FALSE;
 		--buf->b_locked;
 
 #ifdef FEAT_EVAL
