@@ -3,7 +3,7 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# Copyright (C) 2001-2023 MURAOKA Taro <koron.kaoriya@gmail.com>,
+# Copyright (C) 2001-2024 MURAOKA Taro <koron.kaoriya@gmail.com>,
 # 			  vim-jp <http://vim-jp.org/>
 #
 # THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
@@ -12,10 +12,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim 9.0\n"
+"Project-Id-Version: Vim 9.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-18 16:41+0900\n"
-"PO-Revision-Date: 2023-12-19 12:45+0900\n"
+"POT-Creation-Date: 2024-07-23 10:59+0900\n"
+"PO-Revision-Date: 2024-08-15 12:54+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: Japanese <https://github.com/vim-jp/lang-ja>\n"
 "Language: ja\n"
@@ -174,6 +174,9 @@ msgstr " (file %d of %d)"
 #, c-format
 msgid " (file (%d) of %d)"
 msgstr " (file (%d) of %d)"
+
+msgid "[Command Line]"
+msgstr "[コマンドライン]"
 
 msgid "[Prompt]"
 msgstr "[プロンプト]"
@@ -439,10 +442,6 @@ msgstr "片仮名"
 msgid "Bopomofo"
 msgstr "注音字母"
 
-msgid "Not enough memory to set references, garbage collection aborted!"
-msgstr ""
-"ガーベッジコレクションを中止しました! 参照を作成するのにメモリが不足しました"
-
 msgid ""
 "\n"
 "\tLast set from "
@@ -688,9 +687,6 @@ msgstr "エラー"
 msgid "Interrupt"
 msgstr "割込み"
 
-msgid "[Command Line]"
-msgstr "[コマンドライン]"
-
 msgid "is a directory"
 msgstr "はディレクトリです"
 
@@ -853,6 +849,10 @@ msgstr[0] "+--%3ld 行が折畳まれました"
 msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
 msgstr[0] "+-%s%3ld 行: "
+
+msgid "Not enough memory to set references, garbage collection aborted!"
+msgstr ""
+"ガーベッジコレクションを中止しました! 参照を作成するのにメモリが不足しました"
 
 msgid "No match at cursor, finding next"
 msgstr "カーソルの位置にマッチはありません、次を検索しています"
@@ -1415,6 +1415,9 @@ msgstr "mapnew() の引数"
 
 msgid "filter() argument"
 msgstr "filter() の引数"
+
+msgid "foreach() argument"
+msgstr "foreach() の引数"
 
 msgid "extendnew() argument"
 msgstr "extendnew() の引数"
@@ -2454,6 +2457,9 @@ msgstr "%s へ (%s 上の)"
 msgid "Printing '%s'"
 msgstr "印刷しています: '%s'"
 
+#~ msgid "DefaultFontNameForWindows"
+#~ msgstr ""
+
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "Xサーバーへの接続に %ld ミリ秒かかりました"
@@ -3394,8 +3400,8 @@ msgid "%s returning %s"
 msgstr "%s が %s を返しました"
 
 #, c-format
-msgid "Function %s does not need compiling"
-msgstr "関数 %s はコンパイルの必要がありません"
+msgid "Function %s%s%s does not need compiling"
+msgstr "関数 %s%s%s はコンパイルの必要がありません"
 
 #, c-format
 msgid "%s (%s, compiled %s)"
@@ -3553,6 +3559,9 @@ msgstr "   第2ユーザー vimrc: \""
 
 msgid " 3rd user vimrc file: \""
 msgstr "   第3ユーザー vimrc: \""
+
+msgid " 4th user vimrc file: \""
+msgstr "   第4ユーザー vimrc: \""
 
 msgid "      user exrc file: \""
 msgstr "       ユーザー exrc: \""
@@ -4158,6 +4167,10 @@ msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: :source で取込むファイル以外では :loadkeymap を使えません"
 
 #, c-format
+msgid "E106: Unsupported diff output format: %s"
+msgstr "E106: サポートしていないdiff出力フォーマットです: %s"
+
+#, c-format
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: カッコ '(' がありません: %s"
 
@@ -4486,8 +4499,8 @@ msgstr "E196: このバージョンに合字はありません"
 msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: 言語を \"%s\" に設定できません"
 
-msgid "E199: Active window or buffer deleted"
-msgstr "E199: アクティブなウィンドウかバッファが削除されました"
+msgid "E199: Active window or buffer changed or deleted"
+msgstr "E199: アクティブなウィンドウかバッファが変更または削除されました"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr "E200: *ReadPre 自動コマンド がファイルを読込不可にしました"
@@ -5857,9 +5870,6 @@ msgstr "E612: signの定義が多過ぎます"
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: 未知のプリンタオプションです: %s"
 
-msgid "E614: Class required"
-msgstr "E614: クラスが必要です"
-
 #, c-format
 msgid "E616: Object required for argument %d"
 msgstr "E616: 引数 %d にはオブジェクトが必要です"
@@ -6696,7 +6706,7 @@ msgid "E862: Cannot use g: here"
 msgstr "E862: ここでは g: は使えません"
 
 msgid "E863: Not allowed for a terminal in a popup window"
-msgstr "E863: 端末はポップアップウィンドウでは許されません"
+msgstr "E863: ポップアップウィンドウ内の端末では許されません"
 
 #, no-c-format
 msgid ""
@@ -6752,6 +6762,10 @@ msgstr ""
 
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr "E876: (NFA 正規表現) NFA全体を保存するには空きスペースが足りません"
+
+#, c-format
+msgid "E877: (NFA regexp) Invalid character class: %d"
+msgstr "E877: (NFA 正規表現) 無効な文字クラスです: %d"
 
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr ""
@@ -8319,20 +8333,11 @@ msgstr "E1317: 不正なオブジェクト変数の宣言です: %s"
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: クラス内では使えないコマンドです: %s"
 
-msgid "E1319: Using a Class as a Number"
-msgstr "E1319: クラスを数値として扱っています"
-
 msgid "E1320: Using an Object as a Number"
 msgstr "E1320: オブジェクトを数値として扱っています"
 
-msgid "E1321: Using a Class as a Float"
-msgstr "E1321: クラスを浮動小数点数として扱っています"
-
 msgid "E1322: Using an Object as a Float"
 msgstr "E1322: オブジェクトを浮動小数点数として扱っています"
-
-msgid "E1323: Using a Class as a String"
-msgstr "E1323: クラスを文字列として扱っています"
 
 msgid "E1324: Using an Object as a String"
 msgstr "E1324: オブジェクトを文字列として扱っています"
@@ -8362,14 +8367,14 @@ msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: オブジェクト変数として無効な型です: %s"
 
 msgid ""
-"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"E1331: public must be followed by \"var\" or \"static\" or \"final\" or "
 "\"const\""
 msgstr ""
 "E1331: public の後ろに \"var\", \"static\", \"final\" または \"const\" が必要"
 "です"
 
 #, c-format
-msgid "E1332: Public variable name cannot start with underscore: %s"
+msgid "E1332: public variable name cannot start with underscore: %s"
 msgstr "E1332: パブリック変数名はアンダースコアで始めることはできません: %s"
 
 #, c-format
@@ -8575,10 +8580,10 @@ msgstr ""
 "E1386: オブジェクトメソッド \"%s\" はクラス \"%s\" のオブジェクトを使うことの"
 "みでアクセスできます"
 
-msgid "E1387: Public variable not supported in an interface"
+msgid "E1387: public variable not supported in an interface"
 msgstr "E1387: インターフェイス内でパブリック変数はサポートされていません"
 
-msgid "E1388: Public keyword not supported for a method"
+msgid "E1388: public keyword not supported for a method"
 msgstr "E1388: インターフェイス内で public キーワードはサポートされていません"
 
 msgid "E1389: Missing name after implements"
@@ -8608,10 +8613,6 @@ msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: 型の名前は英大文字で始まらなければなりません: %s"
 
 #, c-format
-msgid "E1395: Type alias \"%s\" cannot be modified"
-msgstr "E1395: 型エイリアス \"%s\" は変更できません"
-
-#, c-format
 msgid "E1396: Type alias \"%s\" already exists"
 msgstr "E1396: 型エイリアス \"%s\" は既に存在します"
 
@@ -8625,18 +8626,6 @@ msgid "E1399: Type can only be used in a script"
 msgstr "E1399: 型はスクリプトの中でのみ使用できます"
 
 #, c-format
-msgid "E1400: Using type alias \"%s\" as a Number"
-msgstr "E1400: 型エイリアス \"%s\" を数値として扱っています"
-
-#, c-format
-msgid "E1401: Using type alias \"%s\" as a Float"
-msgstr "E1401: 型エイリアス \"%s\" を浮動小数点数として扱っています"
-
-#, c-format
-msgid "E1402: Using type alias \"%s\" as a String"
-msgstr "E1402: 型エイリアス \"%s\" を文字列として扱っています"
-
-#, c-format
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr "E1403: 型エイリアス \"%s\" を値として使うことはできません"
 
@@ -8646,9 +8635,6 @@ msgstr "E1404: abstract をインターフェイス内で使うことはでき�
 #, c-format
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: クラス \"%s\" を値として使うことはできません"
-
-msgid "E1406: Cannot use a Class as a variable or value"
-msgstr "E1406: クラスを変数や値として使うことはできません"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: 型エイリアスを変数や値として使うことはできません"
@@ -8663,6 +8649,76 @@ msgstr ""
 
 msgid "E1410: Const variable not supported in an interface"
 msgstr "E1410: インターフェイス内で const 変数はサポートされていません"
+
+#, c-format
+msgid "E1411: Missing dot after object \"%s\""
+msgstr "E1411: オブジェクト \"%s\" の後にドットがありません"
+
+#, c-format
+msgid "E1412: Builtin object method \"%s\" not supported"
+msgstr "E1412: 組み込みオブジェクトメソッド \"%s\" はサポートされていません"
+
+msgid "E1413: Builtin class method not supported"
+msgstr "E1413: 組み込みクラスメソッドはサポートされていません"
+
+msgid "E1414: Enum can only be defined in Vim9 script"
+msgstr "E1414: 列挙型は Vim9 script の中でのみ定義できます"
+
+#, c-format
+msgid "E1415: Enum name must start with an uppercase letter: %s"
+msgstr "E1415: 列挙型の名前は英大文字で始まらなければなりません: %s"
+
+msgid "E1416: Enum cannot extend a class or enum"
+msgstr "E1416: 列挙型はクラスや列挙型を拡張できません"
+
+msgid "E1417: Abstract cannot be used in an Enum"
+msgstr "E1417: abstract を列挙型内で使うことはできません"
+
+#, c-format
+msgid "E1418: Invalid enum value declaration: %s"
+msgstr "E1418: 不正な列挙値の宣言です: %s"
+
+#, c-format
+msgid "E1419: Not a valid command in an Enum: %s"
+msgstr "E1419: 列挙型内では使えないコマンドです: %s"
+
+msgid "E1420: Missing :endenum"
+msgstr "E1420: :endenum がありません"
+
+#, c-format
+msgid "E1421: Enum \"%s\" cannot be used as a value"
+msgstr "E1421: 列挙型 \"%s\" を値として使うことはできません"
+
+#, c-format
+msgid "E1422: Enum value \"%s\" not found in enum \"%s\""
+msgstr "E1422: 列挙値 \"%s\" が列挙型 \"%s\" 内で見つかりません"
+
+#, c-format
+msgid "E1423: Enum value \"%s.%s\" cannot be modified"
+msgstr "E1423: 列挙値 \"%s.%s\" は変更できません"
+
+#, c-format
+msgid "E1424: Using an Enum \"%s\" as a Number"
+msgstr "E1424: 列挙型 \"%s\" を数値として扱っています"
+
+#, c-format
+msgid "E1425: Using an Enum \"%s\" as a String"
+msgstr "E1425: 列挙型 \"%s\" を文字列として扱っています"
+
+#, c-format
+msgid "E1426: Enum \"%s\" ordinal value cannot be modified"
+msgstr "E1426: 列挙型 \"%s\" の順序値は変更できません"
+
+#, c-format
+msgid "E1427: Enum \"%s\" name cannot be modified"
+msgstr "E1427: 列挙型 \"%s\" の名前は変更できません"
+
+#, c-format
+msgid "E1428: Duplicate enum value: %s"
+msgstr "E1428: 列挙値が重複しています: %s"
+
+msgid "E1429: Class can only be used in a script"
+msgstr "E1429: クラスはスクリプトの中でのみ使用できます"
 
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
@@ -8707,6 +8763,17 @@ msgstr "E1509: 拡張属性の読込みまたは書込みでエラーが起き�
 #, c-format
 msgid "E1510: Value too large: %s"
 msgstr "E1510: 値が大き過ぎます: %s"
+
+#, c-format
+msgid "E1511: Wrong number of characters for field \"%s\""
+msgstr "E1511: フィールド \"%s\" の文字数が間違っています"
+
+#, c-format
+msgid "E1512: Wrong character width for field \"%s\""
+msgstr "E1512: フィールド \"%s\" の文字幅が間違っています"
+
+msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
+msgstr "E1513: バッファを切り替えられません。'winfixbuf' が有効化されています"
 
 msgid "--No lines in buffer--"
 msgstr "--バッファに行がありません--"
@@ -9096,7 +9163,7 @@ msgid "\" Hit <Enter> on an index line to jump there."
 msgstr "\" インデックス行で <Enter> を打つと、そこにジャンプします。"
 
 msgid "\" Hit <Space> on a \"set\" line to refresh it."
-msgstr "\" \"set\" 行で <Spece> を打つと、最新の値が読込まれます。"
+msgstr "\" \"set\" 行で <Space> を打つと、最新の値が読込まれます。"
 
 msgid "important"
 msgstr "重要"
@@ -9415,6 +9482,9 @@ msgstr "現在のウィンドウに使われる最小行数"
 msgid "minimal number of lines used for any window"
 msgstr "任意のウィンドウに使われる最小行数"
 
+msgid "keep window focused on a single buffer"
+msgstr "ウィンドウが別のバッファに切り替わらないようにする"
+
 msgid "keep the height of the window"
 msgstr "ウィンドウの高さを保つ"
 
@@ -9489,6 +9559,9 @@ msgstr "複数タブページ"
 
 msgid "0, 1 or 2; when to use a tab pages line"
 msgstr "0, 1 または 2; タブページ行をいつ使うか"
+
+msgid "behaviour when closing tab pages: left, uselast or empty"
+msgstr "タブページを閉じるときの挙動: left, uselast または empty"
 
 msgid "maximum number of tab pages to open for -p and \"tab all\""
 msgstr "-p と \"tab all\" で開かれるタブページの最大数"
