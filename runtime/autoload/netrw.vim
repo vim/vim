@@ -101,7 +101,7 @@ fun! netrw#ErrorMsg(level,msg,errnum)
   endif
 "  call Decho("level=".level,'~'.expand("<slnum>"))
 
-  if g:netrw_use_errorwindow == 2 && (v:version > 802 || (v:version == 802 && has("patch486")))
+  if g:netrw_use_errorwindow == 2 && exists("*popup_atcursor")
    " use popup window
    if type(a:msg) == 3
     let msg = [level]+a:msg
@@ -231,7 +231,10 @@ let g:netrw_localmovecmdopt    = ""
 
 " ---------------------------------------------------------------------
 " Default values for netrw's global protocol variables {{{2
-if (v:version > 802 || (v:version == 802 && has("patch486"))) && has("balloon_eval") && !exists("s:initbeval") && !exists("g:netrw_nobeval") && has("syntax") && exists("g:syntax_on") && has("mouse")
+if exists("*popup_atcursor")
+\   && has("syntax")
+\   && exists("g:syntax_on")
+\   && has("mouse")
   call s:NetrwInit("g:netrw_use_errorwindow",2)
 else
   call s:NetrwInit("g:netrw_use_errorwindow",1)
