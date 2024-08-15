@@ -36,11 +36,11 @@ DESCRIPTION
             vim [options] [filelist]
 
        If the filelist is missing, the editor will start with an empty buffer.
-       Otherwise  exactly  one out of the following four may be used to choose
+       Otherwise exactly one out of the following four may be used  to  choose
        one or more files to be edited.
 
-       file ..     A list of filenames.  The first one  will  be  the  current
-                   file  and  read  into the buffer.  The cursor will be posi‐
+       file ..     A  list  of  filenames.   The first one will be the current
+                   file and read into the buffer.  The cursor  will  be  posi‐
                    tioned on the first line of the buffer.  You can get to the
                    other files with the ":next" command.  To edit a file  that
                    starts with a dash, precede the filelist with "--".
@@ -49,18 +49,18 @@ DESCRIPTION
                    from stderr, which should be a tty.
 
        -t {tag}    The file to edit and the initial cursor position depends on
-                   a "tag", a sort of goto label.  {tag} is looked up  in  the
+                   a  "tag",  a sort of goto label.  {tag} is looked up in the
                    tags file, the associated file becomes the current file and
                    the  associated  command  is executed.  Mostly this is used
                    for C programs, in which case {tag}  could  be  a  function
                    name.  The effect is that the file containing that function
-                   becomes  the  current  file and the cursor is positioned on
+                   becomes the current file and the cursor  is  positioned  on
                    the start of the function.  See ":help tag-commands".
 
        -q [errorfile]
-                   Start in quickFix mode.  The file [errorfile] is  read  and
-                   the  first  error is displayed.  If [errorfile] is omitted,
-                   the filename is obtained from the 'errorfile'  option  (de‐
+                   Start  in  quickFix mode.  The file [errorfile] is read and
+                   the first error is displayed.  If [errorfile]  is  omitted,
+                   the  filename  is obtained from the 'errorfile' option (de‐
                    faults to "AztecC.Err" for the Amiga, "errors.err" on other
                    systems).   Further  errors can be jumped to with the ":cn"
                    command.  See ":help quickfix".
@@ -70,10 +70,10 @@ DESCRIPTION
 
        vim       The "normal" way, everything is default.
 
-       ex        Start in Ex mode.  Go to Normal mode with the ":vi"  command.
+       ex        Start  in Ex mode.  Go to Normal mode with the ":vi" command.
                  Can also be done with the "-e" argument.
 
-       view      Start  in read-only mode.  You will be protected from writing
+       view      Start in read-only mode.  You will be protected from  writing
                  the files.  Can also be done with the "-R" argument.
 
        gvim gview
@@ -111,16 +111,6 @@ OPTIONS
                    vim "+set si" main.c
                    Note: You can use up to 10 "+" or "-c" commands.
 
-       -S {file}   {file} will be sourced after the first file has been  read.
-                   This  is  equivalent  to -c "source {file}".  {file} cannot
-                   start with '-'.  If {file} is omitted "Session.vim" is used
-                   (only works when -S is the last argument).
-
-       --cmd {command}
-                   Like using "-c", but the command is  executed  just  before
-                   processing  any  vimrc file.  You can use up to 10 of these
-                   commands, independently from "-c" commands.
-
        -A          If Vim has been compiled with ARABIC  support  for  editing
                    right-to-left  oriented  files and Arabic keyboard mapping,
                    this option starts Vim in Arabic  mode,  i.e.  'arabic'  is
@@ -134,86 +124,73 @@ OPTIONS
                    ists.
 
        -d          Start in diff mode.  There should between two to eight file
-                   name arguments.  Vim will open all the files and show  dif‐
+                   name  arguments.  Vim will open all the files and show dif‐
                    ferences between them.  Works like vimdiff(1).
 
        -d {device}, -dev {device}
-                   Open  {device}  for  use as a terminal.  Only on the Amiga.
+                   Open {device} for use as a terminal.  Only  on  the  Amiga.
                    Example: "-d con:20/30/600/150".
 
-       -D          Debugging.  Go to debugging mode when executing  the  first
+       -D          Debugging.   Go  to debugging mode when executing the first
                    command from a script.
 
-       -e          Start  Vim  in Ex mode, just like the executable was called
+       -e          Start Vim in Ex mode, just like the executable  was  called
                    "ex".
 
        -E          Start Vim in improved Ex mode, just like the executable was
                    called "exim".
 
        -f          Foreground.  For the GUI version, Vim will not fork and de‐
-                   tach from the shell it was started in.  On the  Amiga,  Vim
-                   is  not restarted to open a new window.  This option should
-                   be used when Vim is executed by a program  that  will  wait
-                   for  the  edit session to finish (e.g. mail).  On the Amiga
+                   tach  from  the shell it was started in.  On the Amiga, Vim
+                   is not restarted to open a new window.  This option  should
+                   be  used  when  Vim is executed by a program that will wait
+                   for the edit session to finish (e.g. mail).  On  the  Amiga
                    the ":sh" and ":!" commands will not work.
 
-       --nofork    Foreground.  For the GUI version, Vim will not fork and de‐
-                   tach from the shell it was started in.
-
-       -F          If Vim has been compiled with  FKMAP  support  for  editing
-                   right-to-left  oriented  files  and Farsi keyboard mapping,
-                   this option starts Vim in  Farsi  mode,  i.e.  'fkmap'  and
-                   'rightleft'  are  set.  Otherwise an error message is given
+       -F          If  Vim  has  been  compiled with FKMAP support for editing
+                   right-to-left oriented files and  Farsi  keyboard  mapping,
+                   this  option  starts  Vim  in  Farsi mode, i.e. 'fkmap' and
+                   'rightleft' are set.  Otherwise an error message  is  given
                    and Vim aborts.
+                   Note: Farsi support has been removed in patch 8.1.0932.
 
-       -g          If Vim has been compiled with GUI support, this option  en‐
+       -g          If  Vim has been compiled with GUI support, this option en‐
                    ables the GUI.  If no GUI support was compiled in, an error
                    message is given and Vim aborts.
 
-       --gui-dialog-file {name}
-                   When  using the GUI, instead of showing a dialog, write the
-                   title and message of the dialog to file {name}.   The  file
-                   is  created  or  appended  to.  Only useful for testing, to
-                   avoid that the test gets stuck on a dialog  that  can't  be
-                   seen.  Without the GUI the argument is ignored.
-
-       --help, -h, -?
-                   Give a bit of help about the command line arguments and op‐
-                   tions.  After this Vim exits.
-
        -H          If Vim has been compiled with RIGHTLEFT support for editing
-                   right-to-left  oriented  files and Hebrew keyboard mapping,
-                   this option starts Vim in Hebrew  mode,  i.e.  'hkmap'  and
-                   'rightleft'  are  set.  Otherwise an error message is given
+                   right-to-left oriented files and Hebrew  keyboard  mapping,
+                   this  option  starts  Vim  in Hebrew mode, i.e. 'hkmap' and
+                   'rightleft' are set.  Otherwise an error message  is  given
                    and Vim aborts.
 
        -i {viminfo}
-                   Specifies the filename to use when reading or  writing  the
-                   viminfo  file,  instead  of the default "~/.viminfo".  This
-                   can also be used to skip the use of the .viminfo  file,  by
+                   Specifies  the  filename to use when reading or writing the
+                   viminfo file, instead of the  default  "~/.viminfo".   This
+                   can  also  be used to skip the use of the .viminfo file, by
                    giving the name "NONE".
-
-       -L          Same as -r.
 
        -l          Lisp mode.  Sets the 'lisp' and 'showmatch' options on.
 
-       -m          Modifying  files  is  disabled.  Resets the 'write' option.
-                   You can still modify the buffer, but writing a file is  not
+       -L          Same as -r.
+
+       -m          Modifying files is disabled.  Resets  the  'write'  option.
+                   You  can still modify the buffer, but writing a file is not
                    possible.
 
-       -M          Modifications  not  allowed.   The 'modifiable' and 'write'
-                   options will be unset, so that changes are not allowed  and
-                   files  can  not be written.  Note that these options can be
+       -M          Modifications not allowed.  The  'modifiable'  and  'write'
+                   options  will be unset, so that changes are not allowed and
+                   files can not be written.  Note that these options  can  be
                    set to enable making modifications.
+
+       -n          No  swap file will be used.  Recovery after a crash will be
+                   impossible.  Handy if you want to edit a  file  on  a  very
+                   slow  medium  (e.g.  floppy).   Can also be done with ":set
+                   uc=0".  Can be undone with ":set uc=200".
 
        -N          No-compatible mode.  Resets the 'compatible' option.   This
                    will  make Vim behave a bit better, but less Vi compatible,
                    even though a .vimrc file does not exist.
-
-       -n          No swap file will be used.  Recovery after a crash will  be
-                   impossible.   Handy  if  you  want to edit a file on a very
-                   slow medium (e.g. floppy).  Can also  be  done  with  ":set
-                   uc=0".  Can be undone with ":set uc=200".
 
        -nb         Become an editor server for NetBeans.  See the docs for de‐
                    tails.
@@ -221,7 +198,7 @@ OPTIONS
        -o[N]       Open N windows stacked.  When N is omitted, open one window
                    for each file.
 
-       -O[N]       Open  N  windows side by side.  When N is omitted, open one
+       -O[N]       Open N windows side by side.  When N is omitted,  open  one
                    window for each file.
 
        -p[N]       Open N tab pages.  When N is omitted, open one tab page for
@@ -232,25 +209,25 @@ OPTIONS
                    tion.   When possible, Vim will run in an MDI window inside
                    the application. {parent-title} must appear in  the  window
                    title of the parent application.  Make sure that it is spe‐
-                   cific  enough. Note that the implementation is still primi‐
-                   tive.  It won't work with all  applications  and  the  menu
+                   cific enough. Note that the implementation is still  primi‐
+                   tive.   It  won't  work  with all applications and the menu
                    doesn't work.
 
-       -R          Read-only  mode.   The  'readonly' option will be set.  You
-                   can still edit the buffer, but will be prevented from acci‐
-                   dentally overwriting a file.  If you do want to overwrite a
-                   file, add an exclamation mark to  the  Ex  command,  as  in
-                   ":w!".   The  -R  option  also  implies  the -n option (see
-                   above).  The 'readonly' option  can  be  reset  with  ":set
-                   noro".  See ":help 'readonly'".
-
-       -r          List  swap files, with information about using them for re‐
+       -r          List swap files, with information about using them for  re‐
                    covery.
 
-       -r {file}   Recovery mode.  The swap file is used to recover a  crashed
-                   editing  session.   The  swap  file is a file with the same
+       -r {file}   Recovery  mode.  The swap file is used to recover a crashed
+                   editing session.  The swap file is a  file  with  the  same
                    filename as the text file with ".swp" appended.  See ":help
                    recovery".
+
+       -R          Read-only mode.  The 'readonly' option will  be  set.   You
+                   can still edit the buffer, but will be prevented from acci‐
+                   dentally overwriting a file.  If you do want to overwrite a
+                   file,  add  an  exclamation  mark  to the Ex command, as in
+                   ":w!".  The -R option  also  implies  the  -n  option  (see
+                   above).   The  'readonly'  option  can  be reset with ":set
+                   noro".  See ":help 'readonly'".
 
        -s          Silent mode.  Only when started as "Ex" or  when  the  "-e"
                    option was given before the "-s" option.
@@ -262,50 +239,41 @@ OPTIONS
                    end of the file is reached before the editor exits, further
                    characters are read from the keyboard.
 
+       -S {file}   {file}  will be sourced after the first file has been read.
+                   This is equivalent to -c "source  {file}".   {file}  cannot
+                   start with '-'.  If {file} is omitted "Session.vim" is used
+                   (only works when -S is the last argument).
+
        -T {terminal}
                    Tells Vim the name of the terminal you are using.  Only re‐
                    quired  when  the  automatic way doesn't work.  Should be a
                    terminal known to Vim (builtin) or defined in  the  termcap
                    or terminfo file.
 
-       --not-a-term
-                   Tells  Vim that the user knows that the input and/or output
-                   is not connected to a terminal.  This will avoid the  warn‐
-                   ing and the two second delay that would happen.
-
-       --ttyfail   When  stdin  or  stdout is not a a terminal (tty) then exit
-                   right away.
-
-       -u {vimrc}  Use the commands in the file {vimrc}  for  initializations.
-                   All  the  other  initializations  are skipped.  Use this to
-                   edit a special kind of files.  It can also be used to  skip
-                   all  initializations by giving the name "NONE".  See ":help
+       -u {vimrc}  Use  the  commands in the file {vimrc} for initializations.
+                   All the other initializations are  skipped.   Use  this  to
+                   edit  a special kind of files.  It can also be used to skip
+                   all initializations by giving the name "NONE".  See  ":help
                    initialization" within vim for more details.
 
-       -U {gvimrc} Use the commands in the file {gvimrc} for  GUI  initializa‐
-                   tions.   All the other GUI initializations are skipped.  It
-                   can also be used to skip all GUI initializations by  giving
-                   the  name "NONE".  See ":help gui-init" within vim for more
+       -U {gvimrc} Use  the  commands in the file {gvimrc} for GUI initializa‐
+                   tions.  All the other GUI initializations are skipped.   It
+                   can  also be used to skip all GUI initializations by giving
+                   the name "NONE".  See ":help gui-init" within vim for  more
                    details.
 
-       -V[N]       Verbose.  Give messages about which files are  sourced  and
-                   for  reading and writing a viminfo file.  The optional num‐
+       -v          Start  Vim  in Vi mode, just like the executable was called
+                   "vi".  This only has effect when the executable  is  called
+                   "ex".
+
+       -V[N]       Verbose.   Give  messages about which files are sourced and
+                   for reading and writing a viminfo file.  The optional  num‐
                    ber N is the value for 'verbose'.  Default is 10.
 
        -V[N]{filename}
                    Like -V and set 'verbosefile' to {filename}.  The result is
                    that messages are not displayed but  written  to  the  file
                    {filename}.  {filename} must not start with a digit.
-
-       --log {filename}
-                   If  Vim  has  been  compiled with eval and channel feature,
-                   start logging and write entries to {filename}.  This  works
-                   like calling ch_logfile({filename}, 'ao') very early during
-                   startup.
-
-       -v          Start  Vim  in Vi mode, just like the executable was called
-                   "vi".  This only has effect when the executable  is  called
-                   "ex".
 
        -w{number}  Set the 'window' option to {number}.
 
@@ -319,11 +287,11 @@ OPTIONS
        -W {scriptout}
                    Like -w, but an existing file is overwritten.
 
-       -x          If Vim has been compiled with encryption support,  use  en‐
+       -x          If  Vim  has been compiled with encryption support, use en‐
                    cryption when writing files.  Will prompt for a crypt key.
 
-       -X          Don't  connect to the X server.  Shortens startup time in a
-                   terminal, but the window title and clipboard  will  not  be
+       -X          Don't connect to the X server.  Shortens startup time in  a
+                   terminal,  but  the  window title and clipboard will not be
                    used.
 
        -y          Start Vim in easy mode, just like the executable was called
@@ -341,31 +309,61 @@ OPTIONS
                    etc.).  Useful to see if a problem reproduces with a  clean
                    Vim setup.
 
+       --cmd {command}
+                   Like  using  "-c",  but the command is executed just before
+                   processing any vimrc file.  You can use up to 10  of  these
+                   commands, independently from "-c" commands.
+
        --echo-wid  GTK GUI only: Echo the Window ID on stdout.
 
-       --literal   Take  file  name  arguments  literally, do not expand wild‐
-                   cards.  This has no effect on Unix where the shell  expands
+       --gui-dialog-file {name}
+                   When  using the GUI, instead of showing a dialog, write the
+                   title and message of the dialog to file {name}.   The  file
+                   is  created  or  appended  to.  Only useful for testing, to
+                   avoid that the test gets stuck on a dialog  that  can't  be
+                   seen.  Without the GUI the argument is ignored.
+
+       --help, -h, -?
+                   Give a bit of help about the command line arguments and op‐
+                   tions.  After this Vim exits.
+
+       --literal   Take file name arguments literally,  do  not  expand  wild‐
+                   cards.   This has no effect on Unix where the shell expands
                    wildcards.
 
+       --log {filename}
+                   If Vim has been compiled with  eval  and  channel  feature,
+                   start  logging  and write entries to {filename}. This works
+                   like calling ch_logfile({filename}, 'ao') very early during
+                   startup.
+
+       --nofork    Foreground.  For the GUI version, Vim will not fork and de‐
+                   tach from the shell it was started in.
+
        --noplugin  Skip loading plugins.  Implied by -u NONE.
+
+       --not-a-term
+                   Tells Vim that the user knows that the input and/or  output
+                   is  not connected to a terminal.  This will avoid the warn‐
+                   ing and the two second delay that would happen.
 
        --remote    Connect to a Vim server and make it edit the files given in
                    the rest of the arguments.  If no server is found a warning
                    is given and the files are edited in the current Vim.
 
        --remote-expr {expr}
-                   Connect  to  a  Vim server, evaluate {expr} in it and print
+                   Connect to a Vim server, evaluate {expr} in  it  and  print
                    the result on stdout.
 
        --remote-send {keys}
                    Connect to a Vim server and send {keys} to it.
 
        --remote-silent
-                   As --remote, but without the  warning  when  no  server  is
+                   As  --remote,  but  without  the  warning when no server is
                    found.
 
        --remote-wait
-                   As  --remote,  but  Vim  does not exit until the files have
+                   As --remote, but Vim does not exit  until  the  files  have
                    been edited.
 
        --remote-wait-silent
@@ -381,16 +379,19 @@ OPTIONS
                    the server to connect to.
 
        --socketid {id}
-                   GTK  GUI only: Use the GtkPlug mechanism to run gvim in an‐
+                   GTK GUI only: Use the GtkPlug mechanism to run gVim in  an‐
                    other window.
 
        --startuptime {file}
                    During startup write timing messages to the file {fname}.
 
+       --ttyfail   When  stdin  or  stdout is not a a terminal (tty) then exit
+                   right away.
+
        --version   Print version information and exit.
 
        --windowid {id}
-                   Win32 GUI only: Make gvim try to use the window {id}  as  a
+                   Win32 GUI only: Make gVim try to use the window {id}  as  a
                    parent, so that it runs inside that window.
 
 ON-LINE HELP
@@ -403,12 +404,12 @@ ON-LINE HELP
 
 FILES
        /usr/local/share/vim/vim??/doc/*.txt
-                      The  Vim documentation files.  Use ":help doc-file-list"
+                      The Vim documentation files.  Use ":help  doc-file-list"
                       to get the complete list.
                       vim??  is short version number, like vim91 for Vim 9.1
 
        /usr/local/share/vim/vim??/doc/tags
-                      The tags file used for finding information in the  docu‐
+                      The  tags file used for finding information in the docu‐
                       mentation files.
 
        /usr/local/share/vim/vim??/syntax/syntax.vim
@@ -421,32 +422,32 @@ FILES
                       System wide Vim initializations.
 
        ~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
-                      Your  personal  Vim  initializations (first one found is
+                      Your personal Vim initializations (first  one  found  is
                       used).
 
        /usr/local/share/vim/gvimrc
                       System wide gvim initializations.
 
        ~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
-                      Your personal gvim initializations (first one  found  is
+                      Your  personal  gVim initializations (first one found is
                       used).
 
        /usr/local/share/vim/vim??/optwin.vim
-                      Script  used  for  the ":options" command, a nice way to
+                      Script used for the ":options" command, a  nice  way  to
                       view and set options.
 
        /usr/local/share/vim/vim??/menu.vim
-                      System wide menu initializations for gvim.
+                      System wide menu initializations for gVim.
 
        /usr/local/share/vim/vim??/bugreport.vim
                       Script to generate a bug report.  See ":help bugs".
 
        /usr/local/share/vim/vim??/filetype.vim
-                      Script to detect the type of a file by  its  name.   See
+                      Script  to  detect  the type of a file by its name.  See
                       ":help 'filetype'".
 
        /usr/local/share/vim/vim??/scripts.vim
-                      Script  to  detect  the  type of a file by its contents.
+                      Script to detect the type of a  file  by  its  contents.
                       See ":help 'filetype'".
 
        /usr/local/share/vim/vim??/print/*.ps
@@ -474,4 +475,4 @@ BUGS
        vi_diff.txt  when  in  Vim).   Also have a look at the 'compatible' and
        'cpoptions' options.
 
-                                  2024 Aug 03                           VIM(1)
+                                  2024 Aug 12                           VIM(1)

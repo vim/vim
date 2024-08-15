@@ -1,4 +1,4 @@
-.TH VIM 1 "2024 Aug 03"
+.TH VIM 1 "2024 Aug 12"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -150,18 +150,6 @@ Example: vim "+set si" main.c
 .br
 Note: You can use up to 10 "+" or "\-c" commands.
 .TP
-\-S {file}
-{file} will be sourced after the first file has been read.
-This is equivalent to \-c "source {file}".
-{file} cannot start with '\-'.
-If {file} is omitted "Session.vim" is used (only works when \-S is the last
-argument).
-.TP
-\-\-cmd {command}
-Like using "\-c", but the command is executed just before
-processing any vimrc file.
-You can use up to 10 of these commands, independently from "\-c" commands.
-.TP
 \-A
 If
 .B Vim
@@ -224,11 +212,6 @@ is executed by a program that will wait for the edit
 session to finish (e.g. mail).
 On the Amiga the ":sh" and ":!" commands will not work.
 .TP
-\-\-nofork
-Foreground.  For the GUI version,
-.B Vim
-will not fork and detach from the shell it was started in.
-.TP
 \-F
 If
 .B Vim
@@ -239,6 +222,8 @@ in Farsi mode, i.e. 'fkmap' and 'rightleft' are set.
 Otherwise an error message is given and
 .B Vim
 aborts.
+.br
+Note: Farsi support has been removed in patch 8.1.0932.
 .TP
 \-g
 If
@@ -247,18 +232,6 @@ has been compiled with GUI support, this option enables the GUI.
 If no GUI support was compiled in, an error message is given and
 .B Vim
 aborts.
-.TP
-\-\-gui-dialog-file {name}
-When using the GUI, instead of showing a dialog, write the title and message of
-the dialog to file {name}.  The file is created or appended to.  Only useful
-for testing, to avoid that the test gets stuck on a dialog that can't be seen.
-Without the GUI the argument is ignored.
-.TP
-\-\-help, \-h, \-?
-Give a bit of help about the command line arguments and options.
-After this
-.B Vim
-exits.
 .TP
 \-H
 If
@@ -277,12 +250,12 @@ instead of the default "~/.viminfo".
 This can also be used to skip the use of the .viminfo file, by giving the name
 "NONE".
 .TP
-\-L
-Same as \-r.
-.TP
 \-l
 Lisp mode.
 Sets the 'lisp' and 'showmatch' options on.
+.TP
+\-L
+Same as \-r.
 .TP
 \-m
 Modifying files is disabled.
@@ -294,19 +267,19 @@ Modifications not allowed.  The 'modifiable' and 'write' options will be unset,
 so that changes are not allowed and files can not be written.  Note that these
 options can be set to enable making modifications.
 .TP
-\-N
-No-compatible mode.  Resets the 'compatible' option.
-This will make
-.B Vim
-behave a bit better, but less Vi compatible, even though a .vimrc file does
-not exist.
-.TP
 \-n
 No swap file will be used.
 Recovery after a crash will be impossible.
 Handy if you want to edit a file on a very slow medium (e.g. floppy).
 Can also be done with ":set uc=0".
 Can be undone with ":set uc=200".
+.TP
+\-N
+No-compatible mode.  Resets the 'compatible' option.
+This will make
+.B Vim
+behave a bit better, but less Vi compatible, even though a .vimrc file does
+not exist.
 .TP
 \-nb
 Become an editor server for NetBeans.  See the docs for details.
@@ -330,6 +303,16 @@ the window title of the parent application.  Make sure that it is specific
 enough. Note that the implementation is still primitive.  It won't work with
 all applications and the menu doesn't work.
 .TP
+\-r
+List swap files, with information about using them for recovery.
+.TP
+\-r {file}
+Recovery mode.
+The swap file is used to recover a crashed editing session.
+The swap file is a file with the same filename as the text file with ".swp"
+appended.
+See ":help recovery".
+.TP
 \-R
 Read-only mode.
 The 'readonly' option will be set.
@@ -340,16 +323,6 @@ as in ":w!".
 The \-R option also implies the \-n option (see above).
 The 'readonly' option can be reset with ":set noro".
 See ":help 'readonly'".
-.TP
-\-r
-List swap files, with information about using them for recovery.
-.TP
-\-r {file}
-Recovery mode.
-The swap file is used to recover a crashed editing session.
-The swap file is a file with the same filename as the text file with ".swp"
-appended.
-See ":help recovery".
 .TP
 \-s
 Silent mode.  Only when started as "Ex" or when the "\-e" option was given
@@ -362,6 +335,13 @@ The same can be done with the command ":source! {scriptin}".
 If the end of the file is reached before the editor exits, further characters
 are read from the keyboard.
 .TP
+\-S {file}
+{file} will be sourced after the first file has been read.
+This is equivalent to \-c "source {file}".
+{file} cannot start with '\-'.
+If {file} is omitted "Session.vim" is used (only works when \-S is the last
+argument).
+.TP
 \-T {terminal}
 Tells
 .B Vim
@@ -370,16 +350,6 @@ Only required when the automatic way doesn't work.
 Should be a terminal known to
 .B Vim
 (builtin) or defined in the termcap or terminfo file.
-.TP
-\-\-not-a-term
-Tells
-.B Vim
-that the user knows that the input and/or output is not connected to a
-terminal.  This will avoid the warning and the two second delay that would
-happen.
-.TP
-\-\-ttyfail
-When stdin or stdout is not a a terminal (tty) then exit right away.
 .TP
 \-u {vimrc}
 Use the commands in the file {vimrc} for initializations.
@@ -394,6 +364,12 @@ All the other GUI initializations are skipped.
 It can also be used to skip all GUI initializations by giving the name "NONE".
 See ":help gui\-init" within vim for more details.
 .TP
+\-v
+Start
+.B Vim
+in Vi mode, just like the executable was called "vi".  This only has effect
+when the executable is called "ex".
+.TP
 \-V[N]
 Verbose.  Give messages about which files are sourced and for reading and
 writing a viminfo file.  The optional number N is the value for 'verbose'.
@@ -403,20 +379,6 @@ Default is 10.
 Like \-V and set 'verbosefile' to {filename}.  The result is that messages are
 not displayed but written to the file {filename}.  {filename} must not start
 with a digit.
-.TP
-\-\-log {filename}
-If
-.B Vim
-has been compiled with eval and channel feature, start logging and write
-entries to {filename}. This works like calling
-.I ch_logfile({filename}, 'ao')
-very early during startup.
-.TP
-\-v
-Start
-.B Vim
-in Vi mode, just like the executable was called "vi".  This only has effect
-when the executable is called "ex".
 .TP
 \-w{number}
 Set the 'window' option to {number}.
@@ -462,15 +424,52 @@ This can be used to edit a filename that starts with a '\-'.
 Do not use any personal configuration (vimrc, plugins, etc.).  Useful to see if
 a problem reproduces with a clean Vim setup.
 .TP
+\-\-cmd {command}
+Like using "\-c", but the command is executed just before
+processing any vimrc file.
+You can use up to 10 of these commands, independently from "\-c" commands.
+.TP
 \-\-echo\-wid
 GTK GUI only: Echo the Window ID on stdout.
+.TP
+\-\-gui\-dialog\-file {name}
+When using the GUI, instead of showing a dialog, write the title and message of
+the dialog to file {name}.  The file is created or appended to.  Only useful
+for testing, to avoid that the test gets stuck on a dialog that can't be seen.
+Without the GUI the argument is ignored.
+.TP
+\-\-help, \-h, \-?
+Give a bit of help about the command line arguments and options.
+After this
+.B Vim
+exits.
 .TP
 \-\-literal
 Take file name arguments literally, do not expand wildcards.  This has no
 effect on Unix where the shell expands wildcards.
 .TP
+\-\-log {filename}
+If
+.B Vim
+has been compiled with eval and channel feature, start logging and write
+entries to {filename}. This works like calling
+.I ch_logfile({filename}, 'ao')
+very early during startup.
+.TP
+\-\-nofork
+Foreground.  For the GUI version,
+.B Vim
+will not fork and detach from the shell it was started in.
+.TP
 \-\-noplugin
 Skip loading plugins.  Implied by \-u NONE.
+.TP
+\-\-not\-a\-term
+Tells
+.B Vim
+that the user knows that the input and/or output is not connected to a
+terminal.  This will avoid the warning and the two second delay that would
+happen.
 .TP
 \-\-remote
 Connect to a Vim server and make it edit the files given in the rest of the
@@ -500,16 +499,19 @@ Use {name} as the server name.  Used for the current Vim, unless used with a
 \-\-remote argument, then it's the name of the server to connect to.
 .TP
 \-\-socketid {id}
-GTK GUI only: Use the GtkPlug mechanism to run gvim in another window.
+GTK GUI only: Use the GtkPlug mechanism to run gVim in another window.
 .TP
 \-\-startuptime {file}
 During startup write timing messages to the file {fname}.
+.TP
+\-\-ttyfail
+When stdin or stdout is not a a terminal (tty) then exit right away.
 .TP
 \-\-version
 Print version information and exit.
 .TP
 \-\-windowid {id}
-Win32 GUI only: Make gvim try to use the window {id} as a parent, so that it
+Win32 GUI only: Make gVim try to use the window {id} as a parent, so that it
 runs inside that window.
 .SH ON-LINE HELP
 Type ":help" in
@@ -557,13 +559,16 @@ initializations (first one found is used).
 System wide gvim initializations.
 .TP
 ~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
-Your personal gvim initializations (first one found is used).
+Your personal 
+.B gVim
+initializations (first one found is used).
 .TP
 /usr/local/share/vim/vim??/optwin.vim
 Script used for the ":options" command, a nice way to view and set options.
 .TP
 /usr/local/share/vim/vim??/menu.vim
-System wide menu initializations for gvim.
+System wide menu initializations for 
+.B gVim.
 .TP
 /usr/local/share/vim/vim??/bugreport.vim
 Script to generate a bug report.  See ":help bugs".

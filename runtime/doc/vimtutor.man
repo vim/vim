@@ -16,7 +16,7 @@ DESCRIPTION
        commands.
 
        The  optional argument -g starts vimtutor with gvim rather than vim, if
-       the GUI version of vim is available, or falls back to Vim  if  gvim  is
+       the GUI version of Vim is available, or falls back to vim  if  gvim  is
        not found.
 
        The  optional [language] argument is the two-letter name of a language,
@@ -28,10 +28,11 @@ DESCRIPTION
        Vim is always started in Vi compatible mode.
 
 FILES
-       /usr/local/lib/vim/tutor/tutor[.language]
+       /usr/local/share/vim/vim??/tutor/tutor[.language]
                       The Vimtutor text file(s).
+                      vim??  is short version number, like vim91 for Vim 9.1
 
-       /usr/local/lib/vim/tutor/tutor.vim
+       /usr/local/share/vim/vim??/tutor/tutor.vim
                       The Vim script used to copy the Vimtutor text file.
 
 AUTHOR
@@ -47,4 +48,4 @@ SEE ALSO
 
 
 
-                                 2001 April 2                      VIMTUTOR(1)
+                                2024 August 12                     VIMTUTOR(1)

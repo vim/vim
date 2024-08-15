@@ -1,4 +1,4 @@
-EVIM(1)                                                                EVIM(1)
+EVIM(1)                     General Commands Manual                    EVIM(1)
 
 
 
@@ -10,7 +10,7 @@ SYNOPSIS
        eview
 
 DESCRIPTION
-       eVim starts Vim and sets options to make it behave like a modeless edi-
+       eVim starts Vim and sets options to make it behave like a modeless edi‐
        tor.  This is still Vim but used as  a  point-and-click  editor.   This
        feels  a lot like using Notepad on MS-Windows.  eVim will always run in
        the GUI, to enable the use of menus and toolbar.
@@ -32,8 +32,9 @@ OPTIONS
        See vim(1).
 
 FILES
-       /usr/local/lib/vim/evim.vim
+       /usr/local/share/vim/vim??/evim.vim
                       The script loaded to initialize eVim.
+                      vim??  is short version number, like vim91 for Vim 9.1
 
 AKA
        Also Known As "Vim for gumbies".  When using evim you are  expected  to
@@ -49,4 +50,4 @@ AUTHOR
 
 
 
-                               2002 February 16                        EVIM(1)
+                                2024 August 12                         EVIM(1)

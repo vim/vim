@@ -179,39 +179,42 @@ EXAMPLES
        Print 3 lines (hex 0x30 bytes) from the end of file.
        % xxd -s -0x30 file
 
+       Note: The results of the examples below are relevant to the xxd.1 man
+       page as of May 2024
+
        Print 120 bytes as a continuous hex dump with 20 octets per line.
        % xxd -l 120 -ps -c 20 xxd.1
-       2e54482058584420312022417567757374203139
-       39362220224d616e75616c207061676520666f72
-       20787864220a2e5c220a2e5c222032317374204d
-       617920313939360a2e5c22204d616e2070616765
-       20617574686f723a0a2e5c2220202020546f6e79
-       204e7567656e74203c746f6e79407363746e7567
+       2e544820585844203120224d6179203230323422
+       20224d616e75616c207061676520666f72207878
+       64220a2e5c220a2e5c222032317374204d617920
+       313939360a2e5c22204d616e2070616765206175
+       74686f723a0a2e5c2220202020546f6e79204e75
+       67656e74203c746f6e79407363746e7567656e2e
 
        Hex dump the first 120 bytes of this man page with 12 octets per line.
        % xxd -l 120 -c 12 xxd.1
-       0000000: 2e54 4820 5858 4420 3120 2241  .TH XXD 1 "A
-       000000c: 7567 7573 7420 3139 3936 2220  ugust 1996"
-       0000018: 224d 616e 7561 6c20 7061 6765  "Manual page
-       0000024: 2066 6f72 2078 7864 220a 2e5c   for xxd"..\
-       0000030: 220a 2e5c 2220 3231 7374 204d  "..\" 21st M
-       000003c: 6179 2031 3939 360a 2e5c 2220  ay 1996..\"
-       0000048: 4d61 6e20 7061 6765 2061 7574  Man page aut
-       0000054: 686f 723a 0a2e 5c22 2020 2020  hor:..\"
-       0000060: 546f 6e79 204e 7567 656e 7420  Tony Nugent
-       000006c: 3c74 6f6e 7940 7363 746e 7567  <tony@sctnug
+       00000000: 2e54 4820 5858 4420 3120 224d  .TH XXD 1 "M
+       0000000c: 6179 2032 3032 3422 2022 4d61  ay 2024" "Ma
+       00000018: 6e75 616c 2070 6167 6520 666f  nual page fo
+       00000024: 7220 7878 6422 0a2e 5c22 0a2e  r xxd"..\"..
+       00000030: 5c22 2032 3173 7420 4d61 7920  \" 21st May
+       0000003c: 3139 3936 0a2e 5c22 204d 616e  1996..\" Man
+       00000048: 2070 6167 6520 6175 7468 6f72   page author
+       00000054: 3a0a 2e5c 2220 2020 2054 6f6e  :..\"    Ton
+       00000060: 7920 4e75 6765 6e74 203c 746f  y Nugent <to
+       0000006c: 6e79 4073 6374 6e75 6765 6e2e  ny@sctnugen.
 
        Display just the date from the file xxd.1
-       % xxd -s 0x36 -l 13 -c 13 xxd.1
-       0000036: 3231 7374 204d 6179 2031 3939 36  21st May 1996
+       % xxd -s 0x33 -l 13 -c 13 xxd.1
+       0000033: 3231 7374 204d 6179 2031 3939 36  21st May 1996
 
        Copy input_file to output_file and prepend 100 bytes of value 0x00.
        % xxd input_file | xxd -r -s 100 > output_file
 
        Patch the date in the file xxd.1
-       % echo "0000037: 3574 68" | xxd -r - xxd.1
-       % xxd -s 0x36 -l 13 -c 13 xxd.1
-       0000036: 3235 7468 204d 6179 2031 3939 36  25th May 1996
+       % echo "0000034: 3574 68" | xxd -r - xxd.1
+       % xxd -s 0x33 -l 13 -c 13 xxd.1
+       0000033: 3235 7468 204d 6179 2031 3939 36  25th May 1996
 
        Create  a  65537 byte file with all bytes 0x00, except for the last one
        which is 'A' (hex 0x41).
@@ -221,7 +224,7 @@ EXAMPLES
        % xxd -a -c 12 file
        0000000: 0000 0000 0000 0000 0000 0000  ............
        *
-       000fffc: 0000 0000 40                   ....A
+       000fffc: 0000 0000 41                   ....A
 
        Create a 1 byte file containing a single 'A' character.  The number af‐
        ter  '-r -s' adds to the line numbers found in the file; in effect, the
@@ -268,7 +271,7 @@ WARNINGS
        own risk. Copy files. Trace it. Become a wizard.
 
 VERSION
-       This manual page documents xxd version 1.7
+       This manual page documents xxd version 1.7 from 2024-05.
 
 AUTHOR
        (c) 1990-1997 by Juergen Weigert
@@ -282,4 +285,4 @@ AUTHOR
        <tony@sctnugen.ppp.gu.edu.au> <T.Nugent@sct.gu.edu.au>
        Small changes by Bram Moolenaar.  Edited by Juergen Weigert.
 
-Manual page for xxd               August 1996                           XXD(1)
+Manual page for xxd                May 2024                             XXD(1)
