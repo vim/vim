@@ -3647,7 +3647,7 @@ term_after_channel_closed(term_T *term)
 	if (term->tl_finish == TL_FINISH_CLOSE)
 	{
 	    aco_save_T	aco;
-	    int		do_set_w_closing = term->tl_buffer->b_nwindows == 0;
+	    int		do_set_w_locked = term->tl_buffer->b_nwindows == 0;
 #ifdef FEAT_PROP_POPUP
 	    win_T	*pwin = NULL;
 
@@ -3678,11 +3678,11 @@ term_after_channel_closed(term_T *term)
 	    {
 		// Avoid closing the window if we temporarily use it.
 		if (is_aucmd_win(curwin))
-		    do_set_w_closing = TRUE;
-		if (do_set_w_closing)
+		    do_set_w_locked = TRUE;
+		if (do_set_w_locked)
 		    curwin->w_locked = TRUE;
 		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
-		if (do_set_w_closing)
+		if (do_set_w_locked)
 		    curwin->w_locked = FALSE;
 		aucmd_restbuf(&aco);
 	    }

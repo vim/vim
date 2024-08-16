@@ -3785,8 +3785,7 @@ struct window_S
     synblock_T	*w_s;		    // for :ownsyntax
 #endif
 
-    int		w_locked;	    // window is being closed, don't let
-				    // autocommands close it too.
+    int		w_locked;	    // don't let autocommands close the window
 
     frame_T	*w_frame;	    // frame containing this window
 
