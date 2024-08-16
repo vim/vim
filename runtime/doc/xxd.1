@@ -311,7 +311,7 @@ Patch the date in the file xxd.1
 .br
 \fI% xxd \-s 0x33 \-l 13 \-c 13 xxd.1\fR
 .br
-0000033: 3235 7468 204d 6179 2031 3939 36  25th May 1996
+00000033: 3235 7468 204d 6179 2031 3939 36  25th May 1996
 .PP
 .br
 Create a 65537 byte file with all bytes 0x00,
@@ -324,11 +324,11 @@ Hex dump this file with autoskip.
 .br
 \fI% xxd \-a \-c 12 file\fR
 .br
-0000000: 0000 0000 0000 0000 0000 0000  ............
+00000000: 0000 0000 0000 0000 0000 0000  ............
 .br
 *
 .br
-000fffc: 0000 0000 41                   ....A
+0000fffc: 0000 0000 41                   ....A
 .PP
 Create a 1 byte file containing a single 'A' character.
 The number after '\-r \-s' adds to the line numbers found in the file;
