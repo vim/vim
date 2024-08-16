@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 9.1.  Last change: 2024 Aug 15
+*cmdline.txt*   For Vim version 9.1.  Last change: 2024 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -379,7 +379,7 @@ terminals)
 
 :keepp[atterns] {command}			*:keepp* *:keeppatterns*
 		Execute {command}, without adding anything to the search
-		history or modifying the last substitute pattern.
+		history or modifying the last substitute string for |:&|.
 
 ==============================================================================
 2. Command-line completion				*cmdline-completion*
