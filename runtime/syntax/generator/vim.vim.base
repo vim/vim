@@ -3,7 +3,7 @@
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
 " URL:	   https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	   2024 Jul 18
+" Last Change:	   2024 Aug 16
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -525,7 +525,13 @@ VimL syn keyword	vimUnlet	unl[et]		skipwhite nextgroup=vimUnletBang,vimUnletVars
 syn match	vimUnletBang	contained	"!"	skipwhite nextgroup=vimUnletVars
 syn region	vimUnletVars	contained	start="$\I\|\h" skip="\n\s*\\" end="$" end="|" contains=vimVar,vimEnvvar,vimContinue,vimString,vimNumber
 
-VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s*\%(trim\s\+\%(eval\s\+\)\=\|eval\s\+\%(trim\s\+\)\=\)\=\z(\L\S*\)' matchgroup=vimLetHereDocStop end='^\s*\z1\s*$' extend
+" Note: This incorrectly matches end markers with leading whitespace even if
+"       "trim" was not specified.  Matching :let indent for "trim" indented
+"       end markers would require a contained :let that cannot be restricted
+"       to the start pattern.  A common internal testing use of heredocs is to
+"       specify code blocks where :let commonly appears in the heredoc text.
+VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s*\%(trim\s\+\)\=\z(\L\S*\)'		             matchgroup=vimLetHereDocStop end='^\s*\z1$' extend
+VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s*\%(trim\s\+\)\=eval\s\+\|eval\s\+\%(trim\s\+\)\=\z(\L\S*\)' matchgroup=vimLetHereDocStop end='^\s*\z1$' contains=vimStringInterpolationExpr,vimStringInterpolationBrace extend
 
 Vim9 syn keyword	vim9Const	const	skipwhite nextgroup=vim9Variable,vim9VariableList
 Vim9 syn keyword	vim9Final	final	skipwhite nextgroup=vim9Variable,vim9VariableList

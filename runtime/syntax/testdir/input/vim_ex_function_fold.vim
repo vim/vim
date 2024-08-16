@@ -193,10 +193,9 @@ function Foo()
 endfunction
 
 function Foo()
-  let x =<< END
+  let x =<< trim END
     endfunction
   END
-
 endfunction
 
 function Foo()
