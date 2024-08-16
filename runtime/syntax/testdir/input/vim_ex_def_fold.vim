@@ -120,7 +120,7 @@ def Foo()
 enddef
 
 def Foo()
-  let x =<< END
+  var x =<< trim END
     endfunction
   END
 enddef
