@@ -157,61 +157,61 @@ os_win32.txt:
 # Especially since there is only one dependency and it should presumably always
 # be newer than the target file.
 vim-da.UTF-8.1: vim-da.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimdiff-da.UTF-8.1: vimdiff-da.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimtutor-da.UTF-8.1: vimtutor-da.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vim-de.UTF-8.1: vim-de.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vim-fr.UTF-8.1: vim-fr.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 evim-fr.UTF-8.1: evim-fr.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimdiff-fr.UTF-8.1: vimdiff-fr.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimtutor-fr.UTF-8.1: vimtutor-fr.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 xxd-fr.UTF-8.1: xxd-fr.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vim-it.UTF-8.1: vim-it.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 evim-it.UTF-8.1: evim-it.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimdiff-it.UTF-8.1: vimdiff-it.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimtutor-it.UTF-8.1: vimtutor-it.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 xxd-it.UTF-8.1: xxd-it.1
-	iconv -f ISO-8859-1 -t UTF-8 $? >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vim-pl.UTF-8.1: vim-pl.1
-	iconv -f ISO-8859-2 -t UTF-8 $? >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 evim-pl.UTF-8.1: evim-pl.1
-	iconv -f ISO-8859-2 -t UTF-8 $? >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 vimdiff-pl.UTF-8.1: vimdiff-pl.1
-	iconv -f ISO-8859-2 -t UTF-8 $? >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 vimtutor-pl.UTF-8.1: vimtutor-pl.1
-	iconv -f ISO-8859-2 -t UTF-8 $? >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 xxd-pl.UTF-8.1: xxd-pl.1
-	iconv -f ISO-8859-2 -t UTF-8 $? >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 vim-ru.UTF-8.1: vim-ru.1
 	iconv -f KOI8-R -t UTF-8 $? >$@
@@ -229,13 +229,13 @@ xxd-ru.UTF-8.1: xxd-ru.1
 	iconv -f KOI8-R -t UTF-8 $? >$@
 
 vim-tr.UTF-8.1: vim-tr.1
-	iconv -f ISO-8859-9 -t UTF-8 $? >$@
+	iconv -f latin5 -t UTF-8 $? >$@
 
 evim-tr.UTF-8.1: evim-tr.1
-	iconv -f ISO-8859-9 -t UTF-8 $? >$@
+	iconv -f latin5 -t UTF-8 $? >$@
 
 vimdiff-tr.UTF-8.1: vimdiff-tr.1
-	iconv -f ISO-8859-9 -t UTF-8 $? >$@
+	iconv -f latin5 -t UTF-8 $? >$@
 
 vimtutor-tr.UTF-8.1: vimtutor-tr.1
-	iconv -f ISO-8859-9 -t UTF-8 $? >$@
+	iconv -f latin5 -t UTF-8 $? >$@
