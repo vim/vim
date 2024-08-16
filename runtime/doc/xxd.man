@@ -206,7 +206,7 @@ EXAMPLES
 
        Display just the date from the file xxd.1
        % xxd -s 0x33 -l 13 -c 13 xxd.1
-       0000033: 3231 7374 204d 6179 2031 3939 36  21st May 1996
+       00000033: 3231 7374 204d 6179 2031 3939 36  21st May 1996
 
        Copy input_file to output_file and prepend 100 bytes of value 0x00.
        % xxd input_file | xxd -r -s 100 > output_file
@@ -214,7 +214,7 @@ EXAMPLES
        Patch the date in the file xxd.1
        % echo "0000034: 3574 68" | xxd -r - xxd.1
        % xxd -s 0x33 -l 13 -c 13 xxd.1
-       0000033: 3235 7468 204d 6179 2031 3939 36  25th May 1996
+       00000033: 3235 7468 204d 6179 2031 3939 36  25th May 1996
 
        Create  a  65537 byte file with all bytes 0x00, except for the last one
        which is 'A' (hex 0x41).
@@ -222,9 +222,9 @@ EXAMPLES
 
        Hex dump this file with autoskip.
        % xxd -a -c 12 file
-       0000000: 0000 0000 0000 0000 0000 0000  ............
+       00000000: 0000 0000 0000 0000 0000 0000  ............
        *
-       000fffc: 0000 0000 41                   ....A
+       0000fffc: 0000 0000 41                   ....A
 
        Create a 1 byte file containing a single 'A' character.  The number af‐
        ter  '-r -s' adds to the line numbers found in the file; in effect, the
