@@ -35,19 +35,19 @@ doctags: doctags.c
 	$(CC) doctags.c -o doctags
 
 vim.man: vim.1
-	nroff -man $< | sed -e s/.//g > $@
+	nroff -man $? | sed -e s/.//g > $@
 
 evim.man: evim.1
-	nroff -man $< | sed -e s/.//g > $@
+	nroff -man $? | sed -e s/.//g > $@
 
 vimdiff.man: vimdiff.1
-	nroff -man $< | sed -e s/.//g > $@
+	nroff -man $? | sed -e s/.//g > $@
 
 vimtutor.man: vimtutor.1
-	nroff -man $< | sed -e s/.//g > $@
+	nroff -man $? | sed -e s/.//g > $@
 
 xxd.man: xxd.1
-	nroff -man $< | sed -e s/.//g > $@
+	nroff -man $? | sed -e s/.//g > $@
 
 uganda.nsis.txt : uganda.???
 	for dpn in $?; do \
@@ -74,10 +74,10 @@ $(HTMLS): tags.ref
 # index.html is the starting point for HTML, but for the help files it is
 # help.txt.  Therefore use vimindex.html for index.txt.
 index.html: help.txt
-	$(AWK) -f makehtml.awk $< >$@
+	$(AWK) -f makehtml.awk $? >$@
 
 vimindex.html: index.txt
-	$(AWK) -f makehtml.awk $< >$@
+	$(AWK) -f makehtml.awk $? >$@
 
 tags.ref tags.html: tags
 	$(AWK) -f maketags.awk tags >tags.html
@@ -151,88 +151,91 @@ os_risc.txt:
 os_win32.txt:
 	touch $@
 
-# Note that $< works with GNU make while $> works for BSD make.
-# Is there a solution that works for both??
+# In *BSD, the variable '$<' is used in suffix-transformation rules (in GNU this
+# is called "implicit rules", and in MS Windows it is called "inference rules").
+# For code portability, it is better to use the '$?' variable for explicit rules.
+# Especially since there is only one dependency and it should presumably always
+# be newer than the target file.
 vim-da.UTF-8.1: vim-da.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimdiff-da.UTF-8.1: vimdiff-da.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimtutor-da.UTF-8.1: vimtutor-da.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vim-de.UTF-8.1: vim-de.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vim-fr.UTF-8.1: vim-fr.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 evim-fr.UTF-8.1: evim-fr.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimdiff-fr.UTF-8.1: vimdiff-fr.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimtutor-fr.UTF-8.1: vimtutor-fr.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 xxd-fr.UTF-8.1: xxd-fr.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vim-it.UTF-8.1: vim-it.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 evim-it.UTF-8.1: evim-it.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimdiff-it.UTF-8.1: vimdiff-it.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vimtutor-it.UTF-8.1: vimtutor-it.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 xxd-it.UTF-8.1: xxd-it.1
-	iconv -f latin1 -t utf-8 $< >$@
+	iconv -f latin1 -t UTF-8 $? >$@
 
 vim-pl.UTF-8.1: vim-pl.1
-	iconv -f latin2 -t utf-8 $< >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 evim-pl.UTF-8.1: evim-pl.1
-	iconv -f latin2 -t utf-8 $< >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 vimdiff-pl.UTF-8.1: vimdiff-pl.1
-	iconv -f latin2 -t utf-8 $< >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 vimtutor-pl.UTF-8.1: vimtutor-pl.1
-	iconv -f latin2 -t utf-8 $< >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 xxd-pl.UTF-8.1: xxd-pl.1
-	iconv -f latin2 -t utf-8 $< >$@
+	iconv -f latin2 -t UTF-8 $? >$@
 
 vim-ru.UTF-8.1: vim-ru.1
-	iconv -f KOI8-R -t utf-8 $< >$@
+	iconv -f KOI8-R -t UTF-8 $? >$@
 
 evim-ru.UTF-8.1: evim-ru.1
-	iconv -f KOI8-R -t utf-8 $< >$@
+	iconv -f KOI8-R -t UTF-8 $? >$@
 
 vimdiff-ru.UTF-8.1: vimdiff-ru.1
-	iconv -f KOI8-R -t utf-8 $< >$@
+	iconv -f KOI8-R -t UTF-8 $? >$@
 
 vimtutor-ru.UTF-8.1: vimtutor-ru.1
-	iconv -f KOI8-R -t utf-8 $< >$@
+	iconv -f KOI8-R -t UTF-8 $? >$@
 
 xxd-ru.UTF-8.1: xxd-ru.1
-	iconv -f KOI8-R -t utf-8 $< >$@
+	iconv -f KOI8-R -t UTF-8 $? >$@
 
 vim-tr.UTF-8.1: vim-tr.1
-	iconv -f latin5 -t utf-8 $< >$@
+	iconv -f latin5 -t UTF-8 $? >$@
 
 evim-tr.UTF-8.1: evim-tr.1
-	iconv -f latin5 -t utf-8 $< >$@
+	iconv -f latin5 -t UTF-8 $? >$@
 
 vimdiff-tr.UTF-8.1: vimdiff-tr.1
-	iconv -f latin5 -t utf-8 $< >$@
+	iconv -f latin5 -t UTF-8 $? >$@
 
 vimtutor-tr.UTF-8.1: vimtutor-tr.1
-	iconv -f latin5 -t utf-8 $< >$@
+	iconv -f latin5 -t UTF-8 $? >$@
