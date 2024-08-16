@@ -97,8 +97,7 @@ tests are successful, then this file will be an empty file.
 
 - To execute only specific test functions, add a second argument:
 
-	 $ ../vim -u NONE -S runtest.vim test_channel.vim open_delay
-
+    $ ../vim -u NONE -S runtest.vim test_channel.vim open_delay
 
 - To run all the tests:
 
@@ -120,9 +119,27 @@ tests are successful, then this file will be an empty file.
 
     $ make clean
 
-# ANALYZE FAILED SCREENDUMPS FROM CI:
 
-See the file ../../runtime/syntax/testdir/README.txt section
-"Viewing generated screendumps" on how to analyze failed screen dumps
-(from CI or locally) using the provided Vim script
-../../runtime/syntax/testdir/viewdumps.vim in a more automatic way.
+VIEWING GENERATED SCREENDUMPS:
+
+You may also wish to look at the whole batch of failed screendumps after
+running "make".  Source the "viewdumps.vim" script for this task:
+
+    $ ../vim -u NONE -S viewdumps.vim \
+				[dumps/Test_xxd_*.dump ...]
+
+By default, all screendumps found in the "failed" directory will be added to
+the argument list and then the first one will be loaded.  Loaded screendumps
+that bear filenames of screendumps found in the "dumps" directory will be
+rendering the contents of any such pair of files and the difference between
+them (:help term_dumpdiff()); otherwise, they will be rendering own contents
+(:help term_dumpload()).  Remember to execute :edit when occasionally you see
+raw file contents instead of rendered.
+
+At any time, you can add, list, and abandon other screendumps:
+
+    :$argedit dumps/Test_spell_*.dump
+    :args
+    :qall
+
+The listing of argument commands can be found under :help buffer-list.

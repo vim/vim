@@ -198,6 +198,7 @@ SRC_ALL =	\
 		src/testdir/summarize.vim \
 		src/testdir/term_util.vim \
 		src/testdir/view_util.vim \
+		src/testdir/viewdumps.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test77a.ok \
 		src/testdir/test77a.com \
