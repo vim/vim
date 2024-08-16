@@ -2838,7 +2838,7 @@ do_ecmd(
 		int	    did_decrement;
 		buf_T	    *was_curbuf = curbuf;
 
-		// Set the w_closing flag to avoid that autocommands close the
+		// Set the w_locked flag to avoid that autocommands close the
 		// window.  And set b_locked for the same reason.
 		the_curwin->w_locked = TRUE;
 		++buf->b_locked;
