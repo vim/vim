@@ -654,10 +654,11 @@ is not possible to override them (unlike some other languages).
 
 						*E1356* *E1357* *E1358*
 Object methods of the base class can be overruled.  The signature (arguments,
-argument types and return type) must be exactly the same.  If the return type
-of a method is a class, then that class or one of its subclasses can be used
-in the extended method.  The method of the base class can be called by
-prefixing "super.".
+argument types and return type) must be compile time compatible with the base
+class signature; no runtime checks are required.  If the return type of a
+method is a class, then that class or one of its subclasses can be used in the
+extended method.  The method of the base class can be called by prefixing
+"super.".
 
 						*E1377*
 The access level of a method (public or protected) in a child class should be
