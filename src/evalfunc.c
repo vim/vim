@@ -7541,6 +7541,14 @@ f_hostname(typval_T *argvars UNUSED, typval_T *rettv)
  * Currently only valid for object/container types.
  * Return empty string if not an object.
  */
+#ifdef VMS // VMS does not have defined uintptr_t
+# if defined(HAVE_NO_LONG_LONG)
+typedef unsigned int uintptr_t;
+# else
+typedef unsigned long long uintptr_t;
+# endif
+#endif // VMS
+
     static void
 f_id(typval_T *argvars, typval_T *rettv)
 {
