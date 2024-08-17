@@ -1,4 +1,4 @@
-.TH VIMTUTOR 1 "2 aprile 2001"
+.TH VIMTUTOR 1 "12 agosto 2024"
 .SH NOME
 vimtutor \- Un breve corso introduttivo a Vim
 .SH SINTASSI
@@ -19,7 +19,7 @@ Il comando
 .
 .PP
 L'argomento opzionale \-g inizia vimtutor usando gvim invece che vim, se la
-versione GUI di vim è disponibile; altrimenti viene utilizzato Vim.
+versione GUI di vim è disponibile; altrimenti viene utilizzato vim.
 .PP
 L'argomento opzionale [lingua] è l'abbreviazione di due lettere del nome
 di una lingua, per esempio "it" oppure "es".
@@ -32,12 +32,16 @@ verrà usata la versione inglese.
 è sempre iniziato in Modo compatibile con Vi.
 .SH FILE
 .TP 15
-/usr/local/lib/vim/tutor/tutor[.language]
+/usr/local/lib/vim/vim??/tutor/tutor[.lingua]
 I file di testo per
 .B Vimtutor
 .
+.br
+.I vim??
+è il numero di versione corto, p.es., vim91 per indicare
+.B Vim 9.1.
 .TP 15
-/usr/local/lib/vim/tutor/tutor.vim
+/usr/local/share/vim/vim??/tutor/tutor.vim
 Lo script di Vim usato per copiare il file di testo
 .B Vimtutor
 .

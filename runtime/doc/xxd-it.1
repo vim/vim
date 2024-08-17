@@ -1,4 +1,4 @@
-.TH XXD 1 "Agosto 1996" "Pagina di manuale per xxd"
+.TH XXD 1 "Maggio 2024" "Pagina di manuale per xxd"
 .\"
 .\" 21 Maggio 1996
 .\" Autore della pagina di manuale:
@@ -190,7 +190,10 @@ Nel modificare immagini esadecimali, si tenga conto che
 salta il resto della riga, dopo aver letto i caratteri contenenti dati esadecimali
 (vedere opzione \-c). Ciò implica pure che le modifiche alle colonne di caratteri
 stampabili ASCII (o EBCDIC) sono sempre ignorate. La ricostruzione da un file immagine
-esadecimale in stile semplice (postscript) con xxd \-r \-p non dipende dal numero corretto di colonne. In questo caso, qualsiasi cosa assomigli a una coppia di cifre esadecimali è interpretata [e utilizzata].
+esadecimale in stile semplice (postscript) con xxd \-r \-p non dipende dal numero
+corretto di colonne.
+In questo caso, qualsiasi cosa assomigli a una coppia di cifre esadecimali è
+interpretata [e utilizzata].
 .PP
 Notare la differenza fra
 .br
@@ -221,10 +224,11 @@ si aggiunge a 1k (1024) dove `dd' si era fermato.
 .PP
 Immagine esadecimale dalla posizione 0x100 (=1024\-768 ) del file in avanti.
 .br
-\fI% sh \-c "dd of=normale bs=1k count=1; xxd \-s +\-768 > esadecimale" < file
+\fI% sh \-c "dd of=normale bs=1k count=1; xxd \-s +\-768 > esadecimale" < file\fR
 .PP
 Comunque, questo capita raramente, e l'uso del `+' non serve quasi mai.
-L'autore preferisce monitorare il comportamento di xxd con strace(1) o truss(1), quando si usa l'opzione \-s.
+L'autore preferisce monitorare il comportamento di xxd con strace(1) o truss(1),
+quando si usa l'opzione \-s.
 .SH ESEMPI
 .PP
 .br
@@ -237,60 +241,63 @@ Stampa tutto tranne le prime tre righe (0x30 byte in esadecimale) di
 Stampa 3 righe (0x30 byte in esadecimale) alla fine di
 .BR file .
 .br
-\fI% xxd \-s \-0x30 file
+\fI% xxd \-s \-0x30 file\fR
+.PP
+Nota: I risultati degli esempi seguenti sono riferiti alla versione di
+Maggio 2024 della pagina di manuale [quella che state leggendo].
 .PP
 .br
 Stampa 120 byte come immagine esadecimale continua con 20 byte per riga.
 .br
-\fI% xxd \-l 120 \-ps \-c 20 xxd.1\fR
+\fI% xxd \-l 120 \-ps \-c 20 xxd-it.UTF-8.1\fR
 .br
-2e54482058584420312022417567757374203139
+2e544820585844203120224d616767696f203230
 .br
-39362220224d616e75616c207061676520666f72
+3234222022506167696e61206469206d616e7561
 .br
-20787864220a2e5c220a2e5c222032317374204d
+6c652070657220787864220a2e5c220a2e5c2220
 .br
-617920313939360a2e5c22204d616e2070616765
+3231204d616767696f20313939360a2e5c222041
 .br
-20617574686f723a0a2e5c2220202020546f6e79
+75746f72652064656c6c6120706167696e612064
 .br
-204e7567656e74203c746f6e79407363746e7567
-.br
+69206d616e75616c653a0a2e5c2220202020546f
+.PP
 
 .br
-Stampa i primi 120 byte della pagina di manuale xxd.1 a 12 byte per riga.
+Stampa i primi 120 byte di questa pagina di manuale a 12 byte per riga.
 .br
-\fI% xxd \-l 120 \-c 12 xxd.1\fR
+\fI% xxd \-l 120 \-c 12 xxd-it.UTF-8.1\fR
 .br
-0000000: 2e54 4820 5858 4420 3120 2241  .TH XXD 1 "A
+00000000: 2e54 4820 5858 4420 3120 224d  .TH XXD 1 "M
 .br
-000000c: 7567 7573 7420 3139 3936 2220  ugust 1996" 
+0000000c: 6167 6769 6f20 3230 3234 2220  aggio 2024" 
 .br
-0000018: 224d 616e 7561 6c20 7061 6765  "Manual page
+00000018: 2250 6167 696e 6120 6469 206d  "Pagina di m
 .br
-0000024: 2066 6f72 2078 7864 220a 2e5c   for xxd"..\\
+00000024: 616e 7561 6c65 2070 6572 2078  anuale per x
 .br
-0000030: 220a 2e5c 2220 3231 7374 204d  "..\\" 21st M
+00000030: 7864 220a 2e5c 220a 2e5c 2220  xd"..\"..\" 
 .br
-000003c: 6179 2031 3939 360a 2e5c 2220  ay 1996..\\" 
+0000003c: 3231 204d 6167 6769 6f20 3139  21 Maggio 19
 .br
-0000048: 4d61 6e20 7061 6765 2061 7574  Man page aut
+00000048: 3936 0a2e 5c22 2041 7574 6f72  96..\" Autor
 .br
-0000054: 686f 723a 0a2e 5c22 2020 2020  hor:..\\"    
+00000054: 6520 6465 6c6c 6120 7061 6769  e della pagi
 .br
-0000060: 546f 6e79 204e 7567 656e 7420  Tony Nugent 
+00000060: 6e61 2064 6920 6d61 6e75 616c  na di manual
 .br
-000006c: 3c74 6f6e 7940 7363 746e 7567  <tony@sctnug
+0000006c: 653a 0a2e 5c22 2020 2020 546f  e:..\"    To
 .PP
 .br
-Visualizza la data dal file xxd.1
+Visualizza la data dal file xxd-it.UTF-8.1
 .br
-\fI% xxd \-s 0x36 \-l 13 \-c 13 xxd.1\fR
+\fI% xxd \-s 0x3c \-l 14 \-c 14 xxd-it.UTF-8.1\fR
 .br
-0000036: 3231 7374 204d 6179 2031 3939 36  21st May 1996
+0000003c: 3231 204d 6167 6769 6f20 3139 3936  21 Maggio 1996
 .PP
 .br
-Copiare
+Copia
 .B input_file
 su
 .B output_file
@@ -300,30 +307,30 @@ premettendogli 100 byte a 0x00.
 .br
 
 .br
-Modificare (patch) la data nel file xxd.1
+Modifica (patch) la data nel file xxd-it.UTF-8.1
 .br
-\fI% echo "0000037: 3574 68" | xxd \-r \- xxd.1\fR
+\fI% echo "000003c: 3331" | xxd \-r \- xxd-it.UTF-8.1\fR
 .br
-\fI% xxd \-s 0x36 \-l 13 \-c 13 xxd.1\fR
+\fI% xxd \-s 0x3c \-l 14 \-c 14 xxd-it.UTF-8.1\fR
 .br
-0000036: 3235 7468 204d 6179 2031 3939 36  25th May 1996
+0000003c: 3331 204d 6167 6769 6f20 3139 3936  31 Maggio 1996
 .PP
 .br
-Creare un file di 65537 byte tutto a 0x00,
+Crea un file di 65537 byte tutto a 0x00,
 tranne l'ultimo carattere che è una 'A' (esadecimale 0x41).
 .br
 \fI% echo "010000: 41" | xxd \-r > file\fR
 .PP
 .br
-Stampa una immagine esadecimale del file  di cui sopra con opzione autoskip.
+Stampa un'immagine esadecimale del file di cui sopra con opzione autoskip.
 .br
 \fI% xxd \-a \-c 12 file\fR
 .br
-0000000: 0000 0000 0000 0000 0000 0000  ............
+00000000: 0000 0000 0000 0000 0000 0000  ............
 .br
 *
 .br
-000fffc: 0000 0000 40                   ....A
+0000fffc: 0000 0000 41                   ....A
 .PP
 Creare un file di 1 byte che contiene il solo carattere 'A'.
 Il numero dopo '\-r \-s' viene aggiunto a quello trovato nel file;
@@ -388,7 +395,7 @@ La stranezza dello strumento rispecchia la mente del suo creatore.
 Usate a vostro rischio e pericolo. Copiate i file. Tracciate l'esecuzione. Diventate un mago.
 .br
 .SH VERSIONE
-Questa pagina di manuale documenta la versione 1.7 di xxd.
+Questa pagina di manuale documenta la versione 1.7 di xxd del maggio 2024.
 .SH AUTORE
 .br
 (c) 1990-1997 Juergen Weigert
