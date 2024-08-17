@@ -120,7 +120,7 @@ tests are successful, then this file will be an empty file.
     $ make clean
 
 
-VIEWING GENERATED SCREENDUMPS:
+VIEWING GENERATED SCREENDUMPS (local):
 
 You may also wish to look at the whole batch of failed screendumps after
 running "make".  Source the "viewdumps.vim" script for this task:
@@ -143,3 +143,58 @@ At any time, you can add, list, and abandon other screendumps:
     :qall
 
 The listing of argument commands can be found under :help buffer-list.
+
+
+VIEWING GENERATED SCREENDUMPS (from a CI-uploaded artifact):
+
+After you have downloaded an artifact archive containing failed screendumps
+and extracted its files in a temporary directory, you need to set up a "dumps"
+directory by creating a symlink:
+
+    $ cd /path/to/fork
+    $ ln -s $(pwd)/src/testdir/dumps /tmp/src/testdir/dumps
+
+You can now examine the extracted screendumps:
+
+    $ ./src/vim -u NONE -S src/testdir/viewdumps.vim \
+				/tmp/src/testdir/failed/*.dump
+
+
+VIEWING GENERATED SCREENDUMPS (submitted for a pull request):
+
+First, you need to check out the topic branch with the proposed changes and
+write down a difference list between the HEAD commit (index) and its parent
+commit with respect to the changed "dumps" filenames:
+
+    $ cd /path/to/fork
+    $ git switch prs/1234
+    $ git diff-index --relative=src/testdir/dumps/ \
+				--name-only prs/1234~1 > /tmp/filelist
+
+Then, you need to check out the master branch, change the current working
+directory to reconcile relative filepaths written in the filenames list,
+possibly create an empty "failed" directory, copy in this directory the old
+"dumps" files, whose names are on the same list, and follow it by checking out
+the topic branch:
+
+    $ git switch master
+    $ cd src/testdir/dumps
+    $ test -d ../failed || mkdir ../failed
+    $ cp -t ../failed $(cat /tmp/filelist)
+    $ git switch prs/1234
+
+Make note of any missing new screendumps.  Please remember about the
+introduced INVERTED relation between "dumps" and "failed", i.e. the files to
+be committed are in "dumps" already and their old versions are in "failed".
+Therefore, you need to copy the missing new screendumps from "dumps" to
+"failed":
+
+    $ cp -t ../failed foo_10.dump foo_11.dump foo_12.dump
+
+After you have changed the current working directory to its parent directory,
+you can now examine the screendumps from the "failed" directory (note that new
+screendumps will be shown with no difference between their versions):
+
+    $ cd ..
+    $ ../vim -u NONE -S viewdumps.vim
+
