@@ -468,7 +468,6 @@ get_user_cmd_complete(expand_T *xp UNUSED, int idx)
     return (char_u *)command_complete_tab[idx].value;
 }
 
-#ifdef FEAT_EVAL
 /*
  * Return the row in the command_complete_tab table that contains the given key.
  */
@@ -484,6 +483,7 @@ get_commandtype(int expand)
     return NULL;
 }
 
+#ifdef FEAT_EVAL
 /*
  * Get the name of completion type "expand" as a string.
  */
