@@ -185,6 +185,7 @@ SRC_ALL =	\
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
 		src/testdir/check.vim \
+		src/testdir/commondumps.vim \
 		src/testdir/gui_init.vim \
 		src/testdir/gui_preinit.vim \
 		src/testdir/mouse.vim \
@@ -198,6 +199,7 @@ SRC_ALL =	\
 		src/testdir/summarize.vim \
 		src/testdir/term_util.vim \
 		src/testdir/view_util.vim \
+		src/testdir/viewdumps.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test77a.ok \
 		src/testdir/test77a.com \
