@@ -2245,7 +2245,8 @@ find_func_imported(char_u *name, int flags)
 	    if (!HASHITEM_EMPTY(hi))
 	    {
 		dictitem_T *di = HI2DI(hi);
-		if (di->di_tv.v_type == VAR_FUNC)
+		if (di->di_tv.v_type == VAR_FUNC
+			&& di->di_tv.vval.v_string != NULL)
 		    func = find_func_even_dead(di->di_tv.vval.v_string, flags);
 	    }
 	}

@@ -164,6 +164,16 @@ def Test_wrong_function_name()
   END
   v9.CheckScriptFailure(lines, 'E1182:')
   delfunc g:Define
+
+  lines =<< trim END
+    vim9script
+    var F1_ref: func
+    def Start()
+      F1_ref()
+    enddef
+    Start()
+  END
+  v9.CheckScriptFailure(lines, 'E117:')
 enddef
 
 " Check that in a legacy script a :def accesses the correct script variables.
