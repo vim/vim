@@ -753,9 +753,13 @@ Global mapping:
 			nmap <F1> <Plug>ManPreGetPage
 
 Local mappings:
+<Plug>ManBS
+<LocalLeader>h	Clear backspace <BS> characters from the buffer
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
-q		Same as the |:quit| command.
+
+The mappings can be disabled with: >
+	let g:no_man_maps = 1
 
 To use a vertical split instead of horizontal: >
 	let g:ft_man_open_mode = 'vert'
