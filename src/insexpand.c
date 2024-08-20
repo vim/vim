@@ -1311,7 +1311,8 @@ ins_compl_build_pum(void)
 		{
 		    did_find_shown_match = TRUE;
 		    max_fuzzy_score = compl->cp_score;
-		    compl_shown_match = compl;
+		    if (!compl_no_select)
+			compl_shown_match = compl;
 		}
 
 		if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
