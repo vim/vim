@@ -66,9 +66,11 @@ if !exists("*s:SpecChangelog")
 		endif
 		let line = 0
 		let name = ""
+		let epoch = ""
 		let ver = ""
 		let rel = ""
 		let nameline = -1
+		let epochline = -1
 		let verline = -1
 		let relline = -1
 		let chgline = -1
@@ -77,6 +79,9 @@ if !exists("*s:SpecChangelog")
 			if name == "" && linestr =~? '^Name:'
 				let nameline = line
 				let name = substitute(strpart(linestr,5), '^[	 ]*\([^ 	]\+\)[		]*$','\1','')
+			elseif epoch == "" && linestr =~? '^Epoch:'
+				let epochline = line
+				let epoch = substitute(strpart(linestr,6), '^[     ]*\([^         ]\+\)[          ]*$','\1','')
 			elseif ver == "" && linestr =~? '^Version:'
 				let verline = line
 				let ver = substitute(strpart(linestr,8), '^[	 ]*\([^ 	]\+\)[		]*$','\1','')
@@ -93,6 +98,7 @@ if !exists("*s:SpecChangelog")
 		if nameline != -1 && verline != -1 && relline != -1
 			let include_release_info = exists("g:spec_chglog_release_info")
 			let name = s:ParseRpmVars(name, nameline)
+			let epoch = s:ParseRpmVars(epoch, epochline)
 			let ver = s:ParseRpmVars(ver, verline)
 			let rel = s:ParseRpmVars(rel, relline)
 		else
@@ -117,6 +123,9 @@ if !exists("*s:SpecChangelog")
 		if chgline != -1
 			let tmptime = v:lc_time
 			language time C
+			if strlen(epoch)
+				let ver = epoch.":".ver
+			endif
 			let parsed_format = "* ".strftime(format)." - ".ver."-".rel
 			execute "language time" tmptime
 			let release_info = "+ ".name."-".ver."-".rel
