@@ -40,7 +40,8 @@ def Test_zip_basic()
                execute("normal \<CR>"))
 
   ### Check ENTER on file
-  :1|:/^$//file/
+  :1
+  search('file.txt')
   exe ":normal \<cr>"
   assert_match('zipfile://.*/X.zip::Xzip/file.txt', @%)
   assert_equal('one', getline(1))
@@ -65,6 +66,10 @@ def Test_zip_basic()
   :1|:/^$//file/
   normal x
   assert_true(filereadable("Xzip/file.txt"))
+
+  ## Check not overwriting existing file
+  assert_match('<Xzip/file.txt> .* not overwriting!', execute("normal x"))
+
   delete("Xzip", "rf")
 
   ### Check extracting directory
@@ -131,5 +136,102 @@ def Test_zip_basic()
   assert_match('File not readable', execute("e Xnot_exists.zip"))
 
   bw
+enddef
 
+def Test_zip_glob_fname()
+  CheckNotMSWindows
+  # does not work on Windows, why?
+
+  ### copy sample zip file
+  if !filecopy("samples/testa.zip", "X.zip")
+    assert_report("Can't copy samples/testa.zip")
+    return
+  endif
+  defer delete("X.zip")
+  defer delete('zipglob', 'rf')
+
+  e X.zip
+
+  ### 1) Check extracting strange files
+  :1
+  var fname = 'a[a].txt'
+  search('\V' .. fname)
+  normal x
+  assert_true(filereadable('zipglob/' .. fname))
+  delete('zipglob', 'rf')
+
+  :1
+  fname = 'a*.txt'
+  search('\V' .. fname)
+  normal x
+  assert_true(filereadable('zipglob/' .. fname))
+  delete('zipglob', 'rf')
+
+  :1
+  fname = 'a?.txt'
+  search('\V' .. fname)
+  normal x
+  assert_true(filereadable('zipglob/' .. fname))
+  delete('zipglob', 'rf')
+
+  :1
+  fname = 'a\.txt'
+  search('\V' .. escape(fname, '\\'))
+  normal x
+  assert_true(filereadable('zipglob/' .. fname))
+  delete('zipglob', 'rf')
+
+  :1
+  fname = 'a\\.txt'
+  search('\V' .. escape(fname, '\\'))
+  normal x
+  assert_true(filereadable('zipglob/' .. fname))
+  delete('zipglob', 'rf')
+
+  ### 2) Check entering strange file names
+  :1
+  fname = 'a[a].txt'
+  search('\V' .. fname)
+  exe ":normal \<cr>"
+  assert_match('zipfile://.*/X.zip::zipglob/a\[a\].txt', @%)
+  assert_equal('a test file with []', getline(1))
+  bw
+
+  e X.zip
+  :1
+  fname = 'a*.txt'
+  search('\V' .. fname)
+  exe ":normal \<cr>"
+  assert_match('zipfile://.*/X.zip::zipglob/a\*.txt', @%)
+  assert_equal('a test file with a*', getline(1))
+  bw
+
+  e X.zip
+  :1
+  fname = 'a?.txt'
+  search('\V' .. fname)
+  exe ":normal \<cr>"
+  assert_match('zipfile://.*/X.zip::zipglob/a?.txt', @%)
+  assert_equal('a test file with a?', getline(1))
+  bw
+
+  e X.zip
+  :1
+  fname = 'a\.txt'
+  search('\V' .. escape(fname, '\\'))
+  exe ":normal \<cr>"
+  assert_match('zipfile://.*/X.zip::zipglob/a\\.txt', @%)
+  assert_equal('a test file with a\', getline(1))
+  bw
+
+  e X.zip
+  :1
+  fname = 'a\\.txt'
+  search('\V' .. escape(fname, '\\'))
+  exe ":normal \<cr>"
+  assert_match('zipfile://.*/X.zip::zipglob/a\\\\.txt', @%)
+  assert_equal('a test file with a double \', getline(1))
+  bw
+
+  bw
 enddef
