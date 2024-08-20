@@ -133,6 +133,10 @@ function Test_cmdmods()
       \ 'silent verbose aboveleft belowright botright tab topleft vertical',
       \ g:mods)
 
+  kee keep keepm keepma keepmar keepmarks keepa keepalt keepj keepjumps
+      \ keepp keeppatterns MyCmd
+  call assert_equal('keepalt keepjumps keepmarks keeppatterns', g:mods)
+
   let g:mods = ''
   command! -nargs=* MyQCmd let g:mods .= '<q-mods> '
 
