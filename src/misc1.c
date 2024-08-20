@@ -678,17 +678,6 @@ get_mode(char_u *buf)
 	buf[i++] = 't';
     }
 #endif
-    else if (VIsual_active)
-    {
-	if (VIsual_select)
-	    buf[i++] = VIsual_mode + 's' - 'v';
-	else
-	{
-	    buf[i++] = VIsual_mode;
-	    if (restart_VIsual_select)
-		buf[i++] = 's';
-	}
-    }
     else if (State == MODE_HITRETURN || State == MODE_ASKMORE
 						      || State == MODE_SETWSIZE
 		|| State == MODE_CONFIRM)
@@ -730,6 +719,17 @@ get_mode(char_u *buf)
 	    buf[i++] = 'e';
 	if ((State & MODE_CMDLINE) && cmdline_overstrike())
 	    buf[i++] = 'r';
+    }
+    else if (VIsual_active)
+    {
+	if (VIsual_select)
+	    buf[i++] = VIsual_mode + 's' - 'v';
+	else
+	{
+	    buf[i++] = VIsual_mode;
+	    if (restart_VIsual_select)
+		buf[i++] = 's';
+	}
     }
     else
     {
