@@ -526,15 +526,15 @@ function! s:parse_vim_complete_name(li)
 		new
 		exec 'read ' . file_name
 		norm! gg
-		exec '/^static\s\+keyvalue_T\s\+command_complete_tab\[\]\s*=\s*$/+1;/^};/-1yank'
+		exec '/^static keyvalue_T command_complete_tab\[] =$/+1;/^};$/-1yank'
 		%delete _
 
 		put
-		g!/KEYVALUE_ENTRY/d
+		g!/^\s*KEYVALUE_ENTRY(/d
 		g/"custom\(list\)\?"/d
 
 		for line in getline(1, line('$'))
-			let list = matchlist(line, '^\s*KEYVALUE_ENTRY(\w\+,\s*"\(\w\+\)"\s*)')
+			let list = matchlist(line, '^\s*KEYVALUE_ENTRY(EXPAND_\w\+,\s*"\(\w\+\)"')
 			let item.name = list[1]
 			call add(a:li, copy(item))
 		endfor
