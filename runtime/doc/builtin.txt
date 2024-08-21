@@ -216,7 +216,7 @@ garbagecollect([{atexit}])	none	free memory, breaking cyclic references
 get({list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get({dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 get({func}, {what})		any	get property of funcref/partial {func}
-getbufinfo([{buf}])		List	information about buffers
+getbufinfo({buf])		List	information about buffers
 getbufline({buf}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {buf}
 getbufoneline({buf}, {lnum})	String	line {lnum} of buffer {buf}
@@ -3640,8 +3640,8 @@ get({func}, {what})					*get()-func*
 		Return type: any, depending on {func} and {what}
 
 							*getbufinfo()*
-getbufinfo([{buf}])
-getbufinfo([{dict}])
+getbufinfo({buf})
+getbufinfo({dict})
 		Get information about buffers as a List of Dictionaries.
 
 		Without an argument information about all the buffers is
