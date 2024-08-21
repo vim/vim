@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2024 Jul 16
+*filetype.txt*	For Vim version 9.1.  Last change: 2024 Aug 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -753,9 +753,13 @@ Global mapping:
 			nmap <F1> <Plug>ManPreGetPage
 
 Local mappings:
+<Plug>ManBS
+<LocalLeader>h	Clear backspace <BS> characters from the buffer
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
-q		Same as the |:quit| command.
+
+The mappings can be disabled with: >
+	let g:no_man_maps = 1
 
 To use a vertical split instead of horizontal: >
 	let g:ft_man_open_mode = 'vert'
@@ -764,8 +768,8 @@ To use a new tab: >
 
 To enable |folding|, use this: >
 	let g:ft_man_folding_enable = 1
-If you do not like the default folding, use an |autocommand| to add your desired
-folding style instead.  For example: >
+If you do not like the default folding, use an |autocommand| to add your
+desired folding style instead.  For example: >
 	autocmd FileType man setlocal foldmethod=indent foldenable
 
 If you would like :Man {number} {name} to behave like man {number} {name} by
