@@ -2,7 +2,7 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: 2024 Jul 18
+" Last Change: 2024 Aug 21
 " Version: 2.1.1
 
 let s:keepcpo= &cpo
