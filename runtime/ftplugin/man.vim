@@ -36,8 +36,8 @@ if &filetype == "man"
       let b:undo_ftplugin = b:undo_ftplugin
 	    \ . '|silent! nunmap <buffer> <LocalLeader>h'
     endif
-    nnoremap <buffer> <Plug>ManBS :%s/.\b//g<CR>:setl nomod<CR>''
-
+    nnoremap <buffer> <Plug>ManBS :setl ma<bar>%s/.\b//ge<bar>setl noma<CR>
+ 
     nnoremap <buffer> <silent> <c-]> :call dist#man#PreGetPage(v:count)<CR>
     nnoremap <buffer> <silent> <c-t> :call dist#man#PopPage()<CR>
     " Disabled, since this hides the ability to record a macro or use the
