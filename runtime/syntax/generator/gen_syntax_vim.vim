@@ -2,7 +2,7 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: 2024 Aug 21
+" Last Change: 2024 Aug 23
 " Version: 2.1.1
 
 let s:keepcpo= &cpo
@@ -305,6 +305,7 @@ function! s:get_vim_command_type(cmd_name)
 		function
 		insert
 		let
+		loadkeymap
 		map
 		mapclear
 		match

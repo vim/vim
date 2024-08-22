@@ -1,6 +1,6 @@
 vim9script
 
-# Vim Keymap file for syntax testing
+# Vim :loadkeymap command
 
 scriptencoding utf-8
 
