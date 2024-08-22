@@ -6887,11 +6887,7 @@ fun! s:NetrwMarkFile(islocal,fname)
 
   let ykeep   = @@
   let curbufnr= bufnr("%")
-  if a:fname =~ '^\a'
-   let leader= '\<'
-  else
-   let leader= ''
-  endif
+  let leader= '\(^\|\s\)\zs'
   if a:fname =~ '\a$'
    let trailer = '\>[@=|\/\*]\=\ze\%(  \|\t\|$\)'
   else
