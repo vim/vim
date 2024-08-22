@@ -37,7 +37,9 @@ if &filetype == "man"
       let b:undo_ftplugin = b:undo_ftplugin
 	    \ . '|silent! nunmap <buffer> <LocalLeader>h'
     endif
-    nnoremap <buffer> <Plug>ManBS :setl ma<bar>%s/.\b//ge<bar>setl noma<CR>
+
+    nnoremap <buffer> <silent> <Plug>ManBS :setl ma<Bar>%s/.\b//g
+	\ <Bar>setl noma<CR>`'
 
     nnoremap <buffer> <silent> <c-]> :call dist#man#PreGetPage(v:count)<CR>
     nnoremap <buffer> <silent> <c-t> :call dist#man#PopPage()<CR>
