@@ -5,6 +5,7 @@
 " Autoload Split: Bram Moolenaar
 " Last Change:	2024 Jun 06 (disabled the q mapping, #8210)
 " 		2024 Jul 06 (use nnoremap, #15130)
+" 		2024 Aug 22 (fix the <Plug>ManBS mapping, #15547)
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -36,20 +37,16 @@ if &filetype == "man"
       let b:undo_ftplugin = b:undo_ftplugin
 	    \ . '|silent! nunmap <buffer> <LocalLeader>h'
     endif
-    nnoremap <buffer> <Plug>ManBS :%s/.\b//g<CR>:setl nomod<CR>''
+    nnoremap <buffer> <Plug>ManBS :setl ma<bar>%s/.\b//ge<bar>setl noma<CR>
 
     nnoremap <buffer> <silent> <c-]> :call dist#man#PreGetPage(v:count)<CR>
     nnoremap <buffer> <silent> <c-t> :call dist#man#PopPage()<CR>
-    " Disabled, since this hides the ability to record a macro or use the
-    " command line window
-    " nnoremap <buffer> <silent> q :q<CR>
 
     " Add undo commands for the maps
     let b:undo_ftplugin = b:undo_ftplugin
 	  \ . '|silent! nunmap <buffer> <Plug>ManBS'
 	  \ . '|silent! nunmap <buffer> <c-]>'
 	  \ . '|silent! nunmap <buffer> <c-t>'
-	  "\ . '|silent! nunmap <buffer> q'
   endif
 
   if exists('g:ft_man_folding_enable') && (g:ft_man_folding_enable == 1)
