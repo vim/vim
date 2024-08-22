@@ -7092,21 +7092,16 @@ printf %s "checking --with-python3-stable-abi argument... " >&6; }
 if test ${with_python3_stable_abi+y}
 then :
   withval=$with_python3_stable_abi;
-	 if test "X$withval" = "Xyes"; then
-	   vi_cv_var_python3_stable_abi=$python3_stable_abi_default
-	 else
-	   vi_cv_var_python3_stable_abi="$withval"
-	 fi
-	 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_var_python3_stable_abi" >&5
+     if test "X$withval" = "Xyes"; then
+       vi_cv_var_python3_stable_abi=$python3_stable_abi_default
+     else
+       vi_cv_var_python3_stable_abi="$withval"
+     fi
+     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_var_python3_stable_abi" >&5
 printf "%s\n" "$vi_cv_var_python3_stable_abi" >&6; }
-else $as_nop
-
-	 vi_cv_var_python3_stable_abi=$python3_stable_abi_default
-	 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no. defaults to $python3_stable_abi_default." >&5
-printf "%s\n" "no. defaults to $python3_stable_abi_default." >&6; }
 fi
 
-      if test "X$vi_cv_var_python3_stable_abi" != "Xno"; then
+      if test "X$vi_cv_var_python3_stable_abi" != "X"; then
         if test ${vi_cv_var_python3_stable_abi_hex+y}
 then :
   printf %s "(cached) " >&6
