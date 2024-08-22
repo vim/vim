@@ -7500,6 +7500,9 @@ fun! s:NetrwMarkFileExe(islocal,enbloc)
        NetrwKeepj call netrw#ErrorMsg(s:ERROR,"command<".xcmd."> failed, aborting",54)
        break
       else
+       if ret !=# ''
+        echo "\n"
+       endif
        echo ret
       endif
      endfor
