@@ -464,6 +464,7 @@ runtime/syntax/hitest.vim		@lacygoill
 runtime/syntax/hog.vim			@wtfbbqhax
 runtime/syntax/hollywood.vim		@sodero
 runtime/syntax/html.vim			@dkearns
+runtime/syntax/htmlangular.vim @dlvandenberg
 runtime/syntax/i3config.vim		@hiqua
 runtime/syntax/icon.vim			@dkearns
 runtime/syntax/indent.vim		@dkearns
