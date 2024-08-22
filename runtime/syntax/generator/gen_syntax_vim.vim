@@ -2,7 +2,7 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: 2024 Jul 18
+" Last Change: 2024 Aug 21
 " Version: 2.1.1
 
 let s:keepcpo= &cpo
@@ -526,15 +526,15 @@ function! s:parse_vim_complete_name(li)
 		new
 		exec 'read ' . file_name
 		norm! gg
-		exec '/^}\s*command_complete\[\]\s*=\s*$/+1;/^};/-1yank'
+		exec '/^static keyvalue_T command_complete_tab\[] =$/+1;/^};$/-1yank'
 		%delete _
 
 		put
-		g!/^\s*{.*"\w\+"\s*}\s*,.*$/d
+		g!/^\s*KEYVALUE_ENTRY(/d
 		g/"custom\(list\)\?"/d
 
 		for line in getline(1, line('$'))
-			let list = matchlist(line, '^\s*{.*"\(\w\+\)"\s*}\s*,')
+			let list = matchlist(line, '^\s*KEYVALUE_ENTRY(EXPAND_\w\+,\s*"\(\w\+\)"')
 			let item.name = list[1]
 			call add(a:li, copy(item))
 		endfor
