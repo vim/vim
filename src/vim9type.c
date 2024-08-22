@@ -2138,12 +2138,13 @@ check_type_is_value(type_T *type)
     switch (type->tt_type)
     {
 	case VAR_CLASS:
-	    if (IS_ENUM(type->tt_class))
+	    if (type->tt_class != NULL && IS_ENUM(type->tt_class))
 		semsg(_(e_using_enum_as_value_str),
 			type->tt_class->class_name);
 	    else
 		semsg(_(e_using_class_as_value_str),
-			type->tt_class->class_name);
+			type->tt_class == NULL ? (char_u *)""
+			: type->tt_class->class_name);
 	    return FAIL;
 
 	case VAR_TYPEALIAS:

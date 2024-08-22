@@ -2036,6 +2036,14 @@ def Test_no_space_after_command()
   v9.CheckDefExecAndScriptFailure(lines, 'E486:', 1)
 enddef
 
+def Test_lambda_crash()
+  # This used to crash Vim
+  var lines =<< trim END
+    vim9 () => super      => {
+  END
+  v9.CheckScriptFailureList(lines, ["E1356:", "E1405:"])
+enddef
+
 " Test for the 'previewpopup' option
 def Test_previewpopup()
   set previewpopup=height:10,width:60
@@ -2044,6 +2052,7 @@ def Test_previewpopup()
   assert_notequal(id, 0)
   assert_match('Xppfile', popup_getoptions(id).title)
   popup_clear()
+  bw Xppfile
   set previewpopup&
 enddef
 
