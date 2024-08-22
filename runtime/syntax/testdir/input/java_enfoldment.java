@@ -1,5 +1,5 @@
 // VIM_TEST_SETUP setlocal foldenable foldcolumn=2 foldmethod=syntax
-
+// VIM_TEST_SETUP let g:java_foldtext_show_first_or_second_line = 1
 
 	@SuppressWarnings({
 	"""
