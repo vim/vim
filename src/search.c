@@ -1548,6 +1548,7 @@ do_search(
 			{
 			    vim_free(msgbuf);
 			    msgbuf = r;
+			    msgbuflen = STRLEN(msgbuf);
 			    // move reversed text to beginning of buffer
 			    while (*r != NUL && *r == ' ')
 				r++;
