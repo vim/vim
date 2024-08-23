@@ -68,8 +68,8 @@ menutrans Startup\ &Settings		&Inicialização
 menutrans &Global\ Settings		Opções\ &Globais
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Ativar/Desativar\ &Realce\ de\ Padrões<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Ativar/Desativar\ &Ignorar\ maiúsculas<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Ativar/Desativar\ &coincidências<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Ativar/Desativar\ &Ignorar\ maiúsculas<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		Ativar/Desativar\ &coincidências<Tab>:set\ sm!
 
 menutrans &Context\ lines		Linhas\ de\ C&ontexto
 
@@ -81,7 +81,7 @@ menutrans Block\ and\ Insert		Bloco\ e\ inserção
 menutrans Always			Sempre
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im! Ativar/Desativar\ Modo\ de\ In&serção<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp! Ativar/Desativar\ Co&mpatibilidade\ com\ Vi<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp! Ativar/Desativar\ Co&mpatibilidade\ com\ Vi<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		Camin&ho\ de\ Busca\.\.\.
 menutrans Ta&g\ Files\.\.\.		Arquivos\ de\ Tags\.\.\.
 
@@ -139,7 +139,7 @@ menutrans &Previous\ Error<Tab>:cp	&Erro\ anterior<Tab>:cp
 menutrans &Older\ List<Tab>:cold	Listar\ erros\ &antigos<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	Listar\ erros\ &novos<Tab>:cnew
 menutrans Error\ &Window		&Janela\ de\ erros
-menutrans Se&T\ Compiler		Def&inir\ Compilador
+menutrans Se&t\ Compiler		Def&inir\ Compilador
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Converter\ para\ hexadecimal<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Conver&ter\ de\ volta<Tab>:%!xxd\ -r
 
