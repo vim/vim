@@ -633,6 +633,8 @@ pum_redraw(void)
 	    attr = highlight_attr[hlf];
 	    if (pum_array[idx].pum_user_hlattr > 0)
 		attr = hl_combine_attr(attr, pum_array[idx].pum_user_hlattr);
+	    if (round == 1 && pum_array[idx].pum_user_kind_hlattr > 0)
+		attr = hl_combine_attr(attr, pum_array[idx].pum_user_kind_hlattr);
 	    width = 0;
 	    s = NULL;
 	    switch (round)
