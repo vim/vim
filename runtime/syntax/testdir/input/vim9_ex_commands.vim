@@ -293,7 +293,7 @@ vim9script
 :lnfile
 :lNfile
 :lnoremap
-:loadkeymap
+# :loadkeymap # disabled - runs until EOF
 :loadview
 :lockmarks
 :lockvar
@@ -880,7 +880,7 @@ Foo() | lNext
 Foo() | lnfile
 Foo() | lNfile
 Foo() | lnoremap
-Foo() | loadkeymap
+# Foo() | loadkeymap # disabled - runs until EOF
 Foo() | loadview
 Foo() | lockmarks
 Foo() | lockvar

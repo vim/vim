@@ -289,7 +289,7 @@
 :lnewer
 :lnfile
 :lnoremap
-:loadkeymap
+" :loadkeymap " disabled - runs until EOF
 :loadview
 :lockmarks
 :lockvar
@@ -877,7 +877,7 @@ call Foo() | lnext
 call Foo() | lnewer
 call Foo() | lnfile
 call Foo() | lnoremap
-call Foo() | loadkeymap
+" call Foo() | loadkeymap " disabled - runs until EOF
 call Foo() | loadview
 call Foo() | lockmarks
 call Foo() | lockvar
