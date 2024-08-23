@@ -5,7 +5,7 @@
 " Autoload Split: Bram Moolenaar
 " Last Change:	2024 Jun 06 (disabled the q mapping, #8210)
 " 		2024 Jul 06 (use nnoremap, #15130)
-" 		2024 Aug 22 (fix the <Plug>ManBS mapping, #15547)
+" 		2024 Aug 23 (improve the <Plug>ManBS mapping, #15547, #15556)
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -37,7 +37,9 @@ if &filetype == "man"
       let b:undo_ftplugin = b:undo_ftplugin
 	    \ . '|silent! nunmap <buffer> <LocalLeader>h'
     endif
-    nnoremap <buffer> <Plug>ManBS :setl ma<bar>%s/.\b//ge<bar>setl noma<CR>
+
+    nnoremap <buffer> <silent> <Plug>ManBS :setl ma<Bar>%s/.\b//g
+	\ <Bar>setl noma<CR>`'
 
     nnoremap <buffer> <silent> <c-]> :call dist#man#PreGetPage(v:count)<CR>
     nnoremap <buffer> <silent> <c-t> :call dist#man#PopPage()<CR>
