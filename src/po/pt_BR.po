@@ -226,20 +226,20 @@ msgstr "E898: socket() em channel_open()"
 
 # TODO: Capitalise first word of message?
 msgid "E903: Received command with non-string argument"
-msgstr "E903: comando recebido com argumento não-string"
+msgstr "E903: Comando recebido com argumento não-string"
 
 # TODO: Capitalise first word of message?
 msgid "E904: Last argument for expr/call must be a number"
-msgstr "E904: último argumento para expr/call deve ser numérico"
+msgstr "E904: Último argumento para expr/call deve ser numérico"
 
 # TODO: Capitalise first word of message?
 msgid "E904: Third argument for call must be a list"
-msgstr "E904: terceiro argumento para call deve ser uma lista"
+msgstr "E904: Terceiro argumento para call deve ser uma lista"
 
 #, c-format
 # TODO: Capitalise first word of message?
 msgid "E905: Received unknown command: %s"
-msgstr "E905: comando desconhecido recebido: %s"
+msgstr "E905: Comando desconhecido recebido: %s"
 
 #, c-format
 # TODO: Capitalise first word of message?
@@ -273,7 +273,7 @@ msgstr "E915: buffer in_io requer definição de in_buf ou in_name"
 #, c-format
 # TODO: Capitalise first word of message?
 msgid "E918: Buffer must be loaded: %s"
-msgstr "E918: buffer precisa ser carregado: %s"
+msgstr "E918: Buffer precisa ser carregado: %s"
 
 msgid "E821: File is encrypted with unknown method"
 msgstr "E821: Arquivo criptografado com método desconhecido"
@@ -536,7 +536,7 @@ msgstr "E940: Impossível travar ou destravar variável %s"
 
 # TODO: Capitalise first word of message?
 msgid "E743: Variable nested too deep for (un)lock"
-msgstr "E743: variável aninhada demais para (des)bloquear"
+msgstr "E743: Variável aninhada demais para (des)bloquear"
 
 msgid "E109: Missing ':' after '?'"
 msgstr "E109: ':' faltando depois de '?'"
@@ -590,7 +590,7 @@ msgstr ""
 
 # TODO: Capitalise first word of message?
 msgid "E724: Variable nested too deep for displaying"
-msgstr "E724: variável aninhada demais para ser exibida"
+msgstr "E724: Variável aninhada demais para ser exibida"
 
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Float usado como Número"
@@ -669,7 +669,7 @@ msgstr "E742: Não é possível mudar valor de %s"
 
 # TODO: Capitalise first word of message?
 msgid "E698: Variable nested too deep for making a copy"
-msgstr "E698: variável aninhada demais para fazer uma cópia"
+msgstr "E698: Variável aninhada demais para fazer uma cópia"
 
 msgid ""
 "\n"
@@ -739,7 +739,7 @@ msgstr "E786: Intervalos não são permitidos"
 
 # TODO: Capitalise first word of message?
 msgid "E916: Not a valid job"
-msgstr "E916: não é um trabalho válido"
+msgstr "E916: Não é um trabalho válido"
 
 msgid "E701: Invalid type for len()"
 msgstr "E701: Tipo inválido para len()"
@@ -808,7 +808,7 @@ msgstr "(Inválido)"
 #, c-format
 # TODO: Capitalise first word of message?
 msgid "E935: Invalid submatch number: %d"
-msgstr "E935: número inválido para subpadrão: %d"
+msgstr "E935: Número inválido para subpadrão: %d"
 
 msgid "E677: Error writing temp file"
 msgstr "E677: Erro ao gravar o arquivo temporário"
@@ -1107,7 +1107,7 @@ msgstr "E157: ID de sinal inválido: %ld"
 
 #, c-format
 msgid "E885: Not possible to change sign %s"
-msgstr "E885: Não é possível mudar o sinal %s"
+msgstr "E885: Não é possível alterar o sinal %s"
 
 msgid " (NOT FOUND)"
 msgstr " (NÃO ENCONTRADO)"
@@ -1184,7 +1184,7 @@ msgstr "E165: Impossível ir além do último arquivo"
 #, c-format
 # TODO: Capitalise first word of message?
 msgid "E666: Compiler not supported: %s"
-msgstr "E666: compilador não suportado: %s"
+msgstr "E666: Compilador não suportado: %s"
 
 #, c-format
 msgid "Searching for \"%s\" in \"%s\""
@@ -1408,6 +1408,9 @@ msgstr "E784: Não é possível fechar a última aba"
 
 msgid "Already only one tab page"
 msgstr "Já há apenas uma aba"
+
+msgid "Edit File in new tab page"
+msgstr "Editar arquivo na nova aba"
 
 msgid "Edit File in new window"
 msgstr "Editar arquivo em nova janela"
@@ -1653,7 +1656,7 @@ msgstr ""
 "# Histórico de %s (mais recente primeiro):\n"
 
 msgid "Command Line"
-msgstr "linha de comando"
+msgstr "Linha de comando"
 
 msgid "Search String"
 msgstr "expressões de busca"
@@ -1725,7 +1728,7 @@ msgid "[socket]"
 msgstr "[socket]"
 
 msgid "[character special]"
-msgstr "[dispositivo de caractere]"
+msgstr "[caractere especial]"
 
 msgid "[CR missing]"
 msgstr "[CR faltando]"
@@ -1838,7 +1841,7 @@ msgstr " ERRO DE CONVERSÃO"
 
 #, c-format
 msgid " in line %ld;"
-msgstr "na linha %ld;"
+msgstr " na linha %ld;"
 
 msgid "[Device]"
 msgstr "[Dispositivo]"
