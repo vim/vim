@@ -13,6 +13,9 @@ line1
 line2
 END
 
+
+" trim
+
 let foo =<< trim END
   line1
   line2
@@ -113,4 +116,81 @@ END
   let foo =<< trim END
     END 
   END
+
+
+" end marker must be vertically aligned with :let (if preceded by whitespace)
+
+" assert_equal(foo, ["END"])
+let foo =<< trim END
+  END
+END
+
+  " assert_equal(foo, ["END"])
+  let foo =<< trim END
+    END
+  END
+
+" assert_equal(foo, ["END "])
+let foo =<< trim END
+END 
+END
+
+  " assert_equal(foo, ["END"])
+  let foo =<< trim END
+    END
+  END
+
+  " assert_equal(foo, ["END "])
+  let foo =<< trim END
+    END 
+  END
+
+  " assert_equal(foo, ["END"])
+  let foo =<< trim END
+     END
+  END
+
+  " assert_equal(foo, ["END "])
+  let foo =<< trim END
+     END 
+  END
+
+  " assert_equal(foo, ["END "])
+  let foo =<< trim END
+END 
+END
+
+  " assert_equal(foo, ["END"])
+  let foo =<< trim END
+ END
+END
+
+  " assert_equal(foo, ["END"])
+  let foo =<< trim END
+   END
+END
+
+
+" end markers
+
+let foo =<< !@#$%^&*()_+
+line1
+line2
+!@#$%^&*()_+
+
+let foo =<< 0!@#$%^&*()_+
+line1
+line2
+0!@#$%^&*()_+
+
+let foo =<< A!@#$%^&*()_+
+line1
+line2
+A!@#$%^&*()_+
+
+" error - leading lowercase character
+let foo =<< a!@#$%^&*()_+
+line1
+line2
+a!@#$%^&*()_+
 
