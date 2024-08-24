@@ -7099,6 +7099,9 @@ then :
      fi
      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_var_python3_stable_abi" >&5
 printf "%s\n" "$vi_cv_var_python3_stable_abi" >&6; }
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 fi
 
       if test "X$vi_cv_var_python3_stable_abi" != "X"; then

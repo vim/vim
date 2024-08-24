@@ -1549,7 +1549,8 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
      else
        vi_cv_var_python3_stable_abi="$withval"
      fi
-     AC_MSG_RESULT($vi_cv_var_python3_stable_abi)])
+     AC_MSG_RESULT($vi_cv_var_python3_stable_abi)],
+     AC_MSG_RESULT(no))
       if test "X$vi_cv_var_python3_stable_abi" != "X"; then
         AC_CACHE_VAL(vi_cv_var_python3_stable_abi_hex,
         [
