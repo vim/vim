@@ -1,6 +1,7 @@
 " Menu Translations: Português do Brasil
 " Maintainer: José de Paula <jose@infoviaweb.com>
-" Last Change: 2020 Apr 23
+" Contributor:		JNylson <nylsinho_ba@hotmail.com>
+" Last Change:		2024 Ago 23
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -35,6 +36,7 @@ menutrans &About		&Sobre
 menutrans &File				&Arquivo
 menutrans &Open\.\.\.<Tab>:e		A&brir\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Ab&rir\ em\ outra\ janela\.\.\.<Tab>:sp
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	A&brir\ em\ outra\ aba\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Novo<Tab>:enew
 menutrans &Close<Tab>:close		&Fechar<Tab>:close
 menutrans &Save<Tab>:w			&Salvar<Tab>:w
@@ -48,13 +50,14 @@ menutrans E&xit<Tab>:qa			Sai&r<Tab>:qa
 " Edit menu
 menutrans &Edit				&Editar
 menutrans &Undo<Tab>u			&Desfazer<Tab>u
-menutrans &Redo<Tab>^R			&Refazer<Tab>u
+menutrans &Redo<Tab>^R			&Refazer<Tab>^R
 menutrans Rep&eat<Tab>\.		Repe&tir<Tab>\.
 menutrans Cu&t<Tab>"+x			Re&cortar<Tab>"+x
 menutrans &Copy<Tab>"+y			Cop&iar<Tab>"+y
 menutrans &Paste<Tab>"+gP		C&olar<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		Colocar\ &antes<Tab>[p
 menutrans Put\ &After<Tab>]p		Colocar\ &depois<Tab>]p
+menutrans &Delete<Tab>x			Apa&gar<Tab>x
 menutrans &Select\ all<Tab>ggVG		&Selecionar\ tudo<Tab>ggVG
 menutrans &Find\.\.\.			&Procurar\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	Procurar\ e\ substit&uir\.\.\.
@@ -98,12 +101,13 @@ menutrans F&ile\ Settings		Opções\ do\ &Arquivo
 
 " Boolean options
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Ativar/Desativar\ &numeração\ de\ linhas<Tab>:set\ nu!
-menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Ativar/Desativar\ modo\ &list<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		Ativar/Desativar\ &quebra\ de\ linhas<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Ativar/Desativar\ quebra\ na\ &palavra<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!		Ativar/Desativar\ expansão\ de\ tabs<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Ativar/Desativar\ &auto-indentação<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Ativar/Desativar\ indentação\ estilo\ &C<Tab>:set\ cin!
+menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Ativar/Desativar\ numeração\ relati&va\ de\ linha<Tab>:set\ rnu!
+menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Ativar/Desativar\ modo\ &lista<Tab>:set\ list!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Ativar/Desativar\ &quebra\ de\ linhas<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ Word<Tab>:set\ lbr!	Ativar/Desativar\ quebra\ na\ &palavra<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!		Ativar/Desativar\ expansão\ de\ tabs<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Ativar/Desativar\ &auto-indentação<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Ativar/Desativar\ indentação\ estilo\ &C<Tab>:set\ cin!
 
 " other options
 menutrans &Shiftwidth			Largura\ da\ &indentação
@@ -115,13 +119,15 @@ let g:menutrans_textwidth_dialog = "Digite a nova largura do texto (0 para desat
 
 menutrans &File\ Format\.\.\.		&Formato\ do\ arquivo\.\.\.
 let g:menutrans_fileformat_dialog = "Selecione o formato para gravar o arquivo"
+let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Cancelar "
 
 menutrans C&olor\ Scheme		Esquema\ de\ c&ores
 menutrans default	padrão
-
+menutrans Show\ C&olor\ Schemes\ in\ Menu	Mostrar\ &esquema\ de\ cores\ no\ menu
 menutrans Select\ Fo&nt\.\.\.		Selecionar\ fo&nte\.\.\.
 
 menutrans &Keymap	&Mapa\ de\ teclado
+menutrans Show\ &Keymaps\ in\ Menu		Mostrar\ &mapa\ de\ teclado\ no\ menu
 menutrans None		Nenhum
 
 " Programming menu
@@ -145,7 +151,7 @@ menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Conver&ter\ de\ volta<Tab>:%!xxd\ -r
 
 " Tools.Spelling menu
 menutrans &Spell\ Check\ On		&Ativar\ Correção\ Ortográfica
-menutrans &Spell\ Check\ Off		&Desativar\ Correção\ Ortográfica
+menutrans Spell\ Check\ &Off		&Desativar\ Correção\ Ortográfica
 menutrans To\ &Next\ error<Tab>]s	&Próximo\ Erro<Tab>]s
 menutrans To\ &Previous\ Error<Tab>[s	Erro\ A&nterior<Tab>[s
 menutrans Suggest\ &Corrections<Tab>z=	&Sugerir\ Correções<Tab>z=
@@ -186,6 +192,9 @@ menutrans &Update<Tab>:cwin	&Atualizar<Tab>:cwin
 menutrans &Open<Tab>:copen	A&brir<Tab>:copen
 menutrans &Close<Tab>:cclose	&Fechar<Tab>:cclose
 
+" Setup the Tools.Compiler submenu
+menutrans Se&t\ Compiler		Def&inir\ compilador
+menutrans Show\ Compiler\ Se&ttings\ in\ Menu	Mos&trar\ configurações\ do\ compilador\ no\ menu
 " Names for buffer menu.
 menutrans &Buffers		&Buffers
 menutrans &Refresh\ menu	A&tualizar\ menu
@@ -225,7 +234,10 @@ menutrans &Paste		Co&lar
 menutrans &Delete		&Apagar
 menutrans Select\ Blockwise	Seleção\ de\ bloco
 menutrans Select\ &Word		Selecionar\ &Palavra
+menutrans Select\ &Sentence	Selecionar\ &frase
+menutrans Select\ Pa&ragraph	Selecionar\ pa&rágrafo
 menutrans Select\ &Line		Selecionar\ L&inha
+menutrans Select\ &Block	Selecionar\ &bloco
 menutrans Select\ &All		Selecionar\ T&udo
 
 " The GUI toolbar
@@ -279,6 +291,7 @@ menutrans &Off				&Desativar
 menutrans &Manual			&Manual
 menutrans A&utomatic			A&utomática
 menutrans on/off\ for\ &This\ file	Ativar/Desativar\ neste\ &arquivo
+menutrans &Show\ File\ Types\ in\ Menu		Mos&trar\ tipos\ de\ arquivos\ no\ menu
 menutrans Co&lor\ test			T&este\ de\ cores
 menutrans &Highlight\ test		Teste\ de\ &realce
 menutrans &Convert\ to\ HTML		&Converter\ para\ HTML
