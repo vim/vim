@@ -59,6 +59,13 @@ func s:Highlight_Matching_Pair()
   let c_col = col('.')
   let before = 0
 
+  " On long lines matching may become slow, so don't do the matching if the
+  " cursor column is larger than 'synmaxcol'.
+  let synmaxcol = has('syntax') ? &synmaxcol : 3000
+  if synmaxcol > 0 && c_col > synmaxcol
+    return
+  endif
+
   let text = getline(c_lnum)
   let matches = matchlist(text, '\(.\)\=\%'.c_col.'c\(.\=\)')
   if empty(matches)
