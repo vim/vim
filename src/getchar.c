@@ -446,9 +446,18 @@ flush_buffers(flush_buffers_T flush_typeahead)
 
     if (flush_typeahead == FLUSH_MINIMAL)
     {
-	// remove mapped characters at the start only
-	typebuf.tb_off += typebuf.tb_maplen;
-	typebuf.tb_len -= typebuf.tb_maplen;
+	// remove mapped characters at the start only,
+	// but only when enough space left in typebuf
+	if (typebuf.tb_off + typebuf.tb_maplen >= typebuf.tb_buflen)
+	{
+	    typebuf.tb_off = MAXMAPLEN;
+	    typebuf.tb_len = 0;
+	}
+	else
+	{
+	    typebuf.tb_off += typebuf.tb_maplen;
+	    typebuf.tb_len -= typebuf.tb_maplen;
+	}
 #if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
 	if (typebuf.tb_len == 0)
 	    typebuf_was_filled = FALSE;
