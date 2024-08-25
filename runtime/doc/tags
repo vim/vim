@@ -7,6 +7,7 @@ $HOME	options.txt	/*$HOME*
 $HOME-use	version5.txt	/*$HOME-use*
 $HOME-windows	options.txt	/*$HOME-windows*
 $MYGVIMRC	gui.txt	/*$MYGVIMRC*
+$MYVIMDIR	starting.txt	/*$MYVIMDIR*
 $MYVIMRC	starting.txt	/*$MYVIMRC*
 $VIM	starting.txt	/*$VIM*
 $VIM-use	version5.txt	/*$VIM-use*

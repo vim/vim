@@ -5,9 +5,10 @@ source shared.vim
 
 func s:get_rcs()
   let rcs = {
-        \ 'file1': { 'path': '~/.vimrc' },
-        \ 'file2': { 'path': '~/.vim/vimrc' },
-        \ 'xdg': { 'path': exists('$XDG_CONFIG_HOME') ? '$XDG_CONFIG_HOME' : "~/.config" },
+        \ 'file1': { 'path': '~/.vimrc', 'dir': expand('~/.vim/') },
+        \ 'file2': { 'path': '~/.vim/vimrc', 'dir': expand('~/.vim/') },
+        \ 'xdg': { 'path': exists('$XDG_CONFIG_HOME') ? '$XDG_CONFIG_HOME' : "~/.config",
+                  \ 'dir': exists('$XDG_CONFIG_HOME') ? expand("$XDG_CONFIG_HOME/vim") : '~/.config/vim/'},
         \}
   for v in values(rcs)
     let v.exists = filereadable(expand(v.path))
@@ -20,18 +21,24 @@ func Test_xdg_rc_detection()
   let rc = s:get_rcs()
   let before =<< trim CODE
     call writefile([expand('$MYVIMRC')], "XMY_VIMRC")
+    call writefile([expand('$MYVIMRCDIR')], "XMY_VIMDIR")
     quit!
   CODE
   call RunVim(before, [], "")
   let my_rc = readfile("XMY_VIMRC")
+  let my_rcdir = readfile("XMY_VIMDIR")
   if rc.file1.exists
     call assert_equal(rc.file1.path, my_rc)
+    call assert_equal(rc.file1.dir, my_rcdir)
   elseif !rc.file1.exists && rc.file2.exists
     call assert_equal(rc.file2.path, my_rc)
+    call assert_equal(rc.file2.dir, my_rcdir)
   elseif !rc.file1.exists && !rc.file2.exists && rc.xdg.exists
     call assert_equal(rc.xdg.path, my_rc)
+    call assert_equal(rc.xdg.dir, my_rcdir)
   endif
   call delete("XMY_VIMRC")
+  call delete("XMY_VIMDIR")
 endfunc
 
 func Test_xdg_runtime_files()
@@ -78,6 +85,7 @@ func Test_xdg_runtime_files()
   " Test for ~/.vimrc
   let lines =<< trim END
     call assert_match('XfakeHOME/\.vimrc', $MYVIMRC)
+    call assert_match('XfakeHOME/.vim/', $MYVIMDIR)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_one: 'one', rc: '.vimrc'}, g:)
     call assert_match('XfakeHOME/\.vim/view', &viewdir)
@@ -93,6 +101,7 @@ func Test_xdg_runtime_files()
   " Test for ~/.vim/vimrc
   let lines =<< trim END
     call assert_match('XfakeHOME/\.vim/vimrc', $MYVIMRC)
+    call assert_match('XfakeHOME/\.vim/', $MYVIMDIR)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_two: 'two', rc: '.vim/vimrc'}, g:)
     call assert_match('XfakeHOME/\.vim/view', &viewdir)
@@ -112,6 +121,7 @@ func Test_xdg_runtime_files()
   let lines =<< trim END
     let msg = $'HOME="{$HOME}", ~="{expand("~")}"'
     call assert_match('XfakeHOME/\.config/vim/vimrc', $MYVIMRC, msg)
+    call assert_match('XfakeHOME/\.config/vim/', $MYVIMDIR, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_three: 'three', rc: '.config/vim/vimrc'}, g:)
     call assert_match('XfakeHOME/\.config/vim/view', &viewdir)
@@ -129,6 +139,7 @@ func Test_xdg_runtime_files()
   let lines =<< trim END
     let msg = $'HOME="{$HOME}", XDG_CONFIG_HOME="{$XDG_CONFIG_HOME}"'
     call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC, msg)
+    call assert_match('XfakeHOME/xdg/vim/', $MYVIMDIR, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/vimrc'}, g:)
     call assert_match('XfakeHOME/xdg/vim/view, &viewdir)
@@ -225,6 +236,7 @@ func Test_zzz_xdg_runtime_files()
     call test_ignore_error('E285')
     gui -f
     call assert_match('Xhome/\.gvimrc', $MYGVIMRC)
+    call assert_match('Xhome/\.vim/', $MYVIMDIR)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_one: 'one', rc: '.gvimrc'}, g:)
     call writefile(v:errors, 'Xresult')
@@ -242,6 +254,7 @@ func Test_zzz_xdg_runtime_files()
     call test_ignore_error('E285')
     gui -f
     call assert_match('Xhome/\.vim/gvimrc', $MYGVIMRC)
+    call assert_match('Xhome/\.vim/', $MYVIMDIR)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_two: 'two', rc: '.vim/gvimrc'}, g:)
     call writefile(v:errors, 'Xresult')
@@ -260,6 +273,7 @@ func Test_zzz_xdg_runtime_files()
     gui -f
     let msg = $'HOME="{$HOME}", ~="{expand("~")}"'
     call assert_match('Xhome/\.config/vim/gvimrc', $MYGVIMRC, msg)
+    call assert_match('Xhome/\.config/vim/', $MYVIMDIR, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_three: 'three', rc: '.config/vim/gvimrc'}, g:)
     call writefile(v:errors, 'Xresult')
@@ -279,6 +293,7 @@ func Test_zzz_xdg_runtime_files()
     gui -f
     let msg = $'HOME="{$HOME}", XDG_CONFIG_HOME="{$XDG_CONFIG_HOME}"'
     call assert_match('Xhome/xdg/vim/gvimrc', $MYGVIMRC, msg)
+    call assert_match('Xhome/xdg/vim/', $MYVIMDIR, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/gvimrc'}, g:)
     call writefile(v:errors, 'Xresult')
