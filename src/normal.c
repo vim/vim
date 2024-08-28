@@ -6227,6 +6227,7 @@ nv_g_cmd(cmdarg_T *cap)
 #ifdef FEAT_BYTEOFF
     // "go": goto byte count from start of buffer
     case 'o':
+	oap->inclusive = FALSE;
 	goto_byte(cap->count0);
 	break;
 #endif
