@@ -5714,8 +5714,7 @@ file_pat_to_reg_pat(
 				)
 			    *allow_dirs = TRUE;
 			reg_pat[i++] = '\\';
-			if (enc_dbcs != 0 && (*mb_ptr2len)(p) > 1)
-			    reg_pat[i++] = *p++;
+			reg_pat[i++] = *p;
 		    }
 		break;
 #ifdef BACKSLASH_IN_FILENAME
