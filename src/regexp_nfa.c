@@ -6525,7 +6525,8 @@ nfa_regmatch(
 			else
 			    result = FAIL;
 
-			if (t->state->out->out1->c == NFA_END_COMPOSING)
+			if (t->state->out->out1 != NULL
+				&& t->state->out->out1->c == NFA_END_COMPOSING)
 			{
 			    end = t->state->out->out1;
 			    ADD_STATE_IF_MATCH(end);
