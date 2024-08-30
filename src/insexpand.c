@@ -2887,7 +2887,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict, "kind", FALSE);
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
 
-	user_hlname = dict_get_string(tv->vval.v_dict, "hl_group", FALSE);
+	user_hlname = dict_get_string(tv->vval.v_dict, "hlgroup", FALSE);
 	user_hlattr = get_user_highlight_attr(user_hlname);
 
 	user_kind_hlname = dict_get_string(tv->vval.v_dict, "kind_hlgroup", FALSE);

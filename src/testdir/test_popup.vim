@@ -1513,9 +1513,9 @@ func Test_pum_user_hl_group()
       endif
       return {
             \ 'words': [
-            \ { 'word': 'aword1', 'menu': 'extra text 1', 'kind': 'W', 'hl_group': 'StrikeFake' },
+            \ { 'word': 'aword1', 'menu': 'extra text 1', 'kind': 'W', 'hlgroup': 'StrikeFake' },
             \ { 'word': 'aword2', 'menu': 'extra text 2', 'kind': 'W', },
-            \ { 'word': '你好', 'menu': 'extra text 3', 'kind': 'W', 'hl_group': 'StrikeFake' },
+            \ { 'word': '你好', 'menu': 'extra text 3', 'kind': 'W', 'hlgroup': 'StrikeFake' },
             \]}
     endfunc
     set completeopt=menu
@@ -1557,7 +1557,7 @@ func Test_pum_user_kind_hlgroup()
       endif
       return {
             \ 'words': [
-            \ { 'word': 'aword1', 'menu': 'extra text 1', 'kind': 'variable', 'kind_hlgroup': 'KindVar', 'hl_group': 'StrikeFake' },
+            \ { 'word': 'aword1', 'menu': 'extra text 1', 'kind': 'variable', 'kind_hlgroup': 'KindVar', 'hlgroup': 'StrikeFake' },
             \ { 'word': 'aword2', 'menu': 'extra text 2', 'kind': 'function', 'kind_hlgroup': 'KindFunc' },
             \ { 'word': '你好', 'menu': 'extra text 3', 'kind': 'class', 'kind_hlgroup': 'KindClass'  },
             \]}
