@@ -549,12 +549,12 @@ edit(
 	}
 
 	// May need to adjust w_topline to show the cursor.
-	if (!char_avail())
+	if (count <= 1)
 	    update_topline();
 
 	did_backspace = FALSE;
 
-	if (!char_avail())
+	if (count <= 1)
 	    validate_cursor();		// may set must_redraw
 
 	/*
