@@ -2939,6 +2939,7 @@ shadow:	runtime pixmaps
 				 ../../testdir/*.py \
 				 ../../testdir/python* \
 				 ../../testdir/pyxfile \
+				 ../../testdir/ru_RU \
 				 ../../testdir/sautest \
 				 ../../testdir/samples \
 				 ../../testdir/dumps \
