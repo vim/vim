@@ -883,7 +883,10 @@ ml_close(buf_T *buf, int del_file)
     mf_close(buf->b_ml.ml_mfp, del_file);	// close the .swp file
     if (buf->b_ml.ml_line_lnum != 0
 		      && (buf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED)))
+    {
 	vim_free(buf->b_ml.ml_line_ptr);
+	buf->b_ml.ml_line_size = 0;
+    }
     vim_free(buf->b_ml.ml_stack);
 #ifdef FEAT_BYTEOFF
     VIM_CLEAR(buf->b_ml.ml_chunksize);
@@ -3575,7 +3578,7 @@ ml_replace(linenr_T lnum, char_u *line, int copy)
 
     if (line != NULL)
 	len = (colnr_T)STRLEN(line);
-    return ml_replace_len(lnum, line, len, FALSE, copy);
+    return ml_replace_len_size(lnum, line, len, FALSE, copy, 0);
 }
 
 /*
@@ -3594,8 +3597,27 @@ ml_replace_len(
 	int	    has_props,
 	int	    copy)
 {
+    return ml_replace_len_size(lnum, line_arg, len_arg, has_props, copy, 0);
+}
+
+/*
+ * Replace a line for the current buffer.  Like ml_replace_len() with:
+ * "size_arg" is the size of the buffer.
+ * If this is called from ins_str(), "size_arg" is set to non-zero and
+ * "line_arg" can be same with curbuf->b_ml.ml_line_ptr.
+ */
+    int
+ml_replace_len_size(
+	linenr_T    lnum,
+	char_u	    *line_arg,
+	colnr_T	    len_arg,
+	int	    has_props,
+	int	    copy,
+	int	    size_arg)
+{
     char_u *line = line_arg;
     colnr_T len = len_arg;
+    int	    size = size_arg;
 
     if (line == NULL)		// just checking...
 	return FAIL;
@@ -3656,6 +3678,7 @@ ml_replace_len(
 		mch_memmove(newline + len, curbuf->b_ml.ml_line_ptr
 						    + oldtextlen, textproplen);
 		vim_free(line);
+		size = 0;
 		line = newline;
 		len += (colnr_T)textproplen;
 	    }
@@ -3669,6 +3692,7 @@ ml_replace_len(
 
     curbuf->b_ml.ml_line_ptr = line;
     curbuf->b_ml.ml_line_len = len;
+    curbuf->b_ml.ml_line_size = size;
     curbuf->b_ml.ml_line_textlen = !has_props ? len_arg + 1 : 0;
     curbuf->b_ml.ml_line_lnum = lnum;
     curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
@@ -4242,7 +4266,10 @@ ml_flush_line(buf_T *buf)
 	entered = FALSE;
     }
     else if (buf->b_ml.ml_flags & ML_ALLOCATED)
+    {
 	vim_free(buf->b_ml.ml_line_ptr);
+	buf->b_ml.ml_line_size = 0;
+    }
 
     buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     buf->b_ml.ml_line_lnum = 0;
