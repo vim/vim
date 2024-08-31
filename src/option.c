@@ -41,7 +41,7 @@
 
 static void set_options_default(int opt_flags);
 static void set_string_default_esc(char *name, char_u *val, int escape);
-static char_u *find_dup_item(char_u *origval, char_u *newval, long_u flags);
+static char_u *find_dup_item(char_u *origval, char_u *newval, size_t newvallen, long_u flags);
 static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
@@ -132,51 +132,72 @@ set_init_default_shell(void)
 set_init_default_backupskip(void)
 {
     int		opt_idx;
-    long_u	n;
+    int		i;
     char_u	*p;
+    int		plen;
 #ifdef UNIX
     static char	*(names[4]) = {"", "TMPDIR", "TEMP", "TMP"};
 #else
     static char	*(names[3]) = {"TMPDIR", "TEMP", "TMP"};
 #endif
-    int		len;
     garray_T	ga;
-    char_u	*item;
 
     opt_idx = findoption((char_u *)"backupskip");
 
     ga_init2(&ga, 1, 100);
-    for (n = 0; n < (long)ARRAY_LENGTH(names); ++n)
+    for (i = 0; i < (int)ARRAY_LENGTH(names); ++i)
     {
 	int		mustfree = FALSE;
 #ifdef UNIX
-	if (*names[n] == NUL)
+	if (*names[i] == NUL)
+	{
 # ifdef MACOS_X
 	    p = (char_u *)"/private/tmp";
+	    plen = (int)STRLEN_LITERAL("/private/tmp");
 # else
-	p = (char_u *)"/tmp";
+	    p = (char_u *)"/tmp";
+	    plen = (int)STRLEN_LITERAL("/tmp");
 # endif
+	}
 	else
 #endif
-	    p = vim_getenv((char_u *)names[n], &mustfree);
+	{
+	    p = vim_getenv((char_u *)names[i], &mustfree);
+	    plen = 0;	    // will be calculated below
+	}
 	if (p != NULL && *p != NUL)
 	{
-	    // First time count the NUL, otherwise count the ','.
-	    len = (int)STRLEN(p) + 3;
-	    item = alloc(len);
+	    char_u  *item;
+	    size_t  itemsize;
+	    int	    has_trailing_path_sep = FALSE;
+
+	    if (plen == 0)
+	    {
+		// the value was retrieved from the environment
+		plen = (int)STRLEN(p);
+		// does the value include a trailing path separator?
+		if (after_pathsep(p, p + plen))
+		    has_trailing_path_sep = TRUE;
+	    }
+
+	    // item size needs to be large enough to include "/*" and a trailing NUL
+	    // note: the value (and therefore plen) may already include a path separator
+	    itemsize = plen + (has_trailing_path_sep ? 0 : 1) + 2;
+	    item = alloc(itemsize);
 	    if (item != NULL)
 	    {
-		STRCPY(item, p);
-		add_pathsep(item);
-		STRCAT(item, "*");
-		if (find_dup_item(ga.ga_data, item, options[opt_idx].flags)
-									== NULL
-			&& ga_grow(&ga, len) == OK)
+		// add a preceeding comma as a separator after the first item
+		size_t	itemseplen = (ga.ga_len == 0) ? 0 : 1;
+		size_t	itemlen;
+
+		itemlen = vim_snprintf((char *)item, itemsize, "%s%s*", p, (has_trailing_path_sep) ? "" : PATHSEPSTR);
+
+		if (find_dup_item(ga.ga_data, item, itemlen, options[opt_idx].flags) == NULL
+			&& ga_grow(&ga, itemseplen + itemlen + 1) == OK)
 		{
-		    if (ga.ga_len > 0)
-			STRCAT(ga.ga_data, ",");
-		    STRCAT(ga.ga_data, item);
-		    ga.ga_len += len;
+		    ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len,
+				    itemseplen + itemlen + 1,
+				    "%s%s", (itemseplen > 0) ? "," : "", item);
 		}
 		vim_free(item);
 	    }
@@ -524,7 +545,7 @@ set_init_default_encoding(void)
     // MS-Windows has builtin support for conversion to and from Unicode, using
     // "utf-8" for 'encoding' should work best for most users.
     // z/OS built should default to UTF-8 mode as setlocale does not respect utf-8 environment variable locales
-    p = vim_strsave((char_u *)ENC_DFLT);
+    p = vim_strnsave((char_u *)ENC_DFLT, STRLEN_LITERAL(ENC_DFLT));
 # else
     // enc_locale() will try to find the encoding of the current locale.
     // This works best for properly configured systems, old and new.
@@ -542,7 +563,7 @@ set_init_default_encoding(void)
 	// We don't support "gb18030", but "cp936" is a good substitute
 	// for practical purposes, thus use that.  It's not an alias to
 	// still support conversion between gb18030 and utf-8.
-	p_enc = vim_strsave((char_u *)"cp936");
+	p_enc = vim_strnsave((char_u *)"cp936", STRLEN_LITERAL("cp936"));
 	vim_free(p);
     }
     if (mb_init() == NULL)
@@ -584,14 +605,15 @@ set_init_default_encoding(void)
 		GetACP() != GetConsoleCP())
 	{
 	    char	buf[50];
+	    size_t	buflen;
 
 	    // Win32 console: In ConPTY, GetConsoleCP() returns zero.
 	    // Use an alternative value.
 	    if (GetConsoleCP() == 0)
-		sprintf(buf, "cp%ld", (long)GetACP());
+		buflen = vim_snprintf(buf, sizeof(buf), "cp%ld", (long)GetACP());
 	    else
-		sprintf(buf, "cp%ld", (long)GetConsoleCP());
-	    p_tenc = vim_strsave((char_u *)buf);
+		buflen = vim_snprintf(buf, sizeof(buf), "cp%ld", (long)GetConsoleCP());
+	    p_tenc = vim_strnsave((char_u *)buf, buflen);
 	    if (p_tenc != NULL)
 	    {
 		opt_idx = findoption((char_u *)"termencoding");
@@ -885,25 +907,23 @@ set_string_default(char *name, char_u *val)
  * "origval".  Return NULL if not found.
  */
     static char_u *
-find_dup_item(char_u *origval, char_u *newval, long_u flags)
+find_dup_item(char_u *origval, char_u *newval, size_t newvallen, long_u flags)
 {
     int	    bs = 0;
-    size_t  newlen;
     char_u  *s;
 
     if (origval == NULL)
 	return NULL;
 
-    newlen = STRLEN(newval);
     for (s = origval; *s != NUL; ++s)
     {
 	if ((!(flags & P_COMMA)
 		    || s == origval
 		    || (s[-1] == ',' && !(bs & 1)))
-		&& STRNCMP(s, newval, newlen) == 0
+		&& STRNCMP(s, newval, newvallen) == 0
 		&& (!(flags & P_COMMA)
-		    || s[newlen] == ','
-		    || s[newlen] == NUL))
+		    || s[newvallen] == ','
+		    || s[newvallen] == NUL))
 	    return s;
 	// Count backslashes.  Only a comma with an even number of backslashes
 	// or a single backslash preceded by a comma before it is recognized as
@@ -1289,28 +1309,34 @@ set_init_3(void)
 set_helplang_default(char_u *lang)
 {
     int		idx;
+    size_t	langlen;
 
-    if (lang == NULL || STRLEN(lang) < 2)	// safety check
+    if (lang == NULL)	// safety check
 	return;
+
+    langlen = STRLEN(lang);
+    if (langlen < 2)	// safety check
+	return;
+
     idx = findoption((char_u *)"hlg");
     if (idx < 0 || (options[idx].flags & P_WAS_SET))
 	return;
 
     if (options[idx].flags & P_ALLOCED)
 	free_string_option(p_hlg);
-    p_hlg = vim_strsave(lang);
+    p_hlg = vim_strnsave(lang, langlen);
     if (p_hlg == NULL)
 	p_hlg = empty_option;
     else
     {
 	// zh_CN becomes "cn", zh_TW becomes "tw"
-	if (STRNICMP(p_hlg, "zh_", 3) == 0 && STRLEN(p_hlg) >= 5)
+	if (STRNICMP(p_hlg, "zh_", 3) == 0 && langlen >= 5)
 	{
 	    p_hlg[0] = TOLOWER_ASC(p_hlg[3]);
 	    p_hlg[1] = TOLOWER_ASC(p_hlg[4]);
 	}
 	// any C like setting, such as C.UTF-8, becomes "en"
-	else if (STRLEN(p_hlg) >= 1 && *p_hlg == 'C')
+	else if (langlen >= 1 && *p_hlg == 'C')
 	{
 	    p_hlg[0] = 'e';
 	    p_hlg[1] = 'n';
@@ -1625,13 +1651,13 @@ opt_backspace_nr2str(
 	    *(char_u **)varp = empty_option;
 	    break;
 	case 1:
-	    *(char_u **)varp = vim_strsave((char_u *)"indent,eol");
+	    *(char_u **)varp = vim_strnsave((char_u *)"indent,eol", STRLEN_LITERAL("indent,eol"));
 	    break;
 	case 2:
-	    *(char_u **)varp = vim_strsave((char_u *)"indent,eol,start");
+	    *(char_u **)varp = vim_strnsave((char_u *)"indent,eol,start", STRLEN_LITERAL("indent,eol,start"));
 	    break;
 	case 3:
-	    *(char_u **)varp = vim_strsave((char_u *)"indent,eol,nostop");
+	    *(char_u **)varp = vim_strnsave((char_u *)"indent,eol,nostop", STRLEN_LITERAL("indent,eol,nostop"));
 	    break;
     }
     vim_free(*oldval_p);
@@ -1652,20 +1678,37 @@ opt_backspace_nr2str(
     static char_u *
 opt_whichwrap_nr2str(char_u **argp, char_u *whichwrap)
 {
+    size_t  len = 0;
+
     *whichwrap = NUL;
     int i = getdigits(argp);
     if (i & 1)
-	STRCAT(whichwrap, "b,");
+    {
+	STRCPY(whichwrap, "b,");
+	len += 2;
+    }
     if (i & 2)
-	STRCAT(whichwrap, "s,");
+    {
+	STRCPY(whichwrap + len, "s,");
+	len += 2;
+    }
     if (i & 4)
-	STRCAT(whichwrap, "h,l,");
+    {
+	STRCPY(whichwrap + len, "h,l,");
+	len += 4;
+    }
     if (i & 8)
-	STRCAT(whichwrap, "<,>,");
+    {
+	STRCPY(whichwrap + len, "<,>,");
+	len += 4;
+    }
     if (i & 16)
-	STRCAT(whichwrap, "[,],");
+    {
+	STRCPY(whichwrap + len, "[,],");
+	len += 4;
+    }
     if (*whichwrap != NUL)	// remove trailing ,
-	whichwrap[STRLEN(whichwrap) - 1] = NUL;
+	whichwrap[len - 1] = NUL;
 
     return whichwrap;
 }
@@ -1952,7 +1995,7 @@ stropt_get_newval(
 	if (op == OP_REMOVING || (flags & P_NODUP))
 	{
 	    len = (int)STRLEN(newval);
-	    s = find_dup_item(origval, newval, flags);
+	    s = find_dup_item(origval, newval, len, flags);
 
 	    // do not add if already there
 	    if ((op == OP_ADDING || op == OP_PREPENDING) && s != NULL)
@@ -2680,12 +2723,11 @@ do_set(
 
 	    if (errmsg != NULL)
 	    {
-		vim_strncpy(IObuff, (char_u *)_(errmsg), IOSIZE - 1);
-		i = (int)STRLEN(IObuff) + 2;
+		i = vim_snprintf((char *)IObuff, IOSIZE, "%s", (char_u *)_(errmsg)) + 2;
 		if (i + (arg - startarg) < IOSIZE)
 		{
 		    // append the argument with the error
-		    STRCAT(IObuff, ": ");
+		    STRCPY(IObuff + i - 2, ": ");
 		    mch_memmove(IObuff + i, startarg, (arg - startarg));
 		    IObuff[i + (arg - startarg)] = NUL;
 		}
@@ -5100,7 +5142,7 @@ get_option_value(
 	    // never return the value of the crypt key
 	    else if ((char_u **)varp == &curbuf->b_p_key
 						&& **(char_u **)(varp) != NUL)
-		*stringval = vim_strsave((char_u *)"*****");
+		*stringval = vim_strnsave((char_u *)"*****", STRLEN_LITERAL("*****"));
 #endif
 	    else
 		*stringval = vim_strsave(*(char_u **)(varp));
@@ -7334,6 +7376,7 @@ set_context_in_set_cmd(
     char_u	*s;
     int		is_term_option = FALSE;
     int		key;
+    char_u	*argend;
 
     expand_option_flags = opt_flags;
 
@@ -7343,7 +7386,8 @@ set_context_in_set_cmd(
 	xp->xp_pattern = arg;
 	return;
     }
-    p = arg + STRLEN(arg) - 1;
+    argend = arg + STRLEN(arg);
+    p = argend - 1;
     if (*p == ' ' && *(p - 1) != '\\')
     {
 	xp->xp_pattern = p + 1;
@@ -7560,7 +7604,7 @@ set_context_in_set_cmd(
     // delimited by space.
     if ((flags & P_EXPAND) || (flags & P_COMMA) || (flags & P_COLON))
     {
-	for (p = arg + STRLEN(arg) - 1; p >= xp->xp_pattern; --p)
+	for (p = argend - 1; p >= xp->xp_pattern; --p)
 	{
 	    // count number of backslashes before ' ' or ',' or ':'
 	    if (*p == ' ' || *p == ',' ||
@@ -7587,7 +7631,7 @@ set_context_in_set_cmd(
     // An option that is a list of single-character flags should always start
     // at the end as we don't complete words.
     if (flags & P_FLAGLIST)
-	xp->xp_pattern = arg + STRLEN(arg);
+	xp->xp_pattern = argend;
 
     // Some options can either be using file/dir expansions, or custom value
     // expansion depending on what the user typed. Unfortunately we have to
@@ -8106,7 +8150,7 @@ ExpandSettingSubtract(
 	int count = 0;
 	char_u *p;
 
-	p = vim_strsave(option_val);
+	p = vim_strnsave(option_val, num_flags);
 	if (p == NULL)
 	{
 	    VIM_CLEAR(*matches);
