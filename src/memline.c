@@ -4246,7 +4246,10 @@ ml_flush_line(buf_T *buf)
 	entered = FALSE;
     }
     else if (buf->b_ml.ml_flags & ML_ALLOCATED)
+    {
 	vim_free(buf->b_ml.ml_line_ptr);
+	buf->b_ml.ml_line_size = 0;
+    }
 
     buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     buf->b_ml.ml_line_lnum = 0;
