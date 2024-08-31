@@ -3663,7 +3663,8 @@ ml_replace_len(
     }
 #endif
 
-    if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+    if ((curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+	    && (curbuf->b_ml.ml_line_ptr != line))
 	vim_free(curbuf->b_ml.ml_line_ptr);	// free allocated line
 
     curbuf->b_ml.ml_line_ptr = line;
@@ -4236,6 +4237,7 @@ ml_flush_line(buf_T *buf)
 	    }
 	}
 	vim_free(new_line);
+	buf->b_ml.ml_line_size = 0;
 
 	entered = FALSE;
     }
