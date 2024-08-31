@@ -318,7 +318,10 @@ prop_add_one(
 					    sizeof(textprop_T) * (proplen - i));
 
 	if (buf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+	{
 	    vim_free(buf->b_ml.ml_line_ptr);
+	    buf->b_ml.ml_line_size = 0;
+	}
 	buf->b_ml.ml_line_ptr = newtext;
 	buf->b_ml.ml_line_len += sizeof(textprop_T);
 	buf->b_ml.ml_flags |= ML_LINE_DIRTY;
@@ -866,7 +869,10 @@ set_text_props(linenr_T lnum, char_u *props, int len)
     if (len > 0)
 	mch_memmove(newtext + textlen, props, len);
     if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+    {
 	vim_free(curbuf->b_ml.ml_line_ptr);
+	curbuf->b_ml.ml_line_size = 0;
+    }
     curbuf->b_ml.ml_line_ptr = newtext;
     curbuf->b_ml.ml_line_len = textlen + len;
     curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
@@ -889,7 +895,10 @@ add_text_props(linenr_T lnum, textprop_T *text_props, int text_prop_count)
     mch_memmove(newtext, text, curbuf->b_ml.ml_line_len);
     mch_memmove(newtext + curbuf->b_ml.ml_line_len, text_props, proplen);
     if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+    {
 	vim_free(curbuf->b_ml.ml_line_ptr);
+	curbuf->b_ml.ml_line_size = 0;
+    }
     curbuf->b_ml.ml_line_ptr = newtext;
     curbuf->b_ml.ml_line_len += proplen;
     curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
@@ -1097,7 +1106,10 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 		if (newtext == NULL)
 		    return;
 		if (buf->b_ml.ml_flags & ML_ALLOCATED)
+		{
 		    vim_free(buf->b_ml.ml_line_ptr);
+		    buf->b_ml.ml_line_size = 0;
+		}
 		buf->b_ml.ml_line_ptr = newtext;
 		buf->b_ml.ml_flags |= ML_LINE_DIRTY;
 	    }
@@ -1716,7 +1728,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			mch_memmove(newptr, buf->b_ml.ml_line_ptr,
 							buf->b_ml.ml_line_len);
 			if (buf->b_ml.ml_flags & ML_ALLOCATED)
+			{
 			    vim_free(buf->b_ml.ml_line_ptr);
+			    buf->b_ml.ml_line_size = 0;
+			}
 			buf->b_ml.ml_line_ptr = newptr;
 			buf->b_ml.ml_flags |= ML_LINE_DIRTY;
 
@@ -2291,7 +2306,10 @@ adjust_prop_columns(
 	    char_u *p = vim_memsave(curbuf->b_ml.ml_line_ptr, newlen);
 
 	    if (curbuf->b_ml.ml_flags & ML_ALLOCATED)
+	    {
 		vim_free(curbuf->b_ml.ml_line_ptr);
+		curbuf->b_ml.ml_line_size = 0;
+	    }
 	    curbuf->b_ml.ml_line_ptr = p;
 	}
 	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
