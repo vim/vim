@@ -1678,6 +1678,9 @@ getvcol(
     }
     clear_chartabsize_arg(&cts);
 
+    if (*ptr == NUL && pos->col < MAXCOL && pos->col > ptr - line)
+	pos->col = ptr - line;
+
     if (start != NULL)
 	*start = vcol + head;
     if (end != NULL)
