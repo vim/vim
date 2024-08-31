@@ -1212,19 +1212,17 @@ ins_str(char_u *s)
 	newp = alloc(new_size);
 	if (newp == NULL)
 	    return;
+	curbuf->b_ml.ml_line_size = new_size;
     }
     else
-    {
 	newp = oldp;
-	new_size = curbuf->b_ml.ml_line_size;
-    }
     prevp = newp;
 
     if (col > 0 && newp != oldp)
 	mch_memmove(newp, oldp, (size_t)col);
     mch_memmove(newp + col + newlen, oldp + col, (size_t)(oldlen - col + 1));
     mch_memmove(newp + col, s, (size_t)newlen);
-    ml_replace_len_size(lnum, newp, newtotlen, FALSE, FALSE, new_size);
+    ml_replace_len(lnum, newp, newtotlen, FALSE, FALSE);
     inserted_bytes(lnum, col, newlen);
     curwin->w_cursor.col += newlen;
 }
