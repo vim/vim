@@ -1181,7 +1181,6 @@ ins_char_bytes(char_u *buf, int charlen)
     void
 ins_str(char_u *s)
 {
-    static char_u	*prevp = NULL;
     char_u	*oldp, *newp;
     int		newlen = (int)STRLEN(s);
     int		oldlen;
@@ -1199,7 +1198,7 @@ ins_str(char_u *s)
 
     newtotlen = oldlen + newlen;
     new_size = newtotlen + 1;
-    if ((curbuf->b_ml.ml_line_size < new_size) || (prevp != oldp)
+    if ((curbuf->b_ml.ml_line_size < new_size)
 #ifdef FEAT_PROP_POPUP
 	    || curbuf->b_has_textprop
 #endif
@@ -1218,7 +1217,6 @@ ins_str(char_u *s)
 	newp = oldp;
 	new_size = curbuf->b_ml.ml_line_size;
     }
-    prevp = newp;
 
     if (col > 0 && newp != oldp)
 	mch_memmove(newp, oldp, (size_t)col);
