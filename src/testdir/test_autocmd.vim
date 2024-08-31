@@ -4863,5 +4863,24 @@ func Test_WinNewPre_crash()
   let &cmdheight=_cmdheight
 endfunc
 
+" The specifics of the turkish locale may
+" cause that Vim will not treat the GuiEnter autocommand
+" as case insensitive and instead issues an error
+func Test_GuiEnter_Turkish_locale()
+  try
+    let lng = v:lang
+    lang tr_TR.UTF-8
+    let result = execute(':au GuiEnter')
+    call assert_equal("\n--- Autocommands ---", result)
+    let result = execute(':au GUIENTER')
+    call assert_equal("\n--- Autocommands ---", result)
+    let result = execute(':au guienter')
+    call assert_equal("\n--- Autocommands ---", result)
+    exe ":lang" lng
+  catch /E197:/
+    " can't use Turkish locale
+    throw 'Skipped: Turkish locale not available'
+  endtry
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
