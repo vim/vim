@@ -2774,7 +2774,7 @@ win_update(win_T *wp)
 		    redrawWinline(wp, wp->w_cursor.lnum);
 	    }
 #endif
-	    // New redraw either due to updated topline or due to wcol fix.
+	    // New redraw either due to updated topline, wcol fix or reset skipcol.
 	    if (wp->w_redr_type != 0)
 	    {
 		// Don't update for changes in buffer again.
@@ -2782,6 +2782,7 @@ win_update(win_T *wp)
 		curbuf->b_mod_set = FALSE;
 		j = curbuf->b_mod_xlines;
 		curbuf->b_mod_xlines = 0;
+		curs_columns(TRUE);
 		win_update(curwin);
 		curbuf->b_mod_set = i;
 		curbuf->b_mod_xlines = j;
