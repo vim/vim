@@ -512,6 +512,7 @@ edit(
 #ifdef FEAT_DIFF
 		&& curwin->w_topfill == old_topfill
 #endif
+		&& count <= 1
 		)
 	{
 	    mincol = curwin->w_wcol;
@@ -549,11 +550,13 @@ edit(
 	}
 
 	// May need to adjust w_topline to show the cursor.
-	update_topline();
+	if (count <= 1)
+	    update_topline();
 
 	did_backspace = FALSE;
 
-	validate_cursor();		// may set must_redraw
+	if (count <= 1)
+	    validate_cursor();		// may set must_redraw
 
 	/*
 	 * Redraw the display when no characters are waiting.
@@ -566,7 +569,8 @@ edit(
 
 	if (curwin->w_p_crb)
 	    do_check_cursorbind();
-	update_curswant();
+	if (count <= 1)
+	    update_curswant();
 	old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF
 	old_topfill = curwin->w_topfill;
