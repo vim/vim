@@ -2751,6 +2751,7 @@ ml_get_buf(
 errorret:
 	STRCPY(questions, "???");
 	buf->b_ml.ml_line_len = 4;
+	buf->b_ml.ml_line_size = 0;
 	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	buf->b_ml.ml_line_lnum = lnum;
 	return questions;
@@ -2761,6 +2762,7 @@ errorret:
     if (buf->b_ml.ml_mfp == NULL)	// there are no lines
     {
 	buf->b_ml.ml_line_len = 1;
+	buf->b_ml.ml_line_size = 0;
 	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	return (char_u *)"";
     }
