@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Aug 26
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Aug 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -179,8 +179,7 @@ add a few items or change the highlighting, follow these steps:
 1. Create your user directory from 'runtimepath', see above.
 
 2. Create a directory in there called "after/syntax".  For Unix: >
-	mkdir ~/.vim/after
-	mkdir ~/.vim/after/syntax
+	mkdir -p ~/.vim/after/syntax
 
 3. Write a Vim script that contains the commands you want to use.  For
    example, to change the colors for the C syntax: >
