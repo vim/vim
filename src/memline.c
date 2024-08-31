@@ -2812,6 +2812,7 @@ errorret:
 
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
 	buf->b_ml.ml_line_len = end - start;
+	buf->b_ml.ml_line_size = 0;
 #if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
 	// Text properties come after a NUL byte, so ml_line_len should be
 	// larger than the size of textprop_T if there is any.
@@ -2845,6 +2846,7 @@ errorret:
 	{
 	    memmove(p, buf->b_ml.ml_line_ptr, buf->b_ml.ml_line_len);
 	    buf->b_ml.ml_line_ptr = p;
+	    buf->b_ml.ml_line_size = 0;
 	    buf->b_ml.ml_flags |= ML_ALLOCATED;
 	    if (will_change)
 		// can't make the change in the data block
