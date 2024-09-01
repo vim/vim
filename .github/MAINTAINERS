@@ -213,6 +213,7 @@ runtime/ftplugin/nginx.vim		@chr4
 runtime/ftplugin/nim.vim		@ribru17
 runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
+runtime/ftplugin/nu.vim		@mrcjkb
 runtime/ftplugin/octave.vim		@dkearns
 runtime/ftplugin/ondir.vim		@jparise
 runtime/ftplugin/openvpn.vim		@ObserverOfTime
