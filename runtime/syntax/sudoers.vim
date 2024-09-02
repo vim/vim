@@ -92,10 +92,11 @@ syn cluster sudoersUserList         contains=sudoersUserListComma,sudoersUserLis
 syn match   sudoersUserSpecComma    contained ',' nextgroup=@sudoersUserInSpec  skipwhite skipnl
 syn cluster sudoersUserSpec         contains=sudoersUserSpecComma,@sudoersHostInSpec
 
-syn match   sudoersUserRunasBegin   contained '(' nextgroup=@sudoersUserInRunas skipwhite skipnl
+syn match   sudoersUserRunasBegin   contained '(' nextgroup=@sudoersUserInRunas,sudoersUserRunasColon skipwhite skipnl
 syn match   sudoersUserRunasComma   contained ',' nextgroup=@sudoersUserInRunas skipwhite skipnl
+syn match   sudoersUserRunasColon   contained ':' nextgroup=@sudoersUserInRunas skipwhite skipnl
 syn match   sudoersUserRunasEnd     contained ')' nextgroup=sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
-syn cluster sudoersUserRunas        contains=sudoersUserRunasComma,@sudoersUserInRunas,sudoersUserRunasEnd
+syn cluster sudoersUserRunas        contains=sudoersUserRunasComma,sudoersUserRunasColon,@sudoersUserInRunas,sudoersUserRunasEnd
 
 
 syn match   sudoersHostAliasEquals  contained '=' nextgroup=@sudoersHostInList  skipwhite skipnl
@@ -345,6 +346,7 @@ hi def link sudoersUserListColon            Delimiter
 hi def link sudoersUserSpecComma            Delimiter
 hi def link sudoersUserRunasBegin           Delimiter
 hi def link sudoersUserRunasComma           Delimiter
+hi def link sudoersUserRunasColon           Delimiter
 hi def link sudoersUserRunasEnd             Delimiter
 hi def link sudoersHostAliasEquals          Operator
 hi def link sudoersHostListComma            Delimiter
