@@ -15,6 +15,7 @@ void vim_strcat(char_u *to, char_u *from, size_t tosize);
 size_t vim_strlen_maxlen(char *s, size_t maxlen);
 int vim_stricmp(char *s1, char *s2);
 int vim_strnicmp(char *s1, char *s2, size_t len);
+int vim_strnicmp_asc(char *s1, char *s2, size_t len);
 char_u *vim_strchr(char_u *string, int c);
 char_u *vim_strbyte(char_u *string, int c);
 char_u *vim_strrchr(char_u *string, int c);

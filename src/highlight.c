@@ -1215,8 +1215,8 @@ highlight_set_cterm_color(
 
 	target.key = 0;
 	target.value = (char *)arg;
-	target.length = 0;	// not used, see cmp_keyvalue_value_i()
-	entry = (keyvalue_T *)bsearch(&target, &color_name_tab, ARRAY_LENGTH(color_name_tab), sizeof(color_name_tab[0]), cmp_keyvalue_value_i);
+	target.length = 0;	// not used, see cmp_keyvalue_value_ni()
+	entry = (keyvalue_T *)bsearch(&target, &color_name_tab, ARRAY_LENGTH(color_name_tab), sizeof(color_name_tab[0]), cmp_keyvalue_value_ni);
 	if (entry == NULL)
 	{
 	    semsg(_(e_color_name_or_number_not_recognized_str), key_start);
@@ -2542,8 +2542,8 @@ gui_get_color_cmn(char_u *name)
 
     target.key = 0;
     target.value = (char *)name;
-    target.length = 0;		// not used, see cmp_keyvalue_value_i()
-    entry = (keyvalue_T *)bsearch(&target, &rgb_tab, ARRAY_LENGTH(rgb_tab), sizeof(rgb_tab[0]), cmp_keyvalue_value_i);
+    target.length = 0;		// not used, see cmp_keyvalue_value_ni()
+    entry = (keyvalue_T *)bsearch(&target, &rgb_tab, ARRAY_LENGTH(rgb_tab), sizeof(rgb_tab[0]), cmp_keyvalue_value_ni);
     if (entry != NULL)
 	return gui_adjust_rgb((guicolor_T)entry->key);
 

@@ -63,6 +63,5 @@ int build_argv_from_list(list_T *l, char ***argv, int *argc);
 int get_special_pty_type(void);
 int cmp_keyvalue_value(const void *a, const void *b);
 int cmp_keyvalue_value_n(const void *a, const void *b);
-int cmp_keyvalue_value_i(const void *a, const void *b);
 int cmp_keyvalue_value_ni(const void *a, const void *b);
 /* vim: set ft=c : */

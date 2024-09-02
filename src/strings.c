@@ -590,6 +590,33 @@ vim_strnicmp(char *s1, char *s2, size_t len)
 #endif
 
 /*
+ * Compare two ASCII strings, for length "len", ignoring case, ignoring locale
+ * (mostly matters for turkish locale where i I might be different).
+ * return 0 for match, < 0 for smaller, > 0 for bigger
+ */
+    int
+vim_strnicmp_asc(char *s1, char *s2, size_t len)
+{
+    int                i;
+    int                save_cmp_flags = cmp_flags;
+
+    cmp_flags |= CMP_KEEPASCII;		// compare by ASCII value, ignoring locale
+    while (len > 0)
+    {
+       i = vim_tolower(*s1) - vim_tolower(*s2);
+       if (i != 0)
+           break;			// this character is different
+       if (*s1 == NUL)
+           break;			// strings match until NUL
+       ++s1;
+       ++s2;
+       --len;
+    }
+    cmp_flags = save_cmp_flags;
+    return i;
+}
+
+/*
  * Search for first occurrence of "c" in "string".
  * Version of strchr() that handles unsigned char strings with characters from
  * 128 to 255 correctly.  It also doesn't return a pointer to the NUL at the
