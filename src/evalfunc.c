@@ -11942,6 +11942,7 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
 	    if (fp->col > len)
 		fp->col = len;
 	}
+	invalidate_vcol_cache();
 	getvvcol(curwin, fp, &vcol_start, NULL, &vcol_end);
 	++vcol_start;
 	++vcol_end;

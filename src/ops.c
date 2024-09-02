@@ -3958,6 +3958,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 
 	if (VIsual_active || redo_VIsual_busy)
 	{
+	    invalidate_vcol_cache();
 	    get_op_vcol(oap, redo_VIsual.rv_vcol, TRUE);
 
 	    if (!redo_VIsual_busy && !gui_yank)

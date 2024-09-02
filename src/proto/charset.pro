@@ -21,6 +21,7 @@ int linetabsize_col(int startcol, char_u *s);
 int win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len);
 int linetabsize(win_T *wp, linenr_T lnum);
 int linetabsize_no_outer(win_T *wp, linenr_T lnum);
+void invalidate_vcol_cache(void);
 void win_linetabsize_cts(chartabsize_T *cts, colnr_T len);
 int vim_isIDc(int c);
 int vim_isNormalIDc(int c);
