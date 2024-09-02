@@ -22,7 +22,7 @@ syn match   sudoersUserSpec '^' nextgroup=@sudoersUserInSpec skipwhite
 
 syn match   sudoersSpecEquals         contained '=' nextgroup=@sudoersCmndSpecList skipwhite
 
-syn cluster sudoersCmndSpecList       contains=sudoersUserRunasBegin,sudoersPASSWD,@sudoersCmndInSpec
+syn cluster sudoersCmndSpecList       contains=sudoersUserRunasBegin,sudoersTagSpec,@sudoersCmndInSpec
 
 syn keyword sudoersTodo               contained TODO FIXME XXX NOTE
 
@@ -94,7 +94,7 @@ syn cluster sudoersUserSpec         contains=sudoersUserSpecComma,@sudoersHostIn
 
 syn match   sudoersUserRunasBegin   contained '(' nextgroup=@sudoersUserInRunas skipwhite skipnl
 syn match   sudoersUserRunasComma   contained ',' nextgroup=@sudoersUserInRunas skipwhite skipnl
-syn match   sudoersUserRunasEnd     contained ')' nextgroup=sudoersPASSWD,@sudoersCmndInSpec skipwhite skipnl
+syn match   sudoersUserRunasEnd     contained ')' nextgroup=sudoersTagSpec,@sudoersCmndInSpec skipwhite skipnl
 syn cluster sudoersUserRunas        contains=sudoersUserRunasComma,@sudoersUserInRunas,sudoersUserRunasEnd
 
 
@@ -291,7 +291,7 @@ syn region  sudoersStringValue  contained start=+"+ skip=+\\"+ end=+"+ nextgroup
 syn match   sudoersListValue    contained '[^[:space:],:=\\]*\%(\\[[:space:],:=\\][^[:space:],:=\\]*\)*' nextgroup=sudoersParameterListComma skipwhite skipnl
 syn region  sudoersListValue    contained start=+"+ skip=+\\"+ end=+"+ nextgroup=sudoersParameterListComma skipwhite skipnl
 
-syn match   sudoersPASSWD                   contained '\%(NO\)\=PASSWD:' nextgroup=@sudoersCmndInSpec skipwhite
+syn match   sudoersTagSpec      contained '\%(NO\)\=\%(EXEC\|FOLLOW\|LOG_\%(INPUT\|OUTPUT\)\|MAIL\|INTERCEPT\|PASSWD\|SETENV\):' nextgroup=sudoersTagSpec,@sudoersCmndInSpec skipwhite
 
 hi def link sudoersSpecEquals               Operator
 hi def link sudoersTodo                     Todo
@@ -381,7 +381,7 @@ hi def link sudoersListParameterEquals      Operator
 hi def link sudoersIntegerValue             Number
 hi def link sudoersStringValue              String
 hi def link sudoersListValue                String
-hi def link sudoersPASSWD                   Special
+hi def link sudoersTagSpec                  Special
 hi def link sudoersInclude                  Statement
 
 let b:current_syntax = "sudoers"
