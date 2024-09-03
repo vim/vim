@@ -13,6 +13,7 @@ nsis/lang/russian.nsi			@RestorerZ
 runtime/autoload/freebasic.vim		@dkearns
 runtime/autoload/hare.vim		@selenebun
 runtime/autoload/haskell.vim		@alx741
+runtime/autoload/hcl.vim		@gpanders
 runtime/autoload/javascript.vim		@jsit
 runtime/autoload/modula2.vim		@dkearns
 runtime/autoload/php.vim		@david-szabo97
@@ -170,6 +171,7 @@ runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hare.vim		@selenebun
 runtime/ftplugin/haredoc.vim		@selenebun
 runtime/ftplugin/heex.vim		@cvincent
+runtime/ftplugin/hcl.vim		@gpanders
 runtime/ftplugin/hgcommit.vim		@k-takata
 runtime/ftplugin/hlsplaylist.vim		@avidseeker
 runtime/ftplugin/hog.vim		@wtfbbqhax
@@ -316,6 +318,7 @@ runtime/indent/go.vim			@dbarnett
 runtime/indent/gyp.vim			@ObserverOfTime
 runtime/indent/haml.vim			@tpope
 runtime/indent/hare.vim			@selenebun
+runtime/indent/hcl.vim			@gpanders
 runtime/indent/hog.vim			@wtfbbqhax
 runtime/indent/idlang.vim		@dkearns
 runtime/indent/j.vim			@glts
@@ -360,6 +363,7 @@ runtime/indent/systemverilog.vim	@Kocha
 runtime/indent/tcl.vim			@dkearns
 runtime/indent/tcsh.vim			@dkearns
 runtime/indent/teraterm.vim		@k-takata
+runtime/indent/terraform.vim		@gpanders.com
 runtime/indent/thrift.vim		@jiangyinzuo
 runtime/indent/typescript.vim		@HerringtonDarkholme
 runtime/indent/typst.vim		@gpanders
@@ -459,6 +463,7 @@ runtime/syntax/haml.vim			@tpope
 runtime/syntax/hare.vim			@selenebun
 runtime/syntax/haredoc.vim		@selenebun
 runtime/syntax/haskell.vim		@coot
+runtime/syntax/hcl.vim			@gpanders
 runtime/syntax/help_ru.vim		@RestorerZ
 runtime/syntax/hgcommit.vim		@k-takata
 runtime/syntax/hitest.vim		@lacygoill
@@ -566,6 +571,7 @@ runtime/syntax/systemverilog.vim	@Kocha
 runtime/syntax/tap.vim			@petdance
 runtime/syntax/tcsh.vim			@dkearns
 runtime/syntax/teraterm.vim		@k-takata
+runtime/syntax/terraform.vim		@gpanders
 runtime/syntax/thrift.vim		@jiangyinzuo
 runtime/syntax/tidy.vim			@dkearns
 runtime/syntax/tmux.vim			@ericpruitt
