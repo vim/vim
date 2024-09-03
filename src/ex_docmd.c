@@ -2916,6 +2916,11 @@ parse_command_modifiers(
 	    }
 	    return FAIL;
 	}
+	if (eap->nextcmd == NULL && *eap->cmd == '\n')
+	{
+	    eap->nextcmd = eap->cmd + 1;
+	    return FAIL;
+	}
 	if (*eap->cmd == NUL)
 	{
 	    if (!skip_only)
