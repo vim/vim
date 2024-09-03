@@ -3707,7 +3707,7 @@ func Test_autocmd_with_block()
       }
   augroup END
 
-  let expected = "\n--- Autocommands ---\nblock_testing  BufRead\n    *.xml     {^@            setlocal matchpairs+=<:>^@            /<start^@          }"
+  let expected = gettext("\n--- Autocommands ---") .. "\nblock_testing  BufRead\n    *.xml     {^@            setlocal matchpairs+=<:>^@            /<start^@          }"
   call assert_equal(expected, execute('au BufReadPost *.xml'))
 
   doautocmd CursorHold
@@ -4871,11 +4871,11 @@ func Test_GuiEnter_Turkish_locale()
     let lng = v:lang
     lang tr_TR.UTF-8
     let result = execute(':au GuiEnter')
-    call assert_equal("\n--- Autocommands ---", result)
+    call assert_equal(gettext("\n--- Autocommands ---"), result)
     let result = execute(':au GUIENTER')
-    call assert_equal("\n--- Autocommands ---", result)
+    call assert_equal(gettext("\n--- Autocommands ---"), result)
     let result = execute(':au guienter')
-    call assert_equal("\n--- Autocommands ---", result)
+    call assert_equal(gettext("\n--- Autocommands ---"), result)
     exe ":lang" lng
   catch /E197:/
     " can't use Turkish locale
