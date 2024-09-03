@@ -2758,6 +2758,8 @@ popup_hide(win_T *wp)
 
     wp->w_popup_flags |= POPF_HIDDEN;
     // Do not decrement b_nwindows, we still reference the buffer.
+    if (wp->w_winrow + popup_height(wp) >= cmdline_row)
+	clear_cmdline = TRUE;
     redraw_all_later(UPD_NOT_VALID);
     popup_mask_refresh = TRUE;
 }

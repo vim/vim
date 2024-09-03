@@ -4315,4 +4315,67 @@ func Test_popupwin_setbufvar_changing_window_view()
   bw!
 endfunc
 
+func Test_popupwin_clears_cmdline_on_hide()
+  " Test that the command line is properly cleared for overlong
+  " popup windows and using popup_hide()
+  CheckScreendump
+
+  let lines =<< trim END
+    vim9script
+    var id: number
+    def Filter(winid: number, key: string): bool
+      if key == 'q'
+        popup_hide(winid)
+      else
+        return false
+      endif
+      return true
+    enddef
+    setline(1, repeat(['foobar one two three'], &lines))
+    id = popup_create(1, {
+      col: 1,
+      minwidth: &columns,
+      maxwidth: &columns,
+      minheight: &lines,
+      maxheight: &lines,
+      filter: Filter,
+    })
+  END
+  call writefile(lines, 'XtestPopup_win', 'D')
+  let buf = RunVimInTerminal('-S XtestPopup_win', #{rows: 10})
+  call term_sendkeys(buf, "q")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_popupwin_hide_clear_cmdline_01', {})
+  call StopVimInTerminal(buf)
+  let lines =<< trim END
+    vim9script
+    var id: number
+    def Filter(winid: number, key: string): bool
+      if key == 'q'
+        popup_close(winid)
+      else
+        return false
+      endif
+      return true
+    enddef
+    setline(1, repeat(['foobar one two three'], &lines))
+    id = popup_create(1, {
+      col: 1,
+      minwidth: &columns,
+      maxwidth: &columns,
+      minheight: &lines,
+      maxheight: &lines,
+      filter: Filter,
+    })
+  END
+  call writefile(lines, 'XtestPopup_win2', 'D')
+  let buf = RunVimInTerminal('-S XtestPopup_win2', #{rows: 10})
+  call term_sendkeys(buf, "q")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_popupwin_hide_clear_cmdline_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
