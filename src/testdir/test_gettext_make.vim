@@ -18,6 +18,7 @@ func Test_gettext_makefile()
           \ ..\testdir\test_gettext_makefile_in4.vim" test_gettext.pot')
   else
 " Will it work on macOS?
+    CheckExecutable xgettext
     call system("make -f Makefile PLUGPACKAGE=test_gettext
           \ PO_PLUG_INPUTLIST=\"../testdir/test_gettext_makefile_in1.vim
           \ ../testdir/test_gettext_makefile_in2.vim
