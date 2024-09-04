@@ -849,8 +849,21 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
 #endif
 }
 
+static int s_use_vcol_cache = FALSE;
 static int s_vcol_cache_valid1 = FALSE;
 static int s_vcol_cache_valid2 = FALSE;
+
+    void
+enable_vcol_cache(void)
+{
+    s_use_vcol_cache = TRUE;
+}
+
+    void
+disable_vcol_cache(void)
+{
+    s_use_vcol_cache = TRUE;
+}
 
     void
 invalidate_vcol_cache(void)
@@ -866,17 +879,23 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     static char_u   *saved_ptr = NULL;
     static colnr_T  saved_vcol = 0;
     colnr_T slen = len;
-    colnr_T col_save;
+    colnr_T col_save = 0;
     vimlong_T vcol = cts->cts_vcol;
 
 #ifdef FEAT_PROP_POPUP
     cts->cts_with_trailing = len == MAXCOL;
 #endif
-    if (slen == MAXCOL)
-	slen = STRLEN(cts->cts_line);
-    col_save = (colnr_T)((varnumber_T)slen * 4 / 5);
-    if (slen - col_save > 4096)
-	col_save = slen - 4096;
+
+    if (s_use_vcol_cache)
+    {
+	if (slen == MAXCOL)
+	    slen = STRLEN(cts->cts_line);
+	col_save = (colnr_T)((varnumber_T)slen * 4 / 5);
+	if (slen - col_save > 4096)
+	    col_save = slen - 4096;
+    }
+    else
+	s_vcol_cache_valid1 = FALSE;
     if (s_vcol_cache_valid1
 	    && (old_line != NULL)
 	    && (old_line == cts->cts_line)
@@ -886,10 +905,12 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 	cts->cts_ptr = saved_ptr;
 	cts->cts_vcol = vcol = saved_vcol;
     }
+
     for ( ; *cts->cts_ptr != NUL && (len == MAXCOL || cts->cts_ptr < cts->cts_line + len);
 						      MB_PTR_ADV(cts->cts_ptr))
     {
-	if ((cts->cts_ptr > cts->cts_line)
+	if (s_use_vcol_cache
+		&& (cts->cts_ptr > cts->cts_line)
 		&& (cts->cts_ptr - cts->cts_line <= col_save)
 		&& (cts->cts_ptr + (*mb_ptr2len)(cts->cts_ptr) - cts->cts_line
 			>= col_save))
@@ -1609,7 +1630,7 @@ getvcol(
 #ifdef FEAT_PROP_POPUP
     int		on_NUL = FALSE;
 #endif
-    colnr_T	col_save;
+    colnr_T	col_save = 0;
     static char_u   *old_line = NULL;
     static char_u   *saved_ptr = NULL;
     static colnr_T  saved_vcol = 0;
@@ -1621,9 +1642,15 @@ getvcol(
     init_chartabsize_arg(&cts, wp, pos->lnum, 0, line, line);
     cts.cts_max_head_vcol = -1;
 
-    col_save = (colnr_T)((varnumber_T)pos->col * 4 / 5);
-    if (pos->col - col_save > 4096)
-	col_save = pos->col - 4096;
+    if (s_use_vcol_cache)
+    {
+	col_save = (colnr_T)((varnumber_T)pos->col * 4 / 5);
+	if (pos->col - col_save > 4096)
+	    col_save = pos->col - 4096;
+    }
+    else
+	s_vcol_cache_valid2 = FALSE;
+
     /*
      * This function is used very often, do some speed optimizations.
      * When 'list', 'linebreak', 'showbreak' and 'breakindent' are not set
@@ -1695,7 +1722,8 @@ getvcol(
 	    if (next_ptr - line > pos->col) // character at pos->col
 		break;
 
-	    if ((ptr > line)
+	    if (s_use_vcol_cache
+		    && (ptr > line)
 		    && (ptr - line <= col_save)
 		    && (next_ptr - line >= col_save))
 	    {
@@ -1748,7 +1776,8 @@ getvcol(
 	    if (next_ptr - line > pos->col) // character at pos->col
 		break;
 
-	    if ((cts.cts_ptr > line)
+	    if (s_use_vcol_cache
+		    && (cts.cts_ptr > line)
 		    && (cts.cts_ptr - line <= col_save)
 		    && (next_ptr - line >= col_save))
 	    {

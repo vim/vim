@@ -1144,6 +1144,7 @@ curs_columns(
     long	siso = get_sidescrolloff_value();
     int		did_sub_skipcol = FALSE;
 
+    enable_vcol_cache();
     /*
      * First make sure that w_topline is valid (after moving the cursor).
      */
@@ -1427,6 +1428,8 @@ curs_columns(
     curwin->w_valid_skipcol = curwin->w_skipcol;
 
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
+
+    disable_vcol_cache();
 }
 
 #if (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)) || defined(PROTO)
