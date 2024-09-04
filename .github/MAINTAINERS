@@ -363,7 +363,7 @@ runtime/indent/systemverilog.vim	@Kocha
 runtime/indent/tcl.vim			@dkearns
 runtime/indent/tcsh.vim			@dkearns
 runtime/indent/teraterm.vim		@k-takata
-runtime/indent/terraform.vim		@gpanders.com
+runtime/indent/terraform.vim		@gpanders
 runtime/indent/thrift.vim		@jiangyinzuo
 runtime/indent/typescript.vim		@HerringtonDarkholme
 runtime/indent/typst.vim		@gpanders
