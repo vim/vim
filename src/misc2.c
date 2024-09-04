@@ -3090,6 +3090,16 @@ cmp_keyvalue_value_n(const void *a, const void *b)
     return STRNCMP(kv1->value, kv2->value, MAX(kv1->length, kv2->length));
 }
 
+// compare two keyvalue_T structs by case insensitive value
+    int
+cmp_keyvalue_value_i(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRICMP(kv1->value, kv2->value);
+}
+
 // compare two keyvalue_T structs by case insensitive ASCII value
 // with length
     int
