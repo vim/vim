@@ -875,6 +875,7 @@ invalidate_vcol_cache(void)
     void
 win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 {
+    static win_T    *old_win = NULL;
     static char_u   *old_line = NULL;
     static char_u   *saved_ptr = NULL;
     static colnr_T  saved_vcol = 0;
@@ -897,8 +898,8 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     else
 	s_vcol_cache_valid1 = FALSE;
     if (s_vcol_cache_valid1
-	    && (old_line != NULL)
-	    && (old_line == cts->cts_line)
+	    && (old_win != NULL) && (old_win != cts->cts_win)
+	    && (old_line != NULL) && (old_line == cts->cts_line)
 	    && (saved_ptr >= cts->cts_line)
 	    && (saved_ptr < cts->cts_line + slen)
 #ifdef FEAT_PROP_POPUP
@@ -925,6 +926,7 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 	{
 	    saved_ptr = cts->cts_ptr;
 	    saved_vcol = vcol;
+	    old_win = cts->cts_win;
 	    old_line = cts->cts_line;
 	    s_vcol_cache_valid1 = TRUE;
 	}
@@ -1639,6 +1641,7 @@ getvcol(
     int		on_NUL = FALSE;
 #endif
     colnr_T	col_save = 0;
+    static win_T    *old_win = NULL;
     static char_u   *old_line = NULL;
     static char_u   *saved_ptr = NULL;
     static colnr_T  saved_vcol = 0;
@@ -1675,8 +1678,8 @@ getvcol(
        )
     {
 	if (s_vcol_cache_valid2
-		&& (old_line != NULL)
-		&& (old_line == line)
+		&& (old_win != NULL) && (old_win == wp)
+		&& (old_line != NULL) && (old_line == line)
 		&& (saved_ptr >= line)
 		&& (saved_ptr < line + pos->col)
 		&& (old_cond == 1))
@@ -1737,6 +1740,7 @@ getvcol(
 	    {
 		saved_ptr = next_ptr;
 		saved_vcol = vcol + incr;
+		old_win = wp;
 		old_line = line;
 		old_cond = 1;
 		s_vcol_cache_valid2 = TRUE;
@@ -1748,8 +1752,8 @@ getvcol(
     else
     {
 	if (s_vcol_cache_valid2
-		&& (old_line != NULL)
-		&& (old_line == line)
+		&& (old_win != NULL) && (old_win == wp)
+		&& (old_line != NULL) && (old_line == line)
 		&& (saved_ptr >= line)
 		&& (saved_ptr < line + pos->col)
 		&& (old_cond == 2)
@@ -1799,6 +1803,7 @@ getvcol(
 	    {
 		saved_ptr = next_ptr;
 		saved_vcol = cts.cts_vcol + incr;
+		old_win = wp;
 		old_line = line;
 		old_cond = 2;
 		s_vcol_cache_valid2 = TRUE;
