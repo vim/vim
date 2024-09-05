@@ -900,7 +900,11 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 	    && (old_line != NULL)
 	    && (old_line == cts->cts_line)
 	    && (saved_ptr >= cts->cts_line)
-	    && (saved_ptr < cts->cts_line + slen))
+	    && (saved_ptr < cts->cts_line + slen)
+#ifdef FEAT_PROP_POPUP
+	    && !cts->cts_has_prop_with_text
+#endif
+       )
     {
 	cts->cts_ptr = saved_ptr;
 	cts->cts_vcol = vcol = saved_vcol;
@@ -913,7 +917,11 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 		&& (cts->cts_ptr > cts->cts_line)
 		&& (cts->cts_ptr - cts->cts_line <= col_save)
 		&& (cts->cts_ptr + (*mb_ptr2len)(cts->cts_ptr) - cts->cts_line
-			>= col_save))
+			>= col_save)
+#ifdef FEAT_PROP_POPUP
+		&& !cts->cts_has_prop_with_text
+#endif
+	   )
 	{
 	    saved_ptr = cts->cts_ptr;
 	    saved_vcol = vcol;
@@ -1744,7 +1752,11 @@ getvcol(
 		&& (old_line == line)
 		&& (saved_ptr >= line)
 		&& (saved_ptr < line + pos->col)
-		&& (old_cond == 2))
+		&& (old_cond == 2)
+#ifdef FEAT_PROP_POPUP
+		&& !cts.cts_has_prop_with_text
+#endif
+	   )
 	{
 	    cts.cts_ptr = saved_ptr;
 	    cts.cts_vcol = saved_vcol;
@@ -1779,7 +1791,11 @@ getvcol(
 	    if (s_use_vcol_cache
 		    && (cts.cts_ptr > line)
 		    && (cts.cts_ptr - line <= col_save)
-		    && (next_ptr - line >= col_save))
+		    && (next_ptr - line >= col_save)
+#ifdef FEAT_PROP_POPUP
+		    && !cts.cts_has_prop_with_text
+#endif
+	       )
 	    {
 		saved_ptr = next_ptr;
 		saved_vcol = cts.cts_vcol + incr;

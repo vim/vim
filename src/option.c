@@ -2747,7 +2747,6 @@ did_set_option(
 	*p = *p | P_INSECURE;
     else if (new_value)
 	*p = *p & ~P_INSECURE;
-    invalidate_vcol_cache();
 }
 
 /*
