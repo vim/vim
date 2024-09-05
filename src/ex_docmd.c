@@ -2898,12 +2898,9 @@ parse_command_modifiers(
 	if (comment_start(eap->cmd, starts_with_colon))
 	{
 	    // a comment ends at a NL
-	    if (eap->nextcmd == NULL)
-	    {
-		eap->nextcmd = vim_strchr(eap->cmd, '\n');
-		if (eap->nextcmd != NULL)
-		    ++eap->nextcmd;
-	    }
+	    eap->nextcmd = vim_strchr(eap->cmd, '\n');
+	    if (eap->nextcmd != NULL)
+		++eap->nextcmd;
 	    if (vim9script)
 	    {
 		if (has_cmdmod(cmod, FALSE))
@@ -2916,7 +2913,7 @@ parse_command_modifiers(
 	    }
 	    return FAIL;
 	}
-	if (eap->nextcmd == NULL && *eap->cmd == '\n')
+	if (*eap->cmd == '\n')
 	{
 	    eap->nextcmd = eap->cmd + 1;
 	    return FAIL;
