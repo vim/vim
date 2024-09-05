@@ -898,7 +898,7 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     else
 	s_vcol_cache_valid1 = FALSE;
     if (s_vcol_cache_valid1
-	    && (old_win != NULL) && (old_win != cts->cts_win)
+	    && (old_win != NULL) && (old_win == cts->cts_win)
 	    && (old_line != NULL) && (old_line == cts->cts_line)
 	    && (saved_ptr >= cts->cts_line)
 	    && (saved_ptr < cts->cts_line + slen)
