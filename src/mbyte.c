@@ -5630,7 +5630,8 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     int		    item;
     int		    i;
     listitem_T	    **ptrs;
-    cw_interval_T   *table;
+    cw_interval_T   *table = NULL;
+    size_t	    table_size;
     cw_interval_T   *cw_table_save;
     size_t	    cw_table_size_save;
     char	    *error = NULL;
@@ -5639,15 +5640,12 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     l = argvars[0].vval.v_list;
-    if (l->lv_len == 0)
-    {
+    table_size = (size_t)l->lv_len;
+    if (table_size == 0)
 	// Clearing the table.
-	VIM_CLEAR(cw_table);
-	cw_table_size = 0;
-	goto done;
-    }
+	goto update;
 
-    ptrs = ALLOC_MULT(listitem_T *, l->lv_len);
+    ptrs = ALLOC_MULT(listitem_T *, table_size);
     if (ptrs == NULL)
 	return;
 
@@ -5706,9 +5704,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     // Sort the list on the first number.
-    qsort((void *)ptrs, (size_t)l->lv_len, sizeof(listitem_T *), tv_nr_compare);
+    qsort((void *)ptrs, table_size, sizeof(listitem_T *), tv_nr_compare);
 
-    table = ALLOC_MULT(cw_interval_T, l->lv_len);
+    table = ALLOC_MULT(cw_interval_T, table_size);
     if (table == NULL)
     {
 	vim_free(ptrs);
@@ -5716,7 +5714,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     // Store the items in the new table.
-    for (item = 0; item < l->lv_len; ++item)
+    for (item = 0; (size_t)item < table_size; ++item)
     {
 	listitem_T	*lili = ptrs[item];
 	varnumber_T	n1;
@@ -5738,10 +5736,11 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 
     vim_free(ptrs);
 
+update:
     cw_table_save = cw_table;
     cw_table_size_save = cw_table_size;
     cw_table = table;
-    cw_table_size = l->lv_len;
+    cw_table_size = table_size;
 
     // Check that the new value does not conflict with 'listchars' or
     // 'fillchars'.
@@ -5756,7 +5755,6 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     vim_free(cw_table_save);
-done:
     changed_window_setting_all();
     redraw_all_later(UPD_CLEAR);
 }
