@@ -862,7 +862,7 @@ enable_vcol_cache(void)
     void
 disable_vcol_cache(void)
 {
-    s_use_vcol_cache = TRUE;
+    s_use_vcol_cache = FALSE;
 }
 
     void
