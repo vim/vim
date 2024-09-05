@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Aug 03
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Sep 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -828,8 +828,8 @@ accordingly.  Vim proceeds in this order:
 	easy to copy it to another system.
 
 	If Vim was started with "-u filename", the file "filename" is used.
-	All following initializations until 4. are skipped. $MYVIMRC is not
-	set.
+	All following initializations until 4. are skipped. $MYVIMRC and
+	$MYVIMDIR are not set.
 	"vim -u NORC" can be used to skip these initializations without
 	reading a file.  "vim -u NONE" also skips loading plugins.  |-u|
 
@@ -847,11 +847,13 @@ accordingly.  Vim proceeds in this order:
 	'compatible' is only done later.  Add a ":set nocp" command if you
 	like.  For the Macintosh the $VIMRUNTIME/macmap.vim is read.
 
-	  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc* *$MYVIMRC*
+	  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc* *$MYVIMRC* *$MYVIMDIR*
      c. Five places are searched for initializations.  The first that exists
 	is used, the others are ignored.  The $MYVIMRC environment variable is
 	set to the file that was first found, unless $MYVIMRC was already set
-	and when using VIMINIT.
+	and when using VIMINIT.  The $MYVIMDIR environment variable is
+	set to the personal 'rtp' directory, however it is not verified
+	that the directory actually exists.
 	I   The environment variable VIMINIT (see also |compatible-default|) (*)
 	    The value of $VIMINIT is used as an Ex command line.
 	II  The user vimrc file(s):
@@ -971,7 +973,8 @@ accordingly.  Vim proceeds in this order:
 	The |VimEnter| autocommands are executed.
 
 The $MYVIMRC or $MYGVIMRC file will be set to the first found vimrc and/or
-gvimrc file.
+gvimrc file while $MYVIMDIR is set to the users personal runtime directory
+'rtp' (typically the first entry in 'runtimepath').
 
 
 Some hints on using initializations ~
