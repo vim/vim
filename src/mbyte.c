@@ -5644,7 +5644,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	// Clearing the table.
 	VIM_CLEAR(cw_table);
 	cw_table_size = 0;
-	return;
+	goto done;
     }
 
     ptrs = ALLOC_MULT(listitem_T *, l->lv_len);
@@ -5756,6 +5756,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     vim_free(cw_table_save);
+done:
     changed_window_setting_all();
     redraw_all_later(UPD_CLEAR);
 }
