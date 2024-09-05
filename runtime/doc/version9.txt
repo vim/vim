@@ -41668,6 +41668,10 @@ Python3 support in OpenVMS.
 Support for |fuzzy-matching| during |ins-completion| with the "fuzzy"
 values of the 'completeopt' setting
 
+The environment variable |$MYVIMDIR| is set to the users personal runtime
+directory ($HOME/.vim or $HOME/.config/vim on Linux, $HOME/vimfiles
+on Windows)
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-9.2*
 
