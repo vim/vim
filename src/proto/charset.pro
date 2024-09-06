@@ -37,6 +37,7 @@ int vim_isfilec_or_wc(int c);
 int vim_isprintc(int c);
 int vim_isprintc_strict(int c);
 void init_chartabsize_arg(chartabsize_T *cts, win_T *wp, linenr_T lnum, colnr_T col, char_u *line, char_u *ptr);
+void init_chartabsize_arg_len(chartabsize_T *cts, win_T *wp, linenr_T lnum, colnr_T col, char_u *line, char_u *ptr, colnr_T len);
 void clear_chartabsize_arg(chartabsize_T *cts);
 int lbr_chartabsize(chartabsize_T *cts);
 int lbr_chartabsize_adv(chartabsize_T *cts);

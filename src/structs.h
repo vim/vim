@@ -4975,6 +4975,7 @@ typedef struct {
 #endif
     int		cts_vcol;		// virtual column at current position
     int		cts_max_head_vcol;	// see win_lbr_chartabsize()
+    colnr_T	cts_len;		// length of cts_line, or -1
 } chartabsize_T;
 
 /*

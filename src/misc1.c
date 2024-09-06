@@ -405,10 +405,12 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
     char_u	*s;
     long	col;
     int		width;
+    colnr_T	len;
     chartabsize_T cts;
 
     s = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    init_chartabsize_arg(&cts, wp, lnum, 0, s, s);
+    len = ml_get_buf_len(wp->w_buffer, lnum);
+    init_chartabsize_arg_len(&cts, wp, lnum, 0, s, s, len);
     if (*s == NUL
 #ifdef FEAT_PROP_POPUP
 	    && !cts.cts_has_prop_with_text

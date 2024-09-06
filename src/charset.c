@@ -890,7 +890,12 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     if (s_use_vcol_cache)
     {
 	if (slen == MAXCOL)
-	    slen = STRLEN(cts->cts_line);
+	{
+	    if (cts->cts_len != -1)
+		slen = cts->cts_len;
+	    else
+		slen = STRLEN(cts->cts_line);
+	}
 	col_save = (colnr_T)((varnumber_T)slen * 4 / 5);
 	if (slen - col_save > 4096)
 	    col_save = slen - 4096;
@@ -1099,11 +1104,25 @@ init_chartabsize_arg(
 	char_u		*line,
 	char_u		*ptr)
 {
+    init_chartabsize_arg_len(cts, wp, lnum, col, line, ptr, -1);
+}
+
+    void
+init_chartabsize_arg_len(
+	chartabsize_T	*cts,
+	win_T		*wp,
+	linenr_T	lnum UNUSED,
+	colnr_T		col,
+	char_u		*line,
+	char_u		*ptr,
+	colnr_T		len)
+{
     CLEAR_POINTER(cts);
     cts->cts_win = wp;
     cts->cts_vcol = col;
     cts->cts_line = line;
     cts->cts_ptr = ptr;
+    cts->cts_len = len;
 #ifdef FEAT_LINEBREAK
     cts->cts_bri_size = -1;
 #endif
