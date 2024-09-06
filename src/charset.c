@@ -849,21 +849,8 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
 #endif
 }
 
-static int s_use_vcol_cache = FALSE;
 static int s_vcol_cache_valid1 = FALSE;
 static int s_vcol_cache_valid2 = FALSE;
-
-    void
-enable_vcol_cache(void)
-{
-    s_use_vcol_cache = TRUE;
-}
-
-    void
-disable_vcol_cache(void)
-{
-    s_use_vcol_cache = FALSE;
-}
 
     void
 invalidate_vcol_cache(void)
@@ -887,21 +874,16 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     cts->cts_with_trailing = len == MAXCOL;
 #endif
 
-    if (s_use_vcol_cache)
+    if (slen == MAXCOL)
     {
-	if (slen == MAXCOL)
-	{
-	    if (cts->cts_len != -1)
-		slen = cts->cts_len;
-	    else
-		slen = STRLEN(cts->cts_line);
-	}
-	col_save = (colnr_T)((varnumber_T)slen * 4 / 5);
-	if (slen - col_save > 4096)
-	    col_save = slen - 4096;
+	if (cts->cts_len != -1)
+	    slen = cts->cts_len;
+	else
+	    slen = STRLEN(cts->cts_line);
     }
-    else
-	s_vcol_cache_valid1 = FALSE;
+    col_save = (colnr_T)((varnumber_T)slen * 4 / 5);
+    if (slen - col_save > 4096)
+	col_save = slen - 4096;
     if (s_vcol_cache_valid1
 	    && (old_win != NULL) && (old_win == cts->cts_win)
 	    && (old_line != NULL) && (old_line == cts->cts_line)
@@ -919,8 +901,7 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     for ( ; *cts->cts_ptr != NUL && (len == MAXCOL || cts->cts_ptr < cts->cts_line + len);
 						      MB_PTR_ADV(cts->cts_ptr))
     {
-	if (s_use_vcol_cache
-		&& (cts->cts_ptr > cts->cts_line)
+	if ((cts->cts_ptr > cts->cts_line)
 		&& (cts->cts_ptr - cts->cts_line <= col_save)
 		&& (cts->cts_ptr + (*mb_ptr2len)(cts->cts_ptr) - cts->cts_line
 			>= col_save)
@@ -1672,14 +1653,9 @@ getvcol(
     init_chartabsize_arg(&cts, wp, pos->lnum, 0, line, line);
     cts.cts_max_head_vcol = -1;
 
-    if (s_use_vcol_cache)
-    {
-	col_save = (colnr_T)((varnumber_T)pos->col * 4 / 5);
-	if (pos->col - col_save > 4096)
-	    col_save = pos->col - 4096;
-    }
-    else
-	s_vcol_cache_valid2 = FALSE;
+    col_save = (colnr_T)((varnumber_T)pos->col * 4 / 5);
+    if (pos->col - col_save > 4096)
+	col_save = pos->col - 4096;
 
     /*
      * This function is used very often, do some speed optimizations.
@@ -1752,8 +1728,7 @@ getvcol(
 	    if (next_ptr - line > pos->col) // character at pos->col
 		break;
 
-	    if (s_use_vcol_cache
-		    && (ptr > line)
+	    if ((ptr > line)
 		    && (ptr - line <= col_save)
 		    && (next_ptr - line >= col_save))
 	    {
@@ -1811,8 +1786,7 @@ getvcol(
 	    if (next_ptr - line > pos->col) // character at pos->col
 		break;
 
-	    if (s_use_vcol_cache
-		    && (cts.cts_ptr > line)
+	    if ((cts.cts_ptr > line)
 		    && (cts.cts_ptr - line <= col_save)
 		    && (next_ptr - line >= col_save)
 #ifdef FEAT_PROP_POPUP
