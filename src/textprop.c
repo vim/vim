@@ -497,7 +497,16 @@ prop_add_common(
 	end_col = 1;
 
     if (dict_has_key(dict, "id"))
-	id = dict_get_number(dict, "id");
+    {
+	vimlong_T x;
+	x = dict_get_number(dict, "id");
+	if (x > INT_MAX)
+	{
+	    semsg(_(e_val_too_large), dict_get_string(dict, "id", FALSE));
+	    goto theend;
+	}
+	id = (int)x;
+    }
 
     if (dict_has_key(dict, "text"))
     {

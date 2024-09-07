@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.1.  Last change: 2024 Jun 08
+*textprop.txt*  For Vim version 9.1.  Last change: 2024 Sep 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -140,10 +140,10 @@ prop_add({lnum}, {col}, {props})
 		   bufnr	buffer to add the property to; when omitted
 				the current buffer is used
 		   id		user defined ID for the property; must be a
-				number, should be positive; when using "text"
-				then "id" must not be present and will be set
-				automatically to a negative number; otherwise
-				zero is used
+				number, should be positive |E1510|;
+				when using "text" then "id" must not be
+				present and will be set automatically to a
+				negative number; otherwise zero is used
 							*E1305*
 		   text		text to be displayed before {col}, or
 				above/below the line if {col} is zero; prepend

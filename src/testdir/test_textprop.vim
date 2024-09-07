@@ -1780,6 +1780,7 @@ func Test_prop_func_invalid_args()
   call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'length':-1})", 'E475:')
   call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'end_col':0})", 'E475:')
   call assert_fails("call prop_add(2, 3, {'length':1})", 'E965:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'id': 2147483648})", 'E1510:')
 
   call prop_type_delete('xxx')
   bwipe!
