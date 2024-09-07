@@ -6192,6 +6192,7 @@ bufexists()	builtin.txt	/*bufexists()*
 buffer-functions	usr_41.txt	/*buffer-functions*
 buffer-hidden	windows.txt	/*buffer-hidden*
 buffer-list	windows.txt	/*buffer-list*
+buffer-reuse	windows.txt	/*buffer-reuse*
 buffer-variable	eval.txt	/*buffer-variable*
 buffer-write	editing.txt	/*buffer-write*
 buffer_exists()	builtin.txt	/*buffer_exists()*
