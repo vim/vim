@@ -16,6 +16,7 @@ int ptr2cells(char_u *p);
 int vim_strsize(char_u *s);
 int vim_strnsize(char_u *s, int len);
 int chartabsize(char_u *p, colnr_T col);
+int win_chartabsize(win_T *wp, char_u *p, colnr_T col);
 int linetabsize_str(char_u *s);
 int linetabsize_col(int startcol, char_u *s);
 int win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len);
