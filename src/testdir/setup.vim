@@ -34,6 +34,10 @@ if 1
   " defaults before we get here, and test_mksession checks that.
   let $ORIGHOME = $HOME
 
+  if !exists('$XDG_CONFIG_HOME')
+    let $XDG_CONFIG_HOME = $HOME .. '/.config'
+  endif
+
   " Make sure $HOME does not get read or written.
   " It must exist, gnome tries to create $HOME/.gnome2
   let $HOME = getcwd() . '/XfakeHOME'
