@@ -64,7 +64,7 @@ if !exists("g:GetLatestVimScripts_options")
  if g:GetLatestVimScripts_wget == "wget"
   let g:GetLatestVimScripts_options= "-q -O"
  elseif g:GetLatestVimScripts_wget == "curl"
-  let g:GetLatestVimScripts_options= "-s -O"
+  let g:GetLatestVimScripts_options= "-s -o"
  else
   let g:GetLatestVimScripts_options= ""
  endif
@@ -77,7 +77,11 @@ endif
 
 " set up default scriptaddr address
 if !exists("g:GetLatestVimScripts_scriptaddr")
- let g:GetLatestVimScripts_scriptaddr = 'http://vim.sourceforge.net/script.php?script_id='
+ let g:GetLatestVimScripts_scriptaddr = 'https://www.vim.org/scripts/script.php?script_id='
+endif
+
+if !exists("g:GetLatestVimScripts_downloadaddr")
+  let g:GetLatestVimScripts_downloadaddr = 'https://www.vim.org/scripts/download_script.php?src_id='
 endif
 
 "" For debugging:
@@ -89,11 +93,11 @@ endif
 let s:autoinstall= ""
 if g:GetLatestVimScripts_allowautoinstall
 
- if (has("win32") || has("gui_win32") || has("gui_win32s") || has("win16") || has("win64") || has("win32unix") || has("win95")) && &shell != "bash"
+ if (has("win32") || has("gui_win32") || has("gui_win32s") || has("win16") || has("win64") || has("win32unix") || has("win95")) && &shell !~ '\cbash\|pwsh\|powershell'
   " windows (but not cygwin/bash)
   let s:dotvim= "vimfiles"
   if !exists("g:GetLatestVimScripts_mv")
-   let g:GetLatestVimScripts_mv= "ren"
+   let g:GetLatestVimScripts_mv= "move"
   endif
 
  else
@@ -515,11 +519,11 @@ fun! s:GetOneScript(...)
 "   call Decho(".downloading new <".sname.">")
    echomsg ".downloading new <".sname.">"
    if has("win32") || has("win16") || has("win95")
-"    call Decho(".new|exe silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape('http://vim.sourceforge.net/scripts/download_script.php?src_id='.latestsrcid)."|q")
-    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape('http://vim.sourceforge.net/scripts/download_script.php?src_id='.latestsrcid)|q
+"    call Decho(".new|exe silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid)."|q")
+    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid)|q
    else
-"    call Decho(".exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape('http://vim.sourceforge.net/scripts/download_script.php?src_id='))
-    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape('http://vim.sourceforge.net/scripts/download_script.php?src_id=').latestsrcid
+"    call Decho(".exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr).latestsrcid
+    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr).latestsrcid
    endif
 
    " --------------------------------------------------------------------------
@@ -573,7 +577,7 @@ fun! s:GetOneScript(...)
 "      call Decho("no decompression needed")
      endif
      
-     " distribute archive(.zip, .tar, .vba, ...) contents
+     " distribute archive(.zip, .tar, .vba, .vmb, ...) contents
      if sname =~ '\.zip$'
 "      call Decho("dearchive: attempt to unzip ".sname)
       exe "silent !unzip -o ".shellescape(sname)
@@ -592,7 +596,7 @@ fun! s:GetOneScript(...)
      elseif sname =~ '\.txz$'
 "      call Decho("dearchive: attempt to untar+xz ".sname)
       exe "silent !tar -Jxvf ".shellescape(sname)
-     elseif sname =~ '\.vba$'
+     elseif sname =~ '\.vba$\|\.vmb$'
 "      call Decho("dearchive: attempt to handle a vimball: ".sname)
       silent 1split
       if exists("g:vimball_home")
