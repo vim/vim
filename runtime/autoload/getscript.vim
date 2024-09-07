@@ -212,9 +212,10 @@ fun! getscript#GetLatestVimScripts()
 "  call Decho("searching plugins for GetLatestVimScripts dependencies")
   let lastline    = line("$")
 "  call Decho("lastline#".lastline)
-  let firstdir    = substitute(&rtp,',.*$','','')
+  let firstdir    = substitute(&rtp,',.{-}$','','')
   let plugins     = split(globpath(firstdir,"plugin/**/*.vim"),'\n')
-  let plugins     = plugins + split(globpath(firstdir,"AsNeeded/**/*.vim"),'\n')
+  let plugins     += split(globpath(firstdir,"ftplugin/**/*.vim"),'\n')
+  let plugins     += split(globpath(firstdir,"AsNeeded/**/*.vim"),'\n')
   let foundscript = 0
 
   " this loop updates the GetLatestVimScripts.dat file
