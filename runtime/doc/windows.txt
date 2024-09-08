@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 9.1.  Last change: 2024 Sep 07
+*windows.txt*   For Vim version 9.1.  Last change: 2024 Sep 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -394,7 +394,7 @@ CTRL-W CTRL-C						*CTRL-W_CTRL-C*
 		to the buffer are not written and won't get lost, so this is a
 		"safe" command.
 
-:hid[e] {cmd}	Execute {cmd} with 'hidden' is set.  The previous value of
+:hid[e] {cmd}	Execute {cmd} with 'hidden' set.  The previous value of
 		'hidden' is restored after {cmd} has been executed.
 		Example: >
 		    :hide edit Makefile
