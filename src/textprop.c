@@ -372,7 +372,16 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     type_name = dict_get_string(dict, "type", FALSE);
 
     if (dict_has_key(dict, "id"))
-	id = dict_get_number(dict, "id");
+    {
+	vimlong_T x;
+	x = dict_get_number(dict, "id");
+	if (x > INT_MAX || x  <= INT_MIN)
+	{
+	    semsg(_(e_val_too_large), dict_get_string(dict, "id", FALSE));
+	    return;
+	}
+	id = (int)x;
+    }
 
     if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
 	return;
@@ -497,7 +506,16 @@ prop_add_common(
 	end_col = 1;
 
     if (dict_has_key(dict, "id"))
-	id = dict_get_number(dict, "id");
+    {
+	vimlong_T x;
+	x = dict_get_number(dict, "id");
+	if (x > INT_MAX || x  <= INT_MIN)
+	{
+	    semsg(_(e_val_too_large), dict_get_string(dict, "id", FALSE));
+	    goto theend;
+	}
+	id = (int)x;
+    }
 
     if (dict_has_key(dict, "text"))
     {

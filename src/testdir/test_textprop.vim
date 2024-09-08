@@ -393,6 +393,8 @@ func Test_prop_add_list()
   call assert_fails('call prop_add_list(test_null_dict(), [[2, 2, 2]])', 'E965:')
   call assert_fails('call prop_add_list(#{type: "one"}, test_null_list())', 'E1298:')
   call assert_fails('call prop_add_list(#{type: "one"}, [test_null_list()])', 'E714:')
+  call assert_fails('call prop_add_list(#{type: "one", id: 2147483648}, [[2, 2, 2, 2], [3, 20, 3, 22]])', 'E1510:')
+  call assert_fails('call prop_add_list(#{type: "one", id: -2147483648}, [[2, 2, 2, 2], [3, 20, 3, 22]])', 'E1510:')
 
   " only one error for multiple wrong values
   call assert_fails('call prop_add_list(#{type: "one"}, [[{}, [], 0z00, 0.3]])', ['E728:', 'E728:'])
@@ -1780,6 +1782,8 @@ func Test_prop_func_invalid_args()
   call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'length':-1})", 'E475:')
   call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'end_col':0})", 'E475:')
   call assert_fails("call prop_add(2, 3, {'length':1})", 'E965:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'id': 2147483648})", 'E1510:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'id': -2147483648})", 'E1510:')
 
   call prop_type_delete('xxx')
   bwipe!
