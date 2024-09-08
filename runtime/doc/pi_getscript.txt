@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 9.1.  Last change: 2017 Aug 01
+*pi_getscript.txt*  For Vim version 9.1.  Last change: 2024 Sep 08
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell
 <
@@ -20,7 +20,7 @@ Copyright: (c) 2004-2012 by Charles E. Campbell	*glvs-copyright*
 Getscript is a plugin that simplifies retrieval of the latest versions of the
 scripts that you yourself use!  Typing |:GLVS| will invoke getscript; it will
 then use the <GetLatestVimScripts.dat> (see |GetLatestVimScripts_dat|) file to
-get the latest versions of scripts listed therein from http://vim.sf.net/.
+get the latest versions of scripts listed therein from https://www.vim.org/.
 
 ==============================================================================
 1. Contents				*glvs-contents* *glvs* *getscript*
@@ -59,9 +59,9 @@ the "important" part of it is the first two lines.
 
 Your computer needs to have wget or curl for GetLatestVimScripts to do its work.
 
-	1. if compressed:  gunzip getscript.vba.gz
+	1. if compressed:  gunzip getscript.vmb.gz
 	2. Unix:
-		vim getscript.vba
+		vim getscript.vmb
 		:so %
 		:q
 		cd ~/.vim/GetLatest
@@ -70,7 +70,7 @@ Your computer needs to have wget or curl for GetLatestVimScripts to do its work.
 		list of desired plugins -- see |GetLatestVimScripts_dat|)
 
 	3. Windows:
-		vim getscript.vba
+		vim getscript.vmb
 		:so %
 		:q
 		cd **path-to-vimfiles**/GetLatest
@@ -281,11 +281,14 @@ With :AutoInstall: enabled, as it is by default, files which end with
 
 	---.tar.bz2  : decompressed & untarred in .vim/ directory
 	---.vba.bz2  : decompressed in .vim/ directory, then vimball handles it
+	---.vmb.bz2  : decompressed in .vim/ directory, then vimball handles it
 	---.vim.bz2  : decompressed & moved into .vim/plugin directory
 	---.tar.gz   : decompressed & untarred in .vim/ directory
 	---.vba.gz   : decompressed in .vim/ directory, then vimball handles it
+	---.vmb.gz   : decompressed in .vim/ directory, then vimball handles it
 	---.vim.gz   : decompressed & moved into .vim/plugin directory
-	---.vba      : unzipped in .vim/ directory
+	---.vba      : moved to .vim/ directory, then vimball handles it
+	---.vmb      : moved to .vim/ directory, then vimball handles it
 	---.vim      : moved to .vim/plugin directory
 	---.zip      : unzipped in .vim/ directory
 
@@ -300,7 +303,7 @@ When is a script not auto-installable?  Let me give an example:
 The <blockhl.vim> script provides block highlighting for C/C++ programs; it is
 available at:
 
-	http://vim.sourceforge.net/scripts/script.php?script_id=104
+	https://www.vim.org/scripts/script.php?script_id=104
 
 Currently, vim's after/syntax only supports by-filetype scripts (in
 blockhl.vim's case, that's after/syntax/c.vim).  Hence, auto-install would
@@ -309,7 +312,7 @@ possibly overwrite the current user's after/syntax/c.vim file.
 In my own case, I use <aftersyntax.vim> (renamed to after/syntax/c.vim) to
 allow a after/syntax/c/ directory:
 
-	http://vim.sourceforge.net/scripts/script.php?script_id=1023
+	https://www.vim.org/scripts/script.php?script_id=1023
 
 The script allows multiple syntax files to exist separately in the
 after/syntax/c subdirectory.  I can't bundle aftersyntax.vim in and build an
@@ -345,17 +348,22 @@ after/syntax/c.vim contained in it to overwrite a user's c.vim.
 		Doesn't override vimball installation.
 >
 	g:GetLatestVimScripts_scriptaddr
-<       default='http://vim.sourceforge.net/script.php?script_id='
+<        default='https://www.vim.org/scripts/script.php?script_id='
 		Override this if your system needs
-	  ...  ='http://vim.sourceforge.net/script/script.php?script_id='
-
+	  ...  ='http://vim.sourceforge.net/script.php?script_id='
+>
+	g:GetLatestVimScripts_downloadaddr
+<        default='https://www.vim.org/scripts/download_script.php?src_id='
+		Override this if your system needs
+	  ...  ='http://vim.sourceforge.net/scripts/download_script.php?src_id='
+>
 ==============================================================================
 8. GetLatestVimScripts Algorithm		*glvs-algorithm* *glvs-alg*
 
 The Vim sourceforge page dynamically creates a page by keying off of the
 so-called script-id.  Within the webpage of
 
-	http://vim.sourceforge.net/scripts/script.php?script_id=40
+	https://www.vim.org/scripts/script.php?script_id=40
 
 is a line specifying the latest source-id (src_id).  The source identifier
 numbers are always increasing, hence if the src_id is greater than the one
