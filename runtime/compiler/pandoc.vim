@@ -50,12 +50,12 @@ silent! function s:PandocLang()
 endfunction
 
 execute 'CompilerSet makeprg=pandoc'..escape(
-    \ ' --standalone' .
+    \ ' --standalone'..
     \ (s:PandocFiletype(&filetype) ==# 'markdown' && (getline(1) =~# '^%\s\+\S\+' || (search('^title:\s+\S+', 'cnw') > 0)) ?
-    \ '' : ' --metadata title=%:t:r:S') .
-    \ ' '..s:PandocLang() .
-    \ ' --from='..s:PandocFiletype(&filetype) .
-    \ ' '..get(b:, 'pandoc_compiler_args', get(g:, 'pandoc_compiler_args', '')) .
+    \ '' : ' --metadata title=%:t:r:S')..
+    \ ' '..s:PandocLang()..
+    \ ' --from='..s:PandocFiletype(&filetype)..
+    \ ' '..get(b:, 'pandoc_compiler_args', get(g:, 'pandoc_compiler_args', ''))..
     \ ' --output %:r:S.$* -- %:S', ' ')
 CompilerSet errorformat=\"%f\",\ line\ %l:\ %m
 
