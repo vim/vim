@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.1.  Last change: 2024 Sep 07
+*textprop.txt*  For Vim version 9.1.  Last change: 2024 Sep 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -271,7 +271,7 @@ prop_add_list({props}, [{item}, ...])			*prop_add_list()*
 			call prop_add_list(#{type: 'MyProp', id: 2},
 					\ [[1, 4, 1, 7],
 					\  [1, 15, 1, 20],
-					\  [2, 30, 3, 30]]
+					\  [2, 30, 3, 30]])
 <
 		Can also be used as a |method|: >
 			GetProp()->prop_add_list([[1, 1, 1, 2], [1, 4, 1, 8]])
