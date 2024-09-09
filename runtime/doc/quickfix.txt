@@ -1276,6 +1276,12 @@ not "b:current_compiler".  What the command actually does is the following:
 
 For writing a compiler plugin, see |write-compiler-plugin|.
 
+GNU MAKE						*compiler-make*
+
+Since the default make program is "make", the compiler plugin for make,
+:compiler make, will reset the 'makeprg' and 'errorformat' option to
+the default values and unlet any variables that may have been set by a 
+previous compiler plugin.
 
 DOTNET							*compiler-dotnet*
 

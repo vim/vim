@@ -1,4 +1,4 @@
-if exists("current_compiler") | finish | endif
+if exists("g:current_compiler") | unlet b:current_compiler | endif
 if exists("b:current_compiler") | unlet b:current_compiler | endif
 
 let s:cpo_save = &cpo
