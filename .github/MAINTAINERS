@@ -65,6 +65,7 @@ runtime/compiler/gawk.vim		@dkearns
 runtime/compiler/gjs.vim		@dkearns
 runtime/compiler/gm2.vim		@dkearns
 runtime/compiler/go.vim			@dbarnett
+runtime/compiler/groff.vim		@Konfekt
 runtime/compiler/haml.vim		@tpope
 runtime/compiler/hare.vim		@selenebun
 runtime/compiler/icon.vim		@dkearns

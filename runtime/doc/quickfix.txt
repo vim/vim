@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Aug 20
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Sep 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1334,6 +1334,18 @@ up to 25 remaining errors will be found.
 If Vim was started from the compiler, the :sh and some :!  commands will not
 work, because Vim is then running in the same process as the compiler and
 stdin (standard input) will not be interactive.
+
+GROFF					*quickfix-groff* *compiler-groff*
+
+The GROFF compiler plugin uses the mom macro set (documented in the groff_mom
+manpage) as input and expects that the output file type extension is passed to
+make, say :make html or :make pdf.
+
+Additional arguments can be passed to groff by setting them in
+`b:groff_compiler_args` or `g:groff_compiler_args`. The `language` argument
+passed to groff is set using 'spelllang'; it can be overridden by setting
+`b:groff_compiler_lang`. The default enconding is `UTF-8` and can be changed
+by setting `b:groff_compiler_encoding` or `g:groff_compiler_encoding`.
 
 PANDOC					*quickfix-pandoc* *compiler-pandoc*
 
