@@ -76,6 +76,7 @@ runtime/compiler/jshint.vim		@dkearns
 runtime/compiler/jsonlint.vim		@dkearns
 runtime/compiler/jq.vim                 @vito-c
 runtime/compiler/lazbuild.vim		@dkearns
+runtime/compiler/pandoc.vim		@Konfekt
 runtime/compiler/perl.vim		@petdance @heptite
 runtime/compiler/perlcritic.vim		@petdance @dkearns
 runtime/compiler/php.vim		@dkearns
