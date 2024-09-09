@@ -267,7 +267,8 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define _Py_NoneStruct (*py3__Py_NoneStruct)
 # define _Py_FalseStruct (*py3__Py_FalseStruct)
 # define _Py_TrueStruct (*py3__Py_TrueStruct)
-# ifndef USE_LIMITED_API
+# if !defined(USE_LIMITED_API) && PY_VERSION_HEX < 0x030D0000
+// Private symbol that used to be required as part of PyIter_Check.
 #  define _PyObject_NextNotImplemented (*py3__PyObject_NextNotImplemented)
 # endif
 # define PyModule_AddObject py3_PyModule_AddObject
@@ -482,7 +483,7 @@ static void (*py3_PyErr_Clear)(void);
 static PyObject* (*py3_PyErr_Format)(PyObject *, const char *, ...);
 static void (*py3_PyErr_PrintEx)(int);
 static PyObject*(*py3__PyObject_Init)(PyObject *, PyTypeObject *);
-# ifndef USE_LIMITED_API
+# if !defined(USE_LIMITED_API) && PY_VERSION_HEX < 0x030D0000
 static iternextfunc py3__PyObject_NextNotImplemented;
 # endif
 static PyObject* py3__Py_NoneStruct;
@@ -679,7 +680,7 @@ static struct
     {"PyEval_SaveThread", (PYTHON_PROC*)&py3_PyEval_SaveThread},
     {"_PyArg_Parse_SizeT", (PYTHON_PROC*)&py3_PyArg_Parse},
     {"Py_IsInitialized", (PYTHON_PROC*)&py3_Py_IsInitialized},
-# ifndef USE_LIMITED_API
+# if !defined(USE_LIMITED_API) && PY_VERSION_HEX < 0x030D0000
     {"_PyObject_NextNotImplemented", (PYTHON_PROC*)&py3__PyObject_NextNotImplemented},
 # endif
     {"_Py_NoneStruct", (PYTHON_PROC*)&py3__Py_NoneStruct},
