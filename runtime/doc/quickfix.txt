@@ -1280,7 +1280,7 @@ GNU MAKE						*compiler-make*
 
 Since the default make program is "make", the compiler plugin for make,
 :compiler make, will reset the 'makeprg' and 'errorformat' option to
-the default values and unlet any variables that may have been set by a 
+the default values and unlet any variables that may have been set by a
 previous compiler plugin.
 
 DOTNET							*compiler-dotnet*
