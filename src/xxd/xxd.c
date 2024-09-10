@@ -1002,8 +1002,8 @@ main(int argc, char *argv[])
                 fputs_or_die(", ", fpo);
 
               FPRINTF_OR_DIE((fpo, "0b"));
-              for (int i = 7; i >= 0; i--)
-                putc_or_die((c & (1 << i)) ? '1' : '0', fpo);
+              for (int j = 7; j >= 0; j--)
+                putc_or_die((c & (1 << j)) ? '1' : '0', fpo);
               p++;
 	    }
           else
