@@ -2371,7 +2371,7 @@ au BufNewFile,BufRead *.sml			setf sml
 au BufNewFile,BufRead *.cm			setf voscm
 
 " Swift
-au BufNewFile,BufRead *.swift			setf swift
+au BufNewFile,BufRead *.swift,*.swiftinterface	setf swift
 au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
 
 " Swift Intermediate Language or SILE
