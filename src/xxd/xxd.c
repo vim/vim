@@ -220,11 +220,11 @@ char osver[] = "";
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
 /* the different hextypes known by this program: */
-#define HEX_NORMAL 0
-#define HEX_POSTSCRIPT 1
-#define HEX_CINCLUDE 2
-#define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
-#define HEX_LITTLEENDIAN 4
+#define HEX_NORMAL         0x00  /* No flags set */
+#define HEX_POSTSCRIPT     0x01
+#define HEX_CINCLUDE       0x02
+#define HEX_BITS           0x04 /* not hex a dump, but bits: 01111001 */
+#define HEX_LITTLEENDIAN   0x08
 
 #define CONDITIONAL_CAPITALIZE(c) (capitalize ? toupper((unsigned char)(c)) : (c))
 
@@ -692,11 +692,11 @@ main(int argc, char *argv[])
     {
       pp = argv[1] + (!STRNCMP(argv[1], "--", 2) && argv[1][2]);
 	   if (!STRNCMP(pp, "-a", 2)) autoskip = 1 - autoskip;
-      else if (!STRNCMP(pp, "-b", 2)) hextype = HEX_BITS;
-      else if (!STRNCMP(pp, "-e", 2)) hextype = HEX_LITTLEENDIAN;
+      else if (!STRNCMP(pp, "-b", 2)) hextype |= HEX_BITS;
+      else if (!STRNCMP(pp, "-e", 2)) hextype |= HEX_LITTLEENDIAN;
       else if (!STRNCMP(pp, "-u", 2)) hexx = hexxa + 16;
-      else if (!STRNCMP(pp, "-p", 2)) hextype = HEX_POSTSCRIPT;
-      else if (!STRNCMP(pp, "-i", 2)) hextype = HEX_CINCLUDE;
+      else if (!STRNCMP(pp, "-p", 2)) hextype |= HEX_POSTSCRIPT;
+      else if (!STRNCMP(pp, "-i", 2)) hextype |= HEX_CINCLUDE;
       else if (!STRNCMP(pp, "-C", 2)) capitalize = 1;
       else if (!STRNCMP(pp, "-d", 2)) decimal_offset = 1;
       else if (!STRNCMP(pp, "-r", 2)) revert++;
@@ -856,11 +856,19 @@ main(int argc, char *argv[])
       argc--;
     }
 
+  if (hextype != (HEX_CINCLUDE | HEX_BITS))
+    {
+        /* Allow at most one bit to be set in hextype */
+        if (hextype & (hextype - 1))
+            error_exit(1, "only one of -b, -e, -u, -p, -i can be used");
+    }
+
   if (!colsgiven || (!cols && hextype != HEX_POSTSCRIPT))
     switch (hextype)
       {
       case HEX_POSTSCRIPT:	cols = 30; break;
       case HEX_CINCLUDE:	cols = 12; break;
+      case HEX_CINCLUDE | HEX_BITS:
       case HEX_BITS:		cols = 6; break;
       case HEX_NORMAL:
       case HEX_LITTLEENDIAN:
@@ -870,6 +878,7 @@ main(int argc, char *argv[])
   if (octspergrp < 0)
     switch (hextype)
       {
+      case HEX_CINCLUDE | HEX_BITS:
       case HEX_BITS:		octspergrp = 1; break;
       case HEX_NORMAL:		octspergrp = 2; break;
       case HEX_LITTLEENDIAN:	octspergrp = 4; break;
@@ -966,7 +975,7 @@ main(int argc, char *argv[])
 	}
     }
 
-  if (hextype == HEX_CINCLUDE)
+  if (hextype & HEX_CINCLUDE)
     {
       /* A user-set variable name overrides fp == stdin */
       if (varname == NULL && fp != stdin)
@@ -982,11 +991,28 @@ main(int argc, char *argv[])
 
       p = 0;
       while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
-	{
-	  FPRINTF_OR_DIE((fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
+        {
+          if (hextype & HEX_BITS)
+	    {
+              if (p == 0)
+                fputs_or_die("  ", fpo);
+              else if (p % cols == 0)
+                fputs_or_die(",\n  ", fpo);
+              else
+                fputs_or_die(", ", fpo);
+
+              FPRINTF_OR_DIE((fpo, "0b"));
+              for (int i = 7; i >= 0; i--)
+                putc_or_die((c & (1 << i)) ? '1' : '0', fpo);
+              p++;
+	    }
+          else
+	    {
+	      FPRINTF_OR_DIE((fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
 		(p % cols) ? ", " : (!p ? "  " : ",\n  "), c));
-	  p++;
-	}
+	      p++;
+	    }
+        }
 
       if (p)
 	fputs_or_die("\n", fpo);
