@@ -63,6 +63,7 @@
  * 25.01.2024  revert the previous patch (size_t instead of unsigned int)
  * 10.02.2024  fix buffer-overflow when writing color output to buffer, #14003
  * 10.05.2024  fix another buffer-overflow when writing colored output to buffer, #14738
+ * 10.09.2024  Support -b and -i together, #15661
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
