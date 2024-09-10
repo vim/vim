@@ -220,7 +220,7 @@ char osver[] = "";
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
 /* the different hextypes known by this program: */
-#define HEX_NORMAL         0x00  /* No flags set */
+#define HEX_NORMAL         0x00 /* no flags set */
 #define HEX_POSTSCRIPT     0x01
 #define HEX_CINCLUDE       0x02
 #define HEX_BITS           0x04 /* not hex a dump, but bits: 01111001 */
