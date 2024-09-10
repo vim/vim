@@ -256,7 +256,7 @@ exit_with_usage(void)
   fprintf(stderr, "    or\n       %s -r [-s [-]offset] [-c cols] [-ps] [infile [outfile]]\n", pname);
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "    -a          toggle autoskip: A single '*' replaces nul-lines. Default off.\n");
-  fprintf(stderr, "    -b          binary digit dump (incompatible with -ps,-i). Default hex.\n");
+  fprintf(stderr, "    -b          binary digit dump (incompatible with -ps). Default hex.\n");
   fprintf(stderr, "    -C          capitalize variable names in C include file style (-i).\n");
   fprintf(stderr, "    -c cols     format <cols> octets per line. Default 16 (-i: 12, -ps: 30).\n");
   fprintf(stderr, "    -E          show characters in EBCDIC. Default ASCII.\n");
