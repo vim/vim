@@ -6548,6 +6548,7 @@ compiler-gnat	ft_ada.txt	/*compiler-gnat*
 compiler-groff	quickfix.txt	/*compiler-groff*
 compiler-hpada	ft_ada.txt	/*compiler-hpada*
 compiler-javac	quickfix.txt	/*compiler-javac*
+compiler-make	quickfix.txt	/*compiler-make*
 compiler-manx	quickfix.txt	/*compiler-manx*
 compiler-pandoc	quickfix.txt	/*compiler-pandoc*
 compiler-perl	quickfix.txt	/*compiler-perl*
