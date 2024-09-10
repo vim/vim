@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 Sep 07
+*options.txt*	For Vim version 9.1.  Last change: 2024 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2148,10 +2148,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   fuzzy    Enable |fuzzy-matching| for completion candidates. This
 		    allows for more flexible and intuitive matching, where
 		    characters can be skipped and matches can be found even
-		    if the exact sequence is not typed.  Only makes a
-		    difference how completion candidates are reduced from the
-		    list of alternatives, but not how the candidates are
-		    collected (using different completion types).
+		    if the exact sequence is not typed.
 
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)
