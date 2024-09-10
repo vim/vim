@@ -219,7 +219,7 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyObject_GetItem py3_PyObject_GetItem
 # define PyObject_IsTrue py3_PyObject_IsTrue
 # define PyModule_GetDict py3_PyModule_GetDict
-# ifdef USE_LIMITED_API
+# if defined(USE_LIMITED_API) || PY_VERSION_HEX >= 0x03080000
 #  define Py_IncRef py3_Py_IncRef
 #  define Py_DecRef py3_Py_DecRef
 # endif
@@ -293,9 +293,6 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyBytes_FromString py3_PyBytes_FromString
 # undef PyBytes_FromStringAndSize
 # define PyBytes_FromStringAndSize py3_PyBytes_FromStringAndSize
-# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(USE_LIMITED_API)
-#  define _Py_Dealloc py3__Py_Dealloc
-# endif
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
@@ -396,7 +393,7 @@ static void (*py3_Py_Finalize)(void);
 static void (*py3_PyErr_SetString)(PyObject *, const char *);
 static void (*py3_PyErr_SetObject)(PyObject *, PyObject *);
 static int (*py3_PyErr_ExceptionMatches)(PyObject *);
-# ifdef USE_LIMITED_API
+# if defined(USE_LIMITED_API) || PY_VERSION_HEX >= 0x03080000
 static void (*py3_Py_IncRef)(PyObject *);
 static void (*py3_Py_DecRef)(PyObject *);
 # endif
@@ -497,9 +494,6 @@ static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
 static PyObject* (*py3_PyBytes_FromStringAndSize)(char *str, Py_ssize_t length);
-# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(USE_LIMITED_API)
-static void (*py3__Py_Dealloc)(PyObject *obj);
-# endif
 # if PY_VERSION_HEX >= 0x030900b0
 static PyObject* (*py3__PyObject_New)(PyTypeObject *);
 # endif
@@ -607,7 +601,7 @@ static struct
     {"PyErr_SetString", (PYTHON_PROC*)&py3_PyErr_SetString},
     {"PyErr_SetObject", (PYTHON_PROC*)&py3_PyErr_SetObject},
     {"PyErr_ExceptionMatches", (PYTHON_PROC*)&py3_PyErr_ExceptionMatches},
-# ifdef USE_LIMITED_API
+# if defined(USE_LIMITED_API) || PY_VERSION_HEX >= 0x03080000
     {"Py_IncRef", (PYTHON_PROC*)&py3_Py_IncRef},
     {"Py_DecRef", (PYTHON_PROC*)&py3_Py_DecRef},
 # endif
@@ -702,9 +696,6 @@ static struct
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
     {"PyBytes_FromStringAndSize", (PYTHON_PROC*)&py3_PyBytes_FromStringAndSize},
-# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(USE_LIMITED_API)
-    {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
-# endif
 # if PY_VERSION_HEX >= 0x030900b0
     {"_PyObject_New", (PYTHON_PROC*)&py3__PyObject_New},
 # endif
@@ -752,44 +743,15 @@ static struct
     {"", NULL},
 };
 
-# if PY_VERSION_HEX >= 0x030800f0
-    static inline void
-py3__Py_DECREF(const char *filename UNUSED, int lineno UNUSED, PyObject *op)
-{
-    if (--op->ob_refcnt != 0)
-    {
-#  ifdef Py_REF_DEBUG
-	if (op->ob_refcnt < 0)
-	{
-	    _Py_NegativeRefcount(filename, lineno, op);
-	}
-#  endif
-    }
-    else
-    {
-	_Py_Dealloc(op);
-    }
-}
-
-#  undef Py_DECREF
-#  define Py_DECREF(op) py3__Py_DECREF(__FILE__, __LINE__, _PyObject_CAST(op))
-
-    static inline void
-py3__Py_XDECREF(PyObject *op)
-{
-    if (op != NULL)
-    {
-	Py_DECREF(op);
-    }
-}
-
-#  undef Py_XDECREF
-#  define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
-# endif
-
-# ifdef USE_LIMITED_API
+# if defined(USE_LIMITED_API) || PY_VERSION_HEX >= 0x03080000
 // Use stable versions of inc/dec ref. Note that these always null-check and
 // therefore there's no difference between XINCREF and INCREF.
+//
+// For 3.8 or above, we also use this version even if not using limited API.
+// The Py_DECREF macros in 3.8+ include references to internal functions which
+// cause link errors when building Vim. The stable versions are exposed as API
+// functions and don't have these problems (albeit slightly slower as they
+// require function calls rather than an inlined macro).
 #  undef Py_INCREF
 #  define Py_INCREF(obj) Py_IncRef((PyObject *)obj)
 #  undef Py_XINCREF
