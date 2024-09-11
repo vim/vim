@@ -107,3 +107,15 @@ def Foo()
   "useless string"
 enddef
 
+
+" leading command separator
+
+echo "Foo" | def Foo()
+enddef
+
+
+" command modifiers
+
+silent! def Foo()
+enddef
+

@@ -173,6 +173,18 @@ function Foo()
 endfunction
 
 
+" command modifiers
+
+silent! function Foo()
+endfunction
+
+
+" leading command separator
+
+echo "Foo" | function Foo()
+endfunction
+
+
 " delete function
 
 delfunction Foo
