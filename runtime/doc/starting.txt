@@ -1078,7 +1078,7 @@ recommended to add these lines somewhere near the top: >
 	unlet! skip_defaults_vim
 	source $VIMRUNTIME/defaults.vim
 Then Vim works like before you had a .vimrc. Copying $VIMRUNTIME/vimrc_example
-is way to do this.  Alternatively, you can copy defaults.vim to your .vimrc
+is one way to do this.  Alternatively, you can copy defaults.vim to your .vimrc
 and modify it (but then you won't get updates when it changes).
 
 If you don't like some of the defaults, you can still source defaults.vim and
