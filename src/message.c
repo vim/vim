@@ -1515,7 +1515,7 @@ msg_start(void)
     if (!did_return)
 	redir_write((char_u *)"\n", -1);
 
-    vim_strncpy(current_msg, "", CMDBUFFSIZE);
+    current_msg[0] = '\0';
 }
 
 /*
