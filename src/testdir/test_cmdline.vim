@@ -1617,7 +1617,7 @@ endfunc
 
 set cpo&
 
-func Test_getcmdtype()
+func Test_getcmdtype_getcmdmsg()
   call feedkeys(":MyCmd a\<C-R>=Check_cmdline(':')\<CR>\<Esc>", "xt")
 
   let cmdtype = ''
@@ -1641,6 +1641,11 @@ func Test_getcmdtype()
   cunmap <F6>
 
   call assert_equal('', getcmdline())
+
+  call assert_equal('', getcmdmsg())
+  autocmd CmdlineChanged * call assert_equal('Answer?', getcmdmsg())
+  call feedkeys(":call input('Answer?')\<CR>", "t")
+  call assert_equal('', getcmdmsg())
 endfunc
 
 func Test_verbosefile()
