@@ -2268,7 +2268,8 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
     else
 	msg_puts_display((char_u *)str, maxlen, attr, FALSE);
 
-    vim_snprintf(current_msg, sizeof(current_msg), "%s%s", current_msg, str);
+    vim_snprintf((char *)current_msg, sizeof(current_msg),
+	    "%s%s", current_msg, str);
 
     need_fileinfo = FALSE;
 }
