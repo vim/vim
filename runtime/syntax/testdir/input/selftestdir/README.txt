@@ -6,5 +6,5 @@ This is mainly used for debugging and testing the syntax test suite.
 
 Please test any changes as follows:
 	cd runtime/syntax/
-	VIM_SYNTAX_SELF_TESTING=1 make clean test
+	make clean self-testing test
 
