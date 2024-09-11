@@ -232,7 +232,8 @@ getcharsearch()			Dict	last character search
 getcharstr([{expr}])		String	get one character from the user
 getcmdcompltype()		String	return the type of the current
 					command-line completion
-getcmdline()			String	return the current command-line
+getcmdline()			String	return the current command-line input
+getcmdmsg()			String	return the current command-line message
 getcmdpos()			Number	return cursor position in command-line
 getcmdscreenpos()		Number	return cursor screen position in
 					command-line
