@@ -1070,7 +1070,8 @@ Buffers, windows and the argument list:
 Command line:					*command-line-functions*
 	getcmdcompltype()	get the type of the current command line
 				completion
-	getcmdline()		get the current command line
+	getcmdline()		get the current command line input
+	getcmdmsg()		get the current command line message
 	getcmdpos()		get position of the cursor in the command line
 	getcmdscreenpos()	get screen position of the cursor in the
 				command line

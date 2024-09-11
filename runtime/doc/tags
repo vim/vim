@@ -7826,6 +7826,7 @@ getcharsearch()	builtin.txt	/*getcharsearch()*
 getcharstr()	builtin.txt	/*getcharstr()*
 getcmdcompltype()	builtin.txt	/*getcmdcompltype()*
 getcmdline()	builtin.txt	/*getcmdline()*
+getcmdmsg()	builtin.txt	/*getcmdmsg()*
 getcmdpos()	builtin.txt	/*getcmdpos()*
 getcmdscreenpos()	builtin.txt	/*getcmdscreenpos()*
 getcmdtype()	builtin.txt	/*getcmdtype()*
