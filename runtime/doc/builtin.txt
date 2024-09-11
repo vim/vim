@@ -3980,7 +3980,7 @@ getcmdcompltype()					*getcmdcompltype()*
 		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
 		See |:command-completion| for the return string.
 		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
-		|getcmdmsg| and |setcmdline()|.
+		|getcmdmsg()| and |setcmdline()|.
 		Returns an empty string when completion is not defined.
 
 		Return type: |String|
@@ -3993,7 +3993,7 @@ getcmdline()						*getcmdline()*
 		Example: >
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
 <		Also see |getcmdtype()|, |getcmdpos()|, |setcmdpos()|,
-		|getcmdmsg| and |setcmdline()|.
+		|getcmdmsg()| and |setcmdline()|.
 		Returns an empty string when entering a password or using
 		|inputsecret()|.
 
