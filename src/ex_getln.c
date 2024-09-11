@@ -4245,7 +4245,8 @@ f_getcmdmsg(typval_T *argvars UNUSED, typval_T *rettv)
 	int new_len = msg_len - p->cmdlen;
 	rettv->vval.v_string =
 	    (new_len > 0) ? vim_strnsave(msg, new_len) : NULL;
-    } else
+    }
+    else
 	rettv->vval.v_string = NULL;
 }
 
