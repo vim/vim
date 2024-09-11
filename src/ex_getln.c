@@ -4231,6 +4231,25 @@ f_getcmdline(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
+ * "getcmdmsg()" function
+ */
+    void
+f_getcmdmsg(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    cmdline_info_T *p = get_ccline_ptr();
+    rettv->v_type = VAR_STRING;
+    if (p != NULL)
+    {
+	char_u *msg = msg_get();
+	int msg_len = (int)STRLEN(msg);
+	int new_len = msg_len - p->cmdlen;
+	rettv->vval.v_string =
+	    (new_len > 0) ? vim_strnsave(msg, new_len) : NULL;
+    } else
+	rettv->vval.v_string = NULL;
+}
+
+/*
  * "getcmdpos()" function
  */
     void

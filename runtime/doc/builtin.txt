@@ -3999,6 +3999,16 @@ getcmdline()						*getcmdline()*
 		Return type: |String|
 
 
+getcmdmsg()						*getcmdmsg()*
+		Return the current command-line message.  Only works when the
+		command line is being edited, thus requires use of
+		|c_CTRL-\_e| or |c_CTRL-R_=|.
+		Also see |getcmdtype()|, |getcmdline|, |getcmdpos()|,
+		|setcmdpos()| and |setcmdline()|.
+
+		Return type: |String|
+
+
 getcmdpos()						*getcmdpos()*
 		Return the position of the cursor in the command line as a
 		byte count.  The first column is 1.
