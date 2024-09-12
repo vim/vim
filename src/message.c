@@ -2268,10 +2268,12 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
     else
 	msg_puts_display((char_u *)str, maxlen, attr, FALSE);
 
-    if (STRLEN(current_msg) < sizeof(current_msg) - 1
-	    && STRLEN(str) <= sizeof(current_msg) - STRLEN(current_msg) - 1)
-	vim_strncpy(current_msg + STRLEN(current_msg), (char_u *)str,
-		sizeof(current_msg) - STRLEN(current_msg) - 1);
+    if (STRLEN(current_msg) < sizeof(current_msg) - 1)
+    {
+	vim_strncpy(current_msg + STRLEN(current_msg),
+		(char_u *)str, sizeof(current_msg) - STRLEN(current_msg) - 1);
+	current_msg[sizeof(current_msg) - 1] = '\0';
+    }
 
     need_fileinfo = FALSE;
 }
