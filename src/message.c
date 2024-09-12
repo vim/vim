@@ -2270,14 +2270,15 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 
     if (STRLEN(current_msg) < sizeof(current_msg) - 1)
     {
-	size_t remaining;
-	size_t len;
+	size_t cur_len, remain_len, str_len, copy_len;
 
-	remaining = sizeof(current_msg) - STRLEN(current_msg) - 1;
-	len = (maxlen < remaining) ? maxlen : remaining;
+	cur_len = STRLEN(current_msg);
+	remain_len = sizeof(current_msg) - 1 - cur_len;
+	str_len = (maxlen >= 0 ? maxlen : STRLEN(str));
+	copy_len = MIN(remain_len, str_len);
 
-	memcpy(current_msg + STRLEN(current_msg), str, len);
-	current_msg[STRLEN(current_msg) + len] = '\0';
+	memcpy(current_msg + cur_len, str, copy_len);
+	current_msg[cur_len + copy_len] = '\0';
     }
 
     need_fileinfo = FALSE;
