@@ -2270,9 +2270,14 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 
     if (STRLEN(current_msg) < sizeof(current_msg) - 1)
     {
-	vim_strncpy(current_msg + STRLEN(current_msg),
-		(char_u *)str, sizeof(current_msg) - STRLEN(current_msg) - 1);
-	current_msg[sizeof(current_msg) - 1] = '\0';
+	size_t remaining;
+	size_t len;
+
+	remaining = sizeof(current_msg) - STRLEN(current_msg) - 1;
+	len = (maxlen < remaining) ? maxlen : remaining;
+
+	memcpy(current_msg + STRLEN(current_msg), str, len);
+	current_msg[STRLEN(current_msg) + len] = '\0';
     }
 
     need_fileinfo = FALSE;
