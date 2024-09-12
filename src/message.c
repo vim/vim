@@ -2270,7 +2270,7 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 
     if (STRLEN(current_msg) < sizeof(current_msg) - 1
 	    && STRLEN(str) <= sizeof(current_msg) - STRLEN(current_msg) - 1)
-	vim_strncpy(current_msg + STRLEN(current_msg), str,
+	vim_strncpy(current_msg + STRLEN(current_msg), (char_u *)str,
 		sizeof(current_msg) - STRLEN(current_msg) - 1);
 
     need_fileinfo = FALSE;
