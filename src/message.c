@@ -2274,7 +2274,7 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 
 	cur_len = STRLEN(current_msg);
 	remain_len = sizeof(current_msg) - 1 - cur_len;
-	str_len = (maxlen >= 0 ? maxlen : STRLEN(str));
+	str_len = (maxlen >= 0 ? (size_t)maxlen : STRLEN(str));
 	copy_len = MIN(remain_len, str_len);
 
 	memcpy(current_msg + cur_len, str, copy_len);
