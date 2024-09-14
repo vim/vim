@@ -39,24 +39,25 @@ margin_columns_win(win_T *wp, int *left_col, int *right_col)
     // cache previous calculations depending on w_virtcol
     static int saved_w_virtcol;
     static win_T *prev_wp;
+    static int prev_width1;
+    static int prev_width2;
     static int prev_left_col;
     static int prev_right_col;
-    static int prev_col_off;
 
     int cur_col_off = win_col_off(wp);
     int	width1;
     int	width2;
 
-    if (saved_w_virtcol == wp->w_virtcol
-	    && prev_wp == wp && prev_col_off == cur_col_off)
+    width1 = wp->w_width - cur_col_off;
+    width2 = width1 + win_col_off2(wp);
+
+    if (saved_w_virtcol == wp->w_virtcol && prev_wp == wp
+	    && prev_width1 == width1 && prev_width2 == width2)
     {
 	*right_col = prev_right_col;
 	*left_col = prev_left_col;
 	return;
     }
-
-    width1 = wp->w_width - cur_col_off;
-    width2 = width1 + win_col_off2(wp);
 
     *left_col = 0;
     *right_col = width1;
@@ -70,8 +71,9 @@ margin_columns_win(win_T *wp, int *left_col, int *right_col)
     prev_left_col = *left_col;
     prev_right_col = *right_col;
     prev_wp = wp;
+    prev_width1 = width1;
+    prev_width2 = width2;
     saved_w_virtcol = wp->w_virtcol;
-    prev_col_off = cur_col_off;
 }
 #endif
 
