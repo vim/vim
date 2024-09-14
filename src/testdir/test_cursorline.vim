@@ -309,6 +309,17 @@ func Test_cursorline_screenline_update()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_cursorline_screenline_zero_width()
+  CheckOption foldcolumn
+
+  set cursorline culopt=screenline winminwidth=1 foldcolumn=1
+  " This used to crash Vim
+  1vnew | redraw
+
+  bwipe!
+  set cursorline& culopt& winminwidth& foldcolumn&
+endfunc
+
 func Test_cursorline_cursorbind_horizontal_scroll()
   CheckScreendump
 
