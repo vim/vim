@@ -268,6 +268,76 @@ func Test_xxd()
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
   endfor
 
+  " Test 19: Print Lua file
+  let s:test += 1
+  call writefile(['TESTabcd09'], 'XXDfile')
+  %d
+  exe '0r! ' . s:xxd_cmd . ' -L XXDfile'
+  $d
+  let expected =<< trim [CODE]
+    local XXDfile = "\z
+      \x54\x45\x53\x54\x61\x62\x63\x64\x30\x39\x0a\z
+    "
+  [CODE]
+
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
+  " Test 20: Print Lua file capitalized
+  let s:test += 1
+  for arg in ['-C', '-capitalize']
+    call writefile(['TESTabcd09'], 'XXDfile')
+    %d
+    exe '0r! ' . s:xxd_cmd . ' -L ' . arg . ' XXDfile'
+    $d
+    let expected =<< trim [CODE]
+      local XXDFILE = "\z
+        \x54\x45\x53\x54\x61\x62\x63\x64\x30\x39\x0a\z
+      "
+    [CODE]
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
+
+  " Test 21: Print Lua file with custom variable name
+  let s:test += 1
+  call writefile(['TESTabcd09'], 'XXDfile')
+  for arg in ['-nvarName', '-n varName', '-name varName']
+    %d
+    exe '0r! ' . s:xxd_cmd . ' -L ' . arg . ' XXDfile'
+    $d
+    let expected =<< trim [CODE]
+      local varName = "\z
+        \x54\x45\x53\x54\x61\x62\x63\x64\x30\x39\x0a\z
+      "
+    [CODE]
+
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
+
+  " using "-n name" reading from stdin
+  %d
+  exe '0r! ' . s:xxd_cmd . ' -L < XXDfile -n StdIn'
+  $d
+  let expected =<< trim [CODE]
+    local StdIn = "\z
+      \x54\x45\x53\x54\x61\x62\x63\x64\x30\x39\x0a\z
+    "
+  [CODE]
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
+  " Test 22: Print Lua file: custom variable names can be capitalized
+  let s:test += 1
+  for arg in ['-C', '-capitalize']
+    call writefile(['TESTabcd09'], 'XXDfile')
+    %d
+    exe '0r! ' . s:xxd_cmd . ' -L ' . arg . ' -n varName XXDfile'
+    $d
+    let expected =<< trim [CODE]
+      local VARNAME = "\z
+        \x54\x45\x53\x54\x61\x62\x63\x64\x30\x39\x0a\z
+      "
+    [CODE]
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
 
   %d
   bwipe!

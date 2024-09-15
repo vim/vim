@@ -225,6 +225,7 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 #define HEX_CINCLUDE 2
 #define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
 #define HEX_LITTLEENDIAN 4
+#define HEX_LUA 5
 
 #define CONDITIONAL_CAPITALIZE(c) (capitalize ? toupper((unsigned char)(c)) : (c))
 
@@ -256,15 +257,16 @@ exit_with_usage(void)
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "    -a          toggle autoskip: A single '*' replaces nul-lines. Default off.\n");
   fprintf(stderr, "    -b          binary digit dump (incompatible with -ps,-i). Default hex.\n");
-  fprintf(stderr, "    -C          capitalize variable names in C include file style (-i).\n");
+  fprintf(stderr, "    -C          capitalize variable names in C include or Lua file styles (-i or -L).\n");
   fprintf(stderr, "    -c cols     format <cols> octets per line. Default 16 (-i: 12, -ps: 30).\n");
   fprintf(stderr, "    -E          show characters in EBCDIC. Default ASCII.\n");
   fprintf(stderr, "    -e          little-endian dump (incompatible with -ps,-i,-r).\n");
   fprintf(stderr, "    -g bytes    number of octets per group in normal output. Default 2 (-e: 4).\n");
   fprintf(stderr, "    -h          print this summary.\n");
   fprintf(stderr, "    -i          output in C include file style.\n");
+  fprintf(stderr, "    -L          output in Lua file style.\n");
   fprintf(stderr, "    -l len      stop after <len> octets.\n");
-  fprintf(stderr, "    -n name     set the variable name used in C include output (-i).\n");
+  fprintf(stderr, "    -n name     set the variable name used in C include or Lua output (-i or -L).\n");
   fprintf(stderr, "    -o off      add <off> to the displayed file position.\n");
   fprintf(stderr, "    -ps         output in postscript plain hexdump style.\n");
   fprintf(stderr, "    -r          reverse operation: convert (or patch) hexdump into binary.\n");
@@ -697,6 +699,7 @@ main(int argc, char *argv[])
       else if (!STRNCMP(pp, "-u", 2)) hexx = hexxa + 16;
       else if (!STRNCMP(pp, "-p", 2)) hextype = HEX_POSTSCRIPT;
       else if (!STRNCMP(pp, "-i", 2)) hextype = HEX_CINCLUDE;
+      else if (!STRNCMP(pp, "-L", 2)) hextype = HEX_LUA;
       else if (!STRNCMP(pp, "-C", 2)) capitalize = 1;
       else if (!STRNCMP(pp, "-d", 2)) decimal_offset = 1;
       else if (!STRNCMP(pp, "-r", 2)) revert++;
@@ -860,6 +863,7 @@ main(int argc, char *argv[])
     switch (hextype)
       {
       case HEX_POSTSCRIPT:	cols = 30; break;
+      case HEX_LUA:             cols = 16; break;
       case HEX_CINCLUDE:	cols = 12; break;
       case HEX_BITS:		cols = 6; break;
       case HEX_NORMAL:
@@ -999,6 +1003,34 @@ main(int argc, char *argv[])
 	    putc_or_die(isalnum((unsigned char)c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  FPRINTF_OR_DIE((fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p));
 	}
+
+      fclose_or_die(fp, fpo);
+      return 0;
+    }
+
+  if (hextype == HEX_LUA)
+    {
+      /* A user-set variable name overrides fp == stdin */
+      if (varname == NULL && fp != stdin)
+        varname = argv[1];
+
+      if (varname != NULL)
+	{
+	  FPRINTF_OR_DIE((fpo, "local %s", isdigit((unsigned char)varname[0]) ? "__" : ""));
+	  for (e = 0; (c = varname[e]) != 0; e++)
+	    putc_or_die(isalnum((unsigned char)c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
+	  fputs_or_die(" = \"\\z\n", fpo);
+	}
+
+      p = 0;
+      while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
+	{
+	  FPRINTF_OR_DIE((fpo, (hexx == hexxa) ? "%s\\x%02x" : "%s\\x%02X",
+		(p % cols) ? "" : (!p ? "  " : "\\z\n  "), c));
+	  p++;
+	}
+
+      fputs_or_die("\\z\n\"\n", fpo);
 
       fclose_or_die(fp, fpo);
       return 0;
