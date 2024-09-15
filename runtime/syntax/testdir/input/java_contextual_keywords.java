@@ -1,3 +1,7 @@
+// VIM_TEST_SETUP :highlight link javaConceptKind NonText
+
+
+
 class ContextualKeywordsTests		// See JLS, §3.9 Keywords.
 {
 	private ContextualKeywordsTests() { throw new Error(); }
