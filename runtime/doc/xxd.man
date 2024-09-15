@@ -1,7 +1,5 @@
 XXD(1)                      General Commands Manual                     XXD(1)
 
-
-
 NAME
        xxd - make a hex dump or do the reverse.
 
@@ -23,9 +21,9 @@ OPTIONS
        outfile is given (or a `-' character is in its place), results are sent
        to standard output.
 
-       Note that a "lazy" parser is used which does not check  for  more  than
-       the  first option letter, unless the option is followed by a parameter.
-       Spaces between a single option letter and its parameter  are  optional.
+       Note  that  a  "lazy" parser is used which does not check for more than
+       the first option letter, unless the option is followed by a  parameter.
+       Spaces  between  a single option letter and its parameter are optional.
        Parameters to options can be specified in decimal, hexadecimal or octal
        notation.  Thus -c8, -c 8, -c 010 and -cols 8 are all equivalent.
 
@@ -34,19 +32,19 @@ OPTIONS
 
        -b | -bits
               Switch to bits (binary digits) dump, rather than hex dump.  This
-              option  writes octets as eight digits "1"s and "0"s instead of a
-              normal hexadecimal dump. Each line is preceded by a line  number
-              in  hexadecimal and followed by an ASCII (or EBCDIC) representa‐
-              tion. The command line switches -p, -i do  not  work  with  this
-              mode.
+              option writes octets as eight digits "1"s and "0"s instead of  a
+              normal  hexadecimal dump. Each line is preceded by a line number
+              in hexadecimal and followed by an ASCII (or EBCDIC)  representa‐
+              tion.  The  command line switch -p does not work with this mode.
+              Can be combined with -i.
 
        -c cols | -cols cols
-              Format  <cols> octets per line. Default 16 (-i: 12, -ps: 30, -b:
-              6). Max 256.  No maximum for -ps. With -ps,  0  results  in  one
+              Format <cols> octets per line. Default 16 (-i: 12, -ps: 30,  -b:
+              6).  Max  256.   No  maximum for -ps. With -ps, 0 results in one
               long line of output.
 
        -C | -capitalize
-              Capitalize  variable  names  in C include file style, when using
+              Capitalize variable names in C include file  style,  when  using
               -i.
 
        -d     show offset in decimal instead of hex.
@@ -56,46 +54,46 @@ OPTIONS
               to EBCDIC.  This does not change the hexadecimal representation.
               The option is meaningless in combinations with -r, -p or -i.
 
-       -e     Switch to little-endian  hex  dump.   This  option  treats  byte
+       -e     Switch  to  little-endian  hex  dump.   This  option treats byte
               groups as words in little-endian byte order.  The default group‐
               ing of 4 bytes may be changed using -g.  This  option  only  ap‐
               plies to the hex dump, leaving the ASCII (or EBCDIC) representa‐
-              tion unchanged.  The command line switches -r,  -p,  -i  do  not
+              tion  unchanged.   The  command  line switches -r, -p, -i do not
               work with this mode.
 
        -g bytes | -groupsize bytes
-              Separate  the  output of every <bytes> bytes (two hex characters
+              Separate the output of every <bytes> bytes (two  hex  characters
               or eight bit digits each) by a whitespace.  Specify -g 0 to sup‐
               press grouping.  <Bytes> defaults to 2 in normal mode, 4 in lit‐
-              tle-endian mode and 1 in bits mode.  Grouping does not apply  to
+              tle-endian  mode and 1 in bits mode.  Grouping does not apply to
               PostScript or include style.
 
        -h | -help
-              Print  a summary of available commands and exit.  No hex dumping
+              Print a summary of available commands and exit.  No hex  dumping
               is performed.
 
        -i | -include
-              Output in C include file style. A complete static array  defini‐
-              tion  is  written (named after the input file), unless xxd reads
-              from stdin.
+              Output  in C include file style. A complete static array defini‐
+              tion is written (named after the input file), unless  xxd  reads
+              from stdin. Can be combined with -b.
 
        -l len | -len len
               Stop after writing <len> octets.
 
        -n name  |  -name name
-              Override the variable name output when -i is used. The array  is
+              Override  the variable name output when -i is used. The array is
               named name and the length is named name_len.
 
        -o offset
               Add <offset> to the displayed file position.
 
        -p | -ps | -postscript | -plain
-              Output  in  PostScript  continuous hex dump style. Also known as
+              Output in PostScript continuous hex dump style.  Also  known  as
               plain hex dump style.
 
        -r | -revert
-              Reverse operation: convert (or patch) hex dump into binary.   If
-              not  writing  to stdout, xxd writes into its output file without
+              Reverse  operation: convert (or patch) hex dump into binary.  If
+              not writing to stdout, xxd writes into its output  file  without
               truncating it. Use the combination -r -p to read plain hexadeci‐
               mal dumps without line number information and without a particu‐
               lar column layout. Additional whitespace and line breaks are al‐
@@ -117,7 +115,7 @@ OPTIONS
               Start at <seek> bytes abs. (or rel.) infile offset.  + indicates
               that the seek is relative to the  current  stdin  file  position
               (meaningless when not reading from stdin).  - indicates that the
-              seek should be that many characters from the end  of  the  input
+              seek  should  be  that many characters from the end of the input
               (or if combined with +: before the current stdin file position).
               Without -s option, xxd starts at the current file position.
 
@@ -140,7 +138,7 @@ CAVEATS
        input line after reading enough columns of hexadecimal data (see option
        -c).  This  also  means that changes to the printable ASCII (or EBCDIC)
        columns are always ignored. Reverting a plain (or PostScript) style hex
-       dump  with  xxd -r -p does not depend on the correct number of columns.
+       dump with xxd -r -p does not depend on the correct number  of  columns.
        Here, anything that looks like a pair of hex digits is interpreted.
 
        Note the difference between
@@ -148,7 +146,7 @@ CAVEATS
        and
        % xxd -i < file
 
-       xxd -s +seek may be different from xxd -s seek, as lseek(2) is used  to
+       xxd  -s +seek may be different from xxd -s seek, as lseek(2) is used to
        "rewind" input.  A '+' makes a difference if the input source is stdin,
        and if stdin's file position is not at the start of  the  file  by  the
        time  xxd  is  started and given its input.  The following examples may
@@ -161,7 +159,7 @@ CAVEATS
        Hex  dump  from  file position 0x480 (=1024+128) onwards.  The `+' sign
        means "relative to the current position", thus the `128' adds to the 1k
        where dd left off.
-       %  sh -c "dd of=plain_snippet bs=1k count=1; xxd -s +128 > hex_snippet"
+       % sh -c "dd of=plain_snippet bs=1k count=1; xxd -s +128 >  hex_snippet"
        < file
 
        Hex dump from file position 0x100 (=1024-768) onwards.
@@ -179,7 +177,7 @@ EXAMPLES
        Print 3 lines (hex 0x30 bytes) from the end of file.
        % xxd -s -0x30 file
 
-       Note: The results of the examples below are relevant to the xxd.1 man
+       Note:  The  results of the examples below are relevant to the xxd.1 man
        page as of May 2024
 
        Print 120 bytes as a continuous hex dump with 20 octets per line.
@@ -216,7 +214,7 @@ EXAMPLES
        % xxd -s 0x33 -l 13 -c 13 xxd.1
        00000033: 3235 7468 204d 6179 2031 3939 36  25th May 1996
 
-       Create  a  65537 byte file with all bytes 0x00, except for the last one
+       Create a 65537 byte file with all bytes 0x00, except for the  last  one
        which is 'A' (hex 0x41).
        % echo "010000: 41" | xxd -r > file
 
