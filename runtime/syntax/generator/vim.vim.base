@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2024 Aug 30
+" Last Change:	   2024 Sep 14
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -688,7 +688,7 @@ if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimfunctionerror")
  syn match	vimBufnrWarn	/\<bufnr\s*(\s*["']\.['"]\s*)/
 endif
 
-syn match vimNotFunc	"\<if\>\|\<el\%[seif]\>\|\<retu\%[rn]\>\|\<while\>"	skipwhite nextgroup=vimOper,vimOperParen,vimVar,vimFunc,vimNotation
+syn match vimNotFunc	"\<if\>\|\<el\%[seif]\>\|\<retu\%[rn]\>\|\<while\>"	skipwhite nextgroup=@vimExprList,vimNotation
 
 " Match: {{{2
 " =====
