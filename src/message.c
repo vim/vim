@@ -55,7 +55,7 @@ static int msg_hist_len = 0;
 static FILE *verbose_fd = NULL;
 static int  verbose_did_open = FALSE;
 
-static char_u	current_msg[CMDBUFFSIZE + 1] = "";
+static char_u	current_prompt[CMDBUFFSIZE + 1] = "";
 
 /*
  * When writing messages to the screen, there are many different situations.
@@ -1515,7 +1515,7 @@ msg_start(void)
     if (!did_return)
 	redir_write((char_u *)"\n", -1);
 
-    current_msg[0] = '\0';
+    current_prompt[0] = '\0';
 }
 
 /*
@@ -2267,19 +2267,6 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 	msg_puts_printf((char_u *)str, maxlen);
     else
 	msg_puts_display((char_u *)str, maxlen, attr, FALSE);
-
-    if (STRLEN(current_msg) < sizeof(current_msg) - 1)
-    {
-	size_t cur_len, remain_len, str_len, copy_len;
-
-	cur_len = STRLEN(current_msg);
-	remain_len = sizeof(current_msg) - 1 - cur_len;
-	str_len = (maxlen >= 0 ? (size_t)maxlen : STRLEN(str));
-	copy_len = MIN(remain_len, str_len);
-
-	memcpy(current_msg + cur_len, str, copy_len);
-	current_msg[cur_len + copy_len] = '\0';
-    }
 
     need_fileinfo = FALSE;
 }
@@ -3812,15 +3799,6 @@ msg_check(void)
 	need_wait_return = TRUE;
 	redraw_cmdline = TRUE;
     }
-}
-
-/*
- * Get current command line message.
- */
-    char_u *
-msg_get(void)
-{
-    return current_msg;
 }
 
 /*

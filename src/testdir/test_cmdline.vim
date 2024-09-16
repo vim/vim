@@ -1615,14 +1615,9 @@ func Check_cmdline(cmdtype)
   return ''
 endfunc
 
-func Check_cmdmsg()
-  call assert_equal('=Check_cmdmsg()', getcmdmsg())
-  return ''
-endfunc
-
 set cpo&
 
-func Test_getcmdtype_getcmdmsg()
+func Test_getcmdtype_getcmdprompt()
   call feedkeys(":MyCmd a\<C-R>=Check_cmdline(':')\<CR>\<Esc>", "xt")
 
   let cmdtype = ''
@@ -1647,8 +1642,24 @@ func Test_getcmdtype_getcmdmsg()
 
   call assert_equal('', getcmdline())
 
-  call assert_equal('', getcmdmsg())
-  call feedkeys(":\<C-R>=Check_cmdmsg()\<CR>\<Esc>", "xt")
+  call assert_equal('', getcmdprompt())
+  augroup test_CmdlineChanged
+    autocmd!
+    autocmd CmdlineChanged * call assert_equal('Answer?', getcmdprompt())
+  augroup END
+  "call feedkeys(":call input('Answer?')\<CR>a\<CR>", "xt")
+  call assert_equal('', getcmdprompt())
+
+  augroup test_CmdlineChanged
+    autocmd!
+    autocmd CmdlineChanged * call assert_equal('confirm?', getcmdprompt())
+  augroup END
+  "call feedkeys(":call confirm('confirm?')\<CR>\<CR>", "xt")
+
+  augroup test_CmdlineChanged
+    au!
+  augroup END
+  augroup! test_CmdlineChanged
 endfunc
 
 func Test_verbosefile()

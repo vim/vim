@@ -62,7 +62,6 @@ void msg_clr_eos_force(void);
 void msg_clr_cmdline(void);
 int msg_end(void);
 void msg_check(void);
-char_u *msg_get(void);
 int redirecting(void);
 void verbose_enter(void);
 void verbose_leave(void);

@@ -49,6 +49,7 @@ static void	alloc_cmdbuff(int len);
 static void	draw_cmdline(int start, int len);
 static void	save_cmdline(cmdline_info_T *ccp);
 static void	restore_cmdline(cmdline_info_T *ccp);
+static char_u	*get_prompt(void);
 static int	cmdline_paste(int regname, int literally, int remcr);
 static void	redrawcmdprompt(void);
 static int	ccheck_abbr(int);
@@ -56,6 +57,8 @@ static int	open_cmdwin(void);
 #ifdef FEAT_SEARCH_EXTRA
 static int	empty_pattern_magic(char_u *pat, size_t len, magic_T magic_val);
 #endif
+
+static char_u	current_prompt[CMDBUFFSIZE + 1] = "";
 
 static int	cedit_key = -1;	// key value of 'cedit' option
 
@@ -3703,6 +3706,24 @@ restore_cmdline(cmdline_info_T *ccp)
 }
 
 /*
+ * Get current command line prompt.
+ */
+    static char_u *
+get_prompt(void)
+{
+    return current_prompt;
+}
+
+/*
+ * Set current command line prompt.
+ */
+    void
+set_prompt(char_u* str)
+{
+    vim_strncpy(current_prompt, str, sizeof(current_prompt) - 1);
+}
+
+/*
  * Paste a yank register into the command line.
  * Used by CTRL-R command in command-line mode.
  * insert_reg() can't be used here, because special characters from the
@@ -4231,26 +4252,6 @@ f_getcmdline(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
- * "getcmdmsg()" function
- */
-    void
-f_getcmdmsg(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    cmdline_info_T *p = get_ccline_ptr();
-    rettv->v_type = VAR_STRING;
-    if (p != NULL)
-    {
-	char_u *msg = msg_get();
-	int msg_len = (int)STRLEN(msg);
-	int new_len = msg_len - p->cmdlen;
-	rettv->vval.v_string =
-	    (new_len > 0) ? vim_strnsave(msg, new_len) : NULL;
-    }
-    else
-	rettv->vval.v_string = NULL;
-}
-
-/*
  * "getcmdpos()" function
  */
     void
@@ -4259,6 +4260,17 @@ f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
     cmdline_info_T *p = get_ccline_ptr();
 
     rettv->vval.v_number = p != NULL ? p->cmdpos + 1 : 0;
+}
+
+/*
+ * "getcmdprompt()" function
+ */
+    void
+f_getcmdprompt(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    cmdline_info_T *p = get_ccline_ptr();
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = p != NULL ? vim_strsave(get_prompt()) : NULL;
 }
 
 /*
@@ -4873,6 +4885,7 @@ get_user_input(
 	return;
 
     prompt = tv_get_string_chk(&argvars[0]);
+    set_prompt(prompt);
 
 #ifdef NO_CONSOLE_INPUT
     // While starting up, there is no place to enter text. When running tests

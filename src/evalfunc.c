@@ -2095,10 +2095,10 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getcmdcompltype},
     {"getcmdline",	0, 0, 0,	    NULL,
 			ret_string,	    f_getcmdline},
-    {"getcmdmsg",	0, 0, 0,	    NULL,
-			ret_string,	    f_getcmdmsg},
     {"getcmdpos",	0, 0, 0,	    NULL,
 			ret_number,	    f_getcmdpos},
+    {"getcmdprompt",	0, 0, 0,	    NULL,
+			ret_string,	    f_getcmdprompt},
     {"getcmdscreenpos",	0, 0, 0,	    NULL,
 			ret_number,	    f_getcmdscreenpos},
     {"getcmdtype",	0, 0, 0,	    NULL,
@@ -3778,6 +3778,7 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
 
     message = tv_get_string_chk(&argvars[0]);
+    set_prompt(message);
     if (message == NULL)
 	error = TRUE;
     if (argvars[1].v_type != VAR_UNKNOWN)

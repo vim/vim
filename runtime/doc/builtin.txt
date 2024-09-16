@@ -233,7 +233,7 @@ getcharstr([{expr}])		String	get one character from the user
 getcmdcompltype()		String	return the type of the current
 					command-line completion
 getcmdline()			String	return the current command-line input
-getcmdmsg()			String	return the current command-line message
+getcmdprompt()			String	return the current command-line prompt
 getcmdpos()			Number	return cursor position in command-line
 getcmdscreenpos()		Number	return cursor screen position in
 					command-line
@@ -3980,7 +3980,7 @@ getcmdcompltype()					*getcmdcompltype()*
 		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
 		See |:command-completion| for the return string.
 		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
-		|getcmdmsg()| and |setcmdline()|.
+		|getcmdprompt()| and |setcmdline()|.
 		Returns an empty string when completion is not defined.
 
 		Return type: |String|
@@ -3993,19 +3993,9 @@ getcmdline()						*getcmdline()*
 		Example: >
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
 <		Also see |getcmdtype()|, |getcmdpos()|, |setcmdpos()|,
-		|getcmdmsg()| and |setcmdline()|.
+		|getcmdprompt()| and |setcmdline()|.
 		Returns an empty string when entering a password or using
 		|inputsecret()|.
-
-		Return type: |String|
-
-
-getcmdmsg()						*getcmdmsg()*
-		Return the current command-line message.  Only works when the
-		command line is being edited, thus requires use of
-		|c_CTRL-\_e| or |c_CTRL-R_=|.
-		Also see |getcmdtype()|, |getcmdline()|, |getcmdpos()|,
-		|setcmdpos()| and |setcmdline()|.
 
 		Return type: |String|
 
@@ -4017,9 +4007,19 @@ getcmdpos()						*getcmdpos()*
 		|c_CTRL-\_e| or |c_CTRL-R_=| or an expression mapping.
 		Returns 0 otherwise.
 		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
-		|getcmdmsg()| and |setcmdline()|.
+		|getcmdprompt()| and |setcmdline()|.
 
 		Return type: |Number|
+
+
+getcmdprompt()						*getcmdprompt()*
+		Return the current command-line prompt.  Only works when the
+		command line is being edited, thus requires use of
+		|c_CTRL-\_e| or |c_CTRL-R_=|.
+		Also see |getcmdtype()|, |getcmdline()|, |getcmdpos()|,
+		|setcmdpos()| and |setcmdline()|.
+
+		Return type: |String|
 
 
 getcmdscreenpos()					*getcmdscreenpos()*
