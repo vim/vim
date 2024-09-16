@@ -1647,14 +1647,14 @@ func Test_getcmdtype_getcmdprompt()
     autocmd!
     autocmd CmdlineEnter * call assert_equal('Answer?', getcmdprompt())
   augroup END
-  call feedkeys(":call input('Answer?')\<CR>a\<CR>", "xt")
+  call feedkeys(":call input('Answer?')\<CR>a\<CR>\<ESC>", "xt")
   call assert_equal('', getcmdprompt())
 
   augroup test_CmdlineEnter
     autocmd!
     autocmd CmdlineEnter * call assert_equal('confirm?', getcmdprompt())
   augroup END
-  call feedkeys(":call confirm('confirm?')\<CR>\<CR>", "xt")
+  call feedkeys(":call confirm('confirm?')\<CR>o\<ESC>", "xt")
 
   augroup test_CmdlineEnter
     au!

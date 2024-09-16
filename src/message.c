@@ -55,8 +55,6 @@ static int msg_hist_len = 0;
 static FILE *verbose_fd = NULL;
 static int  verbose_did_open = FALSE;
 
-static char_u	current_prompt[CMDBUFFSIZE + 1] = "";
-
 /*
  * When writing messages to the screen, there are many different situations.
  * A number of variables is used to remember the current state:
@@ -1514,8 +1512,6 @@ msg_start(void)
     // when redirecting, may need to start a new line.
     if (!did_return)
 	redir_write((char_u *)"\n", -1);
-
-    current_prompt[0] = '\0';
 }
 
 /*

@@ -30,6 +30,7 @@ static cmdline_info_T ccline;
 
 #ifdef FEAT_EVAL
 static int	new_cmdpos;	// position set by set_cmdline_pos()
+static char_u	current_prompt[CMDBUFFSIZE + 1] = "";
 #endif
 
 static int	extra_char = NUL;  // extra character to display when redrawing
@@ -59,8 +60,6 @@ static int	open_cmdwin(void);
 #ifdef FEAT_SEARCH_EXTRA
 static int	empty_pattern_magic(char_u *pat, size_t len, magic_T magic_val);
 #endif
-
-static char_u	current_prompt[CMDBUFFSIZE + 1] = "";
 
 static int	cedit_key = -1;	// key value of 'cedit' option
 
