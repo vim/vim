@@ -551,6 +551,7 @@ runtime/syntax/rng.vim			@jhradilek
 runtime/syntax/routeros.vim		@zainin
 runtime/syntax/rst.vim			@marshallward
 runtime/syntax/ruby.vim			@dkearns
+runtime/syntax/salt.vim			@gpanders
 runtime/syntax/sass.vim			@tpope
 runtime/syntax/scala.vim		@derekwyatt
 runtime/syntax/scheme.vim		@evhan
