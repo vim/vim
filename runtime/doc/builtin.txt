@@ -233,8 +233,8 @@ getcharstr([{expr}])		String	get one character from the user
 getcmdcompltype()		String	return the type of the current
 					command-line completion
 getcmdline()			String	return the current command-line input
-getcmdprompt()			String	return the current command-line prompt
 getcmdpos()			Number	return cursor position in command-line
+getcmdprompt()			String	return the current command-line prompt
 getcmdscreenpos()		Number	return cursor screen position in
 					command-line
 getcmdtype()			String	return current command-line type
