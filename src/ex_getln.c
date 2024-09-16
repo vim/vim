@@ -49,7 +49,9 @@ static void	alloc_cmdbuff(int len);
 static void	draw_cmdline(int start, int len);
 static void	save_cmdline(cmdline_info_T *ccp);
 static void	restore_cmdline(cmdline_info_T *ccp);
+#ifdef FEAT_EVAL
 static char_u	*get_prompt(void);
+#endif
 static int	cmdline_paste(int regname, int literally, int remcr);
 static void	redrawcmdprompt(void);
 static int	ccheck_abbr(int);
@@ -3706,24 +3708,6 @@ restore_cmdline(cmdline_info_T *ccp)
 }
 
 /*
- * Get current command line prompt.
- */
-    static char_u *
-get_prompt(void)
-{
-    return current_prompt;
-}
-
-/*
- * Set current command line prompt.
- */
-    void
-set_prompt(char_u* str)
-{
-    vim_strncpy(current_prompt, str, sizeof(current_prompt) - 1);
-}
-
-/*
  * Paste a yank register into the command line.
  * Used by CTRL-R command in command-line mode.
  * insert_reg() can't be used here, because special characters from the
@@ -4249,6 +4233,24 @@ f_getcmdline(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = get_cmdline_str();
+}
+
+/*
+ * Get current command line prompt.
+ */
+    static char_u *
+get_prompt(void)
+{
+    return current_prompt;
+}
+
+/*
+ * Set current command line prompt.
+ */
+    void
+set_prompt(char_u* str)
+{
+    vim_strncpy(current_prompt, str, sizeof(current_prompt) - 1);
 }
 
 /*

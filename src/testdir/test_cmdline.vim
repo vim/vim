@@ -1643,23 +1643,23 @@ func Test_getcmdtype_getcmdprompt()
   call assert_equal('', getcmdline())
 
   call assert_equal('', getcmdprompt())
-  augroup test_CmdlineChanged
+  augroup test_CmdlineEnter
     autocmd!
-    autocmd CmdlineChanged * call assert_equal('Answer?', getcmdprompt())
+    autocmd CmdlineEnter * call assert_equal('Answer?', getcmdprompt())
   augroup END
-  "call feedkeys(":call input('Answer?')\<CR>a\<CR>", "xt")
+  call feedkeys(":call input('Answer?')\<CR>a\<CR>", "xt")
   call assert_equal('', getcmdprompt())
 
-  augroup test_CmdlineChanged
+  augroup test_CmdlineEnter
     autocmd!
-    autocmd CmdlineChanged * call assert_equal('confirm?', getcmdprompt())
+    autocmd CmdlineEnter * call assert_equal('confirm?', getcmdprompt())
   augroup END
-  "call feedkeys(":call confirm('confirm?')\<CR>\<CR>", "xt")
+  call feedkeys(":call confirm('confirm?')\<CR>\<CR>", "xt")
 
-  augroup test_CmdlineChanged
+  augroup test_CmdlineEnter
     au!
   augroup END
-  augroup! test_CmdlineChanged
+  augroup! test_CmdlineEnter
 endfunc
 
 func Test_verbosefile()
