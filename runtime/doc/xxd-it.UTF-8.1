@@ -63,8 +63,9 @@ Richiesta di omissione: Un singolo '*' rimpiazza righe a zeri binari. Default: o
 Richiesta di un'immagine binaria (cifre binarie), invece che esadecimale.
 Quest'opzione scrive un byte come otto cifre "1" e "0" invece di usare i
 numeri esadecimali. Ogni riga è preceduta da un indirizzo in esadecimale e
-seguita da una decodifica ASCII (o EBCDIC). Le opzioni \-p, \-i,
-specificabili dalla riga comando, non funzionano in questo modo.
+seguita da una decodifica ASCII (o EBCDIC). L'opzione \-p, specificabile
+dalla riga comando, non funziona in questo modo. Può essere combinata
+con l'opzione \-i.
 .TP
 .IR "\-c colonne " | " \-cols colonne"
 In ogni riga sono formattate
@@ -108,8 +109,9 @@ Il raggruppamento non si applica agli stili `PostScript' e `include'.
 Stampa un sommario dei comandi disponibili ed esce.  Non viene fatto null'altro.
 .TP
 .IR \-i " | " \-include
-L'output è un file `include' in C.  Viene preparata la definizione completa del
-vettore (col nome del file di input), tranne quando xxd legga dallo `standard input'.
+L'output è un file `include' scritto in C.  Viene preparata la definizione
+completa del vettore (col nome del file di input), tranne quando xxd legge
+dallo `standard input'. Può essere combinata con l'opzione \-b.
 .TP
 .IR "\-l numero " | " \-len numero"
 Il programma esce dopo aver scritto
