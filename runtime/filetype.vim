@@ -1183,6 +1183,9 @@ au BufNewFile,BufRead *.clp			setf jess
 " Jgraph
 au BufNewFile,BufRead *.jgr			setf jgraph
 
+" Jinja
+au BufNewFile,BufRead *.jinja			setf jinja
+
 " Jujutsu
 au BufNewFile,BufRead *.jjdescription		setf jj
 
