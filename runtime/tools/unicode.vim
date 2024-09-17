@@ -420,6 +420,10 @@ if Test_AddLinesToCharDict() || Test_CharDictToPairList()
   finish
 endif
 
+if !exists("g:loaded_netrw")
+  echomsg "Netrw not available, cannot download"
+  finish
+endif
 
 " Try to avoid hitting E36
 set equalalways
