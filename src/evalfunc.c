@@ -3778,9 +3778,10 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
 
     message = tv_get_string_chk(&argvars[0]);
-    set_prompt(message);
     if (message == NULL)
 	error = TRUE;
+    else
+	set_prompt(message);
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	buttons = tv_get_string_buf_chk(&argvars[1], buf);

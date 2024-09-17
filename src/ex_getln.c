@@ -4886,7 +4886,6 @@ get_user_input(
 	return;
 
     prompt = tv_get_string_chk(&argvars[0]);
-    set_prompt(prompt);
 
 #ifdef NO_CONSOLE_INPUT
     // While starting up, there is no place to enter text. When running tests
@@ -4898,6 +4897,8 @@ get_user_input(
     cmd_silent = FALSE;		// Want to see the prompt.
     if (prompt != NULL)
     {
+	set_prompt(prompt);
+
 	// Only the part of the message after the last NL is considered as
 	// prompt for the command line
 	p = vim_strrchr(prompt, '\n');
