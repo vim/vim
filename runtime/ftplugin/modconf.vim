@@ -23,7 +23,6 @@ if has('unix') && executable('less') && exists(':terminal') == 2
   setlocal keywordprg=:ModconfKeywordPrg
   let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer ModconfKeywordPrg'
 endif
-endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
