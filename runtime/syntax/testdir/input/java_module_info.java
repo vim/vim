@@ -1,6 +1,6 @@
 // This module declaration belongs to the sample project published at
 // https://github.com/zzzyxwvut/module-info.git .
-
+import module java.base;
 import java.util.ServiceLoader;
 
 /**
@@ -12,7 +12,7 @@ import java.util.ServiceLoader;
  * @provides org.demo.internal.Testable
  * @see ServiceLoader
  */
-module org.module.info.demo
+module org.module.info.demo	// JDK 23+ (--enable-preview --release 23).
 {
 	requires static jdk.jfr;
 	requires java.base;
