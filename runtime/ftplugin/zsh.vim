@@ -26,11 +26,13 @@ if executable('zsh') && &shell !~# '/\%(nologin\|false\)$'
   else
     command! -buffer -nargs=1 ZshKeywordPrg echo system('MANPAGER= zsh -c "autoload -Uz run-help; run-help <args> 2>/dev/null"')
   endif
+  setlocal keywordprg=:ZshKeywordPrg
+  let b:undo_ftplugin .= '| setl keywordprg< | sil! delc -buffer ZshKeywordPrg'
+
   if !exists('current_compiler')
     compiler zsh
   endif
-  setlocal keywordprg=:ZshKeywordPrg
-  let b:undo_ftplugin .= 'keywordprg< | sil! delc -buffer ZshKeywordPrg'
+  let b:undo_ftplugin .= ' | compiler make'
 endif
 
 let b:match_words = '\<if\>:\<elif\>:\<else\>:\<fi\>'
