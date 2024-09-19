@@ -36,6 +36,7 @@ struct qfline_S
     int		qf_end_col;	// column when the error has range or zero
     int		qf_nr;		// error number
     char_u	*qf_module;	// module name for this error
+    char_u	*qf_fname;	// different filename if there're hard links
     char_u	*qf_pattern;	// search pattern for the error
     char_u	*qf_text;	// description of the error
     char_u	qf_viscol;	// set to TRUE if qf_col and qf_end_col is
@@ -2173,14 +2174,17 @@ qf_add_entry(
     typval_T	*user_data,     // custom user data or NULL
     int		valid)		// valid entry
 {
+    buf_T	*buf;
     qfline_T	*qfp;
     qfline_T	**lastp;	// pointer to qf_last or NULL
+    char_u	*fullname = NULL;
+    char_u	*p = NULL;
 
     if ((qfp = ALLOC_ONE_ID(qfline_T, aid_qf_qfline)) == NULL)
 	return QF_FAIL;
     if (bufnum != 0)
     {
-	buf_T *buf = buflist_findnr(bufnum);
+	buf = buflist_findnr(bufnum);
 
 	qfp->qf_fnum = bufnum;
 	if (buf != NULL)
@@ -2188,7 +2192,24 @@ qf_add_entry(
 		IS_QF_LIST(qfl) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
     }
     else
+    {
 	qfp->qf_fnum = qf_get_fnum(qfl, dir, fname);
+	buf = buflist_findnr(qfp->qf_fnum);
+    }
+    if (fname != NULL)
+	fullname = fix_fname(fname);
+    qfp->qf_fname = NULL;
+    if (buf != NULL &&
+	buf->b_ffname != NULL && fullname != NULL)
+    {
+        if (fnamecmp(fullname, buf->b_ffname) != 0)
+        {
+            p = shorten_fname1(fullname);
+            if (p != NULL)
+		qfp->qf_fname = vim_strsave(p);
+        }
+    }
+    vim_free(fullname);
     if ((qfp->qf_text = vim_strsave(mesg)) == NULL)
     {
 	vim_free(qfp);
@@ -3709,7 +3730,10 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
 	if (qfp->qf_fnum != 0
 		&& (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
 	{
-	    fname = buf->b_fname;
+	    if (qfp->qf_fname == NULL)
+		fname = buf->b_fname;
+	    else
+		fname = qfp->qf_fname;
 	    if (qfp->qf_type == 1)	// :helpgrep
 		fname = gettail(fname);
 	}
@@ -4034,6 +4058,7 @@ qf_free_items(qf_list_T *qfl)
 	qfpnext = qfp->qf_next;
 	if (!stop)
 	{
+	    vim_free(qfp->qf_fname);
 	    vim_free(qfp->qf_module);
 	    vim_free(qfp->qf_text);
 	    vim_free(qfp->qf_pattern);
@@ -4761,7 +4786,10 @@ qf_buf_add_line(
 			mch_dirname(dirname, MAXPATHL);
 		    shorten_buf_fname(errbuf, dirname, FALSE);
 		}
-		ga_concat(gap, errbuf->b_fname);
+		if (qfp->qf_fname == NULL)
+		    ga_concat(gap, errbuf->b_fname);
+		else
+		    ga_concat(gap, qfp->qf_fname);
 	    }
 	}
 
