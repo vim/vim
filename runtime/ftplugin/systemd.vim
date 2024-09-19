@@ -9,30 +9,22 @@ endif
 " Looks a lot like dosini files.
 runtime! ftplugin/dosini.vim
 
-if has('unix') && executable('less')
-  if !has('gui_running') && !has('nvim')
-    command -buffer -nargs=1 SystemdKeywordPrg silent exe '!' . KeywordLookup_systemd(<q-args>) | redraw!
-  elseif exists(':terminal') == 2
-    command -buffer -nargs=1 SystemdKeywordPrg silent exe 'term ' . KeywordLookup_systemd(<q-args>)
-  endif
-  if exists(':SystemdKeywordPrg') == 2
-    if !exists('*KeywordLookup_systemd')
-      function KeywordLookup_systemd(keyword) abort
-        let matches = matchlist(getline(search('\v^\s*\[\s*.+\s*\]\s*$', 'nbWz')), '\v^\s*\[\s*(\k+).*\]\s*$')
-        if len(matches) > 1
-          let section = matches[1]
-          return 'LESS= MANPAGER="less --pattern=''(^|,)\s+' . a:keyword . '=$'' --hilite-search" man ' . 'systemd.' . section
-        else
-          return 'LESS= MANPAGER="less --pattern=''(^|,)\s+' . a:keyword . '=$'' --hilite-search" man ' . 'systemd'
-        endif
-      endfunction
-    endif
-    setlocal iskeyword+=-
-    setlocal keywordprg=:SystemdKeywordPrg
-    if !exists('b:undo_ftplugin') || empty(b:undo_ftplugin)
-      let b:undo_ftplugin = 'setlocal keywordprg< iskeyword<'
+if has('unix') && executable('less') && exists(':terminal') == 2
+  command -buffer -nargs=1 SystemdKeywordPrg silent exe 'term ' . KeywordLookup_systemd(<q-args>)
+  silent! function KeywordLookup_systemd(keyword) abort
+    let matches = matchlist(getline(search('\v^\s*\[\s*.+\s*\]\s*$', 'nbWz')), '\v^\s*\[\s*(\k+).*\]\s*$')
+    if len(matches) > 1
+      let section = matches[1]
+      return 'LESS= MANPAGER="less --pattern=''(^|,)\s+' . a:keyword . '=$'' --hilite-search" man ' . 'systemd.' . section
     else
-      let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer SystemdKeywordPrg'
+      return 'LESS= MANPAGER="less --pattern=''(^|,)\s+' . a:keyword . '=$'' --hilite-search" man ' . 'systemd'
     endif
+  endfunction
+  setlocal iskeyword+=-
+  setlocal keywordprg=:SystemdKeywordPrg
+  if !exists('b:undo_ftplugin') || empty(b:undo_ftplugin)
+    let b:undo_ftplugin = 'setlocal keywordprg< iskeyword<'
+  else
+    let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer SystemdKeywordPrg'
   endif
 endif

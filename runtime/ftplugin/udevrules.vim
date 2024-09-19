@@ -15,20 +15,12 @@ let b:undo_ftplugin = "setl com< cms< fo<"
 
 setlocal comments=:# commentstring=#\ %s formatoptions-=t formatoptions+=croql
 
-if has('unix') && executable('less')
-  if !has('gui_running') && !has('nvim')
-    command -buffer -nargs=1 UdevrulesKeywordPrg
-          \ silent exe '!' . 'LESS= MANPAGER="less --pattern=''^\s{,8}' . <q-args> . '\b'' --hilite-search" man ' . 'udev' |
-          \ redraw!
-  elseif exists(':terminal') == 2
-    command -buffer -nargs=1 UdevrulesKeywordPrg
-          \ silent exe ':term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s{,8}' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'udev'
-  endif
-  if exists(':UdevrulesKeywordPrg') == 2
-    setlocal iskeyword+=-
-    setlocal keywordprg=:UdevrulesKeywordPrg
-    let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer UdevrulesKeywordPrg'
-  endif
+if has('unix') && executable('less') && exists(':terminal') == 2
+  command -buffer -nargs=1 UdevrulesKeywordPrg
+        \ silent exe ':term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s{,8}' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'udev'
+  setlocal iskeyword+=-
+  setlocal keywordprg=:UdevrulesKeywordPrg
+  let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer UdevrulesKeywordPrg'
 endif
 
 let &cpo = s:cpo_save

@@ -35,6 +35,10 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
 	endif
 endif
 
+" Undo the stuff we changed
+let b:undo_ftplugin = "setlocal tw< cms< fo< iskeyword<" .
+			\ " | unlet! b:browsefilter"
+
 " Look up keywords by Get-Help:
 " check for PowerShell Core in Windows, Linux or MacOS
 if executable('pwsh') | let s:pwsh_cmd = 'pwsh'
@@ -45,21 +49,14 @@ elseif executable('powershell.exe') | let s:pwsh_cmd = 'powershell.exe'
 endif
 
 if exists('s:pwsh_cmd')
-  if !has('gui_running') && !has("nvim") && executable('less') &&
-        \ !(exists('$ConEmuBuild') && &term =~? '^xterm')
-    " For exclusion of ConEmu, see https://github.com/Maximus5/ConEmu/issues/2048
-    command! -buffer -nargs=1 GetHelp silent exe '!' . s:pwsh_cmd . ' -NoLogo -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -Command Get-Help -Full "<args>" | ' . (has('unix') ? 'LESS= less' : 'less') | redraw!
-  elseif exists(':terminal') == 2
+  if exists(':terminal') == 2
     command! -buffer -nargs=1 GetHelp silent exe 'term ' . s:pwsh_cmd . ' -NoLogo -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -Command Get-Help -Full "<args>"' . (executable('less') ? ' | less' : '')
   else
     command! -buffer -nargs=1 GetHelp echo system(s:pwsh_cmd . ' -NoLogo -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -Command Get-Help -Full <args>')
   endif
+  setlocal keywordprg=:GetHelp
+  let b:undo_ftplugin ..= " | setl kp< | sil! delc -buffer GetHelp"
 endif
-setlocal keywordprg=:GetHelp
-
-" Undo the stuff we changed
-let b:undo_ftplugin = "setlocal tw< cms< fo< iskeyword< keywordprg<" .
-			\ " | unlet! b:browsefilter"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

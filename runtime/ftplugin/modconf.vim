@@ -16,20 +16,13 @@ let b:undo_ftplugin = "setl com< cms< inc< fo<"
 setlocal comments=:# commentstring=#\ %s include=^\\s*include
 setlocal formatoptions-=t formatoptions+=croql
 
-if has('unix') && executable('less')
-  if !has("gui_running") && !has("nvim")
-    command -buffer -nargs=1 ModconfKeywordPrg
-          \ silent exe '!' . 'LESS= MANPAGER="less --pattern=''^\s{,8}' . <q-args> . '\b'' --hilite-search" man ' . 'modprobe.d' |
-          \ redraw!
-  elseif exists(':terminal') == 2
-    command -buffer -nargs=1 ModconfKeywordPrg
-          \ silent exe ':term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s{,8}' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'modprobe.d'
-  endif
-  if exists(':ModconfKeywordPrg') == 2
-    setlocal iskeyword+=-
-    setlocal keywordprg=:ModconfKeywordPrg
-    let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer ModconfKeywordPrg'
-  endif
+if has('unix') && executable('less') && exists(':terminal') == 2
+  command -buffer -nargs=1 ModconfKeywordPrg
+        \ silent exe ':term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s{,8}' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'modprobe.d'
+  setlocal iskeyword+=-
+  setlocal keywordprg=:ModconfKeywordPrg
+  let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer ModconfKeywordPrg'
+endif
 endif
 
 let &cpo = s:cpo_save

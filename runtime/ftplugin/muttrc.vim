@@ -18,20 +18,12 @@ setlocal formatoptions-=t formatoptions+=croql
 
 let &l:include = '^\s*source\>'
 
-if has('unix') && executable('less')
-  if !has('gui_running') && !has('nvim')
-    command -buffer -nargs=1 MuttrcKeywordPrg
-          \ silent exe '!' . 'LESS= MANPAGER="less --pattern=''^\s+' . <q-args> . '\b'' --hilite-search" man ' . 'muttrc' |
-          \ redraw!
-  elseif exists(':terminal') == 2
-    command -buffer -nargs=1 MuttrcKeywordPrg
-          \ silent exe 'term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'muttrc'
-  endif
-  if exists(':MuttrcKeywordPrg') == 2
-    setlocal iskeyword+=-
-    setlocal keywordprg=:MuttrcKeywordPrg
-    let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer MuttrcKeywordPrg'
-  endif
+if has('unix') && executable('less') && exists(':terminal') == 2
+  command -buffer -nargs=1 MuttrcKeywordPrg
+        \ silent exe 'term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'muttrc'
+  setlocal iskeyword+=-
+  setlocal keywordprg=:MuttrcKeywordPrg
+  let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer MuttrcKeywordPrg'
 endif
 
 let &cpo = s:cpo_save

@@ -15,20 +15,12 @@ let b:undo_ftplugin = "setl com< cms< fo<"
 
 setlocal comments=:# commentstring=#\ %s formatoptions-=t formatoptions+=croql
 
-if has('unix') && executable('less')
-  if !has('gui_running') && !has('nvim')
-    command -buffer -nargs=1 GpgKeywordPrg
-          \ silent exe '!' . 'LESS= MANPAGER="less --pattern=''^\s+--' . <q-args> . '\b'' --hilite-search" man ' . 'gpg' |
-          \ redraw!
-  elseif exists(':terminal') == 2
-    command -buffer -nargs=1 GpgKeywordPrg
-          \ silent exe ':term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+--' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'gpg'
-  endif
-  if exists(':GpgKeywordPrg') == 2
-    setlocal iskeyword+=-
-    setlocal keywordprg=:GpgKeywordPrg
-    let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer GpgKeywordPrg'
-  endif
+if has('unix') && executable('less') && exists(':terminal') == 2
+  command -buffer -nargs=1 GpgKeywordPrg
+        \ silent exe ':term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+--' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . 'gpg'
+  setlocal iskeyword+=-
+  setlocal keywordprg=:GpgKeywordPrg
+  let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer GpgKeywordPrg'
 endif
 
 let &cpo = s:cpo_save
