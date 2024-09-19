@@ -80,7 +80,7 @@ func VerifyScreenDump(buf, filename, options, ...)
   let i = 0
   while 1
     " leave some time for updating the original window
-    sleep 10m
+    sleep 50m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
     let testdump = ReadAndFilter(testfile, filter)
