@@ -1339,6 +1339,17 @@ enum
     , WV_COUNT	    // must be the last one
 };
 
+/*
+ * "indir" values for tab-local options.
+ * These need to be defined globally, so that the TV_COUNT can be used in the
+ * tab structure.
+ */
+enum
+{
+    TV_CH = 0
+    , TV_COUNT	    // must be the last one
+};
+
 // Value for b_p_ul indicating the global value must be used.
 #define NO_LOCAL_UNDOLEVEL (-123456)
 

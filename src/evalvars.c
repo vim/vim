@@ -4428,8 +4428,8 @@ get_var_from(
 	need_switch_win = !(tp == curtab && win == curwin) && !do_change_curbuf;
 	if (!need_switch_win || switch_win(&switchwin, win, tp, TRUE) == OK)
 	{
-	    // Handle options. There are no tab-local options.
-	    if (*varname == '&' && htname != 't')
+	    // Handle options.
+	    if (*varname == '&')
 	    {
 		buf_T	*save_curbuf = curbuf;
 
@@ -4439,8 +4439,8 @@ get_var_from(
 
 		if (varname[1] == NUL)
 		{
-		    // get all window-local or buffer-local options in a dict
-		    dict_T	*opts = get_winbuf_options(htname == 'b');
+		    // get all window-local, buffer-local or tab-local options in a dict
+		    dict_T	*opts = get_local_options(htname);
 
 		    if (opts != NULL)
 		    {

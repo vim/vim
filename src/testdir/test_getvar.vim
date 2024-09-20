@@ -31,11 +31,13 @@ func Test_var()
   unlet def_str
 
   " test for gettabvar()
+  setglobal cmdheight=1
   tabnew
   tabnew
   let t:var_list = [1, 2, 3]
   let t:other = 777
   let def_list = [4, 5, 6, 7]
+  setlocal cmdheight=3
   tabrewind
   call assert_equal([1, 2, 3], 3->gettabvar('var_list'))
   call assert_equal([1, 2, 3], gettabvar(3, 'var_list', def_list))
@@ -49,8 +51,14 @@ func Test_var()
   call assert_equal([4, 5, 6, 7], gettabvar(3, 'var_list', def_list))
   call assert_equal('', gettabvar(9, ''))
   call assert_equal([4, 5, 6, 7], gettabvar(9, '', def_list))
-  call assert_equal('', gettabvar(3, '&nu'))
-  call assert_equal([4, 5, 6, 7], gettabvar(3, '&nu', def_list))
+  call assert_equal(3, gettabvar(3, '&ch'))
+  call assert_equal(3, gettabvar(3, '&ch', def_list))
+  call assert_match("^{.*'cmdheight': 3\\(,.*\\|\\)}$", string(gettabvar(3, '&')))
+  call assert_match("^{.*'cmdheight': 3\\(,.*\\|\\)}$", string(gettabvar(3, '&', def_list)))
+  call assert_equal('', gettabvar(3, '&notexistopt'))
+  call assert_equal([4, 5, 6, 7], gettabvar(3, '&notexistopt', def_list))
+  call assert_equal('', gettabvar(9, '&'))
+  call assert_equal([4, 5, 6, 7], gettabvar(9, '&', def_list))
   unlet def_list
   tabonly
 
