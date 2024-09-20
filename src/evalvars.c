@@ -4523,7 +4523,7 @@ getwinvar(
 }
 
 /*
- * Set option "varname" to the value of "varp" for the current buffer/window.
+ * Set option "varname" to the value of "varp" for the current buffer/window/tab.
  */
     static void
 set_option_from_tv(char_u *varname, typval_T *varp)
@@ -4964,13 +4964,18 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
     save_lu_tp = lastused_tabpage;
     goto_tabpage_tp(tp, FALSE, FALSE);
 
-    tabvarname = alloc(STRLEN(varname) + 3);
-    if (tabvarname != NULL)
+    if (*varname == '&')
+	set_option_from_tv(varname + 1, varp);
+    else
     {
-	STRCPY(tabvarname, "t:");
-	STRCPY(tabvarname + 2, varname);
-	set_var(tabvarname, varp, TRUE);
-	vim_free(tabvarname);
+	tabvarname = alloc(STRLEN(varname) + 3);
+	if (tabvarname != NULL)
+	{
+	    STRCPY(tabvarname, "t:");
+	    STRCPY(tabvarname + 2, varname);
+	    set_var(tabvarname, varp, TRUE);
+	    vim_free(tabvarname);
+	}
     }
 
     // Restore current tabpage and last accessed tabpage.

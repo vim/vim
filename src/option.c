@@ -3404,8 +3404,16 @@ did_set_buflisted(optset_T *args)
     char *
 did_set_cmdheight(optset_T *args)
 {
+    long *varp = (long *)args->os_varp;
     long old_value = args->os_oldval.number;
     char *errmsg = NULL;
+
+    // if tp->tp_ch_used changed, change p_ch and restore tp->tp_ch_used
+    if (&p_ch != varp)
+    {
+	p_ch = *varp;
+	*varp = old_value;
+    }
 
     // if p_ch changed value, change the command line height
     if (p_ch < 1)

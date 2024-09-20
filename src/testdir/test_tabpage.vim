@@ -706,6 +706,29 @@ func Test_tabpage_cmdheight()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_tabpage_cmdheight_with_settabvar()
+  CheckRunVimInTerminal
+  call writefile([
+        \ 'set laststatus=2',
+        \ 'tabnew',
+        \ 'tabrewind',
+        \ 'call settabvar(2, "&cmdheight", 3)',
+        \ 'tabnext',
+        \ 'redraw!',
+        \ 'echo "hello\nthere"',
+	\ ], 'XTest_tabpage_cmdheight_with_settabvar', 'D')
+  " Check that non-current tab page local options is changed by no ENTER prompt displayed
+  let buf = RunVimInTerminal('-S XTest_tabpage_cmdheight_with_settabvar', {'statusoff': 3})
+  call VerifyScreenDump(buf, 'Test_tabpage_cmdheight_with_settabvar_1', {})
+  " Check that current tab page local options is changed by no ENTER prompt displayed
+  call term_sendkeys(buf, ":tabrewind\<CR>")
+  call term_sendkeys(buf, ':call settabvar(1, "&cmdheight", 5)' .. "\<CR>")
+  call term_sendkeys(buf, ':echo "one\ntwo\nthree\nfour"' .. "\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpage_cmdheight_with_settabvar_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test for closing the tab page from a command window
 func Test_tabpage_close_cmdwin()
   tabnew

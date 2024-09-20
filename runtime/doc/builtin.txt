@@ -9873,14 +9873,17 @@ setreg({regname}, {value} [, {options}])			*setreg()*
 
 
 settabvar({tabnr}, {varname}, {val})			*settabvar()*
-		Set tab-local variable {varname} to {val} in tab page {tabnr}.
-		|t:var|
+		Set option or local variable {varname} in tab page {tabnr} to
+		{val}. |t:var|
 		The {varname} argument is a string.
 		Note that autocommands are blocked, side effects may not be
 		triggered, e.g. when setting 'filetype'.
 		Note that the variable name without "t:" must be used.
 		Tabs are numbered starting with one.
-		This function is not available in the |sandbox|.
+		Examples: >
+			:call settabvar(1, "&cmdheight", 3)
+			:call settabvar(3, "myvar", "foobar")
+<		This function is not available in the |sandbox|.
 
 		Can also be used as a |method|, the base is passed as the
 		third argument: >
