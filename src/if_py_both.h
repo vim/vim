@@ -678,6 +678,14 @@ writer(writefn fn, char_u *str, PyInt n)
 	mch_memmove(((char *)io_ga.ga_data) + io_ga.ga_len, str, (size_t)n);
 	io_ga.ga_len += (int)n;
     }
+
+    // Reset emsg_sever if we got empty output from Python interpreter.
+    // Usually emsg_severe is set to FALSE in emsg(), but the function is not called
+    // for empty strings and the var stays TRUE, causing side effects further down,
+    // f.e. returning a different error message than expected, because not severe message
+    // gets severity from previous call write_output() which had the severity.
+    if (fn == (writefn)emsg && emsg_severe == TRUE)
+	emsg_severe = FALSE;
 }
 
     static int
