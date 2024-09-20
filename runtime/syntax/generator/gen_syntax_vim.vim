@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
-" Last Change: 2024 Aug 30
+" Last Change: 2024 Sep 14
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -296,12 +296,14 @@ function! s:get_vim_command_type(cmd_name)
 		echomsg
 		echon
 		echowindow
+		elseif
 		enddef
 		endfunction
 		execute
 		final
 		for
 		function
+		if
 		insert
 		let
 		loadkeymap
@@ -312,6 +314,7 @@ function! s:get_vim_command_type(cmd_name)
 		new
 		normal
 		popup
+		return
 		set
 		setglobal
 		setlocal
@@ -325,6 +328,7 @@ function! s:get_vim_command_type(cmd_name)
 		unmap
 		var
 		vim9script
+		while
 	EOL
 	" Required for original behavior
 	" \	'global', 'vglobal'

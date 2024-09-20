@@ -63,8 +63,8 @@ Toggle autoskip: A single '*' replaces NUL-lines.  Default off.
 Switch to bits (binary digits) dump, rather than hex dump.
 This option writes octets as eight digits "1"s and "0"s instead of a normal
 hexadecimal dump. Each line is preceded by a line number in hexadecimal and
-followed by an ASCII (or EBCDIC) representation. The command line switches
-\-p, \-i do not work with this mode.
+followed by an ASCII (or EBCDIC) representation. The command line switch
+\-p does not work with this mode. Can be combined with \-i.
 .TP
 .IR "\-c cols " | " \-cols cols"
 Format
@@ -109,7 +109,8 @@ Print a summary of available commands and exit.  No hex dumping is performed.
 .TP
 .IR \-i " | " \-include
 Output in C include file style. A complete static array definition is written
-(named after the input file), unless xxd reads from stdin.
+(named after the input file), unless xxd reads from stdin. Can be combined
+with \-b.
 .TP
 .IR "\-l len " | " \-len len"
 Stop after writing

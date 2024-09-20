@@ -237,8 +237,14 @@ au BufNewFile,BufRead *.bat			setf dosbatch
 au BufNewFile,BufRead *.cmd
 	\ if getline(1) =~ '^/\*' | setf rexx | else | setf dosbatch | endif
 " ABB RAPID or Batch file for MSDOS.
-au BufNewFile,BufRead *.sys\c			call dist#ft#FTsys()
-au BufNewFile,BufRead *.sysx\c			setf rapid
+au BufNewFile,BufRead *.sys			call dist#ft#FTsys()
+if has("fname_case")
+  au BufNewFile,BufRead *.Sys,*.SYS		call dist#ft#FTsys()
+endif
+au BufNewFile,BufRead *.sysx			setf rapid
+if has("fname_case")
+  au BufNewFile,BufRead *.Sysx,*.SysX,*.SYSX	setf rapid
+endif
 
 " Batch file for 4DOS
 au BufNewFile,BufRead *.btm			call dist#ft#FTbtm()
@@ -456,7 +462,10 @@ au BufNewFile,BufRead *.ent			call dist#ft#FTent()
 au BufNewFile,BufRead .cling_history		setf cpp
 
 " Clipper, FoxPro, ABB RAPID or eviews
-au BufNewFile,BufRead *.prg\c			call dist#ft#FTprg()
+au BufNewFile,BufRead *.prg			call dist#ft#FTprg()
+if has("fname_case")
+  au BufNewFile,BufRead *.Prg,*.PRG			call dist#ft#FTprg()
+endif
 
 " Clojure
 au BufNewFile,BufRead *.clj,*.cljs,*.cljx,*.cljc		setf clojure
@@ -603,7 +612,10 @@ au BufNewFile,BufRead */tex/latex/**.cfg		setf tex
 au BufNewFile,BufRead .wakatime.cfg		setf dosini
 
 " Configure files
-au BufNewFile,BufRead *.cfg\c			call dist#ft#FTcfg()
+au BufNewFile,BufRead *.cfg			call dist#ft#FTcfg()
+if has("fname_case")
+  au BufNewFile,BufRead *.Cfg,*.CFG			call dist#ft#FTcfg()
+endif
 
 " Cucumber
 au BufNewFile,BufRead *.feature			setf cucumber
@@ -1175,6 +1187,9 @@ au BufNewFile,BufRead *.clp			setf jess
 " Jgraph
 au BufNewFile,BufRead *.jgr			setf jgraph
 
+" Jinja
+au BufNewFile,BufRead *.jinja			setf jinja
+
 " Jujutsu
 au BufNewFile,BufRead *.jjdescription		setf jj
 
@@ -1228,9 +1243,14 @@ au BufNewFile,BufRead *.kdl			setf kdl
 au BufNewFile,BufRead *.kix			setf kix
 
 " Kuka Robot Language
-au BufNewFile,BufRead *.src\c			call dist#ft#FTsrc()
-au BufNewFile,BufRead *.dat\c			call dist#ft#FTdat()
-au BufNewFile,BufRead *.sub\c			setf krl
+au BufNewFile,BufRead *.src			call dist#ft#FTsrc()
+au BufNewFile,BufRead *.dat			call dist#ft#FTdat()
+au BufNewFile,BufRead *.sub			setf krl
+if has("fname_case")
+   au BufNewFile,BufRead *.Src,*.SRC		call dist#ft#FTsrc()
+   au BufNewFile,BufRead *.Dat,*.DAT		call dist#ft#FTdat()
+   au BufNewFile,BufRead *.Sub,*.SUB		setf krl
+endif
 
 " Kimwitu[++]
 au BufNewFile,BufRead *.k			setf kwt
@@ -1480,8 +1500,14 @@ au BufNewFile,BufRead .msmtprc			setf msmtp
 au BufNewFile,BufRead *.mmp			setf mmp
 
 " ABB Rapid, Modula-2, Modsim III or LambdaProlog
-au BufNewFile,BufRead *.mod\c			call dist#ft#FTmod()
-au BufNewFile,BufRead *.modx\c			setf rapid
+au BufNewFile,BufRead *.mod			call dist#ft#FTmod()
+if has("fname_case")
+   au BufNewFile,BufRead *.Mod,*.MOD		call dist#ft#FTmod()
+endif
+au BufNewFile,BufRead *.modx			setf rapid
+if has("fname_case")
+   au BufNewFile,BufRead *.Modx,*.ModX,*.MODX	setf rapid
+endif
 
 " Modula-3 (.m3, .i3, .mg, .ig)
 au BufNewFile,BufRead *.[mi][3g]		setf modula3
@@ -2212,6 +2238,9 @@ au BufNewFile,BufRead *.zs			setf zserio
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
 au BufNewFile,BufRead .zshrc,.zshenv,.zlogin,.zlogout,.zcompdump,.zsh_history setf zsh
 au BufNewFile,BufRead *.zsh,*.zsh-theme,*.zunit		setf zsh
+
+" Salt state files
+au BufNewFile,BufRead *.sls			setf salt
 
 " Scheme ("racket" patterns are now separate, see above)
 au BufNewFile,BufRead *.scm,*.ss,*.sld		setf scheme

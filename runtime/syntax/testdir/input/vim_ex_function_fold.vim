@@ -1,5 +1,6 @@
 " Vim :function command
-" VIM_TEST_SETUP let g:vimsyn_folding = "f" | set fdm=syntax
+" VIM_TEST_SETUP let g:vimsyn_folding = "f"
+" VIM_TEST_SETUP setl fdc=2 fdl=999 fdm=syntax
 
 
 " list
@@ -174,6 +175,18 @@ function Foo()
 endfunction
 
 
+" command modifiers
+
+silent! function Foo()
+endfunction
+
+
+" leading command separator
+
+echo "Foo" | function Foo()
+endfunction
+
+
 " delete function
 
 delfunction Foo
@@ -219,4 +232,46 @@ endfunction
 
 :function Foo()
 :endfunction
+
+
+" Issue #15671
+" No recognition of :fun or :def bodies commencing with empty lines if
+" g:vimsyn_folding contains "f"
+
+fun FA1()
+
+
+    return
+endfun
+
+fun FA2()
+    return
+endfun
+
+fun FB1() abort
+
+    return
+endfun
+
+fun FB2() abort
+    return
+endfun
+
+fun FC1(_)
+
+    return
+endfun
+
+fun FC2(_)
+    return
+endfun
+
+fun FD1(_) abort
+
+    return
+endfun
+
+fun FD2(_) abort
+    return
+endfun
 
