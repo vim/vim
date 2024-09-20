@@ -3330,7 +3330,6 @@ realloc_cmdbuff(int len)
     // there, thus copy up to the NUL and add a NUL.
     mch_memmove(ccline.cmdbuff, p, (size_t)ccline.cmdlen);
     ccline.cmdbuff[ccline.cmdlen] = NUL;
-    vim_free(p);
 
     if (ccline.xpc != NULL
 	    && ccline.xpc->xp_pattern != NULL
@@ -3344,6 +3343,8 @@ realloc_cmdbuff(int len)
 	if (i >= 0 && i <= ccline.cmdlen)
 	    ccline.xpc->xp_pattern = ccline.cmdbuff + i;
     }
+
+    vim_free(p);
 
     return OK;
 }
