@@ -7,7 +7,6 @@ vim9script
 
 export def IsSafeExecutable(filetype: string, executable: string): bool
     if empty(exepath(executable))
-      echomsg executable .. " not found in $PATH"
       return v:false
     endif
     var cwd = getcwd()
