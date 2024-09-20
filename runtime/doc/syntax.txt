@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2026 Feb 08
+*syntax.txt*	For Vim version 9.1.  Last change: 2026 Feb 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2578,6 +2578,11 @@ If HTML highlighting is desired, terminal-based text formatting such as bold
 and italic is possible by: >
 
 	let g:html_style_rendering = 1
+
+MIRANDA					*miranda.vim* *ft-miranda-syntax*
+
+    TODO
+
 
 MODULA2					*modula2.vim* *ft-modula2-syntax*
 
