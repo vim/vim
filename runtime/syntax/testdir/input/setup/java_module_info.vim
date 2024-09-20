@@ -28,3 +28,5 @@ autocmd_add([{
     cmd:	'RestoreFilename()',
     once:	true,
 }])
+
+g:java_syntax_previews = [476]
