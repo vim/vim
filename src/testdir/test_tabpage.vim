@@ -691,16 +691,15 @@ func Test_tabpage_cmdheight()
   CheckRunVimInTerminal
   call writefile([
         \ 'set laststatus=2',
-        \ 'set cmdheight=2',
         \ 'tabnew',
         \ 'set cmdheight=3',
+        \ 'tabrewind',
+        \ 'set cmdheight=1',
         \ 'tabnext',
         \ 'redraw!',
         \ 'echo "hello\nthere"',
-        \ 'tabnext',
-        \ 'redraw',
 	\ ], 'XTest_tabpage_cmdheight', 'D')
-  " Check that cursor line is concealed
+  " Check that tab page local options is preserved by no ENTER prompt displayed
   let buf = RunVimInTerminal('-S XTest_tabpage_cmdheight', {'statusoff': 3})
   call VerifyScreenDump(buf, 'Test_tabpage_cmdheight', {})
 
