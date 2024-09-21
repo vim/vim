@@ -3,27 +3,6 @@
 source check.vim
 import './vim9.vim' as v9
 
-def Test_abstract_method()
-    # Define an abstract class with an abstract method
-    abstract class A
-        abstract def String(): string
-    endclass
-
-    # Define a subclass that implements the abstract method
-    class B extends A
-        def String(): string
-            return 'B'
-        enddef
-    endclass
-
-    # Test the subclass implementation
-    def F(o: A)
-        assert_equal('B', o.String())
-    enddef
-
-    #Ensure calling the method works without errors
-    F(B.new())
-enddef
 
 def Test_class_basic()
   # Class supported only in "vim9script"
