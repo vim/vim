@@ -243,7 +243,7 @@ if has("fname_case")
 endif
 au BufNewFile,BufRead *.sysx			setf rapid
 if has("fname_case")
-  au BufNewFile,BufRead *.sysX,*.Sysx,*.SysX,*.SYSX	setf rapid
+  au BufNewFile,BufRead *.sysX,*.Sysx,*.SysX,*.SYSX,*.SYSx	setf rapid
 endif
 
 " Batch file for 4DOS
@@ -1506,7 +1506,7 @@ if has("fname_case")
 endif
 au BufNewFile,BufRead *.modx			setf rapid
 if has("fname_case")
-   au BufNewFile,BufRead *.modX,*.Modx,*.ModX,*.MODX	setf rapid
+   au BufNewFile,BufRead *.modX,*.Modx,*.ModX,*.MODX,*.MODx	setf rapid
 endif
 
 " Modula-3 (.m3, .i3, .mg, .ig)
