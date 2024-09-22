@@ -1648,6 +1648,7 @@ func Test_getcmdtype_getcmdprompt()
     autocmd CmdlineEnter * let g:cmdprompt=getcmdprompt()
   augroup END
   call feedkeys(":call input('Answer?')\<CR>a\<CR>\<ESC>", "xt")
+  call assert_equal('Answer?', g:cmdprompt)
   call assert_equal('', getcmdprompt())
 
   augroup test_CmdlineEnter
