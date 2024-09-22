@@ -760,6 +760,13 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
     long	len = 0;
     char_u	*ptr;
 
+    if (buf->b_ml.ml_flags & ML_EMPTY)
+    {
+	din->din_mmfile.ptr = NULL;
+	din->din_mmfile.size = 0;
+	return OK;
+    }
+
     // xdiff requires one big block of memory with all the text.
     for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
 	len += ml_get_buf_len(buf, lnum) + 1;
