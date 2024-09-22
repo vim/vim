@@ -1,9 +1,10 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
 " Maintainer:	This runtime file is looking for a new maintainer.
-" Date:		Feb 09, 2021
+" Date:		Sep 09, 2021
 " Last Change:
 "   2024 May 08 by Vim Project: cleanup legacy Win9X checks
+"   2024 Sep 22 by Vim Project: cleanup gx mapping
 " Former Maintainer:   Charles E Campbell
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2021 Charles E. Campbell {{{1
@@ -31,6 +32,100 @@ set cpo&vim
 " ---------------------------------------------------------------------
 " Public Interface: {{{1
 
+" Commands Launch/URL {{{2
+" surpress output of command; use bang for GUI applications
+
+" set up redirection (avoids browser messages)
+" by default, g:netrw_suppress_gx_mesg is true
+if get(g:, ':netrw_suppress_gx_mesg', 1)
+  if &srr =~# "%s"
+    if has("win32")
+      let s:redir= substitute(&srr,"%s","nul","")
+    else
+      let s:redir= substitute(&srr,"%s","/dev/null","")
+    endif
+  else
+    if has("win32")
+      let s:redir= &srr . "nul"
+    else
+      let s:redir= &srr . "/dev/null"
+    endif
+  endif
+else
+  let s:redir= ""
+endif
+"  call Decho("set up redirection: redir{".redir."} srr{".&srr."}",'~'.expand("<slnum>"))
+
+if has('unix')
+  if has('win32unix') " Git Bash provides /usr/bin/start script calling cmd.exe //c
+    " use start //b "" to set void title and avoid ambiguity with passed argument
+    silent! command -complete=shellcmd -nargs=1 -bang Launch
+          \ exe 'silent ! start "" //b ' . trim(<q-args>)  s:redir | redraw!
+  elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
+    silent! command -complete=shellcmd -nargs=1 -bang Launch execute ':silent !'..
+          \ ((<q-args> =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
+            \ 'cmd.exe /c start "" /b ' . trim(<q-args>) :
+            \ 'nohup ' trim(<q-args>) s:redir '&')
+          \ | redraw!
+  else
+    silent! command -complete=shellcmd -nargs=1 -bang Launch execute ':silent ! nohup' trim(<q-args>) s:redir '&' | redraw!
+  endif
+elseif has('win32')
+  silent! command -complete=shellcmd -nargs=1 -bang Launch
+        \ exe 'silent !'.. (&shell =~? '\<cmd\.exe\>' ? '' : 'cmd.exe /c')
+        \ 'start /b ' trim(<q-args>) s:redir | redraw!
+endif
+" if exists(':Launch') == 2
+" Git Bash
+if has('win32unix')
+    " start suffices
+    let s:cmd = ''
+" Windows / WSL
+elseif executable('explorer.exe')
+    let s:cmd = 'explorer.exe'
+" Linux / BSD
+elseif executable('xdg-open')
+    let s:cmd = 'xdg-open'
+" MacOS
+elseif executable('open')
+    let s:cmd = 'open'
+endif
+silent! command -complete=file -nargs=1 Open exe 'Launch' s:cmd <q-args>
+" endif
+
+if !exists('g:netrw_regex_url')
+  let g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
+endif
+
+silent! function Netrw_get_URL_markdown()
+  " markdown URL such as [link text](http://ya.ru 'yandex search')
+  try
+    let save_view = winsaveview()
+    if searchpair('\[.\{-}\](', '', ')\zs', 'cbW', '', line('.')) > 0
+      return matchstr(getline('.')[col('.')-1:], '\[.\{-}\](\zs' .. g:netrw_regex_url .. '\ze\(\s\+.\{-}\)\?)')
+    endif
+  finally
+    call winrestview(save_view)
+    return ''
+  endtry
+endfunction
+
+silent! function Netrw_get_URL_html()
+  " HTML URL such as <a href='http://www.python.org'>Python is here</a>
+  "                  <a href="http://www.python.org"/>
+  try
+    let save_view = winsaveview()
+    if searchpair('<a\s\+href=', '', '\%(</a>\|/>\)\zs', 'cbW', '', line('.')) > 0
+      return matchstr(getline('.')[col('.') - 1 : ],
+            \ 'href=["'.."'"..']\?\zs\S\{-}\ze["'.."'"..']\?/\?>')
+    endif
+  finally
+    call winrestview(save_view)
+    return ''
+  endtry
+endfunction
+
+" " }}}
 " Local Browsing Autocmds: {{{2
 augroup FileExplorer
  au!
