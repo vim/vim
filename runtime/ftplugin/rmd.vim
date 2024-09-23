@@ -74,9 +74,9 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
 endif
 
 if exists('b:undo_ftplugin')
-  let b:undo_ftplugin .= " | setl cms< com< fo< flp< isk< | unlet! b:browsefilter"
+  let b:undo_ftplugin .= " | setl cms< com< fo< flp< isk< fex< | unlet! b:browsefilter"
 else
-  let b:undo_ftplugin = "setl cms< com< fo< flp< isk< | unlet! b:browsefilter"
+  let b:undo_ftplugin = "setl cms< com< fo< flp< isk< fex< | unlet! b:browsefilter"
 endif
 
 let &cpo = s:cpo_save
