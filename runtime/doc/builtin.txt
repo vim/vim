@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Sep 10
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Sep 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -232,8 +232,9 @@ getcharsearch()			Dict	last character search
 getcharstr([{expr}])		String	get one character from the user
 getcmdcompltype()		String	return the type of the current
 					command-line completion
-getcmdline()			String	return the current command-line
+getcmdline()			String	return the current command-line input
 getcmdpos()			Number	return cursor position in command-line
+getcmdprompt()			String	return the current command-line prompt
 getcmdscreenpos()		Number	return cursor screen position in
 					command-line
 getcmdtype()			String	return current command-line type
@@ -3978,21 +3979,21 @@ getcmdcompltype()					*getcmdcompltype()*
 		Only works when the command line is being edited, thus
 		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
 		See |:command-completion| for the return string.
-		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()| and
-		|setcmdline()|.
+		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
+		|getcmdprompt()| and |setcmdline()|.
 		Returns an empty string when completion is not defined.
 
 		Return type: |String|
 
 
 getcmdline()						*getcmdline()*
-		Return the current command-line.  Only works when the command
-		line is being edited, thus requires use of |c_CTRL-\_e| or
-		|c_CTRL-R_=|.
+		Return the current command-line input.  Only works when the
+		command line is being edited, thus requires use of
+		|c_CTRL-\_e| or |c_CTRL-R_=|.
 		Example: >
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
-<		Also see |getcmdtype()|, |getcmdpos()|, |setcmdpos()| and
-		|setcmdline()|.
+<		Also see |getcmdtype()|, |getcmdpos()|, |setcmdpos()|,
+		|getcmdprompt()| and |setcmdline()|.
 		Returns an empty string when entering a password or using
 		|inputsecret()|.
 
@@ -4005,10 +4006,21 @@ getcmdpos()						*getcmdpos()*
 		Only works when editing the command line, thus requires use of
 		|c_CTRL-\_e| or |c_CTRL-R_=| or an expression mapping.
 		Returns 0 otherwise.
-		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()| and
-		|setcmdline()|.
+		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
+		|getcmdprompt()| and |setcmdline()|.
 
 		Return type: |Number|
+
+
+getcmdprompt()						*getcmdprompt()*
+		Return the current command-line prompt when using functions
+		like |input()| or |confirm()|.
+		Only works when the command line is being edited, thus
+		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
+		Also see |getcmdtype()|, |getcmdline()|, |getcmdpos()|,
+		|setcmdpos()| and |setcmdline()|.
+
+		Return type: |String|
 
 
 getcmdscreenpos()					*getcmdscreenpos()*

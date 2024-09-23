@@ -2097,6 +2097,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getcmdline},
     {"getcmdpos",	0, 0, 0,	    NULL,
 			ret_number,	    f_getcmdpos},
+    {"getcmdprompt",	0, 0, 0,	    NULL,
+			ret_string,	    f_getcmdprompt},
     {"getcmdscreenpos",	0, 0, 0,	    NULL,
 			ret_number,	    f_getcmdscreenpos},
     {"getcmdtype",	0, 0, 0,	    NULL,
@@ -3778,6 +3780,8 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     message = tv_get_string_chk(&argvars[0]);
     if (message == NULL)
 	error = TRUE;
+    else
+	set_prompt(message);
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	buttons = tv_get_string_buf_chk(&argvars[1], buf);

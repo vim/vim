@@ -30,6 +30,7 @@ static cmdline_info_T ccline;
 
 #ifdef FEAT_EVAL
 static int	new_cmdpos;	// position set by set_cmdline_pos()
+static char_u	current_prompt[CMDBUFFSIZE + 1] = "";
 #endif
 
 static int	extra_char = NUL;  // extra character to display when redrawing
@@ -49,6 +50,9 @@ static void	alloc_cmdbuff(int len);
 static void	draw_cmdline(int start, int len);
 static void	save_cmdline(cmdline_info_T *ccp);
 static void	restore_cmdline(cmdline_info_T *ccp);
+#ifdef FEAT_EVAL
+static char_u	*get_prompt(void);
+#endif
 static int	cmdline_paste(int regname, int literally, int remcr);
 static void	redrawcmdprompt(void);
 static int	ccheck_abbr(int);
@@ -4232,6 +4236,24 @@ f_getcmdline(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
+ * Get current command line prompt.
+ */
+    static char_u *
+get_prompt(void)
+{
+    return current_prompt;
+}
+
+/*
+ * Set current command line prompt.
+ */
+    void
+set_prompt(char_u* str)
+{
+    vim_strncpy(current_prompt, str, sizeof(current_prompt) - 1);
+}
+
+/*
  * "getcmdpos()" function
  */
     void
@@ -4240,6 +4262,17 @@ f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
     cmdline_info_T *p = get_ccline_ptr();
 
     rettv->vval.v_number = p != NULL ? p->cmdpos + 1 : 0;
+}
+
+/*
+ * "getcmdprompt()" function
+ */
+    void
+f_getcmdprompt(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    cmdline_info_T *p = get_ccline_ptr();
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = p != NULL ? vim_strsave(get_prompt()) : NULL;
 }
 
 /*
@@ -4865,6 +4898,8 @@ get_user_input(
     cmd_silent = FALSE;		// Want to see the prompt.
     if (prompt != NULL)
     {
+	set_prompt(prompt);
+
 	// Only the part of the message after the last NL is considered as
 	// prompt for the command line
 	p = vim_strrchr(prompt, '\n');
