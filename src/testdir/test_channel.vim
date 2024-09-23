@@ -2765,4 +2765,42 @@ func Test_channel_lsp_mode()
   call RunServer('test_channel_lsp.py', 'LspTests', [])
 endfunc
 
+func Test_error_callback_terminal()
+  CheckUnix
+  CheckFeature terminal
+  let g:out = ''
+  let g:error = ''
+
+  func! s:Out(channel, msg)
+      let g:out .= string(a:msg)
+  endfunc
+
+  func! s:Err(channel, msg)
+      let g:error .= string(a:msg)
+  endfunc
+
+  let buf = term_start(['sh'], #{term_finish: 'close', out_cb: 's:Out', err_cb: 's:Err', err_io: 'pipe'})
+  let job = term_getjob(buf)
+  let dict = job_info(job).channel->ch_info()
+
+  call assert_true(dict.id != 0)
+  call assert_equal('open', dict.status)
+  call assert_equal('open', dict.out_status)
+  call assert_equal('RAW', dict.out_mode)
+  call assert_equal('buffer', dict.out_io)
+  call assert_equal('open', dict.err_status)
+  call assert_equal('RAW', dict.err_mode)
+  call assert_equal('pipe', dict.err_io)
+  call term_sendkeys(buf, "XXXX\<cr>")
+  call term_wait(buf)
+  call term_sendkeys(buf, "exit\<cr>")
+  call term_wait(buf)
+  call assert_match('XXX.*exit', g:out)
+  call assert_match('sh:.*XXXX:.*not found', g:error)
+
+  delfunc s:Out
+  delfunc s:Err
+  unlet! g:out g:error
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -5763,8 +5763,11 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	    goto failed;
 	}
     }
+    // only create a pipe for the error fd, when either a callback has been setup
+    // or pty is not used (e.g. terminal uses pty by default)
     else if (!use_out_for_err && !use_null_for_err
-				      && pty_master_fd < 0 && pipe(fd_err) < 0)
+		&& (pty_master_fd < 0 || (options->jo_set & JO_ERR_CALLBACK))
+			    && pipe(fd_err) < 0)
 	goto failed;
 
     if (!use_null_for_in || !use_null_for_out || !use_null_for_err)
