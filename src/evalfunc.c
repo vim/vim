@@ -3780,8 +3780,6 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     message = tv_get_string_chk(&argvars[0]);
     if (message == NULL)
 	error = TRUE;
-    else
-	set_prompt(message);
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	buttons = tv_get_string_buf_chk(&argvars[1], buf);
@@ -3814,8 +3812,12 @@ f_confirm(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	buttons = (char_u *)_("&Ok");
 
     if (!error)
+    {
+	set_prompt(message);
 	rettv->vval.v_number = do_dialog(type, NULL, message, buttons,
 							    def, NULL, FALSE);
+	set_prompt((char_u *)"");
+    }
 #endif
 }
 

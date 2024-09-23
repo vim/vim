@@ -4975,5 +4975,6 @@ get_user_input(
 	msg_didout = FALSE;
     }
     cmd_silent = cmd_silent_save;
+    set_prompt((char_u *)"");
 }
 #endif
