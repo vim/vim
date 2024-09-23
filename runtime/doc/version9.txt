@@ -41577,7 +41577,7 @@ Changed~
 - the default for 'commentstring' contains whitespace padding to have
   automatic comments look nicer |comment-install|
 - 'completeopt' is now a |global-local| option.
-- 'nrformat' accepts the new "blank" suboption, to determine a signed or
+- 'nrformats' accepts the new "blank" suboption, to determine a signed or
   unsigned number based on whitespace in front of a minus sign.
 - allow to specify a priority when defining a new sign |:sign-define|
 - provide information about function arguments using the get(func, "arity")
