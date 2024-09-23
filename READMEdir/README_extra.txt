@@ -11,8 +11,6 @@ farsi/*			Files for the Farsi (persian) language.  If you don't
 src/if_sniff.*		Interface to SNiFF.  If you don't know what SNiFF is,
 			this is not for you.
 
-src/os_amiga.*		Files for the Amiga port.
-
 src/os_msdos.*
 src/os_dos.*		Files for the MS-DOS port.
 

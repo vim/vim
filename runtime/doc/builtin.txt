@@ -12451,7 +12451,6 @@ use: `if exists('+shellslash')`
 acl			Compiled with |ACL| support.
 all_builtin_terms	Compiled with all builtin terminals enabled. (always
 			true)
-amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
 autocmd			Compiled with autocommand support. (always true)

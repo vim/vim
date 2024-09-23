@@ -8332,7 +8332,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'term'* *E529* *E530* *E531*
 'term'			string	(default is $TERM, if that fails:
 				      in the GUI: "builtin_gui"
-					on Amiga: "amiga"
 					on Haiku: "xterm"
 					  on Mac: "mac-ansi"
 					 on Unix: "ansi"

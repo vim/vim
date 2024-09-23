@@ -72,7 +72,6 @@ See one of these files for system-specific instructions.  Either in the
 the top directory (if you unpack an archive):
 
 ```
-README_ami.txt		Amiga
 README_unix.txt		Unix
 README_dos.txt		MS-DOS and MS-Windows
 README_mac.txt		Macintosh

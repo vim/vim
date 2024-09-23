@@ -210,7 +210,6 @@ Versions ~
 						*sys-file-list*
 Remarks about specific systems ~
 |os_390.txt|	OS/390 Unix
-|os_amiga.txt|	Amiga
 |os_beos.txt|	BeOS and BeBox
 |os_dos.txt|	MS-DOS and MS-Windows common items
 |os_haiku.txt|	Haiku

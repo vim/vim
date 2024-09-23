@@ -625,23 +625,6 @@ SRC_DOS_BIN =	\
 		runtime/bitmaps/vim.ico \
 		nsis/icons.zip \
 
-# Source files for Amiga, DOS, etc. (also in the extra archive).
-SRC_AMI_DOS =	\
-
-# Source files for Amiga (also in the extra archive).
-SRC_AMI =	\
-		README_amisrc.txt \
-		README_amisrc.txt.info \
-		src.info \
-		src/INSTALLami.txt \
-		src/Make_ami.mak \
-		src/os_amiga.c \
-		src/os_amiga.h \
-		src/proto/os_amiga.pro \
-		src/testdir/Make_amiga.mak \
-		src/testdir/amiga.vim \
-		src/xxd/Make_amiga.mak \
-
 # Source files for Haiku (also in the extra archive).
 SRC_HAIKU =	\
 		README_haiku.txt \
@@ -684,8 +667,6 @@ SRC_QNX =	\
 
 # Source files for the extra archive (all sources that are not for Unix).
 SRC_EXTRA =	\
-		$(SRC_AMI) \
-		$(SRC_AMI_DOS) \
 		$(SRC_DOS) \
 		$(SRC_DOS_BIN) \
 		$(SRC_HAIKU) \
@@ -875,14 +856,6 @@ RT_UNIX_DOS_BIN =	\
 # Runtime not for Unix-like or extra.
 RT_NO_UNIX =	\
 
-# Runtime for Amiga (also in the extra archive).
-RT_AMI_DOS =	\
-		runtime/doc/evim.man \
-		runtime/doc/vim.man \
-		runtime/doc/vimdiff.man \
-		runtime/doc/vimtutor.man \
-		runtime/doc/xxd.man \
-
 # MS Windows runtime (also in the extra archive).
 RT_DOS =	\
 		README_dos.txt \
@@ -900,51 +873,11 @@ RT_DOS_BIN =	\
 		runtime/vimlogo.pdf \
 		runtime/vimlogo.svg \
 
-# Amiga runtime (also in the extra archive)
-RT_AMI =	\
-		README.txt.info \
-		README_ami.txt \
-		README_ami.txt.info \
-		runtime/doc.info \
-		runtime/doc/*.info \
-		runtime/icons/README.txt \
-		runtime/icons/*.info \
-		runtime/icons.info \
-		runtime/macros.info \
-		runtime/macros/*.info \
-		runtime/macros/hanoi/*.info \
-		runtime/macros/life/*.info \
-		runtime/macros/maze/*.info \
-		runtime/macros/urm/*.info \
-		runtime/tools.info \
-		runtime/tutor.info \
-		runtime/tutor/*.info \
-
 # Runtime files in extra archive.
 RT_EXTRA =	\
-		$(RT_AMI) \
-		$(RT_AMI_DOS) \
 		$(RT_DOS) \
 		$(RT_DOS_BIN) \
 		README_mac.txt \
-
-# Included in all Amiga archives.
-ROOT_AMI =	\
-		Contents \
-		Contents.info \
-		runtime.info \
-		vimdir.info \
-
-# Root files for the extra archive.
-ROOT_EXTRA =	\
-		$(ROOT_AMI) \
-
-# Files for Amiga small binary (also in extra archive).
-BIN_AMI =	\
-		README_amibin.txt \
-		README_amibin.txt.info \
-		Vim.info \
-		Xxd.info \
 
 # Files for MS Windows binary (also in extra archive).
 BIN_DOS =	\
@@ -969,7 +902,6 @@ BIN_OS2 =	\
 
 # Binary files for extra archive.
 BIN_EXTRA =	\
-		$(BIN_AMI) \
 		$(BIN_DOS) \
 		$(BIN_OLE) \
 		$(BIN_W32S) \
@@ -979,7 +911,6 @@ BIN_EXTRA =	\
 # All files for extra archive.
 EXTRA =		\
 		$(BIN_EXTRA) \
-		$(ROOT_EXTRA) \
 		$(RT_EXTRA) \
 		$(SRC_EXTRA) \
 		README_extra.txt \
@@ -988,12 +919,6 @@ EXTRA =		\
 # Files in READMEdir that are included from the top dir.
 IN_README_DIR = \
 		README.txt.info \
-		README_ami.txt \
-		README_ami.txt.info \
-		README_amibin.txt \
-		README_amibin.txt.info \
-		README_amisrc.txt \
-		README_amisrc.txt.info \
 		README_bindos.txt \
 		README_dos.txt \
 		README_extra.txt \

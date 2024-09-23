@@ -54,7 +54,6 @@ DOCS = \
 	netbeans.txt \
 	options.txt \
 	os_390.txt \
-	os_amiga.txt \
 	os_beos.txt \
 	os_dos.txt \
 	os_haiku.txt \
@@ -207,7 +206,6 @@ HTMLS = \
 	netbeans.html \
 	options.html \
 	os_390.html \
-	os_amiga.html \
 	os_beos.html \
 	os_dos.html \
 	os_haiku.html \

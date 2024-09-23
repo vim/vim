@@ -147,11 +147,6 @@ os_390.txt :
 @$(TOUCH)
 <<
 
-os_amiga.txt :
-	<<touch.bat $@
-@$(TOUCH)
-<<
-
 os_beos.txt :
 	<<touch.bat $@
 @$(TOUCH)

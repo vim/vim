@@ -118,9 +118,6 @@ if_ole.txt:
 os_390.txt:
 	touch $@
 
-os_amiga.txt:
-	touch $@
-
 os_beos.txt:
 	touch $@
 
