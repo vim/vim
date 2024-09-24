@@ -357,6 +357,35 @@ after/syntax/c.vim contained in it to overwrite a user's c.vim.
 		Override this if your system needs
 	  ...  ='http://vim.sourceforge.net/scripts/download_script.php?src_id='
 >
+	g:GetLatestVimScripts_bunzip2
+<        default= bunzip2
+		This variable holds the name of the command to decompress .bz2
+		files
+>
+	g:GetLatestVimScripts_gunzip
+<        default= gunzip
+		This variable holds the name of the command to decompress .gz
+		files
+>
+	g:GetLatestVimScripts_unxz
+<        default= unxz
+		This variable holds the name of the command to decompress .xz
+		files
+>
+	g:GetLatestVimScripts_unzip
+<        default= unzip
+		This variable holds the name of the command to decompress .zip
+		files
+
+Note: The variables associated with decompression commands help workaround
+      crossplatform issues. For example, on Windows is possible to delegate this
+      calls into `wsl` by doing: >
+
+	let g:GetLatestVimScripts_bunzip2= "wsl -e bunzip2"
+	let g:GetLatestVimScripts_gunzip= "wsl -e gunzip"
+	let g:GetLatestVimScripts_unxz= "wsl -e unxz"
+	let g:GetLatestVimScripts_unzip= "wsl -e unzip"
+<
 ==============================================================================
 8. GetLatestVimScripts Algorithm		*glvs-algorithm* *glvs-alg*
 
@@ -393,6 +422,11 @@ The AutoInstall process will:
 ==============================================================================
 9. GetLatestVimScripts History		*getscript-history* *glvs-hist* {{{1
 
+v37 Sep 23, 2024 : * Support for the new vimball's .vmb extension (old .vba
+		     extension conflicted with visual basic).
+		   * Support for |glvs-autoinstal| in ftplugins and packages.
+		   * Allow platform driven customization of decompressing
+		     commands.
 v36 Apr 22, 2013 : * (glts) suggested use of plugin/**/*.vim instead of
 		     plugin/*.vim in globpath() call.
 		   * (Andy Wokula) got warning message when setting

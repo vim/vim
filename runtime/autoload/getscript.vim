@@ -10,6 +10,7 @@
 "   2024 Sep 08 by Vim Project: several small fixes (#15640)
 "   2024 Sep 23 by Vim Project: runtimedir selection fix (#15722)
 "                               autoloading search path fix
+"                               substitution of hardcoded commands with global variables
 "  }}}
 "
 " GetLatestVimScripts: 642 1 :AutoInstall: getscript.vim
@@ -21,7 +22,7 @@
 if exists("g:loaded_getscript")
  finish
 endif
-let g:loaded_getscript= "v36"
+let g:loaded_getscript= "v37"
 if &cp
  echoerr "GetLatestVimScripts is not vi-compatible; not loaded (you need to set nocp)"
  finish
@@ -87,6 +88,24 @@ endif
 
 if !exists("g:GetLatestVimScripts_downloadaddr")
   let g:GetLatestVimScripts_downloadaddr = 'https://www.vim.org/scripts/download_script.php?src_id='
+endif
+
+" define decompression tools (on windows this allows redirection to wsl or git tools).
+" Note tar is available as builtin since Windows 11.
+if !exists("g:GetLatestVimScripts_bunzip2")
+ let g:GetLatestVimScripts_bunzip2= "bunzip2"
+endif
+
+if !exists("g:GetLatestVimScripts_gunzip")
+ let g:GetLatestVimScripts_gunzip= "gunzip"
+endif
+
+if !exists("g:GetLatestVimScripts_unxz")
+ let g:GetLatestVimScripts_unxz= "unxz"
+endif
+
+if !exists("g:GetLatestVimScripts_unzip")
+ let g:GetLatestVimScripts_unzip= "unzip"
 endif
 
 "" For debugging:
@@ -569,17 +588,17 @@ fun! s:GetOneScript(...)
      " decompress
      if sname =~ '\.bz2$'
 "      call Decho("decompress: attempt to bunzip2 ".sname)
-      exe "sil !bunzip2 ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_bunzip2." ".shellescape(sname)
       let sname= substitute(sname,'\.bz2$','','')
 "      call Decho("decompress: new sname<".sname."> after bunzip2")
      elseif sname =~ '\.gz$'
 "      call Decho("decompress: attempt to gunzip ".sname)
-      exe "sil !gunzip ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_gunzip." ".shellescape(sname)
       let sname= substitute(sname,'\.gz$','','')
 "      call Decho("decompress: new sname<".sname."> after gunzip")
      elseif sname =~ '\.xz$'
 "      call Decho("decompress: attempt to unxz ".sname)
-      exe "sil !unxz ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_unxz." ".shellescape(sname)
       let sname= substitute(sname,'\.xz$','','')
 "      call Decho("decompress: new sname<".sname."> after unxz")
      else
@@ -589,7 +608,7 @@ fun! s:GetOneScript(...)
      " distribute archive(.zip, .tar, .vba, .vmb, ...) contents
      if sname =~ '\.zip$'
 "      call Decho("dearchive: attempt to unzip ".sname)
-      exe "silent !unzip -o ".shellescape(sname)
+      exe "silent !".g:GetLatestVimScripts_unzip." -o ".shellescape(sname)
      elseif sname =~ '\.tar$'
 "      call Decho("dearchive: attempt to untar ".sname)
       exe "silent !tar -xvf ".shellescape(sname)
