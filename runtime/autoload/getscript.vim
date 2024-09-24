@@ -7,7 +7,9 @@
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "  Last Change:	{{{1
-"   2024 Sep 08 by Vim Project: several small fixes
+"   2024 Sep 08 by Vim Project: several small fixes (#15640)
+"   2024 Sep 23 by Vim Project: runtimedir selection fix (#15722)
+"                               autoloading search path fix
 "  }}}
 "
 " GetLatestVimScripts: 642 1 :AutoInstall: getscript.vim
@@ -96,18 +98,16 @@ endif
 let s:autoinstall= ""
 if g:GetLatestVimScripts_allowautoinstall
 
- if (has("win32") || has("gui_win32") || has("gui_win32s") || has("win16") || has("win64") || has("win32unix") || has("win95")) && &shell !~ '\cbash\|pwsh\|powershell'
-  " windows (but not cygwin/bash)
-  let s:dotvim= "vimfiles"
-  if !exists("g:GetLatestVimScripts_mv")
-   let g:GetLatestVimScripts_mv= "move"
-  endif
+ let s:is_windows = has("win32") || has("gui_win32") || has("gui_win32s") || has("win16") || has("win64") || has("win32unix") || has("win95")
+ let s:dotvim= s:is_windows ? "vimfiles" : ".vim"
 
- else
-  " unix
-  let s:dotvim= ".vim"
-  if !exists("g:GetLatestVimScripts_mv")
-   let g:GetLatestVimScripts_mv= "mv"
+ if !exists("g:GetLatestVimScripts_mv")
+  if s:is_windows && &shell !~ '\cbash\|pwsh\|powershell'
+   " windows (but not cygwin/bash)
+    let g:GetLatestVimScripts_mv= "move"
+  else
+   " unix
+    let g:GetLatestVimScripts_mv= "mv"
   endif
  endif
 
@@ -215,10 +215,15 @@ fun! getscript#GetLatestVimScripts()
 "  call Decho("searching plugins for GetLatestVimScripts dependencies")
   let lastline    = line("$")
 "  call Decho("lastline#".lastline)
-  let firstdir    = substitute(&rtp,',.{-}$','','')
+  let firstdir    = substitute(&rtp,',.*$','','')
   let plugins     = split(globpath(firstdir,"plugin/**/*.vim"),'\n')
   let plugins     += split(globpath(firstdir,"ftplugin/**/*.vim"),'\n')
   let plugins     += split(globpath(firstdir,"AsNeeded/**/*.vim"),'\n')
+" extend the search to the packages too (this script predates the feature)
+  let plugins     += split(globpath(firstdir,"pack/*/start/*/plugin/**/*.vim"),'\n')
+  let plugins     += split(globpath(firstdir,"pack/*/opt/*/plugin/**/*.vim"),'\n')
+  let plugins     += split(globpath(firstdir,"pack/*/start/*/ftplugin/**/*.vim"),'\n')
+  let plugins     += split(globpath(firstdir,"pack/*/opt/*/ftplugin/**/*.vim"),'\n')
   let foundscript = 0
 
   " this loop updates the GetLatestVimScripts.dat file
