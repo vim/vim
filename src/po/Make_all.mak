@@ -4,6 +4,7 @@
 
 LANGUAGES = \
 		af \
+		am \
 		ca \
 		cs \
 		cs.cp1250 \
@@ -49,6 +50,7 @@ LANGUAGES = \
 
 POFILES = \
 		af.po \
+		am.po \
 		ca.po \
 		cs.po \
 		cs.cp1250.po \
@@ -94,6 +96,7 @@ POFILES = \
 
 MOFILES = \
 		af.mo \
+		am.mo \
 		ca.mo \
 		cs.mo \
 		da.mo \
