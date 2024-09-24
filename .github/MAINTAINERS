@@ -610,6 +610,7 @@ runtime/tutor/tutor.ru.cp1251		@RestorerZ
 runtime/tutor/tutor.ru.utf-8		@RestorerZ
 src/iscygpty.*				@k-takata
 src/libvterm/				@leonerd
+src/po/am.po				@gagikh
 src/po/ca.po				@nfdisco
 src/po/de.po				@chrisbra
 src/po/eo.po				@dpelle
