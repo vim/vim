@@ -9433,7 +9433,7 @@ eval_vars(
     char_u	*s;
     char_u	*result;
     char_u	*resultbuf = NULL;
-    int		resultlen;
+    size_t	resultlen;
     buf_T	*buf;
     int		valid = VALID_HEAD + VALID_PATH;    // assume valid result
     int		spec_idx;
@@ -9708,7 +9708,7 @@ eval_vars(
 		break;
 	}
 
-	resultlen = (int)STRLEN(result);	// length of new string
+	resultlen = STRLEN(result);	// length of new string
 	if (src[*usedlen] == '<')	// remove the file name extension
 	{
 	    ++*usedlen;

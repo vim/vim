@@ -8304,7 +8304,7 @@ vimrc_found(char_u *fname, char_u *envname)
 		if (vim_getenv((char_u *)"MYVIMDIR", &dofree) == NULL)
 		{
 		    size_t  usedlen = 0;
-		    int     len = 0;
+		    size_t  len = 0;
 		    char_u  *fbuf = NULL;
 
 		    if (STRNCMP(gettail(fname), ".vimrc", 6) == 0)
