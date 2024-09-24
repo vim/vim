@@ -80,7 +80,7 @@ func Test_non_existing_backupdir()
   set backupdir=./non_existing_dir backupskip=
   call writefile(['line1'], 'Xbackupdir', 'D')
   new Xbackupdir
-  call assert_fails('write', 'E510:')
+  call assert_fails('write', 'E509:')
 
   set backupdir&vim backupskip&vim
 endfunc

@@ -419,7 +419,7 @@ func Test_write_readonly()
   call assert_fails('write', 'E505:')
   let save_cpo = &cpo
   set cpo+=W
-  call assert_fails('write!', 'E504:')
+  call assert_fails('write!', 'E212:')
   let &cpo = save_cpo
   call setline(1, ['line1'])
   write!
