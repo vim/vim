@@ -421,12 +421,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"backupcopy",  "bkc",  P_STRING|P_VIM|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_bkc, PV_BKC, did_set_backupcopy, expand_set_backupcopy,
-#ifdef UNIX
-			    {(char_u *)"yes", (char_u *)"auto"}
-#else
-			    {(char_u *)"auto", (char_u *)"auto"}
-#endif
-			    SCTX_INIT},
+			    {(char_u *)"yes", (char_u *)"yes"} SCTX_INIT},
     {"backupdir",   "bdir", P_STRING|P_EXPAND|P_VI_DEF|P_ONECOMMA
 							    |P_NODUP|P_SECURE,
 			    (char_u *)&p_bdir, PV_NONE, NULL, NULL,

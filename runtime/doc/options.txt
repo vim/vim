@@ -1110,10 +1110,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'backupcopy'* *'bkc'*
-'backupcopy' 'bkc'	string	(Vi default for Unix: "yes", otherwise: "auto")
+'backupcopy' 'bkc'	string	(default "yes")
 			global or local to buffer |global-local|
 	When writing a file and a backup is made, this option tells how it's
 	done.  This is a comma-separated list of words.
+	Using "yes" is optimal to avoid confusing programs that watch file changes.
 
 	The main values are:
 	"yes"	make a copy of the file and overwrite the original one
@@ -1971,8 +1972,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'arabicshape'	+ on		correct character shapes
 	'backspace'	+ ""		normal backspace
 	'backup'	+ off		no backup file
-	'backupcopy'	& Unix: "yes"	backup file is a copy
-			  else: "auto"	copy or rename backup file
 	'balloonexpr'	+ ""		text to show in evaluation balloon
 	'breakindent'	+ off		don't indent when wrapping lines
 	'cedit'		- {unchanged}	{set vim default only on resetting 'cp'}
