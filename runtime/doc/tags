@@ -134,6 +134,7 @@ $quote	eval.txt	/*$quote*
 'character'	intro.txt	/*'character'*
 'charconvert'	options.txt	/*'charconvert'*
 'ci'	options.txt	/*'ci'*
+'cia'	options.txt	/*'cia'*
 'cin'	options.txt	/*'cin'*
 'cindent'	options.txt	/*'cindent'*
 'cink'	options.txt	/*'cink'*
@@ -161,6 +162,7 @@ $quote	eval.txt	/*$quote*
 'compatible'	options.txt	/*'compatible'*
 'complete'	options.txt	/*'complete'*
 'completefunc'	options.txt	/*'completefunc'*
+'completeitemalign'	options.txt	/*'completeitemalign'*
 'completeopt'	options.txt	/*'completeopt'*
 'completepopup'	options.txt	/*'completepopup'*
 'completeslash'	options.txt	/*'completeslash'*

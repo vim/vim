@@ -42,6 +42,7 @@ char *did_set_complete(optset_T *args);
 int expand_set_complete(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_completeopt(optset_T *args);
 int expand_set_completeopt(optexpand_T *args, int *numMatches, char_u ***matches);
+char *did_set_completeitemalign(optset_T *args);
 char *did_set_completepopup(optset_T *args);
 char *did_set_completeslash(optset_T *args);
 int expand_set_completeslash(optexpand_T *args, int *numMatches, char_u ***matches);

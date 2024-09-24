@@ -2373,6 +2373,17 @@ typedef enum {
 } funcerror_T;
 
 /*
+ * Array indexes used for cp_text[].
+ */
+typedef enum {
+    CPT_ABBR,		// "abbr"
+    CPT_KIND,		// "kind"
+    CPT_MENU,		// "menu"
+    CPT_INFO,		// "info"
+    CPT_COUNT,		// Number of entries
+} cpitem_T;
+
+/*
  * Type for the callback function that is invoked after an option value is
  * changed to validate and apply the new value.
  *
