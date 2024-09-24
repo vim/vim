@@ -707,9 +707,9 @@ ga_init2(garray_T *gap, size_t itemsize, int growsize)
  * Return FAIL for failure, OK otherwise.
  */
     int
-ga_grow(garray_T *gap, int n)
+ga_grow(garray_T *gap, size_t n)
 {
-    if (gap->ga_maxlen - gap->ga_len < n)
+    if ((size_t)(gap->ga_maxlen - gap->ga_len) < n)
 	return ga_grow_inner(gap, n);
     return OK;
 }
@@ -729,28 +729,28 @@ ga_grow_id(garray_T *gap, int n, alloc_id_T id UNUSED)
 }
 
     int
-ga_grow_inner(garray_T *gap, int n)
+ga_grow_inner(garray_T *gap, size_t n)
 {
     size_t	old_len;
     size_t	new_len;
     char_u	*pp;
 
-    if (n < gap->ga_growsize)
+    if (n < (size_t)gap->ga_growsize)
 	n = gap->ga_growsize;
 
     // A linear growth is very inefficient when the array grows big.  This
     // is a compromise between allocating memory that won't be used and too
     // many copy operations. A factor of 1.5 seems reasonable.
-    if (n < gap->ga_len / 2)
+    if (n < (size_t)gap->ga_len / 2)
 	n = gap->ga_len / 2;
 
-    new_len = (size_t)gap->ga_itemsize * (gap->ga_len + n);
+    new_len = gap->ga_itemsize * (gap->ga_len + n);
     pp = vim_realloc(gap->ga_data, new_len);
     if (pp == NULL)
 	return FAIL;
     old_len = (size_t)gap->ga_itemsize * gap->ga_maxlen;
     vim_memset(pp + old_len, 0, new_len - old_len);
-    gap->ga_maxlen = gap->ga_len + n;
+    gap->ga_maxlen = gap->ga_len + (int)n;
     gap->ga_data = pp;
     return OK;
 }
