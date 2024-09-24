@@ -545,8 +545,8 @@ uc_list(char_u *name, size_t name_len)
     int		i, j;
     int		found = FALSE;
     ucmd_T	*cmd;
-    int		len;
-    int		over;
+    size_t	len;
+    size_t	over;
     long	a;
     garray_T	*gap;
     keyvalue_T	*entry;
