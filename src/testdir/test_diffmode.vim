@@ -2106,6 +2106,7 @@ func Test_diff_overlapped_diff_blocks_will_be_merged()
   call term_sendkeys(buf, ":set diffexpr&\<CR>:")
 
   call StopVimInTerminal(buf)
+  wincmd c
 
   call WriteDiffFiles3(0, [], [], [])
   let buf = RunVimInTerminal('-d -S XdiffSetup Xdifile1 Xdifile2 Xdifile3', {})
