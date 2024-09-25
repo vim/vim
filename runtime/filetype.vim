@@ -1631,7 +1631,11 @@ au BufNewFile,BufRead *.mm			call dist#ft#FTmm()
 au BufNewFile,BufRead *.nqc			setf nqc
 
 " notmuch
-au BufNewFile,BufRead .notmuch-config		setf dosini
+au BufNewFile,BufRead .notmuch-config{,.*}		setf dosini
+au BufNewFile,BufRead ~/.config/notmuch/*/config	setf dosini
+if exists('$XDG_CONFIG_HOME')
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/notmuch/*/config setf dosini
+endif
 
 " NSE - Nmap Script Engine - uses Lua syntax
 au BufNewFile,BufRead *.nse			setf lua
