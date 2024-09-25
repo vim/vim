@@ -2185,7 +2185,7 @@ msgid "line %4ld:"
 msgstr "տող %4ld:"
 
 msgid "Messages maintainer: The Vim Project"
-msgstr "Հայերեն թարգմանության հեղինակ։ Գագիկ Հակոբյան"
+msgstr "Հայերեն թարգմանության հեղինակ։ Գագիկ Հակոբյան<hakgagik@yahoo.com>"
 
 msgid "Interrupt: "
 msgstr "Ընդհատում: "
@@ -5046,7 +5046,7 @@ msgid "E470: Command aborted"
 msgstr "E470: Հրամանը ընդհատված է"
 
 msgid "E471: Argument required"
-msgstr "E471: Անրաժեշտ է արգումենտ"
+msgstr "E471: Անհրաժեշտ է արգումենտ"
 
 msgid "E472: Command failed"
 msgstr "E472: Հրամանը ձախողվել է"
@@ -7037,3 +7037,9 @@ msgstr "պարունակում է տպագրվող տառեր"
 
 msgid "multi-byte characters"
 msgstr "բազմաբայթ նշաններ"
+
+msgid ""
+"\n"
+"Type Name Content"
+msgstr "\n"
+"Տիպ Անուն Պարունակություն"
