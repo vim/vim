@@ -30,7 +30,7 @@ static cmdline_info_T ccline;
 
 #ifdef FEAT_EVAL
 static int	new_cmdpos;	// position set by set_cmdline_pos()
-static char_u	current_prompt[CMDBUFFSIZE + 1] = "";
+static char_u	*current_prompt;
 #endif
 
 static int	extra_char = NUL;  // extra character to display when redrawing
@@ -4250,7 +4250,7 @@ get_prompt(void)
     void
 set_prompt(char_u* str)
 {
-    vim_strncpy(current_prompt, str, sizeof(current_prompt) - 1);
+    current_prompt = str;
 }
 
 /*

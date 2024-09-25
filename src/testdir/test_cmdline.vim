@@ -1651,6 +1651,10 @@ func Test_getcmdtype_getcmdprompt()
   call assert_equal('Answer?', g:cmdprompt)
   call assert_equal('', getcmdprompt())
 
+  let str = "C" .. repeat("c", 1023) .. "xyz"
+  call feedkeys(":call input('" .. str .. "')\<CR>\<CR>\<ESC>", "xt")
+  call assert_equal(str, g:cmdprompt)
+
   augroup test_CmdlineEnter
     au!
   augroup END
