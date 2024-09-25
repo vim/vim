@@ -1796,15 +1796,6 @@ diff_read(
 					     < dpl->df_next->df_lnum[idx_orig])
 		    break;
 
-	    if (notset)
-	    {
-		dp->df_lnum[idx_new] = hunk->lnum_new;
-		dp->df_count[idx_new] = hunk->count_new;
-	    }
-	    else
-		// New block right next to previous one.  Concatenate them.
-		dp->df_count[idx_new] += hunk->count_new;
-
 	    // If the newly found block starts before the old one, set the
 	    // start back a number of lines.
 	    off = dp->df_lnum[idx_orig] - hunk->lnum_orig;
@@ -1816,14 +1807,18 @@ diff_read(
 			dp->df_lnum[i] -= off;
 			dp->df_count[i] += off;
 		    }
+		dp->df_lnum[idx_new] = hunk->lnum_new;
+		dp->df_count[idx_new] = hunk->count_new;
 	    }
 	    else if (notset)
 	    {
-		// New block inside existing one, adjust new block if not done
-		// already.
-		dp->df_lnum[idx_new] += off;
-		dp->df_count[idx_new] -= off;
+		// new block inside existing one, adjust new block
+		dp->df_lnum[idx_new] = hunk->lnum_new + off;
+		dp->df_count[idx_new] = hunk->count_new - off;
 	    }
+	    else
+		// second overlap of new block with existing block
+		dp->df_count[idx_new] += hunk->count_new;
 
 	    // Adjust the size of the block to include all the lines to the
 	    // end of the existing block or the new diff, whatever ends last.
@@ -1831,7 +1826,7 @@ diff_read(
 			 - (dpl->df_lnum[idx_orig] + dpl->df_count[idx_orig]);
 	    if (off < 0)
 	    {
-		// New change ends in existing block, adjust the end.
+		// new change ends in existing block, adjust the end
 		dp->df_count[idx_new] += -off;
 		off = 0;
 	    }
