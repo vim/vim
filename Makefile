@@ -153,7 +153,7 @@ MINOR = 1
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
-#   This creates the directory vim/vim90 and puts all files in there.
+#   This creates the directory vim/vim91 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
@@ -209,7 +209,7 @@ MINOR = 1
 #	gvimext64.dll in src/GvimExt
 #   gvimext64.dll can be obtained from:
 #   https://github.com/vim/vim-win32-installer/releases
-#	It is part of gvim_9.0.*_x64.zip as vim/vim90/GvimExt/gvimext64.dll.
+#	It is part of gvim_9.1.*_x64.zip as vim/vim91/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:

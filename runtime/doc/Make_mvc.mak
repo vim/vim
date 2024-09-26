@@ -12,7 +12,7 @@
 
 # Correct the following line for the where executeable file vim is installed.
 # Please do not put the path in quotes.
-VIMPROG = D:\Programs\Vim\vim90\vim.exe
+VIMPROG = D:\Programs\Vim\vim91\vim.exe
 
 # Correct the following line for the directory where iconv installed.
 # Please do not put the path in quotes.
