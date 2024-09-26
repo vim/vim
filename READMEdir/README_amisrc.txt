@@ -2,7 +2,7 @@ README_amisrc.txt for version 9.1 of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_ami.txt" for installation instructions for the Amiga.
-These files are in the runtime archive (vim90rt.tgz).
+These files are in the runtime archive (vim91rt.tgz).
 
 
 The Amiga source archive contains the files needed to compile Vim on the

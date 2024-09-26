@@ -2,7 +2,7 @@ README_bindos.txt for version 9.1 of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_dos.txt" for installation instructions for MS-DOS and MS-Windows.
-These files are in the runtime archive (vim90rt.zip).
+These files are in the runtime archive (vim91rt.zip).
 
 
 There are several binary distributions of Vim for the PC.  You would normally
