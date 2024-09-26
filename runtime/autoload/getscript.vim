@@ -3,11 +3,14 @@
 "  Maintainer: This runtime file is looking for a new maintainer.
 "  Original Author: Charles E. Campbell
 "  Date:	Jan 21, 2014
-"  Version:	36
+"  Version:	37
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "  Last Change:	{{{1
-"   2024 Sep 08 by Vim Project: several small fixes
+"   2024 Sep 08 by Vim Project: several small fixes (#15640)
+"   2024 Sep 23 by Vim Project: runtime dir selection fix (#15722)
+"                               autoloading search path fix
+"                               substitution of hardcoded commands with global variables
 "  }}}
 "
 " GetLatestVimScripts: 642 1 :AutoInstall: getscript.vim
@@ -19,7 +22,7 @@
 if exists("g:loaded_getscript")
  finish
 endif
-let g:loaded_getscript= "v36"
+let g:loaded_getscript= "v37"
 if &cp
  echoerr "GetLatestVimScripts is not vi-compatible; not loaded (you need to set nocp)"
  finish
@@ -87,6 +90,24 @@ if !exists("g:GetLatestVimScripts_downloadaddr")
   let g:GetLatestVimScripts_downloadaddr = 'https://www.vim.org/scripts/download_script.php?src_id='
 endif
 
+" define decompression tools (on windows this allows redirection to wsl or git tools).
+" Note tar is available as builtin since Windows 11.
+if !exists("g:GetLatestVimScripts_bunzip2")
+ let g:GetLatestVimScripts_bunzip2= "bunzip2"
+endif
+
+if !exists("g:GetLatestVimScripts_gunzip")
+ let g:GetLatestVimScripts_gunzip= "gunzip"
+endif
+
+if !exists("g:GetLatestVimScripts_unxz")
+ let g:GetLatestVimScripts_unxz= "unxz"
+endif
+
+if !exists("g:GetLatestVimScripts_unzip")
+ let g:GetLatestVimScripts_unzip= "unzip"
+endif
+
 "" For debugging:
 "let g:GetLatestVimScripts_wget    = "echo"
 "let g:GetLatestVimScripts_options = "options"
@@ -96,18 +117,16 @@ endif
 let s:autoinstall= ""
 if g:GetLatestVimScripts_allowautoinstall
 
- if (has("win32") || has("gui_win32") || has("gui_win32s") || has("win16") || has("win64") || has("win32unix") || has("win95")) && &shell !~ '\cbash\|pwsh\|powershell'
-  " windows (but not cygwin/bash)
-  let s:dotvim= "vimfiles"
-  if !exists("g:GetLatestVimScripts_mv")
-   let g:GetLatestVimScripts_mv= "move"
-  endif
+ let s:is_windows = has("win32") || has("gui_win32") || has("gui_win32s") || has("win16") || has("win64") || has("win32unix") || has("win95")
+ let s:dotvim= s:is_windows ? "vimfiles" : ".vim"
 
- else
-  " unix
-  let s:dotvim= ".vim"
-  if !exists("g:GetLatestVimScripts_mv")
-   let g:GetLatestVimScripts_mv= "mv"
+ if !exists("g:GetLatestVimScripts_mv")
+  if s:is_windows && &shell !~ '\cbash\|pwsh\|powershell'
+   " windows (but not cygwin/bash)
+    let g:GetLatestVimScripts_mv= "move"
+  else
+   " unix
+    let g:GetLatestVimScripts_mv= "mv"
   endif
  endif
 
@@ -215,10 +234,15 @@ fun! getscript#GetLatestVimScripts()
 "  call Decho("searching plugins for GetLatestVimScripts dependencies")
   let lastline    = line("$")
 "  call Decho("lastline#".lastline)
-  let firstdir    = substitute(&rtp,',.{-}$','','')
+  let firstdir    = substitute(&rtp,',.*$','','')
   let plugins     = split(globpath(firstdir,"plugin/**/*.vim"),'\n')
   let plugins     += split(globpath(firstdir,"ftplugin/**/*.vim"),'\n')
   let plugins     += split(globpath(firstdir,"AsNeeded/**/*.vim"),'\n')
+" extend the search to the packages too (this script predates the feature)
+  let plugins     += split(globpath(firstdir,"pack/*/start/*/plugin/**/*.vim"),'\n')
+  let plugins     += split(globpath(firstdir,"pack/*/opt/*/plugin/**/*.vim"),'\n')
+  let plugins     += split(globpath(firstdir,"pack/*/start/*/ftplugin/**/*.vim"),'\n')
+  let plugins     += split(globpath(firstdir,"pack/*/opt/*/ftplugin/**/*.vim"),'\n')
   let foundscript = 0
 
   " this loop updates the GetLatestVimScripts.dat file
@@ -564,17 +588,17 @@ fun! s:GetOneScript(...)
      " decompress
      if sname =~ '\.bz2$'
 "      call Decho("decompress: attempt to bunzip2 ".sname)
-      exe "sil !bunzip2 ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_bunzip2." ".shellescape(sname)
       let sname= substitute(sname,'\.bz2$','','')
 "      call Decho("decompress: new sname<".sname."> after bunzip2")
      elseif sname =~ '\.gz$'
 "      call Decho("decompress: attempt to gunzip ".sname)
-      exe "sil !gunzip ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_gunzip." ".shellescape(sname)
       let sname= substitute(sname,'\.gz$','','')
 "      call Decho("decompress: new sname<".sname."> after gunzip")
      elseif sname =~ '\.xz$'
 "      call Decho("decompress: attempt to unxz ".sname)
-      exe "sil !unxz ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_unxz." ".shellescape(sname)
       let sname= substitute(sname,'\.xz$','','')
 "      call Decho("decompress: new sname<".sname."> after unxz")
      else
@@ -584,7 +608,7 @@ fun! s:GetOneScript(...)
      " distribute archive(.zip, .tar, .vba, .vmb, ...) contents
      if sname =~ '\.zip$'
 "      call Decho("dearchive: attempt to unzip ".sname)
-      exe "silent !unzip -o ".shellescape(sname)
+      exe "silent !".g:GetLatestVimScripts_unzip." -o ".shellescape(sname)
      elseif sname =~ '\.tar$'
 "      call Decho("dearchive: attempt to untar ".sname)
       exe "silent !tar -xvf ".shellescape(sname)

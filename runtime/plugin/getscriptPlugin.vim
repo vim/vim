@@ -23,7 +23,7 @@ if &cp
  endif
  finish
 endif
-let g:loaded_getscriptPlugin = "v36"
+let g:loaded_getscriptPlugin = "v37"
 let s:keepcpo                = &cpo
 set cpo&vim
 
