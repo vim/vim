@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 May 17
+" Last Change: 2025 May 28
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -296,6 +296,7 @@ function s:get_vim_command_type(cmd_name)
 		import
 		interface
 		insert
+		k
 		let
 		loadkeymap
 		lhelpgrep
@@ -307,6 +308,7 @@ function s:get_vim_command_type(cmd_name)
 		luafile
 		map
 		mapclear
+		mark
 		match
 		mzscheme
 		mzfile
