@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 Sep 10
+*options.txt*	For Vim version 9.1.  Last change: 2024 Sep 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -396,13 +396,14 @@ between string and number-based options.
 			options which are different from the default.
 
 For buffer-local and window-local options:
-	Command		 global value	    local value ~
-      :set option=value	     set		set
- :setlocal option=value	      -			set
-:setglobal option=value	     set		 -
-      :set option?	      -		       display
- :setlocal option?	      -		       display
-:setglobal option?	    display		 -
+	Command		 global value	  local value	       condition ~
+      :set option=value	     set	      set
+ :setlocal option=value	      -		      set
+:setglobal option=value	     set	       -
+      :set option?	      -		     display	 local value is set
+      :set option?	    display	       -	 local value is not set
+ :setlocal option?	      -		     display
+:setglobal option?	    display	       -
 
 
 Global options with a local value			*global-local*
