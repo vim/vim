@@ -1621,7 +1621,7 @@ endfunc
 
 " Test for using id()
 def Test_id_with_dict()
-  # demonstate a way that "id(item)" differs from "string(item)"
+  # demonstrate a way that "id(item)" differs from "string(item)"
   var d1 = {one: 1}
   var d2 = {one: 1}
   var d3 = {one: 1}

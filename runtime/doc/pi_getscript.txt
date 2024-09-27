@@ -424,7 +424,7 @@ The AutoInstall process will:
 
 v37 Sep 23, 2024 : * Support for the new vimball's .vmb extension (old .vba
 		     extension conflicted with visual basic).
-		   * Support for |glvs-autoinstal| in ftplugins and packages.
+		   * Support for |glvs-autoinstall| in ftplugins and packages.
 		   * Allow platform driven customization of decompressing
 		     commands.
 v36 Apr 22, 2013 : * (glts) suggested use of plugin/**/*.vim instead of

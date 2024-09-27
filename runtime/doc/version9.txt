@@ -41620,7 +41620,7 @@ Functions: ~
 
 Autocommands: ~
 
-|CursorMovedC|		after the cursor was moved in the comamnd-line
+|CursorMovedC|		after the cursor was moved in the command-line
 |KeyInputPre|		before processing any key event in any mode
 |SessionWritePost|	after writing the session file |:mksession|
 |TermResponseAll|	after the terminal response to |t_RV| and others is

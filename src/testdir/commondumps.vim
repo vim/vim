@@ -23,7 +23,7 @@ enddef
 
 # Search for the "failed" directory in the passed _subtreedirname_ directories
 # (usually "\<src\>" or "\<syntax\>") and, if found, select its passed _count_
-# occurence, add all its "*.dump" files to the argument list and list them;
+# occurrence, add all its "*.dump" files to the argument list and list them;
 # also define a BufRead autocommand that would invoke "Render()" for every
 # "*.dump" file.
 def g:Init(subtreedirname: string, count: number)
