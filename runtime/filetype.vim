@@ -567,6 +567,9 @@ au BufNewFile,BufRead *.dsp				call dist#ft#FTdsp()
 au BufNewFile,BufRead *.xcu,*.xlb,*.xlc,*.xba		setf xml
 au BufNewFile,BufRead psprint.conf,sofficerc		setf dosini
 
+" Libtool files
+au BufNewFile,BufRead *.lo,*.la,*.lai		setf sh
+
 " Lynx config files
 au BufNewFile,BufRead lynx.cfg			setf lynx
 
