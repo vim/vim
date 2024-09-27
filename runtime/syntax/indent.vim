@@ -34,7 +34,7 @@ endif
 syn match   indentOptions '-\%(bli\|c\%([bl]i\|[dip]\)\=\|di\=\|ip\=\|lc\=\|pp\=i\|sbi\|ts\|-\%(brace-indent\|comment-indentation\|case-brace-indentation\|declaration-comment-column\|continuation-indentation\|case-indentation\|else-endif-column\|line-comments-indentation\|declaration-indentation\|indent-level\|parameter-indentation\|line-length\|comment-line-length\|paren-indentation\|preprocessor-indentation\|struct-brace-indentation\|tab-size\)\)'
                         \ nextgroup=indentNumber skipwhite skipempty
 
-syn match   indentNumber  display contained '\d\+\>'
+syn match   indentNumber  display contained '-\?\d\+\>'
 
 syn match   indentOptions '-T'
                         \ nextgroup=indentIdent skipwhite skipempty
