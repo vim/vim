@@ -1059,6 +1059,9 @@ au BufNewFile,BufRead init.trans,*/etc/translate-shell,.trans	setf clojure
 au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call dist#ft#FThtml()
 au BufNewFile,BufRead *.cshtml			setf html
 
+" HTTP request files
+au BufNewFile,BufRead *.http			setf http
+
 " HTML with Ruby - eRuby
 au BufNewFile,BufRead *.erb,*.rhtml		setf eruby
 
