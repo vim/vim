@@ -162,6 +162,8 @@ You can now examine the extracted screendumps:
 
 VIEWING GENERATED SCREENDUMPS (submitted for a pull request):
 
+(There is also a "git difftool" extension described in ./commondumps.vim.)
+
 First, you need to check out the topic branch with the proposed changes and
 write down a difference list between the HEAD commit (index) and its parent
 commit with respect to the changed "dumps" filenames:
