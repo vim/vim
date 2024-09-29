@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Jul 11
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Sep 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,9 +37,6 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-FILETYPE_FILE is defined to the same value in multiple places.
-Only use the one in feature.h.  Others too.
 
 Mapping with modifier is not recognized after a partial mapping.  Probably
 because the typeahead was simplified when looking for a matching mapping.
