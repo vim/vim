@@ -120,30 +120,6 @@ Remarks:
   entry, you can remove it by running the "uninstall.exe".  See
   ":help win32-popup-menu".
 
-- In Windows 95/98/NT you can create a shortcut to Vim.  This works for all
-  DOS and Win32 console versions.  For the console version this gives you the
-  opportunity to set defaults for the Console where Vim runs in.
-
-  1. On the desktop, click right to get a menu.  Select New/Shortcut.
-  2. In the dialog, enter Command line: "C:\command.com".  Click "Next".
-  3. Enter any name.  Click "Finish".
-     The new shortcut will appear on the desktop.
-  4. With the mouse pointer on the new shortcut, click right to get a menu.
-     Select Properties.
-  5. In the Program tab, change the "Cmdline" to add "/c" and the name of the
-     Vim executable.  Examples:
-	C:\command.com /c C:\vim\vim91\vim.exe
-	C:\command.com /c D:\editors\vim\vim91\vim.exe
-  6. Select the font, window size, etc. that you like.  If this isn't
-     possible, select "Advanced" in the Program tab, and deselect "MS-DOS
-     mode".
-  7. Click OK.
-
-  For gvim, you can use a normal shortcut on the desktop, and set the size of
-  the Window in your $VIM/_gvimrc:
-	set lines=30 columns=90
-
-
 For further information, type one of these inside Vim:
 	:help dos
 	:help win32

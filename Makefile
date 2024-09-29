@@ -285,10 +285,10 @@ dist/$(COMMENT_RT): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) runtime files for MS-DOS and MS-Windows" > dist/$(COMMENT_RT)
 
 dist/$(COMMENT_W32): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) binaries for MS-Windows NT/95" > dist/$(COMMENT_W32)
+	echo "Vim - Vi IMproved - v$(VDOT) binaries for MS-Windows" > dist/$(COMMENT_W32)
 
 dist/$(COMMENT_GVIM): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) GUI binaries for MS-Windows NT/95" > dist/$(COMMENT_GVIM)
+	echo "Vim - Vi IMproved - v$(VDOT) GUI binaries for MS-Windows" > dist/$(COMMENT_GVIM)
 
 dist/$(COMMENT_OLE): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) MS-Windows GUI binaries with OLE support" > dist/$(COMMENT_OLE)
