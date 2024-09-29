@@ -1,8 +1,6 @@
 b:comment_first_col	comment.txt	/*b:comment_first_col*
 comment.txt	comment.txt	/*comment.txt*
 g:comment_first_col	comment.txt	/*g:comment_first_col*
-gcG	comment.txt	/*gcG*
 gcc	comment.txt	/*gcc*
-gcip	comment.txt	/*gcip*
 o_gc	comment.txt	/*o_gc*
 v_gc	comment.txt	/*v_gc*

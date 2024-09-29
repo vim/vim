@@ -1,4 +1,4 @@
-*comment.txt*   For Vim version 9.1.  Last change:  2024 Jun 04
+*comment.txt*   For Vim version 9.1.  Last change:  2024 Sep 29
 
 
 		  VIM REFERENCE MANUAL
@@ -12,16 +12,25 @@ See |comment-install| on how to activate this package.
 The comment.vim package, allows to toggle comments for a single line, a range
 of lines or a selected text object.  It defines the following mappings:
 
-							*gcc*
-gcc		to comment/uncomment current line
 							*o_gc*
 gc{motion}	to toggle comments for the selected motion
-							*gcip*
-gcip		to comment/uncomment current paragraph
-							*gcG*
-gcG		to comment/uncomment from current line till the end of a buffer
 							*v_gc*
 {Visual}gc	to comment/uncomment the highlighted lines.
+
+Since gc operates on a motion, it can be used with any motion, for example _
+to comment the current line, or ip to comment the current paragraph.
+A default mapping `gcc` to `gc_` is defined:
+							*gcc*
+gcc		to comment/uncomment current line
+
+To comment the rest of the line by  `gC`  whenever the filetype plugin
+supports it (that is, whenever the comment marker precedes the code) and fall
+back to `gcc` otherwise, add the following mapping to your vimrc: >
+
+	nnoremap <silent> <expr> gC comment.Toggle() .. '$'
+<
+Note: using `gC` may not always result in valid comment markers depending on
+the language used.
 
 This plugin uses the buffer-local 'commentstring' option value to add or remove
 comment markers to the selected lines.  Whether it will comment or un-comment
