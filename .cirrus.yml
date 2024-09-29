@@ -25,6 +25,6 @@ freebsd_task:
     screendump_artifacts:
       name: "Cirrus-CI-freebsd-failed-tests"
       path: |
-        "$CIRRUS_WORKING_DIR/runtime/syntax/testdir/failed/*"
-        "$CIRRUS_WORKING_DIR/src/testdir/failed/*"
+        "runtime/syntax/testdir/failed/*"
+        "src/testdir/failed/*"
       type: application/octet-stream
