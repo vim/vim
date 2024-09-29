@@ -40,6 +40,44 @@ def Test_cmdmods_array()
   bwipe!
 enddef
 
+def Test_keep_cmdmods_names()
+  # :k only available in legacy script
+  legacy call assert_equal('k', fullcommand(':k'))
+  legacy call assert_equal('k', fullcommand(':ke'))
+  # single character commands not supported in Vim9
+  assert_equal('', fullcommand(':k'))
+  assert_equal('keepmarks', fullcommand(':ke'))
+  assert_equal('keepmarks', fullcommand(':kee'))
+  assert_equal('keepmarks', fullcommand(':keep'))
+  assert_equal('keepmarks', fullcommand(':keepm'))
+  assert_equal('keepmarks', fullcommand(':keepma'))
+  assert_equal('keepmarks', fullcommand(':keepmar'))
+  assert_equal('keepmarks', fullcommand(':keepmark'))
+  assert_equal('keepmarks', fullcommand(':keepmarks'))
+  assert_equal('keepalt', fullcommand(':keepa'))
+  assert_equal('keepalt', fullcommand(':keepal'))
+  assert_equal('keepalt', fullcommand(':keepalt'))
+  assert_equal('keepjumps', fullcommand(':keepj'))
+  assert_equal('keepjumps', fullcommand(':keepju'))
+  assert_equal('keepjumps', fullcommand(':keepjum'))
+  assert_equal('keepjumps', fullcommand(':keepjump'))
+  assert_equal('keepjumps', fullcommand(':keepjumps'))
+  assert_equal('keeppatterns', fullcommand(':keepp'))
+  assert_equal('keeppatterns', fullcommand(':keeppa'))
+  assert_equal('keeppatterns', fullcommand(':keeppat'))
+  assert_equal('keeppatterns', fullcommand(':keeppatt'))
+  assert_equal('keeppatterns', fullcommand(':keeppatte'))
+  assert_equal('keeppatterns', fullcommand(':keeppatter'))
+  assert_equal('keeppatterns', fullcommand(':keeppattern'))
+  assert_equal('keeppatterns', fullcommand(':keeppatterns'))
+enddef
+
+def Test_cmdmod_completion()
+  assert_equal('edit', getcompletion('keepalt ed',      'cmdline')[0])
+  assert_equal('edit', getcompletion('keepjumps ed',    'cmdline')[0])
+  assert_equal('edit', getcompletion('keepmarks ed',    'cmdline')[0])
+  assert_equal('edit', getcompletion('keeppatterns ed', 'cmdline')[0])
+enddef
 
 " vim: shiftwidth=2 sts=2 expandtab
 
