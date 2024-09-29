@@ -3868,7 +3868,7 @@ netrw:
 				  netrw-safe guioptions
 		Nov 15, 2021	* removed netrw_localrm and netrw_localrmdir
 				  references
-		Aug 18, 2022	* (Miguel Barro) improving compatability with
+		Aug 18, 2022	* (Miguel Barro) improving compatibility with
 				  powershell
 	v171:	Oct 09, 2020	* included code in s:NetrwOptionsSafe()
 				  to allow |'bh'| to be set to delete when
@@ -4099,7 +4099,7 @@ netrw:
 				  The "<nowait>" modifier has been included
 				  with most of netrw's mappings to avoid that
 				  delay.
-		Jun 26, 2015	* |netrw-gn| mapping implemted
+		Jun 26, 2015	* |netrw-gn| mapping implemented
 				* :Ntree NotADir resulted in having
 				  the tree listing expand in the error messages
 				  window.  Fixed.

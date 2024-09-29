@@ -4609,7 +4609,7 @@ free_tabpage(tabpage_T *tp)
  * Otherwise put it just before tab page "after".
  *
  * Does not trigger WinNewPre, since the window structures
- * are not completly setup yet and could cause dereferencing
+ * are not completely setup yet and could cause dereferencing
  * NULL pointers
  *
  * Return FAIL or OK.

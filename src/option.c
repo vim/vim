@@ -186,7 +186,7 @@ set_init_default_backupskip(void)
 	    item = alloc(itemsize);
 	    if (item != NULL)
 	    {
-		// add a preceeding comma as a separator after the first item
+		// add a preceding comma as a separator after the first item
 		size_t	itemseplen = (ga.ga_len == 0) ? 0 : 1;
 		size_t	itemlen;
 
