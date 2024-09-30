@@ -27,7 +27,7 @@ To comment the rest of the line by  `gC`  whenever the filetype plugin
 supports it (that is, whenever the comment marker precedes the code) and fall
 back to `gcc` otherwise, add the following mapping to your vimrc: >
 
-	nnoremap <silent> <expr> gC comment.Toggle() .. '$'
+	nnoremap <silent> <expr> gC comment#Toggle() .. '$'
 <
 Note: using `gC` may not always result in valid comment markers depending on
 the language used.
