@@ -1,7 +1,7 @@
 vim9script
 
 # Maintainer: Maxim Kim <habamax@gmail.com>
-# Last Update: 2024-09-24
+# Last Update: 2024-09-30
 #
 # Toggle comments
 # Usage:
@@ -24,7 +24,7 @@ export def Toggle(...args: list<string>): string
     var first_col = indent(lnum1)
     var start_col = getpos("'[")[2]
     if len(cms_l) == 1 && lnum1 == lnum2 && first_col < start_col
-        var line_start = getline(lnum1)[0 : max(0, start_col - 2)]
+        var line_start = getline(lnum1)[0 : max([0, start_col - 2])]
         var line_end = getline(lnum1)[start_col - 1 : -1]
         line_end = line_end =~# $'^\s*{cms_l[0]}' ?
                     \ substitute(line_end, $'^\s*\zs{cms_l[0]}', '', '') :
