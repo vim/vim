@@ -7,7 +7,7 @@
  */
 
 /*
- * Win32 (Windows NT and Windows 95) machine-dependent things.
+ * Win32 machine-dependent things.
  */
 
 #include "os_dos.h"		// common MS-DOS and Win32 stuff

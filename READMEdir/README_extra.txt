@@ -27,7 +27,7 @@ src/gui_w32.*		Files for the Win32 GUI.
 src/gui_w48.*		Files for the Win32 and Win16 GUI.
 src/Make_mvc.mak	MS Visual C++ makefile for the Win32 GUI.
 
-src/if_ole.*		OLE automation interface, for MS Windows 95 and NT.
+src/if_ole.*		OLE automation interface, for MS Windows.
 
 src/GvimExt/*		DLL for the "Edit with Vim" context menu entry
 
