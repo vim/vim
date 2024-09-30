@@ -143,17 +143,35 @@ syn keyword pythonTodo		FIXME NOTE NOTES TODO XXX contained
 
 " Triple-quoted strings can contain doctests.
 syn region  pythonString matchgroup=pythonQuotes
-      \ start=+[uU]\=\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
+      \ start=+[uUbB]\=\z(['"]\)+ end="$\|\z1" skip="\\\\\|\\\z1"
       \ contains=pythonEscape,@Spell
 syn region  pythonString matchgroup=pythonTripleQuotes
-      \ start=+[uU]\=\z('''\|"""\)+ end="\z1" keepend
+      \ start=+[uUbB]\=\z('''\|"""\)+ end="\z1" keepend
       \ contains=pythonEscape,pythonSpaceError,pythonDoctest,@Spell
 syn region  pythonRawString matchgroup=pythonQuotes
-      \ start=+[uU]\=[rR]\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
+      \ start=+\%([bB][rR]\=\|[rR][bB]\=\)\z(['"]\)+
+      \ end="$\|\z1" skip="\\\\\|\\\r\=$\|\\\z1"
       \ contains=@Spell
 syn region  pythonRawString matchgroup=pythonTripleQuotes
-      \ start=+[uU]\=[rR]\z('''\|"""\)+ end="\z1" keepend
+      \ start=+\%([bB][rR]\=\|[rR][bB]\=\)\z('''\|"""\)+
+      \ end="\z1" keepend
       \ contains=pythonSpaceError,pythonDoctest,@Spell
+syn region  pythonFString matchgroup=pythonQuotes
+      \ start=+[fF]\z(['"]\)+
+      \ end="$\|\z1" skip="\\\\\|\\\z1"
+      \ contains=pythonEscape,pythonFStringEscapedBrace,pythonFStringValue,@Spell
+syn region  pythonFString matchgroup=pythonTripleQuotes
+      \ start=+[fF]\z('''\|"""\)+
+      \ end="\z1" keepend
+      \ contains=pythonEscape,pythonSpaceError,pythonFStringEscapedBrace,pythonFStringValue,pythonDoctest,@Spell
+syn region  pythonRawFString matchgroup=pythonQuotes
+      \ start=+\%([fF][rR]\|[rR][fF]\)\z(['"]\)+
+      \ end="$\|\z1" skip="\\\\\|\\\r\=$\|\\\z1"
+      \ contains=pythonFStringEscapedBrace,pythonFStringValue,@Spell
+syn region  pythonRawFString matchgroup=pythonTripleQuotes
+      \ start=+\%([fF][rR]\|[rR][fF]\)\z('''\|"""\)+
+      \ end="\z1" keepend
+      \ contains=pythonSpaceError,pythonFStringEscapedBrace,pythonFStringValue,pythonDoctest,@Spell
 
 syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
 syn match   pythonEscape	"\\\o\{1,3}" contained
@@ -161,7 +179,11 @@ syn match   pythonEscape	"\\x\x\{2}" contained
 syn match   pythonEscape	"\%(\\u\x\{4}\|\\U\x\{8}\)" contained
 " Python allows case-insensitive Unicode IDs: http://www.unicode.org/charts/
 syn match   pythonEscape	"\\N{\a\+\%(\s\a\+\)*}" contained
-syn match   pythonEscape	"\\$"
+syn match   pythonEscape	"\\\r\=$"
+
+syn region  pythonFStringValue matchgroup=pythonFStringBrace
+      \ start=+{+ end=+=\=\%(![rsa]\)\=\%(:[^{}]*\%({[^{}]*\%({[^{}]*}[^{}]*\)*}[^{}]*\)*\)\=}+ contains=TOP contained excludenl
+syn match   pythonFStringEscapedBrace	"{{\|}}" contained
 
 " It is very important to understand all details before changing the
 " regular expressions below or their order.
@@ -312,9 +334,14 @@ hi def link pythonComment		Comment
 hi def link pythonTodo			Todo
 hi def link pythonString		String
 hi def link pythonRawString		String
+hi def link pythonFString		String
+hi def link pythonRawFString		String
 hi def link pythonQuotes		String
 hi def link pythonTripleQuotes		pythonQuotes
 hi def link pythonEscape		Special
+hi def link pythonFStringEscapedBrace	Special
+hi def link pythonFStringValue		Normal
+hi def link pythonFStringBrace		Include
 if !exists("python_no_number_highlight")
   hi def link pythonNumber		Number
 endif
