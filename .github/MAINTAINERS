@@ -178,6 +178,7 @@ runtime/ftplugin/hgcommit.vim		@k-takata
 runtime/ftplugin/hlsplaylist.vim		@avidseeker
 runtime/ftplugin/hog.vim		@wtfbbqhax
 runtime/ftplugin/html.vim		@dkearns
+runtime/ftplugin/http.vim		@ribru17
 runtime/ftplugin/hyprlang.vim		@ribru17
 runtime/ftplugin/i3config.vim		@hiqua
 runtime/ftplugin/icon.vim		@dkearns
