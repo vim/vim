@@ -1,4 +1,4 @@
-*comment.txt*   For Vim version 9.1.  Last change:  2024 Sep 30
+*comment.txt*   For Vim version 9.1.  Last change:  2024 Oct 01
 
 
 		  VIM REFERENCE MANUAL
@@ -37,6 +37,11 @@ comment markers to the selected lines.  Whether it will comment or un-comment
 depends on the first line of the range of lines to act upon.  When it matches
 a comment marker, the line will be un-commented, if it doesn't, the line will
 be commented out.  Blank and empty lines are ignored.
+
+The value of 'commentstring' is the same for the entire buffer and determined
+by its filetype (|filetypes|). To adapt it within the buffer for embedded
+languages, you can use a plug-in such as
+https://github.com/suy/vim-context-commentstring.
 
 The comment marker will always be padded with blanks whether or not the
 'commentstring' value contains whitespace around "%s".

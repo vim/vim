@@ -22,13 +22,13 @@ export def Toggle(...args: list<string>): string
     var cms_l = split(escape(cms, '*.'), '\s*%s\s*')
 
     var first_col = indent(lnum1)
-    var start_col = getpos("'[")[2]
+    var start_col = getpos("'[")[2] - 1
     if len(cms_l) == 1 && lnum1 == lnum2 && first_col < start_col
-        var line_start = getline(lnum1)[0 : max([0, start_col - 2])]
-        var line_end = getline(lnum1)[start_col - 1 : -1]
-        line_end = line_end =~# $'^\s*{cms_l[0]}' ?
-                    \ substitute(line_end, $'^\s*\zs{cms_l[0]}', '', '') :
-                    \ printf(substitute(cms, '%s\@!', '%%', 'g'), line_end)
+        var line_start = getline(lnum1)[0 : start_col - 1]
+        var line_end = getline(lnum1)[start_col : -1]
+        line_end = line_end =~ $'^\s*{cms_l[0]}' ?
+                    \ substitute(line_end, $'^\s*\zs{cms_l[0]}\s\ze\s*', line_end =~ '^\s' ? ' ' : '', '') :
+                    \ printf(substitute(cms, '%s\@!', '%%', ''), line_end)
         setline(lnum1, line_start .. line_end)
         return ''
     endif
