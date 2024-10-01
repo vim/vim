@@ -1180,6 +1180,8 @@ items:
 			item with the same word is already present.
 	empty		when non-zero this match will be added even when it is
 			an empty string
+	cpstr		optional field that replaces word for matching against
+			input during completion.
 	user_data	custom data which is associated with the item and
 			available in |v:completed_item|; it can be any type;
 			defaults to an empty string

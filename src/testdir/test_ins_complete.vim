@@ -2765,4 +2765,65 @@ func Test_complete_backwards_default()
   bw!
 endfunc
 
+func Test_complete_filter_text()
+  new
+  func OnPumChange()
+    let g:item = get(v:event, 'completed_item', {})
+    let g:word = get(g:item, 'word', v:null)
+  endfunction
+
+  augroup AAAAA_Group
+    au!
+    autocmd CompleteChanged * :call OnPumChange()
+  augroup END
+
+  func Omni_test( findstart, base )
+    if a:findstart
+      return 2
+    endif
+    return {
+          \ 'words': [
+          \ { 'word': '->handle', 'abbr': ' handle', 'cpstr': 'handle'},
+          \ { 'word': '->w_locked', 'abbr': ' w_locked', 'cpstr': 'w_locked'},
+          \ { 'word': '->w_inner_height', 'abbr': ' w_inner_height', 'cpstr': 'w_inner_height'},
+          \ { 'word': '->w_virtcol', 'abbr': ' w_virtcol'},
+          \]}
+  endfunc
+  set omnifunc=Omni_test
+  set completeopt=menuone,menu,noinsert
+  call feedkeys("iwp.\<C-X>\<C-O>w", 'tx')
+  call assert_equal('->w_locked', g:word)
+  " move next circular
+  call feedkeys("iwp.\<C-X>\<C-O>w\<C-N>", 'tx')
+  call assert_equal('->w_inner_height', g:word)
+  call feedkeys("iwp.\<C-X>\<C-O>w\<C-N>\<C-N>", 'tx')
+  call assert_equal(v:null, g:word)
+  call feedkeys("iwp.\<C-X>\<C-O>w\<C-N>\<C-N>\<C-N>", 'tx')
+  call assert_equal('->w_locked', g:word)
+
+  " move prev circular
+  call feedkeys("iwp.\<C-X>\<C-O>w\<C-P>", 'tx')
+  call assert_equal(v:null, g:word)
+  call feedkeys("iwp.\<C-X>\<C-O>w\<C-P>\<C-P>", 'tx')
+  call assert_equal('->w_inner_height', g:word)
+  call feedkeys("iwp.\<C-X>\<C-O>h", 'tx')
+  call assert_equal('->handle', g:word)
+
+  set completeopt+=fuzzy
+  call feedkeys("iwp.\<C-X>\<C-O>h", 'tx')
+  call assert_equal('->handle', g:word)
+  call feedkeys("iwp.\<C-X>\<C-O>h\<C-N>", 'tx')
+  call assert_equal('->w_inner_height', g:word)
+
+  set omnifunc=
+  bw!
+  set complete& completeopt&
+  autocmd! AAAAA_Group
+  augroup! AAAAA_Group
+  delfunc OnPumChange
+  delfunc Omni_test
+  unlet g:item
+  unlet g:word
+endfunction
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

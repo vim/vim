@@ -94,7 +94,8 @@ static char *ctrl_x_mode_names[] = {
 #define CPT_MENU	1	// "menu"
 #define CPT_KIND	2	// "kind"
 #define CPT_INFO	3	// "info"
-#define CPT_COUNT	4	// Number of entries
+#define CPT_CPSTR	4	// "cpstr"
+#define CPT_COUNT	5	// Number of entries
 
 /*
  * Structure used to store one match for insert completion.
@@ -898,11 +899,14 @@ ins_compl_add(
     static int
 ins_compl_equal(compl_T *match, char_u *str, int len)
 {
+    const char_u*  cpstr = match->cp_text[CPT_CPSTR]
+				&& STRLEN(match->cp_text[CPT_CPSTR]) > 0
+				? match->cp_text[CPT_CPSTR] : match->cp_str;
     if (match->cp_flags & CP_EQUAL)
 	return TRUE;
     if (match->cp_flags & CP_ICASE)
-	return STRNICMP(match->cp_str, str, (size_t)len) == 0;
-    return STRNCMP(match->cp_str, str, (size_t)len) == 0;
+	return STRNICMP(cpstr, str, (size_t)len) == 0;
+    return STRNCMP(cpstr, str, (size_t)len) == 0;
 }
 
 /*
@@ -1220,6 +1224,36 @@ ins_compl_fuzzy_cmp(const void *a, const void *b)
     return sa == sb ? (ia == ib ? 0 : (ia < ib ? -1 : 1)) : (sa < sb ? 1 : -1);
 }
 
+    static char_u *
+ins_compl_sub_leader(int lead_len)
+{
+    char_u  *sub_leader = compl_leader;
+    size_t  orig_text_len = STRLEN(compl_orig_text);
+    if (compl_orig_text && orig_text_len > 0 && lead_len > 1
+		&& STRNCMP(compl_leader, compl_orig_text, orig_text_len) == 0)
+    {
+	sub_leader = sub_leader + orig_text_len;
+	lead_len = lead_len - orig_text_len;
+    }
+    return sub_leader;
+}
+
+    static inline int
+ins_compl_has_cpstr(compl_T *compl)
+{
+    return compl->cp_text[CPT_CPSTR] && STRLEN(compl->cp_text[CPT_CPSTR]) > 0;
+}
+
+    static inline void
+ins_compl_restore_leader(char_u *save_leader, int orig_lead_len, int *lead_len)
+{
+    if (save_leader && compl_leader && compl_leader != save_leader)
+    {
+	compl_leader = save_leader;
+	*lead_len = orig_lead_len;
+    }
+}
+
 /*
  * Build a popup menu to show the completion matches.
  * Returns the popup menu entry that should be selected. Returns -1 if nothing
@@ -1235,23 +1269,41 @@ ins_compl_build_pum(void)
     int		i;
     int		cur = -1;
     int		lead_len = 0;
+    int		orig_lead_len = 0;
     int		max_fuzzy_score = 0;
     unsigned int cur_cot_flags = get_cot_flags();
     int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
     int		compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
+    char_u	*save_leader = compl_leader; // save compl_leader
+    char_u	*cp_str = NULL;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
     compl = compl_first_match;
     if (compl_leader != NULL)
+    {
 	lead_len = (int)STRLEN(compl_leader);
+	orig_lead_len = lead_len;
+    }
 
     do
     {
+	// restore compl_leader before run compare.
+	ins_compl_restore_leader(save_leader, orig_lead_len, &lead_len);
+	if (compl->cp_text[CPT_CPSTR] && lead_len > 0)
+	{
+	    compl_leader = ins_compl_sub_leader(lead_len);
+	    lead_len = STRLEN(compl_leader);
+	}
 	// When 'completeopt' contains "fuzzy" and leader is not NULL or empty,
 	// set the cp_score for later comparisons.
 	if (compl_fuzzy_match && compl_leader != NULL && lead_len > 0)
-	    compl->cp_score = fuzzy_match_str(compl->cp_str, compl_leader);
+	{
+	    cp_str = compl->cp_text[CPT_CPSTR]
+				&& STRLEN(compl->cp_text[CPT_CPSTR]) > 0
+				? compl->cp_text[CPT_CPSTR] : compl->cp_str;
+	    compl->cp_score = fuzzy_match_str(cp_str, compl_leader);
+	}
 
 	if (!match_at_original_text(compl)
 		&& (compl_leader == NULL
@@ -1283,6 +1335,12 @@ ins_compl_build_pum(void)
     compl = compl_first_match;
     do
     {
+	ins_compl_restore_leader(save_leader, orig_lead_len, &lead_len);
+	if (compl->cp_text[CPT_CPSTR] && lead_len > 0)
+	{
+	    compl_leader = ins_compl_sub_leader(lead_len);
+	    lead_len = STRLEN(compl_leader);
+	}
 	if (!match_at_original_text(compl)
 		&& (compl_leader == NULL
 		    || ins_compl_equal(compl, compl_leader, lead_len)
@@ -1387,6 +1445,7 @@ ins_compl_build_pum(void)
     if (!shown_match_ok)    // no displayed match at all
 	cur = -1;
 
+    compl_leader = save_leader;
     return cur;
 }
 
@@ -2886,6 +2945,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict, "menu", FALSE);
 	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict, "kind", FALSE);
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
+	cptext[CPT_CPSTR] = dict_get_string(tv->vval.v_dict, "cpstr", FALSE);
 
 	user_hlname = dict_get_string(tv->vval.v_dict, "hl_group", FALSE);
 	user_hlattr = get_user_highlight_attr(user_hlname);
@@ -4146,6 +4206,17 @@ ins_compl_get_exp(pos_T *ini)
     static void
 ins_compl_update_shown_match(void)
 {
+    char_u  *save_leader = NULL;
+    int	    lead_len = 0;
+    if (compl_leader)
+	lead_len = STRLEN(compl_leader);
+
+    if (ins_compl_has_cpstr(compl_shown_match) && lead_len > 0)
+    {
+	save_leader = compl_leader;
+	compl_leader = ins_compl_sub_leader(lead_len);
+    }
+
     while (!ins_compl_equal(compl_shown_match,
 		compl_leader, (int)STRLEN(compl_leader))
 	    && compl_shown_match->cp_next != NULL
@@ -4166,6 +4237,8 @@ ins_compl_update_shown_match(void)
 		&& !is_first_match(compl_shown_match->cp_prev))
 	    compl_shown_match = compl_shown_match->cp_prev;
     }
+    if (save_leader)
+	compl_leader = save_leader;
 }
 
 /*
@@ -4320,9 +4393,22 @@ find_next_completion_match(
     unsigned int cur_cot_flags = get_cot_flags();
     int	    compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
     int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
+    char_u  *save_leader = NULL;
+    int	    lead_len = 0;
+
+    if (compl_leader)
+	lead_len = STRLEN(compl_leader);
 
     while (--todo >= 0)
     {
+	if ((ins_compl_has_cpstr(compl_shown_match)
+		    || (compl_shown_match->cp_prev
+			&& ins_compl_has_cpstr(compl_shown_match->cp_prev)))
+		    && lead_len > 0)
+	{
+	    save_leader = compl_leader;
+	    compl_leader = ins_compl_sub_leader(STRLEN(compl_leader));
+	}
 	if (compl_shows_dir_forward() && compl_shown_match->cp_next != NULL)
 	{
 	    compl_shown_match = compl_fuzzy_match && compl_match_array != NULL
@@ -4392,6 +4478,12 @@ find_next_completion_match(
 	else
 	    // Remember a matching item.
 	    found_compl = compl_shown_match;
+
+	if (save_leader)
+	{
+	    compl_leader = save_leader;
+	    save_leader = NULL;
+	}
 
 	// Stop at the end of the list when we found a usable match.
 	if (found_end)
