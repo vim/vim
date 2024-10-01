@@ -72,7 +72,7 @@ let test_values = {
       \ 'bufhidden': [['', 'hide', 'wipe'], ['xxx', 'hide,wipe']],
       \ 'buftype': [['', 'help', 'nofile'], ['xxx', 'help,nofile']],
       \ 'casemap': [['', 'internal'], ['xxx']],
-      \ 'cedit': [['', '\<Esc>'], ['xxx', 'f']],
+      \ 'cedit': [['', '^Y', '<Esc>'], ['xxx', 'f', '<xxx>']],
       \ 'clipboard': [['', 'unnamed', 'autoselect,unnamed', 'html', 'exclude:vimdisplay'], ['xxx', '\ze*', 'exclude:\\%(']],
       \ 'colorcolumn': [['', '8', '+2'], ['xxx']],
       \ 'comments': [['', 'b:#'], ['xxx']],

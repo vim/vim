@@ -4445,7 +4445,7 @@ did_set_cedit(optset_T *args UNUSED)
     else
     {
 	n = string_to_key(p_cedit, FALSE);
-	if (vim_isprintc(n))
+	if (n == 0 || vim_isprintc(n))
 	    return e_invalid_argument;
 	cedit_key = n;
     }
