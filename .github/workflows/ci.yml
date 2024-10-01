@@ -334,7 +334,7 @@ jobs:
           brew install lua libtool
           echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
-      - name: Grant microphone access for macos-13/14
+      - name: Grant microphone access for macos-14
         if: matrix.features == 'huge' && matrix.runner == 'macos-14'
         run: |
           # Temporary fix to fix microphone permission issues for macos-14 when playing sound.
