@@ -335,9 +335,9 @@ jobs:
           echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
       - name: Grant microphone access for macos-13/14
-        if: matrix.features == 'huge' && ${{ matrix.runner == 'macos-13' && 'macos-14' }}
+        if: matrix.features == 'huge' && matrix.runner == 'macos-14'
         run: |
-          # Temporary fix to fix microphone permission issues for macos-13/14 when playing sound.
+          # Temporary fix to fix microphone permission issues for macos-14 when playing sound.
           sqlite3 $HOME/Library/Application\ Support/com.apple.TCC/TCC.db "INSERT OR IGNORE INTO access VALUES ('kTCCServiceMicrophone','/usr/local/opt/runner/provisioner/provisioner',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687786159,NULL,NULL,'UNUSED',1687786159);"
 
       - name: Set up environment
