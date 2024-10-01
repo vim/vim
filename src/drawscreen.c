@@ -1906,9 +1906,13 @@ win_update(win_T *wp)
 		    // Correct the first entry for filler lines at the top
 		    // when it won't get updated below.
 		    if (wp->w_p_diff && bot_start > 0)
-			wp->w_lines[0].wl_size =
-			    plines_win_nofill(wp, wp->w_topline, TRUE)
-							      + wp->w_topfill;
+		    {
+			int n = plines_win_nofill(wp, wp->w_topline, FALSE)
+			      + wp->w_topfill - adjust_plines_for_skipcol(wp);
+			if (n > wp->w_height)
+			    n = wp->w_height;
+			wp->w_lines[0].wl_size = n;
+		    }
 #endif
 		}
 	    }
