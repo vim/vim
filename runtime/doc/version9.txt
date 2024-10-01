@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Sep 23
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Oct 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41642,6 +41642,8 @@ Commands: ~
 
 Options: ~
 
+'completeitemalign'	Order of |complete-items| in Insert mode completion
+			popup
 'winfixbuf'		Keep buffer focused in a window
 'tabclose'		Which tab page to focus after closing a tab page
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)

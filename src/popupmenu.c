@@ -536,6 +536,28 @@ pum_screen_puts_with_attrs(
     }
 }
 
+
+    static inline void
+pum_align_order(int *order)
+{
+    int is_default = cia_flags == 0;
+    order[0] = is_default ? CPT_ABBR : cia_flags / 100;
+    order[1] = is_default ? CPT_KIND : (cia_flags / 10) % 10;
+    order[2] = is_default ? CPT_MENU : cia_flags % 10;
+}
+
+    static inline char_u *
+pum_get_item(int index, int type)
+{
+    switch(type)
+    {
+	case CPT_ABBR: return pum_array[index].pum_text;
+	case CPT_KIND: return pum_array[index].pum_kind;
+	case CPT_MENU: return pum_array[index].pum_extra;
+    }
+    return NULL;
+}
+
 /*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
@@ -549,19 +571,25 @@ pum_redraw(void)
     hlf_T	*hlfs; // array used for highlights
     hlf_T	hlf;
     int		attr;
-    int		i;
+    int		i, j;
     int		idx;
     char_u	*s;
     char_u	*p = NULL;
-    int		totwidth, width, w;
+    int		totwidth, width, w;  // total-width item-width char-width
     int		thumb_pos = 0;
     int		thumb_height = 1;
-    int		round;
+    int		item_type;
+    int		order[3];
+    int		next_isempty = FALSE;
     int		n;
+    int		items_width_array[3] = { pum_base_width, pum_kind_width,
+							    pum_extra_width };
+    int		basic_width;  // first item width
+    int		last_isabbr = FALSE;
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
-    // "word"
+    // "word"/"abbr"
     hlfsNorm[0] = HLF_PNI;
     hlfsSel[0] = HLF_PSI;
     // "kind"
@@ -621,28 +649,24 @@ pum_redraw(void)
 		screen_putchar(' ', row, pum_col - 1, attr);
 
 	// Display each entry, use two spaces for a Tab.
-	// Do this 3 times:
-	// 0 - main text
-	// 1 - kind
-	// 2 - extra info
+	// Do this 3 times and order from p_cia
 	col = pum_col;
 	totwidth = 0;
-	for (round = 0; round < 3; ++round)
+	pum_align_order(order);
+	basic_width = items_width_array[order[0]];
+	last_isabbr = order[2] == CPT_ABBR;
+	for (j = 0; j < 3; ++j)
 	{
-	    hlf = hlfs[round];
+	    item_type = order[j];
+	    hlf = hlfs[item_type];
 	    attr = highlight_attr[hlf];
 	    if (pum_array[idx].pum_user_hlattr > 0)
 		attr = hl_combine_attr(attr, pum_array[idx].pum_user_hlattr);
-	    if (round == 1 && pum_array[idx].pum_user_kind_hlattr > 0)
+	    if (item_type == CPT_KIND && pum_array[idx].pum_user_kind_hlattr > 0)
 		attr = hl_combine_attr(attr, pum_array[idx].pum_user_kind_hlattr);
 	    width = 0;
 	    s = NULL;
-	    switch (round)
-	    {
-		case 0: p = pum_array[idx].pum_text; break;
-		case 1: p = pum_array[idx].pum_kind; break;
-		case 2: p = pum_array[idx].pum_extra; break;
-	    }
+	    p = pum_get_item(idx, item_type);
 	    if (p != NULL)
 		for ( ; ; MB_PTR_ADV(p))
 		{
@@ -774,33 +798,35 @@ pum_redraw(void)
 			width += w;
 		}
 
-	    if (round > 0)
-		n = pum_kind_width + 1;
+	    if (j > 0)
+		n = items_width_array[order[1]] + (last_isabbr ? 0 : 1);
 	    else
-		n = 1;
+		n = order[j] == CPT_ABBR ? 1 : 0;
+
+	    if (j + 1 < 3)
+		next_isempty = pum_get_item(idx, order[j + 1]) == NULL;
 
 	    // Stop when there is nothing more to display.
-	    if (round == 2
-		    || (round == 1 && pum_array[idx].pum_extra == NULL)
-		    || (round == 0 && pum_array[idx].pum_kind == NULL
-					  && pum_array[idx].pum_extra == NULL)
+	    if (j == 2
+		    || (next_isempty && (j == 1 || (j == 0
+				&& pum_get_item(idx, order[j + 2]) == NULL)))
 		    || pum_base_width + n >= pum_width)
 		break;
 #ifdef FEAT_RIGHTLEFT
 	    if (pum_rl)
 	    {
-		screen_fill(row, row + 1, pum_col - pum_base_width - n + 1,
+		screen_fill(row, row + 1, pum_col - basic_width - n + 1,
 						    col + 1, ' ', ' ', attr);
-		col = pum_col - pum_base_width - n;
+		col = pum_col - basic_width - n;
 	    }
 	    else
 #endif
 	    {
-		screen_fill(row, row + 1, col, pum_col + pum_base_width + n,
+		screen_fill(row, row + 1, col, pum_col + basic_width + n,
 							      ' ', ' ', attr);
-		col = pum_col + pum_base_width + n;
+		col = pum_col + basic_width + n;
 	    }
-	    totwidth = pum_base_width + n;
+	    totwidth = basic_width + n;
 	}
 
 #ifdef FEAT_RIGHTLEFT

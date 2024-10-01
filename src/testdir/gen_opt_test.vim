@@ -80,6 +80,7 @@ let test_values = {
       \ 'complete': [['', 'w,b'], ['xxx']],
       \ 'concealcursor': [['', 'n', 'nvic'], ['xxx']],
       \ 'completeopt': [['', 'menu', 'menu,longest'], ['xxx', 'menu,,,longest,']],
+      \ 'completeitemalign': [['abbr,kind,menu'], ['xxx','abbr,menu','abbr,menu,kind,abbr', 'abbr', 'abbr1234,kind', '']],
       \ 'completepopup': [['', 'height:13', 'highlight:That', 'width:10,height:234,highlight:Mine'], ['height:yes', 'width:no', 'xxx', 'xxx:99', 'border:maybe', 'border:1']],
       \ 'completeslash': [['', 'slash', 'backslash'], ['xxx']],
       \ 'cryptmethod': [['', 'zip'], ['xxx']],
