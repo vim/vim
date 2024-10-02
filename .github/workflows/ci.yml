@@ -322,7 +322,7 @@ jobs:
       fail-fast: false
       matrix:
         features: [tiny, normal, huge]
-        runner: [macos-12, macos-14]
+        runner: [macos-13, macos-14]
 
     steps:
       - name: Checkout repository from github
@@ -333,14 +333,6 @@ jobs:
         run: |
           brew install lua libtool
           echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
-
-      - name: Install blackhole-2ch for macos-12
-        if: matrix.features == 'huge' && matrix.runner == 'macos-12'
-        run: |
-          # Install audio device for playing sound since some of macos-12 machines have no audio device installed.
-          if system_profiler -json SPAudioDataType | jq -er '.SPAudioDataType[]._items == []'; then
-            brew install blackhole-2ch
-          fi
 
       - name: Grant microphone access for macos-14
         if: matrix.features == 'huge' && matrix.runner == 'macos-14'
