@@ -8432,8 +8432,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 	The key that starts a CTRL-W command in a terminal window.  Other keys
 	are sent to the job running in the window.
-	The <> notation can be used, e.g.: >
-		:set termwinkey=<C-L>
+	The key can be specified as a single character, a |key-notation| (e.g.
+	<Up>, <C-F>) or a letter preceded with a caret (e.g. `^F` is CTRL-F): >
+		:set twk=X
+		:set twk=^I
+		:set twk=<C-L>
 <	The string must be one key stroke but can be multiple bytes.
 	When not set CTRL-W is used, so that CTRL-W : gets you to the command
 	line.  If 'termwinkey' is set to CTRL-L then CTRL-L : gets you to the
@@ -9330,7 +9333,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Some keys will not work, such as CTRL-C, <CR> and Enter.
 	<Esc> can be used, but hitting it twice in a row will still exit
 	command-line as a failsafe measure.
-	Although 'wc' is a number option, you can set it to a special key: >
+	Although 'wc' is a number option, it can be specified as a number, a
+	single character, a |key-notation| (e.g. <Up>, <C-F>) or a letter
+	preceded with a caret (e.g. `^F` is CTRL-F): >
+		:set wc=27
+		:set wc=X
+		:set wc=^I
 		:set wc=<Tab>
 <	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
