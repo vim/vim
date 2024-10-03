@@ -51,7 +51,7 @@ unlet s:l s:comment s:scissors
 
 syn match   gitcommitTrailerToken "^[[:alnum:]-]\+\s*:" contained containedin=gitcommitTrailers
 
-syn match   gitcommitHash	"\<\x\{40,}\>" contains=@NoSpell display
+syn match   gitcommitHash	"\<\x\{40}\>\|\<\x\{64}\>" contains=@NoSpell display
 syn match   gitcommitOnBranch	"\%(^. \)\@<=On branch" contained containedin=gitcommitComment nextgroup=gitcommitBranch skipwhite
 syn match   gitcommitOnBranch	"\%(^. \)\@<=Your branch .\{-\} '" contained containedin=gitcommitComment nextgroup=gitcommitBranch skipwhite
 syn match   gitcommitBranch	"[^ ']\+" contained
