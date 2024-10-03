@@ -161,7 +161,7 @@ test_gui_init.res: test_gui_init.vim
 	@rm vimcmd
 
 opt_test.vim: ../optiondefs.h gen_opt_test.vim
-	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../optiondefs.h
+	$(VIMPROG) -e -s -u NONE $(NO_INITS) --nofork --gui-dialog-file guidialog -S gen_opt_test.vim ../optiondefs.h
 
 test_xxd.res:
 	XXD=$(XXDPROG); export XXD; $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim
