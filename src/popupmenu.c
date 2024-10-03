@@ -810,7 +810,7 @@ pum_redraw(void)
 	    if (j == 2
 		    || (next_isempty && (j == 1 || (j == 0
 				&& pum_get_item(idx, order[j + 2]) == NULL)))
-		    || pum_base_width + n >= pum_width)
+		    || basic_width + n >= pum_width)
 		break;
 #ifdef FEAT_RIGHTLEFT
 	    if (pum_rl)
