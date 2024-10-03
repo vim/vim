@@ -522,11 +522,11 @@ func FinishTesting()
   " Add SKIPPED messages
   call extend(s:messages, s:skipped)
 
-  " Append messages to the file "messages"
+  " Append messages to the file "messages", but remove ANSI Escape sequences
   split messages
   call append(line('$'), '')
   call append(line('$'), 'From ' . g:testname . ':')
-  call append(line('$'), s:messages)
+  call append(line('$'), s:messages->map({_, val -> substitute(val, '\%x1b\[\d\?m', '', 'g')}))
   write
 
   qall!
