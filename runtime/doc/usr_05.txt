@@ -446,7 +446,7 @@ This way you can use the plugin with the default key bindings `gc` and similar
 for commenting (which is a well-established mapping in the Vim community).
 
 If you add this line to your vimrc file, then you need to restart Vim to have
-the package loaded. Once the package is loaded, read about it at: >
+the package loaded.  Once the package is loaded, read about it at: >
 	:h comment.txt
 
 

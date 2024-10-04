@@ -30,13 +30,13 @@ Table of contents: |usr_toc.txt|
 *41.1*	Introduction				*vim-script-intro* *script*
 
 Let's start with some nomenclature. A Vim script is any file that Vim can
-interpret and execute. This includes files written in Vim's scripting language
+interpret and execute.  This includes files written in Vim's scripting language
 like for example .vim files or configuration files like .vimrc and .gvimrc.
 These scripts may define functions, commands and settings that Vim uses to
 customize and extend its behavior.
 
 With a slight abuse of nomenclature, we will use "Vim script" to refer to the
-Vim scripting language throughout this documentation. This shorthand helps to
+Vim scripting language throughout this documentation.  This shorthand helps to
 streamline explanations and discussions about scripting with Vim.
 
 A Vim plugin is a collection of one or more Vim scripts, along with additional
@@ -1384,7 +1384,7 @@ Various:					*various-functions*
 	mode()			get current editing mode
 	state()			get current busy state
 	visualmode()		last visual mode used
-	exists()		check if a variable, function, etc. exists
+	exists()		check if a variable, function, etc.  exists
 	exists_compiled()	like exists() but check at compile time
 	has()			check if a feature is supported in Vim
 	changenr()		return number of most recent change

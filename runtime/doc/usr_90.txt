@@ -308,7 +308,7 @@ MS-WINDOWS
 Upgrading is mostly equal to installing a new version.  Just unpack the files
 in the same place as the previous version.  A new directory will be created,
 e.g., "vim82", for the files of the new version.  Your runtime files, vimrc
-file, viminfo, etc. will be left alone.
+file, viminfo, etc.  will be left alone.
    If you want to run the new version next to the old one, you will have to do
 some handwork.  Don't run the install program, it will overwrite a few files
 of the old version.  Execute the new binaries by specifying the full path.
