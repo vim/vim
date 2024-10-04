@@ -26,9 +26,9 @@ struct sign
     int sn_typenr;   // type number of sign
     char_u *sn_name; // name of sign
     char_u *sn_icon; // name of pixmap
-#ifdef FEAT_SIGN_ICONS
-    void *sn_image;  // icon image
-#endif
+# ifdef FEAT_SIGN_ICONS
+    void *sn_image; // icon image
+# endif
     char_u *sn_text; // text used instead of pixmap
     int sn_line_hl;  // highlight ID for line
     int sn_text_hl;  // highlight ID for text
@@ -44,23 +44,23 @@ static void sign_list_defined(sign_T *sp);
 static void sign_undefine(sign_T *sp, sign_T *sp_prev);
 
 static char *cmds[] = { "define",
-#define SIGNCMD_DEFINE 0
+# define SIGNCMD_DEFINE 0
                         "undefine",
-#define SIGNCMD_UNDEFINE 1
+# define SIGNCMD_UNDEFINE 1
                         "list",
-#define SIGNCMD_LIST 2
+# define SIGNCMD_LIST 2
                         "place",
-#define SIGNCMD_PLACE 3
+# define SIGNCMD_PLACE 3
                         "unplace",
-#define SIGNCMD_UNPLACE 4
+# define SIGNCMD_UNPLACE 4
                         "jump",
-#define SIGNCMD_JUMP 5
+# define SIGNCMD_JUMP 5
                         NULL
-#define SIGNCMD_LAST 6
+# define SIGNCMD_LAST 6
 };
 
-#define FOR_ALL_SIGNS(sp) \
-    for ((sp) = first_sign; (sp) != NULL; (sp) = (sp)->sn_next)
+# define FOR_ALL_SIGNS(sp) \
+     for ((sp) = first_sign; (sp) != NULL; (sp) = (sp)->sn_next)
 
 static hashtab_T sg_table;   // sign group (signgroup_T) hashtable
 static int next_sign_id = 1; // next sign id in the global group
@@ -254,10 +254,10 @@ insert_sign(buf_T *buf,         // buffer to store sign in
 
         // first sign in signlist
         buf->b_signlist = newsign;
-#ifdef FEAT_NETBEANS_INTG
+# ifdef FEAT_NETBEANS_INTG
         if (netbeans_active())
             buf->b_has_sign_column = TRUE;
-#endif
+# endif
     }
     else
         prev->se_next = newsign;
@@ -496,9 +496,9 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
             break;
 
         if (sign->se_lnum == lnum
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
             && sign_group_for_window(sign, wp)
-#endif
+# endif
         )
         {
             sattr->sat_typenr = sign->se_typenr;
@@ -506,9 +506,9 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
             if (sp == NULL)
                 return FALSE;
 
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
             sattr->sat_icon = sp->sn_image;
-#endif
+# endif
             sattr->sat_text = sp->sn_text;
             if (sattr->sat_text != NULL && sp->sn_text_hl > 0)
                 sattr->sat_texthl = syn_id2attr(sp->sn_text_hl);
@@ -532,9 +532,9 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
                 {
                     if (sattr->sat_icon == NULL && sattr->sat_text == NULL)
                     {
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
                         sattr->sat_icon = next_sp->sn_image;
-#endif
+# endif
                         sattr->sat_text = next_sp->sn_text;
                     }
                     if (sp->sn_text_hl <= 0 && next_sp->sn_text_hl > 0)
@@ -677,7 +677,7 @@ buf_findsign_id(buf_T *buf,        // buffer whose sign we are searching for
     return 0;
 }
 
-#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+# if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 /*
  * See if a given type of sign exists on a specific line.
  */
@@ -702,7 +702,7 @@ buf_findsigntype_id(buf_T *buf,    // buffer whose sign we are searching for
     return 0;
 }
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+#  if defined(FEAT_SIGN_ICONS) || defined(PROTO)
 /*
  * Return the number of icons on the given line.
  */
@@ -726,8 +726,8 @@ buf_signcount(buf_T *buf, linenr_T lnum)
 
     return count;
 }
-#endif // FEAT_SIGN_ICONS
-#endif // FEAT_NETBEANS_INTG
+#  endif // FEAT_SIGN_ICONS
+# endif  // FEAT_NETBEANS_INTG
 
        /*
  * Delete signs in group 'group' in buffer "buf". If 'group' is '*', then
@@ -947,7 +947,7 @@ sign_define_init_icon(sign_T *sp, char_u *icon)
     vim_free(sp->sn_icon);
     sp->sn_icon = vim_strsave(icon);
     backslash_halve(sp->sn_icon);
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
     if (gui.in_use)
     {
         out_flush();
@@ -955,7 +955,7 @@ sign_define_init_icon(sign_T *sp, char_u *icon)
             gui_mch_destroy_sign(sp->sn_image);
         sp->sn_image = gui_mch_register_sign(sp->sn_icon);
     }
-#endif
+# endif
 }
 
 /*
@@ -1293,9 +1293,9 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
         do_cmdline_cmd(cmd);
         vim_free(cmd);
     }
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
     foldOpenCursor();
-#endif
+# endif
 
     return lnum;
 }
@@ -1847,7 +1847,7 @@ sign_get_placed(buf_T *buf, linenr_T lnum, int sign_id, char_u *sign_group,
     }
 }
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+# if defined(FEAT_SIGN_ICONS) || defined(PROTO)
 /*
  * Allocate the icons.  Called when the GUI has started.  Allows defining
  * signs before it starts.
@@ -1861,7 +1861,7 @@ sign_gui_started(void)
         if (sp->sn_icon != NULL)
             sp->sn_image = gui_mch_register_sign(sp->sn_icon);
 }
-#endif
+# endif
 
 /*
  * List one sign.
@@ -1877,12 +1877,12 @@ sign_list_defined(sign_T *sp)
     {
         msg_puts(" icon=");
         msg_outtrans(sp->sn_icon);
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
         if (sp->sn_image == NULL)
             msg_puts(_(" (NOT FOUND)"));
-#else
+# else
         msg_puts(_(" (not supported)"));
-#endif
+# endif
     }
     if (sp->sn_text != NULL)
     {
@@ -1940,13 +1940,13 @@ sign_undefine(sign_T *sp, sign_T *sp_prev)
 {
     vim_free(sp->sn_name);
     vim_free(sp->sn_icon);
-#ifdef FEAT_SIGN_ICONS
+# ifdef FEAT_SIGN_ICONS
     if (sp->sn_image != NULL)
     {
         out_flush();
         gui_mch_destroy_sign(sp->sn_image);
     }
-#endif
+# endif
     vim_free(sp->sn_text);
     if (sp_prev == NULL)
         first_sign = sp->sn_next;
@@ -1955,7 +1955,7 @@ sign_undefine(sign_T *sp, sign_T *sp_prev)
     vim_free(sp);
 }
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+# if defined(FEAT_SIGN_ICONS) || defined(PROTO)
 void *
 sign_get_image(int typenr) // the attribute which may have a sign
 {
@@ -1966,7 +1966,7 @@ sign_get_image(int typenr) // the attribute which may have a sign
             return sp->sn_image;
     return NULL;
 }
-#endif
+# endif
 
 /*
  * Undefine/free all signs.
@@ -2762,10 +2762,10 @@ get_first_valid_sign(win_T *wp)
 {
     sign_entry_T *sign = wp->w_buffer->b_signlist;
 
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
     while (sign != NULL && !sign_group_for_window(sign, wp))
         sign = sign->se_next;
-#endif
+# endif
     return sign;
 }
 
@@ -2786,9 +2786,9 @@ signcolumn_on(win_T *wp)
     if (*wp->w_p_scl == 'y')
         return TRUE;
     return (get_first_valid_sign(wp) != NULL
-#ifdef FEAT_NETBEANS_INTG
+# ifdef FEAT_NETBEANS_INTG
             || wp->w_buffer->b_has_sign_column
-#endif
+# endif
     );
 }
 
