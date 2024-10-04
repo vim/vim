@@ -292,11 +292,11 @@ entry in /etc/termcap and everything should work.
 On some systems (at least on FreeBSD with XFree86 3.1.2) the codes that the
 <End> and <Home> keys send contain a <Nul> character.  To make these keys send
 the proper key code, add these lines to your ~/.Xdefaults file:
-
-*VT100.Translations:		#override \n\
-		<Key>Home: string("0x1b") string("[7~") \n\
-		<Key>End: string("0x1b") string("[8~")
-
+>
+	*VT100.Translations:		#override \n\
+			<Key>Home: string("0x1b") string("[7~") \n\
+			<Key>End: string("0x1b") string("[8~")
+<
 						*xterm-8bit* *xterm-8-bit*
 Xterm can be run in a mode where it uses 8-bit escape sequences.  The CSI code
 is used instead of <Esc>[.  The advantage is that an <Esc> can quickly be
@@ -719,9 +719,9 @@ If this feature is enabled by the 't_fe' sequence, special key sequences are
 sent from the terminal to Vim every time the terminal gains or loses focus.
 Vim fires focus events (|FocusGained|/|FocusLost|) by handling them accordingly.
 Focus event tracking is disabled by a 't_fd' sequence when exiting "raw" mode.
-If you would like to disable this feature, add the following to your .vimrc:
-	`set t_fd=`
-	`set t_fe=`
+If you would like to disable this feature, add the following to your .vimrc: >
+	set t_fd=
+	set t_fe=
 If your terminal does support this but Vim does not recognize the terminal,
 you may have to set the options yourself: >
 	let &t_fe = "\<Esc>[?1004h"
@@ -810,13 +810,13 @@ region.  It should be set to an empty string otherwise.
 Note for xterm users: The shifted cursor keys normally don't work.  You can
 	make them work with the xmodmap command and some mappings in Vim.
 
-	Give these commands in the xterm:
+	Give these commands in the xterm: >
 		xmodmap -e "keysym Up = Up F13"
 		xmodmap -e "keysym Down = Down F16"
 		xmodmap -e "keysym Left = Left F18"
 		xmodmap -e "keysym Right = Right F19"
-
-	And use these mappings in Vim:
+<
+	And use these mappings in Vim: >
 		:map <t_F3> <S-Up>
 		:map! <t_F3> <S-Up>
 		:map <t_F6> <S-Down>

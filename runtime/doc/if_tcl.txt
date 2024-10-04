@@ -461,14 +461,14 @@ Input from stdin is currently not supported.
 Here are a few small (and maybe useful) Tcl scripts.
 
 This script sorts the lines of the entire buffer (assume it contains a list
-of names or something similar):
+of names or something similar): >
 	set buf $::vim::current(buffer)
 	set lines [$buf get top bottom]
 	set lines [lsort -dictionary $lines]
 	$buf set top bottom $lines
 
 This script reverses the lines in the buffer.  Note the use of "::vim::lbase"
-and "$buf last" to work with any line number setting.
+and "$buf last" to work with any line number setting: >
 	set buf $::vim::current(buffer)
 	set t $::vim::lbase
 	set b [$buf last]
@@ -481,7 +481,7 @@ and "$buf last" to work with any line number setting.
 		incr b -1
 	}
 
-This script adds a consecutive number to each line in the current range:
+This script adds a consecutive number to each line in the current range: >
 	set buf $::vim::current(buffer)
 	set i $::vim::range(start)
 	set n 1
@@ -491,17 +491,17 @@ This script adds a consecutive number to each line in the current range:
 		incr i ; incr n
 	}
 
-The same can also be done quickly with two Ex commands, using ":tcldo":
+The same can also be done quickly with two Ex commands, using ":tcldo": >
 	:tcl set n 1
 	:[range]tcldo set line "$n\t$line" ; incr n
 
-This procedure runs an Ex command on each buffer (idea stolen from Ron Aaron):
+This procedure runs an Ex command on each buffer (idea stolen from Ron Aaron): >
 	proc eachbuf { cmd } {
 		foreach b [::vim::buffer list] {
 			$b command $cmd
 		}
 	}
-Use it like this:
+Use it like this: >
 	:tcl eachbuf %s/foo/bar/g
 Be careful with Tcl's string and backslash substitution, tough.  If in doubt,
 surround the Ex command with curly braces.
@@ -509,7 +509,7 @@ surround the Ex command with curly braces.
 
 If you want to add some Tcl procedures permanently to vim, just place them in
 a file (e.g. "~/.vimrc.tcl" on Unix machines), and add these lines to your
-startup file (usually "~/.vimrc" on Unix):
+startup file (usually "~/.vimrc" on Unix): >
 	if has("tcl")
 		tclfile ~/.vimrc.tcl
 	endif

@@ -119,11 +119,11 @@ Vi compatibility.					|'compatible'|
 	considered to be a bug, or at least need improvement.  But still, Vim
 	starts in a mode which behaves like the "real" Vi as much as possible.
 	To make Vim behave a little bit better, try resetting the 'compatible'
-	option:
+	option: >
 		:set nocompatible
-	Or start Vim with the "-N" argument:
+<	Or start Vim with the "-N" argument: >
 		vim -N
-	Vim starts with 'nocompatible' automatically if you have a .vimrc
+<	Vim starts with 'nocompatible' automatically if you have a .vimrc
 	file.  See |startup|.
 	The 'cpoptions' option can be used to set Vi compatibility on/off for
 	a number of specific items.
