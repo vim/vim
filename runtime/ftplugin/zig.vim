@@ -18,7 +18,7 @@ setlocal iskeyword+=@-@
 setlocal formatoptions-=t formatoptions+=croql
 setlocal suffixesadd=.zig,.zir,.zon
 let &l:define='\v(<fn>|<const>|<var>|^\s*\#\s*define)'
-let b:undo_ftplugin ..= 'setl isk< fo< sua< mp< def<'
+let b:undo_ftplugin = 'setl isk< fo< sua< mp< def<'
 
 if get(g:, 'zig_recommended_style', 1)
     setlocal expandtab

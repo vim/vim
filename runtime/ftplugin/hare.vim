@@ -51,7 +51,7 @@ augroup hare.vim
 augroup END
 
 if !exists('current_compiler')
-  let b:undo_ftplugin ..= "| compiler make"
+  let b:undo_ftplugin .= "| compiler make"
   compiler hare
 endif
 
