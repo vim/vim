@@ -68,6 +68,10 @@ syn match helpSpecial		"\[N]"
 syn match helpSpecial		"N  N"he=s+1
 syn match helpSpecial		"Nth"me=e-2
 syn match helpSpecial		"N-1"me=e-2
+" highlighting N of cinoptions-values in indent.txt
+syn match helpSpecial		"\<Ns\>"me=e-1
+" highlighting N of cinoptions-values in indent.txt
+syn match helpSpecial		"^\t[enfLlbghNEpticCuUwWkmMjJP]N "ms=s+2,me=e-1
 syn match helpSpecial		"{[-a-zA-Z0-9'"*+/:%#=[\]<>.,]\+}"
 syn match helpSpecial		"\s\[[-a-z^A-Z0-9_]\{2,}]"ms=s+1
 syn match helpSpecial		"<[-a-zA-Z0-9_]\+>"
