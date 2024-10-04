@@ -2043,36 +2043,36 @@ get_sign_name(expand_T *xp UNUSED, int idx)
 {
     switch (expand_what)
     {
-    case EXP_SUBCMD:
-        return (char_u *)cmds[idx];
-    case EXP_DEFINE:
-    {
-        char *define_arg[] = { "culhl=", "icon=",   "linehl=",   "numhl=",
-                               "text=",  "texthl=", "priority=", NULL };
-        return (char_u *)define_arg[idx];
-    }
-    case EXP_PLACE:
-    {
-        char *place_arg[] = { "line=", "name=",   "group=", "priority=",
-                              "file=", "buffer=", NULL };
-        return (char_u *)place_arg[idx];
-    }
-    case EXP_LIST:
-    {
-        char *list_arg[] = { "group=", "file=", "buffer=", NULL };
-        return (char_u *)list_arg[idx];
-    }
-    case EXP_UNPLACE:
-    {
-        char *unplace_arg[] = { "group=", "file=", "buffer=", NULL };
-        return (char_u *)unplace_arg[idx];
-    }
-    case EXP_SIGN_NAMES:
-        return get_nth_sign_name(idx);
-    case EXP_SIGN_GROUPS:
-        return get_nth_sign_group_name(idx);
-    default:
-        return NULL;
+        case EXP_SUBCMD:
+            return (char_u *)cmds[idx];
+        case EXP_DEFINE:
+        {
+            char *define_arg[] = { "culhl=", "icon=",   "linehl=",   "numhl=",
+                                   "text=",  "texthl=", "priority=", NULL };
+            return (char_u *)define_arg[idx];
+        }
+        case EXP_PLACE:
+        {
+            char *place_arg[] = { "line=", "name=",   "group=", "priority=",
+                                  "file=", "buffer=", NULL };
+            return (char_u *)place_arg[idx];
+        }
+        case EXP_LIST:
+        {
+            char *list_arg[] = { "group=", "file=", "buffer=", NULL };
+            return (char_u *)list_arg[idx];
+        }
+        case EXP_UNPLACE:
+        {
+            char *unplace_arg[] = { "group=", "file=", "buffer=", NULL };
+            return (char_u *)unplace_arg[idx];
+        }
+        case EXP_SIGN_NAMES:
+            return get_nth_sign_name(idx);
+        case EXP_SIGN_GROUPS:
+            return get_nth_sign_group_name(idx);
+        default:
+            return NULL;
     }
 }
 
@@ -2133,30 +2133,30 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
         xp->xp_pattern = last;
         switch (cmd_idx)
         {
-        case SIGNCMD_DEFINE:
-            expand_what = EXP_DEFINE;
-            break;
-        case SIGNCMD_PLACE:
-            // List placed signs
-            if (VIM_ISDIGIT(*begin_subcmd_args))
-                //   :sign place {id} {args}...
-                expand_what = EXP_PLACE;
-            else
-                //   :sign place {args}...
-                expand_what = EXP_LIST;
-            break;
-        case SIGNCMD_LIST:
-        case SIGNCMD_UNDEFINE:
-            // :sign list <CTRL-D>
-            // :sign undefine <CTRL-D>
-            expand_what = EXP_SIGN_NAMES;
-            break;
-        case SIGNCMD_JUMP:
-        case SIGNCMD_UNPLACE:
-            expand_what = EXP_UNPLACE;
-            break;
-        default:
-            xp->xp_context = EXPAND_NOTHING;
+            case SIGNCMD_DEFINE:
+                expand_what = EXP_DEFINE;
+                break;
+            case SIGNCMD_PLACE:
+                // List placed signs
+                if (VIM_ISDIGIT(*begin_subcmd_args))
+                    //   :sign place {id} {args}...
+                    expand_what = EXP_PLACE;
+                else
+                    //   :sign place {args}...
+                    expand_what = EXP_LIST;
+                break;
+            case SIGNCMD_LIST:
+            case SIGNCMD_UNDEFINE:
+                // :sign list <CTRL-D>
+                // :sign undefine <CTRL-D>
+                expand_what = EXP_SIGN_NAMES;
+                break;
+            case SIGNCMD_JUMP:
+            case SIGNCMD_UNPLACE:
+                expand_what = EXP_UNPLACE;
+                break;
+            default:
+                xp->xp_context = EXPAND_NOTHING;
         }
     }
     else
@@ -2165,38 +2165,38 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
         xp->xp_pattern = p + 1;
         switch (cmd_idx)
         {
-        case SIGNCMD_DEFINE:
-            if (STRNCMP(last, "texthl", 6) == 0
-                || STRNCMP(last, "linehl", 6) == 0
-                || STRNCMP(last, "culhl", 5) == 0
-                || STRNCMP(last, "numhl", 5) == 0)
-                xp->xp_context = EXPAND_HIGHLIGHT;
-            else if (STRNCMP(last, "icon", 4) == 0)
-                xp->xp_context = EXPAND_FILES;
-            else
+            case SIGNCMD_DEFINE:
+                if (STRNCMP(last, "texthl", 6) == 0
+                    || STRNCMP(last, "linehl", 6) == 0
+                    || STRNCMP(last, "culhl", 5) == 0
+                    || STRNCMP(last, "numhl", 5) == 0)
+                    xp->xp_context = EXPAND_HIGHLIGHT;
+                else if (STRNCMP(last, "icon", 4) == 0)
+                    xp->xp_context = EXPAND_FILES;
+                else
+                    xp->xp_context = EXPAND_NOTHING;
+                break;
+            case SIGNCMD_PLACE:
+                if (STRNCMP(last, "name", 4) == 0)
+                    expand_what = EXP_SIGN_NAMES;
+                else if (STRNCMP(last, "group", 5) == 0)
+                    expand_what = EXP_SIGN_GROUPS;
+                else if (STRNCMP(last, "file", 4) == 0)
+                    xp->xp_context = EXPAND_BUFFERS;
+                else
+                    xp->xp_context = EXPAND_NOTHING;
+                break;
+            case SIGNCMD_UNPLACE:
+            case SIGNCMD_JUMP:
+                if (STRNCMP(last, "group", 5) == 0)
+                    expand_what = EXP_SIGN_GROUPS;
+                else if (STRNCMP(last, "file", 4) == 0)
+                    xp->xp_context = EXPAND_BUFFERS;
+                else
+                    xp->xp_context = EXPAND_NOTHING;
+                break;
+            default:
                 xp->xp_context = EXPAND_NOTHING;
-            break;
-        case SIGNCMD_PLACE:
-            if (STRNCMP(last, "name", 4) == 0)
-                expand_what = EXP_SIGN_NAMES;
-            else if (STRNCMP(last, "group", 5) == 0)
-                expand_what = EXP_SIGN_GROUPS;
-            else if (STRNCMP(last, "file", 4) == 0)
-                xp->xp_context = EXPAND_BUFFERS;
-            else
-                xp->xp_context = EXPAND_NOTHING;
-            break;
-        case SIGNCMD_UNPLACE:
-        case SIGNCMD_JUMP:
-            if (STRNCMP(last, "group", 5) == 0)
-                expand_what = EXP_SIGN_GROUPS;
-            else if (STRNCMP(last, "file", 4) == 0)
-                xp->xp_context = EXPAND_BUFFERS;
-            else
-                xp->xp_context = EXPAND_NOTHING;
-            break;
-        default:
-            xp->xp_context = EXPAND_NOTHING;
         }
     }
 }
