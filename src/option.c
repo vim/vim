@@ -2251,10 +2251,11 @@ do_set_option_numeric(
      * Different ways to set a number option:
      * &	    set to default value
      * <	    set to global value
-     * <xx>	    accept special key codes for 'wildchar'
-     * c	    accept any non-digit for 'wildchar'
-     * [-]0-9   set number
-     * other    error
+     * <xx>	    accept special key codes for 'wildchar' or 'wildcharm'
+     * ^x	    accept ctrl key codes for 'wildchar' or 'wildcharm'
+     * c	    accept any non-digit for 'wildchar' or 'wildcharm'
+     * [-]0-9	    set number
+     * other	    error
      */
     ++arg;
     if (nextchar == '&')
@@ -2281,7 +2282,7 @@ do_set_option_numeric(
 		    && !VIM_ISDIGIT(*arg))))
     {
 	value = string_to_key(arg, FALSE);
-	if (value == 0 && (long *)varp != &p_wcm)
+	if (value == 0)
 	{
 	    errmsg = e_invalid_argument;
 	    goto skip;
