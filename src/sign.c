@@ -65,7 +65,7 @@ static char *cmds[] = { "define",
 static hashtab_T sg_table;   // sign group (signgroup_T) hashtable
 static int next_sign_id = 1; // next sign id in the global group
 
-                             /*
+/*
  * Initialize data needed for managing signs
  */
 void
@@ -419,8 +419,8 @@ buf_addsign(buf_T *buf,        // buffer to store sign in
             linenr_T lnum,     // line number which gets the mark
             int typenr)        // typenr of sign we are adding
 {
-    sign_entry_T *sign;        // a sign in the signlist
-    sign_entry_T *prev;        // the previous sign
+    sign_entry_T *sign; // a sign in the signlist
+    sign_entry_T *prev; // the previous sign
 
     prev = NULL;
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
@@ -458,7 +458,7 @@ buf_change_sign_type(buf_T *buf,    // buffer to store sign in
                      int typenr,    // typenr of sign we are adding
                      int prio)      // sign priority
 {
-    sign_entry_T *sign;             // a sign in the signlist
+    sign_entry_T *sign; // a sign in the signlist
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {
@@ -569,10 +569,10 @@ buf_delsign(buf_T *buf,      // buffer sign is stored in
             int id,          // sign id
             char_u *group)   // sign group
 {
-    sign_entry_T **lastp;    // pointer to pointer to current sign
-    sign_entry_T *sign;      // a sign in a b_signlist
-    sign_entry_T *next;      // the next sign in a b_signlist
-    linenr_T lnum;           // line number whose sign was deleted
+    sign_entry_T **lastp; // pointer to pointer to current sign
+    sign_entry_T *sign;   // a sign in a b_signlist
+    sign_entry_T *next;   // the next sign in a b_signlist
+    linenr_T lnum;        // line number whose sign was deleted
 
     lastp = &buf->b_signlist;
     lnum = 0;
@@ -626,7 +626,7 @@ buf_findsign(buf_T *buf,    // buffer to store sign in
              int id,        // sign ID
              char_u *group) // sign group
 {
-    sign_entry_T *sign;     // a sign in the signlist
+    sign_entry_T *sign; // a sign in the signlist
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
         if (sign->se_id == id && sign_in_group(sign, group))
@@ -644,7 +644,7 @@ buf_getsign_at_line(buf_T *buf,        // buffer whose sign we are searching for
                     linenr_T lnum,     // line number of sign
                     char_u *groupname) // sign group name
 {
-    sign_entry_T *sign;                // a sign in the signlist
+    sign_entry_T *sign; // a sign in the signlist
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {
@@ -668,7 +668,7 @@ buf_findsign_id(buf_T *buf,        // buffer whose sign we are searching for
                 linenr_T lnum,     // line number of sign
                 char_u *groupname) // sign group name
 {
-    sign_entry_T *sign;            // a sign in the signlist
+    sign_entry_T *sign; // a sign in the signlist
 
     sign = buf_getsign_at_line(buf, lnum, groupname);
     if (sign != NULL)
@@ -686,7 +686,7 @@ buf_findsigntype_id(buf_T *buf,    // buffer whose sign we are searching for
                     linenr_T lnum, // line number of sign
                     int typenr)    // sign type number
 {
-    sign_entry_T *sign;            // a sign in the signlist
+    sign_entry_T *sign; // a sign in the signlist
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {
@@ -729,7 +729,7 @@ buf_signcount(buf_T *buf, linenr_T lnum)
 #  endif // FEAT_SIGN_ICONS
 # endif  // FEAT_NETBEANS_INTG
 
-       /*
+/*
  * Delete signs in group 'group' in buffer "buf". If 'group' is '*', then
  * delete all the signs.
  */
