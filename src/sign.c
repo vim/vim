@@ -1022,8 +1022,14 @@ sign_define_init_text(sign_T *sp, char_u *text)
  * Define a new sign or update an existing sign
  */
 int
-sign_define_by_name(char_u *name, char_u *icon, char_u *linehl, char_u *text,
-                    char_u *texthl, char_u *culhl, char_u *numhl, int prio)
+sign_define_by_name(char_u *name,
+                    char_u *icon,
+                    char_u *linehl,
+                    char_u *text,
+                    char_u *texthl,
+                    char_u *culhl,
+                    char_u *numhl,
+                    int prio)
 {
     sign_T *sp_prev;
     sign_T *sp;
@@ -1158,8 +1164,12 @@ may_force_numberwidth_recompute(buf_T *buf, int unplace)
  * Place a sign at the specified file location or update a sign.
  */
 int
-sign_place(int *sign_id, char_u *sign_group, char_u *sign_name, buf_T *buf,
-           linenr_T lnum, int prio)
+sign_place(int *sign_id,
+           char_u *sign_group,
+           char_u *sign_name,
+           buf_T *buf,
+           linenr_T lnum,
+           int prio)
 {
     sign_T *sp;
 
@@ -1383,8 +1393,12 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
  * ":sign place" command
  */
 static void
-sign_place_cmd(buf_T *buf, linenr_T lnum, char_u *sign_name, int id,
-               char_u *group, int prio)
+sign_place_cmd(buf_T *buf,
+               linenr_T lnum,
+               char_u *sign_name,
+               int id,
+               char_u *group,
+               int prio)
 {
     if (id <= 0)
     {
@@ -1421,7 +1435,10 @@ sign_place_cmd(buf_T *buf, linenr_T lnum, char_u *sign_name, int id,
  * ":sign unplace" command
  */
 static void
-sign_unplace_cmd(buf_T *buf, linenr_T lnum, char_u *sign_name, int id,
+sign_unplace_cmd(buf_T *buf,
+                 linenr_T lnum,
+                 char_u *sign_name,
+                 int id,
                  char_u *group)
 {
     if (lnum >= 0 || sign_name != NULL || (group != NULL && *group == '\0'))
@@ -1486,7 +1503,10 @@ sign_unplace_cmd(buf_T *buf, linenr_T lnum, char_u *sign_name, int id,
  *   :sign jump {id} group={group} buffer={nr}
  */
 static void
-sign_jump_cmd(buf_T *buf, linenr_T lnum, char_u *sign_name, int id,
+sign_jump_cmd(buf_T *buf,
+              linenr_T lnum,
+              char_u *sign_name,
+              int id,
               char_u *group)
 {
     if (sign_name == NULL && group == NULL && id == -1)
@@ -1513,8 +1533,14 @@ sign_jump_cmd(buf_T *buf, linenr_T lnum, char_u *sign_name, int id,
  * priority={prio} and file={fname} or buffer={nr}.
  */
 static int
-parse_sign_cmd_args(int cmd, char_u *arg, char_u **sign_name, int *signid,
-                    char_u **group, int *prio, buf_T **buf, linenr_T *lnum)
+parse_sign_cmd_args(int cmd,
+                    char_u *arg,
+                    char_u **sign_name,
+                    int *signid,
+                    char_u **group,
+                    int *prio,
+                    buf_T **buf,
+                    linenr_T *lnum)
 {
     char_u *arg1;
     char_u *name;
@@ -1795,8 +1821,11 @@ get_buffer_signs(buf_T *buf, list_T *l)
  * Return information about all the signs placed in a buffer
  */
 static void
-sign_get_placed_in_buf(buf_T *buf, linenr_T lnum, int sign_id,
-                       char_u *sign_group, list_T *retlist)
+sign_get_placed_in_buf(buf_T *buf,
+                       linenr_T lnum,
+                       int sign_id,
+                       char_u *sign_group,
+                       list_T *retlist)
 {
     dict_T *d;
     list_T *l;
@@ -1834,7 +1863,10 @@ sign_get_placed_in_buf(buf_T *buf, linenr_T lnum, int sign_id,
  * placed in 'buf'. If 'buf' is NULL, return signs placed in all the buffers.
  */
 static void
-sign_get_placed(buf_T *buf, linenr_T lnum, int sign_id, char_u *sign_group,
+sign_get_placed(buf_T *buf,
+                linenr_T lnum,
+                int sign_id,
+                char_u *sign_group,
                 list_T *retlist)
 {
     if (buf != NULL)
@@ -1978,7 +2010,8 @@ free_signs(void)
         sign_undefine(first_sign, NULL);
 }
 
-static enum {
+static enum
+{
     EXP_SUBCMD,     // expand :sign sub-commands
     EXP_DEFINE,     // expand :sign define {name} args
     EXP_PLACE,      // expand :sign place {id} args
@@ -2456,8 +2489,11 @@ cleanup:
  * identifier if successfully placed, otherwise returns 0.
  */
 static int
-sign_place_from_dict(typval_T *id_tv, typval_T *group_tv, typval_T *name_tv,
-                     typval_T *buf_tv, dict_T *dict)
+sign_place_from_dict(typval_T *id_tv,
+                     typval_T *group_tv,
+                     typval_T *name_tv,
+                     typval_T *buf_tv,
+                     dict_T *dict)
 {
     int sign_id = 0;
     char_u *group = NULL;
