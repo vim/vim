@@ -776,7 +776,7 @@ Global mapping:
 
 Local mappings:
 <Plug>ManBS
-<LocalLeader>h	Clear backspace <BS> characters from the buffer
+<LocalLeader>h	Clear backspace <BS> characters from the buffer.
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
 

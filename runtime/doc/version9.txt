@@ -41608,7 +41608,7 @@ Functions: ~
 |diff()|		diff two Lists of strings
 |filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items
-|getcmdprompt()|        get prompt for input()/confirm()
+|getcmdprompt()|	get prompt for input()/confirm()
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
 |id()|			get unique identifier for a Dict, List, Object,
