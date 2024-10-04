@@ -177,7 +177,7 @@ example is for the X Window System.  This font is in a package that is used to
 enhance xterm with Unicode support.  If you don't have this font, you might
 find it here:
 
-	http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz ~
+	http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz
 
 For MS-Windows, some fonts have a limited number of Unicode characters.  Try
 using the "Courier New" font.  You can use the Edit/Select Font... menu to
@@ -189,7 +189,7 @@ though.  Example: >
 If it doesn't work well, try getting a fontpack.  If Microsoft didn't move it,
 you can find it here:
 
-	http://www.microsoft.com/typography/fonts/default.aspx ~
+	http://www.microsoft.com/typography/fonts/default.aspx
 
 Now you have told Vim to use Unicode internally and display text with a
 Unicode font.  Typed characters still arrive in the encoding of your original
