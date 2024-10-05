@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Sep 23
+*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -30,13 +30,13 @@ Table of contents: |usr_toc.txt|
 *41.1*	Introduction				*vim-script-intro* *script*
 
 Let's start with some nomenclature. A Vim script is any file that Vim can
-interpret and execute. This includes files written in Vim's scripting language
+interpret and execute.  This includes files written in Vim's scripting language
 like for example .vim files or configuration files like .vimrc and .gvimrc.
 These scripts may define functions, commands and settings that Vim uses to
 customize and extend its behavior.
 
 With a slight abuse of nomenclature, we will use "Vim script" to refer to the
-Vim scripting language throughout this documentation. This shorthand helps to
+Vim scripting language throughout this documentation.  This shorthand helps to
 streamline explanations and discussions about scripting with Vim.
 
 A Vim plugin is a collection of one or more Vim scripts, along with additional

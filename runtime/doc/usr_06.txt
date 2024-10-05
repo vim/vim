@@ -1,4 +1,4 @@
-*usr_06.txt*	For Vim version 9.1.  Last change: 2021 Nov 07
+*usr_06.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -184,7 +184,7 @@ this command: >
 	:runtime syntax/colortest.vim
 
 You will see text in various color combinations.  You can check which ones are
-readable and look nice. These aren't the only colors available to you though.
+readable and look nice.  These aren't the only colors available to you though.
 You can specify #rrggbb hex colors and you can define new names for hex
 colors in |v:colornames| like so: >
 
@@ -196,7 +196,7 @@ to define these colors only when they do not exist: >
 	call extend(v:colornames, {'mine_red': '#aa0000'}, 'keep')
 
 This allows users of the color scheme to override the precise definition of
-that color prior to loading your color scheme. For example, in a |.vimrc|
+that color prior to loading your color scheme.  For example, in a |.vimrc|
 file: >
 
 	runtime colors/lists/css_colors.vim
@@ -204,7 +204,7 @@ file: >
 	colorscheme yourscheme
 
 As a color scheme author, you should be able to rely on some color names for
-GUI colors. These are defined in `colors/lists/default.vim`. All such files
+GUI colors.  These are defined in `colors/lists/default.vim`.  All such files
 found on the |'runtimepath'| are loaded each time the colorscheme command is
 run. A canonical list is provided by the vim distribution, which should
 include all X11 colors (previously defined in rgb.txt).
