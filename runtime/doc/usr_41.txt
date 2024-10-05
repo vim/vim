@@ -1384,7 +1384,7 @@ Various:					*various-functions*
 	mode()			get current editing mode
 	state()			get current busy state
 	visualmode()		last visual mode used
-	exists()		check if a variable, function, etc.  exists
+	exists()		check if a variable, function, etc. exists
 	exists_compiled()	like exists() but check at compile time
 	has()			check if a feature is supported in Vim
 	changenr()		return number of most recent change

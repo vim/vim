@@ -219,8 +219,8 @@ Suppose you are editing the file "one.txt".  Somewhere halfway through the
 file you use "x" to delete a character.  Then you go to the last line with "G"
 and write the file with ":w".  You edit several other files, and then use
 ":edit one.txt" to come back to "one.txt".  If you now use `" Vim jumps to the
-last line of the file.  Using `.  takes you to the position where you deleted
-the character.  Even when you move around in the file `" and `.  will take you
+last line of the file.  Using `. takes you to the position where you deleted
+the character.  Even when you move around in the file `" and `. will take you
 to the remembered position.  At least until you make another change or leave
 the file.
 
