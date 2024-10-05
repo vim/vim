@@ -23,7 +23,8 @@ let &l:makeprg = 'cppcheck --quiet'
       \ ..' '..get(b:, 'c_cppcheck_params',
       \            g:c_cppcheck_params..' '..(&filetype ==# 'cpp' ? ' --language=c++' : ''))
       \ ..' '..get(b:, 'c_cppcheck_includes', get(g:, 'c_cppcheck_includes',
-      \	           (empty(&path) ? '' : '-I')..join(map(filter(split(&path, ','), 'isdirectory(v:val)'),'shellescape(v:val)'), ' -I')))
+      \	           (filereadable('compile_commands.json') ? '--project=compile_commands.json' :
+      \	            (empty(&path) ? '' : '-I')..join(map(filter(split(&path, ','), 'isdirectory(v:val)'),'shellescape(v:val)'), ' -I'))))
 silent CompilerSet makeprg
 
 CompilerSet errorformat=

@@ -1294,10 +1294,11 @@ settings by default include
 For C++ files (`filetype == 'cpp'`), the `--language=c++` option is added to
 ensure Cppcheck treats the file as C++.
 
-By default the directories in &path are passed as include directories.
-These can be set by g/b:c_cppcheck_includes as a list of '-I' flags.
-Tim Pope's vim-apathy plug-in [0] can expand &path. To also append the folders
-in a git repo use
+If compile_commands.json is present in the current directory, it is added as a
+`--project` parameter to the command line. Otherwise, by default the
+directories in &path are passed as include directories. These can be set by
+g/b:c_cppcheck_includes as a list of '-I' flags. Tim Pope's vim-apathy plug-in
+[0] can expand &path. To also append the folders in a git repo use
 
 let &l:path .= join(systemlist('git ls-tree -d --name-only -r HEAD'), ',')
 
