@@ -58,9 +58,11 @@ export def Toggle(...args: list<string>): string
                 # handle % with substitute
                 line = printf(substitute(cms, '%s\@!', '%%', 'g'), getline(lnum))
             else
+                line = getline(lnum)
+                var indent_start_len = strlen(indent_start)
                 # handle % with substitute
                 line = printf(indent_start .. substitute(cms, '%s\@!', '%%', 'g'),
-                        strpart(getline(lnum), strlen(indent_start)))
+                    strpart(line, (line[0 : strlen(indent_start_len) - 1] =~ '\t' ? indent_start_len / &tabstop : indent_start_len)))
             endif
         else
             line = substitute(getline(lnum), $'^\s*\zs{cms_l[0]} \?\| \?{cms_l[1]}$', '', 'g')
