@@ -6737,6 +6737,11 @@ win_copy_options(win_T *wp_from, win_T *wp_to)
     void
 after_copy_winopt(win_T *wp)
 {
+    // Set w_leftcol or w_skipcol to zero.
+    if (wp->w_p_wrap)
+	wp->w_leftcol = 0;
+    else
+	wp->w_skipcol = 0;
 #ifdef FEAT_LINEBREAK
     briopt_check(wp);
 #endif
