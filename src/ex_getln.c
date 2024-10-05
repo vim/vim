@@ -3317,8 +3317,7 @@ redrawcmd_preedit(void)
 #endif // FEAT_XIM && FEAT_GUI_GTK
 
 /*
- * Deallocate a command line buffer, updating the buffer size and
- * command line length.
+ * Deallocate a command line buffer, updating the buffer size and length.
  */
     static void
 dealloc_cmdbuff(void)
