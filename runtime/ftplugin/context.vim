@@ -4,7 +4,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2023 Dec 26
+# Latest Revision:    2024 Oct 04
 
 if exists("b:did_ftplugin")
   finish
@@ -13,10 +13,6 @@ endif
 import autoload '../autoload/context.vim'
 
 b:did_ftplugin = 1
-
-if !exists('current_compiler')
-  compiler context
-endif
 
 b:undo_ftplugin = "setl com< cms< def< inc< sua< fo< ofu<"
 
@@ -106,6 +102,12 @@ if !get(g:, 'no_context_maps', 0) && !get(g:, 'no_plugin_maps', 0)
   endfor
 endif
 
+if !exists('current_compiler')
+  b:undo_ftplugin ..= "| compiler make"
+  compiler context
+endif
+
+b:undo_ftplugin ..= "| sil! delc -buffer ConTeXt | sil! delc -buffer ConTeXtLog | sil! delc -buffer ConTeXtJobStatus | sil! delc -buffer ConTeXtStopJobs"
 # Commands for asynchronous typesetting
 command! -buffer -nargs=? -complete=buffer ConTeXt          context.Typeset(<q-args>)
 command! -buffer -nargs=0                  ConTeXtLog       context.Log('%')
