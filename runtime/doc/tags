@@ -6543,6 +6543,7 @@ compile-changes-8	version8.txt	/*compile-changes-8*
 compile-changes-9	version9.txt	/*compile-changes-9*
 compile-changes-9.2	version9.txt	/*compile-changes-9.2*
 compiler-compaqada	ft_ada.txt	/*compiler-compaqada*
+compiler-cppcheck	quickfix.txt	/*compiler-cppcheck*
 compiler-decada	ft_ada.txt	/*compiler-decada*
 compiler-dotnet	quickfix.txt	/*compiler-dotnet*
 compiler-gcc	quickfix.txt	/*compiler-gcc*
@@ -9641,6 +9642,7 @@ quickfix-ID	quickfix.txt	/*quickfix-ID*
 quickfix-buffer	quickfix.txt	/*quickfix-buffer*
 quickfix-changedtick	quickfix.txt	/*quickfix-changedtick*
 quickfix-context	quickfix.txt	/*quickfix-context*
+quickfix-cppcheck	quickfix.txt	/*quickfix-cppcheck*
 quickfix-directory-stack	quickfix.txt	/*quickfix-directory-stack*
 quickfix-error-lists	quickfix.txt	/*quickfix-error-lists*
 quickfix-functions	usr_41.txt	/*quickfix-functions*

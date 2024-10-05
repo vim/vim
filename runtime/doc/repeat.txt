@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 9.1.  Last change: 2024 Aug 12
+*repeat.txt*    For Vim version 9.1.  Last change: 2024 Oct 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -105,9 +105,9 @@ where the cursor was before the global command).
 
 The global command sets both the last used search pattern and the last used
 substitute pattern (this is vi compatible).  This makes it easy to globally
-replace a string:
+replace a string: >
 	:g/pat/s//PAT/g
-This replaces all occurrences of "pat" with "PAT".  The same can be done with:
+This replaces all occurrences of "pat" with "PAT".  The same can be done with: >
 	:%s/pat/PAT/g
 Which is two characters shorter!
 
@@ -526,7 +526,7 @@ Example: the lines >
 		     \:%,
 		     \n:>,
 		     \fb:-
-are interpreted as if they were given in one line:
+are interpreted as if they were given in one line: >
 	:set comments=sr:/*,mb:*,el:*/,://,b:#,:%,n:>,fb:-
 
 All leading whitespace characters in the line before a backslash are ignored.
@@ -611,7 +611,7 @@ advantages over normal plugins:
 Using a package and loading automatically ~
 
 Let's assume your Vim files are in the "~/.vim" directory and you want to add a
-package from a zip archive "/tmp/foopack.zip":
+package from a zip archive "/tmp/foopack.zip": >
 	% mkdir -p ~/.vim/pack/foo
 	% cd ~/.vim/pack/foo
 	% unzip /tmp/foopack.zip
@@ -661,7 +661,7 @@ If the package has an "after" directory, that directory is added to the end of
 Using a single plugin and loading it automatically ~
 
 If you don't have a package but a single plugin, you need to create the extra
-directory level:
+directory level: >
 	% mkdir -p ~/.vim/pack/foo/start/foobar
 	% cd ~/.vim/pack/foo/start/foobar
 	% unzip /tmp/someplugin.zip
@@ -978,13 +978,13 @@ will put the MO files in the "lang/" directory of the Vim editor.
 Type the following commands:
 >
 	cd /d f:\forkvim\src\po
- (the following command must be entered in one line, here it is separated for example)
- For Russian:
+< (the following command must be entered in one line, here it is separated for example)
+ For Russian: >
 	nmake.exe -f Make_mvc.mak "PLUGPACKAGE=aap"
 	"PO_PLUGPACKAGE=e:\project\translate\plugins\ru.po"
 	"MO_PLUGPACKAGE_PATH=d:\Programs\vim\vim91\lang\ru\LC_MESSAGES"
 	aap.mo
- For German:
+< For German: >
 	nmake.exe -f Make_mvc.mak "PLUGPACKAGE=aap"
 	"PO_PLUGPACKAGE=e:\project\translate\plugins\de.po"
 	"MO_PLUGPACKAGE_PATH=d:\Programs\vim\vim91\lang\de\LC_MESSAGES"

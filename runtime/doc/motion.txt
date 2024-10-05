@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 9.1.  Last change: 2024 Aug 28
+*motion.txt*    For Vim version 9.1.  Last change: 2024 Oct 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -169,9 +169,9 @@ h		or					*h*
 CTRL-H		or					*CTRL-H* *<BS>*
 <BS>			[count] characters to the left.  |exclusive| motion.
 			Note: If you prefer <BS> to delete a character, use
-			the mapping:
+			the mapping: >
 				:map CTRL-V<BS>		X
-			(to enter "CTRL-V<BS>" type the CTRL-V key, followed
+<			(to enter "CTRL-V<BS>" type the CTRL-V key, followed
 			by the <BS> key)
 			See |:fixdel| if the <BS> key does not do what you
 			want.

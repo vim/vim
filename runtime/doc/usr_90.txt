@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 9.1.  Last change: 2022 May 13
+*usr_90.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -36,7 +36,7 @@ FROM A PACKAGE
 You can get precompiled binaries for many different UNIX systems.  There is a
 long list with links on this page:
 
-	http://www.vim.org/binaries.html ~
+	http://www.vim.org/binaries.html
 
 Volunteers maintain the binaries, so they are often out of date.  It is a
 good idea to compile your own UNIX version from the source.  Also, creating
@@ -59,7 +59,7 @@ To compile and install Vim, you will need the following:
 To get the Vim archives, look in this file for a mirror near you, this should
 provide the fastest download:
 
-	ftp://ftp.vim.org/pub/vim/MIRRORS ~
+	ftp://ftp.vim.org/pub/vim/MIRRORS
 
 Or use the home site ftp.vim.org, if you think it's fast enough.  Go to the
 "unix" directory and you'll find a list of files there.  The version number is
@@ -213,7 +213,7 @@ one, you will need:
 To get the Vim archives, look in this file for a mirror near you, this should
 provide the fastest download:
 
-	ftp://ftp.vim.org/pub/vim/MIRRORS ~
+	ftp://ftp.vim.org/pub/vim/MIRRORS
 
 Or use the home site ftp.vim.org, if you think it's fast enough.  Go to the
 "pc" directory and you'll find a list of files there.  The version number is
