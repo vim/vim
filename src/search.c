@@ -421,6 +421,12 @@ last_search_pattern(void)
 {
     return spats[RE_SEARCH].pat;
 }
+
+    size_t
+last_search_pattern_len(void)
+{
+    return spats[RE_SEARCH].patlen;
+}
 #endif
 
 /*
