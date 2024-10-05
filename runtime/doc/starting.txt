@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Sep 15
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Oct 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -847,7 +847,8 @@ accordingly.  Vim proceeds in this order:
 	'compatible' is only done later.  Add a ":set nocp" command if you
 	like.  For the Macintosh the $VIMRUNTIME/macmap.vim is read.
 
-	  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc* *$MYVIMRC* *$MYVIMDIR*
+			*VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc*
+			*$MYVIMRC* *$MYVIMDIR*
      c. Five places are searched for initializations.  The first that exists
 	is used, the others are ignored.  The $MYVIMRC environment variable is
 	set to the file that was first found, unless $MYVIMRC was already set
@@ -972,9 +973,9 @@ accordingly.  Vim proceeds in this order:
 	The |v:vim_did_enter| variable is set to 1.
 	The |VimEnter| autocommands are executed.
 
-The $MYVIMRC or $MYGVIMRC file will be set to the first found vimrc and/or
-gvimrc file while $MYVIMDIR is set to the users personal runtime directory
-'rtp' (typically the first entry in 'runtimepath').
+The $MYVIMRC or $MYGVIMRC environment variable will be set to the first found
+vimrc and/or gvimrc file while $MYVIMDIR is set to the users personal runtime
+directory 'rtp' (typically the first entry in 'runtimepath').
 
 
 Some hints on using initializations ~

@@ -1,8 +1,8 @@
-*usr_toc.txt*	For Vim version 9.1.  Last change: 2024 Oct 01
+*usr_toc.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
-			      Table Of Contents		       *user-manual* *usr*
+			      Table Of Contents		*user-manual* *usr*
 
 ==============================================================================
 Overview ~

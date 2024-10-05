@@ -1,6 +1,6 @@
-# Generator of Vim Script Syntax File
+# Generator of Vim script Syntax File
 
-This directory contains a Vim Script generator, that will parse the Vim source file and
+This directory contains a Vim script generator, that will parse the Vim source file and
 generate a vim.vim syntax file.
 
 Files in this directory where copied from https://github.com/vim-jp/syntax-vim-ex/

@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2024 Sep 29
+*filetype.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -776,7 +776,7 @@ Global mapping:
 
 Local mappings:
 <Plug>ManBS
-<LocalLeader>h	Clear backspace <BS> characters from the buffer
+<LocalLeader>h	Clear backspace <BS> characters from the buffer.
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
 
