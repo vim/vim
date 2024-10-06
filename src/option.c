@@ -2794,16 +2794,21 @@ did_set_option(
 
 /*
  * Convert a key name or string into a key value.
- * Used for 'wildchar' and 'cedit' options.
+ * Used for 'cedit', 'termwinkey', 'wildchar' and 'wildcharm' options.
  * When "multi_byte" is TRUE allow for multi-byte characters.
  */
     int
 string_to_key(char_u *arg, int multi_byte)
 {
-    if (*arg == '<')
+    if (*arg == '<' && arg[1])
 	return find_key_option(arg + 1, TRUE);
-    if (*arg == '^')
-	return Ctrl_chr(arg[1]);
+    if (*arg == '^' && arg[1])
+    {
+	int key = Ctrl_chr(arg[1]);
+	if (key == 0)		// ^@ is <Nul>
+	    key = K_ZERO;
+	return key;
+    }
     if (multi_byte)
 	return PTR2CHAR(arg);
     return *arg;
@@ -5622,7 +5627,10 @@ find_key_option(char_u *arg_arg, int has_lt)
     // Don't use get_special_key_code() for t_xx, we don't want it to call
     // add_termcap_entry().
     if (arg[0] == 't' && arg[1] == '_' && arg[2] && arg[3])
-	key = TERMCAP2KEY(arg[2], arg[3]);
+    {
+	if (!has_lt || arg[4] == '>')
+	    key = TERMCAP2KEY(arg[2], arg[3]);
+    }
     else if (has_lt)
     {
 	--arg;			    // put arg at the '<'
