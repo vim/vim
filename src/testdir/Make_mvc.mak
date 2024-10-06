@@ -152,7 +152,7 @@ test_gui_init.res: test_gui_init.vim
 	@del vimcmd
 
 opt_test.vim: ../optiondefs.h gen_opt_test.vim
-	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../optiondefs.h
+	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S gen_opt_test.vim ../optiondefs.h
 
 test_bench_regexp.res: test_bench_regexp.vim
 	-if exist benchmark.out del benchmark.out

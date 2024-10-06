@@ -1,9 +1,11 @@
-" Script to generate testdir/opt_test.vim from option.c
+" Script to generate testdir/opt_test.vim from optiondefs.h
 
 set cpo=&vim
 
 " Only do this when build with the +eval feature.
 if 1
+
+try
 
 set nomore
 
@@ -243,6 +245,13 @@ call add(script, 'let &columns = save_columns')
 call add(script, 'let &lines = save_lines')
 
 call writefile(script, 'opt_test.vim')
+
+" Exit with error-code if error occurs.
+catch
+  set verbose=1
+  echoc 'Error:' v:exception 'in' v:throwpoint
+  cq! 1
+endtry
 
 endif
 
