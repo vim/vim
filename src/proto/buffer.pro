@@ -70,4 +70,5 @@ char_u *buf_get_fname(buf_T *buf);
 void set_buflisted(int on);
 int buf_contents_changed(buf_T *buf);
 void wipe_buffer(buf_T *buf, int aucmd);
+int buf_locked(buf_T *buf);
 /* vim: set ft=c : */

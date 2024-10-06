@@ -2743,6 +2743,18 @@ do_ecmd(
 	}
 	if (buf == NULL)
 	    goto theend;
+	// autocommands try to edit a file that is goind to be removed,
+	// abort
+	if (buf_locked(buf))
+	{
+	    // window was split, but not editing the new buffer,
+	    // reset b_nwindows again
+	    if (oldwin == NULL
+		    && curwin->w_buffer != NULL
+		    && curwin->w_buffer->b_nwindows > 1)
+		--curwin->w_buffer->b_nwindows;
+	    goto theend;
+	}
 	if (curwin->w_alt_fnum == buf->b_fnum && prev_alt_fnum != 0)
 	    // reusing the buffer, keep the old alternate file
 	    curwin->w_alt_fnum = prev_alt_fnum;

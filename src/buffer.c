@@ -497,6 +497,12 @@ can_unload_buffer(buf_T *buf)
     return can_unload;
 }
 
+    int
+buf_locked(buf_T *buf)
+{
+    return buf->b_locked || buf->b_locked_split;
+}
+
 /*
  * Close the link to a buffer.
  * "action" is used when there is no longer a window for the buffer.
