@@ -9293,6 +9293,7 @@ opening-window	windows.txt	/*opening-window*
 operator	motion.txt	/*operator*
 operator-doubled	motion.txt	/*operator-doubled*
 operator-pending-index	index.txt	/*operator-pending-index*
+operator-resulting-pos	motion.txt	/*operator-resulting-pos*
 operator-variable	eval.txt	/*operator-variable*
 option-backslash	options.txt	/*option-backslash*
 option-list	quickref.txt	/*option-list*
