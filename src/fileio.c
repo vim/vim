@@ -5570,6 +5570,8 @@ match_file_list(char_u *list, char_u *sfname, char_u *ffname)
  * allow_dirs, otherwise FALSE is put there -- webb.
  * Handle backslashes before special characters, like "\*" and "\ ".
  *
+ * no_bslash only makes a difference, when BACKSLASH_IN_FILENAME is defined
+ *
  * Returns NULL when out of memory.
  */
     char_u *

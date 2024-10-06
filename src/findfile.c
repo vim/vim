@@ -2362,7 +2362,7 @@ uniquefy_paths(
     file_pattern[0] = '*';
     file_pattern[1] = NUL;
     STRCAT(file_pattern, pattern);
-    pat = file_pat_to_reg_pat(file_pattern, NULL, NULL, TRUE);
+    pat = file_pat_to_reg_pat(file_pattern, NULL, NULL, FALSE);
     vim_free(file_pattern);
     if (pat == NULL)
 	return;
