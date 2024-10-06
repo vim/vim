@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
-" Last Change: 2024 Sep 14
+" Last Change: 2024 Oct 04
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -285,6 +285,7 @@ function! s:get_vim_command_type(cmd_name)
 		behave
 		call
 		catch
+		class
 		def
 		delcommand
 		doautoall
@@ -297,13 +298,19 @@ function! s:get_vim_command_type(cmd_name)
 		echon
 		echowindow
 		elseif
+		endclass
 		enddef
+		endenum
 		endfunction
+		endinterface
+		enum
 		execute
+		export
 		final
 		for
 		function
 		if
+		interface
 		insert
 		let
 		loadkeymap
@@ -314,6 +321,7 @@ function! s:get_vim_command_type(cmd_name)
 		new
 		normal
 		popup
+		public
 		return
 		set
 		setglobal
@@ -321,9 +329,12 @@ function! s:get_vim_command_type(cmd_name)
 		sleep
 		smagic
 		snomagic
+		static
 		substitute
 		syntax
+		this
 		throw
+		type
 		unlet
 		unmap
 		var

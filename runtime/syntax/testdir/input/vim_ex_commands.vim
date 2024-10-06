@@ -383,7 +383,6 @@
 :ptprevious
 :ptrewind
 :ptselect
-:public
 :put
 :pwd
 :py3
@@ -478,7 +477,6 @@
 :startinsert
 :startgreplace
 :startreplace
-:static
 :stopinsert
 :stjump
 :stselect
@@ -971,7 +969,6 @@ call Foo() | ptnext
 call Foo() | ptprevious
 call Foo() | ptrewind
 call Foo() | ptselect
-call Foo() | public
 call Foo() | put
 call Foo() | pwd
 call Foo() | py3
@@ -1066,7 +1063,6 @@ call Foo() | stag
 call Foo() | startinsert
 call Foo() | startgreplace
 call Foo() | startreplace
-call Foo() | static
 call Foo() | stopinsert
 call Foo() | stjump
 call Foo() | stselect
@@ -1187,8 +1183,6 @@ call Foo() | z
 
 :abstract
 :class
-:defcompile
-:disassemble
 :endclass
 :endinterface
 :endenum
@@ -1203,8 +1197,6 @@ call Foo() | z
 
 Foo() | abstract
 Foo() | class
-Foo() | defcompile
-Foo() | disassemble
 Foo() | endclass
 Foo() | endenum
 Foo() | endinterface
