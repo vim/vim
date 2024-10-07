@@ -3920,7 +3920,7 @@ func Test_ex_command_completion()
   set cpo-=*
 endfunc
 
-func Test_cd_bslsh_completion_windows()
+func Test_cd_bslash_completion_windows()
   CheckMSWindows
   let save_shellslash = &shellslash
   set noshellslash
