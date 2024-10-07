@@ -3556,13 +3556,15 @@ mch_init_c(void)
     static void
 mch_exit_c(int r)
 {
+    int fTermcapMode = g_fTermcapMode;  // Copy flag since stoptermcap() will clear the flag.
+
     exiting = TRUE;
 
     vtp_exit();
 
     stoptermcap();
-    // Switch back to main screen buffer.
-    if (use_alternate_screen_buffer)
+    // Switch back to main screen buffer if TermcapMode was not active.
+    if (!fTermcapMode &&  use_alternate_screen_buffer)
 	vtp_printf("\033[?1049l");
 
     if (g_fWindInitCalled)
@@ -6337,6 +6339,10 @@ termcap_mode_end(void)
 # endif
     RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
+
+    // Switch back to main screen buffer.
+    if (exiting && use_alternate_screen_buffer)
+        vtp_printf("\033[?1049l");
 
     if (!USE_WT && (p_rs || exiting))
     {
