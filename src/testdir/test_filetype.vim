@@ -295,6 +295,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     gdscript: ['file.gd'],
     gdshader: ['file.gdshader', 'file.shader'],
     gedcom: ['file.ged', 'lltxxxxx.txt', '/tmp/lltmp', '/tmp/lltmp-file', 'any/tmp/lltmp', 'any/tmp/lltmp-file'],
+    tigel: ['file.gel'],
     gemtext: ['file.gmi', 'file.gemini'],
     gift: ['file.gift'],
     gitattributes: ['file.git/info/attributes', '.gitattributes', '/.config/git/attributes', '/etc/gitattributes', '/usr/local/etc/gitattributes', 'some.git/info/attributes'] + WhenConfigHome('$XDG_CONFIG_HOME/git/attributes'),
@@ -659,7 +660,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     samba: ['smb.conf'],
     sas: ['file.sas'],
     sass: ['file.sass'],
-    sather: ['file.sa'],
+    sather: ['file.sather'],
     sbt: ['file.sbt'],
     scala: ['file.scala'],
     scheme: ['file.scm', 'file.ss', 'file.sld'],
@@ -2275,6 +2276,16 @@ func Test_cls_file()
   call assert_equal('vb', &filetype)
   bwipe!
 
+  filetype off
+endfunc
+
+func Test_sa_type()
+  filetype on
+  call writefile([';* XXX-a.sa: XXX for TI C6000 DSP *;', '.no_mdep'], 'Xfile.sa')
+  split Xfile.sa
+  call assert_equal('tisa', &filetype)
+
+  bwipe!
   filetype off
 endfunc
 
