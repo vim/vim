@@ -668,7 +668,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     samba: ['smb.conf'],
     sas: ['file.sas'],
     sass: ['file.sass'],
-    sather: ['file.sa'],
+    sather: ['file.sather'],
     sbt: ['file.sbt'],
     scala: ['file.scala'],
     scheme: ['file.scm', 'file.ss', 'file.sld', 'file.stsg', 'any/local/share/supertux2/config'],
@@ -2300,6 +2300,16 @@ func Test_cls_file()
   call assert_equal('vb', &filetype)
   bwipe!
 
+  filetype off
+endfunc
+
+func Test_sa_type()
+  filetype on
+  call writefile([';* XXX-a.sa: XXX for TI C6000 DSP *;', '.no_mdep'], 'Xfile.sa')
+  split Xfile.sa
+  call assert_equal('tisa', &filetype)
+
+  bwipe!
   filetype off
 endfunc
 
