@@ -1092,10 +1092,6 @@ cmdline_erase_chars(
     else if (ccline.cmdlen == 0 && c != Ctrl_W
 	    && ccline.cmdprompt == NULL && indent == 0)
     {
-#ifdef FEAT_SEARCH_EXTRA
-	int cmdlen;
-#endif
-
 	// In ex and debug mode it doesn't make sense to return.
 	if (exmode_active
 #ifdef FEAT_EVAL
@@ -1104,9 +1100,6 @@ cmdline_erase_chars(
 	   )
 	    return CMDLINE_NOT_CHANGED;
 
-#ifdef FEAT_SEARCH_EXTRA
-	cmdlen = ccline.cmdlen;
-#endif
 	dealloc_cmdbuff();	// no commandline to return
 
 	if (!cmd_silent)
@@ -1120,8 +1113,7 @@ cmdline_erase_chars(
 	    msg_putchar(' ');		// delete ':'
 	}
 #ifdef FEAT_SEARCH_EXTRA
-	if (cmdlen == 0)
-	    isp->search_start = isp->save_cursor;
+	isp->search_start = isp->save_cursor;
 #endif
 	redraw_cmdline = TRUE;
 	return GOTO_NORMAL_MODE;
