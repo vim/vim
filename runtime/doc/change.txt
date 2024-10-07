@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2024 Jul 28
+*change.txt*    For Vim version 9.1.  Last change: 2024 Oct 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1283,8 +1283,7 @@ mapped.  E.g. |%| is mapped by the matchit plugin.
    With each successive deletion or change, Vim shifts the previous contents
 of register 1 into register 2, 2 into 3, and so forth, losing the previous
 contents of register 9.
-{Vi: numbered register contents are lost when changing files; register 0 does
-not exist}
+{Vi: register 0 does not exist}
 
 3. Small delete register "-				*quote_-* *quote-*
 This register contains text from commands that delete less than one line,
