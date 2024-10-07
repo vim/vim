@@ -121,11 +121,14 @@ if g:GetLatestVimScripts_allowautoinstall
  let s:dotvim= s:is_windows ? "vimfiles" : ".vim"
 
  if !exists("g:GetLatestVimScripts_mv")
-  if s:is_windows && &shell !~ '\cbash\|pwsh\|powershell'
+  if &shell =~? '\<pwsh\>\|\<powershell\>'
+   let g:GetLatestVimScripts_mv= "move -Force"
+  elseif s:is_windows && &shell =~? '\<cmd\>'
    " windows (but not cygwin/bash)
-    let g:GetLatestVimScripts_mv= "move"
+   let g:GetLatestVimScripts_mv= "move /Y"
   else
-   " unix
+   " unix or cygwin bash/zsh
+   " 'mv' overrides existing files without asking
     let g:GetLatestVimScripts_mv= "mv"
   endif
  endif
@@ -377,7 +380,16 @@ fun! s:GetOneScript(...)
   let t_ti= &t_ti
   let t_te= &t_te
   let rs  = &rs
+  let ssl = &ssl
+
   set t_ti= t_te= nors
+  " avoid issues with shellescape() on Windows
+  if s:is_windows && &shell =~? '\<cmd\>'
+    set noshellslash
+  endif
+
+  " restore valures afterwards
+  defer execute("let @a = rega | let &t_ti = t_ti | let &t_te = t_te | let &rs = rs | let &ssl = ssl")
 
  " put current line on top-of-screen and interpret it into
  " a      script identifier  : used to obtain webpage
@@ -394,7 +406,6 @@ fun! s:GetOneScript(...)
   else
    let curline  = getline(".")
    if curline =~ '^\s*#'
-    let @a= rega
 "    call Dret("GetOneScript : skipping a pure comment line")
     return
    endif
@@ -429,7 +440,6 @@ fun! s:GetOneScript(...)
   " plugin author protection from downloading his/her own scripts atop their latest work
   if scriptid == 0 || srcid == 0
    " When looking for :AutoInstall: lines, skip scripts that have   0 0 scriptname
-   let @a= rega
 "   call Dret("GetOneScript : skipping a scriptid==srcid==0 line")
    return
   endif
@@ -497,7 +507,6 @@ fun! s:GetOneScript(...)
 "   call Decho("***warning*** couldn'".'t find "Click on the package..." in description page for <'.aicmmnt.">")
    echomsg "***warning*** couldn'".'t find "Click on the package..." in description page for <'.aicmmnt.">"
 "   call Dret("GetOneScript : srch for /Click on the package/ failed")
-   let @a= rega
    return
   endif
 "  call Decho('found "Click on the package to download"')
@@ -513,7 +522,6 @@ fun! s:GetOneScript(...)
    let s:downerrors = s:downerrors + 1
 "   call Decho("***warning*** couldn'".'t find "src_id=" in description page for <'.aicmmnt.">")
    echomsg "***warning*** couldn'".'t find "src_id=" in description page for <'.aicmmnt.">"
-   let @a= rega
 "  call Dret("GetOneScript : srch for /src_id/ failed")
    return
   endif
@@ -680,13 +688,7 @@ fun! s:GetOneScript(...)
 "   call Decho("[latestsrcid=".latestsrcid."] <= [srcid=".srcid."], no need to update")
   endif
 
- " restore options
-  let &t_ti = t_ti
-  let &t_te = t_te
-  let &rs   = rs
-  let @a    = rega
 "  call Dredir("BUFFER TEST (GetOneScript)","ls!")
-
 "  call Dret("GetOneScript")
 endfun
 
