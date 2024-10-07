@@ -92,6 +92,7 @@ static keyvalue_T command_complete_tab[] =
     KEYVALUE_ENTRY(EXPAND_SCRIPTNAMES, "scriptnames"),
 #endif
     KEYVALUE_ENTRY(EXPAND_SHELLCMD, "shellcmd"),
+    KEYVALUE_ENTRY(EXPAND_SHELLCMDLINE, "shellcmdline"),
 #if defined(FEAT_SIGNS)
     KEYVALUE_ENTRY(EXPAND_SIGN, "sign"),
 #endif
@@ -328,7 +329,6 @@ set_context_in_user_cmdarg(
     if (argt & EX_XFILE)
     {
 	// EX_XFILE: file names are handled before this call
-	xp->xp_context = context;
 	return NULL;
     }
 
@@ -850,7 +850,7 @@ parse_compl_arg(
     *complp = entry->key;
     if (*complp == EXPAND_BUFFERS)
 	*argt |= EX_BUFNAME;
-    else if (*complp == EXPAND_DIRECTORIES || *complp == EXPAND_FILES)
+    else if (*complp == EXPAND_DIRECTORIES || *complp == EXPAND_FILES || *complp == EXPAND_SHELLCMDLINE)
 	*argt |= EX_XFILE;
 
     if (
