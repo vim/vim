@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.1.  Last change: 2024 Sep 26
+*map.txt*       For Vim version 9.1.  Last change: 2024 Oct 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -84,6 +84,8 @@ modes.
 			where the map command applies.  Disallow mapping of
 			{rhs}, to avoid nested and recursive mappings.  Often
 			used to redefine a command.
+			Note: Keys in {rhs} also won't trigger abbreviation,
+			with the exception of |i_CTRL-]| and |c_CTRL-]|.
 			Note: When <Plug> appears in the {rhs} this part is
 			always applied even if remapping is disallowed.
 
