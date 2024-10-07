@@ -1,4 +1,4 @@
-*usr_52.txt*	For Vim version 9.1.  Last change: 2024 Jun 09
+*usr_52.txt*	For Vim version 9.1.  Last change: 2024 Oct 07
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -13,7 +13,7 @@ smaller parts.
 |52.3|	Autoloading without import/export
 |52.4|	Other mechanisms to use
 |52.5|	Using a Vim9 script from legacy script
-|52.6|	Vim9 script examples: comment package, highlight-yank plugin
+|52.6|	Vim9 examples: comment and highlight-yank plugin
 
      Next chapter: |usr_90.txt|  Installing Vim
  Previous chapter: |usr_51.txt|  Create a plugin
@@ -337,7 +337,7 @@ will have to make sure to use a unique name for these global items. Example: >
 	call g:NicePluginTest()
 
 ==============================================================================
-*52.6*	Vim9 script examples: comment package, highlight-yank plugin
+*52.6*	Vim9 examples: comment and highlight-yank plugin
 
 COMMENT PACKAGE
 
