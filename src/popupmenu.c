@@ -586,6 +586,8 @@ pum_redraw(void)
 							    pum_extra_width };
     int		basic_width;  // first item width
     int		last_isabbr = FALSE;
+    int		user_abbr_hlattr, user_kind_hlattr;
+    int		orig_attr = -1;
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
@@ -660,10 +662,13 @@ pum_redraw(void)
 	    item_type = order[j];
 	    hlf = hlfs[item_type];
 	    attr = highlight_attr[hlf];
-	    if (pum_array[idx].pum_user_hlattr > 0)
-		attr = hl_combine_attr(attr, pum_array[idx].pum_user_hlattr);
-	    if (item_type == CPT_KIND && pum_array[idx].pum_user_kind_hlattr > 0)
-		attr = hl_combine_attr(attr, pum_array[idx].pum_user_kind_hlattr);
+	    orig_attr = attr;
+	    user_abbr_hlattr = pum_array[idx].pum_user_abbr_hlattr;
+	    user_kind_hlattr = pum_array[idx].pum_user_kind_hlattr;
+	    if (item_type == CPT_ABBR && user_abbr_hlattr > 0)
+		attr = hl_combine_attr(attr, user_abbr_hlattr);
+	    if (item_type == CPT_KIND && user_kind_hlattr > 0)
+		attr = hl_combine_attr(attr, user_kind_hlattr);
 	    width = 0;
 	    s = NULL;
 	    p = pum_get_item(idx, item_type);
@@ -678,7 +683,7 @@ pum_redraw(void)
 			// Display the text that fits or comes before a Tab.
 			// First convert it to printable characters.
 			char_u	*st;
-			int	*attrs;
+			int	*attrs = NULL;
 			int	saved = *p;
 
 			if (saved != NUL)
@@ -687,9 +692,9 @@ pum_redraw(void)
 			if (saved != NUL)
 			    *p = saved;
 
-			int user_hlattr = pum_array[idx].pum_user_hlattr;
-			attrs = pum_compute_text_attrs(st, hlf, user_hlattr);
-
+			if (item_type == CPT_ABBR)
+			    attrs = pum_compute_text_attrs(st, hlf,
+							    user_abbr_hlattr);
 #ifdef FEAT_RIGHTLEFT
 			if (pum_rl)
 			{
@@ -771,7 +776,11 @@ pum_redraw(void)
 			    col += width;
 			}
 
-			vim_free(attrs);
+			if (attrs != NULL)
+			{
+			    vim_free(attrs);
+			    attrs = NULL;
+			}
 
 			if (*p != TAB)
 			    break;
@@ -781,13 +790,14 @@ pum_redraw(void)
 			if (pum_rl)
 			{
 			    screen_puts_len((char_u *)"  ", 2, row, col - 1,
-									attr);
+								    orig_attr);
 			    col -= 2;
 			}
 			else
 #endif
 			{
-			    screen_puts_len((char_u *)"  ", 2, row, col, attr);
+			    screen_puts_len((char_u *)"  ", 2, row, col,
+								    orig_attr);
 			    col += 2;
 			}
 			totwidth += 2;
@@ -823,7 +833,7 @@ pum_redraw(void)
 #endif
 	    {
 		screen_fill(row, row + 1, col, pum_col + basic_width + n,
-							      ' ', ' ', attr);
+							      ' ', ' ', orig_attr);
 		col = pum_col + basic_width + n;
 	    }
 	    totwidth = basic_width + n;

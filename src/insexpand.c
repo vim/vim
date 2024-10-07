@@ -100,13 +100,14 @@ struct compl_S
 #ifdef FEAT_EVAL
     typval_T	cp_user_data;
 #endif
-    char_u	*cp_fname;	// file containing the match, allocated when
-				// cp_flags has CP_FREE_FNAME
-    int		cp_flags;	// CP_ values
-    int		cp_number;	// sequence number
-    int		cp_score;	// fuzzy match score
-    int		cp_user_hlattr;	// highlight attribute to combine with
-    int		cp_user_kind_hlattr; // highlight attribute for kind
+    char_u	*cp_fname;		// file containing the match, allocated when
+					// cp_flags has CP_FREE_FNAME
+    int		cp_flags;		// CP_ values
+    int		cp_number;		// sequence number
+    int		cp_score;		// fuzzy match score
+    int		cp_user_abbr_hlattr;	// highlight attribute to combine with
+					// for abbr.
+    int		cp_user_kind_hlattr;	// highlight attribute for kind
 };
 
 // values for cp_flags
@@ -772,7 +773,7 @@ ins_compl_add(
     int		cdir,
     int		flags_arg,
     int		adup,		    // accept duplicate match
-    int		user_hlattr,
+    int		user_abbr_hlattr,
     int		user_kind_hlattr)
 {
     compl_T	*match;
@@ -837,7 +838,7 @@ ins_compl_add(
     else
 	match->cp_fname = NULL;
     match->cp_flags = flags;
-    match->cp_user_hlattr = user_hlattr;
+    match->cp_user_abbr_hlattr = user_abbr_hlattr;
     match->cp_user_kind_hlattr = user_kind_hlattr;
 
     if (cptext != NULL)
@@ -1335,7 +1336,7 @@ ins_compl_build_pum(void)
 	    compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
 	    compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
 	    compl_match_array[i].pum_score = compl->cp_score;
-	    compl_match_array[i].pum_user_hlattr = compl->cp_user_hlattr;
+	    compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
 	    compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
 	    if (compl->cp_text[CPT_MENU] != NULL)
 		compl_match_array[i++].pum_extra =
@@ -2863,9 +2864,9 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     char_u	*(cptext[CPT_COUNT]);
     typval_T	user_data;
     int		status;
-    char_u	*user_hlname;
+    char_u	*user_abbr_hlname;
+    int		user_abbr_hlattr = -1;
     char_u	*user_kind_hlname;
-    int		user_hlattr = -1;
     int		user_kind_hlattr = -1;
 
     user_data.v_type = VAR_UNKNOWN;
@@ -2877,8 +2878,8 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict, "kind", FALSE);
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
 
-	user_hlname = dict_get_string(tv->vval.v_dict, "hl_group", FALSE);
-	user_hlattr = get_user_highlight_attr(user_hlname);
+	user_abbr_hlname = dict_get_string(tv->vval.v_dict, "abbr_hlgroup", FALSE);
+	user_abbr_hlattr = get_user_highlight_attr(user_abbr_hlname);
 
 	user_kind_hlname = dict_get_string(tv->vval.v_dict, "kind_hlgroup", FALSE);
 	user_kind_hlattr = get_user_highlight_attr(user_kind_hlname);
@@ -2906,7 +2907,8 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	return FAIL;
     }
     status = ins_compl_add(word, -1, NULL, cptext,
-				     &user_data, dir, flags, dup, user_hlattr, user_kind_hlattr);
+				     &user_data, dir, flags, dup,
+				     user_abbr_hlattr, user_kind_hlattr);
     if (status != OK)
 	clear_tv(&user_data);
     return status;
