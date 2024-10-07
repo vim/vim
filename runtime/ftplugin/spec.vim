@@ -14,6 +14,11 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo&vim
 
+setlocal comments=b:#
+setlocal commentstring=#\ %s
+
+let b:undo_ftplugin = "setlocal comments< commentstring<"
+
 if !exists("no_plugin_maps") && !exists("no_spec_maps")
 	if !hasmapto("<Plug>SpecChangelog")
 		map <buffer> <LocalLeader>c <Plug>SpecChangelog
@@ -216,4 +221,4 @@ let b:match_words =
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-let b:undo_ftplugin = "unlet! b:match_ignorecase b:match_words"
+let b:undo_ftplugin ..= " | unlet! b:match_ignorecase b:match_words"
