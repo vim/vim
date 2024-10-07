@@ -169,6 +169,14 @@ export def FTcls()
   endif
 enddef
 
+export def FTll()
+  if getline(1) =~ ';\|\<source_filename\>\|\<target\>'
+    setf llvm
+  else
+    setf lifelines
+  endif
+enddef
+
 export def FTlpc()
   if exists("g:lpc_syntax_for_c")
     var lnum = 1

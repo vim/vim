@@ -1351,7 +1351,7 @@ au BufNewFile,BufRead */etc/sensors.conf,*/etc/sensors3.conf	setf sensors
 au BufNewFile,BufRead lftp.conf,.lftprc,*lftp/rc	setf lftp
 
 " Lifelines (or Lex for C++!)
-au BufNewFile,BufRead *.ll			setf lifelines
+au BufNewFile,BufRead *.ll			call dist#ft#FTll()
 
 " Lilo: Linux loader
 au BufNewFile,BufRead lilo.conf			setf lilo
