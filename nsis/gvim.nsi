@@ -53,6 +53,12 @@ Unicode true
   !define WIN64 0
 !endif
 
+# if you don't want to include libgcc_s_sjlj-1.dll in the package, use the
+# switch /DINCLUDE_LIBGCC=0 on the command line makensis.exe.
+!ifndef INCLUDE_LIBGCC
+  !define INCLUDE_LIBGCC 1
+!endif
+
 !include gvim_version.nsh	# for version number
 
 # Definition of Patch for Vim.
@@ -728,12 +734,14 @@ Section "$(str_section_nls)" id_section_nls
 	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 	    "${GETTEXT}\gettext${BIT}\libiconv-2.dll" \
 	    "$0\libiconv-2.dll" "$0"
-# Install libgcc_s_sjlj-1.dll only if it is needed.
-#  !if /FileExists "${GETTEXT}\gettext${BIT}\libgcc_s_sjlj-1.dll"
-#	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
-#	    "${GETTEXT}\gettext${BIT}\libgcc_s_sjlj-1.dll" \
-#	    "$0\libgcc_s_sjlj-1.dll" "$0"
-#  !endif
+!if ${INCLUDE_LIBGCC}
+!if /FileExists "${GETTEXT}\gettext${BIT}\libgcc_s_sjlj-1.dll"
+	# Install libgcc_s_sjlj-1.dll only if it is needed.
+	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	    "${GETTEXT}\gettext${BIT}\libgcc_s_sjlj-1.dll" \
+	    "$0\libgcc_s_sjlj-1.dll" "$0"
+!endif
+!endif
 
 	${If} ${SectionIsSelected} ${id_section_editwith}
 	  ${If} ${RunningX64}
@@ -759,12 +767,14 @@ Section "$(str_section_nls)" id_section_nls
 	  !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 	      "${GETTEXT}\gettext32\libiconv-2.dll" \
 	      "$0\GvimExt32\libiconv-2.dll" "$0\GvimExt32"
-# Install libgcc_s_sjlj-1.dll only if it is needed.
-#  !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
-#	  !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
-#	      "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll" \
-#	      "$0\GvimExt32\libgcc_s_sjlj-1.dll" "$0\GvimExt32"
-#  !endif
+!if ${INCLUDE_LIBGCC}
+!if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
+	  # Install libgcc_s_sjlj-1.dll only if it is needed.
+	  !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll" \
+	      "$0\GvimExt32\libgcc_s_sjlj-1.dll" "$0\GvimExt32"
+!endif
+!endif
 	${EndIf}
 SectionEnd
 !endif
