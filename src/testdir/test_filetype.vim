@@ -1174,6 +1174,22 @@ func Test_cfg_file()
   filetype off
 endfunc
 
+func Test_cl_file()
+  filetype on
+
+  call writefile(['int f() {}'], 'Xfile.cl')
+  split Xfile.cl
+  call assert_equal('opencl', &filetype)
+  bwipe!
+
+  call writefile(['()'], 'Xfile.cl')
+  split Xfile.cl
+  call assert_equal('lisp', &filetype)
+  bwipe!
+
+  filetype off
+enclfunc
+
 func Test_d_file()
   filetype on
 
