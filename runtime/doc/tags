@@ -7827,6 +7827,7 @@ getcharmod()	builtin.txt	/*getcharmod()*
 getcharpos()	builtin.txt	/*getcharpos()*
 getcharsearch()	builtin.txt	/*getcharsearch()*
 getcharstr()	builtin.txt	/*getcharstr()*
+getcmdcomplpat()	builtin.txt	/*getcmdcomplpat()*
 getcmdcompltype()	builtin.txt	/*getcmdcompltype()*
 getcmdline()	builtin.txt	/*getcmdline()*
 getcmdpos()	builtin.txt	/*getcmdpos()*
