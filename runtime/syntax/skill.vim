@@ -509,7 +509,7 @@ syn match skilltechFunctions		"(\(tech\|tc\)\u\a\+\>"hs=s+1
 syn match skilltechFunctions		"\<\(tech\|tc\)\u\a\+("he=e-1
 
 " strings
-syn region skillString				start=+"+ skip=+\\"+ end=+"+
+syn region skillString				start=+"+ skip=+\\\@<!\\"+ end=+"+
 
 syn keyword skillTodo contained		TODO FIXME XXX
 syn keyword skillNote contained		NOTE IMPORTANT
