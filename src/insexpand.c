@@ -1242,7 +1242,7 @@ ins_compl_build_pum(void)
 	// When 'completeopt' contains "fuzzy" and leader is not NULL or empty,
 	// set the cp_score for later comparisons.
 	if (compl_fuzzy_match && compl_leader != NULL && lead_len > 0)
-	    compl->cp_score = fuzzy_match_str(compl->cp_str, compl_leader);
+	    compl->cp_score = fuzzy_match_simd(compl_leader, compl->cp_str);
 
 	if (!match_at_original_text(compl)
 		&& (compl_leader == NULL
