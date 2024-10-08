@@ -3643,7 +3643,7 @@ endfunc
 
 " Test for shellcmdline command argument completion
 func Test_cmdline_complete_shellcmdline_argument()
-  command -nargs=1 -complete=shellcmdline MyCmd
+  command -nargs=+ -complete=shellcmdline MyCmd
 
   set wildoptions=fuzzy
   call feedkeys(":MyCmd vim test_cmdline.\<Tab>\<C-B>\"\<CR>", 'xt')
