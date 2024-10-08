@@ -3646,11 +3646,43 @@ func Test_cmdline_complete_shellcmdline_argument()
   command -nargs=+ -complete=shellcmdline MyCmd
 
   set wildoptions=fuzzy
+
   call feedkeys(":MyCmd vim test_cmdline.\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd vim test_cmdline.vim', @:)
+
+  call feedkeys(":MyCmd vim nonexistentfile\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim nonexistentfile', @:)
+
+  let compl1 = getcompletion('', 'file')[0]
+  let compl2 = getcompletion('', 'file')[1]
+  call feedkeys(":MyCmd vim \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1, @:)
+
+  call feedkeys(":MyCmd vim \<Tab> \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1 .. ' ' .. compl1, @:)
+
+  let compl = getcompletion('', 'file')[1]
+  call feedkeys(":MyCmd vim \<Tab> \<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1 .. ' ' .. compl2, @:)
+
   set wildoptions&
   call feedkeys(":MyCmd vim test_cmdline.\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd vim test_cmdline.vim', @:)
+
+  call feedkeys(":MyCmd vim nonexistentfile\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim nonexistentfile', @:)
+
+  let compl1 = getcompletion('', 'file')[0]
+  let compl2 = getcompletion('', 'file')[1]
+  call feedkeys(":MyCmd vim \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1, @:)
+
+  call feedkeys(":MyCmd vim \<Tab> \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1 .. ' ' .. compl1, @:)
+
+  let compl = getcompletion('', 'file')[1]
+  call feedkeys(":MyCmd vim \<Tab> \<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd vim ' .. compl1 .. ' ' .. compl2, @:)
 
   delcommand MyCmd
 endfunc
@@ -3683,7 +3715,7 @@ func Test_screenpos_and_completion()
   call feedkeys(":nosuchcommand \<F2>\<C-B>\"\<CR>", "xt")
   call assert_equal("\"nosuchcommand [15, 16, '', '']", @:)
 
-  " Check that getcmdcompltype() and getcmdcomplpat() doesn't interfere with
+  " Check that getcmdcompltype() and getcmdcomplpat() don't interfere with
   " cmdline completion.
   let g:results = []
   cnoremap <F2> <Cmd>let g:results += [[getcmdline()] + Call_cmd_funcs()]<CR>
