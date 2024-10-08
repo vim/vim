@@ -4468,14 +4468,14 @@ typedef struct
  */
 typedef struct
 {
-    char_u	*pum_text;	  // main menu text
-    char_u	*pum_kind;	  // extra kind text (may be truncated)
-    char_u	*pum_extra;	  // extra menu text (may be truncated)
-    char_u	*pum_info;	  // extra info
-    int		pum_score;	  // fuzzy match score
-    int		pum_idx;	  // index of item before sorting by score
-    int		pum_user_hlattr;  // highlight attribute to combine with
-    int		pum_user_kind_hlattr; // highlight attribute for kind
+    char_u	*pum_text;		// main menu text
+    char_u	*pum_kind;		// extra kind text (may be truncated)
+    char_u	*pum_extra;		// extra menu text (may be truncated)
+    char_u	*pum_info;		// extra info
+    int		pum_score;		// fuzzy match score
+    int		pum_idx;		// index of item before sorting by score
+    int		pum_user_abbr_hlattr;	// highlight attribute to combine with
+    int		pum_user_kind_hlattr;	// highlight attribute for kind
 } pumitem_T;
 
 /*
@@ -5086,4 +5086,3 @@ typedef struct
 
 #define KEYVALUE_ENTRY(k, v) \
     {(k), (v), STRLEN_LITERAL(v)}
-
