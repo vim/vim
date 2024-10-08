@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Sep 23
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Oct 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -230,6 +230,8 @@ getcharmod()			Number	modifiers for the last typed character
 getcharpos({expr})		List	position of cursor, mark, etc.
 getcharsearch()			Dict	last character search
 getcharstr([{expr}])		String	get one character from the user
+getcmdcomplpat()		String	return the completion pattern of the
+					current command-line completion
 getcmdcompltype()		String	return the type of the current
 					command-line completion
 getcmdline()			String	return the current command-line input
@@ -3973,6 +3975,16 @@ getcharstr([{expr}])					*getcharstr()*
 
 		Return type: |String|
 
+getcmdcomplpat()					*getcmdcomplpat()*
+		Return completion pattern of the current command-line.
+		Only works when the command line is being edited, thus
+		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
+		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
+		|getcmdprompt()|, |getcmdcompltype()| and |setcmdline()|.
+		Returns an empty string when completion is not defined.
+
+		Return type: |String|
+
 
 getcmdcompltype()					*getcmdcompltype()*
 		Return the type of the current command-line completion.
@@ -3980,7 +3992,7 @@ getcmdcompltype()					*getcmdcompltype()*
 		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
 		See |:command-completion| for the return string.
 		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
-		|getcmdprompt()| and |setcmdline()|.
+		|getcmdprompt()|, |getcmdcomplpat()| and |setcmdline()|.
 		Returns an empty string when completion is not defined.
 
 		Return type: |String|

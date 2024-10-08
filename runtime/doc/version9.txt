@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Oct 05
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Oct 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41589,6 +41589,8 @@ Changed~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
   add the "cd_in_path" completion type for e.g. |:command-complete| and
   |getcompletion()|
+- allow to complete shell commands and files using the new shellcmdline
+  completion type using |:command-complete| and |getcmdcomplpat()|
 - add 'cpoptions' flag "z" |cpo-z|, to disable some (traditional) vi
   behaviour/inconsistency (see |d-special| and |cw|).
 - allow to specify additional attributes in the completion menu (allows to
@@ -41608,6 +41610,7 @@ Functions: ~
 |diff()|		diff two Lists of strings
 |filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items
+|getcmdcomplpat()|	Shell command line completion
 |getcmdprompt()|	get prompt for input()/confirm()
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region

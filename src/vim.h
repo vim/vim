@@ -844,6 +844,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_TERMINALOPT	57
 #define EXPAND_KEYMAP		58
 #define EXPAND_DIRS_IN_CDPATH	59
+#define EXPAND_SHELLCMDLINE	60
 
 
 // Values for exmode_active (0 is no exmode)

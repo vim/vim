@@ -59,6 +59,7 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_PACKADD
 	    && xp->xp_context != EXPAND_RUNTIME
 	    && xp->xp_context != EXPAND_SHELLCMD
+	    && xp->xp_context != EXPAND_SHELLCMDLINE
 	    && xp->xp_context != EXPAND_TAGS
 	    && xp->xp_context != EXPAND_TAGS_LISTFILES
 	    && xp->xp_context != EXPAND_USER_LIST);
@@ -1754,7 +1755,7 @@ set_context_for_wildcard_arg(
     xp->xp_context = EXPAND_FILES;
 
     // For a shell command more chars need to be escaped.
-    if (usefilter || eap->cmdidx == CMD_bang || eap->cmdidx == CMD_terminal)
+    if (usefilter || eap->cmdidx == CMD_bang || eap->cmdidx == CMD_terminal || *complp == EXPAND_SHELLCMDLINE)
     {
 #ifndef BACKSLASH_IN_FILENAME
 	xp->xp_shell = TRUE;

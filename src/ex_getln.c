@@ -4205,6 +4205,40 @@ get_cmdline_str(void)
 }
 
 /*
+ * Get the current command-line completion pattern.
+ */
+    static char_u *
+get_cmdline_completion_pattern(void)
+{
+    cmdline_info_T *p;
+    int		xp_context;
+
+    if (cmdline_star > 0)
+	return NULL;
+
+    p = get_ccline_ptr();
+    if (p == NULL || p->xpc == NULL)
+	return NULL;
+
+    xp_context = p->xpc->xp_context;
+    if (xp_context == EXPAND_NOTHING)
+    {
+	set_expand_context(p->xpc);
+	xp_context = p->xpc->xp_context;
+	p->xpc->xp_context = EXPAND_NOTHING;
+    }
+    if (xp_context == EXPAND_UNSUCCESSFUL)
+	return NULL;
+
+    char_u *compl_pat = p->xpc->xp_pattern;
+
+    if (compl_pat == NULL)
+	return NULL;
+
+    return vim_strsave(compl_pat);
+}
+
+/*
  * Get the current command-line completion type.
  */
     static char_u *
@@ -4245,6 +4279,16 @@ get_cmdline_completion(void)
     }
 
     return vim_strsave(cmd_compl);
+}
+
+/*
+ * "getcmdcomplpat()" function
+ */
+    void
+f_getcmdcomplpat(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = get_cmdline_completion_pattern();
 }
 
 /*
