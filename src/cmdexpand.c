@@ -1721,7 +1721,7 @@ set_context_for_wildcard_arg(
 	// characters that end the command and white space.
 	else if (c == '|' || c == '\n' || c == '"' || (VIM_ISWHITE(c)
 #ifdef SPACE_IN_FILENAME
-		    && (!(eap->argt & EX_NOSPC) || usefilter)
+		    && (!(eap != NULL && (eap->argt & EX_NOSPC)) || usefilter)
 #endif
 		    ))
 	{
@@ -1756,7 +1756,10 @@ set_context_for_wildcard_arg(
     xp->xp_context = EXPAND_FILES;
 
     // For a shell command more chars need to be escaped.
-    if (usefilter || eap->cmdidx == CMD_bang || eap->cmdidx == CMD_terminal || *complp == EXPAND_SHELLCMDLINE)
+    if (usefilter
+	    || (eap != NULL
+		&& (eap->cmdidx == CMD_bang || eap->cmdidx == CMD_terminal))
+	    || *complp == EXPAND_SHELLCMDLINE)
     {
 #ifndef BACKSLASH_IN_FILENAME
 	xp->xp_shell = TRUE;
@@ -4206,6 +4209,13 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	if (xpc.xp_context == EXPAND_RUNTIME)
 	{
 	    set_context_in_runtime_cmd(&xpc, xpc.xp_pattern);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
+	if (xpc.xp_context == EXPAND_SHELLCMDLINE)
+	{
+	    int context = EXPAND_SHELLCMDLINE;
+	    set_context_for_wildcard_arg(NULL, xpc.xp_pattern, FALSE, &xpc,
+								     &context);
 	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
 	}
     }
