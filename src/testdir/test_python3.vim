@@ -4029,30 +4029,34 @@ func Test_python3_iter_ref()
       v = create_list()
       base_ref_count = sys.getrefcount(v)
       for el in v:
-          vim.vars['list_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+        vim.vars['list_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
 
       create_dict = vim.Function('Create_vim_dict')
       v = create_dict()
       base_ref_count = sys.getrefcount(v)
       for el in v:
-          vim.vars['dict_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+        vim.vars['dict_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
 
       v = vim.buffers
       base_ref_count = sys.getrefcount(v)
       for el in v:
-          vim.vars['bufmap_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+        vim.vars['bufmap_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
 
       v = vim.options
       base_ref_count = sys.getrefcount(v)
       for el in v:
-          vim.vars['options_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+        vim.vars['options_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
 
     test_python3_iter_ref()
   EOF
 
   call assert_equal(1, g:list_iter_ref_count_increase)
   call assert_equal(1, g:dict_iter_ref_count_increase)
-  call assert_equal(1, g:bufmap_iter_ref_count_increase)
+  if py3eval('sys.version_info[:2] < (3, 13)')
+    call assert_equal(1, g:bufmap_iter_ref_count_increase)
+  else
+    call assert_equal(0, g:bufmap_iter_ref_count_increase)
+  endif
   call assert_equal(1, g:options_iter_ref_count_increase)
 endfunc
 
