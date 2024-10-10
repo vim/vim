@@ -7500,6 +7500,61 @@ qf_add_entry_from_dict(
 }
 
 /*
+ * Check if `entry` is closer to the target than `other_entry`.
+ *
+ * Only returns TRUE if `entry` is definitively closer. If it's further
+ * away, or there's not enough information to tell, return FALSE.
+ */
+    static int
+entry_is_closer_to_target(
+	qfline_T	*entry,
+	qfline_T	*other_entry,
+	int		target_fnum,
+	int		target_lnum,
+	int		target_col)
+{
+    // First, compare entries to target file.
+    if (!target_fnum)
+	// Without a target file, we can't know which is closer.
+	return FALSE;
+
+    int is_target_file = entry->qf_fnum && entry->qf_fnum == target_fnum;
+    int other_is_target_file = other_entry->qf_fnum && other_entry->qf_fnum == target_fnum;
+    if (!is_target_file && other_is_target_file)
+	return FALSE;
+    else if (is_target_file && !other_is_target_file)
+	return TRUE;
+
+    // Both entries are pointing at the exact same file. Now compare line
+    // numbers.
+    if (!target_lnum)
+	// Without a target line number, we can't know which is closer.
+	return FALSE;
+
+    int line_distance = entry->qf_lnum ? labs(entry->qf_lnum - target_lnum) : INT_MAX;
+    int other_line_distance = other_entry->qf_lnum ? labs(other_entry->qf_lnum - target_lnum) : INT_MAX;
+    if (line_distance > other_line_distance)
+	return FALSE;
+    else if (line_distance < other_line_distance)
+	return TRUE;
+
+    // Both entries are pointing at the exact same line number. Now compare columns.
+    if (!target_col)
+	// Without a target column, we can't know which is closer.
+	return FALSE;
+
+    int column_distance = entry->qf_col ? abs(entry->qf_col - target_col) : INT_MAX;
+    int other_column_distance = other_entry->qf_col ? abs(other_entry->qf_col - target_col): INT_MAX;
+    if (column_distance > other_column_distance)
+	return FALSE;
+    else if (column_distance < other_column_distance)
+	return TRUE;
+
+    // It's a complete tie! The exact same file, line, and column.
+    return FALSE;
+}
+
+/*
  * Add list of entries to quickfix/location list. Each list entry is
  * a dictionary with item information.
  */
@@ -7509,7 +7564,8 @@ qf_add_entries(
 	int		qf_idx,
 	list_T		*list,
 	char_u		*title,
-	int		action)
+	int		action,
+	int		keep_idx)
 {
     qf_list_T	*qfl = qf_get_list(qi, qf_idx);
     listitem_T	*li;
@@ -7518,21 +7574,47 @@ qf_add_entries(
     int		retval = OK;
     int		valid_entry = FALSE;
 
+    // If there's an entry selected in the quickfix list, remember its location
+    // (file, line, column), so we can select the nearest entry in the updated
+    // quickfix list.
+    int prev_fnum = 0;
+    int prev_lnum = 0;
+    int prev_col = 0;
+    if (qfl->qf_ptr)
+    {
+	prev_fnum = qfl->qf_ptr->qf_fnum;
+	prev_lnum = qfl->qf_ptr->qf_lnum;
+	prev_col = qfl->qf_ptr->qf_col;
+    }
+
+    int select_first_entry = FALSE;
+
     if (action == ' ' || qf_idx == qi->qf_listcount)
     {
+	select_first_entry = TRUE;
 	// make place for a new list
 	qf_new_list(qi, title);
 	qf_idx = qi->qf_curlist;
 	qfl = qf_get_list(qi, qf_idx);
     }
-    else if (action == 'a' && !qf_list_empty(qfl))
-	// Adding to existing list, use last entry.
-	old_last = qfl->qf_last;
+    else if (action == 'a')
+    {
+	if (qf_list_empty(qfl))
+	    // Appending to empty list, select first entry.
+	    select_first_entry = TRUE;
+	else
+	    // Adding to existing list, use last entry.
+	    old_last = qfl->qf_last;
+    }
     else if (action == 'r')
     {
+	select_first_entry = TRUE;
 	qf_free_items(qfl);
 	qf_store_title(qfl, title);
     }
+
+    qfline_T *entry_to_select = NULL;
+    int entry_to_select_index = 0;
 
     FOR_ALL_LIST_ITEMS(list, li)
     {
@@ -7547,6 +7629,18 @@ qf_add_entries(
 								&valid_entry);
 	if (retval == QF_FAIL)
 	    break;
+
+	qfline_T *entry = qfl->qf_last;
+	if (
+	    (select_first_entry && entry_to_select == NULL) ||
+	    (keep_idx &&
+		(entry_to_select == NULL ||
+		 entry_is_closer_to_target(entry, entry_to_select, prev_fnum,
+					   prev_lnum, prev_col))))
+	{
+	    entry_to_select = entry;
+	    entry_to_select_index = qfl->qf_count;
+        }
     }
 
     // Check if any valid error entries are added to the list.
@@ -7556,14 +7650,12 @@ qf_add_entries(
 	// no valid entry
 	qfl->qf_nonevalid = TRUE;
 
-    // If not appending to the list, set the current error to the first entry
-    if (action != 'a')
-	qfl->qf_ptr = qfl->qf_start;
-
-    // Update the current error index if not appending to the list or if the
-    // list was empty before and it is not empty now.
-    if ((action != 'a' || qfl->qf_index == 0) && !qf_list_empty(qfl))
-	qfl->qf_index = 1;
+    // Set the current error.
+    if (entry_to_select)
+    {
+	qfl->qf_ptr = entry_to_select;
+	qfl->qf_index = entry_to_select_index;
+    }
 
     // Don't update the cursor in quickfix window when appending entries
     qf_update_buffer(qi, old_last);
@@ -7656,7 +7748,7 @@ qf_setprop_title(qf_info_T *qi, int qf_idx, dict_T *what, dictitem_T *di)
  * Set quickfix list items/entries.
  */
     static int
-qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action)
+qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action, int keep_idx)
 {
     int		retval = FAIL;
     char_u	*title_save;
@@ -7666,7 +7758,7 @@ qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action)
 
     title_save = vim_strsave(qi->qf_lists[qf_idx].qf_title);
     retval = qf_add_entries(qi, qf_idx, di->di_tv.vval.v_list,
-	    title_save, action == ' ' ? 'a' : action);
+	    title_save, action == ' ' ? 'a' : action, keep_idx);
     vim_free(title_save);
 
     return retval;
@@ -7822,7 +7914,19 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     if ((di = dict_find(what, (char_u *)"title", -1)) != NULL)
 	retval = qf_setprop_title(qi, qf_idx, what, di);
     if ((di = dict_find(what, (char_u *)"items", -1)) != NULL)
-	retval = qf_setprop_items(qi, qf_idx, di, action);
+    {
+	int keep_idx = FALSE;
+	dictitem_T *keep_idx_di;
+
+	if ((keep_idx_di = dict_find(what, (char_u *)"keep_idx", -1)) != NULL)
+	{
+	    if (keep_idx_di->di_tv.v_type != VAR_NUMBER)
+		return FAIL;
+	    keep_idx = keep_idx_di->di_tv.vval.v_number;
+	}
+
+	retval = qf_setprop_items(qi, qf_idx, di, action, keep_idx);
+    }
     if ((di = dict_find(what, (char_u *)"lines", -1)) != NULL)
 	retval = qf_setprop_items_from_lines(qi, qf_idx, what, di, action);
     if ((di = dict_find(what, (char_u *)"context", -1)) != NULL)
@@ -7939,7 +8043,8 @@ set_errorlist(
 	retval = qf_set_properties(qi, what, action, title);
     else
     {
-	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action);
+	int keep_idx = FALSE;
+	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action, keep_idx);
 	if (retval == OK)
 	    qf_list_changed(qf_get_curlist(qi));
     }

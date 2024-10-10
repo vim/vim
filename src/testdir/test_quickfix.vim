@@ -6462,6 +6462,23 @@ func Test_quickfix_buffer_contents()
   call setqflist([], 'f')
 endfunc
 
+func Test_quickfix_keep_idx()
+  " Setup: populate the buffer and build a quickfix list.
+  call setline(1, range(1,5))
+  let b = bufnr()
+  let items = [{'bufnr': b, 'lnum': 1}, {'bufnr': b, 'lnum': 2}, {'bufnr': b, 'lnum': 3}]
+  call setqflist(items)
+
+  " Open the quickfix list, select the second entry.
+  copen
+  exe "normal j\<CR>"
+  call assert_equal(2, getqflist({'idx' : 0}).idx)
+
+  " Replace the quickfix list with `keep_idx`. Make sure the second entry is still selected.
+  call setqflist([], 'r', { 'items': items, 'keep_idx': 1 })
+  call assert_equal(2, getqflist({'idx' : 0}).idx)
+endfunc
+
 " Test for "%b" in "errorformat"
 func Test_efm_format_b()
   call setqflist([], 'f')
