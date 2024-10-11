@@ -12417,6 +12417,10 @@ writefile({object}, {fname} [, {flags}])			*writefile()*
 		     When {flags} does not contain "S" or "s" then fsync() is
 		     called if the 'fsync' option is set.
 
+		't'  if the {fname} corresponds to a buffer, update that buffer's
+		     modified time so future writes to the buffer don't think there's
+		     changes outside of Vim.
+
 		An existing file is overwritten, if possible.
 
 		When the write fails -1 is returned, otherwise 0.  There is an

@@ -2295,6 +2295,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 #ifdef HAVE_FSYNC
     int		do_fsync = p_fs;
 #endif
+    int		update_buf_mtime = FALSE;
     char_u	*fname;
     FILE	*fd;
     int		ret = 0;
@@ -2353,6 +2354,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	else if (vim_strchr(arg2, 'S') != NULL)
 	    do_fsync = FALSE;
 #endif
+	if (vim_strchr(arg2, 't') != NULL)
+	    update_buf_mtime = TRUE;
     }
 
     fname = tv_get_string_chk(&argvars[1]);
@@ -2408,6 +2411,24 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 		vim_ignored = vim_fsync(fileno(fd));
 #endif
 	    fclose(fd);
+	    if (update_buf_mtime)
+	    {
+		// must do this after the `fclose`
+		char_u  *fullfname = FullName_save(fname, TRUE);
+		buf_T   *buf;
+		stat_T	st;
+
+		if (mch_stat((char *)fullfname, &st) >= 0)
+		{
+#ifdef UNIX
+		    buf = buflist_findname_stat(fullfname, &st);
+#else
+		    buf = buflist_findname(fullfname);
+#endif
+		    if (buf)
+			buf_store_time(buf, &st, fname, TRUE);
+		}
+	    }
 	}
     }
 
