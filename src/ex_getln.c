@@ -46,7 +46,7 @@ static void	set_cmdspos(void);
 static void	set_cmdspos_cursor(void);
 static void	correct_cmdspos(int idx, int cells);
 static void	dealloc_cmdbuff(void);
-static void	alloc_cmdbuff(int len);
+static void	alloc_cmdbuff(size_t len);
 static void	draw_cmdline(int start, int len);
 static void	save_cmdline(cmdline_info_T *ccp);
 static void	restore_cmdline(cmdline_info_T *ccp);
@@ -632,7 +632,7 @@ may_adjust_incsearch_highlighting(
 	    return FAIL;
 	}
 	skiplen = 0;
-	patlen = last_search_pattern_len();
+	patlen = (int)last_search_pattern_len();
     }
     else
 	pat = ccline.cmdbuff + skiplen;
@@ -1485,7 +1485,7 @@ cmdline_browse_history(
 		}
 	    }
 	    ccline.cmdbuff[len] = NUL;
-	    ccline.cmdpos = ccline.cmdlen = len;
+	    ccline.cmdpos = ccline.cmdlen = (int)len;
 	}
 	else
 	{
@@ -1496,7 +1496,7 @@ cmdline_browse_history(
 		goto done;
 	    }
 	    STRCPY(ccline.cmdbuff, p);
-	    ccline.cmdpos = ccline.cmdlen = plen;
+	    ccline.cmdpos = ccline.cmdlen = (int)plen;
 	}
 
 	redrawcmd();
@@ -3323,7 +3323,7 @@ dealloc_cmdbuff(void)
  * Assigns the new buffer to ccline.cmdbuff and ccline.cmdbufflen.
  */
     static void
-alloc_cmdbuff(int len)
+alloc_cmdbuff(size_t len)
 {
     /*
      * give some extra space to avoid having to allocate all the time
@@ -3334,7 +3334,7 @@ alloc_cmdbuff(int len)
 	len += 20;
 
     ccline.cmdbuff = alloc(len);    // caller should check for out-of-memory
-    ccline.cmdbufflen = len;
+    ccline.cmdbufflen = (int)len;
 }
 
 /*
@@ -4782,8 +4782,8 @@ open_cmdwin(void)
 	    {
 		// Execute the command directly.
 		ccline.cmdbuff = vim_strnsave(p, plen);
-		ccline.cmdlen = plen;
-		ccline.cmdbufflen = plen + 1;
+		ccline.cmdlen = (int)plen;
+		ccline.cmdbufflen = (int)plen + 1;
 		cmdwin_result = CAR;
 	    }
 	    else
