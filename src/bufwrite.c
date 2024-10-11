@@ -2580,9 +2580,7 @@ nofail:
 	    // prompt when writing again.
 	    if (mch_stat((char *)fname, &st_old) >= 0)
 	    {
-		buf_store_time(buf, &st_old, fname);
-		buf->b_mtime_read = buf->b_mtime;
-		buf->b_mtime_read_ns = buf->b_mtime_ns;
+		buf_store_time(buf, &st_old, fname, TRUE);
 	    }
 	}
     }

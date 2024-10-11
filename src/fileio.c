@@ -422,9 +422,7 @@ readfile(
 	// Remember time of file.
 	if (mch_stat((char *)fname, &st) >= 0)
 	{
-	    buf_store_time(curbuf, &st, fname);
-	    curbuf->b_mtime_read = curbuf->b_mtime;
-	    curbuf->b_mtime_read_ns = curbuf->b_mtime_ns;
+	    buf_store_time(curbuf, &st, fname, TRUE);
 #ifdef FEAT_CRYPT
 	    filesize_disk = st.st_size;
 #endif
@@ -2632,9 +2630,7 @@ failed:
 	if (newfile && !read_stdin && !read_buffer
 					 && mch_stat((char *)fname, &st) >= 0)
 	{
-	    buf_store_time(curbuf, &st, fname);
-	    curbuf->b_mtime_read = curbuf->b_mtime;
-	    curbuf->b_mtime_read_ns = curbuf->b_mtime_ns;
+	    buf_store_time(curbuf, &st, fname, TRUE);
 	}
 #endif
     }
@@ -4225,7 +4221,7 @@ buf_check_timestamp(
 	    buf->b_orig_mode = 0;
 	}
 	else
-	    buf_store_time(buf, &st, buf->b_ffname);
+	    buf_store_time(buf, &st, buf->b_ffname, FALSE);
 
 	// Don't do anything for a directory.  Might contain the file
 	// explorer.
@@ -4625,7 +4621,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 }
 
     void
-buf_store_time(buf_T *buf, stat_T *st, char_u *fname UNUSED)
+buf_store_time(buf_T *buf, stat_T *st, char_u *fname UNUSED, int update_mtime_read)
 {
     buf->b_mtime = (long)st->st_mtime;
 #ifdef ST_MTIM_NSEC
@@ -4639,6 +4635,12 @@ buf_store_time(buf_T *buf, stat_T *st, char_u *fname UNUSED)
 #else
     buf->b_orig_mode = mch_getperm(fname);
 #endif
+
+    if (update_mtime_read)
+    {
+	buf->b_mtime_read = buf->b_mtime;
+	buf->b_mtime_read_ns = buf->b_mtime_ns;
+    }
 }
 
 /*

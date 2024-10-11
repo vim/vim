@@ -30,7 +30,7 @@ int vim_copyfile(char_u *from, char_u *to);
 int check_timestamps(int focus);
 int buf_check_timestamp(buf_T *buf, int focus);
 void buf_reload(buf_T *buf, int orig_mode, int reload_options);
-void buf_store_time(buf_T *buf, stat_T *st, char_u *fname);
+void buf_store_time(buf_T *buf, stat_T *st, char_u *fname, int update_mtime_read);
 void write_lnum_adjust(linenr_T offset);
 int readdir_core(garray_T *gap, char_u *path, int withattr, void *context, int (*checkitem)(void *context, void *item), int sort);
 int delete_recursive(char_u *name);

@@ -1739,7 +1739,7 @@ nb_do_cmd(
 		// avoid "file changed" warnings.
 		if (buf->bufp->b_ffname != NULL
 			&& mch_stat((char *)buf->bufp->b_ffname, &st) >= 0)
-		    buf_store_time(buf->bufp, &st, buf->bufp->b_ffname);
+		    buf_store_time(buf->bufp, &st, buf->bufp->b_ffname, FALSE);
 		buf->bufp->b_changed = FALSE;
 	    }
 	    buf->modified = buf->bufp->b_changed;

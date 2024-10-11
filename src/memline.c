@@ -1056,9 +1056,7 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 #ifdef CHECK_INODE
 	    long_to_char((long)st.st_ino, b0p->b0_ino);
 #endif
-	    buf_store_time(buf, &st, buf->b_ffname);
-	    buf->b_mtime_read = buf->b_mtime;
-	    buf->b_mtime_read_ns = buf->b_mtime_ns;
+	    buf_store_time(buf, &st, buf->b_ffname, TRUE);
 	}
 	else
 	{
