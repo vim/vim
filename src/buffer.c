@@ -38,7 +38,6 @@ static void	buflist_getfpos(void);
 static char_u	*buflist_match(regmatch_T *rmp, buf_T *buf, int ignore_case);
 static char_u	*fname_match(regmatch_T *rmp, char_u *name, int ignore_case);
 #ifdef UNIX
-static buf_T	*buflist_findname_stat(char_u *ffname, stat_T *st);
 static int	otherfile_buf(buf_T *buf, char_u *ffname, stat_T *stp);
 static int	buf_same_ino(buf_T *buf, stat_T *stp);
 #else
@@ -2656,7 +2655,7 @@ buflist_findname(char_u *ffname)
  * twice for the same file.
  * Returns NULL if not found.
  */
-    static buf_T *
+    buf_T *
 buflist_findname_stat(
     char_u	*ffname,
     stat_T	*stp)
