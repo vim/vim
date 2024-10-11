@@ -581,7 +581,7 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
   2. Escriba  :s/laas/las/  <INTRO> . Tenga en cuenta que este mandato cambia
      sólo la primera aparición en la línea de la expresión a cambiar.
   
-  3. Ahora escriba :/laas/la/g . Al añadir la opción  g  esto significa
+  3. Ahora escriba :s/laas/la/g . Al añadir la opción  g  esto significa
      que hará la sustitución global en la línea, cambiando todas las
      ocurrencias del término "laas" en la línea.
 
