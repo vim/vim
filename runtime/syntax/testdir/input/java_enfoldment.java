@@ -1,5 +1,8 @@
 // VIM_TEST_SETUP setlocal foldenable foldcolumn=2 foldmethod=syntax
 // VIM_TEST_SETUP let g:java_foldtext_show_first_or_second_line = 1
+// VIM_TEST_SETUP highlight link javaBlockOtherStart Structure
+// VIM_TEST_SETUP highlight link javaBlockStart Todo
+
 
 	@SuppressWarnings({
 	"""
@@ -10,6 +13,9 @@
 	/**
 	 *
 	 */
+	///
+	///
+	///
 	//
 	//
 	//
@@ -78,6 +84,21 @@ out: {
 	/** No operation. */
 	void noOp4() {
 	/*/\/\/\*/ ; }
+
+	/// No operation.
+	///
+	///
+	void noOp5() { }
+	/// No operation.
+	void noOp6()
+	{
+	}
+	/// No operation.
+	void noOp7() {
+	}
+	/// No operation.
+	void noOp8() {
+	/*/\/\/\*/ ; }
 }
 
 /*
@@ -90,6 +111,9 @@ out: {
  * {
  * }
  */
+/// A summary.
+/// {
+/// }
 //
 // {
 // }
