@@ -3330,4 +3330,25 @@ def Test_import_locked_var()
   v9.CheckScriptFailure(lines, 'E741: Value is locked: Foo', 3)
 enddef
 
+def Test_import_member_initializer()
+  var lines =<< trim END
+    vim9script
+    export const DEFAULT = 'default'
+    export class Foo
+      public var x = DEFAULT
+    endclass
+  END
+  writefile(lines, 'Ximportclass.vim', 'D')
+  # The initializer for Foo.x is evaluated in the context of Ximportclass.vim.
+  lines =<< trim END
+    vim9script
+    import './Ximportclass.vim' as X
+    class Bar extends X.Foo
+    endclass
+    var o = Bar.new()
+    assert_equal(X.DEFAULT, o.x)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
