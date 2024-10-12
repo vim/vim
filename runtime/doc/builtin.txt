@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Oct 09
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8529,10 +8529,10 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 		string, also see |{server}|.
 
 		The string is sent as an expression and the result is returned
-		after evaluation.  The result must be a String or a |List|.  A
-		|List| is turned into a String by joining the items with a
-		line break in between (not at the end), like with join(expr,
-		"\n").
+		after evaluation.  The result must be a String or a |List|
+		other types will be converted to String.  A |List| is turned
+		into a String by joining the items with a line break in
+		between (not at the end), like with join(expr, "\n").
 
 		If {idvar} is present and not empty, it is taken as the name
 		of a variable and a {serverid} for later use with
