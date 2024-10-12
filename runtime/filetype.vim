@@ -1800,7 +1800,7 @@ au BufNewFile,BufRead *.pod			setf pod
 au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp,*.phpt,*.theme	setf php
 
 " PHP config
-au BufNewFile,BufRead php.ini-*			setf dosini
+au BufNewFile,BufRead php.ini-*,php-fpm.conf*,www.conf*		setf dosini
 
 " Pike and Cmod
 au BufNewFile,BufRead *.pike,*.pmod		setf pike
