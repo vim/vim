@@ -410,6 +410,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     less: ['file.less'],
     lex: ['file.lex', 'file.l', 'file.lxx', 'file.l++'],
     lftp: ['lftp.conf', '.lftprc', 'anylftp/rc', 'lftp/rc', 'some-lftp/rc'],
+    lf: ['lfrc'],
     lhaskell: ['file.lhs'],
     libao: ['/etc/libao.conf', '/.libao', 'any/.libao', 'any/etc/libao.conf'],
     lifelines: ['file.ll'],

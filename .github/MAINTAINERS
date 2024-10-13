@@ -493,6 +493,7 @@ runtime/syntax/kotlin.vim		@udalov
 runtime/syntax/kdl.vim			@imsnif @jiangyinzuo
 runtime/syntax/krl.vim			@KnoP-01
 runtime/syntax/less.vim			@genoma
+runtime/syntax/lf.vim			@andis-sprinkis
 runtime/syntax/liquid.vim		@tpope
 runtime/syntax/lua.vim			@marcuscf
 runtime/syntax/lyrics.vim		@ObserverOfTime
