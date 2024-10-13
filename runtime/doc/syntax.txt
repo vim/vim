@@ -2526,9 +2526,9 @@ set "msql_minlines" to the value you desire.  Example: >
 
 NEOMUTT			*neomutt.vim* *ft-neomuttrc-syntax* *ft-neomuttlog-syntax*
 
-To use Neomutt default log colors instead of your colorscheme's >
+To disable the default NeoMutt log colors
 
-	:let g:neolog_default_colors = 1
+	:let g:neolog_disable_default_colors = 1
 
 N1QL						*n1ql.vim* *ft-n1ql-syntax*
 

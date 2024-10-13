@@ -35,7 +35,7 @@ syntax match neolog_debug4  "\v%22v\<4\> .*" contains=neolog_debug4_key,neolog_f
 syntax match neolog_debug5  "\v%22v\<5\> .*" contains=neolog_debug5_key,neolog_function
 syntax match neolog_notify  "\v%22v\<N\> .*" contains=neolog_notify_key,neolog_function
 
-if exists('g:neolog_default_colors')
+if !exists('g:neolog_disable_default_colors')
   highlight neolog_date     ctermfg=cyan    guifg=#40ffff
   highlight neolog_banner   ctermfg=magenta guifg=#ff00ff
   highlight neolog_version  cterm=reverse   gui=reverse
