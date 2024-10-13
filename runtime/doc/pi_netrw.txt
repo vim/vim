@@ -1489,6 +1489,19 @@ expand("<cfile>") depends on the |'isfname'| setting.  Alternatively, one may
 select the text to be used by gx by making a visual selection (see
 |visual-block|) and then pressing gx.
 
+The selection function can be adapted for each filetype by adding a function
+Netrw_get_URL_<filetype>, where <filetype> is given by &filetype.
+The function should return the URL or file name to be used by gx, and will
+fall back to the default behavior if it returns an empty string.
+Special handlers are provided for Markdown and HTML files.
+
+Other than a file path, the text under the cursor may be a URL.  Netrw uses
+by default the following regular expression to determine if the text under the
+cursor is a URL:
+>
+	g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
+<
+
 Netrw determines which special handler by the following method:
 
   * if |g:netrw_browsex_viewer| exists, then it will be used to attempt to

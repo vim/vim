@@ -5476,28 +5476,12 @@ fun! netrw#GX()
 endfun
 
 fun! s:GetURL() abort
-  " markdown URL such as [link text](http://ya.ru 'yandex search')
-  try
-    let save_view = winsaveview()
-    if searchpair('\[.\{-}\](', '', ')\zs', 'cbW', '', line('.')) > 0
-      return matchstr(getline('.')[col('.')-1:], '\[.\{-}\](\zs'..s:regex_url..'\ze\(\s\+.\{-}\)\?)')
-    endif
-  finally
-    call winrestview(save_view)
-  endtry
-  " HTML URL such as <a href='http://www.python.org'>Python is here</a>
-  "                  <a href="http://www.python.org"/>
-  try
-    let save_view = winsaveview()
-    if searchpair('<a\s\+href=', '', '\%(</a>\|/>\)\zs', 'cbW', '', line('.')) > 0
-      return matchstr(getline('.')[col('.') - 1 : ],
-            \ 'href=["'.."'"..']\?\zs\S\{-}\ze["'.."'"..']\?/\?>')
-    endif
-    finally
-      call winrestview(save_view)
-    endtry
-  " URL with leading or closing parenthesis (http://google.com)
-  let URL = matchstr(expand("<cWORD>"), '^(\?\zs'..s:regex_url..'\ze)\?$')
+   if exists('*Netrw_get_URL_' .. &filetype)
+      let URL = call('Netrw_get_URL_' .. &filetype, [])
+   endif
+   if !empty(URL) | return URL | endif
+  " URLs end in letter, digit or forward slash
+  let URL = matchstr(expand("<cWORD>"), '\<' .. g:netrw_regex_url .. '\ze[^A-Za-z0-9/]*$')
   if !empty(URL) | return URL | endif
 
   " Is it a file in the current work dir ...
