@@ -55,16 +55,15 @@ export def Toggle(...args: list<string>): string
             line = getline(lnum)
         elseif comment
             if exists("g:comment_first_col") || exists("b:comment_first_col")
-                # handle % with substitute
                 line = printf(substitute(cms, '%s\@!', '%%', 'g'), getline(lnum))
             else
-                line = getline(lnum)
-                var indent_start_len = strlen(indent_start)
-                # handle % with substitute,
                 # consider different whitespace indenting
-                line = printf(indent_start .. substitute(cms, '%s\@!', '%%', 'g'),
-                    strpart(line, (line[0 : strlen(indent_start_len) - 1] =~ '\t' ?
-                    indent_start_len / &tabstop : indent_start_len)))
+                var indent_current = matchstr(getline(lnum), '^\s*')
+                if strlen(indent_start) < strlen(indent_current)
+                    indent_current = indent_start
+                endif
+                line = printf(indent_current .. substitute(cms, '%s\@!', '%%', 'g'),
+                    strpart(getline(lnum), strlen(indent_current)))
             endif
         else
             line = substitute(getline(lnum), $'^\s*\zs{cms_l[0]} \?\| \?{cms_l[1]}$', '', 'g')
