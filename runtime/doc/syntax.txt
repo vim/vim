@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Oct 06
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Oct 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2221,6 +2221,20 @@ Lace (Language for Assembly of Classes in Eiffel) is case insensitive, but the
 style guide lines are not.  If you prefer case insensitive highlighting, just
 define the vim variable 'lace_case_insensitive' in your startup file: >
 	:let lace_case_insensitive=1
+
+
+LF (LFRC)		*lf.vim* *ft-lf-syntax* *g:lf_shell_syntax*
+						*b:lf_shell_syntax*
+
+For the lf file manager configuration files (lfrc) the shell commands
+syntax highlighting can be changed globally and per buffer by setting
+a different 'include' command search pattern using these variables:
+	let g:lf_shell_syntax = "syntax/dosbatch.vim"
+	let b:lf_shell_syntax = "syntax/zsh.vim"
+
+These variables are unset by default.
+
+The default 'include' command search pattern is 'syntax/sh.vim'.
 
 
 LEX						*lex.vim* *ft-lex-syntax*
