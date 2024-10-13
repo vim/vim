@@ -352,8 +352,9 @@ was called from a mapping defined with ":noremap".
 DOCUMENTATION						*write-local-help*
 
 It's a good idea to also write some documentation for your plugin.  Especially
-when its behavior can be changed by the user.  See |add-local-help| for how
-they are installed.
+when its behavior can be changed by the user.  See |help-writing| for the
+syntax used by the help files and |add-local-help| for how local help files
+are installed.
 
 Here is a simple example for a plugin help file, called "typecorrect.txt": >
 
