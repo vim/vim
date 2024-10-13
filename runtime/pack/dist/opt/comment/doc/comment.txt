@@ -57,7 +57,7 @@ Vim script): >
 
 	autocmd Filetype vim :setlocal commentstring="%s
 
-This example sets the " as start of a comment for legacy Vim Script.  For Vim9
+This example sets the " as start of a comment for legacy Vim script.  For Vim9
 script, you would instead use the "#" char: >
 
 	autocmd Filetype vim :setlocal commentstring=#\ %s

@@ -1,4 +1,4 @@
-" plugin/editorconfig.vim: EditorConfig native Vimscript plugin file
+" plugin/editorconfig.vim: EditorConfig native Vim script plugin file
 " Copyright (c) 2011-2019 EditorConfig Team
 " All rights reserved.
 "
