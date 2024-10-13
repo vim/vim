@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.1.  Last change: 2024 Jul 10
+*editing.txt*   For Vim version 9.1.  Last change: 2024 Oct 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1325,7 +1325,7 @@ used (Motif only offers one pattern, but you can edit it).
 For example, to have only Vim files in the dialog, you could use the following
 command: >
 
-     let g:browsefilter = "Vim Scripts\t*.vim\nVim Startup Files\t*vimrc\n"
+     let g:browsefilter = "Vim scripts\t*.vim\nVim Startup Files\t*vimrc\n"
 
 You can override the filter setting on a per-buffer basis by setting the
 b:browsefilter variable.  You would most likely set b:browsefilter in a

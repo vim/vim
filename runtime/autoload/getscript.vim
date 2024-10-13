@@ -365,7 +365,7 @@ fun! getscript#GetLatestVimScripts()
 endfun
 
 " ---------------------------------------------------------------------
-"  GetOneScript: (Get Latest Vim Script) this function operates {{{1
+"  GetOneScript: (Get Latest Vim script) this function operates {{{1
 "    on the current line, interpreting two numbers and text as
 "    ScriptID, SourceID, and Filename.
 "    It downloads any scripts that have newer versions from vim.sourceforge.net.
