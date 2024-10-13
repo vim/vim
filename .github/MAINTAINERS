@@ -163,6 +163,7 @@ runtime/ftplugin/gitconfig.vim		@tpope
 runtime/ftplugin/gitignore.vim		@ObserverOfTime
 runtime/ftplugin/gitrebase.vim		@tpope
 runtime/ftplugin/gitsendemail.vim	@tpope
+runtime/ftplugin/gleam.vim		@trilowy
 runtime/ftplugin/go.vim			@dbarnett
 runtime/ftplugin/goaccess.vim		@meonkeys
 runtime/ftplugin/gomod.vim		@yu-yk
