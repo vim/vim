@@ -7921,11 +7921,17 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	if ((keep_idx_di = dict_find(what, (char_u *)"keep_idx", -1)) != NULL)
 	{
 	    if (keep_idx_di->di_tv.v_type != VAR_NUMBER)
-		return FAIL;
-	    keep_idx = keep_idx_di->di_tv.vval.v_number;
+		retval = FAIL;
+	    else
+	    {
+		keep_idx = keep_idx_di->di_tv.vval.v_number;
+		retval = qf_setprop_items(qi, qf_idx, di, action, keep_idx);
+	    }
 	}
-
-	retval = qf_setprop_items(qi, qf_idx, di, action, keep_idx);
+	else
+	{
+	    retval = qf_setprop_items(qi, qf_idx, di, action, keep_idx);
+	}
     }
     if ((di = dict_find(what, (char_u *)"lines", -1)) != NULL)
 	retval = qf_setprop_items_from_lines(qi, qf_idx, what, di, action);
