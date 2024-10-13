@@ -7365,6 +7365,8 @@ ft-msql-syntax	syntax.txt	/*ft-msql-syntax*
 ft-n1ql-syntax	syntax.txt	/*ft-n1ql-syntax*
 ft-nasm-syntax	syntax.txt	/*ft-nasm-syntax*
 ft-ncf-syntax	syntax.txt	/*ft-ncf-syntax*
+ft-neomuttlog-syntax	syntax.txt	/*ft-neomuttlog-syntax*
+ft-neomuttrc-syntax	syntax.txt	/*ft-neomuttrc-syntax*
 ft-nroff-syntax	syntax.txt	/*ft-nroff-syntax*
 ft-ocaml-syntax	syntax.txt	/*ft-ocaml-syntax*
 ft-pandoc-syntax	syntax.txt	/*ft-pandoc-syntax*
@@ -8875,6 +8877,7 @@ nb-protocol_errors	netbeans.txt	/*nb-protocol_errors*
 nb-special	netbeans.txt	/*nb-special*
 nb-terms	netbeans.txt	/*nb-terms*
 ncf.vim	syntax.txt	/*ncf.vim*
+neomutt.vim	syntax.txt	/*neomutt.vim*
 netbeans	netbeans.txt	/*netbeans*
 netbeans-commands	netbeans.txt	/*netbeans-commands*
 netbeans-configure	netbeans.txt	/*netbeans-configure*
