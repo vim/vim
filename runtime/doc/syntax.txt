@@ -2223,9 +2223,10 @@ define the vim variable 'lace_case_insensitive' in your startup file: >
 	:let lace_case_insensitive=1
 
 
-LF (LFRC)		lf.vim ft-lf-syntax g:lf_shell_syntax b:lf_shell_syntax
+LF (LFRC)		*lf.vim* *ft-lf-syntax* *g:lf_shell_syntax*
+						*b:lf_shell_syntax*
 
-For lf file manager configuration files (lfrc) the shell commands
+For the lf file manager configuration files (lfrc) the shell commands
 syntax highlighting can be changed globally and per buffer by setting
 a different 'include' command search pattern using these variables:
 	let g:lf_shell_syntax = "syntax/dosbatch.vim"
