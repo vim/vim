@@ -73,6 +73,7 @@ $quote	eval.txt	/*$quote*
 'awa'	options.txt	/*'awa'*
 'b:context_ignore_makefile'	ft_context.txt	/*'b:context_ignore_makefile'*
 'b:context_include'	ft_context.txt	/*'b:context_include'*
+'b:lf_shell_syntax'	syntax.txt	/*'b:lf_shell_syntax'*
 'b:mp_metafun'	ft_mp.txt	/*'b:mp_metafun'*
 'background'	options.txt	/*'background'*
 'backspace'	options.txt	/*'backspace'*
@@ -7331,6 +7332,7 @@ ft-json-syntax	syntax.txt	/*ft-json-syntax*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
 ft-lace-syntax	syntax.txt	/*ft-lace-syntax*
 ft-lex-syntax	syntax.txt	/*ft-lex-syntax*
+ft-lf-syntax	syntax.txt	/*ft-lf-syntax*
 ft-lifelines-syntax	syntax.txt	/*ft-lifelines-syntax*
 ft-lisp-syntax	syntax.txt	/*ft-lisp-syntax*
 ft-lite-syntax	syntax.txt	/*ft-lite-syntax*
@@ -7581,6 +7583,7 @@ g:html_use_encoding	syntax.txt	/*g:html_use_encoding*
 g:html_use_input_for_pc	syntax.txt	/*g:html_use_input_for_pc*
 g:html_use_xhtml	syntax.txt	/*g:html_use_xhtml*
 g:html_whole_filler	syntax.txt	/*g:html_whole_filler*
+g:lf_shell_syntax	syntax.txt	/*g:lf_shell_syntax*
 g:markdown_fenced_languages	syntax.txt	/*g:markdown_fenced_languages*
 g:markdown_minlines	syntax.txt	/*g:markdown_minlines*
 g:markdown_syntax_conceal	syntax.txt	/*g:markdown_syntax_conceal*
@@ -8556,6 +8559,7 @@ len()	builtin.txt	/*len()*
 less	various.txt	/*less*
 letter	print.txt	/*letter*
 lex.vim	syntax.txt	/*lex.vim*
+lf.vim	syntax.txt	/*lf.vim*
 lhaskell.vim	syntax.txt	/*lhaskell.vim*
 libcall()	builtin.txt	/*libcall()*
 libcallnr()	builtin.txt	/*libcallnr()*
