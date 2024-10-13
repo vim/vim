@@ -60,20 +60,20 @@ if has('unix')
   if has('win32unix') " Git Bash provides /usr/bin/start script calling cmd.exe //c
     " use start //b "" to set void title and avoid ambiguity with passed argument
     silent! command -complete=shellcmd -nargs=1 -bang Launch
-          \ exe 'silent ! start "" //b ' . shellescape(trim(<q-args>), 1)  s:redir | redraw!
+          \ exe 'silent ! start "" //b ' . trim(<q-args>)  s:redir | redraw!
   elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
     silent! command -complete=shellcmd -nargs=1 -bang Launch execute ':silent !'..
           \ ((<q-args> =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
-            \ 'cmd.exe /c start "" /b ' . shellescape(trim(<q-args>), 1) :
-            \ 'nohup ' shellescape(trim(<q-args>), 1) s:redir '&')
+            \ 'cmd.exe /c start "" /b ' . trim(<q-args>) :
+            \ 'nohup ' trim(<q-args>) s:redir '&')
           \ | redraw!
   else
-    silent! command -complete=shellcmd -nargs=1 -bang Launch execute ':silent ! nohup' shellescape(trim(<q-args>), 1) s:redir '&' | redraw!
+    silent! command -complete=shellcmd -nargs=1 -bang Launch execute ':silent ! nohup' trim(<q-args>) s:redir '&' | redraw!
   endif
 elseif has('win32')
   silent! command -complete=shellcmd -nargs=1 -bang Launch
         \ exe 'silent !'.. (&shell =~? '\<cmd\.exe\>' ? '' : 'cmd.exe /c')
-        \ 'start /b ' shellescape(trim(<q-args>), 1) s:redir | redraw!
+        \ 'start /b ' trim(<q-args>) s:redir | redraw!
 endif
 " if exists(':Launch') == 2
 " Git Bash
