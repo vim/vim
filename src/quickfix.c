@@ -7564,8 +7564,7 @@ qf_add_entries(
 	int		qf_idx,
 	list_T		*list,
 	char_u		*title,
-	int		action,
-	int		keep_idx)
+	int		action)
 {
     qf_list_T	*qfl = qf_get_list(qi, qf_idx);
     listitem_T	*li;
@@ -7588,6 +7587,7 @@ qf_add_entries(
     }
 
     int select_first_entry = FALSE;
+    int select_nearest_entry = FALSE;
 
     if (action == ' ' || qf_idx == qi->qf_listcount)
     {
@@ -7612,6 +7612,12 @@ qf_add_entries(
 	qf_free_items(qfl);
 	qf_store_title(qfl, title);
     }
+    else if (action == 'u')
+    {
+	select_nearest_entry = TRUE;
+	qf_free_items(qfl);
+	qf_store_title(qfl, title);
+    }
 
     qfline_T *entry_to_select = NULL;
     int entry_to_select_index = 0;
@@ -7633,7 +7639,7 @@ qf_add_entries(
 	qfline_T *entry = qfl->qf_last;
 	if (
 	    (select_first_entry && entry_to_select == NULL) ||
-	    (keep_idx &&
+	    (select_nearest_entry &&
 		(entry_to_select == NULL ||
 		 entry_is_closer_to_target(entry, entry_to_select, prev_fnum,
 					   prev_lnum, prev_col))))
@@ -7748,7 +7754,7 @@ qf_setprop_title(qf_info_T *qi, int qf_idx, dict_T *what, dictitem_T *di)
  * Set quickfix list items/entries.
  */
     static int
-qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action, int keep_idx)
+qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action)
 {
     int		retval = FAIL;
     char_u	*title_save;
@@ -7758,7 +7764,7 @@ qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action, int keep
 
     title_save = vim_strsave(qi->qf_lists[qf_idx].qf_title);
     retval = qf_add_entries(qi, qf_idx, di->di_tv.vval.v_list,
-	    title_save, action == ' ' ? 'a' : action, keep_idx);
+	    title_save, action == ' ' ? 'a' : action);
     vim_free(title_save);
 
     return retval;
@@ -7792,7 +7798,7 @@ qf_setprop_items_from_lines(
     if (di->di_tv.v_type != VAR_LIST || di->di_tv.vval.v_list == NULL)
 	return FAIL;
 
-    if (action == 'r')
+    if (action == 'r' || action == 'u')
 	qf_free_items(&qi->qf_lists[qf_idx]);
     if (qf_init_ext(qi, qf_idx, NULL, NULL, &di->di_tv, errorformat,
 		FALSE, (linenr_T)0, (linenr_T)0, NULL, NULL) >= 0)
@@ -7914,25 +7920,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     if ((di = dict_find(what, (char_u *)"title", -1)) != NULL)
 	retval = qf_setprop_title(qi, qf_idx, what, di);
     if ((di = dict_find(what, (char_u *)"items", -1)) != NULL)
-    {
-	int keep_idx = FALSE;
-	dictitem_T *keep_idx_di;
-
-	if ((keep_idx_di = dict_find(what, (char_u *)"keep_idx", -1)) != NULL)
-	{
-	    if (keep_idx_di->di_tv.v_type != VAR_NUMBER)
-		retval = FAIL;
-	    else
-	    {
-		keep_idx = keep_idx_di->di_tv.vval.v_number;
-		retval = qf_setprop_items(qi, qf_idx, di, action, keep_idx);
-	    }
-	}
-	else
-	{
-	    retval = qf_setprop_items(qi, qf_idx, di, action, keep_idx);
-	}
-    }
+	retval = qf_setprop_items(qi, qf_idx, di, action);
     if ((di = dict_find(what, (char_u *)"lines", -1)) != NULL)
 	retval = qf_setprop_items_from_lines(qi, qf_idx, what, di, action);
     if ((di = dict_find(what, (char_u *)"context", -1)) != NULL)
@@ -8007,8 +7995,8 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
 /*
  * Populate the quickfix list with the items supplied in the list
  * of dictionaries. "title" will be copied to w:quickfix_title.
- * "action" is 'a' for add, 'r' for replace.  Otherwise create a new list.
- * When "what" is not NULL then only set some properties.
+ * "action" is 'a' for add, 'r' for replace, 'u' for update.  Otherwise
+ * create a new list. When "what" is not NULL then only set some properties.
  */
     int
 set_errorlist(
@@ -8049,8 +8037,7 @@ set_errorlist(
 	retval = qf_set_properties(qi, what, action, title);
     else
     {
-	int keep_idx = FALSE;
-	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action, keep_idx);
+	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action);
 	if (retval == OK)
 	    qf_list_changed(qf_get_curlist(qi));
     }
@@ -8851,7 +8838,7 @@ set_qf_ll_list(
 	    act = tv_get_string_chk(action_arg);
 	    if (act == NULL)
 		return;		// type error; errmsg already given
-	    if ((*act == 'a' || *act == 'r' || *act == ' ' || *act == 'f') &&
+	    if ((*act == 'a' || *act == 'r' || *act == 'u' || *act == ' ' || *act == 'f') &&
 		    act[1] == NUL)
 		action = *act;
 	    else

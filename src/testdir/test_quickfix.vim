@@ -6462,7 +6462,7 @@ func Test_quickfix_buffer_contents()
   call setqflist([], 'f')
 endfunc
 
-func Test_quickfix_keep_idx()
+func Test_quickfix_update()
   " Setup: populate a couple buffers
   call setline(1, range(1,5))
   let b1 = bufnr()
@@ -6478,13 +6478,13 @@ func Test_quickfix_keep_idx()
   exe "normal jj\<CR>"
   call assert_equal(3, getqflist({'idx' : 0}).idx)
 
-  " Replace the quickfix list with `keep_idx`. Make sure the third entry is still selected.
-  call setqflist([], 'r', { 'items': items, 'keep_idx': 1 })
+  " Update the quickfix list. Make sure the third entry is still selected.
+  call setqflist([], 'u', { 'items': items })
   call assert_equal(3, getqflist({'idx' : 0}).idx)
 
   " Update the quickfix list again, but this time with missing line number
   " information. Confirm that we keep the current buffer selected.
-  call setqflist([], 'r', { 'items': [{'bufnr': b1}, {'bufnr': b2}], 'keep_idx': 1 })
+  call setqflist([{'bufnr': b1}, {'bufnr': b2}], 'u')
   call assert_equal(2, getqflist({'idx' : 0}).idx)
 endfunc
 

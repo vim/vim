@@ -9765,6 +9765,8 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 			clear the list: >
 				:call setqflist([], 'r')
 <
+		'u'	Like 'r', but tries to preserve the current selection
+			in the quickfix list.
 		'f'	All the quickfix lists in the quickfix stack are
 			freed.
 
@@ -9787,8 +9789,6 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				current entry.  See |quickfix-index|
 		    items	list of quickfix entries. Same as the {list}
 				argument.
-		    keep_idx	select the entry nearest the currently
-				selected entry
 		    lines	use 'errorformat' to parse a list of lines and
 				add the resulting entries to the quickfix list
 				{nr} or {id}.  Only a |List| value is supported.
