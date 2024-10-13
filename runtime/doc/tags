@@ -73,7 +73,6 @@ $quote	eval.txt	/*$quote*
 'awa'	options.txt	/*'awa'*
 'b:context_ignore_makefile'	ft_context.txt	/*'b:context_ignore_makefile'*
 'b:context_include'	ft_context.txt	/*'b:context_include'*
-'b:lf_shell_syntax'	syntax.txt	/*'b:lf_shell_syntax'*
 'b:mp_metafun'	ft_mp.txt	/*'b:mp_metafun'*
 'background'	options.txt	/*'background'*
 'backspace'	options.txt	/*'backspace'*
@@ -6122,6 +6121,7 @@ b:changelog_name	filetype.txt	/*b:changelog_name*
 b:clojure_syntax_keywords	syntax.txt	/*b:clojure_syntax_keywords*
 b:clojure_syntax_without_core_keywords	syntax.txt	/*b:clojure_syntax_without_core_keywords*
 b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
+b:lf_shell_syntax	syntax.txt	/*b:lf_shell_syntax*
 b:netrw_lastfile	pi_netrw.txt	/*b:netrw_lastfile*
 b:rust_cargo_avoid_whole_workspace	ft_rust.txt	/*b:rust_cargo_avoid_whole_workspace*
 b:rust_cargo_check_all_features	ft_rust.txt	/*b:rust_cargo_check_all_features*
