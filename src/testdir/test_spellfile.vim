@@ -1154,7 +1154,7 @@ endfunc
 " 'spellfile' accepts '@' on top of 'isfname'.
 def Test_spellfile_allow_at_character()
   mkdir('Xtest/the foo@bar,dir', 'p')
-  &spellfile = './Xtest/the foo@bar,dir/Xspellfile.add'
+  &spellfile = './Xtest/the foo@bar\,dir/Xspellfile.add'
   &spellfile = ''
   delete('Xtest', 'rf')
 enddef
