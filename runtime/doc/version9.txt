@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Oct 08
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41598,6 +41598,8 @@ Changed~
 - the regex engines match correctly case-insensitive multi-byte characters
   (and apply proper case folding)
 - |:keeppatterns| preserves the last substitute pattern when used with |:s|
+- |setqflist()| and |setloclist()| can optionally try to preserve the current
+  selection in the quickfix list with the "u" action.
 
 							*added-9.2*
 Added ~
