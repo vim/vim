@@ -45,6 +45,6 @@ void spell_expand_check_cap(colnr_T col);
 int expand_spelling(linenr_T lnum, char_u *pat, char_u ***matchp);
 int valid_spelllang(char_u *val);
 int valid_spellfile(char_u *val);
-char *did_set_spell_option(int is_spellfile);
+char *did_set_spell_option(void);
 char *compile_cap_prog(synblock_T *synblock);
 /* vim: set ft=c : */

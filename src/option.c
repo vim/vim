@@ -2956,7 +2956,7 @@ didset_options(void)
     (void)spell_check_msm();
     (void)spell_check_sps();
     (void)compile_cap_prog(curwin->w_s);
-    (void)did_set_spell_option(TRUE);
+    (void)did_set_spell_option();
 #endif
     // set cedit_key
     (void)did_set_cedit(NULL);

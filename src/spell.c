@@ -4465,13 +4465,10 @@ valid_spellfile(char_u *val)
  * Return an error message or NULL for success.
  */
     char *
-did_set_spell_option(int is_spellfile)
+did_set_spell_option(void)
 {
     char    *errmsg = NULL;
     win_T   *wp;
-
-    if (is_spellfile && !valid_spellfile(curwin->w_s->b_p_spf))
-	return e_invalid_argument;
 
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer == curbuf && wp->w_p_spell)
