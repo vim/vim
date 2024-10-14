@@ -6551,8 +6551,6 @@ func Test_quickfix_update_with_missing_coordinate_info()
 
   " Cleanup the buffers we allocated during this test.
   %bwipe!
-  %bwipe!
-  %bwipe!
 endfunc
 
 " Test for "%b" in "errorformat"
