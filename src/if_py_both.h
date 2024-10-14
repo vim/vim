@@ -635,13 +635,14 @@ PythonIO_Flush(void)
     if (old_fn != NULL && io_ga.ga_len > 0)
     {
 	((char *)io_ga.ga_data)[io_ga.ga_len] = NUL;
+	// We don't know what emsg_severe should be here, so ... hope?
 	old_fn((char *)io_ga.ga_data);
     }
     io_ga.ga_len = 0;
 }
 
     static void
-writer(writefn fn, char_u *str, PyInt n)
+writer(writefn fn, char_u *str, PyInt n, int severe)
 {
     char_u *ptr;
 
@@ -665,6 +666,7 @@ writer(writefn fn, char_u *str, PyInt n)
 
 	mch_memmove(((char *)io_ga.ga_data) + io_ga.ga_len, str, (size_t)len);
 	((char *)io_ga.ga_data)[io_ga.ga_len + len] = NUL;
+	emsg_severe = severe;
 	fn((char *)io_ga.ga_data);
 	str = ptr + 1;
 	n -= len + 1;
@@ -692,9 +694,7 @@ write_output(OutputObject *self, PyObject *string)
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
-    if (error)
-	emsg_severe = TRUE;
-    writer((writefn)(error ? emsg : msg), (char_u *)str, len);
+    writer((writefn)(error ? emsg : msg), (char_u *)str, len, error);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
     PyMem_Free(str);

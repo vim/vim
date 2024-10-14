@@ -1338,6 +1338,11 @@ Python3_Init(void)
 	    goto fail;
 	}
 #endif
+	// Python 3.13 introduced a really useful feature: colorized exceptions.
+	// This is great if you're reading them from the terminal, but useless
+	// and broken everywhere else (such as in log files, or text editors).
+	// Opt out, forcefully.
+	vim_setenv((char_u*)"PYTHON_COLORS", (char_u*)"0");
 
 	init_structs();
 
