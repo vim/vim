@@ -2250,7 +2250,7 @@ parse_spelllang(win_T *wp)
 	else
 	{
 	    // One entry in 'spellfile'.
-	    copy_option_part(&spf, spf_name, MAXPATHL - 5, ",");
+	    copy_option_part(&spf, spf_name, MAXPATHL - 4, ",");
 	    STRCAT(spf_name, ".spl");
 
 	    // If it was already found above then skip it.
@@ -4441,11 +4441,22 @@ valid_spelllang(char_u *val)
     int
 valid_spellfile(char_u *val)
 {
-    char_u *s;
+    char_u	spf_name[MAXPATHL];
+    char_u	*spf;
+    char_u	*s;
+    int		l;
 
-    for (s = val; *s != NUL; ++s)
-	if (!vim_is_fname_char(*s))
+    spf = val;
+    while (*spf != NUL)
+    {
+	l = copy_option_part(&spf, spf_name, MAXPATHL, ",");
+	if (l >= MAXPATHL - 4 || l < 4
+				  || STRCMP(spf_name + l - 4, ".add") != 0)
 	    return FALSE;
+	for (s = spf_name; *s != NUL; ++s)
+	    if (!vim_is_fname_char(*s))
+		return FALSE;
+    }
     return TRUE;
 }
 
@@ -4458,18 +4469,9 @@ did_set_spell_option(int is_spellfile)
 {
     char    *errmsg = NULL;
     win_T   *wp;
-    int	    l;
 
-    if (is_spellfile)
-    {
-	l = (int)STRLEN(curwin->w_s->b_p_spf);
-	if (l > 0 && (l < 4
-			|| STRCMP(curwin->w_s->b_p_spf + l - 4, ".add") != 0))
-	    errmsg = e_invalid_argument;
-    }
-
-    if (errmsg != NULL)
-	return errmsg;
+    if (is_spellfile && !valid_spellfile(curwin->w_s->b_p_spf))
+	return e_invalid_argument;
 
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer == curbuf && wp->w_p_spell)
