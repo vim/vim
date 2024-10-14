@@ -975,4 +975,28 @@ func Test_terminal_vertical()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+func Test_autocmd_buffilepos_with_hidden_term()
+  CheckExecutable true
+  new XTestFile
+  defer delete('XTestFile')
+  call setline(1, ['one', 'two', 'three'])
+  call cursor(3, 10)
+  augroup TestCursor
+    au!
+    autocmd BufFilePost * call setbufvar(3, '&tabstop', 4)
+  augroup END
+
+  let buf = term_start(['true'], #{hidden: 1, term_finish: 'close'})
+  call term_wait(buf)
+  redraw!
+  call assert_equal('XTestFile', bufname('%'))
+  call assert_equal([0, 3, 5, 0], getpos('.'))
+
+  augroup TestCursor
+    au!
+  augroup END
+  augroup! TestCursor
+  bw! XTestFile
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
