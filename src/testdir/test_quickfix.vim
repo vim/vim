@@ -6464,6 +6464,7 @@ endfunc
 
 func Test_quickfix_update()
   " Setup: populate a couple buffers
+  new
   call setline(1, range(1,5))
   let b1 = bufnr()
   new
@@ -6486,6 +6487,10 @@ func Test_quickfix_update()
   " information. Confirm that we keep the current buffer selected.
   call setqflist([{'bufnr': b1}, {'bufnr': b2}], 'u')
   call assert_equal(2, getqflist({'idx' : 0}).idx)
+
+  " Cleanup the buffers we allocated during this test.
+  %bwipe!
+  %bwipe!
 endfunc
 
 " Test for "%b" in "errorformat"
