@@ -7538,7 +7538,8 @@ entry_is_closer_to_target(
     else if (line_distance < other_line_distance)
 	return TRUE;
 
-    // Both entries are pointing at the exact same line number. Now compare columns.
+    // Both entries are pointing at the exact same line number (or no line
+    // number at all). Now compare columns.
     if (!target_col)
 	// Without a target column, we can't know which is closer.
 	return FALSE;
