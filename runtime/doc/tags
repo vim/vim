@@ -7114,6 +7114,7 @@ file-read	insert.txt	/*file-read*
 file-searching	editing.txt	/*file-searching*
 file-type	filetype.txt	/*file-type*
 file-types	filetype.txt	/*file-types*
+file-watcher	editing.txt	/*file-watcher*
 file_readable()	builtin.txt	/*file_readable()*
 filecopy()	builtin.txt	/*filecopy()*
 fileencoding-changed	version6.txt	/*fileencoding-changed*
