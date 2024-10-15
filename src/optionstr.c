@@ -2776,13 +2776,32 @@ did_set_imactivatekey(optset_T *args UNUSED)
 #endif
 
 /*
+ * The 'iskeyword' option is changed.
+ */
+    char *
+did_set_iskeyword(optset_T *args)
+{
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (varp == &p_isk)		// only check for global-value
+    {
+	if (check_isopt(*varp) == FAIL)
+	    return e_invalid_argument;
+    }
+    else			// fallthrough for local-value
+	return did_set_isopt(args);
+
+    return NULL;
+}
+
+/*
  * The 'isident' or the 'iskeyword' or the 'isprint' or the 'isfname' option is
  * changed.
  */
     char *
 did_set_isopt(optset_T *args)
 {
-    // 'isident', 'iskeyword', 'isprint or 'isfname' option: refill g_chartab[]
+    // 'isident', 'iskeyword', 'isprint' or 'isfname' option: refill g_chartab[]
     // If the new option is invalid, use old value.
     // 'lisp' option: refill g_chartab[] for '-' char.
     if (init_chartab() == FAIL)

@@ -1456,7 +1456,7 @@ static struct vimoption options[] =
 #endif
 				(char_u *)0L} SCTX_INIT},
     {"iskeyword",   "isk",  P_STRING|P_ALLOCED|P_VIM|P_COMMA|P_NODUP,
-			    (char_u *)&p_isk, PV_ISK, did_set_isopt, NULL,
+			    (char_u *)&p_isk, PV_ISK, did_set_iskeyword, NULL,
 			    {
 				(char_u *)"@,48-57,_",
 #if defined(MSWIN)
