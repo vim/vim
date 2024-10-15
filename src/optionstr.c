@@ -3892,9 +3892,11 @@ did_set_term_option(optset_T *args)
  * The 'termwinkey' option is changed.
  */
     char *
-did_set_termwinkey(optset_T *args UNUSED)
+did_set_termwinkey(optset_T *args)
 {
-    if (*curwin->w_p_twk != NUL && string_to_key(curwin->w_p_twk, TRUE) == 0)
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if ((*varp)[0] != NUL && string_to_key(*varp, TRUE) == 0)
 	return e_invalid_argument;
 
     return NULL;
