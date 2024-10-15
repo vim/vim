@@ -3465,6 +3465,16 @@ did_set_conceallevel(optset_T *args UNUSED)
 	errmsg = e_invalid_argument;
 	curwin->w_p_cole = 3;
     }
+    if (curwin->w_allbuf_opt.wo_cole < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	curwin->w_allbuf_opt.wo_cole = 0;
+    }
+    else if (curwin->w_allbuf_opt.wo_cole > 3)
+    {
+	errmsg = e_invalid_argument;
+	curwin->w_allbuf_opt.wo_cole = 3;
+    }
 
     return errmsg;
 }
@@ -3529,6 +3539,16 @@ did_set_foldcolumn(optset_T *args UNUSED)
     {
 	errmsg = e_invalid_argument;
 	curwin->w_p_fdc = 12;
+    }
+    if (curwin->w_allbuf_opt.wo_fdc < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	curwin->w_allbuf_opt.wo_fdc = 0;
+    }
+    else if (curwin->w_allbuf_opt.wo_fdc > 12)
+    {
+	errmsg = e_invalid_argument;
+	curwin->w_allbuf_opt.wo_fdc = 12;
     }
 
     return errmsg;
@@ -3856,10 +3876,20 @@ did_set_numberwidth(optset_T *args UNUSED)
 	errmsg = e_argument_must_be_positive;
 	curwin->w_p_nuw = 1;
     }
-    if (curwin->w_p_nuw > 20)
+    else if (curwin->w_p_nuw > 20)
     {
 	errmsg = e_invalid_argument;
 	curwin->w_p_nuw = 20;
+    }
+    if (curwin->w_allbuf_opt.wo_nuw < 1)
+    {
+	errmsg = e_argument_must_be_positive;
+	curwin->w_allbuf_opt.wo_nuw = 1;
+    }
+    else if (curwin->w_allbuf_opt.wo_nuw > 20)
+    {
+	errmsg = e_invalid_argument;
+	curwin->w_allbuf_opt.wo_nuw = 20;
     }
     curwin->w_nrwidth_line_count = 0; // trigger a redraw
 
@@ -4141,6 +4171,27 @@ did_set_shiftwidth_tabstop(optset_T *args)
     long	*pp = (long *)args->os_varp;
     char	*errmsg = NULL;
 
+    if (curbuf->b_p_ts <= 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	curbuf->b_p_ts = 8;
+    }
+    else if (curbuf->b_p_ts > TABSTOP_MAX)
+    {
+	errmsg = e_invalid_argument;
+	curbuf->b_p_ts = 8;
+    }
+    if (p_ts <= 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	p_ts = 8;
+    }
+    else if (p_ts > TABSTOP_MAX)
+    {
+	errmsg = e_invalid_argument;
+	p_ts = 8;
+    }
+
     if (curbuf->b_p_sw < 0)
     {
 	errmsg = e_argument_must_be_positive;
@@ -4151,6 +4202,18 @@ did_set_shiftwidth_tabstop(optset_T *args)
 		       : curbuf->b_p_ts;
 #else
 	curbuf->b_p_sw = curbuf->b_p_ts;
+#endif
+    }
+    if (p_sw < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+#ifdef FEAT_VARTABS
+	// Use the first 'vartabstop' value, or 'tabstop' if vts isn't in use.
+	p_sw = tabstop_count(curbuf->b_p_vts_array) > 0
+	     ? tabstop_first(curbuf->b_p_vts_array)
+	     : curbuf->b_p_ts;
+#else
+	p_sw = curbuf->b_p_ts;
 #endif
     }
 
@@ -4341,6 +4404,11 @@ did_set_textwidth(optset_T *args UNUSED)
     {
 	errmsg = e_argument_must_be_positive;
 	curbuf->b_p_tw = 0;
+    }
+    if (p_tw < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	p_tw = 0;
     }
 #ifdef FEAT_SYN_HL
     {
@@ -4810,16 +4878,6 @@ check_num_option_bounds(
 	    p_window = Rows - 1;
     }
 
-    if (curbuf->b_p_ts <= 0)
-    {
-	errmsg = e_argument_must_be_positive;
-	curbuf->b_p_ts = 8;
-    }
-    else if (curbuf->b_p_ts > TABSTOP_MAX)
-    {
-	errmsg = e_invalid_argument;
-	curbuf->b_p_ts = 8;
-    }
     if (p_tm < 0)
     {
 	errmsg = e_argument_must_be_positive;
@@ -4952,6 +5010,10 @@ set_num_option(
     need_mouse_correct = TRUE;
 #endif
 
+    // May set global value for local option.
+    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+	*(long *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL) = value;
+
     // Invoke the option specific callback function to validate and apply the
     // new value.
     if (options[opt_idx].opt_did_set_cb != NULL)
@@ -4970,10 +5032,6 @@ set_num_option(
     // Check the bounds for numeric options here
     errmsg = check_num_option_bounds(pp, old_value, old_Rows, old_Columns,
 						errbuf, errbuflen, errmsg);
-
-    // May set global value for local option.
-    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
-	*(long *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL) = *pp;
 
     options[opt_idx].flags |= P_WAS_SET;
 
