@@ -7925,23 +7925,37 @@ int_cmp(const void *pa, const void *pb)
 }
 
 /*
- * Handle setting 'colorcolumn' or 'textwidth' in window "wp".
+ * Check "cc" as 'colorcolumn' and update the members of "wp".
+ * This is called when 'colorcolumn' or 'textwidth' is changed.
  * Returns error message, NULL if it's OK.
  */
     char *
-check_colorcolumn(win_T *wp)
+check_colorcolumn(
+    char_u *cc,		// when NULL: use "wp->w_p_cc"
+    win_T *wp)		// when NULL: only parse "cc"
 {
     char_u	*s;
+    int		tw;
     int		col;
     int		count = 0;
     int		color_cols[256];
     int		i;
     int		j = 0;
 
-    if (wp->w_buffer == NULL)
+    if (wp != NULL && wp->w_buffer == NULL)
 	return NULL;  // buffer was closed
 
-    for (s = wp->w_p_cc; *s != NUL && count < 255;)
+    if (cc != NULL)
+	s = cc;
+    else
+	s = wp->w_p_cc;
+
+    if (wp != NULL)
+	tw = wp->w_buffer->b_p_tw;
+    else
+	tw = 0;
+
+    while (*s != NUL && count < 255)
     {
 	if (*s == '-' || *s == '+')
 	{
@@ -7951,9 +7965,9 @@ check_colorcolumn(win_T *wp)
 	    if (!VIM_ISDIGIT(*s))
 		return e_invalid_argument;
 	    col = col * getdigits(&s);
-	    if (wp->w_buffer->b_p_tw == 0)
+	    if (tw == 0)
 		goto skip;  // 'textwidth' not set, skip this item
-	    col += wp->w_buffer->b_p_tw;
+	    col += tw;
 	    if (col < 0)
 		goto skip;
 	}
@@ -7970,6 +7984,9 @@ skip:
 	if (*++s == NUL)
 	    return e_invalid_argument;  // illegal trailing comma as in "set cc=80,"
     }
+
+    if (wp == NULL)
+	return NULL;  // only parse "cc"
 
     vim_free(wp->w_p_cc_cols);
     if (count == 0)
