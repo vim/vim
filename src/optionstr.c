@@ -1235,17 +1235,19 @@ did_set_breakat(optset_T *args UNUSED)
  * The 'breakindentopt' option is changed.
  */
     char *
-did_set_breakindentopt(optset_T *args UNUSED)
+did_set_breakindentopt(optset_T *args)
 {
-    char *errmsg = NULL;
+    char_u	**varp = (char_u **)args->os_varp;
 
-    if (briopt_check(curwin) == FAIL)
-	errmsg = e_invalid_argument;
+    if (briopt_check(*varp, varp == &curwin->w_p_briopt ? curwin : NULL)
+								      == FAIL)
+	return e_invalid_argument;
+
     // list setting requires a redraw
-    if (curwin->w_briopt_list)
+    if (varp == &curwin->w_p_briopt && curwin->w_briopt_list)
 	redraw_all_later(UPD_NOT_VALID);
 
-    return errmsg;
+    return NULL;
 }
 
     int

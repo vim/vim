@@ -18,7 +18,7 @@ int get_indent_str(char_u *ptr, int ts, int no_ts);
 int get_indent_str_vtab(char_u *ptr, int ts, int *vts, int no_ts);
 int set_indent(int size, int flags);
 int get_number_indent(linenr_T lnum);
-int briopt_check(win_T *wp);
+int briopt_check(char_u *briopt, win_T *wp);
 int get_breakindent_win(win_T *wp, char_u *line);
 int inindent(int extra);
 void op_reindent(oparg_T *oap, int (*how)(void));
