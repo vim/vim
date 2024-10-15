@@ -160,7 +160,7 @@ test_gui_init.res: test_gui_init.vim
 	$(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@rm vimcmd
 
-GEN_OPT_DEPS = gen_opt_test.vim ../optiondefs.h
+GEN_OPT_DEPS = gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
 
 opt_test.vim: $(GEN_OPT_DEPS)
 	$(VIMPROG) -e -s -u NONE $(NO_INITS) --nofork --gui-dialog-file guidialog -S $(GEN_OPT_DEPS)

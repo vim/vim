@@ -4,6 +4,14 @@ source shared.vim
 source check.vim
 source view_util.vim
 
+" opt_test.vim is generated from src/optiondefs.h and runtime/doc/options.txt
+" using gen_opt_test.vim
+if filereadable('opt_test.vim')
+  source opt_test.vim
+endif
+
+scriptencoding utf-8
+
 func Test_whichwrap()
   set whichwrap=b,s
   call assert_equal('b,s', &whichwrap)
@@ -273,7 +281,8 @@ func Test_complete()
   set complete&
 endfun
 
-func Test_set_completion()
+" Must be executed before other tests that set 'shellslash'.
+func Test_000_set_completion()
   call feedkeys(":set di\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set dictionary diff diffexpr diffopt digraph directory display', @:)
 
@@ -1035,15 +1044,6 @@ func Test_set_all_one_column()
   call assert_equal(out_one[0], '--- Options ---')
   let options = out_one[1:]->mapnew({_, line -> line[2:]})
   call assert_equal(sort(copy(options)), options)
-endfunc
-
-func Test_set_values()
-  " opt_test.vim is generated from ../optiondefs.h using gen_opt_test.vim
-  if filereadable('opt_test.vim')
-    source opt_test.vim
-  else
-    throw 'Skipped: opt_test.vim does not exist'
-  endif
 endfunc
 
 func Test_renderoptions()
@@ -2313,7 +2313,8 @@ func Test_opt_scrolljump()
 endfunc
 
 " Test for the 'cdhome' option
-func Test_opt_cdhome()
+" Must be executed before other tests that set 'shellslash'.
+func Test_000_opt_cdhome()
   if has('unix') || has('vms')
     throw 'Skipped: only works on non-Unix'
   endif
