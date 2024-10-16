@@ -37,7 +37,7 @@ set cpo&vim
 
 " set up redirection (avoids browser messages)
 " by default, g:netrw_suppress_gx_mesg is true
-if get (g:, ':netrw_suppress_gx_mesg', 1)
+if get(g:, ':netrw_suppress_gx_mesg', 1)
   if &srr =~# "%s"
     if has("win32")
       let s:redir= substitute(&srr,"%s","nul","")
