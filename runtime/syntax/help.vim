@@ -68,6 +68,10 @@ syn match helpSpecial		"\[N]"
 syn match helpSpecial		"N  N"he=s+1
 syn match helpSpecial		"Nth"me=e-2
 syn match helpSpecial		"N-1"me=e-2
+" highlighting N for :resize in windows.txt
+syn match helpSpecial		"] -N\>"ms=s+3
+syn match helpSpecial		"+N\>"ms=s+1
+syn match helpSpecial		"\[+-]N\>"ms=s+4
 " highlighting N of cinoptions-values in indent.txt
 syn match helpSpecial		"^\t-\?\zsNs\?\s"me=s+1
 " highlighting N of cinoptions-values in indent.txt
