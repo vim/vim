@@ -3,7 +3,7 @@
 " Maintainer: Gregory Anders
 " Upstream: https://gitlab.com/HiPhish/jinja.vim
 
-if exists('b:current_syntax')
+if exists('b:current_syntax') && b:current_syntax =~? 'jinja'
     finish
 endif
 
