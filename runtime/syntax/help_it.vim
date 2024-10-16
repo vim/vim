@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Italian Vim program help files *.itx
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	16 Oct 2024
+" Last Change:	2024 Oct 16
 "
 " This script is sourced from syntax/help.vim.
 
