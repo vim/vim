@@ -2001,6 +2001,12 @@ func Test_xx08_kitty_response()
         \ kitty: 'y',
         \ }, terminalprops())
 
+  call feedkeys("\<Esc>[?1u") " simulate the kitty keyboard protocol is enabled
+  call feedkeys(':' .. GetEscCodeCSIu('V', '5') .. GetEscCodeCSIuWithoutModifier("\<Esc>") .. "\<C-B>\"\<CR>", 'Lx!')
+  call assert_equal("\"\<Esc>", @:)
+  call feedkeys(':' .. GetEscCodeCSIu('V', '5') .. GetEscCodeCSIu("\<Esc>", '129') .. "\<C-B>\"\<CR>", 'Lx!')
+  call assert_equal("\"\<Esc>", @:)
+
   set t_RV=
   call test_override('term_props', 0)
 endfunc
