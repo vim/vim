@@ -6,6 +6,7 @@
 " This script is sourced from syntax/help.vim.
 
 syn keyword helpNote		nota Nota NOTA nota: Nota: NOTA: notare Notare NOTARE notare: Notare: NOTARE:
+syn match helpNote		"\c(nota\(:\|\>\)"ms=s+1
 syn match helpSpecial		"Nma"me=e-2
 syn match helpSpecial		"Nme"me=e-2
 syn match helpSpecial		"Nmi"me=e-2

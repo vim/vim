@@ -56,6 +56,7 @@ else
   syn match helpIgnore		"." contained
 endif
 syn keyword helpNote		note Note NOTE note: Note: NOTE: Notes Notes:
+syn match helpNote		"\c(note\(:\|\>\)"ms=s+1
 syn keyword helpWarning		WARNING WARNING: Warning:
 syn keyword helpDeprecated	DEPRECATED DEPRECATED: Deprecated:
 syn match helpSpecial		"\<N\>"
