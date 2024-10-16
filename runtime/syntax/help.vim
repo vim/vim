@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Oct 08
+" Last Change:	16 Oct 2024
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
@@ -144,7 +144,7 @@ syn match helpUnderlined	"\t[* ]Underlined\t\+[a-z].*"
 syn match helpError		"\t[* ]Error\t\+[a-z].*"
 syn match helpTodo		"\t[* ]Todo\t\+[a-z].*"
 
-syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-zA-Z0-9/]`
+syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^'" \t<>{}]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^'" \t<>{}]+)[a-zA-Z0-9/]`
 
 syn match helpDiffAdded		"\t[* ]Added\t\+[a-z].*"
 syn match helpDiffChanged	"\t[* ]Changed\t\+[a-z].*"
