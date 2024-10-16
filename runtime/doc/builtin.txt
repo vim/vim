@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Oct 14
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Oct 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11954,7 +11954,7 @@ wildmenumode()					*wildmenumode()*
 		For example to make <c-j> work like <down> in wildmode, use: >
     :cnoremap <expr> <C-j> wildmenumode() ? "\<Down>\<Tab>" : "\<c-j>"
 <
-		(Note, this needs the 'wildcharm' option set appropriately).
+		(Note: this needs the 'wildcharm' option set appropriately).
 
 		Return type: |Number|
 
