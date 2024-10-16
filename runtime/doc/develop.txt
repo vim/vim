@@ -218,8 +218,34 @@ formats.  Also "long long unsigned" with %llu.
 Declarations ~
 
 Now that the minimal supported compiler is MSVC 2015 declarations do not need
-to be at the start of a block.  However, it is often a good idea to do this
-anyway.
+to be at the start of a block.  Only do this to declare global variables with
+a default value.
+
+Never declare an empty pointer:
+Wrong:	int *pointer;
+OK:	int *pointer = NULL;
+
+When possible declare and assign a variable in one statement:
+Wrong:
+	int var;
+	var = 8;
+OK:
+	int var = 8;
+
+Declare variables in the lowest scope possible
+Wrong:
+	int isnum = TRUE;
+	...
+	{
+		/* Inside a scope */
+		check_if_number(n, &isnum);
+	}
+OK:
+	{
+		/* Inside a scope */
+		int isnum = TRUE;
+		check_if_number(n, &isnum);
+	}
 
 Declaration of the for loop variable inside the loop is recommended:
 	for (int i = 0; i < len; ++i)
@@ -368,9 +394,37 @@ OK:	    if (cond)
                cmd;
 	    }
 
+Try, when possible, not to indent the code more than 3 levels and prefer early returns
+Wrong:
+	if (cond)
+	{
+	    ...
+	    if (cond)
+	    {
+	        ...
+	    }
+	}
+
+OK:
+	if (!cond)
+	    return;
+
+	if (!cond)
+	    return;
+
+	...
+
+
 When a block has one line the braces can be left out.  When an if/else has
-braces on one block, it usually looks better when the other block also has
-braces:
+braces on one block the other should have it too:
+Wrong:	    if (cond)
+	    {
+	       cmd;
+	       cmd;
+	    }
+	    else
+	       cmd;
+
 OK:	    if (cond)
 	       cmd;
 	    else
@@ -386,8 +440,7 @@ OK:	    if (cond)
                cmd;
 	    }
 
-Use ANSI (new style) function declarations with the return type on a separate
-indented line.
+Declare functions with the return type on a separate line.
 
 Wrong:	int function_name(int arg1, int arg2)
 
@@ -396,16 +449,12 @@ OK:	/*
 	 *
 	 * Return value explanation.
 	 */
-	    int
-	function_name(
-	    int		arg1,		// short comment about arg1
-	    int		arg2)		// short comment about arg2
+	int
+	function_name(int arg1,	// short comment about arg1
+		      int arg2)	// short comment about arg2
 	{
-	    int		local;		// comment about local
-
-	    local = arg1 * arg2;
-
-
+	    // comment about local
+	    int	local = arg1 * arg2;
 
 SPACES AND PUNCTUATION					*style-spaces*
 
