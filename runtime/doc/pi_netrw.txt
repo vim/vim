@@ -1,8 +1,8 @@
 *pi_netrw.txt*  For Vim version 9.1.  Last change: 2024 Jul 13
 
-            ------------------------------------------------
-            NETRW REFERENCE MANUAL    by Charles E. Campbell
-            ------------------------------------------------
+	    ------------------------------------------------
+	    NETRW REFERENCE MANUAL    by Charles E. Campbell
+	    ------------------------------------------------
 Author:  Charles E. Campbell  <NcampObell@SdrPchip.AorgM-NOSPAM>
           (remove NOSPAM from Campbell's email first)
 
@@ -1499,7 +1499,7 @@ Other than a file path, the text under the cursor may be a URL.  Netrw uses
 by default the following regular expression to determine if the text under the
 cursor is a URL:
 >
-	g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
+        g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
 <
 
 Netrw determines which special handler by the following method:
