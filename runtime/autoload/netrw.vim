@@ -24,6 +24,7 @@
 "   2024 Aug 22 by Vim Project: fix mf-selection highlight (#15551)
 "   2024 Aug 22 by Vim Project: adjust echo output of mx command (#15550)
 "   2024 Sep 15 by Vim Project: more strict confirmation dialog (#15680)
+"   2024 Sep 19 by Vim Project: mf-selection highlight uses wrong pattern (#15700)
 "   2024 Sep 21 by Vim Project: remove extraneous closing bracket (#15718)
 "   2024 Sep 22 by Vim Project: clean up and expand gx mapping
 "   }}}
