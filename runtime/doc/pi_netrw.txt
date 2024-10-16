@@ -1477,7 +1477,7 @@ best seen with a special handler (ie. a tool provided with your computer's
 operating system).  Netrw allows one to invoke such special handlers by:
 
         * hitting gx with the cursor atop the file path or alternatively x
-          in in a netrw buffer; the former can be disabled by defining the
+          in a netrw buffer; the former can be disabled by defining the
           |g:netrw_nogx| variable
         * when in command line, typing :Open <path>
 
