@@ -355,7 +355,7 @@ add_to_history(
     else
     {
 	hisptr->hisstr[new_entrylen + 1] = sep;
-	hisptr->hisstrlen = new_entrylen + 1;
+	hisptr->hisstrlen = new_entrylen;
     }
 
     hisptr->hisnum = ++hisnum[histype];
@@ -630,7 +630,6 @@ f_histget(typval_T *argvars UNUSED, typval_T *rettv)
     {
 	int type;
 	int idx;
-	int i;
 
 	type = get_histtype(str);
 	if (argvars[1].v_type == VAR_UNKNOWN)
@@ -639,11 +638,11 @@ f_histget(typval_T *argvars UNUSED, typval_T *rettv)
 	    idx = (int)tv_get_number_chk(&argvars[1], NULL);
 						    // -1 on type error
 
-	i = calc_hist_idx(type, idx);
-	if (i < 0)
+	idx = calc_hist_idx(type, idx);
+	if (idx < 0)
 	    rettv->vval.v_string = vim_strnsave((char_u *)"", 0);
 	else
-	    rettv->vval.v_string = vim_strnsave(history[type][i].hisstr, history[type][i].hisstrlen);
+	    rettv->vval.v_string = vim_strnsave(history[type][idx].hisstr, history[type][idx].hisstrlen);
     }
     rettv->v_type = VAR_STRING;
 }

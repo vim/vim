@@ -552,12 +552,13 @@ read_viminfo_history(vir_T *virp, int writing)
 
     // Need to re-allocate to append the separator byte.
     len = STRLEN(val);
-    p = alloc(len + 2);
-    if (p == NULL)
-	goto done;
 
     if (type == HIST_SEARCH)
     {
+	p = alloc((size_t)len + 1);		    // +1 for NUL
+	if (p == NULL)
+	    goto done;
+
 	// Search entry: Move the separator from the first
 	// column to after the NUL.
 	mch_memmove(p, val + 1, (size_t)len);
@@ -565,12 +566,18 @@ read_viminfo_history(vir_T *virp, int writing)
     }
     else
     {
+	p = alloc((size_t)len + 2);		    // +1 for separator and +1 for NUL
+	if (p == NULL)
+	    goto done;
+
 	// Not a search entry: No separator in the viminfo
 	// file, add a NUL separator.
-	mch_memmove(p, val, (size_t)len + 1);
-	p[len + 1] = NUL;
+	++len;
+	mch_memmove(p, val, (size_t)len);
+	p[len] = NUL;
     }
     viminfo_history[type][viminfo_hisidx[type]].hisstr = p;
+    viminfo_history[type][viminfo_hisidx[type]].hisstrlen = (size_t)len;
     viminfo_history[type][viminfo_hisidx[type]].time_set = 0;
     viminfo_history[type][viminfo_hisidx[type]].viminfo = TRUE;
     viminfo_history[type][viminfo_hisidx[type]].hisnum = 0;
@@ -594,6 +601,7 @@ handle_viminfo_history(
     long_u	len;
     char_u	*val;
     char_u	*p;
+    size_t	plen;
     bval_T	*vp = (bval_T *)values->ga_data;
 
     // Check the format:
@@ -629,8 +637,9 @@ handle_viminfo_history(
     for (idx = 0; idx < viminfo_hisidx[type]; ++idx)
     {
 	p = viminfo_history[type][idx].hisstr;
+	plen = viminfo_history[type][idx].hisstrlen;
 	if (STRCMP(val, p) == 0
-		&& (type != HIST_SEARCH || sep == p[STRLEN(p) + 1]))
+		&& (type != HIST_SEARCH || sep == p[plen + 1]))
 	{
 	    overwrite = TRUE;
 	    break;
@@ -654,6 +663,7 @@ handle_viminfo_history(
 	    // Put the separator after the NUL.
 	    p[len + 1] = sep;
 	    viminfo_history[type][idx].hisstr = p;
+	    viminfo_history[type][idx].hisstrlen = (size_t)len;
 	    viminfo_history[type][idx].hisnum = 0;
 	    viminfo_history[type][idx].viminfo = TRUE;
 	    viminfo_hisidx[type]++;
@@ -699,6 +709,7 @@ concat_history(int type)
     {
 	vim_free(histentry[idx].hisstr);
 	histentry[idx].hisstr = viminfo_history[type][i].hisstr;
+	histentry[idx].hisstrlen = viminfo_history[type][i].hisstrlen;
 	histentry[idx].viminfo = TRUE;
 	histentry[idx].time_set = viminfo_history[type][i].time_set;
 	if (--idx < 0)
@@ -768,6 +779,7 @@ merge_history(int type)
 	{
 	    new_hist[i] = *tot_hist[i];
 	    tot_hist[i]->hisstr = NULL;
+	    tot_hist[i]->hisstrlen = 0;
 	    if (new_hist[i].hisnum == 0)
 		new_hist[i].hisnum = ++*hisnum;
 	}
@@ -778,9 +790,15 @@ merge_history(int type)
 
     // Free what is not kept.
     for (i = 0; i < viminfo_hisidx[type]; i++)
+    {
 	vim_free(viminfo_history[type][i].hisstr);
+	viminfo_history[type][i].hisstrlen = 0;
+    }
     for (i = 0; i < hislen; i++)
+    {
 	vim_free(histentry[i].hisstr);
+	histentry[i].hisstrlen = 0;
+    }
     vim_free(histentry);
     set_histentry(type, new_hist);
     vim_free(tot_hist);
@@ -867,20 +885,30 @@ write_viminfo_history(FILE *fp, int merge)
 			&& !(round == 2 && i >= viminfo_hisidx[type]))
 		{
 		    char_u  *p;
+		    size_t  plen;
 		    time_t  timestamp;
 		    int	    c = NUL;
 
 		    if (round == 1)
 		    {
 			p = histentry[i].hisstr;
+			plen = histentry[i].hisstrlen;
 			timestamp = histentry[i].time_set;
 		    }
 		    else
 		    {
-			p = viminfo_history[type] == NULL ? NULL
-					    : viminfo_history[type][i].hisstr;
-			timestamp = viminfo_history[type] == NULL ? 0
-					  : viminfo_history[type][i].time_set;
+			if (viminfo_history[type] == NULL)
+			{
+			    p = NULL;
+			    plen = 0;
+			    timestamp = 0;
+			}
+			else
+			{
+			    p = viminfo_history[type][i].hisstr;
+			    plen = viminfo_history[type][i].hisstrlen;
+			    timestamp = viminfo_history[type][i].time_set;
+			}
 		    }
 
 		    if (p != NULL && (round == 2
@@ -893,7 +921,7 @@ write_viminfo_history(FILE *fp, int merge)
 			// second column; use a space if there isn't one.
 			if (type == HIST_SEARCH)
 			{
-			    c = p[STRLEN(p) + 1];
+			    c = p[plen + 1];
 			    putc(c == NUL ? ' ' : c, fp);
 			}
 			viminfo_writestring(fp, p);
@@ -931,7 +959,10 @@ write_viminfo_history(FILE *fp, int merge)
 	}
 	for (i = 0; i < viminfo_hisidx[type]; ++i)
 	    if (viminfo_history[type] != NULL)
+	    {
 		vim_free(viminfo_history[type][i].hisstr);
+		viminfo_history[type][i].hisstrlen = 0;
+	    }
 	VIM_CLEAR(viminfo_history[type]);
 	viminfo_hisidx[type] = 0;
     }
