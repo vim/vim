@@ -1283,6 +1283,7 @@ typedef struct hist_entry
     int		hisnum;		// identifying number
     int		viminfo;	// when TRUE hisstr comes from viminfo
     char_u	*hisstr;	// actual entry, separator char after the NUL
+    size_t	hisstrlen;	// length of hisstr (excluding the NUL)
     time_t	time_set;	// when it was typed, zero if unknown
 } histentry_T;
 
