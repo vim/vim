@@ -157,8 +157,12 @@ test_gui_init.res: test_gui_init.vim
 	$(VIMPROG) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@$(DEL) vimcmd
 
-opt_test.vim: ../optiondefs.h gen_opt_test.vim
-	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S gen_opt_test.vim ../optiondefs.h
+opt_test.vim: gen_opt_test.vim ../optiondefs.h
+	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S $^
+	@if test -f test.log; then \
+		cat test.log; \
+		exit 1; \
+	fi
 
 test_bench_regexp.res: test_bench_regexp.vim
 	-$(DEL) benchmark.out

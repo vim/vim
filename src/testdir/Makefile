@@ -160,8 +160,14 @@ test_gui_init.res: test_gui_init.vim
 	$(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@rm vimcmd
 
-opt_test.vim: ../optiondefs.h gen_opt_test.vim
-	$(VIMPROG) -e -s -u NONE $(NO_INITS) --nofork --gui-dialog-file guidialog -S gen_opt_test.vim ../optiondefs.h
+GEN_OPT_DEPS = gen_opt_test.vim ../optiondefs.h
+
+opt_test.vim: $(GEN_OPT_DEPS)
+	$(VIMPROG) -e -s -u NONE $(NO_INITS) --nofork --gui-dialog-file guidialog -S $(GEN_OPT_DEPS)
+	@if test -f test.log; then \
+		cat test.log; \
+		exit 1; \
+	fi
 
 test_xxd.res:
 	XXD=$(XXDPROG); export XXD; $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim

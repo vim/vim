@@ -192,6 +192,12 @@ let test_values = {
       \ 'otherstring': [['', 'xxx'], []],
       \}
 
+const invalid_options = test_values->keys()
+      \->filter({-> v:val !~# '^other' && !exists($"&{v:val}")})
+if !empty(invalid_options)
+  throw $"Invalid option name in test_values: '{invalid_options->join("', '")}'"
+endif
+
 1
 /struct vimoption options
 while 1
@@ -253,11 +259,14 @@ call add(script, 'let &lines = save_lines')
 
 call writefile(script, 'opt_test.vim')
 
-" Exit with error-code if error occurs.
+" Write error messages if error occurs.
 catch
-  set verbose=1
-  echoc 'Error:' v:exception 'in' v:throwpoint
-  cq! 1
+  " Append errors to test.log
+  let error = $'Error: {v:exception} in {v:throwpoint}'
+  echoc error
+  split test.log
+  call append('$', error)
+  write
 endtry
 
 endif
