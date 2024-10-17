@@ -691,18 +691,40 @@ func Test_tabpage_cmdheight()
   CheckRunVimInTerminal
   call writefile([
         \ 'set laststatus=2',
-        \ 'set cmdheight=2',
         \ 'tabnew',
         \ 'set cmdheight=3',
+        \ 'tabrewind',
+        \ 'set cmdheight=1',
         \ 'tabnext',
         \ 'redraw!',
         \ 'echo "hello\nthere"',
-        \ 'tabnext',
-        \ 'redraw',
 	\ ], 'XTest_tabpage_cmdheight', 'D')
-  " Check that cursor line is concealed
+  " Check that tab page local options is preserved by no ENTER prompt displayed
   let buf = RunVimInTerminal('-S XTest_tabpage_cmdheight', {'statusoff': 3})
   call VerifyScreenDump(buf, 'Test_tabpage_cmdheight', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_tabpage_cmdheight_with_settabvar()
+  CheckRunVimInTerminal
+  call writefile([
+        \ 'set laststatus=2',
+        \ 'tabnew',
+        \ 'tabrewind',
+        \ 'call settabvar(2, "&cmdheight", 3)',
+        \ 'tabnext',
+        \ 'redraw!',
+        \ 'echo "hello\nthere"',
+	\ ], 'XTest_tabpage_cmdheight_with_settabvar', 'D')
+  " Check that non-current tab page local options is changed by no ENTER prompt displayed
+  let buf = RunVimInTerminal('-S XTest_tabpage_cmdheight_with_settabvar', {'statusoff': 3})
+  call VerifyScreenDump(buf, 'Test_tabpage_cmdheight_with_settabvar_1', {})
+  " Check that current tab page local options is changed by no ENTER prompt displayed
+  call term_sendkeys(buf, ":tabrewind\<CR>")
+  call term_sendkeys(buf, ':call settabvar(1, "&cmdheight", 5)' .. "\<CR>")
+  call term_sendkeys(buf, ':echo "one\ntwo\nthree\nfour"' .. "\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpage_cmdheight_with_settabvar_2', {})
 
   call StopVimInTerminal(buf)
 endfunc
