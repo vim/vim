@@ -774,7 +774,7 @@ ex_history(exarg_T *eap)
 
     for (; !got_int && histype1 <= histype2; ++histype1)
     {
-	vim_snprintf(IObuff, IOSIZE, "\n      #  %s history", history_names[histype1]);
+	vim_snprintf((char *)IObuff, IOSIZE, "\n      #  %s history", history_names[histype1]);
 	msg_puts_title((char *)IObuff);
 	idx = hisidx[histype1];
 	hist = history[histype1];
