@@ -171,6 +171,7 @@ static pos_T	  compl_startpos;
 // Length in bytes of the text being completed (this is deleted to be replaced
 // by the match.)
 static int	  compl_length = 0;
+static linenr_T	  compl_lnum = 0;           // lnum where the completion start
 static colnr_T	  compl_col = 0;	    // column where the text starts
 					    // that is being completed
 static char_u	  *compl_orig_text = NULL;  // text as it was before
@@ -2987,6 +2988,7 @@ set_completion(colnr_T startcol, list_T *list)
     if (startcol > curwin->w_cursor.col)
 	startcol = curwin->w_cursor.col;
     compl_col = startcol;
+    compl_lnum = curwin->w_cursor.lnum;
     compl_length = (int)curwin->w_cursor.col - (int)startcol;
     // compl_pattern doesn't need to be set
     compl_orig_text = vim_strnsave(ml_get_curline() + compl_col, compl_length);
@@ -4170,11 +4172,24 @@ ins_compl_delete(void)
     // In insert mode: Delete the typed part.
     // In replace mode: Put the old characters back, if any.
     col = compl_col + (compl_status_adding() ? compl_length : 0);
-    if ((int)curwin->w_cursor.col > col)
+
+    if (curwin->w_cursor.lnum > compl_lnum)
+    {
+        while (curwin->w_cursor.lnum > compl_lnum)
+	{
+	    ml_delete(curwin->w_cursor.lnum);
+	    curwin->w_cursor.lnum--;
+	    curwin->w_cursor.col = (colnr_T)STRLEN(ml_get(curwin->w_cursor.lnum));
+        }
+	if (stop_arrow() == FAIL)
+	    return;
+        backspace_until_column(compl_col);
+    }
+    else if ((int)curwin->w_cursor.col > col)
     {
 	if (stop_arrow() == FAIL)
 	    return;
-	backspace_until_column(col);
+        backspace_until_column(col);
     }
 
     // TODO: is this sufficient for redrawing?  Redrawing everything causes
@@ -4184,6 +4199,31 @@ ins_compl_delete(void)
     // clear v:completed_item
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
 #endif
+}
+
+/*
+ * handle sepecial characters in word like wrap tab etc.
+ */
+    static void
+ins_compl_with_special_chars(char_u *str)
+{
+    while (*str)
+    {
+	if (*str == '\n')
+	{
+	    open_line(FORWARD, OPENLINE_DELSPACES, FALSE, NULL);
+	    curwin->w_cursor.col = 0;
+	}
+	else if (*str == TAB)
+	    ins_char(TAB);
+	else
+	{
+	    int len = mb_ptr2len(str);
+	    ins_char_bytes((char_u *)str, len);
+	    str += len - 1;
+	}
+	str++;
+    }
 }
 
 /*
@@ -4198,7 +4238,7 @@ ins_compl_insert(int in_compl_func)
     // Make sure we don't go over the end of the string, this can happen with
     // illegal bytes.
     if (compl_len < (int)STRLEN(compl_shown_match->cp_str))
-	ins_bytes(compl_shown_match->cp_str + compl_len);
+        ins_compl_with_special_chars(compl_shown_match->cp_str + compl_len);
     if (match_at_original_text(compl_shown_match))
 	compl_used_match = FALSE;
     else
@@ -5155,6 +5195,7 @@ ins_compl_start(void)
     line = ml_get(curwin->w_cursor.lnum);
     curs_col = curwin->w_cursor.col;
     compl_pending = 0;
+    compl_lnum = curwin->w_cursor.lnum;
 
     if ((compl_cont_status & CONT_INTRPT) == CONT_INTRPT
 	    && compl_cont_mode == ctrl_x_mode)
@@ -5205,6 +5246,7 @@ ins_compl_start(void)
 	    curbuf->b_p_com = old;
 	    compl_length = 0;
 	    compl_col = curwin->w_cursor.col;
+	    compl_lnum = curwin->w_cursor.lnum;
 	}
 	else if (ctrl_x_mode_normal() && in_fuzzy)
 	{

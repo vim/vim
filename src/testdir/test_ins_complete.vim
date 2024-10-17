@@ -2765,4 +2765,31 @@ func Test_complete_backwards_default()
   bw!
 endfunc
 
+func Test_pum_complete_with_special_characters()
+  CheckScreendump
+
+  let lines =<< trim END
+    func Omni_test(findstart, base)
+      if a:findstart
+        return col(".")
+      endif
+      return [#{word: "function ()\n\t\nend", abbr: "function ()",  kind:"Snippet" }, #{word: "foobar"}]
+    endfunc
+    set omnifunc=Omni_test
+  END
+
+  call writefile(lines, 'Xpreviewscript', 'D')
+  let buf = RunVimInTerminal('-S Xpreviewscript', #{rows: 12})
+  call term_sendkeys(buf, "Gi\<C-X>\<C-O>")
+  call TermWait(buf, 200)
+  call VerifyScreenDump(buf, 'Test_pum_with_special_characters_01', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call TermWait(buf, 200)
+  call VerifyScreenDump(buf, 'Test_pum_with_special_characters_02', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
