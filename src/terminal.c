@@ -3436,7 +3436,8 @@ limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
     if (gap->ga_len < term->tl_buffer->b_p_twsl)
 	return;
 
-    int	todo = term->tl_buffer->b_p_twsl / 10;
+    int	todo = MAX(term->tl_buffer->b_p_twsl / 10,
+				     gap->ga_len - term->tl_buffer->b_p_twsl);
     int	i;
 
     curbuf = term->tl_buffer;
