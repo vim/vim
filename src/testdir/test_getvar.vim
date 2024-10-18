@@ -22,14 +22,22 @@ func Test_var()
   call assert_equal('Chance', getwinvar(9, '', def_str))
   call assert_equal(0, getwinvar(1, '&nu'))
   call assert_equal(0, getwinvar(1, '&nu', 1))
+  call assert_match("^{.*'number': 0\\(,.*\\|\\)}$", string(getwinvar(1, '&')))
+  call assert_match("^{.*'number': 0\\(,.*\\|\\)}$", string(getwinvar(1, '&', def_str)))
+  call assert_equal('', getwinvar(3, '&notexistopt'))
+  call assert_equal('Chance', getwinvar(3, '&notexistopt', def_str))
+  call assert_equal('', getwinvar(9, '&'))
+  call assert_equal('Chance', getwinvar(9, '&', def_str))
   unlet def_str
 
   " test for gettabvar()
+  setglobal cmdheight=1
   tabnew
   tabnew
   let t:var_list = [1, 2, 3]
   let t:other = 777
   let def_list = [4, 5, 6, 7]
+  setlocal cmdheight=3
   tabrewind
   call assert_equal([1, 2, 3], 3->gettabvar('var_list'))
   call assert_equal([1, 2, 3], gettabvar(3, 'var_list', def_list))
@@ -43,8 +51,14 @@ func Test_var()
   call assert_equal([4, 5, 6, 7], gettabvar(3, 'var_list', def_list))
   call assert_equal('', gettabvar(9, ''))
   call assert_equal([4, 5, 6, 7], gettabvar(9, '', def_list))
-  call assert_equal('', gettabvar(3, '&nu'))
-  call assert_equal([4, 5, 6, 7], gettabvar(3, '&nu', def_list))
+  call assert_equal(3, gettabvar(3, '&ch'))
+  call assert_equal(3, gettabvar(3, '&ch', def_list))
+  call assert_match("^{.*'cmdheight': 3\\(,.*\\|\\)}$", string(gettabvar(3, '&')))
+  call assert_match("^{.*'cmdheight': 3\\(,.*\\|\\)}$", string(gettabvar(3, '&', def_list)))
+  call assert_equal('', gettabvar(3, '&notexistopt'))
+  call assert_equal([4, 5, 6, 7], gettabvar(3, '&notexistopt', def_list))
+  call assert_equal('', gettabvar(9, '&'))
+  call assert_equal([4, 5, 6, 7], gettabvar(9, '&', def_list))
   unlet def_list
   tabonly
 
@@ -83,7 +97,12 @@ func Test_var()
 
   unlet def_dict
 
+  call assert_match("^{.*'number': 0\\(,.*\\|\\)}$", string(gettabwinvar(2, 3, '&')))
+  call assert_match("^{.*'number': 0\\(,.*\\|\\)}$", string(gettabwinvar(2, 3, '&', 1)))
   call assert_equal("", gettabwinvar(9, 2020, ''))
+  call assert_equal(1, gettabwinvar(9, 2020, '', 1))
+  call assert_equal('', gettabwinvar(9, 2020, '&'))
+  call assert_equal(1, gettabwinvar(9, 2020, '&', 1))
   call assert_equal('', gettabwinvar(2, 3, '&nux'))
   call assert_equal(1, gettabwinvar(2, 3, '&nux', 1))
   tabonly

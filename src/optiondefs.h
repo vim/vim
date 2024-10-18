@@ -19,9 +19,11 @@
 #define PV_BOTH 0x1000
 #define PV_WIN  0x2000
 #define PV_BUF  0x4000
+#define PV_TAB  0x8000
 #define PV_MASK 0x0fff
 #define OPT_WIN(x)  (idopt_T)(PV_WIN + (int)(x))
 #define OPT_BUF(x)  (idopt_T)(PV_BUF + (int)(x))
+#define OPT_TAB(x)  (idopt_T)(PV_TAB + (int)(x))
 #define OPT_BOTH(x) (idopt_T)(PV_BOTH + (int)(x))
 
 // Definition of the PV_ values for buffer-local options.
@@ -234,7 +236,11 @@
 # define PV_SCL		OPT_WIN(WV_SCL)
 #endif
 
-// WV_ and BV_ values get typecasted to this for the "indir" field
+// Definition of the PV_ values for tab-local options.
+// The TV_ values are defined in option.h.
+#define PV_CH		OPT_BOTH(OPT_TAB(TV_CH))
+
+// WV_, BV_ and TV_ values get typecasted to this for the "indir" field
 typedef enum
 {
     PV_NONE = 0,
@@ -606,7 +612,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"cmdheight",   "ch",   P_NUM|P_VI_DEF|P_RALL,
-			    (char_u *)&p_ch, PV_NONE, did_set_cmdheight, NULL,
+			    (char_u *)&p_ch, PV_CH, did_set_cmdheight, NULL,
 			    {(char_u *)1L, (char_u *)0L} SCTX_INIT},
     {"cmdwinheight", "cwh", P_NUM|P_VI_DEF,
 			    (char_u *)&p_cwh, PV_NONE, NULL, NULL,

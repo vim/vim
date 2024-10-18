@@ -144,7 +144,7 @@ unsigned int get_bkc_flags(buf_T *buf);
 char_u *get_flp_value(buf_T *buf);
 unsigned int get_ve_flags(void);
 char_u *get_showbreak_value(win_T *win);
-dict_T *get_winbuf_options(int bufopt);
+dict_T *get_local_options(int htname);
 int fill_culopt_flags(char_u *val, win_T *wp);
 int magic_isset(void);
 int option_set_callback_func(char_u *optval, callback_T *optcb);

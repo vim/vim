@@ -3410,8 +3410,16 @@ did_set_buflisted(optset_T *args)
     char *
 did_set_cmdheight(optset_T *args)
 {
+    long *varp = (long *)args->os_varp;
     long old_value = args->os_oldval.number;
     char *errmsg = NULL;
+
+    // if tp->tp_ch_used changed, change p_ch and restore tp->tp_ch_used
+    if (&p_ch != varp)
+    {
+	p_ch = *varp;
+	*varp = old_value;
+    }
 
     // if p_ch changed value, change the command line height
     if (p_ch < 1)
@@ -6413,6 +6421,7 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_LCS:  return (char_u *)&(curwin->w_p_lcs);
 	    case PV_FCS:  return (char_u *)&(curwin->w_p_fcs);
 	    case PV_VE:	  return (char_u *)&(curwin->w_p_ve);
+	    case PV_CH:	  return (char_u *)&(curtab->tp_ch_used);
 
 	}
 	return NULL; // "cannot happen"
@@ -6681,6 +6690,7 @@ get_varp(struct vimoption *p)
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
 #endif
+	case PV_CH:	return (char_u *)&(curtab->tp_ch_used);
 	default:	iemsg(e_get_varp_error);
     }
     // always return a valid pointer to avoid a crash!
@@ -8519,10 +8529,11 @@ get_showbreak_value(win_T *win)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Get window or buffer local options.
+ * Get window, buffer or tab local options.
  */
     dict_T *
-get_winbuf_options(int bufopt)
+get_local_options(
+    int		htname)	    // 't'ab, 'w'indow or 'b'uffer local.
 {
     dict_T	*d;
     int		opt_idx;
@@ -8535,8 +8546,9 @@ get_winbuf_options(int bufopt)
     {
 	struct vimoption *opt = &options[opt_idx];
 
-	if ((bufopt && (opt->indir & PV_BUF))
-					 || (!bufopt && (opt->indir & PV_WIN)))
+	if ((htname == 'b' && (opt->indir & PV_BUF))
+					 || (htname == 'w' && (opt->indir & PV_WIN))
+					 || (htname == 't' && (opt->indir & PV_TAB)))
 	{
 	    char_u *varp = get_varp(opt);
 
