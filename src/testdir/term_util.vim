@@ -174,7 +174,7 @@ endfunc
 " number.
 func Run_shell_in_terminal(options)
   if has('win32')
-    let buf = term_start([&shell, '/k'], a:options)
+    let buf = term_start([&shell, '/D', '/k'], a:options)
   else
     let buf = term_start(&shell, a:options)
   endif

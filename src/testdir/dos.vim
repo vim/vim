@@ -3,7 +3,7 @@
 set shell=c:\COMMAND.COM shellquote= shellxquote= shellcmdflag=/c shellredir=>
 " This is used only when the +eval feature is available.
 if executable("cmd.exe")
-   set shell=cmd.exe
+   set shell=cmd.exe shellcmdflag=/D\ /c
 endif
 
 source setup.vim

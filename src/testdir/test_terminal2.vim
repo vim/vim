@@ -450,7 +450,7 @@ func Test_terminal_does_not_truncate_last_newlines()
   for c in contents
     call writefile(c, 'Xdntfile', 'D')
     if has('win32')
-      term cmd /c type Xdntfile
+      term cmd /D /c type Xdntfile
     else
       term cat Xdntfile
     endif
@@ -465,7 +465,7 @@ endfunc
 
 func GetDummyCmd()
   if has('win32')
-    return 'cmd /c ""'
+    return 'cmd /D /c ""'
   else
     CheckExecutable false
     return 'false'
