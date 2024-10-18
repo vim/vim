@@ -5448,11 +5448,7 @@ fun! netrw#BrowseX(fname,remote)
 
   " execute the file handler
 "  call Decho("execute the file handler (if any)",'~'.expand("<slnum>"))
-  if exists("g:netrw_browsex_viewer") && g:netrw_browsex_viewer == '-'
-"   call Decho("(netrw#BrowseX) g:netrw_browsex_viewer<".g:netrw_browsex_viewer.">",'~'.expand("<slnum>"))
-   let ret= netrwFileHandlers#Invoke(exten,fname)
-
-  elseif exists("g:netrw_browsex_viewer") && executable(viewer)
+  if exists("g:netrw_browsex_viewer") && executable(viewer)
 "   call Decho("(netrw#BrowseX) g:netrw_browsex_viewer<".g:netrw_browsex_viewer.">",'~'.expand("<slnum>"))
    call s:NetrwExe("sil !".viewer." ".viewopt.s:ShellEscape(fname,1).redir)
    let ret= v:shell_error
@@ -5518,17 +5514,13 @@ fun! netrw#BrowseX(fname,remote)
 "   call Decho("(netrw#BrowseX) macunix and open",'~'.expand("<slnum>"))
    call s:NetrwExe("sil !open ".s:ShellEscape(fname,1)." ".redir)
    let ret= v:shell_error
-
   else
-   " netrwFileHandlers#Invoke() always returns 0
-"   call Decho("(netrw#BrowseX) use netrwFileHandlers",'~'.expand("<slnum>"))
-   let ret= netrwFileHandlers#Invoke(exten,fname)
+   call netrw#ErrorMsg(s:ERROR, "Couldn't find a program to open '".a:fname."'", 0)
+   let ret=0
   endif
 
-  " if unsuccessful, attempt netrwFileHandlers#Invoke()
   if ret
-"   call Decho("(netrw#BrowseX) ret=".ret," indicates unsuccessful thus far",'~'.expand("<slnum>"))
-   let ret= netrwFileHandlers#Invoke(exten,fname)
+   call netrw#ErrorMsg(s:ERROR, "Failed to open '".a:fname."'", 0)
   endif
 
   " restoring redraw! after external file handlers
