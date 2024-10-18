@@ -71,6 +71,7 @@ char *did_set_spell(optset_T *args);
 char *did_set_swapfile(optset_T *args);
 char *did_set_tabclose(optset_T *args);
 char *did_set_termguicolors(optset_T *args);
+char *did_set_termwinscroll(optset_T *args);
 char *did_set_terse(optset_T *args);
 char *did_set_textauto(optset_T *args);
 char *did_set_textmode(optset_T *args);
