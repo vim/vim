@@ -5309,10 +5309,10 @@ of colors by using the `:colorscheme` command, for example: >
 			This is basically the same as >
 				:echo g:colors_name
 <			In case g:colors_name has not been defined :colo will
-			output "default", which is defined in the file
-			"syntax/syncolor.vim" and based on the palette of
-			legacy versions of peachpuff and desert. When compiled
-			without the |+eval| feature it will output "unknown".
+			output "default". Its palette is defined in the file
+			"syntax/syncolor.vim" and is based on legacy versions
+			of peachpuff and desert. When compiled without the
+			|+eval| feature it will output "unknown".
 
 :colo[rscheme] {name}	Load color scheme {name}.  This searches 'runtimepath'
 			for the file "colors/{name}.vim".  The first one that
