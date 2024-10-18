@@ -663,7 +663,7 @@ handle_viminfo_history(
 	    // Put the separator after the NUL.
 	    p[len + 1] = sep;
 	    viminfo_history[type][idx].hisstr = p;
-	    viminfo_history[type][idx].hisstrlen = (size_t)len;
+	    viminfo_history[type][idx].hisstrlen = (size_t)len + 1;
 	    viminfo_history[type][idx].hisnum = 0;
 	    viminfo_history[type][idx].viminfo = TRUE;
 	    viminfo_hisidx[type]++;
