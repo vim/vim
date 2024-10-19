@@ -1039,11 +1039,28 @@ endfunc
 
 func Test_set_values()
   " opt_test.vim is generated from ../optiondefs.h using gen_opt_test.vim
-  if filereadable('opt_test.vim')
-    source opt_test.vim
-  else
+  if !filereadable('opt_test.vim')
     throw 'Skipped: opt_test.vim does not exist'
   endif
+
+  " Save the values of options having non-default values.
+  let non_default_options = execute('set!')->split("\n")[1:]
+        \ ->mapnew({_, line -> line[2:]->split('=')[0]})
+  " :set output doesn't escape spaces, so use &option to get values.
+  let non_default_values = {}
+  for o in non_default_options
+    if o == 'pyxversion'
+      continue
+    endif
+    exe $'let non_default_values[o] = [&g:{o}, &l:{o}]'
+  endfor
+
+  source opt_test.vim
+
+  " Restore the values of options having non-default values.
+  for [o, v] in non_default_values->items()
+    exe $'let [&g:{o}, &l:{o}] = v'
+  endfor
 endfunc
 
 func Test_renderoptions()
@@ -1434,7 +1451,8 @@ func Test_local_scrolloff()
   set siso&
 endfunc
 
-func Test_writedelay()
+" FIXME: this fails in testgui job when run after Test_set_values()
+func Test_000_writedelay()
   CheckFunction reltimefloat
 
   new
