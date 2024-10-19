@@ -6923,39 +6923,27 @@ ex_wrongmodifier(exarg_T *eap)
     eap->errmsg = ex_errmsg(e_invalid_command_str, eap->cmd);
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Evaluate the 'findexpr' expression and return the result.  When evaluating
  * the expression, v:fname is set to the ":find" command argument.
  */
     static list_T *
-eval_findexpr(char_u *ptr, int len)
+eval_findexpr(char_u *ptr)
 {
     sctx_T	saved_sctx = current_sctx;
-    int		use_sandbox = FALSE;
     char_u	*findexpr;
     char_u	*arg;
     typval_T	tv;
     list_T	*retlist = NULL;
 
-    if (*curbuf->b_p_fexpr == NUL)
-    {
-	use_sandbox = was_set_insecurely((char_u *)"findexpr", OPT_GLOBAL);
-	findexpr = p_fexpr;
-    }
-    else
-    {
-	use_sandbox = was_set_insecurely((char_u *)"findexpr", OPT_LOCAL);
-	findexpr = curbuf->b_p_fexpr;
-    }
+    findexpr = get_findexpr();
 
-    set_vim_var_string(VV_FNAME, ptr, len);
+    set_vim_var_string(VV_FNAME, ptr, -1);
     current_sctx = curbuf->b_p_script_ctx[BV_FEXPR];
 
     arg = skipwhite(findexpr);
 
-    if (use_sandbox)
-	++sandbox;
     ++textlock;
 
     // Evaluate the expression.  If the expression is "FuncName()" call the
@@ -6966,10 +6954,10 @@ eval_findexpr(char_u *ptr, int len)
     {
 	if (tv.v_type == VAR_LIST)
 	    retlist = list_copy(tv.vval.v_list, TRUE, TRUE, get_copyID());
+	else
+	    emsg(_(e_invalid_return_type_from_findexpr));
 	clear_tv(&tv);
     }
-    if (use_sandbox)
-	--sandbox;
     --textlock;
     clear_evalarg(&EVALARG_EVALUATE, NULL);
 
@@ -6977,6 +6965,61 @@ eval_findexpr(char_u *ptr, int len)
     current_sctx = saved_sctx;
 
     return retlist;
+}
+
+/*
+ * Find file names matching "pat" using 'findexpr' and return it in "files".
+ * Used for expanding the :find, :sfind and :tabfind command argument.
+ * Returns OK on success and FAIL otherwise.
+ */
+    int
+expand_findexpr(char_u *pat, char_u ***files, int *numMatches)
+{
+    list_T	*l;
+    int		len;
+    char_u	*regpat;
+
+    *numMatches = 0;
+    *files = NULL;
+
+    // File name expansion uses wildchars.  But the 'findexpr' expression
+    // expects a regular expression argument.  So convert wildchars in the
+    // argument to regular expression patterns.
+    regpat = file_pat_to_reg_pat(pat, NULL, NULL, FALSE);
+    if (regpat == NULL)
+	return FAIL;
+
+    l = eval_findexpr(regpat);
+
+    vim_free(regpat);
+
+    if (l == NULL)
+	return FAIL;
+
+    len = list_len(l);
+    if (len == 0)	    // empty List
+	return FAIL;
+
+    *files = ALLOC_MULT(char_u *, len);
+    if (*files == NULL)
+	return FAIL;
+
+    // Copy all the List items
+    listitem_T *li;
+    int idx = 0;
+    FOR_ALL_LIST_ITEMS(l, li)
+    {
+	if (li->li_tv.v_type == VAR_STRING)
+	{
+	    (*files)[idx] = vim_strsave(li->li_tv.vval.v_string);
+	    idx++;
+	}
+    }
+
+    *numMatches = idx;
+    list_free(l);
+
+    return OK;
 }
 
 /*
@@ -6994,7 +7037,7 @@ findexpr_find_file(char_u *findarg, int findarg_len, int count)
     cc = findarg[findarg_len];
     findarg[findarg_len] = NUL;
 
-    fname_list = eval_findexpr(findarg, findarg_len);
+    fname_list = eval_findexpr(findarg);
     fname_count = list_len(fname_list);
 
     if (fname_count == 0)
