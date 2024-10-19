@@ -395,6 +395,9 @@ while 1
   endif
 
   call add(script, $"func Test_opt_set_{fullname}()")
+  call add(script, $"if exists('+{fullname}')")
+  call add(script, $"let saved = [&g:{fullname}, &l:{fullname}]")
+  call add(script, 'endif')
 
   let [pre_processing, post_processing] = get(test_prepost, fullname, [[], []])
   let script += pre_processing
@@ -463,6 +466,9 @@ while 1
   if fullname != 'termencoding' || !has('gui_gtk')
     call add(script, $'set {fullname}&')
     call add(script, $'set {shortname}&')
+    call add(script, $"if exists('+{fullname}')")
+    call add(script, $"let [&g:{fullname}, &l:{fullname}] = saved")
+    call add(script, 'endif')
   endif
 
   let script += post_processing
