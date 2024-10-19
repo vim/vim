@@ -6293,6 +6293,11 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_FP:
 	    clear_string_option(&buf->b_p_fp);
 	    break;
+# ifdef FEAT_EVAL
+	case PV_FEXPR:
+	    clear_string_option(&buf->b_p_fexpr);
+	    break;
+# endif
 # ifdef FEAT_QUICKFIX
 	case PV_EFM:
 	    clear_string_option(&buf->b_p_efm);
@@ -6371,6 +6376,9 @@ get_varp_scope(struct vimoption *p, int scope)
 	switch ((int)p->indir)
 	{
 	    case PV_FP:   return (char_u *)&(curbuf->b_p_fp);
+#ifdef FEAT_EVAL
+	    case PV_FEXPR:   return (char_u *)&(curbuf->b_p_fexpr);
+#endif
 #ifdef FEAT_QUICKFIX
 	    case PV_EFM:  return (char_u *)&(curbuf->b_p_efm);
 	    case PV_GP:   return (char_u *)&(curbuf->b_p_gp);
@@ -6481,6 +6489,10 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_FP:	return *curbuf->b_p_fp != NUL
 				    ? (char_u *)&(curbuf->b_p_fp) : p->var;
+#ifdef FEAT_EVAL
+	case PV_FEXPR:	return *curbuf->b_p_fexpr != NUL
+				    ? (char_u *)&curbuf->b_p_fexpr : p->var;
+#endif
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:	return *curbuf->b_p_efm != NUL
 				    ? (char_u *)&(curbuf->b_p_efm) : p->var;
@@ -6725,6 +6737,21 @@ get_equalprg(void)
     if (*curbuf->b_p_ep == NUL)
 	return p_ep;
     return curbuf->b_p_ep;
+}
+
+/*
+ * Get the value of 'findexpr', either the buffer-local one or the global one.
+ */
+    char_u *
+get_findexpr(void)
+{
+#ifdef FEAT_EVAL
+    if (*curbuf->b_p_fexpr == NUL)
+	return p_fexpr;
+    return curbuf->b_p_fexpr;
+#else
+    return (char_u *)"";
+#endif
 }
 
 /*
@@ -7255,6 +7282,10 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_efm = empty_option;
 #endif
 	    buf->b_p_ep = empty_option;
+#if defined(FEAT_EVAL)
+	    buf->b_p_fexpr = vim_strsave(p_fexpr);
+	    COPY_OPT_SCTX(buf, BV_FEXPR);
+#endif
 	    buf->b_p_kp = empty_option;
 	    buf->b_p_path = empty_option;
 	    buf->b_p_tags = empty_option;

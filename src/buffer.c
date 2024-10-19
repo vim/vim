@@ -2412,6 +2412,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_fp);
 #if defined(FEAT_EVAL)
     clear_string_option(&buf->b_p_fex);
+    clear_string_option(&buf->b_p_fexpr);
 #endif
 #ifdef FEAT_CRYPT
 # ifdef FEAT_SODIUM

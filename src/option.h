@@ -596,6 +596,9 @@ EXTERN char_u	*p_ffs;		// 'fileformats'
 EXTERN int	p_fic;		// 'fileignorecase'
 EXTERN char_u	*p_ft;		// 'filetype'
 EXTERN char_u	*p_fcs;		// 'fillchar'
+#ifdef FEAT_EVAL
+EXTERN char_u	*p_fexpr;	// 'findexpr'
+#endif
 EXTERN int	p_fixeol;	// 'fixendofline'
 #ifdef FEAT_FOLDING
 EXTERN char_u	*p_fcl;		// 'foldclose'
@@ -1168,6 +1171,7 @@ enum
     , BV_EP
     , BV_ET
     , BV_FENC
+    , BV_FEXPR
     , BV_FP
 #ifdef FEAT_EVAL
     , BV_BEXPR
