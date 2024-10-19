@@ -1,5 +1,7 @@
 " Test findfile() and finddir()
 
+source check.vim
+
 let s:files = [ 'Xfinddir1/foo',
       \         'Xfinddir1/bar',
       \         'Xfinddir1/Xdir2/foo',
@@ -279,6 +281,45 @@ func Test_find_non_existing_path()
   call chdir(save_dir)
   bw!
   let &path = save_path
+endfunc
+
+" Test for 'findprg'
+func Test_findprg()
+  CheckUnix
+  call assert_equal('', &findprg)
+  let save_dir = getcwd()
+  call mkdir('Xdir/dirA/dir1', 'pR')
+  call writefile(['aFile'], 'Xdir/dirA/dir1/1File.c', 'D')
+  call writefile(['bFile'], 'Xdir/dirA/dir1/2File.c', 'D')
+
+  call chdir('Xdir')
+  setlocal findprg=find\ .\ -name\ '$*'\|sort
+  find 1File.c
+  call assert_equal('./dirA/dir1/1File.c', @%)
+  bw!
+  find *.c
+  call assert_equal('./dirA/dir1/1File.c', @%)
+  bw!
+  2find *.c
+  call assert_equal('./dirA/dir1/2File.c', @%)
+  bw!
+  call assert_fails('3find *.c', 'E347: No more file "*.c" found in path')
+  call assert_fails('find foobar', 'E345: Can''t find file "foobar" in path')
+
+  sfind 2File.c
+  call assert_equal('./dirA/dir1/2File.c', @%)
+  call assert_equal(2, winnr('$'))
+  %bw!
+  call assert_fails('sfind foobar', 'E345: Can''t find file "foobar" in path')
+
+  tabfind 1File.c
+  call assert_equal('./dirA/dir1/1File.c', @%)
+  call assert_equal(2, tabpagenr())
+  %bw!
+  call assert_fails('tabfind foobar', 'E345: Can''t find file "foobar" in path')
+
+  call chdir(save_dir)
+  set findprg&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

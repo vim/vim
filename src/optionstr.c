@@ -324,6 +324,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_efm);
 #endif
     check_string_option(&buf->b_p_ep);
+    check_string_option(&buf->b_p_fprg);
     check_string_option(&buf->b_p_path);
     check_string_option(&buf->b_p_tags);
     check_string_option(&buf->b_p_tc);

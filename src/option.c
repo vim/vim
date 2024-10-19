@@ -6293,6 +6293,9 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_FP:
 	    clear_string_option(&buf->b_p_fp);
 	    break;
+	case PV_FPRG:
+	    clear_string_option(&buf->b_p_fprg);
+	    break;
 # ifdef FEAT_QUICKFIX
 	case PV_EFM:
 	    clear_string_option(&buf->b_p_efm);
@@ -6371,6 +6374,7 @@ get_varp_scope(struct vimoption *p, int scope)
 	switch ((int)p->indir)
 	{
 	    case PV_FP:   return (char_u *)&(curbuf->b_p_fp);
+	    case PV_FPRG:   return (char_u *)&(curbuf->b_p_fprg);
 #ifdef FEAT_QUICKFIX
 	    case PV_EFM:  return (char_u *)&(curbuf->b_p_efm);
 	    case PV_GP:   return (char_u *)&(curbuf->b_p_gp);
@@ -6481,6 +6485,8 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_FP:	return *curbuf->b_p_fp != NUL
 				    ? (char_u *)&(curbuf->b_p_fp) : p->var;
+	case PV_FPRG:	return *curbuf->b_p_fprg != NUL
+				    ? (char_u *)&curbuf->b_p_fprg : p->var;
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:	return *curbuf->b_p_efm != NUL
 				    ? (char_u *)&(curbuf->b_p_efm) : p->var;
@@ -6725,6 +6731,17 @@ get_equalprg(void)
     if (*curbuf->b_p_ep == NUL)
 	return p_ep;
     return curbuf->b_p_ep;
+}
+
+/*
+ * Get the value of 'findprg', either the buffer-local one or the global one.
+ */
+    char_u *
+get_findprg(void)
+{
+    if (*curbuf->b_p_fprg == NUL)
+	return p_fprg;
+    return curbuf->b_p_fprg;
 }
 
 /*
@@ -7255,6 +7272,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_efm = empty_option;
 #endif
 	    buf->b_p_ep = empty_option;
+	    buf->b_p_fprg = empty_option;
 	    buf->b_p_kp = empty_option;
 	    buf->b_p_path = empty_option;
 	    buf->b_p_tags = empty_option;
