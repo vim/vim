@@ -30,7 +30,7 @@ default: nongui
 include Make_all.mak
 
 # Explicit dependencies.
-test_options.res test_alot.res: opt_test.vim
+test_options_all.res: opt_test.vim
 
 .SUFFIXES: .in .out .res .vim
 

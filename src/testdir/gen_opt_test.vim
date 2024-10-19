@@ -64,7 +64,7 @@ let skip_setglobal_reasons = #{
 " The terminal size is restored at the end.
 let script = [
       \ '" DO NOT EDIT: Generated with gen_opt_test.vim',
-      \ '" Used by test_options.vim.',
+      \ '" Used by test_options_all.vim.',
       \ '',
       \ 'scriptencoding utf-8',
       \ ]
