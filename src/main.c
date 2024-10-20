@@ -1695,7 +1695,7 @@ getout(int exitval)
 
 #ifdef FEAT_VIMINFO
     if (
-# if defined(EXITFREE) || defined(PROTO)
+# ifdef EXITFREE
 	    entered_free_all_mem == FALSE &&
 # endif
 	    *p_viminfo != NUL)
