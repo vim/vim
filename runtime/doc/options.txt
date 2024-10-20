@@ -3556,13 +3556,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 'findprg' 'fprg'	string	(default "")
 			global or local to buffer |global-local|
 	External program to use for the |:find| command.  When this option is
-	empty the internal file finding mechanism is used.  When executing the
-	external command, "$*" in 'findprg' is replaced with the argument
-	passed to the |:find| command.
-	If a matching file is found, the command should return one or more
-	file names separated by the newline character.  Example:
+	empty, the internal |file-searching| mechanism is used.
+	The external command is executed for each directory in 'path' until a
+	match is found.
+	When executing the external command, "$*" in 'findprg' is replaced
+	with the argument passed to the |:find| command.   The placeholder
+	"$@" in 'findprg' is replaced with a directory name from |'path'|.
+	If a match is found, the command should return one or more file names
+	separated by a newline character.  Example:
 >
-	    :set findprg=find\ .\ -name\ '$*'
+	    :set findprg=find\ $@\ -name\ '$*'
 <
 		*'fixendofline'* *'fixeol'* *'nofixendofline'* *'nofixeol'*
 'fixendofline' 'fixeol'	boolean	(default on)

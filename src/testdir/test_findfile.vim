@@ -288,32 +288,30 @@ func Test_findprg()
   CheckUnix
   call assert_equal('', &findprg)
   let save_dir = getcwd()
-  call mkdir('Xdir/dirA/dir1', 'pR')
-  call writefile(['aFile'], 'Xdir/dirA/dir1/1File.c', 'D')
-  call writefile(['bFile'], 'Xdir/dirA/dir1/2File.c', 'D')
+  call mkdir('Xdir/dirA', 'pR')
+  call mkdir('Xdir/dirB', 'pR')
+  call writefile(['aFile'], 'Xdir/dirA/foobar.c', 'D')
+  call writefile(['bFile'], 'Xdir/dirB/foobar.c', 'D')
 
   call chdir('Xdir')
   setlocal findprg=find\ .\ -name\ '$*'\|sort
-  find 1File.c
-  call assert_equal('./dirA/dir1/1File.c', @%)
+  find foobar.c
+  call assert_equal('./dirA/foobar.c', @%)
   bw!
-  find *.c
-  call assert_equal('./dirA/dir1/1File.c', @%)
+  2find foobar.c
+  call assert_equal('./dirB/foobar.c', @%)
   bw!
-  2find *.c
-  call assert_equal('./dirA/dir1/2File.c', @%)
-  bw!
-  call assert_fails('3find *.c', 'E347: No more file "*.c" found in path')
+  call assert_fails('3find foobar.c', 'E347: No more file "foobar.c" found in path')
   call assert_fails('find foobar', 'E345: Can''t find file "foobar" in path')
 
-  sfind 2File.c
-  call assert_equal('./dirA/dir1/2File.c', @%)
+  sfind foobar.c
+  call assert_equal('./dirA/foobar.c', @%)
   call assert_equal(2, winnr('$'))
   %bw!
   call assert_fails('sfind foobar', 'E345: Can''t find file "foobar" in path')
 
-  tabfind 1File.c
-  call assert_equal('./dirA/dir1/1File.c', @%)
+  tabfind foobar.c
+  call assert_equal('./dirA/foobar.c', @%)
   call assert_equal(2, tabpagenr())
   %bw!
   call assert_fails('tabfind foobar', 'E345: Can''t find file "foobar" in path')

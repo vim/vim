@@ -2210,7 +2210,7 @@ is_unique(char_u *maybe_unique, garray_T *gap, int i)
  * TODO: handle upward search (;) and path limiter (**N) notations by
  * expanding each into their equivalent path(s).
  */
-    static void
+    void
 expand_path_option(
 	char_u		*curdir,
 	char_u		*path_option,	// p_path or p_cdpath
