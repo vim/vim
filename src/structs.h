@@ -1439,7 +1439,16 @@ typedef long_u hash_T;		// Type for hi_hash
 // value.
 typedef signed char int8_T;
 
-typedef double	float_T;
+// Allow longer floats if system supports it, otherwise fallback to behavior we
+// know worked in the past for most use-cases
+//
+// Attributions;
+// - https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html -> __LP64__
+#if defined(__LP64__)
+  typedef long double	float_T;
+#else
+  typedef double	float_T;
+#endif
 
 typedef struct typval_S typval_T;
 typedef struct listvar_S list_T;
