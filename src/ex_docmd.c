@@ -7006,6 +7006,7 @@ findprg_find_file(char_u *findarg, int findarg_len, int count)
     mch_dirname(curdir, MAXPATHL);
     ga_init2(&path_ga, sizeof(char_u *), 1);
     expand_path_option(curdir, path_opt, &path_ga);
+    vim_free(curdir);
 
     cc = findarg[findarg_len];
     findarg[findarg_len] = NUL;
