@@ -320,10 +320,10 @@ endfunc
 func Get_cat_123_cmd()
   if has('win32')
     if !has('conpty')
-      return 'cmd /c "cls && color 2 && echo 123"'
+      return 'cmd /D /c "cls && color 2 && echo 123"'
     else
       " When clearing twice, extra sequence is not output.
-      return 'cmd /c "cls && cls && color 2 && echo 123"'
+      return 'cmd /D /c "cls && cls && color 2 && echo 123"'
     endif
   else
     call writefile(["\<Esc>[32m123"], 'Xtext')
@@ -410,7 +410,7 @@ func Test_terminal_scrape_multibyte()
   if has('win32')
     " Run cmd with UTF-8 codepage to make the type command print the expected
     " multibyte characters.
-    let buf = term_start("cmd /K chcp 65001")
+    let buf = term_start("cmd /D /K chcp 65001")
     call term_sendkeys(buf, "type Xtext\<CR>")
     eval buf->term_sendkeys("exit\<CR>")
     let line = 4
@@ -457,7 +457,7 @@ endfunc
 func Test_terminal_scroll()
   call writefile(range(1, 200), 'Xtext', 'D')
   if has('win32')
-    let cmd = 'cmd /c "type Xtext"'
+    let cmd = 'cmd /D /c "type Xtext"'
   else
     let cmd = "cat Xtext"
   endif
@@ -765,7 +765,7 @@ endfunc
 
 func Test_terminal_cwd()
   if has('win32')
-    let cmd = 'cmd /c cd'
+    let cmd = 'cmd /D /c cd'
   else
     CheckExecutable pwd
     let cmd = 'pwd'
@@ -1111,7 +1111,7 @@ func Test_terminal_composing_unicode()
   set encoding=utf-8
 
   if has('win32')
-    let cmd = "cmd /K chcp 65001"
+    let cmd = "cmd /D /K chcp 65001"
     let lnum = [3, 6, 9]
   else
     let cmd = &shell

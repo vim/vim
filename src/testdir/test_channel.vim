@@ -1429,7 +1429,7 @@ func Test_exit_cb_wipes_buf()
   new
   let g:wipe_buf = bufnr('')
 
-  let job = job_start(has('win32') ? 'cmd /c echo:' : ['true'],
+  let job = job_start(has('win32') ? 'cmd /D /c echo:' : ['true'],
 	\ {'exit_cb': 'ExitCbWipe'})
   let timer = timer_start(300, {-> feedkeys("\<Esc>", 'nt')}, {'repeat': 5})
   call feedkeys(repeat('g', 1000) . 'o', 'ntx!')
@@ -1770,7 +1770,7 @@ func Test_job_start_fails()
   call assert_fails("call job_start('ls',
         \ {'err_io' : 'buffer', 'err_buf' : -1})", 'E475:')
 
-  let cmd = has('win32') ? "cmd /c dir" : "ls"
+  let cmd = has('win32') ? "cmd /D /c dir" : "ls"
 
   set nomodifiable
   call assert_fails("call job_start(cmd,
@@ -2308,7 +2308,7 @@ endfunc
 
 func Test_issue_5150()
   if has('win32')
-    let cmd = 'cmd /c pause'
+    let cmd = 'cmd /D /c pause'
   else
     let cmd = 'grep foo'
   endif
@@ -2438,7 +2438,7 @@ func Test_cb_with_input()
   let g:wait_exit_cb = 1
 
   if has('win32')
-    let cmd = 'cmd /c echo "Vim''s test"'
+    let cmd = 'cmd /D /c echo "Vim''s test"'
   else
     let cmd = 'echo "Vim''s test"'
   endif
