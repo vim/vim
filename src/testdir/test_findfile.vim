@@ -294,7 +294,7 @@ func Test_findprg()
   call writefile(['bFile'], 'Xdir/dirB/foobar.c', 'D')
   call chdir('Xdir')
 
-  setlocal path=.,,
+  set path=.,,
 
   " Test both the "$@" and the "$*" placeholders
   setlocal findprg=find\ $@\ -name\ '$*'\|sort
