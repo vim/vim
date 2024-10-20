@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Oct 13
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Oct 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5309,12 +5309,15 @@ of colors by using the `:colorscheme` command, for example: >
 			This is basically the same as >
 				:echo g:colors_name
 <			In case g:colors_name has not been defined :colo will
-			output "default".  When compiled without the |+eval|
-			feature it will output "unknown".
+			output "default". Its palette is defined in the file
+			"$VIMRUNTIME/syntax/syncolor.vim" and is based on
+			legacy versions of peachpuff and desert. When compiled
+			without the |+eval| feature it will output "unknown".
 
 :colo[rscheme] {name}	Load color scheme {name}.  This searches 'runtimepath'
 			for the file "colors/{name}.vim".  The first one that
 			is found is loaded.
+			Use `:colo default` to load the default colorscheme.
 			Also searches all plugins in 'packpath', first below
 			"start" and then under "opt".
 
