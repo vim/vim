@@ -294,24 +294,24 @@ func Test_findprg()
   call writefile(['bFile'], 'Xdir/dirB/foobar.c', 'D')
 
   call chdir('Xdir')
-  setlocal findprg=find\ .\ -name\ '$*'\|sort
+  setlocal findprg=find\ $@\ -name\ '$*'\|sort
   find foobar.c
-  call assert_equal('./dirA/foobar.c', @%)
+  call assert_match('/dirA/foobar.c$', @%)
   bw!
   2find foobar.c
-  call assert_equal('./dirB/foobar.c', @%)
+  call assert_match('/dirB/foobar.c$', @%)
   bw!
   call assert_fails('3find foobar.c', 'E347: No more file "foobar.c" found in path')
   call assert_fails('find foobar', 'E345: Can''t find file "foobar" in path')
 
   sfind foobar.c
-  call assert_equal('./dirA/foobar.c', @%)
+  call assert_match('/dirA/foobar.c$', @%)
   call assert_equal(2, winnr('$'))
   %bw!
   call assert_fails('sfind foobar', 'E345: Can''t find file "foobar" in path')
 
   tabfind foobar.c
-  call assert_equal('./dirA/foobar.c', @%)
+  call assert_match('/dirA/foobar.c$', @%)
   call assert_equal(2, tabpagenr())
   %bw!
   call assert_fails('tabfind foobar', 'E345: Can''t find file "foobar" in path')
