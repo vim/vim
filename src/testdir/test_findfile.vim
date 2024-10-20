@@ -292,8 +292,11 @@ func Test_findprg()
   call mkdir('Xdir/dirB', 'pR')
   call writefile(['aFile'], 'Xdir/dirA/foobar.c', 'D')
   call writefile(['bFile'], 'Xdir/dirB/foobar.c', 'D')
-
   call chdir('Xdir')
+
+  setlocal path=.,,
+
+  " Test both the "$@" and the "$*" placeholders
   setlocal findprg=find\ $@\ -name\ '$*'\|sort
   find foobar.c
   call assert_match('/dirA/foobar.c$', @%)
@@ -316,8 +319,15 @@ func Test_findprg()
   %bw!
   call assert_fails('tabfind foobar', 'E345: Can''t find file "foobar" in path')
 
+  " Test without the "$@" placeholder
+  setlocal findprg=find\ .\ -name\ '$*'\|sort
+  find foobar.c
+  call assert_match('/dirA/foobar.c$', @%)
+  bw!
+
   call chdir(save_dir)
   set findprg&
+  set path&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
