@@ -353,11 +353,6 @@ let test_prepost = {
       \		'let &columns = save_columns',
       \		'set t_WS&'
       \		]],
-      \ 'encoding': [[
-      \		'let save_encoding = &encoding'
-      \		], [
-      \		'let &encoding = save_encoding'
-      \		]],
       \ 'lines': [[
       \		'set t_WS=',
       \		'let save_lines = &lines'
@@ -365,7 +360,6 @@ let test_prepost = {
       \		'let &lines = save_lines',
       \		'set t_WS&'
       \		]],
-      \ 'more': [[], ['set nomore']],
       \ 'verbosefile': [[], ['call delete("Xfile")']],
       \}
 
@@ -395,8 +389,8 @@ while 1
   endif
 
   call add(script, $"func Test_opt_set_{fullname}()")
-  call add(script, $"if exists('+{fullname}')")
-  call add(script, $"let saved = [&g:{fullname}, &l:{fullname}]")
+  call add(script, $"if exists('+{fullname}') && execute('set!') =~# '\\n..{fullname}\\([=\\n]\\|$\\)'")
+  call add(script, $"let l:saved = [&g:{fullname}, &l:{fullname}]")
   call add(script, 'endif')
 
   let [pre_processing, post_processing] = get(test_prepost, fullname, [[], []])
@@ -466,8 +460,8 @@ while 1
   if fullname != 'termencoding' || !has('gui_gtk')
     call add(script, $'set {fullname}&')
     call add(script, $'set {shortname}&')
-    call add(script, $"if exists('+{fullname}')")
-    call add(script, $"let [&g:{fullname}, &l:{fullname}] = saved")
+    call add(script, $"if exists('l:saved')")
+    call add(script, $"let [&g:{fullname}, &l:{fullname}] = l:saved")
     call add(script, 'endif')
   endif
 
