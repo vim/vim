@@ -1694,7 +1694,11 @@ getout(int exitval)
     }
 
 #ifdef FEAT_VIMINFO
-    if (*p_viminfo != NUL)
+    if (
+# ifdef EXITFREE
+	    entered_free_all_mem == FALSE &&
+# endif
+	    *p_viminfo != NUL)
 	// Write out the registers, history, marks etc, to the viminfo file
 	write_viminfo(NULL, FALSE);
 #endif
