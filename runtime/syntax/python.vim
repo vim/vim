@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Zvezdan Petkovic <zpetkovic@acm.org>
-" Last Change:	2023 Feb 28
+" Last Change:	2024 Sep 21
 " Credits:	Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
 "
@@ -108,7 +108,7 @@ syn keyword pythonAsync		async await
 " These keywords do not mean anything unless used in the right context.
 " See https://docs.python.org/3/reference/lexical_analysis.html#soft-keywords
 " for more on this.
-syn match   pythonConditional   "^\s*\zscase\%(\s\+.*:.*$\)\@="
+syn match   pythonConditional   "^\s*\zscase\%(\s\+.*[:(].*$\)\@="
 syn match   pythonConditional   "^\s*\zsmatch\%(\s\+.*:\s*\%(#.*\)\=$\)\@="
 
 " Decorators
