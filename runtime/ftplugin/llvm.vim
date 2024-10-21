@@ -1,0 +1,12 @@
+" Vim filetype plugin file
+" Language:	LLVM IR
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2024 Oct 22
+
+if exists("b:did_ftplugin") | finish | endif
+let b:did_ftplugin = 1
+
+setl comments=:;
+setl commentstring=;\ %s
+
+let b:undo_ftplugin = "setl commentstring< comments<"
