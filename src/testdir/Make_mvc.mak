@@ -16,7 +16,7 @@ default: nongui
 !include Make_all.mak
 
 # Explicit dependencies.
-test_options.res test_alot.res: opt_test.vim
+test_options_all.res: opt_test.vim
 
 TEST_OUTFILES = $(SCRIPTS_TINY_OUT)
 DOSTMP = dostmp
@@ -151,7 +151,7 @@ test_gui_init.res: test_gui_init.vim
 	$(VIMPROG) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $*.vim
 	@del vimcmd
 
-opt_test.vim: gen_opt_test.vim ../optiondefs.h
+opt_test.vim: gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
 	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S $**
 	@if exist test.log ( type test.log & exit /b 1 )
 

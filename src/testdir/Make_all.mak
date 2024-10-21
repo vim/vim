@@ -232,6 +232,7 @@ NEW_TESTS = \
 	test_normal \
 	test_number \
 	test_options \
+	test_options_all \
 	test_packadd \
 	test_partial \
 	test_paste \
@@ -492,6 +493,7 @@ NEW_TESTS_RES = \
 	test_normal.res \
 	test_number.res \
 	test_options.res \
+	test_options_all.res \
 	test_packadd.res \
 	test_partial.res \
 	test_paste.res \
