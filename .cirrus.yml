@@ -28,3 +28,4 @@ freebsd_task:
         runtime/syntax/testdir/failed/*
         src/testdir/failed/*
       type: application/octet-stream
+\
