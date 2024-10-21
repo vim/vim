@@ -7747,6 +7747,8 @@ g:typescript_host_keyword	syntax.txt	/*g:typescript_host_keyword*
 g:typst_cmd	quickfix.txt	/*g:typst_cmd*
 g:typst_conceal	filetype.txt	/*g:typst_conceal*
 g:typst_embedded_languages	syntax.txt	/*g:typst_embedded_languages*
+g:typst_folding	filetype.txt	/*g:typst_folding*
+g:typst_foldnested	filetype.txt	/*g:typst_foldnested*
 g:var	eval.txt	/*g:var*
 g:vim_indent	indent.txt	/*g:vim_indent*
 g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
