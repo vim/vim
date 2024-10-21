@@ -552,10 +552,10 @@ read_viminfo_history(vir_T *virp, int writing)
 
     // Need to re-allocate to append the separator byte.
     len = STRLEN(val);
-
     if (type == HIST_SEARCH)
     {
-	p = alloc((size_t)len + 1);		    // +1 for NUL
+	p = alloc((size_t)len + 1);	    // +1 for the NUL. val already
+					    // includes the separator.
 	if (p == NULL)
 	    goto done;
 
@@ -563,18 +563,18 @@ read_viminfo_history(vir_T *virp, int writing)
 	// column to after the NUL.
 	mch_memmove(p, val + 1, (size_t)len);
 	p[len] = sep;
+	--len;				    // take into account the shortened string
     }
     else
     {
-	p = alloc((size_t)len + 2);		    // +1 for separator and +1 for NUL
+	p = alloc((size_t)len + 2);	    // +1 for NUL and +1 for separator
 	if (p == NULL)
 	    goto done;
 
 	// Not a search entry: No separator in the viminfo
 	// file, add a NUL separator.
-	++len;
-	mch_memmove(p, val, (size_t)len);
-	p[len] = NUL;
+	mch_memmove(p, val, (size_t)len + 1);	// +1 to include the NUL
+	p[len + 1] = NUL;			// put the separator *after* the string's NUL
     }
     viminfo_history[type][viminfo_hisidx[type]].hisstr = p;
     viminfo_history[type][viminfo_hisidx[type]].hisstrlen = (size_t)len;
@@ -601,7 +601,6 @@ handle_viminfo_history(
     long_u	len;
     char_u	*val;
     char_u	*p;
-    size_t	plen;
     bval_T	*vp = (bval_T *)values->ga_data;
 
     // Check the format:
@@ -637,9 +636,9 @@ handle_viminfo_history(
     for (idx = 0; idx < viminfo_hisidx[type]; ++idx)
     {
 	p = viminfo_history[type][idx].hisstr;
-	plen = viminfo_history[type][idx].hisstrlen;
+	len = viminfo_history[type][idx].hisstrlen;
 	if (STRCMP(val, p) == 0
-		&& (type != HIST_SEARCH || sep == p[plen + 1]))
+		&& (type != HIST_SEARCH || sep == p[len + 1]))
 	{
 	    overwrite = TRUE;
 	    break;
