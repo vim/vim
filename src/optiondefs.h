@@ -2563,7 +2563,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"termwinscroll", "twsl", P_NUM|P_VI_DEF|P_VIM|P_RBUF,
 #ifdef FEAT_TERMINAL
-			    (char_u *)&p_twsl, PV_TWSL, NULL, NULL,
+			    (char_u *)&p_twsl, PV_TWSL, did_set_termwinscroll, NULL,
 			    {(char_u *)10000L, (char_u *)10000L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
