@@ -4121,7 +4121,12 @@ compile_def_function(
 
     // Compiling a function in an interface is done to get the function type.
     // No code is actually compiled.
-    if (ufunc->uf_class != NULL && IS_INTERFACE(ufunc->uf_class))
+    if ((ufunc->uf_class != NULL && IS_INTERFACE(ufunc->uf_class))
+   || IS_ABSTRACT_METHOD(ufunc))
+{
+   ufunc->uf_def_status = UF_NOT_COMPILED;
+   ret = OK;
+}
     {
 	ufunc->uf_def_status = UF_NOT_COMPILED;
 	ret = OK;
