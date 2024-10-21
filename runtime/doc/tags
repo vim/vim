@@ -9122,7 +9122,6 @@ netrw-write	pi_netrw.txt	/*netrw-write*
 netrw-x	pi_netrw.txt	/*netrw-x*
 netrw-xfer	pi_netrw.txt	/*netrw-xfer*
 netrw.vim	pi_netrw.txt	/*netrw.vim*
-netrw_filehandler	pi_netrw.txt	/*netrw_filehandler*
 netterm-mouse	options.txt	/*netterm-mouse*
 network	pi_netrw.txt	/*network*
 new()	vim9class.txt	/*new()*
