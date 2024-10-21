@@ -1,5 +1,7 @@
 " Test findfile() and finddir()
 
+source check.vim
+
 let s:files = [ 'Xfinddir1/foo',
       \         'Xfinddir1/bar',
       \         'Xfinddir1/Xdir2/foo',
@@ -279,6 +281,73 @@ func Test_find_non_existing_path()
   call chdir(save_dir)
   bw!
   let &path = save_path
+endfunc
+
+" Test for 'findexpr'
+func Test_findexpr()
+  CheckUnix
+  call assert_equal('', &findexpr)
+  call writefile(['aFile'], 'Xfindexpr1.c', 'D')
+  call writefile(['bFile'], 'Xfindexpr2.c', 'D')
+  call writefile(['cFile'], 'Xfindexpr3.c', 'D')
+
+  " basic tests
+  func MyFindExpr1()
+    let fnames = ['Xfindexpr1.c', 'Xfindexpr2.c', 'Xfindexpr3.c']
+    return fnames->copy()->filter('v:val =~? v:fname')->join("\n")
+  endfunc
+
+  set findexpr=MyFindExpr1()
+  find Xfindexpr3
+  call assert_match('Xfindexpr3.c', @%)
+  bw!
+  2find Xfind
+  call assert_match('Xfindexpr2.c', @%)
+  bw!
+  call assert_fails('4find Xfind', 'E347: No more file "Xfind" found in path')
+  call assert_fails('find foobar', 'E345: Can''t find file "foobar" in path')
+
+  sfind Xfindexpr2.c
+  call assert_match('Xfindexpr2.c', @%)
+  call assert_equal(2, winnr('$'))
+  %bw!
+  call assert_fails('sfind foobar', 'E345: Can''t find file "foobar" in path')
+
+  tabfind Xfindexpr3.c
+  call assert_match('Xfindexpr3.c', @%)
+  call assert_equal(2, tabpagenr())
+  %bw!
+  call assert_fails('tabfind foobar', 'E345: Can''t find file "foobar" in path')
+
+  " Buffer-local option
+  set findexpr='abc'
+  new
+  setlocal findexpr='def'
+  find xxxx
+  call assert_equal('def', @%)
+  wincmd w
+  find xxxx
+  call assert_equal('abc', @%)
+  aboveleft new
+  call assert_equal("'abc'", &findexpr)
+  wincmd k
+  aboveleft new
+  call assert_equal("'abc'", &findexpr)
+  %bw!
+
+  " Error cases
+  set findexpr=MyFindExpr1{}
+  call assert_fails('find Xfindexpr1.c', 'E15: Invalid expression')
+
+  func MyFindExpr2()
+    throw 'find error'
+  endfunc
+  set findexpr=MyFindExpr2()
+  call assert_fails('find Xfindexpr1.c', 'find error')
+
+  set findexpr&
+  delfunc! MyFindExpr1
+  delfunc! MyFindExpr2
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
