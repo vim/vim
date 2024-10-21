@@ -60,6 +60,9 @@ report:
 
 $(SCRIPTS_TINY_OUT) $(NEW_TESTS_RES): $(VIMPROG)
 
+# For $ASAN_OPTIONS and $UBSAN_OPTIONS append the testname to it.
+# This assumes $ASAN_OPTIONS contains log_path as last part of the environment variable
+# For Github CI, those variables are set in .github/workflows/ci.yml
 
 # Execute an individual new style test, e.g.:
 # 	make test_largefile
@@ -114,7 +117,11 @@ tinytests: $(SCRIPTS_TINY_OUT)
 	@# 200 msec is sufficient, but only modern sleep supports a fraction of
 	@# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIMPROG) $*.in $(REDIR_TEST_TO_NULL)
+	if test -n "$${ASAN_OPTIONS}"; then \
+		ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(RUN_VIMPROG) $*.in $(REDIR_TEST_TO_NULL) ; \
+	else \
+		$(RUN_VIMPROG) $*.in $(REDIR_TEST_TO_NULL) ; \
+	fi
 
 	@# Check if the test.out file matches test.ok.
 	@/bin/sh -c "if test -f test.out; then \
@@ -145,32 +152,53 @@ newtestssilent: $(NEW_TESTS_RES)
 .vim.res:
 	@echo "$(VIMPROG)" > vimcmd
 	@echo "$(RUN_VIMTEST)" >> vimcmd
-	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
+	if test -n "$${ASAN_OPTIONS}"; then \
+		ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL) ; \
+	else \
+		$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL) ; \
+	fi
 	@rm vimcmd
 
 test_gui.res: test_gui.vim
 	@echo "$(VIMPROG)" > vimcmd
 	@echo "$(RUN_GVIMTEST)" >> vimcmd
-	$(RUN_VIMTEST) -u NONE $(NO_INITS) -S runtest.vim $<
+	if test -n "$${ASAN_OPTIONS}"; then \
+		ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(RUN_VIMTEST) -u NONE $(NO_INITS) -S runtest.vim $< ; \
+	else \
+		$(RUN_VIMTEST) -u NONE $(NO_INITS) -S runtest.vim $< ; \
+	fi
+
 	@rm vimcmd
 
 test_gui_init.res: test_gui_init.vim
 	@echo "$(VIMPROG)" > vimcmd
 	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" >> vimcmd
-	$(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
+	if test -n "$${ASAN_OPTIONS}"; then \
+		ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $< ; \
+	else \
+		$(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $< ; \
+	fi
 	@rm vimcmd
 
 GEN_OPT_DEPS = gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
 
 opt_test.vim: $(GEN_OPT_DEPS)
-	$(VIMPROG) -e -s -u NONE $(NO_INITS) --nofork --gui-dialog-file guidialog -S $(GEN_OPT_DEPS)
+	if test -n "$${ASAN_OPTIONS}"; then \
+		ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(VIMPROG) -e -s -u NONE $(NO_INITS) --nofork --gui-dialog-file guidialog -S $(GEN_OPT_DEPS) ; \
+	else \
+		$(VIMPROG) -e -s -u NONE $(NO_INITS) --nofork --gui-dialog-file guidialog -S $(GEN_OPT_DEPS) ; \
+	fi
 	@if test -f test.log; then \
 		cat test.log; \
 		exit 1; \
 	fi
 
 test_xxd.res:
-	XXD=$(XXDPROG); export XXD; $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim
+	if test -n "$${ASAN_OPTIONS}"; then \
+		XXD=$(XXDPROG); export XXD; ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim ; \
+	else \
+		XXD=$(XXDPROG); export XXD; $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim ; \
+	fi
 
 test_bench_regexp.res: test_bench_regexp.vim
 	-rm -rf benchmark.out $(RM_ON_RUN)
@@ -178,5 +206,9 @@ test_bench_regexp.res: test_bench_regexp.vim
 	@# 200 msec is sufficient, but only modern sleep supports a fraction of
 	@# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
+	if test -n "$${ASAN_OPTIONS}"; then \
+		ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL) ; \
+	else \
+		$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL) ; \
+	fi
 	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
