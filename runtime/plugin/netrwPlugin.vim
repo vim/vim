@@ -59,19 +59,19 @@ endif
 if has('unix')
   if has('win32unix') " Git Bash provides /usr/bin/start script calling cmd.exe //c
     " use start //b "" to set void title and avoid ambiguity with passed argument
-    silent! command -complete=shellcmd -nargs=1 -bang Launch
+    command -complete=shellcmd -nargs=1 -bang Launch
           \ exe 'silent ! start "" //b ' . trim(<q-args>)  s:redir | redraw!
   elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
-    silent! command -complete=shellcmd -nargs=1 -bang Launch execute ':silent !'..
+    command -complete=shellcmd -nargs=1 -bang Launch execute ':silent !'..
           \ ((<q-args> =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
             \ 'cmd.exe /c start "" /b ' . trim(<q-args>) :
             \ 'nohup ' trim(<q-args>) s:redir '&')
           \ | redraw!
   else
-    silent! command -complete=shellcmd -nargs=1 -bang Launch execute ':silent ! nohup' trim(<q-args>) s:redir '&' | redraw!
+    command -complete=shellcmd -nargs=1 -bang Launch execute ':silent ! nohup' trim(<q-args>) s:redir '&' | redraw!
   endif
 elseif has('win32')
-  silent! command -complete=shellcmd -nargs=1 -bang Launch
+  command -complete=shellcmd -nargs=1 -bang Launch
         \ exe 'silent !'.. (&shell =~? '\<cmd\.exe\>' ? '' : 'cmd.exe /c')
         \ 'start /b ' trim(<q-args>) s:redir | redraw!
 endif
@@ -90,14 +90,14 @@ elseif executable('xdg-open')
 elseif executable('open')
     let s:cmd = 'open'
 endif
-silent! command -complete=file -nargs=1 Open exe 'Launch' s:cmd <q-args>
+command -complete=file -nargs=1 Open exe 'Launch' s:cmd <q-args>
 " endif
 
 if !exists('g:netrw_regex_url')
   let g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
 endif
 
-silent! function Netrw_get_URL_markdown()
+function Netrw_get_URL_markdown()
   " markdown URL such as [link text](http://ya.ru 'yandex search')
   try
     let save_view = winsaveview()
@@ -110,7 +110,7 @@ silent! function Netrw_get_URL_markdown()
   endtry
 endfunction
 
-silent! function Netrw_get_URL_html()
+function Netrw_get_URL_html()
   " HTML URL such as <a href='http://www.python.org'>Python is here</a>
   "                  <a href="http://www.python.org"/>
   try
