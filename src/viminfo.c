@@ -1142,6 +1142,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 			// freed later, also need to free "buf" later
 			value->bv_tofree = buf;
 		    s = sconv;
+		    len = STRLEN(s);
 		    converted = TRUE;
 		}
 	    }
@@ -1149,7 +1150,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    // Need to copy in allocated memory if the string wasn't allocated
 	    // above and we did allocate before, thus vir_line may change.
 	    if (s != buf && allocated && !converted)
-		s = vim_strsave(s);
+		s = vim_strnsave(s, len);
 	    value->bv_string = s;
 	    value->bv_type = BVAL_STRING;
 	    value->bv_len = len;
