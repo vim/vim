@@ -3326,6 +3326,7 @@ struct file_buffer
     char_u	*b_p_efm;	// 'errorformat' local value
 #endif
     char_u	*b_p_ep;	// 'equalprg' local value
+    char_u	*b_p_fprg;	// 'findprg' local value
     char_u	*b_p_path;	// 'path' local value
     int		b_p_ar;		// 'autoread' local value
     char_u	*b_p_tags;	// 'tags' local value

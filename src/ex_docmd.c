@@ -6924,6 +6924,150 @@ ex_wrongmodifier(exarg_T *eap)
 }
 
 /*
+ * Skip to the next newline character.
+ */
+    static char_u *
+skiptonewline(char_u *p)
+{
+    while (*p && *p != NL)
+	++p;
+
+    return p;
+}
+
+/*
+ * Find file "findarg" using the 'findprg' option.  If "count" is greater than
+ * zero, then find the count'th file.
+ */
+    static char_u *
+findprg_find_file_in_dir(char_u *findarg, char_u *dirname)
+{
+    char_u	*program;
+    int		i;
+
+    /*
+     * Copy 'findprg' and replace "$*" with the ":find" command argument.
+     */
+    program = get_findprg();
+
+    i = 0;
+    while (*program)
+    {
+	int	len;
+
+	if (*program == '$' && *(program + 1) == '*')
+	{
+	    program += 2;
+	    STRCPY(IObuff + i, findarg);
+	    i += STRLEN(findarg);
+	}
+	else if (*program == '$' && *(program + 1) == '@')
+	{
+	    program += 2;
+	    len = STRLEN(dirname);
+	    STRCPY(IObuff + i, dirname);
+	    i += len;
+	}
+	else
+	{
+	    IObuff[i] = *program;
+	    program++;
+	    i++;
+	}
+    }
+    IObuff[i] = NUL;
+
+    return get_cmd_output(IObuff, NULL, SHELL_SILENT, NULL);
+}
+
+    static char_u *
+findprg_find_file(char_u *findarg, int findarg_len, int count)
+{
+    char_u	*program;
+    char_u	*path_opt;
+    char_u	*curdir;
+    garray_T	path_ga;
+    int		i;
+    char_u	*fnames;
+    char_u	*p;
+    char_u	*ret_fname = NULL;
+    char_u	cc;
+    int		save_count = count;
+
+    program = get_findprg();
+
+    if ((char_u *)strstr((char *)program, "$@") != NULL)
+	path_opt = *curbuf->b_p_path == NUL ? p_path : curbuf->b_p_path;
+    else
+	path_opt = (char_u *)",";
+
+    if ((curdir = alloc(MAXPATHL)) == NULL)
+	return NULL;
+    mch_dirname(curdir, MAXPATHL);
+    ga_init2(&path_ga, sizeof(char_u *), 1);
+    expand_path_option(curdir, path_opt, &path_ga);
+    vim_free(curdir);
+
+    cc = findarg[findarg_len];
+    findarg[findarg_len] = NUL;
+
+    for (i = 0; i < path_ga.ga_len && !got_int; i++)
+    {
+	fnames = findprg_find_file_in_dir(findarg,
+					((char_u **)path_ga.ga_data)[i]);
+	if (fnames == NULL || *fnames == NUL)
+	{
+	    VIM_CLEAR(fnames);
+	    continue;
+	}
+
+	// Return the 'count'th match
+	char_u *fname_end = NULL;
+
+	p = fnames;
+	while (*p && count > 0)
+	{
+	    ret_fname = p;
+
+	    // skip till the next newline character
+	    p = skiptonewline(p);
+	    fname_end = p;
+
+	    if (*p == NL)
+		p++;
+
+	    count--;
+	}
+
+	if (count > 0)
+	{
+	    VIM_CLEAR(fnames);
+	    ret_fname = NULL;
+	    continue;
+	}
+
+	*fname_end = NUL;
+	ret_fname = vim_strsave(ret_fname);
+	VIM_CLEAR(fnames);
+	break;
+    }
+
+    ga_clear_strings(&path_ga);
+
+    if (count > 0)
+    {
+	if (save_count == count && ret_fname == NULL)
+	    semsg(_(e_cant_find_file_str_in_path), findarg);
+	else if (save_count > 1)
+	    semsg(_(e_no_more_file_str_found_in_path), findarg);
+    }
+
+    findarg[findarg_len] = cc;
+
+    return ret_fname;
+}
+
+/*
  * :sview [+command] file	split window with new file, read-only
  * :split [[+command] file]	split window with current or new file
  * :vsplit [[+command] file]	split window vertically with current or new file
@@ -6972,11 +7116,20 @@ ex_splitview(exarg_T *eap)
     {
 	char_u	*file_to_find = NULL;
 	char	*search_ctx = NULL;
-	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
-					  FNAME_MESS, TRUE, curbuf->b_ffname,
-					  &file_to_find, &search_ctx);
-	vim_free(file_to_find);
-	vim_findfile_cleanup(search_ctx);
+
+	if (*get_findprg() != NUL)
+	{
+	    fname = findprg_find_file(eap->arg, (int)STRLEN(eap->arg),
+					  eap->addr_count > 0 ? eap->line2 : 1);
+	}
+	else
+	{
+	    fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
+					      FNAME_MESS, TRUE, curbuf->b_ffname,
+					      &file_to_find, &search_ctx);
+	    vim_free(file_to_find);
+	    vim_findfile_cleanup(search_ctx);
+	}
 	if (fname == NULL)
 	    goto theend;
 	eap->arg = fname;
@@ -7246,22 +7399,30 @@ ex_find(exarg_T *eap)
     char_u	*file_to_find = NULL;
     char	*search_ctx = NULL;
 
-    fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg), FNAME_MESS,
-			   TRUE, curbuf->b_ffname, &file_to_find, &search_ctx);
-    if (eap->addr_count > 0)
+    if (*get_findprg() != NUL)
     {
-	// Repeat finding the file "count" times.  This matters when it appears
-	// several times in the path.
-	count = eap->line2;
-	while (fname != NULL && --count > 0)
-	{
-	    vim_free(fname);
-	    fname = find_file_in_path(NULL, 0, FNAME_MESS,
-			  FALSE, curbuf->b_ffname, &file_to_find, &search_ctx);
-	}
+	fname = findprg_find_file(eap->arg, (int)STRLEN(eap->arg),
+				eap->addr_count > 0 ? eap->line2 : 1);
     }
-    VIM_CLEAR(file_to_find);
-    vim_findfile_cleanup(search_ctx);
+    else
+    {
+	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg), FNAME_MESS,
+			       TRUE, curbuf->b_ffname, &file_to_find, &search_ctx);
+	if (eap->addr_count > 0)
+	{
+	    // Repeat finding the file "count" times.  This matters when it appears
+	    // several times in the path.
+	    count = eap->line2;
+	    while (fname != NULL && --count > 0)
+	    {
+		vim_free(fname);
+		fname = find_file_in_path(NULL, 0, FNAME_MESS,
+			      FALSE, curbuf->b_ffname, &file_to_find, &search_ctx);
+	    }
+	}
+	VIM_CLEAR(file_to_find);
+	vim_findfile_cleanup(search_ctx);
+    }
 
     if (fname == NULL)
 	return;

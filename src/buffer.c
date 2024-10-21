@@ -2478,6 +2478,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_efm);
 #endif
     clear_string_option(&buf->b_p_ep);
+    clear_string_option(&buf->b_p_fprg);
     clear_string_option(&buf->b_p_path);
     clear_string_option(&buf->b_p_tags);
     clear_string_option(&buf->b_p_tc);

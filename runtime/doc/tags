@@ -277,6 +277,7 @@ $quote	eval.txt	/*$quote*
 'fileignorecase'	options.txt	/*'fileignorecase'*
 'filetype'	options.txt	/*'filetype'*
 'fillchars'	options.txt	/*'fillchars'*
+'findprg'	options.txt	/*'findprg'*
 'fixendofline'	options.txt	/*'fixendofline'*
 'fixeol'	options.txt	/*'fixeol'*
 'fk'	options.txt	/*'fk'*
@@ -305,6 +306,7 @@ $quote	eval.txt	/*$quote*
 'formatoptions'	options.txt	/*'formatoptions'*
 'formatprg'	options.txt	/*'formatprg'*
 'fp'	options.txt	/*'fp'*
+'fprg'	options.txt	/*'fprg'*
 'fs'	options.txt	/*'fs'*
 'fsync'	options.txt	/*'fsync'*
 'ft'	options.txt	/*'ft'*

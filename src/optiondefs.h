@@ -72,6 +72,7 @@
 # define PV_BEXPR	OPT_BOTH(OPT_BUF(BV_BEXPR))
 #endif
 #define PV_FP		OPT_BOTH(OPT_BUF(BV_FP))
+#define PV_FPRG		OPT_BOTH(OPT_BUF(BV_FPRG))
 #ifdef FEAT_EVAL
 # define PV_FEX		OPT_BUF(BV_FEX)
 #endif
@@ -958,6 +959,9 @@ static struct vimoption options[] =
 			    {(char_u *)"vert:|,fold:-,eob:~,lastline:@",
 								  (char_u *)0L}
 			    SCTX_INIT},
+    {"findprg",   "fprg",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
+			    (char_u *)&p_fprg, PV_NONE, NULL, NULL,
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"fixendofline",  "fixeol", P_BOOL|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_fixeol, PV_FIXEOL,
 			    did_set_eof_eol_fixeol_bomb, NULL,
