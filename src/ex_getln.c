@@ -1430,7 +1430,7 @@ cmdline_browse_history(
 	else
 	{
 	    p = get_histentry(histype)[hiscnt].hisstr;
-	    plen = STRLEN(p);
+	    plen = get_histentry(histype)[hiscnt].hisstrlen;
 	}
 
 	if (histype == HIST_SEARCH
