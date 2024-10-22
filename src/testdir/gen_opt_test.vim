@@ -423,8 +423,8 @@ while 1
       endfor
       " Testing to clear the local value and switch back to the global value.
       if global_locals->has_key(fullname)
-	let swichback_val = global_locals[fullname]
-	call add(script, $'setlocal {opt}={swichback_val}')
+	let switchback_val = global_locals[fullname]
+	call add(script, $'setlocal {opt}={switchback_val}')
 	call add(script, $'call assert_equal(&g:{fullname}, &{fullname})')
       endif
     endfor
