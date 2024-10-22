@@ -905,6 +905,12 @@ au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 " Gemtext
 au BufNewFile,BufRead *.gmi,*.gemini		setf gemtext
 
+" Gentoo portage
+au BufNewFile,BufRead portage/{make.conf{,/*},repo.postsync.d/*,color.map}		setf sh
+au BufNewFile,BufRead portage/config/{make.conf.*,make.global,repo.postsync.d/*}	setf sh
+au BufNewFile,BufRead portage/{repos.conf{,/*},binrepos.conf{,/*},set.conf}		setf dosini
+au BufNewFile,BufRead portage/config/{repos.conf,set/*}					setf dosini
+
 " Gift (Moodle)
 autocmd BufRead,BufNewFile *.gift		setf gift
 
