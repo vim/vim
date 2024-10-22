@@ -25,7 +25,7 @@ endwhile
 call extend(global_locals, #{
       \ scrolloff: -1,
       \ sidescrolloff: -1,
-      \ undolevels: -12345,
+      \ undolevels: -123456,
       \})
 
 " Get local-noglobal options.
@@ -61,7 +61,8 @@ let skip_setglobal_reasons = #{
       \ textwidth:	'TODO: fix missing error handling for setglobal',
       \}
 
-" The terminal size is restored at the end.
+" Script header.
+" The test values contains multibyte characters.
 let script = [
       \ '" DO NOT EDIT: Generated with gen_opt_test.vim',
       \ '" Used by test_options_all.vim.',
@@ -424,6 +425,7 @@ while 1
       if global_locals->has_key(fullname)
 	let swichback_val = global_locals[fullname]
 	call add(script, $'setlocal {opt}={swichback_val}')
+	call add(script, $'call assert_equal(&g:{fullname}, &{fullname})')
       endif
     endfor
 
