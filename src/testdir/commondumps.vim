@@ -73,4 +73,4 @@ def g:Init(subtreedirname: string, count: number)
   endif
 enddef
 
-# vim:fdm=syntax:sw=2:ts=8:noet:nolist:nosta:
+# vim:fdm=syntax:sw=2:ts=8:noet:nosta:

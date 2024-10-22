@@ -8,4 +8,4 @@ g:Init('\<src\>', 0)
 # Match ":language" of runtest.vim.
 language messages C
 
-# vim:fdm=syntax:sw=2:ts=8:noet:nolist:nosta:
+# vim:fdm=syntax:sw=2:ts=8:noet:nosta:
