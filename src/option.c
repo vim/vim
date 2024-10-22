@@ -4259,6 +4259,26 @@ did_set_termguicolors(optset_T *args UNUSED)
 }
 #endif
 
+#if defined(FEAT_TERMINAL) || defined(PROTO)
+/*
+ * Process the updated 'termwinscroll' option value.
+ */
+    char *
+did_set_termwinscroll(optset_T *args)
+{
+    long	*pp = (long *)args->os_varp;
+    char	*errmsg = NULL;
+
+    if (*pp < 1)
+    {
+	errmsg = e_argument_must_be_positive;
+	*pp = 1;
+    }
+
+    return errmsg;
+}
+#endif
+
 /*
  * Process the updated 'terse' option value.
  */

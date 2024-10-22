@@ -501,6 +501,21 @@ func Test_terminal_scrollback()
   let lines = line('$')
   call assert_inrange(91, 100, lines)
 
+  " When 'termwinscroll' becomes small, the scrollback should become small.
+  set termwinscroll=20
+  call term_sendkeys(buf, "echo set20\<CR>")
+  call WaitForAssert({-> assert_true([term_getline(buf, rows - 1), term_getline(buf, rows - 2)]->index('set20') >= 0)})
+  let lines = line('$')
+  call assert_inrange(19, 20, lines)
+
+  " When 'termwinscroll' under 10 which means 10% of it will be 0,
+  " the scrollback should become small.
+  set termwinscroll=1
+  call term_sendkeys(buf, "echo set1\<CR>")
+  call WaitForAssert({-> assert_true([term_getline(buf, rows - 1), term_getline(buf, rows - 2)]->index('set1') >= 0)})
+  let lines = line('$')
+  call assert_inrange(1, 2, lines)
+
   call StopShellInTerminal(buf)
   exe buf . 'bwipe'
   set termwinscroll&
