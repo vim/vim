@@ -2336,8 +2336,7 @@ did_set_foldmethod(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
 
-    if (check_opt_strings(*varp, p_fdm_values, FALSE) != OK
-	    || *curwin->w_p_fdm == NUL)
+    if (check_opt_strings(*varp, p_fdm_values, FALSE) != OK || **varp == NUL)
 	return e_invalid_argument;
 
     foldUpdateAll(curwin);
