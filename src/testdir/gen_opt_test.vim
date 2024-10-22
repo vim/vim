@@ -1,7 +1,7 @@
 " Script to generate src/testdir/opt_test.vim from src/optiondefs.h and
 " runtime/doc/options.txt
 
-set cpo=&vim
+set cpo&vim
 
 " Only do this when build with the +eval feature.
 if 1
