@@ -283,7 +283,7 @@ au BufNewFile,BufRead *.blade.php		setf blade
 au BufNewFile,BufRead *.bl			setf blank
 
 " Bitbake
-au BufNewFile,BufRead *.bb,*.bbappend,*.bbclass,*/build/conf/*.conf,*/meta{-*,}/conf/*.conf	setf bitbake
+au BufNewFile,BufRead *.bb,*.bbappend,*.bbclass,*/build/conf/*.conf,*/meta{-*,}/conf/*.conf,*/project-spec/configs/*.conf	setf bitbake
 
 " Blkid cache file
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
