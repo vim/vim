@@ -40,9 +40,9 @@ set cpo&vim
 if get(g:, ':netrw_suppress_gx_mesg', 1)
   if &srr =~# "%s"
     if has("win32")
-      let s:redir= substitute(&srr,"%s","nul","")
+      let s:redir= printf(&srr, null)
     else
-      let s:redir= substitute(&srr,"%s","/dev/null","")
+      let s:redir= printf(&srr, null)
     endif
   else
     if has("win32")
