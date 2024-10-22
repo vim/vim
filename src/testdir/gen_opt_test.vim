@@ -1,7 +1,7 @@
 " Script to generate src/testdir/opt_test.vim from src/optiondefs.h and
 " runtime/doc/options.txt
 
-set cpo=&vim
+set cpo&vim
 
 " Only do this when build with the +eval feature.
 if 1
@@ -25,7 +25,7 @@ endwhile
 call extend(global_locals, #{
       \ scrolloff: -1,
       \ sidescrolloff: -1,
-      \ undolevels: -12345,
+      \ undolevels: -123456,
       \})
 
 " Get local-noglobal options.
@@ -61,7 +61,6 @@ let skip_setglobal_reasons = #{
       \ textwidth:	'TODO: fix missing error handling for setglobal',
       \}
 
-" The terminal size is restored at the end.
 let script = [
       \ '" DO NOT EDIT: Generated with gen_opt_test.vim',
       \ '" Used by test_options_all.vim.',
