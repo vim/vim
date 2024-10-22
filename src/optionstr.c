@@ -3904,17 +3904,16 @@ did_set_termwinkey(optset_T *args UNUSED)
  * The 'termwinsize' option is changed.
  */
     char *
-did_set_termwinsize(optset_T *args UNUSED)
+did_set_termwinsize(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u	*p;
 
-    if (*curwin->w_p_tws == NUL)
+    if ((*varp)[0] == NUL)
 	return NULL;
 
-    p = skipdigits(curwin->w_p_tws);
-    if (p == curwin->w_p_tws
-	    || (*p != 'x' && *p != '*')
-	    || *skipdigits(p + 1) != NUL)
+    p = skipdigits(*varp);
+    if (p == *varp || (*p != 'x' && *p != '*') || *skipdigits(p + 1) != NUL)
 	return e_invalid_argument;
 
     return NULL;

@@ -57,7 +57,6 @@ let skip_setglobal_reasons = #{
       \ sidescrolloff:	'TODO: fix missing error handling for setglobal',
       \ tabstop:	'TODO: fix missing error handling for setglobal',
       \ termwinkey:	'TODO: fix missing error handling for setglobal',
-      \ termwinsize:	'TODO: fix missing error handling for setglobal',
       \ textwidth:	'TODO: fix missing error handling for setglobal',
       \}
 
