@@ -97,34 +97,6 @@ if !exists('g:netrw_regex_url')
   let g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
 endif
 
-function Netrw_get_URL_markdown()
-  " markdown URL such as [link text](http://ya.ru 'yandex search')
-  try
-    let save_view = winsaveview()
-    if searchpair('\[.\{-}\](', '', ')\zs', 'cbW', '', line('.')) > 0
-      return matchstr(getline('.')[col('.')-1:], '\[.\{-}\](\zs' .. g:netrw_regex_url .. '\ze\(\s\+.\{-}\)\?)')
-    endif
-  finally
-    call winrestview(save_view)
-    return ''
-  endtry
-endfunction
-
-function Netrw_get_URL_html()
-  " HTML URL such as <a href='http://www.python.org'>Python is here</a>
-  "                  <a href="http://www.python.org"/>
-  try
-    let save_view = winsaveview()
-    if searchpair('<a\s\+href=', '', '\%(</a>\|/>\)\zs', 'cbW', '', line('.')) > 0
-      return matchstr(getline('.')[col('.') - 1 : ],
-            \ 'href=["'.."'"..']\?\zs\S\{-}\ze["'.."'"..']\?/\?>')
-    endif
-  finally
-    call winrestview(save_view)
-    return ''
-  endtry
-endfunction
-
 " " }}}
 " Local Browsing Autocmds: {{{2
 augroup FileExplorer

@@ -1493,7 +1493,36 @@ The selection function can be adapted for each filetype by adding a function
 Netrw_get_URL_<filetype>, where <filetype> is given by &filetype.
 The function should return the URL or file name to be used by gx, and will
 fall back to the default behavior if it returns an empty string.
-Special handlers are provided for Markdown and HTML files.
+For example, special handlers for links Markdown and HTML are
+>
+function Netrw_get_URL_markdown()
+  " markdown URL such as [link text](http://ya.ru 'yandex search')
+  try
+    let save_view = winsaveview()
+    if searchpair('\[.\{-}\](', '', ')\zs', 'cbW', '', line('.')) > 0
+      return matchstr(getline('.')[col('.')-1:], '\[.\{-}\](\zs' .. g:netrw_regex_url .. '\ze\(\s\+.\{-}\)\?)')
+    endif
+  finally
+    call winrestview(save_view)
+    return ''
+  endtry
+endfunction
+
+function Netrw_get_URL_html()
+  " HTML URL such as <a href='http://www.python.org'>Python is here</a>
+  "                  <a href="http://www.python.org"/>
+  try
+    let save_view = winsaveview()
+    if searchpair('<a\s\+href=', '', '\%(</a>\|/>\)\zs', 'cbW', '', line('.')) > 0
+      return matchstr(getline('.')[col('.') - 1 : ],
+            \ 'href=["'.."'"..']\?\zs\S\{-}\ze["'.."'"..']\?/\?>')
+    endif
+  finally
+    call winrestview(save_view)
+    return ''
+  endtry
+endfunction
+<
 
 Other than a file path, the text under the cursor may be a URL.  Netrw uses
 by default the following regular expression to determine if the text under the
