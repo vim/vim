@@ -6751,7 +6751,7 @@ after_copy_winopt(win_T *wp)
     else
 	wp->w_skipcol = 0;
 #ifdef FEAT_LINEBREAK
-    briopt_check(wp);
+    briopt_check(NULL, wp);
 #endif
 #ifdef FEAT_SYN_HL
     fill_culopt_flags(NULL, wp);
