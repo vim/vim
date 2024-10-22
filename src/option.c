@@ -4328,7 +4328,7 @@ did_set_textwidth(optset_T *args UNUSED)
 	tabpage_T	*tp;
 
 	FOR_ALL_TAB_WINDOWS(tp, wp)
-	    check_colorcolumn(wp);
+	    check_colorcolumn(NULL, wp);
     }
 #endif
 
@@ -6755,7 +6755,7 @@ after_copy_winopt(win_T *wp)
 #endif
 #ifdef FEAT_SYN_HL
     fill_culopt_flags(NULL, wp);
-    check_colorcolumn(wp);
+    check_colorcolumn(NULL, wp);
 #endif
     set_listchars_option(wp, wp->w_p_lcs, TRUE, NULL, 0);
     set_fillchars_option(wp, wp->w_p_fcs, TRUE, NULL, 0);
