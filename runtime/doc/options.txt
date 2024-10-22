@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 Oct 16
+*options.txt*	For Vim version 9.1.  Last change: 2024 Oct 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3403,7 +3403,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'fileformat'* *'ff'*
 'fileformat' 'ff'	string (MS-Windows default: "dos",
-				Unix, macOS default: "unix")
+				Unix default: "unix")
 			local to buffer
 	This gives the <EOL> of the current buffer, which is used for
 	reading/writing the buffer from/to a file:
@@ -3426,7 +3426,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 					*'fileformats'* *'ffs'*
 'fileformats' 'ffs'	string (default:
 				Vim+Vi	MS-Windows: "dos,unix",
-				Vim	Unix, macOS: "unix,dos",
+				Vim	Unix: "unix,dos",
 				Vi	Cygwin: "unix,dos",
 				Vi	others: "")
 			global
@@ -4917,7 +4917,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	set and to the Vim default value when 'compatible' is reset.
 
 						*'isprint'* *'isp'*
-'isprint' 'isp'	string	(default for Win32 and macOS:
+'isprint' 'isp'	string	(default for Win32 and VMS:
 				"@,~-255"; otherwise: "@,161-255")
 			global
 	The characters given by this option are displayed directly on the
@@ -6742,9 +6742,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,
 						$HOME/vimfiles/after"
-					macOS: "$VIM:vimfiles,
-						$VIMRUNTIME,
-						$VIM:vimfiles:after"
 					Haiku: "$BE_USER_SETTINGS/vim,
 						$VIM/vimfiles,
 						$VIMRUNTIME,
@@ -9057,7 +9054,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 					 for Win32: "$HOME/vimfiles/view",
 					 for Unix: "$HOME/.vim/view" or
 					           "$XDG_CONFIG_HOME/vim/view"
-					 for macOS: "$VIM/vimfiles/view",
 					 for VMS: "sys$login:vimfiles/view")
 			global
 			{not available when compiled without the |+mksession|
