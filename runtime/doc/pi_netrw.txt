@@ -1495,6 +1495,7 @@ The function should return the URL or file name to be used by gx, and will
 fall back to the default behavior if it returns an empty string.
 For example, special handlers for links Markdown and HTML are
 >
+" make gx work on concealed links regardless of exact cursor position
 function Netrw_get_URL_markdown()
   " markdown URL such as [link text](http://ya.ru 'yandex search')
   try
