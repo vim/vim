@@ -21,4 +21,4 @@ set display=lastline ruler scrolloff=5 t_ZH= t_ZR=
 # Anticipate non-Latin-1 characters in "input/" files.
 set encoding=utf-8 termencoding=utf-8
 
-# vim:fdm=syntax:sw=2:ts=8:noet:nolist:nosta:
+# vim:fdm=syntax:sw=2:ts=8:noet:nosta:

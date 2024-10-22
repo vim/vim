@@ -485,4 +485,4 @@ endif
 
 qa!
 
-" vim:sw=2:ts=8:noet:nolist:nosta:
+" vim:sw=2:ts=8:noet:nosta:
