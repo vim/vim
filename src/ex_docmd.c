@@ -6923,6 +6923,103 @@ ex_wrongmodifier(exarg_T *eap)
     eap->errmsg = ex_errmsg(e_invalid_command_str, eap->cmd);
 }
 
+#ifdef FEAT_EVAL
+/*
+ * Evaluate the 'findexpr' expression and return the result.  When evaluating
+ * the expression, v:fname is set to the ":find" command argument.
+ */
+    static list_T *
+eval_findexpr(char_u *ptr, int len)
+{
+    sctx_T	saved_sctx = current_sctx;
+    int		use_sandbox = FALSE;
+    char_u	*findexpr;
+    char_u	*arg;
+    typval_T	tv;
+    list_T	*retlist = NULL;
+
+    if (*curbuf->b_p_fexpr == NUL)
+    {
+	use_sandbox = was_set_insecurely((char_u *)"findexpr", OPT_GLOBAL);
+	findexpr = p_fexpr;
+    }
+    else
+    {
+	use_sandbox = was_set_insecurely((char_u *)"findexpr", OPT_LOCAL);
+	findexpr = curbuf->b_p_fexpr;
+    }
+
+    set_vim_var_string(VV_FNAME, ptr, len);
+    current_sctx = curbuf->b_p_script_ctx[BV_FEXPR];
+
+    arg = skipwhite(findexpr);
+
+    if (use_sandbox)
+	++sandbox;
+    ++textlock;
+
+    // Evaluate the expression.  If the expression is "FuncName()" call the
+    // function directly.
+    if (eval0_simple_funccal(arg, &tv, NULL, &EVALARG_EVALUATE) == FAIL)
+	retlist = NULL;
+    else
+    {
+	if (tv.v_type == VAR_LIST)
+	    retlist = list_copy(tv.vval.v_list, TRUE, TRUE, get_copyID());
+	clear_tv(&tv);
+    }
+    if (use_sandbox)
+	--sandbox;
+    --textlock;
+    clear_evalarg(&EVALARG_EVALUATE, NULL);
+
+    set_vim_var_string(VV_FNAME, NULL, 0);
+    current_sctx = saved_sctx;
+
+    return retlist;
+}
+
+/*
+ * Use 'findexpr' to find file 'findarg'.  The 'count' argument is used to find
+ * the n'th matching file.
+ */
+    static char_u *
+findexpr_find_file(char_u *findarg, int findarg_len, int count)
+{
+    list_T	*fname_list;
+    char_u	*ret_fname = NULL;
+    char_u	cc;
+    int		fname_count;
+
+    cc = findarg[findarg_len];
+    findarg[findarg_len] = NUL;
+
+    fname_list = eval_findexpr(findarg, findarg_len);
+    fname_count = list_len(fname_list);
+
+    if (fname_count == 0)
+	semsg(_(e_cant_find_file_str_in_path), findarg);
+    else
+    {
+	if (count > fname_count)
+	    semsg(_(e_no_more_file_str_found_in_path), findarg);
+	else
+	{
+	    listitem_T *li = list_find(fname_list, count - 1);
+	    if (li != NULL && li->li_tv.v_type == VAR_STRING)
+		ret_fname = vim_strsave(li->li_tv.vval.v_string);
+	}
+    }
+
+    if (fname_list != NULL)
+	list_free(fname_list);
+
+    findarg[findarg_len] = cc;
+
+    return ret_fname;
+}
+#endif
+
 /*
  * :sview [+command] file	split window with new file, read-only
  * :split [[+command] file]	split window with current or new file
@@ -6972,11 +7069,22 @@ ex_splitview(exarg_T *eap)
     {
 	char_u	*file_to_find = NULL;
 	char	*search_ctx = NULL;
-	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
-					  FNAME_MESS, TRUE, curbuf->b_ffname,
-					  &file_to_find, &search_ctx);
-	vim_free(file_to_find);
-	vim_findfile_cleanup(search_ctx);
+
+	if (*get_findexpr() != NUL)
+	{
+#ifdef FEAT_EVAL
+	    fname = findexpr_find_file(eap->arg, (int)STRLEN(eap->arg),
+				       eap->addr_count > 0 ? eap->line2 : 1);
+#endif
+	}
+	else
+	{
+	    fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
+					      FNAME_MESS, TRUE, curbuf->b_ffname,
+					      &file_to_find, &search_ctx);
+	    vim_free(file_to_find);
+	    vim_findfile_cleanup(search_ctx);
+	}
 	if (fname == NULL)
 	    goto theend;
 	eap->arg = fname;
@@ -7241,27 +7349,37 @@ ex_find(exarg_T *eap)
     if (!check_can_set_curbuf_forceit(eap->forceit))
 	return;
 
-    char_u	*fname;
+    char_u	*fname = NULL;
     int		count;
     char_u	*file_to_find = NULL;
     char	*search_ctx = NULL;
 
-    fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg), FNAME_MESS,
-			   TRUE, curbuf->b_ffname, &file_to_find, &search_ctx);
-    if (eap->addr_count > 0)
+    if (*get_findexpr() != NUL)
     {
-	// Repeat finding the file "count" times.  This matters when it appears
-	// several times in the path.
-	count = eap->line2;
-	while (fname != NULL && --count > 0)
-	{
-	    vim_free(fname);
-	    fname = find_file_in_path(NULL, 0, FNAME_MESS,
-			  FALSE, curbuf->b_ffname, &file_to_find, &search_ctx);
-	}
+#ifdef FEAT_EVAL
+	fname = findexpr_find_file(eap->arg, (int)STRLEN(eap->arg),
+					eap->addr_count > 0 ? eap->line2 : 1);
+#endif
     }
-    VIM_CLEAR(file_to_find);
-    vim_findfile_cleanup(search_ctx);
+    else
+    {
+	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg), FNAME_MESS,
+			       TRUE, curbuf->b_ffname, &file_to_find, &search_ctx);
+	if (eap->addr_count > 0)
+	{
+	    // Repeat finding the file "count" times.  This matters when it appears
+	    // several times in the path.
+	    count = eap->line2;
+	    while (fname != NULL && --count > 0)
+	    {
+		vim_free(fname);
+		fname = find_file_in_path(NULL, 0, FNAME_MESS,
+			      FALSE, curbuf->b_ffname, &file_to_find, &search_ctx);
+	    }
+	}
+	VIM_CLEAR(file_to_find);
+	vim_findfile_cleanup(search_ctx);
+    }
 
     if (fname == NULL)
 	return;

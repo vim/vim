@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 Jul 28
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Oct 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2223,7 +2223,8 @@ v:fcs_choice	What should happen after a |FileChangedShell| event was
 
 					*v:fname* *fname-variable*
 v:fname		When evaluating 'includeexpr': the file name that was
-		detected.  Empty otherwise.
+		detected.  When evaluating 'findexpr': the argument passed to
+		the |:find| command.  Empty otherwise.
 
 					*v:fname_in* *fname_in-variable*
 v:fname_in	The name of the input file.  Valid while evaluating:

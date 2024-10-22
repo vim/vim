@@ -267,6 +267,7 @@ $quote	eval.txt	/*$quote*
 'fenc'	options.txt	/*'fenc'*
 'fencs'	options.txt	/*'fencs'*
 'fex'	options.txt	/*'fex'*
+'fexpr'	options.txt	/*'fexpr'*
 'ff'	options.txt	/*'ff'*
 'ffs'	options.txt	/*'ffs'*
 'fic'	options.txt	/*'fic'*
@@ -277,6 +278,7 @@ $quote	eval.txt	/*$quote*
 'fileignorecase'	options.txt	/*'fileignorecase'*
 'filetype'	options.txt	/*'filetype'*
 'fillchars'	options.txt	/*'fillchars'*
+'findexpr'	options.txt	/*'findexpr'*
 'fixendofline'	options.txt	/*'fixendofline'*
 'fixeol'	options.txt	/*'fixeol'*
 'fk'	options.txt	/*'fk'*

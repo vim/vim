@@ -324,6 +324,9 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_efm);
 #endif
     check_string_option(&buf->b_p_ep);
+#ifdef FEAT_EVAL
+    check_string_option(&buf->b_p_fexpr);
+#endif
     check_string_option(&buf->b_p_path);
     check_string_option(&buf->b_p_tags);
     check_string_option(&buf->b_p_tc);
@@ -3132,8 +3135,8 @@ expand_set_nrformats(optexpand_T *args, int *numMatches, char_u ***matches)
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * One of the '*expr' options is changed: 'balloonexpr', 'diffexpr',
- * 'foldexpr', 'foldtext', 'formatexpr', 'includeexpr', 'indentexpr',
- * 'patchexpr', 'printexpr' and 'charconvert'.
+ * 'findexpr', 'foldexpr', 'foldtext', 'formatexpr', 'includeexpr',
+ * 'indentexpr', 'patchexpr', 'printexpr' and 'charconvert'.
  *
  */
     char *
