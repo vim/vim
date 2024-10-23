@@ -603,6 +603,9 @@ for g:testfunc in sort(s:tests)
   " A test can set g:test_is_flaky to retry running the test.
   let g:test_is_flaky = 0
 
+  " A test can set g:max_run_nr to change the max retry count.
+  let g:max_run_nr = 5
+
   let starttime = strftime("%H:%M:%S")
   call RunTheTest(g:testfunc)
 
@@ -621,7 +624,7 @@ for g:testfunc in sort(s:tests)
       call add(total_errors, $'Run {g:run_nr}, {starttime} - {endtime}:')
       call extend(total_errors, v:errors)
 
-      if g:run_nr >= 5 || prev_error == v:errors[0]
+      if g:run_nr >= g:max_run_nr || prev_error == v:errors[0]
         call add(total_errors, 'Flaky test failed too often, giving up')
         let v:errors = total_errors
         break
