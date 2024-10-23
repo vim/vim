@@ -39,22 +39,13 @@ set cpo&vim
 " by default, g:netrw_suppress_gx_mesg is true
 if get(g:, ':netrw_suppress_gx_mesg', 1)
   if &srr =~# "%s"
-    if has("win32")
-      let s:redir= printf(&srr, "nul")
-    else
-      let s:redir= printf(&srr, "/dev/null")
-    endif
+    let s:redir = printf(&srr, has("win32") ? "nul" : "/dev/null")
   else
-    if has("win32")
-      let s:redir= &srr . "nul"
-    else
-      let s:redir= &srr . "/dev/null"
-    endif
+    let s:redir= &srr .. (has("win32") ? "nul" : "/dev/null")
   endif
 else
   let s:redir= ""
 endif
-"  call Decho("set up redirection: redir{".redir."} srr{".&srr."}",'~'.expand("<slnum>"))
 
 if has('unix')
   if has('win32unix') " Git Bash provides /usr/bin/start script calling cmd.exe //c
@@ -90,7 +81,7 @@ elseif executable('xdg-open')
 elseif executable('open')
     let s:cmd = 'open'
 endif
-command -complete=file -nargs=1 Open exe 'Launch' s:cmd <q-args>
+command! -complete=file -nargs=1 Open exe 'Launch' s:cmd shellescape(<q-args>, 1)
 " endif
 
 if !exists('g:netrw_regex_url')

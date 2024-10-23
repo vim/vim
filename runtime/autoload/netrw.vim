@@ -5430,9 +5430,9 @@ fun! netrw#BrowseX(fname,remote)
 
   if exists("g:netrw_browsex_viewer") && executable(viewer)
 "   call Decho("(netrw#BrowseX) g:netrw_browsex_viewer<".g:netrw_browsex_viewer.">",'~'.expand("<slnum>"))
-    exe 'Launch' viewer viewopt escape(fname, '#%')
+    exe 'Launch' viewer viewopt shellescape(fname, 1)
   else
-    exe 'Open' escape(fname, '#%')
+    exe 'Open' fname
   endif
 
   " cleanup: remove temporary file,
@@ -5490,11 +5490,11 @@ fun! s:GetURL() abort
   let file = expand("<cfile>")
   if filereadable(file) | return file | endif
   " ... or in that of the current buffer?
-  let path = expand('%')
+  let path = fnamemodify(expand('%'), ':p')
   if isdirectory(path)
-    let dir = fnamemodify(path, ':p')
+    let dir = path
   elseif filereadable(path)
-    let dir = fnamemodify(path, ':p:h')
+    let dir = fnamemodify(path, ':h')
   endif
   if exists('dir') && filereadable(dir..'/'..file) | return dir..'/'..file | endif
 
