@@ -905,6 +905,9 @@ au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 " Gemtext
 au BufNewFile,BufRead *.gmi,*.gemini		setf gemtext
 
+" Gentoo portage
+au BufNewFile,BufRead make.conf,color.map	setf sh
+
 " Gift (Moodle)
 autocmd BufRead,BufNewFile *.gift		setf gift
 
