@@ -7934,7 +7934,7 @@ check_colorcolumn(
     char_u *cc,		// when NULL: use "wp->w_p_cc"
     win_T *wp)		// when NULL: only parse "cc"
 {
-    char_u	*s;
+    char_u	*s = empty_option;
     int		tw;
     int		col;
     int		count = 0;
@@ -7947,7 +7947,7 @@ check_colorcolumn(
 
     if (cc != NULL)
 	s = cc;
-    else
+    else if (wp != NULL)
 	s = wp->w_p_cc;
 
     if (wp != NULL)
