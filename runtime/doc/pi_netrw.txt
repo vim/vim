@@ -1540,11 +1540,17 @@ Netrw determines which special handler by the following method:
     directory, set |g:netrw_browsex_support_remote| to 0.
   * otherwise:
 
-    * for Windows                     : explorer.exe is used
-    * for Mac OS X               : open is used.
-    * for Linux               : xdg-open is used.
+    * for Windows			: explorer.exe is used
+    * for Mac OS X			: open is used.
+    * for Linux				: xdg-open is used.
 
-To launch a specific application <app>, type :Launch <app>.
+To open a file <filepath> by the appropriate handler, type
+
+	:Open <filepath>
+
+To launch a specific application <app> <args>, often <args> being <filepath>,
+
+	:Launch <app> <args>.
 
 Associated setting variables:
 	|g:netrw_gx|	control how gx picks up the text under the cursor

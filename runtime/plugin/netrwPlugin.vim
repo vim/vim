@@ -51,11 +51,11 @@ if has('unix')
   if has('win32unix') " Git Bash provides /usr/bin/start script calling cmd.exe //c
     " use start //b "" to set void title and avoid ambiguity with passed argument
     command -complete=shellcmd -nargs=1 -bang Launch
-          \ exe 'silent ! start "" //b ' . trim(<q-args>)  s:redir | redraw!
+          \ exe 'silent ! start "" //b' trim(<q-args>)  s:redir | redraw!
   elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
     command -complete=shellcmd -nargs=1 -bang Launch execute ':silent !'..
           \ ((<q-args> =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
-            \ 'cmd.exe /c start "" /b ' . trim(<q-args>) :
+            \ 'cmd.exe /c start "" /b' trim(<q-args>) :
             \ 'nohup ' trim(<q-args>) s:redir '&')
           \ | redraw!
   else
@@ -66,23 +66,23 @@ elseif has('win32')
         \ exe 'silent !'.. (&shell =~? '\<cmd\.exe\>' ? '' : 'cmd.exe /c')
         \ 'start /b ' trim(<q-args>) s:redir | redraw!
 endif
-" if exists(':Launch') == 2
-" Git Bash
-if has('win32unix')
-    " start suffices
-    let s:cmd = ''
-" Windows / WSL
-elseif executable('explorer.exe')
-    let s:cmd = 'explorer.exe'
-" Linux / BSD
-elseif executable('xdg-open')
-    let s:cmd = 'xdg-open'
-" MacOS
-elseif executable('open')
-    let s:cmd = 'open'
+if exists(':Launch') == 2
+  " Git Bash
+  if has('win32unix')
+      " start suffices
+      let s:cmd = ''
+  " Windows / WSL
+  elseif executable('explorer.exe')
+      let s:cmd = 'explorer.exe'
+  " Linux / BSD
+  elseif executable('xdg-open')
+      let s:cmd = 'xdg-open'
+  " MacOS
+  elseif executable('open')
+      let s:cmd = 'open'
+  endif
+  command! -complete=file -nargs=1 Open exe 'Launch' s:cmd shellescape(<q-args>, 1)
 endif
-command! -complete=file -nargs=1 Open exe 'Launch' s:cmd shellescape(<q-args>, 1)
-" endif
 
 if !exists('g:netrw_regex_url')
   let g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
