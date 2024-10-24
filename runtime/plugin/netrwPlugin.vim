@@ -1,9 +1,10 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
 " Maintainer:	This runtime file is looking for a new maintainer.
-" Date:		Feb 09, 2021
+" Date:		Sep 09, 2021
 " Last Change:
 "   2024 May 08 by Vim Project: cleanup legacy Win9X checks
+"   2024 Sep 22 by Vim Project: cleanup gx mapping
 " Former Maintainer:   Charles E Campbell
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2021 Charles E. Campbell {{{1
@@ -31,6 +32,65 @@ set cpo&vim
 " ---------------------------------------------------------------------
 " Public Interface: {{{1
 
+" Commands Launch/URL {{{2
+" surpress output of command; use bang for GUI applications
+
+" set up redirection (avoids browser messages)
+" by default, g:netrw_suppress_gx_mesg is true
+if get(g:, ':netrw_suppress_gx_mesg', 1)
+  if &srr =~# "%s"
+    let s:redir = printf(&srr, has("win32") ? "nul" : "/dev/null")
+  else
+    let s:redir= &srr .. (has("win32") ? "nul" : "/dev/null")
+  endif
+else
+  let s:redir= ""
+endif
+
+if has('unix')
+  if has('win32unix')
+    " MSYS2/Git Bash provides (/usr/bin/)start script calling `cmd.exe //c`
+    " `start "" //b` sets void title and blocks path conversion of /b to \b\
+    " by MSYS2 as documented at https://www.msys2.org/docs/filesystem-paths/
+    command -complete=shellcmd -nargs=1 -bang Launch
+          \ exe 'silent ! start "" //b' trim(<q-args>)  s:redir | redraw!
+  elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
+    command -complete=shellcmd -nargs=1 -bang Launch execute ':silent !'..
+          \ ((<q-args> =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
+            \ 'cmd.exe /c start "" /b' trim(<q-args>) :
+            \ 'nohup ' trim(<q-args>) s:redir '&')
+          \ | redraw!
+  else
+    command -complete=shellcmd -nargs=1 -bang Launch execute ':silent ! nohup' trim(<q-args>) s:redir '&' | redraw!
+  endif
+elseif has('win32')
+  command -complete=shellcmd -nargs=1 -bang Launch
+        \ exe 'silent !'.. (&shell =~? '\<cmd\.exe\>' ? '' : 'cmd.exe /c')
+        \ 'start /b ' trim(<q-args>) s:redir | redraw!
+endif
+if exists(':Launch') == 2
+  " Git Bash
+  if has('win32unix')
+      " start suffices
+      let s:cmd = ''
+  " Windows / WSL
+  elseif executable('explorer.exe')
+      let s:cmd = 'explorer.exe'
+  " Linux / BSD
+  elseif executable('xdg-open')
+      let s:cmd = 'xdg-open'
+  " MacOS
+  elseif executable('open')
+      let s:cmd = 'open'
+  endif
+  command! -complete=file -nargs=1 Open exe 'Launch' s:cmd shellescape(<q-args>, 1)
+endif
+
+if !exists('g:netrw_regex_url')
+  let g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
+endif
+
+" " }}}
 " Local Browsing Autocmds: {{{2
 augroup FileExplorer
  au!
