@@ -190,10 +190,6 @@ function GetAllocId(name)
   return lnum - top - 1
 endfunc
 
-if has('reltime')
-  let g:func_start = reltime()
-endif
-
 " Get the list of swap files in the current directory.
 func s:GetSwapFileList()
   let save_dir = &directory
