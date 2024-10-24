@@ -620,7 +620,12 @@ for g:testfunc in sort(s:tests)
       call extend(s:messages, v:errors)
 
       let endtime = strftime("%H:%M:%S")
-      call add(total_errors, $'Run {g:run_nr}, {starttime} - {endtime}:')
+      if has('reltime')
+        let suffix = $' in{reltimestr(reltime(g:func_start))} seconds'
+      else
+        let suffix = ''
+      endif
+      call add(total_errors, $'Run {g:run_nr}, {starttime} - {endtime}{suffix}:')
       call extend(total_errors, v:errors)
 
       if g:run_nr >= g:max_run_nr || g:giveup_same_error && prev_error == v:errors[0]
