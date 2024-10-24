@@ -601,6 +601,9 @@ for g:testfunc in sort(s:tests)
 
   " A test can set g:max_run_nr to change the max retry count.
   let g:max_run_nr = 5
+  if has('mac')
+    let g:max_run_nr = 10
+  endif
 
   " A test can set g:giveup_same_error to giving up due to the same error.
   let g:giveup_same_error = 1
@@ -639,7 +642,8 @@ for g:testfunc in sort(s:tests)
       " Flakiness is often caused by the system being very busy.  Sleep a
       " couple of seconds to have a higher chance of succeeding the second
       " time.
-      sleep 2
+      let delay = g:run_nr * 2
+      exe 'sleep' delay
 
       let prev_error = v:errors[0]
       let v:errors = []
