@@ -1013,9 +1013,10 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define KEY_COMPLETE	0x103	// end of completion
 
 // Used for the first argument of do_map()
-#define MAPTYPE_MAP	0
-#define MAPTYPE_UNMAP	1
-#define MAPTYPE_NOREMAP	2
+#define MAPTYPE_MAP		0
+#define MAPTYPE_UNMAP		1
+#define MAPTYPE_NOREMAP		2
+#define MAPTYPE_UNMAP_LHS	3
 
 // Values for "noremap" argument of ins_typebuf().  Also used for
 // map->m_noremap and menu->noremap[].
