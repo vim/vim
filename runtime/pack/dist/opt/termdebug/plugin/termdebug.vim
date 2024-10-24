@@ -1582,7 +1582,7 @@ enddef
 def Popup_show(expr: string)
   var formatted = Popup_format(expr)
   if evalPopupId != -1
-    call popup_close(evalPopupId)
+    popup_close(evalPopupId)
   endif
   evalPopupId = popup_atcursor(formatted, {})
 enddef
@@ -1609,6 +1609,8 @@ def HandleEvaluate(msg: string)
     endif
     if evalFromBalloonExpr
       Balloon_show(evalExprResult)
+    elseif evalInPopup
+      Popup_show(evalExprResult)
     endif
   else
     echomsg $'"{evalexpr}": {value}'
@@ -1619,11 +1621,8 @@ def HandleEvaluate(msg: string)
     ignoreEvalError = true
     SendEval($'*{evalexpr}')
   else
-    if evalInPopup
-      Popup_show(evalExprResult)
-      evalInPopup = false
-    endif
     evalFromBalloonExpr = false
+    evalInPopup = false
   endif
 enddef
 
