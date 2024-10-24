@@ -2,6 +2,9 @@
 "
 " Current directory must be runtime/syntax.
 
+" needed because of line-continuation lines
+set cpo&vim
+
 " Only do this with the +eval feature
 if 1
 
