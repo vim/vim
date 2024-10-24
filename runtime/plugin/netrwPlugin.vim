@@ -48,8 +48,10 @@ else
 endif
 
 if has('unix')
-  if has('win32unix') " Git Bash provides /usr/bin/start script calling cmd.exe //c
-    " use start //b "" to set void title and avoid ambiguity with passed argument
+  if has('win32unix')
+    " MSYS2/Git Bash provides (/usr/bin/)start script calling `cmd.exe //c`
+    " `start "" //b` sets void title and blocks path conversion of /b to \b\
+    " by MSYS2 as documented at https://www.msys2.org/docs/filesystem-paths/
     command -complete=shellcmd -nargs=1 -bang Launch
           \ exe 'silent ! start "" //b' trim(<q-args>)  s:redir | redraw!
   elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
