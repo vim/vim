@@ -1584,7 +1584,9 @@ def Popup_show(expr: string)
   if evalPopupId != -1
     popup_close(evalPopupId)
   endif
-  evalPopupId = popup_atcursor(formatted, {})
+  # Specifying the line is necessary, as the winbar seems to cause issues
+  # otherwise. I.e., the popup would be shown one line too high.
+  evalPopupId = popup_atcursor(formatted, {'line': 'cursor-1'})
 enddef
 
 def HandleEvaluate(msg: string)
