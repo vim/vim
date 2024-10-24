@@ -134,6 +134,8 @@ jobs:
           bash $name -b -p ~/mambaforge
           ~/mambaforge/bin/mamba init bash
           rm $name
+          sudo update-alternatives --install /usr/bin/mamba mamba ~/mambaforge/bin/mamba 100
+          sudo update-alternatives --set mamba ~/mambaforge/bin/mamba
           popd
 
       - name: Install gcc-${{ env.GCC_VER }}
