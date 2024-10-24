@@ -157,6 +157,7 @@ VIM IS... NOT						*design-not*
   being less consistent over all platforms.  But functional GUI features are
   welcomed.
 
+
 ==============================================================================
 2. Coding style						*coding-style*
 
@@ -191,52 +192,234 @@ Later standards, such as C99, are not widely supported, or at least not 100%
 supported.  Therefore we use only some of the C99 features and explicitly
 disallow some (this will gradually be adjusted over time).
 
-Please don't make changes everywhere to use the C99 features, it causes merge
-problems for existing patches.  Only use them for new and changed code.
-
-Comments ~
-
-Traditionally Vim uses /* comments */.  We intend to keep it that way
-for file and function headers and larger blocks of code, E.g.:
-	/*
-	 * The "foo" argument does something useful.
-	 * Return OK or FAIL.
-	 */
-For new code or lines of code that change, it is preferred to use // comments.
-Especially when it comes after code:
-	int some_var;  // single line comment useful here
-
-Enums ~
-
-The last item in an enum may have a trailing comma.  C89 didn't allow this.
-
-Types ~
-
-"long long" is allowed and can be expected to be 64 bits.  Use %lld in printf
-formats.  Also "long long unsigned" with %llu.
-
-Declarations ~
-
-Now that the minimal supported compiler is MSVC 2015 declarations do not need
-to be at the start of a block.  However, it is often a good idea to do this
-anyway.
-
-Declaration of the for loop variable inside the loop is recommended:
-	for (int i = 0; i < len; ++i)
-Since this is clearly an advantage we'll use this more often.
-
-
-Not to be used ~
+Features not to be used ~
 
 These C99 features are not to be used, because not enough compilers support
 them:
 - Variable length arrays (even in C11 this is an optional feature).
-- _Bool and _Complex types.
+- C99 _Bool and _Complex types.
 - "inline" (it's hardly ever needed, let the optimizer do its work)
 - flexible array members: Not supported by HP-UX C compiler (John Marriott)
 
 
-USE OF COMMON FUNCTIONS					*style-functions*
+COMMENTS					       *style-comments*
+
+Try to avoid putting multiline comments inside a function body: if the
+function is so complex that you need to separately comment parts of it, you
+should probably rethink the structure of the function.
+
+For file headers and function descriptions use: >
+    /*
+     * Description
+     */
+<
+For everything else use: >
+    // comment
+<
+
+
+INDENTATION					      *style-indentation*
+
+We use 4 space to indent the code. If you are using Vim to edit the source,
+you don't need to do anything due to the |modeline|.
+
+For other editors an `.editorconfig` is provided at the root of the repo.
+
+
+DECLARATIONS	                                     *style-declarations*
+
+Declare, when possible, `for` loop variables in the guard:
+OK: >
+    for (int i = 0; i < len; ++i)
+<
+Wrong: >
+    int i;
+    for (i = 0; i < len; ++i)
+<
+Always declare a variable with a default value:
+OK: >
+    int n = 0;
+    int *ptr = NULL;
+<
+Wrong: >
+    int n;
+    int *ptr;
+<
+
+
+BRACES							   *style-braces*
+
+All curly braces must be returned onto a new line:
+OK: >
+    if (cond)
+    {
+       cmd;
+       cmd;
+    }
+    else
+    {
+       cmd;
+       cmd;
+    }
+<
+Wrong: >
+    if (cond) {
+       cmd;
+       cmd;
+    } else {
+       cmd;
+       cmd;
+    }
+<
+OK: >
+    while (cond)
+    {
+	cmd;
+    }
+<
+Wrong: >
+    while (cond) {
+	cmd;
+    }
+<
+When a block has one line, including comments, the braces can be left out.
+OK: >
+    if (cond)
+	cmd;
+    else
+	cmd;
+<
+Wrong: >
+    if (cond)
+	/*
+	 * comment
+	 */
+	cmd;
+    else
+	cmd;
+<
+When an `if`/`else` has braces on one block, the other should have it too.
+OK: >
+    if (cond)
+    {
+	cmd;
+    }
+    else
+    {
+	cmd;
+	cmd;
+    }
+<
+Wrong: >
+    if (cond)
+	cmd;
+    else
+    {
+	cmd;
+	cmd;
+    }
+
+    if (cond)
+    {
+	cmd;
+	cmd;
+    }
+    else
+	cmd;
+<
+OK: >
+    while (cond)
+	cmd;
+<
+Wrong:
+>
+    while (cond)
+	if (cond)
+	    cmd;
+<
+
+
+TYPES							    *style-types*
+
+Use descriptive types. You can find a list of them in the src/structs.h file
+and probably in a typedef in the file you are working on.
+
+Note that all custom types are postfixed with "_T"
+
+OK: >
+    int is_valid_line_number(linenr_T lnum);
+<
+Wrong: >
+    int is_valid_line_number(unsigned long lnum);
+<
+
+
+SPACES AND PUNCTUATION					   *style-spaces*
+
+No space between a function name and the bracket:
+
+OK:	func(arg);
+Wrong:  func (arg);
+
+Do use a space after `if`, `while`, `switch`, etc.
+
+OK:	if (arg)	for (;;)
+Wrong:	if(arg)		for(;;)
+
+Use a space after a comma or semicolon:
+
+OK:	func(arg1, arg2);	for (i = 0; i < 2; ++i)
+Wrong:  func(arg1,arg2);	for (i = 0;i < 2;++i)
+
+Use a space before and after '=', '+', '/', etc.
+
+Wrong:	var=a*5;
+OK:	var = a * 5;
+
+Use empty lines to group similar actions together.
+
+OK: >
+    msg_puts_title(_("\n--- Signs ---"));
+    msg_putchar('\n');
+
+    if (rbuf == NULL)
+	buf = firstbuf;
+    else
+	buf = rbuf;
+
+    while (buf != NULL && !got_int)
+<
+Wrong: >
+    msg_puts_title(_("\n--- Signs ---"));
+    msg_putchar('\n');
+    if (rbuf == NULL)
+	buf = firstbuf;
+    else
+	buf = rbuf;
+    while (buf != NULL && !got_int)
+<
+
+
+FUNCTIONS						*style-functions*
+
+Use function declarations with the return type on a separate indented line.
+
+OK: >
+    int
+    function_name(int arg1, int arg2)
+    {
+    }
+<
+Wrong: >
+    int function_name(int arg1, int arg2)
+    {
+    }
+<
+
+Give meaningful names to function parameters.
+
+
+USE OF COMMON FUNCTIONS				 *style-common-functions*
 
 Some functions that are common to use, have a special Vim version.  Always
 consider using the Vim version, because they were introduced with a reason.
@@ -311,27 +494,30 @@ get_env_value()	Linux system function
 
 VARIOUS							*style-various*
 
-Typedef'ed names should end in "_T": >
-    typedef int some_T;
-Define'ed names should be uppercase: >
+Define'd names should be uppercase: >
     #define SOME_THING
+<
+
 Features always start with "FEAT_": >
     #define FEAT_FOO
+<
 
 Don't use '\"', some compilers can't handle it.  '"' works fine.
 
-Don't use:
+Don't use: >
     #if HAVE_SOME
+<
 Some compilers can't handle that and complain that "HAVE_SOME" is not defined.
-Use
+Use >
     #ifdef HAVE_SOME
-or
+<
+or >
     #if defined(HAVE_SOME)
-
+<
 
 STYLE							*style-examples*
 
-General rule: One statement per line.
+One statement per line.
 
 Wrong:	    if (cond) a = 1;
 
@@ -349,101 +535,6 @@ OK:	    do
 		a = 1;
 	    while (cond);
 
-Wrong:	    if (cond) {
-               cmd;
-               cmd;
-	    } else {
-               cmd;
-               cmd;
-	    }
-
-OK:	    if (cond)
-            {
-               cmd;
-               cmd;
-	    }
-	    else
-	    {
-               cmd;
-               cmd;
-	    }
-
-When a block has one line the braces can be left out.  When an if/else has
-braces on one block, it usually looks better when the other block also has
-braces:
-OK:	    if (cond)
-	       cmd;
-	    else
-               cmd;
-
-OK:	    if (cond)
-	    {
-	       cmd;
-	    }
-	    else
-	    {
-               cmd;
-               cmd;
-	    }
-
-Use ANSI (new style) function declarations with the return type on a separate
-indented line.
-
-Wrong:	int function_name(int arg1, int arg2)
-
-OK:	/*
-	 * Explanation of what this function is used for.
-	 *
-	 * Return value explanation.
-	 */
-	    int
-	function_name(
-	    int		arg1,		// short comment about arg1
-	    int		arg2)		// short comment about arg2
-	{
-	    int		local;		// comment about local
-
-	    local = arg1 * arg2;
-
-
-
-SPACES AND PUNCTUATION					*style-spaces*
-
-No space between a function name and the bracket:
-
-Wrong:  func (arg);
-OK:	func(arg);
-
-Do use a space after if, while, switch, etc.
-
-Wrong:	if(arg)		for(;;)
-OK:	if (arg)	for (;;)
-
-Use a space after a comma and semicolon:
-
-Wrong:  func(arg1,arg2);	for (i = 0;i < 2;++i)
-OK:	func(arg1, arg2);	for (i = 0; i < 2; ++i)
-
-Use a space before and after '=', '+', '/', etc.
-
-Wrong:	var=a*5;
-OK:	var = a * 5;
-
-In general: Use empty lines to group lines of code together.  Put a comment
-just above the group of lines.  This makes it easier to quickly see what is
-being done.
-
-OK:	/* Prepare for building the table. */
-	get_first_item();
-	table_idx = 0;
-
-	/* Build the table */
-	while (has_item())
-	    table[table_idx++] = next_item();
-
-	/* Finish up. */
-	cleanup_items();
-	generate_hash(table);
 
 ==============================================================================
 3. Design decisions					*design-decisions*
