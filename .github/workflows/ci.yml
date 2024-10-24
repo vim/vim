@@ -128,16 +128,22 @@ jobs:
             )
           fi
           sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
+          pushd ~
+          name=Miniforge3-$(uname)-$(uname -m).sh
+          wget "https://github.com/conda-forge/miniforge/releases/latest/download/$name"
+          bash $name -b -p ~/mambaforge
+          ~/mambaforge/bin/mamba init bash
+          rm $name
+          sudo update-alternatives --install /usr/bin/mamba mamba ~/mambaforge/bin/mamba 100
+          sudo update-alternatives --set mamba ~/mambaforge/bin/mamba
+          popd
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
-          # ubuntu-toolchain-r/test PPA for gcc-13 compiler
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-          sudo apt-get update -y
-          sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
-          sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
+          mamba install conda-forge::gcc=${{ env.GCC_VER }}
+          sudo update-alternatives --install /usr/bin/gcc gcc ~/mambaforge/bin/gcc 100
+          sudo update-alternatives --set gcc ~/mambaforge/bin/gcc
 
       - name: Install clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
