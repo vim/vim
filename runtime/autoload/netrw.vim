@@ -5478,6 +5478,7 @@ fun! netrw#GX()
 endfun
 
 fun! s:GetURL() abort
+   let URL = ''
    if exists('*Netrw_get_URL_' .. &filetype)
       let URL = call('Netrw_get_URL_' .. &filetype, [])
    endif
