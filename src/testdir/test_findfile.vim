@@ -374,7 +374,7 @@ func Test_findexpr()
 
   " Expression returning a string
   set findexpr='abc'
-  call assert_fails('find Xfindexpr1.c', 'E1514: findexpr did not return a List type')
+  call assert_fails('find Xfindexpr1.c', 'E1514: ''findexpr'' did not return a List type')
 
   set findexpr&
   delfunc! FindExpr1
@@ -466,7 +466,10 @@ func Test_findexpr_expand_arg()
   call feedkeys(":find Xfind\<Tab>\<Tab>\<C-B>\"\<CR>", "xt")
   call assert_equal('"find Xfindexpr2.c', @:)
 
-  call feedkeys(":find *3*\<Tab>\<C-B>\"\<CR>", "xt")
+  call feedkeys(":find X.*1\\.c\<Tab>\<C-B>\"\<CR>", "xt")
+  call assert_equal('"find Xfindexpr1.c', @:)
+
+  call feedkeys(":find .*3.*\<Tab>\<C-B>\"\<CR>", "xt")
   call assert_equal('"find Xfindexpr3.c', @:)
 
   call feedkeys(":find Xfind\<C-A>\<C-B>\"\<CR>", "xt")

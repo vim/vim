@@ -6977,21 +6977,11 @@ expand_findexpr(char_u *pat, char_u ***files, int *numMatches)
 {
     list_T	*l;
     int		len;
-    char_u	*regpat;
 
     *numMatches = 0;
     *files = NULL;
 
-    // File name expansion uses wildchars.  But the 'findexpr' expression
-    // expects a regular expression argument.  So convert wildchars in the
-    // argument to regular expression patterns.
-    regpat = file_pat_to_reg_pat(pat, NULL, NULL, FALSE);
-    if (regpat == NULL)
-	return FAIL;
-
-    l = eval_findexpr(regpat);
-
-    vim_free(regpat);
+    l = eval_findexpr(pat);
 
     if (l == NULL)
 	return FAIL;
