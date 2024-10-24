@@ -408,9 +408,11 @@ list_mappings(
  * noreabbr {lhs} {rhs}	    : same, but no remapping for {rhs}
  * unabbr {lhs}		    : remove abbreviation for {lhs}
  *
- * maptype: MAPTYPE_MAP for :map
- *	    MAPTYPE_UNMAP for :unmap
- *	    MAPTYPE_NOREMAP for noremap
+ * maptype: MAPTYPE_MAP for :map or :abbr
+ *	    MAPTYPE_UNMAP for :unmap or :unabbr
+ *	    MAPTYPE_NOREMAP for :noremap or :noreabbr
+ *	    MAPTYPE_UNMAP_LHS is like MAPTYPE_UNMAP, but doesn't try to match
+ *	    with {rhs} if there is no match with {lhs}.
  *
  * arg is pointer to any arguments. Note: arg cannot be a read-only string,
  * it will be modified.
@@ -470,12 +472,19 @@ do_map(
     int		expr = FALSE;
 #endif
     int		did_simplify = FALSE;
+    int		unmap_lhs_only = FALSE;
     int		noremap;
     char_u      *orig_rhs;
 
     keys = arg;
     map_table = maphash;
     abbr_table = &first_abbr;
+
+    if (maptype == MAPTYPE_UNMAP_LHS)
+    {
+	unmap_lhs_only = TRUE;
+	maptype = MAPTYPE_UNMAP;
+    }
 
     // For ":noremap" don't remap, otherwise do remap.
     if (maptype == MAPTYPE_NOREMAP)
@@ -619,6 +628,7 @@ do_map(
 	int	did_local = FALSE;
 	int	keyround1_simplified = keyround == 1 && did_simplify;
 	int	round;
+	int	num_rounds;
 
 	if (keyround == 2)
 	{
@@ -742,8 +752,8 @@ do_map(
 	// an entry with a matching 'to' part. This was done to allow
 	// ":ab foo bar" to be unmapped by typing ":unab foo", where "foo" will
 	// be replaced by "bar" because of the abbreviation.
-	for (round = 0; (round == 0 || maptype == MAPTYPE_UNMAP) && round <= 1
-					       && !did_it && !got_int; ++round)
+	num_rounds = maptype == MAPTYPE_UNMAP && !unmap_lhs_only ? 2 : 1;
+	for (round = 0; round < num_rounds && !did_it && !got_int; ++round)
 	{
 	    // need to loop over all hash lists
 	    for (int hash = 0; hash < 256 && !got_int; ++hash)
@@ -2817,7 +2827,7 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	if (arg == NULL)
 	    return;
     }
-    do_map(MAPTYPE_UNMAP, arg, mode, is_abbr);
+    do_map(MAPTYPE_UNMAP_LHS, arg, mode, is_abbr);
     vim_free(arg);
 
     mp_result[0] = map_add(map_table, abbr_table, lhsraw, rhs, orig_rhs,
