@@ -161,6 +161,7 @@ static struct vimvar
     {VV_NAME("t_typealias",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_enum",		 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_enumvalue",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("cmdcomplete",	 VAR_BOOL), NULL, VV_RO},
 };
 
 // shorthand
@@ -234,6 +235,7 @@ evalvars_init(void)
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
     set_vim_var_nr(VV_EXITING, VVAL_NULL);
+    set_vim_var_nr(VV_CMDCOMPLETE, VVAL_FALSE);
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
     set_vim_var_list(VV_ERRORS, list_alloc());
     set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));

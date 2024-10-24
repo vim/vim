@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 Oct 22
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Oct 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2026,6 +2026,11 @@ v:cmdbang	Set like v:cmdarg for a file read/write command.  When a "!"
 		was used the value is 1, otherwise it is 0.  Note that this
 		can only be used in autocommands.  For user commands |<bang>|
 		can be used.
+
+					*v:cmdcomplete* *cmdcomplete-variable*
+v:cmdcomplete	When evaluating 'findexpr': if 'findexpr' is used for cmdline
+		completion the value is |v:true|, otherwise it is |v:false|.
+
 						*v:collate* *collate-variable*
 v:collate	The current locale setting for collation order of the runtime
 		environment.  This allows Vim scripts to be aware of the
