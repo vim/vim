@@ -3653,4 +3653,4 @@ EXTERN char e_wrong_character_width_for_field_str[]
 EXTERN char e_winfixbuf_cannot_go_to_buffer[]
 	INIT(= N_("E1513: Cannot switch buffer. 'winfixbuf' is enabled"));
 EXTERN char e_invalid_return_type_from_findexpr[]
-	INIT(= N_("E1514: findexpr did not return a List type"));
+	INIT(= N_("E1514: 'findexpr' did not return a List type"));
