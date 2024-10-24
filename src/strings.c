@@ -2273,7 +2273,8 @@ enum
     TYPE_PERCENT,
     TYPE_CHAR,
     TYPE_STRING,
-    TYPE_FLOAT
+    TYPE_FLOAT,
+    TYPE_LONGFLOAT
 };
 
 /* Types that can be used in a format string
@@ -2429,6 +2430,9 @@ format_typename(
 
 	case TYPE_FLOAT:
 	    return _(typename_float);
+
+	case TYPE_LONGFLOAT:
+	    return _(typename_longfloat);
     }
 
     return _(typename_unknown);
@@ -2942,6 +2946,10 @@ skip_to_arg(
 
 	case TYPE_FLOAT:
 	    va_arg(*ap, double);
+	    break;
+
+	case TYPE_LONGFLOAT:
+	    va_arg(*ap, long double);
 	    break;
 	}
     }
