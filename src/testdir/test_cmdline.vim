@@ -1701,6 +1701,8 @@ func Test_verbose_option()
   CheckScreendump
 
   let lines =<< trim [SCRIPT]
+    " clear the TermResponse autocommand from defaults.vim
+    au! vimStartup TermResponse
     command DoSomething echo 'hello' |set ts=4 |let v = '123' |echo v
     call feedkeys("\r", 't') " for the hit-enter prompt
     set verbose=20
