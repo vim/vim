@@ -2289,8 +2289,8 @@ format_typeof(
     // current conversion specifier character
     char    fmt_spec = '\0';
 
-    // parse 'h', 'l' and 'll' length modifiers
-    if (*type == 'h' || *type == 'l')
+    // parse 'h', 'l', 'll' and 'L' length modifiers
+    if (*type == 'h' || *type == 'l' || *type == 'L')
     {
 	length_modifier = *type;
 	type++;
@@ -2386,7 +2386,14 @@ format_typeof(
     case 'E':
     case 'g':
     case 'G':
-	return TYPE_FLOAT;
+	if (length_modifier == 'L')
+	{
+	    return TYPE_LONGFLOAT;
+	}
+	else
+	{
+	    return TYPE_FLOAT;
+	}
     }
 
     return TYPE_UNKNOWN;
@@ -2768,8 +2775,8 @@ parse_fmt_types(
 		ptype = p;
 	    }
 
-	    // parse 'h', 'l' and 'll' length modifiers
-	    if (*p == 'h' || *p == 'l')
+	    // parse 'h', 'l', 'll' and 'L' length modifiers
+	    if (*p == 'h' || *p == 'l' || *p == 'L')
 	    {
 		length_modifier = *p;
 		p++;
@@ -3223,8 +3230,8 @@ vim_vsnprintf_typval(
 		}
 	    }
 
-	    // parse 'h', 'l' and 'll' length modifiers
-	    if (*p == 'h' || *p == 'l')
+	    // parse 'h', 'l', 'll' and 'L' length modifiers
+	    if (*p == 'h' || *p == 'l' || *p == 'L')
 	    {
 		length_modifier = *p;
 		p++;

@@ -1132,7 +1132,13 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 		emsg(_(e_using_float_as_string));
 		break;
 	    }
-	    vim_snprintf((char *)buf, NUMBUFLEN, "%g", varp->vval.v_float);
+#if defined(__LP64__)
+	    vim_snprintf((char *)buf, NUMBUFLEN, "%.*Lg", FLOAT_PRECISION,
+		    varp->vval.v_float);
+#else
+	    vim_snprintf((char *)buf, NUMBUFLEN, "%.*g", FLOAT_PRECISION,
+		    varp->vval.v_float);
+#endif
 	    return buf;
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
