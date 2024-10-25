@@ -1548,9 +1548,14 @@ To open a file <filepath> by the appropriate handler, type
 
 	:Open <filepath>
 
+No escaping, neither for the shell, nor for Vim's command-line is needed.
+
 To launch a specific application <app> <args>, often <args> being <filepath>,
 
 	:Launch <app> <args>.
+
+Since <args> can be arbitrarily complex, in particular contain many file
+paths, the escaping is left to the user.
 
 Associated setting variables:
 	|g:netrw_gx|	control how gx picks up the text under the cursor
