@@ -266,13 +266,13 @@ func Test_termdebug_evaluate()
   " Evaluate an expression
   Evaluate n
   call term_wait(gdb_buf)
-  call assert_equal(execute('1messages'), '"n": 7')
+  call assert_equal(execute('1messages')->trim(), '"n": 7')
   Evaluate argc
   call term_wait(gdb_buf)
-  call assert_equal(execute('1messages'), '"argc": 1')
+  call assert_equal(execute('1messages')->trim(), '"argc": 1')
   Evaluate isprime(n)
   call term_wait(gdb_buf)
-  call assert_equal(execute('1messages'), '"isprime(n)": 1')
+  call assert_equal(execute('1messages')->trim(), '"isprime(n)": 1')
 
   wincmd t
   quit!
@@ -293,6 +293,7 @@ func Test_termdebug_evaluate_in_popup()
 
     int main(int argc, char* argv[]) {
       struct Point p = {argc, 2};
+      struct Point* p_ptr = &p;
       return 0;
     }
   END
@@ -306,7 +307,7 @@ func Test_termdebug_evaluate_in_popup()
     let g:termdebug_config['evaluate_in_popup'] = v:true
     Termdebug ./XTD_evaluate_in_popup
     wincmd b
-    Break 8
+    Break 9
     Run
   END
 
@@ -317,6 +318,10 @@ func Test_termdebug_evaluate_in_popup()
   call term_sendkeys(buf, ":Evaluate p\<CR>")
   call TermWait(buf, 400)
   call VerifyScreenDump(buf, 'Test_termdebug_evaluate_in_popup_01', {})
+
+  call term_sendkeys(buf, ":Evaluate p_ptr\<CR>")
+  call TermWait(buf, 400)
+  call VerifyScreenDump(buf, 'Test_termdebug_evaluate_in_popup_02', {})
 
   " Cleanup
   call term_sendkeys(buf, ":Gdb")
