@@ -1609,11 +1609,6 @@ def HandleEvaluate(msg: string)
     else
       evalExprResult ..= $' = {value}'
     endif
-    if evalFromBalloonExpr
-      Balloon_show(evalExprResult)
-    elseif evalInPopup
-      Popup_show(evalExprResult)
-    endif
   else
     echomsg $'"{evalexpr}": {value}'
   endif
@@ -1622,8 +1617,11 @@ def HandleEvaluate(msg: string)
     # Looks like a pointer, also display what it points to.
     ignoreEvalError = true
     SendEval($'*{evalexpr}')
-  else
+  elseif evalFromBalloonExpr
+    Balloon_show(evalExprResult)
     evalFromBalloonExpr = false
+  elseif evalInPopup
+    Popup_show(evalExprResult)
     evalInPopup = false
   endif
 enddef
