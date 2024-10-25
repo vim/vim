@@ -6891,7 +6891,16 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 				   get_var_special_name(iptr->isn_arg.number));
 		break;
 	    case ISN_PUSHF:
-		smsg("%s%4d PUSHF %g", pfx, current, iptr->isn_arg.fnumber);
+#if defined(__LP64__)
+		smsg("%s%4d PUSHF %.*Lg", FLOAT_PRECISION, pfx, current,
+			iptr->isn_arg.fnumber);
+		/* smsg("%s%4d PUSHF %.20Lg", pfx, current, iptr->isn_arg.fnumber); */
+#else
+		/* smsg("%s%4d PUSHF %g", pfx, current, iptr->isn_arg.fnumber); */
+		smsg("%s%4d PUSHF %.*g", FLOAT_PRECISION, pfx, current,
+			iptr->isn_arg.fnumber);
+
+#endif
 		break;
 	    case ISN_PUSHS:
 		smsg("%s%4d PUSHS \"%s\"", pfx, current, iptr->isn_arg.string);
