@@ -49,11 +49,23 @@ endif
 
 if has('unix')
   if has('win32unix')
-    " MSYS2/Git Bash provides (/usr/bin/)start script calling `cmd.exe //c`
-    " `start "" //b` sets void title and blocks path conversion of /b to \b\
-    " by MSYS2 as documented at https://www.msys2.org/docs/filesystem-paths/
+    " If cygstart provided, then assume Cygwin and use cygstart --hide; see man cygstart.
+    if executable('cygstart')
     command -complete=shellcmd -nargs=1 -bang Launch
-          \ exe 'silent ! start "" //b' trim(<q-args>)  s:redir | redraw!
+          \ exe 'silent ! cygstart --hide' trim(<q-args>)  s:redir | redraw!
+    elseif !empty($MSYSTEM) && executable('start')
+      " MSYS2/Git Bash comes by default without cygstart; see
+      " https://www.msys2.org/wiki/How-does-MSYS2-differ-from-Cygwin
+      " Instead it provides /usr/bin/start script running `cmd.exe //c start`
+      " Adding "" //b` sets void title, hides cmd window and blocks path conversion
+      " of /b to \b\ " by MSYS2; see https://www.msys2.org/docs/filesystem-paths/
+      command -complete=shellcmd -nargs=1 -bang Launch
+            \ exe 'silent !start "" //b' trim(<q-args>)  s:redir | redraw!
+    else
+      " imitate /usr/bin/start script for other environments and hope for the best
+      command -complete=shellcmd -nargs=1 -bang Launch
+            \ exe 'silent !cmd //c start "" //b' trim(<q-args>)  s:redir | redraw!
+    endif
   elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
     command -complete=shellcmd -nargs=1 -bang Launch execute ':silent !'..
           \ ((<q-args> =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
