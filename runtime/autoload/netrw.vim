@@ -5432,7 +5432,8 @@ fun! netrw#BrowseX(fname,remote)
 "   call Decho("(netrw#BrowseX) g:netrw_browsex_viewer<".g:netrw_browsex_viewer.">",'~'.expand("<slnum>"))
     exe 'Launch' viewer viewopt shellescape(fname, 1)
   else
-    exe 'Open' fname
+     " though shellescape(..., 1) is used in Open, it's insufficient
+     exe 'Open' escape(fname, '#%')
   endif
 
   " cleanup: remove temporary file,
