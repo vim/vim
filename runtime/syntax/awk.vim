@@ -92,7 +92,7 @@ syn match   awkSpecialCharacter display contained "\\x[0-9A-Fa-f]\+"
 syn match   awkFieldVars	"\$\d\+"
 
 " catch errors caused by wrong parenthesis
-syn region	awkParen	transparent start="(" end=")" contains=ALLBUT,awkParenError,awkSpecialCharacter,awkArrayElement,awkArrayArray,awkTodo,awkRegExp,awkBrktRegExp,awkBrackets,awkCharClass,awkComment
+syn region	awkParen	transparent start="(" end=")" contains=ALLBUT,awkParenError,awkSpecialCharacter,awkArrayElement,awkArrayArray,awkTodo,awkRegExp,awkBrktRegExp,awkBrackets,awkCharClass
 syn match	awkParenError	display ")"
 "syn match	awkInParen	display contained "[{}]"
 
