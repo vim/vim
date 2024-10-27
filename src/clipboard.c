@@ -2129,7 +2129,7 @@ clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd)
 	return -1;
 
     for (i = 0; i < y_ptr->y_size; i++)
-	*len += (long_u)STRLEN(y_ptr->y_array[i]) + eolsize;
+	*len += (long_u)y_ptr->y_array[i].length + eolsize;
 
     // Don't want newline character at end of last line if we're in MCHAR mode.
     if (y_ptr->y_type == MCHAR && *len >= eolsize)
@@ -2141,9 +2141,9 @@ clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd)
     lnum = 0;
     for (i = 0, j = 0; i < (int)*len; i++, j++)
     {
-	if (y_ptr->y_array[lnum][j] == '\n')
+	if (y_ptr->y_array[lnum].string[j] == '\n')
 	    p[i] = NUL;
-	else if (y_ptr->y_array[lnum][j] == NUL)
+	else if (y_ptr->y_array[lnum].string[j] == NUL)
 	{
 # ifdef USE_CRNL
 	    p[i++] = '\r';
@@ -2153,7 +2153,7 @@ clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd)
 	    j = -1;
 	}
 	else
-	    p[i] = y_ptr->y_array[lnum][j];
+	    p[i] = y_ptr->y_array[lnum].string[j];
     }
     return y_ptr->y_type;
 }

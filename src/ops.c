@@ -2504,7 +2504,11 @@ charwise_block_prep(
 	}
     }
     if (endcol == MAXCOL)
+    {
+	// the selection ends at the end of the line
 	endcol = ml_get_len(lnum);
+	inclusive = 0;		// make sure we don't go over the end of the line
+    }
     if (startcol > endcol || bdp->is_oneChar)
 	bdp->textlen = 0;
     else

@@ -20,6 +20,13 @@ typedef int		colnr_T;
 typedef unsigned short	short_u;
 #endif
 
+// structure to store a string (including it's length)
+typedef struct
+{
+    char_u  *string;		// the string
+    size_t  length;		// length of the string (excluding the NUL)
+} string_T;
+
 /*
  * Position in file or buffer.
  */
@@ -4784,7 +4791,7 @@ struct block_def
 // Each yank register has an array of pointers to lines.
 typedef struct
 {
-    char_u	**y_array;	// pointer to array of line pointers
+    string_T	*y_array;	// pointer to array of string_T structs
     linenr_T	y_size;		// number of lines in y_array
     char_u	y_type;		// MLINE, MCHAR or MBLOCK
     colnr_T	y_width;	// only set if y_type == MBLOCK

@@ -1882,8 +1882,8 @@ func Test_visual_getregion()
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
     call assert_equal([
-          \   [[bufnr('%'), 1, 3, 0], [bufnr('%'), 1, 4, 0]],
-          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 4, 0]],
+          \   [[bufnr('%'), 1, 3, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
           \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 6, 2]],
           \ ],
           \ getregionpos(getpos('v'), getpos('.'),
@@ -1894,14 +1894,14 @@ func Test_visual_getregion()
     call assert_equal(['', 'two', 'three  '],
           \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
     call assert_equal([
-          \   [[bufnr('%'), 1, 0, 0], [bufnr('%'), 1, 0, 0]],
+          \   [[bufnr('%'), 1, 0, 0], [bufnr('%'), 1, 3, 0]],
           \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
           \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
     call assert_equal([
-          \   [[bufnr('%'), 1, 4, 0], [bufnr('%'), 1, 4, 0]],
-          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 4, 0]],
+          \   [[bufnr('%'), 1, 4, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
           \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 6, 2]],
           \ ],
           \ getregionpos(getpos('v'), getpos('.'),
