@@ -2263,7 +2263,7 @@ win_line(
 				}
 
 				if (above)
-				    wlv.vcol_off_tp = wlv.n_extra;
+				    wlv.vcol_off_tp = vim_strsize(wlv.p_extra);
 
 				if (lcs_eol_one < 0
 					&& wp->w_p_wrap
