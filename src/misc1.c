@@ -953,6 +953,17 @@ get_keystroke(void)
     return n;
 }
 
+// For overflow detection, add a digit safely to an int value.
+    static int
+vim_append_digit_int(int *value, int digit)
+{
+    int x = *value;
+    if (x > ((INT_MAX - digit) / 10))
+	return FAIL;
+    *value = x * 10 + digit;
+    return OK;
+}
+
 /*
  * Get a number from the user.
  * When "mouse_used" is not NULL allow using the mouse.
@@ -2822,17 +2833,6 @@ may_trigger_modechanged(void)
 
     restore_v_event(v_event, &save_v_event);
 #endif
-}
-
-// For overflow detection, add a digit safely to an int value.
-    int
-vim_append_digit_int(int *value, int digit)
-{
-    int x = *value;
-    if (x > ((INT_MAX - digit) / 10))
-	return FAIL;
-    *value = x * 10 + digit;
-    return OK;
 }
 
 // For overflow detection, add a digit safely to a long value.

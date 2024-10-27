@@ -7,7 +7,6 @@ void enum_set_internal_obj_vars(class_T *en, object_T *enval);
 type_T *oc_member_type(class_T *cl, int is_object, char_u *name, char_u *name_end, int *member_idx);
 type_T *oc_member_type_by_idx(class_T *cl, int is_object, int member_idx);
 void ex_enum(exarg_T *eap);
-void typealias_free(typealias_T *ta);
 void typealias_unref(typealias_T *ta);
 void ex_type(exarg_T *eap);
 int class_object_index(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int verbose);
