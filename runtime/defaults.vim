@@ -115,6 +115,11 @@ if 1
       \ |   execute "normal! g`\""
       \ | endif
 
+    " Set the default background for putty to dark. Putty usually sets the 
+    " $TERM to xterm and by default it starts with a dark background which
+    " makes syntax highlighting often hard to read with bg=light
+    " undo this using:  ":au! vimStartup TermResponse"
+    autocmd TermResponse * if v:termresponse == "\e[>0;136;0c" | set bg=dark | endif
   augroup END
 
   " Quite a few people accidentally type "q:" instead of ":q" and get confused

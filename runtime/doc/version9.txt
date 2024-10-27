@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Oct 22
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41600,6 +41600,8 @@ Changed~
 - |:keeppatterns| preserves the last substitute pattern when used with |:s|
 - |setqflist()| and |setloclist()| can optionally try to preserve the current
   selection in the quickfix list with the "u" action.
+- the putty terminal is detected using an |TermResponse| autocommand in
+  |defaults.vim| and Vim switches to a dark background
 
 							*added-9.2*
 Added ~

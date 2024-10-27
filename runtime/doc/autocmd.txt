@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Aug 18
+*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1254,10 +1254,19 @@ TerminalWinOpen			Just after a terminal buffer was created, with
 TermResponse			After the response to |t_RV| is received from
 				the terminal.  The value of |v:termresponse|
 				can be used to do things depending on the
-				terminal version.  Note that this event may be
-				triggered halfway executing another event,
-				especially if file I/O, a shell command or
-				anything else that takes time is involved.
+				terminal version.
+				This is used in |defaults.vim| to detect
+				putty terminal and set a dark background: >
+
+				au TermResponse *
+				\ if v:termresponse == "\e[>0;136;0c"
+				\    set bg=dark
+				\ endif
+<
+				Note: that this event may be triggered halfway
+				executing another event, especially if file
+				I/O, a shell command or anything else that
+				takes time is involved.
 							*TermResponseAll*
 TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				|t_RB|, |t_RF|, or |t_u7| are received from
