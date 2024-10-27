@@ -94,8 +94,17 @@ if exists(':Launch') == 2
   " MacOS
   elseif executable('open')
       let s:cmd = 'open'
+  else
+    s:cmd = ''
   endif
-  command! -complete=file -nargs=1 Open exe 'Launch' s:cmd shellescape(<q-args>, 1)
+  function s:Open(cmd, file)
+    if empty(a:cmd) && !exists('g:netrw_browsex_viewer')
+      echoerr "No executable handler found. See :help Open for default handlers. To customize it, see :help netrw_browsex_viewer"
+    else
+      Launch cmd shellescape(file, 1)
+    endif
+  endfunction
+  command -complete=file -nargs=1 Open call s:Open(<q-args>, s:cmd)
 endif
 
 if !exists('g:netrw_regex_url')
