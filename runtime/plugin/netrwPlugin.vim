@@ -104,7 +104,7 @@ if exists(':Launch') == 2
       Launch cmd shellescape(a:file, 1)
     endif
   endfunction
-  command -complete=file -nargs=1 Open call s:Open(<q-args>, s:cmd)
+  command -complete=file -nargs=1 Open call s:Open(s:cmd, <q-args>)
 endif
 
 if !exists('g:netrw_regex_url')
