@@ -101,7 +101,7 @@ if exists(':Launch') == 2
     if empty(a:cmd) && !exists('g:netrw_browsex_viewer')
       echoerr "No executable handler found. See :help Open for default handlers. To customize it, see :help netrw_browsex_viewer"
     else
-      Launch cmd shellescape(file, 1)
+      Launch cmd shellescape(a:file, 1)
     endif
   endfunction
   command -complete=file -nargs=1 Open call s:Open(<q-args>, s:cmd)
