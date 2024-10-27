@@ -55,31 +55,13 @@ When a help item can't be found, then open 'helpfile'.  Search for the tag in
 that file and gtive E149 only when not found.  Helps for a tiny Vim installed
 without all the help files.
 
-SpellCap highlight not updated - PR #12428
-
 Virtual text problems:
--  If 'list' is on, 'below' virtual text which includes 1 or 2 characters are
-   gone (Issue #12028)
 -  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
    #12232)
--  Virtual text to the right of the line that isn't visible doesn't cause the
-   'extends' character to show in 'list' mode.  #12478
--  Virtual text to the right of the line that fits exactly on screen causes
-   that line and all lines below it not to be displayed (Issue #12213)
--  Window screen gets wrong when a virtual text is placed on 'above' or
-   'below' on an empty line (Issue #11959)
 -  truncated Virtual text below an empty line causes display error #12493
 
 When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
 highlighted. (van-de-bugger, 2018 Jan 23, #2576)
-
-Improve profiling by caching matching functions:  PR  #12192
-
-With 'smoothscroll' set and "lastline" in 'display', moving the cursor to a
-wrapping line that makes the display scroll up may scroll much more than
-needed, thus jump-scrolling. (part of issue 12411)
-
-Implement foreach()  PR  #12166
 
 Errors when running tests with valgrind:
 - test_codestyle.vim:  e.g.:
@@ -117,7 +99,6 @@ Upcoming larger works:
 
 Further Vim9 improvements:
 - Classes and Interfaces. See |vim9-classes|
-  - Cannot use class type of itself in the method (Issue #12369)
   - Getting member of variable with "any" type should be handled at runtime.
     Remove temporary solution from #12096 / patch 9.0.1375.
   - "obj.Method()" does not always work in a compiled function, assumes "obj"
@@ -127,9 +108,6 @@ Further Vim9 improvements:
     Possibly issue #11981 can be fixed at the same time (has two examples).
   - Forward declaration of a class?  E.g. for Clone() function.
 	Email lifepillar 2023 Mar 26
-  - When "Meta" is a class, is "const MetaAlias = Meta" allowed?  It should
-    either work or given an error. Possibly give an error now and implement it
-    later (using a typedef).  #12006
   - how about lock/unlock?
   - For chaining, allow using the class name as type for function return
     value.
@@ -147,7 +125,7 @@ Further Vim9 improvements:
     has(featureName), len(someString)
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
 - The use of the literal value "null" and the type specific "null_xxx"
-  values is confusing (#13458, #11770).
+  values is confusing (#13433, #11770).
 
 Information missing in terminfo:
 - Codes used for focus gained and lost termcodes are hard-coded in
@@ -225,8 +203,6 @@ Popup windows:
   positioned?  PopupNew?  Could be used to set some options or move it out of
   the way. (#5737)
   However, it may also cause trouble, changing the popup of another plugin.
-- Width is not computed correctly when minwidth and maxwidth are &columns
-  and padding and a scrollbar are used.  (#6676)
 - Should popup_getoptions() also return the mask?  #7774
 - Add a way to use popup_menu() synchronously: instead of invoking the
   callback, return the choice. (Ben Jackson, #6534)
@@ -296,8 +272,6 @@ Terminal emulator window:
 - Use CTRL-W CTRL-K to enter a digraph? #5371
 - When Vim runs in the terminal and changes the title, the statusline needs to
   be redrawn.
-- GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
-  (#3327)
 - Allow for specifying the directory, with ++cwd={dir}.
 - When pasting should call vterm_keyboard_start_paste(), e.g. when using
   K_MIDDLEMOUSE, calling insert_reg().
@@ -323,9 +297,6 @@ Cursor is after the end of the line:  #12137.
 
 Crash when a variable is removed while listing variables (Issue #11435)
 
-Autoconf: must use autoconf 2.69, later version generates lots of warnings
-- try using autoconf 2.71 and fix all "obsolete" warnings  #11322
-
 Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
 #11272
 
@@ -342,8 +313,6 @@ Support dark mode for MS-Windows: #12282
 
 Remote command escapes single quote with backslash, should be doubling the
 single quote in vim_strsave_escaped_ext()  #12202.
-
-PR to add custom and customlist completion types.  #12228
 
 Can deref_func_name() and deref_function_name() be merged?
 
