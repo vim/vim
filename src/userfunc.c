@@ -34,6 +34,7 @@ static void func_clear(ufunc_T *fp, int force);
 static int func_free(ufunc_T *fp, int force);
 static char_u *untrans_function_name(char_u *name);
 static void handle_defer_one(funccall_T *funccal);
+static char_u *trans_function_name_ext(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial, type_T **type, ufunc_T **ufunc);
 
     void
 func_init(void)
@@ -4266,7 +4267,7 @@ trans_function_name(
  * trans_function_name() with extra arguments.
  * "fdp", "partial", "type" and "ufunc" can be NULL.
  */
-    char_u *
+    static char_u *
 trans_function_name_ext(
     char_u	**pp,
     int		*is_global,

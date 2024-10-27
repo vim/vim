@@ -42,7 +42,6 @@ int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typva
 int call_simple_func(char_u *funcname, size_t len, typval_T *rettv);
 char_u *printable_func_name(ufunc_T *fp);
 char_u *trans_function_name(char_u **pp, int *is_global, int skip, int flags);
-char_u *trans_function_name_ext(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial, type_T **type, ufunc_T **ufunc);
 char_u *get_scriptlocal_funcname(char_u *funcname);
 char_u *alloc_printable_func_name(char_u *fname);
 char_u *save_function_name(char_u **name, int *is_global, int skip, int flags, funcdict_T *fudi);

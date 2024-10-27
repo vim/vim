@@ -2646,7 +2646,7 @@ oc_member_type_by_idx(
  * Type aliases (:type)
  */
 
-    void
+    static void
 typealias_free(typealias_T *ta)
 {
     // ta->ta_type is freed in clear_type_list()

@@ -1021,7 +1021,7 @@ check_for_object_arg(typval_T *args, int idx)
 /*
  * Returns TRUE if "tv" is a type alias for a class
  */
-    int
+    static int
 tv_class_alias(typval_T *tv)
 {
     return tv->v_type == VAR_TYPEALIAS &&
