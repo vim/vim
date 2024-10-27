@@ -1,6 +1,7 @@
 " Test for the termdebug plugin
 
 source shared.vim
+source screendump.vim
 source check.vim
 
 CheckUnix
@@ -240,6 +241,94 @@ func Test_termdebug_tbreak()
   call assert_equal([], sign_getplaced('', #{group: 'TermDebug'})[0].signs)
 
   eval s:cleanup_files(bin_name)
+  %bw!
+endfunc
+
+func Test_termdebug_evaluate()
+  let bin_name = 'XTD_evaluate'
+  let src_name = bin_name .. '.c'
+  call s:generate_files(bin_name)
+
+  edit XTD_evaluate.c
+  Termdebug ./XTD_evaluate
+  call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
+  call WaitForAssert({-> assert_equal(3, winnr('$'))})
+  let gdb_buf = winbufnr(1)
+  wincmd b
+
+  " return stmt in main
+  Break 22
+  call term_wait(gdb_buf)
+  Run
+  call term_wait(gdb_buf, 400)
+  redraw!
+
+  " Evaluate an expression
+  Evaluate n
+  call term_wait(gdb_buf)
+  call assert_equal(execute('1messages')->trim(), '"n": 7')
+  Evaluate argc
+  call term_wait(gdb_buf)
+  call assert_equal(execute('1messages')->trim(), '"argc": 1')
+  Evaluate isprime(n)
+  call term_wait(gdb_buf)
+  call assert_equal(execute('1messages')->trim(), '"isprime(n)": 1')
+
+  wincmd t
+  quit!
+  redraw!
+  call s:cleanup_files(bin_name)
+  %bw!
+endfunc
+
+func Test_termdebug_evaluate_in_popup()
+  CheckScreendump
+  let bin_name = 'XTD_evaluate_in_popup'
+  let src_name = bin_name .. '.c'
+  let code =<< trim END
+    struct Point {
+      int x;
+      int y;
+    };
+
+    int main(int argc, char* argv[]) {
+      struct Point p = {argc, 2};
+      struct Point* p_ptr = &p;
+      return 0;
+    }
+  END
+  call writefile(code, src_name, 'D')
+  call system($'{g:GCC} -g -o {bin_name} {src_name}')
+
+  let lines =<< trim END
+    edit XTD_evaluate_in_popup.c
+    packadd termdebug
+    let g:termdebug_config = {}
+    let g:termdebug_config['evaluate_in_popup'] = v:true
+    Termdebug ./XTD_evaluate_in_popup
+    wincmd b
+    Break 9
+    Run
+  END
+
+  call writefile(lines, 'Xscript', 'D')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call TermWait(buf, 400)
+
+  call term_sendkeys(buf, ":Evaluate p\<CR>")
+  call TermWait(buf, 400)
+  call VerifyScreenDump(buf, 'Test_termdebug_evaluate_in_popup_01', {})
+
+  call term_sendkeys(buf, ":Evaluate p_ptr\<CR>")
+  call TermWait(buf, 400)
+  call VerifyScreenDump(buf, 'Test_termdebug_evaluate_in_popup_02', {})
+
+  " Cleanup
+  call term_sendkeys(buf, ":Gdb")
+  call term_sendkeys(buf, ":quit!\<CR>")
+  call term_sendkeys(buf, ":qa!\<CR>")
+  call StopVimInTerminal(buf)
+  call delete(bin_name)
   %bw!
 endfunc
 

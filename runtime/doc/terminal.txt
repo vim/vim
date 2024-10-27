@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jul 28
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Oct 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1537,6 +1537,7 @@ If there is no g:termdebug_config you can use: >
 <
 However, the latter form will be deprecated in future releases.
 
+
 Mappings ~
 The termdebug plugin enables a few default mappings.  All those mappings
 are reset to their original values once the termdebug session concludes.
@@ -1590,6 +1591,7 @@ Any value greater than 1 will set the Var window height to that value.
 If the current window has enough horizontal space, it will be vertically split
 and the Var window will be shown side by side with the source code window (and
 the height options won't be used).
+
 
 Communication ~
 						*termdebug-communication*
@@ -1675,10 +1677,11 @@ If there is no g:termdebug_config you can use: >
 
 However, the latter form will be deprecated in future releases.
 
+
 Change default signs ~
 							*termdebug_signs*
 Termdebug uses the hex number of the breakpoint ID in the signcolumn to
-represent breakpoints. if it is greater than "0xFF", then it will be displayed
+represent breakpoints. If it is greater than "0xFF", then it will be displayed
 as "F+", due to we really only have two screen cells for the sign.
 
 If you want to customize the breakpoint signs: >
@@ -1716,4 +1719,18 @@ Set the wide value to 1 to use a vertical split without ever changing
 'columns'.  This is useful when the terminal can't be resized by Vim.
 
 
+Evaluate in Popup Window at Cursor ~
+						*termdebug_evaluate_in_popup*
+By default |:Evaluate| will simply echo its output. For larger entities this
+might become difficult to read or even truncated.
+Alternatively, the evaluation result may be output into a popup window at the
+current cursor position: >
+	let g:termdebug_config['evaluate_in_popup'] = v:true
+This can also be used in a "one-shot" manner: >
+	func OnCursorHold()
+	  let g:termdebug_config['evaluate_in_popup'] = v:true
+	  :Evaluate
+	  let g:termdebug_config['evaluate_in_popup'] = v:false
+	endfunc
+<
  vim:tw=78:ts=8:noet:ft=help:norl:
