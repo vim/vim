@@ -194,9 +194,9 @@ jobs:
             echo "TEST=unittests"
           fi
           if ${{ contains(matrix.extra, 'asan') }}; then
-            echo "SANITIZER_CFLAGS=-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
-            echo "ASAN_OPTIONS=print_stacktrace=1 log_path=${LOG_DIR}/asan"
-            echo "UBSAN_OPTIONS=print_stacktrace=1 log_path=${LOG_DIR}/ubsan"
+            echo "SANITIZER_CFLAGS=-g -O0 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
+            echo "ASAN_OPTIONS=print_stacktrace=1:log_path=${LOG_DIR}/asan"
+            echo "UBSAN_OPTIONS=print_stacktrace=1:log_path=${LOG_DIR}/ubsan"
             echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/src/testdir/lsan-suppress.txt"
           fi
           if ${{ contains(matrix.extra, 'vimtags') }}; then
@@ -304,6 +304,7 @@ jobs:
         if: contains(matrix.extra, 'asan') && !cancelled()
         run: |
           for f in $(grep -lR '#[[:digit:]]* *0x[[:xdigit:]]*' "${LOG_DIR}"); do
+            echo "$f"
             asan_symbolize -l "$f"
             false # in order to fail a job
           done
