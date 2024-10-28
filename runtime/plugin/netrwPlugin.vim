@@ -102,7 +102,7 @@ if exists(':Launch') == 2
     if empty(a:cmd) && !exists('g:netrw_browsex_viewer')
       echoerr "No program to open this path found. See :help Open for more information."
     else
-      Launch cmd shellescape(a:file, 1)
+      exe 'Launch' a:cmd shellescape(a:file, 1)
     endif
   endfunction
   command -complete=file -nargs=1 Open call s:Open(s:cmd, <q-args>)
