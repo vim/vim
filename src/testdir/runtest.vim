@@ -605,8 +605,8 @@ for g:testfunc in sort(s:tests)
     let g:max_run_nr = 10
   endif
 
-  " By default, give up if the same error occurs. 
-  " A test can set g:giveup_same_error to zero to not to not give up on the same error and keep trying
+  " By default, give up if the same error occurs.
+  " A test can set g:giveup_same_error to zero to not give up on the same error and keep trying
   let g:giveup_same_error = 1
 
   let starttime = strftime("%H:%M:%S")
