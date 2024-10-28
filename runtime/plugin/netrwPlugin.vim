@@ -95,17 +95,15 @@ if exists(':Launch') == 2
   " MacOS
   elseif executable('open')
       let s:cmd = 'open'
-  else
-      let s:cmd = ''
   endif
-  function s:Open(cmd, file)
-    if empty(a:cmd) && !exists('g:netrw_browsex_viewer')
+  function s:Open(file)
+    if !exists('s:cmd') && !exists('g:netrw_browsex_viewer')
       echoerr "No program to open this path found. See :help Open for more information."
     else
       exe 'Launch' a:cmd shellescape(a:file, 1)
     endif
   endfunction
-  command -complete=file -nargs=1 Open call s:Open(s:cmd, <q-args>)
+  command -complete=file -nargs=1 Open call s:Open(<q-args>)
 endif
 
 if !exists('g:netrw_regex_url')
