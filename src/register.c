@@ -309,7 +309,8 @@ get_register(
 	{
 	    for (i = 0; i < reg->y_size; ++i)
 	    {
-		reg->y_array[i].string = vim_strnsave(y_current->y_array[i].string, y_current->y_array[i].length);
+		reg->y_array[i].string = vim_strnsave(y_current->y_array[i].string,
+					    y_current->y_array[i].length);
 		reg->y_array[i].length = y_current->y_array[i].length;
 	    }
 	}
@@ -1165,7 +1166,6 @@ op_yank(oparg_T *oap, int deleting, int mess)
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
     int			did_star = FALSE;
 #endif
-    colnr_T		len;
     int			i;
 
     if (oap->regname != 0 && !valid_yank_reg(oap->regname, TRUE))
@@ -1247,11 +1247,14 @@ op_yank(oparg_T *oap, int deleting, int mess)
 		break;
 
 	    case MLINE:
-		len = ml_get_len(lnum);
+		y_current->y_array[y_idx].length = ml_get_len(lnum);
 		if ((y_current->y_array[y_idx].string =
-					    vim_strnsave(ml_get(lnum), len)) == NULL)
+					vim_strnsave(ml_get(lnum),
+					y_current->y_array[y_idx].length)) == NULL)
+		{
+		    y_current->y_array[y_idx].length = 0;
 		    goto fail;
-		y_current->y_array[y_idx].length = len;
+		}
 		break;
 
 	    case MCHAR:
@@ -1486,7 +1489,8 @@ copy_yank_reg(yankreg_T *reg)
     else
 	for (j = 0; j < y_current->y_size; ++j)
 	{
-	    if ((y_current->y_array[j].string = vim_strnsave(curr->y_array[j].string, curr->y_array[j].length)) == NULL)
+	    if ((y_current->y_array[j].string = vim_strnsave(curr->y_array[j].string,
+						curr->y_array[j].length)) == NULL)
 	    {
 		free_yank(j);
 		y_current->y_size = 0;
@@ -1664,7 +1668,7 @@ do_put(
 	    plen = ml_get_cursor_len();
 	    if (dir == FORWARD && *p != NUL)
 		MB_PTR_ADV(p);
-	    ptr = vim_strnsave(p, plen - (p - p_orig));
+	    ptr = vim_strnsave(p, plen - (size_t)(p - p_orig));
 	    if (ptr == NULL)
 		goto end;
 	    ml_append(curwin->w_cursor.lnum, ptr, (colnr_T)0, FALSE);
@@ -1674,7 +1678,7 @@ do_put(
 	    p = oldp + curwin->w_cursor.col;
 	    if (dir == FORWARD && *p != NUL)
 		MB_PTR_ADV(p);
-	    ptr = vim_strnsave(oldp, p - oldp);
+	    ptr = vim_strnsave(oldp, (size_t)(p - oldp));
 	    if (ptr == NULL)
 		goto end;
 	    ml_replace(curwin->w_cursor.lnum, ptr, FALSE);
@@ -2703,7 +2707,7 @@ get_reg_contents(int regname, int flags)
     len = 0;
     for (i = 0; i < y_current->y_size; ++i)
     {
-	len += y_current->y_array[i].length;
+	len += (long)y_current->y_array[i].length;
 
 	// Insert a NL between lines and after the last line if y_type is
 	// MLINE.
@@ -2720,7 +2724,7 @@ get_reg_contents(int regname, int flags)
     for (i = 0; i < y_current->y_size; ++i)
     {
 	STRCPY(retval + len, y_current->y_array[i].string);
-	len += y_current->y_array[i].length;
+	len += (long)y_current->y_array[i].length;
 
 	// Insert a NL between lines and after the last line if y_type is
 	// MLINE.
@@ -2881,7 +2885,7 @@ write_reg_contents_ex(
     {
 	char_u	    *p, *s;
 
-	p = vim_strnsave(str, len);
+	p = vim_strnsave(str, (size_t)len);
 	if (p == NULL)
 	    return;
 	if (must_append && expr_line != NULL)
@@ -3038,7 +3042,7 @@ str_to_reg(
 	    s[extra] = NUL;
 	    y_ptr->y_array[lnum].string = s;
 	    y_ptr->y_array[lnum].length = extra;
-	    lnum++;
+	    ++lnum;
 	    while (--extra >= 0)
 	    {
 		if (*s == NUL)
