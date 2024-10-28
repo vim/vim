@@ -1560,6 +1560,43 @@ def Run_Test_import_in_printexpr()
   set printexpr=
 enddef
 
+" Test for using an imported function as 'findexpr'
+func Test_import_in_findexpr()
+  call Run_Test_import_in_findexpr()
+endfunc
+
+def Run_Test_import_in_findexpr()
+  var lines =<< trim END
+      vim9script
+
+      export def FindExpr(): list<string>
+        var fnames = ['Xfile1.c', 'Xfile2.c', 'Xfile3.c']
+        return fnames->copy()->filter('v:val =~? v:fname')
+      enddef
+  END
+  writefile(lines, 'Xfindexpr', 'D')
+
+  lines =<< trim END
+      vim9script
+      import './Xfindexpr' as find
+
+      set findexpr=find.FindExpr()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  enew!
+  find Xfile2
+  assert_equal('Xfile2.c', @%)
+  bwipe!
+
+  botright vert new
+  find Xfile1
+  assert_equal('Xfile1.c', @%)
+
+  set findexpr=
+  bwipe!
+enddef
+
 def Test_import_in_charconvert()
   var lines =<< trim END
       vim9script
