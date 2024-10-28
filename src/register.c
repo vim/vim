@@ -1259,12 +1259,12 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 	    case MCHAR:
 		{
-		    size_t  tmp;
+		    int  tmp;
 
 		    charwise_block_prep(oap->start, oap->end, &bd, lnum, oap->inclusive);
 
 		    // make sure bd.textlen is not longer than the text
-		    tmp = STRLEN(bd.textstart);
+		    tmp = (int)STRLEN(bd.textstart);
 		    if (tmp < bd.textlen)
 			bd.textlen = tmp;
 
