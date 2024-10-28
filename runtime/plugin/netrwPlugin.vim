@@ -96,7 +96,7 @@ if exists(':Launch') == 2
   elseif executable('open')
       let s:cmd = 'open'
   else
-    s:cmd = ''
+      let s:cmd = ''
   endif
   function s:Open(cmd, file)
     if empty(a:cmd) && !exists('g:netrw_browsex_viewer')
