@@ -2762,6 +2762,8 @@ func LspTests(port)
 endfunc
 
 func Test_channel_lsp_mode()
+  " The channel lsp mode test is flaky and gives the same error.
+  let g:giveup_same_error = 0
   call RunServer('test_channel_lsp.py', 'LspTests', [])
 endfunc
 

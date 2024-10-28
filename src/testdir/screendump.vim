@@ -56,6 +56,7 @@ func VerifyScreenDump(buf, filename, options, ...)
 
   " Starting a terminal to make a screendump is always considered flaky.
   let g:test_is_flaky = 1
+  let g:giveup_same_error = 0
 
   " wait for the pending updates to be handled.
   call TermWait(a:buf)
@@ -83,41 +84,55 @@ func VerifyScreenDump(buf, filename, options, ...)
     sleep 50m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
+
+    if refdump->empty()
+      let msg = 'See new dump file: call term_dumpload("testdir/' .. testfile .. '")'
+      call assert_report(msg)
+      " no point in retrying
+      let g:run_nr = 10
+      return 1
+    endif
+
     let testdump = ReadAndFilter(testfile, filter)
     if refdump == testdump
       call delete(testfile)
       if did_mkdir
 	call delete('failed', 'd')
       endif
+      if i > 0
+	call remove(v:errors, -1)
+      endif
       break
     endif
-    if i == max_loops
-      " Leave the failed dump around for inspection.
-      if filereadable(reference)
-	let msg = 'See dump file difference: call term_dumpdiff("testdir/' .. testfile .. '", "testdir/' .. reference .. '")'
-	if a:0 == 1
-	  let msg = a:1 . ': ' . msg
-	endif
-	if len(testdump) != len(refdump)
-	  let msg = msg . '; line count is ' . len(testdump) . ' instead of ' . len(refdump)
-	endif
-      else
-	let msg = 'See new dump file: call term_dumpload("testdir/' .. testfile .. '")'
-	" no point in retrying
-	let g:run_nr = 10
+
+    " Leave the failed dump around for inspection.
+    let msg = 'See dump file difference: call term_dumpdiff("testdir/' .. testfile .. '", "testdir/' .. reference .. '")'
+    if a:0 == 1
+      let msg = a:1 . ': ' . msg
+    endif
+    if len(testdump) != len(refdump)
+      let msg = msg . '; line count is ' . len(testdump) . ' instead of ' . len(refdump)
+    endif
+    for j in range(len(refdump))
+      if j >= len(testdump)
+	break
       endif
-      for i in range(len(refdump))
-	if i >= len(testdump)
-	  break
-	endif
-	if testdump[i] != refdump[i]
-	  let msg = msg . '; difference in line ' . (i + 1) . ': "' . testdump[i] . '"'
-	endif
-      endfor
-      call assert_report(msg)
+      if testdump[j] != refdump[j]
+	let msg = msg . '; difference in line ' . (j + 1) . ': "' . testdump[j] . '"'
+      endif
+    endfor
+
+    " Always add the last error so that it is displayed on timeout.
+    " See TestTimeout() in runtest.vim.
+    if i > 0
+      call remove(v:errors, -1)
+    endif
+    call assert_report(msg)
+
+    let i += 1
+    if i >= max_loops
       return 1
     endif
-    let i += 1
   endwhile
   return 0
 endfunc

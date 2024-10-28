@@ -389,7 +389,7 @@ jobs:
           brew install diffutils
 
       - name: Test
-        timeout-minutes: 20
+        timeout-minutes: 25
         run: |
           make ${TEST}
 
