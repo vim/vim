@@ -11,6 +11,11 @@ VIMRUNTIME = ..
 # If a test fails a testdir/*.fail file will be written.
 test:
 	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term -u testdir/runtest.vim
+	for file in testdir/*.fail; do \
+		if test -f "$$file"; then \
+			diff -Nu $${file%.*}.in $${file}; \
+	  fi; \
+	done
 
 
 clean testclean:
