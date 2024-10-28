@@ -2557,7 +2557,7 @@ dnd_yank_drag_data(char_u *str, long len)
     yankreg_T *curr;
 
     curr = y_current;
-    y_current = &y_regs[TILDE_REGISTER];
+    y_current = &y_regs[TILDE_REGISTER].string;
     free_yank_all();
     str_to_reg(y_current, MCHAR, str, len, 0L, FALSE);
     y_current = curr;
@@ -2707,10 +2707,9 @@ get_reg_contents(int regname, int flags)
     len = 0;
     for (i = 0; i < y_current->y_size; ++i)
     {
-	len += (long)y_current->y_array[i].length;
-
-	// Insert a NL between lines and after the last line if y_type is
-	// MLINE.
+	len += STRLEN(y_current->y_array[i].string);
+	// Insert a newline between lines and after last line if
+	// y_type is MLINE.
 	if (y_current->y_type == MLINE || i < y_current->y_size - 1)
 	    ++len;
     }
@@ -2724,7 +2723,7 @@ get_reg_contents(int regname, int flags)
     for (i = 0; i < y_current->y_size; ++i)
     {
 	STRCPY(retval + len, y_current->y_array[i].string);
-	len += (long)y_current->y_array[i].length;
+	len += STRLEN(retval + len);
 
 	// Insert a NL between lines and after the last line if y_type is
 	// MLINE.
