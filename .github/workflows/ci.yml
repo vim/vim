@@ -171,7 +171,7 @@ jobs:
           normal)
             ;;
           huge)
-            echo "TEST=scripttests test_libvterm"
+            echo "TEST=scripttests test_libvterm indenttest syntaxtest"
             INTERFACE=${{ matrix.interface || 'yes' }}
             if ${{ matrix.python3 == 'stable-abi' }}; then
               PYTHON3_CONFOPT="--with-python3-stable-abi=3.8"
@@ -268,7 +268,7 @@ jobs:
       - name: Test
         timeout-minutes: 25
         run: |
-          do_test() { sg audio "sg $(id -gn) '$*'"; }
+          do_test() { echo "$*"; sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
       - if: ${{ !cancelled() }}
