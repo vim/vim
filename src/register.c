@@ -1259,7 +1259,15 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 	    case MCHAR:
 		{
+		    size_t  tmp;
+
 		    charwise_block_prep(oap->start, oap->end, &bd, lnum, oap->inclusive);
+
+		    // make sure bd.textlen is not longer than the text
+		    tmp = STRLEN(bd.textstart);
+		    if (tmp < bd.textlen)
+			bd.textlen = tmp;
+
 		    if (yank_copy_line(&bd, y_idx, FALSE) == FAIL)
 			goto fail;
 		    break;
@@ -2707,9 +2715,10 @@ get_reg_contents(int regname, int flags)
     len = 0;
     for (i = 0; i < y_current->y_size; ++i)
     {
-	len += STRLEN(y_current->y_array[i].string);
-	// Insert a newline between lines and after last line if
-	// y_type is MLINE.
+	len += (long)y_current->y_array[i].length;
+
+	// Insert a NL between lines and after the last line if y_type is
+	// MLINE.
 	if (y_current->y_type == MLINE || i < y_current->y_size - 1)
 	    ++len;
     }
@@ -2723,7 +2732,7 @@ get_reg_contents(int regname, int flags)
     for (i = 0; i < y_current->y_size; ++i)
     {
 	STRCPY(retval + len, y_current->y_array[i].string);
-	len += STRLEN(retval + len);
+	len += (long)y_current->y_array[i].length;
 
 	// Insert a NL between lines and after the last line if y_type is
 	// MLINE.
