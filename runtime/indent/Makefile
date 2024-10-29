@@ -11,6 +11,7 @@ VIMRUNTIME = ..
 # If a test fails a testdir/*.fail file will be written.
 test:
 	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term -u testdir/runtest.vim
+	@echo "INDENT TESTS: DONE"
 
 
 clean testclean:

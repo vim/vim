@@ -431,7 +431,7 @@ func RunTest()
     call Message('View generated screendumps with "../../src/vim --clean -S testdir/viewdumps.vim"')
   endif
 
-  call AppendMessages('== SUMMARY ==')
+  call AppendMessages('== SUMMARY SYNTAX TESTS ==')
 
   if len(failed_tests) > 0
     " have make report an error
