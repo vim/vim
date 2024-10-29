@@ -5279,38 +5279,52 @@ func s:redir()
   return ''
 endfunc
 
-fun! netrw#Launch(args)
-   let args = trim(a:args)
-   if has('unix')
-      if has('win32unix')
-         " If cygstart provided, then assume Cygwin and use `cygstart --hide`; see man cygstart.
-         if executable('cygstart')
-            exe 'silent ! cygstart --hide' args s:redir() | redraw!
-         elseif !empty($MSYSTEM) && executable('start')
-            " MSYS2/Git Bash comes by default without cygstart; see
-            " https://www.msys2.org/wiki/How-does-MSYS2-differ-from-Cygwin
-            " Instead it provides /usr/bin/start script running `cmd.exe //c start`
-            " Adding "" //b` sets void title, hides cmd window and blocks path conversion
-            " of /b to \b\ " by MSYS2; see https://www.msys2.org/docs/filesystem-paths/
-            exe 'silent !start "" //b' args  s:redir() | redraw!
-         else
-            " imitate /usr/bin/start script for other environments and hope for the best
-            exe 'silent !cmd //c start "" //b' args  s:redir() | redraw!
-         endif
-      elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
-         exe 'silent !'..
-                  \ ((args =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
-                  \ 'cmd.exe /c start "" /b ' .. args :
-                  \ 'nohup ' .. args .. ' ' .. s:redir() .. '&')
-                  \ | redraw!
-      else
-         exe ':silent ! nohup' args s:redir() '&' | redraw!
-      endif
-   elseif has('win32')
-      exe 'silent !'.. (&shell =~? '\<cmd\.exe\>' ? '' : 'cmd.exe /c')
-               \ 'start /b ' args s:redir() | redraw!
-   endif
-endfun
+if has('unix')
+ if has('win32unix')
+  " Cygwin provides cygstart
+  if executable('cygstart')
+   fun! netrw#Launch(args)
+     exe 'silent ! cygstart --hide' a:args s:redir() | redraw!
+   endfun
+  elseif !empty($MSYSTEM) && executable('start')
+   " MSYS2/Git Bash comes by default without cygstart; see
+   " https://www.msys2.org/wiki/How-does-MSYS2-differ-from-Cygwin
+   " Instead it provides /usr/bin/start script running `cmd.exe //c start`
+   " Adding "" //b` sets void title, hides cmd window and blocks path conversion
+   " of /b to \b\ " by MSYS2; see https://www.msys2.org/docs/filesystem-paths/
+   fun! netrw#Launch(args)
+     exe 'silent !start "" //b' a:args s:redir() | redraw!
+   endfun
+  else
+   " imitate /usr/bin/start script for other environments and hope for the best
+   fun! netrw#Launch(args)
+     exe 'silent !cmd //c start "" //b' a:args s:redir() | redraw!
+   endfun
+  endif
+ elseif exists('$WSL_DISTRO_NAME') " use cmd.exe to start GUI apps in WSL
+  fun! netrw#Launch(args)
+    let args = a:args
+    exe 'silent !' ..
+      \ ((args =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
+      \ 'cmd.exe /c start "" /b ' .. args :
+      \ 'nohup ' .. args .. ' ' .. s:redir() .. ' &')
+      \ | redraw!
+  endfun
+ else
+  fun! netrw#Launch(args)
+    exe ':silent ! nohup' a:args s:redir() '&' | redraw!
+  endfun
+ endif
+elseif has('win32')
+ fun! netrw#Launch(args)
+   exe 'silent !' .. (&shell =~? '\<cmd\.exe\>' ? '' : 'cmd.exe /c')
+     \ 'start "" /b' a:args s:redir() | redraw!
+ endfun
+else
+ fun! netrw#Launch(dummy)
+   echom 'No common launcher found'
+ endfun
+endif
 
 if exists('g:netrw_browsex_viewer') && executable(g:netrw_browsex_viewer)
    " extract any viewing options.  Assumes that they're set apart by spaces.
