@@ -1129,7 +1129,7 @@ free_yank(long n)
     long	    i;
 
     for (i = n; --i >= 0; )
-	vim_free_string(&y_current->y_array[i]);
+	VIM_CLEAR_STRING(y_current->y_array[i]);
     VIM_CLEAR(y_current->y_array);
 }
 
@@ -1246,7 +1246,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 					vim_strnsave(ml_get(lnum),
 					y_current->y_array[y_idx].length)) == NULL)
 		{
-		    vim_free_string(&y_current->y_array[y_idx]);
+		    VIM_CLEAR_STRING(y_current->y_array[y_idx]);
 		    goto fail;
 		}
 		break;
@@ -1307,7 +1307,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    curr->y_array[j].string = pnew;
 	    curr->y_array[j].length = curr->y_array[j].length + y_current->y_array[0].length;
 	    ++j;
-	    vim_free_string(&y_current->y_array[0]);
+	    VIM_CLEAR_STRING(y_current->y_array[0]);
 	    y_idx = 1;
 	}
 	else
@@ -2149,7 +2149,7 @@ do_put(
 		    STRCPY(newp + totlen, ptr);
 		    // insert second line
 		    ml_append(lnum, newp, (colnr_T)0, FALSE);
-		    ++new_lnum;
+		    new_lnum++;
 		    vim_free(newp);
 
 		    oldp = ml_get(lnum);

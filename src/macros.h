@@ -367,6 +367,15 @@
 	} \
     } while (0)
 
+/*
+ * Free a string and set it's pointer to NULL and length to 0
+ */
+#define VIM_CLEAR_STRING(s) \
+    do { \
+	VIM_CLEAR(s.string); \
+	s.length = 0; \
+    } while (0)
+
 // Whether a command index indicates a user command.
 #define IS_USER_CMDIDX(idx) ((int)(idx) < 0)
 

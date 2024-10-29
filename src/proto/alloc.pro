@@ -13,7 +13,6 @@ void do_outofmem_msg(size_t size);
 void free_all_mem(void);
 char_u *vim_memsave(char_u *p, size_t len);
 void vim_free(void *x);
-void vim_free_string(string_T *s);
 void ga_clear(garray_T *gap);
 void ga_clear_strings(garray_T *gap);
 int ga_copy_strings(garray_T *from, garray_T *to);
