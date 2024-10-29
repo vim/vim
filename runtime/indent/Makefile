@@ -16,6 +16,7 @@ test:
 			diff -Nu $${file%.*}.in $${file}; \
 	  fi; \
 	done
+	echo "INDENT TESTS: DONE"
 
 
 clean testclean:
