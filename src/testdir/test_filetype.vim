@@ -239,7 +239,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     dracula: ['file.drac', 'file.drc', 'file.lvs', 'file.lpe', 'drac.file'],
     dtd: ['file.dtd'],
     dtrace: ['/usr/lib/dtrace/io.d'],
-    dts: ['file.dts', 'file.dtsi', 'file.dtso', 'file.its', 'file.keymap'],
+    dts: ['file.dts', 'file.dtsi', 'file.dtso', 'file.its', 'file.keymap', 'file.overlay'],
     dune: ['jbuild', 'dune', 'dune-project', 'dune-workspace', 'dune-file'],
     dylan: ['file.dylan'],
     dylanintr: ['file.intr'],
