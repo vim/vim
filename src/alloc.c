@@ -617,6 +617,13 @@ vim_free(void *x)
     }
 }
 
+    void
+vim_free_string(string_T *s)
+{
+    VIM_CLEAR(s->string);
+    s->length = 0;
+}
+
 /************************************************************************
  * Functions for handling growing arrays.
  */

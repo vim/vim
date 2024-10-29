@@ -259,7 +259,6 @@ get_yank_register(int regname, int writing)
     y_current = &(y_regs[i]);
     if (writing)	// remember the register we write into for do_put()
 	y_previous = y_current;
-
     return ret;
 }
 
@@ -1130,10 +1129,7 @@ free_yank(long n)
     long	    i;
 
     for (i = n; --i >= 0; )
-    {
-	vim_free(y_current->y_array[i].string);
-	y_current->y_array[i].length = 0;
-    }
+	vim_free_string(&y_current->y_array[i]);
     VIM_CLEAR(y_current->y_array);
 }
 
@@ -1166,8 +1162,8 @@ op_yank(oparg_T *oap, int deleting, int mess)
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
     int			did_star = FALSE;
 #endif
-    int			i;
 
+				    // check for read-only register
     if (oap->regname != 0 && !valid_yank_reg(oap->regname, TRUE))
     {
 	beep_flush();
@@ -1217,8 +1213,6 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	y_current = curr;
 	return FAIL;
     }
-    for (i = 0; i < y_current->y_size; ++i)
-	y_current->y_array[i].length = 0;
 #ifdef FEAT_VIMINFO
     y_current->y_time_set = vim_time();
 #endif
@@ -1252,14 +1246,14 @@ op_yank(oparg_T *oap, int deleting, int mess)
 					vim_strnsave(ml_get(lnum),
 					y_current->y_array[y_idx].length)) == NULL)
 		{
-		    y_current->y_array[y_idx].length = 0;
+		    vim_free_string(&y_current->y_array[y_idx]);
 		    goto fail;
 		}
 		break;
 
 	    case MCHAR:
 		{
-		    int  tmp;
+		    int tmp;
 
 		    charwise_block_prep(oap->start, oap->end, &bd, lnum, oap->inclusive);
 
@@ -1313,8 +1307,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    curr->y_array[j].string = pnew;
 	    curr->y_array[j].length = curr->y_array[j].length + y_current->y_array[0].length;
 	    ++j;
-	    vim_free(y_current->y_array[0].string);
-	    y_current->y_array[0].length = 0;
+	    vim_free_string(&y_current->y_array[0]);
 	    y_idx = 1;
 	}
 	else
@@ -1429,7 +1422,6 @@ op_yank(oparg_T *oap, int deleting, int mess)
     if (!deleting && has_textyankpost())
 	yank_do_autocmd(oap, y_current);
 #endif
-
     return OK;
 
 fail:		// free the allocated lines
@@ -1452,7 +1444,6 @@ yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space)
     if ((pnew = alloc(bd->startspaces + bd->endspaces + bd->textlen + 1))
 								      == NULL)
 	return FAIL;
-
     y_current->y_array[y_idx].string = pnew;
     vim_memset(pnew, ' ', (size_t)bd->startspaces);
     pnew += bd->startspaces;
@@ -1467,7 +1458,7 @@ yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space)
 	while (s > 0 && VIM_ISWHITE(*(bd->textstart + s - 1)))
 	{
 	    s = s - (*mb_head_off)(bd->textstart, bd->textstart + s - 1) - 1;
-	    --pnew;
+	    pnew--;
 	}
     }
     *pnew = NUL;
@@ -2129,7 +2120,7 @@ do_put(
 	{
 	    linenr_T	new_lnum = new_cursor.lnum;
 	    int		indent;
-	    int		orig_indent;
+	    int		orig_indent = 0;
 	    int		indent_diff = 0;	// init for gcc
 	    int		first_indent = TRUE;
 	    int		lendiff = 0;
@@ -2137,8 +2128,6 @@ do_put(
 
 	    if (flags & PUT_FIXINDENT)
 		orig_indent = get_indent();
-	    else
-		orig_indent = 0;
 
 	    // Insert at least one line.  When y_type is MCHAR, break the first
 	    // line in two.
@@ -2184,9 +2173,9 @@ do_put(
 			if (ml_append(lnum, y_array[i].string, (colnr_T)0, FALSE)
 								      == FAIL)
 			    goto error;
-			++new_lnum;
+			new_lnum++;
 		    }
-		    ++lnum;
+		    lnum++;
 		    ++nr_lines;
 		    if (flags & PUT_FIXINDENT)
 		    {
@@ -2198,8 +2187,7 @@ do_put(
 			    lendiff = ml_get_len(lnum);
 			if (*ptr == '#' && preprocs_left())
 			    indent = 0;     // Leave # lines at start
-			else
-			if (*ptr == NUL)
+			else if (*ptr == NUL)
 			    indent = 0;     // Ignore empty lines
 			else if (first_indent)
 			{
@@ -2717,7 +2705,7 @@ get_reg_contents(int regname, int flags)
     {
 	len += (long)y_current->y_array[i].length;
 
-	// Insert a NL between lines and after the last line if y_type is
+	// Insert a newline between lines and after the last line if y_type is
 	// MLINE.
 	if (y_current->y_type == MLINE || i < y_current->y_size - 1)
 	    ++len;
@@ -2734,7 +2722,7 @@ get_reg_contents(int regname, int flags)
 	STRCPY(retval + len, y_current->y_array[i].string);
 	len += (long)y_current->y_array[i].length;
 
-	// Insert a NL between lines and after the last line if y_type is
+	// Insert a newline between lines and after the last line if y_type is
 	// MLINE.
 	if (y_current->y_type == MLINE || i < y_current->y_size - 1)
 	    retval[len++] = '\n';
