@@ -1,0 +1,23 @@
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+
+// Define macro for layers.
+#define LAYER_MAIN 0
+
+/ {
+	keymap {
+		compatible = "zmk,keymap";
+
+		layer_0 {
+			bindings = <
+				&kp Z
+				&kp M
+				&kp K
+				&zmk_string
+				&to LAYER_MAIN
+			>;
+		};
+	};
+
+	ZMK_MACRO(zmk_string, wait-ms = <10>; tap-ms = <10>; bindings = <&macro_tap &kp Z &kp M &kp K>;)
+};
