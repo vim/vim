@@ -1735,8 +1735,7 @@ read_viminfo_register(vir_T *virp, int force)
 	    {
 		if (y_current_p->y_array == NULL)
 		{
-		    vim_free(array[i].string);
-		    array[i].length = 0;
+		    VIM_CLEAR_STRING(array[i]);
 		}
 		else
 		{
