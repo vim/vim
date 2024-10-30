@@ -5326,53 +5326,55 @@ else
  endfun
 endif
 
-if exists('g:netrw_browsex_viewer') && executable(g:netrw_browsex_viewer)
-   " extract any viewing options.  Assumes that they're set apart by spaces.
-   "   call Decho("extract any viewing options from g:netrw_browsex_viewer<".g:netrw_browsex_viewer.">",'~'.expand("<slnum>"))
-   if g:netrw_browsex_viewer =~ '\s'
-      let s:viewer  = substitute(g:netrw_browsex_viewer,'\s.*$','','')
-      let s:viewopt = substitute(g:netrw_browsex_viewer,'^\S\+\s*','','')." "
-      let s:oviewer = ''
-      let s:cnt     = 1
-      while !executable(s:viewer) && s:viewer != s:oviewer
-         let s:viewer  = substitute(g:netrw_browsex_viewer,'^\(\(^\S\+\s\+\)\{'.s:cnt.'}\S\+\)\(.*\)$','\1','')
-         let s:viewopt = substitute(g:netrw_browsex_viewer,'^\(\(^\S\+\s\+\)\{'.s:cnt.'}\S\+\)\(.*\)$','\3','')." "
-         let s:cnt     = s:cnt + 1
-         let s:oviewer = s:viewer
-         "     call Decho("!exe: viewer<".s:viewer.">  viewopt<".s:viewopt.">",'~'.expand("<slnum>"))
-      endwhile
-      unlet s:cnt s:oviewer
-   else
-      let s:viewer  = g:netrw_browsex_viewer
-      let s:viewopt = ""
-   endif
-   "   call Decho("viewer<".s:viewer.">  viewopt<".s:viewopt.">",'~'.expand("<slnum>"))
-   let s:viewer = s:viewer .. ' ' .. s:viewopt
-   unlet s:viewopt
-else
-   " Git Bash
-   if has('win32unix')
-      " (cyg)start suffices
-      let s:viewer = ''
-   " Windows / WSL
-   elseif executable('explorer.exe')
-      let s:viewer = 'explorer.exe'
-   " Linux / BSD
-   elseif executable('xdg-open')
-      let s:viewer = 'xdg-open'
-   " MacOS
-   elseif executable('open')
-      let s:viewer = 'open'
-   endif
+" Git Bash
+if has('win32unix')
+   " (cyg)start suffices
+   let s:os_viewer = ''
+" Windows / WSL
+elseif executable('explorer.exe')
+   let s:os_viewer = 'explorer.exe'
+" Linux / BSD
+elseif executable('xdg-open')
+   let s:os_viewer = 'xdg-open'
+" MacOS
+elseif executable('open')
+   let s:os_viewer = 'open'
 endif
 
-function netrw#Open(file)
-   if !exists('s:viewer')
-      echoerr "No program to open this path found. See :help Open for more information."
-   else
-      call netrw#Launch(s:viewer .. ' ' .. shellescape(a:file, 1))
-   endif
-endfunction
+fun! s:viewer()
+  if exists('g:netrw_browsex_viewer') && executable(g:netrw_browsex_viewer)
+    " extract any viewing options.  Assumes that they're set apart by spaces.
+    "   call Decho("extract any viewing options from g:netrw_browsex_viewer<".g:netrw_browsex_viewer.">",'~'.expand("<slnum>"))
+    if g:netrw_browsex_viewer =~ '\s'
+      let viewer  = substitute(g:netrw_browsex_viewer,'\s.*$','','')
+      let viewopt = substitute(g:netrw_browsex_viewer,'^\S\+\s*','','')." "
+      let oviewer = ''
+      let cnt     = 1
+      while !executable(viewer) && viewer != oviewer
+        let viewer  = substitute(g:netrw_browsex_viewer,'^\(\(^\S\+\s\+\)\{'.cnt.'}\S\+\)\(.*\)$','\1','')
+        let viewopt = substitute(g:netrw_browsex_viewer,'^\(\(^\S\+\s\+\)\{'.cnt.'}\S\+\)\(.*\)$','\3','')." "
+        let cnt     = cnt + 1
+        let oviewer = viewer
+        "     call Decho("!exe: viewer<".viewer.">  viewopt<".viewopt.">",'~'.expand("<slnum>"))
+      endwhile
+    else
+      let viewer  = g:netrw_browsex_viewer
+      let viewopt = ""
+    endif
+    "   call Decho("viewer<".viewer.">  viewopt<".viewopt.">",'~'.expand("<slnum>"))
+    return viewer .. ' ' .. viewopt
+  else
+    if !exists('s:os_viewer')
+      call netrw#ErrorMsg(s:ERROR,"No program to open this path found. See :help Open for more information.",106)
+    else
+      return s:os_viewer
+    endif
+  endif
+endfun
+
+fun! netrw#Open(file) abort
+  call netrw#Launch(s:viewer() .. ' ' .. shellescape(a:file, 1))
+endf
 
 if !exists('g:netrw_regex_url')
   let g:netrw_regex_url = '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}'
