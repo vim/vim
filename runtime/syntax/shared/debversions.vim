@@ -23,8 +23,8 @@ let g:debSharedUnsupportedVersions = [
       \ 'gutsy', 'hardy', 'intrepid', 'jaunty', 'karmic', 'lucid',
       \ 'maverick', 'natty', 'oneiric', 'precise', 'quantal', 'raring', 'saucy',
       \ 'trusty', 'utopic', 'vivid', 'wily', 'xenial', 'yakkety', 'zesty',
-      \ 'artful', 'bionic', 'cosmic', 'disco', 'eoan', 'hirsute',
-      \ 'impish', 'kinetic', 'lunar', 'mantic', 'groovy'
+      \ 'artful', 'bionic', 'cosmic', 'disco', 'eoan', 'groovy',
+      \ 'hirsute', 'impish', 'kinetic', 'lunar', 'mantic',
       \ ]
 
 let &cpo=s:cpo
