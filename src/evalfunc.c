@@ -8359,15 +8359,19 @@ f_line(typval_T *argvars, typval_T *rettv)
 	{
 	    if (switch_win_noblock(&switchwin, wp, tp, TRUE) == OK)
 	    {
+#ifdef FEAT_DIFF
 		// in diff mode, prevent that the window scrolls
 		// and keep the topline
 		if (curwin->w_p_diff && switchwin.sw_curwin->w_p_diff)
 		    skip_update_topline = TRUE;
+#endif
 		check_cursor();
 		fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 	    }
+#ifdef FEAT_DIFF
 	    if (curwin->w_p_diff && switchwin.sw_curwin->w_p_diff)
 		skip_update_topline = FALSE;
+#endif
 	    restore_win_noblock(&switchwin, TRUE);
 	}
     }
