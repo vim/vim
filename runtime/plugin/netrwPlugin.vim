@@ -36,6 +36,7 @@ set cpo&vim
 " Commands Launch/URL {{{2
 command -complete=shellcmd -nargs=1   Launch  call netrw#Launch(trim(<q-args>))
 command -complete=file     -nargs=1   Open    call netrw#Open(trim(<q-args>))
+command -complete=file     -nargs=1   O       call netrw#Open(trim(<q-args>))
 " " }}}
 " Local Browsing Autocmds: {{{2
 augroup FileExplorer
