@@ -4348,6 +4348,69 @@ mch_get_shellsize(void)
     return OK;
 }
 
+/*
+ * Try to get the current terminal cell size.
+ * If faile get cell size, fallback 5x10 pixel.
+ */
+    void
+calc_cell_size(struct cellsize *cs_out) {
+#if defined(FEAT_GUI)
+    if (!gui.in_use)
+    {
+#endif
+
+        // get parent process pid.
+        pid_t ppid = getppid();
+
+        // get parent process's tty path.
+        char tty_path[256];
+        snprintf(tty_path, sizeof(tty_path), "/proc/%d/fd/0", ppid);
+
+        char actual_tty[256];
+        ssize_t len = readlink(tty_path, actual_tty, sizeof(actual_tty) - 1);
+        if (len == -1) {
+            cs_out->cs_xpixel = 5;
+            cs_out->cs_ypixel = 10;
+            return;
+        }
+        actual_tty[len] = '\0';
+
+        // open parent process's tty.
+        int tty_fd = open(tty_path, O_RDWR);
+        if (tty_fd == -1) {
+            cs_out->cs_xpixel = 5;
+            cs_out->cs_ypixel = 10;
+            return;
+        }
+
+              // get parent tty size.
+        struct winsize ws;
+        if (ioctl(tty_fd, TIOCGWINSZ, &ws) == -1) {
+            cs_out->cs_xpixel = 5;
+            cs_out->cs_ypixel = 10;
+            close(tty_fd);
+            return;
+        }
+
+        close(tty_fd);
+
+        // calculate parent tty's pixel per cell.
+        int x_cell_size = ws.ws_xpixel / ws.ws_col;
+        int y_cell_size = ws.ws_xpixel / ws.ws_row;
+
+        // calculate current tty's pixel
+        cs_out->cs_xpixel = x_cell_size;
+        cs_out->cs_ypixel = y_cell_size;
+#if defined(FEAT_GUI)
+    }
+    else
+    {
+        cs_out->cs_xpixel = 5;
+        cs_out->cs_ypixel = 10;
+    }
+#endif
+}
+
 #if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Report the windows size "rows" and "cols" to tty "fd".
@@ -4367,8 +4430,13 @@ mch_report_winsize(int fd, int rows, int cols)
 
     ws.ws_col = cols;
     ws.ws_row = rows;
-    ws.ws_xpixel = cols * 5;
-    ws.ws_ypixel = rows * 10;
+
+    // calcurate and set tty pixel size
+    struct cellsize cs;
+    calc_cell_size(&cs);
+    ws.ws_xpixel = cols * cs.cs_xpixel;
+    ws.ws_ypixel = rows * cs.cs_ypixel;
+
     retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
     ch_log(NULL, "ioctl(TIOCSWINSZ) %s", retval == 0 ? "success" : "failed");
 # elif defined(TIOCSSIZE)

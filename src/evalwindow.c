@@ -409,6 +409,18 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     if (dict == NULL)
 	return NULL;
 
+# if defined(UNIX) || defined(VMS)
+    struct cellsize cs;
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+    {
+#endif
+        calc_cell_size(&cs);
+#ifdef FEAT_GUI
+    }
+#endif
+#endif
+
     // make sure w_botline is valid
     validate_botline_win(wp);
 
@@ -416,6 +428,16 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_number(dict, "winnr", winnr);
     dict_add_number(dict, "winid", wp->w_id);
     dict_add_number(dict, "height", wp->w_height);
+# if defined(UNIX) || defined(VMS)
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+    {
+#endif
+        dict_add_number(dict, "hpixel", cs.cs_ypixel * wp->w_height);
+#ifdef FEAT_GUI
+    }
+#endif
+#endif
     dict_add_number(dict, "winrow", wp->w_winrow + 1);
     dict_add_number(dict, "topline", wp->w_topline);
     dict_add_number(dict, "botline", wp->w_botline - 1);
@@ -423,6 +445,16 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_number(dict, "winbar", wp->w_winbar_height);
 #endif
     dict_add_number(dict, "width", wp->w_width);
+# if defined(UNIX) || defined(VMS)
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+    {
+#endif
+        dict_add_number(dict, "wpixel", cs.cs_xpixel * wp->w_width);
+#ifdef FEAT_GUI
+    }
+#endif
+#endif
     dict_add_number(dict, "wincol", wp->w_wincol + 1);
     dict_add_number(dict, "textoff", win_col_off(wp));
     dict_add_number(dict, "bufnr", wp->w_buffer->b_fnum);
