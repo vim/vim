@@ -4836,7 +4836,7 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 <
 		Return type: list<string>
 
-<
+
 getregionpos({pos1}, {pos2} [, {opts}])            *getregionpos()*
 		Same as |getregion()|, but returns a list of positions
 		describing the buffer text segments bound by {pos1} and
@@ -4892,6 +4892,7 @@ getregtype([{regname}])					*getregtype()*
 			GetRegname()->getregtype()
 <
 		Return type: |String|
+
 
 getscriptinfo([{opts}])					*getscriptinfo()*
 		Returns a |List| with information about all the sourced Vim
