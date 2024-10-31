@@ -754,8 +754,12 @@ au BufNewFile,BufRead *.dsl
 " DTD (Document Type Definition for XML)
 au BufNewFile,BufRead *.dtd			setf dtd
 
-" DTS/DSTI/DTSO (device tree files)
-au BufNewFile,BufRead *.dts,*.dtsi,*.dtso,*.its,*.keymap	setf dts
+" Devicetree (.its for U-Boot Flattened Image Trees, .keymap for ZMK keymap, and
+" .overlay for Zephyr overlay)
+au BufNewFile,BufRead *.dts,*.dtsi,*.dtso	setf dts
+au BufNewFile,BufRead *.its			setf dts
+au BufNewFile,BufRead *.keymap			setf dts
+au BufNewFile,BufRead *.overlay			setf dts
 
 " Earthfile
 au BufNewFile,BufRead Earthfile			setf earthfile
