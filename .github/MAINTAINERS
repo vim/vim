@@ -263,6 +263,7 @@ runtime/ftplugin/squirrel.vim		@ribru17
 runtime/ftplugin/ssa.vim		@ObserverOfTime
 runtime/ftplugin/sshdconfig.vim		@jiangyinzuo
 runtime/ftplugin/svelte.vim		@igorlfs
+runtime/ftplugin/sway.vim		@ribru17
 runtime/ftplugin/swayconfig.vim		@jamespeapen
 runtime/ftplugin/systemverilog.vim	@Kocha
 runtime/ftplugin/swig.vim		@jmarrec

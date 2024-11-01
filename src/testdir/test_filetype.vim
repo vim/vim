@@ -729,6 +729,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     svelte: ['file.svelte'],
     svg: ['file.svg'],
     svn: ['svn-commitfile.tmp', 'svn-commit-file.tmp', 'svn-commit.tmp'],
+    sway: ['file.sw'],
     swayconfig: ['/home/user/.sway/config', '/home/user/.config/sway/config', '/etc/sway/config', '/etc/xdg/sway/config'],
     swift: ['file.swift', 'file.swiftinterface'],
     swiftgyb: ['file.swift.gyb'],

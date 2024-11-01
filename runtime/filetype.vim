@@ -2430,6 +2430,9 @@ au BufNewFile,BufRead *.sml			setf sml
 " Sratus VOS command macro
 au BufNewFile,BufRead *.cm			setf voscm
 
+" Sway (programming language)
+au BufNewFile,BufRead *.sw			setf sway
+
 " Swift
 au BufNewFile,BufRead *.swift,*.swiftinterface	setf swift
 au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
