@@ -247,6 +247,11 @@ func RunTheTest(test)
     let g:timeout_start = localtime()
   endif
 
+  if ValgrindOrAsan()
+    let g:vim_indent = {"searchpair_timeout": 1024}
+    let g:python_indent = {"searchpair_timeout": 1024}
+  endif
+
   " Avoid stopping at the "hit enter" prompt
   set nomore
 

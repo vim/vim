@@ -318,6 +318,14 @@ func RunningWithValgrind()
   return GetVimCommand() =~ '\<valgrind\>'
 endfunc
 
+func RunningAsan()
+  return exists("$ASAN_OPTIONS")
+endfunc
+
+func ValgrindOrAsan()
+  return RunningWithValgrind() || RunningAsan()
+endfun
+
 " Get the command to run Vim, with --clean instead of "-u NONE".
 func GetVimCommandClean()
   let cmd = GetVimCommand()
