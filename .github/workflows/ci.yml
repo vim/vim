@@ -272,7 +272,7 @@ jobs:
           do_test make ${SHADOWOPT} ${TEST}
 
       - if: ${{ !cancelled() }}
-        uses: ./.github/actions/screendump
+        uses: ./.github/actions/test_artifacts
 
       - name: Vim tags
         if: contains(matrix.extra, 'vimtags')
@@ -394,7 +394,7 @@ jobs:
           make ${TEST}
 
       - if: ${{ !cancelled() }}
-        uses: ./.github/actions/screendump
+        uses: ./.github/actions/test_artifacts
 
   windows:
     runs-on: windows-2022
@@ -704,7 +704,7 @@ jobs:
           )
 
       - if: ${{ !cancelled() }}
-        uses: ./.github/actions/screendump
+        uses: ./.github/actions/test_artifacts
 
       - name: Generate gcov files
         if: matrix.coverage
