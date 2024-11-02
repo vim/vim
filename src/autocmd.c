@@ -707,8 +707,8 @@ event_name2nr(char_u *start, char_u **end)
 	;
 
     target.key = 0;
-    target.value = (char *)start;
-    target.length = (size_t)(p - start);
+    target.value.string = start;
+    target.value.length = (size_t)(p - start);
 
     // special cases:
     // BufNewFile and BufRead are searched for ALOT (especially at startup)
@@ -752,7 +752,7 @@ event_nr2name(event_T event)
     for (i = cache_last_index; cache_tab[i] >= 0; )
     {
 	if ((event_T)event_tab[cache_tab[i]].key == event)
-	    return (char_u *)event_tab[cache_tab[i]].value;
+	    return event_tab[cache_tab[i]].value.string;
 
 	if (i == 0)
 	    i = ARRAY_LENGTH(cache_tab) - 1;
@@ -780,7 +780,7 @@ event_nr2name(event_T event)
 	}
     }
 
-    return (i == (int)ARRAY_LENGTH(event_tab)) ? (char_u *)"Unknown" : (char_u *)event_tab[i].value;
+    return (i == (int)ARRAY_LENGTH(event_tab)) ? (char_u *)"Unknown" : event_tab[i].value.string;
 }
 
 /*
@@ -2880,7 +2880,7 @@ get_event_name(expand_T *xp UNUSED, int idx)
     if (i < 0 || i >= (int)ARRAY_LENGTH(event_tab))
 	return NULL;
 
-    return (char_u *)event_tab[i].value;
+    return event_tab[i].value.string;
 }
 
 /*
@@ -2893,7 +2893,7 @@ get_event_name_no_group(expand_T *xp UNUSED, int idx)
     if (idx < 0 || idx >= (int)ARRAY_LENGTH(event_tab))
 	return NULL;
 
-    return (char_u *)event_tab[idx].value;
+    return event_tab[idx].value.string;
 }
 
 
@@ -3365,8 +3365,8 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 		keyvalue_T *entry;
 
 		target.key = 0;
-		target.value = (char *)name;
-		target.length = (int)STRLEN(target.value);
+		target.value.string = name;
+		target.value.length = STRLEN(target.value.string);
 		entry = (keyvalue_T *)bsearch(&target, &event_tab, ARRAY_LENGTH(event_tab), sizeof(event_tab[0]), cmp_keyvalue_value_ni);
 		if (entry == NULL)
 		{

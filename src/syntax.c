@@ -4066,7 +4066,7 @@ syn_list_flags(keyvalue_T *nlist, int nr_entries, int flags, int attr)
     for (i = 0; i < nr_entries; ++i)
 	if (flags & nlist[i].key)
 	{
-	    msg_puts_attr(nlist[i].value, attr);
+	    msg_puts_attr((char *)nlist[i].value.string, attr);
 	    msg_putchar(' ');
 	}
 }

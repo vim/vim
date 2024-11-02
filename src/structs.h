@@ -5087,13 +5087,12 @@ typedef struct {
 // Return the length of a string literal
 #define STRLEN_LITERAL(s) (sizeof(s) - 1)
 
-// Store a key/value pair
+// Store a key/value (string) pair
 typedef struct
 {
     int	    key;        // the key
-    char    *value;     // the value string
-    size_t  length;     // length of the value string
+    string_T value;	// the value
 } keyvalue_T;
 
 #define KEYVALUE_ENTRY(k, v) \
-    {(k), (v), STRLEN_LITERAL(v)}
+    {(k), {((char_u *)v), STRLEN_LITERAL(v)}}

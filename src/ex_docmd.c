@@ -9530,14 +9530,14 @@ find_cmdline_var(char_u *src, size_t *usedlen)
 
     case '<':
 	target.key = 0;
-	target.value = (char *)src + 1;	    // skip over '<'
-	target.length = 0;		    // not used, see cmp_keyvalue_value_n()
+	target.value.string = src + 1;	    // skip over '<'
+	target.value.length = 0;	    // not used, see cmp_keyvalue_value_n()
 
 	entry = (keyvalue_T *)bsearch(&target, &spec_str_tab, ARRAY_LENGTH(spec_str_tab), sizeof(spec_str_tab[0]), cmp_keyvalue_value_n);
 	if (entry == NULL)
 	    return -1;
 
-	*usedlen = entry->length + 1;
+	*usedlen = entry->value.length + 1;
 	return entry->key;
 
     default:

@@ -465,7 +465,7 @@ get_user_cmd_complete(expand_T *xp UNUSED, int idx)
 {
     if (idx < 0 || idx >= (int)ARRAY_LENGTH(command_complete_tab))
 	return NULL;
-    return (char_u *)command_complete_tab[idx].value;
+    return command_complete_tab[idx].value.string;
 }
 
 /*
@@ -494,7 +494,7 @@ cmdcomplete_type_to_str(int expand)
 
     kv = get_commandtype(expand);
 
-    return (kv == NULL) ? NULL : (char_u *)kv->value;
+    return (kv == NULL) ? NULL : kv->value.string;
 }
 
 /*
@@ -514,8 +514,8 @@ cmdcomplete_str_to_type(char_u *complete_str)
 	return EXPAND_USER_LIST;
 
     target.key = 0;
-    target.value = (char *)complete_str;
-    target.length = 0;				// not used, see cmp_keyvalue_value()
+    target.value.string = complete_str;
+    target.value.length = 0;			// not used, see cmp_keyvalue_value()
 
     if (last_entry != NULL && cmp_keyvalue_value(&target, last_entry) == 0)
 	entry = last_entry;
@@ -670,8 +670,8 @@ uc_list(char_u *name, size_t name_len)
 	    entry = get_commandtype(cmd->uc_compl);
 	    if (entry != NULL)
 	    {
-		STRCPY(IObuff + len, entry->value);
-		len += entry->length;
+		STRCPY(IObuff + len, entry->value.string);
+		len += entry->value.length;
 #ifdef FEAT_EVAL
 		if (p_verbose > 0 && cmd->uc_compl_arg != NULL)
 		{
@@ -826,8 +826,8 @@ parse_compl_arg(
     }
 
     target.key = 0;
-    target.value = (char *)value;
-    target.length = valend;
+    target.value.string = value;
+    target.value.length = valend;
 
     if (last_entry != NULL && cmp_keyvalue_value_n(&target, last_entry) == 0)
 	entry = last_entry;
@@ -1637,7 +1637,7 @@ produce_cmdmods(char_u *buf, cmdmod_T *cmod, int quote)
     // the modifiers that are simple flags
     for (i = 0; i < (int)ARRAY_LENGTH(mod_entry_tab); ++i)
 	if (cmod->cmod_flags & mod_entry_tab[i].key)
-	    buflen += add_cmd_modifier(buf, buflen, mod_entry_tab[i].value, mod_entry_tab[i].length, &multi_mods);
+	    buflen += add_cmd_modifier(buf, buflen, (char *)mod_entry_tab[i].value.string, mod_entry_tab[i].value.length, &multi_mods);
 
     // :silent
     if (cmod->cmod_flags & CMOD_SILENT)

@@ -869,10 +869,10 @@ highlight_set_termgui_attr(int idx, char_u *key, char_u *arg, int init)
     attr = 0;
     off = 0;
     target.key = 0;
-    target.length = 0;	// not used, see cmp_keyvalue_value_ni()
+    target.value.length = 0;	// not used, see cmp_keyvalue_value_ni()
     while (arg[off] != NUL)
     {
-	target.value = (char *)arg + off;
+	target.value.string = (char *)arg + off;
 	entry = (keyvalue_T *)bsearch(&target, &highlight_tab, ARRAY_LENGTH(highlight_tab), sizeof(highlight_tab[0]), cmp_keyvalue_value_ni);
 	if (entry == NULL)
 	{
@@ -881,7 +881,7 @@ highlight_set_termgui_attr(int idx, char_u *key, char_u *arg, int init)
 	}
 
 	attr |= entry->key;
-	off += entry->length;
+	off += entry->value.length;
 	if (arg[off] == ',')		// another one follows
 	    ++off;
     }
@@ -1214,8 +1214,8 @@ highlight_set_cterm_color(
 	keyvalue_T *entry;
 
 	target.key = 0;
-	target.value = (char *)arg;
-	target.length = 0;	// not used, see cmp_keyvalue_value_i()
+	target.value.string = arg;
+	target.value.length = 0;	// not used, see cmp_keyvalue_value_i()
 	entry = (keyvalue_T *)bsearch(&target, &color_name_tab, ARRAY_LENGTH(color_name_tab), sizeof(color_name_tab[0]), cmp_keyvalue_value_i);
 	if (entry == NULL)
 	{
@@ -2541,8 +2541,8 @@ gui_get_color_cmn(char_u *name)
 	return color;
 
     target.key = 0;
-    target.value = (char *)name;
-    target.length = 0;		// not used, see cmp_keyvalue_value_i()
+    target.value.string = name;
+    target.value.length = 0;		// not used, see cmp_keyvalue_value_i()
     entry = (keyvalue_T *)bsearch(&target, &rgb_tab, ARRAY_LENGTH(rgb_tab), sizeof(rgb_tab[0]), cmp_keyvalue_value_i);
     if (entry != NULL)
 	return gui_adjust_rgb((guicolor_T)entry->key);
@@ -3139,8 +3139,8 @@ highlight_list_arg(
 		    STRCPY(buf + buflen, (char_u *)",");
 		    ++buflen;
 		}
-		STRCPY(buf + buflen, (char_u *)highlight_index_tab[i]->value);
-		buflen += highlight_index_tab[i]->length;
+		STRCPY(buf + buflen, highlight_index_tab[i]->value.string);
+		buflen += highlight_index_tab[i]->value.length;
 		iarg &= ~highlight_index_tab[i]->key;	    // don't want "inverse"/"reverse"
 	    }
 	}
@@ -4236,7 +4236,7 @@ highlight_get_attr_dict(int hlattr)
     {
 	if (hlattr & highlight_index_tab[i]->key)
 	{
-	    dict_add_bool(dict, highlight_index_tab[i]->value, VVAL_TRUE);
+	    dict_add_bool(dict, highlight_index_tab[i]->value.string, VVAL_TRUE);
 	    hlattr &= ~highlight_index_tab[i]->key;	// don't want "inverse"/"reverse"
 	}
     }
@@ -4478,14 +4478,14 @@ hldict_attr_to_str(
     p = attr_str;
     for (i = 0; i < (int)ARRAY_LENGTH(highlight_tab); ++i)
     {
-	if (dict_get_bool(attrdict, highlight_tab[i].value, VVAL_FALSE) == VVAL_TRUE)
+	if (dict_get_bool(attrdict, highlight_tab[i].value.string, VVAL_FALSE) == VVAL_TRUE)
 	{
 	    if (p != attr_str && (size_t)(p - attr_str + 2) < len)
 		STRCPY(p, (char_u *)",");
-	    if (p - attr_str + highlight_tab[i].length + 1 < len)
+	    if (p - attr_str + highlight_tab[i].value.length + 1 < len)
 	    {
-		STRCPY(p, highlight_tab[i].value);
-		p += highlight_tab[i].length;
+		STRCPY(p, highlight_tab[i].value.string);
+		p += highlight_tab[i].value.length;
 	    }
 	}
     }
