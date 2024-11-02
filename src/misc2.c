@@ -3108,6 +3108,6 @@ cmp_keyvalue_value_ni(const void *a, const void *b)
     keyvalue_T *kv1 = (keyvalue_T *)a;
     keyvalue_T *kv2 = (keyvalue_T *)b;
 
-    return vim_strnicmp_asc(kv1->value.string, kv2->value.string, MAX(kv1->value.length, kv2->value.length));
+    return vim_strnicmp_asc((char *)kv1->value.string, (char *)kv2->value.string, MAX(kv1->value.length, kv2->value.length));
 }
 

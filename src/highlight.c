@@ -872,7 +872,7 @@ highlight_set_termgui_attr(int idx, char_u *key, char_u *arg, int init)
     target.value.length = 0;	// not used, see cmp_keyvalue_value_ni()
     while (arg[off] != NUL)
     {
-	target.value.string = (char *)arg + off;
+	target.value.string = arg + off;
 	entry = (keyvalue_T *)bsearch(&target, &highlight_tab, ARRAY_LENGTH(highlight_tab), sizeof(highlight_tab[0]), cmp_keyvalue_value_ni);
 	if (entry == NULL)
 	{
@@ -4236,7 +4236,7 @@ highlight_get_attr_dict(int hlattr)
     {
 	if (hlattr & highlight_index_tab[i]->key)
 	{
-	    dict_add_bool(dict, highlight_index_tab[i]->value.string, VVAL_TRUE);
+	    dict_add_bool(dict, (char *)highlight_index_tab[i]->value.string, VVAL_TRUE);
 	    hlattr &= ~highlight_index_tab[i]->key;	// don't want "inverse"/"reverse"
 	}
     }
@@ -4478,7 +4478,7 @@ hldict_attr_to_str(
     p = attr_str;
     for (i = 0; i < (int)ARRAY_LENGTH(highlight_tab); ++i)
     {
-	if (dict_get_bool(attrdict, highlight_tab[i].value.string, VVAL_FALSE) == VVAL_TRUE)
+	if (dict_get_bool(attrdict, (char *)highlight_tab[i].value.string, VVAL_FALSE) == VVAL_TRUE)
 	{
 	    if (p != attr_str && (size_t)(p - attr_str + 2) < len)
 		STRCPY(p, (char_u *)",");
