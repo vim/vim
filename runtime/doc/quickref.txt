@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 9.1.  Last change: 2024 Oct 22
+*quickref.txt*  For Vim version 9.1.  Last change: 2024 Nov 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -707,7 +707,7 @@ Short explanation of each option:		*option-list*
 'fileignorecase'  'fic'     ignore case when using file names
 'filetype'	  'ft'	    type of file, used for autocommands
 'fillchars'	  'fcs'     characters to use for displaying special items
-'findexpr'	  'fexpr'   expression to evaluate for |:find|
+'findfunc'	  'ffu'     function to be called for the |:find| command
 'fixendofline'	  'fixeol'  make sure last line in file has <EOL>
 'fkmap'		  'fk'	    obsolete option for Farsi
 'foldclose'	  'fcl'     close a fold when the cursor leaves it

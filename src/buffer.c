@@ -2412,7 +2412,6 @@ free_buf_options(
     clear_string_option(&buf->b_p_fp);
 #if defined(FEAT_EVAL)
     clear_string_option(&buf->b_p_fex);
-    clear_string_option(&buf->b_p_fexpr);
 #endif
 #ifdef FEAT_CRYPT
 # ifdef FEAT_SODIUM
@@ -2485,6 +2484,8 @@ free_buf_options(
 #ifdef FEAT_EVAL
     clear_string_option(&buf->b_p_tfu);
     free_callback(&buf->b_tfu_cb);
+    clear_string_option(&buf->b_p_ffu);
+    free_callback(&buf->b_ffu_cb);
 #endif
     clear_string_option(&buf->b_p_dict);
     clear_string_option(&buf->b_p_tsr);

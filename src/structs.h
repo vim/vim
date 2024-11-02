@@ -3248,6 +3248,8 @@ struct file_buffer
 #ifdef FEAT_EVAL
     char_u	*b_p_tfu;	// 'tagfunc' option value
     callback_T	b_tfu_cb;	// 'tagfunc' callback
+    char_u	*b_p_ffu;	// 'findfunc' option value
+    callback_T	b_ffu_cb;	// 'findfunc' callback
 #endif
     int		b_p_eof;	// 'endoffile'
     int		b_p_eol;	// 'endofline'
@@ -3334,9 +3336,6 @@ struct file_buffer
     char_u	*b_p_efm;	// 'errorformat' local value
 #endif
     char_u	*b_p_ep;	// 'equalprg' local value
-#ifdef FEAT_EVAL
-    char_u	*b_p_fexpr;	// 'findexpr' local value
-#endif
     char_u	*b_p_path;	// 'path' local value
     int		b_p_ar;		// 'autoread' local value
     char_u	*b_p_tags;	// 'tags' local value

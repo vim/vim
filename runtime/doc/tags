@@ -267,9 +267,9 @@ $quote	eval.txt	/*$quote*
 'fenc'	options.txt	/*'fenc'*
 'fencs'	options.txt	/*'fencs'*
 'fex'	options.txt	/*'fex'*
-'fexpr'	options.txt	/*'fexpr'*
 'ff'	options.txt	/*'ff'*
 'ffs'	options.txt	/*'ffs'*
+'ffu'	options.txt	/*'ffu'*
 'fic'	options.txt	/*'fic'*
 'fileencoding'	options.txt	/*'fileencoding'*
 'fileencodings'	options.txt	/*'fileencodings'*
@@ -278,7 +278,7 @@ $quote	eval.txt	/*$quote*
 'fileignorecase'	options.txt	/*'fileignorecase'*
 'filetype'	options.txt	/*'filetype'*
 'fillchars'	options.txt	/*'fillchars'*
-'findexpr'	options.txt	/*'findexpr'*
+'findfunc'	options.txt	/*'findfunc'*
 'fixendofline'	options.txt	/*'fixendofline'*
 'fixeol'	options.txt	/*'fixeol'*
 'fk'	options.txt	/*'fk'*
@@ -6510,7 +6510,6 @@ close_cb	channel.txt	/*close_cb*
 closure	eval.txt	/*closure*
 cmdarg-variable	eval.txt	/*cmdarg-variable*
 cmdbang-variable	eval.txt	/*cmdbang-variable*
-cmdcomplete-variable	eval.txt	/*cmdcomplete-variable*
 cmdline-arguments	vi_diff.txt	/*cmdline-arguments*
 cmdline-changed	version5.txt	/*cmdline-changed*
 cmdline-completion	cmdline.txt	/*cmdline-completion*
@@ -10942,7 +10941,6 @@ v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
 v:cmdarg	eval.txt	/*v:cmdarg*
 v:cmdbang	eval.txt	/*v:cmdbang*
-v:cmdcomplete	eval.txt	/*v:cmdcomplete*
 v:collate	eval.txt	/*v:collate*
 v:colornames	eval.txt	/*v:colornames*
 v:completed_item	eval.txt	/*v:completed_item*

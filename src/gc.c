@@ -183,6 +183,9 @@ garbage_collect(int testing)
     // 'imactivatefunc' and 'imstatusfunc' callbacks
     abort = abort || set_ref_in_im_funcs(copyID);
 
+    // 'findfunc' callback
+    abort = abort || set_ref_in_findfunc(copyID);
+
 #ifdef FEAT_LUA
     abort = abort || set_ref_in_lua(copyID);
 #endif
