@@ -265,8 +265,8 @@ get_char_class(char_u **pp)
 	static keyvalue_T *last_entry = NULL;
 
 	target.key = 0;
-	target.value = (char *)*pp + 2;
-	target.length = 0;		    // not used, see cmp_keyvalue_value_n()
+	target.value.string = *pp + 2;
+	target.value.length = 0;	// not used, see cmp_keyvalue_value_n()
 
 	if (last_entry != NULL && cmp_keyvalue_value_n(&target, last_entry) == 0)
 	    entry = last_entry;
@@ -277,7 +277,7 @@ get_char_class(char_u **pp)
 	if (entry != NULL)
 	{
 	    last_entry = entry;
-	    *pp += entry->length + 2;
+	    *pp += entry->value.length + 2;
 	    return entry->key;
 	}
     }

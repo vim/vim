@@ -3077,7 +3077,7 @@ cmp_keyvalue_value(const void *a, const void *b)
     keyvalue_T *kv1 = (keyvalue_T *)a;
     keyvalue_T *kv2 = (keyvalue_T *)b;
 
-    return STRCMP(kv1->value, kv2->value);
+    return STRCMP(kv1->value.string, kv2->value.string);
 }
 
 // compare two keyvalue_T structs by value with length
@@ -3087,7 +3087,8 @@ cmp_keyvalue_value_n(const void *a, const void *b)
     keyvalue_T *kv1 = (keyvalue_T *)a;
     keyvalue_T *kv2 = (keyvalue_T *)b;
 
-    return STRNCMP(kv1->value, kv2->value, MAX(kv1->length, kv2->length));
+    return STRNCMP(kv1->value.string, kv2->value.string, MAX(kv1->value.length,
+		kv2->value.length));
 }
 
 // compare two keyvalue_T structs by case insensitive value
@@ -3097,17 +3098,19 @@ cmp_keyvalue_value_i(const void *a, const void *b)
     keyvalue_T *kv1 = (keyvalue_T *)a;
     keyvalue_T *kv2 = (keyvalue_T *)b;
 
-    return STRICMP(kv1->value, kv2->value);
+    return STRICMP(kv1->value.string, kv2->value.string);
 }
 
 // compare two keyvalue_T structs by case insensitive ASCII value
-// with length
+// with value.length
     int
 cmp_keyvalue_value_ni(const void *a, const void *b)
 {
     keyvalue_T *kv1 = (keyvalue_T *)a;
     keyvalue_T *kv2 = (keyvalue_T *)b;
 
-    return vim_strnicmp_asc(kv1->value, kv2->value, MAX(kv1->length, kv2->length));
+    return vim_strnicmp_asc((char *)kv1->value.string,
+	    (char *)kv2->value.string, MAX(kv1->value.length,
+		    kv2->value.length));
 }
 
