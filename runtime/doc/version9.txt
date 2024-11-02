@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Oct 27
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41602,6 +41602,7 @@ Changed~
   selection in the quickfix list with the "u" action.
 - the putty terminal is detected using an |TermResponse| autocommand in
   |defaults.vim| and Vim switches to a dark background
+- the |help-TOC| package is included to ease navigating the documentation.
 
 							*added-9.2*
 Added ~

@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2024 Apr 10
+*helphelp.txt*	For Vim version 9.1.  Last change: 2024 Nov 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -246,6 +246,61 @@ command: >
 			To rebuild the help tags in the runtime directory
 			(requires write permission there): >
 				:helptags $VIMRUNTIME/doc
+<
+						*help-TOC* *help-toc-install*
+
+If you want to access an interactive table of contents, from any position in
+the file, you can use the helptoc plugin.  Load the plugin with: >
+
+    packadd helptoc
+
+Then you can use the `:HelpToc` command to open a popup menu.
+The latter supports the following normal commands: >
+
+	key | effect
+	----+---------------------------------------------------------
+	j   | select next entry
+	k   | select previous entry
+	J   | same as j, and jump to corresponding line in main buffer
+	K   | same as k, and jump to corresponding line in main buffer
+	c   | select nearest entry from cursor position in main buffer
+	g   | select first entry
+	G   | select last entry
+	H   | collapse one level
+	L   | expand one level
+	p   | print current entry on command-line
+
+	P   | same as p but automatically, whenever selection changes
+	    | press multiple times to toggle feature on/off
+
+	q   | quit menu
+	z   | redraw menu with current entry at center
+	+   | increase width of popup menu
+	-   | decrease width of popup menu
+	?   | show/hide a help window
+
+	<C-D>      | scroll down half a page
+	<C-U>      | scroll up half a page
+	<PageUp>   | scroll down a whole page
+	<PageDown> | scroll up a whole page
+	<Home>     | select first entry
+	<End>      | select last entry
+
+The plugin can also provide a table of contents in man pages, markdown files,
+and terminal buffers.  In the latter, the entries will be the past executed
+shell commands.  To find those, the following regex is used: >
+
+	^\w\+@\w\+:\f\+\$\s
+
+This is meant to match a default bash prompt.  If it doesn't match your prompt,
+you can change the regex with the `shell_prompt` key from the `g:helptoc`
+dictionary variable: >
+
+	let g:helptoc = {'shell_prompt': 'regex matching your shell prompt'}
+
+Tip: After inserting a pattern to look for with the `/` command, if you press
+<Esc> instead of <CR>, you can then get more context for each remaining entry
+by pressing `J` or `K`.
 
 ==============================================================================
 2. Translated help files				*help-translated*

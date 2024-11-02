@@ -8062,11 +8062,13 @@ hasmapto()	builtin.txt	/*hasmapto()*
 hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	helphelp.txt	/*help*
+help-TOC	helphelp.txt	/*help-TOC*
 help-buffer-options	helphelp.txt	/*help-buffer-options*
 help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
 help-summary	usr_02.txt	/*help-summary*
 help-tags	tags	1
+help-toc-install	helphelp.txt	/*help-toc-install*
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
 help-xterm-window	helphelp.txt	/*help-xterm-window*
