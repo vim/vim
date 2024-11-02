@@ -10,8 +10,8 @@ SRC_ALL =	\
 		.github/ISSUE_TEMPLATE/feature_request.md \
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
-		.github/actions/screendump/action.yml \
 		.github/workflows/coverity.yml \
+		.github/actions/test_artifacts/action.yml \
 		.github/dependabot.yml \
 		.gitignore \
 		.hgignore \
