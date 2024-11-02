@@ -1,0 +1,9 @@
+# When making commits that are strictly formatting/style changes, add the
+# commit hash here, so git blame can ignore the change. See docs for more details:
+#
+# https://git-scm.com/docs/git-config#Documentation/git-config.txt-blameignoreRevsFile
+#
+# Run this command to always ignore formatting commits in git blame
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+# 
+8ce738de3fd7192fa6274730594305cde780074c  # expand tabs to spaces in sound.c
