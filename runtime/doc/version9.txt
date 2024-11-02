@@ -41651,7 +41651,7 @@ Options: ~
 
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup
-'findexpr'		Vim expression to obtain the results for a |:find|
+'findfunc'		Vim function to obtain the results for a |:find|
 			command
 'winfixbuf'		Keep buffer focused in a window
 'tabclose'		Which tab page to focus after closing a tab page

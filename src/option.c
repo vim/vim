@@ -1014,6 +1014,9 @@ free_all_options(void)
     }
     free_operatorfunc_option();
     free_tagfunc_option();
+# if defined(FEAT_EVAL)
+    free_findfunc_option();
+# endif
 }
 #endif
 
@@ -6372,8 +6375,8 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_fp);
 	    break;
 # ifdef FEAT_EVAL
-	case PV_FEXPR:
-	    clear_string_option(&buf->b_p_fexpr);
+	case PV_FFU:
+	    clear_string_option(&buf->b_p_ffu);
 	    break;
 # endif
 # ifdef FEAT_QUICKFIX
@@ -6455,7 +6458,7 @@ get_varp_scope(struct vimoption *p, int scope)
 	{
 	    case PV_FP:   return (char_u *)&(curbuf->b_p_fp);
 #ifdef FEAT_EVAL
-	    case PV_FEXPR:   return (char_u *)&(curbuf->b_p_fexpr);
+	    case PV_FFU: return (char_u *)&(curbuf->b_p_ffu);
 #endif
 #ifdef FEAT_QUICKFIX
 	    case PV_EFM:  return (char_u *)&(curbuf->b_p_efm);
@@ -6568,8 +6571,8 @@ get_varp(struct vimoption *p)
 	case PV_FP:	return *curbuf->b_p_fp != NUL
 				    ? (char_u *)&(curbuf->b_p_fp) : p->var;
 #ifdef FEAT_EVAL
-	case PV_FEXPR:	return *curbuf->b_p_fexpr != NUL
-				    ? (char_u *)&curbuf->b_p_fexpr : p->var;
+	case PV_FFU:	return *curbuf->b_p_ffu != NUL
+				    ? (char_u *)&(curbuf->b_p_ffu) : p->var;
 #endif
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:	return *curbuf->b_p_efm != NUL
@@ -6818,15 +6821,15 @@ get_equalprg(void)
 }
 
 /*
- * Get the value of 'findexpr', either the buffer-local one or the global one.
+ * Get the value of 'findfunc', either the buffer-local one or the global one.
  */
     char_u *
-get_findexpr(void)
+get_findfunc(void)
 {
 #ifdef FEAT_EVAL
-    if (*curbuf->b_p_fexpr == NUL)
-	return p_fexpr;
-    return curbuf->b_p_fexpr;
+    if (*curbuf->b_p_ffu == NUL)
+	return p_ffu;
+    return curbuf->b_p_ffu;
 #else
     return (char_u *)"";
 #endif
@@ -7361,8 +7364,7 @@ buf_copy_options(buf_T *buf, int flags)
 #endif
 	    buf->b_p_ep = empty_option;
 #if defined(FEAT_EVAL)
-	    buf->b_p_fexpr = vim_strsave(p_fexpr);
-	    COPY_OPT_SCTX(buf, BV_FEXPR);
+	    buf->b_p_ffu = empty_option;
 #endif
 	    buf->b_p_kp = empty_option;
 	    buf->b_p_path = empty_option;
@@ -8749,6 +8751,7 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 #ifdef FEAT_EVAL
     typval_T	*tv;
     callback_T	cb;
+    int		funcname = FALSE;
 
     if (optval == NULL || *optval == NUL)
     {
@@ -8762,8 +8765,11 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 	// Lambda expression or a funcref
 	tv = eval_expr(optval, NULL);
     else
+    {
 	// treat everything else as a function name string
 	tv = alloc_string_tv(vim_strsave(optval));
+	funcname = TRUE;
+    }
     if (tv == NULL)
 	return FAIL;
 
@@ -8780,6 +8786,16 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 	vim_free(cb.cb_name);
     free_tv(tv);
 
+    if (in_vim9script() && funcname && (vim_strchr(optval, '.') != NULL))
+    {
+	// When a Vim9 imported function name is used, it is expanded by the
+	// call to get_callback() above to <SNR>_funcname.   Revert the name to
+	// back to "import.funcname".
+	if (optcb->cb_free_name)
+	    vim_free(optcb->cb_name);
+	optcb->cb_name = vim_strsave(optval);
+	optcb->cb_free_name = TRUE;
+    }
     // when using Vim9 style "import.funcname" it needs to be expanded to
     // "import#funcname".
     expand_autload_callback(optcb);

@@ -120,7 +120,7 @@ char_u *get_option_var(int opt_idx);
 char_u *get_option_fullname(int opt_idx);
 opt_did_set_cb_T get_option_did_set_cb(int opt_idx);
 char_u *get_equalprg(void);
-char_u *get_findexpr(void);
+char_u *get_findfunc(void);
 void win_copy_options(win_T *wp_from, win_T *wp_to);
 void after_copy_winopt(win_T *wp);
 void copy_winopt(winopt_T *from, winopt_T *to);

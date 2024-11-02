@@ -1560,27 +1560,47 @@ def Run_Test_import_in_printexpr()
   set printexpr=
 enddef
 
-" Test for using an imported function as 'findexpr'
-func Test_import_in_findexpr()
-  call Run_Test_import_in_findexpr()
+" Test for using an imported function as 'findfunc'
+func Test_import_in_findfunc()
+  call Run_Test_import_in_findfunc()
 endfunc
 
-def Run_Test_import_in_findexpr()
+def Run_Test_import_in_findfunc()
   var lines =<< trim END
-      vim9script
+    vim9script
 
-      export def FindExpr(): list<string>
-        var fnames = ['Xfile1.c', 'Xfile2.c', 'Xfile3.c']
-        return fnames->copy()->filter('v:val =~? v:fname')
-      enddef
+    export def FindFunc(pat: string, cmdexpand: bool): list<string>
+      var fnames = ['Xfile1.c', 'Xfile2.c', 'Xfile3.c']
+      return fnames->filter((_, v) => v =~? pat)
+    enddef
   END
-  writefile(lines, 'Xfindexpr', 'D')
+  writefile(lines, 'Xfindfunc', 'D')
 
+  # Test using the "set" command
   lines =<< trim END
-      vim9script
-      import './Xfindexpr' as find
+    vim9script
+    import './Xfindfunc' as find1
 
-      set findexpr=find.FindExpr()
+    set findfunc=find1.FindFunc
+  END
+  v9.CheckScriptSuccess(lines)
+
+  enew!
+  find Xfile2
+  assert_equal('Xfile2.c', @%)
+  bwipe!
+
+  botright vert new
+  find Xfile1
+  assert_equal('Xfile1.c', @%)
+  bw!
+
+  # Test using the option variable
+  lines =<< trim END
+    vim9script
+    import './Xfindfunc' as find2
+
+    &findfunc = find2.FindFunc
   END
   v9.CheckScriptSuccess(lines)
 
@@ -1593,7 +1613,7 @@ def Run_Test_import_in_findexpr()
   find Xfile1
   assert_equal('Xfile1.c', @%)
 
-  set findexpr=
+  set findfunc=
   bwipe!
 enddef
 
