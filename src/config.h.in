@@ -209,6 +209,7 @@
 #undef HAVE_CANBERRA
 #undef HAVE_SODIUM
 #undef HAVE_ST_BLKSIZE
+#undef HAVE_SYNC
 #undef HAVE_SYSCONF
 #undef HAVE_SYSCTL
 #undef HAVE_SYSINFO
