@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2024 Nov 02
+*helphelp.txt*	For Vim version 9.1.  Last change: 2024 Nov 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -278,6 +278,7 @@ The latter supports the following normal commands: >
 	+   | increase width of popup menu
 	-   | decrease width of popup menu
 	?   | show/hide a help window
+	/   | search for pattern
 
 	<C-D>      | scroll down half a page
 	<C-U>      | scroll up half a page
@@ -288,7 +289,7 @@ The latter supports the following normal commands: >
 
 The plugin can also provide a table of contents in man pages, markdown files,
 and terminal buffers.  In the latter, the entries will be the past executed
-shell commands.  To find those, the following regex is used: >
+shell commands.  To find those, the following pattern is used: >
 
 	^\w\+@\w\+:\f\+\$\s
 
