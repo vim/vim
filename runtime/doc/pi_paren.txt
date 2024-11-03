@@ -29,6 +29,17 @@ the ":highlight" command.  Example: >
 
 	:hi MatchParen ctermbg=blue guibg=lightblue
 
+By default the plugin will highlight both the paren under the cursor and the
+matching one using MatchParen colors; depending on the selected highlighting,
+the colorscheme, or even the terminal emulator, this might result in the cursor
+briefly disappearing from the screen as the MatchParen colors take over the
+cursor style. To prevent this from happening and have the plugin only highlight
+the matching paren and not the one under the cursor (effectively leaving the
+cursor style unchanged), you can use the "matchparen_disable_cursor_hl"
+variable: >
+
+	:let matchparen_disable_cursor_hl = 1
+
 The characters to be matched come from the 'matchpairs' option.  You can
 change the value to highlight different matches.  Note that not everything is
 possible.  For example, you can't highlight single or double quotes, because
