@@ -2687,16 +2687,17 @@ did_set_thesaurusfunc(optset_T *args UNUSED)
 {
     int	retval;
 
-    if (*curbuf->b_p_tsrfu != NUL)
-    {
+    if (args->os_flags & OPT_LOCAL)
 	// buffer-local option set
 	retval = option_set_callback_func(curbuf->b_p_tsrfu,
 							&curbuf->b_tsrfu_cb);
-    }
     else
     {
 	// global option set
 	retval = option_set_callback_func(p_tsrfu, &tsrfu_cb);
+	// when using :set, free the local callback
+	if (!(args->os_flags & OPT_GLOBAL))
+	    free_callback(&curbuf->b_tsrfu_cb);
     }
 
     return retval == FAIL ? e_invalid_argument : NULL;

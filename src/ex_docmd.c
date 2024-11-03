@@ -6934,6 +6934,9 @@ get_findfunc_callback(void)
     return *curbuf->b_p_ffu != NUL ? &curbuf->b_ffu_cb : &ffu_cb;
 }
 
+/*
+ * Call 'findfunc' to obtain a list of file names.
+ */
     static list_T *
 call_findfunc(char_u *pat, int cmdcomplete)
 {
@@ -6944,7 +6947,6 @@ call_findfunc(char_u *pat, int cmdcomplete)
     sctx_T	saved_sctx = current_sctx;
     sctx_T	*ctx;
 
-    // Call 'findfunc' to obtain the list of file names.
     args[0].v_type = VAR_STRING;
     args[0].vval.v_string = pat;
     args[1].v_type = VAR_BOOL;
@@ -7076,15 +7078,16 @@ did_set_findfunc(optset_T *args UNUSED)
 {
     int	retval;
 
-    if (*curbuf->b_p_ffu != NUL)
-    {
+    if (args->os_flags & OPT_LOCAL)
 	// buffer-local option set
 	retval = option_set_callback_func(curbuf->b_p_ffu, &curbuf->b_ffu_cb);
-    }
     else
     {
 	// global option set
 	retval = option_set_callback_func(p_ffu, &ffu_cb);
+	// when using :set, free the local callback
+	if (!(args->os_flags & OPT_GLOBAL))
+	    free_callback(&curbuf->b_ffu_cb);
     }
 
     if (retval == FAIL)
