@@ -180,8 +180,13 @@ if &enc == 'utf-8' && s:ext !~ '\.utf-8'
   let s:ext .= '.utf-8'
 endif
 
-" 2. Build the name of the file:
-let s:tutorfile = "/tutor/tutor"
+" 2. Build the name of the file and chapter
+let s:chapter = exists("$CHAPTER") ? $CHAPTER : ''
+if s:chapter == "1"
+  let s:chapter = ''
+endif
+
+let s:tutorfile = "/tutor/tutor" . s:chapter
 let s:tutorxx = $VIMRUNTIME . s:tutorfile . s:ext
 
 " 3. Finding the file:

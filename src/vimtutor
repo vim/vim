@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Start Vim on a copy of the tutor file.
 
@@ -13,15 +13,126 @@
 # have Vim installed with its version number.
 # We anticipate up to a future Vim 8.1 version :-).
 seq="vim vim81 vim80 vim8 vim74 vim73 vim72 vim71 vim70 vim7 vim6 vi"
-if test "$1" = "-g"; then
-    # Try to use the GUI version of Vim if possible, it will fall back
-    # on Vim if Gvim is not installed.
-    seq="gvim gvim81 gvim80 gvim8 gvim74 gvim73 gvim72 gvim71 gvim70 gvim7 gvim6 $seq"
-    shift
-fi
 
-xx=$1
-export xx
+usage()
+{
+    echo "==USAGE========================================================================================="
+    echo "${0##*/} [-(-l)anguage ISO639] [-(-c)hapter) NUMBER] [-(-g)ui] | [-(-h)elp] | [--list]"
+    printf "\twhere:\n"
+    printf "\t\tISO639 (default=en) is a 2 or 3 character language code\n"
+    printf "\t\tNUMBER (default=01) is one or two digits representing the chapter number\n"
+    printf "\texamples:\n"
+    printf "\t\tvimtutor -l es -c 2 -g\n"
+    printf "\t\tvimtutor --language de --chapter 02\n"
+    printf "\t\tvimtutor fr\n"
+    echo "More information at 'man vimtutor'"
+    echo "================================================================================================"
+}
+
+listOptions()
+{
+  declare -A language
+  language[bar]=Bavarian
+  language[bg]=Bulgarian
+  language[ca]=Catalan
+  language[cs]=Czech
+  language[da]=Danish
+  language[de]=German
+  language[el]=Greek
+  language[en]=English\(default\)
+  language[eo]=Esperanto
+  language[es]=Spanish
+  language[fr]=French
+  language[hr]=Croatian
+  language[hu]=Hungarian
+  language[it]=Italian
+  language[ja]=Japanese
+  language[ko]=Korean
+  language[lv]=Latvian
+  language[nb]=Bokmål
+  language[nl]=Dutch
+  language[no]=Norwegian
+  language[pl]=Polish
+  language[pt]=Portuguese
+  language[ru]=Russian
+  language[sk]=Slovak
+  language[sr]=Serbian
+  language[sv]=Swedish
+  language[tr]=Turkish
+  language[uk]=English
+  language[vi]=Vietnamese
+  language[zh]=Chinese
+
+  echo "==OPTIONS======================================================================================="
+  echo "Chapter: 1"
+  for code in bar bg ca cs da de el en eo es fr hr hu it ja ko lv nb nl no pl pt ru sk sr sv tr uk vi zh
+  do
+    printf "\tLang: %s => %s\n" ${code} ${language[${code}]}
+  done
+  echo "Chapter: 2"
+  for code in en
+  do
+    printf "\tLang: %s => %s\n" ${code} ${language[${code}]}
+  done
+  echo "================================================================================================"
+}
+
+validateLang()
+{
+  if [[ $xx =~ ^[^a-z]*$ ]]; then echo "Error: iso639 code must contain only [a-z]" && exit 1; fi
+  if [ ${#xx} == 2 ] || [ ${#xx} == 3 ]; then :; else echo "Error: iso639 code must be 2 or 3 characters only" && exit 1; fi
+  export xx
+}
+
+validateChapter()
+{
+  if [[ $cc =~ ^[0-9]*$ ]]; then :; else echo "Error: chapter argument must contain digits only" && exit 1; fi
+  if [ $cc == "0" ]; then echo "Error: chapter must be non-zero" && exit 1; fi
+  if [ $cc == "00" ]; then echo "Error: chapter must be non-zero" && exit 1; fi
+  export CHAPTER="$cc"
+}
+
+shopt -s extglob
+while [ "$1" != "" ]; do
+  case $1 in
+    -g | --gui )                    seq="gvim gvim91 gvim90 gvim81 gvim80 gvim8 gvim74 gvim73 gvim72 gvim71 gvim70 gvim7 gvim6 $seq"
+                                    ;;
+    -l | --language )               shift
+                                    xx=$1
+                                    validateLang
+                                    ;;
+    -l[a-z][a-z]?([a-z]) )          xx=${1#*l}
+                                    validateLang
+                                    ;;
+    --language[a-z][a-z]?([a-z]) )  xx=${1#*e}
+                                    validateLang
+                                    ;;
+    [a-z][a-z]?([a-z]) )            xx=$1
+                                    validateLang
+                                    ;;
+    -c | --chapter )                shift
+                                    cc=$1
+                                    validateChapter
+                                    ;;
+    -c[0-9]?([0-9]) )               cc=${1#*c}
+                                    validateChapter
+                                    ;;
+    --chapter[0-9]?([0-9]) )        cc=${1#*r}
+                                    validateChapter
+                                    ;;
+    -h | --help )                   usage
+                                    exit
+                                    ;;
+    --list )                        listOptions
+                                    exit
+                                    ;;
+    "" )                            ;;
+    * )                             usage
+                                    exit 1
+    esac
+    shift
+done
+
 
 # We need a temp file for the copy.  First try using a standard command.
 tmp="${TMPDIR-/tmp}"
@@ -68,6 +179,7 @@ fi
 
 # Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
 # The script tutor.vim tells Vim which file to copy
+
 $VIM -f -u NONE -c 'so $VIMRUNTIME/tutor/tutor.vim'
 
 # Start vim without any .vimrc, set 'nocompatible' and 'showcmd'

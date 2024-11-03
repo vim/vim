@@ -120,8 +120,11 @@ On Unix, if Vim has been properly installed, you can start it from the shell:
 On MS-Windows you can find it in the Program/Vim menu.  Or execute
 vimtutor.bat in the $VIMRUNTIME directory.
 
-This will make a copy of the tutor file, so that you can edit it without
-the risk of damaging the original.
+This will make a copy of chapter 1 tutor file, so that you can edit it without
+the risk of damaging the original.  To continue with chapter 2, you can use
+the following command: >
+	vimtutor -c 2
+<
    There are a few translated versions of the tutor.  To find out if yours is
 available, use the two-letter language code.  For French: >
 

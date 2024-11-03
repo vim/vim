@@ -41605,6 +41605,7 @@ Changed~
 - the |help-TOC| package is included to ease navigating the documentation.
 - an interactive tutor plugin has been included |vim-tutor-mode|, can be
   started via |:Tutor|
+- improve the |vimtutor| and add a second chapter for more advanced tips
 
 							*added-9.2*
 Added ~

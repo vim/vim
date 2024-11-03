@@ -1,7 +1,7 @@
 :: Start Vim on a copy of the tutor file.
 @echo off
 
-:: Usage: vimtutor [-console] [xx]
+:: Usage: vimtutor [-chapter 2] [-console] [xx]
 ::
 :: -console means gvim will not be used
 :: xx is a language code like "es" or "nl".
@@ -25,6 +25,11 @@ GOTO end
 
 :dir_ok
 
+IF .%1==.-chapter (
+    SET CHAPTER=%2
+    SHIFT
+    SHIFT
+)
 SET xx=%1
 
 IF NOT .%1==.-console GOTO use_gui
