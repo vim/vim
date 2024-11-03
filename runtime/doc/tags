@@ -2177,6 +2177,7 @@ $quote	eval.txt	/*$quote*
 :Termdebug	terminal.txt	/*:Termdebug*
 :TermdebugCommand	terminal.txt	/*:TermdebugCommand*
 :Texplore	pi_netrw.txt	/*:Texplore*
+:Tutor	pi_tutor.txt	/*:Tutor*
 :Until	terminal.txt	/*:Until*
 :Up	terminal.txt	/*:Up*
 :UseVimball	pi_vimball.txt	/*:UseVimball*
@@ -9438,6 +9439,7 @@ pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
 pi_tar.txt	pi_tar.txt	/*pi_tar.txt*
+pi_tutor.txt	pi_tutor.txt	/*pi_tutor.txt*
 pi_vimball.txt	pi_vimball.txt	/*pi_vimball.txt*
 pi_zip.txt	pi_zip.txt	/*pi_zip.txt*
 pkzip	options.txt	/*pkzip*
@@ -11244,6 +11246,9 @@ vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-script-library	eval.txt	/*vim-script-library*
 vim-security	intro.txt	/*vim-security*
 vim-shebang	various.txt	/*vim-shebang*
+vim-tutor-create	pi_tutor.txt	/*vim-tutor-create*
+vim-tutor-mode	pi_tutor.txt	/*vim-tutor-mode*
+vim-tutor-usage	pi_tutor.txt	/*vim-tutor-usage*
 vim-use	intro.txt	/*vim-use*
 vim-variable	eval.txt	/*vim-variable*
 vim.b	if_lua.txt	/*vim.b*

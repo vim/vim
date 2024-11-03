@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 02
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41603,6 +41603,8 @@ Changed~
 - the putty terminal is detected using an |TermResponse| autocommand in
   |defaults.vim| and Vim switches to a dark background
 - the |help-TOC| package is included to ease navigating the documentation.
+- an interactive tutor plugin has been included |vim-tutor-mode|, can be
+  started via |:Tutor|
 
 							*added-9.2*
 Added ~

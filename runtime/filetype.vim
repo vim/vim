@@ -2589,6 +2589,9 @@ au BufNewFile,BufReadPost *.tsscl		setf tsscl
 " TSV Files
 au BufNewFile,BufRead *.tsv			setf tsv
 
+" Tutor mode
+au BufNewFile,BufReadPost *.tutor		setf tutor
+
 " TWIG files
 au BufNewFile,BufReadPost *.twig		setf twig
 

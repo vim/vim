@@ -2346,7 +2346,7 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(VIMTARGET) $(DEST_RT) \
 		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
 		$(DEST_AUTO)/rust $(DEST_AUTO)/cargo \
 		$(DEST_IMPORT) $(DEST_IMPORT)/dist \
-		$(DEST_PLUG) $(DEST_TUTOR) $(DEST_SPELL) $(DEST_COMP)
+		$(DEST_PLUG) $(DEST_TUTOR) $(DEST_TUTOR)/en $(DEST_SPELL) $(DEST_COMP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 # Generate the help tags with ":helptags" to handle all languages.
 # Move the distributed tags file aside and restore it, to avoid it being
@@ -2473,8 +2473,10 @@ installgtutorbin: $(DEST_BIN)
 
 installtutor: $(DEST_RT) $(DEST_TUTOR)
 	-$(INSTALL_DATA) $(TUTORSOURCE)/README* $(TUTORSOURCE)/tutor* $(DEST_TUTOR)
+	-$(INSTALL_DATA) $(TUTORSOURCE)/en/* $(DEST_TUTOR)/en/
 	-rm -f $(DEST_TUTOR)/*.info
 	chmod $(HELPMOD) $(DEST_TUTOR)/*
+	chmod $(DIRMOD) $(DEST_TUTOR)/en
 
 # Install the spell files, if they exist.  This assumes at least the English
 # spell file is there.
@@ -2671,7 +2673,8 @@ $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_SYN)/modula2 $(DEST_SYN)/modula2/opt \
 		$(DEST_IND) $(DEST_FTP) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
-		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
+		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_TUTOR)/en \
+		$(DEST_SPELL) \
 		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
 		$(DEST_AUTO)/cargo $(DEST_AUTO)/rust \
 		$(DEST_IMPORT) $(DEST_IMPORT)/dist $(DEST_PLUG):
@@ -2854,6 +2857,7 @@ uninstall_runtime:
 	-rm -f $(DEST_IND)/*.vim $(DEST_IND)/README.txt
 	-rm -rf $(DEST_MACRO)
 	-rm -rf $(DEST_PACK)
+	-rm -rf $(DEST_TUTOR)/en
 	-rm -rf $(DEST_TUTOR)
 	-rm -rf $(DEST_SPELL)
 	-rm -rf $(DEST_TOOLS)

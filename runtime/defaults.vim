@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last change:	2023 Aug 10
+" Last Change:	2024 Nov 03
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
@@ -107,11 +107,11 @@ if 1
     " (happens when dropping a file on gvim), for a commit or rebase message
     " (likely a different one than last time), and when using xxd(1) to filter
     " and edit binary files (it transforms input files back and forth, causing
-    " them to have dual nature, so to speak)
+    " them to have dual nature, so to speak) or when running the new tutor
     autocmd BufReadPost *
       \ let line = line("'\"")
       \ | if line >= 1 && line <= line("$") && &filetype !~# 'commit'
-      \      && index(['xxd', 'gitrebase'], &filetype) == -1
+      \      && index(['xxd', 'gitrebase', 'tutor'], &filetype) == -1
       \ |   execute "normal! g`\""
       \ | endif
 
