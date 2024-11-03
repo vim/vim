@@ -11328,7 +11328,9 @@ else $as_nop
     if test "$cross_compiling" = yes
 then :
 
-    as_fn_error $? "cross-compiling: please set 'vim_cv_toupper_broken'" "$LINENO" 5
+    vim_cv_toupper_broken=no
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_toupper_broken'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_toupper_broken'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -12746,7 +12748,7 @@ fi
     if test "x$olibs" != "x$LIBS"; then
                         if test "$cross_compiling" = yes
 then :
-  res="FAIL"
+  res="OK"
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -12822,7 +12824,9 @@ else $as_nop
     if test "$cross_compiling" = yes
 then :
 
-      as_fn_error $? "cross-compiling: please set 'vim_cv_terminfo'" "$LINENO" 5
+      vim_cv_terminfo=yes
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_terminfo'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_terminfo'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -12840,17 +12844,17 @@ else $as_nop
 # include <stddef.h>
 #endif
 int main()
-{char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!strcmp(s==0 ? "" : s, "1")); }
+{char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!!strcmp(s==0 ? "" : s, "1")); }
 
 _ACEOF
 if ac_fn_c_try_run "$LINENO"
 then :
 
-      vim_cv_terminfo=no
+      vim_cv_terminfo=yes
 
 else $as_nop
 
-      vim_cv_terminfo=yes
+      vim_cv_terminfo=no
 
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
@@ -12877,7 +12881,9 @@ else $as_nop
     if test "$cross_compiling" = yes
 then :
 
-      as_fn_error $? "failed to compile test program." "$LINENO" 5
+      vim_cv_tgetent=zero
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_tgetent'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_tgetent'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13253,7 +13259,9 @@ else $as_nop
     if test "$cross_compiling" = yes
 then :
 
-      as_fn_error $? "cross-compiling: please set 'vim_cv_getcwd_broken'" "$LINENO" 5
+      vim_cv_getcwd_broken=no
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_getcwd_broken'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_getcwd_broken'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14149,50 +14157,29 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
 
-if test "$cross_compiling" = yes
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create'" >&5
-printf "%s\n" "$as_me: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create'" >&2;}
-
-else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-#include <signal.h>
-#include <time.h>
-static void set_flag(union sigval sv) {}
+  #include <time.h>
 
 int
 main (void)
 {
 
-  struct timespec ts;
-  struct sigevent action = {0};
-  timer_t timer_id;
-
-  action.sigev_notify = SIGEV_THREAD;
-  action.sigev_notify_function = set_flag;
-  if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
-    exit(1);  // cannot create a monotonic timer
+    timer_create(CLOCK_MONOTONIC, NULL, NULL);
 
   ;
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_run "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   vim_cv_timer_create=yes
 else $as_nop
   vim_cv_timer_create=no
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
 
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create" >&5
 printf "%s\n" "$vim_cv_timer_create" >&6; }
@@ -14207,10 +14194,56 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
 
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #include <time.h>
+
+int
+main (void)
+{
+
+      timer_create(CLOCK_MONOTONIC, NULL, NULL);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  vim_cv_timer_create_with_lrt=yes
+else $as_nop
+  vim_cv_timer_create_with_lrt=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create_with_lrt" >&5
+printf "%s\n" "$vim_cv_timer_create_with_lrt" >&6; }
+  LIBS="$save_LIBS"
+else
+  vim_cv_timer_create_with_lrt=no
+fi
+
+if test "x$vim_cv_timer_create" = "xyes" ||
+   test "x$vim_cv_timer_create_with_lrt" = "xyes"; then
+  save_LIBS="$LIBS"
+  if test "x$vim_cv_timer_create_works" = "xyes" ; then
+    LIBS="$LIBS -lrt"
+  fi
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if timer_create works" >&5
+printf %s "checking if timer_create works... " >&6; }
+if test ${vim_cv_timer_create_works+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+
     if test "$cross_compiling" = yes
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'" >&5
-printf "%s\n" "$as_me: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'" >&2;}
+  vim_cv_timer_create_works=yes
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_timer_create_works'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_timer_create_works'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14235,7 +14268,7 @@ main (void)
       action.sigev_notify = SIGEV_THREAD;
       action.sigev_notify_function = set_flag;
       if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
-	exit(1);  // cannot create a monotonic timer
+        exit(1);  // cannot create a monotonic timer
 
   ;
   return 0;
@@ -14243,30 +14276,25 @@ main (void)
 _ACEOF
 if ac_fn_c_try_run "$LINENO"
 then :
-  vim_cv_timer_create_with_lrt=yes
+  vim_cv_timer_create_works=yes
 else $as_nop
-  vim_cv_timer_create_with_lrt=no
+  vim_cv_timer_create_works=no
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create_with_lrt" >&5
-printf "%s\n" "$vim_cv_timer_create_with_lrt" >&6; }
-  LIBS="$save_LIBS"
-else
-  vim_cv_timer_create_with_lrt=no
-fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create_works" >&5
+printf "%s\n" "$vim_cv_timer_create_works" >&6; }
 
-if test "x$vim_cv_timer_create" = "xyes" ; then
-  printf "%s\n" "#define HAVE_TIMER_CREATE 1" >>confdefs.h
+  if test "x$vim_cv_timer_create_works" = "xyes" ; then
+    printf "%s\n" "#define HAVE_TIMER_CREATE 1" >>confdefs.h
 
-fi
-if test "x$vim_cv_timer_create_with_lrt" = "xyes" ; then
-  printf "%s\n" "#define HAVE_TIMER_CREATE 1" >>confdefs.h
-
-  LIBS="$LIBS -lrt"
+    LIBS="$LIBS -lrt"
+  else
+    LIBS="$save_LIBS"
+  fi
 fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether stat() ignores a trailing slash" >&5
@@ -14279,7 +14307,9 @@ else $as_nop
     if test "$cross_compiling" = yes
 then :
 
-      as_fn_error $? "cross-compiling: please set 'vim_cv_stat_ignores_slash'" "$LINENO" 5
+      vim_cv_stat_ignores_slash=yes
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_stat_ignores_slash'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_stat_ignores_slash'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -15414,8 +15444,8 @@ printf "%s\n" "#define VIM_SIZEOF_LONG $ac_cv_sizeof_long" >>confdefs.h
 printf %s "checking uint32_t is 32 bits... " >&6; }
 if test "$cross_compiling" = yes
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cannot check uint32_t when cross-compiling." >&5
-printf "%s\n" "$as_me: WARNING: cannot check uint32_t when cross-compiling." >&2;}
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: assuming uint32_t is correct when cross-compiling" >&5
+printf "%s\n" "$as_me: WARNING: assuming uint32_t is correct when cross-compiling" >&2;}
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -15478,7 +15508,9 @@ else $as_nop
     if test "$cross_compiling" = yes
 then :
 
-	as_fn_error $? "cross-compiling: please set 'vim_cv_memmove_handles_overlap'" "$LINENO" 5
+	vim_cv_memmove_handles_overlap=yes
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_memmove_handles_overlap'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_memmove_handles_overlap'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -15518,7 +15550,9 @@ else $as_nop
       if test "$cross_compiling" = yes
 then :
 
-	as_fn_error $? "cross-compiling: please set 'vim_cv_bcopy_handles_overlap'" "$LINENO" 5
+	vim_cv_bcopy_handles_overlap=yes
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_bcopy_handles_overlap'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_bcopy_handles_overlap'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -15558,7 +15592,9 @@ else $as_nop
 	if test "$cross_compiling" = yes
 then :
 
-	    as_fn_error $? "cross-compiling: please set 'vim_cv_memcpy_handles_overlap'" "$LINENO" 5
+	    vim_cv_memcpy_handles_overlap=yes
+	    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cross-compiling: consider setting 'vim_cv_memcpy_handles_overlap'" >&5
+printf "%s\n" "$as_me: WARNING: cross-compiling: consider setting 'vim_cv_memcpy_handles_overlap'" >&2;}
 
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
