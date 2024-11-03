@@ -1146,6 +1146,9 @@ did_set_backupcopy(optset_T *args)
 	bkc = curbuf->b_p_bkc;
 	flags = &curbuf->b_bkc_flags;
     }
+    else if (!(args->os_flags & OPT_GLOBAL))
+	// When using :set, clear the local flags.
+	curbuf->b_bkc_flags = 0;
 
     if ((args->os_flags & OPT_LOCAL) && *bkc == NUL)
 	// make the local value empty: use the global value
@@ -1619,6 +1622,9 @@ did_set_completeopt(optset_T *args UNUSED)
 	cot = curbuf->b_p_cot;
 	flags = &curbuf->b_cot_flags;
     }
+    else if (!(args->os_flags & OPT_GLOBAL))
+	// When using :set, clear the local flags.
+	curbuf->b_cot_flags = 0;
 
     if (check_opt_strings(cot, p_cot_values, TRUE) != OK)
 	return e_invalid_argument;
