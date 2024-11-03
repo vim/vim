@@ -3297,7 +3297,8 @@ int main() { exit(toupper('A') == 'A' && tolower('z') == 'z'); }
   ],[
     vim_cv_toupper_broken=no
   ],[
-    AC_MSG_ERROR(cross-compiling: please set 'vim_cv_toupper_broken')
+    vim_cv_toupper_broken=no
+    AC_MSG_WARN(cross-compiling: consider setting 'vim_cv_toupper_broken')
   ])])
 
 if test "x$vim_cv_toupper_broken" = "xyes" ; then
@@ -3510,7 +3511,7 @@ else
 # include <stddef.h>
 #endif
 int main() {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(0); }])],
-			  res="OK", res="FAIL", res="FAIL")
+			  res="OK", res="FAIL", res="OK")
       if test "$res" = "OK"; then
 	break
       fi
@@ -3549,13 +3550,14 @@ AC_CACHE_CHECK([whether we talk terminfo], [vim_cv_terminfo],
 # include <stddef.h>
 #endif
 int main()
-{char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!strcmp(s==0 ? "" : s, "1")); }
+{char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!!strcmp(s==0 ? "" : s, "1")); }
     ]])],[
+      vim_cv_terminfo=yes
+    ],[
       vim_cv_terminfo=no
     ],[
       vim_cv_terminfo=yes
-    ],[
-      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_terminfo')
+      AC_MSG_WARN(cross-compiling: consider setting 'vim_cv_terminfo')
     ])
   ])
 
@@ -3581,7 +3583,8 @@ int main()
     ],[
       vim_cv_tgetent=non-zero
     ],[
-      AC_MSG_ERROR(failed to compile test program.)
+      vim_cv_tgetent=zero
+      AC_MSG_WARN(cross-compiling: consider setting 'vim_cv_tgetent')
     ])
   ])
 
@@ -3747,7 +3750,8 @@ int main()
     ],[
       vim_cv_getcwd_broken=yes
     ],[
-      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_getcwd_broken')
+      vim_cv_getcwd_broken=no
+      AC_MSG_WARN(cross-compiling: consider setting 'vim_cv_getcwd_broken')
     ])
   ])
 
@@ -3871,30 +3875,14 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 	AC_MSG_RESULT(no))
 
 dnl Check for timer_create. It probably requires the 'rt' library.
-dnl Run the program to find out if timer_create(CLOCK_MONOTONIC) actually
-dnl works, on Solaris timer_create() exists but fails at runtime.
 AC_CACHE_CHECK([for timer_create without -lrt], [vim_cv_timer_create], [
-AC_RUN_IFELSE([AC_LANG_PROGRAM([
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-#include <signal.h>
-#include <time.h>
-static void set_flag(union sigval sv) {}
-], [
-  struct timespec ts;
-  struct sigevent action = {0};
-  timer_t timer_id;
-
-  action.sigev_notify = SIGEV_THREAD;
-  action.sigev_notify_function = set_flag;
-  if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
-    exit(1);  // cannot create a monotonic timer
-  ])],
-  vim_cv_timer_create=yes,
-  vim_cv_timer_create=no,
-  AC_MSG_WARN([failed to build test program; if cross-compiling please set 'vim_cv_timer_create'])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+  #include <time.h>
+  ], [
+    timer_create(CLOCK_MONOTONIC, NULL, NULL);
+     ])],
+    vim_cv_timer_create=yes,
+    vim_cv_timer_create=no
   )])
 
 dnl If the previous failed, check for timer_create() and linking with -lrt.
@@ -3902,6 +3890,29 @@ if test "x$vim_cv_timer_create" = "xno" ; then
   save_LIBS="$LIBS"
   LIBS="$LIBS -lrt"
   AC_CACHE_CHECK([for timer_create with -lrt], [vim_cv_timer_create_with_lrt], [
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+    #include <time.h>
+    ], [
+      timer_create(CLOCK_MONOTONIC, NULL, NULL);
+       ])],
+      vim_cv_timer_create_with_lrt=yes,
+      vim_cv_timer_create_with_lrt=no
+    )])
+  LIBS="$save_LIBS"
+else
+  vim_cv_timer_create_with_lrt=no
+fi
+
+dnl Run the program to find out if timer_create(CLOCK_MONOTONIC) actually
+dnl works, on Solaris timer_create() exists but fails at runtime.
+if test "x$vim_cv_timer_create" = "xyes" ||
+   test "x$vim_cv_timer_create_with_lrt" = "xyes"; then
+  save_LIBS="$LIBS"
+  if test "x$vim_cv_timer_create_works" = "xyes" ; then
+    LIBS="$LIBS -lrt"
+  fi
+
+  AC_CACHE_CHECK([if timer_create works], [vim_cv_timer_create_works], [
     AC_RUN_IFELSE([AC_LANG_PROGRAM([
     #if STDC_HEADERS
     # include <stdlib.h>
@@ -3918,23 +3929,20 @@ if test "x$vim_cv_timer_create" = "xno" ; then
       action.sigev_notify = SIGEV_THREAD;
       action.sigev_notify_function = set_flag;
       if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
-	exit(1);  // cannot create a monotonic timer
+        exit(1);  // cannot create a monotonic timer
       ])],
-      vim_cv_timer_create_with_lrt=yes,
-      vim_cv_timer_create_with_lrt=no,
-      AC_MSG_WARN([failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'])
+      vim_cv_timer_create_works=yes,
+      vim_cv_timer_create_works=no,
+      vim_cv_timer_create_works=yes
+      AC_MSG_WARN([cross-compiling: consider setting 'vim_cv_timer_create_works'])
     )])
-  LIBS="$save_LIBS"
-else
-  vim_cv_timer_create_with_lrt=no
-fi
 
-if test "x$vim_cv_timer_create" = "xyes" ; then
-  AC_DEFINE(HAVE_TIMER_CREATE)
-fi
-if test "x$vim_cv_timer_create_with_lrt" = "xyes" ; then
-  AC_DEFINE(HAVE_TIMER_CREATE)
-  LIBS="$LIBS -lrt"
+  if test "x$vim_cv_timer_create_works" = "xyes" ; then
+    AC_DEFINE(HAVE_TIMER_CREATE)
+    LIBS="$LIBS -lrt"
+  else
+    LIBS="$save_LIBS"
+  fi
 fi
 
 AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_slash],
@@ -3953,7 +3961,8 @@ int main() {struct stat st;  exit(stat("configure/", &st) != 0); }
     ],[
       vim_cv_stat_ignores_slash=no
     ],[
-      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_stat_ignores_slash')
+      vim_cv_stat_ignores_slash=yes
+      AC_MSG_WARN(cross-compiling: consider setting 'vim_cv_stat_ignores_slash')
     ])
   ])
 
@@ -4320,7 +4329,7 @@ int main() {
 }])],
 AC_MSG_RESULT(ok),
 AC_MSG_ERROR([WRONG!  uint32_t not defined correctly.]),
-AC_MSG_WARN([cannot check uint32_t when cross-compiling.]))
+AC_MSG_WARN([assuming uint32_t is correct when cross-compiling]))
 
 dnl Check for memmove() before bcopy(), makes memmove() be used when both are
 dnl present, fixes problem with incompatibility between Solaris 2.4 and 2.5.
@@ -4355,7 +4364,8 @@ AC_CACHE_CHECK([whether memmove handles overlaps],[vim_cv_memmove_handles_overla
       ],[
 	vim_cv_memmove_handles_overlap=no
       ],[
-	AC_MSG_ERROR(cross-compiling: please set 'vim_cv_memmove_handles_overlap')
+	vim_cv_memmove_handles_overlap=yes
+	AC_MSG_WARN(cross-compiling: consider setting 'vim_cv_memmove_handles_overlap')
       ])
   ])
 
@@ -4370,7 +4380,8 @@ else
       ],[
 	vim_cv_bcopy_handles_overlap=no
       ],[
-	AC_MSG_ERROR(cross-compiling: please set 'vim_cv_bcopy_handles_overlap')
+	vim_cv_bcopy_handles_overlap=yes
+	AC_MSG_WARN(cross-compiling: consider setting 'vim_cv_bcopy_handles_overlap')
       ])
     ])
 
@@ -4385,7 +4396,8 @@ else
 	  ],[
 	    vim_cv_memcpy_handles_overlap=no
 	  ],[
-	    AC_MSG_ERROR(cross-compiling: please set 'vim_cv_memcpy_handles_overlap')
+	    vim_cv_memcpy_handles_overlap=yes
+	    AC_MSG_WARN(cross-compiling: consider setting 'vim_cv_memcpy_handles_overlap')
 	  ])
       ])
 
