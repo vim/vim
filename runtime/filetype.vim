@@ -1325,6 +1325,9 @@ au BufRead,BufNewFile *.ldg,*.ledger,*.journal			setf ledger
 " lf configuration (lfrc)
 au BufNewFile,BufRead lfrc			setf lf
 
+" Leo
+au BufNewFile,BufRead *.leo			setf leo
+
 " Less
 au BufNewFile,BufRead *.less			setf less
 
