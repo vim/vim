@@ -13,17 +13,8 @@ DESCRIPTION
        Vimtutor starts the Vim tutor.
 
        The Vimtutor is useful for people that want to learn  their  first  Vim
-       commands.
-
-       The  optional argument -g starts vimtutor with gvim rather than vim, if
-       the GUI version of Vim is available, or falls back to vim  if  gvim  is
-       not found.
-
-       The  optional [language] argument is the two-letter name of a language,
-       like "it" or "es".  If the [language] argument is missing, the language
-       of the current locale will be used.  If a tutor  in  this  language  is
-       available,  it  will  be  used.   Otherwise the English version will be
-       used.
+       commands.  The optional [language] argument is the two-letter name of a
+       language, like "it" or "es".
 
        Vimtutor only opens temporary copies of the original tutor files, there
        is no danger of overwriting the lessons.
@@ -32,13 +23,12 @@ DESCRIPTION
 
 OPTIONS
        -l, --language=ISO639
-              Set the two or three letter  language  code.  E.g.  'it',  'es',
+              Set  the  two  or  three  letter language code. E.g. 'it', 'es',
               'bar'. Defaults to language of locale if available, else to Eng‐
               lish.
 
        -c, --chapter=NUMBER
-              Set  the  one  or  two digit chapter number. Defaults to chapter
-              one.
+              Set the chapter number. Defaults to chapter one.
 
        -g, --gui
               Start vimtutor in the GUI version of vim if available, otherwise
@@ -66,22 +56,17 @@ FILES
        /usr/local/share/vim/vim??/tutor/tutor[.language]
                       The Vimtutor chapter one text file(s).
 
-       /usr/local/share/vim/vim??/tutor/tutor02[.language]
+       /usr/local/share/vim/vim??/tutor/tutor2[.language]
                       The Vimtutor chapter two text file(s).
 
        /usr/local/share/vim/vim??/tutor/tutor.vim
-                      The Vim script used to copy  the  Vimtutor  chapter  one
-                      text file.
-
-       /usr/local/share/vim/vim??/tutor/tutor02.vim
-                      The  Vim  script  used  to copy the Vimtutor chapter two
-                      text file.
+                      The Vim script used to copy the Vimtutor text file.
 
 AUTHOR
        The Vi Tutorial was originally written for Vi by Michael C. Pierce  and
        Robert  K.  Ware,  Colorado  School  of  Mines  using ideas supplied by
        Charles Smith, Colorado  State  University.   E-mail:  bware@mines.col‐
-       orado.edu.
+       orado.edu (now invalid).
 
        Modified for Vim by Bram Moolenaar.
 
@@ -90,4 +75,4 @@ AUTHOR
 SEE ALSO
        vim(1)
 
-                               2024 November 03                    VIMTUTOR(1)
+                               2024 November 04                    VIMTUTOR(1)
