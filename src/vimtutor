@@ -2,12 +2,13 @@
 
 # Start Vim on a copy of the tutor file.
 
-# Usage: vimtutor [-g] [xx]
-# Where optional argument -g starts vimtutor in gvim (GUI) instead of vim.
-# and xx is a language code like "es" or "nl".
-# When an argument is given, it tries loading that tutor.
-# When this fails or no argument was given, it tries using 'v:lang'
-# When that also fails, it uses the English version.
+# Type "man vimtutor" (or "vimtutor --help") to learn more about the supported
+# command-line options.
+#
+# Tutors in several human languages are distributed.  Type "vimtutor" to use
+# a tutor in the language of the current locale (:help v:lang), if available;
+# otherwise fall back to using the English tutor.  To request any bundled
+# tutor, specify its ISO639 name as an argument, e.g. "vimtutor nl".
 
 # Vim could be called "vim" or "vi".  Also check for "vimN", for people who
 # have Vim installed with its version number.
@@ -16,13 +17,13 @@ seq="vim vim91 vim90 vim81 vim80 vim8 vim74 vim73 vim72 vim71 vim70 vim7 vim6 vi
 usage()
 {
     echo "==USAGE========================================================================================="
-    echo "${0##*/} [-(-l)anguage ISO639] [-(-c)hapter) NUMBER] [-(-g)ui] | [-(-h)elp] | [--list]"
+    echo "${0##*/} [[-(-l)anguage] ISO639] [-(-c)hapter NUMBER] [-(-g)ui] | [-(-h)elp] | [--list]"
     printf "\twhere:\n"
     printf "\t\tISO639 (default=en) is a 2 or 3 character language code\n"
-    printf "\t\tNUMBER (default=01) is one or two digits representing the chapter number\n"
+    printf "\t\tNUMBER (default=1) is a chapter number (1 or 2)\n"
     printf "\texamples:\n"
     printf "\t\tvimtutor -l es -c 2 -g\n"
-    printf "\t\tvimtutor --language de --chapter 02\n"
+    printf "\t\tvimtutor --language de --chapter 2\n"
     printf "\t\tvimtutor fr\n"
     echo "More information at 'man vimtutor'"
     echo "================================================================================================"
@@ -72,111 +73,123 @@ en English\(default\)
 
 validateLang()
 {
-  case "$xx" in
-    '' | *[!a-z]* )
-      echo "Error: iso639 code must contain only [a-z]"
-      exit 1
-  esac
+    case "$xx" in
+	'' | *[!a-z]* )
+	    echo "Error: iso639 code must contain only [a-z]"
+	    exit 1
+    esac
 
-  case "${#xx}" in
-    [23] )
-      ;;
-    * )
-      echo "Error: iso639 code must be 2 or 3 characters only"
-      exit 1
-  esac
+    case "${#xx}" in
+	[23] )
+	    ;;
+	* )
+	    echo "Error: iso639 code must be 2 or 3 characters only"
+	    exit 1
+    esac
 
-  export xx
+    export xx
 }
 
 validateChapter()
 {
-  case "$cc" in
-    '' | *[!0-9]* )
-      echo "Error: chapter argument must contain digits only"
-      exit 1
-      ;;
-    0 | 00 )
-      echo "Error: chapter must be non-zero"
-      exit 1
-  esac
+    case "$cc" in
+	'' | *[!0-9]* )
+	    echo "Error: chapter argument must contain digits only"
+	    exit 1
+	    ;;
+	[12] )
+	    ;;
+	* )
+	    echo "Error: invalid chapter number: [12]"
+	    exit 1
+    esac
 
-  export CHAPTER="$cc"
+    export CHAPTER="$cc"
 }
 
 while [ "$1" != "" ]; do
-  case "$1" in
-    -g | --gui )                    seq="gvim gvim91 gvim90 gvim81 gvim80 gvim8 gvim74 gvim73 gvim72 gvim71 gvim70 gvim7 gvim6 $seq"
-                                    ;;
-    -l | --language )               shift
-                                    xx="$1"
-                                    validateLang
-                                    ;;
-    -l[a-z][a-z][a-z] | -l[a-z][a-z] )
-                                    export xx="${1#*l}"
-                                    ;;
-    --language[a-z][a-z][a-z] | --language[a-z][a-z] )
-                                    export xx="${1#*e}"
-                                    ;;
-    [a-z][a-z][a-z] | [a-z][a-z] )  export xx="$1"
-                                    ;;
-    -c | --chapter )                shift
-                                    cc="$1"
-                                    validateChapter
-                                    ;;
-    -c[1-9][0-9] | -c[1-9] )        export CHAPTER="${1#*c}"
-                                    ;;
-    --chapter[1-9][0-9] | --chapter[1-9] )
-                                    export CHAPTER="${1#*r}"
-                                    ;;
-    -h | --help )                   usage
-                                    exit
-                                    ;;
-    --list )                        listOptions
-                                    exit
-                                    ;;
-    "" )                            ;;
-    * )                             usage
-                                    exit 1
-  esac
-  shift
+    case "$1" in
+	-g | --gui )
+	    seq="gvim gvim91 gvim90 gvim81 gvim80 gvim8 gvim74 gvim73 gvim72 gvim71 gvim70 gvim7 gvim6 $seq"
+	    ;;
+	-l | --language )
+	    shift
+	    xx="$1"
+	    validateLang
+	    ;;
+	-l[a-z][a-z][a-z] | -l[a-z][a-z] )
+	    export xx="${1#*l}"
+	    ;;
+	--language[a-z][a-z][a-z] | --language[a-z][a-z] )
+	    export xx="${1#*e}"
+	    ;;
+	[a-z][a-z][a-z] | [a-z][a-z] )
+	    export xx="$1"
+	    ;;
+	-c | --chapter )
+	    shift
+	    cc="$1"
+	    validateChapter
+	    ;;
+	-c[12] )
+	    export CHAPTER="${1#*c}"
+	    ;;
+	--chapter[12] )
+	    export CHAPTER="${1#*r}"
+	    ;;
+	-h | --help )
+	    usage
+	    exit
+	    ;;
+	--list )
+	    listOptions
+	    exit
+	    ;;
+	"" )
+	    ;;
+	* )
+	    usage
+	    exit 1
+    esac
+
+    shift
 done
 
 
 # We need a temp file for the copy.  First try using a standard command.
 tmp="${TMPDIR-/tmp}"
-TUTORCOPY=`mktemp $tmp/tutorXXXXXX || tempfile -p tutor || echo none`
+TUTORCOPY=$(mktemp "$tmp/tutorXXXXXX" || tempfile -p tutor || echo none)
 
 # If the standard commands failed then create a directory to put the copy in.
 # That is a secure way to make a temp file.
 if test "$TUTORCOPY" = none; then
-	tmpdir=$tmp/vimtutor$$
-	OLD_UMASK=`umask`
-	umask 077
-	getout=no
-	mkdir $tmpdir || getout=yes
-	umask $OLD_UMASK
-	if test $getout = yes; then
-		echo "Could not create directory for tutor copy, exiting."
-		exit 1
-	fi
-	TUTORCOPY=$tmpdir/tutorcopy
-	touch $TUTORCOPY
-	TODELETE=$tmpdir
+    tmpdir="$tmp/vimtutor$$"
+    OLD_UMASK=$(umask)
+    umask 077
+    getout=no
+    mkdir "$tmpdir" || getout=yes
+    umask "$OLD_UMASK"
+    if test "$getout" = yes; then
+	echo "Could not create directory for tutor copy, exiting."
+	exit 1
+    fi
+    TUTORCOPY="$tmpdir/tutorcopy"
+    touch "$TUTORCOPY"
+    TODELETE="$tmpdir"
 else
-	TODELETE=$TUTORCOPY
+    TODELETE="$TUTORCOPY"
 fi
 
 export TUTORCOPY
 
 # remove the copy of the tutor on exit
-trap "rm -rf $TODELETE" EXIT HUP INT QUIT SEGV PIPE TERM
+trap 'rm -rf "$TODELETE"' EXIT HUP INT QUIT SEGV PIPE TERM
 
 for i in $seq; do
     testvim=$(command -v "$i" 2>/dev/null)
     if test -f "$testvim"; then
-        VIM=$i
-        break
+	VIM="$i"
+	break
     fi
 done
 
@@ -189,7 +202,9 @@ fi
 # Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
 # The script tutor.vim tells Vim which file to copy
 
-$VIM -f -u NONE -c 'so $VIMRUNTIME/tutor/tutor.vim'
+$VIM -f -u NONE -c "so \$VIMRUNTIME/tutor/tutor.vim"
 
 # Start vim without any .vimrc, set 'nocompatible' and 'showcmd'
 $VIM -f -u NONE -c "set nocp showcmd" "$TUTORCOPY"
+
+# vim:sw=4:ts=8:noet:nosta:
