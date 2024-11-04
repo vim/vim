@@ -13642,6 +13642,12 @@ then :
   printf "%s\n" "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "sync" "ac_cv_func_sync"
+if test "x$ac_cv_func_sync" = xyes
+then :
+  printf "%s\n" "#define HAVE_SYNC 1" >>confdefs.h
+
+fi
 
 
 

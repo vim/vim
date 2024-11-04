@@ -3769,7 +3769,7 @@ AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
 	sigprocmask sigvec strcasecmp strcoll strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strptime strtol tgetent towlower towupper iswupper \
 	tzset usleep utime utimes mblen ftruncate unsetenv posix_openpt \
-	clock_gettime)
+	clock_gettime sync)
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_FSEEKO
 
