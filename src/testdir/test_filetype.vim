@@ -408,6 +408,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     ldif: ['file.ldif'],
     lean: ['file.lean'],
     ledger: ['file.ldg', 'file.ledger', 'file.journal'],
+    leo: ['file.leo'],
     less: ['file.less'],
     lex: ['file.lex', 'file.l', 'file.lxx', 'file.l++'],
     lf: ['lfrc'],
