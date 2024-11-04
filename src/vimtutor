@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Start Vim on a copy of the tutor file.
 
@@ -11,8 +11,7 @@
 
 # Vim could be called "vim" or "vi".  Also check for "vimN", for people who
 # have Vim installed with its version number.
-# We anticipate up to a future Vim 8.1 version :-).
-seq="vim vim81 vim80 vim8 vim74 vim73 vim72 vim71 vim70 vim7 vim6 vi"
+seq="vim vim91 vim90 vim81 vim80 vim8 vim74 vim73 vim72 vim71 vim70 vim7 vim6 vi"
 
 usage()
 {
@@ -31,94 +30,104 @@ usage()
 
 listOptions()
 {
-  declare -A language
-  language[bar]=Bavarian
-  language[bg]=Bulgarian
-  language[ca]=Catalan
-  language[cs]=Czech
-  language[da]=Danish
-  language[de]=German
-  language[el]=Greek
-  language[en]=English\(default\)
-  language[eo]=Esperanto
-  language[es]=Spanish
-  language[fr]=French
-  language[hr]=Croatian
-  language[hu]=Hungarian
-  language[it]=Italian
-  language[ja]=Japanese
-  language[ko]=Korean
-  language[lv]=Latvian
-  language[nb]=Bokmål
-  language[nl]=Dutch
-  language[no]=Norwegian
-  language[pl]=Polish
-  language[pt]=Portuguese
-  language[ru]=Russian
-  language[sk]=Slovak
-  language[sr]=Serbian
-  language[sv]=Swedish
-  language[tr]=Turkish
-  language[uk]=English
-  language[vi]=Vietnamese
-  language[zh]=Chinese
+    echo "==OPTIONS======================================================================================="
+    echo "Chapter: 1"
+    printf "\tLang: %-3s => %s\n" \
+bar Bavarian \
+bg Bulgarian \
+ca Catalan \
+cs Czech \
+da Danish \
+de German \
+el Greek \
+en English\(default\) \
+eo Esperanto \
+es Spanish \
+fr French \
+hr Croatian \
+hu Hungarian \
+it Italian \
+ja Japanese \
+ko Korean \
+lv Latvian \
+nb Bokmål \
+nl Dutch \
+no Norwegian \
+pl Polish \
+pt Portuguese \
+ru Russian \
+sk Slovak \
+sr Serbian \
+sv Swedish \
+tr Turkish \
+uk English \
+vi Vietnamese \
+zh Chinese
 
-  echo "==OPTIONS======================================================================================="
-  echo "Chapter: 1"
-  for code in bar bg ca cs da de el en eo es fr hr hu it ja ko lv nb nl no pl pt ru sk sr sv tr uk vi zh
-  do
-    printf "\tLang: %s => %s\n" ${code} ${language[${code}]}
-  done
-  echo "Chapter: 2"
-  for code in en
-  do
-    printf "\tLang: %s => %s\n" ${code} ${language[${code}]}
-  done
-  echo "================================================================================================"
+    echo "Chapter: 2"
+    printf "\tLang: %-3s => %s\n" \
+en English\(default\)
+    echo "================================================================================================"
 }
 
 validateLang()
 {
-  if [[ $xx =~ ^[^a-z]*$ ]]; then echo "Error: iso639 code must contain only [a-z]" && exit 1; fi
-  if [ ${#xx} == 2 ] || [ ${#xx} == 3 ]; then :; else echo "Error: iso639 code must be 2 or 3 characters only" && exit 1; fi
+  case "$xx" in
+    '' | *[!a-z]* )
+      echo "Error: iso639 code must contain only [a-z]"
+      exit 1
+  esac
+
+  case "${#xx}" in
+    [23] )
+      ;;
+    * )
+      echo "Error: iso639 code must be 2 or 3 characters only"
+      exit 1
+  esac
+
   export xx
 }
 
 validateChapter()
 {
-  if [[ $cc =~ ^[0-9]*$ ]]; then :; else echo "Error: chapter argument must contain digits only" && exit 1; fi
-  if [ $cc == "0" ]; then echo "Error: chapter must be non-zero" && exit 1; fi
-  if [ $cc == "00" ]; then echo "Error: chapter must be non-zero" && exit 1; fi
+  case "$cc" in
+    '' | *[!0-9]* )
+      echo "Error: chapter argument must contain digits only"
+      exit 1
+      ;;
+    0 | 00 )
+      echo "Error: chapter must be non-zero"
+      exit 1
+  esac
+
   export CHAPTER="$cc"
 }
 
-shopt -s extglob
 while [ "$1" != "" ]; do
-  case $1 in
+  case "$1" in
     -g | --gui )                    seq="gvim gvim91 gvim90 gvim81 gvim80 gvim8 gvim74 gvim73 gvim72 gvim71 gvim70 gvim7 gvim6 $seq"
                                     ;;
     -l | --language )               shift
-                                    xx=$1
+                                    xx="$1"
                                     validateLang
                                     ;;
-    -l[a-z][a-z]?([a-z]) )          xx=${1#*l}
-                                    validateLang
+    -l[a-z][a-z][a-z] | -l[a-z][a-z] )
+                                    export xx="${1#*l}"
                                     ;;
-    --language[a-z][a-z]?([a-z]) )  xx=${1#*e}
-                                    validateLang
+    --language[a-z][a-z][a-z] | --language[a-z][a-z] )
+                                    export xx="${1#*e}"
                                     ;;
-    [a-z][a-z]?([a-z]) )            xx=$1
-                                    validateLang
+    [a-z][a-z][a-z] | [a-z][a-z] )  export xx="$1"
                                     ;;
     -c | --chapter )                shift
-                                    cc=$1
+                                    cc="$1"
                                     validateChapter
                                     ;;
-    -c[0-9]?([0-9]) )               cc=${1#*c}
-                                    validateChapter
+    -c[1-9][0-9] | -c[1-9] )        export CHAPTER="${1#*c}"
                                     ;;
-    --chapter[0-9]?([0-9]) )        cc=${1#*r}
-                                    validateChapter
+    --chapter[1-9][0-9] | --chapter[1-9] )
+                                    export CHAPTER="${1#*r}"
                                     ;;
     -h | --help )                   usage
                                     exit
@@ -129,8 +138,8 @@ while [ "$1" != "" ]; do
     "" )                            ;;
     * )                             usage
                                     exit 1
-    esac
-    shift
+  esac
+  shift
 done
 
 
@@ -161,10 +170,10 @@ fi
 export TUTORCOPY
 
 # remove the copy of the tutor on exit
-trap "rm -rf $TODELETE" 0 1 2 3 9 11 13 15
+trap "rm -rf $TODELETE" EXIT HUP INT QUIT SEGV PIPE TERM
 
 for i in $seq; do
-    testvim=$(which $i 2>/dev/null)
+    testvim=$(command -v "$i" 2>/dev/null)
     if test -f "$testvim"; then
         VIM=$i
         break
