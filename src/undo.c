@@ -3121,7 +3121,10 @@ ex_undolist(exarg_T *eap UNUSED)
 	    len = vim_snprintf((char *)IObuff, IOSIZE, "%6ld %7d  ",
 							uhp->uh_seq, changes);
 	    add_time(IObuff + len, IOSIZE - len, uhp->uh_time);
-	    len = STRLEN(IObuff);
+
+	    // we have to call STRLEN() here because add_time() does not report
+	    // the number of characters added.
+	    len += STRLEN(IObuff + len);
 	    if (uhp->uh_save_nr > 0)
 	    {
 		int n = (len >= 33) ? 0 : 33 - len;
