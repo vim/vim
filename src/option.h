@@ -513,6 +513,8 @@ EXTERN char_u	*p_cpt;		// 'complete'
 EXTERN int	p_confirm;	// 'confirm'
 #endif
 EXTERN int	p_cp;		// 'compatible'
+EXTERN char_u	*p_cfc;		// 'completefuzzycollect'
+EXTERN unsigned cfc_flags;	// flags from "completefuzzycollect"
 EXTERN char_u	*p_cia;		// 'completeitemalign'
 EXTERN unsigned cia_flags;	// order flags of 'completeitemalign'
 EXTERN char_u	*p_cot;		// 'completeopt'
@@ -532,6 +534,11 @@ EXTERN unsigned	cot_flags;	// flags from 'completeopt'
 #define COT_FUZZY	    0x100   // TRUE: fuzzy match enabled
 #define COT_NOSORT	    0x200   // TRUE: fuzzy match without qsort score
 #define COT_PREINSERT	    0x400   // TRUE: preinsert
+
+#define CFC_KEYWORD         0x001
+#define CFC_FILES           0x002
+#define CFC_WHOLELINE       0x004
+
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char_u	*p_csl;		// 'completeslash'
 #endif

@@ -120,6 +120,7 @@ static char *(p_fdm_values[]) = {"manual", "expr", "marker", "indent", "syntax",
 				NULL};
 static char *(p_fcl_values[]) = {"all", NULL};
 #endif
+static char *(p_cfc_values[]) = {"keyword", "files", "whole_line", NULL};
 static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "popup", "popuphidden", "noinsert", "noselect", "fuzzy", "nosort", "preinsert", NULL};
 #ifdef BACKSLASH_IN_FILENAME
 static char *(p_csl_values[]) = {"slash", "backslash", NULL};
@@ -147,6 +148,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
     (void)opt_strings_flags(p_bkc, p_bkc_values, &bkc_flags, TRUE);
     (void)opt_strings_flags(p_bo, p_bo_values, &bo_flags, TRUE);
+    (void)opt_strings_flags(p_cfc, p_cfc_values, &cfc_flags, TRUE);
     (void)opt_strings_flags(p_cot, p_cot_values, &cot_flags, TRUE);
 #ifdef FEAT_SESSION
     (void)opt_strings_flags(p_ssop, p_ssop_values, &ssop_flags, TRUE);
@@ -1645,6 +1647,17 @@ expand_set_completeopt(optexpand_T *args, int *numMatches, char_u ***matches)
 	    ARRAY_LENGTH(p_cot_values) - 1,
 	    numMatches,
 	    matches);
+}
+
+/*
+ * The 'completefuzzycollect' option is changed.
+ */
+    char *
+did_set_completefuzzycollect(optset_T *args UNUSED)
+{
+    if (opt_strings_flags(p_cfc, p_cfc_values, &cfc_flags, TRUE) != OK)
+	return e_invalid_argument;
+    return NULL;
 }
 
 /*

@@ -24,7 +24,7 @@ void compl_status_clear(void);
 int has_compl_option(int dict_opt);
 int vim_is_ctrl_x_key(int c);
 int ins_compl_accept_char(int c);
-int ins_compl_add_infercase(char_u *str_arg, int len, int icase, char_u *fname, int dir, int cont_s_ipos);
+int ins_compl_add_infercase(char_u *str_arg, int len, int icase, char_u *fname, int dir, int cont_s_ipos, int score);
 int ins_compl_has_shown_match(void);
 int ins_compl_long_shown_match(void);
 unsigned int get_cot_flags(void);
