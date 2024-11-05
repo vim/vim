@@ -53,7 +53,6 @@ static int fuzzy_match_str_compare(const void *s1, const void *s2);
 static void fuzzy_match_str_sort(fuzmatch_str_T *fm, int sz);
 static int fuzzy_match_func_compare(const void *s1, const void *s2);
 static void fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz);
-static int fuzzy_match_str_in_line(char_u **ptr, char_u *pat, int *len, pos_T *current_pos);
 
 #define SEARCH_STAT_DEF_TIMEOUT 40L
 #define SEARCH_STAT_DEF_MAX_COUNT 99
@@ -3867,7 +3866,7 @@ search_line:
 
 		add_r = ins_compl_add_infercase(aux, i, p_ic,
 			curr_fname == curbuf->b_fname ? NULL : curr_fname,
-			dir, cont_s_ipos);
+			dir, cont_s_ipos, 0);
 		if (add_r == OK)
 		    // if dir was BACKWARD then honor it just once
 		    dir = FORWARD;
@@ -5221,20 +5220,31 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
 }
 
 /*
- * This function searches for a fuzzy match of the pattern `pat` within the
- * line pointed to by `*ptr`. It splits the line into words, performs fuzzy
- * matching on each word, and returns the length and position of the first
- * matched word.
+ * This function splits the line pointed to by `*ptr` into words and performs
+ * a fuzzy match for the pattern `pat` on each word. It iterates through the
+ * line, moving `*ptr` to the start of each word during the process.
+ *
+ * If a match is found:
+ * - `*ptr` points to the start of the matched word.
+ * - `*len` is set to the length of the matched word.
+ * - `*score` contains the match score.
+ *
+ * If no match is found, `*ptr` is updated to point beyond the last word
+ * or to the end of the line.
  */
-    static int
-fuzzy_match_str_in_line(char_u **ptr, char_u *pat, int *len, pos_T *current_pos)
+    int
+fuzzy_match_str_in_line(
+    char_u	**ptr,
+    char_u	*pat,
+    int		*len,
+    pos_T	*current_pos,
+    int		*score)
 {
     char_u	*str = *ptr;
     char_u	*strBegin = str;
     char_u	*end = NULL;
     char_u	*start = NULL;
     int		found = FALSE;
-    int		result;
     char	save_end;
 
     if (str == NULL || pat == NULL)
@@ -5253,15 +5263,16 @@ fuzzy_match_str_in_line(char_u **ptr, char_u *pat, int *len, pos_T *current_pos)
 	*end = NUL;
 
 	// Perform fuzzy match
-	result = fuzzy_match_str(start, pat);
+	*score = fuzzy_match_str(start, pat);
 	*end = save_end;
 
-	if (result > 0)
+	if (*score > 0)
 	{
 	    *len = (int)(end - start);
-	    current_pos->col += (int)(end - strBegin);
 	    found = TRUE;
 	    *ptr = start;
+	    if (current_pos)
+		current_pos->col += (int)(end - strBegin);
 	    break;
 	}
 
@@ -5292,13 +5303,14 @@ search_for_fuzzy_match(
     pos_T	*start_pos,
     int		*len,
     char_u	**ptr,
-    int		whole_line)
+    int		*score)
 {
     pos_T	current_pos = *pos;
     pos_T	circly_end;
     int		found_new_match = FALSE;
     int		looped_around = FALSE;
 
+    int whole_line = ctrl_x_mode_whole_line();
     if (whole_line)
 	current_pos.lnum += dir;
 
@@ -5324,13 +5336,15 @@ search_for_fuzzy_match(
 	    *ptr = ml_get_buf(buf, current_pos.lnum, FALSE);
 	    // If ptr is end of line is reached, move to next line
 	    // or previous line based on direction
-	    if (**ptr != NUL)
+	    if (*ptr != NULL && **ptr != NUL)
 	    {
 		if (!whole_line)
 		{
 		    *ptr += current_pos.col;
-		    // Try to find a fuzzy match in the current line starting from current position
-		    found_new_match = fuzzy_match_str_in_line(ptr, pattern, len, &current_pos);
+		    // Try to find a fuzzy match in the current line starting
+		    // from current position
+		    found_new_match = fuzzy_match_str_in_line(ptr, pattern,
+						    len, &current_pos, score);
 		    if (found_new_match)
 		    {
 			if (ctrl_x_mode_normal())
