@@ -37,6 +37,48 @@ func Test_pyxeval()
   call assert_match(s:py3pattern, split(pyxeval('sys.version'))[0])
 endfunc
 
+" Test for pyxeval with locals
+func Test_python_pyeval_locals()
+  let str = 'a string'
+  let num = 0xbadb33f
+  let d = {'a': 1, 'b': 2, 'c': str}
+  let l = [ str, num, d ]
+
+  let locals = #{
+        \ s: str,
+        \ n: num,
+        \ d: d,
+        \ l: l,
+        \ }
+
+  " check basics
+  call assert_equal('a string', pyxeval('s', locals))
+  call assert_equal(0xbadb33f, pyxeval('n', locals))
+  call assert_equal(d, pyxeval('d', locals))
+  call assert_equal(l, pyxeval('l', locals))
+
+  py3 << trim EOF
+  def __UpdateDict(d, upd):
+    d.update(upd)
+    return d
+
+  def __ExtendList(l, *args):
+    l.extend(*args)
+    return l
+  EOF
+
+  " check assign to dict member works like bindeval
+  call assert_equal(3, pyxeval('__UpdateDict( d, {"c": 3} )["c"]', locals))
+  call assert_equal(3, d['c'])
+
+  " check append lo list
+  call assert_equal(4, pyxeval('len(__ExtendList(l, ["new item"]))', locals))
+  call assert_equal("new item", l[-1])
+
+  " check calling a function
+  let StrLen = function('strlen')
+  call assert_equal(3, pyxeval('f("abc")', {'f': StrLen}))
+endfunc
 
 func Test_pyxfile()
   " No special comments nor shebangs

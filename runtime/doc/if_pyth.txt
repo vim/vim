@@ -201,6 +201,10 @@ vim.eval(str)						*python-eval*
 	[{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name': ~
 	'eval_expr', 'kind': 'f', 'filename': './src/eval.c'}] ~
 
+	NOTE: In vim9script, local variables in def functions are not visible
+	to to python evaluations. To pass local variables to python evaluations,
+	use the {locals} dict when calling |py3eval()| and friends.
+
 vim.bindeval(str)					*python-bindeval*
 	Like |python-eval|, but returns special objects described in
 	|python-bindeval-objects|. These python objects let you modify (|List|
@@ -740,6 +744,10 @@ vim.Function object				*python-Function*
 To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()|
 functions to evaluate Python expressions and pass their values to Vim script.
 |pyxeval()| is also available.
+
+You can inject local variables into the evaluation using the optional {locals}
+dict. This can be particularly useful in vim9script where vim.eval
+|python-eval| will not find locals in a def func.
 
 The Python value "None" is converted to v:none.
 

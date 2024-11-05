@@ -467,9 +467,9 @@ prop_type_get({name} [, {props}])
 prop_type_list([{props}])	List	get list of property types
 pum_getpos()			Dict	position and size of pum if visible
 pumvisible()			Number	whether popup menu is visible
-py3eval({expr})			any	evaluate |python3| expression
-pyeval({expr})			any	evaluate |Python| expression
-pyxeval({expr})			any	evaluate |python_x| expression
+py3eval({expr}[, {locals}])	any	evaluate |python3| expression
+pyeval({expr}[, {locals}])	any	evaluate |Python| expression
+pyxeval({expr}[, {locals}])	any	evaluate |python_x| expression
 rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
@@ -8127,9 +8127,14 @@ pumvisible()						*pumvisible()*
 		Return type: |Number|
 
 
-py3eval({expr})						*py3eval()*
+py3eval({expr}[, {locals}])				*py3eval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
+		If a {locals} |Dictionary| is given, it defines set of local
+		variables available in the expression. The keys are variable
+		names and the values are the variable values. |Dictionary| and
+		|List| values are referenced, and may be updated by the
+		expression (as if |python-bindeval| was used).
 		Numbers and strings are returned as they are (strings are
 		copied though, Unicode strings are additionally converted to
 		'encoding').
@@ -8141,15 +8146,17 @@ py3eval({expr})						*py3eval()*
 
 		Can also be used as a |method|: >
 			GetExpr()->py3eval()
+			'b",".join(l)'->py3eval({'l': ['a', 'b', 'c']})
 <
 		Return type: any, depending on {expr}
 
 		{only available when compiled with the |+python3| feature}
 
 							*E858* *E859*
-pyeval({expr})						*pyeval()*
+pyeval({expr}[, {locals}])				*pyeval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
+		For {locals} see |py3eval()|.
 		Numbers and strings are returned as they are (strings are
 		copied though).
 		Lists are represented as Vim |List| type.
@@ -8165,9 +8172,10 @@ pyeval({expr})						*pyeval()*
 
 		{only available when compiled with the |+python| feature}
 
-pyxeval({expr})						*pyxeval()*
+pyxeval({expr}[, {locals}])				*pyxeval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
+		For {locals} see |py3eval()|.
 		Uses Python 2 or 3, see |python_x| and 'pyxversion'.
 		See also: |pyeval()|, |py3eval()|
 

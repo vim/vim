@@ -47,6 +47,7 @@ TEST_VIM9 = \
 	test_vim9_fails \
 	test_vim9_func \
 	test_vim9_import \
+	test_vim9_python3 \
 	test_vim9_script \
 	test_vim9_typealias
 
