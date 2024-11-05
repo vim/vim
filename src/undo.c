@@ -3099,7 +3099,6 @@ ex_undolist(exarg_T *eap UNUSED)
     int		mark;
     int		nomark;
     int		changes = 1;
-    int		i;
     int		len;
 
     /*
@@ -3122,15 +3121,12 @@ ex_undolist(exarg_T *eap UNUSED)
 	    len = vim_snprintf((char *)IObuff, IOSIZE, "%6ld %7d  ",
 							uhp->uh_seq, changes);
 	    add_time(IObuff + len, IOSIZE - len, uhp->uh_time);
+	    len = STRLEN(IObuff);
 	    if (uhp->uh_save_nr > 0)
 	    {
-		while (len < 33)
-		{
-		    STRNCPY(IObuff + len, " ", IOSIZE - len);
-		    ++len;
-		}
-		len = vim_snprintf((char *)IObuff + len, IOSIZE - len,
-						   "  %3ld", uhp->uh_save_nr);
+		int n = (len >= 33) ? 0 : 33 - len;
+
+		len += vim_snprintf((char *)IObuff + len, IOSIZE - len, "%*.*s  %3ld", n, n, " ", uhp->uh_save_nr);
 	    }
 	    ((char_u **)(ga.ga_data))[ga.ga_len++] = vim_strnsave(IObuff, len);
 	}
@@ -3179,6 +3175,8 @@ ex_undolist(exarg_T *eap UNUSED)
 	msg(_("Nothing to undo"));
     else
     {
+	int		i;
+
 	sort_strings((char_u **)ga.ga_data, ga.ga_len);
 
 	msg_start();

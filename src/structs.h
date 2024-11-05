@@ -397,7 +397,8 @@ typedef struct {
     char_u	*ul_line;	// text of the line
     long	ul_len;		// length of the line including NUL, plus text
 				// properties
-    colnr_T	ul_textlen;	// length of the line excluding NUL
+    colnr_T	ul_textlen;	// length of the line excluding NUL and any text
+				// properties
 } undoline_T;
 
 typedef struct u_entry u_entry_T;
