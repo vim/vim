@@ -1335,6 +1335,15 @@ g:javac_makeprg_params variable.  For example: >
 
 	let g:javac_makeprg_params = "-Xlint:all -encoding utf-8"
 <
+SPOTBUGS						*compiler-spotbugs*
+
+Commonly used compiler options can be added to 'makeprg' by setting the
+b/g:makeprg_params variable.  For example: >
+
+	let b:spotbugs_params = "-longBugCodes -effort:max -low"
+
+The gloab default is "-workHard -experimental".
+
 GNU MAKE						*compiler-make*
 
 Since the default make program is "make", the compiler plugin for make,
