@@ -10,18 +10,62 @@
 "
 " Based on haskell indentation by motemen <motemen@gmail.com>
 "
+" Indentation configuration variables:
 "
+" g:idris_indent_if (default: 3)
+"   Controls indentation after 'if' statements
+"   Example:
+"     if condition
+"     >>>then expr
+"     >>>else expr
 "
-" Modify g:idris_indent_if and g:idris_indent_case to
-" change indentation for `if'(default 3) and `case'(default 5).
-" Example (in .vimrc):
-" > let g:idris_indent_if = 2
+" g:idris_indent_case (default: 5)
+"   Controls indentation of case expressions
+"   Example:
+"     case x of
+"     >>>>>Left y => ...
+"     >>>>>Right z => ...
+"
+" g:idris_indent_let (default: 4)
+"   Controls indentation after 'let' bindings
+"   Example:
+"     let x = expr in
+"     >>>>body
+"
+" g:idris_indent_rewrite (default: 8)
+"   Controls indentation after 'rewrite' expressions
+"   Example:
+"     rewrite proof in
+"     >>>>>>>>expr
+"
+" g:idris_indent_where (default: 6)
+"   Controls indentation of 'where' blocks
+"   Example:
+"     function args
+"     >>>>>>where helper = expr
+"
+" g:idris_indent_do (default: 3)
+"   Controls indentation in 'do' blocks
+"   Example:
+"     do x <- action
+"     >>>y <- action
+"
+" Example configuration in .vimrc:
+" let g:idris_indent_if = 2
+
+setlocal indentexpr=GetIdrisIndent()
+setlocal indentkeys=!^F,o,O,}
+
+if exists("*GetIdrisIndent")
+  finish
+endif
 
 if exists('b:did_indent')
   finish
 endif
 
 let b:did_indent = 1
+let b:undo_indent = "setlocal indentexpr< indentkeys<"
 
 if !exists('g:idris_indent_if')
   " if bool
@@ -60,9 +104,6 @@ if !exists('g:idris_indent_do')
   " >>>y <- b
   let g:idris_indent_do = 3
 endif
-
-setlocal indentexpr=GetIdrisIndent()
-setlocal indentkeys=!^F,o,O,}
 
 function! GetIdrisIndent()
   let prevline = getline(v:lnum - 1)

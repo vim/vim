@@ -14,7 +14,34 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn keyword ipkgKey package authors maintainers license brief readme homepage sourceloc bugtracker options opts sourcedir builddir outputdir prebuild postbuild preinstall postinstall preclean postclean version langversion modules main executable depends
+syn keyword ipkgKey
+    \ package
+    \ authors
+    \ maintainers
+    \ license
+    \ brief
+    \ readme
+    \ homepage
+    \ sourceloc
+    \ bugtracker
+    \ options
+    \ opts
+    \ sourcedir
+    \ builddir
+    \ outputdir
+    \ prebuild
+    \ postbuild
+    \ preinstall
+    \ postinstall
+    \ preclean
+    \ postclean
+    \ version
+    \ langversion
+    \ modules
+    \ main
+    \ executable
+    \ depends
+
 syn region ipkgString start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=@Spell
 syn match ipkgVersion "[0-9]*\([.][0-9]*\)*"
 syn match ipkgName "[a-zA-Z][a-zA-z0-9_']*\([.][a-zA-Z][a-zA-z0-9_']*\)*" contained
