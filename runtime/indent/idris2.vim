@@ -53,16 +53,12 @@
 " Example configuration in .vimrc:
 " let g:idris_indent_if = 2
 
-setlocal indentexpr=GetIdrisIndent()
-setlocal indentkeys=!^F,o,O,}
-
-if exists("*GetIdrisIndent")
-  finish
-endif
-
 if exists('b:did_indent')
   finish
 endif
+
+setlocal indentexpr=GetIdrisIndent()
+setlocal indentkeys=!^F,o,O,}
 
 let b:did_indent = 1
 let b:undo_indent = "setlocal indentexpr< indentkeys<"
@@ -103,6 +99,10 @@ if !exists('g:idris_indent_do')
   " do x <- a
   " >>>y <- b
   let g:idris_indent_do = 3
+endif
+
+if exists("*GetIdrisIndent")
+  finish
 endif
 
 function! GetIdrisIndent()
