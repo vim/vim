@@ -13,6 +13,7 @@ endif
 
 setlocal shiftwidth=2
 setlocal tabstop=2
+
 " Set g:idris2#allow_tabchar = 1 to use tabs instead of spaces
 if exists('g:idris2#allow_tabchar') && g:idris2#allow_tabchar != 0
   setlocal noexpandtab

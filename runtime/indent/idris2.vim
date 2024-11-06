@@ -63,6 +63,10 @@ setlocal indentkeys=!^F,o,O,}
 let b:did_indent = 1
 let b:undo_indent = "setlocal indentexpr< indentkeys<"
 
+" we want to use line continuations (\) BEGINNING
+let s:cpo_save = &cpo
+set cpo&vim
+
 " Define defaults for indent configuration
 let s:indent_defaults = {
   \ 'idris2_indent_if': 3,
@@ -72,6 +76,10 @@ let s:indent_defaults = {
   \ 'idris2_indent_where': 6,
   \ 'idris2_indent_do': 3
   \ }
+
+" we want to use line continuations (\) END
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " Set up indent settings with user overrides
 for [key, default] in items(s:indent_defaults)

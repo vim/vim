@@ -11,8 +11,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn match idrisTypeDecl "[a-zA-Z][a-zA-z0-9_']*\s\+:\s\+"
-  \ contains=idrisIdentifier,idrisOperators
+syn match idrisTypeDecl "[a-zA-Z][a-zA-z0-9_']*\s\+:\s\+" contains=idrisIdentifier,idrisOperators
 syn region idrisParens matchgroup=idrisDelimiter start="(" end=")" contains=TOP,idrisTypeDecl
 syn region idrisBrackets matchgroup=idrisDelimiter start="\[" end="]" contains=TOP,idrisTypeDecl
 syn region idrisBlock matchgroup=idrisDelimiter start="{" end="}" contains=TOP,idrisTypeDecl

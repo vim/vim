@@ -14,6 +14,10 @@ if exists("b:current_syntax")
   finish
 endif
 
+" we want to use line continuations (\) BEGINNING
+let s:cpo_save = &cpo
+set cpo&vim
+
 syn keyword ipkgKey
     \ package
     \ authors
@@ -41,6 +45,10 @@ syn keyword ipkgKey
     \ main
     \ executable
     \ depends
+
+" we want to use line continuations (\) END
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 syn region ipkgString start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=@Spell
 syn match ipkgVersion "[0-9]*\([.][0-9]*\)*"
