@@ -1009,7 +1009,7 @@ fail:
  * External interface
  */
     static void
-DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
+DoPyCommand(const char *cmd, dict_T* locals, rangeinitializer init_range, runner run, void *arg)
 {
 #ifndef PY_CAN_RECURSE
     static int		recursive = 0;
@@ -1058,7 +1058,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     Python_RestoreThread();	    // enter python
 #endif
 
-    run((char *) cmd, arg
+    run((char *) cmd, locals, arg
 #ifdef PY_CAN_RECURSE
 	    , &pygilstate
 #endif
@@ -1103,6 +1103,7 @@ ex_python(exarg_T *eap)
 	    p_pyx = 2;
 
 	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
+		NULL,
 		init_range_cmd,
 		(runner) run_cmd,
 		(void *) eap);
@@ -1154,6 +1155,7 @@ ex_pyfile(exarg_T *eap)
 
     // Execute the file
     DoPyCommand(buffer,
+	    NULL,
 	    init_range_cmd,
 	    (runner) run_cmd,
 	    (void *) eap);
@@ -1166,6 +1168,7 @@ ex_pydo(exarg_T *eap)
 	p_pyx = 2;
 
     DoPyCommand((char *)eap->arg,
+	    NULL,
 	    init_range_cmd,
 	    (runner)run_do,
 	    (void *)eap);
@@ -1521,9 +1524,10 @@ FunctionGetattr(PyObject *self, char *name)
 }
 
     void
-do_pyeval(char_u *str, typval_T *rettv)
+do_pyeval(char_u *str, dict_T *locals, typval_T *rettv)
 {
     DoPyCommand((char *) str,
+	    locals,
 	    init_range_eval,
 	    (runner) run_eval,
 	    (void *) rettv);
