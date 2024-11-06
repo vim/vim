@@ -3,9 +3,9 @@
 " Maintainer:  Idris Hackers (https://github.com/edwinb/idris2-vim)
 " Last Change: 2020 May 19
 " Version:     0.1
-" Author: ShinKage
-" License:             Vim (see :h license)
-" Repository:          https://github.com/ShinKage/idris2-nvim
+" Author:      ShinKage
+" License:     Vim (see :h license)
+" Repository:  https://github.com/ShinKage/idris2-nvim
 "
 " Syntax highlight for Idris 2 Package Descriptors (idris-lang.org)
 "

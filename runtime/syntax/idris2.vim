@@ -3,8 +3,8 @@
 " Maintainer:		Serhii Khoma <srghma@gmail.com>
 " Last Change:		2024 Nov 05
 " Original Author:	raichoo (raichoo@googlemail.com)
-" License:             Vim (see :h license)
-" Repository:          https://github.com/ShinKage/idris2-nvim
+" License:		Vim (see :h license)
+" Repository:		https://github.com/ShinKage/idris2-nvim
 "
 
 if exists("b:current_syntax")

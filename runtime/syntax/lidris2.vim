@@ -3,8 +3,8 @@
 " Maintainer:  Idris Hackers (https://github.com/edwinb/idris2-vim)
 " Last Change: 2020 May 19
 " Version:     0.1
-" License:             Vim (see :h license)
-" Repository:          https://github.com/ShinKage/idris2-nvim
+" License:     Vim (see :h license)
+" Repository:  https://github.com/ShinKage/idris2-nvim
 "
 " This is just a minimal adaption of the Literate Haskell syntax file.
 
