@@ -30,9 +30,6 @@ setlocal iskeyword+=?
 
 setlocal wildignore+=*.ibc
 
-let b:undo_ftplugin = "
-      \ setlocal shiftwidth< tabstop< expandtab<
-      \ comments< commentstring< iskeyword< wildignore<
-      \"
+let b:undo_ftplugin = "setlocal shiftwidth< tabstop< expandtab< comments< commentstring< iskeyword< wildignore<"
 
 let b:did_ftplugin = 1
