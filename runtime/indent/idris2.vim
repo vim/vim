@@ -12,46 +12,46 @@
 "
 " Indentation configuration variables:
 "
-" g:idris_indent_if (default: 3)
+" g:idris2_indent_if (default: 3)
 "   Controls indentation after 'if' statements
 "   Example:
 "     if condition
 "     >>>then expr
 "     >>>else expr
 "
-" g:idris_indent_case (default: 5)
+" g:idris2_indent_case (default: 5)
 "   Controls indentation of case expressions
 "   Example:
 "     case x of
 "     >>>>>Left y => ...
 "     >>>>>Right z => ...
 "
-" g:idris_indent_let (default: 4)
+" g:idris2_indent_let (default: 4)
 "   Controls indentation after 'let' bindings
 "   Example:
 "     let x = expr in
 "     >>>>body
 "
-" g:idris_indent_rewrite (default: 8)
+" g:idris2_indent_rewrite (default: 8)
 "   Controls indentation after 'rewrite' expressions
 "   Example:
 "     rewrite proof in
 "     >>>>>>>>expr
 "
-" g:idris_indent_where (default: 6)
+" g:idris2_indent_where (default: 6)
 "   Controls indentation of 'where' blocks
 "   Example:
 "     function args
 "     >>>>>>where helper = expr
 "
-" g:idris_indent_do (default: 3)
+" g:idris2_indent_do (default: 3)
 "   Controls indentation in 'do' blocks
 "   Example:
 "     do x <- action
 "     >>>y <- action
 "
 " Example configuration in .vimrc:
-" let g:idris_indent_if = 2
+" let g:idris2_indent_if = 2
 
 if exists('b:did_indent')
   finish
@@ -63,43 +63,23 @@ setlocal indentkeys=!^F,o,O,}
 let b:did_indent = 1
 let b:undo_indent = "setlocal indentexpr< indentkeys<"
 
-if !exists('g:idris_indent_if')
-  " if bool
-  " >>>then ...
-  " >>>else ...
-  let g:idris_indent_if = 3
-endif
+" Define defaults for indent configuration
+let s:indent_defaults = {
+  \ 'idris2_indent_if': 3,
+  \ 'idris2_indent_case': 5,
+  \ 'idris2_indent_let': 4,
+  \ 'idris2_indent_rewrite': 8,
+  \ 'idris2_indent_where': 6,
+  \ 'idris2_indent_do': 3
+  \ }
 
-if !exists('g:idris_indent_case')
-  " case xs of
-  " >>>>>[]      => ...
-  " >>>>>(y::ys) => ...
-  let g:idris_indent_case = 5
-endif
-
-if !exists('g:idris_indent_let')
-  " let x : Nat = O in
-  " >>>>x
-  let g:idris_indent_let = 4
-endif
-
-if !exists('g:idris_indent_rewrite')
-  " rewrite prf in expr
-  " >>>>>>>>x
-  let g:idris_indent_rewrite = 8
-endif
-
-if !exists('g:idris_indent_where')
-  " where f : Nat -> Nat
-  " >>>>>>f x = x
-  let g:idris_indent_where = 6
-endif
-
-if !exists('g:idris_indent_do')
-  " do x <- a
-  " >>>y <- b
-  let g:idris_indent_do = 3
-endif
+" Set up indent settings with user overrides
+for [key, default] in items(s:indent_defaults)
+  let varname = 'g:' . key
+  if !exists(varname)
+    execute 'let' varname '=' default
+  endif
+endfor
 
 if exists("*GetIdrisIndent")
   finish
@@ -128,11 +108,11 @@ function! GetIdrisIndent()
   endif
 
   if prevline =~ '\<let\>\s\+.\+\<in\>\s*$'
-    return match(prevline, '\<let\>') + g:idris_indent_let
+    return match(prevline, '\<let\>') + g:idris2_indent_let
   endif
 
   if prevline =~ '\<rewrite\>\s\+.\+\<in\>\s*$'
-    return match(prevline, '\<rewrite\>') + g:idris_indent_rewrite
+    return match(prevline, '\<rewrite\>') + g:idris2_indent_rewrite
   endif
 
   if prevline !~ '\<else\>'
@@ -143,7 +123,7 @@ function! GetIdrisIndent()
 
     let s = match(prevline, '\<if\>')
     if s > 0
-      return s + g:idris_indent_if
+      return s + g:idris2_indent_if
     endif
   endif
 
@@ -152,11 +132,11 @@ function! GetIdrisIndent()
   endif
 
   if prevline =~ '\<where\>\s\+\S\+.*$'
-    return match(prevline, '\<where\>') + g:idris_indent_where
+    return match(prevline, '\<where\>') + g:idris2_indent_where
   endif
 
   if prevline =~ '\<do\>\s\+\S\+.*$'
-    return match(prevline, '\<do\>') + g:idris_indent_do
+    return match(prevline, '\<do\>') + g:idris2_indent_do
   endif
 
   if prevline =~ '^\s*\<\(co\)\?data\>\s\+[^=]\+\s\+=\s\+\S\+.*$'
@@ -168,7 +148,7 @@ function! GetIdrisIndent()
   endif
 
   if prevline =~ '\<case\>\s\+.\+\<of\>\s*$'
-    return match(prevline, '\<case\>') + g:idris_indent_case
+    return match(prevline, '\<case\>') + g:idris2_indent_case
   endif
 
   if prevline =~ '^\s*\(\<namespace\>\|\<\(co\)\?data\>\)\s\+\S\+\s*$'
