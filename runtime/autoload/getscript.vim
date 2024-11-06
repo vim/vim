@@ -57,6 +57,9 @@ endif
 if !exists("g:GetLatestVimScripts_wget")
  if executable("wget")
   let g:GetLatestVimScripts_wget= "wget"
+ elseif executable("curl.exe")
+  " enforce extension: windows powershell desktop version has a curl alias that hides curl.exe
+  let g:GetLatestVimScripts_wget= "curl.exe"
  elseif executable("curl")
   let g:GetLatestVimScripts_wget= "curl"
  else
@@ -69,7 +72,7 @@ endif
 if !exists("g:GetLatestVimScripts_options")
  if g:GetLatestVimScripts_wget == "wget"
   let g:GetLatestVimScripts_options= "-q -O"
- elseif g:GetLatestVimScripts_wget == "curl"
+ elseif g:GetLatestVimScripts_wget =~ "curl"
   let g:GetLatestVimScripts_options= "-s -o"
  else
   let g:GetLatestVimScripts_options= ""
