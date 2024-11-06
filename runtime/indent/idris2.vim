@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:            Idris2
+" Language:            Idris 2
 " Maintainer:          Serhii Khoma <srghma@gmail.com>
 " Author:              raichoo <raichoo@googlemail.com>
 " Last Change:         2024 Nov 05

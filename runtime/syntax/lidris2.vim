@@ -14,12 +14,12 @@ if exists("b:current_syntax")
 endif
 
 " Read Idris highlighting.
-syntax include @idrisTop syntax/idris2.vim
+syntax include @idris2Top syntax/idris2.vim
 
 " Recognize blocks of Bird tracks, highlight as Idris.
-syntax region lidrisBirdTrackBlock start="^>" end="\%(^[^>]\)\@=" contains=@idrisTop,lidrisBirdTrack
-syntax match  lidrisBirdTrack "^>" contained
+syntax region lidris2BirdTrackBlock start="^>" end="\%(^[^>]\)\@=" contains=@idris2Top,lidris2BirdTrack
+syntax match  lidris2BirdTrack "^>" contained
 
-hi def link   lidrisBirdTrack Comment
+hi def link   lidris2BirdTrack Comment
 
 let b:current_syntax = "lidris2"

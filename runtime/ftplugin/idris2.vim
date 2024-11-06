@@ -1,5 +1,5 @@
 " Vim ftplugin file
-" Language:	   Idris2
+" Language:	   Idris 2
 " Last Change: 2024 Nov 05
 " Maintainer:  Serhii Khoma <srghma@gmail.com>
 " License:     Vim (see :h license)
