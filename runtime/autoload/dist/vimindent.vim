@@ -2,10 +2,11 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2023 Jun 29
+# Last Change:  2024 Nov 08
 #
-# Includes Changes from Vim:
+# Includes changes from The Vim Project:
 #  - 2024 Feb 09: Fix indent after literal Dict (A. Radev via #13966)
+#  - 2024 Nov 08: Fix indent after :silent! function (D. Kearns via #16009)
 
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
@@ -295,7 +296,7 @@ patterns = []
     endfor
 }
 
-const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]\s\+\)\=\%({patterns->join('\|')}\)\>\%(\s\|$\|!\)\@='
+const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]!\=\s\+\)\=\%({patterns->join('\|')}\)\>\%(\s\|$\|!\)\@='
 
 # STARTS_CURLY_BLOCK {{{3
 
