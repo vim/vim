@@ -4353,7 +4353,8 @@ mch_get_shellsize(void)
  * If faile get cell size, fallback 5x10 pixel.
  */
     void
-calc_cell_size(struct cellsize *cs_out) {
+calc_cell_size(struct cellsize *cs_out)
+{
 #if defined(FEAT_GUI)
     if (!gui.in_use)
     {
@@ -4368,7 +4369,8 @@ calc_cell_size(struct cellsize *cs_out) {
 
         char actual_tty[256];
         ssize_t len = readlink(tty_path, actual_tty, sizeof(actual_tty) - 1);
-        if (len == -1) {
+        if (len == -1)
+        {
             cs_out->cs_xpixel = 5;
             cs_out->cs_ypixel = 10;
             return;
@@ -4377,7 +4379,8 @@ calc_cell_size(struct cellsize *cs_out) {
 
         // open parent process's tty.
         int tty_fd = open(tty_path, O_RDWR);
-        if (tty_fd == -1) {
+        if (tty_fd == -1)
+        {
             cs_out->cs_xpixel = 5;
             cs_out->cs_ypixel = 10;
             return;
@@ -4385,7 +4388,8 @@ calc_cell_size(struct cellsize *cs_out) {
 
               // get parent tty size.
         struct winsize ws;
-        if (ioctl(tty_fd, TIOCGWINSZ, &ws) == -1) {
+        if (ioctl(tty_fd, TIOCGWINSZ, &ws) == -1)
+        {
             cs_out->cs_xpixel = 5;
             cs_out->cs_ypixel = 10;
             close(tty_fd);
