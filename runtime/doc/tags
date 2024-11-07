@@ -6564,6 +6564,7 @@ compiler-pandoc	quickfix.txt	/*compiler-pandoc*
 compiler-perl	quickfix.txt	/*compiler-perl*
 compiler-pyunit	quickfix.txt	/*compiler-pyunit*
 compiler-select	quickfix.txt	/*compiler-select*
+compiler-spotbugs	quickfix.txt	/*compiler-spotbugs*
 compiler-tex	quickfix.txt	/*compiler-tex*
 compiler-typst	quickfix.txt	/*compiler-typst*
 compiler-vaxada	ft_ada.txt	/*compiler-vaxada*
