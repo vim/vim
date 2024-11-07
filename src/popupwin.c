@@ -764,7 +764,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_DRAGALL;
     }
 
-    nr = dict_get_bool(dict, (char_u *)"focusable", -1);
+    nr = dict_get_bool(dict, "focusable", -1);
     if (nr != -1)
     {
 	if (nr)
