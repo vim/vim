@@ -1,7 +1,8 @@
 " Vim ftplugin file
 " Language:    Ipkg
+" Maintainer:  Idris Hackers (https://github.com/edwinb/idris2-vim), Serhii Khoma <srghma@gmail.com>
 " Last Change: 2024 Nov 05
-" Maintainer:  Serhii Khoma <srghma@gmail.com>
+" Author:      ShinKage
 " License:     Vim (see :h license)
 " Repository:  https://github.com/ShinKage/idris2-nvim
 

@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:    Literate Idris 2
-" Maintainer:  Idris Hackers (https://github.com/edwinb/idris2-vim)
+" Maintainer:  Idris Hackers (https://github.com/edwinb/idris2-vim), Serhii Khoma <srghma@gmail.com>
 " Last Change: 2020 May 19
 " Version:     0.1
 " License:     Vim (see :h license)

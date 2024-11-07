@@ -1,6 +1,6 @@
 " Vim indent file
 " Language:            Idris 2
-" Maintainer:          Serhii Khoma <srghma@gmail.com>
+" Maintainer:          Idris Hackers (https://github.com/edwinb/idris2-vim), Serhii Khoma <srghma@gmail.com>
 " Author:              raichoo <raichoo@googlemail.com>
 " Last Change:         2024 Nov 05
 " License:             Vim (see :h license)
