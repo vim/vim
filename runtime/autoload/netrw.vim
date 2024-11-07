@@ -4765,6 +4765,9 @@ endfun
 "                       directory and a new directory name.  Also, if the
 "                       "new directory name" is actually a file,
 "                       NetrwBrowseChgDir() edits the file.
+"    cursor=0: newdir is relative to b:netrw_curdir
+"          =1: newdir is relative to the path to the word under the cursor in
+"              tree view
 fun! s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
 "  call Dfunc("s:NetrwBrowseChgDir(islocal=".a:islocal."> newdir<".a:newdir.">) a:0=".a:0." win#".winnr()." curpos<".string(getpos("."))."> b:netrw_curdir<".(exists("b:netrw_curdir")? b:netrw_curdir : "").">")
 "  call Decho("tab#".tabpagenr()." win#".winnr()." buf#".bufnr("%")."<".bufname("%")."> line#".line(".")." col#".col(".")." winline#".winline()." wincol#".wincol(),'~'.expand("<slnum>"))
