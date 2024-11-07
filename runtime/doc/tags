@@ -6560,9 +6560,12 @@ compiler-hpada	ft_ada.txt	/*compiler-hpada*
 compiler-javac	quickfix.txt	/*compiler-javac*
 compiler-make	quickfix.txt	/*compiler-make*
 compiler-manx	quickfix.txt	/*compiler-manx*
+compiler-mypy	quickfix.txt	/*compiler-mypy*
 compiler-pandoc	quickfix.txt	/*compiler-pandoc*
 compiler-perl	quickfix.txt	/*compiler-perl*
+compiler-pylint	quickfix.txt	/*compiler-pylint*
 compiler-pyunit	quickfix.txt	/*compiler-pyunit*
+compiler-ruff	quickfix.txt	/*compiler-ruff*
 compiler-select	quickfix.txt	/*compiler-select*
 compiler-tex	quickfix.txt	/*compiler-tex*
 compiler-typst	quickfix.txt	/*compiler-typst*
