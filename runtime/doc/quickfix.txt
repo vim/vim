@@ -1338,11 +1338,11 @@ g:javac_makeprg_params variable.  For example: >
 SPOTBUGS						*compiler-spotbugs*
 
 Commonly used compiler options can be added to 'makeprg' by setting the
-b/g:makeprg_params variable.  For example: >
+b/g:spotbugs_makeprg_params variable.  For example: >
 
-	let b:spotbugs_params = "-longBugCodes -effort:max -low"
+	let b:spotbugs_makeprg_params = "-longBugCodes -effort:max -low"
 
-The gloab default is "-workHard -experimental".
+The global default is "-workHard -experimental".
 
 GNU MAKE						*compiler-make*
 
