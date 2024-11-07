@@ -55,6 +55,9 @@ static int msg_hist_len = 0;
 static FILE *verbose_fd = NULL;
 static int  verbose_did_open = FALSE;
 
+static int  did_warn_clipboard = FALSE;
+static char *warn_clipboard = "W23: Clipboard register not available, using register 0";
+
 /*
  * When writing messages to the screen, there are many different situations.
  * A number of variables is used to remember the current state:
@@ -4058,6 +4061,19 @@ msg_advance(int col)
 #endif
 	while (msg_col < col)
 	    msg_putchar(' ');
+}
+
+/*
+ * Warn about missing Clipboard Support
+ */
+    void
+msg_warn_missing_clipboard(void)
+{
+    if (!global_busy && !did_warn_clipboard)
+    {
+       msg(_(warn_clipboard));
+       did_warn_clipboard = TRUE;
+    }
 }
 
 #if defined(FEAT_CON_DIALOG) || defined(PROTO)

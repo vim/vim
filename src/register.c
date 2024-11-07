@@ -198,6 +198,12 @@ valid_yank_reg(
 #endif
 							)
 	return TRUE;
+    // Warn about missing clipboard support once
+    else if (regname == '*' || regname == '+')
+    {
+	msg_warn_missing_clipboard();
+	return FALSE;
+    }
     return FALSE;
 }
 
@@ -1173,10 +1179,12 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	return OK;
 
 #ifdef FEAT_CLIPBOARD
-    if (!clip_star.available && oap->regname == '*')
+    if ((!clip_star.available && oap->regname == '*') || (!clip_plus.available
+               && oap->regname == '+'))
+    {
 	oap->regname = 0;
-    else if (!clip_plus.available && oap->regname == '+')
-	oap->regname = 0;
+	msg_warn_missing_clipboard();
+    }
 #endif
 
     if (!deleting)		    // op_delete() already set y_current

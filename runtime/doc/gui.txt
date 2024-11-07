@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.1.  Last change: 2024 Jul 17
+*gui.txt*       For Vim version 9.1.  Last change: 2024 Nov 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -473,6 +473,8 @@ transferred via the |x11-cut-buffer|, the selection type is ALWAYS lost.
 When the "unnamed" string is included in the 'clipboard' option, the unnamed
 register is the same as the "* register.  Thus you can yank to and paste the
 selection without prepending "* to commands.
+
+See also |W23|.
 
 ==============================================================================
 5. Menus						*menus*

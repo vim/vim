@@ -2220,10 +2220,12 @@ adjust_clip_reg(int *rp)
 	    *rp = ((clip_unnamed_saved & CLIP_UNNAMED_PLUS)
 					   && clip_plus.available) ? '+' : '*';
     }
-    if (!clip_star.available && *rp == '*')
+    if ((!clip_star.available && *rp == '*') ||
+           (!clip_plus.available && *rp == '+'))
+    {
+	msg_warn_missing_clipboard();
 	*rp = 0;
-    if (!clip_plus.available && *rp == '+')
-	*rp = 0;
+    }
 }
 
 #endif // FEAT_CLIPBOARD
