@@ -2882,10 +2882,9 @@ uninstall_runtime:
 # Clean up all the files that have been produced, except configure's.
 # We support common typing mistakes for Juergen! :-)
 clean celan: testclean
-	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
+	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim
 	-rm -rf objects
-	-rm -rf xxd/xxd.dSYM
-	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h auto/os_haiku.rdef
+	-rm -f auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h auto/os_haiku.rdef
 	-rm -f conftest* *~ auto/link.sed
 	-rm -f testdir/opt_test.vim
 	-rm -f $(UNITTEST_TARGETS)
@@ -2895,6 +2894,7 @@ clean celan: testclean
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
+	cd xxd; $(MAKE) clean
 
 # Make a shadow directory for compilation on another system or with different
 # features:
