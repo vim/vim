@@ -30,15 +30,12 @@ syn keyword skeyword container
 syn keyword skeyword containerinstance
 syn keyword skeyword custom
 syn keyword skeyword default
-syn keyword skeyword default
 syn keyword skeyword deployment
 syn keyword skeyword deploymentenvironment
 syn keyword skeyword deploymentgroup
 syn keyword skeyword deploymentnode
 syn keyword skeyword description
-syn keyword skeyword description
 syn keyword skeyword dynamic
-syn keyword skeyword element
 syn keyword skeyword element
 syn keyword skeyword enterprise
 syn keyword skeyword exclude
@@ -60,8 +57,6 @@ syn keyword skeyword opacity
 syn keyword skeyword person
 syn keyword skeyword perspectives
 syn keyword skeyword properties
-syn keyword skeyword properties
-syn keyword skeyword relationship
 syn keyword skeyword relationship
 syn keyword skeyword routing
 syn keyword skeyword scope
