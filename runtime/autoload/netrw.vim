@@ -12551,7 +12551,7 @@ fun! s:ShowLink()
    else
     let basedir = b:netrw_curdir.'/'
    endif
-   let fname = basedir .. s:NetrwGetWord()
+   let fname = basedir.s:NetrwGetWord()
    let resname = resolve(fname)
 " "   call Decho("fname         <".fname.">",'~'.expand("<slnum>"))
 " "   call Decho("resname       <".resname.">",'~'.expand("<slnum>"))
