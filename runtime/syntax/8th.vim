@@ -428,7 +428,7 @@ syn match eighthBuiltin /db:col\[]/
 
 syn region eighthComment start="\zs\\" end="$" contains=eighthTodo,@Spell
 syn region eighthComment start="\zs--\s" end="$" contains=eighthTodo,@Spell
-syn region eighthComment start="\zs(\*\s" end="\s\*)\ze" contains=eighthTodo,@Spell
+syn region eighthComment start="\zs(\*\_[:space:]" end="\_[:space:]\*)\ze" contains=eightTodo,@Spell
 
 " The default methods for highlighting. Can be overriden later.
 hi def link eighthTodo Todo
