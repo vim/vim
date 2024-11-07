@@ -1692,7 +1692,7 @@ If you would like to use decimal (base 10) breakpoint signs: >
 	let g:termdebug_config['sign_decimal'] = 1
 If there is no g:terminal_config yet you can use: >
 	let g:termdebug_config = {'sign': '>>'}
-Or, for decimal signs: >
+Likewise, to enable decimal signs: >
 	let g:termdebug_config = {'sign_decimal': 1}
 
 
