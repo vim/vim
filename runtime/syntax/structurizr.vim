@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:      Structurizr DSL
 " Maintainer:    Bastian Venthur <venthur@debian.org>
-" Last Change:   2023-11-06
+" Last Change:   2024-11-06
 " Remark:        For a language reference, see
 "                https://docs.structurizr.com/dsl/language
 
