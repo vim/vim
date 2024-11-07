@@ -35,12 +35,12 @@ silent! function s:GetClassFiles() abort
   return class_files
 endfunction
 
-silent exe 'CompilerSet makeprg=spotbugs'..(has('win32')?'.bat':'')..
-  \ escape(' '..
+" CompilerSet makeprg=spotbugs
+let &makeprg = 'spotbugs'..(has('win32')?'.bat':'')..' '..
     \ get(b:, 'spotbugs_makeprg_params', get(g:, 'spotbugs_makeprg_params', '-workHard -experimental'))..
     \ ' -textui -emacs -auxclasspath %:p:h:S -sourcepath %:p:h:S '..
-    \ join(s:GetClassFiles(), ' '),
-  \ ' ')
+    \ join(s:GetClassFiles(), ' ')
+exe 'CompilerSet makeprg='..escape(&l:makeprg, ' "')
 " Emacs expects doubled line numbers
 CompilerSet errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
 

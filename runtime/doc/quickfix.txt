@@ -1337,6 +1337,9 @@ g:javac_makeprg_params variable.  For example: >
 <
 SPOTBUGS						*compiler-spotbugs*
 
+Spotbugs is a static analysis tool that can be used to find bugs in Java.
+It scans the Java bytecode of all classes in the currently open buffer.
+
 Commonly used compiler options can be added to 'makeprg' by setting the
 b/g:spotbugs_makeprg_params variable.  For example: >
 
