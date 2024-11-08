@@ -778,6 +778,7 @@ String manipulation:					*string-functions*
 	strdisplaywidth()	size of string when displayed, deals with tabs
 	setcellwidths()		set character cell width overrides
 	getcellwidths()		get character cell width overrides
+	getcellpixels()		get character cell pixel size
 	reverse()		reverse the order of characters in a string
 	substitute()		substitute a pattern match with a string
 	submatch()		get a specific match in ":s" and substitute()
