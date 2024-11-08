@@ -273,6 +273,12 @@ func Test_setcellwidths()
   bwipe!
 endfunc
 
+" Pixel size of a cell is terminal-dependent, so in the test, only the list and size 2 are checked.
+func Test_getcellpixels()
+  let cellpixels = getcellpixels()
+  call assert_equal(2, len(cellpixels))
+endfunc
+
 func Test_getcellwidths()
   call setcellwidths([])
   call assert_equal([], getcellwidths())
