@@ -2079,7 +2079,7 @@ static funcentry_T global_functions[] =
 			ret_any,	    f_getbufvar},
     {"getcellpixels",	0, 0, 0,	    NULL,
 			ret_list_any,
-#if defined(UNIX) || defined(VMS)
+#if (defined(UNIX) || defined(VMS)) && (defined(FEAT_EVAL) || defined(PROTO))
 	    f_getcellpixels
 #else
 	    NULL
