@@ -222,6 +222,7 @@ getbufline({buf}, {lnum} [, {end}])
 getbufoneline({buf}, {lnum})	String	line {lnum} of buffer {buf}
 getbufvar({buf}, {varname} [, {def}])
 				any	variable {varname} in buffer {buf}
+getcellpixels()			List	get character cell pixel size
 getcellwidths()			List	get character cell width overrides
 getchangelist([{buf}])		List	list of change list items
 getchar([{expr}])		Number or String
@@ -3786,6 +3787,14 @@ getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 		Return type: any, depending on {varname}
 
 
+getcellpixels()						*getcellpixels()*
+		Returns a |List| of cell pixel size.
+		List format is [xpixels, ypixels].
+		Only on UNIX.
+
+		Return type: list<any>
+
+
 getcellwidths()						*getcellwidths()*
 		Returns a |List| of cell widths of character ranges overridden
 		by |setcellwidths()|.  The format is equal to the argument of
@@ -5071,8 +5080,6 @@ getwininfo([{winid}])					*getwininfo()*
 			botline		last complete displayed buffer line
 			bufnr		number of buffer in the window
 			height		window height (excluding winbar)
-			hpixel		window height of pixel-level
-					{only with UNIX build}
 			loclist		1 if showing a location list
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
@@ -5084,8 +5091,6 @@ getwininfo([{winid}])					*getwininfo()*
 			variables	a reference to the dictionary with
 					window-local variables
 			width		window width
-			wpixel		window width of pixel-level
-					{only with UNIX build}
 			winbar		1 if the window has a toolbar, 0
 					otherwise
 			wincol		leftmost screen column of the window;
