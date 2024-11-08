@@ -4360,22 +4360,8 @@ calc_cell_size(struct cellsize *cs_out)
     {
 #endif
 
-        // get parent process pid.
-        pid_t ppid = getppid();
-
         // get parent process's tty path.
-        char tty_path[256];
-        snprintf(tty_path, sizeof(tty_path), "/proc/%d/fd/0", ppid);
-
-        char actual_tty[256];
-        ssize_t len = readlink(tty_path, actual_tty, sizeof(actual_tty) - 1);
-        if (len == -1)
-        {
-            cs_out->cs_xpixel = 5;
-            cs_out->cs_ypixel = 10;
-            return;
-        }
-        actual_tty[len] = '\0';
+        char* tty_path = ttyname(STDIN_FILENO);
 
         // open parent process's tty.
         int tty_fd = open(tty_path, O_RDWR);
