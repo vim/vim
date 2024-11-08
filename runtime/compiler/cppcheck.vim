@@ -25,7 +25,7 @@ let &l:makeprg = 'cppcheck --quiet'
       \	          (filereadable('compile_commands.json') ? '--project=compile_commands.json' :
       \           (!empty(glob('*'..s:slash..'compile_commands.json', 1, 1)) ? '--project='..glob('*'..s:slash..'compile_commands.json', 1, 1)[0] :
       \	          (empty(&path) ? '' : '-I')..join(map(filter(split(&path, ','), 'isdirectory(v:val)'),'shellescape(v:val)'), ' -I')))))
-silent CompilerSet makeprg
+exe 'CompilerSet makeprg='..escape(&l:makeprg, ' "')
 
 CompilerSet errorformat=
   \%f:%l:%c:\ %tarning:\ %m,
