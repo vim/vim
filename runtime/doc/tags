@@ -7834,6 +7834,7 @@ getbufinfo()	builtin.txt	/*getbufinfo()*
 getbufline()	builtin.txt	/*getbufline()*
 getbufoneline()	builtin.txt	/*getbufoneline()*
 getbufvar()	builtin.txt	/*getbufvar()*
+getcellpixels()	builtin.txt	/*getcellpixels()*
 getcellwidths()	builtin.txt	/*getcellwidths()*
 getchangelist()	builtin.txt	/*getchangelist()*
 getchar()	builtin.txt	/*getchar()*
