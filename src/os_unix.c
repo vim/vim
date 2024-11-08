@@ -4396,7 +4396,7 @@ mch_calc_cell_size(struct cellsize *cs_out)
         cs_out->cs_ypixel = y_cell_size;
 
 #  ifdef FEAT_EVAL
-        ch_log(NULL, "Got cell pixel size with TIOCGWINSZ: %ld x %ld", x_cell_size, y_cell_size);
+        ch_log(NULL, "Got cell pixel size with TIOCGWINSZ: %d x %d", x_cell_size, y_cell_size);
 #  endif
 #if defined(FEAT_GUI)
     }
