@@ -4348,6 +4348,19 @@ mch_get_shellsize(void)
     return OK;
 }
 
+    void
+f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    struct cellsize cs;
+    calc_cell_size(&cs);
+
+    if (rettv_list_alloc(rettv) == FAIL)
+        return;
+
+    list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
+    list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
+}
+
 /*
  * Try to get the current terminal cell size.
  * If faile get cell size, fallback 5x10 pixel.
@@ -4364,20 +4377,15 @@ calc_cell_size(struct cellsize *cs_out)
         char* tty_path = ttyname(STDIN_FILENO);
 
         // open parent process's tty.
+        // It opens Vim's own tty, so it doesn't fail
         int tty_fd = open(tty_path, O_RDWR);
-        if (tty_fd == -1)
-        {
-            cs_out->cs_xpixel = 5;
-            cs_out->cs_ypixel = 10;
-            return;
-        }
 
-              // get parent tty size.
+        // get parent tty size.
         struct winsize ws;
         if (ioctl(tty_fd, TIOCGWINSZ, &ws) == -1)
         {
-            cs_out->cs_xpixel = 5;
-            cs_out->cs_ypixel = 10;
+            cs_out->cs_xpixel = -1;
+            cs_out->cs_ypixel = -1;
             close(tty_fd);
             return;
         }

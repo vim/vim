@@ -1,4 +1,4 @@
-/* os_unix.c */
+/* os_;.c */
 sighandler_T mch_signal(int sig, sighandler_T func);
 int mch_chdir(char *path);
 void mch_write(char_u *s, int len);
@@ -91,4 +91,5 @@ void xsmp_close(void);
 void stop_timeout(void);
 volatile sig_atomic_t *start_timeout(long msec);
 void delete_timer(void);
+void f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv);
 /* vim: set ft=c : */
