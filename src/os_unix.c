@@ -4391,7 +4391,7 @@ mch_calc_cell_size(struct cellsize *cs_out)
 
         // calculate parent tty's pixel per cell.
         int x_cell_size = ws.ws_xpixel / ws.ws_col;
-        int y_cell_size = ws.ws_xpixel / ws.ws_row;
+        int y_cell_size = ws.ws_ypixel / ws.ws_row;
 
         // calculate current tty's pixel
         cs_out->cs_xpixel = x_cell_size;
