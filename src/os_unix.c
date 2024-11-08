@@ -4352,7 +4352,7 @@ mch_get_shellsize(void)
 f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
 {
     struct cellsize cs;
-    calc_cell_size(&cs);
+    mch_calc_cell_size(&cs);
 
     if (rettv_list_alloc(rettv) == FAIL)
         return;
@@ -4366,31 +4366,26 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
  * If faile get cell size, fallback 5x10 pixel.
  */
     void
-calc_cell_size(struct cellsize *cs_out)
+mch_calc_cell_size(struct cellsize *cs_out)
 {
 #if defined(FEAT_GUI)
     if (!gui.in_use)
     {
 #endif
-
-        // get parent process's tty path.
-        char* tty_path = ttyname(STDIN_FILENO);
-
-        // open parent process's tty.
-        // It opens Vim's own tty, so it doesn't fail
-        int tty_fd = open(tty_path, O_RDWR);
-
-        // get parent tty size.
+        // get current tty size.
         struct winsize ws;
-        if (ioctl(tty_fd, TIOCGWINSZ, &ws) == -1)
+        int fd = 1;
+        int retval = -1;
+        retval = ioctl(fd, TIOCGWINSZ, &ws);
+#  ifdef FEAT_EVAL
+        ch_log(NULL, "ioctl(TIOCGWINSZ) %s", retval == 0 ? "success" : "failed");
+#  endif
+        if (retval == -1)
         {
             cs_out->cs_xpixel = -1;
             cs_out->cs_ypixel = -1;
-            close(tty_fd);
             return;
         }
-
-        close(tty_fd);
 
         // calculate parent tty's pixel per cell.
         int x_cell_size = ws.ws_xpixel / ws.ws_col;
@@ -4399,6 +4394,10 @@ calc_cell_size(struct cellsize *cs_out)
         // calculate current tty's pixel
         cs_out->cs_xpixel = x_cell_size;
         cs_out->cs_ypixel = y_cell_size;
+
+#  ifdef FEAT_EVAL
+        ch_log(NULL, "Got cell pixel size with TIOCGWINSZ: %ld x %ld", x_cell_size, y_cell_size);
+#  endif
 #if defined(FEAT_GUI)
     }
     else
@@ -4431,7 +4430,7 @@ mch_report_winsize(int fd, int rows, int cols)
 
     // calcurate and set tty pixel size
     struct cellsize cs;
-    calc_cell_size(&cs);
+    mch_calc_cell_size(&cs);
     ws.ws_xpixel = cols * cs.cs_xpixel;
     ws.ws_ypixel = rows * cs.cs_ypixel;
 

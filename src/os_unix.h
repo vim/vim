@@ -494,5 +494,3 @@ struct cellsize {
     unsigned int cs_ypixel;
 };
 
-void calc_cell_size(struct cellsize *cs_out);
-

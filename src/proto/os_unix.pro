@@ -92,4 +92,5 @@ void stop_timeout(void);
 volatile sig_atomic_t *start_timeout(long msec);
 void delete_timer(void);
 void f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv);
+void mch_calc_cell_size(struct cellsize *cs_out);
 /* vim: set ft=c : */
