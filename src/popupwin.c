@@ -2741,13 +2741,6 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     id = (int)tv_get_number(argvars);
-    if (
-# ifdef FEAT_TERMINAL
-	// if the popup contains a terminal it will become hidden
-	curbuf->b_term == NULL &&
-# endif
-	    ERROR_IF_ANY_POPUP_WINDOW)
-	return;
 
     wp = find_popup_win(id);
     if (wp != NULL)
