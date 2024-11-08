@@ -17,7 +17,7 @@ set cpo&vim
 let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:regex = '\v%(;|^)\s*%(public |protected |private )?\s*%(abstract |final )?\s*class\s+(\w+)%(\<.*\> )?\s+%(extends\s+\w+ |implements\s+\w+%(\s*,\s*\w+)* )?\s*%(permits\s+\w+%(\s*,\s*\w+)* )?\s*\{'
 
-silent! function s:GetClassFiles() abort
+function! s:GetClassFiles() abort
   " Get all class names in the current buffer
   let class_names = []
   for line in getbufline(bufnr('%'), 1, '$')
