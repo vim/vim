@@ -18,6 +18,7 @@ SRC_ALL =	\
 		.hgignore \
 		.appveyor.yml \
 		.codecov.yml \
+		.clang-format \
 		ci/appveyor.bat \
 		ci/config.mk*.sed \
 		ci/if_ver*.vim \
