@@ -70,6 +70,7 @@ SCRIPTS_BENCH = test_bench_regexp.res
 # Individual tests, including the ones part of test_alot.
 # Please keep sorted up to test_alot.
 NEW_TESTS = \
+	test_glvs \
 	test_arabic \
 	test_arglist \
 	test_assert \
