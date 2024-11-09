@@ -202,7 +202,7 @@ vim.eval(str)						*python-eval*
 	'eval_expr', 'kind': 'f', 'filename': './src/eval.c'}] ~
 
 	NOTE: In Vim9 script, local variables in def functions are not visible
-	to to python evaluations. To pass local variables to python evaluations,
+	to python evaluations. To pass local variables to python evaluations,
 	use the {locals} dict when calling |py3eval()| and friends.
 
 vim.bindeval(str)					*python-bindeval*
