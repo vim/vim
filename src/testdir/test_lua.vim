@@ -117,11 +117,11 @@ func Test_lua_eval()
 
   " lua.eval with a bool
   lua v = vim.eval('v:true')
-  call assert_equal('number', luaeval('vim.type(v)'))
-  call assert_equal(1, luaeval('v'))
+  call assert_equal('boolean', luaeval('vim.type(v)'))
+  call assert_equal(v:true, luaeval('v'))
   lua v = vim.eval('v:false')
-  call assert_equal('number', luaeval('vim.type(v)'))
-  call assert_equal(0, luaeval('v'))
+  call assert_equal('boolean', luaeval('vim.type(v)'))
+  call assert_equal(v:false, luaeval('v'))
 
   " lua.eval with a null
   lua v = vim.eval('v:null')
