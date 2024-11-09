@@ -275,10 +275,10 @@ delete_buff_tail(buffheader_T *buf, int slen)
 {
     if (buf->bh_curr == NULL)
 	return;  // nothing to delete
-    if (buf->bh_curr->b_strlen < slen)
+    if (buf->bh_curr->b_strlen < (size_t)slen)
 	return;
 
-    buf->bh_curr->b_str[buf->bh_curr->b_strlen - slen] = NUL;
+    buf->bh_curr->b_str[buf->bh_curr->b_strlen - (size_t)slen] = NUL;
     buf->bh_curr->b_strlen -= slen;
     buf->bh_space += slen;
 }
