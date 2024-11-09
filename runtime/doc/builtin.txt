@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 06
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5203,7 +5203,7 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 		on {list}
 
 
-glob2regpat({string})					 *glob2regpat()*
+glob2regpat({string})					*glob2regpat()*
 		Convert a file pattern, as used by glob(), into a search
 		pattern.  The result can be used to match with a string that
 		is a file name.  E.g. >
@@ -5656,7 +5656,7 @@ iconv({string}, {from}, {to})				*iconv()*
 		Return type: |String|
 
 
-id({item})							    *id()*
+id({item})							*id()*
 		The result is a unique String associated with the {item} and
 		not with the {item}'s contents. It is only valid while the
 		{item} exists and is referenced. It is valid only in the
@@ -7081,7 +7081,7 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
 		Return type: list<dict<any>> or list<any>
 
 
-matchdelete({id} [, {win})		       *matchdelete()* *E802* *E803*
+matchdelete({id} [, {win})			*matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
 		or one of the |:match| commands.  Returns 0 if successful,
 		otherwise -1.  See example for |matchadd()|.  All matches can

@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Nov 03
+" Last Change:	2024 Nov 09
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
@@ -115,7 +115,7 @@ if 1
       \ |   execute "normal! g`\""
       \ | endif
 
-    " Set the default background for putty to dark. Putty usually sets the 
+    " Set the default background for putty to dark. Putty usually sets the
     " $TERM to xterm and by default it starts with a dark background which
     " makes syntax highlighting often hard to read with bg=light
     " undo this using:  ":au! vimStartup TermResponse"
