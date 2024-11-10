@@ -14,22 +14,74 @@ set cpo&vim
 " The regex, auxpath and glob try to include all dependent classes of the
 " current buffer. See https://github.com/spotbugs/spotbugs/issues/856
 
+" FIXME: When "search()" is used with the "e" flag, it makes no _further_
+" progress after claiming an EOL match (i.e. "\_" or "\n", but not "$").
+" XXX: Omit anonymous class declarations
+let s:types = '\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\%(\s\|$\)'
+let s:names = '\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\s*\(\K\k*\)\>'
 let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
-let s:regex = '\v%(;|^)\s*%(public |protected |private )?\s*%(abstract |final )?\s*class\s+(\w+)%(\<.*\> )?\s+%(extends\s+\w+ |implements\s+\w+%(\s*,\s*\w+)* )?\s*%(permits\s+\w+%(\s*,\s*\w+)* )?\s*\{'
+
+if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
+    \ b:current_syntax == 'java' && hlexists('javaClassDecl')
+
+  function! s:GetDeclaredTypeNames() abort
+    defer execute('keepjumps normal ``')
+    normal gg
+    let type_names = []
+    let lnum = search(s:types, 'eW')
+    while lnum > 0
+      if synIDattr(synID(lnum, (col('.') - 1), 0), 'name') == 'javaClassDecl'
+        let tokens = matchlist(getline(lnum)..getline(lnum + 1), s:names)
+        if !empty(tokens) | call add(type_names, tokens[1]) | endif
+      endif
+      let lnum = search(s:types, 'eW')
+    endwhile
+    return type_names
+  endfunction
+
+else
+
+  function! s:GetDeclaredTypeNames() abort
+    " Undo the unsetting of &hls, see below
+    if &hls | defer execute('set hls') | endif
+    " Copy buffer contents for modification
+    silent %y
+    new
+    defer execute('silent bwipeout')
+    " Apply ":help scratch-buffer" effects
+    setlocal buftype=nofile bufhidden=hide noswapfile nohls
+    silent normal P
+    let @" = ""
+    let @0 = ""
+    " Discard text blocks and strings
+    silent keeppatterns %s/\\\@<!"""\_.\{-}\\\@<!"""\|\\"//ge
+    silent keeppatterns %s/".*"//ge
+    " Discard comments
+    silent keeppatterns %s/\/\/.\+$//ge
+    silent keeppatterns %s/\/\*\_.\{-}\*\///ge
+    normal gg
+    let type_names = []
+    let lnum = search(s:types, 'eW')
+    while lnum > 0
+      let tokens = matchlist(getline(lnum)..getline(lnum + 1), s:names)
+      if !empty(tokens) | call add(type_names, tokens[1]) | endif
+      let lnum = search(s:types, 'eW')
+    endwhile
+    return type_names
+  endfunction
+
+endif
 
 function! s:GetClassFiles() abort
-  " Get all class names in the current buffer
-  let class_names = []
-  for line in getbufline(bufnr('%'), 1, '$')
-    let matches = matchlist(line, s:regex)
-    if len(matches) > 1 | let class_names += [ matches[1] ] | endif
-  endfor
-
+  " Get all type names in the current buffer and let the filename globbing
+  " discover inner type names from arbitrary type names
   let class_files = []
-  for class_name in class_names
-    let class_files += [ shellescape(expand('%:p:h')..s:slash..class_name..'.class') ]
-    " add files of inner classes of each class
-    let class_files += map(glob(expand('%:p:h')..s:slash..class_name..'\$*.class', 1, 1), 'shellescape(v:val)')
+
+  for type_name in s:GetDeclaredTypeNames()
+    for candidate in insert(glob(expand('%:p:h')..s:slash..type_name..'\$*.class', 1, 1),
+        \ expand('%:p:h')..s:slash..type_name..'.class')
+      if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
+    endfor
   endfor
 
   return class_files
@@ -44,6 +96,7 @@ exe 'CompilerSet makeprg='..escape(&l:makeprg, ' "')
 " Emacs expects doubled line numbers
 CompilerSet errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
 
+delfunction s:GetClassFiles
+delfunction s:GetDeclaredTypeNames
 let &cpo = s:cpo_save
-unlet s:cpo_save
-
+unlet s:slash s:names s:types s:cpo_save
