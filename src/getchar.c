@@ -137,8 +137,7 @@ get_buffcont(
     char_u	    *p2;
     char_u	    *str;
     buffblock_T *bp;
-
-    *len = 0;
+    size_t	    i = 0;
 
     // compute the total length of the string
     for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
@@ -151,8 +150,12 @@ get_buffcont(
 	    for (str = bp->b_str; *str; )
 		*p2++ = *str++;
 	*p2 = NUL;
-	*len = (size_t)(p2 - p);
+	i = (size_t)(p2 - p);
     }
+
+    if (len != NULL)
+	*len = i;
+
     return p;
 }
 
@@ -197,9 +200,7 @@ get_recorded(void)
     char_u *
 get_inserted(void)
 {
-    size_t  len;
-
-    return get_buffcont(&redobuff, FALSE, &len);
+    return get_buffcont(&redobuff, FALSE, NULL);
 }
 
 /*
