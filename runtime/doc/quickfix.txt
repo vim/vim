@@ -1339,6 +1339,9 @@ SPOTBUGS						*compiler-spotbugs*
 
 Spotbugs is a static analysis tool that can be used to find bugs in Java.
 It scans the Java bytecode of all classes in the currently open buffer.
+Since these vary with the buffer, make its &makeprg aware of it by adding
+
+	autocmd BufWritePost *.java compiler spotbugs
 
 Commonly used compiler options can be added to 'makeprg' by setting the
 b/g:spotbugs_makeprg_params variable.  For example: >
