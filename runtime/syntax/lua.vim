@@ -62,8 +62,12 @@ syn match  luaParenError ")"
 syn match  luaError "}"
 syn match  luaError "\<\%(end\|else\|elseif\|then\|until\|in\)\>"
 
+" methods and user functions
+syn match luaFunc "[^ :.]\@=\k\+(\@="
+
 " Function declaration
 syn region luaFunctionBlock transparent matchgroup=luaFunction start="\<function\>" end="\<end\>" contains=TOP
+syn region luaFunctionBlock transparent matchgroup=luaLambda start="\<function\>\ze(" end="\<end\>" contains=TOP
 
 " else
 syn keyword luaCondElse matchgroup=luaCond contained containedin=luaCondEnd else
@@ -165,9 +169,6 @@ endif
 
 " tables
 syn region luaTableBlock transparent matchgroup=luaTable start="{" end="}" contains=TOP,luaStatement
-
-" methods
-syntax match luaFunc ":\@<=\k\+"
 
 " built-in functions
 syn keyword luaFunc assert collectgarbage dofile error next
@@ -422,7 +423,8 @@ hi def link luaSymbolOperator   luaOperator
 hi def link luaConstant         Constant
 hi def link luaCond             Conditional
 hi def link luaCondElse         Conditional
-hi def link luaFunction         Function
+hi def link luaFunction         Keyword
+hi def link luaLambda           Function
 hi def link luaMetaMethod       Function
 hi def link luaComment          Comment
 hi def link luaCommentDelimiter luaComment
