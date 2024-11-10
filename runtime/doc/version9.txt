@@ -31790,7 +31790,7 @@ Changed ~
 - The features |++builtin_terms|, |+cmdline_info|, |+cmdwin|, |+file_in_path|,
   |+float|, |+path_extra|, |+textobjects|, |+wildignore| and |+wildmenu| are
   available in all the builds.
-- Support for Windows-XP is dropped.
+- Support for Windows-XP is dropped (starting with v9.0.0496)
 - Support for VisVim is removed.
 - The "small" and "big" builds are dropped in favor of "tiny" and "huge"
   builds.

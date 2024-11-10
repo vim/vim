@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 9.1.  Last change: 2024 Oct 05
+*vi_diff.txt*   For Vim version 9.1.  Last change: 2024 Nov 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,6 +21,7 @@ is missing something or because Posix is beside the mark).
 6. Supported Vi features		|vi-features|
 7. Command-line arguments		|cmdline-arguments|
 8. POSIX compliance			|posix-compliance|
+9. Supported Operating Systems		|os-support|
 
 ==============================================================================
 1. Simulated command					*simulated-command*
@@ -1361,5 +1362,37 @@ These are remarks about running the POSIX test suite:
   1 instead of 2.
 - ex test 534 fails because .exrc isn't read in silent mode.
 
+==============================================================================
+9. Supported Operating systems					*os-support*
+
+Vim tries to support some old operating systems, however support for older
+operating systems might be dropped if maintenance becomes a burden or can no
+longer be verified.
+
+Here is the status of some operating systems. Note fully supported means,
+support is verified as part of the CI test suite.
+
+System				| Status:~
+--------------------------------+-----------------------------------------
+Amiga (OS4, AROS & MorphOS):	| still supported (?)
+Haiku:				| still supported (?)
+Linux:				| fully supported (on maintained versions)
+Mac OS:				| fully supported up until v10.6 (?)
+MS-Windows 7, 8, 10, 11:	| fully supported
+UNIX:				| supported (on maintained versions)
+OpenVMS:			| supported
+QNX:				| still supported (?)
+zOS/OS390:			| still supported (?)
+
+The following operating systems are no longer supported:
+
+System				| Status:~
+--------------------------------+-----------------------------------------
+Atari MiNT			| support was dropped with v8.2.1215
+BeOS:				| support was dropped with v8.2.0849
+MS-DOS:				| support was dropped with v7.4.1399
+MS-Windows XP and Vista:	| support was dropped with v9.0.0496
+OS/2				| support was dropped with v7.4.1008
+RISC OS:			| support was dropped with v7.3.0187
 
  vim:tw=78:ts=8:noet:ft=help:norl:

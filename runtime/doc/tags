@@ -9331,6 +9331,7 @@ options.txt	options.txt	/*options.txt*
 optwin	options.txt	/*optwin*
 or()	builtin.txt	/*or()*
 oracle	ft_sql.txt	/*oracle*
+os-support	vi_diff.txt	/*os-support*
 os2	os_os2.txt	/*os2*
 os390	os_390.txt	/*os390*
 os_390.txt	os_390.txt	/*os_390.txt*
