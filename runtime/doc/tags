@@ -9282,6 +9282,7 @@ o_CTRL-V	motion.txt	/*o_CTRL-V*
 o_V	motion.txt	/*o_V*
 o_object-select	motion.txt	/*o_object-select*
 o_v	motion.txt	/*o_v*
+obj-var-type-any	vim9class.txt	/*obj-var-type-any*
 object	vim9class.txt	/*object*
 object-const-variable	vim9class.txt	/*object-const-variable*
 object-empty()	vim9class.txt	/*object-empty()*
