@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 09
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -467,9 +467,9 @@ prop_type_get({name} [, {props}])
 prop_type_list([{props}])	List	get list of property types
 pum_getpos()			Dict	position and size of pum if visible
 pumvisible()			Number	whether popup menu is visible
-py3eval({expr}[, {locals}])	any	evaluate |python3| expression
-pyeval({expr}[, {locals}])	any	evaluate |Python| expression
-pyxeval({expr}[, {locals}])	any	evaluate |python_x| expression
+py3eval({expr} [, {locals}])	any	evaluate |python3| expression
+pyeval({expr} [, {locals}])	any	evaluate |Python| expression
+pyxeval({expr} [, {locals}])	any	evaluate |python_x| expression
 rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
@@ -8127,7 +8127,7 @@ pumvisible()						*pumvisible()*
 		Return type: |Number|
 
 
-py3eval({expr}[, {locals}])				*py3eval()*
+py3eval({expr} [, {locals}])				*py3eval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
 		If a {locals} |Dictionary| is given, it defines set of local
@@ -8153,7 +8153,7 @@ py3eval({expr}[, {locals}])				*py3eval()*
 		{only available when compiled with the |+python3| feature}
 
 							*E858* *E859*
-pyeval({expr}[, {locals}])				*pyeval()*
+pyeval({expr} [, {locals}])				*pyeval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
 		For {locals} see |py3eval()|.
@@ -8172,7 +8172,7 @@ pyeval({expr}[, {locals}])				*pyeval()*
 
 		{only available when compiled with the |+python| feature}
 
-pyxeval({expr}[, {locals}])				*pyxeval()*
+pyxeval({expr} [, {locals}])				*pyxeval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
 		For {locals} see |py3eval()|.

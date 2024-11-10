@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Nov 09
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2670,7 +2670,7 @@ To specify elements that should not be concealed, set the following variable: >
 
 	:let g:pandoc#syntax#conceal#blacklist = []
 
-This is a list of the rules wich can be used here:
+This is a list of the rules which can be used here:
 
   - titleblock
   - image

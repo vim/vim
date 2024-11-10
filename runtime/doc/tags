@@ -2216,7 +2216,6 @@ $quote	eval.txt	/*$quote*
 :abo	windows.txt	/*:abo*
 :aboveleft	windows.txt	/*:aboveleft*
 :abstract	vim9class.txt	/*:abstract*
-:addd	quickfix.txt	/*:addd*
 :al	windows.txt	/*:al*
 :all	windows.txt	/*:all*
 :am	gui.txt	/*:am*
@@ -2736,6 +2735,7 @@ $quote	eval.txt	/*$quote*
 :lab	quickfix.txt	/*:lab*
 :labove	quickfix.txt	/*:labove*
 :lad	quickfix.txt	/*:lad*
+:ladd	quickfix.txt	/*:ladd*
 :laddb	quickfix.txt	/*:laddb*
 :laddbuffer	quickfix.txt	/*:laddbuffer*
 :laddexpr	quickfix.txt	/*:laddexpr*
