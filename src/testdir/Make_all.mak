@@ -70,7 +70,6 @@ SCRIPTS_BENCH = test_bench_regexp.res
 # Individual tests, including the ones part of test_alot.
 # Please keep sorted up to test_alot.
 NEW_TESTS = \
-	test_glvs \
 	test_arabic \
 	test_arglist \
 	test_assert \
@@ -172,6 +171,7 @@ NEW_TESTS = \
 	test_gf \
 	test_glob2regpat \
 	test_global \
+	test_glvs \
 	test_gn \
 	test_goto \
 	test_gui \
@@ -435,6 +435,7 @@ NEW_TESTS_RES = \
 	test_gettext_make.res \
 	test_getvar.res \
 	test_gf.res \
+	test_glvs.res \
 	test_gn.res \
 	test_goto.res \
 	test_gui.res \

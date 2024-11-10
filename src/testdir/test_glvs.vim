@@ -4,6 +4,14 @@
 const s:dotvim= has("win32") ? "vimfiles" : ".vim"
 const s:scriptdir = $"{$HOME}/{s:dotvim}/GetLatest"
 const s:vimdir = expand("<script>:h:h:h")
+const s:packages = {
+    \ 'vmb': {
+        \ 'spec': '6106 1 :AutoInstall: setpwsh.vmb',
+        \ 'package': 'GetLatest/Installed/setpwsh.vmb',
+        \ 'files': ['pack/setpwsh/start/setpwsh/doc/setpwsh.txt',
+        \           'pack/setpwsh/start/setpwsh/plugin/setpwsh.vim']
+        \ }
+    \ }
 
 " Before each test recreate the .vim dir structure expected by GLVS and load the plugin
 func SetUp()
@@ -71,7 +79,7 @@ func SetShell(shell)
             set shellxquote=
         endif
     else
-        assert_report("Trying to select and unknown shell")
+        call assert_report("Trying to select and unknown shell")
     endif
 
     " reload script to force new shell options
@@ -79,7 +87,7 @@ func SetShell(shell)
 
 endfunc
 
-func SelectScript(script_lines)
+func SelectScript(package)
 
     " add the corresponding file
     exe $"split {s:scriptdir}/GetLatestVimScripts.dat"
@@ -88,61 +96,69 @@ func SelectScript(script_lines)
         --------------------------
     END
     call setline(1, scripts)
-    call append(line('$'), a:script_lines)
+    call append(line('$'), s:packages[a:package]['spec'])
     w!
     bwipe!
 
 endfunc
 
+func ValidateInstall(package)
+    " check the package is expected
+    call assert_true(s:packages->has_key(a:package), "This package is unexpected")
+
+    " check if installation work out
+    let check = filereadable($"{$HOME}/{s:dotvim}/".s:packages[a:package]['package'])
+    call assert_true(check, "The plugin was not downloaded")
+
+    for file in s:packages[a:package]['files']
+        let check = filereadable($"{$HOME}/{s:dotvim}/".file)
+        call assert_true(check, "The plugin was not installed")
+    endfor
+endfunc
+
 " Tests
 "
-func Test_glvs_load_default_vmb()
+func Test_glvs_default_vmb()
 
     " select different shells
-    call SetShell("default")
+    call SetShell('default')
 
     " add the corresponding script
-    call SelectScript("6106 1 :AutoInstall: setpwsh.vmb")
+    call SelectScript('vmb')
 
     " load the plugins specified
     GLVS
 
-    " check if installation work out
-    let check = filereadable($"{$HOME}/{s:dotvim}/pack/setpwsh/start/setpwsh/doc/setpwsh.txt")
-    call assert_true(check, "The plugin was not installed")
+    call ValidateInstall('vmb')
 
 endfunc
 
-func Test_glvs_load_pwsh_vmb()
+func Test_glvs_pwsh_vmb()
 
     " select different shells
-    call SetShell("pwsh")
+    call SetShell('pwsh')
 
     " add the corresponding script
-    call SelectScript("6106 1 :AutoInstall: setpwsh.vmb")
+    call SelectScript('vmb')
 
     " load the plugins specified
     GLVS
 
-    " check if installation work out
-    let check = filereadable($"{$HOME}/{s:dotvim}/pack/setpwsh/start/setpwsh/doc/setpwsh.txt")
-    call assert_true(check, "The plugin was not installed")
+    call ValidateInstall('vmb')
 
 endfunc
 
-func Test_glvs_load_powershell_vmb()
+func Test_glvs_powershell_vmb()
 
     " select different shells
-    call SetShell("powershell")
+    call SetShell('powershell')
 
     " add the corresponding script
-    call SelectScript("6106 1 :AutoInstall: setpwsh.vmb")
+    call SelectScript('vmb')
 
     " load the plugins specified
     GLVS
 
-    " check if installation work out
-    let check = filereadable($"{$HOME}/{s:dotvim}/pack/setpwsh/start/setpwsh/doc/setpwsh.txt")
-    call assert_true(check, "The plugin was not installed")
+    call ValidateInstall('vmb')
 
 endfunc
