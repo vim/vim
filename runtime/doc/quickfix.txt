@@ -1341,7 +1341,12 @@ Spotbugs is a static analysis tool that can be used to find bugs in Java.
 It scans the Java bytecode of all classes in the currently open buffer.
 Since these vary with the buffer, make its &makeprg aware of it by adding
 
-	autocmd BufWritePost *.java compiler spotbugs
+	augroup vimrcFileTypeJava
+		autocmd! * <buffer>
+		autocmd BufWrite <buffer> if get(b:, 'compiler', '') ==# 'spotbugs' | compiler spotbugs | endif
+	augroup END
+
+to `ftplugin/java.vim` in your runtimepath.
 
 Commonly used compiler options can be added to 'makeprg' by setting the
 b/g:spotbugs_makeprg_params variable.  For example: >
