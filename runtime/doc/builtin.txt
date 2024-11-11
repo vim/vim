@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 10
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -222,6 +222,7 @@ getbufline({buf}, {lnum} [, {end}])
 getbufoneline({buf}, {lnum})	String	line {lnum} of buffer {buf}
 getbufvar({buf}, {varname} [, {def}])
 				any	variable {varname} in buffer {buf}
+getcellpixels()			List	get character cell pixel size
 getcellwidths()			List	get character cell width overrides
 getchangelist([{buf}])		List	list of change list items
 getchar([{expr}])		Number or String
@@ -3784,6 +3785,15 @@ getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 			GetBufnr()->getbufvar(varname)
 <
 		Return type: any, depending on {varname}
+
+
+getcellpixels()						*getcellpixels()*
+		Returns a |List| of terminal cell pixel size.
+		List format is [xpixels, ypixels].
+		Only works on Unix. For gVim and on other systems,
+		returns [-1, -1].
+
+		Return type: list<Number>
 
 
 getcellwidths()						*getcellwidths()*

@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 06
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41621,6 +41621,7 @@ Functions: ~
 |foreach()|		apply function to List items
 |getcmdcomplpat()|	Shell command line completion
 |getcmdprompt()|	get prompt for input()/confirm()
+|getcellpixels()|	get List of terminal cell pixel size
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
 |id()|			get unique identifier for a Dict, List, Object,
