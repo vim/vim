@@ -17,8 +17,8 @@ set cpo&vim
 " FIXME: When "search()" is used with the "e" flag, it makes no _further_
 " progress after claiming an EOL match (i.e. "\_" or "\n", but not "$").
 " XXX: Omit anonymous class declarations
-let s:types = '\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\%(\s\|$\)'
-let s:names = '\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\s*\(\K\k*\)\>'
+let s:types = '\C\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\%(\s\|$\)'
+let s:names = '\C\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\s*\(\K\k*\)\>'
 let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
 
 if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
