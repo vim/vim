@@ -270,6 +270,12 @@ func Test_changing_cmdheight()
 
   let lines =<< trim END
       set cmdheight=1 laststatus=2
+      func EchoOne()
+        set laststatus=2 cmdheight=1
+        echo 'foo'
+        echo 'bar'
+        set cmdheight=2
+      endfunc
       func EchoTwo()
         set laststatus=2
         set cmdheight=5
@@ -304,6 +310,10 @@ func Test_changing_cmdheight()
   " setting 'cmdheight' works after outputting two messages
   call term_sendkeys(buf, ":call EchoTwo()\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_6', {})
+
+  " increasing 'cmdheight' doesn't clear the messages that need hit-enter
+  call term_sendkeys(buf, ":call EchoOne()\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_7', {})
 
   " clean up
   call StopVimInTerminal(buf)
