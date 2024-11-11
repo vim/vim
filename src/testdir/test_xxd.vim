@@ -356,12 +356,19 @@ endfunc
 
 " Various ways with wrong arguments that trigger the usage output.
 func Test_xxd_usage()
-  for arg in ['-h', '-c', '-g', '-o', '-s', '-l', '-X', '-R', 'one two three']
+  for arg in ['-h', '-c', '-g', '-o', '-s', '-l', '-X', '-R', 'one two three', '----', '---']
     new
     exe 'r! ' . s:xxd_cmd . ' ' . arg
     call assert_match("Usage:", join(getline(1, 3)))
     bwipe!
   endfor
+endfunc
+
+func Test_xxd_end_of_options()
+  new
+  exe 'r! ' . s:xxd_cmd . ' -- random-file-' . rand()
+  call assert_match('random-file-.*: No such file or directory', join(getline(1, 3)))
+  bwipe!
 endfunc
 
 func Test_xxd_ignore_garbage()

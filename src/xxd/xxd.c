@@ -65,6 +65,7 @@
  * 10.05.2024  fix another buffer-overflow when writing colored output to buffer, #14738
  * 10.09.2024  Support -b and -i together, #15661
  * 19.10.2024  -e did add an extra space #15899
+ * 11.11.2024  improve end-of-options argument parser #9285
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -145,7 +146,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2024-10-19 by Juergen Weigert et al.";
+char version[] = "xxd 2024-11-11 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -843,7 +844,7 @@ main(int argc, char *argv[])
 	  else
 	    exit_with_usage();
         }
-      else if (!strcmp(pp, "--"))	/* end of options */
+      else if (!strcmp(argv[1], "--"))	/* end of options */
 	{
 	  argv++;
 	  argc--;
