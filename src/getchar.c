@@ -36,9 +36,9 @@
 
 #define MINIMAL_SIZE 20			// minimal size for b_str
 
-static buffheader_T redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-static buffheader_T old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-static buffheader_T recordbuff = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T redobuff = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
+static buffheader_T old_redobuff = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
+static buffheader_T recordbuff = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
 
 static int typeahead_char = 0;		// typeahead char that's not flushed
 
@@ -129,17 +129,19 @@ free_buff(buffheader_T *buf)
     static char_u *
 get_buffcont(
     buffheader_T	*buffer,
-    int			dozero)	    // count == zero is not an error
+    int			dozero,	    // count == zero is not an error
+    size_t		*len)	    // the length of the returned buffer
 {
     long_u	    count = 0;
     char_u	    *p = NULL;
     char_u	    *p2;
     char_u	    *str;
     buffblock_T *bp;
+    size_t	    i = 0;
 
     // compute the total length of the string
     for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
-	count += (long_u)STRLEN(bp->b_str);
+	count += (long_u)bp->b_strlen;
 
     if ((count > 0 || dozero) && (p = alloc(count + 1)) != NULL)
     {
@@ -148,7 +150,12 @@ get_buffcont(
 	    for (str = bp->b_str; *str; )
 		*p2++ = *str++;
 	*p2 = NUL;
+	i = (size_t)(p2 - p);
     }
+
+    if (len != NULL)
+	*len = i;
+
     return p;
 }
 
@@ -163,14 +170,13 @@ get_recorded(void)
     char_u	*p;
     size_t	len;
 
-    p = get_buffcont(&recordbuff, TRUE);
+    p = get_buffcont(&recordbuff, TRUE, &len);
     free_buff(&recordbuff);
 
     /*
      * Remove the characters that were added the last time, these must be the
      * (possibly mapped) characters that stopped the recording.
      */
-    len = STRLEN(p);
     if (len >= last_recorded_len)
     {
 	len -= last_recorded_len;
@@ -194,7 +200,7 @@ get_recorded(void)
     char_u *
 get_inserted(void)
 {
-    return get_buffcont(&redobuff, FALSE);
+    return get_buffcont(&redobuff, FALSE, NULL);
 }
 
 /*
@@ -207,9 +213,6 @@ add_buff(
     char_u		*s,
     long		slen)	// length of "s" or -1
 {
-    buffblock_T *p;
-    long_u	    len;
-
     if (slen < 0)
 	slen = (long)STRLEN(s);
     if (slen == 0)				// don't add empty strings
@@ -217,8 +220,8 @@ add_buff(
 
     if (buf->bh_first.b_next == NULL)	// first add to list
     {
-	buf->bh_space = 0;
 	buf->bh_curr = &(buf->bh_first);
+	buf->bh_create_newblock = TRUE;
     }
     else if (buf->bh_curr == NULL)	// buffer has already been read
     {
@@ -226,19 +229,26 @@ add_buff(
 	return;
     }
     else if (buf->bh_index != 0)
+    {
 	mch_memmove(buf->bh_first.b_next->b_str,
 		    buf->bh_first.b_next->b_str + buf->bh_index,
-		    STRLEN(buf->bh_first.b_next->b_str + buf->bh_index) + 1);
+		    (buf->bh_first.b_next->b_strlen - buf->bh_index) + 1);
+	buf->bh_first.b_next->b_strlen -= buf->bh_index;
+	buf->bh_space += buf->bh_index;
+    }
     buf->bh_index = 0;
 
-    if (buf->bh_space >= (int)slen)
+    if (!buf->bh_create_newblock && buf->bh_space >= (int)slen)
     {
-	len = (long_u)STRLEN(buf->bh_curr->b_str);
-	vim_strncpy(buf->bh_curr->b_str + len, s, (size_t)slen);
+	vim_strncpy(buf->bh_curr->b_str + buf->bh_curr->b_strlen, s, (size_t)slen);
+	buf->bh_curr->b_strlen += slen;
 	buf->bh_space -= slen;
     }
     else
     {
+	long_u	    len;
+	buffblock_T *p;
+
 	if (slen < MINIMAL_SIZE)
 	    len = MINIMAL_SIZE;
 	else
@@ -246,8 +256,10 @@ add_buff(
 	p = alloc(offsetof(buffblock_T, b_str) + len + 1);
 	if (p == NULL)
 	    return; // no space, just forget it
-	buf->bh_space = (int)(len - slen);
 	vim_strncpy(p->b_str, s, (size_t)slen);
+	p->b_strlen = slen;
+	buf->bh_space = (int)(len - slen);
+	buf->bh_create_newblock = FALSE;
 
 	p->b_next = buf->bh_curr->b_next;
 	buf->bh_curr->b_next = p;
@@ -262,15 +274,13 @@ add_buff(
     static void
 delete_buff_tail(buffheader_T *buf, int slen)
 {
-    int len;
-
     if (buf->bh_curr == NULL)
 	return;  // nothing to delete
-    len = (int)STRLEN(buf->bh_curr->b_str);
-    if (len < slen)
+    if (buf->bh_curr->b_strlen < (size_t)slen)
 	return;
 
-    buf->bh_curr->b_str[len - slen] = NUL;
+    buf->bh_curr->b_str[buf->bh_curr->b_strlen - (size_t)slen] = NUL;
+    buf->bh_curr->b_strlen -= slen;
     buf->bh_space += slen;
 }
 
@@ -281,9 +291,10 @@ delete_buff_tail(buffheader_T *buf, int slen)
 add_num_buff(buffheader_T *buf, long n)
 {
     char_u	number[32];
+    int		numberlen;
 
-    sprintf((char *)number, "%ld", n);
-    add_buff(buf, number, -1L);
+    numberlen = vim_snprintf((char *)number, sizeof(number), "%ld", n);
+    add_buff(buf, number, (long)numberlen);
 }
 
 /*
@@ -297,6 +308,7 @@ add_char_buff(buffheader_T *buf, int c)
     int		len;
     int		i;
     char_u	temp[4];
+    long	templen;
 
     if (IS_SPECIAL(c))
 	len = 1;
@@ -314,6 +326,7 @@ add_char_buff(buffheader_T *buf, int c)
 	    temp[1] = K_SECOND(c);
 	    temp[2] = K_THIRD(c);
 	    temp[3] = NUL;
+	    templen = 3;
 	}
 #ifdef FEAT_GUI
 	else if (c == CSI)
@@ -323,22 +336,24 @@ add_char_buff(buffheader_T *buf, int c)
 	    temp[1] = KS_EXTRA;
 	    temp[2] = (int)KE_CSI;
 	    temp[3] = NUL;
+	    templen = 3;
 	}
 #endif
 	else
 	{
 	    temp[0] = c;
 	    temp[1] = NUL;
+	    templen = 1;
 	}
-	add_buff(buf, temp, -1L);
+	add_buff(buf, temp, templen);
     }
 }
 
 // First read ahead buffer. Used for translated commands.
-static buffheader_T readbuf1 = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T readbuf1 = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
 
 // Second read ahead buffer. Used for redo.
-static buffheader_T readbuf2 = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T readbuf2 = {{NULL, 0, {NUL}}, NULL, 0, 0, FALSE};
 
 /*
  * Get one byte from the read buffers.  Use readbuf1 one first, use readbuf2
@@ -390,12 +405,12 @@ start_stuff(void)
     if (readbuf1.bh_first.b_next != NULL)
     {
 	readbuf1.bh_curr = &(readbuf1.bh_first);
-	readbuf1.bh_space = 0;
+	readbuf1.bh_create_newblock = TRUE;		// force a new block to be created (see add_buff())
     }
     if (readbuf2.bh_first.b_next != NULL)
     {
 	readbuf2.bh_curr = &(readbuf2.bh_first);
-	readbuf2.bh_space = 0;
+	readbuf2.bh_create_newblock = TRUE;		// force a new block to be created (see add_buff())
     }
 }
 
@@ -529,6 +544,7 @@ CancelRedo(void)
 saveRedobuff(save_redo_T *save_redo)
 {
     char_u	*s;
+    size_t	slen;
 
     save_redo->sr_redobuff = redobuff;
     redobuff.bh_first.b_next = NULL;
@@ -536,11 +552,11 @@ saveRedobuff(save_redo_T *save_redo)
     old_redobuff.bh_first.b_next = NULL;
 
     // Make a copy, so that ":normal ." in a function works.
-    s = get_buffcont(&save_redo->sr_redobuff, FALSE);
+    s = get_buffcont(&save_redo->sr_redobuff, FALSE, &slen);
     if (s == NULL)
 	return;
 
-    add_buff(&redobuff, s, -1L);
+    add_buff(&redobuff, s, (long)slen);
     vim_free(s);
 }
 
@@ -2219,13 +2235,15 @@ do_key_input_pre(int c)
 	// character.  Only use it when changed, otherwise continue with the
 	// original character.
 	char_u *v_char;
+	size_t	v_charlen;
 
 	v_char = get_vim_var_str(VV_CHAR);
+	v_charlen = STRLEN(v_char);
 
 	// Convert special bytes when it is special string.
-	if (STRLEN(v_char) >= 3 && v_char[0] == K_SPECIAL)
+	if (v_charlen >= 3 && v_char[0] == K_SPECIAL)
 	    res = TERMCAP2KEY(v_char[1], v_char[2]);
-	else if (STRLEN(v_char) > 0)
+	else if (v_charlen > 0)
 	    res = PTR2CHAR(v_char);
     }
 
@@ -2438,9 +2456,9 @@ getchar_common(typval_T *argvars, typval_T *rettv)
 	    i += (*mb_char2bytes)(n, temp + i);
 	else
 	    temp[i++] = n;
-	temp[i++] = NUL;
+	temp[i] = NUL;
 	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = vim_strsave(temp);
+	rettv->vval.v_string = vim_strnsave(temp, i);
 
 	if (is_mouse_key(n))
 	{
@@ -2507,9 +2525,9 @@ f_getcharstr(typval_T *argvars, typval_T *rettv)
 	else
 	    temp[i++] = n;
     }
-    temp[i++] = NUL;
+    temp[i] = NUL;
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strsave(temp);
+    rettv->vval.v_string = vim_strnsave(temp, i);
 }
 
 /*
@@ -3256,7 +3274,7 @@ handle_mapping(
 		buf[1] = KS_EXTRA;
 		buf[2] = KE_IGNORE;
 		buf[3] = NUL;
-		map_str = vim_strsave(buf);
+		map_str = vim_strnsave(buf, 3);
 		if (State & MODE_CMDLINE)
 		{
 		    // redraw the command below the error
@@ -4265,6 +4283,7 @@ getcmdkeycmd(
 may_add_last_used_map_to_redobuff(void)
 {
     char_u  buf[3 + 20];
+    int	    buflen;
     int	    sid = -1;
 
     if (last_used_map != NULL)
@@ -4279,8 +4298,10 @@ may_add_last_used_map_to_redobuff(void)
     buf[0] = K_SPECIAL;
     buf[1] = KS_EXTRA;
     buf[2] = KE_SID;
-    vim_snprintf((char *)buf + 3, 20, "%d;", sid);
-    add_buff(&redobuff, buf, -1L);
+    buflen = 3;
+
+    buflen += vim_snprintf((char *)buf + 3, 20, "%d;", sid);
+    add_buff(&redobuff, buf, (long)buflen);
 }
 #endif
 

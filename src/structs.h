@@ -573,6 +573,7 @@ typedef struct buffheader buffheader_T;
 struct buffblock
 {
     buffblock_T	*b_next;	// pointer to next buffblock
+    size_t	b_strlen;	// length of b_str, excluding the NUL
     char_u	b_str[1];	// contents (actually longer)
 };
 
@@ -585,6 +586,7 @@ struct buffheader
     buffblock_T	*bh_curr;	// buffblock for appending
     int		bh_index;	// index for reading
     int		bh_space;	// space in bh_curr for appending
+    int		bh_create_newblock;	// create a new block?
 };
 
 typedef struct
