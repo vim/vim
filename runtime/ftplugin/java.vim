@@ -99,6 +99,7 @@ augroup END
 let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
 		\     " formatoptions< comments< commentstring< path< includeexpr<" .
 		\     " | unlet! b:browsefilter"
+		\     " | exe 'autocmd! ftplugin-java BufWrite <buffer>' | silent! augroup! ftplugin-java"
 
 " See ":help vim9-mix".
 if !has("vim9script")
