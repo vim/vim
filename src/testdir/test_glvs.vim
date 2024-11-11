@@ -1,28 +1,43 @@
 " Tests for GetLatestVimScripts plugin
 
+" vim feature
+set nocp
+set cpo&vim
+
 " constants
 const s:dotvim= has("win32") ? "vimfiles" : ".vim"
 const s:scriptdir = $"{$HOME}/{s:dotvim}/GetLatest"
 const s:vimdir = expand("<script>:h:h:h")
 const s:packages = {
     \ 'vmb': {
-        \ 'spec': '6106 1 :AutoInstall: setpwsh.vmb',
-        \ 'package': 'GetLatest/Installed/setpwsh.vmb',
-        \ 'files': ['pack/setpwsh/start/setpwsh/doc/setpwsh.txt',
-        \           'pack/setpwsh/start/setpwsh/plugin/setpwsh.vim']
+        \ 'spec': '4979 1 :AutoInstall: AnsiEsc.vim',
+        \ 'files': ['plugin/AnsiEscPlugin.vim', 'autoload/AnsiEsc.vim']
+        \ },
+    \ 'vim.bz2': {
+        \ 'spec': '514 1 :AutoInstall: mrswin.vim',
+        \ 'files': ['plugin/mrswin.vim']
+        \ },
+    \ 'vba.gz': {
+        \ 'spec': '120 1 :AutoInstall: Decho.vim',
+        \ 'package': 'GetLatest/Installed/Decho.vba',
+        \ 'files': ['plugin/Decho.vim', 'syntax/Decho.vim']
+        \ },
+    \ 'tar.xz': {
+        \ 'spec': '5632 1 :AutoInstall: dumpx',
+        \ 'package': 'GetLatest/Installed/dumpx.tar',
+        \ 'files': ['dumpx/plugin/dumpx.vim', 'dumpx/doc/dumpx.txt']
         \ }
     \ }
 
 " Before each test recreate the .vim dir structure expected by GLVS and load the plugin
 func SetUp()
 
-    " vim feature
-    set nocp
-    set cpo&vim
-
     " add the required GetLatest dir (note $HOME is a dummy)
     call mkdir(s:scriptdir, "p")
     let &runtimepath = $"{$HOME}/{s:dotvim},{s:vimdir}/runtime"
+
+    " add plugin dir
+    call mkdir($"{$HOME}/{s:dotvim}/plugin")
 
     " doc file is required for the packages which use :helptags
     let docdir = $"{$HOME}/{s:dotvim}/doc"
@@ -35,6 +50,14 @@ func SetUp()
     " (instead of relying on autoload) because set up depends on shell selection
     runtime plugin/vimballPlugin.vim
     runtime plugin/getscriptPlugin.vim
+
+    " provide accesibility to git binary tools like unzip (for gzip.vim and other plugins)
+    if has('win32') && !executable('gunzip') && executable('git')
+        let git_path = trim(system('powershell -Command "Split-Path (Split-Path (gcm git).Source)"'))
+        let $PATH .= $';{git_path}\usr\bin;{git_path}\mingw64\bin'
+        " some of the git tools are script and bash must be called explicitly
+        let g:GetLatestVimScripts_gunzip="bash gunzip"
+    endif
 
 endfunc
 
@@ -107,9 +130,12 @@ func ValidateInstall(package)
     call assert_true(s:packages->has_key(a:package), "This package is unexpected")
 
     " check if installation work out
-    let check = filereadable($"{$HOME}/{s:dotvim}/".s:packages[a:package]['package'])
-    call assert_true(check, "The plugin was not downloaded")
+    if s:packages[a:package]->has_key('package')
+        let check = filereadable($"{$HOME}/{s:dotvim}/".s:packages[a:package]['package'])
+        call assert_true(check, "The plugin was not downloaded")
+    endif
 
+    call assert_true(s:packages[a:package]->has_key('files'), "This package lacks validation files")
     for file in s:packages[a:package]['files']
         let check = filereadable($"{$HOME}/{s:dotvim}/".file)
         call assert_true(check, "The plugin was not installed")
@@ -160,5 +186,140 @@ func Test_glvs_powershell_vmb()
     GLVS
 
     call ValidateInstall('vmb')
+
+endfunc
+
+func Test_glvs_default_vim_bz2()
+
+    " select different shells
+    call SetShell('default')
+
+    " add the corresponding script
+    call SelectScript('vim.bz2')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('vim.bz2')
+
+endfunc
+
+func Test_glvs_powershell_vim_bz2()
+
+    " select different shells
+    call SetShell('powershell')
+
+    " add the corresponding script
+    call SelectScript('vim.bz2')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('vim.bz2')
+
+endfunc
+
+func Test_glvs_pwsh_vim_bz2()
+
+    " select different shells
+    call SetShell('pwsh')
+
+    " add the corresponding script
+    call SelectScript('vim.bz2')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('vim.bz2')
+
+endfunc
+
+func Test_glvs_default_vba_gz()
+
+    " select different shells
+    call SetShell('default')
+
+    " add the corresponding script
+    call SelectScript('vba.gz')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('vba.gz')
+
+endfunc
+
+func Test_glvs_powershell_vba_gz()
+
+    " select different shells
+    call SetShell('powershell')
+
+    " add the corresponding script
+    call SelectScript('vba.gz')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('vba.gz')
+
+endfunc
+
+func Test_glvs_pwsh_vba_gz()
+
+    " select different shells
+    call SetShell('pwsh')
+
+    " add the corresponding script
+    call SelectScript('vba.gz')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('vba.gz')
+
+endfunc
+
+func Test_glvs_default_tar_xz()
+
+    " select different shells
+    call SetShell('default')
+
+    " add the corresponding script
+    call SelectScript('tar.xz')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('tar.xz')
+
+endfunc
+
+func Test_glvs_powershell_tar_xz()
+
+    " select different shells
+    call SetShell('powershell')
+
+    " add the corresponding script
+    call SelectScript('tar.xz')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('tar.xz')
+
+endfunc
+
+func Test_glvs_pwsh_tar_xz()
+
+    " select different shells
+    call SetShell('pwsh')
+
+    " add the corresponding script
+    call SelectScript('tar.xz')
+
+    " load the plugins specified
+    GLVS
+
+    call ValidateInstall('tar.xz')
 
 endfunc
