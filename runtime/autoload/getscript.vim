@@ -561,8 +561,8 @@ fun! s:GetOneScript(...)
 "    call Decho(".new|exe silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid)."|bw!")
     new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid)|bw!
    else
-"    call Decho(".exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr).latestsrcid
-    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr).latestsrcid
+"    call Decho(".exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid)
+    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape(g:GetLatestVimScripts_downloadaddr.latestsrcid)
    endif
 
    " --------------------------------------------------------------------------
@@ -665,8 +665,8 @@ fun! s:GetOneScript(...)
       exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".installdir
      endif
      if tgtdir != "plugin"
-"      call Decho("exe silent !".g:GetLatestVimScripts_mv." plugin/".shellescape(pname)." ".tgtdir)
-      exe "silent !".g:GetLatestVimScripts_mv." plugin/".shellescape(pname)." ".tgtdir
+"      call Decho("exe silent !".g:GetLatestVimScripts_mv." ".shellescape("plugin/".pname)." ".tgtdir)
+      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape("plugin/".pname)." ".tgtdir
      endif
      
      " helptags step
