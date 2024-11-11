@@ -1,0 +1,21 @@
+# https://spec.editorconfig.org/#supported-pairs
+root = true
+
+[*]
+indent_style = tab
+tab_width = 8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{c,h,proto}]
+indent_size = 4
+
+[*.{md,yml,sh,bat}]
+# This will become the default after we migrate the codebase
+indent_style = space
+indent_size = 2
+
+[*.md]
+# Markdown uses trailing whitespaces to do an hard line break
+# https://spec.commonmark.org/0.31.2/#hard-line-breaks
+trim_trailing_whitespace = false
