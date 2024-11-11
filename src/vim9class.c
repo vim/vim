@@ -2777,12 +2777,13 @@ done:
  * "rettv".  If "is_object" is TRUE, then the object member variable table is
  * searched.  Otherwise the class member variable table is searched.
  */
-    static int
+    int
 get_member_tv(
     class_T	*cl,
     int		is_object,
     char_u	*name,
     size_t	namelen,
+    class_T	*current_class,
     typval_T	*rettv)
 {
     ocmember_T *m;
@@ -2793,7 +2794,8 @@ get_member_tv(
     if (m == NULL)
 	return FAIL;
 
-    if (*name == '_')
+    if (*name == '_' && (current_class == NULL ||
+				!class_instance_of(current_class, cl)))
     {
 	emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name, 0, cl);
@@ -2873,7 +2875,7 @@ call_oc_method(
 
     if (ocm == NULL && *fp->uf_name == '_')
     {
-	// Cannot access a private method outside of a class
+	// Cannot access a protected method outside of a class
 	semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 	return FAIL;
     }
@@ -2912,6 +2914,33 @@ call_oc_method(
 	return FAIL;
     }
     *arg = argp;
+
+    return OK;
+}
+
+/*
+ * Create a partial typval for "obj.obj_method" and store it in "rettv".
+ * Returns OK on success and FAIL on memory allocation failure.
+ */
+    int
+obj_method_to_partial_tv(object_T *obj, ufunc_T *obj_method, typval_T *rettv)
+{
+    partial_T *pt = ALLOC_CLEAR_ONE(partial_T);
+    if (pt == NULL)
+	return FAIL;
+
+    pt->pt_refcount = 1;
+    if (obj != NULL)
+    {
+	pt->pt_obj = obj;
+	++pt->pt_obj->obj_refcount;
+    }
+    pt->pt_auto = TRUE;
+    pt->pt_func = obj_method;
+    func_ptr_ref(pt->pt_func);
+
+    rettv->v_type = VAR_PARTIAL;
+    rettv->vval.v_partial = pt;
 
     return OK;
 }
@@ -2978,7 +3007,7 @@ class_object_index(
 	// Search in the object member variable table and the class member
 	// variable table.
 	int is_object = rettv->v_type == VAR_OBJECT;
-	if (get_member_tv(cl, is_object, name, len, rettv) == OK)
+	if (get_member_tv(cl, is_object, name, len, NULL, rettv) == OK)
 	{
 	    *arg = name_end;
 	    return OK;
@@ -2989,28 +3018,17 @@ class_object_index(
 	ufunc_T	*fp = method_lookup(cl, rettv->v_type, name, len, &fidx);
 	if (fp != NULL)
 	{
-	    // Private methods are not accessible outside the class
+	    // Protected methods are not accessible outside the class
 	    if (*name == '_')
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 		return FAIL;
 	    }
 
-	    partial_T	*pt = ALLOC_CLEAR_ONE(partial_T);
-	    if (pt == NULL)
+	    if (obj_method_to_partial_tv(is_object ? rettv->vval.v_object :
+						NULL, fp, rettv) == FAIL)
 		return FAIL;
 
-	    pt->pt_refcount = 1;
-	    if (is_object)
-	    {
-		pt->pt_obj = rettv->vval.v_object;
-		++pt->pt_obj->obj_refcount;
-	    }
-	    pt->pt_auto = TRUE;
-	    pt->pt_func = fp;
-	    func_ptr_ref(pt->pt_func);
-	    rettv->v_type = VAR_PARTIAL;
-	    rettv->vval.v_partial = pt;
 	    *arg = name_end;
 	    return OK;
 	}
