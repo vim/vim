@@ -5,6 +5,7 @@ set nocp
 set cpo&vim
 
 " constants
+const s:keep_path = $PATH
 const s:dotvim= has("win32") ? "vimfiles" : ".vim"
 const s:scriptdir = $"{$HOME}/{s:dotvim}/GetLatest"
 const s:vimdir = expand("<script>:h:h:h")
@@ -51,13 +52,20 @@ func SetUp()
     runtime plugin/vimballPlugin.vim
     runtime plugin/getscriptPlugin.vim
 
-    " provide accesibility to git binary tools like unzip (for gzip.vim and other plugins)
-    if has('win32') && !executable('gunzip') && executable('git')
-        let git_path = trim(system('powershell -Command "Split-Path (Split-Path (gcm git).Source)"'))
-        let $PATH .= $';{git_path}\usr\bin;{git_path}\mingw64\bin'
-        " some of the git tools are script and bash must be called explicitly
-        let g:GetLatestVimScripts_gunzip="bash gunzip"
-    endif
+   if has('win32') && !executable('gunzip')
+       if exists('$CI') && executable('7z')
+           " github runners have 7zip installed
+           let g:GetLatestVimScripts_gunzip="7z e"
+       elseif executable('git')
+            " provide accesibility to git binary tools like unzip (for gzip.vim and other plugins)
+           let git_path = trim(system('powershell -Command "Split-Path (Split-Path (gcm git).Source)"'))
+           let $PATH .= $';{git_path}\usr\bin;{git_path}\mingw64\bin'
+           " some of the git tools are script and bash must be called explicitly
+           let g:GetLatestVimScripts_gunzip="bash gunzip"
+       else
+            call assert_report("Missing tool to decompress .gz files")
+       endif
+   endif
 
 endfunc
 
@@ -74,6 +82,9 @@ func TearDown()
         call map(script_globals, '"g:" . v:val')
         exe "unlet " . script_globals->join()
     endif
+
+    " restore path
+    let $PATH = s:keep_path
 endfunc
 
 " Ancillary functions
