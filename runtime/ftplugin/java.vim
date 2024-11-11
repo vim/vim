@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Sep 26
+" Last Change:		2024 Nov 11
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -89,6 +89,11 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
 	let b:browsefilter .= "All Files (*)\t*\n"
     endif
 endif
+
+augroup ftplugin-java
+	autocmd! * <buffer>
+	autocmd BufWrite <buffer> if get(b:, 'compiler', '') ==# 'spotbugs' | silent compiler spotbugs | endif
+augroup END
 
 " Undo the stuff we changed.
 let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
