@@ -92,14 +92,14 @@ endif
 
 augroup ftplugin-java
 	autocmd! * <buffer>
-	autocmd BufWrite <buffer> if get(b:, 'compiler', '') ==# 'spotbugs' | silent compiler spotbugs | endif
+	autocmd BufWritePost <buffer> if get(b:, 'compiler', '') ==# 'spotbugs' | silent compiler spotbugs | endif
 augroup END
 
 " Undo the stuff we changed.
 let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
 		\     " formatoptions< comments< commentstring< path< includeexpr<" .
 		\     " | unlet! b:browsefilter"
-		\     " | exe 'autocmd! ftplugin-java BufWrite <buffer>' | silent! augroup! ftplugin-java"
+		\     " | exe 'autocmd! ftplugin-java BufWritePost <buffer>' | silent! augroup! ftplugin-java"
 
 " See ":help vim9-mix".
 if !has("vim9script")
