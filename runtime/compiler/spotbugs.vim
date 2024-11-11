@@ -40,19 +40,18 @@ if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
   endfunction
 
 else
-
   function! s:GetDeclaredTypeNames() abort
     " Undo the unsetting of &hls, see below
     if &hls | defer execute('set hls') | endif
+    " Possibly restore the current value for register "y", see below
+    defer execute('let @y = '..(!empty(string(@y)) ? string(@y) : '""'))
     " Copy buffer contents for modification
-    silent %y
+    silent %y y
     new
     defer execute('silent bwipeout')
     " Apply ":help scratch-buffer" effects
     setlocal buftype=nofile bufhidden=hide noswapfile nohls
-    silent normal P
-    let @" = ""
-    let @0 = ""
+    silent normal "yP
     " Discard text blocks and strings
     silent keeppatterns %s/\\\@<!"""\_.\{-}\\\@<!"""\|\\"//ge
     silent keeppatterns %s/".*"//ge
@@ -69,7 +68,6 @@ else
     endwhile
     return type_names
   endfunction
-
 endif
 
 function! s:GetClassFiles() abort
