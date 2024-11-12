@@ -24,10 +24,8 @@ endif
 setlocal comments=s1:{-,mb:-,ex:-},:\|\|\|,:--
 setlocal commentstring=--\ %s
 
-" Add ? to iskeyword for Idris2's type-level operators like '?', allowing them to be treated as part of words
-" The ?, incidentally, differs from _ in that _ will be bound as an implicit argument if unresolved after checking the type of test, but ? will be left as a hole to be resolved later. Otherwise, they can be used interchangeably.
-" Example code `test : Vect ? Int`
-setlocal iskeyword+=?
+" makes ? a part of a word, e.g. for named holes `vzipWith f [] [] = ?vzipWith_rhs_3`, uncomment if want to reenable
+" setlocal iskeyword+=?
 
 setlocal wildignore+=*.ibc
 
