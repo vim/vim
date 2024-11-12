@@ -173,6 +173,7 @@ NEW_TESTS = \
 	test_gf \
 	test_glob2regpat \
 	test_global \
+	test_glvs \
 	test_gn \
 	test_goto \
 	test_gui \
@@ -437,6 +438,7 @@ NEW_TESTS_RES = \
 	test_gettext_make.res \
 	test_getvar.res \
 	test_gf.res \
+	test_glvs.res \
 	test_gn.res \
 	test_goto.res \
 	test_gui.res \
