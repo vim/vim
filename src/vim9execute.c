@@ -2271,6 +2271,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		    // Get the current function
 		    ufunc_T *ufunc = (((dfunc_T *)def_functions.ga_data)
 					+ ectx->ec_dfunc_idx)->df_ufunc;
+		    where_T where = WHERE_INIT;
 
 		    // Check whether the member variable is writeable
 		    if ((m->ocm_access != VIM_ACCESS_ALL) &&
@@ -2283,6 +2284,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 			emsg_var_cl_define(msg, m->ocm_name, 0, cl);
 			status = FAIL;
 		    }
+		    // Fail if the variable is a const or final or the type
+		    // is not compatible
+		    else if (oc_var_check_ro(cl, m) ||
+			     check_typval_type(m->ocm_type, tv, where)
+								== FAIL)
+			status = FAIL;
 		    else
 			lidx = m_idx;
 		}

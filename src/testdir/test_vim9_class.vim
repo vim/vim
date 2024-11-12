@@ -11546,6 +11546,54 @@ def Test_any_obj_var_type()
     Fn(null_object)
   END
   v9.CheckScriptFailure(lines, 'E1360: Using a null object', 1)
+
+  # Try to change a const object variable using a "any" variable
+  lines =<< trim END
+    vim9script
+    class A
+      public const v1: number = 123
+    endclass
+
+    def Fn(o: any)
+      o.v1 = 321
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot change read-only variable "v1" in class "A"', 1)
+
+  # Try to change a final object variable using a "any" variable
+  lines =<< trim END
+    vim9script
+    class A
+      public final v1: number = 123
+    endclass
+
+    def Fn(o: any)
+      o.v1 = 321
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot change read-only variable "v1" in class "A"', 1)
+
+  # Assign a different type of value to an "any" type object variable
+  lines =<< trim END
+    vim9script
+    class A
+      public var v1: list<any> = [1, 2]
+    endclass
+
+    def Fn(o: A)
+      o.v1 = 'abc'
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected list<any> but got string', 1)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
