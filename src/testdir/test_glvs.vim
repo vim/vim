@@ -119,14 +119,14 @@ func SetShell(shell)
         if !has("win32")
             throw 'Skipped: powershell desktop is missing'
         endif
-        set shell=powershell shellcmdflag=-Command shellxquote=\"
+        set shell=powershell shellcmdflag=-NoProfile\ -Command shellxquote=\"
         set shellpipe=2>&1\ \|\ Out-File\ -Encoding\ default shellredir=2>&1\ \|\ Out-File\ -Encoding\ default
     elseif a:shell == "pwsh" " help dos-powershell
         " powershell core works crossplatform
         if !executable("pwsh")
             throw 'Skipped: powershell core is missing'
         endif
-        set shell=pwsh shellcmdflag=-c shellpipe=>%s\ 2>&1 shellredir=>%s\ 2>&1
+        set shell=pwsh shellcmdflag=-NoProfile\ -c shellpipe=>%s\ 2>&1 shellredir=>%s\ 2>&1
         if has("win32")
             set shellxquote=\"
         else
