@@ -1,10 +1,9 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
-" Maintainer:   @Konfekt
-" Last Change:  2024 nov 6
+" Maintainer:   @konfekt and @zzzxywvut
+" Last Change:  2024 nov 12
 
 if exists("current_compiler") | finish | endif
-let current_compiler = "spotbugs"
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -85,6 +84,14 @@ function! s:GetClassFiles() abort
   return class_files
 endfunction
 
+function! s:IsClassFileCurrent(javaFile)
+    let classFile = substitute(a:javaFile, '\.java$', '.class', '')
+    return filereadable(classFile) && getftime(classFile) > getftime(a:javaFile)
+endfunction
+
+if !s:IsClassFileCurrent(expand('%')) && executable('javac') | compiler javac | make %:S | endif
+
+let current_compiler = "spotbugs"
 " CompilerSet makeprg=spotbugs
 let &makeprg = 'spotbugs'..(has('win32')?'.bat':'')..' '..
     \ get(b:, 'spotbugs_makeprg_params', get(g:, 'spotbugs_makeprg_params', '-workHard -experimental'))..
@@ -96,5 +103,6 @@ CompilerSet errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
 
 delfunction s:GetClassFiles
 delfunction s:GetDeclaredTypeNames
+delfunction s:IsClassFileCurrent
 let &cpo = s:cpo_save
 unlet s:slash s:names s:types s:cpo_save
