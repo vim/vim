@@ -1156,7 +1156,7 @@ au BufRead,BufNewFile usw2kagt.log\c,usw2kagt.*.log\c,*.usw2kagt.log\c	setf usw2
 " Ipfilter
 au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter
 
-" Ipkg
+" Ipkg for Idris 2 language
 au BufNewFile,BufRead *.ipkg			setf ipkg
 
 " Informix 4GL (source - canonical, include file, I4GL+M4 preproc.)
