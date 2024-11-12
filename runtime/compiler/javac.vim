@@ -11,6 +11,7 @@ let current_compiler = "javac"
 let s:cpo_save = &cpo
 set cpo&vim
 
+" these settings are also used by spotbugs.vim
 if exists("g:javac_makeprg_params")
   execute $'CompilerSet makeprg=javac\ {escape(g:javac_makeprg_params, ' \|"')}'
 else

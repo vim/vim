@@ -89,7 +89,18 @@ function! s:IsClassFileCurrent(javaFile)
     return filereadable(classFile) && getftime(classFile) > getftime(a:javaFile)
 endfunction
 
-if !s:IsClassFileCurrent(expand('%')) && executable('javac') | compiler javac | make %:S | endif
+if !s:IsClassFileCurrent(expand('%')) && executable('javac')
+  " copy-paste from compiler/javac.vim as :CompilerSet is defined by Vim if
+  " :compiler sources a compiler/*.vim file and :compiler javac leads to
+  " errors about redefining it (as it is at this point already defined by Vim)
+  setlocal makeprg=javac
+  setlocal errorformat=%E%f:%l:\ error:\ %m,
+		    \%W%f:%l:\ warning:\ %m,
+		    \%-Z%p^,
+		    \%-C%.%#,
+		    \%-G%.%#
+	make %:S
+endif
 
 let current_compiler = "spotbugs"
 " CompilerSet makeprg=spotbugs
