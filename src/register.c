@@ -198,6 +198,7 @@ valid_yank_reg(
 #endif
 							)
 	return TRUE;
+#ifndef FEAT_CLIPBOARD
     // clipboard support not enabled in this build
     else if (regname == '*' || regname == '+')
     {
@@ -205,6 +206,7 @@ valid_yank_reg(
 	msg_warn_missing_clipboard();
 	return FALSE;
     }
+#endif
     return FALSE;
 }
 
