@@ -4159,4 +4159,23 @@ func Test_slice()
   call assert_equal(0, slice(v:true, 1))
 endfunc
 
+" Test for getcellwidth()
+" Pixel size of a cell is terminal-dependent, so in the test, only the list and size 2 are checked.
+func Test_getcellpixels()
+  " Not yet Windows-compatible
+  CheckNotMSWindows
+  let cellpixels = getcellpixels()
+  call assert_equal(2, len(cellpixels))
+endfunc
+
+" Test for getcellwidth() on gVim
+func Test_getcellpixels_gui()
+  " Not yet Windows-compatible
+  CheckNotMSWindows
+  if has("gui_running")
+    let cellpixels = getcellpixels()
+    call assert_equal(0, len(cellpixels))
+  endif
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

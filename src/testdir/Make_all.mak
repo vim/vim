@@ -164,7 +164,6 @@ NEW_TESTS = \
 	test_functions \
 	test_function_lists \
 	test_ga \
-	test_getcellpixels \
 	test_getcwd \
 	test_gettext \
 	test_gettext_cp1251 \
