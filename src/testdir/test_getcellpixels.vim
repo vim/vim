@@ -1,4 +1,4 @@
-" Tests for Unicode manipulations
+" Tests for get cell pixel size.
 
 source check.vim
 
