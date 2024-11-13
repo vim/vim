@@ -168,8 +168,8 @@ NEW_TESTS = \
 	test_getcwd \
 	test_gettext \
 	test_gettext_cp1251 \
-	test_gettext_make \
 	test_gettext_utf8 \
+	test_gettext_make \
 	test_getvar \
 	test_gf \
 	test_glob2regpat \
