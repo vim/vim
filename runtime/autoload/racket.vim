@@ -1,6 +1,6 @@
 " Maintainer: D. Ben Knoble <ben.knoble+github@gmail.com>
 " URL: https://github.com/benknoble/vim-racket
-" Last Change: 2023 Sep 22
+" Last Change: 2024 Nov 12
 vim9script
 
 def MakePatternFromLiterals(xs: list<string>): string
@@ -170,7 +170,7 @@ def PosLT(left: dict<any>, right: dict<any>): bool
 enddef
 
 def IsForFold(word: string): bool
-  return ['for/fold', 'for/foldr', 'for*/fold', 'for*/foldr']->index(word) >= 0
+  return ['for/fold', 'for/foldr', 'for/lists', 'for*/fold', 'for*/foldr', 'for*/lists']->index(word) >= 0
 enddef
 
 def IsSecondForm(blnum: number, bcol: number, vlnum: number): bool
@@ -209,5 +209,5 @@ def IsSecondForm(blnum: number, bcol: number, vlnum: number): bool
   endwhile
 
   # assert_report(printf('forms seen pre-return: %d', forms_seen))
-  return forms_seen == 2 || (forms_seen == 1 && !empty(stack))
+  return (forms_seen == 2 && empty(stack)) || (forms_seen == 1 && !empty(stack))
 enddef
