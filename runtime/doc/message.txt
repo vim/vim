@@ -29,7 +29,7 @@ depends on the 'shortmess' option.
 				Clear messages, keeping only the {count} most
 				recent ones.
 
-The number of remembered messages is fixed at 200.
+The number of remembered messages depends on 'maxmsghistory'.
 
 								*g<*
 The "g<" command can be used to see the last page of previous command output.

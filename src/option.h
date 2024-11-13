@@ -772,6 +772,7 @@ EXTERN long	p_mmd;		// 'maxmapdepth'
 EXTERN long	p_mm;		// 'maxmem'
 EXTERN long	p_mmp;		// 'maxmempattern'
 EXTERN long	p_mmt;		// 'maxmemtot'
+EXTERN long	p_mmh;		// 'maxmsghistory'
 #ifdef FEAT_MENU
 EXTERN long	p_mis;		// 'menuitems'
 #endif

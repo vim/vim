@@ -5625,6 +5625,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	used.
 	Also see 'maxmem'.
 
+						*'maxmsghistory'* *'mmh'*
+'maxmsghistory' 'mmh'	number	(default 1000)
+			global
+	Maximum amount of |:messages| history.
+
 						*'menuitems'* *'mis'*
 'menuitems' 'mis'	number	(default 25)
 			global

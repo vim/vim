@@ -1685,6 +1685,9 @@ static struct vimoption options[] =
 			    (char_u *)&p_mmt, PV_NONE, NULL, NULL,
 			    {(char_u *)DFLT_MAXMEMTOT, (char_u *)0L}
 			    SCTX_INIT},
+    {"maxmsghistory","mmh", P_NUM|P_VI_DEF,
+			    (char_u *)&p_mmh, PV_NONE, NULL, NULL,
+			    {(char_u *)1000L, (char_u *)0L} SCTX_INIT},
     {"menuitems",   "mis",  P_NUM|P_VI_DEF,
 #ifdef FEAT_MENU
 			    (char_u *)&p_mis, PV_NONE, NULL, NULL,
