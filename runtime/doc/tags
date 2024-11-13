@@ -494,6 +494,7 @@ $quote	eval.txt	/*$quote*
 'maxmem'	options.txt	/*'maxmem'*
 'maxmempattern'	options.txt	/*'maxmempattern'*
 'maxmemtot'	options.txt	/*'maxmemtot'*
+'maxmsghistory'	options.txt	/*'maxmsghistory'*
 'mco'	options.txt	/*'mco'*
 'mef'	options.txt	/*'mef'*
 'menc'	options.txt	/*'menc'*
@@ -508,6 +509,7 @@ $quote	eval.txt	/*$quote*
 'mls'	options.txt	/*'mls'*
 'mm'	options.txt	/*'mm'*
 'mmd'	options.txt	/*'mmd'*
+'mmh'	options.txt	/*'mmh'*
 'mmp'	options.txt	/*'mmp'*
 'mmt'	options.txt	/*'mmt'*
 'mod'	options.txt	/*'mod'*
