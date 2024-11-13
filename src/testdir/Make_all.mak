@@ -349,7 +349,8 @@ NEW_TESTS = \
 	test_zip_plugin \
 	test_alot_latin \
 	test_alot_utf8 \
-	test_alot
+	test_alot \
+	test_getcellpixels
 
 # Test targets that use runtest.vim.
 # Keep test_alot*.res as the last one, sort the others.
