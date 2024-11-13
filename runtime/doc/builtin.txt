@@ -3791,7 +3791,7 @@ getcellpixels()						*getcellpixels()*
 		Returns a |List| of terminal cell pixel size.
 		List format is [xpixels, ypixels].
 		If failed get size returns [].
-		Only works on Unix.  For gVim returns [].
+		Only works on (terminal) Unix.  For gVim, on other systems and on failure returns [].
 
 		Return type: list<any>
 
