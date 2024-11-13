@@ -1045,4 +1045,16 @@ func Test_insert_small_delete_replace_mode()
   bwipe!
 endfunc
 
+" Test for W23 when clipboard is not available
+func Test_clipboard_regs_not_working()
+  CheckNotGui
+  if !has("clipboard")
+    new
+    call append(0, "text for clipboard test")
+    let mess = execute(':norm "*yiw')
+    call assert_match('W23', mess)
+    bw!
+  endif
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Apr 22
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Nov 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -708,6 +708,14 @@ Examples: (assuming the default option values)
 Note that the text in the "+ register remains available when making a Visual
 selection, which makes other text available in the "* register.  That allows
 overwriting selected text.
+
+								*W23*
+When you are yanking into the "* or "+ register and Vim cannot establish a
+connection to the X11 selection (or clipboard), it will use register 0 and
+output a warning:
+
+  Warning: Clipboard register not available, using register 0 ~
+
 							*x11-cut-buffer*
 There are, by default, 8 cut-buffers: CUT_BUFFER0 to CUT_BUFFER7.  Vim only
 uses CUT_BUFFER0, which is the one that xterm uses by default.

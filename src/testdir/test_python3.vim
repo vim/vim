@@ -299,7 +299,7 @@ func Test_unicode()
 endfunc
 
 " Test vim.eval() with various types.
-func Test_python3_vim_val()
+func Test_python3_vim_eval()
   call assert_equal("\n8",             execute('py3 print(vim.eval("3+5"))'))
   call assert_equal("\n3.140000",    execute('py3 print(vim.eval("1.01+2.13"))'))
   call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
@@ -1025,6 +1025,52 @@ func Test_python3_pyeval()
   call AssertException(['let v = py3eval("undefined_name")'],
         \ "Vim(let):NameError: name 'undefined_name' is not defined")
   call AssertException(['let v = py3eval("vim")'], 'E859:')
+endfunc
+
+" Test for py3eval with locals
+func Test_python3_pyeval_locals()
+  let str = 'a string'
+  let num = 0xbadb33f
+  let d = {'a': 1, 'b': 2, 'c': str}
+  let l = [ str, num, d ]
+
+  let locals = #{
+        \ s: str,
+        \ n: num,
+        \ d: d,
+        \ l: l,
+        \ }
+
+  " check basics
+  call assert_equal('a string', py3eval('s', locals))
+  call assert_equal(0xbadb33f, py3eval('n', locals))
+  call assert_equal(d, py3eval('d', locals))
+  call assert_equal(l, py3eval('l', locals))
+  call assert_equal('a,b,c', py3eval('b",".join(l)', {'l': ['a', 'b', 'c']}))
+  call assert_equal('hello', 's'->py3eval({'s': 'hello'}))
+  call assert_equal('a,b,c', 'b",".join(l)'->py3eval({'l': ['a', 'b', 'c']}))
+
+  py3 << trim EOF
+  def __UpdateDict(d, upd):
+    d.update(upd)
+    return d
+
+  def __ExtendList(l, *args):
+    l.extend(*args)
+    return l
+  EOF
+
+  " check assign to dict member works like bindeval
+  call assert_equal(3, py3eval('__UpdateDict( d, {"c": 3} )["c"]', locals))
+  call assert_equal(3, d['c'])
+
+  " check append lo list
+  call assert_equal(4, py3eval('len(__ExtendList(l, ["new item"]))', locals))
+  call assert_equal("new item", l[-1])
+
+  " check calling a function
+  let StrLen = function('strlen')
+  call assert_equal(3, py3eval('f("abc")', {'f': StrLen}))
 endfunc
 
 " Test for vim.bindeval()

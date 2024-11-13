@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
+*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Nov 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -778,6 +778,7 @@ String manipulation:					*string-functions*
 	strdisplaywidth()	size of string when displayed, deals with tabs
 	setcellwidths()		set character cell width overrides
 	getcellwidths()		get character cell width overrides
+	getcellpixels()		get character cell pixel size
 	reverse()		reverse the order of characters in a string
 	substitute()		substitute a pattern match with a string
 	submatch()		get a specific match in ":s" and substitute()
@@ -1394,6 +1395,7 @@ Various:					*various-functions*
 	did_filetype()		check if a FileType autocommand was used
 	diff()			diff two Lists of strings
 	eventhandler()		check if invoked by an event handler
+	getcellpixels()		get List of cell pixel size
 	getpid()		get process ID of Vim
 	getscriptinfo()		get list of sourced vim scripts
 	getimstatus()		check if IME status is active

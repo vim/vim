@@ -2743,7 +2743,7 @@ do_ecmd(
 	}
 	if (buf == NULL)
 	    goto theend;
-	// autocommands try to edit a file that is goind to be removed,
+	// autocommands try to edit a file that is going to be removed,
 	// abort
 	if (buf_locked(buf))
 	{

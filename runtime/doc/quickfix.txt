@@ -361,7 +361,7 @@ processing a quickfix or location list command, it will be aborted.
 			Example: >
     :g/mypattern/caddexpr expand("%") .. ":" .. line(".") ..  ":" .. getline(".")
 <
-						*:lad* *:addd* *:laddexpr*
+						*:lad* *:ladd* *:laddexpr*
 :lad[dexpr] {expr}	Same as ":caddexpr", except the location list for the
 			current window is used instead of the quickfix list.
 
@@ -1426,6 +1426,32 @@ being checked.  To disable this set g:perl_compiler_force_warnings to a zero
 value.  For example: >
 	let g:perl_compiler_force_warnings = 0
 
+MYPY TYPE CHECKER					*compiler-mypy*
+
+Commonly used compiler options can be added to 'makeprg' by setting the
+b/g:mypy_makeprg_params variable.  For example: >
+
+	let b:mypy_makeprg_params = "--warn-unused-ignores"
+
+The global default is "--strict --ignore-missing-imports".
+
+RUFF LINTER						*compiler-ruff*
+
+Commonly used compiler options can be added to 'makeprg' by setting the
+b/g:ruff_makeprg_params variable.  For example: >
+
+	let b:ruff_makeprg_params = "--max-line-length "..&textwidth
+
+The global default is "--preview".
+
+PYLINT LINTER						*compiler-pylint*
+
+Commonly used compiler options can be added to 'makeprg' by setting the
+b/g:pylint_makeprg_params variable.  For example: >
+
+	let b:pylint_makeprg_params = "--max-line-length "..&textwidth
+
+The global default is "--jobs=0" to use (almost) all cores.
 
 PYUNIT COMPILER						*compiler-pyunit*
 

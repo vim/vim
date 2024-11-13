@@ -5,5 +5,6 @@
 #
 # Run this command to always ignore formatting commits in git blame
 # git config blame.ignoreRevsFile .git-blame-ignore-revs
-# 
-8ce738de3fd7192fa6274730594305cde780074c  # expand tabs to spaces in sound.c
+
+# Patch v9.1.0829 expanded tabs to spaces in sound.c
+8ce738de3fd7192fa6274730594305cde780074c

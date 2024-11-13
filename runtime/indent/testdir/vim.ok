@@ -951,3 +951,12 @@ endenum
 call prop_type_add('indent_after_literal_dict', #{ foo: 'bar' })
 call prop_type_delete('indent_after_literal_dict')
 " END_INDENT
+
+" START_INDENT
+silent function Foo()
+    return 42
+endfunction
+silent! function Bar()
+    return 42
+endfunction
+" END_INDENT

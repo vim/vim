@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 Nov 02
+*options.txt*	For Vim version 9.1.  Last change: 2024 Nov 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3515,7 +3515,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only alphanumeric characters, '-' and '_' can be used.
 
 						*'fillchars'* *'fcs'*
-'fillchars' 'fcs'	string	(default "vert:|,fold:-,eob:~")
+'fillchars' 'fcs'	string	(default "vert:|,fold:-,eob:~,lastline:@")
 			global or local to window |global-local|
 	Characters to fill the statuslines, vertical separators and special
 	lines in the window.

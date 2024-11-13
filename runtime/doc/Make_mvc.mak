@@ -10,7 +10,7 @@
 # TODO: to think about what to use instead of awk. PowerShell?
 #AWK =
 
-# Correct the following line for the where executeable file vim is installed.
+# Correct the following line for the where executable file vim is installed.
 # Please do not put the path in quotes.
 VIMPROG = D:\Programs\Vim\vim91\vim.exe
 

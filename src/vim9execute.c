@@ -2268,15 +2268,30 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		ocmember_T *m = object_member_lookup(cl, member, 0, &m_idx);
 		if (m != NULL)
 		{
-		    if (*member == '_')
+		    // Get the current function
+		    ufunc_T *ufunc = (((dfunc_T *)def_functions.ga_data)
+					+ ectx->ec_dfunc_idx)->df_ufunc;
+		    where_T where = WHERE_INIT;
+
+		    // Check whether the member variable is writeable
+		    if ((m->ocm_access != VIM_ACCESS_ALL) &&
+			    (ufunc->uf_class == NULL ||
+			     !class_instance_of(ufunc->uf_class, cl)))
 		    {
-			emsg_var_cl_define(
-					e_cannot_access_protected_variable_str,
-					m->ocm_name, 0, cl);
+			char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
+			    ? e_cannot_access_protected_variable_str
+			    : e_variable_is_not_writable_str;
+			emsg_var_cl_define(msg, m->ocm_name, 0, cl);
 			status = FAIL;
 		    }
-
-		    lidx = m_idx;
+		    // Fail if the variable is a const or final or the type
+		    // is not compatible
+		    else if (oc_var_check_ro(cl, m) ||
+			     check_typval_type(m->ocm_type, tv, where)
+								== FAIL)
+			status = FAIL;
+		    else
+			lidx = m_idx;
 		}
 		else
 		{
@@ -3117,6 +3132,73 @@ object_required_error(typval_T *tv)
     semsg(_(e_object_required_found_str), typename);
     vim_free(tofree);
     clear_type_list(&type_list);
+}
+
+/*
+ * Accessing the member of an object stored in a variable of type "any".
+ * Returns OK if the member variable is present.
+ * Returns FAIL if the variable is not found.
+ */
+    static int
+any_var_get_obj_member(class_T *current_class, isn_T *iptr, typval_T *tv)
+{
+    object_T	*obj = tv->vval.v_object;
+    typval_T	mtv;
+
+    if (obj == NULL)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_using_null_object));
+	return FAIL;
+    }
+
+    // get_member_tv() needs the object information in the typval argument.
+    // So set the object information.
+    copy_tv(tv, &mtv);
+
+    // 'name' can either be a object variable or a object method
+    int		namelen = STRLEN(iptr->isn_arg.string);
+    int		save_did_emsg = did_emsg;
+
+    if (get_member_tv(obj->obj_class, TRUE, iptr->isn_arg.string, namelen,
+						current_class, &mtv) == OK)
+    {
+	copy_tv(&mtv, tv);
+	clear_tv(&mtv);
+	return OK;
+    }
+
+    if (did_emsg != save_did_emsg)
+	return FAIL;
+
+    // could be a member function
+    ufunc_T	*obj_method;
+    int		obj_method_idx;
+
+    obj_method = method_lookup(obj->obj_class, VAR_OBJECT,
+				iptr->isn_arg.string, namelen,
+				&obj_method_idx);
+    if (obj_method == NULL)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	semsg(_(e_variable_not_found_on_object_str_str), iptr->isn_arg.string,
+		obj->obj_class->class_name);
+	return FAIL;
+    }
+
+    // Protected methods are not accessible outside the class
+    if (*obj_method->uf_name == '_'
+			&& !class_instance_of(current_class, obj->obj_class))
+    {
+	semsg(_(e_cannot_access_protected_method_str), obj_method->uf_name);
+	return FAIL;
+    }
+
+    // Create a partial for the member function
+    if (obj_method_to_partial_tv(obj, obj_method, tv) == FAIL)
+	return FAIL;
+
+    return OK;
 }
 
 /*
@@ -5482,6 +5564,7 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    // dict member with string key (dict['member'])
 	    case ISN_MEMBER:
 		{
 		    dict_T	*dict;
@@ -5526,35 +5609,51 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
-	    // dict member with string key
+	    // dict member with string key (dict.member)
+	    // or can be an object
 	    case ISN_STRINGMEMBER:
 		{
 		    dict_T	*dict;
 		    dictitem_T	*di;
 
 		    tv = STACK_TV_BOT(-1);
-		    if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_dictionary_required));
-			goto on_error;
-		    }
-		    dict = tv->vval.v_dict;
 
-		    if ((di = dict_find(dict, iptr->isn_arg.string, -1))
-								       == NULL)
+		    if (tv->v_type == VAR_OBJECT)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_key_not_present_in_dictionary_str),
-							 iptr->isn_arg.string);
-			goto on_error;
-		    }
-		    // Put the dict used on the dict stack, it might be used by
-		    // a dict function later.
-		    if (dict_stack_save(tv) == FAIL)
-			goto on_fatal_error;
+			if (dict_stack_save(tv) == FAIL)
+			    goto on_fatal_error;
 
-		    copy_tv(&di->di_tv, tv);
+			ufunc_T *ufunc = (((dfunc_T *)def_functions.ga_data)
+					+ ectx->ec_dfunc_idx)->df_ufunc;
+			// Class object (not a Dict)
+			if (any_var_get_obj_member(ufunc->uf_class, iptr, tv) == FAIL)
+			    goto on_error;
+		    }
+		    else
+		    {
+			if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    emsg(_(e_dictionary_required));
+			    goto on_error;
+			}
+			dict = tv->vval.v_dict;
+
+			if ((di = dict_find(dict, iptr->isn_arg.string, -1))
+								   == NULL)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    semsg(_(e_key_not_present_in_dictionary_str),
+						     iptr->isn_arg.string);
+			    goto on_error;
+			}
+			// Put the dict used on the dict stack, it might be
+			// used by a dict function later.
+			if (dict_stack_save(tv) == FAIL)
+			    goto on_fatal_error;
+
+			copy_tv(&di->di_tv, tv);
+		    }
 		}
 		break;
 

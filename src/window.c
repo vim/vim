@@ -7343,11 +7343,14 @@ command_height(void)
 	    // Recompute window positions.
 	    (void)win_comp_pos();
 
-	    // clear the lines added to cmdline
-	    if (full_screen)
-		screen_fill(cmdline_row, (int)Rows, 0,
-						   (int)Columns, ' ', ' ', 0);
-	    msg_row = cmdline_row;
+	    if (!need_wait_return)
+	    {
+		// clear the lines added to cmdline
+		if (full_screen)
+		    screen_fill(cmdline_row, (int)Rows, 0,
+						       (int)Columns, ' ', ' ', 0);
+		msg_row = cmdline_row;
+	    }
 	    redraw_cmdline = TRUE;
 	    return;
 	}

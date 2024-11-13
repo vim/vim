@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 03
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31790,7 +31790,7 @@ Changed ~
 - The features |++builtin_terms|, |+cmdline_info|, |+cmdwin|, |+file_in_path|,
   |+float|, |+path_extra|, |+textobjects|, |+wildignore| and |+wildmenu| are
   available in all the builds.
-- Support for Windows-XP is dropped.
+- Support for Windows-XP is dropped (starting with v9.0.0496)
 - Support for VisVim is removed.
 - The "small" and "big" builds are dropped in favor of "tiny" and "huge"
   builds.
@@ -41606,6 +41606,7 @@ Changed~
 - an interactive tutor plugin has been included |vim-tutor-mode|, can be
   started via |:Tutor|
 - improve the |vimtutor| and add a second chapter for more advanced tips
+- allow to pass local Vim script variables to python interpreter |py3eval()|
 
 							*added-9.2*
 Added ~
@@ -41620,6 +41621,7 @@ Functions: ~
 |foreach()|		apply function to List items
 |getcmdcomplpat()|	Shell command line completion
 |getcmdprompt()|	get prompt for input()/confirm()
+|getcellpixels()|	get List of terminal cell pixel size
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
 |id()|			get unique identifier for a Dict, List, Object,

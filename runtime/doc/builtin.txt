@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 01
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -222,6 +222,7 @@ getbufline({buf}, {lnum} [, {end}])
 getbufoneline({buf}, {lnum})	String	line {lnum} of buffer {buf}
 getbufvar({buf}, {varname} [, {def}])
 				any	variable {varname} in buffer {buf}
+getcellpixels()			List	get character cell pixel size
 getcellwidths()			List	get character cell width overrides
 getchangelist([{buf}])		List	list of change list items
 getchar([{expr}])		Number or String
@@ -467,9 +468,9 @@ prop_type_get({name} [, {props}])
 prop_type_list([{props}])	List	get list of property types
 pum_getpos()			Dict	position and size of pum if visible
 pumvisible()			Number	whether popup menu is visible
-py3eval({expr})			any	evaluate |python3| expression
-pyeval({expr})			any	evaluate |Python| expression
-pyxeval({expr})			any	evaluate |python_x| expression
+py3eval({expr} [, {locals}])	any	evaluate |python3| expression
+pyeval({expr} [, {locals}])	any	evaluate |Python| expression
+pyxeval({expr} [, {locals}])	any	evaluate |python_x| expression
 rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
@@ -3786,6 +3787,15 @@ getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 		Return type: any, depending on {varname}
 
 
+getcellpixels()						*getcellpixels()*
+		Returns a |List| of terminal cell pixel size.
+		List format is [xpixels, ypixels].
+		Only works on Unix. For gVim and on other systems,
+		returns [-1, -1].
+
+		Return type: list<Number>
+
+
 getcellwidths()						*getcellwidths()*
 		Returns a |List| of cell widths of character ranges overridden
 		by |setcellwidths()|.  The format is equal to the argument of
@@ -5203,7 +5213,7 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 		on {list}
 
 
-glob2regpat({string})					 *glob2regpat()*
+glob2regpat({string})					*glob2regpat()*
 		Convert a file pattern, as used by glob(), into a search
 		pattern.  The result can be used to match with a string that
 		is a file name.  E.g. >
@@ -5656,7 +5666,7 @@ iconv({string}, {from}, {to})				*iconv()*
 		Return type: |String|
 
 
-id({item})							    *id()*
+id({item})							*id()*
 		The result is a unique String associated with the {item} and
 		not with the {item}'s contents. It is only valid while the
 		{item} exists and is referenced. It is valid only in the
@@ -7081,7 +7091,7 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
 		Return type: list<dict<any>> or list<any>
 
 
-matchdelete({id} [, {win})		       *matchdelete()* *E802* *E803*
+matchdelete({id} [, {win})			*matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
 		or one of the |:match| commands.  Returns 0 if successful,
 		otherwise -1.  See example for |matchadd()|.  All matches can
@@ -8127,9 +8137,14 @@ pumvisible()						*pumvisible()*
 		Return type: |Number|
 
 
-py3eval({expr})						*py3eval()*
+py3eval({expr} [, {locals}])				*py3eval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
+		If a {locals} |Dictionary| is given, it defines set of local
+		variables available in the expression. The keys are variable
+		names and the values are the variable values. |Dictionary| and
+		|List| values are referenced, and may be updated by the
+		expression (as if |python-bindeval| was used).
 		Numbers and strings are returned as they are (strings are
 		copied though, Unicode strings are additionally converted to
 		'encoding').
@@ -8141,15 +8156,17 @@ py3eval({expr})						*py3eval()*
 
 		Can also be used as a |method|: >
 			GetExpr()->py3eval()
+			'b",".join(l)'->py3eval({'l': ['a', 'b', 'c']})
 <
 		Return type: any, depending on {expr}
 
 		{only available when compiled with the |+python3| feature}
 
 							*E858* *E859*
-pyeval({expr})						*pyeval()*
+pyeval({expr} [, {locals}])				*pyeval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
+		For {locals} see |py3eval()|.
 		Numbers and strings are returned as they are (strings are
 		copied though).
 		Lists are represented as Vim |List| type.
@@ -8165,9 +8182,10 @@ pyeval({expr})						*pyeval()*
 
 		{only available when compiled with the |+python| feature}
 
-pyxeval({expr})						*pyxeval()*
+pyxeval({expr} [, {locals}])				*pyxeval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
+		For {locals} see |py3eval()|.
 		Uses Python 2 or 3, see |python_x| and 'pyxversion'.
 		See also: |pyeval()|, |py3eval()|
 

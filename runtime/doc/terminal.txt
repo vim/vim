@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Oct 27
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1683,13 +1683,17 @@ Change default signs ~
 Termdebug uses the hex number of the breakpoint ID in the signcolumn to
 represent breakpoints. If it is greater than "0xFF", then it will be displayed
 as "F+", due to we really only have two screen cells for the sign.
+You may also use decimal breakpoint signs instead, in which case IDs greater
+than 99 will be displayed as "9+".
 
-If you want to customize the breakpoint signs: >
+If you want to customize the breakpoint signs to show `>>` in the signcolumn: >
 	let g:termdebug_config['sign'] = '>>'
-If there is no g:terminal_config yet you can use: >
+If you would like to use decimal (base 10) breakpoint signs: >
+	let g:termdebug_config['sign_decimal'] = 1
+If the variable g:termdebug_config does not yet exist, you can use: >
 	let g:termdebug_config = {'sign': '>>'}
-
-After this, breakpoints will be displayed as `>>` in the signcolumn.
+Likewise, to enable decimal signs: >
+	let g:termdebug_config = {'sign_decimal': 1}
 
 
 Window toolbar ~

@@ -784,7 +784,7 @@ def Test_member_any_used_as_object()
     vim9script
 
     class Inner
-      var value: number = 0
+      public var value: number = 0
     endclass
 
     class Outer
@@ -11211,6 +11211,389 @@ def Test_class_cast()
     defcompile F
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using a variable of type "any" with an object
+def Test_any_obj_var_type()
+  var lines =<< trim END
+    vim9script
+    class A
+      var name: string = "foobar"
+      def Foo(): string
+        return "func foo"
+      enddef
+    endclass
+
+    def CheckVals(x: any)
+      assert_equal("foobar", x.name)
+      assert_equal("func foo", x.Foo())
+    enddef
+
+    var a = A.new()
+    CheckVals(a)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Try to set a non-existing variable
+  lines =<< trim END
+    vim9script
+    class A
+      var name: string = "foobar"
+    endclass
+
+    def SetNonExistingVar(x: any)
+      x.bar = [1, 2, 3]
+    enddef
+
+    var a = A.new()
+    SetNonExistingVar(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1326: Variable "bar" not found in object "A"', 1)
+
+  # Try to read a non-existing variable
+  lines =<< trim END
+    vim9script
+    class A
+      var name: string = "foobar"
+    endclass
+
+    def GetNonExistingVar(x: any)
+      var i: dict<any> = x.bar
+    enddef
+
+    var a = A.new()
+    GetNonExistingVar(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1326: Variable "bar" not found in object "A"', 1)
+
+  # Try to invoke a non-existing method
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo(): number
+        return 10
+      enddef
+    endclass
+
+    def CallNonExistingMethod(x: any)
+      var i: number = x.Bar()
+    enddef
+
+    var a = A.new()
+    CallNonExistingMethod(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1326: Variable "Bar" not found in object "A"', 1)
+
+  # Use an object which is a Dict value
+  lines =<< trim END
+    vim9script
+    class Foo
+      def Bar(): number
+        return 369
+      enddef
+    endclass
+
+    def GetValue(FooDict: dict<any>): number
+      var n: number = 0
+      for foo in values(FooDict)
+        n += foo.Bar()
+      endfor
+      return n
+    enddef
+
+    var d = {'x': Foo.new()}
+    assert_equal(369, GetValue(d))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Nested data.  Object containg a Dict containing another Object.
+  lines =<< trim END
+    vim9script
+    class Context
+      public var state: dict<any> = {}
+    endclass
+
+    class Metadata
+      public var value = 0
+    endclass
+
+    var ctx = Context.new()
+    ctx.state["meta"] = Metadata.new(2468)
+
+    const foo = ctx.state.meta.value
+
+    def F(): number
+      const bar = ctx.state.meta.value
+      return bar
+    enddef
+
+    assert_equal(2468, F())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Accessing an object from a method inside the class using any type
+  lines =<< trim END
+    vim9script
+    class C
+      def _G(): string
+        return '_G'
+      enddef
+      static def S(o_any: any): string
+        return o_any._G()
+      enddef
+    endclass
+
+    var o1 = C.new()
+    assert_equal('_G', C.S(o1))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Modifying an object private variable from a method in another class using
+  # any type
+  lines =<< trim END
+    vim9script
+
+    class A
+      var num = 10
+    endclass
+
+    class B
+      def SetVal(x: any)
+        x.num = 20
+      enddef
+    endclass
+
+    var a = A.new()
+    var b = B.new()
+    b.SetVal(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1335: Variable "num" in class "A" is not writable', 1)
+
+  # Accessing a object protected variable from a method in another class using
+  # any type
+  lines =<< trim END
+    vim9script
+
+    class A
+      var _num = 10
+    endclass
+
+    class B
+      def GetVal(x: any): number
+        return x._num
+      enddef
+    endclass
+
+    var a = A.new()
+    var b = B.new()
+    var i = b.GetVal(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access protected variable "_num" in class "A"', 1)
+
+  # Accessing an object returned from an imported function and class
+  lines =<< trim END
+    vim9script
+    export class Foo
+      public var name: string
+    endclass
+
+    export def ReturnFooObject(): Foo
+      var r = Foo.new('star')
+      return r
+    enddef
+  END
+  writefile(lines, 'Xanyvar1.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import './Xanyvar1.vim'
+
+    def GetName(): string
+      var whatever = Xanyvar1.ReturnFooObject()
+      return whatever.name
+    enddef
+
+    assert_equal('star', GetName())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Try to modify a private object variable using a variable of type "any"
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var n: number = 10
+    endclass
+    def Fn(x: any)
+      x.n = 20
+    enddef
+    var a = Foo.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1335: Variable "n" in class "Foo" is not writable', 1)
+
+  # Try to read a protected object variable using a variable of type "any"
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var _n: number = 10
+    endclass
+    def Fn(x: any): number
+      return x._n
+    enddef
+
+    var a = Foo.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access protected variable "_n" in class "Foo"', 1)
+
+  # Read a protected object variable using a variable of type "any" in an object
+  # method
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var _n: number = 10
+      def Fn(x: any): number
+        return x._n
+      enddef
+    endclass
+
+    var a = Foo.new()
+    assert_equal(10, a.Fn(a))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Try to call a protected object method using a "any" type variable
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      def _GetVal(): number
+        return 234
+      enddef
+    endclass
+    def Fn(x: any): number
+      return x._GetVal()
+    enddef
+
+    var a = Foo.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1366: Cannot access protected method: _GetVal', 1)
+
+  # Call a protected object method using a "any" type variable from another
+  # object method
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      def _GetVal(): number
+        return 234
+      enddef
+      def FooVal(x: any): number
+        return x._GetVal()
+      enddef
+    endclass
+
+    var a = Foo.new()
+    assert_equal(234, a.FooVal(a))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Method chaining
+  lines =<< trim END
+    vim9script
+
+    export class T
+      var id: number = 268
+      def F(): any
+        return this
+      enddef
+    endclass
+
+    def H()
+      var a = T.new().F().F()
+      assert_equal(268, a.id)
+    enddef
+    H()
+
+    var b: T = T.new().F().F()
+    assert_equal(268, b.id)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Using a null object to access a member variable
+  lines =<< trim END
+    vim9script
+    def Fn(x: any): number
+      return x.num
+    enddef
+
+    Fn(null_object)
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object', 1)
+
+  # Using a null object to invoke a method
+  lines =<< trim END
+    vim9script
+    def Fn(x: any)
+      x.Foo()
+    enddef
+
+    Fn(null_object)
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object', 1)
+
+  # Try to change a const object variable using a "any" variable
+  lines =<< trim END
+    vim9script
+    class A
+      public const v1: number = 123
+    endclass
+
+    def Fn(o: any)
+      o.v1 = 321
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot change read-only variable "v1" in class "A"', 1)
+
+  # Try to change a final object variable using a "any" variable
+  lines =<< trim END
+    vim9script
+    class A
+      public final v1: number = 123
+    endclass
+
+    def Fn(o: any)
+      o.v1 = 321
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot change read-only variable "v1" in class "A"', 1)
+
+  # Assign a different type of value to an "any" type object variable
+  lines =<< trim END
+    vim9script
+    class A
+      public var v1: list<any> = [1, 2]
+    endclass
+
+    def Fn(o: A)
+      o.v1 = 'abc'
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected list<any> but got string', 1)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

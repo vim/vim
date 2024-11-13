@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2024 Oct 31
+*develop.txt*   For Vim version 9.1.  Last change: 2024 Nov 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -165,6 +165,10 @@ These are the rules to use when making changes to the Vim source code.  Please
 stick to these rules, to keep the sources readable and maintainable.
 
 This list is not complete.  Look in the source code for more examples.
+
+The code repository contains an editorconfig file, that can be used together
+with the distributed editorconfig plugin |editorconfig-install| to ensure the
+recommended style is followed.
 
 
 MAKING CHANGES						*style-changes*

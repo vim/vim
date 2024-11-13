@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Apr 13
+*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -872,6 +872,33 @@ includes it: >
 Note that the method name must start with "new".  If there is no method called
 "new()" then the default constructor is added, even though there are other
 constructor methods.
+
+Using variable type "any" for an Object~
+							*obj-var-type-any*
+You can use a variable declared with type "any" to hold an object.  e.g.
+>
+    vim9script
+    class A
+	var n = 10
+	def Get(): number
+	    return this.n
+	enddef
+    endclass
+
+    def Fn(o: any)
+	echo o.n
+	echo o.Get()
+    enddef
+
+    var a = A.new()
+    Fn(a)
+<
+In this example, Vim cannot determine the type of the parameter "o" for
+function Fn() at compile time.  It can be either a |Dict| or an |Object|
+value.  Therefore, at runtime, when the type is known, the object member
+variable and method are looked up.  This process is not efficient, so it is
+recommended to use a more specific type whenever possible for better
+efficiency.
 
 Compiling methods in a Class ~
 							*class-compile*

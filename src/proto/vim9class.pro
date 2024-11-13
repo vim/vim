@@ -9,6 +9,8 @@ type_T *oc_member_type_by_idx(class_T *cl, int is_object, int member_idx);
 void ex_enum(exarg_T *eap);
 void typealias_unref(typealias_T *ta);
 void ex_type(exarg_T *eap);
+int get_member_tv(class_T *cl, int is_object, char_u *name, size_t namelen, class_T *current_class, typval_T *rettv);
+int obj_method_to_partial_tv(object_T *obj, ufunc_T *obj_method, typval_T *rettv);
 int class_object_index(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int verbose);
 ufunc_T *find_class_func(char_u **arg);
 int class_member_idx(class_T *cl, char_u *name, size_t namelen);

@@ -3948,8 +3948,7 @@ func Test_mouse_shape_after_failed_change()
   END
   call writefile(lines, 'Xmouseshape.vim', 'D')
   call RunVim([], [], "-g -S Xmouseshape.vim")
-  sleep 300m
-  call assert_equal(['busy', 'arrow'], readfile('Xmouseshapes'))
+  call WaitForAssert({-> assert_equal(['busy', 'arrow'], readfile('Xmouseshapes'))}, 300)
 
   call delete('Xmouseshapes')
 endfunc
@@ -3980,8 +3979,7 @@ func Test_mouse_shape_after_cancelling_gr()
   END
   call writefile(lines, 'Xmouseshape.vim', 'D')
   call RunVim([], [], "-g -S Xmouseshape.vim")
-  sleep 300m
-  call assert_equal(['beam', 'arrow'], readfile('Xmouseshapes'))
+  call WaitForAssert({-> assert_equal(['beam', 'arrow'], readfile('Xmouseshapes'))}, 300)
 
   call delete('Xmouseshapes')
 endfunc

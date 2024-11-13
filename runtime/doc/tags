@@ -2216,7 +2216,6 @@ $quote	eval.txt	/*$quote*
 :abo	windows.txt	/*:abo*
 :aboveleft	windows.txt	/*:aboveleft*
 :abstract	vim9class.txt	/*:abstract*
-:addd	quickfix.txt	/*:addd*
 :al	windows.txt	/*:al*
 :all	windows.txt	/*:all*
 :am	gui.txt	/*:am*
@@ -2736,6 +2735,7 @@ $quote	eval.txt	/*$quote*
 :lab	quickfix.txt	/*:lab*
 :labove	quickfix.txt	/*:labove*
 :lad	quickfix.txt	/*:lad*
+:ladd	quickfix.txt	/*:ladd*
 :laddb	quickfix.txt	/*:laddb*
 :laddbuffer	quickfix.txt	/*:laddbuffer*
 :laddexpr	quickfix.txt	/*:laddexpr*
@@ -5818,6 +5818,7 @@ W19	autocmd.txt	/*W19*
 W20	if_pyth.txt	/*W20*
 W21	if_pyth.txt	/*W21*
 W22	userfunc.txt	/*W22*
+W23	gui_x11.txt	/*W23*
 WORD	motion.txt	/*WORD*
 WSL	os_win32.txt	/*WSL*
 WWW	intro.txt	/*WWW*
@@ -6560,9 +6561,12 @@ compiler-hpada	ft_ada.txt	/*compiler-hpada*
 compiler-javac	quickfix.txt	/*compiler-javac*
 compiler-make	quickfix.txt	/*compiler-make*
 compiler-manx	quickfix.txt	/*compiler-manx*
+compiler-mypy	quickfix.txt	/*compiler-mypy*
 compiler-pandoc	quickfix.txt	/*compiler-pandoc*
 compiler-perl	quickfix.txt	/*compiler-perl*
+compiler-pylint	quickfix.txt	/*compiler-pylint*
 compiler-pyunit	quickfix.txt	/*compiler-pyunit*
+compiler-ruff	quickfix.txt	/*compiler-ruff*
 compiler-select	quickfix.txt	/*compiler-select*
 compiler-spotbugs	quickfix.txt	/*compiler-spotbugs*
 compiler-tex	quickfix.txt	/*compiler-tex*
@@ -7330,6 +7334,8 @@ ft-html-omni	insert.txt	/*ft-html-omni*
 ft-html-syntax	syntax.txt	/*ft-html-syntax*
 ft-htmlos-syntax	syntax.txt	/*ft-htmlos-syntax*
 ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
+ft-idris2-indent	indent.txt	/*ft-idris2-indent*
+ft-idris2-plugin	filetype.txt	/*ft-idris2-plugin*
 ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-plugin	filetype.txt	/*ft-java-plugin*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
@@ -7835,6 +7841,7 @@ getbufinfo()	builtin.txt	/*getbufinfo()*
 getbufline()	builtin.txt	/*getbufline()*
 getbufoneline()	builtin.txt	/*getbufoneline()*
 getbufvar()	builtin.txt	/*getbufvar()*
+getcellpixels()	builtin.txt	/*getcellpixels()*
 getcellwidths()	builtin.txt	/*getcellwidths()*
 getchangelist()	builtin.txt	/*getchangelist()*
 getchar()	builtin.txt	/*getchar()*
@@ -9280,6 +9287,7 @@ o_CTRL-V	motion.txt	/*o_CTRL-V*
 o_V	motion.txt	/*o_V*
 o_object-select	motion.txt	/*o_object-select*
 o_v	motion.txt	/*o_v*
+obj-var-type-any	vim9class.txt	/*obj-var-type-any*
 object	vim9class.txt	/*object*
 object-const-variable	vim9class.txt	/*object-const-variable*
 object-empty()	vim9class.txt	/*object-empty()*
@@ -9329,6 +9337,7 @@ options.txt	options.txt	/*options.txt*
 optwin	options.txt	/*optwin*
 or()	builtin.txt	/*or()*
 oracle	ft_sql.txt	/*oracle*
+os-support	vi_diff.txt	/*os-support*
 os2	os_os2.txt	/*os2*
 os390	os_390.txt	/*os390*
 os_390.txt	os_390.txt	/*os_390.txt*

@@ -38,7 +38,7 @@ VIMRUNTIME = ..\..\runtime
 !ENDIF
 
 PACKAGE = vim
-# Correct the following line for the where executeable file vim is
+# Correct the following line for the where executable file vim is
 # installed.  Please do not put the path in quotes.
 !IFNDEF VIMPROG
 VIMPROG = ..\vim.exe
