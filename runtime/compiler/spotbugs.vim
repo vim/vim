@@ -40,7 +40,9 @@ if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
 else
   function! s:GetDeclaredTypeNames() abort
     " Undo the unsetting of &hls, see below
-    if &hls | defer execute('set hls') | endif
+    if &hls
+      defer execute('set hls')
+    endif
     " Possibly restore the current values for registers '"' and "y", see below
     defer call('setreg', ['"', getreg('"'), getregtype('"')])
     defer call('setreg', ['y', getreg('y'), getregtype('y')])
