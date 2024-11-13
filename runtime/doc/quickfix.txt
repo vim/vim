@@ -1356,6 +1356,10 @@ basenames to the following two properties: >
 	let g:spotbugs_properties = {'sourceDirName': 'src',
 					\ 'classDirName': 'bin'}
 
+These could for example be set in a project-local vimrc loaded by [0]
+
+[0] https://github.com/MarcWeber/vim-addon-local-vimrc/
+
 GNU MAKE						*compiler-make*
 
 Since the default make program is "make", the compiler plugin for make,
