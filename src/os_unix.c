@@ -4359,7 +4359,7 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
         return;
 
     // failed get pixel size.
-    if ((varnumber_T)cs.cs_xpixel == -1)
+    if (cs.cs_xpixel == -1)
         return;
 
 #if defined(FEAT_GUI)
