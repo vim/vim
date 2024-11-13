@@ -164,11 +164,12 @@ NEW_TESTS = \
 	test_functions \
 	test_function_lists \
 	test_ga \
+	test_getcellpixels \
 	test_getcwd \
 	test_gettext \
 	test_gettext_cp1251 \
-	test_gettext_utf8 \
 	test_gettext_make \
+	test_gettext_utf8 \
 	test_getvar \
 	test_gf \
 	test_glob2regpat \
@@ -349,8 +350,7 @@ NEW_TESTS = \
 	test_zip_plugin \
 	test_alot_latin \
 	test_alot_utf8 \
-	test_alot \
-	test_getcellpixels
+	test_alot
 
 # Test targets that use runtest.vim.
 # Keep test_alot*.res as the last one, sort the others.
