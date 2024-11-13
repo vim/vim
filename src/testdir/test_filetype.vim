@@ -2446,6 +2446,46 @@ func Test_inc_file()
   filetype off
 endfunc
 
+func Test_l_file()
+  filetype on
+
+  call writefile(['%{'], 'Xfile.l')
+  split Xfile.l
+  call assert_equal('lex', &filetype)
+  bwipe!
+
+  call writefile(['%%'], 'Xfile.l')
+  split Xfile.l
+  call assert_equal('lex', &filetype)
+  bwipe!
+
+  call writefile(['(de example "Looks like PicoLisp")'], 'Xfile.l', 'D')
+  split Xfile.l
+  call assert_equal('picolisp', &filetype)
+  bwipe!
+
+  call writefile(['# PicoLisp comment'], 'Xfile.l')
+  split Xfile.l
+  call assert_equal('picolisp', &filetype)
+  bwipe!
+
+  let g:filetype_l = 'lex'
+  call writefile([''], 'Xfile.l', 'D')
+  split Xfile.l
+  call assert_equal('lex', &filetype)
+  unlet g:filetype_l
+  bwipe!
+
+  let g:filetype_l = 'picolisp'
+  call writefile([''], 'Xfile.l', 'D')
+  split Xfile.l
+  call assert_equal('picolisp', &filetype)
+  bwipe!
+
+  unlet g:filetype_l
+  filetype off
+endfunc
+
 func Test_lsl_file()
   filetype on
 

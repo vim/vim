@@ -156,6 +156,7 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.h		g:c_syntax_for_h	|ft-c-syntax|
 	*.i		g:filetype_i		|ft-progress-syntax|
 	*.inc		g:filetype_inc
+	*.l		g:filetype_l
 	*.lsl		g:filetype_lsl
 	*.m		g:filetype_m		|ft-mathematica-syntax|
 	*.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md
