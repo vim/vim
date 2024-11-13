@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Oct 05
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Nov 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1337,7 +1337,7 @@ g:javac_makeprg_params variable.  For example: >
 <
 SPOTBUGS						*compiler-spotbugs*
 
-Spotbugs is a static analysis tool that can be used to find bugs in Java.
+SpotBugs is a static analysis tool that can be used to find bugs in Java.
 It scans the Java bytecode of all classes in the currently open buffer.
 
 Commonly used compiler options can be added to 'makeprg' by setting the
@@ -1346,6 +1346,15 @@ b/g:spotbugs_makeprg_params variable.  For example: >
 	let b:spotbugs_makeprg_params = "-longBugCodes -effort:max -low"
 
 The global default is "-workHard -experimental".
+
+By default, the class files are searched in the directory where the source
+files are placed.  However, typical Java projects usually maintain distinct
+directory subtrees for source files and class files.  To make sibling source
+and class directories known to SpotBugs, assign the actual directory subtree
+basenames to the following two properties: >
+
+	let g:spotbugs_properties = {'sourceDirName': 'src',
+					\ 'classDirName': 'bin'}
 
 GNU MAKE						*compiler-make*
 
