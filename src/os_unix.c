@@ -4376,7 +4376,7 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
 
 /*
  * Try to get the current terminal cell size.
- * If faile get cell size, -1x-1 pixel.
+ * On failure, returns -1x-1
  */
     void
 mch_calc_cell_size(struct cellsize *cs_out)
