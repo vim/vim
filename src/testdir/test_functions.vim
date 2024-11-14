@@ -4160,7 +4160,7 @@ func Test_slice()
 endfunc
 
 
-" Test for getcellwidth()
+" Test for getcellpixels()
 " Pixel size of a cell is terminal-dependent, so in the test, only the list and size 2 are checked.
 func Test_getcellpixels()
   " Not yet Windows-compatible
@@ -4180,7 +4180,7 @@ func Test_getcellpixels()
   call StopVimInTerminal(buf)
 endfunc
 
-" Test for getcellwidth() on gVim
+" Test for getcellpixels() on gVim
 func Test_getcellpixels_gui()
   " Not yet Windows-compatible
   CheckNotMSWindows
