@@ -5004,7 +5004,7 @@ if has('unix')
     let args = a:args
     exe 'silent !' ..
       \ ((args =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
-      \ 'cmd.exe /c start "" /b ' .. args :
+      \ 'cmd.exe /c start /b ' .. args :
       \ 'nohup ' .. args .. ' ' .. s:redir() .. ' &')
       \ | redraw!
   endfun
@@ -5083,10 +5083,7 @@ endif
 "              given filename; typically this means given their extension.
 "              0=local, 1=remote
 fun! netrw#BrowseX(fname,remote)
-  if a:remote == 0 && isdirectory(a:fname)
-   " if its really just a local directory, then do a "gf" instead
-   exe "e ".a:fname
-  elseif a:remote == 1 && a:fname !~ '^https\=:' && a:fname =~ '/$'
+  if a:remote == 1 && a:fname !~ '^https\=:' && a:fname =~ '/$'
    " remote directory, not a webpage access, looks like an attempt to do a directory listing
    norm! gf
   endif
