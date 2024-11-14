@@ -4170,12 +4170,12 @@ func Test_getcellpixels()
   let buf = RunVimInTerminal('', #{rows: 6})
 
   " write getcellpixels() result to current buffer.
-  call term_sendkeys(buf, ":redi @\"")
+  call term_sendkeys(buf, ":redi @\"\<CR>")
   call term_sendkeys(buf, ":echo getcellpixels()\<CR>")
   call term_sendkeys(buf, ":redi END\<CR>")
   call term_sendkeys(buf, "P")
 
-  call WaitForAssert({-> assert_match('[0, 0]', term_getline(buf, 3))}, 1000)
+  call WaitForAssert({-> assert_match("\[\d+, \d+\]", term_getline(buf, 3))}, 1000)
 
   call StopVimInTerminal(buf)
 endfunc
