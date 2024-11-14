@@ -1472,6 +1472,9 @@ au BufNewFile,BufRead *.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md
 	\   setf markdown |
 	\ endif
 
+" Org (Emacs' org-mode)
+au BufNewFile,BufRead *.org			setf org
+
 " Mason (it used to include *.comp, are those Mason files?)
 au BufNewFile,BufRead *.mason,*.mhtml	setf mason
 
