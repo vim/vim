@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 9.1.  Last change: 2019 Apr 21
+*os_mac.txt*    For Vim version 9.1.  Last change: 2024 Nov 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -118,9 +118,13 @@ Shift-Control-2.
 
 When reporting any Mac specific bug or feature change, please use the vim-mac
 maillist |vim-mac|.  However, you need to be subscribed.  An alternative is to
-send a message to the current MacVim maintainers:
+report issues either directly at the Vim github repository:
 
-	mac@vim.org
+https://github.com/vim/vim/issues
+
+or for MacVim specific issues, you may report those over here:
+
+https://github.com/macvim-dev/macvim/issues
 
 ==============================================================================
 7. Compiling Vim					*mac-compile*
