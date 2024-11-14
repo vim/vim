@@ -489,8 +489,9 @@ int mch_rename(const char *src, const char *dest);
 // We have three kinds of ACL support.
 #define HAVE_ACL (HAVE_POSIX_ACL || HAVE_SOLARIS_ACL || HAVE_AIX_ACL)
 
+// Defined as signed, to return -1 on error
 struct cellsize {
-    unsigned int cs_xpixel;
-    unsigned int cs_ypixel;
+    int cs_xpixel;
+    int cs_ypixel;
 };
 

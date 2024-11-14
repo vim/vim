@@ -4358,6 +4358,17 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
         return;
 
+    // failed get pixel size.
+    if (cs.cs_xpixel == -1)
+        return;
+
+#if defined(FEAT_GUI)
+    // gui return [].
+    if (gui.in_use)
+        return;
+#endif
+
+    // success pixel size and no gui.
     list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
     list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
 }
@@ -4365,48 +4376,38 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
 
 /*
  * Try to get the current terminal cell size.
- * If faile get cell size, fallback 5x10 pixel.
+ * On failure, returns -1x-1
  */
     void
 mch_calc_cell_size(struct cellsize *cs_out)
 {
-#if defined(FEAT_GUI)
-    if (!gui.in_use)
-    {
+   // get current tty size.
+   struct winsize ws;
+   int fd = 1;
+   int retval = -1;
+   retval = ioctl(fd, TIOCGWINSZ, &ws);
+
+#ifdef FEAT_EVAL
+   ch_log(NULL, "ioctl(TIOCGWINSZ) %s", retval == 0 ? "success" : "failed");
 #endif
-        // get current tty size.
-        struct winsize ws;
-        int fd = 1;
-        int retval = -1;
-        retval = ioctl(fd, TIOCGWINSZ, &ws);
-#  ifdef FEAT_EVAL
-        ch_log(NULL, "ioctl(TIOCGWINSZ) %s", retval == 0 ? "success" : "failed");
-#  endif
-        if (retval == -1)
-        {
-            cs_out->cs_xpixel = -1;
-            cs_out->cs_ypixel = -1;
-            return;
-        }
 
-        // calculate parent tty's pixel per cell.
-        int x_cell_size = ws.ws_xpixel / ws.ws_col;
-        int y_cell_size = ws.ws_ypixel / ws.ws_row;
+   if (retval == -1)
+   {
+       cs_out->cs_xpixel = -1;
+       cs_out->cs_ypixel = -1;
+       return;
+   }
 
-        // calculate current tty's pixel
-        cs_out->cs_xpixel = x_cell_size;
-        cs_out->cs_ypixel = y_cell_size;
+   // calculate parent tty's pixel per cell.
+   int x_cell_size = ws.ws_xpixel / ws.ws_col;
+   int y_cell_size = ws.ws_ypixel / ws.ws_row;
 
-#  ifdef FEAT_EVAL
-        ch_log(NULL, "Got cell pixel size with TIOCGWINSZ: %d x %d", x_cell_size, y_cell_size);
-#  endif
-#if defined(FEAT_GUI)
-    }
-    else
-    {
-        cs_out->cs_xpixel = -1;
-        cs_out->cs_ypixel = -1;
-    }
+   // calculate current tty's pixel
+   cs_out->cs_xpixel = x_cell_size;
+   cs_out->cs_ypixel = y_cell_size;
+
+#ifdef FEAT_EVAL
+   ch_log(NULL, "Got cell pixel size with TIOCGWINSZ: %d x %d", x_cell_size, y_cell_size);
 #endif
 }
 
@@ -4433,8 +4434,18 @@ mch_report_winsize(int fd, int rows, int cols)
     // calcurate and set tty pixel size
     struct cellsize cs;
     mch_calc_cell_size(&cs);
-    ws.ws_xpixel = cols * cs.cs_xpixel;
-    ws.ws_ypixel = rows * cs.cs_ypixel;
+
+    if (cs.cs_xpixel == -1)
+    {
+        // failed get pixel size.
+        ws.ws_xpixel = 0;
+        ws.ws_ypixel = 0;
+    }
+    else
+    {
+        ws.ws_xpixel = cols * cs.cs_xpixel;
+        ws.ws_ypixel = rows * cs.cs_ypixel;
+    }
 
     retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
     ch_log(NULL, "ioctl(TIOCSWINSZ) %s", retval == 0 ? "success" : "failed");

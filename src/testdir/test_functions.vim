@@ -4159,4 +4159,35 @@ func Test_slice()
   call assert_equal(0, slice(v:true, 1))
 endfunc
 
+
+" Test for getcellpixels()
+" Pixel size of a cell is terminal-dependent, so in the test, only the list and size 2 are checked.
+func Test_getcellpixels()
+  " Not yet Windows-compatible
+  CheckNotMSWindows
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('', #{rows: 6})
+
+  " write getcellpixels() result to current buffer.
+  call term_sendkeys(buf, ":redi @\"\<CR>")
+  call term_sendkeys(buf, ":echo getcellpixels()\<CR>")
+  call term_sendkeys(buf, ":redi END\<CR>")
+  call term_sendkeys(buf, "P")
+
+  call WaitForAssert({-> assert_match("\[\d+, \d+\]", term_getline(buf, 3))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for getcellpixels() on gVim
+func Test_getcellpixels_gui()
+  " Not yet Windows-compatible
+  CheckNotMSWindows
+  if has("gui_running")
+    let cellpixels = getcellpixels()
+    call assert_equal(0, len(cellpixels))
+  endif
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 11
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Nov 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3790,10 +3790,10 @@ getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 getcellpixels()						*getcellpixels()*
 		Returns a |List| of terminal cell pixel size.
 		List format is [xpixels, ypixels].
-		Only works on Unix. For gVim and on other systems,
-		returns [-1, -1].
+		Only works on (terminal) Unix.  For gVim, on other systems and
+		on failure returns [].
 
-		Return type: list<Number>
+		Return type: list<any>
 
 
 getcellwidths()						*getcellwidths()*
