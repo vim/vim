@@ -772,7 +772,6 @@ EXTERN long	p_mmd;		// 'maxmapdepth'
 EXTERN long	p_mm;		// 'maxmem'
 EXTERN long	p_mmp;		// 'maxmempattern'
 EXTERN long	p_mmt;		// 'maxmemtot'
-EXTERN long	p_mmh;		// 'maxmsghistory'
 #ifdef FEAT_MENU
 EXTERN long	p_mis;		// 'menuitems'
 #endif
@@ -795,6 +794,7 @@ EXTERN int	p_mousemev;	// 'mousemoveevent'
 #endif
 EXTERN long	p_mouset;	// 'mousetime'
 EXTERN int	p_more;		// 'more'
+EXTERN long	p_mhi;		// 'msghistory'
 #ifdef FEAT_MZSCHEME
 EXTERN long	p_mzq;		// 'mzquantum
 # if defined(DYNAMIC_MZSCHEME)

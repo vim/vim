@@ -5625,11 +5625,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	used.
 	Also see 'maxmem'.
 
-						*'maxmsghistory'* *'mmh'*
-'maxmsghistory' 'mmh'	number	(default 1000)
-			global
-	Maximum amount of |:messages| history.
-
 						*'menuitems'* *'mis'*
 'menuitems' 'mis'	number	(default 25)
 			global
@@ -5921,6 +5916,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only for GUI, Win32 and Unix with xterm.  Defines the maximum
 	time in msec between two mouse clicks for the second click to be
 	recognized as a multi click.
+
+						*'msghistory'* *'mhi'*
+'msghistory' 'mhi'	number	(default 1000)
+			global
+	Determines how many entries may be stored in |:messages| history.
+	The maximum value is 10000.
 
 						    *'mzquantum'* *'mzq'*
 'mzquantum' 'mzq'	number	(default 100)
