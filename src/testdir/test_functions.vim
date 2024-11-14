@@ -4185,7 +4185,6 @@ func Test_getcellpixels_gui()
   " Not yet Windows-compatible
   CheckNotMSWindows
   if has("gui_running")
-    call ch_logfile('Test_getcellpixels.log', 'w')
     let cellpixels = getcellpixels()
     call assert_equal(0, len(cellpixels))
   endif
