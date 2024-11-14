@@ -1778,6 +1778,9 @@ static struct vimoption options[] =
     {"mousetime",   "mouset",	P_NUM|P_VI_DEF,
 			    (char_u *)&p_mouset, PV_NONE, NULL, NULL,
 			    {(char_u *)500L, (char_u *)0L} SCTX_INIT},
+    {"msghistory","mhi",    P_NUM|P_VI_DEF,
+			    (char_u *)&p_mhi, PV_NONE, NULL, NULL,
+			    {(char_u *)500L, (char_u *)0L} SCTX_INIT},
     {"mzquantum",  "mzq",   P_NUM,
 #ifdef FEAT_MZSCHEME
 			    (char_u *)&p_mzq, PV_NONE, did_set_mzquantum, NULL,

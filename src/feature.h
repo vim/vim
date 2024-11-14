@@ -138,11 +138,6 @@
  */
 
 /*
- * Message history is fixed at 200 messages.
- */
-#define MAX_MSG_HIST_LEN 200
-
-/*
  * +folding		Fold lines.
  */
 #ifdef FEAT_NORMAL

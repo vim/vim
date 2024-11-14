@@ -501,6 +501,7 @@ $quote	eval.txt	/*$quote*
 'mesg'	vi_diff.txt	/*'mesg'*
 'mfd'	options.txt	/*'mfd'*
 'mh'	options.txt	/*'mh'*
+'mhi'	options.txt	/*'mhi'*
 'mis'	options.txt	/*'mis'*
 'mkspellmem'	options.txt	/*'mkspellmem'*
 'ml'	options.txt	/*'ml'*
@@ -531,6 +532,7 @@ $quote	eval.txt	/*$quote*
 'mousetime'	options.txt	/*'mousetime'*
 'mp'	options.txt	/*'mp'*
 'mps'	options.txt	/*'mps'*
+'msghistory'	options.txt	/*'msghistory'*
 'msm'	options.txt	/*'msm'*
 'mzq'	options.txt	/*'mzq'*
 'mzquantum'	options.txt	/*'mzquantum'*

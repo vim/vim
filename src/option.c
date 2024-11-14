@@ -4914,6 +4914,16 @@ check_num_option_bounds(
 	errmsg = e_invalid_argument;
 	p_hi = 10000;
     }
+    if (p_mhi < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	p_mhi = 0;
+    }
+    else if (p_mhi > 10000)
+    {
+	errmsg = e_invalid_argument;
+	p_mhi = 10000;
+    }
     if (p_re < 0 || p_re > 2)
     {
 	errmsg = e_invalid_argument;

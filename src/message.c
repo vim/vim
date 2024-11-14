@@ -1013,7 +1013,7 @@ add_msg_hist(
 	return;
 
     // Don't let the message history get too big
-    while (msg_hist_len > MAX_MSG_HIST_LEN)
+    while (msg_hist_len > p_mhi)
 	(void)delete_first_msg();
 
     // allocate an entry and add the message at the end of the history
