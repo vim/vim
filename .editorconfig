@@ -19,3 +19,7 @@ indent_size = 2
 # Markdown uses trailing whitespaces to do an hard line break
 # https://spec.commonmark.org/0.31.2/#hard-line-breaks
 trim_trailing_whitespace = false
+
+[runtime/doc/**.txt]
+# It can mess up some documentation by trying to strip trailing whitespaces
+trim_trailing_whitespace = false
