@@ -4434,8 +4434,18 @@ mch_report_winsize(int fd, int rows, int cols)
     // calcurate and set tty pixel size
     struct cellsize cs;
     mch_calc_cell_size(&cs);
-    ws.ws_xpixel = cols * cs.cs_xpixel;
-    ws.ws_ypixel = rows * cs.cs_ypixel;
+
+    if (cs.cs_xpixel == -1)
+    {
+        // failed get pixel size.
+        ws.ws_xpixel = 0;
+        ws.ws_ypixel = 0;
+    }
+    else
+    {
+        ws.ws_xpixel = cols * cs.cs_xpixel;
+        ws.ws_ypixel = rows * cs.cs_ypixel;
+    }
 
     retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
     ch_log(NULL, "ioctl(TIOCSWINSZ) %s", retval == 0 ? "success" : "failed");
