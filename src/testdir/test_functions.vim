@@ -4205,7 +4205,7 @@ func Test_getcellpixels_gui()
   " Not yet Windows-compatible
   if has("gui_running")
     let cellpixels = getcellpixels()
-    call assert_equal(0, len(cellpixels))
+    call assert_equal(2, len(cellpixels))
   endif
 endfunc
 
