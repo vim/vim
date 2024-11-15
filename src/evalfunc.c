@@ -5231,7 +5231,13 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
     {
 #endif
         struct cellsize cs;
+# if defined(UNIX)
         mch_calc_cell_size(&cs);
+# else
+        // Non-Unix CUIs are not supported, so set this to -1x-1.
+        cs.cs_xpixel = -1;
+        cs.cs_ypixel = -1;
+# endif
 
         // failed get pixel size.
         if (cs.cs_xpixel == -1)
