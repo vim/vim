@@ -4163,7 +4163,6 @@ endfunc
 " Test for getcellpixels() for unix system
 " Pixel size of a cell is terminal-dependent, so in the test, only the list and size 2 are checked.
 func Test_getcellpixels_for_unix()
-  " Not yet Windows-compatible
   CheckNotMSWindows
   CheckRunVimInTerminal
 
@@ -4183,7 +4182,6 @@ endfunc
 " Test for getcellpixels() for windows system
 " Windows terminal vim is not support. check return `[]`.
 func Test_getcellpixels_for_windows()
-  " Not yet Windows-compatible
   CheckMSWindows
   CheckRunVimInTerminal
 
@@ -4202,7 +4200,6 @@ endfunc
 
 " Test for getcellpixels() on gVim
 func Test_getcellpixels_gui()
-  " Not yet Windows-compatible
   if has("gui_running")
     let cellpixels = getcellpixels()
     call assert_equal(2, len(cellpixels))
