@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Nov 11
+" Last Change:		2024 Nov 15
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -90,16 +90,62 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
     endif
 endif
 
-augroup ftplugin-java
-	autocmd! * <buffer>
-	autocmd BufWritePost <buffer> if get(b:, 'compiler', '') ==# 'spotbugs' | silent compiler spotbugs | endif
-augroup END
+if exists('g:spotbugs_properties')
+    let s:request = 0
+
+    if has_key(g:spotbugs_properties, 'PreCompilerAction')
+	let s:request = or(s:request, 1)
+    endif
+
+    if has_key(g:spotbugs_properties, 'PostCompilerAction')
+	let s:request = or(s:request, 2)
+    endif
+
+    if s:request
+	let s:actions = [{
+		\ 'group': 'java_spotbugs',
+		\ 'pattern': '<buffer>',
+		\ 'event': 'Syntax',
+		\ 'once': v:true,
+		\ }, {
+		\ 'group': 'java_spotbugs',
+		\ 'pattern': '<buffer>',
+		\ 'event': 'BufWritePost',
+		\ }]
+
+	for s:idx in range(len(s:actions))
+	    if s:request == 3
+		let s:actions[s:idx].cmd =
+			\ 'call g:spotbugs_properties.PreCompilerAction() | ' .
+			\ 'compiler spotbugs | ' .
+			\ 'call g:spotbugs_properties.PostCompilerAction()'
+	    elseif s:request == 2
+		let s:actions[s:idx].cmd =
+			\ 'compiler spotbugs | ' .
+			\ 'call g:spotbugs_properties.PostCompilerAction()'
+	    elseif s:request == 1
+		let s:actions[s:idx].cmd =
+			\ 'call g:spotbugs_properties.PreCompilerAction() | ' .
+			\ 'compiler spotbugs'
+	    else
+		let s:actions[s:idx].cmd = ''
+	    endif
+	endfor
+
+	let s:actions[0]['replace'] = v:true
+	call autocmd_add(copy(s:actions))
+	unlet s:idx s:actions
+    endif
+
+    unlet s:request
+endif
 
 " Undo the stuff we changed.
 let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
 		\     " formatoptions< comments< commentstring< path< includeexpr<" .
-		\     " | unlet! b:browsefilter"
-		\     " | exe 'autocmd! ftplugin-java BufWritePost <buffer>' | silent! augroup! ftplugin-java"
+		\     " | unlet! b:browsefilter" .
+		\     " | silent! autocmd! java_spotbugs" .
+		\     " | silent! augroup! java_spotbugs"
 
 " See ":help vim9-mix".
 if !has("vim9script")
