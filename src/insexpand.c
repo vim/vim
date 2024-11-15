@@ -198,7 +198,7 @@ static int	  compl_selected_item = -1;
 
 static int	  *compl_fuzzy_scores;
 
-static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int user_hlattr, int user_kind_hlattr);
+static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int *extra_hl);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
@@ -738,7 +738,7 @@ ins_compl_add_infercase(
     if (icase)
 	flags |= CP_ICASE;
 
-    res = ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE, -1, -1);
+    res = ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE, NULL);
     vim_free(tofree);
     return res;
 }
@@ -755,6 +755,7 @@ ins_compl_add_infercase(
  *     cdir	 - match direction. If 0, use "compl_direction".
  *     flags_arg - match flags (cp_flags)
  *     adup	 - accept this match even if it is already present.
+ *     *extra_hl - list of extra highlight attributes for abbr kind.
  * If "cdir" is FORWARD, then the match is added after the current match.
  * Otherwise, it is added before the current match.
  *
@@ -772,8 +773,7 @@ ins_compl_add(
     int		cdir,
     int		flags_arg,
     int		adup,		    // accept duplicate match
-    int		user_abbr_hlattr,
-    int		user_kind_hlattr)
+    int		*extra_hl)	    // user abbr/kind hlattr
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -837,8 +837,8 @@ ins_compl_add(
     else
 	match->cp_fname = NULL;
     match->cp_flags = flags;
-    match->cp_user_abbr_hlattr = user_abbr_hlattr;
-    match->cp_user_kind_hlattr = user_kind_hlattr;
+    match->cp_user_abbr_hlattr = extra_hl ? extra_hl[0] : -1;
+    match->cp_user_kind_hlattr = extra_hl ? extra_hl[1] : -1;
 
     if (cptext != NULL)
     {
@@ -991,7 +991,7 @@ ins_compl_add_matches(
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
 	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, NULL, dir,
-			       CP_FAST | (icase ? CP_ICASE : 0), FALSE, -1, -1)) == OK)
+			       CP_FAST | (icase ? CP_ICASE : 0), FALSE, NULL)) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
     FreeWild(num_matches, matches);
@@ -2865,9 +2865,8 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     typval_T	user_data;
     int		status;
     char_u	*user_abbr_hlname;
-    int		user_abbr_hlattr = -1;
     char_u	*user_kind_hlname;
-    int		user_kind_hlattr = -1;
+    int		extra_hl[2] = { -1, -1 };
 
     user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -2879,10 +2878,10 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
 
 	user_abbr_hlname = dict_get_string(tv->vval.v_dict, "abbr_hlgroup", FALSE);
-	user_abbr_hlattr = get_user_highlight_attr(user_abbr_hlname);
+	extra_hl[0] = get_user_highlight_attr(user_abbr_hlname);
 
 	user_kind_hlname = dict_get_string(tv->vval.v_dict, "kind_hlgroup", FALSE);
-	user_kind_hlattr = get_user_highlight_attr(user_kind_hlname);
+	extra_hl[1] = get_user_highlight_attr(user_kind_hlname);
 
 	dict_get_tv(tv->vval.v_dict, "user_data", &user_data);
 	if (dict_get_string(tv->vval.v_dict, "icase", FALSE) != NULL
@@ -2907,8 +2906,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	return FAIL;
     }
     status = ins_compl_add(word, -1, NULL, cptext,
-				     &user_data, dir, flags, dup,
-				     user_abbr_hlattr, user_kind_hlattr);
+				     &user_data, dir, flags, dup, extra_hl);
     if (status != OK)
 	clear_tv(&user_data);
     return status;
@@ -2995,7 +2993,7 @@ set_completion(colnr_T startcol, list_T *list)
 	flags |= CP_ICASE;
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
 					      -1, NULL, NULL, NULL, 0,
-					      flags | CP_FAST, FALSE, -1, -1) != OK)
+					      flags | CP_FAST, FALSE, NULL) != OK)
 	return;
 
     ctrl_x_mode = CTRL_X_EVAL;
@@ -5234,7 +5232,7 @@ ins_compl_start(void)
     if (p_ic)
 	flags |= CP_ICASE;
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-		-1, NULL, NULL, NULL, 0, flags, FALSE, -1, -1) != OK)
+		-1, NULL, NULL, NULL, 0, flags, FALSE, NULL) != OK)
     {
 	VIM_CLEAR(compl_pattern);
 	compl_patternlen = 0;
