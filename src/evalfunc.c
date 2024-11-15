@@ -61,6 +61,7 @@ static void f_funcref(typval_T *argvars, typval_T *rettv);
 static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
+static void f_getcellpixels(typval_T *argvars, typval_T *rettv);
 static void f_getchangelist(typval_T *argvars, typval_T *rettv);
 static void f_getcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
@@ -2078,13 +2079,7 @@ static funcentry_T global_functions[] =
     {"getbufvar",	2, 3, FEARG_1,	    arg3_buffer_string_any,
 			ret_any,	    f_getbufvar},
     {"getcellpixels",	0, 0, 0,	    NULL,
-			ret_list_any,
-#if (defined(UNIX) || defined(VMS)) && (defined(FEAT_EVAL) || defined(PROTO))
-	    f_getcellpixels
-#else
-	    NULL
-#endif
-			},
+			ret_list_any,	    f_getcellpixels},
     {"getcellwidths",	0, 0, 0,	    NULL,
 			ret_list_any,	    f_getcellwidths},
     {"getchangelist",	0, 1, FEARG_1,	    arg1_buffer,
@@ -5214,6 +5209,33 @@ f_get(typval_T *argvars, typval_T *rettv)
     }
     else
 	copy_tv(tv, rettv);
+}
+
+/*
+ * "getcellpixels()" function
+ */
+    static void
+f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    struct cellsize cs;
+    mch_calc_cell_size(&cs);
+
+    if (rettv_list_alloc(rettv) == FAIL)
+        return;
+
+    // failed get pixel size.
+    if (cs.cs_xpixel == -1)
+        return;
+
+#if defined(FEAT_GUI)
+    // gui return [].
+    if (gui.in_use)
+        return;
+#endif
+
+    // success pixel size and no gui.
+    list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
+    list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
 }
 
 /*

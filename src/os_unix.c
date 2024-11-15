@@ -4348,32 +4348,6 @@ mch_get_shellsize(void)
     return OK;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-    void
-f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    struct cellsize cs;
-    mch_calc_cell_size(&cs);
-
-    if (rettv_list_alloc(rettv) == FAIL)
-        return;
-
-    // failed get pixel size.
-    if (cs.cs_xpixel == -1)
-        return;
-
-#if defined(FEAT_GUI)
-    // gui return [].
-    if (gui.in_use)
-        return;
-#endif
-
-    // success pixel size and no gui.
-    list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
-    list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
-}
-#endif
-
 /*
  * Try to get the current terminal cell size.
  * On failure, returns -1x-1
