@@ -1099,8 +1099,8 @@ au BufRead,BufNewFile *.hurl			setf hurl
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
 
-" Hyprlang
-au BufNewFile,BufRead hypr\(land\|paper\|idle\|lock\).conf	setf hyprlang
+" Hyprland Configuration language
+au BufNewFile,BufRead */hypr/*.conf,hypr\(land\|paper\|idle\|lock\).conf setf hyprlang
 
 " Httest
 au BufNewFile,BufRead *.htt,*.htb		setf httest
