@@ -4160,9 +4160,9 @@ func Test_slice()
 endfunc
 
 
-" Test for getcellpixels()
+" Test for getcellpixels() for unix system
 " Pixel size of a cell is terminal-dependent, so in the test, only the list and size 2 are checked.
-func Test_getcellpixels()
+func Test_getcellpixels_for_unix()
   " Not yet Windows-compatible
   CheckNotMSWindows
   CheckRunVimInTerminal
@@ -4180,10 +4180,29 @@ func Test_getcellpixels()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test for getcellpixels() for windows system
+" Windows terminal vim is not support. check return `[]`.
+func Test_getcellpixels_for_windows()
+  " Not yet Windows-compatible
+  CheckMSWindows
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('', #{rows: 6})
+
+  " write getcellpixels() result to current buffer.
+  call term_sendkeys(buf, ":redi @\"\<CR>")
+  call term_sendkeys(buf, ":echo getcellpixels()\<CR>")
+  call term_sendkeys(buf, ":redi END\<CR>")
+  call term_sendkeys(buf, "P")
+
+  call WaitForAssert({-> assert_match("\[\]", term_getline(buf, 3))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test for getcellpixels() on gVim
 func Test_getcellpixels_gui()
   " Not yet Windows-compatible
-  CheckNotMSWindows
   if has("gui_running")
     let cellpixels = getcellpixels()
     call assert_equal(0, len(cellpixels))

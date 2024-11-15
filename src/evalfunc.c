@@ -5221,7 +5221,6 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
         return;
 
 #if defined(FEAT_GUI)
-    // gui return [].
     if (gui.in_use)
     {
         // success pixel size and no gui.

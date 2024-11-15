@@ -3790,7 +3790,7 @@ getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 getcellpixels()						*getcellpixels()*
 		Returns a |List| of terminal cell pixel size.
 		List format is [xpixels, ypixels].
-		Only works on (terminal) Unix.  For gVim, on other systems and
+		Only works on Unix and Windows gVim.  For on other systems and
 		on failure returns [].
 
 		Return type: list<any>
