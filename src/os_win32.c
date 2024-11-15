@@ -4500,18 +4500,6 @@ mch_get_shellsize(void)
 }
 
 /*
- * Try to get the current terminal cell size.
- * Windows CUI not supported, return -1x-1.
- */
-    void
-mch_calc_cell_size(struct cellsize *cs_out)
-{
-    cs_out->cs_xpixel = -1;
-    cs_out->cs_ypixel = -1;
-}
-
-
-/*
  * Resize console buffer to 'COORD'
  */
     static void
@@ -4697,6 +4685,17 @@ mch_set_winsize_now(void)
     suppress_winsize = 0;
 }
 #endif // FEAT_GUI_MSWIN
+
+/*
+ * Try to get the current terminal cell size.
+ * Windows CUI not supported, return -1x-1.
+ */
+    void
+mch_calc_cell_size(struct cellsize *cs_out)
+{
+    cs_out->cs_xpixel = -1;
+    cs_out->cs_ypixel = -1;
+}
 
     static BOOL
 vim_create_process(
