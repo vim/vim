@@ -1356,7 +1356,7 @@ properties (using the example of a typical Maven project): >
 	let g:spotbugs_properties = {'sourceDirName': 'src/main/java',
 				   \ 'classDirName':  'target/classes'}
 
-Pre- and post-compiler actions to first refresh the class files for the
+Pre- and post-compiler actions, to first refresh the class files for the
 current buffer, and then run `spotbugs` on them, can be enabled by adding
 to your |vimrc| (before any |FileType| event): >
 
@@ -1374,7 +1374,9 @@ to your |vimrc| (before any |FileType| event): >
 			let b:spotbugs_class_files = []
 		endif
 
-  		compiler javac | make -Xlint -Xdiags:verbose %:S
+  		compiler javac
+  		exe 'make -Xlint -Xdiags:verbose'
+			\ '-d' shellescape(get(g:, 'spotbugs_properties.classDirName', '.'), 1) '%:S'
 	endfunction
 
 	function! SpotBugsMake() abort
