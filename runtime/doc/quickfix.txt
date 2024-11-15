@@ -1348,43 +1348,24 @@ b/g:spotbugs_makeprg_params variable.  For example: >
 The global default is "-workHard -experimental".
 
 By default, the class files are searched in the directory where the source
-files are placed.  However, typical Java projects usually maintain distinct
-directory subtrees for source files and class files.  To make sibling source
-and class directories known to SpotBugs, assign the actual directory subtree
-basenames to the following two properties: >
-
-	let g:spotbugs_properties = {'sourceDirName': 'src',
-				\ 'classDirName': 'bin'}
-
-Whenever the parent directories of the sibling directories also bear distinct
-names between subtrees, the whole span of unique pathname components must be
-specified for each directory subtree.  For example, the following assignments
-will be appropriate for Maven projects on a Unix platform: >
+files are placed.  However, typical Java projects use distinct directories
+for source files and class files.  To make both known to SpotBugs, assign
+their paths (relative to the current directory) to the following two
+properties (using the example of a typical Maven project): >
 
 	let g:spotbugs_properties = {'sourceDirName': 'src/main/java',
-				\ 'classDirName': 'target/classes'}
-	let g:spotbugs_properties = {'sourceDirName': 'src/test/java',
-				\ 'classDirName': 'target/test-classes'}
+				   \ 'classDirName':  'target/classes'}
 
-Pre- and post-compiler selection actions are supported and can be enabled by
-defining functions and assigning their |Funcref|s to the "PreCompilerAction"
-and "PostCompilerAction" keys of "g:spotbugs_properties".  When either of two
-keys is used, `:compiler spotbugs` will be selected after "PreCompilerAction"
-and before "PostCompilerAction", once for a |Syntax| event and after that for
-every |BufWritePost| event.  All actions can also be fired on demand with: >
+Pre- and post-compiler actions to first refresh the class files for the
+current buffer, and then run `spotbugs` on them, can be enabled by adding
+to your |vimrc| (before any |FileType| event): >
 
-	doautocmd java_spotbugs BufWritePost
+	let g:spotbugs_properties = {
+		\ 'PreCompilerAction':  function('CompilerJavacMake'),
+		\ 'PostCompilerAction': function('SpotBugsMake'),
+	\}
 
-For example, to remove compiled class files and recompile source files for the
-current buffer, and to follow it with selecting `:compiler spotbugs` to run
-`spotbugs` for the freshly compiled class files, source this snippet before
-a |FileType| event: >
-
-	function! s:CompilerJavacMake() abort
-		if !exists('g:javac_makeprg_params')
-			let g:javac_makeprg_params = '-Xlint -Xdiags:verbose'
-		endif
-
+	function! CompilerJavacMake() abort
 		if exists('b:spotbugs_class_files')
 			for pathname in b:spotbugs_class_files
 				call delete(eval(pathname))
@@ -1393,18 +1374,12 @@ a |FileType| event: >
 			let b:spotbugs_class_files = []
 		endif
 
-		compiler javac
-		make %:S
+  		compiler javac | make -Xlint -Xdiags:verbose %:S
 	endfunction
 
-	function! s:SpotBugsMake() abort
+	function! SpotBugsMake() abort
 		make %:S
 	endfunction
-
-	let g:spotbugs_properties = {
-		\ 'PreCompilerAction': function('s:CompilerJavacMake'),
-		\ 'PostCompilerAction': function('s:SpotBugsMake'),
-	\}
 
 The "g:spotbugs_properties" variable could for example be set in
 a project-local vimrc loaded by [0].
