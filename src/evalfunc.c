@@ -5217,25 +5217,34 @@ f_get(typval_T *argvars, typval_T *rettv)
     static void
 f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    struct cellsize cs;
-    mch_calc_cell_size(&cs);
-
     if (rettv_list_alloc(rettv) == FAIL)
-        return;
-
-    // failed get pixel size.
-    if (cs.cs_xpixel == -1)
         return;
 
 #if defined(FEAT_GUI)
     // gui return [].
     if (gui.in_use)
-        return;
+    {
+        // success pixel size and no gui.
+        list_append_number(rettv->vval.v_list, (varnumber_T)gui.char_width);
+        list_append_number(rettv->vval.v_list, (varnumber_T)gui.char_height);
+    }
+    else
+    {
+#endif
+        struct cellsize cs;
+        mch_calc_cell_size(&cs);
+
+        // failed get pixel size.
+        if (cs.cs_xpixel == -1)
+            return;
+
+        // success pixel size and no gui.
+        list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
+        list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
+#if defined(FEAT_GUI)
+    }
 #endif
 
-    // success pixel size and no gui.
-    list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
-    list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
 }
 
 /*
