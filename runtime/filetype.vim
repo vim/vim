@@ -1472,9 +1472,6 @@ au BufNewFile,BufRead *.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md
 	\   setf markdown |
 	\ endif
 
-" Org (Emacs' org-mode)
-au BufNewFile,BufRead *.org			setf org
-
 " Mason (it used to include *.comp, are those Mason files?)
 au BufNewFile,BufRead *.mason,*.mhtml	setf mason
 
@@ -1726,7 +1723,7 @@ au BufNewFile,BufRead *.scad				setf openscad
 " Oracle config file
 au BufNewFile,BufRead *.ora				setf ora
 
-" Org
+" Org (Emacs' org-mode)
 au BufNewFile,BufRead *.org,*.org_archive		setf org
 
 " Packet filter conf
