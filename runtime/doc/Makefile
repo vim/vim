@@ -93,7 +93,7 @@ test_urls:
 	$(VIMPROG) --clean -S test_urls.vim
 
 clean:
-	-rm -f doctags *.html tags.ref
+	-rm -f doctags *.html tags.ref tags-* vim-stylesheet.css
 
 # These files are in the extra archive, skip if not present
 
