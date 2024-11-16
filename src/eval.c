@@ -6924,8 +6924,8 @@ make_expanded_name(
     temp_result = eval_to_string(expr_start + 1, FALSE, FALSE);
     if (temp_result != NULL)
     {
-	size_t	in_startlen = (size_t)(expr_start - in_start);
-	size_t	retvalsize = in_startlen + STRLEN(temp_result)
+	int	in_startlen = (int)(expr_start - in_start);
+	size_t	retvalsize = (size_t)in_startlen + STRLEN(temp_result)
 						+ (in_end - expr_end) + 1;
 
 	retval = alloc(retvalsize);
