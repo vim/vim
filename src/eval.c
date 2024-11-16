@@ -6924,14 +6924,13 @@ make_expanded_name(
     temp_result = eval_to_string(expr_start + 1, FALSE, FALSE);
     if (temp_result != NULL)
     {
-	int	in_startlen = (int)(expr_start - in_start);
-	size_t	retvalsize = (size_t)in_startlen + STRLEN(temp_result)
-						+ (in_end - expr_end) + 1;
+	size_t	retvalsize = (size_t)(expr_start - in_start)
+				+ STRLEN(temp_result)
+				+ (size_t)(in_end - expr_end) + 1;
 
 	retval = alloc(retvalsize);
 	if (retval != NULL)
-	    vim_snprintf((char *)retval, retvalsize, "%*.*s%s%s",
-				in_startlen, in_startlen,
+	    vim_snprintf((char *)retval, retvalsize, "%s%s%s",
 				in_start, temp_result, expr_end + 1);
     }
     vim_free(temp_result);
