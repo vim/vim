@@ -102,16 +102,30 @@ if exists('g:spotbugs_properties')
     endif
 
     if s:request
-	let s:actions = [{
-		\ 'group': 'java_spotbugs',
-		\ 'pattern': '<buffer>',
-		\ 'event': 'Syntax',
-		\ 'once': v:true,
-		\ }, {
-		\ 'group': 'java_spotbugs',
-		\ 'pattern': '<buffer>',
-		\ 'event': 'BufWritePost',
-		\ }]
+	if exists('b:spotbugs_syntax_once')
+	    let s:actions = [{
+		    \ 'group': 'java_spotbugs',
+		    \ 'event': 'BufWritePost',
+		    \ 'bufnr': bufnr(),
+		    \ }]
+	else
+	    " XXX: Handle multiple FileType events when vimrc contains more
+	    " than one filetype setting for the language, e.g.:
+	    "	:filetype plugin indent on
+	    "	:autocmd BufRead,BufNewFile *.java setlocal filetype=java ...
+	    " XXX: DO NOT ADD b:spotbugs_syntax_once TO b:undo_ftplugin !
+	    let b:spotbugs_syntax_once = 1
+	    let s:actions = [{
+		    \ 'group': 'java_spotbugs',
+		    \ 'event': 'Syntax',
+		    \ 'bufnr': bufnr(),
+		    \ 'once': v:true,
+		    \ }, {
+		    \ 'group': 'java_spotbugs',
+		    \ 'event': 'BufWritePost',
+		    \ 'bufnr': bufnr(),
+		    \ }]
+	endif
 
 	for s:idx in range(len(s:actions))
 	    if s:request == 3
@@ -132,7 +146,12 @@ if exists('g:spotbugs_properties')
 	    endif
 	endfor
 
-	let s:actions[0]['replace'] = v:true
+	" The events are defined in s:actions.
+	silent! call autocmd_delete([{
+		\ 'group': 'java_spotbugs',
+		\ 'event': ['BufWritePost', 'Syntax'],
+		\ 'bufnr': bufnr(),
+		\ }])
 	call autocmd_add(copy(s:actions))
 	unlet s:idx s:actions
     endif
@@ -144,8 +163,7 @@ endif
 let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
 		\     " formatoptions< comments< commentstring< path< includeexpr<" .
 		\     " | unlet! b:browsefilter" .
-		\     " | silent! autocmd! java_spotbugs" .
-		\     " | silent! augroup! java_spotbugs"
+		\     " | silent! call autocmd_delete([{'group': 'java_spotbugs', 'event': ['BufWritePost', 'Syntax'], 'bufnr': bufnr()}])"
 
 " See ":help vim9-mix".
 if !has("vim9script")

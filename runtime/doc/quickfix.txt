@@ -1350,7 +1350,7 @@ The global default is "-workHard -experimental".
 By default, the class files are searched in the directory where the source
 files are placed.  However, typical Java projects use distinct directories
 for source files and class files.  To make both known to SpotBugs, assign
-their paths (relative to the current directory) to the following two
+their paths (relative to their common root directory) to the following two
 properties (using the example of a typical Maven project): >
 
 	let g:spotbugs_properties = {'sourceDirName': 'src/main/java',
@@ -1359,11 +1359,6 @@ properties (using the example of a typical Maven project): >
 Pre- and post-compiler actions, to first refresh the class files for the
 current buffer, and then run `spotbugs` on them, can be enabled by adding
 to your |vimrc| (before any |FileType| event): >
-
-	let g:spotbugs_properties = {
-		\ 'PreCompilerAction':  function('CompilerJavacMake'),
-		\ 'PostCompilerAction': function('SpotBugsMake'),
-	\}
 
 	function! CompilerJavacMake() abort
 		if exists('b:spotbugs_class_files')
@@ -1376,12 +1371,18 @@ to your |vimrc| (before any |FileType| event): >
 
   		compiler javac
   		exe 'make -Xlint -Xdiags:verbose'
-			\ '-d' shellescape(get(g:, 'spotbugs_properties.classDirName', '.'), 1) '%:S'
+			\ '-d' shellescape(get(get(g:, 'spotbugs_properties', {}),
+			\ 'classDirName', '.'), 1) '%:S'
 	endfunction
 
 	function! SpotBugsMake() abort
 		make %:S
 	endfunction
+
+	let g:spotbugs_properties = {
+		\ 'PreCompilerAction':  function('CompilerJavacMake'),
+		\ 'PostCompilerAction': function('SpotBugsMake'),
+	\}
 
 The "g:spotbugs_properties" variable could for example be set in
 a project-local vimrc loaded by [0].
