@@ -1695,6 +1695,9 @@ static struct vimoption options[] =
     {"mesg",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"messagesopt","mopt",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_COLON|P_NODUP,
+			    (char_u *)&p_meo, PV_NONE, did_set_messagesopt, expand_set_messagesopt,
+			    {(char_u *)"hit-enter,history:500", (char_u *)NULL} SCTX_INIT},
     {"mkspellmem",  "msm",  P_STRING|P_VI_DEF|P_EXPAND|P_SECURE,
 #ifdef FEAT_SPELL
 			    (char_u *)&p_msm, PV_NONE, did_set_mkspellmem, NULL,
@@ -1777,9 +1780,6 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"mousetime",   "mouset",	P_NUM|P_VI_DEF,
 			    (char_u *)&p_mouset, PV_NONE, NULL, NULL,
-			    {(char_u *)500L, (char_u *)0L} SCTX_INIT},
-    {"msghistory","mhi",    P_NUM|P_VI_DEF,
-			    (char_u *)&p_mhi, PV_NONE, did_set_msghistory, NULL,
 			    {(char_u *)500L, (char_u *)0L} SCTX_INIT},
     {"mzquantum",  "mzq",   P_NUM,
 #ifdef FEAT_MZSCHEME

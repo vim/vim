@@ -775,6 +775,7 @@ EXTERN long	p_mmt;		// 'maxmemtot'
 #ifdef FEAT_MENU
 EXTERN long	p_mis;		// 'menuitems'
 #endif
+EXTERN char_u	*p_meo;		// 'messagesopt'
 #ifdef FEAT_SPELL
 EXTERN char_u	*p_msm;		// 'mkspellmem'
 #endif
@@ -794,7 +795,6 @@ EXTERN int	p_mousemev;	// 'mousemoveevent'
 #endif
 EXTERN long	p_mouset;	// 'mousetime'
 EXTERN int	p_more;		// 'more'
-EXTERN long	p_mhi;		// 'msghistory'
 #ifdef FEAT_MZSCHEME
 EXTERN long	p_mzq;		// 'mzquantum
 # if defined(DYNAMIC_MZSCHEME)

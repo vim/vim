@@ -3864,31 +3864,6 @@ did_set_number_relativenumber(optset_T *args UNUSED)
     return NULL;
 }
 
-/*
- * Process the updated 'msghistory' option value.
- */
-    char *
-did_set_msghistory(optset_T *args UNUSED)
-{
-    char *errmsg = NULL;
-
-    // 'msghistory' must be positive
-    if (p_mhi < 0)
-    {
-	errmsg = e_argument_must_be_positive;
-	p_mhi = 0;
-    }
-    else if (p_mhi > 10000)
-    {
-	errmsg = e_invalid_argument;
-	p_mhi = 10000;
-    }
-
-    check_msg_hist();
-
-    return errmsg;
-}
-
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
  * Process the new 'numberwidth' option value.
