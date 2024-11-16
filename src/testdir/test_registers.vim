@@ -1052,7 +1052,7 @@ func Test_clipboard_regs_not_working()
     new
     call append(0, "text for clipboard test")
     let mess = execute(':norm "*yiw')
-    call assert_match('W23', mess)
+    call assert_match('W24', mess)
     bw!
   endif
 endfunc

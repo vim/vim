@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.1.  Last change: 2024 Nov 07
+*gui.txt*       For Vim version 9.1.  Last change: 2024 Nov 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -474,7 +474,7 @@ When the "unnamed" string is included in the 'clipboard' option, the unnamed
 register is the same as the "* register.  Thus you can yank to and paste the
 selection without prepending "* to commands.
 
-See also |W23|.
+See also |W23| and |W24|.
 
 ==============================================================================
 5. Menus						*menus*
