@@ -1334,7 +1334,7 @@ func Run_terminal_qall_kill(line1, line2)
   if !RunVim([], after, '')
     return
   endif
-  call assert_equal("done", readfile("Xdone")[0])
+  call WaitForAssert({-> assert_equal('done', readfile('Xdone')[0])})
   call delete("Xdone")
 endfunc
 
@@ -1369,7 +1369,7 @@ func Test_terminal_qall_exit()
   if !RunVim([], after, '')
     return
   endif
-  call assert_equal("done", readfile("Xdone")[0])
+  call WaitForAssert({-> assert_equal('done', readfile('Xdone')[0])})
   call delete("Xdone")
 endfunc
 
