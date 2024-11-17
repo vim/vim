@@ -5785,6 +5785,14 @@ nv_g_home_m_cmd(cmdarg_T *cap)
 	curwin->w_valid &= ~VALID_WCOL;
     }
     curwin->w_set_curswant = TRUE;
+#ifdef FEAT_FOLDING
+    if (hasAnyFolding(curwin))
+    {
+	validate_cheight();
+	if (curwin->w_cline_folded)
+	    update_curswant_force();
+    }
+#endif
     adjust_skipcol();
 }
 
