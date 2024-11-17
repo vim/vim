@@ -1,9 +1,11 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzxywvut
-" Last Change:  2024 nov 15
+" Last Change:  2024 nov 16
 
-if exists('g:current_compiler') | finish | endif
+if exists('g:current_compiler') || bufname() !~# '\.java\=$'
+  finish
+endif
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -23,6 +25,9 @@ if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
     \ b:current_syntax == 'java' && hlexists('javaClassDecl')
 
   function! s:GetDeclaredTypeNames() abort
+    if bufname() =~# '\<\%(module\|package\)-info\.java\=$'
+      return [expand('%:t:r')]
+    endif
     defer execute('normal! g``')
     call cursor(1, 1)
     let type_names = []
@@ -39,6 +44,9 @@ if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
 
 else
   function! s:GetDeclaredTypeNames() abort
+    if bufname() =~# '\<\%(module\|package\)-info\.java\=$'
+      return [expand('%:t:r')]
+    endif
     " Undo the unsetting of &hls, see below
     if &hls
       defer execute('set hls')
@@ -73,25 +81,29 @@ else
 endif
 
 if exists('g:spotbugs_properties') &&
-    \ has_key(g:spotbugs_properties, 'sourceDirName') &&
-    \ has_key(g:spotbugs_properties, 'classDirName')
+    \ has_key(g:spotbugs_properties, 'sourceDirPath') &&
+    \ has_key(g:spotbugs_properties, 'classDirPath')
 
 function! s:FindClassFiles(src_type_name) abort
-  let src_dir_name = g:spotbugs_properties.sourceDirName
-  let bin_dir_name = g:spotbugs_properties.classDirName
-  " Since only the rightmost "src" is sought, while there can be any number of
-  " such filenames, no "fnamemodify(a:src_type_name, ':p:s?src?bin?')" is used
-  let tail_idx = strridx(a:src_type_name, src_dir_name)
-  " No such directory
-  if tail_idx < 0 | return [] | endif
-  " Substitute "bin_dir_name" for the rightmost "src_dir_name"
-  let candidate_type_name = strpart(a:src_type_name, 0, tail_idx)..
-      \ bin_dir_name..
-      \ strpart(a:src_type_name, (tail_idx + strlen(src_dir_name)))
+  let src_dir_path = g:spotbugs_properties.sourceDirPath
+  let bin_dir_path = g:spotbugs_properties.classDirPath
   let class_files = []
-  for candidate in insert(glob(candidate_type_name..'\$*.class', 1, 1),
-          \ candidate_type_name..'.class')
-    if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
+  " Match pairwise the components of source and class pathnames
+  for dir_idx in range(min([len(src_dir_path), len(bin_dir_path)]))
+    " Since only the rightmost "src" is sought, while there can be any number of
+    " such filenames, no "fnamemodify(a:src_type_name, ':p:s?src?bin?')" is used
+    let tail_idx = strridx(a:src_type_name, src_dir_path[dir_idx])
+    " No such directory or no such inner type (i.e. without "$")
+    if tail_idx < 0 | continue | endif
+    " Substitute "bin_dir_path[dir_idx]" for the rightmost "src_dir_path[dir_idx]"
+    let candidate_type_name = strpart(a:src_type_name, 0, tail_idx)..
+        \ bin_dir_path[dir_idx]..
+        \ strpart(a:src_type_name, (tail_idx + strlen(src_dir_path[dir_idx])))
+    for candidate in insert(glob(candidate_type_name..'\$*.class', 1, 1),
+            \ candidate_type_name..'.class')
+      if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
+    endfor
+    if !empty(class_files) | break | endif
   endfor
   return class_files
 endfunction

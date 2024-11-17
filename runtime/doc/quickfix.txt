@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Nov 15
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Nov 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1350,11 +1350,13 @@ The global default is "-workHard -experimental".
 By default, the class files are searched in the directory where the source
 files are placed.  However, typical Java projects use distinct directories
 for source files and class files.  To make both known to SpotBugs, assign
-their paths (relative to their common root directory) to the following two
-properties (using the example of a typical Maven project): >
+their paths (distinct and relative to their common root directory) to the
+following two properties (using the example of a typical Maven project): >
 
-	let g:spotbugs_properties = {'sourceDirName': 'src/main/java',
-				   \ 'classDirName':  'target/classes'}
+	let g:spotbugs_properties = {
+		\ 'sourceDirPath': ['src/main/java',  'src/test/java'],
+		\ 'classDirPath':  ['target/classes', 'target/test-classes'],
+	\ }
 
 Pre- and post-compiler actions, to first refresh the class files for the
 current buffer, and then run `spotbugs` on them, can be enabled by adding
@@ -1363,16 +1365,22 @@ to your |vimrc| (before any |FileType| event): >
 	function! CompilerJavacMake() abort
 		if exists('b:spotbugs_class_files')
 			for pathname in b:spotbugs_class_files
-				call delete(eval(pathname))
+				let classname = eval(pathname)
+
+				if classname =~# '\.class$'
+					call delete(classname)
+				endif
 			endfor
 
 			let b:spotbugs_class_files = []
 		endif
 
-  		compiler javac
-  		exe 'make -Xlint -Xdiags:verbose'
-			\ '-d' shellescape(get(get(g:, 'spotbugs_properties', {}),
-			\ 'classDirName', '.'), 1) '%:S'
+		if !exists('g:javac_makeprg_params')
+			let g:javac_makeprg_params = '-Xlint -Xdiags:verbose'
+		endif
+
+		compiler javac
+		make %:S
 	endfunction
 
 	function! SpotBugsMake() abort
