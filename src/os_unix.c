@@ -4365,7 +4365,7 @@ mch_calc_cell_size(struct cellsize *cs_out)
    ch_log(NULL, "ioctl(TIOCGWINSZ) %s", retval == 0 ? "success" : "failed");
 #endif
 
-   if (retval == -1)
+   if (retval == -1 || ws.ws_xpixel == 0)
    {
        cs_out->cs_xpixel = -1;
        cs_out->cs_ypixel = -1;
