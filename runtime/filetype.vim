@@ -1262,6 +1262,9 @@ au BufNewFile,BufRead *.jl			setf julia
 " Just
 au BufNewFile,BufRead [jJ]ustfile,.justfile,*.just setf just
 
+" KAREL
+au BufNewFile,BufRead *.kl,*.KL setf karel
+
 " KDL
 au BufNewFile,BufRead *.kdl			setf kdl
 
