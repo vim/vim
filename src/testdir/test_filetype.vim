@@ -395,6 +395,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     jsp: ['file.jsp'],
     julia: ['file.jl'],
     just: ['justfile', 'Justfile', '.justfile', 'config.just'],
+    karel: ['file.kl', 'file.KL'],
     kconfig: ['Kconfig', 'Kconfig.debug', 'Kconfig.file', 'Config.in', 'Config.in.host'],
     kdl: ['file.kdl'],
     kivy: ['file.kv'],
