@@ -1057,4 +1057,28 @@ func Test_clipboard_regs_not_working()
   endif
 endfunc
 
+" This was causing a crash because y_append was ending up being NULL
+func Test_clipboard_regs_not_working2()
+  CheckNotMac
+  CheckRunVimInTerminal
+  CheckFeature clipboard
+  let display=$DISPLAY
+  unlet $DISPLAY
+  " Run in a separate Vim instance because changing 'encoding' may cause
+  " trouble for later tests.
+  let lines =<< trim END
+      unlet $DISPLAY
+      call setline(1, 'abcdefg')
+      let a=execute(':norm! "+yy')
+      call writefile([a], 'Xclipboard_result.txt')
+  END
+  call writefile(lines, 'XTest_clipboard', 'D')
+  let buf = RunVimInTerminal('-S XTest_clipboard', {})
+  call term_sendkeys(buf, "\"+yy")
+  call StopVimInTerminal(buf)
+  let result = readfile('Xclipboard_result.txt')
+  call assert_match("^\\nW23:", result[0])
+  let $DISPLAY=display
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
