@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Nov 11
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Nov 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -715,6 +715,25 @@ connection to the X11 selection (or clipboard), it will use register 0 and
 output a warning:
 
   Warning: Clipboard register not available, using register 0 ~
+
+								*W24*
+Vim comes in different flavors, from a tiny build, that just tries to be
+compatible to original Vi, to enhanced builds which include many improvements
+(like a GUI).  However, on servers and embedded systems, Vim is typically
+compiled without clipboard support, since this feature requires X11 libraries
+to be present.  Check the ":version" output for the flag |+clipboard| or
+-clipboard.  The former means clipboard support is present while the latter
+means your Vim does not contain clipboard support.
+
+In the case when you are trying to access the "* or "+ register and Vim has
+no clipboard support, you will see this warning:
+
+  Warning: Clipboard register not available. See :h W24~
+
+If you have a vim with no clipboard support but would like to use the
+clipboard, try to install a more enhanced Vim package like vim-enhanced or
+vim-gtk3 (the gui packages usually also come with a terminal Vim that has
+clipboard support included).
 
 							*x11-cut-buffer*
 There are, by default, 8 cut-buffers: CUT_BUFFER0 to CUT_BUFFER7.  Vim only
