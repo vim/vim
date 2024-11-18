@@ -189,7 +189,7 @@ func Test_termdebug_decimal_breakpoints()
   let g:termdebug_config = {}
   let g:termdebug_config['sign_decimal'] = 1
 
-  Termdebug ./XTD_basic
+  exe "Termdebug " .. bin_name
   call WaitForAssert({-> assert_true(get(g:, "termdebug_is_running", v:false))})
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   let gdb_buf = winbufnr(1)
