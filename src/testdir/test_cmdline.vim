@@ -4022,7 +4022,10 @@ func Test_msghistory()
   echomsg 'bar'
   echomsg 'baz'
   echomsg 'foobar'
-  call assert_equal(split(execute('messages'), "\n"), ['baz', 'foobar'])
+  call assert_equal(
+        \ filter(split(execute('messages'), "\n"),
+        \        { _, val -> stridx(val, 'Messages maintainer:') != 0 }),
+        \ ['baz', 'foobar'])
 
   " When the number of messages is 10 and 'msghistory' is changed to 5, is the
   " number of output lines of :messages 5?
@@ -4031,11 +4034,16 @@ func Test_msghistory()
     echomsg num
   endfor
   set msghistory=5
-  call assert_equal(len(split(execute('messages'), "\n")), 5)
+  call assert_equal(
+        \ len(filter(split(execute('messages'), "\n"),
+        \        { _, val -> stridx(val, 'Messages maintainer:') != 0 })),
+        \ 5)
 
   " Check empty list
   set msghistory=0
-  call assert_true(empty(split(execute('messages'), "\n")))
+  call assert_true(
+        \ empty(filter(split(execute('messages'), "\n"),
+        \        { _, val -> stridx(val, 'Messages maintainer:') != 0 })))
 
   set msghistory&
 endfunc
