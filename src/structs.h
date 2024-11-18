@@ -5099,3 +5099,11 @@ typedef struct
 
 #define KEYVALUE_ENTRY(k, v) \
     {(k), {((char_u *)v), STRLEN_LITERAL(v)}}
+
+#if defined(UNIX) || defined(MSWIN)
+// Defined as signed, to return -1 on error
+struct cellsize {
+    int cs_xpixel;
+    int cs_ypixel;
+};
+#endif
