@@ -19,6 +19,16 @@ tests.
 
 At 4), to run a test in GUI, add "GUI_FLAG=-g" to the make command.
 
+TIP: When you add a test in a test_<subject>.vim file, in most cased you can
+test your newly added test within Vim.
+For example, if you add Test_foo() in test_termdebug.vim,
+you can do the following:
+
+  vim --clean # Start vim with no plugins loaded
+  :cd src/testdir # assuming that you are in the vim root folder
+  :e test_termdebug.vim
+  :source %
+  :call Test_foo()
 
 What you can use (see test_assert.vim for an example):
 
@@ -197,4 +207,3 @@ screendumps will be shown with no difference between their versions):
 
     $ cd ..
     $ ../vim -u NONE -S viewdumps.vim
-
