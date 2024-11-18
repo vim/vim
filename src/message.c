@@ -1061,7 +1061,7 @@ delete_first_msg(void)
 }
 
     void
-check_msg_hist()
+check_msg_hist(void)
 {
     // Don't let the message history get too big
     while (msg_hist_len > 0 && msg_hist_len > p_mhi)
