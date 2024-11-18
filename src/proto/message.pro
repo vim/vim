@@ -18,7 +18,7 @@ void emsg_namelen(char *msg, char_u *name, int len);
 char *msg_trunc_attr(char *s, int force, int attr);
 char_u *msg_may_trunc(int force, char_u *s);
 int delete_first_msg(void);
-void check_msg_hist();
+void check_msg_hist(void);
 void ex_messages(exarg_T *eap);
 void msg_end_prompt(void);
 void wait_return(int redraw);
