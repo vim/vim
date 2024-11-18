@@ -5923,6 +5923,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Determines how many entries are remembered in the |:messages| history.
 	The maximum value is 10000.
+	Setting it to zero clears the message history.
+
 
 						    *'mzquantum'* *'mzq'*
 'mzquantum' 'mzq'	number	(default 100)

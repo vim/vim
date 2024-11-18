@@ -3870,8 +3870,23 @@ did_set_number_relativenumber(optset_T *args UNUSED)
     char *
 did_set_msghistory(optset_T *args UNUSED)
 {
+    char *errmsg = NULL;
+
+    // 'msghistory' must be positive
+    if (p_mhi < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	p_mhi = 0;
+    }
+    else if (p_mhi > 10000)
+    {
+	errmsg = e_invalid_argument;
+	p_mhi = 10000;
+    }
+
     check_msg_hist();
-    return NULL;
+
+    return errmsg;
 }
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
@@ -4923,16 +4938,6 @@ check_num_option_bounds(
     {
 	errmsg = e_invalid_argument;
 	p_hi = 10000;
-    }
-    if (p_mhi < 0)
-    {
-	errmsg = e_argument_must_be_positive;
-	p_mhi = 0;
-    }
-    else if (p_mhi > 10000)
-    {
-	errmsg = e_invalid_argument;
-	p_mhi = 10000;
     }
     if (p_re < 0 || p_re > 2)
     {
