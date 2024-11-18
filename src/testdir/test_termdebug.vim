@@ -180,11 +180,11 @@ func Test_termdebug_basic()
 endfunc
 
 func Test_termdebug_decimal_breakpoints()
-  let bin_name = 'XTD_basic'
+  let bin_name = 'example_file'
   let src_name = bin_name .. '.c'
   call s:generate_files(bin_name)
 
-  edit XTD_basic.c
+  exe "edit " .. src_name
 
   let g:termdebug_config = {}
   let g:termdebug_config['sign_decimal'] = 1
