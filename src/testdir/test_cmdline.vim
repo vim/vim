@@ -4025,7 +4025,7 @@ func Test_msghistory()
   echomsg 'bar'
   echomsg 'baz'
   echomsg 'foobar'
-  call assert_equal(GetMessages(), ['baz', 'foobar'])
+  call assert_equal(['baz', 'foobar'], GetMessages())
 
   " When the number of messages is 10 and 'msghistory' is changed to 5, is the
   " number of output lines of :messages 5?
