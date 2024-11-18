@@ -668,12 +668,14 @@ repeat:
 			str = vim_strnsave(*fnamep, *fnamelen);
 			if (sub != NULL && str != NULL)
 			{
+			    size_t slen;
+
 			    *usedlen = p + 1 - src;
-			    s = do_string_sub(str, pat, sub, NULL, flags);
+			    s = do_string_sub(str, *fnamelen, pat, sub, NULL, flags, &slen);
 			    if (s != NULL)
 			    {
 				*fnamep = s;
-				*fnamelen = (int)STRLEN(s);
+				*fnamelen = slen;
 				vim_free(*bufp);
 				*bufp = s;
 				didit = TRUE;

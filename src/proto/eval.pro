@@ -73,5 +73,5 @@ int get_echo_attr(void);
 void ex_execute(exarg_T *eap);
 char_u *find_option_end(char_u **arg, int *scope);
 void last_set_msg(sctx_T script_ctx);
-char_u *do_string_sub(char_u *str, char_u *pat, char_u *sub, typval_T *expr, char_u *flags);
+char_u *do_string_sub(char_u *str, size_t str_len, char_u *pat, char_u *sub, typval_T *expr, char_u *flags, size_t *ret_len);
 /* vim: set ft=c : */
