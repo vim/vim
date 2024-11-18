@@ -4012,8 +4012,11 @@ func Test_cd_bslash_completion_windows()
 endfunc
 
 func Test_msghistory()
-  " Clear the history
-  set msghistory=0
+  " NOTE: 'Messages maintainer:' message must be filtered
+  function! GetMessages() abort
+    return filter(split(execute('messages'), "\n"),
+        \        { _, val -> stridx(val, 'Messages maintainer:') != 0 })
+  endfunction
 
   " After setting 'msghistory' to 2 and outputting a message 4 times with
   " :echomsg, is the number of output lines of :messages 2?
@@ -4022,10 +4025,7 @@ func Test_msghistory()
   echomsg 'bar'
   echomsg 'baz'
   echomsg 'foobar'
-  call assert_equal(
-        \ filter(split(execute('messages'), "\n"),
-        \        { _, val -> stridx(val, 'Messages maintainer:') != 0 }),
-        \ ['baz', 'foobar'])
+  call assert_equal(GetMessages(), ['baz', 'foobar'])
 
   " When the number of messages is 10 and 'msghistory' is changed to 5, is the
   " number of output lines of :messages 5?
@@ -4034,16 +4034,11 @@ func Test_msghistory()
     echomsg num
   endfor
   set msghistory=5
-  call assert_equal(
-        \ len(filter(split(execute('messages'), "\n"),
-        \        { _, val -> stridx(val, 'Messages maintainer:') != 0 })),
-        \ 5)
+  call assert_equal(len(GetMessages()), 5)
 
   " Check empty list
   set msghistory=0
-  call assert_true(
-        \ empty(filter(split(execute('messages'), "\n"),
-        \        { _, val -> stridx(val, 'Messages maintainer:') != 0 })))
+  call assert_true(empty(GetMessages()))
 
   set msghistory&
 endfunc
