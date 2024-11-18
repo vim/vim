@@ -5228,16 +5228,16 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
         list_append_number(rettv->vval.v_list, (varnumber_T)gui.char_height);
     }
     else
-    {
 #endif
+    {
         struct cellsize cs;
-# if defined(UNIX)
+#if defined(UNIX)
         mch_calc_cell_size(&cs);
-# else
+#else
         // Non-Unix CUIs are not supported, so set this to -1x-1.
         cs.cs_xpixel = -1;
         cs.cs_ypixel = -1;
-# endif
+#endif
 
         // failed get pixel size.
         if (cs.cs_xpixel == -1)
@@ -5246,9 +5246,7 @@ f_getcellpixels(typval_T *argvars UNUSED, typval_T *rettv)
         // success pixel size and no gui.
         list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_xpixel);
         list_append_number(rettv->vval.v_list, (varnumber_T)cs.cs_ypixel);
-#if defined(FEAT_GUI)
     }
-#endif
 
 }
 
