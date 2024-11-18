@@ -203,10 +203,10 @@ func Test_termdebug_decimal_breakpoints()
     Break
     call term_wait(gdb_buf)
     if i == 2
-      call WaitForAssert({-> assert_equal(sign_getdefined('debugBreakpoint2.0')[0].text, '02')})
+      call WaitForAssert({-> assert_equal(sign_getdefined('debugBreakpoint2.0')[0].text, '2')})
     endif
     if i == 10
-      call WaitForAssert({-> assert_equal(sign_getdefined('debugBreakpoint10.0')[0].text, '0A')})
+      call WaitForAssert({-> assert_equal(sign_getdefined('debugBreakpoint10.0')[0].text, '10')})
     endif
     if i == 168
       call WaitForAssert({-> assert_equal(sign_getdefined('debugBreakpoint168.0')[0].text, '9+')})
