@@ -9,10 +9,6 @@ if exists("b:current_syntax")
   finish
 endif
 
-if version < 600
-  syntax clear
-endif
-
 " KAREL is case-insensitive
 syntax case ignore
 
