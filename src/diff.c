@@ -1961,7 +1961,7 @@ int count_virtual_lines(win_T *win, linenr_T start, linenr_T endline)
 {
     int virtual_lines = 0;
     for (int k = start; k <= endline; k++) {
-	int n = diff_check(win, k, NULL);
+	int n = diff_check(win, k);
 	if (n > 0) {
 	    virtual_lines += n;  // filler lines
 	}
@@ -1985,7 +1985,7 @@ int count_virtual_to_real(win_T *win, const linenr_T lnum,
     int real_offset = 0;
     int virtual_offset = 0;
     while (1) {
-	int n = diff_check(win, lnum+real_offset, NULL);
+	int n = diff_check(win, lnum+real_offset);
 	virtual_offset++;
 	if (n > 0) {
 	    virtual_offset += n;  // filler lines
@@ -2593,7 +2593,7 @@ void linematch_nbuffers(const char **diff_block, const int *diff_length,
  * added line
  */
     int
-diff_check(win_T *wp, linenr_T lnum, int *linestatus)
+diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus)
 {
     int		idx;		// index in tp_diffbuf[] for this buffer
     diff_T	*dp;
@@ -2629,58 +2629,16 @@ diff_check(win_T *wp, linenr_T lnum, int *linestatus)
     if (dp == NULL || lnum < dp->df_lnum[idx])
 	return 0;
 
-    if (dp->df_redraw && diff_linematch(dp)) {
-	// define buffers for diff algorithm
-	diffin_T *diffbuffers = ALLOC_MULT(diffin_T, DB_COUNT);
-	const char **diff_begin = ALLOC_MULT(const char *, DB_COUNT);
-	int *diff_length = ALLOC_MULT(int, DB_COUNT);
-	int *outputmap = ALLOC_MULT(int, DB_COUNT);
-	int diffbuffers_count = 0;
-	for (i = 0; i < DB_COUNT; i++) {
-	    if (curtab->tp_diffbuf[i] != NULL) {
-		CLEAR_FIELD(diffbuffers[diffbuffers_count]);
-		diff_write(curtab->tp_diffbuf[i], &diffbuffers[diffbuffers_count]);
-		diff_begin[diffbuffers_count] = diffbuffers[diffbuffers_count].din_mmfile.ptr;
-
-		for (int j = 0; j < dp->df_lnum[i] - 1; j++) {
-		    while (*diff_begin[diffbuffers_count] != '\n') {
-			diff_begin[diffbuffers_count]++;
-		    }
-		    diff_begin[diffbuffers_count]++;
-		}
-		diff_length[diffbuffers_count] = dp->df_count[i];
-
-		outputmap[diffbuffers_count] = i;
-
-		diffbuffers_count++;
-	    }
-	}
-
-	linematch_nbuffers(diff_begin, diff_length, diffbuffers_count,
-		&dp->df_comparisonlines, &dp->df_arr_col_size, outputmap);
-
-	for (i = 0; i < diffbuffers_count; i++) {
-	    clear_diffin(&diffbuffers[i]);
-	}
-	vim_free(diffbuffers);
-	vim_free(diff_begin);
-	vim_free(diff_length);
-	vim_free(outputmap);
-
-	dp->df_redraw = False;
+    // Don't run linematch when lnum is offscreen.
+    // Useful for scrollbind calculations which need to count all the filler lines
+    // above the screen.
+    if (lnum >= wp->w_topline && lnum < wp->w_botline
+        && !dp->is_linematched && diff_linematch(dp)) {
+      run_linematch_algorithm(dp);
     }
-    if (diff_linematch(dp)) {
-	long off = lnum - dp->df_lnum[idx];
-	if (off < dp->df_count[idx]) {
-	    if (linestatus != NULL&&dp->df_comparisonlines[
-		    dp->df_arr_col_size * idx + lnum-dp->df_lnum[idx]].df_newline) {
-		*linestatus=-2;   // line was added
-	    } else if (linestatus != NULL) { *linestatus=-1; }  // line was changed
-	}
-	return (
-		diff_flags&DIFF_FILLER?
-		dp->df_comparisonlines[
-		dp->df_arr_col_size * idx + lnum-dp->df_lnum[idx]].df_filler:0);
+
+    if (dp->is_linematched) {
+      return linematched_filler_lines(dp, idx, lnum, linestatus);
     }
 
     if (lnum < dp->df_lnum[idx] + dp->df_count[idx])
@@ -2734,6 +2692,11 @@ diff_check(win_T *wp, linenr_T lnum, int *linestatus)
 	if (curtab->tp_diffbuf[i] != NULL && dp->df_count[i] > maxcount)
 	    maxcount = dp->df_count[i];
     return maxcount - dp->df_count[idx];
+}
+
+int diff_check(win_T *wp, linenr_T lnum)
+{
+    return diff_check_with_linestatus(wp, lnum, NULL)
 }
 
 /*
@@ -2858,7 +2821,7 @@ diff_check_fill(win_T *wp, linenr_T lnum)
     // be quick when there are no filler lines
     if (!(diff_flags & DIFF_FILLER))
 	return 0;
-    n = diff_check(wp, lnum, NULL);
+    n = diff_check(wp, lnum);
     if (n <= 0)
 	return 0;
     return n;
@@ -3546,9 +3509,9 @@ ex_diffgetput(exarg_T *eap)
 	// the cursor line when there is no difference above the cursor.
 	if (eap->cmdidx == CMD_diffget
 		&& eap->line1 == curbuf->b_ml.ml_line_count
-		&& diff_check(curwin, eap->line1, NULL) == 0
+		&& diff_check(curwin, eap->line1) == 0
 		&& (eap->line1 == 1
-		    || diff_check(curwin, eap->line1 - 1, NULL) == 0))
+		    || diff_check(curwin, eap->line1 - 1) == 0))
 	    ++eap->line2;
 	else if (eap->line1 > 0)
 	    --eap->line1;

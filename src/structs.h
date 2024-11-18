@@ -3570,20 +3570,8 @@ struct diffblock_S
     diff_T	*df_next;
     linenr_T	df_lnum[DB_COUNT];	// line number in buffer
     linenr_T	df_count[DB_COUNT];	// nr of inserted/changed lines
-
-    // diffopt linematch algorithm parameter: marks when the algorithm for diff
-    // alignment has been ran the algorithm will run only when this diff is
-    // scrolled into view, or if it has been changed
-    int df_redraw;
-
-    // diffopt linematch algorithm parameter: pointer to a 2d array of
-    // df_linecompare_T, for each diff buffer (axis 0) for each line of that
-    // buffer in the diff (axis 1), contains the information which lines in the
-    // other buffers should this line be compared to, how many filler lines
-    // should be drawn above this line, and is this a new line
-    df_linecompare_T *df_comparisonlines;
-
-    int df_arr_col_size;  // used for referencing 2d array df_comparisonlines
+    bool is_linematched;  // has the linematch algorithm ran on this diff hunk to divide it into
+			  // smaller diff hunks?
 };
 #endif
 
