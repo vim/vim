@@ -2840,6 +2840,7 @@ au BufNewFile,BufRead */etc/xinetd.conf		setf xinetd
 " Xilinx Vivado/Vitis project files and block design files
 au BufNewFile,BufRead *.xpr,*.xpfm,*.spfm,*.bxml,*.mmi		setf xml
 au BufNewFile,BufRead *.bd,*.bda,*.xci				setf json
+au BufNewFile,BufRead *.mss					setf mss
 
 " XS Perl extension interface language
 au BufNewFile,BufRead *.xs			setf xs
