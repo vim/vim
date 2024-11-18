@@ -153,8 +153,8 @@ sound_callback(ca_context *c UNUSED,
     callback_queue = scb;
     scb->scb_id = id;
     scb->scb_result = error_code == CA_SUCCESS ? 0
-                      : error_code == CA_ERROR_CANCELED
-                              || error_code == CA_ERROR_DESTROYED
+                      : error_code == CA_ERROR_CANCELED ||
+                              error_code == CA_ERROR_DESTROYED
                           ? 1
                           : 2;
     scb->scb_callback = soundcb;
@@ -346,8 +346,8 @@ sound_window(void)
     if (g_hWndSound == NULL)
     {
         LPCSTR clazz = "VimSound";
-        WNDCLASS wndclass
-            = { 0, sound_wndproc, 0, 0, g_hinst, NULL, 0, 0, NULL, clazz };
+        WNDCLASS wndclass = { 0, sound_wndproc, 0,    0, g_hinst, NULL, 0,
+                              0, NULL,          clazz };
         RegisterClass(&wndclass);
         g_hWndSound = CreateWindow(clazz, NULL, 0, 0, 0, 0, 0, HWND_MESSAGE,
                                    NULL, g_hinst, NULL);

@@ -140,10 +140,10 @@ sign_group_unref(char_u *groupname)
 static int
 sign_in_group(sign_entry_T *sign, char_u *group)
 {
-    return ((group != NULL && STRCMP(group, "*") == 0)
-            || (group == NULL && sign->se_group == NULL)
-            || (group != NULL && sign->se_group != NULL
-                && STRCMP(group, sign->se_group->sg_name) == 0));
+    return ((group != NULL && STRCMP(group, "*") == 0) ||
+            (group == NULL && sign->se_group == NULL) ||
+            (group != NULL && sign->se_group != NULL &&
+             STRCMP(group, sign->se_group->sg_name) == 0));
 }
 
 /*
@@ -153,8 +153,8 @@ sign_in_group(sign_entry_T *sign, char_u *group)
 static int
 sign_group_for_window(sign_entry_T *sign, win_T *wp)
 {
-    int for_popup = sign->se_group != NULL
-                    && STRNCMP("PopUp", sign->se_group->sg_name, 5) == 0;
+    int for_popup = sign->se_group != NULL &&
+                    STRNCMP("PopUp", sign->se_group->sg_name, 5) == 0;
 
     return WIN_IS_POPUP(wp) ? for_popup : !for_popup;
 }
@@ -350,10 +350,10 @@ sign_sort_by_prio_on_line(buf_T *buf, sign_entry_T *sign)
 
     // If there is only one sign in the buffer or only one sign on the line or
     // the sign is already sorted by priority, then return.
-    if ((sign->se_prev == NULL || sign->se_prev->se_lnum != sign->se_lnum
-         || sign->se_prev->se_priority > sign->se_priority)
-        && (sign->se_next == NULL || sign->se_next->se_lnum != sign->se_lnum
-            || sign->se_next->se_priority < sign->se_priority))
+    if ((sign->se_prev == NULL || sign->se_prev->se_lnum != sign->se_lnum ||
+         sign->se_prev->se_priority > sign->se_priority) &&
+        (sign->se_next == NULL || sign->se_next->se_lnum != sign->se_lnum ||
+         sign->se_next->se_priority < sign->se_priority))
         return;
 
     // One or more signs on the same line as 'sign'
@@ -361,8 +361,8 @@ sign_sort_by_prio_on_line(buf_T *buf, sign_entry_T *sign)
 
     // First search backward for a sign with higher priority on the same line
     p = sign;
-    while (p->se_prev != NULL && p->se_prev->se_lnum == sign->se_lnum
-           && p->se_prev->se_priority <= sign->se_priority)
+    while (p->se_prev != NULL && p->se_prev->se_lnum == sign->se_lnum &&
+           p->se_prev->se_priority <= sign->se_priority)
         p = p->se_prev;
 
     if (p == sign)
@@ -370,8 +370,8 @@ sign_sort_by_prio_on_line(buf_T *buf, sign_entry_T *sign)
         // Sign not found. Search forward for a sign with priority just before
         // 'sign'.
         p = sign->se_next;
-        while (p->se_next != NULL && p->se_next->se_lnum == sign->se_lnum
-               && p->se_next->se_priority > sign->se_priority)
+        while (p->se_next != NULL && p->se_next->se_lnum == sign->se_lnum &&
+               p->se_next->se_priority > sign->se_priority)
             p = p->se_next;
     }
 
@@ -425,8 +425,8 @@ buf_addsign(buf_T *buf, // buffer to store sign in
     prev = NULL;
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {
-        if (lnum == sign->se_lnum && id == sign->se_id
-            && sign_in_group(sign, groupname))
+        if (lnum == sign->se_lnum && id == sign->se_id &&
+            sign_in_group(sign, groupname))
         {
             // Update an existing sign
             sign->se_typenr = typenr;
@@ -522,9 +522,9 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 
             // If there is another sign next with the same priority, may
             // combine the text and the line highlighting.
-            if (sign->se_next != NULL
-                && sign->se_next->se_priority == sign->se_priority
-                && sign->se_next->se_lnum == sign->se_lnum)
+            if (sign->se_next != NULL &&
+                sign->se_next->se_priority == sign->se_priority &&
+                sign->se_next->se_lnum == sign->se_lnum)
             {
                 sign_T *next_sp = find_sign_by_typenr(sign->se_next->se_typenr);
 
@@ -579,9 +579,9 @@ buf_delsign(buf_T *buf, // buffer sign is stored in
     for (sign = buf->b_signlist; sign != NULL; sign = next)
     {
         next = sign->se_next;
-        if ((id == 0 || sign->se_id == id)
-            && (atlnum == 0 || sign->se_lnum == atlnum)
-            && sign_in_group(sign, group))
+        if ((id == 0 || sign->se_id == id) &&
+            (atlnum == 0 || sign->se_lnum == atlnum) &&
+            sign_in_group(sign, group))
 
         {
             *lastp = next;
@@ -597,8 +597,8 @@ buf_delsign(buf_T *buf, // buffer sign is stored in
             // If deleting a sign with a specific identifier in a particular
             // group or deleting any sign at a particular line number, delete
             // only one sign.
-            if (group == NULL || (*group != '*' && id != 0)
-                || (*group == '*' && atlnum != 0))
+            if (group == NULL || (*group != '*' && id != 0) ||
+                (*group == '*' && atlnum != 0))
                 break;
         }
         else
@@ -1154,9 +1154,9 @@ may_force_numberwidth_recompute(buf_T *buf, int unplace)
     win_T *wp;
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
-        if (wp->w_buffer == buf && (wp->w_p_nu || wp->w_p_rnu)
-            && (unplace || wp->w_nrwidth_width < 2)
-            && (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u'))
+        if (wp->w_buffer == buf && (wp->w_p_nu || wp->w_p_rnu) &&
+            (unplace || wp->w_nrwidth_width < 2) &&
+            (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u'))
             wp->w_nrwidth_line_count = 0;
 }
 
@@ -1420,8 +1420,8 @@ sign_place_cmd(buf_T *buf,
     else
     {
         // Place a new sign
-        if (sign_name == NULL || buf == NULL
-            || (group != NULL && *group == '\0'))
+        if (sign_name == NULL || buf == NULL ||
+            (group != NULL && *group == '\0'))
         {
             emsg(_(e_invalid_argument));
             return;
@@ -1515,8 +1515,8 @@ sign_jump_cmd(buf_T *buf,
         return;
     }
 
-    if (buf == NULL || (group != NULL && *group == '\0') || lnum >= 0
-        || sign_name != NULL)
+    if (buf == NULL || (group != NULL && *group == '\0') || lnum >= 0 ||
+        sign_name != NULL)
     {
         // File or buffer is not specified or an empty group is used
         // or a line number or a sign name is specified.
@@ -1637,8 +1637,8 @@ parse_sign_cmd_args(int cmd,
 
     // If the filename is not supplied for the sign place or the sign jump
     // command, then use the current buffer.
-    if (filename == NULL
-        && ((cmd == SIGNCMD_PLACE && lnum_arg) || cmd == SIGNCMD_JUMP))
+    if (filename == NULL &&
+        ((cmd == SIGNCMD_PLACE && lnum_arg) || cmd == SIGNCMD_JUMP))
         *buf = curwin->w_buffer;
 
     return OK;
@@ -1713,8 +1713,7 @@ ex_sign(exarg_T *eap)
 
         // Parse command line arguments
         if (parse_sign_cmd_args(idx, arg, &sign_name, &id, &group, &prio, &buf,
-                                &lnum)
-            == FAIL)
+                                &lnum) == FAIL)
             return;
 
         if (idx == SIGNCMD_PLACE)
@@ -1846,10 +1845,10 @@ sign_get_placed_in_buf(buf_T *buf,
     {
         if (!sign_in_group(sign, sign_group))
             continue;
-        if ((lnum == 0 && sign_id == 0)
-            || (sign_id == 0 && lnum == sign->se_lnum)
-            || (lnum == 0 && sign_id == sign->se_id)
-            || (lnum == sign->se_lnum && sign_id == sign->se_id))
+        if ((lnum == 0 && sign_id == 0) ||
+            (sign_id == 0 && lnum == sign->se_lnum) ||
+            (lnum == 0 && sign_id == sign->se_id) ||
+            (lnum == sign->se_lnum && sign_id == sign->se_id))
         {
             if ((sdict = sign_get_info(sign)) != NULL)
                 list_append_dict(l, sdict);
@@ -2199,10 +2198,10 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
         switch (cmd_idx)
         {
             case SIGNCMD_DEFINE:
-                if (STRNCMP(last, "texthl", 6) == 0
-                    || STRNCMP(last, "linehl", 6) == 0
-                    || STRNCMP(last, "culhl", 5) == 0
-                    || STRNCMP(last, "numhl", 5) == 0)
+                if (STRNCMP(last, "texthl", 6) == 0 ||
+                    STRNCMP(last, "linehl", 6) == 0 ||
+                    STRNCMP(last, "culhl", 5) == 0 ||
+                    STRNCMP(last, "numhl", 5) == 0)
                     xp->xp_context = EXPAND_HIGHLIGHT;
                 else if (STRNCMP(last, "icon", 4) == 0)
                     xp->xp_context = EXPAND_FILES;
@@ -2273,8 +2272,7 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
     }
 
     if (sign_define_by_name(name, icon, linehl, text, texthl, culhl, numhl,
-                            prio)
-        == OK)
+                            prio) == OK)
         retval = 0;
 
 cleanup:
@@ -2318,9 +2316,8 @@ f_sign_define(typval_T *argvars, typval_T *rettv)
 {
     char_u *name;
 
-    if (in_vim9script()
-        && (check_for_string_or_list_arg(argvars, 0) == FAIL
-            || check_for_opt_dict_arg(argvars, 1) == FAIL))
+    if (in_vim9script() && (check_for_string_or_list_arg(argvars, 0) == FAIL ||
+                            check_for_opt_dict_arg(argvars, 1) == FAIL))
         return;
 
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_UNKNOWN)
@@ -2384,10 +2381,9 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc_id(rettv, aid_sign_getplaced) == FAIL)
         return;
 
-    if (in_vim9script()
-        && (check_for_opt_buffer_arg(argvars, 0) == FAIL
-            || (argvars[0].v_type != VAR_UNKNOWN
-                && check_for_opt_dict_arg(argvars, 1) == FAIL)))
+    if (in_vim9script() && (check_for_opt_buffer_arg(argvars, 0) == FAIL ||
+                            (argvars[0].v_type != VAR_UNKNOWN &&
+                             check_for_opt_dict_arg(argvars, 1) == FAIL)))
         return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -2444,10 +2440,9 @@ f_sign_jump(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if (in_vim9script()
-        && (check_for_number_arg(argvars, 0) == FAIL
-            || check_for_string_arg(argvars, 1) == FAIL
-            || check_for_buffer_arg(argvars, 2) == FAIL))
+    if (in_vim9script() && (check_for_number_arg(argvars, 0) == FAIL ||
+                            check_for_string_arg(argvars, 1) == FAIL ||
+                            check_for_buffer_arg(argvars, 2) == FAIL))
         return;
 
     // Sign identifier
@@ -2616,12 +2611,11 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if (in_vim9script()
-        && (check_for_number_arg(argvars, 0) == FAIL
-            || check_for_string_arg(argvars, 1) == FAIL
-            || check_for_string_arg(argvars, 2) == FAIL
-            || check_for_buffer_arg(argvars, 3) == FAIL
-            || check_for_opt_dict_arg(argvars, 4) == FAIL))
+    if (in_vim9script() && (check_for_number_arg(argvars, 0) == FAIL ||
+                            check_for_string_arg(argvars, 1) == FAIL ||
+                            check_for_string_arg(argvars, 2) == FAIL ||
+                            check_for_buffer_arg(argvars, 3) == FAIL ||
+                            check_for_opt_dict_arg(argvars, 4) == FAIL))
         return;
 
     if (argvars[4].v_type != VAR_UNKNOWN)
@@ -2838,8 +2832,8 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if ((check_for_string_arg(argvars, 0) == FAIL
-         || check_for_opt_dict_arg(argvars, 1) == FAIL))
+    if ((check_for_string_arg(argvars, 0) == FAIL ||
+         check_for_opt_dict_arg(argvars, 1) == FAIL))
         return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
