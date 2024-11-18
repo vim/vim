@@ -4034,7 +4034,7 @@ func Test_msghistory()
     echomsg num
   endfor
   set msghistory=5
-  call assert_equal(len(GetMessages()), 5)
+  call assert_equal(5, len(GetMessages()))
 
   " Check empty list
   set msghistory=0
