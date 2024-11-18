@@ -3790,8 +3790,13 @@ getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 getcellpixels()						*getcellpixels()*
 		Returns a |List| of terminal cell pixel size.
 		List format is [xpixels, ypixels].
-		Only works on Unix and Windows gVim.  For on other systems and
-		on failure returns [].
+
+		Only works on Unix (terminal and gVim) and Windows (gVim only).
+		Returns [] on other systems or on failure.
+		Note that there could be variations across different terminals.
+		On macOS, system Terminal.app returns sizes in points (before
+		Retina scaling), whereas third-party terminals return raw pixel
+		sizes (post Retina scaling).
 
 		Return type: list<any>
 
