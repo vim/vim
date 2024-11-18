@@ -4012,6 +4012,9 @@ func Test_cd_bslash_completion_windows()
 endfunc
 
 func Test_msghistory()
+  " Clear the history
+  set msghistory=0
+
   " After setting 'msghistory' to 2 and outputting a message 4 times with
   " :echomsg, is the number of output lines of :messages 2?
   set msghistory=2
