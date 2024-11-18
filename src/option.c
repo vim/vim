@@ -3864,6 +3864,16 @@ did_set_number_relativenumber(optset_T *args UNUSED)
     return NULL;
 }
 
+/*
+ * Process the updated 'msghistory' option value.
+ */
+    char *
+did_set_msghistory(optset_T *args UNUSED)
+{
+    check_msg_hist();
+    return NULL;
+}
+
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
  * Process the new 'numberwidth' option value.
@@ -4914,7 +4924,6 @@ check_num_option_bounds(
 	errmsg = e_invalid_argument;
 	p_hi = 10000;
     }
-
     if (p_mhi < 0)
     {
 	errmsg = e_argument_must_be_positive;
@@ -4925,8 +4934,6 @@ check_num_option_bounds(
 	errmsg = e_invalid_argument;
 	p_mhi = 10000;
     }
-    check_msg_hist();
-
     if (p_re < 0 || p_re > 2)
     {
 	errmsg = e_invalid_argument;
