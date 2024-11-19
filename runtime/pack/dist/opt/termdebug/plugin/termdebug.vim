@@ -39,6 +39,9 @@ vim9script
 # https://sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI.html
 
 var DEBUG = false
+if exists('g:termdebug_config')
+  DEBUG = get(g:termdebug_config, 'debug', false)
+endif
 
 def Echoerr(msg: string)
   echohl ErrorMsg | echom $'[termdebug] {msg}' | echohl None

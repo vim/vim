@@ -564,4 +564,19 @@ function Test_termdebug_config_types()
   unlet g:termdebug_config
 endfunction
 
+function Test_termdebug_config_debug()
+  let s:error_message = 'Termdebug already loaded'
+
+  " USER mode: No error message shall be displayed
+  packadd termdebug
+  call WaitForAssert({-> assert_true(execute('messages') !~ s:error_message)})
+
+  " DEBUG mode: Error message shall be now displayed
+  let g:termdebug_config = {}
+  let g:termdebug_config['debug'] = 1
+  packadd termdebug
+  call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
+
+  unlet g:termdebug_config
+endfunction
 " vim: shiftwidth=2 sts=2 expandtab
