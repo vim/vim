@@ -4040,6 +4040,7 @@ func Test_msghistory()
   set msghistory=0
   call assert_true(empty(GetMessages()))
 
+  delfunction GetMessages
   set msghistory&
 endfunc
 
