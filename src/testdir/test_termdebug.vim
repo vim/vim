@@ -180,7 +180,7 @@ func Test_termdebug_basic()
 endfunc
 
 func Test_decimal_breakpoints()
-  let bin_name = 'example_file'
+  let bin_name = 'XTD_decimal'
   let src_name = bin_name .. '.c'
   call s:generate_files(bin_name)
 
