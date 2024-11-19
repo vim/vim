@@ -311,6 +311,9 @@ au BufNewFile,BufRead */.bundle/config			setf yaml
 au BufNewFile,BufRead *.c			call dist#ft#FTlpc()
 au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 
+" C3
+au BufNewFile,BufRead *.c3,*.c3i,*.c3t		setf c3
+
 " Cairo
 au BufNewFile,BufRead *.cairo			setf cairo
 
