@@ -1331,10 +1331,10 @@ g:compiler_gcc_ignore_unmatched_lines
 JAVAC							*compiler-javac*
 
 Commonly used compiler options can be added to 'makeprg' by setting the
-g:javac_makeprg_params variable.  For example: >
+b/g:javac_makeprg_params variable.  For example: >
 
 	let g:javac_makeprg_params = "-Xlint:all -encoding utf-8"
-<
+
 SPOTBUGS						*compiler-spotbugs*
 
 SpotBugs is a static analysis tool that can be used to find bugs in Java.
@@ -1375,12 +1375,12 @@ to your |vimrc| (before any |FileType| event): >
 			let b:spotbugs_class_files = []
 		endif
 
-		if !exists('g:javac_makeprg_params')
-			let g:javac_makeprg_params = '-Xlint -Xdiags:verbose'
+		if !exists('b:javac_makeprg_params')
+			let b:javac_makeprg_params =
+				\ '-Xlint -Xdiags:verbose -encoding utf-8'
 		endif
 
-		compiler javac
-		make %:S
+		compiler javac | make %:S
 	endfunction
 
 	function! SpotBugsMake() abort
