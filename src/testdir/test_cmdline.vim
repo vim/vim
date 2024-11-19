@@ -4013,7 +4013,7 @@ endfunc
 
 func Test_msghistory()
   " NOTE: 'Messages maintainer:' message must be filtered
-  function! GetMessages() abort
+  function GetMessages() abort
     return filter(split(execute('messages'), "\n"),
         \        { _, val -> stridx(val, 'Messages maintainer:') != 0 })
   endfunction
