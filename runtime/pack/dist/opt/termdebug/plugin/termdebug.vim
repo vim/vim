@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2024 Jul 04
+# Last Change: 2024 Nov 19
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -38,6 +38,11 @@ vim9script
 # The communication with gdb uses GDB/MI.  See:
 # https://sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI.html
 
+var DEBUG = false
+if exists('g:termdebug_config')
+  DEBUG = get(g:termdebug_config, 'debug', false)
+endif
+
 def Echoerr(msg: string)
   echohl ErrorMsg | echom $'[termdebug] {msg}' | echohl None
 enddef
@@ -49,7 +54,9 @@ enddef
 # Variables to keep their status among multiple instances of Termdebug
 # Avoid to source the script twice.
 if exists('g:termdebug_loaded')
-  Echoerr('Termdebug already loaded.')
+  if DEBUG
+    Echoerr('Termdebug already loaded.')
+  endif
   finish
 endif
 g:termdebug_loaded = true

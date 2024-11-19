@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Nov 10
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Nov 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1737,4 +1737,23 @@ This can also be used in a "one-shot" manner: >
 	  let g:termdebug_config['evaluate_in_popup'] = v:false
 	endfunc
 <
+
+Contributing ~
+						*termdebug_contributing*
+Contributions for termdebug improvements are welcome.
+However, it is fairly common that during the development process you need some
+mechanisms like `echo` statements (or similar) to help you in your job.
+For this reason, you can set: >
+    let g:termdebug_config['debug'] = true
+<
+This sets the `DEBUG` variable to `true` in the source code that you can use
+within the source code. An example of its usage follows: >
+    if exists('g:termdebug_loaded')
+      if DEBUG
+	Echoerr('Termdebug already loaded.')
+      endif
+      finish
+    endif
+<
+
  vim:tw=78:ts=8:noet:ft=help:norl:
