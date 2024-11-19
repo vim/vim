@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzxywvut
-" Last Change:  2024 nov 18
+" Last Change:  2024 nov 19
 
 if exists('g:current_compiler') || bufname() !~# '\.java\=$' || wordcount().chars < 9
   finish
@@ -155,9 +155,12 @@ let &l:makeprg = 'spotbugs'..(has('win32') ? '.bat' : '')..' '..
     \ get(b:, 'spotbugs_makeprg_params', get(g:, 'spotbugs_makeprg_params', '-workHard -experimental'))..
     \ ' -textui -emacs -auxclasspath %:p'..s:package_dir_heads..':S -sourcepath %:p'..s:package_dir_heads..':S '..
     \ join(b:spotbugs_class_files, ' ')
-exe 'CompilerSet makeprg='..escape(&l:makeprg, ' "')
 " Emacs expects doubled line numbers
-CompilerSet errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
+setlocal errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
+
+" " This compiler is meant to be used for a single buffer only
+" exe 'CompilerSet makeprg='..escape(&l:makeprg, ' \|"')
+" exe 'CompilerSet errorformat='..escape(&l:errorformat, ' \|"')
 
 delfunction s:CollectClassFiles
 delfunction s:FindClassFiles
