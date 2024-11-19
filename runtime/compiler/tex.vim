@@ -27,7 +27,7 @@ if exists('b:tex_ignore_makefile') || exists('g:tex_ignore_makefile') ||
 		let current_compiler = "latex"
 	endif
 	let s:makeprg=current_compiler .. ' -interaction=nonstopmode'
-	execute 'CompilerSet makeprg=' .. escape(s:makeprg, ' ')
+	execute 'CompilerSet makeprg=' .. escape(s:makeprg, ' \|"')
 else
 	let current_compiler = 'make'
 endif

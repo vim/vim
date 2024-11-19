@@ -12,7 +12,7 @@ set cpo&vim
 " CompilerSet makeprg=ruff
 let &l:makeprg= 'ruff check --output-format=concise '
         \ ..get(b:, 'ruff_makeprg_params', get(g:, 'ruff_makeprg_params', '--preview'))
-exe 'CompilerSet makeprg='..escape(&l:makeprg, ' "')
+exe 'CompilerSet makeprg='..escape(&l:makeprg, ' \|"')
 CompilerSet errorformat=%f:%l:%c:\ %m,%f:%l:\ %m,%f:%l:%c\ -\ %m,%f:
 
 let &cpo = s:cpo_save

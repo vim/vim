@@ -49,7 +49,7 @@ let s:makeprg = g:ps1_makeprg_cmd .. ' %:p:S'
 "         + CategoryInfo          : ObjectNotFound: (Write-Ouput:String) [], CommandNotFoundException
 "         + FullyQualifiedErrorId : CommandNotFoundException
 
-execute 'CompilerSet makeprg=' .. escape(s:makeprg, ' ')
+execute 'CompilerSet makeprg=' .. escape(s:makeprg, ' \|"')
 
 " Showing error in context with underlining.
 CompilerSet errorformat=%+G+%m

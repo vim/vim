@@ -56,7 +56,7 @@ execute 'CompilerSet makeprg=pandoc'..escape(
     \ ' '..s:PandocLang()..
     \ ' --from='..s:PandocFiletype(&filetype)..
     \ ' '..get(b:, 'pandoc_compiler_args', get(g:, 'pandoc_compiler_args', ''))..
-    \ ' --output %:r:S.$* -- %:S', ' ')
+    \ ' --output %:r:S.$* -- %:S', ' \|"')
 CompilerSet errorformat=\"%f\",\ line\ %l:\ %m
 
 let &cpo = s:keepcpo

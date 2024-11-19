@@ -30,7 +30,7 @@ execute 'CompilerSet makeprg=groff'..escape(
     \ ' '..s:groff_compiler_lang()..
     \ ' -K'..get(b:, 'groff_compiler_encoding', get(g:, 'groff_compiler_encoding', 'utf8'))..
     \ ' '..get(b:, 'groff_compiler_args', get(g:, 'groff_compiler_args', ''))..
-    \ ' -mom -T$* -- %:S > %:r:S.$*', ' ')
+    \ ' -mom -T$* -- %:S > %:r:S.$*', ' \|"')
 " From Gavin Freeborn's https://github.com/Gavinok/vim-troff under Vim License
 " https://github.com/Gavinok/vim-troff/blob/91017b1423caa80aba541c997909a4f810edd275/compiler/troff.vim#L39
 CompilerSet errorformat=%o:<standard\ input>\ (%f):%l:%m,

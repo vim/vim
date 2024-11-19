@@ -12,7 +12,7 @@ set cpo&vim
 " CompilerSet makeprg=mypy
 let &l:makeprg = 'mypy --show-column-numbers '
 	    \ ..get(b:, 'mypy_makeprg_params', get(g:, 'mypy_makeprg_params', '--strict --ignore-missing-imports'))
-exe 'CompilerSet makeprg='..escape(&l:makeprg, ' "')
+exe 'CompilerSet makeprg='..escape(&l:makeprg, ' \|"')
 CompilerSet errorformat=%f:%l:%c:\ %t%*[^:]:\ %m
 
 let &cpo = s:cpo_save
