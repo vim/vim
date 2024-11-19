@@ -7,16 +7,10 @@
 if exists("b:did_ftplugin")
   finish
 endif
-
 let b:did_ftplugin = 1
-let s:keepcpo = &cpo
-set cpo&vim
 
 setlocal comments=:--
 setlocal commentstring=--\ %s
 setlocal suffixesadd+=.kl,.KL
 
 let b:undo_ftplugin = "setlocal com< cms< sua<"
-
-let &cpo = s:keepcpo
-unlet s:keepcpo
