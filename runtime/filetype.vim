@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 May 31
+" Last Change:	2024 Nov 19
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -1261,6 +1261,12 @@ au BufNewFile,BufRead *.jl			setf julia
 
 " Just
 au BufNewFile,BufRead [jJ]ustfile,.justfile,*.just setf just
+
+" KAREL
+au BufNewFile,BufRead *.kl setf karel
+if has("fname_case")
+   au BufNewFile,BufRead *.KL setf karel
+endif
 
 " KDL
 au BufNewFile,BufRead *.kdl			setf kdl
