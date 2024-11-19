@@ -509,7 +509,6 @@ diff_mark_adjust_tp(
 		if (tp->tp_diffbuf[i] != NULL)
 		    dprev->df_count[i] += dp->df_count[i];
 	    dprev->df_next = dp->df_next;
-	    vim_free(dp->df_comparisonlines);
 	    vim_free(dp);
 	    dp = dprev->df_next;
 	}
@@ -755,22 +754,26 @@ clear_diffout(diffout_T *dout)
  * Return FAIL for failure.
  */
     static int
-diff_write_buffer(buf_T *buf, diffin_T *din)
+diff_write_buffer(buf_T *buf, mmfile_t *m, linenr_T start, linenr_T end)
 {
     linenr_T	lnum;
     char_u	*s;
     long	len = 0;
     char_u	*ptr;
 
+    if (end < 0) {
+      end = buf->b_ml.ml_line_count;
+    }
+
     if (buf->b_ml.ml_flags & ML_EMPTY)
     {
-	din->din_mmfile.ptr = NULL;
-	din->din_mmfile.size = 0;
+	m->ptr = NULL;
+	m->size = 0;
 	return OK;
     }
 
     // xdiff requires one big block of memory with all the text.
-    for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
+    for (lnum = start; lnum <= end; ++lnum)
 	len += ml_get_buf_len(buf, lnum) + 1;
     ptr = alloc(len);
     if (ptr == NULL)
@@ -788,11 +791,11 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
 	}
 	return FAIL;
     }
-    din->din_mmfile.ptr = (char *)ptr;
-    din->din_mmfile.size = len;
+    m->ptr = (char *)ptr;
+    m->size = len;
 
     len = 0;
-    for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
+    for (lnum = start; lnum <= end; ++lnum)
     {
 	for (s = ml_get_buf(buf, lnum, FALSE); *s != NUL; )
 	{
@@ -843,7 +846,7 @@ diff_write(buf_T *buf, diffin_T *din)
     int		save_cmod_flags;
 
     if (din->din_fname == NULL)
-	return diff_write_buffer(buf, din);
+	return diff_write_buffer(buf, &din->din_mmfile, 1, -1);
 
     // Always use 'fileformat' set to "unix".
     save_ff = buf->b_p_ff;
@@ -1941,7 +1944,7 @@ diff_linematch(diff_T *dp)
 	    // not run the algorithm because this will try to allocate a negative
 	    // amount of space and crash
 	    if (dp->df_count[i] < 0) {
-	      return false;
+	      return FALSE;
 	    }
 	    tsize += dp->df_count[i];
 	}
@@ -2017,7 +2020,7 @@ count_filler_lines_and_topline(int *curlinenum_to, int *linesfiller,
 {
   const diff_T *curdif = thistopdiff;
   int ch_virtual_lines = 0;
-  bool isfiller = false;
+  Bool isfiller = FALSE;
   while (virtual_lines_passed > 0) {
     if (ch_virtual_lines) {
       virtual_lines_passed--;
@@ -2030,7 +2033,7 @@ count_filler_lines_and_topline(int *curlinenum_to, int *linesfiller,
     } else {
       (*linesfiller) = 0;
       ch_virtual_lines = get_max_diff_length(curdif);
-      isfiller = (curdif->df_count[toidx] ? false : true);
+      isfiller = (curdif->df_count[toidx] ? FALSE : TRUE);
       if (isfiller) {
         while (curdif && curdif->df_next && curdif->df_lnum[toidx] ==
                curdif->df_next->df_lnum[toidx]
@@ -2159,7 +2162,7 @@ static void apply_linematch_results(diff_T *dp, size_t decisions_length, const i
       // create new sub diff blocks to segment the original diff block which we
       // further divided by running the linematch algorithm
       dp_s = diff_alloc_new(curtab, dp_s, dp_s->df_next);
-      dp_s->is_linematched = true;
+      dp_s->is_linematched = TRUE;
       for (int j = 0; j < DB_COUNT; j++) {
         if (curtab->tp_diffbuf[j] != NULL) {
           dp_s->df_lnum[j] = line_numbers[j];
@@ -2175,7 +2178,7 @@ static void apply_linematch_results(diff_T *dp, size_t decisions_length, const i
       }
     }
   }
-  dp->is_linematched = true;
+  dp->is_linematched = TRUE;
 }
 
 static void
@@ -2207,7 +2210,7 @@ run_linematch_algorithm(diff_T *dp)
   // we will get the output of the linematch algorithm in the format of an array
   // of integers (*decisions) and the length of that array (decisions_length)
   int *decisions = NULL;
-  const bool iwhite = (diff_flags & (DIFF_IWHITEALL | DIFF_IWHITE)) > 0;
+  const Bool iwhite = (diff_flags & (DIFF_IWHITEALL | DIFF_IWHITE)) > 0;
   size_t decisions_length = linematch_nbuffers(diffbufs, diff_length, ndiffs, &decisions, iwhite);
 
   for (size_t i = 0; i < ndiffs; i++) {

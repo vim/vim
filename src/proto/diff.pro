@@ -27,7 +27,8 @@ void diff_allign_extraction(const int best_path_index, const int *best_path_deci
 void free_comparison_mem(int ***comparison_mem, const int *diff_length, const int nDiffs);
 void populate_tensor(int *df_iterators, const int ch_dim, diffcomparisonpath_flat_T *diffcomparisonpath_flat, int ***comparison_mem, const int *diff_length, const int nDiffs, const char **diff_block);
 void linematch_nbuffers(const char **diff_block, const int *diff_length, const int nDiffs, df_linecompare_T **df_comparisonlines, int *df_arr_col_size, const int *outmap);
-int diff_check(win_T *wp, linenr_T lnum, int *linestatus);
+int diff_check(win_T *wp, linenr_T lnum);
+int diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus);
 int diff_check_fill(win_T *wp, linenr_T lnum);
 void diff_set_topline(win_T *fromwin, win_T *towin);
 int diffopt_changed(void);
@@ -40,7 +41,7 @@ void nv_diffgetput(int put, long count);
 void ex_diffgetput(exarg_T *eap);
 int diff_mode_buf(buf_T *buf);
 int diff_move_to(int dir, long count);
-linenr_T diff_get_corresponding_line(buf_T *buf1, win_T *win1, linenr_T lnum1);
+linenr_T diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1);
 linenr_T diff_lnum_win(linenr_T lnum, win_T *wp);
 void f_diff_filler(typval_T *argvars, typval_T *rettv);
 void f_diff_hlID(typval_T *argvars, typval_T *rettv);
