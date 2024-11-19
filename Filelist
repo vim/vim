@@ -17,6 +17,7 @@ SRC_ALL =	\
 		.gitignore \
 		.hgignore \
 		.appveyor.yml \
+		.clang-format \
 		.codecov.yml \
 		.editorconfig \
 		ci/appveyor.bat \
