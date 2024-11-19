@@ -707,6 +707,8 @@ RT_ALL =	\
 		README_VIM9.md \
 		LICENSE \
 		CONTRIBUTING.md \
+		lang/LICENSE.itx \
+		lang/README.itx \
 		runtime/bugreport.vim \
 		runtime/doc/*.awk \
 		runtime/doc/*.pl \
