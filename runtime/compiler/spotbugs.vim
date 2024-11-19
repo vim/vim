@@ -1,9 +1,9 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzxywvut
-" Last Change:  2024 nov 16
+" Last Change:  2024 nov 18
 
-if exists('g:current_compiler') || bufname() !~# '\.java\=$'
+if exists('g:current_compiler') || bufname() !~# '\.java\=$' || wordcount().chars < 9
   finish
 endif
 
@@ -18,8 +18,11 @@ set cpo&vim
 " FIXME: When "search()" is used with the "e" flag, it makes no _further_
 " progress after claiming an EOL match (i.e. "\_" or "\n", but not "$").
 " XXX: Omit anonymous class declarations
-let s:types = '\C\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\%(\s\|$\)'
-let s:names = '\C\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\s*\(\K\k*\)\>'
+let s:keywords = '\C\<\%(\.\@1<!class\|@\=interface\|enum\|record\|package\)\%(\s\|$\)'
+let s:type_names = '\C\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\s*\(\K\k*\)\>'
+" Capture ";" for counting a class file directory (see s:package_dir_heads below)
+let s:package_names = '\C\<package\s*\(\K\%(\k*\.\=\)\+;\)'
+let s:package = ''
 
 if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
     \ b:current_syntax == 'java' && hlexists('javaClassDecl')
@@ -28,16 +31,20 @@ if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
     if bufname() =~# '\<\%(module\|package\)-info\.java\=$'
       return [expand('%:t:r')]
     endif
-    defer execute('normal! g``')
+    defer execute('silent! normal! g``')
     call cursor(1, 1)
     let type_names = []
-    let lnum = search(s:types, 'eW')
+    let lnum = search(s:keywords, 'eW')
     while lnum > 0
-      if synIDattr(synID(lnum, (col('.') - 1), 0), 'name') ==# 'javaClassDecl'
-        let tokens = matchlist(getline(lnum)..getline(lnum + 1), s:names)
+      let name_attr = synIDattr(synID(lnum, (col('.') - 1), 0), 'name')
+      if name_attr ==# 'javaClassDecl'
+        let tokens = matchlist(getline(lnum)..getline(lnum + 1), s:type_names)
         if !empty(tokens) | call add(type_names, tokens[1]) | endif
+      elseif name_attr ==# 'javaExternal'
+        let tokens = matchlist(getline(lnum)..getline(lnum + 1), s:package_names)
+        if !empty(tokens) | let s:package = tokens[1] | endif
       endif
-      let lnum = search(s:types, 'eW')
+      let lnum = search(s:keywords, 'eW')
     endwhile
     return type_names
   endfunction
@@ -59,7 +66,7 @@ else
     silent %y y
     new
     " Apply ":help scratch-buffer" effects and match "$" in Java (generated)
-    " type names (see s:names)
+    " type names (see s:type_names)
     setlocal iskeyword+=$ buftype=nofile bufhidden=hide noswapfile nohls
     0put y
     " Discard text blocks and strings
@@ -70,11 +77,17 @@ else
     silent keeppatterns %s/\/\*\_.\{-}\*\///ge
     call cursor(1, 1)
     let type_names = []
-    let lnum = search(s:types, 'eW')
+    let lnum = search(s:keywords, 'eW')
     while lnum > 0
-      let tokens = matchlist(getline(lnum)..getline(lnum + 1), s:names)
-      if !empty(tokens) | call add(type_names, tokens[1]) | endif
-      let lnum = search(s:types, 'eW')
+      let line = getline(lnum)
+      if line =~# '\<package\>'
+        let tokens = matchlist(line..getline(lnum + 1), s:package_names)
+        if !empty(tokens) | let s:package = tokens[1] | endif
+      else
+        let tokens = matchlist(line..getline(lnum + 1), s:type_names)
+        if !empty(tokens) | call add(type_names, tokens[1]) | endif
+      endif
+      let lnum = search(s:keywords, 'eW')
     endwhile
     return type_names
   endfunction
@@ -135,11 +148,12 @@ endfunction
 
 " Expose class files for removal etc.
 let b:spotbugs_class_files = s:CollectClassFiles()
+let s:package_dir_heads = repeat(':h', (1 + strlen(substitute(s:package, '[^.;]', '', 'g'))))
 let g:current_compiler = 'spotbugs'
 " CompilerSet makeprg=spotbugs
-let &makeprg = 'spotbugs'..(has('win32')?'.bat':'')..' '..
+let &l:makeprg = 'spotbugs'..(has('win32') ? '.bat' : '')..' '..
     \ get(b:, 'spotbugs_makeprg_params', get(g:, 'spotbugs_makeprg_params', '-workHard -experimental'))..
-    \ ' -textui -emacs -auxclasspath %:p:h:S -sourcepath %:p:h:S '..
+    \ ' -textui -emacs -auxclasspath %:p'..s:package_dir_heads..':S -sourcepath %:p'..s:package_dir_heads..':S '..
     \ join(b:spotbugs_class_files, ' ')
 exe 'CompilerSet makeprg='..escape(&l:makeprg, ' "')
 " Emacs expects doubled line numbers
@@ -149,4 +163,4 @@ delfunction s:CollectClassFiles
 delfunction s:FindClassFiles
 delfunction s:GetDeclaredTypeNames
 let &cpo = s:cpo_save
-unlet s:names s:types s:cpo_save
+unlet s:package_dir_heads s:package s:package_names s:type_names s:keywords s:cpo_save
