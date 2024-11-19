@@ -179,7 +179,7 @@ func Test_termdebug_basic()
   %bw!
 endfunc
 
-func Test_termdebug_decimal_breakpoints()
+func Test_decimal_breakpoints()
   let bin_name = 'example_file'
   let src_name = bin_name .. '.c'
   call s:generate_files(bin_name)
@@ -203,7 +203,7 @@ func Test_termdebug_decimal_breakpoints()
     Break
     call term_wait(gdb_buf)
     if i == 2
-      call WaitForAssert({-> assert_equal(sign_getdefined('debugBreakpoint2.0')[0].text, '2')})
+      call WaitForAssert({-> assert_equal(sign_getdefined('debugBreakpoint2.0')[0].text, '02')})
     endif
     if i == 10
       call WaitForAssert({-> assert_equal(sign_getdefined('debugBreakpoint10.0')[0].text, '10')})
