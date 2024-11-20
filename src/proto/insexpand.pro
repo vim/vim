@@ -31,6 +31,7 @@ unsigned int get_cot_flags(void);
 int pum_wanted(void);
 void ins_compl_show_pum(void);
 char_u *ins_compl_leader(void);
+size_t ins_compl_leader_len(void);
 char_u *find_word_start(char_u *ptr);
 char_u *find_word_end(char_u *ptr);
 void ins_compl_clear(void);
