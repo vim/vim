@@ -4012,12 +4012,6 @@ func Test_cd_bslash_completion_windows()
 endfunc
 
 func Test_msghistory()
-  " NOTE: 'Messages maintainer:' message must be filtered
-  function GetMessages() abort
-    return filter(split(execute('messages'), "\n"),
-        \        { _, val -> stridx(val, 'Messages maintainer:') != 0 })
-  endfunction
-
   " After setting 'msghistory' to 2 and outputting a message 4 times with
   " :echomsg, is the number of output lines of :messages 2?
   set msghistory=2
@@ -4040,7 +4034,6 @@ func Test_msghistory()
   set msghistory=0
   call assert_true(empty(GetMessages()))
 
-  delfunction GetMessages
   set msghistory&
 endfunc
 
