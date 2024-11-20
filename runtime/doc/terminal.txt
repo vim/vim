@@ -255,7 +255,7 @@ Command syntax ~
 					`:!command`		*E279*
 					{only works on Unix and MS-Windows}
 					The resulting command will look like
-					|'shell'| |'shellcmdflag'| [command]
+					'shell' 'shellcmdflag' [command]
 					Other options related to `:!command`
 					have no effect.
 			++kill={how}	When trying to close the terminal
