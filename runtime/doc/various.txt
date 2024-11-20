@@ -306,7 +306,10 @@ g8			Print the hex values of the bytes used in the
 			CTRL-L or ":redraw!" if the command did display
 			something.  However, this depends on what the |t_ti|
 			and |t_te| termcap entries are set to.
-			Also see |shell-window|.
+
+			Hint: use |:terminal| command if you want to run {cmd}
+			in Vim window.  `:term ++shell ++close {cmd}` could
+			serve as close approximation to what `:!{cmd}` does.
 
 							*:!!*
 :!!			Repeat last ":!{cmd}".

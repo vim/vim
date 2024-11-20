@@ -197,6 +197,13 @@ Command syntax ~
 			if [command] is NONE no job is started, the pty of the
 			terminal can be used by a command like gdb.
 
+							*terminal-nospecial*
+			Vim itself only recognizes |cmdline-special|
+			characters inside [command].  Everything else will be
+			passed untouched.  When needed to expand wildcards,
+			environment variables or other shell specials consider
+			|term++shell| option.
+
 			If [command] is missing the default behavior is to
 			close the terminal when the shell exits.  This can be
 			changed with the ++noclose argument.
@@ -241,10 +248,16 @@ Command syntax ~
 					no window will be used.
 			++norestore	Do not include this terminal window
 					in a session file.
+
+						*term++shell*
 			++shell		Instead of executing {command}
 					directly, use a shell, like with
 					`:!command`		*E279*
 					{only works on Unix and MS-Windows}
+					The resulting command will look like
+					|'shell'| |'shellcmdflag'| [command]
+					Other options related to `:!command`
+					have no effect.
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See
 					|term_setkill()| for the values.
