@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Nov 15
+" Last Change:		2024 Nov 19
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -90,24 +90,22 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
     endif
 endif
 
-if exists('g:spotbugs_properties')
+" The support for pre- and post-compiler actions for SpotBugs.
+if exists("g:spotbugs_properties") &&
+	    \ filereadable($VIMRUNTIME . '/compiler/spotbugs.vim')
     let s:request = 0
 
     if has_key(g:spotbugs_properties, 'PreCompilerAction')
-	let s:request = or(s:request, 1)
+	let s:request += 1
     endif
 
     if has_key(g:spotbugs_properties, 'PostCompilerAction')
-	let s:request = or(s:request, 2)
+	let s:request += 2
     endif
 
     if s:request
-	if exists('b:spotbugs_syntax_once')
-	    let s:actions = [{
-		    \ 'group': 'java_spotbugs',
-		    \ 'event': 'BufWritePost',
-		    \ 'bufnr': bufnr(),
-		    \ }]
+	if exists("b:spotbugs_syntax_once")
+	    let s:actions = [{'event': 'BufWritePost'}]
 	else
 	    " XXX: Handle multiple FileType events when vimrc contains more
 	    " than one filetype setting for the language, e.g.:
@@ -116,14 +114,10 @@ if exists('g:spotbugs_properties')
 	    " XXX: DO NOT ADD b:spotbugs_syntax_once TO b:undo_ftplugin !
 	    let b:spotbugs_syntax_once = 1
 	    let s:actions = [{
-		    \ 'group': 'java_spotbugs',
 		    \ 'event': 'Syntax',
-		    \ 'bufnr': bufnr(),
-		    \ 'once': v:true,
+		    \ 'once': 1,
 		    \ }, {
-		    \ 'group': 'java_spotbugs',
 		    \ 'event': 'BufWritePost',
-		    \ 'bufnr': bufnr(),
 		    \ }]
 	endif
 
@@ -146,14 +140,25 @@ if exists('g:spotbugs_properties')
 	    endif
 	endfor
 
+	if !exists("#java_spotbugs")
+	    augroup java_spotbugs
+	    augroup END
+	endif
+
 	" The events are defined in s:actions.
-	silent! call autocmd_delete([{
-		\ 'group': 'java_spotbugs',
-		\ 'event': ['BufWritePost', 'Syntax'],
-		\ 'bufnr': bufnr(),
-		\ }])
-	call autocmd_add(copy(s:actions))
-	unlet s:idx s:actions
+	silent! autocmd! java_spotbugs BufWritePost <buffer>
+	silent! autocmd! java_spotbugs Syntax <buffer>
+
+	for s:action in s:actions
+	    execute printf('autocmd java_spotbugs %s <buffer> %s',
+		    \ s:action.event,
+		    \ s:action.cmd . (has_key(s:action, 'once')
+			    \ ? printf(' | autocmd! java_spotbugs %s <buffer>',
+				    \ s:action.event)
+			    \ : ''))
+	endfor
+
+	unlet s:idx s:action s:actions
     endif
 
     unlet s:request
@@ -163,7 +168,8 @@ endif
 let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
 		\     " formatoptions< comments< commentstring< path< includeexpr<" .
 		\     " | unlet! b:browsefilter" .
-		\     " | silent! call autocmd_delete([{'group': 'java_spotbugs', 'event': ['BufWritePost', 'Syntax'], 'bufnr': bufnr()}])"
+		\     " | silent! autocmd! java_spotbugs BufWritePost <buffer>" .
+		\     " | silent! autocmd! java_spotbugs Syntax <buffer>"
 
 " See ":help vim9-mix".
 if !has("vim9script")
