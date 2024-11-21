@@ -179,3 +179,5 @@ delfunction s:FindClassFiles
 delfunction s:GetDeclaredTypeNames
 let &cpo = s:cpo_save
 unlet s:package_dir_heads s:package s:package_names s:type_names s:keywords s:cpo_save
+
+" vim: set foldmethod=syntax shiftwidth=2 expandtab:
