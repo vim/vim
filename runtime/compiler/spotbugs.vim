@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzxywvut
-" Last Change:  2024 nov 19
+" Last Change:  2024 nov 21
 
 if exists('g:current_compiler') || bufname() !~# '\.java\=$' || wordcount().chars < 9
   finish
@@ -93,6 +93,18 @@ else
   endfunction
 endif
 
+if has('win32')
+
+  function! s:GlobClassFiles(src_type_name) abort
+    return glob(a:src_type_name..'$*.class', 1, 1)
+  endfunction
+
+else
+  function! s:GlobClassFiles(src_type_name) abort
+    return glob(a:src_type_name..'\$*.class', 1, 1)
+  endfunction
+endif
+
 if exists('g:spotbugs_properties') &&
     \ has_key(g:spotbugs_properties, 'sourceDirPath') &&
     \ has_key(g:spotbugs_properties, 'classDirPath')
@@ -112,7 +124,7 @@ function! s:FindClassFiles(src_type_name) abort
     let candidate_type_name = strpart(a:src_type_name, 0, tail_idx)..
         \ bin_dir_path[dir_idx]..
         \ strpart(a:src_type_name, (tail_idx + strlen(src_dir_path[dir_idx])))
-    for candidate in insert(glob(candidate_type_name..'\$*.class', 1, 1),
+    for candidate in insert(s:GlobClassFiles(candidate_type_name),
             \ candidate_type_name..'.class')
       if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
     endfor
@@ -124,7 +136,7 @@ endfunction
 else
 function! s:FindClassFiles(src_type_name) abort
   let class_files = []
-  for candidate in insert(glob(a:src_type_name..'\$*.class', 1, 1),
+  for candidate in insert(s:GlobClassFiles(a:src_type_name),
           \ a:src_type_name..'.class')
     if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
   endfor
