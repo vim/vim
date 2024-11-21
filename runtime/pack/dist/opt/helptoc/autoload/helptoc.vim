@@ -2,9 +2,15 @@ vim9script noclear
 
 # Config {{{1
 
-const SHELL_PROMPT: string = g:
-    ->get('helptoc', {})
-    ->get('shell_prompt', '^\w\+@\w\+:\f\+\$\s')
+var SHELL_PROMPT: string = ''
+
+def UpdateUserSettings() #{{{2
+    SHELL_PROMPT = g:
+        ->get('helptoc', {})
+        ->get('shell_prompt', '^\w\+@\w\+:\f\+\$\s')
+enddef
+
+UpdateUserSettings()
 
 # Init {{{1
 
@@ -200,6 +206,7 @@ enddef
 #}}}1
 # Core {{{1
 def SetToc() #{{{2
+    UpdateUserSettings()
     var toc: dict<any> = {entries: []}
     var type: string = GetType()
     toc.changedtick = b:changedtick
