@@ -6,8 +6,6 @@
 #include <string.h>
 
 #include "vim.h"           // Add Vim's main header
-#include "memline.h"       // For line operations
-#include "misc2.h"         // For utility functions
 
 #define LN_MAX_BUFS 8
 #define LN_DECISION_MAX 255  // pow(2, LN_MAX_BUFS(8)) - 1 = 255
