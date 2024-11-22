@@ -365,6 +365,9 @@ call s:NetrwInit("g:netrw_cygdrive","/cygdrive")
 " Default values - d-g ---------- {{{3
 call s:NetrwInit("s:didstarstar",0)
 call s:NetrwInit("g:netrw_dirhistcnt"      , 0)
+let s:xz_opt = has('unix') ? "XZ_OPT=-T0" :
+		\ (has("win32") && &shell =~? '\vcmd(\.exe)?$' ?
+		\ "setx XZ_OPT=-T0 &&" : "")
 call s:NetrwInit("g:netrw_decompress ", "{"
             \ .."'.lz4':      'lz4 -d',"
             \ .."'.lzo':      'lzop -d',"
@@ -386,14 +389,15 @@ call s:NetrwInit("g:netrw_decompress ", "{"
             \ .."'.tbz2':     'tar -xvjf',"
             \ .."'.tar.gz':   'tar -xvzf',"
             \ .."'.tgz':      'tar -xvzf',"
-            \ .."'.tar.lzma': '"..(has('unix')?"XZ_OPT=-T0":(has("win32") && &shell =~? '\vcmd(\.exe)?$' ?"setx XZ_OPT=-T0 &&":"")).." tar -xvf --lzma',"
-            \ .."'.tlz':      '"..(has('unix')?"XZ_OPT=-T0":(has("win32") && &shell =~? '\vcmd(\.exe)?$' ?"setx XZ_OPT=-T0 &&":"")).." tar -xvf --lzma',"
-            \ .."'.tar.xz':   '"..(has('unix')?"XZ_OPT=-T0":(has("win32") && &shell =~? '\vcmd(\.exe)?$' ?"setx XZ_OPT=-T0 &&":"")).." tar -xvfJ',"
-            \ .."'.txz':      '"..(has('unix')?"XZ_OPT=-T0":(has("win32") && &shell =~? '\vcmd(\.exe)?$' ?"setx XZ_OPT=-T0 &&":"")).." tar -xvfJ',"
-            \ .."'.tar.zst':  '"..(has('unix')?"XZ_OPT=-T0":(has("win32") && &shell =~? '\vcmd(\.exe)?$' ?"setx XZ_OPT=-T0 &&":"")).." tar -xvf --use-compress-program=unzstd',"
-            \ .."'.tzst':     '"..(has('unix')?"XZ_OPT=-T0":(has("win32") && &shell =~? '\vcmd(\.exe)?$' ?"setx XZ_OPT=-T0 &&":"")).." tar -xvf --use-compress-program=unzstd',"
+            \ .."'.tar.lzma': '"..s:xz_opt.." tar -xvf --lzma',"
+            \ .."'.tlz':      '"..s:xz_opt.." tar -xvf --lzma',"
+            \ .."'.tar.xz':   '"..s:xz_opt.." tar -xvfJ',"
+            \ .."'.txz':      '"..s:xz_opt.." tar -xvfJ',"
+            \ .."'.tar.zst':  '"..s:xz_opt.." tar -xvf --use-compress-program=unzstd',"
+            \ .."'.tzst':     '"..s:xz_opt.." tar -xvf --use-compress-program=unzstd',"
             \ .."'.rar':      '"..(executable("unrar")?"unrar x -ad":"rar x -ad").."'"
             \ .."}")
+unlet s:xz_opt
 call s:NetrwInit("g:netrw_dirhistmax"       , 10)
 call s:NetrwInit("g:netrw_fastbrowse"       , 1)
 call s:NetrwInit("g:netrw_ftp_browse_reject", '^total\s\+\d\+$\|^Trying\s\+\d\+.*$\|^KERBEROS_V\d rejected\|^Security extensions not\|No such file\|: connect to address [0-9a-fA-F:]*: No route to host$')
