@@ -1500,6 +1500,7 @@ BASIC_SRC = \
 	debugger.c \
 	dict.c \
 	diff.c \
+	linematch.c \
 	digraph.c \
 	drawline.c \
 	drawscreen.c \
@@ -3170,6 +3171,9 @@ objects/dict.o: dict.c
 
 objects/diff.o: diff.c $(XDIFF_INCL)
 	$(CCC) -o $@ diff.c
+
+objects/dict.o: linematch.c
+	$(CCC) -o $@ linematch.c
 
 objects/digraph.o: digraph.c
 	$(CCC) -o $@ digraph.c

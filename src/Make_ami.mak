@@ -94,6 +94,7 @@ SRC += \
 	debugger.c \
 	dict.c \
 	diff.c \
+	linematch.c\
 	digraph.c \
 	drawline.c \
 	drawscreen.c \

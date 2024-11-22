@@ -1950,10 +1950,7 @@ diff_linematch(diff_T *dp)
 	}
     }
     // avoid allocating a huge array because it will lag
-    if (tsize > linematch_lines) {
-	return 0;
-    }
-    return 1;
+    return tsize <= linematch_lines;
 }
 
     static int
