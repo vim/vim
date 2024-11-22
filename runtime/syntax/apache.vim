@@ -14,6 +14,7 @@ if exists("b:current_syntax")
 	finish
 endif
 
+syn iskeyword @,48-57,_,192-255,-
 syn case ignore
 
 " Base constructs
