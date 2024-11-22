@@ -51,6 +51,7 @@ SRC_ALL =	\
 		src/debugger.c \
 		src/dict.c \
 		src/diff.c \
+		src/linematch.c \
 		src/digraph.c \
 		src/drawline.c \
 		src/drawscreen.c \

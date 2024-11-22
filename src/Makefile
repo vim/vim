@@ -3172,7 +3172,7 @@ objects/dict.o: dict.c
 objects/diff.o: diff.c $(XDIFF_INCL)
 	$(CCC) -o $@ diff.c
 
-objects/dict.o: linematch.c
+objects/linematch.o: linematch.c
 	$(CCC) -o $@ linematch.c
 
 objects/digraph.o: digraph.c

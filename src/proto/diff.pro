@@ -26,7 +26,7 @@ int ***allocate_comparison_mem(const int *diff_length, const int nDiffs);
 void diff_allign_extraction(const int best_path_index, const int *best_path_decisions, int nDiffs, df_linecompare_T **df_comparisonlines, int *df_arr_col_size, const int *outmap);
 void free_comparison_mem(int ***comparison_mem, const int *diff_length, const int nDiffs);
 void populate_tensor(int *df_iterators, const int ch_dim, diffcomparisonpath_flat_T *diffcomparisonpath_flat, int ***comparison_mem, const int *diff_length, const int nDiffs, const char **diff_block);
-void linematch_nbuffers(const mmfile_t **diff_blk, const int *diff_len, const size_t ndiffs, int **decisions, bool iwhite);
+void linematch_nbuffers(const mmfile_t **diff_blk, const int *diff_len, const size_t ndiffs, int **decisions, Bool iwhite);
 int diff_check(win_T *wp, linenr_T lnum);
 int diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus);
 int diff_check_fill(win_T *wp, linenr_T lnum);
