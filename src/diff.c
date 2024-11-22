@@ -2211,12 +2211,12 @@ run_linematch_algorithm(diff_T *dp)
   size_t decisions_length = linematch_nbuffers(diffbufs, diff_length, ndiffs, &decisions, iwhite);
 
   for (size_t i = 0; i < ndiffs; i++) {
-    XFREE_CLEAR(diffbufs_mm[i].ptr);
+    free(diffbufs_mm[i].ptr); // TODO should this be vim_free ?
   }
 
   apply_linematch_results(dp, decisions_length, decisions);
 
-  xfree(decisions);
+  free(decisions);
 }
 
 /*
@@ -2234,7 +2234,7 @@ run_linematch_algorithm(diff_T *dp)
  * pointer is set to -1 to indicate a changed line, and -2 to indicate an
  * added line
  */
-    static int
+    int
 diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus)
 {
     int		idx;		// index in tp_diffbuf[] for this buffer
@@ -2336,7 +2336,7 @@ diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus)
     int
 diff_check(win_T *wp, linenr_T lnum)
 {
-    return diff_check_with_linestatus(wp, lnum, NULL)
+    return diff_check_with_linestatus(wp, lnum, NULL);
 }
 
 /*

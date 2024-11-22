@@ -3345,7 +3345,7 @@ do_check_cursorbind(void)
 # ifdef FEAT_DIFF
 	    if (curwin->w_p_diff)
 		curwin->w_cursor.lnum =
-				 diff_get_corresponding_line(old_curbuf, old_curwin, line);
+				 diff_get_corresponding_line(old_curbuf, line);
 	    else
 # endif
 		curwin->w_cursor.lnum = line;
