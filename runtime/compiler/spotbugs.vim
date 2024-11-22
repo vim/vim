@@ -176,6 +176,7 @@ setlocal errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
 
 delfunction s:CollectClassFiles
 delfunction s:FindClassFiles
+delfunction s:GlobClassFiles
 delfunction s:GetDeclaredTypeNames
 let &cpo = s:cpo_save
 unlet s:package_dir_heads s:package s:package_names s:type_names s:keywords s:cpo_save
