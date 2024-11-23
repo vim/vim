@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2024 Nov 12
+*various.txt*   For Vim version 9.1.  Last change: 2024 Nov 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -256,6 +256,17 @@ g8			Print the hex values of the bytes used in the
 :!{cmd}			Execute {cmd} with the shell.  See also the 'shell'
 			and 'shelltype' option.  For the filter command, see
 			|:range!|.
+
+			Vim builds command line using options 'shell', 'shcf',
+			'sxq' and 'shq' in the following order:
+			`&sh &shcf &sxq &shq {cmd} &shq &sxq`
+			So setting both 'sxq' and 'shq' is possible but rarely
+			useful.  Additional escaping inside `{cmd}` may also
+			be due to 'sxe' option.
+
+			Also, all |cmdline-special| characters in {cmd} are
+			replaced by Vim before passing them to shell.
+
 							*E34*
 			Any '!' in {cmd} is replaced with the previous
 			external command (see also 'cpoptions').  But not when
@@ -306,7 +317,10 @@ g8			Print the hex values of the bytes used in the
 			CTRL-L or ":redraw!" if the command did display
 			something.  However, this depends on what the |t_ti|
 			and |t_te| termcap entries are set to.
-			Also see |shell-window|.
+
+			Hint: use |:terminal| command if you want to run {cmd}
+			in Vim window.  `:term ++shell ++close {cmd}` could
+			serve as close approximation to what `:!{cmd}` does.
 
 							*:!!*
 :!!			Repeat last ":!{cmd}".
