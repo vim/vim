@@ -597,7 +597,7 @@ vim_strnicmp(char *s1, char *s2, size_t len)
     int
 vim_strnicmp_asc(char *s1, char *s2, size_t len)
 {
-    int                i;
+    int                i = 0;
     int                save_cmp_flags = cmp_flags;
 
     cmp_flags |= CMP_KEEPASCII;		// compare by ASCII value, ignoring locale
