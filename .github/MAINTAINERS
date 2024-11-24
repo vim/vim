@@ -111,6 +111,16 @@ runtime/compiler/yamllint.vim		@romainl
 runtime/compiler/zsh.vim		@dkearns
 runtime/doc/ft_hare.txt			@selenebun
 runtime/doc/ps1.txt			@heaths
+runtime/doc/evim-ru.1			@RestorerZ
+runtime/doc/evim-ru.UTF-8.1		@RestorerZ
+runtime/doc/vim-ru.1			@RestorerZ
+runtime/doc/vim-ru.UTF-8.1		@RestorerZ
+runtime/doc/vimdiff-ru.1		@RestorerZ
+runtime/doc/vimdiff-ru.UTF-8.1		@RestorerZ
+runtime/doc/vimtutor-ru.1		@RestorerZ
+runtime/doc/vimtutor-ru.UTF-8.1		@RestorerZ
+runtime/doc/xxd-ru.1			@RestorerZ
+runtime/doc/xxd-ru.UTF-8.1		@RestorerZ
 runtime/ftplugin/abaqus.vim		@costerwi
 runtime/ftplugin/antlr4.vim		@jiangyinzuo
 runtime/ftplugin/apache.vim		@dubgeiser
