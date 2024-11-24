@@ -1,0 +1,1061 @@
+===============================================================================
+=          V I M   p r a d ž i a m o k s l i s    –    1.7 versija            =
+===============================================================================
+
+     „Vim“ yra galingas tekstų redaktorius, turintis daug komandų – tiek daug,
+     kad tokiame pradžiamokslyje kaip šis jų visų aprašyti neįmanoma. Šio
+     pradžiamokslio tikslas – aprašyti tas komandas, kurių pagalba lengvai
+     išmoksite naudotis „Vim“ kaip visaverčiu tekstų redaktoriumi.
+
+     Vidutiniškai šiam pradžiamoksliui praeiti užtrunkama apie 30 minučių,
+     priklausomai nuo to, kiek laiko skiriama eksperimentams.
+
+     SVARBU:
+     Pamokėlių metu šis tekstas bus keičiamas, tad mokymuisi pasidarykite šio
+     failo kopiją (jei paleidote „vimtutor“ komandą, tai jau skaitote failo
+     kopiją).
+
+     Neužmirškite, kad šis pradžiamokslis yra praktinis. Tai reiškia, kad
+     reikia pačiam įvykdyti nurodytas komandas, jei norite jas tinkamai
+     išmokti. Jeigu tiktai skaitysite šį tekstą, komandas tiesiog užmiršite!
+
+     VERTĖJO PASTABOS:
+     „Vim“ komandas dažnai sudaro raidės. Turėkite omenyje, jog šių raidžių
+     registras (tai, ar jos didžiosios, ar mažosios) yra svarbus. Kai tekste
+     matysite instrukciją, panašią į „spustelėkite klavišą x“, tai reikš, jog
+     turėsite įvesti būtent mažąją raidę. Analogiškai, jei matysite
+     instrukciją, panašią į „spustelėkite klavišą X“, tai reikš, jog kalbama
+     būtent apie didžiąją raidę.
+
+     Šiame vertime naudojami angliški funkcinių klavišų pavadinimai. Jei jūs
+     naudojatės lietuviška klaviatūra, joje klavišas <ESC> žymimas užrašu <GR>,
+     klavišas <CTRL> – užrašu <VALD>, o klavišas <ENTER> – užrašu <ĮVESTI>.
+
+     Dabar įsitikinkite, kad yra išjungta didžiųjų raidžių veiksena
+     („Caps Lock“) ir spauskite klavišą   j   tol, kol 1.1.1 pamokos tekstas
+     visiškai užpildys ekraną.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        1.1.1 pamoka:  ŽYMEKLIO VALDYMAS
+
+
+   ** Žymeklis valdomas klavišų h,j,k,l pagalba, kaip pavaizduota. **
+            ^
+            k            Pastabos: klavišas h yra kairėje ir perkelia kairėn.
+       < h     l >                 Klavišas l yra dešinėje ir perkelia dešinėn.
+            j                      Raidė „j“ kažkiek primena rodyklę žemyn.
+            v
+  1. Judinkite žymeklį ekrane, kol apsiprasite.
+
+  2. Nuspauskite klavišą žemyn (j), kol jo veiksmas ims kartotis.
+     Dabar žinote, kaip nukeliauti iki kitos pamokos.
+
+  3. Naudodami klavišą žemyn, keliaukite iki 1.1.2 pamokos.
+
+PASTABA: Jei kada nebūtumėte tikri, kad nuspaudėte reikiamą klavišą,
+         spustelėkite klavišą <ESC> – taip sugrįšite į „Normaliąją“ veikseną.
+         Tada pakartokite norimą komandą.
+
+PASTABA: Žymeklį paprastai galima valdyti ir rodyklių klavišais, tačiau, įpratę
+         naudoti hjkl, judėsite greičiau. Pažadame!
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                     1.1.2 pamoka: DARBO SU „VIM“ PABAIGA
+
+
+  !!   SVARBU: prieš bandydami toliau nurodytas komandas,   !!
+  !!           perskaitykite šią pamoką iki galo!           !!
+
+  1. Spustelėkite <ESC> klavišą
+     (taip užtikrinsite, jog esate „Normaliojoje“ veiksenoje).
+
+  2. Surinkite:        :q! <ENTER>
+     Šitaip užbaigsite redaktoriaus darbą NEĮRAŠYDAMI jokių atvertame faile
+     atliktų pakeitimų.
+
+  3. Sugrįžkite atgal į šį pradžiamokslį, pakartodami ankstesnę jį
+     iškvietusią komandą. Pavyzdžiui:  vimtutor <ENTER>.
+
+  4. Jei šiuos žingsnius įsiminėte, įvykdykite punktus nuo 1 iki 3, kad
+     užbaigtumėte redaktoriaus darbą ir vėl jį atvertumėte.
+
+PASTABA: komanda :q! <ENTER> užbaigia redaktoriaus darbą, atmesdama bet kokius
+         juo atliktus, bet dar neįrašytus failo pakeitimus. Kaip pakeitimus
+         įrašyti, sužinosite paskesnėje pamokoje.
+
+  5. Perkelkite žymeklį žemyn į 1.1.3 pamoką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  1.1.3 pamoka: TEKSTO REDAGAVIMAS - ŠALINIMAS
+
+
+ ** Pašalinti ties žymekliu esantį rašmenį galite spustelėdami  x  klavišą. **
+
+  1. Perkelkite žymeklį į žemiau esančią eilutę, pažymėtą  --->.
+
+  2. Norėdami ištaisyti klaidas, perkelkite žymeklį ant rašmens, kurį
+     norite pašalinti.
+
+  3. Spustelėkite klavišą  x  , kad pašalintumėte nereikalingą rašmenį.
+
+  4. Kartokite punktus nuo 2 iki 4, kol ištaisysite visas klaidas sakinyje.
+
+---> KKarvė peršooko pperr mmmėnullį.
+
+  5. Ištaisę klaidas sakinyje, eikite į 1.1.4 pamoką.
+
+PASTABA: šiame pradžiamokslyje komandas stenkitės įsiminti ne tik skaitydami
+         jų aprašymus, bet ir išbandydami jas praktiškai.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  1.1.4 pamoka: TEKSTO REDAGAVIMAS – ĮTERPIMAS
+
+
+       ** Įterpti tekstą galite, prieš tai spustelėję  i  raidę. **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->.
+
+  2. Norėdami pirmą eilutę papildyti iki antrosios, perkelkite žymeklį ant
+     rašmens, PRIEŠ kurį norite įterpti tekstą.
+
+  3. Spustelėkite klavišą  i  ir surinkite reikiamą tekstą.
+
+  4. Ištaisę klaidą, spustelėkite <ESC>, kad sugrįžtumėte į „Normaliąją“
+     veikseną. Kartokite 2–4 žingsnius tol, kol sakinys bus ištaisytas.
+
+---> Šioje eiluje trūksta tiek .
+---> Šioje eilutėje trūksta šiek tiek teksto.
+
+  5. Išmokę įterpti tekstą, keliaukite toliau į 1.1.5 pamoką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           1.1.5 pamoka: TEKSTO REDAGAVIMAS – PRIDĖJIMAS EILUTĖS GALE
+
+
+   ** Pridėti teksto eilutės gale galite, prieš tai spustelėję  A  raidę. **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->.
+     Visiškai nesvarbu, ties kuriuo rašmeniu toje eilutėje bus žymeklis.
+
+  2. Spustelėkite klavišą  A  ir įveskite pridedamą tekstą.
+
+  3. Pridėję tekstą, spustelėkite klavišą <ESC>, kad sugrįžtumėte
+     į „Normaliąją“ veikseną.
+
+  4. Perkelkite žymeklį į antrąją eilutę, pažymėtą ---> ir pataisykite sakinį
+     joje, pakartodami 2 ir 3 žingsnius.
+
+---> Šioje eilutėje trūksta ši
+     Šioje eilutėje trūksta šiek tiek teksto.
+---> Čia taip pat trūks
+     Čia taip pat trūksta šiek tiek teksto.
+
+  5. Išmokę pridėti teksto eilutės gale, keliaukite toliau į 1.1.6 pamoką.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                     1.1.6 pamoka: FAILO REDAGAVIMAS
+
+
+    ** Komanda  :wq  įrašo atvertą failą ir užbaigia redaktoriaus darbą. **
+
+  !!   SVARBU: prieš bandydami toliau nurodytas komandas,   !!
+  !!           perskaitykite šią pamoką iki galo            !!
+
+  1. Jei galite naudotis kitu terminalu, tolesnius veiksmus atlikite jame.
+     Kitu atveju užverkite šį pradžiamokslį kaip ir 1.1.2 pamokoje:  :q!
+
+  2. Komandų eilutėje įveskite komandą:  vim failas.txt <ENTER>
+     Čia „vim“ – komanda „Vim“ redaktoriui paleisti, o „failas.txt“ – norimo
+     redaguoti failo vardas. Naudokite failo, kurį galėsite keisti, vardą.
+
+  3. Pridėkite ir/ar pašalinkite tekstą, kaip išmokote ankstesnėse pamokose.
+
+  4. Įrašykite pakeistą failą ir užbaikite „Vim“ darbą:  :wq <ENTER>
+
+  5. Jei pirmajame žingsnyje užvėrėte pradžiamokslį, dabar jį vėl atverkite
+     komandos „vimtutor“ pagalba, tada keliaukite į pirmosios santrauką žemiau.
+
+  6. Perskaitę ir įsiminę visus aukščiau aprašytus žingsnius, atlikite juos.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               1.1 pamokos SANTRAUKA
+
+
+  1. Žymeklis valdomas rodyklių arba hjkl klavišais.
+         h (kairėn)        j (žemyn)        k (aukštyn)        l (dešinėn)
+
+  2. Iš komandinės eilutės „Vim“ paleidžiamas taip: vim FAILO_VARDAS <ENTER>
+
+  3. Darbo su „Vim“ pabaiga:   <ESC>  :q!  <ENTER> – neįrašant jokių pakeitimų.
+                       arba:   <ESC>  :wq  <ENTER> – įrašant pakeitimus.
+
+  4. Rašmens po žymekliu pašalinimas, esant „Normaliojoje“ veiksenoje:  x
+
+  5. Teksto įterpimas ar pridėjimas:
+         i   įterpiamas tekstas   <ESC>     – įterpti tekstą prieš žymeklį
+         A   pridedamas tekstas   <ESC>     – pridėti tekstą eilutės gale
+
+PASTABA: <ESC> paspaudimas grąžina į „Normaliąją“ veikseną arba nutraukia
+         nereikalingos komandos įvedimą.
+
+Dabar keliaukite į 1.2 pamoką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                       1.2.1 pamoka: ŠALINIMO KOMANDOS
+
+
+                      ** Komanda  dw  šalina žodį. **
+
+  1. Spustelėkite <ESC>, kad sugrįžtumėte į „Normaliąją“ veikseną.
+
+  2. Perkelkite žymeklį į eilutę žemiau, pažymėtą --->.
+
+  3. Perkelkite žymeklį į norimo pašalinti žodžio pradžią.
+
+  4. Spustelėkite   dw   žodžio pašalinimui.
+
+PASTABA: Raidė d pasirodys apatinėje terminalo eilutėje, spustelėjus jos
+         klavišą. „Vim“ lauks, kol surinksite raidę  w . Jei terminalo apačioje
+         matote kitą raidę ar suklydote ją rinkdami – spustelėkite  <ESC>  ir
+         rinkite komandą iš naujo.
+
+---> Yra mėlynas žodžių, kurie skėtis nepriklauso juokiasi šiam sakiniui.
+
+  5. Kartokite 3 ir 4 punktus tol, kol sakinys bus ištaisytas. Tuomet
+     keliaukite į 1.2.2 pamoką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  1.2.2 pamoka: DAUGIAU ŠALINIMO KOMANDŲ
+
+
+          ** Komanda  d$  pašalinta tekstą iki eilutės pabaigos. **
+
+  1. Spustelėkite <ESC>, kad sugrįžtumėte į „Normaliąją“ veikseną.
+
+  2. Perkelkite žymeklį į eilutę žemiau, pažymėtą --->.
+
+  3. Perkelkite žymeklį į pageidautiną eilutės pabaigą (PO pirmojo taško).
+
+  4. Surinkite  d$  nereikalingam tekstui iki eilutės pabaigos pašalinti.
+
+---> Kažkas šios eilutės pabaigą įvedė dukart. pabaigą įvedė dukart.
+
+
+  5. Keliaukite į 1.2.3 pamoką. Ten sužinosite daugiau kaip vyksta šalinimas.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                     1.2.3 pamoka: OPERATORIAI IR VEKTORIAI
+
+
+  Daugelį teksto redagavimo komandų sudaro operatorius ir vektorius.
+  Pavyzdžiui, šalinimo komandos su operatoriumi  d  formatas yra toks:
+
+         d   vektorius
+  Kur:
+    d         – šalinimo operatorius;
+    vektorius – nurodo, kuo komanda operuoja (išvardyta žemiau).
+
+  Trumpas vektorių sąrašas:
+    w – iki artimiausios žodžio pradžios, NEĮTRAUKIANT pirmojo jo rašmens;
+    e – iki artimiausios žodžio pabaigos, ĮTRAUKIANT paskutinį jo rašmenį;
+    $ – iki einamosios eilutės pabaigos, ĮTRAUKIANT paskutinį jos rašmenį.
+
+  Taigi, įvedę komandą  de  , pašalinsite tekstą nuo žymeklio pozicijos iki
+  atitinkamo žodžio pabaigos.
+
+PASTABA: „Normaliojoje“ veiksenoje spustelėjus tik vektoriaus klavišą, bet
+         nenurodžius operatoriaus, į atitinkamą poziciją bus perkeltas teksto
+         žymeklis.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              1.2.4 pamoka: VEKTORIAUS NAUDOJIMAS SU SKAITIKLIU
+
+
+   ** Prieš vektoriaus ženklą parašius skaičių, jis pakartojamas atitinkamą
+      skaičių kartų. **
+
+  1. Perkelkite žymeklį į eilutės žemiau, pažymėtos --->, pradžią.
+
+  2. Įveskite  2w  , kad perkeltumėte žymeklį per du žodžius pirmyn (į žodžio
+     pradžią).
+
+  3. Įveskite  3e  , kad perkeltumėte žymeklį iki trečiosios žodžio pabaigos
+     nuo einamosios jo vietos.
+
+  4. Įveskite  0  (nulį), kad perkeltumėte žymeklį į eilutės pradžią.
+
+  5. Pakartokite žingsnius 2 ir 3 su kitais skaičiais.
+
+---> Šioje eilutėje yra žodžių, po kuriuos galite pakilnoti žymeklį.
+
+  6. Keliaukite toliau į 1.2.5 pamoką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            1.2.5 pamoka: SKAITIKLIO NAUDOJIMAS ŠALINANT TEKSTĄ
+
+
+   ** Kai skaičius naudojamas su operatoriumi, komanda pakartojama atitinkamą
+      skaičių kartų. **
+
+  Į aukščiau minėtą teksto šalinimo operatoriaus ir vektoriaus kombinaciją
+  įterpę skaičių, galite pašalinti daugiau teksto:
+         d   skaičius   vektorius
+
+  1. Perkelkite žymeklį ties pirmuoju DIDŽIOSIOMIS RAIDĖMIS parašytu žodžiu
+     eilutėje žemiau, pažymėtoje --->.
+
+  2. Įveskite  d2w  , kad pašalintumėte du DIDŽIOSIOMIS RAIDĖMIS parašytus
+     žodžius.
+
+  3. Kartokite žingsnius 1 ir 2 su kitais skaičiais, kad pašalintumėte kitus
+     vienas po kito einančius žodžius DIDŽIOSIOMIS RAIDĖMIS vienos komandos
+     pagalba.
+
+--->  Šis ABC DE sakinys FGHI JK LMN OP dabar išvalytas R STU VZŽ nuo šlamšto.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                1.2.6 pamoka: OPERAVIMAS VISOMIS EILUTĖMIS
+
+
+             ** Spustelėkite  dd  visai eilutei pašalinti. **
+
+  Kadangi visos eilutės šalinimas – gan dažna operacija, „Vi“ autoriai nutarė,
+  jog bus patogiau dukart spustelėti  d  visos eilutės pašalinimui.
+
+  1. Perkelkite žymeklį į antrąją eilutę žemiau, pažymėtą --->.
+  2. Surinkite  dd  visai eilutei pašalinti.
+  3. Tada pereikite į ketvirtąją eilutę.
+  4. Surinkite  2dd  pašalinti iškart dviems eilutėms.
+
+--->  1)  Apšerkšniję mūsų žiemos –
+--->  2)  Sniegas maišos su purvu,
+--->  3)  Balta, balta – kur dairais –
+--->  4)  Dienos trumpos ir niūrios,
+--->  5)  Gatvės ir keliai slidūs,
+--->  6)  Ilgas pasakas mažiemus
+--->  7)  Seka pirkioj vakarais.
+
+Operatoriaus dubliavimas, norint atlikti komandą su visa eilute, veikia ir su
+kitais žemiau paminėtais operatoriais.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                       1.2.7 pamoka: ATŠAUKIMO KOMANDA
+
+
+   ** Spustelėkite  u  atšaukti paskutinės komandos pakeitimams,
+              arba  U  atšaukti visiems pakeitimams eilutėje. **
+
+  1. Perkelkite žymeklį ties pirmąja klaida eilutėje žemiau, pažymėtoje --->.
+  2. Spustelėkite  x  – taip pašalinsite nereikalingą simbolį.
+  3. Dabar spustelėkite  u  paskutinės komandos atliktiems pakeitimams
+     atšaukti.
+  4. Šįkart ištaisykite visas eilutėje esančias klaidas   x  komandos pagalba.
+  5. Spustelėkite didžiąją  U  – taip atstatysite eilutę į pirminę būseną.
+  6. Dabar keletą kartų spustelėkite  u  – taip atitaisysite  U  bei ankstesnių
+     komandų pakeitimus.
+  7. Keletą kartų spustelėkite  CTRL+R  – taip pakartosite atšauktus veiksmus.
+
+---> Ištaisyykite klaidas šiioje eilutėje iir atšaukite paakeitimus.
+
+  8. Šios komandos labai naudingos. Keliaukite į 1.2 pamokos santrauką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               1.2 pamokos SANTRAUKA
+
+
+  1. Tekstui pašalinti nuo žymeklio iki kito žodžio pradžios rinkite:      dw
+  2. Tekstui pašalinti nuo žymeklio iki einamojo žodžio pabaigos rinkite:  de
+  3. Tekstui pašalinti nuo žymeklio iki eilutės pabaigos rinkite:          d$
+  4. Visai eilutei pašalinti rinkite:                                      dd
+
+  5. Vektoriui pakartoti prieš jį parašykite skaičių:     2w
+  6. Pakeitimo komandos formatas yra toks:
+              komanda   [skaičius]  vektorius
+     kur:
+       komanda    – atliktinas veiksmas, pavyzdžiui  d  – šalinimas
+       [skaičius] – skaitiklis, nurodantis, kiek kartų pakartoti veiksmą
+                    (neprivalomas)
+       vektorius  – nurodo apimtį teksto, kuriuo norima operuoti, pavyzdžiui:
+                    w (iki žodžio pradžios), e (iki žodžio pabaigos),
+                    $ (iki eilutės pabaigos) ir pan.
+
+  7. Žymekliui perkelti į eilutės pradžią surinkite nulį:  0
+
+  8. Atšaukti pastariesiems pakeitimams rinkite:                u  (mažoji u)
+     Atšaukti visiems pakeitimams esamojoje eilutėje rinkite:   U  (didžioji U)
+     Pakartoti atšauktiems veiksmams spustelėkite:              CTRL+R
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    1.3.1 pamoka: PATALPINIMO KOMANDA
+
+
+     ** Komanda  p  už žymeklio patalpina paskiausiai pašalintą tekstą. **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->.
+
+  2. Spustelėkite  dd  – taip pašalinsite einamąją eilutę ir patalpinsite jos
+     turinį į „Vim“ iškarpinę.
+
+  3. Perkelkite žymeklį į c) eilutę, VIRŠ tos vietos, kurioje turėtų atsidurti
+     pašalintoji eilutė.
+
+  4. Spustelėkite  p  – taip pašalintą eilutę patalpinsite į reikiamą vietą.
+
+  5. Kartokite 2-4 žingsnius ir perkelkite visas eilutes į savo vietas.
+
+--->  d) Seka pirkioj vakarais.
+--->  b) Balta, balta – kur dairais –
+--->  c) Ilgas pasakas mažiemus
+--->  a) Apšerkšniję mūsų žiemos –
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                       1.3.2 pamoka: PAKEITIMO KOMANDA
+
+
+  ** Rašmenį, esantį ties žymekliu, galite pakeisti, spustelėdami  r  ir
+     naująjį rašmenį. **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->.
+
+  2. Tada perkelkite žymeklį ties pirmuoju klaidingu rašmeniu.
+
+  3. Spustelėkite  r  ir simbolį, kuriuo norite pakeisti klaidingą.
+
+  4. Kartokite 2 ir 3 punktą kol eilutė bus ištaisyta.
+
+--->  Kežkus, rinjdamss šį tekštą, pridėrė dauk kleidų!
+--->  Kažkas, rinkdamas šį tekstą, pridarė daug klaidų!
+
+  5. Tuomet keliaukite į 1.3.3 pamoką.
+
+PASTABA: Mokykitės ne tik skaitydami, bet ir darydami.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        1.3.3 pamoka: KEITIMO KOMANDA
+
+
+   ** Kai norite pakeisti viską iki žodžio pabaigos, spustelėkite  ce  . **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->.
+
+  2. Patalpinkite žymeklį ties raide „h“ žodyje „eilhhhja“.
+
+  3. Spustelėkite  ce  ir ištaisykite žodį (šiuo atveju, surinkite „utėje“).
+
+  4. Spustelėkite <ESC> ir perkelkite žymeklį ties kita klaida (pirmuoju
+     rašmeniu, kurį reikia pakeisti).
+
+  5. Kartokite 3 ir 4 punktus, kol ištaisysite visą sakinį.
+
+---> Šioje eilhhhja yra keklasf žodžių, kowkshs reikia ištaisyti.
+---> Šioje eilutėje yra keletas žodžių, kuriuos reikia ištaisyti.
+
+PASTABA: komanda  ce  pašalina žodį ir įjungia įterpimo veikseną, o
+         komanda  cc  analogišką veiksmą atlieka su visa eilute.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              1.3.4 pamoka: KITI KEITIMAI NAUDOJANT c OPERATORIŲ
+
+
+     ** Keitimo komanda gali būti naudojama su tais pačiais vektoriais,
+        kaip ir šalinimo. **
+
+  1. Keitimo operatorius veikia labai panašiai kaip šalinimo.
+     Komandos formatas yra toks:
+
+         c   [skaičius]   vektorius
+
+  2. Vektoriai yra tokie pat, kaip ir šalinimo komandoje:
+     w (žodis),  $ (iki eilutės pabaigos) ir pan.
+
+  3. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->.
+
+  4. Tuomet perkelkite žymeklį ties pirma klaida.
+
+  5. Spustelėkite  c$  ir surinkite teisingą eilutės pabaigą,
+     tada spustelėkite <ESC>.
+
+---> Šios eilutės pabaigą reikia perrašyti, kad ji būtų tokia pat, kaip kita.
+---> Šios eilutės pabaigą reikia pataisyti  c$  komandos pagalba.
+
+PASTABA: rinkdami tekstą, klaidas pataisyti galite ir naudodamiesi įprastu
+         šalinimo kairėn klavišu.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                              1.3 pamokos SANTRAUKA
+
+
+  1. Norėdami patalpinti paskiausiai pašalintą tekstą, spustelėkite  p  – taip
+     jį patalpinsite iškart PO žymeklio. Jei buvo pašalinta visa eilutė, tuomet
+     ji bus patalpinta kaip nauja eilutė po einamosios.
+
+  2. Vienas rašmuo pakeičiamas spustelint  r  ir rašmenį, kuriuo norime
+     pakeisti esamąjį.
+
+  3. Keitimo operatorius keičia nurodytą teksto dalį nuo žymeklio. Pavyzdžiui,
+     spustelėdami  ce  , galite pakeisti tekstą nuo žymeklio iki žodžio
+     pabaigos, o  c$  – iki eilutės pabaigos.
+
+  4. Keitimo komandos formatas yra toks:
+
+         c   [skaičius]   vektorius
+
+Dabar keliaukite į kitą pamoką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+             1.4.1 pamoka: ŽYMEKLIO VIETA IR FAILO BŪSENA
+
+
+  ** Spustelėję CTRL+G, sužinosite žymeklio vietą faile ir failo būseną.
+     Spustelėję  G  , žymeklį perkelsite į nurodytą eilutę. **
+
+  PASTABA: perskaitykite visą šią pamoką prieš pradėdami vykdyti nurodymus!!
+
+  1. Spustelėkite  CTRL+G klavišų kombinaciją. Redaktoriaus apačioje atsiras
+     pranešimas su failo vardu ir žymeklio vieta jame. Įsidėmėkite, kurioje
+     eilutėje yra žymeklis, to reikės 3 punkte.
+
+PASTABA: žymeklio poziciją faile apatiniame dešiniajame redaktoriaus kampe
+         galima matyti ir nuolatos – tam galima įjungti parinktį „ruler“
+         (liniuotė) (žr.  :help 'ruler'  ).
+
+  2. Spustelėkite  G  tam, kad nukeliautumėte į failo pabaigą.
+     Spustelėkite  gg  tam, kad nukeliautumėte į failo pradžią.
+
+  3. Surinkite eilutės numerį, kurioje buvote pradžioje, tada
+     spustelėkite  G  – taip sugrįšite į nurodytą eilutę (jos numerį turėjote
+     pamatyti ir įsiminti pirmajame šios pamokos žingsnyje).
+
+  4. Jei supratote, kaip tai daroma – įvykdykite punktus nuo 1 iki 3.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        1.4.2 pamoka: PAIEŠKOS KOMANDA
+
+
+     ** Paieška vykdoma, spustelint  /  , tada surenkant ieškomą frazę. **
+
+  1. Būdami „Normaliojoje“ veiksenoje, spustelėkite  /  klavišą. Šis ženklas ir
+     žymeklis atsiras „Vim“ sąsajos apačioje, lygiai kaip ir  :  komandos
+     atveju.
+
+  2. Surinkite žodį „kllaidda“ (kabučių nereikia) ir spustelėkite <ENTER>.
+     Tai – žodis, kurio ieškosime.
+
+  3. Norėdami surasti kitą tokią pat frazę, spustelėkite  n .
+     Jei kitos frazės norite ieškoti priešinga kryptimi, spustelėkite  N.
+
+  4. Jei norite frazės iškart ieškoti ne pirmyn, bet atgal, vietoj  /  komandos
+     naudokite  ? .
+
+  5. Grįžti į ankstesnę vietą galite klavišų kombinacijos  CTRL+O  pagalba
+     (laikydami nuspaustą klavišą CTRL, spustelėkite raidę O). Kartodami šią
+     kombinaciją, grįšite dar anksčiau. Grįžti į vėlesnę lankytą vietą galite
+     klavišų kombinacijos  CTRL+I  pagalba.
+
+---> „kllaidda“ yra žodis su klaida; „kllaidda“ yra klaida.
+
+PASTABA: paieškai pasiekus failo pabaigą, ji bus pratęsta nuo pradžios, nebent
+         būtų pakeista parinkties „wrapscan“ reikšmė.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   1.4.3 pamoka: PORINIŲ SKLIAUSTŲ PAIEŠKA
+
+
+   ** Spauskite  %  , jei norite surasti porinį ), ] ar } skliaustą. **
+
+  1. Perkelkite žymeklį ties bet kuriuo (, [ ar { skliaustu, esančiu
+     eilutėje, pažymėtoje --->.
+
+  2. Dabar spustelėkite  %  simbolį.
+
+  3. Žymeklis peršoks ties poriniu dešiniuoju skliaustu.
+
+  4. Dar kartą spustelėkite  %  – sugrįšite atgal ties atitinkamu
+     kairiuoju skliaustu.
+
+---> Teksto ( eilutė su ( visų, [ tipų ] ir { skliaustų } poromis. ))
+
+PASTABA: Ši komanda pravers derinant programas su skliaustų maišalyne.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                      1.4.4 pamoka: PAKAITOS KOMANDA
+
+
+       ** Pakeisti vieną frazę kita padės komanda  :s/viena/kita/g . **
+
+  1. Perkelkite žymeklį į eilutę žemiau, pažymėtą --->.
+
+  2. Surinkite  :s/išgalvuojau/išgalvojau <ENTER>. Taip pakeisite pirmąjį
+     eilutėje esantį žodį „išgalvuojau“ į „išgalvojau“.
+
+  3. Dabar surinkite  :s/išgalvuojau/išgalvojau/g <ENTER>. Pridėta gairė „g“
+     nurodo pakaitos komandą vykdyti globaliai visoje eilutėje, todėl dabar
+     į „išgalvojau“ bus pakeisti visi eilutėje likę žodžiai „išgalvuojau“.
+
+---> išgalvuojau lietų, išgalvuojau giedrą, išgalvuojau jūrą ir kai ką daugiau
+
+  4. Jeigu norite atlikti tokią pakaitą rėžyje tarp dviejų eilučių,
+     surinkite   :#,#s/viena/kita/g   , kur #,# yra dviejų rėžį apibrėžiančių
+                                      eilučių numeriai (pvz., 12,14).
+     Surinkite   :%s/viena/kita/g   , jei norite pakaitą atlikti visame faile.
+     Surinkite   :%s/viena/kita/gc   , kad būtų surastos visos keistinos vietos
+                                     faile ir atskirai atsiklausta dėl
+                                     kiekvienos iš jų pakeitimo.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               1.4 pamokos SANTRAUKA
+
+
+  1. CTRl+G  parodo padėtį faile ir failo būseną.
+             G  perkelia žymeklį į failo pabaigą.
+     numeris G  perkelia žymeklį į atitinkamą eilutę.
+            gg  perkelia žymeklį į failo pradžią.
+
+  2. Įvedę  /  ir frazę, atliksite šios frazės paiešką PIRMYN.
+     Įvedę  ?  ir frazę, atliksite šios frazės paiešką ATGAL.
+     Pastarąją paiešką galima pakartoti, spustelint  n  (ta pačia kryptimi,
+     kaip ir vykusi paieška) arba  N  (priešinga kryptimi).
+     CTRL+O  kombinacija padės grįžti į ankstesnę žymeklio vietą, o
+     CTRL+I  – į paskesnę.
+
+  3. Paspaudus  %  , kai žymeklis yra ties (,),[,],{, arba }, jis perkeliamas
+     ties atitinkančiu poriniu skliaustu.
+
+  4. Pirmą „sena“ eilutėje pakeisti į „nauja“ galite, įvedę:
+                                                           :s/sena/nauja
+     Visus „sena“ eilutėje pakeisti į „nauja“ galite, įvedę:
+                                                           :s/sena/nauja/g
+     Visus frazės pasikartojimus tarp dviejų eilučių galite pakeisti, įvedę:
+                                                           :#,#s/sena/nauja/g
+     Pakeisti visus „sena“ pasikartojimus faile į „nauja“ galite, įvedę:
+                                                           :%s/sena/nauja/g
+     Jei norite, kad prieš kiekvieną pakeitimą būtų prašoma patvirtinimo:
+                                                           :%s/sena/nauja/gc
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                1.5.1 pamoka: KAIP ĮVYKDYTI IŠORINĘ KOMANDĄ
+
+
+ ** Surinkite  :!  ir norimą įvykdyti išorinę komandą – ir ji bus įvykdyta. **
+
+  1. Įveskite jau pažįstamą komandą  :  , kad žymeklis atsidurtų redaktoriaus
+     apačioje.
+
+  2. Dabar įveskite  !  (šauktuką). Tai leis įvykdyti norimą išorinę komandą.
+
+  3. Pavyzdžiui, po šauktuko surinkite   ls   ir spustelėkite <ENTER>. Tai
+     parodys jūsų esamo aplanko turinį – tarsi komandą būtumėte paleidę
+     tiesiogiai terminale. Jei  ls  neveikia – pabandykite komandą  dir  .
+
+PASTABA: Tokiu būdu galima įvykdyti bet kokią išorinę programą, taip pat ir su
+         argumentais.
+
+Pastaba: Visos  :  komandos pradedamos vykdyti paspaudus <ENTER>
+         Tolesnėse pamokose ne visada tai priminsime.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    1.5.2 pamoka: DAR APIE FAILŲ RAŠYMĄ
+
+
+ ** Jeigu norite įrašyti savo pakeitimus į failą, surinkite  :w FAILO_VARDAS **
+
+  1. Surinkite  :!dir  ar  :!ls  , kad pamatytumėte aplanko turinį.
+     Neužmirškite po to spustelėti <ENTER>.
+
+  2. Sugalvokite failo vardą, kurio aplanke dar nėra, pavyzdžiui, TESTAS.
+
+  3. Dabar surinkite  :w TESTAS  (čia TESTAS – jūsų pasirinktas failo vardas).
+
+  4. Taip įrašysite visą failą (šį pradžiamokslį) vardu TESTAS.
+     Patikrinkite tai, pakartodami  :!dir  ar  :!ls  komandą.
+
+PASTABA: jei po šio žingsnio baigtumėte „Vim“ darbą, o tada vėl paleistumėte
+         redaktorių komandos   vim TESTAS   pagalba, atvertas failas būtų
+         tiksli jūsų įrašyto pradžiamokslio kopija.
+
+  5. Dabar pašalinkite failą, surinkdami tokią komandą:
+           :!del TESTAS   – jei naudojatės „Windows“,
+     arba  :!rm TESTAS    – jei naudojatės „Unix“
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                 1.5.3 pamoka: ĮRAŠYTINO TEKSTO PAŽYMĖJIMAS
+
+
+   ** Norėdami įrašyti dalį failo, įveskite  v  vektorius :w FAILO_VARDAS **
+
+  1. Perkelkite žymeklį į šią eilutę.
+
+  2. Spustelėkite  v  , tada perkelkite žymeklį į penktąjį punktą žemiau.
+     Atkreipkite dėmesį, jog tekstas pažymimas.
+
+  3. Spustelėkite  :  – ekrano apačioje pamatysite raginimą :'<,'> .
+
+  4. Įveskite  w TESTAS  , kur TESTAS – tai dar neegzistuojančio failo vardas.
+     Prieš spustelėdami <ENTER>, įsitikinkite, jog redaktoriaus apačioje
+     matote eilutę  :'<,'>w TESTAS .
+
+  5. Spustelėjus <ENTER>, „Vim“ įrašys pasirinktą tekstą į failą TESTAS.
+     Įsitikinti, jog failas sukurtas, galite, įvykdę komandą  :!dir  ar  :!ls .
+     Kol kas nepašalinkite šio failo, nes jį naudosime kitoje pamokoje.
+
+PASTABA: Spustelėjus  v  , pradedamas Vizualusis pažymėjimas. Pažymėto teksto
+         apimtį galite keisti žymeklio valdymo klavišais. Pasirinkę norimą
+         teksto fragmentą, galite panaudoti operatorių, kad kažką su tuo tekstu
+         atliktumėte. Pavyzdžiui, operatorius  d  pažymėtą tekstą pašalins.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   1.5.4 pamoka: FAILO ĮTERPIMAS
+
+
+** Jei norite į tekstą įterpti kito failo turinį, surinkite  :r FAILO_VARDAS **
+
+  1. Perkelkite žymeklį virš šios eilutės.
+
+PASTABA: Įvykdę 2 žingsnį, pamatysite 1.5.3 pamokos turinį. Tuomet grįžkite atgal
+         į šią pamoką.
+
+  2. Dabar įterpkite failo TESTAS turinį į tekstą, pasinaudodami komanda
+     :r TESTAS , kur TESTAS – tai norimo įterpti failo vardas (šį failą
+     turėjote sukurti 1.5.3 pamokoje). Failo turinys bus įterptas iškart
+     po eilute, kurioje yra žymeklis.
+
+  3. Kad įsitikintumėte, jog komanda buvo įvykdyta, šiek tiek sugrįžkite
+     aukštyn. Turėtumėte matyti dvi 1.5.3 pamokos kopijas.
+
+PASTABA: Panašiai galite įterpti ir išorinės komandos išvestą tekstą.
+         Pavyzdžiui, įvedę  :r !ls , įterpsite ls komandos išvestį po eilute,
+         kurioje yra žymeklis.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               1.5 pamokos SANTRAUKA
+
+
+  1. :!komanda  įvykdo išorinę komandą.
+
+     Keletas naudingų pavyzdžių:
+        (Windows)            (Unix)
+        :!dir                :!ls                – parodo aplanko turinį.
+        :!del FAILO_VARDAS   :!rm FAILO_VARDAS   – pašalina failą FAILO_VARDAS.
+
+  2. :w FAILO_VARDAS  įrašo redaguojamą tekstą į failą vardu FAILO_VARDAS.
+
+  3. v  vektorius  :w FAILO_VARDAS  įrašo vizualiai pažymėtą tekstą į failą
+                                    vardu FAILO_VARDAS.
+
+  4. :r FAILO_VARDAS  įterpia failo vardu FAILO_VARDAS turinį į redaguojamą
+                      tekstą po eilute, kurioje yra žymeklis.
+
+  5. :r !dir  įterpia komandos dir išvestį į redaguojamą tekstą po eilute,
+              kurioje yra žymeklis.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      1.6.1 pamoka: NAUJOS EILUTĖS ĮTERPIMO IR REDAGAVIMO KOMANDA („OPEN“)
+
+
+   ** Spustelėjus  o  , po žymekliu bus įterpta tuščia eilutė ir persijungta
+      į Įterpimo joje veikseną. **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->.
+
+  2. Spustelėkite  o  – taip įterpsite tuščią eilutę PO žymekliu, be to, bus
+     įjungta Įterpimo veiksena.
+
+  3. Įveskite keletą žodžių ir spustelėkite <ESC>, kad grįžtumėte į
+     „Normaliąją“ veikseną
+
+---> Spustelėjus  o  , rašymo žymeklis bus perkeltas į naujai įterptą eilutę.
+
+  4. Jei norite įterpti tuščią eilutę VIRŠ žymeklio, spustelėkite didžiąją  O ,
+     o ne mažąją. Išbandykite tai su žemiau esančia eilute.
+
+---> Įterpkite naują eilutę virš šios, įvesdami  O , kai žymeklis yra šioje.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           1.6.2 pamoka: TEKSTO ĮTERPIMO UŽ ŽYMEKLIO KOMANDA („APPEND“)
+
+
+        ** Kai norite rašyti tekstą už žymeklio, spustelėkite  a . **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->.
+
+  2. Spauskite  e  , kol žymeklis atsidurs žodžio „eilutė“ gale.
+
+  3. Spustelėkite  a  (mažąją) tekstui įterpti už žymeklio.
+
+  4. Užbaikite žodį, kad būtų toks pat, kaip eilutėje žemiau. Tada spustelėkite
+     <ESC>, kad išeitumėte iš Įterpimo veiksenos.
+
+  5. Spauskite  e  , kad pereitumėte prie kito neužbaigto žodžio ir pakartokite
+     3–5 žingsnius.
+
+---> Šioje eilutė pasimokykite įterp teks už žymeklio.
+---> Šioje eilutėje pasimokykite įterpti tekstą už žymeklio.
+
+PASTABA: komandos a, i ir A visos įjungia Įterpimo veikseną. Skiriasi tik
+         vieta, ties kuria tekstas bus pradėtas įterpti.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    1.6.3 pamoka: KITAS KEITIMO BŪDAS
+
+
+   ** Spustelėkite  R  , jeigu norite pakeisti daugiau nei vieną rašmenį. **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->. Perkelkite
+     žymeklį į pirmojo fragmento „xxx“ joje pradžią.
+
+  3. Spustelėkite  R  ir perrašykite skaičių iš kitos eilutės, kad jis pakeistų
+     fragmentą.
+
+  4. Pakartokite žingsnius ir analogiškai perrašykite antrąjį „xxx“ fragmentą.
+
+---> Prie 123 pridėję xxx gausime xxx.
+---> Prie 123 pridėję 456 gausime 579.
+
+PASTABA: Perrašymo veiksena yra analogiška Įterpimo veiksenai, tačiau
+         kiekvienas joje įvedamas rašmuo perrašo esamą rašmenį.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                1.6.4 pamoka: TEKSTO KOPIJAVIMAS IR ĮKLIJAVIMAS
+
+
+  ** Tekstas kopijuojamas  y  operatoriumi, o įterpiamas  p  operatoriumi. **
+
+  1. Perkelkite žymeklį į pirmąją eilutę žemiau, pažymėtą --->, tada
+     perkelkite jį už „a)“.
+
+  2. Įjunkite Vizualiojo žymėjimo veikseną (komanda  v ) ir perkelkite žymeklį
+     iki pozicijos prieš pat žodį „pirmas“.
+
+  3. Spustelėkite  y  pažymėtam tekstui nukopijuoti į „Vim“ iškarpinę.
+
+  4. Perkelkite žymeklį į kitos eilutės pabaigą:  j$
+
+  5. Spustelėkite  p  tekstui įterpti. Tada įveskite:  antras <ESC> .
+
+  6. Grįžkite į ankstesnę eilutę, Vizualiojo žymėjimo veiksenoje pažymėkite
+     tekstą „ elementas.“, nukopijuokite jį, spustelėdami  y  , tada vėl
+     pereikite į kitos eilutės pabaigą ( j$ ) ir įterpkite nukopijuotą tekstą,
+     spustelėdami  p .
+
+--->  a) tai yra pirmas elementas.
+      b)
+
+  PASTABA:  y  galite naudoti ir kaip operatorių:  yw  nukopijuos vieną žodį,
+        yy  – visą eilutę, o vėliau  p  šią eilutę įterps.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    1.6.5 pamoka: PARINKČIŲ NUSTATYMAS
+
+
+   ** Kad ieškant teksto nebūtų paisoma didžiųjų ir mažųjų raidžių skirtumo,
+      galima pakeisti atitinkamą parinktį. **
+
+  1. Paieškokite žodžio „nepaisyti“:  /nepaisyti <ENTER>
+     Pakartokite paiešką keletą kartų, spustelėdami  n  klavišą.
+
+  2. Nustatykite  'ic' („ignore case“ / nepaisyti raidžių registro) parinktį:
+     :set ic
+
+  3. Pratęskite žodžio „nepaisyti“ paiešką, spustelėdami  n . Atkreipkite
+     dėmesį, jog dabar bus randami ir žodžiai „Nepaisyti“ bei „NEPAISYTI“.
+
+  4. Nustatykite 'hlsearch' ir 'incsearch' parinktis:  :set hls is
+
+  5. Dar kartą įvykdykite paiešką ir pasižiūrėkite kas bus:  /nepaisyti <ENTER>
+
+  6. Kad ieškant raidžių registro vėl būtų paisoma, įveskite:  :set noic
+
+PASTABA: Jei norite išjungti radinių paryškinimą, įveskite:  :nohlsearch
+PASTABA: Jei norite raidžių registro nepaisyti tik vienos paieškos metu, frazę
+         papildykite  \c  sufiksu:  /nepaisyti\c <ENTER>
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               1.6 pamokos SANTRAUKA
+
+
+  1. Spustelėjus  o , įterpiama nauja eilutė ŽEMIAU žymeklio, žymeklis
+                    perkeliamas į ją ir įjungiama Įterpimo veiksena.
+     Spustelėjus  O , eilutė bus įterpta VIRŠ žymeklio.
+
+  2. Spustelėjus  a , bus įjungta Įterpimo veiksena UŽ žymeklio.
+     Spustelėjus  A , bus įjungta Įterpimo veiksena eilutės pabaigoje.
+
+  3. Spustelėjus  e , žymeklis perkeliamas į žodžio pabaigą.
+
+  4. Spustelėjus  y , pažymėtas tekstas nukopijuojamas į „Vim“ iškarpinę.
+     Spustelėjus  p , „Vim“ iškarpinėje esantis tekstas įterpiamas.
+
+  5. Spustelėjus  R , įjungiama Perrašymo („Replace“) veiksena, iš kurios
+                    išeinama spustelint <ESC>.
+
+  6. Įvedus komandą „:set xxx“, yra įjungiama "xxx" parinktis. Keletas jų:
+        'ic' arba 'ignorecase' – nepaisyti raidžių registro ieškant
+        'is' arba 'incsearch'  – rodyti dalinius ieškomos frazės atitikmenis
+        'hls' arba 'hlsearch'  – paryškinti visus radinius
+     Galima naudoti tiek trumpąjį, tiek ilgąjį parinkties vardus.
+
+  7. Parinktį išjungti galite, prieš jos vardą pridėdami priešdėlį „no“, pvz.:
+        :set noic
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                     1.7.1 pamoka: VIM ŽINYNO KOMANDOS
+
+
+                  ** Naudokitės „Vim“ žinyno sistema. **
+
+  „Vim“ turi išsamų žinyną. Pirmai pažinčiai su juo, išbandykite vieną iš šių
+  būdų:
+        - spustelėkite <HELP> klavišą (jei turite klaviatūroje)
+        - spustelėkite <F1> klavišą (jei turite klaviatūroje)
+        - surinkite  :help <ENTER>
+
+  Perskaitykite tekstą žinyno lange, kad sužinotumėte, kaip jis veikia.
+  Nuspaudę  CTRL+W CTRL+W  , galite peršokti iš vieno lango į kitą.
+  Įveskite     :q <ENTER>  žinyno langui užverti.
+
+  Informacijos galima rasti įvairiausiomis temomis, perduodant  „:help“
+  komandai raktinį žodį kaip argumentą. Pabandykite:
+
+        :help w <ENTER>
+        :help c_CTRL-D <ENTER>
+        :help insert-index <ENTER>
+        :help user-manual <ENTER>
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                1.7.2 pamoka: PALEISTIES SCENARIJAUS KŪRIMAS
+
+
+                    ** Išnaudokite „Vim“ privalumus **
+
+  „Vim“ turi platesnį funkcionalumą nei „Vi“, tačiau dauguma šių galimybių
+  numatytuoju atveju išjungtos. Jei norite pradėti naudotis papildomomis
+  galimybėmis, pirmiausia susikurkite „vimrc“ failą.
+
+  1. Pradėkite redaguoti „vimrc“ failą. Komanda priklauso nuo jūsų naudojamos
+     platformos:
+        :e ~/.vimrc   – „Unix“ sistemose
+        :e ~/_vimrc   – „Windows“ sistemose
+
+  2. Įterpkite pavyzdinio „vimrc“ failo turinį:
+        :r $VIMRUNTIME/vimrc_example.vim
+
+  3. Įrašykite redaguojamą failą:
+        :w
+
+  Kitąkart paleidę „Vim“, jau galėsite mėgautis sintaksės paryškinimu.
+  Visas pageidaujamas parinktis galite pridėti į šį „vimrc“ failą.
+  Išsamesnė informacija apie paleisties scenarijų –  :help vimrc-intro .
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   1.7.3 pamoka: AUTOMATINIS UŽBAIGIMAS
+
+
+            ** Komandų užbaigimas naudojant CTRL+D ir <TAB> **
+
+  1. Įsitikinkite, jog „Vim“ nėra suderinamumo veiksenoje:  :set nocp
+
+  2. Peržiūrėkite failų sąrašą aplanke:  :!ls   arba  :!dir
+
+  3. Pradėkite vesti komandos pavadinimą:  :e
+
+  4. Nuspauskite  CTRL+D  – pamatysite komandų, prasidedančių raide „e“ sąrašą.
+
+  5. Įveskite  d<TAB> , kad „Vim“ užbaigtų komandos pavadinimą iki „:edit“.
+
+  6. Įveskite tarpą ir pradėkite vesti failo vardą:  :edit FAIL
+
+  7. Spustelėkite <TAB>. „Vim“ užbaigs failo vardą (jei failas taip
+     prasidedančiu vardu egzistuoja ir yra vienintelis).
+
+PASTABA: Automatinis užbaigimas veikia su daugeliu komandų. Jį išbandyti galite
+         klavišų kombinacijos  CTRL+D  ir klavišo  <TAB>  pagalba. Jis ypač
+         naudingas su komanda  :help .
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               1.7 pamokos SANTRAUKA
+
+
+  1. Įveskite  :help , arba spustelėkite <F1> arba <HELP> žinynui atverti.
+
+  2. Įveskite  :help KOMANDA  žinynui apie komandą „KOMANDA“ atverti.
+
+  3. Nuspauskite  CTRL+W CTRL+W , jeigu norite peršokti į kitą langą.
+
+  4. Įveskite  :q  žinyno langui užverti.
+
+  5. Susikurkite „vimrc“ paleisties scenarijaus failą norimoms išlaikyti
+     parinktims įrašyti.
+
+  6. Rinkdami  :  prasidedančią komandą, nuspauskite CTRL+D galimiems užbaigimo
+     variantams pamatyti, arba <TAB> užbaigimui atlikti.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Sveikiname, jūs pasiekėte „Vim“ pradžiamokslio pabaigą! Jo tikslas – pateikti
+  glaustą „Vim“ redaktoriaus apžvalgą, kurios pakaktų įgyti „Vim“ redaktoriaus
+  pagrindams. Tačiau tai toli gražu ne visos galimybės, kuriomis „Vim“
+  pasižymi. Toliau patariame perskaityti naudotojo vadovą:
+     :help user-manual
+
+  Dar nuodugnesniam mokymuisi rekomenduojame knygą:
+        Steve Oualline. Vim - Vi Improved
+        Leidėjas: New Riders
+  Tai – pirmoji knyga, skirta vien tik „Vim“ redaktoriui. Ypatingai naudinga
+  pradedantiesiems. Knygoje nemažai pavyzdžių ir iliustracijų.
+  Išsamiau – https://iccf-holland.org/click5.html
+
+  Taip pat galime rekomenduoti šią senesnę knygą, nors ji ir skirta labiau
+  „Vi“, o ne „Vim“ redaktoriui:
+        Linda Lamb. "Learning the Vi Editor"
+        Leidėjas: O'Reilly & Associates Inc.
+  Tai – gera knyga, kurioje išnagrinėtos beveik visos „Vi“ redaktoriaus
+  galimybės. Šeštame leidime pateikiama informacija ir apie „Vim“.
+
+  Šį pradžiamokslį parašė Michael C. Pierce ir Robert K. Ware, Colorado School
+  of Mines, pasinaudodami Charles Smith, Colorado State University, idėjomis.
+  El. paštas: bware@mines.colorado.edu.
+
+  „Vim“ redaktoriui pritaikė Bram Moolenaar.
+
+  Į lietuvių kalbą išvertė Laurynas Stančikas (1.4 versiją)
+  ir Rimas Kudelis (1.7 versiją).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

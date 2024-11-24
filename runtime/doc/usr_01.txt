@@ -145,13 +145,13 @@ On other systems, you have to do a little work:
 
 1. Copy the tutor file.  You can do this with Vim (it knows where to find it):
 >
-	vim --clean -c 'e $VIMRUNTIME/tutor/tutor' -c 'w! TUTORCOPY' -c 'q'
+	vim --clean -c 'e $VIMRUNTIME/tutor/tutor1' -c 'w! TUTORCOPY' -c 'q'
 <
    This will write the file "TUTORCOPY" in the current directory.  To use a
 translated version of the tutor, append the two-letter language code to the
 filename.  For French:
 >
-	vim --clean -c 'e $VIMRUNTIME/tutor/tutor.fr' -c 'w! TUTORCOPY' -c 'q'
+	vim --clean -c 'e $VIMRUNTIME/tutor/tutor1.fr' -c 'w! TUTORCOPY' -c 'q'
 <
 2. Edit the copied file with Vim:
 >
