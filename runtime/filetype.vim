@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Nov 19
+" Last Change:	2024 Nov 24
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -646,9 +646,9 @@ au BufNewFile,BufRead *.dfy			setf dafny
 au BufRead,BufNewfile *.dart,*.drt		setf dart
 
 " Debian Control
-au BufNewFile,BufRead */debian/control		setf debcontrol
+au BufNewFile,BufRead */{debian,DEBIAN}/control		setf debcontrol
 au BufNewFile,BufRead control
-	\  if getline(1) =~ '^Source:'
+	\  if getline(1) =~ '^Source:\|^Package:'
 	\|   setf debcontrol
 	\| endif
 
