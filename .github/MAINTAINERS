@@ -131,6 +131,7 @@ runtime/ftplugin/autohotkey.vim		@telemachus
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
+runtime/ftplugin/c3.vim		@ttytm
 runtime/ftplugin/cabal.vim		@ribru17
 runtime/ftplugin/cedar.vim		@ribru17
 runtime/ftplugin/cfg.vim		@chrisbra
