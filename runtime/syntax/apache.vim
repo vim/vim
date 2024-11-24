@@ -3,8 +3,8 @@
 " Maintainer: David Necas (Yeti) <yeti@physics.muni.cz>
 " License: This file can be redistribued and/or modified under the same terms
 "		as Vim itself.
-" Last Change: 2024 Nov 23
-" Notes: Last synced with apache-2.2.3, version 1.x is no longer supported
+" Last Change: 2024 Nov 24
+" Notes: Last synced with apache-2.4.62, version 1.x is no longer supported
 " TODO: see particular FIXME's scattered through the file
 "		make it really linewise?
 "		+ add `display' where appropriate
