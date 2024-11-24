@@ -1,6 +1,6 @@
-/* vi:set ts=8 sts=4 sw=4 noet:
+/* vi:set ts=8 sts=4 sw=4 et:
  *
- * VIM - Vi IMproved	by Bram Moolenaar
+ * VIM - Vi IMproved    by Bram Moolenaar
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
  * Do ":help credits" in Vim to see a list of people who contributed.
@@ -25,25 +25,25 @@
  */
 
 #ifndef XmNshift
-# define XmNshift		"shift"
+# define XmNshift "shift"
 #endif
 #ifndef XmCShift
-# define XmCShift		"Shift"
+# define XmCShift "Shift"
 #endif
 
 #ifndef XmNlabelLocation
-# define XmNlabelLocation	"labelLocation"
+# define XmNlabelLocation "labelLocation"
 #endif
 #ifndef XmCLocation
-# define XmCLocation		"Location"
+# define XmCLocation "Location"
 #endif
 
 #ifndef XmNpixmapData
-# define XmNpixmapData		"pixmapData"
+# define XmNpixmapData "pixmapData"
 #endif
 
 #ifndef XmNpixmapFile
-# define XmNpixmapFile		"pixmapFile"
+# define XmNpixmapFile "pixmapFile"
 #endif
 
 /*
@@ -52,10 +52,10 @@
 #ifdef HAVE_XM_JOINSIDET_H
 # include <Xm/JoinSideT.h>
 #else
-# define XmLEFT	    1
-# define XmRIGHT    2
-# define XmTOP	    3
-# define XmBOTTOM   4
+# define XmLEFT 1
+# define XmRIGHT 2
+# define XmTOP 3
+# define XmBOTTOM 4
 #endif
 
 #define XmIsEnhancedButton(w) XtIsSubclass(w, xmEnhancedButtonWidgetClass)

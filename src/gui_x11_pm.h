@@ -1,7 +1,7 @@
-/* vi:set ts=8 sts=4 sw=4 noet:
+/* vi:set ts=8 sts=4 sw=4 et:
  *
- * VIM - Vi IMproved		by Bram Moolenaar
- *				GUI/Motif support by Robert Webb
+ * VIM - Vi IMproved            by Bram Moolenaar
+ *                              GUI/Motif support by Robert Webb
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
  * Do ":help credits" in Vim to see a list of people who contributed.
@@ -48,45 +48,23 @@
 /*
  * Those are the pixmaps used for the default buttons.
  */
-static char **(built_in_pixmaps[]) =
-{
-    tb_new_xpm,
-    tb_open_xpm,
-    tb_save_xpm,
-    tb_undo_xpm,
-    tb_redo_xpm,
-    tb_cut_xpm,
-    tb_copy_xpm,
-    tb_paste_xpm,
-    tb_print_xpm,
-    tb_help_xpm,
-    tb_find_xpm,
-    tb_save_all_xpm,
-    tb_save_session_xpm,
-    tb_new_session_xpm,
-    tb_load_session_xpm,
-    tb_macro_xpm,
-    tb_replace_xpm,
-    tb_close_xpm,
-    tb_maximize_xpm,
-    tb_minimize_xpm,
-    tb_split_xpm,
-    tb_shell_xpm,
-    tb_find_prev_xpm,
-    tb_find_next_xpm,
-    tb_find_help_xpm,
-    tb_make_xpm,
-    tb_jump_xpm,
-    tb_ctags_xpm,
-    tb_vsplit_xpm,
-    tb_maxwidth_xpm,
-    tb_minwidth_xpm,
-    tb_exit_xpm
+static char **(built_in_pixmaps[]) = {
+    tb_new_xpm,          tb_open_xpm,        tb_save_xpm,
+    tb_undo_xpm,         tb_redo_xpm,        tb_cut_xpm,
+    tb_copy_xpm,         tb_paste_xpm,       tb_print_xpm,
+    tb_help_xpm,         tb_find_xpm,        tb_save_all_xpm,
+    tb_save_session_xpm, tb_new_session_xpm, tb_load_session_xpm,
+    tb_macro_xpm,        tb_replace_xpm,     tb_close_xpm,
+    tb_maximize_xpm,     tb_minimize_xpm,    tb_split_xpm,
+    tb_shell_xpm,        tb_find_prev_xpm,   tb_find_next_xpm,
+    tb_find_help_xpm,    tb_make_xpm,        tb_jump_xpm,
+    tb_ctags_xpm,        tb_vsplit_xpm,      tb_maxwidth_xpm,
+    tb_minwidth_xpm,     tb_exit_xpm
 };
 
 // Indices for named colors
-#define BACKGROUND	0
-#define FOREGROUND	1
-#define BOTTOM_SHADOW	2
-#define TOP_SHADOW	3
-#define HIGHLIGHT	4
+#define BACKGROUND 0
+#define FOREGROUND 1
+#define BOTTOM_SHADOW 2
+#define TOP_SHADOW 3
+#define HIGHLIGHT 4

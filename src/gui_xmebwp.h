@@ -1,6 +1,6 @@
-/* vi:set ts=8 sts=4 sw=4 noet:
+/* vi:set ts=8 sts=4 sw=4 et:
  *
- * VIM - Vi IMproved	by Bram Moolenaar
+ * VIM - Vi IMproved    by Bram Moolenaar
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
  * Do ":help credits" in Vim to see a list of people who contributed.
@@ -24,7 +24,6 @@
 
 #include "gui_xmebw.h"
 
-
 /*
  * EnhancedButton class structure.
  */
@@ -44,7 +43,6 @@ typedef struct
     XmPushButtonClassPart pushbutton_class;
     XmEnhancedButtonClassPart enhancedbutton_class;
 } XmEnhancedButtonClassRec;
-
 
 extern XmEnhancedButtonClassRec xmEnhancedButtonClassRec;
 
@@ -71,7 +69,6 @@ typedef struct _XmEnhancedButtonPart
     int doing_setvalues;
     int doing_destroy;
 } XmEnhancedButtonPart;
-
 
 /*
  * Full instance record declaration.
