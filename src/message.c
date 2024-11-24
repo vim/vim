@@ -1011,10 +1011,6 @@ add_msg_hist(
     if (msg_hist_off || msg_silent != 0)
 	return;
 
-    // Don't let the message history get too big
-    while (msg_hist_len > p_mhi)
-	(void)delete_first_msg();
-
     // allocate an entry and add the message at the end of the history
     p = ALLOC_ONE(struct msg_hist);
     if (p == NULL)
@@ -1039,6 +1035,8 @@ add_msg_hist(
     if (first_msg_hist == NULL)
 	first_msg_hist = last_msg_hist;
     ++msg_hist_len;
+
+    check_msg_hist();
 }
 
 /*
@@ -1060,6 +1058,14 @@ delete_first_msg(void)
     vim_free(p);
     --msg_hist_len;
     return OK;
+}
+
+    void
+check_msg_hist(void)
+{
+    // Don't let the message history get too big
+    while (msg_hist_len > 0 && msg_hist_len > p_mhi)
+	(void)delete_first_msg();
 }
 
 /*

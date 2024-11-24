@@ -56,6 +56,7 @@ char *did_set_maxcombine(optset_T *args);
 char *did_set_modifiable(optset_T *args);
 char *did_set_modified(optset_T *args);
 char *did_set_mousehide(optset_T *args);
+char *did_set_msghistory(optset_T *args);
 char *did_set_number_relativenumber(optset_T *args);
 char *did_set_numberwidth(optset_T *args);
 char *did_set_paste(optset_T *args);
