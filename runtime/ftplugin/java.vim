@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Nov 19
+" Last Change:		2024 Nov 24
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -91,16 +91,57 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
 endif
 
 " The support for pre- and post-compiler actions for SpotBugs.
+if exists("g:spotbugs_properties") && has_key(g:spotbugs_properties, 'compiler')
+    try
+	let spotbugs#compiler = g:spotbugs_properties.compiler
+	let g:spotbugs_properties = extend(
+		\ spotbugs#DefaultProperties(),
+		\ g:spotbugs_properties,
+		\ 'force')
+    catch
+	echomsg v:errmsg
+    finally
+	call remove(g:spotbugs_properties, 'compiler')
+    endtry
+endif
+
 if exists("g:spotbugs_properties") &&
 	    \ filereadable($VIMRUNTIME . '/compiler/spotbugs.vim')
     let s:request = 0
 
     if has_key(g:spotbugs_properties, 'PreCompilerAction')
+	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerAction() | '
 	let s:request += 1
     endif
 
-    if has_key(g:spotbugs_properties, 'PostCompilerAction')
+    if has_key(g:spotbugs_properties, 'PreCompilerTestAction')
+	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerTestAction() | '
 	let s:request += 2
+    endif
+
+    if has_key(g:spotbugs_properties, 'PostCompilerAction')
+	let s:request += 4
+    endif
+
+    if (s:request == 3 || s:request == 7) &&
+	    \ has_key(g:spotbugs_properties, 'sourceDirPath') &&
+	    \ has_key(g:spotbugs_properties, 'testSourceDirPath')
+	function! s:DispatchAction(path_action_pairs) abort
+	    let name = expand('%:p')
+
+	    for [path, Action] in a:path_action_pairs
+		if name =~# (path . '.\{-}\.java\=$')
+		    call Action()
+		    break
+		endif
+	    endfor
+	endfunction
+
+	let s:dispatcher = printf('call s:DispatchAction(%s) | ',
+		\ string([[g:spotbugs_properties.sourceDirPath,
+			    \ g:spotbugs_properties.PreCompilerAction],
+			\ [g:spotbugs_properties.testSourceDirPath,
+			    \ g:spotbugs_properties.PreCompilerTestAction]]))
     endif
 
     if s:request
@@ -122,19 +163,14 @@ if exists("g:spotbugs_properties") &&
 	endif
 
 	for s:idx in range(len(s:actions))
-	    if s:request == 3
-		let s:actions[s:idx].cmd =
-			\ 'call g:spotbugs_properties.PreCompilerAction() | ' .
-			\ 'compiler spotbugs | ' .
+	    if s:request == 7 || s:request == 6 || s:request == 5
+		let s:actions[s:idx].cmd = s:dispatcher . 'compiler spotbugs | ' .
 			\ 'call g:spotbugs_properties.PostCompilerAction()'
-	    elseif s:request == 2
-		let s:actions[s:idx].cmd =
-			\ 'compiler spotbugs | ' .
+	    elseif s:request == 4
+		let s:actions[s:idx].cmd = 'compiler spotbugs | ' .
 			\ 'call g:spotbugs_properties.PostCompilerAction()'
-	    elseif s:request == 1
-		let s:actions[s:idx].cmd =
-			\ 'call g:spotbugs_properties.PreCompilerAction() | ' .
-			\ 'compiler spotbugs'
+	    elseif s:request == 3 || s:request == 2 || s:request == 1
+		let s:actions[s:idx].cmd = s:dispatcher . 'compiler spotbugs'
 	    else
 		let s:actions[s:idx].cmd = ''
 	    endif
@@ -158,18 +194,23 @@ if exists("g:spotbugs_properties") &&
 			    \ : ''))
 	endfor
 
-	unlet s:idx s:action s:actions
+	unlet! s:action s:actions s:idx s:dispatcher
     endif
 
     unlet s:request
 endif
 
+function! JavaFileTypeCleanUp() abort
+    setlocal suffixes< suffixesadd< formatoptions< comments< commentstring< path< includeexpr<
+    unlet! b:browsefilter
+
+    " The concatenated removals may be misparsed as a BufWritePost autocmd.
+    silent! autocmd! java_spotbugs BufWritePost <buffer>
+    silent! autocmd! java_spotbugs Syntax <buffer>
+endfunction
+
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal suffixes< suffixesadd<" .
-		\     " formatoptions< comments< commentstring< path< includeexpr<" .
-		\     " | unlet! b:browsefilter" .
-		\     " | silent! autocmd! java_spotbugs BufWritePost <buffer>" .
-		\     " | silent! autocmd! java_spotbugs Syntax <buffer>"
+let b:undo_ftplugin = 'call JavaFileTypeCleanUp() | delfunction JavaFileTypeCleanUp'
 
 " See ":help vim9-mix".
 if !has("vim9script")
@@ -188,6 +229,19 @@ if exists("s:zip_func_upgradable")
 
     setlocal includeexpr=s:JavaFileTypeZipFile()
     setlocal suffixesadd<
+endif
+
+if exists("*s:DispatchAction")
+    def! s:DispatchAction(path_action_pairs: list<list<any>>)
+	const name: string = expand('%:p')
+
+	for [path: string, Action: func: any] in path_action_pairs
+	    if name =~# (path .. '.\{-}\.java\=$')
+		Action()
+		break
+	    endif
+	endfor
+    enddef
 endif
 
 " Restore the saved compatibility options.

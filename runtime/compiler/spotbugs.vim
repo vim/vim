@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzxywvut
-" Last Change:  2024 nov 21
+" Last Change:  2024 nov 24
 
 if exists('g:current_compiler') || bufname() !~# '\.java\=$' || wordcount().chars < 9
   finish
@@ -106,24 +106,29 @@ else
 endif
 
 if exists('g:spotbugs_properties') &&
-    \ has_key(g:spotbugs_properties, 'sourceDirPath') &&
-    \ has_key(g:spotbugs_properties, 'classDirPath')
+    \ (has_key(g:spotbugs_properties, 'sourceDirPath') &&
+    \ has_key(g:spotbugs_properties, 'classDirPath')) ||
+    \ (has_key(g:spotbugs_properties, 'testSourceDirPath') &&
+    \ has_key(g:spotbugs_properties, 'testClassDirPath'))
 
 function! s:FindClassFiles(src_type_name) abort
-  let src_dir_path = g:spotbugs_properties.sourceDirPath
-  let bin_dir_path = g:spotbugs_properties.classDirPath
   let class_files = []
   " Match pairwise the components of source and class pathnames
-  for dir_idx in range(min([len(src_dir_path), len(bin_dir_path)]))
+  for [src_dir, bin_dir] in filter([
+            \ [get(g:spotbugs_properties, 'sourceDirPath', ''),
+                \ get(g:spotbugs_properties, 'classDirPath', '')],
+            \ [get(g:spotbugs_properties, 'testSourceDirPath', ''),
+                \ get(g:spotbugs_properties, 'testClassDirPath', '')]],
+        \ '!(empty(v:val[0]) || empty(v:val[1]))')
     " Since only the rightmost "src" is sought, while there can be any number of
     " such filenames, no "fnamemodify(a:src_type_name, ':p:s?src?bin?')" is used
-    let tail_idx = strridx(a:src_type_name, src_dir_path[dir_idx])
+    let tail_idx = strridx(a:src_type_name, src_dir)
     " No such directory or no such inner type (i.e. without "$")
     if tail_idx < 0 | continue | endif
-    " Substitute "bin_dir_path[dir_idx]" for the rightmost "src_dir_path[dir_idx]"
+    " Substitute "bin_dir" for the rightmost "src_dir"
     let candidate_type_name = strpart(a:src_type_name, 0, tail_idx)..
-        \ bin_dir_path[dir_idx]..
-        \ strpart(a:src_type_name, (tail_idx + strlen(src_dir_path[dir_idx])))
+        \ bin_dir..
+        \ strpart(a:src_type_name, (tail_idx + strlen(src_dir)))
     for candidate in insert(s:GlobClassFiles(candidate_type_name),
             \ candidate_type_name..'.class')
       if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
