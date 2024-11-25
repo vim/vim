@@ -1335,6 +1335,13 @@ b/g:javac_makeprg_params variable.  For example: >
 
 	let g:javac_makeprg_params = "-Xlint:all -encoding utf-8"
 
+MAVEN							*compiler-maven*
+
+Commonly used compiler options can be added to 'makeprg' by setting the
+b/g:maven_makeprg_params variable.  For example: >
+
+	let g:maven_makeprg_params = "-DskipTests -U -X"
+
 SPOTBUGS						*compiler-spotbugs*
 
 SpotBugs is a static analysis tool that can be used to find bugs in Java.
