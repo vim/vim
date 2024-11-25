@@ -3330,7 +3330,12 @@ parse_statustabline_rulerformat(optset_T *args, int rulerformat)
 	if (wid && *s == '(' && (errmsg = check_stl_option(p_ruf)) == NULL)
 	    ru_wid = wid;
 	else
-	    errmsg = check_stl_option(p_ruf);
+	{
+	    // Validate the flags in 'rulerformat' only if it doesn't point to
+	    // a custom function ("%!" flag).
+	    if ((*varp)[1] != '!')
+		errmsg = check_stl_option(p_ruf);
+	}
     }
     // check 'statusline' or 'tabline' only if it doesn't start with "%!"
     else if (rulerformat || s[0] != '%' || s[1] != '!')
