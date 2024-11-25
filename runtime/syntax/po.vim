@@ -45,10 +45,42 @@ syn match     poCopyrightUnset "SOME DESCRIPTIVE TITLE\|FIRST AUTHOR <EMAIL@ADDR
 " Translation comment block including: translator comment, automatic comments, flags and locations
 syn match     poComment "^#.*$"
 syn keyword   poFlagFuzzy fuzzy contained
+
+syn match     poFlagFormat /\<\%(no-\)\?awk-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?boost-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?c++-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?c-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?csharp-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?elisp-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?gcc-internal-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?gfc-internal-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?java-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?java-printf-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?javascript-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?kde-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?librep-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?lisp-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?lua-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?objc-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?object-pascal-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?perl-brace-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?perl-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?php-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?python-brace-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?python-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?qt-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?qt-plural-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?ruby-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?scheme-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?sh-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?smalltalk-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?tcl-format\>/ contained
+syn match     poFlagFormat /\<\%(no-\)\?ycp-format\>/ contained
+
 syn match     poCommentTranslator "^# .*$" contains=poCopyrightUnset
 syn match     poCommentAutomatic "^#\..*$"
 syn match     poCommentSources	"^#:.*$"
-syn match     poCommentFlags "^#,.*$" contains=poFlagFuzzy
+syn match     poCommentFlags "^#,.*$" contains=poFlagFuzzy,poFlagFormat
 syn match     poCommentPrevious "^#|.*$"
 
 " Translations (also includes header fields as they appear in a translation msgstr)
@@ -87,6 +119,7 @@ hi def link poCommentFlags      Special
 hi def link poCommentPrevious   Comment
 hi def link poCopyrightUnset    Todo
 hi def link poFlagFuzzy         Todo
+hi def link poFlagFormat        Todo
 hi def link poObsolete         Comment
 
 hi def link poStatementMsgid   Statement
