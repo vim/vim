@@ -2819,7 +2819,7 @@ sign_unplace_from_dict(typval_T *group_tv, dict_T *dict)
 
     if (dict != NULL)
     {
-        dictitem_T *di = di = dict_find(dict, (char_u *)"buffer", -1);
+        dictitem_T *di = dict_find(dict, (char_u *)"buffer", -1);
         if (di != NULL)
         {
             buf = get_buf_arg(&di->di_tv);
