@@ -426,6 +426,7 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_number(dict, "wincol", wp->w_wincol + 1);
     dict_add_number(dict, "textoff", win_col_off(wp));
     dict_add_number(dict, "bufnr", wp->w_buffer->b_fnum);
+    dict_add_number(dict, "leftcol", wp->w_leftcol);
 
 #ifdef FEAT_TERMINAL
     dict_add_number(dict, "terminal", bt_terminal(wp->w_buffer));
