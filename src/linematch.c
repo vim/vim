@@ -27,9 +27,9 @@ struct diffcmppath_S {
 
 static size_t line_len(const mmfile_t *m)
 {
-  char *s = m->ptr;
+  char_u *s = (char_u *)m->ptr;
   size_t n = (size_t)m->size;
-  char *end = strnchr(s, &n, '\n');
+  char_u *end = strnchr(s, &n, '\n');
   if (end) {
     return (size_t)(end - s);
   }
