@@ -571,7 +571,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
     if (dnew == NULL)
 	return NULL;
 
-    dnew->is_linematched = false;
+    dnew->is_linematched = False;
     dnew->df_next = dp;
     if (dprev == NULL)
 	tp->tp_first_diff = dnew;
@@ -3171,13 +3171,13 @@ ex_diffgetput(exarg_T *eap)
     dprev = NULL;
     for (dp = curtab->tp_first_diff; dp != NULL; )
     {
-	if (!addr_count)
+	if (!eap->addr_count)
 	{
 	  // handle the case with adjacent diff blocks
 	  while (dp->is_linematched
 		 && dp->df_next
 		 && dp->df_next->df_lnum[idx_cur] == dp->df_lnum[idx_cur] + dp->df_count[idx_cur]
-		 && dp->df_next->df_lnum[idx_cur] == line1 + off + 1)
+		 && dp->df_next->df_lnum[idx_cur] == eap->line1 + off + 1)
 	  {
 	    dprev = dp;
 	    dp = dp->df_next;
