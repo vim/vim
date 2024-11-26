@@ -11,7 +11,6 @@
 #define LN_DECISION_MAX 255  // pow(2, LN_MAX_BUFS(8)) - 1 = 255
 
 // struct for running the diff linematch algorithm
-typedef struct diffcmppath_S diffcmppath_T;
 struct diffcmppath_S {
   int df_lev_score;  // to keep track of the total score of this path
   size_t df_path_n;   // current index of this path
@@ -25,11 +24,11 @@ struct diffcmppath_S {
 # include "linematch.c.generated.h"
 #endif
 
-static size_t line_len(const mmfile_t *m)
+size_t line_len(const mmfile_t *m)
 {
-  char_u *s = (char_u *)m->ptr;
+  char *s = m->ptr;
   size_t n = (size_t)m->size;
-  char_u *end = strnchr(s, &n, '\n');
+  char *end = strnchr(s, &n, '\n');
   if (end) {
     return (size_t)(end - s);
   }
@@ -42,7 +41,7 @@ static size_t line_len(const mmfile_t *m)
 ///
 /// @param s1
 /// @param s2
-static int matching_chars_iwhite(const mmfile_t *s1, const mmfile_t *s2)
+int matching_chars_iwhite(const mmfile_t *s1, const mmfile_t *s2)
 {
   // the newly processed strings that will be compared
   // delete the white space characters
@@ -81,7 +80,7 @@ static int matching_chars_iwhite(const mmfile_t *s1, const mmfile_t *s2)
 ///
 /// @param m1
 /// @param m2
-static int matching_chars(const mmfile_t *m1, const mmfile_t *m2)
+int matching_chars(const mmfile_t *m1, const mmfile_t *m2)
 {
   size_t s1len = MIN(MATCH_CHAR_MAX_LEN - 1, line_len(m1));
   size_t s2len = MIN(MATCH_CHAR_MAX_LEN - 1, line_len(m2));
@@ -117,7 +116,7 @@ static int matching_chars(const mmfile_t *m1, const mmfile_t *m2)
 /// @param sp
 /// @param fomvals
 /// @param n
-static int count_n_matched_chars(mmfile_t **sp, const size_t n, bool iwhite)
+int count_n_matched_chars(mmfile_t **sp, const size_t n, Bool iwhite)
 {
   int matched_chars = 0;
   int matched = 0;
@@ -167,7 +166,7 @@ mmfile_t fastforward_buf_to_lnum(mmfile_t s, linenr_T lnum)
 /// @param diff_len
 /// @param ndiffs
 /// @param diff_blk
-static void try_possible_paths(const int *df_iters, const size_t *paths, const int npaths,
+void try_possible_paths(const int *df_iters, const size_t *paths, const int npaths,
                                const int path_idx, int *choice, diffcmppath_T *diffcmppath,
                                const int *diff_len, const size_t ndiffs, const mmfile_t **diff_blk,
                                bool iwhite)
@@ -219,7 +218,7 @@ static void try_possible_paths(const int *df_iters, const size_t *paths, const i
 /// @param values
 /// @param diff_len
 /// @param ndiffs
-static size_t unwrap_indexes(const int *values, const int *diff_len, const size_t ndiffs)
+size_t unwrap_indexes(const int *values, const int *diff_len, const size_t ndiffs)
 {
   size_t num_unwrap_scalar = 1;
   for (size_t k = 0; k < ndiffs; k++) {
@@ -245,7 +244,7 @@ static size_t unwrap_indexes(const int *values, const int *diff_len, const size_
 /// @param diff_len
 /// @param ndiffs
 /// @param diff_blk
-static void populate_tensor(int *df_iters, const size_t ch_dim, diffcmppath_T *diffcmppath,
+void populate_tensor(int *df_iters, const size_t ch_dim, diffcmppath_T *diffcmppath,
                             const int *diff_len, const size_t ndiffs, const mmfile_t **diff_blk,
                             bool iwhite)
 {
@@ -381,7 +380,7 @@ size_t linematch_nbuffers(const mmfile_t **diff_blk, const int *diff_len, const 
 }
 
 // returns the minimum amount of path changes from start to end
-static size_t test_charmatch_paths(diffcmppath_T *node, int lastdecision)
+size_t test_charmatch_paths(diffcmppath_T *node, int lastdecision)
 {
   // memoization
   if (node->df_choice_mem[lastdecision] == -1) {
