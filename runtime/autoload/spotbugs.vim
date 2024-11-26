@@ -1,6 +1,6 @@
 " Default pre- and post-compiler actions for SpotBugs
 " Maintainers:  @konfekt and @zzzxywvut
-" Last Change:  2024 nov 24
+" Last Change:  2024 nov 26
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -106,6 +106,7 @@ if s:readable && s:compiler ==# 'maven' && executable('mvn')
         \ }
   endfunction
 
+  unlet s:readable s:compiler
 elseif s:readable && s:compiler ==# 'ant' && executable('ant')
 
   function! spotbugs#DefaultPreCompilerAction() abort
@@ -135,6 +136,7 @@ elseif s:readable && s:compiler ==# 'ant' && executable('ant')
         \ }
   endfunction
 
+  unlet s:readable s:compiler
 elseif s:readable && s:compiler ==# 'javac' && executable('javac')
 
   function! spotbugs#DefaultPreCompilerAction() abort
@@ -158,6 +160,7 @@ elseif s:readable && s:compiler ==# 'javac' && executable('javac')
         \ }
   endfunction
 
+  unlet s:readable s:compiler
 else
 
   function! spotbugs#DefaultPreCompilerAction() abort
@@ -172,9 +175,10 @@ else
     return {}
   endfunction
 
+  unlet s:readable
 endif
 
 let &cpo = s:save_cpo
-unlet s:readable s:save_cpo
+unlet s:save_cpo
 
 " vim: set foldmethod=syntax shiftwidth=2 expandtab:
