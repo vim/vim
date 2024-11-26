@@ -169,7 +169,7 @@ mmfile_t fastforward_buf_to_lnum(mmfile_t s, linenr_T lnum)
 void try_possible_paths(const int *df_iters, const size_t *paths, const int npaths,
                                const int path_idx, int *choice, diffcmppath_T *diffcmppath,
                                const int *diff_len, const size_t ndiffs, const mmfile_t **diff_blk,
-                               bool iwhite)
+                               Bool iwhite)
 {
   if (path_idx == npaths) {
     if ((*choice) > 0) {
@@ -246,7 +246,7 @@ size_t unwrap_indexes(const int *values, const int *diff_len, const size_t ndiff
 /// @param diff_blk
 void populate_tensor(int *df_iters, const size_t ch_dim, diffcmppath_T *diffcmppath,
                             const int *diff_len, const size_t ndiffs, const mmfile_t **diff_blk,
-                            bool iwhite)
+                            Bool iwhite)
 {
   if (ch_dim == ndiffs) {
     int npaths = 0;
@@ -329,7 +329,7 @@ void populate_tensor(int *df_iters, const size_t ch_dim, diffcmppath_T *diffcmpp
 /// @param [out] [allocated] decisions
 /// @return the length of decisions
 size_t linematch_nbuffers(const mmfile_t **diff_blk, const int *diff_len, const size_t ndiffs,
-                          int **decisions, bool iwhite)
+                          int **decisions, Bool iwhite)
 {
   assert(ndiffs <= LN_MAX_BUFS);
 
