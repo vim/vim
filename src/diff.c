@@ -399,7 +399,7 @@ diff_mark_adjust_tp(
 	{
 	    // 6. change below line2: only adjust for amount_after; also when
 	    // "deleted" became zero when deleted all lines between two diffs
-	    if (dp->df_lnum[idx] - (deleted + inserted != 0) > line2)
+	    if (dp->df_lnum[idx] - (deleted + inserted != 0) > line2 - (dp->is_linematched ? 1 : 0))
 	    {
 		if (amount_after == 0)
 		    break;	// nothing left to change
@@ -502,8 +502,8 @@ diff_mark_adjust_tp(
 	}
 
 	// check if this block touches the previous one, may merge them.
-	if (dprev != NULL && dprev->df_lnum[idx] + dprev->df_count[idx]
-							  == dp->df_lnum[idx])
+	if ((dprev != NULL) && !dp->is_linematched
+		&& dprev->df_lnum[idx] + dprev->df_count[idx] == dp->df_lnum[idx])
 	{
 	    for (i = 0; i < DB_COUNT; ++i)
 		if (tp->tp_diffbuf[i] != NULL)
@@ -571,6 +571,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
     if (dnew == NULL)
 	return NULL;
 
+    dnew->is_linematched = false;
     dnew->df_next = dp;
     if (dprev == NULL)
 	tp->tp_first_diff = dnew;
@@ -2822,13 +2823,14 @@ diff_find_change(
     FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
 	if (lnum <= dp->df_lnum[idx] + dp->df_count[idx])
 	    break;
-      if (dp->is_linematched) {
-	while (dp && dp->df_next
-	       && lnum == dp->df_count[idx] + dp->df_lnum[idx]
-	       && dp->df_next->df_lnum[idx] == lnum) {
-	  dp = dp->df_next;
-	}
+    if (dp->is_linematched)
+    {
+      while (dp && dp->df_next
+             && lnum == dp->df_count[idx] + dp->df_lnum[idx]
+             && dp->df_next->df_lnum[idx] == lnum) {
+        dp = dp->df_next;
       }
+    }
     if (dp == NULL || diff_check_sanity(curtab, dp) == FAIL)
     {
 	vim_free(line_org);
@@ -3169,6 +3171,18 @@ ex_diffgetput(exarg_T *eap)
     dprev = NULL;
     for (dp = curtab->tp_first_diff; dp != NULL; )
     {
+	if (!addr_count)
+	{
+	  // handle the case with adjacent diff blocks
+	  while (dp->is_linematched
+		 && dp->df_next
+		 && dp->df_next->df_lnum[idx_cur] == dp->df_lnum[idx_cur] + dp->df_count[idx_cur]
+		 && dp->df_next->df_lnum[idx_cur] == line1 + off + 1)
+	  {
+	    dprev = dp;
+	    dp = dp->df_next;
+	  }
+	}
 	if (dp->df_lnum[idx_cur] > eap->line2 + off)
 	    break;	// past the range that was specified
 
