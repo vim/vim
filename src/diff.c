@@ -1953,7 +1953,7 @@ diff_linematch(diff_T *dp)
     return tsize <= linematch_lines;
 }
 
-    static int
+    int
 get_max_diff_length(const diff_T *dp)
 {
   int maxlength = 0;
@@ -1967,7 +1967,7 @@ get_max_diff_length(const diff_T *dp)
   return maxlength;
 }
 
-    static void
+    void
 find_top_diff_block(diff_T **thistopdiff, diff_T **nextblockblock, int fromidx,
                                 int topline)
 {
@@ -2010,7 +2010,7 @@ find_top_diff_block(diff_T **thistopdiff, diff_T **nextblockblock, int fromidx,
   }
 }
 
-    static void
+    void
 count_filler_lines_and_topline(int *curlinenum_to, int *linesfiller,
                                            const diff_T *thistopdiff, const int toidx,
                                            int virtual_lines_passed)
@@ -2046,7 +2046,7 @@ count_filler_lines_and_topline(int *curlinenum_to, int *linesfiller,
   }
 }
 
-    static void
+    void
 calculate_topfill_and_topline(const int fromidx, const int toidx, const
                                           int from_topline, const int from_topfill, int *topfill,
                                           linenr_T *topline)
@@ -2096,7 +2096,7 @@ calculate_topfill_and_topline(const int fromidx, const int toidx, const
   (*topline) = curlinenum_to;
 }
 
-    static int
+    int
 linematched_filler_lines(diff_T *dp, int idx, linenr_T lnum, int *linestatus)
 {
   int filler_lines_d1 = 0;
@@ -2132,7 +2132,8 @@ linematched_filler_lines(diff_T *dp, int idx, linenr_T lnum, int *linestatus)
 
 // Apply results from the linematch algorithm and apply to 'dp' by splitting it into multiple
 // adjacent diff blocks.
-static void apply_linematch_results(diff_T *dp, size_t decisions_length, const int *decisions)
+void
+apply_linematch_results(diff_T *dp, size_t decisions_length, const int *decisions)
 {
   // get the start line number here in each diff buffer, and then increment
   int line_numbers[DB_COUNT];
@@ -2178,7 +2179,7 @@ static void apply_linematch_results(diff_T *dp, size_t decisions_length, const i
   dp->is_linematched = TRUE;
 }
 
-static void
+void
 run_linematch_algorithm(diff_T *dp)
 {
   // define buffers for diff algorithm
