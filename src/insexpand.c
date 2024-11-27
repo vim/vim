@@ -95,6 +95,7 @@ struct compl_S
 {
     compl_T	*cp_next;
     compl_T	*cp_prev;
+    compl_T	*cp_match_next;		// matched next compl_T
     string_T	cp_str;			// matched text
     char_u	*(cp_text[CPT_COUNT]);	// text for the menu
 #ifdef FEAT_EVAL
@@ -197,7 +198,7 @@ static int	  compl_selected_item = -1;
 
 static int	  *compl_fuzzy_scores;
 
-static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int *extra_hl);
+static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int *user_hl);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
@@ -754,7 +755,7 @@ ins_compl_add_infercase(
  *     cdir	 - match direction. If 0, use "compl_direction".
  *     flags_arg - match flags (cp_flags)
  *     adup	 - accept this match even if it is already present.
- *     *extra_hl - list of extra highlight attributes for abbr kind.
+ *     *user_hl  - list of extra highlight attributes for abbr kind.
  * If "cdir" is FORWARD, then the match is added after the current match.
  * Otherwise, it is added before the current match.
  *
@@ -772,7 +773,7 @@ ins_compl_add(
     int		cdir,
     int		flags_arg,
     int		adup,		    // accept duplicate match
-    int		*extra_hl)	    // user abbr/kind hlattr
+    int		*user_hl)	    // user abbr/kind hlattr
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -838,8 +839,8 @@ ins_compl_add(
     else
 	match->cp_fname = NULL;
     match->cp_flags = flags;
-    match->cp_user_abbr_hlattr = extra_hl ? extra_hl[0] : -1;
-    match->cp_user_kind_hlattr = extra_hl ? extra_hl[1] : -1;
+    match->cp_user_abbr_hlattr = user_hl ? user_hl[0] : -1;
+    match->cp_user_kind_hlattr = user_hl ? user_hl[1] : -1;
 
     if (cptext != NULL)
     {
@@ -1233,6 +1234,9 @@ ins_compl_build_pum(void)
     unsigned int cur_cot_flags = get_cot_flags();
     int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
     int		compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
+    compl_T	*match_head = NULL;
+    compl_T	*match_tail = NULL;
+    compl_T	*match_next = NULL;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
@@ -1249,7 +1253,14 @@ ins_compl_build_pum(void)
 		&& (compl_leader.string == NULL
 		    || ins_compl_equal(compl, compl_leader.string, (int)compl_leader.length)
 		    || (compl_fuzzy_match && compl->cp_score > 0)))
+	{
 	    ++compl_match_arraysize;
+	    if (match_head == NULL)
+		match_head = compl;
+	    else
+		match_tail->cp_match_next  = compl;
+	    match_tail = compl;
+	}
 	compl = compl->cp_next;
     } while (compl != NULL && !is_first_match(compl));
 
@@ -1270,80 +1281,75 @@ ins_compl_build_pum(void)
 	    && shown_match_ok == FALSE)
 	compl_shown_match = compl_no_select ? compl_first_match
 					    : compl_first_match->cp_next;
-
     i = 0;
-    compl = compl_first_match;
-    do
+    compl = match_head;
+    if (match_tail == match_head)
+	did_find_shown_match = TRUE;
+    while (compl != NULL)
     {
-	if (!match_at_original_text(compl)
-		&& (compl_leader.string == NULL
-		    || ins_compl_equal(compl, compl_leader.string, (int)compl_leader.length)
-		    || (compl_fuzzy_match && compl->cp_score > 0)))
+	if (!shown_match_ok && !compl_fuzzy_match)
 	{
-	    if (!shown_match_ok && !compl_fuzzy_match)
+	    if (compl == compl_shown_match || did_find_shown_match)
 	    {
-		if (compl == compl_shown_match || did_find_shown_match)
-		{
-		    // This item is the shown match or this is the
-		    // first displayed item after the shown match.
-		    compl_shown_match = compl;
-		    did_find_shown_match = TRUE;
-		    shown_match_ok = TRUE;
-		}
-		else
-		    // Remember this displayed match for when the
-		    // shown match is just below it.
-		    shown_compl = compl;
-		cur = i;
+	        // This item is the shown match or this is the
+	        // first displayed item after the shown match.
+	        compl_shown_match = compl;
+	        did_find_shown_match = TRUE;
+	        shown_match_ok = TRUE;
 	    }
-	    else if (compl_fuzzy_match)
-	    {
-		if (i == 0)
-		    shown_compl = compl;
-		// Update the maximum fuzzy score and the shown match
-		// if the current item's score is higher
-		if (compl->cp_score > max_fuzzy_score)
-		{
-		    did_find_shown_match = TRUE;
-		    max_fuzzy_score = compl->cp_score;
-		    if (!compl_no_select)
-			compl_shown_match = compl;
-		}
-
-		if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
-		{
-		    cur = i;
-		    shown_match_ok = TRUE;
-		}
-
-		// If there is no "no select" condition and the max fuzzy
-		// score is positive, or there is no completion leader or the
-		// leader length is zero, mark the shown match as valid and
-		// reset the current index.
-		if (!compl_no_select
-			&& (max_fuzzy_score > 0
-				|| (compl_leader.string == NULL || compl_leader.length == 0)))
-		{
-		    if (match_at_original_text(compl_shown_match))
-		      compl_shown_match = shown_compl;
-		}
-	    }
-
-	    if (compl->cp_text[CPT_ABBR] != NULL)
-		compl_match_array[i].pum_text = compl->cp_text[CPT_ABBR];
 	    else
-		compl_match_array[i].pum_text = compl->cp_str.string;
-	    compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
-	    compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
-	    compl_match_array[i].pum_score = compl->cp_score;
-	    compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
-	    compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
-	    if (compl->cp_text[CPT_MENU] != NULL)
-		compl_match_array[i++].pum_extra =
-		    compl->cp_text[CPT_MENU];
-	    else
-		compl_match_array[i++].pum_extra = compl->cp_fname;
+	        // Remember this displayed match for when the
+	        // shown match is just below it.
+	        shown_compl = compl;
+	    cur = i;
 	}
+	else if (compl_fuzzy_match)
+	{
+	    if (i == 0)
+	        shown_compl = compl;
+	    // Update the maximum fuzzy score and the shown match
+	    // if the current item's score is higher
+	    if (compl->cp_score > max_fuzzy_score)
+	    {
+	        did_find_shown_match = TRUE;
+	        max_fuzzy_score = compl->cp_score;
+	        if (!compl_no_select)
+		   compl_shown_match = compl;
+	    }
+
+	    if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
+	    {
+	        cur = i;
+	        shown_match_ok = TRUE;
+	    }
+
+	    // If there is no "no select" condition and the max fuzzy
+	    // score is positive, or there is no completion leader or the
+	    // leader length is zero, mark the shown match as valid and
+	    // reset the current index.
+	    if (!compl_no_select
+		    && (max_fuzzy_score > 0
+			|| (compl_leader.string == NULL || compl_leader.length == 0)))
+	    {
+	        if (match_at_original_text(compl_shown_match))
+		    compl_shown_match = shown_compl;
+	    }
+	}
+
+	if (compl->cp_text[CPT_ABBR] != NULL)
+	    compl_match_array[i].pum_text = compl->cp_text[CPT_ABBR];
+	else
+	    compl_match_array[i].pum_text = compl->cp_str.string;
+	compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
+	compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
+	compl_match_array[i].pum_score = compl->cp_score;
+	compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
+	compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
+	if (compl->cp_text[CPT_MENU] != NULL)
+	    compl_match_array[i++].pum_extra =
+	        compl->cp_text[CPT_MENU];
+	else
+	    compl_match_array[i++].pum_extra = compl->cp_fname;
 
 	if (compl == compl_shown_match && !compl_fuzzy_match)
 	{
@@ -1362,8 +1368,10 @@ ins_compl_build_pum(void)
 		shown_match_ok = TRUE;
 	    }
 	}
-	compl = compl->cp_next;
-    } while (compl != NULL && !is_first_match(compl));
+	match_next = compl->cp_match_next;
+	compl->cp_match_next = NULL;
+	compl = match_next;
+    }
 
     if (compl_fuzzy_match && compl_leader.string != NULL && compl_leader.length > 0)
     {
@@ -2893,7 +2901,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     int		status;
     char_u	*user_abbr_hlname;
     char_u	*user_kind_hlname;
-    int		extra_hl[2] = { -1, -1 };
+    int		user_hl[2] = { -1, -1 };
 
     user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -2905,10 +2913,10 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
 
 	user_abbr_hlname = dict_get_string(tv->vval.v_dict, "abbr_hlgroup", FALSE);
-	extra_hl[0] = get_user_highlight_attr(user_abbr_hlname);
+	user_hl[0] = get_user_highlight_attr(user_abbr_hlname);
 
 	user_kind_hlname = dict_get_string(tv->vval.v_dict, "kind_hlgroup", FALSE);
-	extra_hl[1] = get_user_highlight_attr(user_kind_hlname);
+	user_hl[1] = get_user_highlight_attr(user_kind_hlname);
 
 	dict_get_tv(tv->vval.v_dict, "user_data", &user_data);
 	if (dict_get_string(tv->vval.v_dict, "icase", FALSE) != NULL
@@ -2933,7 +2941,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	return FAIL;
     }
     status = ins_compl_add(word, -1, NULL, cptext,
-				     &user_data, dir, flags, dup, extra_hl);
+				     &user_data, dir, flags, dup, user_hl);
     if (status != OK)
 	clear_tv(&user_data);
     return status;
