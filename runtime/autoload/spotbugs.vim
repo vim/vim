@@ -1,11 +1,12 @@
 " Default pre- and post-compiler actions for SpotBugs
 " Maintainers:  @konfekt and @zzzxywvut
-" Last Change:  2024 nov 26
+" Last Change:  2024 nov 27
 
 let s:save_cpo = &cpo
 set cpo&vim
 
 if v:version > 900
+
   function! spotbugs#DeleteClassFiles() abort
     if !exists('b:spotbugs_class_files')
       return
@@ -17,11 +18,11 @@ if v:version > 900
           \ : pathname
 
       if classname =~# '\.class$' && filereadable(classname)
-        " After v9.0.0795 and since v8.2.2343.
+        " Since v9.0.0795.
         let octad = readblob(classname, 0, 8)
 
         " Test the magic number and the major version number (45 for v1.0).
-        " Since v7.3.377.  Since v8.1.0735.  Since v8.2.5003.
+        " Since v9.0.2027.
         if len(octad) == 8 && octad[0 : 3] == 0zcafe.babe &&
               \ or((octad[6] << 8), octad[7]) >= 45
           echomsg printf('Deleting %s: %d', classname, delete(classname))
@@ -33,6 +34,57 @@ if v:version > 900
   endfunction
 
 else
+
+  function! s:DeleteClassFilesWithNewLineCodes(classname) abort
+    " The distribution of "0a"s in class file versions 2560 and 2570:
+    "
+    " 0zca.fe.ba.be.00.00.0a.00    0zca.fe.ba.be.00.00.0a.0a
+    " 0zca.fe.ba.be.00.0a.0a.00    0zca.fe.ba.be.00.0a.0a.0a
+    " 0zca.fe.ba.be.0a.00.0a.00    0zca.fe.ba.be.0a.00.0a.0a
+    " 0zca.fe.ba.be.0a.0a.0a.00    0zca.fe.ba.be.0a.0a.0a.0a
+    let numbers = [0, 0, 0, 0, 0, 0, 0, 0]
+    let offset = 0
+    let lines = readfile(a:classname, 'b', 4)
+
+    " Track NL byte counts to handle files of less than 8 bytes.
+    let nl_cnt = len(lines)
+    " Track non-NL byte counts for "0zca.fe.ba.be.0a.0a.0a.0a".
+    let non_nl_cnt = 0
+
+    for line in lines
+      for idx in range(strlen(line))
+        " Remap NLs to Nuls.
+        let numbers[offset] = (line[idx] == "\n") ? 0 : char2nr(line[idx]) % 256
+        let non_nl_cnt += 1
+        let offset += 1
+
+        if offset > 7
+          break
+        endif
+      endfor
+
+      let nl_cnt -= 1
+
+      if offset > 7 || (nl_cnt < 1 && non_nl_cnt > 4)
+        break
+      endif
+
+      " Reclaim NLs.
+      let numbers[offset] = 10
+      let offset += 1
+
+      if offset > 7
+        break
+      endif
+    endfor
+
+    " Test the magic number and the major version number (45 for v1.0).
+    if offset > 7 && numbers[0] == 0xca && numbers[1] == 0xfe &&
+          \ numbers[2] == 0xba && numbers[3] == 0xbe &&
+          \ (numbers[6] * 256 + numbers[7]) >= 45
+      echomsg printf('Deleting %s: %d', a:classname, delete(a:classname))
+    endif
+  endfunction
 
   function! spotbugs#DeleteClassFiles() abort
     if !exists('b:spotbugs_class_files')
@@ -51,12 +103,16 @@ else
 
         if classname =~# '\.class$' && filereadable(classname)
           let line = get(readfile(classname, 'b', 1), 0, '')
+          let length = strlen(line)
 
           " Test the magic number and the major version number (45 for v1.0).
-          if strlen(line) > 7 && line[0 : 3] == "\xca\xfe\xba\xbe" &&
-                \ ((line[6] == "\n" ? 0 : char2nr(line[6]) % 256) * 256 +
-                    \ char2nr(line[7]) % 256) >= 45
-            echomsg printf('Deleting %s: %d', classname, delete(classname))
+          if length > 3 && line[0 : 3] == "\xca\xfe\xba\xbe"
+            if length > 7 && ((line[6] == "\n" ? 0 : char2nr(line[6]) % 256) * 256 +
+                    \ (line[7] == "\n" ? 0 : char2nr(line[7]) % 256)) >= 45
+              echomsg printf('Deleting %s: %d', classname, delete(classname))
+            else
+              call s:DeleteClassFilesWithNewLineCodes(classname)
+            endif
           endif
         endif
       endfor
