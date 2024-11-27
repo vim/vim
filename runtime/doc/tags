@@ -10222,6 +10222,7 @@ state()	builtin.txt	/*state()*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
+stl-%!	options.txt	/*stl-%!*
 stl-%{	options.txt	/*stl-%{*
 str2float()	builtin.txt	/*str2float()*
 str2list()	builtin.txt	/*str2list()*
