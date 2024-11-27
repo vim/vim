@@ -224,6 +224,7 @@ SRC_ALL =	\
 		src/testdir/samples/*.vim \
 		src/testdir/samples/test000 \
 		src/testdir/samples/test.zip \
+		src/testdir/samples/test_undo.txt.undo \
 		src/testdir/samples/testa.zip \
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
