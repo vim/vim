@@ -4859,15 +4859,15 @@ check_num_option_bounds(
     size_t	errbuflen,
     char	*errmsg)
 {
-    if (Rows < min_rows() && full_screen)
+    if (Rows < min_rows_for_all_tabpages() && full_screen)
     {
 	if (errbuf != NULL)
 	{
 	    vim_snprintf(errbuf, errbuflen,
-		    _(e_need_at_least_nr_lines), min_rows());
+		    _(e_need_at_least_nr_lines), min_rows_for_all_tabpages());
 	    errmsg = errbuf;
 	}
-	Rows = min_rows();
+	Rows = min_rows_for_all_tabpages();
     }
     if (Columns < MIN_COLUMNS && full_screen)
     {

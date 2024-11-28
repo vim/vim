@@ -2294,12 +2294,12 @@ func Test_opt_cmdheight()
   %bw!
   set cmdheight& winminheight& winheight&
 
-  " The 'winminheight' in oher tabpages should be taken into account.
+  " Only the windows in the current tabpage are taken into account.
   set winheight=3 winminheight=3 showtabline=0
   split
   tabnew
   set cmdheight=9999
-  call assert_equal(ht - 8, &cmdheight)
+  call assert_equal(ht - 3, &cmdheight)
   %bw!
   set cmdheight& winminheight& winheight& showtabline&
 endfunc

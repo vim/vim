@@ -6667,7 +6667,7 @@ win_setminheight(void)
     while (p_wmh > 0)
     {
 	room = Rows - p_ch;
-	needed = min_rows() - 1;  // 1 was added for the cmdline
+	needed = min_rows_for_all_tabpages() - 1;  // 1 was added for the cmdline
 	if (room >= needed)
 	    break;
 	--p_wmh;
@@ -7496,6 +7496,20 @@ last_stl_height(
  */
     int
 min_rows(void)
+{
+    if (firstwin == NULL)	// not initialized yet
+	return MIN_LINES;
+
+    return frame_minheight(curtab->tp_topframe, NULL) + tabline_height()
+	+ 1;		// count the room for the command line
+}
+
+/*
+ * Return the minimal number of rows that is needed on the screen to display
+ * the current number of windows for all tab pages.
+ */
+    int
+min_rows_for_all_tabpages(void)
 {
     int		total;
     tabpage_T	*tp;
