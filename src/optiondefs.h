@@ -1305,7 +1305,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"history",	    "hi",   P_NUM|P_VIM,
 			    (char_u *)&p_hi, PV_NONE, NULL, NULL,
-			    {(char_u *)0L, (char_u *)50L} SCTX_INIT},
+			    {(char_u *)0L, (char_u *)200L} SCTX_INIT},
     {"hkmap",	    "hk",   P_BOOL|P_VI_DEF|P_VIM,
 #ifdef FEAT_RIGHTLEFT
 			    (char_u *)&p_hkmap, PV_NONE, NULL, NULL,
