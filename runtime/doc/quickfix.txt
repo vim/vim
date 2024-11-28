@@ -1453,9 +1453,9 @@ Also see http://vim.sourceforge.net/tip_view.php?tip_id=280.
 PYTEST COMPILER						*compiler-pytest*
 
 Commonly used compiler options can be added to 'makeprg' by setting the
-b/g:pytest variable.  For example: >
+b/g:pytest_makeprg_params variable.  For example: >
 
-	let b:pytest = "--max-line-length "..&textwidth
+	let b:pytest_makeprg_params = "--verbose --no-header --no-summary"
 
 The global default is "--tb=short --quiet" and warnings are suppressed.
 
