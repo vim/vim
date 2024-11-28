@@ -3564,8 +3564,9 @@ get_bytes_from_buf(char_u *buf, char_u *bytes, int num_bytes)
     void
 check_shellsize(void)
 {
-    if (Rows < min_rows())	// need room for one window and command line
-	Rows = min_rows();
+    // need room for one window and command line
+    if (Rows < min_rows_for_all_tabpages())
+	Rows = min_rows_for_all_tabpages();
     limit_screen_size();
 
     // make sure these values are not invalid

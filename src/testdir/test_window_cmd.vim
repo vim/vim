@@ -68,7 +68,7 @@ func Test_cmdheight_not_changed()
 
   tabonly!
   only
-  set winminwidth& cmdheight&
+  set winminheight& cmdheight&
   augroup Maximize
     au!
   augroup END

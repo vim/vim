@@ -89,6 +89,7 @@ void last_status(int morewin);
 int tabline_height(void);
 int last_stl_height(int morewin);
 int min_rows(void);
+int min_rows_for_all_tabpages(void);
 int only_one_window(void);
 void check_lnums(int do_curwin);
 void check_lnums_nested(int do_curwin);
