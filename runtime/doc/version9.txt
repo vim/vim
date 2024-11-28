@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 27
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41609,6 +41609,8 @@ Changed~
 - allow to pass local Vim script variables to python interpreter |py3eval()|
 - |getwininfo()| now also returns the "leftcol" property for a window
 - 'rulerformat' now supports the |stl-%!| item
+- the default 'history' option value has been increased to 200 and removed
+  from |defaults.vim|
 
 							*added-9.2*
 Added ~
