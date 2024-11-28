@@ -3417,13 +3417,13 @@ did_set_cmdheight(optset_T *args)
     char *errmsg = NULL;
 
     // if p_ch changed value, change the command line height
-    if (p_ch < 1)
+    if (p_ch < MIN_CMDHEIGHT)
     {
 	errmsg = e_argument_must_be_positive;
-	p_ch = 1;
+	p_ch = MIN_CMDHEIGHT;
     }
-    if (p_ch > Rows - min_rows() + 1)
-	p_ch = Rows - min_rows() + 1;
+    if (p_ch > Rows - min_rows() + MIN_CMDHEIGHT)
+	p_ch = Rows - min_rows() + MIN_CMDHEIGHT;
 
     // Only compute the new window layout when startup has been
     // completed. Otherwise the frame sizes may be wrong.

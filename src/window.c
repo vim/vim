@@ -6826,7 +6826,7 @@ win_drag_status_line(win_T *dragwin, int offset)
     row = win_comp_pos();
     screen_fill(row, cmdline_row, 0, (int)Columns, ' ', ' ', 0);
     cmdline_row = row;
-    p_ch = MAX(Rows - cmdline_row, 1);
+    p_ch = MAX(Rows - cmdline_row, MIN_CMDHEIGHT);
     curtab->tp_ch_used = p_ch;
 
     win_fix_scroll(TRUE);
@@ -7501,7 +7501,7 @@ min_rows(void)
 	return MIN_LINES;
 
     return frame_minheight(curtab->tp_topframe, NULL) + tabline_height()
-	+ 1;		// count the room for the command line
+	+ MIN_CMDHEIGHT;
 }
 
 /*
@@ -7526,7 +7526,7 @@ min_rows_for_all_tabpages(void)
 	    total = n;
     }
     total += tabline_height();
-    total += 1;		// count the room for the command line
+    total += MIN_CMDHEIGHT;
     return total;
 }
 
