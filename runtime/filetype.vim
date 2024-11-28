@@ -1982,8 +1982,8 @@ au BufNewFile,BufRead MANIFEST.in		setf pymanifest
 " Pyret
 au BufNewFile,BufRead *.arr			setf pyret
 
-" Pyrex
-au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
+" Pyrex/Cython
+au BufNewFile,BufRead *.pyx,*.pyx+,*.pxd,*.pxi	setf pyrex
 
 " Python, Python Shell Startup and Python Stub Files
 " Quixote (Python-based web framework)
