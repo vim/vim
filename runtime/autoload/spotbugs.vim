@@ -122,6 +122,7 @@ else
 
     let b:spotbugs_class_files = []
   endfunction
+
 endif
 
 function! spotbugs#DefaultPostCompilerAction() abort
@@ -198,7 +199,16 @@ elseif s:readable && s:compiler ==# 'javac' && executable('javac')
   function! spotbugs#DefaultPreCompilerAction() abort
     call spotbugs#DeleteClassFiles()
     compiler javac
-    make %:S
+
+    if get(b:, 'javac_makeprg_params', get(g:, 'javac_makeprg_params', '')) =~ '\s@\S'
+      " Read options and filenames from @options [@sources ...].
+      make
+    else
+      " Let Javac figure out what files to compile.
+      execute 'make ' . join(map(filter(copy(v:argv),
+          \ "v:val =~# '\\.java\\=$'"),
+          \ 'shellescape(v:val)'), ' ')
+    endif
   endfunction
 
   function! spotbugs#DefaultPreCompilerTestAction() abort
