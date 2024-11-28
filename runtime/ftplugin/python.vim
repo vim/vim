@@ -134,6 +134,11 @@ elseif executable('python')
   setlocal keywordprg=python\ -m\ pydoc
 endif
 
+if expand('%:t') =~# '\v^test_.*\.py$|_test\.py$' && executable('pytest')
+  compiler pytest
+  let &l:makeprg .= ' %:S'
+endif
+
 " Script for filetype switching to undo the local stuff we may have changed
 let b:undo_ftplugin = 'setlocal cinkeys<'
       \ . '|setlocal comments<'
@@ -148,6 +153,7 @@ let b:undo_ftplugin = 'setlocal cinkeys<'
       \ . '|setlocal softtabstop<'
       \ . '|setlocal suffixesadd<'
       \ . '|setlocal tabstop<'
+      \ . '|setlocal makeprg<'
       \ . '|silent! nunmap <buffer> [M'
       \ . '|silent! nunmap <buffer> [['
       \ . '|silent! nunmap <buffer> []'
