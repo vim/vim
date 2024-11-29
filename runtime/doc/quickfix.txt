@@ -1455,9 +1455,9 @@ PYTEST COMPILER						*compiler-pytest*
 Commonly used compiler options can be added to 'makeprg' by setting the
 b/g:pytest_makeprg_params variable.  For example: >
 
-	let b:pytest_makeprg_params = "--verbose --no-header --no-summary"
+  let b:pytest_makeprg_params = "--verbose --no-summary --disable-warnings"
 
-The global default is "--tb=short --quiet" and warnings are suppressed.
+The global default is "--tb=short --quiet"; Python warnings are suppressed.
 
 TEX COMPILER						*compiler-tex*
 
