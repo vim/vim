@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Nov 28
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1368,13 +1368,16 @@ following properties (using the example of a common Maven project): >
 		\ 'testClassDirPath':	'target/test-classes',
 	\ }
 
+Note that source and class path entries are expected to come in pairs: define
+both "sourceDirPath" and "classDirPath" when you are considering at least one,
+and apply the same logic to "testSourceDirPath" and "testClassDirPath".
 Note that values for the path keys describe only for SpotBugs where to look
 for files; refer to the documentation for particular compiler plugins for more
 information.
 
 The default pre- and post-compiler actions are provided for Ant, Maven, and
 Javac compiler plugins and can be selected by assigning the name of a compiler
-plugin to the "compiler" key: >
+plugin (`ant`, `maven`, or `javac`) to the "compiler" key: >
 
 	let g:spotbugs_properties = {
 		\ 'compiler':		'maven',
@@ -1415,12 +1418,14 @@ project and requests other default Maven settings with the "compiler" entry: >
 		call spotbugs#DeleteClassFiles()
 		compiler maven
 		make compile
+		cc
 	endfunction
 
 	function! MavenPreCompilerTestAction() abort
 		call spotbugs#DeleteClassFiles()
 		compiler maven
 		make test-compile
+		cc
 	endfunction
 
 	let g:spotbugs_properties = {
@@ -1433,6 +1438,10 @@ project and requests other default Maven settings with the "compiler" entry: >
 
 Note that all entered custom settings will take precedence over the matching
 default settings in "g:spotbugs_properties".
+Note that it is necessary to notify the plugin of the result of a pre-compiler
+action before further work can be undertaken.  Using |:cc| after |:make| (or
+|:ll| after |:lmake|) as the last command of an action is the supported means
+of such communication.
 
 The "g:spotbugs_properties" variable is consulted by the Java filetype plugin
 (|ft-java-plugin|) to arrange for the described automation, and, therefore, it
