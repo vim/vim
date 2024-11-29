@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Nov 24
+" Last Change:		2024 Dec 02
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -99,7 +99,7 @@ if exists("g:spotbugs_properties") && has_key(g:spotbugs_properties, 'compiler')
 		\ g:spotbugs_properties,
 		\ 'force')
     catch
-	echomsg v:errmsg
+	echomsg v:exception
     finally
 	call remove(g:spotbugs_properties, 'compiler')
     endtry
@@ -107,15 +107,24 @@ endif
 
 if exists("g:spotbugs_properties") &&
 	    \ filereadable($VIMRUNTIME . '/compiler/spotbugs.vim')
+    " Work around ":bar"s and ":autocmd"s.
+    function! s:ExecuteActionOnce(action_cmd, cleanup_cmd) abort
+	try
+	    execute a:action_cmd
+	finally
+	    execute a:cleanup_cmd
+	endtry
+    endfunction
+
     let s:request = 0
 
     if has_key(g:spotbugs_properties, 'PreCompilerAction')
-	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerAction() | '
+	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerAction()'
 	let s:request += 1
     endif
 
     if has_key(g:spotbugs_properties, 'PreCompilerTestAction')
-	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerTestAction() | '
+	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerTestAction()'
 	let s:request += 2
     endif
 
@@ -137,11 +146,35 @@ if exists("g:spotbugs_properties") &&
 	    endfor
 	endfunction
 
-	let s:dispatcher = printf('call s:DispatchAction(%s) | ',
+	let s:dispatcher = printf('call s:DispatchAction(%s)',
 		\ string([[g:spotbugs_properties.sourceDirPath,
 			    \ g:spotbugs_properties.PreCompilerAction],
 			\ [g:spotbugs_properties.testSourceDirPath,
 			    \ g:spotbugs_properties.PreCompilerTestAction]]))
+    endif
+
+    if exists("s:dispatcher")
+	function! s:ExecuteAction(pre_action, post_action) abort
+""""	    let status = v:shell_error
+""""	    let success = 0
+
+	    try
+		" FIXME: Why ":make" does not update "v:shell_error"?
+		execute a:pre_action
+	    catch /\<E42:/
+		execute a:post_action
+		return
+""""		let success = !v:shell_error || status
+	    endtry
+
+""""	    if success || !v:shell_error || status
+""""		execute a:post_action
+""""	    endif
+	endfunction
+    else
+	function! s:ExecuteAction(action) abort
+	    execute a:action
+	endfunction
     endif
 
     if s:request
@@ -164,13 +197,18 @@ if exists("g:spotbugs_properties") &&
 
 	for s:idx in range(len(s:actions))
 	    if s:request == 7 || s:request == 6 || s:request == 5
-		let s:actions[s:idx].cmd = s:dispatcher . 'compiler spotbugs | ' .
-			\ 'call g:spotbugs_properties.PostCompilerAction()'
+		let s:actions[s:idx].cmd = printf('call s:ExecuteAction(%s, %s)',
+		    \ string(s:dispatcher),
+		    \ string('compiler spotbugs | ' .
+			\ 'call g:spotbugs_properties.PostCompilerAction()'))
 	    elseif s:request == 4
-		let s:actions[s:idx].cmd = 'compiler spotbugs | ' .
-			\ 'call g:spotbugs_properties.PostCompilerAction()'
+		let s:actions[s:idx].cmd = printf('call s:ExecuteAction(%s)',
+		    \ string('compiler spotbugs | ' .
+			\ 'call g:spotbugs_properties.PostCompilerAction()'))
 	    elseif s:request == 3 || s:request == 2 || s:request == 1
-		let s:actions[s:idx].cmd = s:dispatcher . 'compiler spotbugs'
+		let s:actions[s:idx].cmd = printf('call s:ExecuteAction(%s, %s)',
+		    \ string(s:dispatcher),
+		    \ string('compiler spotbugs'))
 	    else
 		let s:actions[s:idx].cmd = ''
 	    endif
@@ -186,12 +224,18 @@ if exists("g:spotbugs_properties") &&
 	silent! autocmd! java_spotbugs Syntax <buffer>
 
 	for s:action in s:actions
-	    execute printf('autocmd java_spotbugs %s <buffer> %s',
+	    if has_key(s:action, 'once')
+		execute printf('autocmd java_spotbugs %s <buffer> ' .
+			\ 'call s:ExecuteActionOnce(%s, %s)',
 		    \ s:action.event,
-		    \ s:action.cmd . (has_key(s:action, 'once')
-			    \ ? printf(' | autocmd! java_spotbugs %s <buffer>',
-				    \ s:action.event)
-			    \ : ''))
+		    \ string(s:action.cmd),
+		    \ string(printf('autocmd! java_spotbugs %s <buffer>',
+			\ s:action.event)))
+	    else
+		execute printf('autocmd java_spotbugs %s <buffer> %s',
+		    \ s:action.event,
+		    \ s:action.cmd)
+	    endif
 	endfor
 
 	unlet! s:action s:actions s:idx s:dispatcher

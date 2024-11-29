@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzyxwvut
-" Last Change:  2024 Nov 27
+" Last Change:  2024 Dec 01
 
 if exists('g:current_compiler') || bufname() !~# '\.java\=$' || wordcount().chars < 9
   finish
@@ -24,8 +24,9 @@ let s:type_names = '\C\<\%(\.\@1<!class\|@\=interface\|enum\|record\)\s*\(\K\k*\
 let s:package_names = '\C\<package\s*\(\K\%(\k*\.\=\)\+;\)'
 let s:package = ''
 
-if has('syntax') && exists('g:syntax_on') && exists('b:current_syntax') &&
-    \ b:current_syntax == 'java' && hlexists('javaClassDecl')
+if has('syntax') && exists('g:syntax_on') &&
+    \ exists('b:current_syntax') && b:current_syntax == 'java' &&
+    \ hlexists('javaClassDecl') && hlexists('javaExternal')
 
   function! s:GetDeclaredTypeNames() abort
     if bufname() =~# '\<\%(module\|package\)-info\.java\=$'
@@ -106,10 +107,10 @@ else
 endif
 
 if exists('g:spotbugs_properties') &&
-    \ (has_key(g:spotbugs_properties, 'sourceDirPath') &&
+    \ ((has_key(g:spotbugs_properties, 'sourceDirPath') &&
     \ has_key(g:spotbugs_properties, 'classDirPath')) ||
     \ (has_key(g:spotbugs_properties, 'testSourceDirPath') &&
-    \ has_key(g:spotbugs_properties, 'testClassDirPath'))
+    \ has_key(g:spotbugs_properties, 'testClassDirPath')))
 
 function! s:FindClassFiles(src_type_name) abort
   let class_files = []
