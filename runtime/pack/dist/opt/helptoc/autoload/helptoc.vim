@@ -5,9 +5,14 @@ vim9script noclear
 var SHELL_PROMPT: string = ''
 
 def UpdateUserSettings() #{{{2
-    SHELL_PROMPT = g:
+    var new_prompt: string = g:
         ->get('helptoc', {})
         ->get('shell_prompt', '^\w\+@\w\+:\f\+\$\s')
+    if new_prompt != SHELL_PROMPT
+        SHELL_PROMPT = new_prompt
+        # invalidate cache: user config has changed
+        unlet! b:toc
+    endif
 enddef
 
 UpdateUserSettings()
@@ -147,6 +152,8 @@ export def Open() #{{{2
         return
     endif
 
+    UpdateUserSettings()
+
     # invalidate the cache if the buffer's contents has changed
     if exists('b:toc') && &filetype != 'man'
         if b:toc.changedtick != b:changedtick
@@ -206,7 +213,6 @@ enddef
 #}}}1
 # Core {{{1
 def SetToc() #{{{2
-    UpdateUserSettings()
     var toc: dict<any> = {entries: []}
     var type: string = GetType()
     toc.changedtick = b:changedtick
