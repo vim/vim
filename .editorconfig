@@ -15,7 +15,7 @@ indent_size = 4
 indent_style = space
 indent_size = 2
 
-[*.md]
+[*.{md,dump}]
 # Markdown uses trailing whitespaces to do an hard line break
 # https://spec.commonmark.org/0.31.2/#hard-line-breaks
 trim_trailing_whitespace = false

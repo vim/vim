@@ -6741,7 +6741,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 					 *'ruler'* *'ru'* *'noruler'* *'noru'*
-'ruler' 'ru'		boolean	(default off, set in |defaults.vim|)
+'ruler' 'ru'		boolean	(Vim default: on, Vi default: off)
 			global
 	Show the line and column number of the cursor position, separated by a
 	comma.  When there is room, the relative position of the displayed

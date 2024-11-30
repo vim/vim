@@ -167,14 +167,14 @@ endfunc
 func Test_recording_status_in_ex_line()
   norm qx
   redraw!
-  call assert_equal('recording @x', Screenline(&lines))
+  call assert_match('recording @x\s\+0,0-1\s\+All', Screenline(&lines))
   set shortmess=q
   redraw!
-  call assert_equal('recording', Screenline(&lines))
+  call assert_match('recording\s\+0,0-1\s\+All', Screenline(&lines))
   set shortmess&
   norm q
   redraw!
-  call assert_equal('', Screenline(&lines))
+  call assert_match('\s\+0,0-1\s\+All', Screenline(&lines))
 endfunc
 
 " Check that replaying a typed sequence does not use an Esc and following

@@ -33,7 +33,6 @@ silent! while 0
   set nocompatible
 silent! endwhile
 
-set ruler		" show the cursor position all the time
 set showcmd		" display incomplete commands
 
 set ttimeout		" time out for key codes
