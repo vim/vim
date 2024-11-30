@@ -1228,7 +1228,7 @@ ins_compl_build_pum(void)
     compl_T     *shown_compl = NULL;
     int		did_find_shown_match = FALSE;
     int		shown_match_ok = FALSE;
-    int		i;
+    int		i = 0;
     int		cur = -1;
     int		max_fuzzy_score = 0;
     unsigned int cur_cot_flags = get_cot_flags();
@@ -1241,6 +1241,17 @@ ins_compl_build_pum(void)
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
     compl = compl_first_match;
+
+    // If the current match is the original text don't find the first
+    // match after it, don't highlight anything.
+    if (match_at_original_text(compl_shown_match))
+	shown_match_ok = TRUE;
+
+    if (compl_leader.string != NULL
+	    && STRCMP(compl_leader.string, compl_orig_text.string) == 0
+	    && shown_match_ok == FALSE)
+	compl_shown_match = compl_no_select ? compl_first_match
+					    : compl_first_match->cp_next;
 
     do
     {
@@ -1258,98 +1269,47 @@ ins_compl_build_pum(void)
 	    if (match_head == NULL)
 		match_head = compl;
 	    else
-		match_tail->cp_match_next  = compl;
+		match_tail->cp_match_next = compl;
 	    match_tail = compl;
+
+	    if (!shown_match_ok && !compl_fuzzy_match)
+	    {
+		if (compl == compl_shown_match || did_find_shown_match)
+		{
+		    // This item is the shown match or this is the
+		    // first displayed item after the shown match.
+		    compl_shown_match = compl;
+		    did_find_shown_match = TRUE;
+		    shown_match_ok = TRUE;
+		}
+		else
+		    // Remember this displayed match for when the
+		    // shown match is just below it.
+		    shown_compl = compl;
+		cur = i;
+	    }
+	    else if (compl_fuzzy_match)
+	    {
+		if (i == 0)
+		    shown_compl = compl;
+		// Update the maximum fuzzy score and the shown match
+		// if the current item's score is higher
+		if (compl->cp_score > max_fuzzy_score)
+		{
+		    did_find_shown_match = TRUE;
+		    max_fuzzy_score = compl->cp_score;
+		    if (!compl_no_select)
+			compl_shown_match = compl;
+		}
+
+		if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
+		{
+		    cur = i;
+		    shown_match_ok = TRUE;
+		}
+	    }
+	    i++;
 	}
-	compl = compl->cp_next;
-    } while (compl != NULL && !is_first_match(compl));
-
-    if (compl_match_arraysize == 0)
-	return -1;
-
-    compl_match_array = ALLOC_CLEAR_MULT(pumitem_T, compl_match_arraysize);
-    if (compl_match_array == NULL)
-	return -1;
-
-    // If the current match is the original text don't find the first
-    // match after it, don't highlight anything.
-    if (match_at_original_text(compl_shown_match))
-	shown_match_ok = TRUE;
-
-    if (compl_leader.string != NULL
-	    && STRCMP(compl_leader.string, compl_orig_text.string) == 0
-	    && shown_match_ok == FALSE)
-	compl_shown_match = compl_no_select ? compl_first_match
-					    : compl_first_match->cp_next;
-    i = 0;
-    compl = match_head;
-    if (match_tail == match_head)
-	did_find_shown_match = TRUE;
-    while (compl != NULL)
-    {
-	if (!shown_match_ok && !compl_fuzzy_match)
-	{
-	    if (compl == compl_shown_match || did_find_shown_match)
-	    {
-	        // This item is the shown match or this is the
-	        // first displayed item after the shown match.
-	        compl_shown_match = compl;
-	        did_find_shown_match = TRUE;
-	        shown_match_ok = TRUE;
-	    }
-	    else
-	        // Remember this displayed match for when the
-	        // shown match is just below it.
-	        shown_compl = compl;
-	    cur = i;
-	}
-	else if (compl_fuzzy_match)
-	{
-	    if (i == 0)
-	        shown_compl = compl;
-	    // Update the maximum fuzzy score and the shown match
-	    // if the current item's score is higher
-	    if (compl->cp_score > max_fuzzy_score)
-	    {
-	        did_find_shown_match = TRUE;
-	        max_fuzzy_score = compl->cp_score;
-	        if (!compl_no_select)
-		   compl_shown_match = compl;
-	    }
-
-	    if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
-	    {
-	        cur = i;
-	        shown_match_ok = TRUE;
-	    }
-
-	    // If there is no "no select" condition and the max fuzzy
-	    // score is positive, or there is no completion leader or the
-	    // leader length is zero, mark the shown match as valid and
-	    // reset the current index.
-	    if (!compl_no_select
-		    && (max_fuzzy_score > 0
-			|| (compl_leader.string == NULL || compl_leader.length == 0)))
-	    {
-	        if (match_at_original_text(compl_shown_match))
-		    compl_shown_match = shown_compl;
-	    }
-	}
-
-	if (compl->cp_text[CPT_ABBR] != NULL)
-	    compl_match_array[i].pum_text = compl->cp_text[CPT_ABBR];
-	else
-	    compl_match_array[i].pum_text = compl->cp_str.string;
-	compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
-	compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
-	compl_match_array[i].pum_score = compl->cp_score;
-	compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
-	compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
-	if (compl->cp_text[CPT_MENU] != NULL)
-	    compl_match_array[i++].pum_extra =
-	        compl->cp_text[CPT_MENU];
-	else
-	    compl_match_array[i++].pum_extra = compl->cp_fname;
 
 	if (compl == compl_shown_match && !compl_fuzzy_match)
 	{
@@ -1368,6 +1328,34 @@ ins_compl_build_pum(void)
 		shown_match_ok = TRUE;
 	    }
 	}
+	compl = compl->cp_next;
+    } while (compl != NULL && !is_first_match(compl));
+
+    if (compl_match_arraysize == 0)
+	return -1;
+
+    compl_match_array = ALLOC_CLEAR_MULT(pumitem_T, compl_match_arraysize);
+    if (compl_match_array == NULL)
+	return -1;
+
+    compl = match_head;
+    i = 0;
+    while (compl != NULL)
+    {
+	if (compl->cp_text[CPT_ABBR] != NULL)
+	    compl_match_array[i].pum_text = compl->cp_text[CPT_ABBR];
+	else
+	    compl_match_array[i].pum_text = compl->cp_str.string;
+	compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
+	compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
+	compl_match_array[i].pum_score = compl->cp_score;
+	compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
+	compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
+	if (compl->cp_text[CPT_MENU] != NULL)
+	    compl_match_array[i++].pum_extra =
+	        compl->cp_text[CPT_MENU];
+	else
+	    compl_match_array[i++].pum_extra = compl->cp_fname;
 	match_next = compl->cp_match_next;
 	compl->cp_match_next = NULL;
 	compl = match_next;
