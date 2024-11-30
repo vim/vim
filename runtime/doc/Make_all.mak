@@ -152,6 +152,7 @@ DOCS = \
 	vim9.txt \
 	vim9class.txt \
 	visual.txt \
+	vietnamese.txt \
 	windows.txt \
 	workshop.txt
 
@@ -303,6 +304,7 @@ HTMLS = \
 	version8.html \
 	version9.html \
 	vi_diff.html \
+	vietnamese.html \
 	vimindex.html \
 	vim9.html \
 	vim9class.html \

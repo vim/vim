@@ -10,7 +10,7 @@ VIMPROG = ../../src/vim
 
 # include the config.mk from the source directory.  It's only needed to set
 # AWK, used for "make html".  Comment this out if the include gives problems.
-include ../../src/auto/config.mk
+# include ../../src/auto/config.mk
 
 # Common components
 include Make_all.mak
@@ -149,6 +149,9 @@ os_risc.txt:
 	touch $@
 
 os_win32.txt:
+	touch $@
+
+vietnamese.txt:
 	touch $@
 
 # In *BSD, the variable '$<' is used in suffix-transformation rules (in GNU this
