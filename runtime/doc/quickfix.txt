@@ -1557,6 +1557,14 @@ Useful values for the 'makeprg' options therefore are:
 
 Also see http://vim.sourceforge.net/tip_view.php?tip_id=280.
 
+PYTEST COMPILER						*compiler-pytest*
+
+Commonly used compiler options can be added to 'makeprg' by setting the
+b/g:pytest_makeprg_params variable.  For example: >
+
+  let b:pytest_makeprg_params = "--verbose --no-summary --disable-warnings"
+
+The global default is "--tb=short --quiet"; Python warnings are suppressed.
 
 TEX COMPILER						*compiler-tex*
 
