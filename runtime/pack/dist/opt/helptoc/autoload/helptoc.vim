@@ -2,9 +2,20 @@ vim9script noclear
 
 # Config {{{1
 
-const SHELL_PROMPT: string = g:
-    ->get('helptoc', {})
-    ->get('shell_prompt', '^\w\+@\w\+:\f\+\$\s')
+var SHELL_PROMPT: string = ''
+
+def UpdateUserSettings() #{{{2
+    var new_prompt: string = g:
+        ->get('helptoc', {})
+        ->get('shell_prompt', '^\w\+@\w\+:\f\+\$\s')
+    if new_prompt != SHELL_PROMPT
+        SHELL_PROMPT = new_prompt
+        # invalidate cache: user config has changed
+        unlet! b:toc
+    endif
+enddef
+
+UpdateUserSettings()
 
 # Init {{{1
 
@@ -140,6 +151,8 @@ export def Open() #{{{2
         echomsg 'does not work in a popup window; only in a regular window'
         return
     endif
+
+    UpdateUserSettings()
 
     # invalidate the cache if the buffer's contents has changed
     if exists('b:toc') && &filetype != 'man'
