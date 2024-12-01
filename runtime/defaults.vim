@@ -34,7 +34,6 @@ silent! while 0
 silent! endwhile
 
 set ruler		" show the cursor position all the time
-set showcmd		" display incomplete commands
 
 set ttimeout		" time out for key codes
 set ttimeoutlen=100	" wait up to 100ms after Esc for special key

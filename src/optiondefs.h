@@ -2311,13 +2311,7 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"showcmd",	    "sc",   P_BOOL|P_VIM,
 			    (char_u *)&p_sc, PV_NONE, NULL, NULL,
-			    {(char_u *)FALSE,
-#ifdef UNIX
-				(char_u *)FALSE
-#else
-				(char_u *)TRUE
-#endif
-				} SCTX_INIT},
+			    {(char_u *)FALSE, (char_u *)TRUE} SCTX_INIT},
     {"showcmdloc",  "sloc", P_STRING|P_RSTAT,
 			    (char_u *)&p_sloc, PV_NONE, did_set_showcmdloc, expand_set_showcmdloc,
 			    {(char_u *)"last", (char_u *)"last"} SCTX_INIT},

@@ -7409,8 +7409,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:setlocal showbreak=NONE
 <
 				     *'showcmd'* *'sc'* *'noshowcmd'* *'nosc'*
-'showcmd' 'sc'		boolean	(Vim default: on, off for Unix,
-				       Vi default: off, set in |defaults.vim|)
+'showcmd' 'sc'		boolean	(Vim default: on, Vi default: off)
 			global
 	Show (partial) command in the last line of the screen.  Set this
 	option off if your terminal is slow.
