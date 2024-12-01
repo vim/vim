@@ -414,9 +414,9 @@ static struct vimoption options[] =
 			    (char_u *)"light",
 #endif
 					    (char_u *)0L} SCTX_INIT},
-    {"backspace",   "bs",   P_STRING|P_VI_DEF|P_VIM|P_ONECOMMA|P_NODUP,
+    {"backspace",   "bs",   P_STRING|P_VIM|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_bs, PV_NONE, did_set_backspace, expand_set_backspace,
-			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+			    {(char_u *)"", (char_u *)"indent,eol,start"} SCTX_INIT},
     {"backup",	    "bk",   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_bk, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},

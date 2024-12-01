@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Nov 14
+" Last Change:	2024 Dec 01
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
@@ -32,9 +32,6 @@ endif
 silent! while 0
   set nocompatible
 silent! endwhile
-
-" Allow backspacing over everything in insert mode.
-set backspace=indent,eol,start
 
 set ruler		" show the cursor position all the time
 set showcmd		" display incomplete commands

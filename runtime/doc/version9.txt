@@ -41611,6 +41611,8 @@ Changed~
 - 'rulerformat' now supports the |stl-%!| item
 - the default 'history' option value has been increased to 200 and removed
   from |defaults.vim|
+- the default 'backspace' option for Vim has been set to "indent,eol,start"
+  and removed from |defaults.vim|
 
 							*added-9.2*
 Added ~
