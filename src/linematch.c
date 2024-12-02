@@ -30,7 +30,7 @@ struct diffcmppath_S {
 };
 
 
-size_t
+    size_t
 line_len(const mmfile_t *m)
 {
   char *s = m->ptr;
@@ -48,7 +48,7 @@ line_len(const mmfile_t *m)
 ///
 /// @param s1
 /// @param s2
-int
+    int
 matching_chars_iwhite(const mmfile_t *s1, const mmfile_t *s2)
 {
   // the newly processed strings that will be compared
@@ -88,7 +88,7 @@ matching_chars_iwhite(const mmfile_t *s1, const mmfile_t *s2)
 ///
 /// @param m1
 /// @param m2
-int
+    int
 matching_chars(const mmfile_t *m1, const mmfile_t *m2)
 {
   size_t s1len = MIN(MATCH_CHAR_MAX_LEN - 1, line_len(m1));
@@ -125,7 +125,7 @@ matching_chars(const mmfile_t *m1, const mmfile_t *m2)
 /// @param sp
 /// @param fomvals
 /// @param n
-int
+    int
 count_n_matched_chars(mmfile_t **sp, const size_t n, Bool iwhite)
 {
   int matched_chars = 0;
@@ -150,7 +150,7 @@ count_n_matched_chars(mmfile_t **sp, const size_t n, Bool iwhite)
   return matched_chars;
 }
 
-mmfile_t
+    mmfile_t
 fastforward_buf_to_lnum(mmfile_t s, linenr_T lnum)
 {
   for (int i = 0; i < lnum - 1; i++) {
@@ -177,7 +177,7 @@ fastforward_buf_to_lnum(mmfile_t s, linenr_T lnum)
 /// @param diff_len
 /// @param ndiffs
 /// @param diff_blk
-void
+    void
 try_possible_paths(const int *df_iters, const size_t *paths, const int npaths,
                                const int path_idx, int *choice, diffcmppath_T *diffcmppath,
                                const int *diff_len, const size_t ndiffs, const mmfile_t **diff_blk,
@@ -230,7 +230,7 @@ try_possible_paths(const int *df_iters, const size_t *paths, const int npaths,
 /// @param values
 /// @param diff_len
 /// @param ndiffs
-size_t
+    size_t
 unwrap_indexes(const int *values, const int *diff_len, const size_t ndiffs)
 {
   size_t num_unwrap_scalar = 1;
@@ -257,7 +257,7 @@ unwrap_indexes(const int *values, const int *diff_len, const size_t ndiffs)
 /// @param diff_len
 /// @param ndiffs
 /// @param diff_blk
-void
+    void
 populate_tensor(int *df_iters, const size_t ch_dim, diffcmppath_T *diffcmppath,
                             const int *diff_len, const size_t ndiffs, const mmfile_t **diff_blk,
                             Bool iwhite)
@@ -342,7 +342,7 @@ populate_tensor(int *df_iters, const size_t ch_dim, diffcmppath_T *diffcmppath,
 /// @param ndiffs
 /// @param [out] [allocated] decisions
 /// @return the length of decisions
-size_t
+    size_t
 linematch_nbuffers(const mmfile_t **diff_blk, const int *diff_len, const size_t ndiffs,
                           int **decisions, Bool iwhite)
 {
@@ -395,7 +395,7 @@ linematch_nbuffers(const mmfile_t **diff_blk, const int *diff_len, const size_t 
 }
 
 // returns the minimum amount of path changes from start to end
-size_t
+    size_t
 test_charmatch_paths(diffcmppath_T *node, int lastdecision)
 {
   // memoization
