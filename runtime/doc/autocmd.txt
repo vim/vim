@@ -702,6 +702,13 @@ CompleteDone			After Insert mode completion is done.  Either
 				The |v:completed_item| variable contains
 				information about the completed item.
 
+				Sets these |v:event| keys:
+				    complete_word	The word that was
+							selected, empty if
+							abandoned complete.
+				    complete_type	See
+							|complete_info_mode|
+
 							*CursorHold*
 CursorHold			When the user doesn't press a key for the time
 				specified with 'updatetime'.  Not triggered

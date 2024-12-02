@@ -2297,12 +2297,42 @@ set_ctrl_x_mode(int c)
 }
 
 /*
+ * Trigger CompleteDone event and adds relevant information to v:event
+ */
+    static void
+trigger_complete_done_event(int mode UNUSED, char_u *word UNUSED)
+{
+#if defined(FEAT_EVAL)
+    save_v_event_T	save_v_event;
+    dict_T		*v_event = get_v_event(&save_v_event);
+    char_u		*mode_str = NULL;
+
+    mode = mode & ~CTRL_X_WANT_IDENT;
+    if (ctrl_x_mode_names[mode])
+	mode_str = (char_u *)ctrl_x_mode_names[mode];
+
+    (void)dict_add_string(v_event, "complete_word",
+				word == NULL ? (char_u *)"" : word);
+    (void)dict_add_string(v_event, "complete_type",
+				mode_str != NULL ? mode_str : (char_u *)"");
+
+    dict_set_items_ro(v_event);
+#endif
+    ins_apply_autocmds(EVENT_COMPLETEDONE);
+
+#if defined(FEAT_EVAL)
+    restore_v_event(v_event, &save_v_event);
+#endif
+}
+
+/*
  * Stop insert completion mode
  */
     static int
 ins_compl_stop(int c, int prev_mode, int retval)
 {
     int		want_cindent;
+    char_u      *word = NULL;
 
     // Get here when we have finished typing a sequence of ^N and
     // ^P or other completion characters in CTRL-X mode.  Free up
@@ -2358,7 +2388,10 @@ ins_compl_stop(int c, int prev_mode, int retval)
     if ((c == Ctrl_Y || (compl_enter_selects
 		    && (c == CAR || c == K_KENTER || c == NL)))
 	    && pum_visible())
+    {
+	word = vim_strsave(compl_shown_match->cp_str.string);
 	retval = TRUE;
+    }
 
     // CTRL-E means completion is Ended, go back to the typed text.
     // but only do this, if the Popup is still visible
@@ -2418,7 +2451,8 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	do_c_expr_indent();
     // Trigger the CompleteDone event to give scripts a chance to act
     // upon the end of completion.
-    ins_apply_autocmds(EVENT_COMPLETEDONE);
+    trigger_complete_done_event(prev_mode, word);
+    vim_free(word);
 
     return retval;
 }
@@ -2538,7 +2572,7 @@ ins_compl_prep(int c)
     else if (ctrl_x_mode == CTRL_X_LOCAL_MSG)
 	// Trigger the CompleteDone event to give scripts a chance to act
 	// upon the (possibly failed) completion.
-	ins_apply_autocmds(EVENT_COMPLETEDONE);
+	trigger_complete_done_event(ctrl_x_mode, NULL);
 
     may_trigger_modechanged();
 
