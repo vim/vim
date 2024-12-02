@@ -67,10 +67,8 @@ matching_chars_iwhite(const mmfile_t *s1, const mmfile_t *s2)
       }
     }
 
-    sp[k] = (mmfile_t){
-      .ptr = p[k],
-      .size = (int)pi,
-    };
+    sp[k].ptr = p[k];
+    sp[k].size = (int)pi;
   }
   return matching_chars(&sp[0], &sp[1]);
 }
