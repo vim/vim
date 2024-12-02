@@ -25,7 +25,7 @@ size_t line_len(const mmfile_t *m)
 {
   char *s = m->ptr;
   size_t n = (size_t)m->size;
-  char *end = strnchr(s, &n, '\n');
+  char *end = vim_strnchr(s, &n, '\n');
   if (end) {
     return (size_t)(end - s);
   }
@@ -141,7 +141,7 @@ mmfile_t fastforward_buf_to_lnum(mmfile_t s, linenr_T lnum)
 {
   for (int i = 0; i < lnum - 1; i++) {
     size_t n = (size_t)s.size;
-    s.ptr = strnchr(s.ptr, &n, '\n');
+    s.ptr = vim_strnchr(s.ptr, &n, '\n');
     s.size = (int)n;
     if (!s.ptr) {
       break;
