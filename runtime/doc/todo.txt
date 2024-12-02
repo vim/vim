@@ -4749,7 +4749,6 @@ Insert mode completion/expansion:
     (Prabir Shrestha, 2017 May 19, #1713)
 -   When 'completeopt' has "noselect" does not insert a newline.
     (Lifepillar, 2017 Apr 23, #1653)
--   Can 'completeopt' be made buffer-local? (#5487)
 -   When complete() first argument is before where insert started and
     'backspace' is Vi compatible, the completion fails.
     (Hirohito Higashi, 2015 Feb 19)
