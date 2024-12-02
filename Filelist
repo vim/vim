@@ -766,14 +766,13 @@ RT_ALL =	\
 		runtime/tools/README.txt \
 		runtime/tools/[a-z]*[a-z0-9] \
 		runtime/tutor/README.txt \
-		runtime/tutor/tutor \
+		runtime/tutor/tutor1 \
 		runtime/tutor/en/vim-01-beginner.tutor \
 		runtime/tutor/en/vim-01-beginner.tutor.json \
 		runtime/tutor/tutor.tutor \
 		runtime/tutor/tutor.tutor.json \
 		runtime/tutor/tutor.vim \
 		runtime/tutor/tutor2 \
-		runtime/tutor/tutor2.utf-8 \
 		runtime/vimrc_example.vim \
 		runtime/pack/dist/opt/cfilter/plugin/cfilter.vim \
 		runtime/pack/dist/opt/comment/plugin/comment.vim \
@@ -1058,19 +1057,20 @@ LANG_GEN = \
 		runtime/tutor/README.*.txt \
 		runtime/tutor/Makefile \
 		runtime/tutor/Make_all.mak \
-		runtime/tutor/tutor.utf-8 \
-		runtime/tutor/tutor.?? \
-		runtime/tutor/tutor.??.utf-8 \
-		runtime/tutor/tutor.??.euc \
-		runtime/tutor/tutor.??.sjis \
-		runtime/tutor/tutor.??.iso9 \
-		runtime/tutor/tutor.??.big5 \
-		runtime/tutor/tutor.??.cp1250 \
-		runtime/tutor/tutor.??.cp1251 \
-		runtime/tutor/tutor.??.cp737 \
-		runtime/tutor/tutor.??_??.utf-8 \
-		runtime/tutor/tutor.bar \
-		runtime/tutor/tutor.bar.utf-8 \
+		runtime/tutor/tutor1.utf-8 \
+		runtime/tutor/tutor1.?? \
+		runtime/tutor/tutor1.??.utf-8 \
+		runtime/tutor/tutor1.??.euc \
+		runtime/tutor/tutor1.??.sjis \
+		runtime/tutor/tutor1.??.iso9 \
+		runtime/tutor/tutor1.??.big5 \
+		runtime/tutor/tutor1.??.cp1250 \
+		runtime/tutor/tutor1.??.cp1251 \
+		runtime/tutor/tutor1.??.cp737 \
+		runtime/tutor/tutor1.??_??.utf-8 \
+		runtime/tutor/tutor1.bar \
+		runtime/tutor/tutor1.bar.utf-8 \
+		runtime/tutor/tutor2.utf-8 \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \

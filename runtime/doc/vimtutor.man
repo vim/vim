@@ -1,5 +1,7 @@
 VIMTUTOR(1)                 General Commands Manual                VIMTUTOR(1)
 
+
+
 NAME
        vimtutor - the Vim tutor
 
@@ -13,8 +15,8 @@ DESCRIPTION
        Vimtutor starts the Vim tutor.
 
        The Vimtutor is useful for people that want to learn  their  first  Vim
-       commands.  The optional [language] argument is the two-letter name of a
-       language, like "it" or "es".
+       commands.   The  optional  [ISO639] argument is the two or three letter
+       name of a language, like "it" or "es".
 
        Vimtutor only opens temporary copies of the original tutor files, there
        is no danger of overwriting the lessons.
@@ -24,8 +26,8 @@ DESCRIPTION
 OPTIONS
        -l, --language=ISO639
               Set  the  two  or  three  letter language code. E.g. 'it', 'es',
-              'bar'. Defaults to language of locale if available, else to Eng‐
-              lish.
+              'bar'.  Defaults to language of locale  if  available,  else  to
+              English.
 
        -c, --chapter=NUMBER
               Set the chapter number. Defaults to chapter one.
@@ -53,7 +55,7 @@ EXAMPLES
               vimtutor --language bar --chapter 1 --gui
 
 FILES
-       /usr/local/share/vim/vim??/tutor/tutor[.language]
+       /usr/local/share/vim/vim??/tutor/tutor1[.language]
                       The Vimtutor chapter one text file(s).
 
        /usr/local/share/vim/vim??/tutor/tutor2[.language]
@@ -74,5 +76,7 @@ AUTHOR
 
 SEE ALSO
        vim(1)
+
+
 
                                2024 November 04                    VIMTUTOR(1)
