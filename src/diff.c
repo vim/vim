@@ -571,7 +571,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
     if (dnew == NULL)
 	return NULL;
 
-    dnew->is_linematched = False;
+    dnew->is_linematched = FALSE;
     dnew->df_next = dp;
     if (dprev == NULL)
 	tp->tp_first_diff = dnew;
