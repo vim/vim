@@ -963,6 +963,18 @@ enddef
 def Test_digraph_getlist()
   v9.CheckSourceDefAndScriptFailure(['digraph_getlist(10)'], ['E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['digraph_getlist("")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1'])
+
+  var lines =<< trim END
+    var l = digraph_getlist(true)
+    assert_notequal([], l)
+    l = digraph_getlist(false)
+    assert_equal([], l)
+    l = digraph_getlist(1)
+    assert_notequal([], l)
+    l = digraph_getlist(0)
+    assert_equal([], l)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
 enddef
 
 def Test_digraph_set()
