@@ -285,6 +285,7 @@ SRC_ALL =	\
 		src/proto/insexpand.pro \
 		src/proto/job.pro \
 		src/proto/json.pro \
+		src/proto/linematch.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
 		src/proto/logfile.pro \
