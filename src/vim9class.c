@@ -3313,7 +3313,7 @@ class_defining_member(class_T *cl, char_u *name, size_t len, ocmember_T **p_m)
 	    if (( m = class_member_lookup(super, name, len, NULL)) != NULL)
 	    {
 		cl_tmp = super;
-		vartype = VAR_OBJECT;
+		vartype = VAR_CLASS;
 	    }
 	}
 	if (cl_tmp == NULL)
