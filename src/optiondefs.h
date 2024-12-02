@@ -1147,12 +1147,12 @@ static struct vimoption options[] =
 			    (char_u *)&p_gp, PV_GP, NULL, NULL,
 			    {
 # if defined(MSWIN)
-			    // may be changed to "grep -n" in os_win32.c
+			    // may be changed to "grep -In" in os_win32.c
 			    (char_u *)"findstr /n",
 # elif defined(UNIX)
 			    // Add an extra file name so that grep will always
 			    // insert a file name in the match line.
-			    (char_u *)"grep -n $* /dev/null",
+			    (char_u *)"grep -In $* /dev/null",
 # elif defined(VMS)
 			    (char_u *)"SEARCH/NUMBERS ",
 # else
