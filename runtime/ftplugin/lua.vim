@@ -53,7 +53,7 @@ silent! function FoldLuaLevel(lnum)
   lua foldlevel_luacode()
 endfunction
 
-if has("folding") && get(g:, "lua_folding", 0)
+if has("folding") && has("lua") && get(g:, "lua_folding", 0)
   setlocal foldexpr=FoldLuaLevel(v:lnum)
   setlocal foldmethod=expr
   let b:undo_ftplugin ..= "|setl foldexpr< foldmethod<"
