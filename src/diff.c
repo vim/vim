@@ -755,7 +755,7 @@ clear_diffout(diffout_T *dout)
  * Return FAIL for failure.
  */
     static int
-diff_write_buffer(buf_T *buf, mmfile_t *m, linenr_T start, linenr_T end)
+diff_write_buffer(buf_T *buf, diffin_T *din, linenr_T start, linenr_T end)
 {
     linenr_T	lnum;
     char_u	*s;
@@ -768,8 +768,8 @@ diff_write_buffer(buf_T *buf, mmfile_t *m, linenr_T start, linenr_T end)
 
     if (buf->b_ml.ml_flags & ML_EMPTY)
     {
-	m->ptr = NULL;
-	m->size = 0;
+	din->din_mmfile.ptr = NULL;
+	din->din_mmfile.size = 0;
 	return OK;
     }
 
@@ -792,8 +792,8 @@ diff_write_buffer(buf_T *buf, mmfile_t *m, linenr_T start, linenr_T end)
 	}
 	return FAIL;
     }
-    m->ptr = (char *)ptr;
-    m->size = len;
+    din->din_mmfile.ptr = (char *)ptr;
+    din->din_mmfile.size = len;
 
     len = 0;
     for (lnum = start; lnum <= end; ++lnum)
@@ -847,7 +847,7 @@ diff_write(buf_T *buf, diffin_T *din)
     int		save_cmod_flags;
 
     if (din->din_fname == NULL)
-	return diff_write_buffer(buf, &din->din_mmfile, 1, -1);
+	return diff_write_buffer(buf, din, 1, -1);
 
     // Always use 'fileformat' set to "unix".
     save_ff = buf->b_p_ff;
@@ -2184,7 +2184,7 @@ void
 run_linematch_algorithm(diff_T *dp)
 {
   // define buffers for diff algorithm
-  mmfile_t diffbufs_mm[DB_COUNT];
+  diffin_T diffbufs_mm[DB_COUNT];
   const mmfile_t *diffbufs[DB_COUNT];
   int diff_length[DB_COUNT];
   size_t ndiffs = 0;
@@ -2195,7 +2195,7 @@ run_linematch_algorithm(diff_T *dp)
       diff_write_buffer(curtab->tp_diffbuf[i], &diffbufs_mm[ndiffs],
                         dp->df_lnum[i], dp->df_lnum[i] + dp->df_count[i] - 1);
 
-      diffbufs[ndiffs] = &diffbufs_mm[ndiffs];
+      diffbufs[ndiffs] = &diffbufs_mm[ndiffs].din_mmfile;
 
       // keep track of the length of this diff block to pass it to the linematch
       // algorithm
@@ -2213,7 +2213,7 @@ run_linematch_algorithm(diff_T *dp)
   size_t decisions_length = linematch_nbuffers(diffbufs, diff_length, ndiffs, &decisions, iwhite);
 
   for (size_t i = 0; i < ndiffs; i++) {
-    free(diffbufs_mm[i].ptr); // TODO should this be vim_free ?
+    free(diffbufs_mm[i].din_mmfile.ptr); // TODO should this be vim_free ?
   }
 
   apply_linematch_results(dp, decisions_length, decisions);
