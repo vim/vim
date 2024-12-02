@@ -1931,7 +1931,7 @@ diff_clear(tabpage_T *tp)
 /*
  *  return true if the options are set to use diff linematch
  */
-    Bool
+    int
 diff_linematch(diff_T *dp)
 {
     if (!(diff_flags & DIFF_LINEMATCH)) {

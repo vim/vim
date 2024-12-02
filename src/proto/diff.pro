@@ -21,7 +21,7 @@ void calculate_topfill_and_topline(const int fromidx, const int toidx, const int
 void count_filler_lines_and_topline(int *curlinenum_to, int *linesfiller, const diff_T *thistopdiff, const int toidx, int virtual_lines_passed);
 void find_top_diff_block(diff_T **thistopdiff, diff_T **nextblockblock, int fromidx, int topline);
 int get_max_diff_length(const diff_T *dp);
-Bool diff_linematch(diff_T *dp);
+int diff_linematch(diff_T *dp);
 int diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus);
 int diff_check_fill(win_T *wp, linenr_T lnum);
 void diff_set_topline(win_T *fromwin, win_T *towin);
