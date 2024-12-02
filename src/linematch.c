@@ -1,3 +1,4 @@
+// vi:set ts=8 sts=4 sw=4 noet:
 #include <assert.h>
 #include <math.h>
 #include <stdbool.h>
@@ -5,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "vim.h"           // Add Vim's main header
+#include "vim.h"
 
 #define LN_MAX_BUFS 8
 #define LN_DECISION_MAX 255  // pow(2, LN_MAX_BUFS(8)) - 1 = 255
