@@ -57,12 +57,13 @@ endif
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" The rest of the file needs to be :sourced only once per session.
-" let b:foldlist = []
-" let b:lasttick = -1
+" The rest of the file needs to be :sourced only once per Vim session
+let b:lasttick = -1
 
 if exists('s:loaded_lua') || &cp | finish | endif
 let s:loaded_lua = 1
+
+" From https://github.com/ElPiloto/Lua-Omni-Vim-Completion/blob/7044c7010d4e6f59da60704a4a8e2118af7e973b/ftplugin/lua_omni.lua#L715C1-L738C4
 
 let s:patterns = [
       \ ['do', 'end'],
@@ -75,33 +76,35 @@ let s:patterns = [
       \ ['local\s+function\s+.+', 'end'],
       \ ]
 
-function FoldLevelLua(lnum) abort
-  " if b:lasttick == b:changedtick
-  "   return len(b:foldlist)
-  " endif
-  " let b:lasttick = b:changedtick
+function! LuaFold(lnum) abort
+  if b:lasttick == b:changedtick
+    return len(b:foldlists[a:lnum-1])
+  endif
+  let b:lasttick = b:changedtick
 
-  let b:foldlist = []
-  let buf = getline(1, a:lnum)
+  let b:foldlists = []
+  let foldlist = []
+  let buf = getline(1, '$')
   for line in buf
     for t in s:patterns
       let tagopen = '\v^\s*'..t[0]..'\s*$'
       let tagclose = '\v^\s*'..t[1]..'\s*$'
       if line =~# tagopen
-        call add(b:foldlist, t)
+        call add(foldlist, t)
         break
       elseif line =~# tagclose
-        if len(b:foldlist) > 0 && line =~# b:foldlist[-1][1]
-          call remove(b:foldlist, -1)
+        if len(foldlist) > 0 && line =~# foldlist[-1][1]
+          call remove(foldlist, -1)
         else
-          let b:foldlist = []
+          let foldlist = []
         endif
         break
       endif
     endfor
+    call add(b:foldlists, copy(foldlist))
   endfor
 
-  return len(b:foldlist)
+  return len(foldlists[a:lnum])
 endfunction
 
 " vim: nowrap sw=2 sts=2 ts=8 noet:
