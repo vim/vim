@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 02
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1362,10 +1362,10 @@ their paths (distinct and relative to their common root directory) to the
 following properties (using the example of a common Maven project): >
 
 	let g:spotbugs_properties = {
-		\ 'sourceDirPath':	'src/main/java',
-		\ 'classDirPath':	'target/classes',
-		\ 'testSourceDirPath':	'src/test/java',
-		\ 'testClassDirPath':	'target/test-classes',
+		\ 'sourceDirPath':	['src/main/java'],
+		\ 'classDirPath':	['target/classes'],
+		\ 'testSourceDirPath':	['src/test/java'],
+		\ 'testClassDirPath':	['target/test-classes'],
 	\ }
 
 Note that source and class path entries are expected to come in pairs: define
@@ -1396,10 +1396,10 @@ available. >
 			\ function('spotbugs#DefaultPreCompilerTestAction'),
 		\ 'PostCompilerAction':
 			\ function('spotbugs#DefaultPostCompilerAction'),
-		\ 'sourceDirPath':	'src/main/java',
-		\ 'classDirPath':	'target/classes',
-		\ 'testSourceDirPath':	'src/test/java',
-		\ 'testClassDirPath':	'target/test-classes',
+		\ 'sourceDirPath':	['src/main/java'],
+		\ 'classDirPath':	['target/classes'],
+		\ 'testSourceDirPath':	['src/test/java'],
+		\ 'testClassDirPath':	['target/test-classes'],
 	\ }
 
 With default actions, the compiler of choice will attempt to rebuild the class
