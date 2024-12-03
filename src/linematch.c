@@ -7,12 +7,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#include <assert.h>
-#include <math.h>
 #include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
 
 #include "vim.h"
 
