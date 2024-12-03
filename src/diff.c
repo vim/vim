@@ -399,7 +399,8 @@ diff_mark_adjust_tp(
 	{
 	    // 6. change below line2: only adjust for amount_after; also when
 	    // "deleted" became zero when deleted all lines between two diffs
-	    if (dp->df_lnum[idx] - (deleted + inserted != 0) > line2 - (dp->is_linematched ? 1 : 0))
+	    if (dp->df_lnum[idx] - (deleted + inserted != 0) > line2 -
+						(dp->is_linematched ? 1 : 0))
 	    {
 		if (amount_after == 0)
 		    break;	// nothing left to change
@@ -502,8 +503,9 @@ diff_mark_adjust_tp(
 	}
 
 	// check if this block touches the previous one, may merge them.
-	if ((dprev != NULL) && !dp->is_linematched
-		&& dprev->df_lnum[idx] + dprev->df_count[idx] == dp->df_lnum[idx])
+	if (dprev != NULL && !dp->is_linematched
+				&& dprev->df_lnum[idx] + dprev->df_count[idx]
+							== dp->df_lnum[idx])
 	{
 	    for (i = 0; i < DB_COUNT; ++i)
 		if (tp->tp_diffbuf[i] != NULL)
@@ -763,9 +765,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din, linenr_T start, linenr_T end)
     char_u	*ptr;
 
     if (end < 0)
-    {
       end = buf->b_ml.ml_line_count;
-    }
 
     if (buf->b_ml.ml_flags & ML_EMPTY)
     {
@@ -1932,339 +1932,347 @@ diff_clear(tabpage_T *tp)
 /*
  *  return true if the options are set to use diff linematch
  */
-    int
+    static int
 diff_linematch(diff_T *dp)
 {
     if (!(diff_flags & DIFF_LINEMATCH))
-    {
 	return 0;
-    }
+
     // are there more than three diff buffers?
     int tsize = 0;
     for (int i = 0; i < DB_COUNT; i++)
     {
-	if ( curtab->tp_diffbuf[i] != NULL )
+	if (curtab->tp_diffbuf[i] != NULL)
 	{
-	    // for the rare case (bug?) that the count of a diff block is negative, do
-	    // not run the algorithm because this will try to allocate a negative
-	    // amount of space and crash
+	    // for the rare case (bug?) that the count of a diff block is
+	    // negative, do not run the algorithm because this will try to
+	    // allocate a negative amount of space and crash
 	    if (dp->df_count[i] < 0)
-	    {
-	      return FALSE;
-	    }
+		return FALSE;
 	    tsize += dp->df_count[i];
 	}
     }
+
     // avoid allocating a huge array because it will lag
     return tsize <= linematch_lines;
 }
 
-    int
+    static int
 get_max_diff_length(const diff_T *dp)
 {
-  int maxlength = 0;
-  for (int k = 0; k < DB_COUNT; k++)
-  {
-    if (curtab->tp_diffbuf[k] != NULL)
-    {
-      if (dp->df_count[k] > maxlength)
-      {
-        maxlength = dp->df_count[k];
-      }
-    }
-  }
-  return maxlength;
-}
+    int maxlength = 0;
 
-    void
-find_top_diff_block(diff_T **thistopdiff, diff_T **nextblockblock, int fromidx,
-                                int topline)
-{
-  diff_T *topdiff = NULL;
-  diff_T *localtopdiff = NULL;
-  int topdiffchange = 0;
-
-  for (topdiff = curtab->tp_first_diff; topdiff != NULL; topdiff = topdiff->df_next)
-  {
-    // set the top of the current overlapping diff block set as we
-    // iterate through all of the sets of overlapping diff blocks
-    if (!localtopdiff || topdiffchange)
+    for (int k = 0; k < DB_COUNT; k++)
     {
-      localtopdiff = topdiff;
-      topdiffchange = 0;
-    }
-
-    // check if the fromwin topline is matched by the current diff. if so, set it to the top of the diff block
-    if (topline >= topdiff->df_lnum[fromidx] && topline <=
-        (topdiff->df_lnum[fromidx] + topdiff->df_count[fromidx]))
-    {
-      // this line is inside the current diff block, so we will save the
-      // top block of the set of blocks to refer to later
-      if ((*thistopdiff) == NULL)
-      {
-        (*thistopdiff) = localtopdiff;
-      }
-    }
-
-    // check if the next set of overlapping diff blocks is next
-    if (!(topdiff->df_next && (topdiff->df_next->df_lnum[fromidx] ==
-                               (topdiff->df_lnum[fromidx] + topdiff->df_count[fromidx]))))
-    {
-      // mark that the next diff block is belongs to a different set of
-      // overlapping diff blocks
-      topdiffchange = 1;
-
-      // if we already have found that the line number is inside a diff block,
-      // set the marker of the next block and finish the iteration
-      if (*thistopdiff)
-      {
-        (*nextblockblock) = topdiff->df_next;
-        break;
-      }
-    }
-  }
-}
-
-    void
-count_filler_lines_and_topline(int *curlinenum_to, int *linesfiller,
-                                           const diff_T *thistopdiff, const int toidx,
-                                           int virtual_lines_passed)
-{
-  const diff_T *curdif = thistopdiff;
-  int ch_virtual_lines = 0;
-  Bool isfiller = FALSE;
-  while (virtual_lines_passed > 0)
-  {
-    if (ch_virtual_lines)
-    {
-      virtual_lines_passed--;
-      ch_virtual_lines--;
-      if (!isfiller)
-      {
-        (*curlinenum_to)++;
-      } else
-      {
-        (*linesfiller)++;
-      }
-    } else
-    {
-      (*linesfiller) = 0;
-      ch_virtual_lines = get_max_diff_length(curdif);
-      isfiller = (curdif->df_count[toidx] ? FALSE : TRUE);
-      if (isfiller)
-      {
-        while (curdif && curdif->df_next && curdif->df_lnum[toidx] ==
-               curdif->df_next->df_lnum[toidx]
-               && curdif->df_next->df_count[toidx] == 0)
+	if (curtab->tp_diffbuf[k] != NULL)
 	{
-          curdif = curdif->df_next;
-          ch_virtual_lines += get_max_diff_length(curdif);
-        }
-      }
-      if (curdif)
-      {
-        curdif = curdif->df_next;
-      }
+	    if (dp->df_count[k] > maxlength)
+		maxlength = dp->df_count[k];
+	}
     }
-  }
+    return maxlength;
 }
 
-    void
-calculate_topfill_and_topline(const int fromidx, const int toidx, const
-                                          int from_topline, const int from_topfill, int *topfill,
-                                          linenr_T *topline)
+    static void
+find_top_diff_block(
+    diff_T	**thistopdiff,
+    diff_T	**nextblockblock,
+    int		fromidx,
+    int		topline)
 {
-  // 1. find the position from the top of the diff block, and the start
-  // of the next diff block
-  diff_T *thistopdiff = NULL;
-  diff_T *nextblockblock = NULL;
-  int virtual_lines_passed = 0;
+    diff_T *topdiff = NULL;
+    diff_T *localtopdiff = NULL;
+    int topdiffchange = 0;
 
-  find_top_diff_block(&thistopdiff, &nextblockblock, fromidx, from_topline);
-
-  // count the virtual lines that have been passed
-
-  diff_T *curdif = thistopdiff;
-  while (curdif && (curdif->df_lnum[fromidx] + curdif->df_count[fromidx])
-         <= from_topline)
-  {
-    virtual_lines_passed += get_max_diff_length(curdif);
-
-    curdif = curdif->df_next;
-  }
-
-  if (curdif != nextblockblock)
-  {
-    virtual_lines_passed += from_topline - curdif->df_lnum[fromidx];
-  }
-  virtual_lines_passed -= from_topfill;
-
-  // count the same amount of virtual lines in the toidx buffer
-  int curlinenum_to = thistopdiff->df_lnum[toidx];
-  int linesfiller = 0;
-  count_filler_lines_and_topline(&curlinenum_to, &linesfiller,
-                                 thistopdiff, toidx, virtual_lines_passed);
-
-  // count the number of filler lines that would normally be above this line
-  int maxfiller = 0;
-  for (diff_T *dpfillertest = thistopdiff; dpfillertest != NULL;
-       dpfillertest = dpfillertest->df_next)
-  {
-    if (dpfillertest->df_lnum[toidx] == curlinenum_to)
+    for (topdiff = curtab->tp_first_diff; topdiff != NULL;
+						topdiff = topdiff->df_next)
     {
-      while (dpfillertest && dpfillertest->df_lnum[toidx] == curlinenum_to)
-      {
-        maxfiller += dpfillertest->df_count[toidx] ? 0 : get_max_diff_length(dpfillertest);
-        dpfillertest = dpfillertest->df_next;
-      }
-      break;
+	// set the top of the current overlapping diff block set as we
+	// iterate through all of the sets of overlapping diff blocks
+	if (!localtopdiff || topdiffchange)
+	{
+	    localtopdiff = topdiff;
+	    topdiffchange = 0;
+	}
+
+	// check if the fromwin topline is matched by the current diff. if so,
+	// set it to the top of the diff block
+	if (topline >= topdiff->df_lnum[fromidx] && topline <=
+		(topdiff->df_lnum[fromidx] + topdiff->df_count[fromidx]))
+	{
+	    // this line is inside the current diff block, so we will save the
+	    // top block of the set of blocks to refer to later
+	    if ((*thistopdiff) == NULL)
+		(*thistopdiff) = localtopdiff;
+	}
+
+	// check if the next set of overlapping diff blocks is next
+	if (!(topdiff->df_next && (topdiff->df_next->df_lnum[fromidx] ==
+			(topdiff->df_lnum[fromidx] +
+						topdiff->df_count[fromidx]))))
+	{
+	    // mark that the next diff block is belongs to a different set of
+	    // overlapping diff blocks
+	    topdiffchange = 1;
+
+	    // if we already have found that the line number is inside a diff
+	    // block, set the marker of the next block and finish the iteration
+	    if (*thistopdiff)
+	    {
+		(*nextblockblock) = topdiff->df_next;
+		break;
+	    }
+	}
     }
-  }
-  (*topfill) = maxfiller - linesfiller;
-  (*topline) = curlinenum_to;
 }
 
-    int
+    static void
+count_filler_lines_and_topline(
+    int			*curlinenum_to,
+    int			*linesfiller,
+    const diff_T	*thistopdiff,
+    const int		toidx,
+    int			virtual_lines_passed)
+{
+    const diff_T *curdif = thistopdiff;
+    int ch_virtual_lines = 0;
+    Bool isfiller = FALSE;
+
+    while (virtual_lines_passed > 0)
+    {
+	if (ch_virtual_lines)
+	{
+	    virtual_lines_passed--;
+	    ch_virtual_lines--;
+	    if (!isfiller)
+		(*curlinenum_to)++;
+	    else
+		(*linesfiller)++;
+	}
+	else
+	{
+	    (*linesfiller) = 0;
+	    ch_virtual_lines = get_max_diff_length(curdif);
+	    isfiller = (curdif->df_count[toidx] ? FALSE : TRUE);
+	    if (isfiller)
+	    {
+		while (curdif && curdif->df_next &&
+		       curdif->df_lnum[toidx] ==
+					curdif->df_next->df_lnum[toidx] &&
+		       curdif->df_next->df_count[toidx] == 0)
+		{
+		    curdif = curdif->df_next;
+		    ch_virtual_lines += get_max_diff_length(curdif);
+		}
+	    }
+	    if (curdif)
+		curdif = curdif->df_next;
+	}
+    }
+}
+
+    static void
+calculate_topfill_and_topline(
+    const int	fromidx,
+    const int	toidx,
+    const int	from_topline,
+    const int	from_topfill,
+    int		*topfill,
+    linenr_T	*topline)
+{
+    // 1. find the position from the top of the diff block, and the start
+    // of the next diff block
+    diff_T *thistopdiff = NULL;
+    diff_T *nextblockblock = NULL;
+    int virtual_lines_passed = 0;
+
+    find_top_diff_block(&thistopdiff, &nextblockblock, fromidx, from_topline);
+
+    // count the virtual lines that have been passed
+    diff_T *curdif = thistopdiff;
+    while (curdif && (curdif->df_lnum[fromidx] + curdif->df_count[fromidx])
+							<= from_topline)
+    {
+	virtual_lines_passed += get_max_diff_length(curdif);
+
+	curdif = curdif->df_next;
+    }
+
+    if (curdif != nextblockblock)
+	virtual_lines_passed += from_topline - curdif->df_lnum[fromidx];
+    virtual_lines_passed -= from_topfill;
+
+    // count the same amount of virtual lines in the toidx buffer
+    int curlinenum_to = thistopdiff->df_lnum[toidx];
+    int linesfiller = 0;
+
+    count_filler_lines_and_topline(&curlinenum_to, &linesfiller, thistopdiff,
+				   toidx, virtual_lines_passed);
+
+    // count the number of filler lines that would normally be above this line
+    int maxfiller = 0;
+    for (diff_T *dpfillertest = thistopdiff; dpfillertest != NULL;
+					dpfillertest = dpfillertest->df_next)
+    {
+	if (dpfillertest->df_lnum[toidx] == curlinenum_to)
+	{
+	    while (dpfillertest && dpfillertest->df_lnum[toidx] ==
+							curlinenum_to)
+	    {
+		maxfiller += dpfillertest->df_count[toidx] ? 0 :
+					get_max_diff_length(dpfillertest);
+		dpfillertest = dpfillertest->df_next;
+	    }
+	    break;
+	}
+    }
+    (*topfill) = maxfiller - linesfiller;
+    (*topline) = curlinenum_to;
+}
+
+    static int
 linematched_filler_lines(diff_T *dp, int idx, linenr_T lnum, int *linestatus)
 {
-  int filler_lines_d1 = 0;
-  while (dp && dp->df_next
-         && lnum == (dp->df_lnum[idx] + dp->df_count[idx])
-         && dp->df_next->df_lnum[idx] == lnum)
-  {
-    if (dp->df_count[idx] == 0)
+    int filler_lines_d1 = 0;
+
+    while (dp && dp->df_next &&
+	   lnum == (dp->df_lnum[idx] + dp->df_count[idx]) &&
+	   dp->df_next->df_lnum[idx] == lnum)
     {
-      filler_lines_d1 += get_max_diff_length(dp);
+	if (dp->df_count[idx] == 0)
+	    filler_lines_d1 += get_max_diff_length(dp);
+	dp = dp->df_next;
     }
-    dp = dp->df_next;
-  }
 
-  if (dp->df_count[idx] == 0)
-  {
-    filler_lines_d1 += get_max_diff_length(dp);
-  }
+    if (dp->df_count[idx] == 0)
+	filler_lines_d1 += get_max_diff_length(dp);
 
-  if (lnum < dp->df_lnum[idx] + dp->df_count[idx])
-  {
-    int j = 0;
+    if (lnum < dp->df_lnum[idx] + dp->df_count[idx])
+    {
+	int j = 0;
+
+	for (int i = 0; i < DB_COUNT; i++)
+	{
+	    if (curtab->tp_diffbuf[i] != NULL)
+	    {
+		if (dp->df_count[i])
+		    j++;
+	    }
+	    // is this an added line or a changed line?
+	    if (linestatus)
+		(*linestatus) = (j == 1) ? -2 : -1;
+	}
+    }
+
+    return filler_lines_d1;
+}
+
+// Apply results from the linematch algorithm and apply to 'dp' by splitting it
+// into multiple adjacent diff blocks.
+    static void
+apply_linematch_results(
+    diff_T	*dp,
+    size_t	decisions_length,
+    const int	*decisions)
+{
+    // get the start line number here in each diff buffer, and then increment
+    int line_numbers[DB_COUNT];
+    int outputmap[DB_COUNT];
+    size_t ndiffs = 0;
+
     for (int i = 0; i < DB_COUNT; i++)
     {
-      if (curtab->tp_diffbuf[i] != NULL)
-      {
-        if (dp->df_count[i])
+	if (curtab->tp_diffbuf[i] != NULL)
 	{
-          j++;
-        }
-      }
-      // is this an added line or a changed line?
-      if (linestatus)
-      {
-        (*linestatus) = (j == 1) ? -2 : -1;
-      }
+	    line_numbers[i] = dp->df_lnum[i];
+	    dp->df_count[i] = 0;
+
+	    // Keep track of the index of the diff buffer we are using here.
+	    // We will use this to write the output of the algorithm to
+	    // diff_T structs at the correct indexes
+	    outputmap[ndiffs] = i;
+	    ndiffs++;
+	}
     }
-  }
-  return filler_lines_d1;
+
+    // write the diffs starting with the current diff block
+    diff_T *dp_s = dp;
+    for (size_t i = 0; i < decisions_length; i++)
+    {
+	// Don't allocate on first iter since we can reuse the initial
+	// diffblock
+	if (i != 0 && (decisions[i - 1] != decisions[i]))
+	{
+	    // create new sub diff blocks to segment the original diff block
+	    // which we further divided by running the linematch algorithm
+	    dp_s = diff_alloc_new(curtab, dp_s, dp_s->df_next);
+	    dp_s->is_linematched = TRUE;
+	    for (int j = 0; j < DB_COUNT; j++)
+	    {
+		if (curtab->tp_diffbuf[j] != NULL)
+		{
+		    dp_s->df_lnum[j] = line_numbers[j];
+		    dp_s->df_count[j] = 0;
+		}
+	    }
+	}
+	for (size_t j = 0; j < ndiffs; j++)
+	{
+	    if (decisions[i] & (1 << j))
+	    {
+		// will need to use the map here
+		dp_s->df_count[outputmap[j]]++;
+		line_numbers[outputmap[j]]++;
+	    }
+	}
+    }
+    dp->is_linematched = TRUE;
 }
 
-// Apply results from the linematch algorithm and apply to 'dp' by splitting it into multiple
-// adjacent diff blocks.
-void
-apply_linematch_results(diff_T *dp, size_t decisions_length, const int *decisions)
-{
-  // get the start line number here in each diff buffer, and then increment
-  int line_numbers[DB_COUNT];
-  int outputmap[DB_COUNT];
-  size_t ndiffs = 0;
-  for (int i = 0; i < DB_COUNT; i++)
-  {
-    if (curtab->tp_diffbuf[i] != NULL)
-    {
-      line_numbers[i] = dp->df_lnum[i];
-      dp->df_count[i] = 0;
-
-      // Keep track of the index of the diff buffer we are using here.
-      // We will use this to write the output of the algorithm to
-      // diff_T structs at the correct indexes
-      outputmap[ndiffs] = i;
-      ndiffs++;
-    }
-  }
-
-  // write the diffs starting with the current diff block
-  diff_T *dp_s = dp;
-  for (size_t i = 0; i < decisions_length; i++)
-  {
-    // Don't allocate on first iter since we can reuse the initial diffblock
-    if (i != 0 && (decisions[i - 1] != decisions[i]))
-    {
-      // create new sub diff blocks to segment the original diff block which we
-      // further divided by running the linematch algorithm
-      dp_s = diff_alloc_new(curtab, dp_s, dp_s->df_next);
-      dp_s->is_linematched = TRUE;
-      for (int j = 0; j < DB_COUNT; j++)
-      {
-        if (curtab->tp_diffbuf[j] != NULL)
-	{
-          dp_s->df_lnum[j] = line_numbers[j];
-          dp_s->df_count[j] = 0;
-        }
-      }
-    }
-    for (size_t j = 0; j < ndiffs; j++)
-    {
-      if (decisions[i] & (1 << j))
-      {
-        // will need to use the map here
-        dp_s->df_count[outputmap[j]]++;
-        line_numbers[outputmap[j]]++;
-      }
-    }
-  }
-  dp->is_linematched = TRUE;
-}
-
-void
+    static void
 run_linematch_algorithm(diff_T *dp)
 {
-  // define buffers for diff algorithm
-  diffin_T diffbufs_mm[DB_COUNT];
-  const mmfile_t *diffbufs[DB_COUNT];
-  int diff_length[DB_COUNT];
-  size_t ndiffs = 0;
-  for (int i = 0; i < DB_COUNT; i++)
-  {
-    if (curtab->tp_diffbuf[i] != NULL)
+    // define buffers for diff algorithm
+    diffin_T diffbufs_mm[DB_COUNT];
+    const mmfile_t *diffbufs[DB_COUNT];
+    int diff_length[DB_COUNT];
+    size_t ndiffs = 0;
+
+    for (int i = 0; i < DB_COUNT; i++)
     {
-      // write the contents of the entire buffer to
-      // diffbufs_mm[diffbuffers_count]
-      diff_write_buffer(curtab->tp_diffbuf[i], &diffbufs_mm[ndiffs],
-                        dp->df_lnum[i], dp->df_lnum[i] + dp->df_count[i] - 1);
+	if (curtab->tp_diffbuf[i] != NULL)
+	{
+	    // write the contents of the entire buffer to
+	    // diffbufs_mm[diffbuffers_count]
+	    diff_write_buffer(curtab->tp_diffbuf[i], &diffbufs_mm[ndiffs],
+		    dp->df_lnum[i], dp->df_lnum[i] + dp->df_count[i] - 1);
 
-      diffbufs[ndiffs] = &diffbufs_mm[ndiffs].din_mmfile;
+	    diffbufs[ndiffs] = &diffbufs_mm[ndiffs].din_mmfile;
 
-      // keep track of the length of this diff block to pass it to the linematch
-      // algorithm
-      diff_length[ndiffs] = dp->df_count[i];
+	    // keep track of the length of this diff block to pass it to the
+	    // linematch algorithm
+	    diff_length[ndiffs] = dp->df_count[i];
 
-      // increment the amount of diff buffers we are passing to the algorithm
-      ndiffs++;
+	    // increment the amount of diff buffers we are passing to the
+	    // algorithm
+	    ndiffs++;
+	}
     }
-  }
 
-  // we will get the output of the linematch algorithm in the format of an array
-  // of integers (*decisions) and the length of that array (decisions_length)
-  int *decisions = NULL;
-  const Bool iwhite = (diff_flags & (DIFF_IWHITEALL | DIFF_IWHITE)) > 0;
-  size_t decisions_length = linematch_nbuffers(diffbufs, diff_length, ndiffs, &decisions, iwhite);
+    // we will get the output of the linematch algorithm in the format of an
+    // array of integers (*decisions) and the length of that array
+    // (decisions_length)
+    int *decisions = NULL;
+    const Bool iwhite = (diff_flags & (DIFF_IWHITEALL | DIFF_IWHITE)) > 0;
+    size_t decisions_length =
+	linematch_nbuffers(diffbufs, diff_length, ndiffs, &decisions, iwhite);
 
-  for (size_t i = 0; i < ndiffs; i++)
-  {
-    free(diffbufs_mm[i].din_mmfile.ptr); // TODO should this be vim_free ?
-  }
+    for (size_t i = 0; i < ndiffs; i++)
+	free(diffbufs_mm[i].din_mmfile.ptr); // TODO should this be vim_free ?
 
-  apply_linematch_results(dp, decisions_length, decisions);
+    apply_linematch_results(dp, decisions_length, decisions);
 
-  free(decisions);
+    free(decisions);
 }
 
 /*
@@ -2319,19 +2327,14 @@ diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus)
     if (dp == NULL || lnum < dp->df_lnum[idx])
 	return 0;
 
-    // Don't run linematch when lnum is offscreen.
-    // Useful for scrollbind calculations which need to count all the filler lines
-    // above the screen.
+    // Don't run linematch when lnum is offscreen.  Useful for scrollbind
+    // calculations which need to count all the filler lines above the screen.
     if (lnum >= wp->w_topline && lnum < wp->w_botline
-        && !dp->is_linematched && diff_linematch(dp)) 
-    {
+				&& !dp->is_linematched && diff_linematch(dp))
       run_linematch_algorithm(dp);
-    }
 
     if (dp->is_linematched)
-    {
       return linematched_filler_lines(dp, idx, lnum, linestatus);
-    }
 
     if (lnum < dp->df_lnum[idx] + dp->df_count[idx])
     {
@@ -2564,8 +2567,11 @@ diff_set_topline(win_T *fromwin, win_T *towin)
 	{
 	    if (diff_flags & DIFF_LINEMATCH)
 	    {
-	      calculate_topfill_and_topline(fromidx, toidx, fromwin->w_topline,
-	      			      fromwin->w_topfill, &towin->w_topfill, &towin->w_topline);
+		calculate_topfill_and_topline(fromidx, toidx,
+						fromwin->w_topline,
+						fromwin->w_topfill,
+						&towin->w_topfill,
+						&towin->w_topline);
 	    }
 	    else
 	    {
@@ -2614,8 +2620,8 @@ diff_set_topline(win_T *fromwin, win_T *towin)
 			    towin->w_topfill = fromwin->w_topfill;
 			else
 			    // fromwin has some diff lines
-			    towin->w_topfill = dp->df_lnum[fromidx]
-							       + max_count - lnum;
+			    towin->w_topfill = dp->df_lnum[fromidx] +
+							max_count - lnum;
 		    }
 		}
 	    }
@@ -2654,7 +2660,7 @@ diffopt_changed(void)
 {
     char_u	*p;
     int		diff_context_new = 6;
-    int linematch_lines_new = 0;
+    int		linematch_lines_new = 0;
     int		diff_flags_new = 0;
     int		diff_foldcolumn_new = 2;
     long	diff_algorithm_new = 0;
@@ -2875,12 +2881,10 @@ diff_find_change(
 	    break;
     if (dp->is_linematched)
     {
-      while (dp && dp->df_next
-             && lnum == dp->df_count[idx] + dp->df_lnum[idx]
-             && dp->df_next->df_lnum[idx] == lnum)
-      {
-        dp = dp->df_next;
-      }
+	while (dp && dp->df_next
+			&& lnum == dp->df_count[idx] + dp->df_lnum[idx]
+			&& dp->df_next->df_lnum[idx] == lnum)
+	    dp = dp->df_next;
     }
     if (dp == NULL || diff_check_sanity(curtab, dp) == FAIL)
     {
@@ -3224,15 +3228,16 @@ ex_diffgetput(exarg_T *eap)
     {
 	if (!eap->addr_count)
 	{
-	  // handle the case with adjacent diff blocks
-	  while (dp->is_linematched
-		 && dp->df_next
-		 && dp->df_next->df_lnum[idx_cur] == dp->df_lnum[idx_cur] + dp->df_count[idx_cur]
-		 && dp->df_next->df_lnum[idx_cur] == eap->line1 + off + 1)
-	  {
-	    dprev = dp;
-	    dp = dp->df_next;
-	  }
+	    // handle the case with adjacent diff blocks
+	    while (dp->is_linematched
+		    && dp->df_next
+		    && dp->df_next->df_lnum[idx_cur] == dp->df_lnum[idx_cur] +
+							dp->df_count[idx_cur]
+		    && dp->df_next->df_lnum[idx_cur] == eap->line1 + off + 1)
+	    {
+		dprev = dp;
+		dp = dp->df_next;
+	    }
 	}
 	if (dp->df_lnum[idx_cur] > eap->line2 + off)
 	    break;	// past the range that was specified
