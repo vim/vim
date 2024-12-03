@@ -1,0 +1,197 @@
+===============================================================================
+=    Benvenuto  alla   G u i d a    all'Editor   V I M   -    Versione 1.7    =
+===============================================================================
+=			  C A P I T O L O   DUE				      =
+===============================================================================
+
+     Hic Sunt Dracones: Se questa è la prima volta che vi accostate a vim
+     e preferite iniziare dal capitolo introduttivo, gentilmente immettete
+     :q<INVIO> e poi iniziate da quello.
+
+     Il tempo necessario per completare questo capitolo è di circa 8-10
+     minuti, a seconda del tempo utilizzato per fare delle prove.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			Lezione 2.1.1: I REGISTRI CON NOME
+
+
+         ** Copiare due parole in registri diversi e poi incollarle **
+
+  1. Spostate il cursore alla riga qui sotto marcata con --->
+
+  2. Andate su una lettera qualsiasi di 'Edward' e battete "ayiw
+
+MNEMONICO: nel registro(") di nome (a) (y)copia (i)interna (w)parola
+
+  3. Spostatevi alla parola 'biscotti' (fc o 2fb o $b o /bis<INVIO>)
+     e battete   "byiw
+
+  4. Andate su una lettera qualsiasi di 'Vince' e battete   ciw<C-r>a<ESC>
+
+MNEMONICO: (c)cambia (i)interna (w)parola con <Contenuto (r)egistro> di nome (a)
+
+  5. Andate su una lettera qualsiasi di 'dolci' e battete   ciw<C-r>b<ESC>
+
+--->  a) Edward sarà d'ora in poi responsabile della razione di biscotti
+      b) Come compito, Vince sarà il solo a decidere riguardo ai dolci
+
+NOTA: Anche una parola cancellata può essere inviata ad un registro, p.es.,
+      "sdiw cancellerà (d) la parola sotto il cursore (iw) e la metterà
+      nel registro (s)
+RIFERIMENTI: 	Registri 	  :h registers
+		Registri con nome :h quotea
+		Movimento	  :h motion.txt<INVIO> /inner<INVIO>
+		CTRL-R		  :h insert<INVIO> /CTRL-R<INVIO>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+			Lezione 2.1.2: IL REGISTRO DELLE ESPRESSIONI
+
+
+	       ** Inserire al volo risultati di un calcolo **
+
+  1. Spostate il cursore alla riga qui sotto marcata con --->
+
+  2. Andate su un punto qualsiasi del numero fornito
+
+  3. Battete ciw<C-r>=60*60*24<INVIO>
+
+  4. Sulla riga seguente, entrate in modo Insert e aggiungete
+     la data di oggi con <C-r>=system('date')<INVIO>
+
+NOTA: Tutte le chiamate a sistema dipendono dal S.O., p.es., in ambiente
+      Windows si usa    system('date /t')   o  :r!date /t
+
+---> Non ricordo il numero esatto di secondi in un giorno, è 84600?
+     La data di oggi è: 
+
+NOTA: Lo stesso risultato si può ottenere con   :pu=system('date')
+      o, ancora più brevemente, con  :r!date
+
+RIFERIMENTI: 	Registro espressioni	:h quote=
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+			Lezione 2.1.3: I REGISTRI NUMERATI
+
+
+	    ** Battere yy e dd per vedere l'effetto sui registri **
+
+  1. Spostate il cursore alla riga qui sotto marcata con --->
+
+  2. Copiate (yy) la riga stessa e controllate i registri con :reg<INVIO>
+
+  3. Cancellate la riga che inizia con "0." con "cdd, poi controllate i
+     registri (Dove vi aspettate sia finita la riga cancellata?)
+
+  4. Continuate a cancellare ogni riga seguente, controllando ogni volta
+     con :reg il risultato
+NOTA: Dovreste notare che le righe cancellate per prime scendono nella
+      lista, man mano che vengono aggiunte nuove righe cancellate
+  5. Poi incollate (p) i seguenti registri nell'ordine; c, 7, 4, 8, 2.+
+     ossia "cp "7p ...
+
+---> 0. Questo
+     9. dondolante
+     8. messaggio
+     7. è
+     6. in
+     5. asse
+     4. un
+     3. guerresco
+     2. segreto
+     1. tributo
+
+NOTA: Le cancellazioni di righe intere (dd) sopravvivono nei registri numerati
+      molto più a lungo delle copie di righe intere (yy), o delle
+      cancellazioni che implicano movimenti minori
+
+RIFERIMENTI: 	Registri numerati 	:h quote0
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+			Lezione 2.1.4: IL FASCINO DELLE MARCATURE
+
+
+	         ** Evitare di contare le righe di codice **
+
+NOTA: Un problema frequente quando si scrivono programmi è spostare numerose
+      righe di codice. Il metodo seguente evita di dover calcolare numeri di
+      riga con operazioni tipo   "a147d  o  :945,1091d a  o, ancor peggio,
+      usando prima i<C-r>=1091-945<INVIO>
+
+  1. Spostate il cursore alla riga qui sotto marcata con --->
+
+  2. Andate alla prima riga della funzione e marcatela con   ma
+
+NOTA: La posizione sulla riga NON è importante!
+
+  3. Spostatevi a fine riga e da qui alla fine del blocco di codice
+     con   $%
+
+  4. Cancellate il blocco salvandolo nel registro a con   "ad'a
+
+MNEMONICO: nel registro(") di nome (a) mettere la cancellazione (d) dal
+	  cursore fino alla RIGA che contiene il marcatore (') (a)
+
+  5. Incollare il blocco the le righe BBB e CCC   "ap
+
+NOTA: Provare più volte quest'operazione, per impratichirsi    ma$%"ad'a
+
+---> AAA
+     function cresciutaTroppoinFretta() {
+       if ( condizioneVera ) {
+         faiQualcosa()
+       }
+       // La classificazione della nostra funzione è cambiata
+       // non ha senso mantenerla nella posizione attuale
+
+       // ...immaginate centinaia di righe di codice
+
+       // Ingenuamente si potrebbe andare dall'inizio alla fine
+       // e annotare da qualche parte il numero di righe
+     }
+     BBB
+     CCC
+
+NOTA: marcature e registri non hanno niente in comune, quindi il registro
+      a è completamente indipendente dalla marcatura a. Questo non vale
+      per i nomi dei registri e quelli delle macro di Vim.
+
+RIFERIMENTI: 	Marcature		:h marks
+		Movimenti marcature 	:h mark-motions (differenza fra ' e `)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+			Lezione 2.1 SOMMARIO
+
+
+  1. Per inserire (copiando, cancellando) testo, e per incollarlo (incolla))
+     sono disponibili 26 registri (a-z) 
+  2. Copiare una parola da una posizione qualsiasi al suo interno:   yiw
+  3. Cambiare una parola da una posizione qualsiasi al suo interno:   ciw
+  4. Inserire testo direttamente da registri in modo Insert:   (C-r)a
+
+  5. Inserire il risultato di semplici operazioni aritmetiche in modo
+     Insert: (C-r)=60*60<INVIO>
+  6. Inserire il risultato di chiamate a sistema in modo Insert:
+     (C-r)=system('ls -1')
+
+  7. Controllare contenuto registri con   :reg
+  8. Vedere dove vanno a finire le cancellazioni di intere righe: dd
+     nei registri numerati, ossia discendendo dal registro 1 al 9.
+     Osservare che le righe intere cancellate sono disponibili nei registri
+     numerati più a lungo di qualsiasi altra modifica
+  9. Vedere la destinazione finale delle operazioni di copia nei registri
+     numerati e controllare quanto si può aspettare che durino
+
+ 10. Inserire marcature in modo Normale   m[a-zA-Z0-9]
+ 11. Spostarsi a una riga marcata con il comando  '
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Qui finisce il capitolo due della guida Vim. Ci sono lavori in corso.
+
+  Questo capitolo è stato scritto da Paul D. Parker
+  e tradotto da Antonio Colombo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

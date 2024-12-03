@@ -41,7 +41,8 @@ CHAPTER1 = \
 		tutor1.zh.utf-8
 
 CHAPTER2 = \
-		tutor2
+		tutor2 \
+		tutor2.it
 
 CONVERTED = $(CHAPTER1) $(CHAPTER2)
 
