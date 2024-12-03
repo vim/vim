@@ -80,7 +80,7 @@ let s:patterns = [
       \ ['local\s+function\s+.+', 'end'],
       \ ]
 
-function! FoldLevelLua(lnum) abort
+function FoldLevelLua(lnum) abort
   " if b:lasttick == b:changedtick
   "   return len(b:foldlist)
   " endif
@@ -108,3 +108,5 @@ function! FoldLevelLua(lnum) abort
 
   return len(b:foldlist)
 endfunction
+
+" vim: nowrap sw=2 sts=2 ts=8 noet:
