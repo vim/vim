@@ -452,6 +452,9 @@ au BufNewFile,BufRead .clang-format		setf yaml
 " Clang-tidy
 au BufNewFile,BufRead .clang-tidy		setf yaml
 
+" Conda configuration file
+au BufNewFile,BufRead .condarc,condarc		setf yaml
+
 " Matplotlib
 au BufNewFile,BufRead *.mplstyle,matplotlibrc	setf yaml
 
