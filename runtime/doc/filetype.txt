@@ -752,10 +752,6 @@ If Vim has Lua support, then you can enable folding by using this: >
 
 	let g:lua_folding = 1
 
-Nested folds will be made by default. If you do not want that, then use this: >
-
-	let b/g:lua_inner_folds = 0
-
 MAIL							*ft-mail-plugin*
 
 Options:
