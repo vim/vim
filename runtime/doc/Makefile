@@ -151,6 +151,9 @@ os_risc.txt:
 os_win32.txt:
 	touch $@
 
+vietnamese.txt:
+	touch $@
+
 # In *BSD, the variable '$<' is used in suffix-transformation rules (in GNU this
 # is called "implicit rules", and in MS Windows it is called "inference rules").
 # For code portability, it is better to use the '$?' variable for explicit rules.
