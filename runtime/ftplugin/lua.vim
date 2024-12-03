@@ -5,7 +5,7 @@
 " Contributor:		Dorai Sitaram <ds26@gte.com>
 "			C.D. MacEachern <craig.daniel.maceachern@gmail.com>
 "			Tyler Miller <tmillr@proton.me>
-" Last Change:		2024 Jan 14
+" Last Change:		2024 Dec 03
 
 if exists("b:did_ftplugin")
   finish
@@ -52,17 +52,17 @@ if has("folding") && get(g:, "lua_folding", 0)
   setlocal foldmethod=expr
   setlocal foldexpr=LuaFold(v:lnum)
   let b:lua_lasttick = -1
-  let b:undo_ftplugin ..= "|setl foldexpr< foldmethod< | unlet b:lua_lasttick b:lua_foldlists"
+  let b:undo_ftplugin ..= "|setl foldexpr< foldmethod< | unlet! b:lua_lasttick b:lua_foldlists"
 endif
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
 
 " The rest of the file needs to be :sourced only once per Vim session
-if exists('s:loaded_lua') || &cp | finish | endif
+if exists('s:loaded_lua') || &cp
+  let &cpo = s:cpo_save
+  unlet s:cpo_save
+  finish
+endif
 let s:loaded_lua = 1
-
-" From https://github.com/ElPiloto/Lua-Omni-Vim-Completion/blob/7044c7010d4e6f59da60704a4a8e2118af7e973b/ftplugin/lua_omni.lua#L715C1-L738C4
 
 let s:patterns = [
       \ ['do', 'end'],
@@ -77,7 +77,7 @@ let s:patterns = [
 
 function! LuaFold(lnum) abort
   if b:lua_lasttick == b:changedtick
-    return len(b:lua_foldlists[a:lnum-1])
+    return b:lua_foldlists[a:lnum-1]
   endif
   let b:lua_lasttick = b:changedtick
 
@@ -100,10 +100,13 @@ function! LuaFold(lnum) abort
         break
       endif
     endfor
-    call add(b:lua_foldlists, copy(foldlist))
+    call add(b:lua_foldlists, len(foldlist))
   endfor
 
-  return len(lua_foldlists[a:lnum-1])
+  return lua_foldlists[a:lnum-1]
 endfunction
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: nowrap sw=2 sts=2 ts=8 noet:
