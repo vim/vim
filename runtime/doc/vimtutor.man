@@ -1,7 +1,5 @@
 VIMTUTOR(1)                 General Commands Manual                VIMTUTOR(1)
 
-
-
 NAME
        vimtutor - the Vim tutor
 
@@ -24,12 +22,12 @@ DESCRIPTION
        Vim is always started in Vi compatible mode.
 
 OPTIONS
-       -l, --language=ISO639
-              Set  the  two  or  three  letter language code. E.g. 'it', 'es',
-              'bar'.  Defaults to language of locale  if  available,  else  to
+       -l, --language ISO639
+              Set the two or three letter  language  code.  E.g.  'it',  'es',
+              'bar'.   Defaults  to  language  of locale if available, else to
               English.
 
-       -c, --chapter=NUMBER
+       -c, --chapter NUMBER
               Set the chapter number. Defaults to chapter one.
 
        -g, --gui
@@ -77,6 +75,4 @@ AUTHOR
 SEE ALSO
        vim(1)
 
-
-
-                               2024 November 04                    VIMTUTOR(1)
+                               2024 December 03                    VIMTUTOR(1)
