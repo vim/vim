@@ -51,8 +51,8 @@ endif
 if has("folding") && get(g:, "lua_folding", 0)
   setlocal foldmethod=expr
   setlocal foldexpr=LuaFold(v:lnum)
-  let b:lasttick = -1
-  let b:undo_ftplugin ..= "|setl foldexpr< foldmethod< | unlet b:lasttick b:foldlists"
+  let b:lua_lasttick = -1
+  let b:undo_ftplugin ..= "|setl foldexpr< foldmethod< | unlet b:lua_lasttick b:lua_foldlists"
 endif
 
 let &cpo = s:cpo_save
@@ -76,12 +76,12 @@ let s:patterns = [
       \ ]
 
 function! LuaFold(lnum) abort
-  if b:lasttick == b:changedtick
-    return len(b:foldlists[a:lnum-1])
+  if b:lua_lasttick == b:changedtick
+    return len(b:lua_foldlists[a:lnum-1])
   endif
-  let b:lasttick = b:changedtick
+  let b:lua_lasttick = b:changedtick
 
-  let b:foldlists = []
+  let b:lua_foldlists = []
   let foldlist = []
   let buf = getline(1, '$')
   for line in buf
@@ -100,10 +100,10 @@ function! LuaFold(lnum) abort
         break
       endif
     endfor
-    call add(b:foldlists, copy(foldlist))
+    call add(b:lua_foldlists, copy(foldlist))
   endfor
 
-  return len(foldlists[a:lnum-1])
+  return len(lua_foldlists[a:lnum-1])
 endfunction
 
 " vim: nowrap sw=2 sts=2 ts=8 noet:
