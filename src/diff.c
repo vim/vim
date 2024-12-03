@@ -2263,7 +2263,7 @@ run_linematch_algorithm(diff_T *dp)
     // array of integers (*decisions) and the length of that array
     // (decisions_length)
     int *decisions = NULL;
-    const Bool iwhite = (diff_flags & (DIFF_IWHITEALL | DIFF_IWHITE)) > 0;
+    const int iwhite = (diff_flags & (DIFF_IWHITEALL | DIFF_IWHITE)) > 0 ? 1 : 0;
     size_t decisions_length =
 	linematch_nbuffers(diffbufs, diff_length, ndiffs, &decisions, iwhite);
 

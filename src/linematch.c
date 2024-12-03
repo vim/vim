@@ -7,7 +7,6 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#include <stdbool.h>
 
 #include "vim.h"
 
@@ -93,10 +92,10 @@ matching_chars(const mmfile_t *m1, const mmfile_t *m2)
   char *s1 = m1->ptr;
   char *s2 = m2->ptr;
   int matrix[2][MATCH_CHAR_MAX_LEN] = { 0 };
-  bool icur = 1;  // save space by storing only two rows for i axis
+  int icur = 1;  // save space by storing only two rows for i axis
   for (size_t i = 0; i < s1len; i++)
   {
-    icur = !icur;
+    icur = (icur == 1 ? 0 : 1);
     int *e1 = matrix[icur];
     int *e2 = matrix[!icur];
     for (size_t j = 0; j < s2len; j++)
@@ -128,7 +127,7 @@ matching_chars(const mmfile_t *m1, const mmfile_t *m2)
 /// @param fomvals
 /// @param n
     int
-count_n_matched_chars(mmfile_t **sp, const size_t n, Bool iwhite)
+count_n_matched_chars(mmfile_t **sp, const size_t n, int iwhite)
 {
   int matched_chars = 0;
   int matched = 0;
@@ -189,7 +188,7 @@ fastforward_buf_to_lnum(mmfile_t s, linenr_T lnum)
 try_possible_paths(const int *df_iters, const size_t *paths, const int npaths,
                                const int path_idx, int *choice, diffcmppath_T *diffcmppath,
                                const int *diff_len, const size_t ndiffs, const mmfile_t **diff_blk,
-                               Bool iwhite)
+                               int iwhite)
 {
   if (path_idx == npaths)
   {
@@ -279,7 +278,7 @@ unwrap_indexes(const int *values, const int *diff_len, const size_t ndiffs)
     void
 populate_tensor(int *df_iters, const size_t ch_dim, diffcmppath_T *diffcmppath,
                             const int *diff_len, const size_t ndiffs, const mmfile_t **diff_blk,
-                            Bool iwhite)
+                            int iwhite)
 {
   if (ch_dim == ndiffs)
   {
@@ -367,7 +366,7 @@ populate_tensor(int *df_iters, const size_t ch_dim, diffcmppath_T *diffcmppath,
 /// @return the length of decisions
     size_t
 linematch_nbuffers(const mmfile_t **diff_blk, const int *diff_len, const size_t ndiffs,
-                          int **decisions, Bool iwhite)
+                          int **decisions, int iwhite)
 {
   assert(ndiffs <= LN_MAX_BUFS);
 
