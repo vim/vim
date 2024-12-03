@@ -2241,7 +2241,10 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		mch_memmove(remain, q, remainlen + 1);
 	    }
 	    else
+	    {
 		VIM_CLEAR(remain);
+		remainlen = 0;
+	    }
 	}
 
 	vim_free(buf);
