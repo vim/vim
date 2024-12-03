@@ -48,11 +48,6 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
   let b:undo_ftplugin ..= " | unlet! b:browsefilter"
 endif
 
-" fold Lua functions
-silent! function LuaFold(lnum)
-  lua foldlevel_luacode()
-endfunction
-
 if has("folding") && get(g:, "lua_folding", 0)
   setlocal foldexpr=LuaFold(v:lnum)
   setlocal foldmethod=expr
