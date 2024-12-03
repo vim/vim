@@ -1071,6 +1071,8 @@ LANG_GEN = \
 		runtime/tutor/tutor1.bar \
 		runtime/tutor/tutor1.bar.utf-8 \
 		runtime/tutor/tutor2.utf-8 \
+		runtime/tutor/tutor2.?? \
+		runtime/tutor/tutor2.??.utf-8 \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
