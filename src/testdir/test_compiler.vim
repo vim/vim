@@ -229,8 +229,8 @@ func Test_compiler_spotbugs_makeprg()
 
   " MAKE CLASS FILES DISCOVERABLE!
   let g:spotbugs_properties = {
-    \ 'sourceDirPath': 'src/tests',
-    \ 'classDirPath': 'tests',
+      \ 'sourceDirPath': ['src/tests'],
+      \ 'classDirPath': ['tests'],
   \ }
 
   call assert_true(has_key(s:SpotBugsParseFilterMakePrg('Xspotbugs', ''), 'sourcepath'))
