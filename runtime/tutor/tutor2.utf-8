@@ -117,7 +117,7 @@ REFERENCE: 	Numbered Registers 	:h quote0
 
 NOTE: a common conundrum when coding is moving around large chunks of code.
       The following technique helps avoid number line calculations associated
-      with operatins like   "a147d   or   :945,1091d a   or even worse using
+      with operations like   "a147d   or   :945,1091d a   or even worse using
       i<C-r>=1091-945<enter>   first
 
   1. Move the cursor to the line below marked --->
