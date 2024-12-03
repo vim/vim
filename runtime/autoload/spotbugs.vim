@@ -1,6 +1,6 @@
 " Default pre- and post-compiler actions for SpotBugs
 " Maintainers:  @konfekt and @zzzyxwvut
-" Last Change:  2024 Dec 02
+" Last Change:  2024 Dec 03
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -130,8 +130,8 @@ function! spotbugs#DefaultPostCompilerAction() abort
   make %:S
 endfunction
 
-" Look for "spotbugs#compiler" in "ftplugin/java.vim".
-let s:compiler = exists('spotbugs#compiler') ? spotbugs#compiler : ''
+" Look for "g:spotbugs#compiler" in "ftplugin/java.vim".
+let s:compiler = exists('g:spotbugs#compiler') ? g:spotbugs#compiler : ''
 let s:readable = filereadable($VIMRUNTIME . '/compiler/' . s:compiler . '.vim')
 
 if s:readable && s:compiler ==# 'maven' && executable('mvn')
@@ -158,10 +158,10 @@ if s:readable && s:compiler ==# 'maven' && executable('mvn')
             \ function('spotbugs#DefaultPreCompilerTestAction'),
         \ 'PostCompilerAction':
             \ function('spotbugs#DefaultPostCompilerAction'),
-        \ 'sourceDirPath':      'src/main/java',
-        \ 'classDirPath':       'target/classes',
-        \ 'testSourceDirPath':  'src/test/java',
-        \ 'testClassDirPath':   'target/test-classes',
+        \ 'sourceDirPath':      ['src/main/java'],
+        \ 'classDirPath':       ['target/classes'],
+        \ 'testSourceDirPath':  ['src/test/java'],
+        \ 'testClassDirPath':   ['target/test-classes'],
         \ }
   endfunction
 
@@ -190,10 +190,10 @@ elseif s:readable && s:compiler ==# 'ant' && executable('ant')
             \ function('spotbugs#DefaultPreCompilerTestAction'),
         \ 'PostCompilerAction':
             \ function('spotbugs#DefaultPostCompilerAction'),
-        \ 'sourceDirPath':      'src',
-        \ 'classDirPath':       'build/classes',
-        \ 'testSourceDirPath':  'test',
-        \ 'testClassDirPath':   'build/test/classes',
+        \ 'sourceDirPath':      ['src'],
+        \ 'classDirPath':       ['build/classes'],
+        \ 'testSourceDirPath':  ['test'],
+        \ 'testClassDirPath':   ['build/test/classes'],
         \ }
   endfunction
 

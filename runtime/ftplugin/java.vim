@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Dec 02
+" Last Change:		2024 Dec 03
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -93,7 +93,7 @@ endif
 " The support for pre- and post-compiler actions for SpotBugs.
 if exists("g:spotbugs_properties") && has_key(g:spotbugs_properties, 'compiler')
     try
-	let spotbugs#compiler = g:spotbugs_properties.compiler
+	let g:spotbugs#compiler = g:spotbugs_properties.compiler
 	let g:spotbugs_properties = extend(
 		\ spotbugs#DefaultProperties(),
 		\ g:spotbugs_properties,
@@ -118,9 +118,8 @@ if exists("g:spotbugs_properties") &&
 
     let s:request = 0
 
-    if has_key(g:spotbugs_properties, 'PreCompilerAction')
-	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerAction()'
-	let s:request += 1
+    if has_key(g:spotbugs_properties, 'PostCompilerAction')
+	let s:request += 4
     endif
 
     if has_key(g:spotbugs_properties, 'PreCompilerTestAction')
@@ -128,29 +127,44 @@ if exists("g:spotbugs_properties") &&
 	let s:request += 2
     endif
 
-    if has_key(g:spotbugs_properties, 'PostCompilerAction')
-	let s:request += 4
+    if has_key(g:spotbugs_properties, 'PreCompilerAction')
+	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerAction()'
+	let s:request += 1
     endif
 
+    " Adapt the tests for "s:FindClassFiles()" from "compiler/spotbugs.vim".
     if (s:request == 3 || s:request == 7) &&
-	    \ has_key(g:spotbugs_properties, 'sourceDirPath') &&
-	    \ has_key(g:spotbugs_properties, 'testSourceDirPath')
-	function! s:DispatchAction(path_action_pairs) abort
+	    \ (!empty(get(g:spotbugs_properties, 'sourceDirPath', [])) &&
+		\ !empty(get(g:spotbugs_properties, 'classDirPath', [])) &&
+	    \ !empty(get(g:spotbugs_properties, 'testSourceDirPath', [])) &&
+		\ !empty(get(g:spotbugs_properties, 'testClassDirPath', [])))
+	function! s:DispatchAction(paths_action_pairs) abort
 	    let name = expand('%:p')
 
-	    for [path, Action] in a:path_action_pairs
-		if name =~# (path . '.\{-}\.java\=$')
-		    call Action()
-		    break
-		endif
+	    for [paths, Action] in a:paths_action_pairs
+		for path in paths
+		    if name =~# (path . '.\{-}\.java\=$')
+			call Action()
+			return
+		    endif
+		endfor
 	    endfor
 	endfunction
 
+	let s:dir_cnt = min([
+	    \ len(g:spotbugs_properties.sourceDirPath),
+	    \ len(g:spotbugs_properties.classDirPath)])
+	let s:test_dir_cnt = min([
+	    \ len(g:spotbugs_properties.testSourceDirPath),
+	    \ len(g:spotbugs_properties.testClassDirPath)])
+
+	" Do not break up path pairs with filtering!
 	let s:dispatcher = printf('call s:DispatchAction(%s)',
-		\ string([[g:spotbugs_properties.sourceDirPath,
-			    \ g:spotbugs_properties.PreCompilerAction],
-			\ [g:spotbugs_properties.testSourceDirPath,
-			    \ g:spotbugs_properties.PreCompilerTestAction]]))
+	    \ string([[g:spotbugs_properties.sourceDirPath[0 : s:dir_cnt - 1],
+			\ g:spotbugs_properties.PreCompilerAction],
+		\ [g:spotbugs_properties.testSourceDirPath[0 : s:test_dir_cnt - 1],
+			\ g:spotbugs_properties.PreCompilerTestAction]]))
+	unlet s:test_dir_cnt s:dir_cnt
     endif
 
     if exists("s:dispatcher")
@@ -276,14 +290,16 @@ if exists("s:zip_func_upgradable")
 endif
 
 if exists("*s:DispatchAction")
-    def! s:DispatchAction(path_action_pairs: list<list<any>>)
+    def! s:DispatchAction(paths_action_pairs: list<list<any>>)
 	const name: string = expand('%:p')
 
-	for [path: string, Action: func: any] in path_action_pairs
-	    if name =~# (path .. '.\{-}\.java\=$')
-		Action()
-		break
-	    endif
+	for [paths: list<string>, Action: func: any] in paths_action_pairs
+	    for path in paths
+		if name =~# (path .. '.\{-}\.java\=$')
+		    Action()
+		    return
+		endif
+	    endfor
 	endfor
     enddef
 endif

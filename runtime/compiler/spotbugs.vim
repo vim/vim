@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzyxwvut
-" Last Change:  2024 Dec 01
+" Last Change:  2024 Dec 03
 
 if exists('g:current_compiler') || bufname() !~# '\.java\=$' || wordcount().chars < 9
   finish
@@ -107,32 +107,49 @@ else
 endif
 
 if exists('g:spotbugs_properties') &&
-    \ ((has_key(g:spotbugs_properties, 'sourceDirPath') &&
-    \ has_key(g:spotbugs_properties, 'classDirPath')) ||
-    \ (has_key(g:spotbugs_properties, 'testSourceDirPath') &&
-    \ has_key(g:spotbugs_properties, 'testClassDirPath')))
+    \ ((!empty(get(g:spotbugs_properties, 'sourceDirPath', [])) &&
+        \ !empty(get(g:spotbugs_properties, 'classDirPath', []))) ||
+    \ (!empty(get(g:spotbugs_properties, 'testSourceDirPath', [])) &&
+        \ !empty(get(g:spotbugs_properties, 'testClassDirPath', []))))
+
+function! s:CommonIdxsAndDirs() abort
+  let src_dir_path = get(g:spotbugs_properties, 'sourceDirPath', [])
+  let bin_dir_path = get(g:spotbugs_properties, 'classDirPath', [])
+  let test_src_dir_path = get(g:spotbugs_properties, 'testSourceDirPath', [])
+  let test_bin_dir_path = get(g:spotbugs_properties, 'testClassDirPath', [])
+  let dir_cnt = min([len(src_dir_path), len(bin_dir_path)])
+  let test_dir_cnt = min([len(test_src_dir_path), len(test_bin_dir_path)])
+  " Do not break up path pairs with filtering!
+  return [[range(dir_cnt),
+          \ src_dir_path[0 : dir_cnt - 1],
+          \ bin_dir_path[0 : dir_cnt - 1]],
+      \ [range(test_dir_cnt),
+          \ test_src_dir_path[0 : test_dir_cnt - 1],
+          \ test_bin_dir_path[0 : test_dir_cnt - 1]]]
+endfunction
+
+let s:common_idxs_and_dirs = s:CommonIdxsAndDirs()
+delfunction s:CommonIdxsAndDirs
 
 function! s:FindClassFiles(src_type_name) abort
   let class_files = []
   " Match pairwise the components of source and class pathnames
-  for [src_dir, bin_dir] in filter([
-            \ [get(g:spotbugs_properties, 'sourceDirPath', ''),
-                \ get(g:spotbugs_properties, 'classDirPath', '')],
-            \ [get(g:spotbugs_properties, 'testSourceDirPath', ''),
-                \ get(g:spotbugs_properties, 'testClassDirPath', '')]],
-        \ '!(empty(v:val[0]) || empty(v:val[1]))')
-    " Since only the rightmost "src" is sought, while there can be any number of
-    " such filenames, no "fnamemodify(a:src_type_name, ':p:s?src?bin?')" is used
-    let tail_idx = strridx(a:src_type_name, src_dir)
-    " No such directory or no such inner type (i.e. without "$")
-    if tail_idx < 0 | continue | endif
-    " Substitute "bin_dir" for the rightmost "src_dir"
-    let candidate_type_name = strpart(a:src_type_name, 0, tail_idx)..
-        \ bin_dir..
-        \ strpart(a:src_type_name, (tail_idx + strlen(src_dir)))
-    for candidate in insert(s:GlobClassFiles(candidate_type_name),
+  for [idxs, src_dirs, bin_dirs] in s:common_idxs_and_dirs
+    " Do not use "fnamemodify(a:src_type_name, ':p:s?src?bin?')" because only
+    " the rightmost "src" is looked for
+    for idx in idxs
+      let tail_idx = strridx(a:src_type_name, src_dirs[idx])
+      " No such directory or no such inner type (i.e. without "$")
+      if tail_idx < 0 | continue | endif
+      " Substitute "bin_dirs[idx]" for the rightmost "src_dirs[idx]"
+      let candidate_type_name = strpart(a:src_type_name, 0, tail_idx)..
+          \ bin_dirs[idx]..
+          \ strpart(a:src_type_name, (tail_idx + strlen(src_dirs[idx])))
+      for candidate in insert(s:GlobClassFiles(candidate_type_name),
             \ candidate_type_name..'.class')
-      if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
+        if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
+      endfor
+      if !empty(class_files) | break | endif
     endfor
     if !empty(class_files) | break | endif
   endfor
@@ -143,7 +160,7 @@ else
 function! s:FindClassFiles(src_type_name) abort
   let class_files = []
   for candidate in insert(s:GlobClassFiles(a:src_type_name),
-          \ a:src_type_name..'.class')
+        \ a:src_type_name..'.class')
     if filereadable(candidate) | call add(class_files, shellescape(candidate)) | endif
   endfor
   return class_files
@@ -185,6 +202,6 @@ delfunction s:FindClassFiles
 delfunction s:GlobClassFiles
 delfunction s:GetDeclaredTypeNames
 let &cpo = s:cpo_save
-unlet s:package_dir_heads s:package s:package_names s:type_names s:keywords s:cpo_save
+unlet! s:package_dir_heads s:common_idxs_and_dirs s:package s:package_names s:type_names s:keywords s:cpo_save
 
 " vim: set foldmethod=syntax shiftwidth=2 expandtab:
