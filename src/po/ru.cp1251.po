@@ -22,18 +22,18 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9010733.170924\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-17 02:14+0300\n"
-"PO-Revision-Date: 2024-09-17 02:16+0300\n"
+"Project-Id-Version: RuVim_0.9010898.301124\n"
+"Report-Msgid-Bugs-To: The Vim Project, <vim-dev@vim.org>\n"
+"POT-Creation-Date: 2024-11-30 20:11+0300\n"
+"PO-Revision-Date: 2024-11-30 20:26+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1251\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 # #Restorer: выводится при анализе (профилировании) программы, функции и т. п.
 # ~!: earlier
@@ -216,31 +216,27 @@ msgstr "%d %%"
 
 # #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
 # #Restorer: редактировании нескольких файлов
-# ~!: Restorer
 #, c-format
 msgid " (%d of %d)"
 msgstr " (%d из %d)"
 
 # #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
 # #Restorer: редактировании нескольких файлов
-# ~!: Restorer
 #, c-format
 msgid " ((%d) of %d)"
 msgstr " ((%d) из %d)"
 
 # #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
 # #Restorer: редактировании нескольких файлов
-# ~!: Restorer
 #, c-format
 msgid " (file %d of %d)"
-msgstr " (файл %d из %d"
+msgstr " (файл %d из %d)"
 
 # #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
 # #Restorer: редактировании нескольких файлов
-# ~!: Restorer
 #, c-format
 msgid " (file (%d) of %d)"
-msgstr " (файл (%d) из %d"
+msgstr " (файл (%d) из %d)"
 
 msgid "[Command Line]"
 msgstr "[командная строка]"
@@ -435,8 +431,8 @@ msgstr "XChaCha20v2: для получения ключа применён стандартный алгоритм \"%d\""
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr ""
-"Выполнено переключение в режим диагностики. Чтобы продолжить, наберите \"cont"
-"\""
+"Выполнено переключение в режим диагностики. Чтобы продолжить, наберите "
+"\"cont\""
 
 # #Restorer: команды `:debug`; выводится при изменении в точке останова
 #, c-format
@@ -494,8 +490,8 @@ msgstr "аргумента функции extend()"
 #, c-format
 msgid "Not enough memory to use internal diff for buffer \"%s\""
 msgstr ""
-"Встроенному механизму сравнения недостаточно памяти на считывание буфера \"%s"
-"\""
+"Встроенному механизму сравнения недостаточно памяти на считывание буфера "
+"\"%s\""
 
 # #Restorer: выводится в заголовке окна выбора файла
 msgid "Patch file"
@@ -1110,8 +1106,8 @@ msgstr "Чтобы получить дополнительную информацию, наберите `:help W11`"
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr ""
-"W16: Внимание! После считывания в буфер, изменены права доступа к файлу \"%s"
-"\""
+"W16: Внимание! После считывания в буфер, изменены права доступа к файлу "
+"\"%s\""
 
 msgid "See \":help W16\" for more info."
 msgstr "Чтобы получить дополнительную информацию, наберите `:help W16`"
@@ -2838,6 +2834,12 @@ msgstr "-- Далее --"
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr " SPACE/d/j - вниз, b/u/k - вверх на экран/страницу/строку; q - отбой "
 
+msgid "W23: Clipboard register not available, using register 0"
+msgstr "W23: Регистр буфера обмена не доступен. Будет использован регист 0"
+
+msgid "W24: Clipboard register not available. See :h W24"
+msgstr "W24: Регистр буфера обмена не доступен. Подробнее см. :h W24"
+
 # #Restorer: заголовок окна
 msgid "Question"
 msgstr "Запрос"
@@ -2956,7 +2958,7 @@ msgstr[0] "%d строка изменена"
 msgstr[1] "%d строки изменено"
 msgstr[2] "%d строк изменено"
 
-# #Restorer: добавляется к сообщению о позиции каретки при блоковом выделении
+# #Restorer: добавляется к сообщению о позиции каретки при выделении блока
 #, c-format
 msgid "%ld Cols; "
 msgstr "колонок %ld; "
@@ -3407,7 +3409,7 @@ msgstr " РЕЖИМ ВИЗУАЛЬНЫЙ ПОСТРОЧНЫЙ"
 # #Restorer: наименование режима. Выводится в командной строке по команде
 # #Restorer: `ctrl+v`
 msgid " VISUAL BLOCK"
-msgstr " РЕЖИМ ВИЗУАЛЬНЫЙ БЛОКОВЫЙ"
+msgstr " РЕЖИМ ВИЗУАЛЬНЫЙ БЛОЧНЫЙ"
 
 # #Restorer: наименование режима. Выводится в командной строке по команде `g h`
 msgid " SELECT"
@@ -3421,7 +3423,7 @@ msgstr " РЕЖИМ ВЫБОРКИ ПОСТРОЧНЫЙ"
 # #Restorer: наименование режима. Выводится в командной строке по команде
 # #Restorer: `g ctrl+h`
 msgid " SELECT BLOCK"
-msgstr " РЕЖИМ ВЫБОРКИ БЛОКОВЫЙ"
+msgstr " РЕЖИМ ВЫБОРКИ БЛОЧНЫЙ"
 
 # #Restorer: наименование режима. Выводится в командной строке по команде `q`
 msgid "recording"
@@ -3856,7 +3858,7 @@ msgstr "Не обработано слов с символами, не входящими в кодировку ASCII: %d"
 # #Restorer: с версии 8.2 подставляется наименования сжимаемого «дерева» - %s
 #, c-format
 msgid "Compressed %s: %ld of %ld nodes; %ld (%ld%%) remaining"
-msgstr "Сжато узлов %s: %ld из %ld. Осталось %ld (%ld%%)"
+msgstr "Сжато узлов %s: %ld из %ld. Осталось %ld (%ld %%)"
 
 msgid "Reading back spell file..."
 msgstr "Считывание записанного файла правил написания..."
@@ -4480,9 +4482,8 @@ msgstr " В этой версии включены (+) и отключены (-) следующие компоненты:\n"
 msgid "   system vimrc file: \""
 msgstr "           общесистемный файл vimrc: \""
 
-# ~!: earlier
 msgid "     user vimrc file: \""
-msgstr "        пользовательский файл vimrc: \""
+msgstr "   1-ый пользовательский файл vimrc: \""
 
 msgid " 2nd user vimrc file: \""
 msgstr "   2-ой пользовательский файл vimrc: \""
@@ -4493,9 +4494,8 @@ msgstr "   3-ий пользовательский файл vimrc: \""
 msgid " 4th user vimrc file: \""
 msgstr "   4-ый пользовательский файл vimrc: \""
 
-# ~!: earlier
 msgid "      user exrc file: \""
-msgstr "         пользовательский файл exrc: \""
+msgstr "    1-ый пользовательский файл exrc: \""
 
 # ~!: earlier
 msgid "  2nd user exrc file: \""
@@ -4505,9 +4505,8 @@ msgstr "    2-ой пользовательский файл exrc: \""
 msgid "  system gvimrc file: \""
 msgstr "          общесистемный файл gvimrc: \""
 
-# ~!: earlier
 msgid "    user gvimrc file: \""
-msgstr "       пользовательский файл gvimrc: \""
+msgstr "  1-ый пользовательский файл gvimrc: \""
 
 # ~!: earlier
 msgid "2nd user gvimrc file: \""
@@ -5089,7 +5088,7 @@ msgstr "E69: Отсутствует закрывающая квадратная скобка для %s%%["
 
 #, c-format
 msgid "E70: Empty %s%%[]"
-msgstr "E70: Отсутствуют элементы в классе факультативных элементов %s%%[]"
+msgstr "E70: Отсутствуют записи в классе факультативных элементов %s%%[]"
 
 #, c-format
 msgid "E71: Invalid character after %s%%"
@@ -9929,8 +9928,8 @@ msgstr ""
 "\"%s\""
 
 msgid ""
-"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or \"const"
-"\""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
+"\"const\""
 msgstr ""
 "E1368: После ключевого слова \"static\" требуется команда :var или :def, "
 "либо ключевое слово \"final\" или \"const\""
@@ -9948,8 +9947,8 @@ msgstr "E1371: После ключевого слова \"abstract\" требуется команда :def"
 #, c-format
 msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
 msgstr ""
-"E1372: Не допускается определение в реальном классе абстрактного метода \"%s"
-"\""
+"E1372: Не допускается определение в реальном классе абстрактного метода "
+"\"%s\""
 
 #, c-format
 msgid "E1373: Abstract method \"%s\" is not implemented"
@@ -10021,8 +10020,8 @@ msgid ""
 "E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
 "method"
 msgstr ""
-"E1390: Переменная объекта \"this.%s\" может указываться только в методе \"new"
-"\""
+"E1390: Переменная объекта \"this.%s\" может указываться только в методе "
+"\"new\""
 
 #, c-format
 msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
@@ -10080,8 +10079,8 @@ msgstr "E1408: Интерфейсы не поддерживают финализированные переменные"
 #, c-format
 msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
 msgstr ""
-"E1409: Не допускается изменение доступной только для чтения переменной \"%s"
-"\" класса \"%s\""
+"E1409: Не допускается изменение доступной только для чтения переменной "
+"\"%s\" класса \"%s\""
 
 msgid "E1410: Const variable not supported in an interface"
 msgstr "E1410: Интерфейсы не поддерживают константные переменные"
@@ -10219,6 +10218,10 @@ msgstr "E1512: В данном поле не поддерживаются полноширинные символы \"%s\""
 
 msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
 msgstr "E1513: Не удалось сменить буфер. Установлен параметр 'winfixbuf'"
+
+msgid "E1514: 'findfunc' did not return a List type"
+msgstr ""
+"E1514: Полученные от параметра 'findfunc' данные не являются типом List"
 
 # #Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 msgid "--No lines in buffer--"
@@ -11327,6 +11330,9 @@ msgstr ""
 msgid "list of flags to make messages shorter"
 msgstr "флаги, управляющие количеством отображаемых сообщений программы"
 
+msgid "how many messages are remembered"
+msgstr "количество запоминаемых сообщений"
+
 msgid "show (partial) command keys in location given by 'showcmdloc'"
 msgstr ""
 "отображение набранных команд там, где указанно в параметре\n"
@@ -11454,6 +11460,9 @@ msgstr "работа команд CTRL+N и CTRL+P при подстановке в режиме вставки"
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "использовать всплывающее меню при подстановке в режиме вставки"
+
+msgid "popup menu item align order"
+msgstr "порядок отображения элементов во всплывающем меню при подстановке"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "информация во всплывающем меню при подстановке в режиме вставки"

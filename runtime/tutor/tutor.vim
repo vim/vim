@@ -1,7 +1,7 @@
 " Vim tutor support file
 " Author:	Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
 " Maintainer:	The·Vim·Project·<https://github.com/vim/vim>
-" Last Change:	2023 Aug 13
+" Last Change:	2024 Nov 17
 
 " This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -13,7 +13,7 @@
 " 1. Build the extension of the file, if any:
 let s:ext = ""
 if strlen($xx) > 1
-  let s:ext = "." . $xx
+  let s:ext = "." .. $xx
 else
   let s:lang = ""
   " Check that a potential value has at least two letters.
@@ -51,7 +51,7 @@ else
     elseif s:lang =~ "Bulgarian"
       let s:ext = ".bg"
     else
-      let s:ext = "." . strpart(s:lang, 0, 2)
+      let s:ext = "." .. strpart(s:lang, 0, 2)
     endif
   endif
 endif
@@ -177,28 +177,25 @@ endif
 
 " If 'encoding' is utf-8 s:ext must end in utf-8.
 if &enc == 'utf-8' && s:ext !~ '\.utf-8'
-  let s:ext .= '.utf-8'
+  let s:ext ..= '.utf-8'
 endif
 
 " 2. Build the name of the file and chapter
-let s:chapter = exists("$CHAPTER") ? $CHAPTER : ''
-if s:chapter == "1"
-  let s:chapter = ''
-endif
+let s:chapter = exists("$CHAPTER") ? $CHAPTER : 1
 
-let s:tutorfile = "/tutor/tutor" . s:chapter
-let s:tutorxx = $VIMRUNTIME . s:tutorfile . s:ext
+let s:tutorfile = "/tutor/tutor" .. s:chapter
+let s:tutorxx = $VIMRUNTIME .. s:tutorfile .. s:ext
 
 " 3. Finding the file:
 if filereadable(s:tutorxx)
   let $TUTOR = s:tutorxx
-elseif s:ext !~ '\.utf-8' && filereadable(s:tutorxx . ".utf-8")
+elseif s:ext !~ '\.utf-8' && filereadable(s:tutorxx .. ".utf-8")
   " Fallback to utf-8 if available.
-  let $TUTOR = s:tutorxx . ".utf-8"
+  let $TUTOR = s:tutorxx .. ".utf-8"
 else
-  let $TUTOR = $VIMRUNTIME . s:tutorfile
-  echo "The file " . s:tutorxx . " does not exist.\n"
-  echo "Copying English version: " . $TUTOR
+  let $TUTOR = $VIMRUNTIME .. s:tutorfile
+  echo "The file " .. s:tutorxx .. " does not exist.\n"
+  echo "Copying English version: " .. $TUTOR
   4sleep
 endif
 

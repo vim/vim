@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 Nov 27
+*options.txt*	For Vim version 9.1.  Last change: 2024 Dec 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1069,8 +1069,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	done with ":syntax on".
 
 							*'backspace'* *'bs'*
-'backspace' 'bs'	string	(default "", set to "indent,eol,start"
-							    in |defaults.vim|)
+'backspace' 'bs'	string	(Vim default: "indent,eol,start", Vi default: "")
 			global
 	Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert
 	mode.  This is a list of items, separated by commas.  Each item allows
@@ -2155,9 +2154,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    a match from the menu. Only works in combination with
 		    "menu" or "menuone". No effect if "longest" is present.
 
-	   noselect Do not select a match in the menu, force the user to
-		    select one from the menu. Only works in combination with
-		    "menu" or "menuone".
+	   noselect Same as "noinsert", except that no menu item is
+		    pre-selected. If both "noinsert" and "noselect" are present,
+		    "noselect" has precedence.
 
 	   fuzzy    Enable |fuzzy-matching| for completion candidates. This
 		    allows for more flexible and intuitive matching, where
