@@ -49,17 +49,16 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
 endif
 
 if has("folding") && get(g:, "lua_folding", 0)
-  setlocal foldexpr=LuaFold(v:lnum)
   setlocal foldmethod=expr
-  let b:undo_ftplugin ..= "|setl foldexpr< foldmethod<"
+  setlocal foldexpr=LuaFold(v:lnum)
+  let b:lasttick = -1
+  let b:undo_ftplugin ..= "|setl foldexpr< foldmethod< | unlet b:lasttick b:foldlists"
 endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
 " The rest of the file needs to be :sourced only once per Vim session
-let b:lasttick = -1
-
 if exists('s:loaded_lua') || &cp | finish | endif
 let s:loaded_lua = 1
 
@@ -104,7 +103,7 @@ function! LuaFold(lnum) abort
     call add(b:foldlists, copy(foldlist))
   endfor
 
-  return len(foldlists[a:lnum])
+  return len(foldlists[a:lnum-1])
 endfunction
 
 " vim: nowrap sw=2 sts=2 ts=8 noet:
