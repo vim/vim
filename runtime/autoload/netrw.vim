@@ -5045,7 +5045,7 @@ if has('unix')
   endfun
  else
   fun! netrw#Launch(args)
-    exe ':silent ! nohup' a:args s:redir() '&' | redraw!
+    exe ':silent ! nohup' a:args s:redir() (has('gui_running') ? '' : '&') | redraw!
   endfun
  endif
 elseif has('win32')
