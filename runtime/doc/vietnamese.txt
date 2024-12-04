@@ -1,4 +1,4 @@
-*vietnamese.txt*   For Vim version 9.1.  Last change: 2024 Dec 02
+*vietnamese.txt*   For Vim version 9.1.  Last change: 2024 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by Phạm Bình An
@@ -13,7 +13,6 @@ Vietnamese language support in Vim		*vietnamese* *Vietnamese*
 ===============================================================================
 1. Introduction
 							*vietnamese-intro*
-
 Vim supports Vietnamese language in the following ways:
 
 - Built-in |vietnamese-keymap|, which allows you to type Vietnamese characters
@@ -23,7 +22,6 @@ Vim supports Vietnamese language in the following ways:
 ===============================================================================
 2. Vietnamese keymaps
 							*vietnamese-keymap*
-
 To switch between languages you can use your system native keyboard switcher,
 or use one of the Vietnamese keymaps included in the Vim distribution, like
 below >
@@ -42,7 +40,6 @@ Vim comes with the following Vietnamese keymaps:
 - *vietnamese-vni_utf-8*	VNI input method, |UTF-8| encoding.
 
                                                    *vietnamese-ime_diff*
-
 Since these keymaps were designed to be minimalistic, they do not support all
 features of the corresponding input methods. The differences are described
 below:
@@ -67,10 +64,9 @@ below:
 ===============================================================================
 3. Localization
 							*vietnamese-l18n*
-
-Vim |messages| are also available in Vietnamese.  If you wish to see messages in
-Vietnamese, you can run the command |:language| with an argument being the name
-of the Vietnamese locale.  For example, >
+Vim |messages| are also available in Vietnamese.  If you wish to see messages
+in Vietnamese, you can run the command |:language| with an argument being the
+name of the Vietnamese locale.  For example, >
 	:language vi_VN
 < or >
 	:language vi_VN.utf-8
@@ -79,7 +75,7 @@ Note that the name of the Vietnamese locale may vary depending on your system.
 See |mbyte-first| for details.
 
 |vimtutor| is also available in Vietnamese. To start Vimtutor in Vietnamese,
-run the following command in terminal: >sh
+run the following command in terminal: >
 	vimtutor vi
 <
 ===============================================================================
