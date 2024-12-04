@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Dec 02
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Dec 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4752,9 +4752,6 @@ Insert mode completion/expansion:
 -   When complete() first argument is before where insert started and
     'backspace' is Vi compatible, the completion fails.
     (Hirohito Higashi, 2015 Feb 19)
--   The CompleteDone autocommand needs some info passed to it:
-    - The word that was selected (empty if abandoned complete)
-    - Type of completion: tag, omnifunc, user func.
 -   When a:base in 'completefunc' starts with a number it's passed as a
     number, not a string. (Sean Ma)  Need to add flag to call_func_retlist()
     to force a string value.
