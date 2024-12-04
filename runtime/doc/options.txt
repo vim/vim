@@ -2958,8 +2958,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 				Use the indent heuristic for the internal
 				diff library.
 
-		algorithm:{text} Use the specified diff algorithm with the
-
 		linematch:{n}   Align and mark changes between the most
 				similar lines between the buffers. When the
 				total number of lines in the diff hunk exceeds
@@ -2970,8 +2968,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				for a 2 buffer diff hunk of 30 lines each,
 				or a 3 buffer diff hunk of 20 lines each.
 
-                algorithm:{text} Use the specified diff algorithm with the
-
+		algorithm:{text} Use the specified diff algorithm with the
 				internal diff engine. Currently supported
 				algorithms are:
 				myers      the default algorithm
