@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2024 Dec 03
+*filetype.txt*	For Vim version 9.1.  Last change: 2024 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -634,7 +634,7 @@ To disable this behavior, set the following variable in your vimrc: >
 	let g:gdscript_recommended_style = 0
 
 
-GIT COMMIT                                              *ft-gitcommit-plugin*
+GIT COMMIT						*ft-gitcommit-plugin*
 
 One command, :DiffGitCached, is provided to show a diff of the current commit
 in the preview window.  It is equivalent to calling "git diff --cached" plus
@@ -744,9 +744,9 @@ Add following lines to $HOME/.vim/ftplugin/json.vim: >
 	import autoload 'dist/json.vim'
 	setl formatexpr=json.FormatExpr()
 
-LUA                                                     *ft-lua-plugin*
+LUA							*ft-lua-plugin*
 
-You can enable folding of lua functions using |fold-expr| by: >
+You can enable folding of Lua functions using |fold-expr| by: >
 
 	let g:lua_folding = 1
 
@@ -820,7 +820,7 @@ page in a Vim window: >
 	set keywordprg=:Man
 
 
-MANPAGER				      *manpager.vim*
+MANPAGER						*manpager.vim*
 
 The |:Man| command allows you to turn Vim into a manpager (that syntax
 highlights manpages and follows linked manpages on hitting CTRL-]).
@@ -838,7 +838,7 @@ For fish, add to the config file
 	set -x MANPAGER "vim +MANPAGER --not-a-term -"
 
 
-MARKDOWN                                                *ft-markdown-plugin*
+MARKDOWN						*ft-markdown-plugin*
 
 To enable folding use this: >
 	let g:markdown_folding = 1
@@ -917,7 +917,7 @@ To enable this behavior, set the following variable in your vimrc: >
 	let g:rst_style = 1
 
 
-RNOWEB							      *ft-rnoweb-plugin*
+RNOWEB							*ft-rnoweb-plugin*
 
 The 'formatexpr' option is set dynamically with different values for R code
 and for LaTeX code. If you prefer that 'formatexpr' is not set, add to your
