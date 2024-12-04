@@ -349,7 +349,6 @@ SRC = \
 	debugger.c \
 	dict.c \
 	diff.c \
-	linematch.c \
 	digraph.c \
 	drawline.c \
 	drawscreen.c \
@@ -382,6 +381,7 @@ SRC = \
 	insexpand.c \
 	job.c \
 	json.c \
+	linematch.c \
 	list.c \
 	locale.c \
 	logfile.c \
@@ -515,6 +515,7 @@ OBJ = \
 	insexpand.obj \
 	job.obj \
 	json.obj \
+	linematch.obj \
 	list.obj \
 	locale.obj \
 	logfile.obj \
@@ -985,6 +986,9 @@ indent.obj : indent.c vim.h [.auto]config.h feature.h os_unix.h
 insexpand.obj : insexpand.c vim.h [.auto]config.h feature.h os_unix.h
 job.obj : job.c vim.h [.auto]config.h feature.h os_unix.h
 json.obj : json.c vim.h [.auto]config.h feature.h os_unix.h   \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h gui.h beval.h \
+ [.proto]gui_beval.pro option.h ex_cmds.h proto.h errors.h globals.h
+linematch.obj : linematch.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h errors.h globals.h
 list.obj : list.c vim.h [.auto]config.h feature.h os_unix.h \

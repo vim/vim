@@ -227,7 +227,7 @@ try_possible_paths(
 		    mm[k] = fastforward_buf_to_lnum(*diff_blk[k], df_iters[k]);
 		}
 		else
-		    mm[k] = (mmfile_t){ 0 };
+		    CLEAR_FIELD(mm[k]);
 		current_lines[k] = &mm[k];
 	    }
 	    size_t unwrapped_idx_from = unwrap_indexes(from_vals, diff_len, ndiffs);

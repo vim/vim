@@ -94,7 +94,6 @@ SRC += \
 	debugger.c \
 	dict.c \
 	diff.c \
-	linematch.c\
 	digraph.c \
 	drawline.c \
 	drawscreen.c \
@@ -124,6 +123,7 @@ SRC += \
 	indent.c \
 	insexpand.c \
 	json.c \
+	linematch.c\
 	list.c \
 	locale.c \
 	logfile.c \

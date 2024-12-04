@@ -1469,6 +1469,7 @@ win_line(
 
     int linestatus = 0;
     wlv.filler_lines = diff_check_with_linestatus(wp, lnum, &linestatus);
+
     if (wlv.filler_lines < 0 || linestatus < 0)
     {
 	if (wlv.filler_lines == -1 || linestatus == -1)
@@ -1480,16 +1481,18 @@ win_line(
 	    else
 		wlv.diff_hlf = HLF_CHD;	// changed line
 	}
-	else {
+	else
 	    wlv.diff_hlf = HLF_ADD;
-	}
-	if (linestatus == 0) {
+
+	if (linestatus == 0)
 	    wlv.filler_lines = 0;
-	}
+
 	area_highlighting = TRUE;
     }
+
     if (lnum == wp->w_topline)
 	wlv.filler_lines = wp->w_topfill;
+
     wlv.filler_todo = wlv.filler_lines;
 #endif
 
