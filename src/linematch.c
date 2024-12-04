@@ -33,9 +33,9 @@ static size_t test_charmatch_paths(diffcmppath_T *node, int lastdecision);
     static size_t
 line_len(const mmfile_t *m)
 {
-    char_u	*s = m->ptr;
+    char	*s = m->ptr;
     size_t	n = (size_t)m->size;
-    char_u	*end;
+    char	*end;
 
     end = vim_strnchr(s, &n, '\n');
     if (end)

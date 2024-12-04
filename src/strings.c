@@ -676,13 +676,13 @@ vim_strchr(char_u *string, int c)
 
 // Sized version of strchr that can handle embedded NULs.
 // Adjusts n to the new size.
-    char_u *
-vim_strnchr(const char_u *p, size_t *n, int c)
+    char *
+vim_strnchr(const char *p, size_t *n, int c)
 {
     while (*n > 0)
     {
 	if (*p == c)
-	    return (char_u *)p;
+	    return (char *)p;
 	p++;
 	(*n)--;
     }
