@@ -1980,9 +1980,9 @@ find_top_diff_block(
     int		fromidx,
     int		topline)
 {
-    diff_T *topdiff = NULL;
-    diff_T *localtopdiff = NULL;
-    int topdiffchange = 0;
+    diff_T	*topdiff = NULL;
+    diff_T	*localtopdiff = NULL;
+    int		topdiffchange = 0;
 
     for (topdiff = curtab->tp_first_diff; topdiff != NULL;
 						topdiff = topdiff->df_next)
@@ -2034,9 +2034,9 @@ count_filler_lines_and_topline(
     const int		toidx,
     int			virtual_lines_passed)
 {
-    const diff_T *curdif = thistopdiff;
-    int ch_virtual_lines = 0;
-    Bool isfiller = FALSE;
+    const diff_T	*curdif = thistopdiff;
+    int			ch_virtual_lines = 0;
+    int			isfiller = FALSE;
 
     while (virtual_lines_passed > 0)
     {
@@ -2082,9 +2082,9 @@ calculate_topfill_and_topline(
 {
     // 1. find the position from the top of the diff block, and the start
     // of the next diff block
-    diff_T *thistopdiff = NULL;
-    diff_T *nextblockblock = NULL;
-    int virtual_lines_passed = 0;
+    diff_T	*thistopdiff = NULL;
+    diff_T	*nextblockblock = NULL;
+    int		virtual_lines_passed = 0;
 
     find_top_diff_block(&thistopdiff, &nextblockblock, fromidx, from_topline);
 
@@ -2176,9 +2176,9 @@ apply_linematch_results(
     const int	*decisions)
 {
     // get the start line number here in each diff buffer, and then increment
-    int line_numbers[DB_COUNT];
-    int outputmap[DB_COUNT];
-    size_t ndiffs = 0;
+    int		line_numbers[DB_COUNT];
+    int		outputmap[DB_COUNT];
+    size_t	ndiffs = 0;
 
     for (int i = 0; i < DB_COUNT; i++)
     {
@@ -2233,10 +2233,10 @@ apply_linematch_results(
 run_linematch_algorithm(diff_T *dp)
 {
     // define buffers for diff algorithm
-    diffin_T diffbufs_mm[DB_COUNT];
-    const mmfile_t *diffbufs[DB_COUNT];
-    int diff_length[DB_COUNT];
-    size_t ndiffs = 0;
+    diffin_T		diffbufs_mm[DB_COUNT];
+    const mmfile_t	*diffbufs[DB_COUNT];
+    int			diff_length[DB_COUNT];
+    size_t		ndiffs = 0;
 
     for (int i = 0; i < DB_COUNT; i++)
     {
