@@ -530,7 +530,7 @@ huntype(
 xxdline(FILE *fp, char *l, int nz)
 {
   static char z[LLEN+1];
-  static int zero_seen = 0;
+  static signed char zero_seen = 0;
 
   if (!nz && zero_seen == 1)
     strcpy(z, l);
@@ -551,6 +551,11 @@ xxdline(FILE *fp, char *l, int nz)
       if (nz)
 	zero_seen = 0;
     }
+
+  /* If zero_seen > 3, then its exact value doesn't matter, so long as it
+   * remains >3 and incrementing it will not cause overflow. */
+  if (zero_seen >= 0x7F)
+    zero_seen = 4;
 }
 
 /* This is an EBCDIC to ASCII conversion table */
