@@ -769,6 +769,8 @@ RT_ALL =	\
 		runtime/tutor/tutor1 \
 		runtime/tutor/en/vim-01-beginner.tutor \
 		runtime/tutor/en/vim-01-beginner.tutor.json \
+		runtime/tutor/it/vim-01-beginner.tutor \
+		runtime/tutor/it/vim-01-beginner.tutor.json \
 		runtime/tutor/tutor.tutor \
 		runtime/tutor/tutor.tutor.json \
 		runtime/tutor/tutor.vim \

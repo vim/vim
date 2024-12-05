@@ -5857,6 +5857,9 @@ PmenuThumb	Popup menu: Thumb of the scrollbar.
 PmenuMatch	Popup menu: Matched text in normal item.
 							*hl-PmenuMatchSel*
 PmenuMatchSel	Popup menu: Matched text in selected item.
+
+ComplMatchIns	Matched text of the currently inserted completion.
+
 							*hl-PopupNotification*
 PopupNotification
 		Popup window created with |popup_notification()|.  If not
