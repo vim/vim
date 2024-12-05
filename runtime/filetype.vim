@@ -1976,6 +1976,10 @@ au BufNewFile,BufRead *.pk			setf poke
 " Protocols
 au BufNewFile,BufRead */etc/protocols		setf protocols
 
+" Nvidia PTX (Parallel Thread Execution)
+" See https://docs.nvidia.com/cuda/parallel-thread-execution/
+au BufNewFile,BufRead *.ptx			setf ptx
+
 " Purescript
 au BufNewFile,BufRead *.purs			setf purescript
 
