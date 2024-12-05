@@ -2080,17 +2080,19 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 #else
 # ifdef HAVE_READLINK
     {
+	size_t	plen;
 	char_u	*buf;
 	size_t	buflen;
-	size_t	len;
 	char_u	*cpy;
-	size_t	plen;
+	size_t	cpysize;
 	char_u	*remain = NULL;
-	size_t	remainlen;
+	char_u	*r = NULL;			// points to current position in "remain"
+	size_t	rlen = 0;			// length of r (excluding the NUL)
 	char_u	*q;
 	int	is_relative_to_current = FALSE;
 	int	has_trailing_pathsep = FALSE;
 	int	limit = 100;
+	size_t	len;
 
 	plen = STRLEN(p);
 	p = vim_strnsave(p, plen);
@@ -2103,20 +2105,33 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	if (plen > 1 && after_pathsep(p, p + plen))
 	{
 	    has_trailing_pathsep = TRUE;
-	    --plen;
-	    p[plen] = NUL; // the trailing slash breaks readlink()
+	    p[--plen] = NUL; // the trailing slash breaks readlink()
 	}
 
 	q = getnextcomp(p);
 	if (*q != NUL)
 	{
+	    char_u  *q_prev = q - 1;
+
+	    // getnextcomp() finds the first path separator.
+	    // if there is a run of >1 path separators, set all
+	    // but the last in the run to NUL.
+	    while (*q != NUL && vim_ispathsep(*q))
+	    {
+		*q_prev = NUL;
+		q_prev = q;
+		MB_PTR_ADV(q);
+	    }
+	    q = q_prev;
+
 	    // Separate the first path component in "p", and keep the
 	    // remainder (beginning with the path separator).
-	    --q;
-	    remainlen = (size_t)(plen - (q - p));
-	    remain = vim_strnsave(q, remainlen);
+	    rlen = (size_t)(plen - (q - p));
+	    r = remain = vim_strnsave(q, rlen);
+	    if (remain == NULL)
+		rlen = 0;
 	    *q = NUL;
-	    plen -= remainlen;
+	    plen -= rlen;
 	}
 
 	buf = alloc(MAXPATHL + 1);
@@ -2134,8 +2149,6 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		ssize_t rv = readlink((char *)p, (char *)buf, MAXPATHL);
 		if (rv <= 0)
 		    break;
-		buflen = (size_t)rv;
-		buf[buflen] = NUL;
 
 		if (limit-- == 0)
 		{
@@ -2146,6 +2159,9 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		    rettv->vval.v_string = NULL;
 		    goto fail;
 		}
+
+		buflen = (size_t)rv;
+		buf[buflen] = NUL;
 
 		// Ensure that the result will have a trailing path separator
 		// if the argument has one.
@@ -2160,26 +2176,39 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		q = getnextcomp(vim_ispathsep(*buf) ? buf + 1 : buf);
 		if (*q != NUL)
 		{
-		    --q;
+		    char_u  *q_prev = q - 1;
+
+		    // getnextcomp() finds the first path separator.
+		    // if there is a run of >1 path separators, set all
+		    // but the last in the run to NUL.
+		    while (*q != NUL && vim_ispathsep(*q))
+		    {
+			*q_prev = NUL;
+			q_prev = q;
+			MB_PTR_ADV(q);
+		    }
+		    q = q_prev;
+
 		    if (remain == NULL)
 		    {
-			remainlen = (size_t)(buflen - (q - buf));
-			remain = vim_strnsave(q, remainlen);
+			rlen = (size_t)(buflen - (q - buf));
+			r = remain = vim_strnsave(q, rlen);
 			if (remain == NULL)
-			    remainlen = 0;
+			    rlen = 0;
 		    }
 		    else
 		    {
-			cpy = concat_str(q, remain);
+			len = (size_t)(buflen - (q - buf));
+			cpysize = (size_t)(len + rlen + 1);		// +1 for NUL
 			if (cpy != NULL)
 			{
+			    rlen = (int)vim_snprintf((char *)cpy, cpysize, "%.*s%s", (int)len, q, r);
 			    vim_free(remain);
-			    remain = cpy;
-			    remainlen = (size_t)(buflen - (q - buf));
+			    r = remain = cpy;
 			}
 		    }
 		    *q = NUL;
-		    buflen -= remainlen;
+		    buflen = (size_t)(q - buf);
 		}
 
 		q = gettail(p);
@@ -2212,10 +2241,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		{
 		    vim_free(p);
 		    p = vim_strnsave(buf, buflen);
-		    if (p == NULL)
-			plen = 0;
-		    else
-			plen = buflen;
+		    plen = (p == NULL) ? 0 : buflen;
 		}
 	    }
 
@@ -2223,27 +2249,28 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		break;
 
 	    // Append the first path component of "remain" to "p".
-	    q = getnextcomp(remain + 1);
-	    len = (size_t)(q - remain - (*q != NUL));
-	    cpy = vim_strnsave(p, plen + len);
+	    q = getnextcomp(r + 1);
+	    len = (size_t)(q - r);
+	    cpysize = (size_t)(plen + len + 1);			// +1 for NUL
+	    cpy = alloc(cpysize);
 	    if (cpy != NULL)
 	    {
-		STRNCPY(cpy + plen, remain, len);
+		plen = vim_snprintf((char *)cpy, cpysize, "%s%.*s", p, (int)len, r);
 		vim_free(p);
 		p = cpy;
-		plen += len;
 	    }
+
 	    // Shorten "remain".
 	    if (*q != NUL)
 	    {
-		--q;
-		remainlen -= len;
-		mch_memmove(remain, q, remainlen + 1);
+		r += len;
+		rlen -= len;
 	    }
 	    else
 	    {
 		VIM_CLEAR(remain);
-		remainlen = 0;
+		r = NULL;
+		rlen = 0;
 	    }
 	}
 
@@ -2287,12 +2314,8 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 
 	// Ensure that the result will have no trailing path separator
 	// if the argument had none.  But keep "/" or "//".
-	if (!has_trailing_pathsep)
-	{
-	    q = p + plen;
-	    if (after_pathsep(p, q))
-		*gettail_sep(p) = NUL;
-	}
+	if (!has_trailing_pathsep && after_pathsep(p, p + plen))
+	    *gettail_sep(p) = NUL;
 
 	rettv->vval.v_string = p;
     }
@@ -3012,6 +3035,7 @@ getnextcomp(char_u *fname)
 {
     while (*fname && !vim_ispathsep(*fname))
 	MB_PTR_ADV(fname);
+
     if (*fname)
 	++fname;
     return fname;
@@ -3164,20 +3188,18 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
     char_u  *
 concat_fnames(char_u *fname1, char_u *fname2, int sep)
 {
-    char_u  *dest;
     size_t  fname1len = STRLEN(fname1);
+    size_t  destsize = fname1len + STRLEN(fname2) + 3;
+    char_u  *dest;
 
-    dest = alloc(fname1len + STRLEN(fname2) + 3);
+    dest = alloc(destsize);
     if (dest == NULL)
 	return NULL;
 
-    STRCPY(dest, fname1);
-    if (sep && !after_pathsep(dest, dest + fname1len))
-    {
-	STRCPY(dest + fname1len, PATHSEPSTR);
-	++fname1len;
-    }
-    STRCPY(dest + fname1len, fname2);
+    vim_snprintf((char *)dest, destsize, "%s%s%s",
+	    fname1,
+	    (sep && !after_pathsep(fname1, fname1 + fname1len)) ? PATHSEPSTR : "",
+	    fname2);
     return dest;
 }
 
