@@ -3845,10 +3845,14 @@ unix_expandpath(
 			   sizeof(char_u *), pstrcmp);
     return matches;
 }
-#endif
 
-#ifdef MSWIN
-    static int
+/*
+ * Expand a path into all matching files and/or directories.  Handles "*",
+ * "?", "[a-z]", "**", etc where appropriate for the platform.
+ * "path" has backslashes before chars that are not to be expanded.
+ * Returns the number of matches found.
+ */
+    int
 mch_expandpath(
     garray_T	*gap,
     char_u	*path,
