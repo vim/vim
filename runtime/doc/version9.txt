@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 28
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41613,6 +41613,8 @@ Changed~
   from |defaults.vim|
 - the default 'backspace' option for Vim has been set to "indent,eol,start"
   and removed from |defaults.vim|
+- the completed word and completion type are provided when handling the
+  |CompleteDone| autocommand in the |v:event| dictionary
 
 							*added-9.2*
 Added ~
