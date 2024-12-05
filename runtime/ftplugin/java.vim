@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Dec 03
+" Last Change:		2024 Dec 05
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -192,7 +192,7 @@ if exists("g:spotbugs_properties") &&
     endif
 
     if s:request
-	if exists("b:spotbugs_syntax_once")
+	if exists("b:spotbugs_syntax_once") || empty(join(getline(1, 8), ''))
 	    let s:actions = [{'event': 'BufWritePost'}]
 	else
 	    " XXX: Handle multiple FileType events when vimrc contains more
