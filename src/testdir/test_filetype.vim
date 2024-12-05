@@ -608,6 +608,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     ps1xml: ['file.ps1xml'],
     psf: ['file.psf'],
     psl: ['file.psl'],
+    ptx: ['file.ptx'],
     pug: ['file.pug'],
     puppet: ['file.pp'],
     purescript: ['file.purs'],

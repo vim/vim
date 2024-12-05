@@ -249,6 +249,7 @@ runtime/ftplugin/postscr.vim		@mrdubya
 runtime/ftplugin/prisma.vim		@ribru17
 runtime/ftplugin/ps1.vim		@heaths
 runtime/ftplugin/ps1xml.vim		@heaths
+runtime/ftplugin/ptx.vim		@jiangyinzuo
 runtime/ftplugin/purescript.vim		@ribru17
 runtime/ftplugin/pymanifest.vim		@ObserverOfTime
 runtime/ftplugin/python.vim		@tpict
@@ -556,6 +557,7 @@ runtime/syntax/prolog.vim		@XVilka
 runtime/syntax/ps1.vim			@heaths
 runtime/syntax/ps1xml.vim		@heaths
 runtime/syntax/psl.vim			@danielkho
+runtime/syntax/ptx.vim			@jiangyinzuo
 runtime/syntax/pymanifest.vim		@ObserverOfTime
 runtime/syntax/qb64.vim			@dkearns
 runtime/syntax/qml.vim			@ChaseKnowlden
