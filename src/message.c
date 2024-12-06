@@ -1120,9 +1120,7 @@ messagesopt_changed(void)
 	}
 
 	if (*p != ',' && *p != NUL)
-	{
 	    return FAIL;
-	}
 	if (*p == ',')
 	    ++p;
     }
@@ -1130,21 +1128,15 @@ messagesopt_changed(void)
     // "wait" must be set if "hit-enter" is not present
     if (!(messages_flags_new & MESSAGES_HIT_ENTER)
 	&& !(messages_flags_new & MESSAGES_WAIT))
-    {
         return FAIL;
-    }
 
     // "history" must be set
     if (!(messages_flags_new & MESSAGES_HISTORY))
-    {
         return FAIL;
-    }
 
     // "history" must be <= 10000
-    else if (messages_history_new > 10000)
-    {
+    if (messages_history_new > 10000)
         return FAIL;
-    }
 
     msg_flags = messages_flags_new;
     msg_wait = messages_wait_new;
