@@ -5638,8 +5638,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'messagesopt' 'mopt'	string	(default "hit-enter,history:500")
 			global
 
-	Option settings when outputting messages.  It can consist of the following
-	items.  Items must be separated by a comma.
+	Option settings when outputting messages.  It can consist of the
+	following items.  Items must be separated by a comma.
 
 	hit-enter	Use |hit-enter| prompt when the message is longer than
 			'cmdheight' size.
