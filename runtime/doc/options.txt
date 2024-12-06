@@ -5635,7 +5635,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	option has no direct effect, the menu must be refreshed first.
 
 						*'messagesopt'* *'mopt'*
-'messagesopt' 'mopt'		string	(default "hit-enter,history:500")
+'messagesopt' 'mopt'	string	(default "hit-enter,history:500")
 			global
 
 	Option settings when outputting messages.  It can consist of the following
