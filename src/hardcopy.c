@@ -2742,7 +2742,7 @@ mch_print_begin(prt_settings_T *psettings)
 
     prt_dsc_textline("CreationDate", get_ctime(time(NULL), FALSE));
     prt_dsc_textline("DocumentData", "Clean8Bit");
-    prt_dsc_textline("Orientation", "Portrait");
+    prt_dsc_textline("Orientation", prt_portrait ? "Portrait" : "Landscape");
     prt_dsc_atend("Pages");
     prt_dsc_textline("PageOrder", "Ascend");
     // The bbox does not change with orientation - it is always in the default

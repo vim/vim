@@ -209,4 +209,31 @@ func Test_illegal_byte()
   call delete('Xpstest')
 endfunc
 
+func Test_printoptions_portrait()
+  CheckFeature postscript
+  edit test_hardcopy.vim
+  syn on
+
+  set printoptions=portrait:y
+  1,50hardcopy > Xhardcopy_printoptions_portrait
+  let lines = readfile('Xhardcopy_printoptions_portrait')
+  call assert_match('Orientation: Portrait', lines[6])
+  call assert_match('BoundingBox: 59 49 564 800', lines[9])
+  call assert_match('DocumentMedia: A4', lines[10])
+  call assert_match('PageMedia: A4', lines[24])
+  call delete('Xhardcopy_printoptions')
+
+  set printoptions=portrait:n
+  1,50hardcopy > Xhardcopy_printoptions_portrait
+  let lines = readfile('Xhardcopy_printoptions_portrait')
+  call assert_match('Orientation: Landscape', lines[6])
+  call assert_match('BoundingBox: 59 42 590 756', lines[9])
+  call assert_match('DocumentMedia: A4', lines[10])
+  call assert_match('PageMedia: A4', lines[24])
+  call delete('Xhardcopy_printoptions')
+
+  set printoptions&
+  bwipe
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
