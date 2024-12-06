@@ -1125,9 +1125,8 @@ messagesopt_changed(void)
 	    ++p;
     }
 
-    // "wait" must be set if "hit-enter" is not present
-    if (!(messages_flags_new & MESSAGES_HIT_ENTER)
-	&& !(messages_flags_new & MESSAGES_WAIT))
+    // Either "wait" or "hit-enter" is required
+    if (!(messages_flags_new & (MESSAGES_HIT_ENTER | MESSAGES_WAIT)))
         return FAIL;
 
     // "history" must be set
