@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 9.1.  Last change: 2024 Nov 07
+*help.txt*	For Vim version 9.1.  Last change: 2024 Dec 06
 
 			VIM - main help file
 									 k
@@ -180,6 +180,7 @@ Language support ~
 |hebrew.txt|	Hebrew language support and editing
 |russian.txt|	Russian language support and editing
 |hangulin.txt|	Hangul (Korean) input mode
+|vietnamese.txt|  Vietnamese language support and editing
 
 GUI ~
 |gui.txt|	Graphical User Interface (GUI)
