@@ -2729,8 +2729,8 @@ quality_id2name(DWORD id)
 }
 
 // The default font height in 100% scaling (96dpi).
-// (-12 in 96dpi equates to roughly 9pt)
-#define DEFAULT_FONT_HEIGHT	(-12)
+// (-16 in 96dpi equates to roughly 12pt)
+#define DEFAULT_FONT_HEIGHT	(-16)
 
 static const LOGFONTW s_lfDefault =
 {
