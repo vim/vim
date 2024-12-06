@@ -123,12 +123,14 @@ if exists("g:spotbugs_properties") &&
     endif
 
     if has_key(g:spotbugs_properties, 'PreCompilerTestAction')
-	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerTestAction()'
+	let s:dispatcher = printf('call call(%s, [])',
+	    \ string(g:spotbugs_properties.PreCompilerTestAction))
 	let s:request += 2
     endif
 
     if has_key(g:spotbugs_properties, 'PreCompilerAction')
-	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerAction()'
+	let s:dispatcher = printf('call call(%s, [])',
+	    \ string(g:spotbugs_properties.PreCompilerAction))
 	let s:request += 1
     endif
 
@@ -168,7 +170,7 @@ if exists("g:spotbugs_properties") &&
     endif
 
     if exists("s:dispatcher")
-	function! s:ExecuteAction(pre_action, post_action) abort
+	function! s:ExecuteActions(pre_action, post_action) abort
 """"	    let status = v:shell_error
 """"	    let success = 0
 
@@ -184,10 +186,6 @@ if exists("g:spotbugs_properties") &&
 """"	    if success || !v:shell_error || status
 """"		execute a:post_action
 """"	    endif
-	endfunction
-    else
-	function! s:ExecuteAction(action) abort
-	    execute a:action
 	endfunction
     endif
 
@@ -211,16 +209,16 @@ if exists("g:spotbugs_properties") &&
 
 	for s:idx in range(len(s:actions))
 	    if s:request == 7 || s:request == 6 || s:request == 5
-		let s:actions[s:idx].cmd = printf('call s:ExecuteAction(%s, %s)',
+		let s:actions[s:idx].cmd = printf('call s:ExecuteActions(%s, %s)',
 		    \ string(s:dispatcher),
-		    \ string('compiler spotbugs | ' .
-			\ 'call g:spotbugs_properties.PostCompilerAction()'))
+		    \ string(printf('compiler spotbugs | call call(%s, [])',
+			\ string(g:spotbugs_properties.PostCompilerAction))))
 	    elseif s:request == 4
-		let s:actions[s:idx].cmd = printf('call s:ExecuteAction(%s)',
-		    \ string('compiler spotbugs | ' .
-			\ 'call g:spotbugs_properties.PostCompilerAction()'))
+		let s:actions[s:idx].cmd = printf(
+		    \ 'compiler spotbugs | call call(%s, [])',
+		    \ string(g:spotbugs_properties.PostCompilerAction))
 	    elseif s:request == 3 || s:request == 2 || s:request == 1
-		let s:actions[s:idx].cmd = printf('call s:ExecuteAction(%s, %s)',
+		let s:actions[s:idx].cmd = printf('call s:ExecuteActions(%s, %s)',
 		    \ string(s:dispatcher),
 		    \ string('compiler spotbugs'))
 	    else
