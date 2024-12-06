@@ -111,6 +111,8 @@ int expand_set_keyprotocol(optexpand_T *args, int *numMatches, char_u ***matches
 char *did_set_lispoptions(optset_T *args);
 int expand_set_lispoptions(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_matchpairs(optset_T *args);
+char *did_set_messagesopt(optset_T *args);
+int expand_set_messagesopt(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_mkspellmem(optset_T *args);
 char *did_set_mouse(optset_T *args);
 int expand_set_mouse(optexpand_T *args, int *numMatches, char_u ***matches);

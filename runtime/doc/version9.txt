@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 05
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41667,7 +41667,7 @@ Options: ~
 			popup
 'findfunc'		Vim function to obtain the results for a |:find|
 			command
-'msghistory'		Max number of messages to remember
+'messagesopt'		configure |:messages| and |hit-enter| prompt
 'winfixbuf'		Keep buffer focused in a window
 'tabclose'		Which tab page to focus after closing a tab page
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
