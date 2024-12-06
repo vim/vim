@@ -11596,4 +11596,65 @@ def Test_any_obj_var_type()
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected list<any> but got string', 1)
 enddef
 
+" Test for using an object method with mapnew()
+def Test_mapnew_with_instance_method()
+  var lines =<< trim END
+    vim9script
+
+    class Foo
+      var str: string
+      var nums: list<number> = [1, 2, 3]
+
+      def InstanceMethod(n: number): string
+        return this.str .. n
+      enddef
+
+      def MapperMethod(idx: number, elem: number): string
+        return elem->this.InstanceMethod()
+      enddef
+
+      def MapTest()
+        this.str = "foo"
+        var l = ['foo1', 'foo2', 'foo3']
+        assert_equal(l, this.nums->mapnew(this.MapperMethod))
+      enddef
+    endclass
+
+    Foo.new().MapTest()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Error in the mapnew() function
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var str: string
+      var nums: list<number> = [1, 2, 3]
+
+      def InstanceMethod(n: number): string
+        throw "InstanceMethod failed"
+      enddef
+
+      def MapperMethod(idx: number, elem: number): string
+        return elem->this.InstanceMethod()
+      enddef
+
+      def MapTest()
+        this.str = "foo"
+        var caught_exception: bool = false
+        try
+          this.nums->mapnew(this.MapperMethod)
+        catch /InstanceMethod failed/
+          caught_exception = true
+        endtry
+        assert_true(caught_exception)
+      enddef
+    endclass
+
+    Foo.new().MapTest()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
