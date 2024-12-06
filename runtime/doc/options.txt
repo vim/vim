@@ -5644,7 +5644,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	hit-enter	Use |hit-enter| prompt when the message is longer than
 			'cmdheight' size.
 
-	wait:{n}	Ignored when "hit-enter" is present. Instead of using
+	wait:{n}	Ignored when "hit-enter" is present.  Instead of using
 			|hit-enter| prompt, will simply wait for {n}
 			milliseconds so the user has a chance to read the
 			message, use 0 to disable sleep (but then the user may
