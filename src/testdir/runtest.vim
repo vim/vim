@@ -55,11 +55,11 @@ silent! endwhile
 
 " In the GUI we can always change the screen size.
 if has('gui_running')
-  set columns=80 lines=25
   if has('gui_gtk')
     " to keep screendump size unchanged
     set guifont=Monospace\ 10
   endif
+  set columns=80 lines=25
 endif
 
 " Check that the screen size is at least 24 x 80 characters.
