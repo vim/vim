@@ -271,8 +271,10 @@ eval_expr_partial(
 	    return FAIL;
 
 	// Shortcut to call a compiled function with minimal overhead.
+	if (partial->pt_obj != NULL)
+	    partial->pt_obj->obj_refcount++;
 	r = call_def_function(partial->pt_func, argc, argv, DEF_USE_PT_ARGV,
-						partial, NULL, fc, rettv);
+					partial, partial->pt_obj, fc, rettv);
 	if (fc_arg == NULL)
 	    remove_funccal();
 	if (r == FAIL)
