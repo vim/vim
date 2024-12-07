@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzyxwvut
-" Last Change:  2024 Dec 06
+" Last Change:  2024 Dec 07
 
 if exists('g:current_compiler') || bufname() !~# '\.java\=$' || wordcount().chars < 9
   finish
@@ -106,17 +106,37 @@ else
   endfunction
 endif
 
-if exists('g:spotbugs_properties') &&
-    \ ((!empty(get(g:spotbugs_properties, 'sourceDirPath', [])) &&
-        \ !empty(get(g:spotbugs_properties, 'classDirPath', []))) ||
-    \ (!empty(get(g:spotbugs_properties, 'testSourceDirPath', [])) &&
-        \ !empty(get(g:spotbugs_properties, 'testClassDirPath', []))))
+if exists('b:spotbugs_properties')
+  " Let "ftplugin/java.vim" merge global entries, if any, in buffer-local
+  " entries
+
+  function! s:GetProperty(name, default) abort
+    return get(b:spotbugs_properties, a:name, a:default)
+  endfunction
+
+elseif exists('g:spotbugs_properties')
+
+  function! s:GetProperty(name, default) abort
+    return get(g:spotbugs_properties, a:name, a:default)
+  endfunction
+
+else
+  function! s:GetProperty(dummy, default) abort
+    return a:default
+  endfunction
+endif
+
+if (exists('g:spotbugs_properties') || exists('b:spotbugs_properties')) &&
+    \ ((!empty(s:GetProperty('sourceDirPath', [])) &&
+        \ !empty(s:GetProperty('classDirPath', []))) ||
+    \ (!empty(s:GetProperty('testSourceDirPath', [])) &&
+        \ !empty(s:GetProperty('testClassDirPath', []))))
 
   function! s:CommonIdxsAndDirs() abort
-    let src_dir_path = get(g:spotbugs_properties, 'sourceDirPath', [])
-    let bin_dir_path = get(g:spotbugs_properties, 'classDirPath', [])
-    let test_src_dir_path = get(g:spotbugs_properties, 'testSourceDirPath', [])
-    let test_bin_dir_path = get(g:spotbugs_properties, 'testClassDirPath', [])
+    let src_dir_path = s:GetProperty('sourceDirPath', [])
+    let bin_dir_path = s:GetProperty('classDirPath', [])
+    let test_src_dir_path = s:GetProperty('testSourceDirPath', [])
+    let test_bin_dir_path = s:GetProperty('testClassDirPath', [])
     let dir_cnt = min([len(src_dir_path), len(bin_dir_path)])
     let test_dir_cnt = min([len(test_src_dir_path), len(test_bin_dir_path)])
     " Do not break up path pairs with filtering!
@@ -199,6 +219,7 @@ setlocal errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
 
 delfunction s:CollectClassFiles
 delfunction s:FindClassFiles
+delfunction s:GetProperty
 delfunction s:GlobClassFiles
 delfunction s:GetDeclaredTypeNames
 let &cpo = s:cpo_save

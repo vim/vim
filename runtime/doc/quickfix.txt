@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 03
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1448,6 +1448,9 @@ The "g:spotbugs_properties" variable is consulted by the Java filetype plugin
 must be defined before |FileType| events can take place for the buffers loaded
 with Java source files.  It could, for example, be set in a project-local
 |vimrc| loaded by [0].
+
+Both "g:spotbugs_properties" and "b:spotbugs_properties" are recognized and
+must be modifiable (|:unlockvar|).
 
 [0] https://github.com/MarcWeber/vim-addon-local-vimrc/
 

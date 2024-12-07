@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Dec 05
+" Last Change:		2024 Dec 07
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -90,23 +90,28 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
     endif
 endif
 
-" The support for pre- and post-compiler actions for SpotBugs.
-if exists("g:spotbugs_properties") && has_key(g:spotbugs_properties, 'compiler')
-    try
-	let g:spotbugs#compiler = g:spotbugs_properties.compiler
-	let g:spotbugs_properties = extend(
-		\ spotbugs#DefaultProperties(),
-		\ g:spotbugs_properties,
-		\ 'force')
-    catch
-	echomsg v:exception
-    finally
-	call remove(g:spotbugs_properties, 'compiler')
-    endtry
-endif
+"""" Support pre- and post-compiler actions for SpotBugs.
+if (!empty(get(g:, 'spotbugs_properties', {})) ||
+	\ !empty(get(b:, 'spotbugs_properties', {}))) &&
+	\ filereadable($VIMRUNTIME . '/compiler/spotbugs.vim')
 
-if exists("g:spotbugs_properties") &&
-	    \ filereadable($VIMRUNTIME . '/compiler/spotbugs.vim')
+    function! s:SpotBugsGetProperty(name, default) abort
+	return get(
+	    \ {s:spotbugs_properties_scope}spotbugs_properties,
+	    \ a:name,
+	    \ a:default)
+    endfunction
+
+    function! s:SpotBugsHasProperty(name) abort
+	return has_key(
+	    \ {s:spotbugs_properties_scope}spotbugs_properties,
+	    \ a:name)
+    endfunction
+
+    function! s:SpotBugsGetProperties() abort
+	return {s:spotbugs_properties_scope}spotbugs_properties
+    endfunction
+
     " Work around ":bar"s and ":autocmd"s.
     function! s:ExecuteActionOnce(action_cmd, cleanup_cmd) abort
 	try
@@ -116,30 +121,54 @@ if exists("g:spotbugs_properties") &&
 	endtry
     endfunction
 
+    if exists("b:spotbugs_properties")
+	let s:spotbugs_properties_scope = 'b:'
+
+	" Merge global entries, if any, in buffer-local entries, favouring
+	" defined buffer-local ones.
+	call extend(
+	    \ b:spotbugs_properties,
+	    \ get(g:, 'spotbugs_properties', {}),
+	    \ 'keep')
+    elseif exists("g:spotbugs_properties")
+	let s:spotbugs_properties_scope = 'g:'
+    endif
+
+    if s:SpotBugsHasProperty('compiler')
+	let g:spotbugs#compiler = remove(s:SpotBugsGetProperties(), 'compiler')
+
+	" Merge default entries in global (or buffer-local) entries, favouring
+	" defined global (or buffer-local) ones.
+	call extend(
+	    \ {s:spotbugs_properties_scope}spotbugs_properties,
+	    \ spotbugs#DefaultProperties(),
+	    \ 'keep')
+    endif
+
     let s:request = 0
 
-    if has_key(g:spotbugs_properties, 'PostCompilerAction')
+    if s:SpotBugsHasProperty('PostCompilerAction')
 	let s:request += 4
     endif
 
-    if has_key(g:spotbugs_properties, 'PreCompilerTestAction')
+    if s:SpotBugsHasProperty('PreCompilerTestAction')
 	let s:dispatcher = printf('call call(%s, [])',
-	    \ string(g:spotbugs_properties.PreCompilerTestAction))
+	    \ string(s:SpotBugsGetProperties().PreCompilerTestAction))
 	let s:request += 2
     endif
 
-    if has_key(g:spotbugs_properties, 'PreCompilerAction')
+    if s:SpotBugsHasProperty('PreCompilerAction')
 	let s:dispatcher = printf('call call(%s, [])',
-	    \ string(g:spotbugs_properties.PreCompilerAction))
+	    \ string(s:SpotBugsGetProperties().PreCompilerAction))
 	let s:request += 1
     endif
 
     " Adapt the tests for "s:FindClassFiles()" from "compiler/spotbugs.vim".
     if (s:request == 3 || s:request == 7) &&
-	    \ (!empty(get(g:spotbugs_properties, 'sourceDirPath', [])) &&
-		\ !empty(get(g:spotbugs_properties, 'classDirPath', [])) &&
-	    \ !empty(get(g:spotbugs_properties, 'testSourceDirPath', [])) &&
-		\ !empty(get(g:spotbugs_properties, 'testClassDirPath', [])))
+	    \ (!empty(s:SpotBugsGetProperty('sourceDirPath', [])) &&
+		\ !empty(s:SpotBugsGetProperty('classDirPath', [])) &&
+	    \ !empty(s:SpotBugsGetProperty('testSourceDirPath', [])) &&
+		\ !empty(s:SpotBugsGetProperty('testClassDirPath', [])))
 	function! s:DispatchAction(paths_action_pairs) abort
 	    let name = expand('%:p')
 
@@ -154,18 +183,18 @@ if exists("g:spotbugs_properties") &&
 	endfunction
 
 	let s:dir_cnt = min([
-	    \ len(g:spotbugs_properties.sourceDirPath),
-	    \ len(g:spotbugs_properties.classDirPath)])
+	    \ len(s:SpotBugsGetProperties().sourceDirPath),
+	    \ len(s:SpotBugsGetProperties().classDirPath)])
 	let s:test_dir_cnt = min([
-	    \ len(g:spotbugs_properties.testSourceDirPath),
-	    \ len(g:spotbugs_properties.testClassDirPath)])
+	    \ len(s:SpotBugsGetProperties().testSourceDirPath),
+	    \ len(s:SpotBugsGetProperties().testClassDirPath)])
 
 	" Do not break up path pairs with filtering!
 	let s:dispatcher = printf('call s:DispatchAction(%s)',
-	    \ string([[g:spotbugs_properties.sourceDirPath[0 : s:dir_cnt - 1],
-			\ g:spotbugs_properties.PreCompilerAction],
-		\ [g:spotbugs_properties.testSourceDirPath[0 : s:test_dir_cnt - 1],
-			\ g:spotbugs_properties.PreCompilerTestAction]]))
+	    \ string([[s:SpotBugsGetProperties().sourceDirPath[0 : s:dir_cnt - 1],
+			\ s:SpotBugsGetProperties().PreCompilerAction],
+		\ [s:SpotBugsGetProperties().testSourceDirPath[0 : s:test_dir_cnt - 1],
+			\ s:SpotBugsGetProperties().PreCompilerTestAction]]))
 	unlet s:test_dir_cnt s:dir_cnt
     endif
 
@@ -202,9 +231,9 @@ if exists("g:spotbugs_properties") &&
 	    let s:actions = [{
 		    \ 'event': 'Syntax',
 		    \ 'once': 1,
-		    \ }, {
+		\ }, {
 		    \ 'event': 'BufWritePost',
-		    \ }]
+		\ }]
 	endif
 
 	for s:idx in range(len(s:actions))
@@ -212,11 +241,11 @@ if exists("g:spotbugs_properties") &&
 		let s:actions[s:idx].cmd = printf('call s:ExecuteActions(%s, %s)',
 		    \ string(s:dispatcher),
 		    \ string(printf('compiler spotbugs | call call(%s, [])',
-			\ string(g:spotbugs_properties.PostCompilerAction))))
+			\ string(s:SpotBugsGetProperties().PostCompilerAction))))
 	    elseif s:request == 4
 		let s:actions[s:idx].cmd = printf(
 		    \ 'compiler spotbugs | call call(%s, [])',
-		    \ string(g:spotbugs_properties.PostCompilerAction))
+		    \ string(s:SpotBugsGetProperties().PostCompilerAction))
 	    elseif s:request == 3 || s:request == 2 || s:request == 1
 		let s:actions[s:idx].cmd = printf('call s:ExecuteActions(%s, %s)',
 		    \ string(s:dispatcher),
@@ -253,7 +282,10 @@ if exists("g:spotbugs_properties") &&
 	unlet! s:action s:actions s:idx s:dispatcher
     endif
 
-    unlet s:request
+    delfunction s:SpotBugsGetProperties
+    delfunction s:SpotBugsHasProperty
+    delfunction s:SpotBugsGetProperty
+    unlet! s:request s:spotbugs_properties_scope
 endif
 
 function! JavaFileTypeCleanUp() abort
