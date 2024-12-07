@@ -1,6 +1,6 @@
 " Default pre- and post-compiler actions for SpotBugs
 " Maintainers:  @konfekt and @zzzyxwvut
-" Last Change:  2024 Dec 03
+" Last Change:  2024 Dec 07
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -275,6 +275,41 @@ else
   " XXX: Keep "s:compiler" around for "spotbugs#DefaultPreCompilerAction()".
   unlet s:readable
 endif
+
+function! s:DefineBufferAutocmd(event, ...) abort
+  if !exists('#java_spotbugs#User')
+    return 1
+  endif
+
+  for l:event in insert(copy(a:000), a:event)
+    if l:event != 'User'
+      execute printf('silent! autocmd! java_spotbugs %s <buffer>', l:event)
+      execute printf('autocmd java_spotbugs %s <buffer> doautocmd User', l:event)
+    endif
+  endfor
+
+  return 0
+endfunction
+
+function! s:RemoveBufferAutocmd(event, ...) abort
+  if !exists('#java_spotbugs')
+    return 1
+  endif
+
+  for l:event in insert(copy(a:000), a:event)
+    if l:event != 'User'
+      execute printf('silent! autocmd! java_spotbugs %s <buffer>', l:event)
+    endif
+  endfor
+
+  return 0
+endfunction
+
+" Documented in ":help compiler-spotbugs".
+command! -bar -nargs=+ -complete=event SpotBugsDefineBufferAutocmd
+    \ call s:DefineBufferAutocmd(<f-args>)
+command! -bar -nargs=+ -complete=event SpotBugsRemoveBufferAutocmd
+    \ call s:RemoveBufferAutocmd(<f-args>)
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
