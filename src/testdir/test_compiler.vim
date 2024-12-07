@@ -410,7 +410,17 @@ func Test_compiler_spotbugs_properties()
     " Some ":autocmd"s with one of "PreCompiler*Action", "PostCompilerAction".
     call assert_true(exists('#java_spotbugs'))
     call assert_true(exists('#java_spotbugs#Syntax'))
-    call assert_true(exists('#java_spotbugs#BufWritePost'))
+    call assert_true(exists('#java_spotbugs#User'))
+    call assert_equal(2, exists(':SpotBugsDefineBufferAutocmd'))
+    SpotBugsDefineBufferAutocmd SigUSR1 User SigUSR1 User
+    call assert_true(exists('#java_spotbugs#SigUSR1'))
+    call assert_true(exists('#java_spotbugs#Syntax'))
+    call assert_true(exists('#java_spotbugs#User'))
+    call assert_equal(2, exists(':SpotBugsRemoveBufferAutocmd'))
+    SpotBugsRemoveBufferAutocmd SigUSR1 User SigUSR1 User
+    call assert_false(exists('#java_spotbugs#SigUSR1'))
+    call assert_true(exists('#java_spotbugs#Syntax'))
+    call assert_true(exists('#java_spotbugs#User'))
 
     let s:spotbugs_results.preActionDone = 0
     let s:spotbugs_results.preTestActionDone = 0
@@ -441,7 +451,7 @@ func Test_compiler_spotbugs_properties()
     let g:spotbugs_properties.testSourceDirPath = ['tests']
     let g:spotbugs_properties.testClassDirPath = ['tests']
 
-    doautocmd java_spotbugs BufWritePost
+    doautocmd java_spotbugs User
     " No match: "type_file !~# 'src/main/java'" (with old "*DirPath" values
     " cached).
     call assert_false(s:spotbugs_results.preActionDone)
@@ -461,7 +471,7 @@ func Test_compiler_spotbugs_properties()
     doautocmd FileType
 
     call assert_true(exists('b:spotbugs_syntax_once'))
-    doautocmd java_spotbugs BufWritePost
+    doautocmd java_spotbugs User
     " A match: "type_file =~# 'Xspotbugs/src'" (with new "*DirPath" values
     " cached).
     call assert_true(s:spotbugs_results.preActionDone)
@@ -494,7 +504,7 @@ func Test_compiler_spotbugs_properties()
     call assert_equal('java', &l:filetype)
     call assert_true(exists('#java_spotbugs'))
     call assert_true(exists('#java_spotbugs#Syntax'))
-    call assert_true(exists('#java_spotbugs#BufWritePost'))
+    call assert_true(exists('#java_spotbugs#User'))
     call assert_fails('doautocmd java_spotbugs Syntax', 'Oops')
     call assert_false(exists('#java_spotbugs#Syntax'))
     " No match: "test_file !~# 'Xspotbugs/src'".
@@ -516,7 +526,7 @@ func Test_compiler_spotbugs_properties()
     doautocmd FileType
 
     call assert_true(exists('b:spotbugs_syntax_once'))
-    doautocmd java_spotbugs BufWritePost
+    doautocmd java_spotbugs User
     " No match: "test_file !~# 'Xspotbugs/src'".
     call assert_false(s:spotbugs_results.preActionDone)
     " A match: "test_file =~# 'tests'".

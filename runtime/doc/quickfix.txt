@@ -1443,6 +1443,17 @@ action before further work can be undertaken.  Using |:cc| after |:make| (or
 |:ll| after |:lmake|) as the last command of an action is the supported means
 of such communication.
 
+Two commands, "SpotBugsRemoveBufferAutocmd" and "SpotBugsDefineBufferAutocmd",
+are provided to toggle actions for buffer-local autocommands.  For example, to
+also run actions on any |BufWritePost| and |SigUSR1| event, add these lines to
+`~/.vim/after/ftplugin/java.vim`:  >
+
+	if exists(':SpotBugsDefineBufferAutocmd') == 2
+		SpotBugsDefineBufferAutocmd BufWritePost SigUSR1
+	endif
+
+Otherwise, you can turn to `:doautocmd java_spotbugs User` at any time.
+
 The "g:spotbugs_properties" variable is consulted by the Java filetype plugin
 (|ft-java-plugin|) to arrange for the described automation, and, therefore, it
 must be defined before |FileType| events can take place for the buffers loaded

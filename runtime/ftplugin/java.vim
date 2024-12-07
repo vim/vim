@@ -220,7 +220,7 @@ if (!empty(get(g:, 'spotbugs_properties', {})) ||
 
     if s:request
 	if exists("b:spotbugs_syntax_once") || empty(join(getline(1, 8), ''))
-	    let s:actions = [{'event': 'BufWritePost'}]
+	    let s:actions = [{'event': 'User'}]
 	else
 	    " XXX: Handle multiple FileType events when vimrc contains more
 	    " than one filetype setting for the language, e.g.:
@@ -232,7 +232,7 @@ if (!empty(get(g:, 'spotbugs_properties', {})) ||
 		    \ 'event': 'Syntax',
 		    \ 'once': 1,
 		\ }, {
-		    \ 'event': 'BufWritePost',
+		    \ 'event': 'User',
 		\ }]
 	endif
 
@@ -261,7 +261,7 @@ if (!empty(get(g:, 'spotbugs_properties', {})) ||
 	endif
 
 	" The events are defined in s:actions.
-	silent! autocmd! java_spotbugs BufWritePost <buffer>
+	silent! autocmd! java_spotbugs User <buffer>
 	silent! autocmd! java_spotbugs Syntax <buffer>
 
 	for s:action in s:actions
@@ -292,8 +292,8 @@ function! JavaFileTypeCleanUp() abort
     setlocal suffixes< suffixesadd< formatoptions< comments< commentstring< path< includeexpr<
     unlet! b:browsefilter
 
-    " The concatenated removals may be misparsed as a BufWritePost autocmd.
-    silent! autocmd! java_spotbugs BufWritePost <buffer>
+    " The concatenated removals may be misparsed as a User autocmd.
+    silent! autocmd! java_spotbugs User <buffer>
     silent! autocmd! java_spotbugs Syntax <buffer>
 endfunction
 
