@@ -775,7 +775,7 @@ EXTERN long	p_mmt;		// 'maxmemtot'
 #ifdef FEAT_MENU
 EXTERN long	p_mis;		// 'menuitems'
 #endif
-EXTERN char_u	*p_meo;		// 'messagesopt'
+EXTERN char_u	*p_mopt;	// 'messagesopt'
 #ifdef FEAT_SPELL
 EXTERN char_u	*p_msm;		// 'mkspellmem'
 #endif

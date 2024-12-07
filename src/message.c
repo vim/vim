@@ -1093,7 +1093,7 @@ messagesopt_changed(void)
     int		messages_wait_new = 0;
     int		messages_history_new = 0;
 
-    p = p_meo;
+    p = p_mopt;
     while (*p != NUL)
     {
 	if (STRNCMP(p, MESSAGES_OPT_HIT_ENTER,
