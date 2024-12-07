@@ -2584,6 +2584,156 @@ push_default_value(
 }
 
 /*
+ * Compile an object member variable assignment in the argument passed to a
+ * class new() method.
+ *
+ * Instruction format:
+ *
+ *	ifargisset <n> this.<varname> = <value>
+ *
+ * where <n> is the object member variable index.
+ *
+ * Generates the ISN_JUMP_IF_ARG_NOT_SET instruction to skip the assignment if
+ * the value is passed as an argument to the new() method call.
+ *
+ * Returns OK on success.
+ */
+    static int
+compile_assignment_obj_new_arg(char_u **argp, cctx_T *cctx)
+{
+    char_u *arg = *argp;
+
+    arg += 11;	    // skip "ifargisset"
+    int def_idx = getdigits(&arg);
+    arg = skipwhite(arg);
+
+    // Use a JUMP_IF_ARG_NOT_SET instruction to skip if the value was not
+    // given and the default value is "v:none".
+    int off = STACK_FRAME_SIZE + (cctx->ctx_ufunc->uf_va_name != NULL
+								? 1 : 0);
+    int count = cctx->ctx_ufunc->uf_def_args.ga_len;
+    if (generate_JUMP_IF_ARG(cctx, ISN_JUMP_IF_ARG_NOT_SET,
+					def_idx - count - off) == FAIL)
+	return FAIL;
+
+    *argp = arg;
+    return OK;
+}
+
+/*
+ * Convert the increment (++) or decrement (--) operator to the corresponding
+ * compound operator.
+ *
+ * Returns OK on success and FAIL on syntax error.
+ */
+    static int
+incdec_op_translate(
+    exarg_T	*eap,
+    char_u	**op,
+    int		*oplen,
+    int		*incdec)
+{
+    if (VIM_ISWHITE(eap->cmd[2]))
+    {
+	semsg(_(e_no_white_space_allowed_after_str_str),
+		eap->cmdidx == CMD_increment ? "++" : "--", eap->cmd);
+	return FAIL;
+    }
+    *op = (char_u *)(eap->cmdidx == CMD_increment ? "+=" : "-=");
+    *oplen = 2;
+    *incdec = TRUE;
+
+    return OK;
+}
+
+/*
+ * Parse a heredoc assignment starting at "p".  Returns a pointer to the
+ * beginning of the heredoc content.
+ */
+    static char_u *
+heredoc_assign_stmt_end_get(char_u *p, exarg_T *eap, cctx_T *cctx)
+{
+    // [let] varname =<< [trim] {end}
+    eap->ea_getline = exarg_getline;
+    eap->cookie = cctx;
+
+    list_T *l = heredoc_get(eap, p + 3, FALSE, TRUE);
+    if (l == NULL)
+	return NULL;
+
+    list_free(l);
+    p += STRLEN(p);
+
+    return p;
+}
+
+    static char_u *
+compile_list_assignment(
+    char_u	*p,
+    char_u	*op,
+    int		oplen,
+    int		var_count,
+    int		semicolon,
+    garray_T	*instr,
+    type_T	**rhs_type,
+    cctx_T	*cctx)
+{
+    char_u *wp;
+
+    // for "[var, var] = expr" evaluate the expression here, loop over the
+    // list of variables below.
+    // A line break may follow the "=".
+
+    wp = op + oplen;
+    if (may_get_next_line_error(wp, &p, cctx) == FAIL)
+	return NULL;
+    if (compile_expr0(&p, cctx) == FAIL)
+	return NULL;
+
+    if (cctx->ctx_skip != SKIP_YES)
+    {
+	type_T	*stacktype;
+	int		needed_list_len;
+	int		did_check = FALSE;
+
+	stacktype = cctx->ctx_type_stack.ga_len == 0 ? &t_void
+						: get_type_on_stack(cctx, 0);
+	if (stacktype->tt_type == VAR_VOID)
+	{
+	    emsg(_(e_cannot_use_void_value));
+	    return NULL;
+	}
+	if (need_type(stacktype, &t_list_any, FALSE, -1, 0, cctx, FALSE,
+							FALSE) == FAIL)
+	    return NULL;
+	// If a constant list was used we can check the length right here.
+	needed_list_len = semicolon ? var_count - 1 : var_count;
+	if (instr->ga_len > 0)
+	{
+	    isn_T	*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+
+	    if (isn->isn_type == ISN_NEWLIST)
+	    {
+		did_check = TRUE;
+		if (semicolon ? isn->isn_arg.number < needed_list_len
+			: isn->isn_arg.number != needed_list_len)
+		{
+		    semsg(_(e_expected_nr_items_but_got_nr),
+			    needed_list_len, (int)isn->isn_arg.number);
+		    return NULL;
+		}
+	    }
+	}
+	if (!did_check)
+	    generate_CHECKLEN(cctx, needed_list_len, semicolon);
+	if (stacktype->tt_member != NULL)
+	    *rhs_type = stacktype->tt_member;
+    }
+
+    return p;
+}
+
+/*
  * Compile declaration and assignment:
  * "let name"
  * "var name = expr"
@@ -2625,38 +2775,20 @@ compile_assignment(
     long	start_lnum = SOURCING_LNUM;
 
     int	has_arg_is_set_prefix = STRNCMP(arg, "ifargisset ", 11) == 0;
-    if (has_arg_is_set_prefix)
-    {
-	arg += 11;
-	int def_idx = getdigits(&arg);
-	arg = skipwhite(arg);
-
-	// Use a JUMP_IF_ARG_NOT_SET instruction to skip if the value was not
-	// given and the default value is "v:none".
-	int off = STACK_FRAME_SIZE + (cctx->ctx_ufunc->uf_va_name != NULL
-								      ? 1 : 0);
-	int count = cctx->ctx_ufunc->uf_def_args.ga_len;
-	if (generate_JUMP_IF_ARG(cctx, ISN_JUMP_IF_ARG_NOT_SET,
-						def_idx - count - off) == FAIL)
-	    goto theend;
-    }
+    if (has_arg_is_set_prefix &&
+	    compile_assignment_obj_new_arg(&arg, cctx) == FAIL)
+	goto theend;
 
     // Skip over the "varname" or "[varname, varname]" to get to any "=".
     p = skip_var_list(arg, TRUE, &var_count, &semicolon, TRUE);
     if (p == NULL)
 	return *arg == '[' ? arg : NULL;
 
+
     if (eap->cmdidx == CMD_increment || eap->cmdidx == CMD_decrement)
     {
-	if (VIM_ISWHITE(eap->cmd[2]))
-	{
-	    semsg(_(e_no_white_space_allowed_after_str_str),
-			 eap->cmdidx == CMD_increment ? "++" : "--", eap->cmd);
+	if (incdec_op_translate(eap, &op, &oplen, &incdec) == FAIL)
 	    return NULL;
-	}
-	op = (char_u *)(eap->cmdidx == CMD_increment ? "+=" : "-=");
-	oplen = 2;
-	incdec = TRUE;
     }
     else
     {
@@ -2678,73 +2810,19 @@ compile_assignment(
 
     if (heredoc)
     {
-	list_T	   *l;
-
-	// [let] varname =<< [trim] {end}
-	eap->ea_getline = exarg_getline;
-	eap->cookie = cctx;
-	l = heredoc_get(eap, op + 3, FALSE, TRUE);
-	if (l == NULL)
+	p = heredoc_assign_stmt_end_get(p, eap, cctx);
+	if (p == NULL)
 	    return NULL;
-
-	list_free(l);
-	p += STRLEN(p);
 	end = p;
     }
     else if (var_count > 0)
     {
-	char_u *wp;
-
-	// for "[var, var] = expr" evaluate the expression here, loop over the
-	// list of variables below.
-	// A line break may follow the "=".
-
-	wp = op + oplen;
-	if (may_get_next_line_error(wp, &p, cctx) == FAIL)
-	    return FAIL;
-	if (compile_expr0(&p, cctx) == FAIL)
-	    return NULL;
+	// "[var, var] = expr"
+	p = compile_list_assignment(p, op, oplen, var_count, semicolon,
+						instr, &rhs_type, cctx);
+	if (p == NULL)
+	    goto theend;
 	end = p;
-
-	if (cctx->ctx_skip != SKIP_YES)
-	{
-	    type_T	*stacktype;
-	    int		needed_list_len;
-	    int		did_check = FALSE;
-
-	    stacktype = cctx->ctx_type_stack.ga_len == 0 ? &t_void
-						  : get_type_on_stack(cctx, 0);
-	    if (stacktype->tt_type == VAR_VOID)
-	    {
-		emsg(_(e_cannot_use_void_value));
-		goto theend;
-	    }
-	    if (need_type(stacktype, &t_list_any, FALSE, -1, 0, cctx,
-							 FALSE, FALSE) == FAIL)
-		goto theend;
-	    // If a constant list was used we can check the length right here.
-	    needed_list_len = semicolon ? var_count - 1 : var_count;
-	    if (instr->ga_len > 0)
-	    {
-		isn_T	*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
-
-		if (isn->isn_type == ISN_NEWLIST)
-		{
-		    did_check = TRUE;
-		    if (semicolon ? isn->isn_arg.number < needed_list_len
-			    : isn->isn_arg.number != needed_list_len)
-		    {
-			semsg(_(e_expected_nr_items_but_got_nr),
-				    needed_list_len, (int)isn->isn_arg.number);
-			goto theend;
-		    }
-		}
-	    }
-	    if (!did_check)
-		generate_CHECKLEN(cctx, needed_list_len, semicolon);
-	    if (stacktype->tt_member != NULL)
-		rhs_type = stacktype->tt_member;
-	}
     }
 
     /*
