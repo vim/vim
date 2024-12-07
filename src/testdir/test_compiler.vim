@@ -337,6 +337,7 @@ func Test_compiler_spotbugs_properties()
   let s:spotbugs_results = {
       \ 'preActionDone': 0,
       \ 'preTestActionDone': 0,
+      \ 'preTestLocalActionDone': 0,
       \ 'postActionDone': 0,
   \ }
   defer execute('unlet s:spotbugs_results')
@@ -354,6 +355,13 @@ func Test_compiler_spotbugs_properties()
     throw 'Oops'
   endfunc
   defer execute('delfunction g:SpotBugsPreTestAction')
+
+  func! g:SpotBugsPreTestLocalAction() abort
+    let s:spotbugs_results.preTestLocalActionDone = 1
+    " XXX: Notify the spotbugs compiler about success or failure.
+    cc
+  endfunc
+  defer execute('delfunction g:SpotBugsPreTestLocalAction')
 
   func! g:SpotBugsPostAction() abort
     let s:spotbugs_results.postActionDone = 1
@@ -449,9 +457,10 @@ func Test_compiler_spotbugs_properties()
     let s:spotbugs_results.preTestActionDone = 0
     let s:spotbugs_results.postActionDone = 0
     " XXX: Re-build ":autocmd"s from scratch with new values applied.
-    call s:SpotBugsBeforeFileTypeTryPluginAndClearCache('maven')
+""""call s:SpotBugsBeforeFileTypeTryPluginAndClearCache('maven')
     doautocmd FileType
 
+    call assert_true(exists('b:spotbugs_syntax_once'))
     doautocmd java_spotbugs BufWritePost
     " A match: "type_file =~# 'Xspotbugs/src'" (with new "*DirPath" values
     " cached).
@@ -472,9 +481,16 @@ func Test_compiler_spotbugs_properties()
     setlocal makeprg=
     let s:spotbugs_results.preActionDone = 0
     let s:spotbugs_results.preTestActionDone = 0
+    let s:spotbugs_results.preTestLocalActionDone = 0
     let s:spotbugs_results.postActionDone = 0
 
     execute 'edit ' .. test_file
+    " Prepare a buffer-local, incomplete variant of properties, relying on
+    " "ftplugin/java.vim" to take care of merging in unique entries, if any,
+    " from "g:spotbugs_properties".
+    let b:spotbugs_properties = {
+        \ 'PreCompilerTestAction': function('g:SpotBugsPreTestLocalAction'),
+    \ }
     call assert_equal('java', &l:filetype)
     call assert_true(exists('#java_spotbugs'))
     call assert_true(exists('#java_spotbugs#Syntax'))
@@ -485,11 +501,39 @@ func Test_compiler_spotbugs_properties()
     call assert_false(s:spotbugs_results.preActionDone)
     " A match: "test_file =~# 'tests'".
     call assert_true(s:spotbugs_results.preTestActionDone)
+    call assert_false(s:spotbugs_results.preTestLocalActionDone)
     " No action after pre-failure (the thrown "Oops" doesn't qualify for ":cc").
     call assert_false(s:spotbugs_results.postActionDone)
     " No ":compiler spotbugs" will be run after pre-failure.
     call assert_true(empty(&l:makeprg))
+
+    let s:spotbugs_results.preActionDone = 0
+    let s:spotbugs_results.preTestActionDone = 0
+    let s:spotbugs_results.preTestLocalActionDone = 0
+    let s:spotbugs_results.postActionDone = 0
+    " XXX: Re-build ":autocmd"s from scratch with buffer-local values applied.
+""""call s:SpotBugsBeforeFileTypeTryPluginAndClearCache('maven')
+    doautocmd FileType
+
+    call assert_true(exists('b:spotbugs_syntax_once'))
+    doautocmd java_spotbugs BufWritePost
+    " No match: "test_file !~# 'Xspotbugs/src'".
+    call assert_false(s:spotbugs_results.preActionDone)
+    " A match: "test_file =~# 'tests'".
+    call assert_true(s:spotbugs_results.preTestLocalActionDone)
+    call assert_false(s:spotbugs_results.preTestActionDone)
+    " For a pre-match, a post-action.
+    call assert_true(s:spotbugs_results.postActionDone)
+
+    " With a match, confirm that ":compiler spotbugs" has run.
+    if has('win32')
+      call assert_match('^spotbugs\.bat\s', &l:makeprg)
+    else
+      call assert_match('^spotbugs\s', &l:makeprg)
+    endif
+
     bwipeout
+    setlocal makeprg=
   endif
 
   filetype plugin off
