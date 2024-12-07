@@ -1696,7 +1696,7 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"messagesopt","mopt",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_COLON|P_NODUP,
-			    (char_u *)&p_meo, PV_NONE, did_set_messagesopt, expand_set_messagesopt,
+			    (char_u *)&p_mopt, PV_NONE, did_set_messagesopt, expand_set_messagesopt,
 			    {(char_u *)"hit-enter,history:500", (char_u *)NULL} SCTX_INIT},
     {"mkspellmem",  "msm",  P_STRING|P_VI_DEF|P_EXPAND|P_SECURE,
 #ifdef FEAT_SPELL

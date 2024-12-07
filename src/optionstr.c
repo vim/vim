@@ -3055,11 +3055,11 @@ did_set_messagesopt(optset_T *args UNUSED)
     int
 expand_set_messagesopt(optexpand_T *args, int *numMatches, char_u ***matches)
 {
-    static char *(p_meo_values[]) = {"hit-enter", "wait:", "history:", NULL};
+    static char *(p_mopt_values[]) = {"hit-enter", "wait:", "history:", NULL};
     return expand_set_opt_string(
 	    args,
-	    p_meo_values,
-	    ARRAY_LENGTH(p_meo_values) - 1,
+	    p_mopt_values,
+	    ARRAY_LENGTH(p_mopt_values) - 1,
 	    numMatches,
 	    matches);
 }
