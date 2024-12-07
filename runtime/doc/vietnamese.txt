@@ -8,7 +8,7 @@ Vietnamese language support in Vim		*vietnamese* *Vietnamese*
 
 1. Introduction				  |vietnamese-intro|
 2. Vietnamese keymaps			  |vietnamese-keymap|
-3. Localization				  |vietnamese-l18n|
+3. Localization				  |vietnamese-l10n|
 
 ===============================================================================
 1. Introduction
@@ -17,7 +17,7 @@ Vim supports Vietnamese language in the following ways:
 
 - Built-in |vietnamese-keymap|, which allows you to type Vietnamese characters
   in |Insert-mode| and |search-commands| using US keyboard layout.
-- Localization in Vietnamese. See |vietnamese-l18n|
+- Localization in Vietnamese. See |vietnamese-l10n|
 
 ===============================================================================
 2. Vietnamese keymaps
@@ -63,7 +63,7 @@ below:
 
 ===============================================================================
 3. Localization
-							*vietnamese-l18n*
+							*vietnamese-l10n*
 Vim |messages| are also available in Vietnamese.  If you wish to see messages
 in Vietnamese, you can run the command |:language| with an argument being the
 name of the Vietnamese locale.  For example, >
