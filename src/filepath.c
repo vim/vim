@@ -2062,6 +2062,11 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 f_resolve(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
+#ifdef HAVE_READLINK
+    char_u	*buf = NULL;
+    char_u	*remain = NULL;
+    int		p_was_allocated = FALSE;
+#endif
 
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
@@ -2081,11 +2086,9 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 # ifdef HAVE_READLINK
     {
 	size_t	plen;
-	char_u	*buf;
 	size_t	buflen;
 	char_u	*cpy;
 	size_t	cpysize;
-	char_u	*remain = NULL;
 	char_u	*r = NULL;			// points to current position in "remain"
 	size_t	rlen = 0;			// length of r (excluding the NUL)
 	char_u	*q;
@@ -2094,10 +2097,14 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	int	limit = 100;
 	size_t	len;
 
+	rettv->vval.v_string = NULL;
+
 	plen = STRLEN(p);
 	p = vim_strnsave(p, plen);
 	if (p == NULL)
 	    goto fail;
+
+	p_was_allocated = TRUE;
 	if (p[0] == '.' && (vim_ispathsep(p[1])
 				   || (p[1] == '.' && (vim_ispathsep(p[2])))))
 	    is_relative_to_current = TRUE;
@@ -2105,7 +2112,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	if (plen > 1 && after_pathsep(p, p + plen))
 	{
 	    has_trailing_pathsep = TRUE;
-	    p[--plen] = NUL; // the trailing slash breaks readlink()
+	    p[--plen] = NUL;			// the trailing slash breaks readlink()
 	}
 
 	q = getnextcomp(p);
@@ -2136,11 +2143,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 
 	buf = alloc(MAXPATHL + 1);
 	if (buf == NULL)
-	{
-	    vim_free(p);
-	    vim_free(remain);
 	    goto fail;
-	}
 
 	for (;;)
 	{
@@ -2152,11 +2155,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 
 		if (limit-- == 0)
 		{
-		    vim_free(p);
-		    vim_free(buf);
-		    vim_free(remain);
 		    emsg(_(e_too_many_symbolic_links_cycle));
-		    rettv->vval.v_string = NULL;
 		    goto fail;
 		}
 
@@ -2200,12 +2199,13 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		    {
 			len = (size_t)(buflen - (q - buf));
 			cpysize = (size_t)(len + rlen + 1);		// +1 for NUL
-			if (cpy != NULL)
-			{
-			    rlen = (int)vim_snprintf((char *)cpy, cpysize, "%.*s%s", (int)len, q, r);
-			    vim_free(remain);
-			    r = remain = cpy;
-			}
+			cpy = alloc(plen + buflen + 1);
+			if (cpy == NULL)
+			    goto fail;
+
+			rlen = (size_t)vim_snprintf((char *)cpy, cpysize, "%.*s%s", (int)len, q, r);
+			vim_free(remain);
+			r = remain = cpy;
 		    }
 		    *q = NUL;
 		    buflen = (size_t)(q - buf);
@@ -2221,27 +2221,30 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		}
 		if (q > p && !mch_isFullName(buf))
 		{
+		    char_u *tail;
+
 		    // symlink is relative to directory of argument
 		    cpy = alloc(plen + buflen + 1);
-		    if (cpy != NULL)
-		    {
-			char_u *tail;
+		    if (cpy == NULL)
+			goto fail;
 
-			STRCPY(cpy, p);
-			tail = gettail(cpy);
-			if (*tail != NUL)
-			    plen -= (size_t)(plen - (tail - cpy));	// remove portion that will be replaced
-			STRCPY(tail, buf);
-			vim_free(p);
-			p = cpy;
-			plen += buflen;
-		    }
+		    STRCPY(cpy, p);
+		    tail = gettail(cpy);
+		    if (*tail != NUL)
+			plen -= (size_t)(plen - (tail - cpy));	// remove portion that will be replaced
+		    STRCPY(tail, buf);
+		    vim_free(p);
+		    p = cpy;
+		    plen += buflen;
 		}
 		else
 		{
 		    vim_free(p);
 		    p = vim_strnsave(buf, buflen);
-		    plen = (p == NULL) ? 0 : buflen;
+		    if (p == NULL)
+			goto fail;
+
+		    plen = buflen;
 		}
 	    }
 
@@ -2253,12 +2256,12 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	    len = (size_t)(q - r);
 	    cpysize = (size_t)(plen + len + 1);			// +1 for NUL
 	    cpy = alloc(cpysize);
-	    if (cpy != NULL)
-	    {
-		plen = vim_snprintf((char *)cpy, cpysize, "%s%.*s", p, (int)len, r);
-		vim_free(p);
-		p = cpy;
-	    }
+	    if (cpy == NULL)
+		goto fail;
+
+	    plen = (size_t)vim_snprintf((char *)cpy, cpysize, "%s%.*s", p, (int)len, r);
+	    vim_free(p);
+	    p = cpy;
 
 	    // Shorten "remain".
 	    if (*q != NUL)
@@ -2274,8 +2277,6 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	    }
 	}
 
-	vim_free(buf);
-
 	// If the result is a relative path name, make it explicitly relative to
 	// the current directory if and only if the argument had this form.
 	if (!vim_ispathsep(*p))
@@ -2290,13 +2291,14 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 				    || vim_ispathsep(p[2]))))))
 	    {
 		// Prepend "./".
-		cpy = concat_str((char_u *)"./", p);
-		if (cpy != NULL)
-		{
-		    vim_free(p);
-		    p = cpy;
-		    plen += 2;
-		}
+		cpysize = plen + 3;		    // +2 for "./" and +1 for NUL
+		cpy = alloc(cpysize);
+		if (cpy == NULL)
+		    goto fail;
+
+		plen = (size_t)vim_snprintf((char *)cpy, cpysize, "./%s", p);
+		vim_free(p);
+		p = cpy;
 	    }
 	    else if (!is_relative_to_current)
 	    {
@@ -2328,6 +2330,10 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 
 #ifdef HAVE_READLINK
 fail:
+    if (rettv->vval.v_string == NULL && p_was_allocated)
+	vim_free(p);
+    vim_free(buf);
+    vim_free(remain);
 #endif
     rettv->v_type = VAR_STRING;
 }
