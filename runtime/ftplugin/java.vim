@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Nov 24
+" Last Change:		2024 Dec 07
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -91,62 +91,172 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
 endif
 
 " The support for pre- and post-compiler actions for SpotBugs.
-if exists("g:spotbugs_properties") && has_key(g:spotbugs_properties, 'compiler')
-    try
-	let spotbugs#compiler = g:spotbugs_properties.compiler
+if exists('b:spotbugs_properties')
+    " Merge global entries, if any, in buffer-local entries, favouring defined
+    " buffer-local ones.
+    call extend(
+	\ b:spotbugs_properties,
+	\ get(g:, 'spotbugs_properties', {}),
+	\ 'keep')
+
+    function! s:SpotBugsGetProperty(name, default) abort
+	return get(b:spotbugs_properties, a:name, a:default)
+    endfunction
+
+    function! s:SpotBugsHasProperty(name) abort
+	return has_key(b:spotbugs_properties, a:name)
+    endfunction
+
+    function! s:SpotBugsGetProperties() abort
+	return b:spotbugs_properties
+    endfunction
+
+    function! s:SpotBugsMergeDefaultProperties() abort
+	let b:spotbugs_properties = extend(
+	    \ spotbugs#DefaultProperties(),
+	    \ b:spotbugs_properties,
+	    \ 'force')
+    endfunction
+
+elseif exists('g:spotbugs_properties')
+
+    function! s:SpotBugsGetProperty(name, default) abort
+	return get(g:spotbugs_properties, a:name, a:default)
+    endfunction
+
+    function! s:SpotBugsHasProperty(name) abort
+	return has_key(g:spotbugs_properties, a:name)
+    endfunction
+
+    function! s:SpotBugsGetProperties() abort
+	return g:spotbugs_properties
+    endfunction
+
+    function! s:SpotBugsMergeDefaultProperties() abort
 	let g:spotbugs_properties = extend(
-		\ spotbugs#DefaultProperties(),
-		\ g:spotbugs_properties,
-		\ 'force')
+	    \ spotbugs#DefaultProperties(),
+	    \ g:spotbugs_properties,
+	    \ 'force')
+    endfunction
+
+else
+
+    function! s:SpotBugsGetProperty(dummy, default) abort
+	return a:default
+    endfunction
+
+    function! s:SpotBugsHasProperty(dummy) abort
+	return 0
+    endfunction
+
+    function! s:SpotBugsGetProperties() abort
+	return {}
+    endfunction
+
+    function! s:SpotBugsMergeDefaultProperties() abort
+	" No-op.
+    endfunction
+
+endif
+
+if s:SpotBugsHasProperty('compiler')
+    try
+	let g:spotbugs#compiler = s:SpotBugsGetProperties().compiler
+	call s:SpotBugsMergeDefaultProperties()
     catch
-	echomsg v:errmsg
+	echomsg v:exception
     finally
-	call remove(g:spotbugs_properties, 'compiler')
+	call remove(s:SpotBugsGetProperties(), 'compiler')
     endtry
 endif
 
-if exists("g:spotbugs_properties") &&
+if !empty(s:SpotBugsGetProperties()) &&
 	    \ filereadable($VIMRUNTIME . '/compiler/spotbugs.vim')
+    " Work around ":bar"s and ":autocmd"s.
+    function! s:ExecuteActionOnce(action_cmd, cleanup_cmd) abort
+	try
+	    execute a:action_cmd
+	finally
+	    execute a:cleanup_cmd
+	endtry
+    endfunction
+
     let s:request = 0
 
-    if has_key(g:spotbugs_properties, 'PreCompilerAction')
-	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerAction() | '
-	let s:request += 1
-    endif
-
-    if has_key(g:spotbugs_properties, 'PreCompilerTestAction')
-	let s:dispatcher = 'call g:spotbugs_properties.PreCompilerTestAction() | '
-	let s:request += 2
-    endif
-
-    if has_key(g:spotbugs_properties, 'PostCompilerAction')
+    if s:SpotBugsHasProperty('PostCompilerAction')
 	let s:request += 4
     endif
 
+    if s:SpotBugsHasProperty('PreCompilerTestAction')
+	let s:dispatcher = printf('call %s()',
+	    \ string(s:SpotBugsGetProperties().PreCompilerTestAction))
+	let s:request += 2
+    endif
+
+    if s:SpotBugsHasProperty('PreCompilerAction')
+	let s:dispatcher = printf('call %s()',
+	    \ string(s:SpotBugsGetProperties().PreCompilerAction))
+	let s:request += 1
+    endif
+
+    " Adapt the tests for "s:FindClassFiles()" from "compiler/spotbugs.vim".
     if (s:request == 3 || s:request == 7) &&
-	    \ has_key(g:spotbugs_properties, 'sourceDirPath') &&
-	    \ has_key(g:spotbugs_properties, 'testSourceDirPath')
-	function! s:DispatchAction(path_action_pairs) abort
+	    \ (!empty(s:SpotBugsGetProperty('sourceDirPath', [])) &&
+		\ !empty(s:SpotBugsGetProperty('classDirPath', [])) &&
+	    \ !empty(s:SpotBugsGetProperty('testSourceDirPath', [])) &&
+		\ !empty(s:SpotBugsGetProperty('testClassDirPath', [])))
+	function! s:DispatchAction(paths_action_pairs) abort
 	    let name = expand('%:p')
 
-	    for [path, Action] in a:path_action_pairs
-		if name =~# (path . '.\{-}\.java\=$')
-		    call Action()
-		    break
-		endif
+	    for [paths, Action] in a:paths_action_pairs
+		for path in paths
+		    if name =~# (path . '.\{-}\.java\=$')
+			call Action()
+			return
+		    endif
+		endfor
 	    endfor
 	endfunction
 
-	let s:dispatcher = printf('call s:DispatchAction(%s) | ',
-		\ string([[g:spotbugs_properties.sourceDirPath,
-			    \ g:spotbugs_properties.PreCompilerAction],
-			\ [g:spotbugs_properties.testSourceDirPath,
-			    \ g:spotbugs_properties.PreCompilerTestAction]]))
+	let s:dir_cnt = min([
+	    \ len(s:SpotBugsGetProperties().sourceDirPath),
+	    \ len(s:SpotBugsGetProperties().classDirPath)])
+	let s:test_dir_cnt = min([
+	    \ len(s:SpotBugsGetProperties().testSourceDirPath),
+	    \ len(s:SpotBugsGetProperties().testClassDirPath)])
+
+	" Do not break up path pairs with filtering!
+	let s:dispatcher = printf('call s:DispatchAction(%s)',
+	    \ string([[s:SpotBugsGetProperties().sourceDirPath[0 : s:dir_cnt - 1],
+			\ s:SpotBugsGetProperties().PreCompilerAction],
+		\ [s:SpotBugsGetProperties().testSourceDirPath[0 : s:test_dir_cnt - 1],
+			\ s:SpotBugsGetProperties().PreCompilerTestAction]]))
+	unlet s:test_dir_cnt s:dir_cnt
+    endif
+
+    if exists("s:dispatcher")
+	function! s:ExecuteActions(pre_action, post_action) abort
+""""	    let status = v:shell_error
+""""	    let success = 0
+
+	    try
+		" FIXME: Why ":make" does not update "v:shell_error"?
+		execute a:pre_action
+	    catch /\<E42:/
+		execute a:post_action
+		return
+""""		let success = !v:shell_error || status
+	    endtry
+
+""""	    if success || !v:shell_error || status
+""""		execute a:post_action
+""""	    endif
+	endfunction
     endif
 
     if s:request
-	if exists("b:spotbugs_syntax_once")
-	    let s:actions = [{'event': 'BufWritePost'}]
+	if exists("b:spotbugs_syntax_once") || empty(join(getline(1, 8), ''))
+	    let s:actions = [{'event': 'User'}]
 	else
 	    " XXX: Handle multiple FileType events when vimrc contains more
 	    " than one filetype setting for the language, e.g.:
@@ -158,19 +268,24 @@ if exists("g:spotbugs_properties") &&
 		    \ 'event': 'Syntax',
 		    \ 'once': 1,
 		    \ }, {
-		    \ 'event': 'BufWritePost',
+		    \ 'event': 'User',
 		    \ }]
 	endif
 
 	for s:idx in range(len(s:actions))
 	    if s:request == 7 || s:request == 6 || s:request == 5
-		let s:actions[s:idx].cmd = s:dispatcher . 'compiler spotbugs | ' .
-			\ 'call g:spotbugs_properties.PostCompilerAction()'
+		let s:actions[s:idx].cmd = printf('call s:ExecuteActions(%s, %s)',
+		    \ string(s:dispatcher),
+		    \ string(printf('compiler spotbugs | call %s()',
+			\ string(s:SpotBugsGetProperties().PostCompilerAction))))
 	    elseif s:request == 4
-		let s:actions[s:idx].cmd = 'compiler spotbugs | ' .
-			\ 'call g:spotbugs_properties.PostCompilerAction()'
+		let s:actions[s:idx].cmd = printf(
+		    \ 'compiler spotbugs | call %s()',
+		    \ string(s:SpotBugsGetProperties().PostCompilerAction))
 	    elseif s:request == 3 || s:request == 2 || s:request == 1
-		let s:actions[s:idx].cmd = s:dispatcher . 'compiler spotbugs'
+		let s:actions[s:idx].cmd = printf('call s:ExecuteActions(%s, %s)',
+		    \ string(s:dispatcher),
+		    \ string('compiler spotbugs'))
 	    else
 		let s:actions[s:idx].cmd = ''
 	    endif
@@ -182,16 +297,22 @@ if exists("g:spotbugs_properties") &&
 	endif
 
 	" The events are defined in s:actions.
-	silent! autocmd! java_spotbugs BufWritePost <buffer>
+	silent! autocmd! java_spotbugs User <buffer>
 	silent! autocmd! java_spotbugs Syntax <buffer>
 
 	for s:action in s:actions
-	    execute printf('autocmd java_spotbugs %s <buffer> %s',
+	    if has_key(s:action, 'once')
+		execute printf('autocmd java_spotbugs %s <buffer> ' .
+			\ 'call s:ExecuteActionOnce(%s, %s)',
 		    \ s:action.event,
-		    \ s:action.cmd . (has_key(s:action, 'once')
-			    \ ? printf(' | autocmd! java_spotbugs %s <buffer>',
-				    \ s:action.event)
-			    \ : ''))
+		    \ string(s:action.cmd),
+		    \ string(printf('autocmd! java_spotbugs %s <buffer>',
+			\ s:action.event)))
+	    else
+		execute printf('autocmd java_spotbugs %s <buffer> %s',
+		    \ s:action.event,
+		    \ s:action.cmd)
+	    endif
 	endfor
 
 	unlet! s:action s:actions s:idx s:dispatcher
@@ -200,12 +321,17 @@ if exists("g:spotbugs_properties") &&
     unlet s:request
 endif
 
+delfunction s:SpotBugsMergeDefaultProperties
+delfunction s:SpotBugsGetProperties
+delfunction s:SpotBugsHasProperty
+delfunction s:SpotBugsGetProperty
+
 function! JavaFileTypeCleanUp() abort
     setlocal suffixes< suffixesadd< formatoptions< comments< commentstring< path< includeexpr<
     unlet! b:browsefilter
 
-    " The concatenated removals may be misparsed as a BufWritePost autocmd.
-    silent! autocmd! java_spotbugs BufWritePost <buffer>
+    " The concatenated removals may be misparsed as a User autocmd.
+    silent! autocmd! java_spotbugs User <buffer>
     silent! autocmd! java_spotbugs Syntax <buffer>
 endfunction
 
@@ -232,14 +358,16 @@ if exists("s:zip_func_upgradable")
 endif
 
 if exists("*s:DispatchAction")
-    def! s:DispatchAction(path_action_pairs: list<list<any>>)
+    def! s:DispatchAction(paths_action_pairs: list<list<any>>)
 	const name: string = expand('%:p')
 
-	for [path: string, Action: func: any] in path_action_pairs
-	    if name =~# (path .. '.\{-}\.java\=$')
-		Action()
-		break
-	    endif
+	for [paths: list<string>, Action: func: any] in paths_action_pairs
+	    for path in paths
+		if name =~# (path .. '.\{-}\.java\=$')
+		    Action()
+		    return
+		endif
+	    endfor
 	endfor
     enddef
 endif
