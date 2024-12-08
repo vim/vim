@@ -12,8 +12,10 @@ let b:did_ftplugin = 1
 setlocal commentstring=//\ %s
 setlocal comments=s1:/*,mb:*,ex:*/,://
 setlocal formatoptions+=croqn
+" Numbered Lists
 setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
-setlocal formatlistpat+=\\\|^\\s*[-+\]\\s\\+
+" Unordered (-), Ordered (+) and definiotion (/) Lists
+setlocal formatlistpat+=\\\|^\\s*[-+/\]\\s\\+
 setlocal suffixesadd=.typ
 
 let b:undo_ftplugin = 'setl cms< com< fo< flp< sua<'
