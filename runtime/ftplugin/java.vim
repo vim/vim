@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Dec 07
+" Last Change:		2024 Dec 08
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -134,8 +134,31 @@ if (!empty(get(g:, 'spotbugs_properties', {})) ||
 	let s:spotbugs_properties_scope = 'g:'
     endif
 
+    let s:commands = {}
+
+    for s:name in ['DefaultPreCompilerCommand',
+	    \ 'DefaultPreCompilerTestCommand',
+	    \ 'DefaultPostCompilerCommand']
+	if s:SpotBugsHasProperty(s:name)
+	    let s:commands[s:name] = remove(
+		\ s:SpotBugsGetProperties(),
+		\ s:name)
+	endif
+    endfor
+
     if s:SpotBugsHasProperty('compiler')
-	let g:spotbugs#compiler = remove(s:SpotBugsGetProperties(), 'compiler')
+	" XXX: Postpone loading the script until all state, if any, has been
+	" collected.
+	if !empty(s:commands)
+	    let g:spotbugs#state = {
+		\ 'compiler': remove(s:SpotBugsGetProperties(), 'compiler'),
+		\ 'commands': copy(s:commands),
+	    \ }
+	else
+	    let g:spotbugs#state = {
+		\ 'compiler': remove(s:SpotBugsGetProperties(), 'compiler'),
+	    \ }
+	endif
 
 	" Merge default entries in global (or buffer-local) entries, favouring
 	" defined global (or buffer-local) ones.
@@ -143,8 +166,13 @@ if (!empty(get(g:, 'spotbugs_properties', {})) ||
 	    \ {s:spotbugs_properties_scope}spotbugs_properties,
 	    \ spotbugs#DefaultProperties(),
 	    \ 'keep')
+    elseif !empty(s:commands)
+	" XXX: Postpone loading the script until all state, if any, has been
+	" collected.
+	let g:spotbugs#state = {'commands': copy(s:commands)}
     endif
 
+    unlet s:commands s:name
     let s:request = 0
 
     if s:SpotBugsHasProperty('PostCompilerAction')

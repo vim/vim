@@ -1,9 +1,50 @@
-" Default pre- and post-compiler actions for SpotBugs
+" Default pre- and post-compiler actions and commands for SpotBugs
 " Maintainers:  @konfekt and @zzzyxwvut
-" Last Change:  2024 Dec 07
+" Last Change:  2024 Dec 08
 
 let s:save_cpo = &cpo
 set cpo&vim
+
+" Look for the setting of "g:spotbugs#state" in "ftplugin/java.vim".
+let s:state = get(g:, 'spotbugs#state', {})
+let s:commands = get(s:state, 'commands', {})
+let s:compiler = get(s:state, 'compiler', '')
+let s:readable = filereadable($VIMRUNTIME . '/compiler/' . s:compiler . '.vim')
+
+if has_key(s:commands, 'DefaultPreCompilerCommand')
+  let g:SpotBugsPreCompilerCommand = s:commands.DefaultPreCompilerCommand
+else
+
+  function! s:DefaultPreCompilerCommand(arguments) abort
+    execute 'make ' . a:arguments
+    cc
+  endfunction
+
+  let g:SpotBugsPreCompilerCommand = function('s:DefaultPreCompilerCommand')
+endif
+
+if has_key(s:commands, 'DefaultPreCompilerTestCommand')
+  let g:SpotBugsPreCompilerTestCommand = s:commands.DefaultPreCompilerTestCommand
+else
+
+  function! s:DefaultPreCompilerTestCommand(arguments) abort
+    execute 'make ' . a:arguments
+    cc
+  endfunction
+
+  let g:SpotBugsPreCompilerTestCommand = function('s:DefaultPreCompilerTestCommand')
+endif
+
+if has_key(s:commands, 'DefaultPostCompilerCommand')
+  let g:SpotBugsPostCompilerCommand = s:commands.DefaultPostCompilerCommand
+else
+
+  function! s:DefaultPostCompilerCommand(arguments) abort
+    execute 'make ' . a:arguments
+  endfunction
+
+  let g:SpotBugsPostCompilerCommand = function('s:DefaultPostCompilerCommand')
+endif
 
 if v:version > 900
 
@@ -127,27 +168,21 @@ endif
 
 function! spotbugs#DefaultPostCompilerAction() abort
   " Since v7.4.191.
-  make %:S
+  call call(g:SpotBugsPostCompilerCommand, ['%:S'])
 endfunction
-
-" Look for "g:spotbugs#compiler" in "ftplugin/java.vim".
-let s:compiler = exists('g:spotbugs#compiler') ? g:spotbugs#compiler : ''
-let s:readable = filereadable($VIMRUNTIME . '/compiler/' . s:compiler . '.vim')
 
 if s:readable && s:compiler ==# 'maven' && executable('mvn')
 
   function! spotbugs#DefaultPreCompilerAction() abort
     call spotbugs#DeleteClassFiles()
     compiler maven
-    make compile
-    cc
+    call call(g:SpotBugsPreCompilerCommand, ['compile'])
   endfunction
 
   function! spotbugs#DefaultPreCompilerTestAction() abort
     call spotbugs#DeleteClassFiles()
     compiler maven
-    make test-compile
-    cc
+    call call(g:SpotBugsPreCompilerTestCommand, ['test-compile'])
   endfunction
 
   function! spotbugs#DefaultProperties() abort
@@ -171,15 +206,13 @@ elseif s:readable && s:compiler ==# 'ant' && executable('ant')
   function! spotbugs#DefaultPreCompilerAction() abort
     call spotbugs#DeleteClassFiles()
     compiler ant
-    make compile
-    cc
+    call call(g:SpotBugsPreCompilerCommand, ['compile'])
   endfunction
 
   function! spotbugs#DefaultPreCompilerTestAction() abort
     call spotbugs#DeleteClassFiles()
     compiler ant
-    make compile-test
-    cc
+    call call(g:SpotBugsPreCompilerTestCommand, ['compile-test'])
   endfunction
 
   function! spotbugs#DefaultProperties() abort
@@ -208,7 +241,7 @@ elseif s:readable && s:compiler ==# 'javac' && executable('javac')
     if get(b:, 'javac_makeprg_params', get(g:, 'javac_makeprg_params', '')) =~ '\s@\S'
       " Only read options and filenames from @options [@sources ...] and do
       " not update these files when filelists change.
-      make
+      call call(g:SpotBugsPreCompilerCommand, [''])
     else
       " Collect filenames so that Javac can figure out what to compile.
       let filelist = []
@@ -238,10 +271,8 @@ elseif s:readable && s:compiler ==# 'javac' && executable('javac')
       endfor
 
       noautocmd call writefile(filelist, s:filename)
-      execute 'make @' . s:filename
+      call call(g:SpotBugsPreCompilerCommand, [shellescape('@' . s:filename)])
     endif
-
-    cc
   endfunction
 
   function! spotbugs#DefaultPreCompilerTestAction() abort
@@ -257,7 +288,8 @@ elseif s:readable && s:compiler ==# 'javac' && executable('javac')
         \ }
   endfunction
 
-  unlet s:readable s:compiler
+  unlet s:readable s:compiler g:SpotBugsPreCompilerTestCommand
+  delfunction! s:DefaultPreCompilerTestCommand
 else
 
   function! spotbugs#DefaultPreCompilerAction() abort
@@ -272,8 +304,11 @@ else
     return {}
   endfunction
 
-  " XXX: Keep "s:compiler" around for "spotbugs#DefaultPreCompilerAction()".
-  unlet s:readable
+  " XXX: Keep "s:compiler" around for "spotbugs#DefaultPreCompilerAction()",
+  " "s:DefaultPostCompilerCommand" -- "spotbugs#DefaultPostCompilerAction()".
+  unlet s:readable g:SpotBugsPreCompilerCommand g:SpotBugsPreCompilerTestCommand
+  delfunction! s:DefaultPreCompilerCommand
+  delfunction! s:DefaultPreCompilerTestCommand
 endif
 
 function! s:DefineBufferAutocmd(event, ...) abort
@@ -312,6 +347,6 @@ command! -bar -nargs=+ -complete=event SpotBugsRemoveBufferAutocmd
     \ call s:RemoveBufferAutocmd(<f-args>)
 
 let &cpo = s:save_cpo
-unlet s:save_cpo
+unlet s:commands s:state s:save_cpo
 
 " vim: set foldmethod=syntax shiftwidth=2 expandtab:
