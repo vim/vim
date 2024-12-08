@@ -41615,6 +41615,8 @@ Changed~
   and removed from |defaults.vim|
 - the completed word and completion type are provided when handling the
   |CompleteDone| autocommand in the |v:event| dictionary
+- the default fontsize for the GTK builds of Vim (Windows and Unix) has been
+  increased to 12pt to accomodate modern high-dpi monitors
 
 							*added-9.2*
 Added ~

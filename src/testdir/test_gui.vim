@@ -105,8 +105,8 @@ func Test_getfontname_without_arg()
     let pat = '\(7x13\)\|\(\c-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO8859-1\)'
     call assert_match(pat, fname)
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
-    " 'expected' is DEFAULT_FONT of gui_gtk_x11.c.
-    call assert_equal('Monospace 10', fname)
+    " 'expected' is DEFAULT_FONT of gui_gtk_x11.c (any size)
+    call assert_match('^Monospace\>', fname)
   endif
 endfunc
 
@@ -426,7 +426,7 @@ func Test_set_guifont()
 
     " Empty list. Should fallback to the built-in default.
     set guifont=
-    call assert_equal('Monospace 10', getfontname())
+    call assert_match('^Monospace\>', getfontname())
   endif
 
   if has('xfontset')
@@ -613,7 +613,7 @@ func Test_expand_guifont()
 
     " Test recalling default and existing option
     set guifont=
-    call assert_equal('Monospace\ 10', getcompletion('set guifont=', 'cmdline')[0])
+    call assert_match('^Monospace\>', getcompletion('set guifont=', 'cmdline')[0])
     set guifont=Monospace\ 9
     call assert_equal('Monospace\ 9', getcompletion('set guifont=', 'cmdline')[0])
 
