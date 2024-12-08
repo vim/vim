@@ -1710,6 +1710,7 @@ EXTERN char typename_percent[]	INIT(= N_("percent"));
 EXTERN char typename_char[] INIT(= N_("char"));
 EXTERN char typename_string[]	INIT(= N_("string"));
 EXTERN char typename_float[]	INIT(= N_("float"));
+EXTERN char typename_longfloat[]	INIT(= N_("long float"));
 
 /*
  * When ":global" is used to number of substitutions and changed lines is
