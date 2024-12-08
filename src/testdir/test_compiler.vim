@@ -281,10 +281,10 @@ func Test_compiler_spotbugs_makeprg()
   let &shellslash = save_shellslash
 endfunc
 
-func s:SpotBugsBeforeFileTypeTryPluginAndClearCache(plugin)
+func s:SpotBugsBeforeFileTypeTryPluginAndClearCache(state)
   " Ponder over "extend(spotbugs#DefaultProperties(), g:spotbugs_properties)"
   " in "ftplugin/java.vim".
-  let g:spotbugs#compiler = a:plugin
+  let g:spotbugs#state = a:state
   runtime autoload/spotbugs.vim
 endfunc
 
@@ -305,11 +305,13 @@ func Test_compiler_spotbugs_properties()
   if !filereadable($VIMRUNTIME .. '/compiler/foo.vim') && !executable('foo')
     let g:spotbugs_properties = {'compiler': 'foo'}
     " XXX: In case this "if" block is no longer first.
-    call s:SpotBugsBeforeFileTypeTryPluginAndClearCache('foo')
+    call s:SpotBugsBeforeFileTypeTryPluginAndClearCache({
+        \ 'compiler': g:spotbugs_properties.compiler,
+    \ })
     execute 'edit ' .. type_file
     call assert_equal('java', &l:filetype)
     " This variable will indefinitely keep the compiler name.
-    call assert_equal('foo', g:spotbugs#compiler)
+    call assert_equal('foo', g:spotbugs#state.compiler)
     " The "compiler" entry should be gone after FileType and default entries
     " should only appear for a supported compiler.
     call assert_false(has_key(g:spotbugs_properties, 'compiler'))
@@ -339,6 +341,9 @@ func Test_compiler_spotbugs_properties()
       \ 'preTestActionDone': 0,
       \ 'preTestLocalActionDone': 0,
       \ 'postActionDone': 0,
+      \ 'preCommandArguments': '',
+      \ 'preTestCommandArguments': '',
+      \ 'postCommandArguments': '',
   \ }
   defer execute('unlet s:spotbugs_results')
 
@@ -368,6 +373,28 @@ func Test_compiler_spotbugs_properties()
   endfunc
   defer execute('delfunction g:SpotBugsPostAction')
 
+  func! g:SpotBugsPreCommand(arguments) abort
+    let s:spotbugs_results.preActionDone = 1
+    let s:spotbugs_results.preCommandArguments = a:arguments
+    " XXX: Notify the spotbugs compiler about success or failure.
+    cc
+  endfunc
+  defer execute('delfunction g:SpotBugsPreCommand')
+
+  func! g:SpotBugsPreTestCommand(arguments) abort
+    let s:spotbugs_results.preTestActionDone = 1
+    let s:spotbugs_results.preTestCommandArguments = a:arguments
+    " XXX: Notify the spotbugs compiler about success or failure.
+    cc
+  endfunc
+  defer execute('delfunction g:SpotBugsPreTestCommand')
+
+  func! g:SpotBugsPostCommand(arguments) abort
+    let s:spotbugs_results.postActionDone = 1
+    let s:spotbugs_results.postCommandArguments = a:arguments
+  endfunc
+  defer execute('delfunction g:SpotBugsPostCommand')
+
   " TEST INTEGRATION WITH A SUPPORTED COMPILER PLUGIN.
   if filereadable($VIMRUNTIME .. '/compiler/maven.vim')
     if !executable('mvn')
@@ -387,12 +414,13 @@ func Test_compiler_spotbugs_properties()
         \ 'PreCompilerTestAction': function('g:SpotBugsPreTestAction'),
         \ 'PostCompilerAction': function('g:SpotBugsPostAction'),
     \ }
-
     " XXX: In case this is a runner-up ":edit".
-    call s:SpotBugsBeforeFileTypeTryPluginAndClearCache('maven')
+    call s:SpotBugsBeforeFileTypeTryPluginAndClearCache({
+        \ 'compiler': g:spotbugs_properties.compiler,
+    \ })
     execute 'edit ' .. type_file
     call assert_equal('java', &l:filetype)
-    call assert_equal('maven', g:spotbugs#compiler)
+    call assert_equal('maven', g:spotbugs#state.compiler)
     call assert_false(has_key(g:spotbugs_properties, 'compiler'))
     call assert_false(empty(g:spotbugs_properties))
     " Query default implementations.
@@ -412,12 +440,12 @@ func Test_compiler_spotbugs_properties()
     call assert_true(exists('#java_spotbugs#Syntax'))
     call assert_true(exists('#java_spotbugs#User'))
     call assert_equal(2, exists(':SpotBugsDefineBufferAutocmd'))
-    SpotBugsDefineBufferAutocmd SigUSR1 User SigUSR1 User
+    SpotBugsDefineBufferAutocmd SigUSR1 User SigUSR1 User SigUSR1 User
     call assert_true(exists('#java_spotbugs#SigUSR1'))
     call assert_true(exists('#java_spotbugs#Syntax'))
     call assert_true(exists('#java_spotbugs#User'))
     call assert_equal(2, exists(':SpotBugsRemoveBufferAutocmd'))
-    SpotBugsRemoveBufferAutocmd SigUSR1 User SigUSR1 User
+    SpotBugsRemoveBufferAutocmd SigUSR1 User SigUSR1 User UserGettingBored
     call assert_false(exists('#java_spotbugs#SigUSR1'))
     call assert_true(exists('#java_spotbugs#Syntax'))
     call assert_true(exists('#java_spotbugs#User'))
@@ -467,7 +495,6 @@ func Test_compiler_spotbugs_properties()
     let s:spotbugs_results.preTestActionDone = 0
     let s:spotbugs_results.postActionDone = 0
     " XXX: Re-build ":autocmd"s from scratch with new values applied.
-""""call s:SpotBugsBeforeFileTypeTryPluginAndClearCache('maven')
     doautocmd FileType
 
     call assert_true(exists('b:spotbugs_syntax_once'))
@@ -522,7 +549,6 @@ func Test_compiler_spotbugs_properties()
     let s:spotbugs_results.preTestLocalActionDone = 0
     let s:spotbugs_results.postActionDone = 0
     " XXX: Re-build ":autocmd"s from scratch with buffer-local values applied.
-""""call s:SpotBugsBeforeFileTypeTryPluginAndClearCache('maven')
     doautocmd FileType
 
     call assert_true(exists('b:spotbugs_syntax_once'))
@@ -534,6 +560,66 @@ func Test_compiler_spotbugs_properties()
     call assert_false(s:spotbugs_results.preTestActionDone)
     " For a pre-match, a post-action.
     call assert_true(s:spotbugs_results.postActionDone)
+
+    " With a match, confirm that ":compiler spotbugs" has run.
+    if has('win32')
+      call assert_match('^spotbugs\.bat\s', &l:makeprg)
+    else
+      call assert_match('^spotbugs\s', &l:makeprg)
+    endif
+
+    setlocal makeprg=
+    let s:spotbugs_results.preActionDone = 0
+    let s:spotbugs_results.preTestActionDone = 0
+    let s:spotbugs_results.preTestLocalActionDone = 0
+    let s:spotbugs_results.postActionDone = 0
+    let s:spotbugs_results.preCommandArguments = ''
+    let s:spotbugs_results.preTestCommandArguments = ''
+    let s:spotbugs_results.postCommandArguments = ''
+    " XXX: Compose the assigned "*Command"s with the default Maven "*Action"s.
+    let b:spotbugs_properties = {
+        \ 'compiler': 'maven',
+        \ 'DefaultPreCompilerTestCommand': function('g:SpotBugsPreTestCommand'),
+        \ 'DefaultPreCompilerCommand': function('g:SpotBugsPreCommand'),
+        \ 'DefaultPostCompilerCommand': function('g:SpotBugsPostCommand'),
+        \ 'sourceDirPath': ['Xspotbugs/src'],
+        \ 'classDirPath': ['Xspotbugs/src'],
+        \ 'testSourceDirPath': ['tests'],
+        \ 'testClassDirPath': ['tests'],
+    \ }
+    unlet g:spotbugs_properties
+    " XXX: Re-build ":autocmd"s from scratch with buffer-local values applied.
+    call s:SpotBugsBeforeFileTypeTryPluginAndClearCache({
+        \ 'compiler': b:spotbugs_properties.compiler,
+        \ 'commands': {
+            \ 'DefaultPreCompilerTestCommand':
+                \ b:spotbugs_properties.DefaultPreCompilerTestCommand,
+            \ 'DefaultPreCompilerCommand':
+                \ b:spotbugs_properties.DefaultPreCompilerCommand,
+            \ 'DefaultPostCompilerCommand':
+                \ b:spotbugs_properties.DefaultPostCompilerCommand,
+        \ },
+    \ })
+    doautocmd FileType
+
+    call assert_equal('maven', g:spotbugs#state.compiler)
+    call assert_equal(sort([
+            \ 'DefaultPreCompilerTestCommand',
+            \ 'DefaultPreCompilerCommand',
+            \ 'DefaultPostCompilerCommand',
+        \ ]),
+        \ sort(keys(g:spotbugs#state.commands)))
+    call assert_true(exists('b:spotbugs_syntax_once'))
+    doautocmd java_spotbugs User
+    " No match: "test_file !~# 'Xspotbugs/src'".
+    call assert_false(s:spotbugs_results.preActionDone)
+    call assert_true(empty(s:spotbugs_results.preCommandArguments))
+    " A match: "test_file =~# 'tests'".
+    call assert_true(s:spotbugs_results.preTestActionDone)
+    call assert_equal('test-compile', s:spotbugs_results.preTestCommandArguments)
+    " For a pre-match, a post-action.
+    call assert_true(s:spotbugs_results.postActionDone)
+    call assert_equal('%:S', s:spotbugs_results.postCommandArguments)
 
     " With a match, confirm that ":compiler spotbugs" has run.
     if has('win32')

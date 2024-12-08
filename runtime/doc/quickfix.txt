@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 07
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1407,8 +1407,25 @@ files for the buffer (and possibly for the whole project) as soon as a Java
 syntax file is loaded; then, `spotbugs` will attempt to analyze the quality of
 the compilation unit of the buffer.
 
-When default actions are not suited to a desired workflow, consider writing
-arbitrary functions yourself and matching their |Funcref|s to the supported
+Vim commands proficient in 'makeprg' [0] can be composed with default actions.
+Begin by considering which of the supported keys, "DefaultPreCompilerCommand",
+"DefaultPreCompilerTestCommand", or "DefaultPostCompilerCommand", you need to
+write an implementation for, observing that each of these keys corresponds to
+a particular "*Action" key.  Follow it by defining a new function that always
+declares an only parameter of type string and puts to use a command equivalent
+of |:make|, and assigning its |Funcref| to the selected key.  For example: >
+
+	function! GenericPostCompilerCommand(arguments) abort
+		execute 'make ' . a:arguments
+	endfunction
+
+	let g:spotbugs_properties = {
+		\ 'DefaultPostCompilerCommand':
+			\ function('GenericPostCompilerCommand'),
+	\ }
+
+When default actions are not suited to a desired workflow, proceed by writing
+arbitrary functions yourself and matching their Funcrefs to the supported
 keys: "PreCompilerAction", "PreCompilerTestAction", and "PostCompilerAction".
 
 The next example re-implements the default pre-compiler actions for a Maven
@@ -1458,12 +1475,14 @@ The "g:spotbugs_properties" variable is consulted by the Java filetype plugin
 (|ft-java-plugin|) to arrange for the described automation, and, therefore, it
 must be defined before |FileType| events can take place for the buffers loaded
 with Java source files.  It could, for example, be set in a project-local
-|vimrc| loaded by [0].
+|vimrc| loaded by [1].
 
 Both "g:spotbugs_properties" and "b:spotbugs_properties" are recognized and
-must be modifiable (|:unlockvar|).
+must be modifiable (|:unlockvar|).  The "*Command" entries are always treated
+as global functions to be shared among all Java buffers.
 
-[0] https://github.com/MarcWeber/vim-addon-local-vimrc/
+[0] https://github.com/Konfekt/vim-compilers
+[1] https://github.com/MarcWeber/vim-addon-local-vimrc
 
 GNU MAKE						*compiler-make*
 
