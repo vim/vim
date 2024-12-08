@@ -1133,12 +1133,10 @@ messagesopt_changed(void)
     if (!(messages_flags_new & MESSAGES_HISTORY))
         return FAIL;
 
-    // "history" must be <= 10000
-    if (messages_history_new > 10000)
+    if (messages_history_new < 0 || messages_history_new > 10000)
         return FAIL;
 
-    // "wait" must be <= 10000
-    if (messages_wait_new > 10000)
+    if (messages_wait_new < 0 || messages_wait_new > 10000)
         return FAIL;
 
     msg_flags = messages_flags_new;
