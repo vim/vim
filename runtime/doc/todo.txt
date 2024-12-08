@@ -1093,9 +1093,6 @@ Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
 MS-Windows: buffer completion doesn't work when using backslash (or slash)
 for a path separator. (xtal8, #2201)
 
-Would be nice for Insert mode completion to highlight the text that was added
-(and may change when picking another completion).
-
 Test more runtime files.
 
 Window not closed when deleting buffer. (Harm te Hennepe, 2017 Aug 27, #2029)

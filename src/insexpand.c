@@ -173,6 +173,7 @@ static pos_T	  compl_startpos;
 static int	  compl_length = 0;
 static colnr_T	  compl_col = 0;	    // column where the text starts
 					    // that is being completed
+static colnr_T	  compl_ins_end_col = 0;
 static string_T	  compl_orig_text = {NULL, 0};  // text as it was before
 					    // completion started
 static int	  compl_cont_mode = 0;
@@ -197,6 +198,11 @@ static int	  compl_opt_suppress_empty = FALSE;
 static int	  compl_selected_item = -1;
 
 static int	  *compl_fuzzy_scores;
+
+// "compl_match_array" points the currently displayed list of entries in the
+// popup menu.  It is NULL when there is no popup menu.
+static pumitem_T *compl_match_array = NULL;
+static int compl_match_arraysize;
 
 static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int *user_hl);
 static void ins_compl_longest_match(compl_T *match);
@@ -899,6 +905,67 @@ ins_compl_equal(compl_T *match, char_u *str, int len)
 }
 
 /*
+ * when len is -1 mean use whole length of p otherwise part of p
+ */
+    static void
+ins_compl_insert_bytes(char_u *p, int len)
+{
+    if (len == -1)
+	len = (int)STRLEN(p);
+    ins_bytes_len(p, len);
+    compl_ins_end_col = curwin->w_cursor.col - 1;
+}
+
+/*
+ *  Checks if the column is within the currently inserted completion text
+ *  column range. If it is, it returns a special highlight attribute.
+ *  -1 mean normal item.
+ */
+    int
+ins_compl_col_range_attr(int col)
+{
+    int		leader_len = ins_compl_leader_len();
+    char_u	*leader = ins_compl_leader();
+    int		scol = compl_col;
+    int		fuzzy_filter = (get_cot_flags() & COT_FUZZY) != 0;
+    garray_T	*match_pos = NULL;
+    int		lead_attr = syn_name2attr((char_u *)"PmenuMatchLead");
+    int		ins_attr = syn_name2attr((char_u *)"PmenuMatchIns");
+    int		i = 0;
+
+    if (fuzzy_filter && compl_match_array != NULL
+	    && leader !=NULL && leader_len > 0)
+    {
+	match_pos = fuzzy_match_str_with_pos(compl_shown_match->cp_str.string,
+								    leader);
+	if (match_pos == NULL)
+	    return -1;
+
+	for (i = 0 ; i < match_pos->ga_len; ++i)
+	{
+	    if (col == compl_col + ((int *)match_pos->ga_data)[i])
+	    {
+		ga_clear(match_pos);
+	        return lead_attr;
+	    }
+	}
+	ga_clear(match_pos);
+	return ins_attr;
+    }
+
+    if (leader_len > 0)
+	scol += leader_len;
+
+    if (col >= compl_col && col < scol)
+	return lead_attr;
+
+    if (col >= scol && col < compl_ins_end_col)
+	return ins_attr;
+
+    return -1;
+}
+
+/*
  * Reduce the longest common string for match "match".
  */
     static void
@@ -918,7 +985,7 @@ ins_compl_longest_match(compl_T *match)
 	compl_leader.length = match->cp_str.length;
 	had_match = (curwin->w_cursor.col > compl_col);
 	ins_compl_delete();
-	ins_bytes(compl_leader.string + get_compl_len());
+	ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
 	ins_redraw(FALSE);
 
 	// When the match isn't there (to avoid matching itself) remove it
@@ -968,7 +1035,7 @@ ins_compl_longest_match(compl_T *match)
 
 	had_match = (curwin->w_cursor.col > compl_col);
 	ins_compl_delete();
-	ins_bytes(compl_leader.string + get_compl_len());
+	ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
 	ins_redraw(FALSE);
 
 	// When the match isn't there (to avoid matching itself) remove it
@@ -1057,12 +1124,6 @@ get_cot_flags(void)
 {
     return curbuf->b_cot_flags != 0 ? curbuf->b_cot_flags : cot_flags;
 }
-
-
-// "compl_match_array" points the currently displayed list of entries in the
-// popup menu.  It is NULL when there is no popup menu.
-static pumitem_T *compl_match_array = NULL;
-static int compl_match_arraysize;
 
 /*
  * Update the screen and when there is any scrolling remove the popup menu.
@@ -1823,6 +1884,7 @@ ins_compl_clear(void)
     compl_cont_status = 0;
     compl_started = FALSE;
     compl_matches = 0;
+    compl_ins_end_col = 0;
     VIM_CLEAR_STRING(compl_pattern);
     VIM_CLEAR_STRING(compl_leader);
     edit_submode_extra = NULL;
@@ -1971,7 +2033,7 @@ ins_compl_new_leader(void)
 {
     ins_compl_del_pum();
     ins_compl_delete();
-    ins_bytes(compl_leader.string + get_compl_len());
+    ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
     compl_used_match = FALSE;
 
     if (compl_started)
@@ -2416,7 +2478,7 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	    int	    compl_len = get_compl_len();
 
 	    if ((int)plen > compl_len)
-		ins_bytes_len(p + compl_len, (int)(plen - compl_len));
+		ins_compl_insert_bytes(p + compl_len, (int)(plen - compl_len));
 	}
 	retval = TRUE;
     }
@@ -4266,7 +4328,7 @@ ins_compl_insert(int in_compl_func)
     // Make sure we don't go over the end of the string, this can happen with
     // illegal bytes.
     if (compl_len < (int)compl_shown_match->cp_str.length)
-	ins_bytes(compl_shown_match->cp_str.string + compl_len);
+	ins_compl_insert_bytes(compl_shown_match->cp_str.string + compl_len, -1);
     if (match_at_original_text(compl_shown_match))
 	compl_used_match = FALSE;
     else
@@ -4543,7 +4605,7 @@ ins_compl_next(
     // Insert the text of the new completion, or the compl_leader.
     if (compl_no_insert && !started)
     {
-	ins_bytes(compl_orig_text.string + get_compl_len());
+	ins_compl_insert_bytes(compl_orig_text.string + get_compl_len(), -1);
 	compl_used_match = FALSE;
     }
     else if (insert_match)
@@ -4551,7 +4613,7 @@ ins_compl_next(
 	if (!compl_get_longest || compl_used_match)
 	    ins_compl_insert(in_compl_func);
 	else
-	    ins_bytes(compl_leader.string + get_compl_len());
+	    ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
     }
     else
 	compl_used_match = FALSE;
