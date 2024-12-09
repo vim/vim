@@ -41,12 +41,12 @@ export def FTasm()
     FTasmsyntax()
   endif
 
-  # if b:asmsyntax still isn't set, default to asmsyntax or GNU
+  # if b:asmsyntax still isn't set, default to asmsyntax or nasm
   if b:asmsyntax == ""
     if exists("g:asmsyntax")
       b:asmsyntax = g:asmsyntax
     else
-      b:asmsyntax = "asm"
+      b:asmsyntax = "nasm"
     endif
   endif
 
