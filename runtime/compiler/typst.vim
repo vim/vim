@@ -1,7 +1,7 @@
 " Vim compiler file
 " Language:    Typst
-" Maintainer:  Gregory Anders
-" Last Change: 2024-07-14
+" Maintainer:  Luca Saccarola <github.e41mv@aleeas.com>
+" Last Change: 2024 Dec 09
 " Based on:    https://github.com/kaarmu/typst.vim
 
 if exists('current_compiler')
