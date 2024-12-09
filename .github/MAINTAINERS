@@ -125,6 +125,7 @@ runtime/ftplugin/abaqus.vim		@costerwi
 runtime/ftplugin/antlr4.vim		@jiangyinzuo
 runtime/ftplugin/apache.vim		@dubgeiser
 runtime/ftplugin/arduino.vim		@k-takata
+runtime/ftplugin/asciidoc.vim		@saccarosium
 runtime/ftplugin/astro.vim		@romainl
 runtime/ftplugin/asy.vim		@avidseeker
 runtime/ftplugin/autohotkey.vim		@telemachus
@@ -238,6 +239,7 @@ runtime/ftplugin/octave.vim		@dkearns
 runtime/ftplugin/ondir.vim		@jparise
 runtime/ftplugin/opencl.vim		@Freed-Wu
 runtime/ftplugin/openvpn.vim		@ObserverOfTime
+runtime/ftplugin/org.vim		@saccarosium
 runtime/ftplugin/pascal.vim		@dkearns
 runtime/ftplugin/pbtxt.vim		@lakshayg
 runtime/ftplugin/pdf.vim		@tpope
@@ -493,6 +495,7 @@ runtime/syntax/hog.vim			@wtfbbqhax
 runtime/syntax/hollywood.vim		@sodero
 runtime/syntax/html.vim			@dkearns
 runtime/syntax/htmlangular.vim @dlvandenberg
+runtime/syntax/hyprlang.vim		@saccarosium
 runtime/syntax/i3config.vim		@hiqua
 runtime/syntax/icon.vim			@dkearns
 runtime/syntax/indent.vim		@dkearns
@@ -542,6 +545,7 @@ runtime/syntax/nsis.vim			@k-takata
 runtime/syntax/ondir.vim		@jparise
 runtime/syntax/opencl.vim		@Freed-Wu
 runtime/syntax/openvpn.vim		@ObserverOfTime
+runtime/syntax/org.vim			@saccarosium
 runtime/syntax/pacmanlog.vim		@rpigott
 runtime/syntax/pascal.vim		@dkearns
 runtime/syntax/pbtxt.vim		@lakshayg
