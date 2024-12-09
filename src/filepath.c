@@ -3775,7 +3775,11 @@ unix_expandpath(
 	    {
 		int len = (int)basepathlen + vim_snprintf((char *)s, (size_t)(MAXPATHL - (basepathlen + 1)), "%s", d_name);
 
-		if (starstar && stardepth < 100)
+		if (starstar && stardepth < 100
+#ifdef MSWIN
+			    && (wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+#endif
+		    )
 		{
 		    // For "**" in the pattern first go deeper in the tree to
 		    // find matches.
