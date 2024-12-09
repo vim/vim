@@ -19,7 +19,7 @@ runtime/autoload/modula2.vim		@dkearns
 runtime/autoload/php.vim		@david-szabo97
 runtime/autoload/rubycomplete.vim	@segfault @dkearns
 runtime/autoload/rust.vim		@lilyball
-runtime/autoload/typst.vim		@gpanders
+runtime/autoload/typst.vim		@saccarosium
 runtime/autoload/xmlformat.vim		@chrisbra
 runtime/autoload/dist/json.vim		@habamax
 runtime/colors/blue.vim			@habamax @romainl @neutaaaaan
@@ -104,7 +104,7 @@ runtime/compiler/tidy.vim		@dkearns
 runtime/compiler/ts-node.vim		@dkearns
 runtime/compiler/tsc.vim		@dkearns
 runtime/compiler/typedoc.vim		@dkearns
-runtime/compiler/typst.vim		@gpanders
+runtime/compiler/typst.vim		@saccarosium
 runtime/compiler/xmllint.vim		@dkearns
 runtime/compiler/xo.vim			@dkearns
 runtime/compiler/yamllint.vim		@romainl
@@ -297,7 +297,7 @@ runtime/ftplugin/toml.vim		@averms
 runtime/ftplugin/tt2html.vim		@petdance
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
-runtime/ftplugin/typst.vim		@gpanders
+runtime/ftplugin/typst.vim		@saccarosium
 runtime/ftplugin/unison.vim		@chuwy
 runtime/ftplugin/v.vim			@ribru17
 runtime/ftplugin/vdf.vim		@ObserverOfTime
@@ -390,7 +390,7 @@ runtime/indent/teraterm.vim		@k-takata
 runtime/indent/terraform.vim		@gpanders
 runtime/indent/thrift.vim		@jiangyinzuo
 runtime/indent/typescript.vim		@HerringtonDarkholme
-runtime/indent/typst.vim		@gpanders
+runtime/indent/typst.vim		@saccarosium
 runtime/indent/vroom.vim		@dbarnett
 runtime/indent/wast.vim			@rhysd
 runtime/indent/xml.vim			@chrisbra
