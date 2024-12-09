@@ -1324,8 +1324,8 @@ wait_return(int redraw)
 		++allow_keys;
 
 		// Temporarily disable Recording. If Recording is active, the
-		// character will be recorded later, since it will be added to the
-		// typebuf after the loop
+		// character will be recorded later, since it will be added to
+		// the typebuf after the loop
 		save_reg_recording = reg_recording;
 		save_scriptout = scriptout;
 		reg_recording = 0;
@@ -1339,9 +1339,10 @@ wait_return(int redraw)
 		scriptout = save_scriptout;
 
 #ifdef FEAT_CLIPBOARD
-		// Strange way to allow copying (yanking) a modeless selection at
-		// the hit-enter prompt.  Use CTRL-Y, because the same is used in
-		// Cmdline-mode and it's harmless when there is no selection.
+		// Strange way to allow copying (yanking) a modeless selection
+		// at the hit-enter prompt.  Use CTRL-Y, because the same is
+		// used in Cmdline-mode and it's harmless when there is no
+		// selection.
 		if (c == Ctrl_Y && clip_star.state == SELECT_DONE)
 		{
 		    clip_copy_modeless_selection(TRUE);
@@ -1351,14 +1352,14 @@ wait_return(int redraw)
 
 		/*
 		* Allow scrolling back in the messages.
-		* Also accept scroll-down commands when messages fill the screen,
-		* to avoid that typing one 'j' too many makes the messages
-		* disappear.
+		* Also accept scroll-down commands when messages fill the
+		* screen, to avoid that typing one 'j' too many makes the
+		* messages disappear.
 		*/
 		if (p_more && !p_cp)
 		{
 		    if (c == 'b' || c == 'k' || c == 'u' || c == 'g'
-						    || c == K_UP || c == K_PAGEUP)
+						|| c == K_UP || c == K_PAGEUP)
 		    {
 			if (msg_scrolled > Rows)
 			    // scroll back to show older messages
@@ -1391,36 +1392,36 @@ wait_return(int redraw)
 			c = K_IGNORE;
 		}
 	    } while ((had_got_int && c == Ctrl_C)
-				    || c == K_IGNORE
+				|| c == K_IGNORE
 #ifdef FEAT_GUI
-				    || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR
+				|| c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR
 #endif
-				    || c == K_LEFTDRAG   || c == K_LEFTRELEASE
-				    || c == K_MIDDLEDRAG || c == K_MIDDLERELEASE
-				    || c == K_RIGHTDRAG  || c == K_RIGHTRELEASE
-				    || c == K_MOUSELEFT  || c == K_MOUSERIGHT
-				    || c == K_MOUSEDOWN  || c == K_MOUSEUP
-				    || c == K_MOUSEMOVE
-				    || (!mouse_has(MOUSE_RETURN)
-					&& mouse_row < msg_row
-					&& (c == K_LEFTMOUSE
-					    || c == K_MIDDLEMOUSE
-					    || c == K_RIGHTMOUSE
-					    || c == K_X1MOUSE
-					    || c == K_X2MOUSE))
-				    );
+				|| c == K_LEFTDRAG   || c == K_LEFTRELEASE
+				|| c == K_MIDDLEDRAG || c == K_MIDDLERELEASE
+				|| c == K_RIGHTDRAG  || c == K_RIGHTRELEASE
+				|| c == K_MOUSELEFT  || c == K_MOUSERIGHT
+				|| c == K_MOUSEDOWN  || c == K_MOUSEUP
+				|| c == K_MOUSEMOVE
+				|| (!mouse_has(MOUSE_RETURN)
+				    && mouse_row < msg_row
+				    && (c == K_LEFTMOUSE
+					|| c == K_MIDDLEMOUSE
+					|| c == K_RIGHTMOUSE
+					|| c == K_X1MOUSE
+					|| c == K_X2MOUSE))
+				);
 	    ui_breakcheck();
 
 	    // Avoid that the mouse-up event causes Visual mode to start.
 	    if (c == K_LEFTMOUSE || c == K_MIDDLEMOUSE || c == K_RIGHTMOUSE
-					    || c == K_X1MOUSE || c == K_X2MOUSE)
+					|| c == K_X1MOUSE || c == K_X2MOUSE)
 		(void)jump_to_mouse(MOUSE_SETPOS, NULL, 0);
 	    else if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
 	    {
-		// Put the character back in the typeahead buffer.  Don't use the
-		// stuff buffer, because lmaps wouldn't work.
+		// Put the character back in the typeahead buffer.  Don't use
+		// the stuff buffer, because lmaps wouldn't work.
 		ins_char_typebuf(vgetc_char, vgetc_mod_mask);
-		do_redraw = TRUE;	    // need a redraw even though there is
+		do_redraw = TRUE;	// need a redraw even though there is
 					// typeahead
 	    }
 	}
