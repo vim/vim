@@ -260,6 +260,8 @@ static char *(highlight_init_both[]) = {
     "default link PmenuKindSel PmenuSel",
     "default link PmenuMatch Pmenu",
     "default link PmenuMatchSel PmenuSel",
+    "default link PmenuMatchIns Normal",
+    "default link PmenuMatchLead Normal",
     "default link PmenuExtra Pmenu",
     "default link PmenuExtraSel PmenuSel",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
