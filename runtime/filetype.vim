@@ -2301,7 +2301,7 @@ au BufNewFile,BufRead *.zsh,*.zsh-theme,*.zunit		setf zsh
 au BufNewFile,BufRead *.sls			setf salt
 
 " Scheme ("racket" patterns are now separate, see above)
-au BufNewFile,BufRead *.scm,*.ss,*.sld		setf scheme
+au BufNewFile,BufRead *.scm,*.ss,*.sld		call dist#ft#DetectSchemeFlavor()
 
 " Screen RC
 au BufNewFile,BufRead .screenrc,screenrc	setf screen

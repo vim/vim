@@ -1451,5 +1451,23 @@ export def Detect_UCI_statements(): bool
   \         )
 enddef
 
+export def DetectSchemeFlavor()
+  # Guile uses the shebang in the first line
+  if getline(1) =~? '\v^#!.*[Gg]uile'
+    setf scheme.guile
+    return
+  endif
+
+  var save_cursor = getcurpos()
+  cursor(1, 1)
+  if search('\v\(\s*(define-module|use-modules)\s*\(', 'c', 0, 1000)
+    setf scheme.guile
+    return
+  endif
+  setpos('.', save_cursor)
+
+  setf scheme
+enddef
+
 # Uncomment this line to check for compilation errors early
 # defcompile
