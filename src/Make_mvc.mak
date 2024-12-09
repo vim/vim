@@ -738,6 +738,7 @@ OBJ = \
 	$(OUTDIR)\indent.obj \
 	$(OUTDIR)\insexpand.obj \
 	$(OUTDIR)\json.obj \
+	$(OUTDIR)\linematch.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\locale.obj \
 	$(OUTDIR)\logfile.obj \
@@ -1675,6 +1676,8 @@ $(OUTDIR)/job.obj:	$(OUTDIR) job.c $(INCL)
 
 $(OUTDIR)/json.obj:	$(OUTDIR) json.c  $(INCL)
 
+$(OUTDIR)/linematch.obj:	$(OUTDIR) linematch.c  $(INCL)
+
 $(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
 
 $(OUTDIR)/locale.obj:	$(OUTDIR) locale.c  $(INCL)
@@ -1954,6 +1957,7 @@ proto.h: \
 	proto/indent.pro \
 	proto/insexpand.pro \
 	proto/json.pro \
+	proto/linematch.pro \
 	proto/list.pro \
 	proto/locale.pro \
 	proto/logfile.pro \
