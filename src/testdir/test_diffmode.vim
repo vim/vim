@@ -1035,6 +1035,13 @@ func Test_diff_screen()
   call WriteDiffFiles(buf, [], [0])
   call VerifyBoth(buf, "Test_diff_22", "")
 
+  call WriteDiffFiles(buf, ['?a', '?b', '?c'], ['!b'])
+  call term_sendkeys(buf, ":set diffopt+=linematch:30\<cr>")
+  " write the contents to a screen dump?
+  call term_dumpwrite(buf, "Test_diff_23")
+  " call VerifyInternal(buf, 'Test_diff_23', " diffopt+=linematch:30")
+
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xdifile1')
