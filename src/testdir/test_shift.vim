@@ -112,14 +112,13 @@ func Test_ex_shift_errors()
   call assert_fails('2,1<', 'E493:')
 endfunc
 
-" Test inserting a backspace at the start of a line
+" Test inserting a backspace at the start of a line.
 "
 " This is to verify the proper behavior of tabstop_start() as called from
 " ins_bs().
 "
 func Test_shift_ins_bs()
   set backspace=indent,start
-
   set softtabstop=11
 
   call setline(1, repeat(" ", 33) . "word")
@@ -131,6 +130,15 @@ func Test_shift_ins_bs()
   exe "norm I\<BS>"
   call assert_equal(repeat(" ", 11) . "word", getline(1))
 
+  set backspace& softtabstop&
+  bw!
+endfunc
+
+" Test inserting a backspace at the start of a line, with 'varsofttabstop'.
+"
+func Test_shift_ins_bs_vartabs()
+  CheckFeature vartabs
+  set backspace=indent,start
   set varsofttabstop=13,11,7
 
   call setline(1, repeat(" ", 44) . "word")
@@ -150,7 +158,7 @@ func Test_shift_ins_bs()
   exe "norm I\<BS>"
   call assert_equal(                  "word", getline(1))
 
-  set backspace& softtabstop& varsofttabstop&
+  set backspace& varsofttabstop&
   bw!
 endfunc
 
@@ -162,7 +170,6 @@ func Test_shift_norm()
 
   set shiftwidth=5
   set tabstop=7
-  set vartabstop=
 
   call setline(1, "  word")
 
@@ -205,9 +212,22 @@ func Test_shift_norm()
   norm <<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
+  set expandtab& shiftwidth& tabstop&
+  bw!
+endfunc
+
+" Test the >> and << normal-mode commands, with 'vartabstop'.
+"
+func Test_shift_norm_vartabs()
+  CheckFeature vartabs
+  set expandtab                 " Don't want to worry about tabs vs. spaces in
+                                " results.
+
+  set shiftwidth=0
+  set vartabstop=19,17,11
+
   " Shift by 'vartabstop' right and left.
 
-  set vartabstop=19,17,11
   call setline(1, "  word")
 
   norm >>
@@ -230,7 +250,7 @@ func Test_shift_norm()
   norm <<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
-  set expandtab& shiftwidth& tabstop& vartabstop&
+  set expandtab& shiftwidth& vartabstop&
   bw!
 endfunc
 
@@ -243,7 +263,6 @@ func Test_shift_norm_round()
   set shiftround
   set shiftwidth=5
   set tabstop=7
-  set vartabstop=
 
   call setline(1, "word")
 
@@ -324,9 +343,23 @@ func Test_shift_norm_round()
   norm <<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
+  set expandtab& shiftround& shiftwidth& tabstop&
+  bw!
+endfunc
+
+" Test the >> and << normal-mode commands with 'shiftround' and 'vartabstop'.
+"
+func Test_shift_norm_round_vartabs()
+  CheckFeature vartabs
+  set expandtab                 " Don't want to worry about tabs vs. spaces in
+                                " results.
+
+  set shiftround
+  set shiftwidth=0
+  set vartabstop=19,17,11
+
   " Shift by 'vartabstop' right and left.
 
-  set vartabstop=19,17,11
   call setline(1, "word")
 
   exe "norm I  "
@@ -363,7 +396,7 @@ func Test_shift_norm_round()
   norm <<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
-  set expandtab& shiftround& shiftwidth& tabstop& vartabstop&
+  set expandtab& shiftround& shiftwidth& vartabstop&
   bw!
 endfunc
 
@@ -379,7 +412,6 @@ func Test_shift_vis()
 
   set shiftwidth=5
   set tabstop=7
-  set vartabstop=
 
   call setline(1, "  word")
 
@@ -426,9 +458,26 @@ func Test_shift_vis()
   norm V3<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
+  set expandtab& shiftwidth& tabstop&
+  bw!
+endfunc
+
+" Test the V> and V< visual-mode commands, with 'vartabstop'.
+"
+" See ":help v_<" and ":help v_>".  See also the last paragraph of "3. Simple
+" changes", ":help simple-change", immediately above "4. Complex changes",
+" ":help complex-change".
+"
+func Test_shift_vis_vartabs()
+  CheckFeature vartabs
+  set expandtab                 " Don't want to worry about tabs vs. spaces in
+                                " results.
+
+  set shiftwidth=0
+  set vartabstop=19,17,11
+
   " Shift by 'vartabstop' right and left.
 
-  set vartabstop=19,17,11
   call setline(1, "  word")
 
   norm V>
@@ -449,7 +498,7 @@ func Test_shift_vis()
   norm V3<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
-  set expandtab& shiftwidth& tabstop& vartabstop&
+  set expandtab& shiftwidth& vartabstop&
   bw!
 endfunc
 
@@ -462,7 +511,6 @@ func Test_shift_vis_round()
   set shiftround
   set shiftwidth=5
   set tabstop=7
-  set vartabstop=
 
   call setline(1, "word")
 
@@ -523,9 +571,24 @@ func Test_shift_vis_round()
   norm V<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
+
+  set expandtab& shiftround& shiftwidth& tabstop&
+  bw!
+endfunc
+
+" Test the V> and V< visual-mode commands with 'shiftround' and 'vartabstop'.
+"
+func Test_shift_vis_round_vartabs()
+  CheckFeature vartabs
+  set expandtab                 " Don't want to worry about tabs vs. spaces in
+                                " results.
+
+  set shiftround
+  set shiftwidth=0
+  set vartabstop=19,17,11
+
   " Shift by 'vartabstop' right and left.
 
-  set vartabstop=19,17,11
   call setline(1, "word")
 
   exe "norm I  "
@@ -548,7 +611,7 @@ func Test_shift_vis_round()
   norm V<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
-  set expandtab& shiftround& shiftwidth& tabstop& vartabstop&
+  set expandtab& shiftround& shiftwidth& vartabstop&
   bw!
 endfunc
 
@@ -560,7 +623,6 @@ func Test_shift_ex()
 
   set shiftwidth=5
   set tabstop=7
-  set vartabstop=
 
   call setline(1, "  word")
 
@@ -601,9 +663,22 @@ func Test_shift_ex()
   <
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
+  set expandtab& shiftwidth& tabstop&
+  bw!
+endfunc
+
+" Test the :> and :< ex-mode commands, with vartabstop.
+"
+func Test_shift_ex_vartabs()
+  CheckFeature vartabs
+  set expandtab                 " Don't want to worry about tabs vs. spaces in
+                                " results.
+
+  set shiftwidth=0
+  set vartabstop=19,17,11
+
   " Shift by 'vartabstop' right and left.
 
-  set vartabstop=19,17,11
   call setline(1, "  word")
 
   >
@@ -620,7 +695,7 @@ func Test_shift_ex()
   <
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
-  set expandtab& shiftwidth& tabstop& vartabstop&
+  set expandtab& shiftwidth& vartabstop&
   bw!
 endfunc
 
@@ -633,7 +708,6 @@ func Test_shift_ex_round()
   set shiftround
   set shiftwidth=5
   set tabstop=7
-  set vartabstop=
 
   call setline(1, "word")
 
@@ -689,9 +763,23 @@ func Test_shift_ex_round()
   <<<
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
+  set expandtab& shiftround& shiftwidth& tabstop&
+  bw!
+endfunc
+
+" Test the :> and :< ex-mode commands with 'shiftround' and 'vartabstop'.
+"
+func Test_shift_ex_round_vartabs()
+  CheckFeature vartabs
+  set expandtab                 " Don't want to worry about tabs vs. spaces in
+                                " results.
+
+  set shiftround
+  set shiftwidth=0
+  set vartabstop=19,17,11
+
   " Shift by 'vartabstop' right and left.
 
-  set vartabstop=19,17,11
   call setline(1, "word")
 
   exe "norm I  "
@@ -714,11 +802,11 @@ func Test_shift_ex_round()
   <
   call assert_equal(repeat(" ",  0) . "word", getline(1))
 
-  set expandtab& shiftround& shiftwidth& tabstop& vartabstop&
+  set expandtab& shiftround& shiftwidth& vartabstop&
   bw!
 endfunc
 
-" Test shifting lines with <C-T> and <C-D>
+" Test shifting lines with <C-T> and <C-D>.
 "
 func Test_shift_ins()
   set expandtab                 " Don't want to worry about tabs vs. spaces in
@@ -726,7 +814,6 @@ func Test_shift_ins()
 
   set shiftwidth=5
   set tabstop=7
-  set vartabstop=
 
   " Shift by 'shiftwidth' right and left.
 
@@ -781,9 +868,22 @@ func Test_shift_ins()
   exe "norm I\<C-D>"
   call assert_equal(repeat(" ", 0) . "word", getline(1))
 
+  set expandtab& shiftwidth& tabstop&
+  bw!
+endfunc
+
+" Test shifting lines with <C-T> and <C-D>, with 'vartabstop'.
+"
+func Test_shift_ins_vartabs()
+  CheckFeature vartabs
+  set expandtab                 " Don't want to worry about tabs vs. spaces in
+                                " results.
+
+  set shiftwidth=0
+  set vartabstop=19,17,11
+
   " Shift by 'vartabstop' right and left.
 
-  set vartabstop=19,17,11
   call setline(1, "word")
 
   call setline(1, repeat(" ", 9) . "word")
@@ -809,7 +909,7 @@ func Test_shift_ins()
   exe "norm I\<C-D>"
   call assert_equal(repeat(" ", 0) . "word", getline(1))
 
-  set expandtab& shiftwidth& tabstop& vartabstop&
+  set expandtab& shiftwidth& vartabstop&
   bw!
 endfunc
 

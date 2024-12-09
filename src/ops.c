@@ -380,7 +380,9 @@ shift_line(
     vimlong_T	count;
     long	sw_val = curbuf->b_p_sw;
     long	ts_val = curbuf->b_p_ts;
+#ifdef FEAT_VARTABS
     int		*vts_array = curbuf->b_p_vts_array;
+#endif
 
     if (sw_val != 0)
     {
@@ -388,13 +390,17 @@ shift_line(
 
 	count = get_new_sw_indent(left, round, amount, sw_val);
     }
-    else if ((vts_array == NULL) || (vts_array[0] == 0))
+    else
+#ifdef FEAT_VARTABS
+	if ((vts_array == NULL) || (vts_array[0] == 0))
+#endif
     {
 	// 'shiftwidth is zero and 'vartabstop' is empty; use 'tabstop' as the
 	// shift size.
 
 	count = get_new_sw_indent(left, round, amount, ts_val);
     }
+#ifdef FEAT_VARTABS
     else
     {
 	// 'shiftwidth is zero and 'vartabstop' is defined; use 'vartabstop'
@@ -402,6 +408,7 @@ shift_line(
 
 	count = get_new_vts_indent(left, round, amount, vts_array);
     }
+#endif
 
     // Set new indent
     if (State & VREPLACE_FLAG)
