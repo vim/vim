@@ -1002,6 +1002,14 @@ export def SQL()
   endif
 enddef
 
+export def FTsa()
+  if getline(1) .. getline(2) .. getline(3) .. getline(4) =~# ';\*'
+    setf tisa
+    return
+  endif
+  setf sather
+enddef
+
 # This function checks the first 25 lines of file extension "sc" to resolve
 # detection between scala and SuperCollider.
 # NOTE: We don't check for 'Class : Method', as this can easily be confused
