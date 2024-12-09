@@ -218,6 +218,7 @@ op_shift(oparg_T *oap, int curs_top, int amount)
     }
 }
 
+#ifdef FEAT_VARTABS
 /*
  * Return the tabstop width at the index of the variable tabstop array.  If an
  * index greater than the length of the array is given, the last tabstop width
@@ -259,6 +260,7 @@ get_vts_sum(int *vts_array, int index)
 
     return sum;
 }
+#endif
 
     static vimlong_T
 get_new_sw_indent(
@@ -301,6 +303,7 @@ get_new_sw_indent(
     return count;
 }
 
+#ifdef FEAT_VARTABS
     static vimlong_T
 get_new_vts_indent(
     int	left,			// TRUE if shift is to the left
@@ -359,6 +362,7 @@ get_new_vts_indent(
 
     return indent;
 }
+#endif
 
 /*
  * Shift the current line 'amount' shiftwidth(s) left (if 'left' is TRUE) or
