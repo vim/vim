@@ -2985,9 +2985,9 @@ ExpandBufnames(
 	    vim_free(patc);
     }
 
-#ifdef FEAT_VIMINFO
     if (!fuzzy)
     {
+#ifdef FEAT_VIMINFO
 	if (matches != NULL)
 	{
 	    int i;
@@ -3007,13 +3007,13 @@ ExpandBufnames(
 	    }
 	    vim_free(matches);
 	}
+#endif
     }
     else
     {
 	if (fuzzymatches_to_strmatches(fuzmatch, file, count, FALSE) == FAIL)
 	    return FAIL;
     }
-#endif
 
     *num_file = count;
     return (count == 0 ? FAIL : OK);
