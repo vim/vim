@@ -183,7 +183,16 @@ au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
 
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
-au BufNewFile,BufRead *.asm,*.[sS],*.[aA],*.mac,*.lst	call dist#ft#FTasm()
+au BufNewFile,BufRead *.asm,*.mac,*.lst	call dist#ft#FTasm()
+
+" Assembly - GNU
+au BufNewFile,BufRead *.[sS],*.[aA]		setf asm
+
+" Assembly - Netwide
+au BufNewFile,BufRead *.nasm			setf nasm
+
+" Assembly - Microsoft
+au BufNewFile,BufRead *.masm			setf masm
 
 " Assembly - Macro (VAX)
 au BufNewFile,BufRead *.mar			setf vmasm
