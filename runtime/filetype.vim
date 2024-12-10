@@ -233,9 +233,9 @@ au BufNewFile,BufRead *.fb			setf freebasic
 
 " Batch file for MSDOS. See dist#ft#FTsys for *.sys
 au BufNewFile,BufRead *.bat			setf dosbatch
-" *.cmd is close to a Batch file, but on OS/2 Rexx files also use *.cmd.
+" *.cmd is close to a Batch file, but on OS/2 Rexx files and TI DSP linker command files also use *.cmd.
 au BufNewFile,BufRead *.cmd
-	\ if getline(1) =~ '^/\*' | setf rexx | else | setf dosbatch | endif
+	\ if getline(1) . getline(2) =~ '/\*\s\+\S\+\.cmd' | setf tild | elseif getline(1) =~ '^/\*' | setf rexx | else | setf dosbatch | endif
 " ABB RAPID or Batch file for MSDOS.
 au BufNewFile,BufRead *.sys			call dist#ft#FTsys()
 if has("fname_case")
@@ -1073,6 +1073,9 @@ au BufRead,BufNewFile *.hoon			setf hoon
 
 " Tilde (must be before HTML)
 au BufNewFile,BufRead *.t.html			setf tilde
+
+" TI DSP gel
+au BufNewFile,BufRead *.gel			setf tigel
 
 " Translate shell
 au BufNewFile,BufRead init.trans,*/etc/translate-shell,.trans	setf clojure
@@ -2169,7 +2172,7 @@ au BufNewFile,BufRead *.sas			setf sas
 au BufNewFile,BufRead *.sass			setf sass
 
 " Sather
-au BufNewFile,BufRead *.sa			setf sather
+au BufNewFile,BufRead *.sa			call dist#ft#FTsa()
 
 " Scala
 au BufNewFile,BufRead *.scala			setf scala
