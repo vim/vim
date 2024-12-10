@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Nov 28
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1362,19 +1362,22 @@ their paths (distinct and relative to their common root directory) to the
 following properties (using the example of a common Maven project): >
 
 	let g:spotbugs_properties = {
-		\ 'sourceDirPath':	'src/main/java',
-		\ 'classDirPath':	'target/classes',
-		\ 'testSourceDirPath':	'src/test/java',
-		\ 'testClassDirPath':	'target/test-classes',
+		\ 'sourceDirPath':	['src/main/java'],
+		\ 'classDirPath':	['target/classes'],
+		\ 'testSourceDirPath':	['src/test/java'],
+		\ 'testClassDirPath':	['target/test-classes'],
 	\ }
 
+Note that source and class path entries are expected to come in pairs: define
+both "sourceDirPath" and "classDirPath" when you are considering at least one,
+and apply the same logic to "testSourceDirPath" and "testClassDirPath".
 Note that values for the path keys describe only for SpotBugs where to look
 for files; refer to the documentation for particular compiler plugins for more
 information.
 
 The default pre- and post-compiler actions are provided for Ant, Maven, and
 Javac compiler plugins and can be selected by assigning the name of a compiler
-plugin to the "compiler" key: >
+plugin (`ant`, `maven`, or `javac`) to the "compiler" key: >
 
 	let g:spotbugs_properties = {
 		\ 'compiler':		'maven',
@@ -1393,10 +1396,10 @@ available. >
 			\ function('spotbugs#DefaultPreCompilerTestAction'),
 		\ 'PostCompilerAction':
 			\ function('spotbugs#DefaultPostCompilerAction'),
-		\ 'sourceDirPath':	'src/main/java',
-		\ 'classDirPath':	'target/classes',
-		\ 'testSourceDirPath':	'src/test/java',
-		\ 'testClassDirPath':	'target/test-classes',
+		\ 'sourceDirPath':	['src/main/java'],
+		\ 'classDirPath':	['target/classes'],
+		\ 'testSourceDirPath':	['src/test/java'],
+		\ 'testClassDirPath':	['target/test-classes'],
 	\ }
 
 With default actions, the compiler of choice will attempt to rebuild the class
@@ -1415,12 +1418,14 @@ project and requests other default Maven settings with the "compiler" entry: >
 		call spotbugs#DeleteClassFiles()
 		compiler maven
 		make compile
+		cc
 	endfunction
 
 	function! MavenPreCompilerTestAction() abort
 		call spotbugs#DeleteClassFiles()
 		compiler maven
 		make test-compile
+		cc
 	endfunction
 
 	let g:spotbugs_properties = {
@@ -1433,12 +1438,30 @@ project and requests other default Maven settings with the "compiler" entry: >
 
 Note that all entered custom settings will take precedence over the matching
 default settings in "g:spotbugs_properties".
+Note that it is always necessary to notify this plugin of the result of
+a pre-compiler action before further work can be undertaken.  Using |:cc|
+after |:make| (or |:ll| after |:lmake|) as the last command of an action is
+the supported means of such communication.
+
+Two commands, "SpotBugsRemoveBufferAutocmd" and "SpotBugsDefineBufferAutocmd",
+are provided to toggle actions for buffer-local autocommands.  For example, to
+also run actions on any |BufWritePost| and |SigUSR1| event, add these lines to
+`~/.vim/after/ftplugin/java.vim`:  >
+
+	if exists(':SpotBugsDefineBufferAutocmd') == 2
+		SpotBugsDefineBufferAutocmd BufWritePost SigUSR1
+	endif
+
+Otherwise, you can turn to `:doautocmd User` at any time.
 
 The "g:spotbugs_properties" variable is consulted by the Java filetype plugin
 (|ft-java-plugin|) to arrange for the described automation, and, therefore, it
 must be defined before |FileType| events can take place for the buffers loaded
 with Java source files.  It could, for example, be set in a project-local
 |vimrc| loaded by [0].
+
+Both "g:spotbugs_properties" and "b:spotbugs_properties" are recognized and
+must be modifiable (|:unlockvar|).
 
 [0] https://github.com/MarcWeber/vim-addon-local-vimrc/
 

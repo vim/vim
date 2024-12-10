@@ -1,6 +1,6 @@
 " Default pre- and post-compiler actions for SpotBugs
 " Maintainers:  @konfekt and @zzzyxwvut
-" Last Change:  2024 Nov 27
+" Last Change:  2024 Dec 07
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -130,8 +130,8 @@ function! spotbugs#DefaultPostCompilerAction() abort
   make %:S
 endfunction
 
-" Look for "spotbugs#compiler" in "ftplugin/java.vim".
-let s:compiler = exists('spotbugs#compiler') ? spotbugs#compiler : ''
+" Look for "g:spotbugs#compiler" in "ftplugin/java.vim".
+let s:compiler = exists('g:spotbugs#compiler') ? g:spotbugs#compiler : ''
 let s:readable = filereadable($VIMRUNTIME . '/compiler/' . s:compiler . '.vim')
 
 if s:readable && s:compiler ==# 'maven' && executable('mvn')
@@ -140,12 +140,14 @@ if s:readable && s:compiler ==# 'maven' && executable('mvn')
     call spotbugs#DeleteClassFiles()
     compiler maven
     make compile
+    cc
   endfunction
 
   function! spotbugs#DefaultPreCompilerTestAction() abort
     call spotbugs#DeleteClassFiles()
     compiler maven
     make test-compile
+    cc
   endfunction
 
   function! spotbugs#DefaultProperties() abort
@@ -156,10 +158,10 @@ if s:readable && s:compiler ==# 'maven' && executable('mvn')
             \ function('spotbugs#DefaultPreCompilerTestAction'),
         \ 'PostCompilerAction':
             \ function('spotbugs#DefaultPostCompilerAction'),
-        \ 'sourceDirPath':      'src/main/java',
-        \ 'classDirPath':       'target/classes',
-        \ 'testSourceDirPath':  'src/test/java',
-        \ 'testClassDirPath':   'target/test-classes',
+        \ 'sourceDirPath':      ['src/main/java'],
+        \ 'classDirPath':       ['target/classes'],
+        \ 'testSourceDirPath':  ['src/test/java'],
+        \ 'testClassDirPath':   ['target/test-classes'],
         \ }
   endfunction
 
@@ -170,12 +172,14 @@ elseif s:readable && s:compiler ==# 'ant' && executable('ant')
     call spotbugs#DeleteClassFiles()
     compiler ant
     make compile
+    cc
   endfunction
 
   function! spotbugs#DefaultPreCompilerTestAction() abort
     call spotbugs#DeleteClassFiles()
     compiler ant
     make compile-test
+    cc
   endfunction
 
   function! spotbugs#DefaultProperties() abort
@@ -186,29 +190,58 @@ elseif s:readable && s:compiler ==# 'ant' && executable('ant')
             \ function('spotbugs#DefaultPreCompilerTestAction'),
         \ 'PostCompilerAction':
             \ function('spotbugs#DefaultPostCompilerAction'),
-        \ 'sourceDirPath':      'src',
-        \ 'classDirPath':       'build/classes',
-        \ 'testSourceDirPath':  'test',
-        \ 'testClassDirPath':   'build/test/classes',
+        \ 'sourceDirPath':      ['src'],
+        \ 'classDirPath':       ['build/classes'],
+        \ 'testSourceDirPath':  ['test'],
+        \ 'testClassDirPath':   ['build/test/classes'],
         \ }
   endfunction
 
   unlet s:readable s:compiler
 elseif s:readable && s:compiler ==# 'javac' && executable('javac')
+  let s:filename = tempname()
 
   function! spotbugs#DefaultPreCompilerAction() abort
     call spotbugs#DeleteClassFiles()
     compiler javac
 
     if get(b:, 'javac_makeprg_params', get(g:, 'javac_makeprg_params', '')) =~ '\s@\S'
-      " Read options and filenames from @options [@sources ...].
+      " Only read options and filenames from @options [@sources ...] and do
+      " not update these files when filelists change.
       make
     else
-      " Let Javac figure out what files to compile.
-      execute 'make ' . join(map(filter(copy(v:argv),
-          \ "v:val =~# '\\.java\\=$'"),
-          \ 'shellescape(v:val)'), ' ')
+      " Collect filenames so that Javac can figure out what to compile.
+      let filelist = []
+
+      for arg_num in range(argc(-1))
+        let arg_name = argv(arg_num)
+
+        if arg_name =~# '\.java\=$'
+          call add(filelist, fnamemodify(arg_name, ':p:S'))
+        endif
+      endfor
+
+      for buf_num in range(1, bufnr('$'))
+        if !buflisted(buf_num)
+          continue
+        endif
+
+        let buf_name = bufname(buf_num)
+
+        if buf_name =~# '\.java\=$'
+          let buf_name = fnamemodify(buf_name, ':p:S')
+
+          if index(filelist, buf_name) < 0
+            call add(filelist, buf_name)
+          endif
+        endif
+      endfor
+
+      noautocmd call writefile(filelist, s:filename)
+      execute 'make @' . s:filename
     endif
+
+    cc
   endfunction
 
   function! spotbugs#DefaultPreCompilerTestAction() abort
@@ -219,8 +252,6 @@ elseif s:readable && s:compiler ==# 'javac' && executable('javac')
     return {
         \ 'PreCompilerAction':
             \ function('spotbugs#DefaultPreCompilerAction'),
-        \ 'PreCompilerTestAction':
-            \ function('spotbugs#DefaultPreCompilerTestAction'),
         \ 'PostCompilerAction':
             \ function('spotbugs#DefaultPostCompilerAction'),
         \ }
@@ -241,8 +272,43 @@ else
     return {}
   endfunction
 
+  " XXX: Keep "s:compiler" around for "spotbugs#DefaultPreCompilerAction()".
   unlet s:readable
 endif
+
+function! s:DefineBufferAutocmd(event, ...) abort
+  if !exists('#java_spotbugs#User')
+    return 1
+  endif
+
+  for l:event in insert(copy(a:000), a:event)
+    if l:event != 'User'
+      execute printf('silent! autocmd! java_spotbugs %s <buffer>', l:event)
+      execute printf('autocmd java_spotbugs %s <buffer> doautocmd User', l:event)
+    endif
+  endfor
+
+  return 0
+endfunction
+
+function! s:RemoveBufferAutocmd(event, ...) abort
+  if !exists('#java_spotbugs')
+    return 1
+  endif
+
+  for l:event in insert(copy(a:000), a:event)
+    if l:event != 'User'
+      execute printf('silent! autocmd! java_spotbugs %s <buffer>', l:event)
+    endif
+  endfor
+
+  return 0
+endfunction
+
+command! -bar -nargs=+ -complete=event SpotBugsDefineBufferAutocmd
+    \ call s:DefineBufferAutocmd(<f-args>)
+command! -bar -nargs=+ -complete=event SpotBugsRemoveBufferAutocmd
+    \ call s:RemoveBufferAutocmd(<f-args>)
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
