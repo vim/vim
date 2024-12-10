@@ -3553,6 +3553,8 @@ struct diffblock_S
     diff_T	*df_next;
     linenr_T	df_lnum[DB_COUNT];	// line number in buffer
     linenr_T	df_count[DB_COUNT];	// nr of inserted/changed lines
+    int is_linematched;  // has the linematch algorithm ran on this diff hunk to divide it into
+			  // smaller diff hunks?
 };
 #endif
 
