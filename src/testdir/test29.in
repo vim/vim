@@ -1,0 +1,14 @@
+Test for buffer name completion when 'wildoptions' contains "fuzzy"
+(Confirm that Vim does not crash)
+
+STARTTEST
+:set wildoptions=fuzzy
+:new buf_a
+:b buf_a
+:q!
+:set wildoptions&
+:$w! test.out
+:qa!
+ENDTEST
+
+I'm alive!
