@@ -1563,6 +1563,25 @@ To launch a specific application <app> <args>, often <args> being <path> >
 Since <args> can be arbitrarily complex, in particular contain many file
 paths, the escaping is left to the user.
 
+Examples:
+
+- to look up documentation for the keyword under the cursor on
+  Devdocs: >
+
+    let &keywordprg = ':Open https://devdocs.io/\#q='..&filetype
+
+- to do the same hitting <F1> in Zeal: > 
+
+    nnoremap <expr> <F1> '<cmd>Launch zeal "'..&filetype..':'..expand('<cword>')..'"<CR>'
+
+- to live preview the currently edited markdown file: >
+
+    :Launch okular %:S
+
+- to compile it and view it as PDF file: >
+
+    :compile pandoc | make pdf and :Open %:r.pdf
+
 If you disabled the netrw plugin by setting g:loaded_netrwPlugin (see
 |netrw-noload|), then you can use >
 
