@@ -13,10 +13,6 @@
 
 #include "vim.h"
 
-#ifndef MAX
-# define MAX(x,y) ((x) > (y) ? (x) : (y))
-#endif
-
 // Return value when handling keys in command-line mode.
 #define CMDLINE_NOT_CHANGED	1
 #define CMDLINE_CHANGED		2
