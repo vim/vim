@@ -6,7 +6,6 @@ CheckNotGui
 CheckFeature balloon_eval_term
 
 source screendump.vim
-CheckScreendump
 
 let s:common_script =<< trim [CODE]
   call setline(1, ["one one one", "two tXo two", "three three three"])
@@ -19,6 +18,7 @@ let s:common_script =<< trim [CODE]
 [CODE]
 
 func Test_balloon_eval_term()
+  CheckScreendump
   " Use <Ignore> after <MouseMove> to return from vgetc() without removing
   " the balloon.
   let xtra_lines =<< trim [CODE]
@@ -49,6 +49,7 @@ func Test_balloon_eval_term()
 endfunc
 
 func Test_balloon_eval_term_visual()
+  CheckScreendump
   " Use <Ignore> after <MouseMove> to return from vgetc() without removing
   " the balloon.
   call writefile(s:common_script + [
@@ -66,6 +67,7 @@ func Test_balloon_eval_term_visual()
 endfunc
 
 func Test_balloon_eval_term_rightleft()
+  CheckScreendump
   CheckFeature rightleft
 
   " Use <Ignore> after <MouseMove> to return from vgetc() without removing

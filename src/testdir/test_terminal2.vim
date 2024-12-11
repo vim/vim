@@ -499,6 +499,7 @@ func Test_terminal_switch_mode()
 endfunc
 
 func Test_terminal_normal_mode()
+  CheckScreendump
   CheckRunVimInTerminal
 
   " Run Vim in a terminal and open a terminal window to run Vim in.

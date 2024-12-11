@@ -15,6 +15,7 @@ endif
 " running with 'encoding' "euc-jp".  We need to make sure the text is in the
 " right encoding, this is a bit tricky.
 func Test_termencoding_euc_jp()
+  CheckScreendump
   new
   call setline(1, 'E89: バッファ %ld の変更は保存されていません (! で変更を破棄)')
   write ++enc=euc-jp Xeuc_jp.txt

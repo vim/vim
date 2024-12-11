@@ -749,6 +749,7 @@ endfunc
 
 " Test for the mode() function
 func Test_mode()
+  CheckScreendump
   new
   call append(0, ["Blue Ball Black", "Brown Band Bowl", ""])
 
@@ -953,6 +954,7 @@ func Test_mode()
 
   " Test statusline updates for overstrike mode
   if CanRunVimInTerminal()
+    CheckScreendump
     let buf = RunVimInTerminal('', {'rows': 12})
     call term_sendkeys(buf, ":set laststatus=2 statusline=%!mode(1)\<CR>")
     call term_sendkeys(buf, ":")
