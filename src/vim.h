@@ -3005,4 +3005,12 @@ long elapsed(DWORD start_tick);
 #define CF_INTERFACE	2	// inside an interface
 #define CF_ABSTRACT_METHOD	4	// inside an abstract class
 
+#ifndef MIN
+# define MIN(a, b) (((a)<(b))?(a):(b))
+#endif /* MIN */
+
+#ifndef MAX
+# define MAX(a, b) (((a)>(b))?(a):(b))
+#endif  /* MAX */
+
 #endif // VIM__H
