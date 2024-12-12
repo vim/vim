@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Nov 24
+" Last Change:	2024 Dec 12
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -183,7 +183,14 @@ au BufNewFile,BufRead *.demo,*.dm{1,2,3,t},*.wxm,maxima-init.mac setf maxima
 
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
+" *.[sS], *.[aA] usually Assembly - GNU
 au BufNewFile,BufRead *.asm,*.[sS],*.[aA],*.mac,*.lst	call dist#ft#FTasm()
+
+" Assembly - Netwide
+au BufNewFile,BufRead *.nasm			setf nasm
+
+" Assembly - Microsoft
+au BufNewFile,BufRead *.masm			setf masm
 
 " Assembly - Macro (VAX)
 au BufNewFile,BufRead *.mar			setf vmasm
