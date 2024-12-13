@@ -100,6 +100,9 @@ pum_display(
     int		cursor_col;
     int		above_row;
     int		below_row;
+    int		cline_visible_offset;
+    int		content_width;
+    int		right_edge_col;
     int		redo_count = 0;
 #if defined(FEAT_QUICKFIX)
     win_T	*pvwin;
@@ -150,10 +153,7 @@ pum_display(
 	/*
 	 * Figure out the size and position of the pum.
 	 */
-	if (size < PUM_DEF_HEIGHT)
-	    pum_height = size;
-	else
-	    pum_height = PUM_DEF_HEIGHT;
+	pum_height = MIN(size, PUM_DEF_HEIGHT);
 	if (p_ph > 0 && pum_height > p_ph)
 	    pum_height = p_ph;
 
@@ -168,13 +168,8 @@ pum_display(
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
 	    else
-	    {
 		// Leave two lines of context if possible
-		if (curwin->w_wrow - curwin->w_cline_row >= 2)
-		    context_lines = 2;
-		else
-		    context_lines = curwin->w_wrow - curwin->w_cline_row;
-	    }
+		context_lines = MIN(2, curwin->w_wrow - curwin->w_cline_row);
 
 	    if (pum_win_row >= size + context_lines)
 	    {
@@ -203,19 +198,13 @@ pum_display(
 	    {
 		// Leave two lines of context if possible
 		validate_cheight();
-		if (curwin->w_cline_row
-				+ curwin->w_cline_height - curwin->w_wrow >= 3)
-		    context_lines = 3;
-		else
-		    context_lines = curwin->w_cline_row
-				     + curwin->w_cline_height - curwin->w_wrow;
+		cline_visible_offset = curwin->w_cline_row +
+				    curwin->w_cline_height - curwin->w_wrow;
+		context_lines = MIN(3, cline_visible_offset);
 	    }
 
 	    pum_row = pum_win_row + context_lines;
-	    if (size > below_row - pum_row)
-		pum_height = below_row - pum_row;
-	    else
-		pum_height = size;
+	    pum_height = MIN(below_row - pum_row, size);
 	    if (p_ph > 0 && pum_height > p_ph)
 		pum_height = p_ph;
 	}
@@ -284,15 +273,10 @@ pum_display(
 #endif
 		pum_width = Columns - pum_col - pum_scrollbar;
 
-	    if (pum_width > max_width + pum_kind_width + pum_extra_width + 1
-						&& pum_width > p_pw)
-	    {
-		// the width is more than needed for the items, make it
-		// narrower
-		pum_width = max_width + pum_kind_width + pum_extra_width + 1;
-		if (pum_width < p_pw)
-		    pum_width = p_pw;
-	    }
+	    content_width = max_width + pum_kind_width + pum_extra_width + 1;
+	    if (pum_width > content_width && pum_width > p_pw)
+		// Reduce width to fit item
+		pum_width = MAX(content_width , p_pw);
 	    else if (((cursor_col > p_pw || cursor_col > max_width)
 #ifdef FEAT_RIGHTLEFT
 			&& !pum_rl)
@@ -313,14 +297,10 @@ pum_display(
 		else if (!pum_rl)
 #endif
 		{
-		    if (curwin->w_wincol > Columns - max_width - pum_scrollbar
-							  && max_width <= p_pw)
-		    {
+		    right_edge_col = Columns - max_width - pum_scrollbar;
+		    if (curwin->w_wincol > right_edge_col && max_width <= p_pw)
 			// use full width to end of the screen
-			pum_col = Columns - max_width - pum_scrollbar;
-			if (pum_col < 0)
-			    pum_col = 0;
-		    }
+			pum_col = MAX(0, right_edge_col);
 		}
 
 #ifdef FEAT_RIGHTLEFT
@@ -346,15 +326,8 @@ pum_display(
 			    pum_width = Columns - pum_col - 1;
 		    }
 		}
-		else if (pum_width > max_width + pum_kind_width
-							  + pum_extra_width + 1
-			    && pum_width > p_pw)
-		{
-		    pum_width = max_width + pum_kind_width
-							 + pum_extra_width + 1;
-		    if (pum_width < p_pw)
-			pum_width = p_pw;
-		}
+		else if (pum_width > content_width && pum_width > p_pw)
+		    pum_width = MIN(content_width, p_pw);
 	    }
 
 	}
@@ -823,14 +796,14 @@ pum_redraw(void)
 	    if (pum_rl)
 	    {
 		screen_fill(row, row + 1, pum_col - basic_width - n + 1,
-						    col + 1, ' ', ' ', orig_attr);
+						col + 1, ' ', ' ', orig_attr);
 		col = pum_col - basic_width - n;
 	    }
 	    else
 #endif
 	    {
 		screen_fill(row, row + 1, col, pum_col + basic_width + n,
-							      ' ', ' ', orig_attr);
+							' ', ' ', orig_attr);
 		col = pum_col + basic_width + n;
 	    }
 	    totwidth = basic_width + n;
@@ -839,11 +812,11 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 	if (pum_rl)
 	    screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1, ' ',
-								    ' ', orig_attr);
+							    ' ', orig_attr);
 	else
 #endif
 	    screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ',
-									orig_attr);
+								orig_attr);
 	if (pum_scrollbar > 0)
 	{
 #ifdef FEAT_RIGHTLEFT
@@ -998,8 +971,7 @@ pum_set_selected(int n, int repeat UNUSED)
 	    }
 	}
 	// adjust for the number of lines displayed
-	if (pum_first > pum_size - pum_height)
-	    pum_first = pum_size - pum_height;
+	pum_first = MIN(pum_first, pum_size - pum_height);
 
 #if defined(FEAT_QUICKFIX)
 	/*
@@ -1322,8 +1294,7 @@ pum_may_redraw(void)
 
     if (pum_in_same_position())
     {
-	// window position didn't change, redraw in the same position
-	pum_redraw();
+	pum_redraw();  // Redraw window in same position
     }
     else
     {
@@ -1403,8 +1374,7 @@ pum_position_at_mouse(int min_width)
 	    pum_col = mouse_col;
 	else
 	    // Not enough space, left align with window.
-	    pum_col = (pum_base_width > min_width
-					     ? min_width : pum_base_width) - 1;
+	    pum_col = MIN(pum_base_width, min_width) - 1;
 	pum_width = pum_col + 1;
     }
     else
@@ -1416,8 +1386,7 @@ pum_position_at_mouse(int min_width)
 	    pum_col = mouse_col;
 	else
 	    // Not enough space, right align with window.
-	    pum_col = Columns - (pum_base_width > min_width
-						 ? min_width : pum_base_width);
+	    pum_col = Columns -  MIN(pum_base_width, min_width);
 	pum_width = Columns - pum_col;
     }
 
