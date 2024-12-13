@@ -1873,6 +1873,9 @@ au BufNewFile,BufRead requires/*.txt		setf requirements
 au BufNewFile,BufRead Pipfile			setf toml
 au BufNewFile,BufRead Pipfile.lock		setf json
 
+" Pixi lock
+au BufNewFile,BufRead pixi.lock			setf yaml
+
 " PL/1, PL/I
 au BufNewFile,BufRead *.pli,*.pl1		setf pli
 
