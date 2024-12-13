@@ -241,8 +241,52 @@ func Test_termwinscroll()
     let filtered = filter(copy(lines), {idx, val -> val =~ 'echo ' . i . '\>'})
     call assert_equal(1, len(filtered), 'for "echo ' . i . '"')
   endfor
-
   exe buf . 'bwipe!'
+endfunc
+
+func Test_termwinscroll_topline()
+  set termwinscroll=1000 mouse=a
+  terminal
+  call assert_equal(2, winnr('$'))
+  let buf = bufnr()
+  call WaitFor({-> !empty(term_getline(buf, 1))})
+
+  let num1 = &termwinscroll / 100 * 99
+  call writefile(range(num1), 'Xtext', 'D')
+  if has('win32')
+    call term_sendkeys(buf, "type Xtext\<CR>")
+  else
+    call term_sendkeys(buf, "cat Xtext\<CR>")
+  endif
+  let rows = term_getsize(buf)[0]
+  " On MS-Windows there is an empty line, check both last line and above it.
+  call WaitForAssert({-> assert_match(string(num1 - 1), term_getline(buf, rows - 1) .. term_getline(buf, rows - 2))})
+  call feedkeys("\<C-W>N", 'xt')
+  call feedkeys("i", 'xt')
+
+  let num2 = &termwinscroll / 100 * 10
+  call writefile(range(num2), 'Xtext', 'D')
+  if has('win32')
+    call term_sendkeys(buf, "timeout /t 1 && type Xtext\<CR>")
+  else
+    call term_sendkeys(buf, "sleep 1; cat Xtext\<CR>")
+  endif
+  " Change the normal window to the current window with keystrokes.
+  call feedkeys("\<C-W>w", 'xt')
+  call WaitForAssert({-> assert_notequal(buf, bufnr())})
+  let rows = term_getsize(buf)[0]
+  " On MS-Windows there is an empty line, check both last line and above it.
+  call WaitForAssert({-> assert_match(string(num2 - 1), term_getline(buf, rows - 1) .. term_getline(buf, rows - 2))})
+  " Change the terminal window to the current window using mouse operation.
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call WaitForAssert({-> assert_equal(buf, bufnr())})
+  " Before the fix, E340 and E315 would occur multiple times at this point.
+  let wm = winheight(0) * 2
+  let num3 = num1 + num2 - (num1 / 10) - wm
+  call assert_inrange(num3 - wm, num3 + wm, getwininfo(bufwinid(buf))[0].topline)
+  exe buf . 'bwipe!'
+  set termwinscroll& mouse&
 endfunc
 
 " Resizing the terminal window caused an ml_get error.

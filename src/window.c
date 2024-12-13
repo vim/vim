@@ -5578,6 +5578,10 @@ win_enter_ext(win_T *wp, int flags)
 	did_decrement = TRUE;
     }
 #endif
+#ifdef FEAT_TERMINAL
+    if (bt_terminal(curwin->w_buffer))
+	update_topline();
+#endif
 
     win_fix_current_dir();
 
