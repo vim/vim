@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     Spotbugs (Java static checker; needs javac compiled classes)
 " Maintainer:   @konfekt and @zzzyxwvut
-" Last Change:  2024 Dec 07
+" Last Change:  2024 Dec 14
 
 if exists('g:current_compiler') || bufname() !~# '\.java\=$' || wordcount().chars < 9
   finish
@@ -187,9 +187,32 @@ else
   endfunction
 endif
 
+if exists('g:spotbugs_alternative_path') &&
+    \ !empty(get(g:spotbugs_alternative_path, 'fromPath', '')) &&
+    \ !empty(get(g:spotbugs_alternative_path, 'toPath', ''))
+
+  " See https://github.com/spotbugs/spotbugs/issues/909
+  function! s:ResolveAbsolutePathname() abort
+    let pathname = expand('%:p')
+    let head_idx = stridx(pathname, g:spotbugs_alternative_path.toPath)
+    " No such file: a mismatched path request for a project
+    if head_idx < 0 | return pathname | endif
+    " Settle for failure with file readability tests _in s:FindClassFiles()_
+    return strpart(pathname, 0, head_idx)..
+        \ g:spotbugs_alternative_path.fromPath..
+        \ strpart(pathname, (head_idx + strlen(g:spotbugs_alternative_path.toPath)))
+  endfunction
+
+else
+  function! s:ResolveAbsolutePathname() abort
+    return expand('%:p')
+  endfunction
+endif
+
 function! s:CollectClassFiles() abort
+  " Possibly obtain a symlinked path for an unsupported directory name
+  let pathname = s:ResolveAbsolutePathname()
   " Get a platform-independent pathname prefix, cf. "expand('%:p:h')..'/'"
-  let pathname = expand('%:p')
   let tail_idx = strridx(pathname, expand('%:t'))
   let src_pathname = strpart(pathname, 0, tail_idx)
   let all_class_files = []
@@ -204,11 +227,12 @@ endfunction
 " Expose class files for removal etc.
 let b:spotbugs_class_files = s:CollectClassFiles()
 let s:package_dir_heads = repeat(':h', (1 + strlen(substitute(s:package, '[^.;]', '', 'g'))))
+let s:package_root_dir = fnamemodify(s:ResolveAbsolutePathname(), s:package_dir_heads..':S')
 let g:current_compiler = 'spotbugs'
 " CompilerSet makeprg=spotbugs
 let &l:makeprg = 'spotbugs'..(has('win32') ? '.bat' : '')..' '..
     \ get(b:, 'spotbugs_makeprg_params', get(g:, 'spotbugs_makeprg_params', '-workHard -experimental'))..
-    \ ' -textui -emacs -auxclasspath %:p'..s:package_dir_heads..':S -sourcepath %:p'..s:package_dir_heads..':S '..
+    \ ' -textui -emacs -auxclasspath '..s:package_root_dir..' -sourcepath '..s:package_root_dir..' '..
     \ join(b:spotbugs_class_files, ' ')
 " Emacs expects doubled line numbers
 setlocal errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
@@ -218,11 +242,13 @@ setlocal errorformat=%f:%l:%*[0-9]\ %m,%f:-%*[0-9]:-%*[0-9]\ %m
 " exe 'CompilerSet errorformat='..escape(&l:errorformat, ' \|"')
 
 delfunction s:CollectClassFiles
+delfunction s:ResolveAbsolutePathname
 delfunction s:FindClassFiles
 delfunction s:GetProperty
 delfunction s:GlobClassFiles
 delfunction s:GetDeclaredTypeNames
 let &cpo = s:cpo_save
-unlet! s:package_dir_heads s:common_idxs_and_dirs s:package s:package_names s:type_names s:keywords s:cpo_save
+unlet! s:package_root_dir s:package_dir_heads s:common_idxs_and_dirs s:package
+unlet! s:package_names s:type_names s:keywords s:cpo_save
 
 " vim: set foldmethod=syntax shiftwidth=2 expandtab:

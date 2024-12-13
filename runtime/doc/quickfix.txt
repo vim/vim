@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 08
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1481,8 +1481,20 @@ Both "g:spotbugs_properties" and "b:spotbugs_properties" are recognized and
 must be modifiable (|:unlockvar|).  The "*Command" entries are always treated
 as global functions to be shared among all Java buffers.
 
+The SpotBugs Java library and, by extension, its distributed shell scripts do
+not support in the `-textui` mode listed pathnames with directory filenames
+that contain blank characters [2].  To work around this limitation, consider
+making a symbolic link to such a directory from a directory that does not have
+blank characters in its name and passing this information to SpotBugs: >
+
+	let g:spotbugs_alternative_path = {
+		\ 'fromPath':	'path/to/dir_without_blanks',
+		\ 'toPath':	'path/to/dir with blanks',
+	\ }
+
 [0] https://github.com/Konfekt/vim-compilers
 [1] https://github.com/MarcWeber/vim-addon-local-vimrc
+[2] https://github.com/spotbugs/spotbugs/issues/909
 
 GNU MAKE						*compiler-make*
 

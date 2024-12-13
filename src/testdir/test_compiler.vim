@@ -99,6 +99,7 @@ func s:SpotBugsParseFilterMakePrg(dirname, makeprg)
   endif
   let offset += 1 + strlen('-sourcepath')
   let result.sourcepath = matchstr(strpart(a:makeprg, offset), '.\{-}\ze[ \t]')
+  let offset += 1 + strlen(result.sourcepath)
 
   " Get the class file arguments, dropping the pathname prefix.
   let offset = stridx(a:makeprg, a:dirname, offset)
@@ -148,7 +149,8 @@ func Test_compiler_spotbugs_makeprg()
   " THE EXPECTED RESULTS.
   let results = {}
   let results['Xspotbugs/src/tests/𐌂1.java'] = {
-      \ 'sourcepath': '%:p:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/𐌂1.java',
+          \ ':p:h:S')},
       \ 'classfiles': sort([
           \ 'Xspotbugs/tests/𐌂1$1.class',
           \ 'Xspotbugs/tests/𐌂1$1𐌉𐌉1.class',
@@ -161,11 +163,12 @@ func Test_compiler_spotbugs_makeprg()
       \ }
   " No class file for an empty source file even with "-Xpkginfo:always".
   let results['Xspotbugs/src/tests/package-info.java'] = {
-      \ 'sourcepath': '',
+      \ 'Sourcepath': {-> ''},
       \ 'classfiles': [],
       \ }
   let results['Xspotbugs/src/tests/α/𐌂1.java'] = {
-      \ 'sourcepath': '%:p:h:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/α/𐌂1.java',
+          \ ':p:h:h:S')},
       \ 'classfiles': sort([
           \ 'Xspotbugs/tests/α/𐌂1$1.class',
           \ 'Xspotbugs/tests/α/𐌂1$1𐌉𐌉1.class',
@@ -177,11 +180,13 @@ func Test_compiler_spotbugs_makeprg()
           \ 'Xspotbugs/tests/α/𐌂2.class']),
       \ }
   let results['Xspotbugs/src/tests/α/package-info.java'] = {
-      \ 'sourcepath': '%:p:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/α/package-info.java',
+          \ ':p:h:S')},
       \ 'classfiles': ['Xspotbugs/tests/α/package-info.class'],
       \ }
   let results['Xspotbugs/src/tests/α/β/𐌂1.java'] = {
-      \ 'sourcepath': '%:p:h:h:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/α/β/𐌂1.java',
+          \ ':p:h:h:h:S')},
       \ 'classfiles': sort([
           \ 'Xspotbugs/tests/α/β/𐌂1$1.class',
           \ 'Xspotbugs/tests/α/β/𐌂1$1𐌉𐌉1.class',
@@ -193,11 +198,13 @@ func Test_compiler_spotbugs_makeprg()
           \ 'Xspotbugs/tests/α/β/𐌂2.class']),
       \ }
   let results['Xspotbugs/src/tests/α/β/package-info.java'] = {
-      \ 'sourcepath': '%:p:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/α/β/package-info.java',
+          \ ':p:h:S')},
       \ 'classfiles': ['Xspotbugs/tests/α/β/package-info.class'],
       \ }
   let results['Xspotbugs/src/tests/α/β/γ/𐌂1.java'] = {
-      \ 'sourcepath': '%:p:h:h:h:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/α/β/γ/𐌂1.java',
+          \ ':p:h:h:h:h:S')},
       \ 'classfiles': sort([
           \ 'Xspotbugs/tests/α/β/γ/𐌂1$1.class',
           \ 'Xspotbugs/tests/α/β/γ/𐌂1$1𐌉𐌉1.class',
@@ -209,11 +216,13 @@ func Test_compiler_spotbugs_makeprg()
           \ 'Xspotbugs/tests/α/β/γ/𐌂2.class']),
       \ }
   let results['Xspotbugs/src/tests/α/β/γ/package-info.java'] = {
-      \ 'sourcepath': '%:p:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/α/β/γ/package-info.java',
+          \ ':p:h:S')},
       \ 'classfiles': ['Xspotbugs/tests/α/β/γ/package-info.class'],
       \ }
   let results['Xspotbugs/src/tests/α/β/γ/δ/𐌂1.java'] = {
-      \ 'sourcepath': '%:p:h:h:h:h:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/α/β/γ/δ/𐌂1.java',
+          \ ':p:h:h:h:h:h:S')},
       \ 'classfiles': sort([
           \ 'Xspotbugs/tests/α/β/γ/δ/𐌂1$1.class',
           \ 'Xspotbugs/tests/α/β/γ/δ/𐌂1$1𐌉𐌉1.class',
@@ -225,7 +234,8 @@ func Test_compiler_spotbugs_makeprg()
           \ 'Xspotbugs/tests/α/β/γ/δ/𐌂2.class']),
       \ }
   let results['Xspotbugs/src/tests/α/β/γ/δ/package-info.java'] = {
-      \ 'sourcepath': '%:p:h:S',
+      \ 'Sourcepath': {-> fnamemodify('Xspotbugs/src/tests/α/β/γ/δ/package-info.java',
+          \ ':p:h:S')},
       \ 'classfiles': ['Xspotbugs/tests/α/β/γ/δ/package-info.class'],
       \ }
 
@@ -265,14 +275,14 @@ func Test_compiler_spotbugs_makeprg()
       execute 'edit ' .. type_file
       compiler spotbugs
       let result = s:SpotBugsParseFilterMakePrg('Xspotbugs', &l:makeprg)
-      call assert_equal(results[type_file].sourcepath, result.sourcepath)
+      call assert_equal(results[type_file].Sourcepath(), result.sourcepath)
       call assert_equal(results[type_file].classfiles, result.classfiles)
       bwipeout
 
       execute 'edit ' .. package_file
       compiler spotbugs
       let result = s:SpotBugsParseFilterMakePrg('Xspotbugs', &l:makeprg)
-      call assert_equal(results[package_file].sourcepath, result.sourcepath)
+      call assert_equal(results[package_file].Sourcepath(), result.sourcepath)
       call assert_equal(results[package_file].classfiles, result.classfiles)
       bwipeout
     endfor
