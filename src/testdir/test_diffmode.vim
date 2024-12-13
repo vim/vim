@@ -1038,6 +1038,37 @@ func Test_diff_screen()
   call WriteDiffFiles(buf, ['?a', '?b', '?c'], ['!b'])
   call VerifyInternal(buf, 'Test_diff_23', " diffopt+=linematch:30")
 
+  call WriteDiffFiles(buf, ['',
+      \ 'common line',
+      \ 'common line',
+      \ '',
+      \ 'DEFabc',
+      \ 'xyz',
+      \ 'xyz',
+      \ 'xyz',
+      \ 'DEFabc',
+      \ 'DEFabc',
+      \ 'DEFabc',
+      \ 'common line',
+      \ 'common line',
+      \ 'DEF',
+      \ 'common line',
+      \ 'DEF',
+      \ 'something' ],
+      \ ['',
+      \ 'common line',
+      \ 'common line',
+      \ '',
+      \ 'ABCabc',
+      \ 'ABCabc',
+      \ 'ABCabc',
+      \ 'ABCabc',
+      \ 'common line',
+      \ 'common line',
+      \ 'common line',
+      \ 'something'])
+  call VerifyInternal(buf, 'Test_diff_24', " diffopt+=linematch:30")
+
 
   " clean up
   call StopVimInTerminal(buf)
