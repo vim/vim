@@ -327,7 +327,7 @@ pum_display(
 		    }
 		}
 		else if (pum_width > content_width && pum_width > p_pw)
-		    pum_width = MIN(content_width, p_pw);
+		    pum_width = MAX(content_width, p_pw);
 	    }
 
 	}
