@@ -2038,6 +2038,12 @@ def Test_if_const_expr()
       .. 'ccc'
       )->setline(1)
   endif
+
+  if 1
+    # do nothing
+  else
+    var [a] = [10]
+  endif
 enddef
 
 def Test_if_const_expr_fails()
@@ -2234,6 +2240,15 @@ def Test_echowindow_cmd()
 
   # output goes in message window
   popup_clear()
+
+  # Invalid range
+  var lines =<< trim END
+    def Foo()
+      :$echowindow "foo"
+    enddef
+    defcompile
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E16: Invalid range')
 enddef
 
 def Test_for_outside_of_function()
@@ -5131,6 +5146,29 @@ def Test_unknown_type_in_typecast()
     var i: number = <number>true
   END
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got bool', 2)
+enddef
+
+" Test for calling a function as a method with a list argument
+" This exercises some conditions in the assignment statement parsing code.
+def Test_method_call_with_list_arg()
+  var lines =<< trim END
+    vim9script
+
+    def Foo(l: list<number>)
+      g:save_list = l
+    enddef
+
+    def Bar()
+      var a = 10
+      var b = 20
+      [a, b]->Foo()
+    enddef
+
+    g:save_list = []
+    Bar()
+    assert_equal([10, 20], g:save_list)
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Keep this last, it messes up highlighting.
