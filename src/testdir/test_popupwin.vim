@@ -1106,6 +1106,7 @@ func Test_win_execute_not_allowed()
   call assert_fails('call win_execute(winid, "next")', 'E994:')
   call assert_fails('call win_execute(winid, "rewind")', 'E994:')
   call assert_fails('call win_execute(winid, "pedit filename")', 'E994:')
+  call assert_fails('call win_execute(winid, "pbuffer filename")', 'E994:')
   call assert_fails('call win_execute(winid, "buf")', 'E994:')
   call assert_fails('call win_execute(winid, "bnext")', 'E994:')
   call assert_fails('call win_execute(winid, "bprev")', 'E994:')
@@ -3457,7 +3458,7 @@ func Test_previewpopup()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_previewpopup_pum()
+func s:run_preview_popuppum(preview_lines, dumpfile_name)
   CheckScreendump
   CheckFeature quickfix
 
@@ -3471,30 +3472,43 @@ func Test_previewpopup_pum()
   END
   call writefile(lines, 'XpreviewText.vim', 'D')
 
-  let lines =<< trim END
-      call setline(1, ['one', 'two', 'three', 'other', 'once', 'only', 'off'])
-      set previewpopup=height:6,width:40
-      pedit XpreviewText.vim
-  END
-  call writefile(lines, 'XtestPreviewPum', 'D')
+  call writefile(a:preview_lines, 'XtestPreviewPum', 'D')
   let buf = RunVimInTerminal('-S XtestPreviewPum', #{rows: 12})
 
   call term_sendkeys(buf, "A o\<C-N>")
-  call VerifyScreenDump(buf, 'Test_pum_preview_1', {})
+  call VerifyScreenDump(buf, 'Test_pum_preview_' . a:dumpfile_name . '_1', {})
 
   call term_sendkeys(buf, "\<C-N>")
-  call VerifyScreenDump(buf, 'Test_pum_preview_2', {})
+  call VerifyScreenDump(buf, 'Test_pum_preview_' . a:dumpfile_name . '_2', {})
 
   call term_sendkeys(buf, "\<C-N>")
-  call VerifyScreenDump(buf, 'Test_pum_preview_3', {})
+  call VerifyScreenDump(buf, 'Test_pum_preview_' . a:dumpfile_name . '_3', {})
 
   call term_sendkeys(buf, "\<C-N>")
-  call VerifyScreenDump(buf, 'Test_pum_preview_4', {})
+  call VerifyScreenDump(buf, 'Test_pum_preview_' . a:dumpfile_name . '_4', {})
 
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_previewpopup_pum_pedit()
+  let lines =<< trim END
+      call setline(1, ['one', 'two', 'three', 'other', 'once', 'only', 'off'])
+      set previewpopup=height:6,width:40
+      pedit XpreviewText.vim
+  END
+  call s:run_preview_popuppum(lines, 'pedit')
+endfunc
+
+func Test_previewpopup_pum_pbuffer()
+  let lines =<< trim END
+      call setline(1, ['one', 'two', 'three', 'other', 'once', 'only', 'off'])
+      set previewpopup=height:6,width:40
+      badd XpreviewText.vim
+      exe bufnr('$') . 'pbuffer'
+  END
+  call s:run_preview_popuppum(lines, 'pbuffer')
+endfunc
 
 func Get_popupmenu_lines()
   let lines =<< trim END

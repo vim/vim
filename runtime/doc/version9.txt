@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 06
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41661,7 +41661,8 @@ Highlighting: ~
 Commands: ~
 
 |[r| and |]r|		to move the cursor to previous/next rare word
-
+|:pbuffer|		Edit buffer [N] from the buffer list in the preview
+			window
 
 Options: ~
 
