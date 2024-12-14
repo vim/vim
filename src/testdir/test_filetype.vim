@@ -893,7 +893,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     xslt: ['file.xsl', 'file.xslt'],
     yacc: ['file.yy', 'file.yxx', 'file.y++'],
     yaml: ['file.yaml', 'file.yml', 'file.eyaml', 'any/.bundle/config', '.clangd', '.clang-format', '.clang-tidy', 'file.mplstyle', 'matplotlibrc', 'yarn.lock',
-           '/home/user/.kube/config', '.condarc', 'condarc'],
+           '/home/user/.kube/config', '.condarc', 'condarc', 'pixi.lock'],
     yang: ['file.yang'],
     yuck: ['file.yuck'],
     z8a: ['file.z8a'],
