@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 9.1.  Last change: 2024 Sep 08
+*windows.txt*   For Vim version 9.1.  Last change: 2024 Dec 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1012,6 +1012,8 @@ CTRL-W g }						*CTRL-W_g}*
 		position isn't changed.  Useful example: >
 			:pedit +/fputc /usr/include/stdio.h
 <
+		Also see |++opt| and |+cmd|.
+
 							*:ps* *:psearch*
 :[range]ps[earch][!] [count] [/]pattern[/]
 		Works like |:ijump| but shows the found match in the preview
