@@ -1364,22 +1364,22 @@ func Test_shortmess_F3()
   set shortmess+=F
   echo ''
 
+  call writefile(['bar'], 'X_dummy')
   if has('nanotime')
     sleep 10m
   else
     sleep 2
   endif
-  call writefile(['bar'], 'X_dummy')
   bprev
   call assert_equal('', Screenline(&lines))
   call assert_equal(['bar'], getbufline('X_dummy', 1, '$'))
 
+  call writefile(['baz'], 'X_dummy')
   if has('nanotime')
     sleep 10m
   else
     sleep 2
   endif
-  call writefile(['baz'], 'X_dummy')
   checktime
   call assert_equal('', Screenline(&lines))
   call assert_equal(['baz'], getbufline('X_dummy', 1, '$'))
