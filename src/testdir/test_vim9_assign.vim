@@ -3090,6 +3090,14 @@ def Test_heredoc_expr()
       END
   LINES
   v9.CheckDefAndScriptFailure(lines, 'E15: Invalid expression: "}"')
+
+  # dangling "}"
+  lines =<< trim LINES
+    var text =<< trim eval END
+      aa}a
+    END
+  LINES
+  v9.CheckDefAndScriptFailure(lines, "E1278: Stray '}' without a matching '{': aa}a")
 enddef
 
 " Test for assigning to a multi-dimensional list item.

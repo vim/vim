@@ -3342,7 +3342,7 @@ compile_assignment(
 
     // For "[var, var] = expr" drop the "expr" value.
     // Also for "[var, var; _] = expr".
-    if (cac.cac_var_count > 0 &&
+    if (cctx->ctx_skip != SKIP_YES && cac.cac_var_count > 0 &&
 	    (!cac.cac_semicolon || !cac.cac_did_generate_slice))
     {
 	if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
