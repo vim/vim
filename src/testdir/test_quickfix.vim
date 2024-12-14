@@ -6718,4 +6718,62 @@ func Test_hardlink_fname()
   call Xtest_hardlink_fname('l')
 endfunc
 
+func Test_event_QufickFixCmdChanged()
+  let g:qflistbuf = -1
+  let g:content = []
+  let g:list_id = -1
+  let g:Xsetlist = function('setqflist')
+  let g:is_qflist = v:true
+
+  func GetQfContent()
+    if bufexists(g:qflistbuf)
+      let g:content = getbufline(g:qflistbuf, 1, '$')
+    else
+      let g:content = [string(g:Xsetlist)]
+    endif
+    let g:list_id = get(v:event, g:is_qflist ? 'quickfix_id' : 'loclist_id', -1)
+  endfunc
+
+  autocmd QuickFixChanged * :call GetQfContent()
+
+  " setqflist run before copen mean qf buffer is NULL
+  call g:Xsetlist([{'text': 'foo'}], 'r')
+  call assert_equal(['function(''setqflist'')'], g:content)
+
+  copen
+  let g:qflistbuf = bufnr()
+  call g:Xsetlist([{'text': 'foo'}], 'r')
+  call assert_equal(['|| foo'], g:content)
+  call assert_equal('foo', getqflist({'id': g:list_id, 'items': v:true})['items'][0]['text'])
+
+  call g:Xsetlist([{'text': 'bar'}], 'a')
+  call assert_equal(['|| foo', '|| bar'], g:content)
+  call assert_equal('bar', getqflist({'id': g:list_id, 'items': v:true})['items'][1]['text'])
+
+  call writefile(['this one', 'that one'], 'Xgrepthis', 'D')
+  vimgrep one Xgrepthis
+  call assert_equal(['Xgrepthis|1 col 6-9| this one', 'Xgrepthis|2 col 6-9| that one'], g:content)
+  call assert_equal('that one', getqflist({'id': g:list_id, 'items': v:true})['items'][1]['text'])
+  cclose
+  let g:qflistbuf = -1
+
+  let g:Xsetlist = function('setloclist')
+  let g:is_qflist = v:false
+  call g:Xsetlist(0, [{'text': 'local_foo'}], 'r')
+  call assert_equal(['function(''setloclist'')'], g:content)
+  call assert_equal('local_foo', getloclist(0, {'id': g:list_id, 'items': v:true})['items'][0]['text'])
+
+  lopen
+  let g:qflistbuf = bufnr()
+  call g:Xsetlist(0, [{'text': 'local_bar'}], 'a')
+  call assert_equal(['|| local_foo', '|| local_bar'], g:content)
+  call assert_equal('local_bar', getloclist(0, {'id': g:list_id, 'items': v:true})['items'][1]['text'])
+  lclose
+
+  autocmd! QuickFixChanged
+  unlet g:content
+  unlet g:qflistbuf
+  unlet g:Xsetlist
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
