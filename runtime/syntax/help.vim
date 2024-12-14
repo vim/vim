@@ -16,9 +16,18 @@ syn match helpHeadline		"^[A-Z.][-A-Z0-9 .,()_']*?\=\ze\(\s\+\*\|$\)"
 syn match helpSectionDelim	"^===.*===$"
 syn match helpSectionDelim	"^---.*--$"
 if has("conceal")
-  syn region helpExample	matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<" concealends
+  syn region helpExample	matchgroup=helpIgnore start=" >[a-z0-9]*$" start="^>[a-z0-9]*$" end="^[^ \t]"me=e-1 end="^<" concealends
+
+  unlet! b:current_syntax
+  silent! syntax include @helpExampleVimScript syntax/vim.vim
+  syntax region helpExampleVimScript
+        \ start=/^>vim$/
+        \ start=/ >vim$/
+        \ end=/^</
+        \ end=/^[^ \t]/me=e-1  concealends
+        \ contains=@helpExampleVimScript keepend
 else
-  syn region helpExample	matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<"
+  syn region helpExample	matchgroup=helpIgnore start=" >[a-z0-9]*$" start="^>[a-z0-9]*$" end="^[^ \t]"me=e-1 end="^<"
 endif
 if has("ebcdic")
   syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar
