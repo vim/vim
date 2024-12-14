@@ -8404,6 +8404,7 @@ inactive-buffer	windows.txt	/*inactive-buffer*
 include-search	tagsrch.txt	/*include-search*
 inclusion	helphelp.txt	/*inclusion*
 inclusive	motion.txt	/*inclusive*
+inclusive-motion-selection-exclusive	motion.txt	/*inclusive-motion-selection-exclusive*
 incomp-small-6	version6.txt	/*incomp-small-6*
 incompatible-5	version5.txt	/*incompatible-5*
 incompatible-6	version6.txt	/*incompatible-6*
