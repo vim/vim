@@ -438,7 +438,7 @@ also implicitly stops the block of ex-commands before it.  E.g. >
     endfunction
 <
 
-To add annotation in the block, place the annotation(ex: vim) after a greater
+To add annotation in the block, place the annotation (ex: vim) after a greater
 than (>) character. E.g. >vim
     function Example_Func()
 	echo "Example"
