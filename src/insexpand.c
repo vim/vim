@@ -554,19 +554,18 @@ ins_compl_infercase_gettext(
 
     p = str;
     for (i = 0; i < char_len; ++i)
+    {
 	if (has_mbyte)
 	    wca[i] = mb_ptr2char_adv(&p);
 	else
 	    wca[i] = *(p++);
+    }
 
     // Rule 1: Were any chars converted to lower?
     p = compl_orig_text.string;
     for (i = 0; i < min_len; ++i)
     {
-	if (has_mbyte)
-	    c = mb_ptr2char_adv(&p);
-	else
-	    c = *(p++);
+	c = has_mbyte ? mb_ptr2char_adv(&p) : *(p++);
 	if (MB_ISLOWER(c))
 	{
 	    has_lower = TRUE;
@@ -587,10 +586,7 @@ ins_compl_infercase_gettext(
 	p = compl_orig_text.string;
 	for (i = 0; i < min_len; ++i)
 	{
-	    if (has_mbyte)
-		c = mb_ptr2char_adv(&p);
-	    else
-		c = *(p++);
+	    c = has_mbyte ? mb_ptr2char_adv(&p) : *(p++);
 	    if (was_letter && MB_ISUPPER(c) && MB_ISLOWER(wca[i]))
 	    {
 		// Rule 2 is satisfied.
@@ -606,10 +602,7 @@ ins_compl_infercase_gettext(
     p = compl_orig_text.string;
     for (i = 0; i < min_len; ++i)
     {
-	if (has_mbyte)
-	    c = mb_ptr2char_adv(&p);
-	else
-	    c = *(p++);
+	c = has_mbyte ? mb_ptr2char_adv(&p) : *(p++);
 	if (MB_ISLOWER(c))
 	    wca[i] = MB_TOLOWER(wca[i]);
 	else if (MB_ISUPPER(c))
@@ -710,7 +703,9 @@ ins_compl_add_infercase(
 	    }
 	}
 	else
+	{
 	    char_len = len;
+	}
 
 	// Find actual length of original text.
 	if (has_mbyte)
@@ -724,11 +719,13 @@ ins_compl_add_infercase(
 	    }
 	}
 	else
+	{
 	    compl_char_len = compl_length;
+	}
 
 	// "char_len" may be smaller than "compl_char_len" when using
 	// thesaurus, only use the minimum when comparing.
-	min_len = char_len < compl_char_len ? char_len : compl_char_len;
+	min_len = MIN(char_len, compl_char_len);
 
 	str = ins_compl_infercase_gettext(str, char_len,
 					  compl_char_len, min_len, &tofree);
@@ -847,8 +844,10 @@ ins_compl_add(
 	int i;
 
 	for (i = 0; i < CPT_COUNT; ++i)
+	{
 	    if (cptext[i] != NULL && *cptext[i] != NUL)
 		match->cp_text[i] = vim_strsave(cptext[i]);
+	}
     }
 #ifdef FEAT_EVAL
     if (user_data != NULL)
@@ -995,10 +994,13 @@ ins_compl_add_matches(
     int		dir = compl_direction;
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
-	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, NULL, dir,
-			       CP_FAST | (icase ? CP_ICASE : 0), FALSE, NULL)) == OK)
+    {
+	add_r = ins_compl_add(matches[i], -1, NULL, NULL, NULL, dir,
+				CP_FAST | (icase ? CP_ICASE : 0), FALSE, NULL);
+	if (add_r == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
+    }
     FreeWild(num_matches, matches);
 }
 
@@ -1123,12 +1125,11 @@ pum_wanted(void)
 pum_enough_matches(void)
 {
     compl_T     *compl;
-    int		i;
+    int		i = 0;
 
     // Don't display the popup menu if there are no matches or there is only
     // one (ignoring the original text).
     compl = compl_first_match;
-    i = 0;
     do
     {
 	if (compl == NULL || (!match_at_original_text(compl) && ++i == 2))
@@ -1342,20 +1343,15 @@ ins_compl_build_pum(void)
     i = 0;
     while (compl != NULL)
     {
-	if (compl->cp_text[CPT_ABBR] != NULL)
-	    compl_match_array[i].pum_text = compl->cp_text[CPT_ABBR];
-	else
-	    compl_match_array[i].pum_text = compl->cp_str.string;
+	compl_match_array[i].pum_text = compl->cp_text[CPT_ABBR] != NULL
+			    ? compl->cp_text[CPT_ABBR] : compl->cp_str.string;
 	compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
 	compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
 	compl_match_array[i].pum_score = compl->cp_score;
 	compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
 	compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
-	if (compl->cp_text[CPT_MENU] != NULL)
-	    compl_match_array[i++].pum_extra =
-	        compl->cp_text[CPT_MENU];
-	else
-	    compl_match_array[i++].pum_extra = compl->cp_fname;
+	compl_match_array[i++].pum_extra = compl->cp_text[CPT_MENU] != NULL
+			    ? compl->cp_text[CPT_MENU] : compl->cp_fname;
 	match_next = compl->cp_match_next;
 	compl->cp_match_next = NULL;
 	compl = match_next;
@@ -1687,10 +1683,8 @@ ins_compl_files(
 	    while (vim_regexec(regmatch, buf, (colnr_T)(ptr - buf)))
 	    {
 		ptr = regmatch->startp[0];
-		if (ctrl_x_mode_line_or_eval())
-		    ptr = find_line_end(ptr);
-		else
-		    ptr = find_word_end(ptr);
+		ptr = ctrl_x_mode_line_or_eval() ? find_line_end(ptr)
+							: find_word_end(ptr);
 		add_r = ins_compl_add_infercase(regmatch->startp[0],
 			(int)(ptr - regmatch->startp[0]),
 			p_ic, files[i], *dir, FALSE);
