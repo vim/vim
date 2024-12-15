@@ -1,0 +1,1029 @@
+#             Benvenuto   alla   guida   introduttiva   VIM
+
+Vim è un editor molto potente, che ha molti comandi, troppi per poterli
+spiegare in una guida introduttiva come questa. Questa guida introduttiva è
+stata preparata per descrivere i comandi che servono a poter usare facilmente
+Vim come editor di uso generale. È IMPORTANTE ricordarsi che questa guida è
+stata preparata per apprendere facendo pratica. Ciò significa che occorre fare
+gli esercizi, per poter apprendere davvero. Limitandosi a leggere il testo, si
+finirebbe per dimenticare presto le cose più importanti!
+
+Per iniziare, assicuratevi che il tasto di blocco maiuscole NON sia premuto e
+premete ripetutamente il tasto `j`{normal} per muovere il cursore, finché la
+Lezione 0 riempia completamente lo schermo.
+
+# Lezione 0
+
+NOTA: I comandi dati durante le lezioni modificheranno il testo, ma le
+modifiche da voi effettuate non saranno salvate. Quindi non preoccupatevi
+se fate pasticci; ricordate che premendo il tasto [<Esc>](<Esc>) e poi
+[u](u) verrà annullata l'ultima modifica.
+
+Questa guida è interattiva, e ci sono alcune cose che dovreste sapere.
+- Battete [<Invio>](<Enter>) sui link [come questo](holy-grail    ) per aprire la parte di help relativa.
+- O semplicemente battete [K](K) su una parola qualsiasi per trovare la relativa
+  documentazione!
+- Talvolta vi viene richiesto di modificare righe di testo come
+questa qui
+Una volta fatte correttamente le modifiche richieste, il segno ✗ a sinistra
+della riga diverrà ✓. Penso iniziate a intuire quanto Vim sia bello. ;)
+Altre volte vi viene richiesto di eseguire un comando (vedere più sotto):
+~~~ cmd
+    :help <Invio>
+~~~
+o di battere una sequenza di tasti
+~~~ normal
+    <Esc>0f<Spazio>d3wP$P
+~~~
+
+I testi racchiusi tra i segni '<' e '>' (come `<Enter>`{normal}) indicano un tasto
+da premere, invece di un testo da immettere.
+
+Ora, avanziamo verso la prossima Lezione (usa il tasto `j`{normal} per scorrere
+verso il basso).
+
+# Lezione 1.1: SPOSTARE IL CURSORE
+
+** Per spostare il cursore, premete i tasti `h`, `j`, `k`, `l` come indicato.
+
+         ↑
+         k          Nota: Il tasto `h`{normal} è a sinistra e sposta a sinistra.
+     ← h   l →            Il tasto `l`{normal} è a destra e sposta a destra.
+         j                Il tasto `j`{normal} assomiglia a una freccia in giù.
+         ↓
+
+  1. Muovete il cursore sullo schermo, finché vi sentite a vostro agio.
+
+  2. Tenete schiacciato il tasto "giù" (`j`{normal}) per far ripetere l'azione.
+     Adesso sapete come andare alla prossima Lezione.
+
+  3. Usando il tasto "giù", passate alla Lezione 1.2.
+
+NOTA: Se non siete sicuri di aver usato i tasti giusti, premete <Esc> per
+      tornare al modo Normal. Poi immettete ancora il comando che volevate.
+
+NOTA: I tasti del cursore hanno lo steso effetto. Ma usando hjkl sarete in grado
+      di spostarvi molto più velocemente, dopo che vi siete abituati. Davvero!
+
+# Lezione 1.2: USCIRE DA VIM
+
+!! NOTA: Prima di eseguire i passi elencati sotto,
+leggetevi l'intera Lezione !!
+
+ 1. Premete il tasto <Esc> (per accertarvi di essere nel modo Normal).
+
+ 2. Battete:
+
+    `:q!`{vim} `<Invio>`{normal}.
+
+     Così si esce dall'editor, SCARTANDO qualsiasi modifica fatta.
+
+ 3. Aprite vim e tornate qui eseguendo il comando che vi ha portato a questa
+     guida. Potrebbe essere:
+
+     :Tutor <Invio>
+
+ 4. Se siete sicuri di aver memorizzato questi passi, eseguite i passi
+    dall'1 al 3 per uscire dall'editor e rientrarvi.
+
+NOTA: [:q!](:q) <Invio> SCARTA qualsiasi modifica fatta. Tra qualche Lezione
+      vedremo come salvare le modifiche su un file.
+
+ 5. Spostatevi in giù col cursore, alla Lezione 1.3.
+
+# Lezione 1.3: MODIFICARE TESTO - CANCELLARE
+
+** Premete `x`{normal} per cancellare il carattere sotto il cursore. **
+
+ 1. Portatevi col cursore alla riga qui sotto marcata ✗.
+
+ 2. Per correggere, spostate il cursore posizionandolo sopra il
+    carattere da cancellare.
+
+ 3. Premete [il tasto x](x) per cancellare il carattere di troppo.
+
+ 4. Ripetete i passi da 2 a 4 finché la frase è corretta.
+
+La mmucca saltòò soppra lla luuna.
+
+ 5. Ora che la riga è corretta, passate alla Lezione 1.4.
+
+NOTA: Nel seguire questa guida, non tentate di memorizzare, è
+      meglio imparare facendo pratica.
+
+# Lezione 1.4: EDITARE UN TESTO: INSERIMENTI
+
+** Premete `i`{normal} per inserire del testo. **
+
+ 1. Portatevi col cursore alla prima riga sotto, marcata ✗.
+
+ 2. Per rendere la riga uguale alla seguente, spostate il cursore fino
+    a sovrapporvi al print carattere DOPO il testo che va inserito.
+
+ 3. Premete `i`{normal} e immettete le aggiunte richieste.
+
+ 4. Dopo aver corretto ogni siingolo errore premete `<Esc>`{normal}
+    per ritornare al modo Normal.
+    Ripetete i passi da 2 a 4 per correggere la frase.
+
+Un po' testo mca questa .
+Un po' di testo manca da questa riga.
+
+ 5. Quando vi sentite a vostro agio nell'inserire del testo, passate alla
+    Lezione 1.5.
+
+# Lezione 1.5: EDITARE UN TESTO: AGGIUNGERE A FINE RIGA
+
+** Premete `A`{normal} per aggiungere del testo a fine riga. **
+
+ 1. Portatevi col cursore alla prima riga sotto marcata ✗.
+    Non importa su che carattere sta il cursore nella riga.
+
+ 2. Premete [A](A) e aggiungete quanto manca.
+
+ 3. Una volta finito di aggiungere testo, premete `<Esc>`{normal}
+    per ritornare al modo Normal.
+
+ 4. Portatevi col cursore alla seconda riga marcata ✗ e ripetete
+    i passi 2 e 3 per correggere la frase.
+
+Un po' di testo manca da que
+Un po' di testo manca da questa riga.
+Un po' di testo man
+Un po' di testo manca anche qui.
+
+ 5. Quando vi sentite a vostro agio nell'aggiungere del testo in fondo
+    alla riga, passate alla Lezione 1.6.
+
+# Lezione 1.6: EDITARE UN FILE
+
+** Usate `:wq`{vim} per salvare un file e uscire da Vim. **
+
+!! NOTA: Prima di eseguire i passi elencati sotto,
+leggetevi l'intera Lezione !!
+
+ 1. Uscite da questa guida come avete fatto nella Lezione 1.2: `:q!`{vim}
+    O, se avete accesso a un altro terminale, digitate quel che segue in
+    quel terminale.
+
+ 2. Dal prompt della shell battete questo comando:
+~~~ sh
+     $ vim tutor
+~~~
+    'vim' è il comando che fa partire l'editor Vim, 'tutor' è il nome
+    del file che desiderate editare.  Usate un file che siete in grado di
+    modificare.
+
+ 3. Inserite e cancellate del testo, come visto nella Lezione precedente.
+
+ 4. Salvate il file con le modifiche da voi fatte e uscite da Vim immettendo:
+~~~ cmd
+     :wq
+~~~
+
+    Notate che occorre premete `<Invio>` perché il comando sia eseguito.
+
+ 5. Se siete usciti dalla guida Vim nel Passo 1, fate ripartire la guida Vim
+    e posizionatevi sul sommario qui sotto.
+
+ 6. Dopo aver letto e capito tutti i passi visti qui sopra: metteteli in pratica.
+
+# Lezione 1 SOMMARIO
+
+ 1. Il cursore su muove usando i tasti freccia o i tasti h j k l.
+        h (sinistra)   j (giù)       k (sù)       l (destra)
+
+ 2. Per far partire Vim dal prompt della shell immettete:
+
+~~~ sh
+    $ vim NOME-DI-FILE
+~~~
+
+ 3. Per uscire da Vim battete: `<Esc>`{normal} `:q!`{vim} `<Invio>`{normal}
+    per buttar via tutte le modifiche.
+               OPPURE battete: `<Esc>`{normal} `:wq`{vim} `<Invio>`{normal}
+    per salvare le modifiche fatte.
+
+ 4. Per cancellare il carattere sotto il cursore battete: `x`{normal}
+
+ 5. Per inserire o aggiungere in fondo del testo battete:
+    `i`{normal} inserire   testo `<Esc>`{normal}     inserire prima del cursore.
+    `A`{normal} aggiungere testo `<Esc>`{normal}     aggiungere a fine riga.
+
+NOTA: Premendo `<Esc>`{normal} si entra nel modo Normal e, se del caso, si
+      annulla un comando parzialmente immesso, che non volete eseguire.
+
+Ora continuate con la Lezione 2.
+
+# Lezione 2.1: COMANDI PER CANCELLARE
+
+** Battete `dw`{normal} per cancellare una parola. **
+
+ 1. Premete `<Esc>`{normal} per assicurarvi di essere nel modo Normal.
+
+ 2. Portatevi col cursore alla riga qui sotto marcata ✗.
+
+ 3. Portatevi col cursore all'inizio di una parola che va cancellata
+
+ 4. Battete [d](d)[w](w) per cancellare la parola.
+
+Ci sono penna alcune parole matita che non appartengono carta a questa frase.
+
+ 5. Ripetete i passi 3 e 4 finché la frase è corretta e andate alla Lezione 2.2.
+
+# Lezione 2.2: ANCORA COMANDI PER CANCELLARE
+
+** Battete `d$`{normal} per cancellare fino a fine riga. **
+
+ 1. Premete `<Esc>`{normal} per assicurarvi di essere nel modo Normal.
+
+ 2. Portatevi col cursore alla riga qui sotto marcata ✗.
+
+ 3. Portatevi col cursore alla fine della riga corretta (DOPO il primo . ).
+
+ 4. Battete `d$`{normal} per cancellare fino a fine riga.
+
+Qualcuno ha scritto due volte la fine di questa riga. fine di questa riga.
+
+ 5. Passate alla Lezione 2.3 per capire cosa sta accadendo.
+
+# Lezione 2.3: OPERATORI E MOVIMENTI
+
+Molti comandi che modificano del testo sono composti da un [operatore](operator) e
+da un [movimento](navigation).
+Il formato di un comando delete con l'operatore [d](d) è il seguente:
+
+    d   movimento
+
+  Dove:
+    d         - è l'operatore per "delete" (cancella)
+    movimento - indice dove l'operatore agisce (vedere sotto).
+
+  Una breve lista di movimenti:
+    [w](w) - fino a inizio prossima parola, ESCLUSO il carattere iniziale.
+    [e](e) - fino alla fine della parola corrente, INCLUSO l'ultimo carattere.
+    [$]($) - fino a fine riga, INCLUSO l'ultimo carattere.
+
+  Quindi battendo `de`{normal} cancella dalla posizione del cursore a fine parola.
+
+NOTA:  Premendo solo il carattere di movimento in modo Normal, senza un operatore
+       sposterà il cursore come specificato.
+
+# Lezione 2.4: USARE UN CONTATORE PER UN MOVIMENTO
+
+** Un numero prima di un movimento lo ripete altrettante volte. **
+
+ 1. Portatevi col cursore all'inizio della riga qui sotto, marcata ✓ .
+
+ 2. Battete `2w`{normal} per spostare il cursore due parole in avanti.
+
+ 3. Battete `3e`{normal} per spostare il cursore alla fine della terza parola
+    in avanti.
+
+ 4. Battete `0`{normal} ([zero](0)) per andare all'inizio della riga.
+
+ 5. Ripetete i passi 2 e 3 con numeri differenti.
+
+Questa è solo una riga con delle parole per imparare a muovere il cursore.
+
+ 6. Passate alla Lezione 2.5.
+
+# Lezione 2.5: USARE UN CONTATORE PER CANCELLARE DI PIÙ
+
+** Un numero prima di un operatore lo ripete altrettante volte. **
+
+Usando l'operatore delete con un movimento di quelli visti sopra, si può
+inserire un contatore prima del movimento, per cancellare di più
+     d   numero   movimento
+
+ 1. Portatevi col cursore alla prima parola MAIUSCOLA sulla riga marcata ✗.
+
+ 2. Battete `d2w`{normal} per cancellare le due parole MAIUSCOLE.
+
+ 3. Ripetete i passi 1 e 2 con un contatore differente per cancellare tutte
+    le parole MAIUSCOLE consecutive, con un solo comando.
+
+Questa ABC DE riga FGHI JK LMN OP di parole è stata Q RS TUV pulita.
+
+# Lezione 2.6: AGIRE SU INTERE RIGHE
+
+** Battete `dd`{normal} per cancellare un'intera riga. **
+
+A causa della frequenza con cui capita di cancellare intere righe,
+chi ha progettato Vim ha deciso che sarebbe stato più semplice battere
+due volte la lettera d per cancellare una riga.
+
+ 1. Portatevi col cursore alla seconda riga nella frase sotto.
+ 2. Battete [dd](dd) per cancellare la riga.
+ 3. Poi spostatevi alla riga numero 4.
+ 4. Battete `2dd`{normal} per cancellare due righe.
+
+1)  Le rose sono rosse,
+2)  Il fango è divertente,
+3)  Le viole sono blu,
+4)  Io ho un'automobile,
+5)  Gli orologi ti dicono l'ora,
+6)  Dolce è lo zucchero,
+7)  Ma non quanto sei tu.
+
+# Lezione 2.7: IL COMANDO UNDO
+
+** Premete `u`{normal} per annullare l'ultimo comando, `U`{normal} per farlo su un'intera riga. **
+
+ 1. Portatevi col cursore alla riga qui sotto marcata ✗ e posizionatelo
+    sul primo errore.
+ 2. Battete `x`{normal} per cancellare il primo carattere indesiderato.
+ 3. Poi battete `u`{normal} per annullare l'ultimo comando eseguito.
+ 4. Poi correggete tutti gli errori sulla riga con il comando `x`{normal}.
+ 5. Poi battete `U`{normal} per riportare la riga a come era all'inizio.
+ 6. Poi battete `u`{normal} più volte per annullare l'effetto di `U`{normal}
+    e i comandi precedenti.
+ 7. Ora battete `<C-r>`{normal} (Control + R) più volte per rieseguire i comandi
+    (annullare gli annullamenti).
+
+Corregggete gli errori ssu queesta riga e rimettetelli usanndo undo.
+
+ 8. Questi comandi sono molto utili. Potete procedere al Sommario della Lezione 2.
+
+# Lezione 2 SOMMARIO
+
+ 1. Per cancellare dal cursore fino alla parola seguente battete:    `dw`{normal}
+ 2. Per cancellare dal cursore a fine riga battete:                  `d$`{normal}
+ 3. Per cancellare un'intera riga battete:                           `dd`{normal}
+ 4. Per ripetere un movimento metteteci davanti un numero:           `2w`{normal}
+
+ 5. Il formato di un comando di modifica è:
+               operatore   [numero]   movimento
+    dove:
+       operatore -   indica l'azione, come [d](d) per cancellare (delete)
+       [numero]  -   è un contatore opzionale per ripetere il movimento
+       movimento -   indica quanto esteso è il campo su cui operare, come:
+                        [w](w) (parola, word),
+                        [$]($) (fine della riga), etc.
+
+ 6. Per spostarsi a inizio riga si usa uno zero: [0](0)
+
+ 7. Per annullare azioni precedenti, battete:             `u`{normal}  (u minuscolo)
+    Per annullare tutte le modifiche a una riga, battete: `U`{normal}  (U maiuscolo)
+    Per annullare gli annulli, battete:                   `<C-r>`{normal}
+
+# Lezione 3.1: IL COMANDO PUT
+
+** Battete `p`{normal} per inserire il testo appena cancellato dopo il cursore. **
+
+ 1. Portatevi col cursore alla prima riga marcata ✓ sotto.
+
+ 2. Battete `dd`{normal} per cancellare la riga e metterla in un registro Vim.
+
+ 3. Portatevi col cursore alla riga c), SOPRA dove va messa la riga cancellata.
+
+ 4. Battete `p`{normal} per inserire la riga sotto quella dove è il cursore.
+
+ 5. Ripetete i passi da 2 a 4 per inserire tutte le righe nell'ordine corretto.
+
+d) Puoi impararla anche tu?
+b) Le viole sono blu,
+c) L'intelligenza si impara.
+a) Le rose sono rosse,
+
+# Lezione 3.2: IL COMANDO RIMPIAZZA
+
+** Battete `rx`{normal} per rimpiazzare il carattere sotto il cursore con x. **
+
+ 1. Portatevi col cursore alla prima riga sotto marcata ✗.
+
+ 2. Spostate il cursore fino a posizionarlo sopra al primo errore.
+
+ 3. Battete `r`{normal} e poi il carattere "giusto".
+
+ 4. Ripetete i passi 2 e 3 finché la prima riga è uguale alla seconda.
+
+Quwndo questa riga è stata imbessa, qualcuno ha premato i tasti sballiati!
+Quando questa riga è stata immessa, qualcuno ha premuto i tasti sbagliati!
+
+ 5. Ora passate alla Lezione 3.3.
+
+NOTA: Non dimenticate è meglio imparare provando, e non memorizzando.
+
+# Lezione 3.3: L'OPERATORE CAMBIA `c`{normal}
+
+** Per cambiare fino alla fine di una parola, battete `ce`{normal}. **
+
+ 1. Portatevi col cursore alla prima riga sotto marcata ✗.
+
+ 2. Posizionate il cursore sulla prima "a" di "rana".
+
+ 3. Battete `ce`{normal} e la parola corretta (in questo caso, battete "iga" ).
+
+ 4. Premete `<Esc>`{normal} e posizionatevi sul successivo carattere da
+     cambiare.
+
+ 5. Ripetete i passi 3 e 4 finché la prima frase è uguale alla seconda.
+
+Questa rana ha alcune papere che vanga cambiate uscita il comando change.
+Questa riga ha alcune parole che vanno cambiate usando il comando change.
+
+Notare che [c](c)e cancella la parole e vi mette in modo Insert.
+
+# Lezione 3.4: ALTRE MODIFICHE USANDO `c`{normal}
+
+** L'operatore cambia si usa con gli stessi movimenti di cancella. **
+
+ 1. L'operatore cambia funziona come l'operatore cancella. Il formato è:
+
+         c    [numero]   movimento
+
+ 2. I movimenti sono gli stessi, come `w`{normal} (parola) e `$`{normal} (fine-riga).
+
+ 3. Spostatevi alla prima riga sotto marcata ✗.
+
+ 4. Portatevi col cursore alla prima parola errata.
+
+ 5. Battete `c$`{normal} e battete il resto della riga come la seguente
+    e premete `<Esc>`{normal}.
+
+La fine di questa riga ha bisogno di aiuto per divenire uguale alla seguente.
+La fine di questa riga va corretta usando il comando `c$`.
+
+NOTA: Si può usare il tasto Backspace per correggere errori di battitura.
+
+# Lezione 3 SOMMARIO
+
+ 1. Per reinserire del testo che è stato appena cancellato, battete [p](p).
+    Questo comando mette il testo appena cancellato DOPO il cursore
+    (se una riga intera era stata cancellata, questa diverrà la riga SOTTO
+    il cursore).
+
+ 2. Per rimpiazzare il carattere sotto il cursore, battete [r](r) e poi il
+    carattere che volete sostituire a quello.
+
+ 3. Il comando [change](c) consente di cambiare il testo dalla posizione
+    del cursore fino a dove il movimento lo porta.  Battete `ce`{normal}
+    per cambiare dalla posizione del cursore alla fine della parola, e
+    `c$`{normal} per cambiare il testo fino alla fine della riga.
+
+ 4. Il formato per il comando che cambia del testo è:
+
+     c   [numero]   movimento
+
+Adesso passate alla prossima Lezione.
+
+# Lezione 4.1: POSIZIONE DEL CURSORE E STATO DEL FILE
+
+** Battete `<C-g>`{normal} per visualizzare la vostra posizione
+ all'interno del file, e lo stato del file.
+ Battete `G`{normal} per andare a una data riga nel file. **
+
+!! NOTA: Prima di eseguire i passi elencati sotto,
+leggetevi l'intera Lezione !!
+
+ 1. Tenendo premuto il tasto `<Ctrl>`{normal} premete `g`{normal}.  Questo si indica
+    scrivendo `<C-g>`{normal}.  Un messaggio apparirà in fondo alla pagina
+    con il nome del file e la posizione all'interno del file.  Memorizzate
+    il numero di riga per il Passo 3 sotto.
+
+NOTA: La posizione del cursore si può vedere nell'angolo in basso a destra
+      dello schermo.  Ciò accada se è stata specificata l'opzione ['ruler']('ruler').
+ 2. Battete [G](G) per portarvi in fondo al file.
+    Battete [gg](gg) per portarvi in cima al file.
+
+ 3. Battete il numero della riga in cui eravate e poi `G`{normal}.  In questo modo
+    tornerete alla riga in cui eravate al momento di battere `<C-g>`{normal}.
+
+ 4. Se vi sentite sicuri del fatto vostro, eseguite i passi da 1 a 3.
+
+# Lezione 4.2: IL COMANDO CERCA
+
+** Battete `/`{normal} seguito da una frase, per cercare quella frase. **
+
+ 1. In modo Normal battete il carattere `/`{normal}.  Notate che il carattere
+    stesso e il cursore sono in fondo alla schermo, dove vengono anche
+    visualizzati i comandi che iniziano per `:`{normal}.
+
+ 2. Ora battete 'errroore' `<Invio>`{normal}.  Questa è la parola che volete
+    cercare.
+
+ 3. Per cercare ancora la stessa frase, simply battete [n](n).
+    Per cercare la stessa frase nella direzione opposta, battete [N](N).
+
+ 4. Per cerca una frase all'indietro, usate [?](?) invece che `/`{normal}.
+
+ 5. Per tornare dove eravate prima premete `<C-o>`{normal} (tenendo premuto
+    il tasto `<Ctrl>`{normal} premete la lettera `o`{normal}).  Ripetete
+    per tornare ancora più indietro.  `<C-i>`{normal} per andare in avanti.
+
+"errroore" non è il modo giusto di scrivere errore; errroore è un errore.
+
+NOTA: Quando la ricerca arriva a fine file, ricomincia dall'inizio, a meno
+      che l'opzione ['wrapscan']('wrapscan') sia inattiva.
+
+# Lezione 4.3: CERCARE PARENTESI CORRISPONDENTI
+
+** Battete `%`{normal} per trovare una corrispondenza a ),], o }. **
+
+ 1. Posizionate il cursore su una qualsiasi (, [, o { nella riga sotto
+    marcata ✓.
+
+ 2. Ora battete il carattere [%](%).
+
+ 3. Il cursore si sposterà sulla parentesi corrispondente.
+
+ 4. Battete `%`{normal} per spostare il cursore sull'altra parentesi
+    corrispondente.
+
+ 5. Portatevi col cursore su un'altra (,),[,],{ o } e guardate cosa fa
+    il comando `%`{normal}.
+
+Questa ( è una riga di test che contiene (, [, ] e { } al suo interno. ))
+
+NOTA: Questo comando è molto utile per correggere un programma con qualche
+      parentesi mancante o posizionata male!
+
+# Lezione 4.4: IL COMANDO SOSTITUISCI
+
+** Battete `:s/vecchio/nuovo/g` per sostituire "nuovo" a "vecchio". **
+
+ 1. Portatevi col cursore alla riga qui sotto marcata ✗.
+
+ 2. Battete
+~~~ cmd
+    :s/laa/la/
+~~~
+
+    NOTATE che il comando [:s](:s) la cambiato solo il primo "laa" della riga.
+
+ 3. Adesso battete
+~~~ cmd
+     :s/laa/la/g
+~~~
+
+    Aggiungendo il flag [flag](:s_flags) si chiede di sostituire globalmente
+    sulla riga, ossia di cambiare tutte le occorrenze di "laa" della riga.
+
+Di solito laa stagione migliore per ammirare i fiori è laa primavera.
+
+ 4. Per cambiare ogni occorrenza di una stringa in un gruppo di righe
+    battete
+~~~ cmd
+     :#,#s/vecchio/nuovo/g
+~~~
+    Dove #,# sono i numeri iniziale e finale del gruppo di righe dove va
+    fatta la sostituzione.
+
+    Battete
+~~~ cmd
+    :%s/vecchio/nuovo/g
+~~~
+    per cambiare ogni occorrenza di una stringa nell'intero file.
+
+    Battete
+~~~ cmd
+    :%s/vecchio/nuovo/gc
+~~~
+    per trovare ogni occorrenza di una stringa nell'intero file, e ricevere
+    la richiesta se cambiare oppure no ogni particolare occorrenza.
+
+# Lezione 4 SOMMARIO
+
+ 1. `<C-g>`{normal}     visualizza posizione e stato del file.
+    `G`{normal}         va all'ultima riga del file.
+     numero `G`{normal} va al numero di riga specificato.
+    `gg`{normal}        va alla prima riga del file.
+
+ 2. Battendo `/`{normal} seguito da una frase cerca la frase in AVANTI.
+    Battendo `?`{normal} seguito da una frase cerca la frase all'INDIETRO.
+    Dopo aver trovato una corrispondenza battete `n`{normal} per cercare la
+    corrispondenza successiva nella stessa direzione, oppure `N`{normal}
+    per cercarla nella direzione opposta.
+    `<C-o>`{normal} vi riposta indietro a posizioni precedenti,
+    `<C-i>`{normal} vi riporta avanti verso le posizioni più recenti.
+
+ 3. Battendo `%`{normal} mentre il cursore è su (,),[,],{, o } sposta il
+    cursore alla parentesi corrispondente.
+
+ 4. Per sostituire "nuovo" alla prima occorrenza di "vecchio" in una riga
+    battete
+~~~ cmd
+        :s/vecchio/nuovo
+~~~
+    Per sostituire "nuovo" per tutti i "vecchio" di una riga battete
+~~~ cmd
+        :s/vecchio/nuovo/g
+~~~
+    Per sostituire frasi nell'intervallo di righe da "#" a "#"  battete
+~~~ cmd
+        :#,#s/vecchio/nuovo/g
+~~~
+    Per sostituire tutte le occorrenze nel file battete
+~~~ cmd
+        :%s/vecchio/nuovo/g
+~~~
+    Per chiedere conferma per ogni possibile modifica, aggiungete il flag 'c'
+~~~ cmd
+        :%s/vecchio/nuovo/gc
+~~~
+%%%%
+# Lezione 5.1: COME ESEGUIRE UN COMANDO ESTERNO
+
+** Battete `:!`{vim} seguito da un comando esterno, per eseguire quel comando. **
+
+ 1. Battete il familiare comando `:`{normal} per portare il cursore in fondo allo
+    schermo.  Ciò vi consente di immettere un comando dalla riga-di-comando.
+
+ 2. Ora battete il carattere [!](!cmd) (punto esclamativo).  Questo permette di
+    eseguire qualsiasi comando esterno della shell.
+
+ 3. Come esempio battete "ls" dopo il "!" e poi date `<Invio>`{normal}.
+    Ciò vi mostrerà una lista dei file nella vostra directory, proprio come se
+    deste il comando dalla shell.
+
+NOTA: Si può eseguire qualsiasi comando esterno in questo modo, si possono
+      anche specificare degli argomenti per il comando.
+
+NOTA: Tutti il comandi `:`{vim} vanno completati battendo `<Invio>`{normal}.
+      Da qui in poi non lo ricorderemo tutte le volte.
+
+# Lezione 5.2: RISCRIVERE I FILE
+
+** Per salvare le modifiche fatte al testo, battete `:w`{vim} NOME-FILE. **
+
+ 1. Battete `:!ls`{vim} per ottenere la lista dei file nella vostra directory.
+    Già sapete di dover battere `<Invio>`{normal} per far eseguire il comando.
+
+ 2. Scegliete un nome-file che ancora non esiste, come TEST.
+
+ 3. Poi battete:
+~~~ cmd
+        :w TEST
+~~~
+   (dove TEST indica il nome-file da voi scelto.)
+
+ 4. Questo comando salva l'intero file (il file Vim Tutor) con il nome TEST.
+    Per verificarlo, battete `:!ls`{vim} ancora per vedere i file nella
+    vostra directory.
+
+NOTA: Se uscite da Vim e chiamate Vim di nuovo battendo `vim TEST`, il file
+      in edit è una copia esatta del file di guida, quando è stato salvato.
+
+ 5. Ora cancellate il file battendo:
+~~~ cmd
+        :!rm TEST
+~~~
+
+# Lezione 5.3: SCRIVERE SOLO PARTE DEL TESTO
+
+** Per salvare solo una parte del file, battete `v`{normal} movimento
+ `:w NOME-FILE`{vim}. **
+
+ 1. Portatevi col cursore su questa riga.
+
+ 2. Premete [v](v) e spostate il cursore alla riga marcata 5. qui sotto.
+    Notate che il testo selezionato è evidenziato.
+
+ 3. Premete il tasto `:`{normal}.  A fondo schermo apparirà
+
+        :'<,'>
+
+ 4. Battete
+
+        `:w TEST`{vim}
+
+    dove TEST è un nome-file non ancora esistente. Verificate di vedere
+
+        `:'<,'>w TEST`{vim}
+
+    prima di premere `<Invio>`{normal}.
+
+ 5. Vim scriverà le righe selezionate al file TEST. Usate `:!ls`{vim} per
+    controllare.
+    Non cancellate subito il file!  Sarà usato nella prossima Lezione.
+
+NOTA: Premendo [v](v) iniziate il modo [selezione Visuale](visual-mode).  Potete
+      usare il cursore per rendere la selezione più piccola o più grande.
+      Poi potete usare un operatore per fare qualcosa col testo così
+      selezionato.  Per esempio, `d`{normal} cancella tutto il testo.
+
+# Lezione 5.4: AGGIUNGERE INTERI FILE E UNIRE FILE
+
+** Per inserire il contenuto di un file, battete `:r NOME-FILE`{vim}. **
+
+ 1. Posizionate il cursore sopra questa riga.
+
+NOTA:  Dopo aver eseguito il Passo 2 vedrete del testo dalla Lezione 5.3.
+       Quindi, spostatevi in GIÙ per vedere di nuovo questa Lezione.
+
+ 2. A questo punto, inserite il vostro file TEST usando il comando
+
+        `:r TEST`{vim}
+
+     dove TEST è il nome del file che avete usato più sopra.
+     Il file da voi letto viene inserito sotto la riga del cursore.
+
+ 3. Per verificare che è stato inserito un file, portatevi indietro col
+    cursore e vedrete che ci sono ora due copie della Lezione 5.3, quella
+    originale e quella inserita da voi, prendendola dal file.
+
+NOTA: Si può anche leggere l'output prodotto da un comando esterno.
+      Per esempio,
+
+        `:r !ls`{vim}
+
+      mette l'output del comando `ls` a partire dalla riga sotto il cursore.
+
+# Lezione 5 SOMMARIO
+
+ 1. [:!comando](:!cmd) esegue un comando esterno.
+
+     Alcune esempi utili sono:
+     `:!ls`{vim}              -  mostra i file di una directory
+     `:!rm NOME-FILE`{vim}    -  cancella il file NOME-FILE
+
+ 2. [:w](:w) NOME-FILE           scrive il file in edit su disco con il nome
+                                 NOME-FILE.
+
+ 3. [v](v)  movimento  :w NOME-FILE   salva le righe selezionate in
+                                 modo Visual nel file chiamato NOME-FILE.
+
+ 4. [:r](:r) NOME-FILE           legge da disco il file NOME-FILE e lo
+                                 inserisce nella riga sotto il cursore.
+
+ 5. [:r !dir](:r!)               legge l'output del comando dir e lo
+                                 inserisce nella riga sotto il cursore.
+
+# Lezione 6.1: IL COMANDO OPEN
+
+** Battete `o`{normal} per aprire una nuova riga sotto a quella del cursore
+   e per mettervi in modo Insert sulla riga. **
+
+ 1. Portatevi col cursore alla riga qui sotto marcata ✓.
+
+ 2. Battete la lettera minuscola `o`{normal} per [aprire](o) una riga sotto il
+    cursore e mettervi in modo Insert.
+
+ 3. Ora battete del testo e premete `<Esc>`{normal} per uscire dal modo Insert.
+
+Dopo battuto `o`{normal} il cursore si sposta sulla riga nuova in modo Insert.
+
+ 4. Per aprire una riga SOPRA il cursore, semplicemente battete una
+    [O maiuscola](O), invece che una `o`{normal} minuscola.
+    Provate a farlo con la riga sotto.
+
+Aprite una riga sopra questa battendo O mentre il cursore è su questa riga.
+
+# Lezione 6.2: IL COMANDO AGGIUNGI
+
+** Battete `a`{normal} per inserire del testo DOPO il cursore. **
+
+ 1. Portatevi col cursore all'inizio della riga sotto marcata ✗.
+
+ 2. Premete `e`{normal} fino a che il cursore sia alla fine di "ri".
+
+ 3. Battete la lettera minuscola `a`{normal} per [aggiungere](a) testo DOPO
+    il cursore.
+
+ 4. Completate la parole come nella riga sotto. Premete `<Esc>`{normal} per
+    uscire dal modo Insert.
+
+ 5. Usate `e`{normal} per spostarvi sulla parola incompleta seguente e
+    ripetete i passi 3 e 4.
+
+Questa ri serve per far prat ad aggiungere testo a una riga.
+Questa riga serve per far pratica ad aggiungere testo a una riga.
+
+NOTA: I comandi [a](a), [i](i) e [A](A) fanno tutti andate al modo Insert,
+      la sola differenza è dove vengono inseriti i caratteri.
+
+# Lezione 6.3: UN ALTRO MODO PER RIMPIAZZARE
+
+** Battete una `R`{normal} maiuscola per rimpiazzare più caratteri. **
+
+ 1. Portatevi col cursore alla prima riga sotto marcata ✗. Portatevi col
+    cursore all'inizio del primo "xxx".
+
+ 2. Poi premete `R`{normal} ([R maiuscolo](R)) e inserite il numero che
+    vedete sulla riga seguente, in modo da rimpiazzare "xxx".
+
+ 3. Premete `<Esc>`{normal} per uscire dal [modo Replace](mode-replace).
+    Notate che il resto della riga non viene cambiato.
+
+ 4. Ripetete i passi per rimpiazzare l'altro "xxx".
+
+Sommando 123 a xxx si ottiene xxx.
+Sommando 123 a 456 si ottiene 579.
+
+NOTA: Il modo Replace è come il modo Insert, ma ogni carattere immesso cancella
+      un carattere del testo.
+
+# Lezione 6.4: COPIARE E INCOLLARE TESTO
+
+** Usare l'operatore `y`{normal} per copiare testo e `p`{normal} per incollarlo. **
+
+ 1. Andate alla riga marcata con ✓ sotto e posizionate il cursore dopo "a)".
+
+ 2. Entrate in mod Visual con `v`{normal} e spostate il cursore subito prima
+    di "primo".
+
+ 3. Battete `y`{normal} per [copiare](yank) (copy) il testo evidenziato.
+
+ 4. Portatevi col cursore alla fine delle riga seguente: `j$`{normal}
+
+ 5. Battete `p`{normal} per [incollare](put) il testo.
+
+ 6. Premete `a`{normal} e poi battete "secondo". Premete `<Esc>`{normal} per
+    uscire dal modo Insert.
+
+ 7. Usate il modo Visual per selezionare "elemento.", copiatelo con `y`{normal},
+    andate alla fine della riga seguente con `j$`{normal} e incollate lì il
+    testo con `p`{normal}
+
+a) Questo è il primo elemento.
+b)
+
+NOTA: SI può usare `y`{normal} come un operatore: `yw`{normal} copia una parola.
+
+# Lezione 6.5: IMPOSTARE UN'OPZIONE
+
+** Impostare un'opzione per ignorare la distinzione maiuscolo/minuscolo
+   quando si cerca o si sostituisce. **
+
+ 1. Cercate la parola 'premete' col comando: `/premete`
+    ripetete più volte premendo `n`{normal}.
+
+ 2. Impostate l'opzione the 'ic' (Ignora MAIUSCOLO/minuscolo) battendo:
+~~~ cmd
+        :set ic
+~~~
+ 3. Poi cercate ancora 'ignore' premendo `n`{normal}.
+    Notate che ora vengono trovate anche le parole Premete e PREMETE.
+
+ 4. Impostate le opzioni 'hlsearch' e 'incsearch':
+~~~ cmd
+        :set hls is
+~~~
+ 5. Ora battete il comando di ricerca e guardate cosa succede:
+    /premete <Invio>
+
+ 6. Per tornare a distinguere MAIUSCOLO/minuscolo battete:
+~~~ cmd
+        :set noic
+~~~
+ 7. Per invertire il valore di un'opzione, metteteci davanti "inv":
+~~~ cmd
+        :set invic
+~~~
+NOTA: Per rimuovere l'evidenziazione delle corrispondenze battete:
+~~~ cmd
+        :nohlsearch
+~~~
+NOTA: Se volete ignorare la distinzione MAIUSCOLO/minuscolo solo una volta,
+      usate [\c](/\c) nel comando: /premete\c <Invio>
+
+# Lezione 6 SOMMARIO
+
+ 1. Battete `o`{normal} per aprire una riga sotto il cursore e entrare
+    in modo Insert.
+    Battete `O`{normal} per aprire una riga SOPRA il cursore.
+
+ 2. Battete `a`{normal} per inserire del testo DOPO il cursore.
+    Battete `A`{normal} per aggiungere del testo a fine riga.
+
+ 3. Il comando `e`{normal} sposta il cursore a fine parola.
+
+ 4. Il comando `y`{normal} copia del testo, `p`{normal} lo incolla.
+
+ 5. Battendo `R`{normal} maiuscola si entra nel modo Replace
+    fino a quando non si preme il tasto `<Esc>`{normal}.
+
+ 6. Battendo "[:set](:set) xxx" imposta l'opzione "xxx".
+    Alcune opzioni sono:
+
+        'ic' 'ignorecase'   ignorare MAIUSCOLO/minuscole nella ricerca
+        'is' 'incsearch'    mostra corrispondenze parziali in ricerca
+        'hls' 'hlsearch'    evidenzia tutte le corrispondenze trovate
+
+    Si può usare sia il nome lungo di un'opzione, che quello corto.
+
+ 7. Premettete "no" per annullare un'opzione:
+~~~ cmd
+        :set noic
+~~~
+ 8. Premettete "inv" per invertire un'opzione:
+~~~ cmd
+        :set invic
+~~~
+
+# Lezione 7.1: OTTENERE AIUTO
+
+** Usate il sistema di aiuto on-line. **
+
+Vim ha un ampio sistema di aiuto on-line.  Per iniziare, provate una
+di queste alternative:
+    - premete il taso `<HELP>`{normal} (se disponibile)
+    - premete il taso `<F1>`{normal} (se disponibile)
+    - Battete
+        `:help`{vim}
+
+Leggete il testo nella finestra di help per vedere come funziona.
+Battete `<C-w><C-w>`{normal} per passare da una finestra all'altra.
+Battete `:q`{vim} per chiudere la finestra di aiuto.
+
+Potete trovare aiuto su quasi tutto, fornendo un argomento al comando
+":help".  Potete provare questi (non dimenticatevi di battere <Invio>):
+~~~ cmd
+    :help w
+    :help c_CTRL-D
+    :help insert-index
+    :help user-manual
+~~~
+# Lezione 7.2: CREARE UNO SCRIPT INIZIALE
+
+** Abilitare funzionalità di Vim. **
+
+Vim ha molte più funzionalità rispetto a Vi, ma molte di esse sono
+disabilitate per default.  Per iniziare a usare più funzionalità occorre
+creare un file "vimrc".
+
+ 1. Iniziate a editare il file "vimrc" con:
+    `:call mkdir(stdpath('config'),'p')`{vim}
+    `:exe 'edit' stdpath('config').'/init.vim'`{vim}
+
+ 2. Salvate il file con:
+    `:w`{vim}
+
+  Potete aggiungere a questo file "vimrc" tutte le vostre impostazioni
+  preferite.  Per maggiori informazioni battete `:help vimrc-intro`{vim}.
+
+# Lezione 7.3: COMPLETAMENTI
+
+** Completamenti nella riga-di-comando con `<C-d>`{normal} e `<Tab>`{normal}. **
+
+ 1. Guardate i file che esistono nella directory corrente: `:!ls`{vim}
+
+ 2. Battete l'inizio di un comando: `:e`{vim}
+
+ 3. Premete `<C-d>`{normal} e Vim vi mostra una lista di tutti i comandi che
+    iniziano con la lettera "e".
+
+ 4. Premete `<Tab>`{normal} e Vim completerà il nome comando a ":edit".
+
+ 5. Ora aggiungete uno spazio e la lettera iniziale di un file nella vostra
+    directory: `:edit FIL`{vim}
+
+ 6. Premete `<Tab>`{normal}. Vim completerà il nome (se è il solo possibile
+    completamento).
+
+NOTA: Il completamento è disponibile in parecchi comandi.  È particolarmente
+      utile per il comando `:help`{vim}.
+
+# Lezione 7 SOMMARIO
+
+ 1. Battete `:help`{vim}
+    o premete il tasto `<F1>`{normal} o `<Help>`{normal} per aprire una
+    finestra di aiuto.
+
+ 2. Battete `:help ARGOMENTO`{vim} per trovare aiuto su ARGOMENTO.
+
+ 3. Battete `<C-w><C-w>`{normal} per saltare da una finestra all'altra.
+
+ 4. Battete `:q`{vim} per chiudere la finestra di help.
+
+ 5. Create uno script iniziale vimrc mettendoci le vostre impostazioni
+    preferite.
+
+ 6. Mentre immettete un comando, premete `<C-d>`{normal} per vedere i
+    completamenti possibili.
+    Premete `<Tab>`{normal} per usare uno dei completamenti visualizzati.
+
+# CONCLUSIONE
+
+Lo scopo di questa guida era di dare una breve panoramica sull'editor Vim,
+che fosse sufficiente a permettervi di usare l'editore abbastanza facilmente.
+La guida è tutt'altro che completa, Vim ha molti altri comandi.
+Consultate spesso l''help.
+
+Ci sono molte risorse on-line (in inglese) per saperne di più riguardo a Vim.
+Qui sotto potete trovare un breve elenco:
+
+- *Learn Vim Progressively*: http://yannesposito.com/Scratch/en/blog/Learn-Vim-Progressively/
+- *Learning Vim in 2014*: http://benmccormick.org/learning-vim-in-2014/
+- *Vimcasts*: http://vimcasts.org/
+- *Vim Video-Tutorials by Derek Wyatt*: http://derekwyatt.org/vim/tutorials/
+- *Learn Vimscript the Hard Way*: http://learnvimscriptthehardway.stevelosh.com/
+- *7 Habits of Effective testo Editing*: http://www.moolenaar.net/habits.html
+- *vim-galore*: https://github.com/mhinz/vim-galore
+
+Se preferite un libro (sempre in inglese), *Practical Vim* e il suo seguito
+*Modern Vim* di Drew Neil sono spesso raccomandati.
+
+Le parti più importanti dell'help di Vim (inclusa una traduzione completa
+della "User Guide") sono disponibili anche in italiano.
+Per procurarsi la versione italiana, vedere:
+https://sites.google.com/view/vimdoc-it
+
+Questa guida è stata scritta di Michael C. Pierce e Robert K. Ware, Colorado
+School of Mines usando idee fornite da Charles Smith, Colorado State
+University. E-mail: bware@mines.colorado.edu.
+
+Modificato per Vim da Bram Moolenaar.
+Modificato per vim-tutor-mode da Felipe Morales.
+Tradotto in italiano da Antonio Colombo.
