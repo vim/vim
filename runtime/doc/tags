@@ -7218,6 +7218,7 @@ fold-create-marker	fold.txt	/*fold-create-marker*
 fold-delete-marker	fold.txt	/*fold-delete-marker*
 fold-diff	fold.txt	/*fold-diff*
 fold-expr	fold.txt	/*fold-expr*
+fold-expr-slow	fold.txt	/*fold-expr-slow*
 fold-foldcolumn	fold.txt	/*fold-foldcolumn*
 fold-foldlevel	fold.txt	/*fold-foldlevel*
 fold-foldtext	fold.txt	/*fold-foldtext*
