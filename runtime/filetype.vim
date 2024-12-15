@@ -1315,6 +1315,9 @@ au BufNewFile,BufRead Kconfig,Kconfig.debug,Config.in	setf kconfig
 " Lace (ISE)
 au BufNewFile,BufRead *.ace,*.ACE		setf lace
 
+" Lalrpop
+au BufNewFile,Bufread *.lalrpop			setf lalrpop
+
 " Larch Shared Language
 au BufNewFile,BufRead .lsl			call dist#ft#FTlsl()
 
