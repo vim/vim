@@ -2321,8 +2321,10 @@ func Test_diff_topline_noscroll()
 endfunc
 
 func Test_diffget_diffput_linematch()
+  call delete('.Xdifile1.swp')
+  call delete('.Xdifile2.swp')
   call WriteDiffFiles(0, [], [])
-  let buf = RunVimInTerminal('-d -S XdiffSetup Xdifile1 Xdifile2', {})
+  let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
   call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
   call WriteDiffFiles(buf, ['',
@@ -2354,7 +2356,10 @@ func Test_diffget_diffput_linematch()
       \ 'common line',
       \ 'common line',
       \ 'something'])
-  call VerifyScreenDump(buf, 'Test_diff_linematch_24', {})
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_1', {})
+  call term_sendkeys(buf, "\<c-w>w")
+  call term_sendkeys(buf, ":5,9diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_2', {})
 
 endfunc
 
