@@ -3,7 +3,7 @@
 " Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
 " Former Maintainer:	Dan Sharp
 " Repository:		https://github.com/zzzyxwvut/java-vim.git
-" Last Change:		2024 Dec 08
+" Last Change:		2024 Dec 16
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
@@ -113,11 +113,11 @@ if (!empty(get(g:, 'spotbugs_properties', {})) ||
     endfunction
 
     " Work around ":bar"s and ":autocmd"s.
-    function! s:ExecuteActionOnce(action_cmd, cleanup_cmd) abort
+    function! s:ExecuteActionOnce(cleanup_cmd, action_cmd) abort
 	try
-	    execute a:action_cmd
-	finally
 	    execute a:cleanup_cmd
+	finally
+	    execute a:action_cmd
 	endtry
     endfunction
 
@@ -297,9 +297,9 @@ if (!empty(get(g:, 'spotbugs_properties', {})) ||
 		execute printf('autocmd java_spotbugs %s <buffer> ' .
 			\ 'call s:ExecuteActionOnce(%s, %s)',
 		    \ s:action.event,
-		    \ string(s:action.cmd),
 		    \ string(printf('autocmd! java_spotbugs %s <buffer>',
-			\ s:action.event)))
+			\ s:action.event)),
+		    \ string(s:action.cmd))
 	    else
 		execute printf('autocmd java_spotbugs %s <buffer> %s',
 		    \ s:action.event,
