@@ -23,3 +23,7 @@ trim_trailing_whitespace = false
 [runtime/doc/**.txt]
 # It can mess up some documentation by trying to strip trailing whitespaces
 trim_trailing_whitespace = false
+
+[src/testdir/test*.vim]
+# Some tests need trailing whitespaces, for example `set showbreak=>>\ `
+trim_trailing_whitespace = false
