@@ -2320,4 +2320,42 @@ func Test_diff_topline_noscroll()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_diffget_diffput_linematch()
+  call WriteDiffFiles(0, [], [])
+  let buf = RunVimInTerminal('-d -S XdiffSetup Xdifile1 Xdifile2', {})
+  call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
+  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call WriteDiffFiles(buf, ['',
+      \ 'common line',
+      \ 'common line',
+      \ '',
+      \ 'DEFabc',
+      \ 'xyz',
+      \ 'xyz',
+      \ 'xyz',
+      \ 'DEFabc',
+      \ 'DEFabc',
+      \ 'DEFabc',
+      \ 'common line',
+      \ 'common line',
+      \ 'DEF',
+      \ 'common line',
+      \ 'DEF',
+      \ 'something' ],
+      \ ['',
+      \ 'common line',
+      \ 'common line',
+      \ '',
+      \ 'ABCabc',
+      \ 'ABCabc',
+      \ 'ABCabc',
+      \ 'ABCabc',
+      \ 'common line',
+      \ 'common line',
+      \ 'common line',
+      \ 'something'])
+  call VerifyScreenDump(buf, 'Test_diff_linematch_24', {})
+
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
