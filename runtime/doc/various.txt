@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2024 Nov 23
+*various.txt*   For Vim version 9.1.  Last change: 2024 Dec 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -322,6 +322,9 @@ g8			Print the hex values of the bytes used in the
 			in Vim window.  `:term ++shell ++close {cmd}` could
 			serve as close approximation to what `:!{cmd}` does.
 
+							*:!-range*
+:{range}!{cmd}		Like |:!| but execute {cmd} for each line in the
+			{range}.
 							*:!!*
 :!!			Repeat last ":!{cmd}".
 
