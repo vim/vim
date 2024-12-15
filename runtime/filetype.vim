@@ -1078,6 +1078,9 @@ au BufRead,BufNewFile *.hws			setf hollywood
 " Hoon
 au BufRead,BufNewFile *.hoon			setf hoon
 
+" TI Code Composer Studio General Extension Language
+au BufNewFile,BufRead *.gel			setf gel
+
 " Tilde (must be before HTML)
 au BufNewFile,BufRead *.t.html			setf tilde
 
