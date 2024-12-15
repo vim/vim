@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 14
+*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1349,7 +1349,7 @@ It scans the Java bytecode of all classes in the currently open buffer.
 (Therefore, `:compiler! spotbugs` is not supported.)
 
 Commonly used compiler options can be added to 'makeprg' by setting the
-"b:" or "g:spotbugs_makeprg_params" variable.  For example: >
+"b:" or "g:spotbugs_makeprg_params" variable.  For example: >vim
 
 	let b:spotbugs_makeprg_params = "-longBugCodes -effort:max -low"
 
@@ -1359,7 +1359,7 @@ By default, the class files are searched in the directory where the source
 files are placed.  However, typical Java projects use distinct directories
 for source files and class files.  To make both known to SpotBugs, assign
 their paths (distinct and relative to their common root directory) to the
-following properties (using the example of a common Maven project): >
+following properties (using the example of a common Maven project): >vim
 
 	let g:spotbugs_properties = {
 		\ 'sourceDirPath':	['src/main/java'],
@@ -1377,7 +1377,7 @@ information.
 
 The default pre- and post-compiler actions are provided for Ant, Maven, and
 Javac compiler plugins and can be selected by assigning the name of a compiler
-plugin (`ant`, `maven`, or `javac`) to the "compiler" key: >
+plugin (`ant`, `maven`, or `javac`) to the "compiler" key: >vim
 
 	let g:spotbugs_properties = {
 		\ 'compiler':		'maven',
@@ -1387,7 +1387,7 @@ This single setting is essentially equivalent to all the settings below, with
 the exception made for the "PreCompilerAction" and "PreCompilerTestAction"
 values: their listed |Funcref|s will obtain no-op implementations whereas the
 implicit Funcrefs of the "compiler" key will obtain the requested defaults if
-available. >
+available. >vim
 
 	let g:spotbugs_properties = {
 		\ 'PreCompilerAction':
@@ -1413,8 +1413,8 @@ Begin by considering which of the supported keys, "DefaultPreCompilerCommand",
 write an implementation for, observing that each of these keys corresponds to
 a particular "*Action" key.  Follow it by defining a new function that always
 declares an only parameter of type string and puts to use a command equivalent
-of |:make|, and assigning its |Funcref| to the selected key.  For example: >
-
+of |:make|, and assigning its |Funcref| to the selected key.  For example:
+>vim
 	function! GenericPostCompilerCommand(arguments) abort
 		execute 'make ' . a:arguments
 	endfunction
@@ -1429,8 +1429,8 @@ arbitrary functions yourself and matching their Funcrefs to the supported
 keys: "PreCompilerAction", "PreCompilerTestAction", and "PostCompilerAction".
 
 The next example re-implements the default pre-compiler actions for a Maven
-project and requests other default Maven settings with the "compiler" entry: >
-
+project and requests other default Maven settings with the "compiler" entry:
+>vim
 	function! MavenPreCompilerAction() abort
 		call spotbugs#DeleteClassFiles()
 		compiler maven
@@ -1463,7 +1463,7 @@ of such communication.
 Two commands, "SpotBugsRemoveBufferAutocmd" and "SpotBugsDefineBufferAutocmd",
 are provided to toggle actions for buffer-local autocommands.  For example, to
 also run actions on any |BufWritePost| and |SigUSR1| event, add these lines to
-`~/.vim/after/ftplugin/java.vim`:  >
+`~/.vim/after/ftplugin/java.vim`: >vim
 
 	if exists(':SpotBugsDefineBufferAutocmd') == 2
 		SpotBugsDefineBufferAutocmd BufWritePost SigUSR1
@@ -1485,7 +1485,7 @@ The SpotBugs Java library and, by extension, its distributed shell scripts do
 not support in the `-textui` mode listed pathnames with directory filenames
 that contain blank characters [2].  To work around this limitation, consider
 making a symbolic link to such a directory from a directory that does not have
-blank characters in its name and passing this information to SpotBugs: >
+blank characters in its name and passing this information to SpotBugs: >vim
 
 	let g:spotbugs_alternative_path = {
 		\ 'fromPath':	'path/to/dir_without_blanks',
