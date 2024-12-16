@@ -8136,6 +8136,7 @@ hit-return	message.txt	/*hit-return*
 hitest.vim	syntax.txt	/*hitest.vim*
 hjkl	usr_02.txt	/*hjkl*
 hl-ColorColumn	syntax.txt	/*hl-ColorColumn*
+hl-ComplMatchIns	syntax.txt	/*hl-ComplMatchIns*
 hl-Conceal	syntax.txt	/*hl-Conceal*
 hl-CurSearch	syntax.txt	/*hl-CurSearch*
 hl-Cursor	syntax.txt	/*hl-Cursor*

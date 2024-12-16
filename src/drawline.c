@@ -1139,6 +1139,7 @@ win_line(
     long	vcol_prev = -1;		// "wlv.vcol" of previous character
     char_u	*line;			// current line
     char_u	*ptr;			// current position in "line"
+    int		in_curline = wp == curwin && lnum == curwin->w_cursor.lnum;
 
 #ifdef FEAT_PROP_POPUP
     char_u	*p_extra_free2 = NULL;   // another p_extra to be freed
@@ -1172,6 +1173,7 @@ win_line(
 					// highlighting
     int		area_attr = 0;		// attributes desired by highlighting
     int		search_attr = 0;	// attributes desired by 'hlsearch'
+    int		ins_match_attr = 0;	// attributes desired by PmenuMatch
 #ifdef FEAT_SYN_HL
     int		vcol_save_attr = 0;	// saved attr for 'cursorcolumn'
     int		syntax_attr = 0;	// attributes desired by syntax
@@ -1415,8 +1417,7 @@ win_line(
 	    }
 
 	    // Check if the character under the cursor should not be inverted
-	    if (!highlight_match && lnum == curwin->w_cursor.lnum
-								&& wp == curwin
+	    if (!highlight_match && in_curline
 #ifdef FEAT_GUI
 		    && !gui.in_use
 #endif
@@ -3938,6 +3939,14 @@ win_line(
 
 	if (wlv.draw_state == WL_LINE)
 	    vcol_prev = wlv.vcol;
+
+	if (wlv.draw_state == WL_LINE
+		&& (State & MODE_INSERT) && in_curline && ins_compl_active())
+	{
+	    ins_match_attr = ins_compl_col_range_attr(wlv.col);
+	    if (ins_match_attr > 0)
+	        wlv.char_attr = hl_combine_attr(wlv.char_attr, ins_match_attr);
+	}
 
 	// Store character to be displayed.
 	// Skip characters that are left of the screen for 'nowrap'.

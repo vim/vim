@@ -41653,6 +41653,7 @@ Autocommands: ~
 
 Highlighting: ~
 
+|hl-ComplMatchIns|	matched text of the currently inserted completion.
 |hl-MsgArea|		highlighting of the Command-line and messages area
 |hl-PmenuMatch|		Popup menu: highlighting of matched text
 |hl-PmenuMatchSel|	Popup menu: highlighting of matched text in selected
