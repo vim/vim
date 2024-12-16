@@ -228,21 +228,11 @@ if (!empty(get(g:, 'spotbugs_properties', {})) ||
 
     if exists("s:dispatcher")
 	function! s:ExecuteActions(pre_action, post_action) abort
-""""	    let status = v:shell_error
-""""	    let success = 0
-
 	    try
-		" FIXME: Why ":make" does not update "v:shell_error"?
 		execute a:pre_action
 	    catch /\<E42:/
 		execute a:post_action
-		return
-""""		let success = !v:shell_error || status
 	    endtry
-
-""""	    if success || !v:shell_error || status
-""""		execute a:post_action
-""""	    endif
 	endfunction
     endif
 
