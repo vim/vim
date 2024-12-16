@@ -2044,16 +2044,27 @@ def Test_lambda_crash()
   v9.CheckScriptFailureList(lines, ["E1356:", "E1405:"])
 enddef
 
+def s:check_previewpopup(expected_title: string)
+  var id = popup_findpreview()
+  assert_notequal(id, 0)
+  assert_match(expected_title, popup_getoptions(id).title)
+  popup_clear()
+  bw Xppfile
+  set previewpopup&
+enddef
+
 " Test for the 'previewpopup' option
 def Test_previewpopup()
   set previewpopup=height:10,width:60
   pedit Xppfile
-  var id = popup_findpreview()
-  assert_notequal(id, 0)
-  assert_match('Xppfile', popup_getoptions(id).title)
-  popup_clear()
-  bw Xppfile
-  set previewpopup&
+  s:check_previewpopup('Xppfile')
+enddef
+
+def Test_previewpopup_pbuffer()
+  set previewpopup=height:10,width:60
+  edit Xppfile
+  pbuffer
+  s:check_previewpopup('')
 enddef
 
 def Test_syntax_enable_clear()

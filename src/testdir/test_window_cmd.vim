@@ -1258,6 +1258,7 @@ func Run_noroom_for_newwindow_test(dir_arg)
 
     " Preview window
     call assert_fails(dir .. 'pedit Xnorfile2', 'E36:')
+    call assert_fails(dir .. 'pbuffer', 'E36:')
     call setline(1, 'abc')
     call assert_fails(dir .. 'psearch abc', 'E36:')
   endif

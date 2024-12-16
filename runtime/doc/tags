@@ -3026,6 +3026,8 @@ $quote	eval.txt	/*$quote*
 :packadd	repeat.txt	/*:packadd*
 :packl	repeat.txt	/*:packl*
 :packloadall	repeat.txt	/*:packloadall*
+:pb	windows.txt	/*:pb*
+:pbuffer	windows.txt	/*:pbuffer*
 :pc	windows.txt	/*:pc*
 :pclose	windows.txt	/*:pclose*
 :pe	if_perl.txt	/*:pe*

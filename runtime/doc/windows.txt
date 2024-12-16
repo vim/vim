@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 9.1.  Last change: 2024 Dec 14
+*windows.txt*   For Vim version 9.1.  Last change: 2024 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1004,6 +1004,15 @@ CTRL-W g }						*CTRL-W_g}*
 		Use identifier under cursor as a tag and perform a :ptjump on
 		it.  Make the new Preview window (if required) N high.  If N is
 		not given, 'previewheight' is used.
+
+							*:pb* *:pbuffer*
+:[N]pb[uffer][!] [+cmd] [N]
+		Edit buffer [N] from the buffer list in the preview window.
+		If [N] is not given, the current buffer remains being edited.
+		See |:buffer-!| for [!].  This will also edit a buffer that is
+		not in the buffer list, without setting the 'buflisted' flag.
+		The notation with single quotes does not work here, `:pbuffer
+		12'345'` uses 12'345 as a buffer name.  Also see |+cmd|.
 
 							*:ped* *:pedit*
 :ped[it][!] [++opt] [+cmd] {file}
