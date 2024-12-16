@@ -1,4 +1,4 @@
-*pi_tutor.txt*    For Vim version 9.1.  Last change: 2024 Nov 09
+*pi_tutor.txt*    For Vim version 9.1.  Last change: 2024 Dec 16
 
 INTERACTIVE TUTORIALS FOR VIM			 *vim-tutor-mode*
 
@@ -16,21 +16,28 @@ by double-clicking them.
 1.1 Commands
 ------------
 								      *:Tutor*
-:Tutor {tutorial}	Opens a tutorial.  Command-line completion for
-			{tutorial} is provided, the candidates are a list of
-			'.tutor' files found in the 'tutor/'  folder in
-			the 'runtimepath'.  Tutorials prefixed with 'vim-'
+:Tutor [tutorial]	Opens a tutorial.  Command-line completion for
+			[tutorial] is provided, the candidates are a list of
+			".tutor" files found in the "tutor/<lang>/"  folder in
+			the 'runtimepath'.  Tutorials prefixed with "vim-"
 			will always be shown first.
 
-			If no {tutorial} is provided, the command starts the
-			'vim-01-beginner' tutorial, which is equivalent to
-			Vim's `vimtutor`.
+			If no [tutorial] is provided, the command starts the
+			"vim-01-beginner" tutorial, which is equivalent to
+			Vim's `vimtutor`, chapter 1.
 
+			Uses the translated tutorial for the current message
+			language if possible (|v:lang|), e.g. to open the
+			chapter 1 of the Italian tutor, use: >
+
+			:lang it_IT.utf-8
+			:Tutor
+<
 =============================================================================
 2. Creating tutorials                                        *vim-tutor-create*
 
 Writing vim-tutor-mode tutorials is easy.  For an overview of the format used,
-please consult the 'tutor.tutor' file: >
+please consult the "tutor.tutor" file: >
 
     :Tutor tutor
 <

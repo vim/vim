@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 9.1.  Last change: 2024 Nov 03
+*usr_01.txt*	For Vim version 9.1.  Last change: 2024 Dec 16
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -110,8 +110,8 @@ For more info see |vimrc| and |compatible-default|.
 For the interactive tutor, see |vim-tutor-mode|
 
 Instead of reading the text (boring!) you can use the vimtutor to learn your
-first Vim commands.  This is a 30-minute tutorial that teaches the most basic
-Vim functionality hands-on.
+first Vim commands.  This is a 30-minute tutorial provided in 2 chapters, that
+teaches the most basic Vim functionality hands-on.
 
 On Unix, if Vim has been properly installed, you can start it from the shell:
 >
