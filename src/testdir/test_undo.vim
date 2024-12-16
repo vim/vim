@@ -282,7 +282,8 @@ func Test_undolist()
     w Xundolist.txt
     defer delete('Xundolist.txt')
     let lastline = execute('undolist')->split("\n")[-1]
-    call assert_match("ago        1", lastline)
+    call assert_match('seconds\? ago         \?1', lastline)
+
   endif
   bw!
 endfunc
