@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 9.1.  Last change: 2024 Dec 14
+*motion.txt*    For Vim version 9.1.  Last change: 2024 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -93,13 +93,6 @@ command.  There are however, two general exceptions:
    end of the motion is moved to the end of the previous line and the motion
    becomes inclusive.  Example: "}" moves to the first line after a paragraph,
    but "d}" will not include that line.
-
-					*inclusive-motion-selection-exclusive*
-When 'selection' is "exclusive", |Visual| mode is active and an inclusive
-motion has been used, the cursor position will be adjusted by another
-character to the right, so that visual selction includes the expected text and
-can be acted upon.
-
 						*exclusive-linewise*
 2. If the motion is exclusive, the end of the motion is in column 1 and the
    start of the motion was at or before the first non-blank in the line, the
@@ -128,6 +121,12 @@ This cannot be repeated: >
 	   call search("f")<CR>
 	endif<CR>
 Note that when using ":" any motion becomes characterwise exclusive.
+
+					*inclusive-motion-selection-exclusive*
+When 'selection' is "exclusive", |Visual| mode is active and an inclusive
+motion has been used, the cursor position will be adjusted by another
+character to the right, so that visual selction includes the expected text and
+can be acted upon.
 
 								*forced-motion*
 FORCING A MOTION TO BE LINEWISE, CHARACTERWISE OR BLOCKWISE

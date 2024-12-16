@@ -2034,7 +2034,6 @@ $quote	eval.txt	/*$quote*
 :	cmdline.txt	/*:*
 :!	various.txt	/*:!*
 :!!	various.txt	/*:!!*
-:!-range	various.txt	/*:!-range*
 :!cmd	various.txt	/*:!cmd*
 :!start	os_win32.txt	/*:!start*
 :#	various.txt	/*:#*
