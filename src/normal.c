@@ -5518,6 +5518,8 @@ nv_visual(cmdarg_T *cap)
 		update_curswant_force();
 		curwin->w_curswant += resel_VIsual_vcol * cap->count0 - 1;
 		curwin->w_cursor.lnum = lnum;
+		if (*p_sel == 'e')
+		    ++curwin->w_curswant;
 		coladvance(curwin->w_curswant);
 	    }
 	    else
