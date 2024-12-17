@@ -1434,7 +1434,7 @@ msgid "tagname"
 msgstr "taggnamn"
 
 msgid " kind file\n"
-msgstr " snäll fil\n"
+msgstr "  typ fil\n"
 
 msgid "'history' option is zero"
 msgstr "'history'-flagga är noll"
