@@ -11306,7 +11306,7 @@ def Test_any_obj_var_type()
   END
   v9.CheckScriptSuccess(lines)
 
-  # Nested data.  Object containg a Dict containing another Object.
+  # Nested data.  Object containing a Dict containing another Object.
   lines =<< trim END
     vim9script
     class Context
