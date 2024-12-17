@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 9.1.  Last change: 2024 Dec 16
+*usr_01.txt*	For Vim version 9.1.  Last change: 2024 Dec 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -117,8 +117,9 @@ On Unix, if Vim has been properly installed, you can start it from the shell:
 >
 	vimtutor
 
-On MS-Windows you can find it in the Program/Vim menu.  Or execute
-vimtutor.bat in the $VIMRUNTIME directory.
+On MS-Windows you can find it in the "Program/Vim 9.1" menu.  Or execute
+vimtutor.bat from the installation directory (You can use `:echo $VIMRUNTIME`
+from within Vim to find this directory).
 
 This will make a copy of chapter 1 tutor file, so that you can edit it without
 the risk of damaging the original.  To continue with chapter 2, you can use

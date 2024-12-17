@@ -1,4 +1,4 @@
-*pi_tutor.txt*    For Vim version 9.1.  Last change: 2024 Dec 16
+*pi_tutor.txt*    For Vim version 9.1.  Last change: 2024 Dec 17
 
 INTERACTIVE TUTORIALS FOR VIM			 *vim-tutor-mode*
 
@@ -30,7 +30,7 @@ by double-clicking them.
 			language if possible (|v:lang|), e.g. to open the
 			chapter 1 of the Italian tutor, use: >
 
-			:lang it_IT.utf-8
+			:lang it_IT.UTF-8
 			:Tutor
 <
 =============================================================================
