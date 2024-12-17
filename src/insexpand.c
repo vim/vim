@@ -916,9 +916,9 @@ ins_compl_insert_bytes(char_u *p, int len)
 }
 
 /*
- *  Checks if the column is within the currently inserted completion text
- *  column range. If it is, it returns a special highlight attribute.
- *  -1 mean normal item.
+ * Checks if the column is within the currently inserted completion text
+ * column range. If it is, it returns a special highlight attribute.
+ * -1 mean normal item.
  */
     int
 ins_compl_col_range_attr(int col)
