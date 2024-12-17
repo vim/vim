@@ -1173,7 +1173,6 @@ win_line(
 					// highlighting
     int		area_attr = 0;		// attributes desired by highlighting
     int		search_attr = 0;	// attributes desired by 'hlsearch'
-    int		ins_match_attr = 0;	// attributes desired by PmenuMatch
 #ifdef FEAT_SYN_HL
     int		vcol_save_attr = 0;	// saved attr for 'cursorcolumn'
     int		syntax_attr = 0;	// attributes desired by syntax
@@ -2012,9 +2011,7 @@ win_line(
 #endif
 
 	// When still displaying '$' of change command, stop at cursor.
-	if (dollar_vcol >= 0 && wp == curwin
-		&& lnum == wp->w_cursor.lnum
-		&& wlv.vcol >= (long)wp->w_virtcol)
+	if (dollar_vcol >= 0 && in_curline && wlv.vcol >= (long)wp->w_virtcol)
 	{
 	    wlv_screen_line(wp, &wlv, FALSE);
 	    // Pretend we have finished updating the window.  Except when
@@ -2563,6 +2560,15 @@ win_line(
 	    if (text_prop_type != NULL && (text_prop_flags & PT_FLAG_OVERRIDE))
 		wlv.char_attr = hl_combine_attr(wlv.char_attr, text_prop_attr);
 #endif
+	}
+
+	// Apply ComplMatchIns highlight if needed.
+	if (wlv.draw_state == WL_LINE
+		&& (State & MODE_INSERT) && in_curline && ins_compl_active())
+	{
+	    int ins_match_attr = ins_compl_col_range_attr((int)(ptr - line));
+	    if (ins_match_attr > 0)
+	        wlv.char_attr = hl_combine_attr(wlv.char_attr, ins_match_attr);
 	}
 
 	// combine attribute with 'wincolor'
@@ -3608,8 +3614,7 @@ win_line(
 	// With 'virtualedit' we may never reach cursor position, but we still
 	// need to correct the cursor column, so do that at end of line.
 	if (!did_wcol && wlv.draw_state == WL_LINE
-		&& wp == curwin && lnum == wp->w_cursor.lnum
-		&& conceal_cursor_line(wp)
+		&& in_curline && conceal_cursor_line(wp)
 		&& (wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
 	{
 # ifdef FEAT_RIGHTLEFT
@@ -3850,7 +3855,7 @@ win_line(
 
 		// Update w_cline_height and w_cline_folded if the cursor line
 		// was updated (saves a call to plines() later).
-		if (wp == curwin && lnum == curwin->w_cursor.lnum)
+		if (in_curline)
 		{
 		    curwin->w_cline_row = startrow;
 		    curwin->w_cline_height = wlv.row - startrow;
@@ -3939,14 +3944,6 @@ win_line(
 
 	if (wlv.draw_state == WL_LINE)
 	    vcol_prev = wlv.vcol;
-
-	if (wlv.draw_state == WL_LINE
-		&& (State & MODE_INSERT) && in_curline && ins_compl_active())
-	{
-	    ins_match_attr = ins_compl_col_range_attr(wlv.col);
-	    if (ins_match_attr > 0)
-	        wlv.char_attr = hl_combine_attr(wlv.char_attr, ins_match_attr);
-	}
 
 	// Store character to be displayed.
 	// Skip characters that are left of the screen for 'nowrap'.
