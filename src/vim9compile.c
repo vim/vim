@@ -1643,30 +1643,32 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 }
 
 /*
- * Figure out the LHS type and other properties for an assignment or one item
- * of ":unlet" with an index.
- * Returns OK or FAIL.
+ * Initialize "lhs" with default values
  */
-    int
-compile_lhs(
-	char_u	    *var_start,
-	lhs_T	    *lhs,
-	cmdidx_T    cmdidx,
-	int	    heredoc,
-	int	    has_cmd,	    // "var" before "var_start"
-	int	    oplen,
-	cctx_T	    *cctx)
+    static void
+lhs_init_defaults(lhs_T *lhs)
 {
-    char_u	*var_end;
-    int		is_decl = is_decl_command(cmdidx);
-
     CLEAR_POINTER(lhs);
     lhs->lhs_dest = dest_local;
     lhs->lhs_vimvaridx = -1;
     lhs->lhs_scriptvar_idx = -1;
     lhs->lhs_member_idx = -1;
+}
 
-    // "dest_end" is the end of the destination, including "[expr]" or
+/*
+ * When compiling a LHS variable name, find the end of the destination and the
+ * end of the variable name.
+ */
+    static int
+lhs_find_var_end(
+    lhs_T	*lhs,
+    char_u	*var_start,
+    int		is_decl,
+    char_u	**var_endp)
+{
+    char_u  *var_end = *var_endp;
+
+    // "lhs_dest_end" is the end of the destination, including "[expr]" or
     // ".name".
     // "var_end" is the end of the variable/option/etc. name.
     lhs->lhs_dest_end = skip_var_one(var_start, FALSE);
@@ -1685,11 +1687,35 @@ compile_lhs(
 
     // "a: type" is declaring variable "a" with a type, not dict "a:".
     if (is_decl && lhs->lhs_dest_end == var_start + 2
-					       && lhs->lhs_dest_end[-1] == ':')
+					&& lhs->lhs_dest_end[-1] == ':')
 	--lhs->lhs_dest_end;
     if (is_decl && var_end == var_start + 2 && var_end[-1] == ':')
 	--var_end;
+
     lhs->lhs_end = lhs->lhs_dest_end;
+    *var_endp = var_end;
+
+    return OK;
+}
+
+/*
+ * Set various fields in "lhs"
+ */
+    static int
+lhs_init(
+    lhs_T	*lhs,
+    char_u	*var_start,
+    int		is_decl,
+    int		heredoc,
+    char_u	**var_endp)
+{
+    char_u *var_end = *var_endp;
+
+    lhs_init_defaults(lhs);
+
+    // Find the end of the variable and the destination
+    if (lhs_find_var_end(lhs, var_start, is_decl, &var_end) == FAIL)
+	return FAIL;
 
     // compute the length of the destination without "[expr]" or ".name"
     lhs->lhs_varlen = var_end - var_start;
@@ -1702,213 +1728,571 @@ compile_lhs(
 	// Something follows after the variable: "var[idx]" or "var.key".
 	lhs->lhs_has_index = TRUE;
 
-    if (heredoc)
-	lhs->lhs_type = &t_list_string;
-    else
-	lhs->lhs_type = &t_any;
+    lhs->lhs_type = heredoc ? &t_list_string : &t_any;
 
-    if (cctx->ctx_skip != SKIP_YES)
+    *var_endp = var_end;
+
+    return OK;
+}
+
+/*
+ * Compile a LHS class variable name.
+ */
+    static int
+compile_lhs_class_variable(
+    cctx_T	*cctx,
+    lhs_T	*lhs,
+    class_T	*defcl,
+    int		is_decl)
+{
+    if (cctx->ctx_ufunc->uf_defclass != defcl)
     {
-	int	    declare_error = FALSE;
+	// A class variable can be accessed without the class name
+	// only inside a class.
+	semsg(_(e_class_variable_str_accessible_only_inside_class_str),
+		lhs->lhs_name, defcl->class_name);
+	return FAIL;
+    }
 
-	if (get_var_dest(lhs->lhs_name, &lhs->lhs_dest, cmdidx,
-				      &lhs->lhs_opt_flags, &lhs->lhs_vimvaridx,
-						 &lhs->lhs_type, cctx) == FAIL)
-	    return FAIL;
-	if (lhs->lhs_dest != dest_local
-				 && cmdidx != CMD_const && cmdidx != CMD_final)
+    if (is_decl)
+    {
+	semsg(_(e_variable_already_declared_in_class_str), lhs->lhs_name);
+	return FAIL;
+    }
+
+    ocmember_T	*m = &defcl->class_class_members[lhs->lhs_classmember_idx];
+    if (oc_var_check_ro(defcl, m))
+	return FAIL;
+
+    lhs->lhs_dest = dest_class_member;
+    // The class variable is defined either in the current class or
+    // in one of the parent class in the hierarchy.
+    lhs->lhs_class = defcl;
+    lhs->lhs_type = oc_member_type_by_idx(defcl, FALSE,
+						lhs->lhs_classmember_idx);
+
+    return OK;
+}
+
+/*
+ * Compile an imported LHS variable
+ */
+    static int
+compile_lhs_import_var(
+    lhs_T	*lhs,
+    imported_T	*import,
+    char_u	*var_start,
+    char_u	**var_endp,
+    char_u	**rawnamep)
+{
+    char_u	*var_end = *var_endp;
+    char_u	*dot = vim_strchr(var_start, '.');
+    char_u	*p;
+
+    // for an import the name is what comes after the dot
+    if (dot == NULL)
+    {
+	semsg(_(e_no_dot_after_imported_name_str), var_start);
+	return FAIL;
+    }
+
+    p = skipwhite(dot + 1);
+    var_end = to_name_end(p, TRUE);
+    if (var_end == p)
+    {
+	semsg(_(e_missing_name_after_imported_name_str), var_start);
+	return FAIL;
+    }
+
+    vim_free(lhs->lhs_name);
+    lhs->lhs_varlen = var_end - p;
+    lhs->lhs_name = vim_strnsave(p, lhs->lhs_varlen);
+    if (lhs->lhs_name == NULL)
+	return FAIL;
+    *rawnamep = lhs->lhs_name;
+    lhs->lhs_scriptvar_sid = import->imp_sid;
+
+    // TODO: where do we check this name is exported?
+
+    // Check if something follows: "exp.var[idx]" or
+    // "exp.var.key".
+    lhs->lhs_has_index = lhs->lhs_dest_end > skipwhite(var_end);
+
+    *var_endp = var_end;
+
+    return OK;
+}
+
+/*
+ * Process a script-local variable when compiling a LHS variable name.
+ */
+    static int
+compile_lhs_script_var(
+    cctx_T	*cctx,
+    lhs_T	*lhs,
+    char_u	*var_start,
+    char_u	*var_end,
+    int		is_decl)
+{
+    int		script_namespace = FALSE;
+    int		script_var = FALSE;
+    imported_T	*import;
+    char_u	*var_name;
+    int		var_name_len;
+
+    if (lhs->lhs_varlen > 1 && STRNCMP(var_start, "s:", 2) == 0)
+	script_namespace = TRUE;
+
+    if (script_namespace)
+    {
+	var_name = var_start + 2;
+	var_name_len = lhs->lhs_varlen - 2;
+    }
+    else
+    {
+	var_name = var_start;
+	var_name_len = lhs->lhs_varlen;
+    }
+
+    if (script_var_exists(var_name, var_name_len, cctx, NULL) == OK)
+	script_var = TRUE;
+
+    import = find_imported(var_start, lhs->lhs_varlen, FALSE);
+
+    if (script_namespace || script_var || import != NULL)
+    {
+	char_u *rawname = lhs->lhs_name + (lhs->lhs_name[1] == ':' ? 2 : 0);
+
+	if (script_namespace && current_script_is_vim9())
 	{
-	    // Specific kind of variable recognized.
-	    declare_error = is_decl;
+	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), var_start);
+	    return FAIL;
+	}
+
+	if (is_decl)
+	{
+	    if (script_namespace)
+		semsg(_(e_cannot_declare_script_variable_in_function_str),
+			lhs->lhs_name);
+	    else
+		semsg(_(e_variable_already_declared_in_script_str),
+			lhs->lhs_name);
+	    return FAIL;
+	}
+	else if (cctx->ctx_ufunc->uf_script_ctx_version == SCRIPT_VERSION_VIM9
+		&& script_namespace
+		&& !script_var && import == NULL)
+	{
+	    semsg(_(e_unknown_variable_str), lhs->lhs_name);
+	    return FAIL;
+	}
+
+	lhs->lhs_dest = current_script_is_vim9() ? dest_script_v9 :
+								dest_script;
+
+	// existing script-local variables should have a type
+	lhs->lhs_scriptvar_sid = current_sctx.sc_sid;
+	if (import != NULL)
+	{
+	    if (compile_lhs_import_var(lhs, import, var_start, &var_end,
+							&rawname) == FAIL)
+		return FAIL;
+	}
+
+	if (SCRIPT_ID_VALID(lhs->lhs_scriptvar_sid))
+	{
+	    // Check writable only when no index follows.
+	    lhs->lhs_scriptvar_idx = get_script_item_idx(
+					lhs->lhs_scriptvar_sid, rawname,
+					lhs->lhs_has_index ?  ASSIGN_FINAL :
+					ASSIGN_CONST, cctx, NULL);
+	    if (lhs->lhs_scriptvar_idx >= 0)
+	    {
+		scriptitem_T *si = SCRIPT_ITEM(lhs->lhs_scriptvar_sid);
+		svar_T	 *sv = ((svar_T *)si->sn_var_vals.ga_data)
+						+ lhs->lhs_scriptvar_idx;
+
+		lhs->lhs_type = sv->sv_type;
+	    }
+	}
+
+	return OK;
+    }
+
+    return check_defined(var_start, lhs->lhs_varlen, cctx, NULL, FALSE);
+}
+
+/*
+ * Compile the LHS destination.
+ */
+    static int
+compile_lhs_var_dest(
+    cctx_T	*cctx,
+    lhs_T	*lhs,
+    int		cmdidx,
+    char_u	*var_start,
+    char_u	*var_end,
+    int		is_decl)
+{
+    int	    declare_error = FALSE;
+
+    if (get_var_dest(lhs->lhs_name, &lhs->lhs_dest, cmdidx,
+				&lhs->lhs_opt_flags, &lhs->lhs_vimvaridx,
+				&lhs->lhs_type, cctx) == FAIL)
+	return FAIL;
+
+    if (lhs->lhs_dest != dest_local && cmdidx != CMD_const
+						&& cmdidx != CMD_final)
+    {
+	// Specific kind of variable recognized.
+	declare_error = is_decl;
+    }
+    else
+    {
+	class_T	*defcl;
+
+	// No specific kind of variable recognized, just a name.
+	if (check_reserved_name(lhs->lhs_name, lhs->lhs_has_index
+						&& *var_end == '.') == FAIL)
+	    return FAIL;
+
+	if (lookup_local(var_start, lhs->lhs_varlen, &lhs->lhs_local_lvar,
+								cctx) == OK)
+	{
+	    lhs->lhs_lvar = &lhs->lhs_local_lvar;
 	}
 	else
 	{
-	    class_T	*defcl;
-
-	    // No specific kind of variable recognized, just a name.
-	    if (check_reserved_name(lhs->lhs_name, lhs->lhs_has_index
-						&& *var_end == '.') == FAIL)
-		return FAIL;
-
-	    if (lookup_local(var_start, lhs->lhs_varlen,
-					     &lhs->lhs_local_lvar, cctx) == OK)
-	    {
-		lhs->lhs_lvar = &lhs->lhs_local_lvar;
-	    }
-	    else
-	    {
-		CLEAR_FIELD(lhs->lhs_arg_lvar);
-		if (arg_exists(var_start, lhs->lhs_varlen,
-			 &lhs->lhs_arg_lvar.lv_idx, &lhs->lhs_arg_lvar.lv_type,
-			    &lhs->lhs_arg_lvar.lv_from_outer, cctx) == OK)
-		{
-		    if (is_decl)
-		    {
-			semsg(_(e_str_is_used_as_argument), lhs->lhs_name);
-			return FAIL;
-		    }
-		    lhs->lhs_lvar = &lhs->lhs_arg_lvar;
-		}
-	    }
-
-	    if (lhs->lhs_lvar != NULL)
+	    CLEAR_FIELD(lhs->lhs_arg_lvar);
+	    if (arg_exists(var_start, lhs->lhs_varlen,
+			&lhs->lhs_arg_lvar.lv_idx, &lhs->lhs_arg_lvar.lv_type,
+			&lhs->lhs_arg_lvar.lv_from_outer, cctx) == OK)
 	    {
 		if (is_decl)
 		{
-		    // if we come here with what looks like an assignment like
-		    // .= but which has been rejected by assignment_len() from
-		    // may_compile_assignment give a better error message
-		    char_u *p = skipwhite(lhs->lhs_end);
-		    if (p[0] == '.' && p[1] == '=')
-			emsg(_(e_dot_equal_not_supported_with_script_version_two));
-		    else if (p[0] == ':')
-			// type specified in a non-var assignment
-			semsg(_(e_trailing_characters_str), p);
-		    else
-			semsg(_(e_variable_already_declared_str), lhs->lhs_name);
+		    semsg(_(e_str_is_used_as_argument), lhs->lhs_name);
 		    return FAIL;
 		}
-	    }
-	    else if ((lhs->lhs_classmember_idx = cctx_class_member_idx(
-			    cctx, var_start, lhs->lhs_varlen, &defcl)) >= 0)
-	    {
-		if (cctx->ctx_ufunc->uf_defclass != defcl)
-		{
-		    // A class variable can be accessed without the class name
-		    // only inside a class.
-		    semsg(_(e_class_variable_str_accessible_only_inside_class_str),
-			    lhs->lhs_name, defcl->class_name);
-		    return FAIL;
-		}
-		if (is_decl)
-		{
-		    semsg(_(e_variable_already_declared_in_class_str),
-								lhs->lhs_name);
-		    return FAIL;
-		}
-
-		ocmember_T	*m =
-			&defcl->class_class_members[lhs->lhs_classmember_idx];
-		if (oc_var_check_ro(defcl, m))
-		    return FAIL;
-
-		lhs->lhs_dest = dest_class_member;
-		// The class variable is defined either in the current class or
-		// in one of the parent class in the hierarchy.
-		lhs->lhs_class = defcl;
-		lhs->lhs_type = oc_member_type_by_idx(defcl, FALSE,
-						lhs->lhs_classmember_idx);
-	    }
-	    else
-	    {
-		int script_namespace = lhs->lhs_varlen > 1
-				       && STRNCMP(var_start, "s:", 2) == 0;
-		int script_var = (script_namespace
-			? script_var_exists(var_start + 2, lhs->lhs_varlen - 2,
-								    cctx, NULL)
-			  : script_var_exists(var_start, lhs->lhs_varlen,
-							    cctx, NULL)) == OK;
-		imported_T  *import =
-			      find_imported(var_start, lhs->lhs_varlen, FALSE);
-
-		if (script_namespace || script_var || import != NULL)
-		{
-		    char_u	*rawname = lhs->lhs_name
-					   + (lhs->lhs_name[1] == ':' ? 2 : 0);
-
-		    if (script_namespace && current_script_is_vim9())
-		    {
-			semsg(_(e_cannot_use_s_colon_in_vim9_script_str),
-								    var_start);
-			return FAIL;
-		    }
-		    if (is_decl)
-		    {
-			if (script_namespace)
-			    semsg(_(e_cannot_declare_script_variable_in_function_str),
-								lhs->lhs_name);
-			else
-			    semsg(_(e_variable_already_declared_in_script_str),
-								lhs->lhs_name);
-			return FAIL;
-		    }
-		    else if (cctx->ctx_ufunc->uf_script_ctx_version
-							 == SCRIPT_VERSION_VIM9
-				    && script_namespace
-				    && !script_var && import == NULL)
-		    {
-			semsg(_(e_unknown_variable_str), lhs->lhs_name);
-			return FAIL;
-		    }
-
-		    lhs->lhs_dest = current_script_is_vim9()
-			      ? dest_script_v9 : dest_script;
-
-		    // existing script-local variables should have a type
-		    lhs->lhs_scriptvar_sid = current_sctx.sc_sid;
-		    if (import != NULL)
-		    {
-			char_u	*dot = vim_strchr(var_start, '.');
-			char_u	*p;
-
-			// for an import the name is what comes after the dot
-			if (dot == NULL)
-			{
-			    semsg(_(e_no_dot_after_imported_name_str),
-								    var_start);
-			    return FAIL;
-			}
-			p = skipwhite(dot + 1);
-			var_end = to_name_end(p, TRUE);
-			if (var_end == p)
-			{
-			    semsg(_(e_missing_name_after_imported_name_str),
-								    var_start);
-			    return FAIL;
-			}
-			vim_free(lhs->lhs_name);
-			lhs->lhs_varlen = var_end - p;
-			lhs->lhs_name = vim_strnsave(p, lhs->lhs_varlen);
-			if (lhs->lhs_name == NULL)
-			    return FAIL;
-			rawname = lhs->lhs_name;
-			lhs->lhs_scriptvar_sid = import->imp_sid;
-			// TODO: where do we check this name is exported?
-
-			// Check if something follows: "exp.var[idx]" or
-			// "exp.var.key".
-			lhs->lhs_has_index = lhs->lhs_dest_end
-							  > skipwhite(var_end);
-		    }
-		    if (SCRIPT_ID_VALID(lhs->lhs_scriptvar_sid))
-		    {
-			// Check writable only when no index follows.
-			lhs->lhs_scriptvar_idx = get_script_item_idx(
-					       lhs->lhs_scriptvar_sid, rawname,
-			      lhs->lhs_has_index ? ASSIGN_FINAL : ASSIGN_CONST,
-								   cctx, NULL);
-			if (lhs->lhs_scriptvar_idx >= 0)
-			{
-			    scriptitem_T *si = SCRIPT_ITEM(
-						       lhs->lhs_scriptvar_sid);
-			    svar_T	 *sv =
-					    ((svar_T *)si->sn_var_vals.ga_data)
-						      + lhs->lhs_scriptvar_idx;
-			    lhs->lhs_type = sv->sv_type;
-			}
-		    }
-		}
-		else if (check_defined(var_start, lhs->lhs_varlen, cctx,
-							  NULL, FALSE) == FAIL)
-		    return FAIL;
+		lhs->lhs_lvar = &lhs->lhs_arg_lvar;
 	    }
 	}
 
-	if (declare_error)
+	if (lhs->lhs_lvar != NULL)
 	{
-	    vim9_declare_error(lhs->lhs_name);
+	    if (is_decl)
+	    {
+		// if we come here with what looks like an assignment like
+		// .= but which has been rejected by assignment_len() from
+		// may_compile_assignment give a better error message
+		char_u *p = skipwhite(lhs->lhs_end);
+		if (p[0] == '.' && p[1] == '=')
+		    emsg(_(e_dot_equal_not_supported_with_script_version_two));
+		else if (p[0] == ':')
+		    // type specified in a non-var assignment
+		    semsg(_(e_trailing_characters_str), p);
+		else
+		    semsg(_(e_variable_already_declared_str), lhs->lhs_name);
+		return FAIL;
+	    }
+	}
+	else if ((lhs->lhs_classmember_idx = cctx_class_member_idx(
+			cctx, var_start, lhs->lhs_varlen, &defcl)) >= 0)
+	{
+	    if (compile_lhs_class_variable(cctx, lhs, defcl, is_decl)
+		    == FAIL)
+		return FAIL;
+	}
+	else
+	{
+	    if (compile_lhs_script_var(cctx, lhs, var_start, var_end,
+			is_decl) == FAIL)
+		return FAIL;
+	}
+    }
+
+    if (declare_error)
+    {
+	vim9_declare_error(lhs->lhs_name);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+/*
+ * When compiling a LHS variable name, for a class or an object, set the LHS
+ * member type.
+ */
+    static int
+compile_lhs_set_oc_member_type(
+    cctx_T	*cctx,
+    lhs_T	*lhs,
+    char_u	*var_start)
+{
+    class_T	*cl = lhs->lhs_type->tt_class;
+    int		is_object = lhs->lhs_type->tt_type == VAR_OBJECT;
+    char_u	*name = var_start + lhs->lhs_varlen + 1;
+    size_t	namelen = lhs->lhs_end - var_start - lhs->lhs_varlen - 1;
+
+    ocmember_T	*m = member_lookup(cl, lhs->lhs_type->tt_type,
+	    name, namelen, &lhs->lhs_member_idx);
+    if (m == NULL)
+    {
+	member_not_found_msg(cl, lhs->lhs_type->tt_type, name, namelen);
+	return FAIL;
+    }
+
+    if (IS_ENUM(cl))
+    {
+	if (!inside_class(cctx, cl))
+	{
+	    semsg(_(e_enumvalue_str_cannot_be_modified),
+		    cl->class_name, m->ocm_name);
 	    return FAIL;
 	}
+	if (lhs->lhs_type->tt_type == VAR_OBJECT &&
+		lhs->lhs_member_idx < 2)
+	{
+	    char *msg = lhs->lhs_member_idx == 0 ?
+		e_enum_str_name_cannot_be_modified :
+		e_enum_str_ordinal_cannot_be_modified;
+	    semsg(_(msg), cl->class_name);
+	    return FAIL;
+	}
+    }
+
+    // If it is private member variable, then accessing it outside the
+    // class is not allowed.
+    // If it is a read only class variable, then it can be modified
+    // only inside the class where it is defined.
+    if ((m->ocm_access != VIM_ACCESS_ALL) &&
+	    ((is_object && !inside_class(cctx, cl))
+	     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
+    {
+	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
+	    ? e_cannot_access_protected_variable_str
+	    : e_variable_is_not_writable_str;
+	emsg_var_cl_define(msg, m->ocm_name, 0, cl);
+	return FAIL;
+    }
+
+    if (!IS_CONSTRUCTOR_METHOD(cctx->ctx_ufunc)
+	    && oc_var_check_ro(cl, m))
+	return FAIL;
+
+    lhs->lhs_member_type = m->ocm_type;
+
+    return OK;
+}
+
+/*
+ * When compiling a LHS variable, set the LHS variable type.
+ */
+    static int
+compile_lhs_set_type(cctx_T *cctx, lhs_T *lhs, char_u *var_end, int is_decl)
+{
+    if (is_decl && *skipwhite(var_end) == ':')
+    {
+	char_u *p;
+
+	// parse optional type: "let var: type = expr"
+	if (VIM_ISWHITE(*var_end))
+	{
+	    semsg(_(e_no_white_space_allowed_before_colon_str), var_end);
+	    return FAIL;
+	}
+
+	if (!VIM_ISWHITE(var_end[1]))
+	{
+	    semsg(_(e_white_space_required_after_str_str), ":", var_end);
+	    return FAIL;
+	}
+
+	p = skipwhite(var_end + 1);
+	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
+	if (lhs->lhs_type == NULL)
+	    return FAIL;
+
+	lhs->lhs_has_type = TRUE;
+	lhs->lhs_end = p;
+    }
+    else if (lhs->lhs_lvar != NULL)
+	lhs->lhs_type = lhs->lhs_lvar->lv_type;
+
+    return OK;
+}
+
+/*
+ * Returns TRUE if "lhs" is a concatenable string.
+ */
+    static int
+lhs_concatenable(lhs_T *lhs)
+{
+    return lhs->lhs_dest == dest_global
+		|| lhs->lhs_has_index
+		|| lhs->lhs_type->tt_type == VAR_STRING
+		|| lhs->lhs_type->tt_type == VAR_ANY;
+}
+
+/*
+ * Create a new local variable when compiling a LHS variable.
+ */
+    static int
+compile_lhs_new_local_var(
+    cctx_T	*cctx,
+    lhs_T	*lhs,
+    char_u	*var_start,
+    int		cmdidx,
+    int		oplen,
+    int		is_decl,
+    int		has_cmd,
+    int		heredoc)
+{
+    if (oplen > 1 && !heredoc)
+    {
+	// +=, /=, etc. require an existing variable
+	semsg(_(e_cannot_use_operator_on_new_variable_str), lhs->lhs_name);
+	return FAIL;
+    }
+
+    if (!is_decl || (lhs->lhs_has_index && !has_cmd
+					&& cctx->ctx_skip != SKIP_YES))
+    {
+	semsg(_(e_unknown_variable_str), lhs->lhs_name);
+	return FAIL;
+    }
+
+    // Check the name is valid for a funcref.
+    if (lhs->lhs_type->tt_type == VAR_FUNC
+				|| lhs->lhs_type->tt_type == VAR_PARTIAL)
+    {
+	if (var_wrong_func_name(lhs->lhs_name, TRUE))
+	    return FAIL;
+    }
+
+    // New local variable.
+    int assign;
+    switch (cmdidx)
+    {
+	case CMD_final:
+	    assign = ASSIGN_FINAL; break;
+	case CMD_const:
+	    assign = ASSIGN_CONST; break;
+	default:
+	    assign = ASSIGN_VAR; break;
+    }
+
+    lhs->lhs_lvar = reserve_local(cctx, var_start, lhs->lhs_varlen, assign,
+							lhs->lhs_type);
+    if (lhs->lhs_lvar == NULL)
+	return FAIL;
+
+    lhs->lhs_new_local = TRUE;
+
+    return OK;
+}
+
+/*
+ * When compiling a LHS variable name, set the LHS member type.
+ */
+    static int
+compile_lhs_set_member_type(
+    cctx_T	*cctx,
+    lhs_T	*lhs,
+    char_u	*var_start,
+    int		is_decl,
+    int		has_cmd)
+{
+    lhs->lhs_member_type = lhs->lhs_type;
+
+    if (!lhs->lhs_has_index)
+	return OK;
+
+    char_u	*after = var_start + lhs->lhs_varlen;
+    char_u	*p;
+
+    // Something follows after the variable: "var[idx]" or "var.key".
+    if (is_decl && cctx->ctx_skip != SKIP_YES)
+    {
+	if (has_cmd)
+	    emsg(_(e_cannot_use_index_when_declaring_variable));
+	else
+	    semsg(_(e_unknown_variable_str), lhs->lhs_name);
+	return FAIL;
+    }
+
+    // Now: var_start[lhs->lhs_varlen] is '[' or '.'
+    // Only the last index is used below, if there are others
+    // before it generate code for the expression.  Thus for
+    // "ll[1][2]" the expression is "ll[1]" and "[2]" is the index.
+    for (;;)
+    {
+	p = skip_index(after);
+	if (*p != '[' && *p != '.')
+	{
+	    lhs->lhs_varlen_total = p - var_start;
+	    break;
+	}
+	after = p;
+    }
+    if (after > var_start + lhs->lhs_varlen)
+    {
+	lhs->lhs_varlen = after - var_start;
+	lhs->lhs_dest = dest_expr;
+	// We don't know the type before evaluating the expression,
+	// use "any" until then.
+	lhs->lhs_type = &t_any;
+    }
+
+    int use_class = lhs->lhs_type != NULL
+	&& (lhs->lhs_type->tt_type == VAR_CLASS
+		|| lhs->lhs_type->tt_type == VAR_OBJECT);
+
+    if (lhs->lhs_type == NULL
+	    || (use_class ? lhs->lhs_type->tt_class == NULL
+		: lhs->lhs_type->tt_member == NULL))
+    {
+	lhs->lhs_member_type = &t_any;
+    }
+    else if (use_class)
+    {
+	// for an object or class member get the type of the member
+	if (compile_lhs_set_oc_member_type(cctx, lhs, var_start) == FAIL)
+	    return FAIL;
+    }
+    else
+	lhs->lhs_member_type = lhs->lhs_type->tt_member;
+
+    return OK;
+}
+
+/*
+ * Figure out the LHS type and other properties for an assignment or one item
+ * of ":unlet" with an index.
+ * Returns OK or FAIL.
+ */
+    int
+compile_lhs(
+	char_u	    *var_start,
+	lhs_T	    *lhs,
+	cmdidx_T    cmdidx,
+	int	    heredoc,
+	int	    has_cmd,	    // "var" before "var_start"
+	int	    oplen,
+	cctx_T	    *cctx)
+{
+    char_u	*var_end;
+    int		is_decl = is_decl_command(cmdidx);
+
+    if (lhs_init(lhs, var_start, is_decl, heredoc, &var_end) == FAIL)
+	return FAIL;
+
+    if (cctx->ctx_skip != SKIP_YES)
+    {
+	// compile the LHS destination
+	if (compile_lhs_var_dest(cctx, lhs, cmdidx, var_start, var_end,
+							is_decl) == FAIL)
+	    return FAIL;
     }
 
     // handle "a:name" as a name, not index "name" in "a"
@@ -1917,181 +2301,29 @@ compile_lhs(
 
     if (lhs->lhs_dest != dest_option && lhs->lhs_dest != dest_func_option)
     {
-	if (is_decl && *skipwhite(var_end) == ':')
-	{
-	    char_u *p;
-
-	    // parse optional type: "let var: type = expr"
-	    if (VIM_ISWHITE(*var_end))
-	    {
-		semsg(_(e_no_white_space_allowed_before_colon_str), var_end);
-		return FAIL;
-	    }
-	    if (!VIM_ISWHITE(var_end[1]))
-	    {
-		semsg(_(e_white_space_required_after_str_str), ":", var_end);
-		return FAIL;
-	    }
-	    p = skipwhite(var_end + 1);
-	    lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
-	    if (lhs->lhs_type == NULL)
-		return FAIL;
-	    lhs->lhs_has_type = TRUE;
-	    lhs->lhs_end = p;
-	}
-	else if (lhs->lhs_lvar != NULL)
-	    lhs->lhs_type = lhs->lhs_lvar->lv_type;
+	// set the LHS variable type
+	if (compile_lhs_set_type(cctx, lhs, var_end, is_decl) == FAIL)
+	    return FAIL;
     }
 
-    if (oplen == 3 && !heredoc
-		   && lhs->lhs_dest != dest_global
-		   && !lhs->lhs_has_index
-		   && lhs->lhs_type->tt_type != VAR_STRING
-		   && lhs->lhs_type->tt_type != VAR_ANY)
+    if (oplen == 3 && !heredoc && !lhs_concatenable(lhs))
     {
 	emsg(_(e_can_only_concatenate_to_string));
 	return FAIL;
     }
 
     if (lhs->lhs_lvar == NULL && lhs->lhs_dest == dest_local
-						 && cctx->ctx_skip != SKIP_YES)
+						&& cctx->ctx_skip != SKIP_YES)
     {
-	if (oplen > 1 && !heredoc)
-	{
-	    // +=, /=, etc. require an existing variable
-	    semsg(_(e_cannot_use_operator_on_new_variable_str), lhs->lhs_name);
+	if (compile_lhs_new_local_var(cctx, lhs, var_start, cmdidx, oplen,
+					is_decl, has_cmd, heredoc) == FAIL)
 	    return FAIL;
-	}
-	if (!is_decl || (lhs->lhs_has_index && !has_cmd
-						&& cctx->ctx_skip != SKIP_YES))
-	{
-	    semsg(_(e_unknown_variable_str), lhs->lhs_name);
-	    return FAIL;
-	}
-
-	// Check the name is valid for a funcref.
-	if ((lhs->lhs_type->tt_type == VAR_FUNC
-				      || lhs->lhs_type->tt_type == VAR_PARTIAL)
-		&& var_wrong_func_name(lhs->lhs_name, TRUE))
-	    return FAIL;
-
-	// New local variable.
-	int assign = cmdidx == CMD_final ? ASSIGN_FINAL
-			     : cmdidx == CMD_const ? ASSIGN_CONST : ASSIGN_VAR;
-	lhs->lhs_lvar = reserve_local(cctx, var_start, lhs->lhs_varlen,
-							assign, lhs->lhs_type);
-	if (lhs->lhs_lvar == NULL)
-	    return FAIL;
-	lhs->lhs_new_local = TRUE;
     }
 
-    lhs->lhs_member_type = lhs->lhs_type;
-    if (lhs->lhs_has_index)
-    {
-	char_u	*after = var_start + lhs->lhs_varlen;
-	char_u	*p;
+    if (compile_lhs_set_member_type(cctx, lhs, var_start, is_decl, has_cmd)
+								== FAIL)
+	return FAIL;
 
-	// Something follows after the variable: "var[idx]" or "var.key".
-	if (is_decl && cctx->ctx_skip != SKIP_YES)
-	{
-	    if (has_cmd)
-		emsg(_(e_cannot_use_index_when_declaring_variable));
-	    else
-		semsg(_(e_unknown_variable_str), lhs->lhs_name);
-	    return FAIL;
-	}
-
-	// Now: var_start[lhs->lhs_varlen] is '[' or '.'
-	// Only the last index is used below, if there are others
-	// before it generate code for the expression.  Thus for
-	// "ll[1][2]" the expression is "ll[1]" and "[2]" is the index.
-	for (;;)
-	{
-	    p = skip_index(after);
-	    if (*p != '[' && *p != '.')
-	    {
-		lhs->lhs_varlen_total = p - var_start;
-		break;
-	    }
-	    after = p;
-	}
-	if (after > var_start + lhs->lhs_varlen)
-	{
-	    lhs->lhs_varlen = after - var_start;
-	    lhs->lhs_dest = dest_expr;
-	    // We don't know the type before evaluating the expression,
-	    // use "any" until then.
-	    lhs->lhs_type = &t_any;
-	}
-
-	int use_class = lhs->lhs_type != NULL
-			    && (lhs->lhs_type->tt_type == VAR_CLASS
-				    || lhs->lhs_type->tt_type == VAR_OBJECT);
-	if (lhs->lhs_type == NULL
-		|| (use_class ? lhs->lhs_type->tt_class == NULL
-		    : lhs->lhs_type->tt_member == NULL))
-	{
-	    lhs->lhs_member_type = &t_any;
-	}
-	else if (use_class)
-	{
-	    // for an object or class member get the type of the member
-	    class_T	*cl = lhs->lhs_type->tt_class;
-	    int		is_object = lhs->lhs_type->tt_type == VAR_OBJECT;
-	    char_u	*name = var_start + lhs->lhs_varlen + 1;
-	    size_t	namelen = lhs->lhs_end - var_start - lhs->lhs_varlen - 1;
-
-	    ocmember_T	*m = member_lookup(cl, lhs->lhs_type->tt_type,
-					name, namelen, &lhs->lhs_member_idx);
-	    if (m == NULL)
-	    {
-		member_not_found_msg(cl, lhs->lhs_type->tt_type, name, namelen);
-		return FAIL;
-	    }
-
-	    if (IS_ENUM(cl))
-	    {
-		if (!inside_class(cctx, cl))
-		{
-		    semsg(_(e_enumvalue_str_cannot_be_modified),
-			    cl->class_name, m->ocm_name);
-		    return FALSE;
-		}
-		if (lhs->lhs_type->tt_type == VAR_OBJECT &&
-			lhs->lhs_member_idx < 2)
-		{
-		    char *msg = lhs->lhs_member_idx == 0 ?
-			e_enum_str_name_cannot_be_modified :
-			e_enum_str_ordinal_cannot_be_modified;
-		    semsg(_(msg), cl->class_name);
-		    return FALSE;
-		}
-	    }
-
-	    // If it is private member variable, then accessing it outside the
-	    // class is not allowed.
-	    // If it is a read only class variable, then it can be modified
-	    // only inside the class where it is defined.
-	    if ((m->ocm_access != VIM_ACCESS_ALL) &&
-		    ((is_object && !inside_class(cctx, cl))
-		     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
-	    {
-		char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
-				    ? e_cannot_access_protected_variable_str
-				    : e_variable_is_not_writable_str;
-		emsg_var_cl_define(msg, m->ocm_name, 0, cl);
-		return FAIL;
-	    }
-
-	    if (!IS_CONSTRUCTOR_METHOD(cctx->ctx_ufunc)
-						&& oc_var_check_ro(cl, m))
-		return FAIL;
-
-	    lhs->lhs_member_type = m->ocm_type;
-	}
-	else
-	    lhs->lhs_member_type = lhs->lhs_type->tt_member;
-    }
     return OK;
 }
 
