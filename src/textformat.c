@@ -1163,13 +1163,24 @@ format_lines(
 		State = MODE_INSERT;	// for open_line()
 		smd_save = p_smd;
 		p_smd = FALSE;
+
 		insertchar(NUL, INSCHAR_FORMAT
 			+ (do_comments ? INSCHAR_DO_COM : 0)
 			+ (do_comments && do_comments_list
 						       ? INSCHAR_COM_LIST : 0)
 			+ (avoid_fex ? INSCHAR_NO_FEX : 0), second_indent);
+
 		State = old_State;
 		p_smd = smd_save;
+		// Cursor and mouse shape shapes may have been updated (e.g. by
+		// :normal) in insertchar(), so they need to be updated here.
+#ifdef CURSOR_SHAPE
+		ui_cursor_shape();
+#endif
+#ifdef FEAT_MOUSESHAPE
+		update_mouseshape(-1);
+#endif
+
 		second_indent = -1;
 		// at end of par.: need to set indent of next par.
 		need_set_indent = is_end_par;
