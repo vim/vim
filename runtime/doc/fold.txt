@@ -417,8 +417,7 @@ zX		Undo manually opened and closed folds: re-apply 'foldlevel'.
 
 							*zm*
 zm		Fold more: Subtract |v:count1| from 'foldlevel'.  If
-		'foldlevel' was
-		already zero nothing happens.
+		'foldlevel' was already zero nothing happens.
 		'foldenable' will be set.
 
 							*zM*
