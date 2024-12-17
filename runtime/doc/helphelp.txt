@@ -433,17 +433,27 @@ To quote a block of ex-commands verbatim, place a greater than (>) character
 at the end of the line before the block and a less than (<) character as the
 first non-blank on a line following the block.  Any line starting in column 1
 also implicitly stops the block of ex-commands before it.  E.g. >
-    function Example_Func()
-	echo "Example"
-    endfunction
+	function Example_Func()
+	  echo "Example"
+	endfunction
 <
-It's possible to add Vim syntax highlighting support to code examples.  This
-can be done by adding "vim" after the greater than (>) character (">vim").
-E.g: >vim
-    function Example_Func()
-	echo "Example"
-    endfunction
+
+To add annotation in the block, place the annotation (ex: "lua") after a
+greater than (>) character.  E.g: >lua
+	print("hello")
 <
+In default, it's possible to add Vim syntax highlighting support to code
+examples.  E.g: >vim
+	function Example_Func()
+	  echo "Example"
+	endfunction
+<
+						 *g:help_example_languages*
+If you want to change the syntax highlighting in the block, you can
+change it like this: >
+	:let g:help_example_languages = #{ vim: 'vim', sh: 'bash' }
+The key is language annotation and the value is syntax name.
+
 The following are highlighted differently in a Vim help file:
   - a special key name expressed either in <> notation as in <PageDown>, or
     as a Ctrl character as in CTRL-X
