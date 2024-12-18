@@ -123,6 +123,7 @@ SRC += \
 	indent.c \
 	insexpand.c \
 	json.c \
+	linematch.c\
 	list.c \
 	locale.c \
 	logfile.c \

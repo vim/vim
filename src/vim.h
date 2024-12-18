@@ -1992,6 +1992,7 @@ typedef int sock_T;
 // Note that gui.h is included by structs.h
 
 #include "structs.h"	// defines many structures
+#include "xdiff/xdiff.h"	// TODO: maybe remove this, but this brings in mmfile_t so it can compile
 
 #include "alloc.h"
 
