@@ -442,6 +442,7 @@ To add annotation in the block, place the annotation (ex: "lua") after a
 greater than (>) character.  E.g: >lua
 	print("hello")
 <
+Note: uses lua syntax highlighting, if "lua" is in |g:help_example_languages|.
 In default, it's possible to add Vim syntax highlighting support to code
 examples.  E.g: >vim
 	function Example_Func()
