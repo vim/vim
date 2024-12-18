@@ -3908,7 +3908,7 @@ dnl works, on Solaris timer_create() exists but fails at runtime.
 if test "x$vim_cv_timer_create" = "xyes" ||
    test "x$vim_cv_timer_create_with_lrt" = "xyes"; then
   save_LIBS="$LIBS"
-  if test "x$vim_cv_timer_create_works" = "xyes" ; then
+  if test "x$vim_cv_timer_create_with_lrt" = "xyes" ; then
     LIBS="$LIBS -lrt"
   fi
 
@@ -3939,7 +3939,6 @@ if test "x$vim_cv_timer_create" = "xyes" ||
 
   if test "x$vim_cv_timer_create_works" = "xyes" ; then
     AC_DEFINE(HAVE_TIMER_CREATE)
-    LIBS="$LIBS -lrt"
   else
     LIBS="$save_LIBS"
   fi
