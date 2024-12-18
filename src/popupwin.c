@@ -1434,17 +1434,7 @@ popup_adjust_position(win_T *wp)
 	len = linetabsize(wp, lnum);
 	wp->w_width = w_width;
 
-	if (wp->w_p_wrap)
-	{
-	    while (len + margin_width > maxwidth)
-	    {
-		++wrapped;
-		len -= maxwidth - margin_width;
-		wp->w_width = maxwidth;
-		used_maxwidth = TRUE;
-	    }
-	}
-	else if (len + margin_width > maxwidth
+	if (len + margin_width > maxwidth
 		&& allow_adjust_left
 		&& (wp->w_popup_pos == POPPOS_TOPLEFT
 		    || wp->w_popup_pos == POPPOS_BOTLEFT))
@@ -1456,13 +1446,22 @@ popup_adjust_position(win_T *wp)
 	    {
 		int truncate_shift = shift_by - wp->w_wincol;
 
-		len -= truncate_shift;
 		shift_by -= truncate_shift;
 	    }
 
 	    wp->w_wincol -= shift_by;
 	    maxwidth += shift_by;
 	    wp->w_width = maxwidth;
+	}
+	if (wp->w_p_wrap)
+	{
+	    while (len + margin_width > maxwidth)
+	    {
+		++wrapped;
+		len -= maxwidth - margin_width;
+		wp->w_width = maxwidth;
+		used_maxwidth = TRUE;
+	    }
 	}
 	if (wp->w_width < len + margin_width)
 	{

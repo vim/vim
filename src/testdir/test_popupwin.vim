@@ -31,7 +31,7 @@ func Test_simple_popup()
 	\ .. "#{text: 'a comment line', props: [#{"
 	\ .. "col: 3, length: 7, minwidth: 20, type: 'comment'"
 	\ .. "}]},"
-	\ .. "], #{line: 4, col: 9, minwidth: 20})\<CR>")
+	\ .. "], #{line: 4, col: 9, minwidth: 20, fixed: v:true})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_02', {})
 
   " switch back to first tabpage
@@ -87,7 +87,7 @@ func Test_popup_with_border_and_padding()
 	  call popup_create('hello both', #{line: 2, col: 43, border: [], padding: [], highlight: 'Normal'})
 	  call popup_create('border TL', #{line: 6, col: 3, border: [1, 0, 0, 4]})
 	  call popup_create('paddings', #{line: 6, col: 23, padding: range(1, 4)})
-	  call popup_create('wrapped longer text', #{line: 8, col: 55, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
+	  call popup_create('wrapped longer text', #{line: 8, col: 55, padding: [0, 3, 0, 3], border: [0, 1, 0, 1], fixed: v:true})
 	  call popup_create('right aligned text', #{line: 11, col: 56, wrap: 0, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
 	  call popup_create('X', #{line: 2, col: 73})
 	  call popup_create('X', #{line: 3, col: 74})
@@ -1970,7 +1970,7 @@ func Test_popup_position_adjust()
   " Anything placed past the last cell on the right of the screen is moved to
   " the left.
   "
-  " When wrapping is disabled, we also shift to the left to display on the
+  " We also shift to the left to display on the
   " screen, unless fixed is set.
 
   " Entries for cases which don't vary based on wrapping.
@@ -1995,9 +1995,10 @@ func Test_popup_position_adjust()
   "     - expected height
   let tests = [
 	\ #{
-	\   comment: 'left-aligned with wrapping',
+	\   comment: 'left aligned with wrapping, fixed position',
 	\   options: #{
 	\     wrap: 1,
+	\     fixed: v:true,
 	\     pos: 'botleft',
 	\   },
 	\   tests: both_wrap_tests + [
@@ -2022,9 +2023,22 @@ func Test_popup_position_adjust()
 	\   ],
 	\ },
 	\ #{
-	\   comment: 'left aligned without wrapping',
+	\   comment: 'left aligned with wrapping, no fixed position',
+	\   options: #{
+	\     wrap: 1,
+	\     fixed: v:false,
+	\     pos: 'botleft',
+	\   },
+	\   tests: both_wrap_tests + [
+	\       [ repeat('a', &columns*3), 5, &columns,   3,                 1, &columns, 3],
+	\       [ repeat('a', 50),         5, &columns,   5, &columns - 50 + 1,       50, 1],
+	\   ],
+	\ },
+	\ #{
+	\   comment: 'left aligned without wrapping, no fixed position',
 	\   options: #{
 	\     wrap: 0,
+	\     fixed: v:false,
 	\     pos: 'botleft',
 	\   },
 	\   tests: both_wrap_tests + [
@@ -2048,7 +2062,7 @@ func Test_popup_position_adjust()
 	\   ],
 	\ },
 	\ #{
-	\   comment: 'left aligned with fixed position',
+	\   comment: 'left aligned without wrapping, fixed position',
 	\   options: #{
 	\     wrap: 0,
 	\     fixed: 1,
