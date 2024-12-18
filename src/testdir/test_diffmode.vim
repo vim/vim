@@ -2326,40 +2326,202 @@ func Test_diffget_diffput_linematch()
   call WriteDiffFiles(0, [], [])
   let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
+
+  " enable linematch
   call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
   call WriteDiffFiles(buf, ['',
       \ 'common line',
       \ 'common line',
       \ '',
-      \ 'DEFabc',
-      \ 'xyz',
-      \ 'xyz',
-      \ 'xyz',
-      \ 'DEFabc',
-      \ 'DEFabc',
-      \ 'DEFabc',
+      \ 'ABCabc',
+      \ 'ABCabc',
+      \ 'ABCabc',
+      \ 'ABCabc',
       \ 'common line',
       \ 'common line',
-      \ 'DEF',
       \ 'common line',
-      \ 'DEF',
       \ 'something' ],
       \ ['',
       \ 'common line',
       \ 'common line',
       \ '',
-      \ 'ABCabc',
-      \ 'ABCabc',
-      \ 'ABCabc',
-      \ 'ABCabc',
+      \ 'DEFabc',
+      \ 'xyz',
+      \ 'xyz',
+      \ 'xyz',
+      \ 'DEFabc',
+      \ 'DEFabc',
+      \ 'DEFabc',
       \ 'common line',
       \ 'common line',
+      \ 'DEF',
       \ 'common line',
+      \ 'DEF',
       \ 'something'])
   call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_1', {})
-  call term_sendkeys(buf, "\<c-w>w")
+
+  " get from window 1 from line 5 to 9
+  call term_sendkeys(buf, "1\<c-w>w")
   call term_sendkeys(buf, ":5,9diffget\<CR>")
   call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_2', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " get from window 2 from line 5 to 10
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, ":5,10diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_3', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " get all from window 2
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, ":4,17diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_4', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " get all from window 1
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, ":4,12diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_5', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " get from window 1 using do 1 line 5
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "5gg")
+  call term_sendkeys(buf, ":diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_6', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " get from window 1 using do 2 line 6
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "6gg")
+  call term_sendkeys(buf, ":diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_7', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " get from window 1 using do 2 line 7
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "7gg")
+  call term_sendkeys(buf, ":diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_8', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " get from window 1 using do 2 line 11
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "11gg")
+  call term_sendkeys(buf, ":diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_9', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " get from window 1 using do 2 line 12
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "12gg")
+  call term_sendkeys(buf, ":diffget\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_10', {})
+
+  " undo the last diffget
+  call term_sendkeys(buf, "u")
+
+  " put from window 1 using dp 1 line 5
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "5gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_11', {})
+
+  " undo the last diffput
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "u")
+
+  " put from window 1 using dp 2 line 6
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "6gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_12', {})
+
+  " undo the last diffput
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "u")
+
+  " put from window 1 using dp 2 line 7
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "7gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_13', {})
+
+  " undo the last diffput
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "u")
+
+  " put from window 1 using dp 2 line 11
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "11gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_14', {})
+
+  " undo the last diffput
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "u")
+
+  " put from window 1 using dp 2 line 12
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "12gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_15', {})
+
+  " undo the last diffput
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "u")
+
+  " put from window 2 using dp line 6
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "6gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_16', {})
+
+  " undo the last diffput
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "u")
+
+  " put from window 2 using dp line 8
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "8gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_17', {})
+
+  " undo the last diffput
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "u")
+
+  " put from window 2 using dp line 9
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "9gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_18', {})
+
+  " undo the last diffput
+  call term_sendkeys(buf, "1\<c-w>w")
+  call term_sendkeys(buf, "u")
+
+  " put from window 2 using dp line 17
+  call term_sendkeys(buf, "2\<c-w>w")
+  call term_sendkeys(buf, "17gg")
+  call term_sendkeys(buf, ":diffput\<CR>")
+  call VerifyScreenDump(buf, 'Test_diff_get_put_linematch_19', {})
 
 endfunc
 
