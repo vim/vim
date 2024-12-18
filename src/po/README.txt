@@ -177,3 +177,8 @@ For third-party plugins, it is necessary to specify a one-time call to the
 bindtextdomain() function in scripts containing translation strings and for
 all message strings to add a {package} argument to the gettext() function. For
 more information, see ":help package-translation".
+
+COMMITTING CHANGES
+
+Before committing changes to the repo, make sure to run "make check" to verify
+any changes here do not fail the test script (and therefore the CI)
