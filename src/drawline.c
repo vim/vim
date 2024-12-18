@@ -1172,7 +1172,8 @@ win_line(
     int		vi_attr = 0;		// attributes for Visual and incsearch
 					// highlighting
     int		area_attr = 0;		// attributes desired by highlighting
-    int		search_attr = 0;	// attributes desired by 'hlsearch'
+    int		search_attr = 0;	// attributes desired by 'hlsearch' or
+					// ComplMatchIns
 #ifdef FEAT_SYN_HL
     int		vcol_save_attr = 0;	// saved attr for 'cursorcolumn'
     int		syntax_attr = 0;	// attributes desired by syntax
@@ -1213,7 +1214,7 @@ win_line(
     int		word_end = 0;		// last byte with same spell_attr
     int		cur_checked_col = 0;	// checked column for current line
 #endif
-    int		extra_check = 0;	// has extra highlighting
+    int		extra_check = FALSE;	// has extra highlighting
     int		multi_attr = 0;		// attributes desired by multibyte
     int		mb_l = 1;		// multi-byte byte length
     int		mb_c = 0;		// decoded multi-byte character
@@ -1868,6 +1869,9 @@ win_line(
     }
 #endif
 
+    if ((State & MODE_INSERT) && in_curline && ins_compl_active())
+	area_highlighting = TRUE;
+
 #ifdef FEAT_SYN_HL
     // Cursor line highlighting for 'cursorline' in the current window.
     if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
@@ -2389,9 +2393,9 @@ win_line(
 			|| (noinvcur && (colnr_T)wlv.vcol == wp->w_virtcol)))
 		*area_attr_p = 0;		// stop highlighting
 
-#ifdef FEAT_SEARCH_EXTRA
 	    if (wlv.n_extra == 0)
 	    {
+#ifdef FEAT_SEARCH_EXTRA
 		// Check for start/end of 'hlsearch' and other matches.
 		// After end, check for start/end of next match.
 		// When another match, have to check for start again.
@@ -2406,8 +2410,20 @@ win_line(
 		// and bad things happen.
 		if (*ptr == NUL)
 		    has_match_conc = 0;
-	    }
+#else
+		search_attr = 0;
 #endif
+
+		// Check if ComplMatchIns highlight is needed.
+		if ((State & MODE_INSERT) && in_curline && ins_compl_active())
+		{
+		    int ins_match_attr =
+			ins_compl_col_range_attr((int)(ptr - line));
+		    if (ins_match_attr > 0)
+			search_attr =
+			    hl_combine_attr(search_attr, ins_match_attr);
+		}
+	    }
 
 #ifdef FEAT_DIFF
 	    if (wlv.diff_hlf != (hlf_T)0)
@@ -2560,15 +2576,6 @@ win_line(
 	    if (text_prop_type != NULL && (text_prop_flags & PT_FLAG_OVERRIDE))
 		wlv.char_attr = hl_combine_attr(wlv.char_attr, text_prop_attr);
 #endif
-	}
-
-	// Apply ComplMatchIns highlight if needed.
-	if (wlv.draw_state == WL_LINE
-		&& (State & MODE_INSERT) && in_curline && ins_compl_active())
-	{
-	    int ins_match_attr = ins_compl_col_range_attr((int)(ptr - line));
-	    if (ins_match_attr > 0)
-	        wlv.char_attr = hl_combine_attr(wlv.char_attr, ins_match_attr);
 	}
 
 	// combine attribute with 'wincolor'
