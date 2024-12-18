@@ -35,7 +35,7 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
         \ $'syntax/{s:syntax}.vim'
 
   execute $'syn region helpExampleHighlight_{s:lang} matchgroup=helpIgnore'
-        \ $'start=/^>{s:lang}$/ start=/ >{s:lang}$/'
+        \ $'start=/\%(^\| \)>{s:lang}$/'
         \ 'end=/^[^ \t]/me=e-1 end=/^</'
         \ (has("conceal") ? 'concealends' : '')
         \ $'contains=@helpExampleHighlight_{s:lang} keepend'
