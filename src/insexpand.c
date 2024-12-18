@@ -923,7 +923,13 @@ ins_compl_insert_bytes(char_u *p, int len)
     int
 ins_compl_col_range_attr(int col)
 {
-    if (col >= compl_col && col < compl_ins_end_col)
+    int	    scol = compl_col;
+    int	    leader_len = ins_compl_leader_len();
+
+    if (leader_len > 0)
+	scol += leader_len;
+
+    if (col >= scol && col < compl_ins_end_col)
 	return syn_name2attr((char_u *)"ComplMatchIns");
 
     return -1;
