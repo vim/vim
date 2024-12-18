@@ -37,6 +37,8 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
         \ (has("conceal") ? 'concealends' : '')
         \ $'contains=@Example{s:lang} keepend'
 endfor
+unlet s:lang
+unlet s:syntax
 
 if has("ebcdic")
   syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar
