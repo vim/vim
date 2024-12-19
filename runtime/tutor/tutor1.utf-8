@@ -19,9 +19,8 @@
      use.  That means that you need to execute the commands to learn them
      properly.  If you only read the text, you will forget the commands!
      Now, make sure that your Caps-Lock key is NOT depressed and press
-     the   j   key enough times to move the cursor so that lesson 1.1
+     the   j   key enough times to move the cursor so that lesson 1.1.1
      completely fills the screen.
-
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lesson 1.1.1:  MOVING THE CURSOR
 
@@ -321,7 +320,6 @@ NOTE:  Pressing just the motion while in Normal mode without an operator will
 --->  7)  And so are you.
 
 Doubling to operate on a line also works for operators mentioned below.
-
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lesson 1.2.7: THE UNDO COMMAND
 
@@ -785,7 +783,6 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lesson 1.6.4: COPY AND PASTE TEXT
 
-
 	  ** Use the  y  operator to copy text and  p  to paste it **
 
   1. Move to the line below marked ---> and place the cursor after "a)".
@@ -946,7 +943,8 @@ NOTE:  Completion works for many commands.  Just try pressing CTRL-D and
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  This concludes Chapter 1 of the Vim Tutor.  Consider continuing with Chapter 2.
+  This concludes Chapter 1 of the Vim Tutor.  Consider continuing with
+  Chapter 2.
 
   It was intended to give a brief overview of the Vim editor, just enough to
   allow you to use the editor fairly easily. It is far from complete as Vim
