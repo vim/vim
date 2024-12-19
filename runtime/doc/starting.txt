@@ -976,6 +976,7 @@ accordingly.  Vim proceeds in this order:
 The $MYVIMRC or $MYGVIMRC environment variable will be set to the first found
 vimrc and/or gvimrc file while $MYVIMDIR is set to the users personal runtime
 directory 'rtp' (typically the first entry in 'runtimepath').
+Note: These environment variables resolve symbolic links, but 'rtp' does not.
 
 
 Some hints on using initializations ~
