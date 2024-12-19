@@ -2332,6 +2332,7 @@ set_context_by_cmdname(
 	    // FALLTHROUGH
 	case CMD_buffer:
 	case CMD_sbuffer:
+	case CMD_pbuffer:
 	case CMD_checktime:
 	    xp->xp_context = EXPAND_BUFFERS;
 	    xp->xp_pattern = arg;
