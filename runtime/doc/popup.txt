@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 9.1.  Last change: 2024 Jun 16
+*popup.txt*  For Vim version 9.1.  Last change: 2024 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -705,7 +705,6 @@ The second argument of |popup_create()| is a dictionary with options:
 			present. Use zero to reset.
 	fixed		When FALSE (the default), and:
 			 - "pos" is "botleft" or "topleft", and
-			 - "wrap" is off, and
 			 - the popup would be truncated at the right edge of
 			   the screen, then
 			the popup is moved to the left so as to fit the
