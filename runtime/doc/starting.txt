@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Oct 05
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -976,6 +976,7 @@ accordingly.  Vim proceeds in this order:
 The $MYVIMRC or $MYGVIMRC environment variable will be set to the first found
 vimrc and/or gvimrc file while $MYVIMDIR is set to the users personal runtime
 directory 'rtp' (typically the first entry in 'runtimepath').
+Note: These environment variables resolve symbolic links, but 'rtp' does not.
 
 
 Some hints on using initializations ~
