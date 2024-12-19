@@ -2281,7 +2281,7 @@ compile_lhs(
 	int	    oplen,
 	cctx_T	    *cctx)
 {
-    char_u	*var_end;
+    char_u	*var_end = NULL;
     int		is_decl = is_decl_command(cmdidx);
 
     if (lhs_init(lhs, var_start, is_decl, heredoc, &var_end) == FAIL)
