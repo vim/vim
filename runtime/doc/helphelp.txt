@@ -456,7 +456,7 @@ change it like this: >
 The key is the annotation marker name and the value is the 'syntax' name.
 When not configured, help files support Vim script highlighting only.
 Note: When setting "g:help_example_languages", if you do not add "vim", Vim
-script syntax highlighting will not be available.
+When setting "g:help_example_languages" to an empty value, syntax highlighting for embedded languages will be disabled.
 
 The following are highlighted differently in a Vim help file:
   - a special key name expressed either in <> notation as in <PageDown>, or
