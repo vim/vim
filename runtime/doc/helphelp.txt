@@ -453,8 +453,10 @@ examples.  E.g: >vim
 If you want to change the syntax highlighting in the block, you can
 change it like this: >
 	:let g:help_example_languages = #{ vim: 'vim', sh: 'bash' }
-The key is the annotation marker and the value is the 'syntax' name.
+The key is the annotation marker name and the value is the 'syntax' name.
 When not configured, help files support Vim script highlighting only.
+Note: When setting "g:help_example_languages", if you do not add "vim", Vim
+script syntax highlighting will not be available.
 
 The following are highlighted differently in a Vim help file:
   - a special key name expressed either in <> notation as in <PageDown>, or
