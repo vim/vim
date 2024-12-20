@@ -5199,8 +5199,7 @@ fun! netrw#Open(file) abort
       endif
     endif
 
-    " although shellescape(..., 1) is used in netrw#Open(), it's insufficient
-    call netrw#Open(escape(fname, '#%'))
+    call netrw#Open(fname)
 
     " cleanup: remove temporary file,
     "          delete current buffer if success with handler,
