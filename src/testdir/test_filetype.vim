@@ -375,7 +375,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     jal: ['file.jal', 'file.JAL'],
     jam: ['file.jpl', 'file.jpr', 'JAM-file.file', 'JAM.file', 'Prl-file.file', 'Prl.file'],
     janet: ['file.janet'],
-    java: ['file.java', 'file.jav'],
+    java: ['file.java', 'file.jav', 'file.jsh'],
     javacc: ['file.jj', 'file.jjt'],
     javascript: ['file.js', 'file.jsm', 'file.javascript', 'file.es', 'file.mjs', 'file.cjs', '.node_repl_history', '.bun_repl_history', 'deno_history.txt'],
     'javascript.glimmer': ['file.gjs'],
@@ -1042,6 +1042,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
             ['#!/path/regina']],
     janet:  [['#!/path/janet']],
     dart:   [['#!/path/dart']],
+    java:   [['#!/path/jshell']],
     vim:    [['#!/path/vim']],
   }
 enddef

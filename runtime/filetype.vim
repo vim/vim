@@ -1200,7 +1200,7 @@ au BufNewFile,BufRead *.jpl,*.jpr		setf jam
 au BufNewFile,BufRead *.janet			setf janet
 
 " Java
-au BufNewFile,BufRead *.java,*.jav		setf java
+au BufNewFile,BufRead *.java,*.jav,*.jsh	setf java
 
 " JavaCC
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
