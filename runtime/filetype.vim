@@ -844,7 +844,7 @@ au BufNewFile,BufRead *.fan,*.fwt		setf fan
 au BufNewFile,BufRead *.factor			setf factor
 
 " Fennel
-autocmd BufRead,BufNewFile *.fnl		setf fennel
+autocmd BufRead,BufNewFile *.fnl,{,.}fennelrc	setf fennel
 
 " Fetchmail RC file
 au BufNewFile,BufRead .fetchmailrc		setf fetchmail
