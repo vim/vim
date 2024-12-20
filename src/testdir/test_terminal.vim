@@ -698,7 +698,7 @@ func s:get_sleep_cmd()
     let waittime = 900
   else
     echo 'This will take five seconds...'
-    let waittime = 2000
+    let waittime = 3000
     if has('win32')
       let cmd = $windir . '\system32\timeout.exe 1'
     else
