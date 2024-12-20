@@ -78,6 +78,10 @@ setlocal comments& comments^=:///,sO:*\ -,mO:*\ \ ,exO:*/
 
 setlocal commentstring=//\ %s
 
+if expand('%:e') ==# 'jsh'
+  match Comment /^#!.*/
+endif
+
 " Change the :browse e filter to primarily show Java-related files.
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
     let  b:browsefilter="Java Files (*.java)\t*.java\n" .
