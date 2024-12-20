@@ -2544,4 +2544,29 @@ func Test_linematch_diff()
 
 endfunc
 
+func Test_linematch_diff_iwhite()
+  call delete('.Xdifile1.swp')
+  call delete('.Xdifile2.swp')
+  call WriteDiffFiles(0, [], [])
+  let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
+  call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
+
+  " enable linematch
+  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call WriteDiffFiles(buf, ['void testFunction () {',
+      \ '  for (int i = 0; i < 10; i++) {',
+      \ '    for (int j = 0; j < 10; j++) {',
+      \ '    }',
+      \ '  }',
+      \ '}' ],
+      \ ['void testFunction () {',
+      \ '  // for (int j = 0; j < 10; i++) {',
+      \ '  // }',
+      \ '}'])
+  call VerifyScreenDump(buf, 'Test_linematch_diff_iwhite1', {})
+  call term_sendkeys(buf, ":set diffopt+=iwhiteall\<CR>")
+  call VerifyScreenDump(buf, 'Test_linematch_diff_iwhite2', {})
+
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
