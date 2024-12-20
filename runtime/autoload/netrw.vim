@@ -4622,6 +4622,9 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
   NetrwKeepj call s:NetrwOptionsSafe(a:islocal)
 
   let newdir = a:newdir
+  if exists("w:netrw_liststyle") && w:netrw_liststyle == s:THINLIST
+      call cursor(1,1)
+  end
   if a:cursor && exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST && exists("w:netrw_treetop")
     " dirname is the path to the word under the cursor
     let dirname = s:NetrwTreePath(w:netrw_treetop)
