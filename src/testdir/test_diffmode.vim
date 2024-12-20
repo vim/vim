@@ -2551,7 +2551,7 @@ func Test_linematch_diff_iwhite()
   let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
-  " enable linematch
+  " setup a diff with 2 files and set linematch:30, with ignore white
   call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
   call WriteDiffFiles(buf, ['void testFunction () {',
       \ '  for (int i = 0; i < 10; i++) {',
@@ -2566,6 +2566,42 @@ func Test_linematch_diff_iwhite()
   call VerifyScreenDump(buf, 'Test_linematch_diff_iwhite1', {})
   call term_sendkeys(buf, ":set diffopt+=iwhiteall\<CR>")
   call VerifyScreenDump(buf, 'Test_linematch_diff_iwhite2', {})
+
+endfunc
+
+func Test_linematch_diff_grouping()
+  call delete('.Xdifile1.swp')
+  call delete('.Xdifile2.swp')
+  call WriteDiffFiles(0, [], [])
+  let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
+  call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
+
+  " a diff that would result in multiple groups before grouping optimization
+  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call WriteDiffFiles(buf, ['!A',
+      \ '!B',
+      \ '!C' ],
+      \ ['?Z',
+      \ '?A',
+      \ '?B',
+      \ '?C',
+      \ '?A',
+      \ '?B',
+      \ '?B',
+      \ '?C'])
+  call VerifyScreenDump(buf, 'Test_linematch_diff_grouping1', {})
+  call WriteDiffFiles(buf, ['!A',
+      \ '!B',
+      \ '!C' ],
+      \ ['?A',
+      \ '?Z',
+      \ '?B',
+      \ '?C',
+      \ '?A',
+      \ '?B',
+      \ '?C',
+      \ '?C'])
+  call VerifyScreenDump(buf, 'Test_linematch_diff_grouping2', {})
 
 endfunc
 
