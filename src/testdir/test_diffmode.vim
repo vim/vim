@@ -2525,4 +2525,23 @@ func Test_diffget_diffput_linematch()
 
 endfunc
 
+func Test_linematch_diff()
+  call delete('.Xdifile1.swp')
+  call delete('.Xdifile2.swp')
+  call WriteDiffFiles(0, [], [])
+  let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
+  call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
+
+  " enable linematch
+  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call WriteDiffFiles(buf, ['// abc d?',
+      \ '// d?',
+      \ '// d?' ],
+      \ ['!',
+      \ 'abc d!',
+      \ 'd!'])
+  call VerifyScreenDump(buf, 'Test_linematch_diff1', {})
+
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
