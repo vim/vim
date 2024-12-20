@@ -273,7 +273,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     falcon: ['file.fal'],
     fan: ['file.fan', 'file.fwt'],
     faust: ['file.dsp', 'file.lib'],
-    fennel: ['file.fnl'],
+    fennel: ['file.fnl', '.fennelrc', 'fennelrc'],
     fetchmail: ['.fetchmailrc'],
     fgl: ['file.4gl', 'file.4gh', 'file.m4gl'],
     firrtl: ['file.fir'],
