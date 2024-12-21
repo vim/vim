@@ -181,7 +181,7 @@ runtime/ftplugin/go.vim			@dbarnett
 runtime/ftplugin/goaccess.vim		@meonkeys
 runtime/ftplugin/gomod.vim		@yu-yk
 runtime/ftplugin/gprof.vim		@dpelle
-runtime/ftplugin/graphql.vim	@ribru17
+runtime/ftplugin/graphql.vim		@jparise
 runtime/ftplugin/gyp.vim		@ObserverOfTime
 runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hare.vim		@selenebun
@@ -339,6 +339,7 @@ runtime/indent/gitconfig.vim		@tpope
 runtime/indent/gitolite.vim		@sitaramc
 runtime/indent/glsl.vim		@gpanders
 runtime/indent/go.vim			@dbarnett
+runtime/indent/graphql.vim		@jparise
 runtime/indent/gyp.vim			@ObserverOfTime
 runtime/indent/haml.vim			@tpope
 runtime/indent/hare.vim			@selenebun
@@ -481,6 +482,7 @@ runtime/syntax/goaccess.vim		@meonkeys
 runtime/syntax/godoc.vim		@dbarnett
 runtime/syntax/gp.vim			@KBelabas
 runtime/syntax/gprof.vim		@dpelle
+runtime/syntax/graphql.vim		@jparise
 runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/gyp.vim			@ObserverOfTime
 runtime/syntax/haml.vim			@tpope
