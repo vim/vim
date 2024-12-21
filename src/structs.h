@@ -4692,6 +4692,7 @@ typedef struct lval_S
     int		ll_oi;		// The object/class member index
     int		ll_is_root;	// TRUE if ll_tv is the lval_root, like a
 				// plain object/class. ll_tv is variable.
+    garray_T	ll_type_list;   // list of pointers to allocated types
 } lval_T;
 
 /**

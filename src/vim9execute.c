@@ -2216,6 +2216,25 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
 }
 
 /*
+ * Do a runtime check of the RHS value against the LHS List member type.
+ * This is used by the STOREINDEX instruction to perform a type check
+ * at runtime if compile time type check cannot be performed (VAR_ANY).
+ * Returns FAIL if there is a type mismatch.
+ */
+    static int
+storeindex_check_list_member_type(
+    list_T	*lhs_list,
+    typval_T	*rhs_tv,
+    ectx_T	*ectx)
+{
+    if (lhs_list->lv_type == NULL || lhs_list->lv_type->tt_member == NULL)
+	return OK;
+
+    return check_typval_type(lhs_list->lv_type->tt_member, rhs_tv,
+			     ectx->ec_where);
+}
+
+/*
  * Store a value in a list, dict, blob or object variable.
  * Returns OK, FAIL or NOTDONE (uncatchable error).
  */
@@ -2228,6 +2247,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
     long	lidx = 0;
     typval_T	*tv_dest = STACK_TV_BOT(-1);
     int		status = OK;
+    int		check_rhs_type = FALSE;
 
     if (tv_idx->v_type == VAR_NUMBER)
 	lidx = (long)tv_idx->vval.v_number;
@@ -2247,6 +2267,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
     }
     else if (dest_type == VAR_ANY)
     {
+	check_rhs_type = TRUE;
 	dest_type = tv_dest->v_type;
 	if (dest_type == VAR_DICT)
 	    status = do_2string(tv_idx, TRUE, FALSE);
@@ -2327,6 +2348,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		semsg(_(e_list_index_out_of_range_nr), lidx);
 		return FAIL;
 	    }
+
+	    // Do a runtime type check for VAR_ANY
+	    if (check_rhs_type &&
+		    storeindex_check_list_member_type(list, tv, ectx) == FAIL)
+		return FAIL;
+
 	    if (lidx < list->lv_len)
 	    {
 		listitem_T *li = list_find(list, lidx);
@@ -6304,7 +6331,7 @@ call_def_function(
 		else if (check_typval_arg_type(expected, tv,
 						   NULL, argv_idx + 1) == FAIL)
 		    goto failed_early;
-	}
+	    }
 	    if (!done)
 		copy_tv(tv, STACK_TV_BOT(0));
 	}

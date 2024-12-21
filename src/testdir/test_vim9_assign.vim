@@ -3707,4 +3707,46 @@ def Test_override_script_local_func()
   v9.CheckScriptFailure(lines, 'E705: Variable name conflicts with existing function: MyFunc', 5)
 enddef
 
+" Test for doing a type check at runtime for a list member type
+def Test_nested_type_check()
+  var lines =<< trim END
+    var d = {a: [10], b: [20]}
+    var l = d->items()
+    l[0][1][0] = 'abc'
+  END
+  v9.CheckSourceDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string')
+
+  lines =<< trim END
+    vim9script
+    var d = {a: [10], b: [20]}
+    var l = d->items()
+    l[0][1][0] = 30
+    assert_equal([['a', [30]], ['b', [20]]], l)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Foo()
+      var d = {a: [10], b: [20]}
+      var l = d->items()
+      l[0][1][0] = 30
+      assert_equal([['a', [30]], ['b', [20]]], l)
+    enddef
+    Foo()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Test for modifying a List item added using add() with a different type.
+  lines =<< trim END
+    vim9script
+
+    var l: list<list<any>> = [['a']]
+    var v = [[10]]
+    l[0]->add(v)
+    l[0][1][0] = [{x: 20}]
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<dict<number>>', 6)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
