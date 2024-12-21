@@ -221,10 +221,6 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ '^janet\>'
     return 'janet'
 
-    # JShell
-  elseif name =~ '^jshell\>'
-    return 'java'
-
     # Dart
   elseif name =~ '^dart\>'
     return 'dart'

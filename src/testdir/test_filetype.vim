@@ -1042,7 +1042,6 @@ def s:GetScriptChecks(): dict<list<list<string>>>
             ['#!/path/regina']],
     janet:  [['#!/path/janet']],
     dart:   [['#!/path/dart']],
-    java:   [['#!/path/jshell']],
     vim:    [['#!/path/vim']],
   }
 enddef
