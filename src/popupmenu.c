@@ -917,7 +917,7 @@ pum_set_selected(int n, int repeat UNUSED)
 {
     int	    resized = FALSE;
     int	    context = pum_height / 2;
-    int	    scroll_offset = pum_selected - pum_height;
+    int	    scroll_offset;
 #ifdef FEAT_QUICKFIX
     int	    prev_selected = pum_selected;
     unsigned	cur_cot_flags = get_cot_flags();
@@ -927,6 +927,7 @@ pum_set_selected(int n, int repeat UNUSED)
 #endif
 
     pum_selected = n;
+    scroll_offset = pum_selected - pum_height;
 
     if (pum_selected >= 0 && pum_selected < pum_size)
     {
@@ -950,7 +951,7 @@ pum_set_selected(int n, int repeat UNUSED)
 	    // scroll up; when we did a jump it's probably a PageDown then
 	    // scroll a whole page
 	    if (pum_first < scroll_offset + 3)
-		pum_first = MAX(pum_first, scroll_offset + 1);
+		pum_first = MAX(pum_first + pum_height - 2, scroll_offset + 1);
 	    else
 		pum_first = scroll_offset + 1;
 	}

@@ -1715,11 +1715,15 @@ endfunc
 func Test_pum_matchins_highlight()
   CheckScreendump
   let lines =<< trim END
+    let g:change = 0
     func Omni_test(findstart, base)
       if a:findstart
         return col(".")
       endif
-      return [#{word: "foo"}, #{word: "bar"}, #{word: "你好"}]
+      if g:change == 0
+        return [#{word: "foo"}, #{word: "bar"}, #{word: "你好"}]
+      endif
+      return [#{word: "foo", info: "info"}, #{word: "bar"}, #{word: "你好"}]
     endfunc
     set omnifunc=Omni_test
     hi ComplMatchIns ctermfg=red
@@ -1764,6 +1768,10 @@ func Test_pum_matchins_highlight()
   call VerifyScreenDump(buf, 'Test_pum_matchins_09', {})
   call term_sendkeys(buf, "\<C-Y>")
   call VerifyScreenDump(buf, 'Test_pum_matchins_10', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call term_sendkeys(buf, ":let g:change=1\<CR>S\<C-X>\<C-O>")
+  call VerifyScreenDump(buf, 'Test_pum_matchins_11', {})
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
