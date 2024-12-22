@@ -797,7 +797,7 @@ length minus one is used: >
 
 
 Blob modification ~
-					*blob-modification* *E1182* *E1184*
+						*blob-modification* *E1184*
 To change a specific byte of a blob use |:let| this way: >
 	:let blob[4] = 0x44
 

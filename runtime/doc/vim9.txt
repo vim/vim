@@ -193,7 +193,7 @@ created yet.  In this case you can call `execute()` to invoke it at runtime. >
 "closure".  A `:def` function always aborts on an error (unless `:silent!` was
 used for the command or the error was caught a `:try` block), does not get a
 range passed, cannot be a "dict" function, and can always be a closure.
-						*vim9-no-dict-function*
+						*vim9-no-dict-function* *E1182*
 You can use a Vim9 Class (|Vim9-class|) instead of a "dict function".
 You can also pass the dictionary explicitly: >
 	def DictFunc(self: dict<any>, arg: string)
