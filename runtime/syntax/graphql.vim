@@ -3,6 +3,7 @@
 " Maintainer:	Jon Parise <jon@indelible.org>
 " Filenames:	*.graphql *.graphqls *.gql
 " URL:		https://github.com/jparise/vim-graphql
+" License:	MIT <https://opensource.org/license/mit>
 " Last Change:	2024 Dec 21
 
 if !exists('main_syntax')
