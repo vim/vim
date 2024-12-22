@@ -3827,6 +3827,36 @@ get_compile_type(ufunc_T *ufunc)
     return CT_NONE;
 }
 
+/*
+ * Free the compiled instructions saved for a def function.  This is used when
+ * compiling a def function and the function was compiled before.
+ * The index is reused.
+ */
+    static void
+clear_def_function(ufunc_T *ufunc, compiletype_T compile_type)
+{
+    isn_T	*instr_dest = NULL;
+    dfunc_T	*dfunc;
+
+    dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+
+    switch (compile_type)
+    {
+	case CT_PROFILE:
+#ifdef FEAT_PROFILE
+	    instr_dest = dfunc->df_instr_prof; break;
+#endif
+	case CT_NONE:   instr_dest = dfunc->df_instr; break;
+	case CT_DEBUG:  instr_dest = dfunc->df_instr_debug; break;
+    }
+
+    if (instr_dest != NULL)
+	// Was compiled in this mode before: Free old instructions.
+	delete_def_function_contents(dfunc, FALSE);
+
+    ga_clear_strings(&dfunc->df_var_names);
+    dfunc->df_defer_var_idx = 0;
+}
 
 /*
  * Add a function to the list of :def functions.
@@ -3859,6 +3889,60 @@ add_def_function(ufunc_T *ufunc)
     ++dfunc->df_refcount;
     ++def_functions.ga_len;
     return OK;
+}
+
+    static int
+compile_dfunc_ufunc_init(
+    ufunc_T		*ufunc,
+    cctx_T		*outer_cctx,
+    compiletype_T	compile_type,
+    int			*new_def_function)
+{
+    // When using a function that was compiled before: Free old instructions.
+    // The index is reused.  Otherwise add a new entry in "def_functions".
+    if (ufunc->uf_dfunc_idx > 0)
+	clear_def_function(ufunc, compile_type);
+    else
+    {
+	if (add_def_function(ufunc) == FAIL)
+	    return FAIL;
+
+	*new_def_function = TRUE;
+    }
+
+    if ((ufunc->uf_flags & FC_CLOSURE) && outer_cctx == NULL)
+    {
+	semsg(_(e_compiling_closure_without_context_str),
+						printable_func_name(ufunc));
+	return FAIL;
+    }
+
+    ufunc->uf_def_status = UF_COMPILING;
+
+    return OK;
+}
+
+/*
+ * Initialize the compilation context for compiling a def function.
+ */
+    static void
+compile_dfunc_cctx_init(
+    cctx_T		*cctx,
+    cctx_T		*outer_cctx,
+    ufunc_T		*ufunc,
+    compiletype_T	compile_type)
+{
+    CLEAR_FIELD(*cctx);
+
+    cctx->ctx_compile_type = compile_type;
+    cctx->ctx_ufunc = ufunc;
+    cctx->ctx_lnum = -1;
+    cctx->ctx_outer = outer_cctx;
+    ga_init2(&cctx->ctx_locals, sizeof(lvar_T), 10);
+    // Each entry on the type stack consists of two type pointers.
+    ga_init2(&cctx->ctx_type_stack, sizeof(type2_T), 50);
+    cctx->ctx_type_list = &ufunc->uf_type_list;
+    ga_init2(&cctx->ctx_instr, sizeof(isn_T), 50);
 }
 
 /*
@@ -3964,8 +4048,8 @@ obj_method_prologue(ufunc_T *ufunc, cctx_T *cctx)
     static int
 compile_def_function_default_args(
     ufunc_T	*ufunc,
-    cctx_T	*cctx,
-    garray_T	*instr)
+    garray_T	*instr,
+    cctx_T	*cctx)
 {
     int	count = ufunc->uf_def_args.ga_len;
     int	first_def_arg = ufunc->uf_args.ga_len - count;
@@ -4036,11 +4120,11 @@ compile_def_function_default_args(
  */
     static int
 compile_def_function_body(
-    cctx_T	*cctx,
     int		last_func_lnum,
     int		check_return_type,
     garray_T	*lines_to_free,
-    char	**errormsg)
+    char	**errormsg,
+    cctx_T	*cctx)
 {
     char_u	*line = NULL;
     char_u	*p;
@@ -4589,6 +4673,150 @@ nextline:
 }
 
 /*
+ * Returns TRUE if the end of a scope (if, while, for, block) is missing.
+ * Called after compiling a def function body.
+ */
+    static int
+compile_dfunc_scope_end_missing(cctx_T *cctx)
+{
+    if (cctx->ctx_scope == NULL)
+	return FALSE;
+
+    if (cctx->ctx_scope->se_type == IF_SCOPE)
+	emsg(_(e_missing_endif));
+    else if (cctx->ctx_scope->se_type == WHILE_SCOPE)
+	emsg(_(e_missing_endwhile));
+    else if (cctx->ctx_scope->se_type == FOR_SCOPE)
+	emsg(_(e_missing_endfor));
+    else
+	emsg(_(e_missing_rcurly));
+
+    return TRUE;
+}
+
+/*
+ * When compiling a def function, if it doesn not have an explicit return
+ * statement, then generate a default return instruction.  For an object
+ * constructor, return the object.
+ */
+    static int
+compile_dfunc_generate_default_return(ufunc_T *ufunc, cctx_T *cctx)
+{
+    // TODO: if a function ends in "throw" but there was a return elsewhere we
+    // should not assume the return type is "void".
+    if (cctx->ctx_had_return || cctx->ctx_had_throw)
+	return OK;
+
+    if (ufunc->uf_ret_type->tt_type == VAR_UNKNOWN)
+	ufunc->uf_ret_type = &t_void;
+    else if (ufunc->uf_ret_type->tt_type != VAR_VOID
+					&& !IS_CONSTRUCTOR_METHOD(ufunc))
+    {
+	emsg(_(e_missing_return_statement));
+	return FAIL;
+    }
+
+    // Return void if there is no return at the end.
+    // For a constructor return the object.
+    if (IS_CONSTRUCTOR_METHOD(ufunc))
+    {
+	generate_instr(cctx, ISN_RETURN_OBJECT);
+	ufunc->uf_ret_type = &ufunc->uf_class->class_object_type;
+    }
+    else
+	generate_instr(cctx, ISN_RETURN_VOID);
+
+    return OK;
+}
+
+/*
+ * Perform the chores after successfully compiling a def function.
+ */
+    static void
+compile_dfunc_epilogue(
+    cctx_T	*outer_cctx,
+    ufunc_T	*ufunc,
+    garray_T	*instr,
+    cctx_T	*cctx)
+{
+    dfunc_T	*dfunc;
+
+    dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+    dfunc->df_deleted = FALSE;
+    dfunc->df_script_seq = current_sctx.sc_seq;
+
+#ifdef FEAT_PROFILE
+    if (cctx->ctx_compile_type == CT_PROFILE)
+    {
+	dfunc->df_instr_prof = instr->ga_data;
+	dfunc->df_instr_prof_count = instr->ga_len;
+    }
+    else
+#endif
+	if (cctx->ctx_compile_type == CT_DEBUG)
+	{
+	    dfunc->df_instr_debug = instr->ga_data;
+	    dfunc->df_instr_debug_count = instr->ga_len;
+	}
+	else
+	{
+	    dfunc->df_instr = instr->ga_data;
+	    dfunc->df_instr_count = instr->ga_len;
+	}
+    dfunc->df_varcount = dfunc->df_var_names.ga_len;
+    dfunc->df_has_closure = cctx->ctx_has_closure;
+
+    if (cctx->ctx_outer_used)
+    {
+	ufunc->uf_flags |= FC_CLOSURE;
+	if (outer_cctx != NULL)
+	    ++outer_cctx->ctx_closure_count;
+    }
+
+    ufunc->uf_def_status = UF_COMPILED;
+}
+
+/*
+ * Perform the cleanup when a def function compilation fails.
+ */
+    static void
+compile_dfunc_ufunc_cleanup(
+    ufunc_T	*ufunc,
+    garray_T	*instr,
+    int		new_def_function,
+    char	*errormsg,
+    int		did_emsg_before,
+    cctx_T	*cctx)
+{
+    dfunc_T	*dfunc;
+
+    dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+
+    // Compiling aborted, free the generated instructions.
+    clear_instr_ga(instr);
+    VIM_CLEAR(dfunc->df_name);
+    ga_clear_strings(&dfunc->df_var_names);
+
+    // If using the last entry in the table and it was added above, we
+    // might as well remove it.
+    if (!dfunc->df_deleted && new_def_function
+			&& ufunc->uf_dfunc_idx == def_functions.ga_len - 1)
+    {
+	--def_functions.ga_len;
+	ufunc->uf_dfunc_idx = 0;
+    }
+    ufunc->uf_def_status = UF_COMPILE_ERROR;
+
+    while (cctx->ctx_scope != NULL)
+	drop_scope(cctx);
+
+    if (errormsg != NULL)
+	emsg(errormsg);
+    else if (did_emsg == did_emsg_before)
+	emsg(_(e_compiling_def_function_failed));
+}
+
+/*
  * After ex_function() has collected all the function lines: parse and compile
  * the lines into instructions.
  * Adds the function to "def_functions".
@@ -4624,56 +4852,13 @@ compile_def_function(
     // allocated lines are freed at the end
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
 
-    // When using a function that was compiled before: Free old instructions.
-    // The index is reused.  Otherwise add a new entry in "def_functions".
-    if (ufunc->uf_dfunc_idx > 0)
-    {
-	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
-	isn_T	*instr_dest = NULL;
-
-	switch (compile_type)
-	{
-	    case CT_PROFILE:
-#ifdef FEAT_PROFILE
-			    instr_dest = dfunc->df_instr_prof; break;
-#endif
-	    case CT_NONE:   instr_dest = dfunc->df_instr; break;
-	    case CT_DEBUG:  instr_dest = dfunc->df_instr_debug; break;
-	}
-	if (instr_dest != NULL)
-	    // Was compiled in this mode before: Free old instructions.
-	    delete_def_function_contents(dfunc, FALSE);
-	ga_clear_strings(&dfunc->df_var_names);
-	dfunc->df_defer_var_idx = 0;
-    }
-    else
-    {
-	if (add_def_function(ufunc) == FAIL)
-	    return FAIL;
-	new_def_function = TRUE;
-    }
-
-    if ((ufunc->uf_flags & FC_CLOSURE) && outer_cctx == NULL)
-    {
-	semsg(_(e_compiling_closure_without_context_str),
-						   printable_func_name(ufunc));
+    // Initialize the ufunc and the compilation context
+    if (compile_dfunc_ufunc_init(ufunc, outer_cctx, compile_type,
+						&new_def_function) == FAIL)
 	return FAIL;
-    }
 
-    ufunc->uf_def_status = UF_COMPILING;
+    compile_dfunc_cctx_init(&cctx, outer_cctx, ufunc, compile_type);
 
-    CLEAR_FIELD(cctx);
-
-    cctx.ctx_compile_type = compile_type;
-    cctx.ctx_ufunc = ufunc;
-    cctx.ctx_lnum = -1;
-    cctx.ctx_outer = outer_cctx;
-    ga_init2(&cctx.ctx_locals, sizeof(lvar_T), 10);
-    // Each entry on the type stack consists of two type pointers.
-    ga_init2(&cctx.ctx_type_stack, sizeof(type2_T), 50);
-    cctx.ctx_type_list = &ufunc->uf_type_list;
-    ga_init2(&cctx.ctx_instr, sizeof(isn_T), 50);
     instr = &cctx.ctx_instr;
 
     // Set the context to the function, it may be compiled when called from
@@ -4691,6 +4876,7 @@ compile_def_function(
 	estack_push_ufunc(ufunc, 1);
     estack_compiling = TRUE;
 
+    // Make sure arguments don't shadow variables in the context
     if (check_args_shadowing(ufunc, &cctx) == FAIL)
 	goto erret;
 
@@ -4701,7 +4887,7 @@ compile_def_function(
 	    goto erret;
 
     if (ufunc->uf_def_args.ga_len > 0)
-	if (compile_def_function_default_args(ufunc, &cctx, instr) == FAIL)
+	if (compile_def_function_default_args(ufunc, instr, &cctx) == FAIL)
 	    goto erret;
     ufunc->uf_args_visible = ufunc->uf_args.ga_len;
 
@@ -4715,116 +4901,29 @@ compile_def_function(
     }
 
     // compile the function body
-    if (compile_def_function_body(&cctx, ufunc->uf_lines.ga_len,
-		check_return_type, &lines_to_free, &errormsg) == FAIL)
+    if (compile_def_function_body(ufunc->uf_lines.ga_len, check_return_type,
+				&lines_to_free, &errormsg, &cctx) == FAIL)
 	goto erret;
 
-    if (cctx.ctx_scope != NULL)
-    {
-	if (cctx.ctx_scope->se_type == IF_SCOPE)
-	    emsg(_(e_missing_endif));
-	else if (cctx.ctx_scope->se_type == WHILE_SCOPE)
-	    emsg(_(e_missing_endwhile));
-	else if (cctx.ctx_scope->se_type == FOR_SCOPE)
-	    emsg(_(e_missing_endfor));
-	else
-	    emsg(_(e_missing_rcurly));
+    if (compile_dfunc_scope_end_missing(&cctx))
 	goto erret;
-    }
 
-    // TODO: if a function ends in "throw" but there was a return elsewhere we
-    // should not assume the return type is "void".
-    if (!cctx.ctx_had_return && !cctx.ctx_had_throw)
-    {
-	if (ufunc->uf_ret_type->tt_type == VAR_UNKNOWN)
-	    ufunc->uf_ret_type = &t_void;
-	else if (ufunc->uf_ret_type->tt_type != VAR_VOID
-		&& !IS_CONSTRUCTOR_METHOD(ufunc))
-	{
-	    emsg(_(e_missing_return_statement));
-	    goto erret;
-	}
-
-	// Return void if there is no return at the end.
-	// For a constructor return the object.
-	if (IS_CONSTRUCTOR_METHOD(ufunc))
-	{
-	    generate_instr(&cctx, ISN_RETURN_OBJECT);
-	    ufunc->uf_ret_type = &ufunc->uf_class->class_object_type;
-	}
-	else
-	    generate_instr(&cctx, ISN_RETURN_VOID);
-    }
+    if (compile_dfunc_generate_default_return(ufunc, &cctx) == FAIL)
+	goto erret;
 
     // When compiled with ":silent!" and there was an error don't consider the
     // function compiled.
     if (emsg_silent == 0 || did_emsg_silent == did_emsg_silent_before)
-    {
-	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
-	dfunc->df_deleted = FALSE;
-	dfunc->df_script_seq = current_sctx.sc_seq;
-#ifdef FEAT_PROFILE
-	if (cctx.ctx_compile_type == CT_PROFILE)
-	{
-	    dfunc->df_instr_prof = instr->ga_data;
-	    dfunc->df_instr_prof_count = instr->ga_len;
-	}
-	else
-#endif
-	if (cctx.ctx_compile_type == CT_DEBUG)
-	{
-	    dfunc->df_instr_debug = instr->ga_data;
-	    dfunc->df_instr_debug_count = instr->ga_len;
-	}
-	else
-	{
-	    dfunc->df_instr = instr->ga_data;
-	    dfunc->df_instr_count = instr->ga_len;
-	}
-	dfunc->df_varcount = dfunc->df_var_names.ga_len;
-	dfunc->df_has_closure = cctx.ctx_has_closure;
-
-	if (cctx.ctx_outer_used)
-	{
-	    ufunc->uf_flags |= FC_CLOSURE;
-	    if (outer_cctx != NULL)
-		++outer_cctx->ctx_closure_count;
-	}
-
-	ufunc->uf_def_status = UF_COMPILED;
-    }
+	compile_dfunc_epilogue(outer_cctx, ufunc, instr, &cctx);
 
     ret = OK;
 
 erret:
     if (ufunc->uf_def_status == UF_COMPILING)
     {
-	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
-
-	// Compiling aborted, free the generated instructions.
-	clear_instr_ga(instr);
-	VIM_CLEAR(dfunc->df_name);
-	ga_clear_strings(&dfunc->df_var_names);
-
-	// If using the last entry in the table and it was added above, we
-	// might as well remove it.
-	if (!dfunc->df_deleted && new_def_function
-			    && ufunc->uf_dfunc_idx == def_functions.ga_len - 1)
-	{
-	    --def_functions.ga_len;
-	    ufunc->uf_dfunc_idx = 0;
-	}
-	ufunc->uf_def_status = UF_COMPILE_ERROR;
-
-	while (cctx.ctx_scope != NULL)
-	    drop_scope(&cctx);
-
-	if (errormsg != NULL)
-	    emsg(errormsg);
-	else if (did_emsg == did_emsg_before)
-	    emsg(_(e_compiling_def_function_failed));
+	// compilation failed. do cleanup.
+	compile_dfunc_ufunc_cleanup(ufunc, instr, new_def_function,
+				    errormsg, did_emsg_before, &cctx);
     }
 
     if (cctx.ctx_redir_lhs.lhs_name != NULL)
