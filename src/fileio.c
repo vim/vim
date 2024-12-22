@@ -2498,37 +2498,29 @@ failed:
 #ifdef UNIX
 	    if (S_ISFIFO(perm))			    // fifo
 	    {
-		STRCPY(IObuff + buflen, _("[fifo]"));
-		buflen += STRLEN_LITERAL(_("[fifo]"));
+		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[fifo]"));
 		c = TRUE;
 	    }
 	    if (S_ISSOCK(perm))			    // or socket
 	    {
-		STRCPY(IObuff + buflen, _("[socket]"));
-		buflen += STRLEN_LITERAL(_("[socket]"));
+		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[socket]"));
 		c = TRUE;
 	    }
 # ifdef OPEN_CHR_FILES
 	    if (S_ISCHR(perm))			    // or character special
 	    {
-		STRCPY(IObuff + buflen, _("[character special]"));
-		buflen += STRLEN_LITERAL(_("[character special]"));
+		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[character special]"));
 		c = TRUE;
 	    }
 # endif
 #endif
 	    if (curbuf->b_p_ro)
 	    {
-		if (shortmess(SHM_RO))
-		{
-		    STRCPY(IObuff + buflen, _("[RO]"));
-		    buflen += STRLEN_LITERAL(_("RO]"));
-		}
-		else
-		{
-		    STRCPY(IObuff + buflen, _("[readonly]"));
-		    buflen += STRLEN_LITERAL(_("[readonly]"));
-		}
+		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			"%s", shortmess(SHM_RO) ? _("[RO]") : _("[readonly]"));
 		c = TRUE;
 	    }
 	    if (read_no_eol_lnum)
@@ -2538,26 +2530,26 @@ failed:
 	    }
 	    if (ff_error == EOL_DOS)
 	    {
-		STRCPY(IObuff + buflen, _("[CR missing]"));
-		buflen += STRLEN_LITERAL(_("[CR missing]"));
+		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("CR missing"));
 		c = TRUE;
 	    }
 	    if (split)
 	    {
-		STRCPY(IObuff + buflen, _("[long lines split]"));
-		buflen += STRLEN_LITERAL(_("[long lines split]"));
+		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[long lines split]"));
 		c = TRUE;
 	    }
 	    if (notconverted)
 	    {
-		STRCPY(IObuff + buflen, _("[NOT converted]"));
-		buflen += STRLEN_LITERAL(_("[NOT converted"));
+		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[NOT converted]"));
 		c = TRUE;
 	    }
 	    else if (converted)
 	    {
-		STRCPY(IObuff + buflen, _("[converted]"));
-		buflen += STRLEN_LITERAL(_("[converted"));
+		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[converted]"));
 		c = TRUE;
 	    }
 #ifdef FEAT_CRYPT
@@ -2569,20 +2561,20 @@ failed:
 #endif
 	    if (conv_error != 0)
 	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-		       _("[CONVERSION ERROR in line %ld]"), (long)conv_error);
+		vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[CONVERSION ERROR in line %ld]"), (long)conv_error);
 		c = TRUE;
 	    }
 	    else if (illegal_byte > 0)
 	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			 _("[ILLEGAL BYTE in line %ld]"), (long)illegal_byte);
+		vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[ILLEGAL BYTE in line %ld]"), (long)illegal_byte);
 		c = TRUE;
 	    }
 	    else if (error)
 	    {
-		STRCPY(IObuff + buflen, _("[READ ERRORS]"));
-		buflen += STRLEN_LITERAL(_("[READ ERRORS]"));
+		vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
+			_("[READ ERRORS]"));
 		c = TRUE;
 	    }
 	    if (msg_add_fileformat(fileformat))
@@ -3190,7 +3182,7 @@ msg_add_lines(
     long    lnum,
     off_T   nchars)
 {
-    size_t  len = STRLEN(IObuff);
+    int  len = (int)STRLEN(IObuff);
 
     if (shortmess(SHM_LINES))
 	vim_snprintf((char *)IObuff + len, IOSIZE - len,
