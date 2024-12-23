@@ -1384,9 +1384,9 @@ au BufNewFile,BufRead *.ly,*.ily		setf lilypond
 " Lisp (*.el = ELisp)
 " *.jl was removed, it's also used for Julia, better skip than guess wrong.
 if has("fname_case")
-  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,*.L,.emacs,.sawfishrc,*.stsg,*/supertux2/config setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,*.L,.emacs,.sawfishrc setf lisp
 else
-  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,.emacs,.sawfishrc,*.stsg,*/supertux2/config setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,.emacs,.sawfishrc setf lisp
 endif
 
 " *.cl = Common Lisp or OpenCL
@@ -2314,8 +2314,8 @@ au BufNewFile,BufRead *.zsh,*.zsh-theme,*.zunit		setf zsh
 " Salt state files
 au BufNewFile,BufRead *.sls			setf salt
 
-" Scheme ("racket" patterns are now separate, see above)
-au BufNewFile,BufRead *.scm,*.ss,*.sld		setf scheme
+" Scheme, Supertux configuration ("racket" patterns are now separate, see above)
+au BufNewFile,BufRead *.scm,*.ss,*.sld,*.stsg,*/supertux2/config	setf scheme
 
 " Screen RC
 au BufNewFile,BufRead .screenrc,screenrc	setf screen
