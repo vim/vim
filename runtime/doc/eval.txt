@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 Nov 02
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Dec 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -797,7 +797,7 @@ length minus one is used: >
 
 
 Blob modification ~
-					*blob-modification* *E1182* *E1184*
+						*blob-modification* *E1184*
 To change a specific byte of a blob use |:let| this way: >
 	:let blob[4] = 0x44
 
