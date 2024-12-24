@@ -163,6 +163,11 @@ function Foo(
   return 42
 endfunction
 
+" Issue #16243 (vimscript def parameters syntax highlight is wrong)
+
+function Test(lines = [line('.'), line('.')])
+endfunction
+
 
 " comments
 
