@@ -193,7 +193,7 @@ set_init_default_backupskip(void)
 		itemlen = vim_snprintf((char *)item, itemsize, "%s%s*", p, (has_trailing_path_sep) ? "" : PATHSEPSTR);
 
 		if (find_dup_item(ga.ga_data, item, itemlen, options[opt_idx].flags) == NULL
-			&& ga_grow(&ga, itemseplen + itemlen + 1) == OK)
+			&& ga_grow(&ga, (int)(itemseplen + itemlen + 1)) == OK)
 		{
 		    ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len,
 				    itemseplen + itemlen + 1,
@@ -8415,7 +8415,7 @@ vimrc_found(char_u *fname, char_u *envname)
 		if (vim_getenv((char_u *)"MYVIMDIR", &dofree) == NULL)
 		{
 		    size_t  usedlen = 0;
-		    int     len = 0;
+		    size_t  len = 0;
 		    char_u  *fbuf = NULL;
 
 		    if (STRNCMP(gettail(fname), ".vimrc", 6) == 0)
@@ -8452,7 +8452,7 @@ vimrc_found(char_u *fname, char_u *envname)
 		    }
 #endif
 		    else
-			(void)modify_fname((char_u *)":h", FALSE, &usedlen, &p, &fbuf, &len);
+			(void)modify_fname((char_u *)":h", FALSE, &usedlen, &p, &fbuf, (int *)&len);
 
 		    if (p != NULL)
 		    {

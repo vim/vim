@@ -3184,7 +3184,7 @@ any_var_get_obj_member(class_T *current_class, isn_T *iptr, typval_T *tv)
     copy_tv(tv, &mtv);
 
     // 'name' can either be a object variable or a object method
-    int		namelen = STRLEN(iptr->isn_arg.string);
+    int		namelen = (int)STRLEN(iptr->isn_arg.string);
     int		save_did_emsg = did_emsg;
 
     if (get_member_tv(obj->obj_class, TRUE, iptr->isn_arg.string, namelen,

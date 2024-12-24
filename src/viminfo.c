@@ -1142,7 +1142,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 			// freed later, also need to free "buf" later
 			value->bv_tofree = buf;
 		    s = sconv;
-		    len = STRLEN(s);
+		    len = (int)STRLEN(s);
 		    converted = TRUE;
 		}
 	    }
