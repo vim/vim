@@ -1865,6 +1865,23 @@ ins_compl_active(void)
 }
 
 /*
+ * Return True when wp is the actual completion window
+ */
+    int
+ins_compl_win_active(win_T *wp UNUSED)
+{
+    return ins_compl_active()
+#if defined(FEAT_QUICKFIX)
+        && (!wp->w_p_pvw
+# ifdef FEAT_PROP_POPUP
+            && !(wp->w_popup_flags & POPF_INFO)
+# endif
+        )
+#endif
+    ;
+}
+
+/*
  * Selected one of the matches.  When FALSE the match was edited or using the
  * longest common string.
  */
