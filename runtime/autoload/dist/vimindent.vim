@@ -314,6 +314,10 @@ const STARTS_CURLY_BLOCK: string = '\%('
 
 const STARTS_FUNCTION: string = $'^\s*\%({MODIFIERS.def}\)\=def\>!\=\s\@='
 
+# STARTS_ENUM {{{3
+
+const STARTS_ENUM: string = $'^\s*enum\>\s*'
+
 # ENDS_FUNCTION {{{3
 
 const ENDS_FUNCTION: string = $'^\s*enddef\>{END_OF_COMMAND}'
@@ -461,7 +465,6 @@ export def Expr(lnum = v:lnum): number # {{{2
             return startindent + shiftwidth()
         endif
     endif
-
     var past_bracket_block: dict<any>
     if exists('b:vimindent')
             && b:vimindent->has_key('is_BracketBlock')
@@ -587,6 +590,11 @@ export def Expr(lnum = v:lnum): number # {{{2
         if !line_B->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
             return base_ind
         endif
+    endif
+    if line_A.text =~ STARTS_ENUM
+        line_A->CacheEnumBlock()
+    elseif line_A.lnum->IsInside('EnumBlock')
+        return shiftwidth() 
     endif
 
     var ind: number = base_ind + Offset(line_A, line_B)
@@ -835,6 +843,25 @@ def CacheBracketBlock(line_A: dict<any>) # {{{2
         startlnum: line_A.lnum,
         endlnum: endlnum,
     })
+
+    RegisterCacheInvalidation()
+enddef
+
+def CacheEnumBlock(line_A: dict<any>) # {{{2
+    if line_A.text !~ '^\s*enum\s'
+        return
+    endif
+
+    var pos: list<number> = getcurpos()
+    var startlnum: number = line_A.lnum + 1
+    var endlnum: number = search($'^\s*endenum$', 'nW') - 1
+    setpos('.', pos)
+
+    b:vimindent = {
+        is_EnumBlock: true,
+        startlnum: startlnum,
+        endlnum: endlnum,
+    }
 
     RegisterCacheInvalidation()
 enddef
