@@ -6718,4 +6718,55 @@ func Test_hardlink_fname()
   call Xtest_hardlink_fname('l')
 endfunc
 
+func Test_event_QufickFixCmdChanged()
+  let g:count = 0
+  let g:qflistbuf = -1
+  let g:content = []
+  let g:Xsetlist = function('setqflist')
+
+  func GetQfContent()
+    if bufexists(g:qflistbuf)
+      let g:content = getbufline(g:qflistbuf, 1, '$')
+    else
+      let g:content = [string(g:Xsetlist)]
+    endif
+  endfunc
+
+  autocmd QuickFixChanged * :call GetQfContent()
+
+  " setqflist run before copen mean qf buffer is NULL
+  call g:Xsetlist([{'text': 'foo'}], 'r')
+  call assert_equal(['function(''setqflist'')'], g:content)
+
+  copen
+  let g:qflistbuf = bufnr()
+  call g:Xsetlist([{'text': 'foo'}], 'r')
+  call assert_equal(['|| foo'], g:content)
+
+  call g:Xsetlist([{'text': 'bar'}], 'a')
+  call assert_equal(['|| foo', '|| bar'], g:content)
+
+  call writefile(['this one', 'that one'], 'Xgrepthis', 'D')
+  vimgrep one Xgrepthis
+  call assert_equal(['Xgrepthis|1 col 6-9| this one', 'Xgrepthis|2 col 6-9| that one'], g:content)
+  cclose
+  let g:qflistbuf = -1
+
+  let g:Xsetlist = function('setloclist')
+  call g:Xsetlist(0, [{'text': 'local_foo'}], 'r')
+  call assert_equal(['function(''setloclist'')'], g:content)
+
+  lopen
+  let g:qflistbuf = bufnr()
+  call g:Xsetlist(0, [{'text': 'local_bar'}], 'a')
+  call assert_equal(['|| local_foo', '|| local_bar'], g:content)
+  lclose
+
+  autocmd! QuickFixChanged
+  unlet g:count
+  unlet g:content
+  unlet g:qflistbuf
+  unlet g:Xsetlist
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
