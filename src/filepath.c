@@ -675,7 +675,7 @@ repeat:
 			    if (s != NULL)
 			    {
 				*fnamep = s;
-				*fnamelen = slen;
+				*fnamelen = (int)slen;
 				vim_free(*bufp);
 				*bufp = s;
 				didit = TRUE;

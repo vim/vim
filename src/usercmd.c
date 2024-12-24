@@ -671,7 +671,7 @@ uc_list(char_u *name, size_t name_len)
 	    if (entry != NULL)
 	    {
 		STRCPY(IObuff + len, entry->value.string);
-		len += entry->value.length;
+		len += (int)entry->value.length;
 #ifdef FEAT_EVAL
 		if (p_verbose > 0 && cmd->uc_compl_arg != NULL)
 		{
@@ -681,7 +681,7 @@ uc_list(char_u *name, size_t name_len)
 		    {
 			IObuff[len++] = ',';
 			STRCPY(IObuff + len, cmd->uc_compl_arg);
-			len += uc_compl_arglen;
+			len += (int)uc_compl_arglen;
 		    }
 		}
 #endif

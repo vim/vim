@@ -1838,7 +1838,7 @@ compile_lhs_script_var(
     int		script_var = FALSE;
     imported_T	*import;
     char_u	*var_name;
-    int		var_name_len;
+    size_t	var_name_len;
 
     if (lhs->lhs_varlen > 1 && STRNCMP(var_start, "s:", 2) == 0)
 	script_namespace = TRUE;
