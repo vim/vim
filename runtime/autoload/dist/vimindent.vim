@@ -468,8 +468,7 @@ export def Expr(lnum = v:lnum): number # {{{2
     
     if line_A.text =~ STARTS_ENUM
         line_A->CacheEnumBlock()
-    elseif !line_A.lnum->IsRightBelow('EnumBlock')
-           && line_A.lnum->IsInside('EnumBlock')
+    elseif line_A.lnum->IsInside('EnumBlock')
         return shiftwidth() 
     endif
 
