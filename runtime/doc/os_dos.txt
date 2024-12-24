@@ -292,9 +292,9 @@ should be:
 'shellquote'	   "
 'shellxquote'						 "
 
-For Dos 16 bit this starts the shell as:
+For Dos 16 bit this starts the shell as: >
 	<shell> -c "command name" >file
-For Win32 as:
+For Win32 as: >
 	<shell> -c "command name >file"
 For DOS 32 bit, DJGPP does this internally somehow.
 
