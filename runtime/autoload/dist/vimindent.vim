@@ -465,7 +465,6 @@ export def Expr(lnum = v:lnum): number # {{{2
             return startindent + shiftwidth()
         endif
     endif
-   
     var past_bracket_block: dict<any>
     if exists('b:vimindent')
             && b:vimindent->has_key('is_BracketBlock')
@@ -592,7 +591,6 @@ export def Expr(lnum = v:lnum): number # {{{2
             return base_ind
         endif
     endif
- 
     if line_A.text =~ STARTS_ENUM
         line_A->CacheEnumBlock()
     elseif line_A.lnum->IsInside('EnumBlock')
