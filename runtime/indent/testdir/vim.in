@@ -939,10 +939,10 @@ endinterface
 
 " START_INDENT
 enum Color
-White
-Red
-Green
-Blue
+White,
+Red,
+Green,
+Blue,
 Black
 endenum
 " END_INDENT
