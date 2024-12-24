@@ -905,15 +905,15 @@ endif
 
 " START_INDENT
 abstract class Shape
-    this.color = Color.Black
-    this.thickness = 10
+    var color = Color.Black
+    var thickness = 10
 endclass
 " END_INDENT
 
 " START_INDENT
 class OtherThing
-    this.size: number
-    static totalSize: number
+    var size: number
+    static var totalSize: number
 
     static def ClearTotalSize(): number
 	var prev = totalSize
@@ -925,7 +925,7 @@ endclass
 
 " START_INDENT
 interface HasSurface
-    this.size: number
+    var size: number
     def Surface(): number
 endinterface
 " END_INDENT
@@ -939,11 +939,11 @@ endinterface
 
 " START_INDENT
 enum Color
-    White
-    Red
-    Green
-    Blue
-    Black
+    White,
+	Red,
+	Green,
+	Blue,
+	Black
 endenum
 " END_INDENT
 
