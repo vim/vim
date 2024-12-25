@@ -426,7 +426,6 @@ const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
 # RANGE_AT_SOL {{{3
 
 const RANGE_AT_SOL: string = '^\s*:\S'
-
 # }}}1
 # Interface {{{1
 export def Expr(lnum = v:lnum): number # {{{2
