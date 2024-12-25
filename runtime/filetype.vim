@@ -1078,6 +1078,9 @@ au BufRead,BufNewFile *.hws			setf hollywood
 " Hoon
 au BufRead,BufNewFile *.hoon			setf hoon
 
+" TI Code Composer Studio General Extension Language
+au BufNewFile,BufRead *.gel			setf gel
+
 " Tilde (must be before HTML)
 au BufNewFile,BufRead *.t.html			setf tilde
 
@@ -1108,6 +1111,9 @@ au BufNewFile,BufRead */etc/hosts.allow,*/etc/hosts.deny  setf hostsaccess
 
 " Hurl
 au BufRead,BufNewFile *.hurl			setf hurl
+
+" Hy
+au BufRead,BufNewFile *.hy,.hy-history		setf hy
 
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
@@ -1384,9 +1390,9 @@ au BufNewFile,BufRead *.ly,*.ily		setf lilypond
 " Lisp (*.el = ELisp)
 " *.jl was removed, it's also used for Julia, better skip than guess wrong.
 if has("fname_case")
-  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,*.L,.emacs,.sawfishrc,*.stsg,*/supertux2/config setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,*.L,.emacs,.sawfishrc setf lisp
 else
-  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,.emacs,.sawfishrc,*.stsg,*/supertux2/config setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.asd,*.el,.emacs,.sawfishrc setf lisp
 endif
 
 " *.cl = Common Lisp or OpenCL
@@ -2314,8 +2320,8 @@ au BufNewFile,BufRead *.zsh,*.zsh-theme,*.zunit		setf zsh
 " Salt state files
 au BufNewFile,BufRead *.sls			setf salt
 
-" Scheme ("racket" patterns are now separate, see above)
-au BufNewFile,BufRead *.scm,*.ss,*.sld		setf scheme
+" Scheme, Supertux configuration, Lips.js history ("racket" patterns are now separate, see above)
+au BufNewFile,BufRead *.scm,*.ss,*.sld,*.stsg,*/supertux2/config,.lips_repl_history	setf scheme
 
 " Screen RC
 au BufNewFile,BufRead .screenrc,screenrc	setf screen

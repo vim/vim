@@ -7583,6 +7583,7 @@ g:gzip_exec	pi_gzip.txt	/*g:gzip_exec*
 g:hare_recommended_style	ft_hare.txt	/*g:hare_recommended_style*
 g:hare_space_error	ft_hare.txt	/*g:hare_space_error*
 g:haredoc_search_depth	ft_hare.txt	/*g:haredoc_search_depth*
+g:help_example_languages	helphelp.txt	/*g:help_example_languages*
 g:html_charset_override	syntax.txt	/*g:html_charset_override*
 g:html_diff_one_file	syntax.txt	/*g:html_diff_one_file*
 g:html_dynamic_folds	syntax.txt	/*g:html_dynamic_folds*
@@ -8086,6 +8087,7 @@ help-TOC	helphelp.txt	/*help-TOC*
 help-buffer-options	helphelp.txt	/*help-buffer-options*
 help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
+help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
 help-tags	tags	1
 help-toc-install	helphelp.txt	/*help-toc-install*

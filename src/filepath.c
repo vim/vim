@@ -27,7 +27,7 @@
  * Returns OK on success, FAIL on failure.
  */
     static int
-get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
+get_short_pathname(char_u **fnamep, char_u **bufp, size_t *fnamelen)
 {
     int		l, len;
     WCHAR	*newbuf;
@@ -80,7 +80,7 @@ get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
     vim_free(wfname);
     vim_free(newbuf);
 
-    *fnamelen = l == 0 ? l : (int)STRLEN(*bufp);
+    *fnamelen = l == 0 ? l : STRLEN(*bufp);
     return OK;
 }
 
@@ -103,13 +103,14 @@ get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
 shortpath_for_invalid_fname(
     char_u	**fname,
     char_u	**bufp,
-    int		*fnamelen)
+    size_t	*fnamelen)
 {
     char_u	*short_fname, *save_fname, *pbuf_unused;
     char_u	*endp, *save_endp;
     char_u	ch;
-    int		old_len, len;
-    int		new_len, sfx_len;
+    size_t	old_len;
+    size_t	len;
+    size_t	new_len, sfx_len;
     int		retval = OK;
 
     // Make a copy
@@ -141,7 +142,7 @@ shortpath_for_invalid_fname(
 	ch = *endp;
 	*endp = 0;
 	short_fname = save_fname;
-	len = (int)STRLEN(short_fname) + 1;
+	len = STRLEN(short_fname) + 1;
 	if (get_short_pathname(&short_fname, &pbuf_unused, &len) == FAIL)
 	{
 	    retval = FAIL;
@@ -164,7 +165,7 @@ shortpath_for_invalid_fname(
 	 */
 
 	// Compute the length of the new path.
-	sfx_len = (int)(save_endp - endp) + 1;
+	sfx_len = (save_endp - endp) + 1;
 	new_len = len + sfx_len;
 
 	*fnamelen = new_len;
@@ -211,9 +212,10 @@ theend:
 shortpath_for_partial(
     char_u	**fnamep,
     char_u	**bufp,
-    int		*fnamelen)
+    size_t	*fnamelen)
 {
-    int		sepcount, len, tflen;
+    int		sepcount;
+    size_t	len, tflen;
     char_u	*p;
     char_u	*pbuf, *tfname;
     int		hasTilde;
@@ -232,7 +234,7 @@ shortpath_for_partial(
     else
 	pbuf = tfname = FullName_save(*fnamep, FALSE);
 
-    len = tflen = (int)STRLEN(tfname);
+    len = tflen = STRLEN(tfname);
 
     if (get_short_pathname(&tfname, &pbuf, &len) == FAIL)
 	return FAIL;
@@ -273,7 +275,7 @@ shortpath_for_partial(
 
     // Copy in the string - p indexes into tfname - allocated at pbuf
     vim_free(*bufp);
-    *fnamelen = (int)STRLEN(p);
+    *fnamelen = STRLEN(p);
     *bufp = pbuf;
     *fnamep = p;
 
@@ -295,7 +297,7 @@ modify_fname(
     size_t	*usedlen,	// characters after src that are used
     char_u	**fnamep,	// file name so far
     char_u	**bufp,		// buffer for allocated file name or NULL
-    int		*fnamelen)	// length of fnamep
+    size_t	*fnamelen)	// length of fnamep
 {
     int		valid = 0;
     char_u	*tail;
@@ -486,7 +488,7 @@ repeat:
     }
 
     tail = gettail(*fnamep);
-    *fnamelen = (int)STRLEN(*fnamep);
+    *fnamelen = STRLEN(*fnamep);
 
     // ":h" - head, remove "/file_name", can be repeated
     // Don't remove the first "/" or "c:\"
@@ -497,7 +499,7 @@ repeat:
 	s = get_past_head(*fnamep);
 	while (tail > s && after_pathsep(s, tail))
 	    MB_PTR_BACK(*fnamep, tail);
-	*fnamelen = (int)(tail - *fnamep);
+	*fnamelen = tail - *fnamep;
 #ifdef VMS
 	if (*fnamelen > 0)
 	    *fnamelen += 1; // the path separator is part of the path
@@ -537,7 +539,7 @@ repeat:
 	// Copy the string if it is shortened by :h and when it wasn't copied
 	// yet, because we are going to change it in place.  Avoids changing
 	// the buffer name for "%:8".
-	if (*fnamelen < (int)STRLEN(*fnamep) || *fnamep == fname_start)
+	if (*fnamelen < STRLEN(*fnamep) || *fnamep == fname_start)
 	{
 	    p = vim_strnsave(*fnamep, *fnamelen);
 	    if (p == NULL)
@@ -555,7 +557,7 @@ repeat:
 	}
 	else
 	{
-	    int		l = *fnamelen;
+	    size_t	l = *fnamelen;
 
 	    // Simple case, already have the full-name.
 	    // Nearly always shorter, so try first time.
@@ -578,7 +580,7 @@ repeat:
     if (src[*usedlen] == ':' && src[*usedlen + 1] == 't')
     {
 	*usedlen += 2;
-	*fnamelen -= (int)(tail - *fnamep);
+	*fnamelen -= tail - *fnamep;
 	*fnamep = tail;
     }
 
@@ -601,7 +603,7 @@ repeat:
 	{
 	    if (s > tail)
 	    {
-		*fnamelen += (int)(*fnamep - (s + 1));
+		*fnamelen += (*fnamep - (s + 1));
 		*fnamep = s + 1;
 #ifdef VMS
 		// cut version from the extension
@@ -623,7 +625,7 @@ repeat:
 	    if (limit < tail)
 		limit = tail;
 	    if (s > limit)	// remove one extension
-		*fnamelen = (int)(s - *fnamep);
+		*fnamelen = s - *fnamep;
 	}
 	*usedlen += 2;
     }
@@ -706,7 +708,7 @@ repeat:
 	    return -1;
 	vim_free(*bufp);
 	*bufp = *fnamep = p;
-	*fnamelen = (int)STRLEN(p);
+	*fnamelen = STRLEN(p);
 	*usedlen += 2;
     }
 
@@ -1041,7 +1043,7 @@ f_fnamemodify(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     char_u	*mods;
     size_t	usedlen = 0;
-    int		len = 0;
+    size_t	len = 0;
     char_u	*fbuf = NULL;
     char_u	buf[NUMBUFLEN];
 
@@ -1056,7 +1058,7 @@ f_fnamemodify(typval_T *argvars, typval_T *rettv)
 	fname = NULL;
     else
     {
-	len = (int)STRLEN(fname);
+	len = STRLEN(fname);
 	if (mods != NULL && *mods != NUL)
 	    (void)modify_fname(mods, FALSE, &usedlen, &fname, &fbuf, &len);
     }
@@ -2735,13 +2737,13 @@ home_replace(
     if (homedir_env != NULL && *homedir_env == '~')
     {
 	size_t	usedlen = 0;
-	int	flen;
+	size_t	flen;
 	char_u	*fbuf = NULL;
 
-	flen = (int)STRLEN(homedir_env);
+	flen = STRLEN(homedir_env);
 	(void)modify_fname((char_u *)":p", FALSE, &usedlen,
 						  &homedir_env, &fbuf, &flen);
-	flen = (int)STRLEN(homedir_env);
+	flen = STRLEN(homedir_env);
 	if (flen > 0 && vim_ispathsep(homedir_env[flen - 1]))
 	    // Remove the trailing / that is added to a directory.
 	    homedir_env[flen - 1] = NUL;
