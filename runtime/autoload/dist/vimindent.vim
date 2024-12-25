@@ -42,11 +42,6 @@ enddef
 
 # Init {{{1
 var patterns: list<string>
-
-# Buffer Variables {{{2
-b:isInsideEnumBlock = false
-# }}}2
-
 # Tokens {{{2
 # BAR_SEPARATION {{{3
 
@@ -319,17 +314,9 @@ const STARTS_CURLY_BLOCK: string = '\%('
 
 const STARTS_FUNCTION: string = $'^\s*\%({MODIFIERS.def}\)\=def\>!\=\s\@='
 
-# STARTS_ENUM {{{3
-
-const STARTS_ENUM: string = $'^\s*enum\>\s*'
-
 # ENDS_FUNCTION {{{3
 
 const ENDS_FUNCTION: string = $'^\s*enddef\>{END_OF_COMMAND}'
-
-# ENDS_ENUM {{{3
-
-const ENDS_ENUM: string = $'^\s*endenum\>\s*'
 
 # ASSIGNS_HEREDOC {{{3
 
@@ -474,6 +461,7 @@ export def Expr(lnum = v:lnum): number # {{{2
             return startindent + shiftwidth()
         endif
     endif
+
     var past_bracket_block: dict<any>
     if exists('b:vimindent')
             && b:vimindent->has_key('is_BracketBlock')
@@ -601,12 +589,6 @@ export def Expr(lnum = v:lnum): number # {{{2
         endif
     endif
 
-    if line_A.text =~ STARTS_ENUM
-        b:isInsideEnumBlock = true
-    elseif line_A.text =~ ENDS_ENUM
-        b:isInsideEnumBlock = false
-    endif
-
     var ind: number = base_ind + Offset(line_A, line_B)
     return [ind, 0]->max()
 enddef
@@ -652,7 +634,7 @@ def Offset( # {{{2
     elseif !line_A.isfirst
             && (line_B->EndsWithLineContinuation()
             || line_A.text =~ LINE_CONTINUATION_AT_SOL)
-            && !(line_B->EndsWithComma() && b:isInsideEnumBlock)
+            && !(line_B->EndsWithComma() && line_A.lnum->IsInside('EnumBlock'))
         return shiftwidth()
     endif
 
@@ -1070,6 +1052,24 @@ def ContinuesBelowBracketBlock( # {{{3
 enddef
 
 def IsInside(lnum: number, syntax: string): bool # {{{3
+    if syntax == 'EnumBlock'
+        var cur_pos = getpos('.')
+        cursor(lnum, 1)
+
+        var enum_pos = search('\s*enum\>\s', 'bnW')
+        var endenum_pos = search('\s*endenum\>\s', 'bnW')
+        
+        setpos('.', cur_pos)
+
+        if enum_pos == 0 && endenum_pos == 0
+            return false
+        endif
+        if (enum_pos > 0 && (endenum_pos == 0 || enum_pos < endenum_pos))
+            return true
+        endif
+        return false
+    endif
+
     if !exists('b:vimindent')
             || !b:vimindent->has_key($'is_{syntax}')
         return false
