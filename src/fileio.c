@@ -4256,17 +4256,23 @@ buf_check_timestamp(
 	else
 	{
 	    char    *reason;
+#ifdef FEAT_EVAL
 	    size_t  reasonlen;
+#endif
 
 	    if (stat_res < 0)
 	    {
 		reason = "deleted";
+#ifdef FEAT_EVAL
 		reasonlen = STRLEN_LITERAL("deleted");
+#endif
 	    }
 	    else if (bufIsChanged(buf))
 	    {
 		reason = "conflict";
+#ifdef FEAT_EVAL
 		reasonlen = STRLEN_LITERAL("conflict");
+#endif
 	    }
 	    /*
 	     * Check if the file contents really changed to avoid giving a
@@ -4276,17 +4282,23 @@ buf_check_timestamp(
 	    else if (orig_size != buf->b_orig_size || buf_contents_changed(buf))
 	    {
 		reason = "changed";
+#ifdef FEAT_EVAL
 		reasonlen = STRLEN_LITERAL("changed");
+#endif
 	    }
 	    else if (orig_mode != buf->b_orig_mode)
 	    {
 		reason = "mode";
+#ifdef FEAT_EVAL
 		reasonlen = STRLEN_LITERAL("mode");
+#endif
 	    }
 	    else
 	    {
 		reason = "time";
+#ifdef FEAT_EVAL
 		reasonlen = STRLEN_LITERAL("time");
+#endif
 	    }
 
 	    /*
