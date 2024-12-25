@@ -43,8 +43,8 @@ enddef
 # Init {{{1
 var patterns: list<string>
 
-# Global Variables {{{2
-var isInsideEnumBlock: bool = false
+# Buffer Variables {{{2
+b:isInsideEnumBlock = false
 # }}}2
 
 # Tokens {{{2
@@ -602,9 +602,9 @@ export def Expr(lnum = v:lnum): number # {{{2
     endif
 
     if line_A.text =~ STARTS_ENUM
-        isInsideEnumBlock = true
+        b:isInsideEnumBlock = true
     elseif line_A.text =~ ENDS_ENUM
-        isInsideEnumBlock = false
+        b:isInsideEnumBlock = false
     endif
 
     var ind: number = base_ind + Offset(line_A, line_B)
@@ -652,7 +652,7 @@ def Offset( # {{{2
     elseif !line_A.isfirst
             && (line_B->EndsWithLineContinuation()
             || line_A.text =~ LINE_CONTINUATION_AT_SOL)
-            && !(line_B->EndsWithComma() && isInsideEnumBlock)
+            && !(line_B->EndsWithComma() && b:isInsideEnumBlock)
         return shiftwidth()
     endif
 
