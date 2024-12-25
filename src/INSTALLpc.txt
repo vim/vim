@@ -256,6 +256,8 @@ Select one of the following icon from the Start Menu:
 * MSYS2 MinGW 32-bit (To build 32-bit versions of Vim)
 * MSYS2 MinGW 64-bit (To build 64-bit versions of Vim)
 
+Before building look through notes for MinGW in part 3 below.
+
 Go to the source directory of Vim, then execute the make command.  E.g.:
 
     make -f Make_ming.mak
@@ -320,6 +322,18 @@ The original 'mingw32' compiler is outdated, and may no longer work:
 
     http://www.mingw.org/
 
+Please note, newer versions of Windows (I believe starting with Win10)
+offer support for UCRT C-library in addition to traditional MSVCRT. As result,
+one may find 2 flavors of MinGW: one compiling against UCRT and another compiling
+against MSVCRT. Currently VIM comes with libXpm.a compiled against MSVCRT,
+so an attempt to build VIM against UCRT will fail with:
+
+    undefined reference to __imp___iob_func
+
+In which case, if one does not need support for XPM, then argument XPM=no can be
+added to make-command. If support is needed, then another flavor of MinGW must
+be used.
+
 Once you have downloaded the compiler binaries, unpack them on your hard disk
 somewhere, and put them on your PATH.  Go to the Control Panel, (Performance
 and Maintenance), System, Advanced, and edit the environment from there.  If
@@ -349,10 +363,18 @@ Change directory to 'vim\src':
 
 and you type:
 
-    mingw32-make -f Make_ming.mak gvim.exe
+    mingw32-make -f Make_ming.mak ARCH=x86-64 gvim.exe
+
+Note, ARCH is necessary because otherwise "sed" won't be found (or will
+get called incorrectly) and compilation shall abort. Just make sure that
+correct value is used with ARCH. In the example above the value corresponds
+to 64-bit architecture. For 32-bit the value is x86.
 
 After churning for a while, you will end up with 'gvim.exe' in the 'vim\src'
 directory.
+
+If you also want to get xxd.exe, hex.exe, install.exe etc. then just remove "gvim.exe"
+from make-command.
 
 You should not need to do *any* editing of any files to get vim compiled this
 way.  If, for some reason, you want the console-mode-only version of vim (this
@@ -671,12 +693,12 @@ When building, you need to set the following variables:
 E.g. When using MSVC (as one line):
 
     nmake -f Make_mvc.mak
-        PERL=C:\Perl DYNAMIC_PERL=yes PERL_VER=522
+        PERL=C:\StrawberryPerl\perl DYNAMIC_PERL=yes PERL_VER=522
 
 Or when using MinGW (as one line):
 
     mingw32-make -f Make_ming.mak
-        PERL=C:/Perl DYNAMIC_PERL=yes PERL_VER=522
+        PERL=C:/StrawberryPerl/perl DYNAMIC_PERL=yes PERL_VER=522
 
 
 11. Building with Ruby support
