@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2024 Nov 11
+*develop.txt*   For Vim version 9.1.  Last change: 2024 Dec 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -190,6 +190,12 @@ The basic steps to make changes to the code:
 
 For any non-trivial change, please always create a pull request on github,
 since this triggers the test suite.
+
+							*style-clang-format*
+sound.c and sign.c can be (semi-) automatically formated using the
+`clang-format` formatter according to the distributed .clang-format file.
+Other source files do not yet correspond to the .clang-format file.  This may
+change in the future and they may be reformatted as well.
 
 
 C COMPILER				*style-compiler* *ANSI-C* *C89* *C99*

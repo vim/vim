@@ -10268,6 +10268,7 @@ strutf16len()	builtin.txt	/*strutf16len()*
 strwidth()	builtin.txt	/*strwidth()*
 style-braces	develop.txt	/*style-braces*
 style-changes	develop.txt	/*style-changes*
+style-clang-format	develop.txt	/*style-clang-format*
 style-comments	develop.txt	/*style-comments*
 style-common-functions	develop.txt	/*style-common-functions*
 style-compiler	develop.txt	/*style-compiler*
