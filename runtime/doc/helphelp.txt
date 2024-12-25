@@ -461,7 +461,7 @@ Note: When setting "g:help_example_languages", if you do not include "vim"
 key, the Vim syntax highlighting will not be enabled. If you set it to an
 empty value, syntax highlighting for embedded languages will be disabled.
 
-Further note: including additional syntax languages into help files may not
+Further note: including arbitrary syntax languages into help files may not
 always work perfectly, if the included 'syntax' script does not account for
 such an import.
 						*help-notation*
