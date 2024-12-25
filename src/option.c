@@ -8452,7 +8452,7 @@ vimrc_found(char_u *fname, char_u *envname)
 		    }
 #endif
 		    else
-			(void)modify_fname((char_u *)":h", FALSE, &usedlen, &p, &fbuf, (int *)&len);
+			(void)modify_fname((char_u *)":h", FALSE, &usedlen, &p, &fbuf, &len);
 
 		    if (p != NULL)
 		    {

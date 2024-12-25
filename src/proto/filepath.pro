@@ -1,5 +1,5 @@
 /* filepath.c */
-int modify_fname(char_u *src, int tilde_file, size_t *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen);
+int modify_fname(char_u *src, int tilde_file, size_t *usedlen, char_u **fnamep, char_u **bufp, size_t *fnamelen);
 void shorten_dir(char_u *str);
 int file_is_readable(char_u *fname);
 void f_chdir(typval_T *argvars, typval_T *rettv);
