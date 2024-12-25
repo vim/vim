@@ -42,6 +42,11 @@ enddef
 
 # Init {{{1
 var patterns: list<string>
+
+# Global Variables {{{2
+var isInsideEnumBlock: bool = false
+# }}}2
+
 # Tokens {{{2
 # BAR_SEPARATION {{{3
 
@@ -322,6 +327,10 @@ const STARTS_ENUM: string = $'^\s*enum\>\s*'
 
 const ENDS_FUNCTION: string = $'^\s*enddef\>{END_OF_COMMAND}'
 
+# ENDS_ENUM {{{3
+
+const ENDS_ENUM: string = $'^\s*endenum\>\s*'
+
 # ASSIGNS_HEREDOC {{{3
 
 const ASSIGNS_HEREDOC: string = $'^\%({COMMENT}\)\@!.*\%({HEREDOC_OPERATOR}\)\s\+\zs[A-Z]\+{END_OF_LINE}'
@@ -417,6 +426,7 @@ const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
 # RANGE_AT_SOL {{{3
 
 const RANGE_AT_SOL: string = '^\s*:\S'
+
 # }}}1
 # Interface {{{1
 export def Expr(lnum = v:lnum): number # {{{2
@@ -591,10 +601,11 @@ export def Expr(lnum = v:lnum): number # {{{2
             return base_ind
         endif
     endif
+
     if line_A.text =~ STARTS_ENUM
-        line_A->CacheEnumBlock()
-    elseif line_A.lnum->IsInside('EnumBlock')
-        return shiftwidth() 
+        isInsideEnumBlock = true
+    elseif line_A.text =~ ENDS_ENUM
+        isInsideEnumBlock = false
     endif
 
     var ind: number = base_ind + Offset(line_A, line_B)
@@ -642,6 +653,7 @@ def Offset( # {{{2
     elseif !line_A.isfirst
             && (line_B->EndsWithLineContinuation()
             || line_A.text =~ LINE_CONTINUATION_AT_SOL)
+            && !(line_B->EndsWithComma() && isInsideEnumBlock)
         return shiftwidth()
     endif
 
@@ -843,25 +855,6 @@ def CacheBracketBlock(line_A: dict<any>) # {{{2
         startlnum: line_A.lnum,
         endlnum: endlnum,
     })
-
-    RegisterCacheInvalidation()
-enddef
-
-def CacheEnumBlock(line_A: dict<any>) # {{{2
-    if line_A.text !~ '^\s*enum\s'
-        return
-    endif
-
-    var pos: list<number> = getcurpos()
-    var startlnum: number = line_A.lnum + 1
-    var endlnum: number = search($'^\s*endenum$', 'nW') - 1
-    setpos('.', pos)
-
-    b:vimindent = {
-        is_EnumBlock: true,
-        startlnum: startlnum,
-        endlnum: endlnum,
-    }
 
     RegisterCacheInvalidation()
 enddef

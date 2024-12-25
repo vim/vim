@@ -956,6 +956,7 @@ FIVE(1 + 2 + 2), SIX(36 / 3 / 2), SEVEN(7), EIGHT(2 * 2 * 2),
 NINE(3 + 3 + 3)
 const value: number
 def new(this.value)
+return this.value
 enddef
 endenum
 " END_INDENT
