@@ -1109,6 +1109,9 @@ au BufNewFile,BufRead */etc/hosts.allow,*/etc/hosts.deny  setf hostsaccess
 " Hurl
 au BufRead,BufNewFile *.hurl			setf hurl
 
+" Hy
+au BufRead,BufNewFile *.hy,.hy-history		setf hy
+
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
 
@@ -2314,8 +2317,8 @@ au BufNewFile,BufRead *.zsh,*.zsh-theme,*.zunit		setf zsh
 " Salt state files
 au BufNewFile,BufRead *.sls			setf salt
 
-" Scheme, Supertux configuration ("racket" patterns are now separate, see above)
-au BufNewFile,BufRead *.scm,*.ss,*.sld,*.stsg,*/supertux2/config	setf scheme
+" Scheme, Supertux configuration, Lips.js history ("racket" patterns are now separate, see above)
+au BufNewFile,BufRead *.scm,*.ss,*.sld,*.stsg,*/supertux2/config,.lips_repl_history	setf scheme
 
 " Screen RC
 au BufNewFile,BufRead .screenrc,screenrc	setf screen
