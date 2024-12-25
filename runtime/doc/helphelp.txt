@@ -452,16 +452,16 @@ E.g: >vim
 	endfunction
 <
 						*g:help_example_languages*
-If you want to change the syntax highlighting in the block, you can
-change it like this: >
-	:let g:help_example_languages = #{ vim: 'vim', sh: 'bash' }
+If you want to change the syntax highlighting in the block, you can put like
+this in your |vimrc|: >
+	:let g:help_example_languages = { "vim": "vim", "sh": "bash" }
 The key represents the annotation marker name, and the value is the 'syntax'
 name.  By default, help files support only Vim script highlighting.
-Note: When setting "g:help_example_languages", if you do not include "vim"
-key, the Vim syntax highlighting will not be enabled. If you set it to an
-empty value, syntax highlighting for embedded languages will be disabled.
+Note: When setting "g:help_example_languages", if you do not include "vim" key,
+the Vim syntax highlighting will not be enabled.  If you set it to an empty
+value, syntax highlighting for embedded languages will be disabled.
 
-Further note: including arbitrary syntax languages into help files may not
+Further note: Including arbitrary syntax languages into help files may not
 always work perfectly, if the included 'syntax' script does not account for
 such an import.
 						*help-notation*
@@ -481,15 +481,15 @@ You can find the details in $VIMRUNTIME/syntax/help.vim
 GENDER NEUTRAL LANGUAGE
 
 						*gender-neutral* *inclusion*
-Vim is for everybody, no matter race, gender or anything. For new or updated
-help text, gender neutral language is recommended. Some of the help text is
-many years old and there is no need to change it. We do not make any
+Vim is for everybody, no matter race, gender or anything.  For new or updated
+help text, gender neutral language is recommended.  Some of the help text is
+many years old and there is no need to change it.  We do not make any
 assumptions about the gender of the user, no matter how the text is phrased.
 The goal is that the reader understands how Vim works, the exact wording is
 secondary.
 
 Many online technical style guides include sections about gender neutral
-language. Here are a few: >
+language.  Here are a few: >
 
 	https://developers.google.com/style/pronouns
 	https://techwhirl.com/gender-neutral-technical-writing/
