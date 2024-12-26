@@ -940,10 +940,24 @@ endinterface
 " START_INDENT
 enum Color
     White,
-	Red,
-	Green,
-	Blue,
-	Black
+    Red,
+    Green,
+    Blue,
+    Black
+endenum
+" END_INDENT
+
+" START_INDENT
+enum Digits
+    INVALID(v:numbermax),  # The null value.
+    ZERO(0 * v:numbermin), ONE(2 - 1),
+    TWO(1 + 1), THREE(9 / 3), FOUR(1 * 4),
+    FIVE(1 + 2 + 2), SIX(36 / 3 / 2), SEVEN(7), EIGHT(2 * 2 * 2),
+    NINE(3 + 3 + 3)
+    const value: number
+    def new(value: number)
+	this.value = value
+    enddef
 endenum
 " END_INDENT
 
