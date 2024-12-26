@@ -1057,13 +1057,13 @@ def IsInside(lnum: number, syntax: string): bool # {{{3
         var cur_pos = getpos('.')
         cursor(lnum, 1)
         var enum_pos = search('^\C\s*\%(export\s\)\=\s*enum\s\+\S\+', 'bnW')
-        var endenum_pos = search('^\C\s*endenum\>\s', 'bnW')
+        var endenum_pos = search('^\C\s*endenum\>', 'bnW')
         setpos('.', cur_pos)
 
         if enum_pos == 0 && endenum_pos == 0
             return false
         endif
-        if (enum_pos > 0 && (endenum_pos == 0 || enum_pos < endenum_pos))
+        if (enum_pos > 0 && (endenum_pos == 0 || enum_pos > endenum_pos))
             return true
         endif
         return false
