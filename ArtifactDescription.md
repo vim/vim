@@ -1,4 +1,4 @@
-# Artifact Description2
+# Artifact Description
 
 **クレジット**：
 
