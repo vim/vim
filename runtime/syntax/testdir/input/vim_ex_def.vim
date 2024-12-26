@@ -99,6 +99,11 @@ def Foo(
     z: string = "zed")
 enddef
 
+" Issue #16243 (vimscript def parameters syntax highlight is wrong)
+
+def Test(lines: list<number> = [line('.'), line('.')]): void
+enddef
+
 
 " comments
 
