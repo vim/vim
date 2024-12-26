@@ -172,6 +172,7 @@ const MODIFIERS: dict<string> = {
     def: ['export', 'static'],
     class: ['export', 'abstract', 'export abstract'],
     interface: ['export'],
+    enum: ['export'],
 }
 #     ...
 #     class: ['export', 'abstract', 'export abstract'],
