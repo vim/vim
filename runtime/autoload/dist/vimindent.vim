@@ -1055,10 +1055,8 @@ def IsInside(lnum: number, syntax: string): bool # {{{3
     if syntax == 'EnumBlock'
         var cur_pos = getpos('.')
         cursor(lnum, 1)
-
         var enum_pos = search('^\C\s*enum\>\s', 'bnW')
         var endenum_pos = search('^\C\s*endenum\>\s', 'bnW')
-        
         setpos('.', cur_pos)
 
         if enum_pos == 0 && endenum_pos == 0
