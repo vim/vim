@@ -187,6 +187,7 @@ static void f_synconcealed(typval_T *argvars, typval_T *rettv);
 static void f_tabpagebuflist(typval_T *argvars, typval_T *rettv);
 static void f_taglist(typval_T *argvars, typval_T *rettv);
 static void f_tagfiles(typval_T *argvars, typval_T *rettv);
+static void f_toradians(typval_T *argvars, typval_T *rettv);
 static void f_type(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
@@ -2914,6 +2915,8 @@ static funcentry_T global_functions[] =
 			ret_void,	    TIMER_FUNC(f_timer_stopall)},
     {"tolower",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_tolower},
+    {"toradians",       1, 1, FEARG_1,      arg1_float_or_nr,
+                        ret_string,         f_toradians},
     {"toupper",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_toupper},
     {"tr",		3, 3, FEARG_1,	    arg3_string,
@@ -11922,6 +11925,31 @@ f_taglist(typval_T *argvars, typval_T *rettv)
 	fname = tv_get_string(&argvars[1]);
     if (rettv_list_alloc(rettv) == OK)
 	(void)get_tags(rettv->vval.v_list, tag_pattern, fname);
+}
+
+/*
+ * "taglist()" function
+ */
+    static void
+f_toradians(typval_T *argvars, typval_T *rettv)
+{
+    char buf[12];
+    float_T     f = 0.0;
+
+    if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
+	return;
+    
+    rettv->v_type = VAR_STRING;
+    if(get_float_arg(argvers, %f) == OK){
+      f = f/180.0;
+      snprintf(buf, 12, "%f", f);
+      int size = snprintf(NULL, 0, "pi * %s", buf) + 1;
+      rettv->vval.v_string = malloc(size);
+      snprintf(rettv->vval.v_string, size, "pi * %s", buf)
+    }
+    else
+      rettv->vval.v_string = "0.0";
+    return;
 }
 
 /*
