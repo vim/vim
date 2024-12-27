@@ -44,6 +44,14 @@ def Test_enum_parse()
   END
   v9.CheckSourceFailure(lines, 'E492: Not an editor command: enums Something', 2)
 
+  # The complete "enum" should be specified.
+  lines =<< trim END
+    vim9script
+    enu Something
+    endenum
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: enu', 2)
+
   # The complete "endenum" should be specified.
   lines =<< trim END
     vim9script
