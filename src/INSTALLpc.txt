@@ -1,4 +1,4 @@
-INSTALLpc.txt - Installation of Vim on PC - Last Update: 2024 Dec 26
+INSTALLpc.txt - Installation of Vim on PC - Last Update: 2024 Dec 27
 
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
@@ -367,7 +367,7 @@ and you type:
 
 Note, ARCH is necessary if you don't have the sed command in your $PATH. Just
 make sure that the correct value is used with ARCH. In the example above the
-value corresponds to 64-bit architecture. For 32-bit the value is x86.
+value corresponds to 64-bit architecture. For 32-bit the value is "i686".
 
 After churning for a while, you will end up with 'gvim.exe' in the 'vim\src'
 directory.
