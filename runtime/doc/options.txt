@@ -2164,6 +2164,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    characters can be skipped and matches can be found even
 		    if the exact sequence is not typed.
 
+	   reverse  Reverse the display order of completion matches when the
+		    popup menu is above the cursor line.
+
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)
 			global
@@ -9577,6 +9580,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			instead wildcard expansion is used.
 	  pum		Display the completion matches using the popup menu
 			in the same style as the |ins-completion-menu|.
+	  reverse	Reverse the display order of completion matches when
+			using the "pum" option.
 	  tagfile	When using CTRL-D to list matching tags, the kind of
 			tag and the file of the tag is listed.	Only one match
 			is displayed per line.  Often used tag kinds are:

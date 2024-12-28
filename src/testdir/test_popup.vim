@@ -1830,4 +1830,27 @@ func Test_popup_completion_many_ctrlp()
   bw!
 endfunc
 
+func Test_pum_reverse_render()
+  CheckScreendump
+  let lines =<< trim END
+    set wildmenu
+    set wildoptions=pum,reverse
+    set cot+=noinsert,reverse
+    set pumheight=5
+    call setline(1, ['apple', 'anchor', 'astronomy', 'artist', 'avenue', 'antique', 'adventure', 'arrival', 'amber', 'alliance'])
+  END
+  call writefile(lines, 'Xscript', 'D')
+  let buf = RunVimInTerminal('-S Xscript', #{rows: 13})
+
+  call term_sendkeys(buf, "Go\<C-X>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_reverse_01', {})
+  call term_sendkeys(buf, "\<C-E>\<ESC>")
+
+  call term_sendkeys(buf, ":\<TAB>")
+  call VerifyScreenDump(buf, 'Test_pum_reverse_02', {})
+  call term_sendkeys(buf, "\<ESC>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
