@@ -225,6 +225,8 @@ static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
 static void show_pum(int prev_w_wrow, int prev_w_leftcol);
 static unsigned  quote_meta(char_u *dest, char_u *str, int len);
+static int strncmp_simd(const char_u *s1, const char_u *s2, size_t n);
+static int strnicmp_simd(const char_u *s1, const char_u *s2, size_t n);
 
 #ifdef FEAT_SPELL
 static void spell_back_to_badword(void);
@@ -798,7 +800,7 @@ ins_compl_add(
 	do
 	{
 	    if (!match_at_original_text(match)
-		    && STRNCMP(match->cp_str.string, str, len) == 0
+		    && strncmp_simd(match->cp_str.string, str, len) == 0
 		    && ((int)match->cp_str.length <= len
 						 || match->cp_str.string[len] == NUL))
 		return NOTDONE;
@@ -899,8 +901,8 @@ ins_compl_equal(compl_T *match, char_u *str, int len)
     if (match->cp_flags & CP_EQUAL)
 	return TRUE;
     if (match->cp_flags & CP_ICASE)
-	return STRNICMP(match->cp_str.string, str, (size_t)len) == 0;
-    return STRNCMP(match->cp_str.string, str, (size_t)len) == 0;
+	return strnicmp_simd(match->cp_str.string, str, (size_t)len) == 0;
+    return strncmp_simd(match->cp_str.string, str, (size_t)len) == 0;
 }
 
 /*
@@ -1241,6 +1243,209 @@ ins_compl_fuzzy_cmp(const void *a, const void *b)
     const int ia = (*(pumitem_T *)a).pum_idx;
     const int ib = (*(pumitem_T *)b).pum_idx;
     return sa == sb ? (ia == ib ? 0 : (ia < ib ? -1 : 1)) : (sa < sb ? 1 : -1);
+}
+
+/*
+ * strncmp_simd: Compare up to n bytes of two strings (s1 and s2) using SIMD.
+ * Falls back to default strncmp_simd if SIMD is not supported or unavailable.
+ */
+    static int
+strncmp_simd(const char_u *s1, const char_u *s2, size_t n)
+{
+    if (n == 0)
+        return 0;
+
+#ifdef PLATFORM_NO_SIMD
+    return STRNCMP(s1, s2, n);
+#endif
+
+    size_t i = 0;
+
+#ifdef PLATFORM_X86
+    const size_t simd_width = 16; // SSE2 processes 16 bytes at a time
+    while (n >= simd_width)
+    {
+	__m128i v1 = _mm_loadu_si128((__m128i *)(s1 + i));
+	__m128i v2 = _mm_loadu_si128((__m128i *)(s2 + i));
+	__m128i cmp = _mm_cmpeq_epi8(v1, v2);
+
+	// Generate a mask of unequal bytes
+	int mask = _mm_movemask_epi8(cmp);
+	if (mask != 0xFFFF)
+	{   // Not all bytes are equal
+	    for (size_t j = 0; j < simd_width; ++j)
+	    {
+		if ((unsigned char)s1[i + j] != (unsigned char)s2[i + j])
+		    return (unsigned char)s1[i + j] - (unsigned char)s2[i + j];
+		if (s1[i + j] == '\0' || s2[i + j] == '\0')
+		    return 0; // End of string
+	    }
+	}
+
+	n -= simd_width;
+	i += simd_width;
+    }
+
+#elif defined(PLATFORM_ARM_NEON)
+    const size_t simd_width = 16; // NEON processes 16 bytes at a time
+    while (n >= simd_width)
+    {
+	uint8x16_t v1 = vld1q_u8((uint8_t *)(s1 + i));
+	uint8x16_t v2 = vld1q_u8((uint8_t *)(s2 + i));
+	uint8x16_t cmp = vceqq_u8(v1, v2);
+
+	// Check if all bytes are equal
+	uint64_t high = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 1);
+	uint64_t low = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 0);
+	if ((high != ~0ULL) || (low != ~0ULL))
+	{
+	    for (size_t j = 0; j < simd_width; ++j)
+	    {
+		if ((unsigned char)s1[i + j] != (unsigned char)s2[i + j])
+		    return (unsigned char)s1[i + j] - (unsigned char)s2[i + j];
+		if (s1[i + j] == '\0' || s2[i + j] == '\0')
+		    return 0; // End of string
+	    }
+	}
+
+	n -= simd_width;
+	i += simd_width;
+    }
+#endif
+
+    // Handle remaining bytes (non-SIMD path)
+    for (; i < n; ++i)
+    {
+	if ((unsigned char)s1[i] != (unsigned char)s2[i])
+	    return (unsigned char)s1[i] - (unsigned char)s2[i];
+	if (s1[i] == '\0' || s2[i] == '\0')
+	    return 0;
+    }
+
+    return 0;
+}
+
+#ifdef PLATFORM_X86
+static inline __m128i simd_tolower(__m128i r)
+{
+    __m128i lower_bound = _mm_set1_epi8('A' - 1);
+    __m128i upper_bound = _mm_set1_epi8('Z' + 1);
+    __m128i is_upper = _mm_and_si128(
+        _mm_cmpgt_epi8(r, lower_bound),
+        _mm_cmplt_epi8(r, upper_bound)
+    );
+    __m128i mask = _mm_and_si128(is_upper, _mm_set1_epi8(32));
+    return _mm_add_epi8(r, mask);
+}
+#elif defined(PLATFORM_ARM_NEON)
+static inline uint8x16_t simd_tolower(uint8x16_t r)
+{
+    uint8x16_t lower_bound = vdupq_n_u8('A');
+    uint8x16_t upper_bound = vdupq_n_u8('Z');
+    uint8x16_t is_upper = vandq_u8(
+        vcgeq_u8(r, lower_bound),
+        vcleq_u8(r, upper_bound)
+    );
+    uint8x16_t mask = vandq_u8(is_upper, vdupq_n_u8(32));
+    return vaddq_u8(r, mask);
+}
+#endif
+
+    static int
+strnicmp_simd(const char_u *s1, const char_u *s2, size_t n)
+{
+    if (n == 0)
+        return 0;
+
+    // Handle multi-byte characters
+    if (has_mbyte)
+        return STRNICMP(s1, s2, n);
+
+#ifdef PLATFORM_NO_SIMD
+    return STRNICMP(s1, s2, n);
+#endif
+
+    // SIMD path for single-byte characters
+#ifdef PLATFORM_X86
+    const size_t simd_width = 16;
+    size_t i = 0, j = 0;
+    while (n - i >= simd_width)
+    {
+	__m128i v1 = _mm_loadu_si128((__m128i *)(s1 + i));
+	__m128i v2 = _mm_loadu_si128((__m128i *)(s2 + i));
+
+	// Convert to lowercase
+	v1 = simd_tolower(v1);
+	v2 = simd_tolower(v2);
+
+	// Compare
+	__m128i cmp = _mm_cmpeq_epi8(v1, v2);
+	int mask = _mm_movemask_epi8(cmp);
+	if (mask != 0xFFFF) // Not all bytes match
+	{
+	    for (j = 0; j < simd_width; ++j)
+	    {
+		char c1 = s1[i + j] | 0x20; // To lower
+		char c2 = s2[i + j] | 0x20;
+		if (c1 != c2)
+		    return c1 - c2;
+		if (c1 == '\0')
+		    return 0;
+	    }
+	}
+	i += simd_width;
+    }
+    s1 += i;
+    s2 += i;
+    n -= i;
+
+#elif defined(PLATFORM_ARM_NEON)
+    const size_t simd_width = 16;
+    size_t i = 0, j = 0;
+    while (n - i >= simd_width)
+    {
+	uint8x16_t v1 = vld1q_u8((uint8_t *)(s1 + i));
+	uint8x16_t v2 = vld1q_u8((uint8_t *)(s2 + i));
+
+	// Convert to lowercase
+	v1 = simd_tolower(v1);
+	v2 = simd_tolower(v2);
+
+        // Compare
+        uint8x16_t cmp = vceqq_u8(v1, v2);
+        uint64_t high = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 1);
+        uint64_t low = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 0);
+        if (high != ~0ULL || low != ~0ULL)
+        {
+	    for (j = 0; j < simd_width; ++j)
+	    {
+		char c1 = s1[i + j] | 0x20; // To lower
+		char c2 = s2[i + j] | 0x20;
+		if (c1 != c2)
+		    return c1 - c2;
+		if (c1 == '\0')
+		    return 0;
+	    }
+	}
+        i += simd_width;
+    }
+    s1 += i;
+    s2 += i;
+    n -= i;
+#endif
+
+    // Fallback for remaining bytes
+    for (i = 0; i < n; ++i)
+    {
+        char c1 = s1[i] | 0x20; // To lower
+        char c2 = s2[i] | 0x20;
+        if (c1 != c2)
+            return c1 - c2;
+        if (c1 == '\0')
+            return 0;
+    }
+
+    return 0;
 }
 
 /*
