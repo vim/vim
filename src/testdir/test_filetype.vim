@@ -463,7 +463,6 @@ def s:GetFilenameChecks(): dict<list<string>>
     mallard: ['file.page'],
     man: ['file.man'],
     manconf: ['/etc/man.conf', 'man.config', 'any/etc/man.conf'],
-    map: ['file.map'],
     maple: ['file.mv', 'file.mpl', 'file.mws'],
     markdown: ['file.markdown', 'file.mdown', 'file.mkd', 'file.mkdn', 'file.mdwn', 'file.md'],
     masm: ['file.masm'],
@@ -2769,6 +2768,24 @@ func Test_make_file()
   call writefile(['# get the list of tests', 'include testdir/Make_all.mak'], 'XMakefile.mak', 'D')
   split XMakefile.mak
   call assert_equal(0, get(b:, 'make_microsoft', 0))
+  bwipe!
+
+  filetype off
+endfunc
+
+func Test_map_file()
+  filetype on
+
+  " TI linker map file
+  call writefile(['******************************************************************************', '               TMS320C6x Linker Unix v7.4.24                   ', '******************************************************************************'], 'Xfile.map', 'D')
+  split Xfile.map
+  call assert_equal('lnkmap', &filetype)
+  bwipe!
+
+  " TI linker map file
+  call writefile(['MAP', 'NAME "local-demo"', 'END'], 'Xfile.map', 'D')
+  split Xfile.map
+  call assert_equal('map', &filetype)
   bwipe!
 
   filetype off
