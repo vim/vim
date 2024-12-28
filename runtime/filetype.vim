@@ -2200,8 +2200,8 @@ au BufNewFile,BufRead *.sas			setf sas
 " Sass
 au BufNewFile,BufRead *.sass			setf sass
 
-" Sather
-au BufNewFile,BufRead *.sa			setf sather
+" Sather, TI linear assembly
+au BufNewFile,BufRead *.sa			call dist#ft#FTsa()
 
 " Scala
 au BufNewFile,BufRead *.scala			setf scala
