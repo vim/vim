@@ -4425,9 +4425,10 @@ exec_instructions(ectx_T *ectx)
 		    // Stack has the local variable, argument the whole :lock
 		    // or :unlock command, like ISN_EXEC.
 		    --ectx->ec_stack.ga_len;
-		    lval_root_T root = { .lr_tv = STACK_TV_BOT(0),
-			    .lr_cl_exec = iptr->isn_arg.lockunlock.lu_cl_exec,
-			    .lr_is_arg  = iptr->isn_arg.lockunlock.lu_is_arg };
+		    lval_root_T root;
+            root.lr_tv      = STACK_TV_BOT(0);
+            root.lr_cl_exec = iptr->isn_arg.lockunlock.lu_cl_exec;
+            root.lr_is_arg  = iptr->isn_arg.lockunlock.lu_is_arg;
 		    lval_root = &root;
 		    int res = exec_command(iptr,
 					iptr->isn_arg.lockunlock.lu_string);
