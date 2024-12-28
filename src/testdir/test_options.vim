@@ -596,6 +596,8 @@ func Test_set_completion_string_values()
   call assert_equal([&keyprotocol], getcompletion('set keyprotocol=', 'cmdline'))
   call feedkeys(":set keyprotocol+=someterm:m\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set keyprotocol+=someterm:mok2', @:)
+  call feedkeys(":set keyprotocol+=someterm:k\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set keyprotocol+=someterm:kitty', @:)
   set keyprotocol&
 
   " previewpopup / completepopup
@@ -2858,6 +2860,11 @@ func Test_set_missing_options()
   set w300=23
   set w1200=23
   set w9600=23
+endfunc
+
+func Test_default_keyprotocol()
+  " default value of keyprotocol
+  call assert_equal('kitty:kitty,foot:kitty,ghostty:kitty,wezterm:kitty,xterm:mok2', &keyprotocol)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
