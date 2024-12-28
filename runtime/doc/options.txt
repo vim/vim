@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 Dec 14
+*options.txt*	For Vim version 9.1.  Last change: 2024 Dec 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5072,11 +5072,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	a pattern that is matched against the 'term' option, a colon and the
 	protocol name to be used.  To illustrate this, the default value would
 	be set with: >
-	   set keyprotocol=kitty:kitty,foot:kitty,wezterm:kitty,xterm:mok2
+	   set keyprotocol=kitty:kitty,foot:kitty,ghostty:kitty,wezterm:kitty
+	   set keyprotocol+=xterm:mok2
 
-<	This means that when 'term' contains "kitty, "foot" or "wezterm"
-	somewhere then the "kitty" protocol is used.  When 'term' contains
-	"xterm" somewhere, then the "mok2" protocol is used.
+<	This means that when 'term' contains "kitty, "foot", "ghostty"  or
+	"wezterm" somewhere, then the "kitty" protocol is used.  When 'term'
+	contains "xterm" somewhere, then the "mok2" protocol is used.
 
 	The first match is used, thus if you want to have "kitty" use the
 	kitty protocol, but "badkitty" not, then you should match "badkitty"

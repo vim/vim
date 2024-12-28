@@ -41619,6 +41619,8 @@ Changed~
   increased to 12pt to accomodate modern high-dpi monitors
 - filetype detection now detects bash scripts as a separate "bash filetype
   instead of the "sh" filetype
+- the default value of the 'keyprotocol' option has been updated by support
+  for the ghostty terminal emulator (using kitty protocol)
 
 							*added-9.2*
 Added ~
