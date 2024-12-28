@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 16
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41617,6 +41617,8 @@ Changed~
   |CompleteDone| autocommand in the |v:event| dictionary
 - the default fontsize for the GTK builds of Vim (Windows and Unix) has been
   increased to 12pt to accomodate modern high-dpi monitors
+- filetype detection now detects bash scripts as a separate "bash filetype
+  instead of the "sh" filetype
 
 							*added-9.2*
 Added ~
@@ -41721,4 +41723,4 @@ features, but does not include runtime file changes (syntax, indent, ftplugin,
 documentation, etc.)
 
 
- vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:
+ vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable
