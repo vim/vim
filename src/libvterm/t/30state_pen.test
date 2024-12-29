@@ -82,7 +82,7 @@ PUSH "\e[34m"
   ?pen foreground = idx(4)
 PUSH "\e[91m"
   ?pen foreground = idx(9)
-PUSH "\e[38:2:10:20:30m"
+PUSH "\e[38:2::10:20:30m"
   ?pen foreground = rgb(10,20,30)
 PUSH "\e[38:5:1m"
   ?pen foreground = idx(1)
@@ -98,7 +98,7 @@ PUSH "\e[44m"
   ?pen background = idx(4)
 PUSH "\e[101m"
   ?pen background = idx(9)
-PUSH "\e[48:2:10:20:30m"
+PUSH "\e[48::2:10:20:30m"
   ?pen background = rgb(10,20,30)
 PUSH "\e[48:5:1m"
   ?pen background = idx(1)
