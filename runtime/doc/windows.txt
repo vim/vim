@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 9.1.  Last change: 2024 Dec 16
+*windows.txt*   For Vim version 9.1.  Last change: 2024 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1011,8 +1011,9 @@ CTRL-W g }						*CTRL-W_g}*
 		If [N] is not given, the current buffer remains being edited.
 		See |:buffer-!| for [!].  This will also edit a buffer that is
 		not in the buffer list, without setting the 'buflisted' flag.
-		The notation with single quotes does not work here, `:pbuffer
-		12'345'` uses 12'345 as a buffer name.  Also see |+cmd|.
+		The notation with single quotes does not work here,
+		`:pbuffer 12'345'` uses 12'345' as a buffer name.
+		Also see |+cmd|.
 
 							*:ped* *:pedit*
 :ped[it][!] [++opt] [+cmd] {file}
@@ -1280,7 +1281,7 @@ list of buffers. |unlisted-buffer|
 		[!].  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
 		The notation with single quotes does not work here,
-		`:buf 12'345'` uses 12'345 as a buffer name.
+		`:buf 12'345'` uses 12'345' as a buffer name.
 		Also see |+cmd|.
 
 :[N]b[uffer][!] [+cmd] {bufname}				*{bufname}*
