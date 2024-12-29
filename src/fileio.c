@@ -2531,7 +2531,7 @@ failed:
 	    if (ff_error == EOL_DOS)
 	    {
 		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("CR missing"));
+			_("[CR missing]"));
 		c = TRUE;
 	    }
 	    if (split)
