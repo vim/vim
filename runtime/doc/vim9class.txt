@@ -951,11 +951,11 @@ aliased: >
 						*enum* *E1418* *E1419* *E1420*
 An enum is a type that can have one of a list of values.  Example: >
 
-    :enum Color
+    enum Color
 	White,
 	Red,
 	Green, Blue, Black
-    :endenum
+    endenum
 <
 						*enumvalue* *E1422*
 The enum values are separated by commas.  More than one enum value can be
