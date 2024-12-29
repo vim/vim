@@ -4407,7 +4407,16 @@ compile_def_function_body(
 				     cctx->ctx_had_return ? "return" : "throw");
 	    return FAIL;
 	}
-	cctx->ctx_had_throw = FALSE;
+
+	// When processing the end of an if-else block, don't clear the
+	// "ctx_had_throw" flag.  If an if-else block ends in a "throw"
+	// statement, then it is considered to end in a "return" statement.
+	// The "ctx_had_throw" is cleared immediately after processing the
+	// if-else block ending statement.
+	// Otherwise, clear the "had_throw" flag.
+	if (ea.cmdidx != CMD_else && ea.cmdidx != CMD_elseif
+						&& ea.cmdidx != CMD_endif)
+	    cctx->ctx_had_throw = FALSE;
 
 	p = skipwhite(p);
 	if (ea.cmdidx != CMD_SIZE
@@ -4474,13 +4483,16 @@ compile_def_function_body(
 	    case CMD_elseif:
 		    line = compile_elseif(p, cctx);
 		    cctx->ctx_had_return = FALSE;
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 	    case CMD_else:
 		    line = compile_else(p, cctx);
 		    cctx->ctx_had_return = FALSE;
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 	    case CMD_endif:
 		    line = compile_endif(p, cctx);
+		    cctx->ctx_had_throw = FALSE;
 		    break;
 
 	    case CMD_while:
@@ -4695,7 +4707,7 @@ compile_dfunc_scope_end_missing(cctx_T *cctx)
 }
 
 /*
- * When compiling a def function, if it doesn not have an explicit return
+ * When compiling a def function, if it doesn't have an explicit return
  * statement, then generate a default return instruction.  For an object
  * constructor, return the object.
  */

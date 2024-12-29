@@ -602,7 +602,9 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
     unwind_locals(cctx, scope->se_local_count, TRUE);
-    if (!cctx->ctx_had_return)
+    if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
+	// the previous if block didn't end in a "return" or a "throw"
+	// statement.
 	scope->se_u.se_if.is_had_return = FALSE;
 
     if (cctx->ctx_skip == SKIP_NOT)
@@ -749,7 +751,9 @@ compile_else(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
     unwind_locals(cctx, scope->se_local_count, TRUE);
-    if (!cctx->ctx_had_return)
+    if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
+	// the previous if block didn't end in a "return" or a "throw"
+	// statement.
 	scope->se_u.se_if.is_had_return = FALSE;
     scope->se_u.se_if.is_seen_else = TRUE;
 
@@ -821,7 +825,9 @@ compile_endif(char_u *arg, cctx_T *cctx)
     }
     ifscope = &scope->se_u.se_if;
     unwind_locals(cctx, scope->se_local_count, TRUE);
-    if (!cctx->ctx_had_return)
+    if (!cctx->ctx_had_return && !cctx->ctx_had_throw)
+	// the previous if block didn't end in a "return" or a "throw"
+	// statement.
 	ifscope->is_had_return = FALSE;
 
     if (scope->se_u.se_if.is_if_label >= 0)
