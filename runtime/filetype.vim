@@ -2916,6 +2916,9 @@ au BufNewFile,BufRead *.fsproj,*.fsproj.user	setf xml
 " VBPROJ files are Visual Studio.NET's XML-based Visual Basic project config files
 au BufNewFile,BufRead *.vbproj,*.vbproj.user	setf xml
 
+" MSBUILD configuration files is also XML
+au BufNewFile,BufRead Directory.Packages.props,Directory.Build.targets,Directory.Build.props	setf xml
+
 " Unison Language
 au BufNewFile,BufRead *.u,*.uu				setf unison
 
