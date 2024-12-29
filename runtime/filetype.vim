@@ -1692,7 +1692,8 @@ au BufNewFile,BufRead *.me
 	\ if expand("<afile>") != "read.me" && expand("<afile>") != "click.me" |
 	\   setf nroff |
 	\ endif
-au BufNewFile,BufRead *.tr,*.nr,*.roff,*.tmac,*.mom	setf nroff
+au BufNewFile,BufRead *.tr,*.nr,*.roff,*.tmac 	setf nroff
+au BufNewFile,BufRead *.mom			setf mom
 au BufNewFile,BufRead *.[1-9]			call dist#ft#FTnroff()
 
 " Nroff or Objective C++
