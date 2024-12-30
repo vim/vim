@@ -17,4 +17,21 @@ let b:is_bash = 1
 
 runtime! ftplugin/sh.vim ftplugin/sh_*.vim ftplugin/sh/*.vim
 
+if exists(':terminal') == 2
+  command! -buffer -nargs=1 ShKeywordPrg silent exe ':term bash -c "help "<args>" 2>/dev/null || man "<args>""'
+else
+  command! -buffer -nargs=1 ShKeywordPrg echo system('bash -c "help <args>" 2>/dev/null || MANPAGER= man "<args>"')
+endif
+setlocal keywordprg=:ShKeywordPrg
+let b:undo_ftplugin ..= " | setl kp< | sil! delc -buffer ShKeywordPrg"
+
+if !exists('current_compiler')
+  if executable('shellcheck')
+    compiler shellcheck
+  else
+    compiler bash
+  endif
+  let b:undo_ftplugin ..= ' | compiler make'
+endif
+
 " vim: ts=8
