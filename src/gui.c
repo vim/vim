@@ -1429,7 +1429,7 @@ gui_position_components(int total_width UNUSED)
     text_area_x = 0;
     if (gui.which_scrollbars[SBAR_LEFT])
 	text_area_x += gui.scrollbar_width;
-	text_area_x += p_guipad;
+    text_area_x += p_guipad;
 
     text_area_y = 0;
 #if defined(FEAT_MENU) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON))
