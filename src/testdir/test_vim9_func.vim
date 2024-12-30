@@ -550,6 +550,47 @@ def Test_not_missing_return()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for an if-else block ending in a throw statement
+def Test_if_else_with_throw()
+  var lines =<< trim END
+      def Ifelse_Throw1(): number
+        if false
+          return 1
+        else
+          throw 'Error'
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      def Ifelse_Throw2(): number
+        if true
+          throw 'Error'
+        else
+          return 2
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      def Ifelse_Throw3(): number
+        if true
+          return 1
+        elseif false
+          throw 'Error'
+        else
+          return 3
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_return_bool()
   var lines =<< trim END
       vim9script
