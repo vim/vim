@@ -19,7 +19,7 @@ syn match lnkmapFile			'[^ =]\+\%(\.\S\+\)\+\>'
 syn match lnkmapLibFile			'[^ =]\+\.lib\>'
 syn match lnkmapAttrib			'\<[RWIX]\+\>'
 syn match lnkmapAttrib			'\s\zs--HOLE--\ze\%\(\s\|$\)'
-syn keyword lnkmapAttrib		UNINITIALIZED
+syn keyword lnkmapAttrib		UNINITIALIZED DESCT
 
 
 hi def link lnkmapTime			Comment
