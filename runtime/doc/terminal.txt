@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Dec 03
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Dec 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -196,6 +196,9 @@ Command syntax ~
 			If [command] is not given the 'shell' option is used.
 			if [command] is NONE no job is started, the pty of the
 			terminal can be used by a command like gdb.
+
+			If [command] outputs NUL bytes, those will be
+			converted to new lines |NL-used-for-Nul|.
 
 							*terminal-nospecial*
 			Vim itself only recognizes |cmdline-special|
