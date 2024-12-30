@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Dec 12
+" Last Change:	2024 Dec 30
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -2915,6 +2915,9 @@ au BufNewFile,BufRead *.fsproj,*.fsproj.user	setf xml
 
 " VBPROJ files are Visual Studio.NET's XML-based Visual Basic project config files
 au BufNewFile,BufRead *.vbproj,*.vbproj.user	setf xml
+
+" MSBUILD configuration files are also XML
+au BufNewFile,BufRead Directory.Packages.props,Directory.Build.targets,Directory.Build.props	setf xml
 
 " Unison Language
 au BufNewFile,BufRead *.u,*.uu				setf unison
