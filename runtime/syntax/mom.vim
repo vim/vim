@@ -1,4 +1,5 @@
 " VIM syntax file
+
 " Language:	MOM (Macros for GNU Troff)
 " Maintainer:	John Marshall <jmarshall@hey.com>
 " Previous Maintainer:	Pedro Alejandro López-Valencia <palopezv@gmail.com>
@@ -10,6 +11,3 @@ endif
 
 syn clear
 runtime! syntax/nroff.vim
-
-let s:cpo_save = &cpo
-set cpo&vim
