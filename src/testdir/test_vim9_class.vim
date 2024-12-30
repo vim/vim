@@ -11657,4 +11657,46 @@ def Test_mapnew_with_instance_method()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using an object method in a method call.
+def Test_use_object_method_in_a_method_call()
+  var lines =<< trim END
+    vim9script
+
+    class Foo
+      def Cost(nums: list<number>): number
+        return nums[0] * nums[1]
+      enddef
+
+      def ShowCost(): string
+        var g = [4, 5]
+        return $"Cost is: {g->this.Cost()}"
+      enddef
+    endclass
+
+    var d = Foo.new()
+    assert_equal('Cost is: 20', d.ShowCost())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for using a non-existing object method in string interpolation
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      def Cost(nums: list<number>): number
+        return nums[0] * nums[1]
+      enddef
+
+      def ShowCost(): string
+        var g = [4, 5]
+        echo $"Cost is: {g->this.NewCost()}"
+      enddef
+    endclass
+
+    var d = Foo.new()
+    d.ShowCost()
+  END
+  v9.CheckSourceFailure(lines, 'E1326: Variable "NewCost" not found in object "Foo"')
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

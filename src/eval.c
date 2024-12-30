@@ -819,6 +819,8 @@ deref_function_name(
     typval_T	ref;
     char_u	*name = *arg;
     int		save_flags = 0;
+    int		evaluate = evalarg != NULL
+				      && (evalarg->eval_flags & EVAL_EVALUATE);
 
     ref.v_type = VAR_UNKNOWN;
     if (evalarg != NULL)
@@ -867,7 +869,7 @@ deref_function_name(
 	    *tofree = name;
 	}
     }
-    else
+    else if (evaluate)
     {
 	if (verbose)
 	    semsg(_(e_not_callable_type_str), name);
