@@ -4206,4 +4206,55 @@ func Test_getcellpixels_gui()
   endif
 endfunc
 
+func Str2Blob(s)
+  return list2blob(str2list(a:s))
+endfunc
+
+func Blob2Str(b)
+  return list2str(blob2list(a:b))
+endfunc
+
+" Test for the base64_encode() and base64_decode() functions
+func Test_base64_encoding()
+  let lines =<< trim END
+    #" Test for encoding/decoding the RFC-4648 alphabets
+    VAR s = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    for i in range(64)
+      call assert_equal($'{s[i]}A==', base64_encode(list2blob([i << 2])))
+      call assert_equal(list2blob([i << 2]), base64_decode($'{s[i]}A=='))
+    endfor
+
+    #" Test for encoding with padding
+    call assert_equal('TQ==', base64_encode(g:Str2Blob("M")))
+    call assert_equal('TWE=', base64_encode(g:Str2Blob("Ma")))
+    call assert_equal('TWFu', g:Str2Blob("Man")->base64_encode())
+    call assert_equal('', base64_encode(0z))
+    call assert_equal('', base64_encode(g:Str2Blob("")))
+
+    #" Test for decoding with padding
+    call assert_equal('light work.', g:Blob2Str(base64_decode("bGlnaHQgd29yay4=")))
+    call assert_equal('light work', g:Blob2Str(base64_decode("bGlnaHQgd29yaw==")))
+    call assert_equal('light wor', g:Blob2Str("bGlnaHQgd29y"->base64_decode()))
+    call assert_equal(0z00, base64_decode("===="))
+    call assert_equal(0z, base64_decode(""))
+
+    #" Test for invalid padding
+    call assert_equal('Hello', g:Blob2Str(base64_decode("SGVsbG8=")))
+    call assert_fails('call base64_decode("SGVsbG9=")', 'E475:')
+    call assert_fails('call base64_decode("SGVsbG9")', 'E475:')
+    call assert_equal('Hell', g:Blob2Str(base64_decode("SGVsbA==")))
+    call assert_fails('call base64_decode("SGVsbA=")', 'E475:')
+    call assert_fails('call base64_decode("SGVsbA")', 'E475:')
+    call assert_fails('call base64_decode("SGVsbA====")', 'E475:')
+
+    #" Error case
+    call assert_fails('call base64_decode("b")', 'E475: Invalid argument: b')
+    call assert_fails('call base64_decode("<<==")', 'E475: Invalid argument: <<==')
+
+    call assert_fails('call base64_encode([])', 'E1238: Blob required for argument 1')
+    call assert_fails('call base64_decode([])', 'E1174: String required for argument 1')
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

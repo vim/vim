@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Dec 16
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Dec 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4198,8 +4198,6 @@ Vim script language:
 	char2hex()		convert char string to hex string.
 	crypt()			encrypt string
 	decrypt()		decrypt string
-	base64enc()		base 64 encoding
-	base64dec()		base 64 decoding
 	attributes()		return file protection flags "drwxrwxrwx"
 	shorten(fname)		shorten a file name, like home_replace()
 	perl(cmd)		call Perl and return string

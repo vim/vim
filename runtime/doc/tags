@@ -6164,6 +6164,8 @@ balloon_show()	builtin.txt	/*balloon_show()*
 balloon_split()	builtin.txt	/*balloon_split()*
 bar	motion.txt	/*bar*
 bars	help.txt	/*bars*
+base64_decode()	builtin.txt	/*base64_decode()*
+base64_encode()	builtin.txt	/*base64_encode()*
 base_font_name_list	mbyte.txt	/*base_font_name_list*
 basic.vim	syntax.txt	/*basic.vim*
 beep	options.txt	/*beep*

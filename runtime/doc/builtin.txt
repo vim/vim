@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Dec 03
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Dec 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -67,6 +67,8 @@ autocmd_get([{opts}])		List	return a list of autocmds
 balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
+base64_decode({string})		Blob	base-64 decode {string} characters
+base64_encode({blob})		String	base-64 encode the bytes in {blob}
 bindtextdomain({package}, {path})
 				Bool	bind text domain to specified path
 blob2list({blob})		List	convert {blob} into a list of numbers
@@ -1167,6 +1169,43 @@ autocmd_get([{opts}])					*autocmd_get()*
 			Getopts()->autocmd_get()
 <
 		Return type: list<dict<any>>
+
+
+base64_decode({string})					*base64_decode()*
+		Return a Blob containing the bytes decoded from the base64
+		characters in {string}.
+
+		The {string} argument should contain only base64-encoded
+		characters and should have a length that is a multiple of 4.
+
+		Returns an empty blob on error.
+
+		Examples: >
+		    " Write the decoded contents to a binary file
+		    call writefile(base64_decode(s), 'tools.bmp')
+		    " Decode a base64-encoded string
+		    echo list2str(blob2list(base64_decode(encodedstr)))
+<
+		Can also be used as a |method|: >
+			GetEncodedString()->base64_decode()
+<
+		Return type: |Blob|
+
+
+base64_encode({blob})					*base64_encode()*
+		Return a base64-encoded String representing the bytes in
+		{blob}.  The base64 alphabet defined in RFC 4648 is used.
+
+		Examples: >
+		    " Encode the contents of a binary file
+		    echo base64_encode(readblob('somefile.bin'))
+		    " Encode a string
+		    echo base64_encode(list2blob(str2list(somestr)))
+<
+		Can also be used as a |method|: >
+			GetBinaryData()->base64_encode()
+<
+		Return type: |String|
 
 
 balloon_gettext()					*balloon_gettext()*

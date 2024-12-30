@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 29
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41629,13 +41629,15 @@ Various syntax, indent and other plugins were added.
 
 Functions: ~
 
+|base64_decode()|	decode a base64 string into a blob
+|base64_encode()|	encode a blob into a base64 string
 |bindtextdomain()|	set message lookup translation base path
 |diff()|		diff two Lists of strings
 |filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items
+|getcellpixels()|	get List of terminal cell pixel size
 |getcmdcomplpat()|	Shell command line completion
 |getcmdprompt()|	get prompt for input()/confirm()
-|getcellpixels()|	get List of terminal cell pixel size
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
 |id()|			get unique identifier for a Dict, List, Object,
