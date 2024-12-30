@@ -134,9 +134,6 @@ function s:parse_vim_command(cmd)
 					for idx in range(1, strlen(lcmd[key][my]))
 						let matched = 0
 						for pre in range(my - 1, 0, -1)
-							if pre == my
-								continue
-							endif
 							" Avoiding conflicts shortened command and special commands
 							" - weird abbreviations for delete. (See :help :d)
 							" - k{char} is used as mark. (See :help :k)
@@ -196,6 +193,16 @@ function s:parse_vim_command(cmd)
 		let item.name = 'i'		" insert
 		let item.syn_str = item.name
 		call add(a:cmd, copy(item))
+
+    " ":fina" means ":finally" in legacy script, for backwards compatibility.
+		" (From Vim source code find_ex_command() in ex_docmd.c)
+		call map(a:cmd, {_, v ->
+			\ v.name ==# 'final' ?
+			\		extend(copy(v), {'omit_idx': -1, 'syn_str': v.name}) :
+			\ v.name ==# 'finally' ?
+			\		extend(copy(v), {'omit_idx': 3, 'syn_str': 'fina[lly]'}) :
+			\ v
+			\ })
 
 		if empty(a:cmd)
 			throw 'cmd is empty'
