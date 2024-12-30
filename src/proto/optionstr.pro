@@ -91,6 +91,7 @@ char *did_set_guifontset(optset_T *args);
 char *did_set_guifontwide(optset_T *args);
 char *did_set_guiligatures(optset_T *args);
 char *did_set_guioptions(optset_T *args);
+char *did_set_guipad(optset_T *args);
 int expand_set_guioptions(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_guitablabel(optset_T *args);
 char *did_set_helpfile(optset_T *args);

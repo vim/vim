@@ -3767,6 +3767,22 @@ did_set_linespace(optset_T *args UNUSED)
 }
 #endif
 
+#if defined(FEAT_GUI) || defined(PROTO)
+/*
+ * Process the new 'guipad' option value.
+ */
+    char *
+did_set_guipad(optset_T *args UNUSED)
+{
+    gui.border_width  = p_guipad;
+    gui.border_offset = gui.border_width;
+    if (gui.in_use && gui_mch_adjust_charheight() == OK)
+	gui_set_shellsize(FALSE, FALSE, RESIZE_VERT);
+    return NULL;
+}
+#endif
+
+
 /*
  * Process the updated 'lisp' option value.
  */
