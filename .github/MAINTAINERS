@@ -229,11 +229,11 @@ runtime/ftplugin/meson.vim		@Liambeguin
 runtime/ftplugin/modula2.vim		@dkearns
 runtime/ftplugin/modula3.vim		@dkearns
 runtime/ftplugin/mojo.vim		@ribru17
-runtime/ftplugin/mom.vim		@a-vrma
+runtime/ftplugin/mom.vim		@averms
 runtime/ftplugin/mss.vim		@Freed-Wu
 runtime/ftplugin/nginx.vim		@chr4
 runtime/ftplugin/nim.vim		@ribru17
-runtime/ftplugin/nroff.vim		@a-vrma
+runtime/ftplugin/nroff.vim		@averms
 runtime/ftplugin/nsis.vim		@k-takata
 runtime/ftplugin/nu.vim		@mrcjkb
 runtime/ftplugin/octave.vim		@dkearns

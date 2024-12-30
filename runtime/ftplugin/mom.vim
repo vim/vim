@@ -1,9 +1,7 @@
 " Vim filetype plugin
-" Language:	roff(7)
+" Language:	MOM (Macros for GNU Troff)
 " Maintainer:	Aman Verma
-" Homepage:	https://github.com/a-vrma/vim-nroff-ftplugin
-" Previous Maintainer: Chris Spiegel <cspiegel@gmail.com>
-"		2024 May 24 by Riley Bruins <ribru17@gmail.com> ('commentstring')
+" Homepage:	https://github.com/averms/vim-nroff-ftplugin
 
 if exists("b:did_ftplugin")
   finish

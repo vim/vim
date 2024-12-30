@@ -1,9 +1,8 @@
 " VIM syntax file
-" Language:	nroff
+" Language:	MOM (Macros for GNU Troff)
 " Maintainer:	John Marshall <jmarshall@hey.com>
 " Previous Maintainer:	Pedro Alejandro López-Valencia <palopezv@gmail.com>
 " Previous Maintainer:	Jérôme Plût <Jerome.Plut@ens.fr>
-" Last Change:	2021 Mar 28
 
 if exists("b:current_syntax")
   finish
