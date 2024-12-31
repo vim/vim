@@ -425,8 +425,13 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    else
 #endif
 	    {
-		vim_snprintf((char *)numbuf, NUMBUFLEN, "%g",
-							   val->vval.v_float);
+#if defined(__LP64__)
+		vim_snprintf((char *)numbuf, NUMBUFLEN, "%.*Lg",
+			FLOAT_PRECISION, val->vval.v_float);
+#else
+		vim_snprintf((char *)numbuf, NUMBUFLEN, "%.*g",
+			FLOAT_PRECISION, val->vval.v_float);
+#endif
 		ga_concat(gap, numbuf);
 	    }
 	    break;

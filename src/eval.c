@@ -4102,8 +4102,13 @@ eval_concat_str(typval_T *tv1, typval_T *tv2)
 		vartype_name(tv2->v_type));
     else if (vim9script && tv2->v_type == VAR_FLOAT)
     {
-	vim_snprintf((char *)buf2, NUMBUFLEN, "%g",
+#if defined(__LP64__)
+	vim_snprintf((char *)buf2, NUMBUFLEN, "%.*Lg", FLOAT_PRECISION,
 		tv2->vval.v_float);
+#else
+	vim_snprintf((char *)buf2, NUMBUFLEN, "%.*g", FLOAT_PRECISION,
+		tv2->vval.v_float);
+#endif
 	s2 = buf2;
     }
     else
@@ -6348,7 +6353,13 @@ echo_string_core(
 
 	case VAR_FLOAT:
 	    *tofree = NULL;
-	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv->vval.v_float);
+#if defined(__LP64__)
+	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%.*Lg", FLOAT_PRECISION,
+		    tv->vval.v_float);
+#else
+	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%.*g", FLOAT_PRECISION,
+		    tv->vval.v_float);
+#endif
 	    r = numbuf;
 	    break;
 

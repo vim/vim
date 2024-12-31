@@ -3006,3 +3006,10 @@ long elapsed(DWORD start_tick);
 #define CF_ABSTRACT_METHOD	4	// inside an abstract class
 
 #endif // VIM__H
+
+#if defined(__LP64__)
+# define FLOAT_PRECISION 20
+#else
+# define FLOAT_PRECISION 5
+#endif
+
