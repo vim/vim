@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 30
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41621,6 +41621,8 @@ Changed~
   instead of the "sh" filetype
 - the default value of the 'keyprotocol' option has been updated by support
   for the ghostty terminal emulator (using kitty protocol)
+- |complete_info()| returns the list of matches shown in the poppu menu via
+  the "matches" key
 
 							*added-9.2*
 Added ~
