@@ -11,6 +11,7 @@ let b:did_ftplugin = 1
 runtime! ftplugin/nroff.vim
 
 if executable('groff')
+  " compile to output format using its extension, say `:make html` or `:make pdf`.
   let b:groff_compiler_args = '-mom'
   compiler groff
   let b:undo_ftplugin .= '| compiler make | unlet b:groff_compiler_args'

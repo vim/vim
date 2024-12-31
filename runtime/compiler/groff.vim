@@ -3,7 +3,8 @@
 " Maintainer:   Konfekt
 " Last Change:	2024 Nov 19
 "
-" Expects output file extension, say `:make -mom html` or `:make -mom pdf`.
+" Expects output file extension, say `:make html` or `:make pdf`.
+" Parameters such as `-mom` are set in global/buffer-local `groff_compiler_args`.
 " Supported devices as of Sept 2024 are: (x)html, pdf, ps, dvi, lj4, lbp ...
 " Adjust command-line flags, language, encoding by buffer-local/global variables
 " groff_compiler_args, groff_compiler_lang, and groff_compiler_encoding,
