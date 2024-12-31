@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Dec 30
+" Last Change:	2024 Dec 31
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -240,9 +240,17 @@ au BufNewFile,BufRead *.fb			setf freebasic
 
 " Batch file for MSDOS. See dist#ft#FTsys for *.sys
 au BufNewFile,BufRead *.bat			setf dosbatch
-" *.cmd is close to a Batch file, but on OS/2 Rexx files also use *.cmd.
+" *.cmd is close to a Batch file, but on OS/2 Rexx files and TI linker command files also use *.cmd.
+" lnk: `/* comment */`, `// comment`, and `--linker-option=value`
+" rexx: `/* comment */`, `-- comment`
 au BufNewFile,BufRead *.cmd
-	\ if getline(1) =~ '^/\*' | setf rexx | else | setf dosbatch | endif
+	\  if join(getline(1, 20), "\n") =~ 'MEMORY\|SECTIONS\|\%(^\|\n\)--\S\|\%(^\|\n\)//'
+	\|   setf lnk
+	\| elseif getline(1) =~ '^/\*'
+	\|   setf rexx
+	\| else
+	\|   setf dosbatch
+	\| endif
 " ABB RAPID or Batch file for MSDOS.
 au BufNewFile,BufRead *.sys			call dist#ft#FTsys()
 if has("fname_case")
