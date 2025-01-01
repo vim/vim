@@ -846,6 +846,11 @@ To enable folding use this: >
 'expandtab' will be set by default.  If you do not want that use this: >
 	let g:markdown_recommended_style = 0
 
+MOM							*ft-mom-plugin*
+
+Sets |compiler-groff| with the mom macro set (documented in the groff_mom
+manpage). |:make| and expects the output file type extension, say :make html
+or :make pdf.
 
 ORG							*ft-org-plugin*
 
