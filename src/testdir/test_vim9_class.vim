@@ -2386,6 +2386,22 @@ def Test_interface_basics()
   END
   v9.CheckSourceFailure(lines, 'E1345: Not a valid command in an interface: return 5', 6)
 
+  # Test for "interface" cannot be abbreviated
+  lines =<< trim END
+    vim9script
+    inte Something
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: inte Something', 2)
+
+  # Test for "endinterface" cannot be abbreviated
+  lines =<< trim END
+    vim9script
+    interface Something
+    endin
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endin', 3)
+
   # Additional commands after "interface name"
   lines =<< trim END
     vim9script
@@ -3524,6 +3540,14 @@ def Test_abstract_class()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1316: Class can only be defined in Vim9 script', 1)
+
+  # Test for "abstract" cannot be abbreviated
+  lines =<< trim END
+    vim9script
+    abs class A
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: abs class A', 2)
 
   # Additional commands after "abstract class"
   lines =<< trim END

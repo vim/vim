@@ -1738,6 +1738,7 @@ enum_set_internal_obj_vars(class_T *en, object_T *enval)
 
 /*
  * Handle ":class" and ":abstract class" up to ":endclass".
+ * Handle ":enum" up to ":endenum".
  * Handle ":interface" up to ":endinterface".
  */
     void
