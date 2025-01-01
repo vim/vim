@@ -292,6 +292,7 @@ NEW_TESTS = \
 	test_spell_utf8 \
 	test_spellfile \
 	test_spellrare \
+	test_stacktrace \
 	test_startup \
 	test_startup_utf8 \
 	test_stat \
@@ -545,6 +546,7 @@ NEW_TESTS_RES = \
 	test_spell_utf8.res \
 	test_spellfile.res \
 	test_spellrare.res \
+	test_stacktrace.res \
 	test_startup.res \
 	test_stat.res \
 	test_statusline.res \
