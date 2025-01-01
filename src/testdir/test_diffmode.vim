@@ -2605,6 +2605,38 @@ func Test_linematch_diff_grouping()
 
 endfunc
 
+func Test_linematch_diff_scroll()
+  call delete('.Xdifile1.swp')
+  call delete('.Xdifile2.swp')
+  call WriteDiffFiles(0, [], [])
+  let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
+  call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
+
+  " a diff that would result in multiple groups before grouping optimization
+  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call WriteDiffFiles(buf, ['!A',
+      \ '!B',
+      \ '!C' ],
+      \ ['?A',
+      \ '?Z',
+      \ '?B',
+      \ '?C',
+      \ '?A',
+      \ '?B',
+      \ '?C',
+      \ '?C'])
+  " scroll down to show calculation of top fill and scroll to correct line in
+  " both windows
+  call VerifyScreenDump(buf, 'Test_linematch_diff_grouping_scroll0', {})
+  call term_sendkeys(buf, "3\<c-e>")
+  call VerifyScreenDump(buf, 'Test_linematch_diff_grouping_scroll1', {})
+  call term_sendkeys(buf, "3\<c-e>")
+  call VerifyScreenDump(buf, 'Test_linematch_diff_grouping_scroll2', {})
+
+endfunc
+
+
+
 func Test_linematch_line_limit_exceeded()
   call delete('.Xdifile1.swp')
   call delete('.Xdifile2.swp')
