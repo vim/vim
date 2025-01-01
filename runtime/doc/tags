@@ -7385,6 +7385,7 @@ ft-metapost-mappings	ft_mp.txt	/*ft-metapost-mappings*
 ft-metapost-settings	ft_mp.txt	/*ft-metapost-settings*
 ft-mma-syntax	syntax.txt	/*ft-mma-syntax*
 ft-modula2-syntax	syntax.txt	/*ft-modula2-syntax*
+ft-mom-plugin	filetype.txt	/*ft-mom-plugin*
 ft-moo-syntax	syntax.txt	/*ft-moo-syntax*
 ft-msql-syntax	syntax.txt	/*ft-msql-syntax*
 ft-n1ql-syntax	syntax.txt	/*ft-n1ql-syntax*
