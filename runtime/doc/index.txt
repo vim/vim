@@ -1339,7 +1339,7 @@ tag		command		action ~
 |:emenu|	:em[enu]	execute a menu by name
 |:endclass|	:endclass	end of a class specification
 |:enddef|	:enddef		end of a user function started with :def
-|:endenum|	:endenum	end of a enum specification
+|:endenum|	:endenum	end of an enum specification
 |:endif|	:en[dif]	end previous :if
 |:endinterface|	:endinterface	end of an interface specification
 |:endfor|	:endfo[r]	end previous :for
