@@ -481,15 +481,15 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 		&& plen < MAXPATHL - 1)
 	    *(p + plen++) = ' ';
 	if (bt_help(wp->w_buffer))
-	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, _("[Help]"));
+	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", _("[Help]"));
 #ifdef FEAT_QUICKFIX
 	if (wp->w_p_pvw)
-	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, _("[Preview]"));
+	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", _("[Preview]"));
 #endif
 	if (bufIsChanged(wp->w_buffer) && !bt_terminal(wp->w_buffer))
-	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "[+]");
+	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", "[+]");
 	if (wp->w_buffer->b_p_ro)
-	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, _("[RO]"));
+	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", _("[RO]"));
 
 	this_ru_col = ru_col - (Columns - wp->w_width);
 	n = (wp->w_width + 1) / 2;
