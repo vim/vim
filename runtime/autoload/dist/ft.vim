@@ -1452,5 +1452,18 @@ export def Detect_UCI_statements(): bool
   \         )
 enddef
 
+export def DetectSchemeFlavor()
+  var save_cursor = getcurpos()
+
+  cursor(1, 1)
+  if search('\v\(\s*(define-module|use-modules)\s*\(', 'c', 0, 1000)
+    setf guile
+    return
+  endif
+  setpos('.', save_cursor)
+
+  setf scheme
+enddef
+
 # Uncomment this line to check for compilation errors early
 # defcompile
