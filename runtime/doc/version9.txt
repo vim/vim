@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Dec 31
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jan 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31849,14 +31849,14 @@ Autocommands: ~
 
 Commands: ~
 
-|:abstract|		define a Vim9 abstract class
-|:class|		start of a class specification
+|:abstract|		declare a Vim9 abstract class
+|:class|		start of a class declaration
 |:defer|		call function when current function is done
 |:echowindow|		same as :echomsg, but use a popup window
-|:endinterface|		end of an interface specification
-|:endclass|		end of a class specification
+|:endinterface|		end of an interface declaration
+|:endclass|		end of a class declaration
 |:horizontal|		following window command works horizontally
-|:interface|		start of an interface specification
+|:interface|		start of an interface declaration
 |:public|		prefix for a class or object member
 |:static|		prefix for a class member or function
 |:this|			prefix for an object member

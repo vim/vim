@@ -2670,7 +2670,7 @@ $quote	eval.txt	/*$quote*
 :his	cmdline.txt	/*:his*
 :history	cmdline.txt	/*:history*
 :history-indexing	cmdline.txt	/*:history-indexing*
-:hor	windows.txt	/*:hor*
+:ho	windows.txt	/*:ho*
 :horizontal	windows.txt	/*:horizontal*
 :i	insert.txt	/*:i*
 :ia	map.txt	/*:ia*
@@ -3058,9 +3058,9 @@ $quote	eval.txt	/*$quote*
 :promptrepl	change.txt	/*:promptrepl*
 :ps	windows.txt	/*:ps*
 :psearch	windows.txt	/*:psearch*
+:pt	windows.txt	/*:pt*
 :ptN	tagsrch.txt	/*:ptN*
 :ptNext	tagsrch.txt	/*:ptNext*
-:pta	windows.txt	/*:pta*
 :ptag	windows.txt	/*:ptag*
 :ptf	tagsrch.txt	/*:ptf*
 :ptfirst	tagsrch.txt	/*:ptfirst*

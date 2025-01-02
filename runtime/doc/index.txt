@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 9.1.  Last change: 2024 Dec 15
+*index.txt*     For Vim version 9.1.  Last change: 2025 Jan 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1185,6 +1185,7 @@ tag		command		action ~
 |:abbreviate|	:ab[breviate]	enter abbreviation
 |:abclear|	:abc[lear]	remove all abbreviations
 |:aboveleft|	:abo[veleft]	make split window appear left or above
+|:abstract|	:abstract	declare a Vim9 abstract class
 |:all|		:al[l]		open a window for each file in the argument
 				list
 |:amenu|	:am[enu]	enter new menu item for all modes
@@ -1224,7 +1225,7 @@ tag		command		action ~
 |:breakdel|	:breakd[el]	delete a debugger breakpoint
 |:breaklist|	:breakl[ist]	list debugger breakpoints
 |:browse|	:bro[wse]	use file selection dialog
-|:bufdo|	:bufdo		execute command in each listed buffer
+|:bufdo|	:bufd[o]	execute command in each listed buffer
 |:buffers|	:buffers	list all files in the buffer list
 |:bunload|	:bun[load]	unload a specific buffer
 |:bwipeout|	:bw[ipeout]	really delete a buffer
@@ -1240,7 +1241,7 @@ tag		command		action ~
 |:cafter|	:caf[ter]	go to error after current cursor
 |:call|		:cal[l]		call a function
 |:catch|	:cat[ch]	part of a :try command
-|:cbefore|	:cbef[ore]	go to error before current cursor
+|:cbefore|	:cbe[fore]	go to error before current cursor
 |:cbelow|	:cbel[ow]	go to error below current line
 |:cbottom|	:cbo[ttom]	scroll to the bottom of the quickfix window
 |:cbuffer|	:cb[uffer]	parse error messages and jump to first error
@@ -1300,7 +1301,7 @@ tag		command		action ~
 |:debuggreedy|	:debugg[reedy]	read debug mode commands from normal input
 |:def|		:def		define a Vim9 user function
 |:defcompile|	:defc[ompile]	compile Vim9 user functions in current script
-|:defer|	:defer		call function when current function is done
+|:defer|	:defe[r]	call function when current function is done
 |:delcommand|	:delc[ommand]	delete user-defined command
 |:delfunction|	:delf[unction]	delete a user function
 |:delmarks|	:delm[arks]	delete marks
@@ -1310,7 +1311,7 @@ tag		command		action ~
 |:diffpatch|	:diffp[atch]	apply a patch and show differences
 |:diffput|	:diffpu[t]	remove differences in other buffer
 |:diffsplit|	:diffs[plit]	show differences with another file
-|:diffthis|	:diffthis	make current window a diff window
+|:diffthis|	:difft[his]	make current window a diff window
 |:digraphs|	:dig[raphs]	show or enter digraphs
 |:display|	:di[splay]	display registers
 |:disassemble|	:disa[ssemble]	disassemble Vim9 user function
@@ -1338,12 +1339,15 @@ tag		command		action ~
 |:emenu|	:em[enu]	execute a menu by name
 |:endclass|	:endclass	end of a class specification
 |:enddef|	:enddef		end of a user function started with :def
+|:endenum|	:endenum	end of an enum specification
 |:endif|	:en[dif]	end previous :if
+|:endinterface|	:endinterface	end of an interface specification
 |:endfor|	:endfo[r]	end previous :for
 |:endfunction|	:endf[unction]	end of a user function started with :function
 |:endtry|	:endt[ry]	end previous :try
 |:endwhile|	:endw[hile]	end previous :while
 |:enew|		:ene[w]		edit a new, unnamed buffer
+|:enum|		:enum		start of an enum declaration
 |:eval|		:ev[al]		evaluate an expression and discard the result
 |:ex|		:ex		same as ":edit"
 |:execute|	:exe[cute]	execute result of expressions
@@ -1382,7 +1386,7 @@ tag		command		action ~
 |:highlight|	:hi[ghlight]	specify highlighting methods
 |:hide|		:hid[e]		hide current buffer for a command
 |:history|	:his[tory]	print a history list
-|:horizontal|	:hor[izontal]	following window command work horizontally
+|:horizontal|	:ho[rizontal]	following window command work horizontally
 |:insert|	:i[nsert]	insert text
 |:iabbrev|	:ia[bbrev]	like ":abbrev" but for Insert mode
 |:iabclear|	:iabc[lear]	like ":abclear" but for Insert mode
@@ -1397,6 +1401,7 @@ tag		command		action ~
 |:inoreabbrev|	:inorea[bbrev]	like ":noreabbrev" but for Insert mode
 |:inoremenu|	:inoreme[nu]	like ":noremenu" but for Insert mode
 |:intro|	:int[ro]	print the introductory message
+|:interface|	:interface	start of an interface declaration
 |:isearch|	:is[earch]	list one line where identifier matches
 |:isplit|	:isp[lit]	split window and jump to definition of
 				identifier
@@ -1421,7 +1426,7 @@ tag		command		action ~
 |:last|		:la[st]		go to the last file in the argument list
 |:language|	:lan[guage]	set the language (locale)
 |:later|	:lat[er]	go to newer change, redo
-|:lbefore|	:lbef[ore]	go to location before current cursor
+|:lbefore|	:lbe[fore]	go to location before current cursor
 |:lbelow|	:lbel[ow]	go to location below current line
 |:lbottom|	:lbo[ttom]	scroll to the bottom of the location window
 |:lbuffer|	:lb[uffer]	parse locations and jump to first location
@@ -1461,7 +1466,7 @@ tag		command		action ~
 |:lockmarks|	:loc[kmarks]	following command keeps marks where they are
 |:lockvar|	:lockv[ar]	lock variables
 |:lolder|	:lol[der]	go to older location list
-|:lopen|	:lope[n]	open location window
+|:lopen|	:lop[en]	open location window
 |:lprevious|	:lp[revious]	go to previous location
 |:lpfile|	:lpf[ile]	go to last location in previous file
 |:lrewind|	:lr[ewind]	go to the specified location, default first one
@@ -1496,7 +1501,7 @@ tag		command		action ~
 |:mzfile|	:mzf[ile]	execute MzScheme script file
 |:nbclose|	:nbc[lose]	close the current Netbeans session
 |:nbkey|	:nb[key]	pass a key to Netbeans
-|:nbstart|	:nbs[art]	start a new Netbeans session
+|:nbstart|	:nbs[tart]	start a new Netbeans session
 |:next|		:n[ext]		go to next file in the argument list
 |:new|		:new		create a new empty window
 |:nmap|		:nm[ap]		like ":map" but for Normal mode
@@ -1682,7 +1687,7 @@ tag		command		action ~
 |:tNext|	:tN[ext]	jump to previous matching tag
 |:tabNext|	:tabN[ext]	go to previous tab page
 |:tabclose|	:tabc[lose]	close current tab page
-|:tabdo|	:tabdo		execute command in each tab page
+|:tabdo|	:tabd[o]	execute command in each tab page
 |:tabedit|	:tabe[dit]	edit a file in a new tab page
 |:tabfind|	:tabf[ind]	find file in 'path', edit it in a new tab page
 |:tabfirst|	:tabfir[st]	go to first tab page
@@ -1706,6 +1711,8 @@ tag		command		action ~
 |:terminal|	:ter[minal]	open a terminal window
 |:tfirst|	:tf[irst]	jump to first matching tag
 |:throw|	:th[row]	throw an exception
+|:this|		:this		prefix for an object member during
+				initialization (e.g. on |new()|)
 |:tjump|	:tj[ump]	like ":tselect", but jump directly when there
 				is only one match
 |:tlast|	:tl[ast]	jump to last matching tag
@@ -1724,6 +1731,7 @@ tag		command		action ~
 |:tselect|	:ts[elect]	list matching tags and select one
 |:tunmap|	:tunma[p]	like ":unmap" but for Terminal-Job mode
 |:tunmenu|	:tu[nmenu]	remove menu tooltip
+|:type|		:type		create a type alias
 |:undo|		:u[ndo]		undo last change(s)
 |:undojoin|	:undoj[oin]	join next change with previous undo block
 |:undolist|	:undol[ist]	list leafs of the undo tree
@@ -1757,7 +1765,7 @@ tag		command		action ~
 |:vsplit|	:vs[plit]	split current window vertically
 |:vunmap|	:vu[nmap]	like ":unmap" but for Visual+Select mode
 |:vunmenu|	:vunme[nu]	remove menu for Visual+Select mode
-|:windo|	:windo		execute command in each window
+|:windo|	:wind[o]	execute command in each window
 |:write|	:w[rite]	write to a file
 |:wNext|	:wN[ext]	write to a file and go to previous file in
 				argument list
