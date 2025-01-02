@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2024 Dec 21
+" Last Change:	   2025 Jan 3
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -410,10 +410,19 @@ if s:vim9script
   VimFoldc syn region	vim9ClassBody	start="\<class\>" matchgroup=vimCommand end="\<endclass\>" contains=@vim9ClassBodyList transparent
 
   " Enums {{{3
-  syn cluster	vim9EnumBodyList		contains=vim9Comment,vim9LineComment,@vim9Continue,vim9Enum,vim9Implements,@vim9MethodDef,vim9Const,vim9Final,vim9Var
+  syn cluster	vim9EnumBodyList		contains=vim9Abstract,vim9Enum,vim9Comment,vim9LineComment,@vim9Continue,@vimExprList,@vim9MethodDef,vim9Public,vim9Static,vim9Const,vim9Final,vim9This,vim9Var
 
-  syn match	vim9Enum		contained	"\<enum\>"	skipwhite nextgroup=vim9EnumName
-  syn match	vim9EnumName		contained	"\<\u\w*\>"	skipwhite skipnl nextgroup=vim9Implements
+  syn match	vim9Enum		contained	"\<enum\>"	skipwhite	  nextgroup=vim9EnumName
+  syn match	vim9EnumName		contained	"\<\u\w*\>"	skipwhite skipempty nextgroup=vim9EnumImplements,vim9EnumValue,vim9EnumValueListComment
+  syn keyword	vim9EnumImplements	contained	implements	skipwhite skipempty nextgroup=vim9EnumImplementedInterface
+  syn match	vim9EnumImplementedInterface	contained	"\<\u\w*\>"	skipwhite skipempty nextgroup=vim9EnumInterfaceListComma,vim9EnumValueListComment,vim9EnumValue
+  syn match	vim9EnumInterfaceListComma	contained	","	skipwhite skipempty nextgroup=vim9EnumImplementedInterface
+  hi def link vim9EnumImplements vim9Implements
+
+  syn match	vim9EnumValue		contained	"\<\a\w*\>"		  nextgroup=vim9EnumValueArgList,vim9EnumValueListComma,vim9Comment
+  syn match	vim9EnumValueListComma	contained	","	skipwhite skipempty nextgroup=vim9EnumValue,vim9EnumValueListComment
+  syn match	vim9EnumValueListComment	contained	"#.*"	skipwhite skipempty nextgroup=vim9EnumValueListComment,vim9EnumValue
+  syn region	vim9EnumValueArgList	contained	matchgroup=vimParenSep start="(" end=")" nextgroup=vim9EnumValueListComma contains=@vimExprList,vim9Comment
 
   VimFolde syn region	vim9EnumBody	start="\<enum\>" matchgroup=vimCommand end="\<endenum\>" contains=@vim9EnumBodyList transparent
 
@@ -1473,6 +1482,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9Const	vimCommand
  hi def link vim9ContinueComment	vimContinueComment
  hi def link vim9Enum	vimCommand
+ hi def link vim9EnumValueListComment	vim9Comment
  hi def link vim9Export	vimCommand
  hi def link vim9Extends	Keyword
  hi def link vim9Final	vimCommand
