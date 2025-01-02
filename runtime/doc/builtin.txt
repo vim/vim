@@ -279,6 +279,7 @@ getregionpos({pos1}, {pos2} [, {opts}])
 				List	get a list of positions for a region
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
+getstacktrace()			List	get current stack trace of Vim scripts
 gettabinfo([{expr}])		List	list of tab pages
 gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
@@ -4994,6 +4995,21 @@ getscriptinfo([{opts}])					*getscriptinfo()*
 			:echo getscriptinfo({'name': 'myscript'})
 			:echo getscriptinfo({'sid': 15})[0].variables
 <
+		Return type: list<dict<any>>
+
+
+getstacktrace()						*getstacktrace()*
+		Returns the current stack trace of Vim scripts.
+		Stack trace is a |List|, of which each item is a |Dictionary|
+		with the following items:
+		    funcref	The funcref if the stack is at the function,
+				otherwise this item is not exist.
+		    event	The string of the event description if the
+				stack is at autocmd event, otherwise this item
+				is not exist.
+		    lnum	The line number of the script on the stack.
+		    filepath	The file path of the script on the stack.
+
 		Return type: list<dict<any>>
 
 

@@ -532,6 +532,29 @@ dict_add_callback(dict_T *d, char *key, callback_T *cb)
 }
 
 /*
+ * Add a function entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_func(dict_T *d, char *key, ufunc_T *fp)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    item->di_tv.v_type = VAR_FUNC;
+    item->di_tv.vval.v_string = vim_strsave(fp->uf_name);
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    func_ref(item->di_tv.vval.v_string);
+    return OK;
+}
+
+/*
  * Initializes "iter" for iterating over dictionary items with
  * dict_iterate_next().
  * If "var" is not a Dict or an empty Dict then there will be nothing to

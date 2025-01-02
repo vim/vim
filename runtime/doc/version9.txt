@@ -41623,6 +41623,8 @@ Changed~
   for the ghostty terminal emulator (using kitty protocol)
 - |complete_info()| returns the list of matches shown in the poppu menu via
   the "matches" key
+- |v:stacktrace| The stack trace of the exception most recently caught and
+  not finished
 
 							*added-9.2*
 Added ~
@@ -41642,6 +41644,7 @@ Functions: ~
 |getcmdprompt()|	get prompt for input()/confirm()
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
+|getstacktrace()|	get current stack trace of Vim scripts
 |id()|			get unique identifier for a Dict, List, Object,
 			Channel or Blob variable
 |matchbufline()|	all the matches of a pattern in a buffer
