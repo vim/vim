@@ -1319,6 +1319,13 @@ characters may be different and the number of composing characters may differ.
 Only relevant when 'encoding' is "utf-8".
 Exception: If the pattern starts with one or more composing characters, these
 must match.
+							*/\%G* *E1515*
+When "\%G" appears at the beginning of the pattern (but must be after
+|two-engines|), all diacretic characters are ignored.  Thus searching for
+"\%Gbaum" will match "baum", "bäume" and "bäume" (the difference between the
+last two is the use of combining characters).
+This works similar to the |/[[=| atom, but for the complete pattern.
+Only relevant when 'encoding' is "utf-8".
 							*/\%C*
 Use "\%C" to skip any composing characters.  For example, the pattern "a" does
 not match in "càt" (where the a has the composing character 0x0300), but
