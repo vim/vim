@@ -203,7 +203,7 @@ runtime/ftplugin/java.vim		@zzzyxwvut
 runtime/ftplugin/javacc.vim		@ribru17
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
-runtime/ftplugin/jj.vim			@gpanders
+runtime/ftplugin/jjdescription.vim	@gpanders
 runtime/ftplugin/json.vim		@dbarnett
 runtime/ftplugin/json5.vim		@dkearns
 runtime/ftplugin/jsonc.vim		@izhakjakov
@@ -506,7 +506,7 @@ runtime/syntax/jargon.vim		@h3xx
 runtime/syntax/java.vim			@zzzyxwvut
 runtime/syntax/javascript.vim		@fleiner
 runtime/syntax/jinja.vim		@gpanders
-runtime/syntax/jj.vim			@gpanders
+runtime/syntax/jjdescription.vim	@gpanders
 runtime/syntax/json.vim		        @vito-c
 runtime/syntax/jsonc.vim		@izhakjakov
 runtime/syntax/julia.vim		@carlobaldassi

@@ -1244,7 +1244,7 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 au BufNewFile,BufRead *.jinja			setf jinja
 
 " Jujutsu
-au BufNewFile,BufRead *.jjdescription		setf jj
+au BufNewFile,BufRead *.jjdescription		setf jjdescription
 
 " Jovial
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
