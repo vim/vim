@@ -1251,6 +1251,13 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"guipad",     "gpd",   P_NUM|P_VI_DEF|P_RCLR,
+#ifdef FEAT_GUI
+                            (char_u *)&p_guipad, PV_NONE, did_set_guipad, NULL,
+#else
+                            (char_u *)NULL, PV_NONE, NULL, NULL,
+#endif
+                            {(char_u *)10L, (char_u *)0L} SCTX_INIT},
     {"guipty",	    NULL,   P_BOOL|P_VI_DEF,
 #if defined(FEAT_GUI)
 			    (char_u *)&p_guipty, PV_NONE, NULL, NULL,
