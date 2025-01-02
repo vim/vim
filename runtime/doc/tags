@@ -2670,7 +2670,7 @@ $quote	eval.txt	/*$quote*
 :his	cmdline.txt	/*:his*
 :history	cmdline.txt	/*:history*
 :history-indexing	cmdline.txt	/*:history-indexing*
-:ho	windows.txt	/*:ho*
+:hor	windows.txt	/*:hor*
 :horizontal	windows.txt	/*:horizontal*
 :i	insert.txt	/*:i*
 :ia	map.txt	/*:ia*
