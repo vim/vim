@@ -196,7 +196,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     crm: ['file.crm'],
     crontab: ['crontab', 'crontab.file', '/etc/cron.d/file', 'any/etc/cron.d/file'],
     crystal: ['file.cr'],
-    cs: ['file.cs', 'file.csx'],
+    cs: ['file.cs', 'file.csx', 'file.cake'],
     csc: ['file.csc'],
     csdl: ['file.csdl'],
     csp: ['file.csp', 'file.fdr'],
