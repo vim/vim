@@ -21,7 +21,7 @@ LangString ^UninstallCaption ${LANG_ENGLISH} \
 # License file for the license page                                       {{{1
 ##############################################################################
 
-LicenseLangString page_lic_file ${LANG_ENGLISH} "${VIMRT}\doc\uganda.nsis.txt"
+LicenseLangString page_lic_file ${LANG_ENGLISH} "..\lang\LICENSE.nsis.txt"
 
 ##############################################################################
 # README.txt file, which is opened after installation                     {{{1

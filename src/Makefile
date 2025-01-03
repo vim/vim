@@ -1182,6 +1182,9 @@ KMAPSOURCE = ../runtime/keymap
 # Where to look for print resource files
 PRINTSOURCE = ../runtime/print
 
+# Where to look translated README and LICENSE files
+TRANSSOURCE = ../lang
+
 # If you are using Linux, you might want to use this to make vim the
 # default vi editor, it will create a link from vi to Vim when doing
 # "make install".  An existing file will be overwritten!
@@ -2404,6 +2407,11 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(VIMTARGET) $(DEST_RT) \
 	chmod $(VIMSCRIPTMOD) $(SYS_INDOFF_FILE)
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/optwin.vim $(SYS_OPTWIN_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_OPTWIN_FILE)
+# install README and LICENCE files
+	$(INSTALL_DATA) ../README.txt $(DEST_RT)
+	chmod $(HELPMOD) $(DEST_RT)/README.txt
+	$(INSTALL_DATA) ../LICENSE $(DEST_RT)
+	chmod $(HELPMOD) $(DEST_RT)/LICENSE
 # install the print resource files
 	cd $(PRINTSOURCE); $(INSTALL_DATA) *.ps $(DEST_PRINT)
 	cd $(DEST_PRINT); chmod $(FILEMOD) *.ps
@@ -2542,7 +2550,7 @@ install-tool-languages:
 
 
 # install the language specific files, if they were unpacked
-install-languages: languages $(DEST_LANG) $(DEST_KMAP)
+install-languages: languages $(DEST_LANG) $(DEST_KMAP) $(DEST_RT)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_DA) "-da" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_DA_I) "-da" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_DA_U) "-da.UTF-8" $(INSTALLMANARGS)
@@ -2617,6 +2625,29 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	if test -d $(KMAPSOURCE); then \
 	   $(INSTALL_DATA) $(KMAPSOURCE)/README.txt $(KMAPSOURCE)/*.vim $(DEST_KMAP); \
 	   chmod $(FILEMOD) $(DEST_KMAP)/README.txt $(DEST_KMAP)/*.vim; \
+	fi
+# Installing translated README and LICENSE files
+	if test -d $(TRANSSOURCE) ; then \
+	  if test -n "$(LANG)" ; then \
+	    lngusr=$${LANG%%.*} ; \
+	  elif test -n "$(LANGUAGE)" ; then \
+	    lngusr=$${LANGUAGE%%:*} ; \
+	  elif test -n "$(LC_MESSAGES)" ; then \
+	    lngusr=$${LC_MESSAGES%%.*} ; \
+	  fi; \
+	  if test "$$lngusr" = "zh_TW" -o "$$lngusr" = "zh_CN" ; then \
+	    lngusr=`echo $$lngusr | tr '[:upper:]' '[:lower:]'` ; \
+	  elif test -n "$$lngusr" -a "$$lngusr" != "C" -a "$$lngusr" != "POSIX" ; then \
+	    lngusr=$${lngusr%%_*} ; \
+	  fi ; \
+	  if test -f $(TRANSSOURCE)/README.$$lngusr.txt ; then \
+	    $(INSTALL_DATA) $(TRANSSOURCE)/README.$$lngusr.txt $(DEST_RT) ; \
+	    chmod $(HELPMOD) $(DEST_RT)/README.$$lngusr.txt ; \
+	  fi ; \
+	  if test -f $(TRANSSOURCE)/LICENSE.$$lngusr.txt ; then \
+	    $(INSTALL_DATA) $(TRANSSOURCE)/LICENSE.$$lngusr.txt $(DEST_RT) ; \
+	    chmod $(HELPMOD) $(DEST_RT)/LICENSE.$$lngusr.txt ; \
+	  fi ; \
 	fi
 
 # Install the icons for KDE, if the directory exists and the icon doesn't.
@@ -2879,6 +2910,9 @@ uninstall_runtime:
 	-rm -f $(DEST_PLUG)/*.vim $(DEST_PLUG)/README.txt
 	-rmdir $(DEST_FTP) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_AUTO)/cargo $(DEST_AUTO)/rust $(DEST_AUTO)
 	-rmdir $(DEST_IMPORT)/dist $(DEST_IMPORT)
+	-rm -f $(DEST_RT)/README.??.txt
+	-rm -f $(DEST_RT)/LICENSE.??.txt
+	-rm -f $(DEST_RT)/README.txt $(DEST_RT)/LICENSE
 	-rmdir $(DEST_PLUG) $(DEST_RT)
 #	This will fail when other Vim versions are installed, no worries.
 	-rmdir $(DEST_VIM)

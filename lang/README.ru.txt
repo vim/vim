@@ -1,4 +1,4 @@
-README.rux.txt для версии 9.1 программы Vim — Vi IMproved.
+README.ru.txt для версии 9.1 программы Vim — Vi IMproved.
 
 
 ЧТО ТАКОЕ РЕДАКТОР VIM?
