@@ -342,7 +342,7 @@ au BufNewFile,BufRead *.capnp			setf capnp
 au BufNewFile,BufRead cgdbrc			setf cgdbrc
 
 " C#
-au BufNewFile,BufRead *.cs,*.csx		setf cs
+au BufNewFile,BufRead *.cs,*.csx,*.cake		setf cs
 
 " CSDL
 au BufNewFile,BufRead *.csdl			setf csdl
