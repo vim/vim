@@ -1214,6 +1214,146 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Convert the string "str", from encoding "from" to encoding "to".
+ */
+    static char_u *
+convert_string(char_u *str, char_u *from, char_u *to)
+{
+    vimconv_T	vimconv;
+
+    vimconv.vc_type = CONV_NONE;
+    if (convert_setup(&vimconv, from, to) == FAIL)
+	return NULL;
+    vimconv.vc_fail = TRUE;
+    if (vimconv.vc_type == CONV_NONE)
+	str = vim_strsave(str);
+    else
+	str = string_convert(&vimconv, str, NULL);
+    convert_setup(&vimconv, NULL, NULL);
+
+    return str;
+}
+
+/*
+ * "blob2str()" function
+ * Converts a blob to a string, ensuring valid UTF-8 encoding.
+ */
+    void
+f_blob2str(typval_T *argvars, typval_T *rettv)
+{
+    blob_T  *blob;
+    char_u  *str;
+    char_u  *p;
+    int	    blen;
+
+    if (check_for_blob_arg(argvars, 0) == FAIL
+	    || check_for_opt_dict_arg(argvars, 1) == FAIL)
+	return;
+
+    blob = argvars->vval.v_blob;
+    blen = blob_len(blob);
+
+    rettv->v_type = VAR_STRING;
+
+    str = alloc(blen + 1);
+    if (str == NULL)
+	return;
+
+    for (int i = 0; i < blen; i++)
+	str[i] = (char_u)blob_get(blob, i);
+    str[blen] = NUL;
+
+    p = str;
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	dict_T *d = argvars[1].vval.v_dict;
+	if (d != NULL)
+	{
+	    char_u *enc = dict_get_string(d, "encoding", FALSE);
+	    if (enc != NULL)
+	    {
+		char_u *from = enc_canonize(enc_skip(enc));
+		p = convert_string(str, from, p_enc);
+		vim_free(str);
+		if (p == NULL)
+		{
+		    semsg(_(e_str_encoding_failed), "from", from);
+		    vim_free(from);
+		    return;
+		}
+		vim_free(from);
+	    }
+	}
+    }
+
+    if (STRCMP(p_enc, "utf-8") == 0 || STRCMP(p_enc, "utf8") == 0)
+    {
+	if (!utf_valid_string(p, NULL))
+	{
+	    semsg(_(e_str_encoding_failed), "from", p_enc);
+	    vim_free(p);
+	    return;
+	}
+    }
+
+    rettv->vval.v_string = p;
+}
+
+/*
+ * "str2blob()" function
+ */
+    void
+f_str2blob(typval_T *argvars, typval_T *rettv)
+{
+    blob_T	*blob;
+    char_u	*p;
+    size_t	len;
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_opt_dict_arg(argvars, 1) == FAIL)
+	return;
+
+    if (rettv_blob_alloc(rettv) == FAIL)
+	return;
+
+    blob = rettv->vval.v_blob;
+
+    p = tv_get_string_chk(&argvars[0]);
+    if (p == NULL)
+	return;
+
+    int free_str = FALSE;
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	dict_T *d = argvars[1].vval.v_dict;
+	if (d != NULL)
+	{
+	    char_u *enc = dict_get_string(d, "encoding", FALSE);
+	    if (enc != NULL)
+	    {
+		char_u *to = enc_canonize(enc_skip(enc));
+		p = convert_string(p, p_enc, to);
+		if (p == NULL)
+		{
+		    semsg(_(e_str_encoding_failed), "to", to);
+		    vim_free(to);
+		    return;
+		}
+		vim_free(to);
+		free_str = TRUE;
+	    }
+	}
+    }
+
+    len = STRLEN(p);
+    for (size_t i = 0; i < len; i++)
+	ga_append(&blob->bv_ga, (int)p[i]);
+
+    if (free_str)
+	vim_free(p);
+}
+
+/*
  * "str2list()" function
  */
     void

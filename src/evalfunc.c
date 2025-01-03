@@ -1151,6 +1151,7 @@ static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_number};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
+static argcheck_T arg2_blob_dict[] = {arg_blob, arg_dict_any};
 static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
@@ -1844,6 +1845,8 @@ static funcentry_T global_functions[] =
 			ret_bool,	    f_bindtextdomain},
     {"blob2list",	1, 1, FEARG_1,	    arg1_blob,
 			ret_list_number,    f_blob2list},
+    {"blob2str",	1, 2, FEARG_1,	    arg2_blob_dict,
+			ret_string,	    f_blob2str},
     {"browse",		4, 4, 0,	    arg4_browse,
 			ret_string,	    f_browse},
     {"browsedir",	2, 2, 0,	    arg2_string,
@@ -2710,6 +2713,8 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_srand},
     {"state",		0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_state},
+    {"str2blob",	1, 2, FEARG_1,	    arg2_string_dict,
+			ret_blob,	    f_str2blob},
     {"str2float",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_float,	    f_str2float},
     {"str2list",	1, 2, FEARG_1,	    arg2_string_bool,
