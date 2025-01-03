@@ -79,7 +79,7 @@ can be translated:
 *   Menus, see [runtime/lang/README.txt][2]
 *   Vim tutor, see [runtime/tutor/README.txt][3]
 *   Manual pages, see [runtime/doc/\*.1][4] for examples
-*   Installer, see [nsis/lang/\*.nsi][5] for examples
+*   Installer, see [nsis/lang/README.txt][5]
 
 The help files can be translated and made available separately.
 See https://www.vim.org/translations.php for examples.
@@ -103,7 +103,7 @@ mailing list. For other questions please use the [Vi Stack Exchange][8] website,
 [2]: https://github.com/vim/vim/blob/master/runtime/lang/README.txt
 [3]: https://github.com/vim/vim/blob/master/runtime/tutor/README.txt
 [4]: https://github.com/vim/vim/blob/master/runtime/doc/vim.1
-[5]: https://github.com/vim/vim/blob/master/nsis/lang/english.nsi
+[5]: https://github.com/vim/vim/blob/master/nsis/lang/README.txt
 [6]: https://github.com/vim/vim/discussions/13087
 [7]: https://github.com/vim/vim/blob/master/runtime/doc/develop.txt
 [8]: https://vi.stackexchange.com
