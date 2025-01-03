@@ -11723,4 +11723,120 @@ def Test_use_object_method_in_a_method_call()
   v9.CheckSourceFailure(lines, 'E1326: Variable "NewCost" not found in object "Foo"')
 enddef
 
+" Test for referencing an object variable which is not yet initialized
+def Test_uninitialized_object_var()
+  var lines =<< trim END
+    vim9script
+    class Foo
+      const two: number = Foo.Two(this)
+      const one: number = 1
+
+      static def Two(that: Foo): number
+        return that.one + 2
+      enddef
+    endclass
+
+    echo Foo.Two(Foo.new())
+  END
+  v9.CheckSourceFailure(lines, "E1430: Uninitialized object variable 'one' referenced")
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const one: number = Foo.One(this)
+
+      static def One(that: Foo): number
+        return 1
+      enddef
+    endclass
+
+    assert_equal(1, Foo.One(Foo.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const one: number = 1
+      const two: number = Foo.Two(this)
+
+      static def Two(that: Foo): number
+        return that.one + 1
+      enddef
+    endclass
+
+    assert_equal(2, Foo.Two(Foo.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const Id: func(any): any = ((_) => (v) => v)(this)
+
+      static def Id(that: Foo): func(any): any
+        return that.Id
+      enddef
+    endclass
+
+    assert_equal(5, Foo.Id(Foo.new())(5))
+    assert_equal(7, Foo.new().Id(7))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const Id: func(any): any = ((that) => (_) => that)(this)
+
+      static def Id(that: Foo): func(any): any
+          return that.Id
+      enddef
+    endclass
+
+    const Id0: func(any): any = Foo.Id(Foo.new())
+    const Id1: func(any): any = Foo.new().Id
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const Id: any = Foo.Id(this)
+
+      static def Id(that: Foo): any
+          return that.Id
+      enddef
+    endclass
+
+    const Id2: any = Foo.Id(Foo.new())
+    const Id3: any = Foo.new().Id
+  END
+  v9.CheckSourceFailure(lines, "E1430: Uninitialized object variable 'Id' referenced")
+
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var x: string = ''
+      var Y: func(): string = () => this.x
+    endclass
+
+    var foo = Foo.new('ok')
+    assert_equal('ok', foo.Y())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var x: string = this.x
+    endclass
+
+    var foo = Foo.new('ok')
+  END
+  v9.CheckSourceFailure(lines, "E1430: Uninitialized object variable 'x' referenced")
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
