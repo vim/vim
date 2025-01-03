@@ -194,13 +194,34 @@ function s:parse_vim_command(cmd)
 		let item.syn_str = item.name
 		call add(a:cmd, copy(item))
 
-    " ":fina" means ":finally" in legacy script, for backwards compatibility.
-		" (From Vim source code find_ex_command() in ex_docmd.c)
+		let no_shorten_in_vim9 =<< trim EOL
+			final
+			def
+			enddef
+			class
+			endclass
+			enum
+			endenum
+			interface
+			endinterface
+			abstract
+			public
+			static
+			this
+			var
+			type
+		EOL
+
 		call map(a:cmd, {_, v ->
-			\ v.name ==# 'final' ?
+			\ index(no_shorten_in_vim9, v.name) != -1 ?
 			\		extend(copy(v), {'omit_idx': -1, 'syn_str': v.name}) :
+			"\ ":fina" means ":finally" in legacy script, for backwards compatibility.
+			"\ (From Vim source code find_ex_command() in ex_docmd.c)
 			\ v.name ==# 'finally' ?
 			\		extend(copy(v), {'omit_idx': 3, 'syn_str': 'fina[lly]'}) :
+			"\ :ho must not be recognized as :horizontal.
+			\ v.name ==# 'horizontal' ?
+			\		extend(copy(v), {'omit_idx': 2, 'syn_str': 'hor[izontal]'}) :
 			\ v
 			\ })
 
@@ -233,6 +254,7 @@ function s:get_vim_command_type(cmd_name)
 		Next
 		Print
 		X
+		abstract
 		append
 		augroup
 		augroup
@@ -715,6 +737,29 @@ function s:check_help_doc(vim_info)
 			i
 		END
 
+		let nocheck_shorten_excmd_list =<< trim END
+			bufdo
+			cfdo
+			cstag
+			debug
+			defer
+			eval
+			intro
+			lfdo
+			luado
+			luafile
+			ownsyntax
+			py3do
+			pydo
+			pyxdo
+			pyxfile
+			rundo
+			smile
+			syntime
+			windo
+			wundo
+		END
+
 		" Check the Ex-command is listed in index.txt
 		split index.txt
 		for vimcmd in a:vim_info.cmd
@@ -750,8 +795,8 @@ function s:check_help_doc(vim_info)
 				call s:err_sanity($'Help tag for Ex-cmd ":{vimcmd.name}" not found.')
 			elseif len(qfl) > 1
 				call s:err_sanity($'Help tag for Ex-cmd ":{vimcmd.name}" is duplicated.')
-			else
-				" Check the existence of Ex-command notation.
+			elseif index(nocheck_shorten_excmd_list, vimcmd.name) ==# -1
+				" Check the existence of the shorten Ex-command notation.
 				cc
 				norm! 2k
 				let end_lnum = qfl[0].lnum + 10
@@ -778,7 +823,9 @@ function s:check_help_doc(vim_info)
 		call s:err_gen('')
 		throw 'exit'
 	finally
+		call s:err_gen('Ex-cmd documentation consistency check completed.')
 		exec 'cd ' . cwd_save
+		set wildignore&
 	endtry
 endfunc
 
