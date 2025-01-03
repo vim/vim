@@ -72,6 +72,7 @@ base64_encode({blob})		String	base64 encode the bytes in {blob}
 bindtextdomain({package}, {path})
 				Bool	bind text domain to specified path
 blob2list({blob})		List	convert {blob} into a list of numbers
+blob2str({blob})		String	convert {blob} into a String
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -609,6 +610,7 @@ split({expr} [, {pat} [, {keepempty}]])
 sqrt({expr})			Float	square root of {expr}
 srand([{expr}])			List	get seed for |rand()|
 state([{what}])			String	current state of Vim
+str2blob({string})		Blob	convert {string} into a Blob
 str2float({expr} [, {quoted}])	Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF-8 value
@@ -1288,6 +1290,25 @@ blob2list({blob})					*blob2list()*
 			GetBlob()->blob2list()
 <
 		Return type: list<any> or list<number>
+
+
+blob2str({blob})					*blob2str()*
+		Return a String by converting the UTF-8 encoded bytes in {blob}
+		into characters.
+
+							*E1515*
+		Returns an empty String if blob is empty or an invalid UTF-8
+		byte sequence is encountered.
+
+		Examples: >
+			blob2str(0z6162)	returns "ab"
+			blob2str(0zC2ABC2BB)	returns "«»"
+<
+		Can also be used as a |method|: >
+			GetBlob()->blob2str()
+<
+		Return type: |String|
+
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
@@ -10555,6 +10576,21 @@ state([{what}])						*state()*
 
 		Return type: |String|
 
+
+str2blob({string})					*str2blob()*
+		Return a Blob by converting the characters in {string} into
+		UTF-8 encoded bytes.
+
+		Returns an empty Blob if {string} is empty or on error.
+
+		Examples: >
+			str2blob("ab")		returns 0z6162
+			str2blob("«»")		returns 0zC2ABC2BB
+<
+		Can also be used as a |method|: >
+			GetStr()->str2blob()
+<
+		Return type: |Blob|
 
 str2float({string} [, {quoted}])				*str2float()*
 		Convert String {string} to a Float.  This mostly works the
