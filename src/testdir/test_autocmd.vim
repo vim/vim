@@ -4902,4 +4902,28 @@ func Test_autocmd_BufWinLeave_with_vsp()
   exe "bw! " .. dummy
 endfunc
 
+func Test_OptionSet_cmdheight()
+  set mouse=a laststatus=2
+  au OptionSet cmdheight :let &l:ch = v:option_new
+
+  resize -1
+  call assert_equal(2, &l:ch)
+  resize +1
+  call assert_equal(1, &l:ch)
+
+  call test_setmouse(&lines - 1, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call test_setmouse(&lines - 2, 1)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call assert_equal(2, &l:ch)
+
+  tabnew | resize +1
+  call assert_equal(1, &l:ch)
+  tabfirst
+  call assert_equal(2, &l:ch)
+
+  tabonly
+  set cmdheight& mouse& laststatus&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

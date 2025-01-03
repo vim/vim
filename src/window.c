@@ -27,7 +27,7 @@ static win_T *frame2win(frame_T *frp);
 static int frame_has_win(frame_T *frp, win_T *wp);
 static void win_fix_scroll(int resize);
 static void win_fix_cursor(int normal);
-static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
+static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh, int set_ch);
 static int frame_fixed_height(frame_T *frp);
 static int frame_fixed_width(frame_T *frp);
 static void frame_add_statusline(frame_T *frp);
@@ -1404,13 +1404,14 @@ win_split_ins(
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    int new_fr_height = curfrp->fr_height - new_size
-							  + WINBAR_HEIGHT(wp) ;
+							  + WINBAR_HEIGHT(wp);
 
 	    if (!((flags & WSP_BOT) && p_ls == 0))
 		new_fr_height -= STATUS_HEIGHT;
 	    if (flags & WSP_BOT)
 		frame_add_statusline(curfrp);
-	    frame_new_height(curfrp, new_fr_height, flags & WSP_TOP, FALSE);
+	    frame_new_height(curfrp, new_fr_height, flags & WSP_TOP, FALSE,
+									FALSE);
 	}
 	else
 	    win_new_height(oldwin, oldwin_height - (new_size + STATUS_HEIGHT));
@@ -2126,7 +2127,7 @@ win_equal_rec(
 	   )
 	{
 	    topfr->fr_win->w_winrow = row;
-	    frame_new_height(topfr, height, FALSE, FALSE);
+	    frame_new_height(topfr, height, FALSE, FALSE, FALSE);
 	    topfr->fr_win->w_wincol = col;
 	    frame_new_width(topfr, width, FALSE, FALSE);
 	    redraw_all_later(UPD_NOT_VALID);
@@ -3551,7 +3552,7 @@ winframe_remove(
 	    }
 	}
 	frame_new_height(frp2, frp2->fr_height + frp_close->fr_height,
-			    frp2 == frp_close->fr_next, FALSE);
+			    frp2 == frp_close->fr_next, FALSE, FALSE);
 	*dirp = 'v';
     }
     else
@@ -3691,7 +3692,7 @@ winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr)
     if (dir == 'v')
     {
 	frame_new_height(unflat_altfr, unflat_altfr->fr_height - frp->fr_height,
-		unflat_altfr == frp->fr_next, FALSE);
+		unflat_altfr == frp->fr_next, FALSE, FALSE);
     }
     else if (dir == 'h')
     {
@@ -3840,13 +3841,22 @@ frame_new_height(
     frame_T	*topfrp,
     int		height,
     int		topfirst,	// resize topmost contained frame first
-    int		wfh)		// obey 'winfixheight' when there is a choice;
+    int		wfh,		// obey 'winfixheight' when there is a choice;
 				// may cause the height not to be set
+    int		set_ch)		// set 'cmdheight' to resize topframe
 {
     frame_T	*frp;
     int		extra_lines;
     int		h;
 
+    if (topfrp->fr_parent == NULL && set_ch)
+    {
+	// topframe: update the command line height, with side effects.
+	int new_ch = MAX(1, p_ch + topfrp->fr_height - height);
+	if (new_ch != p_ch)
+	    set_option_value((char_u *)"cmdheight", new_ch, NULL, 0);
+	height = MIN(height, ROWS_AVAIL);
+    }
     if (topfrp->fr_win != NULL)
     {
 	// Simple case: just one window.
@@ -3861,7 +3871,7 @@ frame_new_height(
 	    // All frames in this row get the same new height.
 	    FOR_ALL_FRAMES(frp, topfrp->fr_child)
 	    {
-		frame_new_height(frp, height, topfirst, wfh);
+		frame_new_height(frp, height, topfirst, wfh, set_ch);
 		if (frp->fr_height > height)
 		{
 		    // Could not fit the windows, make the whole row higher.
@@ -3907,12 +3917,12 @@ frame_new_height(
 		if (frp->fr_height + extra_lines < h)
 		{
 		    extra_lines += frp->fr_height - h;
-		    frame_new_height(frp, h, topfirst, wfh);
+		    frame_new_height(frp, h, topfirst, wfh, set_ch);
 		}
 		else
 		{
 		    frame_new_height(frp, frp->fr_height + extra_lines,
-							       topfirst, wfh);
+							topfirst, wfh, set_ch);
 		    break;
 		}
 		if (topfirst)
@@ -3935,7 +3945,8 @@ frame_new_height(
 	else if (extra_lines > 0)
 	{
 	    // increase height of bottom or top frame
-	    frame_new_height(frp, frp->fr_height + extra_lines, topfirst, wfh);
+	    frame_new_height(frp, frp->fr_height + extra_lines, topfirst, wfh,
+									set_ch);
 	}
     }
     topfrp->fr_height = height;
@@ -4380,6 +4391,10 @@ unuse_tabpage(tabpage_T *tp)
     tp->tp_lastwin = lastwin;
     tp->tp_curwin = curwin;
 }
+
+// When switching tabpage, handle other side-effects in command_height(), but
+// avoid setting frame sizes which are still correct.
+static int command_frame_height = TRUE;
 
 /*
  * Set the relevant pointers to use tab page "tp".  May want to call
@@ -4915,12 +4930,22 @@ enter_tabpage(
     int		trigger_enter_autocmds,
     int		trigger_leave_autocmds)
 {
-    int		row;
     int		old_off = tp->tp_firstwin->w_winrow;
     win_T	*next_prevwin = tp->tp_prevwin;
     tabpage_T	*last_tab = curtab;
 
     use_tabpage(tp);
+
+    if (p_ch != curtab->tp_ch_used)
+    {
+	// Use the stored value of p_ch, so that it can be different for each
+	// tab page.
+	int new_ch = curtab->tp_ch_used;
+	curtab->tp_ch_used = p_ch;
+	command_frame_height = FALSE;
+	set_option_value((char_u *)"cmdheight", new_ch, NULL, 0);
+	command_frame_height = TRUE;
+    }
 
     // We would like doing the TabEnter event first, but we don't have a
     // valid current window yet, which may break some commands.
@@ -4931,22 +4956,10 @@ enter_tabpage(
     prevwin = next_prevwin;
 
     last_status(FALSE);		// status line may appear or disappear
-    row = win_comp_pos();	// recompute w_winrow for all windows
+    win_comp_pos();		// recompute w_winrow for all windows
 #ifdef FEAT_DIFF
     diff_need_scrollbind = TRUE;
 #endif
-
-    // Use the stored value of p_ch, so that it can be different for each tab
-    // page.
-    if (p_ch != curtab->tp_ch_used)
-	clear_cmdline = TRUE;
-    p_ch = curtab->tp_ch_used;
-
-    // When cmdheight is changed in a tab page with '<C-w>-', cmdline_row is
-    // changed but p_ch and tp_ch_used are not changed. Thus we also need to
-    // check cmdline_row.
-    if (row < cmdline_row && cmdline_row <= Rows - p_ch)
-	clear_cmdline = TRUE;
 
     // If there was a click in a window, it won't be usable for a following
     // drag.
@@ -6091,9 +6104,9 @@ shell_new_rows(void)
 
     // First try setting the heights of windows with 'winfixheight'.  If
     // that doesn't result in the right height, forget about that option.
-    frame_new_height(topframe, h, FALSE, TRUE);
+    frame_new_height(topframe, h, FALSE, TRUE, FALSE);
     if (!frame_check_height(topframe, h))
-	frame_new_height(topframe, h, FALSE, FALSE);
+	frame_new_height(topframe, h, FALSE, FALSE, FALSE);
 
     (void)win_comp_pos();		// recompute w_winrow and w_wincol
     compute_cmdrow();
@@ -6275,8 +6288,6 @@ win_setheight(int height)
     void
 win_setheight_win(int height, win_T *win)
 {
-    int		row;
-
     if (win == curwin)
     {
 	// Always keep current window at least one line high, even when
@@ -6291,18 +6302,7 @@ win_setheight_win(int height, win_T *win)
     frame_setheight(win->w_frame, height + win->w_status_height);
 
     // recompute the window positions
-    row = win_comp_pos();
-
-    /*
-     * If there is extra space created between the last window and the command
-     * line, clear it.
-     */
-    if (full_screen && msg_scrolled == 0 && row < cmdline_row)
-	screen_fill(row, cmdline_row, 0, (int)Columns, ' ', ' ', 0);
-    cmdline_row = row;
-    msg_row = row;
-    msg_col = 0;
-
+    win_comp_pos();
     win_fix_scroll(TRUE);
 
     redraw_all_later(UPD_NOT_VALID);
@@ -6339,10 +6339,8 @@ frame_setheight(frame_T *curfrp, int height)
     if (curfrp->fr_parent == NULL)
     {
 	// topframe: can only change the command line height
-	if (height > ROWS_AVAIL)
-	    height = ROWS_AVAIL;
 	if (height > 0)
-	    frame_new_height(curfrp, height, FALSE, FALSE);
+	    frame_new_height(curfrp, height, FALSE, FALSE, TRUE);
     }
     else if (curfrp->fr_parent->fr_layout == FR_ROW)
     {
@@ -6428,7 +6426,7 @@ frame_setheight(frame_T *curfrp, int height)
 	/*
 	 * set the current frame to the new height
 	 */
-	frame_new_height(curfrp, height, FALSE, FALSE);
+	frame_new_height(curfrp, height, FALSE, FALSE, TRUE);
 
 	/*
 	 * First take lines from the frames after the current frame.  If
@@ -6455,7 +6453,8 @@ frame_setheight(frame_T *curfrp, int height)
 			if (frp->fr_height - room_reserved > take)
 			    room_reserved = frp->fr_height - take;
 			take -= frp->fr_height - room_reserved;
-			frame_new_height(frp, room_reserved, FALSE, FALSE);
+			frame_new_height(frp, room_reserved, FALSE, FALSE,
+									TRUE);
 			room_reserved = 0;
 		    }
 		}
@@ -6464,12 +6463,12 @@ frame_setheight(frame_T *curfrp, int height)
 		    if (frp->fr_height - take < h)
 		    {
 			take -= frp->fr_height - h;
-			frame_new_height(frp, h, FALSE, FALSE);
+			frame_new_height(frp, h, FALSE, FALSE, TRUE);
 		    }
 		    else
 		    {
 			frame_new_height(frp, frp->fr_height - take,
-								FALSE, FALSE);
+							    FALSE, FALSE, TRUE);
 			take = 0;
 		    }
 		}
@@ -6718,7 +6717,6 @@ win_drag_status_line(win_T *dragwin, int offset)
     frame_T	*curfr;
     frame_T	*fr;
     int		room;
-    int		row;
     int		up;	// if TRUE, drag status line up, otherwise down
     int		n;
 
@@ -6799,7 +6797,7 @@ win_drag_status_line(win_T *dragwin, int offset)
      * Doesn't happen when dragging the last status line up.
      */
     if (fr != NULL)
-	frame_new_height(fr, fr->fr_height + offset, up, FALSE);
+	frame_new_height(fr, fr->fr_height + offset, up, FALSE, TRUE);
 
     if (up)
 	fr = curfr;		// current frame gets smaller
@@ -6815,11 +6813,11 @@ win_drag_status_line(win_T *dragwin, int offset)
 	if (fr->fr_height - offset <= n)
 	{
 	    offset -= fr->fr_height - n;
-	    frame_new_height(fr, n, !up, FALSE);
+	    frame_new_height(fr, n, !up, FALSE, TRUE);
 	}
 	else
 	{
-	    frame_new_height(fr, fr->fr_height - offset, !up, FALSE);
+	    frame_new_height(fr, fr->fr_height - offset, !up, FALSE, TRUE);
 	    break;
 	}
 	if (up)
@@ -6827,12 +6825,7 @@ win_drag_status_line(win_T *dragwin, int offset)
 	else
 	    fr = fr->fr_next;
     }
-    row = win_comp_pos();
-    screen_fill(row, cmdline_row, 0, (int)Columns, ' ', ' ', 0);
-    cmdline_row = row;
-    p_ch = MAX(Rows - cmdline_row, MIN_CMDHEIGHT);
-    curtab->tp_ch_used = p_ch;
-
+    win_comp_pos();
     win_fix_scroll(TRUE);
 
     redraw_all_later(UPD_SOME_VALID);
@@ -7287,31 +7280,10 @@ win_comp_scroll(win_T *wp)
     void
 command_height(void)
 {
-    int		h;
-    frame_T	*frp;
     int		old_p_ch = curtab->tp_ch_used;
 
-    // Use the value of p_ch that we remembered.  This is needed for when the
-    // GUI starts up, we can't be sure in what order things happen.  And when
-    // p_ch was changed in another tab page.
-    curtab->tp_ch_used = p_ch;
-
-    // If the space for the command line is already more than 'cmdheight' there
-    // is nothing to do (window size must have decreased).
-    // Note: this makes curtab->tp_ch_used unreliable
-    if (p_ch > old_p_ch && cmdline_row <= Rows - p_ch)
-	return;
-
-    // Update cmdline_row to what it should be: just below the last window.
-    cmdline_row = topframe->fr_height + tabline_height();
-
-    // old_p_ch may be unreliable, because of the early return above, so
-    // set old_p_ch to what it would be, so that the windows get resized
-    // properly for the new value.
-    old_p_ch = Rows - cmdline_row;
-
     // Find bottom frame with width of screen.
-    frp = lastwin->w_frame;
+    frame_T *frp = lastwin->w_frame;
     while (frp->fr_width != Columns && frp->fr_parent != NULL)
 	frp = frp->fr_parent;
 
@@ -7320,54 +7292,39 @@ command_height(void)
 						      && frp->fr_win->w_p_wfh)
 	frp = frp->fr_prev;
 
-    if (starting != NO_SCREEN)
+    while (p_ch > old_p_ch && command_frame_height)
     {
-	cmdline_row = Rows - p_ch;
-
-	if (p_ch > old_p_ch)		    // p_ch got bigger
+	if (frp == NULL)
 	{
-	    while (p_ch > old_p_ch)
-	    {
-		if (frp == NULL)
-		{
-		    emsg(_(e_not_enough_room));
-		    p_ch = old_p_ch;
-		    curtab->tp_ch_used = p_ch;
-		    cmdline_row = Rows - p_ch;
-		    break;
-		}
-		h = frp->fr_height - frame_minheight(frp, NULL);
-		if (h > p_ch - old_p_ch)
-		    h = p_ch - old_p_ch;
-		old_p_ch += h;
-		frame_add_height(frp, -h);
-		frp = frp->fr_prev;
-	    }
-
-	    // Recompute window positions.
-	    (void)win_comp_pos();
-
-	    if (!need_wait_return)
-	    {
-		// clear the lines added to cmdline
-		if (full_screen)
-		    screen_fill(cmdline_row, (int)Rows, 0,
-						       (int)Columns, ' ', ' ', 0);
-		msg_row = cmdline_row;
-	    }
-	    redraw_cmdline = TRUE;
-	    return;
+	    emsg(_(e_not_enough_room));
+	    p_ch = old_p_ch;
+	    break;
 	}
-
-	if (msg_row < cmdline_row)
-	    msg_row = cmdline_row;
-	redraw_cmdline = TRUE;
+	int h = MIN(p_ch - old_p_ch,
+			frp->fr_height - frame_minheight(frp, NULL));
+	frame_add_height(frp, -h);
+	old_p_ch += h;
+	frp = frp->fr_prev;
     }
-    frame_add_height(frp, (int)(old_p_ch - p_ch));
+    if (p_ch < old_p_ch && command_frame_height)
+	frame_add_height(frp, (int)(old_p_ch - p_ch));
 
     // Recompute window positions.
-    if (frp != lastwin->w_frame)
-	(void)win_comp_pos();
+    win_comp_pos();
+    cmdline_row = Rows - p_ch;
+    redraw_cmdline = TRUE;
+
+    // Clear the cmdheight area.
+    if (msg_scrolled == 0 && full_screen)
+    {
+	screen_fill(cmdline_row, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+	msg_row = cmdline_row;
+    }
+
+    // Use the value of p_ch that we remembered.  This is needed for when the
+    // GUI starts up, we can't be sure in what order things happen.  And when
+    // p_ch was changed in another tab page.
+    curtab->tp_ch_used = p_ch;
 }
 
 /*
@@ -7377,7 +7334,7 @@ command_height(void)
     static void
 frame_add_height(frame_T *frp, int n)
 {
-    frame_new_height(frp, frp->fr_height + n, FALSE, FALSE);
+    frame_new_height(frp, frp->fr_height + n, FALSE, FALSE, FALSE);
     for (;;)
     {
 	frp = frp->fr_parent;
@@ -7436,7 +7393,7 @@ last_status_rec(frame_T *fr, int statusline)
 	    wp->w_status_height = 1;
 	    if (fp != fr)
 	    {
-		frame_new_height(fp, fp->fr_height - 1, FALSE, FALSE);
+		frame_new_height(fp, fp->fr_height - 1, FALSE, FALSE, FALSE);
 		frame_fix_height(wp);
 		(void)win_comp_pos();
 	    }
@@ -7819,7 +7776,7 @@ restore_snapshot_rec(frame_T *sn, frame_T *fr)
     fr->fr_width = sn->fr_width;
     if (fr->fr_layout == FR_LEAF)
     {
-	frame_new_height(fr, fr->fr_height, FALSE, FALSE);
+	frame_new_height(fr, fr->fr_height, FALSE, FALSE, FALSE);
 	frame_new_width(fr, fr->fr_width, FALSE, FALSE);
 	wp = sn->fr_win;
     }
