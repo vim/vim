@@ -3654,3 +3654,5 @@ EXTERN char e_winfixbuf_cannot_go_to_buffer[]
 	INIT(= N_("E1513: Cannot switch buffer. 'winfixbuf' is enabled"));
 EXTERN char e_invalid_return_type_from_findfunc[]
 	INIT(= N_("E1514: 'findfunc' did not return a List type"));
+EXTERN char e_invalid_utf8_char_at_index[]
+	INIT(= N_("E1515: Invalid UTF-8 character at index %d"));

@@ -4257,4 +4257,51 @@ func Test_base64_encoding()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+" Tests for the str2blob() function
+func Test_str2blob()
+  let lines =<< trim END
+    call assert_equal(0z, str2blob(""))
+    call assert_fails("call str2blob([])", 'E1174: String required for argument 1')
+    call assert_equal(0z6162, str2blob("ab"))
+    call assert_equal(0zC2ABC2BB, str2blob("«»"))
+    call assert_equal(0zC59DC59F, str2blob("ŝş"))
+    call assert_equal(0zE0AE85E0.AE87, str2blob("அஇ"))
+    call assert_equal(0zF09F81B0.F09F81B3, str2blob("🁰🁳"))
+
+    call assert_equal("", blob2str(0z))
+    call assert_fails("call blob2str([])", 'E1238: Blob required for argument 1')
+    call assert_equal("ab", blob2str(0z6162))
+    call assert_equal("«»", blob2str(0zC2ABC2BB))
+    call assert_equal("ŝş", blob2str(0zC59DC59F))
+    call assert_equal("அஇ", blob2str(0zE0AE85E0.AE87))
+    call assert_equal("🁰🁳", blob2str(0zF09F81B0.F09F81B3))
+
+    #" Invalid encoding
+    call assert_fails("call blob2str(0z80)", 'E1515: Invalid UTF-8 character at index 0')
+    call assert_fails("call blob2str(0zC0)", 'E1515: Invalid UTF-8 character at index 0')
+    call assert_fails("call blob2str(0zE0)", 'E1515: Invalid UTF-8 character at index 0')
+    call assert_fails("call blob2str(0zF0)", 'E1515: Invalid UTF-8 character at index 0')
+
+    call assert_fails("call blob2str(0z6180)", 'E1515: Invalid UTF-8 character at index 1')
+    call assert_fails("call blob2str(0z61C0)", 'E1515: Invalid UTF-8 character at index 1')
+    call assert_fails("call blob2str(0z61E0)", 'E1515: Invalid UTF-8 character at index 1')
+    call assert_fails("call blob2str(0z61F0)", 'E1515: Invalid UTF-8 character at index 1')
+
+    call assert_fails("call blob2str(0zC0C0)", 'E1515: Invalid UTF-8 character at index 1')
+    call assert_fails("call blob2str(0z61C0C0)", 'E1515: Invalid UTF-8 character at index 2')
+
+    call assert_fails("call blob2str(0zE0)", 'E1515: Invalid UTF-8 character at index 0')
+    call assert_fails("call blob2str(0zE080)", 'E1515: Invalid UTF-8 character at index 0')
+    call assert_fails("call blob2str(0zE080C0)", 'E1515: Invalid UTF-8 character at index 2')
+    call assert_fails("call blob2str(0z61E080C0)", 'E1515: Invalid UTF-8 character at index 3')
+
+    call assert_fails("call blob2str(0zF08080C0)", 'E1515: Invalid UTF-8 character at index 3')
+    call assert_fails("call blob2str(0z61F08080C0)", 'E1515: Invalid UTF-8 character at index 4')
+    call assert_fails("call blob2str(0zF0)", 'E1515: Invalid UTF-8 character at index 0')
+    call assert_fails("call blob2str(0zF080)", 'E1515: Invalid UTF-8 character at index 0')
+    call assert_fails("call blob2str(0zF08080)", 'E1515: Invalid UTF-8 character at index 0')
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

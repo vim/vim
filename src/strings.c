@@ -1198,6 +1198,96 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "blob2str()" function
+ * Converts a blob to a string, ensuring valid UTF-8 encoding.
+ */
+    void
+f_blob2str(typval_T *argvars, typval_T *rettv)
+{
+    blob_T  *blob;
+    char_u  *str;
+    int	    blen;
+
+    if (check_for_blob_arg(argvars, 0) == FAIL)
+	return;
+
+    blob = argvars->vval.v_blob;
+    blen = blob_len(blob);
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = str = alloc(blen + 1);
+    if (str == NULL)
+	return;
+
+    int i = 0;
+    while (i < blen)
+    {
+	char_u	first_byte;
+	int	len;
+
+	// First byte is the UTF-8 character length
+	first_byte = (char_u)blob_get(blob, i);
+	len = utf_byte2len_zero((int)first_byte);
+
+	// check for valid UTF-8 character length
+	if (!len || (i + len) > blen)
+	    goto on_err;
+
+	str[i++] = first_byte;
+	for (int j = 1; j < len; j++)
+	{
+	    str[i] = (char_u)blob_get(blob, i);
+	    // Ensure the byte is a valid continuation byte
+	    if ((str[i] & 0xc0) != 0x80)
+		goto on_err;
+	    i++;
+	}
+    }
+
+    str[blen] = NUL;
+    return;
+
+on_err:
+    semsg(_(e_invalid_utf8_char_at_index), i);
+    *str = NUL;
+}
+
+/*
+ * "str2blob()" function
+ */
+    void
+f_str2blob(typval_T *argvars, typval_T *rettv)
+{
+    blob_T  *blob;
+    char_u  *p;
+    size_t  len;
+
+    if (check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    if (rettv_blob_alloc(rettv) == FAIL)
+	return;
+
+    blob = rettv->vval.v_blob;
+
+    p = tv_get_string_chk(&argvars[0]);
+    if (p == NULL)
+	return;
+
+    len = STRLEN(p);
+
+    int	n = 0;
+    for (size_t i = 0; i < len; i += n)
+    {
+	char_u	bytes[MB_MAXBYTES + 1];
+
+	n = utf_char2bytes(utf_ptr2char(p + i), bytes);
+	for (int j = 0; j < n; j++)
+	    ga_append(&blob->bv_ga, (int)bytes[j]);
+    }
+}
+
+/*
  * "str2list()" function
  */
     void
