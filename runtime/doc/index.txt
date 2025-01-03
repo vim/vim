@@ -1262,7 +1262,7 @@ tag		command		action ~
 |:checkpath|	:che[ckpath]	list included files
 |:checktime|	:checkt[ime]	check timestamp of loaded buffers
 |:chistory|	:chi[story]	list the error lists
-|:class|	:class		start of a class specification
+|:class|	:class		start of a class declaration
 |:clast|	:cla[st]	go to the specified error, default last one
 |:clearjumps|	:cle[arjumps]	clear the jump list
 |:clist|	:cl[ist]	list all errors
@@ -1337,11 +1337,11 @@ tag		command		action ~
 |:else|		:el[se]		part of an :if command
 |:elseif|	:elsei[f]	part of an :if command
 |:emenu|	:em[enu]	execute a menu by name
-|:endclass|	:endclass	end of a class specification
+|:endclass|	:endclass	end of a class declaration
 |:enddef|	:enddef		end of a user function started with :def
-|:endenum|	:endenum	end of an enum specification
+|:endenum|	:endenum	end of an enum declaration
 |:endif|	:en[dif]	end previous :if
-|:endinterface|	:endinterface	end of an interface specification
+|:endinterface|	:endinterface	end of an interface declaration
 |:endfor|	:endfo[r]	end previous :for
 |:endfunction|	:endf[unction]	end of a user function started with :function
 |:endtry|	:endt[ry]	end previous :try
