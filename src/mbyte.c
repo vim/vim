@@ -2107,6 +2107,17 @@ utf_byte2len(int b)
 }
 
 /*
+ * Return length of UTF-8 character, obtained from the first byte.
+ * "b" must be between 0 and 255!
+ * Returns 0 for an invalid first byte value.
+ */
+    int
+utf_byte2len_zero(int b)
+{
+    return utf8len_tab_zero[b];
+}
+
+/*
  * Get the length of UTF-8 byte sequence "p[size]".  Does not include any
  * following composing characters.
  * Returns 1 for "".
