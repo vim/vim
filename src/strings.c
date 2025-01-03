@@ -674,6 +674,22 @@ vim_strchr(char_u *string, int c)
     return NULL;
 }
 
+// Sized version of strchr that can handle embedded NULs.
+// Adjusts n to the new size.
+    char *
+vim_strnchr(const char *p, size_t *n, int c)
+{
+    while (*n > 0)
+    {
+	if (*p == c)
+	    return (char *)p;
+	p++;
+	(*n)--;
+    }
+
+    return NULL;
+}
+
 /*
  * Version of strchr() that only works for bytes and handles unsigned char
  * strings with characters above 128 correctly. It also doesn't return a
