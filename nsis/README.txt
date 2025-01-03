@@ -3,22 +3,15 @@ Installation System (NSIS), available at http://nsis.sourceforge.net/
 
 To build the installable .exe file:
 
-1.  Unpack three archives:
-	PC sources
-	PC runtime
-	PC language files
-    You can generate these from the Unix sources and runtime plus the extra
-    archive (see the Makefile in the top directory).
+Preparatory stage
 
-2.  Go to the src directory and build:
-	gvim.exe (the OLE version),
-	vimrun.exe,
-	install.exe,
-	uninstall.exe,
-	tee/tee.exe,
-	xxd/xxd.exe
+1.  Clone using the git tool the Vim repository or download its zip file
+    available at:
+	https://github.com/vim/vim
 
-    Then execute tools/rename.bat to rename the executables.
+2.  Go to the "/src" directory and build the Vim editor, making sure to use the
+    following variable values: "GUI=yes"; "OLE=yes"; "VIMDLL=yes". See
+    INSTALLpc.txt and Make_mvc.mak for details.
 
 3.  Go to the GvimExt directory and build gvimext.dll (or get it from a binary
     archive).  Both 64- and 32-bit versions are needed and should be placed
@@ -32,8 +25,8 @@ To build the installable .exe file:
 	https://www.mediafire.com/file/9edk4g3xvfgzby0/diff4Vim.zip/file
     When will you have "diff.exe" put it in the "../.." directory (above the
     "vim91" directory, it's the same for all Vim versions).  However, you can
-    specify another directory by passing /DVIMTOOLS=<dir> option to the
-    "makensis.exe" program via the command line.
+    specify a different directory by specifying the appropriate makefile value.
+    How to do this is described below.
 
 5.  For the terminal window to work in Vim, the library winpty is required.
     You can get it at the following url:
@@ -41,8 +34,8 @@ To build the installable .exe file:
     For the 32-bit version, rename "winpty.dll" from ia32/bin to "winpty32.dll",
     and for the 64-bit version — "winpty.dll" from x64/bin to "winpty64.dll".
     Put the renamed file and "winpty-agent.exe" in "../.." (above the "vim91"
-    directory).  However, you can specify another directory by passing
-    /DVIMTOOLS=<dir> option to the "makensis.exe" program via the command line.
+    directory).  However, you can specify a different directory by specifying
+    the appropriate makefile value. How to do this is described below. 
 
 6.  To use stronger encryption, add the Sodium library.  You can get it here:
 	https://github.com/jedisct1/libsodium/releases/download/1.0.19-RELEASE/libsodium-1.0.19-msvc.zip
@@ -52,12 +45,7 @@ To build the installable .exe file:
     "../.." directory (above the "vim91" directory, where "diff.exe" and
     "winpty{32|64}.dll").
 
-7.  On MS Windows do "nmake.exe -f Make_mvc.mak uganda.nsis.txt" in runtime/doc.
-    On Unix-like system do "make runtime/doc/uganda.nsis.txt" in top directory
-    or "make uganda.nsis.txt" in runtime/doc.  The created files
-    "uganda.nsis.???" will be automatically converted to DOS file format.
-
-8.  Get gettext and iconv DLLs from the following site:
+7.  Get gettext and iconv DLLs from the following site:
 	https://github.com/mlocati/gettext-iconv-windows/releases
     Both 64- and 32-bit versions are needed.
     Download the files gettextX.X.X.X-iconvX.XX-shared-{32,64}.zip, extract
@@ -74,35 +62,47 @@ To build the installable .exe file:
 		libintl-8.dll
 		libiconv-2.dll
 
-    The default <GETTEXT directory> is "..", however, you can specify another
-    directory by passing /DGETTEXT=<dir> option to "makensis.exe" program via
-    the command line.
+    The default <GETTEXT directory> is "../..".  However, you can specify a
+    different directory by specifying the appropriate makefile value. How to do
+    this is described below. 
 
-
-Install NSIS if you didn't do that already.
-Download Unicode version the ShellExecAsUser plug-in for NSIS from:
+8.  Install NSIS if you didn't do that already.
+    Download Unicode version the ShellExecAsUser plug-in for NSIS from:
 	https://nsis.sourceforge.io/ShellExecAsUser_plug-in
-and put ShellExecAsUser.dll to path\to\NSIS\Plugins\x86-unicode
+    and put "ShellExecAsUser.dll" to path\to\NSIS\Plugins\x86-unicode
 
+Installer assembly stage
 
-Unpack the images:
-	cd nsis
-	unzip icons.zip or 7z x icons.zip (on Unix-like or MS Windows)
-	WinRar.exe x icons.zip (on MS Windows)
+    On MS Windows, open the Developer Command Prompt for VS and go to the
+    "/nsis" directory and type the command
+	    nmake.exe -lf Make_mvc.mak [variables] all
 
-Then build gvim.exe:
-	cd nsis
-	makensis.exe [options] gvim.nsi
+    After the installer is created and you copy it to the desired location, run
+    the following command in the "/nsis" directory
+	    nmake.exe -lf Make_mvc.mak clean
+    
+    On UNIX-like systems, go to the "/nsis" directory and type the command
+	    make -f Makefile [variables] all
 
-Options (not mandatory):
-    /DVIMSRC=<dir>	— directory where location of gvim_ole.exe, vimw32.exe,
+    After the installer is created and you copy it to the desired location, run
+    the following command in the "/nsis" directory
+	    make -f Makefile clean
+
+Variables and their values available for building the installer (not mandatory):
+
+    "VIMSRC=<dir>"	— directory where location of gvim_ole.exe, vimw32.exe,
 			    GvimExt/*, etc.
-    /DVIMRT=<dir>	— directory where location of runtime files
-    /DVIMTOOLS=<dir>    — directory where location of extra tools: diff.exe,
-			    winpty{32|64}.dll, winpty-agent.exe, libsodium.dll
-    /DGETTEXT=<dir>     — directory where location of gettext libraries
-    /DHAVE_UPX=1	— additional compression of the installer.  UPX program
+    "VIMRT=<dir>"	— directory where location of runtime files.
+    "VIMTOOLS=<dir>"    — directory where location of extra tools: diff.exe,
+			    winpty{32|64}.dll, winpty-agent.exe, libsodium.dll.
+    "GETTEXT=<dir>"     — directory where location of gettext libraries.
+    "HAVE_UPX=1"	— additional compression of the installer.  UPX program
 			    must be installed.
-    /DHAVE_NLS=0	— do not add native language support
-    /DHAVE_MULTI_LANG=0 — to create an English-only the installer
-    /DWIN64=1		— to create a 64-bit the installer
+    "HAVE_NLS=0"	— do not add native language support.
+    "HAVE_MULTI_LANG=0" — to create an English-only the installer.
+    "WIN64=1"		— to create a 64-bit the installer.
+    "X=<scriptcmd>"	— executes scriptcmd in script.  If multiple scriptcmd
+			    are specified, they are separated by a semicolon.
+			    Example "X=OutFile MyVim.exe;XPMode on"
+    "MKNSIS=<dir>"	— the directory where the "makensis.exe" program is
+			    located.
