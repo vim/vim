@@ -1,33 +1,12 @@
-" netrwPlugin.vim: Handles file transfer and remote directory listing across a network
-"            PLUGIN SECTION
-" Maintainer:   This runtime file is looking for a new maintainer.
-" Date:         Sep 09, 2021
-" Last Change:
-"   2024 May 08 by Vim Project: cleanup legacy Win9X checks
-"   2024 Oct 27 by Vim Project: cleanup gx mapping
-"   2024 Oct 28 by Vim Project: further improvements
-"   2024 Oct 31 by Vim Project: use autoloaded functions
-"   2024 Dec 19 by Vim Project: change style (#16248)
-" Former Maintainer:   Charles E Campbell
-" GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
-" Copyright:    Copyright (C) 1999-2021 Charles E. Campbell {{{1
-"               Permission is hereby granted to use and distribute this code,
-"               with or without modifications, provided that this copyright
-"               notice is copied with it. Like anything else that's free,
-"               netrw.vim, netrwPlugin.vim, and netrwSettings.vim are provided
-"               *as is* and comes with no warranty of any kind, either
-"               expressed or implied. By using this plugin, you agree that
-"               in no event will the copyright holder be liable for any damages
-"               resulting from the use of this software.
-"
-"  But be doers of the Word, and not only hearers, deluding your own selves {{{1
-"  (James 1:22 RSV)
-" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+" Maintainer: Luca Saccarola <github.e41mv@aleeas.com>
+" Former Maintainer: Charles E Campbell
+" Upstream: <https://github.com/saccarosium/netrw.vim>
+
 " Load Once: {{{1
 if &cp || exists("g:loaded_netrwPlugin")
   finish
 endif
-let g:loaded_netrwPlugin = "v173"
+let g:loaded_netrwPlugin = "v174"
 let s:keepcpo = &cpo
 set cpo&vim
 "DechoRemOn
