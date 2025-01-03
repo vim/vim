@@ -375,6 +375,7 @@ typedef enum {
 #define WOP_FUZZY	'z'
 #define WOP_TAGFILE	't'
 #define WOP_PUM		'p'
+#define WOP_REVERSE	'r'
 
 // arguments for can_bs()
 // each defined char should be unique over all values
@@ -530,6 +531,7 @@ EXTERN unsigned	cot_flags;	// flags from 'completeopt'
 #define COT_NOINSERT	    0x040   // FALSE: select & insert, TRUE: noinsert
 #define COT_NOSELECT	    0x080   // FALSE: select & insert, TRUE: noselect
 #define COT_FUZZY	    0x100   // TRUE: fuzzy match enabled
+#define COT_REVERSE	    0x200   // reverse render when pum above
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char_u	*p_csl;		// 'completeslash'
 #endif

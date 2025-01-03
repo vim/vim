@@ -32,6 +32,7 @@ static int pum_rl;			// TRUE when pum is drawn 'rightleft'
 
 static int pum_row;			// top row of pum
 static int pum_col;			// left column of pum
+static int pum_above;			// pum is drawn above cursor line
 
 static win_T *pum_window = NULL;
 static int pum_win_row;
@@ -163,6 +164,7 @@ pum_display(
 		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
 	    // pum above "pum_win_row"
+	    pum_above = TRUE;
 
 	    if (State == MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
@@ -190,6 +192,7 @@ pum_display(
 	else
 	{
 	    // pum below "pum_win_row"
+	    pum_above = FALSE;
 
 	    if (State == MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
@@ -573,6 +576,7 @@ pum_redraw(void)
     int		last_isabbr = FALSE;
     int		orig_attr = -1;
     int		scroll_range = pum_size - pum_height;
+    int		reverse = FALSE;
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
@@ -596,6 +600,10 @@ pum_redraw(void)
 	pum_will_redraw = FALSE;
     }
 
+    if ((get_cot_flags() & COT_REVERSE)
+	    || (pum_in_cmdline && vim_strchr(p_wop, WOP_REVERSE) != NULL))
+	reverse = TRUE;
+
     // never display more than we have
     pum_first = MIN(pum_first, scroll_range);
 
@@ -604,8 +612,15 @@ pum_redraw(void)
 	thumb_height = pum_height * pum_height / pum_size;
 	if (thumb_height == 0)
 	    thumb_height = 1;
-	thumb_pos = (pum_first * (pum_height - thumb_height)
-			    + scroll_range / 2) / scroll_range;
+	if (reverse)
+	{
+	    thumb_pos = (pum_first * (pum_height - thumb_height)
+			 + scroll_range / 2) / scroll_range;
+	    thumb_pos = pum_height - thumb_height - thumb_pos;
+	}
+	else
+	    thumb_pos = (pum_first * (pum_height - thumb_height)
+			     + scroll_range / 2) / scroll_range;
     }
 
 #ifdef FEAT_PROP_POPUP
@@ -616,7 +631,7 @@ pum_redraw(void)
 
     for (i = 0; i < pum_height; ++i)
     {
-	idx = i + pum_first;
+	idx = reverse ? pum_first + pum_height - 1 - i : pum_first + i;
 	hlfs = (idx == pum_selected) ? hlfsSel : hlfsNorm;
 	hlf = hlfs[0]; // start with "word" highlight
 	attr = highlight_attr[hlf];
