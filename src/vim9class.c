@@ -1623,6 +1623,8 @@ enum_parse_values(
 	}
     }
 
+    p = skipwhite(p);
+
     if (*p != NUL && *p != '#')
     {
 	if (did_emsg == did_emsg_before)
