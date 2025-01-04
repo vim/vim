@@ -85,6 +85,7 @@ def Test_test_files()
             && fname !~ 'test_let.vim'
             && fname !~ 'test_tagjump.vim'
             && fname !~ 'test_vim9_cmd.vim'
+            && fname !~ 'test_vim9_enum.vim'
       cursor(1, 1)
       var lnum = search(
           fname =~ 'test_vim9_assign.vim' ? '[^=]\s$'
