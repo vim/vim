@@ -4697,6 +4697,23 @@ def Test_test_override_defcompile()
   test_override('defcompile', 0)
 enddef
 
+" Test for using a comment after the opening curly brace of an inner block.
+def Test_comment_after_inner_block()
+  var lines =<< trim END
+    vim9script
+
+    def F(G: func)
+    enddef
+
+    F(() => {       # comment1
+      F(() => {     # comment2
+        echo 'ok'   # comment3
+      })            # comment4
+    })              # comment5
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()

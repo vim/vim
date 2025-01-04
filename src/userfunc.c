@@ -1123,7 +1123,20 @@ get_function_body(
 	    if (nesting_def[nesting] ? *p != '#' : *p != '"')
 	    {
 		// Not a comment line: check for nested inline function.
-		end = p + STRLEN(p) - 1;
+
+		if (in_vim9script())
+		{
+		    // A comment can be present after the opening curly brace
+		    // of a block statement.  Need to ignore the comment and
+		    // look for the opening curly brace before that.
+		    char_u	*t = p;
+		    while (*t && !vim9_comment_start(t))
+			t++;
+		    end = t -1;
+		}
+		else
+		    end = p + STRLEN(p) - 1;
+
 		while (end > p && VIM_ISWHITE(*end))
 		    --end;
 		if (end > p + 1 && *end == '{' && VIM_ISWHITE(end[-1]))
