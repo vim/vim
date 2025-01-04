@@ -4345,23 +4345,20 @@ def Test_lockvar_object_variable()
   END
   v9.CheckSourceFailure(lines, 'E1335: Variable "val4" in class "C" is not writable')
 
-  # TODO: the following tests use type "any" for argument. Need a run time
-  #       check for access. Probably OK as is for now.
-
   # read-only lockvar from object method arg
   lines =<< trim END
     vim9script
 
     class C
       var val5: number
-      def Lock(o_any: any)
-        lockvar o_any.val5
+      def Lock(c: C)
+        lockvar c.val5
       enddef
     endclass
     var o = C.new(3)
     o.Lock(C.new(5))
   END
-  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val5" in class "C"')
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "c.val5" in class "C"')
 
   # read-only lockvar from class method arg
   lines =<< trim END
@@ -4369,14 +4366,14 @@ def Test_lockvar_object_variable()
 
     class C
       var val6: number
-      static def Lock(o_any: any)
-        lockvar o_any.val6
+      static def Lock(c: C)
+        lockvar c.val6
       enddef
     endclass
     var o = C.new(3)
     C.Lock(o)
   END
-  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val6" in class "C"')
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "c.val6" in class "C"')
 
   #
   # lockvar of public object variable
@@ -4444,14 +4441,14 @@ def Test_lockvar_object_variable()
 
     class C
       public var val5: number
-      def Lock(o_any: any)
-        lockvar o_any.val5
+      def Lock(c: C)
+        lockvar c.val5
       enddef
     endclass
     var o = C.new(3)
     o.Lock(C.new(5))
   END
-  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val5" in class "C"', 1)
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "c.val5" in class "C"', 1)
 
   # lockvar from class method arg
   lines =<< trim END
@@ -4459,14 +4456,14 @@ def Test_lockvar_object_variable()
 
     class C
       public var val6: number
-      static def Lock(o_any: any)
-        lockvar o_any.val6
+      static def Lock(c: C)
+        lockvar c.val6
       enddef
     endclass
     var o = C.new(3)
     C.Lock(o)
   END
-  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val6" in class "C"', 1)
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "c.val6" in class "C"', 1)
 enddef
 
 " Test trying to lock a class variable from various places

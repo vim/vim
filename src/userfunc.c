@@ -860,6 +860,92 @@ function_using_block_scopes(ufunc_T *fp, cstack_T *cstack)
 }
 
 /*
+ * Skip over all the characters in a single quoted string starting at "p" and
+ * return a pointer to the character following the ending single quote.
+ * If the ending single quote is missing, then return a pointer to the NUL
+ * character.
+ */
+    static char_u *
+skip_single_quote_string(char_u *p)
+{
+    p++;	    // skip the beginning single quote
+    while (*p != NUL)
+    {
+	// Within the string, a single quote can be escaped by using
+	// two single quotes.
+	if (*p == '\'' && *(p + 1) == '\'')
+	    p += 2;
+	else if (*p == '\'')
+	{
+	    p++;    // skip the ending single quote
+	    break;
+	}
+	else
+	    MB_PTR_ADV(p);
+    }
+
+    return p;
+}
+
+/*
+ * Skip over all the characters in a double quoted string starting at "p" and
+ * return a pointer to the character following the ending double quote.
+ * If the ending double quote is missing, then return a pointer to the NUL
+ * character.
+ */
+    static char_u *
+skip_double_quote_string(char_u *p)
+{
+    p++;	    // skip the beginning double quote
+    while (*p != NUL)
+    {
+	// Within the string, a double quote can be escaped by
+	// preceding it with a backslash.
+	if (*p == '\\' && *(p + 1) == '"')
+	    p += 2;
+	else if (*p == '"')
+	{
+	    p++;    // skip the ending double quote
+	    break;
+	}
+	else
+	    MB_PTR_ADV(p);
+    }
+
+    return p;
+}
+
+/*
+ * Return the start of a Vim9 comment (#) in the line starting at "line".
+ * If a comment is not found, then returns a pointer to the end of the
+ * string (NUL).
+ */
+    static char_u *
+find_start_of_vim9_comment(char_u *line)
+{
+    char_u	*p = line;
+
+    while (*p != NUL)
+    {
+	if (*p == '\'')
+	    // Skip a single quoted string.
+	    p = skip_single_quote_string(p);
+	else if (*p == '"')
+	    // Skip a double quoted string.
+	    p = skip_double_quote_string(p);
+	else
+	{
+	    if (*p == '#')
+		// Found the start of a Vim9 comment
+		break;
+	    MB_PTR_ADV(p);
+	}
+    }
+
+    return p;
+}
+
+/*
  * Read the body of a function, put every line in "newlines".
  * This stops at "}", "endfunction" or "enddef".
  * "newlines" must already have been initialized.
@@ -1123,7 +1209,17 @@ get_function_body(
 	    if (nesting_def[nesting] ? *p != '#' : *p != '"')
 	    {
 		// Not a comment line: check for nested inline function.
-		end = p + STRLEN(p) - 1;
+
+		if (nesting_inline[nesting])
+		{
+		    // A comment (#) can follow the opening curly brace of a
+		    // block statement.  Need to ignore the comment and look
+		    // for the opening curly brace before the comment.
+		    end = find_start_of_vim9_comment(p) - 1;
+		}
+		else
+		    end = p + STRLEN(p) - 1;
+
 		while (end > p && VIM_ISWHITE(*end))
 		    --end;
 		if (end > p + 1 && *end == '{' && VIM_ISWHITE(end[-1]))
