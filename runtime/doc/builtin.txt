@@ -9038,7 +9038,7 @@ search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 		's'	Set the ' mark at the previous location of the cursor
 		'w'	Wrap around the end of the file
 		'W'	don't Wrap around the end of the file
-		'z'	start searching at the cursor column instead of zero
+		'z'	start searching at the cursor column instead of Zero
 		If neither 'w' or 'W' is given, the 'wrapscan' option applies.
 
 		If the 's' flag is supplied, the ' mark is set, only if the
