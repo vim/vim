@@ -5279,7 +5279,7 @@ get_rel_pos(
 {
     long	above; // number of lines above window
     long	below; // number of lines below window
-    int		perc;
+    int		len;
 
     if (buflen < 3) // need at least 3 chars for writing
 	return 0;
@@ -5293,17 +5293,28 @@ get_rel_pos(
 #endif
     below = wp->w_buffer->b_ml.ml_line_count - wp->w_botline + 1;
     if (below <= 0)
-	return vim_snprintf((char *)buf, buflen, (above == 0) ? _("All") : _("Bot"));
-
-    if (above <= 0)
-	return vim_snprintf((char *)buf, buflen, _("Top"));
-
-    perc = (above > 1000000L)
+	len = vim_snprintf((char *)buf, buflen, "%s", (above == 0) ? _("All") : _("Bot"));
+    else if (above <= 0)
+	len = vim_snprintf((char *)buf, buflen, "%s", _("Top"));
+    else
+    {
+	int perc = (above > 1000000L)
 		    ?  (int)(above / ((above + below) / 100L))
 		    :  (int)(above * 100L / (above + below));
 
-    // localized percentage value
-    return vim_snprintf((char *)buf, buflen, _("%s%d%%"), (perc < 10) ? " " : "", perc);
+	// localized percentage value
+	len = vim_snprintf((char *)buf, buflen, _("%s%d%%"), (perc < 10) ? " " : "", perc);
+    }
+    if (len < 0)
+    {
+	buf[0] = NUL;
+	len = 0;
+    }
+    else
+    if (len > buflen - 1)
+	len = buflen - 1;
+
+    return len;
 }
 
 /*

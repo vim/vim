@@ -971,7 +971,7 @@ get_keymap_str(
     int		plen;
 
     if (wp->w_buffer->b_p_iminsert != B_IMODE_LMAP)
-	return -1;
+	return 0;
 
 #ifdef FEAT_EVAL
     buf_T	*old_curbuf = curbuf;
@@ -1000,10 +1000,10 @@ get_keymap_str(
 #ifdef FEAT_EVAL
     vim_free(s);
 #endif
-    if (plen > len - 1)
+    if (plen < 0 || plen > len - 1)
     {
 	buf[0] = NUL;
-	plen = -1;
+	plen = 0;
     }
 
     return plen;
