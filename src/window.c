@@ -3832,6 +3832,10 @@ frame_has_win(frame_T *frp, win_T *wp)
     return FALSE;
 }
 
+// 'cmdheight' value explicitly set by the user: window commands are allowed to
+// resize the topframe to values higher than this minimum, but not lower.
+static int min_set_ch = 1;
+
 /*
  * Set a new height for a frame.  Recursively sets the height for contained
  * frames and windows.  Caller must take care of positions.
@@ -3852,9 +3856,11 @@ frame_new_height(
     if (topfrp->fr_parent == NULL && set_ch)
     {
 	// topframe: update the command line height, with side effects.
-	int new_ch = MAX(1, p_ch + topfrp->fr_height - height);
+	int new_ch = MAX(min_set_ch, p_ch + topfrp->fr_height - height);
+	int save_ch = min_set_ch;
 	if (new_ch != p_ch)
 	    set_option_value((char_u *)"cmdheight", new_ch, NULL, 0);
+	min_set_ch = save_ch;
 	height = MIN(height, ROWS_AVAIL);
     }
     if (topfrp->fr_win != NULL)
@@ -7306,7 +7312,7 @@ command_height(void)
 	old_p_ch += h;
 	frp = frp->fr_prev;
     }
-    if (p_ch < old_p_ch && command_frame_height)
+    if (p_ch < old_p_ch && command_frame_height && frp != NULL)
 	frame_add_height(frp, (int)(old_p_ch - p_ch));
 
     // Recompute window positions.
@@ -7325,6 +7331,7 @@ command_height(void)
     // GUI starts up, we can't be sure in what order things happen.  And when
     // p_ch was changed in another tab page.
     curtab->tp_ch_used = p_ch;
+    min_set_ch = p_ch;
 }
 
 /*
