@@ -2185,7 +2185,7 @@ au BufNewFile,BufRead [rR]antfile,*.rant,[rR]akefile,*.rake	setf ruby
 au BufNewFile,BufRead *.rs			setf rust
 au BufNewFile,BufRead Cargo.lock,*/.cargo/config,*/.cargo/credentials	setf toml
 
-" S-lang (or shader language, or SmallLisp)
+" S-lang
 au BufNewFile,BufRead *.sl			setf slang
 
 " Sage
@@ -2208,6 +2208,9 @@ au BufNewFile,BufRead *.scala			setf scala
 
 " SBT - Scala Build Tool
 au BufNewFile,BufRead *.sbt			setf sbt
+
+" Slang Shading Language
+au BufNewFile,BufRead *.slang			setf shaderslang
 
 " Slint
 au BufNewFile,BufRead *.slint			setf slint
