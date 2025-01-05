@@ -743,7 +743,7 @@ EXTERN char_u	*p_lm;		// 'langmenu'
 #endif
 #ifdef FEAT_GUI
 EXTERN long	p_linespace;	// 'linespace'
-EXTERN int	p_guipad;	// 'guipad'
+EXTERN int	p_gpd;		// 'guipadding'
 #endif
 EXTERN int	p_lisp;		// 'lisp'
 EXTERN char_u	*p_lop;		// 'lispoptions'

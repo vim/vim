@@ -5627,7 +5627,7 @@ gui_mch_init(void)
 #ifdef FEAT_MENU
     gui.menu_height = 0;	// Windows takes care of this
 #endif
-    gui.border_width = p_guipad;
+    gui.border_width = p_gpd;
 #ifdef FEAT_TOOLBAR
     gui.toolbar_height = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
 #endif
