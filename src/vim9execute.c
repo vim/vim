@@ -4855,6 +4855,7 @@ exec_instructions(ectx_T *ectx)
 					+ iptr->isn_arg.jumparg.jump_arg_off
 					+ STACK_FRAME_SIZE;
 		    type_T *t = ufunc->uf_arg_types[argidx];
+		    CLEAR_POINTER(tv);
 		    tv->v_type = t->tt_type;
 		}
 

@@ -11839,4 +11839,31 @@ def Test_uninitialized_object_var()
   v9.CheckSourceFailure(lines, "E1430: Uninitialized object variable 'x' referenced")
 enddef
 
+" Test for initializing member variables of compound type in the constructor
+def Test_constructor_init_compound_member_var()
+  var lines =<< trim END
+    vim9script
+
+    class Foo
+      var v1: string = "aaa"
+      var v2: list<number> = [1, 2]
+      var v3: dict<string> = {a: 'a', b: 'b'}
+    endclass
+
+    class Bar
+      var v4: string = "bbb"
+      var v5: Foo = Foo.new()
+      var v6: list<number> = [1, 2]
+    endclass
+
+    var b: Bar = Bar.new()
+    assert_equal("aaa", b.v5.v1)
+    assert_equal([1, 2], b.v5.v2)
+    assert_equal({a: 'a', b: 'b'}, b.v5.v3)
+    assert_equal("bbb", b.v4)
+    assert_equal([1, 2], b.v6)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
