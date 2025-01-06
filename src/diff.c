@@ -2244,11 +2244,13 @@ run_linematch_algorithm(diff_T *dp)
 	{
 	    // write the contents of the entire buffer to
 	    // diffbufs_mm[diffbuffers_count]
-	    if (dp->df_count[i] > 0) {
+	    if (dp->df_count[i] > 0)
+	    {
 		diff_write_buffer(curtab->tp_diffbuf[i], &diffbufs_mm[ndiffs],
 			dp->df_lnum[i], dp->df_lnum[i] + dp->df_count[i] - 1);
 	    }
-	    else {
+	    else
+	    {
 		diffbufs_mm[ndiffs].din_mmfile.size = 0;
 		diffbufs_mm[ndiffs].din_mmfile.ptr = NULL;
 	    }

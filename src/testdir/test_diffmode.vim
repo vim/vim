@@ -2647,7 +2647,7 @@ func Test_linematch_line_limit_exceeded()
   call term_sendkeys(buf, ":set diffopt+=linematch:10\<CR>")
   " a diff block will not be aligned with linematch because it's contents
   " exceed 10 lines
-  call WriteDiffFiles(buf, 
+  call WriteDiffFiles(buf,
         \ ['common line',
         \ 'HIL',
         \ '',
@@ -2695,7 +2695,7 @@ func Test_linematch_3diffs()
   call term_sendkeys(buf, "2\<c-w>w:set autoread\<CR>")
   call term_sendkeys(buf, "3\<c-w>w:set autoread\<CR>")
   call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
-  call WriteDiffFiles3(buf, 
+  call WriteDiffFiles3(buf,
         \ ["",
         \ "  common line",
         \ "      AAA",
