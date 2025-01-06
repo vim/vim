@@ -2,7 +2,7 @@
 " Language: XF86Config (XFree86 configuration file)
 " Former Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
 " Last Change By David: 2010 Nov 01
-" Last Change: 2023 Jan 23
+" Last Change: 2025 Jan 06
 " Required Vim Version: 6.0
 "
 " Options: let xf86conf_xfree86_version = 3 or 4
