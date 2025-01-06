@@ -161,7 +161,7 @@ static struct vimvar
     {VV_NAME("t_typealias",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_enum",		 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_enumvalue",	 VAR_NUMBER), NULL, VV_RO},
-    {VV_NAME("stacktrace",	 VAR_LIST), &t_list_string, VV_RO},
+    {VV_NAME("stacktrace",	 VAR_LIST), &t_list_dict_any, VV_RO},
 };
 
 // shorthand
