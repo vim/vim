@@ -215,21 +215,6 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      - name: Set up snd-dummy
-        if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
-        env:
-          DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-${{ env.LINUX_VERSION }}
-        uses: tecolicom/actions-use-apt-tools@main
-        with:
-          tools: linux-modules-extra-${{ env.LINUX_VERSION }}
-          path: "${DEST_DIR}"
-
-      - name: modprobe snd-dummy
-        if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
-        run: |
-          sudo depmod --verbose
-          sudo modprobe --verbose snd-dummy || true
-
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
         run: |
