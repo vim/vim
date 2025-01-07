@@ -1273,6 +1273,21 @@ au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc,.lintstagedrc,flake.l
 " JSONC (JSON with comments)
 au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc,bun.lock	setf jsonc
 au BufNewFile,BufRead .jshintrc,.jscsrc,.vsconfig,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
+" Visual Code settings
+if has('win32')
+  au BufRead,BufNewFile,BufFilePost $APPDATA/{Code,VSCodium}/User/*.json setlocal filetype=jsconc
+elseif has('unix')
+  " Mac: $HOME/Library/Application Support/Code/User/settings.json
+  if isdirectory($HOME..'/Library/Application Support')
+    au BufRead,BufNewFile,BufFilePost ~/Library/Application Support/{Code,VSCodium}/User/*.json setlocal filetype=jsonc
+  " Linux: $XDG_CONFIG_HOME/Code/User/settings.json
+  " with $XDG_CONFIG_HOME being $HOME/.config by default
+  elseif !empty($XDG_CONFIG_HOME)
+    au BufRead,BufNewFile,BufFilePost $XDG_CONFIG_HOME/{Code,VSCodium}/User/*.json setlocal filetype=jsonc
+  elseif isdirectory($HOME..'/.config')
+    au BufRead,BufNewFile,BufFilePost ~/.config/{Code,VSCodium}/User/*.json setlocal filetype=jsonc
+  endif
+endif
 
 " JSON
 au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
