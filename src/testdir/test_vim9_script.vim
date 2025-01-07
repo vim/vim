@@ -595,6 +595,27 @@ def Test_autocommand_block()
   unlet g:otherVar
 enddef
 
+def Test_block_in_a_string()
+  var lines =<< trim END
+    vim9script
+
+    def Foo(): string
+      var x = ' => { # abc'
+      return x
+    enddef
+
+    assert_equal(' => { # abc', Foo())
+
+    def Bar(): string
+      var x = " => { # abc"
+      return x
+    enddef
+
+    assert_equal(" => { # abc", Bar())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 func g:NoSuchFunc()
   echo 'none'
 endfunc
