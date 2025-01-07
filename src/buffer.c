@@ -5310,8 +5310,7 @@ get_rel_pos(
 	buf[0] = NUL;
 	len = 0;
     }
-    else
-    if (len > buflen - 1)
+    else if (len > buflen - 1)
 	len = buflen - 1;
 
     return len;
