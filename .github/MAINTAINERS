@@ -273,6 +273,7 @@ runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/sdoc.vim		@gpanders
 runtime/ftplugin/sed.vim		@dkearns
 runtime/ftplugin/sh.vim			@dkearns
+runtime/ftplugin/shaderslang.vim        @mTvare6
 runtime/ftplugin/slint.vim		@ribru17
 runtime/ftplugin/snakemake.vim		@ribru17
 runtime/ftplugin/solidity.vim		@cothi
@@ -590,6 +591,7 @@ runtime/syntax/scss.vim			@tpope
 runtime/syntax/sdoc.vim			@gpanders
 runtime/syntax/sed.vim			@dkearns
 runtime/syntax/shared/debversions.vim	@jamessan
+runtime/syntax/shaderslang.vim          @mTvare6
 runtime/syntax/solidity.vim		@cothi
 runtime/syntax/spec.vim			@ignatenkobrain
 runtime/syntax/sqloracle.vim		@chrisbra

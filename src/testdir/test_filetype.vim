@@ -697,6 +697,7 @@ def s:GetFilenameChecks(): dict<list<string>>
          'user-dirs.defaults', 'user-dirs.dirs', 'makepkg.conf', '.makepkg.conf',
          'file.mdd', '.env', '.envrc', 'devscripts.conf', '.devscripts', 'file.lo',
          'file.la', 'file.lai'],
+    shaderslang: ['file.slang'],
     sieve: ['file.siv', 'file.sieve'],
     sil: ['file.sil'],
     simula: ['file.sim'],
