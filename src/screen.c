@@ -968,20 +968,21 @@ get_keymap_str(
     int		len)	    // length of buffer
 {
     char_u	*p;
+    int		plen;
 
     if (wp->w_buffer->b_p_iminsert != B_IMODE_LMAP)
-	return FALSE;
+	return 0;
 
 #ifdef FEAT_EVAL
     buf_T	*old_curbuf = curbuf;
     win_T	*old_curwin = curwin;
+    char_u	to_evaluate[] = "b:keymap_name";
     char_u	*s;
 
     curbuf = wp->w_buffer;
     curwin = wp;
-    STRCPY(buf, "b:keymap_name");	// must be writable
     ++emsg_skip;
-    s = p = eval_to_string(buf, FALSE, FALSE);
+    s = p = eval_to_string(to_evaluate, FALSE, FALSE);
     --emsg_skip;
     curbuf = old_curbuf;
     curwin = old_curwin;
@@ -995,12 +996,17 @@ get_keymap_str(
 #endif
 	    p = (char_u *)"lang";
     }
-    if (vim_snprintf((char *)buf, len, (char *)fmt, p) > len - 1)
-	buf[0] = NUL;
+    plen = vim_snprintf((char *)buf, len, (char *)fmt, p);
 #ifdef FEAT_EVAL
     vim_free(s);
 #endif
-    return buf[0] != NUL;
+    if (plen < 0 || plen > len - 1)
+    {
+	buf[0] = NUL;
+	plen = 0;
+    }
+
+    return plen;
 }
 
 #if defined(FEAT_STL_OPT) || defined(PROTO)
@@ -4133,7 +4139,7 @@ showmode(void)
 		    else
 # endif
 			if (get_keymap_str(curwin, (char_u *)" (%s)",
-							   NameBuff, MAXPATHL))
+							   NameBuff, MAXPATHL) > 0)
 			    msg_puts_attr((char *)NameBuff, attr);
 		}
 #endif
