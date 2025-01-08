@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2024 May 23
+# Last Change:		2025 Jan 08
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -32,6 +32,10 @@ enddef
 # This function checks for the kind of assembly that is wanted by the user, or
 # can be detected from the first five lines of the file.
 export def FTasm()
+  # tiasm uses `* commment`
+  if join(getline(1, 10), "\n") =~ '\%(\%(^\|\n\)\*\|Texas Instruments Incorporated\)'
+    setf tiasm
+  endif
   # make sure b:asmsyntax exists
   if !exists("b:asmsyntax")
     b:asmsyntax = ""
@@ -1001,6 +1005,14 @@ export def SQL()
   else
     setf sql
   endif
+enddef
+
+export def FTsa()
+  if join(getline(1, 4), "\n") =~# '\%(^\|\n\);'
+    setf tiasm
+    return
+  endif
+  setf sather
 enddef
 
 # This function checks the first 25 lines of file extension "sc" to resolve

@@ -676,7 +676,6 @@ def s:GetFilenameChecks(): dict<list<string>>
     samba: ['smb.conf'],
     sas: ['file.sas'],
     sass: ['file.sass'],
-    sather: ['file.sa'],
     sbt: ['file.sbt'],
     scala: ['file.scala'],
     scheme: ['file.scm', 'file.ss', 'file.sld', 'file.stsg', 'any/local/share/supertux2/config', '.lips_repl_history'],
@@ -2326,6 +2325,22 @@ func Test_cmd_file()
   call writefile(['REM comment'], 'Xfile.cmd')
   split Xfile.cmd
   call assert_equal('dosbatch', &filetype)
+  bwipe!
+
+  filetype off
+endfunc
+
+func Test_sa_file()
+  filetype on
+
+  call writefile([';* XXX-a.sa: XXX for TI C6000 DSP *;', '.no_mdep'], 'Xfile.sa')
+  split Xfile.sa
+  call assert_equal('tiasm', &filetype)
+  bwipe!
+
+  call writefile(['-- comment'], 'Xfile.sa')
+  split Xfile.sa
+  call assert_equal('sather', &filetype)
   bwipe!
 
   filetype off
