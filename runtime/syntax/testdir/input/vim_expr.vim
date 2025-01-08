@@ -70,3 +70,8 @@ echo 0z
 echo 0zFF00ED015DAF
 echo 0zFF00.ED01.5DAF
 echo 0zFF.00.ED.01.5D.AF
+
+
+" Issue #16221 (vimString becomes vimVar when preceded by !)
+let bar = !'g:bar'->exists()
+
