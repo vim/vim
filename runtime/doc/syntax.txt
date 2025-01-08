@@ -5854,9 +5854,11 @@ PmenuSbar	Popup menu: Scrollbar.
 							*hl-PmenuThumb*
 PmenuThumb	Popup menu: Thumb of the scrollbar.
 							*hl-PmenuMatch*
-PmenuMatch	Popup menu: Matched text in normal item.
+PmenuMatch	Popup menu: Matched text in normal item. Applied in
+		combination with |hl-Pmenu|.
 							*hl-PmenuMatchSel*
-PmenuMatchSel	Popup menu: Matched text in selected item.
+PmenuMatchSel	Popup menu: Matched text in selected item. Applied in
+		combination with |hl-PmenuSel|.
 							*hl-ComplMatchIns*
 ComplMatchIns	Matched text of the currently inserted completion.
 							*hl-PopupNotification*

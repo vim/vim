@@ -450,13 +450,18 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
 		if (char_pos == ((int_u *)ga->ga_data)[i])
 		{
 		    new_attr = highlight_attr[is_select ? HLF_PMSI : HLF_PMNI];
+		    new_attr = hl_combine_attr(highlight_attr[hlf], new_attr);
 		    break;
 		}
 	    }
 	}
 	else if (matched_start && ptr < text + leader_len)
+	{
 	    new_attr = highlight_attr[is_select ? HLF_PMSI : HLF_PMNI];
+	    new_attr = hl_combine_attr(highlight_attr[hlf], new_attr);
+	}
 
+	new_attr = hl_combine_attr(highlight_attr[HLF_PNI], new_attr);
 	if (user_hlattr > 0)
 	    new_attr = hl_combine_attr(new_attr, user_hlattr);
 
