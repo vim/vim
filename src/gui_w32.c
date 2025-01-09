@@ -2711,6 +2711,7 @@ gui_mch_clear_all(void)
 
     rc.left = 0;
     rc.top = 0;
+    // enan: do we have to factor in guipadding here?
     rc.right = Columns * gui.char_width + 2 * gui.border_width;
     rc.bottom = Rows * gui.char_height + 2 * gui.border_width;
     clear_rect(&rc);
@@ -5627,7 +5628,7 @@ gui_mch_init(void)
 #ifdef FEAT_MENU
     gui.menu_height = 0;	// Windows takes care of this
 #endif
-    gui.border_width = p_gpd;
+    gui.border_width = 0; //p_gpd;
 #ifdef FEAT_TOOLBAR
     gui.toolbar_height = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
 #endif

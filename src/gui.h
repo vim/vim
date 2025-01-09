@@ -146,6 +146,14 @@
 				// is no console input possible
 #endif
 
+typedef struct
+{
+  int top;
+  int left;
+  int bot;
+  int right;
+} gpd_attrs_T;
+
 typedef struct GuiScrollbar
 {
     long	ident;		// Unique identifier for each scrollbar
@@ -278,6 +286,7 @@ typedef struct Gui
     int		char_ascent;	    // Ascent of char in pixels
     int		border_width;	    // Width of our border around text area
     int		border_offset;	    // Total pixel offset for all borders
+    gpd_attrs_T	padding;
 
     GuiFont	norm_font;	    // Normal font
 #ifndef FEAT_GUI_GTK

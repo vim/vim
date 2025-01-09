@@ -701,7 +701,6 @@ if has("gui")
     call <SID>OptionG("wak", &wak)
   endif
   call <SID>AddOption("linespace", gettext("number of pixel lines to use between characters"))
-  call <SID>AddOption("guipad", gettext("number of pixel lines to use as padding in GUI"))
   call append("$", " \tset lsp=" . &lsp)
   if has("balloon_eval") || has("balloon_eval_term")
     call <SID>AddOption("balloondelay", gettext("delay in milliseconds before a balloon may pop up"))

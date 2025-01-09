@@ -415,6 +415,8 @@ gui_init_check(void)
     gui.char_ascent = 0;
     gui.border_width = 0;
 
+    gui.padding.top = gui.padding.left = gui.padding.bot = gui.padding.right = 5;
+
     gui.norm_font = NOFONT;
 #ifndef FEAT_GUI_GTK
     gui.bold_font = NOFONT;
@@ -1429,7 +1431,7 @@ gui_position_components(int total_width UNUSED)
     text_area_x = 0;
     if (gui.which_scrollbars[SBAR_LEFT])
 	text_area_x += gui.scrollbar_width;
-    text_area_x += p_gpd;
+    text_area_x += gui.padding.left; //p_gpd;
 
     text_area_y = 0;
 #if defined(FEAT_MENU) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON))
@@ -1437,7 +1439,7 @@ gui_position_components(int total_width UNUSED)
     if (gui.menu_is_active)
 	text_area_y += gui.menu_height;
 #endif
-    text_area_y += p_gpd;
+    text_area_y += gui.padding.top; //p_gpd;
 
 #if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MOTIF))
@@ -1466,6 +1468,8 @@ gui_position_components(int total_width UNUSED)
 
     text_area_width = gui.num_cols * gui.char_width + gui.border_offset * 2;
     text_area_height = gui.num_rows * gui.char_height + gui.border_offset * 2;
+    text_area_width   += (gui.padding.left + gui.padding.right);
+    text_area_height  += (gui.padding.top  + gui.padding.bot);
 
     gui_mch_set_text_area_pos(text_area_x,
 			      text_area_y,
@@ -1500,7 +1504,7 @@ gui_get_base_width(void)
 {
     int	    base_width;
 
-    base_width = 2 * gui.border_offset;
+    base_width = 2 * gui.border_offset + gui.padding.left + gui.padding.right;
     if (gui.which_scrollbars[SBAR_LEFT])
 	base_width += gui.scrollbar_width;
     if (gui.which_scrollbars[SBAR_RIGHT])
@@ -1516,7 +1520,7 @@ gui_get_base_height(void)
 {
     int	    base_height;
 
-    base_height = 2 * gui.border_offset;
+    base_height = 2 * gui.border_offset + gui.padding.top + gui.padding.bot;
     if (gui.which_scrollbars[SBAR_BOTTOM])
 	base_height += gui.scrollbar_height;
 #ifdef FEAT_GUI_GTK

@@ -1251,13 +1251,17 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
-    {"guipadding",  "gpd",  P_NUM|P_VI_DEF|P_RCLR,
+
+    {"guipadding",  "gpd",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_GUI
                             (char_u *)&p_gpd, PV_NONE, did_set_guipadding, NULL,
+                            {(char_u *)"top:5,bot:5,left:5,right:5",(char_u *)0L}
 #else
                             (char_u *)NULL, PV_NONE, NULL, NULL,
+                            {(char_u *)0L, (char_u *)0L}
 #endif
-                            {(char_u *)10L, (char_u *)0L} SCTX_INIT},
+                            SCTX_INIT},
+
     {"guipty",	    NULL,   P_BOOL|P_VI_DEF,
 #if defined(FEAT_GUI)
 			    (char_u *)&p_guipty, PV_NONE, NULL, NULL,
