@@ -782,7 +782,7 @@ validate_interface_methods(
     static int
 validate_implements_classes(
     garray_T	*impl_gap,
-    class_T	**intf_classes,
+    garray_T	*intf_classes_gap,
     garray_T	*objmethods_gap,
     garray_T	*objmembers_gap,
     class_T	*extends_cl)
@@ -812,7 +812,15 @@ validate_implements_classes(
 	}
 
 	class_T *ifcl = tv.vval.v_class;
-	intf_classes[i] = ifcl;
+	if (ga_grow(intf_classes_gap, 1) == FAIL)
+	{
+	    success = FALSE;
+	    clear_tv(&tv);
+	    break;
+	}
+	((class_T **)intf_classes_gap->ga_data)[intf_classes_gap->ga_len]
+								= ifcl;
+	intf_classes_gap->ga_len++;
 	++ifcl->class_refcount;
 
 	// check the variables of the interface match the members of the class
@@ -828,6 +836,80 @@ validate_implements_classes(
     }
 
     return success;
+}
+
+/*
+ * Returns TRUE if the interface class "ifcl" is already present in the
+ * "intf_classes_gap" grow array.
+ */
+    static int
+is_interface_class_present(garray_T *intf_classes_gap, class_T *ifcl)
+{
+    for (int j = 0; j < intf_classes_gap->ga_len; j++)
+    {
+	if (((class_T **)intf_classes_gap)[j] == ifcl)
+	    return TRUE;
+    }
+
+    return FALSE;
+}
+
+/*
+ * Add interface "ifcl" from a super class to "intf_classes_gap" and the class
+ * name to "impl_gap".
+ */
+    static int
+add_interface_from_super_class(
+    class_T	*ifcl,
+    garray_T	*impl_gap,
+    garray_T	*intf_classes_gap)
+{
+    char_u	*intf_name;
+
+    // Add the interface name to "impl_gap"
+    intf_name = vim_strsave(ifcl->class_name);
+    if (intf_name == NULL)
+	return FALSE;
+
+    if (ga_grow(impl_gap, 1) == FAIL)
+	return FALSE;
+
+    char_u **intf_names = (char_u **)impl_gap->ga_data;
+    intf_names[impl_gap->ga_len] = intf_name;
+    impl_gap->ga_len++;
+
+    // Add the interface class to "intf_classes_gap"
+    if (ga_grow(intf_classes_gap, 1) == FAIL)
+	return FALSE;
+
+    class_T **intf_classes = (class_T **)intf_classes_gap->ga_data;
+    intf_classes[intf_classes_gap->ga_len] = ifcl;
+    intf_classes_gap->ga_len++;
+    ++ifcl->class_refcount;
+
+    return TRUE;
+}
+
+/*
+ * Add "super" class interfaces to "intf_classes_gap" (if not present already)
+ * Add the interface class names to "impl_gap".
+ */
+    static int
+add_super_class_interfaces(
+    class_T	*super,
+    garray_T	*impl_gap,
+    garray_T	*intf_classes_gap)
+{
+    // Iterate through all the interfaces implemented by "super"
+    for (int i = 0; i < super->class_interface_count; i++)
+    {
+	class_T	*ifcl = super->class_interfaces_cl[i];
+
+	if (!is_interface_class_present(intf_classes_gap, ifcl))
+	    add_interface_from_super_class(ifcl, impl_gap, intf_classes_gap);
+    }
+
+    return TRUE;
 }
 
 /*
@@ -2427,14 +2509,23 @@ early_ret:
 	success = validate_abstract_class_methods(&classfunctions,
 						&objmethods, extends_cl);
 
+    // Process the "implements" entries
     // Check all "implements" entries are valid.
-    if (success && ga_impl.ga_len > 0)
-    {
-	intf_classes = ALLOC_CLEAR_MULT(class_T *, ga_impl.ga_len);
+    garray_T  intf_classes_ga;
 
-	success = validate_implements_classes(&ga_impl, intf_classes,
+    ga_init2(&intf_classes_ga, sizeof(class_T *), 5);
+
+    if (success && ga_impl.ga_len > 0)
+	success = validate_implements_classes(&ga_impl, &intf_classes_ga,
 					&objmethods, &objmembers, extends_cl);
-    }
+
+    // inherit the super class interfaces
+    if (success && extends_cl != NULL)
+	success = add_super_class_interfaces(extends_cl, &ga_impl,
+							&intf_classes_ga);
+
+    intf_classes = intf_classes_ga.ga_data;
+    intf_classes_ga.ga_len = 0;
 
     // Check no function argument name is used as a class member.
     if (success)
