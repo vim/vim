@@ -924,6 +924,47 @@ def Test_try_catch_throw()
       endif
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # test that the v:exception stacks are correctly restored
+  try
+    try
+      throw 101
+    catch
+      assert_equal('101', v:exception)
+      try
+      catch
+      finally
+        assert_equal('101', v:exception) # finally shouldn't clear if it doesn't own it
+      endtry
+      assert_equal('101', v:exception)
+      throw 102 # Re-throw inside catch block
+    endtry
+  catch
+    assert_equal('102', v:exception)
+    try
+      throw 103 # throw inside nested exception stack
+    catch
+      assert_equal('103', v:exception)
+    endtry
+    assert_equal('102', v:exception) # restored stack
+  finally
+    assert_equal('', v:exception) # finally should clear if it owns the exception
+  endtry
+  try
+    try
+      throw 104
+    catch
+      try
+        exec 'nonexistent_cmd' # normal exception inside nested exception stack
+      catch
+        assert_match('E492:', v:exception)
+      endtry
+      eval [][0] # normal exception inside catch block
+    endtry
+  catch
+    assert_match('E684:', v:exception)
+  endtry
+  assert_equal('', v:exception) # All exceptions properly popped
 enddef
 
 def Test_unreachable_after()
@@ -1396,11 +1437,23 @@ def Test_throw_line_number()
     eval 2 + 2
     throw 'exception'
   enddef
+  def Func2()
+    eval 1 + 1
+    eval 2 + 2
+    eval 3 + 3
+    throw 'exception'
+  enddef
   try
     Func()
   catch /exception/
+    try
+      Func2()
+    catch /exception/
+      assert_match('line 4', v:throwpoint)
+    endtry
     assert_match('line 3', v:throwpoint)
   endtry
+  assert_match('', v:throwpoint)
 enddef
 
 
