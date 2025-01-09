@@ -1273,7 +1273,7 @@ au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc,.lintstagedrc,flake.l
 " JSONC (JSON with comments)
 au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc,bun.lock	setf jsonc
 au BufNewFile,BufRead .jshintrc,.jscsrc,.vsconfig,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
-" Visual Code settings
+" Visual Studio Code settings
 au BufRead,BufNewFile ~/*/{Code,VSCodium}/User/*.json setf jsconc
 
 " JSON
