@@ -21,6 +21,15 @@ echo "\<*C->>"
 echo "\<C->>>"
 echo "\<*C->>>"
 
+echo ''''
+echo '''foo'
+echo 'foo'''
+echo 'foo''bar'
+
+" Unreported issue (incorrectly matches as vimString vimMark vimOper NONE)
+" https://github.com/tpope/vim-unimpaired/blob/6d44a6dc2ec34607c41ec78acf81657248580bf1/plugin/unimpaired.vim#L232
+let cmd = 'put!=repeat(nr2char(10), v:count1)|silent '']+'
+
 " String interpolation
 
 echo 'Don''t highlight interpolation: {{ {1 + 2} }}'
@@ -29,6 +38,11 @@ echo $'Highlight interpolation:\t{{ { string({'foo': 'bar'}) } }}'
 echo $'Highlight interpolation:\t{{ { $'nested: {{ {1 + 2} }}' } }}'
 echo $"Highlight interpolation:\t{{ { string({"foo": "bar"}) } }}"
 echo $"Highlight interpolation:\t{{ { $"nested: {{ {1 + 2} }}" } }}"
+
+echo $''''
+echo $'''foo'
+echo $'foo'''
+echo $'foo''bar'
 
 " Number
 
