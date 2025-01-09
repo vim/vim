@@ -718,7 +718,7 @@ catch_exception(except_T *excp)
 /*
  * Remove an exception from the caught stack.
  */
-    static void
+    void
 finish_exception(except_T *excp)
 {
     if (excp != caught_stack)

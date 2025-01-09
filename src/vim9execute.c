@@ -3281,7 +3281,15 @@ exec_instructions(ectx_T *ectx)
 		trycmd_T *trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - 1;
 		if (trycmd->tcd_frame_idx == ectx->ec_frame_idx)
-		    trycmd->tcd_caught = FALSE;
+		{
+		    if (trycmd->tcd_caught)
+		    {
+			// Inside a "catch" we need to first discard the caught
+			// exception.
+			finish_exception(caught_stack);
+			trycmd->tcd_caught = FALSE;
+		    }
+		}
 	    }
 	}
 
@@ -4972,6 +4980,12 @@ exec_instructions(ectx_T *ectx)
 		    // Reset the index to avoid a return statement jumps here
 		    // again.
 		    trycmd->tcd_finally_idx = 0;
+		    if (trycmd->tcd_caught)
+		    {
+			// discard the exception
+			finish_exception(caught_stack);
+			trycmd->tcd_caught = FALSE;
+		    }
 		    break;
 		}
 
@@ -4986,12 +5000,10 @@ exec_instructions(ectx_T *ectx)
 		    trycmd = ((trycmd_T *)trystack->ga_data) + trystack->ga_len;
 		    if (trycmd->tcd_did_throw)
 			did_throw = TRUE;
-		    if (trycmd->tcd_caught && current_exception != NULL)
+		    if (trycmd->tcd_caught)
 		    {
 			// discard the exception
-			if (caught_stack == current_exception)
-			    caught_stack = caught_stack->caught;
-			discard_current_exception();
+			finish_exception(caught_stack);
 		    }
 
 		    if (trycmd->tcd_return)
@@ -5040,12 +5052,10 @@ exec_instructions(ectx_T *ectx)
 		    {
 			trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - 1;
-			if (trycmd->tcd_caught && current_exception != NULL)
+			if (trycmd->tcd_caught)
 			{
 			    // discard the exception
-			    if (caught_stack == current_exception)
-				caught_stack = caught_stack->caught;
-			    discard_current_exception();
+			    finish_exception(caught_stack);
 			    trycmd->tcd_caught = FALSE;
 			}
 		    }
