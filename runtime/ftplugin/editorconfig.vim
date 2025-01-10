@@ -10,4 +10,6 @@ let b:did_ftplugin = 1
 
 setl comments=:#,:; commentstring=#\ %s
 
-let b:undo_ftplugin = 'setl com< cms<'
+setl omnifunc=syntaxcomplete#Complete
+
+let b:undo_ftplugin = 'setl com< cms< ofu<'
