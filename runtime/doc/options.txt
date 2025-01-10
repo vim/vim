@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 Dec 28
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jan 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4348,7 +4348,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
 				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
 				     z:StatusLineTerm,Z:StatusLineTermNC,
-				     g:MsgArea")
+				     g:MsgArea,h:ComplMatchIns")
 			global
 	This option can be used to set highlighting mode for various
 	occasions.  It is a comma-separated list of character pairs.  The
@@ -4368,6 +4368,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-MoreMsg|	 m  |more-prompt|
 	|hl-ModeMsg|	 M  Mode (e.g., "-- INSERT --")
 	|hl-MsgArea|	 g  |Command-line| and message area
+	|hl-ComplMatchIns| h  matched text of currently inserted completion
 	|hl-LineNr|	 n  line number for ":number" and ":#" commands, and
 			    when 'number' or 'relativenumber' option is set.
 	|hl-LineNrAbove|   a  line number above the cursor for when the
