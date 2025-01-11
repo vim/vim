@@ -60,6 +60,7 @@ packadd termdebug
 " should be the first test to run, since it validates the window layout with
 " win ids
 func Test_termdebug_basic()
+  let g:test_is_flaky = 1
   let bin_name = 'XTD_basic'
   let src_name = bin_name .. '.c'
   call s:generate_files(bin_name)
@@ -579,6 +580,7 @@ endfunction
 
 function Test_termdebug_config_types()
   " TODO Remove the deprecated features after 1 Jan 2025.
+  let g:test_is_flaky = 1
   let g:termdebug_config = {}
   let s:error_message = 'Deprecation Warning:'
   call assert_true(maparg('K', 'n', 0, 1)->empty())
