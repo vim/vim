@@ -1258,6 +1258,10 @@ do_arg_all(
 
     tabpage_T *new_lu_tp = curtab;
 
+    // Stop Visual mode, the cursor and "VIsual" may very well be invalid after
+    // switching to another buffer.
+    reset_VIsual_and_resel();
+
     // Try closing all windows that are not in the argument list.
     // Also close windows that are not full width;
     // When 'hidden' or "forceit" set the buffer becomes hidden.

@@ -2586,6 +2586,7 @@ charwise_block_prep(
     colnr_T startcol = 0, endcol = MAXCOL;
     colnr_T cs, ce;
     char_u *p;
+    int	plen = ml_get_len(lnum);
 
     p = ml_get(lnum);
     bdp->startspaces = 0;
@@ -2646,7 +2647,7 @@ charwise_block_prep(
     else
 	bdp->textlen = endcol - startcol + inclusive;
     bdp->textcol = startcol;
-    bdp->textstart = p + startcol;
+    bdp->textstart = startcol <= plen ? p + startcol : p;
 }
 
 /*
