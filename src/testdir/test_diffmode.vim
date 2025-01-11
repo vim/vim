@@ -2321,6 +2321,7 @@ func Test_diff_topline_noscroll()
 endfunc
 
 func Test_diffget_diffput_linematch()
+  CheckScreendump
   call delete('.Xdifile1.swp')
   call delete('.Xdifile2.swp')
   call WriteDiffFiles(0, [], [])
@@ -2526,6 +2527,7 @@ func Test_diffget_diffput_linematch()
 endfunc
 
 func Test_linematch_diff()
+  CheckScreendump
   call delete('.Xdifile1.swp')
   call delete('.Xdifile2.swp')
   call WriteDiffFiles(0, [], [])
@@ -2545,6 +2547,7 @@ func Test_linematch_diff()
 endfunc
 
 func Test_linematch_diff_iwhite()
+  CheckScreendump
   call delete('.Xdifile1.swp')
   call delete('.Xdifile2.swp')
   call WriteDiffFiles(0, [], [])
@@ -2570,6 +2573,7 @@ func Test_linematch_diff_iwhite()
 endfunc
 
 func Test_linematch_diff_grouping()
+  CheckScreendump
   call delete('.Xdifile1.swp')
   call delete('.Xdifile2.swp')
   call WriteDiffFiles(0, [], [])
@@ -2606,6 +2610,7 @@ func Test_linematch_diff_grouping()
 endfunc
 
 func Test_linematch_diff_scroll()
+  CheckScreendump
   call delete('.Xdifile1.swp')
   call delete('.Xdifile2.swp')
   call WriteDiffFiles(0, [], [])
@@ -2638,6 +2643,7 @@ endfunc
 
 
 func Test_linematch_line_limit_exceeded()
+  CheckScreendump
   call delete('.Xdifile1.swp')
   call delete('.Xdifile2.swp')
   call WriteDiffFiles(0, [], [])
@@ -2686,6 +2692,7 @@ func Test_linematch_line_limit_exceeded()
 endfunc
 
 func Test_linematch_3diffs()
+  CheckScreendump
   call delete('.Xdifile1.swp')
   call delete('.Xdifile2.swp')
   call delete('.Xdifile3.swp')
