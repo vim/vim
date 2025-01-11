@@ -392,8 +392,15 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    }
 	    else
 	    {
-		if (generate_GET_OBJ_MEMBER(cctx, m_idx, ocm->ocm_type) ==
-									FAIL)
+		int status;
+
+		if (IS_INTERFACE(cl))
+		    status = generate_GET_ITF_MEMBER(cctx, cl, m_idx,
+							ocm->ocm_type);
+		else
+		    status = generate_GET_OBJ_MEMBER(cctx, m_idx,
+							ocm->ocm_type);
+		if (status == FAIL)
 		    return FAIL;
 	    }
 	}
