@@ -927,7 +927,7 @@ ins_compl_col_range_attr(int col)
     if ((get_cot_flags() & COT_FUZZY))
 	return -1;
 
-    if (col >= (compl_col + (int)compl_leader.length) && col < compl_ins_end_col)
+    if (col >= (compl_col + (int)ins_compl_leader_len()) && col < compl_ins_end_col)
 	return syn_name2attr((char_u *)"ComplMatchIns");
 
     return -1;
