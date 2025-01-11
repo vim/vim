@@ -3586,4 +3586,29 @@ def Test_disassemble_member_initializer()
   unlet g:instr
 enddef
 
+" Disassemble the code generated for accessing a interface member variable
+def Test_disassemble_interface_variable_access()
+  var lines =<< trim END
+    vim9script
+    interface IX
+      var F: func(): string
+    endinterface
+
+    def Foo(ix: IX): string
+      return ix.F()
+    enddef
+
+    g:instr = execute('disassemble Foo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Foo\_s*' ..
+    'return ix.F()\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 ITF_MEMBER 0 on IX\_s*' ..
+    '2 PCALL top (argc 0)\_s*' ..
+    '3 PCALL end\_s*' ..
+    '4 RETURN', g:instr)
+  unlet g:instr
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

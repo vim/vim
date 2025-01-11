@@ -7257,6 +7257,31 @@ def Test_interface_extends_with_dup_members()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for implementing an interface with different ordering for the interface
+" member variables.
+def Test_implement_interface_with_different_variable_order()
+  var lines =<< trim END
+    vim9script
+
+    interface IX
+      var F: func(): string
+    endinterface
+
+    class X implements IX
+      var x: number
+      var F: func(): string = () => 'ok'
+    endclass
+
+    def Foo(ix: IX): string
+      return ix.F()
+    enddef
+
+    var x0 = X.new(0)
+    assert_equal('ok', Foo(x0))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using "any" type for a variable in a sub-class while it has a
 " concrete type in the interface
 def Test_implements_using_var_type_any()
