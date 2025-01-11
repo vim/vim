@@ -494,6 +494,12 @@ ConPTY problems have been fixed "winpty" will be preferred.
 Environment variables are used to pass information to the running job:
     VIM_SERVERNAME	v:servername
 
+							*git-vimdumps*
+There exists a git-difftool extension called `git-vimdumps` that can be used
+to conveniently inspect screendump files and diff them.  Please see in the Vim
+Repository the file `src/testdir/commondumps.vim` on how to create and use
+this git extension.
+
 ==============================================================================
 2. Terminal functions				 *terminal-function-details*
 

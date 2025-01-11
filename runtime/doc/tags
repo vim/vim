@@ -7926,6 +7926,7 @@ gf	editing.txt	/*gf*
 gg	motion.txt	/*gg*
 gh	visual.txt	/*gh*
 gi	insert.txt	/*gi*
+git-vimdumps	terminal.txt	/*git-vimdumps*
 gj	motion.txt	/*gj*
 gk	motion.txt	/*gk*
 glob()	builtin.txt	/*glob()*
