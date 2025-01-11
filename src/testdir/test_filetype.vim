@@ -399,7 +399,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     '.prettierrc', '.firebaserc', '.stylelintrc', '.lintstagedrc', 'file.slnf', 'file.sublime-project', 'file.sublime-settings', 'file.sublime-workspace',
     'file.bd', 'file.bda', 'file.xci', 'flake.lock', 'pack.mcmeta', 'deno.lock'],
     json5: ['file.json5'],
-    jsonc: ['file.jsonc', '.babelrc', '.eslintrc', '.jsfmtrc', '.jshintrc', '.jscsrc', '.vsconfig', '.hintrc', '.swrc', 'jsconfig.json', 'tsconfig.json', 'tsconfig.test.json', 'tsconfig-test.json', '.luaurc', 'bun.lock', /home/linus/.config/VSCodium/User/settings.json'],
+    jsonc: ['file.jsonc', '.babelrc', '.eslintrc', '.jsfmtrc', '.jshintrc', '.jscsrc', '.vsconfig', '.hintrc', '.swrc', 'jsconfig.json', 'tsconfig.json', 'tsconfig.test.json', 'tsconfig-test.json', '.luaurc', 'bun.lock', '/home/linus/.config/VSCodium/User/settings.json'],
     jsonl: ['file.jsonl'],
     jsonnet: ['file.jsonnet', 'file.libsonnet'],
     jsp: ['file.jsp'],
