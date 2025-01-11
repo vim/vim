@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2024 Dec 27
+*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -550,9 +550,9 @@ EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
 <			Otherwise it works the same as `:ldo`.
 
 FILTERING A QUICKFIX OR LOCATION LIST:
-				    *cfilter-plugin* *:Cfilter* *:Lfilter*
+		    *cfilter-plugin* *:Cfilter* *:Lfilter* *package-cfilter*
 If you have too many entries in a quickfix list, you can use the cfilter
-plugin to reduce the number of entries.  Load the plugin with: >
+plugin to reduce the number of entries.  Load the plugin with: >vim
 
     packadd cfilter
 

@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
+*usr_05.txt*	For Vim version 9.1.  Last change: 2025 Jan 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -392,7 +392,7 @@ The ":map" command (with no arguments) lists your current mappings.  At
 least the ones for Normal mode.  More about mappings in section |40.1|.
 
 ==============================================================================
-*05.5*	Adding a package			*add-package* *matchit-install*
+*05.5*	Adding a package  *add-package* *matchit-install* *package-matchit*
 
 A package is a set of files that you can add to Vim.  There are two kinds of
 packages: optional and automatically loaded on startup.
@@ -427,7 +427,7 @@ an archive or as a repository.  For an archive you can follow these steps:
 	   Here "fancytext" is the name of the package, it can be anything
 	   else.
 
-Adding the editorconfig package				*editorconfig-install*
+Adding the editorconfig package *editorconfig-install* *package-editorconfig*
 
 Similar to the matchit package, to load the distributed editorconfig plugin
 when Vim starts, add the following line to your vimrc file: >
@@ -437,7 +437,7 @@ After restarting your Vim, the plugin is active and you can read about it at: >
 	:h editorconfig.txt
 
 
-Adding comment package					*comment-install*
+Adding comment package			*comment-install* *package-comment*
 
 Load the plugin with this command: >
 	packadd comment
@@ -450,7 +450,7 @@ the package loaded.  Once the package is loaded, read about it at: >
 	:h comment.txt
 
 
-Adding nohlsearch package				*nohlsearch-install*
+Adding nohlsearch package	*nohlsearch-install* *package-nohlsearch*
 
 Load the plugin with this command: >
 	packadd nohlsearch

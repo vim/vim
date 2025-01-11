@@ -2129,6 +2129,7 @@ $quote	eval.txt	/*$quote*
 :GnatTags	ft_ada.txt	/*:GnatTags*
 :HelpToc	helphelp.txt	/*:HelpToc*
 :Hexplore	pi_netrw.txt	/*:Hexplore*
+:Justify	usr_25.txt	/*:Justify*
 :LP	pi_logipat.txt	/*:LP*
 :LPE	pi_logipat.txt	/*:LPE*
 :LPF	pi_logipat.txt	/*:LPF*
@@ -5567,6 +5568,7 @@ J	change.txt	/*J*
 Japanese	mbyte.txt	/*Japanese*
 Job	eval.txt	/*Job*
 Jobs	eval.txt	/*Jobs*
+Justify()	usr_25.txt	/*Justify()*
 K	various.txt	/*K*
 KDE	gui_x11.txt	/*KDE*
 KVim	gui_x11.txt	/*KVim*
@@ -8538,6 +8540,7 @@ jump-motions	motion.txt	/*jump-motions*
 jumplist	motion.txt	/*jumplist*
 jumplist-stack	motion.txt	/*jumplist-stack*
 jumpto-diffs	diff.txt	/*jumpto-diffs*
+justify	usr_25.txt	/*justify*
 k	motion.txt	/*k*
 kcc	uganda.txt	/*kcc*
 kde	gui_x11.txt	/*kde*
@@ -9384,9 +9387,17 @@ out_name	channel.txt	/*out_name*
 out_timeout	channel.txt	/*out_timeout*
 p	change.txt	/*p*
 pack-add	repeat.txt	/*pack-add*
+package-cfilter	quickfix.txt	/*package-cfilter*
+package-comment	usr_05.txt	/*package-comment*
 package-create	repeat.txt	/*package-create*
 package-doc	repeat.txt	/*package-doc*
 package-documentation	repeat.txt	/*package-documentation*
+package-editorconfig	usr_05.txt	/*package-editorconfig*
+package-helptoc	helphelp.txt	/*package-helptoc*
+package-justify	usr_25.txt	/*package-justify*
+package-matchit	usr_05.txt	/*package-matchit*
+package-nohlsearch	usr_05.txt	/*package-nohlsearch*
+package-termdebug	terminal.txt	/*package-termdebug*
 package-translate_example	repeat.txt	/*package-translate_example*
 package-translation	repeat.txt	/*package-translation*
 packages	repeat.txt	/*packages*

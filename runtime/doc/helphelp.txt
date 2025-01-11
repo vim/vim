@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2024 Dec 26
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -247,10 +247,10 @@ command: >
 			(requires write permission there): >
 				:helptags $VIMRUNTIME/doc
 <
-					*:HelpToc* *help-TOC* *help-toc-install*
+		*:HelpToc* *help-TOC* *help-toc-install* *package-helptoc*
 
 If you want to access an interactive table of contents, from any position in
-the file, you can use the helptoc plugin.  Load the plugin with: >
+the file, you can use the helptoc plugin.  Load the plugin with: >vim
 
     packadd helptoc
 

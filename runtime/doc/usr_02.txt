@@ -1,4 +1,4 @@
-*usr_02.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
+*usr_02.txt*	For Vim version 9.1.  Last change: 2025 Jan 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -693,6 +693,13 @@ Summary:					*help-summary*  >
     listed at the Vim command that usually causes this.  So: >
 	:help E128
 <    takes you to the |:function| command
+
+27) Documenction for packages distributed with Vim have the form package-<name>.
+     So >
+	:help package-comment
+<
+    will bring you to the help section for the included comment plugin and how to
+    enable it.
 
 
 ==============================================================================

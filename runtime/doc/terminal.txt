@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Dec 30
+*terminal.txt*	For Vim version 9.1.  Last change: 2025 Jan 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1254,7 +1254,7 @@ Alternatively, press "s" to swap the first and second dump. Do this several
 times so that you can spot the difference in the context of the text.
 
 ==============================================================================
-6. Debugging				*terminal-debug* *terminal-debugger*
+6. Debugging	*terminal-debug* *terminal-debugger* *package-termdebug*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
 the source code in a Vim window.  Since this is completely contained inside
