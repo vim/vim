@@ -3739,7 +3739,6 @@ f_call(typval_T *argvars, typval_T *rettv)
     char_u	*func;
     partial_T   *partial = NULL;
     dict_T	*selfdict = NULL;
-    char_u	*dot;
     char_u	*tofree = NULL;
 
     if (in_vim9script()
@@ -3765,25 +3764,15 @@ f_call(typval_T *argvars, typval_T *rettv)
     if (func == NULL || *func == NUL)
 	return;		// type error, empty name or null function
 
-    dot = vim_strchr(func, '.');
-    if (dot != NULL)
+    ++emsg_off;
+    tofree = trans_function_name(&func, NULL, FALSE, TFN_INT|TFN_QUIET);
+    --emsg_off;
+    if (tofree == NULL)
     {
-	imported_T *import = find_imported(func, dot - func, TRUE);
-
-	if (import != NULL && SCRIPT_ID_VALID(import->imp_sid))
-	{
-	    scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);
-
-	    if (si->sn_autoload_prefix != NULL)
-	    {
-		// Turn "import.Func" into "scriptname#Func".
-		tofree = concat_str(si->sn_autoload_prefix, dot + 1);
-		if (tofree == NULL)
-		    return;
-		func = tofree;
-	    }
-	}
+	emsg_funcname(e_unknown_function_str, func);
+	return;
     }
+    func = tofree;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
