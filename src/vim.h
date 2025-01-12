@@ -136,6 +136,18 @@
 # endif
 #endif
 
+
+// Check for simd support
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #define PLATFORM_X86 1
+    #include <emmintrin.h>  // For SSE2 intrinsics
+#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
+    #define PLATFORM_ARM_NEON 1
+    #include <arm_neon.h>   // For ARM NEON intrinsics
+#else
+    #define PLATFORM_NO_SIMD 1
+#endif
+
 /*
  * VIM_SIZEOF_INT is used in feature.h, and the system-specific included files
  * need items from feature.h.  Therefore define VIM_SIZEOF_INT here.
