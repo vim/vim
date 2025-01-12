@@ -1531,6 +1531,7 @@ BASIC_SRC = \
 	indent.c \
 	insexpand.c \
 	json.c \
+	linematch.c \
 	list.c \
 	locale.c \
 	logfile.c \
@@ -1693,6 +1694,7 @@ OBJ_COMMON = \
 	objects/if_xcmdsrv.o \
 	objects/indent.o \
 	objects/insexpand.o \
+	objects/linematch.o \
 	objects/list.o \
 	objects/locale.o \
 	objects/logfile.o \
@@ -1842,6 +1844,7 @@ PRO_AUTO = \
 	debugger.pro \
 	dict.pro \
 	diff.pro \
+	linematch.pro \
 	digraph.pro \
 	drawline.pro \
 	drawscreen.pro \
@@ -3343,6 +3346,9 @@ objects/json_test.o: json_test.c
 objects/kword_test.o: kword_test.c
 	$(CCC) -o $@ kword_test.c
 
+objects/linematch.o: linematch.c
+	$(CCC) -o $@ linematch.c
+
 objects/list.o: list.c
 	$(CCC) -o $@ list.c
 
@@ -3944,6 +3950,11 @@ objects/json.o: json.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
+objects/linematch.o: linematch.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h proto/gui_beval.pro structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h xdiff/xdiff.h \
+ xdiff/../vim.h alloc.h ex_cmds.h spell.h proto.h globals.h errors.h
 objects/list.o: list.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
