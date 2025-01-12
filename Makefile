@@ -96,8 +96,14 @@ syntaxtest:
 #    To do all this you need the Unix archive and compiled binaries.
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
-MAJOR = 9
-MINOR = 1
+# I think it is better to place getting the current version number in the
+# configure script. And then automatically fill in the fields in the files
+# listed below. (Restorer)
+
+MAJOR != grep -E 'VIM_VERSION_MAJOR\s{2,}' src/version.h | \
+	awk '{ printf "%d",$$3 }'
+MINOR != grep -E 'VIM_VERSION_MINOR\s{2,}' src/version.h | \
+	awk '{ printf "%d",$$3 }'
 
 # CHECKLIST for creating a new version:
 #
@@ -161,12 +167,12 @@ MINOR = 1
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
 #   > cd src
-#   > msvc2015.bat
+#   > msvc-latest.bat
 # - Build the console binary:
-#   > nmake -f Make_mvc.mak
+#   > nmake.exe -f Make_mvc.mak
 # - Run the tests and check the output:
-#   > nmake -f Make_mvc.mak testclean
-#   > nmake -f Make_mvc.mak test
+#   > nmake.exe -f Make_mvc.mak testclean
+#   > nmake.exe -f Make_mvc.mak test
 # - Rename (using ../tools/rename.bat):
 #           vim.exe to vimw32.exe
 #           tee/tee.exe to teew32.exe
@@ -176,10 +182,10 @@ MINOR = 1
 #           uninstall.exe to uninstallw32.exe
 # Win32 GUI version build:
 # - > cd src
-#   > nmake -f Make_mvc.mak GUI=yes
+#   > nmake.exe -f Make_mvc.mak "GUI=yes"
 # - Run the tests and check the output:
-#   > nmake -f Make_mvc.mak testclean
-#   > nmake -f Make_mvc.mak testgvim
+#   > nmake.exe -f Make_mvc.mak testclean
+#   > nmake.exe -f Make_mvc.mak testgvim
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
 # - Copy "GvimExt/gvimext.dll" to here.
@@ -191,8 +197,8 @@ MINOR = 1
 #   > cd src
 #   > bigvim.bat
 # - Run the tests:
-#   > nmake -f Make_mvc.mak testclean
-#   > nmake -f Make_mvc.mak testgvim
+#   > nmake.exe -f Make_mvc.mak testclean
+#   > nmake.exe -f Make_mvc.mak testgvim
 #   - check the output.
 # - Rename "gvim.exe" to "gvim_ole.exe".
 # - Rename gvim.pdb to "gvim_ole.pdb".
@@ -216,9 +222,9 @@ MINOR = 1
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
-#   > unzip icons.zip
-#   > makensis gvim.nsi  (takes a few minutes).
-#      ignore warning for libwinpthread-1.dll
+#   > nmake.exe -f Make_mvc.mak all
+#    (takes a few minutes).
+#    See nsis/README.txt for details.
 # - Copy gvim##.exe to the dist directory.
 #
 # 64 bit builds (these are not in the normal distribution, the 32 bit build
@@ -226,9 +232,9 @@ MINOR = 1
 # Like the console and GUI version, but first run vcvars64.bat or
 #   "..\VC\vcvarsall.bat x86_amd64".
 # - Build the console version:
-#   > nmake -f Make_mvc.mak
+#   > nmake.exe -f Make_mvc.mak
 # - Build the GUI version:
-#   > nmake -f Make_mvc.mak GUI=yes
+#   > nmake.exe -f Make_mvc.mak "GUI=yes"
 # - Build the OLE version with interfaces:
 #   > bigvim64.bat
 #
@@ -266,8 +272,8 @@ dist:
 # Clean up some files to avoid they are included.
 # Copy README files to the top directory.
 prepare:
-	if test -f runtime/doc/uganda.nsis.txt; then \
-		rm runtime/doc/uganda.nsis.???; fi
+	if test -f lang/LICENSE.nsis.txt; then \
+		rm -f lang/LICENSE*.nsis.txt; fi
 	for name in $(IN_README_DIR); do \
 	  cp READMEdir/"$$name" .; \
 	  done
@@ -408,8 +414,7 @@ amisrc: dist prepare
 	mv dist/vim$(VERSION)src.tar.gz dist/vim$(VERSION)src.tgz
 
 # MS-DOS sources
-dossrc: dist dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt \
-	nsis/gvim_version.nsh
+dossrc: dist dist/$(COMMENT_SRC) license nsis/gvim_version.nsh
 	-rm -rf dist/vim$(VERSION)src.zip
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -420,23 +425,19 @@ dossrc: dist dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt \
 		$(SRC_DOS_BIN) \
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS_UNIX) \
-		runtime/doc/uganda.nsis.??? \
+		lang/LICENSE.*.txt \
+		lang/README.*.txt \
 		nsis/gvim_version.nsh \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
 	cd dist && zip -9 -rD -z vim$(VERSION)src.zip vim <$(COMMENT_SRC)
 
-runtime/doc/uganda.nsis.txt: runtime/doc/uganda.???
-	cd runtime/doc && $(MAKE) uganda.nsis.txt
+license:
+	cd nsis && $(MAKE) -f Makefile $@
 
 nsis/gvim_version.nsh: Makefile
-	echo "# Generated from Makefile: define the version numbers" > $@
-	echo "!ifndef __GVIM_VER__NSH__"  >> $@
-	echo "!define __GVIM_VER__NSH__"  >> $@
-	echo "!define VER_MAJOR $(MAJOR)" >> $@
-	echo "!define VER_MINOR $(MINOR)" >> $@
-	echo "!endif" >> $@
+	cd nsis && $(MAKE) -f Makefile $(@F)
 
 dosrt: dist dist/$(COMMENT_RT) dosrt_files
 	-rm -rf dist/vim$(VERSION)rt.zip
