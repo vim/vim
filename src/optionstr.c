@@ -2433,24 +2433,29 @@ did_set_guipadding(optset_T *args UNUSED)
 
     gui.padding.top = gui.padding.left = gui.padding.bot = gui.padding.right = 5;
 
-    while(*p != NUL) {
+    while (*p != NUL)
+    {
       if (STRNCMP(p, "top:", _len = STRLEN_LITERAL("top:")) == 0
-          && vim_isdigit(p[_len])) {
+          && vim_isdigit(p[_len]))
+      {
         p += _len;
         gui.padding.top = getdigits(&p);
       }
       else if (STRNCMP(p, "left:", _len = STRLEN_LITERAL("left:")) == 0
-          && vim_isdigit(p[_len])) {
+          && vim_isdigit(p[_len]))
+      {
         p += _len;
         gui.padding.left = getdigits(&p);
       }
       else if (STRNCMP(p, "bot:", _len = STRLEN_LITERAL("bot:")) == 0
-          && vim_isdigit(p[_len])) {
+          && vim_isdigit(p[_len]))
+      {
         p += _len;
         gui.padding.bot = getdigits(&p);
       }
       else if (STRNCMP(p, "right:", _len = STRLEN_LITERAL("right:")) == 0
-          && vim_isdigit(p[_len])) {
+          && vim_isdigit(p[_len]))
+      {
         p += _len;
         gui.padding.right = getdigits(&p);
       }
@@ -2461,8 +2466,6 @@ did_set_guipadding(optset_T *args UNUSED)
         ++p;
     }
 
-    // gui.border_width  = 10; // p_gpd;
-    // gui.border_offset = gui.border_width;
     if (gui.in_use)
         gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
 
