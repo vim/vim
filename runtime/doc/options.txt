@@ -2164,6 +2164,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    characters can be skipped and matches can be found even
 		    if the exact sequence is not typed.
 
+	   preinsert
+		    Preinsert the portion of the first candidate word that is
+		    not part of the current completion leader and the
+		    |ComplMatchIns| highlight group is used,  Does not work when
+		    fuzzy is also included.
+
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)
 			global
