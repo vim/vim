@@ -619,4 +619,27 @@ func Test_search_multibyte_match_ascii()
   bw!
 endfunc
 
+func Test_match_diacritics()
+  sp ./samples/diacritics.txt
+  for i in range(0, 2)
+    exe 'set regexpengine=' .. i
+    %s/\%Gbau.*\>//g
+    call assert_equal([&re] + ['a', 'Bäume', '', 'Baum', '', '', 'kočička', 'kocicka'], [&re] + getline(1, '$'))
+    e!
+    %s/\%Gbau.*\>\%C//g
+    call assert_equal([&re] + ['a', 'Bäume', '', 'Baum', '', '', 'kočička', 'kocicka'], [&re] + getline(1, '$'))
+
+    e!
+    %s/\%Gkocicka.*\n//g
+    call assert_equal([&re] + ['a', 'Bäume', 'baum', 'Baum', 'bäume', 'bäume', ''], [&re] + getline(1, '$'))
+    e!
+    %s/\%Ga//g
+    call assert_equal([&re] + ['', 'Bume', 'bum', 'Bum', 'bume', 'bume', 'kočičk', 'kocick'], [&re] + getline(1, '$'))
+    e!
+    call assert_fails('%s/a\%G//', 'E1515')
+    e!
+  endfor
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

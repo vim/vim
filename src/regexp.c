@@ -349,6 +349,7 @@ init_class_tab(void)
 #define RF_HASNL    4	// can match a NL
 #define RF_ICOMBINE 8	// ignore combining characters
 #define RF_LOOKBH   16	// uses "\@<=" or "\@<!"
+#define RF_IDIAC    32	// ignore diacritic characters
 
 /*
  * Global work variables for vim_regcomp().
@@ -1183,6 +1184,10 @@ typedef struct {
     // Similar to "reg_ic", but only for 'combining' characters.  Set with \Z
     // flag in the regexp.  Defaults to false, always.
     int			reg_icombine;
+
+    // Similar to "reg_iccombine", but for the complete pattern.  Set with \%G
+    // flag at the beginning of the pattern.  Defaults to false.
+    int			reg_idiac;
 
     // Copy of "rmm_maxcol": maximum column to search for a match.  Zero when
     // there is no maximum.
@@ -2866,6 +2871,7 @@ init_regexec_multi(
     rex.reg_line_lbr = FALSE;
     rex.reg_ic = rmp->rmm_ic;
     rex.reg_icombine = FALSE;
+    rex.reg_idiac = FALSE;
     rex.reg_maxcol = rmp->rmm_maxcol;
 }
 
@@ -2950,6 +2956,11 @@ vim_regcomp(char_u *expr_arg, int re_flags)
 #endif
     // reg_iswordc() uses rex.reg_buf
     rex.reg_buf = curbuf;
+    if (STRNCMP(expr, "\\%G", 3 ) == 0)
+    {
+	rex.reg_idiac = TRUE;
+	expr += 3;
+    }
 
     /*
      * First try the NFA engine, unless backtracking was requested.

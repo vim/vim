@@ -18,6 +18,10 @@
 #endif
 
 #ifdef DEBUG
+#undef DEBUG
+#endif
+
+#ifdef DEBUG
 # define DEBUG_LOG(s) fprintf(stderr, s)
 # define DEBUG_LOG1(s, a) fprintf(stderr, s, a)
 # define DEBUG_LOG2(s, a, b) fprintf(stderr, s, a, b)
