@@ -1278,7 +1278,12 @@ au BufNewFile,BufRead .jshintrc,.jscsrc,.vsconfig,.hintrc,.swrc,[jt]sconfig*.jso
 au BufRead,BufNewFile ~/*/{Code,VSCodium}/User/*.json setf jsonc
 
 " JSON
-au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
+au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest
+  			\ for line in getline(1,'$')
+	  		\   if match(line, '^\s*//') >= 0 | setf jsonc | break | let b:found_jsonc_comment = 1 | endif
+  			\ endfor
+			\ if !exists('b:found_jsonc_comment') | setf json | else | unlet b:found_jsonc_comment | endif
+			\ endif
 
 " JSON Lines
 au BufNewFile,BufRead *.jsonl			setf jsonl

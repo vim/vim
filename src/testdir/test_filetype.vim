@@ -2514,6 +2514,16 @@ func Test_inc_file()
   filetype off
 endfunc
 
+func Test_jsonc_file()
+  filetype on
+
+  call writefile(['//comment'], 'file.json', 'D')
+  split file.json
+  call assert_equal('jsonc', &filetype)
+
+  filetype off
+endfunc
+
 func Test_ll_file()
   filetype on
 
