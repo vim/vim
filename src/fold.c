@@ -1879,7 +1879,7 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
 	    {
 		// Also delete 'commentstring' if it matches.
 		cms2 = (char_u *)strstr((char *)cms, "%s");
-		if (p - line >= cms2 - cms
+		if (cms2 != NULL && p - line >= cms2 - cms
 			&& STRNCMP(p - (cms2 - cms), cms, cms2 - cms) == 0
 			&& STRNCMP(p + len, cms2 + 2, STRLEN(cms2 + 2)) == 0)
 		{
