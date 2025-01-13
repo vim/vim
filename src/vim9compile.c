@@ -778,6 +778,7 @@ get_script_item_idx(
     static imported_T *
 find_imported_in_script(char_u *name, size_t len, int sid)
 {
+    static int	    nesting = 0;
     scriptitem_T    *si;
     int		    idx;
 
@@ -792,6 +793,19 @@ find_imported_in_script(char_u *name, size_t len, int sid)
 		     : STRLEN(import->imp_name) == len
 				  && STRNCMP(name, import->imp_name, len) == 0)
 	    return import;
+	else
+	{
+	    if (nesting >= p_mfd)
+	    {
+		emsg(_(e_import_nesting_too_deep));
+		return NULL;
+	    }
+	    ++nesting;
+	    import = find_imported_in_script(name, len, import->imp_sid);
+	    --nesting;
+	    if (import != NULL)
+		return import;
+	}
     }
     return NULL;
 }

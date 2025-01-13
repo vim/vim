@@ -5582,6 +5582,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	command recursion, see |E169|.
 	See also |:function|.
 	Also used for maximum depth of callback functions.
+	Also used for maximum depth of import.  See |:import-cycle|.
 
 						*'maxmapdepth'* *'mmd'* *E223*
 'maxmapdepth' 'mmd'	number	(default 1000)
