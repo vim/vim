@@ -23,7 +23,7 @@ syn match lrcTagName contained nextgroup=lrcTagValue
 syn match lrcTagValue /:\zs.\+\ze\]/ contained
 
 " Lyrics
-syn match lrcLyricTime /^\s*\(\[\d\d:\d\d\.\d\d\]\)\+/
+syn match lrcLyricTime /^\s*\(\[\d\d:\d\d\.\d\d\d\?\]\)\+/
             \ contains=lrcNumber nextgroup=lrcLyricLine
 syn match lrcLyricLine /.*$/ contained contains=lrcWordTime,@Spell
 syn match lrcWordTime /<\d\d:\d\d\.\d\d>/ contained contains=lrcNumber,@NoSpell
