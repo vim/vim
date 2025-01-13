@@ -2052,8 +2052,11 @@ count_filler_lines_and_topline(
 	else
 	{
 	    (*linesfiller) = 0;
-	    ch_virtual_lines = get_max_diff_length(curdif);
-	    isfiller = (curdif->df_count[toidx] ? FALSE : TRUE);
+	    if (curdif)
+	    {
+		ch_virtual_lines = get_max_diff_length(curdif);
+		isfiller = (curdif->df_count[toidx] ? FALSE : TRUE);
+	    }
 	    if (isfiller)
 	    {
 		while (curdif && curdif->df_next &&
