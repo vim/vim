@@ -414,7 +414,7 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
     int_u	char_pos = 0;
     int		is_select = FALSE;
 
-    if ((hlf != HLF_PSI && hlf != HLF_PNI)
+    if (*text == NUL || (hlf != HLF_PSI && hlf != HLF_PNI)
 	    || (highlight_attr[HLF_PMSI] == highlight_attr[HLF_PSI]
 		&& highlight_attr[HLF_PMNI] == highlight_attr[HLF_PNI]))
 	return NULL;
@@ -662,131 +662,129 @@ pum_redraw(void)
 		    if (s == NULL)
 			s = p;
 		    w = ptr2cells(p);
-		    if (*p == NUL || *p == TAB || totwidth + w > pum_width)
+		    if (*p != NUL && *p != TAB && totwidth + w <= pum_width)
 		    {
-			// Display the text that fits or comes before a Tab.
-			// First convert it to printable characters.
-			char_u	*st;
-			int	*attrs = NULL;
-			int	saved = *p;
+			width += w;
+			continue;
+		    }
 
-			if (saved != NUL)
-			    *p = NUL;
-			st = transstr(s);
-			if (saved != NUL)
-			    *p = saved;
+		    // Display the text that fits or comes before a Tab.
+		    // First convert it to printable characters.
+		    char_u	*st;
+		    int		*attrs = NULL;
+		    int		saved = *p;
 
-			if (item_type == CPT_ABBR)
-			    attrs = pum_compute_text_attrs(st, hlf,
-					pum_array[idx].pum_user_abbr_hlattr);
+		    if (saved != NUL)
+			*p = NUL;
+		    st = transstr(s);
+		    if (saved != NUL)
+			*p = saved;
+
+		    if (item_type == CPT_ABBR)
+			attrs = pum_compute_text_attrs(st, hlf,
+					  pum_array[idx].pum_user_abbr_hlattr);
 #ifdef FEAT_RIGHTLEFT
-			if (pum_rl)
+		    if (pum_rl)
+		    {
+			if (st != NULL)
 			{
-			    if (st != NULL)
+			    char_u	*rt = reverse_text(st);
+
+			    if (rt != NULL)
 			    {
-				char_u	*rt = reverse_text(st);
+				char_u		*rt_start = rt;
+				int		cells;
 
-				if (rt != NULL)
+				cells = vim_strsize(rt);
+				if (cells > pum_width)
 				{
-				    char_u	*rt_start = rt;
-				    int		cells;
-
-				    cells = vim_strsize(rt);
-				    if (cells > pum_width)
+				    do
 				    {
-					do
-					{
-					    cells -= has_mbyte
+					cells -= has_mbyte
 						     ? (*mb_ptr2cells)(rt) : 1;
-					    MB_PTR_ADV(rt);
-					} while (cells > pum_width);
+					MB_PTR_ADV(rt);
+				    } while (cells > pum_width);
 
-					if (cells < pum_width)
-					{
-					    // Most left character requires
-					    // 2-cells but only 1 cell is
-					    // available on screen.  Put a
-					    // '<' on the left of the pum
-					    // item
-					    *(--rt) = '<';
-					    cells++;
-					}
-				    }
-
-				    if (attrs == NULL)
-					screen_puts_len(rt, (int)STRLEN(rt),
-						   row, col - cells + 1, attr);
-				    else
-					pum_screen_puts_with_attrs(row,
-						    col - cells + 1, cells, rt,
-						       (int)STRLEN(rt), attrs);
-
-				    vim_free(rt_start);
-				}
-				vim_free(st);
-			    }
-			    col -= width;
-			}
-			else
-#endif
-			{
-			    if (st != NULL)
-			    {
-				int size = (int)STRLEN(st);
-				int cells = (*mb_string2cells)(st, size);
-
-				// only draw the text that fits
-				while (size > 0
-					  && col + cells > pum_width + pum_col)
-				{
-				    --size;
-				    if (has_mbyte)
+				    if (cells < pum_width)
 				    {
-					size -= (*mb_head_off)(st, st + size);
-					cells -= (*mb_ptr2cells)(st + size);
+					// Most left character requires 2-cells
+					// but only 1 cell is available on
+					// screen.  Put a '<' on the left of
+					// the pum item.
+					*(--rt) = '<';
+					cells++;
 				    }
-				    else
-					--cells;
 				}
 
 				if (attrs == NULL)
-				    screen_puts_len(st, size, row, col, attr);
+				    screen_puts_len(rt, (int)STRLEN(rt), row,
+							col - cells + 1, attr);
 				else
-				    pum_screen_puts_with_attrs(row, col, cells,
-							      st, size, attrs);
+				    pum_screen_puts_with_attrs(row,
+						    col - cells + 1, cells, rt,
+						    (int)STRLEN(rt), attrs);
 
-				vim_free(st);
+				vim_free(rt_start);
 			    }
-			    col += width;
+			    vim_free(st);
 			}
-
-			if (attrs != NULL)
-			    VIM_CLEAR(attrs);
-
-			if (*p != TAB)
-			    break;
-
-			// Display two spaces for a Tab.
-#ifdef FEAT_RIGHTLEFT
-			if (pum_rl)
-			{
-			    screen_puts_len((char_u *)"  ", 2, row, col - 1,
-								    attr);
-			    col -= 2;
-			}
-			else
-#endif
-			{
-			    screen_puts_len((char_u *)"  ", 2, row, col,
-								    attr);
-			    col += 2;
-			}
-			totwidth += 2;
-			s = NULL;	    // start text at next char
-			width = 0;
+			col -= width;
 		    }
 		    else
-			width += w;
+#endif
+		    {
+			if (st != NULL)
+			{
+			    int size = (int)STRLEN(st);
+			    int cells = (*mb_string2cells)(st, size);
+
+			    // only draw the text that fits
+			    while (size > 0
+					  && col + cells > pum_width + pum_col)
+			    {
+				--size;
+				if (has_mbyte)
+				{
+				    size -= (*mb_head_off)(st, st + size);
+				    cells -= (*mb_ptr2cells)(st + size);
+				}
+				else
+				    --cells;
+			    }
+
+			    if (attrs == NULL)
+				screen_puts_len(st, size, row, col, attr);
+			    else
+				pum_screen_puts_with_attrs(row, col, cells,
+							      st, size, attrs);
+
+			    vim_free(st);
+			}
+			col += width;
+		    }
+
+		    if (attrs != NULL)
+			VIM_CLEAR(attrs);
+
+		    if (*p != TAB)
+			break;
+
+		    // Display two spaces for a Tab.
+#ifdef FEAT_RIGHTLEFT
+		    if (pum_rl)
+		    {
+			screen_puts_len((char_u *)"  ", 2, row, col - 1, attr);
+			col -= 2;
+		    }
+		    else
+#endif
+		    {
+			screen_puts_len((char_u *)"  ", 2, row, col, attr);
+			col += 2;
+		    }
+		    totwidth += 2;
+		    s = NULL;  // start text at next char
+		    width = 0;
 		}
 
 	    if (j > 0)
