@@ -42,7 +42,7 @@ static void find_mps_values(int *initc, int *findc, int *backwards, int switchit
 static int is_zero_width(char_u *pattern, size_t patternlen, int move, pos_T *cur, int direction);
 static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, size_t msgbuflen, int recompute, int maxcount, long timeout);
 static void update_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, searchstat_T *stat, int recompute, int maxcount, long timeout);
-static int fuzzy_match_compute_score(char_u *str, int strSz, int_u *matches, int numMatches);
+static int fuzzy_match_compute_score(char_u *fuzpat, char_u *str, int strSz, int_u *matches, int numMatches);
 static int fuzzy_match_recursive(char_u *fuzpat, char_u *str, int_u strIdx, int *outScore, char_u *strBegin, int strLen, int_u *srcMatches, int_u *matches, int maxMatches, int nextMatch, int *recursionCount);
 #if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 static int fuzzy_match_item_compare(const void *s1, const void *s2);
@@ -4355,6 +4355,10 @@ typedef struct
 #define CAMEL_BONUS 30
 // bonus if the first letter is matched
 #define FIRST_LETTER_BONUS 15
+// bonus if exact match
+#define EXACT_MATCH_BONUS 100
+// bonus if case match when no ignorecase
+#define CASE_MATCH_BONUS 25
 // penalty applied for every letter in str before the first match
 #define LEADING_LETTER_PENALTY (-5)
 // maximum penalty for leading letters
@@ -4374,6 +4378,7 @@ typedef struct
  */
     static int
 fuzzy_match_compute_score(
+	char_u		*fuzpat,
 	char_u		*str,
 	int		strSz,
 	int_u		*matches,
@@ -4386,6 +4391,11 @@ fuzzy_match_compute_score(
     char_u	*p = str;
     int_u	sidx = 0;
     int		is_exact_match = TRUE;
+    char_u	*orig_fuzpat = fuzpat - numMatches;
+    char_u	*curpat = orig_fuzpat;
+    int		pat_idx = 0;
+    // Track consecutive camel case matches
+    int		consecutive_camel = 0;
 
     // Initialize score
     score = 100;
@@ -4404,6 +4414,8 @@ fuzzy_match_compute_score(
     for (i = 0; i < numMatches; ++i)
     {
 	int_u	currIdx = matches[i];
+	int	curr;
+	int	is_camel = FALSE;
 
 	if (i > 0)
 	{
@@ -4413,15 +4425,18 @@ fuzzy_match_compute_score(
 	    if (currIdx == (prevIdx + 1))
 		score += SEQUENTIAL_BONUS;
 	    else
+	    {
 		score += GAP_PENALTY * (currIdx - prevIdx);
+		// Reset consecutive camel count on gap
+		consecutive_camel = 0;
+	    }
 	}
 
 	// Check for bonuses based on neighbor character value
 	if (currIdx > 0)
 	{
 	    // Camel case
-	    int	neighbor = ' ';
-	    int	curr;
+	    int neighbor = ' ';
 
 	    if (has_mbyte)
 	    {
@@ -4439,8 +4454,18 @@ fuzzy_match_compute_score(
 		curr = str[currIdx];
 	    }
 
+	    // Enhanced camel case scoring
 	    if (vim_islower(neighbor) && vim_isupper(curr))
-		score += CAMEL_BONUS;
+	    {
+		score += CAMEL_BONUS * 2;  // Double the camel case bonus
+		is_camel = TRUE;
+		consecutive_camel++;
+		// Additional bonus for consecutive camel
+		if (consecutive_camel > 1)
+		    score += CAMEL_BONUS;
+	    }
+	    else
+		consecutive_camel = 0;
 
 	    // Bonus if the match follows a separator character
 	    if (neighbor == '/' || neighbor == '\\')
@@ -4452,14 +4477,47 @@ fuzzy_match_compute_score(
 	{
 	    // First letter
 	    score += FIRST_LETTER_BONUS;
+	    curr = has_mbyte ? (*mb_ptr2char)(p) : str[currIdx];
 	}
+
+	// Case matching bonus
+	if (vim_isalpha(curr))
+	{
+	    while (pat_idx < i && *curpat)
+	    {
+		if (has_mbyte)
+		    MB_PTR_ADV(curpat);
+		else
+		    curpat++;
+		pat_idx++;
+	    }
+
+	    if (has_mbyte)
+	    {
+		if (curr == (*mb_ptr2char)(curpat))
+		{
+		    score += CASE_MATCH_BONUS;
+		    // Extra bonus for exact case match in camel
+		    if (is_camel)
+			score += CASE_MATCH_BONUS / 2;
+		}
+	    }
+	    else if (curr == *curpat)
+	    {
+		score += CASE_MATCH_BONUS;
+		if (is_camel)
+		    score += CASE_MATCH_BONUS / 2;
+	    }
+	}
+
 	// Check exact match condition
         if (currIdx != (int_u)i)
 	    is_exact_match = FALSE;
     }
+
     // Boost score for exact matches
     if (is_exact_match && numMatches == strSz)
-        score += 100;
+        score += EXACT_MATCH_BONUS;
 
     return score;
 }
@@ -4563,7 +4621,7 @@ fuzzy_match_recursive(
 
     // Calculate score
     if (matched)
-	*outScore = fuzzy_match_compute_score(strBegin, strLen, matches,
+	*outScore = fuzzy_match_compute_score(fuzpat, strBegin, strLen, matches,
 		nextMatch);
 
     // Return best result
