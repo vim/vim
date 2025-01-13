@@ -72,6 +72,7 @@ base64_encode({blob})		String	base64 encode the bytes in {blob}
 bindtextdomain({package}, {path})
 				Bool	bind text domain to specified path
 blob2list({blob})		List	convert {blob} into a list of numbers
+blob2str({blob} [, {options}])	String	convert {blob} into a String
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -609,6 +610,8 @@ split({expr} [, {pat} [, {keepempty}]])
 sqrt({expr})			Float	square root of {expr}
 srand([{expr}])			List	get seed for |rand()|
 state([{what}])			String	current state of Vim
+str2blob({string} [, {options}])
+				Blob	convert {string} into a Blob
 str2float({expr} [, {quoted}])	Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF-8 value
@@ -1288,6 +1291,38 @@ blob2list({blob})					*blob2list()*
 			GetBlob()->blob2list()
 <
 		Return type: list<any> or list<number>
+
+
+blob2str({blob} [, {options}])				*blob2str()*
+		Return a String in the current 'encoding' by converting the
+		bytes in {blob} into characters.
+
+		If {options} is not supplied, the current 'encoding' value is
+		used to decode the bytes in {blob}.
+
+		The argument {options} is a |Dict| and supports the following
+		items:
+		    encoding	Decode the bytes in {blob} using this
+				encoding.  The value is a |String|.  See
+				|encoding-names| for the supported values.
+							*E1515*
+		An error is given and an empty string is returned if
+		an invalid byte sequence is encountered in {blob},
+
+		Returns an empty String if blob is empty.
+
+		See also |str2blob()|
+
+		Examples: >
+			blob2str(0z6162)	returns "ab"
+			blob2str(0zC2ABC2BB)	returns "«»"
+			blob2str(0zABBB, {'encoding': 'latin1'})  returns "«»"
+<
+		Can also be used as a |method|: >
+			GetBlob()->blob2str()
+<
+		Return type: |String|
+
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
@@ -10555,6 +10590,36 @@ state([{what}])						*state()*
 
 		Return type: |String|
 
+
+str2blob({string} [, {options}])				*str2blob()*
+		Return a Blob by converting the characters in {string} into
+		bytes.
+
+		If {options} is not supplied, the current 'encoding' value is
+		used to convert the characters in {string} into bytes.
+
+		The argument {options} is a |Dict| and supports the following
+		items:
+		    encoding	Encode the characters in {string} using this
+				encoding.  The value is a |String|.  See
+				|encoding-names| for the supported values.
+
+		An error is given and an empty blob is returned if the
+		character encoding fails.
+
+		Returns an empty Blob if {string} is empty.
+
+		See also |blob2str()|
+
+		Examples: >
+			str2blob("ab")		returns 0z6162
+			str2blob("«»")		returns 0zC2ABC2BB
+			str2blob("«»", {'encoding': 'latin1'})	returns 0zABBB
+<
+		Can also be used as a |method|: >
+			GetStr()->str2blob()
+<
+		Return type: |Blob|
 
 str2float({string} [, {quoted}])				*str2float()*
 		Convert String {string} to a Float.  This mostly works the

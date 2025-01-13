@@ -31,6 +31,8 @@ void string_reduce(typval_T *argvars, typval_T *expr, typval_T *rettv);
 void f_byteidx(typval_T *argvars, typval_T *rettv);
 void f_byteidxcomp(typval_T *argvars, typval_T *rettv);
 void f_charidx(typval_T *argvars, typval_T *rettv);
+void f_blob2str(typval_T *argvars, typval_T *rettv);
+void f_str2blob(typval_T *argvars, typval_T *rettv);
 void f_str2list(typval_T *argvars, typval_T *rettv);
 void f_str2nr(typval_T *argvars, typval_T *rettv);
 void f_strgetchar(typval_T *argvars, typval_T *rettv);
