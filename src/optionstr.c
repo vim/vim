@@ -2424,46 +2424,42 @@ did_set_guicursor(optset_T *args UNUSED)
     char *
 did_set_guipadding(optset_T *args UNUSED)
 {
-    char_u  **varp  = (char_u **)args->os_varp;
-    char    *errmsg = NULL;
-
-    int _len = 0;
-    char_u *p;
-    p = p_gpd;
+    int		_len = 0;
+    char_u 	*p = p_gpd;
 
     gui.padding.top = gui.padding.left = gui.padding.bot = gui.padding.right = 5;
 
     while (*p != NUL)
     {
-      if (STRNCMP(p, "top:", _len = STRLEN_LITERAL("top:")) == 0
-          && vim_isdigit(p[_len]))
-      {
-        p += _len;
-        gui.padding.top = getdigits(&p);
-      }
-      else if (STRNCMP(p, "left:", _len = STRLEN_LITERAL("left:")) == 0
-          && vim_isdigit(p[_len]))
-      {
-        p += _len;
-        gui.padding.left = getdigits(&p);
-      }
-      else if (STRNCMP(p, "bot:", _len = STRLEN_LITERAL("bot:")) == 0
-          && vim_isdigit(p[_len]))
-      {
-        p += _len;
-        gui.padding.bot = getdigits(&p);
-      }
-      else if (STRNCMP(p, "right:", _len = STRLEN_LITERAL("right:")) == 0
-          && vim_isdigit(p[_len]))
-      {
-        p += _len;
-        gui.padding.right = getdigits(&p);
-      }
+        if (STRNCMP(p, "top:", _len = STRLEN_LITERAL("top:")) == 0
+            && vim_isdigit(p[_len]))
+        {
+            p += _len;
+            gui.padding.top = getdigits(&p);
+        }
+        else if (STRNCMP(p, "left:", _len = STRLEN_LITERAL("left:")) == 0
+            && vim_isdigit(p[_len]))
+        {
+            p += _len;
+            gui.padding.left = getdigits(&p);
+        }
+        else if (STRNCMP(p, "bot:", _len = STRLEN_LITERAL("bot:")) == 0
+            && vim_isdigit(p[_len]))
+        {
+            p += _len;
+            gui.padding.bot = getdigits(&p);
+        }
+        else if (STRNCMP(p, "right:", _len = STRLEN_LITERAL("right:")) == 0
+            && vim_isdigit(p[_len]))
+        {
+            p += _len;
+            gui.padding.right = getdigits(&p);
+        }
 
-      if (*p != ',' && *p != NUL)
-        return FAIL;
-      if (*p == ',')
-        ++p;
+        if (*p != ',' && *p != NUL)
+            return FAIL;
+        if (*p == ',')
+            ++p;
     }
 
     if (gui.in_use)
