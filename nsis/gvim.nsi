@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2024 Mar 20
+# Last Change:	2025 Jan 05
 
 Unicode true
 
@@ -14,19 +14,19 @@ Unicode true
 
 # Location of runtime files
 !ifndef VIMRT
-  !define VIMRT ".."
+  !define VIMRT "..\runtime"
 !endif
 
 # Location of extra tools: diff.exe, winpty{32|64}.dll, winpty-agent.exe, etc.
 !ifndef VIMTOOLS
-  !define VIMTOOLS ..\..
+  !define VIMTOOLS "..\.."
 !endif
 
 # Location of gettext.
 # It must contain two directories: gettext32 and gettext64.
 # See README.txt for detail.
 !ifndef GETTEXT
-  !define GETTEXT ${VIMRT}
+  !define GETTEXT ${VIMTOOLS}
 !endif
 
 # If you have UPX, use the switch /DHAVE_UPX=1 on the command line makensis.exe.
@@ -74,6 +74,8 @@ Unicode true
 !include "nsDialogs.nsh"
 !include "Sections.nsh"
 !include "x64.nsh"
+!include "StrFunc.nsh"
+${StrRep}
 
 # See https://nsis.sourceforge.io/LogicLib
 ;FileExists is already part of LogicLib, but returns true for directories
@@ -246,6 +248,9 @@ Var vim_nsd_mouse
 Var vim_compat_stat
 Var vim_keymap_stat
 Var vim_mouse_stat
+!if ${HAVE_NLS}
+Var lng_usr
+!endif
 
 
 # Reserve files
@@ -423,6 +428,7 @@ Section "$(str_section_exe)" id_section_exe
 	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
 	File ..\vimtutor.bat
 	File ..\README.txt
+	File /oname=LICENSE.txt ..\LICENSE
 	File ..\uninstall.txt
 	File ${VIMRT}\*.vim
 
@@ -621,110 +627,23 @@ SectionGroupEnd
 Section "$(str_section_nls)" id_section_nls
 	SectionIn 1 3
 
-#; FIXME: When adding new translations, do not forget to make changes here.
-	SetOutPath $0
-!if /FileExists ..\README.dax.txt
-    ${If} $Language = ${LANG_DANISH}
-	File ..\README.dax.txt
-    ${EndIf}
+	SetOutPath $INSTDIR
+!if /FileExists "..\lang\README.*.txt"
+	File ..\lang\README.*.txt
+	CopyFiles /SILENT /FILESONLY $INSTDIR\README.$lng_usr.txt \
+	       	$INSTDIR\vim${VER_MAJOR}${VER_MINOR}\README.$lng_usr.txt
+	Delete $INSTDIR\README.*.txt
 !endif
-!if /FileExists ..\README.nlx.txt
-    ${If} $Language = ${LANG_DUTCH}
-	File ..\README.nlx.txt
-    ${EndIf}
+!if /FileExists "..\lang\LICENSE.??.txt"
+	File ..\lang\LICENSE.??.txt
+!if /FileExists "..\lang\LICENSE.??_??.txt"
+	File ..\lang\LICENSE.??_??.txt
 !endif
-!if /FileExists ..\README.dex.txt
-    ${If} $Language = ${LANG_GERMAN}
-	File ..\README.dex.txt
-    ${EndIf}
+	CopyFiles /SILENT /FILESONLY $INSTDIR\LICENSE.$lng_usr.txt \
+	       	$INSTDIR\vim${VER_MAJOR}${VER_MINOR}\LICENSE.$lng_usr.txt
+	Delete $INSTDIR\LICENSE.*.txt
 !endif
-!if /FileExists ..\README.itx.txt
-    ${If} $Language = ${LANG_ITALIAN}
-	File ..\README.itx.txt
-    ${EndIf}
-!endif
-!if /FileExists ..\README.jax.txt
-    ${If} $Language = ${LANG_JAPANESE}
-	File ..\README.jax.txt
-    ${EndIf}
-!endif
-!if /FileExists ..\README.rux.txt
-    ${If} $Language = ${LANG_RUSSIAN}
-	File ..\README.rux.txt
-    ${EndIf}
-!endif
-!if /FileExists ..\README.srx.txt
-    ${If} $Language = ${LANG_SERBIAN}
-	File ..\README.srx.txt
-    ${EndIf}
-!endif
-!if /FileExists ..\README.cnx.txt
-    ${If} $Language = ${LANG_SIMPCHINESE}
-	File ..\README.cnx.txt
-    ${EndIf}
-!endif
-!if /FileExists ..\README.twx.txt
-    ${If} $Language = ${LANG_TRADCHINESE}
-	File ..\README.twx.txt
-    ${EndIf}
-!endif
-!if /FileExists ..\README.trx.txt
-    ${OrIf} $Language = ${LANG_TURKISH}
-	File ..\README.trx.txt
-    ${EndIf}
-!endif
-#; FIXME: When adding new translations, do not forget to make changes here.
-	SetOutPath $0\doc
-!if /FileExists "${VIMRT}\doc\uganda.dax"
-    ${If} $Language = ${LANG_DANISH}
-	File ${VIMRT}\doc\uganda.dax
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.nlx"
-    ${If} $Language = ${LANG_DUTCH}
-	File ${VIMRT}\doc\uganda.nlx
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.dex"
-    ${If} $Language = ${LANG_GERMAN}
-	File ${VIMRT}\doc\uganda.dex
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.itx"
-    ${If} $Language = ${LANG_ITALIAN}
-	File ${VIMRT}\doc\uganda.itx
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.jax"
-    ${If} $Language = ${LANG_JAPANESE}
-	File ${VIMRT}\doc\uganda.jax
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.rux"
-    ${If} $Language = ${LANG_RUSSIAN}
-	File ${VIMRT}\doc\uganda.rux
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.srx"
-    ${If} $Language = ${LANG_SERBIAN}
-	File ${VIMRT}\doc\uganda.srx
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.cnx"
-    ${If} $Language = ${LANG_SIMPCHINESE}
-	File ${VIMRT}\doc\uganda.cnx
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.twx"
-    ${If} $Language = ${LANG_TRADCHINESE}
-	File ${VIMRT}\doc\uganda.twx
-    ${EndIf}
-!endif
-!if /FileExists "${VIMRT}\doc\uganda.trx"
-    ${If} $Language = ${LANG_TURKISH}
-	File ${VIMRT}\doc\uganda.trx
-    ${EndIf}
-!endif
+
 	SetOutPath $0\lang
 	File /r /x Makefile ${VIMRT}\lang\*.*
 	SetOutPath $0
@@ -881,6 +800,20 @@ Function .onInit
 !if ${HAVE_MULTI_LANG}
   # Select a language (or read from the registry).
   !insertmacro MUI_LANGDLL_DISPLAY
+!endif
+
+!if ${HAVE_NLS}
+  ClearErrors
+  System::Call 'kernel32::GetUserDefaultLocaleName(t.r19, *i${NSIS_MAX_STRLEN})'
+  StrCmp $R9 "zh-cn" coincide 0
+  StrCmp $R9 "zh-tw" 0 part
+  coincide:
+  System::Call 'User32::CharLower(t r19 r19)*i${NSIS_MAX_STRLEN}'
+  ${StrRep} $lng_usr "$R9" "-" "_"
+  Goto done
+  part:
+  StrCpy $lng_usr $R9 2
+  done:
 !endif
 
   ${If} $INSTDIR == ${DEFAULT_INSTDIR}
