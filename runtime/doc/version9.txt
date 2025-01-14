@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jan 12
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41638,6 +41638,7 @@ Functions: ~
 
 |base64_decode()|	decode a base64 string into a blob
 |base64_encode()|	encode a blob into a base64 string
+|blob2str()|		convert a blob into a string
 |bindtextdomain()|	set message lookup translation base path
 |diff()|		diff two Lists of strings
 |filecopy()|		copy a file {from} to {to}
@@ -41653,6 +41654,7 @@ Functions: ~
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
 |popup_setbuf()|	switch to a different buffer in a popup
+|str2blob()|		convert a string into a blob
 
 
 Autocommands: ~
