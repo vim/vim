@@ -4618,7 +4618,11 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
   endif
 
   if (a:cursor==1) && exists("w:netrw_liststyle") && (w:netrw_liststyle < s:TREELIST)
-      call cursor(1,1)
+    if exists("w:netrwnetrw_bannercnt")
+      call cursor(w:netrw_bannercnt, 1)
+    else
+      call cursor(1, 1)
+    endif
   endif
 
   " NetrwBrowseChgDir; save options and initialize {{{3
