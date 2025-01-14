@@ -1244,7 +1244,7 @@ base64_decode({string})					*base64_decode()*
 		    " Write the decoded contents to a binary file
 		    call writefile(base64_decode(s), 'tools.bmp')
 		    " Decode a base64-encoded string
-		    echo list2str(blob2list(base64_decode(encodedstr)))
+		    echo blob2str(base64_decode(encodedstr))
 <
 		Can also be used as a |method|: >
 			GetEncodedString()->base64_decode()
@@ -1260,7 +1260,7 @@ base64_encode({blob})					*base64_encode()*
 		    " Encode the contents of a binary file
 		    echo base64_encode(readblob('somefile.bin'))
 		    " Encode a string
-		    echo base64_encode(list2blob(str2list(somestr)))
+		    echo base64_encode(str2blob(somestr))
 <
 		Can also be used as a |method|: >
 			GetBinaryData()->base64_encode()
