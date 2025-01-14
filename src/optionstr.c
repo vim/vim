@@ -2424,8 +2424,8 @@ did_set_guicursor(optset_T *args UNUSED)
     char *
 did_set_guipadding(optset_T *args UNUSED)
 {
-    int		_len = 0;
-    char_u 	*p = p_gpd;
+    int         _len = 0;
+    char_u      *p = p_gpd;
 
     gui.padding.top = gui.padding.left = gui.padding.bot = gui.padding.right = 5;
 
