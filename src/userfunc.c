@@ -2309,49 +2309,6 @@ find_func_with_prefix(char_u *name, int sid)
 }
 
 /*
- * Find a function by name, return pointer to it.
- * The name may be a local script variable, VAR_FUNC. or it may be a fully
- * qualified import name such as 'i_imp.FuncName'.
- *
- * When VAR_FUNC, the import might either direct or autoload.
- * When 'i_imp.FuncName' it is direct, autoload is rewritten as i_imp#FuncName
- * in f_call and subsequently found.
- */
-    static ufunc_T *
-find_func_imported(char_u *name, int flags)
-{
-    ufunc_T	*func = NULL;
-    char_u	*dot = name; // Find a dot, '.', in the name
-
-    // Either run into '.' or the end of the string
-    while (eval_isnamec(*dot))
-	++dot;
-
-    if (*dot == '.')
-    {
-	imported_T *import = find_imported(name, dot - name, FALSE);
-	if (import != NULL)
-	    func = find_func_with_sid(dot + 1, import->imp_sid);
-    }
-    else if (*dot == NUL) // looking at the entire string
-    {
-	hashtab_T *ht = get_script_local_ht();
-	if (ht != NULL)
-	{
-	    hashitem_T *hi = hash_find(ht, name);
-	    if (!HASHITEM_EMPTY(hi))
-	    {
-		dictitem_T *di = HI2DI(hi);
-		if (di->di_tv.v_type == VAR_FUNC
-			&& di->di_tv.vval.v_string != NULL)
-		    func = find_func_even_dead(di->di_tv.vval.v_string, flags);
-	    }
-	}
-    }
-    return func;
-}
-
-/*
  * Find a function by name, return pointer to it in ufuncs.
  * When "flags" has FFED_IS_GLOBAL don't find script-local or imported
  * functions.
@@ -2400,15 +2357,8 @@ find_func_even_dead(char_u *name, int flags)
     }
 
     // Find autoload function if this is an autoload script.
-    func = find_func_with_prefix(name[0] == 's' && name[1] == ':'
+    return find_func_with_prefix(name[0] == 's' && name[1] == ':'
 				       ? name + 2 : name, current_sctx.sc_sid);
-    if (func != NULL)
-	return func;
-
-    // Find a script-local "VAR_FUNC" or i_"imp.Func", so vim9script).
-    if (in_vim9script())
-	func = find_func_imported(name, flags);
-    return func;
 }
 
 /*

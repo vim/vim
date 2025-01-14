@@ -4714,6 +4714,47 @@ def Test_comment_after_inner_block()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for calling an imported funcref which is modified in the current script
+def Test_call_modified_import_func()
+  var lines =<< trim END
+    vim9script
+
+    export var done = 0
+
+    def Noop()
+    enddef
+
+    export var Setup = Noop
+
+    export def Run()
+      done = 0
+      Setup()
+      done += 1
+    enddef
+  END
+  writefile(lines, 'XcallModifiedImportFunc.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import './XcallModifiedImportFunc.vim' as imp
+
+    var setup = 0
+
+    imp.Run()
+
+    imp.Setup = () => {
+      ++setup
+    }
+
+    imp.Run()
+
+    assert_equal(1, setup)
+    assert_equal(1, imp.done)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()
