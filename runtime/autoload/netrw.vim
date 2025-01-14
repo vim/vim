@@ -4618,7 +4618,7 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
   endif
 
   if (a:cursor==1) && exists("w:netrw_liststyle") && (w:netrw_liststyle < s:TREELIST)
-    if exists("w:netrwnetrw_bannercnt")
+    if exists("w:netrw_bannercnt")
       call cursor(w:netrw_bannercnt, 1)
     else
       call cursor(1, 1)
