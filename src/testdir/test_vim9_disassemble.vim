@@ -3611,4 +3611,26 @@ def Test_disassemble_interface_variable_access()
   unlet g:instr
 enddef
 
+" Disassemble the code generated for accessing a script-local funcref
+def Test_disassemble_using_script_local_funcref()
+  var lines =<< trim END
+    vim9script
+    def Noop()
+    enddef
+    export var Setup = Noop
+    export def Run()
+      Setup()
+    enddef
+    g:instr = execute('disassemble Run')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Run\_s*' ..
+    'Setup()\_s*' ..
+    '0 LOADSCRIPT Setup-0 from .*\_s*' ..
+    '1 PCALL (argc 0)\_s*' ..
+    '2 DROP\_s*' ..
+    '3 RETURN void\_s*', g:instr)
+  unlet g:instr
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

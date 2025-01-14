@@ -3507,7 +3507,73 @@ def Test_extend_imported_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
-def Test_abstract_class()
+" Test for multi level import
+def Test_multi_level_import_normal()
+  var lines =<< trim END
+    vim9script
+    export class Property
+      public var value: string
+    endclass
+  END
+  writefile(lines, 'aa.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './aa.vim'
+    export class View
+      var content = aa.Property.new('')
+    endclass
+  END
+  writefile(lines, 'bb.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './bb.vim'
+    class MyView extends bb.View
+      def new(value: string)
+        this.content.value = value
+      enddef
+    endclass
+    var myView = MyView.new('This should be ok')
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for multi level import
+def Test_multi_level_import_nest_over()
+  var lines =<< trim END
+    vim9script
+    import './xbb.vim'
+    export class Property
+      public var value: string
+    endclass
+  END
+  writefile(lines, 'xaa.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './xaa.vim'
+    export class View
+      var content = aa.Property.new('')
+    endclass
+  END
+  writefile(lines, 'xbb.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    set maxfuncdepth=100
+    import './xbb.vim'
+    class MyView extends bb.View
+      def new(value: string)
+        this.content.value = value
+      enddef
+    endclass
+    var myView = MyView.new('This should be ok')
+  END
+  v9.CheckSourceFailure(lines, 'E1045: Import nesting too deep', 3)
+enddef
+
+def Test_abtstract_class()
   var lines =<< trim END
     vim9script
     abstract class Base

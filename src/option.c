@@ -8786,15 +8786,33 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 	vim_free(cb.cb_name);
     free_tv(tv);
 
-    if (in_vim9script() && funcname && (vim_strchr(optval, '.') != NULL))
+    char_u  *dot = NULL;
+    if (in_vim9script() && funcname
+				&& ((dot = vim_strchr(optval, '.')) != NULL))
     {
-	// When a Vim9 imported function name is used, it is expanded by the
-	// call to get_callback() above to <SNR>_funcname.   Revert the name to
-	// back to "import.funcname".
 	if (optcb->cb_free_name)
 	    vim_free(optcb->cb_name);
-	optcb->cb_name = vim_strsave(optval);
-	optcb->cb_free_name = TRUE;
+
+	imported_T *import = find_imported(optval, dot - optval, FALSE);
+	if (import != NULL && SCRIPT_ID_VALID(import->imp_sid)
+				&& !(import->imp_flags & IMP_FLAGS_AUTOLOAD))
+	{
+	    char_u	fnamebuf[MAX_FUNC_NAME_LEN];
+
+	    // Imported non-autoloaded function.  Replace the import script
+	    // name (import.funcname) with the script ID (<SNR>123_funcname)
+	    vim_snprintf((char *)fnamebuf, sizeof(fnamebuf), "<SNR>%d_%s",
+						import->imp_sid, dot + 1);
+	    optcb->cb_name = vim_strsave(fnamebuf);
+	    optcb->cb_free_name = TRUE;
+	}
+	else
+	{
+	    // Imported autoloaded function.  Store the function name as
+	    // "import.funcname".
+	    optcb->cb_name = vim_strsave(optval);
+	    optcb->cb_free_name = TRUE;
+	}
     }
     // when using Vim9 style "import.funcname" it needs to be expanded to
     // "import#funcname".

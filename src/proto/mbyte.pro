@@ -31,6 +31,7 @@ int utfc_ptr2char_len(char_u *p, int *pcc, int maxlen);
 int utfc_char2bytes(int off, char_u *buf);
 int utf_ptr2len(char_u *p);
 int utf_byte2len(int b);
+int utf_byte2len_zero(int b);
 int utf_ptr2len_len(char_u *p, int size);
 int utfc_ptr2len(char_u *p);
 int utfc_ptr2len_len(char_u *p, int size);

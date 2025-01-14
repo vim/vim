@@ -540,7 +540,7 @@ def Test_call_imports()
     const Imported = i_imp.Imported
     const foo = i_imp.foo
 
-    assert_fails('call("i_imp.foo", [])', 'E117:') # foo is not a function
+    assert_fails('call("i_imp.foo", [])', ['E46:', 'E117:']) # foo is not a function
     assert_fails('call("foo", [])', 'E117:') # foo is not a function
     assert_fails('call("i_xxx.foo", [])', 'E117:') # i_xxx not imported file
   END

@@ -2738,7 +2738,8 @@ EXTERN char e_invalid_command_after_export[]
 	INIT(= N_("E1043: Invalid command after :export"));
 EXTERN char e_export_with_invalid_argument[]
 	INIT(= N_("E1044: Export with invalid argument"));
-// E1045 not used
+EXTERN char e_import_nesting_too_deep[]
+        INIT(= N_("E1045: Import nesting too deep"));
 // E1046 not used
 EXTERN char e_syntax_error_in_import_str[]
 	INIT(= N_("E1047: Syntax error in import: %s"));
@@ -3656,3 +3657,5 @@ EXTERN char e_winfixbuf_cannot_go_to_buffer[]
 	INIT(= N_("E1513: Cannot switch buffer. 'winfixbuf' is enabled"));
 EXTERN char e_invalid_return_type_from_findfunc[]
 	INIT(= N_("E1514: 'findfunc' did not return a List type"));
+EXTERN char e_str_encoding_failed[]
+	INIT(= N_("E1515: Unable to convert %s '%s' encoding"));
