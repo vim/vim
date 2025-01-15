@@ -1911,7 +1911,8 @@ complete_info([{what}])				*complete_info()*
 				typed text only, or the last completion after
 				no item is selected when using the <Up> or
 				<Down> keys)
-		   inserted	Inserted string. [NOT IMPLEMENTED YET]
+		   completed	Return a dictionary containing the entries of
+				the currently selected index item.
 
 							*complete_info_mode*
 		mode values are:

@@ -309,9 +309,6 @@ Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
 GUI Scroll test fails on FreeBSD when using Motif.  See FIXME in
 Test_scrollbars in src/test_gui.vim
 
-Selected index returned by complete_info() does not match the index in the
-list of items.  #12230
-
 Support dark mode for MS-Windows: #12282
 
 Remote command escapes single quote with backslash, should be doubling the
