@@ -1824,8 +1824,14 @@ diff_read(
 		dp->df_count[idx_new] = hunk->count_new - off;
 	    }
 	    else
+	    {
 		// second overlap of new block with existing block
 		dp->df_count[idx_new] += hunk->count_new;
+		if ((dp->df_lnum[idx_new] + dp->df_count[idx_new] - 1)
+			> curtab->tp_diffbuf[idx_new]->b_ml.ml_line_count)
+		    dp->df_count[idx_new] = curtab->tp_diffbuf[idx_new]->b_ml.ml_line_count
+			- dp->df_lnum[idx_new] + 1;
+	    }
 
 	    // Adjust the size of the block to include all the lines to the
 	    // end of the existing block or the new diff, whatever ends last.
@@ -1835,6 +1841,10 @@ diff_read(
 	    {
 		// new change ends in existing block, adjust the end
 		dp->df_count[idx_new] += -off;
+		if ((dp->df_lnum[idx_new] + dp->df_count[idx_new] - 1)
+			> curtab->tp_diffbuf[idx_new]->b_ml.ml_line_count)
+		    dp->df_count[idx_new] = curtab->tp_diffbuf[idx_new]->b_ml.ml_line_count
+			- dp->df_lnum[idx_new] + 1;
 		off = 0;
 	    }
 	    for (i = idx_orig; i < idx_new; ++i)
