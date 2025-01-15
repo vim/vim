@@ -174,6 +174,7 @@ static pos_T	  compl_startpos;
 static int	  compl_length = 0;
 static colnr_T	  compl_col = 0;	    // column where the text starts
 					    // that is being completed
+
 static colnr_T	  compl_ins_end_col = 0;
 static string_T	  compl_orig_text = {NULL, 0};  // text as it was before
 					    // completion started
@@ -1943,6 +1944,15 @@ ins_compl_len(void)
     return compl_length;
 }
 
+    int
+ins_compl_has_preinsert(void)
+{
+    if ((get_cot_flags() & COT_PREINSERT) && compl_leader.length > 0
+	    && compl_ins_end_col > curwin->w_cursor.col)
+	return TRUE;
+    return FALSE;
+}
+
 /*
  * Delete one character before the cursor and show the subset of the matches
  * that match the word that is now before the cursor.
@@ -1954,6 +1964,9 @@ ins_compl_bs(void)
 {
     char_u	*line;
     char_u	*p;
+
+    if (ins_compl_has_preinsert())
+	ins_compl_delete();
 
     line = ml_get_curline();
     p = line + curwin->w_cursor.col;
@@ -2051,6 +2064,8 @@ ins_compl_new_leader(void)
     // Don't let Enter select the original text when there is no popup menu.
     if (compl_match_array == NULL)
 	compl_enter_selects = FALSE;
+    else if ((get_cot_flags() & COT_PREINSERT) && compl_leader.length > 0)
+	ins_compl_insert(FALSE, TRUE);
 }
 
 /*
@@ -2075,6 +2090,9 @@ get_compl_len(void)
 ins_compl_addleader(int c)
 {
     int		cc;
+
+    if (ins_compl_has_preinsert())
+	ins_compl_delete();
 
     if (stop_arrow() == FAIL)
 	return;
@@ -3073,7 +3091,7 @@ set_completion(colnr_T startcol, list_T *list)
     int flags = CP_ORIGINAL_TEXT;
     unsigned int cur_cot_flags = get_cot_flags();
     int compl_longest = (cur_cot_flags & COT_LONGEST) != 0;
-    int compl_no_insert = (cur_cot_flags & COT_NOINSERT) != 0;
+    int compl_no_insert = (cur_cot_flags & (COT_PREINSERT | COT_NOINSERT)) != 0;
     int compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
 
     // If already doing completions stop it.
@@ -3089,7 +3107,8 @@ set_completion(colnr_T startcol, list_T *list)
     compl_col = startcol;
     compl_length = (int)curwin->w_cursor.col - (int)startcol;
     // compl_pattern doesn't need to be set
-    compl_orig_text.string = vim_strnsave(ml_get_curline() + compl_col, (size_t)compl_length);
+    compl_orig_text.string = vim_strnsave(ml_get_curline() + compl_col,
+							(size_t)compl_length);
     if (p_ic)
 	flags |= CP_ICASE;
     if (compl_orig_text.string == NULL)
@@ -4288,11 +4307,15 @@ ins_compl_update_shown_match(void)
     void
 ins_compl_delete(void)
 {
-    int	    col;
-
     // In insert mode: Delete the typed part.
     // In replace mode: Put the old characters back, if any.
-    col = compl_col + (compl_status_adding() ? compl_length : 0);
+    int col = compl_col + (compl_status_adding() ? compl_length : 0);
+    if (ins_compl_has_preinsert())
+    {
+	col = compl_col + compl_leader.length;
+	curwin->w_cursor.col = compl_ins_end_col;
+    }
+
     if ((int)curwin->w_cursor.col > col)
     {
 	if (stop_arrow() == FAIL)
@@ -4313,19 +4336,30 @@ ins_compl_delete(void)
 /*
  * Insert the new text being completed.
  * "in_compl_func" is TRUE when called from complete_check().
+ * "move_cursor" is used when completeopt include preinsert and when true
+ * mean accept from edit function
  */
     void
-ins_compl_insert(int in_compl_func)
+ins_compl_insert(int in_compl_func, int move_cursor)
 {
     int compl_len = get_compl_len();
+    int preinsert = (get_cot_flags() & COT_PREINSERT);
+    char_u *str = compl_shown_match->cp_str.string;
 
     // Make sure we don't go over the end of the string, this can happen with
     // illegal bytes.
     if (compl_len < (int)compl_shown_match->cp_str.length)
-	ins_compl_insert_bytes(compl_shown_match->cp_str.string + compl_len, -1);
+    {
+	ins_compl_insert_bytes(str + compl_len, -1);
+	if (compl_leader.length > 0 && preinsert && move_cursor)
+	{
+	    curwin->w_cursor.col -= ((size_t)STRLEN(str) - compl_leader.length);
+	    setcursor();
+	}
+    }
     if (match_at_original_text(compl_shown_match))
 	compl_used_match = FALSE;
-    else
+    else if (!preinsert)
 	compl_used_match = TRUE;
 #ifdef FEAT_EVAL
     {
@@ -4553,7 +4587,7 @@ ins_compl_next(
     int	    started = compl_started;
     buf_T   *orig_curbuf = curbuf;
     unsigned int cur_cot_flags = get_cot_flags();
-    int	    compl_no_insert = (cur_cot_flags & COT_NOINSERT) != 0;
+    int	    compl_no_insert = (cur_cot_flags & (COT_PREINSERT | COT_NOINSERT)) != 0;
     int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
 
     // When user complete function return -1 for findstart which is next
@@ -4605,7 +4639,7 @@ ins_compl_next(
     else if (insert_match)
     {
 	if (!compl_get_longest || compl_used_match)
-	    ins_compl_insert(in_compl_func);
+	    ins_compl_insert(in_compl_func, TRUE);
 	else
 	    ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
     }
