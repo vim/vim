@@ -3769,14 +3769,17 @@ f_call(typval_T *argvars, typval_T *rettv)
     if (func == NULL || *func == NUL)
 	return;		// type error, empty name or null function
 
-    char_u	*p = func;
-    tofree = trans_function_name(&p, NULL, FALSE, TFN_INT|TFN_QUIET);
-    if (tofree == NULL)
+    if (argvars[0].v_type == VAR_STRING)
     {
-	emsg_funcname(e_unknown_function_str, func);
-	return;
+	char_u	*p = func;
+	tofree = trans_function_name(&p, NULL, FALSE, TFN_INT|TFN_QUIET);
+	if (tofree == NULL)
+	{
+	    emsg_funcname(e_unknown_function_str, func);
+	    return;
+	}
+	func = tofree;
     }
-    func = tofree;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
