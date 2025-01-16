@@ -1129,6 +1129,7 @@ static argcheck_T arg2_list_any_number[] = {arg_list_any, arg_number};
 static argcheck_T arg2_list_any_string[] = {arg_list_any, arg_string};
 static argcheck_T arg2_list_number[] = {arg_list_number, arg_list_number};
 static argcheck_T arg2_list_number_bool[] = {arg_list_number, arg_bool};
+static argcheck_T arg2_list_string_dict[] = {arg_list_string, arg_dict_any};
 static argcheck_T arg2_listblobmod_item[] = {arg_list_or_blob_mod, arg_item_of_prev};
 static argcheck_T arg2_lnum[] = {arg_lnum, arg_lnum};
 static argcheck_T arg2_lnum_number[] = {arg_lnum, arg_number};
@@ -2713,7 +2714,7 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_srand},
     {"state",		0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_state},
-    {"str2blob",	1, 2, FEARG_1,	    arg2_string_dict,
+    {"str2blob",	1, 2, FEARG_1,	    arg2_list_string_dict,
 			ret_blob,	    f_str2blob},
     {"str2float",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_float,	    f_str2float},
