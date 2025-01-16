@@ -6360,6 +6360,7 @@ c_no_ansi	syntax.txt	/*c_no_ansi*
 c_no_bracket_error	syntax.txt	/*c_no_bracket_error*
 c_no_bsd	syntax.txt	/*c_no_bsd*
 c_no_c11	syntax.txt	/*c_no_c11*
+c_no_c23	syntax.txt	/*c_no_c23*
 c_no_c99	syntax.txt	/*c_no_c99*
 c_no_cformat	syntax.txt	/*c_no_cformat*
 c_no_curly_error	syntax.txt	/*c_no_curly_error*
