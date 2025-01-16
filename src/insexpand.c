@@ -3253,6 +3253,26 @@ ins_compl_update_sequence_numbers(void)
 }
 
 /*
+ * Fill the dict of complete_info
+ */
+    static void
+fill_complete_info_dict(dict_T *di, compl_T *match, int add_match)
+{
+    dict_add_string(di, "word", match->cp_str.string);
+    dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
+    dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
+    dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
+    dict_add_string(di, "info", match->cp_text[CPT_INFO]);
+    if (add_match)
+        dict_add_bool(di, "match", match->cp_in_match_array);
+    if (match->cp_user_data.v_type == VAR_UNKNOWN)
+        // Add an empty string for backwards compatibility
+        dict_add_string(di, "user_data", (char_u *)"");
+    else
+        dict_add_tv(di, "user_data", &match->cp_user_data);
+}
+
+/*
  * Get complete information
  */
     static void
@@ -3264,13 +3284,13 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 #define CI_WHAT_PUM_VISIBLE	0x02
 #define CI_WHAT_ITEMS		0x04
 #define CI_WHAT_SELECTED	0x08
-#define CI_WHAT_INSERTED	0x10
+#define CI_WHAT_COMPLETED	0x10
 #define CI_WHAT_MATCHES		0x20
 #define CI_WHAT_ALL		0xff
     int		what_flag;
 
     if (what_list == NULL)
-	what_flag = CI_WHAT_ALL & ~CI_WHAT_MATCHES;
+	what_flag = CI_WHAT_ALL & ~(CI_WHAT_MATCHES | CI_WHAT_COMPLETED);
     else
     {
 	what_flag = 0;
@@ -3287,8 +3307,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		what_flag |= CI_WHAT_ITEMS;
 	    else if (STRCMP(what, "selected") == 0)
 		what_flag |= CI_WHAT_SELECTED;
-	    else if (STRCMP(what, "inserted") == 0)
-		what_flag |= CI_WHAT_INSERTED;
+	    else if (STRCMP(what, "completed") == 0)
+		what_flag |= CI_WHAT_COMPLETED;
 	    else if (STRCMP(what, "matches") == 0)
 		what_flag |= CI_WHAT_MATCHES;
 	}
@@ -3300,8 +3320,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     if (ret == OK && (what_flag & CI_WHAT_PUM_VISIBLE))
 	ret = dict_add_number(retdict, "pum_visible", pum_visible());
 
-    if (ret == OK && (what_flag & CI_WHAT_ITEMS || what_flag & CI_WHAT_SELECTED
-		|| what_flag & CI_WHAT_MATCHES))
+    if (ret == OK && (what_flag & (CI_WHAT_ITEMS | CI_WHAT_SELECTED
+				    | CI_WHAT_MATCHES | CI_WHAT_COMPLETED)))
     {
 	list_T	    *li = NULL;
 	dict_T	    *di;
@@ -3309,6 +3329,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 	int         selected_idx = -1;
 	int	    has_items = what_flag & CI_WHAT_ITEMS;
 	int	    has_matches = what_flag & CI_WHAT_MATCHES;
+	int	    has_completed = what_flag & CI_WHAT_COMPLETED;
 
 	if (has_items || has_matches)
 	{
@@ -3338,18 +3359,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 			ret = list_append_dict(li, di);
 			if (ret != OK)
 			    return;
-			dict_add_string(di, "word", match->cp_str.string);
-			dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
-			dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
-			dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
-			dict_add_string(di, "info", match->cp_text[CPT_INFO]);
-			if (has_matches && has_items)
-			    dict_add_bool(di, "match", match->cp_in_match_array);
-			if (match->cp_user_data.v_type == VAR_UNKNOWN)
-			    // Add an empty string for backwards compatibility
-			    dict_add_string(di, "user_data", (char_u *)"");
-			else
-			    dict_add_tv(di, "user_data", &match->cp_user_data);
+			fill_complete_info_dict(di, match, has_matches && has_items);
 		    }
 		    if (compl_curr_match != NULL
 			    && compl_curr_match->cp_number == match->cp_number)
@@ -3362,11 +3372,15 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 	}
 	if (ret == OK && (what_flag & CI_WHAT_SELECTED))
 	    ret = dict_add_number(retdict, "selected", selected_idx);
-    }
 
-    if (ret == OK && (what_flag & CI_WHAT_INSERTED))
-    {
-	// TODO
+	if (ret == OK && selected_idx != -1 && has_completed)
+	{
+	    di = dict_alloc();
+	    if (di == NULL)
+		return;
+	    fill_complete_info_dict(di, compl_curr_match, FALSE);
+	    ret = dict_add_dict(retdict, "completed", di);
+	}
     }
 }
 

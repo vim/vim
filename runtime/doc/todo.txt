@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Dec 30
+*todo.txt*      For Vim version 9.1.  Last change: 2025 Jan 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -308,9 +308,6 @@ Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
 
 GUI Scroll test fails on FreeBSD when using Motif.  See FIXME in
 Test_scrollbars in src/test_gui.vim
-
-Selected index returned by complete_info() does not match the index in the
-list of items.  #12230
 
 Support dark mode for MS-Windows: #12282
 
