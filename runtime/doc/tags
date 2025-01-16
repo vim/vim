@@ -9003,7 +9003,6 @@ netrw-ctrl-r	pi_netrw.txt	/*netrw-ctrl-r*
 netrw-ctrl_l	pi_netrw.txt	/*netrw-ctrl_l*
 netrw-curdir	pi_netrw.txt	/*netrw-curdir*
 netrw-d	pi_netrw.txt	/*netrw-d*
-netrw-debug	pi_netrw.txt	/*netrw-debug*
 netrw-del	pi_netrw.txt	/*netrw-del*
 netrw-delete	pi_netrw.txt	/*netrw-delete*
 netrw-dir	pi_netrw.txt	/*netrw-dir*
@@ -9037,7 +9036,6 @@ netrw-help	pi_netrw.txt	/*netrw-help*
 netrw-hexplore	pi_netrw.txt	/*netrw-hexplore*
 netrw-hide	pi_netrw.txt	/*netrw-hide*
 netrw-hiding	pi_netrw.txt	/*netrw-hiding*
-netrw-history	pi_netrw.txt	/*netrw-history*
 netrw-horiz	pi_netrw.txt	/*netrw-horiz*
 netrw-i	pi_netrw.txt	/*netrw-i*
 netrw-incompatible	pi_netrw.txt	/*netrw-incompatible*
@@ -9148,7 +9146,6 @@ netrw-starstarpat	pi_netrw.txt	/*netrw-starstarpat*
 netrw-start	pi_netrw.txt	/*netrw-start*
 netrw-t	pi_netrw.txt	/*netrw-t*
 netrw-texplore	pi_netrw.txt	/*netrw-texplore*
-netrw-todo	pi_netrw.txt	/*netrw-todo*
 netrw-trailingslash	pi_netrw.txt	/*netrw-trailingslash*
 netrw-transparent	pi_netrw.txt	/*netrw-transparent*
 netrw-u	pi_netrw.txt	/*netrw-u*
@@ -9165,6 +9162,7 @@ netrw-windows-s	pi_netrw.txt	/*netrw-windows-s*
 netrw-write	pi_netrw.txt	/*netrw-write*
 netrw-x	pi_netrw.txt	/*netrw-x*
 netrw-xfer	pi_netrw.txt	/*netrw-xfer*
+netrw.txt	pi_netrw.txt	/*netrw.txt*
 netrw.vim	pi_netrw.txt	/*netrw.vim*
 netterm-mouse	options.txt	/*netterm-mouse*
 network	pi_netrw.txt	/*network*
@@ -9479,7 +9477,6 @@ phtml.vim	syntax.txt	/*phtml.vim*
 pi_getscript.txt	pi_getscript.txt	/*pi_getscript.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
 pi_logipat.txt	pi_logipat.txt	/*pi_logipat.txt*
-pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
 pi_tar.txt	pi_tar.txt	/*pi_tar.txt*
