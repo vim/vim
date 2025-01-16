@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jan 14
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jan 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -72,7 +72,7 @@ base64_encode({blob})		String	base64 encode the bytes in {blob}
 bindtextdomain({package}, {path})
 				Bool	bind text domain to specified path
 blob2list({blob})		List	convert {blob} into a list of numbers
-blob2str({blob} [, {options}])	String	convert {blob} into a String
+blob2str({blob} [, {options}])	String	convert {blob} into a list of strings
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -610,8 +610,8 @@ split({expr} [, {pat} [, {keepempty}]])
 sqrt({expr})			Float	square root of {expr}
 srand([{expr}])			List	get seed for |rand()|
 state([{what}])			String	current state of Vim
-str2blob({string} [, {options}])
-				Blob	convert {string} into a Blob
+str2blob({list} [, {options}])
+				Blob	convert list of strings into a Blob
 str2float({expr} [, {quoted}])	Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF-8 value
@@ -1244,7 +1244,7 @@ base64_decode({string})					*base64_decode()*
 		    " Write the decoded contents to a binary file
 		    call writefile(base64_decode(s), 'tools.bmp')
 		    " Decode a base64-encoded string
-		    echo list2str(blob2list(base64_decode(encodedstr)))
+		    echo blob2str(base64_decode(encodedstr))
 <
 		Can also be used as a |method|: >
 			GetEncodedString()->base64_decode()
@@ -1260,7 +1260,7 @@ base64_encode({blob})					*base64_encode()*
 		    " Encode the contents of a binary file
 		    echo base64_encode(readblob('somefile.bin'))
 		    " Encode a string
-		    echo base64_encode(list2blob(str2list(somestr)))
+		    echo base64_encode(str2blob([somestr]))
 <
 		Can also be used as a |method|: >
 			GetBinaryData()->base64_encode()
@@ -1294,8 +1294,12 @@ blob2list({blob})					*blob2list()*
 
 
 blob2str({blob} [, {options}])				*blob2str()*
-		Return a String in the current 'encoding' by converting the
-		bytes in {blob} into characters.
+		Return a List of Strings in the current 'encoding' by
+		converting the bytes in {blob} into characters.
+
+		Each <NL> byte in the blob is interpreted as the end of a
+		string and a new list item is added.  Each <NUL> byte in the
+		blob is converted into a <NL> character.
 
 		If {options} is not supplied, the current 'encoding' value is
 		used to decode the bytes in {blob}.
@@ -1306,22 +1310,22 @@ blob2str({blob} [, {options}])				*blob2str()*
 				encoding.  The value is a |String|.  See
 				|encoding-names| for the supported values.
 							*E1515*
-		An error is given and an empty string is returned if
+		An error is given and an empty List is returned if
 		an invalid byte sequence is encountered in {blob},
 
-		Returns an empty String if blob is empty.
+		Returns an empty List if blob is empty.
 
 		See also |str2blob()|
 
 		Examples: >
-			blob2str(0z6162)	returns "ab"
-			blob2str(0zC2ABC2BB)	returns "«»"
-			blob2str(0zABBB, {'encoding': 'latin1'})  returns "«»"
+			blob2str(0z6162)	returns ["ab"]
+			blob2str(0zC2ABC2BB)	returns ["«»"]
+			blob2str(0zABBB, {'encoding': 'latin1'}) returns ["«»"]
 <
 		Can also be used as a |method|: >
 			GetBlob()->blob2str()
 <
-		Return type: |String|
+		Return type: list<string>
 
 
 							*browse()*
@@ -1946,7 +1950,8 @@ complete_info([{what}])				*complete_info()*
 				typed text only, or the last completion after
 				no item is selected when using the <Up> or
 				<Down> keys)
-		   inserted	Inserted string. [NOT IMPLEMENTED YET]
+		   completed	Return a dictionary containing the entries of
+				the currently selected index item.
 
 							*complete_info_mode*
 		mode values are:
@@ -10591,33 +10596,39 @@ state([{what}])						*state()*
 		Return type: |String|
 
 
-str2blob({string} [, {options}])				*str2blob()*
-		Return a Blob by converting the characters in {string} into
-		bytes.
+str2blob({list} [, {options}])					*str2blob()*
+		Return a Blob by converting the characters in the List of
+		strings in {list} into bytes.
+
+		A <NL> byte is added to the blob after each list item.  A
+		newline character in the string is translated into a <NUL>
+		byte in the blob.
 
 		If {options} is not supplied, the current 'encoding' value is
-		used to convert the characters in {string} into bytes.
+		used to convert the characters into bytes.
 
 		The argument {options} is a |Dict| and supports the following
 		items:
-		    encoding	Encode the characters in {string} using this
-				encoding.  The value is a |String|.  See
-				|encoding-names| for the supported values.
+		    encoding	Encode the characters using this encoding.
+				The value is a |String|.  See |encoding-names|
+				for the supported values.
 
 		An error is given and an empty blob is returned if the
 		character encoding fails.
 
-		Returns an empty Blob if {string} is empty.
+		Returns an empty Blob if {list} is empty.
 
 		See also |blob2str()|
 
 		Examples: >
-			str2blob("ab")		returns 0z6162
-			str2blob("«»")		returns 0zC2ABC2BB
-			str2blob("«»", {'encoding': 'latin1'})	returns 0zABBB
+		    str2blob(["ab"])	returns 0z6162
+		    str2blob(["«»"])	returns 0zC2ABC2BB
+		    str2blob(["a\nb"])	returns 0z610A62
+		    str2blob(readfile('myfile.txt'))
+		    str2blob(["«»"], {'encoding': 'latin1'}) returns 0zABBB
 <
 		Can also be used as a |method|: >
-			GetStr()->str2blob()
+			GetListOfStrings()->str2blob()
 <
 		Return type: |Blob|
 

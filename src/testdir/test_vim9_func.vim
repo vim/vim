@@ -4729,6 +4729,9 @@ def Test_call_modified_import_func()
     export def Run()
       done = 0
       Setup()
+      call(Setup, [])
+      call("Setup", [])
+      call(() => Setup(), [])
       done += 1
     enddef
   END
@@ -4749,7 +4752,7 @@ def Test_call_modified_import_func()
 
     imp.Run()
 
-    assert_equal(1, setup)
+    assert_equal(4, setup)
     assert_equal(1, imp.done)
   END
   v9.CheckScriptSuccess(lines)
