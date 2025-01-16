@@ -480,8 +480,8 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 		    || wp->w_buffer->b_p_ro)
 		&& plen < MAXPATHL - 1)
 	{
-	    *(p + plen++) = ' ';
-	    *(p + plen) = NUL;
+	    *(p + plen++) = ' ';	// replace NUL with space
+	    *(p + plen) = NUL;		// NUL terminate the string
 	}
 	if (bt_help(wp->w_buffer))
 	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", _("[Help]"));
