@@ -19,30 +19,136 @@ let foo %= expr
 let foo .= expr
 let foo ..= expr
 
+let b:foo = expr
+
+let b:foo[0] = expr
+
+let b:foo[1:2] = expr
+let b:foo[:2] = expr
+let b:foo[1:] = expr
+let b:foo[:] = expr
+
+let b:foo += expr
+let b:foo -= expr
+let b:foo *= expr
+let b:foo /= expr
+let b:foo %= expr
+let b:foo .= expr
+let b:foo ..= expr
+
+let g:foo = expr
+
+let g:foo[0] = expr
+
+let g:foo[1:2] = expr
+let g:foo[:2] = expr
+let g:foo[1:] = expr
+let g:foo[:] = expr
+
+let g:foo += expr
+let g:foo -= expr
+let g:foo *= expr
+let g:foo /= expr
+let g:foo %= expr
+let g:foo .= expr
+let g:foo ..= expr
+
+let s:foo = expr
+
+let s:foo[0] = expr
+
+let s:foo[1:2] = expr
+let s:foo[:2] = expr
+let s:foo[1:] = expr
+let s:foo[:] = expr
+
+let s:foo += expr
+let s:foo -= expr
+let s:foo *= expr
+let s:foo /= expr
+let s:foo %= expr
+let s:foo .= expr
+let s:foo ..= expr
+
+let t:foo = expr
+
+let t:foo[0] = expr
+
+let t:foo[1:2] = expr
+let t:foo[:2] = expr
+let t:foo[1:] = expr
+let t:foo[:] = expr
+
+let t:foo += expr
+let t:foo -= expr
+let t:foo *= expr
+let t:foo /= expr
+let t:foo %= expr
+let t:foo .= expr
+let t:foo ..= expr
+
+let v:foo = expr
+
+let v:foo[0] = expr
+
+let v:foo[1:2] = expr
+let v:foo[:2] = expr
+let v:foo[1:] = expr
+let v:foo[:] = expr
+
+let v:foo += expr
+let v:foo -= expr
+let v:foo *= expr
+let v:foo /= expr
+let v:foo %= expr
+let v:foo .= expr
+let v:foo ..= expr
+
+let w:foo = expr
+
+let w:foo[0] = expr
+
+let w:foo[1:2] = expr
+let w:foo[:2] = expr
+let w:foo[1:] = expr
+let w:foo[:] = expr
+
+let w:foo += expr
+let w:foo -= expr
+let w:foo *= expr
+let w:foo /= expr
+let w:foo %= expr
+let w:foo .= expr
+let w:foo ..= expr
+
 let $FOO = expr
 let $FOO .= expr
+let $FOO ..= expr
 
 let @f = expr
 let @f .= expr
+let @f ..= expr
 
 let &foo = expr
 
 let &t_k1 = "\<Esc>[234;"
 
 let &foo .= expr
-
+let &foo ..= expr
 let &foo += expr
 let &foo -= expr
 
 let &l:foo = expr
 
 let &l:foo .= expr
+let &l:foo ..= expr
 let &l:foo += expr
 let &l:foo -= expr
 
 let &g:foo = expr
 
 let &g:foo .= expr
+let &g:foo ..= expr
 let &g:foo += expr
 let &g:foo -= expr
 
@@ -51,6 +157,7 @@ let [foo,
       \ bar] = expr
 
 let [foo, bar] .= expr
+let [foo, bar] ..= expr
 let [foo, bar] += expr
 let [foo, bar] -= expr
 
@@ -58,10 +165,6 @@ let [foo, bar; baz] = expr
 let [foo,
       \ bar;
       \ baz] = expr
-
-let [foo, bar; baz] .= expr
-let [foo, bar; baz] += expr
-let [foo, bar; baz] -= expr
 
 let foo =<< END
 ...
