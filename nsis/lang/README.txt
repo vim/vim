@@ -18,17 +18,17 @@ allowable length of strings.  For example:
  drop-down lists on the .vimrc page - 55 characters.
 Characters in this case mean characters of the English alphabet.
 
-If you do not yet have a translated "uganda.txt" file and a main "README.txt"
+If you do not yet have a translated "LICENSE" file and/or a main "README.txt"
 file, set the following values:
 
 for the license file
-LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
+LicenseLangString page_lic_file 0 "..\lang\LICENSE.nsis.txt"
 
 for the readme.txt file
 LangString vim_readme_file 0 "README.txt"
 
 Once you have the translations of these files, then set the values for these
 variables similarly to what is done in the other translation files.
-Also add the appropriate entries to the "gvim.nsi" file as done for other
-languages.
-
+Translation files should be located in the "lang" subdirectory of the root
+directory. The name of the files is as follows: "README.xx.txt", where xx is the
+language code according to ISO639.

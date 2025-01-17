@@ -609,6 +609,8 @@ SRC_DOS =	\
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
 		nsis/gvim_version.nsh \
+		nsis/Makefile \
+		nsis/Make_mvc.mak \
 		nsis/README.txt \
 		nsis/lang/*.nsi \
 		nsis/lang/README.txt \
@@ -710,8 +712,6 @@ RT_ALL =	\
 		README_VIM9.md \
 		LICENSE \
 		CONTRIBUTING.md \
-		lang/LICENSE.itx \
-		lang/README.itx \
 		runtime/bugreport.vim \
 		runtime/doc/*.awk \
 		runtime/doc/*.pl \
@@ -1043,7 +1043,8 @@ IN_README_DIR = \
 
 # Generic language files.
 LANG_GEN = \
-		README.??x.txt \
+		lang/README.*.txt \
+		lang/LICENSE.*.txt \
 		runtime/doc/*-da.1 \
 		runtime/doc/*-da.UTF-8.1 \
 		runtime/doc/*-de.1 \
@@ -1059,7 +1060,6 @@ LANG_GEN = \
 		runtime/doc/*-ru.UTF-8.1 \
 		runtime/doc/*-tr.1 \
 		runtime/doc/*-tr.UTF-8.1 \
-		runtime/doc/uganda.??x \
 		runtime/lang/README.txt \
 		runtime/lang/Makefile \
 		runtime/lang/Make_all.mak \

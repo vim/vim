@@ -12,7 +12,7 @@
 
 # Correct the following line for the where executable file vim is installed.
 # Please do not put the path in quotes.
-VIMPROG = D:\Programs\Vim\vim91\vim.exe
+VIMPROG = ..\..\src\vim.exe
 
 # Correct the following line for the directory where iconv installed.
 # Please do not put the path in quotes.
@@ -54,7 +54,7 @@ tags : doctags $(DOCS)
 	doctags.exe $(DOCS) | sort /L C /O tags
 	$(PS) $(PSFLAGS) \
 		(Get-Content -Raw tags ^| Get-Unique ^| %%{$$_ -replace \"`r\", \"\"}) \
-		^| New-Item -Path . -Force -ItemType file -Name tags
+		^| New-Item -Path . -Name tags -ItemType file -Force
 
 doctags : doctags.c
 	$(CC) doctags.c
@@ -64,15 +64,6 @@ doctags : doctags.c
 # compiled and installed.  Supports multiple languages.
 vimtags : $(DOCS)
 	@"$(VIMPROG)" --clean -esX -V1 -u doctags.vim
-
-
-uganda.nsis.txt : uganda.???
-	! $(PS) $(PSFLAGS) (Get-Content $? -Encoding UTF8 \
-		^| %%{$$_ -replace '[\t\s]*\*.*\*', '' -replace 'vim:tw=\d\d:.*', ''}) \
-		^| Set-Content \"$(@B)$$((Get-Item $?).Extension)\" -Encoding Unicode
-	! $(PS) $(PSFLAGS)\
-		(Get-Content $(@B)$$((Get-Item $?).Extension) -Raw).Trim() -replace '(\r\n){3,}', '$$1$$1' \
-		^| Set-Content \"$(@B)$$((Get-Item $?).Extension)\" -Encoding Unicode
 
 # TODO:
 #html: noerrors tags $(HTMLS)
@@ -108,8 +99,8 @@ test_urls :
 	"$(VIMPROG)" --clean -S test_urls.vim
 
 clean :
-	$(RM) doctags.exe doctags.obj
-	$(RM) *.html vim-stylesheet.css
+	- $(RM) doctags.exe doctags.obj
+	- $(RM) *.html vim-stylesheet.css
 
 
 arabic.txt :
