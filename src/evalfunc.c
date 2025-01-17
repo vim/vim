@@ -1847,7 +1847,7 @@ static funcentry_T global_functions[] =
     {"blob2list",	1, 1, FEARG_1,	    arg1_blob,
 			ret_list_number,    f_blob2list},
     {"blob2str",	1, 2, FEARG_1,	    arg2_blob_dict,
-			ret_string,	    f_blob2str},
+			ret_list_string,    f_blob2str},
     {"browse",		4, 4, 0,	    arg4_browse,
 			ret_string,	    f_browse},
     {"browsedir",	2, 2, 0,	    arg2_string,
