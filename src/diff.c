@@ -2351,7 +2351,8 @@ diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus)
     // Don't run linematch when lnum is offscreen.  Useful for scrollbind
     // calculations which need to count all the filler lines above the screen.
     if (lnum >= wp->w_topline && lnum < wp->w_botline
-				&& !dp->is_linematched && diff_linematch(dp))
+				&& !dp->is_linematched && diff_linematch(dp)
+				&& diff_check_sanity(curtab, dp))
       run_linematch_algorithm(dp);
 
     if (dp->is_linematched)
