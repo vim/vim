@@ -287,7 +287,7 @@ syn match texDelimiter		"&"
 syn match texDelimiter		"\\\\"
 
 " Tex/Latex Options: {{{1
-syn match texOption		"[^\\]\zs#\d\+\|^#\d\+"
+syn match texOption		"[^\\]\zs#[1-9]\|^#[1-9]"
 
 " texAccent (tnx to Karim Belabas) avoids annoying highlighting for accents: {{{1
 if b:tex_stylish
@@ -669,16 +669,21 @@ if s:tex_fast =~# 'r'
 endif
 syn match  texRefZone		'\\cite\%([tp]\*\=\)\=\>' nextgroup=texRefOption,texCite
 
-" Handle (re)newcommand, (re)newenvironment : {{{1
-syn match  texNewCmd				"\\\%(re\)\=newcommand\>"		nextgroup=texCmdName skipwhite skipnl
+" Handle (re)newcommand, providecommand, (re)newenvironment : {{{1
+syn match  texNewCmd				"\\\%(\%(re\)\=new\|provide\)command\>\*\?"	nextgroup=texCmdName skipwhite skipnl
 if s:tex_fast =~# 'V'
   syn region texCmdName contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texCmdArgs,texCmdBody skipwhite skipnl
+  " TODO: texCmdArgs must be 1–9
+  " TODO: default argument
   syn region texCmdArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texCmdBody skipwhite skipnl
   syn region texCmdBody contained matchgroup=texDelimiter start="{"rs=s+1 skip="\\\\\|\\[{}]"	matchgroup=texDelimiter end="}" contains=@texCmdGroup
 endif
-syn match  texNewEnv				"\\\%(re\)\=newenvironment\>"		nextgroup=texEnvName skipwhite skipnl
+syn match  texNewEnv				"\\\%(re\)\=newenvironment\>\*\?"		nextgroup=texEnvName skipwhite skipnl
 if s:tex_fast =~# 'V'
-  syn region texEnvName contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texEnvBgn skipwhite skipnl
+  syn region texEnvName contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texEnvArgs,texEnvBgn skipwhite skipnl
+  " TODO: texEnvArgs must be 1–9
+  " TODO: default argument
+  syn region texEnvArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texEnvBgn skipwhite skipnl
   syn region texEnvBgn  contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texEnvEnd skipwhite skipnl contains=@texEnvGroup
   syn region texEnvEnd  contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		skipwhite skipnl contains=@texEnvGroup
 endif
@@ -693,7 +698,7 @@ else
   syn match texDefName contained		"\\\A"					nextgroup=texDefParms,texCmdBody skipwhite skipnl
 endif
 syn match texDefParms  contained		"#[^{]*"	contains=texDefParm	nextgroup=texCmdBody skipwhite skipnl
-syn match  texDefParm  contained		"#\d\+"
+syn match  texDefParm  contained		"#[1-9]"
 
 " TeX Lengths: {{{1
 syn match  texLength		"\<\d\+\([.,]\d\+\)\=\s*\(true\)\=\s*\(bp\|cc\|cm\|dd\|em\|ex\|in\|mm\|pc\|pt\|sp\)\>"
@@ -1322,6 +1327,7 @@ if !exists("skip_tex_syntax_inits")
   hi def link texCmdArgs	Number
   hi def link texCmdName	Statement
   hi def link texComment	Comment
+  hi def link texEnvArgs	Number
   hi def link texDef		Statement
   hi def link texDefParm	Special
   hi def link texDelimiter	Delimiter
