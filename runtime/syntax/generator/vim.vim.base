@@ -210,9 +210,9 @@ syn match vimIsCommand	"\<\%(\h\w*\|[23]mat\%[ch]\)\>"	 nextgroup=vimBang contai
 syn match vimBang	      contained	"!"
 syn match vimVar	      contained	"\<\h[a-zA-Z0-9#_]*\>"
 syn match vimVar		"\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"
-syn match vimVar	      	"\s\zs&\%([lg]:\)\=\a\+\>"
-syn match vimVar		"\s\zs&t_\S[a-zA-Z0-9]\>"
-syn match vimVar        	"\s\zs&t_k;"
+syn match vimVar	      	"&\%([lg]:\)\=\a\+\>"
+syn match vimVar		"&t_\S[a-zA-Z0-9]\>"
+syn match vimVar        	"&t_k;"
 syn match vimFBVar      contained   "\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"
 syn keyword vimCommand  contained	in
 
@@ -287,21 +287,25 @@ syn keyword vimAugroupKey	contained aug[roup]  skipwhite nextgroup=vimAugroupBan
 " Operators: {{{2
 " =========
 syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimOper,vimOperParen,vimNumber,vimString,vimRegister,@vimContinue,vim9Comment,vimVar,vimBoolean,vimNull
-syn match	vimOper	"\a\@<!!"			skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"||\|&&\|[-+*/%.]"		skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"?"			skipwhite nextgroup=@vimExprList
+syn match	vimOper	"\a\@<!!"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
+syn match	vimOper	"||\|&&\|[-+*/%.]"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
+syn match	vimOper	"?"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
 " distinguish ternary : from ex-colon
-syn match	vimOper	"\s\@1<=:\ze\s\|\s\@1<=:$"		skipwhite nextgroup=@vimExprList
-syn match	vimOper	"??"			skipwhite nextgroup=@vimExprList
-syn match	vimOper	"="			skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"\%#=1\%(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\="	skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"\<is\%(not\)\=\>"		skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"\<is\%(not\)\=[?#]"		skipwhite nextgroup=vimString,vimSpecFile
+syn match	vimOper	"\s\@1<=:\ze\s\|\s\@1<=:$"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
+syn match	vimOper	"??"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
+syn match	vimOper	"="			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
+syn match	vimOper	"\%#=1\%(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\="	skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
+syn match	vimOper	"\<is\%(not\)\=\>"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
+syn match	vimOper	"\<is\%(not\)\=[?#]"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 syn region	vimOperParen 	matchgroup=vimParenSep	start="(" end=")" contains=@vimOperGroup
 syn region	vimOperParen	matchgroup=vimSep		start="#\={" end="}" contains=@vimOperGroup nextgroup=vimVar,vimFuncVar
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_noopererror")
  syn match	vimOperError	")"
 endif
+
+syn match	vimOperContinue		contained	"^\s*\zs\\"	 skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
+syn match         vimOperContinueComment	contained	'^\s*\zs["#]\\ .*' skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
+syn cluster	vimOperContinue		contains=vimOperContinue,vimOperContinueComment
 
 " Functions: Tag is provided for those who wish to highlight tagged functions {{{2
 " =========
@@ -450,12 +454,12 @@ if s:vim9script
 
   VimFoldi syn region	vim9InterfaceBody	start="\<interface\>" matchgroup=vimCommand end="\<endinterface\>" contains=@vim9InterfaceBodyList transparent
 
-  " type {{{3
+  " Type Aliases {{{3
   syn match	vim9Type		"\<ty\%[pe]\>"	skipwhite nextgroup=vim9TypeAlias,vim9TypeAliasError
   syn match	vim9TypeAlias	 contained	"\<\u\w*\>"	skipwhite nextgroup=vim9TypeEquals
   syn match	vim9TypeEquals	 contained	"="	skipwhite nextgroup=@vimType
   if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_notypealiaserror")
-    syn match	vim9TypeAliasError contained	"\<\U\w*"
+    syn match	vim9TypeAliasError contained	"\<\l\w*\>"	skipwhite nextgroup=vim9TypeEquals
   endif
 endif
 
@@ -1400,6 +1404,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimNumber	Number
  hi def link vimOperError	Error
  hi def link vimOper	Operator
+ hi def link vimOperContinue	vimContinue
+ hi def link vimOperContinueComment	vimContinueComment
  hi def link vimOption	PreProc
  hi def link vimParenSep	Delimiter
  hi def link vimPatSepErr	vimError

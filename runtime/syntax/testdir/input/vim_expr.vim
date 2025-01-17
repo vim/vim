@@ -169,8 +169,25 @@ echo expr !~?    expr
 echo expr is?    expr
 echo expr isnot? expr
 
-" Unreported issue (incorrectly matches as "echo vimNumber *vimCommand* vimNumber")
+" Unreported issue ("is" incorrectly matches as "echo vimNumber *vimCommand* vimNumber")
 echo 42 is 42
+
+" Line continuation
+let foo = foo +
+      \
+      "\ comment
+      \
+      "\ comment
+      \ bar +
+      \ "baz"
+
+let foo = foo +
+      "\ comment
+      \
+      "\ comment
+      \
+      \ bar +
+      \ "baz"
 
 
 " Issue #16221 (vimString becomes vimVar when preceded by !)
