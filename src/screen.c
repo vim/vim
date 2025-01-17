@@ -240,13 +240,10 @@ win_draw_end(
     int
 compute_foldcolumn(win_T *wp, int col)
 {
-    int fdc = wp->w_p_fdc;
     int wmw = wp == curwin && p_wmw == 0 ? 1 : p_wmw;
-    int wwidth = wp->w_width;
+    int n = wp->w_width - (col + wmw);
 
-    if (fdc > wwidth - (col + wmw))
-	fdc = wwidth - (col + wmw);
-    return fdc;
+    return MIN(wp->w_p_fdc, n);
 }
 
 /*
@@ -271,6 +268,7 @@ fill_foldcolumn(
     size_t	byte_counter = 0;
     int		symbol = 0;
     int		len = 0;
+    int		n;
 
     // Init to all spaces.
     vim_memset(p, ' ', MAX_MCO * fdc + 1);
@@ -284,7 +282,8 @@ fill_foldcolumn(
     if (first_level < 1)
 	first_level = 1;
 
-    for (i = 0; i < MIN(fdc, level); i++)
+    n = MIN(fdc, level);		// evaluate this once
+    for (i = 0; i < n; i++)
     {
 	if (win_foldinfo.fi_lnum == lnum
 		&& first_level + i >= win_foldinfo.fi_low_level)
@@ -1120,7 +1119,7 @@ win_redr_custom(
     // might change the option value and free the memory.
     stl = vim_strsave(stl);
     width = build_stl_str_hl(ewp, buf, sizeof(buf),
-				stl, opt_name, opt_scope,
+				(stl == NULL) ? (char_u *)"" : stl, opt_name, opt_scope,
 				fillchar, maxwidth, &hltab, &tabtab);
     vim_free(stl);
     ewp->w_p_crb = p_crb_save;
@@ -1129,12 +1128,13 @@ win_redr_custom(
     p = transstr(buf);
     if (p != NULL)
     {
-	vim_strncpy(buf, p, sizeof(buf) - 1);
+	len = vim_snprintf((char *)buf, sizeof(buf), "%s", p);
 	vim_free(p);
     }
+    else
+	len = (int)STRLEN(buf);
 
     // fill up with "fillchar"
-    len = (int)STRLEN(buf);
     while (width < maxwidth && len < (int)sizeof(buf) - 1)
     {
 	len += (*mb_char2bytes)(fillchar, buf + len);
@@ -4368,8 +4368,7 @@ draw_tabline(void)
 	    {
 		if (wincount > 1)
 		{
-		    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
-		    len = (int)STRLEN(NameBuff);
+		    len = vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
 		    if (col + len >= Columns - 3)
 			break;
 		    screen_puts_len(NameBuff, len, 0, col,
@@ -4389,6 +4388,8 @@ draw_tabline(void)
 	    room = scol - col + tabwidth - 1;
 	    if (room > 0)
 	    {
+		int n;
+
 		// Get buffer name in NameBuff[]
 		get_trans_bufname(cwp->w_buffer);
 		shorten_dir(NameBuff);
@@ -4405,8 +4406,9 @@ draw_tabline(void)
 		    p += len - room;
 		    len = room;
 		}
-		if (len > Columns - col - 1)
-		    len = Columns - col - 1;
+		n = Columns - col - 1;
+		if (len > n)
+		    len = n;
 
 		screen_puts_len(p, (int)STRLEN(p), 0, col, attr);
 		col += len;
@@ -4429,7 +4431,8 @@ draw_tabline(void)
 	// Draw the 'showcmd' information if 'showcmdloc' == "tabline".
 	if (p_sc && *p_sloc == 't')
 	{
-	    int	width = MIN(10, (int)Columns - col - (tabcount > 1) * 3);
+	    int	n = (int)Columns - col - (tabcount > 1) * 3;
+	    int	width = MIN(10, n);
 
 	    if (width > 0)
 		screen_puts_len(showcmd_buf, width, 0, (int)Columns
@@ -4687,44 +4690,48 @@ get_encoded_char_adv(char_u **p)
 struct charstab
 {
     int	    *cp;
-    char    *name;
+    string_T	name;
 };
+
+#define CHARSTAB_ENTRY(cp, name) \
+    {(cp), {(char_u *)(name), STRLEN_LITERAL(name)}}
+
 static fill_chars_T fill_chars;
 static struct charstab filltab[] =
 {
-    {&fill_chars.stl,		"stl"},
-    {&fill_chars.stlnc,		"stlnc"},
-    {&fill_chars.vert,		"vert"},
-    {&fill_chars.fold,		"fold"},
-    {&fill_chars.foldopen,	"foldopen"},
-    {&fill_chars.foldclosed,	"foldclose"},
-    {&fill_chars.foldsep,	"foldsep"},
-    {&fill_chars.diff,		"diff"},
-    {&fill_chars.eob,		"eob"},
-    {&fill_chars.lastline,	"lastline"},
+    CHARSTAB_ENTRY(&fill_chars.stl,	    "stl"),
+    CHARSTAB_ENTRY(&fill_chars.stlnc,	    "stlnc"),
+    CHARSTAB_ENTRY(&fill_chars.vert,	    "vert"),
+    CHARSTAB_ENTRY(&fill_chars.fold,	    "fold"),
+    CHARSTAB_ENTRY(&fill_chars.foldopen,    "foldopen"),
+    CHARSTAB_ENTRY(&fill_chars.foldclosed,  "foldclose"),
+    CHARSTAB_ENTRY(&fill_chars.foldsep,	    "foldsep"),
+    CHARSTAB_ENTRY(&fill_chars.diff,	    "diff"),
+    CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
+    CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline")
 };
 static lcs_chars_T lcs_chars;
 static struct charstab lcstab[] =
 {
-    {&lcs_chars.eol,		"eol"},
-    {&lcs_chars.ext,		"extends"},
-    {&lcs_chars.nbsp,		"nbsp"},
-    {&lcs_chars.prec,		"precedes"},
-    {&lcs_chars.space,		"space"},
-    {&lcs_chars.tab2,		"tab"},
-    {&lcs_chars.trail,		"trail"},
-    {&lcs_chars.lead,		"lead"},
+    CHARSTAB_ENTRY(&lcs_chars.eol,	    "eol"),
+    CHARSTAB_ENTRY(&lcs_chars.ext,	    "extends"),
+    CHARSTAB_ENTRY(&lcs_chars.nbsp,	    "nbsp"),
+    CHARSTAB_ENTRY(&lcs_chars.prec,	    "precedes"),
+    CHARSTAB_ENTRY(&lcs_chars.space,	    "space"),
+    CHARSTAB_ENTRY(&lcs_chars.tab2,	    "tab"),
+    CHARSTAB_ENTRY(&lcs_chars.trail,	    "trail"),
+    CHARSTAB_ENTRY(&lcs_chars.lead,	    "lead"),
 #ifdef FEAT_CONCEAL
-    {&lcs_chars.conceal,	"conceal"},
+    CHARSTAB_ENTRY(&lcs_chars.conceal,	    "conceal"),
 #else
-    {NULL,			"conceal"},
+    CHARSTAB_ENTRY(NULL,		    "conceal"),
 #endif
-    {NULL,			"multispace"},
-    {NULL,			"leadmultispace"},
+    CHARSTAB_ENTRY(NULL,		    "multispace"),
+    CHARSTAB_ENTRY(NULL,		    "leadmultispace")
 };
 
     static char *
-field_value_err(char *errbuf, size_t errbuflen, char *fmt, char *field)
+field_value_err(char *errbuf, size_t errbuflen, char *fmt, char_u *field)
 {
     if (errbuf == NULL)
 	return "";
@@ -4744,7 +4751,7 @@ field_value_err(char *errbuf, size_t errbuflen, char *fmt, char *field)
 set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 						char *errbuf, size_t errbuflen)
 {
-    int	    round, i, len, entries;
+    int	    round, i, entries;
     char_u  *p, *s;
     int	    c1 = 0, c2 = 0, c3 = 0;
     char_u  *last_multispace = NULL;  // Last occurrence of "multispace:"
@@ -4767,7 +4774,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 	tab = filltab;
 	entries = ARRAY_LENGTH(filltab);
 	if (wp->w_p_fcs[0] == NUL)
-	    value = p_fcs;  // local value is empty, us the global value
+	    value = p_fcs;  // local value is empty, use the global value
     }
 
     // first round: check for valid value, second round: assign values
@@ -4797,7 +4804,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		{
 		    lcs_chars.leadmultispace =
 				      ALLOC_MULT(int, lead_multispace_len + 1);
-		    lcs_chars.leadmultispace[lead_multispace_len] = NUL;
+		    if (lcs_chars.leadmultispace != NULL)
+			lcs_chars.leadmultispace[lead_multispace_len] = NUL;
 		}
 		else
 		    lcs_chars.leadmultispace = NULL;
@@ -4821,13 +4829,12 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 	{
 	    for (i = 0; i < entries; ++i)
 	    {
-		len = (int)STRLEN(tab[i].name);
-		if (!(STRNCMP(p, tab[i].name, len) == 0 && p[len] == ':'))
+		if (!(STRNCMP(p, tab[i].name.string, tab[i].name.length) == 0 && p[tab[i].name.length] == ':'))
 		    continue;
 
-		if (is_listchars && strcmp(tab[i].name, "multispace") == 0)
+		s = p + tab[i].name.length + 1;
+		if (is_listchars && STRCMP(tab[i].name.string, "multispace") == 0)
 		{
-		    s = p + len + 1;
 		    if (round == 0)
 		    {
 			// Get length of lcs-multispace string in first round
@@ -4839,14 +4846,14 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    if (char2cells(c1) > 1)
 				return field_value_err(errbuf, errbuflen,
 					 e_wrong_character_width_for_field_str,
-					 tab[i].name);
+					 tab[i].name.string);
 			    ++multispace_len;
 			}
 			if (multispace_len == 0)
 			    // lcs-multispace cannot be an empty string
 			    return field_value_err(errbuf, errbuflen,
 				    e_wrong_number_of_characters_for_field_str,
-				    tab[i].name);
+				    tab[i].name.string);
 			p = s;
 		    }
 		    else
@@ -4856,7 +4863,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			while (*s != NUL && *s != ',')
 			{
 			    c1 = get_encoded_char_adv(&s);
-			    if (p == last_multispace)
+			    if (p == last_multispace && lcs_chars.multispace != NULL)
 				lcs_chars.multispace[multispace_pos++] = c1;
 			}
 			p = s;
@@ -4864,9 +4871,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		    break;
 		}
 
-		if (is_listchars && strcmp(tab[i].name, "leadmultispace") == 0)
+		if (is_listchars && STRCMP(tab[i].name.string, "leadmultispace") == 0)
 		{
-		    s = p + len + 1;
 		    if (round == 0)
 		    {
 			// get length of lcs-leadmultispace string in first
@@ -4879,14 +4885,14 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    if (char2cells(c1) > 1)
 				return field_value_err(errbuf, errbuflen,
 					 e_wrong_character_width_for_field_str,
-					 tab[i].name);
+					 tab[i].name.string);
 			    ++lead_multispace_len;
 			}
 			if (lead_multispace_len == 0)
 			    // lcs-leadmultispace cannot be an empty string
 			    return field_value_err(errbuf, errbuflen,
 				    e_wrong_number_of_characters_for_field_str,
-				    tab[i].name);
+				    tab[i].name.string);
 			p = s;
 		    }
 		    else
@@ -4896,7 +4902,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			while (*s != NUL && *s != ',')
 			{
 			    c1 = get_encoded_char_adv(&s);
-			    if (p == last_lmultispace)
+			    if (p == last_lmultispace && lcs_chars.leadmultispace != NULL)
 				lcs_chars.leadmultispace[multispace_pos++] = c1;
 			}
 			p = s;
@@ -4905,34 +4911,33 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		}
 
 		c2 = c3 = 0;
-		s = p + len + 1;
 		if (*s == NUL)
 		    return field_value_err(errbuf, errbuflen,
 				    e_wrong_number_of_characters_for_field_str,
-				    tab[i].name);
+				    tab[i].name.string);
 		c1 = get_encoded_char_adv(&s);
 		if (char2cells(c1) > 1)
 		    return field_value_err(errbuf, errbuflen,
 					 e_wrong_character_width_for_field_str,
-					 tab[i].name);
+					 tab[i].name.string);
 		if (tab[i].cp == &lcs_chars.tab2)
 		{
 		    if (*s == NUL)
 			return field_value_err(errbuf, errbuflen,
 				    e_wrong_number_of_characters_for_field_str,
-				    tab[i].name);
+				    tab[i].name.string);
 		    c2 = get_encoded_char_adv(&s);
 		    if (char2cells(c2) > 1)
 			return field_value_err(errbuf, errbuflen,
 					 e_wrong_character_width_for_field_str,
-					 tab[i].name);
+					 tab[i].name.string);
 		    if (!(*s == ',' || *s == NUL))
 		    {
 			c3 = get_encoded_char_adv(&s);
 			if (char2cells(c3) > 1)
 			    return field_value_err(errbuf, errbuflen,
 					 e_wrong_character_width_for_field_str,
-					 tab[i].name);
+					 tab[i].name.string);
 		    }
 		}
 
@@ -4956,7 +4961,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		else
 		    return field_value_err(errbuf, errbuflen,
 				    e_wrong_number_of_characters_for_field_str,
-				    tab[i].name);
+				    tab[i].name.string);
 	    }
 
 	    if (i == entries)
@@ -5011,10 +5016,10 @@ set_listchars_option(win_T *wp, char_u *val, int apply, char *errbuf,
     char_u *
 get_fillchars_name(expand_T *xp UNUSED, int idx)
 {
-    if (idx >= (int)(sizeof(filltab) / sizeof(filltab[0])))
+    if (idx < 0 || idx >= (int)ARRAY_LENGTH(filltab))
 	return NULL;
 
-    return (char_u*)filltab[idx].name;
+    return filltab[idx].name.string;
 }
 
 /*
@@ -5024,10 +5029,10 @@ get_fillchars_name(expand_T *xp UNUSED, int idx)
     char_u *
 get_listchars_name(expand_T *xp UNUSED, int idx)
 {
-    if (idx >= (int)(sizeof(lcstab) / sizeof(lcstab[0])))
+    if (idx < 0 || idx >= (int)ARRAY_LENGTH(lcstab))
 	return NULL;
 
-    return (char_u*)lcstab[idx].name;
+    return lcstab[idx].name.string;
 }
 
 /*
