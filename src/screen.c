@@ -243,7 +243,7 @@ compute_foldcolumn(win_T *wp, int col)
     int wmw = wp == curwin && p_wmw == 0 ? 1 : p_wmw;
     int n = wp->w_width - (col + wmw);
 
-    return (wp->w_p_fdc > n) ? n : wp->w_p_fdc;
+    return MIN(wp->w_p_fdc, n);
 }
 
 /*
@@ -1125,13 +1125,14 @@ win_redr_custom(
     ewp->w_p_crb = p_crb_save;
 
     // Make all characters printable.
-    len = 0;
     p = transstr(buf);
     if (p != NULL)
     {
 	len = vim_snprintf((char *)buf, sizeof(buf), "%s", p);
 	vim_free(p);
     }
+    else
+	len = (int)STRLEN(buf);
 
     // fill up with "fillchar"
     while (width < maxwidth && len < (int)sizeof(buf) - 1)
