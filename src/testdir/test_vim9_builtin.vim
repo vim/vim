@@ -357,6 +357,16 @@ def Test_blob2list()
   v9.CheckSourceDefAndScriptFailure(['blob2list(10)'], ['E1013: Argument 1: type mismatch, expected blob but got number', 'E1238: Blob required for argument 1'])
 enddef
 
+def Test_blob2str()
+  0z6162->blob2str()->assert_equal(["ab"])
+  blob2str(0z)->assert_equal([])
+
+  var l: list<string> = blob2str(0zC2ABC2BB)
+  assert_equal(["«»"], l)
+
+  v9.CheckSourceDefAndScriptFailure(['blob2str("ab")'], ['E1013: Argument 1: type mismatch, expected blob but got string', 'E1238: Blob required for argument 1'])
+enddef
+
 def Test_browse()
   CheckFeature browse
 
@@ -4323,6 +4333,13 @@ enddef
 def Test_state()
   v9.CheckSourceDefAndScriptFailure(['state({})'], ['E1013: Argument 1: type mismatch, expected string but got dict<any>', 'E1174: String required for argument 1'])
   assert_equal('', state('a'))
+enddef
+
+def Test_str2blob()
+  ["ab"]->str2blob()->assert_equal(0z6162)
+  str2blob([""])->assert_equal(0z)
+
+  v9.CheckSourceDefAndScriptFailure(['str2blob("ab")'], ['E1013: Argument 1: type mismatch, expected list<string> but got string', 'E1211: List required for argument 1'])
 enddef
 
 def Test_str2float()
