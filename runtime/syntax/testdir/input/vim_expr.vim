@@ -85,6 +85,46 @@ echo 0zFF00ED015DAF
 echo 0zFF00.ED01.5DAF
 echo 0zFF.00.ED.01.5D.AF
 
+" Operators
+
+" Comparison - using 'ignorcase'
+echo expr ==     expr
+echo expr !=     expr
+echo expr >      expr
+echo expr >=     expr
+echo expr <      expr
+echo expr <=     expr
+echo expr =~     expr
+echo expr !~     expr
+echo expr is     expr
+echo expr isnot  expr
+
+" Comparison - match case
+echo expr ==#    expr
+echo expr !=#    expr
+echo expr >#     expr
+echo expr >=#    expr
+echo expr <#     expr
+echo expr <=#    expr
+echo expr =~#    expr
+echo expr !~#    expr
+echo expr is#    expr
+echo expr isnot# expr
+
+" Comparison - ignore case
+echo expr ==?    expr
+echo expr !=?    expr
+echo expr >?     expr
+echo expr >=?    expr
+echo expr <?     expr
+echo expr <=?    expr
+echo expr =~?    expr
+echo expr !~?    expr
+echo expr is?    expr
+echo expr isnot? expr
+
+" Unreported issue (incorrectly matches as "echo vimNumber *vimCommand* vimNumber")
+echo 42 is 42
 
 " Issue #16221 (vimString becomes vimVar when preceded by !)
 let bar = !'g:bar'->exists()
