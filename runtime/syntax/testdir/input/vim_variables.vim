@@ -11,6 +11,9 @@ let foo[:2] = expr
 let foo[1:] = expr
 let foo[:] = expr
 
+let foo["key"] = expr
+let foo['key'] = expr
+
 let foo += expr
 let foo -= expr
 let foo *= expr
@@ -27,6 +30,9 @@ let b:foo[1:2] = expr
 let b:foo[:2] = expr
 let b:foo[1:] = expr
 let b:foo[:] = expr
+
+let bfoo["key"] = expr
+let bfoo['key'] = expr
 
 let b:foo += expr
 let b:foo -= expr
@@ -45,6 +51,9 @@ let g:foo[:2] = expr
 let g:foo[1:] = expr
 let g:foo[:] = expr
 
+let g:foo["key"] = expr
+let g:foo['key'] = expr
+
 let g:foo += expr
 let g:foo -= expr
 let g:foo *= expr
@@ -61,6 +70,9 @@ let s:foo[1:2] = expr
 let s:foo[:2] = expr
 let s:foo[1:] = expr
 let s:foo[:] = expr
+
+let s:foo["key"] = expr
+let s:foo['key'] = expr
 
 let s:foo += expr
 let s:foo -= expr
@@ -79,6 +91,9 @@ let t:foo[:2] = expr
 let t:foo[1:] = expr
 let t:foo[:] = expr
 
+let t:foo["key"] = expr
+let t:foo['key'] = expr
+
 let t:foo += expr
 let t:foo -= expr
 let t:foo *= expr
@@ -96,6 +111,9 @@ let v:foo[:2] = expr
 let v:foo[1:] = expr
 let v:foo[:] = expr
 
+let v:foo["key"] = expr
+let v:foo['key'] = expr
+
 let v:foo += expr
 let v:foo -= expr
 let v:foo *= expr
@@ -112,6 +130,9 @@ let w:foo[1:2] = expr
 let w:foo[:2] = expr
 let w:foo[1:] = expr
 let w:foo[:] = expr
+
+let w:foo["key"] = expr
+let w:foo['key'] = expr
 
 let w:foo += expr
 let w:foo -= expr
