@@ -8,6 +8,9 @@ if exists('b:current_syntax')
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 let b:current_syntax = 'just'
 
 " syncing fromstart prevents mismatched highlighting when jumping around in a justfile
@@ -398,3 +401,6 @@ hi def link justUnexport                         Statement
 hi def link justUserDefinedError                 Exception
 hi def link justVariadicPrefix                   Statement
 hi def link justVariadicPrefixError              Error
+
+let &cpo = s:cpo_sav
+unlet s:cpo_sav

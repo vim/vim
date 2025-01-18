@@ -1293,8 +1293,6 @@ au BufNewFile,BufRead *.jl			setf julia
 
 " Just
 au BufNewFile,BufRead \c{,*.}justfile,\c*.just setf just
-au BufNewFile,BufRead *
-	\ if getline(1) =~# '\v^#!/%(\w|[-/])*/%(env%(\s+-S)?\s+)?just\A' | setf just | end if
 
 " KAREL
 au BufNewFile,BufRead *.kl setf karel

@@ -133,6 +133,9 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ 'node\(js\)\=\>\|js\>' || name =~ 'rhino\>'
     return 'javascript'
 
+  elseif name =~# 'just'
+    return 'just'
+
     # BC calculator
   elseif name =~ '^bc\>'
     return 'bc'
