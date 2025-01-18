@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     env:
       CC: ${{ matrix.compiler }}
@@ -106,6 +106,7 @@ jobs:
             libncurses-dev:${{ matrix.architecture }} \
             libxt-dev:${{ matrix.architecture }} \
             locales-all \
+            software-properties-common \
           )
           if ${{ matrix.features == 'huge' }}; then
             LUA_VER=${{ matrix.lua_ver || '5.4' }}
@@ -115,7 +116,6 @@ jobs:
               lcov \
               libcanberra-dev \
               libperl-dev \
-              python2-dev \
               python3-dev \
               liblua${LUA_VER}-dev \
               lua${LUA_VER} \
@@ -127,7 +127,7 @@ jobs:
               libattr1-dev
             )
           fi
-          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
@@ -159,7 +159,7 @@ jobs:
           (
           echo "LINUX_VERSION=$(uname -r)"
           echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
-          echo "TMPDIR=${{ runner.temp }}"
+          echo "TMPDIR=$(mktemp -d -p /tmp)"
 
           case "${{ matrix.features }}" in
           tiny)
@@ -176,7 +176,19 @@ jobs:
             if ${{ matrix.python3 == 'stable-abi' }}; then
               PYTHON3_CONFOPT="--with-python3-stable-abi=3.8"
             fi
-            echo "CONFOPT=--enable-perlinterp=${INTERFACE} --enable-pythoninterp=${INTERFACE} --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
+            PERL_CONFOPT="${INTERFACE}"
+            if ${{ contains(matrix.extra, 'uchar') }}; then
+              # In the ubtunu-24.04 CI runner if_perl fails to link w/ uchar:
+              # usr/bin/ld: objects/if_perl.o: warning: relocation against `PL_memory_wrap' in read-only section `.text'
+              # /usr/bin/ld: objects/if_perl.o: in function `Perl_croak_memory_wrap':
+              # if_perl.c:(.text+0xb): undefined reference to `PL_memory_wrap'
+              # /usr/bin/ld: if_perl.c:(.text+0x22): undefined reference to `Perl_croak_nocontext'
+              # /usr/bin/ld: warning: creating DT_TEXTREL in a PIE
+              # collect2: error: ld returned 1 exit status
+              PERL_CONFOPT=no
+            fi
+            # The ubuntu-24.04 CI runner does not provide a python2 package.
+            echo "CONFOPT=--enable-perlinterp=${PERL_CONFOPT} --enable-pythoninterp=no --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
             ;;
           esac
 
@@ -253,8 +265,8 @@ jobs:
       - name: Test
         timeout-minutes: 25
         run: |
-          do_test() { echo "$*"; sg audio "sg $(id -gn) '$*'"; }
-          do_test make ${SHADOWOPT} ${TEST}
+          make ${SHADOWOPT} ${TEST}
+
 
       - if: ${{ !cancelled() }}
         uses: ./.github/actions/test_artifacts
