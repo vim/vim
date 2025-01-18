@@ -208,6 +208,7 @@ runtime/ftplugin/json.vim		@dbarnett
 runtime/ftplugin/json5.vim		@dkearns
 runtime/ftplugin/jsonc.vim		@izhakjakov
 runtime/ftplugin/julia.vim		@carlobaldassi
+runtime/ftplugin/just.vim		@pbnj
 runtime/ftplugin/jq.vim	    	        @vito-c
 runtime/ftplugin/kconfig.vim		@chrisbra
 runtime/ftplugin/kdl.vim		@imsnif @jiangyinzuo
@@ -354,6 +355,7 @@ runtime/indent/javascript.vim		@bounceme
 runtime/indent/json.vim			@elzr
 runtime/indent/jsonc.vim		@izhakjakov
 runtime/indent/julia.vim		@carlobaldassi
+runtime/indent/just.vim			@pbnj
 runtime/indent/kdl.vim			@imsnif @jiangyinzuo
 runtime/indent/kotlin.vim		@udalov
 runtime/indent/krl.vim			@KnoP-01
@@ -512,6 +514,7 @@ runtime/syntax/jjdescription.vim	@gpanders
 runtime/syntax/json.vim		        @vito-c
 runtime/syntax/jsonc.vim		@izhakjakov
 runtime/syntax/julia.vim		@carlobaldassi
+runtime/syntax/just.vim			@pbnj
 runtime/syntax/jq.vim		        @vito-c
 runtime/syntax/karel.vim		@kirillmorozov
 runtime/syntax/kconfig.vim		@chrisbra
