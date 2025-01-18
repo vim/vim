@@ -1,7 +1,7 @@
 *netrw.txt*
 
 	    ------------------------------------------------
-	    NETRW REFERENCE MANUAL      by Charles E.Cambell
+	    NETRW REFERENCE MANUAL    by Charles E. Campbell
 	    ------------------------------------------------
 Original Author:  Charles E. Campbell
 
