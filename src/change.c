@@ -1181,9 +1181,12 @@ ins_char_bytes(char_u *buf, int charlen)
     void
 ins_str(char_u *s)
 {
+    static char_u	*prevp = NULL;
     char_u	*oldp, *newp;
     int		newlen = (int)STRLEN(s);
     int		oldlen;
+    int		newtotlen;
+    int		new_size;
     colnr_T	col;
     linenr_T	lnum = curwin->w_cursor.lnum;
 
@@ -1194,14 +1197,32 @@ ins_str(char_u *s)
     oldp = ml_get(lnum);
     oldlen = (int)ml_get_len(lnum);
 
-    newp = alloc(oldlen + newlen + 1);
-    if (newp == NULL)
-	return;
-    if (col > 0)
+    newtotlen = oldlen + newlen;
+    new_size = newtotlen + 1;
+    if ((curbuf->b_ml.ml_line_size < new_size) || (prevp != oldp)
+#ifdef FEAT_PROP_POPUP
+	    || curbuf->b_has_textprop
+#endif
+	    )
+    {
+#ifdef FEAT_PROP_POPUP
+	if (!curbuf->b_has_textprop)
+#endif
+	    new_size = new_size * 3 / 2;
+	newp = alloc(new_size);
+	if (newp == NULL)
+	    return;
+	curbuf->b_ml.ml_line_size = new_size;
+    }
+    else
+	newp = oldp;
+    prevp = newp;
+
+    if (col > 0 && newp != oldp)
 	mch_memmove(newp, oldp, (size_t)col);
-    mch_memmove(newp + col, s, (size_t)newlen);
     mch_memmove(newp + col + newlen, oldp + col, (size_t)(oldlen - col + 1));
-    ml_replace(lnum, newp, FALSE);
+    mch_memmove(newp + col, s, (size_t)newlen);
+    ml_replace_len(lnum, newp, newtotlen, FALSE, FALSE);
     inserted_bytes(lnum, col, newlen);
     curwin->w_cursor.col += newlen;
 }
