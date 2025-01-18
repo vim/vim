@@ -4308,7 +4308,7 @@ buf_check_timestamp(
 	     */
 	    busy = TRUE;
 #ifdef FEAT_EVAL
-	    set_vim_var_string(VV_FCS_REASON, (char_u *)reason, reasonlen);
+	    set_vim_var_string(VV_FCS_REASON, (char_u *)reason, (int)reasonlen);
 	    set_vim_var_string(VV_FCS_CHOICE, (char_u *)"", 0);
 #endif
 	    ++allbuf_lock;
