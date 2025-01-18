@@ -400,8 +400,8 @@ jobs:
       PYTHON_VER_DOT: '2.7'
       PYTHON_DIR: 'C:\Python27'
       # Python 3
-      PYTHON3_VER: 311
-      PYTHON3_VER_DOT: '3.11'
+      PYTHON3_VER: 312
+      PYTHON3_VER_DOT: '3.12'
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
