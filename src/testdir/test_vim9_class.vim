@@ -3268,21 +3268,22 @@ def Test_using_base_class()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using a method from the super class
 def Test_super_dispatch()
   # See #15448 and #15463
   var lines =<< trim END
     vim9script
 
     class A
-        def String(): string
-            return 'A'
-        enddef
+      def String(): string
+        return 'A'
+      enddef
     endclass
 
     class B extends A
-        def String(): string
-            return super.String()
-        enddef
+      def String(): string
+        return super.String()
+      enddef
     endclass
 
     class C extends B
@@ -3296,30 +3297,30 @@ def Test_super_dispatch()
     vim9script
 
     class A
-        def F(): string
-            return 'AA'
-        enddef
+      def F(): string
+        return 'AA'
+      enddef
     endclass
 
     class B extends A
-        def F(): string
-            return 'BB'
-        enddef
-        def S(): string
-            return super.F()
-        enddef
-        def S0(): string
-            return this.S()
-        enddef
+      def F(): string
+        return 'BB'
+      enddef
+      def S(): string
+        return super.F()
+      enddef
+      def S0(): string
+        return this.S()
+      enddef
     endclass
 
     class C extends B
-        def F(): string
-            return 'CC'
-        enddef
-        def ToB(): string
-            return super.F()
-        enddef
+      def F(): string
+        return 'CC'
+      enddef
+      def ToB(): string
+        return super.F()
+      enddef
     endclass
 
     assert_equal('AA', B.new().S())
@@ -3341,51 +3342,51 @@ def Test_super_dispatch()
     var call_chain: list<string>
 
     abstract class A
-        abstract def _G(): string
+      abstract def _G(): string
 
-        def F(): string
-            call_chain->add('A.F()')
-            return this._G()
-        enddef
-        def _H(): string
-            call_chain->add('A._H()')
-            return this.F()
-        enddef
+      def F(): string
+        call_chain->add('A.F()')
+        return this._G()
+      enddef
+      def _H(): string
+        call_chain->add('A._H()')
+        return this.F()
+      enddef
     endclass
 
     class B extends A
-        def _G(): string
-            call_chain->add('B.G()')
-            return 'BBB'
-        enddef
-        def SF(): string
-            call_chain->add('B.SF()')
-            return super._H()
-        enddef
+      def _G(): string
+        call_chain->add('B.G()')
+        return 'BBB'
+      enddef
+      def SF(): string
+        call_chain->add('B.SF()')
+        return super._H()
+      enddef
     endclass
 
     class C extends B
     endclass
 
     class D extends C
-        def SF(): string
-            call_chain->add('D.SF()')
-            return super.SF()
-        enddef
+      def SF(): string
+        call_chain->add('D.SF()')
+        return super.SF()
+      enddef
     endclass
 
     class E extends D
-        def SF(): string
-            call_chain->add('E.SF()')
-            return super.SF()
-        enddef
+      def SF(): string
+        call_chain->add('E.SF()')
+        return super.SF()
+      enddef
     endclass
 
     class F extends E
-        def _G(): string
-            call_chain->add('F._G()')
-            return 'FFF'
-        enddef
+      def _G(): string
+        call_chain->add('F._G()')
+        return 'FFF'
+      enddef
     endclass
 
     # E.new() -> A.F() -> B._G()
@@ -3399,6 +3400,160 @@ def Test_super_dispatch()
     var o2 = F.new()
     assert_equal('FFF', o2.SF())
     assert_equal(['E.SF()', 'D.SF()', 'B.SF()', 'A._H()', 'A.F()', 'F._G()'], call_chain)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # problems with method dispatch: super -> abstract
+  # https://github.com/vim/vim/issues/15514
+  lines =<< trim END
+    vim9script
+    abstract class B
+      abstract def ToString(): string
+    endclass
+
+    class C extends B
+      def ToString(): string
+        return super.ToString()
+      enddef
+    endclass
+
+    try
+      defcompile C.ToString
+      call assert_false(1, 'command should have failed')
+    catch
+      call assert_exception('E1431: Abstract method "ToString" in class "B" cannot be accessed directly')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # problems with method dispatch: super -> abstract -> concrete
+  lines =<< trim END
+    vim9script
+
+    class A
+      def ToString()
+        echo 'A'
+      enddef
+    endclass
+
+    abstract class B extends A
+      abstract def ToString()
+    endclass
+
+    class C extends B
+      def ToString()
+        super.ToString()
+      enddef
+    endclass
+
+    try
+      defcompile C.ToString
+      call assert_false(1, 'command should have failed')
+    catch
+      call assert_exception('E1431: Abstract method "ToString" in class "B" cannot be accessed directly')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Invoking a super method and an interface method which have the same name.
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def ToString(): string
+    endinterface
+
+    # Note that A does not implement I.
+    class A
+      def ToString(): string
+        return 'A'
+      enddef
+    endclass
+
+    class B extends A implements I
+      def ToString(): string
+        return super.ToString()
+      enddef
+    endclass
+
+     def TestI(i: I): string
+       return i.ToString()
+     enddef
+
+     assert_equal('A', B.new().ToString())
+     assert_equal('A', TestI(B.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # super and an abstract class with no abstract methods
+  lines =<< trim END
+    vim9script
+
+    class A
+      def ToString(): string
+        return 'A'
+      enddef
+    endclass
+
+    # An abstract class with no abstract methods.
+    abstract class B extends A
+    endclass
+
+    class C extends B
+      def ToString(): string
+        return super.ToString()
+      enddef
+    endclass
+
+    def TestA(a: A): string
+      return a.ToString()
+    enddef
+
+    def TestB(b: B): string
+      return b.ToString()
+    enddef
+
+    assert_equal('A', C.new().ToString())
+    assert_equal('A', TestA(A.new()))
+    assert_equal('A', TestA(C.new()))
+    assert_equal('A', TestB(C.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # super and an abstract class with no abstract methods and the initial
+  # implements clause
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def ToString(): string
+    endinterface
+
+    # Note that A does not implement I.
+    class A
+      def ToString(): string
+        return 'A'
+      enddef
+    endclass
+
+    # An abstract class with no abstract methods.
+    abstract class B extends A implements I
+    endclass
+
+    class C extends B implements I
+      def ToString(): string
+        return super.ToString()
+      enddef
+    endclass
+
+    # Note that A.ToString() is different from I.ToString().
+    def TestA(a: A): string
+      return a.ToString()
+    enddef
+
+    assert_equal('A', C.new().ToString())
+    assert_equal('A', TestA(A.new()))
+    assert_equal('A', TestA(C.new()))
   END
   v9.CheckSourceSuccess(lines)
 enddef
