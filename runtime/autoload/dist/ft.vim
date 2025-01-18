@@ -900,7 +900,6 @@ export def SetFileTypeSH(name: string, setft = true): string
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-    return SetFileTypeShell("bash", setft)
   elseif name =~ '\<sh\>' || name =~ '\<dash\>'
     # Ubuntu links "sh" to "dash", thus it is expected to work the same way
     b:is_sh = 1
