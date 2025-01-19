@@ -8501,6 +8501,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, uses |highlight-guifg| and |highlight-guibg| attributes in
 	the terminal (thus using 24-bit color).
 
+	Will automatically be enabled, if Vim detects that it runs in a
+	capable terminal (when the terminal supports the RGB terminfo
+	capability or when the number of colors |t_Co| supported by the
+	terminal is 0x1000000, e.g. with $TERM=xterm-direct).
+
 	Requires a ISO-8613-3 compatible terminal.  If setting this option
 	does not work (produces a colorless UI) reading |xterm-true-color|
 	might help.
