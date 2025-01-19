@@ -373,6 +373,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		break;
 	    }
 	}
+
 	ocmember_T  *ocm = NULL;
 	if (ufunc == NULL)
 	{
@@ -403,6 +404,15 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		if (status == FAIL)
 		    return FAIL;
 	    }
+	}
+
+	if (is_super && IS_ABSTRACT_METHOD(ufunc))
+	{
+	    // Trying to invoke an abstract method in a super class is not
+	    // allowed.
+	    semsg(_(e_abstract_method_str_direct), ufunc->uf_name,
+		    ufunc->uf_defclass->class_name);
+	    return FAIL;
 	}
 
 	// A private object method can be used only inside the class where it
