@@ -1033,7 +1033,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When the |t_RB| option is set, Vim will use it to request the background
 	color from the terminal.  If the returned RGB value is dark/light and
 	'background' is not dark/light, 'background' will be set and the
-	screen is redrawn.  This may have side effects, make t_BG empty in
+	screen is redrawn.  This may have side effects, make |t_RB| empty in
 	your .vimrc if you suspect this problem.  The response to |t_RB| can
 	be found in |v:termrbgresp|.
 
