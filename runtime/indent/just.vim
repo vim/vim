@@ -1,8 +1,8 @@
 " Vim indent file
 " Language:	Justfile
-" Maintainer:	Noah Bogart <noah.bogart@hey.com>
-" URL:		https://github.com/NoahTheDuke/vim-just.git
-" Last Change:	2024 Jan 25
+" Maintainer:	Peter Benjamin <@pbnj>
+" Last Change:	2025 Jan 19
+" Credits:	The original author, Noah Bogart <https://github.com/NoahTheDuke/vim-just/>
 
 " Only load this indent file when no other was loaded yet.
 if exists("b:did_indent")

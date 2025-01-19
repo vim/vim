@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Justfile
-" Maintainer:	Noah Bogart <noah.bogart@hey.com>
-" URL:		https://github.com/NoahTheDuke/vim-just.git
-" Last Change:	2024 Aug 05
+" Maintainer:	Peter Benjamin <@pbnj>
+" Last Change:	2025 Jan 19
+" Credits:	The original author, Noah Bogart <https://github.com/NoahTheDuke/vim-just/>
 
 if exists('b:current_syntax')
   finish
