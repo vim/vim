@@ -1366,9 +1366,10 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	    }
 	}
 
-	if (list_append_string(rettv->vval.v_list, converted_str, -1) == FAIL)
-	    break;
+	int ret = list_append_string(rettv->vval.v_list, converted_str, -1);
 	vim_free(converted_str);
+	if (ret == FAIL)
+	    break;
     }
 
 done:
