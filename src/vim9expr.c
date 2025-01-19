@@ -406,7 +406,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    }
 	}
 
-	if (is_super && IS_ABSTRACT_METHOD(ufunc))
+	if (is_super && ufunc != NULL && IS_ABSTRACT_METHOD(ufunc))
 	{
 	    // Trying to invoke an abstract method in a super class is not
 	    // allowed.

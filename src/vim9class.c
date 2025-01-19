@@ -4054,6 +4054,7 @@ object2string(
 	vim_free(ga.ga_data);
 	return NULL;
     }
+    ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
 }
 

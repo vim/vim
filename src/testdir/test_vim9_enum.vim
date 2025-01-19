@@ -1586,4 +1586,19 @@ def Test_lambda_block_in_enum()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Echo an enum
+def Test_enum_echo()
+  var lines =<< trim END
+    vim9script
+    enum Demo
+      one('tahi'),
+      two('rua'),
+      three('toru')
+      var alias: string
+    endenum
+    assert_equal('enum Demo.one {name: one, ordinal: 0, alias: tahi}', execute('echo Demo.one')->split("\n")[0])
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
