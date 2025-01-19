@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Jan 14
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Jan 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1938,9 +1938,10 @@ Exporting an item can be written as: >
 	export def MyFunc() ...
 	export class MyClass ...
 	export interface MyClass ...
+	export enum MyEnum ...
 <							*E1043* *E1044*
-As this suggests, only constants, variables, `:def` functions and classes can
-be exported.
+As this suggests, only constants, variables, `:def` functions, classes,
+interfaces and enums can be exported.
 
 							*E1042*
 `:export` can only be used in Vim9 script, at the script level.
