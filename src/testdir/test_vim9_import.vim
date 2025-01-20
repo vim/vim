@@ -3387,4 +3387,37 @@ def Test_import_locked_var()
   v9.CheckScriptFailure(lines, 'E741: Value is locked: Foo', 3)
 enddef
 
+" Test for using an autoload imported class as the function return type
+def Test_imported_class_as_def_func_rettype()
+  var lines =<< trim END
+    vim9script
+
+    export class Foo
+      var name: string = "foo"
+    endclass
+  END
+  writefile(lines, 'Ximportclassrettype1.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload "./Ximportclassrettype1.vim" as A
+
+    export def CreateFoo(): A.Foo
+      return A.Foo.new()
+    enddef
+  END
+  writefile(lines, 'Ximportclassrettype2.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import './Ximportclassrettype2.vim' as B
+
+    var foo = B.CreateFoo()
+    assert_equal('foo', foo.name)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
