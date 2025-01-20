@@ -1727,6 +1727,9 @@ au BufNewFile,BufRead *.nse			setf lua
 " NSIS
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
 
+" N-Triples
+au BufNewFile,BufRead *.nt			setf ntriples
+
 " Nu
 au BufNewFile,BufRead *.nu		setf nu
 
@@ -2322,6 +2325,9 @@ au BufNewFile,BufRead .tcshrc,*.tcsh,tcsh.tcshrc,tcsh.login	call dist#ft#SetFile
 " csh scripts, but might also be tcsh scripts (on some systems csh is tcsh)
 " (patterns ending in a start further below)
 au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call dist#ft#CSH()
+
+" TriG
+au BufNewFile,BufRead *.trig			setf trig
 
 " Zig and Zig Object Notation (ZON)
 au BufNewFile,BufRead *.zig,*.zon		setf zig
