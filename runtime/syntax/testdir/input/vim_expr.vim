@@ -87,6 +87,52 @@ echo 0zFF.00.ED.01.5D.AF
 
 " Operators
 
+" Ternary
+echo expr ? expr : expr
+
+echo lnum == 1 ? "top" : lnum
+echo lnum == 1 ? "top" : lnum == 1000 ? "last" : lnum
+
+echo lnum == 1
+      \	? "top"
+      \	: lnum == 1000
+      \		? "last"
+      \		: lnum
+echo lnum == 1 ?
+      \	"top" :
+      \	lnum == 1000 ?
+      \		"last" :
+      \		lnum
+
+echo 1 ? 1 : 0
+echo "foo" ? "foo" : "bar"
+echo foo ? foo : bar
+echo g:foo ? g:foo : g:bar
+echo $FOO ? $FOO : $BAR
+echo True() ? True() : False()
+echo @a ? @a : @b
+echo (1) ? (1) : (0)
+
+" Falsy
+echo expr ?? expr
+
+echo theList ?? 'list is empty'
+echo GetName() ?? 'unknown'
+
+echo theList
+      \ ?? 'list is empty'
+echo theList ??
+      \ 'list is empty'
+
+echo 1 ?? 1
+echo "foo" ?? "foo"
+echo foo ?? foo
+echo g:foo ?? g:foo
+echo $FOO ?? $FOO
+echo True() ?? True()
+echo @a ?? @a
+echo (1) ?? (1)
+
 " Comparison - using 'ignorcase'
 echo expr ==     expr
 echo expr !=     expr
@@ -126,6 +172,28 @@ echo expr isnot? expr
 " Unreported issue (incorrectly matches as "echo vimNumber *vimCommand* vimNumber")
 echo 42 is 42
 
+
 " Issue #16221 (vimString becomes vimVar when preceded by !)
 let bar = !'g:bar'->exists()
+
+
+" Issue #14423 (vim.vim: Opt out of vimSearch*)
+
+?truthy
+let truthy = 0
+\   ? (0
+\   )
+\   : (1
+\   )
+echo truthy
+
+function Foo()
+  ?truthy
+  let truthy = 0
+  \   ? (0
+  \   )
+  \   : (1
+  \   )
+  echo truthy
+endfunction
 
