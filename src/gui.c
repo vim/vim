@@ -4478,13 +4478,15 @@ gui_do_scroll(void)
     /*
      * Don't call updateWindow() when nothing has changed (it will overwrite
      * the status line!).
+     *
+     * Check for ScreenLines, because in ex-mode, we don't have a valid display.
      */
-    if (old_topline != wp->w_topline
+    if (ScreenLines != NULL && (old_topline != wp->w_topline
 	    || wp->w_redr_type != 0
 #ifdef FEAT_DIFF
 	    || old_topfill != wp->w_topfill
 #endif
-	    )
+	    ))
     {
 	int type = UPD_VALID;
 
