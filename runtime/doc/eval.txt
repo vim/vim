@@ -4907,5 +4907,36 @@ executable.  It takes the following arguments:
 	filetype	string
 	executable	string
 
+						      *dist#vim9#Open* *:Open*
+						      *g:Openprg*
+Opens `path` with the system default handler (macOS `open`, Windows
+`explorer.exe`, Linux `xdg-open`, …). If the variable |g:Openprg| exists the
+string specified in the variable is used instead.
+
+NOTE: Escaping of the path is automatically applied.
+
+Usage: >
+	:call dist#vim9#Open(<path>)
+	:Open <path>
+<
+
+						  *dist#vim9#Launch* *:Launch*
+Launches <args> with the appropriate system programs. Intended for launching
+GUI programs within Vim.
+
+NOTE: escaping of <args> is left to the user
+
+Examples: >
+	vim9script
+
+	import autoload 'dist/vim9.vim'
+	# Execute 'makeprg' into another xterm window
+	vim9.Launch('xterm ' .. expandcmd(&makeprg))
+<
+
+Usage: >
+	:call dist#vim9#Launch(<args>)
+	:Launch <app> <args>.
+<
 
  vim:tw=78:ts=8:noet:ft=help:norl:
