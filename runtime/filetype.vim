@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Jan 15
+" Last Change:	2025 Jan 20
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -1292,7 +1292,7 @@ au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
 au BufNewFile,BufRead *.jl			setf julia
 
 " Just
-au BufNewFile,BufRead [jJ]ustfile,.justfile,*.just setf just
+au BufNewFile,BufRead \c{,*.}justfile,\c*.just setf just
 
 " KAREL
 au BufNewFile,BufRead *.kl setf karel

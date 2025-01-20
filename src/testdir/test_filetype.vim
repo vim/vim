@@ -999,6 +999,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     expect: [['#!/path/expect']],
     execline: [['#!/sbin/execlineb -S0'], ['#!/usr/bin/execlineb']],
     gnuplot: [['#!/path/gnuplot']],
+    just:   [['#!/path/just']],
     make:   [['#!/path/make']],
     nix:    [['#!/path/nix-shell']],
     pike:   [['#!/path/pike'],

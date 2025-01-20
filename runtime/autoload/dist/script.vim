@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2023 Aug 10
+# Last Change:	2025 Jan 20
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 export def DetectFiletype()
@@ -132,6 +132,9 @@ export def Exe2filetype(name: string, line1: string): string
     # JavaScript
   elseif name =~ 'node\(js\)\=\>\|js\>' || name =~ 'rhino\>'
     return 'javascript'
+
+  elseif name =~# 'just'
+    return 'just'
 
     # BC calculator
   elseif name =~ '^bc\>'
