@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Jan 11
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Jan 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2218,6 +2218,16 @@ To disable numbers having their own color add the following to your vimrc: >
 If you want quotes to have different highlighting than strings >
 	let g:jq_quote_highlight = 1
 
+KCONFIG							*ft-kconfig-syntax*
+
+Kconfig syntax highlighting language.  For syntax syncing, you can configure
+the following variable (default: 50): >
+
+	let kconfig_minlines = 50
+
+To configure a bit more (heavier) highlighting, set the following variable: >
+
+	let kconfig_syntax_heavy = 1
 
 LACE						*lace.vim* *ft-lace-syntax*
 
