@@ -5472,11 +5472,19 @@ define_function(
 	// The function may use script variables from the context.
 	function_using_block_scopes(fp, cstack);
 
+	// The argument types and the return type may use an imported type.
+	// In that case, the imported file will be sourced.  To avoid treating
+	// everything in the imported file as exported, temporarily reset
+	// is_export.
+	int save_is_export = is_export;
+	is_export = FALSE;
+
 	if (parse_argument_types(fp, &argtypes, varargs, &arg_objm,
 					obj_members, obj_member_count) == FAIL)
 	{
 	    SOURCING_LNUM = lnum_save;
 	    free_fp = fp_allocated;
+	    is_export = save_is_export;
 	    goto erret;
 	}
 	varargs = FALSE;
@@ -5486,8 +5494,10 @@ define_function(
 	{
 	    SOURCING_LNUM = lnum_save;
 	    free_fp = fp_allocated;
+	    is_export = save_is_export;
 	    goto erret;
 	}
+	is_export = save_is_export;
 	SOURCING_LNUM = lnum_save;
     }
     else
