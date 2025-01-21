@@ -1835,11 +1835,11 @@ may_restore_clipboard(void)
     void
 ex_xrestore(exarg_T *eap)
 {
-    if (eap->arg != NULL)
-    {
-	size_t  arglen = STRLEN(eap->arg);
+    size_t  arglen;
 
-	if (arglen > 0 && xterm_display_allocated)
+    if (eap->arg != NULL && (arglen = STRLEN(eap->arg)) > 0)
+    {
+	if (xterm_display_allocated)
 	    vim_free(xterm_display);
 	xterm_display = (char *)vim_strnsave(eap->arg, arglen);
 	xterm_display_allocated = TRUE;
@@ -3448,12 +3448,12 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
 
     p = (char_u *)getenv("PATH");
     if (p == NULL || *p == NUL)
-	return FALSE;
+	return -1;
     p_end = p + STRLEN(p);
     bufsize = STRLEN(name) + (size_t)(p_end - p) + 2;
     buf = alloc(bufsize);
     if (buf == NULL)
-	return FALSE;
+	return -1;
 
     /*
      * Walk through all entries in $PATH to check if "name" exists there and
@@ -7026,7 +7026,7 @@ mch_expand_wildcards(
 	p = (char_u *)strstr((char *)command, ")>");
 	if (p == NULL)
 	{
-	    // can't happen ;-)
+	    ;					    // can't happen ;-)
 	}
 	else
 	{
@@ -8194,7 +8194,10 @@ do_xterm_trace(void)
 
 	// Rely on the same mouse code for the duration of this
 	mouse_code = find_termcode(mouse_name);
-	mouse_codelen = STRLEN(mouse_code);
+	if (mouse_code == NULL)
+	    mouse_codelen = 0;
+	else
+	    mouse_codelen = STRLEN(mouse_code);
 	prev_row = mouse_row;
 	prev_col = mouse_col;
 	xterm_trace = 2;
