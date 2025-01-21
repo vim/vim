@@ -111,6 +111,8 @@ src/shadow
 src/shadow-*
 src/runtime
 src/pixmaps
+src/LICENSE
+src/README.txt
 
 # other files possibly created by tools
 src/cscope.out
