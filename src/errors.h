@@ -2738,8 +2738,7 @@ EXTERN char e_invalid_command_after_export[]
 	INIT(= N_("E1043: Invalid command after :export"));
 EXTERN char e_export_with_invalid_argument[]
 	INIT(= N_("E1044: Export with invalid argument"));
-EXTERN char e_import_nesting_too_deep[]
-        INIT(= N_("E1045: Import nesting too deep"));
+// E1045 not used
 // E1046 not used
 EXTERN char e_syntax_error_in_import_str[]
 	INIT(= N_("E1047: Syntax error in import: %s"));
