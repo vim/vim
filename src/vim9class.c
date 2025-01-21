@@ -540,8 +540,8 @@ validate_abstract_class_methods(
 	// loop == 1: check class methods
 	// loop == 2: check object methods
 	int extends_method_count = loop == 1
-				? extends_cl->class_class_function_count
-				: extends_cl->class_obj_method_count;
+				? extends_cl->class_class_function_count_child
+				: extends_cl->class_obj_method_count_child;
 	if (extends_method_count == 0)
 	    continue;
 

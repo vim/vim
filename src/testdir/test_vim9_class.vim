@@ -12287,4 +12287,102 @@ def Test_constructor_init_compound_member_var()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using a concrete method in an abstract extended class which is
+" further extended
+def Test_abstract_method_across_hierarchy()
+  # Object methods
+  var lines =<< trim END
+    vim9script
+
+    abstract class A
+      abstract def M1(): string
+      abstract def M2(): string
+    endclass
+
+    abstract class B extends A
+      def M1(): string
+        return 'B: M1'
+      enddef
+
+      def M2(): string
+        return 'B: M2'
+      enddef
+    endclass
+
+    class C1 extends B
+      def M1(): string
+        return 'C1: M1'
+      enddef
+    endclass
+
+    class C2 extends B
+      def M2(): string
+        return 'C2: M2'
+      enddef
+    endclass
+
+    class D1 extends C1
+    endclass
+
+    class D2 extends C2
+    endclass
+
+    var l: list<string> = []
+    for Type in ['C1', 'C2', 'D1', 'D2']
+      l->add(eval($'{Type}.new().M1()'))
+      l->add(eval($'{Type}.new().M2()'))
+    endfor
+    assert_equal(['C1: M1', 'B: M2', 'B: M1', 'C2: M2', 'C1: M1', 'B: M2', 'B: M1', 'C2: M2'], l)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    abstract class A
+      abstract def M1(): string
+      abstract def M2(): string
+    endclass
+
+    class B extends A
+      def M1(): string
+        return 'B: M1'
+      enddef
+
+      def M2(): string
+        return 'B: M2'
+      enddef
+    endclass
+
+    abstract class C extends B
+    endclass
+
+    class D1 extends C
+      def M1(): string
+        return 'D1: M1'
+      enddef
+    endclass
+
+    class D2 extends C
+      def M2(): string
+        return 'D2: M2'
+      enddef
+    endclass
+
+    class E1 extends D1
+    endclass
+
+    class E2 extends D2
+    endclass
+
+    var l: list<string> = []
+    for Type in ['B', 'D1', 'D2', 'E1', 'E2']
+      l->add(eval($'{Type}.new().M1()'))
+      l->add( eval($'{Type}.new().M2()'))
+    endfor
+    assert_equal(['B: M1', 'B: M2', 'D1: M1', 'B: M2', 'B: M1', 'D2: M2', 'D1: M1', 'B: M2', 'B: M1', 'D2: M2'], l)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
