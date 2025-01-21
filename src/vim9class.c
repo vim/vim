@@ -561,20 +561,34 @@ validate_abstract_class_methods(
 	    if (!IS_ABSTRACT_METHOD(uf))
 		continue;
 
-	    int method_found = FALSE;
+	    int	concrete_method_found = FALSE;
+	    int	j = 0;
 
-	    for (int j = 0; j < method_count; j++)
+	    // Check if the abstract method is already implemented in one of
+	    // the parent classes.
+	    for (j = 0; !concrete_method_found && j < i; j++)
+	    {
+		ufunc_T *uf2 = extends_methods[j];
+		if (!IS_ABSTRACT_METHOD(uf2) &&
+			STRCMP(uf->uf_name, uf2->uf_name) == 0)
+		    concrete_method_found = TRUE;
+	    }
+
+	    if (concrete_method_found)
+		continue;
+
+	    for (j = 0; j < method_count; j++)
 	    {
 		if (STRCMP(uf->uf_name, cl_fp[j]->uf_name) == 0)
 		{
-		    method_found = TRUE;
+		    concrete_method_found = TRUE;
 		    break;
 		}
 	    }
 
-	    if (!method_found)
+	    if (!concrete_method_found)
 	    {
-		semsg(_(e_abstract_method_str_not_found), uf->uf_name);
+		semsg(_(e_abstract_method_str_not_implemented), uf->uf_name);
 		return FALSE;
 	    }
 	}
