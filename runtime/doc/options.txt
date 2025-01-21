@@ -2164,6 +2164,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    characters can be skipped and matches can be found even
 		    if the exact sequence is not typed.
 
+	   nosort   Disable sorting of completion candidates based on fuzzy
+		    scores when "fuzzy" is enabled. candidates will appear
+		    in their original order.
+
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)
 			global
