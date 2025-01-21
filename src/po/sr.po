@@ -2,7 +2,7 @@
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
-# Copyright (C) 2024
+# Copyright (C) 2025
 # This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR Ivan Pešić <ivan.pesic@gmail.com>, 2017.
 #
@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-19 10:23+0400\n"
-"PO-Revision-Date: 2024-07-19 10:39+0400\n"
+"POT-Creation-Date: 2025-01-21 15:11+0400\n"
+"PO-Revision-Date: 2025-01-21 15:26+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -161,8 +161,8 @@ msgid "Top"
 msgstr "Врх"
 
 #, c-format
-msgid "%d%%"
-msgstr "%d%%"
+msgid "%s%d%%"
+msgstr "%s%d%%"
 
 #, c-format
 msgid " (%d of %d)"
@@ -785,11 +785,11 @@ msgid "[unix format]"
 msgstr "[unix формат]"
 
 #, c-format
-msgid "%ld line, "
-msgid_plural "%ld lines, "
-msgstr[0] "%ld линија, "
-msgstr[1] "%ld линије, "
-msgstr[2] "%ld линија, "
+msgid "%s%ld line, "
+msgid_plural "%s%ld lines, "
+msgstr[0] "%s%ld линија, "
+msgstr[1] "%s%ld линије, "
+msgstr[2] "%s%ld линија, "
 
 #, c-format
 msgid "%lld byte"
@@ -1261,6 +1261,15 @@ msgstr "linenr је ван опсега"
 
 msgid "not allowed in the Vim sandbox"
 msgstr "није дозвољено унутар Vim sandbox"
+
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: Библиотека %s није могла да се учита"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"Жао нам је, ова команда је онемогућена: Perl библиотека није могла да се "
+"учита."
 
 msgid "invalid buffer number"
 msgstr "неисправан број бафера"
@@ -2289,6 +2298,12 @@ msgstr "-- Још --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr " РАЗМАКНИЦА/d/j: екран/страна/линија наниже, b/u/k: навише, q: излаз "
+
+msgid "W23: Clipboard register not available, using register 0"
+msgstr "W23: Клипборд регистар није доступан, користи се регистар 0"
+
+msgid "W24: Clipboard register not available. See :h W24"
+msgstr "W24: Клипборд регистар није доступан. Погледајте :h W24"
 
 msgid "Question"
 msgstr "Питање"
@@ -3876,15 +3891,6 @@ msgstr "Уписивање viminfo фајла „%s”"
 
 msgid "Already only one window"
 msgstr "Већ постоји само један прозор"
-
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: Библиотека %s није могла да се учита"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"Жао нам је, ова команда је онемогућена: Perl библиотека није могла да се "
-"учита."
 
 msgid "Edit with Vim using &tabpages"
 msgstr "Уређуј програмом Vim у новој &картици"
@@ -7443,6 +7449,9 @@ msgstr "E1043: Неважећа команда након :export"
 msgid "E1044: Export with invalid argument"
 msgstr "E1044: Export са неважећим аргументом"
 
+msgid "E1045: Import nesting too deep"
+msgstr "E1045: Import угњеждавање је сувише дубоко"
+
 #, c-format
 msgid "E1047: Syntax error in import: %s"
 msgstr "E1047: Синтаксна грешка у import: %s"
@@ -8799,6 +8808,16 @@ msgid "E1429: Class can only be used in a script"
 msgstr "E1429: Class може да се употреби само у скрипти"
 
 #, c-format
+msgid "E1430: Uninitialized object variable '%s' referenced"
+msgstr "E1430: Указује се на неиницијализовану објекат променљиву ’%s’"
+
+#, c-format
+msgid ""
+"E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"
+msgstr ""
+"E1431: Апстрактној методи „%s” у класи „%s” не може директно да се приступи"
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Не могу да се мешају позициони и непозициони аргументи: %s"
 
@@ -8854,6 +8873,13 @@ msgstr "E1512: Погрешна ширина карактера за поље �
 
 msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
 msgstr "E1513: Не може да пређе на други бафер. Укључена је опција 'winfixbuf'"
+
+msgid "E1514: 'findfunc' did not return a List type"
+msgstr "E1514: 'findfunc' није вратила тип Листа"
+
+#, c-format
+msgid "E1515: Unable to convert %s '%s' encoding"
+msgstr "E1515: Кодирање %s ’%s’ не може да се конвертује"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
@@ -9889,6 +9915,9 @@ msgstr ""
 msgid "list of flags to make messages shorter"
 msgstr "листа заставица за скраћивање порука"
 
+msgid "options for outputting messages"
+msgstr "опције за исписивање порука"
+
 msgid "show (partial) command keys in location given by 'showcmdloc'"
 msgstr ""
 "приказује (делимичне) тастере команде на месту наведеном у 'showcmdloc'"
@@ -10008,6 +10037,9 @@ msgstr "наводи како ради довршавање у режиму Ум
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "да ли се за довршавање у режиму Уметање користи искачући мени"
+
+msgid "popup menu item align order"
+msgstr "редослед поравнања ставки искачућег менија"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "опције за искачући мени за довршавање у режиму Уметање"
