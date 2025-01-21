@@ -100,9 +100,9 @@ syntaxtest:
 # configure script. And then automatically fill in the fields in the files
 # listed below. (Restorer)
 
-MAJOR != grep -E 'VIM_VERSION_MAJOR\s{2,}' src/version.h | \
+	MAJOR != grep -E 'VIM_VERSION_MAJOR\s{2,}' src/version.h | \
 	awk '{ printf "%d",$$3 }'
-MINOR != grep -E 'VIM_VERSION_MINOR\s{2,}' src/version.h | \
+	MINOR != grep -E 'VIM_VERSION_MINOR\s{2,}' src/version.h | \
 	awk '{ printf "%d",$$3 }'
 
 # CHECKLIST for creating a new version:
