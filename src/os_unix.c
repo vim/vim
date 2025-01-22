@@ -8194,9 +8194,7 @@ do_xterm_trace(void)
 
 	// Rely on the same mouse code for the duration of this
 	mouse_code = find_termcode(mouse_name);
-	if (mouse_code == NULL)
-	    mouse_codelen = 0;
-	else
+	if (mouse_code != NULL)
 	    mouse_codelen = STRLEN(mouse_code);
 	prev_row = mouse_row;
 	prev_col = mouse_col;
