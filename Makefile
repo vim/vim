@@ -96,14 +96,8 @@ syntaxtest:
 #    To do all this you need the Unix archive and compiled binaries.
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
-# I think it is better to place getting the current version number in the
-# configure script. And then automatically fill in the fields in the files
-# listed below. (Restorer)
-
-MAJOR != grep -E 'VIM_VERSION_MAJOR\s{2,}' src/version.h | \
-	awk '{ printf "%d",$$3 }'
-MINOR != grep -E 'VIM_VERSION_MINOR\s{2,}' src/version.h | \
-	awk '{ printf "%d",$$3 }'
+MAJOR = 9
+MINOR = 1
 
 # CHECKLIST for creating a new version:
 #
