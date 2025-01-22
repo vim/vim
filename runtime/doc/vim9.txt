@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Jan 19
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2052,14 +2052,13 @@ prefixing the function with |<SID>| you should use|<ScriptCmd>|. For example:
 >
 	noremap ,a <ScriptCmd>:call s:that.OtherFunc()<CR>
 <
-							*:import-cycle* *E1045*
-The `import` commands are executed when encountered.  It can be nested up to
-'maxfuncdepth' levels deep.  If script A imports script B, and B (directly or
-indirectly) imports A, this will be skipped over.  At this point items in A
-after "import B" will not have been processed and defined yet.  Therefore
-cyclic imports can exist and not result in an error directly, but may result
-in an error for items in A after "import B" not being defined.  This does not
-apply to autoload imports, see the next section.
+							*:import-cycle*
+The `import` commands are executed when encountered.  If script A imports
+script B, and B (directly or indirectly) imports A, this will be skipped over.
+At this point items in A after "import B" will not have been processed and
+defined yet.  Therefore cyclic imports can exist and not result in an error
+directly, but may result in an error for items in A after "import B" not being
+defined.  This does not apply to autoload imports, see the next section.
 
 
 Importing an autoload script ~
