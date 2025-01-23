@@ -1,10 +1,10 @@
 " Test for setting 'encoding' to something else than the terminal uses, then
 " setting 'termencoding' to make it work.
 
+source check.vim
+
 " This only works with "iconv".
-if !has('iconv')
-  throw 'Skipped: iconv feature missing'
-endif
+CheckFeature iconv
 
 source screendump.vim
 if !CanRunVimInTerminal()
