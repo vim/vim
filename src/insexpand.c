@@ -1264,8 +1264,8 @@ ins_compl_build_pum(void)
     int		max_fuzzy_score = 0;
     unsigned int cur_cot_flags = get_cot_flags();
     int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
-    int		fuzzy_nosort = (cur_cot_flags & COT_NOSORT) != 0;
-    int		fuzzy_filter = fuzzy_nosort || (cur_cot_flags & COT_FUZZY) != 0;
+    int		fuzzy_filter = (cur_cot_flags & COT_FUZZY) != 0;
+    int		fuzzy_sort = fuzzy_filter && !(cur_cot_flags & COT_NOSORT);
     compl_T	*match_head = NULL;
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
@@ -1328,14 +1328,14 @@ ins_compl_build_pum(void)
 		    shown_compl = compl;
 		// Update the maximum fuzzy score and the shown match
 		// if the current item's score is higher
-		if (!fuzzy_nosort && compl->cp_score > max_fuzzy_score)
+		if (fuzzy_sort && compl->cp_score > max_fuzzy_score)
 		{
 		    did_find_shown_match = TRUE;
 		    max_fuzzy_score = compl->cp_score;
 		    if (!compl_no_select)
 			compl_shown_match = compl;
 		}
-		else if (fuzzy_nosort && i == 0 && !compl_no_select)
+		else if (!fuzzy_sort && i == 0 && !compl_no_select)
 		    compl_shown_match = shown_compl;
 
 		if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
@@ -1392,7 +1392,7 @@ ins_compl_build_pum(void)
 	compl = match_next;
     }
 
-    if (fuzzy_filter && !fuzzy_nosort && compl_leader.string != NULL && compl_leader.length > 0)
+    if (fuzzy_sort && compl_leader.string != NULL && compl_leader.length > 0)
     {
 	for (i = 0; i < compl_match_arraysize; i++)
 	    compl_match_array[i].pum_idx = i;
