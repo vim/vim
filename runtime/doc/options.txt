@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jan 21
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2163,6 +2163,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    allows for more flexible and intuitive matching, where
 		    characters can be skipped and matches can be found even
 		    if the exact sequence is not typed.
+
+	   nosort   Disable sorting of completion candidates based on fuzzy
+		    scores when "fuzzy" is enabled. Candidates will appear
+		    in their original order.
 
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)
