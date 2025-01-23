@@ -41625,6 +41625,8 @@ Changed~
   the "matches" key
 - |v:stacktrace| The stack trace of the exception most recently caught and
   not finished
+- 'termguicolors' is automatically enabled if the terminal supports the RGB
+  terminfo capability or supports 0x1000000 colors
 
 							*added-9.2*
 Added ~
