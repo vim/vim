@@ -206,7 +206,7 @@ export def Exe2filetype(name: string, line1: string): string
 
     # Guile
   elseif name =~ 'guile'
-    return 'scheme'
+    return 'guile'
 
     # Nix
   elseif name =~ 'nix-shell'
