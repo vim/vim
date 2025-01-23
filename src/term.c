@@ -7199,6 +7199,7 @@ got_code_from_term(char_u *code, int len)
 	    else if (name[0] == 'R' && name[1] == 'G' && name[2] == 'B' && code[9] == '=')
 	    {
 		int val = atoi((char *)str);
+		// 8 bits per color channel
 		if (val == 8)
 		{
 #ifdef FEAT_EVAL
