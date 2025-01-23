@@ -176,6 +176,8 @@ let &g:foo -= expr
 let [foo, bar] = expr
 let [foo,
       \ bar] = expr
+let [&foo, &bar] = expr
+let [$foo, $bar] = expr
 
 let [foo, bar] .= expr
 let [foo, bar] ..= expr

@@ -16,6 +16,8 @@ $FOO = expr
 var [foo, bar] = expr
 var [foo,
       \ bar] = expr
+var [&foo, &bar] = expr
+var [$foo, $bar] = expr
 
 var [foo, bar; baz] = expr
 var [foo,
@@ -119,6 +121,8 @@ $FOO ..= expr
 &g:foo -= expr
  
 [foo, bar] = expr
+[&foo, &bar] = expr
+[$foo, $bar] = expr
 [foo,
       \ bar] = expr
 
