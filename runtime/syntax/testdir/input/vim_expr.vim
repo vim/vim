@@ -85,6 +85,21 @@ echo 0zFF00ED015DAF
 echo 0zFF00.ED01.5DAF
 echo 0zFF.00.ED.01.5D.AF
 
+" List
+
+echo []
+echo [42]
+echo [[11, 12], [21, 22], [31, 32]]
+echo [1,
+      \ 2,
+      \ 3,
+      \ 4
+      \]
+echo [1, 'two', 1 + 2, "fo" .. "ur"]
+
+" Issue #5830 (Incorrect syntax highlighting in Vim script when omitting space in list of string)
+let l = ['a','b','c']
+
 " Operators
 
 " Ternary
