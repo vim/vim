@@ -1265,7 +1265,7 @@ ins_compl_build_pum(void)
     unsigned int cur_cot_flags = get_cot_flags();
     int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
     int		fuzzy_nosort = (cur_cot_flags & COT_NOSORT) != 0;
-    int		fuzzy_filter = fuzzy_nosort || (cur_cot_flags & COT_FUZZY) != 0;
+    int		fuzzy_filter = (cur_cot_flags & COT_FUZZY) != 0;
     compl_T	*match_head = NULL;
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
