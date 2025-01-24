@@ -402,5 +402,5 @@ hi def link justUserDefinedError                 Exception
 hi def link justVariadicPrefix                   Statement
 hi def link justVariadicPrefixError              Error
 
-let &cpo = s:cpo_sav
-unlet s:cpo_sav
+let &cpo = s:cpo_save
+unlet s:cpo_save
