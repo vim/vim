@@ -301,7 +301,7 @@ func Test_term_mouse_middle_click_no_clipboard()
   let &ttymouse = save_ttymouse
   let &term = save_term
   let &mouse = save_mouse
-  close!
+  bw!
 endfunc
 
 func Test_term_mouse_middle_click_insert_mode()
@@ -370,7 +370,7 @@ func Test_term_mouse_switch_win_insert_mode()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for using the mouse to increase the height of the cmdline window
@@ -1051,7 +1051,7 @@ func Test_mouse_alt_leftclick()
   let &ttymouse = save_ttymouse
   set mousetime& mousemodel&
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 func Test_xterm_mouse_click_in_fold_columns()
@@ -1276,7 +1276,7 @@ func Test_term_mouse_visual_mode()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for displaying the popup menu using the right mouse click
@@ -1311,7 +1311,7 @@ func Test_term_mouse_popup_menu()
   let &ttymouse = save_ttymouse
   let &mousemodel = save_mousemodel
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for 'mousemodel' set to popup_setpos to move the cursor where the popup
@@ -1437,7 +1437,7 @@ func Test_term_mouse_popup_menu_setpos()
   let &ttymouse = save_ttymouse
   let &mousemodel = save_mousemodel
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for searching for the word under the cursor using Shift-Right or
@@ -1476,7 +1476,7 @@ func Test_term_mouse_search()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for selecting an entry in the quickfix/location list window using the
@@ -2738,6 +2738,5 @@ func Test_terminal_builtin_without_gui()
   call assert_equal(-1, index(output, 'builtin_gui'))
   call assert_notequal(-1, index(output, 'builtin_dumb'))
 endfunc
-
 
 " vim: shiftwidth=2 sts=2 expandtab
