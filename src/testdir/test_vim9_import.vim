@@ -3420,4 +3420,51 @@ def Test_imported_class_as_def_func_rettype()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for multi level import
+def Test_import_multi_level()
+  var lines =<< trim END
+    vim9script
+    export var a0 = "A0"
+  END
+  writefile(lines, 'aa0.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './bb.vim'
+    import './bb1.vim' as acme
+    export var a = "A"
+  END
+  writefile(lines, 'aa.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    export var b = "B"
+  END
+  writefile(lines, 'bb.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './cc.vim'
+    export var b1 = "B1"
+  END
+  writefile(lines, 'bb1.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    export var c = "C"
+  END
+  writefile(lines, 'cc.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './aa0.vim' as acme
+    import './aa.vim'
+    assert_equal("A0", acme.a0)
+    assert_equal("A", aa.a)
+    assert_equal("B1", aa.acme.b1)
+    assert_equal("C", aa.acme.cc.c)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

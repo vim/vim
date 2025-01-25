@@ -7026,6 +7026,7 @@ handle_subscript(
     int		check_white = TRUE;
     int		getnext;
     char_u	*p;
+    scid_T	sid = rettv->v_type == VAR_ANY ? rettv->vval.v_number : 0;
 
     while (ret == OK)
     {
@@ -7053,34 +7054,52 @@ handle_subscript(
 	    int		idx;
 	    ufunc_T	*ufunc;
 	    type_T	*type;
+	    imported_T	*imp;
 
-	    // Found script from "import {name} as name", script item name must
-	    // follow.  "rettv->vval.v_number" has the script ID.
-	    if (**arg != '.')
+	    do
 	    {
-		if (verbose)
-		    semsg(_(e_expected_dot_after_name_str),
+		// Found script from "import {name} as name", script item name
+		// must follow.  "rettv->vval.v_number" has the script ID.
+		if (**arg != '.')
+		{
+		    if (verbose)
+			semsg(_(e_expected_dot_after_name_str),
 					name_start != NULL ? name_start: *arg);
-		ret = FAIL;
-		break;
-	    }
-	    ++*arg;
-	    if (IS_WHITE_OR_NUL(**arg))
-	    {
-		if (verbose)
-		    emsg(_(e_no_white_space_allowed_after_dot));
-		ret = FAIL;
-		break;
-	    }
-
-	    // isolate the name
-	    exp_name = *arg;
-	    while (eval_isnamec(**arg))
+		    ret = FAIL;
+		    break;
+		}
 		++*arg;
-	    cc = **arg;
-	    **arg = NUL;
+		if (IS_WHITE_OR_NUL(**arg))
+		{
+		    if (verbose)
+			emsg(_(e_no_white_space_allowed_after_dot));
+		    ret = FAIL;
+		    break;
+		}
 
-	    idx = find_exported(rettv->vval.v_number, exp_name, &ufunc, &type,
+		// isolate the name
+		exp_name = *arg;
+		while (eval_isnamec(**arg))
+		    ++*arg;
+		cc = **arg;
+		**arg = NUL;
+
+		scid_T sc_sid_save = current_sctx.sc_sid;
+		current_sctx.sc_sid = sid;
+		imp = find_imported(exp_name, 0, FALSE);
+		current_sctx.sc_sid = sc_sid_save;
+		if (imp != NULL)
+		{
+		    sid = imp->imp_sid;
+		    **arg = cc;
+		}
+	    }
+	    while (imp != NULL && ret == OK);
+
+	    if (ret != OK)
+		break;
+
+	    idx = find_exported(sid, exp_name, &ufunc, &type,
 		       evalarg == NULL ? NULL : evalarg->eval_cctx,
 		       evalarg == NULL ? NULL : evalarg->eval_cstack, verbose);
 	    **arg = cc;
@@ -7092,7 +7111,7 @@ handle_subscript(
 	    }
 	    if (idx >= 0)
 	    {
-		scriptitem_T    *si = SCRIPT_ITEM(rettv->vval.v_number);
+		scriptitem_T    *si = SCRIPT_ITEM(sid);
 		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
 		copy_tv(sv->sv_tv, rettv);
