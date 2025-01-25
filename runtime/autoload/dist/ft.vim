@@ -1429,8 +1429,8 @@ export def FTv()
     # Verilog: line ends with ';' followed by an optional variable number of
     # spaces and an optional start of a comment.
     # Example: " b <= a + 1; // Add 1".
-    # Alternatively: a module is defined: " module MyModule"
-    if line =~ ';\s*\(/[/*].*\)\?$' || line =~ '\C^\s*module\>'
+    # Alternatively: a module is defined: " module MyModule ( input )"
+    if line =~ ';\s*\(/[/*].*\)\?$' || line =~ '\C^\s*module\s\+\w\+\s*('
       setf verilog
       return
     endif
