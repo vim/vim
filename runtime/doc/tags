@@ -2140,7 +2140,6 @@ $quote	eval.txt	/*$quote*
 :Man	filetype.txt	/*:Man*
 :MkVimball	pi_vimball.txt	/*:MkVimball*
 :N	editing.txt	/*:N*
-:NetrwClean	pi_netrw.txt	/*:NetrwClean*
 :Nexplore	pi_netrw.txt	/*:Nexplore*
 :Next	editing.txt	/*:Next*
 :NoMatchParen	pi_paren.txt	/*:NoMatchParen*
@@ -7711,7 +7710,6 @@ g:netrw_special_syntax	pi_netrw.txt	/*g:netrw_special_syntax*
 g:netrw_ssh_browse_reject	pi_netrw.txt	/*g:netrw_ssh_browse_reject*
 g:netrw_ssh_cmd	pi_netrw.txt	/*g:netrw_ssh_cmd*
 g:netrw_sshport	pi_netrw.txt	/*g:netrw_sshport*
-g:netrw_suppress_gx_mesg	pi_netrw.txt	/*g:netrw_suppress_gx_mesg*
 g:netrw_timefmt	pi_netrw.txt	/*g:netrw_timefmt*
 g:netrw_tmpfile_escape	pi_netrw.txt	/*g:netrw_tmpfile_escape*
 g:netrw_uid	pi_netrw.txt	/*g:netrw_uid*
@@ -8991,7 +8989,6 @@ netrw-call	pi_netrw.txt	/*netrw-call*
 netrw-cb	pi_netrw.txt	/*netrw-cb*
 netrw-cd	pi_netrw.txt	/*netrw-cd*
 netrw-chgup	pi_netrw.txt	/*netrw-chgup*
-netrw-clean	pi_netrw.txt	/*netrw-clean*
 netrw-contents	pi_netrw.txt	/*netrw-contents*
 netrw-copyright	pi_netrw.txt	/*netrw-copyright*
 netrw-cr	pi_netrw.txt	/*netrw-cr*
@@ -9001,7 +8998,6 @@ netrw-ctrl-h	pi_netrw.txt	/*netrw-ctrl-h*
 netrw-ctrl-l	pi_netrw.txt	/*netrw-ctrl-l*
 netrw-ctrl-r	pi_netrw.txt	/*netrw-ctrl-r*
 netrw-ctrl_l	pi_netrw.txt	/*netrw-ctrl_l*
-netrw-curdir	pi_netrw.txt	/*netrw-curdir*
 netrw-d	pi_netrw.txt	/*netrw-d*
 netrw-del	pi_netrw.txt	/*netrw-del*
 netrw-delete	pi_netrw.txt	/*netrw-delete*
