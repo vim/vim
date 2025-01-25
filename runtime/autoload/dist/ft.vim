@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Jan 11
+# Last Change:		2025 Jan 25
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -1384,7 +1384,7 @@ export def FTdsp()
   setf faust
 enddef
 
-# Set the filetype of a *.v file to Verilog, V or Cog based on the first 200
+# Set the filetype of a *.v file to Verilog, V or Cog based on the first 500
 # lines.
 export def FTv()
   if did_filetype()
@@ -1397,7 +1397,7 @@ export def FTv()
   endif
 
   var in_comment = 0
-  for lnum in range(1, min([line("$"), 200]))
+  for lnum in range(1, min([line("$"), 500]))
     var line = getline(lnum)
     # Skip Verilog and V comments (lines and blocks).
     if line =~ '^\s*/\*'
@@ -1429,7 +1429,8 @@ export def FTv()
     # Verilog: line ends with ';' followed by an optional variable number of
     # spaces and an optional start of a comment.
     # Example: " b <= a + 1; // Add 1".
-    if line =~ ';\s*\(/[/*].*\)\?$'
+    # Alternatively: a module is defined: " module MyModule"
+    if line =~ ';\s*\(/[/*].*\)\?$' || line =~ '\C^\s*module\>'
       setf verilog
       return
     endif
