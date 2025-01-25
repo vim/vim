@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jan 23
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jan 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41626,6 +41626,8 @@ Changed~
 - |v:stacktrace| The stack trace of the exception most recently caught and
   not finished
 - New option value "nosort" for 'completeopt'
+- add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
+  and decouple it from |netrw|
 
 							*added-9.2*
 Added ~
