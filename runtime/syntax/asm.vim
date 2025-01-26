@@ -32,6 +32,9 @@ syn match asmType "\.single"
 syn match asmType "\.space"
 syn match asmType "\.string"
 syn match asmType "\.word"
+syn match asmType "\.2byte"
+syn match asmType "\.4byte"
+syn match asmType "\.8byte"
 
 syn match asmIdentifier		"[a-z_][a-z0-9_]*"
 syn match asmLabel		"[a-z_][a-z0-9_]*:"he=e-1
