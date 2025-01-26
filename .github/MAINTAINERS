@@ -434,7 +434,7 @@ runtime/syntax/bzr.vim			@hdima
 runtime/syntax/cabal.vim		@coot
 runtime/syntax/cabalconfig.vim		@coot
 runtime/syntax/cabalproject.vim		@coot
-runtime/syntax/caddy.vim		@opa-oz
+runtime/syntax/caddyfile.vim		@opa-oz
 runtime/syntax/cf.vim			@ernstvanderlinden
 runtime/syntax/chatito.vim		@ObserverOfTime
 runtime/syntax/chicken.vim		@evhan

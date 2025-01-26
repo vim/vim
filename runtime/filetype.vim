@@ -331,7 +331,7 @@ au BufNewFile,BufRead *.c3,*.c3i,*.c3t		setf c3
 
 " Caddyfile;
 " Also see Caddyfile.* below.
-au BufNewFile,BufRead Caddyfile,caddyfile,*.[cC]addyfile	setf caddyfile
+au BufNewFile,BufRead [cC]addyfile,*.[cC]addyfile	setf caddyfile
 
 " Cairo
 au BufNewFile,BufRead *.cairo			setf cairo
