@@ -1,0 +1,20 @@
+{
+    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+
+dell.proxmox.opa-oz.live {
+    tls opaozhub@gmail.com {
+        # https://caddy.community/t/how-to-guide-caddy-v2-cloudflare-dns-01-via-docker/8007
+        dns cloudflare {env.CLOUDFLARE_TOKEN}
+        resolvers 1.1.1.1
+    }
+
+    reverse_proxy https://192.168.0.101:8006 {
+        transport http {
+            tls_insecure_skip_verify
+		include "string"
+        }
+    }
+}
+

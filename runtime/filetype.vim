@@ -329,6 +329,10 @@ au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 " C3
 au BufNewFile,BufRead *.c3,*.c3i,*.c3t		setf c3
 
+" Caddyfile;
+" Also see Caddyfile.* below.
+au BufNewFile,BufRead Caddyfile,caddyfile,*.[cC]addyfile	setf caddyfile
+
 " Cairo
 au BufNewFile,BufRead *.cairo			setf cairo
 
@@ -3082,6 +3086,9 @@ endif
 au BufNewFile,BufRead */named/db.*,*/bind/db.*	call s:StarSetf('bindzone')
 
 au BufNewFile,BufRead cabal.project.*		call s:StarSetf('cabalproject')
+
+" Caddyfile
+au BufNewFile,BufRead Caddyfile.*	call s:StarSetf('caddyfile')
 
 " Calendar
 au BufNewFile,BufRead */.calendar/*,
