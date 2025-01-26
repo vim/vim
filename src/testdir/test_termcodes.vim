@@ -2739,4 +2739,40 @@ func Test_terminal_builtin_without_gui()
   call assert_notequal(-1, index(output, 'builtin_dumb'))
 endfunc
 
+func Test_xterm_direct_enables_termguicolors()
+  " TERM=xterm-direct enables termguicolors
+  CheckNotMSWindows
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  if !executable('tput')
+    throw "Skipped: tput not executable!"
+  endif
+  if has("gui_running")
+    throw "Skipped: does not work in GUI mode"
+  endif
+  call system('tput -Txterm-direct RGB 2>/dev/null')
+  if v:shell_error
+    throw "Skipped: xterm-direct $TERM has no RGB capability"
+  endif
+  let colors  = systemlist('tput -Txterm-direct colors')[0]
+  defer delete('XTerm-direct.txt')
+
+  let buf = RunVimInTerminal('--cmd ":set noswapfile" --clean XTerm-direct.txt',
+        \  {'rows': 10, 'env': {'TERM': 'xterm-direct'}})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":$put ='TERM: ' .. &term\<cr>")
+  " doesn't work. Vim cannot query xterm colors in the embedded terminal?
+  "call term_sendkeys(buf, ":$put ='Colors: ' .. &t_Co\<cr>")
+  call term_sendkeys(buf, ":$put ='Termguicolors: ' .. &tgc\<cr>")
+  call term_sendkeys(buf, ":wq\<cr>")
+  call TermWait(buf)
+
+  let result=readfile('XTerm-direct.txt')
+  " call assert_equal(['', 'TERM: xterm-direct', 'Colors: ' .. colors, 'Termguicolors: 1'], result)
+  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 1'], result)
+  " cleanup
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

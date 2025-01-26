@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jan 25
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41628,6 +41628,8 @@ Changed~
 - New option value "nosort" for 'completeopt'
 - add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
   and decouple it from |netrw|
+- 'termguicolors' is automatically enabled if the terminal supports the RGB
+  terminfo capability or supports 0x1000000 colors
 
 							*added-9.2*
 Added ~
