@@ -1343,6 +1343,8 @@ call <SID>AddOption("virtualedit", gettext("when to use virtual editing: \"block
 call <SID>OptionG("ve", &ve)
 call <SID>AddOption("eventignore", gettext("list of autocommand events which are to be ignored"))
 call <SID>OptionG("ei", &ei)
+call <SID>AddOption("eventignorewin", gettext("list of autocommand events which are to be ignored in a window"))
+call <SID>OptionG("eiw", &eiw)
 call <SID>AddOption("loadplugins", gettext("load plugin scripts when starting up"))
 call <SID>BinOptionG("lpl", &lpl)
 call <SID>AddOption("exrc", gettext("enable reading .vimrc/.exrc/.gvimrc in the current directory"))

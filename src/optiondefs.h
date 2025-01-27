@@ -164,6 +164,7 @@
 #ifdef FEAT_DIFF
 # define PV_DIFF	OPT_WIN(WV_DIFF)
 #endif
+# define PV_EIW		OPT_WIN(WV_EIW)
 #ifdef FEAT_FOLDING
 # define PV_FDC		OPT_WIN(WV_FDC)
 # define PV_FEN		OPT_WIN(WV_FEN)
@@ -916,6 +917,9 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)TRUE} SCTX_INIT},
     {"eventignore", "ei",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_ei, PV_NONE, did_set_eventignore, expand_set_eventignore,
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"eventignorewin", "eiw",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+			    (char_u *)VAR_WIN, PV_EIW, did_set_eventignore, expand_set_eventignore,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"expandtab",   "et",   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_et, PV_ET, NULL, NULL,
