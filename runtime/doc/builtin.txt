@@ -7699,7 +7699,7 @@ ngettext({single}, {plural}, {number}[, {domain})	*ngettext()*
 		Can be used as a |method|: >
 			1->ngettext("File", "Files")  # returns "File"
 <
-		See |gettext| for information on the domain parameter.
+		See |gettext()| for information on the domain parameter.
 
 		Return type: |String|
 
