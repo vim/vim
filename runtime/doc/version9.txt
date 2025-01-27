@@ -187,6 +187,7 @@ New and extended functions: ~
 |matchfuzzy()|		fuzzy matches a string in a list of strings
 |matchfuzzypos()|	fuzzy matches a string in a list of strings
 |menu_info()|		get information about a menu item
+|ngettext()|		lookup single/plural message translation
 |popup_list()|		get list of all popup window IDs
 |prompt_getprompt()|	get the effective prompt text for a buffer
 |prop_add_list()|	attach a property at multiple positions

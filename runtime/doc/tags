@@ -9263,6 +9263,7 @@ new-vimscript-8.2	version8.txt	/*new-vimscript-8.2*
 new-virtedit	version6.txt	/*new-virtedit*
 news	intro.txt	/*news*
 nextnonblank()	builtin.txt	/*nextnonblank()*
+ngettext()	builtin.txt	/*ngettext()*
 no-eval-feature	eval.txt	/*no-eval-feature*
 no-type-checking	eval.txt	/*no-type-checking*
 no_buffers_menu	gui.txt	/*no_buffers_menu*

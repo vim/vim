@@ -15946,6 +15946,28 @@ else $as_nop
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 fi
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for dngettext" >&5
+printf %s "checking for dngettext... " >&6; }
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libintl.h>
+int
+main (void)
+{
+dngettext("DOMAIN", "Test single", "Test plural", 1);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }; printf "%s\n" "#define HAVE_DNGETTEXT 1" >>confdefs.h
+
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for _nl_msg_cat_cntr" >&5

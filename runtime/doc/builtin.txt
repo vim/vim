@@ -416,6 +416,8 @@ mkdir({name} [, {flags} [, {prot}]])
 mode([{expr}])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
+ngettext({single}, {plural}, {number}[, {domain}])
+				String	translate text based on {number}
 nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF-8 value {expr}
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr} [, {len}])	String	shorten directory names in a path
@@ -7686,6 +7688,20 @@ nextnonblank({lnum})					*nextnonblank()*
 			GetLnum()->nextnonblank()
 <
 		Return type: |Number|
+
+
+ngettext({single}, {plural}, {number}[, {domain})	*ngettext()*
+		Return a string that contains the correct value for a
+		message based on the rules for plural form(s) in
+		a language. Examples: >
+			ngettext("File", "Files", 2)  # returns "Files"
+<
+		Can be used as a |method|: >
+			1->ngettext("File", "Files")  # returns "File"
+<
+		See |gettext| for information on the domain parameter.
+
+		Return type: |String|
 
 
 nr2char({expr} [, {utf8}])				*nr2char()*
