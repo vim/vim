@@ -178,6 +178,7 @@ let [foo,
       \ bar] = expr
 let [&foo, &bar] = expr
 let [$foo, $bar] = expr
+let [@a, @b] = expr
 
 let [foo, bar] .= expr
 let [foo, bar] ..= expr
@@ -205,19 +206,33 @@ let foo =<< eval trim END
 ...
 END
 
+" :let list values
+
 let foo
 let foo bar
+let foo
+      "\ comment
+      \ bar
+
+let foo " comment
+let foo "\ comment
+let foo | echo "Foo"
+let foo bar " comment
+let foo bar | echo "Foo"
+let foo bar "\ comment
 
 " :unlet
 
 unlet foo
 unlet foo bar
 unlet foo
+      "\ comment
       \ bar
 
 unlet! foo
 unlet! foo bar
 unlet! foo
+      "\ comment
       \ bar
 
 unlet $FOO
@@ -227,6 +242,13 @@ unlet list[3]
 unlet list[3:]
 unlet dict['two']
 unlet dict.two
+
+unlet foo " comment
+unlet foo "\ comment
+unlet foo | echo "Foo"
+unlet foo bar " comment
+unlet foo bar "\ comment
+unlet foo bar | echo "Foo"
 
 " :const
 
@@ -262,3 +284,74 @@ endfor
 
 for [foo, bar] in expr
 endfor
+
+" :lockvar
+
+lockvar foo
+lockvar foo bar
+lockvar foo
+      "\ comment
+      \ bar
+
+lockvar foo " comment
+lockvar foo | echo "Foo"
+lockvar foo bar " comment
+lockvar foo bar | echo "Foo"
+
+lockvar! foo
+lockvar! foo bar
+lockvar! foo
+      "\ comment
+      \ bar
+
+lockvar! foo " comment
+lockvar! foo | echo "Foo"
+lockvar! foo bar " comment
+lockvar! foo bar | echo "Foo"
+
+lockvar 2 foo
+lockvar 2 foo bar
+lockvar 2 foo
+      "\ comment
+      \ bar
+
+lockvar 2 foo " comment
+lockvar 2 foo | echo "Foo"
+lockvar 2 foo bar " comment
+lockvar 2 foo bar | echo "Foo"
+
+" :unlockvar
+
+unlockvar foo
+unlockvar foo bar
+unlockvar foo
+      "\ comment
+      \ bar
+
+unlockvar foo " comment
+unlockvar foo | echo "Foo"
+unlockvar foo bar " comment
+unlockvar foo bar | echo "Foo"
+
+unlockvar! foo
+unlockvar! foo bar
+unlockvar! foo
+      "\ comment
+      \ bar
+
+unlockvar! foo " comment
+unlockvar! foo | echo "Foo"
+unlockvar! foo bar " comment
+unlockvar! foo bar | echo "Foo"
+
+unlockvar 2 foo
+unlockvar 2 foo bar
+unlockvar 2 foo
+      "\ comment
+      \ bar
+
+unlockvar 2 foo " comment
+unlockvar 2 foo | echo "Foo"
+unlockvar 2 foo bar " comment
+unlockvar 2 foo bar | echo "Foo"
+

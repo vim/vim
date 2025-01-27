@@ -241,7 +241,7 @@ syn match	vimNumber	'\%(^\|\A\)\zs#\x\{6}'		skipwhite nextgroup=vimGlobal,vimSub
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimFor,vimFunction,vimFuncFold,vimGlobal,vimHighlight,vimLet,vimLoadkeymap,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimSet,vimSleep,vimSyntax,vimThrow,vimUnlet,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate,@vim9CmdList
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimFor,vimFunction,vimFuncFold,vimGlobal,vimHighlight,vimLet,vimLoadkeymap,vimLockvar,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimSet,vimSleep,vimSyntax,vimThrow,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate,@vim9CmdList
 syn cluster vim9CmdList	contains=vim9Abstract,vim9Class,vim9Const,vim9Enum,vim9Export,vim9Final,vim9For,vim9Interface,vim9Type,vim9Var
 syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
 syn match vimCount	contained	"\d\+"
@@ -721,13 +721,18 @@ syn match	vimSetMod	contained	"\a\@1<=\%(&vim\=\|[!&?<]\)"
 
 " Variable Declarations: {{{2
 " =====================
-VimL syn keyword	vimLet	let		skipwhite nextgroup=vimVar,vimFuncVar,vimLetRegister,vimVarList,vimOptionVar
-VimL syn keyword	vimConst	cons[t]		skipwhite nextgroup=vimVar,vimVarList,vimOptionVar
-syn region	vimVarList	contained	start="\[" end="]" contains=@vimContinue,vimVar,vimEnvvar,vimOptionVar
+VimL syn keyword	vimLet	let		skipwhite nextgroup=vimFuncVar,vimLetRegister,vimOptionVar,vimVar,vimVarList
+VimL syn keyword	vimConst	cons[t]		skipwhite nextgroup=vimFuncVar,vimLetRegister,vimOptionVar,vimVar,vimVarList
+syn region	vimVarList	contained
+      \ start="\[" end="]"
+      \ contains=@vimContinue,vimEnvvar,vimLetRegister,vimOptionVar,vimVar
 
-VimL syn keyword	vimUnlet	unl[et]		skipwhite nextgroup=vimUnletBang,vimUnletVars
-syn match	vimUnletBang	contained	"!"	skipwhite nextgroup=vimUnletVars
-syn region	vimUnletVars	contained	start="$\I\|\h" skip=+\\\|\n\s*\\\|\n\s"\\ + end="$" end="|" contains=vimVar,vimEnvvar,@vimContinue
+VimL syn keyword	vimUnlet		unl[et]	skipwhite nextgroup=vimUnletBang,vimUnletVars
+syn match	vimUnletBang	contained	"\a\@1<=!"	skipwhite nextgroup=vimUnletVars
+syn region	vimUnletVars	contained
+      \ start="$\I\|\h" skip=+\n\s*\\\|\n\s*"\\ \|^\s*"\\ + end="$" end="\ze[|"]"
+      \ nextgroup=vimCmdSep,vimComment
+      \ contains=@vimContinue,vimEnvvar,vimVar
 
 VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='\%(^\z(\s*\)\S.*\)\@<==<<\s*trim\%(\s\+\)\@>\z(\L\S*\)'	matchgroup=vimLetHereDocStop end='^\z1\=\z2$' extend
 VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\%(\s*\)\@>\z(\L\S*\)'			matchgroup=vimLetHereDocStop end='^\z1$' extend
@@ -740,6 +745,22 @@ Vim9 syn keyword	vim9Var	var	skipwhite nextgroup=vim9Variable,vim9VariableList
 
 syn match	vim9Variable	contained	"\<\h\w*\>"	skipwhite nextgroup=vimTypeSep,vimLetHereDoc,vimOper
 syn region	vim9VariableList	contained	start="\[" end="]" contains=vim9Variable,vimEnvvar,vimOptionVar,@vimContinue
+
+" Lockvar and Unlockvar: {{{2
+" =====================
+syn keyword	vimLockvar	lockv[ar]	skipwhite nextgroup=vimLockvarBang,vimLockvarDepth,vimLockvarVars
+syn keyword	vimUnlockvar	unlo[ckvar]	skipwhite nextgroup=vimLockvarBang,vimLockvarDepth,vimLockvarVars
+syn match	vimLockvarBang	contained	"\a\@1<=!"	skipwhite nextgroup=vimLockvarVars
+syn match	vimLockvarDepth	contained	"\<[0-3]\>"	skipwhite nextgroup=vimLockvarVars
+syn region	vimLockvarVars	contained
+      \ start="\h" skip=+\n\s*\\\|\n\s*"\\ \|^\s*"\\ + end="$" end="\ze[|"]"
+      \ nextgroup=vimCmdSep,vimComment
+      \ contains=@vimContinue,vimVar
+
+hi def link vimLockvar vimCommand
+hi def link vimUnlockvar vimCommand
+hi def link vimLockvarBang vimBang
+hi def link vimLockvarDepth vimNumber
 
 " For: {{{2
 " ===
