@@ -9392,7 +9392,7 @@ f_ngettext(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_string = vim_strsave((char_u *)dngettext((const char *)argvars[3].vval.v_string, (const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string, (int)argvars[2].vval.v_number));
 #else
 	textdomain((const char *)argvars[3].vval.v_string);
-	rettv->vval.v_string = vim_strsave((char_u *)NGETTEXT(argvars[0].vval.v_string, argvars[1].vval.v_string, argvars[2].vval.v_number));
+	rettv->vval.v_string = vim_strsave((char_u *)NGETTEXT((const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string, argvars[2].vval.v_number));
 	textdomain(VIMPACKAGE);
 #endif
 
