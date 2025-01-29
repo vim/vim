@@ -5159,7 +5159,7 @@ define_function(
 	    // In Vim9 script a function cannot have the same name as a
 	    // variable.
 	    if (vim9script && *arg == K_SPECIAL
-		&& eval_variable(name_base, (int)i, 0, NULL,
+		&& eval_variable(name_base, i, 0, NULL,
 		    NULL, EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT
 						     + EVAL_VAR_NO_FUNC) == OK)
 	    {
