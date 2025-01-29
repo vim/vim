@@ -814,6 +814,7 @@ RT_ALL =	\
 		runtime/pack/dist/opt/netrw/LICENSE.txt \
 		runtime/pack/dist/opt/netrw/README.md \
 		runtime/pack/dist/opt/netrw/autoload/netrw.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw/own.vim \
 		runtime/pack/dist/opt/netrw/autoload/netrwSettings.vim \
 		runtime/pack/dist/opt/netrw/autoload/netrw_gitignore.vim \
 		runtime/pack/dist/opt/netrw/doc/netrw.txt \
