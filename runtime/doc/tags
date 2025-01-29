@@ -8053,6 +8053,7 @@ gvimrc	gui.txt	/*gvimrc*
 gw	change.txt	/*gw*
 gwgw	change.txt	/*gwgw*
 gww	change.txt	/*gww*
+gx	eval.txt	/*gx*
 gzip	pi_gzip.txt	/*gzip*
 gzip-autocmd	pi_gzip.txt	/*gzip-autocmd*
 gzip-example	autocmd.txt	/*gzip-example*
