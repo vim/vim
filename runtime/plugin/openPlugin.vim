@@ -12,9 +12,18 @@ command -complete=file -nargs=1 Open vim9.Open(trim(<q-args>))
 
 const no_gx = get(g:, "nogx", get(g:, "netrw_nogx", false))
 if !no_gx
+  def GetWordUnderCursor(): string
+    const url = matchstr(expand("<cWORD>"), '\%(\%(http\|ftp\|irc\)s\?\|file\)://\S\{-}\ze[^A-Za-z0-9/]*$')
+    if !empty(url)
+      return url
+    endif
+
+    const user_var = get(g:, 'gx_word', get(g:, 'netrw_gx', '<cfile>')
+    return expand(user_var)
+  enddef
+
   if maparg('gx', 'n') == ""
-    const file = get(g:, 'netrw_gx', '<cfile>')
-    nnoremap <unique> gx <scriptcmd>vim9.Open(expand(file))<CR>
+    nnoremap <unique> gx <scriptcmd>vim9.Open(GetWordUnderCursor())<CR>
   endif
   if maparg('gx', 'x') == ""
     xnoremap <unique> gx <scriptcmd>vim9.Open(getregion(getpos('v'), getpos('.'), { type: mode() })->join())<CR>
