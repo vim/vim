@@ -722,16 +722,17 @@ get_lambda_name_len(void)
     static ufunc_T *
 alloc_ufunc(char_u *name, size_t namelen)
 {
+    size_t  len;
     ufunc_T *fp;
 
     // When the name is short we need to make sure we allocate enough bytes for
     // the whole struct, including any padding.
-    size_t len = offsetof(ufunc_T, uf_name) + namelen + 1;
+    len = offsetof(ufunc_T, uf_name) + namelen + 1;
     fp = alloc_clear(len < sizeof(ufunc_T) ? sizeof(ufunc_T) : len);
     if (fp != NULL)
     {
 	// Add a type cast to avoid a warning for an overflow, the uf_name[] array
-	// can actually extends beyond the struct.
+	// can actually extend beyond the struct.
 	STRCPY((void *)fp->uf_name, name);
 	fp->uf_namelen = namelen;
 
@@ -1916,10 +1917,13 @@ errret:
     {
 	ga_clear_strings(&argtypes);
 	ga_clear(&arg_objm);
-	if (fp != NULL)
-	    vim_free(fp->uf_arg_types);
     }
-    vim_free(fp);
+    if (fp != NULL)
+    {
+	vim_free(fp->uf_arg_types);
+	vim_free(fp->uf_name_exp);
+	vim_free(fp);
+    }
     vim_free(pt);
     vim_free(tofree2);
     eval_lavars_used = old_eval_lavars;
@@ -2850,8 +2854,6 @@ copy_lambda_to_global_func(
     fp->uf_ret_type = ufunc->uf_ret_type;
 
     fp->uf_refcount = 1;
-
-    fp->uf_name_exp = NULL;
 
     hash_add(&func_hashtab, UF2HIKEY(fp), "copy lambda");
 
@@ -5635,6 +5637,7 @@ errret_2:
     {
 	VIM_CLEAR(fp->uf_arg_types);
 	VIM_CLEAR(fp->uf_va_name);
+	VIM_CLEAR(fp->uf_name_exp);
 	clear_func_type_list(&fp->uf_type_list, &fp->uf_func_type);
     }
     if (free_fp)
@@ -6063,7 +6066,6 @@ copy_function(ufunc_T *fp)
     ga_copy_strings(&fp->uf_lines, &ufunc->uf_lines);
 
     ufunc->uf_refcount = 1;
-    ufunc->uf_name_exp = NULL;
 
     return ufunc;
 }
