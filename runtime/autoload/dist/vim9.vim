@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2025 Jan 24
+# Last Change:  2025 Jan 29
 
 export def IsSafeExecutable(filetype: string, executable: string): bool
   if empty(exepath(executable))
@@ -34,7 +34,7 @@ if has('unix')
     # Cygwin provides cygstart
     if executable('cygstart')
       export def Launch(args: string)
-        execute 'silent ! cygstart --hide' args Redir() | redraw!
+        execute $'silent ! cygstart --hide {args} {Redir()}' | redraw!
       enddef
     elseif !empty($MSYSTEM) && executable('start')
       # MSYS2/Git Bash comes by default without cygstart; see
@@ -43,31 +43,33 @@ if has('unix')
       # Adding "" //b` sets void title, hides cmd window and blocks path conversion
       # of /b to \b\ " by MSYS2; see https://www.msys2.org/docs/filesystem-paths/
       export def Launch(args: string)
-        execute 'silent !start "" //b' args Redir() | redraw!
+        execute $'silent !start "" //b {args} {Redir()}' | redraw!
       enddef
     else
       # imitate /usr/bin/start script for other environments and hope for the best
       export def Launch(args: string)
-        execute 'silent !cmd //c start "" //b' args Redir() | redraw!
+        const quotes = empty(&shell) ? '' : '""'
+        execute $'silent !cmd /c start {quotes} /b {args} {Redir()}' | redraw!
       enddef
     endif
   elseif exists('$WSL_DISTRO_NAME') # use cmd.exe to start GUI apps in WSL
     export def Launch(args: string)
-      execute 'silent !' ..
-            ((args =~? '\v<\f+\.(exe|com|bat|cmd)>') ?
-            $'cmd.exe /c start /b {args} {Redir()}' :
-            $'nohup {args} {Redir()} &')
-            | redraw!
+      const command = (args =~? '\v<\f+\.(exe|com|bat|cmd)>')
+        ? $'cmd.exe /c start /b {args} {Redir()}'
+        : $'nohup {args} {Redir()} &'
+      execute $'silent ! {command}' | redraw!
     enddef
   else
     export def Launch(args: string)
-      execute ':silent ! nohup' args Redir() (has('gui_running') ? '' : '&') | redraw!
+      const fork = has('gui_running') ? '' : '&'
+      execute $':silent ! nohup {args} {Redir()} {fork}' | redraw!
     enddef
   endif
 elseif has('win32')
   export def Launch(args: string)
-    execute 'silent !' .. (&shell =~? '\<cmd\.exe\>' ? '' : 'cmd.exe /c')
-          'start "" /b' args Redir() | redraw!
+    const shell = (&shell =~? '\<cmd\.exe\>') ? '' : 'cmd.exe /c'
+    const quotes = empty(shell) ? '' : '""'
+    execute $'silent ! {shell} start {quotes} /b {args} {Redir()}' | redraw!
   enddef
 else
   export def Launch(dummy: string)
