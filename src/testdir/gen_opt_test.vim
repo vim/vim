@@ -155,7 +155,7 @@ let test_values = {
       \		['xxx']],
       \ 'concealcursor': [['', 'n', 'v', 'i', 'c', 'nvic'], ['xxx']],
       \ 'completeopt': [['', 'menu', 'menuone', 'longest', 'preview', 'popup',
-      \		'popuphidden', 'noinsert', 'noselect', 'fuzzy', 'menu,longest'],
+      \		'popuphidden', 'noinsert', 'noselect', 'fuzzy', "preinsert", 'menu,longest'],
       \		['xxx', 'menu,,,longest,']],
       \ 'completeitemalign': [['abbr,kind,menu', 'menu,abbr,kind'],
       \		['', 'xxx', 'abbr', 'abbr,menu', 'abbr,menu,kind,abbr',
