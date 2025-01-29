@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jan 26
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2167,6 +2167,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   nosort   Disable sorting of completion candidates based on fuzzy
 		    scores when "fuzzy" is enabled. Candidates will appear
 		    in their original order.
+
+	   preinsert
+		    Preinsert the portion of the first candidate word that is
+		    not part of the current completion leader and using the
+		    |hl-ComplMatchIns| highlight group. Does not work when
+		    "fuzzy" is also included.
 
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)

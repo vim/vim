@@ -41626,7 +41626,9 @@ Changed~
   the "matches" key
 - |v:stacktrace| The stack trace of the exception most recently caught and
   not finished
-- New option value "nosort" for 'completeopt'
+- New option value for 'completeopt':
+	"nosort"	- do not sort completion results
+	"preinsert"	- highlight to be inserted values
 - add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
   and decouple it from |netrw|
 - 'termguicolors' is automatically enabled if the terminal supports the RGB
