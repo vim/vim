@@ -4296,6 +4296,7 @@ did_set_termguicolors(optset_T *args UNUSED)
 #  endif
 	    !has_vtp_working())
     {
+	p_tgc_set = TRUE;
 	p_tgc = 0;
 	return e_24_bit_colors_are_not_supported_on_this_environment;
     }
@@ -4320,6 +4321,7 @@ did_set_termguicolors(optset_T *args UNUSED)
     term_update_palette_all();
     term_update_wincolor_all();
 # endif
+    p_tgc_set = TRUE;
 
     return NULL;
 }
