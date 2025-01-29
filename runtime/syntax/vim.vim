@@ -270,8 +270,8 @@ Vim9 syn match vim9LhsVariableList	"\[\_[^]]\+]\ze\s\+\.\.="	contains=@vim9Conti
 
 Vim9 syn match vim9LhsRegister	"@["0-9\-a-zA-Z#=*+_/]\ze\s\+\%(\.\.\)\=="
 
-syn cluster vimExprList	contains=vimEnvvar,vimFunc,vimNumber,vimOper,vimOperParen,vimOptionVar,vimLetRegister,vimString,vimVar,@vim9ExprList
-syn cluster vim9ExprList	contains=vim9Boolean,vim9Null
+syn cluster vimExprList	contains=vimEnvvar,vimFunc,vimNumber,vimOper,vimOperParen,vimOptionVar,vimLambda,vimLetRegister,vimString,vimVar,@vim9ExprList
+syn cluster vim9ExprList	contains=vim9Boolean,vim9LambdaParams,vim9Null
 
 " Insertions And Appends: insert append {{{2
 "   (buftype != nofile test avoids having append, change, insert show up in the command window)
@@ -340,7 +340,7 @@ syn keyword vimAugroupKey	contained aug[roup]  skipwhite nextgroup=vimAugroupBan
 
 " Operators: {{{2
 " =========
-syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimOper,vimOperParen,vimOptionVar,vimNumber,vimString,vimRegister,@vimContinue,vim9Comment,vimVar,vimBoolean,vimNull
+syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimLambda,vimOper,vimOperParen,vimOptionVar,vimNumber,vimString,vimRegister,@vimContinue,vim9Comment,vimVar,vimBoolean,vim9LambdaParams,vimNull
 syn match	vimOper	"\a\@<!!"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 syn match	vimOper	"||\|&&\|[-+*/%.]"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 syn match	vimOper	"?"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
@@ -361,6 +361,34 @@ endif
 syn match	vimOperContinue		contained	"^\s*\zs\\"	 skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
 syn match         vimOperContinueComment	contained	'^\s*\zs["#]\\ .*' skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
 syn cluster	vimOperContinue		contains=vimOperContinue,vimOperContinueComment
+
+" Lambda Expressions: {{{2
+" ==================
+syn match	vimLambdaOperator	contained	"->" skipwhite nextgroup=@vimExprList
+syn region	vimLambda	contained	matchgroup=Delimiter start="{\ze[[:space:][:alnum:]_.,]*->" end="}" end="$" skip=+\s*\n\s*\\\|\s*\n\s*"\\ + contains=@vimContinue,@vimExprList,vimLambdaParams
+syn match	vimLambdaParams	contained	"{\@1<=.\{-}\%(->\)\@=" nextgroup=vimLambdaOperator contains=vimFuncParam
+
+syn match	vim9LambdaOperator    contained	"=>" skipwhite skipempty nextgroup=@vimExprList,vim9LambdaBlock,vim9LambdaOperatorComment
+syn match	vim9LambdaParamsParen contained	"[()]"
+syn region	vim9LambdaParams	    contained
+      \ matchgroup=vim9LambdaParamsParen
+      \ start="(\ze\s*\(\.\.\.\)\=\h\w*[,:]\%(\s\|$\)"
+      \ start="(\ze\s*\n
+        "\ line continuations
+        \\%(\s*\%(#\\ .*\|\\\s*\)\n\)*\s*\\\s*
+        "\ parameter names
+        \\(\.\.\.\)\=\h\w*[,:]\%(\s\|$\)"
+      \ end=")\ze\%(:\s\|\s\+=>\)"
+      \ matchgroup=vimContinue
+      \ end="^\s*\\\ze\s\+=>"
+      \ skipwhite nextgroup=vim9LambdaReturnType,vim9LambdaOperator
+      \ contains=@vim9Continue,vimDefParam,vim9LambdaParamsParen
+syn match	vim9LambdaParams	    contained     "(\s*)\|(\s*\(\.\.\.\)\=\h\w*\s*)\ze\%(:\s\|\s\+=>\)" skipwhite nextgroup=vim9LambdaReturnType,vim9LambdaOperator contains=vimDefParam,vim9LambdaParamsParen
+
+syn region	vim9LambdaReturnType  contained	start=":\s" end="$" end="\ze#" end="\ze=>" skipwhite skipempty nextgroup=vim9LambdaOperator,vim9LamdaOperatorComment contains=vimTypeSep transparent
+syn region	vim9LambdaBlock	    contained	matchgroup=vimSep start="{" end="^\s*\zs}" contains=@vimDefBodyList
+
+syn match	vim9LambdaOperatorComment contained "#.*" skipwhite skipempty nextgroup=@vimExprList,vim9LambdaBlock,vim9LambdaOperatorComment
 
 " Functions: Tag is provided for those who wish to highlight tagged functions {{{2
 " =========
@@ -887,7 +915,7 @@ syn case match
 " User Function Highlighting: {{{2
 " (following Gautam Iyer's suggestion)
 " ==========================
-syn match	vimFunc              	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\ze\s*("                	contains=vimFuncEcho,vimFuncName,vimUserFunc,vimExecute
+syn match	vimFunc              	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\ze\s*("                	skipwhite nextgroup=vimOperParen contains=vimFuncEcho,vimFuncName,vimUserFunc,vimExecute
 syn match	vimUserFunc	contained        	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\|\<\u[a-zA-Z0-9.]*\>\|\<if\>"	contains=vimNotation,vim9MethodName
 syn keyword	vimFuncEcho	contained      	ec ech echo
 
@@ -1455,6 +1483,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9KeymapLineComment	vimKeymapLineComment
  hi def link vimKeymapLineComment	vimComment
  hi def link vimKeymapTailComment	vimComment
+ hi def link vimLambdaOperator	vimOper
  hi def link vimLet	vimCommand
  hi def link vimLetHereDoc	vimString
  hi def link vimLetHereDocStart	Special
@@ -1593,6 +1622,9 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9Implements	Keyword
  hi def link vim9AbstractDef	vimCommand
  hi def link vim9Interface	vimCommand
+ hi def link vim9LambdaOperator	vimOper
+ hi def link vim9LambdaOperatorComment	vim9Comment
+ hi def link vim9LambdaParamsParen	vimParenSep
  hi def link vim9LhsRegister	vimLetRegister
  hi def link vim9LhsVariable	vimVar
  hi def link vim9LineComment	vimComment
