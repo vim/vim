@@ -7100,7 +7100,7 @@ handle_subscript(
 	    else
 	    {
 		rettv->v_type = VAR_FUNC;
-		rettv->vval.v_string = vim_strsave(ufunc->uf_name);
+		rettv->vval.v_string = vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
 	    }
 	    continue;
 	}

@@ -544,7 +544,7 @@ dict_add_func(dict_T *d, char *key, ufunc_T *fp)
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_type = VAR_FUNC;
-    item->di_tv.vval.v_string = vim_strsave(fp->uf_name);
+    item->di_tv.vval.v_string = vim_strnsave(fp->uf_name, fp->uf_namelen);
     if (dict_add(d, item) == FAIL)
     {
 	dictitem_free(item);
