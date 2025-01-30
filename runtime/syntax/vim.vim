@@ -397,7 +397,7 @@ syn cluster	vimDefList	contains=vimFuncBang,vimFunctionError,vimDefKey,vimFuncSI
 
 syn cluster	vimFuncBodyCommon	contains=@vimCmdList,vimCmplxRepeat,vimContinue,vimCtrlChar,vimDef,vimEnvvar,vimFBVar,vimFunc,vimFunction,vimLetHereDoc,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegister,vimSpecFile,vimString,vimSubst,vimFuncFold,vimDefFold
 syn cluster	vimFuncBodyList	contains=@vimFuncBodyCommon,vimComment,vimLineComment,vimFuncVar,vimInsert,vimConst,vimLet,vimSearch
-syn cluster	vimDefBodyList	contains=@vimFuncBodyCommon,vim9Comment,vim9LineComment,vim9Const,vim9Final,vim9Var,vim9Null,vim9Boolean,vim9For,vim9LhsVariable,vim9LhsVariableList,vim9LhsRegister,vimOptionVar,vim9Search
+syn cluster	vimDefBodyList	contains=@vimFuncBodyCommon,vim9Comment,vim9LineComment,vim9Block,vim9Const,vim9Final,vim9Var,vim9Null,vim9Boolean,vim9For,vim9LhsVariable,vim9LhsVariableList,vim9LhsRegister,vimOptionVar,vim9Search
 
 syn region	vimFuncPattern	contained		matchgroup=vimOper start="/" end="$" contains=@vimSubstList
 syn match	vimFunction	"\<fu\%[nction]\>"	skipwhite nextgroup=vimCmdSep,vimComment,vimFuncPattern contains=vimFuncKey
@@ -546,6 +546,10 @@ if s:vim9script
   endif
 endif
 
+" Blocks: {{{2
+" ======
+Vim9 syn region	vim9Block	matchgroup=vimSep start="{" end="^\s*\zs}" contains=@vimDefBodyList
+
 " Keymaps: {{{2
 " =======
 
@@ -612,7 +616,7 @@ syn keyword vimUserCmdAttrAddr contained arguments arg buffers buf lines line lo
 syn match	vimUserCmdAttrAddr	contained	"?"
 syn case match
 
-syn region	vimUserCmdBlock	contained	matchgroup=vimSep start="{" end="}" contains=@vimDefBodyList
+syn region	vimUserCmdBlock	contained	matchgroup=vimSep start="{" end="^\s*\zs}" contains=@vimDefBodyList
 
 syn match	vimDelcommand		"\<delc\%[ommand]\>" skipwhite nextgroup=vimDelcommandAttr
 syn match	vimDelcommandAttr	contained	"-buffer\>"
@@ -814,7 +818,7 @@ syn match	vimAutoCmdSfxList	contained	"\S*"	skipwhite nextgroup=vimAutoCmdMod,vi
 syn keyword	vimAutoCmd	au[tocmd]		skipwhite nextgroup=vimAutoCmdBang,vimAutoEventList
 syn keyword	vimAutoCmd	do[autocmd] doautoa[ll]	skipwhite nextgroup=vimAutoEventList
 syn match	vimAutoCmdMod	"\(++\)\=\(once\|nested\)"	skipwhite nextgroup=vimAutoCmdBlock
-syn region	vimAutoCmdBlock	contained	matchgroup=vimSep start="{" end="}" contains=@vimDefBodyList
+syn region	vimAutoCmdBlock	contained	matchgroup=vimSep start="{" end="^\s*\zs}" contains=@vimDefBodyList
 
 " Echo And Execute: -- prefer strings! {{{2
 " ================
