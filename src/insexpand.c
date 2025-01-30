@@ -4374,16 +4374,17 @@ ins_compl_insert(int in_compl_func, int move_cursor)
 {
     int	    compl_len = get_compl_len();
     int	    preinsert = ins_compl_has_preinsert();
-    char_u  *str = compl_shown_match->cp_str.string;
-    int	    leader_len = ins_compl_leader_len();
+    char_u  *cp_str = compl_shown_match->cp_str.string;
+    size_t  cp_str_len = compl_shown_match->cp_str.length;
+    size_t  leader_len = ins_compl_leader_len();
 
     // Make sure we don't go over the end of the string, this can happen with
     // illegal bytes.
-    if (compl_len < (int)compl_shown_match->cp_str.length)
+    if (compl_len < (int)cp_str_len)
     {
-	ins_compl_insert_bytes(str + compl_len, -1);
+	ins_compl_insert_bytes(cp_str + compl_len, -1);
 	if (preinsert && move_cursor)
-	    curwin->w_cursor.col -= ((size_t)STRLEN(str) - leader_len);
+	    curwin->w_cursor.col -= (colnr_T)(cp_str_len - leader_len);
     }
     if (match_at_original_text(compl_shown_match) || preinsert)
 	compl_used_match = FALSE;
