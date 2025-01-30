@@ -2989,7 +2989,6 @@ func Test_complete_info_matches()
   call assert_false(has_key(g:compl_info, 'matches'))
 
   bw!
-  bw!
   unlet g:what
   delfunc ShownInfo
   set cot&
@@ -3019,7 +3018,6 @@ func Test_complete_info_completed()
   call feedkeys("Go\<C-X>\<C-N>\<F5>\<Esc>dd", 'tx')
   call assert_equal({}, g:compl_info)
 
-  bw!
   bw!
   delfunc ShownInfo
   set cot&
@@ -3082,7 +3080,7 @@ function Test_completeopt_preinsert()
   call assert_equal("hello  fobar wo", getline('.'))
   call feedkeys("\<C-E>\<ESC>", 'tx')
 
-  " confrim
+  " confirm
   call feedkeys("S\<C-X>\<C-O>f\<C-Y>", 'tx')
   call assert_equal("fobar", getline('.'))
   call assert_equal(5, col('.'))
@@ -3135,11 +3133,9 @@ function Test_completeopt_preinsert()
   call assert_equal(5, col('.'))
 
   bw!
-  bw!
   set cot&
   set omnifunc&
   delfunc Omni_test
-  autocmd! CompleteChanged
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
