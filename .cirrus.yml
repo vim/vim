@@ -7,7 +7,7 @@ freebsd_task:
   matrix:
     - name: FreeBSD 14.3
       freebsd_instance:
-        image_family: freebsd-14-3
+        image_family: freebsd-14-3-RELEASE
   timeout_in: 20m
   install_script:
     - pkg install -y gettext
