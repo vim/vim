@@ -50,46 +50,76 @@ func SetUp()
     " (instead of relying on autoload) because set up depends on shell selection
     runtime plugin/vimballPlugin.vim
     runtime plugin/getscriptPlugin.vim
+endfunc
 
+func CheckTool(tool)
     " define tools location
     if has('win32')
-
         if executable('git')
            let git_path = trim(system('powershell -Command "Split-Path (Split-Path (gcm git).Source)"'))
         endif
 
-        if executable('bunzip2')
-            let g:GetLatestVimScripts_bunzip2= "bunzip2"
-        elseif executable('7z')
-            let g:GetLatestVimScripts_bunzip2= "7z x"
-        elseif exists('git_path')
-            let g:GetLatestVimScripts_bunzip2= $'{git_path}\usr\bin\bunzip2'
-        else
-            call assert_report("Missing tool to decompress .bz2 files")
+        if a:tool == 'bunzip2'
+          if executable('bunzip2')
+              let g:GetLatestVimScripts_bunzip2= "bunzip2"
+          elseif executable('7z')
+              let g:GetLatestVimScripts_bunzip2= "7z x"
+          elseif exists('git_path')
+              let g:GetLatestVimScripts_bunzip2= $'{git_path}\usr\bin\bunzip2'
+          else
+              throw "Skipped: Missing tool to decompress .bz2 files"
+          endif
         endif
 
-        if executable('gunzip')
-            let g:GetLatestVimScripts_gunzip= "gunzip"
-        elseif executable('7z')
-            let g:GetLatestVimScripts_gunzip="7z e"
-        elseif exists('git_path')
-            let g:GetLatestVimScripts_gunzip= $'{git_path}\usr\bin\gunzip'
-        else
-            call assert_report("Missing tool to decompress .gz files")
+        if a:tool == 'gunzip'
+          if executable('gunzip')
+              let g:GetLatestVimScripts_gunzip= "gunzip"
+          elseif executable('7z')
+              let g:GetLatestVimScripts_gunzip="7z e"
+          elseif exists('git_path')
+              let g:GetLatestVimScripts_gunzip= $'{git_path}\usr\bin\gunzip'
+          else
+              throw "Skipped: Missing tool to decompress .gz files"
+          endif
         endif
 
-        if executable('unxz')
-            let g:GetLatestVimScripts_unxz= "unxz"
-        elseif executable('7z')
-            let g:GetLatestVimScripts_unxz="7z x"
-        elseif exists('git_path')
-            let g:GetLatestVimScripts_unxz= $'{git_path}\mingw64\bin\unxz'
-        else
-            call assert_report("Missing tool to decompress .xz files")
+        if a:tool == 'unxz'
+          if executable('unxz')
+              let g:GetLatestVimScripts_unxz= "unxz"
+          elseif executable('7z')
+              let g:GetLatestVimScripts_unxz="7z x"
+          elseif exists('git_path')
+              let g:GetLatestVimScripts_unxz= $'{git_path}\mingw64\bin\unxz'
+          else
+              throw "Skipped: Missing tool to decompress .xz files"
+          endif
+        endif
+    else
+        " Mac or Unix
+        if a:tool == 'bunzip2'
+            if executable('bunzip2')
+                let g:GetLatestVimScripts_bunzip2= "bunzip2"
+            else
+              throw "Skipped: Missing tool to decompress .bz2 files"
+            endif
         endif
 
+        if a:tool == 'gunzip'
+            if executable('gunzip')
+                let g:GetLatestVimScripts_gunzip= "gunzip"
+            else
+                throw "Skipped: Missing tool to decompress .bz2 files"
+            endif
+        endif
+
+        if a:tool == 'unxz'
+            if executable('unxz')
+                let g:GetLatestVimScripts_unxz= "unxz"
+            else
+                throw "Skipped: Missing tool to decompress .xz files"
+            endif
+        endif
    endif
-
 endfunc
 
 " After each test remove the contents of the .vim dir and reset the script
@@ -110,7 +140,6 @@ endfunc
 " Ancillary functions
 
 func SetShell(shell)
-
     " select different shells
     if a:shell == "default"
         set shell& shellcmdflag& shellxquote& shellpipe& shellredir&
@@ -138,11 +167,9 @@ func SetShell(shell)
 
     " reload script to force new shell options
     runtime autoload/getscript.vim
-
 endfunc
 
 func SelectScript(package)
-
     " add the corresponding file
     exe $"split {s:scriptdir}/GetLatestVimScripts.dat"
     let scripts =<< trim END
@@ -153,7 +180,6 @@ func SelectScript(package)
     call append(line('$'), s:packages[a:package]['spec'])
     w!
     bwipe!
-
 endfunc
 
 func ValidateInstall(package)
@@ -176,7 +202,6 @@ endfunc
 " Tests
 "
 func Test_glvs_default_vmb()
-
     " select different shells
     call SetShell('default')
 
@@ -187,11 +212,9 @@ func Test_glvs_default_vmb()
     GLVS
 
     call ValidateInstall('vmb')
-
 endfunc
 
 func Test_glvs_pwsh_vmb()
-
     " select different shells
     call SetShell('pwsh')
 
@@ -202,11 +225,9 @@ func Test_glvs_pwsh_vmb()
     GLVS
 
     call ValidateInstall('vmb')
-
 endfunc
 
 func Test_glvs_powershell_vmb()
-
     " select different shells
     call SetShell('powershell')
 
@@ -217,10 +238,10 @@ func Test_glvs_powershell_vmb()
     GLVS
 
     call ValidateInstall('vmb')
-
 endfunc
 
 func Test_glvs_default_vim_bz2()
+    call CheckTool('bunzip2')
 
     " select different shells
     call SetShell('default')
@@ -232,10 +253,10 @@ func Test_glvs_default_vim_bz2()
     GLVS
 
     call ValidateInstall('vim.bz2')
-
 endfunc
 
 func Test_glvs_powershell_vim_bz2()
+    call CheckTool('bunzip2')
 
     " select different shells
     call SetShell('powershell')
@@ -247,10 +268,10 @@ func Test_glvs_powershell_vim_bz2()
     GLVS
 
     call ValidateInstall('vim.bz2')
-
 endfunc
 
 func Test_glvs_pwsh_vim_bz2()
+    call CheckTool('bunzip2')
 
     " select different shells
     call SetShell('pwsh')
@@ -262,10 +283,10 @@ func Test_glvs_pwsh_vim_bz2()
     GLVS
 
     call ValidateInstall('vim.bz2')
-
 endfunc
 
 func Test_glvs_default_vba_gz()
+    call CheckTool('gunzip')
 
     " select different shells
     call SetShell('default')
@@ -277,10 +298,10 @@ func Test_glvs_default_vba_gz()
     GLVS
 
     call ValidateInstall('vba.gz')
-
 endfunc
 
 func Test_glvs_powershell_vba_gz()
+    call CheckTool('gunzip')
 
     " select different shells
     call SetShell('powershell')
@@ -292,10 +313,10 @@ func Test_glvs_powershell_vba_gz()
     GLVS
 
     call ValidateInstall('vba.gz')
-
 endfunc
 
 func Test_glvs_pwsh_vba_gz()
+    call CheckTool('gunzip')
 
     " select different shells
     call SetShell('pwsh')
@@ -307,10 +328,10 @@ func Test_glvs_pwsh_vba_gz()
     GLVS
 
     call ValidateInstall('vba.gz')
-
 endfunc
 
 func Test_glvs_default_tar_xz()
+    call CheckTool('unxz')
 
     " select different shells
     call SetShell('default')
@@ -322,10 +343,10 @@ func Test_glvs_default_tar_xz()
     GLVS
 
     call ValidateInstall('tar.xz')
-
 endfunc
 
 func Test_glvs_powershell_tar_xz()
+    call CheckTool('unxz')
 
     " select different shells
     call SetShell('powershell')
@@ -337,10 +358,10 @@ func Test_glvs_powershell_tar_xz()
     GLVS
 
     call ValidateInstall('tar.xz')
-
 endfunc
 
 func Test_glvs_pwsh_tar_xz()
+    call CheckTool('unxz')
 
     " select different shells
     call SetShell('pwsh')
@@ -352,5 +373,6 @@ func Test_glvs_pwsh_tar_xz()
     GLVS
 
     call ValidateInstall('tar.xz')
-
 endfunc
+
+" vim: set sw=4 ts=4 et:
