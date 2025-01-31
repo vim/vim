@@ -203,7 +203,7 @@ vim9script
 :folddoclosed
 :folddoopen
 :foldopen
-:for
+:for foo in bar | endfor
 :function
 :global/.../
 :goto
@@ -785,7 +785,7 @@ Foo() | foldclose
 Foo() | folddoclosed
 Foo() | folddoopen
 Foo() | foldopen
-Foo() | for
+Foo() | for foo in bar | endfor
 Foo() | function
 Foo() | global/.../
 Foo() | goto

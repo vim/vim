@@ -209,7 +209,6 @@ syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
 syn match vimCount	contained	"\d\+"
 syn match vimIsCommand	"\<\%(\h\w*\|[23]mat\%[ch]\)\>"	 nextgroup=vimBang contains=vimCommand
 syn match vimBang	      contained	"!"
-syn keyword vimCommand  contained	in
 
 syn region vimSubscript contained	matchgroup=vimSubscriptBracket start="\[" end="]" nextgroup=vimSubscript contains=@vimExprList
 
@@ -756,11 +755,19 @@ hi def link vimLockvarDepth vimNumber
 
 " For: {{{2
 " ===
-if s:vim9script
-  syn keyword	vim9For	for	skipwhite nextgroup=vim9Variable,vim9VariableList
-else
-  syn keyword	vimFor	for	skipwhite nextgroup=vimVar,vimVarList
-endif
+" handles Vim9 and legacy for now
+syn region	vimFor
+      \ matchgroup=vimCommand
+      \ start="\<for\>" end="\<in\>"
+      \ skipwhite skipnl nextgroup=@vimForInContinue,vim9ForInComment,@vimExprList
+      \ contains=@vimContinue,vimVar,vimVarList,vim9VariableList
+      \ transparent
+
+syn match	vim9ForInComment		contained	"#.*"	skipwhite skipempty nextgroup=vimForInComment,@vimExprList
+
+syn match	vimForInContinue		contained	"^\s*\zs\\"	 skipwhite skipnl nextgroup=@vimForInContinue,@vimExprList
+syn match         vimForInContinueComment	contained	'^\s*\zs["#]\\ .*' skipwhite skipnl nextgroup=@vimForInContinue,@vimExprList
+syn cluster	vimForInContinue		contains=vimForInContinue,vimForInContinueComment
 
 " Abbreviations: {{{2
 " =============
@@ -1402,6 +1409,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimFgBgAttrib	vimHiAttrib
  hi def link vimFuncEcho	vimCommand
  hi def link vimFor	vimCommand
+ hi def link vimForInContinue	vimContinue
+ hi def link vimForInContinueComment	vimContinueComment
  hi def link vimFTCmd	vimCommand
  hi def link vimFTOption	vimSynType
  hi def link vimFuncBang	vimBang
@@ -1577,6 +1586,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9Extends	Keyword
  hi def link vim9Final	vimCommand
  hi def link vim9For	vimCommand
+ hi def link vim9ForInComment	vim9Comment
  hi def link vim9Implements	Keyword
  hi def link vim9AbstractDef	vimCommand
  hi def link vim9Interface	vimCommand
