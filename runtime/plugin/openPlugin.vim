@@ -18,7 +18,7 @@ if !no_gx
       return url
     endif
 
-    const user_var = get(g:, 'gx_word', get(g:, 'netrw_gx', '<cfile>')
+    const user_var = get(g:, 'gx_word', get(g:, 'netrw_gx', '<cfile>'))
     return expand(user_var)
   enddef
 
