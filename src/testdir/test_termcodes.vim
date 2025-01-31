@@ -10,6 +10,24 @@ source mouse.vim
 source view_util.vim
 source term_util.vim
 
+func s:TermGuiColorsTest()
+  CheckNotMSWindows
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  if !executable('tput')
+    throw "Skipped: tput not executable!"
+  endif
+  if has("gui_running")
+    throw "Skipped: does not work in GUI mode"
+  endif
+  call system('tput -Txterm-direct RGB 2>/dev/null')
+  if v:shell_error
+    throw "Skipped: xterm-direct $TERM has no RGB capability"
+  endif
+endfunc
+
+
 func Test_term_mouse_left_click()
   new
   let save_mouse = &mouse
@@ -2740,21 +2758,8 @@ func Test_terminal_builtin_without_gui()
 endfunc
 
 func Test_xterm_direct_enables_termguicolors()
+  call s:TermGuiColorsTest()
   " TERM=xterm-direct enables termguicolors
-  CheckNotMSWindows
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
-  if !executable('tput')
-    throw "Skipped: tput not executable!"
-  endif
-  if has("gui_running")
-    throw "Skipped: does not work in GUI mode"
-  endif
-  call system('tput -Txterm-direct RGB 2>/dev/null')
-  if v:shell_error
-    throw "Skipped: xterm-direct $TERM has no RGB capability"
-  endif
   let colors  = systemlist('tput -Txterm-direct colors')[0]
   defer delete('XTerm-direct.txt')
 
@@ -2773,6 +2778,33 @@ func Test_xterm_direct_enables_termguicolors()
   call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 1'], result)
   " cleanup
   bw!
+  close
+endfunc
+
+func Test_xterm_direct_no_termguicolors()
+  " unfortunately doesn't work with libvterm
+  call s:TermGuiColorsTest()
+
+  let lines =<< trim END
+      set notermguicolors noswapfile
+      set t_Co=16777216
+  END
+  call writefile(lines, 'XtermDirect', 'D')
+  defer delete('XTerm-direct2.txt')
+
+  let buf = RunVimInTerminal('-S XtermDirect --clean XTerm-direct2.txt',
+        \  {'rows': 10, 'env': {'TERM': 'xterm-direct'}})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":$put ='TERM: ' .. &term\<cr>")
+  call term_sendkeys(buf, ":$put ='Termguicolors: ' .. &tgc\<cr>")
+  call term_sendkeys(buf, ":wq\<cr>")
+  call TermWait(buf)
+
+  let result=readfile('XTerm-direct2.txt')
+  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 0'], result)
+  " cleanup
+  bw!
+  close
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

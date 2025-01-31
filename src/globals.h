@@ -2043,3 +2043,7 @@ EXTERN int skip_update_topline INIT(= FALSE);
 // 'showcmd' buffer shared between normal.c and statusline code
 #define SHOWCMD_BUFLEN (SHOWCMD_COLS + 1 + 30)
 EXTERN char_u showcmd_buf[SHOWCMD_BUFLEN];
+
+#ifdef FEAT_TERMGUICOLORS
+EXTERN int	p_tgc_set INIT(= FALSE);
+#endif

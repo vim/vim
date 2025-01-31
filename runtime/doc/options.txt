@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jan 29
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jan 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8500,7 +8500,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	You need to do this when your system has no locale support for UTF-8.
 
 		*'termguicolors'* *'tgc'* *'notermguicolors'* *'notgc'* *E954*
-'termguicolors' 'tgc'	boolean (default off)
+'termguicolors' 'tgc'	boolean (default off unless Vim detects that it runs
+				in a capable terminal)
 			global
 			{not available when compiled without the
 			|+termguicolors| feature}
@@ -8510,7 +8511,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Will automatically be enabled, if Vim detects that it runs in a
 	capable terminal (when the terminal supports the RGB terminfo
 	capability or when the number of colors |t_Co| supported by the
-	terminal is 0x1000000, e.g. with $TERM=xterm-direct).
+	terminal is 0x1000000, e.g. with $TERM=xterm-direct). Due to the async
+	nature of querying the terminal, enabling this automatically is
+	noticable. Use >
+		set notermguicolors
+<	to explicitly disable.
 
 	Requires a ISO-8613-3 compatible terminal.  If setting this option
 	does not work (produces a colorless UI) reading |xterm-true-color|

@@ -1662,8 +1662,8 @@ set_color_count(int nr)
     else
 	*nr_colors = NUL;
 #ifdef FEAT_TERMGUICOLORS
-    // xterm-direct, enable termguicolors
-    if (t_colors == 0x1000000 && !p_tgc)
+    // xterm-direct, enable termguicolors, when it wasn't set yet
+    if (t_colors == 0x1000000 && !p_tgc_set)
 	set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
 #endif
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
@@ -7199,8 +7199,9 @@ got_code_from_term(char_u *code, int len)
 	    else if (name[0] == 'R' && name[1] == 'G' && name[2] == 'B' && code[9] == '=')
 	    {
 		int val = atoi((char *)str);
-		// 8 bits per color channel
-		if (val == 8)
+		// only enable it, if termguicolors hasn't been set yet and
+		// there are 8 bits per color channel
+		if (val == 8 && !p_tgc_set)
 		{
 #ifdef FEAT_EVAL
 		    ch_log(NULL, "got_code_from_term(RGB): xterm-direct colors detected");
