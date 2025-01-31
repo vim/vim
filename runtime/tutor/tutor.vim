@@ -132,7 +132,7 @@ if s:ext =~? '\.sk'
   endif
 endif
 
-" The Slovak tutor is available in two encodings, guess which one to use
+" The Serbian tutor is available in two encodings, guess which one to use
 " Note that the utf-8 version is the original, the cp1250 version is created
 " from it.
 if s:ext =~? '\.sr'

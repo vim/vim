@@ -773,6 +773,8 @@ RT_ALL =	\
 		runtime/tutor/en/vim-01-beginner.tutor.json \
 		runtime/tutor/it/vim-01-beginner.tutor \
 		runtime/tutor/it/vim-01-beginner.tutor.json \
+		runtime/tutor/sr/vim-01-beginner.tutor \
+		runtime/tutor/sr/vim-01-beginner.tutor.json \
 		runtime/tutor/tutor.tutor \
 		runtime/tutor/tutor.tutor.json \
 		runtime/tutor/tutor.vim \
