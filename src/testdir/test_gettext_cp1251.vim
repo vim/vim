@@ -14,7 +14,7 @@ func Test_gettext()
 
     try
       language messages ru_RU
-      call assert_equal('Œÿ»¡ ¿: ', gettext("ERROR: ", "__PACKAGE__"))
+      call assert_equal('Œÿ»¡ ¿: for __PACKAGE__', gettext("ERROR: ", "__PACKAGE__"))
     catch /^Vim\%((\a\+)\)\=:E197:/
       throw "Skipped: not possible to set locale to ru (missing?)"
     endtry
