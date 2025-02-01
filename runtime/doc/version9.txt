@@ -41635,6 +41635,7 @@ Changed~
 	"preinsert"	- highlight to be inserted values
 - add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
   and decouple it from |netrw|
+- new digraph "APPROACHES THE LIMIT" using ".="
 
 							*added-9.2*
 Added ~
