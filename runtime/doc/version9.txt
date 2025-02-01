@@ -41660,6 +41660,7 @@ Functions: ~
 			Channel or Blob variable
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
+|ngettext()|		lookup single/plural message translation
 |popup_setbuf()|	switch to a different buffer in a popup
 |str2blob()|		convert a List of strings into a blob
 

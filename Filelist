@@ -231,6 +231,8 @@ SRC_ALL =	\
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
 		src/testdir/crash/* \
+		src/testdir/ru_RU/LC_MESSAGES/Makefile \
+		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.po \
 		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.mo \
 		src/proto.h \
 		src/protodef.h \

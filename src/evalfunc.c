@@ -119,6 +119,7 @@ static void f_min(typval_T *argvars, typval_T *rettv);
 static void f_mzeval(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_nextnonblank(typval_T *argvars, typval_T *rettv);
+static void f_ngettext(typval_T *argvars, typval_T *rettv);
 static void f_nr2char(typval_T *argvars, typval_T *rettv);
 static void f_or(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_PERL
@@ -2402,6 +2403,8 @@ static funcentry_T global_functions[] =
 			},
     {"nextnonblank",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_nextnonblank},
+    {"ngettext",	3, 4, FEARG_3,	    arg4_string_string_number_string,
+			ret_string,	    f_ngettext},
     {"nr2char",		1, 2, FEARG_1,	    arg2_number_bool,
 			ret_string,	    f_nr2char},
     {"or",		2, 2, FEARG_1,	    arg2_number,
@@ -9357,6 +9360,51 @@ f_nextnonblank(typval_T *argvars, typval_T *rettv)
     }
     rettv->vval.v_number = lnum;
 }
+
+
+/*
+ * "ngettext()" function
+ */
+    static void
+f_ngettext(typval_T *argvars, typval_T *rettv)
+{
+#if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
+    char *prev = NULL;
+#endif
+
+    if (check_for_nonempty_string_arg(argvars, 0) == FAIL
+	|| check_for_nonempty_string_arg(argvars, 1) == FAIL
+	|| check_for_number_arg(argvars, 2) == FAIL
+	|| check_for_opt_string_arg(argvars, 3) == FAIL)
+	return;
+
+    rettv->v_type = VAR_STRING;
+
+    if (argvars[3].v_type == VAR_STRING &&
+	    argvars[3].vval.v_string != NULL &&
+	    *(argvars[3].vval.v_string) != NUL)
+    {
+#if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
+	prev = bind_textdomain_codeset((const char *)argvars[3].vval.v_string, (char *)p_enc);
+#endif
+
+#if defined(HAVE_DNGETTEXT)
+	rettv->vval.v_string = vim_strsave((char_u *)dngettext((const char *)argvars[3].vval.v_string, (const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string, (int)argvars[2].vval.v_number));
+#else
+	textdomain((const char *)argvars[3].vval.v_string);
+	rettv->vval.v_string = vim_strsave((char_u *)NGETTEXT((const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string, argvars[2].vval.v_number));
+	textdomain(VIMPACKAGE);
+#endif
+
+#if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
+	if (prev != NULL)
+	    bind_textdomain_codeset((const char *)argvars[3].vval.v_string, prev);
+#endif
+    }
+    else
+	rettv->vval.v_string = vim_strsave((char_u *)NGETTEXT((const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string, argvars[2].vval.v_number));
+}
+
 
 /*
  * "nr2char()" function

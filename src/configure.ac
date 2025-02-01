@@ -4520,6 +4520,12 @@ if test "$enable_nls" = "yes"; then
 		[#include <libintl.h>],
 		[dgettext("Test", "Test");])],
 		AC_MSG_RESULT([yes]); AC_DEFINE(HAVE_DGETTEXT),
+      AC_MSG_CHECKING([for dngettext])
+		AC_MSG_RESULT([no]))
+      AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libintl.h>],
+		[dngettext("DOMAIN", "Test single", "Test plural", 1);])],
+		AC_MSG_RESULT([yes]); AC_DEFINE(HAVE_DNGETTEXT),
 		AC_MSG_RESULT([no]))
       dnl _nl_msg_cat_cntr is required for GNU gettext
       AC_MSG_CHECKING([for _nl_msg_cat_cntr])
