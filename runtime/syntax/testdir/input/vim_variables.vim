@@ -176,9 +176,18 @@ let &g:foo -= expr
 let [foo, bar] = expr
 let [foo,
       \ bar] = expr
+let [v:foo, v:bar] = expr
+let [v:foo,
+      \ v:bar] = expr
 let [&foo, &bar] = expr
+let [&foo,
+      \  &bar] = expr
 let [$foo, $bar] = expr
+let [$foo,
+      \  $bar] = expr
 let [@a, @b] = expr
+let [@a,
+      \  @b] = expr
 
 let [foo, bar] .= expr
 let [foo, bar] ..= expr
@@ -189,6 +198,22 @@ let [foo, bar; baz] = expr
 let [foo,
       \ bar;
       \ baz] = expr
+let [v:foo, v:bar; v:baz] = expr
+let [v:foo,
+      \ v:bar;
+      \ v:baz] = expr
+let [$foo, $bar; $baz] = expr
+let [$foo,
+      \ $bar;
+      \ $baz] = expr
+let [&foo, &bar; &baz] = expr
+let [&foo,
+      \ &bar;
+      \ &baz] = expr
+let [@a, @b; @c] = expr
+let [@a,
+      \ @b;
+      \ @c] = expr
 
 let foo =<< END
 ...

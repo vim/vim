@@ -252,10 +252,14 @@ syn region vimSubscript contained	matchgroup=vimSubscriptBracket start="\[" end=
 
 syn match vimVar	      contained	"\<\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscript
 syn match vimVar		"\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscript
+syn match vimVar		"\<a:\%(000\|\d\+\)\>"	nextgroup=vimSubscript
+syn match vimFBVar      contained   "\<[bwglsta]:\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscript
+
+syn match vimVimVar	"\<v:\h\w*\>"		nextgroup=vimSubscript
 syn match vimOptionVar      	"&\%([lg]:\)\=\a\+\>"	nextgroup=vimSubscript
 syn match vimOptionVar	"&t_\S[a-zA-Z0-9]\>"	nextgroup=vimSubscript
 syn match vimOptionVar        	"&t_k;"		nextgroup=vimSubscript
-syn match vimFBVar      contained   "\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscript
+syn cluster vimSpecialVar	contains=vimEnvvar,vimLetRegister,vimOptionVar,vimVimVar
 
 Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\s\+[-+/*%]\=="
 Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\s\+\.\.="
@@ -264,12 +268,12 @@ Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\s*->"
 Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\["	nextgroup=vimSubscript
 Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\."	nextgroup=vimOper
 
-Vim9 syn match vim9LhsVariableList	"\[\_[^]]\+]\ze\s\+[-+/*%]\=="	contains=@vim9Continue,vimVar,vimEnvvar,vimOptionVar
-Vim9 syn match vim9LhsVariableList	"\[\_[^]]\+]\ze\s\+\.\.="	contains=@vim9Continue,vimVar,vimEnvvar,vimOptionVar
+Vim9 syn match vim9LhsVariableList	"\[\_[^]]\+]\ze\s\+[-+/*%]\=="	contains=vimVar,@vimSpecialVar
+Vim9 syn match vim9LhsVariableList	"\[\_[^]]\+]\ze\s\+\.\.="	contains=vimVar,@vimSpecialVar
 
 Vim9 syn match vim9LhsRegister	"@["0-9\-a-zA-Z#=*+_/]\ze\s\+\%(\.\.\)\=="
 
-syn cluster vimExprList	contains=vimEnvvar,vimFunc,vimNumber,vimOper,vimOperParen,vimOptionVar,vimLambda,vimLetRegister,vimString,vimVar,@vim9ExprList
+syn cluster vimExprList	contains=@vimSpecialVar,vimFunc,vimNumber,vimOper,vimOperParen,vimLambda,vimString,vimVar,@vim9ExprList
 syn cluster vim9ExprList	contains=vim9Boolean,vim9LambdaParams,vim9Null
 
 " Insertions And Appends: insert append {{{2
@@ -321,7 +325,7 @@ syn keyword vimFTOption contained	detect indent off on plugin
 
 " Augroup : vimAugroupError removed because long augroups caused sync'ing problems. {{{2
 " ======= : Trade-off: Increasing synclines with slower editing vs augroup END error checking.
-syn cluster vimAugroupList	contains=@vimCmdList,vimFilter,vimFunc,vimLineComment,vimSpecFile,vimOper,vimNumber,vimOperParen,@vimComment,vimString,vimSubst,vimRegister,vimCmplxRepeat,vimNotation,vimCtrlChar,vimFuncVar,vimContinue
+syn cluster vimAugroupList	contains=@vimCmdList,vimFilter,vimFunc,vimLineComment,vimSpecFile,vimOper,vimNumber,vimOperParen,@vimComment,vimString,vimSubst,vimRegister,vimCmplxRepeat,vimNotation,vimCtrlChar,vimContinue
 syn match   vimAugroup	"\<aug\%[roup]\>" contains=vimAugroupKey,vimAugroupBang skipwhite nextgroup=vimAugroupBang,vimAutoCmdGroup
 if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'a'
   syn region  vimAugroup  fold	start="\<aug\%[roup]\>\ze\s\+\%([eE][nN][dD]\)\@!\S\+" matchgroup=vimAugroupKey end="\<aug\%[roup]\>\ze\s\+[eE][nN][dD]\>" contains=vimAutoCmd,@vimAugroupList,vimAugroupkey skipwhite nextgroup=vimAugroupEnd
@@ -339,7 +343,7 @@ syn keyword vimAugroupKey	contained aug[roup]  skipwhite nextgroup=vimAugroupBan
 
 " Operators: {{{2
 " =========
-syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimLambda,vimOper,vimOperParen,vimOptionVar,vimNumber,vimString,vimRegister,@vimContinue,vim9Comment,vimVar,vimBoolean,vim9LambdaParams,vimNull
+syn cluster	vimOperGroup	contains=@vimSpecialVar,vimFunc,vimLambda,vimOper,vimOperParen,vimNumber,vimString,vimRegister,@vimContinue,vim9Comment,vimVar,vimBoolean,vim9LambdaParams,vimNull
 syn match	vimOper	"\a\@<!!"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 syn match	vimOper	"||\|&&\|[-+*/%.]"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 syn match	vimOper	"?"			skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList
@@ -351,8 +355,8 @@ syn match	vimOper	"\%#=1\%(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\="	skipwhite ski
 syn match	vimOper	"\<is\%(not\)\=\>"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 syn match	vimOper	"\<is\%(not\)\=[?#]"		skipwhite skipnl nextgroup=@vimOperContinue,@vimExprList,vimSpecFile
 syn region	vimOperParen 		matchgroup=vimParenSep start="("    end=")" contains=@vimOperGroup nextgroup=vimSubscript
-syn region	vimOperParen		matchgroup=vimSep	     start="#\={" end="}" contains=@vimOperGroup nextgroup=vimSubscript,vimVar,vimFuncVar
-syn region	vimOperParen	contained	matchgroup=vimSep	     start="\["	end="]" contains=@vimOperGroup nextgroup=vimSubscript,vimVar,vimFuncVar
+syn region	vimOperParen		matchgroup=vimSep	     start="#\={" end="}" contains=@vimOperGroup nextgroup=vimSubscript,vimVar
+syn region	vimOperParen	contained	matchgroup=vimSep	     start="\["	end="]" contains=@vimOperGroup nextgroup=vimSubscript,vimVar
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_noopererror")
  syn match	vimOperError	")"
 endif
@@ -391,12 +395,12 @@ syn match	vim9LambdaOperatorComment contained "#.*" skipwhite skipempty nextgrou
 
 " Functions: Tag is provided for those who wish to highlight tagged functions {{{2
 " =========
-syn cluster	vimFuncList	contains=vimFuncBang,vimFunctionError,vimFuncKey,vimFuncSID,Tag
-syn cluster	vimDefList	contains=vimFuncBang,vimFunctionError,vimDefKey,vimFuncSID,Tag
+syn cluster	vimFuncList	contains=vimFuncBang,vimFunctionError,vimFuncKey,vimFuncScope,vimFuncSID,Tag
+syn cluster	vimDefList	contains=vimFuncBang,vimFunctionError,vimDefKey,vimFuncScope,vimFuncSID,Tag
 
-syn cluster	vimFuncBodyCommon	contains=@vimCmdList,vimCmplxRepeat,vimContinue,vimCtrlChar,vimDef,vimEnvvar,vimFBVar,vimFunc,vimFunction,vimLetHereDoc,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegister,vimSpecFile,vimString,vimSubst,vimFuncFold,vimDefFold
-syn cluster	vimFuncBodyList	contains=@vimFuncBodyCommon,vimComment,vimLineComment,vimFuncVar,vimInsert,vimConst,vimLet,vimSearch
-syn cluster	vimDefBodyList	contains=@vimFuncBodyCommon,vim9Comment,vim9LineComment,vim9Block,vim9Const,vim9Final,vim9Var,vim9Null,vim9Boolean,vim9For,vim9LhsVariable,vim9LhsVariableList,vim9LhsRegister,vimOptionVar,vim9Search
+syn cluster	vimFuncBodyCommon	contains=@vimCmdList,vimCmplxRepeat,vimContinue,vimCtrlChar,vimDef,vimFBVar,vimFunc,vimFunction,vimLetHereDoc,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegister,vimSpecFile,vimString,vimSubst,vimFuncFold,vimDefFold
+syn cluster	vimFuncBodyList	contains=@vimFuncBodyCommon,vimComment,vimLineComment,vimInsert,vimConst,vimLet,vimSearch
+syn cluster	vimDefBodyList	contains=@vimFuncBodyCommon,vim9Comment,vim9LineComment,vim9Block,vim9Const,vim9Final,vim9Var,vim9Null,vim9Boolean,vim9For,vim9LhsVariable,vim9LhsVariableList,vim9LhsRegister,vim9Search,@vimSpecialVar
 
 syn region	vimFuncPattern	contained		matchgroup=vimOper start="/" end="$" contains=@vimSubstList
 syn match	vimFunction	"\<fu\%[nction]\>"	skipwhite nextgroup=vimCmdSep,vimComment,vimFuncPattern contains=vimFuncKey
@@ -410,7 +414,7 @@ syn match	vimDefComment	contained	"#.*" skipwhite skipempty nextgroup=vimDefBody
 
 syn match	vimFuncBang	contained	"!"
 syn match	vimFuncSID	contained	"\c<sid>"
-syn match	vimFuncSID	contained	"\<[sg]:"
+syn match	vimFuncScope	contained	"\<[sg]:"
 syn keyword	vimFuncKey	contained	fu[nction]
 syn keyword	vimDefKey	contained	def
 
@@ -433,7 +437,6 @@ if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'f'
  syn region	vimDefFold	start="\<def\>!\=\s*\%(<[sS][iI][dD]>\|[sg]:\)\=\%(\i\|[#.]\)\+("	                 end="\<enddef\>"	       contains=vimDef      fold keepend extend transparent
 endif
 
-syn match	vimFuncVar   contained	"a:\%(\K\k*\|\d\+\)\>"
 syn match	vimFuncBlank contained	"\s\+"
 
 " Types: {{{2
@@ -752,11 +755,11 @@ syn match	vimSetMod	contained	"\a\@1<=\%(&vim\=\|[!&?<]\)"
 
 " Variable Declarations: {{{2
 " =====================
-VimL syn keyword	vimLet	let		skipwhite nextgroup=vimFuncVar,vimLetRegister,vimOptionVar,vimVar,vimVarList
-VimL syn keyword	vimConst	cons[t]		skipwhite nextgroup=vimFuncVar,vimLetRegister,vimOptionVar,vimVar,vimVarList
+VimL syn keyword	vimLet	let		skipwhite nextgroup=@vimSpecialVar,vimVar,vimVarList
+VimL syn keyword	vimConst	cons[t]		skipwhite nextgroup=@vimSpecialVar,vimVar,vimVarList
 syn region	vimVarList	contained
       \ start="\[" end="]"
-      \ contains=@vimContinue,vimEnvvar,vimLetRegister,vimOptionVar,vimVar
+      \ contains=@vimContinue,@vimSpecialVar,vimVar
 
 VimL syn keyword	vimUnlet		unl[et]	skipwhite nextgroup=vimUnletBang,vimUnletVars
 syn match	vimUnletBang	contained	"\a\@1<=!"	skipwhite nextgroup=vimUnletVars
@@ -775,7 +778,7 @@ Vim9 syn keyword	vim9Final	final	skipwhite nextgroup=vim9Variable,vim9VariableLi
 Vim9 syn keyword	vim9Var	var	skipwhite nextgroup=vim9Variable,vim9VariableList
 
 syn match	vim9Variable	contained	"\<\h\w*\>"	skipwhite nextgroup=vimTypeSep,vimLetHereDoc,vimOper
-syn region	vim9VariableList	contained	start="\[" end="]" contains=vim9Variable,vimEnvvar,vimOptionVar,@vimContinue
+syn region	vim9VariableList	contained	start="\[" end="]" contains=@vimContinue,@vimSpecialVar,vim9Variable
 
 " Lockvar and Unlockvar: {{{2
 " =====================
@@ -1439,7 +1442,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimDebuggreedy	vimCommand
  hi def link vimDefComment	vim9Comment
  hi def link vimDefKey	vimCommand
- hi def link vimDefParam vimVar
+ hi def link vimDefParam	vimVar
  hi def link vimDelcommand	vimCommand
  hi def link vimDelcommandAttr	vimUserCmdAttr
  hi def link vimEcho	vimCommand
@@ -1466,8 +1469,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimFuncMod	Special
  hi def link vimFuncParam	vimVar
  hi def link vimFuncParamEquals	vimOper
- hi def link vimFuncSID	Special
- hi def link vimFuncVar	Identifier
+ hi def link vimFuncScope	vimVar
+ hi def link vimFuncSID	vimNotation
  hi def link vimGroupAdd	vimSynOption
  hi def link vimGroupName	vimGroup
  hi def link vimGroupRem	vimSynOption
@@ -1534,6 +1537,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimOperContinueComment	vimContinueComment
  hi def link vimOption	PreProc
  hi def link vimOptionVar	Identifier
+ hi def link vimVimVar	Identifier
  hi def link vimParenSep	Delimiter
  hi def link vimPatSepErr	vimError
  hi def link vimPatSepR	vimPatSep
@@ -1616,7 +1620,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimUserCmdError	Error
  hi def link vimUserCmdKey	vimCommand
  hi def link vimUserFunc	Normal
- hi def link vimVar	Identifier
+ hi def link vimVar	Normal
  hi def link vimWarn	WarningMsg
 
  hi def link vim9Abstract	vimCommand

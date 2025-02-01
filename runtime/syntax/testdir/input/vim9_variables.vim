@@ -11,18 +11,25 @@ g:foo = expr
 t:foo = expr
 w:foo = expr
 
+v:foo = expr
+
 $FOO = expr
  
 var [foo, bar] = expr
 var [foo,
       \ bar] = expr
-var [&foo, &bar] = expr
 var [$foo, $bar] = expr
+var [$foo,
+      \ $bar] = expr
 
 var [foo, bar; baz] = expr
 var [foo,
       \ bar;
       \ baz] = expr
+var [$foo, $bar; $baz] = expr
+var [$foo,
+      \ $bar;
+      \ $baz] = expr
 
 var foo =<< END
 ...
@@ -121,10 +128,20 @@ $FOO ..= expr
 &g:foo -= expr
  
 [foo, bar] = expr
-[&foo, &bar] = expr
-[$foo, $bar] = expr
 [foo,
       \ bar] = expr
+[v:foo, v:bar] = expr
+[v:foo,
+      \ v:bar] = expr
+[&foo, &bar] = expr
+[&foo,
+      \ &bar] = expr
+[$foo, $bar] = expr
+[$foo,
+      \  $bar] = expr
+[@a, @b] = expr
+[@a,
+      \  @a] = expr
 
 [foo, bar] ..= expr
 [foo, bar] += expr
@@ -137,6 +154,22 @@ $FOO ..= expr
 [foo,
       \ bar;
       \ baz] = expr
+[v:foo, v:bar; v:baz] = expr
+[v:foo,
+      \ v:bar;
+      \ v:baz] = expr
+[$foo, $bar; $baz] = expr
+[$foo,
+      \ $bar;
+      \ $baz] = expr
+[&foo, &bar; &baz] = expr
+[&foo,
+      \ &bar;
+      \ &baz] = expr
+[@a, @b; @c] = expr
+[@a,
+      \ @b;
+      \ @c] = expr
 
 foo =<< END
 ...
