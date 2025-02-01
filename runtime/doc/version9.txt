@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jan 26
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Feb 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41563,13 +41563,26 @@ Support for the XDG Desktop Specification |xdg-base-dir|
 Support for translating messages in Vim script plugins using the |gettext()|
 and |bindtextdomain()| functions.
 
-Support highlighting the matched text  and the completion kind for insert-mode
+Support highlighting the matched text and the completion kind for insert-mode
 completion and command-line completion in |ins-completion-menu|, see
 |complete-items|
 
 Include the "linematch" algorithm for the 'diffopt' setting.  This aligns
 changes between buffers on similar lines improving the diff highlighting in
 Vim
+
+Adjusted default values ~
+-----------------------
+- the default 'history' option value has been increased to 200 and removed
+  from |defaults.vim|
+- the default 'backspace' option for Vim has been set to "indent,eol,start"
+  and removed from |defaults.vim|
+- the default fontsize for the GTK builds of Vim (Windows and Unix) has been
+  increased to 12pt to accomodate modern high-dpi monitors
+- the default value of the 'keyprotocol' option has been updated and support
+  for the ghostty terminal emulator (using kitty protocol) has been added
+- 'termguicolors' is automatically enabled if the terminal supports the RGB
+  terminfo capability or supports 0x1000000 colors
 
 							*changed-9.2*
 Changed~
@@ -41611,16 +41624,8 @@ Changed~
 - allow to pass local Vim script variables to python interpreter |py3eval()|
 - |getwininfo()| now also returns the "leftcol" property for a window
 - 'rulerformat' now supports the |stl-%!| item
-- the default 'history' option value has been increased to 200 and removed
-  from |defaults.vim|
-- the default 'backspace' option for Vim has been set to "indent,eol,start"
-  and removed from |defaults.vim|
 - the completed word and completion type are provided when handling the
   |CompleteDone| autocommand in the |v:event| dictionary
-- the default fontsize for the GTK builds of Vim (Windows and Unix) has been
-  increased to 12pt to accomodate modern high-dpi monitors
-- the default value of the 'keyprotocol' option has been updated by support
-  for the ghostty terminal emulator (using kitty protocol)
 - |complete_info()| returns the list of matches shown in the poppu menu via
   the "matches" key
 - |v:stacktrace| The stack trace of the exception most recently caught and
@@ -41630,8 +41635,6 @@ Changed~
 	"preinsert"	- highlight to be inserted values
 - add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
   and decouple it from |netrw|
-- 'termguicolors' is automatically enabled if the terminal supports the RGB
-  terminfo capability or supports 0x1000000 colors
 
 							*added-9.2*
 Added ~
