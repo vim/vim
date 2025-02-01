@@ -289,6 +289,61 @@ func Test_termwinscroll_topline()
   set termwinscroll& mouse&
 endfunc
 
+func Test_termwinscroll_topline2()
+  let g:test_is_flaky = 1
+  set termwinscroll=75000 mouse=a
+  if !has('win32')
+    set shell=sh
+  endif
+  let norm_winid = win_getid()
+  terminal
+  call assert_equal(2, winnr('$'))
+  let buf = bufnr()
+  let win = winnr()
+  call WaitFor({-> !empty(term_getline(buf, 1))})
+
+  let num1 = &termwinscroll / 1000 * 999
+  call writefile(range(num1), 'Xtext', 'D')
+  if has('win32')
+    call term_sendkeys(buf, "type Xtext\<CR>")
+  else
+    call term_sendkeys(buf, "cat Xtext\<CR>")
+  endif
+  let rows = term_getsize(buf)[0]
+  " It may take a while to finish on a slow system
+  call term_wait(buf, 1000 * g:run_nr)
+  " On MS-Windows there is an empty line, check both last line and above it.
+  call WaitForAssert({-> assert_match(string(num1 - 1), term_getline(buf, rows - 1) .. '\|' .. term_getline(buf, rows - 2))})
+  call feedkeys("\<C-W>N", 'xt')
+  call feedkeys("i", 'xt')
+
+  let num2 = &termwinscroll / 1000 * 8
+  call writefile(range(num2), 'Xtext', 'D')
+  if has('win32')
+    call term_sendkeys(buf, "timeout /t 2 && type Xtext\<CR>")
+  else
+    call term_sendkeys(buf, "sleep 2; cat Xtext\<CR>")
+  endif
+  let winrow = get(get(filter(getwininfo(), 'v:val.winid == norm_winid'), 0, {}), 'winrow', -1)
+
+  call test_setmouse(winrow, 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call WaitForAssert({-> assert_notequal(buf, bufnr())})
+
+  " Change the terminal window row size
+  call win_move_statusline(win,1)
+  " Before the fix, E340 and E315 would occur multiple times at this point.
+  let winrow2 = get(get(filter(getwininfo(), 'v:val.winid == norm_winid'), 0, {}), 'winrow', -1)
+  call assert_equal(winrow + 1, winrow2)
+
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call WaitForAssert({-> assert_equal(buf, bufnr())})
+
+  exe buf . 'bwipe!'
+  set termwinscroll& mouse& sh&
+endfunc
+
 " Resizing the terminal window caused an ml_get error.
 " TODO: This does not reproduce the original problem.
 " TODO: This test starts timing out in Github CI Gui test, why????
