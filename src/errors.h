@@ -3172,7 +3172,8 @@ EXTERN char e_exists_compiled_can_only_be_used_in_def_function[]
 EXTERN char e_legacy_must_be_followed_by_command[]
 	INIT(= N_("E1234: legacy must be followed by a command"));
 #ifdef FEAT_EVAL
-// E1235 unused
+EXTERN char e_bool_or_number_required_for_argument_nr[]
+	INIT(= N_("E1235: Bool or Number required for argument %d"));
 EXTERN char e_cannot_use_str_itself_it_is_imported[]
 	INIT(= N_("E1236: Cannot use %s itself, it is imported"));
 #endif
