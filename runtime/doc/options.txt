@@ -5096,7 +5096,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   set keyprotocol=kitty:kitty,foot:kitty,ghostty:kitty,wezterm:kitty
 	   set keyprotocol+=xterm:mok2
 
-<	This means that when 'term' contains "kitty, "foot", "ghostty"  or
+<	This means that when 'term' contains "kitty, "foot", "ghostty" or
 	"wezterm" somewhere, then the "kitty" protocol is used.  When 'term'
 	contains "xterm" somewhere, then the "mok2" protocol is used.
 

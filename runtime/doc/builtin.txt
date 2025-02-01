@@ -610,8 +610,7 @@ split({expr} [, {pat} [, {keepempty}]])
 sqrt({expr})			Float	square root of {expr}
 srand([{expr}])			List	get seed for |rand()|
 state([{what}])			String	current state of Vim
-str2blob({list} [, {options}])
-				Blob	convert list of strings into a Blob
+str2blob({list} [, {options}])	Blob	convert list of strings into a Blob
 str2float({expr} [, {quoted}])	Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF-8 value

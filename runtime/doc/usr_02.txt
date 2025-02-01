@@ -698,8 +698,8 @@ Summary:					*help-summary*  >
      package-<name>. So >
 	:help package-comment
 <
-    will bring you to the help section for the included comment plugin and how to
-    enable it.
+    will bring you to the help section for the included comment plugin and how
+    to enable it.
 
 
 ==============================================================================
