@@ -1722,9 +1722,12 @@ term_convert_key(term_T *term, int c, int modmask, char *buf)
 
     // Ctrl-Shift-i may have the key "I" instead of "i", but for the kitty
     // keyboard protocol should use "i".  Applies to all ascii letters.
+    // Without the Shift modifier, use lower-case for ascii letters when the
+    // Ctrl modifier is present.
     if (ASCII_ISUPPER(c)
-	    && vterm_is_kitty_keyboard(vterm)
-	    && mod == (VTERM_MOD_CTRL | VTERM_MOD_SHIFT))
+	    && ((vterm_is_kitty_keyboard(vterm)
+		    && mod == (VTERM_MOD_CTRL | VTERM_MOD_SHIFT))
+		|| ((mod & VTERM_MOD_CTRL) && !(mod & VTERM_MOD_SHIFT))))
 	c = TOLOWER_ASC(c);
 
     /*
