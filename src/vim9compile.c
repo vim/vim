@@ -1034,6 +1034,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     int		off;
     char_u	*func_name;
     char_u	*lambda_name;
+    size_t	lambda_namelen;
     ufunc_T	*ufunc;
     int		r = FAIL;
     compiletype_T   compile_type;
@@ -1092,7 +1093,9 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 
     eap->forceit = FALSE;
     // We use the special <Lamba>99 name, but it's not really a lambda.
-    lambda_name = vim_strsave(get_lambda_name());
+    lambda_name = get_lambda_name();
+    lambda_namelen = get_lambda_name_len();
+    lambda_name = vim_strnsave(lambda_name, lambda_namelen);
     if (lambda_name == NULL)
 	return NULL;
 
@@ -3884,7 +3887,7 @@ add_def_function(ufunc_T *ufunc)
     dfunc->df_idx = def_functions.ga_len;
     ufunc->uf_dfunc_idx = dfunc->df_idx;
     dfunc->df_ufunc = ufunc;
-    dfunc->df_name = vim_strsave(ufunc->uf_name);
+    dfunc->df_name = vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
     ga_init2(&dfunc->df_var_names, sizeof(char_u *), 10);
     ++dfunc->df_refcount;
     ++def_functions.ga_len;

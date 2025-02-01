@@ -1445,7 +1445,7 @@ generate_FUNCREF(
 	}
     }
     if (ufunc->uf_def_status == UF_NOT_COMPILED || cl != NULL)
-	extra->fre_func_name = vim_strsave(ufunc->uf_name);
+	extra->fre_func_name = vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
     if (ufunc->uf_def_status != UF_NOT_COMPILED && cl == NULL)
     {
 	if (isn_idx == NULL && ufunc->uf_def_status == UF_TO_BE_COMPILED)
@@ -1912,7 +1912,7 @@ generate_CALL(
     {
 	// A user function may be deleted and redefined later, can't use the
 	// ufunc pointer, need to look it up again at runtime.
-	isn->isn_arg.ufunc.cuf_name = vim_strsave(ufunc->uf_name);
+	isn->isn_arg.ufunc.cuf_name = vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
 	isn->isn_arg.ufunc.cuf_argcount = argcount;
     }
 
