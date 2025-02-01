@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2025 Jan 24
+# Last Change:  2025 Feb 01
 
 import autoload 'dist/vim9.vim'
 
@@ -18,7 +18,7 @@ if !no_gx
       return url
     endif
 
-    const user_var = get(g:, 'gx_word', get(g:, 'netrw_gx', '<cfile>')
+    const user_var = get(g:, 'gx_word', get(g:, 'netrw_gx', '<cfile>'))
     return expand(user_var)
   enddef
 
