@@ -2498,6 +2498,9 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	retval = TRUE;
     }
 
+    if ((c == Ctrl_W || c == Ctrl_U) && ins_compl_preinsert_effect())
+	ins_compl_delete();
+
     auto_format(FALSE, TRUE);
 
     // Trigger the CompleteDonePre event to give scripts a chance to
