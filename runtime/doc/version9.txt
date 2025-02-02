@@ -41636,6 +41636,8 @@ Changed~
 - add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
   and decouple it from |netrw|
 - new digraph "APPROACHES THE LIMIT" using ".="
+- Add the optional {opts} |Dict| argument to |getchar()| to control: cursor
+  behaviour, return type and whether or not to simplify the returned key
 
 							*added-9.2*
 Added ~
