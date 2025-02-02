@@ -682,12 +682,12 @@ make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize)
     return buf;
 }
 
-/*
- * Get a name for a lambda.  Returned in static memory.
- */
 static char_u	lambda_name[8 + NUMBUFLEN];
 static size_t	lambda_namelen = 0;
 
+/*
+ * Get a name for a lambda.  Returned in static memory.
+ */
     char_u *
 get_lambda_name(void)
 {
@@ -6820,17 +6820,13 @@ discard_pending_return(void *rettv)
 get_return_cmd(void *rettv)
 {
     char_u	*s = NULL;
+    char_u	*tofree = NULL;
+    char_u	numbuf[NUMBUFLEN];
     size_t	slen = 0;
     size_t	IObufflen;
 
     if (rettv != NULL)
-    {
-	char_u	*tofree = NULL;
-	char_u	numbuf[NUMBUFLEN];
-
 	s = echo_string((typval_T *)rettv, &tofree, numbuf, 0);
-	vim_free(tofree);
-    }
     if (s == NULL)
 	s = (char_u *)"";
     else
@@ -6839,11 +6835,12 @@ get_return_cmd(void *rettv)
     STRCPY(IObuff, ":return ");
     STRNCPY(IObuff + 8, s, IOSIZE - 8);
     IObufflen = 8 + slen;
-    if (slen + 8 >= IOSIZE)
+    if (IObufflen >= IOSIZE)
     {
 	STRCPY(IObuff + IOSIZE - 4, "...");
-	IObufflen += 3;
+	IObufflen = IOSIZE - 1;
     }
+    vim_free(tofree);
     return vim_strnsave(IObuff, IObufflen);
 }
 
