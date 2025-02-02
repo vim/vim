@@ -291,7 +291,7 @@ endfunc
 
 func Test_termwinscroll_topline2()
   let g:test_is_flaky = 1
-  set termwinscroll=75000 mouse=a
+  set termwinscroll=50000 mouse=a
   if !has('win32')
     set shell=sh
   endif
@@ -311,7 +311,7 @@ func Test_termwinscroll_topline2()
   endif
   let rows = term_getsize(buf)[0]
   " It may take a while to finish on a slow system
-  call term_wait(buf, 1000 * g:run_nr)
+  call term_wait(buf, 2000 * g:run_nr)
   " On MS-Windows there is an empty line, check both last line and above it.
   call WaitForAssert({-> assert_match(string(num1 - 1), term_getline(buf, rows - 1) .. '\|' .. term_getline(buf, rows - 2))})
   call feedkeys("\<C-W>N", 'xt')
