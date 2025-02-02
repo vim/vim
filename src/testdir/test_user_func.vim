@@ -473,6 +473,43 @@ func Test_func_def_error()
 
   " Try to list functions using an invalid search pattern
   call assert_fails('function /\%(/', 'E53:')
+
+  " Use a script-local function to cover uf_name_exp.
+  func s:TestRedefine(arg1 = 1, arg2 = 10)
+    let caught_E122 = 0
+    try
+      func s:TestRedefine(arg1 = 1, arg2 = 10)
+      endfunc
+    catch /E122:/
+      let caught_E122 = 1
+    endtry
+    call assert_equal(1, caught_E122)
+
+    let caught_E127 = 0
+    try
+      func! s:TestRedefine(arg1 = 1, arg2 = 10)
+      endfunc
+    catch /E127:/
+      let caught_E127 = 1
+    endtry
+    call assert_equal(1, caught_E127)
+
+    " The failures above shouldn't cause heap-use-after-free here.
+    return [a:arg1 + a:arg2, expand('<stack>')]
+  endfunc
+
+  let stacks = []
+  " Call the function twice.
+  " Failing to redefine a function shouldn't clear its argument list.
+  for i in range(2)
+    let [val, stack] = s:TestRedefine(1000)
+    call assert_equal(1010, val)
+    call assert_match(expand('<SID>') .. 'TestRedefine\[20\]$', stack)
+    call add(stacks, stack)
+  endfor
+  call assert_equal(stacks[0], stacks[1])
+
+  delfunc s:TestRedefine
 endfunc
 
 " Test for deleting a function

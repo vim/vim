@@ -5404,13 +5404,13 @@ define_function(
 		    emsg_funcname(e_name_already_defined_str, name);
 		else
 		    emsg_funcname(e_function_str_already_exists_add_bang_to_replace, name);
-		goto erret;
+		goto errret_keep;
 	    }
 	    if (fp->uf_calls > 0)
 	    {
 		emsg_funcname(
 			    e_cannot_redefine_function_str_it_is_in_use, name);
-		goto erret;
+		goto errret_keep;
 	    }
 	    if (fp->uf_refcount > 1)
 	    {
@@ -5630,9 +5630,6 @@ erret:
 	ga_init(&fp->uf_def_args);
     }
 errret_2:
-    ga_clear_strings(&newargs);
-    ga_clear_strings(&default_args);
-    ga_clear_strings(&newlines);
     if (fp != NULL)
     {
 	VIM_CLEAR(fp->uf_arg_types);
@@ -5642,6 +5639,10 @@ errret_2:
     }
     if (free_fp)
 	VIM_CLEAR(fp);
+errret_keep:
+    ga_clear_strings(&newargs);
+    ga_clear_strings(&default_args);
+    ga_clear_strings(&newlines);
 ret_free:
     ga_clear_strings(&argtypes);
     ga_clear(&arg_objm);
