@@ -1838,8 +1838,10 @@ def Test_getchar()
   endwhile
   getchar(true)->assert_equal(0)
   getchar(1)->assert_equal(0)
-  v9.CheckSourceDefAndScriptFailure(['getchar(2)'], ['E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1'])
-  v9.CheckSourceDefAndScriptFailure(['getchar("1")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1'])
+  v9.CheckSourceDefExecAndScriptFailure(['getchar(2)'], 'E1023: Using a Number as a Bool: 2')
+  v9.CheckSourceDefExecAndScriptFailure(['getchar(-2)'], 'E1023: Using a Number as a Bool: -2')
+  v9.CheckSourceDefAndScriptFailure(['getchar("1")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1235: Bool or Number required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['getchar(1, 1)'], ['E1013: Argument 2: type mismatch, expected dict<any> but got number', 'E1206: Dictionary required for argument 2'])
 enddef
 
 def Test_getcharpos()
@@ -1851,8 +1853,14 @@ def Test_getcharpos()
 enddef
 
 def Test_getcharstr()
-  v9.CheckSourceDefAndScriptFailure(['getcharstr(2)'], ['E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1'])
-  v9.CheckSourceDefAndScriptFailure(['getcharstr("1")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1'])
+  while len(getcharstr(0)) > 0
+  endwhile
+  getcharstr(true)->assert_equal('')
+  getcharstr(1)->assert_equal('')
+  v9.CheckSourceDefExecAndScriptFailure(['getcharstr(2)'], 'E1023: Using a Number as a Bool: 2')
+  v9.CheckSourceDefExecAndScriptFailure(['getcharstr(-2)'], 'E1023: Using a Number as a Bool: -2')
+  v9.CheckSourceDefAndScriptFailure(['getcharstr("1")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1235: Bool or Number required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['getcharstr(1, 1)'], ['E1013: Argument 2: type mismatch, expected dict<any> but got number', 'E1206: Dictionary required for argument 2'])
 enddef
 
 def Test_getcompletion()
@@ -4989,7 +4997,7 @@ enddef
 
 def Test_win_findbuf()
   v9.CheckSourceDefAndScriptFailure(['win_findbuf("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
-  assert_equal([], win_findbuf(1000))
+  assert_equal([], win_findbuf(9999))
   assert_equal([win_getid()], win_findbuf(bufnr('')))
 enddef
 

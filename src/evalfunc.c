@@ -388,6 +388,20 @@ arg_bool(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a bool or a number.
+ */
+    static int
+arg_bool_or_nr(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+    if (type->tt_type == VAR_BOOL
+	    || type->tt_type == VAR_NUMBER
+	    || type_any_or_unknown(type))
+	return OK;
+    arg_type_mismatch(&t_number, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
  * Check "type" is a list of 'any' or a blob.
  */
     static int
@@ -1195,6 +1209,7 @@ static argcheck_T arg24_count[] = {arg_string_or_list_or_dict, arg_any, arg_bool
 static argcheck_T arg13_cursor[] = {arg_cursor1, arg_number, arg_number};
 static argcheck_T arg12_deepcopy[] = {arg_any, arg_bool};
 static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
+static argcheck_T arg12_getchar[] = {arg_bool_or_nr, arg_dict_any};
 static argcheck_T arg23_extend[] = {arg_list_or_dict_mod, arg_same_as_prev, arg_extend3};
 static argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
 static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, arg_any};
@@ -2095,7 +2110,7 @@ static funcentry_T global_functions[] =
 			ret_list_any,	    f_getcellwidths},
     {"getchangelist",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_list_any,	    f_getchangelist},
-    {"getchar",		0, 1, 0,	    arg1_bool,
+    {"getchar",		0, 2, 0,	    arg12_getchar,
 			ret_any,	    f_getchar},
     {"getcharmod",	0, 0, 0,	    NULL,
 			ret_number,	    f_getcharmod},
@@ -2103,7 +2118,7 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_getcharpos},
     {"getcharsearch",	0, 0, 0,	    NULL,
 			ret_dict_any,	    f_getcharsearch},
-    {"getcharstr",	0, 1, 0,	    arg1_bool,
+    {"getcharstr",	0, 2, 0,	    arg12_getchar,
 			ret_string,	    f_getcharstr},
     {"getcmdcomplpat",	0, 0, 0,	    NULL,
 			ret_string,	    f_getcmdcomplpat},

@@ -2384,13 +2384,32 @@ char_avail(void)
  * "getchar()" and "getcharstr()" functions
  */
     static void
-getchar_common(typval_T *argvars, typval_T *rettv)
+getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
 {
     varnumber_T		n;
     int			error = FALSE;
+    int			simplify = TRUE;
 
-    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+    if ((in_vim9script()
+		&& check_for_opt_bool_or_number_arg(argvars, 0) == FAIL)
+	    || (argvars[0].v_type != VAR_UNKNOWN
+		    && check_for_opt_dict_arg(argvars, 1) == FAIL))
 	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type == VAR_DICT)
+    {
+	dict_T		*d = argvars[1].vval.v_dict;
+
+	if (allow_number)
+	    allow_number = dict_get_bool(d, "number", TRUE);
+	else if (dict_has_key(d, "number"))
+	{
+	    semsg(_(e_invalid_argument_str), "number");
+	    error = TRUE;
+	}
+
+	simplify = dict_get_bool(d, "simplify", TRUE);
+    }
 
 #ifdef MESSAGE_QUEUE
     // vpeekc() used to check for messages, but that caused problems, invoking
@@ -2404,9 +2423,13 @@ getchar_common(typval_T *argvars, typval_T *rettv)
 
     ++no_mapping;
     ++allow_keys;
-    for (;;)
+    if (!simplify)
+	++no_reduce_keys;
+    while (!error)
     {
-	if (argvars[0].v_type == VAR_UNKNOWN)
+	if (argvars[0].v_type == VAR_UNKNOWN
+		|| (argvars[0].v_type == VAR_NUMBER
+			&& argvars[0].vval.v_number == -1))
 	    // getchar(): blocking wait.
 	    n = plain_vgetc_nopaste();
 	else if (tv_get_bool_chk(&argvars[0], &error))
@@ -2427,14 +2450,15 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     }
     --no_mapping;
     --allow_keys;
+    if (!simplify)
+	--no_reduce_keys;
 
     set_vim_var_nr(VV_MOUSE_WIN, 0);
     set_vim_var_nr(VV_MOUSE_WINID, 0);
     set_vim_var_nr(VV_MOUSE_LNUM, 0);
     set_vim_var_nr(VV_MOUSE_COL, 0);
 
-    rettv->vval.v_number = n;
-    if (n != 0 && (IS_SPECIAL(n) || mod_mask != 0))
+    if (n != 0 && (!allow_number || IS_SPECIAL(n) || mod_mask != 0))
     {
 	char_u		temp[10];   // modifier: 3, mbyte-char: 6, NUL: 1
 	int		i = 0;
@@ -2492,6 +2516,10 @@ getchar_common(typval_T *argvars, typval_T *rettv)
 	    }
 	}
     }
+    else if (!allow_number)
+	rettv->v_type = VAR_STRING;
+    else
+	rettv->vval.v_number = n;
 }
 
 /*
@@ -2500,7 +2528,7 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     void
 f_getchar(typval_T *argvars, typval_T *rettv)
 {
-    getchar_common(argvars, rettv);
+    getchar_common(argvars, rettv, TRUE);
 }
 
 /*
@@ -2509,25 +2537,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
     void
 f_getcharstr(typval_T *argvars, typval_T *rettv)
 {
-    getchar_common(argvars, rettv);
-
-    if (rettv->v_type != VAR_NUMBER)
-	return;
-
-    char_u		temp[7];   // mbyte-char: 6, NUL: 1
-    varnumber_T	n = rettv->vval.v_number;
-    int		i = 0;
-
-    if (n != 0)
-    {
-	if (has_mbyte)
-	    i += (*mb_char2bytes)(n, temp + i);
-	else
-	    temp[i++] = n;
-    }
-    temp[i] = NUL;
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strnsave(temp, i);
+    getchar_common(argvars, rettv, FALSE);
 }
 
 /*
