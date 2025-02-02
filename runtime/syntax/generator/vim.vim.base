@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Feb 03
+" Last Change:	   2025 Feb 08
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -212,7 +212,7 @@ syn match vimBang	      contained	"!"
 
 syn region vimSubscript contained	matchgroup=vimSubscriptBracket start="\[" end="]" nextgroup=vimSubscript contains=@vimExprList
 
-syn match vimVar	      contained	"\<\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscript
+syn match vimVar	      contained	"\<\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscript contains=vim9Super,vim9This
 syn match vimVar		"\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscript
 syn match vimVar		"\<a:\%(000\|\d\+\)\>"	nextgroup=vimSubscript
 syn match vimFBVar      contained   "\<[bwglsta]:\h[a-zA-Z0-9#_]*\>"	nextgroup=vimSubscript
@@ -226,9 +226,9 @@ syn cluster vimSpecialVar	contains=vimEnvvar,vimLetRegister,vimOptionVar,vimVimV
 Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\s\+[-+/*%]\=="
 Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\s\+\.\.="
 Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\s\+=<<"
-Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\s*->"
+Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\s*->"		contains=vim9Super,vim9This
 Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\["	nextgroup=vimSubscript
-Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\."	nextgroup=vimOper
+Vim9 syn match vim9LhsVariable	"\s\=\h[a-zA-Z0-9#_]*\ze\."	nextgroup=vimOper contains=vim9Super,vim9This
 
 Vim9 syn match vim9LhsVariableList	"\[\_[^]]\+]\ze\s\+[-+/*%]\=="	contains=vimVar,@vimSpecialVar
 Vim9 syn match vim9LhsVariableList	"\[\_[^]]\+]\ze\s\+\.\.="	contains=vimVar,@vimSpecialVar
@@ -421,12 +421,24 @@ syn cluster vimType contains=vimType,vimCompoundType,vimUserType
 
 if s:vim9script
   " Methods {{{3
-  syn match	vim9MethodDef		contained	"\<def\>"	skipwhite nextgroup=vim9MethodDefName
+  syn match	vim9MethodDef		contained	"\<def\>"	skipwhite nextgroup=vim9MethodDefName,vim9ConstructorDefName
   syn match	vim9MethodDefName		contained	"\<\h\w*\>"	nextgroup=vim9MethodDefParams contains=@vim9MethodName
   syn region	vim9MethodDefParams	contained
         \ matchgroup=Delimiter start="(" end=")"
         \ skipwhite skipnl nextgroup=vim9MethodDefBody,vimDefComment,vimEnddef,vim9MethodDefReturnType,vimCommentError
         \ contains=vimDefParam,vim9Comment,vimFuncParamEquals
+
+  syn match	vim9ConstructorDefName	contained	"\<new\w*\>"
+        \ nextgroup=vim9ConstructorDefParams
+        \ contains=@vim9MethodName
+  syn match	vim9ConstructorDefParam	contained	"\<\%(this\.\)\=\h\w*\>"
+        \ skipwhite nextgroup=vimParamType,vimFuncParamEquals
+        \ contains=vim9This,vimOper
+  syn region	vim9ConstructorDefParams	contained
+        \ matchgroup=Delimiter start="(" end=")"
+        \ skipwhite skipnl nextgroup=vim9MethodDefBody,vimDefComment,vimEnddef,vimCommentError
+        \ contains=vim9ConstructorDefParam,vim9Comment,vimFuncParamEquals
+
   syn region	vim9MethodDefReturnType	contained
         \ start=":\s" end="$" matchgroup=vim9Comment end="\ze[#"]"
         \ skipwhite skipnl nextgroup=vim9MethodDefBody,vimDefComment,vimCommentError
@@ -442,7 +454,7 @@ if s:vim9script
   if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimfunctionerror")
     syn match	vim9MethodNameError contained	"\<[a-z0-9]\i\>"
   endif
-  syn match	vim9MethodName	contained	"\<new\i*\>"
+  syn match	vim9MethodName	contained	"\<new\w*\>"
   syn keyword	vim9MethodName	contained	empty len string
 
   syn cluster	vim9MethodName	contains=vim9MethodName,vim9MethodNameError
@@ -467,8 +479,11 @@ if s:vim9script
   syn keyword	vim9Implements		contained	implements	skipwhite skipnl nextgroup=vim9ImplementedInterface
   syn keyword	vim9Public		contained	public
   syn keyword	vim9Static		contained	static
-  syn keyword	vim9This		contained	this
-  syn keyword	vim9Super		contained	super
+  " FIXME: don't match as dictionary keys, remove when operators are not
+  "        shared between Vim9 and legacy script
+  syn match	vim9This		contained	"\.\@1<!\<this\>:\@!"
+  " super must be folowed by '.'
+  syn match	vim9Super		contained	"\.\@1<!\<super\.\@="
 
   VimFoldc syn region	vim9ClassBody	start="\<class\>" matchgroup=vimCommand end="\<endclass\>" contains=@vim9ClassBodyList transparent
 
@@ -884,7 +899,7 @@ syn case match
 " (following Gautam Iyer's suggestion)
 " ==========================
 syn match	vimFunc              	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\ze\s*("                	skipwhite nextgroup=vimOperParen contains=vimFuncEcho,vimFuncName,vimUserFunc,vimExecute
-syn match	vimUserFunc	contained        	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\|\<\u[a-zA-Z0-9.]*\>\|\<if\>"	contains=vimNotation,vim9MethodName
+syn match	vimUserFunc	contained        	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\|\<\u[a-zA-Z0-9.]*\>\|\<if\>"	contains=vimNotation,vim9MethodName,vim9Super,vim9This
 syn keyword	vimFuncEcho	contained      	ec ech echo
 
 syn match	vimMap	"\<map\%(\s\+(\)\@="	skipwhite nextgroup=vimMapBang,vimMapMod,vimMapLhs
@@ -1583,6 +1598,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9Comment	Comment
  hi def link vim9CommentError	vimError
  hi def link vim9CommentTitle	PreProc
+ hi def link vim9ConstructorDefParam	vimVar
  hi def link vim9Const	vimCommand
  hi def link vim9ContinueComment	vimContinueComment
  hi def link vim9Enum	vimCommand
