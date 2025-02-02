@@ -2386,9 +2386,11 @@ char_avail(void)
     static void
 getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
 {
-    varnumber_T		n;
+    varnumber_T		n = 0;
+    int			called_emsg_start = called_emsg;
     int			error = FALSE;
     int			simplify = TRUE;
+    char_u		cursor_flag = 'm';
 
     if ((in_vim9script()
 		&& check_for_opt_bool_or_number_arg(argvars, 0) == FAIL)
@@ -2399,17 +2401,30 @@ getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
     if (argvars[0].v_type != VAR_UNKNOWN && argvars[1].v_type == VAR_DICT)
     {
 	dict_T		*d = argvars[1].vval.v_dict;
+	char_u		*cursor_str;
 
 	if (allow_number)
 	    allow_number = dict_get_bool(d, "number", TRUE);
 	else if (dict_has_key(d, "number"))
-	{
 	    semsg(_(e_invalid_argument_str), "number");
-	    error = TRUE;
-	}
 
 	simplify = dict_get_bool(d, "simplify", TRUE);
+
+	cursor_str = dict_get_string(d, "cursor", FALSE);
+	if (cursor_str != NULL)
+	{
+	    if (STRCMP(cursor_str, "hide") != 0
+		    && STRCMP(cursor_str, "keep") != 0
+		    && STRCMP(cursor_str, "msg") != 0)
+		semsg(_(e_invalid_value_for_argument_str_str), "cursor",
+								   cursor_str);
+	    else
+		cursor_flag = cursor_str[0];
+	}
     }
+
+    if (called_emsg != called_emsg_start)
+	return;
 
 #ifdef MESSAGE_QUEUE
     // vpeekc() used to check for messages, but that caused problems, invoking
@@ -2418,14 +2433,16 @@ getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
     parse_queued_messages();
 #endif
 
-    // Position the cursor.  Needed after a message that ends in a space.
-    windgoto(msg_row, msg_col);
+    if (cursor_flag == 'h')
+	cursor_sleep();
+    else if (cursor_flag == 'm')
+	windgoto(msg_row, msg_col);
 
     ++no_mapping;
     ++allow_keys;
     if (!simplify)
 	++no_reduce_keys;
-    while (!error)
+    for (;;)
     {
 	if (argvars[0].v_type == VAR_UNKNOWN
 		|| (argvars[0].v_type == VAR_NUMBER
@@ -2452,6 +2469,9 @@ getchar_common(typval_T *argvars, typval_T *rettv, int allow_number)
     --allow_keys;
     if (!simplify)
 	--no_reduce_keys;
+
+    if (cursor_flag == 'h')
+	cursor_unsleep();
 
     set_vim_var_nr(VV_MOUSE_WIN, 0);
     set_vim_var_nr(VV_MOUSE_WINID, 0);
