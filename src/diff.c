@@ -2795,7 +2795,7 @@ diffopt_changed(void)
 	    else
 		return FAIL;
 	}
-	else if (STRNCMP(p, "linematch:", 10) == 0 && VIM_ISDIGIT(p[11]))
+	else if (STRNCMP(p, "linematch:", 10) == 0 && VIM_ISDIGIT(p[10]))
 	{
 	    p += 10;
 	    linematch_lines_new = getdigits(&p);
