@@ -359,7 +359,10 @@ VIM::DoCommand('let s ..= "B"')
   perl << trim eof
     VIM::DoCommand('let s ..= "E"')
   eof
-  call assert_equal('ABCDE', s)
+  perl << trimm
+VIM::DoCommand('let s ..= "F"')
+trimm
+  call assert_equal('ABCDEF', s)
 endfunc
 
 func Test_perl_in_sandbox()

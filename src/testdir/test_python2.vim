@@ -263,7 +263,10 @@ s+='B'
   python << trim eof
     s+='E'
   eof
-  call assert_equal('ABCDE', pyxeval('s'))
+python << trimm
+s+='F'
+trimm
+  call assert_equal('ABCDEF', pyxeval('s'))
 endfunc
 
 " Test for the buffer range object
