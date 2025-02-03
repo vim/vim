@@ -2149,6 +2149,30 @@ func Test_terminal_ansicolors_default()
   exe buf . 'bwipe'
 endfunc
 
+func Test_terminal_ansicolors_default_reset_tgc()
+  CheckFeature termguicolors
+  CheckRunVimInTerminal
+
+  let $PS1="$ "
+  let buf = RunVimInTerminal('-c "term sh"', {'rows': 12})
+  call TermWait(buf)
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  call term_sendkeys(buf, "printf '\\033[0;30;41mhello world\\033[0m\\n'\<CR>")
+  call WaitForAssert({-> assert_match('hello world', term_getline(buf, 2))})
+  call term_sendkeys(buf, "\<C-W>:set notgc\<CR>")
+  call term_sendkeys(buf, "printf '\\033[0;30;41mhello world\\033[0m\\n'\<CR>")
+  call WaitForAssert({-> assert_match('hello world', term_getline(buf, 4))})
+
+  call VerifyScreenDump(buf, 'Test_terminal_ansi_reset_tgc', {})
+
+  call term_sendkeys(buf, "exit\<CR>")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+  unlet! $PS1
+endfunc
+
 let s:test_colors = [
 	\ '#616e64', '#0d0a79',
 	\ '#6d610d', '#0a7373',

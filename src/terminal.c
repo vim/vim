@@ -4957,8 +4957,6 @@ term_reset_palette(VTerm *vterm)
 	color.type = VTERM_COLOR_INDEXED;
 	ansi_color2rgb(index, &color.red, &color.green, &color.blue,
 		&color.index);
-	// The first valid index starts at 1.
-	color.index -= 1;
 
 	vterm_state_set_palette_color(state, index, &color);
     }

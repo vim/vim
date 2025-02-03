@@ -277,7 +277,7 @@ void vterm_state_set_palette_color(VTermState *state, int index, const VTermColo
   if(index >= 0 && index < 16)
   {
     state->colors[index] = *col;
-    state->colors[index].index = index + 1;
+    state->colors[index].index = index;
   }
 }
 
