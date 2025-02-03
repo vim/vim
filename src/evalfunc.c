@@ -6425,7 +6425,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"bsd",
-#if defined(BSD) && !defined(MACOS_X)
+#if defined(BSD) && !defined(MACOS_X) && !defined(__GNU__)
 		1
 #else
 		0
