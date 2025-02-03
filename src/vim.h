@@ -953,6 +953,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 # define HL_TRANS_CONT	0x10000 // transparent item without contains arg
 # define HL_CONCEAL	0x20000 // can be concealed
 # define HL_CONCEALENDS	0x40000 // can be concealed
+# define HL_INCLUDED_TOPLEVEL 0x80000 // toplevel item in included syntax, allowed by contains=TOP
 #endif
 
 // Values for 'options' argument in do_search() and searchit()
