@@ -934,7 +934,10 @@ vim.command('let s ..= "B"')
   lua << trim eof
     vim.command('let s ..= "E"')
   eof
-  call assert_equal('ABCDE', s)
+  lua << trimm
+vim.command('let s ..= "F"')
+trimm
+  call assert_equal('ABCDEF', s)
 endfunc
 
 " Test for adding, accessing and removing global variables using the vim.g

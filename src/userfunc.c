@@ -1322,7 +1322,8 @@ get_function_body(
 	    {
 		// ":python <<" continues until a dot, like ":append"
 		p = skipwhite(arg + 2);
-		if (STRNCMP(p, "trim", 4) == 0)
+		if (STRNCMP(p, "trim", 4) == 0
+			&& (p[4] == NUL || VIM_ISWHITE(p[4])))
 		{
 		    // Ignore leading white space.
 		    p = skipwhite(p + 4);
@@ -1367,26 +1368,34 @@ get_function_body(
 		    current_sctx.sc_version = save_sc_version;
 		    if (arg != NULL && STRNCMP(arg, "=<<", 3) == 0)
 		    {
+			int has_trim = FALSE;
+
 			p = skipwhite(arg + 3);
 			while (TRUE)
 			{
-			    if (STRNCMP(p, "trim", 4) == 0)
+			    if (STRNCMP(p, "trim", 4) == 0
+				    && (p[4] == NUL || VIM_ISWHITE(p[4])))
 			    {
 				// Ignore leading white space.
 				p = skipwhite(p + 4);
-				heredoc_trimmedlen = skipwhite(theline) - theline;
-				heredoc_trimmed = vim_strnsave(theline, heredoc_trimmedlen);
-				if (heredoc_trimmed == NULL)
-				    heredoc_trimmedlen = 0;
+				has_trim = TRUE;
 				continue;
 			    }
-			    if (STRNCMP(p, "eval", 4) == 0)
+			    if (STRNCMP(p, "eval", 4) == 0
+				    && (p[4] == NUL || VIM_ISWHITE(p[4])))
 			    {
 				// Ignore leading white space.
 				p = skipwhite(p + 4);
 				continue;
 			    }
 			    break;
+			}
+			if (has_trim)
+			{
+			    heredoc_trimmedlen = skipwhite(theline) - theline;
+			    heredoc_trimmed = vim_strnsave(theline, heredoc_trimmedlen);
+			    if (heredoc_trimmed == NULL)
+				heredoc_trimmedlen = 0;
 			}
 			skip_until = vim_strnsave(p, skiptowhite(p) - p);
 			getline_options = GETLINE_NONE;
