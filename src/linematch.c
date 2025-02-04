@@ -34,14 +34,10 @@ static size_t test_charmatch_paths(diffcmppath_T *node, int lastdecision);
 line_len(const mmfile_t *m)
 {
     char	*s = m->ptr;
-    size_t	n = (size_t)m->size;
     char	*end;
 
-    end = vim_strnchr(s, &n, '\n');
-    if (end)
-	return (size_t)(end - s);
-
-    return (size_t)m->size;
+    end = memchr(s, '\n', (size_t)m->size);
+    return end ? (size_t)(end - s) : (size_t)m->size;
 }
 
 #define MATCH_CHAR_MAX_LEN 800
@@ -171,10 +167,11 @@ fastforward_buf_to_lnum(mmfile_t s, linenr_T lnum)
 {
     for (int i = 0; i < lnum - 1; i++)
     {
-	size_t n = (size_t)s.size;
+	char *line_end;
 
-	s.ptr = vim_strnchr(s.ptr, &n, '\n');
-	s.size = (int)n;
+	line_end = memchr(s.ptr, '\n', (size_t)s.size);
+	s.size = line_end ? (int)(s.size - (line_end - s.ptr)) : 0;
+	s.ptr = line_end;
 	if (!s.ptr)
 	    break;
 	s.ptr++;
