@@ -796,7 +796,7 @@ compile_load(
 	int	    outer_loop_depth = -1;
 	int	    outer_loop_idx = -1;
 
-	name = vim_strnsave(*arg, end - *arg);
+	name = vim_strnsave(*arg, len);
 	if (name == NULL)
 	    return FAIL;
 
