@@ -6438,6 +6438,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"hurd",
+#ifdef __GNU__
+		1
+#else
+		0
+#endif
+		},
 	{"linux",
 #ifdef __linux__
 		1
