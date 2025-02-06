@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Feb 02
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Feb 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12750,6 +12750,7 @@ gui_win32s		idem, and Win32s system being used (Windows 3.1)
 haiku			Haiku version of Vim.
 hangul_input		Compiled with Hangul input support. |hangul|
 hpux			HP-UX version of Vim.
+hurd			GNU/Hurd version of Vim
 iconv			Can use iconv() for conversion.
 insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode. (always true)

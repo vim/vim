@@ -2888,6 +2888,7 @@ func Test_platform_name()
   " Is Unix?
   call assert_equal(has('bsd'), has('bsd') && has('unix'))
   call assert_equal(has('hpux'), has('hpux') && has('unix'))
+  call assert_equal(has('hurd'), has('hurd') && has('unix'))
   call assert_equal(has('linux'), has('linux') && has('unix'))
   call assert_equal(has('mac'), has('mac') && has('unix'))
   call assert_equal(has('qnx'), has('qnx') && has('unix'))
@@ -2905,6 +2906,7 @@ func Test_platform_name()
     call assert_equal(uname =~? 'QNX', has('qnx'))
     call assert_equal(uname =~? 'SunOS', has('sun'))
     call assert_equal(uname =~? 'CYGWIN\|MSYS', has('win32unix'))
+    call assert_equal(uname =~? 'GNU', has('hurd'))
   endif
 endfunc
 
