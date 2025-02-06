@@ -35,6 +35,7 @@ with these extensions:
 	*.xz		xz
 	*.lz		lzip
 	*.zst		zstd
+	*.lz4		lz4
 
 That's actually the only thing you need to know.  There are no options.
 
