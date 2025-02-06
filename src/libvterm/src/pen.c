@@ -275,10 +275,7 @@ void vterm_state_set_default_colors(VTermState *state, const VTermColor *default
 void vterm_state_set_palette_color(VTermState *state, int index, const VTermColor *col)
 {
   if(index >= 0 && index < 16)
-  {
     state->colors[index] = *col;
-    state->colors[index].index = index + 1;
-  }
 }
 
 void vterm_state_convert_color_to_rgb(const VTermState *state, VTermColor *col)
