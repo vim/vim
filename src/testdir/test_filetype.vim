@@ -674,7 +674,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     sas: ['file.sas'],
     sass: ['file.sass'],
     sbt: ['file.sbt'],
-    scala: ['file.scala'],
+    scala: ['file.scala', 'file.mill'],
     scheme: ['file.scm', 'file.ss', 'file.sld', 'file.stsg', 'any/local/share/supertux2/config', '.lips_repl_history'],
     scilab: ['file.sci', 'file.sce'],
     screen: ['.screenrc', 'screenrc'],
