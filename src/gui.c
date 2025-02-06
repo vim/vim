@@ -488,6 +488,7 @@ gui_init_check(void)
 gui_init(void)
 {
     win_T	*wp;
+    tabpage_T	*tp;
     static int	recursive = 0;
 
     /*
@@ -695,7 +696,7 @@ gui_init(void)
     gui_reset_scroll_region();
 
     // Create initial scrollbars
-    FOR_ALL_WINDOWS(wp)
+    FOR_ALL_TAB_WINDOWS(tp, wp)
     {
 	gui_create_scrollbar(&wp->w_scrollbars[SBAR_LEFT], SBAR_LEFT, wp);
 	gui_create_scrollbar(&wp->w_scrollbars[SBAR_RIGHT], SBAR_RIGHT, wp);
