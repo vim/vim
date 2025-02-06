@@ -10944,15 +10944,39 @@ set_position(typval_T *argvars, typval_T *rettv, int charpos)
 	pos.col = 0;
     if ((name[0] == '.' && name[1] == NUL))
     {
-	// set cursor; "fnum" is ignored
-	curwin->w_cursor = pos;
-	if (curswant >= 0)
-	{
-	    curwin->w_curswant = curswant - 1;
-	    curwin->w_set_curswant = FALSE;
+	/**
+	 * fnum is the buffer number, but needs to be converted to `typval_T
+	 * *tv` for functions like `tv_get_buf` to be useful for obtaining the
+	 * buffer data, from there we got to check if returned buffer is `NULL`
+	 * and if so do the default thang, and if not do some bounds checking
+	 * prior to mutating buffer data..
+	 */
+	typval_T    tv;
+	tv.v_type = VAR_NUMBER;
+	tv.vval.v_number = fnum;
+
+	buf_T      *buf;
+	buf = tv_get_buf(&tv, TRUE);
+
+	if (buf == NULL) {
+	    // set cursor; "fnum" is ignored
+	    curwin->w_cursor = pos;
+	    if (curswant >= 0)
+	    {
+		curwin->w_curswant = curswant - 1;
+		curwin->w_set_curswant = FALSE;
+	    }
+	    check_cursor();
+	    rettv->vval.v_number = 0;
+	} else if (
+		   pos.lnum > 1 && pos.lnum <= buf->b_ml.ml_line_count
+		&& pos.col  > 0 && pos.col  <= ml_get_buf_len(buf, pos.lnum)
+	) {
+	    buf->b_last_cursor = pos;
+	    rettv->vval.v_number = 0;
+	} else {
+	    emsg("Error: setpos line row or column out of bounds for target buffer");
 	}
-	check_cursor();
-	rettv->vval.v_number = 0;
     }
     else if (name[0] == '\'' && name[1] != NUL && name[2] == NUL)
     {
