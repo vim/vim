@@ -7136,7 +7136,9 @@ req_more_codes_from_term(void)
 }
 
 /*
- * Decode key code response from xterm: '<Esc>P1+r<name>=<string><Esc>\'.
+ * Decode key code response from xterm:
+ * '<Esc>P1+r<name>=<string><Esc>\' if it is enabled/supported
+ * '<Esc>P0+r<Esc>\'                if it not enabled
  * A "0" instead of the "1" indicates a code that isn't supported.
  * Both <name> and <string> are encoded in hex.
  * "code" points to the "0" or "1".
@@ -7152,8 +7154,9 @@ got_code_from_term(char_u *code, int len)
     int		c;
 
     // A '1' means the code is supported, a '0' means it isn't.
+    // If it is supported, there must be a '=' following
     // When half the length is > XT_LEN we can't use it.
-    if (code[0] == '1' && (code[7] || code[9] == '=') && len / 2 < XT_LEN)
+    if (code[0] == '1' && (code[7] == '=' || code[9] == '=') && len / 2 < XT_LEN)
     {
 	// Get the name from the response and find it in the table.
 	name[0] = hexhex2nr(code + 3);
