@@ -167,7 +167,7 @@ syn cluster texCmdGroup			contains=texCmdBody,texComment,texDefParm,texDelimiter
 if !s:tex_no_error
  syn cluster texCmdGroup		add=texMathError
 endif
-syn cluster texEnvGroup			contains=texMatcher,texMathDelim,texSpecialChar,texStatement
+syn cluster texEnvGroup			contains=texDefParm,texMatcher,texMathDelim,texSpecialChar,texStatement
 syn cluster texFoldGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMatcher,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texBeginEnd,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract,texBoldStyle,texItalStyle,texEmphStyle,texNoSpell
 syn cluster texBoldGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texBeginEnd,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract,texBoldStyle,texBoldItalStyle,texNoSpell
 syn cluster texItalGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texBeginEnd,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract,texItalStyle,texEmphStyle,texItalBoldStyle,texNoSpell
@@ -670,20 +670,45 @@ endif
 syn match  texRefZone		'\\cite\%([tp]\*\=\)\=\>' nextgroup=texRefOption,texCite
 
 " Handle (re)newcommand, providecommand, (re)newenvironment : {{{1
+" EXAMPLE:
+"
+" The followings are valid (ignoring error due to redefinition):
+"
+" \newcommand{\foo}{body}
+" \newcommand{\foo}[1]{#1}
+" \newcommand{\foo}[1][def]{#1}
+"
+" The followings are ill-formed:
+"
+" \newcommand{\foo}{#1}		! Illegal parameter number in definition of \foo.
+" \newcommand{\foo}[x]{…}	! Missing number, treated as zero.
+" \newcommand{\foo}[10]{…}	! You already have nine parameters.
 syn match  texNewCmd				"\\\%(\%(re\)\=new\|provide\)command\>\*\?"	nextgroup=texCmdName skipwhite skipnl
 if s:tex_fast =~# 'V'
   syn region texCmdName contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texCmdArgs,texCmdBody skipwhite skipnl
-  " TODO: texCmdArgs must be 1–9
-  " TODO: default argument
-  syn region texCmdArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texCmdBody skipwhite skipnl
+  syn region texCmdArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texCmdDefaultPar,texCmdBody skipwhite skipnl
+  syn region texCmdDefaultPar contained matchgroup=texDelimiter start="\["rs=s+1 end="]"	nextgroup=texCmdBody skipwhite skipnl
   syn region texCmdBody contained matchgroup=texDelimiter start="{"rs=s+1 skip="\\\\\|\\[{}]"	matchgroup=texDelimiter end="}" contains=@texCmdGroup
 endif
+" EXAMPLE:
+"
+" The followings are valid (ignoring error due to redefinition):
+"
+" \newenvironment{baz}{beg}{end}
+" \newenvironment{baz}[1]{beg #1}{end}
+" \newenvironment{baz}[1][default]{beg #1}{end}
+"
+" The followings are invalid:
+"
+" \newenvironment{baz}{#1}{…}		! Illegal parameter number in definition of \baz.
+" \newenvironment{baz}[x]{…}{…}		! Missing number, treated as zero.
+" \newenvironment{baz}[10]{…}{…}	! You already have nine parameters.
+" \newenvironment{baz}[1]{…}{#1}	! Illegal parameter number in definition of \endbaz.
 syn match  texNewEnv				"\\\%(re\)\=newenvironment\>\*\?"		nextgroup=texEnvName skipwhite skipnl
 if s:tex_fast =~# 'V'
   syn region texEnvName contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texEnvArgs,texEnvBgn skipwhite skipnl
-  " TODO: texEnvArgs must be 1–9
-  " TODO: default argument
-  syn region texEnvArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texEnvBgn skipwhite skipnl
+  syn region texEnvArgs contained matchgroup=texDelimiter start="\["rs=s+1 end="]"		nextgroup=texEnvDefaultPar,texEnvBgn skipwhite skipnl
+  syn region texEnvDefaultPar contained matchgroup=texDelimiter start="\["rs=s+1 end="]"	nextgroup=texEnvBgn skipwhite skipnl
   syn region texEnvBgn  contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		nextgroup=texEnvEnd skipwhite skipnl contains=@texEnvGroup
   syn region texEnvEnd  contained matchgroup=texDelimiter start="{"rs=s+1  end="}"		skipwhite skipnl contains=@texEnvGroup
 endif
@@ -1327,10 +1352,10 @@ if !exists("skip_tex_syntax_inits")
   hi def link texCmdArgs	Number
   hi def link texCmdName	Statement
   hi def link texComment	Comment
-  hi def link texEnvArgs	Number
   hi def link texDef		Statement
   hi def link texDefParm	Special
   hi def link texDelimiter	Delimiter
+  hi def link texEnvArgs	Number
   hi def link texInput		Special
   hi def link texInputFile	Special
   hi def link texLength		Number
