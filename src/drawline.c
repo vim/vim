@@ -1877,7 +1877,8 @@ win_line(
     }
 #endif
 
-    if ((State & MODE_INSERT) && in_curline && ins_compl_win_active(wp))
+    if ((State & MODE_INSERT) && ins_compl_win_active(wp)
+			    && (in_curline || ins_compl_lnum_in_range(lnum)))
 	area_highlighting = TRUE;
 
 #ifdef FEAT_SYN_HL
@@ -2423,11 +2424,11 @@ win_line(
 #endif
 
 		// Check if ComplMatchIns highlight is needed.
-		if ((State & MODE_INSERT) && in_curline
-						&& ins_compl_win_active(wp))
+		if ((State & MODE_INSERT) && ins_compl_win_active(wp)
+			    && (in_curline || ins_compl_lnum_in_range(lnum)))
 		{
 		    int ins_match_attr =
-			ins_compl_col_range_attr((int)(ptr - line));
+			ins_compl_col_range_attr(lnum, (int)(ptr - line));
 		    if (ins_match_attr > 0)
 			search_attr =
 			    hl_combine_attr(search_attr, ins_match_attr);

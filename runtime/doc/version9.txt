@@ -41638,6 +41638,7 @@ Changed~
 - new digraph "APPROACHES THE LIMIT" using ".="
 - Add the optional {opts} |Dict| argument to |getchar()| to control: cursor
   behaviour, return type and whether or not to simplify the returned key
+- handle multi-line completion as expected
 
 							*added-9.2*
 Added ~
