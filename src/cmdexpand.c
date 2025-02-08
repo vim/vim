@@ -226,6 +226,7 @@ nextwild(
     char_u	*p2;
     int		difflen;
     int		v;
+    int		input_env_expand = FALSE;
 
     if (xp->xp_numfiles == -1)
     {
@@ -263,7 +264,18 @@ nextwild(
     }
     else
     {
-	if (cmdline_fuzzy_completion_supported(xp))
+	if (ccline->input_fn && *xp->xp_pattern == '$')
+	{
+	    if (!vim_strchr(xp->xp_pattern, '/'))
+	    {
+		input_env_expand = TRUE;
+		xp->xp_context = EXPAND_ENV_VARS;
+		p1 = vim_strnsave(xp->xp_pattern + 1, xp->xp_pattern_len - 1);
+	    }
+	    else
+		p1 = expand_env_save(xp->xp_pattern);
+	}
+	else if (cmdline_fuzzy_completion_supported(xp))
 	    // If fuzzy matching, don't modify the search string
 	    p1 = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
 	else
@@ -286,14 +298,26 @@ nextwild(
 							   use_options, type);
 	    vim_free(p1);
 	    // longest match: make sure it is not shorter, happens with :help
-	    if (p2 != NULL && type == WILD_LONGEST)
+	    if (p2 != NULL)
 	    {
-		for (j = 0; j < xp->xp_pattern_len; ++j)
-		     if (ccline->cmdbuff[i + j] == '*'
-			     || ccline->cmdbuff[i + j] == '?')
-			 break;
-		if ((int)STRLEN(p2) < j)
+		if (input_env_expand)
+		{
+		    char_u  *new_p2 = alloc(STRLEN(p2) + 2);
+		    STRCPY(new_p2 + 1, p2);
+		    *new_p2 = '$';
 		    VIM_CLEAR(p2);
+		    p2 = new_p2;
+		}
+
+		if (type == WILD_LONGEST)
+		{
+		    for (j = 0; j < xp->xp_pattern_len; ++j)
+			 if (ccline->cmdbuff[i + j] == '*'
+				 || ccline->cmdbuff[i + j] == '?')
+			     break;
+		    if ((int)STRLEN(p2) < j)
+			VIM_CLEAR(p2);
+		}
 	    }
 	}
     }
