@@ -2646,7 +2646,7 @@ au BufNewFile,BufRead *.toml			setf toml
 au BufNewFile,BufRead *.tpp			setf tpp
 
 " TRACE32 Script Language
-au BufNewFile,BufRead *.cmm,*.t32		setf trace32
+au BufNewFile,BufRead *.cmm,*.cmmt,*.t32	setf trace32
 
 " Treetop
 au BufRead,BufNewFile *.treetop			setf treetop
