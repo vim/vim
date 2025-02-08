@@ -1333,11 +1333,12 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define SID_WINLAYOUT	(-7)	// changing window size
 
 /*
- * Events for autocommands.
+ * Events for autocommands. Must be kept in sync with "event_tab".
  */
 enum auto_event
 {
     EVENT_BUFADD = 0,		// after adding a buffer to the buffer list
+    EVENT_BUFCREATE,		// UNUSED: BufCreate == BufAdd
     EVENT_BUFDELETE,		// deleting a buffer from the buffer list
     EVENT_BUFENTER,		// after entering a buffer
     EVENT_BUFFILEPOST,		// after renaming a buffer
@@ -1346,6 +1347,7 @@ enum auto_event
     EVENT_BUFLEAVE,		// before leaving a buffer
     EVENT_BUFNEW,		// after creating any buffer
     EVENT_BUFNEWFILE,		// when creating a buffer for a new file
+    EVENT_BUFREAD,		// UNUSED: BufRead == BufReadPost
     EVENT_BUFREADCMD,		// read buffer using command
     EVENT_BUFREADPOST,		// after reading a buffer
     EVENT_BUFREADPRE,		// before reading a buffer
@@ -1353,6 +1355,7 @@ enum auto_event
     EVENT_BUFWINENTER,		// after showing a buffer in a window
     EVENT_BUFWINLEAVE,		// just after buffer removed from window
     EVENT_BUFWIPEOUT,		// just before really deleting a buffer
+    EVENT_BUFWRITE,		// UNUSED: BufWrite == BufWritePost
     EVENT_BUFWRITECMD,		// write buffer using command
     EVENT_BUFWRITEPOST,		// after writing a buffer
     EVENT_BUFWRITEPRE,		// before writing a buffer
@@ -1383,6 +1386,7 @@ enum auto_event
     EVENT_FILECHANGEDRO,	// before first change to read-only file
     EVENT_FILECHANGEDSHELL,	// after shell command that changed file
     EVENT_FILECHANGEDSHELLPOST,	// after (not) reloading changed file
+    EVENT_FILEENCODING,		// UNUSED: FileEncoding == EncodingChanged
     EVENT_FILEREADCMD,		// read from a file using command
     EVENT_FILEREADPOST,		// after reading a file
     EVENT_FILEREADPRE,		// before reading a file
@@ -1402,8 +1406,8 @@ enum auto_event
     EVENT_INSERTCHANGE,		// when changing Insert/Replace mode
     EVENT_INSERTCHARPRE,	// before inserting a char
     EVENT_INSERTENTER,		// when entering Insert mode
-    EVENT_INSERTLEAVEPRE,	// just before leaving Insert mode
     EVENT_INSERTLEAVE,		// just after leaving Insert mode
+    EVENT_INSERTLEAVEPRE,	// just before leaving Insert mode
     EVENT_KEYINPUTPRE,		// before key input
     EVENT_MENUPOPUP,		// just before popup menu is displayed
     EVENT_MODECHANGED,		// after changing the mode
@@ -1420,8 +1424,8 @@ enum auto_event
     EVENT_SHELLFILTERPOST,	// after ":1,2!cmd", ":w !cmd", ":r !cmd".
     EVENT_SIGUSR1,		// after the SIGUSR1 signal
     EVENT_SOURCECMD,		// sourcing a Vim script using command
-    EVENT_SOURCEPRE,		// before sourcing a Vim script
     EVENT_SOURCEPOST,		// after sourcing a Vim script
+    EVENT_SOURCEPRE,		// before sourcing a Vim script
     EVENT_SPELLFILEMISSING,	// spell file missing
     EVENT_STDINREADPOST,	// after reading from stdin
     EVENT_STDINREADPRE,		// before reading from stdin
@@ -1447,17 +1451,17 @@ enum auto_event
     EVENT_VIMLEAVE,		// before exiting Vim
     EVENT_VIMLEAVEPRE,		// before exiting Vim and writing .viminfo
     EVENT_VIMRESIZED,		// after Vim window was resized
+    EVENT_VIMRESUME,		// after Vim is resumed
+    EVENT_VIMSUSPEND,		// before Vim is suspended
+    EVENT_WINCLOSED,		// after closing a window
     EVENT_WINENTER,		// after entering a window
     EVENT_WINLEAVE,		// before leaving a window
-    EVENT_WINNEWPRE,		// before creating a new window
     EVENT_WINNEW,		// after creating a new window
-    EVENT_WINCLOSED,		// after closing a window
-    EVENT_VIMSUSPEND,		// before Vim is suspended
-    EVENT_VIMRESUME,		// after Vim is resumed
+    EVENT_WINNEWPRE,		// before creating a new window
     EVENT_WINRESIZED,		// after a window was resized
     EVENT_WINSCROLLED,		// after a window was scrolled or resized
 
-    NUM_EVENTS			// MUST be the last one
+    NUM_EVENTS,			// MUST be the last one
 };
 
 typedef enum auto_event event_T;

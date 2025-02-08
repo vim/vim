@@ -1288,6 +1288,7 @@ enum
 #ifdef FEAT_DIFF
     , WV_DIFF
 #endif
+    , WV_EIW
 #ifdef FEAT_FOLDING
     , WV_FDC
     , WV_FEN

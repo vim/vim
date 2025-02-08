@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Feb 01
+*options.txt*	For Vim version 9.1.  Last change: 2025 Feb 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3283,6 +3283,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Otherwise this is a comma-separated list of event names.  Example: >
 	    :set ei=WinEnter,WinLeave
 <
+						*'eventignorewin'* *'eiw'*
+'eventignorewin' 'eiw'	string	(default "")
+			window-local
+	Similar to 'eventignore' but applies to a particular window and its
+	buffers, for which window and buffer related autocommands can be
+	ignored indefinitely without affecting the global 'eventignore'.
+
 				 *'expandtab'* *'et'* *'noexpandtab'* *'noet'*
 'expandtab' 'et'	boolean	(default off)
 			local to buffer
