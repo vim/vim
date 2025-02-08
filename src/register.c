@@ -3019,12 +3019,17 @@ str_to_reg(
 	{
 	    int charlen = 0;
 
-	    for (i = start; i < len; ++i)	// find the end of the line
+	    for (i = start; i < len;)	// find the end of the line
 	    {
 		if (str[i] == '\n')
 		    break;
 		if (type == MBLOCK)
 		    charlen += mb_ptr2cells_len(str + i, len - i);
+
+		if (str[i] == NUL)
+		    i++; // registers can have NUL chars
+		else
+		    i += mb_ptr2len_len(str + i, len - i);
 	    }
 	    i -= start;			// i is now length of line
 	    if (charlen > maxlen)
