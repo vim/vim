@@ -290,11 +290,16 @@ func Test_termwinscroll_topline()
 endfunc
 
 func Test_termwinscroll_topline2()
+  " calling the terminal API doesn't work on Windows
+  CheckNotMSWindows
   let g:test_is_flaky = 1
+  let g:print_complete = 0
+  func! Tapi_print_complete(bufnum, arglist)
+    let g:print_complete = 1
+  endfunc
+
   set termwinscroll=50000 mouse=a
-  if !has('win32')
-    set shell=sh
-  endif
+  set shell=sh
   let norm_winid = win_getid()
   terminal
   call assert_equal(2, winnr('$'))
@@ -304,26 +309,26 @@ func Test_termwinscroll_topline2()
 
   let num1 = &termwinscroll / 1000 * 999
   call writefile(range(num1), 'Xtext', 'D')
-  if has('win32')
-    call term_sendkeys(buf, "type Xtext\<CR>")
-  else
-    call term_sendkeys(buf, "cat Xtext\<CR>")
-  endif
+  call term_sendkeys(buf, "cat Xtext\<CR>")
+  call term_sendkeys(buf, 'printf ''\033]51;["call", "Tapi_print_complete", []]\007''' .. "\<cr>")
   let rows = term_getsize(buf)[0]
-  " It may take a while to finish on a slow system
-  call term_wait(buf, 2000 * g:run_nr)
-  " On MS-Windows there is an empty line, check both last line and above it.
+  let cnt = 0
+  while !g:print_complete && cnt <= 1000
+    " max number of runs
+    let cnt += 1
+    " sleep a bit, to give the the terminal some time to finish
+
+    " It may take a while to finish on a slow system
+    " so wait a bit and handle the callback
+    call term_wait(buf)
+  endwhile
   call WaitForAssert({-> assert_match(string(num1 - 1), term_getline(buf, rows - 1) .. '\|' .. term_getline(buf, rows - 2))})
   call feedkeys("\<C-W>N", 'xt')
   call feedkeys("i", 'xt')
 
   let num2 = &termwinscroll / 1000 * 8
   call writefile(range(num2), 'Xtext', 'D')
-  if has('win32')
-    call term_sendkeys(buf, "timeout /t 2 && type Xtext\<CR>")
-  else
-    call term_sendkeys(buf, "sleep 2; cat Xtext\<CR>")
-  endif
+  call term_sendkeys(buf, "sleep 2; cat Xtext\<CR>")
   let winrow = get(get(filter(getwininfo(), 'v:val.winid == norm_winid'), 0, {}), 'winrow', -1)
 
   call test_setmouse(winrow, 1)
@@ -342,6 +347,8 @@ func Test_termwinscroll_topline2()
 
   exe buf . 'bwipe!'
   set termwinscroll& mouse& sh&
+  delfunc Tapi_print_complete
+  unlet! g:print_complete
 endfunc
 
 " Resizing the terminal window caused an ml_get error.
