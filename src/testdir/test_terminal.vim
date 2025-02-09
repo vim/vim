@@ -963,8 +963,10 @@ func Test_terminal_eof_arg_win32_ctrl_z()
 
   call setline(1, ['print("hello")'])
   exe '1term ++eof=<C-Z> ' .. s:python
-  call WaitForAssert({-> assert_match('\^Z', getline(line('$') - 1))})
-  call assert_match('\^Z', getline(line('$') - 1))
+  call WaitForAssert({-> assert_match('\^Z', getline(line('$') - 1) .. getline(line('$')))})
+  " until python 3.12 there was an extra line break, with 3.13 it was removed,
+  " so depending on the python version the ^Z is on the last or second-last line
+  call assert_match('\^Z', getline(line('$') - 1) .. getline(line('$')))
   %bwipe!
 endfunc
 
