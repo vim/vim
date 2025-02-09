@@ -178,11 +178,11 @@ typedef struct ff_search_ctx_T
 } ff_search_ctx_T;
 
 // locally needed functions
-static int ff_check_visited(ff_visited_T **, char_u *, char_u *);
+static int ff_check_visited(ff_visited_T **, char_u *, size_t, char_u *, size_t);
 static void vim_findfile_free_visited(void *search_ctx_arg);
 static void vim_findfile_free_visited_list(ff_visited_list_hdr_T **list_headp);
 static void ff_free_visited_list(ff_visited_T *vl);
-static ff_visited_list_hdr_T* ff_get_visited_list(char_u *, ff_visited_list_hdr_T **list_headp);
+static ff_visited_list_hdr_T* ff_get_visited_list(char_u *, size_t, ff_visited_list_hdr_T **list_headp);
 
 static void ff_push(ff_search_ctx_T *search_ctx, ff_stack_T *stack_ptr);
 static ff_stack_T *ff_pop(ff_search_ctx_T *search_ctx);
@@ -294,6 +294,7 @@ vim_findfile_init(
     char_u		*wc_part;
     ff_stack_T		*sptr;
     ff_search_ctx_T	*search_ctx;
+    size_t		filenamelen;
     int			add_sep;
 
     // If a search context is given by the caller, reuse it, else allocate a
@@ -312,6 +313,8 @@ vim_findfile_init(
     search_ctx->ffsc_fix_path.length = 0;
     search_ctx->ffsc_wc_path.length = 0;
 
+    filenamelen = STRLEN(filename);
+
     // clear the search context, but NOT the visited lists
     ff_clear(search_ctx);
 
@@ -324,11 +327,11 @@ vim_findfile_init(
 	// filename. If no list for the current filename exists, creates a new
 	// one.
 	search_ctx->ffsc_visited_list = ff_get_visited_list(filename,
-					&search_ctx->ffsc_visited_lists_list);
+					filenamelen, &search_ctx->ffsc_visited_lists_list);
 	if (search_ctx->ffsc_visited_list == NULL)
 	    goto error_return;
 	search_ctx->ffsc_dir_visited_list = ff_get_visited_list(filename,
-				    &search_ctx->ffsc_dir_visited_lists_list);
+				    filenamelen, &search_ctx->ffsc_dir_visited_lists_list);
 	if (search_ctx->ffsc_dir_visited_list == NULL)
 	    goto error_return;
     }
@@ -338,6 +341,7 @@ vim_findfile_init(
 	ff_expand_buffer.string = alloc(MAXPATHL);
 	if (ff_expand_buffer.string == NULL)
 	    goto error_return;
+	ff_expand_buffer.length = 0;
     }
 
     // Store information on starting dir now if path is relative.
@@ -693,9 +697,8 @@ vim_findfile_init(
 
     ff_push(search_ctx, sptr);
 
-    search_ctx->ffsc_file_to_search.length = STRLEN(filename);
-    search_ctx->ffsc_file_to_search.string =
-	vim_strnsave(filename, search_ctx->ffsc_file_to_search.length);
+    search_ctx->ffsc_file_to_search.length = filenamelen;
+    search_ctx->ffsc_file_to_search.string = vim_strnsave(filename, filenamelen);
     if (search_ctx->ffsc_file_to_search.string == NULL)
     {
 	search_ctx->ffsc_file_to_search.length = 0;
@@ -840,7 +843,10 @@ vim_findfile(void *search_ctx_arg)
 	    if (stackp->ffs_filearray == NULL
 		    && ff_check_visited(&search_ctx->ffsc_dir_visited_list
 							  ->ffvl_visited_list,
-			    stackp->ffs_fix_path.string, stackp->ffs_wc_path.string) == FAIL)
+			    stackp->ffs_fix_path.string,
+			    stackp->ffs_fix_path.length,
+			    stackp->ffs_wc_path.string,
+			    stackp->ffs_wc_path.length) == FAIL)
 	    {
 #ifdef FF_VERBOSE
 		if (p_verbose >= 5)
@@ -1103,7 +1109,9 @@ vim_findfile(void *search_ctx_arg)
 				    && (ff_check_visited(
 					    &search_ctx->ffsc_visited_list
 							   ->ffvl_visited_list,
-					    file_path.string, (char_u *)"") == OK)
+					    file_path.string,
+					    file_path.length,
+					    (char_u *)"", 0) == OK)
 #endif
 			       )
 			    {
@@ -1111,7 +1119,9 @@ vim_findfile(void *search_ctx_arg)
 				if (ff_check_visited(
 					    &search_ctx->ffsc_visited_list
 							   ->ffvl_visited_list,
-					      file_path.string, (char_u *)"") == FAIL)
+					      file_path.string,
+					      file_path.length,
+					      (char_u *)"", 0) == FAIL)
 				{
 				    if (p_verbose >= 5)
 				    {
@@ -1135,6 +1145,7 @@ vim_findfile(void *search_ctx_arg)
 				if (mch_dirname(ff_expand_buffer.string, MAXPATHL)
 									== OK)
 				{
+				    ff_expand_buffer.length = STRLEN(ff_expand_buffer.string);
 				    p = shorten_fname(file_path.string,
 							    ff_expand_buffer.string);
 				    if (p != NULL)
@@ -1335,6 +1346,7 @@ ff_free_visited_list(ff_visited_T *vl)
     static ff_visited_list_hdr_T*
 ff_get_visited_list(
     char_u			*filename,
+    size_t			filenamelen,
     ff_visited_list_hdr_T	**list_headp)
 {
     ff_visited_list_hdr_T  *retptr = NULL;
@@ -1383,7 +1395,7 @@ ff_get_visited_list(
 	return NULL;
 
     retptr->ffvl_visited_list = NULL;
-    retptr->ffvl_filename = vim_strsave(filename);
+    retptr->ffvl_filename = vim_strnsave(filename, filenamelen);
     if (retptr->ffvl_filename == NULL)
     {
 	vim_free(retptr);
@@ -1449,7 +1461,9 @@ ff_wc_equal(char_u *s1, char_u *s2)
 ff_check_visited(
     ff_visited_T	**visited_list,
     char_u		*fname,
-    char_u		*wc_path)
+    size_t		fnamelen,
+    char_u		*wc_path,
+    size_t		wc_pathlen)
 {
     ff_visited_T	*vp;
 #ifdef UNIX
@@ -1461,22 +1475,22 @@ ff_check_visited(
     // device/inode (unix) or the full path name (not Unix).
     if (path_with_url(fname))
     {
-	vim_strncpy(ff_expand_buffer.string, fname, MAXPATHL - 1);
+	vim_strncpy(ff_expand_buffer.string, fname, fnamelen);
+	ff_expand_buffer.length = fnamelen;
 #ifdef UNIX
 	url = TRUE;
 #endif
     }
     else
     {
-	ff_expand_buffer.string[0] = NUL;
 #ifdef UNIX
 	if (mch_stat((char *)fname, &st) < 0)
-#else
-	if (vim_FullName(fname, ff_expand_buffer.string, MAXPATHL, TRUE) == FAIL)
-#endif
 	    return FAIL;
+#endif
+	if (vim_FullName(fname, ff_expand_buffer.string, MAXPATHL, TRUE) == FAIL)
+	    return FAIL;
+	ff_expand_buffer.length = STRLEN(ff_expand_buffer.string);
     }
-    ff_expand_buffer.length = STRLEN(ff_expand_buffer.string);
 
     // check against list of already visited files
     for (vp = *visited_list; vp != NULL; vp = vp->ffv_next)
@@ -1505,26 +1519,21 @@ ff_check_visited(
     if (vp == NULL)
 	return OK;
 
-#ifdef UNIX
-    if (!url)
-    {
-	vp->ffv_dev_valid = TRUE;
-	vp->ffv_ino = st.st_ino;
-	vp->ffv_dev = st.st_dev;
-	vp->ffv_fname[0] = NUL;
-    }
-    else
-    {
-	vp->ffv_dev_valid = FALSE;
-#endif
-	STRCPY(vp->ffv_fname, ff_expand_buffer.string);
-#ifdef UNIX
-    }
-#endif
     if (wc_path != NULL)
-	vp->ffv_wc_path = vim_strsave(wc_path);
+	vp->ffv_wc_path = vim_strnsave(wc_path, wc_pathlen);
     else
 	vp->ffv_wc_path = NULL;
+#ifdef UNIX
+    if (url)
+	vp->ffv_dev_valid = FALSE;
+    else
+    {
+	vp->ffv_dev_valid = TRUE;
+	vp->ffv_dev = st.st_dev;
+	vp->ffv_ino = st.st_ino;
+    }
+#endif
+    STRCPY(vp->ffv_fname, ff_expand_buffer.string);
 
     vp->ffv_next = *visited_list;
     *visited_list = vp;
