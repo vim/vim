@@ -2096,7 +2096,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_col},
     {"complete",	2, 2, FEARG_2,	    arg2_number_list,
 			ret_void,	    f_complete},
-    {"complete_add",	1, 1, FEARG_1,	    arg1_dict_or_string,
+    {"complete_add",	1, 2, FEARG_1,	    arg1_dict_or_string,
 			ret_number,	    f_complete_add},
     {"complete_check",	0, 0, 0,	    NULL,
 			ret_number_bool,    f_complete_check},

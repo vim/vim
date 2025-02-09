@@ -3424,4 +3424,47 @@ func Test_complete_append_selected_match_default()
   delfunc PrintMenuWords
 endfunc
 
+function Test_complete_add_during_completion()
+  let g:async = v:false
+  let g:wrongcol = v:false
+  function! AppendCandidate() abort
+    if v:char == 'b'
+      if g:async
+        call timer_start(100, {-> complete_add([ {'word': 'bool'}, {'word': 'balon'}, {'word': 'foo'} ], 1)})
+        return
+      endif
+      try
+        call complete_add({'word': 'bar'}, pumvisible() && g:wrongcol ? 2 : 1)
+      catch /E1516:/
+        let g:got_expected_error = 1
+        return
+      endtry
+    endif
+  endfunction
+  set cot=menu,menuone,noinsert
+
+  new
+  inoremap <buffer> <F5> <cmd>call complete(1, ["red", "blue"])<cr>
+  autocmd InsertCharPre * :call AppendCandidate()
+
+  call feedkeys("A\<F5>b\<C-Y>", 'tx')
+  call assert_equal('bar', getline('.'))
+
+  let g:wrongcol = v:true
+  call feedkeys("A\<F5>b", 'tx')
+  call assert_equal(1, g:got_expected_error)
+
+  let g:async = v:true
+  let g:wrongcol = v:false
+  call feedkeys("S\<F5>b\<Cmd>sleep 300m\<CR>\<C-N>\<C-N>\<C-Y>", 'tx')
+  call assert_equal('balon', getline('.'))
+
+  bw!
+  set cot&
+  delfunc AppendCandidate
+  autocmd! InsertCharPre
+  unlet g:async
+  unlet g:wrongcol
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

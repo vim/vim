@@ -1912,9 +1912,18 @@ complete({startcol}, {matches})			*complete()* *E785*
 		Return type: |Number|
 
 
-complete_add({expr})				*complete_add()*
-		Add {expr} to the list of matches.  Only to be used by the
-		function specified with the 'completefunc' option.
+complete_add({expr}, {startcol})			*complete_add()*
+		Without {startcol}: Add {expr} to the list of matches.  Only
+		to be used by the function specified with the 'completefunc'
+		option.
+
+		With {startcol}: Add {expr} to an active completion. {expr}
+		can be a |List| of matches, a |Dictionary| with |complete-items|
+		properties, or a |String| to add as a simple completion. The
+		{startcol} must match the current completion column. This
+		form can only be used during an active completion session to
+		dynamically add more matches.
+
 		Returns 0 for failure (empty string or out of memory),
 		1 when the match was added, 2 when the match was already in
 		the list.

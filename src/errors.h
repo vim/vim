@@ -3728,3 +3728,5 @@ EXTERN char e_failed_resizing_quickfix_stack[]
 EXTERN char e_no_quickfix_stack[]
 	INIT(= N_("E1545: Quickfix list stack unavailable"));
 #endif
+EXTERN char e_startcol_match_failed[]
+	INIT(= N_("E1546: Wrong startcol does not match current completion col"));
