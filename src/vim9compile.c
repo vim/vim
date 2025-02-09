@@ -837,6 +837,31 @@ find_imported(char_u *name, size_t len, int load)
 }
 
 /*
+ * Find "name" in imported items of extended base class of the class to which
+ * the context :def function belongs.
+ */
+    imported_T *
+find_imported_from_extends(cctx_T *cctx, char_u *name, size_t len, int load)
+{
+    imported_T	*ret = NULL;
+    class_T	*cl_extends = NULL;
+
+    if (cctx != NULL && cctx->ctx_ufunc != NULL
+					&& cctx->ctx_ufunc->uf_class != NULL)
+	cl_extends = cctx->ctx_ufunc->uf_class->class_extends;
+
+    if (cl_extends != NULL && cl_extends->class_class_function_count_child > 0)
+    {
+	sctx_T current_sctx_save = current_sctx;
+
+	current_sctx = cl_extends->class_class_functions[0]->uf_script_ctx;
+	ret = find_imported(name, len, load);
+	current_sctx = current_sctx_save;
+    }
+    return ret;
+}
+
+/*
  * Called when checking for a following operator at "arg".  When the rest of
  * the line is empty or only a comment, peek the next line.  If there is a next
  * line return a pointer to it and set "nextp".
@@ -1374,7 +1399,7 @@ generate_loadvar(cctx_T *cctx, lhs_T *lhs)
 	case dest_script:
 	case dest_script_v9:
 	    res = compile_load_scriptvar(cctx,
-				  name + (name[1] == ':' ? 2 : 0), NULL, NULL);
+			    name + (name[1] == ':' ? 2 : 0), NULL, NULL, NULL);
 	    break;
 	case dest_env:
 	    // Include $ in the name here
