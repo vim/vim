@@ -2461,8 +2461,14 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		otv = class->class_members_tv;
 	    }
 
-	    clear_tv(&otv[lidx]);
-	    otv[lidx] = *tv;
+	    if (otv != NULL)
+	    {
+		clear_tv(&otv[lidx]);
+		otv[lidx] = *tv;
+	    }
+	    else
+		status = FAIL;
+
 	}
 	else
 	{
