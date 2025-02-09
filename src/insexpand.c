@@ -205,7 +205,7 @@ static int	  *compl_fuzzy_scores;
 static pumitem_T *compl_match_array = NULL;
 static int compl_match_arraysize;
 
-static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int *user_hl);
+static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup, int *user_hl, int del_pum);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
@@ -218,7 +218,7 @@ static void ins_compl_restart(void);
 static void ins_compl_set_original_text(char_u *str, size_t len);
 static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
 # if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
-static void ins_compl_add_list(list_T *list);
+static void ins_compl_add_list(list_T *list, int del_pum);
 static void ins_compl_add_dict(dict_T *dict);
 # endif
 static int  ins_compl_key2dir(int c);
@@ -742,7 +742,7 @@ ins_compl_add_infercase(
     if (icase)
 	flags |= CP_ICASE;
 
-    res = ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE, NULL);
+    res = ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE, NULL, TRUE);
     vim_free(tofree);
     return res;
 }
@@ -777,7 +777,8 @@ ins_compl_add(
     int		cdir,
     int		flags_arg,
     int		adup,		    // accept duplicate match
-    int		*user_hl)	    // user abbr/kind hlattr
+    int		*user_hl,	    // user abbr/kind hlattr
+    int		del_pum)
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -808,7 +809,8 @@ ins_compl_add(
     }
 
     // Remove any popup menu before changing the list of matches.
-    ins_compl_del_pum();
+    if (del_pum)
+	ins_compl_del_pum();
 
     // Allocate a new match structure.
     // Copy the values to the new match structure.
@@ -1032,7 +1034,7 @@ ins_compl_add_matches(
     for (i = 0; i < num_matches && add_r != FAIL; i++)
     {
 	add_r = ins_compl_add(matches[i], -1, NULL, NULL, NULL, dir,
-				CP_FAST | (icase ? CP_ICASE : 0), FALSE, NULL);
+				CP_FAST | (icase ? CP_ICASE : 0), FALSE, NULL, TRUE);
 	if (add_r == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
@@ -1253,7 +1255,11 @@ ins_compl_fuzzy_cmp(const void *a, const void *b)
  * should be selected.
  */
     static int
-ins_compl_build_pum(void)
+ins_compl_build_pum(
+	compl_T	    *first_compl,
+	compl_T	    *end_compl,
+	pumitem_T   **new_array,
+	int	    *match_arraysize)
 {
     compl_T     *compl;
     compl_T     *shown_compl = NULL;
@@ -1269,10 +1275,14 @@ ins_compl_build_pum(void)
     compl_T	*match_head = NULL;
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
+    pumitem_T	*match_array = NULL;
 
     // Need to build the popup menu list.
-    compl_match_arraysize = 0;
-    compl = compl_first_match;
+    if (match_arraysize == NULL)
+	match_arraysize = &compl_match_arraysize;
+
+    (*match_arraysize) = 0;
+    compl = first_compl == NULL ? compl_first_match : first_compl;
 
     // If the current match is the original text don't find the first
     // match after it, don't highlight anything.
@@ -1298,7 +1308,7 @@ ins_compl_build_pum(void)
 		    || ins_compl_equal(compl, compl_leader.string, (int)compl_leader.length)
 		    || (fuzzy_filter && compl->cp_score > 0)))
 	{
-	    ++compl_match_arraysize;
+	    ++(*match_arraysize);
 	    compl->cp_in_match_array = TRUE;
 	    if (match_head == NULL)
 		match_head = compl;
@@ -1365,27 +1375,40 @@ ins_compl_build_pum(void)
 	    }
 	}
 	compl = compl->cp_next;
+	if (end_compl && compl == end_compl)
+	    break;
     } while (compl != NULL && !is_first_match(compl));
 
-    if (compl_match_arraysize == 0)
+    if ((*match_arraysize) == 0)
 	return -1;
 
-    compl_match_array = ALLOC_CLEAR_MULT(pumitem_T, compl_match_arraysize);
-    if (compl_match_array == NULL)
-	return -1;
+    if (end_compl)
+    {
+	match_array = ALLOC_CLEAR_MULT(pumitem_T, (*match_arraysize));
+	if (match_array == NULL)
+	    return -1;
+	*new_array = match_array;
+    }
+    else
+    {
+	compl_match_array = ALLOC_CLEAR_MULT(pumitem_T, compl_match_arraysize);
+	if (compl_match_array == NULL)
+	    return -1;
+	match_array = compl_match_array;
+    }
 
     compl = match_head;
     i = 0;
     while (compl != NULL)
     {
-	compl_match_array[i].pum_text = compl->cp_text[CPT_ABBR] != NULL
+	match_array[i].pum_text = compl->cp_text[CPT_ABBR] != NULL
 			    ? compl->cp_text[CPT_ABBR] : compl->cp_str.string;
-	compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
-	compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
-	compl_match_array[i].pum_score = compl->cp_score;
-	compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
-	compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
-	compl_match_array[i++].pum_extra = compl->cp_text[CPT_MENU] != NULL
+	match_array[i].pum_kind = compl->cp_text[CPT_KIND];
+	match_array[i].pum_info = compl->cp_text[CPT_INFO];
+	match_array[i].pum_score = compl->cp_score;
+	match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
+	match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
+	match_array[i++].pum_extra = compl->cp_text[CPT_MENU] != NULL
 			    ? compl->cp_text[CPT_MENU] : compl->cp_fname;
 	match_next = compl->cp_match_next;
 	compl->cp_match_next = NULL;
@@ -1394,10 +1417,10 @@ ins_compl_build_pum(void)
 
     if (fuzzy_sort && compl_leader.string != NULL && compl_leader.length > 0)
     {
-	for (i = 0; i < compl_match_arraysize; i++)
-	    compl_match_array[i].pum_idx = i;
+	for (i = 0; i < (*match_arraysize); i++)
+	    match_array[i].pum_idx = i;
 	// sort by the largest score of fuzzy match
-	qsort(compl_match_array, (size_t)compl_match_arraysize,
+	qsort(match_array, (size_t)(*match_arraysize),
 				       sizeof(pumitem_T), ins_compl_fuzzy_cmp);
 	shown_match_ok = TRUE;
     }
@@ -1427,7 +1450,7 @@ ins_compl_show_pum(void)
 
     if (compl_match_array == NULL)
 	// Need to build the popup menu list.
-	cur = ins_compl_build_pum();
+	cur = ins_compl_build_pum(NULL, NULL, NULL, NULL);
     else
     {
 	// popup menu already exists, only need to find the current item.
@@ -2960,7 +2983,7 @@ expand_by_function(int type, char_u *base)
     }
 
     if (matchlist != NULL)
-	ins_compl_add_list(matchlist);
+	ins_compl_add_list(matchlist, TRUE);
     else if (matchdict != NULL)
 	ins_compl_add_dict(matchdict);
 
@@ -2992,7 +3015,7 @@ get_user_highlight_attr(char_u *hlname)
  * When "fast" is TRUE use fast_breakcheck() instead of ui_breakcheck().
  */
     static int
-ins_compl_add_tv(typval_T *tv, int dir, int fast)
+ins_compl_add_tv(typval_T *tv, int dir, int fast, int del_pum)
 {
     char_u	*word;
     int		dup = FALSE;
@@ -3043,7 +3066,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 	return FAIL;
     }
     status = ins_compl_add(word, -1, NULL, cptext,
-				     &user_data, dir, flags, dup, user_hl);
+				     &user_data, dir, flags, dup, user_hl, del_pum);
     if (status != OK)
 	clear_tv(&user_data);
     return status;
@@ -3053,7 +3076,7 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
  * Add completions from a list.
  */
     static void
-ins_compl_add_list(list_T *list)
+ins_compl_add_list(list_T *list, int del_pum)
 {
     listitem_T	*li;
     int		dir = compl_direction;
@@ -3062,7 +3085,7 @@ ins_compl_add_list(list_T *list)
     CHECK_LIST_MATERIALIZE(list);
     FOR_ALL_LIST_ITEMS(list, li)
     {
-	if (ins_compl_add_tv(&li->li_tv, dir, TRUE) == OK)
+	if (ins_compl_add_tv(&li->li_tv, dir, TRUE, del_pum) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
 	else if (did_emsg)
@@ -3093,7 +3116,7 @@ ins_compl_add_dict(dict_T *dict)
     // Add completions from a "words" list.
     di_words = dict_find(dict, (char_u *)"words", 5);
     if (di_words != NULL && di_words->di_tv.v_type == VAR_LIST)
-	ins_compl_add_list(di_words->di_tv.vval.v_list);
+	ins_compl_add_list(di_words->di_tv.vval.v_list, TRUE);
 }
 
 /*
@@ -3137,12 +3160,12 @@ set_completion(colnr_T startcol, list_T *list)
     compl_orig_text.length = (size_t)compl_length;
     if (ins_compl_add(compl_orig_text.string,
 		  (int)compl_orig_text.length, NULL, NULL, NULL, 0,
-		  flags | CP_FAST, FALSE, NULL) != OK)
+		  flags | CP_FAST, FALSE, NULL, TRUE) != OK)
 	return;
 
     ctrl_x_mode = CTRL_X_EVAL;
 
-    ins_compl_add_list(list);
+    ins_compl_add_list(list, TRUE);
     compl_matches = ins_compl_make_cyclic();
     compl_started = TRUE;
     compl_used_match = TRUE;
@@ -3206,10 +3229,91 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_complete_add(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_string_or_dict_arg(argvars, 0) == FAIL)
-	return;
+    int		startcol;
+    listitem_T	*li;
+    int		dir = compl_direction;
+    compl_T		*added_head = NULL;
+    compl_T		*added_tail = NULL;
+    pumitem_T	*new_array = NULL;
+    int		new_arraysize = 0;
+    pumitem_T	*merged_array = NULL;
 
-    rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0, FALSE);
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	rettv->v_type = VAR_NUMBER;
+	rettv->vval.v_number = FAIL;
+	if ((in_vim9script() &&
+	    (check_for_list_arg(argvars, 0) == FAIL ||
+	     check_for_number_arg(argvars, 1) == FAIL)) || !compl_started)
+	    return;
+
+	if ((State & MODE_INSERT) == 0)
+	{
+	    emsg(_(e_complete_can_only_be_used_in_insert_mode));
+	    return;
+	}
+
+	startcol = (int)tv_get_number_chk(&argvars[1], NULL);
+	if (startcol != compl_col + 1)
+	{
+	    emsg(_("startcol must match the current completion col"));
+	    return;
+	}
+
+	if (check_for_nonnull_list_arg(argvars, 0) == FAIL)
+	    return;
+
+	// Go through the List with matches and add each of them.
+	CHECK_LIST_MATERIALIZE(argvars[0].vval.v_list);
+	FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
+	{
+	    if (ins_compl_add_tv(&li->li_tv, dir, TRUE, FALSE) == OK)
+	    {
+		if (added_head == NULL)
+		    added_head = compl_curr_match;
+		else
+		    added_tail->cp_next = compl_curr_match;
+		added_tail = compl_curr_match;
+
+		// if dir was BACKWARD then honor it just once
+		dir = FORWARD;
+	    }
+	    else if (did_emsg)
+		break;
+	}
+	ins_compl_build_pum(added_head, added_tail, &new_array, &new_arraysize);
+	if (new_arraysize == 0)
+	    return;
+
+	if (compl_match_array)
+	{
+	    merged_array = ALLOC_MULT(pumitem_T, compl_match_arraysize + new_arraysize);
+	    if (merged_array == NULL)
+	    {
+		VIM_CLEAR(new_array);
+		return;
+	    }
+	    memcpy(merged_array, new_array, new_arraysize * sizeof(pumitem_T));
+	    memcpy(merged_array + new_arraysize, compl_match_array, compl_match_arraysize * sizeof(pumitem_T));
+	    VIM_CLEAR(compl_match_array);
+	    compl_match_arraysize = compl_match_arraysize + new_arraysize;
+	    compl_match_array = merged_array;
+	}
+	else
+	{
+	    compl_match_array = new_array;
+	    compl_match_arraysize = new_arraysize;
+	}
+
+	ins_compl_show_pum();  // Update the popup menu
+	rettv->vval.v_number = OK;
+    }
+    else
+    {
+	if (in_vim9script() && check_for_string_or_dict_arg(argvars, 0) == FAIL)
+	    return;
+	rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0, FALSE, TRUE);
+    }
 }
 
 /*
@@ -5452,7 +5556,7 @@ ins_compl_start(void)
     if (p_ic)
 	flags |= CP_ICASE;
     if (compl_orig_text.string == NULL || ins_compl_add(compl_orig_text.string,
-		(int)compl_orig_text.length, NULL, NULL, NULL, 0, flags, FALSE, NULL) != OK)
+		(int)compl_orig_text.length, NULL, NULL, NULL, 0, flags, FALSE, NULL, TRUE) != OK)
     {
 	VIM_CLEAR_STRING(compl_pattern);
 	VIM_CLEAR_STRING(compl_orig_text);

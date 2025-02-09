@@ -1903,9 +1903,16 @@ complete({startcol}, {matches})			*complete()* *E785*
 		Return type: |Number|
 
 
-complete_add({expr})				*complete_add()*
-		Add {expr} to the list of matches.  Only to be used by the
-		function specified with the 'completefunc' option.
+complete_add({expr}, {startcol})			*complete_add()*
+		Without {startcol}: Add {expr} to the list of matches.  Only
+		to be used by the function specified with the 'completefunc'
+		option.
+
+		With {startcol}: Add {expr} to an active completion. {expr}
+		must be a List of matches and {startcol} must match the
+		currrent completion column. Can only be used during active
+		completion.
+
 		Returns 0 for failure (empty string or out of memory),
 		1 when the match was added, 2 when the match was already in
 		the list.

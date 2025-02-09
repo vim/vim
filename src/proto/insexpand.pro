@@ -64,4 +64,6 @@ int ins_complete(int c, int enable_pum);
 int ins_compl_col_range_attr(int col);
 void free_insexpand_stuff(void);
 int ins_compl_preinsert_effect(void);
+void f_complete_append(typval_T *argvars, typval_T *rettv);
+
 /* vim: set ft=c : */
