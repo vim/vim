@@ -175,7 +175,6 @@ NEW_TESTS = \
 	test_gf \
 	test_glob2regpat \
 	test_global \
-	test_glvs \
 	test_gn \
 	test_goto \
 	test_gui \
@@ -212,7 +211,6 @@ NEW_TESTS = \
 	test_listlbr_utf8 \
 	test_lua \
 	test_makeencoding \
-	test_man \
 	test_map_functions \
 	test_mapping \
 	test_marks \
@@ -242,6 +240,11 @@ NEW_TESTS = \
 	test_partial \
 	test_paste \
 	test_perl \
+	test_plugin_glvs \
+	test_plugin_man \
+	test_plugin_termdebug \
+	test_plugin_tohtml \
+	test_plugin_zip \
 	test_plus_arg_edit \
 	test_popup \
 	test_popupwin \
@@ -312,7 +315,6 @@ NEW_TESTS = \
 	test_taglist \
 	test_tcl \
 	test_termcodes \
-	test_termdebug \
 	test_termencoding \
 	test_terminal \
 	test_terminal2 \
@@ -322,7 +324,6 @@ NEW_TESTS = \
 	test_textobjects \
 	test_textprop \
 	test_timers \
-	test_tohtml \
 	test_true_false \
 	test_trycatch \
 	test_undo \
@@ -349,7 +350,6 @@ NEW_TESTS = \
 	test_writefile \
 	test_xdg \
 	test_xxd \
-	test_zip_plugin \
 	test_alot_latin \
 	test_alot_utf8 \
 	test_alot
@@ -441,7 +441,6 @@ NEW_TESTS_RES = \
 	test_gettext_make.res \
 	test_getvar.res \
 	test_gf.res \
-	test_glvs.res \
 	test_gn.res \
 	test_goto.res \
 	test_gui.res \
@@ -477,7 +476,6 @@ NEW_TESTS_RES = \
 	test_listlbr_utf8.res \
 	test_lua.res \
 	test_makeencoding.res \
-	test_man.res \
 	test_map_functions.res \
 	test_mapping.res \
 	test_marks.res \
@@ -505,6 +503,11 @@ NEW_TESTS_RES = \
 	test_partial.res \
 	test_paste.res \
 	test_perl.res \
+	test_plugin_glvs.res \
+	test_plugin_man.res \
+	test_plugin_termdebug.res \
+	test_plugin_tohtml.res \
+	test_plugin_zip.res \
 	test_plus_arg_edit.res \
 	test_popup.res \
 	test_popupwin.res \
@@ -562,7 +565,6 @@ NEW_TESTS_RES = \
 	test_taglist.res \
 	test_tcl.res \
 	test_termcodes.res \
-	test_termdebug.res \
 	test_termencoding.res \
 	test_terminal.res \
 	test_terminal2.res \
@@ -572,7 +574,6 @@ NEW_TESTS_RES = \
 	test_textobjects.res \
 	test_textprop.res \
 	test_timers.res \
-	test_tohtml.res \
 	test_true_false.res \
 	test_trycatch.res \
 	test_undo.res \
@@ -594,7 +595,6 @@ NEW_TESTS_RES = \
 	test_writefile.res \
 	test_xdg.res \
 	test_xxd.res \
-	test_zip_plugin.res \
 	test_alot_latin.res \
 	test_alot_utf8.res \
 	test_alot.res
