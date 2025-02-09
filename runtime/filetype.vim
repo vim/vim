@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Jan 21
+" Last Change:	2025 Feb 08
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -2646,7 +2646,7 @@ au BufNewFile,BufRead *.toml			setf toml
 au BufNewFile,BufRead *.tpp			setf tpp
 
 " TRACE32 Script Language
-au BufNewFile,BufRead *.cmm,*.t32		setf trace32
+au BufNewFile,BufRead *.cmm,*.cmmt,*.t32	setf trace32
 
 " Treetop
 au BufRead,BufNewFile *.treetop			setf treetop

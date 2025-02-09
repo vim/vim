@@ -3420,4 +3420,42 @@ def Test_imported_class_as_def_func_rettype()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for don't crash when using a combination of import and class extends
+def Test_vim9_import_and_class_extends()
+  var lines =<< trim END
+    vim9script
+    import './cccc.vim'
+    export class Property extends cccc.Run
+      public var value: string
+      def new(this.value)
+      cccc.Run.value2 = this.value
+    enddef
+    endclass
+  END
+  writefile(lines, './aaaa.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    export class Run
+      public var value2: string
+      def new(this.value)
+      enddef
+    endclass
+  END
+  writefile(lines, './cccc.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './aaaa.vim'
+    class View
+      var content = aaaa.Property.new('')
+    endclass
+
+    var myView = View.new('This should be ok')
+    assert_equal('This should be ok', myView.content.value)
+  END
+  # TODO: The root cause will be identified later.
+  v9.CheckScriptFailure(lines, 'E1099: Unknown error while executing new', 7)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

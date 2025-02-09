@@ -230,6 +230,7 @@ $quote	eval.txt	/*$quote*
 'ef'	options.txt	/*'ef'*
 'efm'	options.txt	/*'efm'*
 'ei'	options.txt	/*'ei'*
+'eiw'	options.txt	/*'eiw'*
 'ek'	options.txt	/*'ek'*
 'emo'	options.txt	/*'emo'*
 'emoji'	options.txt	/*'emoji'*
@@ -248,6 +249,7 @@ $quote	eval.txt	/*$quote*
 'esckeys'	options.txt	/*'esckeys'*
 'et'	options.txt	/*'et'*
 'eventignore'	options.txt	/*'eventignore'*
+'eventignorewin'	options.txt	/*'eventignorewin'*
 'ex'	options.txt	/*'ex'*
 'expandtab'	options.txt	/*'expandtab'*
 'exrc'	options.txt	/*'exrc'*

@@ -3076,14 +3076,10 @@ make_win_info_dict(
 
 /*
  * This function is used for three purposes:
- * 1. Goes over all windows in the current tab page and returns:
- *	0				no scrolling and no size changes found
- *	CWSR_SCROLLED			at least one window scrolled
- *	CWSR_RESIZED			at least one window changed size
- *	CWSR_SCROLLED + CWSR_RESIZED	both
- *    "size_count" is set to the nr of windows with size changes.
- *    "first_scroll_win" is set to the first window with any relevant changes.
- *    "first_size_win" is set to the first window with size changes.
+ * 1. Goes over all windows in the current tab page and sets:
+ *    "size_count" to the nr of windows with size changes.
+ *    "first_scroll_win" to the first window with any relevant changes.
+ *    "first_size_win" to the first window with size changes.
  *
  * 2. When the first three arguments are NULL and "winlist" is not NULL,
  *    "winlist" is set to the list of window IDs with size changes.
@@ -3091,7 +3087,7 @@ make_win_info_dict(
  * 3. When the first three arguments are NULL and "v_event" is not NULL,
  *    information about changed windows is added to "v_event".
  */
-    static int
+    static void
 check_window_scroll_resize(
 	int	*size_count,
 	win_T	**first_scroll_win,
@@ -3099,7 +3095,6 @@ check_window_scroll_resize(
 	list_T	*winlist UNUSED,
 	dict_T	*v_event UNUSED)
 {
-    int result = 0;
 #ifdef FEAT_EVAL
     int listidx = 0;
     int tot_width = 0;
@@ -3115,11 +3110,12 @@ check_window_scroll_resize(
     win_T *wp;
     FOR_ALL_WINDOWS(wp)
     {
-	int size_changed = wp->w_last_width != wp->w_width
-					  || wp->w_last_height != wp->w_height;
+	int ignore_scroll = event_ignored(EVENT_WINSCROLLED, wp->w_p_eiw);
+	int size_changed = !event_ignored(EVENT_WINRESIZED, wp->w_p_eiw)
+			    && (wp->w_last_width != wp->w_width
+			    || wp->w_last_height != wp->w_height);
 	if (size_changed)
 	{
-	    result |= CWSR_RESIZED;
 #ifdef FEAT_EVAL
 	    if (winlist != NULL)
 	    {
@@ -3139,23 +3135,21 @@ check_window_scroll_resize(
 		    *first_size_win = wp;
 		// For WinScrolled the first window with a size change is used
 		// even when it didn't scroll.
-		if (*first_scroll_win == NULL)
+		if (*first_scroll_win == NULL && !ignore_scroll)
 		    *first_scroll_win = wp;
 	    }
 	}
 
-	int scroll_changed = wp->w_last_topline != wp->w_topline
+	int scroll_changed = !ignore_scroll
+				&& (wp->w_last_topline != wp->w_topline
 #ifdef FEAT_DIFF
 				|| wp->w_last_topfill != wp->w_topfill
 #endif
 				|| wp->w_last_leftcol != wp->w_leftcol
-				|| wp->w_last_skipcol != wp->w_skipcol;
-	if (scroll_changed)
-	{
-	    result |= CWSR_SCROLLED;
-	    if (first_scroll_win != NULL && *first_scroll_win == NULL)
-		*first_scroll_win = wp;
-	}
+				|| wp->w_last_skipcol != wp->w_skipcol);
+	if (scroll_changed
+	    && first_scroll_win != NULL && *first_scroll_win == NULL)
+	    *first_scroll_win = wp;
 
 #ifdef FEAT_EVAL
 	if ((size_changed || scroll_changed) && v_event != NULL)
@@ -3214,8 +3208,6 @@ check_window_scroll_resize(
 	}
     }
 #endif
-
-    return result;
 }
 
 /*
@@ -3238,11 +3230,10 @@ may_trigger_win_scrolled_resized(void)
 
     int size_count = 0;
     win_T *first_scroll_win = NULL, *first_size_win = NULL;
-    int cwsr = check_window_scroll_resize(&size_count,
-					   &first_scroll_win, &first_size_win,
-					   NULL, NULL);
+    check_window_scroll_resize(&size_count, &first_scroll_win, &first_size_win,
+								    NULL, NULL);
     int trigger_resize = do_resize && size_count > 0;
-    int trigger_scroll = do_scroll && cwsr != 0;
+    int trigger_scroll = do_scroll && first_scroll_win != NULL;
     if (!trigger_resize && !trigger_scroll)
 	return;  // no relevant changes
 #ifdef FEAT_EVAL

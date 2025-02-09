@@ -82,30 +82,31 @@ typedef struct AutoPat
 #define BUFNEWFILE_INDEX 9
 #define BUFREAD_INDEX 10
 
-// must be sorted by the 'value' field because it is used by bsearch()!
-static keyvalue_T event_tab[] = {
-    KEYVALUE_ENTRY(EVENT_BUFADD, "BufAdd"),
-    KEYVALUE_ENTRY(EVENT_BUFADD, "BufCreate"),
-    KEYVALUE_ENTRY(EVENT_BUFDELETE, "BufDelete"),
-    KEYVALUE_ENTRY(EVENT_BUFENTER, "BufEnter"),
-    KEYVALUE_ENTRY(EVENT_BUFFILEPOST, "BufFilePost"),
-    KEYVALUE_ENTRY(EVENT_BUFFILEPRE, "BufFilePre"),
-    KEYVALUE_ENTRY(EVENT_BUFHIDDEN, "BufHidden"),
-    KEYVALUE_ENTRY(EVENT_BUFLEAVE, "BufLeave"),
-    KEYVALUE_ENTRY(EVENT_BUFNEW, "BufNew"),
-    KEYVALUE_ENTRY(EVENT_BUFNEWFILE, "BufNewFile"),	// BUFNEWFILE_INDEX
-    KEYVALUE_ENTRY(EVENT_BUFREADPOST, "BufRead"),	// BUFREAD_INDEX
-    KEYVALUE_ENTRY(EVENT_BUFREADCMD, "BufReadCmd"),
-    KEYVALUE_ENTRY(EVENT_BUFREADPOST, "BufReadPost"),
-    KEYVALUE_ENTRY(EVENT_BUFREADPRE, "BufReadPre"),
-    KEYVALUE_ENTRY(EVENT_BUFUNLOAD, "BufUnload"),
-    KEYVALUE_ENTRY(EVENT_BUFWINENTER, "BufWinEnter"),
-    KEYVALUE_ENTRY(EVENT_BUFWINLEAVE, "BufWinLeave"),
-    KEYVALUE_ENTRY(EVENT_BUFWIPEOUT, "BufWipeout"),
-    KEYVALUE_ENTRY(EVENT_BUFWRITEPRE, "BufWrite"),
-    KEYVALUE_ENTRY(EVENT_BUFWRITECMD, "BufWriteCmd"),
-    KEYVALUE_ENTRY(EVENT_BUFWRITEPOST, "BufWritePost"),
-    KEYVALUE_ENTRY(EVENT_BUFWRITEPRE, "BufWritePre"),
+// Must be sorted by the 'value' field because it is used by bsearch()!
+// Events with positive keys aren't allowed in 'eventignorewin'.
+static keyvalue_T event_tab[NUM_EVENTS] = {
+    KEYVALUE_ENTRY(-EVENT_BUFADD, "BufAdd"),
+    KEYVALUE_ENTRY(-EVENT_BUFADD, "BufCreate"),
+    KEYVALUE_ENTRY(-EVENT_BUFDELETE, "BufDelete"),
+    KEYVALUE_ENTRY(-EVENT_BUFENTER, "BufEnter"),
+    KEYVALUE_ENTRY(-EVENT_BUFFILEPOST, "BufFilePost"),
+    KEYVALUE_ENTRY(-EVENT_BUFFILEPRE, "BufFilePre"),
+    KEYVALUE_ENTRY(-EVENT_BUFHIDDEN, "BufHidden"),
+    KEYVALUE_ENTRY(-EVENT_BUFLEAVE, "BufLeave"),
+    KEYVALUE_ENTRY(-EVENT_BUFNEW, "BufNew"),
+    KEYVALUE_ENTRY(-EVENT_BUFNEWFILE, "BufNewFile"),	// BUFNEWFILE_INDEX
+    KEYVALUE_ENTRY(-EVENT_BUFREADPOST, "BufRead"),	// BUFREAD_INDEX
+    KEYVALUE_ENTRY(-EVENT_BUFREADCMD, "BufReadCmd"),
+    KEYVALUE_ENTRY(-EVENT_BUFREADPOST, "BufReadPost"),
+    KEYVALUE_ENTRY(-EVENT_BUFREADPRE, "BufReadPre"),
+    KEYVALUE_ENTRY(-EVENT_BUFUNLOAD, "BufUnload"),
+    KEYVALUE_ENTRY(-EVENT_BUFWINENTER, "BufWinEnter"),
+    KEYVALUE_ENTRY(-EVENT_BUFWINLEAVE, "BufWinLeave"),
+    KEYVALUE_ENTRY(-EVENT_BUFWIPEOUT, "BufWipeout"),
+    KEYVALUE_ENTRY(-EVENT_BUFWRITEPRE, "BufWrite"),
+    KEYVALUE_ENTRY(-EVENT_BUFWRITECMD, "BufWriteCmd"),
+    KEYVALUE_ENTRY(-EVENT_BUFWRITEPOST, "BufWritePost"),
+    KEYVALUE_ENTRY(-EVENT_BUFWRITEPRE, "BufWritePre"),
     KEYVALUE_ENTRY(EVENT_CMDLINECHANGED, "CmdlineChanged"),
     KEYVALUE_ENTRY(EVENT_CMDLINEENTER, "CmdlineEnter"),
     KEYVALUE_ENTRY(EVENT_CMDLINELEAVE, "CmdlineLeave"),
@@ -117,44 +118,44 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_COMPLETECHANGED, "CompleteChanged"),
     KEYVALUE_ENTRY(EVENT_COMPLETEDONE, "CompleteDone"),
     KEYVALUE_ENTRY(EVENT_COMPLETEDONEPRE, "CompleteDonePre"),
-    KEYVALUE_ENTRY(EVENT_CURSORHOLD, "CursorHold"),
-    KEYVALUE_ENTRY(EVENT_CURSORHOLDI, "CursorHoldI"),
-    KEYVALUE_ENTRY(EVENT_CURSORMOVED, "CursorMoved"),
-    KEYVALUE_ENTRY(EVENT_CURSORMOVEDC, "CursorMovedC"),
-    KEYVALUE_ENTRY(EVENT_CURSORMOVEDI, "CursorMovedI"),
+    KEYVALUE_ENTRY(-EVENT_CURSORHOLD, "CursorHold"),
+    KEYVALUE_ENTRY(-EVENT_CURSORHOLDI, "CursorHoldI"),
+    KEYVALUE_ENTRY(-EVENT_CURSORMOVED, "CursorMoved"),
+    KEYVALUE_ENTRY(-EVENT_CURSORMOVEDC, "CursorMovedC"),
+    KEYVALUE_ENTRY(-EVENT_CURSORMOVEDI, "CursorMovedI"),
     KEYVALUE_ENTRY(EVENT_DIFFUPDATED, "DiffUpdated"),
     KEYVALUE_ENTRY(EVENT_DIRCHANGED, "DirChanged"),
     KEYVALUE_ENTRY(EVENT_DIRCHANGEDPRE, "DirChangedPre"),
     KEYVALUE_ENTRY(EVENT_ENCODINGCHANGED, "EncodingChanged"),
     KEYVALUE_ENTRY(EVENT_EXITPRE, "ExitPre"),
-    KEYVALUE_ENTRY(EVENT_FILEAPPENDCMD, "FileAppendCmd"),
-    KEYVALUE_ENTRY(EVENT_FILEAPPENDPOST, "FileAppendPost"),
-    KEYVALUE_ENTRY(EVENT_FILEAPPENDPRE, "FileAppendPre"),
-    KEYVALUE_ENTRY(EVENT_FILECHANGEDRO, "FileChangedRO"),
-    KEYVALUE_ENTRY(EVENT_FILECHANGEDSHELL, "FileChangedShell"),
-    KEYVALUE_ENTRY(EVENT_FILECHANGEDSHELLPOST, "FileChangedShellPost"),
+    KEYVALUE_ENTRY(-EVENT_FILEAPPENDCMD, "FileAppendCmd"),
+    KEYVALUE_ENTRY(-EVENT_FILEAPPENDPOST, "FileAppendPost"),
+    KEYVALUE_ENTRY(-EVENT_FILEAPPENDPRE, "FileAppendPre"),
+    KEYVALUE_ENTRY(-EVENT_FILECHANGEDRO, "FileChangedRO"),
+    KEYVALUE_ENTRY(-EVENT_FILECHANGEDSHELL, "FileChangedShell"),
+    KEYVALUE_ENTRY(-EVENT_FILECHANGEDSHELLPOST, "FileChangedShellPost"),
     KEYVALUE_ENTRY(EVENT_ENCODINGCHANGED, "FileEncoding"),
-    KEYVALUE_ENTRY(EVENT_FILEREADCMD, "FileReadCmd"),
-    KEYVALUE_ENTRY(EVENT_FILEREADPOST, "FileReadPost"),
-    KEYVALUE_ENTRY(EVENT_FILEREADPRE, "FileReadPre"),
-    KEYVALUE_ENTRY(EVENT_FILETYPE, "FileType"),
-    KEYVALUE_ENTRY(EVENT_FILEWRITECMD, "FileWriteCmd"),
-    KEYVALUE_ENTRY(EVENT_FILEWRITEPOST, "FileWritePost"),
-    KEYVALUE_ENTRY(EVENT_FILEWRITEPRE, "FileWritePre"),
-    KEYVALUE_ENTRY(EVENT_FILTERREADPOST, "FilterReadPost"),
-    KEYVALUE_ENTRY(EVENT_FILTERREADPRE, "FilterReadPre"),
-    KEYVALUE_ENTRY(EVENT_FILTERWRITEPOST, "FilterWritePost"),
-    KEYVALUE_ENTRY(EVENT_FILTERWRITEPRE, "FilterWritePre"),
+    KEYVALUE_ENTRY(-EVENT_FILEREADCMD, "FileReadCmd"),
+    KEYVALUE_ENTRY(-EVENT_FILEREADPOST, "FileReadPost"),
+    KEYVALUE_ENTRY(-EVENT_FILEREADPRE, "FileReadPre"),
+    KEYVALUE_ENTRY(-EVENT_FILETYPE, "FileType"),
+    KEYVALUE_ENTRY(-EVENT_FILEWRITECMD, "FileWriteCmd"),
+    KEYVALUE_ENTRY(-EVENT_FILEWRITEPOST, "FileWritePost"),
+    KEYVALUE_ENTRY(-EVENT_FILEWRITEPRE, "FileWritePre"),
+    KEYVALUE_ENTRY(-EVENT_FILTERREADPOST, "FilterReadPost"),
+    KEYVALUE_ENTRY(-EVENT_FILTERREADPRE, "FilterReadPre"),
+    KEYVALUE_ENTRY(-EVENT_FILTERWRITEPOST, "FilterWritePost"),
+    KEYVALUE_ENTRY(-EVENT_FILTERWRITEPRE, "FilterWritePre"),
     KEYVALUE_ENTRY(EVENT_FOCUSGAINED, "FocusGained"),
     KEYVALUE_ENTRY(EVENT_FOCUSLOST, "FocusLost"),
     KEYVALUE_ENTRY(EVENT_FUNCUNDEFINED, "FuncUndefined"),
     KEYVALUE_ENTRY(EVENT_GUIENTER, "GUIEnter"),
     KEYVALUE_ENTRY(EVENT_GUIFAILED, "GUIFailed"),
-    KEYVALUE_ENTRY(EVENT_INSERTCHANGE, "InsertChange"),
-    KEYVALUE_ENTRY(EVENT_INSERTCHARPRE, "InsertCharPre"),
-    KEYVALUE_ENTRY(EVENT_INSERTENTER, "InsertEnter"),
-    KEYVALUE_ENTRY(EVENT_INSERTLEAVE, "InsertLeave"),
-    KEYVALUE_ENTRY(EVENT_INSERTLEAVEPRE, "InsertLeavePre"),
+    KEYVALUE_ENTRY(-EVENT_INSERTCHANGE, "InsertChange"),
+    KEYVALUE_ENTRY(-EVENT_INSERTCHARPRE, "InsertCharPre"),
+    KEYVALUE_ENTRY(-EVENT_INSERTENTER, "InsertEnter"),
+    KEYVALUE_ENTRY(-EVENT_INSERTLEAVE, "InsertLeave"),
+    KEYVALUE_ENTRY(-EVENT_INSERTLEAVEPRE, "InsertLeavePre"),
     KEYVALUE_ENTRY(EVENT_KEYINPUTPRE, "KeyInputPre"),
     KEYVALUE_ENTRY(EVENT_MENUPOPUP, "MenuPopup"),
     KEYVALUE_ENTRY(EVENT_MODECHANGED, "ModeChanged"),
@@ -168,7 +169,7 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_SESSIONLOADPOST, "SessionLoadPost"),
     KEYVALUE_ENTRY(EVENT_SESSIONWRITEPOST, "SessionWritePost"),
     KEYVALUE_ENTRY(EVENT_SHELLCMDPOST, "ShellCmdPost"),
-    KEYVALUE_ENTRY(EVENT_SHELLFILTERPOST, "ShellFilterPost"),
+    KEYVALUE_ENTRY(-EVENT_SHELLFILTERPOST, "ShellFilterPost"),
     KEYVALUE_ENTRY(EVENT_SIGUSR1, "SigUSR1"),
     KEYVALUE_ENTRY(EVENT_SOURCECMD, "SourceCmd"),
     KEYVALUE_ENTRY(EVENT_SOURCEPOST, "SourcePost"),
@@ -187,11 +188,11 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_TERMINALWINOPEN, "TerminalWinOpen"),
     KEYVALUE_ENTRY(EVENT_TERMRESPONSE, "TermResponse"),
     KEYVALUE_ENTRY(EVENT_TERMRESPONSEALL, "TermResponseAll"),
-    KEYVALUE_ENTRY(EVENT_TEXTCHANGED, "TextChanged"),
-    KEYVALUE_ENTRY(EVENT_TEXTCHANGEDI, "TextChangedI"),
-    KEYVALUE_ENTRY(EVENT_TEXTCHANGEDP, "TextChangedP"),
-    KEYVALUE_ENTRY(EVENT_TEXTCHANGEDT, "TextChangedT"),
-    KEYVALUE_ENTRY(EVENT_TEXTYANKPOST, "TextYankPost"),
+    KEYVALUE_ENTRY(-EVENT_TEXTCHANGED, "TextChanged"),
+    KEYVALUE_ENTRY(-EVENT_TEXTCHANGEDI, "TextChangedI"),
+    KEYVALUE_ENTRY(-EVENT_TEXTCHANGEDP, "TextChangedP"),
+    KEYVALUE_ENTRY(-EVENT_TEXTCHANGEDT, "TextChangedT"),
+    KEYVALUE_ENTRY(-EVENT_TEXTYANKPOST, "TextYankPost"),
     KEYVALUE_ENTRY(EVENT_USER, "User"),
     KEYVALUE_ENTRY(EVENT_VIMENTER, "VimEnter"),
     KEYVALUE_ENTRY(EVENT_VIMLEAVE, "VimLeave"),
@@ -199,44 +200,17 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_VIMRESIZED, "VimResized"),
     KEYVALUE_ENTRY(EVENT_VIMRESUME, "VimResume"),
     KEYVALUE_ENTRY(EVENT_VIMSUSPEND, "VimSuspend"),
-    KEYVALUE_ENTRY(EVENT_WINCLOSED, "WinClosed"),
-    KEYVALUE_ENTRY(EVENT_WINENTER, "WinEnter"),
-    KEYVALUE_ENTRY(EVENT_WINLEAVE, "WinLeave"),
+    KEYVALUE_ENTRY(-EVENT_WINCLOSED, "WinClosed"),
+    KEYVALUE_ENTRY(-EVENT_WINENTER, "WinEnter"),
+    KEYVALUE_ENTRY(-EVENT_WINLEAVE, "WinLeave"),
     KEYVALUE_ENTRY(EVENT_WINNEW, "WinNew"),
     KEYVALUE_ENTRY(EVENT_WINNEWPRE, "WinNewPre"),
-    KEYVALUE_ENTRY(EVENT_WINRESIZED, "WinResized"),
-    KEYVALUE_ENTRY(EVENT_WINSCROLLED, "WinScrolled")
+    KEYVALUE_ENTRY(-EVENT_WINRESIZED, "WinResized"),
+    KEYVALUE_ENTRY(-EVENT_WINSCROLLED, "WinScrolled"),
 };
 
-static AutoPat *first_autopat[NUM_EVENTS] = {
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL
-};
-
-static AutoPat *last_autopat[NUM_EVENTS] = {
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL
-};
+static AutoPat *first_autopat[NUM_EVENTS] = { NULL };
+static AutoPat *last_autopat[NUM_EVENTS] = { NULL };
 
 #define AUGROUP_DEFAULT    (-1)	    // default autocmd group
 #define AUGROUP_ERROR	   (-2)	    // erroneous autocmd group
@@ -715,17 +689,17 @@ event_name2nr(char_u *start, char_u **end)
     // so we check for them first.
     if (cmp_keyvalue_value_ni(&target, bufnewfile) == 0)
 	entry = bufnewfile;
-    else
-    if (cmp_keyvalue_value_ni(&target, bufread) == 0)
+    else if (cmp_keyvalue_value_ni(&target, bufread) == 0)
 	entry = bufread;
     else
-	entry = (keyvalue_T *)bsearch(&target, &event_tab, ARRAY_LENGTH(event_tab), sizeof(event_tab[0]), cmp_keyvalue_value_ni);
+	entry = (keyvalue_T *)bsearch(&target, &event_tab, NUM_EVENTS,
+				sizeof(event_tab[0]), cmp_keyvalue_value_ni);
 
     if (*p == ',')
 	++p;
     *end = p;
 
-    return (entry == NULL) ? NUM_EVENTS : (event_T)entry->key;
+    return (entry == NULL) ? NUM_EVENTS : (event_T)abs(entry->key);
 }
 
 /*
@@ -741,9 +715,9 @@ event_nr2name(event_T event)
 
     if (cache_last_index < 0)
     {
-	for (i = 0; i < (int)ARRAY_LENGTH(cache_tab); ++i)
+	for (i = 0; i < CACHE_SIZE; ++i)
 	    cache_tab[i] = -1;
-	cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
+	cache_last_index = CACHE_SIZE - 1;
     }
 
     // first look in the cache
@@ -751,11 +725,11 @@ event_nr2name(event_T event)
     // and go backwards wrapping around when we get to index 0.
     for (i = cache_last_index; cache_tab[i] >= 0; )
     {
-	if ((event_T)event_tab[cache_tab[i]].key == event)
+	if ((event_T)abs(event_tab[cache_tab[i]].key) == event)
 	    return event_tab[cache_tab[i]].value.string;
 
 	if (i == 0)
-	    i = ARRAY_LENGTH(cache_tab) - 1;
+	    i = CACHE_SIZE - 1;
 	else
 	    --i;
 
@@ -765,13 +739,13 @@ event_nr2name(event_T event)
     }
 
     // look in the event table itself
-    for (i = 0; i < (int)ARRAY_LENGTH(event_tab); ++i)
+    for (i = 0; i < NUM_EVENTS; ++i)
     {
-	if ((event_T)event_tab[i].key == event)
+	if ((event_T)abs(event_tab[i].key) == event)
 	{
 	    // store the found entry in the next position in the cache,
 	    // wrapping around when we get to the maximum index.
-	    if (cache_last_index == ARRAY_LENGTH(cache_tab) - 1)
+	    if (cache_last_index == CACHE_SIZE - 1)
 		cache_last_index = 0;
 	    else
 		++cache_last_index;
@@ -780,8 +754,8 @@ event_nr2name(event_T event)
 	}
     }
 
-    return (i == (int)ARRAY_LENGTH(event_tab)) ? (char_u *)"Unknown" :
-	event_tab[i].value.string;
+    return (i == NUM_EVENTS) ? (char_u *)"Unknown" :
+						    event_tab[i].value.string;
 }
 
 /*
@@ -822,18 +796,17 @@ find_end_event(
 }
 
 /*
- * Return TRUE if "event" is included in 'eventignore'.
+ * Return TRUE if "event" is included in 'eventignore(win)'.
  */
-    static int
-event_ignored(event_T event)
+    int
+event_ignored(event_T event, char_u *ei)
 {
-    char_u	*p = p_ei;
-
-    while (*p != NUL)
+    while (*ei != NUL)
     {
-	if (STRNICMP(p, "all", 3) == 0 && (p[3] == NUL || p[3] == ','))
+	if (STRNICMP(ei, "all", 3) == 0 && (ei[3] == NUL || ei[3] == ',')
+	    && (ei == p_ei || (event_tab[event].key <= 0)))
 	    return TRUE;
-	if (event_name2nr(p, &p) == event)
+	if (event_name2nr(ei, &ei) == event)
 	    return TRUE;
     }
 
@@ -841,23 +814,28 @@ event_ignored(event_T event)
 }
 
 /*
- * Return OK when the contents of p_ei is valid, FAIL otherwise.
+ * Return OK when the contents of 'eventignore' or 'eventignorewin' is valid,
+ * FAIL otherwise.
  */
     int
-check_ei(void)
+check_ei(char_u *ei)
 {
-    char_u	*p = p_ei;
+    int	win = ei != p_ei;
 
-    while (*p)
+    while (*ei)
     {
-	if (STRNICMP(p, "all", 3) == 0 && (p[3] == NUL || p[3] == ','))
+	if (STRNICMP(ei, "all", 3) == 0 && (ei[3] == NUL || ei[3] == ','))
 	{
-	    p += 3;
-	    if (*p == ',')
-		++p;
+	    ei += 3;
+	    if (*ei == ',')
+		++ei;
 	}
-	else if (event_name2nr(p, &p) == NUM_EVENTS)
-	    return FAIL;
+	else
+	{
+	    event_T event = event_name2nr(ei, &ei);
+	    if (event == NUM_EVENTS || (win && event_tab[event].key > 0))
+		return FAIL;
+	}
     }
 
     return OK;
@@ -2152,7 +2130,20 @@ apply_autocmds_group(
     /*
      * Ignore events in 'eventignore'.
      */
-    if (event_ignored(event))
+    if (event_ignored(event, p_ei))
+	goto BYPASS_AU;
+
+    wininfo_T *wip;
+    int win_ignore = FALSE;
+    // If event is allowed in 'eventignorewin', check if curwin or all windows
+    // into "buf" are ignoring the event.
+    if (buf == curbuf && event_tab[event].key <= 0)
+	win_ignore = event_ignored(event, curwin->w_p_eiw);
+    else if (buf != NULL && event_tab[event].key <= 0)
+	FOR_ALL_BUF_WININFO(buf, wip)
+	    if (wip->wi_win != NULL && wip->wi_win->w_buffer == buf)
+		win_ignore = event_ignored(event, wip->wi_win->w_p_eiw);
+    if (win_ignore)
 	goto BYPASS_AU;
 
     /*
@@ -2878,7 +2869,7 @@ get_event_name(expand_T *xp UNUSED, int idx)
     }
 
     i = idx - augroups.ga_len;
-    if (i < 0 || i >= (int)ARRAY_LENGTH(event_tab))
+    if (i < 0 || i >= NUM_EVENTS)
 	return NULL;
 
     return event_tab[i].value.string;
@@ -2889,12 +2880,24 @@ get_event_name(expand_T *xp UNUSED, int idx)
  * include groups.
  */
     char_u *
-get_event_name_no_group(expand_T *xp UNUSED, int idx)
+get_event_name_no_group(expand_T *xp UNUSED, int idx, int win)
 {
-    if (idx < 0 || idx >= (int)ARRAY_LENGTH(event_tab))
+    if (idx < 0 || idx >= NUM_EVENTS)
 	return NULL;
 
-    return event_tab[idx].value.string;
+    if (!win)
+	return event_tab[idx].value.string;
+
+    // Need to check subset of allowed values for 'eventignorewin'.
+    int j = 0;
+    for (int i = 0; i < NUM_EVENTS; ++i)
+    {
+	j += event_tab[i].key <= 0;
+	if (j == idx + 1)
+	    return event_tab[i].value.string;
+    }
+
+    return NULL;
 }
 
 
@@ -3369,15 +3372,14 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 		target.value.string = name;
 		target.value.length = STRLEN(target.value.string);
 		entry = (keyvalue_T *)bsearch(&target, &event_tab,
-			ARRAY_LENGTH(event_tab), sizeof(event_tab[0]),
-			cmp_keyvalue_value_ni);
+		    NUM_EVENTS, sizeof(event_tab[0]), cmp_keyvalue_value_ni);
 		if (entry == NULL)
 		{
 		    semsg(_(e_no_such_event_str), name);
 		    vim_free(name);
 		    return;
 		}
-		event_arg = (event_T)entry->key;
+		event_arg = (event_T)abs(entry->key);
 	    }
 	    vim_free(name);
 	}
