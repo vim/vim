@@ -12374,4 +12374,39 @@ def Test_abstract_method_across_hierarchy()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using a protected new() method (singleton design pattern)
+def Test_protected_new_method()
+  var lines =<< trim END
+    vim9script
+    class A
+      def _new()
+      enddef
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1325: Method "new" not found in class "A"', 6)
+
+  lines =<< trim END
+    vim9script
+    class A
+      static var _instance: A
+      var str: string
+      def _new(str: string)
+        this.str = str
+      enddef
+      static def GetInstance(str: string): A
+        if _instance == null
+          _instance = A._new(str)
+        endif
+        return _instance
+      enddef
+    endclass
+    var a: A = A.GetInstance('foo')
+    var b: A = A.GetInstance('bar')
+    assert_equal('foo', a.str)
+    assert_equal('foo', b.str)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

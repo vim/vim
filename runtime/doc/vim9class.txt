@@ -272,6 +272,9 @@ no need to call "super()" or "new()" on the parent.
 When defining the new() method the return type should not be specified.  It
 always returns an object of the class.
 
+The new() method can be made a protected method by using "_new()".  This can
+be used to support the singleton design pattern.
+
 							*E1386*
 When invoking an object method, the method name should be preceded by the
 object variable name.  An object method cannot be invoked using the class
