@@ -3508,7 +3508,7 @@ EXTERN char e_abstract_must_be_followed_by_def[]
 	INIT(= N_("E1371: Abstract must be followed by \"def\""));
 EXTERN char e_abstract_method_in_concrete_class[]
 	INIT(= N_("E1372: Abstract method \"%s\" cannot be defined in a concrete class"));
-EXTERN char e_abstract_method_str_not_found[]
+EXTERN char e_abstract_method_str_not_implemented[]
 	INIT(= N_("E1373: Abstract method \"%s\" is not implemented"));
 EXTERN char e_class_variable_str_accessible_only_inside_class_str[]
 	INIT(= N_("E1374: Class variable \"%s\" accessible only inside class \"%s\""));
