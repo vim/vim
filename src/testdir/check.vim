@@ -291,4 +291,11 @@ func CheckAllOf(...)
   endfor
 endfunc
 
+" Check if running under Github Actions
+command CheckGithubActions call CheckGithubActions()
+func CheckGithubActions()
+  if expand('$GITHUB_ACTIONS') ==# 'true'
+    throw "Skipped: FIXME: this test doesn't work on Github Actions CI"
+  endif
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab
