@@ -944,7 +944,15 @@ func Test_terminal_eof_arg()
     call WaitFor({-> getline('$') =~ 'hello'})
     call assert_equal('hello', getline('$'))
   endif
-  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
+  let exitval = bufnr()->term_getjob()->job_info().exitval
+  if !has('win32')
+    call assert_equal(123, exitval)
+  else
+    " python 3.13 on Windows returns exit code 1
+    " older versions returned correctly exit code 123
+    " https://github.com/python/cpython/issues/129900
+    call assert_match('1\|123', exitval)
+  endif
   %bwipe!
 endfunc
 
@@ -976,7 +984,15 @@ func Test_terminal_duplicate_eof_arg()
     call WaitFor({-> getline('$') =~ 'hello'})
     call assert_equal('hello', getline('$'))
   endif
-  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
+  let exitval = bufnr()->term_getjob()->job_info().exitval
+  if !has('win32')
+    call assert_equal(123, exitval)
+  else
+    " python 3.13 on Windows returns exit code 1
+    " older versions returned correctly exit code 123
+    " https://github.com/python/cpython/issues/129900
+    call assert_match('1\|123', exitval)
+  endif
   %bwipe!
 endfunc
 
