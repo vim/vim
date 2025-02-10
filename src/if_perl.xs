@@ -192,7 +192,7 @@ typedef int perl_key;
 #  define Perl_croak_xs_usage dll_Perl_croak_xs_usage
 # endif
 # ifndef PROTO
-#  ifdef PERL_IMPLICIT_CONTEXT
+#  if defined(PERL_IMPLICIT_CONTEXT)
 #   define Perl_croak_nocontext dll_Perl_croak_nocontext
 #  endif
 #  define Perl_call_argv dll_Perl_call_argv
@@ -312,6 +312,9 @@ typedef int perl_key;
 # ifdef PERL_USE_THREAD_LOCAL
 #  define PL_current_context *dll_PL_current_context
 # endif
+# if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
+#  define PL_memory_wrap *dll_PL_memory_wrap
+# endif
 # define Perl_hv_iternext_flags dll_Perl_hv_iternext_flags
 # define Perl_hv_iterinit dll_Perl_hv_iterinit
 # define Perl_hv_iterkey dll_Perl_hv_iterkey
@@ -352,7 +355,7 @@ static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const para
 						    __attribute__noreturn__;
 #  endif
 # endif
-# ifdef PERL_IMPLICIT_CONTEXT
+# if defined(PERL_IMPLICIT_CONTEXT)
 static void (*Perl_croak_nocontext)(const char*, ...) __attribute__noreturn__;
 # endif
 static I32 (*Perl_dowantarray)(pTHX);
@@ -483,6 +486,9 @@ static perl_key* (*Perl_Gthr_key_ptr)_((pTHX));
 # endif
 # ifdef PERL_USE_THREAD_LOCAL
 static void** dll_PL_current_context;
+# endif
+# if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
+static const char **dll_PL_memory_wrap;
 # endif
 static void (*boot_DynaLoader)_((pTHX_ CV*));
 static HE * (*Perl_hv_iternext_flags)(pTHX_ HV *, I32);
@@ -633,9 +639,12 @@ static struct {
 #  ifdef USE_ITHREADS
     {"PL_thr_key", (PERL_PROC*)&dll_PL_thr_key},
 #  endif
-# ifdef PERL_USE_THREAD_LOCAL
+#  ifdef PERL_USE_THREAD_LOCAL
     {"PL_current_context", (PERL_PROC*)&dll_PL_current_context},
-# endif
+#  endif
+#  if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
+    {"PL_memory_wrap", (PERL_PROC*)&dll_PL_memory_wrap},
+#  endif
 # else
     {"Perl_Idefgv_ptr", (PERL_PROC*)&Perl_Idefgv_ptr},
     {"Perl_Ierrgv_ptr", (PERL_PROC*)&Perl_Ierrgv_ptr},
@@ -1474,6 +1483,19 @@ vim_IOLayer_init(void)
 // would cause linking errors in dynamic builds as we don't link against Perl
 // during build time. Manually fix it here by redirecting these functions
 // towards the dynamically loaded version.
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 38)
+#  undef Perl_croak_nocontext
+void Perl_croak_nocontext(const char *pat, ...)
+{
+    dTHX;
+    va_list args;
+    va_start(args, pat);
+    (*dll_Perl_croak_nocontext)(pat, &args);
+    NOT_REACHED; /* NOTREACHED */
+    va_end(args);
+}
+# endif
 
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
 #  undef Perl_sv_free2
