@@ -4416,7 +4416,11 @@ ins_compl_delete(void)
     if ((int)curwin->w_cursor.col > col)
     {
 	if (stop_arrow() == FAIL)
+	{
+	    if (remaining)
+		VIM_CLEAR(remaining);
 	    return;
+	}
 	backspace_until_column(col);
 	compl_ins_end_col = curwin->w_cursor.col;
     }
