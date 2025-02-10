@@ -2496,9 +2496,10 @@ compile_load_lhs(
 	lhs->lhs_type = cctx->ctx_type_stack.ga_len == 0 ? &t_void
 						  : get_type_on_stack(cctx, 0);
 
-	if (lhs->lhs_type->tt_type == VAR_OBJECT)
+	if (lhs->lhs_type->tt_type == VAR_CLASS
+		|| lhs->lhs_type->tt_type == VAR_OBJECT)
 	{
-	    // Check whether the object variable is modifiable
+	    // Check whether the class or object variable is modifiable
 	    if (!lhs_class_member_modifiable(lhs, var_start, cctx))
 		return FAIL;
 	}
