@@ -10944,7 +10944,7 @@ set_position(typval_T *argvars, typval_T *rettv, int charpos)
 	pos.col = 0;
     if ((name[0] == '.' && name[1] == NUL))
     {
-	if (fnum == curwin->w_buffer->b_fnum) {
+	if (fnum == 0 || fnum == curwin->w_buffer->b_fnum) {
 	    // set cursor; "fnum" is ignored
 	    curwin->w_cursor = pos;
 	    if (curswant >= 0)
@@ -10969,17 +10969,79 @@ set_position(typval_T *argvars, typval_T *rettv, int charpos)
 	    buf_T      *buf;
 	    buf = tv_get_buf(&tv, TRUE);
 
-	    /* printf("fnum -> %i | pos.lnum -> %i | buf->b_ml.ml_line_count -> %i | pos.col -> %i | ml_get_buf_len(buf, pos.lnum) -> %i | curwin->w_buffer->b_fnum %i\n", */
-	    /* 	fnum,        pos.lnum,        buf->b_ml.ml_line_count,        pos.col,        ml_get_buf_len(buf, pos.lnum),        curwin->w_buffer->b_fnum ); */
-
 	    if (
 		       pos.lnum > 1 && pos.lnum <= buf->b_ml.ml_line_count
 		    && pos.col >= 0 && pos.col  <= ml_get_buf_len(buf, pos.lnum)
 	    ) {
 		buf->b_last_cursor = pos;
-		rettv->vval.v_number = 0;
 	    } else {
 		emsg("Error: setpos line row or column out of bounds for target buffer");
+	    }
+
+	    /**
+	     * If buffer is not attached to any window, then tell the user.
+	     *
+	     * Else search linked list of windows in `curwin` for one attached
+	     * to the target buffer and update the first one we can find.
+	     */
+	    if (buf->b_nwindows > 0) {
+		win_T *w_target;
+
+		if (w_target == NULL && curwin->w_prev != NULL) {
+		    win_T *w_prev;
+		    for (
+			w_prev = curwin->w_prev;
+			w_prev != NULL;
+			w_prev = w_prev->w_prev
+		    ) {
+			if (w_prev->w_buffer == buf) {
+			    w_target = w_prev;
+			    break;
+			}
+		    }
+		}
+
+		if (w_target == NULL && curwin->w_next != NULL) {
+		    win_T *w_next;
+		    for (
+			w_next = curwin->w_next;
+			w_next != NULL;
+			w_next = w_next->w_next
+		    ) {
+			if (w_next->w_buffer == buf) {
+			    w_target = w_next;
+			    break;
+			}
+		    }
+		}
+
+		if (w_target != NULL) {
+		    /**
+		     * Note; do dance of pointers so `check_cursor` and friends
+		     * from `src/misc2.c` have a chance at doing their thang.
+		     */
+		    win_T *save_curwin;
+		    save_curwin = curwin;
+		    curwin = w_target;
+
+		    printf("WOOT found w_target!!!\n");
+		    curwin->w_cursor = pos;
+		    if (curswant >= 0)
+		    {
+			curwin->w_curswant = curswant - 1;
+			curwin->w_set_curswant = FALSE;
+		    }
+		    /* check_cursor(); */
+		    // ^^ Vim: Caught deadly signal SEGV
+		    //    Segmentation fault (core dumped)
+
+		    curwin = save_curwin;
+		    rettv->vval.v_number = 0;
+		} else {
+		    emsg("Error: setpos though there were window(s) attached to buffer, but none were found!!!");
+		}
+	    } else {
+		emsg("Warn: setpos updated b_last_cursor position only");
 	    }
 	}
     }
