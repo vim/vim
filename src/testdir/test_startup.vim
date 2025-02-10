@@ -740,6 +740,13 @@ func Test_log()
   call delete('Xlogfile')
 endfunc
 
+func Test_log_nonexistent()
+  " this used to crash Vim
+  CheckFeature channel
+  let result = join(systemlist(GetVimCommand() .. ' --log /X/Xlogfile -c qa!'))
+  call assert_match("E484: Can't open file", result)
+endfunc
+
 func Test_read_stdin()
   let after =<< trim [CODE]
     write Xtestout
