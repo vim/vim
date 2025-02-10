@@ -508,7 +508,8 @@ main(int argc, char **argv)
     CLEAR_FIELD(params);
     params.argc = argc;
     params.argv = argv;
-    common_init(&params);
+    common_init_1();
+    common_init_2(&params);
 
     set_option_value_give_err((char_u *)"encoding", 0, (char_u *)"utf-8", 0);
     init_chartab();
