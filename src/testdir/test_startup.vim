@@ -743,6 +743,7 @@ endfunc
 func Test_log_nonexistent()
   " this used to crash Vim
   CheckFeature channel
+  CheckUnix
   let result = join(systemlist(GetVimCommand() .. ' --log /X/Xlogfile -c qa!'))
   call assert_match("E484: Can't open file", result)
 endfunc
