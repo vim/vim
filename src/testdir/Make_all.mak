@@ -218,7 +218,6 @@ NEW_TESTS = \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_matchfuzzy \
-	test_matchparen \
 	test_memory_usage \
 	test_menu \
 	test_messages \
@@ -242,6 +241,7 @@ NEW_TESTS = \
 	test_perl \
 	test_plugin_glvs \
 	test_plugin_man \
+	test_plugin_matchparen \
 	test_plugin_termdebug \
 	test_plugin_tohtml \
 	test_plugin_zip \
@@ -483,7 +483,6 @@ NEW_TESTS_RES = \
 	test_matchadd_conceal.res \
 	test_matchadd_conceal_utf8.res \
 	test_matchfuzzy.res \
-	test_matchparen.res \
 	test_memory_usage.res \
 	test_menu.res \
 	test_messages.res \
@@ -505,6 +504,7 @@ NEW_TESTS_RES = \
 	test_perl.res \
 	test_plugin_glvs.res \
 	test_plugin_man.res \
+	test_plugin_matchparen.res \
 	test_plugin_termdebug.res \
 	test_plugin_tohtml.res \
 	test_plugin_zip.res \
