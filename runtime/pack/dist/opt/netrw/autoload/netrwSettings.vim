@@ -143,7 +143,7 @@ function! netrwSettings#NetrwSettings()
     put = 'let g:netrw_keepdir = '.g:netrw_keepdir
     put = 'let g:netrw_list_cmd = '.g:netrw_list_cmd
     put = 'let g:netrw_list_hide = '.g:netrw_list_hide
-    put = 'let g:netrw_liststyle = '.g:netrw_liststyle
+    put = 'let g:netrw_treedepthstring = '.g:netrw_treedepthstring
     put = 'let g:netrw_localcopycmd = '.g:netrw_localcopycmd
     put = 'let g:netrw_localcopycmdopt = '.g:netrw_localcopycmdopt
     put = 'let g:netrw_localmkdir = '.g:netrw_localmkdir

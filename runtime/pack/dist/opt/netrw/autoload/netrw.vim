@@ -562,9 +562,9 @@ call s:NetrwInit("g:netrw_menu_escape",'.&? \')
 call s:NetrwInit("g:netrw_tmpfile_escape",' &;')
 call s:NetrwInit("s:netrw_map_escape","<|\n\r\\\<C-V>\"")
 if has("gui_running") && (&enc == 'utf-8' || &enc == 'utf-16' || &enc == 'ucs-4')
-  let s:treedepthstring= "│ "
+  call s:NetrwInit("g:netrw_treedepthstring",'│ ')
 else
-  let s:treedepthstring= "| "
+  call s:NetrwInit("g:netrw_treedepthstring",'| ')
 endif
 call s:NetrwInit("s:netrw_posn",'{}')
 
@@ -3804,7 +3804,7 @@ fun! s:NetrwFile(fname)
 
   " clean up any leading treedepthstring
   if exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST
-    let fname= substitute(a:fname,'^'.s:treedepthstring.'\+','','')
+    let fname= substitute(a:fname,'^'.g:netrw_treedepthstring.'\+','','')
   "   "" call Decho("clean up any leading treedepthstring: fname<".fname.">",'~'.expand("<slnum>"))
   else
     let fname= a:fname
@@ -3867,7 +3867,7 @@ fun! s:NetrwFileInfo(islocal,fname)
         echo system("/bin/ls ".lsopt." ".s:ShellEscape(".."))
       "     call Decho("#1: echo system(/bin/ls -lsad ".s:ShellEscape(..).")",'~'.expand("<slnum>"))
 
-      elseif w:netrw_liststyle == s:TREELIST && getline(".") !~ '^'.s:treedepthstring
+      elseif w:netrw_liststyle == s:TREELIST && getline(".") !~ '^'.g:netrw_treedepthstring
         echo system("/bin/ls ".lsopt." ".s:ShellEscape(b:netrw_curdir))
       "     call Decho("#2: echo system(/bin/ls -lsad ".s:ShellEscape(b:netrw_curdir).")",'~'.expand("<slnum>"))
 
@@ -4184,7 +4184,7 @@ fun! s:NetrwGetWord()
 
   elseif exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST
     "   call Decho("treelist handling",'~'.expand("<slnum>"))
-    let dirname= substitute(getline('.'),'^\('.s:treedepthstring.'\)*','','e')
+    let dirname= substitute(getline('.'),'^\('.g:netrw_treedepthstring.'\)*','','e')
     let dirname= substitute(dirname,'\t -->.*$','','')
 
   else
@@ -4865,7 +4865,7 @@ fun! s:NetrwBrowseUpDir(islocal)
       keepj call search('^\M'.curfile,"wb")
     else
       while 1
-        keepj call search('^\M'.s:treedepthstring.curfile,"wb")
+        keepj call search('^\M'.g:netrw_treedepthstring.curfile,"wb")
         let treepath= s:NetrwTreePath(w:netrw_treetop)
         if treepath == curpath
           break
@@ -5737,17 +5737,17 @@ endfun
 fun! s:TreeSqueezeDir(islocal)
   if exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST && exists("w:netrw_treedict")
     " its a tree-listing style
-    let curdepth = substitute(getline('.'),'^\(\%('.s:treedepthstring.'\)*\)[^'.s:treedepthstring.'].\{-}$','\1','e')
+    let curdepth = substitute(getline('.'),'^\(\%('.g:netrw_treedepthstring.'\)*\)[^'.g:netrw_treedepthstring.'].\{-}$','\1','e')
     let stopline = (exists("w:netrw_bannercnt")? (w:netrw_bannercnt + 1) : 1)
     let depth    = strchars(substitute(curdepth,' ','','g'))
     let srch     = -1
     if depth >= 2
       NetrwKeepj norm! 0
-      let curdepthm1= substitute(curdepth,'^'.s:treedepthstring,'','')
-      let srch      = search('^'.curdepthm1.'\%('.s:treedepthstring.'\)\@!','bW',stopline)
+      let curdepthm1= substitute(curdepth,'^'.g:netrw_treedepthstring,'','')
+      let srch      = search('^'.curdepthm1.'\%('.g:netrw_treedepthstring.'\)\@!','bW',stopline)
     elseif depth == 1
       NetrwKeepj norm! 0
-      let treedepthchr= substitute(s:treedepthstring,' ','','')
+      let treedepthchr= substitute(g:netrw_treedepthstring,' ','','')
       let srch        = search('^[^'.treedepthchr.']','bW',stopline)
     endif
     if srch > 0
@@ -7185,7 +7185,7 @@ fun! s:NetrwMarkFileRegexp(islocal)
       sil NetrwKeepj %s/\s\{2,}/\r/ge
       call histdel("/",-1)
     elseif g:netrw_liststyle == s:TREELIST
-      exe 'sil NetrwKeepj %s/^'.s:treedepthstring.' //e'
+      exe 'sil NetrwKeepj %s/^'.g:netrw_treedepthstring.' //e'
       sil! NetrwKeepj g/^ .*$/d
       call histdel("/",-1)
       call histdel("/",-1)
@@ -8488,7 +8488,7 @@ fun! s:NetrwTreeDir(islocal)
     " extract tree directory if on a line specifying a subdirectory (ie. ends with "/")
     let curline= substitute(getline('.'),"\t -->.*$",'','')
     if curline =~ '/$'
-      let treedir= substitute(getline('.'),'^\%('.s:treedepthstring.'\)*\([^'.s:treedepthstring.'].\{-}\)$','\1','e')
+      let treedir= substitute(getline('.'),'^\%('.g:netrw_treedepthstring.'\)*\([^'.g:netrw_treedepthstring.'].\{-}\)$','\1','e')
     elseif curline =~ '@$'
       let potentialdir= resolve(s:NetrwTreePath(w:netrw_treetop))
     else
@@ -8496,7 +8496,7 @@ fun! s:NetrwTreeDir(islocal)
     endif
 
     " detect user attempting to close treeroot
-    if curline !~ '^'.s:treedepthstring && getline('.') != '..'
+    if curline !~ '^'.g:netrw_treedepthstring && getline('.') != '..'
       " now force a refresh
       sil! NetrwKeepj %d _
       return b:netrw_curdir
@@ -8511,7 +8511,7 @@ fun! s:NetrwTreeDir(islocal)
         let w:netrw_treetop = treedir
       endif
     else
-      let potentialdir= s:NetrwFile(substitute(curline,'^'.s:treedepthstring.'\+ \(.*\)@$','\1',''))
+      let potentialdir= s:NetrwFile(substitute(curline,'^'.g:netrw_treedepthstring.'\+ \(.*\)@$','\1',''))
       let treedir = s:NetrwTreePath(w:netrw_treetop)
     endif
   endif
@@ -8546,7 +8546,7 @@ fun! s:NetrwTreeDisplay(dir,depth)
   let dir= a:dir
 
   " display subtrees (if any)
-  let depth= s:treedepthstring.a:depth
+  let depth= g:netrw_treedepthstring.a:depth
 
   " implement g:netrw_hide for tree listings (uses g:netrw_list_hide)
   if     g:netrw_hide == 1
@@ -8698,19 +8698,19 @@ fun! s:NetrwTreePath(treetop)
 
   let svpos = winsaveview()
   "  call Decho("saving posn to svpos<".string(svpos).">",'~'.expand("<slnum>"))
-  let depth = substitute(getline('.'),'^\(\%('.s:treedepthstring.'\)*\)[^'.s:treedepthstring.'].\{-}$','\1','e')
+  let depth = substitute(getline('.'),'^\(\%('.g:netrw_treedepthstring.'\)*\)[^'.g:netrw_treedepthstring.'].\{-}$','\1','e')
   "  call Decho("depth<".depth."> 1st subst",'~'.expand("<slnum>"))
-  let depth = substitute(depth,'^'.s:treedepthstring,'','')
+  let depth = substitute(depth,'^'.g:netrw_treedepthstring,'','')
   "  call Decho("depth<".depth."> 2nd subst (first depth removed)",'~'.expand("<slnum>"))
   let curline= getline('.')
   "  call Decho("curline<".curline.'>','~'.expand("<slnum>"))
   if curline =~ '/$'
     "   call Decho("extract tree directory from current line",'~'.expand("<slnum>"))
-    let treedir= substitute(curline,'^\%('.s:treedepthstring.'\)*\([^'.s:treedepthstring.'].\{-}\)$','\1','e')
+    let treedir= substitute(curline,'^\%('.g:netrw_treedepthstring.'\)*\([^'.g:netrw_treedepthstring.'].\{-}\)$','\1','e')
   "   call Decho("treedir<".treedir.">",'~'.expand("<slnum>"))
   elseif curline =~ '@\s\+-->'
     "   call Decho("extract tree directory using symbolic link",'~'.expand("<slnum>"))
-    let treedir= substitute(curline,'^\%('.s:treedepthstring.'\)*\([^'.s:treedepthstring.'].\{-}\)$','\1','e')
+    let treedir= substitute(curline,'^\%('.g:netrw_treedepthstring.'\)*\([^'.g:netrw_treedepthstring.'].\{-}\)$','\1','e')
     let treedir= substitute(treedir,'@\s\+-->.*$','','e')
   "   call Decho("treedir<".treedir.">",'~'.expand("<slnum>"))
   else
@@ -8720,10 +8720,10 @@ fun! s:NetrwTreePath(treetop)
   " construct treedir by searching backwards at correct depth
   "  call Decho("construct treedir by searching backwards for correct depth",'~'.expand("<slnum>"))
   "  call Decho("initial      treedir<".treedir."> depth<".depth.">",'~'.expand("<slnum>"))
-  while depth != "" && search('^'.depth.'[^'.s:treedepthstring.'].\{-}/$','bW')
-    let dirname= substitute(getline('.'),'^\('.s:treedepthstring.'\)*','','e')
+  while depth != "" && search('^'.depth.'[^'.g:netrw_treedepthstring.'].\{-}/$','bW')
+    let dirname= substitute(getline('.'),'^\('.g:netrw_treedepthstring.'\)*','','e')
     let treedir= dirname.treedir
-    let depth  = substitute(depth,'^'.s:treedepthstring,'','')
+    let depth  = substitute(depth,'^'.g:netrw_treedepthstring,'','')
     "   call Decho("constructing treedir<".treedir.">: dirname<".dirname."> while depth<".depth.">",'~'.expand("<slnum>"))
   endwhile
   "  call Decho("treedir#1<".treedir.">",'~'.expand("<slnum>"))
@@ -11550,9 +11550,9 @@ fun! s:TreeListMove(dir)
   let curline      = getline('.')
   let prvline      = (line(".") > 1)?         getline(line(".")-1) : ''
   let nxtline      = (line(".") < line("$"))? getline(line(".")+1) : ''
-  let curindent    = substitute(getline('.'),'^\(\%('.s:treedepthstring.'\)*\)[^'.s:treedepthstring.'].\{-}$','\1','e')
-  let indentm1     = substitute(curindent,'^'.s:treedepthstring,'','')
-  let treedepthchr = substitute(s:treedepthstring,' ','','g')
+  let curindent    = substitute(getline('.'),'^\(\%('.g:netrw_treedepthstring.'\)*\)[^'.g:netrw_treedepthstring.'].\{-}$','\1','e')
+  let indentm1     = substitute(curindent,'^'.g:netrw_treedepthstring,'','')
+  let treedepthchr = substitute(g:netrw_treedepthstring,' ','','g')
   let stopline     = exists("w:netrw_bannercnt")? w:netrw_bannercnt : 1
   "  call Decho("prvline  <".prvline."> #".(line(".")-1), '~'.expand("<slnum>"))
   "  call Decho("curline  <".curline."> #".line(".")    , '~'.expand("<slnum>"))
@@ -11564,7 +11564,7 @@ fun! s:TreeListMove(dir)
   if curline !~ '/$'
     if     a:dir == '[[' && prvline != ''
       NetrwKeepj norm! 0
-      let nl = search('^'.indentm1.'\%('.s:treedepthstring.'\)\@!','bWe',stopline) " search backwards
+      let nl = search('^'.indentm1.'\%('.g:netrw_treedepthstring.'\)\@!','bWe',stopline) " search backwards
     "    call Decho("regfile srch back: ".nl,'~'.expand("<slnum>"))
     elseif a:dir == '[]' && nxtline != ''
       NetrwKeepj norm! 0
