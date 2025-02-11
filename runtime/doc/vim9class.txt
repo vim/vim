@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Dec 29
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Feb 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -271,6 +271,9 @@ no need to call "super()" or "new()" on the parent.
 							*E1365*
 When defining the new() method the return type should not be specified.  It
 always returns an object of the class.
+
+The new() method can be made a protected method by using "_new()".  This can
+be used to support the singleton design pattern.
 
 							*E1386*
 When invoking an object method, the method name should be preceded by the
