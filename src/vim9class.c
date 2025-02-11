@@ -2375,7 +2375,8 @@ early_ret:
 	{
 	    exarg_T	ea;
 	    garray_T	lines_to_free;
-	    int		is_new = STRNCMP(p, "new", 3) == 0;
+	    int		is_new = STRNCMP(p, "new", 3) == 0
+						|| STRNCMP(p, "_new", 4) == 0;
 
 	    if (has_public)
 	    {
@@ -2601,7 +2602,8 @@ early_ret:
 	for (int i = 0; i < classfunctions.ga_len; ++i)
 	{
 	    class_func = ((ufunc_T **)classfunctions.ga_data)[i];
-	    if (STRCMP(class_func->uf_name, "new") == 0)
+	    if (STRCMP(class_func->uf_name, "new") == 0
+				|| STRCMP(class_func->uf_name, "_new") == 0)
 	    {
 		have_new = TRUE;
 		break;
