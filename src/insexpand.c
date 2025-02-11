@@ -818,9 +818,7 @@ ins_compl_add(
     match = ALLOC_CLEAR_ONE(compl_T);
     if (match == NULL)
 	return FAIL;
-    match->cp_number = -1;
-    if (flags & CP_ORIGINAL_TEXT)
-	match->cp_number = 0;
+    match->cp_number = flags & CP_ORIGINAL_TEXT ? 0 : -1;
     if ((match->cp_str.string = vim_strnsave(str, len)) == NULL)
     {
 	vim_free(match);
@@ -1250,10 +1248,7 @@ trigger_complete_changed_event(int cur)
     if (recursive)
 	return;
 
-    if (cur < 0)
-	item = dict_alloc();
-    else
-	item = ins_compl_dict_alloc(compl_curr_match);
+    item = cur < 0 ? dict_alloc() : ins_compl_dict_alloc(compl_curr_match);
     if (item == NULL)
 	return;
     v_event = get_v_event(&save_v_event);
@@ -2128,10 +2123,7 @@ ins_compl_new_leader(void)
 get_compl_len(void)
 {
     int off = (int)curwin->w_cursor.col - (int)compl_col;
-
-    if (off < 0)
-	return 0;
-    return off;
+    return MAX(0, off);
 }
 
 /*
@@ -2453,7 +2445,7 @@ ins_compl_stop(int c, int prev_mode, int retval)
     // memory that was used, and make sure we can redo the insert.
     if (compl_curr_match != NULL || compl_leader.string != NULL || c == Ctrl_E)
     {
-	char_u	*ptr;
+	char_u	*ptr = NULL;
 
 	// If any of the original typed text has been changed, eg when
 	// ignorecase is set, we must add back-spaces to the redo
@@ -2463,8 +2455,6 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	// CTRL-E then don't use the current match.
 	if (compl_curr_match != NULL && compl_used_match && c != Ctrl_E)
 	    ptr = compl_curr_match->cp_str.string;
-	else
-	    ptr = NULL;
 	ins_compl_fixRedoBufForLeader(ptr);
     }
 
@@ -2666,10 +2656,7 @@ ins_compl_prep(int c)
 	// We're already in CTRL-X mode, do we stay in it?
 	if (!vim_is_ctrl_x_key(c))
 	{
-	    if (ctrl_x_mode_scroll())
-		ctrl_x_mode = CTRL_X_NORMAL;
-	    else
-		ctrl_x_mode = CTRL_X_FINISHED;
+	    ctrl_x_mode = ctrl_x_mode_scroll() ? CTRL_X_NORMAL : CTRL_X_FINISHED;
 	    edit_submode = NULL;
 	}
 	showmode();
@@ -2726,10 +2713,14 @@ ins_compl_fixRedoBufForLeader(char_u *ptr_arg)
     if (compl_orig_text.string != NULL)
     {
 	p = compl_orig_text.string;
-	for (len = 0; p[len] != NUL && p[len] == ptr[len]; ++len)
-	    ;
+	// Find length of common prefix between original text and new completion
+	while (p[len] != NUL && p[len] == ptr[len])
+	    len++;
+	// Adjust length to not break inside a multi-byte character
 	if (len > 0)
 	    len -= (*mb_head_off)(p, p + len);
+	// Add backspace characters for each remaining character in
+	// original text
 	for (p += len; *p != NUL; MB_PTR_ADV(p))
 	    AppendCharToRedobuff(K_BS);
     }
@@ -2749,28 +2740,49 @@ ins_compl_fixRedoBufForLeader(char_u *ptr_arg)
 ins_compl_next_buf(buf_T *buf, int flag)
 {
     static win_T *wp = NULL;
+    int	 skip_buffer;
 
     if (flag == 'w')		// just windows
     {
 	if (buf == curbuf || !win_valid(wp))
 	    // first call for this flag/expansion or window was closed
 	    wp = curwin;
-	while ((wp = (wp->w_next != NULL ? wp->w_next : firstwin)) != curwin
-		&& wp->w_buffer->b_scanned)
-	    ;
+
+	while (TRUE)
+	{
+	   // Move to next window (wrap to first window if at the end)
+	   wp = (wp->w_next != NULL) ? wp->w_next : firstwin;
+	   // Break if we're back at start or found an unscanned buffer
+	   if (wp == curwin || !wp->w_buffer->b_scanned)
+	       break;
+	}
 	buf = wp->w_buffer;
     }
     else
+    {
 	// 'b' (just loaded buffers), 'u' (just non-loaded buffers) or 'U'
 	// (unlisted buffers)
 	// When completing whole lines skip unloaded buffers.
-	while ((buf = (buf->b_next != NULL ? buf->b_next : firstbuf)) != curbuf
-		&& ((flag == 'U'
-			? buf->b_p_bl
-			: (!buf->b_p_bl
-			    || (buf->b_ml.ml_mfp == NULL) != (flag == 'u')))
-		    || buf->b_scanned))
-	    ;
+	while (TRUE)
+	{
+	    // Move to next buffer (wrap to first buffer if at the end)
+	    buf = (buf->b_next != NULL) ? buf->b_next : firstbuf;
+	    // Break if we're back at start buffer
+	    if (buf == curbuf)
+		break;
+
+	    // Check buffer conditions based on flag
+	    if (flag == 'U')
+		skip_buffer = buf->b_p_bl;
+	    else
+		skip_buffer = !buf->b_p_bl ||
+		    (buf->b_ml.ml_mfp == NULL) != (flag == 'u');
+
+	    // Break if we found a buffer that matches our criteria
+	    if (!skip_buffer && !buf->b_scanned)
+		break;
+	}
+    }
     return buf;
 }
 
@@ -3313,17 +3325,21 @@ ins_compl_update_sequence_numbers(void)
 	// first loop cycle, so it's fast!
 	for (match = compl_curr_match->cp_next; match != NULL
 		&& !is_first_match(match); match = match->cp_next)
+	{
 	    if (match->cp_number != -1)
 	    {
 		number = match->cp_number;
 		break;
 	    }
+	}
 	if (match != NULL)
+	{
 	    // go down and assign all numbers which are not assigned yet
 	    for (match = match->cp_prev; match
 		    && match->cp_number == -1;
 					   match = match->cp_prev)
 		match->cp_number = ++number;
+	}
     }
 }
 
@@ -4416,7 +4432,11 @@ ins_compl_delete(void)
     if ((int)curwin->w_cursor.col > col)
     {
 	if (stop_arrow() == FAIL)
+	{
+	    if (remaining)
+		VIM_CLEAR(remaining);
 	    return;
+	}
 	backspace_until_column(col);
 	compl_ins_end_col = curwin->w_cursor.col;
     }

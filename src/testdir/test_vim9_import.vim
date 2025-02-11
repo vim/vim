@@ -3454,8 +3454,7 @@ def Test_vim9_import_and_class_extends()
     var myView = View.new('This should be ok')
     assert_equal('This should be ok', myView.content.value)
   END
-  # TODO: The root cause will be identified later.
-  v9.CheckScriptFailure(lines, 'E1099: Unknown error while executing new', 7)
+  v9.CheckScriptFailure(lines, 'E1376: Object variable "value2" accessible only using class "Run" object', 2)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

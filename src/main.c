@@ -144,6 +144,11 @@ main
     atexit(vim_mem_profile_dump);
 #endif
 
+    /*
+     * Various initialisations #1 shared with tests.
+     */
+    common_init_1();
+
 #if defined(STARTUPTIME) || defined(FEAT_JOB_CHANNEL)
     // Need to find "--startuptime" and "--log" before actually parsing
     // arguments.
@@ -185,9 +190,9 @@ main
 #endif
 
     /*
-     * Various initialisations shared with tests.
+     * Various initialisations #2 shared with tests.
      */
-    common_init(&params);
+    common_init_2(&params);
 
 #ifdef VIMDLL
     // Check if the current executable file is for the GUI subsystem.
@@ -900,10 +905,10 @@ vim_main2(void)
 }
 
 /*
- * Initialisation shared by main() and some tests.
+ * Initialisation #1 shared by main() and some tests.
  */
     void
-common_init(mparm_T *paramp)
+common_init_1(void)
 {
     estack_init();
     cmdline_init();
@@ -925,7 +930,15 @@ common_init(mparm_T *paramp)
 	    || (NameBuff = alloc(MAXPATHL)) == NULL)
 	mch_exit(0);
     TIME_MSG("Allocated generic buffers");
+}
 
+
+/*
+ * Initialisation #2 shared by main() and some tests.
+ */
+    void
+common_init_2(mparm_T *paramp)
+{
 #ifdef NBDEBUG
     // Wait a moment for debugging NetBeans.  Must be after allocating
     // NameBuff.

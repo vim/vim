@@ -198,7 +198,7 @@
 :folddoopen
 :folddoclosed
 :foldopen
-:for
+:for foo in bar | endfor
 :function
 :global/.../
 :goto
@@ -783,7 +783,7 @@ call Foo() | foldclose
 call Foo() | folddoopen
 call Foo() | folddoclosed
 call Foo() | foldopen
-call Foo() | for
+call Foo() | for foo in bar | endfor
 call Foo() | function
 call Foo() | global/.../
 call Foo() | goto

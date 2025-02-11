@@ -26,11 +26,12 @@ RUN_VIMTEST = VIMRUNTIME=$(VIMRUNTIME) $(VALGRIND) $(ENVVARS) ../$(VIMPROG) -f $
 # If a test succeeds a testdir/done/{name} file will be written.
 # If a test fails a testdir/failed/{name}.dump file will be written.
 # Progress and error messages can be found in "testdir/messages".
+# Comment out the "> /dev/null" part to see the in-progress Vim behaviors.
 test:
 	@# the "vimcmd" file is used by the screendump utils
 	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
-	VIMRUNTIME=$(VIMRUNTIME) $(ENVVARS) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim
+	VIMRUNTIME=$(VIMRUNTIME) $(ENVVARS) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim > /dev/null 
 	@rm -f testdir/Xfilter
 	@# FIXME: Temporarily show the whole file to find out what goes wrong
 	@#if [ -f testdir/messages ]; then tail -n 6 testdir/messages; fi

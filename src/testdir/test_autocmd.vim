@@ -4962,8 +4962,8 @@ func Test_WinScrolled_Resized_eiw()
     au WinScrolled * let [g:afile,g:scrolled] = [expand('<afile>'),g:scrolled+1]
     au WinResized * let [g:afile,g:resized] = [expand('<afile>'),g:resized+1]
   END
-  call writefile(lines, 'Xtest_winscrolled_mouse', 'D')
-  let buf = RunVimInTerminal('-S Xtest_winscrolled_mouse', {'rows': 10})
+  call writefile(lines, 'Xtest_winscrolled_eiw', 'D')
+  let buf = RunVimInTerminal('-S Xtest_winscrolled_eiw', {'rows': 10})
 
   " Both windows are ignoring resize events
   call term_sendkeys(buf, "\<C-W>-")

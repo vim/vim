@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   linux:
-    runs-on: ${{ matrix.architecture == 'arm64' && 'ubuntu-22.04-arm' || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.architecture == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
 
     env:
       CC: ${{ matrix.compiler }}
@@ -115,6 +115,7 @@ jobs:
             libncurses-dev:${{ matrix.architecture }} \
             libxt-dev:${{ matrix.architecture }} \
             locales-all \
+            software-properties-common \
           )
           if ${{ matrix.features == 'huge' }}; then
             LUA_VER=${{ matrix.lua_ver || '5.4' }}
@@ -124,7 +125,6 @@ jobs:
               lcov \
               libcanberra-dev \
               libperl-dev \
-              python2-dev \
               python3-dev \
               liblua${LUA_VER}-dev \
               lua${LUA_VER} \
@@ -136,7 +136,7 @@ jobs:
               libattr1-dev
             )
           fi
-          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
@@ -168,7 +168,7 @@ jobs:
           (
           echo "LINUX_VERSION=$(uname -r)"
           echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
-          echo "TMPDIR=${{ runner.temp }}"
+          echo "TMPDIR=$(mktemp -d -p /tmp)"
 
           case "${{ matrix.features }}" in
           tiny)
@@ -185,7 +185,8 @@ jobs:
             if ${{ matrix.python3 == 'stable-abi' }}; then
               PYTHON3_CONFOPT="--with-python3-stable-abi=3.8"
             fi
-            echo "CONFOPT=--enable-perlinterp=${INTERFACE} --enable-pythoninterp=${INTERFACE} --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
+            # The ubuntu-24.04 CI runner does not provide a python2 package.
+            echo "CONFOPT=--enable-perlinterp=${INTERFACE} --enable-pythoninterp=no --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
             ;;
           esac
 
@@ -263,8 +264,8 @@ jobs:
         if: matrix.architecture != 'arm64'
         timeout-minutes: 25
         run: |
-          do_test() { echo "$*"; sg audio "sg $(id -gn) '$*'"; }
-          do_test make ${SHADOWOPT} ${TEST}
+          make ${SHADOWOPT} ${TEST}
+
 
       # `sg audio` does not work on arm64 runner due to permission ('Incorrect password' error).
       - name: Test on arm64
