@@ -8,6 +8,7 @@ CheckFeature terminal
 source shared.vim
 source screendump.vim
 source mouse.vim
+source view_util.vim
 source term_util.vim
 
 import './vim9.vim' as v9
@@ -998,6 +999,129 @@ func Test_autocmd_buffilepost_with_hidden_term()
   augroup END
   augroup! TestCursor
   bw! XTestFile
+endfunc
+
+func Test_terminal_modifyOtherKeys()
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('-c "terminal ++curwin"', {})
+  call TermWait(buf)
+  call TermWait(buf, 50)
+  let chan = buf->term_getjob()->job_getchannel()
+
+  call term_sendkeys(buf, 'printf "\033[>4;2m"; cat' .. "\<CR>")
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+  call term_sendkeys(buf, 'foobar')
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('foobar',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+  " Ctrl-i and Ctrl-I are the same and are sent as Ctrl-i
+  call ch_sendraw(chan, GetEscCodeCSI27('i', 5))
+  call ch_sendraw(chan, GetEscCodeCSI27('I', 5))
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('^[[27;5;105~^[[27;5;105~',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+  " Ctrl-Shift-i and Ctrl-Shift-I are the same and are sent as Ctrl-Shift-I
+  call ch_sendraw(chan, GetEscCodeCSI27('i', 6))
+  call ch_sendraw(chan, GetEscCodeCSI27('I', 6))
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('^[[27;6;73~^[[27;6;73~',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+
+  call term_sendkeys(buf, "\<C-\>\<C-N>")
+  call term_sendkeys(buf, ":tnoremap <C-I> aaa\<CR>")
+  call term_sendkeys(buf, ":tnoremap <C-S-I> bbb\<CR>")
+  call term_sendkeys(buf, "i")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+  " Mappings for <C-I> and <C-S-I> are applied
+  call ch_sendraw(chan, GetEscCodeCSI27('i', 5))
+  call ch_sendraw(chan, GetEscCodeCSI27('i', 6))
+  call ch_sendraw(chan, GetEscCodeCSI27('I', 5))
+  call ch_sendraw(chan, GetEscCodeCSI27('I', 6))
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('aaabbbaaabbb',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+
+  call term_sendkeys(buf, "\<C-\>\<C-N>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_terminal_kitty_keyboard_protocol()
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('-c "terminal ++curwin"', {})
+  call TermWait(buf, 50)
+  let chan = buf->term_getjob()->job_getchannel()
+
+  call term_sendkeys(buf, 'printf "\033[>1u"; cat' .. "\<CR>")
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+  call term_sendkeys(buf, 'foobar')
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('foobar',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+  " Ctrl-i and Ctrl-I are the same and are sent as Ctrl-i
+  call ch_sendraw(chan, GetEscCodeCSIu('i', 5))
+  call ch_sendraw(chan, GetEscCodeCSIu('I', 5))
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('^[[105;5u^[[105;5u',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+  " Ctrl-Shift-i and Ctrl-Shift-I are the same and are sent as Ctrl-Shift-i
+  call ch_sendraw(chan, GetEscCodeCSIu('i', 6))
+  call ch_sendraw(chan, GetEscCodeCSIu('I', 6))
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('^[[105;6u^[[105;6u',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+
+  call term_sendkeys(buf, "\<C-\>\<C-N>")
+  call term_sendkeys(buf, ":tnoremap <C-I> aaa\<CR>")
+  call term_sendkeys(buf, ":tnoremap <C-S-I> bbb\<CR>")
+  call term_sendkeys(buf, "i")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+  " Mappings for <C-I> and <C-S-I> are applied
+  call ch_sendraw(chan, GetEscCodeCSIu('i', 5))
+  call ch_sendraw(chan, GetEscCodeCSIu('i', 6))
+  call ch_sendraw(chan, GetEscCodeCSIu('I', 5))
+  call ch_sendraw(chan, GetEscCodeCSIu('I', 6))
+  call TermWait(buf, 50)
+  call WaitForAssert({-> assert_equal('aaabbbaaabbb',
+                       \ term_getline(buf, '.')->trim(' ', 2))})
+
+  call term_sendkeys(buf, "\<C-\>\<C-N>")
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
