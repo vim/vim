@@ -742,10 +742,15 @@ endfunc
 
 func Test_log_nonexistent()
   " this used to crash Vim
-  CheckFeature channel
+  CheckRunVimInTerminal
   CheckUnix
-  let result = join(systemlist(GetVimCommand() .. ' --log /X/Xlogfile -c qa!'))
-  call assert_match("E484: Can't open file", result)
+  let args = ' -u NONE -i NONE -U NONE --log /X/Xlogfile -X -c qa!'
+  let options = {'term_finish': 'open', 'cmd':
+        \  'sh -c "' .. GetVimCommand() .. args .. '"'}
+  let buf = RunVimInTerminal('', options)
+  call WaitForAssert({-> assert_match('E484: Can''t open file.*Xlogfile', term_getline(buf, 1))})
+  " terminal job has already finished, so just close the buffer
+  exe buf .. "bw!"
 endfunc
 
 func Test_read_stdin()
