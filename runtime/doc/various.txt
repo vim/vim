@@ -765,9 +765,9 @@ K			Run a program to lookup the keyword under the
 			MS-Windows).  "gs" stands for "goto sleep".
 			While sleeping the cursor is positioned in the text,
 			if at a visible position.
-			Also process the received netbeans messages. {only
-			available when compiled with the |+netbeans_intg|
-			feature}
+			Queued messages are processed during the sleep every
+			second, and timers (|+timers|) will be he triggered as
+			well.
 
 							*:sl!* *:sleep!*
 :[N]sl[eep]! [N][m]	Same as above, but hide the cursor.

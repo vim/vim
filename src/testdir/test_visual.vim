@@ -1563,6 +1563,7 @@ func Test_visual_hl_with_showbreak()
     setlocal showbreak=+
     call setline(1, repeat('a', &columns + 10))
     normal g$v4lo
+    redraw
   END
   call writefile(lines, 'XTest_visual_sbr', 'D')
 

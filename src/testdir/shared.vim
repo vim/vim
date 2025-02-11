@@ -162,7 +162,7 @@ endfunc
 " A second argument can be used to specify a different timeout in msec.
 "
 " Return zero for success, one for failure (like the assert function).
-func WaitForAssert(assert, ...)
+func g:WaitForAssert(assert, ...)
   let timeout = get(a:000, 0, 5000)
   if s:WaitForCommon(v:null, a:assert, timeout) < 0
     return 1
@@ -200,11 +200,11 @@ func s:WaitForCommon(expr, assert, timeout)
       call remove(v:errors, -1)
     endif
 
-    sleep 10m
+    sleep 1m
     if exists('*reltimefloat')
       let slept = float2nr(reltimefloat(reltime(start)) * 1000)
     else
-      let slept += 10
+      let slept += 1
     endif
   endwhile
 

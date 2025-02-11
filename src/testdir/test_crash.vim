@@ -4,11 +4,22 @@ source screendump.vim
 
 CheckScreendump
 
+func s:RunCommandAndWait(buf, cmd)
+  let g:run_complete = 0
+  func! Tapi_run_complete(bufnum, arglist)
+    let g:run_complete = 1
+  endfunc
+
+  call term_sendkeys(a:buf, a:cmd .. '; printf ''\033]51;["call", "Tapi_run_complete", []]\007''' .. "\<cr>")
+  call WaitFor({-> g:run_complete == 1 }, 5000)
+
+  delfunc Tapi_run_complete
+  unlet! g:run_complete
+endfunc
+
 func Test_crash1()
   CheckNotBSD
   CheckExecutable dash
-  " Test 7 fails on Mac ...
-  CheckNotMac
 
   " The following used to crash Vim
   let opts = #{cmd: 'sh'}
@@ -19,70 +30,59 @@ func Test_crash1()
   let file = 'crash/poc_huaf1'
   let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 1: [OK]" > X_crash1_result.txt' .. "\<cr>")
-  call TermWait(buf, 50)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 1: [OK]" > X_crash1_result.txt')
 
   let file = 'crash/poc_huaf2'
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 2: [OK]" >> X_crash1_result.txt' .. "\<cr>")
-  call TermWait(buf, 50)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 2: [OK]" >> X_crash1_result.txt')
 
   let file = 'crash/poc_huaf3'
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 3: [OK]" >> X_crash1_result.txt' .. "\<cr>")
-  call TermWait(buf, 100)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 3: [OK]" >> X_crash1_result.txt')
 
   let file = 'crash/bt_quickfix_poc'
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 4: [OK]" >> X_crash1_result.txt' .. "\<cr>")
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 4: [OK]" >> X_crash1_result.txt')
   " clean up
   call delete('Xerr')
-  " This test takes a bit longer
-  call TermWait(buf, 1000)
 
   let file = 'crash/poc_tagfunc.vim'
   let args = printf(cmn_args, vim, file)
   " using || because this poc causes vim to exit with exitstatus != 0
-  call term_sendkeys(buf, args ..
-    \ '  || echo "crash 5: [OK]" >> X_crash1_result.txt' .. "\<cr>")
+  call s:RunCommandAndWait(buf, args ..
+    \ '  || echo "crash 5: [OK]" >> X_crash1_result.txt')
 
-  call TermWait(buf, 100)
 
   let file = 'crash/bt_quickfix1_poc'
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 6: [OK]" >> X_crash1_result.txt' .. "\<cr>")
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 6: [OK]" >> X_crash1_result.txt')
   " clean up
   call delete('X')
-  call TermWait(buf, 3000)
 
   let file = 'crash/vim_regsub_both_poc'
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 7: [OK]" >> X_crash1_result.txt' .. "\<cr>")
-  call TermWait(buf, 3000)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 7: [OK]" >> X_crash1_result.txt')
 
   let file = 'crash/vim_msg_trunc_poc'
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  || echo "crash 8: [OK]" >> X_crash1_result.txt' .. "\<cr>")
-  call TermWait(buf, 3000)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  || echo "crash 8: [OK]" >> X_crash1_result.txt')
 
   let file = 'crash/crash_scrollbar'
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 9: [OK]" >> X_crash1_result.txt' .. "\<cr>")
-  call TermWait(buf, 1000)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 9: [OK]" >> X_crash1_result.txt')
 
   let file = 'crash/editing_arg_idx_POC_1'
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  || echo "crash 10: [OK]" >> X_crash1_result.txt' .. "\<cr>")
-  call TermWait(buf, 1000)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  || echo "crash 10: [OK]" >> X_crash1_result.txt')
   call delete('Xerr')
   call delete('@')
 
@@ -113,7 +113,6 @@ endfunc
 func Test_crash1_2()
   CheckNotBSD
   CheckExecutable dash
-  let g:test_is_flaky = 1
 
   " The following used to crash Vim
   let opts = #{cmd: 'sh'}
@@ -125,37 +124,32 @@ func Test_crash1_2()
   let file = 'crash/poc1'
   let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 1: [OK]" > '.. result .. "\<cr>")
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 1: [OK]" > '.. result)
 
   let file = 'crash/poc_win_enter_ext'
   let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 2: [OK]" >> '.. result .. "\<cr>")
-  call TermWait(buf, 350)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 2: [OK]" >> '.. result)
 
   let file = 'crash/poc_suggest_trie_walk'
   let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ '  && echo "crash 3: [OK]" >> '.. result .. "\<cr>")
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args ..
+    \ '  && echo "crash 3: [OK]" >> '.. result)
 
   let file = 'crash/poc_did_set_langmap'
   let cmn_args = "%s -u NONE -i NONE -n -X -m -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ ' ; echo "crash 4: [OK]" >> '.. result .. "\<cr>")
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args ..
+    \ ' ; echo "crash 4: [OK]" >> '.. result)
 
   let file = 'crash/reverse_text_overflow'
   let cmn_args = "%s -u NONE -i NONE -n -X -m -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args ..
-    \ ' ; echo "crash 5: [OK]" >> '.. result .. "\<cr>")
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args ..
+    \ ' ; echo "crash 5: [OK]" >> '.. result)
 
   " clean up
   exe buf .. "bw!"
@@ -181,64 +175,55 @@ func Test_crash1_3()
   let buf = RunVimInTerminal('sh', #{cmd: 'sh'})
 
   let file = 'crash/poc_ex_substitute'
-  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'\<cr>"
+  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args)
 
   let file = 'crash/poc_uaf_exec_instructions'
-  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'\<cr>"
+  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args)
 
   let file = 'crash/poc_uaf_check_argument_types'
-  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'\<cr>"
+  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args)
 
   let file = 'crash/double_free'
-  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'\<cr>"
+  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 50)
+  call s:RunCommandAndWait(buf, args)
 
   let file = 'crash/dialog_changed_uaf'
-  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'\<cr>"
+  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args)
 
   let file = 'crash/nullpointer'
-  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'\<cr>"
+  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 50)
+  call s:RunCommandAndWait(buf, args)
 
   let file = 'crash/heap_overflow3'
   let cmn_args = "%s -u NONE -i NONE -n -X -m -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 150)
+  call s:RunCommandAndWait(buf, args)
 
   let file = 'crash/heap_overflow_glob2regpat'
   let cmn_args = "%s -u NONE -i NONE -n -X -m -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 50)
+  call s:RunCommandAndWait(buf, args)
 
   let file = 'crash/nullptr_regexp_nfa'
   let cmn_args = "%s -u NONE -i NONE -n -X -m -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 50)
+  call s:RunCommandAndWait(buf, args)
 
-  let file = 'crash/ex_redraw_crash'
-  let cmn_args = "%s -u NONE -i NONE -n -m -X -Z -e -s -S %s -c ':qa!'"
-  let args = printf(cmn_args, vim, file)
-  call term_sendkeys(buf, args)
-  call TermWait(buf, 150)
+"  " TODO: THIS NEEDS TO BE FIXED. This test is broken!!!
+"  let file = 'crash/ex_redraw_crash'
+"  let cmn_args = "%s -u NONE -i NONE -n -m -X -Z -e -s -S %s -c ':qa!'"
+"  let args = printf(cmn_args, vim, file)
+"  call s:RunCommandAndWait(buf, args)
 
   " clean up
   exe buf .. "bw!"

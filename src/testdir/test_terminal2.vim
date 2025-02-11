@@ -292,7 +292,6 @@ endfunc
 func Test_termwinscroll_topline2()
   " calling the terminal API doesn't work on Windows
   CheckNotMSWindows
-  let g:test_is_flaky = 1
   let g:print_complete = 0
   func! Tapi_print_complete(bufnum, arglist)
     let g:print_complete = 1
@@ -313,14 +312,10 @@ func Test_termwinscroll_topline2()
   call term_sendkeys(buf, 'printf ''\033]51;["call", "Tapi_print_complete", []]\007''' .. "\<cr>")
   let rows = term_getsize(buf)[0]
   let cnt = 0
-  while !g:print_complete && cnt <= 1000
-    " max number of runs
+  while !g:print_complete && cnt <= 50000
+    " Spin wait to process the terminal print as quickly as possible
     let cnt += 1
-    " sleep a bit, to give the the terminal some time to finish
-
-    " It may take a while to finish on a slow system
-    " so wait a bit and handle the callback
-    call term_wait(buf)
+    call term_wait(buf, 0)
   endwhile
   call WaitForAssert({-> assert_match(string(num1 - 1), term_getline(buf, rows - 1) .. '\|' .. term_getline(buf, rows - 2))})
   call feedkeys("\<C-W>N", 'xt')
