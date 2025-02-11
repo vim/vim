@@ -52,6 +52,11 @@
 # include <perliol.h>
 #endif
 
+#if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
+// Copy/pasted from perl.h
+const char PL_memory_wrap[] = "panic: memory wrap";
+#endif
+
 /* Workaround for perl < 5.8.7 */
 #ifndef PERLIO_FUNCS_DECL
 # ifdef PERLIO_FUNCS_CONST
@@ -312,9 +317,6 @@ typedef int perl_key;
 # ifdef PERL_USE_THREAD_LOCAL
 #  define PL_current_context *dll_PL_current_context
 # endif
-# if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
-#  define PL_memory_wrap *dll_PL_memory_wrap
-# endif
 # define Perl_hv_iternext_flags dll_Perl_hv_iternext_flags
 # define Perl_hv_iterinit dll_Perl_hv_iterinit
 # define Perl_hv_iterkey dll_Perl_hv_iterkey
@@ -487,9 +489,6 @@ static perl_key* (*Perl_Gthr_key_ptr)_((pTHX));
 # ifdef PERL_USE_THREAD_LOCAL
 static void** dll_PL_current_context;
 # endif
-# if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
-static const char **dll_PL_memory_wrap;
-# endif
 static void (*boot_DynaLoader)_((pTHX_ CV*));
 static HE * (*Perl_hv_iternext_flags)(pTHX_ HV *, I32);
 static I32 (*Perl_hv_iterinit)(pTHX_ HV *);
@@ -641,9 +640,6 @@ static struct {
 #  endif
 #  ifdef PERL_USE_THREAD_LOCAL
     {"PL_current_context", (PERL_PROC*)&dll_PL_current_context},
-#  endif
-#  if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
-    {"PL_memory_wrap", (PERL_PROC*)&dll_PL_memory_wrap},
 #  endif
 # else
     {"Perl_Idefgv_ptr", (PERL_PROC*)&Perl_Idefgv_ptr},
