@@ -2144,19 +2144,26 @@ file_name_in_line(
     if (file_lnum != NULL)
     {
 	char_u	*p;
-	char	*line_english = " line ";
-	char    *line_transl = _(line_msg);
+	char	*match_text = " line ";		// english
+	size_t	match_textlen = 6;
 
 	// Get the number after the file name and a separator character.
 	// Also accept " line 999" with and without the same translation as
 	// used in last_set_msg().
 	p = ptr + len;
-	if (STRNCMP(p, line_english, STRLEN(line_english)) == 0)
-	    p += STRLEN(line_english);
-	else if (STRNCMP(p, line_transl, STRLEN(line_transl)) == 0)
-	    p += STRLEN(line_transl);
+	if (STRNCMP(p, match_text, match_textlen) == 0)
+	    p += match_textlen;
 	else
-	    p = skipwhite(p);
+	{
+	    // no match with english, try localized
+	    match_text = _(line_msg);
+	    match_textlen = STRLEN(match_text);
+
+	    if (STRNCMP(p, match_text, match_textlen) == 0)
+		p += match_textlen;
+	    else
+		p = skipwhite(p);
+	}
 	if (*p != NUL)
 	{
 	    if (!SAFE_isdigit(*p))
