@@ -561,11 +561,7 @@ compile_load_scriptvar(
     if (end == NULL)
 	imp = NULL;
     else if (import == NULL)
-    {
 	imp = find_imported(name, 0, FALSE);
-	if (imp == NULL)
-	    imp = find_imported_from_extends(cctx, name, 0, FALSE);
-    }
     else
 	imp = import;
 
