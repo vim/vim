@@ -30,6 +30,7 @@ echo g:foo ? g:foo : g:bar
 echo $FOO ? $FOO : $BAR
 echo True() ? True() : False()
 echo @a ? @a : @b
+echo (true) ? (true) : (false)
 echo (1) ? (1) : (0)
 
 # Falsy
@@ -52,7 +53,13 @@ echo g:foo ?? g:foo
 echo $FOO ?? $FOO
 echo True() ?? True()
 echo @a ?? @a
+echo (true) ?? (true)
 echo (1) ?? (1)
+
+
+# Function calls
+
+Foo(true, false, null)
 
 
 # Command {expr} arguments
