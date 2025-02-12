@@ -292,10 +292,6 @@ endfunc
 func Test_termwinscroll_topline2()
   " calling the terminal API doesn't work on Windows
   CheckNotMSWindows
-  let g:print_complete = 0
-  func! Tapi_print_complete(bufnum, arglist)
-    let g:print_complete = 1
-  endfunc
 
   set termwinscroll=50000 mouse=a
   set shell=sh
@@ -309,11 +305,13 @@ func Test_termwinscroll_topline2()
   let num1 = &termwinscroll / 1000 * 999
   call writefile(range(num1), 'Xtext', 'D')
   call term_sendkeys(buf, "cat Xtext\<CR>")
-  call term_sendkeys(buf, 'printf ''\033]51;["call", "Tapi_print_complete", []]\007''' .. "\<cr>")
+  call term_sendkeys(buf, "printf '" .. TermNotifyParentCmd(v:false) .. "'\<cr>")
   let rows = term_getsize(buf)[0]
   let cnt = 0
-  while !g:print_complete && cnt <= 50000
-    " Spin wait to process the terminal print as quickly as possible
+  while !g:child_notification && cnt <= 50000
+    " Spin wait to process the terminal print as quickly as possible. This is
+    " more efficient than calling WaitForChildNotification() as we don't want
+    " to sleep here as the print is I/O-bound.
     let cnt += 1
     call term_wait(buf, 0)
   endwhile
@@ -342,8 +340,6 @@ func Test_termwinscroll_topline2()
 
   exe buf . 'bwipe!'
   set termwinscroll& mouse& sh&
-  delfunc Tapi_print_complete
-  unlet! g:print_complete
 endfunc
 
 " Resizing the terminal window caused an ml_get error.

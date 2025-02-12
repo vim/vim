@@ -73,19 +73,10 @@ func Terminal_color(group_name, highlight_cmds, highlight_opt, open_cmds)
   CheckRunVimInTerminal
   CheckUnix
 
-  let g:child_cmd_done = 0
-  func! Tapi_cmd_done(bufnum, arglist)
-    let g:child_cmd_done = 1
-  endfunc
-  func! s:WaitForChild()
-    call WaitFor({-> g:child_cmd_done == 1}, 1000)
-    let g:child_cmd_done = 0
-  endfunc
-
   let lines = [
 	\ 'call setline(1, range(20))',
     \ 'func NotifyParent()',
-    \ '  call echoraw("\033]51;[\"call\", \"Tapi_cmd_done\", []]\007")',
+    \ '  call echoraw("' .. TermNotifyParentCmd(v:true) .. '")',
     \ 'endfunc',
 	\ 'func OpenTerm()',
 	\ '  set noruler',
@@ -100,18 +91,15 @@ func Terminal_color(group_name, highlight_cmds, highlight_opt, open_cmds)
     \ ]
   call writefile(lines, 'XtermStart', 'D')
   let buf = RunVimInTerminal('-S XtermStart', #{rows: 15})
-  call s:WaitForChild()
+  call WaitForChildNotification()
   call term_sendkeys(buf, ":call OpenTerm()\<CR>")
-  call s:WaitForChild()
+  call WaitForChildNotification()
   call term_sendkeys(buf, "hello\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_color_' .. a:group_name, {})
 
   call term_sendkeys(buf, "\<C-D>")
-  call s:WaitForChild()
+  call WaitForChildNotification()
   call StopVimInTerminal(buf)
-
-  delfunc Tapi_cmd_done
-  unlet! g:child_cmd_done
 endfunc
 
 func Test_terminal_color_Terminal()
@@ -371,19 +359,10 @@ func Terminal_in_popup_color(group_name, highlight_cmds, highlight_opt, popup_cm
   CheckRunVimInTerminal
   CheckUnix
 
-  let g:child_cmd_done = 0
-  func! Tapi_cmd_done(bufnum, arglist)
-    let g:child_cmd_done = 1
-  endfunc
-  func! s:WaitForChild()
-    call WaitFor({-> g:child_cmd_done == 1}, 1000)
-    let g:child_cmd_done = 0
-  endfunc
-
   let lines = [
 	\ 'call setline(1, range(20))',
     \ 'func NotifyParent(...)',
-    \ '  call echoraw("\033]51;[\"call\", \"Tapi_cmd_done\", []]\007")',
+    \ '  call echoraw("' .. TermNotifyParentCmd(v:true) .. '")',
     \ 'endfunc',
 	\ 'func OpenTerm()',
 	\ "  let s:buf = term_start('cat', #{hidden: 1, term_finish: 'close', "
@@ -399,19 +378,16 @@ func Terminal_in_popup_color(group_name, highlight_cmds, highlight_opt, popup_cm
     \ ]
   call writefile(lines, 'XtermPopup', 'D')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
-  call s:WaitForChild()
+  call WaitForChildNotification()
   call term_sendkeys(buf, ":set noruler\<CR>")
   call term_sendkeys(buf, ":call OpenTerm()\<CR>")
-  call s:WaitForChild()
+  call WaitForChildNotification()
   call term_sendkeys(buf, "hello\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_' .. a:group_name, {})
 
   call term_sendkeys(buf, "\<C-D>")
-  call s:WaitForChild()
+  call WaitForChildNotification()
   call StopVimInTerminal(buf)
-
-  delfunc Tapi_cmd_done
-  unlet! g:child_cmd_done
 endfunc
 
 func Test_terminal_in_popup_color_Terminal()

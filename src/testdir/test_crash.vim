@@ -4,17 +4,10 @@ source screendump.vim
 
 CheckScreendump
 
+" Run the command in terminal and wait for it to complete via notification
 func s:RunCommandAndWait(buf, cmd)
-  let g:run_complete = 0
-  func! Tapi_run_complete(bufnum, arglist)
-    let g:run_complete = 1
-  endfunc
-
-  call term_sendkeys(a:buf, a:cmd .. '; printf ''\033]51;["call", "Tapi_run_complete", []]\007''' .. "\<cr>")
-  call WaitFor({-> g:run_complete == 1 }, 5000)
-
-  delfunc Tapi_run_complete
-  unlet! g:run_complete
+  call term_sendkeys(a:buf, a:cmd .. "; printf '" .. TermNotifyParentCmd(v:false) .. "'\<cr>")
+  call WaitForChildNotification()
 endfunc
 
 func Test_crash1()
@@ -218,12 +211,6 @@ func Test_crash1_3()
   let cmn_args = "%s -u NONE -i NONE -n -X -m -n -e -s -S %s -c ':qa!'"
   let args = printf(cmn_args, vim, file)
   call s:RunCommandAndWait(buf, args)
-
-"  " TODO: THIS NEEDS TO BE FIXED. This test is broken!!!
-"  let file = 'crash/ex_redraw_crash'
-"  let cmn_args = "%s -u NONE -i NONE -n -m -X -Z -e -s -S %s -c ':qa!'"
-"  let args = printf(cmn_args, vim, file)
-"  call s:RunCommandAndWait(buf, args)
 
   " clean up
   exe buf .. "bw!"
