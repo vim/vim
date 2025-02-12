@@ -1,0 +1,20 @@
+|v+0&#ffffff0|i|m|9|s|c|r|i|p|t| @64
+@75
+|#| |V|i|m|9| |c|o|n|s|t|r|u|c|t|o|r| @56
+@75
+@75
+|c|l|a|s@1| |A| @67
+@2|s|t|a|t|i|c| |v|a|r| |_|i|n|s|t|a|n|c|e|:| |A| @49
+@2|v|a|r| |s|t|r|:| |s|t|r|i|n|g| @57
+@2|d|e|f| |_|n|e|w|(|s|t|r|:| |s|t|r|i|n|g|)| @51
+@4|t|h|i|s|.|s|t|r| |=| |s|t|r| @56
+@2|e|n|d@1|e|f| @66
+@2|s|t|a|t|i|c| |d|e|f| |G|e|t|I|n|s|t|a|n|c|e|(|s|t|r|:| |s|t|r|i|n|g|)|:| |A| @34
+@4|i|f| |_|i|n|s|t|a|n|c|e| |=@1| |n|u|l@1| @50
+@6|_|i|n|s|t|a|n|c|e| |=| |A|.|_|n|e|w|(|s|t|r|)| @45
+@4|e|n|d|i|f| @65
+@4|r|e|t|u|r|n| |_|i|n|s|t|a|n|c|e| @54
+@2|e|n|d@1|e|f| @66
+|e|n|d|c|l|a|s@1| @66
+@75
+>:|c|a|l@1| |S|e|t|U|p|V|i|m|(|)| @58
