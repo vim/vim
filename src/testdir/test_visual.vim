@@ -1559,6 +1559,7 @@ endfunc
 func Test_visual_hl_with_showbreak()
   CheckScreendump
 
+  " Redraw at the end is necessary due to https://github.com/vim/vim/issues/16620
   let lines =<< trim END
     setlocal showbreak=+
     call setline(1, repeat('a', &columns + 10))
