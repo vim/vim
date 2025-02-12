@@ -765,9 +765,8 @@ K			Run a program to lookup the keyword under the
 			MS-Windows).  "gs" stands for "goto sleep".
 			While sleeping the cursor is positioned in the text,
 			if at a visible position.
-			Queued messages are processed during the sleep every
-			second, and timers (|+timers|) will be he triggered as
-			well.
+			Queued messages and timers (|+timers|) are processed
+			during the sleep as well.
 
 							*:sl!* *:sleep!*
 :[N]sl[eep]! [N][m]	Same as above, but hide the cursor.
