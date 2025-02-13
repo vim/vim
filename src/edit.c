@@ -4130,7 +4130,10 @@ ins_bs(
 
 			    if (curbuf->b_ml.ml_flags
 					      & (ML_LINE_DIRTY | ML_ALLOCATED))
+			    {
 				vim_free(curbuf->b_ml.ml_line_ptr);
+				curbuf->b_ml.ml_line_size = 0;
+			    }
 			    curbuf->b_ml.ml_line_ptr = newp;
 			    curbuf->b_ml.ml_line_len--;
 			    curbuf->b_ml.ml_line_textlen--;
@@ -5116,7 +5119,10 @@ ins_tab(void)
 					   curbuf->b_ml.ml_line_len - col - i);
 
 		    if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+		    {
 			vim_free(curbuf->b_ml.ml_line_ptr);
+			curbuf->b_ml.ml_line_size = 0;
+		    }
 		    curbuf->b_ml.ml_line_ptr = newp;
 		    curbuf->b_ml.ml_line_len -= i;
 		    curbuf->b_ml.ml_line_textlen = 0;

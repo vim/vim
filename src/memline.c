@@ -883,7 +883,10 @@ ml_close(buf_T *buf, int del_file)
     mf_close(buf->b_ml.ml_mfp, del_file);	// close the .swp file
     if (buf->b_ml.ml_line_lnum != 0
 		      && (buf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED)))
+    {
 	vim_free(buf->b_ml.ml_line_ptr);
+	buf->b_ml.ml_line_size = 0;
+    }
     vim_free(buf->b_ml.ml_stack);
 #ifdef FEAT_BYTEOFF
     VIM_CLEAR(buf->b_ml.ml_chunksize);
@@ -2748,6 +2751,7 @@ ml_get_buf(
 errorret:
 	STRCPY(questions, "???");
 	buf->b_ml.ml_line_len = 4;
+	buf->b_ml.ml_line_size = 0;
 	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	buf->b_ml.ml_line_lnum = lnum;
 	return questions;
@@ -2758,6 +2762,7 @@ errorret:
     if (buf->b_ml.ml_mfp == NULL)	// there are no lines
     {
 	buf->b_ml.ml_line_len = 1;
+	buf->b_ml.ml_line_size = 0;
 	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	return (char_u *)"";
     }
@@ -2809,6 +2814,7 @@ errorret:
 
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
 	buf->b_ml.ml_line_len = end - start;
+	buf->b_ml.ml_line_size = 0;
 #if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
 	// Text properties come after a NUL byte, so ml_line_len should be
 	// larger than the size of textprop_T if there is any.
@@ -2842,6 +2848,7 @@ errorret:
 	{
 	    memmove(p, buf->b_ml.ml_line_ptr, buf->b_ml.ml_line_len);
 	    buf->b_ml.ml_line_ptr = p;
+	    buf->b_ml.ml_line_size = 0;
 	    buf->b_ml.ml_flags |= ML_ALLOCATED;
 	    if (will_change)
 		// can't make the change in the data block
@@ -3663,7 +3670,8 @@ ml_replace_len(
     }
 #endif
 
-    if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+    if ((curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+	    && (curbuf->b_ml.ml_line_ptr != line))
 	vim_free(curbuf->b_ml.ml_line_ptr);	// free allocated line
 
     curbuf->b_ml.ml_line_ptr = line;
@@ -4236,11 +4244,15 @@ ml_flush_line(buf_T *buf)
 	    }
 	}
 	vim_free(new_line);
+	buf->b_ml.ml_line_size = 0;
 
 	entered = FALSE;
     }
     else if (buf->b_ml.ml_flags & ML_ALLOCATED)
+    {
 	vim_free(buf->b_ml.ml_line_ptr);
+	buf->b_ml.ml_line_size = 0;
+    }
 
     buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     buf->b_ml.ml_line_lnum = 0;

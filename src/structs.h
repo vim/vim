@@ -826,6 +826,7 @@ typedef struct memline
 #define ML_ALLOCATED	0x10	// ml_line_ptr is an allocated copy
     int		ml_flags;
 
+    colnr_T	ml_line_size;	// allocated size of ml_line_ptr (Used by ins_str())
     colnr_T	ml_line_len;	// length of the cached line + NUL + text properties
     colnr_T	ml_line_textlen;// length of the cached line + NUL, 0 if not known yet
     linenr_T	ml_line_lnum;	// line number of cached line, 0 if not valid
