@@ -404,6 +404,7 @@ runtime/keymap/armenian-eastern_utf-8.vim	@blinskey
 runtime/keymap/armenian-western_utf-8.vim	@blinskey
 runtime/keymap/russian-typograph.vim	@RestorerZ
 runtime/keymap/tamil_tscii.vim		@yegappan
+runtime/keymap/ukrainian-enhanced.vim 	@Dolfost
 runtime/lang/menu_en_gb.latin1.vim	@mrdubya
 runtime/lang/menu_ru_ru.cp1251.vim	@RestorerZ
 runtime/lang/menu_ru_ru.koi8-r.vim	@RestorerZ
