@@ -175,3 +175,12 @@ function! s:ContainedGroup()
   endfor
   " ...
 endfunction
+
+" early termination of vimSynRegion
+
+syn region testRegion
+      "\ | does not end the args region
+      "\ start="foo\|bar"
+      \ start="start"
+      \ end="end"
+
