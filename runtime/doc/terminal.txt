@@ -999,7 +999,8 @@ term_wait({buf} [, {time}])					*term_wait()*
 		Wait for pending updates of {buf} to be handled.
 		{buf} is used as with |term_getsize()|.
 		{time} is how long to wait for updates to arrive in msec.  If
-		not set then 10 msec will be used.
+		not set then 10 msec will be used.  Queued messages will also
+		be processed similar to |:sleep|.
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_wait()

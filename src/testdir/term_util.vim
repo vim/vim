@@ -157,14 +157,14 @@ func StopVimInTerminal(buf, kill = 1)
   call assert_equal("running", term_getstatus(a:buf))
 
   " Wait for all the pending updates to terminal to complete
-  call TermWait(a:buf)
+  call TermWait(a:buf, 1)
 
   " CTRL-O : works both in Normal mode and Insert mode to start a command line.
   " In Command-line it's inserted, the CTRL-U removes it again.
   call term_sendkeys(a:buf, "\<C-O>:\<C-U>qa!\<cr>")
 
   " Wait for all the pending updates to terminal to complete
-  call TermWait(a:buf)
+  call TermWait(a:buf, 1)
 
   " Wait for the terminal to end.
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})

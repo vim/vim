@@ -60,8 +60,8 @@ func Test_terminal_TerminalWinOpen()
   close
 
   if has("unix")
-    terminal ++hidden ++open sleep 1
-    sleep 1
+    terminal ++hidden ++open echo
+    call WaitForAssert({-> assert_equal('terminal', &buftype)})
     call assert_fails("echo b:done", 'E121:')
   endif
 

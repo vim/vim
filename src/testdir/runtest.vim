@@ -265,6 +265,9 @@ func RunTheTest(test)
   " buffers.
   %bwipe!
 
+  " Clear all children notifications in case there are stale ones left
+  let g:child_notification = 0
+
   " The test may change the current directory. Save and restore the
   " directory after executing the test.
   let save_cwd = getcwd()
