@@ -1367,8 +1367,6 @@ ins_compl_build_pum(void)
 		    if (!compl_no_select)
 			compl_shown_match = compl;
 		}
-		else if (!fuzzy_sort && i == 0 && !compl_no_select)
-		    compl_shown_match = shown_compl;
 
 		if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
 		{
@@ -1401,6 +1399,13 @@ ins_compl_build_pum(void)
 
     if (compl_match_arraysize == 0)
 	return -1;
+
+    if (fuzzy_filter && !fuzzy_sort && !compl_no_select && !shown_match_ok)
+    {
+	compl_shown_match = shown_compl;
+	shown_match_ok = TRUE;
+	cur = 0;
+    }
 
     compl_match_array = ALLOC_CLEAR_MULT(pumitem_T, compl_match_arraysize);
     if (compl_match_array == NULL)
