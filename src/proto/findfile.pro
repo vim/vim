@@ -1,5 +1,5 @@
 /* findfile.c */
-void *vim_findfile_init(char_u *path, char_u *filename, char_u *stopdirs, int level, int free_visited, int find_what, void *search_ctx_arg, int tagfile, char_u *rel_fname);
+void *vim_findfile_init(char_u *path, char_u *filename, size_t filenamelen, char_u *stopdirs, int level, int free_visited, int find_what, void *search_ctx_arg, int tagfile, char_u *rel_fname);
 char_u *vim_findfile_stopdir(char_u *buf);
 void vim_findfile_cleanup(void *ctx);
 char_u *vim_findfile(void *search_ctx_arg);

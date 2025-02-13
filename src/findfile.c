@@ -283,6 +283,7 @@ vim_findnext(void)
 vim_findfile_init(
     char_u	*path,
     char_u	*filename,
+    size_t	filenamelen,
     char_u	*stopdirs UNUSED,
     int		level,
     int		free_visited,
@@ -294,7 +295,6 @@ vim_findfile_init(
     char_u		*wc_part;
     ff_stack_T		*sptr;
     ff_search_ctx_T	*search_ctx;
-    size_t		filenamelen;
     int			add_sep;
 
     // If a search context is given by the caller, reuse it, else allocate a
@@ -312,8 +312,6 @@ vim_findfile_init(
     search_ctx->ffsc_start_dir.length = 0;
     search_ctx->ffsc_fix_path.length = 0;
     search_ctx->ffsc_wc_path.length = 0;
-
-    filenamelen = STRLEN(filename);
 
     // clear the search context, but NOT the visited lists
     ff_clear(search_ctx);
@@ -1483,13 +1481,16 @@ ff_check_visited(
     }
     else
     {
+	ff_expand_buffer.string[0] = NUL;
+	ff_expand_buffer.length = 0;
 #ifdef UNIX
 	if (mch_stat((char *)fname, &st) < 0)
 	    return FAIL;
-#endif
+#else
 	if (vim_FullName(fname, ff_expand_buffer.string, MAXPATHL, TRUE) == FAIL)
 	    return FAIL;
 	ff_expand_buffer.length = STRLEN(ff_expand_buffer.string);
+#endif
     }
 
     // check against list of already visited files
@@ -1519,21 +1520,26 @@ ff_check_visited(
     if (vp == NULL)
 	return OK;
 
-    if (wc_path != NULL)
-	vp->ffv_wc_path = vim_strnsave(wc_path, wc_pathlen);
-    else
-	vp->ffv_wc_path = NULL;
 #ifdef UNIX
-    if (url)
-	vp->ffv_dev_valid = FALSE;
-    else
+    if (!url)
     {
 	vp->ffv_dev_valid = TRUE;
 	vp->ffv_dev = st.st_dev;
 	vp->ffv_ino = st.st_ino;
+	vp->ffv_fname[0] = NUL;
+    }
+    else
+    {
+	vp->ffv_dev_valid = FALSE;
+#endif
+	STRCPY(vp->ffv_fname, ff_expand_buffer.string);
+#ifdef UNIX
     }
 #endif
-    STRCPY(vp->ffv_fname, ff_expand_buffer.string);
+    if (wc_path != NULL)
+	vp->ffv_wc_path = vim_strnsave(wc_path, wc_pathlen);
+    else
+	vp->ffv_wc_path = NULL;
 
     vp->ffv_next = *visited_list;
     *visited_list = vp;
@@ -1630,7 +1636,7 @@ ff_pop(ff_search_ctx_T *search_ctx)
     static void
 ff_free_stack_element(ff_stack_T *stack_ptr)
 {
-    // vim_free handles possible NULL pointers
+    // VIM_CLEAR_STRING handles possible NULL pointers
     VIM_CLEAR_STRING(stack_ptr->ffs_fix_path);
     VIM_CLEAR_STRING(stack_ptr->ffs_wc_path);
 
@@ -1972,7 +1978,7 @@ find_file_in_path_option(
 
 		// get the stopdir string
 		r_ptr = vim_findfile_stopdir(buf);
-		*search_ctx = vim_findfile_init(buf, *file_to_find,
+		*search_ctx = vim_findfile_init(buf, *file_to_find, file_to_findlen,
 					    r_ptr, 100, FALSE, find_what,
 					   *search_ctx, FALSE, rel_fname);
 		if (*search_ctx != NULL)
