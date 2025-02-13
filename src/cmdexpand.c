@@ -373,10 +373,7 @@ cmdline_pum_create(
 	columns += vim_strsize(showmatches_gettail(matches[0]));
 	columns -= vim_strsize(matches[0]);
     }
-    if (columns >= compl_startcol)
-	compl_startcol = 0;
-    else
-	compl_startcol -= columns;
+    compl_startcol = MAX(0, compl_startcol - columns);
 
     // no default selection
     compl_selected = -1;
@@ -735,94 +732,84 @@ win_redr_status_matches(
  * in "xp->xp_selected"
  */
     static char_u *
-get_next_or_prev_match(
-	int		mode,
-	expand_T	*xp)
+get_next_or_prev_match(int mode, expand_T *xp)
 {
-    int findex = xp->xp_selected;
-    int ht;
+    int	    findex = xp->xp_selected;
+    int	    ht;
 
+    // When no files found, return NULL
     if (xp->xp_numfiles <= 0)
 	return NULL;
 
     if (mode == WILD_PREV)
     {
+	// Select last file if at start
 	if (findex == -1)
 	    findex = xp->xp_numfiles;
 	--findex;
     }
     else if (mode == WILD_NEXT)
-	++findex;
-    else if (mode == WILD_PAGEUP)
     {
-	if (findex == 0)
-	    // at the first entry, don't select any entries
-	    findex = -1;
-	else if (findex == -1)
-	    // no entry is selected. select the last entry
-	    findex = xp->xp_numfiles - 1;
-	else
-	{
-	    // go up by the pum height
-	    ht = pum_get_height();
-	    if (ht > 3)
-		ht -= 2;
-	    findex -= ht;
-	    if (findex < 0)
-		// few entries left, select the first entry
-		findex = 0;
-	}
+	// Select next file
+	findex = findex + 1;
     }
-    else   // mode == WILD_PAGEDOWN
+    else   // WILD_PAGEDOWN or WILD_PAGEUP
     {
-	if (findex == xp->xp_numfiles - 1)
-	    // at the last entry, don't select any entries
-	    findex = -1;
-	else if (findex == -1)
-	    // no entry is selected. select the first entry
-	    findex = 0;
-	else
+	// Get the height of popup menu (used for both PAGEUP and PAGEDOWN)
+	ht = pum_get_height();
+	if (ht > 3)
+	    ht -= 2;
+
+	if (mode == WILD_PAGEUP)
 	{
-	    // go down by the pum height
-	    ht = pum_get_height();
-	    if (ht > 3)
-		ht -= 2;
-	    findex += ht;
-	    if (findex >= xp->xp_numfiles)
-		// few entries left, select the last entry
+	    if (findex == 0)
+		// at the first entry, don't select any entries
+		findex = -1;
+	    else if (findex == -1)
+		// no entry is selected. select the last entry
 		findex = xp->xp_numfiles - 1;
+	    else
+		// go up by the pum height
+		findex = MAX(findex - ht, 0);
+	}
+	else    // mode == WILD_PAGEDOWN
+	{
+	    if (findex < 0)
+		// no entry is selected, select the first entry
+		findex = 0;
+	    else if (findex >= xp->xp_numfiles - 1)
+		// at the last entry, don't select any entries
+		findex = -1;
+	    else
+		// go down by the pum height
+		findex = MIN(findex + ht, xp->xp_numfiles - 1);
 	}
     }
 
-    // When wrapping around, return the original string, set findex to -1.
-    if (findex < 0)
+    // Handle wrapping around
+    if (findex < 0 || findex >= xp->xp_numfiles)
     {
-	if (xp->xp_orig == NULL)
-	    findex = xp->xp_numfiles - 1;
-	else
+	// If original string exists, return to it when wrapping around
+	if (xp->xp_orig != NULL)
 	    findex = -1;
-    }
-    if (findex >= xp->xp_numfiles)
-    {
-	if (xp->xp_orig == NULL)
-	    findex = 0;
 	else
-	    findex = -1;
+	    // Wrap around to opposite end
+	    findex = (findex < 0) ? xp->xp_numfiles - 1 : 0;
     }
+
+    // Display matches on screen
     if (compl_match_array)
     {
 	compl_selected = findex;
 	cmdline_pum_display();
     }
     else if (p_wmnu)
-	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files,
-		findex, cmd_showtail);
+	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files, findex,
+		cmd_showtail);
+
     xp->xp_selected = findex;
-
-    if (findex == -1)
-	return vim_strsave(xp->xp_orig);
-
-    return vim_strsave(xp->xp_files[findex]);
+    // Return the original string or the selected match
+    return vim_strsave(findex == -1 ? xp->xp_orig : xp->xp_files[findex]);
 }
 
 /*
