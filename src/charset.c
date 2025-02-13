@@ -821,6 +821,7 @@ linetabsize_col(int startcol, char_u *s)
 
 /*
  * Like linetabsize_str(), but for a given window instead of the current one.
+ * Doesn't count the size of 'listchars' "eol".
  */
     int
 win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len)
@@ -836,12 +837,23 @@ win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len)
 /*
  * Return the number of cells line "lnum" of window "wp" will take on the
  * screen, taking into account the size of a tab and text properties.
+ * Doesn't count the size of 'listchars' "eol".
  */
-  int
+    int
 linetabsize(win_T *wp, linenr_T lnum)
 {
     return win_linetabsize(wp, lnum,
 		       ml_get_buf(wp->w_buffer, lnum, FALSE), (colnr_T)MAXCOL);
+}
+
+/*
+ * Like linetabsize(), but counts the size of 'listchars' "eol".
+ */
+    int
+linetabsize_eol(win_T *wp, linenr_T lnum)
+{
+    return linetabsize(wp, lnum)
+	+ ((wp->w_p_list && wp->w_lcs_chars.eol != NUL) ? 1 : 0);
 }
 
 /*
