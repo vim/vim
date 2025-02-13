@@ -52,14 +52,14 @@ func VerifyScreenDump(buf, filename, options, ...)
   let filter = 'dumps/' . a:filename . '.vim'
   let testfile = 'failed/' . a:filename . '.dump'
 
-  let max_loops = get(a:options, 'wait', 1000) / 10
+  let max_loops = get(a:options, 'wait', 1000) / 1
 
   " Starting a terminal to make a screendump is always considered flaky.
   let g:test_is_flaky = 1
   let g:giveup_same_error = 0
 
   " wait for the pending updates to be handled.
-  call TermWait(a:buf)
+  call TermWait(a:buf, 0)
 
   " Redraw to execute the code that updates the screen.  Otherwise we get the
   " text and attributes only from the internal buffer.
@@ -80,8 +80,8 @@ func VerifyScreenDump(buf, filename, options, ...)
 
   let i = 0
   while 1
-    " leave some time for updating the original window
-    sleep 50m
+    " leave a bit of time for updating the original window while we spin wait.
+    sleep 1m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
 
