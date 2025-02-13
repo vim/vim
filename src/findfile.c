@@ -1810,7 +1810,7 @@ find_file_in_path_option(
     // Avoid a requester here for a volume that doesn't exist.
     proc->pr_WindowPtr = (APTR)-1L;
 # endif
-    size_t		file_to_findlen = 0;
+    static size_t	file_to_findlen = 0;
 
     if (first == TRUE)
     {
@@ -1829,6 +1829,7 @@ find_file_in_path_option(
 	if (*file_to_find == NULL)	// out of memory
 	{
 	    file_name = NULL;
+	    file_to_findlen = 0;
 	    goto theend;
 	}
 	if (options & FNAME_UNESC)
