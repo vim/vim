@@ -833,6 +833,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			Default is zero, except for |popup_menu()|.
 	filter		A callback that can filter typed characters, see
 			|popup-filter|.
+			It is ignored when focusable popup.
 	mapping		Allow for key mapping.  When FALSE and the popup is
 			visible and has a filter callback key mapping is
 			disabled.  Default value is TRUE.

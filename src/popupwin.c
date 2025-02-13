@@ -719,7 +719,7 @@ popup_highlight_curline(win_T *wp)
 apply_general_options(win_T *wp, dict_T *dict)
 {
     dictitem_T	*di;
-    int		nr;
+    int		nr, focusable;
     char_u	*str;
 
     // TODO: flip
@@ -982,7 +982,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     }
 
     di = dict_find(dict, (char_u *)"filter", -1);
-    if (di != NULL)
+    if (di != NULL && (wp->w_popup_flags & POPF_FOCUSABLE) == 0)
     {
 	callback_T	callback = get_callback(&di->di_tv);
 
