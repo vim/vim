@@ -100,6 +100,15 @@ echo [1, 'two', 1 + 2, "fo" .. "ur"]
 " Issue #5830 (Incorrect syntax highlighting in Vim script when omitting space in list of string)
 let l = ['a','b','c']
 
+" Register
+
+echo @" 
+echo @0 @1 @2 @3 @4 @5 @6 @7 @8 @9
+echo @-
+echo @a @b @c @d @e @f @g @h @i @j @k @l @m @n @o @p @q @r @s @t @u @v @w @x @y @z
+echo @A @B @C @D @E @F @G @H @I @J @K @L @M @N @O @P @Q @R @S @T @U @V @W @X @Y @Z
+echo @: @. @% @# @= @* @+ @~ @_ @/
+
 " Operators
 
 " Ternary
@@ -203,6 +212,10 @@ let foo = foo +
       \
       \ bar +
       \ "baz"
+
+" Function calls
+
+call Foo(v:true, v:false, v:null)
 
 
 " Issue #16221 (vimString becomes vimVar when preceded by !)
