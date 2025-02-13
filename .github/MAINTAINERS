@@ -267,6 +267,7 @@ runtime/ftplugin/routeros.vim		@zainin
 runtime/ftplugin/rst.vim		@marshallward
 runtime/ftplugin/ruby.vim		@tpope @dkearns
 runtime/ftplugin/rust.vim		@lilyball
+runtime/ftplugin/samba.vim		@mperry2
 runtime/ftplugin/sass.vim		@tpope
 runtime/ftplugin/scala.vim		@derekwyatt
 runtime/ftplugin/scheme.vim		@evhan
