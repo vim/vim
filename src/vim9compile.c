@@ -844,11 +844,13 @@ find_imported(char_u *name, size_t len, int load)
 find_imported_from_extends(cctx_T *cctx, char_u *name, size_t len, int load)
 {
     imported_T	*ret = NULL;
-    class_T	*cl_extends = NULL;
+    class_T	*cl_extends;
 
-    if (cctx != NULL && cctx->ctx_ufunc != NULL
-					&& cctx->ctx_ufunc->uf_class != NULL)
-	cl_extends = cctx->ctx_ufunc->uf_class->class_extends;
+    if (cctx == NULL || cctx->ctx_ufunc == NULL
+					|| cctx->ctx_ufunc->uf_class == NULL)
+	return NULL;
+
+    cl_extends = cctx->ctx_ufunc->uf_class->class_extends;
 
     if (cl_extends != NULL && cl_extends->class_class_function_count_child > 0)
     {
