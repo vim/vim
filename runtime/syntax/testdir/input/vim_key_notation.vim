@@ -1,163 +1,165 @@
 " Key notation
  
-<Space>
-<Tab>
-<Tab>
-<NL>
-<NewLine>
-<LineFeed>
-<LF>
-<CR>
-<Return>
-<Enter>
-<BS>
-<BackSpace>
-<Esc>
-<CSI>
-<xCSI>
-<Bar>
-<Bslash>
-<Del>
-<Delete>
-<kDel>
-<Up>
-<Down>
-<Left>
-<Right>
-<xUp>
-<xDown>
-<xLeft>
-<xRight>
-<PasteStart>
-<PasteEnd>
-<F1>
-<F2>
-<F3>
-<F4>
-<F5>
-<F6>
-<F7>
-<F8>
-<F9>
-<F10>
-<F11>
-<F12>
-<F13>
-<F14>
-<F15>
-<F16>
-<F17>
-<F18>
-<F19>
-<F20>
-<F21>
-<F22>
-<F23>
-<F24>
-<F25>
-<F26>
-<F27>
-<F28>
-<F29>
-<F30>
-<F31>
-<F32>
-<F33>
-<F34>
-<F35>
-<F36>
-<F37>
-<xF1>
-<xF2>
-<xF3>
-<xF4>
-<Help>
-<Undo>
-<Insert>
-<Ins>
-<kInsert>
-<Home>
-<kHome>
-<xHome>
-<zHome>
-<End>
-<kEnd>
-<xEnd>
-<zEnd>
-<PageUp>
-<PageDown>
-<kPageUp>
-<kPageDown>
-<kPlus>
-<kMinus>
-<kDivide>
-<kMultiply>
-<kEnter>
-<kPoint>
-<k0>
-<k1>
-<k2>
-<k3>
-<k4>
-<k5>
-<k6>
-<k7>
-<k8>
-<k9>
-<lt>
-<Mouse>
-<NetMouse>
-<DecMouse>
-<JsbMouse>
-<PtermMouse>
-<UrxvtMouse>
-<SgrMouse>
-<SgrMouseRelease>
-<LeftMouse>
-<LeftMouseNM>
-<LeftDrag>
-<LeftRelease>
-<LeftReleaseNM>
-<MouseMove>
-<MiddleMouse>
-<MiddleDrag>
-<MiddleRelease>
-<RightMouse>
-<RightDrag>
-<RightRelease>
-<ScrollWheelUp>
-<ScrollWheelDown>
-<ScrollWheelRight>
-<ScrollWheelLeft>
-<MouseDown>
-<MouseUp>
-<X1Mouse>
-<X1Drag>
-<X1Release>
-<X2Mouse>
-<X2Drag>
-<X2Release>
-<Drop>
-<Nul>
-<SNR>
-<Plug>
-<CursorHold>
-<Ignore>
-<Cmd>
-<ScriptCmd>
-<FocusGained>
-<FocusLost>
+map foo 
+      \ <Space>
+      \ <Tab>
+      \ <Tab>
+      \ <NL>
+      \ <NewLine>
+      \ <LineFeed>
+      \ <LF>
+      \ <CR>
+      \ <Return>
+      \ <Enter>
+      \ <BS>
+      \ <BackSpace>
+      \ <Esc>
+      \ <CSI>
+      \ <xCSI>
+      \ <Bar>
+      \ <Bslash>
+      \ <Del>
+      \ <Delete>
+      \ <kDel>
+      \ <Up>
+      \ <Down>
+      \ <Left>
+      \ <Right>
+      \ <xUp>
+      \ <xDown>
+      \ <xLeft>
+      \ <xRight>
+      \ <PasteStart>
+      \ <PasteEnd>
+      \ <F1>
+      \ <F2>
+      \ <F3>
+      \ <F4>
+      \ <F5>
+      \ <F6>
+      \ <F7>
+      \ <F8>
+      \ <F9>
+      \ <F10>
+      \ <F11>
+      \ <F12>
+      \ <F13>
+      \ <F14>
+      \ <F15>
+      \ <F16>
+      \ <F17>
+      \ <F18>
+      \ <F19>
+      \ <F20>
+      \ <F21>
+      \ <F22>
+      \ <F23>
+      \ <F24>
+      \ <F25>
+      \ <F26>
+      \ <F27>
+      \ <F28>
+      \ <F29>
+      \ <F30>
+      \ <F31>
+      \ <F32>
+      \ <F33>
+      \ <F34>
+      \ <F35>
+      \ <F36>
+      \ <F37>
+      \ <xF1>
+      \ <xF2>
+      \ <xF3>
+      \ <xF4>
+      \ <Help>
+      \ <Undo>
+      \ <Insert>
+      \ <Ins>
+      \ <kInsert>
+      \ <Home>
+      \ <kHome>
+      \ <xHome>
+      \ <zHome>
+      \ <End>
+      \ <kEnd>
+      \ <xEnd>
+      \ <zEnd>
+      \ <PageUp>
+      \ <PageDown>
+      \ <kPageUp>
+      \ <kPageDown>
+      \ <kPlus>
+      \ <kMinus>
+      \ <kDivide>
+      \ <kMultiply>
+      \ <kEnter>
+      \ <kPoint>
+      \ <k0>
+      \ <k1>
+      \ <k2>
+      \ <k3>
+      \ <k4>
+      \ <k5>
+      \ <k6>
+      \ <k7>
+      \ <k8>
+      \ <k9>
+      \ <lt>
+      \ <Mouse>
+      \ <NetMouse>
+      \ <DecMouse>
+      \ <JsbMouse>
+      \ <PtermMouse>
+      \ <UrxvtMouse>
+      \ <SgrMouse>
+      \ <SgrMouseRelease>
+      \ <LeftMouse>
+      \ <LeftMouseNM>
+      \ <LeftDrag>
+      \ <LeftRelease>
+      \ <LeftReleaseNM>
+      \ <MouseMove>
+      \ <MiddleMouse>
+      \ <MiddleDrag>
+      \ <MiddleRelease>
+      \ <RightMouse>
+      \ <RightDrag>
+      \ <RightRelease>
+      \ <ScrollWheelUp>
+      \ <ScrollWheelDown>
+      \ <ScrollWheelRight>
+      \ <ScrollWheelLeft>
+      \ <MouseDown>
+      \ <MouseUp>
+      \ <X1Mouse>
+      \ <X1Drag>
+      \ <X1Release>
+      \ <X2Mouse>
+      \ <X2Drag>
+      \ <X2Release>
+      \ <Drop>
+      \ <Nul>
+      \ <SNR>
+      \ <Plug>
+      \ <CursorHold>
+      \ <Ignore>
+      \ <Cmd>
+      \ <ScriptCmd>
+      \ <FocusGained>
+      \ <FocusLost>
+      \ 
+      \ <cword>
+      \ <cWORD>
+      \ <cexpr>
+      \ <cfile>
+      \ <afile>
+      \ <abuf>
+      \ <amatch>
+      \ <sfile>
+      \ <stack>
+      \ <script>
+      \ <slnum>
+      \ <sflnum>
+      \ <client>
 
-<cword>
-<cWORD>
-<cexpr>
-<cfile>
-<afile>
-<abuf>
-<amatch>
-<sfile>
-<stack>
-<script>
-<slnum>
-<sflnum>
-<client>
