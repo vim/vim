@@ -572,8 +572,7 @@ changed_common(
 		    && (last < wp->w_topline
 			|| (wp->w_topline >= lnum
 			    && wp->w_topline < lnume
-			    && win_linetabsize(wp, wp->w_topline,
-					ml_get(wp->w_topline), (colnr_T)MAXCOL)
+			    && linetabsize_eol(wp, wp->w_topline)
 				    <= wp->w_skipcol + sms_marker_overlap(wp, -1))))
 		wp->w_skipcol = 0;
 
