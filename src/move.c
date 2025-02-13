@@ -656,6 +656,7 @@ changed_window_setting(void)
     void
 changed_window_setting_win(win_T *wp)
 {
+    invalidate_vcol_cache();
     wp->w_lines_valid = 0;
     changed_line_abv_curs_win(wp);
     wp->w_valid &= ~(VALID_BOTLINE|VALID_BOTLINE_AP|VALID_TOPLINE);
