@@ -160,6 +160,7 @@ runtime/ftplugin/elixir.vim		@mhanberg
 runtime/ftplugin/erlang.vim		@hcs42
 runtime/ftplugin/eruby.vim		@tpope @dkearns
 runtime/ftplugin/expect.vim		@dkearns
+runtime/ftplugin/exports.vim		@mperry2
 runtime/ftplugin/fennel.vim		@gpanders
 runtime/ftplugin/fetchmail.vim		@dkearns
 runtime/ftplugin/forth.vim		@jkotlinski
