@@ -168,7 +168,7 @@ coladvance2(
 		&& wcol >= (colnr_T)width
 		&& width > 0)
 	{
-	    csize = linetabsize(curwin, pos->lnum);
+	    csize = linetabsize_eol(curwin, pos->lnum);
 	    if (csize > 0)
 		csize--;
 
