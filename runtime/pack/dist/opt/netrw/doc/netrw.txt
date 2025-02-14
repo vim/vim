@@ -367,10 +367,6 @@ settings are described below, in |netrw-browser-options|, and in
 			    let g:Netrw_funcref= function("MyFuncRef")
 
 <
- *g:Netrw_UserMaps*	specifies a function or |List| of functions which can
-			be used to set up user-specified maps and functionality.
-			See |netrw-usermaps|
-
  *g:netrw_ftp*		   if it doesn't exist, use default ftp
 			=0 use default ftp		       (uid password)
 			=1 use alternate ftp method	  (user uid password)
@@ -3213,60 +3209,6 @@ than a <c-tab>, too: (but you'll still need to have had |g:netrw_usetab| set). >
 Related topics:			|:Lexplore|
 Associated setting variable:	|g:netrw_usetab|
 
-
-USER SPECIFIED MAPS					*netrw-usermaps* {{{1
-
-One may make customized user maps.  Specify a variable, |g:Netrw_UserMaps|,
-to hold a |List| of lists of keymap strings and function names: >
-
-	[["keymap-sequence","ExampleUserMapFunc"],...]
-<
-When netrw is setting up maps for a netrw buffer, if |g:Netrw_UserMaps|
-exists, then the internal function netrw#UserMaps(islocal) is called.
-This function goes through all the entries in the |g:Netrw_UserMaps| list:
-
-	* sets up maps: >
-		nno <buffer> <silent> KEYMAP-SEQUENCE
-		:call s:UserMaps(islocal,"ExampleUserMapFunc")
-<	* refreshes if result from that function call is the string
-	  "refresh"
-	* if the result string is not "", then that string will be
-	  executed (:exe result)
-	* if the result is a List, then the above two actions on results
-	  will be taken for every string in the result List
-
-The user function is passed one argument; it resembles >
-
-	fun! ExampleUserMapFunc(islocal)
-<
-where a:islocal is 1 if its a local-directory system call or 0 when
-remote-directory system call.
-
-			        *netrw-call*  *netrw-expose*  *netrw-modify*
-Use netrw#Expose("varname")          to access netrw-internal (script-local)
-				     variables.
-Use netrw#Modify("varname",newvalue) to change netrw-internal variables.
-Use netrw#Call("funcname"[,args])    to call a netrw-internal function with
-				     specified arguments.
-
-Example: Get a copy of netrw's marked file list: >
-
-	let netrwmarkfilelist= netrw#Expose("netrwmarkfilelist")
-<
-Example: Modify the value of netrw's marked file list: >
-
-	call netrw#Modify("netrwmarkfilelist",[])
-<
-Example: Clear netrw's marked file list via a mapping on gu >
-    " ExampleUserMap: {{{2
-    fun! ExampleUserMap(islocal)
-      call netrw#Modify("netrwmarkfilelist",[])
-      call netrw#Modify('netrwmarkfilemtch_{bufnr("%")}',"")
-      let retval= ["refresh"]
-      return retval
-    endfun
-    let g:Netrw_UserMaps= [["gu","ExampleUserMap"]]
-<
 
 10. Problems and Fixes					*netrw-problems* {{{1
 

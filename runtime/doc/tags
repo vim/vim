@@ -7527,7 +7527,6 @@ g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
 g:	eval.txt	/*g:*
 g:NetrwTopLvlMenu	pi_netrw.txt	/*g:NetrwTopLvlMenu*
-g:Netrw_UserMaps	pi_netrw.txt	/*g:Netrw_UserMaps*
 g:Netrw_corehandler	pi_netrw.txt	/*g:Netrw_corehandler*
 g:Netrw_funcref	pi_netrw.txt	/*g:Netrw_funcref*
 g:Openprg	eval.txt	/*g:Openprg*
@@ -8988,7 +8987,6 @@ netrw-browsing	pi_netrw.txt	/*netrw-browsing*
 netrw-c-tab	pi_netrw.txt	/*netrw-c-tab*
 netrw-cB	pi_netrw.txt	/*netrw-cB*
 netrw-cadaver	pi_netrw.txt	/*netrw-cadaver*
-netrw-call	pi_netrw.txt	/*netrw-call*
 netrw-cb	pi_netrw.txt	/*netrw-cb*
 netrw-cd	pi_netrw.txt	/*netrw-cd*
 netrw-chgup	pi_netrw.txt	/*netrw-chgup*
@@ -9013,7 +9011,6 @@ netrw-enter	pi_netrw.txt	/*netrw-enter*
 netrw-ex	pi_netrw.txt	/*netrw-ex*
 netrw-explore	pi_netrw.txt	/*netrw-explore*
 netrw-explore-cmds	pi_netrw.txt	/*netrw-explore-cmds*
-netrw-expose	pi_netrw.txt	/*netrw-expose*
 netrw-externapp	pi_netrw.txt	/*netrw-externapp*
 netrw-file	pi_netrw.txt	/*netrw-file*
 netrw-filigree	pi_netrw.txt	/*netrw-filigree*
@@ -9060,7 +9057,6 @@ netrw-mh	pi_netrw.txt	/*netrw-mh*
 netrw-middlemouse	pi_netrw.txt	/*netrw-middlemouse*
 netrw-ml_get	pi_netrw.txt	/*netrw-ml_get*
 netrw-mm	pi_netrw.txt	/*netrw-mm*
-netrw-modify	pi_netrw.txt	/*netrw-modify*
 netrw-mouse	pi_netrw.txt	/*netrw-mouse*
 netrw-move	pi_netrw.txt	/*netrw-move*
 netrw-mp	pi_netrw.txt	/*netrw-mp*
@@ -9148,7 +9144,6 @@ netrw-transparent	pi_netrw.txt	/*netrw-transparent*
 netrw-u	pi_netrw.txt	/*netrw-u*
 netrw-updir	pi_netrw.txt	/*netrw-updir*
 netrw-urls	pi_netrw.txt	/*netrw-urls*
-netrw-usermaps	pi_netrw.txt	/*netrw-usermaps*
 netrw-userpass	pi_netrw.txt	/*netrw-userpass*
 netrw-v	pi_netrw.txt	/*netrw-v*
 netrw-var	pi_netrw.txt	/*netrw-var*
