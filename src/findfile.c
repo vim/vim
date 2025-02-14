@@ -576,16 +576,6 @@ vim_findfile_init(
 	search_ctx->ffsc_fix_path.length = 0;
     }
 
-    if (search_ctx->ffsc_start_dir.length == 0
-	    && search_ctx->ffsc_start_dir.string != NULL)
-	search_ctx->ffsc_start_dir.length = STRLEN(search_ctx->ffsc_start_dir.string);
-    if (search_ctx->ffsc_fix_path.length == 0
-	    && search_ctx->ffsc_fix_path.string != NULL)
-	search_ctx->ffsc_fix_path.length = STRLEN(search_ctx->ffsc_fix_path.string);
-    if (search_ctx->ffsc_wc_path.length == 0
-	    && search_ctx->ffsc_wc_path.string != NULL)
-	search_ctx->ffsc_wc_path.length = STRLEN(search_ctx->ffsc_wc_path.string);
-
     // create an absolute path
     if (search_ctx->ffsc_start_dir.length
 	    + search_ctx->ffsc_fix_path.length + 3 >= MAXPATHL)
@@ -1668,11 +1658,6 @@ ff_clear(ff_search_ctx_T *search_ctx)
     while ((sptr = ff_pop(search_ctx)) != NULL)
 	ff_free_stack_element(sptr);
 
-    VIM_CLEAR_STRING(search_ctx->ffsc_file_to_search);
-    VIM_CLEAR_STRING(search_ctx->ffsc_start_dir);
-    VIM_CLEAR_STRING(search_ctx->ffsc_fix_path);
-    VIM_CLEAR_STRING(search_ctx->ffsc_wc_path);
-
     if (search_ctx->ffsc_stopdirs_v != NULL)
     {
 	int  i = 0;
@@ -1687,6 +1672,10 @@ ff_clear(ff_search_ctx_T *search_ctx)
     search_ctx->ffsc_stopdirs_v = NULL;
 
     // reset everything
+    VIM_CLEAR_STRING(search_ctx->ffsc_file_to_search);
+    VIM_CLEAR_STRING(search_ctx->ffsc_start_dir);
+    VIM_CLEAR_STRING(search_ctx->ffsc_fix_path);
+    VIM_CLEAR_STRING(search_ctx->ffsc_wc_path);
     search_ctx->ffsc_level = 0;
 }
 
@@ -1894,10 +1883,11 @@ find_file_in_path_option(
 		goto theend;
 	    }
 
-	    // When FNAME_REL flag given first use the directory of the file.
-	    // Otherwise or when this fails use the current directory.
 	    if (rel_fname != NULL)
 		rel_fnamelen = STRLEN(rel_fname);
+
+	    // When FNAME_REL flag given first use the directory of the file.
+	    // Otherwise or when this fails use the current directory.
 	    for (run = 1; run <= 2; ++run)
 	    {
 		l = (int)file_to_findlen;
@@ -1907,13 +1897,11 @@ find_file_in_path_option(
 			&& rel_fname != NULL
 			&& rel_fnamelen + l < MAXPATHL)
 		{
-		    int	n = (int)(gettail(rel_fname) - rel_fname);
-
 		    l = vim_snprintf(
 			(char *)NameBuff,
 			MAXPATHL,
 			"%.*s%s",
-			n,
+			(int)(gettail(rel_fname) - rel_fname),
 			rel_fname,
 			*file_to_find);
 		}
