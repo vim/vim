@@ -2489,7 +2489,7 @@ early_ret:
 
     if (success && is_enum && num_enum_values == 0)
 	// Empty enum statement. Add an empty "values" class variable
-	enum_add_values_member(cl, &classmembers, 0, &type_list);
+	success = enum_add_values_member(cl, &classmembers, 0, &type_list);
 
     /*
      * Check a few things

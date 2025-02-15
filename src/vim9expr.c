@@ -884,7 +884,7 @@ compile_load(
 		    || (imp = find_imported(name, 0, FALSE)) != NULL
 		    || (imp = find_imported_from_extends(cctx, name, 0, FALSE))
 								    != NULL)
-		   res = compile_load_scriptvar(cctx, name, *arg, &end, imp);
+		    res = compile_load_scriptvar(cctx, name, *arg, &end, imp);
 
 		// When evaluating an expression and the name starts with an
 		// uppercase letter it can be a user defined function.
