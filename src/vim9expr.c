@@ -291,7 +291,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
 
     class_T *cl = type->tt_class;
-    int is_super = type->tt_flags & TTFLAG_SUPER;
+    int is_super = ((type->tt_flags & TTFLAG_SUPER) == TTFLAG_SUPER);
     if (type == &t_super)
     {
 	if (cctx->ctx_ufunc == NULL || cctx->ctx_ufunc->uf_class == NULL)
@@ -694,6 +694,26 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
 }
 
 /*
+ * Returns TRUE if compiling a class method.
+ */
+    static int
+compiling_a_class_method(cctx_T *cctx)
+{
+    // For an object method, the FC_OBJECT flag will be set.
+    // For a constructor method, the FC_NEW flag will be set.
+    // Excluding these methods, the others are class methods.
+    // When compiling a closure function inside an object method,
+    // cctx->ctx_outer->ctx_func will point to the object method.
+    return cctx->ctx_ufunc != NULL
+	&& (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)) == 0
+	&& (cctx->ctx_outer == NULL
+		|| cctx->ctx_outer->ctx_ufunc == NULL
+		|| cctx->ctx_outer->ctx_ufunc->uf_class == NULL
+		|| (cctx->ctx_outer->ctx_ufunc->uf_flags
+		    & (FC_OBJECT|FC_NEW)) == 0);
+}
+
+/*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
  * "is_expr" is TRUE when evaluating an expression, might be a funcref.
@@ -807,9 +827,7 @@ compile_load(
 	if (name == NULL)
 	    return FAIL;
 
-	if (STRCMP(name, "super") == 0
-		&& cctx->ctx_ufunc != NULL
-		&& (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)) == 0)
+	if (STRCMP(name, "super") == 0 && compiling_a_class_method(cctx))
 	{
 	    // super.SomeFunc() in a class function: push &t_super type, this
 	    // is recognized in compile_subscript().
