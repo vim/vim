@@ -5879,9 +5879,6 @@ fun! s:NetrwMaps(islocal)
     exe 'vnoremap <buffer> <silent> <nowait> R           :call <SID>NetrwLocalRename("'.mapsafecurdir.'")<cr>'
     nnoremap <buffer> <F1>                       :he netrw-quickhelp<cr>
 
-    " support user-specified maps
-    call netrw#UserMaps(1)
-
   else
     " remote normal-mode maps {{{3
     call s:RemotePathAnalysis(b:netrw_curdir)
@@ -5989,7 +5986,6 @@ fun! s:NetrwMaps(islocal)
     nnoremap <buffer> <F1>                       :he netrw-quickhelp<cr>
 
     " support user-specified maps
-    call netrw#UserMaps(0)
   endif " }}}3
 endfun
 
@@ -10342,100 +10338,12 @@ endfunction
 " Support Functions: {{{1
 
 " ---------------------------------------------------------------------
-" netrw#Call: allows user-specified mappings to call internal netrw functions {{{2
-fun! netrw#Call(funcname,...)
-  return call("s:".a:funcname,a:000)
-endfun
-
-" ---------------------------------------------------------------------
-" netrw#Expose: allows UserMaps and pchk to look at otherwise script-local variables {{{2
-"               I expect this function to be used in
-"                 :PChkAssert netrw#Expose("netrwmarkfilelist")
-"               for example.
-fun! netrw#Expose(varname)
-  "   call Dfunc("netrw#Expose(varname<".a:varname.">)")
-  if exists("s:".a:varname)
-    exe "let retval= s:".a:varname
-    "   call Decho("retval=".retval,'~'.expand("<slnum>"))
-    if exists("g:netrw_pchk")
-      "    call Decho("type(g:netrw_pchk=".g:netrw_pchk.")=".type(retval),'~'.expand("<slnum>"))
-      if type(retval) == 3
-        let retval = copy(retval)
-        let i      = 0
-        while i < len(retval)
-          let retval[i]= substitute(retval[i],expand("$HOME"),'~','')
-          let i        = i + 1
-        endwhile
-      endif
-      "     call Dret("netrw#Expose ".string(retval)),'~'.expand("<slnum>"))
-      return string(retval)
-    else
-      "    call Decho("g:netrw_pchk doesn't exist",'~'.expand("<slnum>"))
-    endif
-  else
-    "   call Decho("s:".a:varname." doesn't exist",'~'.expand("<slnum>"))
-    let retval= "n/a"
-  endif
-
-  "  call Dret("netrw#Expose ".string(retval))
-  return retval
-endfun
-
-" ---------------------------------------------------------------------
-" netrw#Modify: allows UserMaps to set (modify) script-local variables {{{2
-fun! netrw#Modify(varname,newvalue)
-  "  call Dfunc("netrw#Modify(varname<".a:varname.">,newvalue<".string(a:newvalue).">)")
-  exe "let s:".a:varname."= ".string(a:newvalue)
-  "  call Dret("netrw#Modify")
-endfun
-
-" ---------------------------------------------------------------------
 "  netrw#RFC2396: converts %xx into characters {{{2
 fun! netrw#RFC2396(fname)
   "  call Dfunc("netrw#RFC2396(fname<".a:fname.">)")
   let fname = escape(substitute(a:fname,'%\(\x\x\)','\=printf("%c","0x".submatch(1))','ge')," \t")
   "  call Dret("netrw#RFC2396 ".fname)
   return fname
-endfun
-
-" ---------------------------------------------------------------------
-" netrw#UserMaps: supports user-specified maps {{{2
-"                 see :help function()
-"
-"                 g:Netrw_UserMaps is a List with members such as:
-"                       [[keymap sequence, function reference],...]
-"
-"                 The referenced function may return a string,
-"                       refresh : refresh the display
-"                       -other- : this string will be executed
-"                 or it may return a List of strings.
-"
-"                 Each keymap-sequence will be set up with a nnoremap
-"                 to invoke netrw#UserMaps(a:islocal).
-"                 Related functions:
-"                   netrw#Expose(varname)          -- see s:varname variables
-"                   netrw#Modify(varname,newvalue) -- modify value of s:varname variable
-"                   netrw#Call(funcname,...)       -- call internal netrw function with optional arguments
-fun! netrw#UserMaps(islocal)
-  "  call Dfunc("netrw#UserMaps(islocal=".a:islocal.")")
-  "  call Decho("g:Netrw_UserMaps ".(exists("g:Netrw_UserMaps")? "exists" : "does NOT exist"),'~'.expand("<slnum>"))
-
-  " set up usermaplist
-  if exists("g:Netrw_UserMaps") && type(g:Netrw_UserMaps) == 3
-    "    call Decho("g:Netrw_UserMaps has type 3<List>",'~'.expand("<slnum>"))
-    for umap in g:Netrw_UserMaps
-      "     call Decho("type(umap[0]<".string(umap[0]).">)=".type(umap[0])." (should be 1=string)",'~'.expand("<slnum>"))
-      "     call Decho("type(umap[1])=".type(umap[1])." (should be 1=string)",'~'.expand("<slnum>"))
-      " if umap[0] is a string and umap[1] is a string holding a function name
-      if type(umap[0]) == 1 && type(umap[1]) == 1
-        "      call Decho("nno <buffer> <silent> ".umap[0]." :call s:UserMaps(".a:islocal.",".string(umap[1]).")<cr>",'~'.expand("<slnum>"))
-        exe "nno <buffer> <silent> ".umap[0]." :call <SID>UserMaps(".a:islocal.",'".umap[1]."')<cr>"
-      else
-        call netrw#ErrorMsg(s:WARNING,"ignoring usermap <".string(umap[0])."> -- not a [string,funcref] entry",99)
-      endif
-    endfor
-  endif
-  "  call Dret("netrw#UserMaps")
 endfun
 
 " ---------------------------------------------------------------------
@@ -11580,37 +11488,6 @@ fun! s:UseBufWinVars()
 endfun
 
 " ---------------------------------------------------------------------
-" s:UserMaps: supports user-defined UserMaps {{{2
-"               * calls a user-supplied funcref(islocal,curdir)
-"               * interprets result
-"             See netrw#UserMaps()
-fun! s:UserMaps(islocal,funcname)
-  if !exists("b:netrw_curdir")
-    let b:netrw_curdir= getcwd()
-  endif
-  let Funcref = function(a:funcname)
-  let result  = Funcref(a:islocal)
-
-  if     type(result) == 1
-    " if result from user's funcref is a string...
-    if result == "refresh"
-      call s:NetrwRefresh(a:islocal,s:NetrwBrowseChgDir(a:islocal,'./',0))
-    elseif result != ""
-      exe result
-    endif
-
-  elseif type(result) == 3
-    " if result from user's funcref is a List...
-    for action in result
-      if action == "refresh"
-        call s:NetrwRefresh(a:islocal,s:NetrwBrowseChgDir(a:islocal,'./',0))
-      elseif action != ""
-        exe action
-      endif
-    endfor
-  endif
-endfun
-
 " Deprecated: {{{1
 
 function! netrw#Launch(args)
