@@ -626,7 +626,10 @@ once.  They can appear in any order, although this order is recommended: >
 	extends ClassName
 	implements InterfaceName, OtherInterface
 	specifies SomeInterface
-<							*E1355* *E1369*
+<
+The "specifies" feature is currently not implemented.
+
+							*E1355* *E1369*
 Each variable and method name can be used only once.  It is not possible to
 define a method with the same name and different type of arguments.  It is not
 possible to use a public and protected member variable with the same name.  An
@@ -695,6 +698,7 @@ A class defining an interface ~
 A class can declare its interface, the object variables and methods, with a
 named interface.  This avoids the need for separately specifying the
 interface, which is often done in many languages, especially Java.
+TODO: This is currently not implemented.
 
 
 Items in a class ~
