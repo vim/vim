@@ -3421,6 +3421,7 @@ get_tagfname(
 	    *filename++ = NUL;
 
 	    tnp->tn_search_ctx = vim_findfile_init(buf, filename,
+		    STRLEN(filename),
 		    r_ptr, 100,
 		    FALSE,	   // don't free visited list
 		    FINDFILE_FILE, // we search for a file
