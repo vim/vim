@@ -843,27 +843,21 @@ find_imported(char_u *name, size_t len, int load)
     imported_T *
 find_imported_from_extends(cctx_T *cctx, char_u *name, size_t len, int load)
 {
-    imported_T	*ret = NULL;
-    class_T	*cl_extends;
-
     if (cctx == NULL || cctx->ctx_ufunc == NULL
 					|| cctx->ctx_ufunc->uf_class == NULL)
 	return NULL;
 
-    cl_extends = cctx->ctx_ufunc->uf_class->class_extends;
-
-    if (cl_extends == NULL || cl_extends->class_class_function_count_child <= 0)
+    class_T *cl_extends = cctx->ctx_ufunc->uf_class->class_extends;
+    if (cl_extends == NULL
+			|| cl_extends->class_class_function_count_child <= 0)
 	return NULL;
-    else
-    {
-	sctx_T current_sctx_save = current_sctx;
 
-	current_sctx = cl_extends->class_class_functions[0]->uf_script_ctx;
-	ret = find_imported(name, len, load);
-	current_sctx = current_sctx_save;
+    sctx_T current_sctx_save = current_sctx;
+    current_sctx = cl_extends->class_class_functions[0]->uf_script_ctx;
+    imported_T *ret = find_imported(name, len, load);
+    current_sctx = current_sctx_save;
 
-	return ret;
-    }
+    return ret;
 }
 
 /*
