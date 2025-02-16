@@ -2420,7 +2420,8 @@ ex_display(exarg_T *eap)
 
 #ifdef FEAT_EVAL
 	if (name == MB_TOLOWER(redir_reg)
-		|| (redir_reg == '"' && yb == y_previous))
+		|| (vim_strchr((char_u *)"\"*+", redir_reg) != NULL &&
+		    (yb == y_previous || yb == &y_regs[0])))
 	    continue;	    // do not list register being written to, the
 			    // pointer can be freed
 #endif
