@@ -1889,6 +1889,7 @@ ins_compl_clear(void)
     compl_cont_status = 0;
     compl_started = FALSE;
     compl_matches = 0;
+    compl_selected_item = -1;
     compl_ins_end_col = 0;
     VIM_CLEAR_STRING(compl_pattern);
     VIM_CLEAR_STRING(compl_leader);
@@ -2579,6 +2580,10 @@ ins_compl_prep(int c)
 {
     int		retval = FALSE;
     int		prev_mode = ctrl_x_mode;
+    int		handle_enter = FALSE;
+
+    if ((c == CAR || c == NL || c == K_KENTER) && compl_selected_item == -1)
+	handle_enter = TRUE;
 
     // Forget any previous 'special' messages if this is actually
     // a ^X mode key - bar ^R, in which case we wait to see what it gives us.
@@ -2676,7 +2681,14 @@ ins_compl_prep(int c)
 	if ((ctrl_x_mode_normal() && c != Ctrl_N && c != Ctrl_P
 				       && c != Ctrl_R && !ins_compl_pum_key(c))
 		|| ctrl_x_mode == CTRL_X_FINISHED)
+	{
 	    retval = ins_compl_stop(c, prev_mode, retval);
+	    // When it is the Enter key and no selected item, return false, and
+	    // continue processing the Enter key to insert a new line in the
+	    // edit function.
+	    if (retval && handle_enter)
+		retval = FALSE;
+	}
     }
     else if (ctrl_x_mode == CTRL_X_LOCAL_MSG)
 	// Trigger the CompleteDone event to give scripts a chance to act
