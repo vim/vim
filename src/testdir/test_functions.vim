@@ -4446,6 +4446,9 @@ func Test_blob2str()
     call assert_equal(['a'], blob2str(0z61, test_null_dict()))
     call assert_equal(['a'], blob2str(0z61, {'encoding': test_null_string()}))
 
+    call assert_equal(["\x80"], blob2str(0z80, {'encoding': 'none'}))
+    call assert_equal(['a', "\x80"], blob2str(0z610A80, {'encoding': 'none'}))
+
     #" Invalid encoding
     call assert_fails("call blob2str(0z80)", "E1515: Unable to convert from 'utf-8' encoding")
     call assert_fails("call blob2str(0z610A80)", "E1515: Unable to convert from 'utf-8' encoding")
