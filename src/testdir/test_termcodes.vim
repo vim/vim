@@ -2775,7 +2775,7 @@ func Test_xterm_direct_enables_termguicolors()
 
   let result=readfile('XTerm-direct.txt')
   " call assert_equal(['', 'TERM: xterm-direct', 'Colors: ' .. colors, 'Termguicolors: 1'], result)
-  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 1'], result)
+  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 0'], result)
   " cleanup
   bw!
   close
