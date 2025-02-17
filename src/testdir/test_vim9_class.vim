@@ -544,7 +544,7 @@ def Test_using_null_class()
   var lines =<< trim END
     @_ = null_class.member
   END
-  v9.CheckDefExecAndScriptFailure(lines, ['E715: Dictionary required', 'E1363: Incomplete type'])
+  v9.CheckDefExecAndScriptFailure(lines, ['E1395: Using a null class', 'E1363: Incomplete type'])
 
   # Test for using a null class as a value
   lines =<< trim END
