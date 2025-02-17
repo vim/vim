@@ -1667,9 +1667,8 @@ ff_clear(ff_search_ctx_T *search_ctx)
 	    vim_free(search_ctx->ffsc_stopdirs_v[i].string);
 	    i++;
 	}
-	vim_free(search_ctx->ffsc_stopdirs_v);
+	VIM_CLEAR(search_ctx->ffsc_stopdirs_v);
     }
-    search_ctx->ffsc_stopdirs_v = NULL;
 
     // reset everything
     VIM_CLEAR_STRING(search_ctx->ffsc_file_to_search);
