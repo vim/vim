@@ -1104,6 +1104,7 @@ endfunc
 
 " This caused use-after-free
 func Test_register_redir_display()
+  CheckFeature clipboard
   " don't touch the clipboard, so only perform this, when the clipboard is not working
   if has("clipboard_working")
     throw "Skipped: skip touching the clipboard register!"
