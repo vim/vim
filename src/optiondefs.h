@@ -1254,7 +1254,7 @@ static struct vimoption options[] =
 
     {"guipadding",  "gpd",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_GUI
-                            (char_u *)&p_gpd, PV_NONE, did_set_guipadding, NULL,
+                            (char_u *)&p_gpd, PV_NONE, did_set_guipadding, expand_set_guipadding,
                             {(char_u *)"top:5,bot:5,left:5,right:5",(char_u *)0L}
 #else
                             (char_u *)NULL, PV_NONE, NULL, NULL,

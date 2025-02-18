@@ -2467,6 +2467,18 @@ did_set_guipadding(optset_T *args UNUSED)
 
     return NULL;
 }
+
+    int
+expand_set_guipadding(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    static char *(p_gpd_values[]) = {"top:", "left:", "bot:", "right:", NULL};
+    return expand_set_opt_string(
+	    args,
+	    p_gpd_values,
+	    ARRAY_LENGTH(p_gpd_values) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 #if defined(FEAT_GUI) || defined(PROTO)
