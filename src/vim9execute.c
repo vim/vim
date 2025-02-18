@@ -6132,6 +6132,11 @@ exec_instructions(ectx_T *ectx)
 		clear_tv(STACK_TV_BOT(0));
 		ectx->ec_where = (where_T)WHERE_INIT;
 		break;
+
+	    case ISN_SCRIPTCTX_SET:
+		// set the script context
+		current_sctx = iptr->isn_arg.setsctx;
+		break;
 	}
 	continue;
 
@@ -7649,6 +7654,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 					 iptr->isn_arg.shuffle.shfl_up);
 			      break;
 	    case ISN_DROP: smsg("%s%4d DROP", pfx, current); break;
+
+	    case ISN_SCRIPTCTX_SET:
+		smsg("%s%4d SCRIPTCTX_SET %d", pfx, current,
+			iptr->isn_arg.setsctx.sc_sid);
+		break;
 
 	    case ISN_FINISH: // End of list of instructions for ISN_SUBSTITUTE.
 			   return;
