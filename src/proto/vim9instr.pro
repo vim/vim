@@ -81,6 +81,7 @@ int generate_undo_cmdmods(cctx_T *cctx);
 int generate_store_var(cctx_T *cctx, assign_dest_T dest, int opt_flags, int vimvaridx, type_T *type, char_u *name, lhs_T *lhs);
 int inside_loop_scope(cctx_T *cctx);
 int generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl);
+int generate_SCRIPTCTX_SET(cctx_T *cctx, sctx_T new_sctx);
 void may_generate_prof_end(cctx_T *cctx, int prof_lnum);
 void delete_instr(isn_T *isn);
 void clear_instr_ga(garray_T *gap);

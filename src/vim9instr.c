@@ -2506,6 +2506,23 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
     return OK;
 }
 
+/*
+ * Generate instruction to set the script context.  Used to evaluate an
+ * object member variable initialization expression in the context of the
+ * script where the class is defined.
+ */
+    int
+generate_SCRIPTCTX_SET(cctx_T *cctx, sctx_T new_sctx)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_SCRIPTCTX_SET)) == NULL)
+	return FAIL;
+    isn->isn_arg.setsctx = new_sctx;
+    return OK;
+}
+
 #if defined(FEAT_PROFILE) || defined(PROTO)
     void
 may_generate_prof_end(cctx_T *cctx, int prof_lnum)
@@ -2821,6 +2838,7 @@ delete_instr(isn_T *isn)
 	case ISN_UNPACK:
 	case ISN_USEDICT:
 	case ISN_WHILE:
+	case ISN_SCRIPTCTX_SET:
 	// nothing allocated
 	break;
     }

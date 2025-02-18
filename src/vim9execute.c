@@ -6132,6 +6132,13 @@ exec_instructions(ectx_T *ectx)
 		clear_tv(STACK_TV_BOT(0));
 		ectx->ec_where = (where_T)WHERE_INIT;
 		break;
+
+	    case ISN_SCRIPTCTX_SET:
+		// change the script context.  Used to evaluate an object
+		// member variable initialization expression in the context of
+		// the script where the class is defined.
+		current_sctx = iptr->isn_arg.setsctx;
+		break;
 	}
 	continue;
 
@@ -6716,6 +6723,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
     int		prev_current = 0;
     int		current;
     int		def_arg_idx = 0;
+    sctx_T	script_ctx = current_sctx;
 
     for (current = 0; current < instr_count; ++current)
     {
@@ -6897,8 +6905,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    scriptref_T	    *sref = iptr->isn_arg.script.scriptref;
 		    scriptitem_T    *si = SCRIPT_ITEM(sref->sref_sid);
 		    svar_T	    *sv;
+		    sctx_T	    save_sctx = current_sctx;
 
+		    current_sctx = script_ctx;
 		    sv = get_script_svar(sref, -1);
+		    current_sctx = save_sctx;
 		    if (sv == NULL)
 			smsg("%s%4d LOADSCRIPT [deleted] from %s",
 						    pfx, current, si->sn_name);
@@ -7015,8 +7026,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    scriptref_T	    *sref = iptr->isn_arg.script.scriptref;
 		    scriptitem_T    *si = SCRIPT_ITEM(sref->sref_sid);
 		    svar_T	    *sv;
+		    sctx_T	    save_sctx = current_sctx;
 
+		    current_sctx = script_ctx;
 		    sv = get_script_svar(sref, -1);
+		    current_sctx = save_sctx;
 		    if (sv == NULL)
 			smsg("%s%4d STORESCRIPT [deleted] in %s",
 						    pfx, current, si->sn_name);
@@ -7649,6 +7663,15 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 					 iptr->isn_arg.shuffle.shfl_up);
 			      break;
 	    case ISN_DROP: smsg("%s%4d DROP", pfx, current); break;
+
+	    case ISN_SCRIPTCTX_SET:
+		{
+		    int	sid = iptr->isn_arg.setsctx.sc_sid;
+		    scriptitem_T *si = SCRIPT_ITEM(sid);
+		    smsg("%s%4d SCRIPTCTX_SET %s", pfx, current, si->sn_name);
+		    script_ctx = iptr->isn_arg.setsctx;
+		}
+		break;
 
 	    case ISN_FINISH: // End of list of instructions for ISN_SUBSTITUTE.
 			   return;
