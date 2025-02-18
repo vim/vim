@@ -751,15 +751,15 @@ func Test_tag_guess()
   call writefile(code, 'Xfoo', 'D')
 
   let v:statusmsg = ''
-  ta func1
+  silent ta func1
   call assert_match('E435:', v:statusmsg)
   call assert_equal(2, line('.'))
   let v:statusmsg = ''
-  ta func2
+  silent ta func2
   call assert_match('E435:', v:statusmsg)
   call assert_equal(4, line('.'))
   let v:statusmsg = ''
-  ta func3
+  silent ta func3
   call assert_match('E435:', v:statusmsg)
   call assert_equal(5, line('.'))
   call assert_fails('ta func4', 'E434:')
@@ -1625,7 +1625,7 @@ func Test_tag_guess_short()
 
   let v:statusmsg = ''
   let @/ = ''
-  ta y
+  silent ta y
   call assert_match('E435:', v:statusmsg)
   call assert_equal(2, line('.'))
   call assert_match('<y', @/)

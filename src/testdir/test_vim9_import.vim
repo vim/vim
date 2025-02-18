@@ -3457,4 +3457,112 @@ def Test_vim9_import_and_class_extends()
   v9.CheckScriptFailure(lines, 'E1376: Object variable "value2" accessible only using class "Run" object', 2)
 enddef
 
+" Test for import and class extends
+def Test_vim9_import_and_class_extends_2()
+  mkdir('import', 'R')
+  var save_rtp = &rtp
+  &rtp = getcwd()
+
+  var lines =<< trim END
+    vim9script
+    export class Property
+      public var value: string
+    endclass
+  END
+  writefile(lines, './import/libproperty.vim')
+
+  lines =<< trim END
+    vim9script
+    import 'libproperty.vim'
+    export class View
+      var _content = libproperty.Property.new('')
+    endclass
+  END
+  writefile(lines, './import/libview.vim')
+
+  lines =<< trim END
+    vim9script
+    import 'libview.vim'
+    class MyView extends libview.View
+      def new(value: string)
+        this._content.value = value
+      enddef
+    endclass
+    var myView = MyView.new('This should be ok')
+  END
+  v9.CheckScriptSuccess(lines)
+  &rtp = save_rtp
+enddef
+
+" Test for using an autoloaded class from another autoloaded script
+def Test_class_from_auloaded_script()
+  mkdir('Xdir', 'R')
+  var save_rtp = &rtp
+  &rtp = getcwd()
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  mkdir('Xdir/autoload/SomeClass/bar', 'p')
+
+  var lines =<< trim END
+    vim9script
+
+    export class Baz
+      static var v1: string = "v1"
+      var v2: string = "v2"
+      def GetName(): string
+        return "baz"
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xdir/autoload/SomeClass/bar/baz.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload './bar/baz.vim'
+
+    export def MyTestFoo(): string
+      assert_fails('var x = baz.Baz.NonExisting()', 'E1325: Method "NonExisting" not found in class "Baz"')
+      assert_fails('var x = baz.Baz.foobar', 'E1337: Class variable "foobar" not found in class "Baz"')
+
+      const instance = baz.Baz.new()
+      return $'{instance.GetName()} {baz.Baz.v1} {instance.v2}'
+    enddef
+  END
+  writefile(lines, 'Xdir/autoload/SomeClass/foo.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload 'SomeClass/foo.vim'
+    import autoload 'SomeClass/bar/baz.vim'
+
+    def NotInAutoload()
+      # Use non-existing class method and variable
+      assert_fails('var x = baz.Baz.NonExisting()', 'E1325: Method "NonExisting" not found in class "Baz"')
+
+      var caught_exception = false
+      try
+        var x = baz.Baz.foobar
+      catch /E1337: Class variable "foobar" not found in class "Baz"/
+        caught_exception = true
+      endtry
+      assert_true(caught_exception)
+
+      const instance = baz.Baz.new()
+      assert_equal("baz v1 v2", $'{instance.GetName()} {baz.Baz.v1} {instance.v2}')
+    enddef
+
+    def InAutoload()
+      assert_equal("baz v1 v2", foo.MyTestFoo())
+    enddef
+
+    NotInAutoload()
+    InAutoload()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  &rtp = save_rtp
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

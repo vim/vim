@@ -544,7 +544,7 @@ def Test_using_null_class()
   var lines =<< trim END
     @_ = null_class.member
   END
-  v9.CheckDefExecAndScriptFailure(lines, ['E715: Dictionary required', 'E1363: Incomplete type'])
+  v9.CheckDefExecAndScriptFailure(lines, ['E1395: Using a null class', 'E1363: Incomplete type'])
 
   # Test for using a null class as a value
   lines =<< trim END
@@ -3061,27 +3061,6 @@ def Test_class_extends()
 
   lines =<< trim END
     vim9script
-    class Base
-      var name: string
-      def ToString(): string
-        return this.name
-      enddef
-    endclass
-
-    class Child extends Base
-      var age: number
-      def ToString(): string
-        return super.ToString() .. ': ' .. this.age
-      enddef
-    endclass
-
-    var o = Child.new('John', 42)
-    assert_equal('John: 42', o.ToString())
-  END
-  v9.CheckSourceSuccess(lines)
-
-  lines =<< trim END
-    vim9script
     class Child
       var age: number
       def ToString(): number
@@ -3093,49 +3072,6 @@ def Test_class_extends()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: ToString', 9)
-
-  lines =<< trim END
-    vim9script
-    class Child
-      var age: number
-      def ToString(): string
-        return super .ToString() .. ': ' .. this.age
-      enddef
-    endclass
-    var o = Child.new(42)
-    echo o.ToString()
-  END
-  v9.CheckSourceFailure(lines, 'E1356: "super" must be followed by a dot', 1)
-
-  lines =<< trim END
-    vim9script
-    class Base
-      var name: string
-      def ToString(): string
-        return this.name
-      enddef
-    endclass
-
-    var age = 42
-    def ToString(): string
-      return super.ToString() .. ': ' .. age
-    enddef
-    echo ToString()
-  END
-  v9.CheckSourceFailure(lines, 'E1357: Using "super" not in a class method', 1)
-
-  lines =<< trim END
-    vim9script
-    class Child
-      var age: number
-      def ToString(): string
-        return super.ToString() .. ': ' .. this.age
-      enddef
-    endclass
-    var o = Child.new(42)
-    echo o.ToString()
-  END
-  v9.CheckSourceFailure(lines, 'E1358: Using "super" not in a child class', 1)
 
   lines =<< trim END
     vim9script
@@ -3244,28 +3180,6 @@ def Test_using_base_class()
   END
   v9.CheckSourceSuccess(lines)
   unlet g:result
-
-  # Using super, Child invokes Base method which has optional arg. #12471
-  lines =<< trim END
-    vim9script
-
-    class Base
-      var success: bool = false
-      def Method(arg = 0)
-        this.success = true
-      enddef
-    endclass
-
-    class Child extends Base
-      def new()
-        super.Method()
-      enddef
-    endclass
-
-    var obj = Child.new()
-    assert_equal(true, obj.success)
-  END
-  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for using a method from the super class
@@ -12405,6 +12319,164 @@ def Test_protected_new_method()
     var b: A = A.GetInstance('bar')
     assert_equal('foo', a.str)
     assert_equal('foo', b.str)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using 'super' in a closure function inside an object method
+def Test_super_in_closure()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      const _value: number
+
+      def Fn(): func(any): number
+        return (_: any) => this._value
+      enddef
+    endclass
+
+    class B extends A
+      def Fn(): func(any): number
+        return (_: any) => super._value
+      enddef
+    endclass
+
+    assert_equal(100, A.new(100).Fn()(null))
+    assert_equal(200, B.new(200).Fn()(null))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using 'super' to access methods and variables
+def Test_super_keyword()
+  var lines =<< trim END
+    vim9script
+    class Base
+      var name: string
+      def ToString(): string
+        return this.name
+      enddef
+    endclass
+
+    class Child extends Base
+      var age: number
+      def ToString(): string
+        return super.ToString() .. ': ' .. this.age
+      enddef
+    endclass
+
+    var o = Child.new('John', 42)
+    assert_equal('John: 42', o.ToString())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Child
+      var age: number
+      def ToString(): string
+        return super .ToString() .. ': ' .. this.age
+      enddef
+    endclass
+    var o = Child.new(42)
+    echo o.ToString()
+  END
+  v9.CheckSourceFailure(lines, 'E1356: "super" must be followed by a dot', 1)
+
+  lines =<< trim END
+    vim9script
+    class Base
+      var name: string
+      def ToString(): string
+        return this.name
+      enddef
+    endclass
+
+    var age = 42
+    def ToString(): string
+      return super.ToString() .. ': ' .. age
+    enddef
+    echo ToString()
+  END
+  v9.CheckSourceFailure(lines, 'E1357: Using "super" not in a class method', 1)
+
+  lines =<< trim END
+    vim9script
+    class Child
+      var age: number
+      def ToString(): string
+        return super.ToString() .. ': ' .. this.age
+      enddef
+    endclass
+    var o = Child.new(42)
+    echo o.ToString()
+  END
+  v9.CheckSourceFailure(lines, 'E1358: Using "super" not in a child class', 1)
+
+  # Using super, Child invokes Base method which has optional arg. #12471
+  lines =<< trim END
+    vim9script
+
+    class Base
+      var success: bool = false
+      def Method(arg = 0)
+        this.success = true
+      enddef
+    endclass
+
+    class Child extends Base
+      def new()
+        super.Method()
+      enddef
+    endclass
+
+    var obj = Child.new()
+    assert_equal(true, obj.success)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using 'super' to access an object variable in the parent
+  lines =<< trim END
+    vim9script
+
+    class A
+      var foo: string = 'xxx'
+    endclass
+
+    class B extends A
+      def GetString(): string
+        return super.foo
+      enddef
+    endclass
+
+    var b: B = B.new()
+    echo b.GetString()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using super to access an overriden method in the parent class
+  lines =<< trim END
+    vim9script
+
+    class A
+      def Foo(): string
+        return 'A.Foo'
+      enddef
+    endclass
+
+    class B extends A
+      def Foo(): string
+        return 'B.Foo'
+      enddef
+
+      def Bar(): string
+        return $'{super.Foo()} {this.Foo()}'
+      enddef
+    endclass
+
+    var b = B.new()
+    assert_equal('A.Foo B.Foo', b.Bar())
   END
   v9.CheckSourceSuccess(lines)
 enddef

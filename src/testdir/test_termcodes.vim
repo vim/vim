@@ -2750,7 +2750,7 @@ func Test_terminal_builtin_without_gui()
   CheckNotMSWindows
 
   " builtin_gui should not be output by :set term=xxx
-  let output = systemlist("TERM=dumb " .. v:progpath .. " --clean -c ':set t_ti= t_te=' -c 'set term=xxx' -c ':q!'")
+  let output = systemlist("TERM=dumb " .. v:progpath .. " --not-a-term --clean -c ':set t_ti= t_te=' -c 'set term=xxx' -c ':q!'")
   redraw!
   call map(output, {_, val -> trim(val)})
   call assert_equal(-1, index(output, 'builtin_gui'))
@@ -2775,7 +2775,7 @@ func Test_xterm_direct_enables_termguicolors()
 
   let result=readfile('XTerm-direct.txt')
   " call assert_equal(['', 'TERM: xterm-direct', 'Colors: ' .. colors, 'Termguicolors: 1'], result)
-  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 1'], result)
+  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 0'], result)
   " cleanup
   bw!
   close

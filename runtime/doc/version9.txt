@@ -41583,8 +41583,6 @@ Adjusted default values ~
   increased to 12pt to accomodate modern high-dpi monitors
 - the default value of the 'keyprotocol' option has been updated and support
   for the ghostty terminal emulator (using kitty protocol) has been added
-- 'termguicolors' is automatically enabled if the terminal supports the RGB
-  terminfo capability or supports 0x1000000 colors
 
 							*changed-9.2*
 Changed~

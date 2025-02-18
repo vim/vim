@@ -75,22 +75,30 @@ func Terminal_color(group_name, highlight_cmds, highlight_opt, open_cmds)
 
   let lines = [
 	\ 'call setline(1, range(20))',
+    \ 'func NotifyParent()',
+    \ '  call echoraw("' .. TermNotifyParentCmd(v:true) .. '")',
+    \ 'endfunc',
 	\ 'func OpenTerm()',
 	\ '  set noruler',
-	\ "  call term_start('cat', #{vertical: 1, " .. a:highlight_opt .. "})",
+	\ "  call term_start('cat', #{vertical: 1, "
+    \      .. 'exit_cb: {->NotifyParent()}, '
+    \      .. a:highlight_opt .. "})",
+    \ '  call NotifyParent()',
 	\ ] + a:open_cmds + [
 	\ 'endfunc',
-	\ ] + a:highlight_cmds
+	\ ] + a:highlight_cmds + [
+    \ 'call NotifyParent()',
+    \ ]
   call writefile(lines, 'XtermStart', 'D')
   let buf = RunVimInTerminal('-S XtermStart', #{rows: 15})
-  call TermWait(buf, 100)
+  call WaitForChildNotification()
   call term_sendkeys(buf, ":call OpenTerm()\<CR>")
-  call TermWait(buf, 50)
+  call WaitForChildNotification()
   call term_sendkeys(buf, "hello\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_color_' .. a:group_name, {})
 
   call term_sendkeys(buf, "\<C-D>")
-  call TermWait(buf, 50)
+  call WaitForChildNotification()
   call StopVimInTerminal(buf)
 endfunc
 
@@ -270,11 +278,11 @@ func Test_terminal_in_popup()
 	\ ]
   call writefile(lines, 'XtermPopup', 'D')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
-  call TermWait(buf, 200)
+  call TermWait(buf,0)
   call term_sendkeys(buf, ":call OpenTerm(0)\<CR>")
-  call TermWait(buf, 800)
+  call TermWait(buf,0)
   call term_sendkeys(buf, ":\<CR>")
-  call TermWait(buf, 500)
+  call TermWait(buf,0)
   call term_sendkeys(buf, "\<C-W>:echo getwinvar(g:winid, \"&buftype\") win_gettype(g:winid)\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_1', {})
 
@@ -282,16 +290,16 @@ func Test_terminal_in_popup()
   call VerifyScreenDump(buf, 'Test_terminal_popup_2', {})
  
   call term_sendkeys(buf, ":call OpenTerm(1)\<CR>")
-  call TermWait(buf, 800)
+  call TermWait(buf,0)
   call term_sendkeys(buf, ":set hlsearch\<CR>")
-  call TermWait(buf, 500)
+  call TermWait(buf,0)
   call term_sendkeys(buf, "/edit\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_3', {})
  
   call term_sendkeys(buf, "\<C-W>:call HidePopup()\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_4', {})
   call term_sendkeys(buf, "\<CR>")
-  call TermWait(buf, 50)
+  call TermWait(buf,0)
 
   call term_sendkeys(buf, "\<C-W>:call ClosePopup()\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_5', {})
@@ -307,9 +315,9 @@ func Test_terminal_in_popup()
   call term_sendkeys(buf, "A")
   call VerifyScreenDump(buf, 'Test_terminal_popup_8', {})
 
-  call TermWait(buf, 50)
+  call TermWait(buf,0)
   call term_sendkeys(buf, ":q\<CR>")
-  call TermWait(buf, 250)  " wait for terminal to vanish
+  call WaitForAssert({-> assert_equal(0, match(term_getline(buf, 6), '^5\s*$'))}, 250) " wait for terminal to vanish
 
   call StopVimInTerminal(buf)
 endfunc
@@ -353,27 +361,32 @@ func Terminal_in_popup_color(group_name, highlight_cmds, highlight_opt, popup_cm
 
   let lines = [
 	\ 'call setline(1, range(20))',
+    \ 'func NotifyParent(...)',
+    \ '  call echoraw("' .. TermNotifyParentCmd(v:true) .. '")',
+    \ 'endfunc',
 	\ 'func OpenTerm()',
-	\ "  let s:buf = term_start('cat', #{hidden: 1, "
+	\ "  let s:buf = term_start('cat', #{hidden: 1, term_finish: 'close', "
 	\ .. a:highlight_opt .. "})",
-	\ '  let g:winid = popup_create(s:buf, #{border: [], '
-  \ .. a:popup_opt .. '})',
-  \ ] + a:popup_cmds + [
+    \ '  let g:winid = popup_create(s:buf, #{border: [], '
+    \      .. 'callback: {->NotifyParent()}, '
+    \      .. a:popup_opt .. '})',
+    \ ] + a:popup_cmds + [
+    \ '  call NotifyParent()',
 	\ 'endfunc',
-	\ ] + a:highlight_cmds
+	\ ] + a:highlight_cmds + [
+    \ 'call NotifyParent()',
+    \ ]
   call writefile(lines, 'XtermPopup', 'D')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
-  call TermWait(buf, 100)
+  call WaitForChildNotification()
   call term_sendkeys(buf, ":set noruler\<CR>")
   call term_sendkeys(buf, ":call OpenTerm()\<CR>")
-  call TermWait(buf, 50)
+  call WaitForChildNotification()
   call term_sendkeys(buf, "hello\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_' .. a:group_name, {})
 
   call term_sendkeys(buf, "\<C-D>")
-  call TermWait(buf, 50)
-  call term_sendkeys(buf, ":q\<CR>")
-  call TermWait(buf, 50)  " wait for terminal to vanish
+  call WaitForChildNotification()
   call StopVimInTerminal(buf)
 endfunc
 

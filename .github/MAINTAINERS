@@ -160,6 +160,7 @@ runtime/ftplugin/elixir.vim		@mhanberg
 runtime/ftplugin/erlang.vim		@hcs42
 runtime/ftplugin/eruby.vim		@tpope @dkearns
 runtime/ftplugin/expect.vim		@dkearns
+runtime/ftplugin/exports.vim		@mperry2
 runtime/ftplugin/fennel.vim		@gpanders
 runtime/ftplugin/fetchmail.vim		@dkearns
 runtime/ftplugin/forth.vim		@jkotlinski
@@ -267,6 +268,7 @@ runtime/ftplugin/routeros.vim		@zainin
 runtime/ftplugin/rst.vim		@marshallward
 runtime/ftplugin/ruby.vim		@tpope @dkearns
 runtime/ftplugin/rust.vim		@lilyball
+runtime/ftplugin/samba.vim		@mperry2
 runtime/ftplugin/sass.vim		@tpope
 runtime/ftplugin/scala.vim		@derekwyatt
 runtime/ftplugin/scheme.vim		@evhan
@@ -404,6 +406,7 @@ runtime/keymap/armenian-eastern_utf-8.vim	@blinskey
 runtime/keymap/armenian-western_utf-8.vim	@blinskey
 runtime/keymap/russian-typograph.vim	@RestorerZ
 runtime/keymap/tamil_tscii.vim		@yegappan
+runtime/keymap/ukrainian-enhanced.vim 	@Dolfost
 runtime/lang/menu_en_gb.latin1.vim	@mrdubya
 runtime/lang/menu_ru_ru.cp1251.vim	@RestorerZ
 runtime/lang/menu_ru_ru.koi8-r.vim	@RestorerZ

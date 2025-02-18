@@ -1661,10 +1661,12 @@ set_color_count(int nr)
 	sprintf((char *)nr_colors, "%d", t_colors);
     else
 	*nr_colors = NUL;
+#if 0
 #ifdef FEAT_TERMGUICOLORS
     // xterm-direct, enable termguicolors, when it wasn't set yet
     if (t_colors == 0x1000000 && !p_tgc_set)
 	set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
+#endif
 #endif
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
 }
@@ -1701,7 +1703,9 @@ static char *(key_names[]) =
 # ifdef FEAT_TERMRESPONSE
     // Do those ones first, both may cause a screen redraw.
     "Co",
-    "RGB",
+    // disabled, because it switches termguicolors, but that
+    // is noticable and confuses users
+    // "RGB",
 # endif
     "ku", "kd", "kr", "kl",
     "#2", "#4", "%i", "*7",
@@ -7197,6 +7201,7 @@ got_code_from_term(char_u *code, int len)
 #endif
 		may_adjust_color_count(val);
 	    }
+#if 0
 #ifdef FEAT_TERMGUICOLORS
 	    // when RGB result comes back, it is supported when the result contains an '='
 	    else if (name[0] == 'R' && name[1] == 'G' && name[2] == 'B' && code[9] == '=')
@@ -7213,6 +7218,7 @@ got_code_from_term(char_u *code, int len)
 		    set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
 		}
 	    }
+#endif
 #endif
 	    else
 	    {
