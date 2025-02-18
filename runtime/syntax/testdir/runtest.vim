@@ -15,6 +15,11 @@ let s:messagesFname = fnameescape(syntaxDir .. '/testdir/messages')
 
 let s:messages = []
 
+" Erase the cursor line and do not advance the cursor.
+def EraseLineAndReturnCarriage()
+  echon repeat("\x20", (winwidth(0) / 2 - 1)) .. "\r"
+enddef
+
 " Add one message to the list of messages
 func Message(msg)
   echomsg a:msg
@@ -30,22 +35,23 @@ endfunc
 
 " Append s:messages to the messages file and make it empty.
 func AppendMessages(header)
-  exe 'split ' .. s:messagesFname
+  silent exe 'split ' .. s:messagesFname
   call append(line('$'), '')
   call append(line('$'), a:header)
   call append(line('$'), s:messages)
   let s:messages = []
-  wq
+  silent wq
 endfunc
 
 " Relevant messages are written to the "messages" file.
 " If the file already exists it is appended to.
-exe 'split ' .. s:messagesFname
+silent exe 'split ' .. s:messagesFname
 call append(line('$'), repeat('=-', 70))
 call append(line('$'), '')
 let s:test_run_message = 'Test run on ' .. strftime("%Y %b %d %H:%M:%S")
 call append(line('$'), s:test_run_message)
-wq
+silent wq
+echo "\n"
 
 if syntaxDir !~ '[/\\]runtime[/\\]syntax\>'
   call Fatal('Current directory must be "runtime/syntax"')
@@ -517,6 +523,8 @@ func RunTest()
       let skipped_count += 1
     endif
 
+    call EraseLineAndReturnCarriage()
+
     " Append messages to the file "testdir/messages"
     call AppendMessages('Input file ' .. fname .. ':')
 
@@ -525,6 +533,7 @@ func RunTest()
     endif
   endfor
 
+  call EraseLineAndReturnCarriage()
   call Message(s:test_run_message)
   call Message('OK: ' .. ok_count)
   call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
@@ -550,4 +559,4 @@ endif
 
 qall!
 
-" vim:ts=8
+" vim:sw=2:ts=8:noet:
