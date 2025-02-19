@@ -878,6 +878,7 @@ RT_SCRIPTS =	\
 		runtime/syntax/testdir/input/setup/*.* \
 		runtime/syntax/testdir/dumps/*.dump \
 		runtime/syntax/testdir/dumps/*.vim \
+		runtime/syntax/testdir/tools/* \
 		runtime/syntax/generator/Makefile \
 		runtime/syntax/generator/README.md \
 		runtime/syntax/generator/gen_syntax_vim.vim \
