@@ -671,5 +671,34 @@ func Test_listchars_foldcolumn()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_listchars_precedes_with_wide_char()
+  new
+  setlocal nowrap list listchars=eol:$,precedes:!
+  call setline(1, '123口456')
+  call assert_equal(['123口456$ '], ScreenLines(1, 10))
+  let attr = screenattr(1, 9)
+  normal! zl
+  call assert_equal(['!3口456$  '], ScreenLines(1, 10))
+  call assert_equal(attr, screenattr(1, 1))
+  normal! zl
+  call assert_equal(['!口456$   '], ScreenLines(1, 10))
+  call assert_equal(attr, screenattr(1, 1))
+  normal! zl
+  call assert_equal(['!<456$    '], ScreenLines(1, 10))
+  call assert_equal(attr, screenattr(1, 1))
+  call assert_equal(attr, screenattr(1, 2))
+  normal! zl
+  " TODO: should it be '!' instead of '<' here?
+  call assert_equal(['<456$     '], ScreenLines(1, 10))
+  call assert_equal(attr, screenattr(1, 1))
+  normal! zl
+  call assert_equal(['!56$      '], ScreenLines(1, 10))
+  call assert_equal(attr, screenattr(1, 1))
+  normal! zl
+  call assert_equal(['!6$       '], ScreenLines(1, 10))
+  call assert_equal(attr, screenattr(1, 1))
+
+  bw!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
