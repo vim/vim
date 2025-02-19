@@ -2053,7 +2053,7 @@ early_ret:
     tv.v_type = VAR_CLASS;
     tv.vval.v_class = cl;
     SOURCING_LNUM = start_lnum;
-    int rc = set_var_const(cl->class_name, 0, NULL, &tv, FALSE, 0, 0);
+    int rc = set_var_const(cl->class_name, current_sctx.sc_sid, NULL, &tv, FALSE, 0, 0);
     if (rc == FAIL)
 	goto cleanup;
 
@@ -2873,7 +2873,7 @@ ex_type(exarg_T *eap)
 	tv.vval.v_class = type->tt_class;
 	++tv.vval.v_class->class_refcount;
     }
-    set_var_const(name_start, 0, NULL, &tv, FALSE,
+    set_var_const(name_start, current_sctx.sc_sid, NULL, &tv, FALSE,
 						ASSIGN_CONST | ASSIGN_FINAL, 0);
 
 done:
