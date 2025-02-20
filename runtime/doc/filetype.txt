@@ -746,9 +746,21 @@ Add following lines to $HOME/.vim/ftplugin/json.vim: >
 
 LUA							*ft-lua-plugin*
 
-You can enable folding of Lua functions using |fold-expr| by: >
+							*g:lua_folding*
+You can enable folding of Lua functions using |fold-expr| by: >vim
 
 	let g:lua_folding = 1
+<
+					*g:lua_version* *g:lua_subversion*
+Lua filetype's |includeexpr| and |ft-lua-syntax| highlighting use the global
+variables "g:lua_version" and "g:lua_subversion" to determine the version of
+Lua to use (5.3 is the default)
+
+For example, to use Lua 5.1, set the variables like this: >vim
+
+	let g:lua_version = 5
+	let g:lua_subversion = 1
+<
 
 MAIL							*ft-mail-plugin*
 

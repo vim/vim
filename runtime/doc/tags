@@ -7625,6 +7625,9 @@ g:html_use_input_for_pc	syntax.txt	/*g:html_use_input_for_pc*
 g:html_use_xhtml	syntax.txt	/*g:html_use_xhtml*
 g:html_whole_filler	syntax.txt	/*g:html_whole_filler*
 g:lf_shell_syntax	syntax.txt	/*g:lf_shell_syntax*
+g:lua_folding	filetype.txt	/*g:lua_folding*
+g:lua_subversion	filetype.txt	/*g:lua_subversion*
+g:lua_version	filetype.txt	/*g:lua_version*
 g:markdown_fenced_languages	syntax.txt	/*g:markdown_fenced_languages*
 g:markdown_minlines	syntax.txt	/*g:markdown_minlines*
 g:markdown_syntax_conceal	syntax.txt	/*g:markdown_syntax_conceal*
@@ -8099,7 +8102,6 @@ help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
 help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
-help-tags	tags	1
 help-toc-install	helphelp.txt	/*help-toc-install*
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
