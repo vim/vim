@@ -696,9 +696,6 @@ popup_highlight_curline(win_T *wp)
 	if (!sign_exists_by_name(sign_name))
 	{
 	    char *linehl = "PopupSelected";
-
-	    if (syn_name2id((char_u *)linehl) == 0)
-		linehl = "PmenuSel";
 	    sign_define_by_name(sign_name, NULL, (char_u *)linehl, NULL, NULL, NULL,
 		    NULL, SIGN_DEF_PRIO);
 	}
@@ -2006,10 +2003,8 @@ popup_update_color(win_T *wp, create_type_T type)
 {
     char    *hiname = type == TYPE_MESSAGE_WIN
 				       ? "MessageWindow" : "PopupNotification";
-    int		nr = syn_name2id((char_u *)hiname);
-
     set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-		(char_u *)(nr == 0 ? "WarningMsg" : hiname),
+		(char_u *)hiname,
 		OPT_FREE|OPT_LOCAL, 0);
 }
 

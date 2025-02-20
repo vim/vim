@@ -504,7 +504,7 @@ popup_menu({what}, {options})				 *popup_menu()*
 				\ mapping: 0,
 				\ })
 <		The current line is highlighted with a match using
-		"PopupSelected", or "PmenuSel" if that is not defined.
+		|hl-PopupSelected| which is linked to "PmenuSel" by default.
 
 		Use {options} to change the properties.  Should at least set
 		"callback" to a function that handles the selected item.
@@ -559,7 +559,7 @@ popup_notification({what}, {options})			 *popup_notification()*
 				\ close: 'click',
 				\ padding: [0,1,0,1],
 				\ })
-<		The PopupNotification highlight group is used instead of
+<		The |hl-PopupNotification| highlight group is used instead of
 		WarningMsg if it is defined.
 
 		Without the |+timers| feature the popup will not disappear
