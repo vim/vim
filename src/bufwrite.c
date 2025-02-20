@@ -2316,6 +2316,8 @@ restore_backup:
 		{
 		    errmsg_allocated = TRUE;
 		    errmsg = alloc(300);
+		    if (errmsg == NULL)
+			goto fail;
 		    vim_snprintf((char *)errmsg, 300, _(e_write_error_conversion_failed_in_line_nr_make_fenc_empty_to_override),
 					 (long)write_info.bw_conv_error_lnum);
 		}
