@@ -728,6 +728,7 @@ RT_ALL =	\
 		runtime/doc/vimdiff.1 \
 		runtime/doc/vimtutor.1 \
 		runtime/doc/xxd.1 \
+		runtime/doc/hlgroups.ignore \
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/import/dist/vimhelp.vim \
