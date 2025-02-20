@@ -17,9 +17,10 @@ include Make_all.mak
 
 .SUFFIXES:
 .SUFFIXES: .c .o .txt .html
-.PHONY: all vimtags noerrors perlhtml clean test_urls
+.PHONY: all checkgroups vimtags noerrors perlhtml clean test_urls
+.INTERMEDIATE: hlgroups deflinks
 
-all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
+all: tags checkgroups vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled.  Supports multiple languages.
@@ -33,6 +34,17 @@ tags: doctags $(DOCS)
 
 doctags: doctags.c
 	$(CC) doctags.c -o doctags
+
+hlgroups: $(DOCS)
+	grep '\*hl-' *txt | sed -E 's/.*:<?\s*//' | sed 's/ /\n/g' | sed 's/hl-//' | sed 's/\*//g' | sort > hlgroups
+
+deflinks: ../../src/highlight.c
+	grep '"default link' ../../src/highlight.c | sed 's/.*default link\s*\(.*\)\s.*/\1/' | sort > deflinks
+
+checkgroups: hlgroups deflinks
+	grep -v -x -F -f hlgroups.ignore hlgroups > hlgroups.stripped
+	diff hlgroups.stripped deflinks
+	rm hlgroups.stripped
 
 vim.man: vim.1
 	nroff -man $? | sed -e s/.//g > $@
