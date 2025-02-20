@@ -5,6 +5,9 @@ SHELL = /bin/bash
 .PHONY: check
 .INTERMEDIATE: hlgroups deflinks hlgroups.stripped
 
+check: hlgroups.stripped deflinks
+	diff hlgroups.stripped deflinks
+
 hlgroups:
 	grep '\*hl-' ../runtime/doc/*txt | sed -E 's/.*:<?\s*//' | sed 's/ /\n/g' | sed 's/hl-//' | sed 's/\*//g' | sort > hlgroups
 
@@ -13,7 +16,3 @@ deflinks: ../src/highlight.c
 
 hlgroups.stripped: hlgroups.ignore hlgroups
 	grep -v -x -F -f hlgroups.ignore hlgroups > hlgroups.stripped
-
-check: hlgroups.stripped deflinks
-	diff hlgroups.stripped deflinks
-
