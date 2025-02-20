@@ -50,11 +50,8 @@ setlocal isk+=#
 " Use :help to lookup the keyword under the cursor with K.
 " Distinguish between commands, options and functions.
 if !exists("*" .. expand("<SID>") .. "Help")
-  function! s:Help(args) abort
-    if !g:syntax_on
-      execute 'help' a:args
-      return
-    endif
+  function s:Help(args) abort
+    if !g:syntax_on | execute "help" a:args | return | endif
 
     silent! let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
 
