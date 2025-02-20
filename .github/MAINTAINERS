@@ -153,6 +153,7 @@ runtime/ftplugin/debchangelog.vim	@jamessan
 runtime/ftplugin/debcontrol.vim		@jamessan
 runtime/ftplugin/debsources.vim		@jamessan
 runtime/ftplugin/desktop.vim		@e-kwsm
+runtime/ftplugin/dnsmasq.vim		@dringsim
 runtime/ftplugin/dosbatch.vim		@mrdubya
 runtime/ftplugin/editorconfig.vim	@ribru17
 runtime/ftplugin/eiffel.vim		@dkearns
