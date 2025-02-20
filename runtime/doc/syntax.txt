@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Jan 20
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5831,8 +5831,8 @@ CursorLineSign	Like SignColumn when 'cursorline' is set for the cursor line.
 MatchParen	Character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|
 							*hl-MessageWindow*
-MessageWindow	Messages popup window used by `:echowindow`.  If not defined
-		|hl-WarningMsg| is used.
+MessageWindow	Messages popup window used by `:echowindow`.  Linked to
+		|hl-WarningMsg| by default.
 							*hl-ModeMsg*
 ModeMsg		'showmode' message (e.g., "-- INSERT --").
 							*hl-MsgArea*
@@ -5872,10 +5872,13 @@ PmenuMatchSel	Popup menu: Matched text in selected item. Applied in
 		combination with |hl-PmenuSel|.
 							*hl-ComplMatchIns*
 ComplMatchIns	Matched text of the currently inserted completion.
+							*hl-PopupSelected*
+PopupSelected	Popup window created with |popup_menu()|.  Linked to
+		|hl-PmenuSel| by default.
 							*hl-PopupNotification*
 PopupNotification
-		Popup window created with |popup_notification()|.  If not
-		defined |hl-WarningMsg| is used.
+		Popup window created with |popup_notification()|.  Linked to
+		|hl-WarningMsg| by default.
 							*hl-Question*
 Question	|hit-enter| prompt and yes/no questions.
 							*hl-QuickFixLine*
