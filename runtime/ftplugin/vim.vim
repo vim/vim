@@ -49,19 +49,26 @@ setlocal isk+=#
 
 " Use :help to lookup the keyword under the cursor with K.
 " Distinguish between commands, options and functions.
-function! s:Help(args)
-  silent! let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
+if !exists("*" .. expand("<SID>") .. "Help")
+  function! s:Help(args) abort
+    if !g:syntax_on
+      execute 'help' a:args
+      return
+    endif
 
-  if syn_name =~# 'vimCommand'
-    execute 'help' a:args..':'
-  elseif syn_name =~# 'vimOption'
-    execute 'help' "'"..a:args.."'"
-  elseif syn_name =~# 'vimFunc'
-    execute 'help' a:args..'()'
-  else
-    execute 'help' a:args
-  endif
-endfunction
+    silent! let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
+
+    if syn_name =~# 'vimCommand'
+      execute "help :"..a:args
+    elseif syn_name =~# 'vimOption'
+      execute "help '"..a:args.."'"
+    elseif syn_name =~# 'vimFunc'
+      execute "help "..a:args.."()"
+    else
+      execute "help" a:args
+    endif
+  endfunction
+endif
 command! -buffer -nargs=1 VimKeywordPrg :call s:Help(<q-args>)
 setlocal keywordprg=:VimKeywordPrg
 
