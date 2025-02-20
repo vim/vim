@@ -728,7 +728,6 @@ RT_ALL =	\
 		runtime/doc/vimdiff.1 \
 		runtime/doc/vimtutor.1 \
 		runtime/doc/xxd.1 \
-		runtime/doc/hlgroups.ignore \
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/import/dist/vimhelp.vim \
@@ -1149,6 +1148,8 @@ IGNORE = \
 		.github/workflows/label.yml \
 		SECURITY.md \
 		ci/unlisted.make \
+		ci/hlgroups.make \
+		ci/hlgroups.ignore \
 		src/libvterm/CODE-MAP \
 		runtime/syntax/testdir/input/html_html \
 
