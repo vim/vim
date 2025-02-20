@@ -18,7 +18,7 @@ set cpo&vim
 
 if !exists('*VimFtpluginUndo')
   func VimFtpluginUndo()
-    setl fo< isk< com< tw< commentstring< include< define<
+    setl fo< isk< com< tw< commentstring< include< define< keywordprg<
     if exists('b:did_add_maps')
       silent! nunmap <buffer> [[
       silent! vunmap <buffer> [[
@@ -48,7 +48,22 @@ setlocal fo-=t fo+=croql
 setlocal isk+=#
 
 " Use :help to lookup the keyword under the cursor with K.
-setlocal keywordprg=:help
+" Distinguish between commands, options and functions.
+function! s:Help(args)
+  silent! let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
+
+  if syn_name =~# 'vimCommand'
+    execute 'help' a:args..':'
+  elseif syn_name =~# 'vimOption'
+    execute 'help' "'"..a:args.."'"
+  elseif syn_name =~# 'vimFunc'
+    execute 'help' a:args..'()'
+  else
+    execute 'help' a:args
+  endif
+endfunction
+command! -buffer -nargs=1 VimKeywordPrg :call s:Help(<q-args>)
+setlocal keywordprg=:VimKeywordPrg
 
 " Comments starts with # in Vim9 script.  We have to guess which one to use.
 if "\n" .. getline(1, 32)->join("\n") =~# '\n\s*vim9\%[script]\>'
