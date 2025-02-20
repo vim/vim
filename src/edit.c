@@ -146,6 +146,7 @@ edit(
 #ifdef FEAT_CONCEAL
     int		cursor_line_was_concealed;
 #endif
+    int		ins_completion = FALSE;
 
     // Remember whether editing was restarted after CTRL-O.
     did_restart_edit = restart_edit;
@@ -636,10 +637,11 @@ edit(
 	 * and the cursor is still in the completed word.  Only when there is
 	 * a match, skip this when no matches were found.
 	 */
-	if (ins_compl_active()
-		&& pum_wanted()
-		&& curwin->w_cursor.col >= ins_compl_col()
-		&& ins_compl_has_shown_match())
+	ins_completion = ins_compl_active()
+	    && curwin->w_cursor.col >= ins_compl_col()
+	    && ins_compl_has_shown_match();
+
+	if (ins_completion && pum_wanted())
 	{
 	    // BS: Delete one character from "compl_leader".
 	    if ((c == K_BS || c == Ctrl_H)
@@ -697,6 +699,8 @@ edit(
 		    ins_compl_delete();
 	    }
 	}
+	else if (ins_completion && !pum_wanted() && ins_compl_preinsert_effect())
+	    ins_compl_delete();
 
 	// Prepare for or stop CTRL-X mode.  This doesn't do completion, but
 	// it does fix up the text when finishing completion.
