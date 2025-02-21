@@ -4429,6 +4429,7 @@ ins_compl_delete(void)
 		    VIM_CLEAR(remaining);
 		return;
 	    }
+	    deleted_lines_mark(curwin->w_cursor.lnum, 1L);
 	    curwin->w_cursor.lnum--;
 	}
 	// move cursor to end of line
