@@ -3718,7 +3718,7 @@ win_line(
 #endif
 	// Handle the case where we are in column 0 but not on the first
 	// character of the line and the user wants us to show us a
-	// special character (via 'listchars' option "precedes:<char>".
+	// special character (via 'listchars' option "precedes:<char>").
 	if (lcs_prec_todo != NUL
 		&& wp->w_p_list
 		&& (wp->w_p_wrap ? (wp->w_skipcol > 0 && wlv.row == 0)

@@ -2891,6 +2891,14 @@ func Test_complete_fuzzy_match()
   call assert_equal("for", g:abbr)
   call assert_equal(2, g:selected)
 
+  set cot=menu,menuone,noselect,fuzzy
+  call feedkeys("i\<C-R>=CompAnother()\<CR>\<C-N>\<C-N>\<C-N>\<C-N>", 'tx')
+  call assert_equal("foo", g:word)
+  call feedkeys("i\<C-R>=CompAnother()\<CR>\<C-P>", 'tx')
+  call assert_equal("foo", g:word)
+  call feedkeys("i\<C-R>=CompAnother()\<CR>\<C-P>\<C-P>", 'tx')
+  call assert_equal("for", g:abbr)
+
   " clean up
   set omnifunc=
   bw!
@@ -3162,6 +3170,11 @@ function Test_completeopt_preinsert()
   call feedkeys("S\<C-X>\<C-O>fb\<C-Y>", 'tx')
   call assert_equal("fobar", getline('.'))
   call assert_equal(5, col('.'))
+
+  set cot=preinsert
+  call feedkeys("Sfoo1 foo2\<CR>f\<C-X>\<C-N>bar", 'tx')
+  call assert_equal("fbar", getline('.'))
+  call assert_equal(4, col('.'))
 
   bw!
   set cot&
