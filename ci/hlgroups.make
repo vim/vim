@@ -9,7 +9,7 @@ check: hlgroups.stripped deflinks
 	diff hlgroups.stripped deflinks
 
 hlgroups:
-	grep '\*hl-' ../runtime/doc/*txt | sed -E 's/.*:<?\s*//' | sed 's/ /\n/g' | sed 's/hl-//' | sed 's/\*//g' | sort > hlgroups
+	grep '\*hl-' ../runtime/doc/*txt | sed -E -e 's/.*:<?\s*//' -e 's/hl-//g' -e 's/\*//g' -e 's/ /\n/g' | sort > hlgroups
 
 deflinks: ../src/highlight.c
 	grep '"default link'  $< | sed 's/.*default link\s*\(.*\)\s.*/\1/' | sort > deflinks
