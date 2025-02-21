@@ -1148,6 +1148,8 @@ IGNORE = \
 		.github/workflows/label.yml \
 		SECURITY.md \
 		ci/unlisted.make \
+		ci/hlgroups.make \
+		ci/hlgroups.ignore \
 		src/libvterm/CODE-MAP \
 		runtime/syntax/testdir/input/html_html \
 
