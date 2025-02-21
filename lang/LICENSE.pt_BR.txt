@@ -1,0 +1,81 @@
+LICENÇA DO VIM
+
+I) Não há restrições para distribuir cópias não modificadas do Vim, exceto
+   que elas devem incluir este texto de licença. Você também pode distribuir
+   partes não modificadas do Vim, igualmente irrestritas, exceto que elas
+   devem incluir este texto de licença. Você também tem permissão para incluir
+   executáveis que você fez a partir das fontes não modificadas do Vim, além 
+   de seus próprios exemplos de uso e scripts do Vim.
+
+II) É permitido distribuir uma versão modificada (ou estendida) do Vim,
+    incluindo executáveis ​​e/ou código-fonte, quando as quatro
+    condições a seguir forem atendidas:
+    1) Este texto de licença deve ser incluído sem modificações.
+    2) O Vim modificado deve ser distribuído de uma das cinco formas a seguir:
+       a) Se você fizer alterações no Vim, deverá descrever claramente na
+          distribuição como entrar em contato com você. Quando o mantenedor
+          solicitar a você (de qualquer forma) uma cópia do Vim modificado que
+          você distribuiu, você deverá disponibilizar suas alterações,
+          incluindo o código-fonte, ao mantenedor sem taxa. O mantenedor
+          reserva o direito de incluir suas alterações na versão oficial
+          do Vim. O que o mantenedor fará com suas alterações e sob qual
+          licença elas serão distribuídas é negociável. Se não houve negociação
+          então esta licença, ou uma versão posterior, também se aplica às suas
+          alterações. Os mantenedores atuais estão listados aqui:
+          https://github.com/orgs/vim/people. Se isso mudar, será anunciado em
+          lugares apropriados (provavelmente vim.sf.net, www.vim.org e/ou
+          comp.editors). Quando for completamente impossível contatar o
+          mantenedor, a obrigação de enviar a ele suas alterações cessa.
+          Uma vez que o mantenedor tenha confirmado que ele recebeu suas
+          alterações, elas não precisarão ser enviadas novamente.
+       b) Se você recebeu um Vim modificado que foi distribuído como
+          mencionado em a), você tem permissão para distribuí-lo sem
+          modificações, como mencionado em I). Se você fizer alterações
+          adicionais, o texto em a) se aplica a essas alterações.
+       c) Forneça todas as alterações, incluindo o código-fonte, com cada cópia
+          do Vim modificado que você distribuir. Isso pode ser feito na forma
+          de um diff de contexto. Você pode escolher qual licença usar para o
+          novo código que você adicionar. As alterações e sua licença não devem
+          restringir outros de fazer suas próprias alterações na versão oficial
+          do Vim.
+       d) Quando você tem um Vim modificado que inclui alterações conforme
+          mencionado em c), você pode distribuí-lo sem o código-fonte para as
+          alterações se as três condições a seguir forem atendidas:
+          - A licença que se aplica às alterações permite que você distribua
+            as alterações para o mantenedor do Vim sem taxa ou restrição, e
+            permite que o mantenedor do Vim inclua as alterações na
+            versão oficial do Vim sem taxa ou restrição.
+          - Você mantém as alterações por pelo menos três anos após a última
+            distribuição do Vim modificado correspondente. Quando o mantenedor
+            ou alguém para quem você distribuiu o Vim modificado solicitar a
+            você (de qualquer forma) as alterações dentro deste período, você
+            deve disponibilizá-las a ele.
+          - Você descreve claramente na distribuição como entrar em contato
+            com você. Estas informações de contato devem permanecer válidas por
+            pelo menos três anos após a última distribuição do Vim modificado
+            correspondente, ou pelo maior tempo possível.
+       e) Quando a Licença Pública Geral GNU (GPL) se aplica às alterações,
+          você pode distribuir o Vim modificado sob a GNU GPL versão 2 ou
+          qualquer versão posterior.
+    3) Uma mensagem deve ser adicionada, no mínimo na saída do comando
+       ":version" e na tela de introdução, de modo que o usuário do Vim
+       modificado seja capaz de ver que ele foi modificado. Ao distribuir
+       conforme mencionado em 2)e), só é necessário adicionar a mensagem
+       na medida em que isso não entre em conflito com a licença usada para
+       as alterações.
+    4) As informações de contato conforme exigido em 2)a) e 2)d) não devem ser
+       removidas ou alteradas, exceto que a própria pessoa pode fazer
+       correções.
+
+III) Se você distribuir uma versão modificada do Vim, encorajamos que use
+     a licença do Vim para suas alterações e disponibilizá-las ao
+     mantenedor, incluindo o código-fonte. A maneira preferida de fazer isso é
+     por e-mail ou enviando os arquivos para um servidor e enviando a URL por
+     e-mail. Se o número de alterações for pequeno (por exemplo, um Makefile
+     modificado), enviar um diff de contexto por e-mail será suficiente.
+     O endereço de e-mail a ser usado é <maintainer@vim.org>
+
+IV) Não é permitido remover esta licença da distribuição das fontes do Vim,
+    partes dela ou de uma versão modificada. Você pode usar esta licença
+    para versões anteriores do Vim em vez da licença com a qual elas vieram,
+    a seu critério.
