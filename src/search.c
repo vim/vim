@@ -5335,7 +5335,7 @@ search_for_fuzzy_match(
 		    {
 			if (ctrl_x_mode_normal())
 			{
-			    if (STRNCMP(*ptr, pattern, *len) == 0)
+			    if (STRNCMP(*ptr, pattern, *len) == 0 && pattern[*len] == NUL)
 			    {
 				char_u	*next_word_end = find_word_start(*ptr + *len);
 				if (*next_word_end != NUL && *next_word_end != NL)
