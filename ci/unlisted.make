@@ -21,7 +21,7 @@ $(eval all_patterns := $(shell \
 			p; \
 		}'))
 
-# In Makefile's `prepeare` target, all the IN_README_DIR files are moved from
+# In Makefile's `prepare` target, all the IN_README_DIR files are moved from
 # READMEdir to the root, so add those files in their Git-tracked location:
 all_patterns := $(all_patterns) \
 	$(foreach readme, $(IN_README_DIR), READMEdir/$(readme))
