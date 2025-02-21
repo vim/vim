@@ -15,6 +15,11 @@ let s:messagesFname = fnameescape(syntaxDir .. '/testdir/messages')
 
 let s:messages = []
 
+" Erase the cursor line and do not advance the cursor.
+def EraseLineAndReturnCarriage()
+  echon repeat("\x20", (winwidth(0) / 2)) .. "\r"
+enddef
+
 " Add one message to the list of messages
 func Message(msg)
   echomsg a:msg
@@ -30,22 +35,23 @@ endfunc
 
 " Append s:messages to the messages file and make it empty.
 func AppendMessages(header)
-  exe 'split ' .. s:messagesFname
+  silent exe 'split ' .. s:messagesFname
   call append(line('$'), '')
   call append(line('$'), a:header)
   call append(line('$'), s:messages)
   let s:messages = []
-  wq
+  silent wq
 endfunc
 
 " Relevant messages are written to the "messages" file.
 " If the file already exists it is appended to.
-exe 'split ' .. s:messagesFname
+silent exe 'split ' .. s:messagesFname
 call append(line('$'), repeat('=-', 70))
 call append(line('$'), '')
 let s:test_run_message = 'Test run on ' .. strftime("%Y %b %d %H:%M:%S")
 call append(line('$'), s:test_run_message)
-wq
+silent wq
+echo "\n"
 
 if syntaxDir !~ '[/\\]runtime[/\\]syntax\>'
   call Fatal('Current directory must be "runtime/syntax"')
@@ -88,26 +94,112 @@ func HandleSwapExists()
   endif
 endfunc
 
-def IsWinNumOneAtEOF(in_name_and_out_name: string): bool
+" See ":help 'ruler'".
+def CannotSeeLastLine(pos: string): bool
+  return !(pos ==# ' All ' || pos ==# ' Bot ')
+enddef
+
+" Poll for updates of the cursor position in the terminal buffer occupying the
+" first window.  (ALWAYS call this function or its equivalent before calling
+" "VerifyScreenDump()" *and* after calling any number of "term_sendkeys()".)
+def PollCursorPosInWinNumOne(buf: number,
+	in_name_and_out_name: string,
+	prev_pos: string): string
   # Expect defaults from term_util#RunVimInTerminal().
   if winwidth(1) != 75 || winheight(1) != 20
     ch_log(printf('Aborting for %s: (75 x 20) != (%d x %d)',
       in_name_and_out_name,
       winwidth(1),
       winheight(1)))
-    return true
+    return ' All '
   endif
-  # A two-fold role: (1) redraw whenever the first test file is of 19 lines or
-  # less long (not applicable to c.c); (2) redraw in case the terminal buffer
-  # cannot redraw itself just yet (else expect extra files generated).
+  # A three-fold role for "redraw"ing:
+  # (1) whenever the first test file is of 19 lines or less long;
+  # (2) in case the terminal buffer cannot redraw itself just yet;
+  # (3) to avoid extra "real estate" checks.
   redraw
-  const pos: string = join([
-    screenstring(20, 71),
-    screenstring(20, 72),
-    screenstring(20, 73),
-    screenstring(20, 74),
-    screenstring(20, 75)], '')
-  return (pos == ' All ' || pos == ' Bot ')
+  # A run of command-line-mode blanks shown with "ruler".
+  const no_pos: string = repeat("\x20", 5)
+  # The cursor position shown with "ruler".
+  var pos: string = no_pos
+  # Attempts at most, targeting ASan-instrumented Vim builds.
+  var times: number = 512
+  # Check "real estate" of the terminal buffer.
+  while (pos ==# no_pos || pos ==# prev_pos || get(term_getcursor(buf), 0) == 20) &&
+	times > 0
+    pos = join([
+	screenstring(20, 71),
+	screenstring(20, 72),
+	screenstring(20, 73),
+	screenstring(20, 74),
+	screenstring(20, 75)], '')
+    sleep 1m
+    times -= 1
+    if times % 8 == 0
+      redraw
+    endif
+  endwhile
+  return pos
+enddef
+
+" Prevent _this script_ from prematurely reading the cursor position, which is
+" available at ":edit", with "PollCursorPosInWinNumOne()" after outracing the
+" loading of syntax etc. in the terminal buffer.  (Call this function once,
+" before calling "PollCursorPosInWinNumOne()" for the first time.)
+def WaitForTokenFromWinNumOne(buf: number, in_name_and_out_name: string)
+  # Expect defaults from term_util#RunVimInTerminal().
+  if winwidth(1) != 75 || winheight(1) != 20
+    ch_log(printf('Aborting for %s: (75 x 20) != (%d x %d)',
+      in_name_and_out_name,
+      winwidth(1),
+      winheight(1)))
+    return
+  endif
+  # A known token rendered in the terminal buffer (its prefix must be "is_*"
+  # so that buffer variables from "sh.vim" can be matched; see "ShellInfo()").
+  var token: string = ''
+  # Attempts at most, targeting ASan-instrumented Vim builds.
+  var times: number = 32768
+  # Check "real estate" of the terminal buffer.
+  while token !~# '^is_' && times > 0
+    token = join([
+	screenstring(20, 1),
+	screenstring(20, 2),
+	screenstring(20, 3),
+	screenstring(20, 4),
+	screenstring(20, 5),
+	screenstring(20, 6),
+	screenstring(20, 7),
+	screenstring(20, 8)], '')
+    sleep 1m
+    times -= 1
+    if times % 8 == 0
+      redraw
+    endif
+  endwhile
+  # Any of "b:is_(bash|dash|kornshell|posix|sh)" values shall be recorded.
+  if token !=# 'is_nonce'
+    return
+  endif
+  # Clear the "is_nonce" token and ensure it is cleared.
+  call term_sendkeys(buf, ":redraw!\<CR>")
+  times = 32768
+  while token ==# 'is_nonce' && times > 0
+    token = join([
+	screenstring(20, 1),
+	screenstring(20, 2),
+	screenstring(20, 3),
+	screenstring(20, 4),
+	screenstring(20, 5),
+	screenstring(20, 6),
+	screenstring(20, 7),
+	screenstring(20, 8)], '')
+    sleep 1m
+    times -= 1
+    if times % 8 == 0
+      redraw
+    endif
+  endwhile
 enddef
 
 func RunTest()
@@ -337,41 +429,42 @@ func RunTest()
       " load filetype specific settings
       call term_sendkeys(buf, ":call LoadFiletype('" .. filetype .. "')\<CR>")
 
+      " Make a synchronisation point between buffers by requesting to echo
+      " a known token in the terminal buffer and asserting its availability
+      " with "WaitForTokenFromWinNumOne()".
       if filetype == 'sh'
 	call term_sendkeys(buf, ":call ShellInfo()\<CR>")
+      else
+	call term_sendkeys(buf, ":echo 'is_nonce'\<CR>")
       endif
 
-      " Screendump at the start of the file: failed/root_00.dump
       let root_00 = root .. '_00'
       let in_name_and_out_name = fname .. ': failed/' .. root_00 .. '.dump'
+      " Queue up all "term_sendkeys()"es and let them finish before returning
+      " from "WaitForTokenFromWinNumOne()".
+      call WaitForTokenFromWinNumOne(buf, in_name_and_out_name)
+      let pos = PollCursorPosInWinNumOne(buf, in_name_and_out_name, repeat("\x20", 5))
       call ch_log('First screendump for ' .. in_name_and_out_name)
+      " Make a screendump at the start of the file: failed/root_00.dump
       let fail = VerifyScreenDump(buf, root_00, {})
-
-      " Make a Screendump every 18 lines of the file: failed/root_NN.dump
-      let nr = 1
-      let root_next = printf('%s_%02d', root, nr)
-      let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
 
       " Accommodate the next code block to "buf"'s contingency for self
       " wipe-out.
       try
-	if !IsWinNumOneAtEOF(in_name_and_out_name)
-	  call term_sendkeys(buf, ":call ScrollToSecondPage((18 * 75 + 1), 19, 5) | redraw!\<CR>")
-	  call ch_log('Next screendump for ' .. in_name_and_out_name)
-	  let fail += VerifyScreenDump(buf, root_next, {})
+	let nr = 0
+	let keys_a = ":call ScrollToSecondPage((18 * 75 + 1), 19, 5) | redraw!\<CR>"
+	let keys_b = ":call ScrollToNextPage((18 * 75 + 1), 19, 5) | redraw!\<CR>"
+	while CannotSeeLastLine(pos)
+	  call term_sendkeys(buf, keys_a)
+	  let keys_a = keys_b
 	  let nr += 1
 	  let root_next = printf('%s_%02d', root, nr)
 	  let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
-
-	  while !IsWinNumOneAtEOF(in_name_and_out_name)
-	    call term_sendkeys(buf, ":call ScrollToNextPage((18 * 75 + 1), 19, 5) | redraw!\<CR>")
-	    call ch_log('Next screendump for ' .. in_name_and_out_name)
-	    let fail += VerifyScreenDump(buf, root_next, {})
-	    let nr += 1
-	    let root_next = printf('%s_%02d', root, nr)
-	    let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
-	  endwhile
-	endif
+	  let pos = PollCursorPosInWinNumOne(buf, in_name_and_out_name, pos)
+	  call ch_log('Next screendump for ' .. in_name_and_out_name)
+	  " Make a screendump of every 18 lines of the file: failed/root_NN.dump
+	  let fail += VerifyScreenDump(buf, root_next, {})
+	endwhile
 	call StopVimInTerminal(buf)
       finally
 	call delete('Xtestscript')
@@ -413,6 +506,8 @@ func RunTest()
       let skipped_count += 1
     endif
 
+    call EraseLineAndReturnCarriage()
+
     " Append messages to the file "testdir/messages"
     call AppendMessages('Input file ' .. fname .. ':')
 
@@ -421,6 +516,7 @@ func RunTest()
     endif
   endfor
 
+  call EraseLineAndReturnCarriage()
   call Message(s:test_run_message)
   call Message('OK: ' .. ok_count)
   call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
