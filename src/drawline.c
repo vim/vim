@@ -3727,6 +3727,7 @@ win_line(
 		&& wlv.filler_todo <= 0
 #endif
 		&& wlv.draw_state > WL_NR
+		&& skip_cells <= 0
 		&& c != NUL)
 	{
 	    c = wp->w_lcs_chars.prec;
