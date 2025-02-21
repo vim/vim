@@ -18,20 +18,21 @@ set cpo&vim
 
 if !exists('*VimFtpluginUndo')
   func VimFtpluginUndo()
-    setl fo< isk< com< tw< commentstring< include< define<
+    setl fo< isk< com< tw< commentstring< include< define< keywordprg<
+    sil! delc -buffer VimKeywordPrg
     if exists('b:did_add_maps')
       silent! nunmap <buffer> [[
-      silent! vunmap <buffer> [[
+      silent! xunmap <buffer> [[
       silent! nunmap <buffer> ]]
-      silent! vunmap <buffer> ]]
+      silent! xunmap <buffer> ]]
       silent! nunmap <buffer> []
-      silent! vunmap <buffer> []
+      silent! xunmap <buffer> []
       silent! nunmap <buffer> ][
-      silent! vunmap <buffer> ][
+      silent! xunmap <buffer> ][
       silent! nunmap <buffer> ]"
-      silent! vunmap <buffer> ]"
+      silent! xunmap <buffer> ]"
       silent! nunmap <buffer> ["
-      silent! vunmap <buffer> ["
+      silent! xunmap <buffer> ["
     endif
     unlet! b:match_ignorecase b:match_words b:match_skip b:did_add_maps
   endfunc
@@ -48,7 +49,26 @@ setlocal fo-=t fo+=croql
 setlocal isk+=#
 
 " Use :help to lookup the keyword under the cursor with K.
-setlocal keywordprg=:help
+" Distinguish between commands, options and functions.
+if !exists("*" .. expand("<SID>") .. "Help")
+  function s:Help(args) abort
+    if !get(g:, 'syntax_on', 0) | execute "help" a:args | return | endif
+
+    silent! let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
+
+    if syn_name =~# 'vimCommand'
+      execute "help :"..a:args
+    elseif syn_name =~# 'vimOption'
+      execute "help '"..a:args.."'"
+    elseif syn_name =~# 'vimFunc'
+      execute "help "..a:args.."()"
+    else
+      execute "help" a:args
+    endif
+  endfunction
+endif
+command! -buffer -nargs=1 VimKeywordPrg :call s:Help(<q-args>)
+setlocal keywordprg=:VimKeywordPrg
 
 " Comments starts with # in Vim9 script.  We have to guess which one to use.
 if "\n" .. getline(1, 32)->join("\n") =~# '\n\s*vim9\%[script]\>'
@@ -77,19 +97,19 @@ if !exists("no_plugin_maps") && !exists("no_vim_maps")
 
   " Move around functions.
   nnoremap <silent><buffer> [[ m':call search('^\s*\(fu\%[nction]\\|\(export\s\+\)\?def\)\>', "bW")<CR>
-  vnoremap <silent><buffer> [[ m':<C-U>exe "normal! gv"<Bar>call search('^\s*\(fu\%[nction]\\|\(export\s\+\)\?def\)\>', "bW")<CR>
+  xnoremap <silent><buffer> [[ m':<C-U>exe "normal! gv"<Bar>call search('^\s*\(fu\%[nction]\\|\(export\s\+\)\?def\)\>', "bW")<CR>
   nnoremap <silent><buffer> ]] m':call search('^\s*\(fu\%[nction]\\|\(export\s\+\)\?def\)\>', "W")<CR>
-  vnoremap <silent><buffer> ]] m':<C-U>exe "normal! gv"<Bar>call search('^\s*\(fu\%[nction]\\|\(export\s\+\)\?def\)\>', "W")<CR>
+  xnoremap <silent><buffer> ]] m':<C-U>exe "normal! gv"<Bar>call search('^\s*\(fu\%[nction]\\|\(export\s\+\)\?def\)\>', "W")<CR>
   nnoremap <silent><buffer> [] m':call search('^\s*end\(f\%[unction]\\|\(export\s\+\)\?def\)\>', "bW")<CR>
-  vnoremap <silent><buffer> [] m':<C-U>exe "normal! gv"<Bar>call search('^\s*end\(f\%[unction]\\|\(export\s\+\)\?def\)\>', "bW")<CR>
+  xnoremap <silent><buffer> [] m':<C-U>exe "normal! gv"<Bar>call search('^\s*end\(f\%[unction]\\|\(export\s\+\)\?def\)\>', "bW")<CR>
   nnoremap <silent><buffer> ][ m':call search('^\s*end\(f\%[unction]\\|\(export\s\+\)\?def\)\>', "W")<CR>
-  vnoremap <silent><buffer> ][ m':<C-U>exe "normal! gv"<Bar>call search('^\s*end\(f\%[unction]\\|\(export\s\+\)\?def\)\>', "W")<CR>
+  xnoremap <silent><buffer> ][ m':<C-U>exe "normal! gv"<Bar>call search('^\s*end\(f\%[unction]\\|\(export\s\+\)\?def\)\>', "W")<CR>
 
   " Move around comments
   nnoremap <silent><buffer> ]" :call search('\%(^\s*".*\n\)\@<!\%(^\s*"\)', "W")<CR>
-  vnoremap <silent><buffer> ]" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\@<!\%(^\s*"\)', "W")<CR>
+  xnoremap <silent><buffer> ]" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\@<!\%(^\s*"\)', "W")<CR>
   nnoremap <silent><buffer> [" :call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
-  vnoremap <silent><buffer> [" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
+  xnoremap <silent><buffer> [" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
 endif
 
 " Let the matchit plugin know what items can be matched.
