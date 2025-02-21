@@ -3269,6 +3269,7 @@ update_search_stat(
     static int	    last_maxcount = SEARCH_STAT_DEF_MAX_COUNT;
     static int	    chgtick = 0;
     static char_u   *lastpat = NULL;
+    static size_t   lastpatlen = 0;
     static buf_T    *lbuf = NULL;
 #ifdef FEAT_RELTIME
     proftime_T  start;
@@ -3295,8 +3296,10 @@ update_search_stat(
     // Unfortunately, there is no MB_STRNICMP function.
     // XXX: above comment should be "no MB_STRCMP function" ?
     if (!(chgtick == CHANGEDTICK(curbuf)
-	&& MB_STRNICMP(lastpat, spats[last_idx].pat, STRLEN(lastpat)) == 0
-	&& STRLEN(lastpat) == STRLEN(spats[last_idx].pat)
+	&& (lastpat != NULL
+	    && MB_STRNICMP(lastpat, spats[last_idx].pat, lastpatlen) == 0
+	    && lastpatlen == spats[last_idx].patlen
+	)
 	&& EQUAL_POS(lastpos, *cursor_pos)
 	&& lbuf == curbuf) || wraparound || cur < 0
 	    || (maxcount > 0 && cur > maxcount) || recompute)
@@ -3355,7 +3358,11 @@ update_search_stat(
 	if (done_search)
 	{
 	    vim_free(lastpat);
-	    lastpat = vim_strsave(spats[last_idx].pat);
+	    lastpat = vim_strnsave(spats[last_idx].pat, spats[last_idx].patlen);
+	    if (lastpat == NULL)
+		lastpatlen = 0;
+	    else
+		lastpatlen = spats[last_idx].patlen;
 	    chgtick = CHANGEDTICK(curbuf);
 	    lbuf = curbuf;
 	    lastpos = p;
@@ -5291,8 +5298,6 @@ search_for_fuzzy_match(
     pos_T	circly_end;
     int		found_new_match = FALSE;
     int		looped_around = FALSE;
-    char_u	*next_word_end = NULL;
-    char_u	*match_word = NULL;
 
     if (whole_line)
 	current_pos.lnum += dir;
@@ -5330,10 +5335,9 @@ search_for_fuzzy_match(
 		    {
 			if (ctrl_x_mode_normal())
 			{
-			    match_word = vim_strnsave(*ptr, *len);
-			    if (STRCMP(match_word, pattern) == 0)
+			    if (STRNCMP(*ptr, pattern, *len) == 0)
 			    {
-				next_word_end = find_word_start(*ptr + *len);
+				char_u	*next_word_end = find_word_start(*ptr + *len);
 				if (*next_word_end != NUL && *next_word_end != NL)
 				{
 				    // Find end of the word.
@@ -5355,7 +5359,6 @@ search_for_fuzzy_match(
 				*len = next_word_end - *ptr;
 				current_pos.col = *len;
 			    }
-			    vim_free(match_word);
 			}
 			*pos = current_pos;
 			break;
@@ -5369,7 +5372,7 @@ search_for_fuzzy_match(
 		    {
 			found_new_match = TRUE;
 			*pos = current_pos;
-			*len = (int)STRLEN(*ptr);
+			*len = (int)ml_get_buf_len(buf, current_pos.lnum);
 			break;
 		    }
 		}
