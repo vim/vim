@@ -219,6 +219,8 @@ typedef enum {
     ISN_CEXPR_AUCMD, // first part of :cexpr  isn_arg.number is cmdidx
     ISN_CEXPR_CORE,  // second part of :cexpr, uses isn_arg.cexpr
 
+    ISN_SCRIPTCTX_SET, // set script context for expression evaluation
+
     ISN_FINISH	    // end marker in list of instructions
 } isntype_T;
 
@@ -570,6 +572,7 @@ struct isn_S {
 	classmember_T	    classmember;
 	storeindex_T	    storeindex;
 	lockunlock_T	    lockunlock;
+	sctx_T		    setsctx;
     } isn_arg;
 };
 
