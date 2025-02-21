@@ -96,6 +96,13 @@ jobs:
           # exit with an error code and list the missing entries.
           make -f ci/unlisted.make
 
+      - name: Check hlgroups (are any new hlgroups added, but not handled in highlight.c)
+        run: |
+          # If any highlight groups have been documented, but not handled in
+          # highlight.c, nor listed as 'intentionally left out' in hlgroups.ignore,
+          # exit with an error code and list the missing entries.
+          make -C ci -f hlgroups.make
+
       - run: sudo dpkg --add-architecture i386
         if: matrix.architecture == 'i386'
 
@@ -224,13 +231,6 @@ jobs:
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
-
-      - name: Check hlgroups (are any new hlgroups added, but not handled in highlight.c)
-        run: |
-          # If any highlight groups have been documented, but not handled in
-          # highlight.c, nor listed as 'intentionally left out' in hlgroups.ignore,
-          # exit with an error code and list the missing entries.
-          make -f ci/hlgroups.make
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
