@@ -151,6 +151,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cabalconfig: ['cabal.config', expand("$HOME/.config/cabal/config")] + WhenConfigHome('$XDG_CONFIG_HOME/cabal/config'),
     cabalproject: ['cabal.project', 'cabal.project.local'],
     cairo: ['file.cairo'],
+    caddyfile: ['Caddyfile', 'caddyfile', 'file.Caddyfile', 'file.caddyfile', 'Caddyfile.dev', 'Caddyfile.prod'],
     calendar: ['calendar', '/.calendar/file', '/share/calendar/any/calendar.file', '/share/calendar/calendar.file', 'any/share/calendar/any/calendar.file', 'any/share/calendar/calendar.file'],
     capnp: ['file.capnp'],
     catalog: ['catalog', 'sgml.catalogfile', 'sgml.catalog', 'sgml.catalog-file'],
