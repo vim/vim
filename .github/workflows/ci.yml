@@ -678,6 +678,17 @@ jobs:
       #    name: vim${{ matrix.bits }}-${{ matrix.toolchain }}
       #    path: ./artifacts
 
+      - name: Install packages for testing
+        shell: bash
+        run: |
+          if ${{ matrix.features != 'TINY' }}; then
+            if ${{ matrix.arch == 'x86' }}; then
+              choco install netbeans --version=8.2.20171030 --no-progress --forcex86
+            else
+              choco install netbeans --no-progress
+            fi
+          fi
+
       - name: Test and show the result of testing gVim
         if: matrix.GUI == 'yes' || matrix.VIMDLL == 'yes'
         shell: cmd
