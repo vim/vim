@@ -51,20 +51,45 @@ setlocal isk+=#
 " Use :help to lookup the keyword under the cursor with K.
 " Distinguish between commands, options and functions.
 if !exists("*" .. expand("<SID>") .. "Help")
-  function s:Help(args) abort
-    if !get(g:, 'syntax_on', 0) | execute "help" a:args | return | endif
+  function s:HelpTopic(topic) abort
+    let topic = a:topic
 
-    silent! let syn_name = synIDattr(synID(line('.'), col('.'), 1), 'name')
-
-    if syn_name =~# 'vimCommand'
-      execute "help :"..a:args
-    elseif syn_name =~# 'vimOption'
-      execute "help '"..a:args.."'"
-    elseif syn_name =~# 'vimFunc'
-      execute "help "..a:args.."()"
-    else
-      execute "help" a:args
+    if get(g:, 'syntax_on', 0)
+      silent! let syn = synIDattr(synID(line('.'), col('.'), 1), 'name')
+      if syn ==# 'vimFuncName'
+        return topic.'()'
+      elseif syn ==# 'vimOption'
+        return "'".topic."'"
+      elseif syn ==# 'vimUserAttrbKey'
+        return ':command-'.topic
+      endif
     endif
+
+    let col = col('.') - 1
+    while col && getline('.')[col] =~# '\k'
+      let col -= 1
+    endwhile
+    let pre = col == 0 ? '' : getline('.')[0 : col]
+
+    let col = col('.') - 1
+    while col && getline('.')[col] =~# '\k'
+      let col += 1
+    endwhile
+    let post = getline('.')[col : -1]
+
+    if pre =~# '^\s*:\=$'
+      return ':'.topic
+    elseif pre =~# '\<v:$'
+      return 'v:'.topic
+    elseif topic ==# 'v' && post =~# ':\w\+'
+      return 'v'.matchstr(post, ':\w\+')
+    else
+      return topic
+    endif
+  endfunction
+
+  function s:Help(args)
+    execute 'help' s:HelpTopic(a:args)
   endfunction
 endif
 command! -buffer -nargs=1 VimKeywordPrg :call s:Help(<q-args>)
