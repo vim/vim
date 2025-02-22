@@ -341,6 +341,11 @@ au BufNewFile,BufRead *.capnp			setf capnp
 " Cgdb config file
 au BufNewFile,BufRead cgdbrc			setf cgdbrc
 
+" m17n database files. */m17n/* matches installed files, */.m17n.d/* matches
+" per-user config files, */m17n-db/* matches the git repo. (must be before
+" *.cs)
+au BufNewFile,BufRead */{m17n,.m17n.d,m17n-db}/*.{ali,cs,dir,flt,fst,lnm,mic,mim,tbl} setf m17ndb
+
 " C#
 au BufNewFile,BufRead *.cs,*.csx,*.cake		setf cs
 
