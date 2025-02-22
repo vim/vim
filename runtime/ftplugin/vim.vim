@@ -51,7 +51,7 @@ setlocal isk+=#
 " Use :help to lookup the keyword under the cursor with K.
 " Distinguish between commands, options and functions.
 if !exists("*" .. expand("<SID>") .. "Help")
-  function s:HelpTopic(topic) abort
+  function s:Help(topic) abort
     let topic = a:topic
 
     if get(g:, 'syntax_on', 0)
@@ -62,7 +62,7 @@ if !exists("*" .. expand("<SID>") .. "Help")
         return "'".topic."'"
       elseif syn ==# 'vimUserAttrbKey'
         return ':command-'.topic
-      elseif syn_name =~# 'vimCommand'
+      elseif syn =~# 'vimCommand'
         return ':'.topic
       endif
     endif
@@ -89,12 +89,8 @@ if !exists("*" .. expand("<SID>") .. "Help")
       return topic
     endif
   endfunction
-
-  function s:Help(args)
-    execute 'help' s:HelpTopic(a:args)
-  endfunction
 endif
-command! -buffer -nargs=1 VimKeywordPrg :call s:Help(<q-args>)
+command! -buffer -nargs=1 VimKeywordPrg :exe 'help' s:Help(<q-args>)
 setlocal keywordprg=:VimKeywordPrg
 
 " Comments starts with # in Vim9 script.  We have to guess which one to use.
