@@ -144,15 +144,15 @@ if exists("loaded_matchit")
   "   func name
   " require a parenthesis following, then there can be an "endfunc".
   let b:match_words =
-        \ '\<\%(fu\%[nction]\|def\)!\=\s\+\S\+\s*(:\%(\%(^\||\)\s*\)\@<=\<retu\%[rn]\>:\%(\%(^\||\)\s*\)\@<=\<\%(endf\%[unction]\|enddef\)\>,' ..
-        \ '\<\%(wh\%[ile]\|for\)\>:\%(\%(^\||\)\s*\)\@<=\<brea\%[k]\>:\%(\%(^\||\)\s*\)\@<=\<con\%[tinue]\>:\%(\%(^\||\)\s*\)\@<=\<end\%(w\%[hile]\|fo\%[r]\)\>,' ..
-        \ '\<if\>:\%(\%(^\||\)\s*\)\@<=\<el\%[seif]\>:\%(\%(^\||\)\s*\)\@<=\<en\%[dif]\>,' ..
-        \ '{:},' ..
-        \ '\<try\>:\%(\%(^\||\)\s*\)\@<=\<cat\%[ch]\>:\%(\%(^\||\)\s*\)\@<=\<fina\%[lly]\>:\%(\%(^\||\)\s*\)\@<=\<endt\%[ry]\>,' ..
-        \ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,' ..
-        \ '\<class\>:\<endclass\>,' ..
-        \ '\<interface\>:\<endinterface\>,' ..
-        \ '\<enum\>:\<endenum\>'
+	\ '\<\%(fu\%[nction]\|def\)!\=\s\+\S\+\s*(:\%(\%(^\||\)\s*\)\@<=\<retu\%[rn]\>:\%(\%(^\||\)\s*\)\@<=\<\%(endf\%[unction]\|enddef\)\>,' ..
+	\ '\<\%(wh\%[ile]\|for\)\>:\%(\%(^\||\)\s*\)\@<=\<brea\%[k]\>:\%(\%(^\||\)\s*\)\@<=\<con\%[tinue]\>:\%(\%(^\||\)\s*\)\@<=\<end\%(w\%[hile]\|fo\%[r]\)\>,' ..
+	\ '\<if\>:\%(\%(^\||\)\s*\)\@<=\<el\%[seif]\>:\%(\%(^\||\)\s*\)\@<=\<en\%[dif]\>,' ..
+	\ '{:},' ..
+	\ '\<try\>:\%(\%(^\||\)\s*\)\@<=\<cat\%[ch]\>:\%(\%(^\||\)\s*\)\@<=\<fina\%[lly]\>:\%(\%(^\||\)\s*\)\@<=\<endt\%[ry]\>,' ..
+	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,' ..
+	\ '\<class\>:\<endclass\>,' ..
+	\ '\<interface\>:\<endinterface\>,' ..
+	\ '\<enum\>:\<endenum\>'
 
   " Ignore syntax region commands and settings, any 'en*' would clobber
   " if-endif.
@@ -160,11 +160,11 @@ if exists("loaded_matchit")
   " - au! FileType javascript syntax region foldBraces start=/{/ end=/}/ …
   " Also ignore here-doc and dictionary keys (vimVar).
   let b:match_skip = 'synIDattr(synID(line("."), col("."), 1), "name")
-        \ =~? "comment\\|string\\|vimSynReg\\|vimSet\\|vimLetHereDoc\\|vimVar"'
+	                  \ =~? "comment\\|string\\|vimSynReg\\|vimSet\\|vimLetHereDoc\\|vimVar"'
 endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
 " removed this, because 'cpoptions' is a global option.
-" setlocal cpo+=M               " makes \%( match \)
+" setlocal cpo+=M		" makes \%( match \)
