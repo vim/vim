@@ -1,6 +1,6 @@
 /* vi:set ts=8 sts=4 sw=4 noet:
  *
- * VIM - Vi IMproved	by Bram Moolenaar
+ * VIM - Vi Improved	by Bram Moolenaar
  *			Visual Workshop integration by Gordon Prieur
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
