@@ -275,6 +275,7 @@ open_buffer(
 	{
 	    curbuf->b_p_bin = save_bin;
 	    if (retval == OK)
+		// do not add READ_FIFO here, otherweise we won't be able to detect the encoding
 		retval = read_buffer(FALSE, eap, flags);
 	}
 #endif
