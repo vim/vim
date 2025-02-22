@@ -1082,6 +1082,7 @@ vim_findfile(void *search_ctx_arg)
 			 * Try without extra suffix and then with suffixes
 			 * from 'suffixesadd'.
 			 */
+			len = file_path.length;
 			if (search_ctx->ffsc_tagfile)
 			    suf = (char_u *)"";
 			else
@@ -1164,8 +1165,8 @@ vim_findfile(void *search_ctx_arg)
 			    // Not found or found already, try next suffix.
 			    if (*suf == NUL)
 				break;
-			    file_path.length += copy_option_part(&suf, file_path.string + file_path.length,
-							 MAXPATHL - file_path.length, ",");
+			    file_path.length = len + copy_option_part(&suf,
+				  file_path.string + len, MAXPATHL - len, ",");
 			}
 		    }
 		}
@@ -1872,6 +1873,7 @@ find_file_in_path_option(
 	if (first == TRUE)
 	{
 	    int		l;
+	    int		NameBufflen;
 	    int		run;
 	    size_t	rel_fnamelen = 0;
 	    char_u	*suffix;
@@ -1912,6 +1914,7 @@ find_file_in_path_option(
 
 		// When the file doesn't exist, try adding parts of
 		// 'suffixesadd'.
+		NameBufflen = l;
 		suffix = suffixes;
 		for (;;)
 		{
@@ -1920,12 +1923,13 @@ find_file_in_path_option(
 				 || ((find_what == FINDFILE_DIR)
 						    == mch_isdir(NameBuff))))
 		    {
-			file_name = vim_strnsave(NameBuff, l);
+			file_name = vim_strnsave(NameBuff, NameBufflen);
 			goto theend;
 		    }
 		    if (*suffix == NUL)
 			break;
-		    l += copy_option_part(&suffix, NameBuff + l, MAXPATHL - l, ",");
+		    NameBufflen = l + copy_option_part(&suffix, NameBuff + l,
+							    MAXPATHL - l, ",");
 		}
 	    }
 	}
