@@ -98,6 +98,7 @@ runtime/compiler/se.vim			@dkearns
 runtime/compiler/shellcheck.vim		@dkearns
 runtime/compiler/sml.vim		@dkearns
 runtime/compiler/spectral.vim		@romainl
+runtime/compiler/svelte-check.vim		@Konfekt
 runtime/compiler/stylelint.vim		@dkearns
 runtime/compiler/tcl.vim		@dkearns
 runtime/compiler/tidy.vim		@dkearns
