@@ -24,4 +24,5 @@ void status_redraw_curbuf(void);
 void redraw_statuslines(void);
 void win_redraw_last_status(frame_T *frp);
 void redrawWinline(win_T *wp, linenr_T lnum);
+void redraw_win_range_later(win_T *wp, linenr_T first, linenr_T last);
 /* vim: set ft=c : */

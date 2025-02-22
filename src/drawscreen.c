@@ -3365,9 +3365,21 @@ redrawWinline(
     win_T	*wp,
     linenr_T	lnum)
 {
-    if (wp->w_redraw_top == 0 || wp->w_redraw_top > lnum)
-	wp->w_redraw_top = lnum;
-    if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < lnum)
-	wp->w_redraw_bot = lnum;
-    redraw_win_later(wp, UPD_VALID);
+    redraw_win_range_later(wp, lnum, lnum);
+}
+
+    void
+redraw_win_range_later(
+    win_T	*wp,
+    linenr_T	first,
+    linenr_T	last)
+{
+    if (last >= wp->w_topline && first < wp->w_botline)
+    {
+	if (wp->w_redraw_top == 0 || wp->w_redraw_top > first)
+	    wp->w_redraw_top = first;
+	if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < last)
+	    wp->w_redraw_bot = last;
+	redraw_win_later(wp, UPD_VALID);
+    }
 }
