@@ -216,6 +216,7 @@ Page custom SetCustom ValidateCustom
 
 # Include support for other languages:
 !if ${HAVE_MULTI_LANG}
+    !include "lang\brazilianportuguese.nsi"
     !include "lang\danish.nsi"
     !include "lang\dutch.nsi"
     !include "lang\german.nsi"
