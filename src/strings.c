@@ -1289,7 +1289,7 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
     blob_T	*blob;
     int		blen;
     long	idx;
-    int		utf8_inuse = FALSE;
+    int		validate_utf8 = FALSE;
 
     if (check_for_blob_arg(argvars, 0) == FAIL
 	    || check_for_opt_dict_arg(argvars, 1) == FAIL)
@@ -1316,7 +1316,14 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
     }
 
     if (STRCMP(p_enc, "utf-8") == 0 || STRCMP(p_enc, "utf8") == 0)
-	utf8_inuse = TRUE;
+	validate_utf8 = TRUE;
+
+    if (from_encoding != NULL && STRCMP(from_encoding, "none") == 0)
+    {
+	validate_utf8 = FALSE;
+	vim_free(from_encoding);
+	from_encoding = NULL;
+    }
 
     idx = 0;
     while (idx < blen)
@@ -1340,7 +1347,7 @@ f_blob2str(typval_T *argvars, typval_T *rettv)
 	    }
 	}
 
-	if (utf8_inuse)
+	if (validate_utf8)
 	{
 	    if (!utf_valid_string(converted_str, NULL))
 	    {
