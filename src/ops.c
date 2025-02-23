@@ -3011,9 +3011,9 @@ do_addsub(
     else
     {
 	char_u	*buf1;
-	size_t	buf1len;
+	int	buf1len;
 	char_u	buf2[NUMBUFLEN];
-	size_t	buf2len;
+	int	buf2len;
 	pos_T	save_pos;
 	int	i;
 
@@ -3189,7 +3189,7 @@ do_addsub(
 	    buf2len = vim_snprintf((char *)buf2, NUMBUFLEN, "%llX", n);
 	else
 	    buf2len = vim_snprintf((char *)buf2, NUMBUFLEN, "%llx", n);
-	length -= (int)buf2len;
+	length -= buf2len;
 
 	/*
 	 * Adjust number of zeros to the new number of digits, so the
@@ -3201,7 +3201,7 @@ do_addsub(
 	    while (length-- > 0)
 		*ptr++ = '0';
 	*ptr = NUL;
-	buf1len = (size_t)(ptr - buf1);
+	buf1len = (int)(ptr - buf1);
 
 	STRCPY(buf1 + buf1len, buf2);
 	buf1len += buf2len;
@@ -3212,7 +3212,7 @@ do_addsub(
 	save_pos = curwin->w_cursor;
 	if (todel > 0)
 	    inc_cursor();
-	ins_str(buf1, buf1len);		// insert the new number
+	ins_str(buf1, (size_t)buf1len);		// insert the new number
 	vim_free(buf1);
 
 	// del_char() will also mark line needing displaying
