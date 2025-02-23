@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Feb 22
+" Last Change:	2025 Feb 23
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -340,6 +340,11 @@ au BufNewFile,BufRead *.capnp			setf capnp
 
 " Cgdb config file
 au BufNewFile,BufRead cgdbrc			setf cgdbrc
+
+" m17n database files. */m17n/* matches installed files, */.m17n.d/* matches
+" per-user config files, */m17n-db/* matches the git repo. (must be before
+" *.cs)
+au BufNewFile,BufRead */{m17n,.m17n.d,m17n-db}/*.{ali,cs,dir,flt,fst,lnm,mic,mim,tbl} setf m17ndb
 
 " C#
 au BufNewFile,BufRead *.cs,*.csx,*.cake		setf cs
