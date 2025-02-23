@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Feb 20
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Feb 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5431,6 +5431,10 @@ in their own color.
 			See |highlight-args| for the {key}={arg} arguments.
 			See |:highlight-default| for the optional [default]
 			argument.
+
+:hi[ghlight][!] [default] link {from-group} {to-group}
+:hi[ghlight][!] [default] link {from-group} NONE
+			See |:hi-link|.
 
 Normally a highlight group is added once when starting up.  This sets the
 default values for the highlighting.  After that, you can use additional

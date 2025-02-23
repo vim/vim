@@ -418,8 +418,8 @@ func Test_match_completion()
   hi Aardig ctermfg=green
   call feedkeys(":match \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"match Aardig', @:)
-  call feedkeys(":match \<S-Tab>\<Home>\"\<CR>", 'xt')
-  call assert_equal('"match none', @:)
+  call feedkeys(":match NON\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"match NONE', @:)
   call feedkeys(":match | chist\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"match | chistory', @:)
 endfunc
@@ -428,20 +428,37 @@ func Test_highlight_completion()
   hi Aardig ctermfg=green
   call feedkeys(":hi \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi Aardig', getreg(':'))
+
+  " hi default
   call feedkeys(":hi default \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi default Aardig', getreg(':'))
-  call feedkeys(":hi clear Aa\<Tab>\<Home>\"\<CR>", 'xt')
-  call assert_equal('"hi clear Aardig', getreg(':'))
-  call feedkeys(":hi li\<S-Tab>\<Home>\"\<CR>", 'xt')
-  call assert_equal('"hi link', getreg(':'))
   call feedkeys(":hi d\<S-Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi default', getreg(':'))
+  call feedkeys(":hi default link Aa\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"hi default link Aardig', getreg(':'))
+
+  " hi clear only accepts one parameter
   call feedkeys(":hi c\<S-Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi clear', getreg(':'))
+  call feedkeys(":hi clear Aa\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"hi clear Aardig', getreg(':'))
   call feedkeys(":hi clear Aardig Aard\<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"hi clear Aardig Aardig', getreg(':'))
-  call feedkeys(":hi Aardig \<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"hi Aardig \t", getreg(':'))
+  call assert_equal("\"hi clear Aardig Aard\<Tab>", getreg(':'))
+  " hi link accepts up to two parameters
+  call feedkeys(":hi li\<S-Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"hi link', getreg(':'))
+  call assert_equal('"hi link', getreg(':'))
+  call feedkeys(":hi link Aa\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"hi link Aardig', getreg(':'))
+  call feedkeys(":hi link Aardig Aard\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"hi link Aardig Aardig", getreg(':'))
+  call feedkeys(":hi link Aardig Aardig Aard\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"hi link Aardig Aardig Aard\<Tab>", getreg(':'))
+  " hi link will complete to "NONE" for second parameter
+  call feedkeys(":hi link NON\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"hi link NonText", getreg(':'))
+  call feedkeys(":hi link Aardig NON\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"hi link Aardig NONE", getreg(':'))
 
   " A cleared group does not show up in completions.
   hi Anders ctermfg=green
@@ -458,6 +475,102 @@ func Test_highlight_easter_egg()
   call feedkeys(":hi Ni \<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"hi Ni \<Tab>", @:)
   call test_override('ALL', 0)
+endfunc
+
+func Test_highlight_group_completion()
+  " Test completing keys
+  call assert_equal('term=', getcompletion('hi Foo ', 'cmdline')[0])
+  call assert_equal('ctermfg=', getcompletion('hi Foo c*fg', 'cmdline')[0])
+  call assert_equal('NONE', getcompletion('hi Foo NON', 'cmdline')[0])
+  set wildoptions+=fuzzy
+  call assert_equal('ctermbg=', getcompletion('hi Foo cmbg', 'cmdline')[0])
+  set wildoptions-=fuzzy
+
+  " Test completing the current value
+  hi FooBar term=bold,underline cterm=undercurl ctermfg=lightgray ctermbg=12 ctermul=34
+  call assert_equal('bold,underline', getcompletion('hi FooBar term=', 'cmdline')[0])
+  call assert_equal('undercurl', getcompletion('hi FooBar cterm=', 'cmdline')[0])
+  call assert_equal('7', getcompletion('hi FooBar ctermfg=', 'cmdline')[0])
+  call assert_equal('12', getcompletion('hi FooBar ctermbg=', 'cmdline')[0])
+  call assert_equal('34', getcompletion('hi FooBar ctermul=', 'cmdline')[0])
+
+  " "bold,underline" is unique and creates an extra item. "undercurl" and
+  " should be de-duplicated
+  call assert_equal(len(getcompletion('hi FooBar term=', 'cmdline')),
+        \ 1 + len(getcompletion('hi FooBar cterm=', 'cmdline')))
+
+  " don't complete original value if we have user input already, similar to
+  " behavior in :set <option>=<pattern>
+  call assert_equal(['bold'], getcompletion('hi FooBar term=bol', 'cmdline'))
+  call assert_equal([], getcompletion('hi FooBar ctermfg=1', 'cmdline'))
+
+  " start/stop do not fill their current value now as they are more
+  " complicated
+  hi FooBar start=123 stop=234
+  call assert_equal([], getcompletion('hi FooBar start=', 'cmdline'))
+  call assert_equal([], getcompletion('hi FooBar stop=', 'cmdline'))
+
+  if has("gui") || has("termguicolors")
+    hi FooBar gui=italic guifg=#112233 guibg=brown1 guisp=green
+    call assert_equal('italic', getcompletion('hi FooBar gui=', 'cmdline')[0])
+    call assert_equal('#112233', getcompletion('hi FooBar guifg=', 'cmdline')[0])
+    call assert_equal('brown1', getcompletion('hi FooBar guibg=', 'cmdline')[0])
+    call assert_equal('green', getcompletion('hi FooBar guisp=', 'cmdline')[0])
+
+    " Check that existing value is de-duplicated and doesn't show up later
+    call assert_equal(1, count(getcompletion('hi FooBar guibg=', 'cmdline'), 'brown1'))
+  endif
+
+  " Test completing attributes
+  call assert_equal(['underdouble', 'underdotted'], getcompletion('hi DoesNotExist term=un*erdo*', 'cmdline'))
+  call assert_equal('NONE', getcompletion('hi DoesNotExist cterm=NON', 'cmdline')[0])
+  call assert_equal('NONE', getcompletion('hi DoesNotExist cterm=', 'cmdline')[-1]) " NONE should be at the end and not sorted
+  call assert_equal('bold', getcompletion('hi DoesNotExist cterm=underline,bo', 'cmdline')[0]) " complete after comma
+  if has("gui") || has("termguicolors")
+    set wildoptions+=fuzzy
+    call assert_equal('italic', getcompletion('hi DoesNotExist gui=itic', 'cmdline')[0])
+    set wildoptions-=fuzzy
+  endif
+
+  " Test completing cterm colors
+  call assert_equal('fg', getcompletion('hi FooBar ctermbg=f*g', 'cmdline')[0])
+  call assert_equal('fg', getcompletion('hi DoesNotExist ctermbg=f*g', 'cmdline')[0])
+  call assert_equal('NONE', getcompletion('hi FooBar ctermfg=NON', 'cmdline')[0])
+  call assert_equal('NONE', getcompletion('hi DoesNotExist ctermfg=NON', 'cmdline')[0])
+  set wildoptions+=fuzzy
+  call assert_equal('Black', getcompletion('hi FooBar ctermul=blck', 'cmdline')[0])
+  call assert_equal('Black', getcompletion('hi DoesNotExist ctermul=blck', 'cmdline')[0])
+  set wildoptions-=fuzzy
+
+  " Test completing gui colors
+  if has("gui") || has("termguicolors")
+    call assert_equal('fg', getcompletion('hi FooBar guibg=f*g', 'cmdline')[0])
+    call assert_equal('fg', getcompletion('hi DoesNotExist guibg=f*g', 'cmdline')[0])
+    call assert_equal('NONE', getcompletion('hi FooBar guifg=NON', 'cmdline')[0])
+    call assert_equal('NONE', getcompletion('hi DoesNotExist guifg=NON', 'cmdline')[0])
+    set wildoptions=fuzzy
+    call assert_equal('limegreen', getcompletion('hi FooBar guisp=limgrn', 'cmdline')[0])
+    call assert_equal('limegreen', getcompletion('hi DoesNotExist guisp=limgrn', 'cmdline')[0])
+    set wildoptions-=fuzzy
+
+    " Test pruning bad color names with space. Vim doesn't support them.
+    let v:colornames['foobar with space'] = '#123456'
+    let v:colornames['foobarwithoutspace'] = '#234567'
+    call assert_equal(['foobarwithoutspace'], getcompletion('hi FooBar guibg=foobarw', 'cmdline'))
+
+    " Test specialized sorting. First few items are special values that
+    " go first, after that it's a sorted list of color names.
+    call assert_equal(['fg','bg','NONE'], getcompletion('hi DoesNotExist guifg=', 'cmdline')[0:2])
+    let completed_colors=getcompletion('hi DoesNotExist guifg=', 'cmdline')[3:]
+    let gui_colors_no_space=filter(copy(v:colornames), {key,val -> match(key, ' ')==-1})
+    call assert_equal(len(gui_colors_no_space), len(completed_colors))
+    call assert_equal(sort(copy(completed_colors)), completed_colors)
+
+    " Test that the specialized sorting still works if we have some pattern matches
+    let completed_colors=getcompletion('hi DoesNotExist guifg=*blue*', 'cmdline')
+    call assert_equal(sort(copy(completed_colors)), completed_colors)
+    call assert_equal('aliceblue', completed_colors[0])
+  endif
 endfunc
 
 func Test_getcompletion()
