@@ -3388,6 +3388,125 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
+ * "complete_match()" function
+ */
+    void
+f_complete_match(typval_T *argvars, typval_T *rettv)
+{
+    linenr_T    lnum;
+    colnr_T     col;
+    char_u      *line = NULL;
+    char_u      *ise = NULL;
+    int         bytepos = -1;
+    regmatch_T  regmatch;
+    char_u      *before_cursor = NULL;
+    char_u      *trigger_str = NULL;
+    char_u	*p = NULL;
+    char_u	*start = NULL;
+    int		best_len = 0;
+
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    ise = curbuf->b_p_ise != empty_option ? curbuf->b_p_ise : p_ise;
+
+    // Process arguments
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	lnum = curwin->w_cursor.lnum;
+	col = curwin->w_cursor.col;
+    }
+    else if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	emsg(_(e_invalid_argument));
+	return;
+    }
+    else
+    {
+	lnum = (linenr_T)tv_get_number(&argvars[0]);
+	col = (colnr_T)tv_get_number(&argvars[1]) - 1;  // Convert to 0-based
+	if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
+	{
+	    semsg(_(e_invalid_line_number_nr), lnum);
+	    return;
+	}
+	if (col < 0 || col > ml_get_buf_len(curbuf, lnum) - 1)
+	{
+	    semsg(_(e_invalid_column_number_nr), col + 1);
+	    return;
+	}
+    }
+
+    line = ml_get_buf(curbuf, lnum, FALSE);
+    if (line == NULL)
+	return;
+    before_cursor = vim_strnsave(line, col);
+    if (before_cursor == NULL)
+	return;
+
+    // Default: use iskeyword pattern if isexpand is empty
+    if (ise == NULL || *ise == NUL)
+    {
+	regmatch.regprog = vim_regcomp((char_u *)"\\k\\+$", RE_MAGIC);
+	if (regmatch.regprog != NULL)
+	{
+	    if (vim_regexec_nl(&regmatch, before_cursor, (colnr_T)0))
+	    {
+		bytepos = (int)(regmatch.startp[0] - before_cursor);
+		trigger_str = vim_strnsave(regmatch.startp[0],
+			regmatch.endp[0] - regmatch.startp[0]);
+	    }
+	    vim_regfree(regmatch.regprog);
+	}
+    }
+    else
+    {
+	p = ise;
+	start = p;
+	while (p != NULL && *p != NUL)
+	{
+	    if (*p == ',' || *(p + 1) == NUL)
+	    {
+		int end = (*p == ',') ? 0 : 1;
+		int len = (int)(p - start + end);
+
+		if (len > 0 && len <= col && len > best_len)
+		{
+		    if (STRNCMP(before_cursor + col - len, start, len) == 0)
+		    {
+			best_len = len;
+			bytepos = col - len;
+			vim_free(trigger_str);
+			trigger_str = vim_strnsave(start, len);
+		    }
+		}
+
+		start = p + 1;
+	    }
+
+	    if (*p != NUL)
+	    {
+		if (*p == ',')
+		    p++;
+		else
+		    MB_PTR_ADV(p);
+	    }
+	}
+    }
+
+    vim_free(before_cursor);
+    list_append_number(rettv->vval.v_list, bytepos == -1 ? -1 : bytepos + 1);
+    if (trigger_str != NULL)
+    {
+	list_append_string(rettv->vval.v_list, trigger_str, -1);
+	vim_free(trigger_str);
+    }
+    else
+	list_append_string(rettv->vval.v_list, (char_u *)"", 0);
+}
+
+/*
  * Return Insert completion mode name string
  */
     static char_u *

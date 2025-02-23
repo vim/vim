@@ -310,6 +310,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_cinw);
     check_string_option(&buf->b_p_cot);
     check_string_option(&buf->b_p_cpt);
+    check_string_option(&buf->b_p_ise);
 #ifdef FEAT_COMPL_FUNC
     check_string_option(&buf->b_p_cfu);
     check_string_option(&buf->b_p_ofu);
@@ -2829,6 +2830,38 @@ did_set_imactivatekey(optset_T *args UNUSED)
     return NULL;
 }
 #endif
+
+/*
+ * The 'isexpand' option is changed.
+ */
+    char *
+did_set_isexpand(optset_T *args UNUSED)
+{
+    char_u *ise = p_ise;
+    char_u *p;
+    int last_was_comma = FALSE;
+
+    if (args->os_flags & OPT_LOCAL)
+       ise = curbuf->b_p_ise;
+
+    for (p = ise; *p != NUL; p++)
+    {
+	if (*p == ',')
+	{
+	    if (last_was_comma)
+	       return e_invalid_argument;
+	   last_was_comma = TRUE;
+	}
+	else
+	    last_was_comma = FALSE;
+    }
+
+    if (last_was_comma)
+       return e_invalid_argument;
+
+    return NULL;
+}
+
 
 /*
  * The 'iskeyword' option is changed.

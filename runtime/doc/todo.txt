@@ -4749,20 +4749,10 @@ Insert mode completion/expansion:
 7   When expanding file names with an environment variable, add the match with
     the unexpanded var.  So $HOME/tm expands to "/home/guy/tmp" and
     "$HOME/tmp"
-8   When there is no word before the cursor but something like "sys." complete
-    with "sys.".  Works well for C and similar languages.
 9   ^X^L completion doesn't repeat correctly.  It uses the first match with
     the last added line, instead of continuing where the last match ended.
     (Webb)
-8   Add option to set different behavior for Insert mode completion:
-    - ignore/match case
-    - different characters than 'iskeyword'
-8   Add option 'isexpand', containing characters when doing expansion (so that
-    "." and "\" can be included, without changing 'iskeyword'). (Goldfarb)
-    Also: 'istagword': characters used for CTRL-].
-    When 'isexpand' or 'istagword' are empty, use 'iskeyword'.
-    Alternative: Use a pattern so that start and end of a keyword can be
-    defined, only allow dash in the middle, etc.
+8   Add option 'istagword': characters used for CTRL-]. like 'isexpand'
 8   Add a command to undo the completion, go back to the original text.
 7   Completion of an abbreviation: Can leave letters out, like what Instant
     text does: www.textware.com
