@@ -9002,6 +9002,7 @@ netrw-ctrl-h	pi_netrw.txt	/*netrw-ctrl-h*
 netrw-ctrl-l	pi_netrw.txt	/*netrw-ctrl-l*
 netrw-ctrl-r	pi_netrw.txt	/*netrw-ctrl-r*
 netrw-ctrl_l	pi_netrw.txt	/*netrw-ctrl_l*
+netrw-curdir	pi_netrw.txt	/*netrw-curdir*
 netrw-d	pi_netrw.txt	/*netrw-d*
 netrw-del	pi_netrw.txt	/*netrw-del*
 netrw-delete	pi_netrw.txt	/*netrw-delete*
