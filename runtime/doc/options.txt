@@ -4906,6 +4906,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	and there is a letter before it, the completed part is made uppercase.
 	With 'noinfercase' the match is used as-is.
 
+						*'isexpand'* *'ise'*
+'isexpand' 'ise'	string	(default: "")
+			local to buffer
+	Defines characters for completion in insert mode. A comma-separated
+	list where 'k' means using 'iskeyword' pattern, and other characters
+	trigger completion directly. For example, "k,.,/" enables keyword
+	completion and triggers completion after dots and slashes.
+
 			*'insertmode'* *'im'* *'noinsertmode'* *'noim'*
 'insertmode' 'im'	boolean	(default off)
 			global

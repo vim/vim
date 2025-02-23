@@ -3379,6 +3379,109 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
+ * "complete_startcol()" function
+ */
+    void
+f_complete_startcol(typval_T *argvars, typval_T *rettv)
+{
+    linenr_T    lnum;
+    colnr_T     col;
+    char_u      *line = NULL;
+    char_u      *ise = curbuf->b_p_ise != empty_option ? curbuf->b_p_ise : p_ise;
+    int         bytepos = -1;
+    char_u      *s = NULL;
+    regmatch_T  regmatch;
+    char_u      *before_cursor = NULL;
+    char_u      trigger = NUL;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	lnum = curwin->w_cursor.lnum;
+	col = curwin->w_cursor.col;
+    }
+    else if (argvars[1].v_type == VAR_UNKNOWN)
+	return;
+    else
+    {
+	lnum = (linenr_T)tv_get_number(&argvars[0]);
+	col = (colnr_T)tv_get_number(&argvars[1]) - 1;  // 0-based
+
+	if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
+	{
+	    semsg(_(e_invalid_line_number_nr), lnum);
+	    return;
+	}
+
+	if (col < 0 || col > ml_get_buf_len(curbuf, lnum) - 1)
+	{
+	    semsg(_(e_invalid_column_number_nr), col + 1);
+	    return;
+	}
+    }
+
+    line = ml_get_buf(curbuf, lnum, FALSE);
+    before_cursor = vim_strnsave(line, col);
+    if (before_cursor == NULL)
+	return;
+
+    while (*ise != NUL)
+    {
+	if (*ise == 'k')
+	{
+	    regmatch.regprog = vim_regcomp((char_u *)"\\k\\+$", RE_MAGIC);
+	    if (regmatch.regprog != NULL)
+	    {
+		if (vim_regexec_nl(&regmatch, before_cursor, (colnr_T)0))
+		{
+		    bytepos = (int)(regmatch.startp[0] - before_cursor);
+		    trigger = 'k';
+		}
+		vim_regfree(regmatch.regprog);
+		if (bytepos != -1)
+		    break;
+	    }
+	}
+	else if (*ise != ',')
+	{
+	    for (s = line + col; s > line; )
+	    {
+		MB_PTR_BACK(line, s);
+		if (*s == *ise)
+		{
+		    bytepos = (int)(s - line);
+		    trigger = *ise;
+		    break;
+		}
+	    }
+	    if (bytepos != -1)
+		break;
+	}
+
+	if (*ise == ',')
+	    ++ise;
+	else
+	    MB_PTR_ADV(ise);
+    }
+
+    vim_free(before_cursor);
+
+    list_append_number(rettv->vval.v_list, bytepos == -1 ? -1 : bytepos + 1);
+
+    if (trigger == NUL)
+	list_append_string(rettv->vval.v_list, (char_u *)"", 0);
+    else
+    {
+	char_u trigger_str[2];
+	trigger_str[0] = trigger;
+	trigger_str[1] = NUL;
+	list_append_string(rettv->vval.v_list, trigger_str, 1);
+    }
+}
+
+/*
  * Return Insert completion mode name string
  */
     static char_u *
