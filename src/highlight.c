@@ -3060,7 +3060,7 @@ highlight_list_one(int id)
     if (message_filtered(sgp->sg_name))
 	return;
 
-    // Note: Keep this in sync with expand_highligh_group().
+    // Note: Keep this in sync with expand_highlight_group().
     didh = highlight_list_arg(id, didh, LIST_ATTR,
 				    sgp->sg_term, NULL, "term");
     didh = highlight_list_arg(id, didh, LIST_STRING,
@@ -4163,7 +4163,7 @@ set_context_in_highlight_cmd(expand_T *xp, char_u *arg)
     {
 	if (expand_group)
 	{
-	    // expansion will be done in expand_highligh_group()
+	    // expansion will be done in expand_highlight_group()
 	    xp->xp_context = EXPAND_HIGHLIGHT_GROUP;
 
 	    expand_hi_synid = syn_namen2id(arg, (int)(p - arg));
@@ -4396,7 +4396,7 @@ get_highlight_group_key(expand_T *xp UNUSED, int idx)
  * Command-line expansion for :hi {group-name} <args>...
  */
     int
-expand_highligh_group(
+expand_highlight_group(
 	char_u	    *pat,
 	expand_T    *xp,
 	regmatch_T  *rmp,

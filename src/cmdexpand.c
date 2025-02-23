@@ -3222,7 +3222,7 @@ ExpandFromContext(
     else if (xp->xp_context == EXPAND_ARGOPT)
 	ret = expand_argopt(pat, xp, &regmatch, matches, numMatches);
     else if (xp->xp_context == EXPAND_HIGHLIGHT_GROUP)
-	ret = expand_highligh_group(pat, xp, &regmatch, matches, numMatches);
+	ret = expand_highlight_group(pat, xp, &regmatch, matches, numMatches);
 #if defined(FEAT_TERMINAL)
     else if (xp->xp_context == EXPAND_TERMINALOPT)
 	ret = expand_terminal_opt(pat, xp, &regmatch, matches, numMatches);
