@@ -134,6 +134,7 @@ complete({startcol}, {matches}) none	set Insert mode completion
 complete_add({expr})		Number	add completion match
 complete_check()		Number	check for key typed during completion
 complete_info([{what}])		Dict	get current completion information
+complete_startcol()		Number	get complete startcol.
 confirm({msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
 copy({expr})			any	make a shallow copy of {expr}
@@ -1997,6 +1998,11 @@ complete_info([{what}])				*complete_info()*
 			GetItems()->complete_info()
 <
 		Return type: dict<any>
+
+complete_startcol()				*complete_startcol()*
+		Return the column position where completion should start based
+		on the 'completetrigger' option, searching backwards from
+		cursor. Returns -1 if no trigger position is found.
 
 						*confirm()*
 confirm({msg} [, {choices} [, {default} [, {type}]]])
