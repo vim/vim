@@ -436,6 +436,8 @@ $quote	eval.txt	/*$quote*
 'infercase'	options.txt	/*'infercase'*
 'insertmode'	options.txt	/*'insertmode'*
 'is'	options.txt	/*'is'*
+'ise'	options.txt	/*'ise'*
+'isexpand'	options.txt	/*'isexpand'*
 'isf'	options.txt	/*'isf'*
 'isfname'	options.txt	/*'isfname'*
 'isi'	options.txt	/*'isi'*
@@ -6661,6 +6663,7 @@ complete_add()	builtin.txt	/*complete_add()*
 complete_check()	builtin.txt	/*complete_check()*
 complete_info()	builtin.txt	/*complete_info()*
 complete_info_mode	builtin.txt	/*complete_info_mode*
+complete_match()	builtin.txt	/*complete_match()*
 completed_item-variable	eval.txt	/*completed_item-variable*
 completion-functions	usr_41.txt	/*completion-functions*
 complex-change	change.txt	/*complex-change*

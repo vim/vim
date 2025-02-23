@@ -3302,6 +3302,7 @@ struct file_buffer
     char_u	*b_p_fo;	// 'formatoptions'
     char_u	*b_p_flp;	// 'formatlistpat'
     int		b_p_inf;	// 'infercase'
+    char_u	*b_p_ise;	// 'isexpand' local value
     char_u	*b_p_isk;	// 'iskeyword'
 #ifdef FEAT_FIND_ID
     char_u	*b_p_def;	// 'define' local value
