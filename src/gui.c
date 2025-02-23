@@ -5289,7 +5289,7 @@ gui_do_findrepl(
 
 		    del_bytes((long)(regmatch.endp[0] - regmatch.startp[0]),
 								FALSE, FALSE);
-		    ins_str(repl_text);
+		    ins_str(repl_text, STRLEN(repl_text));
 		}
 	    }
 	    else

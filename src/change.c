@@ -1178,10 +1178,9 @@ ins_char_bytes(char_u *buf, int charlen)
  * Caller must have prepared for undo.
  */
     void
-ins_str(char_u *s)
+ins_str(char_u *s, size_t slen)
 {
     char_u	*oldp, *newp;
-    int		newlen = (int)STRLEN(s);
     int		oldlen;
     colnr_T	col;
     linenr_T	lnum = curwin->w_cursor.lnum;
@@ -1193,16 +1192,16 @@ ins_str(char_u *s)
     oldp = ml_get(lnum);
     oldlen = (int)ml_get_len(lnum);
 
-    newp = alloc(oldlen + newlen + 1);
+    newp = alloc(oldlen + slen + 1);
     if (newp == NULL)
 	return;
     if (col > 0)
 	mch_memmove(newp, oldp, (size_t)col);
-    mch_memmove(newp + col, s, (size_t)newlen);
-    mch_memmove(newp + col + newlen, oldp + col, (size_t)(oldlen - col + 1));
+    mch_memmove(newp + col, s, slen);
+    mch_memmove(newp + col + slen, oldp + col, (size_t)(oldlen - col + 1));
     ml_replace(lnum, newp, FALSE);
-    inserted_bytes(lnum, col, newlen);
-    curwin->w_cursor.col += newlen;
+    inserted_bytes(lnum, col, slen);
+    curwin->w_cursor.col += slen;
 }
 
 /*
