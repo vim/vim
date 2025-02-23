@@ -3,7 +3,8 @@
 " Maintainer:           Doug Kearns <dougkearns@gmail.com>
 " Last Change:          2025 Jan 06
 " Former Maintainer:    Bram Moolenaar <Bram@vim.org>
-" Contributors:         Riley Bruins <ribru17@gmail.com> ('commentstring')
+" Contributors:         Riley Bruins <ribru17@gmail.com> ('commentstring'),
+"                       @Konfekt, @tpope ('keywordprg')
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -55,7 +56,7 @@ if !exists("*" .. expand("<SID>") .. "Help")
     let topic = a:topic
 
     if get(g:, 'syntax_on', 0)
-      silent! let syn = synIDattr(synID(line('.'), col('.'), 1), 'name')
+      let syn = synIDattr(synID(line('.'), col('.'), 1), 'name')
       if syn ==# 'vimFuncName'
         return topic.'()'
       elseif syn ==# 'vimOption'
