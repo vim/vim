@@ -1429,11 +1429,13 @@ change_indent(
 	    ptr = alloc(i + 1);
 	    if (ptr != NULL)
 	    {
+		size_t ptrlen;
 		new_cursor_col += i;
 		ptr[i] = NUL;
+		ptrlen = i;
 		while (--i >= 0)
 		    ptr[i] = ' ';
-		ins_str(ptr);
+		ins_str(ptr, ptrlen);
 		vim_free(ptr);
 	    }
 	}

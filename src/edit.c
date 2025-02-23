@@ -2058,7 +2058,7 @@ insert_special(
 	    if (stop_arrow() == FAIL)
 		return;
 	    p[len - 1] = NUL;
-	    ins_str(p);
+	    ins_str(p, len - 1);
 	    AppendToRedobuffLit(p, -1);
 	    ctrlv = FALSE;
 	}
@@ -2275,7 +2275,7 @@ insertchar(
 	do_digraph(buf[i-1]);		// may be the start of a digraph
 #endif
 	buf[i] = NUL;
-	ins_str(buf);
+	ins_str(buf, i);
 	if (flags & INSCHAR_CTRLV)
 	{
 	    redo_literal(*buf);
@@ -4300,7 +4300,7 @@ ins_bs(
 		    ins_char(' ');
 		else
 		{
-		    ins_str((char_u *)" ");
+		    ins_str((char_u *)" ", 1);
 		    if ((State & REPLACE_FLAG))
 			replace_push(NUL);
 		}
@@ -4976,7 +4976,7 @@ ins_tab(void)
 	    ins_char(' ');
 	else
 	{
-	    ins_str((char_u *)" ");
+	    ins_str((char_u *)" ", 1);
 	    if (State & REPLACE_FLAG)	    // no char replaced
 		replace_push(NUL);
 	}
