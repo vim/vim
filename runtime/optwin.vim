@@ -1254,6 +1254,8 @@ call <SID>AddOption("isfname", gettext("specifies the characters in a file name"
 call <SID>OptionG("isf", &isf)
 call <SID>AddOption("isident", gettext("specifies the characters in an identifier"))
 call <SID>OptionG("isi", &isi)
+call <SID>AddOption("isexpand", gettext("trigger strings for complete_match()"))
+call append("$", "\t" .. s:local_to_buffer)
 call <SID>AddOption("iskeyword", gettext("specifies the characters in a keyword"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>OptionL("isk")
