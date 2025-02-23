@@ -91,3 +91,11 @@ set path=abc,
 set path=
       "\ def is a 'path' directory value
       \abc,def
+
+
+" CompilerSet
+
+CompilerSet makeprg=ant
+CompilerSet errorformat=\ %#[%.%#]\ %#%f:%l:%v:%*\\d:%*\\d:\ %t%[%^:]%#:%m,
+    \%A\ %#[%.%#]\ %f:%l:\ %m,%-Z\ %#[%.%#]\ %p^,%C\ %#[%.%#]\ %#%m
+

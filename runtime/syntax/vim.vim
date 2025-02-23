@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Feb 16
+" Last Change:	   2025 Feb 23
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -95,7 +95,7 @@ syn keyword vimGroup contained	Comment Constant String Character Number Boolean 
 
 " Default highlighting groups {{{2
 " GEN_SYN_VIM: vimHLGroup, START_STR='syn keyword vimHLGroup contained', END_STR=''
-syn keyword vimHLGroup contained ErrorMsg IncSearch ModeMsg NonText StatusLine StatusLineNC EndOfBuffer VertSplit VisualNOS DiffText PmenuSbar TabLineSel TabLineFill Cursor lCursor QuickFixLine CursorLineSign CursorLineFold CurSearch PmenuKind PmenuKindSel PmenuMatch PmenuMatchSel PmenuExtra PmenuExtraSel Normal Directory LineNr CursorLineNr MoreMsg Question Search SpellBad SpellCap SpellRare SpellLocal PmenuThumb Pmenu PmenuSel SpecialKey Title WarningMsg WildMenu Folded FoldColumn SignColumn Visual DiffAdd DiffChange DiffDelete TabLine CursorColumn CursorLine ColorColumn MatchParen StatusLineTerm StatusLineTermNC ToolbarLine ToolbarButton Menu Tooltip Scrollbar CursorIM LineNrAbove LineNrBelow
+syn keyword vimHLGroup contained ErrorMsg IncSearch ModeMsg NonText StatusLine StatusLineNC EndOfBuffer VertSplit VisualNOS DiffText PmenuSbar TabLineSel TabLineFill Cursor lCursor QuickFixLine CursorLineSign CursorLineFold CurSearch PmenuKind PmenuKindSel PmenuMatch PmenuMatchSel PmenuExtra PmenuExtraSel PopupSelected MessageWindow PopupNotification Normal Directory LineNr CursorLineNr MoreMsg Question Search SpellBad SpellCap SpellRare SpellLocal PmenuThumb Pmenu PmenuSel SpecialKey Title WarningMsg WildMenu Folded FoldColumn SignColumn Visual DiffAdd DiffChange DiffDelete TabLine CursorColumn CursorLine ColorColumn MatchParen StatusLineTerm StatusLineTermNC ToolbarLine ToolbarButton Menu Tooltip Scrollbar CursorIM LineNrAbove LineNrBelow
 syn match vimHLGroup contained "\<Conceal\>"
 syn case match
 
@@ -240,7 +240,7 @@ syn match	vimNumber	'\<0z\%(\x\x\)\+\%(\.\%(\x\x\)\+\)*'	skipwhite nextgroup=vim
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimFor,vimFunction,vimFuncFold,vimGlobal,vimHighlight,vimLet,vimLoadkeymap,vimLockvar,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimSet,vimSleep,vimSyntax,vimThrow,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate,@vim9CmdList
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimFor,vimFunction,vimFuncFold,vimGlobal,vimHighlight,vimLet,vimLoadkeymap,vimLockvar,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimSet,vimSleep,vimSyntax,vimThrow,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList
 syn cluster vim9CmdList	contains=vim9Abstract,vim9Class,vim9Const,vim9Enum,vim9Export,vim9Final,vim9For,vim9Interface,vim9Type,vim9Var
 syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
 syn match vimCount	contained	"\d\+"
@@ -949,6 +949,19 @@ syn match	vimMap	"\<map\%(\s\+(\)\@="	skipwhite nextgroup=vimMapBang,vimMapMod,v
 
 " User Command Highlighting: {{{2
 syn match vimUsrCmd	'^\s*\zs\u\%(\w*\)\@>\%([(#[]\|\s\+\%([-+*/%]\=\|\.\.\)=\)\@!'
+
+" Vim user commands
+
+" Compiler plugins
+syn match	vimCompilerSet	"\<CompilerSet\>"	skipwhite nextgroup=vimSetRegion
+
+" runtime/makemenu.vim
+syn match	vimSynMenu		"\<SynMenu\>"	skipwhite nextgroup=vimSynMenuPath
+syn match	vimSynMenuPath	contained	".*\ze:"	nextgroup=vimSynMenuColon contains=vimMenuNotation
+syn match	vimSynMenuColon	contained	":"	nextgroup=vimSynMenuName
+syn match	vimSynMenuName	contained	"\w\+"
+
+syn cluster vimExUserCmdList contains=vimCompilerSet,vimSynMenu
 
 " Errors And Warnings: {{{2
 " ====================
@@ -1674,6 +1687,10 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9Var	vimCommand
  hi def link vim9Vim9ScriptArg	Special
  hi def link vim9Vim9Script	vimCommand
+
+ hi def link vimCompilerSet	vimCommand
+ hi def link vimSynMenu	vimCommand
+ hi def link vimSynMenuPath	vimMenuName
 endif
 
 " Current Syntax Variable: {{{2
