@@ -368,10 +368,6 @@ readfile(
     }
 #if defined(UNIX) || defined(VMS)
     if (!read_stdin && fname != NULL)
-	/*
-	 * On Unix it is possible to read a directory, so we have to
-	 * check for it before the mch_open().
-	 */
 	perm = mch_getperm(fname);
 #endif
 
@@ -387,6 +383,10 @@ readfile(
 # endif
 						)
 	{
+	    /*
+	     * On Unix it is possible to read a directory, so we have to
+	     * check for it before the mch_open().
+	     */
 	    if (S_ISDIR(perm))
 	    {
 		filemess(curbuf, fname, (char_u *)_(msg_is_a_directory), 0);
