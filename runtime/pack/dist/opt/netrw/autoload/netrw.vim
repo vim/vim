@@ -5304,7 +5304,18 @@ function! s:NetrwHome()
     elseif exists('$MYVIMDIR')
         let home = expand('$MYVIMDIR')->substitute('/$', '', '')
     else
-        let home = netrw#own#PathJoin(expand('~'), '.vim')
+        " Pick the first redable directory in 'runtimepath'
+        for path in split(&rtp, ',')
+            if isdirectory(s:NetrwFile(path)) && filewritable(s:NetrwFile(path))
+                let home = path
+                break
+            endif
+        endfor
+
+        if empty(path)
+            " just pick the first directory
+            let home = substitute(&rtp, ',.*$', '', '')
+        endif
     endif
 
     " insure that the home directory exists
