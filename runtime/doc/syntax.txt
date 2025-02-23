@@ -5432,6 +5432,10 @@ in their own color.
 			See |:highlight-default| for the optional [default]
 			argument.
 
+:hi[ghlight][!] [default] link {from-group} {to-group}
+:hi[ghlight][!] [default] link {from-group} NONE
+			See |:hi-link|.
+
 Normally a highlight group is added once when starting up.  This sets the
 default values for the highlighting.  After that, you can use additional
 highlight commands to change the arguments that you want to set to non-default
