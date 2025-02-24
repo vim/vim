@@ -3432,10 +3432,10 @@ intro_message(
     char	*p;
     static char	*(lines[]) =
     {
-	N_("VIM - Vi IMproved"),
+	N_("FORGEVIM"),
 	"",
 	N_("version "),
-	N_("by Bram Moolenaar et al."),
+	N_("VIM by Bram Moolenaar et al. FORGEVIM edited by Lucas H Fenstra"),
 #ifdef MODIFIED_BY
 	" ",
 #endif

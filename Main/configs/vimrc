@@ -1,0 +1,2 @@
+let s:config_path = expand('<sfile>:p:h')
+execute 'source ' . s:config_path . '/DE/plugins.vim'
