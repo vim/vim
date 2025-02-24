@@ -90,6 +90,9 @@ func VerifyScreenDump(buf, filename, options, ...)
       call assert_report(msg)
       " no point in retrying
       let g:run_nr = 10
+      if testfile !~# '^failed/Test_'
+	call writefile([printf('D: %4d: new: %s', (i + 1), testfile)], 'failed/00-TRACE_LOG', 'a')
+      endif
       return 1
     endif
 
@@ -131,8 +134,14 @@ func VerifyScreenDump(buf, filename, options, ...)
 
     let i += 1
     if i >= max_loops
+      if testfile !~# '^failed/Test_'
+	call writefile([printf('D: %4d: max: %s', (i + 0), testfile)], 'failed/00-TRACE_LOG', 'a')
+      endif
       return 1
     endif
   endwhile
+  if testfile !~# '^failed/Test_'
+    call writefile([printf('D: %4d: %s', (i + 1), testfile)], 'failed/00-TRACE_LOG', 'a')
+  endif
   return 0
 endfunc
