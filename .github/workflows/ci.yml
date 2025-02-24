@@ -269,7 +269,7 @@ jobs:
 
       - name: Test
         if: matrix.architecture != 'arm64'
-        timeout-minutes: 25
+        timeout-minutes: 30
         run: |
           make ${SHADOWOPT} ${TEST}
 
@@ -277,7 +277,7 @@ jobs:
       # `sg audio` does not work on arm64 runner due to permission ('Incorrect password' error).
       - name: Test on arm64
         if: matrix.architecture == 'arm64'
-        timeout-minutes: 25
+        timeout-minutes: 30
         run: |
           make ${SHADOWOPT} ${TEST}
 
@@ -399,7 +399,7 @@ jobs:
           brew install diffutils
 
       - name: Test
-        timeout-minutes: 25
+        timeout-minutes: 30
         run: |
           make ${TEST}
 
