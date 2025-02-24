@@ -837,30 +837,6 @@ find_imported(char_u *name, size_t len, int load)
 }
 
 /*
- * Find "name" in imported items of extended base class of the class to which
- * the context :def function belongs.
- */
-    imported_T *
-find_imported_from_extends(cctx_T *cctx, char_u *name, size_t len, int load)
-{
-    if (cctx == NULL || cctx->ctx_ufunc == NULL
-					|| cctx->ctx_ufunc->uf_class == NULL)
-	return NULL;
-
-    class_T *cl_extends = cctx->ctx_ufunc->uf_class->class_extends;
-    if (cl_extends == NULL
-			|| cl_extends->class_class_function_count_child <= 0)
-	return NULL;
-
-    sctx_T current_sctx_save = current_sctx;
-    current_sctx = cl_extends->class_class_functions[0]->uf_script_ctx;
-    imported_T *ret = find_imported(name, len, load);
-    current_sctx = current_sctx_save;
-
-    return ret;
-}
-
-/*
  * Called when checking for a following operator at "arg".  When the rest of
  * the line is empty or only a comment, peek the next line.  If there is a next
  * line return a pointer to it and set "nextp".
@@ -1398,7 +1374,7 @@ generate_loadvar(cctx_T *cctx, lhs_T *lhs)
 	case dest_script:
 	case dest_script_v9:
 	    res = compile_load_scriptvar(cctx,
-			    name + (name[1] == ':' ? 2 : 0), NULL, NULL, NULL);
+			    name + (name[1] == ':' ? 2 : 0), NULL, NULL);
 	    break;
 	case dest_env:
 	    // Include $ in the name here
@@ -3995,9 +3971,34 @@ obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
 
 	if (m->ocm_init != NULL)
 	{
-	    char_u *expr = m->ocm_init;
+	    char_u	*expr = m->ocm_init;
+	    sctx_T	save_current_sctx;
+	    int		change_sctx = FALSE;
 
-	    if (compile_expr0(&expr, cctx) == FAIL)
+	    // If the member variable initialization script context is
+	    // different from the current script context, then change it.
+	    if (current_sctx.sc_sid != m->ocm_init_sctx.sc_sid)
+		change_sctx = TRUE;
+
+	    if (change_sctx)
+	    {
+		// generate an instruction to change the script context to the
+		// member variable initialization script context.
+		save_current_sctx = current_sctx;
+		current_sctx = m->ocm_init_sctx;
+		generate_SCRIPTCTX_SET(cctx, current_sctx);
+	    }
+
+	    int r = compile_expr0(&expr, cctx);
+
+	    if (change_sctx)
+	    {
+		// restore the previous script context
+		current_sctx = save_current_sctx;
+		generate_SCRIPTCTX_SET(cctx, current_sctx);
+	    }
+
+	    if (r == FAIL)
 		return FAIL;
 
 	    if (!ends_excmd2(m->ocm_init, expr))
