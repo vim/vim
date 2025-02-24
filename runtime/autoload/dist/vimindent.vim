@@ -1055,19 +1055,16 @@ enddef
 
 def IsInside(lnum: number, syntax: string): bool # {{{3
     if syntax == 'EnumBlock'
-        var cur_pos = getpos('.')
+        defer setpos('.', getcurpos())
         cursor(lnum, 1)
-        var enum_pos = search('^\C\s*\%(export\s\)\=\s*enum\s\+\S\+', 'bnW')
-        var endenum_pos = search('^\C\s*endenum\>', 'bnW')
-        setpos('.', cur_pos)
 
-        if enum_pos == 0 && endenum_pos == 0
+        const enum_pos: number = search('^\C\s*\%(export\s\+\)\=enum\s\+\S\+', 'bcnW')
+        if enum_pos == 0 || enum_pos == lnum
             return false
         endif
-        if (enum_pos > 0 && (endenum_pos == 0 || enum_pos > endenum_pos))
-            return true
-        endif
-        return false
+
+        const endenum_pos: number = search('^\C\s*endenum\>', 'bcnW')
+        return endenum_pos == 0 || (endenum_pos != lnum && enum_pos > endenum_pos)
     endif
 
     if !exists('b:vimindent')
