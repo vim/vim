@@ -1385,6 +1385,8 @@ del_bytes(
  *	    OPENLINE_KEEPTRAIL	keep trailing spaces
  *	    OPENLINE_MARKFIX	adjust mark positions after the line break
  *	    OPENLINE_COM_LIST	format comments with list or 2nd line indent
+ *	    OPENLINE_FORCE_INDENT  set indent from second_line_indent, ignore
+ *				   'autoindent'
  *
  * "second_line_indent": indent for after ^^D in Insert mode or if flag
  *			  OPENLINE_COM_LIST
@@ -1498,9 +1500,11 @@ open_line(
     if (dir == FORWARD && did_ai)
 	trunc_line = TRUE;
 
+    if ((flags & OPENLINE_FORCE_INDENT) && second_line_indent >= 0)
+	newindent = second_line_indent;
     // If 'autoindent' and/or 'smartindent' is set, try to figure out what
     // indent to use for the new line.
-    if (curbuf->b_p_ai || do_si)
+    else if (curbuf->b_p_ai || do_si)
     {
 	// count white space on current line
 #ifdef FEAT_VARTABS

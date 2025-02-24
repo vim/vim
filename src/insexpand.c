@@ -4473,6 +4473,7 @@ ins_compl_expand_multiple(char_u *str)
 {
     char_u	*start = str;
     char_u	*curr = str;
+    int		base_indent = get_indent();
 
     while (*curr != NUL)
     {
@@ -4483,7 +4484,7 @@ ins_compl_expand_multiple(char_u *str)
 		ins_char_bytes(start, (int)(curr - start));
 
 	    // Handle newline
-	    open_line(FORWARD, OPENLINE_KEEPTRAIL, FALSE, NULL);
+	    open_line(FORWARD, OPENLINE_KEEPTRAIL | OPENLINE_FORCE_INDENT, base_indent, NULL);
 	    start = curr + 1;
 	}
 	curr++;
