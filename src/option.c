@@ -8418,55 +8418,6 @@ vimrc_found(char_u *fname, char_u *envname)
 	    if (p != NULL)
 	    {
 		vim_setenv(envname, p);
-		if (vim_getenv((char_u *)"MYVIMDIR", &dofree) == NULL)
-		{
-		    size_t  usedlen = 0;
-		    size_t  len = 0;
-		    char_u  *fbuf = NULL;
-
-		    if (STRNCMP(gettail(fname), ".vimrc", 6) == 0)
-		    {
-			len = STRLEN(p) - 2;
-			p[len] = '/';
-		    }
-		    else if (STRNCMP(gettail(fname), ".gvimrc", 7) == 0)
-		    {
-			len = STRLEN(p);
-			char_u  *buf = alloc(len);
-			if (buf != NULL)
-			{
-			    mch_memmove(buf, fname, len - 7);
-			    mch_memmove(buf + len - 7, (char_u *)".vim/", 5);
-			    len -= 2;  // decrement len, so that we can set len+1 = NUL below
-			    vim_free(p);
-			    p = buf;
-			}
-		    }
-#ifdef MSWIN
-		    else if (STRNCMP(gettail(fname), "_vimrc", 6) == 0)
-		    {
-			len = STRLEN(p) + 4; // remove _vimrc, add vimfiles/
-			char_u  *buf = alloc(len);
-			if (buf != NULL)
-			{
-			    mch_memmove(buf, fname, len - 10);
-			    mch_memmove(buf + len - 10, (char_u *)"vimfiles\\", 9);
-			    len -= 2;  // decrement len, so that we can set len+1 = NUL below
-			    vim_free(p);
-			    p = buf;
-			}
-		    }
-#endif
-		    else
-			(void)modify_fname((char_u *)":h", FALSE, &usedlen, &p, &fbuf, &len);
-
-		    if (p != NULL)
-		    {
-			// keep the directory separator
-			p[len + 1] = NUL;
-			vim_setenv((char_u *)"MYVIMDIR", p);
-		    }
-		}
 		vim_free(p);
 	    }
 	}

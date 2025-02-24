@@ -135,6 +135,7 @@ static char *(p_sws_values[]) = {"fsync", "sync", NULL};
 
 static int check_opt_strings(char_u *val, char **values, int list);
 static int opt_strings_flags(char_u *val, char **values, unsigned *flagp, int list);
+static void export_myvimdir(void);
 
 /*
  * After setting various option values: recompute variables that depend on
@@ -4652,10 +4653,13 @@ did_set_string_option(
 	    setmouse();		    // in case 'mouse' changed
     }
 
-#if defined(FEAT_LUA) || defined(PROTO)
     if (varp == &p_rtp)
+    {
+	export_myvimdir();
+#if defined(FEAT_LUA) || defined(PROTO)
 	update_package_paths_in_lua();
 #endif
+    }
 
 #if defined(FEAT_LINEBREAK)
     // Changing Formatlistpattern when briopt includes the list setting:
@@ -4808,4 +4812,35 @@ restore_shm_value(void)
 	set_option_value_give_err((char_u *)"shm", 0L, shm_buf, 0);
 	vim_memset(shm_buf, 0, SHM_LEN);
     }
+}
+
+/*
+ * Export the environment variable $MYVIMDIR to the first item in runtimepath
+ */
+    static void
+export_myvimdir()
+{
+    int		dofree = FALSE;
+    char_u	*p;
+    char_u	*q;
+    char_u	fname[MAXPATHL];
+    q = p_rtp;
+    (void)copy_option_part(&p_rtp, fname, MAXPATHL, ",");
+    p_rtp = q;
+
+    p = vim_getenv((char_u *)"MYVIMDIR", &dofree);
+
+    if (p == NULL || STRCMP(p, fname) != 0)
+    {
+	add_pathsep(fname);
+#ifdef MSWIN
+	// normalize path separators
+	for (q = fname; *q != NUL; q++)
+	    if (*q == '/')
+		*q = '\\';
+#endif
+	vim_setenv((char_u *)"MYVIMDIR", fname);
+    }
+    if (dofree)
+	vim_free(p);
 }
