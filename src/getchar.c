@@ -194,7 +194,8 @@ get_recorded(void)
      * When stopping recording from Insert mode with CTRL-O q, also remove the
      * CTRL-O.
      */
-    if (last_get_recorded_len > 0 && restart_edit != 0 && p[last_get_recorded_len - 1] == Ctrl_O)
+    if (last_get_recorded_len > 0 && restart_edit != 0
+				    && p[last_get_recorded_len - 1] == Ctrl_O)
     {
 	--last_get_recorded_len;
 	p[last_get_recorded_len] = NUL;
