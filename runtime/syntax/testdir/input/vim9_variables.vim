@@ -11,7 +11,7 @@ g:foo = expr
 t:foo = expr
 w:foo = expr
 
-v:foo = expr
+v:true = expr
 
 $FOO = expr
  
@@ -106,36 +106,36 @@ $FOO ..= expr
 @f = expr
 @f ..= expr
  
-&foo = expr
+&ari = expr
  
 &t_k1 = "\<Esc>[234;"
 
-&foo ..= expr
+&ari ..= expr
 
-&foo += expr
-&foo -= expr
+&ari += expr
+&ari -= expr
 
-&l:foo = expr
+&l:aleph = expr
 
-&l:foo ..= expr
-&l:foo += expr
-&l:foo -= expr
+&l:aleph ..= expr
+&l:aleph += expr
+&l:aleph -= expr
 
-&g:foo = expr
+&g:aleph = expr
 
-&g:foo ..= expr
-&g:foo += expr
-&g:foo -= expr
+&g:aleph ..= expr
+&g:aleph += expr
+&g:aleph -= expr
  
 [foo, bar] = expr
 [foo,
       \ bar] = expr
-[v:foo, v:bar] = expr
-[v:foo,
-      \ v:bar] = expr
-[&foo, &bar] = expr
-[&foo,
-      \ &bar] = expr
+[v:true, v:false] = expr
+[v:true,
+      \ v:false] = expr
+[&ari, &bkc] = expr
+[&ari,
+      \ &bkc] = expr
 [$foo, $bar] = expr
 [$foo,
       \  $bar] = expr
@@ -154,18 +154,18 @@ $FOO ..= expr
 [foo,
       \ bar;
       \ baz] = expr
-[v:foo, v:bar; v:baz] = expr
-[v:foo,
-      \ v:bar;
-      \ v:baz] = expr
+[v:true, v:false; v:none] = expr
+[v:true,
+      \ v:false;
+      \ v:none] = expr
 [$foo, $bar; $baz] = expr
 [$foo,
       \ $bar;
       \ $baz] = expr
-[&foo, &bar; &baz] = expr
-[&foo,
-      \ &bar;
-      \ &baz] = expr
+[&ari, &bkc; &cmp] = expr
+[&ari,
+      \ &bkc;
+      \ &cmp] = expr
 [@a, @b; @c] = expr
 [@a,
       \ @b;

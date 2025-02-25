@@ -103,25 +103,25 @@ function Foo()
   let t:foo .= expr
   let t:foo ..= expr
 
-  let v:foo = expr
+  let v:true = expr
 
-  let v:foo[0] = expr
+  let v:true[0] = expr
 
-  let v:foo[1:2] = expr
-  let v:foo[:2] = expr
-  let v:foo[1:] = expr
-  let v:foo[:] = expr
+  let v:true[1:2] = expr
+  let v:true[:2] = expr
+  let v:true[1:] = expr
+  let v:true[:] = expr
 
-  let v:foo["key"] = expr
-  let v:foo['key'] = expr
+  let v:true["key"] = expr
+  let v:true['key'] = expr
 
-  let v:foo += expr
-  let v:foo -= expr
-  let v:foo *= expr
-  let v:foo /= expr
-  let v:foo %= expr
-  let v:foo .= expr
-  let v:foo ..= expr
+  let v:true += expr
+  let v:true -= expr
+  let v:true *= expr
+  let v:true /= expr
+  let v:true %= expr
+  let v:true .= expr
+  let v:true ..= expr
 
   let w:foo = expr
 
@@ -151,38 +151,38 @@ function Foo()
   let @f .= expr
   let @f ..= expr
 
-  let &foo = expr
+  let &ari = expr
 
   let &t_k1 = "\<Esc>[234;"
 
-  let &foo .= expr
-  let &foo ..= expr
-  let &foo += expr
-  let &foo -= expr
+  let &ari .= expr
+  let &ari ..= expr
+  let &ari += expr
+  let &ari -= expr
 
-  let &l:foo = expr
+  let &l:aleph = expr
 
-  let &l:foo .= expr
-  let &l:foo ..= expr
-  let &l:foo += expr
-  let &l:foo -= expr
+  let &l:aleph .= expr
+  let &l:aleph ..= expr
+  let &l:aleph += expr
+  let &l:aleph -= expr
 
-  let &g:foo = expr
+  let &g:aleph = expr
 
-  let &g:foo .= expr
-  let &g:foo ..= expr
-  let &g:foo += expr
-  let &g:foo -= expr
+  let &g:aleph .= expr
+  let &g:aleph ..= expr
+  let &g:aleph += expr
+  let &g:aleph -= expr
 
   let [foo, bar] = expr
   let [foo,
 	\ bar] = expr
-  let [v:foo, v:bar] = expr
-  let [v:foo,
-	\ v:bar] = expr
-  let [&foo, &bar] = expr
-  let [&foo,
-	\  &bar] = expr
+  let [v:true, v:false] = expr
+  let [v:true,
+	\ v:false] = expr
+  let [&ari, &bkc] = expr
+  let [&ari,
+	\  &bkc] = expr
   let [$foo, $bar] = expr
   let [$foo,
 	\  $bar] = expr
@@ -199,18 +199,18 @@ function Foo()
   let [foo,
 	\ bar;
 	\ baz] = expr
-  let [v:foo, v:bar; v:baz] = expr
-  let [v:foo,
-	\ v:bar;
-	\ v:baz] = expr
+  let [v:true, v:false; v:none] = expr
+  let [v:true,
+	\ v:false;
+	\ v:none] = expr
   let [$foo, $bar; $baz] = expr
   let [$foo,
 	\ $bar;
 	\ $baz] = expr
-  let [&foo, &bar; &baz] = expr
-  let [&foo,
-	\ &bar;
-	\ &baz] = expr
+  let [&ari, &bkc; &cmp] = expr
+  let [&ari,
+	\ &bkc;
+	\ &cmp] = expr
   let [@a, @b; @c] = expr
   let [@a,
 	\ @b;
