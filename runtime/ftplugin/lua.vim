@@ -5,7 +5,7 @@
 " Contributor:		Dorai Sitaram <ds26@gte.com>
 "			C.D. MacEachern <craig.daniel.maceachern@gmail.com>
 "			Tyler Miller <tmillr@proton.me>
-" Last Change:		18 Feb 2025
+" Last Change:		2025 Feb 18
 
 if exists("b:did_ftplugin")
   finish
