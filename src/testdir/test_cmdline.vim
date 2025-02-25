@@ -488,14 +488,22 @@ func Test_highlight_group_completion()
 
   " Test completing the current value
   hi FooBar term=bold,underline cterm=undercurl ctermfg=lightgray ctermbg=12 ctermul=34
+  hi AlmostEmpty term=bold
   call assert_equal('bold,underline', getcompletion('hi FooBar term=', 'cmdline')[0])
   call assert_equal('undercurl', getcompletion('hi FooBar cterm=', 'cmdline')[0])
   call assert_equal('7', getcompletion('hi FooBar ctermfg=', 'cmdline')[0])
   call assert_equal('12', getcompletion('hi FooBar ctermbg=', 'cmdline')[0])
   call assert_equal('34', getcompletion('hi FooBar ctermul=', 'cmdline')[0])
 
-  " "bold,underline" is unique and creates an extra item. "undercurl" and
-  " should be de-duplicated
+  " highlight group exists, but no value was set. Should not complete to
+  " existing value
+  call assert_equal('fg', getcompletion('hi AlmostEmpty ctermfg=', 'cmdline')[0])
+  call assert_equal('fg', getcompletion('hi AlmostEmpty ctermbg=', 'cmdline')[0])
+  call assert_equal('fg', getcompletion('hi AlmostEmpty ctermul=', 'cmdline')[0])
+  call assert_equal('bold', getcompletion('hi AlmostEmpty cterm=', 'cmdline')[0])
+
+  " "bold,underline" is unique and creates an extra item. "undercurl" isn't
+  " and should be de-duplicated.
   call assert_equal(len(getcompletion('hi FooBar term=', 'cmdline')),
         \ 1 + len(getcompletion('hi FooBar cterm=', 'cmdline')))
 
@@ -519,6 +527,13 @@ func Test_highlight_group_completion()
 
     " Check that existing value is de-duplicated and doesn't show up later
     call assert_equal(1, count(getcompletion('hi FooBar guibg=', 'cmdline'), 'brown1'))
+
+    " highlight group exists, but no value was set. Should not complete to
+    " existing value
+    call assert_equal('fg', getcompletion('hi AlmostEmpty guifg=', 'cmdline')[0])
+    call assert_equal('fg', getcompletion('hi AlmostEmpty guibg=', 'cmdline')[0])
+    call assert_equal('fg', getcompletion('hi AlmostEmpty guisp=', 'cmdline')[0])
+    call assert_equal('bold', getcompletion('hi AlmostEmpty gui=', 'cmdline')[0])
   endif
 
   " Test completing attributes

@@ -4531,14 +4531,17 @@ expand_highlight_group(
 
 	char_u	    buf[MAX_ATTR_LEN];
 
-	if (expand_hi_synid != 0 && type != 0 && expand_hi_include_orig)
+	expand_hi_curvalue = NULL;
+	if (expand_hi_include_orig)
 	{
-	    // Retrieve the current value to go first in completion
-	    expand_hi_curvalue = highlight_arg_to_string(
-		    type, iarg, sarg, buf);
+	    if (((type == LIST_ATTR || type == LIST_INT) && iarg != 0) ||
+		(type == LIST_STRING && sarg != NULL))
+	    {
+		// Retrieve the current value to go first in completion
+		expand_hi_curvalue = highlight_arg_to_string(
+			type, iarg, sarg, buf);
+	    }
 	}
-	else
-	    expand_hi_curvalue = NULL;
 
 	if (expandfunc != NULL)
 	{
