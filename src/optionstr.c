@@ -307,6 +307,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_cinw);
     check_string_option(&buf->b_p_cot);
     check_string_option(&buf->b_p_cpt);
+    check_string_option(&buf->b_p_ctg);
 #ifdef FEAT_COMPL_FUNC
     check_string_option(&buf->b_p_cfu);
     check_string_option(&buf->b_p_ofu);
@@ -1631,6 +1632,37 @@ did_set_completeopt(optset_T *args UNUSED)
 
     if (opt_strings_flags(cot, p_cot_values, flags, TRUE) != OK)
 	return e_invalid_argument;
+
+    return NULL;
+}
+
+/*
+ * The 'completetrigger' option is changed.
+ */
+    char *
+did_set_completetrigger(optset_T *args UNUSED)
+{
+    char_u *ctg = p_ctg;
+    char_u *p;
+    int last_was_comma = FALSE;
+
+    if (args->os_flags & OPT_LOCAL)
+       ctg = curbuf->b_p_ctg;
+
+    for (p = ctg; *p != NUL; p++)
+    {
+	if (*p == ',')
+	{
+	    if (last_was_comma)
+	       return e_invalid_argument;
+	   last_was_comma = TRUE;
+	}
+	else
+	    last_was_comma = FALSE;
+    }
+
+    if (last_was_comma)
+       return e_invalid_argument;
 
     return NULL;
 }

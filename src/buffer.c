@@ -2466,6 +2466,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_cinw);
     clear_string_option(&buf->b_p_cot);
     clear_string_option(&buf->b_p_cpt);
+    clear_string_option(&buf->b_p_ctg);
 #ifdef FEAT_COMPL_FUNC
     clear_string_option(&buf->b_p_cfu);
     free_callback(&buf->b_cfu_cb);

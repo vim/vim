@@ -3244,6 +3244,7 @@ struct file_buffer
     char_u	*b_p_cot;	// 'completeopt' local value
     unsigned	b_cot_flags;	// flags for 'completeopt'
     char_u	*b_p_cpt;	// 'complete'
+    char_u	*b_p_ctg;	// 'completetrigger' local value
 #ifdef BACKSLASH_IN_FILENAME
     char_u	*b_p_csl;	// 'completeslash'
 #endif
