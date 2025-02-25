@@ -2642,7 +2642,7 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP) $(DEST_RT)
 	  elif test -n "$(LC_MESSAGES)" ; then \
 	    lngusr=$${LC_MESSAGES%%.*} ; \
 	  fi; \
-	  if test "$$lngusr" = "zh_TW" -o "$$lngusr" = "zh_CN" ; then \
+	  if test "$$lngusr" = "zh_TW" -o "$$lngusr" = "zh_CN" -o "$$lngusr" = "pt_BR" ; then \
 	    lngusr=`echo $$lngusr | tr '[:upper:]' '[:lower:]'` ; \
 	  elif test -n "$$lngusr" -a "$$lngusr" != "C" -a "$$lngusr" != "POSIX" ; then \
 	    lngusr=$${lngusr%%_*} ; \
@@ -2920,7 +2920,9 @@ uninstall_runtime:
 	-rmdir $(DEST_FTP) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_AUTO)/cargo $(DEST_AUTO)/rust $(DEST_AUTO)
 	-rmdir $(DEST_IMPORT)/dist $(DEST_IMPORT)
 	-rm -f $(DEST_RT)/README.??.txt
+	-rm -f $(DEST_RT)/README.??_??.txt
 	-rm -f $(DEST_RT)/LICENSE.??.txt
+	-rm -f $(DEST_RT)/LICENSE.??_??.txt
 	-rm -f $(DEST_RT)/README.txt $(DEST_RT)/LICENSE
 	-rmdir $(DEST_PLUG) $(DEST_RT)
 #	This will fail when other Vim versions are installed, no worries.
