@@ -85,6 +85,8 @@ if !exists("*" .. expand("<SID>") .. "Help")
       return ':'.topic
     elseif pre =~# '\<v:$'
       return 'v:'.topic
+    elseif pre =~# '\\$'
+      return '\'.topic
     elseif topic ==# 'v' && post =~# ':\w\+'
       return 'v'.matchstr(post, ':\w\+')
     else
