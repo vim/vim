@@ -163,7 +163,7 @@ LangString str_desc_rm_plugin_home  ${LANG_PORTUGUESEBR} \
 LangString str_unsection_plugin_vim ${LANG_PORTUGUESEBR} \
     "Compartilhados"
 LangString str_desc_rm_plugin_vim   ${LANG_PORTUGUESEBR} \
-    "Remove is diretórios de plugins do diretório de instalação do Vim."
+    "Remove os diretórios de plugins do diretório de instalação do Vim."
 
 LangString str_unsection_rootdir    ${LANG_PORTUGUESEBR} \
     "Remover diretório raiz do Vim"
