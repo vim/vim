@@ -11,7 +11,7 @@ g:foo = expr
 t:foo = expr
 w:foo = expr
 
-v:foo = expr
+v:true = expr
 
 $FOO = expr
  
@@ -57,6 +57,9 @@ foo[1:2] = expr
 foo[:2] = expr
 foo[1:] = expr
 foo[:] = expr
+
+foo["key"] = expr
+foo['key'] = expr
 
 foo += expr
 foo -= expr
@@ -106,36 +109,36 @@ $FOO ..= expr
 @f = expr
 @f ..= expr
  
-&foo = expr
+&ari = expr
  
 &t_k1 = "\<Esc>[234;"
 
-&foo ..= expr
+&ari ..= expr
 
-&foo += expr
-&foo -= expr
+&ari += expr
+&ari -= expr
 
-&l:foo = expr
+&l:aleph = expr
 
-&l:foo ..= expr
-&l:foo += expr
-&l:foo -= expr
+&l:aleph ..= expr
+&l:aleph += expr
+&l:aleph -= expr
 
-&g:foo = expr
+&g:aleph = expr
 
-&g:foo ..= expr
-&g:foo += expr
-&g:foo -= expr
+&g:aleph ..= expr
+&g:aleph += expr
+&g:aleph -= expr
  
 [foo, bar] = expr
 [foo,
       \ bar] = expr
-[v:foo, v:bar] = expr
-[v:foo,
-      \ v:bar] = expr
-[&foo, &bar] = expr
-[&foo,
-      \ &bar] = expr
+[v:true, v:false] = expr
+[v:true,
+      \ v:false] = expr
+[&ari, &bkc] = expr
+[&ari,
+      \ &bkc] = expr
 [$foo, $bar] = expr
 [$foo,
       \  $bar] = expr
@@ -154,18 +157,18 @@ $FOO ..= expr
 [foo,
       \ bar;
       \ baz] = expr
-[v:foo, v:bar; v:baz] = expr
-[v:foo,
-      \ v:bar;
-      \ v:baz] = expr
+[v:true, v:false; v:none] = expr
+[v:true,
+      \ v:false;
+      \ v:none] = expr
 [$foo, $bar; $baz] = expr
 [$foo,
       \ $bar;
       \ $baz] = expr
-[&foo, &bar; &baz] = expr
-[&foo,
-      \ &bar;
-      \ &baz] = expr
+[&ari, &bkc; &cmp] = expr
+[&ari,
+      \ &bkc;
+      \ &cmp] = expr
 [@a, @b; @c] = expr
 [@a,
       \ @b;
@@ -194,4 +197,26 @@ endfor
 
 for [foo, bar] in expr
 endfor
+
+# Scope dictionaries
+
+echo get(b:, 'foo', 42)
+echo get(w:, 'foo', 42)
+echo get(t:, 'foo', 42)
+echo get(g:, 'foo', 42)
+echo get(v:, 'foo', 42)
+
+for k in keys(b:) | echo b:[k] | endfor
+for k in keys(w:) | echo w:[k] | endfor
+for k in keys(t:) | echo t:[k] | endfor
+for k in keys(g:) | echo g:[k] | endfor
+for k in keys(v:) | echo v:[k] | endfor
+
+# Neovim-specific variables (not highlighted by default)
+
+echo v:lua v:msgpack_types v:relnum v:stderr v:termrequest v:virtnum
+
+echo &channel &inccommand &mousescroll &pumblend &redrawdebug &scrollback
+echo &shada &shadafile &statuscolumn &termpastefilter &termsync &winbar
+echo &winblend &winhighlight
 

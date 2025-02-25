@@ -163,6 +163,20 @@ function Foo(
   return 42
 endfunction
 
+
+" arguments
+
+function Foo(a, b, c)
+  echo a:a a:b a:c
+endfunction
+
+function Foo(...)
+  echo a:000
+  echo a:0
+  echo a:1 a:2 a:3 a:4 a:5 a:6 a:7 a:8 a:9 a:10 a:11 a:12 a:13 a:14 a:15 a:16 a:17 a:18 a:19 a:20
+endfunction
+
+
 " Issue #16243 (vimscript def parameters syntax highlight is wrong)
 
 function Test(lines = [line('.'), line('.')])
