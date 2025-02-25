@@ -538,11 +538,12 @@ compile_load_scriptvar(
 	cctx_T *cctx,
 	char_u *name,	    // variable NUL terminated
 	char_u *start,	    // start of variable
-	char_u **end)	    // end of variable, may be NULL
+	char_u **end,	    // end of variable, may be NULL
+	imported_T *import) // found imported item, can be NULL
 {
     scriptitem_T    *si;
     int		    idx;
-    imported_T	    *import;
+    imported_T	    *imp;
 
     if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return FAIL;
@@ -557,8 +558,14 @@ compile_load_scriptvar(
 	return OK;
     }
 
-    import = end == NULL ? NULL : find_imported(name, 0, FALSE);
-    if (import != NULL)
+    if (end == NULL)
+	imp = NULL;
+    else if (import == NULL)
+	imp = find_imported(name, 0, FALSE);
+    else
+	imp = import;
+
+    if (imp != NULL)
     {
 	char_u	*p = skipwhite(*end);
 	char_u	*exp_name;
@@ -568,8 +575,8 @@ compile_load_scriptvar(
 	int	done = FALSE;
 	int	res = OK;
 
-	check_script_symlink(import->imp_sid);
-	import_check_sourced_sid(&import->imp_sid);
+	check_script_symlink(imp->imp_sid);
+	import_check_sourced_sid(&imp->imp_sid);
 
 	// Need to lookup the member.
 	if (*p != '.')
@@ -591,11 +598,11 @@ compile_load_scriptvar(
 	cc = *p;
 	*p = NUL;
 
-	si = SCRIPT_ITEM(import->imp_sid);
+	si = SCRIPT_ITEM(imp->imp_sid);
 	if (si->sn_import_autoload && si->sn_state == SN_STATE_NOT_LOADED)
 	    // "import autoload './dir/script.vim'" or
 	    // "import autoload './autoload/script.vim'" - load script first
-	    res = generate_SOURCE(cctx, import->imp_sid);
+	    res = generate_SOURCE(cctx, imp->imp_sid);
 
 	if (res == OK)
 	{
@@ -624,17 +631,17 @@ compile_load_scriptvar(
 		{
 		    char_u sid_name[MAX_FUNC_NAME_LEN];
 
-		    func_name_with_sid(exp_name, import->imp_sid, sid_name);
+		    func_name_with_sid(exp_name, imp->imp_sid, sid_name);
 		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any, TRUE);
 		}
 		else
 		    res = generate_OLDSCRIPT(cctx, ISN_LOADEXPORT, exp_name,
-						      import->imp_sid, &t_any);
+						      imp->imp_sid, &t_any);
 		done = TRUE;
 	    }
 	    else
 	    {
-		idx = find_exported(import->imp_sid, exp_name, &ufunc, &type,
+		idx = find_exported(imp->imp_sid, exp_name, &ufunc, &type,
 							     cctx, NULL, TRUE);
 	    }
 	}
@@ -656,7 +663,7 @@ compile_load_scriptvar(
 	}
 
 	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
-		import->imp_sid,
+		imp->imp_sid,
 		idx,
 		type);
 	return OK;
@@ -771,7 +778,7 @@ compile_load(
 			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
-								NULL, &end);
+							    NULL, &end, NULL);
 			  break;
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			  {
@@ -887,11 +894,13 @@ compile_load(
 	    }
 	    else
 	    {
+		imported_T *imp = NULL;
+
 		// "var" can be script-local even without using "s:" if it
 		// already exists in a Vim9 script or when it's imported.
 		if (script_var_exists(*arg, len, cctx, NULL) == OK
-				|| find_imported(name, 0, FALSE) != NULL)
-		    res = compile_load_scriptvar(cctx, name, *arg, &end);
+			    || (imp = find_imported(name, 0, FALSE)) != NULL)
+		    res = compile_load_scriptvar(cctx, name, *arg, &end, imp);
 
 		// When evaluating an expression and the name starts with an
 		// uppercase letter it can be a user defined function.
