@@ -32,7 +32,7 @@ let &l:include = '\v<((do|load)file|require)[^''"]*[''"]\zs[^''"]+'
 setlocal includeexpr=LuaInclude(v:fname)
 setlocal suffixesadd=.lua
 
-let b:undo_ftplugin = "setlocal cms< com< def< fo< inex< sua<"
+let b:undo_ftplugin = "setlocal cms< com< def< fo< inc< inex< sua<"
 
 if exists("loaded_matchit") && !exists("b:match_words")
   let b:match_ignorecase = 0
