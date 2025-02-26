@@ -2245,6 +2245,7 @@ func Test_input_func()
   call assert_fails("call input('F:', '', 'invalid')", 'E180:')
   call assert_fails("call input('F:', '', [])", 'E730:')
 
+  " Test for using 'command' as the completion function
   call feedkeys(":let c = input('Command? ', '', 'command')\<CR>"
         \ .. "echo bufnam\<C-A>\<CR>", 'xt')
   call assert_equal('echo bufname(', c)
