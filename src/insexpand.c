@@ -2495,12 +2495,15 @@ ins_compl_stop(int c, int prev_mode, int retval)
     // If the popup menu is displayed pressing CTRL-Y means accepting
     // the selection without inserting anything.  When
     // compl_enter_selects is set the Enter key does the same.
-    if ((c == Ctrl_Y || (compl_enter_selects
-		    && (c == CAR || c == K_KENTER || c == NL)))
-	    && pum_visible())
+    if (c == Ctrl_Y || (compl_enter_selects
+        && (c == CAR || c == K_KENTER || c == NL)))
     {
-	word = vim_strsave(compl_shown_match->cp_str.string);
-	retval = TRUE;
+    word = vim_strsave(compl_shown_match->cp_str.string);
+    retval = TRUE;
+    // If the popup menu is not displayed, the selection needs to be 
+    // inserted before further procceding.
+    if (!pum_visible())
+        ins_compl_insert(FALSE, FALSE);
     }
 
     // CTRL-E means completion is Ended, go back to the typed text.
