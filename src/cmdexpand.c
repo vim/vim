@@ -1,4 +1,3 @@
-/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -229,18 +228,8 @@ nextwild(
 
     if (xp->xp_numfiles == -1)
     {
-#ifdef FEAT_EVAL
-    if (ccline->input_fn && ccline->xp_context == EXPAND_COMMANDS)
-    {
-    // Expand commands typed in input() function
-    set_cmd_context(xp, ccline->cmdbuff, ccline->cmdlen, ccline->cmdpos, FALSE);
-    }
-    else
-#endif
-    {
-    set_expand_context(xp);
-    }
-    cmd_showtail = expand_showtail(xp);
+	set_expand_context(xp);
+	cmd_showtail = expand_showtail(xp);
     }
 
     if (xp->xp_context == EXPAND_UNSUCCESSFUL)
