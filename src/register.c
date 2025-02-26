@@ -28,7 +28,7 @@ static yankreg_T	*y_current;	    // ptr to current yankreg
 static int		y_append;	    // TRUE when appending
 static yankreg_T	*y_previous = NULL; // ptr to last written yankreg
 
-static int	stuff_yank(int, char_u *, size_t);
+static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
 static int	put_in_typebuf(char_u *s, int esc, int colon, int silent);
 static int	yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space);
@@ -419,7 +419,7 @@ do_record(int c)
 	    old_y_previous = y_previous;
 	    old_y_current = y_current;
 
-	    retval = stuff_yank(regname, p, get_recorded_len());
+	    retval = stuff_yank(regname, p);
 
 	    y_previous = old_y_previous;
 	    y_current = old_y_current;
@@ -435,8 +435,10 @@ do_record(int c)
  * return FAIL for failure, OK otherwise
  */
     static int
-stuff_yank(int regname, char_u *p, size_t plen)
+stuff_yank(int regname, char_u *p)
 {
+    size_t  plen;
+
     // check for read-only register
     if (regname != 0 && !valid_yank_reg(regname, TRUE))
     {
@@ -449,6 +451,7 @@ stuff_yank(int regname, char_u *p, size_t plen)
 	return OK;
     }
 
+    plen = STRLEN(p);
     get_yank_register(regname, TRUE);
     if (y_append && y_current->y_array != NULL)
     {
