@@ -229,8 +229,16 @@ nextwild(
 
     if (xp->xp_numfiles == -1)
     {
-	set_expand_context(xp);
-	cmd_showtail = expand_showtail(xp);
+    if (ccline->input_fn && ccline->xp_context == EXPAND_COMMANDS)
+    {
+    // Expand commands in input() function
+    set_cmd_context(xp, ccline->cmdbuff, ccline->cmdlen, ccline->cmdpos, FALSE);
+    }
+    else
+    {
+    set_expand_context(xp);
+    cmd_showtail = expand_showtail(xp);
+    }
     }
 
     if (xp->xp_context == EXPAND_UNSUCCESSFUL)
@@ -2723,10 +2731,8 @@ set_cmd_context(
 	xp->xp_context = ccline->xp_context;
 	xp->xp_pattern = ccline->cmdbuff;
 	xp->xp_arg = ccline->xp_arg;
-	while (nextcomm != NULL)
-		nextcomm = set_one_cmd_context(xp, nextcomm);
-    }
-    else
+	}
+	else
 #endif
 	while (nextcomm != NULL)
 	    nextcomm = set_one_cmd_context(xp, nextcomm);
