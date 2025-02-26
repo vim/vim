@@ -1412,7 +1412,8 @@ The output of ":mksession" is like ":mkvimrc", but additional commands are
 added to the file.  Which ones depends on the 'sessionoptions' option.  The
 resulting file, when executed with a ":source" command:
 1. Restores global mappings and options, if 'sessionoptions' contains
-   "options".  Script-local mappings will not be written.
+   "options".  Script-local mappings and mappings defined in vim9script context
+   will not be written.
 2. Restores global variables that start with an uppercase letter and contain
    at least one lowercase letter, if 'sessionoptions' contains "globals".
 3. Closes all windows in the current tab page, except the current one; closes

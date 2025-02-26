@@ -1968,6 +1968,10 @@ makemap(
 
 	    for ( ; mp; mp = mp->m_next)
 	    {
+		// skip mappings defined in vim9script context
+		if (mp->m_script_ctx.sc_version == SCRIPT_VERSION_VIM9)
+		    continue;
+
 		// skip script-local mappings
 		if (mp->m_noremap == REMAP_SCRIPT)
 		    continue;
