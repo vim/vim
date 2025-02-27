@@ -2503,10 +2503,8 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	    if (!pum_visible())
 		    ins_compl_insert(FALSE, FALSE);
 	    else
-	    {
 		    word = vim_strsave(compl_shown_match->cp_str.string);
-		    retval = TRUE;
-	    }
+	    retval = TRUE;
 	}
 
     // CTRL-E means completion is Ended, go back to the typed text.
