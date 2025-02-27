@@ -2498,14 +2498,14 @@ ins_compl_stop(int c, int prev_mode, int retval)
     if (c == Ctrl_Y || (compl_enter_selects
 		    && (c == CAR || c == K_KENTER || c == NL)))
     {
-	    // If the popup menu is not displayed, the selection needs to be
-	    // inserted before further procceding.
-	    if (!pum_visible())
-		    ins_compl_insert(FALSE, FALSE);
-	    else
-		    word = vim_strsave(compl_shown_match->cp_str.string);
-	    retval = TRUE;
-	}
+	// If the popup menu is not displayed, the selection needs to be
+	// inserted before further procceding.
+	if (!pum_visible())
+	    ins_compl_insert(FALSE, FALSE);
+	else
+	    word = vim_strsave(compl_shown_match->cp_str.string);
+	retval = TRUE;
+    }
 
     // CTRL-E means completion is Ended, go back to the typed text.
     // but only do this, if the Popup is still visible
