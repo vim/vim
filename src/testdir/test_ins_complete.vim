@@ -3222,6 +3222,9 @@ function Test_completeopt_preinsert()
   call assert_equal("fbar", getline('.'))
   call assert_equal(4, col('.'))
 
+  call feedkeys("Sfunc fun\<CR>fu\<C-X>\<C-N>\<C-Y>", 'tx')
+  call assert_equal("func", getline('.'))
+
   bw!
   set cot&
   set omnifunc&
@@ -3271,5 +3274,10 @@ func Test_complete_multiline_marks()
   set omnifunc&
   delfunc Omni_test
 endfunc
+
+func Test_complete_without_pum()
+  new
+  set cot=preinsert
+
 
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
