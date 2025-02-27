@@ -2492,9 +2492,9 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	    inc_cursor();
     }
 
-	// If the popup menu is displayed pressing CTRL-Y means accepting
-	// the selection without inserting anything.  When
-	// compl_enter_selects is set the Enter key does the same.
+    // If the popup menu is displayed pressing CTRL-Y means accepting
+    // the selection without inserting anything.  When
+    // compl_enter_selects is set the Enter key does the same.
     if (c == Ctrl_Y || (compl_enter_selects
 		    && (c == CAR || c == K_KENTER || c == NL)))
     {
