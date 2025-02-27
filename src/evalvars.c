@@ -3087,6 +3087,9 @@ eval_variable(
 			dictitem_T *v = find_var_in_ht(ht, 0, name,
 						  flags & EVAL_VAR_NOAUTOLOAD);
 
+			if (v == NULL)
+			    v = find_var_autoload_prefix(name, sid, NULL, NULL);
+
 			if (v != NULL)
 			{
 			    tv = &v->di_tv;

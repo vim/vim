@@ -2063,7 +2063,7 @@ early_ret:
     tv.v_type = VAR_CLASS;
     tv.vval.v_class = cl;
     SOURCING_LNUM = start_lnum;
-    int rc = set_var_const(cl->class_name, current_sctx.sc_sid, NULL, &tv, FALSE, 0, 0);
+    int rc = set_var_const(cl->class_name, 0, NULL, &tv, FALSE, 0, 0);
     if (rc == FAIL)
 	goto cleanup;
 
