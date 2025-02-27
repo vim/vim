@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-18 13:41+0300\n"
-"PO-Revision-Date: 2024-06-18 17:00+0300\n"
+"POT-Creation-Date: 2025-02-23 23:36+0300\n"
+"PO-Revision-Date: 2025-02-23 23:45+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish <https://github.com/bitigchi/vim>\n"
 "Language: tr\n"
@@ -154,8 +154,8 @@ msgid "Top"
 msgstr "Baş"
 
 #, c-format
-msgid "%d%%"
-msgstr "%%%d"
+msgid "%s%d%%"
+msgstr "%s%%%d"
 
 #, c-format
 msgid " (%d of %d)"
@@ -778,10 +778,10 @@ msgid "[unix format]"
 msgstr "[unix biçimi]"
 
 #, c-format
-msgid "%ld line, "
-msgid_plural "%ld lines, "
-msgstr[0] "%ld satır, "
-msgstr[1] "%ld satır, "
+msgid "%s%ld line, "
+msgid_plural "%s%ld lines, "
+msgstr[0] "%s%ld satır, "
+msgstr[1] "%s%ld satır, "
 
 #, c-format
 msgid "%lld byte"
@@ -2270,6 +2270,12 @@ msgstr "-- Daha fazla --"
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr " BOŞLUK/d/j: ekran/sayfa/satır aşağı, b/u/k: yukarı, q: çık "
 
+msgid "W23: Clipboard register not available, using register 0"
+msgstr "W23: Pano yazmacı kullanılamıyor, yazmaç 0 kullanılıyor"
+
+msgid "W24: Clipboard register not available. See :h W24"
+msgstr "W24: Pano yazmacı kullanılamıyor. Bkz. :h W24"
+
 msgid "Question"
 msgstr "Soru"
 
@@ -3582,7 +3588,6 @@ msgstr "  kullanıcı 3. vimrc dosyası: \""
 
 msgid " 4th user vimrc file: \""
 msgstr "  kullanıcı 4. vimrc dosyası: \""
-
 
 msgid "      user exrc file: \""
 msgstr "      kullanıcı exrc dosyası: \""
@@ -5892,9 +5897,6 @@ msgstr "E612: Çok fazla işaret tanımlanmış"
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Bilinmeyen yazıcı fontu: %s"
 
-msgid "E614: Class required"
-msgstr "E614: Sınıf gerekiyor"
-
 #, c-format
 msgid "E616: Object required for argument %d"
 msgstr "E616: %d argümanı için nesne gerekiyor"
@@ -8056,6 +8058,10 @@ msgid "E1234: legacy must be followed by a command"
 msgstr "E1234: legacy sonrası bir komut gelmelidir"
 
 #, c-format
+msgid "E1235: Bool or Number required for argument %d"
+msgstr "E1235: %d argümanı için Boole veya sayı gerekiyor"
+
+#, c-format
 msgid "E1236: Cannot use %s itself, it is imported"
 msgstr "E1236: %s kendisi kullanılamaz, içe aktarılmış"
 
@@ -8358,20 +8364,11 @@ msgstr "E1317: Geçersiz nesne değişkeni beyanı: %s"
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: Bir sınıfta geçerli olmayan bir komut: %s"
 
-msgid "E1319: Using a Class as a Number"
-msgstr "E1319: Bir sınıf, sayı olarak kullanılıyor"
-
 msgid "E1320: Using an Object as a Number"
 msgstr "E1320: Bir nesne, sayı olarak kullanılıyor"
 
-msgid "E1321: Using a Class as a Float"
-msgstr "E1321: Bir sınıf, kayan noktalı değer olarak kullanılıyor"
-
 msgid "E1322: Using an Object as a Float"
 msgstr "E1322: Bir nesne, kayan noktalı değer olarak kullanılıyor"
-
-msgid "E1323: Using a Class as a String"
-msgstr "E1323: Bir sınıf, dizi olarak kullanılıyor"
 
 msgid "E1324: Using an Object as a String"
 msgstr "E1324: Bir nesne, dizi olarak kullanılıyor"
@@ -8647,9 +8644,8 @@ msgstr "E1393: Tür, yalnızca Vim9 betiğinde tanımlanabilir"
 msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: Tür adı bir BÜYÜK harfle başlamalıdır: %s"
 
-#, c-format
-msgid "E1395: Type alias \"%s\" cannot be modified"
-msgstr "E1395: Tür arması \"%s\" değiştirilemiyor"
+msgid "E1395: Using a null class"
+msgstr "E1395: Bir null sınıf kullanılıyor"
 
 #, c-format
 msgid "E1396: Type alias \"%s\" already exists"
@@ -8665,18 +8661,6 @@ msgid "E1399: Type can only be used in a script"
 msgstr "E1399: Tür yalnızca bir betikte kullanılabilir"
 
 #, c-format
-msgid "E1400: Using type alias \"%s\" as a Number"
-msgstr "E1400: Tür arması \"%s\", sayı olarak kullanılıyor"
-
-#, c-format
-msgid "E1401: Using type alias \"%s\" as a Float"
-msgstr "E1401: Tür arması \"%s\", kayan noktalı değer olarak kullanılıyor"
-
-#, c-format
-msgid "E1402: Using type alias \"%s\" as a String"
-msgstr "E1402: Tür arması \"%s\", dizi olarak kullanılıyor"
-
-#, c-format
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr "E1403: Tür arması \"%s\", bir değer olarak kullanılamıyor"
 
@@ -8686,9 +8670,6 @@ msgstr "E1404: Abstract yalnızca bir betikte kullanılabilir"
 #, c-format
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: \"%s\" sınıfı yalnızca bir değer olarak kullanılabilir"
-
-msgid "E1406: Cannot use a Class as a variable or value"
-msgstr "E1406: Sınıf, bir değişken veya değer olarak kullanılamıyor"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: Tür arması, bir değişken veya değer olarak kullanılamıyor"
@@ -8775,6 +8756,16 @@ msgid "E1429: Class can only be used in a script"
 msgstr "E1429: Sınıf yalnızca bir betikte kullanılabilir"
 
 #, c-format
+msgid "E1430: Uninitialized object variable '%s' referenced"
+msgstr "E1430: İlklendirilmemiş '%s' nesne değişkenine başvuruldu"
+
+#, c-format
+msgid ""
+"E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"
+msgstr ""
+"E1431: \"%2$s\" sınıfındaki \"%1$s\" soyut yöntemine doğrudan erişilemiyor"
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Konumsal ve konumsal olmayan argümanlar karıştırılamıyor: %s"
 
@@ -8830,6 +8821,13 @@ msgstr "E1512: \"%s\" alanı için yanlış karakter genişliği"
 
 msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
 msgstr "E1513: Arabellek değiştirilemiyor. 'winfixbuf' etkinleştirilmiş"
+
+msgid "E1514: 'findfunc' did not return a List type"
+msgstr "E1514: 'findfunc' bir liste türü döndürmedi"
+
+#, c-format
+msgid "E1515: Unable to convert %s '%s' encoding"
+msgstr "E1515: %s '%s' kodlamasına dönüştürülemiyor"
 
 msgid "--No lines in buffer--"
 msgstr "--Arabellek içinde satır yok--"
@@ -9628,6 +9626,9 @@ msgstr "çoklu sekme sayfaları"
 msgid "0, 1 or 2; when to use a tab pages line"
 msgstr "0, 1 veya 2; ne zaman bir sekme sayfası satırının kullanılacağı"
 
+msgid "behaviour when closing tab pages: left, uselast or empty"
+msgstr "sekme sayfalarını kapatma davranışı: left, uselast veya empty"
+
 msgid "maximum number of tab pages to open for -p and \"tab all\""
 msgstr "-p ve \"tab all\"un açacağı en çok sekme sayfası sayısı"
 
@@ -9834,6 +9835,9 @@ msgstr "'shortness'daki 's' bayrağını ekle (arama iletisini gösterme)"
 msgid "list of flags to make messages shorter"
 msgstr "iletileri kısalaştırmak için kullanılan bayraklar listesi"
 
+msgid "options for outputting messages"
+msgstr "ileti çıktılamak için seçenekler"
+
 msgid "show (partial) command keys in location given by 'showcmdloc'"
 msgstr ""
 "'showdcmdloc' tarafından verilen konumda (kısmi) komut düğmelerini göster"
@@ -9956,6 +9960,9 @@ msgstr ""
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "Ekleme kipi tamamlaması için açılır menü kullanımı"
+
+msgid "popup menu item align order"
+msgstr "açılır menü öge hizalama sırası"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "Ekleme kipi tamamlama açılır penceresi için seçenekler"
@@ -10537,6 +10544,9 @@ msgstr ""
 
 msgid "list of autocommand events which are to be ignored"
 msgstr "yok sayılacak otokomut olayları"
+
+msgid "list of autocommand events which are to be ignored in a window"
+msgstr "Bir pencerede yok sayılacak otokomut olaylarının listesi"
 
 msgid "load plugin scripts when starting up"
 msgstr "başlarken eklenti betiklerini yükle"

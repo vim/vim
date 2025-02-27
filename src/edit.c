@@ -421,7 +421,7 @@ edit(
 	new_insert_skip = 0;
     else
     {
-	new_insert_skip = (int)STRLEN(ptr);
+	new_insert_skip = (int)get_inserted_len();
 	vim_free(ptr);
     }
 
@@ -2058,7 +2058,7 @@ insert_special(
 	    if (stop_arrow() == FAIL)
 		return;
 	    p[len - 1] = NUL;
-	    ins_str(p);
+	    ins_str(p, len - 1);
 	    AppendToRedobuffLit(p, -1);
 	    ctrlv = FALSE;
 	}
@@ -2275,7 +2275,7 @@ insertchar(
 	do_digraph(buf[i-1]);		// may be the start of a digraph
 #endif
 	buf[i] = NUL;
-	ins_str(buf);
+	ins_str(buf, i);
 	if (flags & INSCHAR_CTRLV)
 	{
 	    redo_literal(*buf);
@@ -2462,7 +2462,7 @@ stop_insert(
      * otherwise CTRL-O w and then <Left> will clear "last_insert".
      */
     ptr = get_inserted();
-    int added = ptr == NULL ? 0 : (int)STRLEN(ptr) - new_insert_skip;
+    int added = ptr == NULL ? 0 : (int)get_inserted_len() - new_insert_skip;
     if (did_restart_edit == 0 || added > 0)
     {
 	vim_free(last_insert);
@@ -2993,11 +2993,11 @@ get_last_insert_save(void)
 
     if (last_insert == NULL)
 	return NULL;
-    s = vim_strsave(last_insert + last_insert_skip);
+    len = (int)STRLEN(last_insert + last_insert_skip);
+    s = vim_strnsave(last_insert + last_insert_skip, len);
     if (s == NULL)
 	return NULL;
 
-    len = (int)STRLEN(s);
     if (len > 0 && s[len - 1] == ESC)	// remove trailing ESC
 	s[len - 1] = NUL;
     return s;
@@ -4300,7 +4300,7 @@ ins_bs(
 		    ins_char(' ');
 		else
 		{
-		    ins_str((char_u *)" ");
+		    ins_str((char_u *)" ", 1);
 		    if ((State & REPLACE_FLAG))
 			replace_push(NUL);
 		}
@@ -4976,7 +4976,7 @@ ins_tab(void)
 	    ins_char(' ');
 	else
 	{
-	    ins_str((char_u *)" ");
+	    ins_str((char_u *)" ", 1);
 	    if (State & REPLACE_FLAG)	    // no char replaced
 		replace_push(NUL);
 	}

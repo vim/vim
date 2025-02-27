@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2025 Jan 05
+# Last Change:	2025 Feb 24
 
 Unicode true
 
@@ -216,6 +216,7 @@ Page custom SetCustom ValidateCustom
 
 # Include support for other languages:
 !if ${HAVE_MULTI_LANG}
+    !include "lang\portuguesebr.nsi"
     !include "lang\danish.nsi"
     !include "lang\dutch.nsi"
     !include "lang\german.nsi"
@@ -806,7 +807,8 @@ Function .onInit
   ClearErrors
   System::Call 'kernel32::GetUserDefaultLocaleName(t.r19, *i${NSIS_MAX_STRLEN})'
   StrCmp $R9 "zh-cn" coincide 0
-  StrCmp $R9 "zh-tw" 0 part
+  StrCmp $R9 "zh-tw" coincide 0
+  StrCmp $R9 "pt-br" 0 part
   coincide:
   System::Call 'User32::CharLower(t r19 r19)*i${NSIS_MAX_STRLEN}'
   ${StrRep} $lng_usr "$R9" "-" "_"

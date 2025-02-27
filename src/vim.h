@@ -846,6 +846,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_DIRS_IN_CDPATH	59
 #define EXPAND_SHELLCMDLINE	60
 #define EXPAND_FINDFUNC		61
+#define EXPAND_HIGHLIGHT_GROUP  62
 
 
 // Values for exmode_active (0 is no exmode)
@@ -1174,12 +1175,13 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define INSCHAR_COM_LIST 16	// format comments with list/2nd line indent
 
 // flags for open_line()
-#define OPENLINE_DELSPACES  0x01    // delete spaces after cursor
-#define OPENLINE_DO_COM	    0x02    // format comments
-#define OPENLINE_KEEPTRAIL  0x04    // keep trailing spaces
-#define OPENLINE_MARKFIX    0x08    // fix mark positions
-#define OPENLINE_COM_LIST   0x10    // format comments with list/2nd line indent
-#define OPENLINE_FORMAT	    0x20    // formatting long comment
+#define OPENLINE_DELSPACES	0x01    // delete spaces after cursor
+#define OPENLINE_DO_COM		0x02    // format comments
+#define OPENLINE_KEEPTRAIL	0x04    // keep trailing spaces
+#define OPENLINE_MARKFIX	0x08    // fix mark positions
+#define OPENLINE_COM_LIST	0x10    // format comments with list/2nd line indent
+#define OPENLINE_FORMAT		0x20    // formatting long comment
+#define OPENLINE_FORCE_INDENT	0x40    // use second_line_indent without indent logic
 
 // There are five history tables:
 #define HIST_CMD	0	// colon commands

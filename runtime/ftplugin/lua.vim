@@ -5,12 +5,23 @@
 " Contributor:		Dorai Sitaram <ds26@gte.com>
 "			C.D. MacEachern <craig.daniel.maceachern@gmail.com>
 "			Tyler Miller <tmillr@proton.me>
-" Last Change:		2024 Dec 03
+"			Phạm Bình An <phambinhanctb2004@gmail.com>
+" Last Change:		2025 Feb 25
 
 if exists("b:did_ftplugin")
   finish
 endif
 let b:did_ftplugin = 1
+
+" keep in sync with syntax/lua.vim
+if !exists("lua_version")
+  " Default is lua 5.3
+  let lua_version = 5
+  let lua_subversion = 3
+elseif !exists("lua_subversion")
+  " lua_version exists, but lua_subversion doesn't. In this case set it to 0
+  let lua_subversion = 0
+endif
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -21,11 +32,11 @@ setlocal formatoptions-=t formatoptions+=croql
 
 let &l:define = '\<function\|\<local\%(\s\+function\)\='
 
-" TODO: handle init.lua
-setlocal includeexpr=tr(v:fname,'.','/')
+let &l:include = '\v<((do|load)file|require)[^''"]*[''"]\zs[^''"]+'
+setlocal includeexpr=LuaInclude(v:fname)
 setlocal suffixesadd=.lua
 
-let b:undo_ftplugin = "setlocal cms< com< def< fo< inex< sua<"
+let b:undo_ftplugin = "setlocal cms< com< def< fo< inc< inex< sua<"
 
 if exists("loaded_matchit") && !exists("b:match_words")
   let b:match_ignorecase = 0
@@ -75,7 +86,19 @@ let s:patterns = [
       \ ['local\s+function\s+.+', 'end'],
       \ ]
 
-function! LuaFold(lnum) abort
+function LuaInclude(fname) abort
+  let lua_ver = str2float(printf("%d.%02d", g:lua_version, g:lua_subversion))
+  let fname = tr(a:fname, '.', '/')
+  let paths = lua_ver >= 5.03 ?  [ fname.'.lua', fname.'/init.lua' ] : [ fname.'.lua' ]
+  for path in paths
+    if filereadable(path)
+      return path
+    endif
+  endfor
+  return fname
+endfunction
+
+function LuaFold(lnum) abort
   if b:lua_lasttick == b:changedtick
     return b:lua_foldlists[a:lnum-1]
   endif

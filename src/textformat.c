@@ -434,7 +434,7 @@ internal_format(
 			// add the additional whitespace needed after the
 			// comment leader for the numbered list.
 			for (i = 0; i < padding; i++)
-			    ins_str((char_u *)" ");
+			    ins_str((char_u *)" ", 1);
 		    }
 		    else
 		    {

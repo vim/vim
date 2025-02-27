@@ -366,15 +366,14 @@ readfile(
 	    goto theend;
 	}
     }
+#if defined(UNIX) || defined(VMS)
+    if (!read_stdin && fname != NULL)
+	perm = mch_getperm(fname);
+#endif
 
     if (!read_stdin && !read_buffer && !read_fifo)
     {
 #if defined(UNIX) || defined(VMS)
-	/*
-	 * On Unix it is possible to read a directory, so we have to
-	 * check for it before the mch_open().
-	 */
-	perm = mch_getperm(fname);
 	if (perm >= 0 && !S_ISREG(perm)		    // not a regular file ...
 		      && !S_ISFIFO(perm)	    // ... or fifo
 		      && !S_ISSOCK(perm)	    // ... or socket
@@ -384,6 +383,10 @@ readfile(
 # endif
 						)
 	{
+	    /*
+	     * On Unix it is possible to read a directory, so we have to
+	     * check for it before the mch_open().
+	     */
 	    if (S_ISDIR(perm))
 	    {
 		filemess(curbuf, fname, (char_u *)_(msg_is_a_directory), 0);

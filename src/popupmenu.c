@@ -1097,7 +1097,7 @@ pum_set_selected(int n, int repeat UNUSED)
 		    if (pum_selected != prev_selected)
 		    {
 # ifdef FEAT_PROP_POPUP
-			curwin->w_firstline = 1;
+			curwin->w_firstline = 0;
 # endif
 			curwin->w_topline = 1;
 		    }

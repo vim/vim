@@ -1691,6 +1691,8 @@ do_highlight(
 		break;
 	    }
 
+	    // Note: Keep this in sync with get_highlight_group_key.
+
 	    // Isolate the key ("term", "ctermfg", "ctermbg", "font", "guifg"
 	    // or "guibg").
 	    while (*linep && !VIM_ISWHITE(*linep) && *linep != '=')
@@ -3058,6 +3060,7 @@ highlight_list_one(int id)
     if (message_filtered(sgp->sg_name))
 	return;
 
+    // Note: Keep this in sync with expand_highlight_group().
     didh = highlight_list_arg(id, didh, LIST_ATTR,
 				    sgp->sg_term, NULL, "term");
     didh = highlight_list_arg(id, didh, LIST_STRING,
@@ -3108,37 +3111,24 @@ highlight_list_one(int id)
 #endif
 }
 
-    static int
-highlight_list_arg(
-    int		id,
-    int		didh,
+    static char_u*
+highlight_arg_to_string(
     int		type,
     int		iarg,
     char_u	*sarg,
-    char	*name)
+    char_u	*buf)
 {
-    char_u	buf[MAX_ATTR_LEN];
-    char_u	*ts;
-    int		i;
-
-    if (got_int)
-	return FALSE;
-
-    if (type == LIST_STRING ? (sarg == NULL) : (iarg == 0))
-	return didh;
-
-    ts = buf;
     if (type == LIST_INT)
 	sprintf((char *)buf, "%d", iarg - 1);
     else if (type == LIST_STRING)
-	ts = sarg;
+	return sarg;
     else // type == LIST_ATTR
     {
 	size_t buflen;
 
 	buf[0] = NUL;
 	buflen = 0;
-	for (i = 0; i < (int)ARRAY_LENGTH(highlight_index_tab); ++i)
+	for (int i = 0; i < (int)ARRAY_LENGTH(highlight_index_tab); ++i)
 	{
 	    if (iarg & highlight_index_tab[i]->key)
 	    {
@@ -3153,6 +3143,28 @@ highlight_list_arg(
 	    }
 	}
     }
+    return buf;
+}
+
+    static int
+highlight_list_arg(
+    int		id,
+    int		didh,
+    int		type,
+    int		iarg,
+    char_u	*sarg,
+    char	*name)
+{
+    char_u	buf[MAX_ATTR_LEN];
+    char_u	*ts;
+
+    if (got_int)
+	return FALSE;
+
+    if (type == LIST_STRING ? (sarg == NULL) : (iarg == 0))
+	return didh;
+
+    ts = highlight_arg_to_string(type, iarg, sarg, buf);
 
     (void)syn_list_header(didh,
 	    (int)(vim_strsize(ts) + STRLEN(name) + 1), id);
@@ -4078,6 +4090,15 @@ highlight_changed(void)
 static void highlight_list(void);
 static void highlight_list_two(int cnt, int attr);
 
+// context for :highlight <group> <arg> expansion
+static int expand_hi_synid = 0;	    // ID for highlight group being completed
+static int expand_hi_equal_col = 0; // column where the '=' is
+static int expand_hi_include_orig = 0;	    // whether to fill the existing current value or not
+static char_u *expand_hi_curvalue = NULL;   // the existing current value
+#if defined(FEAT_EVAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+static dict_iterator_T expand_colornames_iter;	// iterator for looping through v:colornames
+#endif
+
 /*
  * Handle command line completion for :highlight command.
  */
@@ -4085,10 +4106,12 @@ static void highlight_list_two(int cnt, int attr);
 set_context_in_highlight_cmd(expand_T *xp, char_u *arg)
 {
     char_u	*p;
+    int		expand_group = TRUE;
 
     // Default: expand group names
     xp->xp_context = EXPAND_HIGHLIGHT;
     xp->xp_pattern = arg;
+    include_none = 0;
     include_link = 2;
     include_default = 1;
 
@@ -4114,9 +4137,11 @@ set_context_in_highlight_cmd(expand_T *xp, char_u *arg)
     // past group name
     include_link = 0;
     if (arg[1] == 'i' && arg[0] == 'N')
+    {
 	highlight_list();
-    if (STRNCMP("link", arg, p - arg) == 0
-	    || STRNCMP("clear", arg, p - arg) == 0)
+	expand_group = FALSE;
+    }
+    if (STRNCMP("link", arg, p - arg) == 0)
     {
 	xp->xp_pattern = skipwhite(p);
 	p = skiptowhite(xp->xp_pattern);
@@ -4124,10 +4149,67 @@ set_context_in_highlight_cmd(expand_T *xp, char_u *arg)
 	{
 	    xp->xp_pattern = skipwhite(p);
 	    p = skiptowhite(xp->xp_pattern);
+	    include_none = 1;
 	}
+	expand_group = FALSE;
+    }
+    else if (STRNCMP("clear", arg, p - arg) == 0)
+    {
+	xp->xp_pattern = skipwhite(p);
+	p = skiptowhite(xp->xp_pattern);
+	expand_group = FALSE;
     }
     if (*p != NUL)			// past group name(s)
-	xp->xp_context = EXPAND_NOTHING;
+    {
+	if (expand_group)
+	{
+	    // expansion will be done in expand_highlight_group()
+	    xp->xp_context = EXPAND_HIGHLIGHT_GROUP;
+
+	    expand_hi_synid = syn_namen2id(arg, (int)(p - arg));
+
+	    while (*p != NUL)
+	    {
+		arg = skipwhite(p);
+		p = skiptowhite(arg);
+	    }
+
+	    p = vim_strchr(arg, '=');
+	    if (p == NULL)
+	    {
+		// Didn't find a key=<value> pattern
+		xp->xp_pattern = arg;
+		expand_hi_equal_col = -1;
+		expand_hi_include_orig = FALSE;
+	    }
+	    else
+	    {
+		// Found key=<value> pattern, record the exact location
+		expand_hi_equal_col = (int)(p - xp->xp_line);
+
+		// Only include the original value if the pattern is empty
+		if (*(p + 1) == NUL)
+		    expand_hi_include_orig = TRUE;
+		else
+		    expand_hi_include_orig = FALSE;
+
+		// Account for comma-separated values
+		if (STRNCMP(arg, "term=", 5) == 0 ||
+			STRNCMP(arg, "cterm=", 6) == 0 ||
+			STRNCMP(arg, "gui=", 4) == 0)
+		{
+		    char_u *comma = vim_strrchr(p + 1, ',');
+		    if (comma != NULL)
+			p = comma;
+		}
+		xp->xp_pattern = p + 1;
+	    }
+	}
+	else
+	{
+	    xp->xp_context = EXPAND_NOTHING;
+	}
+    }
 }
 
 /*
@@ -4178,7 +4260,7 @@ get_highlight_name_ext(expand_T *xp UNUSED, int idx, int skip_cleared)
 	return (char_u *)"";
 
     if (idx == highlight_ga.ga_len && include_none != 0)
-	return (char_u *)"none";
+	return (char_u *)"NONE";
     if (idx == highlight_ga.ga_len + include_none && include_default != 0)
 	return (char_u *)"default";
     if (idx == highlight_ga.ga_len + include_none + include_default
@@ -4190,6 +4272,303 @@ get_highlight_name_ext(expand_T *xp UNUSED, int idx, int skip_cleared)
     if (idx >= highlight_ga.ga_len)
 	return NULL;
     return HL_TABLE()[idx].sg_name;
+}
+
+    static char_u *
+get_highlight_attr_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+    {
+	// Fill with current value first
+	if (expand_hi_curvalue != NULL)
+	    return expand_hi_curvalue;
+	else
+	    return (char_u*)"";
+    }
+    if (idx < (int)ARRAY_LENGTH(highlight_index_tab) + 1)
+    {
+	char_u *value = highlight_index_tab[idx-1]->value.string;
+	if (expand_hi_curvalue != NULL && STRCMP(expand_hi_curvalue, value) == 0)
+	{
+	    // Already returned the current value above, just skip.
+	    return (char_u*)"";
+	}
+	return value;
+    }
+    return NULL;
+}
+
+    static char_u *
+get_highlight_cterm_color(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+    {
+	// Fill with current value first
+	if (expand_hi_curvalue != NULL)
+	    return expand_hi_curvalue;
+	else
+	    return (char_u*)"";
+    }
+    // See highlight_set_cterm_color()
+    else if (idx == 1)
+	return (char_u*)"fg";
+    else if (idx == 2)
+	return (char_u*)"bg";
+    if (idx < (int)ARRAY_LENGTH(color_name_tab) + 3)
+    {
+	char_u *value = color_name_tab[idx-3].value.string;
+	return value;
+    }
+    return NULL;
+}
+
+#if defined(FEAT_EVAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+    static char_u *
+get_highlight_gui_color(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+    {
+	// Fill with current value first
+	if (expand_hi_curvalue != NULL)
+	    return expand_hi_curvalue;
+	else
+	    return (char_u*)"";
+    }
+    // See color_name2handle()
+    else if (idx == 1)
+	return (char_u*)"fg";
+    else if (idx == 2)
+	return (char_u*)"bg";
+    else if (idx == 3)
+	return (char_u*)"NONE";
+
+    // Complete from v:colornames. Don't do platform specific names for now.
+    typval_T *tv_result;
+    char_u *colorname = dict_iterate_next(&expand_colornames_iter, &tv_result);
+    if (colorname != NULL)
+    {
+	// :hi command doesn't allow space, so don't suggest any malformed items
+	if (vim_strchr(colorname, ' ') != NULL)
+	    return (char_u*)"";
+
+	if (expand_hi_curvalue != NULL && STRICMP(expand_hi_curvalue, colorname) == 0)
+	{
+	    // Already returned the current value above, just skip.
+	    return (char_u*)"";
+	}
+    }
+    return colorname;
+}
+#endif
+
+    static char_u *
+get_highlight_group_key(expand_T *xp UNUSED, int idx)
+{
+    // Note: Keep this in sync with do_highlight.
+    static char *(p_hi_group_key_values[]) =
+    {
+	"term=",
+	"start=",
+	"stop=",
+	"cterm=",
+	"ctermfg=",
+	"ctermbg=",
+	"ctermul=",
+	"ctermfont=",
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	"gui=",
+	"guifg=",
+	"guibg=",
+	"guisp=",
+#endif
+#ifdef FEAT_GUI
+	"font=",
+#endif
+	"NONE",
+    };
+
+    if (idx < (int)ARRAY_LENGTH(p_hi_group_key_values))
+	return (char_u*)p_hi_group_key_values[idx];
+    return NULL;
+}
+
+/*
+ * Command-line expansion for :hi {group-name} <args>...
+ */
+    int
+expand_highlight_group(
+	char_u	    *pat,
+	expand_T    *xp,
+	regmatch_T  *rmp,
+	char_u	    ***matches,
+	int	    *numMatches)
+{
+    if (expand_hi_equal_col != -1)
+    {
+	// List the values. First fill in the current value, then if possible colors
+	// or attribute names.
+	char_u	    *(*expandfunc)(expand_T *, int) = NULL;
+	int	    type = 0;
+	hl_group_T  *sgp = NULL;
+	int	    iarg = 0;
+	char_u	    *sarg = NULL;
+
+	int	    unsortedItems = -1; // don't sort by default
+
+	if (expand_hi_synid != 0)
+	    sgp = &HL_TABLE()[expand_hi_synid - 1]; // index is ID minus one
+
+	// Note: Keep this in sync with highlight_list_one().
+	char_u	    *name_end = xp->xp_line + expand_hi_equal_col;
+	if (name_end - xp->xp_line >= 5
+		&& STRNCMP(name_end - 5, " term", 5) == 0)
+	{
+	    expandfunc = get_highlight_attr_name;
+	    if (sgp)
+	    {
+		type = LIST_ATTR;
+		iarg = sgp->sg_term;
+	    }
+	}
+	else if (name_end - xp->xp_line >= 6
+		&& STRNCMP(name_end - 6, " cterm", 6) == 0)
+	{
+	    expandfunc = get_highlight_attr_name;
+	    if (sgp)
+	    {
+		type = LIST_ATTR;
+		iarg = sgp->sg_cterm;
+	    }
+	}
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	else if (name_end - xp->xp_line >= 4
+		&& STRNCMP(name_end - 4, " gui", 4) == 0)
+	{
+	    expandfunc = get_highlight_attr_name;
+	    if (sgp)
+	    {
+		type = LIST_ATTR;
+		iarg = sgp->sg_gui;
+	    }
+	}
+#endif
+	else if (name_end - xp->xp_line >= 8
+		&& STRNCMP(name_end - 8, " ctermfg", 8) == 0)
+	{
+	    expandfunc = get_highlight_cterm_color;
+	    if (sgp)
+	    {
+		type = LIST_INT;
+		iarg = sgp->sg_cterm_fg;
+	    }
+	}
+	else if (name_end - xp->xp_line >= 8
+		&& STRNCMP(name_end - 8, " ctermbg", 8) == 0)
+	{
+	    expandfunc = get_highlight_cterm_color;
+	    if (sgp)
+	    {
+		type = LIST_INT;
+		iarg = sgp->sg_cterm_bg;
+	    }
+	}
+	else if (name_end - xp->xp_line >= 8
+		&& STRNCMP(name_end - 8, " ctermul", 8) == 0)
+	{
+	    expandfunc = get_highlight_cterm_color;
+	    if (sgp)
+	    {
+		type = LIST_INT;
+		iarg = sgp->sg_cterm_ul;
+	    }
+	}
+#if defined(FEAT_EVAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+	else if (name_end - xp->xp_line >= 6
+		&& STRNCMP(name_end - 6, " guifg", 6) == 0)
+	{
+	    expandfunc = get_highlight_gui_color;
+	    if (sgp)
+	    {
+		type = LIST_STRING;
+		sarg = sgp->sg_gui_fg_name;
+	    }
+	}
+	else if (name_end - xp->xp_line >= 6
+		&& STRNCMP(name_end - 6, " guibg", 6) == 0)
+	{
+	    expandfunc = get_highlight_gui_color;
+	    if (sgp)
+	    {
+		type = LIST_STRING;
+		sarg = sgp->sg_gui_bg_name;
+	    }
+	}
+	else if (name_end - xp->xp_line >= 6
+		&& STRNCMP(name_end - 6, " guisp", 6) == 0)
+	{
+	    expandfunc = get_highlight_gui_color;
+	    if (sgp)
+	    {
+		type = LIST_STRING;
+		sarg = sgp->sg_gui_sp_name;
+	    }
+	}
+#endif
+
+#if defined(FEAT_EVAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+	if (expandfunc == get_highlight_gui_color)
+	{
+	    // Top 4 items are special, after that sort all the color names
+	    unsortedItems = 4;
+
+	    dict_T *colornames_table = get_vim_var_dict(VV_COLORNAMES);
+	    typval_T colornames_val;
+	    colornames_val.v_type = VAR_DICT;
+	    colornames_val.vval.v_dict = colornames_table;
+	    dict_iterate_start(&colornames_val, &expand_colornames_iter);
+	}
+#endif
+
+	char_u	    buf[MAX_ATTR_LEN];
+
+	expand_hi_curvalue = NULL;
+	if (expand_hi_include_orig)
+	{
+	    if (((type == LIST_ATTR || type == LIST_INT) && iarg != 0) ||
+		(type == LIST_STRING && sarg != NULL))
+	    {
+		// Retrieve the current value to go first in completion
+		expand_hi_curvalue = highlight_arg_to_string(
+			type, iarg, sarg, buf);
+	    }
+	}
+
+	if (expandfunc != NULL)
+	{
+	    return ExpandGenericExt(
+		    pat,
+		    xp,
+		    rmp,
+		    matches,
+		    numMatches,
+		    expandfunc,
+		    FALSE,
+		    unsortedItems);
+	}
+
+	return FAIL;
+    }
+
+    // List all the key names
+    return ExpandGenericExt(
+	    pat,
+	    xp,
+	    rmp,
+	    matches,
+	    numMatches,
+	    get_highlight_group_key,
+	    FALSE,
+	    -1);
 }
 
 #if defined(FEAT_GUI) || defined(PROTO)

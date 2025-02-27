@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2025 Feb 13
+*terminal.txt*	For Vim version 9.1.  Last change: 2025 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1092,11 +1092,11 @@ Currently supported commands:
 		Example in JSON: >
 			["drop", "path/file.txt", {"ff": "dos"}]
 
-A trick to have Vim send this escape sequence: >
-	exe "set t_ts=\<Esc>]51; t_fs=\x07"
-	let &titlestring = '["call","Tapi_TryThis",["hello",123]]'
-	redraw
-	set t_ts& t_fs&
+You can use |echoraw()| to make Vim send this escape sequence: >
+	call echoraw("\<ESC>]51;[\"call\", \"Tapi_TryThis\", [\"hello\", 123]]\x07")
+	call echoraw("\<Esc>]51;[\"drop\", \"README.md\"]\x07")
+Note: JSON requires double quotes around string values, hence those have to be
+escaped.
 
 Rationale: Why not allow for any command or expression?  Because that might
 create a security problem.

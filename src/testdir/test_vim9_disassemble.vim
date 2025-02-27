@@ -3633,4 +3633,33 @@ def Test_disassemble_using_script_local_funcref()
   unlet g:instr
 enddef
 
+" Disassemble the code generated for using a script local variable
+" in an instance variable initialization expression
+def Test_disassemble_using_script_local_var_in_obj_init()
+  var lines =<< trim END
+    vim9script
+    const DEFAULT = 'default-obj_key'
+    export class ObjKey
+      const unique_object_id3 = DEFAULT
+    endclass
+  END
+  writefile(lines, 'Xscriptlocalobjinit.vim', 'D')
+  lines =<< trim END
+    vim9script
+    import './Xscriptlocalobjinit.vim' as obj_key
+
+    class C1 extends obj_key.ObjKey
+    endclass
+    g:instr = execute('disassemble C1.new')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('new\_s*' ..
+    '0 NEW C1 size \d\+\_s*' ..
+    '1 SCRIPTCTX_SET .*/Xscriptlocalobjinit.vim\_s*' ..
+    '2 LOADSCRIPT DEFAULT-0 from .*/Xscriptlocalobjinit.vim\_s*' ..
+    '3 SCRIPTCTX_SET .*\_s*' ..
+    '4 STORE_THIS 0', g:instr)
+  unlet g:instr
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

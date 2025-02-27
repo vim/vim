@@ -3595,4 +3595,70 @@ enddef
 "   &rtp = save_rtp
 " enddef
 
+" Test for using a non-exported constant as an instance variable initiazer in an
+" imported class
+def Test_import_member_initializer()
+  var lines =<< trim END
+    vim9script
+    const DEFAULT = 'default'
+    export class Foo
+      public var x = DEFAULT
+    endclass
+  END
+  writefile(lines, 'Ximportclass.vim', 'D')
+
+  # The initializer for Foo.x is evaluated in the context of Ximportclass.vim.
+  lines =<< trim END
+    vim9script
+    import './Ximportclass.vim' as X
+    class Bar extends X.Foo
+    endclass
+    var o = Bar.new()
+    assert_equal('default', o.x)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Another test
+  lines =<< trim END
+    vim9script
+
+    export interface IObjKey
+      var unique_object_id: string
+    endinterface
+
+    # helper sub-class.
+    export class ObjKey implements IObjKey
+      const unique_object_id = GenerateKey()
+    endclass
+
+    export def GenerateKey(): string
+      return "SomeKey"
+    enddef
+  END
+  writefile(lines, 'XobjKey.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import "./XobjKey.vim" as obj_key
+
+    const GenKey = obj_key.GenerateKey
+
+    class LocalObjKey implements obj_key.IObjKey
+      const unique_object_id = GenKey()
+    endclass
+
+    type Key1 = obj_key.ObjKey
+    type Key2 = LocalObjKey
+
+    class C1 extends Key1
+    endclass
+    class C2 extends Key2
+    endclass
+    assert_equal('SomeKey', C1.new().unique_object_id)
+    assert_equal('SomeKey', C2.new().unique_object_id)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -19,4 +19,3 @@ CompilerSet errorformat+=%-G%.%#
 " CompilerSet errorformat=%A%f:%l:%c,
 " CompilerSet errorformat+=%C%t%*\\a\\:\ %m,
 " CompilerSet errorformat+=%-G%.%#,
-" " CompilerSet errorformat+=%-G

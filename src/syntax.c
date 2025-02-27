@@ -6372,7 +6372,7 @@ reset_expand_highlight(void)
 }
 
 /*
- * Handle command line completion for :match and :echohl command: Add "None"
+ * Handle command line completion for :match and :echohl command: Add "NONE"
  * as highlight group.
  */
     void
