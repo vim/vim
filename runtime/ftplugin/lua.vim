@@ -6,7 +6,7 @@
 "			C.D. MacEachern <craig.daniel.maceachern@gmail.com>
 "			Tyler Miller <tmillr@proton.me>
 "			Phạm Bình An <phambinhanctb2004@gmail.com>
-" Last Change:		2025 Feb 25
+" Last Change:		2025 Feb 27
 
 if exists("b:did_ftplugin")
   finish
@@ -32,11 +32,11 @@ setlocal formatoptions-=t formatoptions+=croql
 
 let &l:define = '\<function\|\<local\%(\s\+function\)\='
 
-let &l:include = '\v<((do|load)file|require)[^''"]*[''"]\zs[^''"]+'
-setlocal includeexpr=LuaInclude(v:fname)
+let &l:include = '\<\%(\%(do\|load\)file\|require\)\s*('
+setlocal includeexpr=s:LuaInclude(v:fname)
 setlocal suffixesadd=.lua
 
-let b:undo_ftplugin = "setlocal cms< com< def< fo< inc< inex< sua<"
+let b:undo_ftplugin = "setl cms< com< def< fo< inc< inex< sua<"
 
 if exists("loaded_matchit") && !exists("b:match_words")
   let b:match_ignorecase = 0
@@ -61,19 +61,30 @@ endif
 
 if has("folding") && get(g:, "lua_folding", 0)
   setlocal foldmethod=expr
-  setlocal foldexpr=LuaFold(v:lnum)
+  setlocal foldexpr=s:LuaFold(v:lnum)
   let b:lua_lasttick = -1
-  let b:undo_ftplugin ..= "|setl foldexpr< foldmethod< | unlet! b:lua_lasttick b:lua_foldlists"
+  let b:undo_ftplugin ..= " | setl foldexpr< foldmethod< | unlet! b:lua_lasttick b:lua_foldlists"
 endif
 
-
 " The rest of the file needs to be :sourced only once per Vim session
-if exists('s:loaded_lua') || &cp
+if exists("s:loaded_lua") || &cp
   let &cpo = s:cpo_save
   unlet s:cpo_save
   finish
 endif
 let s:loaded_lua = 1
+
+function s:LuaInclude(fname) abort
+  let lua_ver = str2float(printf("%d.%02d", g:lua_version, g:lua_subversion))
+  let fname = tr(a:fname, '.', '/')
+  let paths = lua_ver >= 5.03 ? [fname .. ".lua", fname .. "/init.lua"] : [fname .. ".lua"]
+  for path in paths
+    if filereadable(path)
+      return path
+    endif
+  endfor
+  return fname
+endfunction
 
 let s:patterns = [
       \ ['do', 'end'],
@@ -86,47 +97,35 @@ let s:patterns = [
       \ ['local\s+function\s+.+', 'end'],
       \ ]
 
-function LuaInclude(fname) abort
-  let lua_ver = str2float(printf("%d.%02d", g:lua_version, g:lua_subversion))
-  let fname = tr(a:fname, '.', '/')
-  let paths = lua_ver >= 5.03 ?  [ fname.'.lua', fname.'/init.lua' ] : [ fname.'.lua' ]
-  for path in paths
-    if filereadable(path)
-      return path
-    endif
-  endfor
-  return fname
-endfunction
-
-function LuaFold(lnum) abort
+function s:LuaFold(lnum) abort
   if b:lua_lasttick == b:changedtick
-    return b:lua_foldlists[a:lnum-1]
+    return b:lua_foldlists[a:lnum - 1]
   endif
   let b:lua_lasttick = b:changedtick
 
   let b:lua_foldlists = []
   let foldlist = []
-  let buf = getline(1, '$')
+  let buf = getline(1, "$")
   for line in buf
     for t in s:patterns
-      let tagopen = '\v^\s*'..t[0]..'\s*$'
-      let tagclose = '\v^\s*'..t[1]..'\s*$'
+      let tagopen  = '\v^\s*' .. t[0] ..'\s*$'
+      let tagclose = '\v^\s*' .. t[1] ..'\s*$'
       if line =~# tagopen
-        call add(foldlist, t)
-        break
+	call add(foldlist, t)
+	break
       elseif line =~# tagclose
-        if len(foldlist) > 0 && line =~# foldlist[-1][1]
-          call remove(foldlist, -1)
-        else
-          let foldlist = []
-        endif
-        break
+	if len(foldlist) > 0 && line =~# foldlist[-1][1]
+	  call remove(foldlist, -1)
+	else
+	  let foldlist = []
+	endif
+	break
       endif
     endfor
     call add(b:lua_foldlists, len(foldlist))
   endfor
 
-  return lua_foldlists[a:lnum-1]
+  return lua_foldlists[a:lnum - 1]
 endfunction
 
 let &cpo = s:cpo_save
