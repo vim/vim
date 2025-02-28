@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Feb 27
+*options.txt*	For Vim version 9.1.  Last change: 2025 Feb 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2120,6 +2120,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	A comma-separated list of options for Insert mode completion
 	|ins-completion|.  The supported values are:
 
+	   fuzzy    Enable |fuzzy-matching| for completion candidates. This
+		    allows for more flexible and intuitive matching, where
+		    characters can be skipped and matches can be found even
+		    if the exact sequence is not typed.
+
+	   longest  Only insert the longest common text of the matches.  If
+		    the menu is displayed you can use CTRL-L to add more
+		    characters.  Whether case is ignored depends on the kind
+		    of completion.  For buffer text the 'ignorecase' option is
+		    used.
+
 	   menu	    Use a popup menu to show the possible completions.  The
 		    menu is only shown when there is more than one match and
 		    sufficient colors are available.  |ins-completion-menu|
@@ -2128,15 +2139,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    Useful when there is additional information about the
 		    match, e.g., what file it comes from.
 
-	   longest  Only insert the longest common text of the matches.  If
-		    the menu is displayed you can use CTRL-L to add more
-		    characters.  Whether case is ignored depends on the kind
-		    of completion.  For buffer text the 'ignorecase' option is
-		    used.
+	   noinsert Do not insert any text for a match until the user selects
+		    a match from the menu. Only works in combination with
+		    "menu" or "menuone". No effect if "longest" is present.
 
-	   preview  Show extra information about the currently selected
-		    completion in the preview window.  Only works in
-		    combination with "menu" or "menuone".
+	   noselect Same as "noinsert", except that no menu item is
+		    pre-selected. If both "noinsert" and "noselect" are
+		    present, "noselect" has precedence.
+
+	   nosort   Disable sorting of completion candidates based on fuzzy
+		    scores when "fuzzy" is enabled. Candidates will appear
+		    in their original order.
 
 	   popup    Show extra information about the currently selected
 		    completion in a popup window.  Only works in combination
@@ -2151,28 +2164,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    See the example at |complete-popuphidden|.
 		    {only works when compiled with the |+textprop| feature}
 
-	   noinsert Do not insert any text for a match until the user selects
-		    a match from the menu. Only works in combination with
-		    "menu" or "menuone". No effect if "longest" is present.
-
-	   noselect Same as "noinsert", except that no menu item is
-		    pre-selected. If both "noinsert" and "noselect" are
-		    present, "noselect" has precedence.
-
-	   fuzzy    Enable |fuzzy-matching| for completion candidates. This
-		    allows for more flexible and intuitive matching, where
-		    characters can be skipped and matches can be found even
-		    if the exact sequence is not typed.
-
-	   nosort   Disable sorting of completion candidates based on fuzzy
-		    scores when "fuzzy" is enabled. Candidates will appear
-		    in their original order.
-
 	   preinsert
 		    Preinsert the portion of the first candidate word that is
 		    not part of the current completion leader and using the
 		    |hl-ComplMatchIns| highlight group. Does not work when
-		    "fuzzy" is also included.
+		    "fuzzy" is set. Requires both "menu" and "menuone" to be
+		    set.
+
+	   preview  Show extra information about the currently selected
+		    completion in the preview window.  Only works in
+		    combination with "menu" or "menuone".
 
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)
