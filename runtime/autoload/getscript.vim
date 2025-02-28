@@ -100,6 +100,10 @@ if !exists("g:GetLatestVimScripts_bunzip2")
  let g:GetLatestVimScripts_bunzip2= "bunzip2"
 endif
 
+if !exists("g:GetLatestVimScripts_bunzip3")
+ let g:GetLatestVimScripts_bunzip3= "bunzip3"
+endif
+
 if !exists("g:GetLatestVimScripts_gunzip")
  let g:GetLatestVimScripts_gunzip= "gunzip"
 endif
@@ -599,7 +603,7 @@ fun! s:GetOneScript(...)
 "      call Decho("decompress: new sname<".sname."> after bunzip2")
      if sname =~ '\.bz3$'
 "      call Decho("decompress: attempt to bunzip3 ".sname)
-      exe "sil !".g:GetLatestVimScripts_bunzip2." ".shellescape(sname)
+      exe "sil !".g:GetLatestVimScripts_bunzip3." ".shellescape(sname)
       let sname= substitute(sname,'\.bz3$','','')
 "      call Decho("decompress: new sname<".sname."> after bunzip3")
      elseif sname =~ '\.gz$'

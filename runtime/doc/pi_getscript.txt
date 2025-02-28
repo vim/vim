@@ -362,6 +362,11 @@ after/syntax/c.vim contained in it to overwrite a user's c.vim.
 		This variable holds the name of the command to decompress .bz2
 		files
 >
+	g:GetLatestVimScripts_bunzip3
+<        default= bunzip3
+		This variable holds the name of the command to decompress .bz3
+		files
+>
 	g:GetLatestVimScripts_gunzip
 <        default= gunzip
 		This variable holds the name of the command to decompress .gz
@@ -409,6 +414,8 @@ The AutoInstall process will:
 		Windows: $HOME\vimfiles
 	if the downloaded file ends with ".bz2"
 		bunzip2 it
+	else if the downloaded file ends with ".bz3"
+		bunzip3 it
 	else if the downloaded file ends with ".gz"
 		gunzip it
 	if the resulting file ends with ".zip"
@@ -422,6 +429,7 @@ The AutoInstall process will:
 ==============================================================================
 9. GetLatestVimScripts History		*getscript-history* *glvs-hist* {{{1
 
+v38 Feb 25, 2025 : * handles additional decompression option for .bzip3 files.
 v37 Sep 23, 2024 : * Support for the new vimball's .vmb extension (old .vba
 		     extension conflicted with visual basic).
 		   * Support for |glvs-autoinstall| in ftplugins and packages.
