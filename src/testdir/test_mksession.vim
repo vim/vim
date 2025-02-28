@@ -1281,4 +1281,53 @@ func Test_mkview_default_home()
   endif
 endfunc
 
+" Test vim mappings
+func Test_mksession_vim_mappings()
+  call s:ClearMappings()
+  let lines =<< trim END
+    nmap <space>q2 <scriptcmd>call FormatRange(1, 100)<cr>
+    map <space>q1 <cmd>echo "hello world"<cr>
+    cnoremap <expr> <space>q3 getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
+  END
+  new
+  call append(0, lines)
+  :%source
+  mksession! mappings_test
+
+  call s:ClearMappings()
+
+  let li = filter(readfile('mappings_test'), {_, val -> val =~# '^\s*\(n\|cnore\)\?map'})
+  call assert_equal(
+        \ ["map \x16 q1 <Cmd>echo \"hello world\"\x16",
+        \ "nmap \x16 q2 <ScriptCmd>call FormatRange(1, 100)\x16",
+        \ "cnoremap <expr> \x16 q3 getcmdtype() =~ '[/?]' ? '.\\{-}' : \" \""],
+        \ li)
+
+  bwipe!
+  call delete('mappings_test')
+endfunc
+
+" Test vim9 mappings
+func Test_mksession_no_vim9_mappings()
+  call s:ClearMappings()
+  let lines =<< trim END
+    vim9script
+    import autoload "dist/json.vim"
+    map <space>q1 <cmd>echo "hello world"<cr>
+    nmap <space>q2 <scriptcmd>json.FormatRange(1, 100)<cr>
+    cnoremap <expr> <space>q3 getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
+  END
+  new
+  call append(0, lines)
+  :%source
+  mksession! mappings_test_v9
+
+  call s:ClearMappings()
+
+  let li = filter(readfile('mappings_test_v9'), 'v:val =~# "^\\s*map|nmap|cnoremap"')
+  call assert_equal([], li)
+  bwipe!
+  call delete('mappings_test_v9')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
