@@ -12,6 +12,7 @@
 "                               autoloading search path fix
 "                               substitution of hardcoded commands with global variables
 "   2024 Nov 12 by Vim Project: fix problems on Windows (#16036)
+"   2025 Feb 28 by Vim Project: add support for bzip3 (#16755)
 "  }}}
 "
 " GetLatestVimScripts: 642 1 :AutoInstall: getscript.vim
@@ -98,6 +99,10 @@ endif
 " Note tar is available as builtin since Windows 11.
 if !exists("g:GetLatestVimScripts_bunzip2")
  let g:GetLatestVimScripts_bunzip2= "bunzip2"
+endif
+
+if !exists("g:GetLatestVimScripts_bunzip3")
+ let g:GetLatestVimScripts_bunzip3= "bunzip3"
 endif
 
 if !exists("g:GetLatestVimScripts_gunzip")
@@ -565,73 +570,55 @@ fun! s:GetOneScript(...)
    " --------------------------------------------------------------------------
 "   call Decho("checking if plugin requested autoinstall: doautoinstall=".doautoinstall)
    if doautoinstall
-"    call Decho(" ")
-"    call Decho("Autoinstall: getcwd<".getcwd()."> filereadable(".sname.")=".filereadable(sname))
     if filereadable(sname)
-"     call Decho("<".sname."> is readable")
-"     call Decho("exe silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".shellescape(s:autoinstall))
      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".shellescape(s:autoinstall)
      let curdir    = fnameescape(substitute(getcwd(),'\','/','ge'))
      let installdir= curdir."/Installed"
      if !isdirectory(installdir)
       call mkdir(installdir)
      endif
-"     call Decho("curdir<".curdir."> installdir<".installdir.">")
-"     call Decho("exe cd ".fnameescape(s:autoinstall))
      exe "cd ".fnameescape(s:autoinstall)
 
      " determine target directory for moves
      let firstdir= substitute(&rtp,',.*$','','')
      let pname   = substitute(sname,'\..*','.vim','')
-"     call Decho("determine tgtdir: is <".firstdir.'/AsNeeded/'.pname." readable?")
      if filereadable(firstdir.'/AsNeeded/'.pname)
       let tgtdir= "AsNeeded"
      else
       let tgtdir= "plugin"
      endif
-"     call Decho("tgtdir<".tgtdir.">  pname<".pname.">")
-     
+
      " decompress
      if sname =~ '\.bz2$'
-"      call Decho("decompress: attempt to bunzip2 ".sname)
       exe "sil !".g:GetLatestVimScripts_bunzip2." ".shellescape(sname)
       let sname= substitute(sname,'\.bz2$','','')
-"      call Decho("decompress: new sname<".sname."> after bunzip2")
+     elseif sname =~ '\.bz3$'
+      exe "sil !".g:GetLatestVimScripts_bunzip3." ".shellescape(sname)
+      let sname= substitute(sname,'\.bz3$','','')
      elseif sname =~ '\.gz$'
-"      call Decho("decompress: attempt to gunzip ".sname)
       exe "sil !".g:GetLatestVimScripts_gunzip." ".shellescape(sname)
       let sname= substitute(sname,'\.gz$','','')
-"      call Decho("decompress: new sname<".sname."> after gunzip")
      elseif sname =~ '\.xz$'
-"      call Decho("decompress: attempt to unxz ".sname)
       exe "sil !".g:GetLatestVimScripts_unxz." ".shellescape(sname)
       let sname= substitute(sname,'\.xz$','','')
-"      call Decho("decompress: new sname<".sname."> after unxz")
      else
 "      call Decho("no decompression needed")
      endif
-     
+
      " distribute archive(.zip, .tar, .vba, .vmb, ...) contents
      if sname =~ '\.zip$'
-"      call Decho("dearchive: attempt to unzip ".sname)
       exe "silent !".g:GetLatestVimScripts_unzip." -o ".shellescape(sname)
      elseif sname =~ '\.tar$'
-"      call Decho("dearchive: attempt to untar ".sname)
       exe "silent !tar -xvf ".shellescape(sname)
      elseif sname =~ '\.tgz$'
-"      call Decho("dearchive: attempt to untar+gunzip ".sname)
       exe "silent !tar -zxvf ".shellescape(sname)
      elseif sname =~ '\.taz$'
-"      call Decho("dearchive: attempt to untar+uncompress ".sname)
       exe "silent !tar -Zxvf ".shellescape(sname)
      elseif sname =~ '\.tbz$'
-"      call Decho("dearchive: attempt to untar+bunzip2 ".sname)
       exe "silent !tar -jxvf ".shellescape(sname)
      elseif sname =~ '\.txz$'
-"      call Decho("dearchive: attempt to untar+xz ".sname)
       exe "silent !tar -Jxvf ".shellescape(sname)
      elseif sname =~ '\.vba$\|\.vmb$'
-"      call Decho("dearchive: attempt to handle a vimball: ".sname)
       silent 1split
       if exists("g:vimball_home")
        let oldvimballhome= g:vimball_home
@@ -648,25 +635,21 @@ fun! s:GetOneScript(...)
      else
 "      call Decho("no dearchiving needed")
      endif
-     
+
      " ---------------------------------------------
      " move plugin to plugin/ or AsNeeded/ directory
      " ---------------------------------------------
      if sname =~ '.vim$'
-"      call Decho("dearchive: attempt to simply move ".sname." to ".tgtdir)
       exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".tgtdir
      else
-"      call Decho("dearchive: move <".sname."> to installdir<".installdir.">")
       exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".installdir
      endif
      if tgtdir != "plugin"
-"      call Decho("exe silent !".g:GetLatestVimScripts_mv." ".shellescape("plugin/".pname)." ".tgtdir)
       exe "silent !".g:GetLatestVimScripts_mv." ".shellescape("plugin/".pname)." ".tgtdir
      endif
-     
+
      " helptags step
      let docdir= substitute(&rtp,',.*','','e')."/doc"
-"     call Decho("helptags: docdir<".docdir.">")
      exe "helptags ".fnameescape(docdir)
      exe "cd ".fnameescape(curdir)
     endif
@@ -681,13 +664,8 @@ fun! s:GetOneScript(...)
 
    " update the data in the <GetLatestVimScripts.dat> file
    call setline(line("."),modline)
-"   call Decho("update data in ".expand("%")."#".line(".").": modline<".modline.">")
-"  else " Decho
-"   call Decho("[latestsrcid=".latestsrcid."] <= [srcid=".srcid."], no need to update")
   endif
 
-"  call Dredir("BUFFER TEST (GetOneScript)","ls!")
-"  call Dret("GetOneScript")
 endfun
 
 " ---------------------------------------------------------------------
