@@ -2099,6 +2099,21 @@ func Wildmode_tests()
     set fileignorecase&
   endif
 
+  " If 'noselect' is present, single item menu should not insert item
+  func! T(a, c, p)
+    return "oneA"
+  endfunc
+  command! -nargs=1 -complete=custom,T MyCmd
+  set wildmenu
+  set wildmode=noselect,full
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+  set wildmenu&
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+
   %argdelete
   delcommand MyCmd
   delfunc T
