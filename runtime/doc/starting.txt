@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Dec 19
+*starting.txt*  For Vim version 9.1.  Last change: 2025 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -828,8 +828,9 @@ accordingly.  Vim proceeds in this order:
 	easy to copy it to another system.
 
 	If Vim was started with "-u filename", the file "filename" is used.
-	All following initializations until 4. are skipped. $MYVIMRC and
-	$MYVIMDIR are not set.
+	All following initializations until 4. are skipped. `$MYVIMRC` and
+	`$MYVIMDIR` are not set (but `$MYVIMDIR` will be set, if 'rtp' is
+	updated).
 	"vim -u NORC" can be used to skip these initializations without
 	reading a file.  "vim -u NONE" also skips loading plugins.  |-u|
 
@@ -850,9 +851,9 @@ accordingly.  Vim proceeds in this order:
 			*VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc*
 			*$MYVIMRC* *$MYVIMDIR*
      c. Five places are searched for initializations.  The first that exists
-	is used, the others are ignored.  The $MYVIMRC environment variable is
-	set to the file that was first found, unless $MYVIMRC was already set
-	and when using VIMINIT.  The $MYVIMDIR environment variable is
+	is used, the others are ignored.  The `$MYVIMRC` environment variable is
+	set to the file that was first found, unless `$MYVIMRC` was already set
+	when using VIMINIT.  The `$MYVIMDIR` environment variable is
 	set to the personal 'rtp' directory, however it is not verified
 	that the directory actually exists.
 	I   The environment variable VIMINIT (see also |compatible-default|) (*)
@@ -973,9 +974,10 @@ accordingly.  Vim proceeds in this order:
 	The |v:vim_did_enter| variable is set to 1.
 	The |VimEnter| autocommands are executed.
 
-The $MYVIMRC or $MYGVIMRC environment variable will be set to the first found
-vimrc and/or gvimrc file while $MYVIMDIR is set to the users personal runtime
-directory 'rtp' (typically the first entry in 'runtimepath').
+The `$MYVIMRC` or `$MYGVIMRC` environment variable will be set to the first found
+vimrc and/or gvimrc file while `$MYVIMDIR` is set to the users personal runtime
+directory 'rtp' (typically the first entry in 'runtimepath').  If 'rtp'
+changes, `$MYVIMDIR` will be updated.
 Note: These environment variables resolve symbolic links, but 'rtp' does not.
 
 
