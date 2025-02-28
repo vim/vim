@@ -2042,6 +2042,34 @@ func Wildmode_tests()
   call assert_equal('AAA    AAAA   AAAAA', g:Sline)
   call assert_equal('"b A', @:)
 
+  " When 'wildmenu' is not set, 'noselect' completes first item
+  set wildmode=noselect
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+
+  " When 'noselect' is present, do not complete first <tab>.
+  set wildmenu
+  set wildmode=noselect
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+
+  " When 'full' is present, complete after first <tab>.
+  set wildmode=noselect,full
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+  call feedkeys(":MyCmd o\t\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneB', @:)
+
+  " 'noselect' has no effect when 'longest' is present.
+  set wildmode=noselect:longest
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd one', @:)
+  set wildmenu&
+
   " when using longest completion match, matches shorter than the argument
   " should be ignored (happens with :help)
   set wildmode=longest,full

@@ -913,6 +913,8 @@ cmdline_wildchar_complete(
 
     if (wim_flags[wim_index] & WIM_BUFLASTUSED)
 	options |= WILD_BUFLASTUSED;
+    if (wim_flags[wim_index] & WIM_NOSELECT)
+	options |= WILD_KEEP_SOLE_ITEM;
     if (xp->xp_numfiles > 0)   // typed p_wc at least twice
     {
 	// if 'wildmode' contains "list" may still need to list
@@ -958,14 +960,15 @@ cmdline_wildchar_complete(
 	// when more than one match, and 'wildmode' first contains
 	// "list", or no change and 'wildmode' contains "longest,list",
 	// list all matches
-	if (res == OK && xp->xp_numfiles > 1)
+	if (res == OK
+		&& xp->xp_numfiles > ((wim_flags[wim_index] & WIM_NOSELECT) ? 0 : 1))
 	{
 	    // a "longest" that didn't do anything is skipped (but not
 	    // "list:longest")
 	    if (wim_flags[0] == WIM_LONGEST && ccline.cmdpos == j)
 		wim_index = 1;
 	    if ((wim_flags[wim_index] & WIM_LIST)
-		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0))
+		    || (p_wmnu && (wim_flags[wim_index] & (WIM_FULL | WIM_NOSELECT))))
 	    {
 		if (!(wim_flags[0] & WIM_LONGEST))
 		{
@@ -983,7 +986,8 @@ cmdline_wildchar_complete(
 		*did_wild_list = TRUE;
 		if (wim_flags[wim_index] & WIM_LONGEST)
 		    nextwild(xp, WILD_LONGEST, options, escape);
-		else if (wim_flags[wim_index] & WIM_FULL)
+		else if ((wim_flags[wim_index] & WIM_FULL)
+			&& !(wim_flags[wim_index] & WIM_NOSELECT))
 		    nextwild(xp, WILD_NEXT, options, escape);
 	    }
 	    else
@@ -2716,6 +2720,8 @@ check_opt_wim(void)
 	    new_wim_flags[idx] |= WIM_LIST;
 	else if (i == 8 && STRNCMP(p, "lastused", 8) == 0)
 	    new_wim_flags[idx] |= WIM_BUFLASTUSED;
+	else if (i == 8 && STRNCMP(p, "noselect", 8) == 0)
+	    new_wim_flags[idx] |= WIM_NOSELECT;
 	else
 	    return FAIL;
 	p += i;

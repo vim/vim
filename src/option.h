@@ -369,6 +369,7 @@ typedef enum {
 #define WIM_LONGEST	0x02
 #define WIM_LIST	0x04
 #define WIM_BUFLASTUSED	0x08
+#define WIM_NOSELECT	0x10
 
 // flags for the 'wildoptions' option
 // each defined char should be unique over all values.
