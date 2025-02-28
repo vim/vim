@@ -529,6 +529,26 @@ fun! vimball#Decompress(fname,...)
    let fname= substitute(a:fname,'\.bz2$','','')
    exe "e ".escape(fname,' \')
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
+  
+  elseif expand("%") =~ '.*\.bz3' && executable("bunzip3")
+   " handle *.bz3 with bunzip3
+   silent exe "!bunzip3 ".shellescape(a:fname)
+   if v:shell_error != 0
+	call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) bunzip3 may have failed with <".a:fname.">")
+   endif
+   let fname= substitute(a:fname,'\.bz3$','','')
+   exe "e ".escape(fname,' \')
+   if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
+  
+  elseif expand("%") =~ '.*\.bz3' && executable("bzip3")
+   " handle *.bz3 with bzip3 -d
+   silent exe "!bzip3 -d ".shellescape(a:fname)
+   if v:shell_error != 0
+	call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "bzip3 -d" may have failed with <'.a:fname.">")
+   endif
+   let fname= substitute(a:fname,'\.bz3$','','')
+   exe "e ".escape(fname,' \')
+   if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
 
   elseif expand("%") =~ '.*\.zip' && executable("unzip")
    " handle *.zip with unzip
