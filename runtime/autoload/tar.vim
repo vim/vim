@@ -175,9 +175,9 @@ fun! tar#Browse(tarfile)
 
   elseif tarfile =~# '\.lrp'
    exe "sil! r! cat -- ".shellescape(tarfile,1)."|gzip -d -c -|".g:tar_cmd." -".g:tar_browseoptions." - "
-  elseif tarfile =~# '\.\(bz2\|tb2\)$'
+  elseif tarfile =~# '\.\(bz2\|tbz\|tb2\)$'
    exe "sil! r! bzip2 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
-  elseif tarfile =~# '\.\(bz3\|tbz\|tb3\)$'
+  elseif tarfile =~# '\.\(bz3\|tb3\)$'
    exe "sil! r! bzip3 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
   elseif tarfile =~# '\.\(lzma\|tlz\)$'
    exe "sil! r! lzma -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
