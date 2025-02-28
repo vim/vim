@@ -597,6 +597,11 @@ fun! s:GetOneScript(...)
       exe "sil !".g:GetLatestVimScripts_bunzip2." ".shellescape(sname)
       let sname= substitute(sname,'\.bz2$','','')
 "      call Decho("decompress: new sname<".sname."> after bunzip2")
+     if sname =~ '\.bz3$'
+"      call Decho("decompress: attempt to bunzip3 ".sname)
+      exe "sil !".g:GetLatestVimScripts_bunzip2." ".shellescape(sname)
+      let sname= substitute(sname,'\.bz3$','','')
+"      call Decho("decompress: new sname<".sname."> after bunzip3")
      elseif sname =~ '\.gz$'
 "      call Decho("decompress: attempt to gunzip ".sname)
       exe "sil !".g:GetLatestVimScripts_gunzip." ".shellescape(sname)
