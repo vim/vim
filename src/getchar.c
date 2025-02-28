@@ -88,6 +88,9 @@ static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 
 static size_t	last_recorded_len = 0;	// number of last recorded chars
 
+static size_t	last_get_inserted_len = 0;	// length of the string returned from the
+						// last call to get_inserted()
+
 #ifdef FEAT_EVAL
 mapblock_T	*last_used_map = NULL;
 int		last_used_sid = -1;
@@ -171,6 +174,9 @@ get_recorded(void)
     size_t	len;
 
     p = get_buffcont(&recordbuff, TRUE, &len);
+    if (p == NULL)
+	return NULL;
+
     free_buff(&recordbuff);
 
     /*
@@ -200,7 +206,16 @@ get_recorded(void)
     char_u *
 get_inserted(void)
 {
-    return get_buffcont(&redobuff, FALSE, NULL);
+    return get_buffcont(&redobuff, FALSE, &last_get_inserted_len);
+}
+
+/*
+ * Return the length of string returned from the last call of get_inserted().
+ */
+    size_t
+get_inserted_len(void)
+{
+    return last_get_inserted_len;
 }
 
 /*

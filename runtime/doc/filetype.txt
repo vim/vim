@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2025 Feb 20
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -744,12 +744,21 @@ Add following lines to $HOME/.vim/ftplugin/json.vim: >
 	import autoload 'dist/json.vim'
 	setl formatexpr=json.FormatExpr()
 
-LUA							*ft-lua-plugin*
+LUA					*ft-lua-plugin* *g:lua_folding*
 
 You can enable folding of Lua functions using |fold-expr| by: >
 
 	let g:lua_folding = 1
+<					*g:lua_version* *g:lua_subversion*
+Lua filetype's 'includeexpr' and |ft-lua-syntax| highlighting use the global
+variables "g:lua_version" and "g:lua_subversion" to determine the version of
+Lua to use (5.3 is the default)
 
+For example, to use Lua 5.1, set the variables like this: >
+
+	let g:lua_version = 5
+	let g:lua_subversion = 1
+<
 MAIL							*ft-mail-plugin*
 
 Options:

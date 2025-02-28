@@ -1374,7 +1374,7 @@ generate_loadvar(cctx_T *cctx, lhs_T *lhs)
 	case dest_script:
 	case dest_script_v9:
 	    res = compile_load_scriptvar(cctx,
-			    name + (name[1] == ':' ? 2 : 0), NULL, NULL);
+			    name + (name[1] == ':' ? 2 : 0), NULL, NULL, NULL);
 	    break;
 	case dest_env:
 	    // Include $ in the name here

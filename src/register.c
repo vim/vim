@@ -437,7 +437,7 @@ do_record(int c)
     static int
 stuff_yank(int regname, char_u *p)
 {
-    size_t	plen;
+    size_t  plen;
 
     // check for read-only register
     if (regname != 0 && !valid_yank_reg(regname, TRUE))
