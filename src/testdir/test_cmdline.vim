@@ -2069,6 +2069,13 @@ func Wildmode_tests()
   call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd one', @:)
 
+  " Complete 'noselect' value in 'wildmode' option
+  set wildmode&
+  call feedkeys(":set wildmode=n\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set wildmode=noselect', @:)
+  call feedkeys(":set wildmode=\t\t\t\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set wildmode=noselect', @:)
+
   " when using longest completion match, matches shorter than the argument
   " should be ignored (happens with :help)
   set wildmode=longest,full
