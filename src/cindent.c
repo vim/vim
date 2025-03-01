@@ -369,7 +369,8 @@ find_line_comment(void) // XXX
  * "s" is a UTF-8 continuation byte, if first bit is 1.
  */
     static int
-cin_isIDc(char_u s) {
+cin_isIDc(char_u s)
+{
     return s>>7 || vim_isIDc(s);
 }
 
