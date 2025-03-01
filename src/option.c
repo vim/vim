@@ -8420,6 +8420,8 @@ vimrc_found(char_u *fname, char_u *envname)
 		vim_setenv(envname, p);
 		vim_free(p);
 	    }
+	    // Set $MYVIMDIR
+	    export_myvimdir();
 	}
 	else if (dofree)
 	    vim_free(p);
