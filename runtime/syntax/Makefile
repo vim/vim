@@ -3,7 +3,7 @@
 # To run the test manually:
 # ../../src/vim -u 'testdir/runtest.vim' --cmd 'breakadd func RunTest'
 
-# Override this if needed, the default assumes Vim was build in the src dir.
+# Override this if needed, the default assumes Vim was built in the src dir.
 #VIMPROG = vim
 VIMPROG = ../../src/vim
 
@@ -13,6 +13,10 @@ VIMRUNTIME = ../..
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=45 --log-file=valgrind.$*
 
+# Trace ruler liveness on demand.
+# VIM_SYNTAX_TEST_LOG = `pwd`/testdir/failed/00-TRACE_LOG
+
+# ENVVARS = LC_ALL=C VIM_SYNTAX_TEST_LOG="$(VIM_SYNTAX_TEST_LOG)"
 # ENVVARS = LC_ALL=C LANG=C LANGUAGE=C
 # Run the syntax tests with a C locale
 ENVVARS = LC_ALL=C
@@ -31,6 +35,9 @@ test:
 	@# the "vimcmd" file is used by the screendump utils
 	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
+	@# Trace ruler liveness on demand.
+	@#mkdir -p testdir/failed
+	@#touch "$(VIM_SYNTAX_TEST_LOG)"
 	VIMRUNTIME=$(VIMRUNTIME) $(ENVVARS) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim > /dev/null 
 	@rm -f testdir/Xfilter
 	@# FIXME: Temporarily show the whole file to find out what goes wrong
