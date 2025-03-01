@@ -2108,7 +2108,7 @@ func Wildmode_tests()
   call assert_equal('"MyCmd oneA', @:)
   set nowildmenu
   call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"MyCmd o', @:)
+  call assert_equal('"MyCmd oneA', @:)
 
   %argdelete
   delcommand MyCmd
