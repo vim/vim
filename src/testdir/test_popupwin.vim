@@ -4404,6 +4404,31 @@ func Test_popupwin_clears_cmdline_on_hide()
 
   " clean up
   call StopVimInTerminal(buf)
+
+  let lines =<< trim END
+    set completeopt=menuone,noinsert,noselect,popup,fuzzy
+    set completepopup=border:off
+    let g:list = [
+      \ {"word": "one", "info": "one\ntwo\nthree\nfour\nfive"},
+      \ {"word": "two", "info": "one\ntwo\nthree\nfour\nfive"},
+      \ {"word": "three", "info": "one\ntwo\nthree\nfour\nfive"},
+      \ {"word": "four", "info": "one\ntwo\nthree\nfour\nfive"},
+      \ {"word": "five", "info": "one\ntwo\nthree\nfour\nfive"}
+      \ ]
+    call setline(1, repeat(['foobar'], &lines))
+    inoremap <f5> <cmd>call complete(1, g:list)<cr>
+  END
+  call writefile(lines, 'XtestPopup_win3', 'D')
+  let buf = RunVimInTerminal('-S XtestPopup_win3', #{rows: 15})
+  call term_sendkeys(buf, "Go\<F5>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>")
+  call term_wait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_info_popupwin_clears_cmdline_on_hide_01', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call term_wait(buf, 500)
+  call VerifyScreenDump(buf, 'Test_info_popupwin_clears_cmdline_on_hide_02', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2
