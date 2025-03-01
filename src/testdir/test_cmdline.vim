@@ -2106,6 +2106,7 @@ func Wildmode_tests()
   call assert_equal('"MyCmd o', @:)
   call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd oneA', @:)
+  " 'nowildmenu' should make 'noselect' ineffective
   set nowildmenu
   call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd oneA', @:)
