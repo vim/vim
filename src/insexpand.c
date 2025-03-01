@@ -1985,15 +1985,15 @@ ins_compl_len(void)
 }
 
 /*
- * Return TRUE when preinsert is set AND both 'menu' and 'menuone' flags
- * are also set, otherwise return FALSE.
+ * Return TRUE when the 'completeopt' "preinsert" flag is in effect,
+ * otherwise return FALSE.
  */
     static int
 ins_compl_has_preinsert(void)
 {
     int cur_cot_flags = get_cot_flags();
-    return (cur_cot_flags & (COT_PREINSERT | COT_FUZZY | COT_MENU | COT_MENUONE))
-	== (COT_PREINSERT | COT_MENU | COT_MENUONE);
+    return (cur_cot_flags & (COT_PREINSERT | COT_FUZZY | COT_MENUONE))
+	== (COT_PREINSERT | COT_MENUONE);
 }
 
 /*
