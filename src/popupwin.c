@@ -40,6 +40,8 @@ static int  message_win_time = 3000;
 // hit-enter prompt.
 static int    start_message_win_timer = FALSE;
 
+static int popup_on_cmdline = FALSE;
+
 static void may_start_message_win_timer(win_T *wp);
 #endif
 
@@ -4555,6 +4557,7 @@ popup_close_preview(void)
 	popup_close_with_retval(wp, -1);
 }
 
+
 /*
  * Hide the info popup.
  */
@@ -4564,7 +4567,19 @@ popup_hide_info(void)
     win_T *wp = popup_find_info_window();
 
     if (wp != NULL)
+    {
+	popup_on_cmdline = wp->w_popup_flags & POPF_ON_CMDLINE;
 	popup_hide(wp);
+    }
+}
+
+/*
+ * Returns TRUE if a popup extends into the cmdline area.
+ */
+    int
+popup_overlaps_cmdline(void)
+{
+    return popup_on_cmdline;
 }
 
 /*

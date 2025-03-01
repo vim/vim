@@ -74,4 +74,6 @@ void end_echowindow(void);
 int popup_win_closed(win_T *win);
 void popup_set_title(win_T *wp);
 void popup_update_preview_title(void);
+int popup_overlaps_cmdline(void);
+
 /* vim: set ft=c : */

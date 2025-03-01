@@ -2327,7 +2327,11 @@ screen_fill(
 	{
 	    redraw_cmdline = TRUE;
 	    if (start_col == 0 && end_col == Columns
-		    && c1 == ' ' && c2 == ' ' && attr == 0)
+		    && c1 == ' ' && c2 == ' ' && attr == 0
+#ifdef FEAT_PROP_POPUP
+		    && !popup_overlaps_cmdline()
+#endif
+		    )
 		clear_cmdline = FALSE;	// command line has been cleared
 	    if (start_col == 0)
 		mode_displayed = FALSE; // mode cleared or overwritten
