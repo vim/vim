@@ -111,7 +111,6 @@ endfunc
 
 func Test_userlabel_indent()
   new
-  set sw=4
   call setline(1, ['{', 'label:'])
   normal GV=
   call assert_equal('label:', getline(2))
