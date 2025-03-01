@@ -198,4 +198,5 @@ char *did_set_string_option(int opt_idx, char_u **varp, char_u *oldval, char_u *
 int check_ff_value(char_u *p);
 void save_clear_shm_value(void);
 void restore_shm_value(void);
+void export_myvimdir(void);
 /* vim: set ft=c : */

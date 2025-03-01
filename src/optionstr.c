@@ -135,7 +135,6 @@ static char *(p_sws_values[]) = {"fsync", "sync", NULL};
 
 static int check_opt_strings(char_u *val, char **values, int list);
 static int opt_strings_flags(char_u *val, char **values, unsigned *flagp, int list);
-static void export_myvimdir(void);
 
 /*
  * After setting various option values: recompute variables that depend on
@@ -4817,7 +4816,7 @@ restore_shm_value(void)
 /*
  * Export the environment variable $MYVIMDIR to the first item in runtimepath
  */
-    static void
+    void
 export_myvimdir()
 {
     int		dofree = FALSE;
