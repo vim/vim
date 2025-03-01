@@ -2068,18 +2068,15 @@ func Wildmode_tests()
   set wildmode=noselect:longest
   call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd one', @:)
-  set wildmenu&
 
   " when using longest completion match, matches shorter than the argument
   " should be ignored (happens with :help)
   set wildmode=longest,full
-  set wildmenu
   call feedkeys(":help a*\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"help a', @:)
   " non existing file
   call feedkeys(":e a1b2y3z4\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"e a1b2y3z4', @:)
-  set wildmenu&
 
   " Test for longest file name completion with 'fileignorecase'
   " On MS-Windows, file names are case insensitive.
@@ -2104,13 +2101,12 @@ func Wildmode_tests()
     return "oneA"
   endfunc
   command! -nargs=1 -complete=custom,T MyCmd
-  set wildmenu
   set wildmode=noselect,full
   call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd o', @:)
   call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd oneA', @:)
-  set wildmenu&
+  set nowildmenu
   call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd o', @:)
 
