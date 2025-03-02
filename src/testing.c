@@ -1132,6 +1132,10 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    if (argvars[0].vval.v_list != NULL)
 		retval = argvars[0].vval.v_list->lv_refcount - 1;
 	    break;
+	case VAR_TUPLE:
+	    if (argvars[0].vval.v_tuple != NULL)
+		retval = argvars[0].vval.v_tuple->tv_refcount - 1;
+	    break;
 	case VAR_DICT:
 	    if (argvars[0].vval.v_dict != NULL)
 		retval = argvars[0].vval.v_dict->dv_refcount - 1;
@@ -1246,6 +1250,12 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+}
+
+    void
+f_test_null_tuple(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv_tuple_set(rettv, NULL);
 }
 
     void

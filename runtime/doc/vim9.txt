@@ -1464,6 +1464,7 @@ The following builtin types are supported:
 	string
 	blob
 	list<{type}>
+	tuple<{type}>
 	dict<{type}>
 	job
 	channel
@@ -1707,7 +1708,8 @@ argument type checking: >
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
 			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1256*
-			 *E1297* *E1298* *E1301*
+			 *E1297* *E1298* *E1301* *E1527* *E1528* *E1529*
+			 *E1530* *E1533*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 
@@ -1715,7 +1717,7 @@ Categories of variables, defaults and null handling ~
 				*variable-categories* *null-variables*
 There are categories of variables:
 	primitive	number, float, boolean
-	container	string, blob, list, dict
+	container	string, blob, list, tuple, dict
 	specialized	function, job, channel, user-defined-object
 
 When declaring a variable without an initializer, an explicit type must be
@@ -1845,6 +1847,7 @@ An uninitialized variable is usually equal to null; it depends on its type:
 	var s: string		s == null
 	var b: blob		b != null   ***
 	var l: list<any>	l != null   ***
+	var t: tuple<any>	t != null   ***
 	var d: dict<any>	d != null   ***
 	var f: func		f == null
 	var j: job		j == null
@@ -1855,6 +1858,7 @@ A variable initialized to empty equals null_<type>; but not null:
 	var s2: string = ""	  == null_string	!= null
 	var b2: blob = 0z	  == null_blob		!= null
 	var l2: list<any> = []	  == null_list		!= null
+	var t2: tuple<any> = ()	  == null_tuple		!= null
 	var d2: dict<any> = {}	  == null_dict		!= null
 
 NOTE: the specialized variables, like job, default to null value and have no
