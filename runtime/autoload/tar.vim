@@ -187,9 +187,9 @@ fun! tar#Browse(tarfile)
   elseif tarfile =~# '\.\(bz3\|tb3\)$'
    exe "sil! r! bzip3 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
   elseif tarfile =~# '\.tbz'
-   " Read the first three characters of the file to determine whether it is 
-   " compressed by bzip2 or by bzip3.
-   " bzip2 files has header 'BZh', bzip3 files has header 'BZ3'
+   " Determine the compression type by inspecting the file header:
+   " - 'BZh' indicates bzip2 compression
+   " - 'BZ3' indicates bzip3 compression
    let header = strpart(readfile(tarfile, 0, 1)[0], 0, 3)
    if header == 'BZh'
     exe "sil! r! bzip2 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
