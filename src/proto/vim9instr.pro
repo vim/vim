@@ -44,6 +44,7 @@ int generate_LOCKCONST(cctx_T *cctx);
 int generate_OLDSCRIPT(cctx_T *cctx, isntype_T isn_type, char_u *name, int sid, type_T *type);
 int generate_VIM9SCRIPT(cctx_T *cctx, isntype_T isn_type, int sid, int idx, type_T *type);
 int generate_NEWLIST(cctx_T *cctx, int count, int use_null);
+int generate_NEWTUPLE(cctx_T *cctx, int count, int use_null);
 int generate_NEWDICT(cctx_T *cctx, int count, int use_null);
 int generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc, class_T *cl, int object_method, int fi, int *isn_idx);
 int generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name);

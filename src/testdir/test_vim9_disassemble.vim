@@ -3695,4 +3695,184 @@ def Test_disassemble_using_script_local_var_in_obj_init()
   unlet g:instr
 enddef
 
+" Disassemble the code generated for indexing a tuple
+def Test_disassemble_tuple_indexing()
+  var lines =<< trim END
+    vim9script
+    def Fn(): tuple<...list<number>>
+      var t = (5, 6, 7)
+      var i = t[2]
+      var j = t[1 : 2]
+      return t
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t = (5, 6, 7)\_s*' ..
+    '0 PUSHNR 5\_s*' ..
+    '1 PUSHNR 6\_s*' ..
+    '2 PUSHNR 7\_s*' ..
+    '3 NEWTUPLE size 3\_s*' ..
+    '4 SETTYPE tuple<number, number, number>\_s*' ..
+    '5 STORE $0\_s*' ..
+    'var i = t\[2\]\_s*' ..
+    '6 LOAD $0\_s*' ..
+    '7 PUSHNR 2\_s*' ..
+    '8 TUPLEINDEX\_s*' ..
+    '9 STORE $1\_s*' ..
+    'var j = t\[1 : 2\]\_s*' ..
+    '10 LOAD $0\_s*' ..
+    '11 PUSHNR 1\_s*' ..
+    '12 PUSHNR 2\_s*' ..
+    '13 TUPLESLICE\_s*' ..
+    '14 SETTYPE tuple<number, number, number>\_s*' ..
+    '15 STORE $2\_s*' ..
+    'return t\_s*' ..
+    '16 LOAD $0\_s*' ..
+    '17 RETURN', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for assigning a tuple to a default value
+def Test_disassemble_tuple_default_value()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var t: tuple<number>
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t: tuple<number>\_s*' ..
+    '0 NEWTUPLE size 0\_s*' ..
+    '1 SETTYPE tuple<number>\_s*' ..
+    '2 STORE $0\_s*' ..
+    '3 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for comparing tuples
+def Test_disassemble_tuple_compare()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var t1 = (1, 2)
+      var t2 = t1
+      var x = t1 == t2
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t1 = (1, 2)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHNR 2\_s*' ..
+    '2 NEWTUPLE size 2\_s*' ..
+    '3 SETTYPE tuple<number, number>\_s*' ..
+    '4 STORE $0\_s*' ..
+    'var t2 = t1\_s*' ..
+    '5 LOAD $0\_s*' ..
+    '6 SETTYPE tuple<number, number>\_s*' ..
+    '7 STORE $1\_s*' ..
+    'var x = t1 == t2\_s*' ..
+    '8 LOAD $0\_s*' ..
+    '9 LOAD $1\_s*' ..
+    '10 COMPARETUPLE ==\_s*' ..
+    '11 STORE $2\_s*' ..
+    '12 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for concatenating tuples
+def Test_disassemble_tuple_concatenate()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var t1 = (1,) + (2,)
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t1 = (1,) + (2,)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 NEWTUPLE size 1\_s*' ..
+    '2 PUSHNR 2\_s*' ..
+    '3 NEWTUPLE size 1\_s*' ..
+    '4 ADDTUPLE\_s*' ..
+    '5 SETTYPE tuple<number, number>\_s*' ..
+    '6 STORE $0\_s*' ..
+    '7 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for a constant tupe
+def Test_disassemble_tuple_const()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      const t = (1, 2, 3)
+      var x = t[1 : 2]
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'const t = (1, 2, 3)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHNR 2\_s*' ..
+    '2 PUSHNR 3\_s*' ..
+    '3 NEWTUPLE size 3\_s*' ..
+    '4 LOCKCONST\_s*' ..
+    '5 SETTYPE tuple<number, number, number>\_s*' ..
+    '6 STORE $0\_s*' ..
+    'var x = t\[1 : 2\]\_s*' ..
+    '7 LOAD $0\_s*' ..
+    '8 PUSHNR 1\_s*' ..
+    '9 PUSHNR 2\_s*' ..
+    '10 TUPLESLICE\_s*' ..
+    '11 SETTYPE tuple<number, number, number>\_s*' ..
+    '12 STORE $1\_s*' ..
+    '13 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for setting the type when using a tuple in an
+" assignment
+def Test_disassemble_assign_tuple_set_type()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var x = (1,)
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var x = (1,)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 NEWTUPLE size 1\_s*' ..
+    '2 SETTYPE tuple<number>\_s*' ..
+    '3 STORE $0\_s*' ..
+    '4 RETURN void', g:instr)
+
+  lines =<< trim END
+    vim9script
+    def Fn()
+      var x = ()
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var x = ()\_s*' ..
+    '0 NEWTUPLE size 0\_s*' ..
+    '1 STORE $0\_s*' ..
+    '2 RETURN void', g:instr)
+
+  unlet g:instr
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

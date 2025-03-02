@@ -192,6 +192,14 @@ func Test_list_assign()
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
+  let lines =<< trim END
+    VAR [x, y] = test_null_list()
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, [
+        \ 'E714: List required',
+        \ 'E1093: Expected 2 items but got 0',
+        \ 'E714: List required'])
+
   let d = {'abc': [1, 2, 3]}
   call assert_fails('let d.abc[0:0z10] = [10, 20]', 'E976: Using a Blob as a String')
 endfunc
@@ -1000,7 +1008,7 @@ func Test_reverse_sort_uniq()
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
-  call assert_fails('call reverse({})', 'E1252:')
+  call assert_fails('call reverse({})', 'E1253:')
   call assert_fails('call uniq([1, 2], {x, y -> []})', 'E745:')
   call assert_fails("call sort([1, 2], function('min'), 1)", "E1206:")
   call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")
@@ -1073,15 +1081,15 @@ func Test_reduce()
   call assert_fails("call reduce('', { acc, val -> acc + val })", 'E998: Reduce of an empty String with no initial value')
   call assert_fails("call reduce(test_null_string(), { acc, val -> acc + val })", 'E998: Reduce of an empty String with no initial value')
 
-  call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E1098:')
-  call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E1098:')
+  call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E1253:')
+  call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E1253:')
   call assert_fails("call reduce([1, 2], 'Xdoes_not_exist')", 'E117:')
   call assert_fails("echo reduce(0z01, { acc, val -> 2 * acc + val }, '')", 'E1210:')
 
-  call assert_fails("vim9 reduce(0, (acc, val) => (acc .. val), '')", 'E1252:')
-  call assert_fails("vim9 reduce({}, (acc, val) => (acc .. val), '')", 'E1252:')
-  call assert_fails("vim9 reduce(0.1, (acc, val) => (acc .. val), '')", 'E1252:')
-  call assert_fails("vim9 reduce(function('tr'), (acc, val) => (acc .. val), '')", 'E1252:')
+  call assert_fails("vim9 reduce(0, (acc, val) => (acc .. val), '')", 'E1253:')
+  call assert_fails("vim9 reduce({}, (acc, val) => (acc .. val), '')", 'E1253:')
+  call assert_fails("vim9 reduce(0.1, (acc, val) => (acc .. val), '')", 'E1253:')
+  call assert_fails("vim9 reduce(function('tr'), (acc, val) => (acc .. val), '')", 'E1253:')
   call assert_fails("call reduce('', { acc, val -> acc + val }, 1)", 'E1174:')
   call assert_fails("call reduce('', { acc, val -> acc + val }, {})", 'E1174:')
   call assert_fails("call reduce('', { acc, val -> acc + val }, 0.1)", 'E1174:')
@@ -1463,7 +1471,7 @@ func Test_null_list()
   let l = test_null_list()
   call assert_equal([], extend(l, l, 0))
   call assert_equal(0, insert(test_null_list(), 2, -1))
-  call assert_fails('let s = join([1, 2], [])', 'E730:')
+  call assert_fails('let s = join([1, 2], [])', 'E1174:')
   call assert_fails('call remove(l, 0, 2)', 'E684:')
   call assert_fails('call insert(l, 2, -1)', 'E684:')
   call assert_fails('call extend(test_null_list(), test_null_list())', 'E1134:')
@@ -1544,7 +1552,7 @@ func Test_indexof()
   call assert_fails('let i = indexof(l, "v:val == ''cyan''")', 'E735:')
   call assert_fails('let i = indexof(l, "color == ''cyan''")', 'E121:')
   call assert_fails('let i = indexof(l, {})', 'E1256:')
-  call assert_fails('let i = indexof({}, "v:val == 2")', 'E1226:')
+  call assert_fails('let i = indexof({}, "v:val == 2")', 'E1528:')
   call assert_fails('let i = indexof([], "v:val == 2", [])', 'E1206:')
 
   func TestIdx(k, v)

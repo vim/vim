@@ -105,6 +105,8 @@ typedef enum {
     ISN_PUSHCLASS,	// push class, uses isn_arg.classarg
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
 			// -1 for null_list
+    ISN_NEWTUPLE,	// push tuple from stack items, size is isn_arg.number
+			// -1 for null_list
     ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
 			// -1 for null_dict
     ISN_NEWPARTIAL,	// push NULL partial
@@ -149,6 +151,7 @@ typedef enum {
 
     // more expression operations
     ISN_ADDLIST,    // add two lists
+    ISN_ADDTUPLE,   // add two tuples
     ISN_ADDBLOB,    // add two blobs
 
     // operation with two arguments; isn_arg.op.op_type is exprtype_T
@@ -165,6 +168,7 @@ typedef enum {
     ISN_COMPARESTRING,
     ISN_COMPAREBLOB,
     ISN_COMPARELIST,
+    ISN_COMPARETUPLE,
     ISN_COMPAREDICT,
     ISN_COMPAREFUNC,
     ISN_COMPAREANY,
@@ -177,6 +181,8 @@ typedef enum {
     ISN_LISTAPPEND, // append to a list, like add()
     ISN_LISTINDEX,  // [expr] list index
     ISN_LISTSLICE,  // [expr:expr] list slice
+    ISN_TUPLEINDEX,  // [expr] tuple index
+    ISN_TUPLESLICE,  // [expr:expr] tuple slice
     ISN_BLOBINDEX,  // [expr] blob index
     ISN_BLOBSLICE,  // [expr:expr] blob slice
     ISN_ANYINDEX,   // [expr] runtime index

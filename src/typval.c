@@ -72,6 +72,9 @@ free_tv(typval_T *varp)
 	case VAR_LIST:
 	    list_unref(varp->vval.v_list);
 	    break;
+	case VAR_TUPLE:
+	    tuple_unref(varp->vval.v_tuple);
+	    break;
 	case VAR_DICT:
 	    dict_unref(varp->vval.v_dict);
 	    break;
@@ -137,6 +140,10 @@ clear_tv(typval_T *varp)
 	case VAR_LIST:
 	    list_unref(varp->vval.v_list);
 	    varp->vval.v_list = NULL;
+	    break;
+	case VAR_TUPLE:
+	    tuple_unref(varp->vval.v_tuple);
+	    varp->vval.v_tuple = NULL;
 	    break;
 	case VAR_DICT:
 	    dict_unref(varp->vval.v_dict);
@@ -233,6 +240,9 @@ tv_get_bool_or_number_chk(
 	    return n;
 	case VAR_LIST:
 	    emsg(_(e_using_list_as_number));
+	    break;
+	case VAR_TUPLE:
+	    emsg(_(e_using_tuple_as_number));
 	    break;
 	case VAR_DICT:
 	    emsg(_(e_using_dictionary_as_number));
@@ -367,6 +377,9 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    break;
 	case VAR_LIST:
 	    emsg(_(e_using_list_as_float));
+	    break;
+	case VAR_TUPLE:
+	    emsg(_(e_using_tuple_as_float));
 	    break;
 	case VAR_DICT:
 	    emsg(_(e_using_dictionary_as_float));
@@ -529,7 +542,7 @@ check_for_bool_arg(typval_T *args, int idx)
 /*
  * Give an error and return FAIL unless "args[idx]" is a bool or a number.
  */
-    int
+    static int
 check_for_bool_or_number_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_BOOL && args[idx].v_type != VAR_NUMBER)
@@ -617,6 +630,20 @@ check_for_opt_list_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
 	    || check_for_list_arg(args, idx) != FAIL) ? OK : FAIL;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a tuple.
+ */
+    int
+check_for_tuple_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_TUPLE)
+    {
+	semsg(_(e_tuple_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
 }
 
 /*
@@ -827,17 +854,18 @@ check_for_string_or_list_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a string, a list or a
- * blob.
+ * Give an error and return FAIL unless "args[idx]" is a string, a list, a
+ * tuple or a blob.
  */
     int
-check_for_string_or_list_or_blob_arg(typval_T *args, int idx)
+check_for_string_or_list_or_tuple_or_blob_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_STRING
 	    && args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_BLOB)
     {
-	semsg(_(e_string_list_or_blob_required_for_argument_nr), idx + 1);
+	semsg(_(e_string_list_tuple_or_blob_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -897,35 +925,37 @@ check_for_opt_string_or_number_or_list_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a string or a number
- * or a list or a blob.
+ * Give an error and return FAIL unless "args[idx]" is a string, a number, a
+ * list, a tuple or a blob.
  */
     int
-check_for_string_or_number_or_list_or_blob_arg(typval_T *args, int idx)
+check_for_repeat_func_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_STRING
 	    && args[idx].v_type != VAR_NUMBER
 	    && args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_BLOB)
     {
-	semsg(_(e_string_number_list_or_blob_required_for_argument_nr), idx + 1);
+	semsg(_(e_repeatable_type_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a string or a list
- * or a dict.
+ * Give an error and return FAIL unless "args[idx]" is a string, a list, a
+ * tuple or a dict.
  */
     int
-check_for_string_or_list_or_dict_arg(typval_T *args, int idx)
+check_for_string_list_tuple_or_dict_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_STRING
 	    && args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_DICT)
     {
-	semsg(_(e_string_list_or_dict_required_for_argument_nr), idx + 1);
+	semsg(_(e_string_list_tuple_or_dict_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -963,15 +993,48 @@ check_for_list_or_blob_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a list or dict
+ * Give an error and return FAIL unless "args[idx]" is a list or a tuple.
  */
     int
-check_for_list_or_dict_arg(typval_T *args, int idx)
+check_for_list_or_tuple_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST && args[idx].v_type != VAR_TUPLE)
+    {
+	semsg(_(e_list_or_tuple_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a list, a tuple or a
+ * blob.
+ */
+    int
+check_for_list_or_tuple_or_blob_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
+	    && args[idx].v_type != VAR_BLOB)
+    {
+	semsg(_(e_list_or_tuple_or_blob_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a list, a tuple or a
+ * dict
+ */
+    int
+check_for_list_or_tuple_or_dict_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_DICT)
     {
-	semsg(_(e_list_or_dict_required_for_argument_nr), idx + 1);
+	semsg(_(e_list_or_tuple_or_dict_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -995,18 +1058,19 @@ check_for_list_or_dict_or_blob_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a list or dict or a
- * blob or a string.
+ * Give an error and return FAIL unless "args[idx]" is a list, a tuple, a dict,
+ * a blob or a string.
  */
     int
-check_for_list_or_dict_or_blob_or_string_arg(typval_T *args, int idx)
+check_for_list_tuple_dict_blob_or_string_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_TUPLE
 	    && args[idx].v_type != VAR_DICT
 	    && args[idx].v_type != VAR_BLOB
 	    && args[idx].v_type != VAR_STRING)
     {
-	semsg(_(e_list_dict_blob_or_string_required_for_argument_nr), idx + 1);
+	semsg(_(e_list_tuple_dict_blob_or_string_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -1149,6 +1213,9 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_LIST:
 	    emsg(_(e_using_list_as_string));
 	    break;
+	case VAR_TUPLE:
+	    emsg(_(e_using_tuple_as_string));
+	    break;
 	case VAR_DICT:
 	    emsg(_(e_using_dictionary_as_string));
 	    break;
@@ -1267,6 +1334,10 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
 	    if (tv->vval.v_list != NULL)
 		lock = tv->vval.v_list->lv_lock;
 	    break;
+	case VAR_TUPLE:
+	    if (tv->vval.v_tuple != NULL)
+		lock = tv->vval.v_tuple->tv_lock;
+	    break;
 	case VAR_DICT:
 	    if (tv->vval.v_dict != NULL)
 		lock = tv->vval.v_dict->dv_lock;
@@ -1364,6 +1435,15 @@ copy_tv(typval_T *from, typval_T *to)
 		++to->vval.v_list->lv_refcount;
 	    }
 	    break;
+	case VAR_TUPLE:
+	    if (from->vval.v_tuple == NULL)
+		to->vval.v_tuple = NULL;
+	    else
+	    {
+		to->vval.v_tuple = from->vval.v_tuple;
+		++to->vval.v_tuple->tv_refcount;
+	    }
+	    break;
 	case VAR_DICT:
 	    if (from->vval.v_dict == NULL)
 		to->vval.v_dict = NULL;
@@ -1446,6 +1526,15 @@ typval_compare(
     else if (tv1->v_type == VAR_LIST || tv2->v_type == VAR_LIST)
     {
 	if (typval_compare_list(tv1, tv2, type, ic, &res) == FAIL)
+	{
+	    clear_tv(tv1);
+	    return FAIL;
+	}
+	n1 = res;
+    }
+    else if (tv1->v_type == VAR_TUPLE || tv2->v_type == VAR_TUPLE)
+    {
+	if (typval_compare_tuple(tv1, tv2, type, ic, &res) == FAIL)
 	{
 	    clear_tv(tv1);
 	    return FAIL;
@@ -1650,6 +1739,47 @@ typval_compare_list(
 }
 
 /*
+ * Compare "tv1" to "tv2" as tuples according to "type" and "ic".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_tuple(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    ic,
+	int	    *res)
+{
+    int	    val = 0;
+
+    if (type == EXPR_IS || type == EXPR_ISNOT)
+    {
+	val = (tv1->v_type == tv2->v_type
+			      && tv1->vval.v_tuple == tv2->vval.v_tuple);
+	if (type == EXPR_ISNOT)
+	    val = !val;
+    }
+    else if (tv1->v_type != tv2->v_type
+	    || (type != EXPR_EQUAL && type != EXPR_NEQUAL))
+    {
+	if (tv1->v_type != tv2->v_type)
+	    emsg(_(e_can_only_compare_tuple_with_tuple));
+	else
+	    emsg(_(e_invalid_operation_for_tuple));
+	return FAIL;
+    }
+    else
+    {
+	val = tuple_equal(tv1->vval.v_tuple, tv2->vval.v_tuple, ic);
+	if (type == EXPR_NEQUAL)
+	    val = !val;
+    }
+    *res = val;
+    return OK;
+}
+
+/*
  * Compare v:null with another type.  Return TRUE if the value is NULL.
  */
     int
@@ -1674,6 +1804,7 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	    case VAR_JOB: return tv->vval.v_job == NULL;
 #endif
 	    case VAR_LIST: return tv->vval.v_list == NULL;
+	    case VAR_TUPLE: return tv->vval.v_tuple == NULL;
 	    case VAR_OBJECT: return tv->vval.v_object == NULL;
 	    case VAR_PARTIAL: return tv->vval.v_partial == NULL;
 	    case VAR_STRING: return tv->vval.v_string == NULL;
@@ -2075,6 +2206,12 @@ tv_equal(
 	case VAR_LIST:
 	    ++recursive_cnt;
 	    r = list_equal(tv1->vval.v_list, tv2->vval.v_list, ic);
+	    --recursive_cnt;
+	    return r;
+
+	case VAR_TUPLE:
+	    ++recursive_cnt;
+	    r = tuple_equal(tv1->vval.v_tuple, tv2->vval.v_tuple, ic);
 	    --recursive_cnt;
 	    return r;
 

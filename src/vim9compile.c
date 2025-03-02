@@ -524,8 +524,10 @@ use_typecheck(type_T *actual, type_T *expected)
 	return TRUE;
     if (actual->tt_type == VAR_OBJECT && expected->tt_type == VAR_OBJECT)
 	return TRUE;
-    if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
-				       && actual->tt_type == expected->tt_type)
+    if ((actual->tt_type == VAR_LIST
+		|| actual->tt_type == VAR_TUPLE
+		|| actual->tt_type == VAR_DICT)
+	    && actual->tt_type == expected->tt_type)
 	// This takes care of a nested list or dict.
 	return use_typecheck(actual->tt_member, expected->tt_member);
     return FALSE;
@@ -2642,7 +2644,10 @@ compile_assign_unlet(
 	    && lhs->lhs_type != &t_blob
 	    && lhs->lhs_type != &t_any)
     {
-	semsg(_(e_cannot_use_range_with_assignment_str), var_start);
+	if (lhs->lhs_type->tt_type == VAR_TUPLE)
+	    emsg(_(e_cannot_slice_tuple));
+	else
+	    semsg(_(e_cannot_use_range_with_assignment_str), var_start);
 	return FAIL;
     }
 
@@ -2743,7 +2748,10 @@ compile_assign_unlet(
     }
     else
     {
-	emsg(_(e_indexable_type_required));
+	if (dest_type == VAR_TUPLE)
+	    emsg(_(e_tuple_is_immutable));
+	else
+	    emsg(_(e_indexable_type_required));
 	return FAIL;
     }
 
@@ -2784,6 +2792,9 @@ push_default_value(
 	    break;
 	case VAR_LIST:
 	    r = generate_NEWLIST(cctx, 0, FALSE);
+	    break;
+	case VAR_TUPLE:
+	    r = generate_NEWTUPLE(cctx, 0, FALSE);
 	    break;
 	case VAR_DICT:
 	    r = generate_NEWDICT(cctx, 0, FALSE);
@@ -3015,11 +3026,31 @@ compile_assign_list_check_rhs_type(cctx_T *cctx, cac_T *cac)
 	return FAIL;
     }
 
-    if (need_type(stacktype, &t_list_any, FALSE, -1, 0, cctx,
-						FALSE, FALSE) == FAIL)
+    if (stacktype->tt_type != VAR_LIST && stacktype->tt_type != VAR_TUPLE
+					&& stacktype->tt_type != VAR_ANY)
+    {
+	emsg(_(e_list_or_tuple_required));
+	return FAIL;
+    }
+
+    if (need_type(stacktype,
+		  stacktype->tt_type == VAR_TUPLE ? &t_tuple_any : &t_list_any,
+		  FALSE, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
 
-    if (stacktype->tt_member != NULL)
+    if (stacktype->tt_type == VAR_TUPLE)
+    {
+	if (stacktype->tt_argcount != 1)
+	    cac->cac_rhs_type = &t_any;
+	else
+	{
+	    if (stacktype->tt_flags & TTFLAG_VARARGS)
+		cac->cac_rhs_type = stacktype->tt_args[0]->tt_member;
+	    else
+		cac->cac_rhs_type = stacktype->tt_args[0];
+	}
+    }
+    else if (stacktype->tt_member != NULL)
 	cac->cac_rhs_type = stacktype->tt_member;
 
     return OK;
@@ -3043,7 +3074,7 @@ compile_assign_list_check_length(cctx_T *cctx, cac_T *cac)
 	isn_T	*isn = ((isn_T *)cac->cac_instr->ga_data) +
 						cac->cac_instr->ga_len - 1;
 
-	if (isn->isn_type == ISN_NEWLIST)
+	if (isn->isn_type == ISN_NEWLIST || isn->isn_type == ISN_NEWTUPLE)
 	{
 	    did_check = TRUE;
 	    if (cac->cac_semicolon ?
@@ -3408,6 +3439,17 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
     type_T	    *expected;
     type_T	    *stacktype = NULL;
 
+    if (cac->cac_lhs.lhs_type->tt_type == VAR_TUPLE)
+    {
+	// compound operators are not supported with a tuple
+	char_u	op[2];
+
+	op[0] = *cac->cac_op;
+	op[1] = NUL;
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
+	return FAIL;
+    }
+
     if (*cac->cac_op == '.')
     {
 	if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
@@ -3486,8 +3528,11 @@ compile_assign_generate_store(cctx_T *cctx, cac_T *cac)
 		&& lhs->lhs_type->tt_member != NULL
 		&& lhs->lhs_type->tt_member != &t_any
 		&& lhs->lhs_type->tt_member != &t_unknown)
-	    // Set the type in the list or dict, so that it can be checked,
-	    // also in legacy script.
+	    // Set the type in the list or dict, so that it can be
+	    // checked, also in legacy script.
+	    generate_SETTYPE(cctx, lhs->lhs_type);
+	else if (lhs->lhs_type->tt_type == VAR_TUPLE
+					&& lhs->lhs_type->tt_argcount != 0)
 	    generate_SETTYPE(cctx, lhs->lhs_type);
 	else if (inferred_type != NULL
 		&& (inferred_type->tt_type == VAR_DICT
@@ -3495,8 +3540,12 @@ compile_assign_generate_store(cctx_T *cctx, cac_T *cac)
 		&& inferred_type->tt_member != NULL
 		&& inferred_type->tt_member != &t_unknown
 		&& inferred_type->tt_member != &t_any)
-	    // Set the type in the list or dict, so that it can be checked,
-	    // also in legacy script.
+	    // Set the type in the list or dict, so that it can be
+	    // checked, also in legacy script.
+	    generate_SETTYPE(cctx, inferred_type);
+	else if (inferred_type != NULL
+				&& inferred_type->tt_type == VAR_TUPLE
+				&& inferred_type->tt_argcount > 0)
 	    generate_SETTYPE(cctx, inferred_type);
 
 	if (!cac->cac_skip_store &&
@@ -4030,13 +4079,15 @@ obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
 	else
 	    push_default_value(cctx, m->ocm_type->tt_type, FALSE, NULL);
 
-	if ((m->ocm_type->tt_type == VAR_DICT
-		    || m->ocm_type->tt_type == VAR_LIST)
-		&& m->ocm_type->tt_member != NULL
-		&& m->ocm_type->tt_member != &t_any
-		&& m->ocm_type->tt_member != &t_unknown)
-	    // Set the type in the list or dict, so that it can be checked,
-	    // also in legacy script.
+	if (((m->ocm_type->tt_type == VAR_DICT
+			|| m->ocm_type->tt_type == VAR_LIST)
+		    && m->ocm_type->tt_member != NULL
+		    && m->ocm_type->tt_member != &t_any
+		    && m->ocm_type->tt_member != &t_unknown)
+		|| (m->ocm_type->tt_type == VAR_TUPLE
+		    && m->ocm_type->tt_argcount > 0))
+	    // Set the type in the list, tuple or dict, so that it can be
+	    // checked, also in legacy script.
 	    generate_SETTYPE(cctx, m->ocm_type);
 
 	generate_STORE_THIS(cctx, i);

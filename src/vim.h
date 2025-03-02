@@ -2201,7 +2201,8 @@ typedef int sock_T;
 #define VV_TYPE_ENUM	  108
 #define VV_TYPE_ENUMVALUE 109
 #define VV_STACKTRACE	110
-#define VV_LEN		111	// number of v: vars
+#define VV_TYPE_TUPLE	111
+#define VV_LEN		112	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2227,6 +2228,7 @@ typedef int sock_T;
 #define VAR_TYPE_TYPEALIAS  14
 #define VAR_TYPE_ENUM	    15
 #define VAR_TYPE_ENUMVALUE  16
+#define VAR_TYPE_TUPLE	    17
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
