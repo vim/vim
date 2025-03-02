@@ -2054,6 +2054,8 @@ func Wildmode_tests()
   call assert_equal('"MyCmd o', @:)
   call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd o', @:)
+  call feedkeys(":MyCmd o\t\t\<C-Y>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd o', @:)
 
   " When 'full' is present, complete after first <tab>.
   set wildmode=noselect,full
@@ -2062,6 +2064,8 @@ func Wildmode_tests()
   call feedkeys(":MyCmd o\t\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd oneA', @:)
   call feedkeys(":MyCmd o\t\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneB', @:)
+  call feedkeys(":MyCmd o\t\t\t\<C-Y>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd oneB', @:)
 
   " 'noselect' has no effect when 'longest' is present.

@@ -913,7 +913,7 @@ cmdline_wildchar_complete(
 
     if (wim_flags[wim_index] & WIM_BUFLASTUSED)
 	options |= WILD_BUFLASTUSED;
-    if (wim_flags[wim_index] & WIM_NOSELECT)
+    if (wim_flags[0] & WIM_NOSELECT)
 	options |= WILD_KEEP_SOLE_ITEM;
     if (xp->xp_numfiles > 0)   // typed p_wc at least twice
     {
@@ -977,7 +977,7 @@ cmdline_wildchar_complete(
 		    p_wmnu = 0;
 
 		    // remove match
-		    nextwild(xp, WILD_PREV, 0, escape);
+		    nextwild(xp, WILD_PREV, 0 | (options & ~WIM_NOSELECT), escape);
 		    p_wmnu = p_wmnu_save;
 		}
 		(void)showmatches(xp, p_wmnu
