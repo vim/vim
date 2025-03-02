@@ -193,6 +193,7 @@ fun! tar#Browse(tarfile)
     exe "sil! r! bzip2 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
    elseif header == 'BZ3'
     exe "sil! r! bzip3 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
+   endif
   elseif tarfile =~# '\.\(bz3\|tb3\)$'
    exe "sil! r! bzip3 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
   elseif tarfile =~# '\.\(lzma\|tlz\)$'
