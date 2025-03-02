@@ -839,6 +839,30 @@ List manipulation:					*list-functions*
 	repeat()		repeat a List multiple times
 	flatten()		flatten a List
 	flattennew()		flatten a copy of a List
+	items()			get List of List index-value pairs
+
+Tuple manipulation:					*tuple-functions*
+	copy()			make a shallow copy of a Tuple
+	count()			count number of times a value appears in a
+				Tuple
+	deepcopy()		make a full copy of a Tuple
+	empty()			check if Tuple is empty
+	foreach()		apply function to Tuple items
+	get()			get an item without error for wrong index
+	index()			index of a value in a Tuple
+	indexof()		index in a Tuple where an expression is true
+	items()			get List of Tuple index-value pairs
+	join()			join Tuple items into a String
+	len()			number of items in a Tuple
+	list2tuple()		convert a list of items into a Tuple
+	max()			maximum value in a Tuple
+	min()			minimum value in a Tuple
+	reduce()		reduce a Tuple to a value
+	repeat()		repeat a Tuple multiple times
+	reverse()		reverse the order of items in a Tuple
+	slice()			take a slice of a Tuple
+	string()		string representation of a Tuple
+	tuple2list()		convert a Tuple of items into a list
 
 Dictionary manipulation:				*dict-functions*
 	get()			get an entry without an error for a wrong key
@@ -1234,6 +1258,7 @@ Testing:				    *test-functions*
 	test_null_list()	return a null List
 	test_null_partial()	return a null Partial function
 	test_null_string()	return a null String
+	test_null_tuple()	return a null Tuple
 	test_settime()		set the time Vim uses internally
 	test_setmouse()		set the mouse position
 	test_feedinput()	add key sequence to input buffer
@@ -1649,8 +1674,8 @@ More information about defining your own functions here: |user-functions|.
 ==============================================================================
 *41.8*	Lists and Dictionaries
 
-So far we have used the basic types String and Number.  Vim also supports two
-composite types: List and Dictionary.
+So far we have used the basic types String and Number.  Vim also supports
+three composite types: List, Tuple and Dictionary.
 
 A List is an ordered sequence of items.  The items can be any kind of value,
 thus you can make a List of numbers, a List of Lists and even a List of mixed
@@ -1751,6 +1776,23 @@ This looks into lines 1 to 50 (inclusive) and echoes any date found in there.
 
 For further reading see |Lists|.
 
+TUPLE
+
+A Tuple is an immutable ordered sequence of items.  An item can be of any
+type.  Items can be accessed by their index number.  To create a Tuple with
+three strings: >
+
+	var atuple = ('one', 'two', 'three')
+
+The Tuple items are enclosed in parenthesis and separated by commas.  To
+create an empty Tuple: >
+
+	var atuple = ()
+
+The |:for| loop can be used to iterate over the items in a Tuple similar to a
+List.
+
+For further reading see |Tuples|.
 
 DICTIONARIES
 

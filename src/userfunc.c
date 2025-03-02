@@ -7286,9 +7286,9 @@ set_ref_in_previous_funccal(int copyID)
     for (fc = previous_funccal; fc != NULL; fc = fc->fc_caller)
     {
 	fc->fc_copyID = copyID + 1;
-	if (set_ref_in_ht(&fc->fc_l_vars.dv_hashtab, copyID + 1, NULL)
-		|| set_ref_in_ht(&fc->fc_l_avars.dv_hashtab, copyID + 1, NULL)
-		|| set_ref_in_list_items(&fc->fc_l_varlist, copyID + 1, NULL))
+	if (set_ref_in_ht(&fc->fc_l_vars.dv_hashtab, copyID + 1, NULL, NULL)
+		|| set_ref_in_ht(&fc->fc_l_avars.dv_hashtab, copyID + 1, NULL, NULL)
+		|| set_ref_in_list_items(&fc->fc_l_varlist, copyID + 1, NULL, NULL))
 	    return TRUE;
     }
     return FALSE;
@@ -7300,9 +7300,9 @@ set_ref_in_funccal(funccall_T *fc, int copyID)
     if (fc->fc_copyID != copyID)
     {
 	fc->fc_copyID = copyID;
-	if (set_ref_in_ht(&fc->fc_l_vars.dv_hashtab, copyID, NULL)
-		|| set_ref_in_ht(&fc->fc_l_avars.dv_hashtab, copyID, NULL)
-		|| set_ref_in_list_items(&fc->fc_l_varlist, copyID, NULL)
+	if (set_ref_in_ht(&fc->fc_l_vars.dv_hashtab, copyID, NULL, NULL)
+		|| set_ref_in_ht(&fc->fc_l_avars.dv_hashtab, copyID, NULL, NULL)
+		|| set_ref_in_list_items(&fc->fc_l_varlist, copyID, NULL, NULL)
 		|| set_ref_in_func(NULL, fc->fc_func, copyID))
 	    return TRUE;
     }
@@ -7365,7 +7365,7 @@ set_ref_in_func_args(int copyID)
 
     for (i = 0; i < funcargs.ga_len; ++i)
 	if (set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
-							  copyID, NULL, NULL))
+						copyID, NULL, NULL, NULL))
 	    return TRUE;
     return FALSE;
 }

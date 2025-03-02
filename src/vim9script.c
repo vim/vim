@@ -1127,6 +1127,7 @@ static char *reserved[] = {
     "null_dict",
     "null_function",
     "null_list",
+    "null_tuple",
     "null_partial",
     "null_string",
     "null_channel",

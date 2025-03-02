@@ -3799,8 +3799,12 @@ find_ex_command(
 		if (eq != NULL)
 		{
 		    eq = skipwhite(eq);
-		    if (vim_strchr((char_u *)"+-*/%", *eq) != NULL)
+		    if (vim_strchr((char_u *)"+-*/%.", *eq) != NULL)
+		    {
+			if (eq[0] == '.' && eq[1] == '.')
+			    ++eq;
 			++eq;
+		    }
 		}
 		if (p == NULL || p == eap->cmd || *eq != '=')
 		{

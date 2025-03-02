@@ -73,7 +73,74 @@ clear_ppconst(ppconst_T *ppconst)
 }
 
 /*
- * Compile getting a member from a list/dict/string/blob.  Stack has the
+ * Compile getting a member from a tuple.  Stack has the indexable value and
+ * the index or the two indexes of a slice.
+ */
+    static int
+compile_tuple_member(
+    type2_T	*typep,
+    int		is_slice,
+    cctx_T	*cctx)
+{
+    if (is_slice)
+    {
+	if (generate_instr_drop(cctx, ISN_TUPLESLICE, 2) == FAIL)
+	    return FAIL;
+	// a copy is made so the member type is no longer declared
+	if (typep->type_decl->tt_type == VAR_TUPLE)
+	    typep->type_decl = &t_tuple_any;
+
+	// a copy is made, the composite is no longer "const"
+	if (typep->type_curr->tt_flags & TTFLAG_CONST)
+	{
+	    type_T *type = copy_type(typep->type_curr, cctx->ctx_type_list);
+
+	    if (type != typep->type_curr)  // did get a copy
+	    {
+		type->tt_flags &= ~(TTFLAG_CONST | TTFLAG_STATIC);
+		typep->type_curr = type;
+	    }
+	}
+    }
+    else
+    {
+	if (typep->type_curr->tt_type == VAR_TUPLE)
+	{
+	    if (typep->type_curr->tt_argcount == 1)
+	    {
+		if (typep->type_curr->tt_flags & TTFLAG_VARARGS)
+		    typep->type_curr
+				= typep->type_curr->tt_args[0]->tt_member;
+		else
+		    typep->type_curr = typep->type_curr->tt_args[0];
+	    }
+	    else
+		typep->type_curr = &t_any;
+	    if (typep->type_decl->tt_type == VAR_TUPLE)
+	    {
+		if (typep->type_decl->tt_argcount == 1)
+		{
+		    if (typep->type_decl->tt_flags & TTFLAG_VARARGS)
+			typep->type_decl
+				= typep->type_decl->tt_args[0]->tt_member;
+		    else
+			typep->type_decl = typep->type_decl->tt_args[0];
+		}
+		else
+		    typep->type_curr = &t_any;
+	    }
+	    else
+		typep->type_decl = typep->type_curr;
+	}
+	if (generate_instr_drop(cctx, ISN_TUPLEINDEX, 1) == FAIL)
+	    return FAIL;
+    }
+
+    return OK;
+}
+
+/*
+ * Compile getting a member from a list/tuple/dict/string/blob.  Stack has the
  * indexable value and the index or the two indexes of a slice.
  * "keeping_dict" is used for dict[func](arg) to pass dict to func.
  */
@@ -85,7 +152,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     vartype_T	vartype;
     type_T	*idxtype;
 
-    // We can index a list, dict and blob.  If we don't know the type
+    // We can index a list, tuple, dict and blob.  If we don't know the type
     // we can use the index value type.  If we still don't know use an "ANY"
     // instruction.
     // TODO: what about the decl type?
@@ -97,7 +164,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 		|| typep->type_curr->tt_type == VAR_UNKNOWN)
 						       && idxtype == &t_string)
 	vartype = VAR_DICT;
-    if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB)
+    if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB
+						|| vartype == VAR_TUPLE)
     {
 	if (need_type(idxtype, &t_number, FALSE,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
@@ -173,6 +241,11 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    if (generate_instr_drop(cctx, ISN_BLOBINDEX, 1) == FAIL)
 		return FAIL;
 	}
+    }
+    else if (vartype == VAR_TUPLE)
+    {
+	if (compile_tuple_member(typep, is_slice, cctx) == FAIL)
+	    return FAIL;
     }
     else if (vartype == VAR_LIST || typep->type_curr->tt_type == VAR_ANY
 				 || typep->type_curr->tt_type == VAR_UNKNOWN)
@@ -1466,6 +1539,82 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 }
 
 /*
+ * parse a tuple: (expr, expr)
+ * "*arg" points to the ','.
+ * ppconst->pp_is_const is set if all the items are constants.
+ */
+    static int
+compile_tuple(
+    char_u **arg,
+    cctx_T *cctx,
+    ppconst_T *ppconst,
+    int first_item_const)
+{
+    char_u	*p = *arg + 1;
+    char_u	*whitep = *arg + 1;
+    int		count = 0;
+    int		is_const;
+    int		is_all_const = TRUE;	// reset when non-const encountered
+    int		must_end = FALSE;
+
+    if (**arg != ')')
+    {
+	if (*p != ')' && !IS_WHITE_OR_NUL(*p))
+	{
+	    semsg(_(e_white_space_required_after_str_str), ",", p - 1);
+	    return FAIL;
+	}
+	count = 1;	// the first tuple item is already processed
+	is_all_const = first_item_const;
+	for (;;)
+	{
+	    if (may_get_next_line(whitep, &p, cctx) == FAIL)
+	    {
+		semsg(_(e_missing_end_of_tuple_rsp_str), *arg);
+		return FAIL;
+	    }
+	    if (*p == ',')
+	    {
+		semsg(_(e_no_white_space_allowed_before_str_str), ",", p);
+		return FAIL;
+	    }
+	    if (*p == ')')
+	    {
+		++p;
+		break;
+	    }
+	    if (must_end)
+	    {
+		semsg(_(e_missing_comma_in_tuple_str), p);
+		return FAIL;
+	    }
+	    if (compile_expr0_ext(&p, cctx, &is_const) == FAIL)
+		return FAIL;
+	    if (!is_const)
+		is_all_const = FALSE;
+	    ++count;
+	    if (*p == ',')
+	    {
+		++p;
+		if (*p != ')' && !IS_WHITE_OR_NUL(*p))
+		{
+		    semsg(_(e_white_space_required_after_str_str), ",", p - 1);
+		    return FAIL;
+		}
+	    }
+	    else
+		must_end = TRUE;
+	    whitep = p;
+	    p = skipwhite(p);
+	}
+    }
+    *arg = p;
+
+    ppconst->pp_is_const = is_all_const;
+    return generate_NEWTUPLE(cctx, count, FALSE);
+}
+
+/*
  * Parse a lambda: "(arg, arg) => expr"
  * "*arg" points to the '('.
  * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
@@ -2168,6 +2317,11 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
     if (may_get_next_line_error(p, arg, cctx) == FAIL)
 	return FAIL;
+
+    if (**arg == ')')
+	// empty tuple
+	return compile_tuple(arg, cctx, ppconst, FALSE);
+
     if (ppconst->pp_used <= PPSIZE - 10)
     {
 	ret = compile_expr1(arg, cctx, ppconst);
@@ -2181,6 +2335,15 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     }
     if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
 	return FAIL;
+    if (ret == OK && **arg == ',')
+    {
+	// tuple
+	int is_const = ppconst->pp_used > 0 || ppconst->pp_is_const;
+	if (generate_ppconst(cctx, ppconst) == FAIL)
+	    return FAIL;
+	return compile_tuple(arg, cctx, ppconst, is_const);
+    }
+
     if (**arg == ')')
 	++*arg;
     else if (ret == OK)
@@ -2440,6 +2603,7 @@ compile_subscript(
 	    int		is_slice = FALSE;
 
 	    // list index: list[123]
+	    // tuple index: tuple[123]
 	    // dict member: dict[key]
 	    // string index: text[123]
 	    // blob index: blob[123]

@@ -45,6 +45,7 @@ int eval0_retarg(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg,
 int eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 void eval_addblob(typval_T *tv1, typval_T *tv2);
 int eval_addlist(typval_T *tv1, typval_T *tv2);
+int eval_addtuple(typval_T *tv1, typval_T *tv2);
 int eval_leader(char_u **arg, int vim9);
 int handle_predefined(char_u *s, int len, typval_T *rettv);
 int check_can_index(typval_T *rettv, int evaluate, int verbose);
