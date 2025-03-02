@@ -202,7 +202,8 @@ set_tv_type_recurse(type_T *type)
 {
     return type->tt_member != NULL
 		&& (type->tt_member->tt_type == VAR_DICT
-				       || type->tt_member->tt_type == VAR_LIST)
+			       || type->tt_member->tt_type == VAR_LIST
+			       || type->tt_member->tt_type == VAR_TUPLE)
 		&& type->tt_member->tt_member != NULL
 		&& type->tt_member->tt_member != &t_any
 		&& type->tt_member->tt_member != &t_unknown;
@@ -262,6 +263,26 @@ set_tv_type_list(list_T *l, type_T *type)
 }
 
 /*
+ * Set the type of Tuple "t" to "type"
+ */
+    static void
+set_tv_type_tuple(tuple_T *tuple, type_T *type)
+{
+    if (tuple->tv_type == type)
+	return;
+
+    free_type(tuple->tv_type);
+    tuple->tv_type = alloc_type(type);
+
+    // Need to recursively set the type of tuple items?
+    if (!set_tv_type_recurse(type))
+	return;
+
+    for (int i = 0; i < tuple_len(tuple); i++)
+	set_tv_type(TUPLE_ITEM(tuple, i), type->tt_member);
+}
+
+/*
  * Set the type of "tv" to "type" if it is a list or dict.
  */
     void
@@ -276,6 +297,8 @@ set_tv_type(typval_T *tv, type_T *type)
 	set_tv_type_dict(tv->vval.v_dict, type);
     else if (tv->v_type == VAR_LIST && tv->vval.v_list != NULL)
 	set_tv_type_list(tv->vval.v_list, type);
+    else if (tv->v_type == VAR_TUPLE && tv->vval.v_tuple != NULL)
+	set_tv_type_tuple(tv->vval.v_tuple, type);
 }
 
     type_T *
@@ -306,6 +329,36 @@ get_list_type(type_T *member_type, garray_T *type_gap)
     type->tt_args = NULL;
     return type;
 }
+
+    type_T *
+get_tuple_type(type_T *member_type, garray_T *type_gap)
+{
+    type_T *type;
+
+    // recognize commonly used types
+    if (member_type == NULL || member_type->tt_type == VAR_ANY)
+	return &t_tuple_any;
+    if (member_type->tt_type == VAR_VOID
+	    || member_type->tt_type == VAR_UNKNOWN)
+	return &t_tuple_empty;
+    if (member_type->tt_type == VAR_BOOL)
+	return &t_tuple_bool;
+    if (member_type->tt_type == VAR_NUMBER)
+	return &t_tuple_number;
+    if (member_type->tt_type == VAR_STRING)
+	return &t_tuple_string;
+
+    // Not a common type, create a new entry.
+    type = get_type_ptr(type_gap);
+    if (type == NULL)
+	return &t_any;
+    type->tt_type = VAR_TUPLE;
+    type->tt_member = member_type;
+    type->tt_argcount = 0;
+    type->tt_args = NULL;
+    return type;
+}
+
 
     type_T *
 get_dict_type(type_T *member_type, garray_T *type_gap)
@@ -504,6 +557,55 @@ list_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 					member_type, &member_type, type_gap);
 
     return get_list_type(member_type, type_gap);
+}
+
+/*
+ * Get a type_T for a Tuple typval in "tv".
+ * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
+ * "any".
+ * When "flags" has TVTT_MORE_SPECIFIC get the more specific member type if it
+ * is "any".
+ */
+    static type_T *
+tuple_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
+{
+    tuple_T	*t = tv->vval.v_tuple;
+    int		len = tuple_len(t);
+    type_T	*member_type = NULL;
+
+    // An empty tuple has type tuple<unknown>, unless the type was specified
+    // and is not tuple<any>.  This matters when assigning to a variable
+    // with a specific tuple type.
+    if (t == NULL || (len == 0 && (t->tv_type == NULL
+					|| t->tv_type->tt_member == &t_any)))
+	return &t_tuple_empty;
+
+    if ((flags & TVTT_DO_MEMBER) == 0)
+	return &t_tuple_any;
+
+    // If the type is tuple<any> go through the members, it may end up a
+    // more specific type.
+    if (t->tv_type != NULL && (len == 0
+		|| (flags & TVTT_MORE_SPECIFIC) == 0
+		|| t->tv_type->tt_member != &t_any))
+	// make a copy, tv_type may be freed if the tuple is freed
+	return copy_type_deep(t->tv_type, type_gap);
+
+    if (t->tv_copyID == copyID)
+	// avoid recursion
+	return &t_tuple_any;
+
+    t->tv_copyID = copyID;
+
+    // Use the common type of all members.
+    member_type = typval2type(TUPLE_ITEM(t, 0), copyID, type_gap,
+							TVTT_DO_MEMBER);
+    for (int i = 1; i < len; i++)
+	common_type(typval2type(TUPLE_ITEM(t, i), copyID, type_gap,
+				TVTT_DO_MEMBER), member_type, &member_type,
+				type_gap);
+
+    return get_tuple_type(member_type, type_gap);
 }
 
 /*
@@ -722,6 +824,9 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
 	case VAR_LIST:
 	    return list_typval2type(tv, copyID, type_gap, flags);
+
+	case VAR_TUPLE:
+	    return tuple_typval2type(tv, copyID, type_gap, flags);
 
 	case VAR_DICT:
 	    return dict_typval2type(tv, copyID, type_gap, flags);
@@ -1011,7 +1116,8 @@ check_type_maybe(
 		type_mismatch_where(expected, actual, where);
 	    return FAIL;
 	}
-	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
+	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST
+					|| expected->tt_type == VAR_TUPLE)
 	{
 	    // "unknown" is used for an empty list or dict
 	    if (actual->tt_member != NULL && actual->tt_member != &t_unknown)
@@ -1289,6 +1395,8 @@ parse_type_member(
 
     if (type->tt_type == VAR_LIST)
 	return get_list_type(member_type, type_gap);
+    else if (type->tt_type == VAR_TUPLE)
+	return get_tuple_type(member_type, type_gap);
     return get_dict_type(member_type, type_gap);
 }
 
@@ -1577,6 +1685,14 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		return &t_string;
 	    }
 	    break;
+	case 't':
+	    if (len == 5 && STRNCMP(*arg, "tuple", len) == 0)
+	    {
+		*arg += len;
+		return parse_type_member(arg, &t_tuple_any,
+					 type_gap, give_error, "tuple");
+	    }
+	    break;
 	case 'v':
 	    if (len == 4 && STRNCMP(*arg, "void", len) == 0)
 	    {
@@ -1623,6 +1739,7 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_TYPEALIAS:
 	    break;  // not composite is always OK
 	case VAR_LIST:
+	case VAR_TUPLE:
 	case VAR_DICT:
 	    return equal_type(type1->tt_member, type2->tt_member, flags);
 	case VAR_FUNC:
@@ -1725,13 +1842,17 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 
     if (type1->tt_type == type2->tt_type)
     {
-	if (type1->tt_type == VAR_LIST || type2->tt_type == VAR_DICT)
+	if (type1->tt_type == VAR_LIST
+		|| type1->tt_type == VAR_TUPLE
+		|| type2->tt_type == VAR_DICT)
 	{
 	    type_T *common;
 
 	    common_type(type1->tt_member, type2->tt_member, &common, type_gap);
 	    if (type1->tt_type == VAR_LIST)
 		*dest = get_list_type(common, type_gap);
+	    else if (type1->tt_type == VAR_TUPLE)
+		*dest = get_tuple_type(common, type_gap);
 	    else
 		*dest = get_dict_type(common, type_gap);
 	    return;
@@ -1886,6 +2007,7 @@ vartype_name(vartype_T type)
 	case VAR_CLASS: return "class";
 	case VAR_OBJECT: return "object";
 	case VAR_TYPEALIAS: return "typealias";
+	case VAR_TUPLE: return "tuple";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";
@@ -1898,7 +2020,7 @@ vartype_name(vartype_T type)
  * The result may be in allocated memory, in which case "tofree" is set.
  */
     static char *
-type_name_list_or_dict(char *name, type_T *type, char **tofree)
+type_name_list_or_tuple_or_dict(char *name, type_T *type, char **tofree)
 {
     char *member_free;
     char *member_name;
@@ -2032,8 +2154,9 @@ type_name(type_T *type, char **tofree)
     switch (type->tt_type)
     {
 	case VAR_LIST:
+	case VAR_TUPLE:
 	case VAR_DICT:
-	    return type_name_list_or_dict(name, type, tofree);
+	    return type_name_list_or_tuple_or_dict(name, type, tofree);
 
 	case VAR_CLASS:
 	case VAR_OBJECT:

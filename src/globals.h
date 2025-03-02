@@ -549,7 +549,41 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 #define t_typealias		(static_types[90])
 #define t_const_typealias	(static_types[91])
 
-EXTERN type_T static_types[92]
+#define t_tuple_any		(static_types[92])
+#define t_const_tuple_any	(static_types[93])
+
+#define t_tuple_empty		(static_types[94])
+#define t_const_tuple_empty	(static_types[95])
+
+#define t_tuple_bool		(static_types[96])
+#define t_const_tuple_bool	(static_types[97])
+
+#define t_tuple_number		(static_types[98])
+#define t_const_tuple_number	(static_types[99])
+
+#define t_tuple_string		(static_types[100])
+#define t_const_tuple_string	(static_types[101])
+
+#define t_tuple_job		(static_types[102])
+#define t_const_tuple_job	(static_types[103])
+
+#define t_tuple_dict_any	(static_types[104])
+#define t_const_tuple_dict_any	(static_types[105])
+
+#define t_tuple_list_any	(static_types[106])
+#define t_const_tuple_list_any	(static_types[107])
+
+#define t_tuple_list_number	(static_types[108])
+#define t_const_tuple_list_number (static_types[109])
+
+#define t_tuple_list_string	(static_types[110])
+#define t_const_tuple_list_string (static_types[111])
+
+#define t_tuple_list_list_number	(static_types[112])
+#define t_const_tuple_list_list_number (static_types[113])
+
+
+EXTERN type_T static_types[114]
 #ifdef DO_INIT
 = {
     // 0: t_unknown
@@ -735,6 +769,50 @@ EXTERN type_T static_types[92]
     // 90: t_typealias
     {VAR_TYPEALIAS, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
     {VAR_TYPEALIAS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
+
+    // 92: t_tuple_any
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_any, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL, NULL},
+
+    // 94: t_tuple_empty
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_unknown, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_unknown, NULL, NULL},
+
+    // 96: t_tuple_bool
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
+
+    // 98: t_tuple_number
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_number, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL, NULL},
+
+    // 100: t_tuple_string
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_string, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL, NULL},
+
+    // 102: t_tuple_job
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_job, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_job, NULL, NULL},
+
+    // 104: t_tuple_dict_any
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_dict_any, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_dict_any, NULL, NULL},
+
+    // 106: t_tuple_list_any
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_list_any, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_any, NULL, NULL},
+
+    // 108: t_tuple_list_number
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_list_number, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_number, NULL, NULL},
+
+    // 110: t_tuple_list_string
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_list_string, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_string, NULL, NULL},
+
+    // 112: t_tuple_list_list_number
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC, &t_list_list_number, NULL, NULL},
+    {VAR_TUPLE, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_list_number, NULL, NULL}
 }
 #endif
 ;

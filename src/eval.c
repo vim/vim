@@ -1324,6 +1324,7 @@ get_lval_dict_item(
     lp->ll_list = NULL;
     lp->ll_object = NULL;
     lp->ll_class = NULL;
+    lp->ll_tuple = NULL;
 
     // a NULL dict is equivalent with an empty dict
     if (lp->ll_tv->vval.v_dict == NULL)
@@ -1425,6 +1426,12 @@ get_lval_blob(
 {
     long	bloblen = blob_len(lp->ll_tv->vval.v_blob);
 
+    lp->ll_list = NULL;
+    lp->ll_dict = NULL;
+    lp->ll_object = NULL;
+    lp->ll_class = NULL;
+    lp->ll_tuple = NULL;
+
     // Get the number and item for the only or first index of the List.
     if (empty1)
 	lp->ll_n1 = 0;
@@ -1484,6 +1491,7 @@ get_lval_list(
     lp->ll_dict = NULL;
     lp->ll_object = NULL;
     lp->ll_class = NULL;
+    lp->ll_tuple = NULL;
     lp->ll_list = lp->ll_tv->vval.v_list;
     lp->ll_li = check_range_index_one(lp->ll_list, &lp->ll_n1,
 				(flags & GLV_ASSIGN_WITH_OP) == 0, quiet);
@@ -1521,6 +1529,53 @@ get_lval_list(
     lp->ll_tv = &lp->ll_li->li_tv;
 
     return OK;
+}
+
+/*
+ * Get a tuple lval variable that can be assigned a value to: "name",
+ * "na{me}", "name[expr]", "name[expr][expr]", etc.
+ *
+ * 'idx' specifies the tuple index.
+ * If 'quiet' is TRUE, then error messages are not displayed for an invalid
+ * index.
+ *
+ * The typval is returned in 'lp'.  Returns GLV_OK on success and GLV_FAIL on
+ * failure.
+ */
+    static int
+get_lval_tuple(
+    lval_T	*lp,
+    typval_T	*idx,
+    int		quiet)
+{
+    // is number or string
+    lp->ll_n1 = (long)tv_get_number(idx);
+
+    lp->ll_list = NULL;
+    lp->ll_dict = NULL;
+    lp->ll_object = NULL;
+    lp->ll_class = NULL;
+
+    lp->ll_tuple = lp->ll_tv->vval.v_tuple;
+    if (lp->ll_n1 < 0 || lp->ll_n1 >= TUPLE_LEN(lp->ll_tuple))
+    {
+	if (!quiet)
+	    semsg(_(e_tuple_index_out_of_range_nr), lp->ll_n1);
+	return GLV_FAIL;
+    }
+
+    lp->ll_tv = TUPLE_ITEM(lp->ll_tuple, lp->ll_n1);
+
+    // use the type of the member
+    if (lp->ll_valtype != NULL && lp->ll_valtype->tt_member != NULL)
+	lp->ll_valtype = lp->ll_valtype->tt_member;
+    else
+	// If the LHS member type is not known (VAR_ANY), then get it from
+	// the tuple item (after indexing)
+	lp->ll_valtype = typval2type(lp->ll_tv, get_copyID(),
+		&lp->ll_type_list, TVTT_DO_MEMBER);
+
+    return GLV_OK;
 }
 
 /*
@@ -1630,6 +1685,7 @@ get_lval_class_or_obj(
 {
     lp->ll_dict = NULL;
     lp->ll_list = NULL;
+    lp->ll_tuple = NULL;
 
     class_T *cl;
     if (v_type == VAR_OBJECT)
@@ -1722,8 +1778,12 @@ bracket_allowed_after_type(char_u *name, vartype_T v_type, int quiet)
     static int
 index_allowed_after_type(char_u *name, vartype_T v_type, int quiet)
 {
-    if (v_type != VAR_LIST && v_type != VAR_DICT && v_type != VAR_BLOB &&
-	    v_type != VAR_OBJECT && v_type != VAR_CLASS)
+    if (v_type != VAR_LIST
+	    && v_type != VAR_TUPLE
+	    && v_type != VAR_DICT
+	    && v_type != VAR_BLOB
+	    && v_type != VAR_OBJECT
+	    && v_type != VAR_CLASS)
     {
 	if (!quiet)
 	    semsg(_(e_index_not_allowed_after_str_str),
@@ -1863,6 +1923,12 @@ get_lval_subscript(
 			emsg(_(e_cannot_slice_dictionary));
 		    goto done;
 		}
+		if (v_type == VAR_TUPLE)
+		{
+		    if (!quiet)
+			emsg(_(e_cannot_slice_tuple));
+		    goto done;
+		}
 		if (rettv != NULL
 			&& !(rettv->v_type == VAR_LIST
 			    && rettv->vval.v_list != NULL)
@@ -1932,6 +1998,11 @@ get_lval_subscript(
 	    if (get_lval_list(lp, &var1, &var2, empty1, flags, quiet) == FAIL)
 		goto done;
 	}
+	else if (v_type == VAR_TUPLE)
+	{
+	    if (get_lval_tuple(lp, &var1, quiet) == FAIL)
+		goto done;
+	}
 	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
 	{
 	    if (get_lval_class_or_obj(lp, key, p, v_type, cl_exec, flags,
@@ -1943,6 +2014,13 @@ get_lval_subscript(
 	clear_tv(&var2);
 	var1.v_type = VAR_UNKNOWN;
 	var2.v_type = VAR_UNKNOWN;
+    }
+
+    if (lp->ll_tuple != NULL)
+    {
+	if (!quiet)
+	    emsg(_(e_tuple_is_immutable));
+	goto done;
     }
 
     rc = OK;
@@ -2575,6 +2653,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	case VAR_OBJECT:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
+	case VAR_TUPLE:
 	    break;
 
 	case VAR_BLOB:
@@ -2619,6 +2698,7 @@ eval_for_line(
     char_u	*expr;
     typval_T	tv;
     list_T	*l;
+    tuple_T	*tuple;
     int		skip = !(evalarg->eval_flags & EVAL_EVALUATE);
 
     *errp = TRUE;	// default: there is an error
@@ -2671,6 +2751,22 @@ eval_for_line(
 		    fi->fi_lw.lw_item = l->lv_first;
 		}
 	    }
+	    else if (tv.v_type == VAR_TUPLE)
+	    {
+		tuple = tv.vval.v_tuple;
+		if (tuple == NULL)
+		{
+		    // a null tuple is like an empty tuple: do nothing
+		    clear_tv(&tv);
+		}
+		else
+		{
+		    // No need to increment the refcount, it's already set for
+		    // the tuple being used in "tv".
+		    fi->fi_tuple = tuple;
+		    fi->fi_tuple_idx = 0;
+		}
+	    }
 	    else if (tv.v_type == VAR_BLOB)
 	    {
 		fi->fi_bi = 0;
@@ -2695,7 +2791,7 @@ eval_for_line(
 	    }
 	    else
 	    {
-		emsg(_(e_string_list_or_blob_required));
+		emsg(_(e_string_list_tuple_or_blob_required));
 		clear_tv(&tv);
 	    }
 	}
@@ -2780,6 +2876,22 @@ next_for_item(void *fi_void, char_u *arg)
 	return result;
     }
 
+    if (fi->fi_tuple != NULL)
+    {
+	typval_T	tv;
+
+	if (fi->fi_tuple_idx >= TUPLE_LEN(fi->fi_tuple))
+	    return FALSE;
+
+	copy_tv(TUPLE_ITEM(fi->fi_tuple, fi->fi_tuple_idx), &tv);
+	++fi->fi_tuple_idx;
+	++fi->fi_bi;
+	if (skip_assign)
+	    return TRUE;
+	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
+					    fi->fi_varcount, flag, NULL) == OK;
+    }
+
     item = fi->fi_lw.lw_item;
     if (item == NULL)
 	result = FALSE;
@@ -2813,6 +2925,8 @@ free_for_info(void *fi_void)
     }
     else if (fi->fi_blob != NULL)
 	blob_unref(fi->fi_blob);
+    else if (fi->fi_tuple != NULL)
+	tuple_unref(fi->fi_tuple);
     else
 	vim_free(fi->fi_string);
     vim_free(fi);
@@ -3960,6 +4074,26 @@ eval_addlist(typval_T *tv1, typval_T *tv2)
 }
 
 /*
+ * Make a copy of tuple "tv1" and append tuple "tv2".
+ */
+    int
+eval_addtuple(typval_T *tv1, typval_T *tv2)
+{
+    typval_T var3;
+
+    // concatenate tuples
+    if (tuple_concat(tv1->vval.v_tuple, tv2->vval.v_tuple, &var3) == FAIL)
+    {
+	clear_tv(tv1);
+	clear_tv(tv2);
+	return FAIL;
+    }
+    clear_tv(tv1);
+    *tv1 = var3;
+    return OK;
+}
+
+/*
  * Left or right shift the number "tv1" by the number "tv2" and store the
  * result in "tv1".
  *
@@ -4259,7 +4393,8 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    *arg = p;
 	}
 	if ((op != '+' || (rettv->v_type != VAR_LIST
-						 && rettv->v_type != VAR_BLOB))
+						&& rettv->v_type != VAR_TUPLE
+						&& rettv->v_type != VAR_BLOB))
 		&& (op == '.' || rettv->v_type != VAR_FLOAT)
 		&& evaluate)
 	{
@@ -4314,6 +4449,12 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 						   && var2.v_type == VAR_LIST)
 	    {
 		if (eval_addlist(rettv, &var2) == FAIL)
+		    return FAIL;
+	    }
+	    else if (op == '+' && rettv->v_type == VAR_TUPLE
+					   && var2.v_type == VAR_TUPLE)
+	    {
+		if (eval_addtuple(rettv, &var2) == FAIL)
 		    return FAIL;
 	    }
 	    else
@@ -4681,13 +4822,23 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    return OK;
 		}
 		break;
-	case 10: if (STRNCMP(s, "null_class", 10) == 0)
+	case 10:
+		if (STRNCMP(s, "null_", 5) != 0)
+		    break;
+		// null_class
+		if (STRNCMP(s + 5, "class", 5) == 0)
 		{
 		    rettv->v_type = VAR_CLASS;
 		    rettv->vval.v_class = NULL;
 		    return OK;
 		}
-		 break;
+		if (STRNCMP(s + 5, "tuple", 5) == 0)
+		{
+		    rettv->v_type = VAR_TUPLE;
+		    rettv->vval.v_tuple = NULL;
+		    return OK;
+		}
+		break;
 	case 11: if (STRNCMP(s, "null_string", 11) == 0)
 		{
 		    rettv->v_type = VAR_STRING;
@@ -4796,16 +4947,26 @@ eval9_nested_expr(
     if (ret == NOTDONE)
     {
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
-	ret = eval1(arg, rettv, evalarg);	// recursive!
-
-	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg == ')')
-	    ++*arg;
-	else if (ret == OK)
+	    // empty tuple
+	    ret = eval_tuple(arg, rettv, evalarg, TRUE);
+	else
 	{
-	    emsg(_(e_missing_closing_paren));
-	    clear_tv(rettv);
-	    ret = FAIL;
+	    ret = eval1(arg, rettv, evalarg);	// recursive!
+
+	    *arg = skipwhite_and_linebreak(*arg, evalarg);
+
+	    if (**arg == ',')
+		// tuple
+		ret = eval_tuple(arg, rettv, evalarg, TRUE);
+	    else if (**arg == ')')
+		++*arg;
+	    else if (ret == OK)
+	    {
+		emsg(_(e_missing_closing_paren));
+		clear_tv(rettv);
+		ret = FAIL;
+	    }
 	}
     }
 
@@ -5049,6 +5210,7 @@ eval9(
     /*
      * nested expression: (expression).
      * or lambda: (arg) => expr
+     * or tuple
      */
     case '(':	ret = eval9_nested_expr(arg, rettv, evalarg, evaluate);
 		break;
@@ -5603,6 +5765,7 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 
 	case VAR_STRING:
 	case VAR_LIST:
+	case VAR_TUPLE:
 	case VAR_DICT:
 	case VAR_BLOB:
 	    break;
@@ -5731,6 +5894,16 @@ eval_index_inner(
 	    if (var2 == NULL)
 		n2 = VARNUM_MAX;
 	    if (list_slice_or_index(rettv->vval.v_list,
+			  is_range, n1, n2, exclusive, rettv, verbose) == FAIL)
+		return FAIL;
+	    break;
+
+	case VAR_TUPLE:
+	    if (var1 == NULL)
+		n1 = 0;
+	    if (var2 == NULL)
+		n2 = VARNUM_MAX;
+	    if (tuple_slice_or_index(rettv->vval.v_tuple,
 			  is_range, n1, n2, exclusive, rettv, verbose) == FAIL)
 		return FAIL;
 	    break;
@@ -6080,6 +6253,50 @@ list_tv2string(
 }
 
 /*
+ * Return a textual representation of a Tuple in "tv".
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * When "copyID" is not zero replace recursive lists with "...".  When
+ * "restore_copyID" is FALSE, repeated items in tuples are replaced with "...".
+ * May return NULL.
+ */
+    static char_u *
+tuple_tv2string(
+    typval_T	*tv,
+    char_u	**tofree,
+    int		copyID,
+    int		restore_copyID)
+{
+    char_u	*r = NULL;
+
+    if (tv->vval.v_tuple == NULL)
+    {
+	// NULL tuple is equivalent to an empty tuple.
+	*tofree = NULL;
+	r = (char_u *)"()";
+    }
+    else if (copyID != 0 && tv->vval.v_tuple->tv_copyID == copyID
+				&& tv->vval.v_tuple->tv_items.ga_len > 0)
+    {
+	*tofree = NULL;
+	r = (char_u *)"(...)";
+    }
+    else
+    {
+	int old_copyID;
+	if (restore_copyID)
+	    old_copyID = tv->vval.v_tuple->tv_copyID;
+
+	tv->vval.v_tuple->tv_copyID = copyID;
+	*tofree = tuple2string(tv, copyID, restore_copyID);
+	if (restore_copyID)
+	    tv->vval.v_tuple->tv_copyID = old_copyID;
+	r = *tofree;
+    }
+
+    return r;
+}
+
+/*
  * Return a textual representation of a Dict in "tv".
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * When "copyID" is not zero replace recursive dicts with "...".
@@ -6314,6 +6531,10 @@ echo_string_core(
 
 	case VAR_LIST:
 	    r = list_tv2string(tv, tofree, copyID, restore_copyID);
+	    break;
+
+	case VAR_TUPLE:
+	    r = tuple_tv2string(tv, tofree, copyID, restore_copyID);
 	    break;
 
 	case VAR_DICT:
@@ -7255,6 +7476,23 @@ item_copy(
 		to->vval.v_list = list_copy(from->vval.v_list,
 							    deep, top, copyID);
 	    if (to->vval.v_list == NULL)
+		ret = FAIL;
+	    break;
+	case VAR_TUPLE:
+	    to->v_type = VAR_TUPLE;
+	    to->v_lock = 0;
+	    if (from->vval.v_tuple == NULL)
+		to->vval.v_tuple = NULL;
+	    else if (copyID != 0 && from->vval.v_tuple->tv_copyID == copyID)
+	    {
+		// use the copy made earlier
+		to->vval.v_tuple = from->vval.v_tuple->tv_copytuple;
+		++to->vval.v_tuple->tv_refcount;
+	    }
+	    else
+		to->vval.v_tuple = tuple_copy(from->vval.v_tuple,
+							    deep, top, copyID);
+	    if (to->vval.v_tuple == NULL)
 		ret = FAIL;
 	    break;
 	case VAR_BLOB:

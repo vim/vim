@@ -21,9 +21,10 @@ a remark is given.
     1.1 Variable types
     1.2 Function references		|Funcref|
     1.3 Lists				|Lists|
-    1.4 Dictionaries			|Dictionaries|
-    1.5 Blobs				|Blobs|
-    1.6 More about variables		|more-variables|
+    1.4 Tuples				|Tuples|
+    1.5 Dictionaries			|Dictionaries|
+    1.6 Blobs				|Blobs|
+    1.7 More about variables		|more-variables|
 2.  Expression syntax		|expression-syntax|
 3.  Internal variable		|internal-variables|
 4.  Builtin Functions		|functions|
@@ -527,8 +528,26 @@ Don't forget that a combination of features can make things simple.  For
 example, to add up all the numbers in a list: >
 	:exe 'let sum = ' .. join(nrlist, '+')
 
+1.4 Tuples ~
+						*tuple* *Tuple* *Tuples*
+A Tuple is an ordered sequence of items.  An item can be of any type.  Items
+can be accessed by their index number.  A Tuple is immutable.
 
-1.4 Dictionaries ~
+Tuple creation ~
+
+A Tuple is created with a comma-separated list of items in parenthesis.
+Examples: >
+	:let mytuple = (1, two, [3], ("four"))
+	:let tuple = (5,)
+	:let emptytuple = ()
+
+An item can be any expression.  If there is only one item in the tuple, then
+the item should be followed by a comma.
+
+Using a Tuple for an item creates a Tuple of Tuples: >
+	:let nesttuple = ((11, 12), (21, 22), (31, 32))
+
+1.5 Dictionaries ~
 				*dict* *Dict* *Dictionaries* *Dictionary*
 A Dictionary is an associative array: Each entry has a key and a value.  The
 entry can be located with the key.  The entries are stored without a specific
@@ -709,7 +728,7 @@ Functions that can be used with a Dictionary: >
 	:call map(dict, '">> " .. v:val')  " prepend ">> " to each item
 
 
-1.5 Blobs ~
+1.6 Blobs ~
 						*blob* *Blob* *Blobs* *E978*
 A Blob is a binary object.  It can be used to read an image from a file and
 send it over a channel, for example.
@@ -856,7 +875,7 @@ Making a copy of a Blob is done with the |copy()| function.  Using [:] also
 works, as explained above.
 
 
-1.6 More about variables ~
+1.7 More about variables ~
 							*more-variables*
 If you need to know the type of a variable or expression, use the |type()|
 function.
