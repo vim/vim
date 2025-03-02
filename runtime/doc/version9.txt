@@ -41605,7 +41605,7 @@ Completion: ~
 	"preinsert"	- highlight to be inserted values
 - handle multi-line completion as expected
 - improved commandline completion for the |:hi| command
-- New option value for 'wildoptions':
+- New option value for 'wildmode':
   	"noselect"	- do not auto select an entry in the wildmenu
 
 Options: ~
