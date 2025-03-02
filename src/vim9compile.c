@@ -524,8 +524,10 @@ use_typecheck(type_T *actual, type_T *expected)
 	return TRUE;
     if (actual->tt_type == VAR_OBJECT && expected->tt_type == VAR_OBJECT)
 	return TRUE;
-    if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
-				       && actual->tt_type == expected->tt_type)
+    if ((actual->tt_type == VAR_LIST
+		|| actual->tt_type == VAR_TUPLE
+		|| actual->tt_type == VAR_DICT)
+	    && actual->tt_type == expected->tt_type)
 	// This takes care of a nested list or dict.
 	return use_typecheck(actual->tt_member, expected->tt_member);
     return FALSE;
@@ -2642,7 +2644,10 @@ compile_assign_unlet(
 	    && lhs->lhs_type != &t_blob
 	    && lhs->lhs_type != &t_any)
     {
-	semsg(_(e_cannot_use_range_with_assignment_str), var_start);
+	if (lhs->lhs_type->tt_type == VAR_TUPLE)
+	    emsg(_(e_cannot_slice_tuple));
+	else
+	    semsg(_(e_cannot_use_range_with_assignment_str), var_start);
 	return FAIL;
     }
 
@@ -2743,7 +2748,10 @@ compile_assign_unlet(
     }
     else
     {
-	emsg(_(e_indexable_type_required));
+	if (dest_type == VAR_TUPLE)
+	    emsg(_(e_tuple_is_immutable));
+	else
+	    emsg(_(e_indexable_type_required));
 	return FAIL;
     }
 
@@ -2784,6 +2792,9 @@ push_default_value(
 	    break;
 	case VAR_LIST:
 	    r = generate_NEWLIST(cctx, 0, FALSE);
+	    break;
+	case VAR_TUPLE:
+	    r = generate_NEWTUPLE(cctx, 0, FALSE);
 	    break;
 	case VAR_DICT:
 	    r = generate_NEWDICT(cctx, 0, FALSE);
@@ -3407,6 +3418,17 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
     lhs_T	    *lhs = &cac->cac_lhs;
     type_T	    *expected;
     type_T	    *stacktype = NULL;
+
+    if (cac->cac_lhs.lhs_type->tt_type == VAR_TUPLE)
+    {
+	// compound operators are not supported with a tuple
+	char_u	op[2];
+
+	op[0] = *cac->cac_op;
+	op[1] = NUL;
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
+	return FAIL;
+    }
 
     if (*cac->cac_op == '.')
     {

@@ -207,6 +207,46 @@ exe_newlist(int count, ectx_T *ectx)
 }
 
 /*
+ * Create a new tuple from "count" items at the bottom of the stack.
+ * When "count" is zero an empty tuple is added to the stack.
+ * When "count" is -1 a NULL tuple is added to the stack.
+ */
+    static int
+exe_newtuple(int count, ectx_T *ectx)
+{
+    tuple_T	*tuple = NULL;
+    int		idx;
+    typval_T	*tv;
+
+    if (count >= 0)
+    {
+	tuple = tuple_alloc_with_items(count);
+	if (tuple == NULL)
+	    return FAIL;
+	for (idx = 0; idx < count; ++idx)
+	    tuple_set_item(tuple, idx, STACK_TV_BOT(idx - count));
+    }
+
+    if (count > 0)
+	ectx->ec_stack.ga_len -= count - 1;
+    else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+    {
+	tuple_unref(tuple);
+	return FAIL;
+    }
+    else
+	++ectx->ec_stack.ga_len;
+    tv = STACK_TV_BOT(-1);
+    tv->v_type = VAR_TUPLE;
+    tv->vval.v_tuple = tuple;
+    tv->v_lock = 0;
+    if (tuple != NULL)
+	++tuple->tv_refcount;
+
+    return OK;
+}
+
+/*
  * Implementation of ISN_NEWDICT.
  * Returns FAIL on total failure, MAYBE on error.
  */
@@ -923,7 +963,7 @@ set_ref_in_funcstacks(int copyID)
 	int	    i;
 
 	for (i = 0; i < funcstack->fs_ga.ga_len; ++i)
-	    if (set_ref_in_item(stack + i, copyID, NULL, NULL))
+	    if (set_ref_in_item(stack + i, copyID, NULL, NULL, NULL))
 		return TRUE;  // abort
     }
     return FALSE;
@@ -2464,6 +2504,11 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    clear_tv(&otv[lidx]);
 	    otv[lidx] = *tv;
 	}
+	else if (dest_type == VAR_TUPLE)
+	{
+	    emsg(_(e_tuple_is_immutable));
+	    status = FAIL;
+	}
 	else
 	{
 	    status = FAIL;
@@ -2802,6 +2847,20 @@ execute_for(isn_T *iptr, ectx_T *ectx)
 	    ++ectx->ec_stack.ga_len;
 	}
     }
+    else if (ltv->v_type == VAR_TUPLE)
+    {
+	tuple_T *tuple = ltv->vval.v_tuple;
+
+	// push the next item from the tuple
+	++idxtv->vval.v_number;
+	if (tuple == NULL || idxtv->vval.v_number >= TUPLE_LEN(tuple))
+	    jump = TRUE;
+	else
+	{
+	    copy_tv(TUPLE_ITEM(tuple, idxtv->vval.v_number), STACK_TV_BOT(0));
+	    ++ectx->ec_stack.ga_len;
+	}
+    }
     else if (ltv->v_type == VAR_STRING)
     {
 	char_u	*str = ltv->vval.v_string;
@@ -3066,7 +3125,7 @@ set_ref_in_loopvars(int copyID)
 	int	    i;
 
 	for (i = 0; i < loopvars->lvs_ga.ga_len; ++i)
-	    if (set_ref_in_item(stack + i, copyID, NULL, NULL))
+	    if (set_ref_in_item(stack + i, copyID, NULL, NULL, NULL))
 		return TRUE;  // abort
     }
     return FALSE;
@@ -4482,6 +4541,12 @@ exec_instructions(ectx_T *ectx)
 		    goto theend;
 		break;
 
+	    // create a tuple from items on the stack
+	    case ISN_NEWTUPLE:
+		if (exe_newtuple(iptr->isn_arg.number, ectx) == FAIL)
+		    goto theend;
+		break;
+
 	    // create a dict from items on the stack
 	    case ISN_NEWDICT:
 		{
@@ -5247,6 +5312,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_COMPARELIST:
+	    case ISN_COMPARETUPLE:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
 	    case ISN_COMPARESTRING:
@@ -5264,6 +5330,11 @@ exec_instructions(ectx_T *ectx)
 		    if (iptr->isn_type == ISN_COMPARELIST)
 		    {
 			status = typval_compare_list(tv1, tv2,
+							   exprtype, ic, &res);
+		    }
+		    else if (iptr->isn_type == ISN_COMPARETUPLE)
+		    {
+			status = typval_compare_tuple(tv1, tv2,
 							   exprtype, ic, &res);
 		    }
 		    else if (iptr->isn_type == ISN_COMPAREDICT)
@@ -5318,6 +5389,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_ADDLIST:
+	    case ISN_ADDTUPLE:
 	    case ISN_ADDBLOB:
 		{
 		    typval_T *tv1 = STACK_TV_BOT(-2);
@@ -5333,6 +5405,8 @@ exec_instructions(ectx_T *ectx)
 			else
 			    eval_addlist(tv1, tv2);
 		    }
+		    else if (iptr->isn_type == ISN_ADDTUPLE)
+			eval_addtuple(tv1, tv2);
 		    else
 			eval_addblob(tv1, tv2);
 		    clear_tv(tv2);
@@ -5399,6 +5473,14 @@ exec_instructions(ectx_T *ectx)
 			if (tv1->v_type == VAR_LIST && tv2->v_type == VAR_LIST)
 			{
 			    eval_addlist(tv1, tv2);
+			    clear_tv(tv2);
+			    --ectx->ec_stack.ga_len;
+			    break;
+			}
+			else if (tv1->v_type == VAR_TUPLE
+						&& tv2->v_type == VAR_TUPLE)
+			{
+			    eval_addtuple(tv1, tv2);
 			    clear_tv(tv2);
 			    --ectx->ec_stack.ga_len;
 			    break;
@@ -5522,20 +5604,25 @@ exec_instructions(ectx_T *ectx)
 
 	    case ISN_LISTINDEX:
 	    case ISN_LISTSLICE:
+	    case ISN_TUPLEINDEX:
+	    case ISN_TUPLESLICE:
 	    case ISN_BLOBINDEX:
 	    case ISN_BLOBSLICE:
 		{
 		    int		is_slice = iptr->isn_type == ISN_LISTSLICE
-					    || iptr->isn_type == ISN_BLOBSLICE;
+				    || iptr->isn_type == ISN_TUPLESLICE
+				    || iptr->isn_type == ISN_BLOBSLICE;
 		    int		is_blob = iptr->isn_type == ISN_BLOBINDEX
 					    || iptr->isn_type == ISN_BLOBSLICE;
+		    int		is_tuple = iptr->isn_type == ISN_TUPLEINDEX
+				    || iptr->isn_type == ISN_TUPLESLICE;
 		    varnumber_T	n1, n2;
 		    typval_T	*val_tv;
 
 		    // list index: list is at stack-2, index at stack-1
 		    // list slice: list is at stack-3, indexes at stack-2 and
 		    // stack-1
-		    // Same for blob.
+		    // Same for tuple and blob.
 		    val_tv = is_slice ? STACK_TV_BOT(-3) : STACK_TV_BOT(-2);
 
 		    tv = STACK_TV_BOT(-1);
@@ -5556,6 +5643,12 @@ exec_instructions(ectx_T *ectx)
 		    {
 			if (blob_slice_or_index(val_tv->vval.v_blob, is_slice,
 						    n1, n2, FALSE, tv) == FAIL)
+			    goto on_error;
+		    }
+		    else if (is_tuple)
+		    {
+			if (tuple_slice_or_index(val_tv->vval.v_tuple,
+				is_slice, n1, n2, FALSE, tv, TRUE) == FAIL)
 			    goto on_error;
 		    }
 		    else
@@ -7167,6 +7260,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		smsg("%s%4d NEWLIST size %lld", pfx, current,
 					  (varnumber_T)(iptr->isn_arg.number));
 		break;
+	    case ISN_NEWTUPLE:
+		smsg("%s%4d NEWTUPLE size %lld", pfx, current,
+					  (varnumber_T)(iptr->isn_arg.number));
+		break;
 	    case ISN_NEWDICT:
 		smsg("%s%4d NEWDICT size %lld", pfx, current,
 					  (varnumber_T)(iptr->isn_arg.number));
@@ -7458,6 +7555,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_COMPARESTRING:
 	    case ISN_COMPAREBLOB:
 	    case ISN_COMPARELIST:
+	    case ISN_COMPARETUPLE:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
 	    case ISN_COMPAREOBJECT:
@@ -7496,6 +7594,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 						  type = "COMPARESTRING"; break;
 			   case ISN_COMPAREBLOB: type = "COMPAREBLOB"; break;
 			   case ISN_COMPARELIST: type = "COMPARELIST"; break;
+			   case ISN_COMPARETUPLE: type = "COMPARETUPLE"; break;
 			   case ISN_COMPAREDICT: type = "COMPAREDICT"; break;
 			   case ISN_COMPAREFUNC: type = "COMPAREFUNC"; break;
 			   case ISN_COMPAREOBJECT:
@@ -7509,6 +7608,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		   break;
 
 	    case ISN_ADDLIST: smsg("%s%4d ADDLIST", pfx, current); break;
+	    case ISN_ADDTUPLE: smsg("%s%4d ADDTUPLE", pfx, current); break;
 	    case ISN_ADDBLOB: smsg("%s%4d ADDBLOB", pfx, current); break;
 
 	    // expression operations
@@ -7524,6 +7624,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_BLOBAPPEND: smsg("%s%4d BLOBAPPEND", pfx, current); break;
 	    case ISN_LISTINDEX: smsg("%s%4d LISTINDEX", pfx, current); break;
 	    case ISN_LISTSLICE: smsg("%s%4d LISTSLICE", pfx, current); break;
+	    case ISN_TUPLEINDEX: smsg("%s%4d TUPLEINDEX", pfx, current); break;
+	    case ISN_TUPLESLICE: smsg("%s%4d TUPLESLICE", pfx, current); break;
 	    case ISN_ANYINDEX: smsg("%s%4d ANYINDEX", pfx, current); break;
 	    case ISN_ANYSLICE: smsg("%s%4d ANYSLICE", pfx, current); break;
 	    case ISN_SLICE: smsg("%s%4d SLICE %lld",
@@ -7790,6 +7892,8 @@ tv2bool(typval_T *tv)
 	    return tv->vval.v_string != NULL && *tv->vval.v_string != NUL;
 	case VAR_LIST:
 	    return tv->vval.v_list != NULL && tv->vval.v_list->lv_len > 0;
+	case VAR_TUPLE:
+	    return tuple_len(tv->vval.v_tuple) > 0;
 	case VAR_DICT:
 	    return tv->vval.v_dict != NULL
 				    && tv->vval.v_dict->dv_hashtab.ht_used > 0;

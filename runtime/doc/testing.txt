@@ -364,6 +364,11 @@ test_null_string()					*test_null_string()*
 
 		Return type: |String|
 
+test_null_tuple()					*test_null_tuple()*
+		Return a |Tuple| that is null. Only useful for testing.
+
+		Return type: |Tuple|
+
 test_option_not_set({name})				*test_option_not_set()*
 		Reset the flag that indicates option {name} was set.  Thus it
 		looks like it still has the default value. Use like this: >

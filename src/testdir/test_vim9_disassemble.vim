@@ -3662,4 +3662,139 @@ def Test_disassemble_using_script_local_var_in_obj_init()
   unlet g:instr
 enddef
 
+" Disassemble the code generated for indexing a tuple
+def Test_disassemble_tuple_indexing()
+  var lines =<< trim END
+    vim9script
+    def Fn(): tuple<number>
+      var t = (5, 6, 7)
+      var i = t[2]
+      var j = t[1 : 2]
+      return t
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t = (5, 6, 7)\_s*' ..
+    '0 PUSHNR 5\_s*' ..
+    '1 PUSHNR 6\_s*' ..
+    '2 PUSHNR 7\_s*' ..
+    '3 NEWTUPLE size 3\_s*' ..
+    '4 STORE $0\_s*' ..
+    'var i = t\[2\]\_s*' ..
+    '5 LOAD $0\_s*' ..
+    '6 PUSHNR 2\_s*' ..
+    '7 TUPLEINDEX\_s*' ..
+    '8 STORE $1\_s*' ..
+    'var j = t\[1 : 2\]\_s*' ..
+    '9 LOAD $0\_s*' ..
+    '10 PUSHNR 1\_s*' ..
+    '11 PUSHNR 2\_s*' ..
+    '12 TUPLESLICE\_s*' ..
+    '13 STORE $2\_s*' ..
+    'return t\_s*' ..
+    '14 LOAD $0\_s*' ..
+    '15 RETURN', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for assigning a tuple to a default value
+def Test_disassemble_tuple_default_value()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var t: tuple<number>
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t: tuple<number>\_s*' ..
+    '0 NEWTUPLE size 0\_s*' ..
+    '1 STORE $0\_s*' ..
+    '2 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for comparing tuples
+def Test_disassemble_tuple_compare()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var t1 = (1, 2)
+      var t2 = t1
+      var x = t1 == t2
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t1 = (1, 2)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHNR 2\_s*' ..
+    '2 NEWTUPLE size 2\_s*' ..
+    '3 STORE $0\_s*' ..
+    'var t2 = t1\_s*' ..
+    '4 LOAD $0\_s*' ..
+    '5 STORE $1\_s*' ..
+    'var x = t1 == t2\_s*' ..
+    '6 LOAD $0\_s*' ..
+    '7 LOAD $1\_s*' ..
+    '8 COMPARETUPLE ==\_s*' ..
+    '9 STORE $2\_s*' ..
+    '10 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for concatenating tuples
+def Test_disassemble_tuple_concatenate()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var t1 = (1,) + (2,)
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'var t1 = (1,) + (2,)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 NEWTUPLE size 1\_s*' ..
+    '2 PUSHNR 2\_s*' ..
+    '3 NEWTUPLE size 1\_s*' ..
+    '4 ADDTUPLE\_s*' ..
+    '5 STORE $0\_s*' ..
+    '6 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble the code generated for a constant tupe
+def Test_disassemble_tuple_const()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      const t = (1, 2, 3)
+      var x = t[1 : 2]
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'const t = (1, 2, 3)\_s*' ..
+    '0 PUSHNR 1\_s*' ..
+    '1 PUSHNR 2\_s*' ..
+    '2 PUSHNR 3\_s*' ..
+    '3 NEWTUPLE size 3\_s*' ..
+    '4 LOCKCONST\_s*' ..
+    '5 STORE $0\_s*' ..
+    'var x = t\[1 : 2\]\_s*' ..
+    '6 LOAD $0\_s*' ..
+    '7 PUSHNR 1\_s*' ..
+    '8 PUSHNR 2\_s*' ..
+    '9 TUPLESLICE\_s*' ..
+    '10 STORE $1\_s*' ..
+    '11 RETURN void', g:instr)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
