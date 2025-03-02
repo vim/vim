@@ -1966,7 +1966,7 @@ current_quote(
     // col_end is guarenteed to be larger than 0 by previous code.
     curwin->w_cursor.col = col_end;
     if (!include && !VIsual_active && VIsual_mode != 'v')
-	--curwin->w_cursor.col;    // Set end position.
+	--curwin->w_cursor.col;
     if ((include || count > 1 // After vi" another i" must include the ".
 		|| (!vis_empty && inside_quotes)
 	) && inc_cursor() == 2)
