@@ -12,6 +12,8 @@
 "   2025 Feb 28 by Vim Project: add support for bzip3 (#16755)
 "   2025 Mar 01 by Vim Project: fix syntax error in tar#Read()
 "   2025 Mar 02 by Vim Project: escape the filename before using :read
+"   2025 Mar 02 by Vim Project: determine the compression using readblob()
+"                               instead of shelling out to file(1)
 "
 "	Contains many ideas from Michael Toren's <tar.vim>
 "
@@ -161,23 +163,19 @@ fun! tar#Browse(tarfile)
 
   elseif tarfile =~# '\.\(tgz\)$' || tarfile =~# '\.\(tbz\)$' || tarfile =~# '\.\(txz\)$' ||
                           \ tarfile =~# '\.\(tzst\)$' || tarfile =~# '\.\(tlz4\)$'
-   if has("unix") && executable("file")
-    let filekind= system("file ".shellescape(tarfile,1))
-   else
-    let filekind= ""
-   endif
+   let header= s:Header(tarfile)
 
-   if filekind =~ "bzip2"
+   if header =~? 'bzip2'
     exe "sil! r! bzip2 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
-   elseif filekind =~ "bzip3"
+   elseif header =~? 'bzip3'
     exe "sil! r! bzip3 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
-   elseif filekind =~ "XZ"
+   elseif header =~? 'xz'
     exe "sil! r! xz -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
-   elseif filekind =~ "Zstandard"
+   elseif header =~? 'zstd'
     exe "sil! r! zstd --decompress --stdout -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
-   elseif filekind =~ "LZ4"
+   elseif header =~? 'lz4'
     exe "sil! r! lz4 --decompress --stdout -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
-   else
+   elseif header =~? 'gzip'
     exe "sil! r! gzip -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
    endif
 
@@ -372,24 +370,20 @@ fun! tar#Read(fname,mode)
    exe "sil! r! gzip -d -c -- ".shellescape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".tar_secure.shellescape(fname,1).decmp
    exe "read ".escape_file
   elseif tarfile =~# '\(\.tgz\|\.tbz\|\.txz\)'
-   if has("unix") && executable("file")
-    let filekind= system("file ".shellescape(tarfile,1))
-   else
-    let filekind= ""
-   endif
-   if filekind =~ "bzip2"
+   let filekind= s:Header(tarfile)
+   if filekind =~? "bzip2"
     exe "sil! r! bzip2 -d -c -- ".shellescape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".tar_secure.shellescape(fname,1).decmp
     exe "read ".escape_file
    elseif filekind =~ "bzip3"
     exe "sil! r! bzip3 -d -c -- ".shellescape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".tar_secure.shellescape(fname,1).decmp
     exe "read ".escape_file
-   elseif filekind =~ "XZ"
+   elseif filekind =~? "xz"
     exe "sil! r! xz -d -c -- ".shellescape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".tar_secure.shellescape(fname,1).decmp
     exe "read ".escape_file
-   elseif filekind =~ "Zstandard"
+   elseif filekind =~? "zstd"
     exe "sil! r! zstd --decompress --stdout -- ".shellescape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".tar_secure.shellescape(fname,1).decmp
     exe "read ".escape_file
-   else
+   elseif filekind =~? "gzip"
     exe "sil! r! gzip -d -c -- ".shellescape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".tar_secure.shellescape(fname,1).decmp
     exe "read ".escape_file
    endif
@@ -499,6 +493,7 @@ fun! tar#Write(fname)
    let tarfile = substitute(tarfile,'\.lzma','','e')
    let compress= "lzma -- ".shellescape(tarfile,0)
   endif
+  " Note: no support for name.tar.tbz/.txz/.tgz/.tlz4/.tzst
 
   if v:shell_error != 0
    redraw!
@@ -745,6 +740,29 @@ fun! s:Rmdir(fname)
     call system("del /S ".shellescape(a:fname,0))
    endif
   endif
+endfun
+
+" s:FileHeader: {{{2
+fun! s:Header(fname)
+  let header= readblob(a:fname, 0, 6)
+  if header[0:2] == str2blob(['BZh']) " bzip2 header
+    return "bzip2"
+  elseif header[0:2] == str2blob(['BZ3']) " bzip3 header
+    return "bzip3"
+  elseif header == str2blob(["\3757zXZ\n"]) " xz header
+    return "xz"
+  elseif header[0:3] == str2blob(["\x28\xB5\x2F\xFD"]) " zstd header
+    return "zstd"
+  elseif header[0:3] == str2blob(["\004\"M\030"]) " lz4 header
+    return "lz4"
+  elseif (header[0:1] == str2blob(["\037\235"]) ||
+       \  header[0:1] == str2blob(["\037\213"]) ||
+       \  header[0:1] == str2blob(["\037\236"]) ||
+       \  header[0:1] == str2blob(["\037\240"]) ||
+       \  header[0:1] == str2blob(["\037\036"]))
+    return "gzip"
+  endif
+  return "unknown"
 endfun
 
 " ---------------------------------------------------------------------
