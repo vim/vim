@@ -53,12 +53,24 @@ pum_compute_size(void)
 {
     int	i;
     int	w;
+    int end = MIN(pum_first + pum_height, pum_size);
+    // If p_pw is -1, use "auto" mode - only consider visible items
+    if (p_pw == -1)
+    {
+	end = MIN(pum_first + pum_height, pum_size);
+        i = pum_first;
+    }
+    else
+    {
+	end = pum_size;  // consider all items
+	i = 0;
+    }
 
     // Compute the width of the widest match and the widest extra.
     pum_base_width = 0;
     pum_kind_width = 0;
     pum_extra_width = 0;
-    for (i = 0; i < pum_size; ++i)
+    for (; i < end; ++i)
     {
 	if (pum_array[i].pum_text != NULL)
 	{
@@ -104,6 +116,7 @@ pum_display(
     int		content_width;
     int		right_edge_col;
     int		redo_count = 0;
+    int		actual_pw;  // Used for calculations when p_pw is -1 (auto)
 #if defined(FEAT_QUICKFIX)
     win_T	*pvwin;
 #endif
@@ -114,7 +127,7 @@ pum_display(
 
     do
     {
-	def_width = p_pw;
+	def_width = p_pw > 0 ? p_pw : 15;
 	above_row = 0;
 	below_row = cmdline_row;
 
@@ -252,10 +265,11 @@ pum_display(
 	else
 	    pum_scrollbar = 0;
 
-	if (def_width < max_width)
+	if (def_width < max_width && p_pw != -1)
 	    def_width = max_width;
 
-	if (((cursor_col < Columns - p_pw || cursor_col < Columns - max_width)
+	actual_pw = p_pw > 0 ? p_pw : def_width;
+	if (((cursor_col < Columns - actual_pw || cursor_col < Columns - max_width)
 #ifdef FEAT_RIGHTLEFT
 		    && !pum_rl)
 	       || (pum_rl && (cursor_col > p_pw || cursor_col > max_width)
@@ -274,9 +288,9 @@ pum_display(
 		pum_width = Columns - pum_col - pum_scrollbar;
 
 	    content_width = max_width + pum_kind_width + pum_extra_width + 1;
-	    if (pum_width > content_width && pum_width > p_pw)
+	    if (pum_width > content_width && pum_width > actual_pw)
 		// Reduce width to fit item
-		pum_width = MAX(content_width , p_pw);
+		pum_width = MAX(content_width , actual_pw);
 	    else if (((cursor_col > p_pw || cursor_col > max_width)
 #ifdef FEAT_RIGHTLEFT
 			&& !pum_rl)
@@ -310,9 +324,9 @@ pum_display(
 #endif
 		    pum_width = Columns - pum_col - pum_scrollbar;
 
-		if (pum_width < p_pw)
+		if (pum_width < actual_pw)
 		{
-		    pum_width = p_pw;
+		    pum_width = actual_pw;
 #ifdef FEAT_RIGHTLEFT
 		    if (pum_rl)
 		    {
@@ -326,8 +340,8 @@ pum_display(
 			    pum_width = Columns - pum_col - 1;
 		    }
 		}
-		else if (pum_width > content_width && pum_width > p_pw)
-		    pum_width = MAX(content_width, p_pw);
+		else if (pum_width > content_width && pum_width > actual_pw)
+		    pum_width = MAX(content_width, actual_pw);
 	    }
 
 	}
@@ -344,8 +358,8 @@ pum_display(
 	}
 	else
 	{
-	    if (max_width > p_pw)
-		max_width = p_pw;	// truncate
+	    if (max_width > actual_pw && p_pw != -1)
+		max_width = actual_pw;	// truncate
 #ifdef FEAT_RIGHTLEFT
 	    if (pum_rl)
 		pum_col = max_width - 1;
@@ -928,6 +942,7 @@ pum_set_selected(int n, int repeat UNUSED)
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
     int	    has_info = FALSE;
 #endif
+    int     old_first = pum_first;  // Store original value to detect changes
 
     pum_selected = n;
     scroll_offset = pum_selected - pum_height;
@@ -970,6 +985,13 @@ pum_set_selected(int n, int repeat UNUSED)
 	}
 	// adjust for the number of lines displayed
 	pum_first = MIN(pum_first, pum_size - pum_height);
+	// If in auto mode (p_pw == -1) and pum_first changed, recompute width
+	// and force repositioning
+	if (p_pw == -1 && old_first != pum_first)
+	{
+	    pum_compute_size();
+	    resized = TRUE;  // Force repositioning
+	}
 
 #if defined(FEAT_QUICKFIX)
 	/*

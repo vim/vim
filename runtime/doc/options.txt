@@ -6439,6 +6439,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Determines the minimum width to use for the popup menu for Insert mode
 	completion.  |ins-completion-menu|.
+	When set to -1, the popup menu width is dynamically calculated based
+	on currently visible items only, rather than all completion items.
+	The width will adjust automatically when scrolling through the menu.
+	When very long items scroll out of view, the menu width shrinks
+	accordingly. In this mode, 15 is used as the initial default width.
 
 						*'pythondll'*
 'pythondll'		string	(default depends on the build)

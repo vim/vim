@@ -1966,4 +1966,54 @@ func Test_pum_complete_with_special_characters()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_pumwidth_auto()
+  CheckScreendump
+  let lines =<< trim END
+    func Omni_test(findstart, base)
+      if a:findstart
+        return col(".")
+      endif
+      return [
+        \ #{word: "one"},
+        \ #{word: "two"},
+        \ #{word: "three"},
+        \ #{word: "four"},
+        \ #{word: "loooooooooooooooooooooooooooooooooooooooooong"},
+        \ #{word: "five"},
+        \ #{word: "six"},
+        \ #{word: "seven"},
+        \ #{word: "eight"}
+        \ ]
+    endfunc
+    set omnifunc=Omni_test
+    set pumheight=3
+    set pumwidth=-1
+  END
+
+  call writefile(lines, 'Xscript', 'D')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "S\<C-X>\<C-O>")
+  call VerifyScreenDump(buf, 'Test_pumwidth_auto_01', {})
+
+  call term_sendkeys(buf, "\<C-N>\<C-N>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pumwidth_auto_02', {})
+
+  call term_sendkeys(buf, "\<C-N>\<C-N>\<C-N>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_pumwidth_auto_03', {})
+
+  call term_sendkeys(buf, "\<C-P>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_pumwidth_auto_04', {})
+
+  call term_sendkeys(buf, "\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_pumwidth_auto_05', {})
+  call term_sendkeys(buf, "\<C-E>\<ESC>")
+
+  call TermWait(buf, 50)
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
