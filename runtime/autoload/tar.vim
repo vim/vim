@@ -188,8 +188,8 @@ fun! tar#Browse(tarfile)
    exe "sil! r! bzip3 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
   elseif tarfile =~# '\.tbz'
    " Determine the compression type by inspecting the file header:
-   " - 'BZh' indicates bzip2 compression
-   " - 'BZ3' indicates bzip3 compression
+   " - 'BZh(0z425A68)' indicates bzip2 compression
+   " - 'BZ3(0z425A33)' indicates bzip3 compression
    let header = readblob(tarfile, 0, 3)
    if header == 0z425A68
     exe "sil! r! bzip2 -d -c -- ".shellescape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
