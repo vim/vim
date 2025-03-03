@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 02
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41605,7 +41605,7 @@ Completion: ~
 	"preinsert"	- highlight to be inserted values
 - handle multi-line completion as expected
 - improved commandline completion for the |:hi| command
-- New option value for 'wildoptions':
+- New option value for 'wildmode':
   	"noselect"	- do not auto select an entry in the wildmenu
 
 Options: ~
