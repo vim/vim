@@ -28,10 +28,17 @@ if get(g:, 'markdown_recommended_style', 1)
 endif
 
 if !exists("g:no_plugin_maps") && !exists("g:no_markdown_maps")
-  nnoremap <silent><buffer> [[ :<C-U>call search('\%(^#\{1,5\}\s\+\S\\|^\S.*\n^[=-]\+$\)', "bsW")<CR>
-  nnoremap <silent><buffer> ]] :<C-U>call search('\%(^#\{1,5\}\s\+\S\\|^\S.*\n^[=-]\+$\)', "sW")<CR>
-  xnoremap <silent><buffer> [[ :<C-U>exe "normal! gv"<Bar>call search('\%(^#\{1,5\}\s\+\S\\|^\S.*\n^[=-]\+$\)', "bsW")<CR>
-  xnoremap <silent><buffer> ]] :<C-U>exe "normal! gv"<Bar>call search('\%(^#\{1,5\}\s\+\S\\|^\S.*\n^[=-]\+$\)', "sW")<CR>
+  function! s:NextSection(dir)
+    let flags = a:dir > 0 ? "sW" : "bsW"
+    for _ in range(v:count1)
+      let x = search('\%(^#\{1,5\}\s\+\S\|^\S.*\n^[=-]\+$\)', flags)
+    endfor
+  endfunction
+
+  nnoremap <silent><buffer> [[ :<C-U>call <SID>NextSection(-1)<CR>
+  nnoremap <silent><buffer> ]] :<C-U>call <SID>NextSection(+1)<CR>
+  xnoremap <silent><buffer> [[ :<C-U>exe "normal! gv"<Bar>call <SID>NextSection(-1)<CR>
+  xnoremap <silent><buffer> ]] :<C-U>exe "normal! gv"<Bar>call <SID>NextSection(+1)<CR>
   let b:undo_ftplugin .= '|sil! nunmap <buffer> [[|sil! nunmap <buffer> ]]|sil! xunmap <buffer> [[|sil! xunmap <buffer> ]]'
 endif
 
