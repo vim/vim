@@ -977,7 +977,7 @@ cmdline_wildchar_complete(
 		    p_wmnu = 0;
 
 		    // remove match
-		    nextwild(xp, WILD_PREV, 0 | (options & ~WIM_NOSELECT), escape);
+		    nextwild(xp, WILD_PREV, options, escape);
 		    p_wmnu = p_wmnu_save;
 		}
 		(void)showmatches(xp, p_wmnu
