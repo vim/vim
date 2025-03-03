@@ -88,9 +88,6 @@ static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 
 static size_t	last_recorded_len = 0;	// number of last recorded chars
 
-static size_t	last_get_inserted_len = 0;	// length of the string returned from the
-						// last call to get_inserted()
-
 #ifdef FEAT_EVAL
 mapblock_T	*last_used_map = NULL;
 int		last_used_sid = -1;
@@ -203,19 +200,13 @@ get_recorded(void)
  * Return the contents of the redo buffer as a single string.
  * K_SPECIAL and CSI in the returned string are escaped.
  */
-    char_u *
+    string_T
 get_inserted(void)
 {
-    return get_buffcont(&redobuff, FALSE, &last_get_inserted_len);
-}
-
-/*
- * Return the length of string returned from the last call of get_inserted().
- */
-    size_t
-get_inserted_len(void)
-{
-    return last_get_inserted_len;
+    size_t len = 0;
+    char_u* str = get_buffcont(&redobuff, FALSE, &len);
+    string_T ret = { str, len };
+    return ret;
 }
 
 /*
