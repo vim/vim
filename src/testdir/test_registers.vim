@@ -1159,9 +1159,9 @@ func Test_mark_from_yank()
   new
   call setline(1, 'test "yank"  mark')
   normal! yi"
-  assert_equal(getpos("']"), [0, 1, 10, 0])
+  call assert_equal(getpos("']"), [0, 1, 10, 0])
   normal! ya"
-  assert_equal(getpos("']"), [0, 1, 13, 0])
+  call assert_equal(getpos("']"), [0, 1, 13, 0])
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
