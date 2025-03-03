@@ -2,8 +2,7 @@
 void func_init(void);
 hashtab_T *func_tbl_get(void);
 char_u *make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize);
-char_u *get_lambda_name(void);
-size_t get_lambda_name_len(void);
+string_T get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **type, int no_autoload, int new_function, int *found_var);

@@ -1033,8 +1033,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     char_u	*name_end = to_name_end(eap->arg, TRUE);
     int		off;
     char_u	*func_name;
-    char_u	*lambda_name;
-    size_t	lambda_namelen;
+    string_T	lambda_name;
     ufunc_T	*ufunc;
     int		r = FAIL;
     compiletype_T   compile_type;
@@ -1094,9 +1093,8 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     eap->forceit = FALSE;
     // We use the special <Lamba>99 name, but it's not really a lambda.
     lambda_name = get_lambda_name();
-    lambda_namelen = get_lambda_name_len();
-    lambda_name = vim_strnsave(lambda_name, lambda_namelen);
-    if (lambda_name == NULL)
+    lambda_name.string = vim_strnsave(lambda_name.string, lambda_name.length);
+    if (lambda_name.string == NULL)
 	return NULL;
 
     // This may free the current line, make a copy of the name.
@@ -1112,7 +1110,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     int save_KeyTyped = KeyTyped;
     KeyTyped = FALSE;
 
-    ufunc = define_function(eap, lambda_name, lines_to_free, 0, NULL, 0);
+    ufunc = define_function(eap, lambda_name.string, lines_to_free, 0, NULL, 0);
 
     KeyTyped = save_KeyTyped;
 
@@ -1148,9 +1146,10 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     // recursive call.
     if (is_global)
     {
-	r = generate_NEWFUNC(cctx, lambda_name, func_name);
+	r = generate_NEWFUNC(cctx, lambda_name.string, func_name);
 	func_name = NULL;
-	lambda_name = NULL;
+	lambda_name.string = NULL;
+	lambda_name.length = 0;
     }
     else
     {
@@ -1197,7 +1196,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     }
 
 theend:
-    vim_free(lambda_name);
+    vim_free(lambda_name.string);
     vim_free(func_name);
     return r == FAIL ? NULL : (char_u *)"";
 }
