@@ -1374,6 +1374,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    curbuf->b_op_start.col = 0;
 	    curbuf->b_op_end.col = MAXCOL;
 	}
+	if (yanktype != MLINE && !oap->inclusive)
+	    // Exclude the end position.
+	    decl(&curbuf->b_op_end);
     }
 
 #ifdef FEAT_CLIPBOARD
