@@ -502,6 +502,12 @@ end_word(
 
     curwin->w_cursor.coladd = 0;
     cls_bigword = bigword;
+    // Decrease the cursor position if 'selection' is exclusive and in
+    // visual mode 'v'. The second condition excludes the call when both
+    // 'stop' and 'empty' are TRUE.
+    if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
+	    && !(stop == TRUE && empty == TRUE))
+	dec_cursor();
     while (--count >= 0)
     {
 #ifdef FEAT_FOLDING
