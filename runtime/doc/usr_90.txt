@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
+*usr_90.txt*	For Vim version 9.1.  Last change: 2025 Mar 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -28,20 +28,18 @@ is installed in differs.
 used.  But this may be different for your system.  Try finding out where other
 packages are installed.
    When installing for a single user, you can use your home directory as the
-base.  The files will be placed in subdirectories like "bin" and "shared/vim".
+base.  The files will be placed in subdirectories like "bin" and "share/vim".
 
 
 FROM A PACKAGE
 
-You can get precompiled binaries for many different UNIX systems.  There is a
-long list with links on this page:
+Depending on the Unix/Linux system used, there may exist pre-compiled binary
+packages.  You need to search for this. We used to keep a list for different
+UNIX systems, but that list was outdated so the list was removed.
 
-	http://www.vim.org/binaries.html
-
-Volunteers maintain the binaries, so they are often out of date.  It is a
-good idea to compile your own UNIX version from the source.  Also, creating
-the editor from the source allows you to control which features are compiled.
-This does require a compiler though.
+It is a good idea to compile your own UNIX version from the source.  Also,
+creating the editor from the source allows you to control which features are
+compiled.  This does require a compiler though.
 
 If you have a Linux distribution, the "vi" program is probably a minimal
 version of Vim.  It doesn't do syntax highlighting, for example.  Try finding
@@ -52,23 +50,18 @@ FROM SOURCES
 
 To compile and install Vim, you will need the following:
 
-	-  A C compiler (GCC preferred)
-	-  The GZIP program (you can get it from www.gnu.org)
-	-  The Vim source and runtime archives
+	-  A C compiler (GCC or clang preferred)
+	-  git (optionally, only when cloning from github)
+	-  zip/unzip (to uncompress the archive)
+	-  The Vim source archives
 
-To get the Vim archives, look in this file for a mirror near you, this should
-provide the fastest download:
+To download the Vim source, you can either clone it from the Github project
+page: >
+	git clone https://github.com/vim/vim.git
+<
+or download the archive directly using:
 
-	ftp://ftp.vim.org/pub/vim/MIRRORS
-
-Or use the home site ftp.vim.org, if you think it's fast enough.  Go to the
-"unix" directory and you'll find a list of files there.  The version number is
-embedded in the file name.  You will want to get the most recent version.
-   You can get the files for Unix in one big archive that contains everything:
-
-	vim-8.2.tar.bz2 ~
-
-You need the bzip2 program to uncompress it.
+	https://github.com/vim/vim/archive/refs/heads/master.zip
 
 
 COMPILING
@@ -80,17 +73,12 @@ First create a top directory to work in, for example: >
 
 Then unpack the archives there.  You can unpack it like this: >
 
-	tar xf path/vim-8.2.tar.bz2
+	unzip vim-master.zip
 
-If your tar command doesn't support bz2 directly: >
-
-	bzip2 -d -c path/vim-8.2.tar.bz2 | tar xf -
-
-Change "path" to where you have downloaded the file.
 If you are satisfied with getting the default features, and your environment
 is setup properly, you should be able to compile Vim with just this: >
 
-	cd vim82/src
+	cd vim-master/src
 	make
 
 The make program will run configure and compile everything.  Further on we
