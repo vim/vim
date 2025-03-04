@@ -921,186 +921,231 @@ static char_u modifier_keys_table[] =
     NUL
 };
 
+// Indexes into the key_names_table array
+// Must be kept in sync with the array!
+#define IDX_KEYNAME_BS 2
+#define IDX_KEYNAME_CAR 5
+#define IDX_KEYNAME_DEL 9
+#define IDX_KEYNAME_INS 59
+#define IDX_KEYNAME_NL 101
+#define IDX_KEYNAME_SWD 115
+#define IDX_KEYNAME_SWU 118
+#define IDX_KEYNAME_TAB 124
+
+#define STRING_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
 static struct key_name_entry
 {
-    int	    key;	// Special key code or ascii value
-    char_u  *name;	// Name of key
+    int		enabled;	    // is this entry available (TRUE/FALSE)?
+    int		key;		    // special key code or ascii value
+    string_T	name;		    // name of key
+    string_T	*alt_name;	    // pointer to alternative key name
+				    // (may be NULL or point to the name in another entry)
 } key_names_table[] =
+// Must be sorted by the 'name.string' field in ascending order because it is used by bsearch()!
 {
-    {' ',		(char_u *)"Space"},
-    {TAB,		(char_u *)"Tab"},
-    {K_TAB,		(char_u *)"Tab"},
-    {NL,		(char_u *)"NL"},
-    {NL,		(char_u *)"NewLine"},	// Alternative name
-    {NL,		(char_u *)"LineFeed"},	// Alternative name
-    {NL,		(char_u *)"LF"},	// Alternative name
-    {CAR,		(char_u *)"CR"},
-    {CAR,		(char_u *)"Return"},	// Alternative name
-    {CAR,		(char_u *)"Enter"},	// Alternative name
-    {K_BS,		(char_u *)"BS"},
-    {K_BS,		(char_u *)"BackSpace"},	// Alternative name
-    {ESC,		(char_u *)"Esc"},
-    {CSI,		(char_u *)"CSI"},
-    {K_CSI,		(char_u *)"xCSI"},
-    {'|',		(char_u *)"Bar"},
-    {'\\',		(char_u *)"Bslash"},
-    {K_DEL,		(char_u *)"Del"},
-    {K_DEL,		(char_u *)"Delete"},	// Alternative name
-    {K_KDEL,		(char_u *)"kDel"},
-    {K_UP,		(char_u *)"Up"},
-    {K_DOWN,		(char_u *)"Down"},
-    {K_LEFT,		(char_u *)"Left"},
-    {K_RIGHT,		(char_u *)"Right"},
-    {K_XUP,		(char_u *)"xUp"},
-    {K_XDOWN,		(char_u *)"xDown"},
-    {K_XLEFT,		(char_u *)"xLeft"},
-    {K_XRIGHT,		(char_u *)"xRight"},
-    {K_PS,		(char_u *)"PasteStart"},
-    {K_PE,		(char_u *)"PasteEnd"},
-
-    {K_F1,		(char_u *)"F1"},
-    {K_F2,		(char_u *)"F2"},
-    {K_F3,		(char_u *)"F3"},
-    {K_F4,		(char_u *)"F4"},
-    {K_F5,		(char_u *)"F5"},
-    {K_F6,		(char_u *)"F6"},
-    {K_F7,		(char_u *)"F7"},
-    {K_F8,		(char_u *)"F8"},
-    {K_F9,		(char_u *)"F9"},
-    {K_F10,		(char_u *)"F10"},
-
-    {K_F11,		(char_u *)"F11"},
-    {K_F12,		(char_u *)"F12"},
-    {K_F13,		(char_u *)"F13"},
-    {K_F14,		(char_u *)"F14"},
-    {K_F15,		(char_u *)"F15"},
-    {K_F16,		(char_u *)"F16"},
-    {K_F17,		(char_u *)"F17"},
-    {K_F18,		(char_u *)"F18"},
-    {K_F19,		(char_u *)"F19"},
-    {K_F20,		(char_u *)"F20"},
-
-    {K_F21,		(char_u *)"F21"},
-    {K_F22,		(char_u *)"F22"},
-    {K_F23,		(char_u *)"F23"},
-    {K_F24,		(char_u *)"F24"},
-    {K_F25,		(char_u *)"F25"},
-    {K_F26,		(char_u *)"F26"},
-    {K_F27,		(char_u *)"F27"},
-    {K_F28,		(char_u *)"F28"},
-    {K_F29,		(char_u *)"F29"},
-    {K_F30,		(char_u *)"F30"},
-
-    {K_F31,		(char_u *)"F31"},
-    {K_F32,		(char_u *)"F32"},
-    {K_F33,		(char_u *)"F33"},
-    {K_F34,		(char_u *)"F34"},
-    {K_F35,		(char_u *)"F35"},
-    {K_F36,		(char_u *)"F36"},
-    {K_F37,		(char_u *)"F37"},
-
-    {K_XF1,		(char_u *)"xF1"},
-    {K_XF2,		(char_u *)"xF2"},
-    {K_XF3,		(char_u *)"xF3"},
-    {K_XF4,		(char_u *)"xF4"},
-
-    {K_HELP,		(char_u *)"Help"},
-    {K_UNDO,		(char_u *)"Undo"},
-    {K_INS,		(char_u *)"Insert"},
-    {K_INS,		(char_u *)"Ins"},	// Alternative name
-    {K_KINS,		(char_u *)"kInsert"},
-    {K_HOME,		(char_u *)"Home"},
-    {K_KHOME,		(char_u *)"kHome"},
-    {K_XHOME,		(char_u *)"xHome"},
-    {K_ZHOME,		(char_u *)"zHome"},
-    {K_END,		(char_u *)"End"},
-    {K_KEND,		(char_u *)"kEnd"},
-    {K_XEND,		(char_u *)"xEnd"},
-    {K_ZEND,		(char_u *)"zEnd"},
-    {K_PAGEUP,		(char_u *)"PageUp"},
-    {K_PAGEDOWN,	(char_u *)"PageDown"},
-    {K_KPAGEUP,		(char_u *)"kPageUp"},
-    {K_KPAGEDOWN,	(char_u *)"kPageDown"},
-
-    {K_KPLUS,		(char_u *)"kPlus"},
-    {K_KMINUS,		(char_u *)"kMinus"},
-    {K_KDIVIDE,		(char_u *)"kDivide"},
-    {K_KMULTIPLY,	(char_u *)"kMultiply"},
-    {K_KENTER,		(char_u *)"kEnter"},
-    {K_KPOINT,		(char_u *)"kPoint"},
-
-    {K_K0,		(char_u *)"k0"},
-    {K_K1,		(char_u *)"k1"},
-    {K_K2,		(char_u *)"k2"},
-    {K_K3,		(char_u *)"k3"},
-    {K_K4,		(char_u *)"k4"},
-    {K_K5,		(char_u *)"k5"},
-    {K_K6,		(char_u *)"k6"},
-    {K_K7,		(char_u *)"k7"},
-    {K_K8,		(char_u *)"k8"},
-    {K_K9,		(char_u *)"k9"},
-
-    {'<',		(char_u *)"lt"},
-
-    {K_MOUSE,		(char_u *)"Mouse"},
-#ifdef FEAT_MOUSE_NET
-    {K_NETTERM_MOUSE,	(char_u *)"NetMouse"},
-#endif
+    {TRUE, K_BS, STRING_INIT("BackSpace"),
+	&key_names_table[IDX_KEYNAME_BS].name},			// Alternative name
+    {TRUE, '|', STRING_INIT("Bar"), NULL},
+    {TRUE, K_BS, STRING_INIT("BS"), NULL},
+    {TRUE, '\\', STRING_INIT("Bslash"), NULL},
+    {TRUE, K_COMMAND, STRING_INIT("Cmd"), NULL},
+    {TRUE, CAR, STRING_INIT("CR"), NULL},
+    {TRUE, CSI, STRING_INIT("CSI"), NULL},
+    {TRUE, K_CURSORHOLD, STRING_INIT("CursorHold"), NULL},
+    {
 #ifdef FEAT_MOUSE_DEC
-    {K_DEC_MOUSE,	(char_u *)"DecMouse"},
+    TRUE,
+#else
+    FALSE,
 #endif
-#ifdef FEAT_MOUSE_JSB
-    {K_JSBTERM_MOUSE,	(char_u *)"JsbMouse"},
-#endif
-#ifdef FEAT_MOUSE_PTERM
-    {K_PTERM_MOUSE,	(char_u *)"PtermMouse"},
-#endif
-#ifdef FEAT_MOUSE_URXVT
-    {K_URXVT_MOUSE,	(char_u *)"UrxvtMouse"},
-#endif
-    {K_SGR_MOUSE,	(char_u *)"SgrMouse"},
-    {K_SGR_MOUSERELEASE, (char_u *)"SgrMouseRelease"},
-    {K_LEFTMOUSE,	(char_u *)"LeftMouse"},
-    {K_LEFTMOUSE_NM,	(char_u *)"LeftMouseNM"},
-    {K_LEFTDRAG,	(char_u *)"LeftDrag"},
-    {K_LEFTRELEASE,	(char_u *)"LeftRelease"},
-    {K_LEFTRELEASE_NM,	(char_u *)"LeftReleaseNM"},
-    {K_MOUSEMOVE,	(char_u *)"MouseMove"},
-    {K_MIDDLEMOUSE,	(char_u *)"MiddleMouse"},
-    {K_MIDDLEDRAG,	(char_u *)"MiddleDrag"},
-    {K_MIDDLERELEASE,	(char_u *)"MiddleRelease"},
-    {K_RIGHTMOUSE,	(char_u *)"RightMouse"},
-    {K_RIGHTDRAG,	(char_u *)"RightDrag"},
-    {K_RIGHTRELEASE,	(char_u *)"RightRelease"},
-    {K_MOUSEDOWN,	(char_u *)"ScrollWheelUp"},
-    {K_MOUSEUP,		(char_u *)"ScrollWheelDown"},
-    {K_MOUSELEFT,	(char_u *)"ScrollWheelRight"},
-    {K_MOUSERIGHT,	(char_u *)"ScrollWheelLeft"},
-    {K_MOUSEDOWN,	(char_u *)"MouseDown"}, // OBSOLETE: Use
-    {K_MOUSEUP,		(char_u *)"MouseUp"},	// ScrollWheelXXX instead
-    {K_X1MOUSE,		(char_u *)"X1Mouse"},
-    {K_X1DRAG,		(char_u *)"X1Drag"},
-    {K_X1RELEASE,		(char_u *)"X1Release"},
-    {K_X2MOUSE,		(char_u *)"X2Mouse"},
-    {K_X2DRAG,		(char_u *)"X2Drag"},
-    {K_X2RELEASE,		(char_u *)"X2Release"},
-    {K_DROP,		(char_u *)"Drop"},
-    {K_ZERO,		(char_u *)"Nul"},
-#ifdef FEAT_EVAL
-    {K_SNR,		(char_u *)"SNR"},
-#endif
-    {K_PLUG,		(char_u *)"Plug"},
-    {K_CURSORHOLD,	(char_u *)"CursorHold"},
-    {K_IGNORE,		(char_u *)"Ignore"},
-    {K_COMMAND,		(char_u *)"Cmd"},
-    {K_SCRIPT_COMMAND,	(char_u *)"ScriptCmd"},
-    {K_FOCUSGAINED,	(char_u *)"FocusGained"},
-    {K_FOCUSLOST,	(char_u *)"FocusLost"},
-    {0,			NULL}
-    // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
-};
+	K_DEC_MOUSE, STRING_INIT("DecMouse"), NULL},
+    {TRUE, K_DEL, STRING_INIT("Del"), NULL},
+    {TRUE, K_DEL, STRING_INIT("Delete"),
+	&key_names_table[IDX_KEYNAME_DEL].name},		// Alternative name
+    {TRUE, K_DOWN, STRING_INIT("Down"), NULL},
+    {TRUE, K_DROP, STRING_INIT("Drop"), NULL},
+    {TRUE, K_END, STRING_INIT("End"), NULL},
+    {TRUE, CAR, STRING_INIT("Enter"),
+	&key_names_table[IDX_KEYNAME_CAR].name},		// Alternative name
+    {TRUE, ESC, STRING_INIT("Esc"), NULL},
 
-#define KEY_NAMES_TABLE_LEN ARRAY_LENGTH(key_names_table)
+    {TRUE, K_F1, STRING_INIT("F1"), NULL},
+    {TRUE, K_F10, STRING_INIT("F10"), NULL},
+    {TRUE, K_F11, STRING_INIT("F11"), NULL},
+    {TRUE, K_F12, STRING_INIT("F12"), NULL},
+    {TRUE, K_F13, STRING_INIT("F13"), NULL},
+    {TRUE, K_F14, STRING_INIT("F14"), NULL},
+    {TRUE, K_F15, STRING_INIT("F15"), NULL},
+    {TRUE, K_F16, STRING_INIT("F16"), NULL},
+    {TRUE, K_F17, STRING_INIT("F17"), NULL},
+    {TRUE, K_F18, STRING_INIT("F18"), NULL},
+    {TRUE, K_F19, STRING_INIT("F19"), NULL},
+
+    {TRUE, K_F2, STRING_INIT("F2"), NULL},
+    {TRUE, K_F20, STRING_INIT("F20"), NULL},
+    {TRUE, K_F21, STRING_INIT("F21"), NULL},
+    {TRUE, K_F22, STRING_INIT("F22"), NULL},
+    {TRUE, K_F23, STRING_INIT("F23"), NULL},
+    {TRUE, K_F24, STRING_INIT("F24"), NULL},
+    {TRUE, K_F25, STRING_INIT("F25"), NULL},
+    {TRUE, K_F26, STRING_INIT("F26"), NULL},
+    {TRUE, K_F27, STRING_INIT("F27"), NULL},
+    {TRUE, K_F28, STRING_INIT("F28"), NULL},
+    {TRUE, K_F29, STRING_INIT("F29"), NULL},
+
+    {TRUE, K_F3, STRING_INIT("F3"), NULL},
+    {TRUE, K_F30, STRING_INIT("F30"), NULL},
+    {TRUE, K_F31, STRING_INIT("F31"), NULL},
+    {TRUE, K_F32, STRING_INIT("F32"), NULL},
+    {TRUE, K_F33, STRING_INIT("F33"), NULL},
+    {TRUE, K_F34, STRING_INIT("F34"), NULL},
+    {TRUE, K_F35, STRING_INIT("F35"), NULL},
+    {TRUE, K_F36, STRING_INIT("F36"), NULL},
+    {TRUE, K_F37, STRING_INIT("F37"), NULL},
+
+    {TRUE, K_F4, STRING_INIT("F4"), NULL},
+    {TRUE, K_F5, STRING_INIT("F5"), NULL},
+    {TRUE, K_F6, STRING_INIT("F6"), NULL},
+    {TRUE, K_F7, STRING_INIT("F7"), NULL},
+    {TRUE, K_F8, STRING_INIT("F8"), NULL},
+    {TRUE, K_F9, STRING_INIT("F9"), NULL},
+
+    {TRUE, K_FOCUSGAINED, STRING_INIT("FocusGained"), NULL},
+    {TRUE, K_FOCUSLOST, STRING_INIT("FocusLost"), NULL},
+    {TRUE, K_HELP, STRING_INIT("Help"), NULL},
+    {TRUE, K_HOME, STRING_INIT("Home"), NULL},
+    {TRUE, K_IGNORE, STRING_INIT("Ignore"), NULL},
+    {TRUE, K_INS, STRING_INIT("Ins"),
+	&key_names_table[IDX_KEYNAME_INS].name},		// Alternative name
+    {TRUE, K_INS, STRING_INIT("Insert"), NULL},
+    {
+#ifdef FEAT_MOUSE_JSB
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_JSBTERM_MOUSE, STRING_INIT("JsbMouse"), NULL},
+    {TRUE, K_K0, STRING_INIT("k0"), NULL},
+    {TRUE, K_K1, STRING_INIT("k1"), NULL},
+    {TRUE, K_K2, STRING_INIT("k2"), NULL},
+    {TRUE, K_K3, STRING_INIT("k3"), NULL},
+    {TRUE, K_K4, STRING_INIT("k4"), NULL},
+    {TRUE, K_K5, STRING_INIT("k5"), NULL},
+    {TRUE, K_K6, STRING_INIT("k6"), NULL},
+    {TRUE, K_K7, STRING_INIT("k7"), NULL},
+    {TRUE, K_K8, STRING_INIT("k8"), NULL},
+    {TRUE, K_K9, STRING_INIT("k9"), NULL},
+
+    {TRUE, K_KDEL, STRING_INIT("kDel"), NULL},
+    {TRUE, K_KDIVIDE, STRING_INIT("kDivide"), NULL},
+    {TRUE, K_KEND, STRING_INIT("kEnd"), NULL},
+    {TRUE, K_KENTER, STRING_INIT("kEnter"), NULL},
+    {TRUE, K_KHOME, STRING_INIT("kHome"), NULL},
+    {TRUE, K_KINS, STRING_INIT("kInsert"), NULL},
+    {TRUE, K_KMINUS, STRING_INIT("kMinus"), NULL},
+    {TRUE, K_KMULTIPLY, STRING_INIT("kMultiply"), NULL},
+    {TRUE, K_KPAGEDOWN, STRING_INIT("kPageDown"), NULL},
+    {TRUE, K_KPAGEUP, STRING_INIT("kPageUp"), NULL},
+    {TRUE, K_KPLUS, STRING_INIT("kPlus"), NULL},
+    {TRUE, K_KPOINT, STRING_INIT("kPoint"), NULL},
+    {TRUE, K_LEFT, STRING_INIT("Left"), NULL},
+    {TRUE, K_LEFTDRAG, STRING_INIT("LeftDrag"), NULL},
+    {TRUE, K_LEFTMOUSE, STRING_INIT("LeftMouse"), NULL},
+    {TRUE, K_LEFTMOUSE_NM, STRING_INIT("LeftMouseNM"), NULL},
+    {TRUE, K_LEFTRELEASE, STRING_INIT("LeftRelease"), NULL},
+    {TRUE, K_LEFTRELEASE_NM, STRING_INIT("LeftReleaseNM"), NULL},
+    {TRUE, NL, STRING_INIT("LF"),
+	&key_names_table[IDX_KEYNAME_NL].name},			    // Alternative name
+    {TRUE, NL, STRING_INIT("LineFeed"),
+	&key_names_table[IDX_KEYNAME_NL].name},			    // Alternative name
+    {TRUE, '<', STRING_INIT("lt"), NULL},
+    {TRUE, K_MIDDLEDRAG, STRING_INIT("MiddleDrag"), NULL},
+    {TRUE, K_MIDDLEMOUSE, STRING_INIT("MiddleMouse"), NULL},
+    {TRUE, K_MIDDLERELEASE, STRING_INIT("MiddleRelease"), NULL},
+    {TRUE, K_MOUSE, STRING_INIT("Mouse"), NULL},
+    {TRUE, K_MOUSEDOWN, STRING_INIT("MouseDown"),
+	&key_names_table[IDX_KEYNAME_SWU].name},		    // OBSOLETE: Use ScrollWheelXXX instead
+    {TRUE, K_MOUSEMOVE, STRING_INIT("MouseMove"), NULL},
+    {TRUE, K_MOUSEUP, STRING_INIT("MouseUp"),
+	&key_names_table[IDX_KEYNAME_SWD].name},
+    {
+#ifdef FEAT_MOUSE_NET
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_NETTERM_MOUSE, STRING_INIT("NetMouse"), NULL},
+    {TRUE, NL, STRING_INIT("NewLine"),
+	&key_names_table[IDX_KEYNAME_NL].name},			    // Alternative name
+    {TRUE, NL, STRING_INIT("NL"), NULL},
+    {TRUE, K_ZERO, STRING_INIT("Nul"), NULL},
+    {TRUE, K_PAGEDOWN, STRING_INIT("PageDown"), NULL},
+    {TRUE, K_PAGEUP, STRING_INIT("PageUp"), NULL},
+    {TRUE, K_PE, STRING_INIT("PasteEnd"), NULL},
+    {TRUE, K_PS, STRING_INIT("PasteStart"), NULL},
+    {TRUE, K_PLUG, STRING_INIT("Plug"), NULL},
+    {
+#ifdef FEAT_MOUSE_PTERM
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_PTERM_MOUSE, STRING_INIT("PtermMouse"), NULL},
+    {TRUE, CAR, STRING_INIT("Return"),
+	&key_names_table[IDX_KEYNAME_CAR].name},		    // Alternative name
+    {TRUE, K_RIGHT, STRING_INIT("Right"), NULL},
+    {TRUE, K_RIGHTDRAG, STRING_INIT("RightDrag"), NULL},
+    {TRUE, K_RIGHTMOUSE, STRING_INIT("RightMouse"), NULL},
+    {TRUE, K_RIGHTRELEASE, STRING_INIT("RightRelease"), NULL},
+    {TRUE, K_SCRIPT_COMMAND, STRING_INIT("ScriptCmd"), NULL},
+    {TRUE, K_MOUSEUP, STRING_INIT("ScrollWheelDown"), NULL},
+    {TRUE, K_MOUSERIGHT, STRING_INIT("ScrollWheelLeft"), NULL},
+    {TRUE, K_MOUSELEFT, STRING_INIT("ScrollWheelRight"), NULL},
+    {TRUE, K_MOUSEDOWN, STRING_INIT("ScrollWheelUp"), NULL},
+    {TRUE, K_SGR_MOUSE, STRING_INIT("SgrMouse"), NULL},
+    {TRUE, K_SGR_MOUSERELEASE, STRING_INIT("SgrMouseRelease"), NULL},
+    {
+#ifdef FEAT_EVAL
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_SNR, STRING_INIT("SNR"), NULL},
+    {TRUE, ' ', STRING_INIT("Space"), NULL},
+    {TRUE, TAB, STRING_INIT("Tab"), NULL},
+    {TRUE, K_TAB, STRING_INIT("Tab"),
+	&key_names_table[IDX_KEYNAME_TAB].name},
+    {TRUE, K_UNDO, STRING_INIT("Undo"), NULL},
+    {TRUE, K_UP, STRING_INIT("Up"), NULL},
+    {
+#ifdef FEAT_MOUSE_URXVT
+    TRUE,
+#else
+    FALSE,
+#endif
+	K_URXVT_MOUSE, STRING_INIT("UrxvtMouse"), NULL},
+    {TRUE, K_X1DRAG, STRING_INIT("X1Drag"), NULL},
+    {TRUE, K_X1MOUSE, STRING_INIT("X1Mouse"), NULL},
+    {TRUE, K_X1RELEASE, STRING_INIT("X1Release"), NULL},
+    {TRUE, K_X2DRAG, STRING_INIT("X2Drag"), NULL},
+    {TRUE, K_X2MOUSE, STRING_INIT("X2Mouse"), NULL},
+    {TRUE, K_X2RELEASE, STRING_INIT("X2Release"), NULL},
+    {TRUE, K_CSI, STRING_INIT("xCSI"), NULL},
+    {TRUE, K_XDOWN, STRING_INIT("xDown"), NULL},
+    {TRUE, K_XEND, STRING_INIT("xEnd"), NULL},
+    {TRUE, K_XF1, STRING_INIT("xF1"), NULL},
+    {TRUE, K_XF2, STRING_INIT("xF2"), NULL},
+    {TRUE, K_XF3, STRING_INIT("xF3"), NULL},
+    {TRUE, K_XF4, STRING_INIT("xF4"), NULL},
+    {TRUE, K_XHOME, STRING_INIT("xHome"), NULL},
+    {TRUE, K_XLEFT, STRING_INIT("xLeft"), NULL},
+    {TRUE, K_XRIGHT, STRING_INIT("xRight"), NULL},
+    {TRUE, K_XUP, STRING_INIT("xUp"), NULL},
+    {TRUE, K_ZEND, STRING_INIT("zEnd"), NULL},
+    {TRUE, K_ZHOME, STRING_INIT("zHome"), NULL}
+};
+#undef STRING_INIT
 
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
@@ -1111,6 +1156,7 @@ name_to_mod_mask(int c)
 {
     int	    i;
 
+    // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
     c = TOUPPER_ASC(c);
     for (i = 0; mod_mask_table[i].mod_mask != 0; i++)
 	if (c == mod_mask_table[i].name)
@@ -1190,10 +1236,8 @@ handle_x_keys(int key)
 get_special_key_name(int c, int modifiers)
 {
     static char_u string[MAX_KEY_NAME_LEN + 1];
-
     int	    i, idx;
     int	    table_idx;
-    char_u  *s;
 
     string[0] = '<';
     idx = 1;
@@ -1271,7 +1315,7 @@ get_special_key_name(int c, int modifiers)
 		string[idx++] = c;
 	    else
 	    {
-		s = transchar(c);
+		char_u	*s = transchar(c);
 		while (*s)
 		    string[idx++] = *s++;
 	    }
@@ -1279,16 +1323,22 @@ get_special_key_name(int c, int modifiers)
     }
     else		// use name of special key
     {
-	size_t len = STRLEN(key_names_table[table_idx].name);
+	string_T    *s;
 
-	if (len + idx + 2 <= MAX_KEY_NAME_LEN)
+	if (key_names_table[table_idx].alt_name != NULL)
+	    s = key_names_table[table_idx].alt_name;
+	else
+	    s = &key_names_table[table_idx].name;
+
+	if (s->length + idx + 2 <= MAX_KEY_NAME_LEN)
 	{
-	    STRCPY(string + idx, key_names_table[table_idx].name);
-	    idx += (int)len;
+	    STRCPY(string + idx, s->string);
+	    idx += (int)s->length;
 	}
     }
     string[idx++] = '>';
     string[idx] = NUL;
+
     return string;
 }
 
@@ -1668,12 +1718,55 @@ find_special_key_in_table(int c)
 {
     int	    i;
 
-    for (i = 0; key_names_table[i].name != NULL; i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(key_names_table); i++)
 	if (c == key_names_table[i].key)
+	    return key_names_table[i].enabled ? i : -1;
+
+    return -1;
+}
+
+
+/*
+ * Compare two 'struct key_name_entry' structures.
+ * Note that the target string (p1) may contain additional trailing characters
+ * that should not factor into the comparison. Example:
+ * 'LeftMouse>", "<LeftMouse>"] ...'
+ * should match with
+ * 'LeftMouse'.
+ * These characters are identified by vim_isNormalIDc().
+ */
+    static int
+cmp_key_name_entry(const void *a, const void *b)
+{
+    char_u  *p1 = ((struct key_name_entry *)a)->name.string;
+    char_u  *p2 = ((struct key_name_entry *)b)->name.string;
+    int	    result = 0;
+
+    if (p1 == p2)
+	return 0;
+
+    while (vim_isNormalIDc(*p1) && *p2 != NUL)
+    {
+	if ((result = TOLOWER_ASC(*p1) - TOLOWER_ASC(*p2)) != 0)
 	    break;
-    if (key_names_table[i].name == NULL)
-	i = -1;
-    return i;
+	++p1;
+	++p2;
+    }
+
+    if (result == 0)
+    {
+	if (*p2 == NUL)
+	{
+	    if (vim_isNormalIDc(*p1))
+		result = 1;
+	}
+	else
+	{
+	    result = -1;
+	}
+    }
+
+    return result;
 }
 
 /*
@@ -1686,15 +1779,13 @@ find_special_key_in_table(int c)
     int
 get_special_key_code(char_u *name)
 {
-    char_u  *table_name;
-    char_u  string[3];
-    int	    i, j;
-
     /*
      * If it's <t_xx> we get the code for xx from the termcap
      */
     if (name[0] == 't' && name[1] == '_' && name[2] != NUL && name[3] != NUL)
     {
+	char_u  string[3];
+
 	string[0] = name[2];
 	string[1] = name[3];
 	string[2] = NUL;
@@ -1702,24 +1793,38 @@ get_special_key_code(char_u *name)
 	    return TERMCAP2KEY(name[2], name[3]);
     }
     else
-	for (i = 0; key_names_table[i].name != NULL; i++)
-	{
-	    table_name = key_names_table[i].name;
-	    for (j = 0; vim_isNormalIDc(name[j]) && table_name[j] != NUL; j++)
-		if (TOLOWER_ASC(table_name[j]) != TOLOWER_ASC(name[j]))
-		    break;
-	    if (!vim_isNormalIDc(name[j]) && table_name[j] == NUL)
-		return key_names_table[i].key;
-	}
+    {
+	struct key_name_entry	target;
+	struct key_name_entry	*entry;
+
+	target.enabled = TRUE;
+	target.key = 0;
+	target.name.string = name;
+	target.name.length = 0;
+	target.alt_name = NULL;
+
+	entry = (struct key_name_entry *)bsearch(
+	    &target,
+	    &key_names_table,
+	    ARRAY_LENGTH(key_names_table),
+	    sizeof(key_names_table[0]),
+	    cmp_key_name_entry);
+	if (entry != NULL && entry->enabled)
+	    return entry->key;
+    }
+
     return 0;
 }
 
     char_u *
 get_key_name(int i)
 {
-    if (i >= (int)KEY_NAMES_TABLE_LEN)
+    if (i < 0 || i >= (int)ARRAY_LENGTH(key_names_table))
 	return NULL;
-    return  key_names_table[i].name;
+
+    return (key_names_table[i].alt_name != NULL) ?
+	key_names_table[i].alt_name->string :
+	key_names_table[i].name.string;
 }
 
 /*
@@ -1821,7 +1926,6 @@ default_fileformat(void)
     int
 call_shell(char_u *cmd, int opt)
 {
-    char_u	*ncmd;
     int		retval;
 #ifdef FEAT_PROFILE
     proftime_T	wait_time;
@@ -1862,7 +1966,9 @@ call_shell(char_u *cmd, int opt)
 	    retval = mch_call_shell(cmd, opt);
 	else
 	{
-	    char_u *ecmd = cmd;
+	    char_u  *ncmd;
+	    size_t  ncmdsize;
+	    char_u  *ecmd = cmd;
 
 	    if (*p_sxe != NUL && *p_sxq == '(')
 	    {
@@ -1870,14 +1976,13 @@ call_shell(char_u *cmd, int opt)
 		if (ecmd == NULL)
 		    ecmd = cmd;
 	    }
-	    ncmd = alloc(STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1);
+	    ncmdsize = STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1;
+	    ncmd = alloc(ncmdsize);
 	    if (ncmd != NULL)
 	    {
-		STRCPY(ncmd, p_sxq);
-		STRCAT(ncmd, ecmd);
 		// When 'shellxquote' is ( append ).
 		// When 'shellxquote' is "( append )".
-		STRCAT(ncmd, *p_sxq == '(' ? (char_u *)")"
+		vim_snprintf((char *)ncmd, ncmdsize, "%s%s%s", p_sxq, ecmd, *p_sxq == '(' ? (char_u *)")"
 		    : *p_sxq == '"' && *(p_sxq+1) == '(' ? (char_u *)")\""
 		    : p_sxq);
 		retval = mch_call_shell(ncmd, opt);
@@ -2068,26 +2173,29 @@ cursorentry_T shape_table[SHAPE_IDX_COUNT] =
  * Table with names for mouse shapes.  Keep in sync with all the tables for
  * mch_set_mouse_shape()!.
  */
-static char *mshape_names[] =
+#define STRING_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
+static string_T mshape_names[] =
 {
-    "arrow",	// default, must be the first one
-    "blank",	// hidden
-    "beam",
-    "updown",
-    "udsizing",
-    "leftright",
-    "lrsizing",
-    "busy",
-    "no",
-    "crosshair",
-    "hand1",
-    "hand2",
-    "pencil",
-    "question",
-    "rightup-arrow",
-    "up-arrow",
-    NULL
+    STRING_INIT("arrow"),	// default, must be the first one
+    STRING_INIT("blank"),	// hidden
+    STRING_INIT("beam"),
+    STRING_INIT("updown"),
+    STRING_INIT("udsizing"),
+    STRING_INIT("leftright"),
+    STRING_INIT("lrsizing"),
+    STRING_INIT("busy"),
+    STRING_INIT("no"),
+    STRING_INIT("crosshair"),
+    STRING_INIT("hand1"),
+    STRING_INIT("hand2"),
+    STRING_INIT("pencil"),
+    STRING_INIT("question"),
+    STRING_INIT("rightup-arrow"),
+    STRING_INIT("up-arrow"),
+    {NULL, 0}
 };
+#undef STRING_INIT
 
 #  define MSHAPE_NAMES_COUNT  (ARRAY_LENGTH(mshape_names) - 1)
 # endif
@@ -2197,7 +2305,7 @@ parse_shape_opt(int what)
 		    {
 			for (i = 0; ; ++i)
 			{
-			    if (mshape_names[i] == NULL)
+			    if (mshape_names[i].string == NULL)
 			    {
 				if (!VIM_ISDIGIT(*p))
 				    return e_illegal_mouseshape;
@@ -2208,12 +2316,11 @@ parse_shape_opt(int what)
 				    (void)getdigits(&p);
 				break;
 			    }
-			    len = (int)STRLEN(mshape_names[i]);
-			    if (STRNICMP(p, mshape_names[i], len) == 0)
+			    if (STRNICMP(p, mshape_names[i].string, mshape_names[i].length) == 0)
 			    {
 				if (round == 2)
 				    shape_table[idx].mshape = i;
-				p += len;
+				p += mshape_names[i].length;
 				break;
 			    }
 			}
@@ -2458,8 +2565,9 @@ f_getmouseshape(typval_T *argvars UNUSED, typval_T *rettv)
 # if defined(FEAT_MOUSESHAPE) || defined(PROTO)
     if (current_mouse_shape >= 0
 			      && current_mouse_shape < (int)MSHAPE_NAMES_COUNT)
-	rettv->vval.v_string = vim_strsave(
-				  (char_u *)mshape_names[current_mouse_shape]);
+	rettv->vval.v_string = vim_strnsave(
+				  mshape_names[current_mouse_shape].string,
+				  mshape_names[current_mouse_shape].length);
 # endif
 }
 #endif
