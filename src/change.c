@@ -1672,7 +1672,8 @@ open_line(
 		)
 	    && in_cinkeys(dir == FORWARD
 		? KEY_OPEN_FORW
-		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum));
+		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum))
+	    && !(flags & OPENLINE_FORCE_INDENT);
 
     // Find out if the current line starts with a comment leader.
     // This may then be inserted in front of the new line.
