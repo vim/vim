@@ -1087,14 +1087,6 @@ endfunc
 func Test_exclusive_selection()
   new
   set selection=exclusive
-  call setline(1, 'abc(abc)abc')
-  normal ggveeed
-  call assert_equal(')abc', getline(1))
-  %d
-  call setline(1, 'abc(abc)abc')
-  normal gg3lvey
-  call assert_equal('(abc', @")
-  %d
   call setline(1, ['one', 'two'])
   call feedkeys("vwcabc", 'xt')
   call assert_equal('abctwo', getline(1))
@@ -1104,6 +1096,48 @@ func Test_exclusive_selection()
   call assert_equal('l      one', getline(1))
   set virtualedit&
   set selection&
+  bw!
+endfunc
+
+" Test for inclusive motion in visual mode with 'exclusive' selection
+func Test_inclusive_motion_selection_exclusive()
+  new
+  set selection=exclusive
+  " 'e' motion
+  call setline(1, 'eins zwei drei')
+  call feedkeys("ggvey", 'xt')
+  call assert_equal('eins', @")
+  call setline(1, 'abc(abc)abc')
+  call feedkeys("ggveeed", 'xt')
+  call assert_equal(')abc', getline(1))
+  call setline(1, 'abc(abc)abc')
+  call feedkeys("gg3lvey", 'xt')
+  call assert_equal('(abc', @")
+  " 'f' motion
+  call setline(1, 'geschwindigkeit')
+  call feedkeys("\<Esc>ggvfefe", 'xt')
+  call assert_equal([0, 1, 14, 0], getpos('.'))
+  call setline(1, 'loooooooooooong')
+  call feedkeys("\<Esc>ggv2fo2fo2fo", 'xt')
+  call assert_equal([0, 1, 8, 0], getpos('.'))
+  " 't' motion
+  call setline(1, 'geschwindigkeit')
+  call feedkeys("\<Esc>ggv2te", 'xt')
+  call assert_equal([0, 1, 13, 0], getpos('.'))
+  call setline(1, 'loooooooooooong')
+  call feedkeys("\<Esc>ggvl2to2to2to", 'xt')
+  call assert_equal([0, 1, 8, 0], getpos('.'))
+  " ';' motion
+  call setline(1, 'geschwindigkeit')
+  call feedkeys("\<Esc>ggvfi;;", 'xt')
+  call assert_equal([0, 1, 15, 0], getpos('.'))
+  call feedkeys("\<Esc>ggvti;;", 'xt')
+  call assert_equal([0, 1, 14, 0], getpos('.'))
+  call setline(1, 'loooooooooooong')
+  call feedkeys("\<Esc>ggvl2fo;;", 'xt')
+  call assert_equal([0, 1, 8, 0], getpos('.'))
+  call feedkeys("\<Esc>ggvl2to;;", 'xt')
+  call assert_equal([0, 1, 8, 0], getpos('.'))
   bw!
 endfunc
 
