@@ -1091,6 +1091,10 @@ func Test_exclusive_selection()
   normal ggveeed
   call assert_equal(')abc', getline(1))
   %d
+  call setline(1, 'abc(abc)abc')
+  normal gg3lvey
+  call assert_equal('(abc', @")
+  %d
   call setline(1, ['one', 'two'])
   call feedkeys("vwcabc", 'xt')
   call assert_equal('abctwo', getline(1))
