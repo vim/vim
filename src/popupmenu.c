@@ -410,7 +410,7 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
     int		*attrs = NULL;
     char_u	*leader = NULL;
     int		in_fuzzy;
-    int		matched_start = FALSE;
+    int		matched_len = -1;
     int_u	char_pos = 0;
     int		is_select = FALSE;
 
@@ -435,8 +435,6 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
 
     if (in_fuzzy)
 	ga = fuzzy_match_str_with_pos(text, leader);
-    else
-	matched_start = MB_STRNICMP(text, leader, leader_len) == 0;
 
     while (*ptr != NUL)
     {
@@ -455,10 +453,16 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
 		}
 	    }
 	}
-	else if (matched_start && ptr < text + leader_len)
+	else
 	{
-	    new_attr = highlight_attr[is_select ? HLF_PMSI : HLF_PMNI];
-	    new_attr = hl_combine_attr(highlight_attr[hlf], new_attr);
+	    if (matched_len < 0 && MB_STRNICMP(ptr, leader, leader_len) == 0)
+		matched_len = leader_len;
+	    if (matched_len > 0)
+	    {
+		new_attr = highlight_attr[is_select ? HLF_PMSI : HLF_PMNI];
+		new_attr = hl_combine_attr(highlight_attr[hlf], new_attr);
+		matched_len--;
+	    }
 	}
 
 	new_attr = hl_combine_attr(highlight_attr[HLF_PNI], new_attr);
