@@ -1912,7 +1912,7 @@ In the |vimrc| file sourced on startup this does not happen.
 							*vim9-mix*
 There is one way to use both legacy and Vim9 syntax in one script file: >
 	" comments may go here
-	if !has('vim9script')
+	if v:version < 900
 	   " legacy script commands go here
 	   finish
 	endif
