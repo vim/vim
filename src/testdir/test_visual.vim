@@ -1135,8 +1135,8 @@ func Test_inclusive_motion_selection_exclusive()
   call assert_equal([0, 1, 14, 0], getpos('.'))
   call setline(1, 'loooooooooooong')
   call feedkeys("\<Esc>ggv2fo;;", 'xt')
-  call assert_equal([0, 1, 8, 0], getpos('.'))
-  call feedkeys("\<Esc>gglv2to;;", 'xt')
+  call assert_equal([0, 1, 6, 0], getpos('.'))
+  call feedkeys("\<Esc>ggvl2to;;", 'xt')
   call assert_equal([0, 1, 6, 0], getpos('.'))
   bw!
 endfunc

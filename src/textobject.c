@@ -507,12 +507,10 @@ end_word(
      * If 'selection' is set to exclusive and in visual mode 'v', the cursor
      * possibly overshots one column during last motion. Hence decrement the
      * cursor position by one.
-     * The second condition excludes when the call is from 'aw'.
      */
     if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
-		&& !(stop == TRUE && empty == TRUE)
-		&& !EQUAL_POS(VIsual, curwin->w_cursor))
-	dec_cursor();
+		&& VIsual_select_exclu_adj)
+	unadjust_for_sel();
 
     while (--count >= 0)
     {

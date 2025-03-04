@@ -1130,6 +1130,7 @@ call_yank_do_autocmd(int regname)
     void
 end_visual_mode(void)
 {
+    VIsual_select_exclu_adj = FALSE;
     end_visual_mode_keep_button();
     reset_held_button();
 }
@@ -4255,11 +4256,10 @@ nv_csearch(cmdarg_T *cap)
      * possibly overshots one column during last motion. Hence decrement the
      * cursor position by one.
      */
-    if ((cap->cmdchar == 'f' || cap->cmdchar == 't')
-		&& *p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
-		&& !EQUAL_POS(VIsual, curwin->w_cursor))
-	if (dec_cursor() == 0)
-	    cursor_dec = TRUE;
+    if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
+		&& VIsual_select_exclu_adj)
+	unadjust_for_sel();
+	cursor_dec = TRUE;
 
     if (cap->cmdchar == 't' || cap->cmdchar == 'T')
 	t_cmd = TRUE;
@@ -4272,7 +4272,7 @@ nv_csearch(cmdarg_T *cap)
 	clearopbeep(cap->oap);
 	// Revert the position change.
 	if (cursor_dec)
-	    inc_cursor();
+	    adjust_for_sel(cap);
 	return;
     }
 
@@ -5549,6 +5549,8 @@ nv_visual(cmdarg_T *cap)
 	    n_start_visual_mode(cap->cmdchar);
 	    if (VIsual_mode != 'V' && *p_sel == 'e')
 		++cap->count1;  // include one more char
+	    else
+		VIsual_select_exclu_adj = FALSE;
 	    if (cap->count0 > 0 && --cap->count1 > 0)
 	    {
 		// With a count select that many characters or lines.
@@ -6718,6 +6720,7 @@ adjust_for_sel(cmdarg_T *cap)
 	else
 	    ++curwin->w_cursor.col;
 	cap->oap->inclusive = FALSE;
+	VIsual_select_exclu_adj = TRUE;
     }
 }
 
@@ -6743,6 +6746,7 @@ unadjust_for_sel(void)
 unadjust_for_sel_inner(pos_T *pp)
 {
     colnr_T	cs, ce;
+    VIsual_select_exclu_adj = FALSE;
 
     if (pp->coladd > 0)
 	--pp->coladd;
