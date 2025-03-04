@@ -4248,6 +4248,13 @@ normal_search(
 nv_csearch(cmdarg_T *cap)
 {
     int		t_cmd;
+    int		cursor_dec;
+
+    if ((cap->cmdchar == 't' || cap->cmdchar == 'f' )
+		&& *p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
+		&& !EQUAL_POS(VIsual, curwin->w_cursor))
+	if (dec_cursor() == 0)
+	    cursor_dec = TRUE;
 
     if (cap->cmdchar == 't' || cap->cmdchar == 'T')
 	t_cmd = TRUE;
@@ -4258,6 +4265,8 @@ nv_csearch(cmdarg_T *cap)
     if (IS_SPECIAL(cap->nchar) || searchc(cap, t_cmd) == FAIL)
     {
 	clearopbeep(cap->oap);
+	if (cursor_dec)
+	    inc_cursor();
 	return;
     }
 

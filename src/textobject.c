@@ -513,7 +513,7 @@ end_word(
     if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
 		&& !(stop == TRUE && empty == TRUE)
 		&& !EQUAL_POS(VIsual, curwin->w_cursor))
-	    dec_cursor();
+	dec_cursor();
 
     while (--count >= 0)
     {
