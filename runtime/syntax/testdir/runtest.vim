@@ -15,11 +15,12 @@ let s:messagesFname = fnameescape(syntaxDir .. '/testdir/messages')
 
 let s:messages = []
 
-" Erase the cursor line and do not advance the cursor.
-def EraseLineAndReturnCarriage(rname: string)
+" Erase the cursor line and do not advance the cursor.  (Call the function
+" after each passing test report.)
+def EraseLineAndReturnCarriage(line: string)
   const full_width: number = winwidth(0)
   const half_width: number = full_width - (full_width + 1) / 2
-  if (strlen(rname) + strlen('Test' .. "\x20\x20" .. 'FAILED')) > half_width
+  if strlen(line) > half_width
     echon "\r" .. repeat("\x20", full_width) .. "\r"
   else
     echon repeat("\x20", half_width) .. "\r"
@@ -57,7 +58,6 @@ call append(line('$'), '')
 let s:test_run_message = 'Test run on ' .. strftime("%Y %b %d %H:%M:%S")
 call append(line('$'), s:test_run_message)
 silent wq
-echo "\n"
 
 if syntaxDir !~ '[/\\]runtime[/\\]syntax\>'
   call Fatal('Current directory must be "runtime/syntax"')
@@ -80,8 +80,13 @@ if !CanRunVimInTerminal()
 endif
 
 cd testdir
+
 if !isdirectory('done')
   call mkdir('done')
+endif
+
+if !isdirectory('failed')
+  call mkdir('failed')
 endif
 
 set nocp
@@ -224,10 +229,165 @@ def s:TermWaitAndPollRuler(buf: number, in_name_and_out_name: string): list<stri
 enddef
 
 func RunTest()
+  let XTESTSCRIPT =<< trim END
+    " Track the cursor progress through a syntax test file so that any
+    " degenerate input can be reported.  Each file will have its own cursor.
+    let s:cursor = 1
+
+    " extra info for shell variables
+    func ShellInfo()
+      let msg = ''
+      for [key, val] in items(b:)
+	if key =~ '^is_'
+	  let msg ..= key .. ': ' .. val .. ', '
+	endif
+      endfor
+      if msg != ''
+	echomsg msg
+      endif
+    endfunc
+
+    au! SwapExists * call HandleSwapExists()
+    func HandleSwapExists()
+      " Ignore finding a swap file for the test input, the user might be
+      " editing it and that's OK.
+      if expand('<afile>') =~ 'input[/\\].*\..*'
+	let v:swapchoice = 'e'
+      endif
+    endfunc
+
+    func LoadFiletype(type)
+      for file in glob("ftplugin/" .. a:type .. "*.vim", 1, 1)
+	exe "source " .. file
+      endfor
+      redraw!
+    endfunc
+
+    func SetUpVim()
+      call cursor(1, 1)
+      " Defend against rogue VIM_TEST_SETUP commands.
+      for _ in range(20)
+	let lnum = search('\C\<VIM_TEST_SETUP\>', 'eW', 20)
+	if lnum < 1
+	  break
+	endif
+	exe substitute(getline(lnum), '\C.*\<VIM_TEST_SETUP\>', '', '')
+      endfor
+      call cursor(1, 1)
+      " BEGIN [runtime/defaults.vim]
+      " Also, disable italic highlighting to avoid issues on some terminals.
+      set display=lastline ruler scrolloff=5 t_ZH= t_ZR=
+      syntax on
+      " END [runtime/defaults.vim]
+      redraw!
+    endfunc
+
+    def s:AssertCursorForwardProgress(): bool
+      const curnum: number = line('.')
+      if curnum <= cursor
+	# Use "actions/upload-artifact@v4" of ci.yml for delivery.
+	writefile([printf('No cursor progress: %d <= %d (%s).  Please file an issue.',
+	      curnum,
+	      cursor,
+	      bufname('%'))],
+	  'failed/00-FIXME',
+	  'a')
+	bwipeout!
+      endif
+      cursor = curnum
+      return true
+    enddef
+
+    def ScrollToSecondPage(estate: number, op_wh: number, op_so: number): bool
+      if line('.') != 1 || line('w$') >= line('$')
+	return AssertCursorForwardProgress()
+      endif
+      try
+	set scrolloff=0
+	# Advance mark "c"[ursor] along with the cursor.
+	norm! Lmc
+	if foldclosed('.') < 0 &&
+	    (strdisplaywidth(getline('.')) + &l:fdc * winheight(1)) >= estate
+	  # Make for an exit for a screenful long line.
+	  norm! j^
+	  return AssertCursorForwardProgress()
+	else
+	  # Place the cursor on the actually last visible line.
+	  while winline() < op_wh
+	    const lastnum: number = winline()
+	    norm! gjmc
+	    if lastnum > winline()
+	      break
+	    endif
+	  endwhile
+	  norm! zt
+	endif
+      finally
+	# COMPATIBILITY: Scroll up around "scrolloff" lines.
+	&scrolloff = max([1, op_so])
+      endtry
+      norm! ^
+      return AssertCursorForwardProgress()
+    enddef
+
+    def ScrollToNextPage(estate: number, op_wh: number, op_so: number): bool
+      if line('.') == 1 || line('w$') >= line('$')
+	return AssertCursorForwardProgress()
+      endif
+      try
+	set scrolloff=0
+	# Advance mark "c"[ursor] along with the cursor.
+	norm! Lmc
+	if foldclosed('.') < 0 &&
+	    (strdisplaywidth(getline('.')) + &l:fdc * winheight(1)) >= estate
+	  # Make for an exit for a screenful long line.
+	  norm! j^
+	  return AssertCursorForwardProgress()
+	else
+	  # Place the cursor on the actually last visible line.
+	  while winline() < op_wh
+	    const lastnum: number = winline()
+	    norm! gjmc
+	    if lastnum > winline()
+	      break
+	    endif
+	  endwhile
+	endif
+      finally
+	# COMPATIBILITY: Scroll up/down around "scrolloff" lines.
+	&scrolloff = max([1, op_so])
+      endtry
+      norm! zt
+      const marknum: number = line("'c")
+      # Eschew &smoothscroll since line("`c") is not supported.
+      # Remember that "w0" can point to the first line of a _closed_ fold
+      # whereas the last line of a _closed_ fold can be marked.
+      if line('w0') > marknum
+	while line('w0') > marknum
+	  exe "norm! \<C-y>"
+	endwhile
+	if line('w0') != marknum
+	  exe "norm! \<C-e>H"
+	endif
+      # Handle non-wrapped lines.
+      elseif line('w0') < marknum
+	while line('w0') < marknum
+	  exe "norm! \<C-e>"
+	endwhile
+	if line('w0') != marknum
+	  exe "norm! \<C-y>H"
+	endif
+      endif
+      norm! ^
+      return AssertCursorForwardProgress()
+    enddef
+  END
+  let MAX_FAILED_COUNT = 5
+  lockvar MAX_FAILED_COUNT XTESTSCRIPT
   let ok_count = 0
   let failed_tests = []
   let skipped_count = 0
-  let MAX_FAILED_COUNT = 5
+  let last_test_status = 'invalid'
   " Create a map of setup configuration filenames with their basenames as keys.
   let setup = glob('input/setup/*.vim', 1, 1)
     \ ->reduce({d, f -> extend(d, {fnamemodify(f, ':t:r'): f})}, {})
@@ -256,8 +416,6 @@ func RunTest()
   for fname in fnames
     let root = fnamemodify(fname, ':r')
     let fname = dirpath .. fname
-    let filetype = substitute(root, '\([^_.]*\)[_.].*', '\1', '')
-    let failed_root = 'failed/' .. root
 
     " Execute the test if the "done" file does not exist or when the input file
     " is newer.
@@ -265,166 +423,14 @@ func RunTest()
     let out_time = getftime('done/' .. root)
     if out_time < 0 || in_time > out_time
       call ch_log('running tests for: ' .. fname)
+      let filetype = substitute(root, '\([^_.]*\)[_.].*', '\1', '')
+      let failed_root = 'failed/' .. root
 
       for dumpname in glob(failed_root .. '_\d*\.dump', 1, 1)
 	call delete(dumpname)
       endfor
       call delete('done/' .. root)
-
-      let lines =<< trim END
-	" Track the cursor progress through a syntax test file so that any
-	" degenerate input can be reported.  Each file will have its own cursor.
-	let s:cursor = 1
-
-	" extra info for shell variables
-	func ShellInfo()
-	  let msg = ''
-	  for [key, val] in items(b:)
-	    if key =~ '^is_'
-	      let msg ..= key .. ': ' .. val .. ', '
-	    endif
-	  endfor
-	  if msg != ''
-	    echomsg msg
-	  endif
-	endfunc
-
-	au! SwapExists * call HandleSwapExists()
-	func HandleSwapExists()
-	  " Ignore finding a swap file for the test input, the user might be
-	  " editing it and that's OK.
-	  if expand('<afile>') =~ 'input[/\\].*\..*'
-	    let v:swapchoice = 'e'
-	  endif
-	endfunc
-
-	func LoadFiletype(type)
-	  for file in glob("ftplugin/" .. a:type .. "*.vim", 1, 1)
-	    exe "source " .. file
-	  endfor
-	  redraw!
-	endfunc
-
-	func SetUpVim()
-	  call cursor(1, 1)
-	  " Defend against rogue VIM_TEST_SETUP commands.
-	  for _ in range(20)
-	    let lnum = search('\C\<VIM_TEST_SETUP\>', 'eW', 20)
-	    if lnum < 1
-	      break
-	    endif
-	    exe substitute(getline(lnum), '\C.*\<VIM_TEST_SETUP\>', '', '')
-	  endfor
-	  call cursor(1, 1)
-	  " BEGIN [runtime/defaults.vim]
-	  " Also, disable italic highlighting to avoid issues on some terminals.
-	  set display=lastline ruler scrolloff=5 t_ZH= t_ZR=
-	  syntax on
-	  " END [runtime/defaults.vim]
-	  redraw!
-	endfunc
-
-	def s:AssertCursorForwardProgress(): bool
-	  const curnum: number = line('.')
-	  if curnum <= cursor
-	    # Use "actions/upload-artifact@v4" of ci.yml for delivery.
-	    writefile([printf('No cursor progress: %d <= %d (%s).  Please file an issue.',
-		  curnum,
-		  cursor,
-		  bufname('%'))],
-	      'failed/00-FIXME',
-	      'a')
-	    bwipeout!
-	  endif
-	  cursor = curnum
-	  return true
-	enddef
-
-	def ScrollToSecondPage(estate: number, op_wh: number, op_so: number): bool
-	  if line('.') != 1 || line('w$') >= line('$')
-	    return AssertCursorForwardProgress()
-	  endif
-	  try
-	    set scrolloff=0
-	    # Advance mark "c"[ursor] along with the cursor.
-	    norm! Lmc
-	    if foldclosed('.') < 0 &&
-		(strdisplaywidth(getline('.')) + &l:fdc * winheight(1)) >= estate
-	      # Make for an exit for a screenful long line.
-	      norm! j^
-	      return AssertCursorForwardProgress()
-	    else
-	      # Place the cursor on the actually last visible line.
-	      while winline() < op_wh
-		const lastnum: number = winline()
-		norm! gjmc
-		if lastnum > winline()
-		  break
-		endif
-	      endwhile
-	      norm! zt
-	    endif
-	  finally
-	    # COMPATIBILITY: Scroll up around "scrolloff" lines.
-	    &scrolloff = max([1, op_so])
-	  endtry
-	  norm! ^
-	  return AssertCursorForwardProgress()
-	enddef
-
-	def ScrollToNextPage(estate: number, op_wh: number, op_so: number): bool
-	  if line('.') == 1 || line('w$') >= line('$')
-	    return AssertCursorForwardProgress()
-	  endif
-	  try
-	    set scrolloff=0
-	    # Advance mark "c"[ursor] along with the cursor.
-	    norm! Lmc
-	    if foldclosed('.') < 0 &&
-		(strdisplaywidth(getline('.')) + &l:fdc * winheight(1)) >= estate
-	      # Make for an exit for a screenful long line.
-	      norm! j^
-	      return AssertCursorForwardProgress()
-	    else
-	      # Place the cursor on the actually last visible line.
-	      while winline() < op_wh
-		const lastnum: number = winline()
-		norm! gjmc
-		if lastnum > winline()
-		  break
-		endif
-	      endwhile
-	    endif
-	  finally
-	    # COMPATIBILITY: Scroll up/down around "scrolloff" lines.
-	    &scrolloff = max([1, op_so])
-	  endtry
-	  norm! zt
-	  const marknum: number = line("'c")
-	  # Eschew &smoothscroll since line("`c") is not supported.
-	  # Remember that "w0" can point to the first line of a _closed_ fold
-	  # whereas the last line of a _closed_ fold can be marked.
-	  if line('w0') > marknum
-	    while line('w0') > marknum
-	      exe "norm! \<C-y>"
-	    endwhile
-	    if line('w0') != marknum
-	      exe "norm! \<C-e>H"
-	    endif
-	  # Handle non-wrapped lines.
-	  elseif line('w0') < marknum
-	    while line('w0') < marknum
-	      exe "norm! \<C-e>"
-	    endwhile
-	    if line('w0') != marknum
-	      exe "norm! \<C-y>H"
-	    endif
-	  endif
-	  norm! ^
-	  return AssertCursorForwardProgress()
-	enddef
-      END
-      call writefile(lines, 'Xtestscript')
+      call writefile(XTESTSCRIPT, 'Xtestscript')
 
       " close all but the last window
       while winnr('$') > 1
@@ -500,6 +506,11 @@ func RunTest()
       " Add any assert errors to s:messages.
       if len(v:errors) > 0
 	call extend(s:messages, v:errors)
+	if last_test_status == 'passed'
+	  call EraseLineAndReturnCarriage('Test ' .. root .. ' OK')
+	else
+	  echon "\n"
+	endif
 	" Echo the errors here, in case the script aborts or the "messages" file
 	" is not displayed later.
 	echomsg v:errors
@@ -508,13 +519,21 @@ func RunTest()
       endif
 
       if fail == 0
-	call Message("Test " .. root .. " OK")
+	if last_test_status == 'skipped'
+	  echon "\n"
+	endif
+	let last_test_status = 'passed'
+	let msg = "Test " .. root .. " OK"
+	call Message(msg)
+	call EraseLineAndReturnCarriage(msg)
 
 	call writefile(['OK'], 'done/' .. root)
 
 	let ok_count += 1
       else
+	let last_test_status = 'failed'
 	call Message("Test " .. root .. " FAILED")
+	echon "\n"
 
 	call delete('done/' .. root)
 
@@ -525,11 +544,13 @@ func RunTest()
 	endif
       endif
     else
+      if last_test_status == 'passed'
+	call EraseLineAndReturnCarriage('Test ' .. root .. ' OK')
+      endif
+      let last_test_status = 'skipped'
       call Message("Test " .. root .. " skipped")
       let skipped_count += 1
     endif
-
-    call EraseLineAndReturnCarriage(root)
 
     " Append messages to the file "testdir/messages"
     call AppendMessages('Input file ' .. fname .. ':')
@@ -539,7 +560,10 @@ func RunTest()
     endif
   endfor
 
-  call EraseLineAndReturnCarriage('')
+  if last_test_status == 'passed' && exists('root')
+    call EraseLineAndReturnCarriage('Test ' .. root .. ' OK')
+  endif
+
   call Message(s:test_run_message)
   call Message('OK: ' .. ok_count)
   call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
