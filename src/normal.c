@@ -4250,6 +4250,11 @@ nv_csearch(cmdarg_T *cap)
     int		t_cmd;
     int		cursor_dec = FALSE;
 
+    /*
+     * If 'selection' is set to exclusive and in visual mode 'v', the cursor
+     * possibly overshots one column during last motion. Hence decrement the
+     * cursor position by one.
+     */
     if ((cap->cmdchar == 'f' || cap->cmdchar == 't')
 		&& *p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
 		&& !EQUAL_POS(VIsual, curwin->w_cursor))
@@ -4265,6 +4270,7 @@ nv_csearch(cmdarg_T *cap)
     if (IS_SPECIAL(cap->nchar) || searchc(cap, t_cmd) == FAIL)
     {
 	clearopbeep(cap->oap);
+	// Revert the position change.
 	if (cursor_dec)
 	    inc_cursor();
 	return;

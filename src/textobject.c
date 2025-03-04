@@ -508,7 +508,6 @@ end_word(
      * possibly overshots one column during last motion. Hence decrement the
      * cursor position by one.
      * The second condition excludes when the call is from 'aw'.
-     * The third condition excludes when visual area is empty (vis_empty).
      */
     if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
 		&& !(stop == TRUE && empty == TRUE)
