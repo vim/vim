@@ -1912,7 +1912,7 @@ In the |vimrc| file sourced on startup this does not happen.
 							*vim9-mix*
 There is one way to use both legacy and Vim9 syntax in one script file: >
 	" comments may go here
-	if v:version < 900
+	if !has('vim9script')
 	   " legacy script commands go here
 	   finish
 	endif
@@ -1920,6 +1920,9 @@ There is one way to use both legacy and Vim9 syntax in one script file: >
 	# Vim9 script commands go here
 This allows for writing a script that takes advantage of the Vim9 script
 syntax if possible, but will also work on a Vim version without it.
+Note that Vim9 syntax changed before Vim 9 so that scripts using the current 
+syntax (such as import from instead of import) might throw errors.
+To prevent these, a safer check could be for v:version >= 900 instead.
 
 This can only work in two ways:
 1. The "if" statement evaluates to false, the commands up to `endif` are
