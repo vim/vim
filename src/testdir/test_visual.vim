@@ -1086,8 +1086,8 @@ endfunc
 " Test for changing text in visual mode with 'exclusive' selection
 func Test_exclusive_selection()
   new
-  set selection=exclusive
   call setline(1, ['one', 'two'])
+  set selection=exclusive
   call feedkeys("vwcabc", 'xt')
   call assert_equal('abctwo', getline(1))
   call setline(1, ["\tone"])

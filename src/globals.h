@@ -1145,7 +1145,7 @@ EXTERN int	VIsual_select INIT(= FALSE);
 EXTERN int	VIsual_select_reg INIT(= 0);
 				// register name for Select mode
 EXTERN int  VIsual_select_exclu_adj INIT(= FALSE);
-                // whether incremented cursor during exclusive selection
+				// whether incremented cursor during exclusive selection
 EXTERN int	restart_VIsual_select INIT(= 0);
 				// restart Select mode when next cmd finished
 EXTERN int	VIsual_reselect;

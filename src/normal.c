@@ -4266,7 +4266,7 @@ nv_csearch(cmdarg_T *cap)
     if (IS_SPECIAL(cap->nchar) || searchc(cap, t_cmd) == FAIL)
     {
 	clearopbeep(cap->oap);
-	// Revert the position change.
+	// Revert unadjust when failed.
 	if (cursor_dec)
 	    adjust_for_sel(cap);
 	return;
