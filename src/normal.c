@@ -4250,7 +4250,7 @@ nv_csearch(cmdarg_T *cap)
     int		t_cmd;
     int		cursor_dec = FALSE;
 
-    if (cap->cmdchar == 'f'
+    if ((cap->cmdchar == 'f' || cap->cmdchar == 't')
 		&& *p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
 		&& !EQUAL_POS(VIsual, curwin->w_cursor))
 	if (dec_cursor() == 0)
