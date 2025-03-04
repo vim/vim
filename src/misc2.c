@@ -1144,6 +1144,7 @@ static struct key_name_entry
     {TRUE, K_XUP, STRING_INIT("xUp"), NULL},
     {TRUE, K_ZEND, STRING_INIT("zEnd"), NULL},
     {TRUE, K_ZHOME, STRING_INIT("zHome"), NULL}
+    // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
 #undef STRING_INIT
 
@@ -1156,7 +1157,6 @@ name_to_mod_mask(int c)
 {
     int	    i;
 
-    // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
     c = TOUPPER_ASC(c);
     for (i = 0; mod_mask_table[i].mod_mask != 0; i++)
 	if (c == mod_mask_table[i].name)
