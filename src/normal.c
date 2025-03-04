@@ -4254,8 +4254,10 @@ nv_csearch(cmdarg_T *cap)
     // If adjusted cursor position previously, unadjust it.
     if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
 		&& VIsual_select_exclu_adj)
+    {
 	unadjust_for_sel();
 	cursor_dec = TRUE;
+    }
 
     if (cap->cmdchar == 't' || cap->cmdchar == 'T')
 	t_cmd = TRUE;
