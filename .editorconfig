@@ -24,6 +24,10 @@ trim_trailing_whitespace = false
 indent_style = space
 indent_size = 2
 
+[runtime/pack/dist/opt/{comment,nohlsearch}/**.vim]
+indent_style = space
+indent_size = 4
+
 [runtime/doc/**.txt]
 # It can mess up some documentation by trying to strip trailing whitespaces
 trim_trailing_whitespace = false
