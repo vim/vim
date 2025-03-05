@@ -75,6 +75,9 @@ au BufNewFile,BufRead *.abc			setf abc
 " ABEL
 au BufNewFile,BufRead *.abl			setf abel
 
+" ABNF
+au BufNewFile,BufRead *.abnf			setf abnf
+
 " AceDB
 au BufNewFile,BufRead *.wrm			setf acedb
 
