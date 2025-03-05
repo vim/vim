@@ -188,7 +188,7 @@ func dist#man#GetPage(cmdmods, ...)
   setl buftype=nofile noswapfile
 
   setl fdc=0 ma nofen nonu nornu
-  %delete _
+  keepjumps %delete _
   let unsetwidth = 0
   if empty($MANWIDTH)
     let $MANWIDTH = winwidth(0)
@@ -218,10 +218,10 @@ func dist#man#GetPage(cmdmods, ...)
   endif
   " Remove blank lines from top and bottom.
   while line('$') > 1 && getline(1) =~ '^\s*$'
-    1delete _
+    keepjumps 1delete _
   endwhile
   while line('$') > 1 && getline('$') =~ '^\s*$'
-    $delete _
+    keepjumps $delete _
   endwhile
   1
   setl ft=man nomod
