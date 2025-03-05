@@ -1065,10 +1065,10 @@ static struct key_name_entry
     {TRUE, K_MIDDLERELEASE, STRING_INIT("MiddleRelease"), NULL},
     {TRUE, K_MOUSE, STRING_INIT("Mouse"), NULL},
     {TRUE, K_MOUSEDOWN, STRING_INIT("MouseDown"),
-	&key_names_table[IDX_KEYNAME_SWU].name},		    // OBSOLETE: Use ScrollWheelXXX instead
+	&key_names_table[IDX_KEYNAME_SWU].name},		    // OBSOLETE: Use ScrollWheelUP instead
     {TRUE, K_MOUSEMOVE, STRING_INIT("MouseMove"), NULL},
     {TRUE, K_MOUSEUP, STRING_INIT("MouseUp"),
-	&key_names_table[IDX_KEYNAME_SWD].name},
+	&key_names_table[IDX_KEYNAME_SWD].name},		    // OBSELETE: Use ScrollWheelDown instead
     {
 #ifdef FEAT_MOUSE_NET
     TRUE,
