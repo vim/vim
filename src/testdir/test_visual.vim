@@ -1142,6 +1142,7 @@ func Test_inclusive_motion_selection_exclusive()
   set selection=inclusive
   call feedkeys("\<Esc>ggv2fo2fo2fo", 'xt')
   let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
 
   " Test 't' motion
   call setline(1, 'geschwindigkeit')
