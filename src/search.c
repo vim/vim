@@ -4354,7 +4354,7 @@ typedef struct
 // matching a whole word is preferred.
 #define SEQUENTIAL_BONUS 40
 // bonus if match occurs after a path separator
-#define PATH_SEPARATOR_BONUS 30
+#define PATH_SEPARATOR_BONUS 35
 // bonus if match occurs after a word separator
 #define WORD_SEPARATOR_BONUS 25
 // bonus if match is uppercase and prev is lower
@@ -4396,12 +4396,14 @@ fuzzy_match_compute_score(
     int		i;
     char_u	*p = str;
     int_u	sidx = 0;
-    int		is_exact_match = TRUE;
     char_u	*orig_fuzpat = fuzpat - numMatches;
     char_u	*curpat = orig_fuzpat;
     int		pat_idx = 0;
     // Track consecutive camel case matches
     int		consecutive_camel = 0;
+    int		current_consecutive = 0;
+    int		max_consecutive = 0;
+    int		max_consecutive_start = -1;
 
     // Initialize score
     score = 100;
@@ -4429,12 +4431,21 @@ fuzzy_match_compute_score(
 
 	    // Sequential
 	    if (currIdx == (prevIdx + 1))
-		score += SEQUENTIAL_BONUS;
+	    {
+		score += SEQUENTIAL_BONUS * 2;
+		current_consecutive++;
+		if (current_consecutive > max_consecutive)
+		{
+		    max_consecutive = current_consecutive;
+		    max_consecutive_start = (int)(prevIdx - current_consecutive + 1);
+		}
+	    }
 	    else
 	    {
 		score += GAP_PENALTY * (currIdx - prevIdx);
 		// Reset consecutive camel count on gap
 		consecutive_camel = 0;
+		current_consecutive = 0;
 	    }
 	}
 
@@ -4483,6 +4494,12 @@ fuzzy_match_compute_score(
 	{
 	    // First letter
 	    score += FIRST_LETTER_BONUS;
+	    current_consecutive = 1;
+	    if (current_consecutive > max_consecutive)
+	    {
+		max_consecutive = current_consecutive;
+		max_consecutive_start = (int)currIdx;
+	    }
 	    curr = has_mbyte ? (*mb_ptr2char)(p) : str[currIdx];
 	}
 
@@ -4515,15 +4532,20 @@ fuzzy_match_compute_score(
 		    score += CASE_MATCH_BONUS / 2;
 	    }
 	}
-
-	// Check exact match condition
-        if (currIdx != (int_u)i)
-	    is_exact_match = FALSE;
     }
 
-    // Boost score for exact matches
-    if (is_exact_match && numMatches == strSz)
-        score += EXACT_MATCH_BONUS;
+    // Boost score for exact matches first
+    if (max_consecutive == strSz && max_consecutive == numMatches)
+    {
+	// Perfect exact match (pattern matches entire string)
+	// Assign very high bonus to ensure it ranks highest
+	score += EXACT_MATCH_BONUS * 2;  // Double the bonus for perfect matches
+    }
+    else if (max_consecutive > 2)
+    {
+	int position_bonus = (int)(80.0 * exp(-0.3 * max_consecutive_start));
+	score += max_consecutive * 10 + position_bonus;;
+    }
 
     return score;
 }
