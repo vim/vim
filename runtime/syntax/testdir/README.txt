@@ -67,8 +67,8 @@ If there is no further setup required, you can now run all tests:
 
 	make test
 
-Or you can run the tests for a filetype only by passing its file extension as
-another target, e.g. "java", before "test":
+Or you can run the tests for a filetype only by passing its name as another
+target, e.g. "java", before "test":
 
 	make java test
 
