@@ -306,8 +306,11 @@ au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 " BSDL
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
-" Bazel (https://bazel.build) and Buck2 (https://buck2.build/)
-autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE,WORKSPACE.bzlmod	setf bzl
+" Starlark (https://github.com/bazelbuild/starlark) was designed for Bazel
+" (https://bazel.build/), so its filetype is bzl for historical reasons.
+" However it also includes other files written in starlark, like Buck2
+" (https://buck2.build/).
+autocmd BufRead,BufNewFile *.bzl,*.bazel,*.ipd,*.star,*.starlark,WORKSPACE,WORKSPACE.bzlmod	setf bzl
 if has("fname_case")
   " There is another check for BUILD and BUCK further below.
   autocmd BufRead,BufNewFile *.BUILD,BUILD,BUCK		setf bzl
@@ -2486,9 +2489,6 @@ au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 " OpenSSH server configuration
 au BufNewFile,BufRead sshd_config			setf sshdconfig
 au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
-
-" Starlark
-au BufNewFile,BufRead *.ipd,*.star,*.starlark	setf starlark
 
 " OpenVPN configuration
 au BufNewFile,BufRead *.ovpn			setf openvpn
