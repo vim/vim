@@ -1102,28 +1102,29 @@ endfunc
 " Test for inclusive motion in visual mode with 'exclusive' selection
 func Test_inclusive_motion_selection_exclusive()
   func s:compare_exclu_inclu(line, keys, expected_exclu)
+    let msg = "data: '" . a:line . "' operation: '" . a:keys . "'"
     call setline(1, a:line)
     set selection=exclusive
-    call feedkeys("\<Esc>" . a:keys, 'xt')
-    call assert_equal(a:expected_exclu, getpos('.'))
+    call feedkeys(a:keys, 'xt')
+    call assert_equal(a:expected_exclu, getpos('.'), msg)
     let pos_ex = col('.')
     set selection=inclusive
-    call feedkeys("\<Esc>" . a:keys, 'xt')
+    call feedkeys(a:keys, 'xt')
     let pos_in = col('.')
-    call assert_equal(1, pos_ex - pos_in)
+    call assert_equal(1, pos_ex - pos_in, msg)
   endfunc
 
   new
   " Test 'e' motion
   set selection=exclusive
   call setline(1, 'eins zwei drei')
-  call feedkeys("\<Esc>ggvey", 'xt')
+  norm! ggvey
   call assert_equal('eins', @")
   call setline(1, 'abc(abc)abc')
-  call feedkeys("\<Esc>ggveeed", 'xt')
+  norm! ggveeed
   call assert_equal(')abc', getline(1))
   call setline(1, 'abc(abc)abc')
-  call feedkeys("\<Esc>gg3lvey", 'xt')
+  norm! gg3lvey
   call assert_equal('(abc', @")
   call s:compare_exclu_inclu('abc(abc)abc', 'ggveee', [0, 1, 8, 0])
   " Test 'f' motion
