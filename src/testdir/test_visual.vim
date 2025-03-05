@@ -1204,7 +1204,7 @@ func Test_inclusive_motion_selection_exclusive()
   call assert_equal(1, pos_ex - pos_in)
 
   " Clean up
-  set selection=inclusive
+  set selection&
   bw!
 endfunc
 
