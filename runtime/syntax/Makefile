@@ -67,7 +67,7 @@ awk 'BEGIN { \
 		if (name ~ /.+_.+/) { \
 			sub(/_.+/, "", name); \
 		} else { \
-			sub(/.+\./, "", name) \
+			sub(/\..+/, "", name) \
 		} \
 		if (name == "vim9") name = "vim"; \
 		exts[name]; \
