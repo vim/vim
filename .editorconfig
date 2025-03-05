@@ -20,6 +20,10 @@ indent_size = 2
 # https://spec.commonmark.org/0.31.2/#hard-line-breaks
 trim_trailing_whitespace = false
 
+[*.vim]
+indent_style = space
+indent_size = 2
+
 [runtime/doc/**.txt]
 # It can mess up some documentation by trying to strip trailing whitespaces
 trim_trailing_whitespace = false
