@@ -6246,7 +6246,8 @@ vgr_match_buflines(
 
 	    // Fuzzy string match
 	    CLEAR_FIELD(matches);
-	    while (fuzzy_match(str + col, spat, FALSE, &score, matches, sz) > 0)
+	    while (fuzzy_match(str + col, spat, FALSE, &score,
+			matches, sz, TRUE) > 0)
 	    {
 		// Pass the buffer number so that it gets used even for a
 		// dummy buffer, unless duplicate_name is set, then the
