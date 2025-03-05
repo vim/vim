@@ -1,5 +1,7 @@
 #             Welcome   to   the   VIM   Tutor
 
+#                       CHAPTER   ONE
+
 Vim is a very powerful editor that has many commands, too many to explain in
 a tutor such as this. This tutor is designed to describe enough of the
 commands that you will be able to easily use Vim as an all-purpose editor.
@@ -38,7 +40,7 @@ instead of text to type.
 
 Now, move to the next lesson (use the `j`{normal} key to scroll down).
 
-## Lesson 1.1: MOVING THE CURSOR
+# Lesson 1.1: MOVING THE CURSOR
 
 ** To move the cursor, press the `h`, `j`, `k`, `l` keys as indicated. **
 
@@ -87,7 +89,7 @@ NOTE: [:q!](:q) <Enter> discards any changes you made. In a few lessons you
 
  5. Move the cursor down to Lesson 1.3.
 
-## Lesson 1.3: TEXT EDITING - DELETION
+# Lesson 1.3: TEXT EDITING - DELETION
 
 ** Press `x`{normal} to delete the character under the cursor. **
 
@@ -430,7 +432,7 @@ Notice that [c](c)e deletes the word and places you in Insert mode.
  5. Type `c$`{normal} and type the rest of the line like the second and press `<Esc>`{normal}.
 
 The end of this line needs some help to make it like the second.
-The end of this line needs to be corrected using the `c$`{normal} command.
+The end of this line needs to be corrected using the c$ command.
 
 NOTE: You can use the Backspace key to correct mistakes while typing.
 
@@ -907,8 +909,8 @@ Vim has many more features than Vi, but most of them are disabled by
 default. To start using more features you have to create a "vimrc" file.
 
  1. Start editing the "vimrc" file.  This depends on your system:
-    for UNIX-like		    for Windows
-    `:e ~/.vimrc`{vim}		    `:e ~/_vimrc`{vim}
+    for UNIX-like             for Windows
+    `:e ~/.vimrc`{vim}               `:e ~/_vimrc`{vim}
 
  2. Now read the example "vimrc" file contents:
     `:r $VIMRUNTIME/vimrc_example.vim`{vim}
@@ -957,6 +959,9 @@ NOTE: Completion works for many commands. It is especially useful for
      Press `<Tab>`{normal} to use one completion.
 
 # CONCLUSION
+
+This concludes Chapter 1 of the Vim Tutor.  Consider continuing with
+[Chapter 2](@tutor:tutor:vim-02-beginner).
 
 This was intended to give a brief overview of the Vim editor, just enough to
 allow you to use the editor fairly easily. It is far from complete as Vim has
