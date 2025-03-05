@@ -422,6 +422,7 @@ runtime/pack/dist/opt/nohlsearch/		@habamax
 runtime/plugin/manpager.vim		@Konfekt
 runtime/syntax/shared/hgcommitDiff.vim	@vegerot
 runtime/syntax/abaqus.vim		@costerwi
+runtime/syntax/abnf.vim		@A4-Tacks
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/ant.vim			@dkearns
 runtime/syntax/antlr4.vim		@jiangyinzuo

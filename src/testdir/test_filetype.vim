@@ -87,6 +87,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     abap: ['file.abap'],
     abc: ['file.abc'],
     abel: ['file.abl'],
+    abnf: ['file.abnf'],
     acedb: ['file.wrm'],
     ada: ['file.adb', 'file.ads', 'file.ada', 'file.gpr'],
     ahdl: ['file.tdf'],
