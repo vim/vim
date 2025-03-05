@@ -5,6 +5,7 @@
 " Autoload Split: Bram Moolenaar
 " Last Change: 	2024 Jan 17 (make it work on AIX, see #13847)
 " 		2024 Jul 06 (honor command modifiers, #15117)
+" 		2025 Mar 05 (add :keepjumps, #16791)
 
 let s:cpo_save = &cpo
 set cpo-=C
@@ -188,7 +189,7 @@ func dist#man#GetPage(cmdmods, ...)
   setl buftype=nofile noswapfile
 
   setl fdc=0 ma nofen nonu nornu
-  %delete _
+  keepjumps %delete _
   let unsetwidth = 0
   if empty($MANWIDTH)
     let $MANWIDTH = winwidth(0)
@@ -218,10 +219,10 @@ func dist#man#GetPage(cmdmods, ...)
   endif
   " Remove blank lines from top and bottom.
   while line('$') > 1 && getline(1) =~ '^\s*$'
-    1delete _
+    keepjumps 1delete _
   endwhile
   while line('$') > 1 && getline('$') =~ '^\s*$'
-    $delete _
+    keepjumps $delete _
   endwhile
   1
   setl ft=man nomod
