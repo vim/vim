@@ -1101,7 +1101,7 @@ endfunc
 
 " Test for inclusive motion in visual mode with 'exclusive' selection
 func Test_inclusive_motion_selection_exclusive()
-  func s:Cmp_exclu_inclu(line, keys, expected_exclu)
+  func s:compare_exclu_inclu(line, keys, expected_exclu)
     call setline(1, a:line)
     set selection=exclusive
     call feedkeys("\<Esc>" . a:keys, 'xt')
@@ -1125,18 +1125,18 @@ func Test_inclusive_motion_selection_exclusive()
   call setline(1, 'abc(abc)abc')
   call feedkeys("\<Esc>gg3lvey", 'xt')
   call assert_equal('(abc', @")
-  call s:Cmp_exclu_inclu('abc(abc)abc', 'ggveee', [0, 1, 8, 0])
+  call s:compare_exclu_inclu('abc(abc)abc', 'ggveee', [0, 1, 8, 0])
   " Test 'f' motion
-  call s:Cmp_exclu_inclu('geschwindigkeit', 'ggvfefe', [0, 1, 14, 0])
-  call s:Cmp_exclu_inclu('loooooooooooong', 'ggv2fo2fo2fo', [0, 1, 8, 0])
+  call s:compare_exclu_inclu('geschwindigkeit', 'ggvfefe', [0, 1, 14, 0])
+  call s:compare_exclu_inclu('loooooooooooong', 'ggv2fo2fo2fo', [0, 1, 8, 0])
   " Test 't' motion
-  call s:Cmp_exclu_inclu('geschwindigkeit', 'ggv2te', [0, 1, 13, 0])
-  call s:Cmp_exclu_inclu('loooooooooooong', 'gglv2to2to2to', [0, 1, 6, 0])
+  call s:compare_exclu_inclu('geschwindigkeit', 'ggv2te', [0, 1, 13, 0])
+  call s:compare_exclu_inclu('loooooooooooong', 'gglv2to2to2to', [0, 1, 6, 0])
   " Test ';' motion
-  call s:Cmp_exclu_inclu('geschwindigkeit', 'ggvfi;;', [0, 1, 15, 0])
-  call s:Cmp_exclu_inclu('geschwindigkeit', 'ggvti;;', [0, 1, 14, 0])
-  call s:Cmp_exclu_inclu('loooooooooooong', 'ggv2fo;;', [0, 1, 6, 0])
-  call s:Cmp_exclu_inclu('loooooooooooong', 'ggvl2to;;', [0, 1, 6, 0])
+  call s:compare_exclu_inclu('geschwindigkeit', 'ggvfi;;', [0, 1, 15, 0])
+  call s:compare_exclu_inclu('geschwindigkeit', 'ggvti;;', [0, 1, 14, 0])
+  call s:compare_exclu_inclu('loooooooooooong', 'ggv2fo;;', [0, 1, 6, 0])
+  call s:compare_exclu_inclu('loooooooooooong', 'ggvl2to;;', [0, 1, 6, 0])
   " Clean up
   set selection&
   bw!
