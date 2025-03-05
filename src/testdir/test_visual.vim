@@ -1101,9 +1101,21 @@ endfunc
 
 " Test for inclusive motion in visual mode with 'exclusive' selection
 func Test_inclusive_motion_selection_exclusive()
+  func s:Cmp_exclu_inclu(line, keys, expected_exclu)
+    call setline(1, a:line)
+    set selection=exclusive
+    call feedkeys("\<Esc>" . a:keys, 'xt')
+    call assert_equal(a:expected_exclu, getpos('.'))
+    let pos_ex = col('.')
+    set selection=inclusive
+    call feedkeys("\<Esc>" . a:keys, 'xt')
+    let pos_in = col('.')
+    call assert_equal(1, pos_ex - pos_in)
+  endfunc
+
   new
-  set selection=exclusive
   " Test 'e' motion
+  set selection=exclusive
   call setline(1, 'eins zwei drei')
   call feedkeys("\<Esc>ggvey", 'xt')
   call assert_equal('eins', @")
@@ -1113,97 +1125,18 @@ func Test_inclusive_motion_selection_exclusive()
   call setline(1, 'abc(abc)abc')
   call feedkeys("\<Esc>gg3lvey", 'xt')
   call assert_equal('(abc', @")
-  call feedkeys("\<Esc>ggveee", 'xt')
-
-  call setline(1, 'abc(abc)abc')
-  set selection=exclusive
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>ggveee", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
+  call s:Cmp_exclu_inclu('abc(abc)abc', 'ggveee', [0, 1, 8, 0])
   " Test 'f' motion
-  call setline(1, 'geschwindigkeit')
-  set selection=exclusive
-  call feedkeys("\<Esc>ggvfefe", 'xt')
-  call assert_equal([0, 1, 14, 0], getpos('.'))
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>ggvfefe", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
-  call setline(1, 'loooooooooooong')
-  set selection=exclusive
-  call feedkeys("\<Esc>ggv2fo2fo2fo", 'xt')
-  call assert_equal([0, 1, 8, 0], getpos('.'))
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>ggv2fo2fo2fo", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
+  call s:Cmp_exclu_inclu('geschwindigkeit', 'ggvfefe', [0, 1, 14, 0])
+  call s:Cmp_exclu_inclu('loooooooooooong', 'ggv2fo2fo2fo', [0, 1, 8, 0])
   " Test 't' motion
-  call setline(1, 'geschwindigkeit')
-  set selection=exclusive
-  call feedkeys("\<Esc>ggv2te", 'xt')
-  call assert_equal([0, 1, 13, 0], getpos('.'))
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>ggv2te", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
-  call setline(1, 'loooooooooooong')
-  set selection=exclusive
-  call feedkeys("\<Esc>gglv2to2to2to", 'xt')
-  call assert_equal([0, 1, 6, 0], getpos('.'))
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>gglv2to2to2to", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
+  call s:Cmp_exclu_inclu('geschwindigkeit', 'ggv2te', [0, 1, 13, 0])
+  call s:Cmp_exclu_inclu('loooooooooooong', 'gglv2to2to2to', [0, 1, 6, 0])
   " Test ';' motion
-  call setline(1, 'geschwindigkeit')
-  set selection=exclusive
-  call feedkeys("\<Esc>ggvfi;;", 'xt')
-  call assert_equal([0, 1, 15, 0], getpos('.'))
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>ggvfi;;", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
-  set selection=exclusive
-  call feedkeys("\<Esc>ggvti;;", 'xt')
-  call assert_equal([0, 1, 14, 0], getpos('.'))
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>ggvti;;", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
-  call setline(1, 'loooooooooooong')
-  set selection=exclusive
-  call feedkeys("\<Esc>ggv2fo;;", 'xt')
-  call assert_equal([0, 1, 6, 0], getpos('.'))
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>ggv2fo;;", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
-  set selection=exclusive
-  call feedkeys("\<Esc>ggvl2to;;", 'xt')
-  call assert_equal([0, 1, 6, 0], getpos('.'))
-  let pos_ex = col('.')
-  set selection=inclusive
-  call feedkeys("\<Esc>ggvl2to;;", 'xt')
-  let pos_in = col('.')
-  call assert_equal(1, pos_ex - pos_in)
-
+  call s:Cmp_exclu_inclu('geschwindigkeit', 'ggvfi;;', [0, 1, 15, 0])
+  call s:Cmp_exclu_inclu('geschwindigkeit', 'ggvti;;', [0, 1, 14, 0])
+  call s:Cmp_exclu_inclu('loooooooooooong', 'ggv2fo;;', [0, 1, 6, 0])
+  call s:Cmp_exclu_inclu('loooooooooooong', 'ggvl2to;;', [0, 1, 6, 0])
   " Clean up
   set selection&
   bw!
