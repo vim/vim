@@ -1103,41 +1103,108 @@ endfunc
 func Test_inclusive_motion_selection_exclusive()
   new
   set selection=exclusive
-  " 'e' motion
+  " Test 'e' motion
   call setline(1, 'eins zwei drei')
-  call feedkeys("ggvey", 'xt')
+  call feedkeys("\<Esc>ggvey", 'xt')
   call assert_equal('eins', @")
   call setline(1, 'abc(abc)abc')
-  call feedkeys("ggveeed", 'xt')
+  call feedkeys("\<Esc>ggveeed", 'xt')
   call assert_equal(')abc', getline(1))
   call setline(1, 'abc(abc)abc')
-  call feedkeys("gg3lvey", 'xt')
+  call feedkeys("\<Esc>gg3lvey", 'xt')
   call assert_equal('(abc', @")
-  " 'f' motion
+  call feedkeys("\<Esc>ggveee", 'xt')
+
+  call setline(1, 'abc(abc)abc')
+  set selection=exclusive
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>ggveee", 'xt')
+  let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
+
+  " Test 'f' motion
   call setline(1, 'geschwindigkeit')
+  set selection=exclusive
   call feedkeys("\<Esc>ggvfefe", 'xt')
   call assert_equal([0, 1, 14, 0], getpos('.'))
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>ggvfefe", 'xt')
+  let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
+
   call setline(1, 'loooooooooooong')
+  set selection=exclusive
   call feedkeys("\<Esc>ggv2fo2fo2fo", 'xt')
   call assert_equal([0, 1, 8, 0], getpos('.'))
-  " 't' motion
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>ggv2fo2fo2fo", 'xt')
+  let pos_in = col('.')
+
+  " Test 't' motion
   call setline(1, 'geschwindigkeit')
+  set selection=exclusive
   call feedkeys("\<Esc>ggv2te", 'xt')
   call assert_equal([0, 1, 13, 0], getpos('.'))
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>ggv2te", 'xt')
+  let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
+
   call setline(1, 'loooooooooooong')
+  set selection=exclusive
   call feedkeys("\<Esc>gglv2to2to2to", 'xt')
   call assert_equal([0, 1, 6, 0], getpos('.'))
-  " ';' motion
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>gglv2to2to2to", 'xt')
+  let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
+
+  " Test ';' motion
   call setline(1, 'geschwindigkeit')
+  set selection=exclusive
   call feedkeys("\<Esc>ggvfi;;", 'xt')
   call assert_equal([0, 1, 15, 0], getpos('.'))
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>ggvfi;;", 'xt')
+  let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
+
+  set selection=exclusive
   call feedkeys("\<Esc>ggvti;;", 'xt')
   call assert_equal([0, 1, 14, 0], getpos('.'))
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>ggvti;;", 'xt')
+  let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
+
   call setline(1, 'loooooooooooong')
+  set selection=exclusive
   call feedkeys("\<Esc>ggv2fo;;", 'xt')
   call assert_equal([0, 1, 6, 0], getpos('.'))
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>ggv2fo;;", 'xt')
+  let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
+
+  set selection=exclusive
   call feedkeys("\<Esc>ggvl2to;;", 'xt')
   call assert_equal([0, 1, 6, 0], getpos('.'))
+  let pos_ex = col('.')
+  set selection=inclusive
+  call feedkeys("\<Esc>ggvl2to;;", 'xt')
+  let pos_in = col('.')
+  call assert_equal(1, pos_ex - pos_in)
+
+  " Clean up
+  set selection=inclusive
   bw!
 endfunc
 
