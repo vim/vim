@@ -502,6 +502,12 @@ end_word(
 
     curwin->w_cursor.coladd = 0;
     cls_bigword = bigword;
+
+    // If adjusted cursor position previously, unadjust it.
+    if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
+		&& VIsual_select_exclu_adj)
+	unadjust_for_sel();
+
     while (--count >= 0)
     {
 #ifdef FEAT_FOLDING
