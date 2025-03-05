@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Jan 21
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Mar 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1921,6 +1921,10 @@ There is one way to use both legacy and Vim9 syntax in one script file: >
 This allows for writing a script that takes advantage of the Vim9 script
 syntax if possible, but will also work on a Vim version without it.
 
+Note that Vim9 syntax changed before Vim 9 so that scripts using the current
+syntax (such as "import from" instead of "import") might throw errors.
+To prevent these, a safer check could be for |v:version| >= 900 instead.
+
 This can only work in two ways:
 1. The "if" statement evaluates to false, the commands up to `endif` are
    skipped and `vim9script` is then the first command actually executed.
@@ -2435,4 +2439,4 @@ support for classes in Vim is then a problem.
 
 
 
- vim:tw=78:ts=8:noet:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:nofen:
