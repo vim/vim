@@ -10,11 +10,15 @@ endif
 let b:did_ftplugin = 1
 
 setlocal formatoptions-=t
+setlocal formatprg=gofmt
 
 setlocal comments=s1:/*,mb:*,ex:*/,://
 setlocal commentstring=//\ %s
 
-let b:undo_ftplugin = 'setl fo< com< cms<'
+setlocal iskeyword+=.
+setlocal keywordprg=go\ doc
+
+let b:undo_ftplugin = 'setl fo< com< cms< fp< isk< kp<'
 
 if get(g:, 'go_recommended_style', 1)
   setlocal noexpandtab softtabstop=0 shiftwidth=0
