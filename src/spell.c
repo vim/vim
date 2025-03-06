@@ -4219,7 +4219,7 @@ dump_word(
 		    ? MB_STRNICMP(p, pat, STRLEN(pat)) == 0
 		    : STRNCMP(p, pat, STRLEN(pat)) == 0)
 		&& ins_compl_add_infercase(p, (int)STRLEN(p),
-					  p_ic, NULL, *dir, FALSE) == OK)
+					  p_ic, NULL, *dir, FALSE, 0) == OK)
 	// if dir was BACKWARD then honor it just once
 	*dir = FORWARD;
 }

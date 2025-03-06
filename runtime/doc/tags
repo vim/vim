@@ -129,6 +129,7 @@ $quote	eval.txt	/*$quote*
 'cdpath'	options.txt	/*'cdpath'*
 'cedit'	options.txt	/*'cedit'*
 'cf'	options.txt	/*'cf'*
+'cfc'	options.txt	/*'cfc'*
 'cfu'	options.txt	/*'cfu'*
 'ch'	options.txt	/*'ch'*
 'character'	intro.txt	/*'character'*
@@ -162,6 +163,7 @@ $quote	eval.txt	/*$quote*
 'compatible'	options.txt	/*'compatible'*
 'complete'	options.txt	/*'complete'*
 'completefunc'	options.txt	/*'completefunc'*
+'completefuzzycollect'	options.txt	/*'completefuzzycollect'*
 'completeitemalign'	options.txt	/*'completeitemalign'*
 'completeopt'	options.txt	/*'completeopt'*
 'completepopup'	options.txt	/*'completepopup'*
