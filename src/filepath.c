@@ -402,10 +402,11 @@ repeat:
     }
 
     // ":." - path relative to the current directory
+    // ":," - path relative to the current directory, including "../../"
     // ":~" - path relative to the home directory
     // ":8" - shortname path - postponed till after
     while (src[*usedlen] == ':'
-		  && ((c = src[*usedlen + 1]) == '.' || c == '~' || c == '8'))
+		  && ((c = src[*usedlen + 1]) == '.' || c == ',' || c == '~' || c == '8'))
     {
 	*usedlen += 2;
 	if (c == '8')
@@ -431,7 +432,7 @@ repeat:
 
 	if (p != NULL)
 	{
-	    if (c == '.')
+	    if (c == '.' || c == ',')
 	    {
 		size_t	namelen;
 
@@ -464,6 +465,46 @@ repeat:
 			    *bufp = pbuf;
 			    pbuf = NULL;
 			}
+		    }
+		}
+		else if (c == ',')
+		{
+		    // We need to insert "../" entries, as the path `p` isn't below `dirname`
+		    char_u *rel_path = alloc(MAXPATHL);
+		    if (rel_path)
+		    {
+			// Count the number of directories in dirname
+			int dir_count = 0;
+			char_u *append;
+
+			for (char_u *d = dirname; *d; d++)
+			    if (vim_ispathsep(*d) && (d == dirname || !vim_ispathsep(d[-1])))
+				dir_count++;
+
+			*rel_path = NUL;
+
+			// Prepend "../" for each directory level
+			char_u *r = rel_path;
+			for (int i = 0; i < dir_count; i++)
+			{
+			    if(r >= rel_path + MAXPATHL - (sizeof("../") + 1))
+				break;
+			    STRCPY(r, "../");
+			    r += 3;
+			}
+
+			append = dir_count > 0 && vim_ispathsep(p[0]) ? p + 1 : p;
+			if (r >= rel_path + MAXPATHL - (STRLEN(append) + 1))
+			{
+			    // Give up
+			    vim_free(rel_path);
+			    break;
+			}
+
+			STRCAT(r, append);
+			vim_free(*bufp);
+			*bufp = rel_path;
+			*fnamep = rel_path;
 		    }
 		}
 	    }
