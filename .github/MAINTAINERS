@@ -296,6 +296,7 @@ runtime/ftplugin/swig.vim		@jmarrec
 runtime/ftplugin/tap.vim		@petdance
 runtime/ftplugin/tcsh.vim		@dkearns
 runtime/ftplugin/terraform.vim		@JannoTjarks
+runtime/ftplugin/tera.vim		@MuntasirSZN
 runtime/ftplugin/tf.vim			@ribru17
 runtime/ftplugin/thrift.vim		@jiangyinzuo
 runtime/ftplugin/tiasm.vim		@Freed-Wu

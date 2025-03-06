@@ -2607,6 +2607,9 @@ au BufNewFile,BufRead *.ti			setf terminfo
 " Terraform variables
 au BufRead,BufNewFile *.tfvars			setf terraform-vars
 
+" Tera
+au BufRead,BufNewFile *.tera			setf tera
+
 " TeX
 au BufNewFile,BufRead *.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex
 au BufNewFile,BufRead *.tex			call dist#ft#FTtex()
