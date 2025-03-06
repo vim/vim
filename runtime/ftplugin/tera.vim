@@ -1,6 +1,6 @@
 " Vim filetype plugin file
 " Language:             tera
-" Previous Maintainer:  Muntasir Mahmud <muntasir.joypurhat@gmail.com>
+" Maintainer:           Muntasir Mahmud <muntasir.joypurhat@gmail.com>
 " Latest Revision:      2025-03-06
 
 if exists("b:did_ftplugin")
