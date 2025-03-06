@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Mar 05
+" Last Change:	2025 Mar 06
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -2603,6 +2603,9 @@ au BufRead,BufNewFile *.ttl
 
 " Terminfo
 au BufNewFile,BufRead *.ti			setf terminfo
+
+" Tera
+au BufRead,BufNewFile *.tera			setf tera
 
 " Terraform variables
 au BufRead,BufNewFile *.tfvars			setf terraform-vars
