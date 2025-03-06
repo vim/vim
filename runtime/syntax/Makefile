@@ -26,6 +26,10 @@ RUN_VIMTEST = VIMRUNTIME=$(VIMRUNTIME) $(VALGRIND) $(ENVVARS) ../$(VIMPROG) -f $
 # Uncomment this line for debugging
 # DEBUGLOG = --log testlog
 
+# All initial phony targets; these names may clash with file types.
+phonies = clean test testclean
+.PHONY: $(phonies)
+
 # Run the tests that didn't run yet or failed previously.
 # If a test succeeds a testdir/done/{name} file will be written.
 # If a test fails a testdir/failed/{name}.dump file will be written.
@@ -46,34 +50,28 @@ test:
 
 # add dependence on syntax files
 testdir/testdeps.mk:
-	./testdir/tools/maketestdeps > $@
+	./testdir/tools/maketestdeps $(phonies) > $@
 
 -include testdir/testdeps.mk
 
 clean testclean:
 	rm -f testdir/failed/* testdir/done/* testdir/vimcmd testdir/messages testdir/Xtestscript testdir/Xfilter testdir/testdeps.mk
 
-# All initial phony targets; these names may clash with file extensions.
-phonies = clean test testclean
-.PHONY: $(phonies)
-
 # Collect all input filenames and their file types.
 testnames != set +f; \
 awk 'BEGIN { \
-	for (i = 1; i < ARGC; i++) { \
-		name = ARGV[i]; \
-		sub(/.+\//, "", name); \
-		print name; \
-		if (name ~ /.+_.+/) { \
-			sub(/_.+/, "", name); \
-		} else { \
-			sub(/.+\./, "", name) \
-		} \
-		if (name == "vim9") name = "vim"; \
-		exts[name]; \
-	} \
-	for (ext in exts) \
-		print ext; \
+    for (i = 1; i < ARGC; i++) { \
+        split(ARGV[i], names, /\//); \
+        split(names[3], parts, /[._]/); \
+        types[parts[1]]; \
+        print names[3]; \
+    } \
+    delete types["vim9"]; \
+    split("$(phonies)", scratch); \
+    for (phony in scratch) \
+        phonies[scratch[phony]]; \
+    for (type in types) \
+        print type ((type in phonies) ? "_" : ""); \
 }' testdir/input/*.*
 
 .PHONY: self-testing $(testnames)
