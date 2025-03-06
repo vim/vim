@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Mar 05
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Mar 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2439,4 +2439,4 @@ support for classes in Vim is then a problem.
 
 
 
- vim:tw=78:ts=8:noet:ft=help:norl:nofen:
+ vim:tw=78:ts=8:noet:ft=help:norl:
