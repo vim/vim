@@ -2604,11 +2604,11 @@ au BufRead,BufNewFile *.ttl
 " Terminfo
 au BufNewFile,BufRead *.ti			setf terminfo
 
-" Terraform variables
-au BufRead,BufNewFile *.tfvars			setf terraform-vars
-
 " Tera
 au BufRead,BufNewFile *.tera			setf tera
+
+" Terraform variables
+au BufRead,BufNewFile *.tfvars			setf terraform-vars
 
 " TeX
 au BufNewFile,BufRead *.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex

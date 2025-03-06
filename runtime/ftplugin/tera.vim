@@ -1,7 +1,7 @@
 " Vim filetype plugin file
-" Language:             tera
+" Language:             Tera
 " Maintainer:           Muntasir Mahmud <muntasir.joypurhat@gmail.com>
-" Latest Revision:      2025-03-06
+" Last Change:          2025 Mar 06
 
 if exists("b:did_ftplugin")
   finish
