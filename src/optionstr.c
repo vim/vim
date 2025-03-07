@@ -1659,6 +1659,20 @@ did_set_completefuzzycollect(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_completefuzzycollect(
+	optexpand_T *args,
+	int *numMatches,
+	char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_cfc_values,
+	    ARRAY_LENGTH(p_cfc_values) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'completeitemalign' option is changed.
  */
