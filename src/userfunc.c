@@ -3275,7 +3275,7 @@ call_user_func(
     save_did_emsg = did_emsg;
     did_emsg = FALSE;
 
-    if (default_arg_err && (fp->uf_flags & FC_ABORT))
+    if (default_arg_err)
     {
 	did_emsg = TRUE;
 	retval = FCERR_FAILED;

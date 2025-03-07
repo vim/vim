@@ -168,7 +168,60 @@ func Test_default_arg()
     echo F1()
   END
   let @a = l->join("\n")
-  call assert_fails("exe @a", 'E121:')
+  call assert_fails("exe @a", 'E121: Undefined variable: y')
+endfunc
+
+" When this function was written the error could not be caught with
+" "try | call s:default_argument_expression_error() | catch ..."; it could be
+" caught though by wrapping the "try ... catch ... endtry" with another
+" "try ...  catch ...  endtry". Also Vim would start execution of the function
+" body despite the error due to the undefined variable in the default argument
+" expression.
+func s:default_argument_expression_error(v = s:undefined_variable)
+  let s:cmd_count = 1
+  let s:cmd_count = 2
+  return a:v
+endfunc
+
+func Test_default_argument_expression_error()
+  let s:cmd_count = 0
+  try
+    try
+      call s:default_argument_expression_error()
+      throw "No exception."
+    catch
+      call assert_exception("E121: Undefined variable: s:undefined_variable")")
+    endtry
+  catch
+    let v:errors += ['Exception not caught by first catch all. ("'.v:exception.'" was caught by the second catch all.)']
+  endtry
+  call assert_equal(0, s:cmd_count, "s:cmd_count")
+endfunc
+
+func s:undefined_variable_error()
+  return s:undefined_variable
+endfunc
+
+" When this function was written Vim would start execution of the function body
+" despite the error due to the default argument expression. Vim would execute
+" _just_ the first command of the function - an error in that command would be
+" reported otherwise the error from the default argument expression ("E121:
+" Undefined variable: s:undefined_variable") was reported.
+func s:default_argument_expression_error2(v = s:undefined_variable_error())
+  let s:cmd_count = 1
+  let s:cmd_count = 2
+  return a:v
+endfunc
+
+func Test_default_argument_expression_error2()
+  let s:cmd_count = 0
+  try
+    call s:default_argument_expression_error2()
+    throw "No exception."
+  catch
+    call assert_exception("E121: Undefined variable: s:undefined_variable")")
+  endtry
+  call assert_equal(0, s:cmd_count, "s:cmd_count")
 endfunc
 
 func s:addFoo(lead)
