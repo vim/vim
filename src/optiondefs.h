@@ -656,7 +656,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"completefuzzycollect", "cfc", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_cfc, PV_NONE, did_set_completefuzzycollect, NULL,
+			    (char_u *)&p_cfc, PV_NONE, did_set_completefuzzycollect, expand_set_completefuzzycollect,
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
     {"completeitemalign", "cia", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
