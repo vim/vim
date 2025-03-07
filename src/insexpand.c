@@ -3934,7 +3934,7 @@ fuzzy_longest_match(void)
     }
 
     prefix = compl_best_matches[0]->cp_str.string;
-    prefix_len = (int)STRLEN(prefix);
+    prefix_len = (int)compl_best_matches[0]->cp_str.length;
 
     for (i = 1; i < compl_num_bests; i++)
     {
@@ -3958,14 +3958,13 @@ fuzzy_longest_match(void)
     }
 
     leader = ins_compl_leader();
-    if (leader != NULL)
-	leader_len = STRLEN(leader);
+    leader_len = ins_compl_leader_len();
 
     // skip non-consecutive prefixes
-    if (STRNCMP(prefix, leader, leader_len) != 0)
+    if (leader_len > 0 && STRNCMP(prefix, leader, leader_len) != 0)
 	goto end;
 
-    prefix = vim_strnsave(compl_best_matches[0]->cp_str.string, prefix_len);
+    prefix = vim_strnsave(prefix, prefix_len);
     if (prefix != NULL)
     {
 	ins_compl_longest_insert(prefix);
@@ -5829,8 +5828,10 @@ ins_compl_start(void)
     compl_orig_text.string = vim_strnsave(line + compl_col, (size_t)compl_length);
     if (p_ic)
 	flags |= CP_ICASE;
-    if (compl_orig_text.string == NULL || ins_compl_add(compl_orig_text.string,
-		-1, NULL, NULL, NULL, 0, flags, FALSE, NULL, 0) != OK)
+    if (compl_orig_text.string == NULL
+	    || ins_compl_add(compl_orig_text.string,
+		(int)compl_orig_text.length,
+		NULL, NULL, NULL, 0, flags, FALSE, NULL, 0) != OK)
     {
 	VIM_CLEAR_STRING(compl_pattern);
 	VIM_CLEAR_STRING(compl_orig_text);
