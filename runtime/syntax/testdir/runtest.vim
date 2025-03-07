@@ -234,7 +234,7 @@ func RunTest()
   " Turn a subset of filenames etc. requested for testing into a pattern.
   let filter = filereadable('../testdir/Xfilter')
     \ ? readfile('../testdir/Xfilter')
-	\ ->map({_, v -> (v =~ '\.' ? '^' : '\.') .. v .. '$'})
+	\ ->map({_, v -> '^' .. substitute(v, '_$', '', '')})
 	\ ->join('\|')
     \ : ''
 
