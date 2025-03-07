@@ -217,7 +217,6 @@ static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, t
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
-static char_u *find_line_end(char_u *ptr);
 static void ins_compl_free(void);
 static int  ins_compl_need_restart(void);
 static void ins_compl_new_leader(void);
@@ -1870,8 +1869,6 @@ ins_compl_files(
 				&& score == compl_first_match->cp_next->cp_score)
 			    compl_num_bests++;
 		    }
-		    else if (find_word_end(ptr) == line_end)
-			break;
 		}
 	    }
 	    line_breakcheck();
@@ -1927,7 +1924,7 @@ find_word_end(char_u *ptr)
  * Find the end of the line, omitting CR and NL at the end.
  * Returns a pointer to just after the line.
  */
-    static char_u *
+    char_u *
 find_line_end(char_u *ptr)
 {
     char_u	*s;
