@@ -930,7 +930,6 @@ static char_u modifier_keys_table[] =
 #define IDX_KEYNAME_NL 101
 #define IDX_KEYNAME_SWD 115
 #define IDX_KEYNAME_SWU 118
-#define IDX_KEYNAME_TAB 124
 
 #define STRING_INIT(s) \
     {(char_u *)(s), STRLEN_LITERAL(s)}
@@ -939,7 +938,7 @@ static struct key_name_entry
     int		enabled;	    // is this entry available (TRUE/FALSE)?
     int		key;		    // special key code or ascii value
     string_T	name;		    // name of key
-    string_T	*alt_name;	    // pointer to alternative key name
+    string_T	*pref_name;	    // pointer to preferred key name
 				    // (may be NULL or point to the name in another entry)
 } key_names_table[] =
 // Must be sorted by the 'name.string' field in ascending order because it is used by bsearch()!
@@ -1065,7 +1064,7 @@ static struct key_name_entry
     {TRUE, K_MIDDLERELEASE, STRING_INIT("MiddleRelease"), NULL},
     {TRUE, K_MOUSE, STRING_INIT("Mouse"), NULL},
     {TRUE, K_MOUSEDOWN, STRING_INIT("MouseDown"),
-	&key_names_table[IDX_KEYNAME_SWU].name},		    // OBSOLETE: Use ScrollWheelUP instead
+	&key_names_table[IDX_KEYNAME_SWU].name},		    // OBSOLETE: Use ScrollWheelUp instead
     {TRUE, K_MOUSEMOVE, STRING_INIT("MouseMove"), NULL},
     {TRUE, K_MOUSEUP, STRING_INIT("MouseUp"),
 	&key_names_table[IDX_KEYNAME_SWD].name},		    // OBSELETE: Use ScrollWheelDown instead
@@ -1114,8 +1113,7 @@ static struct key_name_entry
 	K_SNR, STRING_INIT("SNR"), NULL},
     {TRUE, ' ', STRING_INIT("Space"), NULL},
     {TRUE, TAB, STRING_INIT("Tab"), NULL},
-    {TRUE, K_TAB, STRING_INIT("Tab"),
-	&key_names_table[IDX_KEYNAME_TAB].name},
+    {TRUE, K_TAB, STRING_INIT("Tab"), NULL},
     {TRUE, K_UNDO, STRING_INIT("Undo"), NULL},
     {TRUE, K_UP, STRING_INIT("Up"), NULL},
     {
@@ -1325,8 +1323,8 @@ get_special_key_name(int c, int modifiers)
     {
 	string_T    *s;
 
-	if (key_names_table[table_idx].alt_name != NULL)
-	    s = key_names_table[table_idx].alt_name;
+	if (key_names_table[table_idx].pref_name != NULL)
+	    s = key_names_table[table_idx].pref_name;
 	else
 	    s = &key_names_table[table_idx].name;
 
@@ -1801,7 +1799,7 @@ get_special_key_code(char_u *name)
 	target.key = 0;
 	target.name.string = name;
 	target.name.length = 0;
-	target.alt_name = NULL;
+	target.pref_name = NULL;
 
 	entry = (struct key_name_entry *)bsearch(
 	    &target,
@@ -1810,7 +1808,12 @@ get_special_key_code(char_u *name)
 	    sizeof(key_names_table[0]),
 	    cmp_key_name_entry);
 	if (entry != NULL && entry->enabled)
-	    return entry->key;
+	{
+	    int key = entry->key;
+	    // Both TAB and K_TAB have name "Tab", and it's unspecified which
+	    // one bsearch() will return.  TAB is the expected one.
+	    return key == K_TAB ? TAB : key;
+	}
     }
 
     return 0;
@@ -1822,8 +1825,8 @@ get_key_name(int i)
     if (i < 0 || i >= (int)ARRAY_LENGTH(key_names_table))
 	return NULL;
 
-    return (key_names_table[i].alt_name != NULL) ?
-	key_names_table[i].alt_name->string :
+    return (key_names_table[i].pref_name != NULL) ?
+	key_names_table[i].pref_name->string :
 	key_names_table[i].name.string;
 }
 
