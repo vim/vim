@@ -88,6 +88,10 @@ CTRL-SHIFT-V				*c_CTRL-SHIFT-V* *c_CTRL-SHIFT-Q*
 CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
 		then it inserts the Escape sequence for a key with modifiers.
 		In the GUI the |key-notation| is inserted without simplifying.
+		Note: When CTRL-SHIFT-V is mapped (e.g., to paste text) you
+		can often use CTRL-SHIFT-Q instead. However, in some
+		terminals, CTRL-SHIFT-Q quits the terminal without
+		confirmation.
 
 							*c_<Left>* *c_Left*
 <Left>		cursor left.  See 'wildmenu' for behavior during wildmenu
