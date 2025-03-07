@@ -52,7 +52,10 @@ func s:StarSetf(ft)
 endfunc
 
 " Vim help file
-au BufNewFile,BufRead $VIMRUNTIME/doc/*.txt	setf help
+au BufNewFile,BufRead */doc/*.txt
+	\  if getline('$') =~ 'vim:.*\<\(ft\|filetype\)=help\>'
+	\|   setf help
+	\| endif
 
 " Abaqus or Trasys
 au BufNewFile,BufRead *.inp			call dist#ft#Check_inp()
