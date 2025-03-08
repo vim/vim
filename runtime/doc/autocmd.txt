@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Feb 08
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -603,6 +603,8 @@ CmdUndefined			When a user command is used but it isn't
 				when it's used.  The pattern is matched
 				against the command name.  Both <amatch> and
 				<afile> are set to the name of the command.
+				This is triggered even when inside an
+				autocommand defined without |autocmd-nested|.
 				NOTE: Autocompletion won't work until the
 				command is defined.  An alternative is to
 				always define the user command and have it
@@ -934,7 +936,9 @@ FuncUndefined			When a user function is used but it isn't
 				when it's used.  The pattern is matched
 				against the function name.  Both <amatch> and
 				<afile> are set to the name of the function.
-				Not triggered when compiling a |Vim9|
+				This is triggered even when inside an
+				autocommand defined without |autocmd-nested|,
+				but not triggered when compiling a |Vim9|
 				function.
 				NOTE: When writing Vim scripts a better
 				alternative is to use an autoloaded function.
