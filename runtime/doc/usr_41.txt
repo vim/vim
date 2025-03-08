@@ -1099,6 +1099,7 @@ Insert mode completion:				*completion-functions*
 	complete_add()		add to found matches
 	complete_check()	check if completion should be aborted
 	complete_info()		get current completion information
+	complete_startcol()		get current completion information
 	pumvisible()		check if the popup menu is displayed
 	pum_getpos()		position and size of popup menu if visible
 

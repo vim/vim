@@ -4756,9 +4756,6 @@ Insert mode completion/expansion:
 9   ^X^L completion doesn't repeat correctly.  It uses the first match with
     the last added line, instead of continuing where the last match ended.
     (Webb)
-8   Add option to set different behavior for Insert mode completion:
-    - ignore/match case
-    - different characters than 'iskeyword'
 8   Add option 'isexpand', containing characters when doing expansion (so that
     "." and "\" can be included, without changing 'iskeyword'). (Goldfarb)
     Also: 'istagword': characters used for CTRL-].

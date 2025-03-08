@@ -52,6 +52,7 @@
 #define PV_COM		OPT_BUF(BV_COM)
 #define PV_COT		OPT_BOTH(OPT_BUF(BV_COT))
 #define PV_CPT		OPT_BUF(BV_CPT)
+#define PV_CTG		OPT_BOTH(OPT_BUF(BV_CTG))
 #define PV_DICT		OPT_BOTH(OPT_BUF(BV_DICT))
 #define PV_TSR		OPT_BOTH(OPT_BUF(BV_TSR))
 #define PV_FFU		OPT_BOTH(OPT_BUF(BV_FFU))
@@ -684,6 +685,10 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}
 #endif
+			    SCTX_INIT},
+    {"completetrigger",   "ctg",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+			    (char_u *)&p_ctg, PV_CTG, did_set_completetrigger, NULL,
+			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
     {"concealcursor","cocu", P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF|P_FLAGLIST,
 #ifdef FEAT_CONCEAL

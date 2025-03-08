@@ -2218,6 +2218,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For Insert mode completion the buffer-local value is used.  For
 	command line completion the global value is used.
 
+						*'completetrigger'* *'ctg'*
+'completetrigger' 'ctg'	string	(default: "")
+			local to buffer
+	Defines characters for completion in insert mode. A comma-separated
+	list where 'k' means using 'iskeyword' pattern, and other characters
+	trigger completion directly. For example, "k,.,/" enables keyword
+	completion and triggers completion after dots and slashes.
+
 						*'concealcursor'* *'cocu'*
 'concealcursor' 'cocu'	string (default: "")
 			local to window

@@ -3384,6 +3384,57 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
     RedrawingDisabled = save_RedrawingDisabled;
 }
 
+    void
+f_complete_startcol(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    char_u	*line = ml_get_curline();
+    colnr_T	col = curwin->w_cursor.col;
+    char_u	*ctg = curbuf->b_p_ctg != empty_option ? curbuf->b_p_ctg : p_ctg;
+    int		pos = -1;
+    char_u	*s;
+    regmatch_T	regmatch;
+    char_u	*before_cursor = vim_strnsave(line, col);
+
+    rettv->vval.v_number = -1;
+    if (before_cursor == NULL)
+	return;
+
+    while (*ctg != NUL)
+    {
+	if (*ctg == 'k')
+	{
+	    regmatch.regprog = vim_regcomp((char_u *)"\\k\\+$", RE_MAGIC);
+	    if (regmatch.regprog != NULL)
+	    {
+		if (vim_regexec_nl(&regmatch, before_cursor, (colnr_T)0))
+		{
+		    pos = (int)(regmatch.startp[0] - before_cursor);
+		    vim_regfree(regmatch.regprog);
+		    break;
+		}
+		vim_regfree(regmatch.regprog);
+	    }
+	}
+	else if (*ctg != ',')
+	{
+	    for (s = line + col - 1; s >= line; s--)
+	    {
+		if (*s == *ctg)
+		{
+		    pos = (int)(s - line);
+		    break;
+		}
+	    }
+	    if (pos != -1)
+		break;
+	}
+	ctg++;
+    }
+
+    vim_free(before_cursor);
+    rettv->vval.v_number = pos;
+}
+
 /*
  * Return Insert completion mode name string
  */

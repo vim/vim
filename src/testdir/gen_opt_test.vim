@@ -169,6 +169,7 @@ let test_values = {
       \		['xxx', 'xxx:99', 'height:yes', 'width:no', 'align:xxx',
       \		'border:maybe', 'border:1', 'border:']],
       \ 'completeslash': [['', 'slash', 'backslash'], ['xxx']],
+      \ 'completetrigger': [['', 'k', '.,k'], ['k,,,/']],
       \ 'cryptmethod': [['', 'zip'], ['xxx']],
       \ 'cscopequickfix': [['', 's-', 'g-', 'd-', 'c-', 't-', 'e-', 'f-', 'i-',
       \		'a-', 's-,c+,e0'],

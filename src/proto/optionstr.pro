@@ -48,6 +48,7 @@ int expand_set_completefuzzycollect(optexpand_T *args, int *numMatches, char_u *
 char *did_set_completepopup(optset_T *args);
 char *did_set_completeslash(optset_T *args);
 int expand_set_completeslash(optexpand_T *args, int *numMatches, char_u ***matches);
+char *did_set_completetrigger(optset_T *args);
 char *did_set_concealcursor(optset_T *args);
 int expand_set_concealcursor(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_cpoptions(optset_T *args);
