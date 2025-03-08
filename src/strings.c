@@ -598,12 +598,10 @@ vim_strnicmp(char *s1, char *s2, size_t len)
 vim_strnicmp_asc(char *s1, char *s2, size_t len)
 {
     int                i = 0;
-    int                save_cmp_flags = cmp_flags;
 
-    cmp_flags |= CMP_KEEPASCII;		// compare by ASCII value, ignoring locale
     while (len > 0)
     {
-       i = vim_tolower(*s1) - vim_tolower(*s2);
+       i = TOLOWER_ASC(*s1) - TOLOWER_ASC(*s2);
        if (i != 0)
            break;			// this character is different
        if (*s1 == NUL)
@@ -612,7 +610,6 @@ vim_strnicmp_asc(char *s1, char *s2, size_t len)
        ++s2;
        --len;
     }
-    cmp_flags = save_cmp_flags;
     return i;
 }
 
