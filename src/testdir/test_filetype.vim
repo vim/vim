@@ -804,7 +804,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     teal: ['file.tl'],
     templ: ['file.templ'],
     template: ['file.tmpl'],
-    tera: ['file.tera','file.toml.tera','file.html.tera','file.css.tera'],
+    tera: ['file.tera', 'file.toml.tera', 'file.html.tera', 'file.css.tera'],
     teraterm: ['file.ttl'],
     terminfo: ['file.ti'],
     'terraform-vars': ['file.tfvars'],
