@@ -461,8 +461,8 @@ handle_lnum_col(
 	  if (wp->w_p_cul
 		  && wlv->lnum == wp->w_cursor.lnum
 		  && (wp->w_p_culopt_flags & CULOPT_NBR)
-		  && (wlv->row == wlv->startrow + wlv->filler_lines
-		      || (wlv->row > wlv->startrow + wlv->filler_lines
+		  && (wlv->row == lnum_row
+		      || (wlv->row > lnum_row
 			 && (wp->w_p_culopt_flags & CULOPT_LINE))))
 	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLN));
 #endif
