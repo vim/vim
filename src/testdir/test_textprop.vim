@@ -3695,6 +3695,10 @@ func Test_prop_above_with_number()
   call term_sendkeys(buf, ":call OneMore()\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_above_number_2', {})
 
+  call term_sendkeys(buf, ":setlocal cursorline cursorlineopt=number\<CR>")
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_prop_above_number_3', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
