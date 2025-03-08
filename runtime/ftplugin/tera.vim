@@ -25,5 +25,6 @@ setlocal expandtab
 setlocal shiftwidth=2
 setlocal softtabstop=2
 
-let b:undo_ftplugin = "setlocal autoindent< commentstring< comments< " .
-      \ "include< includeexpr< suffixesadd< expandtab< shiftwidth< softtabstop< formatoptions<"
+let b:undo_ftplugin = "setlocal autoindent< commentstring< comments< " ..
+      \ "includeexpr< suffixesadd< expandtab< shiftwidth< softtabstop<"
+let b:undo_ftplugin .= "|unlet! b:match_ignorecase b:match_words"
