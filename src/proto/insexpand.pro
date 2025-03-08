@@ -65,4 +65,6 @@ int ins_compl_col_range_attr(linenr_T lnum, int col);
 void free_insexpand_stuff(void);
 int ins_compl_preinsert_effect(void);
 int ins_compl_lnum_in_range(linenr_T lnum);
+char_u *find_line_end(char_u *ptr);
+
 /* vim: set ft=c : */

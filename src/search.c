@@ -5229,8 +5229,7 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
  * - `*len` is set to the length of the matched word.
  * - `*score` contains the match score.
  *
- * If no match is found, `*ptr` is updated to point beyond the last word
- * or to the end of the line.
+ * If no match is found, `*ptr` is updated to to the end of the line.
  */
     int
 fuzzy_match_str_in_line(
@@ -5246,11 +5245,13 @@ fuzzy_match_str_in_line(
     char_u	*start = NULL;
     int		found = FALSE;
     char	save_end;
+    char_u	*line_end = NULL;
 
     if (str == NULL || pat == NULL)
         return found;
+    line_end = find_line_end(str);
 
-    while (*str != NUL)
+    while (str < line_end)
     {
 	// Skip non-word characters
 	start = find_word_start(str);
@@ -5282,6 +5283,9 @@ fuzzy_match_str_in_line(
 	while (*str != NUL && !vim_iswordp(str))
 	    MB_PTR_ADV(str);
     }
+
+    if (!found)
+	*ptr = line_end;
 
     return found;
 }
