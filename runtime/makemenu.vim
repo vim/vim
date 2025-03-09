@@ -2,7 +2,7 @@ vim9script
 
 # Script to define the syntax menu in synmenu.vim
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2023 Aug 10
+# Last Change:	2025 Mar 09
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # This is used by "make menu" in the src directory.
@@ -605,6 +605,7 @@ SynMenu T.TealInfo:tli
 SynMenu T.Telix\ Salt:tsalt
 SynMenu T.Termcap/Printcap:ptcap
 SynMenu T.Terminfo:terminfo
+SynMenu T.Tera:tera
 SynMenu T.Tera\ Term:teraterm
 SynMenu T.TeX.TeX/LaTeX:tex
 SynMenu T.TeX.plain\ TeX:plaintex
