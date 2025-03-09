@@ -5397,7 +5397,7 @@ RangeDestructor(PyObject *self_obj)
 {
     RangeObject *self = (RangeObject*)self_obj;
     PyObject_GC_UnTrack((void *)(self));
-    Py_XDECREF(self->buf);
+    Py_XDECREF(((PyObject *)(self->buf)));
     PyObject_GC_Del((void *)(self));
 }
 
