@@ -6443,6 +6443,7 @@ ex_tabclose(exarg_T *eap)
 {
     tabpage_T	*tp;
     int		tab_number;
+    apply_autocmds(EVENT_TABCLOSEDPRE, NULL, NULL, FALSE, curbuf);
 
     if (cmdwin_type != 0)
     {
@@ -6464,6 +6465,7 @@ ex_tabclose(exarg_T *eap)
 	return;
 
     tp = find_tabpage(tab_number);
+    apply_autocmds(EVENT_TABCLOSEDPRE, NULL, NULL, FALSE, curbuf);
     if (tp == NULL)
     {
 	beep_flush();
