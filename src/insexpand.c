@@ -3671,7 +3671,7 @@ process_next_cpt_value(
 	ins_compl_next_state_T *st,
 	int		*compl_type_arg,
 	pos_T		*start_match_pos,
-	int		in_fuzzy)
+	int		fuzzy_collect)
 {
     int	    compl_type = -1;
     int	    status = INS_COMPL_CPT_OK;
@@ -3687,7 +3687,7 @@ process_next_cpt_value(
 	st->first_match_pos = *start_match_pos;
 	// Move the cursor back one character so that ^N can match the
 	// word immediately after the cursor.
-	if (ctrl_x_mode_normal() && (!in_fuzzy && dec(&st->first_match_pos) < 0))
+	if (ctrl_x_mode_normal() && (!fuzzy_collect && dec(&st->first_match_pos) < 0))
 	{
 	    // Move the cursor to after the last character in the
 	    // buffer, so that word at start of buffer is found
@@ -4487,7 +4487,6 @@ ins_compl_get_exp(pos_T *ini)
     int		i;
     int		found_new_match;
     int		type = ctrl_x_mode;
-    int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
 
     if (!compl_started)
     {
@@ -4528,7 +4527,7 @@ ins_compl_get_exp(pos_T *ini)
 	if ((ctrl_x_mode_normal() || ctrl_x_mode_line_or_eval())
 					&& (!compl_started || st.found_all))
 	{
-	    int status = process_next_cpt_value(&st, &type, ini, in_fuzzy);
+	    int status = process_next_cpt_value(&st, &type, ini, cfc_has_mode());
 
 	    if (status == INS_COMPL_CPT_END)
 		break;
