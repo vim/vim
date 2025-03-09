@@ -6,6 +6,7 @@
 " Last Change:	2024 Jun 06 (disabled the q mapping, #8210)
 " 		2024 Jul 06 (use nnoremap, #15130)
 " 		2024 Aug 23 (improve the <Plug>ManBS mapping, #15547, #15556)
+" 		2025 Mar 09 (improve :Man completion for man-db, #16843)
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -23,6 +24,14 @@ endif
 
 let s:cpo_save = &cpo
 set cpo-=C
+
+if !exists('g:ft_man_implementation')
+  if executable('mandb') > 0
+    let g:ft_man_implementation = 'man-db'
+  else
+    let g:ft_man_implementation = ''
+  endif
+endif
 
 if &filetype == "man"
   " Allow hyphen, plus, colon, dot, and commercial at in manual page name.
@@ -60,9 +69,17 @@ if &filetype == "man"
 endif
 
 if exists(":Man") != 2
-  com -nargs=+ -complete=shellcmd Man call dist#man#GetPage(<q-mods>, <f-args>)
+  if g:ft_man_implementation ==# 'man-db'
+    com -nargs=+ -complete=customlist,dist#man#ManDbComplete Man call dist#man#GetPage(<q-mods>, <f-args>)
+  else
+    com -nargs=+ -complete=shellcmd Man call dist#man#GetPage(<q-mods>, <f-args>)
+  endif
   nnoremap <Leader>K :call dist#man#PreGetPage(0)<CR>
   nnoremap <Plug>ManPreGetPage :call dist#man#PreGetPage(0)<CR>
+endif
+
+if exists(":ManReload") != 2
+  com ManReload call dist#man#Reload()
 endif
 
 let &cpo = s:cpo_save

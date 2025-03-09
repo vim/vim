@@ -2142,6 +2142,7 @@ $quote	eval.txt	/*$quote*
 :Lfilter	quickfix.txt	/*:Lfilter*
 :LogiPat	pi_logipat.txt	/*:LogiPat*
 :Man	filetype.txt	/*:Man*
+:ManReload	filetype.txt	/*:ManReload*
 :MkVimball	pi_vimball.txt	/*:MkVimball*
 :N	editing.txt	/*:N*
 :Nexplore	pi_netrw.txt	/*:Nexplore*
@@ -7581,6 +7582,7 @@ g:filetype_csh	syntax.txt	/*g:filetype_csh*
 g:filetype_haredoc	ft_hare.txt	/*g:filetype_haredoc*
 g:filetype_md	syntax.txt	/*g:filetype_md*
 g:filetype_r	syntax.txt	/*g:filetype_r*
+g:ft_man_implementation	filetype.txt	/*g:ft_man_implementation*
 g:ftplugin_rust_source_path	ft_rust.txt	/*g:ftplugin_rust_source_path*
 g:gnat	ft_ada.txt	/*g:gnat*
 g:gnat.Error_Format	ft_ada.txt	/*g:gnat.Error_Format*
