@@ -224,7 +224,7 @@ CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
 		then it inserts the Escape sequence for a key with modifiers.
 		Note: When CTRL-SHIFT-V is intercepted by your system (e.g.,
 		to paste text) you can often use CTRL-SHIFT-Q instead.
-		However, in some terminals (e.g. Gnome Terminal), CTRL-SHIFT-Q
+		However, in some terminals (e.g. GNOME Terminal), CTRL-SHIFT-Q
 		quits the terminal without confirmation.
 
 CTRL-X		Enter CTRL-X mode.  This is a sub-mode where commands can
