@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Tera
 " Maintainer:	Muntasir Mahmud <muntasir.joypurhat@gmail.com>
-" Last Change:	2025 Mar 08
+" Last Change:	2025 Mar 09
 
 if exists("b:current_syntax")
   finish
