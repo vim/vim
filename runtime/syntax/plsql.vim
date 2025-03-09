@@ -694,7 +694,6 @@ syn region plsqlSqlPlusCommand  start="^\(SET\|DEFINE\|PROMPT\|ACCEPT\|EXEC\|HOS
 syn region plsqlSqlPlusRunFile  start="^\(@\|@@\)" skip="\\$" end="$" keepend extend
 
 if get(g:,"plsql_fold",0) == 1
-    setlocal foldmethod=syntax
     syn sync fromstart
 
     syn cluster plsqlProcedureGroup contains=plsqlProcedure
