@@ -2114,6 +2114,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	each enabling fuzzy collection for a specific completion mode:
 	files		file names
 	keyword		keyword completion in 'complete' and current file
+			Note only regular keyword can be fuzzy collected.
 	whole_line	whole lines
 
 						*'completeitemalign'* *'cia'*
