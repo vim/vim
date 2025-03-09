@@ -1000,6 +1000,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	// give an error now.
 	vartype = get_type_on_stack(cctx, 0);
 	if (vartype->tt_type != VAR_LIST
+		&& vartype->tt_type != VAR_TUPLE
 		&& vartype->tt_type != VAR_STRING
 		&& vartype->tt_type != VAR_BLOB
 		&& vartype->tt_type != VAR_ANY
@@ -1016,6 +1017,15 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	else if (vartype->tt_type == VAR_BLOB)
 	    item_type = &t_number;
 	else if (vartype->tt_type == VAR_LIST
+				     && vartype->tt_member->tt_type != VAR_ANY)
+	{
+	    if (!var_list)
+		item_type = vartype->tt_member;
+	    else if (vartype->tt_member->tt_type == VAR_LIST
+			  && vartype->tt_member->tt_member->tt_type != VAR_ANY)
+		item_type = vartype->tt_member->tt_member;
+	}
+	else if (vartype->tt_type == VAR_TUPLE
 				     && vartype->tt_member->tt_type != VAR_ANY)
 	{
 	    if (!var_list)

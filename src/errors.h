@@ -3146,8 +3146,8 @@ EXTERN char e_string_or_dict_required_for_argument_nr[]
 	INIT(= N_("E1223: String or Dictionary required for argument %d"));
 EXTERN char e_string_number_or_list_required_for_argument_nr[]
 	INIT(= N_("E1224: String, Number or List required for argument %d"));
-EXTERN char e_string_list_or_dict_required_for_argument_nr[]
-	INIT(= N_("E1225: String, List or Dictionary required for argument %d"));
+EXTERN char e_string_list_tuple_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1225: String, List, Tuple or Dictionary required for argument %d"));
 EXTERN char e_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1226: List or Blob required for argument %d"));
 EXTERN char e_list_or_dict_required_for_argument_nr[]
@@ -3218,10 +3218,12 @@ EXTERN char e_highlight_group_name_too_long[]
 #ifdef FEAT_EVAL
 EXTERN char e_argument_of_str_must_be_list_string_dictionary_or_blob[]
 	INIT(= N_("E1250: Argument of %s must be a List, String, Dictionary or Blob"));
-EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
-	INIT(= N_("E1251: List, Dictionary, Blob or String required for argument %d"));
+EXTERN char e_list_tuple_dict_blob_or_string_required_for_argument_nr[]
+	INIT(= N_("E1251: List, Tuple, Dictionary, Blob or String required for argument %d"));
 EXTERN char e_string_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1252: String, List or Blob required for argument %d"));
+EXTERN char e_string_list_tuple_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1253: String, List, Tuple or Blob required for argument %d"));
 // E1253 unused
 EXTERN char e_cannot_use_script_variable_in_for_loop[]
 	INIT(= N_("E1254: Cannot use script variable in for loop"));
@@ -3351,8 +3353,8 @@ EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
 	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
-EXTERN char e_string_number_list_or_blob_required_for_argument_nr[]
-	INIT(= N_("E1301: String, Number, List or Blob required for argument %d"));
+EXTERN char e_repeatable_type_required_for_argument_nr[]
+	INIT(= N_("E1301: String, Number, List, Tuple or Blob required for argument %d"));
 EXTERN char e_script_variable_was_deleted[]
 	INIT(= N_("E1302: Script variable was deleted"));
 EXTERN char e_custom_list_completion_function_does_not_return_list_but_str[]
@@ -3662,3 +3664,41 @@ EXTERN char e_invalid_return_type_from_findfunc[]
 	INIT(= N_("E1514: 'findfunc' did not return a List type"));
 EXTERN char e_str_encoding_failed[]
 	INIT(= N_("E1515: Unable to convert %s '%s' encoding"));
+#ifdef FEAT_EVAL
+EXTERN char e_can_only_compare_tuple_with_tuple[]
+	INIT(= N_("E1516: Can only compare Tuple with Tuple"));
+EXTERN char e_invalid_operation_for_tuple[]
+	INIT(= N_("E1517: Invalid operation for Tuple"));
+EXTERN char e_tuple_index_out_of_range_nr[]
+	INIT(= N_("E1518: Tuple index out of range: %ld"));
+EXTERN char e_using_tuple_as_number[]
+	INIT(= N_("E1519: Using a Tuple as a Number"));
+EXTERN char e_using_tuple_as_float[]
+	INIT(= N_("E1520: Using a Tuple as a Float"));
+EXTERN char e_using_tuple_as_string[]
+	INIT(= N_("E1521: Using a Tuple as a String"));
+EXTERN char e_string_list_tuple_or_blob_required[]
+	INIT(= N_("E1522: String, List, Tuple or Blob required"));
+EXTERN char e_cannot_use_tuple_with_function_str[]
+	INIT(= N_("E1523: Cannot use a tuple with function %s"));
+EXTERN char e_argument_of_str_must_be_list_tuple_string_dictionary_or_blob[]
+	INIT(= N_("E1524: Argument of %s must be a List, Tuple, String, Dictionary or Blob"));
+EXTERN char e_missing_end_of_tuple_rsp_str[]
+	INIT(= N_("E1525: Missing end of Tuple ')': %s"));
+EXTERN char e_missing_comma_in_tuple_str[]
+	INIT(= N_("E1526: Missing comma in Tuple: %s"));
+EXTERN char e_list_or_tuple_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1527: List or Tuple or Blob required for argument %d"));
+EXTERN char e_list_or_tuple_required_for_argument_nr[]
+	INIT(= N_("E1528: List or Tuple required for argument %d"));
+EXTERN char e_list_or_tuple_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1529: List or Tuple or Dictionary required for argument %d"));
+EXTERN char e_argument_of_str_must_be_list_tuple_dictionary_or_blob[]
+	INIT(= N_("E1530: Argument of %s must be a List, Tuple, Dictionary or Blob"));
+EXTERN char e_tuple_is_immutable[]
+	INIT(= N_("E1531: Cannot modify a tuple"));
+EXTERN char e_cannot_slice_tuple[]
+	INIT(= N_("E1532: Cannot slice a tuple"));
+EXTERN char e_tuple_required_for_argument_nr[]
+	INIT(= N_("E1533: Tuple required for argument %d"));
+#endif

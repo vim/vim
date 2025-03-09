@@ -778,7 +778,7 @@ set_ref_in_timer(int copyID)
 	    tv.v_type = VAR_FUNC;
 	    tv.vval.v_string = timer->tr_callback.cb_name;
 	}
-	abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
     }
     return abort;
 }

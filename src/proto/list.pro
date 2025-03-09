@@ -50,6 +50,8 @@ int eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error);
 int write_list(FILE *fd, list_T *list, int binary);
 void init_static_list(staticList10_T *sl);
 void f_list2str(typval_T *argvars, typval_T *rettv);
+void f_list2tuple(typval_T *argvars, typval_T *rettv);
+void f_tuple2list(typval_T *argvars, typval_T *rettv);
 void f_sort(typval_T *argvars, typval_T *rettv);
 void f_uniq(typval_T *argvars, typval_T *rettv);
 int filter_map_one(typval_T *tv, typval_T *expr, filtermap_T filtermap, funccall_T *fc, typval_T *newtv, int *remp);
