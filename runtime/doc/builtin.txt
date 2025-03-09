@@ -364,6 +364,7 @@ line2byte({lnum})		Number	byte count of line {lnum}
 lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2blob({list})		Blob	turn {list} of numbers into a Blob
 list2str({list} [, {utf8}])	String	turn {list} of numbers into a String
+list2tuple({list})		Tuple	turn {list} of items into a tuple
 listener_add({callback} [, {buf}])
 				Number	add a callback to listen to changes
 listener_flush([{buf}])		none	invoke listener callbacks
@@ -713,6 +714,7 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
+test_null_tuple()		Tuple	null value for testing
 test_option_not_set({name})	none	reset flag indicating option was set
 test_override({expr}, {val})	none	test with Vim internal overrides
 test_refcount({expr})		Number	get the reference count of {expr}
@@ -734,6 +736,7 @@ tr({src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 trim({text} [, {mask} [, {dir}]])
 				String	trim characters in {mask} from {text}
 trunc({expr})			Float	truncate Float {expr}
+tuple2list({tuple})		List	turn {tuple} of items into a list
 type({expr})			Number	type of value {expr}
 typename({expr})		String	representation of the type of {expr}
 undofile({name})		String	undo file name for {name}
@@ -6545,6 +6548,20 @@ list2str({list} [, {utf8}])				*list2str()*
 		Return type: |String|
 
 
+list2tuple({list})					*list2tuple()*
+		Convert a list of items into a tuple of items.
+		Examples: >
+			list2tuple([1, 2, 3])		returns (1, 2, 3)
+<		|tuple2list()| does the opposite.
+
+		Returns an empty tuple on error.
+
+		Can also be used as a |method|: >
+			GetList()->list2tuple()
+<
+		Return type: tuple<{type}> (depending on the given |List|)
+
+
 listener_add({callback} [, {buf}])			*listener_add()*
 		Add a callback function that will be invoked when changes have
 		been made to buffer {buf}.
@@ -11869,6 +11886,20 @@ trunc({expr})							*trunc()*
 			Compute()->trunc()
 <
 		Return type: |Float|
+
+
+tuple2list({list})					*tuple2list()*
+		Convert a tuple of items into a list of items.
+		Examples: >
+			tuple2list((1, 2, 3))		returns [1, 2, 3]
+<		|list2tuple()| does the opposite.
+
+		Returns an empty list on error.
+
+		Can also be used as a |method|: >
+			GetTuple()->tuple2list()
+<
+		Return type: list<{type}> (depending on the given |Tuple|)
 
 
 							*type()*

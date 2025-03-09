@@ -22,6 +22,7 @@ char_u *get_list_line(int c, void *cookie, int indent, getline_opt_T options);
 void execute_common(typval_T *argvars, typval_T *rettv, int arg_off);
 void f_exists(typval_T *argvars, typval_T *rettv);
 void f_has(typval_T *argvars, typval_T *rettv);
+int indexof_eval_expr(typval_T *expr);
 int dynamic_feature(char_u *feature);
 void f_len(typval_T *argvars, typval_T *rettv);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);

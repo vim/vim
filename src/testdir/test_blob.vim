@@ -35,7 +35,7 @@ func Test_blob_create()
       call assert_fails('VAR b = 0z1.1')
       call assert_fails('VAR b = 0z.')
       call assert_fails('VAR b = 0z001122.')
-      call assert_fails('call get("", 1)', 'E896:')
+      call assert_fails('call get("", 1)', 'E1530:')
       call assert_equal(0, len(test_null_blob()))
       call assert_equal(0z, copy(test_null_blob()))
   END
