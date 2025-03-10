@@ -4716,7 +4716,7 @@ open_cmdwin(void)
     State = MODE_NORMAL;
     setmouse();
 
-    // Reset here so it can be set by a CmdWinEnter autocommand.
+    // Reset here so it can be set by a CmdwinEnter autocommand.
     cmdwin_result = 0;
 
     // Trigger CmdwinEnter autocommands.
