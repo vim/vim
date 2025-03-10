@@ -395,6 +395,12 @@ au BufNewFile,BufRead *.cdl			setf cdl
 " Conary Recipe
 au BufNewFile,BufRead *.recipe			setf conaryrecipe
 
+" Containers config files
+au BufNewFile,BufRead */containers/containers.conf{,.d/*.conf}		setf toml
+au BufNewFile,BufRead */containers/containers.conf.modules/*.conf	setf toml
+au BufNewFile,BufRead */containers/registries.conf{,.d/*.conf}		setf toml
+au BufNewFile,BufRead */containers/storage.conf				setf toml
+
 " Corn config file
 au BufNewFile,BufRead *.corn			setf corn
 
@@ -963,7 +969,7 @@ au BufNewFile,BufRead */etc/gitattributes			setf gitattributes
 au BufNewFile,BufRead .gitignore,*.git/info/exclude		setf gitignore
 au BufNewFile,BufRead */.config/git/ignore,*.prettierignore	setf gitignore
 au BufNewFile,BufRead */.config/fd/ignore,.fdignore,.ignore	setf gitignore
-au BufNewFile,BufRead .rgignore,.dockerignore			setf gitignore
+au BufNewFile,BufRead .rgignore,.dockerignore,.containerignore	setf gitignore
 au BufNewFile,BufRead .npmignore,.vscodeignore			setf gitignore
 au BufNewFile,BufRead git-rebase-todo				setf gitrebase
 au BufRead,BufNewFile .gitsendemail.msg.??????			setf gitsendemail
