@@ -942,7 +942,8 @@ term_start({cmd} [, {options}])			*term_start()*
 		   "err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
 		However, at least one of stdin, stdout or stderr must be
 		connected to the terminal.  When I/O is connected to the
-		terminal then the callback function for that part is not used.
+		terminal then the callback function for that part is not used;
+		and attach pipe to stderr if an error callback exists.
 
 		There are extra options:
 		   "term_name"	     name to use for the buffer name, instead
