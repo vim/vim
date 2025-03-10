@@ -53,7 +53,7 @@ endfunc
 
 " Vim help file, set ft explicitly, because 'modeline' might be off
 au BufNewFile,BufRead */doc/*.txt
-	\  if getline('$') =~ 'vim:.*\<\(ft\|filetype\)=help\>'
+	\  if getline('$') =~ '\(^\|\s\)vim:.*\<\(ft\|filetype\)=help\>'
 	\|   setf help
 	\| endif
 
