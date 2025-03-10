@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Feb 25
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4017,7 +4017,29 @@ highlighting is to put the following line in your |vimrc|: >
 
 	let g:vimsyn_noerror = 1
 <
+To suppress only specific errors, define the following variables: >
 
+   g:vimsyn_nobehaveerror = 1        " :behave error
+   g:vimsyn_vimFTError = 1           " :filetype error
+   g:vimsyn_noaugrouperror = 1       " :augroup error
+   g:vimsyn_noopererror = 1          " operator error
+   g:vimsyn_notypealiaserror = 1     " Vim9 type alias error
+   g:vimsyn_novimfunctionerror = 1   " Vim9 method error
+   g:vimsyn_nousercmderror = 1       " :com error
+   g:vimsyn_novimsynerror = 1        " :syn error
+   g:vimsyn_novimsyncaseerror = 1    " :syn case error
+   g:vimsyn_novimsynconcealerror = 1 " :syn conceal error
+   g:vimsyn_novimsynfoldlevelerror = 1 " :syn foldlevel error
+   g:vimsyn_novimsynspellerror = 1   " :syn spell error
+   g:vimsyn_novimsyncerror = 1       " :syn sync error
+   g:vimsyn_novimhictermerror = 1    " :hi error
+   g:vimsyn_vimhikeyerror = 1        " :hi key=arg error
+<
+To force highlighting of Neovim specific Vim script elements (even if not
+using Neovim), set >
+
+	let g:vimsyn_vim_features = ['nvim']
+<
 
 WDL							*wdl.vim* *wdl-syntax*
 
