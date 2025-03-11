@@ -11,8 +11,8 @@ let current_compiler = "javac"
 let s:cpo_save = &cpo
 set cpo&vim
 
+" CompilerSet makeprg=javac
 execute $'CompilerSet makeprg=javac\ {escape(get(b:, 'javac_makeprg_params', get(g:, 'javac_makeprg_params', '')), ' \|"')}'
-
 CompilerSet errorformat=%E%f:%l:\ error:\ %m,
 		       \%W%f:%l:\ warning:\ %m,
 		       \%-Z%p^,

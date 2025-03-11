@@ -4,7 +4,7 @@ vim9script
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
 # Contributors:       Enno Nagel
-# Last Change:        2024 Mar 29
+# Last Change:        2025 Mar 11
 #                     2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
 
 if exists("g:current_compiler")
@@ -15,6 +15,7 @@ import autoload '../autoload/context.vim'
 
 g:current_compiler = 'context'
 
+# CompilerSet makeprg=context
 if get(b:, 'context_ignore_makefile', get(g:, 'context_ignore_makefile', 0)) ||
   (!filereadable('Makefile') && !filereadable('makefile'))
   var makeprg =  join(context.ConTeXtCmd(shellescape(expand('%:p:t'))), ' ')
