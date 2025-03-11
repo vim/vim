@@ -5006,8 +5006,8 @@ func Test_TabClosed()
   tabclose
   tabclose
   tabclose
-  assert_equal([1, 2, 3], g:tabpagenr_pre)
-  assert_equal([2, 3, 4], g:tabpagenr_post)
+  call assert_equal([1, 2, 3], g:tabpagenr_pre)
+  call assert_equal([2, 3, 4], g:tabpagenr_post)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
