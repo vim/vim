@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Jan 11
+*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Mar 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1721,6 +1721,13 @@ from |errorformat-LaTeX| is too complex to keep it working for different
 shells and OSes and also does not allow to use other available TeX options,
 if any.  If your TeX doesn't support "-interaction=nonstopmode", please
 report it with different means to express \nonstopmode from the command line.
+
+TSC COMPILER						*compiler-tsc*
+
+The executable and compiler options can be added to 'makeprg' by setting the
+b/g:tsc_makeprg variable.  For example: >
+
+	let b:tsc_makeprg = "npx tsc --noEmit"
 
 TYPST COMPILER						*compiler-typst*
 
