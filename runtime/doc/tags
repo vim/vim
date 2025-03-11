@@ -5759,6 +5759,7 @@ TSQL	ft_sql.txt	/*TSQL*
 TTpro-telnet	syntax.txt	/*TTpro-telnet*
 Tab	intro.txt	/*Tab*
 TabClosed	autocmd.txt	/*TabClosed*
+TabClosedPre	autocmd.txt	/*TabClosedPre*
 TabEnter	autocmd.txt	/*TabEnter*
 TabLeave	autocmd.txt	/*TabLeave*
 TabNew	autocmd.txt	/*TabNew*

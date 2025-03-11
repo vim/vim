@@ -4986,4 +4986,28 @@ func Test_WinScrolled_Resized_eiw()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_TabClosed()
+  " Test that TabClosedPre and TabClosed are triggered when closing a tab.
+  let g:tabpagenr_pre = []
+  let g:tabpagenr_post = []
+  augroup testing
+    au TabClosedPre * call add(g:tabpagenr_pre, t:testvar)
+    au TabClosed * call add(g:tabpagenr_post, t:testvar)
+  augroup END
+  defer CleanUpTestAuGroup()
+  let t:testvar = 1
+  tabnew
+  let t:testvar = 2
+  tabnew
+  let t:testvar = 3
+  tabnew
+  let t:testvar = 4
+  tabnext
+  tabclose
+  tabclose
+  tabclose
+  assert_equal([1, 2, 3], g:tabpagenr_pre)
+  assert_equal([2, 3, 4], g:tabpagenr_post)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
