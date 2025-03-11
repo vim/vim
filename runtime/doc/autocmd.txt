@@ -1234,7 +1234,7 @@ Syntax				When the 'syntax' option has been set.  The
 							*TabClosed*
 TabClosed			After closing a tab page.
 							*TabClosedPre*
-TabClosedPre		Before closing a tab page.
+TabClosedPre			Before closing a tab page.
 							*TabEnter*
 TabEnter			Just after entering a tab page. |tab-page|
 				After triggering the WinEnter and before
