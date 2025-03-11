@@ -2704,10 +2704,6 @@ global_event_filter(GdkXEvent *xev,
     static void
 mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
-#include "../runtime/vim32x32.xpm"
-#include "../runtime/vim16x16.xpm"
-#include "../runtime/vim48x48.xpm"
-
     GdkWindow * const mainwin_win = gtk_widget_get_window(gui.mainwin);
 
     // When started with "--echo-wid" argument, write window ID on stdout.
@@ -2725,17 +2721,7 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	/*
 	 * Add an icon to the main window. For fun and convenience of the user.
 	 */
-	GList *icons = NULL;
-
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim16x16));
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim32x32));
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim48x48));
-
-	gtk_window_set_icon_list(GTK_WINDOW(gui.mainwin), icons);
-
-	// TODO: is this type cast OK?
-	g_list_foreach(icons, (GFunc)(void *)&g_object_unref, NULL);
-	g_list_free(icons);
+	gtk_window_set_icon_name(GTK_WINDOW(gui.mainwin), "gvim");
     }
 
 #if !defined(USE_GNOME_SESSION)
