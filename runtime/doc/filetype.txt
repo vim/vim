@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2025 Feb 25
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Mar 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -776,7 +776,7 @@ Local mappings:
 	to the end of the file in Normal mode.  This means "> " is inserted in
 	each line.
 
-MAN					*ft-man-plugin* *:Man* *man.vim*
+MAN					*ft-man-plugin* *:Man* *:ManReload* *man.vim*
 
 This plugin displays a manual page in a nice way.  See |find-manpage| in the
 user manual for more information.
@@ -793,6 +793,8 @@ Commands:
 Man {name}	Display the manual page for {name} in a window.
 Man {number} {name}
 		Display the manual page for {name} in a section {number}.
+ManReload	Reload the cache of available man pages used for |:Man| argument
+		completion.
 
 Global mapping:
 <Leader>K	Displays the manual page for the word under the cursor.
@@ -823,6 +825,14 @@ desired folding style instead.  For example: >
 If you would like :Man {number} {name} to behave like man {number} {name} by
 not running man {name} if no page is found, then use this: >
 	let g:ft_man_no_sect_fallback = 1
+<
+						*g:ft_man_implementation*
+The completion for the :Man command tries to guess which implementation of man
+the system has. If it guesses wrong, you can set g:ft_man_implementation to
+one of these values:
+	'man-db'	https://man-db.nongnu.org/
+	''		Unknown, fall back to completing shell commands
+			instead of man pages.
 
 You may also want to set 'keywordprg' to make the |K| command open a manual
 page in a Vim window: >
@@ -874,6 +884,12 @@ the PDF.  The following are treated as tags:
 
 These maps can be disabled with >
 	:let g:no_pdf_maps = 1
+
+PLSQL							*ft-plsql-plugin*
+
+To enable syntax folding in PL/SQL filetypes, set the following variable: >
+
+	:let g:plsql_fold = 1
 <
 
 PYTHON						*ft-python-plugin* *PEP8*

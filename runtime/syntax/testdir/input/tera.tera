@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title | default(value="Tera Test") }}</title>
+    {% if include_styles %}
+    <style>
+        body {
+            font-family: {{ font_family | default(value="sans-serif") }};
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        {% if dark_mode %}
+        body {
+            background-color: #222;
+            color: #eee;
+        }
+        {% endif %}
+    </style>
+    {% endif %}
+</head>
+<body>
+    <div class="container">
+        {# Header Section with variable interpolation #}
+        <header>
+            <h1>{{ header_text | upper }}</h1>
+            {% if subheader %}
+                <h2>{{ subheader }}</h2>
+            {% endif %}
+        </header>
+
+        {# Navigation example with for loop #}
+        <nav>
+            <ul>
+                {% for item in navigation %}
+                    <li class="{{ loop.index0 == current_page ? 'active' : '' }}">
+                        <a href="{{ item.url }}">{{ item.title }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        {# Main content section with various template features #}
+        <main>
+            {# Conditionals #}
+            {% if user %}
+                <section class="welcome">
+                    <h2>Welcome back, {{ user.name }}!</h2>
+                    <p>Last login: {{ user.last_login | date(format="%Y-%m-%d") }}</p>
+                </section>
+            {% elif visitor_count > 0 %}
+                <section class="welcome">
+                    <h2>Welcome, visitor!</h2>
+                    <p>You are visitor number {{ visitor_count }}</p>
+                </section>
+            {% else %}
+                <section class="welcome">
+                    <h2>Welcome to our site!</h2>
+                </section>
+            {% endif %}
+
+            {# Macro definition and usage #}
+            {% macro render_item(item, featured=false) %}
+                <div class="item {{ featured ? 'featured' : '' }}">
+                    <h3>{{ item.title }}</h3>
+                    <p>{{ item.description | truncate(length=100) }}</p>
+                    {% if item.tags %}
+                        <div class="tags">
+                            {% for tag in item.tags %}
+                                <span class="tag">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endmacro render_item %}
+
+            {# Items section with macro usage #}
+            <section class="items">
+                <h2>Items ({{ items | length }})</h2>
+
+                {% for item in items %}
+                    {{ self::render_item(item=item, featured=item.id == featured_id) }}
+
+                    {% if not loop.last %}
+                        <hr>
+                    {% endif %}
+                {% endfor %}
+            </section>
+
+            {# Raw content that shouldn't be processed #}
+            {% raw %}
+                <div class="example">
+                    The syntax {{ variable }} will not be processed in raw blocks.
+                    Neither will {% control %} structures.
+                </div>
+            {% endraw %}
+
+            {# Includes #}
+            {% include "partials/footer.tera" %}
+
+            {# Inheritance example #}
+            {% block content %}
+                <p>This is the default content.</p>
+            {% endblock content %}
+
+            {# Set variables #}
+            {% set text_color = dark_mode ? "#fff" : "#333" %}
+            {% set items_count = items | length %}
+
+            <div style="color: {{ text_color }}">
+                We have {{ items_count }} items.
+            </div>
+
+            {# Filters with complex expressions #}
+            <p>{{ "Hello, " ~ user.name | default(value="Guest") | upper }}</p>
+            <p>{{ items | filter(attribute="featured", value=true) | length }} featured items</p>
+
+            {# With statement #}
+            {% with %}
+                {% set local_var = "Only visible in this scope" %}
+                <p>{{ local_var }}</p>
+            {% endwith %}
+
+            {# Mathematical operations #}
+            <div class="math">
+                <p>Price: ${{ price }}</p>
+                <p>Tax ({{ tax_rate * 100 }}%): ${{ price * tax_rate }}</p>
+                <p>Total: ${{ price * (1 + tax_rate) }}</p>
+            </div>
+
+            {# Boolean operations #}
+            {% if user and user.is_admin or super_user %}
+                <div class="admin-panel">Admin panel</div>
+            {% endif %}
+        </main>
+
+        {# Footer section with filters and includes #}
+        <footer>
+            <p>&copy; {{ current_year }} {{ company_name | default(value="Our Company") }}</p>
+
+            {% if debug %}
+                <div class="debug-info">
+                    <p>Render time: {{ render_time }}ms</p>
+                    <p>Template version: {{ version }}</p>
+                </div>
+            {% endif %}
+        </footer>
+    </div>
+
+    <script>
+        const appData = {
+            "user": {% if user %}{{ user | json_encode() }}{% else %}null{% endif %},
+            "settings": {
+                "theme": "{{ theme | default(value="light") }}",
+                "notifications": {{ notifications_enabled | string | lower }}
+            }
+        };
+    </script>
+</body>
+</html>

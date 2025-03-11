@@ -871,7 +871,7 @@ au_event_disable(char *what)
     if (*what == ',' && *p_ei == NUL)
 	STRCPY(new_ei, what + 1);
     else
-	STRCAT(new_ei, what);
+	STRCPY(new_ei + p_ei_len, what);
     set_string_option_direct((char_u *)"ei", -1, new_ei,
 	    OPT_FREE, SID_NONE);
     vim_free(new_ei);

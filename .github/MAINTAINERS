@@ -250,6 +250,7 @@ runtime/ftplugin/pbtxt.vim		@lakshayg
 runtime/ftplugin/pdf.vim		@tpope
 runtime/ftplugin/perl.vim		@petdance @dkearns
 runtime/ftplugin/php.vim		@dkearns
+runtime/ftplugin/plsql.vim		@lee-lindley
 runtime/ftplugin/pod.vim		@petdance @dkearns
 runtime/ftplugin/poefilter.vim		@ObserverOfTime
 runtime/ftplugin/postscr.vim		@mrdubya
@@ -621,6 +622,7 @@ runtime/syntax/swig.vim			@jmarrec
 runtime/syntax/systemverilog.vim	@Kocha
 runtime/syntax/tap.vim			@petdance
 runtime/syntax/tcsh.vim			@dkearns
+runtime/syntax/tera.vim			@MuntasirSZN
 runtime/syntax/teraterm.vim		@k-takata
 runtime/syntax/terraform.vim		@gpanders
 runtime/syntax/thrift.vim		@jiangyinzuo

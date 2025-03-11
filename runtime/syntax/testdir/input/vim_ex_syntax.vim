@@ -1,5 +1,90 @@
 " Vim :syntax command
 
+
+" :syn-case
+
+syntax case
+syntax case match
+syntax case ignore
+
+" :syn-conceal
+
+syntax conceal
+syntax conceal on
+syntax conceal off
+
+" :syn-foldlevel
+
+syntax foldlevel
+syntax foldlevel start
+syntax foldlevel minimum
+
+" :syn-iskeyword
+
+syntax iskeyword
+syntax iskeyword clear
+syntax iskeyword @,48-57,192-255,$,_
+
+" :syn-list
+
+syntax list
+syntax list Foo
+syntax list @Bar
+
+" :syn-spell
+
+syntax spell
+syntax spell toplevel
+syntax spell notoplevel
+syntax spell default
+
+" :syn-sync-ccomment
+
+syntax sync ccomment
+syntax sync ccomment Foo
+syntax sync ccomment minlines=42 maxlines=42 linebreaks=1 linecont "pattern"
+syntax sync ccomment Foo minlines=42 maxlines=42 linebreaks=1 linecont "pattern"
+
+" :syn-sync-fromstart
+
+syntax sync fromstart
+syntax sync fromstart minlines=42 maxlines=42 linebreaks=1 linecont "pattern"
+
+" :syn-sync-linebreaks
+
+syntax sync linebreaks=1
+syntax sync linebreaks=1 minlines=42 maxlines=42 linecont "pattern"
+
+" :syn-sync-linecont
+
+syntax sync linecont "pattern"
+syntax sync linecont "pattern" minlines=42 maxlines=42 linebreaks=1
+
+" :syn-sync-(min|max)lines
+
+syntax sync minlines=42 maxlines=42
+syntax sync minlines=42 maxlines=42 linebreaks=1 linecont "pattern"
+" obsolete
+syntax sync lines=42
+
+" :syn-sync sync patterns
+
+syntax sync match testSyncMatch grouphere  testFoo "pattern"
+syntax sync match testSyncMatch groupthere testBar "pattern"
+syntax sync match testSyncMatch grouphere  NONE "pattern"
+syntax sync match testSyncMatch groupthere NONE "pattern"
+
+" :syn-sync skip groups
+
+syn sync match testMatch "pattern"
+syn sync region testRegion start="start-pattern" skip="skip-pattern" end="end-pattern"
+
+" :syn-sync-clear
+
+syntax sync clear
+syntax sync clear Foo
+
+" tail comments are not explicitly supported by :syntax, see :help :comment
 syn match testMatch "pattern" contained " tail comment
 " NOTE: comments not currently supported
 syn keyword testKeyword keyword contained " tail comment

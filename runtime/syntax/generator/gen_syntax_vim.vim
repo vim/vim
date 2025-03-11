@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
-" Last Change: 2025 Feb 08
+" Last Change: 2025 Mar 09
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -582,6 +582,38 @@ function s:parse_vim_addr_name(li)
 endfunc
 
 " ------------------------------------------------------------------------------
+function s:parse_vim_var(li)
+	try
+		let file_name = $VIM_SRCDIR . '/evalvars.c'
+		let item = {}
+
+		new
+		exec 'read ' . file_name
+		norm! gg
+		exec '/^} vimvars\[VV_LEN] =\n{$/+1;/^};$/-1yank'
+		%delete _
+
+		put
+		g!/^\s*{VV_NAME(/d
+
+		for line in getline(1, line('$'))
+			let list = matchlist(line, '^\s*{VV_NAME("\(\w\+\)"')
+			let item.name = list[1]
+			call add(a:li, copy(item))
+		endfor
+
+		quit!
+
+		if empty(a:li)
+			throw 'var is empty'
+		endif
+	catch /.*/
+		call s:err_gen('')
+		throw 'exit'
+	endtry
+endfunc
+
+" ------------------------------------------------------------------------------
 function s:append_syn_any(lnum, str_info, li)
 	let ret_lnum = a:lnum
 	let str = a:str_info.start
@@ -665,6 +697,15 @@ function s:update_syntax_vim_file(vim_info)
 		let lnum = s:search_and_check(kword . ' term output code', base_fname, str_info)
 		let lnum = s:append_syn_any(lnum, str_info, li)
 
+		" vimOption - normal variable
+		let li = a:vim_info.opt
+		let lnum = s:search_and_check(kword . ' normal variable', base_fname, str_info)
+		let lnum = s:append_syn_vimopt(lnum, str_info, li, '', 0)
+		" vimOption - term output code variable
+		let li = a:vim_info.term_out_code
+		let lnum = s:search_and_check(kword . ' term output code variable', base_fname, str_info)
+		let lnum = s:append_syn_any(lnum, str_info, li)
+
 		" Missing vimOption
 		let li = a:vim_info.missing_opt
 		let lnum = s:search_and_check('Missing vimOption', base_fname, str_info)
@@ -685,6 +726,11 @@ function s:update_syntax_vim_file(vim_info)
 		" vimFuncName
 		let li = a:vim_info.func
 		let lnum = s:search_and_check('vimFuncName', base_fname, str_info)
+		let lnum = s:append_syn_any(lnum, str_info, li)
+
+		" vimVarName
+		let li = a:vim_info.var
+		let lnum = s:search_and_check('vimVarName', base_fname, str_info)
 		let lnum = s:append_syn_any(lnum, str_info, li)
 
 		" vimUserAttrbCmplt
@@ -874,6 +920,7 @@ try
 	let s:vim_info.hlgroup = []
 	let s:vim_info.compl_name = []
 	let s:vim_info.addr_name = []
+	let s:vim_info.var = []
 
 	set lazyredraw
 	if !$CHECK_HELP_DOC
@@ -885,6 +932,7 @@ try
 		silent call s:parse_vim_hlgroup(s:vim_info.hlgroup)
 		silent call s:parse_vim_complete_name(s:vim_info.compl_name)
 		silent call s:parse_vim_addr_name(s:vim_info.addr_name)
+		silent call s:parse_vim_var(s:vim_info.var)
 
 		call s:update_syntax_vim_file(s:vim_info)
 	else
