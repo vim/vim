@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Feb 23
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7587,9 +7587,8 @@ mkdir({name} [, {flags} [, {prot}]])			*mkdir()* *E739*
 		If {prot} is given it is used to set the protection bits of
 		the new directory.  The default is 0o755 (rwxr-xr-x: r/w for
 		the user, readable for others).  Use 0o700 to make it
-		unreadable for others.  This is only used for the last part of
-		{name}.  Thus if you create /tmp/foo/bar then /tmp/foo will be
-		created with 0o755.
+		unreadable for others.  This is used for the newly created
+		directories.  Note an umask is applied to {prot} (on Unix).
 		Example: >
 			:call mkdir($HOME .. "/tmp/foo/bar", "p", 0o700)
 
