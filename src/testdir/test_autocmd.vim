@@ -4987,12 +4987,12 @@ func Test_WinScrolled_Resized_eiw()
 endfunc
 
 " Test that TabClosedPre and TabClosed are triggered when closing a tab.
-func Test_autocmd_tabclosed()
+func Test_autocmd_tabclosedpre()
+  defer CleanUpTestAuGroup()
   augroup testing
     au TabClosedPre * call add(g:tabpagenr_pre, t:testvar)
     au TabClosed * call add(g:tabpagenr_post, t:testvar)
   augroup END
-  defer CleanUpTestAuGroup()
 
   " Test 'tabclose' triggering
   let g:tabpagenr_pre = []
@@ -5053,6 +5053,99 @@ func Test_autocmd_tabclosed()
   close
   call assert_equal([1, 2], g:tabpagenr_pre)
   call assert_equal([2, 3], g:tabpagenr_post)
+
+  func ClearAutomcdAndCreateTabs()
+    au! TabClosedPre
+    e Z
+    tabonly
+    tabnew A
+    tabnew B
+    tabnew C
+  endfunc
+
+  func GetTabs()
+    redir => tabsout
+      tabs
+    redir END
+    let tabsout = substitute(tabsout, '\n', '', 'g')
+    let tabsout = substitute(tabsout, 'Tab page ', '', 'g')
+    let tabsout = substitute(tabsout, ' ', '', 'g')
+    return tabsout
+  endfunc
+
+  call CleanUpTestAuGroup()
+
+  " Close tab in TabClosedPre autocmd
+  call ClearAutomcdAndCreateTabs()  
+  au TabClosedPre * tabclose
+  tabclose
+  call assert_equal('1Z2A3>B', GetTabs())
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabclose
+  tabclose 2
+  call assert_equal('1Z2B3>C', GetTabs())
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabclose 1
+  tabclose
+  call assert_equal('1A2>B', GetTabs())
+
+  " Close other (all) tabs in TabClosedPre autocmd
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabonly
+  tabclose
+  call assert_equal('1>[NoName]', GetTabs())
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabonly
+  tabclose 2
+  call assert_equal('1>[NoName]', GetTabs())
+
+  " Open new tabs in TabClosedPre autocmd
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabnew D
+  tabclose
+  call assert_equal('1Z2A3>B4D', GetTabs())
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabnew D
+  tabclose 1
+  call assert_equal('1D2A3B4>C', GetTabs())
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabnew D
+
+  " Moving the tab page in TabClosedPre autocmd
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabmove 0
+  tabclose
+  call assert_equal('1Z2A3>B', GetTabs())
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabclose
+  tabclose 1
+  call assert_equal('1A2B3>C', GetTabs())
+  tabonly
+  call assert_equal('1>C', GetTabs())
+
+  " Switching tab page in TabClosedPre autocmd
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabnext
+  tabclose
+  call assert_equal('1Z2A3>B', GetTabs())
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabclose
+  tabclose 1
+  call assert_equal('1A2B3>C', GetTabs())
+  tabonly
+  call assert_equal('1>C', GetTabs())
+  
+  " Create new windows in TabClosedPre autocmd
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * split | e X| vsplit | e Y | split | e Z
+  tabclose
+  call assert_equal('1Z2A3>B4ZYX', GetTabs())
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabclose
+  tabclose 1
+  call assert_equal('1A2B3>C', GetTabs())
+  tabonly
+  call assert_equal('1>C', GetTabs())
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
