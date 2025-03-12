@@ -2113,13 +2113,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	candidates instead of the standard prefix-based matching. This option
 	can contain the following values are:
 
-	keyword		keywords in the current file |i_CTRL-X_CTRL-N|
+	keyword		keywords in the current file	|i_CTRL-X_CTRL-N|
 			keywords with the ".", "w", "b", "u", "U" and
-			"k{dict}" flags in 'complete'. |i_CTRL-N| |i_CTRL-P|
+			"k{dict}" flags in 'complete'.	|i_CTRL-N| |i_CTRL-P|
+			keywords in 'dictionary'	|i_CTRL-X_CTRL-K|
 
-	files		file names  |i_CTRL-X_CTRL-F|
+	files		file names			|i_CTRL-X_CTRL-F|
 
-	whole_line	whole lines |i_CTRL-X_CTRL-L|
+	whole_line	whole lines			|i_CTRL-X_CTRL-L|
 
 	When used with 'completeopt' "longest" option, fuzzy collection can
 	identify the longest common string among the best fuzzy matches and
