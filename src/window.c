@@ -3336,6 +3336,9 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     tabpage_T   *ptp = NULL;
     int		free_tp = FALSE;
 
+    if (tp->tp_firstwin == tp->tp_lastwin)
+	trigger_tabclosedpre(tp);
+
     // Get here with win->w_buffer == NULL when win_close() detects the tab
     // page changed.
     if (win_locked(win) || (win->w_buffer != NULL
@@ -3385,7 +3388,7 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     if (tp->tp_firstwin == tp->tp_lastwin)
     {
 	int	h = tabline_height();
-
+	// apply_autocmds(EVENT_TABCLOSEDPRE, NULL, NULL, FALSE, NULL);
 	if (tp == first_tabpage)
 	    first_tabpage = tp->tp_next;
 	else

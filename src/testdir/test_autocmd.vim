@@ -4986,15 +4986,17 @@ func Test_WinScrolled_Resized_eiw()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_TabClosed()
-  " Test that TabClosedPre and TabClosed are triggered when closing a tab.
-  let g:tabpagenr_pre = []
-  let g:tabpagenr_post = []
+" Test that TabClosedPre and TabClosed are triggered when closing a tab.
+func Test_autocmd_tabclosed()
   augroup testing
     au TabClosedPre * call add(g:tabpagenr_pre, t:testvar)
     au TabClosed * call add(g:tabpagenr_post, t:testvar)
   augroup END
   defer CleanUpTestAuGroup()
+
+  " Test 'tabclose' triggering
+  let g:tabpagenr_pre = []
+  let g:tabpagenr_post = []
   let t:testvar = 1
   tabnew
   let t:testvar = 2
@@ -5008,6 +5010,49 @@ func Test_TabClosed()
   tabclose
   call assert_equal([1, 2, 3], g:tabpagenr_pre)
   call assert_equal([2, 3, 4], g:tabpagenr_post)
+
+  " Test 'tabclose {count}' triggering
+  let g:tabpagenr_pre = []
+  let g:tabpagenr_post = []
+  let t:testvar = 1
+  tabnew
+  let t:testvar = 2
+  tabnew
+  let t:testvar = 3
+  tabclose 2
+  tabclose 2
+  call assert_equal([2, 3], g:tabpagenr_pre)
+  call assert_equal([3, 1], g:tabpagenr_post)
+
+  " Test 'tabonly' triggering
+  let g:tabpagenr_pre = []
+  let g:tabpagenr_post = []
+  let t:testvar = 1
+  tabnew
+  let t:testvar = 2
+  tabonly
+  call assert_equal([1], g:tabpagenr_pre)
+  call assert_equal([2], g:tabpagenr_post)
+
+  " Test 'q' and 'close' triggering (closing the last window in a tab)
+  let g:tabpagenr_pre = []
+  let g:tabpagenr_post = []
+  split
+  let t:testvar = 1
+  tabnew
+  let t:testvar = 2
+  split
+  vsplit
+  tabnew
+  let t:testvar = 3
+  tabnext
+  only
+  quit
+  quit
+  close
+  close
+  call assert_equal([1, 2], g:tabpagenr_pre)
+  call assert_equal([2, 3], g:tabpagenr_post)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

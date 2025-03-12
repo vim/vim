@@ -47,4 +47,5 @@ int au_exists(char_u *arg);
 void f_autocmd_add(typval_T *argvars, typval_T *rettv);
 void f_autocmd_delete(typval_T *argvars, typval_T *rettv);
 void f_autocmd_get(typval_T *argvars, typval_T *rettv);
+void trigger_tabclosedpre(tabpage_T *tp);
 /* vim: set ft=c : */
