@@ -3336,14 +3336,19 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     tabpage_T   *ptp = NULL;
     int		free_tp = FALSE;
 
-    if (tp->tp_firstwin == tp->tp_lastwin)
-	trigger_tabclosedpre(tp);
-
     // Get here with win->w_buffer == NULL when win_close() detects the tab
     // page changed.
     if (win_locked(win) || (win->w_buffer != NULL
 					       && win->w_buffer->b_locked > 0))
 	return; // window is already being closed
+
+    if (tp->tp_firstwin == tp->tp_lastwin)
+    {
+	trigger_tabclosedpre(tp);
+	// autocmd may have freed the window already.
+	if (!win_valid_any_tab(win))
+	    return;
+    }
 
     // Trigger WinClosed just before starting to free window-related resources.
     // If the buffer is NULL, it isn't safe to trigger autocommands,
