@@ -3388,6 +3388,7 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     if (tp->tp_firstwin == tp->tp_lastwin)
     {
 	int	h = tabline_height();
+
 	if (tp == first_tabpage)
 	    first_tabpage = tp->tp_next;
 	else
