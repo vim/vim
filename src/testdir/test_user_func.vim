@@ -161,14 +161,11 @@ func Test_default_arg()
 	\ execute('func Args2'))
 
   " Error in default argument expression
-  let l =<< trim END
-    func F1(x = y)
-      return a:x * 2
-    endfunc
-    echo F1()
-  END
-  let @a = l->join("\n")
-  call assert_fails("exe @a", 'E121:')
+  func! s:f(x = s:undefined)
+    return a:x
+  endfunc
+  call assert_fails('echo s:f()', ['E121: Undefined variable: s:undefined',
+        \ 'E121: Undefined variable: a:x'])
 endfunc
 
 func s:addFoo(lead)
