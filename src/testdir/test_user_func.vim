@@ -176,6 +176,22 @@ func Test_default_arg()
   call assert_fails('echo s:f()', [expected_error, expected_error])
 endfunc
 
+func Test_default_argument_expression_error_while_inside_of_a_try_block()
+  func! s:f(v = s:undefined_variable)
+    let s:entered_fn_body = 1
+    return a:v
+  endfunc
+
+  unlet! s:entered_fn_body
+  try
+    call s:f()
+    throw "No exception."
+  catch
+    call assert_exception("E121: Undefined variable: s:undefined_variable")
+  endtry
+  call assert_false(exists('s:entered_fn_body'), "exists('s:entered_fn_body')")
+endfunc
+
 func s:addFoo(lead)
   return a:lead .. 'foo'
 endfunc
