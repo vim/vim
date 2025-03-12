@@ -166,6 +166,14 @@ func Test_default_arg()
   endfunc
   call assert_fails('echo s:f()', ['E121: Undefined variable: s:undefined',
         \ 'E121: Undefined variable: a:x'])
+
+  func! s:f(x = s:undefined) abort
+    return a:x
+  endfunc
+  const expected_error = 'E121: Undefined variable: s:undefined'
+  " Only one error should be output; execution of the function should be aborted
+  " after the default argument expression error.
+  call assert_fails('echo s:f()', [expected_error, expected_error])
 endfunc
 
 func s:addFoo(lead)
