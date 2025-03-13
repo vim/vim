@@ -180,6 +180,7 @@ static keyvalue_T event_tab[NUM_EVENTS] = {
     KEYVALUE_ENTRY(EVENT_SWAPEXISTS, "SwapExists"),
     KEYVALUE_ENTRY(EVENT_SYNTAX, "Syntax"),
     KEYVALUE_ENTRY(EVENT_TABCLOSED, "TabClosed"),
+    KEYVALUE_ENTRY(EVENT_TABCLOSEDPRE, "TabClosedPre"),
     KEYVALUE_ENTRY(EVENT_TABENTER, "TabEnter"),
     KEYVALUE_ENTRY(EVENT_TABLEAVE, "TabLeave"),
     KEYVALUE_ENTRY(EVENT_TABNEW, "TabNew"),
@@ -2900,6 +2901,14 @@ get_event_name_no_group(expand_T *xp UNUSED, int idx, int win)
     return NULL;
 }
 
+/*
+ * Return TRUE when there is a TabClosedPre autocommand defined.
+ */
+    int
+has_tabclosedpre(void)
+{
+    return (first_autopat[(int)EVENT_TABCLOSEDPRE] != NULL);
+}
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
