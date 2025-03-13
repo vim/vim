@@ -3,7 +3,7 @@ int cmdline_fuzzy_complete(char_u *fuzzystr);
 int nextwild(expand_T *xp, int type, int options, int escape);
 void cmdline_pum_display(void);
 int cmdline_pum_active(void);
-void cmdline_pum_remove(void);
+void cmdline_pum_remove(cmdline_info_T *cclp);
 void cmdline_pum_cleanup(cmdline_info_T *cclp);
 int cmdline_compl_startcol(void);
 char_u *cmdline_compl_pattern(void);
