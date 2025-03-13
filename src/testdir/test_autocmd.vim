@@ -4988,7 +4988,6 @@ endfunc
 
 " Test that TabClosedPre and TabClosed are triggered when closing a tab.
 func Test_autocmd_tabclosedpre()
-  defer CleanUpTestAuGroup()
   augroup testing
     au TabClosedPre * call add(g:tabpagenr_pre, t:testvar)
     au TabClosed * call add(g:tabpagenr_post, t:testvar)
@@ -5056,6 +5055,7 @@ func Test_autocmd_tabclosedpre()
 
   func ClearAutomcdAndCreateTabs()
     au! TabClosedPre
+    bw!
     e Z
     tabonly
     tabnew A
@@ -5076,40 +5076,34 @@ func Test_autocmd_tabclosedpre()
   call CleanUpTestAuGroup()
 
   " Close tab in TabClosedPre autocmd
-  call ClearAutomcdAndCreateTabs()  
-  au TabClosedPre * tabclose
-  tabclose
-  call assert_equal('1Z2A3>B', GetTabs())
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * tabclose
-  tabclose 2
-  call assert_equal('1Z2B3>C', GetTabs())
+  call assert_fails('tabclose', 'E1312')
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabclose
+  call assert_fails('tabclose 2', 'E1312')
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * tabclose 1
-  tabclose
-  call assert_equal('1A2>B', GetTabs())
+  call assert_fails('tabclose', 'E1312')
 
   " Close other (all) tabs in TabClosedPre autocmd
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * tabonly
-  tabclose
-  call assert_equal('1>[NoName]', GetTabs())
+  call assert_fails('tabclose', 'E1312')
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * tabonly
-  tabclose 2
-  call assert_equal('1>[NoName]', GetTabs())
+  call assert_fails('tabclose 2', 'E1312')
+  call ClearAutomcdAndCreateTabs()
+  au TabClosedPre * tabclose 4
+  call assert_fails('tabclose 2', 'E1312')
 
   " Open new tabs in TabClosedPre autocmd
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * tabnew D
-  tabclose
-  call assert_equal('1Z2A3>B4D', GetTabs())
+  call assert_fails('tabclose', 'E1312')
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * tabnew D
-  tabclose 1
-  call assert_equal('1D2A3B4>C', GetTabs())
-  call ClearAutomcdAndCreateTabs()
-  au TabClosedPre * tabnew D
+  call assert_fails('tabclose 1', 'E1312')
 
   " Moving the tab page in TabClosedPre autocmd
   call ClearAutomcdAndCreateTabs()
@@ -5117,7 +5111,7 @@ func Test_autocmd_tabclosedpre()
   tabclose
   call assert_equal('1Z2A3>B', GetTabs())
   call ClearAutomcdAndCreateTabs()
-  au TabClosedPre * tabclose
+  au TabClosedPre * tabmove 0
   tabclose 1
   call assert_equal('1A2B3>C', GetTabs())
   tabonly
@@ -5125,27 +5119,29 @@ func Test_autocmd_tabclosedpre()
 
   " Switching tab page in TabClosedPre autocmd
   call ClearAutomcdAndCreateTabs()
-  au TabClosedPre * tabnext
+  au TabClosedPre * tabnext | e Y
   tabclose
-  call assert_equal('1Z2A3>B', GetTabs())
+  call assert_equal('1Y2A3>B', GetTabs())
   call ClearAutomcdAndCreateTabs()
-  au TabClosedPre * tabclose
+  au TabClosedPre * tabnext | e Y
   tabclose 1
-  call assert_equal('1A2B3>C', GetTabs())
+  call assert_equal('1Y2B3>C', GetTabs())
   tabonly
-  call assert_equal('1>C', GetTabs())
-  
+  call assert_equal('1>Y', GetTabs())
+
   " Create new windows in TabClosedPre autocmd
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * split | e X| vsplit | e Y | split | e Z
-  tabclose
-  call assert_equal('1Z2A3>B4ZYX', GetTabs())
+  call assert_fails('tabclose', 'E242')
   call ClearAutomcdAndCreateTabs()
-  au TabClosedPre * tabclose
-  tabclose 1
-  call assert_equal('1A2B3>C', GetTabs())
+  au TabClosedPre * new X | new Y | new Z
+  call assert_fails('tabclose 1', 'E242')
+
+  " Clean up
+  au!
+  only
   tabonly
-  call assert_equal('1>C', GetTabs())
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

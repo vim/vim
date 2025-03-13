@@ -2901,25 +2901,13 @@ get_event_name_no_group(expand_T *xp UNUSED, int idx, int win)
     return NULL;
 }
 
-    void
-trigger_tabclosedpre(tabpage_T *tp)
+/*
+ * Return TRUE when there is a TabClosedPre autocommand defined.
+ */
+    int
+has_tabclosedpre(void)
 {
-    static int	recursive = FALSE;
-    tabpage_T	*ptp = curtab;
-
-    // Quickly return when no TabClosedPre autocommands to be executed or
-    // already executing
-    if (first_autopat[(int)EVENT_TABCLOSEDPRE] == NULL || recursive)
-	return;
-
-    if (valid_tabpage(tp))
-	goto_tabpage_tp(tp, FALSE, FALSE);
-    recursive = TRUE;
-    apply_autocmds(EVENT_TABCLOSEDPRE, NULL, NULL, FALSE, NULL);
-    recursive = FALSE;
-    // tabpage may have been modified or deleted by autocmds
-    if (valid_tabpage(ptp))
-	goto_tabpage_tp(ptp, FALSE, FALSE);
+    return (first_autopat[(int)EVENT_TABCLOSEDPRE] != NULL);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
