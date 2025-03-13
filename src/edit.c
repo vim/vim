@@ -2995,7 +2995,7 @@ get_last_insert(void)
     if (last_insert.string != NULL)
     {
 	insert.string = last_insert.string + last_insert_skip;
-	insert.length = (size_t)last_insert.length - last_insert_skip;
+	insert.length = (size_t)(last_insert.length - last_insert_skip);
     }
 
     return insert;
