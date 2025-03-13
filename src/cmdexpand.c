@@ -423,9 +423,22 @@ cmdline_pum_remove(void)
 {
     int save_p_lz = p_lz;
     int	save_KeyTyped = KeyTyped;
+    cmdline_info_T *ccline = get_cmdline_info();
+    int save_RedrawingDisabled = RedrawingDisabled;
 
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
+
+#ifdef FEAT_EVAL
+    if (RedrawingDisabled && ccline->input_fn)
+    {
+        RedrawingDisabled = 0;
+        update_screen(0);
+        RedrawingDisabled = save_RedrawingDisabled;
+    }
+    else
+#endif
+        update_screen(0);
     p_lz = FALSE;  // avoid the popup menu hanging around
     update_screen(0);
     p_lz = save_p_lz;

@@ -650,4 +650,21 @@ func Test_popupmenu_cmdline()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popupmenu_cmdline_input()
+  CheckRunVimInTerminal
+  let lines =<< trim END
+    set wildmenu
+    set wildoptions=pum
+  END
+  call writefile(lines, 'Xpopupcmdline_input', 'D')
+  let buf = RunVimInTerminal('-S Xpopupcmdline_input', {})
+
+  call term_sendkeys(buf, ":call input('', '', 'command')\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "ech\<TAB> ")
+  call VerifyScreenDump(buf, 'Test_popupmenu_cmdline_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
