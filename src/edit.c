@@ -2456,8 +2456,7 @@ stop_insert(
     if (did_restart_edit == 0 || added > 0)
     {
 	vim_free(last_insert.string);
-	last_insert.string = inserted.string;
-	last_insert.length = inserted.length;
+	last_insert = inserted;			    // structure copy
 	last_insert_skip = added < 0 ? 0 : new_insert_skip;
     }
     else
@@ -2917,10 +2916,7 @@ stuff_inserted(
     int	    no_esc)	// Don't add an ESC at the end
 {
     string_T	insert;				    // text to be inserted
-    char_u	*esc_ptr;
-    int		restore_esc = FALSE;		    // do we need to restore an ESC?
-    char_u	*last_ptr;
-    char_u	last = NUL;
+    char_u	last = ' ';
 
     insert = get_last_insert();
     if (insert.string == NULL)
@@ -2933,31 +2929,35 @@ stuff_inserted(
     if (c != NUL)
 	stuffcharReadbuff(c);
 
-    // look for the last ESC in 'insert'. if we find one, replace it with NUL;
-    // remember where it is so we can restore it later.
-    for (esc_ptr = insert.string + insert.length;
-	esc_ptr > insert.string;
-	MB_PTR_BACK(insert.string, esc_ptr))
+    // look for the last ESC in 'insert'
+    if (insert.length > 0)
     {
-	if (*esc_ptr == ESC)
+	char_u	*p;
+
+	for (p = (insert.string + insert.length) - 1; p >= insert.string; --p)
 	{
-	    restore_esc = TRUE;
-	    *esc_ptr = NUL;	    // remove the ESC
-	    insert.length = (size_t)(esc_ptr - insert.string);
-	    break;
+	    if (*p == ESC)
+	    {
+		insert.length = (size_t)(p - insert.string);
+		break;
+	    }
 	}
     }
 
     // when the last char is either "0" or "^" it will be quoted if no ESC
     // comes after it OR if it will insert more than once and "ptr"
     // starts with ^D.	-- Acevedo
-    last_ptr = (insert.string + insert.length) - 1;
-    if (last_ptr >= insert.string && (*last_ptr == '0' || *last_ptr == '^')
-	    && (no_esc || (*insert.string == Ctrl_D && count > 1)))
+    if (insert.length > 0)
     {
-	last = *last_ptr;
-	*last_ptr = NUL;
-	insert.length = (size_t)(last_ptr - insert.string);
+	char_u	*p = (insert.string + insert.length) - 1;
+
+	if (p >= insert.string
+	    && (*p == '0' || *p == '^')
+	    && (no_esc || (*insert.string == Ctrl_D && count > 1)))
+	{
+	    last = *p;
+	    insert.length = (size_t)(p - insert.string);
+	}
     }
 
     do
@@ -2980,12 +2980,6 @@ stuff_inserted(
     }
     while (--count > 0);
 
-    if (last)
-	*last_ptr = last;
-
-    if (restore_esc)
-	*esc_ptr = ESC;	    // put the ESC back
-
     // may want to stuff a trailing ESC, to get out of Insert mode
     if (!no_esc)
 	stuffcharReadbuff(ESC);
@@ -3001,7 +2995,7 @@ get_last_insert(void)
     if (last_insert.string != NULL)
     {
 	insert.string = last_insert.string + last_insert_skip;
-	insert.length = (size_t)(last_insert.length - last_insert_skip);
+	insert.length = (size_t)last_insert.length - last_insert_skip;
     }
 
     return insert;
@@ -3014,18 +3008,17 @@ get_last_insert(void)
     char_u *
 get_last_insert_save(void)
 {
+    string_T	insert = get_last_insert();
     char_u	*s;
-    int		len;
 
-    if (last_insert.string == NULL)
+    if (insert.string == NULL)
 	return NULL;
-    len = (int)(last_insert.length - last_insert_skip);
-    s = vim_strnsave(last_insert.string + last_insert_skip, len);
+    s = vim_strnsave(insert.string, insert.length);
     if (s == NULL)
 	return NULL;
 
-    if (len > 0 && s[len - 1] == ESC)	// remove trailing ESC
-	s[len - 1] = NUL;
+    if (insert.length > 0 && s[insert.length - 1] == ESC)	// remove trailing ESC
+	s[insert.length - 1] = NUL;
     return s;
 }
 
@@ -3873,7 +3866,7 @@ ins_start_select(int c)
 		buf[1] = KS_MODIFIER;
 		buf[2] = mod_mask;
 		buf[3] = NUL;
-		stuffReadbuff(buf);
+		stuffReadbuffLen(buf, 3L);
 	    }
 	    stuffcharReadbuff(c);
 	    return TRUE;
