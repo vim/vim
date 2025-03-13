@@ -1082,6 +1082,8 @@ LANG_GEN = \
 		runtime/tutor/it/vim-01-beginner.tutor.json \
 		runtime/tutor/sr/vim-01-beginner.tutor \
 		runtime/tutor/sr/vim-01-beginner.tutor.json \
+		runtime/tutor/sr/vim-02-beginner.tutor \
+		runtime/tutor/sr/vim-02-beginner.tutor.json \
 		runtime/tutor/tutor1.?? \
 		runtime/tutor/tutor1.??.utf-8 \
 		runtime/tutor/tutor1.??.euc \
