@@ -1814,7 +1814,7 @@ au BufNewFile,BufRead *.hook
 au BufNewFile,BufRead {.,}makepkg.conf			setf sh
 
 " Pacman log
-au BufNewFile,BufRead pacman.log			setf pacmanlog
+au BufRead pacman.log*					call s:StarSetf('pacmanlog')
 
 " Pam conf
 au BufNewFile,BufRead */etc/pam.conf			setf pamconf
