@@ -5145,7 +5145,7 @@ func Test_autocmd_tabclosedpre()
   sp
   tabclose
   source Session.vim
-  call assert_equal('1[NoName]2>IMPIMP', GetTabs())
+  call assert_equal('1B2IMPORTANTTAB>IMPORTANTTAB', GetTabs())
 
   " Clean up
   au!
