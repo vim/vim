@@ -6471,15 +6471,11 @@ ex_tabclose(exarg_T *eap)
     }
     if (tp != curtab)
     {
-	trigger_tabclosedpre(tp, TRUE);
 	tabpage_close_other(tp, eap->forceit);
 	return;
     }
     else if (!text_locked() && !curbuf_locked())
-    {
-	trigger_tabclosedpre(tp, TRUE);
 	tabpage_close(eap->forceit);
-    }
 }
 
 /*
@@ -6519,7 +6515,6 @@ ex_tabonly(exarg_T *eap)
 	FOR_ALL_TABPAGES(tp)
 	    if (tp->tp_topframe != topframe)
 	    {
-		trigger_tabclosedpre(tp, TRUE);
 		tabpage_close_other(tp, eap->forceit);
 		// if we failed to close it quit
 		if (valid_tabpage(tp))
@@ -6540,6 +6535,8 @@ tabpage_close(int forceit)
 {
     if (window_layout_locked(CMD_tabclose))
 	return;
+
+    trigger_tabclosedpre(curtab, TRUE);
 
     // First close all the windows but the current one.  If that worked then
     // close the last window in this tab, that will close it.
@@ -6563,6 +6560,8 @@ tabpage_close_other(tabpage_T *tp, int forceit)
 {
     int		done = 0;
     win_T	*wp;
+
+    trigger_tabclosedpre(tp, TRUE);
 
     // Limit to 1000 windows, autocommands may add a window while we close
     // one.  OK, so I'm paranoid...
