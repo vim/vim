@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2025 Mar 13
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Mar 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -657,6 +657,7 @@ possibilities: >
 
 	:Cycle  " to cycle between the previous commands
 <
+The `:Cycle` command is also mapped to the CTRL-A and CTRL-X keys.
 For details, see `git-rebase --help`.
 
 GO							*ft-go-plugin*
