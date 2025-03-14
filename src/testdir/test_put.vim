@@ -75,6 +75,8 @@ func Test_put_fails_when_nomodifiable()
   normal! yy
   call assert_fails(':put', 'E21:')
   call assert_fails(':put!', 'E21:')
+  call assert_fails(':iput', 'E21:')
+  call assert_fails(':iput!', 'E21:')
   call assert_fails(':normal! p', 'E21:')
   call assert_fails(':normal! gp', 'E21:')
   call assert_fails(':normal! P', 'E21:')
