@@ -13,6 +13,33 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
+" Priority:
+" - 3: filename: BSDmakefile or GNUmakefile
+" - 2: user's setting: g:make_*
+" - 1: file content
+if get(b:, 'make_bsd') == 2
+  unlet! b:make_gnu
+  unlet! b:make_microsoft
+elseif get(b:, 'make_gnu') == 2
+  unlet! b:make_bsd
+  unlet! b:make_microsoft
+else
+  " filename is Makefile etc
+  if get(g:, 'make_bsd')
+    let    b:make_bsd = 1
+    unlet! b:make_gnu
+    unlet! b:make_microsoft
+  elseif get(g:, 'make_gnu')
+    unlet! b:make_bsd
+    let    b:make_gnu = 1
+    unlet! b:make_microsoft
+  elseif get(g:, 'make_microsoft')
+    unlet! b:make_bsd
+    unlet! b:make_gnu
+    let    b:make_microsoft = 1
+  endif
+endif
+
 " some special characters
 syn match makeSpecial	"^\s*[@+-]\+"
 syn match makeNextLine	"\\\n\s*"
@@ -28,7 +55,7 @@ syn match makePreCondit "^!\s*\(cmdswitches\|error\|message\|include\|if\|ifdef\
 syn case match
 
 " identifiers
-if exists("b:make_microsoft") || exists("make_microsoft")
+if get(b:, "make_microsoft")
   syn region makeIdent	start="\$(" end=")" contains=makeStatement,makeIdent
   syn region makeIdent	start="\${" end="}" contains=makeStatement,makeIdent
 else
@@ -59,12 +86,22 @@ syn match makeTarget           "^[~A-Za-z0-9_./$(){}%*@-][A-Za-z0-9_./\t $(){}%*
 	\ skipnl nextgroup=makeCommands,makeCommandError
 
 syn region makeSpecTarget	transparent matchgroup=makeSpecTarget
-	\ start="^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\|ONESHELL\)\>\s*:\{1,2}[^:=]"rs=e-1
+	\ start="^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|NOTPARALLEL\|DELETE_ON_ERROR\|POSIX\)\>\s*:\{1,2}[^:=]"rs=e-1
 	\ end="[^\\]$" keepend
 	\ contains=makeIdent,makeSpecTarget,makeNextLine,makeComment skipnl nextGroup=makeCommands
-syn match makeSpecTarget	"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\|ONESHELL\)\>\s*::\=\s*$"
+syn match makeSpecTarget	"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|NOTPARALLEL\|DELETE_ON_ERROR\|POSIX\)\>\s*::\=\s*$"
 	\ contains=makeIdent,makeComment
 	\ skipnl nextgroup=makeCommands,makeCommandError
+if get(b:, "make_gnu") || (!get(b:, "make_bsd") && !get(b:, "make_microsoft"))
+  " GNU
+  syn region makeSpecTarget	transparent matchgroup=makeSpecTarget
+	\ start="^\.\(EXPORT_ALL_VARIABLES\|INTERMEDIATE\|KEEP_STATE\|LIBPATTERNS\|ONESHELL\|SECONDARY\)\>\s*:\{1,2}[^:=]"rs=e-1
+	\ end="[^\\]$" keepend
+	\ contains=makeIdent,makeSpecTarget,makeNextLine,makeComment skipnl nextGroup=makeCommands
+  syn match makeSpecTarget	"^\.\(EXPORT_ALL_VARIABLES\|INTERMEDIATE\|KEEP_STATE\|LIBPATTERNS\|ONESHELL\|SECONDARY\)\>\s*::\=\s*$"
+	\ contains=makeIdent,makeComment
+	\ skipnl nextgroup=makeCommands,makeCommandError
+endif
 
 syn match makeCommandError "^\s\+\S.*" contained
 syn region makeCommands contained start=";"hs=s+1 start="^\t"
@@ -74,17 +111,19 @@ syn region makeCommands contained start=";"hs=s+1 start="^\t"
 syn match makeCmdNextLine	"\\\n."he=e-1 contained
 
 " some directives
-syn match makePreCondit	"^ *\(ifn\=\(eq\|def\)\>\|else\(\s\+ifn\=\(eq\|def\)\)\=\>\|endif\>\)"
 syn match makeInclude	"^ *[-s]\=include\s.*$"
-syn match makeStatement	"^ *vpath\>"
 syn match makeExport    "^ *\(export\|unexport\)\>"
-syn match makeOverride	"^ *override\>"
-" Statements / Functions (GNU make)
-syn match makeStatement contained "[({]\(abspath\|addprefix\|addsuffix\|and\|basename\|call\|dir\|error\|eval\|file\|filter-out\|filter\|findstring\|firstword\|flavor\|foreach\|guile\|if\|info\|join\|lastword\|notdir\|or\|origin\|patsubst\|realpath\|shell\|sort\|strip\|subst\|suffix\|value\|warning\|wildcard\|word\|wordlist\|words\)\>"ms=s+1
+if get(b:, "make_gnu") || (!get(b:, "make_bsd") && !get(b:, "make_microsoft"))
+  " Statements / Functions (GNU make)
+  syn match makePreCondit	"^ *\(ifn\=\(eq\|def\)\>\|else\(\s\+ifn\=\(eq\|def\)\)\=\>\|endif\>\)"
+  syn match makeStatement	"^ *vpath\>"
+  syn match makeOverride	"^ *override\>"
+  syn match makeStatement contained "[({]\(abspath\|addprefix\|addsuffix\|and\|basename\|call\|dir\|error\|eval\|file\|filter-out\|filter\|findstring\|firstword\|flavor\|foreach\|guile\|if\|info\|join\|lastword\|notdir\|or\|origin\|patsubst\|realpath\|shell\|sort\|strip\|subst\|suffix\|value\|warning\|wildcard\|word\|wordlist\|words\)\>"ms=s+1
+endif
 
 " Comment
 if !exists("make_no_comments")
-  if exists("b:make_microsoft") || exists("make_microsoft")
+  if get(b:, "make_microsoft")
     syn match   makeComment	"#.*" contains=@Spell,makeTodo
   else
     syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=@Spell,makeTodo

@@ -557,17 +557,38 @@ export def FTm()
 enddef
 
 export def FTmake()
-  # Check if it is a Microsoft Makefile
+  # Check if it is a BSD, GNU, or Microsoft Makefile
+  # - 2: detected according to file name
+  # - 1: detected according to file content
+  unlet! b:make_bsd
+  unlet! b:make_gnu
   unlet! b:make_microsoft
+
+  if expand('%:t') == 'BSDmakefile'
+    b:make_bsd = 2
+    setf make
+    return
+  elseif expand('%:t') == 'GNUmakefile'
+    b:make_gnu = 2
+    setf make
+    return
+  endif
+
+  # Makefile, foo.mk, etc
   var n = 1
   while n < 1000 && n <= line('$')
     var line = getline(n)
     if line =~? '^\s*!\s*\(ifn\=\(def\)\=\|include\|message\|error\)\>'
       b:make_microsoft = 1
       break
-    elseif line =~ '^ *ifn\=\(eq\|def\)\>' || line =~ '^ *[-s]\=include\s'
+    elseif line =~ '^\.\%(export\|error\|for\|if\%(n\=\%(def\|make\)\)\=\|info\|warning\)\>'
+      b:make_bsd = 1
       break
-    elseif line =~ '^ *\w\+\s*[!?:+]='
+    elseif line =~ '^ *\%(ifn\=\%(eq\|def\)\|define\|override\)\>'
+      b:make_gnu = 1
+      break
+    elseif line =~ '\$[({][a-z-]\+\s\+\S\+'  # a function call, e.g. $(shell pwd)
+      b:make_gnu = 1
       break
     endif
     n += 1
