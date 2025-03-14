@@ -5140,8 +5140,8 @@ func Test_autocmd_tabclosedpre()
   " Test directly closing the tab page with ':tabclose'
   au!
   tabonly
-  e Z
   bw!
+  e Z
   au TabClosedPre * mksession!
   tabnew A
   sp

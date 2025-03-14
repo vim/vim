@@ -3005,10 +3005,7 @@ trigger_tabclosedpre(tabpage_T *tp, int directly)
     {
 	goto_tabpage_tp(tp, FALSE, FALSE);
 	if (directly)
-	{
 	    skip = TRUE;
-	    goto_tabpage_win(tp, tp->tp_firstwin);
-	}
     }
     recursive = TRUE;
     window_layout_lock();
