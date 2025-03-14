@@ -42,11 +42,11 @@ static void find_mps_values(int *initc, int *findc, int *backwards, int switchit
 static int is_zero_width(char_u *pattern, size_t patternlen, int move, pos_T *cur, int direction);
 static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, size_t msgbuflen, int recompute, int maxcount, long timeout);
 static void update_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, searchstat_T *stat, int recompute, int maxcount, long timeout);
-static int fuzzy_match_compute_score(char_u *fuzpat, char_u *str, int strSz, int_u *matches, int numMatches);
-static int fuzzy_match_recursive(char_u *fuzpat, char_u *str, int_u strIdx, int *outScore, char_u *strBegin, int strLen, int_u *srcMatches, int_u *matches, int maxMatches, int nextMatch, int *recursionCount);
+static int fuzzy_match_compute_score(char_u *fuzpat, char_u *str, int strSz, int_u *matches, int numMatches, int camelcase);
+static int fuzzy_match_recursive(char_u *fuzpat, char_u *str, int_u strIdx, int *outScore, char_u *strBegin, int strLen, int_u *srcMatches, int_u *matches, int maxMatches, int nextMatch, int *recursionCount, int camelcase);
 #if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 static int fuzzy_match_item_compare(const void *s1, const void *s2);
-static void fuzzy_match_in_list(list_T *l, char_u *str, int matchseq, char_u *key, callback_T *item_cb, int retmatchpos, list_T *fmatchlist, long max_matches);
+static void fuzzy_match_in_list(list_T *l, char_u *str, int matchseq, char_u *key, callback_T *item_cb, int retmatchpos, list_T *fmatchlist, long max_matches, int camelcase);
 static void do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos);
 #endif
 static int fuzzy_match_str_compare(const void *s1, const void *s2);
@@ -4388,7 +4388,8 @@ fuzzy_match_compute_score(
 	char_u		*str,
 	int		strSz,
 	int_u		*matches,
-	int		numMatches)
+	int		numMatches,
+	int		camelcase)
 {
     int		score;
     int		penalty;
@@ -4461,7 +4462,7 @@ fuzzy_match_compute_score(
 	    }
 
 	    // Enhanced camel case scoring
-	    if (vim_islower(neighbor) && vim_isupper(curr))
+	    if (camelcase && vim_islower(neighbor) && vim_isupper(curr))
 	    {
 		score += CAMEL_BONUS * 2;  // Double the camel case bonus
 		is_camel = TRUE;
@@ -4544,7 +4545,8 @@ fuzzy_match_recursive(
 	int_u		*matches,
 	int		maxMatches,
 	int		nextMatch,
-	int		*recursionCount)
+	int		*recursionCount,
+	int		camelcase)
 {
     // Recursion params
     int		recursiveMatch = FALSE;
@@ -4596,7 +4598,7 @@ fuzzy_match_recursive(
 			&recursiveScore, strBegin, strLen, matches,
 			recursiveMatches,
 			ARRAY_LENGTH(recursiveMatches),
-			nextMatch, recursionCount))
+			nextMatch, recursionCount, camelcase))
 	    {
 		// Pick best recursive score
 		if (!recursiveMatch || recursiveScore > bestRecursiveScore)
@@ -4628,7 +4630,7 @@ fuzzy_match_recursive(
     // Calculate score
     if (matched)
 	*outScore = fuzzy_match_compute_score(fuzpat, strBegin, strLen, matches,
-		nextMatch);
+		nextMatch, camelcase);
 
     // Return best result
     if (recursiveMatch && (!matched || bestRecursiveScore > *outScore))
@@ -4666,7 +4668,8 @@ fuzzy_match(
 	int		matchseq,
 	int		*outScore,
 	int_u		*matches,
-	int		maxMatches)
+	int		maxMatches,
+	int		camelcase)
 {
     int		recursionCount = 0;
     int		len = MB_CHARLEN(str);
@@ -4714,7 +4717,7 @@ fuzzy_match(
 	recursionCount = 0;
 	matchCount = fuzzy_match_recursive(pat, str, 0, &score, str, len, NULL,
 				matches + numMatches, maxMatches - numMatches,
-				0, &recursionCount);
+				0, &recursionCount, camelcase);
 	if (matchCount == 0)
 	{
 	    numMatches = 0;
@@ -4775,7 +4778,8 @@ fuzzy_match_in_list(
 	callback_T	*item_cb,
 	int		retmatchpos,
 	list_T		*fmatchlist,
-	long		max_matches)
+	long		max_matches,
+	int		camelcase)
 {
     long	len;
     fuzzyItem_T	*items;
@@ -4836,7 +4840,7 @@ fuzzy_match_in_list(
 
 	if (itemstr != NULL
 		&& fuzzy_match(itemstr, str, matchseq, &score, matches,
-							MAX_FUZZY_MATCHES))
+						MAX_FUZZY_MATCHES, camelcase))
 	{
 	    items[match_count].idx = match_count;
 	    items[match_count].item = li;
@@ -4955,6 +4959,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     int		ret;
     int		matchseq = FALSE;
     long	max_matches = 0;
+    int		camelcase = TRUE;
 
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
@@ -5020,6 +5025,16 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	    max_matches = (long)tv_get_number_chk(&di->di_tv, NULL);
 	}
 
+	if ((di = dict_find(d, (char_u *)"camelcase", -1)) != NULL)
+        {
+	    if (di->di_tv.v_type != VAR_BOOL)
+	    {
+		semsg(_(e_invalid_argument_str), "camelcase");
+		return;
+	    }
+	    camelcase = tv_get_bool_chk(&di->di_tv, NULL);
+        }
+
 	if (dict_has_key(d, "matchseq"))
 	    matchseq = TRUE;
     }
@@ -5063,7 +5078,8 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     }
 
     fuzzy_match_in_list(argvars[0].vval.v_list, tv_get_string(&argvars[1]),
-	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, max_matches);
+	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, max_matches,
+	    camelcase);
 
 done:
     free_callback(&cb);
@@ -5166,7 +5182,7 @@ fuzzy_match_str(char_u *str, char_u *pat)
 	return 0;
 
     fuzzy_match(str, pat, TRUE, &score, matchpos,
-				sizeof(matchpos) / sizeof(matchpos[0]));
+				sizeof(matchpos) / sizeof(matchpos[0]), TRUE);
 
     return score;
 }
@@ -5193,7 +5209,7 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
 	return NULL;
     ga_init2(match_positions, sizeof(int_u), 10);
 
-    if (!fuzzy_match(str, pat, FALSE, &score, matches, MAX_FUZZY_MATCHES)
+    if (!fuzzy_match(str, pat, FALSE, &score, matches, MAX_FUZZY_MATCHES, TRUE)
 	    || score == 0)
     {
 	ga_clear(match_positions);
