@@ -6471,11 +6471,15 @@ ex_tabclose(exarg_T *eap)
     }
     if (tp != curtab)
     {
+	trigger_tabclosedpre(tp, TRUE);
 	tabpage_close_other(tp, eap->forceit);
 	return;
     }
     else if (!text_locked() && !curbuf_locked())
+    {
+	trigger_tabclosedpre(tp, TRUE);
 	tabpage_close(eap->forceit);
+    }
 }
 
 /*

@@ -2978,10 +2978,11 @@ trigger_winclosed(win_T *win)
     recursive = FALSE;
 }
 
-    static void
-trigger_tabclosedpre(tabpage_T *tp)
+    void
+trigger_tabclosedpre(tabpage_T *tp, int directly)
 {
     static int	recursive = FALSE;
+    static int	skip = FALSE;
     tabpage_T	*ptp = curtab;
 
     // Quickly return when no TabClosedPre autocommands to be executed or
@@ -2989,8 +2990,23 @@ trigger_tabclosedpre(tabpage_T *tp)
     if (!has_tabclosedpre() || recursive)
 	return;
 
+    // Skip if the event have been triggered by ':tabclose' recently
+    // This is allows saving the session before closing multi-window tab
+    if (skip)
+    {
+	skip = FALSE;
+	return;
+    }
+
     if (valid_tabpage(tp))
+    {
 	goto_tabpage_tp(tp, FALSE, FALSE);
+	if (directly)
+	{
+	    skip = TRUE;
+	    goto_tabpage_win(tp, tp->tp_firstwin);
+	}
+    }
     recursive = TRUE;
     window_layout_lock();
     apply_autocmds(EVENT_TABCLOSEDPRE, NULL, NULL, FALSE, NULL);
@@ -3382,7 +3398,7 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 
     if (tp->tp_firstwin == tp->tp_lastwin)
     {
-	trigger_tabclosedpre(tp);
+	trigger_tabclosedpre(tp, FALSE);
 	// autocmd may have freed the window already.
 	if (!win_valid_any_tab(win))
 	    return;
