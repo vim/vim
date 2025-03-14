@@ -2978,6 +2978,10 @@ trigger_winclosed(win_T *win)
     recursive = FALSE;
 }
 
+/*
+ * directly is TRUE if the window is closed directly by ':tabclose'.
+ * This allows saving the session before closing multi-window tab.
+ */
     void
 trigger_tabclosedpre(tabpage_T *tp, int directly)
 {
@@ -2991,7 +2995,6 @@ trigger_tabclosedpre(tabpage_T *tp, int directly)
 	return;
 
     // Skip if the event have been triggered by ':tabclose' recently
-    // This is allows saving the session before closing multi-window tab
     if (skip)
     {
 	skip = FALSE;
