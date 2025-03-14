@@ -6519,6 +6519,7 @@ ex_tabonly(exarg_T *eap)
 	FOR_ALL_TABPAGES(tp)
 	    if (tp->tp_topframe != topframe)
 	    {
+		trigger_tabclosedpre(tp, TRUE);
 		tabpage_close_other(tp, eap->forceit);
 		// if we failed to close it quit
 		if (valid_tabpage(tp))

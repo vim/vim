@@ -2979,7 +2979,7 @@ trigger_winclosed(win_T *win)
 }
 
 /*
- * directly is TRUE if the window is closed directly by ':tabclose'.
+ * directly is TRUE if the window is closed by ':tabclose' or ':tabonly'.
  * This allows saving the session before closing multi-window tab.
  */
     void

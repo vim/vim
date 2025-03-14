@@ -5138,14 +5138,26 @@ func Test_autocmd_tabclosedpre()
   call assert_fails('tabclose 1', 'E242')
 
   " Test directly closing the tab page with ':tabclose'
-  au! TabClosedPre * mksession!
+  au!
   tabonly
+  e Z
   bw!
-  tabnew IMPORTANTTAB
+  au TabClosedPre * mksession!
+  tabnew A
   sp
   tabclose
   source Session.vim
-  call assert_equal('1B2IMPORTANTTAB>IMPORTANTTAB', GetTabs())
+  call assert_equal('1Z2A>A', GetTabs())
+
+  " Test directly closing the tab page with ':tabonly'
+  " Z is closed before A. Hence A overwrites the session.
+  au! TabClosedPre * mksession!
+  e Z
+  tabnew A
+  tabnew B
+  tabonly
+  source Session.vim
+  call assert_equal('1>A2B', GetTabs())
 
   " Clean up
   au!
