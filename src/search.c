@@ -5229,7 +5229,7 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
  * - `*len` is set to the length of the matched word.
  * - `*score` contains the match score.
  *
- * If no match is found, `*ptr` is updated to to the end of the line.
+ * If no match is found, `*ptr` is updated to the end of the line.
  */
     int
 fuzzy_match_str_in_line(
@@ -5313,10 +5313,7 @@ search_for_fuzzy_match(
     pos_T	circly_end;
     int		found_new_match = FALSE;
     int		looped_around = FALSE;
-
-    int whole_line = ctrl_x_mode_whole_line();
-    if (whole_line)
-	current_pos.lnum += dir;
+    int		whole_line = ctrl_x_mode_whole_line();
 
     if (buf == curbuf)
         circly_end = *start_pos;
@@ -5326,6 +5323,9 @@ search_for_fuzzy_match(
         circly_end.col = 0;
         circly_end.coladd = 0;
     }
+
+    if (whole_line && start_pos->lnum != pos->lnum)
+	current_pos.lnum += dir;
 
     do {
 
@@ -5338,13 +5338,15 @@ search_for_fuzzy_match(
 	{
 	    // Get the current line buffer
 	    *ptr = ml_get_buf(buf, current_pos.lnum, FALSE);
+	    if (!whole_line)
+		*ptr += current_pos.col;
+
 	    // If ptr is end of line is reached, move to next line
 	    // or previous line based on direction
 	    if (*ptr != NULL && **ptr != NUL)
 	    {
 		if (!whole_line)
 		{
-		    *ptr += current_pos.col;
 		    // Try to find a fuzzy match in the current line starting
 		    // from current position
 		    found_new_match = fuzzy_match_str_in_line(ptr, pattern,
@@ -5371,8 +5373,6 @@ search_for_fuzzy_match(
 				    else
 				       next_word_end = find_word_end(next_word_end);
 				}
-				else if (looped_around)
-				    found_new_match = FALSE;
 
 				*len = next_word_end - *ptr;
 				current_pos.col = *len;

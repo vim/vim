@@ -235,3 +235,26 @@ def Test_zip_glob_fname()
 
   bw
 enddef
+
+def Test_zip_fname_leading_hyphen()
+  CheckNotMSWindows
+
+  ### copy sample zip file
+  if !filecopy("samples/poc.zip", "X.zip")
+    assert_report("Can't copy samples/poc.zip")
+    return
+  endif
+  defer delete("X.zip")
+  defer delete('-d', 'rf')
+  defer delete('/tmp/pwned', 'rf')
+
+  e X.zip
+
+  :1
+  var fname = '-d/tmp'
+  search('\V' .. fname)
+  normal x
+  assert_true(filereadable('-d/tmp'))
+  assert_false(filereadable('/tmp/pwned'))
+  bw
+enddef

@@ -1,8 +1,6 @@
 " Menu Translations:	Italian / Italiano
 " Maintainer:		Antonio Colombo <azc100@gmail.com>
-"			Vlad Sandrini <vlad.gently@gmail.com>
-"			Luciano Montanaro <mikelima@cirulla.net>
-" Last Change:	2023 Aug 22
+" Last Change:	2025 Mar 13
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -10,7 +8,7 @@ if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
-let s:keepcpo= &cpo
+let s:cpo_save= &cpo
 set cpo&vim
 
 scriptencoding iso-8859-1
@@ -24,7 +22,7 @@ menut &How-To\ Links	Co&Me\.\.\.
 menut &Find\.\.\.	&Cerca\.\.\.
 menut &Credits		Cr&Editi
 menut Co&pying		C&Opie
-menut &Sponsor/Register &Sponsor/Registrazione
+menut &Sponsor/Register	&Sponsor/Registrazione
 menut O&rphans		O&Rfani
 menut &Version		&Versione
 menut &About		&Intro
@@ -41,7 +39,7 @@ menut &New<Tab>:enew			&Nuovo<Tab>:enew
 menut &Close<Tab>:close			&Chiudi<Tab>:close
 menut &Save<Tab>:w			&Salva<Tab>:w
 menut Save\ &As\.\.\.<Tab>:sav		Salva\ &Con\ nome\.\.\.<Tab>:sav
-menut Split\ &Diff\ with\.\.\.		&Differenza\ con\.\.\.
+menut Split\ &Diff\ With\.\.\.		&Differenza\ con\.\.\.
 menut Split\ Patched\ &By\.\.\.		Patc&H\ da\.\.\.
 menut &Print				S&tampa
 menut Sa&ve-Exit<Tab>:wqa		Sa&Lva\ ed\ esci<Tab>:wqa
@@ -59,12 +57,12 @@ menut &Paste<Tab>"+gP			&Incolla<Tab>"+gP
 menut Put\ &Before<Tab>[p		&Metti\ davanti<Tab>[p
 menut Put\ &After<Tab>]p		M&Etti\ dietro<Tab>]p
 menut &Delete<Tab>x			Cance&Lla<Tab>x
-menut &Select\ all<Tab>ggVG		Seleziona\ &Tutto<Tab>ggVG
+menut &Select\ All<Tab>ggVG		Seleziona\ &Tutto<Tab>ggVG
 menut &Find\.\.\.			&Cerca\.\.\.
-menut &Find\.\.\.<Tab>/			&Cerca\.\.\.<Tab>/
+menut &Find<Tab>/			&Cerca<Tab>/
 menut Find\ and\ Rep&lace\.\.\.		&Sostituisci\.\.\.
-menut Find\ and\ Rep&lace\.\.\.<Tab>:%s	&Sostituisci\.\.\.<Tab>:%s
-menut Find\ and\ Rep&lace\.\.\.<Tab>:s	&Sostituisci\.\.\.<Tab>:s
+menut Find\ and\ Rep&lace<Tab>:%s	&Sostituisci<Tab>:%s
+menut Find\ and\ Rep&lace<Tab>:s	&Sostituisci<Tab>:s
 menut Settings\ &Window			&Finestra\ Impostazioni
 menut Startup\ &Settings		Impostazioni\ di\ &Avvio
 menut &Global\ Settings			Impostazioni\ &Globali
@@ -75,12 +73,20 @@ menut Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Evidenzia\ ricerche\ Sì/No<Tab
 menut Toggle\ &Ignoring\ Case<Tab>:set\ ic!		&Ignora\ maiusc\.-minusc\.\ Sì/No<Tab>:set\ ic!
 menut Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!			Indica\ &Corrispondenze\ Sì/No<Tab>:set\ sm!
 
-menut &Context\ lines		&Linee\ di\ contesto
+menut &Context\ Lines			&Linee\ di\ contesto
+"menut &Context\ Lines.\ 1\		&Linee\ di\ contesto.\ 1\
+"menut &Context\ Lines.\ 2\		&Linee\ di\ contesto.\ 2\
+"menut &Context\ Lines.\ 3\		&Linee\ di\ contesto.\ 3\
+"menut &Context\ Lines.\ 4\		&Linee\ di\ contesto.\ 4\
+"menut &Context\ Lines.\ 5\		&Linee\ di\ contesto.\ 5\
+"menut &Context\ Lines.\ 7\		&Linee\ di\ contesto.\ 7\
+"menut &Context\ Lines.\ 10\		&Linee\ di\ contesto.\ 10\
+"menut &Context\ Lines.\ 100\		&Linee\ di\ contesto.\ 100\
 
 menut &Virtual\ Edit		&Edit\ virtuale
 menut Never			Mai
 menut Block\ Selection		Seleziona\ Blocco
-menut Insert\ mode		Modo\ Insert
+menut Insert\ Mode		Modo\ Insert
 menut Block\ and\ Insert	Selezione\ Blocco\ e\ Inserimento
 menut Always			Sempre
 
@@ -109,22 +115,13 @@ if has("toolbar")
       tmenu ToolBar.Cut			Taglia
       tmenu ToolBar.Copy		Copia
       tmenu ToolBar.Paste		Incolla
-      tmenu ToolBar.Find		Trova...
       tmenu ToolBar.FindNext		Trova seguente
       tmenu ToolBar.FindPrev		Trova precedente
       tmenu ToolBar.Replace		Sostituisci
-      if 0	" disabled; These are in the Windows menu
-         tmenu ToolBar.New		Nuovo
-         tmenu ToolBar.WinSplit		Dividi
-         tmenu ToolBar.WinMax		Massimizza
-         tmenu ToolBar.WinMin		Minimizza
-         tmenu ToolBar.WinClose		Chiudi
-      endif
       tmenu ToolBar.LoadSesn		Carica sessione
       tmenu ToolBar.SaveSesn		Salva sessione
       tmenu ToolBar.RunScript		Esegui script
       tmenu ToolBar.Make		Esegui make
-      tmenu ToolBar.Shell		Esegui shell
       tmenu ToolBar.RunCtags		Esegui ctags
       tmenu ToolBar.TagJump		Salta alla tag
       tmenu ToolBar.Help		Aiuto
@@ -143,24 +140,23 @@ menut Toggle\ Line\ &Numbering<Tab>:set\ nu!		&Numerazione\ Sì/No<Tab>:set\ nu!
 menut Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Numerazione\ relati&Va\ Sì/No<Tab>:set\ rnu!
 menut Toggle\ &List\ Mode<Tab>:set\ list!		Modo\ &List\ Sì/No<Tab>:set\ list!
 menut Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Linee\ &Continuate\ Sì/No<Tab>:set\ wrap!
-menut Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	A\ capo\ alla\ &Parola\ Sì/No<Tab>:set\ lbr!
-menut Toggle\ Tab\ &expanding<Tab>:set\ et!		&Espandi\ Tabulazione\ Sì/No<Tab>:set\ et!
+menut Toggle\ W&rapping\ at\ Word<Tab>:set\ lbr!	A\ capo\ alla\ &Parola\ Sì/No<Tab>:set\ lbr!
+menut Toggle\ Tab\ &Expanding<Tab>:set\ et!		&Espandi\ Tabulazione\ Sì/No<Tab>:set\ et!
 menut Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Indentazione\ &Automatica\ Sì/No<Tab>:set\ ai!
 menut Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	Indentazione\ stile\ &C\ Sì/No<Tab>:set\ cin!
 menut &Shiftwidth					&Spazi\ rientranza
-"menut &Shiftwidth.2<Tab>:set\ sw=2\ sw?<CR>		&Spazi\ rientranza.2<Tab>:set\ sw=2\ sw?<CR>
-"menut &Shiftwidth.3<Tab>:set\ sw=3\ sw?<CR>		&Spazi\ rientranza.3<Tab>:set\ sw=3\ sw?<CR>
-"menut &Shiftwidth.4<Tab>:set\ sw=4\ sw?<CR>		&Spazi\ rientranza.4<Tab>:set\ sw=4\ sw?<CR>
-"menut &Shiftwidth.5<Tab>:set\ sw=5\ sw?<CR>		&Spazi\ rientranza.5<Tab>:set\ sw=5\ sw?<CR>
-"menut &Shiftwidth.6<Tab>:set\ sw=6\ sw?<CR>		&Spazi\ rientranza.6<Tab>:set\ sw=6\ sw?<CR>
-"menut &Shiftwidth.8<Tab>:set\ sw=8\ sw?<CR>		&Spazi\ rientranza.8<Tab>:set\ sw=8\ sw?<CR>
+"menut &Shiftwidth.3					&Spazi\ rientranza.3
+"menut &Shiftwidth.4					&Spazi\ rientranza.4
+"menut &Shiftwidth.5					&Spazi\ rientranza.5
+"menut &Shiftwidth.6					&Spazi\ rientranza.6
+"menut &Shiftwidth.8					&Spazi\ rientranza.8
 menut Soft\ &Tabstop					&Tabulazione\ software
-"menut Soft\ &Tabstop.2<Tab>:set\ sts=2\ sts?		&Tabulazione\ software.2<Tab>:set\ sts=2\ sts?
-"menut Soft\ &Tabstop.3<Tab>:set\ sts=3\ sts?		&Tabulazione\ software.3<Tab>:set\ sts=3\ sts?
-"menut Soft\ &Tabstop.4<Tab>:set\ sts=4\ sts?		&Tabulazione\ software.4<Tab>:set\ sts=4\ sts?
-"menut Soft\ &Tabstop.5<Tab>:set\ sts=5\ sts?		&Tabulazione\ software.5<Tab>:set\ sts=5\ sts?
-"menut Soft\ &Tabstop.6<Tab>:set\ sts=6\ sts?		&Tabulazione\ software.6<Tab>:set\ sts=6\ sts?
-"menut Soft\ &Tabstop.8<Tab>:set\ sts=8\ sts?		&Tabulazione\ software.8<Tab>:set\ sts=8\ sts?
+"menut Soft\ &Tabstop.2					&Tabulazione\ software.2
+"menut Soft\ &Tabstop.3					&Tabulazione\ software.3
+"menut Soft\ &Tabstop.4					&Tabulazione\ software.4
+"menut Soft\ &Tabstop.5					&Tabulazione\ software.5
+"menut Soft\ &Tabstop.6					&Tabulazione\ software.6
+"menut Soft\ &Tabstop.8					&Tabulazione\ software.8
 menut Te&xt\ Width\.\.\.				Lunghe&Zza\ riga\.\.\.
 menut &File\ Format\.\.\.				Formato\ &File\.\.\.
 
@@ -173,37 +169,61 @@ menut C&olor\ Scheme		Schema\ c&Olori
 
 menut blue		blù
 menut darkblue		blù\ scuro
+menut default		predefinito
+menut delek		delek
 menut desert		deserto
 menut elflord		signore\ degli\ elfi
 menut evening		sera
+menut habamax		habamax
 menut industry		industria
+menut koehler		koehler
+menut lunaperche	luna\ perché
 menut morning		mattino
+menut murphy		murphy
+menut pablo		pablo
 menut peachpuff		pesca
 menut quiet		quieto
+menut retrobox		retrobox
+menut ron		ron
 menut shine		brillante
 menut sorbet		sorbetto
 menut slate		ardesia
 menut torte		torta
+menut unokai		unokai
 menut wildcharm		fascino\ selvaggio
+menut zaibatsu		zaibatsu
+menut zellner		zellner
 menut BLUE		BLÙ
 menut DARKBLUE		BLÙ\ SCURO
+menut DEFAULT		DEFAULT
+menut DELEK		DELEK
 menut DESERT		DESERTO
 menut ELFLORD		SIGNORE\ DEGLI\ ELFI
 menut EVENING		SERA
+menut HABAMAX		HABAMAX
 menut INDUSTRY		INDUSTRIA
+menut KOEHLER		KOEHLER
+menut LUNAPERCHE	LUNA\ PERCHÉ
 menut MORNING		MATTINO
+menut MURPHY		MURPHY
+menut PABLO		PABLO
 menut PEACHPUFF		PESCA
 menut QUIET		QUIETO
+menut RETROBOX		RETROBOX
+menut RON		RON
 menut SHINE		BRILLANTE
 menut SORBET		SORBETTO
 menut SLATE		ARDESIA
 menut TORTE		TORTA
+menut UNOKAI		UNOKAI
 menut WILDCHARM		FASCINO\ SELVAGGIO
+menut ZAIBATSU		ZAIBATSU
+menut ZELLNER		ZELLNER
 
 menut Show\ &Keymaps\ in\ Menu	Mostra\ Ma&ppe\ tastiera\ in\ Menù
 menut &Keymap			Ma&ppa\ tastiera
 
-menut None			nessuna
+menut None			Nessuna
 menut accents			accenti
 menut arabic			arabo
 menut armenian-eastern		armeno-orientale
@@ -217,10 +237,11 @@ menut czech			ceco
 menut dvorak			tastiera-dvorak
 menut esperanto			esperanto
 menut french-azerty		francese-azerty
+menut georgian-qwerty		georgiano-qwerty
 menut german-qwertz		tedesco-qwertz
 menut greek			greco
 menut hebrew			ebraico
-menut hebrewp			ebraicop
+menut hebrewp			ebraico-fonetico
 menut kana			kana
 menut kazakh-jcuken		kazako-jcuken
 menut korean			coreano
@@ -251,8 +272,9 @@ menut thaana			thaana
 menut thaana-phonetic		thaana-fonetico
 menut turkish-f			turco-f
 menut turkish-q			turco-q
-menut ukrainian-dvorak		ukraino-dvorak
-menut ukrainian-jcuken		ukraino-jcuken
+menut ukrainian-dvorak		ucraino-dvorak
+menut ukrainian-jcuken		ucraino-jcuken
+menut ukrainian-enhanced	ucraino-migliorato
 menut vietnamese-telex		vietnamita-telex
 menut vietnamese-viqr		vietnamita-viqr
 menut vietnamese-vni		vietnamita-vni
@@ -269,10 +291,11 @@ menut CZECH			CECO
 menut DVORAK			TASTIERA-DVORAK
 menut ESPERANTO			ESPERANTO
 menut FRENCH-AZERTY		FRANCESE-AZERTY
+menut GEORGIAN-QWERTY		GEORGIANO-QWERTY
 menut GERMAN-QWERTZ		TEDESCO-QWERTZ
 menut GREEK			GRECO
 menut HEBREW			EBRAICO
-menut HEBREWP			EBRAICOP
+menut HEBREWP			EBRAICO-FONETICO
 menut KANA			KANA
 menut KAZAKH-JCUKEN		KAZAKO-JCUKEN
 menut KOREAN			COREANO
@@ -303,8 +326,9 @@ menut THAANA			THAANA
 menut THAANA-PHONETIC		THAANA-FONETICO
 menut TURKISH-F			TURCO-F
 menut TURKISH-Q			TURCO-Q
-menut UKRAINIAN-DVORAK		UKRAINO-DVORAK
-menut UKRAINIAN-JCUKEN		UKRAINO-JCUKEN
+menut UKRAINIAN-DVORAK		UCRAINO-DVORAK
+menut UKRAINIAN-JCUKEN		UCRAINO-JCUKEN
+menut UKRAINIAN-ENHANCED	UCRAINO-MIGLIORATO
 menut VIETNAMESE-TELEX		VIETNAMITA-TELEX
 menut VIETNAMESE-VIQR		VIETNAMITA-VIQR
 menut VIETNAMESE-VNI		VIETNAMITA-VNI
@@ -314,37 +338,36 @@ menut Select\ Fo&nt\.\.\.		Scegli\ &Font\.\.\.
 " Menù strumenti programmazione
 menut &Tools				&Strumenti
 
-menut &Jump\ to\ this\ tag<Tab>g^]	&Vai\ a\ questa\ tag<Tab>g^]
-menut Jump\ &back<Tab>^T		Torna\ &Indietro<Tab>^T
+menut &Jump\ to\ This\ Tag<Tab>g^]	&Vai\ a\ questa\ tag<Tab>g^]
+menut Jump\ &Back<Tab>^T		Torna\ &Indietro<Tab>^T
 menut Build\ &Tags\ File		Costruisci\ file\ &Tag\
 " Menù ortografia / Spelling
 menut &Spelling			&Ortografia
 
 menut &Spell\ Check\ On			Attiva\ &Controllo\ ortografico
 menut Spell\ Check\ &Off		&Disattiva\ controllo\ ortografico
-menut To\ &Next\ error<Tab>]s		Errore\ &Seguente<tab>]s
-menut To\ &Previous\ error<Tab>[s	Errore\ &Precedente<tab>[s
+menut To\ &Next\ Error<Tab>]s		Errore\ &Seguente<Tab>]s
+menut To\ &Previous\ Error<Tab>[s	Errore\ &Precedente<Tab>[s
 menut Suggest\ &Corrections<Tab>z=	&Suggerimenti<Tab>z=
-menut &Repeat\ correction<Tab>:spellrepall	&Ripeti\ correzione<Tab>:spellrepall
-menut Set\ language\ to			Imposta\ lingua\ a
-menut Set\ language\ to\ "en"		Imposta\ lingua\ a\ "en"
-menut Set\ language\ to\ "en_au"	Imposta\ lingua\ a\ "en_au"
-menut Set\ language\ to\ "en_ca"	Imposta\ lingua\ a\ "en_ca"
-menut Set\ language\ to\ "en_gb"	Imposta\ lingua\ a\ "en_gb"
-menut Set\ language\ to\ "en_nz"	Imposta\ lingua\ a\ "en_nz"
-menut Set\ language\ to\ "en_us"	Imposta\ lingua\ a\ "en_us"
+menut &Repeat\ Correction<Tab>:spellrepall	&Ripeti\ correzione<Tab>:spellrepall
+menut Set\ Language\ to\ "en"		Imposta\ lingua\ a\ "en"
+menut Set\ Language\ to\ "en_au"	Imposta\ lingua\ a\ "en_au"
+menut Set\ Language\ to\ "en_ca"	Imposta\ lingua\ a\ "en_ca"
+menut Set\ Language\ to\ "en_gb"	Imposta\ lingua\ a\ "en_gb"
+menut Set\ Language\ to\ "en_nz"	Imposta\ lingua\ a\ "en_nz"
+menut Set\ Language\ to\ "en_us"	Imposta\ lingua\ a\ "en_us"
 menut &Find\ More\ Languages		&Trova\ altre\ lingue
 
 " Menù piegature / Fold
 menut &Folding					&Piegature
 " apri e chiudi piegature
-menut &Enable/Disable\ folds<Tab>zi		Pi&egature\ Sì/No<Tab>zi
+menut &Enable/Disable\ Folds<Tab>zi		Pi&egature\ Sì/No<Tab>zi
 menut &View\ Cursor\ Line<Tab>zv		&Vedi\ linea\ col\ Cursore<Tab>zv
-menut Vie&w\ Cursor\ Line\ only<Tab>zMzx	Vedi\ &Solo\ linea\ col\ Cursore<Tab>zMzx
-menut C&lose\ More\ folds<Tab>zm		C&Hiudi\ più\ piegature<Tab>zm
-menut &Close\ All\ folds<Tab>zM			&Chiudi\ tutte\ le\ piegature<Tab>zM
-menut O&pen\ More\ folds<Tab>zr			A&Pri\ più\ piegature<Tab>zr
-menut &Open\ All\ folds<Tab>zR			&Apri\ tutte\ le\ piegature<Tab>zR
+menut Vie&w\ Cursor\ Line\ Only<Tab>zMzx	Vedi\ &Solo\ linea\ col\ Cursore<Tab>zMzx
+menut C&lose\ More\ Folds<Tab>zm		C&Hiudi\ più\ piegature<Tab>zm
+menut &Close\ All\ Folds<Tab>zM			&Chiudi\ tutte\ le\ piegature<Tab>zM
+menut O&pen\ More\ Folds<Tab>zr			A&Pri\ più\ piegature<Tab>zr
+menut &Open\ All\ Folds<Tab>zR			&Apri\ tutte\ le\ piegature<Tab>zR
 " metodo piegatura
 menut Fold\ Met&hod				Meto&Do\ piegatura
 menut M&anual					&Manuale
@@ -359,7 +382,15 @@ menut Create\ &Fold<Tab>zf			Crea\ &Piegatura<Tab>zf
 menut &Delete\ Fold<Tab>zd			&Togli\ piegatura<Tab>zd
 menut Delete\ &All\ Folds<Tab>zD		Togli\ &Tutte\ le\ piegature<Tab>zD
 " movimenti all'interno delle piegature
-menut Fold\ col&umn\ width			Larghezza\ piegat&Ure\ in\ colonne
+menut Fold\ Col&umn\ Width			Larghezza\ piegat&Ure\ in\ colonne
+"menut Fold\ Col&umn\ Width.\ &0\		Larghezza\ piegat&Ure\ in\ colonne.\ &0\
+"menut Fold\ Col&umn\ Width.\ &2\		Larghezza\ piegat&Ure\ in\ colonne.\ &2\
+"menut Fold\ Col&umn\ Width.\ &3\		Larghezza\ piegat&Ure\ in\ colonne.\ &3\
+"menut Fold\ Col&umn\ Width.\ &4\		Larghezza\ piegat&Ure\ in\ colonne.\ &4\
+"menut Fold\ Col&umn\ Width.\ &5\		Larghezza\ piegat&Ure\ in\ colonne.\ &5\
+"menut Fold\ Col&umn\ Width.\ &6\		Larghezza\ piegat&Ure\ in\ colonne.\ &6\
+"menut Fold\ Col&umn\ Width.\ &7\		Larghezza\ piegat&Ure\ in\ colonne.\ &7\
+"menut Fold\ Col&umn\ Width.\ &8\		Larghezza\ piegat&Ure\ in\ colonne.\ &8\
 
 menut &Diff					&Differenza
 "
@@ -383,9 +414,9 @@ menut &Open<Tab>:copen		&Apri<Tab>:copen
 menut &Close<Tab>:cclose	&Chiudi<Tab>:cclose
 
 menut &Convert\ to\ HEX<Tab>:%!xxd	&Converti\ a\ esadecimale<Tab>:%!xxd
-menut Conve&rt\ back<Tab>:%!xxd\ -r	Conve&rti\ da\ esadecimale<Tab>:%!xxd\ -r
+menut Conve&rt\ Back<Tab>:%!xxd\ -r	Conve&rti\ da\ esadecimale<Tab>:%!xxd\ -r
 
-menut Se&T\ Compiler		Impo&Sta\ Compilatore
+menut Se&t\ Compiler		Impo&Sta\ Compilatore
 menut Show\ Compiler\ Se&ttings\ in\ Menu	Mostra\ Impos&Tazioni\ Compilatore\ nel\ Menù
 
 " Buffers / Buffer
@@ -396,20 +427,20 @@ menut &Delete			&Elimina
 menut &Alternate		&Alternato
 menut &Next			&Successivo
 menut &Previous			&Precedente
-menut [No\ File]		[Nessun\ File]
+"menut [No\ File]		[Nessun\ File]
 
 " Syntax / Sintassi
 menut &Syntax				&Sintassi
 
-menut &Show\ File\ Types\ in\ menu	Mo&Stra\ tipi\ di\ file\ nel\ menù
-menut Set\ '&syntax'\ only		&S\ Attiva\ solo\ \ 'syntax'
-menut Set\ '&filetype'\ too		&F\ Attiva\ anche\ 'filetype'
+menut &Show\ File\ Types\ in\ Menu	Mo&Stra\ tipi\ di\ file\ nel\ menù
+menut Set\ '&syntax'\ Only		&S\ Attiva\ solo\ \ 'syntax'
+menut Set\ '&filetype'\ Too		&F\ Attiva\ anche\ 'filetype'
 menut &Off				&Disattiva
 menut &Manual				&Manuale
 menut A&utomatic			A&Utomatico
-menut on/off\ for\ &This\ file		Attiva\ Sì/No\ su\ ques&To\ file
-menut Co&lor\ test			Test\ &Colori
-menut &Highlight\ test			Test\ &Evidenziamento
+menut On/Off\ for\ &This\ File		Attiva\ Sì/No\ su\ ques&To\ file
+menut Co&lor\ Test			Test\ &Colori
+menut &Highlight\ Test			Test\ &Evidenziamento
 menut &Convert\ to\ HTML		Converti\ ad\ &HTML
 
 let g:menutrans_set_lang_to = "Cambia linguaggio a"
@@ -432,15 +463,15 @@ menut Move\ &To				&Muovi\ verso
 
 menut &Top<Tab>^WK			&Cima<Tab>^WK
 menut &Bottom<Tab>^WJ			&Fondo<Tab>^WJ
-menut &Left\ side<Tab>^WH		Lato\ &Sinistro<Tab>^WH
-menut &Right\ side<Tab>^WL		Lato\ &Destro<Tab>^WL
+menut &Left\ Side<Tab>^WH		Lato\ &Sinistro<Tab>^WH
+menut &Right\ Side<Tab>^WL		Lato\ &Destro<Tab>^WL
 menut Rotate\ &Up<Tab>^WR		Ruota\ verso\ l'&Alto<Tab>^WR
 menut Rotate\ &Down<Tab>^Wr		Ruota\ verso\ il\ &Basso<Tab>^Wr
 menut &Equal\ Size<Tab>^W=		&Uguale\ ampiezza<Tab>^W=
 menut &Max\ Height<Tab>^W_		A&Ltezza\ massima<Tab>^W_
 menut M&in\ Height<Tab>^W1_		Al&Tezza\ minima<Tab>^W1_
 menut Max\ &Width<Tab>^W\|		Lar&Ghezza\ massima<Tab>^W\|
-menut Min\ Widt&h<Tab>^W1\|		Larg&hhezza\ minima<Tab>^W1\|
+menut Min\ Widt&h<Tab>^W1\|		Larg&Hezza\ minima<Tab>^W1\|
 
 " The popup menu
 menut &Undo		&Annulla
@@ -457,40 +488,40 @@ menut Select\ &Sentence		Seleziona\ &Frase
 menut Select\ Pa&ragraph	Seleziona\ Para&Grafo
 
 " The GUI Toolbar / Barra Strumenti
-menut Open		Apri
-menut Save		Salva
-menut SaveAll		Salva\ Tutto
-menut Print		Stampa
-menut Undo		Annulla
-menut Redo		Ripristina
-menut Cut		Taglia
-menut Copy		Copia
-menut Paste		Incolla
+"menut Open		Apri
+"menut Save		Salva
+"menut SaveAll		Salva\ Tutto
+"menut Print		Stampa
+"menut Undo		Annulla
+"menut Redo		Ripristina
+"menut Cut		Taglia
+"menut Copy		Copia
+"menut Paste		Incolla
 " -sep3-
-menut Find	Cerca
-menut FindNext	Cerca\ Successivo
-menut FindPrev	Cerca\ Precedente
-menut Replace	Sostituisci
+"menut Find	Cerca
+"menut FindNext	Cerca\ Successivo
+"menut FindPrev	Cerca\ Precedente
+"menut Replace	Sostituisci
 " -sep4-
-menut New		Nuova\ finestra
-menut WinSplit		Dividi\ finestra
-menut WinMax		Massima\ ampiezza
-menut WinMin		Minima\ ampiezza
-menut WinVSplit		Dividi\ verticalmente
-menut WinMaxWidth	Massima\ larghezza
-menut WinMinWidth	Minima\ larghezza
-menut WinClose		Chiudi\ finestra
-menut LoadSesn		Carica\ Sessione
-menut SaveSesn		Salva\ Sessione
-menut RunScript		Esegui\ Script
-menut Make		Make
-menut Shell		Shell
-menut RunCtags		Esegui\ Ctags
-menut TagJump		Vai\ a\ Tag
-menut Help		Aiuto
-menut FindHelp		Cerca\ in\ Aiuto
+"menut New		Nuova\ finestra
+"menut WinSplit		Dividi\ finestra
+"menut WinMax		Massima\ ampiezza
+"menut WinMin		Minima\ ampiezza
+"menut WinVSplit		Dividi\ verticalmente
+"menut WinMaxWidth	Massima\ larghezza
+"menut WinMinWidth	Minima\ larghezza
+"menut WinClose		Chiudi\ finestra
+"menut LoadSesn		Carica\ Sessione
+"menut SaveSesn		Salva\ Sessione
+"menut RunScript		Esegui\ Script
+"menut Make		Make
+"menut Shell		Shell
+"menut RunCtags		Esegui\ Ctags
+"menut TagJump		Vai\ a\ Tag
+"menut Help		Aiuto
+"menut FindHelp		Cerca\ in\ Aiuto
 
-let &cpo = s:keepcpo
-unlet s:keepcpo
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: set sw=2 :

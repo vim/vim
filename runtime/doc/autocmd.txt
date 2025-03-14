@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Mar 08
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Mar 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1234,7 +1234,9 @@ Syntax				When the 'syntax' option has been set.  The
 							*TabClosed*
 TabClosed			After closing a tab page.
 							*TabClosedPre*
-TabClosedPre			Before closing a tab page.
+TabClosedPre			Before closing a tab page.  The window layout
+				is locked, thus opening and closing of windows
+				is prohibited.
 							*TabEnter*
 TabEnter			Just after entering a tab page. |tab-page|
 				After triggering the WinEnter and before
@@ -1349,6 +1351,10 @@ TextYankPost			After text has been yanked or deleted in the
 				called recursively.
 				It is not allowed to change the buffer text,
 				see |textlock|. *E1064*
+				Also triggered indirectly when Vim tries to
+				become owner of the Visual selection because
+				of setting "autoselect" for 'guioptions' or
+				'clipboard'.
 				{only when compiled with the +eval feature}
 
 							*User*

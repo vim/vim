@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Mar 07
+*options.txt*	For Vim version 9.1.  Last change: 2025 Mar 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2107,14 +2107,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'completefuzzycollect'* *'cfc'*
 'completefuzzycollect' 'cfc'	string	(default: empty)
 				global
-	This option enables fuzzy collection for (only some) specific
-	|ins-completion| modes, adjusting how items are gathered for fuzzy
-	matching based on input.
-	The option can contain the following values (separated by commas),
-	each enabling fuzzy collection for a specific completion mode:
-	files		file names
-	keyword		keyword completion in 'complete' and current file
-	whole_line	whole lines
+	A comma-separated list of strings to enable fuzzy collection for
+	specific |ins-completion| modes, affecting how matches are gathered
+	during completion.  For specified modes, fuzzy matching is used to
+	find completion candidates instead of the standard prefix-based
+	matching.  This option can contain the following values:
+
+	keyword		keywords in the current file	|i_CTRL-X_CTRL-N|
+			keywords with flags ".", "w",	|i_CTRL-N| |i_CTRL-P|
+			"b", "u", "U" and "k{dict}" in 'complete'
+			keywords in 'dictionary'	|i_CTRL-X_CTRL-K|
+
+	files		file names			|i_CTRL-X_CTRL-F|
+
+	whole_line	whole lines			|i_CTRL-X_CTRL-L|
+
+	When used the 'completeopt' "longest" option value, fuzzy collection
+	can identify the longest common string among the best fuzzy matches
+	and insert it automatically.
 
 						*'completeitemalign'* *'cia'*
 'completeitemalign' 'cia' string (default: "abbr,kind,menu")
