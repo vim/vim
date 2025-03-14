@@ -5109,7 +5109,7 @@ func Test_autocmd_tabclosedpre()
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * tabmove 0
   tabclose
-  call assert_equal('1Z2A3>B', GetTabs())
+  call assert_equal('1>Z2A3B', GetTabs())
   call ClearAutomcdAndCreateTabs()
   au TabClosedPre * tabmove 0
   tabclose 1
@@ -5138,9 +5138,9 @@ func Test_autocmd_tabclosedpre()
   call assert_fails('tabclose 1', 'E242')
 
   " Test directly closing the tab page with ':tabclose'
+  au! TabClosedPre * mksession!
   tabonly
   bw!
-  au! TabClosedPre * mksession!
   tabnew IMPORTANTTAB
   sp
   tabclose
