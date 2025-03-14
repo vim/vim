@@ -3253,6 +3253,57 @@ var_any_get_oc_member(class_T *current_class, isn_T *iptr, typval_T *tv)
 }
 
 /*
+ * do ISN_PUT or ISN_IPUT instruction depending on fixindent parameter
+ */
+    static void
+isn_put_do (ectx_T *ectx, isn_T *iptr, typval_T *tv, int fixindent) {
+    int		regname = iptr->isn_arg.put.put_regname;
+    linenr_T	lnum = iptr->isn_arg.put.put_lnum;
+    char_u	*expr = NULL;
+    int		dir = FORWARD;
+
+    if (lnum < -2)
+    {
+	// line number was put on the stack by ISN_RANGE
+	tv = STACK_TV_BOT(-1);
+	curwin->w_cursor.lnum = tv->vval.v_number;
+	if (lnum == LNUM_VARIABLE_RANGE_ABOVE)
+	    dir = BACKWARD;
+	--ectx->ec_stack.ga_len;
+    }
+    else if (lnum == -2)
+	// :put! above cursor
+	dir = BACKWARD;
+    else if (lnum >= 0)
+    {
+	curwin->w_cursor.lnum = lnum;
+	if (lnum == 0)
+	    // check_cursor() below will move to line 1
+	    dir = BACKWARD;
+    }
+
+    if (regname == '=')
+    {
+	tv = STACK_TV_BOT(-1);
+	if (tv->v_type == VAR_STRING)
+	    expr = tv->vval.v_string;
+	else
+	{
+	    expr = typval2string(tv, TRUE); // allocates value
+	    clear_tv(tv);
+	}
+	--ectx->ec_stack.ga_len;
+    }
+    check_cursor();
+
+    if (fixindent)
+	do_put(regname, expr, dir, 1L, PUT_LINE|PUT_CURSLINE|PUT_FIXINDENT);
+    else
+	do_put(regname, expr, dir, 1L, PUT_LINE|PUT_CURSLINE);
+    vim_free(expr);
+}
+
+/*
  * Execute instructions in execution context "ectx".
  * Return OK or FAIL;
  */
@@ -5948,48 +5999,10 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_PUT:
-		{
-		    int		regname = iptr->isn_arg.put.put_regname;
-		    linenr_T	lnum = iptr->isn_arg.put.put_lnum;
-		    char_u	*expr = NULL;
-		    int		dir = FORWARD;
-
-		    if (lnum < -2)
-		    {
-			// line number was put on the stack by ISN_RANGE
-			tv = STACK_TV_BOT(-1);
-			curwin->w_cursor.lnum = tv->vval.v_number;
-			if (lnum == LNUM_VARIABLE_RANGE_ABOVE)
-			    dir = BACKWARD;
-			--ectx->ec_stack.ga_len;
-		    }
-		    else if (lnum == -2)
-			// :put! above cursor
-			dir = BACKWARD;
-		    else if (lnum >= 0)
-		    {
-			curwin->w_cursor.lnum = lnum;
-			if (lnum == 0)
-			    // check_cursor() below will move to line 1
-			    dir = BACKWARD;
-		    }
-
-		    if (regname == '=')
-		    {
-			tv = STACK_TV_BOT(-1);
-			if (tv->v_type == VAR_STRING)
-			    expr = tv->vval.v_string;
-			else
-			{
-			    expr = typval2string(tv, TRUE); // allocates value
-			    clear_tv(tv);
-			}
-			--ectx->ec_stack.ga_len;
-		    }
-		    check_cursor();
-		    do_put(regname, expr, dir, 1L, PUT_LINE|PUT_CURSLINE);
-		    vim_free(expr);
-		}
+		isn_put_do(ectx, iptr, tv, FALSE);
+		break;
+	    case ISN_IPUT:
+		isn_put_do(ectx, iptr, tv, TRUE);
 		break;
 
 	    case ISN_CMDMOD:
@@ -7619,7 +7632,18 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 						 iptr->isn_arg.put.put_regname,
 					     (long)iptr->isn_arg.put.put_lnum);
 		break;
-
+	    case ISN_IPUT:
+		if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE_ABOVE)
+		    smsg("%s%4d PUT %c above range",
+				  pfx, current, iptr->isn_arg.put.put_regname);
+		else if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE)
+		    smsg("%s%4d PUT %c range",
+				  pfx, current, iptr->isn_arg.put.put_regname);
+		else
+		    smsg("%s%4d PUT %c %ld", pfx, current,
+						 iptr->isn_arg.put.put_regname,
+					     (long)iptr->isn_arg.put.put_lnum);
+		break;
 	    case ISN_CMDMOD:
 		{
 		    char_u  *buf;
@@ -7845,6 +7869,5 @@ check_not_string(typval_T *tv)
     }
     return OK;
 }
-
 
 #endif // FEAT_EVAL
