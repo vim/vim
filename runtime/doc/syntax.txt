@@ -2393,10 +2393,15 @@ Comments are also highlighted by default.  You can turn this off by using: >
 
 	:let make_no_comments = 1
 
-Microsoft Makefile handles variable expansion and comments differently
-(backslashes are not used for escape).  If you see any wrong highlights
-because of this, you can try this: >
+There are various Make implementations, which add extensions other than the
+POSIX specification and thus are mutually incompatible.  If the filename is
+BSDmakefile or GNUmakefile, the corresponding implementation is automatically
+detected; otherwise it is determined by the file contents.  If you see any
+wrong highlights because of this, you can enforce flavor by setting one of the
+following: >
 
+	:let make_bsd = 1  " or
+	:let make_gnu = 1  " or
 	:let make_microsoft = 1
 
 
