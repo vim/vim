@@ -2471,7 +2471,7 @@ ex_display(exarg_T *eap)
     }
 
     // display last inserted text
-    if ((p = get_last_insert()) != NULL
+    if ((p = get_last_insert()->string) != NULL
 		  && (arg == NULL || vim_strchr(arg, '.') != NULL) && !got_int
 						      && !message_filtered(p))
     {

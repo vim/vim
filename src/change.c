@@ -2235,7 +2235,7 @@ open_line(
 	    saved_line[curwin->w_cursor.col] = NUL;
 	    // Remove trailing white space, unless OPENLINE_KEEPTRAIL used.
 	    if (trunc_line && !(flags & OPENLINE_KEEPTRAIL))
-		truncate_spaces(saved_line);
+		truncate_spaces(saved_line, curwin->w_cursor.col);
 	    ml_replace(curwin->w_cursor.lnum, saved_line, FALSE);
 	    saved_line = NULL;
 	    if (did_append)
