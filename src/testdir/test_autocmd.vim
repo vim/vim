@@ -5151,8 +5151,11 @@ func Test_autocmd_tabclosedpre()
 
   " Test directly closing the tab page with ':tabonly'
   " Z is closed before A. Hence A overwrites the session.
-  au! TabClosedPre * mksession!
+  au!
+  tabonly
+  bw!
   e Z
+  au TabClosedPre * mksession!
   tabnew A
   tabnew B
   tabonly
