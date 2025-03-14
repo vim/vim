@@ -5163,7 +5163,7 @@ func Test_autocmd_tabclosedpre()
   call assert_equal('1>A2B', GetTabs())
 
   " Clean up
-  call system('rm ' . ' Session.vim')
+  call delete('Session.vim')
   au!
   only
   tabonly
