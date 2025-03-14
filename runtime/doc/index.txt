@@ -1559,6 +1559,8 @@ tag		command		action ~
 |:ptselect|	:pts[elect]	|:tselect| and show tag in preview window
 |:public|	:public		prefix for a class or object member
 |:put|		:pu[t]		insert contents of register in the text
+|:iput|		:ipu[t]		like |:put|, but adjust the indent to the 
+				current line
 |:pwd|		:pw[d]		print current directory
 |:py3|		:py3		execute Python 3 command
 |:python3|	:python3	same as :py3

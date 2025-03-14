@@ -231,6 +231,7 @@ static void	ex_winpos(exarg_T *eap);
 #endif
 static void	ex_operators(exarg_T *eap);
 static void	ex_put(exarg_T *eap);
+static void	ex_iput(exarg_T *eap);
 static void	ex_copymove(exarg_T *eap);
 static void	ex_submagic(exarg_T *eap);
 static void	ex_join(exarg_T *eap);
@@ -2372,7 +2373,7 @@ do_one_cmd(
 	    goto doend;
 	}
 #endif
-	if (valid_yank_reg(*ea.arg, (ea.cmdidx != CMD_put
+	if (valid_yank_reg(*ea.arg, ((ea.cmdidx != CMD_put && ea.cmdidx != CMD_iput)
 					      && !IS_USER_CMDIDX(ea.cmdidx))))
 	{
 	    ea.regname = *ea.arg++;
@@ -8514,6 +8515,25 @@ ex_put(exarg_T *eap)
     check_cursor_col();
     do_put(eap->regname, NULL, eap->forceit ? BACKWARD : FORWARD, 1L,
 						       PUT_LINE|PUT_CURSLINE);
+}
+
+/*
+ * ":iput".
+ */
+    static void
+ex_iput(exarg_T *eap)
+{
+    // ":0iput" works like ":1iput!".
+    if (eap->line2 == 0)
+    {
+	eap->line2 = 1;
+	eap->forceit = TRUE;
+    }
+    curwin->w_cursor.lnum = eap->line2;
+    check_cursor_col();
+    do_put(eap->regname, NULL, eap->forceit ? BACKWARD : FORWARD, 1L,
+						      PUT_LINE|PUT_CURSLINE
+						      |PUT_FIXINDENT);
 }
 
 /*

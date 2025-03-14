@@ -4598,6 +4598,11 @@ compile_def_function_body(
 		    line = compile_put(p, &ea, cctx);
 		    break;
 
+	    case CMD_iput:
+		    ea.cmd = cmd;
+		    line = compile_put(p, &ea, cctx);
+		    break;
+
 	    case CMD_substitute:
 		    if (check_global_and_subst(ea.cmd, p) == FAIL)
 			return FAIL;
