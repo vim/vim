@@ -348,43 +348,43 @@ after/syntax/c.vim contained in it to overwrite a user's c.vim.
 		Doesn't override vimball installation.
 >
 	g:GetLatestVimScripts_scriptaddr
-<        default='https://www.vim.org/scripts/script.php?script_id='
+<	default='https://www.vim.org/scripts/script.php?script_id='
 		Override this if your system needs
 	  ...  ='http://vim.sourceforge.net/script.php?script_id='
 >
 	g:GetLatestVimScripts_downloadaddr
-<        default='https://www.vim.org/scripts/download_script.php?src_id='
+<	default='https://www.vim.org/scripts/download_script.php?src_id='
 		Override this if your system needs
 	  ...  ='http://vim.sourceforge.net/scripts/download_script.php?src_id='
 >
 	g:GetLatestVimScripts_bunzip2
-<        default= bunzip2
+<	default= bunzip2
 		This variable holds the name of the command to decompress .bz2
 		files
 >
 	g:GetLatestVimScripts_bunzip3
-<        default= bunzip3
+<	default= bunzip3
 		This variable holds the name of the command to decompress .bz3
 		files
 >
 	g:GetLatestVimScripts_gunzip
-<        default= gunzip
+<	default= gunzip
 		This variable holds the name of the command to decompress .gz
 		files
 >
 	g:GetLatestVimScripts_unxz
-<        default= unxz
+<	default= unxz
 		This variable holds the name of the command to decompress .xz
 		files
 >
 	g:GetLatestVimScripts_unzip
-<        default= unzip
+<	default= unzip
 		This variable holds the name of the command to decompress .zip
 		files
 
 Note: The variables associated with decompression commands help workaround
-      crossplatform issues. For example, on Windows is possible to delegate this
-      calls into `wsl` by doing: >
+      crossplatform issues. For example, on Windows is possible to delegate
+      this calls into `wsl` by doing: >
 
 	let g:GetLatestVimScripts_bunzip2= "wsl -e bunzip2"
 	let g:GetLatestVimScripts_gunzip= "wsl -e gunzip"

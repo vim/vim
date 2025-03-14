@@ -41606,7 +41606,7 @@ Completion: ~
 - handle multi-line completion as expected
 - improved commandline completion for the |:hi| command
 - New option value for 'wildmode':
-  	"noselect"	- do not auto select an entry in the wildmenu
+	"noselect"	- do not auto select an entry in the wildmenu
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have
