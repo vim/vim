@@ -5137,6 +5137,16 @@ func Test_autocmd_tabclosedpre()
   au TabClosedPre * new X | new Y | new Z
   call assert_fails('tabclose 1', 'E242')
 
+  " Test directly closing the tab page with ':tabclose'
+  tabonly
+  bw!
+  au! TabClosedPre * mksession!
+  tabnew IMPORTANTTAB
+  sp
+  tabclose
+  source Session.vim
+  call assert_equal('1[NoName]2>IMPIMP', GetTabs())
+
   " Clean up
   au!
   only
