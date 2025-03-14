@@ -2188,7 +2188,7 @@ generate_SOURCE(cctx_T *cctx, int sid)
 }
 
 /*
- * Generate an ISN_PUT instruction.
+ * Generate an ISN_PUT or ISN_IPUT instruction depending on fixindent.
  */
     int
 generate_PUT(cctx_T *cctx, int regname, linenr_T lnum, int fixindent)
