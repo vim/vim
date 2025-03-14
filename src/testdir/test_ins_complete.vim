@@ -3375,4 +3375,35 @@ func Test_complete_multiline_marks()
   delfunc Omni_test
 endfunc
 
+function Test_complete_add_during_completion()
+  let g:async = v:false
+  function! AppendCandidate() abort
+    if v:char == 'b'
+      if g:async
+        call timer_start(100, {-> complete_add([ {'word': 'bool'}, {'word': 'balon'}, {'word': 'foo'} ], 1)})
+        return
+      endif
+      call complete_add({'word': 'bar'}, 1)
+    endif
+  endfunction
+  set cot=menu,menuone,noinsert
+
+  new
+  inoremap <buffer> <F5> <cmd>call complete(1, ["red", "blue"])<cr>
+  autocmd InsertCharPre * :call AppendCandidate()
+
+  call feedkeys("A\<F5>b\<C-Y>", 'tx')
+  call assert_equal('bar', getline('.'))
+
+  let g:async = v:true
+  call feedkeys("S\<F5>b\<Cmd>sleep 300m\<CR>\<C-N>\<C-N>\<C-Y>", 'tx')
+  call assert_equal('balon', getline('.'))
+
+  bw!
+  set cot&
+  delfunc AppendCandidate
+  autocmd! InsertCharPre
+  unlet g:async
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
