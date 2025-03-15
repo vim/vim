@@ -2161,9 +2161,12 @@ compile_variable_range(exarg_T *eap, cctx_T *cctx)
 /*
  * :put r
  * :put ={expr}
+ * or if fixindent == TRUE
+ * :iput r
+ * :iput ={expr}
  */
     char_u *
-compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
+compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx, int fixindent)
 {
     char_u	*line = arg;
     linenr_T	lnum;
@@ -2202,7 +2205,8 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	    --lnum;
     }
 
-    generate_PUT(cctx, eap->regname, lnum);
+    generate_PUT(cctx, eap->regname, lnum, fixindent);
+
     return line;
 }
 

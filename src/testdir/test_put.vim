@@ -75,6 +75,8 @@ func Test_put_fails_when_nomodifiable()
   normal! yy
   call assert_fails(':put', 'E21:')
   call assert_fails(':put!', 'E21:')
+  call assert_fails(':iput', 'E21:')
+  call assert_fails(':iput!', 'E21:')
   call assert_fails(':normal! p', 'E21:')
   call assert_fails(':normal! gp', 'E21:')
   call assert_fails(':normal! P', 'E21:')
@@ -325,6 +327,65 @@ func Test_put_list()
   let l = ['a', 'b', 'c']
   put! =l
   call assert_equal(['a', 'b', 'c', ''], getline(1, '$'))
+  bw!
+endfunc
+
+func Test_iput_multiline()
+  new
+  setlocal noexpandtab
+  call feedkeys("i\<Tab>foo", 'x')
+  call setreg('0', "bar\n\<Tab>bar2\nbar3", 'l')
+  exe "iput"
+  call assert_equal(["\<Tab>bar", "\<Tab>\<Tab>bar2", "\<Tab>bar3"], getline(2, 4))
+  setlocal expandtab tabstop=8 shiftwidth=8 noshiftround
+  exe "iput"
+  call assert_equal([repeat(' ', 8) . "bar", 
+        \ repeat(' ', 16) . "bar2",
+        \ repeat(' ', 8) . "bar3"], getline(5, 7))
+  bw!
+endfunc
+
+func Test_iput_beforeafter_tab()
+  new
+  setlocal noexpandtab
+  call feedkeys("i\<Tab>foo", 'x')
+  call setreg('0', "bar", 'l')
+  exe "iput"
+  call assert_equal(["\<Tab>bar"], getline(2, '$'))
+  call feedkeys("k", 'x')
+  exe "iput!"
+  call assert_equal("\<Tab>bar", getline(1))
+  call assert_equal("\<Tab>bar", getline(3))
+  bw!
+endfunc
+
+func Test_iput_beforeafter_expandtab()
+  new
+  setlocal expandtab tabstop=8 shiftwidth=8 noshiftround
+  call feedkeys("i\<Tab>foo", 'x')
+  call setreg('0', "bar", 'l')
+  exe "iput"
+  call assert_equal([repeat(' ', 8) . "bar"], getline(2, '$'))
+  exe "1iput!"
+  call assert_equal(repeat(' ', 8) . "bar", getline(1))
+  bw!
+endfunc
+
+func Test_iput_invalidrange()
+  new
+  call setreg('0', "bar", 'l')
+  call assert_fails(':10iput', 'E16:')
+  bw!
+endfunc
+
+func Test_iput_not_put()
+  new
+  call feedkeys("i\<Tab>foo", 'x')
+  call setreg('0', "bar", 'l')
+  exe "iput"
+  call assert_equal("\<Tab>bar", getline(2))
+  exe "put"
+  call assert_equal("bar", getline(3))
   bw!
 endfunc
 

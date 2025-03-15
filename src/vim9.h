@@ -200,6 +200,7 @@ typedef enum {
     ISN_USEDICT,    // use or clear dict saved by ISN_MEMBER/ISN_STRINGMEMBER
 
     ISN_PUT,	    // ":put", uses isn_arg.put
+    ISN_IPUT,	    // ":iput", uses isn_arg.put
 
     ISN_CMDMOD,	    // set cmdmod
     ISN_CMDMOD_REV, // undo ISN_CMDMOD
