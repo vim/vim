@@ -3284,10 +3284,6 @@ RestoreConsoleBuffer(
     SMALL_RECT WriteRegion;
     int i;
 
-    // VTP uses alternate screen buffer.
-    // No need to restore buffer contents.
-    if (use_alternate_screen_buffer)
-	return TRUE;
 
     if (cb == NULL || !cb->IsValid)
 	return FALSE;
@@ -3318,6 +3314,11 @@ RestoreConsoleBuffer(
 	return FALSE;
     if (!SetConsoleWindowInfo(g_hConOut, TRUE, &cb->Info.srWindow))
 	return FALSE;
+
+    // VTP uses alternate screen buffer.
+    // No need to restore buffer contents.
+    if (use_alternate_screen_buffer)
+	return TRUE;
 
     /*
      * Restore the screen buffer contents.
