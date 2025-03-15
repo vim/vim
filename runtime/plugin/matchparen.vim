@@ -7,8 +7,7 @@
 " - this plugin was already loaded (or disabled)
 " - when 'compatible' is set
 " - Vim has no support for :defer
-if exists("g:loaded_matchparen") || &cp ||
-      \ exists(":defer") != 2
+if exists("g:loaded_matchparen") || &cp || exists(":defer") != 2
   finish
 endif
 let g:loaded_matchparen = 1
