@@ -2929,12 +2929,12 @@ stuff_inserted(
     if (c != NUL)
 	stuffcharReadbuff(c);
 
-    // look for the last ESC in 'insert'
     if (insert->length > 0)
     {
 	char_u	*p;
 
-	for (p = (insert->string + insert->length) - 1; p >= insert->string; --p)
+	// look for the last ESC in 'insert'
+	for (p = insert->string + (insert->length - 1); p >= insert->string; --p)
 	{
 	    if (*p == ESC)
 	    {
@@ -2942,21 +2942,16 @@ stuff_inserted(
 		break;
 	    }
 	}
-    }
 
-    // when the last char is either "0" or "^" it will be quoted if no ESC
-    // comes after it OR if it will insert more than once and "ptr"
-    // starts with ^D.	-- Acevedo
-    if (insert->length > 0)
-    {
-	char_u	*p = (insert->string + insert->length) - 1;
-
+	// when the last char is either "0" or "^" it will be quoted if no ESC
+	// comes after it OR if it will insert more than once and "ptr"
+	// starts with ^D.	-- Acevedo
 	if (p >= insert->string
 	    && (*p == '0' || *p == '^')
 	    && (no_esc || (*insert->string == Ctrl_D && count > 1)))
 	{
 	    last = *p;
-	    insert->length = (size_t)(p - insert->string);
+	    --insert->length;
 	}
     }
 
