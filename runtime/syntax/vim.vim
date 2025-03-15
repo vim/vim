@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Mar 13
+" Last Change:	   2025 Mar 15
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -509,7 +509,7 @@ if s:vim9script
         \ skipwhite skipnl nextgroup=vim9MethodDefBody,vimDefComment,vimEnddef,vim9MethodDefReturnType,vimCommentError
         \ contains=vimDefParam,vim9Comment,vimFuncParamEquals
 
-  syn match	vim9ConstructorDefName	contained	"\<new\w*\>"
+  syn match	vim9ConstructorDefName	contained	"\<_\=new\w*\>"
         \ nextgroup=vim9ConstructorDefParams
         \ contains=@vim9MethodName
   syn match	vim9ConstructorDefParam	contained	"\<\%(this\.\)\=\h\w*\>"
@@ -535,14 +535,14 @@ if s:vim9script
   if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimfunctionerror")
     syn match	vim9MethodNameError contained	"\<[a-z0-9]\i\>"
   endif
-  syn match	vim9MethodName	contained	"\<new\w*\>"
+  syn match	vim9MethodName	contained	"\<_\=new\w*\>"
   syn keyword	vim9MethodName	contained	empty len string
 
   syn cluster	vim9MethodName	contains=vim9MethodName,vim9MethodNameError
 
   if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'f'
     syn region	vim9MethodDefFold	contained	start="\%(^\s*\%(:\=static\s\+\)\=\)\@16<=:\=def\s\+\h\i*(" end="^\s*:\=enddef\>" contains=vim9MethodDef fold keepend extend transparent
-    syn region	vim9MethodDefFold	contained	start="^\s*:\=def\s\+new\i*("		      end="^\s*:\=enddef\>" contains=vim9MethodDef fold keepend extend transparent
+    syn region	vim9MethodDefFold	contained	start="^\s*:\=def\s\+_\=new\i*("		      end="^\s*:\=enddef\>" contains=vim9MethodDef fold keepend extend transparent
   endif
 
   syn cluster vim9MethodDef contains=vim9MethodDef,vim9MethodDefFold
