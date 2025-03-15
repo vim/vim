@@ -101,6 +101,7 @@ char *did_set_highlight(optset_T *args);
 int expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_iconstring(optset_T *args);
 char *did_set_imactivatekey(optset_T *args);
+char *did_set_isexpand(optset_T *args);
 char *did_set_iskeyword(optset_T *args);
 char *did_set_isopt(optset_T *args);
 char *did_set_jumpoptions(optset_T *args);

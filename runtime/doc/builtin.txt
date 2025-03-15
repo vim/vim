@@ -134,6 +134,7 @@ complete({startcol}, {matches}) none	set Insert mode completion
 complete_add({expr})		Number	add completion match
 complete_check()		Number	check for key typed during completion
 complete_info([{what}])		Dict	get current completion information
+complete_startcol()		List	get complete startcol and expandchar.
 confirm({msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
 copy({expr})			any	make a shallow copy of {expr}
@@ -2001,6 +2002,20 @@ complete_info([{what}])				*complete_info()*
 			GetItems()->complete_info()
 <
 		Return type: dict<any>
+
+complete_startcol([{lnum}, {col}])		*complete_startcol()*
+		Returns a List containing the column position and trigger
+		character for completion based on the 'isexpand' option.
+		Return List contains [startcol, trigger_char] where:
+		- startcol: column position where completion should start,
+		  or -1 if no trigger position is found
+		- trigger_char: the character that triggered completion,
+		  empty string if none was found, or "k" for keyword completion
+
+		When no arguments are provided, uses the current cursor
+		position.
+
+		Return type: List<any>
 
 						*confirm()*
 confirm({msg} [, {choices} [, {default} [, {type}]]])
