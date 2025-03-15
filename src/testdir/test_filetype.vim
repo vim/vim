@@ -938,6 +938,9 @@ def s:CheckItems(checks: dict<list<string>>)
 
   for [ft, names] in items(checks)
     for i in range(0, len(names) - 1)
+      if isdirectory(fnameescape(names[i]))
+        continue
+      endif
       new
       try
         exe 'edit ' .. fnameescape(names[i])
