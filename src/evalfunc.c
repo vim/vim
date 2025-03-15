@@ -361,6 +361,15 @@ arg_list_string(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a tuple of 'any'.
+ */
+    static int
+arg_tuple_any(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+    return check_arg_type(&t_tuple_any, type, context);
+}
+
+/*
  * Check "type" is a string.
  */
     static int
@@ -427,6 +436,42 @@ arg_list_or_blob_mod(
     if (arg_list_or_blob(type, decl_type, context) == FAIL)
 	return FAIL;
     return arg_type_modifiable(type, context->arg_idx + 1);
+}
+
+/*
+ * Check "type" is a list of 'any' or a tuple.
+ */
+    static int
+arg_list_or_tuple(
+    type_T		*type,
+    type_T		*decl_type UNUSED,
+    argcontext_T	*context)
+{
+    if (type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
+	    || type_any_or_unknown(type))
+	return OK;
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+
+/*
+ * Check "type" is a list of 'any' or a tuple of 'any' or blob.
+ */
+    static int
+arg_list_or_tuple_or_blob(
+    type_T		*type,
+    type_T		*decl_type UNUSED,
+    argcontext_T	*context)
+{
+    if (type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
+	    || type->tt_type == VAR_BLOB
+	    || type_any_or_unknown(type))
+	return OK;
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
 }
 
 /*
@@ -579,6 +624,24 @@ arg_list_or_dict_mod(
 }
 
 /*
+ * Check "type" is a list of 'any' or a tuple of 'any' or dict of 'any'.
+ */
+    static int
+arg_list_or_tuple_or_dict(
+    type_T		*type,
+    type_T		*decl_type UNUSED,
+    argcontext_T	*context)
+{
+    if (type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
+	    || type->tt_type == VAR_DICT
+	    || type_any_or_unknown(type))
+	return OK;
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
  * Check "type" is a list of 'any' or a dict of 'any' or a blob.
  * Also check if "type" is modifiable.
  */
@@ -601,7 +664,10 @@ arg_list_or_dict_or_blob_mod(
  * Check "type" is a list of 'any' or a dict of 'any' or a blob or a string.
  */
     static int
-arg_list_or_dict_or_blob_or_string(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_list_or_dict_or_blob_or_string(
+    type_T		*type,
+    type_T		*decl_type UNUSED,
+    argcontext_T	*context)
 {
     if (type->tt_type == VAR_LIST
 	    || type->tt_type == VAR_DICT
@@ -627,6 +693,28 @@ arg_list_or_dict_or_blob_or_string_mod(
 	return FAIL;
     return arg_type_modifiable(type, context->arg_idx + 1);
 }
+
+/*
+ * Check "type" is a list of 'any' or a tuple of 'any' or dict of 'any' or a
+ * blob or a string.
+ */
+    static int
+arg_list_tuple_dict_blob_or_string(
+    type_T		*type,
+    type_T		*decl_type UNUSED,
+    argcontext_T	*context)
+{
+    if (type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
+	    || type->tt_type == VAR_DICT
+	    || type->tt_type == VAR_BLOB
+	    || type->tt_type == VAR_STRING
+	    || type_any_or_unknown(type))
+	return OK;
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
 
 /*
  * Check second argument of map(), filter(), foreach().
@@ -850,11 +938,14 @@ arg_string_list_or_blob(type_T *type, type_T *decl_type UNUSED, argcontext_T *co
 }
 
 /*
- * Check "type" is a modifiable list of 'any' or a blob or a string.
+ * Check "type" is a tuple or a modifiable list of 'any' or a blob or a string.
  */
     static int
-arg_string_list_or_blob_mod(type_T *type, type_T *decl_type, argcontext_T *context)
+arg_reverse(type_T *type, type_T *decl_type, argcontext_T *context)
 {
+    if (type->tt_type == VAR_TUPLE)
+	return OK;
+
     if (arg_string_list_or_blob(type, decl_type, context) == FAIL)
 	return FAIL;
     return arg_type_modifiable(type, context->arg_idx + 1);
@@ -985,6 +1076,7 @@ arg_get1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_BLOB
 	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
 	    || type->tt_type == VAR_DICT
 	    || type->tt_type == VAR_FUNC
 	    || type->tt_type == VAR_PARTIAL
@@ -1006,6 +1098,7 @@ arg_len1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    || type->tt_type == VAR_NUMBER
 	    || type->tt_type == VAR_BLOB
 	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
 	    || type->tt_type == VAR_DICT
 	    || type->tt_type == VAR_OBJECT
 	    || type_any_or_unknown(type))
@@ -1042,6 +1135,7 @@ arg_repeat1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    || type->tt_type == VAR_NUMBER
 	    || type->tt_type == VAR_BLOB
 	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
 	    || type_any_or_unknown(type))
 	return OK;
 
@@ -1057,6 +1151,7 @@ arg_repeat1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 arg_slice1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
 	    || type->tt_type == VAR_BLOB
 	    || type->tt_type == VAR_STRING
 	    || type_any_or_unknown(type))
@@ -1067,19 +1162,23 @@ arg_slice1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
- * Check "type" which is the first argument of count() (string or list or dict
- * or any)
+ * Check "type" which is the first argument of count() (string or list or tuple
+ * or dict or any)
  */
     static int
-arg_string_or_list_or_dict(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_string_list_tuple_or_dict(
+    type_T		*type,
+    type_T		*decl_type UNUSED,
+    argcontext_T	*context)
 {
     if (type->tt_type == VAR_STRING
 	    || type->tt_type == VAR_LIST
+	    || type->tt_type == VAR_TUPLE
 	    || type->tt_type == VAR_DICT
 	    || type_any_or_unknown(type))
 	return OK;
 
-    semsg(_(e_string_list_or_dict_required_for_argument_nr),
+    semsg(_(e_string_list_tuple_or_dict_required_for_argument_nr),
 							 context->arg_idx + 1);
     return FAIL;
 }
@@ -1114,11 +1213,12 @@ static argcheck_T arg1_dict_or_string[] = {arg_dict_any_or_string};
 static argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
 static argcheck_T arg1_job[] = {arg_job};
 static argcheck_T arg1_list_any[] = {arg_list_any};
+static argcheck_T arg1_tuple_any[] = {arg_tuple_any};
 static argcheck_T arg1_list_number[] = {arg_list_number};
-static argcheck_T arg1_string_or_list_or_blob_mod[] = {arg_string_list_or_blob_mod};
-static argcheck_T arg1_list_or_dict[] = {arg_list_or_dict};
+static argcheck_T arg1_reverse[] = {arg_reverse};
+static argcheck_T arg1_list_or_tuple_or_dict[] = {arg_list_or_tuple_or_dict};
 static argcheck_T arg1_list_string[] = {arg_list_string};
-static argcheck_T arg1_string_or_list_or_dict[] = {arg_string_or_list_or_dict};
+static argcheck_T arg1_string_list_tuple_or_dict[] = {arg_string_list_tuple_or_dict};
 static argcheck_T arg1_lnum[] = {arg_lnum};
 static argcheck_T arg1_number[] = {arg_number};
 static argcheck_T arg1_string[] = {arg_string};
@@ -1141,7 +1241,6 @@ static argcheck_T arg2_float_or_nr[] = {arg_float_or_nr, arg_float_or_nr};
 static argcheck_T arg2_job_dict[] = {arg_job, arg_dict_any};
 static argcheck_T arg2_job_string_or_number[] = {arg_job, arg_string_or_nr};
 static argcheck_T arg2_list_any_number[] = {arg_list_any, arg_number};
-static argcheck_T arg2_list_any_string[] = {arg_list_any, arg_string};
 static argcheck_T arg2_list_number[] = {arg_list_number, arg_list_number};
 static argcheck_T arg2_list_number_bool[] = {arg_list_number, arg_bool};
 static argcheck_T arg2_list_string_dict[] = {arg_list_string, arg_dict_any};
@@ -1168,6 +1267,7 @@ static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict
 static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_number};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
 static argcheck_T arg2_blob_dict[] = {arg_blob, arg_dict_any};
+static argcheck_T arg2_list_or_tuple_string[] = {arg_list_or_tuple, arg_string};
 static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
@@ -1205,7 +1305,7 @@ static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, ar
 static argcheck_T arg4_browse[] = {arg_bool, arg_string, arg_string, arg_string};
 static argcheck_T arg23_chanexpr[] = {arg_chan_or_job, arg_any, arg_dict_any};
 static argcheck_T arg23_chanraw[] = {arg_chan_or_job, arg_string_or_blob, arg_dict_any};
-static argcheck_T arg24_count[] = {arg_string_or_list_or_dict, arg_any, arg_bool, arg_number};
+static argcheck_T arg24_count[] = {arg_string_list_tuple_or_dict, arg_any, arg_bool, arg_number};
 static argcheck_T arg13_cursor[] = {arg_cursor1, arg_number, arg_number};
 static argcheck_T arg12_deepcopy[] = {arg_any, arg_bool};
 static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
@@ -1215,14 +1315,14 @@ static argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev
 static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, arg_any};
 static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg25_globpath[] = {arg_string, arg_string, arg_bool, arg_bool, arg_bool};
-static argcheck_T arg24_index[] = {arg_list_or_blob, arg_item_of_prev, arg_number, arg_bool};
-static argcheck_T arg23_index[] = {arg_list_or_blob, arg_filter_func, arg_dict_any};
+static argcheck_T arg24_index[] = {arg_list_or_tuple_or_blob, arg_item_of_prev, arg_number, arg_bool};
+static argcheck_T arg23_index[] = {arg_list_or_tuple_or_blob, arg_filter_func, arg_dict_any};
 static argcheck_T arg23_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
 static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg2_filter[] = {arg_list_or_dict_or_blob_or_string_mod, arg_filter_func};
-static argcheck_T arg2_foreach[] = {arg_list_or_dict_or_blob_or_string, arg_foreach_func};
+static argcheck_T arg2_foreach[] = {arg_list_tuple_dict_blob_or_string, arg_foreach_func};
 static argcheck_T arg2_instanceof[] = {arg_object, varargs_class, NULL };
 static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string_mod, arg_map_func};
 static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, arg_any};
@@ -1364,6 +1464,13 @@ ret_list_regionpos(int argcount UNUSED,
     return &t_list_list_list_number;
 }
     static type_T *
+ret_tuple_any(int argcount UNUSED,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type UNUSED)
+{
+    return &t_tuple_any;
+}
+    static type_T *
 ret_dict_any(int argcount UNUSED,
 	type2_T *argtypes UNUSED,
 	type_T	**decl_type UNUSED)
@@ -1457,6 +1564,7 @@ ret_slice(int argcount,
 		case VAR_STRING: *decl_type = &t_string; break;
 		case VAR_BLOB: *decl_type = &t_blob; break;
 		case VAR_LIST: *decl_type = &t_list_any; break;
+		case VAR_TUPLE: *decl_type = &t_tuple_any; break;
 		default: break;
 	    }
 	}
@@ -2288,7 +2396,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_islocked},
     {"isnan",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number_bool,    MATH_FUNC(f_isnan)},
-    {"items",		1, 1, FEARG_1,	    arg1_string_or_list_or_dict,
+    {"items",		1, 1, FEARG_1,	    arg1_string_list_tuple_or_dict,
 			ret_list_items,	    f_items},
     {"job_getchannel",	1, 1, FEARG_1,	    arg1_job,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},
@@ -2302,7 +2410,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    JOB_FUNC(f_job_status)},
     {"job_stop",	1, 2, FEARG_1,	    arg2_job_string_or_number,
 			ret_number_bool,    JOB_FUNC(f_job_stop)},
-    {"join",		1, 2, FEARG_1,	    arg2_list_any_string,
+    {"join",		1, 2, FEARG_1,	    arg2_list_or_tuple_string,
 			ret_string,	    f_join},
     {"js_decode",	1, 1, FEARG_1,	    arg1_string,
 			ret_any,	    f_js_decode},
@@ -2334,6 +2442,8 @@ static funcentry_T global_functions[] =
 			ret_blob,	    f_list2blob},
     {"list2str",	1, 2, FEARG_1,	    arg2_list_number_bool,
 			ret_string,	    f_list2str},
+    {"list2tuple",	1, 1, FEARG_1,	    arg1_list_any,
+			ret_tuple_any,	    f_list2tuple},
     {"listener_add",	1, 2, FEARG_2,	    arg2_any_buffer,
 			ret_number,	    f_listener_add},
     {"listener_flush",	0, 1, FEARG_1,	    arg1_buffer,
@@ -2392,7 +2502,7 @@ static funcentry_T global_functions[] =
 			ret_list_any,	    f_matchstrlist},
     {"matchstrpos",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_list_any,	    f_matchstrpos},
-    {"max",		1, 1, FEARG_1,	    arg1_list_or_dict,
+    {"max",		1, 1, FEARG_1,	    arg1_list_or_tuple_or_dict,
 			ret_number,	    f_max},
     {"menu_info",	1, 2, FEARG_1,	    arg2_string,
 			ret_dict_any,
@@ -2402,7 +2512,7 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"min",		1, 1, FEARG_1,	    arg1_list_or_dict,
+    {"min",		1, 1, FEARG_1,	    arg1_list_or_tuple_or_dict,
 			ret_number,	    f_min},
     {"mkdir",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_number_bool,    f_mkdir},
@@ -2588,7 +2698,7 @@ static funcentry_T global_functions[] =
 			ret_repeat,	    f_repeat},
     {"resolve",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_resolve},
-    {"reverse",		1, 1, FEARG_1,	    arg1_string_or_list_or_blob_mod,
+    {"reverse",		1, 1, FEARG_1,	    arg1_reverse,
 			ret_first_arg,	    f_reverse},
     {"round",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_round},
@@ -2918,6 +3028,8 @@ static funcentry_T global_functions[] =
 			ret_func_any,	    f_test_null_partial},
     {"test_null_string", 0, 0, 0,	    NULL,
 			ret_string,	    f_test_null_string},
+    {"test_null_tuple",	0, 0, 0,	    NULL,
+			ret_tuple_any,	    f_test_null_tuple},
     {"test_option_not_set", 1, 1, FEARG_1,  arg1_string,
 			ret_void,	    f_test_option_not_set},
     {"test_override",	2, 2, FEARG_2,	    arg2_string_number,
@@ -2954,6 +3066,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_trunc},
+    {"tuple2list",	1, 1, FEARG_1,	    arg1_tuple_any,
+			ret_list_any,	    f_tuple2list},
     {"type",		1, 1, FEARG_1|FE_X, NULL,
 			ret_number,	    f_type},
     {"typename",	1, 1, FEARG_1|FE_X, NULL,
@@ -4226,6 +4340,9 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    n = argvars[0].vval.v_list == NULL
 					|| argvars[0].vval.v_list->lv_len == 0;
 	    break;
+	case VAR_TUPLE:
+	    n = tuple_len(argvars[0].vval.v_tuple) == 0;
+	    break;
 	case VAR_DICT:
 	    n = argvars[0].vval.v_dict == NULL
 			|| argvars[0].vval.v_dict->dv_hashtab.ht_used == 0;
@@ -5263,6 +5380,7 @@ f_get(typval_T *argvars, typval_T *rettv)
 {
     listitem_T	*li;
     list_T	*l;
+    tuple_T	*tuple;
     dictitem_T	*di;
     dict_T	*d;
     typval_T	*tv = NULL;
@@ -5296,6 +5414,18 @@ f_get(typval_T *argvars, typval_T *rettv)
 	    li = list_find(l, (long)tv_get_number_chk(&argvars[1], &error));
 	    if (!error && li != NULL)
 		tv = &li->li_tv;
+	}
+    }
+    else if (argvars[0].v_type == VAR_TUPLE)
+    {
+	if ((tuple = argvars[0].vval.v_tuple) != NULL)
+	{
+	    int		error = FALSE;
+	    long	idx;
+
+	    idx = (long)tv_get_number_chk(&argvars[1], &error);
+	    if (!error)
+		tv = tuple_find(tuple, idx);
 	}
     }
     else if (argvars[0].v_type == VAR_DICT)
@@ -5400,7 +5530,7 @@ f_get(typval_T *argvars, typval_T *rettv)
 	}
     }
     else
-	semsg(_(e_argument_of_str_must_be_list_dictionary_or_blob), "get()");
+	semsg(_(e_argument_of_str_must_be_list_tuple_dictionary_or_blob), "get()");
 
     if (tv == NULL)
     {
@@ -7811,6 +7941,7 @@ f_id(typval_T *argvars, typval_T *rettv)
     switch (argvars[0].v_type)
     {
 	case VAR_LIST:
+	case VAR_TUPLE:
 	case VAR_DICT:
 	case VAR_OBJECT:
 	case VAR_JOB:
@@ -7852,7 +7983,7 @@ f_index(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = -1;
 
     if (in_vim9script()
-	    && (check_for_list_or_blob_arg(argvars, 0) == FAIL
+	    && (check_for_list_or_tuple_or_blob_arg(argvars, 0) == FAIL
 		|| (argvars[0].v_type == VAR_BLOB
 		    && check_for_number_arg(argvars, 1) == FAIL)
 		|| check_for_opt_number_arg(argvars, 2) == FAIL
@@ -7893,6 +8024,26 @@ f_index(typval_T *argvars, typval_T *rettv)
 	}
 	return;
     }
+    else if (argvars[0].v_type == VAR_TUPLE)
+    {
+	tuple_T	    *tuple = argvars[0].vval.v_tuple;
+
+	if (tuple == NULL)
+	    return;
+
+	int	start_idx = 0;
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    start_idx = tv_get_number_chk(&argvars[2], &error);
+	    if (!error && argvars[3].v_type != VAR_UNKNOWN)
+		ic = (int)tv_get_bool_chk(&argvars[3], &error);
+	    if (error)
+		return;
+	}
+
+	rettv->vval.v_number = index_tuple(tuple, &argvars[1], start_idx, ic);
+	return;
+    }
     else if (argvars[0].v_type != VAR_LIST)
     {
 	emsg(_(e_list_or_blob_required));
@@ -7930,7 +8081,7 @@ f_index(typval_T *argvars, typval_T *rettv)
  * The expression is expected to return a boolean value.  The caller should set
  * the VV_KEY and VV_VAL vim variables before calling this function.
  */
-    static int
+    int
 indexof_eval_expr(typval_T *expr)
 {
     typval_T	argv[3];
@@ -8053,7 +8204,7 @@ f_indexof(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if (check_for_list_or_blob_arg(argvars, 0) == FAIL
+    if (check_for_list_or_tuple_or_blob_arg(argvars, 0) == FAIL
 	    || check_for_string_or_func_arg(argvars, 1) == FAIL
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
@@ -8078,6 +8229,9 @@ f_indexof(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_BLOB)
 	rettv->vval.v_number = indexof_blob(argvars[0].vval.v_blob, startidx,
+								&argvars[1]);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	rettv->vval.v_number = indexof_tuple(argvars[0].vval.v_tuple, startidx,
 								&argvars[1]);
     else
 	rettv->vval.v_number = indexof_list(argvars[0].vval.v_list, startidx,
@@ -8487,6 +8641,9 @@ f_len(typval_T *argvars, typval_T *rettv)
 	    break;
 	case VAR_LIST:
 	    rettv->vval.v_number = list_len(argvars[0].vval.v_list);
+	    break;
+	case VAR_TUPLE:
+	    rettv->vval.v_number = tuple_len(argvars[0].vval.v_tuple);
 	    break;
 	case VAR_DICT:
 	    rettv->vval.v_number = dict_len(argvars[0].vval.v_dict);
@@ -9229,7 +9386,8 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
     varnumber_T	i;
     int		error = FALSE;
 
-    if (in_vim9script() && check_for_list_or_dict_arg(argvars, 0) == FAIL)
+    if (in_vim9script() &&
+	    check_for_list_or_tuple_or_dict_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type == VAR_LIST)
@@ -9270,6 +9428,12 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 		}
 	    }
 	}
+    }
+    else if (argvars[0].v_type == VAR_TUPLE)
+    {
+	n = tuple_max_min(argvars[0].vval.v_tuple, domax, &error);
+	if (error)
+	    return;
     }
     else if (argvars[0].v_type == VAR_DICT)
     {
@@ -10076,83 +10240,114 @@ f_rename(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "repeat()" function
+ * Repeat the list "l" "n" times and set "rettv" to the new list.
  */
     static void
-f_repeat(typval_T *argvars, typval_T *rettv)
+repeat_list(list_T *l, int n, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == FAIL
+	    || l == NULL
+	    || n <= 0)
+	return;
+
+    while (n-- > 0)
+	if (list_extend(rettv->vval.v_list, l, NULL) == FAIL)
+	    break;
+}
+
+/*
+ * Repeat the blob "b" "n" times and set "rettv" to the new blob.
+ */
+    static void
+repeat_blob(typval_T *blob_tv, int n, typval_T *rettv)
+{
+    int		slen;
+    int		len;
+    int		i;
+    blob_T	*blob = blob_tv->vval.v_blob;
+
+    if (rettv_blob_alloc(rettv) == FAIL
+	    || blob == NULL
+	    || n <= 0)
+	return;
+
+    slen = blob->bv_ga.ga_len;
+    len = (int)slen * n;
+    if (len <= 0)
+	return;
+
+    if (ga_grow(&rettv->vval.v_blob->bv_ga, len) == FAIL)
+	return;
+
+    rettv->vval.v_blob->bv_ga.ga_len = len;
+
+    for (i = 0; i < slen; ++i)
+	if (blob_get(blob, i) != 0)
+	    break;
+
+    if (i == slen)
+	// No need to copy since all bytes are already zero
+	return;
+
+    for (i = 0; i < n; ++i)
+	blob_set_range(rettv->vval.v_blob,
+		(long)i * slen, ((long)i + 1) * slen - 1, blob_tv);
+}
+
+/*
+ * Repeat the string "str" "n" times and set "rettv" to the new string.
+ */
+    static void
+repeat_string(typval_T *str_tv, int n, typval_T *rettv)
 {
     char_u	*p;
-    varnumber_T	n;
     int		slen;
     int		len;
     char_u	*r;
     int		i;
 
+    p = tv_get_string(str_tv);
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    slen = (int)STRLEN(p);
+    len = slen * n;
+    if (len <= 0)
+	return;
+
+    r = alloc(len + 1);
+    if (r == NULL)
+	return;
+
+    for (i = 0; i < n; i++)
+	mch_memmove(r + i * slen, p, (size_t)slen);
+    r[len] = NUL;
+
+    rettv->vval.v_string = r;
+}
+
+/*
+ * "repeat()" function
+ */
+    static void
+f_repeat(typval_T *argvars, typval_T *rettv)
+{
+    varnumber_T	n;
+
     if (in_vim9script()
-	    && (check_for_string_or_number_or_list_or_blob_arg(argvars, 0)
-		    == FAIL
+	    && (check_for_repeat_func_arg(argvars, 0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
     n = tv_get_number(&argvars[1]);
     if (argvars[0].v_type == VAR_LIST)
-    {
-	if (rettv_list_alloc(rettv) == OK && argvars[0].vval.v_list != NULL)
-	    while (n-- > 0)
-		if (list_extend(rettv->vval.v_list,
-					argvars[0].vval.v_list, NULL) == FAIL)
-		    break;
-    }
+	repeat_list(argvars[0].vval.v_list, n, rettv);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	tuple_repeat(argvars[0].vval.v_tuple, n, rettv);
     else if (argvars[0].v_type == VAR_BLOB)
-    {
-	if (rettv_blob_alloc(rettv) == FAIL
-		|| argvars[0].vval.v_blob == NULL
-		|| n <= 0)
-	    return;
-
-	slen = argvars[0].vval.v_blob->bv_ga.ga_len;
-	len = (int)slen * n;
-	if (len <= 0)
-	    return;
-
-	if (ga_grow(&rettv->vval.v_blob->bv_ga, len) == FAIL)
-	    return;
-
-	rettv->vval.v_blob->bv_ga.ga_len = len;
-
-	for (i = 0; i < slen; ++i)
-	    if (blob_get(argvars[0].vval.v_blob, i) != 0)
-		break;
-
-	if (i == slen)
-	    // No need to copy since all bytes are already zero
-	    return;
-
-	for (i = 0; i < n; ++i)
-	    blob_set_range(rettv->vval.v_blob,
-		    (long)i * slen, ((long)i + 1) * slen - 1, argvars);
-    }
+	repeat_blob(&argvars[0], n, rettv);
     else
-    {
-	p = tv_get_string(&argvars[0]);
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = NULL;
-
-	slen = (int)STRLEN(p);
-	len = slen * n;
-	if (len <= 0)
-	    return;
-
-	r = alloc(len + 1);
-	if (r != NULL)
-	{
-	    for (i = 0; i < n; i++)
-		mch_memmove(r + i * slen, p, (size_t)slen);
-	    r[len] = NUL;
-	}
-
-	rettv->vval.v_string = r;
-    }
+	repeat_string(&argvars[0], n, rettv);
 }
 
 #define SP_NOMOVE	0x01	    // don't move cursor
@@ -12191,6 +12386,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_PARTIAL:
 	case VAR_FUNC:    n = VAR_TYPE_FUNC; break;
 	case VAR_LIST:    n = VAR_TYPE_LIST; break;
+	case VAR_TUPLE:   n = VAR_TYPE_TUPLE; break;
 	case VAR_DICT:    n = VAR_TYPE_DICT; break;
 	case VAR_FLOAT:   n = VAR_TYPE_FLOAT; break;
 	case VAR_BOOL:	  n = VAR_TYPE_BOOL; break;
