@@ -30,8 +30,9 @@ static char *(p_briopt_values[]) = {"shift:", "min:", "sbr", "list:", "column:",
 #endif
 #if defined(FEAT_DIFF)
 // Note: Keep this in sync with diffopt_changed()
-static char *(p_dip_values[]) = {"filler", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", "linematch:", NULL};
+static char *(p_dip_values[]) = {"filler", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", "inline:", "linematch:", NULL};
 static char *(p_dip_algorithm_values[]) = {"myers", "minimal", "patience", "histogram", NULL};
+static char *(p_dip_inline_values[]) = {"none", "simple", "char", "word", NULL};
 #endif
 static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", "unsigned", "blank", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
@@ -2014,6 +2015,18 @@ expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches)
 		    args,
 		    p_dip_algorithm_values,
 		    ARRAY_LENGTH(p_dip_algorithm_values) - 1,
+		    numMatches,
+		    matches);
+	}
+	// Within "inline:", we have a subgroup of possible options.
+	int inline_len = (int)STRLEN("inline:");
+	if (xp->xp_pattern - args->oe_set_arg >= inline_len &&
+		STRNCMP(xp->xp_pattern - inline_len, "inline:", inline_len) == 0)
+	{
+	    return expand_set_opt_string(
+		    args,
+		    p_dip_inline_values,
+		    ARRAY_LENGTH(p_dip_inline_values) - 1,
 		    numMatches,
 		    matches);
 	}
