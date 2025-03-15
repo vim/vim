@@ -1080,6 +1080,10 @@ LANG_GEN = \
 		runtime/tutor/Make_all.mak \
 		runtime/tutor/it/vim-01-beginner.tutor \
 		runtime/tutor/it/vim-01-beginner.tutor.json \
+		runtime/tutor/ru/vim-01-beginner.tutor \
+		runtime/tutor/ru/vim-01-beginner.tutor.json \
+		runtime/tutor/ru/vim-02-beginner.tutor \
+		runtime/tutor/ru/vim-02-beginner.tutor.json \
 		runtime/tutor/sr/vim-01-beginner.tutor \
 		runtime/tutor/sr/vim-01-beginner.tutor.json \
 		runtime/tutor/sr/vim-02-beginner.tutor \
