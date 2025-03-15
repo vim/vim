@@ -3230,6 +3230,7 @@ diff_find_change_inline_diff(
     garray_T	linemap[DB_COUNT];
     garray_T	file1_str;
     garray_T	file2_str;
+    int		file1_used = FALSE;
 
     long	save_diff_algorithm = diff_algorithm;
 
@@ -3271,7 +3272,10 @@ diff_find_change_inline_diff(
 	    continue; // skip buffer that isn't loaded
 	}
 
-	garray_T	*curstr = (i == 0) ? &file1_str : &file2_str;
+	if (dp->df_count[i] == 0)
+	    continue; // skip buffer that don't have any texts in this block
+
+	garray_T	*curstr = file1_used ? &file2_str : &file1_str;
 
 	linenr_T numlines = 0;
 	curstr->ga_len = 0;
@@ -3439,17 +3443,17 @@ diff_find_change_inline_diff(
 	    }
 	}
 
-	if (i == 0)
-	{
-	    dio.dio_orig.din_mmfile.ptr = (char *)curstr->ga_data;
-	    dio.dio_orig.din_mmfile.size = curstr->ga_len;
-	}
-	else
+	if (file1_used)
 	{
 	    dio.dio_new.din_mmfile.ptr = (char *)curstr->ga_data;
 	    dio.dio_new.din_mmfile.size = curstr->ga_len;
 	}
-	if (i > 0)
+	else
+	{
+	    dio.dio_orig.din_mmfile.ptr = (char *)curstr->ga_data;
+	    dio.dio_orig.din_mmfile.size = curstr->ga_len;
+	}
+	if (file1_used)
 	{
 	    // Perform diff with first file and read the results
 	    int diff_status = diff_file_internal(&dio);
@@ -3458,6 +3462,8 @@ diff_find_change_inline_diff(
 
 	    diff_read(0, i, &dio);
 	}
+
+	file1_used = TRUE;
     }
     diff_T *new_diff = curtab->tp_first_diff;
 
