@@ -3274,6 +3274,7 @@ diff_find_change_inline_diff(
 	garray_T	*curstr = (i == 0) ? &file1_str : &file2_str;
 
 	linenr_T numlines = 0;
+	curstr->ga_len = 0;
 
 	// Split each line into chars/words and populate fake file buffer as
 	// newline-delimited tokens as that's what xdiff requires.
