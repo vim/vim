@@ -5999,9 +5999,11 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_PUT:
+		tv = NULL; // initialize it so we don't get a warning
 		isn_put_do(ectx, iptr, tv, FALSE);
 		break;
 	    case ISN_IPUT:
+		tv = NULL;
 		isn_put_do(ectx, iptr, tv, TRUE);
 		break;
 
