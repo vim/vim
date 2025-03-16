@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 11
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7275,6 +7275,9 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 				given sequence.
 		    limit	Maximum number of matches in {list} to be
 				returned.  Zero means no limit.
+		    camelcase	Use enhanced camel case scoring making results
+				better suited for completion related to
+				programming languages. Default is v:true
 
 		If {list} is a list of dictionaries, then the optional {dict}
 		argument supports the following additional items:
