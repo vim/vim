@@ -105,8 +105,9 @@ shortpath_for_invalid_fname(
     char_u	**bufp,
     size_t	*fnamelen)
 {
-    char_u	*short_fname, *save_fname;
+    char_u	*save_fname;
     char_u	*pbuf_unused = NULL;
+    char_u	*short_fname = NULL;
     char_u	*endp, *save_endp;
     char_u	ch;
     size_t	old_len;
