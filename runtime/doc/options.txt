@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Mar 13
+*options.txt*	For Vim version 9.1.  Last change: 2025 Mar 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2122,7 +2122,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	whole_line	whole lines			|i_CTRL-X_CTRL-L|
 
-	When used the 'completeopt' "longest" option value, fuzzy collection
+	When using the 'completeopt' "longest" option value, fuzzy collection
 	can identify the longest common string among the best fuzzy matches
 	and insert it automatically.
 

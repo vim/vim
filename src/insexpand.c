@@ -2541,6 +2541,10 @@ ins_compl_stop(int c, int prev_mode, int retval)
     int		want_cindent;
     char_u	*word = NULL;
 
+    // Remove pre-inserted text when present.
+    if (ins_compl_preinsert_effect())
+	ins_compl_delete();
+
     // Get here when we have finished typing a sequence of ^N and
     // ^P or other completion characters in CTRL-X mode.  Free up
     // memory that was used, and make sure we can redo the insert.

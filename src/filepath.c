@@ -3465,7 +3465,7 @@ pstrcmp(const void *a, const void *b)
 dos_expandpath(
     garray_T	*gap,
     char_u	*path,
-    int		wildoff,
+    size_t	wildoff,
     int		flags,		// EW_* flags
     int		didstar)	// expanded "**" once already
 {
@@ -3477,7 +3477,8 @@ dos_expandpath(
     regmatch_T	regmatch;
     int		starts_with_dot;
     int		matches;
-    int		len;
+    size_t	buflen;
+    size_t	len;
     int		starstar = FALSE;
     static int	stardepth = 0;	    // depth for "**" expansion
     HANDLE		hFind = INVALID_HANDLE_VALUE;
@@ -3495,9 +3496,9 @@ dos_expandpath(
 	    return 0;
     }
 
-    // Make room for file name.  When doing encoding conversion the actual
-    // length may be quite a bit longer, thus use the maximum possible length.
-    buf = alloc(MAXPATHL);
+    // Make room for file name (a bit too much to stay on the safe side).
+    buflen = STRLEN(path) + MAXPATHL;
+    buf = alloc(buflen);
     if (buf == NULL)
 	return 0;
 
@@ -3526,10 +3527,11 @@ dos_expandpath(
 	    e = p;
 	if (has_mbyte)
 	{
-	    len = (*mb_ptr2len)(path_end);
-	    STRNCPY(p, path_end, len);
-	    p += len;
-	    path_end += len;
+	    int charlen = (*mb_ptr2len)(path_end);
+
+	    STRNCPY(p, path_end, (size_t)charlen);
+	    p += charlen;
+	    path_end += charlen;
 	}
 	else
 	    *p++ = *path_end++;
@@ -3579,19 +3581,20 @@ dos_expandpath(
     // remember the pattern or file name being looked for
     matchname = vim_strsave(s);
 
+    len = (size_t)(s - buf);
     // If "**" is by itself, this is the first time we encounter it and more
     // is following then find matches without any directory.
     if (!didstar && stardepth < 100 && starstar && e - s == 2
 							  && *path_end == '/')
     {
-	STRCPY(s, path_end + 1);
+	vim_snprintf((char *)s, buflen - len, "%s", path_end + 1);
 	++stardepth;
-	(void)dos_expandpath(gap, buf, (int)(s - buf), flags, TRUE);
+	(void)dos_expandpath(gap, buf, len, flags, TRUE);
 	--stardepth;
     }
 
     // Scan all files in the directory with "dir/ *.*"
-    STRCPY(s, "*.*");
+    vim_snprintf(s, buflen - len, "*.*");
     wn = enc_to_utf16(buf, NULL);
     if (wn != NULL)
 	hFind = FindFirstFileW(wn, &wfb);
@@ -3612,6 +3615,7 @@ dos_expandpath(
 	else
 	    p_alt = utf16_to_enc(wfb.cAlternateFileName, NULL);
 
+	len = (size_t)(s - buf);
 	// Ignore entries starting with a dot, unless when asked for.  Accept
 	// all entries found with "matchname".
 	if ((p[0] != '.' || starts_with_dot
@@ -3623,42 +3627,43 @@ dos_expandpath(
 			 || (p_alt != NULL
 				&& vim_regexec(&regmatch, p_alt, (colnr_T)0))))
 		  || ((flags & EW_NOTWILD)
-		     && fnamencmp(path + (s - buf), p, e - s) == 0)))
+		     && fnamencmp(path + len, p, e - s) == 0)))
 	{
-	    STRCPY(s, p);
-	    len = (int)STRLEN(buf);
-
-	    if (starstar && stardepth < 100
+	    len += vim_snprintf((char *)s, buflen - len, "%s", p);
+	    if (len + 1 < buflen)
+	    {
+		if (starstar && stardepth < 100
 			  && (wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-	    {
-		// For "**" in the pattern first go deeper in the tree to
-		// find matches.
-		STRCPY(buf + len, "/**");
-		STRCPY(buf + len + 3, path_end);
-		++stardepth;
-		(void)dos_expandpath(gap, buf, len + 1, flags, TRUE);
-		--stardepth;
-	    }
+		{
+		    // For "**" in the pattern first go deeper in the tree to
+		    // find matches.
+		    vim_snprintf((char *)buf + len, buflen - len,
+							    "/**%s", path_end);
+		    ++stardepth;
+		    (void)dos_expandpath(gap, buf, len + 1, flags, TRUE);
+		    --stardepth;
+		}
 
-	    STRCPY(buf + len, path_end);
-	    if (mch_has_exp_wildcard(path_end))
-	    {
-		// need to expand another component of the path
-		// remove backslashes for the remaining components only
-		(void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
-	    }
-	    else
-	    {
-		stat_T  sb;
+		vim_snprintf((char *)buf + len, buflen - len, "%s", path_end);
+		if (mch_has_exp_wildcard(path_end))
+		{
+		    // need to expand another component of the path
+		    // remove backslashes for the remaining components only
+		    (void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
+		}
+		else
+		{
+		    stat_T  sb;
 
-		// no more wildcards, check if there is a match
-		// remove backslashes for the remaining components only
-		if (*path_end != 0)
-		    backslash_halve(buf + len + 1);
-		// add existing file
-		if ((flags & EW_ALLLINKS) ? mch_lstat((char *)buf, &sb) >= 0
-			: mch_getperm(buf) >= 0)
-		    addfile(gap, buf, flags);
+		    // no more wildcards, check if there is a match
+		    // remove backslashes for the remaining components only
+		    if (*path_end != 0)
+			backslash_halve(buf + len + 1);
+		    // add existing file
+		    if ((flags & EW_ALLLINKS) ? mch_lstat((char *)buf, &sb) >= 0
+			    : mch_getperm(buf) >= 0)
+			addfile(gap, buf, flags);
+		}
 	    }
 	}
 
@@ -3714,7 +3719,7 @@ pstrcmp(const void *a, const void *b)
 unix_expandpath(
     garray_T	*gap,
     char_u	*path,
-    int		wildoff,
+    size_t	wildoff,
     int		flags,		// EW_* flags
     int		didstar)	// expanded "**" once already
 {
@@ -3726,7 +3731,8 @@ unix_expandpath(
     regmatch_T	regmatch;
     int		starts_with_dot;
     int		matches;
-    int		len;
+    size_t	buflen;
+    size_t	len;
     int		starstar = FALSE;
     static int	stardepth = 0;	    // depth for "**" expansion
 
@@ -3741,8 +3747,8 @@ unix_expandpath(
 	    return 0;
     }
 
-    // make room for file name (a bit too much to stay on the safe side)
-    size_t buflen = STRLEN(path) + MAXPATHL;
+    // Make room for file name (a bit too much to stay on the safe side).
+    buflen = STRLEN(path) + MAXPATHL;
     buf = alloc(buflen);
     if (buf == NULL)
 	return 0;
@@ -3775,10 +3781,11 @@ unix_expandpath(
 	    e = p;
 	if (has_mbyte)
 	{
-	    len = (*mb_ptr2len)(path_end);
-	    STRNCPY(p, path_end, len);
-	    p += len;
-	    path_end += len;
+	    int charlen = (*mb_ptr2len)(path_end);
+
+	    STRNCPY(p, path_end, (size_t)charlen);
+	    p += charlen;
+	    path_end += charlen;
 	}
 	else
 	    *p++ = *path_end++;
@@ -3829,14 +3836,15 @@ unix_expandpath(
 	return 0;
     }
 
+    len = (size_t)(s - buf);
     // If "**" is by itself, this is the first time we encounter it and more
     // is following then find matches without any directory.
     if (!didstar && stardepth < 100 && starstar && e - s == 2
 							  && *path_end == '/')
     {
-	STRCPY(s, path_end + 1);
+	vim_snprintf((char *)s, buflen - len, "%s", path_end + 1);
 	++stardepth;
-	(void)unix_expandpath(gap, buf, (int)(s - buf), flags, TRUE);
+	(void)unix_expandpath(gap, buf, len, flags, TRUE);
 	--stardepth;
     }
 
@@ -3852,6 +3860,7 @@ unix_expandpath(
 	    dp = readdir(dirp);
 	    if (dp == NULL)
 		break;
+	    len = (size_t)(s - buf);
 	    if ((dp->d_name[0] != '.' || starts_with_dot
 			|| ((flags & EW_DODOT)
 			    && dp->d_name[1] != NUL
@@ -3859,10 +3868,11 @@ unix_expandpath(
 		 && ((regmatch.regprog != NULL && vim_regexec(&regmatch,
 					     (char_u *)dp->d_name, (colnr_T)0))
 		   || ((flags & EW_NOTWILD)
-		     && fnamencmp(path + (s - buf), dp->d_name, e - s) == 0)))
+		     && fnamencmp(path + len, dp->d_name, e - s) == 0)))
 	    {
-		vim_strncpy(s, (char_u *)dp->d_name, buflen - (s - buf) - 1);
-		len = STRLEN(buf);
+		len += vim_snprintf((char *)s, buflen - len, "%s", dp->d_name);
+		if (len + 1 >= buflen)
+		    continue;
 
 		if (starstar && stardepth < 100)
 		{
