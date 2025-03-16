@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2024 Dec 15
+*change.txt*    For Vim version 9.1.  Last change: 2025 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1148,6 +1148,11 @@ inside of strings can change!  Also see 'softtabstop' option. >
 
 :[line]pu[t]! [x]	Put the text [from register x] before [line] (default
 			current line).
+
+							*:ip* *:iput*
+:[line]ip[ut] [x]	like |:put|, but adjust indent to the current line
+
+:[line]ip[ut]! [x]	like |:put|!, but adjust indent to the current line
 
 ["x]]p		    or					*]p* *]<MiddleMouse>*
 ["x]]<MiddleMouse>	Like "p", but adjust the indent to the current line.
