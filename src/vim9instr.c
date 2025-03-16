@@ -2816,6 +2816,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHOBJ:
 	case ISN_PUSHSPEC:
 	case ISN_PUT:
+	case ISN_IPUT:
 	case ISN_REDIREND:
 	case ISN_REDIRSTART:
 	case ISN_RETURN:
