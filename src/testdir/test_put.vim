@@ -339,7 +339,7 @@ func Test_iput_multiline()
   call assert_equal(["\<Tab>bar", "\<Tab>\<Tab>bar2", "\<Tab>bar3"], getline(2, 4))
   setlocal expandtab tabstop=8 shiftwidth=8 noshiftround
   exe "iput"
-  call assert_equal([repeat(' ', 8) . "bar", 
+  call assert_equal([repeat(' ', 8) . "bar",
         \ repeat(' ', 16) . "bar2",
         \ repeat(' ', 8) . "bar3"], getline(5, 7))
   bw!
