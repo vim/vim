@@ -119,7 +119,10 @@ shortpath_for_invalid_fname(
     old_len = *fnamelen;
     save_fname = vim_strnsave(*fname, old_len);
     if (save_fname == NULL)
+    {
+	retval = FAIL;
 	goto theend;
+    }
 
     endp = save_fname + old_len - 1; // Find the end of the copy
     save_endp = endp;
