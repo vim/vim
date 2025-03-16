@@ -1350,59 +1350,6 @@ def Test_put_with_linebreak()
   bwipe!
 enddef
 
-def Test_iput()
-  new
-  set noexpandtab
-
-  call feedkeys("i\<Tab>foo", 'x')
-
-  @p = "ppp"
-  iput p
-  call assert_equal("\<Tab>ppp", getline(2))
-
-  iput ="below"
-  assert_equal("\<Tab>below", getline(3))
-  iput! ="above"
-  assert_equal("\<Tab>above", getline(3))
-  assert_equal("\<Tab>below", getline(4))
-
-  :2iput =['a', 'b', 'c']
-  assert_equal(["\<Tab>ppp", "\<Tab>a", "\<Tab>b", "\<Tab>c", "\<Tab>above"], getline(2, 6))
-
-  :0iput =  "\<Tab>\<Tab>first"
-  assert_equal("\<Tab>first", getline(1))
-  :1iput! ="first again"
-  assert_equal("\<Tab>first again", getline(1))
-
-  bw!
-  v9.CheckDefFailure(['iput =xxx'], 'E1001:')
-enddef
-
-def Test_iput_with_linebreak()
-  new
-  var lines =<< trim END
-    vim9script
-    ip =split('abc', '\zs')
-            ->join()
-  END
-  v9.CheckScriptSuccess(lines)
-  getline(2)->assert_equal('a b c')
-  bwipe!
-enddef
-
-def Test_iput_not_put()
-  new
-  call feedkeys("ggS\<Tab>foo", 'x')
-  @a = "putting"
-  :0iput a
-  assert_equal("\<Tab>putting", getline(1))
-  put a
-  assert_equal("putting", getline(2))
-  iput a
-  assert_equal("putting", getline(3))
-  bwipe!
-enddef
-
 def Test_command_star_range()
   new
   setline(1, ['xxx foo xxx', 'xxx bar xxx', 'xxx foo xx bar'])

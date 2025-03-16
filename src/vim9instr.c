@@ -2188,17 +2188,15 @@ generate_SOURCE(cctx_T *cctx, int sid)
 }
 
 /*
- * Generate an ISN_PUT or ISN_IPUT instruction depending on fixindent.
+ * Generate an ISN_PUT instruction.
  */
     int
-generate_PUT(cctx_T *cctx, int regname, linenr_T lnum, int fixindent)
+generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    isn = (fixindent) ? generate_instr(cctx, ISN_IPUT) :
-			generate_instr(cctx, ISN_PUT);
-    if (isn == NULL)
+    if ((isn = generate_instr(cctx, ISN_PUT)) == NULL)
 	return FAIL;
     isn->isn_arg.put.put_regname = regname;
     isn->isn_arg.put.put_lnum = lnum;

@@ -4595,12 +4595,7 @@ compile_def_function_body(
 
 	    case CMD_put:
 		    ea.cmd = cmd;
-		    line = compile_put(p, &ea, cctx, FALSE);
-		    break;
-
-	    case CMD_iput:
-		    ea.cmd = cmd;
-		    line = compile_put(p, &ea, cctx, TRUE);
+		    line = compile_put(p, &ea, cctx);
 		    break;
 
 	    case CMD_substitute:
