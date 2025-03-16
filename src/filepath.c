@@ -3594,7 +3594,7 @@ dos_expandpath(
     }
 
     // Scan all files in the directory with "dir/ *.*"
-    vim_snprintf(s, buflen - len, "*.*");
+    vim_snprintf((char *)s, buflen - len, "*.*");
     wn = enc_to_utf16(buf, NULL);
     if (wn != NULL)
 	hFind = FindFirstFileW(wn, &wfb);
