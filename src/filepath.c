@@ -238,6 +238,8 @@ shortpath_for_partial(
 	pbuf = tfname = expand_env_save(*fnamep);
     else
 	pbuf = tfname = FullName_save(*fnamep, FALSE);
+    if (tfname == NULL)
+	return FAIL;
 
     len = tflen = STRLEN(tfname);
 
