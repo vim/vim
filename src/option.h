@@ -552,7 +552,6 @@ EXTERN char_u	*p_csprg;	// 'cscopeprg'
 EXTERN int	p_csre;		// 'cscoperelative'
 # ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_csqf;	// 'cscopequickfix'
-EXTERN long     p_numqf;        // 'numquickfix'
 #  define	CSQF_CMDS   "sgdctefia"
 #  define	CSQF_FLAGS  "+-0"
 # endif
@@ -859,6 +858,7 @@ EXTERN char_u	*p_rop;		// 'renderoptions'
 EXTERN long	p_report;	// 'report'
 #if defined(FEAT_QUICKFIX)
 EXTERN long	p_pvh;		// 'previewheight'
+EXTERN long     p_numqf;        // 'numquickfix'
 #endif
 #ifdef MSWIN
 EXTERN int	p_rs;		// 'restorescreen'
