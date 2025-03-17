@@ -79,7 +79,7 @@ static colnr_T	Insstart_blank_vcol;	// vcol for first inserted blank
 static int	update_Insstart_orig = TRUE; // set Insstart_orig to Insstart
 
 static string_T	last_insert = {NULL, 0};    // the text of the previous insert,
-					// K_SPECIAL and CSI are escaped
+					    // K_SPECIAL and CSI are escaped
 static int	last_insert_skip; // nr of chars in front of previous insert
 static int	new_insert_skip;  // nr of chars in front of current insert
 static int	did_restart_edit;	// "restart_edit" when calling edit()
@@ -2915,7 +2915,7 @@ stuff_inserted(
     long    count,	// Repeat this many times
     int	    no_esc)	// Don't add an ESC at the end
 {
-    string_T	*insert;				    // text to be inserted
+    string_T	*insert;				// text to be inserted
     char_u	last = ' ';
 
     insert = get_last_insert();
@@ -2934,7 +2934,7 @@ stuff_inserted(
 	char_u	*p;
 
 	// look for the last ESC in 'insert'
-	for (p = insert->string + (insert->length - 1); p >= insert->string; --p)
+	for (p = insert->string + insert->length - 1; p >= insert->string; --p)
 	{
 	    if (*p == ESC)
 	    {
@@ -2942,13 +2942,17 @@ stuff_inserted(
 		break;
 	    }
 	}
+    }
+
+    if (insert->length > 0)
+    {
+	char_u	*p = insert->string + insert->length - 1;
 
 	// when the last char is either "0" or "^" it will be quoted if no ESC
 	// comes after it OR if it will insert more than once and "ptr"
 	// starts with ^D.	-- Acevedo
-	if (p >= insert->string
-	    && (*p == '0' || *p == '^')
-	    && (no_esc || (*insert->string == Ctrl_D && count > 1)))
+	if ((*p == '0' || *p == '^')
+		&& (no_esc || (*insert->string == Ctrl_D && count > 1)))
 	{
 	    last = *p;
 	    --insert->length;
