@@ -230,9 +230,7 @@ func Test_put_visual_mode()
   set selection=exclusive
   exe "norm o\t"
   m0
-  sil! norm 
-p
-p
+  sil! norm
 
   bwipe!
   set selection&
@@ -390,6 +388,7 @@ func Test_iput_not_put()
   put
   call assert_equal("bar", getline(3))
   bw!
+endfunc
 
 " Test pasting the '.' register
 func Test_put_inserted()
