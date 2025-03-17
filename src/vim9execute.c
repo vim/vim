@@ -7637,13 +7637,13 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_IPUT:
 		if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE_ABOVE)
-		    smsg("%s%4d PUT %c above range",
+		    smsg("%s%4d IPUT %c above range",
 				  pfx, current, iptr->isn_arg.put.put_regname);
 		else if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE)
-		    smsg("%s%4d PUT %c range",
+		    smsg("%s%4d IPUT %c range",
 				  pfx, current, iptr->isn_arg.put.put_regname);
 		else
-		    smsg("%s%4d PUT %c %ld", pfx, current,
+		    smsg("%s%4d IPUT %c %ld", pfx, current,
 						 iptr->isn_arg.put.put_regname,
 					     (long)iptr->isn_arg.put.put_lnum);
 		break;
