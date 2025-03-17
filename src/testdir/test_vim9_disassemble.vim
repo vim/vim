@@ -286,6 +286,20 @@ def Test_disassemble_put_expr()
         res)
 enddef
 
+def s:IputExpr()
+  :3iput ="text"
+enddef
+
+def Test_disassemble_iput_expr()
+  var res = execute('disass s:IputExpr')
+  assert_match('<SNR>\d*_IputExpr.*' ..
+        ' :3iput ="text"\_s*' ..
+        '\d PUSHS "text"\_s*' ..
+        '\d PUT = 3\_s*' ..
+        '\d RETURN void',
+        res)
+enddef
+
 def s:PutRange()
   :$-2put a
   :$-3put! b

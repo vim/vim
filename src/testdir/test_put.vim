@@ -333,9 +333,9 @@ endfunc
 func Test_iput_multiline()
   new
   setlocal noexpandtab
-  call feedkeys("i\<Tab>foo", 'x')
+  call setline(1, "\<Tab>foo")
   call setreg('0', "bar\n\<Tab>bar2\nbar3", 'l')
-  exe "iput"
+  iput
   call assert_equal(["\<Tab>bar", "\<Tab>\<Tab>bar2", "\<Tab>bar3"], getline(2, 4))
   setlocal expandtab tabstop=8 shiftwidth=8 noshiftround
   exe "iput"
@@ -348,7 +348,7 @@ endfunc
 func Test_iput_beforeafter_tab()
   new
   setlocal noexpandtab
-  call feedkeys("i\<Tab>foo", 'x')
+  call setline(1, "\<Tab>foo")
   call setreg('0', "bar", 'l')
   exe "iput"
   call assert_equal(["\<Tab>bar"], getline(2, '$'))
@@ -382,9 +382,9 @@ func Test_iput_not_put()
   new
   call feedkeys("i\<Tab>foo", 'x')
   call setreg('0', "bar", 'l')
-  exe "iput"
+  iput
   call assert_equal("\<Tab>bar", getline(2))
-  exe "put"
+  put
   call assert_equal("bar", getline(3))
   bw!
 endfunc
