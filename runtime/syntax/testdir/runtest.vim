@@ -389,18 +389,21 @@ func RunTest()
       \ : {}
   lockvar DUMP_OPTS MAX_FAILED_COUNT XTESTSCRIPT
   let ok_count = 0
+  let disused_pages = []
   let failed_tests = []
   let skipped_count = 0
   let last_test_status = 'invalid'
+  let filter = ''
   " Create a map of setup configuration filenames with their basenames as keys.
   let setup = glob('input/setup/*.vim', 1, 1)
     \ ->reduce({d, f -> extend(d, {fnamemodify(f, ':t:r'): f})}, {})
   " Turn a subset of filenames etc. requested for testing into a pattern.
-  let filter = filereadable('../testdir/Xfilter')
-    \ ? readfile('../testdir/Xfilter')
-	\ ->map({_, v -> '^' .. substitute(v, '_$', '', '')})
+  if filereadable('../testdir/Xfilter')
+    let filter = readfile('../testdir/Xfilter')
+	\ ->map({_, v -> '^' .. escape(substitute(v, '_$', '', ''), '.')})
 	\ ->join('\|')
-    \ : ''
+    call delete('../testdir/Xfilter')
+  endif
 
   " Treat "^self-testing" as a string NOT as a regexp.
   if filter ==# '^self-testing'
@@ -430,8 +433,8 @@ func RunTest()
       let filetype = substitute(root, '\([^_.]*\)[_.].*', '\1', '')
       let failed_root = 'failed/' .. root
 
-      for dumpname in glob(failed_root .. '_\d*\.dump', 1, 1)
-	call delete(dumpname)
+      for pagename in glob(failed_root .. '_\d*\.dump', 1, 1)
+	call delete(pagename)
       endfor
       call delete('done/' .. root)
       call writefile(XTESTSCRIPT, 'Xtestscript')
@@ -477,11 +480,11 @@ func RunTest()
       call ch_log('First screendump for ' .. in_name_and_out_name)
       " Make a screendump at the start of the file: failed/root_00.dump
       let fail = VerifyScreenDump(buf, root_00, DUMP_OPTS)
+      let nr = 0
 
       " Accommodate the next code block to "buf"'s contingency for self
       " wipe-out.
       try
-	let nr = 0
 	let keys_a = ":call ScrollToSecondPage((18 * 75 + 1), 19, 5) | redraw!\<CR>"
 	let keys_b = ":call ScrollToNextPage((18 * 75 + 1), 19, 5) | redraw!\<CR>"
 	while s:CannotSeeLastLine(ruler)
@@ -502,6 +505,15 @@ func RunTest()
       finally
 	call delete('Xtestscript')
       endtry
+
+      let nr += 1
+      let pagename = printf('dumps/%s_%02d.dump', root, nr)
+
+      while filereadable(pagename)
+	call add(disused_pages, pagename)
+	let nr += 1
+	let pagename = printf('dumps/%s_%02d.dump', root, nr)
+      endwhile
 
       " redraw here to avoid the following messages to get mixed up with screen
       " output.
@@ -572,6 +584,10 @@ func RunTest()
   call Message('OK: ' .. ok_count)
   call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
   call Message('skipped: ' .. skipped_count)
+
+  for pagename in disused_pages
+    call Message(printf('No input page found for "%s"', pagename))
+  endfor
 
   if !empty(failed_tests)
     call Message('')

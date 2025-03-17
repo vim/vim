@@ -98,9 +98,7 @@ src/json_test
 src/message_test
 src/kword_test
 
-runtime/syntax/testdir/Xfilter
 runtime/syntax/testdir/done/
-runtime/syntax/testdir/failed/
 runtime/syntax/testdir/messages
 runtime/syntax/testdir/testdeps.mk
 runtime/syntax/testdir/vimcmd
