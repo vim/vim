@@ -204,7 +204,7 @@ get_recorded(void)
 get_inserted(void)
 {
     size_t len = 0;
-    char_u* str = get_buffcont(&redobuff, FALSE, &len);
+    char_u *str = get_buffcont(&redobuff, FALSE, &len);
     string_T ret = { str, len };
     return ret;
 }
