@@ -105,7 +105,9 @@ shortpath_for_invalid_fname(
     char_u	**bufp,
     size_t	*fnamelen)
 {
-    char_u	*short_fname, *save_fname, *pbuf_unused;
+    char_u	*save_fname;
+    char_u	*pbuf_unused = NULL;
+    char_u	*short_fname = NULL;
     char_u	*endp, *save_endp;
     char_u	ch;
     size_t	old_len;
@@ -116,8 +118,11 @@ shortpath_for_invalid_fname(
     // Make a copy
     old_len = *fnamelen;
     save_fname = vim_strnsave(*fname, old_len);
-    pbuf_unused = NULL;
-    short_fname = NULL;
+    if (save_fname == NULL)
+    {
+	retval = FAIL;
+	goto theend;
+    }
 
     endp = save_fname + old_len - 1; // Find the end of the copy
     save_endp = endp;
@@ -233,6 +238,8 @@ shortpath_for_partial(
 	pbuf = tfname = expand_env_save(*fnamep);
     else
 	pbuf = tfname = FullName_save(*fnamep, FALSE);
+    if (tfname == NULL)
+	return FAIL;
 
     len = tflen = STRLEN(tfname);
 
