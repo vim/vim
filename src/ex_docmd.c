@@ -2373,8 +2373,8 @@ do_one_cmd(
 	    goto doend;
 	}
 #endif
-	if (valid_yank_reg(*ea.arg, ((ea.cmdidx != CMD_put && ea.cmdidx != CMD_iput)
-					      && !IS_USER_CMDIDX(ea.cmdidx))))
+	if (valid_yank_reg(*ea.arg, (!IS_USER_CMDIDX(ea.cmdidx)
+			    && ea.cmdidx != CMD_put && ea.cmdidx != CMD_iput)))
 	{
 	    ea.regname = *ea.arg++;
 #ifdef FEAT_EVAL
