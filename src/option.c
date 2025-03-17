@@ -4735,6 +4735,60 @@ did_set_wrap(optset_T *args UNUSED)
     return NULL;
 }
 
+#ifdef FEAT_QUICKFIX
+/*
+ * Process the new 'numquickfix' option value.
+ */
+    char *
+did_set_numquickfix(optset_T *args UNUSED)
+{
+    // cannot have zero or negative number of quickfix lists in a stack
+    if (p_numqf < 1) {
+	p_numqf = 1;
+	return e_cannot_have_negative_or_zero_number_of_quickfix;
+    }
+
+    // cannot have more than 100 quickfix lists in a stack
+    if (p_numqf > 100) {
+	p_numqf = 100;
+	return e_cannot_have_more_than_hundred_quickfix;
+    }
+
+    if (qf_resize_global_stack(p_numqf) == FAIL)
+	return e_failed_resizing_quickfix_stack;
+
+    return NULL;
+}
+
+/*
+ * Process the new 'numloclist' option value.
+ */
+    char *
+did_set_numloclist(optset_T *args UNUSED)
+{
+    long *numll = &(curwin->w_p_numll);
+
+    // cannot have zero or negative number of quickfix lists in a stack
+    if (*numll < 1) {
+	*numll = 1;
+	return e_cannot_have_negative_or_zero_number_of_quickfix;
+    }
+
+    // cannot have more than 100 quickfix lists in a stack
+    if (*numll > 100) {
+	*numll = 100;
+	return e_cannot_have_more_than_hundred_quickfix;
+    }
+
+    // will make sure the 'numloclist' of both the location list window
+    // and its parent window are the same
+    if (ll_resize_stack(curwin, *numll) == FAIL)
+	return e_failed_resizing_quickfix_stack;
+
+    return NULL;
+}
+#endif
+
 /*
  * Set the value of a boolean option, and take care of side effects.
  * Returns NULL for success, or an error message for an error.
@@ -6653,6 +6707,7 @@ get_varp(struct vimoption *p)
 	case PV_WFW:	return (char_u *)&(curwin->w_p_wfw);
 #if defined(FEAT_QUICKFIX)
 	case PV_PVW:	return (char_u *)&(curwin->w_p_pvw);
+	case PV_NUMLL:	return (char_u *)&(curwin->w_p_numll);
 #endif
 #ifdef FEAT_RIGHTLEFT
 	case PV_RL:	return (char_u *)&(curwin->w_p_rl);
@@ -6972,6 +7027,9 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #endif
 #ifdef FEAT_SIGNS
     to->wo_scl = copy_option_val(from->wo_scl);
+#endif
+#ifdef FEAT_QUICKFIX
+    to->wo_numll = from->wo_numll;
 #endif
 
 #ifdef FEAT_EVAL
@@ -8797,4 +8855,5 @@ didset_options_sctx(int opt_flags, char **buf)
 		set_option_sctx_idx(idx, opt_flags, current_sctx);
 	}
 }
+
 #endif

@@ -222,6 +222,12 @@ main
     command_line_scan(&params);
     TIME_MSG("parsing arguments");
 
+#ifdef FEAT_QUICKFIX
+    // initialize global quickfix list
+    if (qf_init_global_stack() == FAIL)
+	return 1;
+#endif
+
     /*
      * On some systems, when we compile with the GUI, we always use it.  On Mac
      * there is no terminal version, and on Windows we can't fork one off with

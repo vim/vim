@@ -3662,3 +3662,11 @@ EXTERN char e_invalid_return_type_from_findfunc[]
 	INIT(= N_("E1514: 'findfunc' did not return a List type"));
 EXTERN char e_str_encoding_failed[]
 	INIT(= N_("E1515: Unable to convert %s '%s' encoding"));
+#ifdef FEAT_QUICKFIX
+EXTERN char e_cannot_have_negative_or_zero_number_of_quickfix[]
+	INIT(= N_("E1516: Cannot have a negative or zero number of quickfix lists"));
+EXTERN char e_cannot_have_more_than_hundred_quickfix[]
+	INIT(= N_("E1517: Cannot have more than a hundred quickfix lists"));
+EXTERN char e_failed_resizing_quickfix_stack[]
+	INIT(= N_("E1517: Failed resizing the quickfix/location list stack"));
+#endif

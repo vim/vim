@@ -275,6 +275,8 @@ typedef struct
 #if defined(FEAT_QUICKFIX)
     int		wo_pvw;
 # define w_p_pvw w_onebuf_opt.wo_pvw	// 'previewwindow'
+    long        wo_numll;
+# define w_p_numll w_allbuf_opt.wo_numll // 'numloclist'
 #endif
 #ifdef FEAT_RIGHTLEFT
     int		wo_rl;
