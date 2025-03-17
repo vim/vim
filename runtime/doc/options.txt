@@ -6120,6 +6120,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
+
+						*'numquickfix'* *'numqf'*
+'numquickfix' 'numqf'	number	(default: 10)
+			global
+			{only available when compiled with the |+quickfix|
+			feature}
+	Number of quickfix lists that should be remembered for the global
+	quickfix stack. Must be between 1 and 100. If the option is set to
+	a value that is lower than the amount of entries in the quickfix
+	list stack, entries will be removed starting from the oldest one.
+	Then the current quickfix list to be shown will be the one on the
+	top of the stack (the most recently created).
+
+						*'numquickfix'* *'numqf'*
+'numloclist' 'numll'	number	(default: 8)
+			local to window
+			{only available when compiled with the |+quickfix|
+			feature}
+	Like 'numquickfix', but for the location list stack associated with
+	the current window. If the option is changed in either the location
+	list window itself or the the window that is associated with the
+	location list stack, the new value will also be applied to the other
+	one. This means this value will always be the same for a given
+	location list window and a normal window pair.
+
 						*'omnifunc'* *'ofu'*
 'omnifunc' 'ofu'	string	(default: empty)
 			local to buffer
