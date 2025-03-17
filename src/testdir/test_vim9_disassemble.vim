@@ -295,7 +295,7 @@ def Test_disassemble_iput_expr()
   assert_match('<SNR>\d*_IputExpr.*' ..
         ' :3iput ="text"\_s*' ..
         '\d PUSHS "text"\_s*' ..
-        '\d PUT = 3\_s*' ..
+        '\d IPUT = 3\_s*' ..
         '\d RETURN void',
         res)
 enddef
