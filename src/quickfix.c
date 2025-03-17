@@ -1985,7 +1985,6 @@ qf_pop_stack(qf_info_T *qi)
     static void
 qf_new_list(qf_info_T *qi, char_u *qf_title)
 {
-    int		i;
     qf_list_T	*qfl;
 
     // If the current entry is not the last entry, delete entries beyond
