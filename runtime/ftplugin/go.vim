@@ -34,9 +34,9 @@ if !exists('*' .. expand('<SID>') .. 'GoKeywordPrg')
     try
       let cmd = 'go doc -C ' . shellescape(expand('%:h')) . ' ' . shellescape(expand('<cword>'))
       if has('nvim')
-        exe "term" cmd
-        startinsert
-        tmap <buffer> <Esc> <Cmd>call jobstop(&channel) <Bar> bdelete<CR>
+        exe 'split | term' cmd
+      elseif has('gui_running')
+        exe 'term' cmd
       else
         exe '!' . cmd
       endif
