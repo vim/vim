@@ -8244,6 +8244,7 @@ hlexists()	builtin.txt	/*hlexists()*
 hlget()	builtin.txt	/*hlget()*
 hlsearch-variable	eval.txt	/*hlsearch-variable*
 hlset()	builtin.txt	/*hlset()*
+hlyank-install	usr_05.txt	/*hlyank-install*
 holy-grail	index.txt	/*holy-grail*
 home	intro.txt	/*home*
 home-replace	editing.txt	/*home-replace*
@@ -9408,6 +9409,7 @@ package-doc	repeat.txt	/*package-doc*
 package-documentation	repeat.txt	/*package-documentation*
 package-editorconfig	usr_05.txt	/*package-editorconfig*
 package-helptoc	helphelp.txt	/*package-helptoc*
+package-hlyank	usr_05.txt	/*package-hlyank*
 package-justify	usr_25.txt	/*package-justify*
 package-matchit	usr_05.txt	/*package-matchit*
 package-nohlsearch	usr_05.txt	/*package-nohlsearch*

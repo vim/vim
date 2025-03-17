@@ -1,4 +1,4 @@
-*usr_52.txt*	For Vim version 9.1.  Last change: 2025 Mar 12
+*usr_52.txt*	For Vim version 9.1.  Last change: 2025 Mar 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -346,11 +346,8 @@ Have a look at the package located at $VIMRUNTIME/pack/dist/opt/comment/
 
 HIGHLIGHT YANK PLUGIN
 
-Here is an example for highlighting the yanked region. It makes use of the
-|getregionpos()| function, available since Vim 9.1.0446.
-
-Copy the following example into a new file and place it into your plugin directory
-and it will be active next time you start Vim.  |add-plugin|: >
+Vim comes with the highlight-yank plugin, written in Vim9 script
+|hlyank-install|, here is a simplified implementation: >vim
 
 	vim9script
 
@@ -375,6 +372,9 @@ and it will be active next time you start Vim.  |add-plugin|: >
 
 	autocmd TextYankPost * HighlightedYank()
 <
+For the complete example, have a look into the package located at
+`$VIMRUNTIME/pack/dist/opt/hlyank/`
+
 ==============================================================================
 
 Next chapter: |usr_90.txt|  Installing Vim
