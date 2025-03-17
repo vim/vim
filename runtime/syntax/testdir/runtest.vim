@@ -383,7 +383,11 @@ func RunTest()
     enddef
   END
   let MAX_FAILED_COUNT = 5
-  lockvar MAX_FAILED_COUNT XTESTSCRIPT
+  let DUMP_OPTS = exists("$VIM_SYNTAX_TEST_WAIT_TIME") &&
+	  \ !empty($VIM_SYNTAX_TEST_WAIT_TIME)
+      \ ? {'wait': max([1, str2nr($VIM_SYNTAX_TEST_WAIT_TIME)])}
+      \ : {}
+  lockvar DUMP_OPTS MAX_FAILED_COUNT XTESTSCRIPT
   let ok_count = 0
   let failed_tests = []
   let skipped_count = 0
@@ -398,8 +402,8 @@ func RunTest()
 	\ ->join('\|')
     \ : ''
 
-  " Treat "\.self-testing$" as a string NOT as a regexp.
-  if filter ==# '\.self-testing$'
+  " Treat "^self-testing" as a string NOT as a regexp.
+  if filter ==# '^self-testing'
     let dirpath = 'input/selftestdir/'
     let fnames = readdir(dirpath, {fname -> fname !~ '^README\.txt$'})
   else
@@ -472,7 +476,7 @@ func RunTest()
       let ruler = s:TermWaitAndPollRuler(buf, in_name_and_out_name)
       call ch_log('First screendump for ' .. in_name_and_out_name)
       " Make a screendump at the start of the file: failed/root_00.dump
-      let fail = VerifyScreenDump(buf, root_00, {})
+      let fail = VerifyScreenDump(buf, root_00, DUMP_OPTS)
 
       " Accommodate the next code block to "buf"'s contingency for self
       " wipe-out.
@@ -492,7 +496,7 @@ func RunTest()
 	      \ in_name_and_out_name)
 	  call ch_log('Next screendump for ' .. in_name_and_out_name)
 	  " Make a screendump of every 18 lines of the file: failed/root_NN.dump
-	  let fail += VerifyScreenDump(buf, root_next, {})
+	  let fail += VerifyScreenDump(buf, root_next, DUMP_OPTS)
 	endwhile
 	call StopVimInTerminal(buf)
       finally

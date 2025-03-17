@@ -764,17 +764,14 @@ ins_compl_add_infercase(
     static int
 cfc_has_mode(void)
 {
-    switch (ctrl_x_mode)
-    {
-	case CTRL_X_NORMAL:
-	    return (cfc_flags & CFC_KEYWORD) != 0;
-	case CTRL_X_FILES:
-	    return (cfc_flags & CFC_FILES) != 0;
-	case CTRL_X_WHOLE_LINE:
-	    return (cfc_flags & CFC_WHOLELINE) != 0;
-	default:
-	    return FALSE;
-    }
+    if (ctrl_x_mode_normal() || ctrl_x_mode_dictionary())
+	return (cfc_flags & CFC_KEYWORD) != 0;
+    else if (ctrl_x_mode_files())
+	return (cfc_flags & CFC_FILES) != 0;
+    else if (ctrl_x_mode_whole_line())
+	return (cfc_flags & CFC_WHOLELINE) != 0;
+    else
+	return FALSE;
 }
 
 /*
@@ -1792,7 +1789,7 @@ ins_compl_files(
     int		add_r;
     char_u	*leader = NULL;
     int		leader_len = 0;
-    int		in_fuzzy_collect = cfc_has_mode() && ctrl_x_mode_normal();
+    int		in_fuzzy_collect = cfc_has_mode();
     int		score = 0;
     int		len = 0;
     char_u	*line_end = NULL;
@@ -2543,6 +2540,10 @@ ins_compl_stop(int c, int prev_mode, int retval)
 {
     int		want_cindent;
     char_u	*word = NULL;
+
+    // Remove pre-inserted text when present.
+    if (ins_compl_preinsert_effect())
+	ins_compl_delete();
 
     // Get here when we have finished typing a sequence of ^N and
     // ^P or other completion characters in CTRL-X mode.  Free up

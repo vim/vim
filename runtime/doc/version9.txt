@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 06
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41606,7 +41606,7 @@ Completion: ~
 - handle multi-line completion as expected
 - improved commandline completion for the |:hi| command
 - New option value for 'wildmode':
-  	"noselect"	- do not auto select an entry in the wildmenu
+	"noselect"	- do not auto select an entry in the wildmenu
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have
@@ -41687,6 +41687,7 @@ Autocommands: ~
 |CursorMovedC|		after the cursor was moved in the command-line
 |KeyInputPre|		before processing any key event in any mode
 |SessionWritePost|	after writing the session file |:mksession|
+|TabClosedPre|		before closing a |tabpage|.
 |TermResponseAll|	after the terminal response to |t_RV| and others is
 			received
 |WinNewPre|		before creating a new window

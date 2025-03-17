@@ -15,6 +15,7 @@ void AppendToRedobuffSpec(char_u *s);
 void AppendCharToRedobuff(int c);
 void AppendNumberToRedobuff(long n);
 void stuffReadbuff(char_u *s);
+void stuffReadbuffLen(char_u *s, long len);
 void stuffRedoReadbuff(char_u *s);
 void stuffReadbuffSpec(char_u *s);
 void stuffcharReadbuff(int c);

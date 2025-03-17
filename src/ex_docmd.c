@@ -6537,6 +6537,8 @@ tabpage_close(int forceit)
     if (window_layout_locked(CMD_tabclose))
 	return;
 
+    trigger_tabclosedpre(curtab, TRUE);
+
     // First close all the windows but the current one.  If that worked then
     // close the last window in this tab, that will close it.
     if (!ONE_WINDOW)
@@ -6559,6 +6561,8 @@ tabpage_close_other(tabpage_T *tp, int forceit)
 {
     int		done = 0;
     win_T	*wp;
+
+    trigger_tabclosedpre(tp, TRUE);
 
     // Limit to 1000 windows, autocommands may add a window while we close
     // one.  OK, so I'm paranoid...

@@ -577,6 +577,7 @@ runtime/syntax/postscr.vim		@mrdubya
 runtime/syntax/privoxy.vim		@dkearns
 runtime/syntax/progress.vim		@rdnlsmith
 runtime/syntax/prolog.vim		@XVilka
+runtime/syntax/prql.vim			@vanillajonathan
 runtime/syntax/ps1.vim			@heaths
 runtime/syntax/ps1xml.vim		@heaths
 runtime/syntax/psl.vim			@danielkho

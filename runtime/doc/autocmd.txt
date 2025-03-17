@@ -387,6 +387,7 @@ Name			triggered by ~
 |TabNew|		after creating a new tab page
 |WinClosed|		after closing a window
 |TabClosed|		after closing a tab page
+|TabClosedPre|		before closing a tab page
 |WinEnter|		after entering another window
 |WinLeave|		before leaving a window
 |TabEnter|		after entering another tab page
@@ -1232,6 +1233,10 @@ Syntax				When the 'syntax' option has been set.  The
 				See |:syn-on|.
 							*TabClosed*
 TabClosed			After closing a tab page.
+							*TabClosedPre*
+TabClosedPre			Before closing a tab page.  The window layout
+				is locked, thus opening and closing of windows
+				is prohibited.
 							*TabEnter*
 TabEnter			Just after entering a tab page. |tab-page|
 				After triggering the WinEnter and before

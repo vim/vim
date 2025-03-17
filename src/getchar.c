@@ -204,7 +204,7 @@ get_recorded(void)
 get_inserted(void)
 {
     size_t len = 0;
-    char_u* str = get_buffcont(&redobuff, FALSE, &len);
+    char_u *str = get_buffcont(&redobuff, FALSE, &len);
     string_T ret = { str, len };
     return ret;
 }
@@ -705,7 +705,7 @@ stuffRedoReadbuff(char_u *s)
     add_buff(&readbuf2, s, -1L);
 }
 
-    static void
+    void
 stuffReadbuffLen(char_u *s, long len)
 {
     add_buff(&readbuf1, s, len);

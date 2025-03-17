@@ -1435,6 +1435,7 @@ enum auto_event
     EVENT_SWAPEXISTS,		// found existing swap file
     EVENT_SYNTAX,		// syntax selected
     EVENT_TABCLOSED,		// after closing a tab page
+    EVENT_TABCLOSEDPRE,		// before closing a tab page
     EVENT_TABENTER,		// after entering a tab page
     EVENT_TABLEAVE,		// before leaving a tab page
     EVENT_TABNEW,		// when entering a new tab page

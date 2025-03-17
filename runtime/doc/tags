@@ -5761,6 +5761,7 @@ TSQL	ft_sql.txt	/*TSQL*
 TTpro-telnet	syntax.txt	/*TTpro-telnet*
 Tab	intro.txt	/*Tab*
 TabClosed	autocmd.txt	/*TabClosed*
+TabClosedPre	autocmd.txt	/*TabClosedPre*
 TabEnter	autocmd.txt	/*TabEnter*
 TabLeave	autocmd.txt	/*TabLeave*
 TabNew	autocmd.txt	/*TabNew*
@@ -6723,6 +6724,7 @@ creating-menus	gui.txt	/*creating-menus*
 credits	intro.txt	/*credits*
 crontab	options.txt	/*crontab*
 cs-find	if_cscop.txt	/*cs-find*
+cs.vim	syntax.txt	/*cs.vim*
 cs7-problem	term.txt	/*cs7-problem*
 cscope	if_cscop.txt	/*cscope*
 cscope-commands	if_cscop.txt	/*cscope-commands*
@@ -7320,6 +7322,7 @@ ft-context-intro	ft_context.txt	/*ft-context-intro*
 ft-context-mappings	ft_context.txt	/*ft-context-mappings*
 ft-context-settings	ft_context.txt	/*ft-context-settings*
 ft-cpp-syntax	syntax.txt	/*ft-cpp-syntax*
+ft-cs-syntax	syntax.txt	/*ft-cs-syntax*
 ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
 ft-css-omni	insert.txt	/*ft-css-omni*
 ft-csv-syntax	syntax.txt	/*ft-csv-syntax*
@@ -7349,6 +7352,7 @@ ft-freebasic-syntax	syntax.txt	/*ft-freebasic-syntax*
 ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
 ft-gdscript-plugin	filetype.txt	/*ft-gdscript-plugin*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
+ft-gitrebase-plugin	filetype.txt	/*ft-gitrebase-plugin*
 ft-go-plugin	filetype.txt	/*ft-go-plugin*
 ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*

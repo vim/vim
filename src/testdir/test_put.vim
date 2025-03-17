@@ -230,7 +230,9 @@ func Test_put_visual_mode()
   set selection=exclusive
   exe "norm o\t"
   m0
-  sil! norm pp
+  sil! norm 
+p
+p
 
   bwipe!
   set selection&
@@ -330,6 +332,7 @@ func Test_put_list()
   bw!
 endfunc
 
+
 func Test_iput_multiline()
   new
   setlocal noexpandtab
@@ -387,6 +390,31 @@ func Test_iput_not_put()
   put
   call assert_equal("bar", getline(3))
   bw!
+
+" Test pasting the '.' register
+func Test_put_inserted()
+  new
+
+  for s in ['', '…', '0', '^', '+0', '+^', '…0', '…^']
+    call setline(1, 'foobar')
+    exe $"normal! A{s}\<Esc>"
+    call assert_equal($'foobar{s}', getline(1))
+    normal! ".p
+    call assert_equal($'foobar{s}{s}', getline(1))
+    normal! ".2p
+    call assert_equal($'foobar{s}{s}{s}{s}', getline(1))
+  endfor
+
+  for s in ['0', '^', '+0', '+^', '…0', '…^']
+    call setline(1, "\t\t\t\t\tfoobar")
+    exe $"normal! A\<C-D>{s}\<Esc>"
+    call assert_equal($"\t\t\t\tfoobar{s}", getline(1))
+    normal! ".p
+    call assert_equal($"\t\t\tfoobar{s}{s}", getline(1))
+    normal! ".2p
+    call assert_equal($"\tfoobar{s}{s}{s}{s}", getline(1))
+  endfor
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
