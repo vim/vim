@@ -2915,11 +2915,11 @@ stuff_inserted(
     long    count,	// Repeat this many times
     int	    no_esc)	// Don't add an ESC at the end
 {
-    string_T	*insert;				// text to be inserted
+    string_T	insert;				// text to be inserted
     char_u	last = ' ';
 
     insert = get_last_insert();
-    if (insert->string == NULL)
+    if (insert.string == NULL)
     {
 	emsg(_(e_no_inserted_text_yet));
 	return FAIL;
@@ -2929,39 +2929,39 @@ stuff_inserted(
     if (c != NUL)
 	stuffcharReadbuff(c);
 
-    if (insert->length > 0)
+    if (insert.length > 0)
     {
 	char_u	*p;
 
 	// look for the last ESC in 'insert'
-	for (p = insert->string + insert->length - 1; p >= insert->string; --p)
+	for (p = insert.string + insert.length - 1; p >= insert.string; --p)
 	{
 	    if (*p == ESC)
 	    {
-		insert->length = (size_t)(p - insert->string);
+		insert.length = (size_t)(p - insert.string);
 		break;
 	    }
 	}
     }
 
-    if (insert->length > 0)
+    if (insert.length > 0)
     {
-	char_u	*p = insert->string + insert->length - 1;
+	char_u	*p = insert.string + insert.length - 1;
 
 	// when the last char is either "0" or "^" it will be quoted if no ESC
 	// comes after it OR if it will insert more than once and "ptr"
 	// starts with ^D.	-- Acevedo
 	if ((*p == '0' || *p == '^')
-		&& (no_esc || (*insert->string == Ctrl_D && count > 1)))
+		&& (no_esc || (*insert.string == Ctrl_D && count > 1)))
 	{
 	    last = *p;
-	    --insert->length;
+	    --insert.length;
 	}
     }
 
     do
     {
-	stuffReadbuffLen(insert->string, insert->length);
+	stuffReadbuffLen(insert.string, insert.length);
 	// a trailing "0" is inserted as "<C-V>048", "^" as "<C-V>^"
 	switch (last)
 	{
@@ -2990,23 +2990,18 @@ stuff_inserted(
     return OK;
 }
 
-    string_T *
+    string_T
 get_last_insert(void)
 {
-    static string_T insert = {NULL, 0};
+    string_T insert = {NULL, 0};
 
-    if (last_insert.string == NULL)
-    {
-	insert.string = NULL;
-	insert.length = 0;
-    }
-    else
+    if (last_insert.string != NULL)
     {
 	insert.string = last_insert.string + last_insert_skip;
 	insert.length = (size_t)(last_insert.length - last_insert_skip);
     }
 
-    return &insert;
+    return insert;
 }
 
 /*
@@ -3016,17 +3011,17 @@ get_last_insert(void)
     char_u *
 get_last_insert_save(void)
 {
-    string_T	*insert = get_last_insert();
+    string_T	insert = get_last_insert();
     char_u	*s;
 
-    if (insert->string == NULL)
+    if (insert.string == NULL)
 	return NULL;
-    s = vim_strnsave(insert->string, insert->length);
+    s = vim_strnsave(insert.string, insert.length);
     if (s == NULL)
 	return NULL;
 
-    if (insert->length > 0 && s[insert->length - 1] == ESC)	// remove trailing ESC
-	s[insert->length - 1] = NUL;
+    if (insert.length > 0 && s[insert.length - 1] == ESC)	// remove trailing ESC
+	s[insert.length - 1] = NUL;
     return s;
 }
 
