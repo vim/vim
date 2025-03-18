@@ -230,7 +230,7 @@ func Test_put_visual_mode()
   set selection=exclusive
   exe "norm o\t"
   m0
-  sil! norm
+  sil! norm pp
 
   bwipe!
   set selection&
@@ -330,7 +330,6 @@ func Test_put_list()
   bw!
 endfunc
 
-
 func Test_iput_multiline()
   new
   setlocal noexpandtab
@@ -413,6 +412,7 @@ func Test_put_inserted()
     normal! ".2p
     call assert_equal($"\tfoobar{s}{s}{s}{s}", getline(1))
   endfor
+
   bwipe!
 endfunc
 
