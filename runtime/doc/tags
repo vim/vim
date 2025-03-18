@@ -809,6 +809,10 @@ $quote	eval.txt	/*$quote*
 'nu'	options.txt	/*'nu'*
 'number'	options.txt	/*'number'*
 'numberwidth'	options.txt	/*'numberwidth'*
+'numquickfix'	options.txt	/*'numquickfix'*
+'numloclist'	options.txt	/*'numloclist'*
+'numqf'	options.txt	/*'numqf'*
+'numll'	options.txt	/*'numll'*
 'nuw'	options.txt	/*'nuw'*
 'odev'	options.txt	/*'odev'*
 'oft'	options.txt	/*'oft'*
