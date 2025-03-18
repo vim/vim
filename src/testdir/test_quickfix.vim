@@ -6732,13 +6732,24 @@ func Xtest_pop_lists(cchar)
   for i in range(1, 100)
     Xexpr string(i)
   endfor
+  Xopen
+  call assert_equal(g:Xgetlist({'nr': '$'}).nr, 100)
+  call assert_equal("|| 100", getline(1))
   Xsethist 8
   call assert_equal(g:Xgetlist({'nr': '$'}).nr, 8)
-  Xopen
   Xolder 7
   call assert_equal("|| 93", getline(1))
   Xsethist 1
   call assert_equal(g:Xgetlist({'nr': '$'}).nr, 1)
+  call assert_equal("|| 100", getline(1))
+
+  " grow array again
+  Xsethist 100
+  for i in range(1, 99)
+    Xexpr string(i)
+  endfor
+  call assert_equal("|| 99", getline(1))
+  Xolder 99
   call assert_equal("|| 100", getline(1))
 
   Xsethistdefault
