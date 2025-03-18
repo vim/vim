@@ -3898,6 +3898,24 @@ func Test_popupwin_cancel()
   call assert_equal({}, popup_getpos(win3))
 endfunc
 
+func Test_popupwin_cancel_with_without_filter()
+  let win1 = popup_create('with filter', #{line: 5, filter: {... -> 0}})
+  let win2 = popup_create('no filter', #{line: 10})
+
+  call assert_equal(5, popup_getpos(win1).line)
+  call assert_equal(10, popup_getpos(win2).line)
+
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal({}, popup_getpos(win1))
+  call assert_equal(10, popup_getpos(win2).line)
+
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal({}, popup_getpos(win1))
+  call assert_equal({}, popup_getpos(win2))
+
+  call popup_clear()
+endfunc
+
 func Test_popupwin_filter_redraw()
   " Create two popups with a filter that closes the popup when typing "0".
   " Both popups should close, even though the redraw also calls

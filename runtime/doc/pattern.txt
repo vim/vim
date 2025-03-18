@@ -141,6 +141,7 @@ CTRL-C			Interrupt current (search) command.  Use CTRL-Break on
 			help users who use "vim file | grep word" and don't
 			know how to get out (blindly typing :qa<CR> would
 			work).
+			If a popup is open, the active popup will be closed.
 
 							*:noh* *:nohlsearch*
 :noh[lsearch]		Stop the highlighting for the 'hlsearch' option.  It
