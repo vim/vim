@@ -4772,13 +4772,13 @@ did_set_numloclist(optset_T *args UNUSED)
     // cannot have zero or negative number of quickfix lists in a stack
     if (*numll < 1) {
 	*numll = 1;
-	errmsg = e_cannot_have_negative_or_zero_number_of_quickfix;
+	errmsg = e_cannot_have_negative_or_zero_number_of_location;
     }
 
     // cannot have more than 100 quickfix lists in a stack
     if (*numll > 100) {
 	*numll = 100;
-	errmsg = e_cannot_have_more_than_hundred_quickfix;
+	errmsg = e_cannot_have_more_than_hundred_location;
     }
 
     // will make sure the 'numloclist' of both the location list window

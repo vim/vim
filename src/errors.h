@@ -3665,8 +3665,12 @@ EXTERN char e_str_encoding_failed[]
 #ifdef FEAT_QUICKFIX
 EXTERN char e_cannot_have_negative_or_zero_number_of_quickfix[]
 	INIT(= N_("E1516: Cannot have a negative or zero number of quickfix lists"));
+EXTERN char e_cannot_have_negative_or_zero_number_of_location[]
+	INIT(= N_("E1516: Cannot have a negative or zero number of location lists"));
 EXTERN char e_cannot_have_more_than_hundred_quickfix[]
 	INIT(= N_("E1517: Cannot have more than a hundred quickfix lists"));
+EXTERN char e_cannot_have_more_than_hundred_location[]
+	INIT(= N_("E1517: Cannot have more than a hundred location lists"));
 EXTERN char e_failed_resizing_quickfix_stack[]
-	INIT(= N_("E1517: Failed resizing the quickfix/location list stack"));
+	INIT(= N_("E1518: Failed resizing the quickfix/location list stack"));
 #endif
