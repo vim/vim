@@ -3673,4 +3673,10 @@ EXTERN char e_cannot_have_more_than_hundred_quickfix[]
 	INIT(= N_("E1518: Cannot have more than a hundred quickfix/location lists"));
 EXTERN char e_failed_resizing_quickfix_stack[]
 	INIT(= N_("E1519: Failed resizing the quickfix/location list stack"));
+EXTERN char e_failed_quickfix_allocation[]
+	INIT(= N_("E1520: Could not allocate enough memory for quickfix/location list stack, stack may be smaller than the given size or invalid"));
+EXTERN char e_using_backup_stack_for_global_quickfix_list[]
+	INIT(= N_("E1521: Could not allocate dynamically any memory for global quickfix stack"));
+EXTERN char e_cannot_resize_global_quickfix_list_stack[]
+	INIT(= N_("E1522: Cannot resize global quickfix list, backup stack is being used"));
 #endif

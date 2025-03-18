@@ -5,7 +5,7 @@ void qf_free_all(win_T *wp);
 void check_quickfix_busy(void);
 int qf_resize_global_stack(int n);
 int ll_resize_stack(win_T *wp, int n);
-int  qf_init_global_stack(void);
+void  qf_init_global_stack(void);
 void copy_loclist_stack(win_T *from, win_T *to);
 void qf_jump(qf_info_T *qi, int dir, int errornr, int forceit);
 void qf_list(exarg_T *eap);

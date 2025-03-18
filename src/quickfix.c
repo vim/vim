@@ -113,10 +113,15 @@ struct qf_info_S
     int		qf_listcount;	    // current number of lists
     int		qf_curlist;	    // current error list
     int         qf_maxcount;        // maximum number of lists
+    int         qf_bkup_stack;      // if we are using the backup stack
     qf_list_T	*qf_lists;
     qfltype_T	qfl_type;	    // type of list
     int		qf_bufnr;	    // quickfix window buffer number
 };
+
+// backup quickfix list stack for ql_info in case we cannot
+// dynamically allocate any memory
+static qf_list_T backup_qf_lists[10];
 
 static qf_info_T ql_info;	// global quickfix list
 static int_u last_qf_id = 0;	// Last used quickfix list id
@@ -174,9 +179,10 @@ static void     qf_pop_stack(qf_info_T *qi);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static int	qf_add_entry(qf_list_T *qfl, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, long end_lnum, int col, int end_col, int vis_col, char_u *pattern, int nr, int type, typval_T *user_data, int valid);
 static int      qf_resize_stack(qf_info_T *qi, int n);
-static int      qf_alloc_global_stack(void);
 static void     qf_sync_llw_to_win(win_T *llw);
 static void     qf_sync_win_to_llw(win_T *pwp);
+static qf_info_T *qf_alloc_stack(qfltype_T qfltype, int n);
+static qf_list_T *qf_alloc_list_stack(int n, int *actual);
 static void	qf_free(qf_list_T *qfl);
 static char_u	*qf_types(int, int);
 static int	qf_get_fnum(qf_list_T *qfl, char_u *, char_u *);
@@ -2300,6 +2306,11 @@ qf_add_entry(
     int
 qf_resize_global_stack(int n)
 {
+    if (ql_info.qf_bkup_stack)
+    {
+	emsg(e_cannot_resize_global_quickfix_list_stack);
+	return FAIL;
+    }
     if (qf_resize_stack(&ql_info, n) == FAIL)
 	return FAIL;
 
@@ -2350,17 +2361,40 @@ qf_resize_stack(qf_info_T *qi, int n)
 	for (i = 0; i < amount_to_rm; i++)
 	    qf_pop_stack(qi);
     }
-    new = vim_realloc(qi->qf_lists, lsz * n);
+
+    i = n;
+    // Allocate smaller amounts each, until we have sucess
+    // or i reaches the original qf_maxcount
+    if (n > qi->qf_maxcount)
+	for (; i >= qi->qf_maxcount; i--)
+	{
+	    new = vim_realloc(qi->qf_lists, lsz * i);
+
+	    if (new == NULL)
+		if (i == qi->qf_maxcount)
+		    return FAIL;
+		else
+		    continue;
+	    else
+	    {
+		if (i != n)
+		    emsg(e_failed_quickfix_allocation);
+		break;
+	    }
+	}
+    else
+	// shrinking stack, just reallocate a smaller amount of memory
+	new = vim_realloc(qi->qf_lists, lsz * i);
 
     if (new == NULL)
 	return FAIL;
 
     // fill with zeroes any newly allocated memory
-    if (n > qi->qf_maxcount)
-	vim_memset(new + qi->qf_maxcount, 0, lsz * (n - qi->qf_maxcount));
+    if (i > qi->qf_maxcount)
+	vim_memset(new + qi->qf_maxcount, 0, lsz * (i - qi->qf_maxcount));
 
     qi->qf_lists = new;
-    qi->qf_maxcount = n;
+    qi->qf_maxcount = i;
     qi->qf_listcount -= amount_to_rm;
 
     // Check if current list was popped off the stack, if so then set current
@@ -2378,34 +2412,27 @@ qf_resize_stack(qf_info_T *qi, int n)
  * Initialize global quickfix list, should only be called once.
  * Returns FAIL on failure and OK on success.
  */
-    int
+    void
 qf_init_global_stack(void)
 {
-    if (qf_alloc_global_stack() == FAIL)
-	return FAIL;
+    int actual;
+    ql_info.qf_lists = qf_alloc_list_stack(p_chi, &actual);
 
-    return OK;
-}
+    ql_info.qfl_type = QFLT_QUICKFIX;
 
-/*
- * Allocate stack for global quickfix list struct
- * Returns FAIl on failure and OK on success
- */
-    static int
-qf_alloc_global_stack(void)
-{
-    qf_info_T *qi = &ql_info;
-
-    if (qi->qf_lists == NULL)
+    if (ql_info.qf_lists == NULL)
     {
-	qi->qf_lists = ALLOC_CLEAR_MULT(qf_list_T, p_chi);
-
-	if (qi->qf_lists == NULL)
-	    return FAIL;
-	qi->qf_maxcount = p_chi;
+	ql_info.qf_lists = backup_qf_lists;
+	ql_info.qf_maxcount = sizeof(backup_qf_lists) /
+	    sizeof(*backup_qf_lists);
+	ql_info.qf_bkup_stack = TRUE;
+	emsg(e_using_backup_stack_for_global_quickfix_list);
     }
-
-    return OK;
+    else
+    {
+	ql_info.qf_maxcount = actual;
+	ql_info.qf_bkup_stack = FALSE;
+    }
 }
 
 /*
@@ -2445,6 +2472,7 @@ qf_sync_win_to_llw(win_T *pwp)
     static qf_info_T *
 qf_alloc_stack(qfltype_T qfltype, int n)
 {
+    int actual;
     qf_info_T *qi;
 
     qi = ALLOC_CLEAR_ONE_ID(qf_info_T, aid_qf_qfinfo);
@@ -2455,16 +2483,54 @@ qf_alloc_stack(qfltype_T qfltype, int n)
     qi->qfl_type = qfltype;
     qi->qf_bufnr = INVALID_QFBUFNR;
 
-    qi->qf_lists = ALLOC_CLEAR_MULT(qf_list_T, n);
+    qi->qf_lists = qf_alloc_list_stack(n, &actual);
 
     if (qi->qf_lists == NULL)
     {
 	vim_free(qi);
 	return NULL;
     }
-    qi->qf_maxcount = n;
+
+    qi->qf_maxcount = actual;
 
     return qi;
+}
+
+/*
+ * Allocate memory for qf_lists member of qf_info_T struct.
+ * 'actual' is the actual amount of lists that have been allocated for
+ * (only set when function returns sucessfully)
+ */
+    static qf_list_T *
+qf_alloc_list_stack(int n, int *actual)
+{
+    int i;
+    qf_list_T *qfl;
+
+    // keep allocating smaller amounts each time allocation fails
+    // until we reach one
+    for (i = n; i > 0; i--)
+    {
+	qfl = ALLOC_CLEAR_MULT(qf_list_T, i);
+
+	if (qfl == NULL)
+	{
+	    if (i == 1)
+		return NULL;
+	    else
+		continue;
+	}
+	else
+	{
+	    if (i != n)
+		emsg(e_failed_quickfix_allocation);
+	    break;
+	}
+    }
+    if (actual != NULL)
+	*actual = i;
+
+    return qfl;
 }
 
 /*

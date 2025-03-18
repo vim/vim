@@ -224,8 +224,7 @@ main
 
 #ifdef FEAT_QUICKFIX
     // initialize global quickfix list
-    if (qf_init_global_stack() == FAIL)
-	return 1;
+    qf_init_global_stack();
 #endif
 
     /*
