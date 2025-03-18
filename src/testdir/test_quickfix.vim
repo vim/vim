@@ -83,7 +83,7 @@ func s:setup_commands(cchar)
     command! -count=1 -nargs=0 Xbefore <mods><count>lbefore
     command! -count=1 -nargs=0 Xafter <mods><count>lafter
     command! -nargs=1 Xsetnum <mods>set numloclist=<args>
-    command! -nargs=0 Xsetnumdefault <mods>setlocal numloclist&
+    command! -nargs=0 Xsetnumdefault <mods>set numloclist&
     let g:Xgetlist = function('getloclist', [0])
     let g:Xsetlist = function('setloclist', [0])
     call setloclist(0, [], 'f')

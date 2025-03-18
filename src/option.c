@@ -4742,24 +4742,26 @@ did_set_wrap(optset_T *args UNUSED)
     char *
 did_set_numquickfix(optset_T *args UNUSED)
 {
+    char *errmsg = NULL;
+
     // cannot have zero or negative number of quickfix lists in a stack
     if (p_numqf < 1)
     {
 	p_numqf = 1;
-	return e_cannot_have_negative_or_zero_number_of_quickfix;
+	errmsg = e_cannot_have_negative_or_zero_number_of_quickfix;
     }
 
     // cannot have more than 100 quickfix lists in a stack
     if (p_numqf > 100)
     {
 	p_numqf = 100;
-	return e_cannot_have_more_than_hundred_quickfix;
+	errmsg = e_cannot_have_more_than_hundred_quickfix;
     }
 
     if (qf_resize_global_stack(p_numqf) == FAIL)
-	return e_failed_resizing_quickfix_stack;
+	errmsg = e_failed_resizing_quickfix_stack;
 
-    return NULL;
+    return errmsg;
 }
 
 /*
