@@ -6133,7 +6133,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Then the current quickfix list to be shown will be the one on the
 	top of the stack (the most recently created).
 
-						*'numquickfix'* *'numqf'*
+						*'numloclist* *'numll'*
 'numloclist' 'numll'	number	(default: 8)
 			local to window
 			{only available when compiled with the |+quickfix|
