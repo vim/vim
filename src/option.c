@@ -4766,26 +4766,27 @@ did_set_numquickfix(optset_T *args UNUSED)
     char *
 did_set_numloclist(optset_T *args UNUSED)
 {
-    long *numll = &(curwin->w_p_numll);
+    long *numll = (long*)args->os_varp;
+    char *errmsg = NULL;
 
     // cannot have zero or negative number of quickfix lists in a stack
     if (*numll < 1) {
 	*numll = 1;
-	return e_cannot_have_negative_or_zero_number_of_quickfix;
+	errmsg = e_cannot_have_negative_or_zero_number_of_quickfix;
     }
 
     // cannot have more than 100 quickfix lists in a stack
     if (*numll > 100) {
 	*numll = 100;
-	return e_cannot_have_more_than_hundred_quickfix;
+	errmsg = e_cannot_have_more_than_hundred_quickfix;
     }
 
     // will make sure the 'numloclist' of both the location list window
     // and its parent window are the same
     if (ll_resize_stack(curwin, *numll) == FAIL)
-	return e_failed_resizing_quickfix_stack;
+	errmsg = e_failed_resizing_quickfix_stack;
 
-    return NULL;
+    return errmsg;
 }
 #endif
 
