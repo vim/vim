@@ -4593,6 +4593,7 @@ E1512	options.txt	/*E1512*
 E1513	message.txt	/*E1513*
 E1514	options.txt	/*E1514*
 E1515	builtin.txt	/*E1515*
+E1516	builtin.txt	/*E1516*
 E152	helphelp.txt	/*E152*
 E153	helphelp.txt	/*E153*
 E154	helphelp.txt	/*E154*
@@ -6726,6 +6727,7 @@ creating-menus	gui.txt	/*creating-menus*
 credits	intro.txt	/*credits*
 crontab	options.txt	/*crontab*
 cs-find	if_cscop.txt	/*cs-find*
+cs.vim	syntax.txt	/*cs.vim*
 cs7-problem	term.txt	/*cs7-problem*
 cscope	if_cscop.txt	/*cscope*
 cscope-commands	if_cscop.txt	/*cscope-commands*
@@ -7323,6 +7325,7 @@ ft-context-intro	ft_context.txt	/*ft-context-intro*
 ft-context-mappings	ft_context.txt	/*ft-context-mappings*
 ft-context-settings	ft_context.txt	/*ft-context-settings*
 ft-cpp-syntax	syntax.txt	/*ft-cpp-syntax*
+ft-cs-syntax	syntax.txt	/*ft-cs-syntax*
 ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
 ft-css-omni	insert.txt	/*ft-css-omni*
 ft-csv-syntax	syntax.txt	/*ft-csv-syntax*

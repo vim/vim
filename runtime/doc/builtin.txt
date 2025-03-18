@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 11
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1311,7 +1311,7 @@ blob2str({blob} [, {options}])				*blob2str()*
 				encoding.  The value is a |String|.  See
 				|encoding-names| for the supported values
 				(plus the special value "none").
-							*E1515*
+							*E1515* *E1516*
 		When current 'encoding' is "utf-8", an error is given and an
 		empty List is returned if an invalid byte sequence is
 		encountered in {blob}.  To suppress this validation and get
@@ -7275,6 +7275,9 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 				given sequence.
 		    limit	Maximum number of matches in {list} to be
 				returned.  Zero means no limit.
+		    camelcase	Use enhanced camel case scoring making results
+				better suited for completion related to
+				programming languages.  Defaults to v:true.
 
 		If {list} is a list of dictionaries, then the optional {dict}
 		argument supports the following additional items:

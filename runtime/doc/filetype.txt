@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2025 Mar 14
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -652,7 +652,7 @@ with interactive `git rebase`: >
 	:Reword " to pick this commit, but change the commit message
 	:Squash " to squash this commit into the previous one
 
-In addition, the following comamnd can be used to cycle between the different
+In addition, the following command can be used to cycle between the different
 possibilities: >
 
 	:Cycle  " to cycle between the previous commands
@@ -795,7 +795,7 @@ Local mappings:
 	to the end of the file in Normal mode.  This means "> " is inserted in
 	each line.
 
-MAN					*ft-man-plugin* *:Man* *:ManReload* *man.vim*
+MAN				*ft-man-plugin* *:Man* *:ManReload* *man.vim*
 
 This plugin displays a manual page in a nice way.  See |find-manpage| in the
 user manual for more information.

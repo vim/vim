@@ -141,6 +141,9 @@ os_risc.txt:
 os_win32.txt:
 	touch $@
 
+pi_netrw.txt: ../pack/dist/opt/netrw/doc/netrw.txt
+	cp ../pack/dist/opt/netrw/doc/netrw.txt $@
+
 vietnamese.txt:
 	touch $@
 

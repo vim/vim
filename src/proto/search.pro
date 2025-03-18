@@ -37,7 +37,7 @@ void find_pattern_in_path(char_u *ptr, int dir, int len, int whole, int skip_com
 spat_T *get_spat(int idx);
 int get_spat_last_idx(void);
 void f_searchcount(typval_T *argvars, typval_T *rettv);
-int fuzzy_match(char_u *str, char_u *pat_arg, int matchseq, int *outScore, int_u *matches, int maxMatches);
+int fuzzy_match(char_u *str, char_u *pat_arg, int matchseq, int *outScore, int_u *matches, int maxMatches, int camelcase);
 void f_matchfuzzy(typval_T *argvars, typval_T *rettv);
 void f_matchfuzzypos(typval_T *argvars, typval_T *rettv);
 int fuzzy_match_str(char_u *str, char_u *pat);
