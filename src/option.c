@@ -4777,14 +4777,14 @@ did_set_lhistory(optset_T *args UNUSED)
     if (*lhi < 1)
     {
 	*lhi = 1;
-	errmsg = e_cannot_have_negative_or_zero_number_of_location;
+	errmsg = e_cannot_have_negative_or_zero_number_of_quickfix;
     }
 
     // cannot have more than 100 quickfix lists in a stack
     if (*lhi > 100)
     {
 	*lhi = 100;
-	errmsg = e_cannot_have_more_than_hundred_location;
+	errmsg = e_cannot_have_more_than_hundred_quickfix;
     }
 
     // will make sure the 'lhistory' of both the location list window
