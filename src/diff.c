@@ -817,6 +817,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din, linenr_T start, linenr_T end)
 	    {
 		int c;
 		int	orig_len;
+		int	c_len = 1;
 		char_u	cbuf[MB_MAXBYTES + 1];
 
 		if (*s == NL)
@@ -825,14 +826,24 @@ diff_write_buffer(buf_T *buf, diffin_T *din, linenr_T start, linenr_T end)
 		{
 		    // xdiff doesn't support ignoring case, fold-case the text.
 		    c = PTR2CHAR(s);
+		    c_len = MB_CHAR2LEN(c);
 		    c = MB_CASEFOLD(c);
 		}
 		orig_len = mb_ptr2len(s);
-		if (mb_char2bytes(c, cbuf) != orig_len)
-		    // TODO: handle byte length difference
+		if (mb_char2bytes(c, cbuf) != c_len)
+		    // TODO: handle byte length difference.
+		    // One example is Å (3 bytes) and å (2 bytes).
 		    mch_memmove(ptr + len, s, orig_len);
 		else
-		    mch_memmove(ptr + len, cbuf, orig_len);
+		{
+		    mch_memmove(ptr + len, cbuf, c_len);
+		    if (orig_len > c_len)
+		    {
+			// Copy remaining composing characters
+			mch_memmove(ptr + len + c_len, s + c_len,
+				orig_len - c_len);
+		    }
+		}
 
 		s += orig_len;
 		len += orig_len;

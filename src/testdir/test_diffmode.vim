@@ -430,13 +430,13 @@ endfunc
 
 func Common_icase_test()
   edit one
-  call setline(1, ['One', 'Two', 'Three', 'Four', 'Fi#ve'])
+  call setline(1, ['One', 'Two', 'Three', 'Four', 'Fi#vϵ', 'Si⃗x', 'Se⃗ve⃗n'])
   redraw
   let normattr = screenattr(1, 1)
   diffthis
 
   botright vert new two
-  call setline(1, ['one', 'TWO', 'Three ', 'Four', 'fI=VE'])
+  call setline(1, ['one', 'TWO', 'Three ', 'Four', 'fI=VΕ', 'SI⃗x', 'SEvE⃗n'])
   diffthis
 
   redraw
@@ -444,10 +444,13 @@ func Common_icase_test()
   call assert_equal(normattr, screenattr(2, 1))
   call assert_notequal(normattr, screenattr(3, 1))
   call assert_equal(normattr, screenattr(4, 1))
+  call assert_equal(normattr, screenattr(6, 2))
+  call assert_notequal(normattr, screenattr(7, 2))
 
   let dtextattr = screenattr(5, 3)
   call assert_notequal(dtextattr, screenattr(5, 1))
   call assert_notequal(dtextattr, screenattr(5, 5))
+  call assert_notequal(dtextattr, screenattr(7, 4))
 
   diffoff!
   %bwipe!
