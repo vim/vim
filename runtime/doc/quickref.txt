@@ -830,8 +830,8 @@ Short explanation of each option:		*option-list*
 'nrformats'	  'nf'	    number formats recognized for CTRL-A command
 'number'	  'nu'	    print the line number in front of each line
 'numberwidth'	  'nuw'     number of columns used for the line number
-'numquickfix'	  'numqf'   maximum number of quickfix lists that can be stored in history
-'numloclist'	  'numll'   Maximum number of location lists that can be stored in history
+'chistory'	  'chi'   maximum number of quickfix lists that can be stored in history
+'lhistory'	  'lhi'   Maximum number of location lists that can be stored in history
 'omnifunc'	  'ofu'     function for filetype-specific completion
 'opendevice'	  'odev'    allow reading/writing devices on MS-Windows
 'operatorfunc'	  'opfunc'  function to be called for |g@| operator

@@ -134,6 +134,8 @@ $quote	eval.txt	/*$quote*
 'ch'	options.txt	/*'ch'*
 'character'	intro.txt	/*'character'*
 'charconvert'	options.txt	/*'charconvert'*
+'chi'		options.txt	/*'chi'*
+'chistory'	options.txt	/*'chistory'*
 'ci'	options.txt	/*'ci'*
 'cia'	options.txt	/*'cia'*
 'cin'	options.txt	/*'cin'*
@@ -463,6 +465,8 @@ $quote	eval.txt	/*$quote*
 'lazyredraw'	options.txt	/*'lazyredraw'*
 'lbr'	options.txt	/*'lbr'*
 'lcs'	options.txt	/*'lcs'*
+'lhi'	options.txt	/*'lhi'*
+'lhistory'	options.txt	/*'lhistory'*
 'linebreak'	options.txt	/*'linebreak'*
 'lines'	options.txt	/*'lines'*
 'linespace'	options.txt	/*'linespace'*
@@ -809,10 +813,6 @@ $quote	eval.txt	/*$quote*
 'nu'	options.txt	/*'nu'*
 'number'	options.txt	/*'number'*
 'numberwidth'	options.txt	/*'numberwidth'*
-'numll'	options.txt	/*'numll'*
-'numloclist'	options.txt	/*'numloclist'*
-'numqf'	options.txt	/*'numqf'*
-'numquickfix'	options.txt	/*'numquickfix'*
 'nuw'	options.txt	/*'nuw'*
 'odev'	options.txt	/*'odev'*
 'oft'	options.txt	/*'oft'*

@@ -858,7 +858,7 @@ EXTERN char_u	*p_rop;		// 'renderoptions'
 EXTERN long	p_report;	// 'report'
 #if defined(FEAT_QUICKFIX)
 EXTERN long	p_pvh;		// 'previewheight'
-EXTERN long     p_numqf;        // 'numquickfix'
+EXTERN long     p_chi;          // 'chistory'
 #endif
 #ifdef MSWIN
 EXTERN int	p_rs;		// 'restorescreen'
@@ -1323,7 +1323,7 @@ enum
 #endif
 #if defined(FEAT_QUICKFIX)
     , WV_PVW
-    , WV_NUMLL
+    , WV_LHI
 #endif
 #ifdef FEAT_RIGHTLEFT
     , WV_RL

@@ -4737,59 +4737,59 @@ did_set_wrap(optset_T *args UNUSED)
 
 #ifdef FEAT_QUICKFIX
 /*
- * Process the new 'numquickfix' option value.
+ * Process the new 'chistory' option value.
  */
     char *
-did_set_numquickfix(optset_T *args UNUSED)
+did_set_chistory(optset_T *args UNUSED)
 {
     char *errmsg = NULL;
 
     // cannot have zero or negative number of quickfix lists in a stack
-    if (p_numqf < 1)
+    if (p_chi < 1)
     {
-	p_numqf = 1;
+	p_chi = 1;
 	errmsg = e_cannot_have_negative_or_zero_number_of_quickfix;
     }
 
     // cannot have more than 100 quickfix lists in a stack
-    if (p_numqf > 100)
+    if (p_chi > 100)
     {
-	p_numqf = 100;
+	p_chi = 100;
 	errmsg = e_cannot_have_more_than_hundred_quickfix;
     }
 
-    if (qf_resize_global_stack(p_numqf) == FAIL)
+    if (qf_resize_global_stack(p_chi) == FAIL)
 	errmsg = e_failed_resizing_quickfix_stack;
 
     return errmsg;
 }
 
 /*
- * Process the new 'numloclist' option value.
+ * Process the new 'lhistory' option value.
  */
     char *
-did_set_numloclist(optset_T *args UNUSED)
+did_set_lhistory(optset_T *args UNUSED)
 {
-    long *numll = (long*)args->os_varp;
+    long *lhi = (long*)args->os_varp;
     char *errmsg = NULL;
 
     // cannot have zero or negative number of quickfix lists in a stack
-    if (*numll < 1)
+    if (*lhi < 1)
     {
-	*numll = 1;
+	*lhi = 1;
 	errmsg = e_cannot_have_negative_or_zero_number_of_location;
     }
 
     // cannot have more than 100 quickfix lists in a stack
-    if (*numll > 100)
+    if (*lhi > 100)
     {
-	*numll = 100;
+	*lhi = 100;
 	errmsg = e_cannot_have_more_than_hundred_location;
     }
 
-    // will make sure the 'numloclist' of both the location list window
+    // will make sure the 'lhistory' of both the location list window
     // and its parent window are the same
-    if (ll_resize_stack(curwin, *numll) == FAIL)
+    if (ll_resize_stack(curwin, *lhi) == FAIL)
 	errmsg = e_failed_resizing_quickfix_stack;
 
     return errmsg;
@@ -6714,7 +6714,7 @@ get_varp(struct vimoption *p)
 	case PV_WFW:	return (char_u *)&(curwin->w_p_wfw);
 #if defined(FEAT_QUICKFIX)
 	case PV_PVW:	return (char_u *)&(curwin->w_p_pvw);
-	case PV_NUMLL:	return (char_u *)&(curwin->w_p_numll);
+	case PV_LHI:	return (char_u *)&(curwin->w_p_lhi);
 #endif
 #ifdef FEAT_RIGHTLEFT
 	case PV_RL:	return (char_u *)&(curwin->w_p_rl);
@@ -7036,7 +7036,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_scl = copy_option_val(from->wo_scl);
 #endif
 #ifdef FEAT_QUICKFIX
-    to->wo_numll = from->wo_numll;
+    to->wo_lhi = from->wo_lhi;
 #endif
 
 #ifdef FEAT_EVAL

@@ -2314,7 +2314,7 @@ qf_resize_global_stack(int n)
 ll_resize_stack(win_T *wp, int n)
 {
     // check if current window is a location list window;
-    // if so then sync its 'numloclist' to the parent window or vice versa
+    // if so then sync its 'lhistory' to the parent window or vice versa
     if (IS_LL_WINDOW(curwin))
 	qf_sync_llw_to_win(curwin);
     else
@@ -2398,18 +2398,18 @@ qf_alloc_global_stack(void)
 
     if (qi->qf_lists == NULL)
     {
-	qi->qf_lists = ALLOC_CLEAR_MULT(qf_list_T, p_numqf);
+	qi->qf_lists = ALLOC_CLEAR_MULT(qf_list_T, p_chi);
 
 	if (qi->qf_lists == NULL)
 	    return FAIL;
-	qi->qf_maxcount = p_numqf;
+	qi->qf_maxcount = p_chi;
     }
 
     return OK;
 }
 
 /*
- * Sync a location list window's 'numloclist' value to the parent window
+ * Sync a location list window's 'lhistory' value to the parent window
  */
     static void
 qf_sync_llw_to_win(win_T *llw)
@@ -2417,11 +2417,11 @@ qf_sync_llw_to_win(win_T *llw)
     win_T *wp = qf_find_win_with_loclist(llw->w_llist_ref);
 
     if (wp != NULL)
-	wp->w_allbuf_opt.wo_numll = llw->w_allbuf_opt.wo_numll;
+	wp->w_p_lhi = llw->w_p_lhi;
 }
 
 /*
- * Sync a window's 'numloclist' value to its location list window, if any
+ * Sync a window's 'lhistory' value to its location list window, if any
  */
     static void
 qf_sync_win_to_llw(win_T *pwp)
@@ -2433,7 +2433,7 @@ qf_sync_win_to_llw(win_T *pwp)
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_llist_ref == llw && bt_quickfix(wp->w_buffer))
 	    {
-		wp->w_allbuf_opt.wo_numll = pwp->w_allbuf_opt.wo_numll;
+		wp->w_p_lhi = pwp->w_p_lhi;
 		return;
 	    }
 }
@@ -2483,8 +2483,9 @@ ll_get_or_alloc_list(win_T *wp)
     ll_free_all(&wp->w_llist_ref);
 
     if (wp->w_llist == NULL)
-	wp->w_llist = qf_alloc_stack(QFLT_LOCATION,
-		wp->w_allbuf_opt.wo_numll);	// new location list
+	// new location list
+	wp->w_llist = qf_alloc_stack(QFLT_LOCATION, wp->w_p_lhi);
+
     return wp->w_llist;
 }
 
@@ -2655,11 +2656,11 @@ copy_loclist_stack(win_T *from, win_T *to)
 
     // allocate a new location list, set size of stack to 'from' window value
     if ((to->w_llist = qf_alloc_stack(QFLT_LOCATION,
-		    from->w_allbuf_opt.wo_numll)) == NULL)
+		    from->w_p_lhi)) == NULL)
 	return;
     else
-	// set 'to' numll to reflect new value
-	to->w_allbuf_opt.wo_numll = to->w_llist->qf_maxcount;
+	// set 'to' lhi to reflect new value
+	to->w_p_lhi = to->w_llist->qf_maxcount;
 
     to->w_llist->qf_listcount = qi->qf_listcount;
 
@@ -8156,7 +8157,7 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
 	// If the location list window is open, then create a new empty
 	// location list
 	qf_info_T *new_ll = qf_alloc_stack(QFLT_LOCATION,
-		wp->w_allbuf_opt.wo_numll);
+		wp->w_p_lhi);
 
 	if (new_ll != NULL)
 	{

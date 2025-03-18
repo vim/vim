@@ -43,8 +43,8 @@ func s:setup_commands(cchar)
     command! -count=1 -nargs=0 Xabove <mods><count>cabove
     command! -count=1 -nargs=0 Xbefore <mods><count>cbefore
     command! -count=1 -nargs=0 Xafter <mods><count>cafter
-    command! -nargs=1 Xsetnum <mods>set numquickfix=<args>
-    command! -nargs=0 Xsetnumdefault <mods>set numquickfix&
+    command! -nargs=1 Xsetnum <mods>set chistory=<args>
+    command! -nargs=0 Xsetnumdefault <mods>set chistory&
     let g:Xgetlist = function('getqflist')
     let g:Xsetlist = function('setqflist')
     call setqflist([], 'f')
@@ -82,8 +82,8 @@ func s:setup_commands(cchar)
     command! -count=1 -nargs=0 Xabove <mods><count>labove
     command! -count=1 -nargs=0 Xbefore <mods><count>lbefore
     command! -count=1 -nargs=0 Xafter <mods><count>lafter
-    command! -nargs=1 Xsetnum <mods>set numloclist=<args>
-    command! -nargs=0 Xsetnumdefault <mods>set numloclist&
+    command! -nargs=1 Xsetnum <mods>set lhistory=<args>
+    command! -nargs=0 Xsetnumdefault <mods>set lhistory&
     let g:Xgetlist = function('getloclist', [0])
     let g:Xsetlist = function('setloclist', [0])
     call setloclist(0, [], 'f')
@@ -6723,7 +6723,7 @@ func Test_hardlink_fname()
 endfunc
 
 " Test for checking if a newer quickfix/location list window is used when
-" the current one is the older one and numquickfix/numloclist is set to 1
+" the current one is the older one and chistory/lhistory is set to 1
 func Xtest_set_numX_to_one(cchar)
   call s:setup_commands(a:cchar)
   Xsetnum 2
