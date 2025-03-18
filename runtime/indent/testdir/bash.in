@@ -5,6 +5,16 @@
 a = 10
 b = 20
 
+function variables(){
+local test1="test1"
+test2=(
+"test" "test2"
+)
+local test3=(
+"test" "test3"
+)
+}
+
 function add() {
 c = $((a + b))
 }

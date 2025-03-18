@@ -7,6 +7,7 @@
 " License:             Vim (see :h license)
 " Repository:          https://github.com/chrisbra/vim-sh-indent
 " Changelog:
+"          20250318  - Detect local arrays in functions
 "          20241411  - Detect dash character in function keyword for
 "                      bash mode (issue #16049)
 "          20190726  - Correctly skip if keywords in syntax comments
@@ -203,7 +204,7 @@ function! s:is_function_definition(line)
 endfunction
 
 function! s:is_array(line)
-  return a:line =~ '^\s*\<\k\+\>=('
+  return a:line =~ '^\s*\(local\s\+\)\?\<\k\+\>=('
 endfunction
 
 function! s:is_case_label(line, pnum)
