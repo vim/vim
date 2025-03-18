@@ -4522,18 +4522,29 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static int		change_start = 0;
     static int		change_end = 0;
     static hlf_T	hlID = (hlf_T)0;
+    int			cache_results = TRUE;
     int			filler_lines;
     int			col;
+    diffline_T		diffline = {};
 
     if (in_vim9script()
 	    && (check_for_lnum_arg(argvars,0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
+    if (diff_flags & ALL_INLINE_DIFF)
+    {
+	// Remember the results if using simple since it's recalculated per
+	// call. Otherwise just call diff_find_change() every time since
+	// internally the result is cached interally.
+	cache_results = FALSE;
+    }
+
     lnum = tv_get_lnum(argvars);
     if (lnum < 0)	// ignore type error in {lnum} arg
 	lnum = 0;
-    if (lnum != prev_lnum
+    if (!cache_results
+	    || lnum != prev_lnum
 	    || changedtick != CHANGEDTICK(curbuf)
 	    || fnum != curbuf->b_fnum)
     {
@@ -4546,15 +4557,16 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    {
 		change_start = MAXCOL;
 		change_end = -1;
-		// TODO ychin fix this up to take into account new inline diff changes
-		diffline_T diffline = {};
 		if (diff_find_change(curwin, lnum, &diffline))
 		    hlID = HLF_ADD;	// added line
 		else
 		{
 		    hlID = HLF_CHD;	// changed line
-		    change_start = diffline.changes[0].dc_start[diffline.bufidx];
-		    change_end = diffline.changes[0].dc_end[diffline.bufidx];
+		    if (diffline.num_changes > 0 && cache_results)
+		    {
+			change_start = diffline.changes[0].dc_start[diffline.bufidx];
+			change_end = diffline.changes[0].dc_end[diffline.bufidx];
+		    }
 		}
 	    }
 	    else
@@ -4562,18 +4574,42 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	}
 	else
 	    hlID = (hlf_T)0;
-	prev_lnum = lnum;
-	changedtick = CHANGEDTICK(curbuf);
-	fnum = curbuf->b_fnum;
+
+	if (cache_results)
+	{
+	    prev_lnum = lnum;
+	    changedtick = CHANGEDTICK(curbuf);
+	    fnum = curbuf->b_fnum;
+	}
     }
 
     if (hlID == HLF_CHD || hlID == HLF_TXD)
     {
 	col = tv_get_number(&argvars[1]) - 1; // ignore type error in {col}
-	if (col >= change_start && col < change_end)
-	    hlID = HLF_TXD;			// changed text
+	if (cache_results)
+	{
+	    if (col >= change_start && col < change_end)
+		hlID = HLF_TXD;			// changed text
+	    else
+		hlID = HLF_CHD;			// changed line
+	}
 	else
-	    hlID = HLF_CHD;			// changed line
+	{
+	    hlID = HLF_CHD;
+	    for (int i = 0; i < diffline.num_changes; i++)
+	    {
+		int added = diff_change_parse(&diffline, &diffline.changes[i],
+			&change_start, &change_end);
+		if (col >= change_start && col < change_end)
+		{
+		    hlID = added ? HLF_TXA : HLF_TXD;
+		    break;
+		}
+		if (col < change_start)
+		    // the remaining changes are past this column and not relevant
+		    break;
+	    }
+	}
     }
     rettv->vval.v_number = hlID == (hlf_T)0 ? 0 : (int)hlID;
 # endif
