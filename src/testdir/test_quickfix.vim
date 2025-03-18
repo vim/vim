@@ -43,8 +43,8 @@ func s:setup_commands(cchar)
     command! -count=1 -nargs=0 Xabove <mods><count>cabove
     command! -count=1 -nargs=0 Xbefore <mods><count>cbefore
     command! -count=1 -nargs=0 Xafter <mods><count>cafter
-    command! -nargs=1 Xsetnum <mods>set chistory=<args>
-    command! -nargs=0 Xsetnumdefault <mods>set chistory&
+    command! -nargs=1 Xsethist <mods>set chistory=<args>
+    command! -nargs=0 Xsethistdefault <mods>set chistory&
     let g:Xgetlist = function('getqflist')
     let g:Xsetlist = function('setqflist')
     call setqflist([], 'f')
@@ -82,8 +82,9 @@ func s:setup_commands(cchar)
     command! -count=1 -nargs=0 Xabove <mods><count>labove
     command! -count=1 -nargs=0 Xbefore <mods><count>lbefore
     command! -count=1 -nargs=0 Xafter <mods><count>lafter
-    command! -nargs=1 Xsetnum <mods>set lhistory=<args>
-    command! -nargs=0 Xsetnumdefault <mods>set lhistory&
+    command! -nargs=1 Xsethist <mods>set lhistory=<args>
+    command! -nargs=1 Xsetlocalhist <mods>setlocal lhistory=<args>
+    command! -nargs=0 Xsethistdefault <mods>set lhistory&
     let g:Xgetlist = function('getloclist', [0])
     let g:Xsetlist = function('setloclist', [0])
     call setloclist(0, [], 'f')
@@ -6722,24 +6723,119 @@ func Test_hardlink_fname()
   call Xtest_hardlink_fname('l')
 endfunc
 
-" Test for checking if a newer quickfix/location list window is used when
-" the current one is the older one and chistory/lhistory is set to 1
-func Xtest_set_numX_to_one(cchar)
+" Test for checking if correct number of tests are deleted
+" after setting Xhistory to a smaller number
+func Xtest_pop_lists(cchar)
   call s:setup_commands(a:cchar)
-  Xsetnum 2
+  Xsethist 100
+
+  for i in range(1, 100)
+    Xexpr string(i)
+  endfor
+  Xsethist 8
+  call assert_equal(g:Xgetlist({'nr': '$'}).nr, 8)
+  Xopen
+  Xolder 7
+  call assert_equal("|| 93", getline(1))
+  Xsethist 1
+  call assert_equal(g:Xgetlist({'nr': '$'}).nr, 1)
+  call assert_equal("|| 100", getline(1))
+
+  Xsethistdefault
+endfunc
+
+func Test_pop_lists()
+  call Xtest_pop_lists('c')
+  call Xtest_pop_lists('l')
+endfunc
+
+" Test for checking if a newer quickfix/location list window is switched to 
+" when the current one is the older one and chistory/lhistory is set to 1
+func Xtest_set_Xhistory_to_one(cchar)
+  call s:setup_commands(a:cchar)
+  Xsethist 2
   Xexpr '1'
   Xexpr '2'
   Xopen
   Xolder " go to buf with '1'
-  Xsetnum 1
+  Xsethist 1
   call assert_equal("|| 2", getline(1))
+  call assert_equal(g:Xgetlist({'nr': '$'}).nr, 1)
   Xclose
-  Xsetnumdefault
+  Xsethistdefault
 endfunc
 
-func Test_set_num_to_one()
-  call Xtest_set_numX_to_one('c')
-  call Xtest_set_numX_to_one('l')
+func Test_set_history_to_one()
+  call Xtest_set_Xhistory_to_one('c')
+  call Xtest_set_Xhistory_to_one('l')
+endfunc
+
+" Check if 'lhistory' is the same between the location list window 
+" and associated normal window
+func Test_win_and_loc_synced()
+  set lhistory=2
+  new
+  lexpr "Text"
+  lopen
+
+  " check if lhistory is synced when modified inside the 
+  " location list window
+  setlocal lhistory=1
+  let l:ll = &lhistory
+  wincmd k
+  let l:win = &lhistory
+  call assert_equal(l:ll, l:win)
+
+  " check if lhistory is synced when modified inside the 
+  " normal window
+  setlocal lhistory=10
+  let l:win = &lhistory
+  lopen
+  let l:ll = &lhistory
+  call assert_equal(l:ll, l:win)
+
+  wincmd k
+  lclose
+  wincmd q
+
+  set lhistory&
+  
+endfunc
+
+" Test if setting the lhistory of one window doesn't affect the other
+func Test_two_win_are_independent_of_history()
+  setlocal lhistory=10
+  new 
+  setlocal lhistory=20
+  wincmd  w
+  call assert_equal(&lhistory, 10)
+  wincmd w
+  wincmd q
+
+  set lhistory&
+endfunc
+
+" Test if lhistory is copied over to a new window
+func Test_lhistory_copied_over()
+  setlocal lhistory=3
+  split
+  call assert_equal(&lhistory, 3)
+  wincmd q
+
+  set lhistory&
+endfunc
+
+" Test if error occurs when given invalid history number
+func Xtest_invalid_history_num(cchar)
+  call s:setup_commands(a:cchar)
+
+  call assert_fails('Xsethist -10000', "E1516:")
+  call assert_fails('Xsethist 10000', "E1517:")
+endfunc
+
+func Test_invalid_history_num()
+  call Xtest_invalid_history_num('c')
+  call Xtest_invalid_history_num('l')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
