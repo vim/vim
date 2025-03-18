@@ -4979,7 +4979,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     if (argvars[1].v_type != VAR_STRING
 	    || argvars[1].vval.v_string == NULL)
     {
-	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
+	semsg(_(e_invalid_argument_str), typval_tostring(&argvars[1], TRUE));
 	return;
     }
 
@@ -5000,7 +5000,8 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		    || di->di_tv.vval.v_string == NULL
 		    || *di->di_tv.vval.v_string == NUL)
 	    {
-		semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
+		semsg(_(e_invalid_value_for_argument_str_str), "key",
+					    typval_tostring(&di->di_tv, TRUE));
 		return;
 	    }
 	    key = tv_get_string(&di->di_tv);
@@ -5019,21 +5020,23 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	{
 	    if (di->di_tv.v_type != VAR_NUMBER)
 	    {
-		semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
+		semsg(_(e_invalid_value_for_argument_str_str), "limit",
+					    typval_tostring(&di->di_tv, TRUE));
 		return;
 	    }
 	    max_matches = (long)tv_get_number_chk(&di->di_tv, NULL);
 	}
 
 	if ((di = dict_find(d, (char_u *)"camelcase", -1)) != NULL)
-        {
+	{
 	    if (di->di_tv.v_type != VAR_BOOL)
 	    {
-		semsg(_(e_invalid_argument_str), "camelcase");
+		semsg(_(e_invalid_value_for_argument_str_str), "camelcase",
+					    typval_tostring(&di->di_tv, TRUE));
 		return;
 	    }
 	    camelcase = tv_get_bool_chk(&di->di_tv, NULL);
-        }
+	}
 
 	if (dict_has_key(d, "matchseq"))
 	    matchseq = TRUE;

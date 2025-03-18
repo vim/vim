@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 16
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7277,7 +7277,7 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 				returned.  Zero means no limit.
 		    camelcase	Use enhanced camel case scoring making results
 				better suited for completion related to
-				programming languages. Default is v:true
+				programming languages.  Defaults to v:true.
 
 		If {list} is a list of dictionaries, then the optional {dict}
 		argument supports the following additional items:
