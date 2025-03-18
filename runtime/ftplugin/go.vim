@@ -33,10 +33,8 @@ if !exists('*' .. expand('<SID>') .. 'GoKeywordPrg')
     setl iskeyword+=.
     try
       let cmd = 'go doc -C ' . shellescape(expand('%:h')) . ' ' . shellescape(expand('<cword>'))
-      if has('nvim')
-        exe 'split | term' cmd
-      elseif has('gui_running')
-        exe 'term' cmd
+      if ('gui_running') || has('nvim')
+        exe 'hor term' cmd
       else
         exe '!' . cmd
       endif
