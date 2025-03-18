@@ -4595,6 +4595,9 @@ E1514	options.txt	/*E1514*
 E1515	builtin.txt	/*E1515*
 E1516	builtin.txt	/*E1516*
 E152	helphelp.txt	/*E152*
+E1520	quickfix.txt	/*E1520*
+E1521	quickfix.txt	/*E1521*
+E1522	quickfix.txt	/*E1522*
 E153	helphelp.txt	/*E153*
 E154	helphelp.txt	/*E154*
 E155	sign.txt	/*E155*
@@ -6170,6 +6173,7 @@ backtick-expansion	editing.txt	/*backtick-expansion*
 backup	editing.txt	/*backup*
 backup-changed	version4.txt	/*backup-changed*
 backup-extension	version4.txt	/*backup-extension*
+backup-global-quickfix-list-stack	quickfix.txt	/*backup-global-quickfix-list-stack*
 backup-table	editing.txt	/*backup-table*
 balloon-eval	debugger.txt	/*balloon-eval*
 balloon_gettext()	builtin.txt	/*balloon_gettext()*
@@ -9727,6 +9731,7 @@ quickfix-functions	usr_41.txt	/*quickfix-functions*
 quickfix-gcc	quickfix.txt	/*quickfix-gcc*
 quickfix-groff	quickfix.txt	/*quickfix-groff*
 quickfix-index	quickfix.txt	/*quickfix-index*
+quickfix-list-allocation	quickfix.txt	/*quickfix-list-allocation*
 quickfix-manx	quickfix.txt	/*quickfix-manx*
 quickfix-pandoc	quickfix.txt	/*quickfix-pandoc*
 quickfix-parse	quickfix.txt	/*quickfix-parse*
