@@ -4743,13 +4743,15 @@ did_set_wrap(optset_T *args UNUSED)
 did_set_numquickfix(optset_T *args UNUSED)
 {
     // cannot have zero or negative number of quickfix lists in a stack
-    if (p_numqf < 1) {
+    if (p_numqf < 1)
+    {
 	p_numqf = 1;
 	return e_cannot_have_negative_or_zero_number_of_quickfix;
     }
 
     // cannot have more than 100 quickfix lists in a stack
-    if (p_numqf > 100) {
+    if (p_numqf > 100)
+    {
 	p_numqf = 100;
 	return e_cannot_have_more_than_hundred_quickfix;
     }
@@ -4770,13 +4772,15 @@ did_set_numloclist(optset_T *args UNUSED)
     char *errmsg = NULL;
 
     // cannot have zero or negative number of quickfix lists in a stack
-    if (*numll < 1) {
+    if (*numll < 1)
+    {
 	*numll = 1;
 	errmsg = e_cannot_have_negative_or_zero_number_of_location;
     }
 
     // cannot have more than 100 quickfix lists in a stack
-    if (*numll > 100) {
+    if (*numll > 100)
+    {
 	*numll = 100;
 	errmsg = e_cannot_have_more_than_hundred_location;
     }

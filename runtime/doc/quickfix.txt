@@ -47,7 +47,7 @@ compiler (see |errorformat| below).
 Each quickfix list has a unique identifier called the quickfix ID and this
 number will not change within a Vim session. The |getqflist()| function can be
 used to get the identifier assigned to a list. There is also a quickfix list
-number which may change whenever more than 'numquickfix' lists are added to a 
+number which may change whenever more than 'numquickfix' lists are added to a
 quickfix stack.
 
 						*location-list* *E776*
@@ -861,9 +861,9 @@ using these functions are below:
 3. Using more than one list of errors			*quickfix-error-lists*
 
 So far has been assumed that there is only one list of errors.  Actually there
-can be multiple used lists that are remembered; see 'numquickfix' and 'numloclist'. 
-When starting a new list, the previous ones are automatically kept.  Two commands 
-can be used to access older error lists.  They set one of the existing error lists 
+can be multiple used lists that are remembered; see 'numquickfix' and 'numloclist'.
+When starting a new list, the previous ones are automatically kept.  Two commands
+can be used to access older error lists.  They set one of the existing error lists
 as the current one.
 
 						*:colder* *:col* *E380*
