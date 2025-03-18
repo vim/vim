@@ -2396,7 +2396,8 @@ qf_alloc_global_stack(void)
 {
     qf_info_T *qi = &ql_info;
 
-    if (qi->qf_lists == NULL) {
+    if (qi->qf_lists == NULL)
+    {
 	qi->qf_lists = ALLOC_CLEAR_MULT(qf_list_T, p_numqf);
 
 	if (qi->qf_lists == NULL)

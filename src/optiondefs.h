@@ -1834,11 +1834,11 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)8L, (char_u *)4L} SCTX_INIT},
 #ifdef FEAT_QUICKFIX
-    {"numquickfix", "numqf",P_NUM|P_VI_DEF,
-			    (char_u *)&p_numqf, PV_NONE, did_set_numquickfix, NULL,
-			    {(char_u *)10L, (char_u *)0L} SCTX_INIT},
     {"numloclist", "numll", P_NUM|P_VI_DEF,
 			    (char_u *)VAR_WIN, PV_NUMLL, did_set_numloclist, NULL,
+			    {(char_u *)10L, (char_u *)0L} SCTX_INIT},
+    {"numquickfix", "numqf",P_NUM|P_VI_DEF,
+			    (char_u *)&p_numqf, PV_NONE, did_set_numquickfix, NULL,
 			    {(char_u *)10L, (char_u *)0L} SCTX_INIT},
 #endif
     {"omnifunc",    "ofu",  P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_FUNC,
