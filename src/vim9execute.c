@@ -3256,7 +3256,7 @@ var_any_get_oc_member(class_T *current_class, isn_T *iptr, typval_T *tv)
  * do ISN_PUT or ISN_IPUT instruction depending on fixindent parameter
  */
     static void
-isn_put_do (ectx_T *ectx, isn_T *iptr, typval_T *tv, int fixindent)
+isn_put_do(ectx_T *ectx, isn_T *iptr, typval_T *tv, int fixindent)
 {
     int		regname = iptr->isn_arg.put.put_regname;
     linenr_T	lnum = iptr->isn_arg.put.put_lnum;
