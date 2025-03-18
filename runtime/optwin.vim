@@ -405,6 +405,13 @@ if has("linebreak")
   call append("$", "\t" .. s:local_to_window)
   call <SID>OptionL("nuw")
 endif
+if has("quickfix")
+  call <SID>AddOption("numquickfix", gettext("Maximum number of quickfix lists that can be stored in history"))
+  call <SID>OptionL("numqf")
+  call <SID>AddOption("numloclist", gettext("Maximum number of location lists that can be stored in history"))
+  call append("$", "\t" .. s:local_to_window)
+  call <SID>OptionL("numll")
+endif
 if has("conceal")
   call <SID>AddOption("conceallevel", gettext("controls whether concealable text is hidden"))
   call append("$", "\t" .. s:local_to_window)
