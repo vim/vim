@@ -73,6 +73,8 @@ let test_values = {
       \		[]],
       \
       "\ number options
+      \ 'numquickfix': [[1, 2, 10, 50], [1000, -1]],
+      \ 'numloclist': [[1, 2, 10, 50], [1000, -1]],
       \ 'cmdheight': [[1, 2, 10], [-1, 0]],
       \ 'cmdwinheight': [[1, 2, 10], [-1, 0]],
       \ 'columns': [[12, 80, 10000], [-1, 0, 10]],
