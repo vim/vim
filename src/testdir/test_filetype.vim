@@ -818,7 +818,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     tla: ['file.tla'],
     tli: ['file.tli'],
     tmux: ['tmuxfile.conf', '.tmuxfile.conf', '.tmux-file.conf', '.tmux.conf', 'tmux-file.conf', 'tmux.conf', 'tmux.conf.local'],
-    toml: ['file.toml', 'Gopkg.lock', 'Pipfile', '/home/user/.cargo/config', '.black',
+    toml: ['file.toml', 'uv.lock', 'Gopkg.lock', 'Pipfile', '/home/user/.cargo/config', '.black',
            'any/containers/containers.conf', 'any/containers/containers.conf.d/file.conf',
            'any/containers/containers.conf.modules/file.conf', 'any/containers/containers.conf.modules/any/file.conf',
            'any/containers/registries.conf', 'any/containers/registries.conf.d/file.conf',

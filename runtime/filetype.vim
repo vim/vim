@@ -2660,7 +2660,7 @@ au BufNewFile,BufRead *.tla			setf tla
 au BufNewFile,BufRead {.,}tmux*.conf		setf tmux
 
 " TOML
-au BufNewFile,BufRead *.toml			setf toml
+au BufNewFile,BufRead *.toml,uv.lock		setf toml
 
 " TPP - Text Presentation Program
 au BufNewFile,BufRead *.tpp			setf tpp
