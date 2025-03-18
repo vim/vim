@@ -4519,6 +4519,7 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static linenr_T	prev_lnum = 0;
     static varnumber_T	changedtick = 0;
     static int		fnum = 0;
+    static int		prev_diff_flags = 0;
     static int		change_start = 0;
     static int		change_end = 0;
     static hlf_T	hlID = (hlf_T)0;
@@ -4546,7 +4547,8 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     if (!cache_results
 	    || lnum != prev_lnum
 	    || changedtick != CHANGEDTICK(curbuf)
-	    || fnum != curbuf->b_fnum)
+	    || fnum != curbuf->b_fnum
+	    || diff_flags != prev_diff_flags)
     {
 	// New line, buffer, change: need to get the values.
 	int linestatus = 0;
@@ -4580,6 +4582,7 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    prev_lnum = lnum;
 	    changedtick = CHANGEDTICK(curbuf);
 	    fnum = curbuf->b_fnum;
+	    prev_diff_flags = diff_flags;
 	}
     }
 
