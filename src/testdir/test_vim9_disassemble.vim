@@ -286,6 +286,20 @@ def Test_disassemble_put_expr()
         res)
 enddef
 
+def s:IputExpr()
+  :3iput ="text"
+enddef
+
+def Test_disassemble_iput_expr()
+  var res = execute('disass s:IputExpr')
+  assert_match('<SNR>\d*_IputExpr.*' ..
+        ' :3iput ="text"\_s*' ..
+        '\d PUSHS "text"\_s*' ..
+        '\d IPUT = 3\_s*' ..
+        '\d RETURN void',
+        res)
+enddef
+
 def s:PutRange()
   :$-2put a
   :$-3put! b
@@ -301,6 +315,25 @@ def Test_disassemble_put_range()
         ' :$-3put! b\_s*' ..
         '\d RANGE $-3\_s*' ..
         '\d PUT b above range\_s*' ..
+        '\d RETURN void',
+        res)
+enddef
+
+def s:IputRange()
+  :$-2iput a
+  :$-3iput! b
+enddef
+
+def Test_disassemble_iput_range()
+  var res = execute('disass s:IputRange')
+  assert_match('<SNR>\d*_IputRange.*' ..
+        ' :$-2iput a\_s*' ..
+        '\d RANGE $-2\_s*' ..
+        '\d IPUT a range\_s*' ..
+
+        ' :$-3iput! b\_s*' ..
+        '\d RANGE $-3\_s*' ..
+        '\d IPUT b above range\_s*' ..
         '\d RETURN void',
         res)
 enddef
