@@ -6749,7 +6749,7 @@ func Test_pop_lists()
   call Xtest_pop_lists('l')
 endfunc
 
-" Test for checking if a newer quickfix/location list window is switched to 
+" Test for checking if a newer quickfix/location list window is switched to
 " when the current one is the older one and chistory/lhistory is set to 1
 func Xtest_set_Xhistory_to_one(cchar)
   call s:setup_commands(a:cchar)
@@ -6770,7 +6770,7 @@ func Test_set_history_to_one()
   call Xtest_set_Xhistory_to_one('l')
 endfunc
 
-" Check if 'lhistory' is the same between the location list window 
+" Check if 'lhistory' is the same between the location list window
 " and associated normal window
 func Test_win_and_loc_synced()
   set lhistory=2
@@ -6778,7 +6778,7 @@ func Test_win_and_loc_synced()
   lexpr "Text"
   lopen
 
-  " check if lhistory is synced when modified inside the 
+  " check if lhistory is synced when modified inside the
   " location list window
   setlocal lhistory=1
   let l:ll = &lhistory
@@ -6786,7 +6786,7 @@ func Test_win_and_loc_synced()
   let l:win = &lhistory
   call assert_equal(l:ll, l:win)
 
-  " check if lhistory is synced when modified inside the 
+  " check if lhistory is synced when modified inside the
   " normal window
   setlocal lhistory=10
   let l:win = &lhistory
@@ -6799,13 +6799,12 @@ func Test_win_and_loc_synced()
   wincmd q
 
   set lhistory&
-  
 endfunc
 
 " Test if setting the lhistory of one window doesn't affect the other
 func Test_two_win_are_independent_of_history()
   setlocal lhistory=10
-  new 
+  new
   setlocal lhistory=20
   wincmd  w
   call assert_equal(&lhistory, 10)
