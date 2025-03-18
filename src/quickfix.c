@@ -2111,6 +2111,7 @@ qf_free_all(win_T *wp)
 	// quickfix list
 	for (i = 0; i < qi->qf_listcount; ++i)
 	    qf_free(qf_get_list(qi, i));
+	vim_free(qi->qf_lists);
     }
 }
 
