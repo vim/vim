@@ -3660,8 +3660,6 @@ EXTERN char e_winfixbuf_cannot_go_to_buffer[]
 	INIT(= N_("E1513: Cannot switch buffer. 'winfixbuf' is enabled"));
 EXTERN char e_invalid_return_type_from_findfunc[]
 	INIT(= N_("E1514: 'findfunc' did not return a List type"));
-EXTERN char e_str_encoding_failed[]
-	INIT(= N_("E1515: Unable to convert %s '%s' encoding"));
 EXTERN char e_str_encoding_from_failed[]
 	INIT(= N_("E1515: Unable to convert from '%s' encoding"));
 EXTERN char e_str_encoding_to_failed[]
