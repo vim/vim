@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 18
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41556,7 +41556,8 @@ Support for protected _new() method
 							*new-other-9.2*
 Other new features ~
 ------------------
-The new plugins |comment-install| and |nohlsearch-install| are included.
+The new packages |package-comment|, |package-nohlsearch| and |package-hlyank|
+are included.
 
 Support for Wayland UI.
 
