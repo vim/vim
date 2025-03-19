@@ -2714,6 +2714,8 @@ $quote	eval.txt	/*$quote*
 :insert	insert.txt	/*:insert*
 :interface	vim9class.txt	/*:interface*
 :intro	starting.txt	/*:intro*
+:ip	change.txt	/*:ip*
+:iput	change.txt	/*:iput*
 :is	tagsrch.txt	/*:is*
 :isearch	tagsrch.txt	/*:isearch*
 :isp	tagsrch.txt	/*:isp*
