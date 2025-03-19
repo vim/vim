@@ -584,6 +584,7 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}
 #endif
+			    SCTX_INIT},
     {"cindent",	    "cin",  P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_cin, PV_CIN, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
