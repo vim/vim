@@ -152,14 +152,7 @@ func Test_mixed_comment2()
 endfunc
 
 func Test_mixed_indent_comment()
-  let lines =<< trim END
-    int main() {
-    	if 1 {
-    	  return 0;
-    	}
-        return 1;
-    }
-  END
+  let lines = ["int main() {", "\tif 1 {", "\t  return 0;", "\t}", "    return 1;", "}"]
 
   let input_file = "test_mixed_indent_comment_input.c"
   call writefile(lines, input_file, "D")
