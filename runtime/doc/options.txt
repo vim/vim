@@ -5318,7 +5318,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	list window itself or the the window that is associated with the
 	location list stack, the new value will also be applied to the other
 	one. This means this value will always be the same for a given
-	location list window and a normal window pair.
+	location list window and a corresponding window.
 
 			*'linebreak'* *'lbr'* *'nolinebreak'* *'nolbr'*
 'linebreak' 'lbr'	boolean	(default off)
