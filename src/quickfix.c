@@ -113,7 +113,6 @@ struct qf_info_S
     int		qf_listcount;	    // current number of lists
     int		qf_curlist;	    // current error list
     int         qf_maxcount;        // maximum number of lists
-    int         qf_bkup_stack;      // if we are using the backup stack
     qf_list_T	*qf_lists;
     qfltype_T	qfl_type;	    // type of list
     int		qf_bufnr;	    // quickfix window buffer number
@@ -122,6 +121,7 @@ struct qf_info_S
 // backup quickfix list stack for ql_info in case we cannot
 // dynamically allocate any memory
 static qf_list_T backup_qf_lists[10];
+static int qf_using_bkup_stack = FALSE; // if we are using the backup stack
 
 static qf_info_T ql_info;	// global quickfix list
 static int_u last_qf_id = 0;	// Last used quickfix list id
@@ -2306,7 +2306,7 @@ qf_add_entry(
     int
 qf_resize_global_stack(int n)
 {
-    if (ql_info.qf_bkup_stack)
+    if (qf_using_bkup_stack)
     {
 	emsg(e_cannot_resize_global_quickfix_list_stack);
 	return FAIL;
@@ -2425,13 +2425,13 @@ qf_init_global_stack(void)
 	ql_info.qf_lists = backup_qf_lists;
 	ql_info.qf_maxcount = sizeof(backup_qf_lists) /
 	    sizeof(*backup_qf_lists);
-	ql_info.qf_bkup_stack = TRUE;
+	qf_using_bkup_stack = TRUE;
 	emsg(e_using_backup_stack_for_global_quickfix_list);
     }
     else
     {
 	ql_info.qf_maxcount = actual;
-	ql_info.qf_bkup_stack = FALSE;
+	qf_using_bkup_stack = FALSE;
     }
 }
 
