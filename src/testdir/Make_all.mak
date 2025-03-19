@@ -110,6 +110,7 @@ NEW_TESTS = \
 	test_codestyle \
 	test_command_count \
 	test_comments \
+	test_comment_pack \
 	test_comparators \
 	test_compiler \
 	test_conceal \
@@ -391,6 +392,7 @@ NEW_TESTS_RES = \
 	test_codestyle.res \
 	test_command_count.res \
 	test_comments.res \
+	test_comment_pack.res \
 	test_comparators.res \
 	test_conceal.res \
 	test_const.res \
