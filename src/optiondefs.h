@@ -576,10 +576,13 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
-#ifdef FEAT_QUICKFIX
     {"chistory",    "chi",  P_NUM|P_VI_DEF,
+#ifdef FEAT_QUICKFIX
 			    (char_u *)&p_chi, PV_NONE, did_set_chistory, NULL,
 			    {(char_u *)10L, (char_u *)0L} SCTX_INIT},
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L}
 #endif
     {"cindent",	    "cin",  P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_cin, PV_CIN, NULL, NULL,
@@ -1579,10 +1582,13 @@ static struct vimoption options[] =
     {"lazyredraw",  "lz",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_lz, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-#ifdef FEAT_QUICKFIX
     {"lhistory", "lhi",	    P_NUM|P_VI_DEF,
+#ifdef FEAT_QUICKFIX
 			    (char_u *)VAR_WIN, PV_LHI, did_set_lhistory, NULL,
 			    {(char_u *)10L, (char_u *)0L} SCTX_INIT},
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L}
 #endif
     {"linebreak",   "lbr",  P_BOOL|P_VI_DEF|P_RWIN,
 #ifdef FEAT_LINEBREAK
