@@ -1591,6 +1591,7 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}
 #endif
+			    SCTX_INIT},
     {"linebreak",   "lbr",  P_BOOL|P_VI_DEF|P_RWIN,
 #ifdef FEAT_LINEBREAK
 			    (char_u *)VAR_WIN, PV_LBR, NULL, NULL,
