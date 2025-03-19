@@ -2,6 +2,7 @@ source check.vim
 source term_util.vim
 
 func Test_basic_comment()
+  CheckScreendump
   let lines =<< trim END
     vim9script
 
@@ -30,6 +31,7 @@ endfunc
 
 
 func Test_basic_uncomment()
+  CheckScreendump
   let lines =<< trim END
     vim9script
 
@@ -57,6 +59,7 @@ func Test_basic_uncomment()
 endfunc
 
 func Test_bothends_comment()
+  CheckScreendump
   let lines =<< trim END
     int main() {}
   END
@@ -79,6 +82,7 @@ func Test_bothends_comment()
 endfunc
 
 func Test_bothends_uncomment()
+  CheckScreendump
   let lines =<< trim END
     /* int main() { */
     /*   return 0; */
@@ -104,6 +108,7 @@ endfunc
 
 
 func Test_mixed_comment()
+  CheckScreendump
   let lines =<< trim END
     for x in range(10):
       # print(x)
@@ -128,6 +133,7 @@ func Test_mixed_comment()
 endfunc
 
 func Test_mixed_comment2()
+  CheckScreendump
   let lines =<< trim END
     # for x in range(10):
       print(x)
@@ -152,6 +158,7 @@ func Test_mixed_comment2()
 endfunc
 
 func Test_mixed_indent_comment()
+  CheckScreendump
   let lines = ["int main() {", "\tif 1 {", "\t  return 0;", "\t}", "    return 1;", "}"]
 
   let input_file = "test_mixed_indent_comment_input.c"
