@@ -239,6 +239,7 @@ NEW_TESTS = \
 	test_partial \
 	test_paste \
 	test_perl \
+	test_plugin_comment \
 	test_plugin_glvs \
 	test_plugin_man \
 	test_plugin_matchparen \
@@ -502,6 +503,7 @@ NEW_TESTS_RES = \
 	test_partial.res \
 	test_paste.res \
 	test_perl.res \
+	test_plugin_comment.res \
 	test_plugin_glvs.res \
 	test_plugin_man.res \
 	test_plugin_matchparen.res \
