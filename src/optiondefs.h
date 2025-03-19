@@ -579,7 +579,7 @@ static struct vimoption options[] =
     {"chistory",    "chi",  P_NUM|P_VI_DEF,
 #ifdef FEAT_QUICKFIX
 			    (char_u *)&p_chi, PV_NONE, did_set_chistory, NULL,
-			    {(char_u *)10L, (char_u *)0L} SCTX_INIT},
+			    {(char_u *)10L, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}
