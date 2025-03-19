@@ -1,4 +1,6 @@
 vim9script
+# VIM_TEST_SETUP hi link vim9LambdaOperator Todo
+
 
 # Vim 9 lambda expressions
 
