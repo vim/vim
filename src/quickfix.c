@@ -2327,9 +2327,9 @@ ll_resize_stack(win_T *wp, int n)
     // check if current window is a location list window;
     // if so then sync its 'lhistory' to the parent window or vice versa
     if (IS_LL_WINDOW(curwin))
-	qf_sync_llw_to_win(curwin);
+	qf_sync_llw_to_win(wp);
     else
-	qf_sync_win_to_llw(curwin);
+	qf_sync_win_to_llw(wp);
 
     qf_info_T *qi = ll_get_or_alloc_list(wp);
 
