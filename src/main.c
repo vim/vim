@@ -214,18 +214,12 @@ main
      * "vimdiff" starts diff mode, "rvim" sets "restricted", etc.
      */
     parse_command_name(&params);
-
     /*
      * Process the command line arguments.  File names are put in the global
      * argument list "global_alist".
      */
     command_line_scan(&params);
     TIME_MSG("parsing arguments");
-
-#ifdef FEAT_QUICKFIX
-    // initialize global quickfix list
-    qf_init_global_stack();
-#endif
 
     /*
      * On some systems, when we compile with the GUI, we always use it.  On Mac
@@ -1028,6 +1022,11 @@ common_init_2(mparm_T *paramp)
 
 #ifdef FEAT_SIGNS
     init_signs();
+#endif
+
+#ifdef FEAT_QUICKFIX
+    // initialize global quickfix list
+    qf_init_global_stack();
 #endif
 }
 
