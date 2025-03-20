@@ -122,7 +122,7 @@ export def ObjComment(inner: bool)
     var pos_start = getcurpos()
 
     if !inner
-        if search('\s*', 'bW', line('.'), 200) > 0
+        if search('\v\s+', 'bW', line('.'), 200) > 0
             pos_start = getcurpos()
         endif
     endif
