@@ -4745,6 +4745,7 @@ did_set_xhistory(optset_T *args)
 {
     char *errmsg = NULL;
     int is_p_chi = (long*)args->os_varp == &p_chi;
+    int err;
     long *arg = (is_p_chi) ? &p_chi :(long*)args->os_varp;
 
     // cannot have zero or negative number of quickfix lists in a stack
@@ -4763,9 +4764,9 @@ did_set_xhistory(optset_T *args)
 
     if (is_p_chi)
 	// reuse variable
-	is_p_chi = qf_resize_global_stack(*arg);
+	err = qf_resize_global_stack(*arg);
     else
-	is_p_chi = ll_resize_stack(curwin, *arg);
+	err = ll_resize_stack(curwin, *arg);
 
     if (is_p_chi == FAIL)
 	errmsg = e_failed_resizing_quickfix_stack;
