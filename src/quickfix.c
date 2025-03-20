@@ -1988,7 +1988,8 @@ qf_pop_stack(qf_info_T *qi, int adjust)
     // fill with zeroes now unused list at the top
     vim_memset(qi->qf_lists + qi->qf_listcount - 1, 0, sizeof(*qi->qf_lists));
 
-    if (adjust) {
+    if (adjust)
+    {
 	qi->qf_listcount--;
 	if (qi->qf_curlist == 0)
 	    qi->qf_curlist = qi->qf_listcount - 1;

@@ -6724,7 +6724,7 @@ func Test_hardlink_fname()
 endfunc
 
 " Test for checking if correct number of tests are deleted
-" and current list stays the same after setting Xhistory 
+" and current list stays the same after setting Xhistory
 " to a smaller number. Do roughly the same for growing the stack.
 func Xtest_resize_list_stack(cchar)
   call s:setup_commands(a:cchar)
