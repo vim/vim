@@ -4768,7 +4768,7 @@ did_set_xhistory(optset_T *args)
     else
 	err = ll_resize_stack(curwin, *arg);
 
-    if (is_p_chi == FAIL)
+    if (err == FAIL)
 	errmsg = e_failed_resizing_quickfix_stack;
 
     return errmsg;
