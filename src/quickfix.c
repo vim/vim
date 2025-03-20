@@ -8234,8 +8234,7 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
     {
 	// If the location list window is open, then create a new empty
 	// location list
-	qf_info_T *new_ll = qf_alloc_stack(QFLT_LOCATION,
-		wp->w_p_lhi);
+	qf_info_T *new_ll = qf_alloc_stack(QFLT_LOCATION, wp->w_p_lhi);
 
 	if (new_ll != NULL)
 	{
