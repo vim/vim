@@ -32,6 +32,15 @@ back to `gcc` otherwise, add the following mapping to your vimrc: >
 Note: using `gC` may not always result in valid comment markers depending on
 the language used.
 
+Additionally, the plugin defines comment text-object which has effect when
+syntax is enabled:
+						     *v_ac* *ac*
+ac		"a comment", select current or next comment.
+		Leading and trailing white space is included.
+		Trailing newlines are included too.
+						     *v_ic* *ic*
+ic		"inner comment", select current or next comment.
+
 This plugin uses the buffer-local 'commentstring' option value to add or remove
 comment markers to the selected lines.  Whether it will comment or un-comment
 depends on the first line of the range of lines to act upon.  When it matches

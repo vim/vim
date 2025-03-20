@@ -76,3 +76,84 @@ export def Toggle(...args: list<string>): string
     noautocmd keepjumps setline(lnum1, lines)
     return ''
 enddef
+
+
+# Comment text object
+# Usage:
+#     import autoload 'dist/comment.vim'
+#     onoremap <silent>ic <scriptcmd>comment.ObjComment(v:true)<CR>
+#     onoremap <silent>ac <scriptcmd>comment.ObjComment(v:false)<CR>
+#     xnoremap <silent>ic <esc><scriptcmd>comment.ObjComment(v:true)<CR>
+#     xnoremap <silent>ac <esc><scriptcmd>comment.ObjComment(v:false)<CR>
+export def ObjComment(inner: bool)
+    def IsComment(): bool
+        var stx = map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')->join()
+        if stx =~ 'Comment'
+            return true
+        else
+            return false
+        endif
+    enddef
+
+    var pos_init = getcurpos()
+
+    # If not in comment, search next one,
+    if !IsComment()
+        if search('\S\+', 'W', line(".") + 100, 100, () => !IsComment()) <= 0
+            return
+        endif
+    endif
+
+    # Search for the beginning of the comment block
+    if IsComment()
+        if search('\v(\S+)|$', 'bW', 0, 200, IsComment) > 0
+            search('\v(\S+)|$', 'W', 0, 200, () => !IsComment())
+        else
+            cursor(1, 1)
+            search('\S\+', 'cW', 0, 200)
+        endif
+    endif
+
+    var pos_start = getcurpos()
+
+    if !inner
+        if search('\s*', 'bW', line('.'), 200) > 0
+            pos_start = getcurpos()
+        endif
+    endif
+
+    # Search for the comment end.
+    if pos_init[1] > pos_start[1]
+        cursor(pos_init[1], pos_init[2])
+    endif
+    if search('\v(\S+)|$', 'W', 0, 200, IsComment) > 0
+        search('\S', 'beW', 0, 200, () => !IsComment())
+    else
+        if search('\%$', 'W', 0, 200) > 0
+            search('\ze\S', 'beW', 0, 200, () => !IsComment())
+        endif
+    endif
+
+    var pos_end = getcurpos()
+
+    if !inner
+        var spaces = matchstr(getline(pos_end[1]), '\%>.c\s*')
+        pos_end[2] += spaces->len()
+        if getline(pos_end[1])[pos_end[2] : ] =~ '^\s*$'
+            && (pos_start[2] == 1 || getline(pos_start[1])[ : pos_start[2]] =~ '^\s*$')
+            if search('\v\s*\_$(\s*\n)+', 'eW', 0, 200) > 0
+                pos_end = getcurpos()
+            endif
+        endif
+    endif
+
+    if (pos_end[2] == (getline(pos_end[1])->len() ?? 1)) && pos_start[2] == 1
+        cursor(pos_end[1], 1)
+        normal! V
+        cursor(pos_start[1], 1)
+    else
+        cursor(pos_end[1], pos_end[2])
+        normal! v
+        cursor(pos_start[1], pos_start[2])
+    endif
+enddef
