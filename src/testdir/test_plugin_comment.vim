@@ -305,3 +305,28 @@ func Test_textobj_acomment2()
 
    call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");printf(\" world\\n\");", "    return 0;", "}"], result)
 endfunc
+
+func Test_textobj_firstline_comment()
+  CheckScreendump
+  let lines =<< trim END
+    /*#include <stdio.h>*/
+
+    int main() {}
+  END
+
+  let input_file = "test_textobj_firstlinecomment_input.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dac")
+  let output_file = "comment_textobj_firstline_comment.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["int main() {}"], result)
+endfunc
