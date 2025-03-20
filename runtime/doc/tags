@@ -134,7 +134,7 @@ $quote	eval.txt	/*$quote*
 'ch'	options.txt	/*'ch'*
 'character'	intro.txt	/*'character'*
 'charconvert'	options.txt	/*'charconvert'*
-'chi'		options.txt	/*'chi'*
+'chi'	options.txt	/*'chi'*
 'chistory'	options.txt	/*'chistory'*
 'ci'	options.txt	/*'ci'*
 'cia'	options.txt	/*'cia'*
@@ -8123,7 +8123,6 @@ help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
 help-notation	helphelp.txt	/*help-notation*
 help-summary	usr_02.txt	/*help-summary*
-help-tags	tags	1
 help-toc-install	helphelp.txt	/*help-toc-install*
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
