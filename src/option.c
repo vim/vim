@@ -4737,59 +4737,37 @@ did_set_wrap(optset_T *args UNUSED)
 
 #ifdef FEAT_QUICKFIX
 /*
- * Process the new 'chistory' option value.
+ * Process the new 'chistory' or 'lhistory' option value. 'chistory' will
+ * be used if args->os_varp is the same as p_chi, else 'lhistory'.
  */
     char *
-did_set_chistory(optset_T *args UNUSED)
+did_set_xhistory(optset_T *args)
 {
     char *errmsg = NULL;
+    int is_p_chi = (long*)args->os_varp == &p_chi;
+    long *arg = (is_p_chi) ? &p_chi :(long*)args->os_varp;
 
     // cannot have zero or negative number of quickfix lists in a stack
-    if (p_chi < 1)
+    if (*arg < 1)
     {
-	p_chi = 1;
+	*arg = 1;
 	errmsg = e_cannot_have_negative_or_zero_number_of_quickfix;
     }
 
     // cannot have more than 100 quickfix lists in a stack
-    if (p_chi > 100)
+    if (*arg > 100)
     {
-	p_chi = 100;
+	*arg = 100;
 	errmsg = e_cannot_have_more_than_hundred_quickfix;
     }
 
-    if (qf_resize_global_stack(p_chi) == FAIL)
-	errmsg = e_failed_resizing_quickfix_stack;
+    if (is_p_chi)
+	// reuse variable
+	is_p_chi = qf_resize_global_stack(*arg);
+    else
+	is_p_chi = ll_resize_stack(curwin, *arg);
 
-    return errmsg;
-}
-
-/*
- * Process the new 'lhistory' option value.
- */
-    char *
-did_set_lhistory(optset_T *args UNUSED)
-{
-    long *lhi = (long*)args->os_varp;
-    char *errmsg = NULL;
-
-    // cannot have zero or negative number of quickfix lists in a stack
-    if (*lhi < 1)
-    {
-	*lhi = 1;
-	errmsg = e_cannot_have_negative_or_zero_number_of_quickfix;
-    }
-
-    // cannot have more than 100 quickfix lists in a stack
-    if (*lhi > 100)
-    {
-	*lhi = 100;
-	errmsg = e_cannot_have_more_than_hundred_quickfix;
-    }
-
-    // will make sure the 'lhistory' of both the location list window
-    // and its parent window are the same
-    if (ll_resize_stack(curwin, *lhi) == FAIL)
+    if (is_p_chi == FAIL)
 	errmsg = e_failed_resizing_quickfix_stack;
 
     return errmsg;

@@ -175,7 +175,7 @@ static efm_T	*fmt_start = NULL; // cached across qf_parse_line() calls
 // callback function for 'quickfixtextfunc'
 static callback_T qftf_cb;
 
-static void     qf_pop_stack(qf_info_T *qi);
+static void     qf_pop_stack(qf_info_T *qi, int adjust);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static int	qf_add_entry(qf_list_T *qfl, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, long end_lnum, int col, int end_col, int vis_col, char_u *pattern, int nr, int type, typval_T *user_data, int valid);
 static int      qf_resize_stack(qf_info_T *qi, int n);
@@ -1972,15 +1972,29 @@ qf_get_curlist(qf_info_T *qi)
 
 /*
  * Pop a quickfix list from the quickfix/location list stack
+ * Automatically adjust qf_curlist so that it stays pointed
+ * to the same list, unless it is deleted, if so then use the
+ * newest created list instead. qf_listcount will be set correctly.
+ * The above will only happen if <adjust> is TRUE.
  */
     static void
-qf_pop_stack(qf_info_T *qi)
+qf_pop_stack(qf_info_T *qi, int adjust)
 {
     int i;
     qf_free(&qi->qf_lists[0]);
-    for (i = 1; i < qi->qf_maxcount; ++i)
+    for (i = 1; i < qi->qf_listcount; ++i)
 	qi->qf_lists[i - 1] = qi->qf_lists[i];
-    qi->qf_curlist = qi->qf_maxcount - 1;
+
+    // fill with zeroes now unused list at the top
+    vim_memset(qi->qf_lists + qi->qf_listcount - 1, 0, sizeof(*qi->qf_lists));
+
+    if (adjust) {
+	qi->qf_listcount--;
+	if (qi->qf_curlist == 0)
+	    qi->qf_curlist = qi->qf_listcount - 1;
+	else
+	    qi->qf_curlist--;
+    }
 }
 
 /*
@@ -2002,9 +2016,13 @@ qf_new_list(qf_info_T *qi, char_u *qf_title)
     // When the stack is full, remove to oldest entry
     // Otherwise, add a new entry.
     if (qi->qf_listcount == qi->qf_maxcount)
-	qf_pop_stack(qi);
+    {
+	qf_pop_stack(qi, FALSE);
+	qi->qf_curlist = qi->qf_listcount - 1; // point to new empty list
+    }
     else
 	qi->qf_curlist = qi->qf_listcount++;
+
     qfl = qf_get_curlist(qi);
     CLEAR_POINTER(qfl);
     qf_store_title(qfl, qf_title);
@@ -2359,7 +2377,7 @@ qf_resize_stack(qf_info_T *qi, int n)
 	amount_to_rm = qi->qf_listcount - n;
 
 	for (i = 0; i < amount_to_rm; i++)
-	    qf_pop_stack(qi);
+	    qf_pop_stack(qi, TRUE);
     }
 
     i = n;
@@ -2395,15 +2413,8 @@ qf_resize_stack(qf_info_T *qi, int n)
 
     qi->qf_lists = new;
     qi->qf_maxcount = i;
-    qi->qf_listcount -= amount_to_rm;
 
-    // Check if current list was popped off the stack, if so then set current
-    // list to topmost of the stack, and update the quickfix window
-    if (qi->qf_curlist >= qi->qf_maxcount)
-    {
-	qi->qf_curlist = qi->qf_listcount - 1;
-	qf_update_buffer(qi, NULL);
-    }
+    qf_update_buffer(qi, NULL);
 
     return OK;
 }

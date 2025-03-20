@@ -578,7 +578,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"chistory",    "chi",  P_NUM|P_VI_DEF,
 #ifdef FEAT_QUICKFIX
-			    (char_u *)&p_chi, PV_NONE, did_set_chistory, NULL,
+			    (char_u *)&p_chi, PV_NONE, did_set_xhistory, NULL,
 			    {(char_u *)10L, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -1585,7 +1585,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"lhistory", "lhi",	    P_NUM|P_VI_DEF,
 #ifdef FEAT_QUICKFIX
-			    (char_u *)VAR_WIN, PV_LHI, did_set_lhistory, NULL,
+			    (char_u *)VAR_WIN, PV_LHI, did_set_xhistory, NULL,
 			    {(char_u *)10L, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,

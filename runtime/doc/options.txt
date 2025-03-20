@@ -1726,8 +1726,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	quickfix stack. Must be between 1 and 100. If the option is set to
 	a value that is lower than the amount of entries in the quickfix
 	list stack, entries will be removed starting from the oldest one.
-	Then the current quickfix list to be shown will be the one on the
-	top of the stack (the most recently created).
+	If the current quickfix list was removed, then the quickfix list
+	at top of the stack (the most recently created) will be used in its
+	place. For additional info, see |quickfix-stack|.
 
 				   *'cindent'* *'cin'* *'nocindent'* *'nocin'*
 'cindent' 'cin'		boolean	(default off)
@@ -5318,7 +5319,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	list window itself or the the window that is associated with the
 	location list stack, the new value will also be applied to the other
 	one. This means this value will always be the same for a given
-	location list window and a corresponding window.
+	location list window and its corresponding window. See |quickfix-stack|
+	for additional info.
 
 			*'linebreak'* *'lbr'* *'nolinebreak'* *'nolbr'*
 'linebreak' 'lbr'	boolean	(default off)

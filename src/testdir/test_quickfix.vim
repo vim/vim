@@ -6724,8 +6724,9 @@ func Test_hardlink_fname()
 endfunc
 
 " Test for checking if correct number of tests are deleted
-" after setting Xhistory to a smaller number
-func Xtest_pop_lists(cchar)
+" and current list stays the same after setting Xhistory 
+" to a smaller number. Do roughly the same for growing the stack.
+func Xtest_resize_list_stack(cchar)
   call s:setup_commands(a:cchar)
   Xsethist 100
 
@@ -6736,11 +6737,12 @@ func Xtest_pop_lists(cchar)
   call assert_equal(g:Xgetlist({'nr': '$'}).nr, 100)
   call assert_equal("|| 100", getline(1))
   Xsethist 8
-  call assert_equal(g:Xgetlist({'nr': '$'}).nr, 8)
-  Xolder 7
-  call assert_equal("|| 93", getline(1))
+  call assert_equal("|| 100", getline(1))
+  Xolder 5
+  call assert_equal("|| 95", getline(1))
+  Xsethist 6
+  call assert_equal("|| 95", getline(1))
   Xsethist 1
-  call assert_equal(g:Xgetlist({'nr': '$'}).nr, 1)
   call assert_equal("|| 100", getline(1))
 
   " grow array again
@@ -6755,30 +6757,59 @@ func Xtest_pop_lists(cchar)
   Xsethistdefault
 endfunc
 
-func Test_pop_lists()
-  call Xtest_pop_lists('c')
-  call Xtest_pop_lists('l')
+func Test_resize_list_stack()
+  call Xtest_resize_list_stack('c')
+  call Xtest_resize_list_stack('l')
 endfunc
 
-" Test for checking if a newer quickfix/location list window is switched to
-" when the current one is the older one and chistory/lhistory is set to 1
-func Xtest_set_Xhistory_to_one(cchar)
-  call s:setup_commands(a:cchar)
-  Xsethist 2
-  Xexpr '1'
-  Xexpr '2'
+" Test to check if order of lists is from
+" oldest at the bottom to newest at the top
+func Xtest_Xhistory_check_order(cchar)
+
+  Xsethist 100
+
+  for i in range(1, 100)
+    Xexpr string(i)
+  endfor
+
   Xopen
-  Xolder " go to buf with '1'
-  Xsethist 1
-  call assert_equal("|| 2", getline(1))
-  call assert_equal(g:Xgetlist({'nr': '$'}).nr, 1)
-  Xclose
+  for i in range(100, 1, -1)
+    let l:ret = assert_equal("|| " .. i, getline(1))
+
+    if ret == 1 || i == 1
+      break
+    endif
+    Xolder
+  endfor
+
+  for i in range(1, 50)
+    Xexpr string(i)
+  endfor
+
+  for i in range(50, 1, -1)
+    let l:ret = assert_equal("|| " .. i, getline(1))
+
+    if ret == 1 || i == 50
+      break
+    endif
+    Xolder
+  endfor
+
+  for i in range(50, 1, -1)
+    let l:ret = assert_equal("|| " .. i, getline(1))
+
+    if ret == 1 || i == 50
+      break
+    endif
+    Xolder
+  endfor
+
   Xsethistdefault
 endfunc
 
-func Test_set_history_to_one()
-  call Xtest_set_Xhistory_to_one('c')
-  call Xtest_set_Xhistory_to_one('l')
+func Test_set_history_to_check_order()
+  call Xtest_Xhistory_check_order('c')
+  call Xtest_Xhistory_check_order('l')
 endfunc
 
 " Check if 'lhistory' is the same between the location list window
@@ -6847,6 +6878,21 @@ endfunc
 func Test_invalid_history_num()
   call Xtest_invalid_history_num('c')
   call Xtest_invalid_history_num('l')
+endfunc
+
+" Test if chistory and lhistory don't affect each other
+func Test_chi_and_lhi_are_independent()
+  set chistory=100
+  set lhistory=100
+
+  set chistory=10
+  call assert_equal(&lhistory, 100)
+
+  set lhistory=1
+  call assert_equal(&chistory, 10)
+
+  set chistory&
+  set lhistory&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

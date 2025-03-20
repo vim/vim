@@ -43,7 +43,7 @@ From inside Vim an easy way to run a command and handle the output is with the
 The 'errorformat' option should be set to match the error messages from your
 compiler (see |errorformat| below).
 
-							*quickfix-ID*
+					*quickfix-stack* *quickfix-ID*
 Each quickfix list has a unique identifier called the quickfix ID and this
 number will not change within a Vim session. The |getqflist()| function can be
 used to get the identifier assigned to a list. There is also a quickfix list
