@@ -32,8 +32,8 @@ back to `gcc` otherwise, add the following mapping to your vimrc: >
 Note: using `gC` may not always result in valid comment markers depending on
 the language used.
 
-Additionally, the plugin defines comment text-object which has effect when
-syntax is enabled:
+Additionally, the plugin defines a comment text-object which requires syntax
+highlighting to be enabled.
 						     *v_ac* *ac*
 ac		"a comment", select current or next comment.
 		Leading and trailing white space is included.
