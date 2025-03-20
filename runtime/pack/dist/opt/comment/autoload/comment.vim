@@ -95,6 +95,11 @@ export def ObjComment(inner: bool)
         endif
     enddef
 
+    # requires syntax support
+    if !exists("g:syntax_on")
+      return
+    endif
+
     var pos_init = getcurpos()
 
     # If not in comment, search next one,
