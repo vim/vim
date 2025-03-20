@@ -1723,12 +1723,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with the |+quickfix|
 			feature}
 	Number of quickfix lists that should be remembered for the global
-	quickfix stack. Must be between 1 and 100. If the option is set to
-	a value that is lower than the amount of entries in the quickfix
-	list stack, entries will be removed starting from the oldest one.
-	If the current quickfix list was removed, then the quickfix list
-	at top of the stack (the most recently created) will be used in its
-	place. For additional info, see |quickfix-stack|.
+	quickfix stack.  Must be between 1 and 100.  If the option is set to a
+	value that is lower than the amount of entries in the quickfix list
+	stack, entries will be removed starting from the oldest one.  If the
+	current quickfix list was removed, then the quickfix list at top of
+	the stack (the most recently created) will be used in its place.  For
+	additional info, see |quickfix-stack|.
 
 				   *'cindent'* *'cin'* *'nocindent'* *'nocin'*
 'cindent' 'cin'		boolean	(default off)
