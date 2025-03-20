@@ -214,6 +214,7 @@ main
      * "vimdiff" starts diff mode, "rvim" sets "restricted", etc.
      */
     parse_command_name(&params);
+
     /*
      * Process the command line arguments.  File names are put in the global
      * argument list "global_alist".
