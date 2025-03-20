@@ -639,7 +639,7 @@ Short explanation of each option:		*option-list*
 'cdpath'	  'cd'	    list of directories searched with ":cd"
 'cedit'			    key used to open the command-line window
 'charconvert'	  'ccv'     expression for character encoding conversion
-'chistory'	  'chi'     maximum number of quickfix lists that can be stored in history
+'chistory'	  'chi'     maximum number of quickfix lists in history
 'cindent'	  'cin'     do C program indenting
 'cinkeys'	  'cink'    keys that trigger indent when 'cindent' is set
 'cinoptions'	  'cino'    how to do indenting when 'cindent' is set
