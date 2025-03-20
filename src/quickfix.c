@@ -2080,6 +2080,31 @@ wipe_qf_buffer(qf_info_T *qi)
     }
 }
 
+
+/*
+ * Free all lists in the stack (not including the stack)
+ */
+    static void
+qf_free_list_stack_items(qf_info_T *qi)
+{
+    int i;
+
+    for (i = 0; i < qi->qf_listcount; ++i)
+	qf_free(qf_get_list(qi, i));
+}
+
+/*
+ * Free a qf_ifo_T struct completely
+ */
+    static void
+qf_free_lists(qf_info_T *qi)
+{
+    qf_free_list_stack_items(qi);
+
+    vim_free(qi->qf_lists);
+    free(qi);
+}
+
 /*
  * Free a location list stack
  */
@@ -2109,10 +2134,7 @@ ll_free_all(qf_info_T **pqi)
 	// If the quickfix window buffer is loaded, then wipe it
 	wipe_qf_buffer(qi);
 
-	for (i = 0; i < qi->qf_listcount; ++i)
-	    qf_free(qf_get_list(qi, i));
-	vim_free(qi->qf_lists);
-	vim_free(qi);
+	qf_free_lists(qi);
     }
 }
 
@@ -2134,8 +2156,7 @@ qf_free_all(win_T *wp)
     else
     {
 	// quickfix list
-	for (i = 0; i < qi->qf_listcount; ++i)
-	    qf_free(qf_get_list(qi, i));
+	qf_free_list_stack_items(qi);
     }
 }
 
@@ -7288,7 +7309,8 @@ qf_get_list_from_lines(dict_T *what, dictitem_T *di, dict_T *retdict)
 	    (void)get_errorlist(qi, NULL, 0, 0, l);
 	    qf_free(&qi->qf_lists[0]);
 	}
-	free(qi);
+
+	qf_free_lists(qi);
     }
     dict_add_list(retdict, "items", l);
     status = OK;
