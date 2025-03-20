@@ -111,8 +111,8 @@ export def ObjComment(inner: bool)
 
     # Search for the beginning of the comment block
     if IsComment()
-        if search('\v%(\S+)|$', 'bW', 0, 200, IsComment) > 0
-            search('\v%(\S+)|$', 'W', 0, 200, () => !IsComment())
+        if search('\v%(\S+)|^', 'bW', 0, 200, IsComment) > 0
+            search('\v%(\S)|$', 'W', 0, 200, () => !IsComment())
         else
             cursor(1, 1)
             search('\v\S+', 'cW', 0, 200)
@@ -122,9 +122,12 @@ export def ObjComment(inner: bool)
     var pos_start = getcurpos()
 
     if !inner
-        if search('\v\s+', 'bW', line('.'), 200) > 0
-            pos_start = getcurpos()
-        endif
+        var col = pos_start[2]
+        var prefix = getline(pos_start[1])[ : col - 2]
+        while col > 0 && prefix[col - 2] =~ '\s'
+            col -= 1
+        endwhile
+        pos_start[2] = col
     endif
 
     # Search for the comment end.
