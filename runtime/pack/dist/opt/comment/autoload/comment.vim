@@ -104,18 +104,18 @@ export def ObjComment(inner: bool)
 
     # If not in comment, search next one,
     if !IsComment()
-        if search('\S\+', 'W', line(".") + 100, 100, () => !IsComment()) <= 0
+        if search('\v\S+', 'W', line(".") + 100, 100, () => !IsComment()) <= 0
             return
         endif
     endif
 
     # Search for the beginning of the comment block
     if IsComment()
-        if search('\v(\S+)|$', 'bW', 0, 200, IsComment) > 0
-            search('\v(\S+)|$', 'W', 0, 200, () => !IsComment())
+        if search('\v%(\S+)|$', 'bW', 0, 200, IsComment) > 0
+            search('\v%(\S+)|$', 'W', 0, 200, () => !IsComment())
         else
             cursor(1, 1)
-            search('\S\+', 'cW', 0, 200)
+            search('\v\S+', 'cW', 0, 200)
         endif
     endif
 
@@ -131,7 +131,7 @@ export def ObjComment(inner: bool)
     if pos_init[1] > pos_start[1]
         cursor(pos_init[1], pos_init[2])
     endif
-    if search('\v(\S+)|$', 'W', 0, 200, IsComment) > 0
+    if search('\v%(\S+)|$', 'W', 0, 200, IsComment) > 0
         search('\S', 'beW', 0, 200, () => !IsComment())
     else
         if search('\%$', 'W', 0, 200) > 0
