@@ -877,9 +877,9 @@ using these functions are below:
 
 So far has been assumed that there is only one list of errors.  Actually there
 can be multiple used lists that are remembered; see 'chistory' and 'lhistory'.
-When starting a new list, the previous ones are automatically kept.  Two commands
-can be used to access older error lists.  They set one of the existing error lists
-as the current one.
+When starting a new list, the previous ones are automatically kept.  Two
+commands can be used to access older error lists.  They set one of the
+existing error lists as the current one.
 
 						*:colder* *:col* *E380*
 :col[der] [count]	Go to older error list.  When [count] is given, do
