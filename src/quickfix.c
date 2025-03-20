@@ -2111,7 +2111,6 @@ qf_free_lists(qf_info_T *qi)
     static void
 ll_free_all(qf_info_T **pqi)
 {
-    int		i;
     qf_info_T	*qi;
 
     qi = *pqi;
@@ -2144,7 +2143,6 @@ ll_free_all(qf_info_T **pqi)
     void
 qf_free_all(win_T *wp)
 {
-    int		i;
     qf_info_T	*qi = &ql_info;
 
     if (wp != NULL)

@@ -6815,26 +6815,22 @@ endfunc
 " Check if 'lhistory' is the same between the location list window
 " and associated normal window
 func Test_win_and_loc_synced()
-  set lhistory=2
   new
+  set lhistory=2
   lexpr "Text"
   lopen
 
   " check if lhistory is synced when modified inside the
   " location list window
   setlocal lhistory=1
-  let l:ll = &lhistory
   wincmd k
-  let l:win = &lhistory
-  call assert_equal(l:ll, l:win)
+  call assert_equal(&lhistory, 1)
 
   " check if lhistory is synced when modified inside the
   " normal window
   setlocal lhistory=10
-  let l:win = &lhistory
   lopen
-  let l:ll = &lhistory
-  call assert_equal(l:ll, l:win)
+  call assert_equal(&lhistory, 10)
 
   wincmd k
   lclose
