@@ -4763,7 +4763,6 @@ did_set_xhistory(optset_T *args)
     }
 
     if (is_p_chi)
-	// reuse variable
 	err = qf_resize_global_stack(*arg);
     else
 	err = ll_resize_stack(curwin, *arg);
