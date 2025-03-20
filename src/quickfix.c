@@ -2733,8 +2733,7 @@ copy_loclist_stack(win_T *from, win_T *to)
 	return;
 
     // allocate a new location list, set size of stack to 'from' window value
-    if ((to->w_llist = qf_alloc_stack(QFLT_LOCATION,
-		    from->w_p_lhi)) == NULL)
+    if ((to->w_llist = qf_alloc_stack(QFLT_LOCATION, from->w_p_lhi)) == NULL)
 	return;
     else
 	// set 'to' lhi to reflect new value
