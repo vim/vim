@@ -177,3 +177,131 @@ func Test_mixed_indent_comment()
 
   call assert_equal(["/* int main() { */", "\t/* if 1 { */", "\t  /* return 0; */",  "\t/* } */", "    /* return 1; */", "/* } */"], result)
 endfunc
+
+func Test_textobj_icomment()
+  CheckScreendump
+  let lines =<< trim END
+    for x in range(10):
+      print(x) # printing stuff
+      # print(x*x)
+      #print(x*x*x)
+      print(x*x*x*x) # printing stuff
+      print(x*x*x*x*x) # printing stuff
+      # print(x*x)
+      #print(x*x*x)
+
+      print(x*x*x*x*x)
+  END
+
+  let input_file = "test_textobj_icomment_input.py"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dic..")
+  let output_file = "comment_textobj_icomment.py"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["for x in range(10):", "  print(x) ", "  print(x*x*x*x) ", "  print(x*x*x*x*x) ", "", "  print(x*x*x*x*x)"], result)
+endfunc
+
+func Test_textobj_icomment2()
+  CheckScreendump
+  let lines =<< trim END
+    #include <stdio.h>
+
+    int main() {
+        printf("hello"); /* hello world */ printf(" world\n");
+        /* if 1 {
+            return 1;
+        }*/
+
+        return 0;
+    }
+  END
+
+  let input_file = "test_textobj_icomment2_input.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dic..")
+  let output_file = "comment_textobj_icomment2.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+   call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");  printf(\" world\\n\");", "    ", "", "    return 0;", "}"], result)
+endfunc
+
+func Test_textobj_acomment()
+  CheckScreendump
+  let lines =<< trim END
+    for x in range(10):
+      print(x) # printing stuff
+      # print(x*x)
+      #print(x*x*x)
+      print(x*x*x*x) # printing stuff
+      print(x*x*x*x*x) # printing stuff
+      # print(x*x)
+      #print(x*x*x)
+
+      print(x*x*x*x*x)
+  END
+
+  let input_file = "test_textobj_acomment_input.py"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dac..")
+  let output_file = "comment_textobj_acomment.py"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["for x in range(10):", "  print(x)", "  print(x*x*x*x)", "  print(x*x*x*x*x)", "", "  print(x*x*x*x*x)"], result)
+endfunc
+
+func Test_textobj_acomment2()
+  CheckScreendump
+  let lines =<< trim END
+    #include <stdio.h>
+
+    int main() {
+        printf("hello"); /* hello world */ printf(" world\n");
+        /* if 1 {
+            return 1;
+        }*/
+
+        return 0;
+    }
+  END
+
+  let input_file = "test_textobj_acomment2_input.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dac.")
+  let output_file = "comment_textobj_acomment2.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+   call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");printf(\" world\\n\");", "    return 0;", "}"], result)
+endfunc
