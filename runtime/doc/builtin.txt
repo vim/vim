@@ -4998,6 +4998,8 @@ getregionpos({pos1}, {pos2} [, {opts}])            *getregionpos()*
 		Can also be used as a |method|: >
 			getpos('.')->getregionpos(getpos("'a"))
 <
+		For an example, see the highlight-yank plugin |52.6|
+
 		Return type: list<list<list<number>>>
 
 

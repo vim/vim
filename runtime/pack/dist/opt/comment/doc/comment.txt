@@ -1,4 +1,4 @@
-*comment.txt*   For Vim version 9.1.  Last change:  2024 Oct 01
+*comment.txt*   For Vim version 9.1.  Last change:  2025 Mar 21
 
 
 		  VIM REFERENCE MANUAL
@@ -32,11 +32,20 @@ back to `gcc` otherwise, add the following mapping to your vimrc: >
 Note: using `gC` may not always result in valid comment markers depending on
 the language used.
 
+Additionally, the plugin defines a comment text-object which requires syntax
+highlighting to be enabled.
+						     *v_ac* *ac*
+ac		"a comment", select current or next comment.
+		Leading and trailing white space is included.
+		Trailing newlines are included too.
+						     *v_ic* *ic*
+ic		"inner comment", select current or next comment.
+
 This plugin uses the buffer-local 'commentstring' option value to add or remove
 comment markers to the selected lines.  Whether it will comment or un-comment
-depends on the first line of the range of lines to act upon.  When it matches
-a comment marker, the line will be un-commented, if it doesn't, the line will
-be commented out.  Blank and empty lines are ignored.
+depends on the range of lines to act upon.  When all of the lines in range
+have comment markers, all lines will be un-commented, if it doesn't, the lines
+will be commented out.  Blank and empty lines are ignored.
 
 The value of 'commentstring' is the same for the entire buffer and determined
 by its filetype (|filetypes|). To adapt it within the buffer for embedded

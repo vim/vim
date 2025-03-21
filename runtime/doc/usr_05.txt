@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 9.1.  Last change: 2025 Jan 11
+*usr_05.txt*	For Vim version 9.1.  Last change: 2025 Mar 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -437,7 +437,7 @@ After restarting your Vim, the plugin is active and you can read about it at: >
 	:h editorconfig.txt
 
 
-Adding comment package			*comment-install* *package-comment*
+Adding the comment package		*comment-install* *package-comment*
 
 Load the plugin with this command: >
 	packadd comment
@@ -450,7 +450,7 @@ the package loaded.  Once the package is loaded, read about it at: >
 	:h comment.txt
 
 
-Adding nohlsearch package	*nohlsearch-install* *package-nohlsearch*
+Adding the nohlsearch package	*nohlsearch-install* *package-nohlsearch*
 
 Load the plugin with this command: >
 	packadd nohlsearch
@@ -464,6 +464,29 @@ To disable the effect of the plugin after it has been loaded: >
 	au! nohlsearch
 <
 
+Adding the highlight-yank package	*hlyank-install* *package-hlyank*
+
+Load the plugin with this command: >
+	packadd hlyank
+<
+This package briefly highlights the affected region of the last |yank|
+command. See |52.6| for a simplified implementation using the |getregionpos()|
+function.
+
+The plugin understands the following configuration variables (the settings
+show the default values).
+
+To specify a different highlighting group, use: >
+	:let g:hlyank_hlgroup = 'IncSearch'
+<
+To use a different highlighting duration, use: >
+	:let g:hlyank_duration = 300
+<
+To highlight in visual mode, use: >
+	:let g:hlyank_invisual = v:true
+
+To disable the effect of the plugin after it has been loaded: >
+	au! hlyank
 
 More information about packages can be found here: |packages|.
 
