@@ -6461,6 +6461,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
 
+						*'pummaxwidth'* *'pmw'*
+'pummaxwidth' 'pmw'	number	(default 0)
+			global
+	Determines the maximum width to use for the popup menu for compleiton.
+	When set to 0 (the default), there is no maximum width limit. When set
+	to a value greater than 0, the popup menu will never be wider than
+	this value, even if items have longer text. When text is truncated due
+	to this limit, "..." will be displayed at the end of the truncated
+	text to indicate that there is more content. If this value is smaller
+	than 'pumwidth', it takes precedence, limiting the width to this
+	maximum.  |ins-completion-menu|.
+
 						*'pumwidth'* *'pw'*
 'pumwidth' 'pw'		number	(default 15)
 			global
