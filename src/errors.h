@@ -3677,4 +3677,6 @@ EXTERN char e_using_backup_stack_for_global_quickfix_list[]
 	INIT(= N_("E1521: Could not allocate dynamically any memory for global quickfix stack"));
 EXTERN char e_cannot_resize_global_quickfix_list_stack[]
 	INIT(= N_("E1522: Cannot resize global quickfix list, backup stack is being used"));
+EXTERN char e_failed_allocating_quickfix_stack[]
+	INIT(= N_("E1523: Failed allocating memory for quickfix/location list stack"));
 #endif
