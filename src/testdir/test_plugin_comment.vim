@@ -29,7 +29,6 @@ func Test_basic_comment()
   call assert_equal(["# vim9script", "", "# def Hello()", '#   echo "Hello"', "# enddef"], result)
 endfunc
 
-
 func Test_basic_uncomment()
   CheckScreendump
   let lines =<< trim END
@@ -459,4 +458,59 @@ func Test_textobj_cursor_on_leading_space_comment()
   let result = readfile(output_file)
 
   call assert_equal(["int main() {", "", "}"], result)
+endfunc
+
+func Test_textobj_conseq_comment()
+  CheckScreendump
+  let lines =<< trim END
+    int main() {
+        printf("hello"); // hello
+        // world
+        printf("world");
+    }
+  END
+
+  let input_file = "test_textobj_conseq_comment_input.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dac")
+  let output_file = "comment_textobj_conseq_comment.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["int main() {", "    printf(\"hello\");", "    printf(\"world\");", "}"], result)
+endfunc
+
+func Test_textobj_conseq_comment2()
+  CheckScreendump
+  let lines =<< trim END
+    int main() {
+        printf("hello"); // hello
+
+        // world
+        printf("world");
+    }
+  END
+
+  let input_file = "test_textobj_conseq_comment_input2.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dac")
+  let output_file = "comment_textobj_conseq_comment2.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["int main() {", "    printf(\"hello\");", "", "    // world", "    printf(\"world\");", "}"], result)
 endfunc
