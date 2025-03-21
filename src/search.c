@@ -5392,7 +5392,6 @@ search_for_fuzzy_match(
 				}
 
 				*len = next_word_end - *ptr;
-				current_pos.col = *len;
 			    }
 			}
 			*pos = current_pos;
