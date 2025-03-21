@@ -4743,7 +4743,6 @@ did_set_wrap(optset_T *args UNUSED)
     char *
 did_set_xhistory(optset_T *args)
 {
-    char *errmsg = NULL;
     int is_p_chi = (long*)args->os_varp == &p_chi;
     int err;
     long *arg = (is_p_chi) ? &p_chi :(long*)args->os_varp;
@@ -4751,15 +4750,15 @@ did_set_xhistory(optset_T *args)
     // cannot have zero or negative number of quickfix lists in a stack
     if (*arg < 1)
     {
-	*arg = 1;
-	errmsg = e_cannot_have_negative_or_zero_number_of_quickfix;
+	*arg = args->os_oldval.number;
+	return e_cannot_have_more_than_hundred_quickfix;
     }
 
     // cannot have more than 100 quickfix lists in a stack
     if (*arg > 100)
     {
-	*arg = 100;
-	errmsg = e_cannot_have_more_than_hundred_quickfix;
+	*arg = args->os_oldval.number;
+	return e_cannot_have_more_than_hundred_quickfix;
     }
 
     if (is_p_chi)
@@ -4768,9 +4767,9 @@ did_set_xhistory(optset_T *args)
 	err = ll_resize_stack(curwin, *arg);
 
     if (err == FAIL)
-	errmsg = e_failed_resizing_quickfix_stack;
+	return e_failed_resizing_quickfix_stack;
 
-    return errmsg;
+    return NULL;
 }
 #endif
 

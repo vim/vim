@@ -3672,5 +3672,5 @@ EXTERN char e_cannot_have_more_than_hundred_quickfix[]
 EXTERN char e_failed_resizing_quickfix_stack[]
 	INIT(= N_("E1519: Failed resizing the quickfix/location list stack"));
 EXTERN char e_failed_allocating_quickfix_stack[]
-	INIT(= N_("E1523: Failed allocating memory for quickfix/location list stack"));
+	INIT(= N_("E1520: Failed allocating memory for quickfix/location list stack"));
 #endif
