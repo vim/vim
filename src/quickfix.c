@@ -177,7 +177,7 @@ static int      qf_resize_stack(qf_info_T *qi, int n);
 static void     qf_sync_llw_to_win(win_T *llw);
 static void     qf_sync_win_to_llw(win_T *pwp);
 static qf_info_T *qf_alloc_stack(qfltype_T qfltype, int n);
-static qf_list_T *qf_alloc_list_stack(int n, int *actual);
+static qf_list_T *qf_alloc_list_stack(int n);
 static void	qf_free(qf_list_T *qfl);
 static char_u	*qf_types(int, int);
 static int	qf_get_fnum(qf_list_T *qfl, char_u *, char_u *);
@@ -2390,39 +2390,17 @@ qf_resize_stack(qf_info_T *qi, int n)
 	    qf_pop_stack(qi, TRUE);
     }
 
-    i = n;
-    // Allocate smaller amounts each, until we have sucess
-    // or i reaches the original qf_maxcount
-    if (n > qi->qf_maxcount)
-	for (; i >= qi->qf_maxcount; i--)
-	{
-	    new = vim_realloc(qi->qf_lists, lsz * i);
-
-	    if (new == NULL)
-		if (i == qi->qf_maxcount)
-		    return FAIL;
-		else
-		    continue;
-	    else
-	    {
-		if (i != n)
-		    emsg(e_failed_quickfix_allocation);
-		break;
-	    }
-	}
-    else
-	// shrinking stack, just reallocate a smaller amount of memory
-	new = vim_realloc(qi->qf_lists, lsz * i);
+    new = vim_realloc(qi->qf_lists, lsz * n);
 
     if (new == NULL)
 	return FAIL;
 
     // fill with zeroes any newly allocated memory
-    if (i > qi->qf_maxcount)
-	vim_memset(new + qi->qf_maxcount, 0, lsz * (i - qi->qf_maxcount));
+    if (n > qi->qf_maxcount)
+	vim_memset(new + qi->qf_maxcount, 0, lsz * (n - qi->qf_maxcount));
 
     qi->qf_lists = new;
-    qi->qf_maxcount = i;
+    qi->qf_maxcount = n;
 
     qf_update_buffer(qi, NULL);
 
@@ -2436,14 +2414,13 @@ qf_resize_stack(qf_info_T *qi, int n)
    int
 qf_init_global_stack(void)
 {
-    int actual;
-    ql_info.qf_lists = qf_alloc_list_stack(p_chi, &actual);
+    ql_info.qf_lists = qf_alloc_list_stack(p_chi);
 
     if (ql_info.qf_lists == NULL)
 	return FAIL;
 
     ql_info.qfl_type = QFLT_QUICKFIX;
-    ql_info.qf_maxcount = actual;
+    ql_info.qf_maxcount = p_chi;
     return OK;
 }
 
@@ -2484,7 +2461,6 @@ qf_sync_win_to_llw(win_T *pwp)
     static qf_info_T *
 qf_alloc_stack(qfltype_T qfltype, int n)
 {
-    int actual;
     qf_info_T *qi;
 
     qi = ALLOC_CLEAR_ONE_ID(qf_info_T, aid_qf_qfinfo);
@@ -2495,7 +2471,7 @@ qf_alloc_stack(qfltype_T qfltype, int n)
     qi->qfl_type = qfltype;
     qi->qf_bufnr = INVALID_QFBUFNR;
 
-    qi->qf_lists = qf_alloc_list_stack(n, &actual);
+    qi->qf_lists = qf_alloc_list_stack(n);
 
     if (qi->qf_lists == NULL)
     {
@@ -2503,7 +2479,7 @@ qf_alloc_stack(qfltype_T qfltype, int n)
 	return NULL;
     }
 
-    qi->qf_maxcount = actual;
+    qi->qf_maxcount = n;
 
     return qi;
 }
@@ -2514,35 +2490,10 @@ qf_alloc_stack(qfltype_T qfltype, int n)
  * (only set when function returns sucessfully)
  */
     static qf_list_T *
-qf_alloc_list_stack(int n, int *actual)
+qf_alloc_list_stack(int n)
 {
-    int i;
-    qf_list_T *qfl;
-
-    // keep allocating smaller amounts each time allocation fails
-    // until we reach one
-    for (i = n; i > 0; i--)
-    {
-	qfl = ALLOC_CLEAR_MULT(qf_list_T, i);
-
-	if (qfl == NULL)
-	{
-	    if (i == 1)
-		return NULL;
-	    else
-		continue;
-	}
-	else
-	{
-	    if (i != n)
-		emsg(e_failed_quickfix_allocation);
-	    break;
-	}
-    }
-    if (actual != NULL)
-	*actual = i;
-
-    return qfl;
+    return ALLOC_CLEAR_MULT(qf_list_T, n);
+;
 }
 
 /*
