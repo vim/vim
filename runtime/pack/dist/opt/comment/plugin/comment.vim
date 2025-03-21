@@ -1,7 +1,7 @@
 vim9script
 
 # Maintainer: Maxim Kim <habamax@gmail.com>
-# Last Update: 2025-03-20
+# Last Update: 2025-03-21
 
 import autoload 'comment.vim'
 

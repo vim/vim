@@ -1,7 +1,7 @@
 vim9script
 
 # Maintainer: Maxim Kim <habamax@gmail.com>
-# Last Update: 2024 Oct 05
+# Last Update: 2025-03-21
 #
 # Toggle comments
 # Usage:
