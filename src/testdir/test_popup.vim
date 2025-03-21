@@ -1986,4 +1986,37 @@ func Test_pum_complete_with_special_characters()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_pum_maxwidth()
+  CheckScreendump
+
+  let lines =<< trim END
+    123456789_123456789_123456789_a
+    123456789_123456789_123456789_b
+                123
+  END
+  call writefile(lines, 'Xtest', 'D')
+  let buf = RunVimInTerminal('Xtest', {})
+
+  call term_sendkeys(buf, "GA\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_01', {'rows': 8})
+  call term_sendkeys(buf, "\<Esc>u")
+
+  call term_sendkeys(buf, ":set pummaxwidth=10\<CR>")
+  call term_sendkeys(buf, "GA\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_02', {'rows': 8})
+  call term_sendkeys(buf, "\<Esc>u")
+
+  call term_sendkeys(buf, ":set pummaxwidth=20\<CR>")
+  call term_sendkeys(buf, "GA\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_03', {'rows': 8})
+  call term_sendkeys(buf, "\<Esc>u")
+
+  call term_sendkeys(buf, ":set pumwidth=20 pummaxwidth=8\<CR>")
+  call term_sendkeys(buf, "GA\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_04', {'rows': 8})
+  call term_sendkeys(buf, "\<Esc>u")
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
