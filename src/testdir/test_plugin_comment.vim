@@ -378,3 +378,30 @@ func Test_textobj_noleading_space_comment2()
 
   call assert_equal(["int main() {", "}"], result)
 endfunc
+
+func Test_textobj_cursor_on_leading_space_comment()
+  CheckScreendump
+  let lines =<< trim END
+    int main() {
+        // multilple comments
+        // cursor is between them
+    }
+  END
+
+  let input_file = "test_textobj_cursor_on_leading_space_comment_input.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "jjdac")
+  let output_file = "comment_textobj_cursor_on_leading_space_comment.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["int main() {", "", "}"], result)
+endfunc
+
