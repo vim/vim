@@ -2084,7 +2084,7 @@ qf_free_list_stack_items(qf_info_T *qi)
 {
     int i;
 
-    for (i = 0; i < qi->qf_listcount; ++i)
+for (int i = 0; i < qi->qf_listcount; ++i)
 	qf_free(qf_get_list(qi, i));
 }
 
