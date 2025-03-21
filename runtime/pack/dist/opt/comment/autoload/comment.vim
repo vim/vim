@@ -88,11 +88,7 @@ enddef
 export def ObjComment(inner: bool)
     def IsComment(): bool
         var stx = map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')->join()
-        if stx =~? 'Comment'
-            return true
-        else
-            return false
-        endif
+        return stx =~? 'Comment'
     enddef
 
     # requires syntax support
