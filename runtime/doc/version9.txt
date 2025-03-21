@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 19
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41653,6 +41653,7 @@ Others: ~
 - add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
   and decouple it from |netrw|
 - new digraph "APPROACHES THE LIMIT" using ".="
+- |CTRL-C| always closes the active |popup-window|.
 
 							*added-9.2*
 Added ~
