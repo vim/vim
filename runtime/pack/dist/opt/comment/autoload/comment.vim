@@ -104,7 +104,7 @@ export def ObjComment(inner: bool)
 
     # If not in comment, search next one,
     if !IsComment()
-        if search('\v\S+', 'W', line(".") + 100, 100, () => !IsComment()) <= 0
+        if search('\v\k+', 'W', line(".") + 100, 100, () => !IsComment()) <= 0
             return
         endif
     endif

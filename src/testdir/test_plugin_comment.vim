@@ -55,7 +55,7 @@ func Test_basic_uncomment()
 
   let result = readfile(output_file)
 
- call assert_equal(["# vim9script", "", "def Hello()", '  echo "Hello"', "enddef"], result)
+  call assert_equal(["# vim9script", "", "def Hello()", '  echo "Hello"', "enddef"], result)
 endfunc
 
 func Test_bothends_comment()
@@ -239,7 +239,35 @@ func Test_textobj_icomment2()
 
   let result = readfile(output_file)
 
-   call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");  printf(\" world\\n\");", "    ", "", "    return 0;", "}"], result)
+  call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");  printf(\" world\\n\");", "    ", "", "    return 0;", "}"], result)
+endfunc
+
+func Test_textobj_icomment3()
+  CheckScreendump
+  let lines =<< trim END
+    #include <stdio.h>
+
+    int main() {
+        printf("hello");/*hello world*/printf(" world\n");
+        return 0;
+    }
+  END
+
+  let input_file = "test_textobj_icomment3_input.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "jjjdic")
+  let output_file = "comment_textobj_icomment3.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");printf(\" world\\n\");",  "    return 0;", "}"], result)
 endfunc
 
 func Test_textobj_acomment()
@@ -303,7 +331,35 @@ func Test_textobj_acomment2()
 
   let result = readfile(output_file)
 
-   call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");printf(\" world\\n\");", "    return 0;", "}"], result)
+  call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");printf(\" world\\n\");", "    return 0;", "}"], result)
+endfunc
+
+func Test_textobj_acomment3()
+  CheckScreendump
+  let lines =<< trim END
+    #include <stdio.h>
+
+    int main() {
+        printf("hello");/*hello world*/printf(" world\n");
+        return 0;
+    }
+  END
+
+  let input_file = "test_textobj_acomment3_input.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "jjjdac")
+  let output_file = "comment_textobj_acomment3.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["#include <stdio.h>", "", "int main() {", "    printf(\"hello\");printf(\" world\\n\");",  "    return 0;", "}"], result)
 endfunc
 
 func Test_textobj_firstline_comment()
@@ -404,4 +460,3 @@ func Test_textobj_cursor_on_leading_space_comment()
 
   call assert_equal(["int main() {", "", "}"], result)
 endfunc
-
