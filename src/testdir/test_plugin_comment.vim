@@ -331,7 +331,6 @@ func Test_textobj_firstline_comment()
   call assert_equal(["int main() {}"], result)
 endfunc
 
-
 func Test_textobj_noleading_space_comment()
   CheckScreendump
   let lines =<< trim END
@@ -346,6 +345,30 @@ func Test_textobj_noleading_space_comment()
 
   call term_sendkeys(buf, "dacdic")
   let output_file = "comment_textobj_noleading_space_comment.c"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["int main() {", "}"], result)
+endfunc
+
+func Test_textobj_noleading_space_comment2()
+  CheckScreendump
+  let lines =<< trim END
+    int main() {// main start
+    }    /* main end */
+  END
+
+  let input_file = "test_textobj_noleading_space_input2.c"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dac.")
+  let output_file = "comment_textobj_noleading_space_comment2.c"
   call term_sendkeys(buf, $":w {output_file}\<CR>")
   defer delete(output_file)
 
