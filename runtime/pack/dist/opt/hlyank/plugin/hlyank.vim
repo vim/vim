@@ -6,10 +6,7 @@ vim9script
 def HighlightedYank()
 
   var hlgroup = get(g:, "hlyank_hlgroup", "IncSearch")
-  var duration = get(g:, "hlyank_duration", 300)
-  if duration > 3000
-    duration = 3000
-  endif
+  var duration = min([get(g:, "hlyank_duration", 300), 3000])
   var in_visual = get(g:, "hlyank_invisual", true)
 
   if v:event.operator ==? 'y'
