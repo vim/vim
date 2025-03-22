@@ -4751,7 +4751,7 @@ did_set_xhistory(optset_T *args)
     if (*arg < 1)
     {
 	*arg = args->os_oldval.number;
-	return e_cannot_have_more_than_hundred_quickfix;
+	return e_cannot_have_negative_or_zero_number_of_quickfix;
     }
 
     // cannot have more than 100 quickfix lists in a stack
