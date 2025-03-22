@@ -4906,6 +4906,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	and there is a letter before it, the completed part is made uppercase.
 	With 'noinfercase' the match is used as-is.
 
+						*'isexpand'* *'ise'*
+'isexpand' 'ise'	string	(default: "")
+			local to buffer
+	A comma-separated list of defines characters for expand completion in
+	insert mode. Each trigger can be:
+	- A single character like "." or "/"
+	- A sequence of characters like "->", "/*", or "/**"
+
+	The |complete_match()| function uses this option to find the appropriate
+	starting position and trigger for completion.
+
 			*'insertmode'* *'im'* *'noinsertmode'* *'noim'*
 'insertmode' 'im'	boolean	(default off)
 			global
