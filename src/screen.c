@@ -2328,7 +2328,7 @@ screen_fill(
 	    redraw_cmdline = TRUE;
 	    if (start_col == 0 && end_col == Columns
 		    && c1 == ' ' && c2 == ' ' && attr == 0
-#ifdef FEAT_PROP_POPUP
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
 		    && !popup_overlaps_cmdline()
 #endif
 		    )
