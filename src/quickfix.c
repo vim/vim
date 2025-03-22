@@ -2082,9 +2082,7 @@ wipe_qf_buffer(qf_info_T *qi)
     static void
 qf_free_list_stack_items(qf_info_T *qi)
 {
-    int i;
-
-for (int i = 0; i < qi->qf_listcount; ++i)
+    for (int i = 0; i < qi->qf_listcount; ++i)
 	qf_free(qf_get_list(qi, i));
 }
 
