@@ -425,6 +425,7 @@ Name			triggered by ~
 
 |RemoteReply|		a reply from a server Vim was received
 
+|QuickFixChanged|	after the quickfix list has been changed
 |QuickFixCmdPre|	before a quickfix command is run
 |QuickFixCmdPost|	after a quickfix command is run
 
@@ -1088,6 +1089,10 @@ OptionSet			After setting an option.  The pattern is
 
 				When using |:set| in the autocommand the event
 				is not triggered again.
+							*QuickFixChanged*
+QuickFixChanged			Trigger after quickfix list changed and sets
+				current changed quickfix_id or loclist_id
+				into |v:event|
 							*QuickFixCmdPre*
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
