@@ -2469,7 +2469,7 @@ win_line(
 		    }
 		}
 		int added = FALSE;
-		if (line_changes.num_changes > 0)
+		if (line_changes.num_changes > 0 && change_index >= 0 && change_index < line_changes.num_changes)
 		{
 		    added = diff_change_parse(&line_changes,
 			    &line_changes.changes[change_index],

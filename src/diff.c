@@ -3476,6 +3476,7 @@ diff_find_change_inline_diff(
 		goto done;
 
 	    diff_read(0, i, &dio);
+	    clear_diffout(&dio.dio_diff);
 	}
     }
     diff_T *new_diff = curtab->tp_first_diff;
