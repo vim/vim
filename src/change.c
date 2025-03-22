@@ -476,7 +476,10 @@ changed_common(
 #endif
 #ifdef FEAT_DIFF
     if (curwin->w_p_diff && diff_internal())
+    {
 	curtab->tp_diff_update = TRUE;
+	diff_update_line(lnum);
+    }
 #endif
 
     // set the '. mark

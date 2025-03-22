@@ -8178,6 +8178,7 @@ hl-DiffAdd	syntax.txt	/*hl-DiffAdd*
 hl-DiffChange	syntax.txt	/*hl-DiffChange*
 hl-DiffDelete	syntax.txt	/*hl-DiffDelete*
 hl-DiffText	syntax.txt	/*hl-DiffText*
+hl-DiffTextAdd	syntax.txt	/*hl-DiffTextAdd*
 hl-Directory	syntax.txt	/*hl-Directory*
 hl-EndOfBuffer	syntax.txt	/*hl-EndOfBuffer*
 hl-ErrorMsg	syntax.txt	/*hl-ErrorMsg*
