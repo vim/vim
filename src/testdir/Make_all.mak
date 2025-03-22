@@ -327,6 +327,7 @@ NEW_TESTS = \
 	test_timers \
 	test_true_false \
 	test_trycatch \
+	test_tuple \
 	test_undo \
 	test_unlet \
 	test_user_func \
@@ -578,6 +579,7 @@ NEW_TESTS_RES = \
 	test_timers.res \
 	test_true_false.res \
 	test_trycatch.res \
+	test_tuple.res \
 	test_undo.res \
 	test_user_func.res \
 	test_usercommands.res \

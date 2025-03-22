@@ -871,6 +871,40 @@ compile_fill_loop_info(loop_info_T *loop_info, int funcref_idx, cctx_T *cctx)
 }
 
 /*
+ * When compiling a for loop to iterate over a tuple, get the type of the loop
+ * variable to use.
+ */
+    static type_T *
+compile_for_tuple_get_vartype(type_T *vartype, int var_list)
+{
+    // If this is not a variadic tuple, or all the tuple items don't have
+    // the same type, then use t_any
+    if (!(vartype->tt_flags & TTFLAG_VARARGS) || vartype->tt_argcount != 1)
+	return &t_any;
+
+    // variadic tuple
+    type_T *member_type = vartype->tt_args[0]->tt_member;
+    if (member_type->tt_type == VAR_ANY)
+	return &t_any;
+
+    if (!var_list)
+	// for x in tuple<...list<xxx>>
+	return member_type;
+
+    if (member_type->tt_type == VAR_LIST
+	    && member_type->tt_member->tt_type != VAR_ANY)
+	// for [x, y] in tuple<...list<list<xxx>>>
+	return member_type->tt_member;
+    else if (member_type->tt_type == VAR_TUPLE
+				&& member_type->tt_flags & TTFLAG_VARARGS
+				&& member_type->tt_argcount == 1)
+	// for [x, y] in tuple<...list<tuple<...list<xxx>>>>
+	return member_type->tt_args[0]->tt_member;
+
+    return &t_any;
+}
+
+/*
  * Compile "for var in expr":
  *
  * Produces instructions:
@@ -1000,6 +1034,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	// give an error now.
 	vartype = get_type_on_stack(cctx, 0);
 	if (vartype->tt_type != VAR_LIST
+		&& vartype->tt_type != VAR_TUPLE
 		&& vartype->tt_type != VAR_STRING
 		&& vartype->tt_type != VAR_BLOB
 		&& vartype->tt_type != VAR_ANY
@@ -1024,6 +1059,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 			  && vartype->tt_member->tt_member->tt_type != VAR_ANY)
 		item_type = vartype->tt_member->tt_member;
 	}
+	else if (vartype->tt_type == VAR_TUPLE)
+	    item_type = compile_for_tuple_get_vartype(vartype, var_list);
 
 	// CMDMOD_REV must come before the FOR instruction.
 	generate_undo_cmdmods(cctx);

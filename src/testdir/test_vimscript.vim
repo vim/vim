@@ -7519,6 +7519,16 @@ func Test_for_over_string()
   endfor
 endfunc
 
+" Test for 'for' loop failures
+func Test_for_loop_failure()
+  func ForFn()
+    for x in test_null_job()
+    endfor
+  endfunc
+  call assert_fails('call ForFn()', 'E1523: String, List, Tuple or Blob required')
+  delfunc ForFn
+endfunc
+
 " Test for deeply nested :source command  {{{1
 func Test_deeply_nested_source()
   let lines =<< trim END

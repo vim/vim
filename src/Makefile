@@ -1584,6 +1584,7 @@ BASIC_SRC = \
 	textobject.c \
 	textprop.c \
 	time.c \
+	tuple.c \
 	typval.c \
 	ui.c \
 	undo.c \
@@ -1744,6 +1745,7 @@ OBJ_COMMON = \
 	objects/textobject.o \
 	objects/textprop.o \
 	objects/time.o \
+	objects/tuple.o \
 	objects/typval.o \
 	objects/ui.o \
 	objects/undo.o \
@@ -1937,6 +1939,7 @@ PRO_AUTO = \
 	textobject.pro \
 	textprop.pro \
 	time.pro \
+	tuple.pro \
 	typval.pro \
 	ui.pro \
 	undo.pro \
@@ -3568,6 +3571,9 @@ objects/textprop.o: textprop.c
 objects/time.o: time.c
 	$(CCC) -o $@ time.c
 
+objects/tuple.o: tuple.c
+	$(CCC) -o $@ tuple.c
+
 objects/typval.o: typval.c
 	$(CCC) -o $@ typval.c
 
@@ -4244,6 +4250,11 @@ objects/textprop.o: textprop.c vim.h protodef.h auto/config.h feature.h os_unix.
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
 objects/time.o: time.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/tuple.o: tuple.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \

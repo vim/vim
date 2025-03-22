@@ -264,12 +264,22 @@ export def CheckLegacyAndVim9Failure(lines: list<string>, error: any)
   var legacylines = lines->mapnew((_, v) =>
 				v->substitute('\<VAR\>', 'let', 'g')
 				 ->substitute('\<LET\>', 'let', 'g')
+				 ->substitute('\<LSTART\>', '{', 'g')
+				 ->substitute('\<LMIDDLE\>', '->', 'g')
+				 ->substitute('\<LEND\>', '}', 'g')
+				 ->substitute('\<TRUE\>', '1', 'g')
+				 ->substitute('\<FALSE\>', '0', 'g')
 				 ->substitute('#"', ' "', 'g'))
   CheckLegacyFailure(legacylines, legacyError)
 
   var vim9lines = lines->mapnew((_, v) =>
 				v->substitute('\<VAR\>', 'var', 'g')
-				 ->substitute('\<LET ', '', 'g'))
+				 ->substitute('\<LET ', '', 'g')
+				 ->substitute('\<LSTART\>', '(', 'g')
+				 ->substitute('\<LMIDDLE\>', ') =>', 'g')
+				 ->substitute(' *\<LEND\> *', '', 'g')
+				 ->substitute('\<TRUE\>', 'true', 'g')
+				 ->substitute('\<FALSE\>', 'false', 'g'))
   CheckDefExecFailure(vim9lines, defError)
   CheckScriptFailure(['vim9script'] + vim9lines, scriptError)
 enddef
