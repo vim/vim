@@ -292,14 +292,32 @@ function s:get_vim_command_type(cmd_name)
 		insert
 		let
 		loadkeymap
+		lua
+		luado
+		luafile
 		map
 		mapclear
 		match
+		mzscheme
+		mzfile
 		noremap
 		new
 		normal
+		perl
+		perldo
 		popup
 		public
+		python
+		pyfile
+		pydo
+		python3
+		py3
+		py3do
+		py3file
+		pythonx
+		pyx
+		pyxdo
+		pyxfile
 		return
 		set
 		setglobal
@@ -310,6 +328,9 @@ function s:get_vim_command_type(cmd_name)
 		static
 		substitute
 		syntax
+		tcl
+		tcldo
+		tclfile
 		this
 		throw
 		type
