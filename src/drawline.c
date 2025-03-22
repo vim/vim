@@ -1223,7 +1223,8 @@ win_line(
 #ifdef FEAT_DIFF
     int		change_start = MAXCOL;	// first col of changed area
     int		change_end = -1;	// last col of changed area
-    diffline_T	line_changes = {};
+    diffline_T	line_changes;
+    CLEAR_FIELD(line_changes);
     int		change_index = -1;
 #endif
     colnr_T	trailcol = MAXCOL;	// start of trailing spaces

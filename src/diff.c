@@ -4540,7 +4540,9 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int			cache_results = TRUE;
     int			filler_lines;
     int			col;
-    diffline_T		diffline = {};
+    diffline_T		diffline;
+
+    CLEAR_FIELD(diffline);
 
     if (in_vim9script()
 	    && (check_for_lnum_arg(argvars,0) == FAIL
