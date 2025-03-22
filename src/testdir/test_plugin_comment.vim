@@ -514,3 +514,49 @@ func Test_textobj_conseq_comment2()
 
   call assert_equal(["int main() {", "    printf(\"hello\");", "", "    // world", "    printf(\"world\");", "}"], result)
 endfunc
+
+func Test_inline_comment()
+  CheckScreendump
+  let lines =<< trim END
+    echo "Hello" This should be a comment
+  END
+
+  let input_file = "test_inline_comment_input.vim"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" -c "nnoremap <expr> gC comment#Toggle()..''$''" ' .. input_file, {})
+
+  call term_sendkeys(buf, "fTgC")
+
+  let output_file = "comment_inline_test.vim"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+  call assert_equal(['echo "Hello" " This should be a comment'], result)
+endfunc
+
+func Test_inline_uncomment()
+  CheckScreendump
+  let lines =<< trim END
+    echo "Hello" " This should be a comment
+  END
+
+  let input_file = "test_inline_uncomment_input.vim"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "0f#gC")
+
+  let output_file = "uncomment_inline_test.vim"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+  call assert_equal(['echo "Hello" This should be a comment'], result)
+endfunc
