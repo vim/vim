@@ -591,6 +591,12 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
 	tp->tp_first_diff = dnew;
     else
 	dprev->df_next = dnew;
+
+    CLEAR_FIELD(dnew->df_lnum);
+    CLEAR_FIELD(dnew->df_count);
+
+    dnew->has_changes = FALSE;
+    ga_init2(&dnew->df_changes, sizeof(diffline_change_T), 20);
     return dnew;
 }
 
@@ -2959,7 +2965,7 @@ diff_update_line(linenr_T lnum)
     if (dp != NULL)
     {
 	dp->has_changes = FALSE;
-	ga_clear(&dp->df_changes);
+	dp->df_changes.ga_len = 0;
     }
 }
 
@@ -3479,7 +3485,7 @@ diff_find_change_inline_diff(
 
     // After the diff, use the linemap to obtain the original line/col of the
     // changes and cache them in dp.
-    ga_init2(&dp->df_changes, sizeof(diffline_change_T), 20);
+    dp->df_changes.ga_len = 0; // this should already be zero
     for (; new_diff != NULL; new_diff = new_diff->df_next)
     {
 	diffline_change_T change;
@@ -3521,7 +3527,7 @@ diff_find_change_inline_diff(
 	}
 	if (ga_grow(&dp->df_changes, 1) != OK)
 	{
-	    ga_clear(&dp->df_changes);
+	    dp->df_changes.ga_len = 0;
 	    goto done;
 	}
 	((diffline_change_T*)(dp->df_changes.ga_data))[dp->df_changes.ga_len] = change;
