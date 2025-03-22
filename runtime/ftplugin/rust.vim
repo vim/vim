@@ -167,10 +167,10 @@ command! -nargs=* -buffer RustEmitAsm call rust#Emit("asm", <q-args>)
 command! -range=% -buffer RustPlay :call rust#Play(<count>, <line1>, <line2>, <f-args>)
 
 " See |:RustFmt| for docs
-command! -bar -buffer RustFmt echomsg 'Use gggqG to format the whole buffer'
+command! -bar -buffer RustFmt exe '%!' &l:formatprg
 
 " See |:RustFmtRange| for docs
-command! -range -buffer RustFmtRange echomsg 'Use gq to format a range'
+command! -range -buffer RustFmtRange exe '<line1>,<line2>!' &l:formatprg
 
 " See |:RustInfo| for docs
 command! -bar -buffer RustInfo call rust#debugging#Info()
