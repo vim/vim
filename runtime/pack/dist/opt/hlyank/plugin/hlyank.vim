@@ -1,12 +1,12 @@
 vim9script
 
 # Highlight Yank plugin
-# Last Change: 2025 Mar 17
+# Last Change: 2025 Mar 22
 
 def HighlightedYank()
 
   var hlgroup = get(g:, "hlyank_hlgroup", "IncSearch")
-  var duration = get(g:, "hlyank_duration", 300)
+  var duration = min([get(g:, "hlyank_duration", 300), 3000])
   var in_visual = get(g:, "hlyank_invisual", true)
 
   if v:event.operator ==? 'y'
@@ -14,8 +14,8 @@ def HighlightedYank()
       visualmode(1)
       return
     endif
-    # if clipboard has autoselect (default on linux) exiting from Visual with ESC
-    # generates bogus event and this highlights previous yank
+    # if clipboard has autoselect (default on linux) exiting from Visual with
+    # ESC generates bogus event and this highlights previous yank
     if &clipboard =~ 'autoselect' && v:event.regname == "*" && v:event.visual
       return
     endif
@@ -36,3 +36,4 @@ augroup hlyank
   autocmd!
   autocmd TextYankPost * HighlightedYank()
 augroup END
+# vim:sts=2:sw=2:et:

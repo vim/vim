@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 9.1.  Last change: 2025 Mar 18
+*usr_05.txt*	For Vim version 9.1.  Last change: 2025 Mar 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -470,8 +470,8 @@ Load the plugin with this command: >
 	packadd hlyank
 <
 This package briefly highlights the affected region of the last |yank|
-command. See |52.6| for a simplified implementation using the |getregionpos()|
-function.
+command.  See |52.6| for a simplified implementation using the
+|getregionpos()| function.
 
 The plugin understands the following configuration variables (the settings
 show the default values).
@@ -481,7 +481,9 @@ To specify a different highlighting group, use: >
 <
 To use a different highlighting duration, use: >
 	:let g:hlyank_duration = 300
-<
+The unit is milliseconds, and the upper limit is 3000 ms.  If you set a value
+higher than this, the highlighting duration will be 3000 ms.
+
 To highlight in visual mode, use: >
 	:let g:hlyank_invisual = v:true
 
