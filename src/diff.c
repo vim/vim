@@ -3241,7 +3241,7 @@ diff_find_change_inline_diff(
     garray_T	linemap[DB_COUNT];
     garray_T	file1_str;
     garray_T	file2_str;
-    int		file1_used = FALSE;
+    int		file1_idx = -1;
 
     long	save_diff_algorithm = diff_algorithm;
 
@@ -3282,7 +3282,10 @@ diff_find_change_inline_diff(
 	if (dp->df_count[i] == 0)
 	    continue; // skip buffer that don't have any texts in this block
 
-	garray_T	*curstr = file1_used ? &file2_str : &file1_str;
+	if (file1_idx == -1)
+	    file1_idx = i;
+
+	garray_T	*curstr = (file1_idx != i) ? &file2_str : &file1_str;
 
 	linenr_T numlines = 0;
 	curstr->ga_len = 0;
@@ -3308,7 +3311,7 @@ diff_find_change_inline_diff(
 		// Always use the first buffer's 'iskeyword' to have a consistent diff
 		int new_in_keyword = FALSE;
 		if (diff_flags & DIFF_INLINE_WORD)
-		    new_in_keyword = vim_iswordp_buf(s, curtab->tp_diffbuf[0]);
+		    new_in_keyword = vim_iswordp_buf(s, curtab->tp_diffbuf[file1_idx]);
 		if (in_keyword && !new_in_keyword)
 		{
 		    ga_append(curstr, NL);
@@ -3449,7 +3452,7 @@ diff_find_change_inline_diff(
 	    }
 	}
 
-	if (file1_used)
+	if (file1_idx != i)
 	{
 	    dio.dio_new.din_mmfile.ptr = (char *)curstr->ga_data;
 	    dio.dio_new.din_mmfile.size = curstr->ga_len;
@@ -3459,7 +3462,7 @@ diff_find_change_inline_diff(
 	    dio.dio_orig.din_mmfile.ptr = (char *)curstr->ga_data;
 	    dio.dio_orig.din_mmfile.size = curstr->ga_len;
 	}
-	if (file1_used)
+	if (file1_idx != i)
 	{
 	    // Perform diff with first file and read the results
 	    int diff_status = diff_file_internal(&dio);
@@ -3468,8 +3471,6 @@ diff_find_change_inline_diff(
 
 	    diff_read(0, i, &dio);
 	}
-
-	file1_used = TRUE;
     }
     diff_T *new_diff = curtab->tp_first_diff;
 

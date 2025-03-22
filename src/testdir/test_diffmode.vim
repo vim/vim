@@ -2510,6 +2510,22 @@ funct Test_diff_inline_multibuffer()
   call VerifyScreenDump(buf, "Test_diff_inline_multibuffer_03", {})
   call term_sendkeys(buf, "\<Esc>u")
 
+  call term_sendkeys(buf, ":diffthis\<CR>")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_01", " diffopt+=inline:char")
+
+  " Test that removing first buffer from diff will in turn use the next
+  " earliest buffer's iskeyword during word diff.
+  call WriteDiffFiles3(buf,
+        \ ["This+is=a-setence"],
+        \ ["This+is=another-setence"],
+        \ ["That+is=a-setence"])
+  call term_sendkeys(buf, ":set iskeyword+=+\<CR>:2wincmd w\<CR>:set iskeyword+=-\<CR>:1wincmd w\<CR>")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_04", " diffopt+=inline:word")
+  call term_sendkeys(buf, ":diffoff\<CR>")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_05", " diffopt+=inline:word")
+  call term_sendkeys(buf, ":diffthis\<CR>")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_04", " diffopt+=inline:word")
+
   call StopVimInTerminal(buf)
 endfunc
 
