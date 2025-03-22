@@ -3277,11 +3277,7 @@ diff_find_change_inline_diff(
 
 	buf_T *buf = curtab->tp_diffbuf[i];
 	if (buf == NULL || buf->b_ml.ml_mfp == NULL)
-	{
-	    if (i == 0)
-		goto done; // first buffer should always be a diff
 	    continue; // skip buffer that isn't loaded
-	}
 
 	if (dp->df_count[i] == 0)
 	    continue; // skip buffer that don't have any texts in this block
