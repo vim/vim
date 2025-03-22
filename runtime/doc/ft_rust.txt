@@ -152,15 +152,6 @@ g:rustfmt_options~
 	defaults to '' : >
 	    let g:rustfmt_options = ''
 <
-                                                       *g:rustfmt_emit_files*
-g:rustfmt_emit_files~
-	If not specified rust.vim tries to detect the right parameter to
-	pass to rustfmt based on its reported version. Otherwise, it
-	determines whether to run rustfmt with '--emit=files' (when 1 is
-	provided) instead of '--write-mode=overwrite'. >
-	    let g:rustfmt_emit_files = 0
-
-<
                                                           *g:rust_playpen_url*
 g:rust_playpen_url~
 	Set this option to override the url for the playpen to use: >
@@ -326,24 +317,6 @@ This plug defines very simple shortcuts for invoking Cargo from with Vim.
 :Cruntarget <args>                                                 *:Cruntarget*
                 Shortcut for 'cargo run --bin' or 'cargo run --example',
                 depending on the currently open buffer.
-
-Formatting
-----------
-
-:RustFmt                                                       *:RustFmt*
-		Runs |g:rustfmt_command| on the current buffer. If
-		|g:rustfmt_options| is set then those will be passed to the
-		executable.
-
-		If |g:rustfmt_fail_silently| is 0 (the default) then it
-		will populate the |location-list| with the errors from
-		|g:rustfmt_command|. If |g:rustfmt_fail_silently| is set to 1
-		then it will not populate the |location-list|.
-
-:RustFmtRange                                                  *:RustFmtRange*
-		Runs |g:rustfmt_command| with selected range. See
-		|:RustFmt| for any other information.
-
 
 Playpen integration
 -------------------

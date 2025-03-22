@@ -2167,8 +2167,6 @@ $quote	eval.txt	/*$quote*
 :RustEmitAsm	ft_rust.txt	/*:RustEmitAsm*
 :RustEmitIr	ft_rust.txt	/*:RustEmitIr*
 :RustExpand	ft_rust.txt	/*:RustExpand*
-:RustFmt	ft_rust.txt	/*:RustFmt*
-:RustFmtRange	ft_rust.txt	/*:RustFmtRange*
 :RustInfo	ft_rust.txt	/*:RustInfo*
 :RustInfoClipboard	ft_rust.txt	/*:RustInfoClipboard*
 :RustInfoToFile	ft_rust.txt	/*:RustInfoToFile*
@@ -7763,7 +7761,6 @@ g:rustc_path	ft_rust.txt	/*g:rustc_path*
 g:rustfmt_autosave	ft_rust.txt	/*g:rustfmt_autosave*
 g:rustfmt_autosave_if_config_present	ft_rust.txt	/*g:rustfmt_autosave_if_config_present*
 g:rustfmt_command	ft_rust.txt	/*g:rustfmt_command*
-g:rustfmt_emit_files	ft_rust.txt	/*g:rustfmt_emit_files*
 g:rustfmt_fail_silently	ft_rust.txt	/*g:rustfmt_fail_silently*
 g:rustfmt_options	ft_rust.txt	/*g:rustfmt_options*
 g:statusline_winid	options.txt	/*g:statusline_winid*
