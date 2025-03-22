@@ -128,6 +128,7 @@ typedef struct {
     long	vcol_sbr;	    // virtual column after showbreak
     int		need_showbreak;	    // overlong line, skipping first x chars
     int		dont_use_showbreak; // do not use 'showbreak'
+    int         lbr_padding;	    // inserted columns for linebreak
 #endif
 #ifdef FEAT_PROP_POPUP
     int		text_prop_above_count;
@@ -520,6 +521,8 @@ handle_breakindent(win_T *wp, winlinevars_T *wlv)
 	    wlv->c_final = NUL;
 	    wlv->n_extra = get_breakindent_win(wp,
 				   ml_get_buf(wp->w_buffer, wlv->lnum, FALSE));
+	    wlv->lbr_padding += get_breakindent_win(wp,
+				   ml_get_buf(wp->w_buffer, wlv->lnum, FALSE));
 	    if (wlv->row == wlv->startrow)
 	    {
 		wlv->n_extra -= win_col_off2(wp);
@@ -910,7 +913,7 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
     // edge for 'cursorcolumn'.
     wlv->col -= wlv->boguscols;
     wlv->boguscols = 0;
-#  define VCOL_HLC (wlv->vcol - wlv->vcol_off_co - wlv->vcol_off_tp)
+#  define VCOL_HLC (wlv->vcol - wlv->vcol_off_co - wlv->vcol_off_tp - wlv->lbr_padding)
 # else
 #  define VCOL_HLC (wlv->vcol - wlv->vcol_off_tp)
 # endif
@@ -1273,7 +1276,7 @@ win_line(
     int		is_concealing	= FALSE;
     int		did_wcol	= FALSE;
     int		old_boguscols   = 0;
-# define VCOL_HLC (wlv.vcol - wlv.vcol_off_co - wlv.vcol_off_tp)
+# define VCOL_HLC (wlv.vcol - wlv.vcol_off_co - wlv.vcol_off_tp - wlv.lbr_padding)
 # define FIX_FOR_BOGUSCOLS \
     { \
 	wlv.n_extra += wlv.vcol_off_co; \
@@ -3087,6 +3090,7 @@ win_line(
 		    cts.cts_has_prop_with_text = FALSE;
 # endif
 		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;
+                    wlv.lbr_padding += win_lbr_chartabsize(&cts, NULL) - 1;
 		    clear_chartabsize_arg(&cts);
 
 		    if (on_last_col && c != TAB)
