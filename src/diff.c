@@ -3168,7 +3168,7 @@ diff_refine_inline_char_highlight(diff_T *dp_orig, garray_T *linemap)
     // Perform multiple passes so that newly merged blocks will now be long
     // enough which may cause other previously unmerged gaps to be merged as
     // well.
-    int pass = 0;
+    int pass = 1;
     do
     {
 	int has_unmerged_gaps = FALSE;
@@ -3224,7 +3224,7 @@ diff_refine_inline_char_highlight(diff_T *dp_orig, garray_T *linemap)
 	}
 	if (!has_unmerged_gaps || !has_merged_gaps)
 	    break;
-    } while (pass++ < 3); // use limited number of passes to avoid excessive looping
+    } while (pass++ < 4); // use limited number of passes to avoid excessive looping
 }
 
 /*
@@ -3363,11 +3363,10 @@ diff_find_change_inline_diff(
 			char_u cbuf[MB_MAXBYTES + 1];
 			// xdiff doesn't support ignoring case, fold-case the text manually.
 			c = PTR2CHAR(s);
-			c = MB_CASEFOLD(c);
-
 			int c_len = MB_CHAR2LEN(c);
-			int casefolded_len = mb_char2bytes(c, cbuf);
-			ga_concat_len(curstr, cbuf, casefolded_len);
+			c = MB_CASEFOLD(c);
+			int c_fold_len = mb_char2bytes(c, cbuf);
+			ga_concat_len(curstr, cbuf, c_fold_len);
 			if (char_len > c_len)
 			{
 			    // There may be remaining composing characters. Write those back in.
