@@ -285,6 +285,7 @@ runtime/ftplugin/slint.vim		@ribru17
 runtime/ftplugin/snakemake.vim		@ribru17
 runtime/ftplugin/solidity.vim		@cothi
 runtime/ftplugin/solution.vim		@dkearns
+runtime/ftplugin/spajson.vim		@dseomn
 runtime/ftplugin/spec.vim		@ignatenkobrain
 runtime/ftplugin/squirrel.vim		@ribru17
 runtime/ftplugin/ssa.vim		@ObserverOfTime
@@ -396,6 +397,7 @@ runtime/indent/scheme.vim		@evhan
 runtime/indent/scss.vim			@tpope
 runtime/indent/sh.vim			@chrisbra
 runtime/indent/solidity.vim		@cothi
+runtime/indent/spajson.vim		@dseomn
 runtime/indent/systemverilog.vim	@Kocha
 runtime/indent/tcl.vim			@dkearns
 runtime/indent/tcsh.vim			@dkearns
@@ -609,6 +611,7 @@ runtime/syntax/sed.vim			@dkearns
 runtime/syntax/shared/debversions.vim	@jamessan
 runtime/syntax/shaderslang.vim          @mTvare6
 runtime/syntax/solidity.vim		@cothi
+runtime/syntax/spajson.vim		@dseomn
 runtime/syntax/spec.vim			@ignatenkobrain
 runtime/syntax/sqloracle.vim		@chrisbra
 runtime/syntax/squirrel.vim		@zenmatic
