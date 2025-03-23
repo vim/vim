@@ -2491,7 +2491,6 @@ qf_alloc_stack(qfltype_T qfltype, int n)
 qf_alloc_list_stack(int n)
 {
     return ALLOC_CLEAR_MULT(qf_list_T, n);
-;
 }
 
 /*
