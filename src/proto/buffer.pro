@@ -5,6 +5,7 @@ int open_buffer(int read_stdin, exarg_T *eap, int flags_arg);
 void set_bufref(bufref_T *bufref, buf_T *buf);
 int bufref_valid(bufref_T *bufref);
 int buf_valid(buf_T *buf);
+int buf_locked(buf_T *buf);
 int close_buffer(win_T *win, buf_T *buf, int action, int abort_if_last, int ignore_abort);
 void buf_clear_file(buf_T *buf);
 void buf_freeall(buf_T *buf, int flags);
@@ -70,5 +71,4 @@ char_u *buf_get_fname(buf_T *buf);
 void set_buflisted(int on);
 int buf_contents_changed(buf_T *buf);
 void wipe_buffer(buf_T *buf, int aucmd);
-int buf_locked(buf_T *buf);
 /* vim: set ft=c : */
