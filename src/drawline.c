@@ -3121,8 +3121,7 @@ win_line(
 		    // do not want virtual text counted here
 		    cts.cts_has_prop_with_text = FALSE;
 # endif
-		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;
-                    wlv.lbr_padding += win_lbr_chartabsize(&cts, NULL) - 1;
+		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;			
 		    clear_chartabsize_arg(&cts);
 
 		    if (on_last_col && c != TAB)
@@ -3144,8 +3143,11 @@ win_line(
 		    wlv.c_extra = mb_off > 0 ? MB_FILLER_CHAR : ' ';
 		    wlv.c_final = NUL;
 # ifdef FEAT_PROP_POPUP
-		    if (wlv.n_extra > 0 && c != TAB)
-			in_linebreak = TRUE;
+                    if (wlv.n_extra > 0 && c != TAB)
+                    {
+                        in_linebreak = TRUE;
+                        wlv.lbr_padding += win_lbr_chartabsize(&cts, NULL) - 1;
+                    }
 # endif
 		    if (VIM_ISWHITE(c))
 		    {
