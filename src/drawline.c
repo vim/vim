@@ -163,6 +163,7 @@ typedef struct {
 				// with win_attr if needed
     int		n_attr_skip;    // chars to skip before using extra_attr
     int		c_extra;	// extra chars, all the same
+    int         is_extra;
     int		c_final;	// final char, mandatory if set
     int		extra_for_textprop; // n_extra set for textprop
     int		start_extra_for_textprop; // extra_for_textprop was just set
@@ -3121,7 +3122,7 @@ win_line(
 		    // do not want virtual text counted here
 		    cts.cts_has_prop_with_text = FALSE;
 # endif
-		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;			
+		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;
 		    clear_chartabsize_arg(&cts);
 
 		    if (on_last_col && c != TAB)
@@ -3146,7 +3147,17 @@ win_line(
                     if (wlv.n_extra > 0 && c != TAB)
                     {
                         in_linebreak = TRUE;
-                        wlv.lbr_padding += win_lbr_chartabsize(&cts, NULL) - 1;
+
+			// edge case: current col is colorcol
+			if (wlv.draw_color_col && VCOL_HLC == *wlv.color_cols)
+                        {
+                            vcol_save_attr = wlv.char_attr;
+                            wlv.char_attr =
+                                hl_combine_attr(wlv.char_attr, HL_ATTR(HLF_MC));
+                        }
+
+			wlv.lbr_padding += win_lbr_chartabsize(&cts, NULL) - 1;
+                        wlv.is_extra = 1;
                     }
 # endif
 		    if (VIM_ISWHITE(c))
@@ -4032,7 +4043,7 @@ win_line(
 		wlv.char_attr = hl_combine_attr(wlv.char_attr,
 							     HL_ATTR(HLF_CUC));
 	    }
-	    else if (wlv.draw_color_col && VCOL_HLC == *wlv.color_cols)
+	    else if (wlv.draw_color_col && VCOL_HLC == *wlv.color_cols && !wlv.is_extra)
 	    {
 		vcol_save_attr = wlv.char_attr;
 		wlv.char_attr = hl_combine_attr(wlv.char_attr, HL_ATTR(HLF_MC));
@@ -4467,6 +4478,10 @@ win_line(
 		break;
 #endif
 	}
+
+
+	if (wlv.n_extra == 0)
+            wlv.is_extra = 0;
 
     }	// for every character in the line
 #ifdef FEAT_PROP_POPUP
