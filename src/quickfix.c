@@ -2095,7 +2095,7 @@ qf_free_lists(qf_info_T *qi)
     qf_free_list_stack_items(qi);
 
     vim_free(qi->qf_lists);
-    free(qi);
+    vim_free(qi);
 }
 
 /*
