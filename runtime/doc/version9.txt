@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 21
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41574,6 +41574,8 @@ Include the "linematch" algorithm for the 'diffopt' setting.  This aligns
 changes between buffers on similar lines improving the diff highlighting in
 Vim
 
+Support for the |Tuple| data type in Vim script and Vim9 script.
+
 							*changed-9.2*
 Changed~
 -------
@@ -41677,11 +41679,14 @@ Functions: ~
 |getstacktrace()|	get current stack trace of Vim scripts
 |id()|			get unique identifier for a Dict, List, Object,
 			Channel or Blob variable
+|list2tuple()|		turn a List of items into a Tuple
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
 |ngettext()|		lookup single/plural message translation
 |popup_setbuf()|	switch to a different buffer in a popup
 |str2blob()|		convert a List of strings into a blob
+|test_null_tuple()|	return a null tuple
+|tuple2list()|		turn a Tuple of items into a List
 
 
 Autocommands: ~

@@ -6248,7 +6248,7 @@ set_ref_in_py(const int copyID)
 	    if (func->argc)
 		for (i = 0; !abort && i < func->argc; ++i)
 		    abort = abort
-			|| set_ref_in_item(&func->argv[i], copyID, NULL, NULL);
+			|| set_ref_in_item(&func->argv[i], copyID, NULL, NULL, NULL);
 	}
     }
 
@@ -6777,6 +6777,7 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_TUPLE:		// FIXME: Need to add support for tuple
 	    Py_INCREF(Py_None);
 	    return Py_None;
 	case VAR_BOOL:

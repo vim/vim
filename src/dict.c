@@ -1554,7 +1554,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 	return;
 
     if ((what == DICT2LIST_ITEMS
-		? check_for_string_or_list_or_dict_arg(argvars, 0)
+		? check_for_string_list_tuple_or_dict_arg(argvars, 0)
 		: check_for_dict_arg(argvars, 0)) == FAIL)
 	return;
 
@@ -1617,6 +1617,8 @@ f_items(typval_T *argvars, typval_T *rettv)
 	string2items(argvars, rettv);
     else if (argvars[0].v_type == VAR_LIST)
 	list2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	tuple2items(argvars, rettv);
     else
 	dict2list(argvars, rettv, DICT2LIST_ITEMS);
 }

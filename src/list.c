@@ -1520,15 +1520,13 @@ f_join(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
 
-    if (in_vim9script()
-	    && (check_for_list_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+    if (check_for_list_or_tuple_arg(argvars, 0) == FAIL
+	    || check_for_opt_string_arg(argvars, 1) == FAIL)
 	return;
 
-    if (check_for_list_arg(argvars, 0) == FAIL)
-	return;
-
-    if (argvars[0].vval.v_list == NULL)
+    if ((argvars[0].v_type == VAR_LIST && argvars[0].vval.v_list == NULL)
+	    || (argvars[0].v_type == VAR_TUPLE
+		&& argvars[0].vval.v_tuple == NULL))
 	return;
 
     if (argvars[1].v_type == VAR_UNKNOWN)
@@ -1539,7 +1537,10 @@ f_join(typval_T *argvars, typval_T *rettv)
     if (sep != NULL)
     {
 	ga_init2(&ga, sizeof(char), 80);
-	list_join(&ga, argvars[0].vval.v_list, sep, TRUE, FALSE, 0);
+	if (argvars[0].v_type == VAR_LIST)
+	    list_join(&ga, argvars[0].vval.v_list, sep, TRUE, FALSE, 0);
+	else
+	    tuple_join(&ga, argvars[0].vval.v_tuple, sep, TRUE, FALSE, 0);
 	ga_append(&ga, NUL);
 	rettv->vval.v_string = (char_u *)ga.ga_data;
     }
@@ -1775,6 +1776,63 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = ga.ga_data;
+}
+
+/*
+ * "list2tuple()" function
+ */
+    void
+f_list2tuple(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    listitem_T	*li;
+    tuple_T	*tuple;
+
+    rettv->v_type = VAR_TUPLE;
+    rettv->vval.v_tuple = NULL;
+
+    if (check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
+    l = argvars[0].vval.v_list;
+    if (l == NULL)
+	return;  // empty list results in empty tuple
+
+    CHECK_LIST_MATERIALIZE(l);
+
+    if (rettv_tuple_set_with_items(rettv, list_len(l)) == FAIL)
+	return;
+
+    tuple = rettv->vval.v_tuple;
+    FOR_ALL_LIST_ITEMS(l, li)
+    {
+	copy_tv(&li->li_tv, TUPLE_ITEM(tuple, TUPLE_LEN(tuple)));
+	tuple->tv_items.ga_len++;
+    }
+}
+
+/*
+ * "tuple2list()" function
+ */
+    void
+f_tuple2list(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    tuple_T	*tuple;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (check_for_tuple_arg(argvars, 0) == FAIL)
+	return;
+
+    tuple = argvars[0].vval.v_tuple;
+    if (tuple == NULL)
+	return;  // empty tuple results in empty list
+
+    l = rettv->vval.v_list;
+    for (int i = 0; i < tuple_len(tuple); i++)
+	list_append_tv(l, TUPLE_ITEM(tuple, i));
 }
 
 /*
@@ -2560,9 +2618,15 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	copy_tv(&argvars[0], rettv);
 
     if (in_vim9script()
-	    && (check_for_list_or_dict_or_blob_or_string_arg(argvars, 0)
+	    && (check_for_list_tuple_dict_blob_or_string_arg(argvars, 0)
 								== FAIL))
 	return;
+
+    if (argvars[0].v_type == VAR_TUPLE && filtermap != FILTERMAP_FOREACH)
+    {
+	semsg(_(e_cannot_use_tuple_with_function_str), func_name);
+	return;
+    }
 
     if (filtermap == FILTERMAP_MAP && in_vim9script())
     {
@@ -2577,11 +2641,17 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 
     if (argvars[0].v_type != VAR_BLOB
 	    && argvars[0].v_type != VAR_LIST
+	    && argvars[0].v_type != VAR_TUPLE
 	    && argvars[0].v_type != VAR_DICT
 	    && argvars[0].v_type != VAR_STRING)
     {
-	semsg(_(e_argument_of_str_must_be_list_string_dictionary_or_blob),
-								    func_name);
+	char *msg;
+
+	if (filtermap == FILTERMAP_FOREACH)
+	    msg = e_argument_of_str_must_be_list_tuple_string_dictionary_or_blob;
+	else
+	    msg = e_argument_of_str_must_be_list_string_dictionary_or_blob;
+	semsg(_(msg), func_name);
 	return;
     }
 
@@ -2611,6 +2681,8 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 							    arg_errmsg, rettv);
     else if (argvars[0].v_type == VAR_STRING)
 	string_filter_map(tv_get_string(&argvars[0]), filtermap, expr, rettv);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	tuple_foreach(argvars[0].vval.v_tuple, filtermap, expr);
     else // argvars[0].v_type == VAR_LIST
 	list_filter_map(argvars[0].vval.v_list, filtermap, type, func_name,
 						      arg_errmsg, expr, rettv);
@@ -2743,7 +2815,7 @@ f_count(typval_T *argvars, typval_T *rettv)
     int		error = FALSE;
 
     if (in_vim9script()
-	    && (check_for_string_or_list_or_dict_arg(argvars, 0) == FAIL
+	    && (check_for_string_list_tuple_or_dict_arg(argvars, 0) == FAIL
 		|| check_for_opt_bool_arg(argvars, 2) == FAIL
 		|| (argvars[2].v_type != VAR_UNKNOWN
 		    && check_for_opt_number_arg(argvars, 3) == FAIL)))
@@ -2764,6 +2836,16 @@ f_count(typval_T *argvars, typval_T *rettv)
 	    idx = (long)tv_get_number_chk(&argvars[3], &error);
 	if (!error)
 	    n = list_count(argvars[0].vval.v_list, &argvars[1], idx, ic);
+    }
+    else if (!error && argvars[0].v_type == VAR_TUPLE)
+    {
+	long idx = 0;
+
+	if (argvars[2].v_type != VAR_UNKNOWN
+		&& argvars[3].v_type != VAR_UNKNOWN)
+	    idx = (long)tv_get_number_chk(&argvars[3], &error);
+	if (!error)
+	    n = tuple_count(argvars[0].vval.v_tuple, &argvars[1], idx, ic);
     }
     else if (!error && argvars[0].v_type == VAR_DICT)
     {
@@ -3033,7 +3115,7 @@ list_reverse(list_T *l, typval_T *rettv)
     void
 f_reverse(typval_T *argvars, typval_T *rettv)
 {
-    if (check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
+    if (check_for_string_or_list_or_tuple_or_blob_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type == VAR_BLOB)
@@ -3048,6 +3130,8 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     }
     else if (argvars[0].v_type == VAR_LIST)
 	list_reverse(argvars[0].vval.v_list, rettv);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	tuple_reverse(argvars[0].vval.v_tuple, rettv);
 }
 
 /*
@@ -3153,6 +3237,7 @@ list_reduce(
 
 /*
  * "reduce(list, { accumulator, element -> value } [, initial])" function
+ * "reduce(tuple, { accumulator, element -> value } [, initial])" function
  * "reduce(blob, { accumulator, element -> value } [, initial])"
  * "reduce(string, { accumulator, element -> value } [, initial])"
  */
@@ -3161,17 +3246,8 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 {
     char_u	*func_name;
 
-    if (in_vim9script()
-		   && check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
+    if (check_for_string_or_list_or_tuple_or_blob_arg(argvars, 0) == FAIL)
 	return;
-
-    if (argvars[0].v_type != VAR_STRING
-	    && argvars[0].v_type != VAR_LIST
-	    && argvars[0].v_type != VAR_BLOB)
-    {
-	emsg(_(e_string_list_or_blob_required));
-	return;
-    }
 
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
@@ -3187,6 +3263,8 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_LIST)
 	list_reduce(argvars, &argvars[1], rettv);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	tuple_reduce(argvars, &argvars[1], rettv);
     else if (argvars[0].v_type == VAR_STRING)
 	string_reduce(argvars, &argvars[1], rettv);
     else
@@ -3202,6 +3280,7 @@ f_slice(typval_T *argvars, typval_T *rettv)
     if (in_vim9script()
 	    && ((argvars[0].v_type != VAR_STRING
 		    && argvars[0].v_type != VAR_LIST
+		    && argvars[0].v_type != VAR_TUPLE
 		    && argvars[0].v_type != VAR_BLOB
 		    && check_for_list_arg(argvars, 0) == FAIL)
 		|| check_for_number_arg(argvars, 1) == FAIL

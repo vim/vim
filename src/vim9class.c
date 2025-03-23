@@ -3650,7 +3650,7 @@ class_free_nonref(int copyID)
 set_ref_in_classes(int copyID)
 {
     for (class_T *cl = first_class; cl != NULL; cl = cl->class_next_used)
-	set_ref_in_item_class(cl, copyID, NULL, NULL);
+	set_ref_in_item_class(cl, copyID, NULL, NULL, NULL);
 
     return FALSE;
 }

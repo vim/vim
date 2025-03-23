@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Mar 06
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1001,6 +1001,7 @@ empty list and dict is falsy:
 	string		non-empty
 	blob		non-empty
 	list		non-empty (different from JavaScript)
+	tuple		non-empty (different from JavaScript)
 	dictionary	non-empty (different from JavaScript)
 	func		when there is a function name
 	special		true or v:true
@@ -1048,6 +1049,7 @@ In Vim9 script one can use the following predefined values: >
 	null_function
 	null_job
 	null_list
+	null_tuple
 	null_object
 	null_partial
 	null_string
@@ -1467,14 +1469,15 @@ The following builtin types are supported:
 	dict<{type}>
 	job
 	channel
+	tuple<{type}>
+	tuple<{type}, {type}, ...>
+	tuple<...list<{type}>>
+	tuple<{type}, ...list<{type}>>
 	func
 	func: {type}
 	func({type}, ...)
 	func({type}, ...): {type}
 	void
-
-Not supported yet:
-	tuple<a: {type}, b: {type}, ...>
 
 These types can be used in declarations, but no simple value will actually
 have the "void" type.  Trying to use a void (e.g. a function without a
@@ -1483,6 +1486,32 @@ return value) results in error *E1031*  *E1186* .
 There is no array type, use list<{type}> instead.  For a list constant an
 efficient implementation is used that avoids allocating a lot of small pieces
 of memory.
+							*tuple-type*
+A tuple type can be declared in more or less specific ways:
+tuple<number>			a tuple with a single item of type |Number|
+tuple<number, string>		a tuple with two items of type |Number| and
+				|String|
+tuple<number, float, bool>	a tuple with three items of type |Number|,
+				|Float| and |Boolean|.
+tuple<...list<number>>		a variadic tuple with zero or more items of
+				type |Number|.
+tuple<number, ...list<string>>	a tuple with an item of type |Number| followed
+				by zero or more items of type |String|.
+
+Examples: >
+    var myTuple: tuple<number> = (20,)
+    var myTuple: tuple<number, string> = (30, 'vim')
+    var myTuple: tuple<number, float, bool> = (40, 1.1, true)
+    var myTuple: tuple<...list<string>> = ('a', 'b', 'c')
+    var myTuple: tuple<number, ...list<string>> = (3, 'a', 'b', 'c')
+<
+						*variadic-tuple* *E1539*
+A variadic tuple has zero or more items of the same type.  The type of a
+variadic tuple must end with a list type.  Examples: >
+    var myTuple: tuple<...list<number>> = (1, 2, 3)
+    var myTuple: tuple<...list<string>> = ('a', 'b', 'c')
+    var myTuple: tuple<...list<bool>> = ()
+<
 				    *vim9-func-declaration* *E1005* *E1007*
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
@@ -1707,7 +1736,8 @@ argument type checking: >
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
 			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1256*
-			 *E1297* *E1298* *E1301*
+			 *E1297* *E1298* *E1301* *E1528* *E1529* *E1530*
+			 *E1531* *E1534*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 
@@ -1715,7 +1745,7 @@ Categories of variables, defaults and null handling ~
 				*variable-categories* *null-variables*
 There are categories of variables:
 	primitive	number, float, boolean
-	container	string, blob, list, dict
+	container	string, blob, list, tuple, dict
 	specialized	function, job, channel, user-defined-object
 
 When declaring a variable without an initializer, an explicit type must be
@@ -1845,6 +1875,7 @@ An uninitialized variable is usually equal to null; it depends on its type:
 	var s: string		s == null
 	var b: blob		b != null   ***
 	var l: list<any>	l != null   ***
+	var t: tuple<any>	t != null   ***
 	var d: dict<any>	d != null   ***
 	var f: func		f == null
 	var j: job		j == null
@@ -1855,6 +1886,7 @@ A variable initialized to empty equals null_<type>; but not null:
 	var s2: string = ""	  == null_string	!= null
 	var b2: blob = 0z	  == null_blob		!= null
 	var l2: list<any> = []	  == null_list		!= null
+	var t2: tuple<any> = ()	  == null_tuple		!= null
 	var d2: dict<any> = {}	  == null_dict		!= null
 
 NOTE: the specialized variables, like job, default to null value and have no

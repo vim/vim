@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2024 Jul 18
+*testing.txt*	For Vim version 9.1.  Last change: 2025 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -363,6 +363,11 @@ test_null_string()					*test_null_string()*
 		Return a |String| that is null. Only useful for testing.
 
 		Return type: |String|
+
+test_null_tuple()					*test_null_tuple()*
+		Return a |Tuple| that is null. Only useful for testing.
+
+		Return type: |Tuple|
 
 test_option_not_set({name})				*test_option_not_set()*
 		Reset the flag that indicates option {name} was set.  Thus it
