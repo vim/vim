@@ -2374,7 +2374,7 @@ func Test_diff_topline_noscroll()
 endfunc
 
 " Test inline highlighting which shows what's different within each diff block
-funct Test_diff_inline()
+func Test_diff_inline()
   CheckScreendump
 
   call WriteDiffFiles(0, [], [])
@@ -2487,7 +2487,7 @@ funct Test_diff_inline()
   call StopVimInTerminal(buf)
 endfunc
 
-funct Test_diff_inline_multibuffer()
+func Test_diff_inline_multibuffer()
   CheckScreendump
 
   call WriteDiffFiles3(0, [], [], [])

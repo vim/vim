@@ -2978,7 +2978,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		inline:{text}	Highlight inline differences within a change.
 				See |view-diffs|.  Supported values are:
 
-				none    Do not perform inline highlighting
+				none    Do not perform inline highlighting.
 				simple  Highlight from first different
 					character to the last one in each
 					line. This is the default if nothing
@@ -4407,10 +4407,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     v:Visual,V:VisualNOS,w:WarningMsg,
 				     W:WildMenu,f:Folded,F:FoldColumn,
 				     A:DiffAdd,C:DiffChange,D:DiffDelete,
-				     T:DiffText,E:DiffTextAdd,>:SignColumn,-:Conceal,
-				     B:SpellBad,P:SpellCap,R:SpellRare,
-				     L:SpellLocal,+:Pmenu,=:PmenuSel,
-				     k:PmenuMatch,<:PmenuMatchSel,
+				     T:DiffText,E:DiffTextAdd,>:SignColumn,
+				     -:Conceal,B:SpellBad,P:SpellCap,
+				     R:SpellRare, L:SpellLocal,+:Pmenu,
+				     =:PmenuSel, k:PmenuMatch,<:PmenuMatchSel,
 				     [:PmenuKind,]:PmenuKindSel,
 				     {:PmenuExtra,}:PmenuExtraSel,
 				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
