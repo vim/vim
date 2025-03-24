@@ -5896,8 +5896,8 @@ indexof({object}, {expr} [, {opts}])			*indexof()*
 		v:true.  {object} must be a |List|, a |Tuple| or a |Blob|.
 
 		If {object} is a |List| or a |Tuple|, evaluate {expr} for each
-		item in the List until the expression is v:true and return the
-		index of this item.
+		item in the List or Tuple until the expression is v:true
+		and return the index of this item.
 
 		If {object} is a |Blob| evaluate {expr} for each byte in the
 		Blob until the expression is v:true and return the index of
