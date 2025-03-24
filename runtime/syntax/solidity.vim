@@ -158,6 +158,15 @@ hi def link solEvent             Type
 hi def link solEventName         Function
 hi def link solEventArgSpecial   Label
 
+" Error
+syn match   solError             /\<error\>/ nextgroup=solErrorName,solErrorArgs skipwhite
+syn match   solErrorName         contained /\<[a-zA-Z_$][0-9a-zA-Z_$]*/ nextgroup=solErrorArgs skipwhite
+syn region  solErrorArgs         contained matchgroup=solFuncParens start='(' end=')' contains=solErrorArgCommas,solBuiltinType skipwhite skipempty
+syn match   solErrorArgCommas    contained ','
+
+hi def link solError             Type
+hi def link solErrorName         Function
+
 " Comment
 syn keyword solCommentTodo       TODO FIXME XXX TBD contained
 syn match solNatSpec             contained /@title\|@author\|@notice\|@dev\|@param\|@inheritdoc\|@return/
