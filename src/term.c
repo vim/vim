@@ -2300,7 +2300,7 @@ set_termname(char_u *term)
     full_screen = TRUE;		// we can use termcap codes from now on
     set_term_defaults();	// use current values as defaults
 #ifdef FEAT_TERMRESPONSE
-    LOG_TR("setting crv_status to STATUS_GET");
+    LOG_TR("setting crv_status to STATUS_GET","");
     crv_status.tr_progress = STATUS_GET;	// Get terminal version later
     write_t_8u_state = FALSE;
 #endif
@@ -4080,7 +4080,7 @@ may_req_termresponse(void)
 	    && *T_CRV != NUL)
     {
 	MAY_WANT_TO_LOG_THIS;
-	LOG_TR("Sending CRV request");
+	LOG_TR("Sending CRV request","");
 	out_str(T_CRV);
 	termrequest_sent(&crv_status);
 	// check for the characters now, otherwise they might be eaten by
@@ -4119,7 +4119,7 @@ check_terminal_behavior(void)
 	// changes cursor position, so it must be called immediately after
 	// entering termcap mode.
 	MAY_WANT_TO_LOG_THIS;
-	LOG_TR("Sending request for ambiwidth check");
+	LOG_TR("Sending request for ambiwidth check","");
 	// Do this in the second row.  In the first row the returned sequence
 	// may be CSI 1;2R, which is the same as <S-F3>.
 	term_windgoto(1, 0);
@@ -4148,7 +4148,7 @@ check_terminal_behavior(void)
 	// handles test sequence incorrectly, a garbage string is displayed and
 	// the cursor does move.
 	MAY_WANT_TO_LOG_THIS;
-	LOG_TR("Sending xterm compatibility test sequence.");
+	LOG_TR("Sending xterm compatibility test sequence.","");
 	// Do this in the third row.  Second row is used by ambiguous
 	// character width check.
 	term_windgoto(2, 0);
@@ -4199,7 +4199,7 @@ may_req_bg_color(void)
 	if (rfg_status.tr_progress == STATUS_GET && *T_RFG != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR("Sending FG request");
+	    LOG_TR("Sending FG request","");
 	    out_str(T_RFG);
 	    termrequest_sent(&rfg_status);
 	    didit = TRUE;
@@ -4210,7 +4210,7 @@ may_req_bg_color(void)
 	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR("Sending BG request");
+	    LOG_TR("Sending BG request","");
 	    out_str(T_RBG);
 	    termrequest_sent(&rbg_status);
 	    didit = TRUE;
@@ -4821,7 +4821,7 @@ switch_to_8bit(void)
 	need_gather = TRUE;		// need to fill termleader[]
     }
     detected_8bit = TRUE;
-    LOG_TR("Switching to 8 bit");
+    LOG_TR("Switching to 8 bit","");
 }
 
 #ifdef CHECK_DOUBLE_CLICK
@@ -5074,7 +5074,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// terminals the request should be ignored.
 	if (version >= 141 && p_xtermcodes)
 	{
-	    LOG_TR("Enable checking for XT codes");
+	    LOG_TR("Enable checking for XT codes","");
 	    check_for_codes = TRUE;
 	    need_gather = TRUE;
 	    req_codes_from_term();
@@ -5244,7 +5244,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& *T_CRS != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR("Sending cursor style request");
+	    LOG_TR("Sending cursor style request","");
 	    out_str(T_CRS);
 	    termrequest_sent(&rcs_status);
 	    need_flush = TRUE;
@@ -5259,7 +5259,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& *T_CRC != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR("Sending cursor blink mode request");
+	    LOG_TR("Sending cursor blink mode request","");
 	    out_str(T_CRC);
 	    termrequest_sent(&rbm_status);
 	    need_flush = TRUE;
@@ -5809,7 +5809,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 	    }
     if (i == len)
     {
-	LOG_TR("not enough characters for RB");
+	LOG_TR("not enough characters for RB","");
 	return FAIL;
     }
     return OK;
@@ -5915,7 +5915,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
     {
 	// These codes arrive many together, each code can be
 	// truncated at any point.
-	LOG_TR("not enough characters for XT");
+	LOG_TR("not enough characters for XT","");
 	return FAIL;
     }
     return OK;
@@ -6267,7 +6267,7 @@ check_termcode(
 		{
 #ifdef DEBUG_TERMRESPONSE
 		    if (resp == -1)
-			LOG_TR("Not enough characters for CSI sequence");
+			LOG_TR("Not enough characters for CSI sequence","");
 #endif
 		    return resp;
 		}
@@ -6558,7 +6558,7 @@ check_termcode(
     }
 
 #ifdef FEAT_TERMRESPONSE
-    LOG_TR("normal character");
+    LOG_TR("normal character","");
 #endif
 
     return 0;			    // no match found
