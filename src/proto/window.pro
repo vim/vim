@@ -1,14 +1,13 @@
 /* window.c */
+int window_layout_locked(enum CMD_index cmd);
 int check_can_set_curbuf_disabled(void);
 int check_can_set_curbuf_forceit(int forceit);
-int window_layout_locked(enum CMD_index cmd);
 win_T *prevwin_curwin(void);
 win_T *swbuf_goto_win_with_buf(buf_T *buf);
 void do_window(int nchar, long Prenum, int xchar);
 void get_wincmd_addr_type(char_u *arg, exarg_T *eap);
 int check_split_disallowed(win_T *wp);
 int win_split(int size, int flags);
-int win_splitmove(win_T *wp, int size, int flags);
 int win_split_ins(int size, int flags, win_T *new_wp, int dir, frame_T *to_flatten);
 int win_valid_popup(win_T *win);
 int win_valid(win_T *win);
@@ -16,6 +15,7 @@ win_T *win_find_by_id(int id);
 int win_valid_any_tab(win_T *win);
 int win_count(void);
 int make_windows(int count, int vertical);
+int win_splitmove(win_T *wp, int size, int flags);
 void win_move_after(win_T *win1, win_T *win2);
 void win_equal(win_T *next_curwin, int current, int dir);
 void leaving_window(win_T *win);
@@ -25,6 +25,7 @@ void close_windows(buf_T *buf, int keep_curwin);
 int last_window(void);
 int one_window(void);
 int win_close(win_T *win, int free_buf);
+void trigger_tabclosedpre(tabpage_T *tp, int directly);
 void snapshot_windows_scroll_size(void);
 void may_make_initial_scroll_size_snapshot(void);
 void may_trigger_win_scrolled_resized(void);
@@ -102,5 +103,4 @@ int get_tab_number(tabpage_T *tp);
 char *check_colorcolumn(char_u *cc, win_T *wp);
 int get_last_winid(void);
 int win_locked(win_T *wp);
-void trigger_tabclosedpre(tabpage_T *tp, int directly);
 /* vim: set ft=c : */
