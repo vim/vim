@@ -15,7 +15,7 @@ endif
 syn keyword solKeyword           abstract anonymous as break calldata case catch constant constructor continue default switch revert require
 syn keyword solKeyword           ecrecover addmod mulmod keccak256
 syn keyword solKeyword           delete do else emit enum external final for function if immutable import in indexed inline
-syn keyword solKeyword           interface internal is let match memory modifier new of payable pragma private public pure override virtual
+syn keyword solKeyword           interface internal is let match memory modifier new of payable pragma private public pure override virtual transient
 syn keyword solKeyword           relocatable return returns static storage struct throw try type typeof using
 syn keyword solKeyword           var view while
 
