@@ -40,11 +40,10 @@ static int  message_win_time = 3000;
 // hit-enter prompt.
 static int    start_message_win_timer = FALSE;
 
-static int popup_on_cmdline = FALSE;
-
 static void may_start_message_win_timer(win_T *wp);
 #endif
 
+static int popup_on_cmdline = FALSE;
 static void popup_adjust_position(win_T *wp);
 
 /*
