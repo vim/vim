@@ -581,7 +581,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
 {
     diff_T	*dnew;
 
-    dnew = ALLOC_ONE(diff_T);
+    dnew = ALLOC_CLEAR_ONE(diff_T);
     if (dnew == NULL)
 	return NULL;
 
@@ -591,9 +591,6 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
 	tp->tp_first_diff = dnew;
     else
 	dprev->df_next = dnew;
-
-    CLEAR_FIELD(dnew->df_lnum);
-    CLEAR_FIELD(dnew->df_count);
 
     dnew->has_changes = FALSE;
     ga_init2(&dnew->df_changes, sizeof(diffline_change_T), 20);
@@ -3582,15 +3579,11 @@ diff_find_change(
 	    dp = dp->df_next;
     }
     if (dp == NULL || diff_check_sanity(curtab, dp) == FAIL)
-    {
 	return FALSE;
-    }
 
     if (lnum - dp->df_lnum[idx] > INT_MAX)
-    {
 	// Integer overflow protection
 	return FALSE;
-    }
     off = lnum - dp->df_lnum[idx];
 
     if (!(diff_flags & ALL_INLINE_DIFF) || diff_internal_failed())
@@ -3624,9 +3617,7 @@ diff_find_change(
     // Use inline diff algorithm.
     // The diff changes are usually cached so we check that first.
     if (!dp->has_changes)
-    {
 	diff_find_change_inline_diff(dp);
-    }
 
     garray_T *changes = &dp->df_changes;
 

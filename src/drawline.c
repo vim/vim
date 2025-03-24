@@ -1224,7 +1224,6 @@ win_line(
     int		change_start = MAXCOL;	// first col of changed area
     int		change_end = -1;	// last col of changed area
     diffline_T	line_changes;
-    CLEAR_FIELD(line_changes);
     int		change_index = -1;
 #endif
     colnr_T	trailcol = MAXCOL;	// start of trailing spaces
@@ -1473,6 +1472,8 @@ win_line(
 
     int linestatus = 0;
     wlv.filler_lines = diff_check_with_linestatus(wp, lnum, &linestatus);
+
+    CLEAR_FIELD(line_changes);
 
     if (wlv.filler_lines < 0 || linestatus < 0)
     {
@@ -2465,9 +2466,7 @@ win_line(
 			&& change_index < line_changes.num_changes - 1)
 		{
 		    if (ptr - line >= line_changes.changes[change_index+1].dc_start[line_changes.bufidx])
-		    {
 			change_index += 1;
-		    }
 		}
 		int added = FALSE;
 		if (line_changes.num_changes > 0 && change_index >= 0 && change_index < line_changes.num_changes)
