@@ -3285,7 +3285,8 @@ may_trigger_win_scrolled_resized(void)
     {
 	// Create the list for v:event.windows before making the snapshot.
 	windows_list = list_alloc_with_items(size_count);
-	(void)check_window_scroll_resize(NULL, NULL, NULL, windows_list, NULL);
+	if (windows_list != NULL)
+	    check_window_scroll_resize(NULL, NULL, NULL, windows_list, NULL);
     }
 
     dict_T *scroll_dict = NULL;
@@ -3296,8 +3297,7 @@ may_trigger_win_scrolled_resized(void)
 	if (scroll_dict != NULL)
 	{
 	    scroll_dict->dv_refcount = 1;
-	    (void)check_window_scroll_resize(NULL, NULL, NULL, NULL,
-								  scroll_dict);
+	    check_window_scroll_resize(NULL, NULL, NULL, NULL, scroll_dict);
 	}
     }
 #endif
@@ -3314,7 +3314,11 @@ may_trigger_win_scrolled_resized(void)
     recursive = TRUE;
 
     // If both are to be triggered do WinResized first.
-    if (trigger_resize)
+    if (trigger_resize
+#ifdef FEAT_EVAL
+	    && windows_list != NULL
+#endif
+	    )
     {
 #ifdef FEAT_EVAL
 	save_v_event_T  save_v_event;
