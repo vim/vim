@@ -87,6 +87,11 @@
 # endif
 #endif
 
+// C89 does not define SIZE_MAX
+#ifndef SIZE_MAX
+# define SIZE_MAX sizeof(size_t)
+#endif
+
 // user ID of root is usually zero, but not for everybody
 #ifdef __TANDEM
 # ifndef _TANDEM_SOURCE
