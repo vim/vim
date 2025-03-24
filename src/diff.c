@@ -3169,7 +3169,7 @@ typedef struct
  * These are done by heuristics and can be further tuned.
  */
     static void
-diff_refine_inline_char_highlight(diff_T *dp_orig, garray_T *linemap)
+diff_refine_inline_char_highlight(diff_T *dp_orig, garray_T *linemap, int idx1)
 {
     // Perform multiple passes so that newly merged blocks will now be long
     // enough which may cause other previously unmerged gaps to be merged as
@@ -3182,25 +3182,25 @@ diff_refine_inline_char_highlight(diff_T *dp_orig, garray_T *linemap)
 	diff_T *dp = dp_orig;
 	while (dp!= NULL && dp->df_next != NULL)
 	{
-	    // Only use buffer 0 to calculate the gap because the gap is
+	    // Only use first buffer to calculate the gap because the gap is
 	    // unchanged text, which would be the same in all buffers.
-	    if (dp->df_lnum[0] + dp->df_count[0] - 1 >= linemap[0].ga_len
-		    || dp->df_next->df_lnum[0] - 1 >= linemap[0].ga_len)
+	    if (dp->df_lnum[idx1] + dp->df_count[idx1] - 1 >= linemap[idx1].ga_len
+		    || dp->df_next->df_lnum[idx1] - 1 >= linemap[idx1].ga_len)
 	    {
 		dp = dp->df_next;
 		continue;
 	    }
 
 	    // If the gap occurs over different lines, don't consider it
-	    linemap_entry_T *entry1 = &((linemap_entry_T*)linemap[0].ga_data)[dp->df_lnum[0] + dp->df_count[0] - 1];
-	    linemap_entry_T *entry2 = &((linemap_entry_T*)linemap[0].ga_data)[dp->df_next->df_lnum[0] - 1];
+	    linemap_entry_T *entry1 = &((linemap_entry_T*)linemap[idx1].ga_data)[dp->df_lnum[idx1] + dp->df_count[idx1] - 1];
+	    linemap_entry_T *entry2 = &((linemap_entry_T*)linemap[idx1].ga_data)[dp->df_next->df_lnum[idx1] - 1];
 	    if (entry1->lineoff != entry2->lineoff)
 	    {
 		dp = dp->df_next;
 		continue;
 	    }
 
-	    linenr_T gap = dp->df_next->df_lnum[0] - (dp->df_lnum[0] + dp->df_count[0]);
+	    linenr_T gap = dp->df_next->df_lnum[idx1] - (dp->df_lnum[idx1] + dp->df_count[idx1]);
 	    if (gap <= 3)
 	    {
 		linenr_T max_df_count = 0;
@@ -3481,8 +3481,8 @@ diff_find_change_inline_diff(
     }
     diff_T *new_diff = curtab->tp_first_diff;
 
-    if (diff_flags & DIFF_INLINE_CHAR)
-	diff_refine_inline_char_highlight(new_diff, linemap);
+    if (diff_flags & DIFF_INLINE_CHAR && file1_idx != -1)
+	diff_refine_inline_char_highlight(new_diff, linemap, file1_idx);
 
     // After the diff, use the linemap to obtain the original line/col of the
     // changes and cache them in dp.

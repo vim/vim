@@ -2526,6 +2526,18 @@ func Test_diff_inline_multibuffer()
   call term_sendkeys(buf, ":diffthis\<CR>")
   call VerifyInternal(buf, "Test_diff_inline_multibuffer_04", " diffopt+=inline:word")
 
+  " Test multi-buffer char diff refinement, and that removing a buffer from
+  " diff will update the others properly.
+  call WriteDiffFiles3(buf,
+        \ ["abcdefghijkYmYYY"],
+        \ ["aXXdXXghijklmnop"],
+        \ ["abcdefghijkYmYop"])
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_06", " diffopt+=inline:char")
+  call term_sendkeys(buf, ":diffoff\<CR>")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_07", " diffopt+=inline:char")
+  call term_sendkeys(buf, ":diffthis\<CR>")
+  call VerifyInternal(buf, "Test_diff_inline_multibuffer_06", " diffopt+=inline:char")
+
   call StopVimInTerminal(buf)
 endfunc
 
