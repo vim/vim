@@ -2391,6 +2391,10 @@ func Test_diff_inline()
   call VerifyInternal(buf, "Test_diff_inline_03", " diffopt+=inline:char")
   call VerifyInternal(buf, "Test_diff_inline_04", " diffopt+=inline:word")
 
+  " multiple inline values will the last one
+  call VerifyInternal(buf, "Test_diff_inline_01", " diffopt+=inline:none,inline:char,inline:simple")
+  call VerifyInternal(buf, "Test_diff_inline_02", " diffopt+=inline:simple,inline:word,inline:none")
+  call VerifyInternal(buf, "Test_diff_inline_03", " diffopt+=inline:simple,inline:word,inline:char")
 
   " DiffTextAdd highlight
   call term_sendkeys(buf, ":hi DiffTextAdd ctermbg=blue\<CR>")

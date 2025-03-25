@@ -43,6 +43,7 @@ static int diff_need_update = FALSE; // ex_diffupdate needs to be called
 #define DIFF_INLINE_CHAR    0x8000  // inline highlight with character diff
 #define DIFF_INLINE_WORD    0x10000 // inline highlight with word diff
 #define ALL_WHITE_DIFF (DIFF_IWHITE | DIFF_IWHITEALL | DIFF_IWHITEEOL)
+#define ALL_INLINE (DIFF_INLINE_NONE | DIFF_INLINE_SIMPLE | DIFF_INLINE_CHAR | DIFF_INLINE_WORD)
 #define ALL_INLINE_DIFF (DIFF_INLINE_CHAR | DIFF_INLINE_WORD)
 static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER | DIFF_CLOSE_OFF;
 
@@ -2843,21 +2844,25 @@ diffopt_changed(void)
 	    if (STRNCMP(p, "none", 4) == 0)
 	    {
 		p += 4;
+		diff_flags_new &= ~(ALL_INLINE);
 		diff_flags_new |= DIFF_INLINE_NONE;
 	    }
 	    else if (STRNCMP(p, "simple", 6) == 0)
 	    {
 		p += 6;
+		diff_flags_new &= ~(ALL_INLINE);
 		diff_flags_new |= DIFF_INLINE_SIMPLE;
 	    }
 	    else if (STRNCMP(p, "char", 4) == 0)
 	    {
 		p += 4;
+		diff_flags_new &= ~(ALL_INLINE);
 		diff_flags_new |= DIFF_INLINE_CHAR;
 	    }
 	    else if (STRNCMP(p, "word", 4) == 0)
 	    {
 		p += 4;
+		diff_flags_new &= ~(ALL_INLINE);
 		diff_flags_new |= DIFF_INLINE_WORD;
 	    }
 	    else
@@ -2880,13 +2885,6 @@ diffopt_changed(void)
 
     // Can't have both "horizontal" and "vertical".
     if ((diff_flags_new & DIFF_HORIZONTAL) && (diff_flags_new & DIFF_VERTICAL))
-	return FAIL;
-
-    // Check no conflicting inline values
-    if ((diff_flags_new & DIFF_INLINE_NONE ? 1 : 0)
-	    + (diff_flags_new & DIFF_INLINE_SIMPLE ? 1 : 0)
-	    + (diff_flags_new & DIFF_INLINE_CHAR ? 1 : 0)
-	    + (diff_flags_new & DIFF_INLINE_WORD ? 1 : 0) > 1)
 	return FAIL;
 
     // If flags were added or removed, or the algorithm was changed, need to
