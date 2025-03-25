@@ -9683,6 +9683,7 @@ python-2-and-3	if_pyth.txt	/*python-2-and-3*
 python-Dictionary	if_pyth.txt	/*python-Dictionary*
 python-Function	if_pyth.txt	/*python-Function*
 python-List	if_pyth.txt	/*python-List*
+python-Tuple	if_pyth.txt	/*python-Tuple*
 python-VIM_SPECIAL_PATH	if_pyth.txt	/*python-VIM_SPECIAL_PATH*
 python-_get_paths	if_pyth.txt	/*python-_get_paths*
 python-bindeval	if_pyth.txt	/*python-bindeval*

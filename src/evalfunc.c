@@ -8632,6 +8632,9 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	    else if (lv.ll_list != NULL)
 		// List item.
 		rettv->vval.v_number = tv_islocked(&lv.ll_li->li_tv);
+	    else if (lv.ll_tuple != NULL)
+		// Tuple item.
+		rettv->vval.v_number = tv_islocked(lv.ll_tv);
 	    else
 		// Dictionary item.
 		rettv->vval.v_number = tv_islocked(&lv.ll_di->di_tv);

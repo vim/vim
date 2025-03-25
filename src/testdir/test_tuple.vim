@@ -1241,12 +1241,43 @@ endfunc
 
 " Test for locking and unlocking a tuple variable
 func Test_tuple_lock()
+  " lockvar 0
+  let g:t = ([0, 1],)
   let lines =<< trim END
-    VAR t = ([0, 1],)
-    call add(t[0], 2)
-    call assert_equal(([0, 1, 2], ), t)
+    lockvar 0 g:t
+    LET g:t = ()
   END
-  call v9.CheckSourceLegacyAndVim9Success(lines)
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E1122: Variable is locked: g:t',
+        \ 'E1122: Variable is locked: t',
+        \ 'E1122: Variable is locked: g:t'])
+  unlet g:t
+
+  " Tuple is immutable.  So "lockvar 1" is not applicable to a tuple.
+
+  " lockvar 2
+  let g:t = ([0, 1],)
+  let lines =<< trim END
+    lockvar 2 g:t
+    call add(g:t[0], 2)
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E741: Value is locked: add() argument',
+        \ 'E741: Value is locked: add() argument',
+        \ 'E741: Value is locked: add() argument'])
+  unlet g:t
+
+  " lockvar 3
+  let g:t = ([0, 1],)
+  let lines =<< trim END
+    lockvar 3 g:t
+    LET g:t[0][0] = 10
+  END
+  call v9.CheckSourceLegacyAndVim9Failure(lines, [
+        \ 'E741: Value is locked: g:t[0][0] = 10',
+        \ 'E1119: Cannot change locked list item',
+        \ 'E741: Value is locked: g:t[0][0] = 10'])
+  unlet g:t
 
   let lines =<< trim END
     VAR t = ([0, 1],)
@@ -1808,6 +1839,25 @@ func Test_tuple_insert()
         \ 'E899: Argument of insert() must be a List or Blob',
         \ 'E1013: Argument 1: type mismatch, expected list<any> but got tuple<number, number, number>',
         \ 'E1226: List or Blob required for argument 1'])
+endfunc
+
+" Test for islocked()
+func Test_tuple_islocked()
+  let lines =<< trim END
+    let t = (1, [2], 3)
+    call assert_equal(0, islocked('t'))
+    call assert_equal(0, islocked('t[1]'))
+    lockvar 1 t
+    call assert_equal(1, islocked('t'))
+    call assert_equal(0, islocked('t[1]'))
+    unlockvar t
+    call assert_equal(0, islocked('t'))
+    lockvar 2 t
+    call assert_equal(1, islocked('t[1]'))
+    unlockvar t
+    call assert_equal(0, islocked('t[1]'))
+  END
+  call v9.CheckSourceSuccess(lines)
 endfunc
 
 " Test for items()

@@ -184,8 +184,9 @@ vim.eval(str)						*python-eval*
 	evaluator (see |expression|).  Returns the expression result as:
 	- a string if the Vim expression evaluates to a string or number
 	- a list if the Vim expression evaluates to a Vim list
+	- a tuple if the Vim expression evaluates to a Vim tuple
 	- a dictionary if the Vim expression evaluates to a Vim dictionary
-	Dictionaries and lists are recursively expanded.
+	Dictionaries, lists and tuples are recursively expanded.
 	Examples: >
 	    :" value of the 'textwidth' option
 	    :py text_width = vim.eval("&tw")
@@ -195,6 +196,8 @@ vim.eval(str)						*python-eval*
 	    :
 	    :" Result is a string! Use string.atoi() to convert to a number.
 	    :py str = vim.eval("12+12")
+	    :
+	    :py tuple = vim.eval('(1, 2, 3)')
 	    :
 	    :py tagList = vim.eval('taglist("eval_expr")')
 <	The latter will return a python list of python dicts, for instance:
@@ -207,8 +210,8 @@ vim.eval(str)						*python-eval*
 
 vim.bindeval(str)					*python-bindeval*
 	Like |python-eval|, but returns special objects described in
-	|python-bindeval-objects|. These python objects let you modify (|List|
-	or |Dictionary|) or call (|Funcref|) vim objects.
+	|python-bindeval-objects|. These python objects let you modify
+	(|List|, |Tuple| or |Dictionary|) or call (|Funcref|) vim objects.
 
 vim.strwidth(str)					*python-strwidth*
 	Like |strwidth()|: returns number of display cells str occupies, tab
@@ -687,6 +690,22 @@ vim.List object					*python-List*
         for i in l:			# iteration
         print isinstance(l, vim.List)	# True
         class List(vim.List):		# Subclassing
+
+vim.Tuple object				*python-Tuple*
+    Sequence-like object providing access to vim |Tuple| type.
+    Supports `.locked` attribute, see |python-.locked|. Also supports the
+    following methods:
+        Method          Description ~
+        __new__(), __new__(iterable)
+                        You can use `vim.Tuple()` to create new vim tuples.
+                        Without arguments constructs empty list.
+    Examples: >
+        t = vim.Tuple("abc")		# Constructor, result: ('a', 'b', 'c')
+        print t[1:]			# slicing
+        print t[0]			# getting item
+        for i in t:			# iteration
+        print isinstance(t, vim.Tuple)	# True
+        class Tuple(vim.Tuple):		# Subclassing
 
 vim.Function object				*python-Function*
     Function-like object, acting like vim |Funcref| object. Accepts special

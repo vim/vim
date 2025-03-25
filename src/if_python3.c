@@ -187,12 +187,16 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyList_New py3_PyList_New
 # define PyList_SetItem py3_PyList_SetItem
 # define PyList_Size py3_PyList_Size
+# define PyTuple_New py3_PyTuple_New
+# define PyTuple_GetItem py3_PyTuple_GetItem
+# define PyTuple_SetItem py3_PyTuple_SetItem
+# undef PyTuple_SET_ITEM
+# define PyTuple_SET_ITEM py3_PyTuple_SET_ITEM
+# define PyTuple_Size py3_PyTuple_Size
 # define PySequence_Check py3_PySequence_Check
 # define PySequence_Size py3_PySequence_Size
 # define PySequence_GetItem py3_PySequence_GetItem
 # define PySequence_Fast py3_PySequence_Fast
-# define PyTuple_Size py3_PyTuple_Size
-# define PyTuple_GetItem py3_PyTuple_GetItem
 # if PY_VERSION_HEX >= 0x030601f0
 #  define PySlice_AdjustIndices py3_PySlice_AdjustIndices
 #  define PySlice_Unpack py3_PySlice_Unpack
@@ -371,11 +375,14 @@ static PyObject* (*py3_PySys_GetObject)(char *);
 static int (*py3_PyList_Append)(PyObject *, PyObject *);
 static int (*py3_PyList_Insert)(PyObject *, int, PyObject *);
 static Py_ssize_t (*py3_PyList_Size)(PyObject *);
+static PyObject* (*py3_PyTuple_New)(Py_ssize_t size);
+static int (*py3_PyTuple_SetItem)(PyObject *, Py_ssize_t, PyObject *);
+static int (*py3_PyTuple_SET_ITEM)(PyObject *, Py_ssize_t, PyObject *);
+static Py_ssize_t (*py3_PyTuple_Size)(PyObject *);
 static int (*py3_PySequence_Check)(PyObject *);
 static Py_ssize_t (*py3_PySequence_Size)(PyObject *);
 static PyObject* (*py3_PySequence_GetItem)(PyObject *, Py_ssize_t);
 static PyObject* (*py3_PySequence_Fast)(PyObject *, const char *);
-static Py_ssize_t (*py3_PyTuple_Size)(PyObject *);
 static PyObject* (*py3_PyTuple_GetItem)(PyObject *, Py_ssize_t);
 static int (*py3_PyMapping_Check)(PyObject *);
 static PyObject* (*py3_PyMapping_Keys)(PyObject *);
@@ -585,12 +592,15 @@ static struct
     {"PyList_Append", (PYTHON_PROC*)&py3_PyList_Append},
     {"PyList_Insert", (PYTHON_PROC*)&py3_PyList_Insert},
     {"PyList_Size", (PYTHON_PROC*)&py3_PyList_Size},
+    {"PyTuple_New", (PYTHON_PROC*)&py3_PyTuple_New},
+    {"PyTuple_GetItem", (PYTHON_PROC*)&py3_PyTuple_GetItem},
+    {"PyTuple_SetItem", (PYTHON_PROC*)&py3_PyTuple_SetItem},
+    {"PyTuple_SET_ITEM", (PYTHON_PROC*)&py3_PyTuple_SET_ITEM},
+    {"PyTuple_Size", (PYTHON_PROC*)&py3_PyTuple_Size},
     {"PySequence_Check", (PYTHON_PROC*)&py3_PySequence_Check},
     {"PySequence_Size", (PYTHON_PROC*)&py3_PySequence_Size},
     {"PySequence_GetItem", (PYTHON_PROC*)&py3_PySequence_GetItem},
     {"PySequence_Fast", (PYTHON_PROC*)&py3_PySequence_Fast},
-    {"PyTuple_Size", (PYTHON_PROC*)&py3_PyTuple_Size},
-    {"PyTuple_GetItem", (PYTHON_PROC*)&py3_PyTuple_GetItem},
 # if PY_VERSION_HEX >= 0x030601f0
     {"PySlice_AdjustIndices", (PYTHON_PROC*)&py3_PySlice_AdjustIndices},
     {"PySlice_Unpack", (PYTHON_PROC*)&py3_PySlice_Unpack},
@@ -1113,6 +1123,8 @@ static PyObject *DictionaryGetattro(PyObject *, PyObject *);
 static int DictionarySetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *ListGetattro(PyObject *, PyObject *);
 static int ListSetattro(PyObject *, PyObject *, PyObject *);
+static PyObject *TupleGetattro(PyObject *, PyObject *);
+static int TupleSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *FunctionGetattro(PyObject *, PyObject *);
 
 static struct PyModuleDef vimmodule;
@@ -2026,6 +2038,26 @@ ListSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
     GET_ATTR_STRING(name, nameobj);
     return ListSetattr(self, name, val);
+}
+
+// Tuple object - Definitions
+
+    static PyObject *
+TupleGetattro(PyObject *self, PyObject *nameobj)
+{
+    GET_ATTR_STRING(name, nameobj);
+
+    if (strcmp(name, "locked") == 0)
+	return PyLong_FromLong(((TupleObject *) (self))->tuple->tv_lock);
+
+    return PyObject_GenericGetAttr(self, nameobj);
+}
+
+    static int
+TupleSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
+{
+    GET_ATTR_STRING(name, nameobj);
+    return TupleSetattr(self, name, val);
 }
 
 // Function object - Definitions
