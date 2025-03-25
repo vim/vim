@@ -2163,6 +2163,8 @@ get_lval(
 	    }
 	}
 	lp->ll_name = lp->ll_exp_name;
+	if (lp->ll_name != NULL)
+	    lp->ll_name_end = lp->ll_name + STRLEN(lp->ll_name);
     }
     else
     {
@@ -2373,7 +2375,7 @@ set_var_lval(
 
 	    // handle +=, -=, *=, /=, %= and .=
 	    di = NULL;
-	    if (eval_variable(lp->ll_name, (int)(lp->ll_name_end - lp->ll_name),
+	    if (eval_variable(lp->ll_name, (int)STRLEN(lp->ll_name),
 				 lp->ll_sid, &tv, &di, EVAL_VAR_VERBOSE) == OK)
 	    {
 		if (di != NULL && check_typval_is_value(&di->di_tv) == FAIL)
