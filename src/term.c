@@ -71,12 +71,12 @@ static void accept_modifiers_for_function_keys(void);
 # define DEBUG_TERMRESPONSE
 # define LOG_TR1(str) \
 		ch_log(NULL, "TermResp: %s " str, \
-		    must_redraw == UPD_NOT_VALID ? "NV" \
-		    : must_redraw == UPD_CLEAR ? "CL" : "  ")
+			must_redraw == UPD_NOT_VALID ? "NV" \
+			: must_redraw == UPD_CLEAR ? "CL" : "  ")
 # define LOG_TRN(fmt,...) \
 		ch_log(NULL, "TermResp: %s " fmt, \
-		    must_redraw == UPD_NOT_VALID ? "NV" \
-		    : must_redraw == UPD_CLEAR ? "CL" : "  ", ##__VA_ARGS__)
+			must_redraw == UPD_NOT_VALID ? "NV" \
+			: must_redraw == UPD_CLEAR ? "CL" : "  ", __VA_ARGS__)
 #else
 # define LOG_TR1(str) do { /**/ } while (0)
 # define LOG_TRN(fmt,...) do { /**/ } while (0)
