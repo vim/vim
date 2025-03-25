@@ -21,6 +21,31 @@ Contributions will be distributed with Vim under the Vim license.  Providing a
 change to be included implies that you agree with this and your contribution
 does not cause us trouble with trademarks or patents.  There is no CLA to sign.
 
+## Signing-off commits
+
+While not required, it's recommended to use **Signed-off commits** to ensure
+transparency, accountability, and compliance with open-source best practices.
+Signed-off commits follow the [Developer Certificate of Origin (DCO)][15],
+which confirms that contributors have the right to submit their changes under
+the project's license.  This process adds a `Signed-off-by` line to commit
+messages, verifying that the contributor agrees to the project's licensing
+terms.  To sign off a commit, simply use the -s flag when committing:
+
+```sh
+git commit -s -m "Your commit message"
+```  
+
+This ensures that every contribution is properly documented and traceable,
+aligning with industry standards used in projects like the Linux Kernel or
+the git project.  By making Signed-off commits a standard practice, we help
+maintain a legally compliant and well-governed codebase while fostering trust
+within our contributor community. 
+
+When merging PRs into Vim, the current maintainer @chrisbra usually adds missing
+`Signed-off-by` trailers for the author user name and email address as well for
+anybody that explicitly *ACK*s a pull request as a statement that those
+approvers are happy with that particular change.
+
 # Reporting issues
 
 We use GitHub issues, but that is not a requirement.  Writing to the Vim
@@ -113,3 +138,4 @@ mailing list. For other questions please use the [Vi Stack Exchange][8] website,
 [12]: https://github.com/vim/vim/blob/master/src/testdir/test_filetype.vim
 [13]: https://github.com/vim/vim/blob/master/runtime/doc/filetype.txt
 [14]: https://github.com/vim/vim/blob/master/runtime/doc/syntax.txt
+[15]: https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin
