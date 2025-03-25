@@ -7038,7 +7038,7 @@ win_fix_scroll(int resize)
 	    {
 		int diff = (wp->w_winrow - wp->w_prev_winrow)
 					  + (wp->w_height - wp->w_prev_height);
-		linenr_T lnum = wp->w_cursor.lnum;
+		pos_T cursor = wp->w_cursor;
 		wp->w_cursor.lnum = wp->w_botline - 1;
 
 		//  Add difference in height and row to botline.
@@ -7052,7 +7052,8 @@ win_fix_scroll(int resize)
 		wp->w_fraction = FRACTION_MULT;
 		scroll_to_fraction(wp, wp->w_prev_height);
 
-		wp->w_cursor.lnum = lnum;
+		wp->w_cursor = cursor;
+		wp->w_valid &= ~VALID_WCOL;
 	    }
 	    else if (wp == curwin)
 		wp->w_valid &= ~VALID_CROW;
