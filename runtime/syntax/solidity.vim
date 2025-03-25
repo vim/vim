@@ -2,10 +2,11 @@
 " Language:		Solidity
 " Maintainer:		Cothi (jiungdev@gmail.com)
 " Original Author:	tomlion (https://github.com/tomlion/vim-solidity/blob/master/syntax/solidity.vim)
-" Last Change:		2022 Sep 27
+" Last Change:		2025 Mar 25
 "
 " Contributors:
 "       Modified by thesis (https://github.com/thesis/vim-solidity/blob/main/indent/solidity.vim)
+"       Modified by S0AndS0 (https://github.com/S0AndS0/vim/blob/syntax-solidity-updates/runtime/syntax/solidity.vim)
 
 if exists("b:current_syntax")
   finish
