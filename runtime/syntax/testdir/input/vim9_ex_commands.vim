@@ -1,6 +1,7 @@
 vim9script
 
 # Vim9 Ex commands
+# VIM_TEST_SETUP let g:vimsyn_embed = "lmpPrt"
 
 # START NOT MATCHED
 :@
