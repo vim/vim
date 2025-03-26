@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 18
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -207,7 +207,7 @@ foldclosedend({lnum})		Number	last line of fold at {lnum} if closed
 foldlevel({lnum})		Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
 foldtextresult({lnum})		String	text for closed fold at {lnum}
-foreach({expr1}, {expr2})	List/Dict/Blob/String
+foreach({expr1}, {expr2})	List/Tuple/Dict/Blob/String
 					for each item in {expr1} call {expr2}
 foreground()			Number	bring the Vim window to the foreground
 fullcommand({name} [, {vim9}])	String	get full command from {name}
@@ -348,7 +348,7 @@ job_start({command} [, {options}])
 				Job	start a job
 job_status({job})		String	get the status of {job}
 job_stop({job} [, {how}])	Number	stop {job}
-join({list} [, {sep}])		String	join {list} items into one String
+join({expr} [, {sep}])		String	join items in {expr} into one String
 js_decode({string})		any	decode JS style JSON
 js_encode({expr})		String	encode JS style JSON
 json_decode({string})		any	decode JSON
@@ -364,6 +364,7 @@ line2byte({lnum})		Number	byte count of line {lnum}
 lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2blob({list})		Blob	turn {list} of numbers into a Blob
 list2str({list} [, {utf8}])	String	turn {list} of numbers into a String
+list2tuple({list})		Tuple	turn {list} of items into a tuple
 listener_add({callback} [, {buf}])
 				Number	add a callback to listen to changes
 listener_flush([{buf}])		none	invoke listener callbacks
@@ -511,10 +512,10 @@ remove({blob}, {idx} [, {end}])	Number/Blob
 					remove bytes {idx}-{end} from {blob}
 remove({dict}, {key})		any	remove entry {key} from {dict}
 rename({from}, {to})		Number	rename (move) file from {from} to {to}
-repeat({expr}, {count})		List/Blob/String
+repeat({expr}, {count})		List/Tuple/Blob/String
 					repeat {expr} {count} times
 resolve({filename})		String	get filename a shortcut points to
-reverse({obj})			List/Blob/String
+reverse({obj})			List/Tuple/Blob/String
 					reverse {obj}
 round({expr})			Float	round off {expr}
 rubyeval({expr})		any	evaluate |Ruby| expression
@@ -713,6 +714,7 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
+test_null_tuple()		Tuple	null value for testing
 test_option_not_set({name})	none	reset flag indicating option was set
 test_override({expr}, {val})	none	test with Vim internal overrides
 test_refcount({expr})		Number	get the reference count of {expr}
@@ -734,6 +736,7 @@ tr({src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 trim({text} [, {mask} [, {dir}]])
 				String	trim characters in {mask} from {text}
 trunc({expr})			Float	truncate Float {expr}
+tuple2list({tuple})		List	turn {tuple} of items into a list
 type({expr})			Number	type of value {expr}
 typename({expr})		String	representation of the type of {expr}
 undofile({name})		String	undo file name for {name}
@@ -1323,9 +1326,11 @@ blob2str({blob} [, {options}])				*blob2str()*
 		See also |str2blob()|
 
 		Examples: >
-			blob2str(0z6162)	returns ["ab"]
-			blob2str(0zC2ABC2BB)	returns ["«»"]
-			blob2str(0zABBB, {'encoding': 'latin1'}) returns ["«»"]
+		    blob2str(0z6162)		returns ['ab']
+		    blob2str(0zC2ABC2BB)	returns ['«»']
+		    blob2str(0z610A62)		returns ['a', 'b']
+		    blob2str(0z610062)		returns ['a\nb']
+		    blob2str(0zABBB, {'encoding': 'latin1'}) returns ['«»']
 <
 		Can also be used as a |method|: >
 			GetBlob()->blob2str()
@@ -2071,7 +2076,8 @@ copy({expr})							*copy()*
 		that the original |List| can be changed without changing the
 		copy, and vice versa.  But the items are identical, thus
 		changing an item changes the contents of both |Lists|.
-		A |Dictionary| is copied in a similar way as a |List|.
+		A |Tuple| or |Dictionary| is copied in a similar way as a
+		|List|.
 		Also see |deepcopy()|.
 		Can also be used as a |method|: >
 			mylist->copy()
@@ -2114,10 +2120,10 @@ cosh({expr})						*cosh()*
 
 count({comp}, {expr} [, {ic} [, {start}]])		*count()* *E706*
 		Return the number of times an item with value {expr} appears
-		in |String|, |List| or |Dictionary| {comp}.
+		in |String|, |List|, |Tuple| or |Dictionary| {comp}.
 
 		If {start} is given then start with the item with this index.
-		{start} can only be used with a |List|.
+		{start} can only be used with a |List| or a |Tuple|.
 
 		When {ic} is given and it's |TRUE| then case is ignored.
 
@@ -2237,7 +2243,8 @@ deepcopy({expr} [, {noref}])				*deepcopy()* *E698*
 		|Dictionary|, a copy for it is made, recursively.  Thus
 		changing an item in the copy does not change the contents of
 		the original |List|.
-		A |Dictionary| is copied in a similar way as a |List|.
+		A |Tuple| or |Dictionary| is copied in a similar way as a
+		|List|.
 
 		When {noref} is omitted or zero a contained |List| or
 		|Dictionary| is only copied once.  All references point to
@@ -2545,8 +2552,8 @@ echoraw({string})					*echoraw()*
 
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
-		- A |List| or |Dictionary| is empty when it does not have any
-		  items.
+		- A |List|, |Tuple| or |Dictionary| is empty when it does
+		  not have any items.
 		- A |String| is empty when its length is zero.
 		- A |Number| and |Float| are empty when their value is zero.
 		- |v:false|, |v:none| and |v:null| are empty, |v:true| is not.
@@ -3473,8 +3480,9 @@ foldtextresult({lnum})					*foldtextresult()*
 		Return type: |String|
 
 
-foreach({expr1}, {expr2})					*foreach()*
-		{expr1} must be a |List|, |String|, |Blob| or |Dictionary|.
+foreach({expr1}, {expr2})				*foreach()* *E1525*
+		{expr1} must be a |List|, |Tuple|, |String|, |Blob| or
+		|Dictionary|.
 		For each item in {expr1} execute {expr2}. {expr1} is not
 		modified; its values may be, as with |:lockvar| 1. |E741|
 		See |map()| and |filter()| to modify {expr1}.
@@ -3483,10 +3491,10 @@ foreach({expr1}, {expr2})					*foreach()*
 
 		If {expr2} is a |string|, inside {expr2} |v:val| has the value
 		of the current item.  For a |Dictionary| |v:key| has the key
-		of the current item and for a |List| |v:key| has the index of
-		the current item.  For a |Blob| |v:key| has the index of the
-		current byte. For a |String| |v:key| has the index of the
-		current character.
+		of the current item and for a |List| or a |Tuple| |v:key| has
+		the index of the current item.  For a |Blob| |v:key| has the
+		index of the current byte. For a |String| |v:key| has the
+		index of the current character.
 		Examples: >
 			call foreach(mylist, 'used[v:val] = true')
 <		This records the items that are in the {expr1} list.
@@ -3512,8 +3520,8 @@ foreach({expr1}, {expr2})					*foreach()*
 		Can also be used as a |method|: >
 			mylist->foreach(expr2)
 <
-		Return type: |String|, |Blob| list<{type}> or dict<{type}>
-		depending on {expr1}
+		Return type: |String|, |Blob|, list<{type}>, tuple<{type}> or
+		dict<{type}> depending on {expr1}
 
 							*foreground()*
 foreground()	Move the Vim window to the foreground.  Useful when sent from
@@ -3685,6 +3693,15 @@ get({list}, {idx} [, {default}])			*get()* *get()-list*
 			mylist->get(idx)
 <
 		Return type: any, depending on {list}
+
+get({tuple}, {idx} [, {default}])			*get()-tuple*
+		Get item {idx} from |Tuple| {tuple}.  When this item is not
+		available return {default}.  Return zero when {default} is
+		omitted.
+		Preferably used as a |method|: >
+			mytuple->get(idx)
+<
+		Return type: any, depending on {tuple}
 
 get({blob}, {idx} [, {default}])			*get()-blob*
 		Get byte {idx} from |Blob| {blob}.  When this byte is not
@@ -5819,8 +5836,8 @@ id({item})							*id()*
 <		prevents {item} from being garbage collected and provides a
 		way to get the {item} from the `id`.
 
-		{item} may be a List, Dictionary, Object, Job, Channel or
-		Blob. If the item is not a permitted type, or it is a null
+		{item} may be a List, Tuple, Dictionary, Object, Job, Channel
+		or Blob. If the item is not a permitted type, or it is a null
 		value, then an empty String is returned.
 
 		Can also be used as a |method|: >
@@ -5847,12 +5864,12 @@ index({object}, {expr} [, {start} [, {ic}]])			*index()*
 		Find {expr} in {object} and return its index.  See
 		|indexof()| for using a lambda to select the item.
 
-		If {object} is a |List| return the lowest index where the item
-		has a value equal to {expr}.  There is no automatic
-		conversion, so the String "4" is different from the Number 4.
-		And the number 4 is different from the Float 4.0.  The value
-		of 'ignorecase' is not used here, case matters as indicated by
-		the {ic} argument.
+		If {object} is a |List| or a |Tuple| return the lowest index
+		where the item has a value equal to {expr}.  There is no
+		automatic conversion, so the String "4" is different from the
+		Number 4.  And the number 4 is different from the Float 4.0.
+		The value of 'ignorecase' is not used here, case matters as
+		indicated by the {ic} argument.
 
 		If {object} is |Blob| return the lowest index where the byte
 		value is equal to {expr}.
@@ -5876,11 +5893,11 @@ index({object}, {expr} [, {start} [, {ic}]])			*index()*
 
 indexof({object}, {expr} [, {opts}])			*indexof()*
 		Returns the index of an item in {object} where {expr} is
-		v:true.  {object} must be a |List| or a |Blob|.
+		v:true.  {object} must be a |List|, a |Tuple| or a |Blob|.
 
-		If {object} is a |List|, evaluate {expr} for each item in the
-		List until the expression is v:true and return the index of
-		this item.
+		If {object} is a |List| or a |Tuple|, evaluate {expr} for each
+		item in the List or Tuple until the expression is v:true
+		and return the index of this item.
 
 		If {object} is a |Blob| evaluate {expr} for each byte in the
 		Blob until the expression is v:true and return the index of
@@ -5888,11 +5905,11 @@ indexof({object}, {expr} [, {opts}])			*indexof()*
 
 		{expr} must be a |string| or |Funcref|.
 
-		If {expr} is a |string|: If {object} is a |List|, inside
-		{expr} |v:key| has the index of the current List item and
-		|v:val| has the value of the item.  If {object} is a |Blob|,
-		inside {expr} |v:key| has the index of the current byte and
-		|v:val| has the byte value.
+		If {expr} is a |string|: If {object} is a |List| or a |Tuple|,
+		inside {expr} |v:key| has the index of the current List or
+		Tuple item and |v:val| has the value of the item.  If {object}
+		is a |Blob|, inside {expr} |v:key| has the index of the
+		current byte and |v:val| has the byte value.
 
 		If {expr} is a |Funcref| it must take two arguments:
 			1. the key or the index of the current item.
@@ -6202,9 +6219,9 @@ items({dict})						*items()*
 			   echo key .. ': ' .. value
 			endfor
 <
-		A List or a String argument is also supported.  In these
-		cases, items() returns a List with the index and the value at
-		the index.
+		A |List|, a |Tuple| or a |String| argument is also supported.
+		In these cases, items() returns a List with the index and the
+		value at the index.
 
 		Can also be used as a |method|: >
 			mydict->items()
@@ -6215,16 +6232,17 @@ items({dict})						*items()*
 job_ functions are documented here: |job-functions-details|
 
 
-join({list} [, {sep}])					*join()*
-		Join the items in {list} together into one String.
+join({expr} [, {sep}])					*join()*
+		Join the items in {expr} together into one String.  {expr} can
+		be a |List| or a |Tuple|.
 		When {sep} is specified it is put in between the items.  If
 		{sep} is omitted a single space is used.
 		Note that {sep} is not added at the end.  You might want to
 		add it there too: >
 			let lines = join(mylist, "\n") .. "\n"
-<		String items are used as-is.  |Lists| and |Dictionaries| are
-		converted into a string like with |string()|.
-		The opposite function is |split()|.
+<		String items are used as-is.  |Lists|, |Tuples| and
+		|Dictionaries| are converted into a string like with
+		|string()|.  The opposite function is |split()|.
 
 		Can also be used as a |method|: >
 			mylist->join()
@@ -6318,6 +6336,8 @@ json_encode({expr})					*json_encode()*
 		   |Funcref|		not possible, error
 		   |List|		as an array (possibly null); when
 					used recursively: []
+		   |Tuple|		as an array (possibly null); when
+					used recursively: []
 		   |Dict|		as an object (possibly null); when
 					used recursively: {}
 		   |Blob|		as an array of the individual bytes
@@ -6365,6 +6385,8 @@ len({expr})						*len()* *E701*
 		When {expr} is a String or a Number the length in bytes is
 		used, as with |strlen()|.
 		When {expr} is a |List| the number of items in the |List| is
+		returned.
+		When {expr} is a |Tuple| the number of items in the |Tuple| is
 		returned.
 		When {expr} is a |Blob| the number of bytes is returned.
 		When {expr} is a |Dictionary| the number of entries in the
@@ -6545,6 +6567,25 @@ list2str({list} [, {utf8}])				*list2str()*
 			GetList()->list2str()
 <
 		Return type: |String|
+
+
+list2tuple({list})					*list2tuple()*
+		Create a Tuple from a shallow copy of the list items.
+		Examples: >
+			list2tuple([1, 2, 3])		returns (1, 2, 3)
+<		|tuple2list()| does the opposite.
+
+		This function doesn't recursively convert all the List items
+		in {list} to a Tuple.  Note that the items are identical
+		between the list and the tuple, changing an item changes the
+		contents of both the tuple and the list.
+
+		Returns an empty tuple on error.
+
+		Can also be used as a |method|: >
+			GetList()->list2tuple()
+<
+		Return type: tuple<{type}> (depending on the given |List|)
 
 
 listener_add({callback} [, {buf}])			*listener_add()*
@@ -7462,11 +7503,12 @@ max({expr})							*max()*
 		Return the maximum value of all items in {expr}. Example: >
 			echo max([apples, pears, oranges])
 
-<		{expr} can be a |List| or a |Dictionary|.  For a Dictionary,
-		it returns the maximum of all values in the Dictionary.
-		If {expr} is neither a List nor a Dictionary, or one of the
-		items in {expr} cannot be used as a Number this results in
-		an error.  An empty |List| or |Dictionary| results in zero.
+<		{expr} can be a |List|, a |Tuple| or a |Dictionary|.  For a
+		Dictionary, it returns the maximum of all values in the
+		Dictionary.  If {expr} is neither a List nor a Tuple nor a
+		Dictionary, or one of the items in {expr} cannot be used as a
+		Number this results in an error.  An empty |List|, |Tuple|
+		or |Dictionary| results in zero.
 
 		Can also be used as a |method|: >
 			mylist->max()
@@ -7553,11 +7595,12 @@ min({expr})							*min()*
 		Return the minimum value of all items in {expr}. Example:  >
 			echo min([apples, pears, oranges])
 
-<		{expr} can be a |List| or a |Dictionary|.  For a Dictionary,
-		it returns the minimum of all values in the Dictionary.
-		If {expr} is neither a List nor a Dictionary, or one of the
-		items in {expr} cannot be used as a Number this results in
-		an error.  An empty |List| or |Dictionary| results in zero.
+<		{expr} can be a |List|, a |Tuple| or a |Dictionary|.  For a
+		Dictionary, it returns the minimum of all values in the
+		Dictionary.  If {expr} is neither a List nor a Tuple nor a
+		Dictionary, or one of the items in {expr} cannot be used as a
+		Number this results in an error.  An empty |List|, |Tuple| or
+		|Dictionary| results in zero.
 
 		Can also be used as a |method|: >
 			mylist->min()
@@ -8293,13 +8336,14 @@ py3eval({expr} [, {locals}])				*py3eval()*
 		converted to Vim data structures.
 		If a {locals} |Dictionary| is given, it defines set of local
 		variables available in the expression. The keys are variable
-		names and the values are the variable values. |Dictionary| and
-		|List| values are referenced, and may be updated by the
-		expression (as if |python-bindeval| was used).
+		names and the values are the variable values. |Dictionary|,
+		|List| and |Tuple| values are referenced, and may be updated
+		by the expression (as if |python-bindeval| was used).
 		Numbers and strings are returned as they are (strings are
 		copied though, Unicode strings are additionally converted to
 		'encoding').
 		Lists are represented as Vim |List| type.
+		Tuples are represented as Vim |Tuple| type.
 		Dictionaries are represented as Vim |Dictionary| type with
 		keys converted to strings.
 		Note that in a `:def` function local variables are not visible
@@ -8321,6 +8365,7 @@ pyeval({expr} [, {locals}])				*pyeval()*
 		Numbers and strings are returned as they are (strings are
 		copied though).
 		Lists are represented as Vim |List| type.
+		Tuples are represented as Vim |Tuple| type.
 		Dictionaries are represented as Vim |Dictionary| type,
 		non-string keys result in error.
 		Note that in a `:def` function local variables are not visible
@@ -8580,8 +8625,8 @@ readfile({fname} [, {type} [, {max}]])
 
 reduce({object}, {func} [, {initial}])			*reduce()* *E998*
 		{func} is called for every item in {object}, which can be a
-		|String|, |List| or a |Blob|.  {func} is called with two
-		arguments: the result so far and current item.  After
+		|String|, |List|, |Tuple| or a |Blob|.  {func} is called with
+		two arguments: the result so far and current item.  After
 		processing all items the result is returned. *E1132*
 
 		{initial} is the initial result.  When omitted, the first item
@@ -8902,16 +8947,16 @@ repeat({expr}, {count})					*repeat()*
 		result.  Example: >
 			:let separator = repeat('-', 80)
 <		When {count} is zero or negative the result is empty.
-		When {expr} is a |List| or a |Blob| the result is {expr}
-		concatenated {count} times.  Example: >
+		When {expr} is a |List|, a |Tuple| or a |Blob| the result is
+		{expr} concatenated {count} times.  Example: >
 			:let longlist = repeat(['a', 'b'], 3)
 <		Results in ['a', 'b', 'a', 'b', 'a', 'b'].
 
 		Can also be used as a |method|: >
 			mylist->repeat(count)
 <
-		Return type: |String|, |Blob| or list<{type}> depending on
-		{expr}
+		Return type: |String|, |Blob|, list<{type}> or tuple<{type}>
+		depending on {expr}
 
 
 resolve({filename})					*resolve()* *E655*
@@ -8938,18 +8983,19 @@ resolve({filename})					*resolve()* *E655*
 
 reverse({object})					*reverse()*
 		Reverse the order of items in {object}.  {object} can be a
-		|List|, a |Blob| or a |String|.  For a List and a Blob the
-		items are reversed in-place and {object} is returned.
+		|List|, a |Tuple|, a |Blob| or a |String|.  For a List and a
+		Blob the items are reversed in-place and {object} is returned.
+		For a Tuple, a new Tuple is returned.
 		For a String a new String is returned.
-		Returns zero if {object} is not a List, Blob or a String.
-		If you want a List or Blob to remain unmodified make a copy
-		first: >
+		Returns zero if {object} is not a List, Tuple, Blob or a
+		String.  If you want a List or Blob to remain unmodified make
+		a copy first: >
 			:let revlist = reverse(copy(mylist))
 <		Can also be used as a |method|: >
 			mylist->reverse()
 <
-		Return type: |String|, |Blob| or list<{type}> depending on
-		{object}
+		Return type: |String|, |Blob|, list<{type}> or tuple<{type}>
+		depending on {object}
 
 
 round({expr})							*round()*
@@ -10302,7 +10348,7 @@ slice({expr}, {start} [, {end}])			*slice()*
 		Can also be used as a |method|: >
 			GetList()->slice(offset)
 <
-		Return type: list<{type}>
+		Return type: list<{type}> or tuple<{type}>
 
 
 sort({list} [, {how} [, {dict}]])			*sort()* *E702*
@@ -10666,11 +10712,12 @@ str2blob({list} [, {options}])					*str2blob()*
 		See also |blob2str()|
 
 		Examples: >
-		    str2blob(["ab"])	returns 0z6162
-		    str2blob(["«»"])	returns 0zC2ABC2BB
-		    str2blob(["a\nb"])	returns 0z610A62
-		    str2blob(readfile('myfile.txt'))
+		    str2blob(["ab"])		returns 0z6162
+		    str2blob(["«»"])		returns 0zC2ABC2BB
+		    str2blob(["a\nb"])		returns 0z610062
+		    str2blob(["a","b"])		returns 0z610A62
 		    str2blob(["«»"], {'encoding': 'latin1'}) returns 0zABBB
+		    str2blob(readfile('myfile.txt'))
 <
 		Can also be used as a |method|: >
 			GetListOfStrings()->str2blob()
@@ -10913,15 +10960,16 @@ string({expr})							*string()*
 			Funcref		function('name')
 			Blob		0z00112233.44556677.8899
 			List		[item, item]
+			Tuple		(item, item)
 			Dictionary	{key: value, key: value}
 			Class		class SomeName
 			Object		object of SomeName {lnum: 1, col: 3}
 			Enum		enum EnumName
 			EnumValue	enum name.value {name: str, ordinal: nr}
 
-		When a |List| or |Dictionary| has a recursive reference it is
-		replaced by "[...]" or "{...}".  Using eval() on the result
-		will then fail.
+		When a |List|, |Tuple| or |Dictionary| has a recursive
+		reference it is replaced by "[...]" or "(...)" or "{...}".
+		Using eval() on the result will then fail.
 
 		For an object, invokes the string() method to get a textual
 		representation of the object.  If the method is not present,
@@ -11875,6 +11923,25 @@ trunc({expr})							*trunc()*
 		Return type: |Float|
 
 
+tuple2list({list})					*tuple2list()*
+		Create a List from a shallow copy of the tuple items.
+		Examples: >
+			tuple2list((1, 2, 3))		returns [1, 2, 3]
+<		|list2tuple()| does the opposite.
+
+		This function doesn't recursively convert all the Tuple items
+		in {tuple} to a List.  Note that the items are identical
+		between the list and the tuple, changing an item changes the
+		contents of both the tuple and the list.
+
+		Returns an empty list on error.
+
+		Can also be used as a |method|: >
+			GetTuple()->tuple2list()
+<
+		Return type: list<{type}> (depending on the given |Tuple|)
+
+
 							*type()*
 type({expr})	The result is a Number representing the type of {expr}.
 		Instead of using the number directly, it is better to use the
@@ -11895,6 +11962,7 @@ type({expr})	The result is a Number representing the type of {expr}.
 			Typealias: 14  |v:t_typealias|
 			Enum:	   15  |v:t_enum|
 			EnumValue: 16  |v:t_enumvalue|
+			Tuple:	   17  |v:t_tuple|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")

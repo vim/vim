@@ -124,9 +124,9 @@ func Test_E963()
 endfunc
 
 func Test_for_invalid()
-  call assert_fails("for x in 99", 'E1098:')
-  call assert_fails("for x in function('winnr')", 'E1098:')
-  call assert_fails("for x in {'a': 9}", 'E1098:')
+  call assert_fails("for x in 99", 'E1523:')
+  call assert_fails("for x in function('winnr')", 'E1523:')
+  call assert_fails("for x in {'a': 9}", 'E1523:')
 
   let lines =<< trim END
     for v:maxcol in range(5)

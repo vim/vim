@@ -110,6 +110,11 @@ static garray_T profile_info_ga = {0, 0, sizeof(profinfo_T), 20, NULL};
 // Get pointer to a local variable on the stack.  Negative for arguments.
 #define STACK_TV_VAR(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx + STACK_FRAME_SIZE + idx)
 
+// Return value for functions used to execute instructions
+#define EXEC_FAIL	0
+#define EXEC_OK		1
+#define EXEC_DONE	2
+
     void
 to_string_error(vartype_T vartype)
 {
@@ -203,6 +208,46 @@ exe_newlist(int count, ectx_T *ectx)
     tv->v_lock = 0;
     if (list != NULL)
 	++list->lv_refcount;
+    return OK;
+}
+
+/*
+ * Create a new tuple from "count" items at the bottom of the stack.
+ * When "count" is zero an empty tuple is added to the stack.
+ * When "count" is -1 a NULL tuple is added to the stack.
+ */
+    static int
+exe_newtuple(int count, ectx_T *ectx)
+{
+    tuple_T	*tuple = NULL;
+    int		idx;
+    typval_T	*tv;
+
+    if (count >= 0)
+    {
+	tuple = tuple_alloc_with_items(count);
+	if (tuple == NULL)
+	    return FAIL;
+	for (idx = 0; idx < count; ++idx)
+	    tuple_set_item(tuple, idx, STACK_TV_BOT(idx - count));
+    }
+
+    if (count > 0)
+	ectx->ec_stack.ga_len -= count - 1;
+    else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+    {
+	tuple_unref(tuple);
+	return FAIL;
+    }
+    else
+	++ectx->ec_stack.ga_len;
+    tv = STACK_TV_BOT(-1);
+    tv->v_type = VAR_TUPLE;
+    tv->vval.v_tuple = tuple;
+    tv->v_lock = 0;
+    if (tuple != NULL)
+	++tuple->tv_refcount;
+
     return OK;
 }
 
@@ -923,7 +968,7 @@ set_ref_in_funcstacks(int copyID)
 	int	    i;
 
 	for (i = 0; i < funcstack->fs_ga.ga_len; ++i)
-	    if (set_ref_in_item(stack + i, copyID, NULL, NULL))
+	    if (set_ref_in_item(stack + i, copyID, NULL, NULL, NULL))
 		return TRUE;  // abort
     }
     return FALSE;
@@ -1718,6 +1763,10 @@ allocate_if_null(svar_T *sv)
 	    if (tv->vval.v_list == NULL && sv->sv_type != &t_list_empty)
 		(void)rettv_list_alloc(tv);
 	    break;
+	case VAR_TUPLE:
+	    if (tv->vval.v_tuple == NULL && sv->sv_type != &t_tuple_empty)
+		(void)rettv_tuple_alloc(tv);
+	    break;
 	case VAR_DICT:
 	    if (tv->vval.v_dict == NULL && sv->sv_type != &t_dict_empty)
 		(void)rettv_dict_alloc(tv);
@@ -2464,6 +2513,11 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    clear_tv(&otv[lidx]);
 	    otv[lidx] = *tv;
 	}
+	else if (dest_type == VAR_TUPLE)
+	{
+	    emsg(_(e_tuple_is_immutable));
+	    status = FAIL;
+	}
 	else
 	{
 	    status = FAIL;
@@ -2802,6 +2856,20 @@ execute_for(isn_T *iptr, ectx_T *ectx)
 	    ++ectx->ec_stack.ga_len;
 	}
     }
+    else if (ltv->v_type == VAR_TUPLE)
+    {
+	tuple_T *tuple = ltv->vval.v_tuple;
+
+	// push the next item from the tuple
+	++idxtv->vval.v_number;
+	if (tuple == NULL || idxtv->vval.v_number >= TUPLE_LEN(tuple))
+	    jump = TRUE;
+	else
+	{
+	    copy_tv(TUPLE_ITEM(tuple, idxtv->vval.v_number), STACK_TV_BOT(0));
+	    ++ectx->ec_stack.ga_len;
+	}
+    }
     else if (ltv->v_type == VAR_STRING)
     {
 	char_u	*str = ltv->vval.v_string;
@@ -3066,7 +3134,7 @@ set_ref_in_loopvars(int copyID)
 	int	    i;
 
 	for (i = 0; i < loopvars->lvs_ga.ga_len; ++i)
-	    if (set_ref_in_item(stack + i, copyID, NULL, NULL))
+	    if (set_ref_in_item(stack + i, copyID, NULL, NULL, NULL))
 		return TRUE;  // abort
     }
     return FALSE;
@@ -3302,6 +3370,145 @@ isn_put_do(ectx_T *ectx, isn_T *iptr, typval_T *tv, int fixindent)
     else
 	do_put(regname, expr, dir, 1L, PUT_LINE|PUT_CURSLINE);
     vim_free(expr);
+}
+
+/*
+ * Execute the ISN_UNPACK instruction for a List
+ */
+    static int
+exec_unpack_list(ectx_T *ectx, isn_T *iptr, typval_T *tv)
+{
+    int		count = iptr->isn_arg.unpack.unp_count;
+    int		semicolon = iptr->isn_arg.unpack.unp_semicolon;
+    list_T	*l;
+    listitem_T	*li;
+    int		i;
+
+    l = tv->vval.v_list;
+    if (l == NULL
+	    || l->lv_len < (semicolon ? count - 1 : count))
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_list_value_does_not_have_enough_items));
+	return EXEC_FAIL;
+    }
+    else if (!semicolon && l->lv_len > count)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_list_value_has_more_items_than_targets));
+	return EXEC_FAIL;
+    }
+
+    CHECK_LIST_MATERIALIZE(l);
+    if (GA_GROW_FAILS(&ectx->ec_stack, count - 1))
+	return EXEC_DONE;
+    ectx->ec_stack.ga_len += count - 1;
+
+    // Variable after semicolon gets a list with the remaining
+    // items.
+    if (semicolon)
+    {
+	list_T	*rem_list =
+	    list_alloc_with_items(l->lv_len - count + 1);
+
+	if (rem_list == NULL)
+	    return EXEC_DONE;
+	tv = STACK_TV_BOT(-count);
+	tv->vval.v_list = rem_list;
+	++rem_list->lv_refcount;
+	tv->v_lock = 0;
+	li = l->lv_first;
+	for (i = 0; i < count - 1; ++i)
+	    li = li->li_next;
+	for (i = 0; li != NULL; ++i)
+	{
+	    typval_T tvcopy;
+
+	    copy_tv(&li->li_tv, &tvcopy);
+	    list_set_item(rem_list, i, &tvcopy);
+	    li = li->li_next;
+	}
+	--count;
+    }
+
+    // Produce the values in reverse order, first item last.
+    li = l->lv_first;
+    for (i = 0; i < count; ++i)
+    {
+	tv = STACK_TV_BOT(-i - 1);
+	copy_tv(&li->li_tv, tv);
+	li = li->li_next;
+    }
+
+    list_unref(l);
+
+    return EXEC_OK;
+}
+
+/*
+ * Execute the ISN_UNPACK instruction for a Tuple
+ */
+    static int
+exec_unpack_tuple(ectx_T *ectx, isn_T *iptr, typval_T *tv)
+{
+    int		count = iptr->isn_arg.unpack.unp_count;
+    int		semicolon = iptr->isn_arg.unpack.unp_semicolon;
+    tuple_T	*tuple;
+    int		i;
+
+    tuple = tv->vval.v_tuple;
+    if (tuple == NULL
+	    || TUPLE_LEN(tuple) < (semicolon ? count - 1 : count))
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_more_targets_than_tuple_items));
+	return EXEC_FAIL;
+    }
+    else if (!semicolon && TUPLE_LEN(tuple) > count)
+    {
+	SOURCING_LNUM = iptr->isn_lnum;
+	emsg(_(e_less_targets_than_tuple_items));
+	return EXEC_FAIL;
+    }
+
+    if (GA_GROW_FAILS(&ectx->ec_stack, count - 1))
+	return EXEC_DONE;
+    ectx->ec_stack.ga_len += count - 1;
+
+    // Variable after semicolon gets a list with the remaining
+    // items.
+    if (semicolon)
+    {
+	list_T	*rem_list =
+	    list_alloc_with_items(TUPLE_LEN(tuple) - count + 1);
+
+	if (rem_list == NULL)
+	    return EXEC_DONE;
+	tv = STACK_TV_BOT(-count);
+	tv->v_type = VAR_LIST;
+	tv->vval.v_list = rem_list;
+	++rem_list->lv_refcount;
+	tv->v_lock = 0;
+	for (i = count - 1; i < TUPLE_LEN(tuple); ++i)
+	{
+	    typval_T tvcopy;
+
+	    copy_tv(TUPLE_ITEM(tuple, i), &tvcopy);
+	    list_set_item(rem_list, i - (count - 1), &tvcopy);
+	}
+	--count;
+    }
+
+    // Produce the values in reverse order, first item last.
+    for (i = 0; i < count; ++i)
+    {
+	tv = STACK_TV_BOT(-i - 1);
+	copy_tv(TUPLE_ITEM(tuple, i), tv);
+    }
+
+    tuple_unref(tuple);
+
+    return EXEC_OK;
 }
 
 /*
@@ -4534,6 +4741,12 @@ exec_instructions(ectx_T *ectx)
 		    goto theend;
 		break;
 
+	    // create a tuple from items on the stack
+	    case ISN_NEWTUPLE:
+		if (exe_newtuple(iptr->isn_arg.number, ectx) == FAIL)
+		    goto theend;
+		break;
+
 	    // create a dict from items on the stack
 	    case ISN_NEWDICT:
 		{
@@ -4938,9 +5151,9 @@ exec_instructions(ectx_T *ectx)
 		    size_t argidx = ufunc->uf_def_args.ga_len
 					+ iptr->isn_arg.jumparg.jump_arg_off
 					+ STACK_FRAME_SIZE;
-		    type_T *t = ufunc->uf_arg_types[argidx];
+		    type_T *tuple = ufunc->uf_arg_types[argidx];
 		    CLEAR_POINTER(tv);
-		    tv->v_type = t->tt_type;
+		    tv->v_type = tuple->tt_type;
 		}
 
 		if (iptr->isn_type == ISN_JUMP_IF_ARG_SET ? arg_set : !arg_set)
@@ -5299,6 +5512,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_COMPARELIST:
+	    case ISN_COMPARETUPLE:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
 	    case ISN_COMPARESTRING:
@@ -5316,6 +5530,11 @@ exec_instructions(ectx_T *ectx)
 		    if (iptr->isn_type == ISN_COMPARELIST)
 		    {
 			status = typval_compare_list(tv1, tv2,
+							   exprtype, ic, &res);
+		    }
+		    else if (iptr->isn_type == ISN_COMPARETUPLE)
+		    {
+			status = typval_compare_tuple(tv1, tv2,
 							   exprtype, ic, &res);
 		    }
 		    else if (iptr->isn_type == ISN_COMPAREDICT)
@@ -5370,6 +5589,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_ADDLIST:
+	    case ISN_ADDTUPLE:
 	    case ISN_ADDBLOB:
 		{
 		    typval_T *tv1 = STACK_TV_BOT(-2);
@@ -5385,6 +5605,8 @@ exec_instructions(ectx_T *ectx)
 			else
 			    eval_addlist(tv1, tv2);
 		    }
+		    else if (iptr->isn_type == ISN_ADDTUPLE)
+			eval_addtuple(tv1, tv2);
 		    else
 			eval_addblob(tv1, tv2);
 		    clear_tv(tv2);
@@ -5451,6 +5673,14 @@ exec_instructions(ectx_T *ectx)
 			if (tv1->v_type == VAR_LIST && tv2->v_type == VAR_LIST)
 			{
 			    eval_addlist(tv1, tv2);
+			    clear_tv(tv2);
+			    --ectx->ec_stack.ga_len;
+			    break;
+			}
+			else if (tv1->v_type == VAR_TUPLE
+						&& tv2->v_type == VAR_TUPLE)
+			{
+			    eval_addtuple(tv1, tv2);
 			    clear_tv(tv2);
 			    --ectx->ec_stack.ga_len;
 			    break;
@@ -5574,20 +5804,25 @@ exec_instructions(ectx_T *ectx)
 
 	    case ISN_LISTINDEX:
 	    case ISN_LISTSLICE:
+	    case ISN_TUPLEINDEX:
+	    case ISN_TUPLESLICE:
 	    case ISN_BLOBINDEX:
 	    case ISN_BLOBSLICE:
 		{
 		    int		is_slice = iptr->isn_type == ISN_LISTSLICE
-					    || iptr->isn_type == ISN_BLOBSLICE;
+				    || iptr->isn_type == ISN_TUPLESLICE
+				    || iptr->isn_type == ISN_BLOBSLICE;
 		    int		is_blob = iptr->isn_type == ISN_BLOBINDEX
 					    || iptr->isn_type == ISN_BLOBSLICE;
+		    int		is_tuple = iptr->isn_type == ISN_TUPLEINDEX
+				    || iptr->isn_type == ISN_TUPLESLICE;
 		    varnumber_T	n1, n2;
 		    typval_T	*val_tv;
 
 		    // list index: list is at stack-2, index at stack-1
 		    // list slice: list is at stack-3, indexes at stack-2 and
 		    // stack-1
-		    // Same for blob.
+		    // Same for tuple and blob.
 		    val_tv = is_slice ? STACK_TV_BOT(-3) : STACK_TV_BOT(-2);
 
 		    tv = STACK_TV_BOT(-1);
@@ -5608,6 +5843,12 @@ exec_instructions(ectx_T *ectx)
 		    {
 			if (blob_slice_or_index(val_tv->vval.v_blob, is_slice,
 						    n1, n2, FALSE, tv) == FAIL)
+			    goto on_error;
+		    }
+		    else if (is_tuple)
+		    {
+			if (tuple_slice_or_index(val_tv->vval.v_tuple,
+				is_slice, n1, n2, FALSE, tv, TRUE) == FAIL)
 			    goto on_error;
 		    }
 		    else
@@ -5648,24 +5889,48 @@ exec_instructions(ectx_T *ectx)
 
 	    case ISN_SLICE:
 		{
-		    list_T	*list;
 		    int		count = iptr->isn_arg.number;
 
 		    // type will have been checked to be a list
 		    tv = STACK_TV_BOT(-1);
-		    list = tv->vval.v_list;
-
-		    // no error for short list, expect it to be checked earlier
-		    if (list != NULL && list->lv_len >= count)
+		    if (tv->v_type == VAR_LIST)
 		    {
-			list_T	*newlist = list_slice(list,
-						      count, list->lv_len - 1);
+			list_T *list = tv->vval.v_list;
 
-			if (newlist != NULL)
+			// no error for short list, expect it to be checked
+			// earlier
+			if (list != NULL && list->lv_len >= count)
 			{
-			    list_unref(list);
-			    tv->vval.v_list = newlist;
-			    ++newlist->lv_refcount;
+			    list_T	*newlist = list_slice(list,
+				    count, list->lv_len - 1);
+
+			    if (newlist != NULL)
+			    {
+				list_unref(list);
+				tv->vval.v_list = newlist;
+				++newlist->lv_refcount;
+			    }
+			}
+		    }
+		    else
+		    {
+			tuple_T *tuple = tv->vval.v_tuple;
+
+			// no error for short tuple, expect it to be checked
+			// earlier
+			if (tuple != NULL && TUPLE_LEN(tuple) >= count)
+			{
+			    tuple_T *newtuple;
+
+			    newtuple = tuple_slice(tuple, count,
+							TUPLE_LEN(tuple) - 1);
+			    if (newtuple != NULL)
+			    {
+				tuple_unref(tuple);
+				tv->v_type = VAR_TUPLE;
+				tv->vval.v_tuple = newtuple;
+				++newtuple->tv_refcount;
+			    }
 			}
 		    }
 		}
@@ -5674,17 +5939,24 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_GETITEM:
 		{
 		    listitem_T	*li;
+		    typval_T	*item_tv;
 		    getitem_T	*gi = &iptr->isn_arg.getitem;
 
 		    // Get list item: list is at stack-1, push item.
 		    // List type and length is checked for when compiling.
 		    tv = STACK_TV_BOT(-1 - gi->gi_with_op);
-		    li = list_find(tv->vval.v_list, gi->gi_index);
+		    if (tv->v_type == VAR_LIST)
+		    {
+			li = list_find(tv->vval.v_list, gi->gi_index);
+			item_tv = &li->li_tv;
+		    }
+		    else
+			item_tv = TUPLE_ITEM(tv->vval.v_tuple, gi->gi_index);
 
 		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    ++ectx->ec_stack.ga_len;
-		    copy_tv(&li->li_tv, STACK_TV_BOT(-1));
+		    copy_tv(item_tv, STACK_TV_BOT(-1));
 
 		    // Useful when used in unpack assignment.  Reset at
 		    // ISN_DROP.
@@ -5920,17 +6192,40 @@ exec_instructions(ectx_T *ectx)
 		{
 		    int	    min_len = iptr->isn_arg.checklen.cl_min_len;
 		    list_T  *list = NULL;
+		    tuple_T *tuple = NULL;
+		    int	    len = 0;
 
 		    tv = STACK_TV_BOT(-1);
+
+		    int		len_check_failed = FALSE;
 		    if (tv->v_type == VAR_LIST)
-			    list = tv->vval.v_list;
-		    if (list == NULL || list->lv_len < min_len
+		    {
+			list = tv->vval.v_list;
+			if (list == NULL || list->lv_len < min_len
 			    || (list->lv_len > min_len
 					&& !iptr->isn_arg.checklen.cl_more_OK))
+			    len_check_failed = TRUE;
+			if (list != NULL)
+			    len = list->lv_len;
+		    }
+		    else if (tv->v_type == VAR_TUPLE)
+		    {
+			tuple = tv->vval.v_tuple;
+			if (tuple == NULL || TUPLE_LEN(tuple) < min_len
+			    || (TUPLE_LEN(tuple) > min_len
+					&& !iptr->isn_arg.checklen.cl_more_OK))
+			    len_check_failed = TRUE;
+			if (tuple != NULL)
+			    len = TUPLE_LEN(tuple);
+		    }
+		    else
+			len_check_failed = TRUE;
+
+		    if (len_check_failed)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_expected_nr_items_but_got_nr),
-				     min_len, list == NULL ? 0 : list->lv_len);
+				     min_len, len);
 			goto on_error;
 		    }
 		}
@@ -6026,78 +6321,25 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_UNPACK:
+		// Check there is a valid list to unpack.
+		tv = STACK_TV_BOT(-1);
+		if (tv->v_type != VAR_LIST && tv->v_type != VAR_TUPLE)
 		{
-		    int		count = iptr->isn_arg.unpack.unp_count;
-		    int		semicolon = iptr->isn_arg.unpack.unp_semicolon;
-		    list_T	*l;
-		    listitem_T	*li;
-		    int		i;
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    emsg(_(e_for_argument_must_be_sequence_of_lists_or_tuples));
+		    goto on_error;
+		}
 
-		    // Check there is a valid list to unpack.
-		    tv = STACK_TV_BOT(-1);
-		    if (tv->v_type != VAR_LIST)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_for_argument_must_be_sequence_of_lists));
+		int rc;
+		if (tv->v_type == VAR_LIST)
+		    rc = exec_unpack_list(ectx, iptr, tv);
+		else
+		    rc = exec_unpack_tuple(ectx, iptr, tv);
+		if (rc != EXEC_OK)
+		{
+		    if (rc == EXEC_FAIL)
 			goto on_error;
-		    }
-		    l = tv->vval.v_list;
-		    if (l == NULL
-				|| l->lv_len < (semicolon ? count - 1 : count))
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_list_value_does_not_have_enough_items));
-			goto on_error;
-		    }
-		    else if (!semicolon && l->lv_len > count)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_list_value_has_more_items_than_targets));
-			goto on_error;
-		    }
-
-		    CHECK_LIST_MATERIALIZE(l);
-		    if (GA_GROW_FAILS(&ectx->ec_stack, count - 1))
-			goto theend;
-		    ectx->ec_stack.ga_len += count - 1;
-
-		    // Variable after semicolon gets a list with the remaining
-		    // items.
-		    if (semicolon)
-		    {
-			list_T	*rem_list =
-				  list_alloc_with_items(l->lv_len - count + 1);
-
-			if (rem_list == NULL)
-			    goto theend;
-			tv = STACK_TV_BOT(-count);
-			tv->vval.v_list = rem_list;
-			++rem_list->lv_refcount;
-			tv->v_lock = 0;
-			li = l->lv_first;
-			for (i = 0; i < count - 1; ++i)
-			    li = li->li_next;
-			for (i = 0; li != NULL; ++i)
-			{
-			    typval_T tvcopy;
-
-			    copy_tv(&li->li_tv, &tvcopy);
-			    list_set_item(rem_list, i, &tvcopy);
-			    li = li->li_next;
-			}
-			--count;
-		    }
-
-		    // Produce the values in reverse order, first item last.
-		    li = l->lv_first;
-		    for (i = 0; i < count; ++i)
-		    {
-			tv = STACK_TV_BOT(-i - 1);
-			copy_tv(&li->li_tv, tv);
-			li = li->li_next;
-		    }
-
-		    list_unref(l);
+		    goto theend;
 		}
 		break;
 
@@ -7183,6 +7425,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		smsg("%s%4d NEWLIST size %lld", pfx, current,
 					  (varnumber_T)(iptr->isn_arg.number));
 		break;
+	    case ISN_NEWTUPLE:
+		smsg("%s%4d NEWTUPLE size %lld", pfx, current,
+					  (varnumber_T)(iptr->isn_arg.number));
+		break;
 	    case ISN_NEWDICT:
 		smsg("%s%4d NEWDICT size %lld", pfx, current,
 					  (varnumber_T)(iptr->isn_arg.number));
@@ -7474,6 +7720,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_COMPARESTRING:
 	    case ISN_COMPAREBLOB:
 	    case ISN_COMPARELIST:
+	    case ISN_COMPARETUPLE:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
 	    case ISN_COMPAREOBJECT:
@@ -7512,6 +7759,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 						  type = "COMPARESTRING"; break;
 			   case ISN_COMPAREBLOB: type = "COMPAREBLOB"; break;
 			   case ISN_COMPARELIST: type = "COMPARELIST"; break;
+			   case ISN_COMPARETUPLE: type = "COMPARETUPLE"; break;
 			   case ISN_COMPAREDICT: type = "COMPAREDICT"; break;
 			   case ISN_COMPAREFUNC: type = "COMPAREFUNC"; break;
 			   case ISN_COMPAREOBJECT:
@@ -7525,6 +7773,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		   break;
 
 	    case ISN_ADDLIST: smsg("%s%4d ADDLIST", pfx, current); break;
+	    case ISN_ADDTUPLE: smsg("%s%4d ADDTUPLE", pfx, current); break;
 	    case ISN_ADDBLOB: smsg("%s%4d ADDBLOB", pfx, current); break;
 
 	    // expression operations
@@ -7540,6 +7789,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_BLOBAPPEND: smsg("%s%4d BLOBAPPEND", pfx, current); break;
 	    case ISN_LISTINDEX: smsg("%s%4d LISTINDEX", pfx, current); break;
 	    case ISN_LISTSLICE: smsg("%s%4d LISTSLICE", pfx, current); break;
+	    case ISN_TUPLEINDEX: smsg("%s%4d TUPLEINDEX", pfx, current); break;
+	    case ISN_TUPLESLICE: smsg("%s%4d TUPLESLICE", pfx, current); break;
 	    case ISN_ANYINDEX: smsg("%s%4d ANYINDEX", pfx, current); break;
 	    case ISN_ANYSLICE: smsg("%s%4d ANYSLICE", pfx, current); break;
 	    case ISN_SLICE: smsg("%s%4d SLICE %lld",
@@ -7817,6 +8068,8 @@ tv2bool(typval_T *tv)
 	    return tv->vval.v_string != NULL && *tv->vval.v_string != NUL;
 	case VAR_LIST:
 	    return tv->vval.v_list != NULL && tv->vval.v_list->lv_len > 0;
+	case VAR_TUPLE:
+	    return tuple_len(tv->vval.v_tuple) > 0;
 	case VAR_DICT:
 	    return tv->vval.v_dict != NULL
 				    && tv->vval.v_dict->dv_hashtab.ht_used > 0;

@@ -45,6 +45,7 @@ int eval0_retarg(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg,
 int eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 void eval_addblob(typval_T *tv1, typval_T *tv2);
 int eval_addlist(typval_T *tv1, typval_T *tv2);
+int eval_addtuple(typval_T *tv1, typval_T *tv2);
 int eval_leader(char_u **arg, int vim9);
 int handle_predefined(char_u *s, int len, typval_T *rettv);
 int check_can_index(typval_T *rettv, int evaluate, int verbose);
@@ -73,5 +74,5 @@ int get_echo_attr(void);
 void ex_execute(exarg_T *eap);
 char_u *find_option_end(char_u **arg, int *scope);
 void last_set_msg(sctx_T script_ctx);
-char_u *do_string_sub(char_u *str, size_t str_len, char_u *pat, char_u *sub, typval_T *expr, char_u *flags, size_t *ret_len);
+char_u *do_string_sub(char_u *str, size_t len, char_u *pat, char_u *sub, typval_T *expr, char_u *flags, size_t *ret_len);
 /* vim: set ft=c : */

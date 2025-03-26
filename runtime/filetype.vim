@@ -2515,6 +2515,10 @@ au BufNewFile,BufRead *.class
 " SMCL
 au BufNewFile,BufRead *.hlp,*.ihlp,*.smcl	setf smcl
 
+" SPA JSON
+au BufNewFile,BufRead */pipewire/*.conf		setf spajson
+au BufNewFile,BufRead */wireplumber/*.conf	setf spajson
+
 " Stored Procedures
 au BufNewFile,BufRead *.stp			setf stp
 

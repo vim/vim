@@ -202,7 +202,7 @@ set_tv_type_recurse(type_T *type)
 {
     return type->tt_member != NULL
 		&& (type->tt_member->tt_type == VAR_DICT
-				       || type->tt_member->tt_type == VAR_LIST)
+				|| type->tt_member->tt_type == VAR_LIST)
 		&& type->tt_member->tt_member != NULL
 		&& type->tt_member->tt_member != &t_any
 		&& type->tt_member->tt_member != &t_unknown;
@@ -262,7 +262,37 @@ set_tv_type_list(list_T *l, type_T *type)
 }
 
 /*
- * Set the type of "tv" to "type" if it is a list or dict.
+ * Set the type of Tuple "tuple" to "type"
+ */
+    static void
+set_tv_type_tuple(tuple_T *tuple, type_T *type)
+{
+    if (tuple->tv_type == type)
+	return;
+
+    free_type(tuple->tv_type);
+    tuple->tv_type = alloc_type(type);
+
+    if (type->tt_argcount <= 0)
+	return;
+
+    // recursively set the type of list items
+    type_T	*item_type;
+    for (int i = 0; i < tuple_len(tuple); i++)
+    {
+	if ((type->tt_flags & TTFLAG_VARARGS) && (i >= type->tt_argcount - 1))
+	    // For a variadic tuple, the last type is a List.  So use the
+	    // List member type.
+	    item_type = type->tt_args[type->tt_argcount - 1]->tt_member;
+	else
+	    item_type = type->tt_args[i];
+
+	set_tv_type(TUPLE_ITEM(tuple, i), item_type);
+    }
+}
+
+/*
+ * Set the type of "tv" to "type" if it is a list or tuple or dict.
  */
     void
 set_tv_type(typval_T *tv, type_T *type)
@@ -276,6 +306,31 @@ set_tv_type(typval_T *tv, type_T *type)
 	set_tv_type_dict(tv->vval.v_dict, type);
     else if (tv->v_type == VAR_LIST && tv->vval.v_list != NULL)
 	set_tv_type_list(tv->vval.v_list, type);
+    else if (tv->v_type == VAR_TUPLE && tv->vval.v_tuple != NULL)
+	set_tv_type_tuple(tv->vval.v_tuple, type);
+}
+
+/*
+ * For a tuple type, reserve space for "typecount" types (including the
+ * repeated type).
+ */
+    static int
+tuple_type_add_types(
+    type_T	*tupletype,
+    int		typecount,
+    garray_T	*type_gap)
+{
+    // To make it easy to free the space needed for the types, add the
+    // pointer to type_gap.
+    if (ga_grow(type_gap, 1) == FAIL)
+	return FAIL;
+    tupletype->tt_args = ALLOC_CLEAR_MULT(type_T *, typecount);
+    if (tupletype->tt_args == NULL)
+	return FAIL;
+    ((type_T **)type_gap->ga_data)[type_gap->ga_len] =
+						(void *)tupletype->tt_args;
+    ++type_gap->ga_len;
+    return OK;
 }
 
     type_T *
@@ -304,6 +359,41 @@ get_list_type(type_T *member_type, garray_T *type_gap)
     type->tt_member = member_type;
     type->tt_argcount = 0;
     type->tt_args = NULL;
+    return type;
+}
+
+/*
+ * Create and return a tuple type from the tuple item types in
+ * "tuple_types_ga".
+ */
+    type_T *
+get_tuple_type(
+    garray_T	*tuple_types_gap,
+    garray_T	*type_gap)
+{
+    type_T	*type;
+    type_T	**tuple_types = tuple_types_gap->ga_data;
+    int		typecount = tuple_types_gap->ga_len;
+
+    // recognize commonly used types
+    if (typecount == 0)
+	return &t_tuple_any;
+
+    // Not a common type, create a new entry.
+    type = get_type_ptr(type_gap);
+    if (type == NULL)
+	return &t_any;
+    type->tt_type = VAR_TUPLE;
+    type->tt_member = NULL;
+    if (typecount > 0)
+    {
+	if (tuple_type_add_types(type, typecount, type_gap) == FAIL)
+	    return NULL;
+	mch_memmove(type->tt_args, tuple_types, sizeof(type_T *) * typecount);
+    }
+    type->tt_argcount = typecount;
+    type->tt_flags = 0;
+
     return type;
 }
 
@@ -349,6 +439,23 @@ alloc_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
     type->tt_type = VAR_FUNC;
     type->tt_member = ret_type == NULL ? &t_unknown : ret_type;
     type->tt_argcount = argcount;
+    type->tt_args = NULL;
+    return type;
+}
+
+/*
+ * Allocate a new type for a tuple.
+ */
+    static type_T *
+alloc_tuple_type(int typecount, garray_T *type_gap)
+{
+    type_T *type = get_type_ptr(type_gap);
+
+    if (type == NULL)
+	return &t_any;
+    type->tt_type = VAR_TUPLE;
+    type->tt_member = NULL;
+    type->tt_argcount = typecount;
     type->tt_args = NULL;
     return type;
 }
@@ -504,6 +611,64 @@ list_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 					member_type, &member_type, type_gap);
 
     return get_list_type(member_type, type_gap);
+}
+
+/*
+ * Get a type_T for a Tuple typval in "tv".
+ * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
+ * "any".
+ * When "flags" has TVTT_MORE_SPECIFIC get the more specific member type if it
+ * is "any".
+ */
+    static type_T *
+tuple_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
+{
+    tuple_T	*tuple = tv->vval.v_tuple;
+    int		len = tuple_len(tuple);
+    type_T	*type = NULL;
+
+    // An empty tuple has type tuple<unknown>, unless the type was specified
+    // and is not tuple<any>.  This matters when assigning to a variable
+    // with a specific tuple type.
+    if (tuple == NULL || (len == 0 && (tuple->tv_type == NULL
+				|| tuple->tv_type->tt_argcount == 0)))
+	return &t_tuple_empty;
+
+    if ((flags & TVTT_DO_MEMBER) == 0)
+	return &t_tuple_any;
+
+    // If the type is tuple<any> go through the members, it may end up a
+    // more specific type.
+    if (tuple->tv_type != NULL && (len == 0
+					|| (flags & TVTT_MORE_SPECIFIC) == 0))
+	// make a copy, tv_type may be freed if the tuple is freed
+	return copy_type_deep(tuple->tv_type, type_gap);
+
+    if (tuple->tv_copyID == copyID)
+	// avoid recursion
+	return &t_tuple_any;
+
+    tuple->tv_copyID = copyID;
+
+    garray_T	tuple_types_ga;
+    ga_init2(&tuple_types_ga, sizeof(type_T *), 10);
+    for (int i = 0; i < len; i++)
+    {
+	type = typval2type(TUPLE_ITEM(tuple, i), copyID, type_gap,
+							TVTT_DO_MEMBER);
+	if (ga_grow(&tuple_types_ga, 1) == FAIL)
+	{
+	    ga_clear(&tuple_types_ga);
+	    return NULL;
+	}
+	((type_T **)tuple_types_ga.ga_data)[tuple_types_ga.ga_len] = type;
+	tuple_types_ga.ga_len++;
+    }
+
+    type_T *tuple_type = get_tuple_type(&tuple_types_ga, type_gap);
+    ga_clear(&tuple_types_ga);
+
+    return tuple_type;
 }
 
 /*
@@ -722,6 +887,9 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 
 	case VAR_LIST:
 	    return list_typval2type(tv, copyID, type_gap, flags);
+
+	case VAR_TUPLE:
+	    return tuple_typval2type(tv, copyID, type_gap, flags);
 
 	case VAR_DICT:
 	    return dict_typval2type(tv, copyID, type_gap, flags);
@@ -950,6 +1118,63 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
 }
 
 /*
+ * Check if the expected and actual types match for a tuple
+ */
+    static int
+check_tuple_type_maybe(
+    type_T	*expected,
+    type_T	*actual,
+    where_T	where)
+{
+    if (expected->tt_argcount == -1 || actual->tt_argcount == -1
+		|| expected->tt_args == NULL || actual->tt_args == NULL)
+	return OK;
+
+    // For a non-variadic tuple, the number of items must match
+    if (!(expected->tt_flags & TTFLAG_VARARGS)
+	    && expected->tt_argcount != actual->tt_argcount)
+	return FAIL;
+
+    // compare the type of each tuple item
+    for (int i = 0; i < actual->tt_argcount; ++i)
+    {
+	type_T	*exp_type;
+	type_T	*actual_type;
+
+	if (expected->tt_flags & TTFLAG_VARARGS)
+	{
+	    if (i < expected->tt_argcount - 1)
+		exp_type = expected->tt_args[i];
+	    else
+		// For a variadic tuple, the last type is a List.  So use the
+		// List member type.
+		exp_type = expected->tt_args[expected->tt_argcount - 1]->tt_member;
+	}
+	else
+	    exp_type = expected->tt_args[i];
+
+	if (actual->tt_flags & TTFLAG_VARARGS)
+	{
+	    if (i < actual->tt_argcount - 1)
+		actual_type = actual->tt_args[i];
+	    else
+		// For a variadic tuple, the last type is a List.  So use the
+		// List member type.
+		actual_type = actual->tt_args[actual->tt_argcount - 1]->tt_member;
+	}
+	else
+	    actual_type = actual->tt_args[i];
+
+	// Allow for using "any" type for a tuple item
+	if (actual->tt_args[i] != &t_any && check_type(exp_type, actual_type,
+						FALSE, where) == FAIL)
+	    return FAIL;
+    }
+
+    return OK;
+}
+
+/*
  * Check if the expected and actual types match.
  * Does not allow for assigning "any" to a specific type.
  * When "argidx" > 0 it is included in the error message.
@@ -1018,6 +1243,8 @@ check_type_maybe(
 		ret = check_type_maybe(expected->tt_member, actual->tt_member,
 								 FALSE, where);
 	}
+	else if (expected->tt_type == VAR_TUPLE && actual != &t_any)
+	    ret =  check_tuple_type_maybe(expected, actual, where);
 	else if (expected->tt_type == VAR_FUNC && actual != &t_any)
 	{
 	    // If the return type is unknown it can be anything, including
@@ -1200,11 +1427,33 @@ skip_type(char_u *start, int optional)
     // Skip over "<type>"; this is permissive about white space.
     if (*skipwhite(p) == '<')
     {
-	p = skipwhite(p);
-	p = skip_type(skipwhite(p + 1), FALSE);
-	p = skipwhite(p);
-	if (*p == '>')
-	    ++p;
+	if (STRNCMP("tuple", start, 5) == 0)
+	{
+	    // handle tuple<{type1}, {type2}, ....<type>>
+	    p = skipwhite(p + 1);
+	    while (*p != '>' && *p != NUL)
+	    {
+		char_u *sp = p;
+
+		if (STRNCMP(p, "...", 3) == 0)
+		    p += 3;
+		p = skip_type(p, TRUE);
+		if (p == sp)
+		    return p;  // syntax error
+		if (*p == ',')
+		    p = skipwhite(p + 1);
+	    }
+	    if (*p == '>')
+		p++;
+	}
+	else
+	{
+	    p = skipwhite(p);
+	    p = skip_type(skipwhite(p + 1), FALSE);
+	    p = skipwhite(p);
+	    if (*p == '>')
+		++p;
+	}
     }
     else if ((*p == '(' || (*p == ':' && VIM_ISWHITE(p[1])))
 					     && STRNCMP("func", start, 4) == 0)
@@ -1423,6 +1672,116 @@ parse_type_func(char_u **arg, size_t len, garray_T *type_gap, int give_error)
 }
 
 /*
+ * Parse a "tuple" type at "*arg" and advance over it.
+ * When "give_error" is TRUE give error messages, otherwise be quiet.
+ * Return NULL for failure.
+ */
+    static type_T *
+parse_type_tuple(char_u **arg, garray_T *type_gap, int give_error)
+{
+    char_u	*p;
+    type_T	*type;
+    type_T	*ret_type = NULL;
+    int		typecount = -1;
+    int		flags = 0;
+    garray_T	tuple_types_ga;
+
+    ga_init2(&tuple_types_ga, sizeof(type_T *), 10);
+
+    // tuple<{type}, {type}>
+    // tuple<{type}, ...{type}>
+    if (**arg != '<')
+    {
+	if (give_error)
+	{
+	    if (*skipwhite(*arg) == '<')
+		semsg(_(e_no_white_space_allowed_before_str_str), "<", *arg);
+	    else
+		semsg(_(e_missing_type_after_str), "tuple");
+	}
+
+	// only "tuple" is specified
+	return NULL;
+    }
+
+    p = ++*arg;
+    typecount = 0;
+    while (*p != NUL && *p != '>')
+    {
+	if (STRNCMP(p, "...", 3) == 0)
+	{
+	    flags |= TTFLAG_VARARGS;
+	    p += 3;
+	}
+
+	type = parse_type(&p, type_gap, give_error);
+	if (type == NULL)
+	    goto on_err;
+
+	if ((flags & TTFLAG_VARARGS) != 0 && type->tt_type != VAR_LIST)
+	{
+	    char *tofree;
+	    semsg(_(e_variadic_tuple_must_end_with_list_type_str),
+						type_name(type, &tofree));
+	    vim_free(tofree);
+	    goto on_err;
+	}
+
+	// Add the item type
+	if (ga_grow(&tuple_types_ga, 1) == FAIL)
+	    goto on_err;
+	((type_T **)tuple_types_ga.ga_data)[tuple_types_ga.ga_len] = type;
+	tuple_types_ga.ga_len++;
+	typecount++;
+
+	// Nothing comes after "...{type}".
+	if (flags & TTFLAG_VARARGS)
+	    break;
+
+	if (*p != ',' && *skipwhite(p) == ',')
+	{
+	    if (give_error)
+		semsg(_(e_no_white_space_allowed_before_str_str), ",", p);
+	    goto on_err;
+	}
+	if (*p == ',')
+	{
+	    ++p;
+	    if (!VIM_ISWHITE(*p))
+	    {
+		if (give_error)
+		    semsg(_(e_white_space_required_after_str_str),
+			    ",", p - 1);
+		goto on_err;
+	    }
+	}
+	p = skipwhite(p);
+    }
+
+    p = skipwhite(p);
+    if (*p != '>' || typecount <= 0)
+    {
+	if (give_error)
+	    semsg(_(e_missing_type_after_str), p);
+	goto on_err;
+    }
+    *arg = p + 1;
+
+    ret_type = alloc_tuple_type(typecount, type_gap);
+    ret_type->tt_flags = flags;
+    ret_type->tt_argcount = typecount;
+    if (tuple_type_add_types(ret_type, typecount, type_gap) == FAIL)
+	return NULL;
+    mch_memmove(ret_type->tt_args, tuple_types_ga.ga_data,
+						sizeof(type_T *) * typecount);
+
+on_err:
+    ga_clear(&tuple_types_ga);
+
+    return ret_type;
+}
+
+/*
  * Parse a user defined type at "*arg" and advance over it.
  * It can be a class or an interface or a typealias name, possibly imported.
  * Return NULL if a type is not found.
@@ -1577,6 +1936,13 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		return &t_string;
 	    }
 	    break;
+	case 't':
+	    if (len == 5 && STRNCMP(*arg, "tuple", len) == 0)
+	    {
+		*arg += len;
+		return parse_type_tuple(arg, type_gap, give_error);
+	    }
+	    break;
 	case 'v':
 	    if (len == 4 && STRNCMP(*arg, "void", len) == 0)
 	    {
@@ -1625,6 +1991,18 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_LIST:
 	case VAR_DICT:
 	    return equal_type(type1->tt_member, type2->tt_member, flags);
+	case VAR_TUPLE:
+	    if (type1->tt_argcount != type2->tt_argcount)
+		return FALSE;
+	    if (type1->tt_argcount < 0
+			   || type1->tt_args == NULL || type2->tt_args == NULL)
+		return TRUE;
+	    for (i = 0; i < type1->tt_argcount; ++i)
+		if ((flags & ETYPE_ARG_UNKNOWN) == 0
+			&& !equal_type(type1->tt_args[i], type2->tt_args[i],
+									flags))
+		    return FALSE;
+	    return TRUE;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
 	    if (!equal_type(type1->tt_member, type2->tt_member, flags)
@@ -1725,7 +2103,8 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 
     if (type1->tt_type == type2->tt_type)
     {
-	if (type1->tt_type == VAR_LIST || type2->tt_type == VAR_DICT)
+	if (type1->tt_type == VAR_LIST
+		|| type1->tt_type == VAR_DICT)
 	{
 	    type_T *common;
 
@@ -1736,8 +2115,7 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 		*dest = get_dict_type(common, type_gap);
 	    return;
 	}
-
-	if (type1->tt_type == VAR_FUNC)
+	else if (type1->tt_type == VAR_FUNC)
 	{
 	    common_type_var_func(type1, type2, dest, type_gap);
 	    return;
@@ -1745,6 +2123,26 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
     }
 
     *dest = &t_any;
+}
+
+/*
+ * Return the item type of a List, Dict or a Tuple
+ */
+    type_T *
+get_item_type(type_T *type)
+{
+    if (type->tt_type == VAR_TUPLE)
+    {
+	if (type->tt_argcount != 1)
+	    return &t_any;
+
+	if (type->tt_flags & TTFLAG_VARARGS)
+	    return type->tt_args[0]->tt_member;
+	else
+	    return type->tt_args[0];
+    }
+
+    return type->tt_member;
 }
 
 /*
@@ -1864,6 +2262,40 @@ get_member_type_from_stack(
     return result;
 }
 
+/*
+ * Get the types of items in a tuple on the stack of "cctx".
+ * Returns the number of types.  Returns -1 on failure.
+ */
+    int
+get_tuple_type_from_stack(
+    int		count,
+    garray_T	*tuple_types_gap,
+    cctx_T	*cctx)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type2_T	*typep;
+    type_T	*type = NULL;
+
+    // Use "unknown" for an empty tuple
+    if (count == 0)
+	return 0;
+
+    // Find the common type from following items.
+    typep = ((type2_T *)stack->ga_data) + stack->ga_len;
+    for (int i = 0; i < count; i++)
+    {
+	type = (typep - (count - i))->type_curr;
+	if (check_type_is_value(type) == FAIL)
+	    return -1;
+	if (ga_grow(tuple_types_gap, 1) == FAIL)
+	    return -1;
+	((type_T **)tuple_types_gap->ga_data)[tuple_types_gap->ga_len] = type;
+	tuple_types_gap->ga_len++;
+    }
+
+    return tuple_types_gap->ga_len;
+}
+
     char *
 vartype_name(vartype_T type)
 {
@@ -1881,6 +2313,7 @@ vartype_name(vartype_T type)
 	case VAR_JOB: return "job";
 	case VAR_CHANNEL: return "channel";
 	case VAR_LIST: return "list";
+	case VAR_TUPLE: return "tuple";
 	case VAR_DICT: return "dict";
 	case VAR_INSTR: return "instr";
 	case VAR_CLASS: return "class";
@@ -1916,6 +2349,65 @@ type_name_list_or_dict(char *name, type_T *type, char **tofree)
     vim_snprintf(*tofree, len, "%s<%s>", name, member_name);
     vim_free(member_free);
     return *tofree;
+}
+
+/*
+ * Return the type name of a tuple.
+ * The result may be in allocated memory, in which case "tofree" is set.
+ */
+    static char *
+type_name_tuple(type_T *type, char **tofree)
+{
+    garray_T    ga;
+    int		i;
+    int		varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
+    char	*arg_free = NULL;
+
+    ga_init2(&ga, 1, 100);
+    if (ga_grow(&ga, 20) == FAIL)
+	goto failed;
+    STRCPY(ga.ga_data, "tuple<");
+    ga.ga_len += 6;
+
+    if (type->tt_argcount <= 0)
+	// empty tuple
+	ga_concat(&ga, (char_u *)"any");
+    else
+    {
+	if (type->tt_args == NULL)
+	    ga_concat(&ga, (char_u *)"[unknown]");
+	else
+	{
+	    for (i = 0; i < type->tt_argcount; ++i)
+	    {
+		char	*arg_type;
+		int	len;
+
+		arg_type = type_name(type->tt_args[i], &arg_free);
+		if (i > 0)
+		{
+		    STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
+		    ga.ga_len += 2;
+		}
+		len = (int)STRLEN(arg_type);
+		if (ga_grow(&ga, len + 8) == FAIL)
+		    goto failed;
+		if (varargs && i == type->tt_argcount - 1)
+		    ga_concat(&ga, (char_u *)"...");
+		ga_concat(&ga, (char_u *)arg_type);
+		VIM_CLEAR(arg_free);
+	    }
+	}
+    }
+
+    STRCPY((char *)ga.ga_data + ga.ga_len, ">");
+    *tofree = ga.ga_data;
+    return ga.ga_data;
+
+failed:
+    vim_free(arg_free);
+    ga_clear(&ga);
+    return "[unknown]";
 }
 
 /*
@@ -2034,6 +2526,9 @@ type_name(type_T *type, char **tofree)
 	case VAR_LIST:
 	case VAR_DICT:
 	    return type_name_list_or_dict(name, type, tofree);
+
+	case VAR_TUPLE:
+	    return type_name_tuple(type, tofree);
 
 	case VAR_CLASS:
 	case VAR_OBJECT:

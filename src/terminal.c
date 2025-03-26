@@ -5081,7 +5081,7 @@ set_ref_in_term(int copyID)
 	{
 	    tv.v_type = VAR_JOB;
 	    tv.vval.v_job = term->tl_job;
-	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
 	}
     return abort;
 }

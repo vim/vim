@@ -162,6 +162,7 @@ static struct vimvar
     {VV_NAME("t_enum",		 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_enumvalue",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("stacktrace",	 VAR_LIST), &t_list_dict_any, VV_RO},
+    {VV_NAME("t_tuple",		 VAR_NUMBER), NULL, VV_RO},
 };
 
 // shorthand
@@ -265,8 +266,9 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_CLASS,   VAR_TYPE_CLASS);
     set_vim_var_nr(VV_TYPE_OBJECT,  VAR_TYPE_OBJECT);
     set_vim_var_nr(VV_TYPE_TYPEALIAS,  VAR_TYPE_TYPEALIAS);
-    set_vim_var_nr(VV_TYPE_ENUM,  VAR_TYPE_ENUM);
+    set_vim_var_nr(VV_TYPE_ENUM,    VAR_TYPE_ENUM);
     set_vim_var_nr(VV_TYPE_ENUMVALUE,  VAR_TYPE_ENUMVALUE);
+    set_vim_var_nr(VV_TYPE_TUPLE,   VAR_TYPE_TUPLE);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
@@ -321,13 +323,13 @@ evalvars_clear(void)
     int
 garbage_collect_globvars(int copyID)
 {
-    return set_ref_in_ht(&globvarht, copyID, NULL);
+    return set_ref_in_ht(&globvarht, copyID, NULL, NULL);
 }
 
     int
 garbage_collect_vimvars(int copyID)
 {
-    return set_ref_in_ht(&vimvarht, copyID, NULL);
+    return set_ref_in_ht(&vimvarht, copyID, NULL, NULL);
 }
 
     int
@@ -340,7 +342,7 @@ garbage_collect_scriptvars(int copyID)
 
     for (i = 1; i <= script_items.ga_len; ++i)
     {
-	abort = abort || set_ref_in_ht(&SCRIPT_VARS(i), copyID, NULL);
+	abort = abort || set_ref_in_ht(&SCRIPT_VARS(i), copyID, NULL, NULL);
 
 	si = SCRIPT_ITEM(i);
 	for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
@@ -348,7 +350,7 @@ garbage_collect_scriptvars(int copyID)
 	    svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
 	    if (sv->sv_name != NULL)
-		abort = abort || set_ref_in_item(sv->sv_tv, copyID, NULL, NULL);
+		abort = abort || set_ref_in_item(sv->sv_tv, copyID, NULL, NULL, NULL);
 	}
     }
 
@@ -1234,10 +1236,13 @@ ex_let_vars(
 {
     char_u	*arg = arg_start;
     list_T	*l;
+    tuple_T	*tuple = NULL;
     int		i;
     int		var_idx = 0;
-    listitem_T	*item;
+    listitem_T	*item = NULL;
     typval_T	ltv;
+    int		is_list = tv->v_type == VAR_LIST;
+    int		idx;
 
     if (tv->v_type == VAR_VOID)
     {
@@ -1253,58 +1258,121 @@ ex_let_vars(
     }
 
     // ":let [v1, v2] = list" or ":for [v1, v2] in listlist"
-    if (tv->v_type != VAR_LIST || (l = tv->vval.v_list) == NULL)
+    // or
+    // ":let [v1, v2] = tuple" or ":for [v1, v2] in tupletuple"
+    if (tv->v_type != VAR_LIST && tv->v_type != VAR_TUPLE)
     {
-	emsg(_(e_list_required));
+	emsg(_(e_list_or_tuple_required));
 	return FAIL;
     }
+    if (is_list)
+    {
+	l = tv->vval.v_list;
+	if (l == NULL)
+	{
+	    emsg(_(e_list_required));
+	    return FAIL;
+	}
+	i = list_len(l);
+    }
+    else
+    {
+	tuple = tv->vval.v_tuple;
+	if (tuple == NULL)
+	{
+	    emsg(_(e_tuple_required));
+	    return FAIL;
+	}
+	i = tuple_len(tuple);
+    }
 
-    i = list_len(l);
     if (semicolon == 0 && var_count < i)
     {
-	emsg(_(e_less_targets_than_list_items));
+	emsg(_(is_list ? e_less_targets_than_list_items
+					: e_less_targets_than_tuple_items));
 	return FAIL;
     }
     if (var_count - semicolon > i)
     {
-	emsg(_(e_more_targets_than_list_items));
+	emsg(_(is_list ? e_more_targets_than_list_items
+					: e_more_targets_than_tuple_items));
 	return FAIL;
     }
 
-    CHECK_LIST_MATERIALIZE(l);
-    item = l->lv_first;
+    if (is_list)
+    {
+	CHECK_LIST_MATERIALIZE(l);
+	item = l->lv_first;
+    }
+    else
+	idx = 0;
+
     while (*arg != ']')
     {
 	arg = skipwhite(arg + 1);
 	++var_idx;
-	arg = ex_let_one(arg, &item->li_tv, TRUE,
-			  flags | ASSIGN_UNPACK, (char_u *)",;]", op, var_idx);
-	item = item->li_next;
+	arg = ex_let_one(arg, is_list ? &item->li_tv : TUPLE_ITEM(tuple, idx),
+			 TRUE, flags | ASSIGN_UNPACK, (char_u *)",;]", op,
+			 var_idx);
+	if (is_list)
+	    item = item->li_next;
+	else
+	    idx++;
 	if (arg == NULL)
 	    return FAIL;
 
 	arg = skipwhite(arg);
 	if (*arg == ';')
 	{
-	    // Put the rest of the list (may be empty) in the var after ';'.
-	    // Create a new list for this.
-	    l = list_alloc();
-	    if (l == NULL)
-		return FAIL;
-	    while (item != NULL)
+	    // Put the rest of the list or tuple (may be empty) in the var
+	    // after ';'.  Create a new list or tuple for this.
+	    if (is_list)
 	    {
-		list_append_tv(l, &item->li_tv);
-		item = item->li_next;
+		// Put the rest of the list (may be empty) in the var
+		// after ';'.  Create a new list for this.
+		l = list_alloc();
+		if (l == NULL)
+		    return FAIL;
+
+		// list
+		while (item != NULL)
+		{
+		    list_append_tv(l, &item->li_tv);
+		    item = item->li_next;
+		}
+
+		ltv.v_type = VAR_LIST;
+		ltv.v_lock = 0;
+		ltv.vval.v_list = l;
+		l->lv_refcount = 1;
+	    }
+	    else
+	    {
+		tuple_T	*new_tuple = tuple_alloc();
+		if (new_tuple == NULL)
+		    return FAIL;
+
+		// Put the rest of the tuple (may be empty) in the var
+		// after ';'.  Create a new tuple for this.
+		while (idx < TUPLE_LEN(tuple))
+		{
+		    typval_T    new_tv;
+
+		    copy_tv(TUPLE_ITEM(tuple, idx), &new_tv);
+		    if (tuple_append_tv(new_tuple, &new_tv) == FAIL)
+			return FAIL;
+		    idx++;
+		}
+
+		ltv.v_type = VAR_TUPLE;
+		ltv.v_lock = 0;
+		ltv.vval.v_tuple = new_tuple;
+		new_tuple->tv_refcount = 1;
 	    }
 
-	    ltv.v_type = VAR_LIST;
-	    ltv.v_lock = 0;
-	    ltv.vval.v_list = l;
-	    l->lv_refcount = 1;
 	    ++var_idx;
-
 	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE,
-			    flags | ASSIGN_UNPACK, (char_u *)"]", op, var_idx);
+			flags | ASSIGN_UNPACK, (char_u *)"]", op, var_idx);
 	    clear_tv(&ltv);
 	    if (arg == NULL)
 		return FAIL;
@@ -2418,6 +2486,9 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 		}
 	    }
 	    break;
+	case VAR_TUPLE:
+	    tuple_lock(tv->vval.v_tuple, deep, lock, check_refcount);
+	    break;
 	case VAR_DICT:
 	    if ((d = tv->vval.v_dict) != NULL
 				    && !(check_refcount && d->dv_refcount > 1))
@@ -3189,9 +3260,9 @@ eval_variable(
 		}
 	    }
 
-	    // If a list or dict variable wasn't initialized and has meaningful
-	    // type, do it now.  Not for global variables, they are not
-	    // declared.
+	    // If a list or tuple or dict variable wasn't initialized and has
+	    // meaningful type, do it now.  Not for global variables, they are
+	    // not declared.
 	    if (ht != &globvarht)
 	    {
 		if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL
@@ -3216,6 +3287,19 @@ eval_variable(
 		    {
 			++tv->vval.v_list->lv_refcount;
 			tv->vval.v_list->lv_type = alloc_type(type);
+			if (sv != NULL)
+			    sv->sv_flags |= SVFLAG_ASSIGNED;
+		    }
+		}
+		else if (tv->v_type == VAR_TUPLE && tv->vval.v_tuple == NULL
+					    && ((type != NULL && !was_assigned)
+							  || !in_vim9script()))
+		{
+		    tv->vval.v_tuple = tuple_alloc();
+		    if (tv->vval.v_tuple != NULL)
+		    {
+			++tv->vval.v_tuple->tv_refcount;
+			tv->vval.v_tuple->tv_type = alloc_type(type);
 			if (sv != NULL)
 			    sv->sv_flags |= SVFLAG_ASSIGNED;
 		    }

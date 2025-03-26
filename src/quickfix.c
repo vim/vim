@@ -8269,7 +8269,7 @@ static int mark_quickfix_user_data(qf_info_T *qi, int copyID)
 	    typval_T* user_data = &qfp->qf_user_data;
 	    if (user_data != NULL && user_data->v_type != VAR_NUMBER
 		&& user_data->v_type != VAR_STRING && user_data->v_type != VAR_FLOAT)
-		abort = abort || set_ref_in_item(user_data, copyID, NULL, NULL);
+		abort = abort || set_ref_in_item(user_data, copyID, NULL, NULL, NULL);
 	}
     }
     return abort;
@@ -8292,7 +8292,7 @@ mark_quickfix_ctx(qf_info_T *qi, int copyID)
 	ctx = qi->qf_lists[i].qf_ctx;
 	if (ctx != NULL && ctx->v_type != VAR_NUMBER
 		&& ctx->v_type != VAR_STRING && ctx->v_type != VAR_FLOAT)
-	    abort = abort || set_ref_in_item(ctx, copyID, NULL, NULL);
+	    abort = abort || set_ref_in_item(ctx, copyID, NULL, NULL, NULL);
 
 	cb = &qi->qf_lists[i].qf_qftf_cb;
 	abort = abort || set_ref_in_callback(cb, copyID);

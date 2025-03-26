@@ -30,6 +30,7 @@ void f_test_null_list(typval_T *argvars, typval_T *rettv);
 void f_test_null_function(typval_T *argvars, typval_T *rettv);
 void f_test_null_partial(typval_T *argvars, typval_T *rettv);
 void f_test_null_string(typval_T *argvars, typval_T *rettv);
+void f_test_null_tuple(typval_T *argvars, typval_T *rettv);
 void f_test_unknown(typval_T *argvars, typval_T *rettv);
 void f_test_void(typval_T *argvars, typval_T *rettv);
 void f_test_setmouse(typval_T *argvars, typval_T *rettv);

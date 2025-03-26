@@ -433,4 +433,12 @@ func Test_put_inserted()
   bwipe!
 endfunc
 
+func Test_put_tuple()
+  new
+  let t = ('a', 'b', 'c')
+  put! =t
+  call assert_equal(['a', 'b', 'c', ''], getline(1, '$'))
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

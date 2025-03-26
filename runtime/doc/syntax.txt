@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Mar 21
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5832,6 +5832,9 @@ DiffChange	Diff mode: Changed line. |diff.txt|
 DiffDelete	Diff mode: Deleted line. |diff.txt|
 							*hl-DiffText*
 DiffText	Diff mode: Changed text within a changed line. |diff.txt|
+							*hl-DiffTextAdd*
+DiffTextAdd	Diff mode: Added text within a changed line.  Linked to
+		|hl-DiffText| by default. |diff.txt|
 							*hl-EndOfBuffer*
 EndOfBuffer	Filler lines (~) after the last line in the buffer.
 		By default, this is highlighted like |hl-NonText|.

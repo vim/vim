@@ -658,10 +658,10 @@ func Test_printf_spec_b()
 endfunc
 
 func Test_max_min_errors()
-  call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['E712:', 'E1013:', 'E1227:'])
-  call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['max()', 'E1013:', 'E1227:'])
-  call v9.CheckLegacyAndVim9Failure(['call min(v:true)'], ['E712:', 'E1013:', 'E1227:'])
-  call v9.CheckLegacyAndVim9Failure(['call min(v:true)'], ['min()', 'E1013:', 'E1227:'])
+  call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['E712:', 'E1013:', 'E1530:'])
+  call v9.CheckLegacyAndVim9Failure(['call max(v:true)'], ['max()', 'E1013:', 'E1530:'])
+  call v9.CheckLegacyAndVim9Failure(['call min(v:true)'], ['E712:', 'E1013:', 'E1530:'])
+  call v9.CheckLegacyAndVim9Failure(['call min(v:true)'], ['min()', 'E1013:', 'E1530:'])
 endfunc
 
 func Test_function_with_funcref()

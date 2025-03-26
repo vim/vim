@@ -538,7 +538,7 @@ def Test_assign_unpack()
       var v2: number
       [v1, v2] = ''
   END
-  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected list<any> but got string', 3)
+  v9.CheckDefFailure(lines, 'E1535: List or Tuple required', 3)
 
   lines =<< trim END
     g:values = [false, 0]

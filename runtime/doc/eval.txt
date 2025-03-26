@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Feb 23
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -21,9 +21,10 @@ a remark is given.
     1.1 Variable types
     1.2 Function references		|Funcref|
     1.3 Lists				|Lists|
-    1.4 Dictionaries			|Dictionaries|
-    1.5 Blobs				|Blobs|
-    1.6 More about variables		|more-variables|
+    1.4 Tuples				|Tuples|
+    1.5 Dictionaries			|Dictionaries|
+    1.6 Blobs				|Blobs|
+    1.7 More about variables		|more-variables|
 2.  Expression syntax		|expression-syntax|
 3.  Internal variable		|internal-variables|
 4.  Builtin Functions		|functions|
@@ -46,8 +47,8 @@ Profiling is documented at |profiling|.
 
 1.1 Variable types ~
 					*E712* *E896* *E897* *E899* *E1098*
-					*E1107* *E1135* *E1138*
-There are ten types of variables:
+					*E1107* *E1135* *E1138* *E1523*
+There are eleven types of variables:
 
 							*Number* *Integer*
 Number		A 32 or 64 bit signed number.  |expr-number|
@@ -62,6 +63,10 @@ String		A NUL terminated string of 8-bit unsigned characters (bytes).
 
 List		An ordered sequence of items, see |List| for details.
 		Example: [1, 2, ['a', 'b']]
+
+Tuple		An ordered immutable sequence of items, see |Tuple| for
+		details.
+		Example: (1, 2, ('a', 'b'))
 
 Dictionary	An associative, unordered array: Each entry has a key and a
 		value. |Dictionary|
@@ -165,16 +170,17 @@ A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 
 		*E611* *E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910*
 		*E913* *E974* *E975* *E976* *E1319* *E1320* *E1321* *E1322*
-		*E1323* *E1324*
-|List|, |Dictionary|, |Funcref|, |Job|, |Channel|, |Blob|, |Class| and
-|object| types are not automatically converted.
+		*E1323* *E1324* *E1520* *E1522*
+|List|, |Tuple|, |Dictionary|, |Funcref|, |Job|, |Channel|, |Blob|, |Class|
+and |object| types are not automatically converted.
 
 							*E805* *E806* *E808*
 When mixing Number and Float the Number is converted to Float.  Otherwise
 there is no automatic conversion of Float.  You can use str2float() for String
 to Float, printf() for Float to String and float2nr() for Float to Number.
 
-			*E362* *E891* *E892* *E893* *E894* *E907* *E911* *E914*
+					*E362* *E891* *E892* *E893* *E894*
+					*E907* *E911* *E914* *E1521*
 When expecting a Float a Number can also be used, but nothing else.
 
 						*no-type-checking*
@@ -267,9 +273,9 @@ position in the sequence.
 
 List creation ~
 							*E696* *E697*
-A List is created with a comma-separated list of items in square brackets.
+A List is created with a comma-separated sequence of items in square brackets.
 Examples: >
-	:let mylist = [1, two, 3, "four"]
+	:let mylist = [1, "two", 3, "four"]
 	:let emptylist = []
 
 An item can be any expression.  Using a List for an item creates a
@@ -327,13 +333,13 @@ similar to -1. >
 	:let otherlist = mylist[:]	" make a copy of the List
 
 Notice that the last index is inclusive.  If you prefer using an exclusive
-index use the |slice()| method.
+index use the |slice()| function.
 
-If the first index is beyond the last item of the List or the second item is
+If the first index is beyond the last item of the List or the last index is
 before the first item, the result is an empty list.  There is no error
 message.
 
-If the second index is equal to or greater than the length of the list the
+If the last index is equal to or greater than the length of the list the
 length minus one is used: >
 	:let mylist = [0, 1, 2, 3]
 	:echo mylist[2:8]		" result: [2, 3]
@@ -463,8 +469,8 @@ Changing the order of items in a list: >
 
 For loop ~
 
-The |:for| loop executes commands for each item in a List, String or Blob.
-A variable is set to each item in sequence.  Example with a List: >
+The |:for| loop executes commands for each item in a List, Tuple, String or
+Blob.  A variable is set to each item in sequence.  Example with a List: >
 	:for item in mylist
 	:   call Doit(item)
 	:endfor
@@ -497,6 +503,8 @@ It is also possible to put remaining items in a List variable: >
 	:   endif
 	:endfor
 
+For a Tuple one tuple item at a time is used.
+
 For a Blob one byte at a time is used.
 
 For a String one character, including any composing characters, is used as a
@@ -527,8 +535,206 @@ Don't forget that a combination of features can make things simple.  For
 example, to add up all the numbers in a list: >
 	:exe 'let sum = ' .. join(nrlist, '+')
 
+1.4 Tuples ~
+						*tuple* *Tuple* *Tuples*
+						*E1532* *E1533*
+A Tuple is an ordered sequence of items.  An item can be of any type.  Items
+can be accessed by their index number.  A Tuple is immutable.
 
-1.4 Dictionaries ~
+A Tuple uses less memory compared to a List and provides O(1) lookup time.
+
+Tuple creation ~
+						*E1526* *E1527*
+A Tuple is created with a comma-separated sequence of items in parentheses.
+Examples: >
+	:let mytuple = (1, "two", 3, "four")
+	:let tuple = (5,)
+	:let emptytuple = ()
+
+An item can be any expression.  If there is only one item in the tuple, then
+the item must be followed by a comma.
+
+Using a Tuple for an item creates a Tuple of Tuples: >
+	:let nesttuple = ((11, 12), (21, 22), (31, 32))
+
+
+Tuple index ~
+							*tuple-index* *E1519*
+An item in the Tuple can be accessed by putting the index in square brackets
+after the Tuple.  Indexes are zero-based, thus the first item has index zero.
+>
+	:let item = mytuple[0]		" get the first item: 1
+	:let item = mytuple[2]		" get the third item: 3
+
+When the resulting item is a tuple this can be repeated: >
+	:let item = nesttuple[0][1]	" get the first tuple, second item: 12
+<
+A negative index is counted from the end.  Index -1 refers to the last item in
+the Tuple, -2 to the last but one item, etc. >
+	:let last = mytuple[-1]		" get the last item: "four"
+
+To avoid an error for an invalid index use the |get()| function.  When an item
+is not available it returns zero or the default value you specify: >
+	:echo get(mytuple, idx)
+	:echo get(mytuple, idx, "NONE")
+
+
+Tuple concatenation ~
+							*tuple-concatenation*
+Two tuples can be concatenated with the "+" operator: >
+	:let longtuple = mytuple + (5, 6)
+	:let longtuple = (5, 6) + mytuple
+To prepend or append an item, turn it into a tuple by putting () around it.
+The item must be followed by a comma.
+
+							*E1540*
+Two variadic tuples with same item type can be concatenated but with different
+item types cannot be concatenated.  Examples: >
+    var a: tuple<...list<number>> = (1, 2)
+    var b: tuple<...list<string>> = ('a', 'b')
+    echo a + b		# not allowed
+
+    var a: tuple<number, number> = (1, 2)
+    var b: tuple<...list<string>> = ('a', 'b')
+    echo a + b		# allowed
+
+    var a: tuple<...list<number>> = (1, 2)
+    var b: tuple<number, number> = (3, 4)
+    echo a + b		# not allowed
+
+    var a: tuple<...list<number>> = (1, 2)
+    var b: tuple<number, ...list<number>> = (3, 4)
+    echo a + b		# not allowed
+<
+Note that a tuple is immutable and items cannot be added or removed from a
+tuple.
+
+
+Subtuple ~
+							*subtuple*
+A part of the Tuple can be obtained by specifying the first and last index,
+separated by a colon in square brackets: >
+	:let shorttuple = mytuple[2:-1]	" get Tuple (3, "four")
+
+Omitting the first index is similar to zero.  Omitting the last index is
+similar to -1. >
+	:let endtuple = mytuple[2:]	" from item 2 to the end: (3, "four")
+	:let shorttuple = mytuple[2:2]	" Tuple with one item: (3,)
+	:let othertuple = mytuple[:]	" make a copy of the Tuple
+
+Notice that the last index is inclusive.  If you prefer using an exclusive
+index, use the |slice()| function.
+
+If the first index is beyond the last item of the Tuple or the last index is
+before the first item, the result is an empty tuple.  There is no error
+message.
+
+If the last index is equal to or greater than the length of the tuple, the
+length minus one is used: >
+	:let mytuple = (0, 1, 2, 3)
+	:echo mytuple[2:8]		" result: (2, 3)
+
+NOTE: mytuple[s:e] means using the variable "s:e" as index.  Watch out for
+using a single letter variable before the ":".  Insert a space when needed:
+mytuple[s : e].
+
+
+Tuple identity ~
+							*tuple-identity*
+When variable "aa" is a tuple and you assign it to another variable "bb", both
+variables refer to the same tuple: >
+	:let aa = (1, 2, 3)
+	:let bb = aa
+<
+
+Making a copy of a tuple is done with the |copy()| function.  Using [:] also
+works, as explained above.  This creates a shallow copy of the tuple: For
+example, changing a list item in the tuple will also change the item in the
+copied tuple: >
+	:let aa = ([1, 'a'], 2, 3)
+	:let bb = copy(aa)
+	:let aa[0][1] = 'aaa'
+	:echo aa
+<	([1, aaa], 2, 3) >
+	:echo bb
+<	([1, aaa], 2, 3)
+
+To make a completely independent tuple, use |deepcopy()|.  This also makes a
+copy of the values in the tuple, recursively.  Up to a hundred levels deep.
+
+The operator "is" can be used to check if two variables refer to the same
+Tuple.  "isnot" does the opposite.  In contrast, "==" compares if two tuples
+have the same value. >
+	:let atuple = (1, 2, 3)
+	:let btuple = (1, 2, 3)
+	:echo atuple is btuple
+<	0 >
+	:echo atuple == btuple
+<	1
+
+Note about comparing tuples: Two tuples are considered equal if they have the
+same length and all items compare equal, as with using "==".  There is one
+exception: When comparing a number with a string they are considered
+different.  There is no automatic type conversion, as with using "==" on
+variables.  Example: >
+	echo 4 == "4"
+<	1 >
+	echo (4,) == ("4",)
+<	0
+
+Thus comparing Tuples is more strict than comparing numbers and strings.  You
+can compare simple values this way too by putting them in a tuple: >
+
+	:let a = 5
+	:let b = "5"
+	:echo a == b
+<	1 >
+	:echo (a,) == (b,)
+<	0
+
+
+Tuple unpack ~
+
+To unpack the items in a tuple to individual variables, put the variables in
+square brackets, like list items: >
+	:let [var1, var2] = mytuple
+
+When the number of variables does not match the number of items in the tuple
+this produces an error.  To handle any extra items from the tuple, append ";"
+and a variable name (which will then be of type tuple): >
+	:let [var1, var2; rest] = mytuple
+
+This works like: >
+	:let var1 = mytuple[0]
+	:let var2 = mytuple[1]
+	:let rest = mytuple[2:]
+
+Except that there is no error if there are only two items.  "rest" will be an
+empty tuple then.
+
+
+Tuple functions ~
+						*E1536*
+Functions that are useful with a Tuple: >
+	:let xs = count(tuple, 'x')	" count number of 'x's in tuple
+	:if empty(tuple)		" check if tuple is empty
+	:let i = index(tuple, 'x')	" index of first 'x' in tuple
+	:let l = items(tuple)		" list of items in a tuple
+	:let string = join(tuple, ', ')	" create string from tuple items
+	:let l = len(tuple)		" number of items in tuple
+	:let big = max(tuple)		" maximum value in tuple
+	:let small = min(tuple)		" minimum value in tuple
+	:let r = repeat(tuple, n)	" repeat a tuple n times
+	:let r = reverse(tuple)		" reverse a tuple
+	:let s = slice(tuple, n1, n2)	" slice a tuple
+	:let s = string(tuple)		" String representation of tuple
+	:let l = tuple2list(tuple)	" convert a tuple to list
+	:let t = list2tuple(list)	" convert a list to tuple
+<
+						*E1524*
+A tuple cannot be used with the |map()|, |mapnew()| and |filter()| functions.
+
+1.5 Dictionaries ~
 				*dict* *Dict* *Dictionaries* *Dictionary*
 A Dictionary is an associative array: Each entry has a key and a value.  The
 entry can be located with the key.  The entries are stored without a specific
@@ -537,10 +743,10 @@ ordering.
 
 Dictionary creation ~
 						*E720* *E721* *E722* *E723*
-A Dictionary is created with a comma-separated list of entries in curly
+A Dictionary is created with a comma-separated sequence of entries in curly
 braces.  Each entry has a key and a value, separated by a colon.  Each key can
 only appear once.  Examples: >
-	:let mydict = {1: 'one', 2: 'two', 3: 'three'}
+	:let mydict = {'one': 1, 'two': 2, 'three': 3}
 	:let emptydict = {}
 <							*E713* *E716* *E717*
 A key is always a String.  You can use a Number, it will be converted to a
@@ -570,8 +776,11 @@ An extra comma after the last entry is ignored.
 Accessing entries ~
 
 The normal way to access an entry is by putting the key in square brackets: >
+	:let mydict = {'one': 1, 'two': 2, 'three': 3}
 	:let val = mydict["one"]
 	:let mydict["four"] = 4
+	:let val = mydict.one
+	:let mydict.four = 4
 
 You can add new entries to an existing Dictionary this way, unlike Lists.
 
@@ -709,7 +918,7 @@ Functions that can be used with a Dictionary: >
 	:call map(dict, '">> " .. v:val')  " prepend ">> " to each item
 
 
-1.5 Blobs ~
+1.6 Blobs ~
 						*blob* *Blob* *Blobs* *E978*
 A Blob is a binary object.  It can be used to read an image from a file and
 send it over a channel, for example.
@@ -856,7 +1065,7 @@ Making a copy of a Blob is done with the |copy()| function.  Using [:] also
 works, as explained above.
 
 
-1.6 More about variables ~
+1.7 More about variables ~
 							*more-variables*
 If you need to know the type of a variable or expression, use the |type()|
 function.
@@ -907,16 +1116,18 @@ Expression syntax summary, from least to most significant:
 	etc.			As above, append ? for ignoring case, # for
 				matching case
 
-	expr5 is expr5		same |List|, |Dictionary| or |Blob| instance
-	expr5 isnot expr5	different |List|, |Dictionary| or |Blob|
+	expr5 is expr5		same |List|, |Tuple|, |Dictionary| or |Blob|
 				instance
+	expr5 isnot expr5	different |List|, |Tuple|, |Dictionary| or
+				|Blob| instance
 
 |expr5|	expr6
 	expr6 << expr6		bitwise left shift
 	expr6 >> expr6		bitwise right shift
 
 |expr6|	expr7
-	expr7 +	 expr7 ...	number addition, list or blob concatenation
+	expr7 +	 expr7 ...	number addition, list or tuple or blob
+				concatenation
 	expr7 -	 expr7 ...	number subtraction
 	expr7 .	 expr7 ...	string concatenation
 	expr7 .. expr7 ...	string concatenation
@@ -935,8 +1146,10 @@ Expression syntax summary, from least to most significant:
 	+ expr9			unary plus
 
 |expr10|  expr11
-	expr10[expr1]		byte of a String or item of a |List|
+	expr10[expr1]		byte of a String or item of a |List| or
+				|Tuple|
 	expr10[expr1 : expr1]	substring of a String or sublist of a |List|
+				or a slice of a |Tuple|
 	expr10.name		entry in a |Dictionary|
 	expr10(expr1, ...)	function call with |Funcref| variable
 	expr10->name(expr1, ...)	|method| call
@@ -945,6 +1158,7 @@ Expression syntax summary, from least to most significant:
 	"string"		string constant, backslash is special
 	'string'		string constant, ' is doubled
 	[expr1, ...]		|List|
+	(expr1, ...)		|Tuple|
 	{expr1: expr1, ...}	|Dictionary|
 	#{key: expr1, ...}	legacy |Dictionary|
 	&option			option value
@@ -1101,10 +1315,11 @@ Examples:
 "abc" == "Abc"	  evaluates to 1 if 'ignorecase' is set, 0 otherwise
 NOTE: In |Vim9| script 'ignorecase' is not used.
 
-							*E691* *E692*
+						*E691* *E692* *E1517* *E1518*
 A |List| can only be compared with a |List| and only "equal", "not equal",
 "is" and "isnot" can be used.  This compares the values of the list,
 recursively.  Ignoring case means case is ignored when comparing item values.
+Same applies for a |Tuple|.
 
 							*E735* *E736*
 A |Dictionary| can only be compared with a |Dictionary| and only "equal", "not
@@ -1124,12 +1339,13 @@ Dictionary and arguments, use |get()| to get the function name: >
 	if get(Part1, 'name') == get(Part2, 'name')
 	   " Part1 and Part2 refer to the same function
 <							*E1037*
-Using "is" or "isnot" with a |List|, |Dictionary| or |Blob| checks whether
-the expressions are referring to the same |List|, |Dictionary| or |Blob|
-instance.  A copy of a |List| is different from the original |List|.  When
-using "is" without a |List|, |Dictionary| or |Blob|, it is equivalent to
-using "equal", using "isnot" equivalent to using "not equal".  Except that
-a different type means the values are different: >
+Using "is" or "isnot" with a |List|, |Tuple|, |Dictionary| or |Blob| checks
+whether the expressions are referring to the same |List|, |Tuple|,
+|Dictionary| or |Blob| instance.  A copy of a |List| or |Tuple| is different
+from the original |List| or |Tuple|.  When using "is" without a |List|,
+|Tuple|, |Dictionary| or |Blob|, it is equivalent to using "equal", using
+"isnot" is equivalent to using "not equal".  Except that a different type
+means the values are different: >
 	echo 4 == '4'
 	1
 	echo 4 is '4'
@@ -1147,7 +1363,7 @@ that: >
 because 'x' converted to a Number is zero.  However: >
 	echo [0] == ['x']
 	0
-Inside a List or Dictionary this conversion is not used.
+Inside a List or Tuple or Dictionary this conversion is not used.
 
 In |Vim9| script the types must match.
 
@@ -1191,13 +1407,14 @@ topmost bit (sometimes called the sign bit) is cleared.  If the right operand
 
 expr6 and expr7				*expr6* *expr7* *E1036* *E1051*
 ---------------
-expr7 + expr7   Number addition, |List| or |Blob| concatenation	*expr-+*
+								*expr-+*
+expr7 + expr7   Number addition, |List| or |Tuple| or |Blob| concatenation
 expr7 - expr7   Number subtraction				*expr--*
 expr7 . expr7   String concatenation				*expr-.*
 expr7 .. expr7  String concatenation				*expr-..*
 
 For |Lists| only "+" is possible and then both expr7 must be a list.  The
-result is a new list with the two lists Concatenated.
+result is a new list with the two lists concatenated.  Same for a |Tuple|.
 
 For String concatenation ".." is preferred, since "." is ambiguous, it is also
 used for |Dict| member access and floating point numbers.
@@ -1295,7 +1512,8 @@ in any order.  E.g., these are all possible:
 	expr10->(expr1, ...)[expr1]
 Evaluation is always from left to right.
 
-expr10[expr1]		item of String or |List|	*expr-[]* *E111*
+							*expr-[]* *E111*
+expr10[expr1]		item of String or |List| or |Tuple|
 						*E909* *subscript* *E1062*
 In legacy Vim script:
 If expr10 is a Number or String this results in a String that contains the
@@ -1327,6 +1545,8 @@ error.  Example: >
 Generally, if a |List| index is equal to or higher than the length of the
 |List|, or more negative than the length of the |List|, this results in an
 error.
+
+A |Tuple| index is similar to a |List| index as explained above.
 
 
 expr10[expr1a : expr1b]	substring or |sublist|		*expr-[:]* *substring*
@@ -1369,6 +1589,7 @@ just above. Also see |sublist| below.  Examples: >
 	:let l = mylist[:3]		" first four items
 	:let l = mylist[4:4]		" List with one item
 	:let l = mylist[:]		" shallow copy of a List
+A |Tuple| slice is similar to a |List| slice.
 
 If expr10 is a |Blob| this results in a new |Blob| with the bytes in the
 indexes expr1a and expr1b, inclusive.  Examples: >
@@ -2615,6 +2836,8 @@ v:t_typealias	Value of |typealias| type.  Read-only.  See: |type()|
 v:t_enum	Value of |enum| type.  Read-only.  See: |type()|
 					*v:t_enumvalue* *t_enumvalue-variable*
 v:t_enumvalue	Value of |enumvalue| type.  Read-only.  See: |type()|
+					*v:t_tuple* *t_tuple-variable*
+v:t_tuple	Value of |Tuple| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
@@ -2934,13 +3157,13 @@ declarations and assignments do not use a command.  |vim9-declaration|
 :let &g:{option-name} -= {expr1}
 			Like above, but only set the global value of an option
 			(if there is one).  Works like |:setglobal|.
-								*E1093*
+						*E1093* *E1537* *E1538* *E1535*
 :let [{name1}, {name2}, ...] = {expr1}		*:let-unpack* *E687* *E688*
-			{expr1} must evaluate to a |List|.  The first item in
-			the list is assigned to {name1}, the second item to
-			{name2}, etc.
+			{expr1} must evaluate to a |List| or a |Tuple|.  The
+			first item in the list or tuple is assigned to
+			{name1}, the second item to {name2}, etc.
 			The number of names must match the number of items in
-			the |List|.
+			the |List| or |Tuple|.
 			Each name can be one of the items of the ":let"
 			command as mentioned above.
 			Example: >
@@ -2957,16 +3180,22 @@ declarations and assignments do not use a command.  |vim9-declaration|
 :let [{name1}, {name2}, ...] .= {expr1}
 :let [{name1}, {name2}, ...] += {expr1}
 :let [{name1}, {name2}, ...] -= {expr1}
-			Like above, but append/add/subtract the value for each
-			|List| item.
+:let [{name1}, {name2}, ...] *= {expr1}
+:let [{name1}, {name2}, ...] /= {expr1}
+:let [{name1}, {name2}, ...] %= {expr1}
+			Like above, but append, add, subtract, multiply,
+			divide, or modulo the value for each |List| or |Tuple|
+			item.
 
 :let [{name}, ..., ; {lastname}] = {expr1}				*E452*
-			Like |:let-unpack| above, but the |List| may have more
-			items than there are names.  A list of the remaining
-			items is assigned to {lastname}.  If there are no
-			remaining items {lastname} is set to an empty list.
+			Like |:let-unpack| above, but the |List| or |Tuple|
+			may have more items than there are names.  A list or a
+			tuple of the remaining items is assigned to
+			{lastname}.  If there are no remaining items,
+			{lastname} is set to an empty list or tuple.
 			Example: >
 				:let [a, b; rest] = ["aval", "bval", 3, 4]
+				:let [a, b; rest] = ("aval", "bval", 3, 4)
 <
 :let [{name}, ..., ; {lastname}] .= {expr1}
 :let [{name}, ..., ; {lastname}] += {expr1}
@@ -3161,23 +3390,26 @@ text...
 			get an error message: "E940: Cannot lock or unlock
 			variable {name}".
 
-			[depth] is relevant when locking a |List| or
-			|Dictionary|.  It specifies how deep the locking goes:
+			[depth] is relevant when locking a |List|, a |Tuple|
+			or a |Dictionary|.  It specifies how deep the locking
+			goes:
 				0	Lock the variable {name} but not its
 					value.
-				1	Lock the |List| or |Dictionary| itself,
-					cannot add or remove items, but can
-					still change their values.
+				1	Lock the |List| or |Tuple| or
+					|Dictionary| itself, cannot add or
+					remove items, but can still change
+					their values.
 				2	Also lock the values, cannot change
 					the items.  If an item is a |List| or
-					|Dictionary|, cannot add or remove
-					items, but can still change the
+					|Tuple| or |Dictionary|, cannot add or
+					remove items, but can still change the
 					values.
-				3	Like 2 but for the |List| /
-					|Dictionary| in the |List| /
+				3	Like 2 but for the |List| / |Tuple| /
+					|Dictionary| in the |List| / |Tuple| /
 					|Dictionary|, one level deeper.
-			The default [depth] is 2, thus when {name} is a |List|
-			or |Dictionary| the values cannot be changed.
+			The default [depth] is 2, thus when {name} is a
+			|List|, a |Tuple| or a |Dictionary| the values cannot
+			be changed.
 
 			Example with [depth] 0: >
 				let mylist = [1, 2, 3]
@@ -3282,7 +3514,7 @@ text...
 :endfo[r]						*:endfo* *:endfor*
 			Repeat the commands between `:for` and `:endfor` for
 			each item in {object}.  {object} can be a |List|,
-			a |Blob| or a |String|. *E1177*
+			a |Tuple|, a |Blob| or a |String|. *E1177*
 
 			Variable {var} is set to the value of each item.
 			In |Vim9| script the loop variable must not have been

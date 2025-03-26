@@ -191,19 +191,23 @@ export func CheckLegacyFailure(lines, error)
   endtry
 endfunc
 
+# Translate "lines" to legacy Vim script
+def LegacyTrans(lines: list<string>): list<string>
+  return lines->mapnew((_, v) =>
+		v->substitute('\<VAR\>', 'let', 'g')
+		->substitute('\<LET\>', 'let', 'g')
+		->substitute('\<LSTART\>', '{', 'g')
+		->substitute('\<LMIDDLE\>', '->', 'g')
+		->substitute('\<LEND\>', '}', 'g')
+		->substitute('\<TRUE\>', '1', 'g')
+		->substitute('\<FALSE\>', '0', 'g')
+		->substitute('#"', ' "', 'g'))
+enddef
+
 # Execute "lines" in a legacy function, translated as in
 # CheckLegacyAndVim9Success()
 export def CheckTransLegacySuccess(lines: list<string>)
-  var legacylines = lines->mapnew((_, v) =>
-				v->substitute('\<VAR\>', 'let', 'g')
-				 ->substitute('\<LET\>', 'let', 'g')
-				 ->substitute('\<LSTART\>', '{', 'g')
-				 ->substitute('\<LMIDDLE\>', '->', 'g')
-				 ->substitute('\<LEND\>', '}', 'g')
-				 ->substitute('\<TRUE\>', '1', 'g')
-				 ->substitute('\<FALSE\>', '0', 'g')
-				 ->substitute('#"', ' "', 'g'))
-  CheckLegacySuccess(legacylines)
+  CheckLegacySuccess(LegacyTrans(lines))
 enddef
 
 export def Vim9Trans(lines: list<string>): list<string>
@@ -264,14 +268,85 @@ export def CheckLegacyAndVim9Failure(lines: list<string>, error: any)
   var legacylines = lines->mapnew((_, v) =>
 				v->substitute('\<VAR\>', 'let', 'g')
 				 ->substitute('\<LET\>', 'let', 'g')
+				 ->substitute('\<LSTART\>', '{', 'g')
+				 ->substitute('\<LMIDDLE\>', '->', 'g')
+				 ->substitute('\<LEND\>', '}', 'g')
+				 ->substitute('\<TRUE\>', '1', 'g')
+				 ->substitute('\<FALSE\>', '0', 'g')
 				 ->substitute('#"', ' "', 'g'))
   CheckLegacyFailure(legacylines, legacyError)
 
   var vim9lines = lines->mapnew((_, v) =>
 				v->substitute('\<VAR\>', 'var', 'g')
-				 ->substitute('\<LET ', '', 'g'))
+				 ->substitute('\<LET ', '', 'g')
+				 ->substitute('\<LSTART\>', '(', 'g')
+				 ->substitute('\<LMIDDLE\>', ') =>', 'g')
+				 ->substitute(' *\<LEND\> *', '', 'g')
+				 ->substitute('\<TRUE\>', 'true', 'g')
+				 ->substitute('\<FALSE\>', 'false', 'g'))
   CheckDefExecFailure(vim9lines, defError)
   CheckScriptFailure(['vim9script'] + vim9lines, scriptError)
+enddef
+
+# Check that "lines" inside a legacy function has no error.
+export func CheckSourceLegacySuccess(lines)
+  let cwd = getcwd()
+  new
+  call setline(1, ['func Func()'] + a:lines + ['endfunc', 'call Func()'])
+  let bnr = bufnr()
+  try
+    :source
+  finally
+    delfunc! Func
+    call chdir(cwd)
+    exe $':bw! {bnr}'
+  endtry
+endfunc
+
+# Check that "lines" inside a legacy function results in the expected error
+export func CheckSourceLegacyFailure(lines, error)
+  let cwd = getcwd()
+  new
+  call setline(1, ['func Func()'] + a:lines + ['endfunc', 'call Func()'])
+  let bnr = bufnr()
+  try
+    call assert_fails('source', a:error)
+  finally
+    delfunc! Func
+    call chdir(cwd)
+    exe $':bw! {bnr}'
+  endtry
+endfunc
+
+# Execute "lines" in a legacy function, translated as in
+# CheckSourceLegacyAndVim9Success()
+export def CheckSourceTransLegacySuccess(lines: list<string>)
+  CheckSourceLegacySuccess(LegacyTrans(lines))
+enddef
+
+# Execute "lines" in a :def function, translated as in
+# CheckLegacyAndVim9Success()
+export def CheckSourceTransDefSuccess(lines: list<string>)
+  CheckSourceDefSuccess(Vim9Trans(lines))
+enddef
+
+# Execute "lines" in a Vim9 script, translated as in
+# CheckLegacyAndVim9Success()
+export def CheckSourceTransVim9Success(lines: list<string>)
+  CheckSourceScriptSuccess(['vim9script'] + Vim9Trans(lines))
+enddef
+
+# Execute "lines" in a legacy function, :def function and Vim9 script.
+# Use 'VAR' for a declaration.
+# Use 'LET' for an assignment
+# Use ' #"' for a comment
+# Use LSTART arg LMIDDLE expr LEND for lambda
+# Use 'TRUE' for 1 in legacy, true in Vim9
+# Use 'FALSE' for 0 in legacy, false in Vim9
+export def CheckSourceLegacyAndVim9Success(lines: list<string>)
+  CheckSourceTransLegacySuccess(lines)
+  CheckSourceTransDefSuccess(lines)
+  CheckSourceTransVim9Success(lines)
 enddef
 
 # :source a list of "lines" and check whether it fails with "error"
@@ -317,18 +392,6 @@ export def CheckSourceScriptSuccess(lines: list<string>)
   endtry
 enddef
 
-export def CheckSourceSuccess(lines: list<string>)
-  CheckSourceScriptSuccess(lines)
-enddef
-
-export def CheckSourceFailure(lines: list<string>, error: string, lnum = -3)
-  CheckSourceScriptFailure(lines, error, lnum)
-enddef
-
-export def CheckSourceFailureList(lines: list<string>, errors: list<string>, lnum = -3)
-  CheckSourceScriptFailureList(lines, errors, lnum)
-enddef
-
 # :source a List of "lines" inside a ":def" function and check that no error
 # occurs when called.
 export func CheckSourceDefSuccess(lines)
@@ -345,11 +408,6 @@ export func CheckSourceDefSuccess(lines)
     exe $'bw! {bnr}'
   endtry
 endfunc
-
-export def CheckSourceDefAndScriptSuccess(lines: list<string>)
-  CheckSourceDefSuccess(lines)
-  CheckSourceScriptSuccess(['vim9script'] + lines)
-enddef
 
 # Check that "lines" inside a ":def" function has no error when compiled.
 export func CheckSourceDefCompileSuccess(lines)
@@ -445,5 +503,47 @@ export def CheckSourceDefExecAndScriptFailure(lines: list<string>, error: any, l
   endif
   CheckSourceDefExecFailure(lines, errorDef, lnum)
   CheckSourceScriptFailure(['vim9script'] + lines, errorScript, lnum + 1)
+enddef
+
+export def CheckSourceSuccess(lines: list<string>)
+  CheckSourceScriptSuccess(lines)
+enddef
+
+export def CheckSourceFailure(lines: list<string>, error: string, lnum = -3)
+  CheckSourceScriptFailure(lines, error, lnum)
+enddef
+
+export def CheckSourceFailureList(lines: list<string>, errors: list<string>, lnum = -3)
+  CheckSourceScriptFailureList(lines, errors, lnum)
+enddef
+
+export def CheckSourceDefAndScriptSuccess(lines: list<string>)
+  CheckSourceDefSuccess(lines)
+  CheckSourceScriptSuccess(['vim9script'] + lines)
+enddef
+
+# Execute "lines" in a legacy function, :def function and Vim9 script.
+# Use 'VAR' for a declaration.
+# Use 'LET' for an assignment
+# Use ' #"' for a comment
+export def CheckSourceLegacyAndVim9Failure(lines: list<string>, error: any)
+  var legacyError: string
+  var defError: string
+  var scriptError: string
+
+  if type(error) == type('string')
+    legacyError = error
+    defError = error
+    scriptError = error
+  else
+    legacyError = error[0]
+    defError = error[1]
+    scriptError = error[2]
+  endif
+
+  CheckSourceLegacyFailure(LegacyTrans(lines), legacyError)
+  var vim9lines = Vim9Trans(lines)
+  CheckSourceDefExecFailure(vim9lines, defError)
+  CheckSourceScriptFailure(['vim9script'] + vim9lines, scriptError)
 enddef
 

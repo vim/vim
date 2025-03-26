@@ -2,11 +2,10 @@
 int object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl);
 int is_valid_builtin_obj_methodname(char_u *funcname);
 ufunc_T *class_get_builtin_method(class_T *cl, class_builtin_T builtin_method, int *method_idx);
-void ex_class(exarg_T *eap);
 void enum_set_internal_obj_vars(class_T *en, object_T *enval);
+void ex_class(exarg_T *eap);
 type_T *oc_member_type(class_T *cl, int is_object, char_u *name, char_u *name_end, int *member_idx);
 type_T *oc_member_type_by_idx(class_T *cl, int is_object, int member_idx);
-void ex_enum(exarg_T *eap);
 void typealias_unref(typealias_T *ta);
 void ex_type(exarg_T *eap);
 int get_member_tv(class_T *cl, int is_object, char_u *name, size_t namelen, class_T *current_class, typval_T *rettv);
@@ -38,7 +37,6 @@ void member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t le
 void defcompile_class(class_T *cl);
 void defcompile_classes_in_script(void);
 int is_class_name(char_u *name, typval_T *rettv);
-void protected_method_access_errmsg(char_u *method_name);
 int object_empty(object_T *obj);
 int object_len(object_T *obj);
 int object_equal(object_T *o1, object_T *o2, int ic);

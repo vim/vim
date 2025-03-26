@@ -289,7 +289,6 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_endif		ex_ni
 # define ex_endtry		ex_ni
 # define ex_endwhile		ex_ni
-# define ex_enum		ex_ni
 # define ex_eval		ex_ni
 # define ex_execute		ex_ni
 # define ex_finally		ex_ni
@@ -3799,8 +3798,12 @@ find_ex_command(
 		if (eq != NULL)
 		{
 		    eq = skipwhite(eq);
-		    if (vim_strchr((char_u *)"+-*/%", *eq) != NULL)
+		    if (vim_strchr((char_u *)"+-*/%.", *eq) != NULL)
+		    {
+			if (eq[0] == '.' && eq[1] == '.')
+			    ++eq;
 			++eq;
+		    }
 		}
 		if (p == NULL || p == eap->cmd || *eq != '=')
 		{
