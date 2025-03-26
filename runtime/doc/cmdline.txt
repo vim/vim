@@ -831,8 +831,8 @@ there.  The difference from using ';' is that the cursor isn't moved.
 Examples: >
 	/pat1//pat2/	Find line containing "pat2" after line containing
 			"pat1", without moving the cursor.
-	7;/pat2/	Find line containing "pat2", after line 7, leaving
-			the cursor in line 7.
+	7;/pat2/	From line 7 till match with line containing
+			"pat2", after line 7, leaving the cursor in line 7.
 
 The {number} must be between 0 and the number of lines in the file.  When
 using a 0 (zero) this is interpreted as a 1 by most commands.  Commands that
@@ -840,12 +840,13 @@ use it as a count do use it as a zero (|:tag|, |:pop|, etc).  Some commands
 interpret the zero as "before the first line" (|:read|, search pattern, etc).
 
 Examples: >
-	.+3		three lines below the cursor
-	/that/+1	the line below the next line containing "that"
-	.,$		from current line until end of file
-	0;/that		the first line containing "that", also matches in the
-			first line.
-	1;/that		the first line after line 1 containing "that"
+	.+3		three lines below the cursor.
+	/that/+1	the line below the next line containing "that".
+	.,$		from the current line until end of file.
+	0;/that		from the first line till match with line containing
+			"that", also matches in the first line.
+	1;/that		from the first line till match with line containing
+			"that", after line 1.
 
 Some commands allow for a count after the command.  This count is used as the
 number of lines to be used, starting with the line given in the last line
