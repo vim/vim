@@ -457,7 +457,7 @@ func Test_textobj_cursor_on_leading_space_comment()
 
   let result = readfile(output_file)
 
-  call assert_equal(["int main() {", "", "}"], result)
+  call assert_equal(["int main() {", "}"], result)
 endfunc
 
 func Test_textobj_conseq_comment()

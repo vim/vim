@@ -151,7 +151,7 @@ export def ObjComment(inner: bool)
         endif
     endif
 
-    if (pos_end[2] == (getline(pos_end[1])->len() ?? 1)) && pos_start[2] == 1
+    if (pos_end[2] == (getline(pos_end[1])->len() ?? 1)) && pos_start[2] <= 1
         cursor(pos_end[1], 1)
         normal! V
         cursor(pos_start[1], 1)
