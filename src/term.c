@@ -104,7 +104,7 @@ typedef struct {
     time_t		    tr_start;	// when request was sent, -1 for never
 } termrequest_T;
 
-# define TERMREQUEST_INIT {STATUS_GET, -1}
+#define TERMREQUEST_INIT {STATUS_GET, -1}
 
 // Request Terminal Version status:
 static termrequest_T crv_status = TERMREQUEST_INIT;
@@ -143,9 +143,9 @@ static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
     &xcc_status,
-#  ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     &rfg_status,
-#  endif
+# endif
     &rbg_status,
     &rbm_status,
     &rcs_status,
@@ -173,9 +173,9 @@ int write_t_8u_state = FALSE;
 # ifndef HAVE_OSPEED
 #  ifdef OSPEED_EXTERN
 extern short ospeed;
-#   else
+#  else
 short ospeed;
-#   endif
+#  endif
 # endif
 # ifndef HAVE_UP_BC_PC
 #  ifdef UP_BC_PC_EXTERN
@@ -235,33 +235,33 @@ typedef struct
 static tcap_entry_T builtin_ansi[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
+#endif
     {(int)KS_CL,	"\033[H\033[2J"},
     {(int)KS_ME,	"\033[0m"},
     {(int)KS_MR,	"\033[7m"},
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},		// guessed
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
 
     {(int)KS_NAME,	NULL}  // end marker
 };
@@ -275,17 +275,17 @@ static tcap_entry_T builtin_ansi[] = {
 static tcap_entry_T builtin_vt320[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
+#endif
     {(int)KS_CL,	"\033[H\033[2J"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_CCO,	"8"},			// allow 8 colors
@@ -305,16 +305,16 @@ static tcap_entry_T builtin_vt320[] = {
     {(int)KS_UT,	"y"},
     {(int)KS_XN,	"y"},
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {K_UP,		"\033[A"},
     {K_DOWN,		"\033[B"},
     {K_RIGHT,		"\033[C"},
@@ -375,11 +375,11 @@ static tcap_entry_T builtin_vt320[] = {
 static tcap_entry_T builtin_vt52[] = {
     {(int)KS_CE,	"\033K"},
     {(int)KS_CD,	"\033J"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033Y%p1%' '%+%c%p2%' '%+%c"},
-#  else
+#else
     {(int)KS_CM,	"\033Y%+ %+ "},
-#  endif
+#endif
     {(int)KS_LE,	"\b"},
     {(int)KS_SR,	"\033I"},
     {(int)KS_AL,	"\033L"},
@@ -403,22 +403,22 @@ static tcap_entry_T builtin_vt52[] = {
 static tcap_entry_T builtin_xterm[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CS,	"\033[%i%p1%d;%p2%dr"},
-#  else
+#else
     {(int)KS_CS,	"\033[%i%d;%dr"},
-#  endif
+#endif
     {(int)KS_CL,	"\033[H\033[2J"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_ME,	"\033[m"},
@@ -435,30 +435,30 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_VE,	"\033[?25h"},
     {(int)KS_VS,	"\033[?12h"},
     {(int)KS_CVS,	"\033[?12l"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CSH,	"\033[%p1%d q"},
-#  else
+#else
     {(int)KS_CSH,	"\033[%d q"},
-#  endif
+#endif
     {(int)KS_CRC,	"\033[?12$p"},
     {(int)KS_CRS,	"\033P$q q\033\\"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
+#endif
     {(int)KS_SR,	"\033M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {(int)KS_KS,	"\033[?1h\033="},
     {(int)KS_KE,	"\033[?1l\033>"},
-#  ifdef FEAT_XTERM_SAVE
+#ifdef FEAT_XTERM_SAVE
     {(int)KS_TI,	"\0337\033[?47h"},
     {(int)KS_TE,	"\033[?47l\0338"},
-#  endif
+#endif
     // These are now under control of the 'keyprotocol' option, see
     // "builtin_mok2".
     // {(int)KS_CTI,	"\033[>4;2m"},
@@ -470,15 +470,15 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_FS,	"\007"},
     {(int)KS_CSC,	"\033]12;"},
     {(int)KS_CEC,	"\007"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CWS,	"\033[8;%p1%d;%p2%dt"},
     {(int)KS_CWP,	"\033[3;%p1%d;%p2%dt"},
     {(int)KS_CGP,	"\033[13t"},
-#  else
+#else
     {(int)KS_CWS,	"\033[8;%d;%dt"},
     {(int)KS_CWP,	"\033[3;%d;%dt"},
     {(int)KS_CGP,	"\033[13t"},
-#  endif
+#endif
     {(int)KS_CRV,	"\033[>c"},
     {(int)KS_CXM,	"\033[?1006;1000%?%p1%{1}%=%th%el%;"},
     {(int)KS_RFG,	"\033]10;?\007"},
@@ -491,10 +491,10 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_CRT,	"\033[23;2t"},
     {(int)KS_SSI,	"\033[22;1t"},
     {(int)KS_SRI,	"\033[23;1t"},
-#  if (defined(UNIX) || defined(VMS))
+#if (defined(UNIX) || defined(VMS))
     {(int)KS_FD,	"\033[?1004l"},
     {(int)KS_FE,	"\033[?1004h"},
-#  endif
+#endif
 
     {K_UP,		"\033O*A"},
     {K_DOWN,		"\033O*B"},
@@ -658,23 +658,23 @@ static tcap_entry_T builtin_iris_ansi[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
+#endif
 #if 0	// The scroll region is not working as Vim expects.
-#  ifdef TERMINFO
+# ifdef TERMINFO
     {(int)KS_CS,	"\033[%i%p1%d;%p2%dr"},
-#  else
+# else
     {(int)KS_CS,	"\033[%i%d;%dr"},
-#  endif
+# endif
 #endif
     {(int)KS_CL,	"\033[H\033[2J"},
     {(int)KS_VE,	"\033[9/y\033[12/y"},	// These aren't documented
@@ -691,42 +691,42 @@ static tcap_entry_T builtin_iris_ansi[] = {
     {(int)KS_CZR,	"\033[23m"},		// italic mode off
     {(int)KS_US,	"\033[4m"},		// underline on
     {(int)KS_UE,	"\033[24m"},		// underline off
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAB,	"\033[4%p1%dm"},    // set background color (ANSI)
     {(int)KS_CAF,	"\033[3%p1%dm"},    // set foreground color (ANSI)
     {(int)KS_CSB,	"\033[102;%p1%dm"}, // set screen background color
     {(int)KS_CSF,	"\033[101;%p1%dm"}, // set screen foreground color
-#  else
+#else
     {(int)KS_CAB,	"\033[4%dm"},	    // set background color (ANSI)
     {(int)KS_CAF,	"\033[3%dm"},	    // set foreground color (ANSI)
     {(int)KS_CSB,	"\033[102;%dm"},    // set screen background color
     {(int)KS_CSF,	"\033[101;%dm"},    // set screen foreground color
-#  endif
+#endif
     {(int)KS_MS,	"y"},		// guessed
     {(int)KS_UT,	"y"},		// guessed
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
+#endif
     {(int)KS_SR,	"\033M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {(int)KS_CIS,	"\033P3.y"},
     {(int)KS_CIE,	"\234"},    // ST "String Terminator"
     {(int)KS_TS,	"\033P1.y"},
     {(int)KS_FS,	"\234"},    // ST "String Terminator"
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CWS,	"\033[203;%p1%d;%p2%d/y"},
     {(int)KS_CWP,	"\033[205;%p1%d;%p2%d/y"},
-#  else
+#else
     {(int)KS_CWS,	"\033[203;%d;%d/y"},
     {(int)KS_CWP,	"\033[205;%d;%d/y"},
-#  endif
+#endif
     {K_UP,		"\033[A"},
     {K_DOWN,		"\033[B"},
     {K_LEFT,		"\033[D"},
@@ -789,27 +789,27 @@ static tcap_entry_T builtin_pcansi[] = {
     {(int)KS_US,	"\033[36;41m"},	// underscore mode: cyan text on red
     {(int)KS_UE,	"\033[0m"},	// underscore mode end
     {(int)KS_CCO,	"8"},		// allow 8 colors
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
     {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
-#  else
+#else
     {(int)KS_CAB,	"\033[4%dm"},	// set background color
     {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
-#  endif
+#endif
     {(int)KS_OP,	"\033[0m"},	// reset colors
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},		// guessed
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {K_UP,		"\316H"},
     {K_DOWN,		"\316P"},
     {K_LEFT,		"\316K"},
@@ -858,19 +858,19 @@ static tcap_entry_T builtin_pcansi[] = {
 static tcap_entry_T builtin_win32[] = {
     {(int)KS_CE,	"\033|K"},	// clear to end of line
     {(int)KS_AL,	"\033|L"},	// add new blank line
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033|%p1%dL"},	// add number of new blank lines
-#  else
+#else
     {(int)KS_CAL,	"\033|%dL"},	// add number of new blank lines
-#  endif
+#endif
     {(int)KS_DL,	"\033|M"},	// delete line
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033|%p1%dM"},	// delete number of lines
     {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
-#  else
+#else
     {(int)KS_CDL,	"\033|%dM"},	// delete number of lines
     {(int)KS_CSV,	"\033|%d;%dV"},
-#  endif
+#endif
     {(int)KS_CL,	"\033|J"},	// clear screen
     {(int)KS_CD,	"\033|j"},	// clear to end of display
     {(int)KS_VI,	"\033|v"},	// cursor invisible
@@ -891,31 +891,31 @@ static tcap_entry_T builtin_win32[] = {
     {(int)KS_US,	"\033|67m"},	// underscore: cyan text on red
     {(int)KS_UE,	"\033|0m"},	// underscore end
     {(int)KS_CCO,	"16"},		// allow 16 colors
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAB,	"\033|%p1%db"},	// set background color
     {(int)KS_CAF,	"\033|%p1%df"},	// set foreground color
-#  else
+#else
     {(int)KS_CAB,	"\033|%db"},	// set background color
     {(int)KS_CAF,	"\033|%df"},	// set foreground color
-#  endif
+#endif
 
     {(int)KS_MS,	"y"},		// save to move cur in reverse mode
     {(int)KS_UT,	"y"},
     {(int)KS_XN,	"y"},
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"}, // cursor motion
-#  else
+#else
     {(int)KS_CM,	"\033|%i%d;%dH"}, // cursor motion
-#  endif
+#endif
     {(int)KS_VB,	"\033|B"},	// visual bell
     {(int)KS_TI,	"\033|S"},	// put terminal in termcap mode
     {(int)KS_TE,	"\033|E"},	// out of termcap mode
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"}, // scroll region
-#  else
+#else
     {(int)KS_CS,	"\033|%i%d;%dr"}, // scroll region
-#  endif
+#endif
 
     {K_UP,		"\316H"},
     {K_DOWN,		"\316P"},
@@ -1043,17 +1043,17 @@ static tcap_entry_T builtin_amiga[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
+#endif
     {(int)KS_CL,	"\014"},
     {(int)KS_VI,	"\033[0 p"},
     {(int)KS_VE,	"\033[1 p"},
@@ -1068,31 +1068,31 @@ static tcap_entry_T builtin_amiga[] = {
     {(int)KS_CZR,	"\033[0m"},
 #if defined(__amigaos4__) || defined(__MORPHOS__) || defined(__AROS__)
     {(int)KS_CCO,	"8"},		// allow 8 colors
-#  ifdef TERMINFO
+# ifdef TERMINFO
     {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
     {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
-#  else
+# else
     {(int)KS_CAB,	"\033[4%dm"},	// set background color
     {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
-#  endif
+# endif
     {(int)KS_OP,	"\033[m"},	// reset colors
 #endif
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},		// guessed
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
+#endif
 #if defined(__MORPHOS__)
     {(int)KS_SR,	"\033M"},
 #endif
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {K_UP,		"\233A"},
     {K_DOWN,		"\233B"},
     {K_LEFT,		"\233D"},
@@ -1158,38 +1158,38 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_CE,	"[CE]"},
     {(int)KS_CD,	"[CD]"},
     {(int)KS_AL,	"[AL]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"[CAL%p1%d]"},
-#  else
+#else
     {(int)KS_CAL,	"[CAL%d]"},
-#  endif
+#endif
     {(int)KS_DL,	"[DL]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"[CDL%p1%d]"},
-#  else
+#else
     {(int)KS_CDL,	"[CDL%d]"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CS,	"[%p1%dCS%p2%d]"},
-#  else
+#else
     {(int)KS_CS,	"[%dCS%d]"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CSV,	"[%p1%dCSV%p2%d]"},
-#  else
+#else
     {(int)KS_CSV,	"[%dCSV%d]"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CAB,	"[CAB%p1%d]"},
     {(int)KS_CAF,	"[CAF%p1%d]"},
     {(int)KS_CSB,	"[CSB%p1%d]"},
     {(int)KS_CSF,	"[CSF%p1%d]"},
-#  else
+#else
     {(int)KS_CAB,	"[CAB%d]"},
     {(int)KS_CAF,	"[CAF%d]"},
     {(int)KS_CSB,	"[CSB%d]"},
     {(int)KS_CSF,	"[CSF%d]"},
-#  endif
+#endif
     {(int)KS_CAU,	"[CAU%d]"},
     {(int)KS_OP,	"[OP]"},
     {(int)KS_LE,	"[LE]"},
@@ -1215,17 +1215,17 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_MS,	"[MS]"},
     {(int)KS_UT,	"[UT]"},
     {(int)KS_XN,	"[XN]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"[%p1%dCM%p2%d]"},
-#  else
+#else
     {(int)KS_CM,	"[%dCM%d]"},
-#  endif
+#endif
     {(int)KS_SR,	"[SR]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CRI,	"[CRI%p1%d]"},
-#  else
+#else
     {(int)KS_CRI,	"[CRI%d]"},
-#  endif
+#endif
     {(int)KS_VB,	"[VB]"},
     {(int)KS_KS,	"[KS]"},
     {(int)KS_KE,	"[KE]"},
@@ -1237,13 +1237,13 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_CEC,	"[CEC]"},
     {(int)KS_TS,	"[TS]"},
     {(int)KS_FS,	"[FS]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CWS,	"[%p1%dCWS%p2%d]"},
     {(int)KS_CWP,	"[%p1%dCWP%p2%d]"},
-#  else
+#else
     {(int)KS_CWS,	"[%dCWS%d]"},
     {(int)KS_CWP,	"[%dCWP%d]"},
-#  endif
+#endif
     {(int)KS_CRV,	"[CRV]"},
     {(int)KS_CXM,	"[CXM]"},
     {(int)KS_U7,	"[U7]"},
@@ -1668,11 +1668,11 @@ set_color_count(int nr)
     else
 	*nr_colors = NUL;
 #if 0
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
     // xterm-direct, enable termguicolors, when it wasn't set yet
     if (t_colors == 0x1000000 && !p_tgc_set)
 	set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
-#endif
+# endif
 #endif
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
 }
@@ -1794,9 +1794,9 @@ get_term_entries(int *height, int *width)
 	if (term_strings_not_set(string_names[i].dest))
 	{
 	    TERM_STR(string_names[i].dest) = TGETSTR(string_names[i].name, &tp);
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	    set_term_option_sctx_idx(string_names[i].name, -1);
-#endif
+# endif
 	}
     }
 
@@ -1844,9 +1844,9 @@ get_term_entries(int *height, int *width)
     if (term_strings_not_set(KS_CCO))
     {
 	set_color_count(tgetnum("Co"));
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	set_term_option_sctx_idx("Co", -1);
-#endif
+# endif
     }
 
 # ifndef hpux
@@ -2248,9 +2248,9 @@ set_termname(char_u *term)
 	    reset_option_was_set((char_u *)"ttym");
 	}
 	if (p == NULL
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 		|| gui.in_use
-#  endif
+# endif
 		)
 	    check_mouse_termcode();	// set mouse termcode anyway
     }
@@ -2424,11 +2424,11 @@ invoke_tgetent(char_u *tbuf, char_u *term)
 	    return _(e_cannot_open_termcap_file);
 	if (i == 0)
 # endif
-#ifdef TERMINFO
+# ifdef TERMINFO
 	    return _(e_terminal_entry_not_found_in_terminfo);
-#else
+# else
 	    return _(e_terminal_entry_not_found_in_termcap);
-#endif
+# endif
     }
     return NULL;
 }
@@ -3090,7 +3090,7 @@ static int winpos_x = -1;
 static int winpos_y = -1;
 static int did_request_winpos = 0;
 
-# if defined(FEAT_EVAL) || defined(FEAT_TERMINAL) || defined(PROTO)
+#  if defined(FEAT_EVAL) || defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Try getting the Vim window position from the terminal.
  * Returns OK or FAIL.
@@ -3263,21 +3263,21 @@ term_bg_default(void)
 
 #if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
 
-#define RED(rgb)   (((long_u)(rgb) >> 16) & 0xFF)
-#define GREEN(rgb) (((long_u)(rgb) >>  8) & 0xFF)
-#define BLUE(rgb)  (((long_u)(rgb)      ) & 0xFF)
+# define RED(rgb)   (((long_u)(rgb) >> 16) & 0xFF)
+# define GREEN(rgb) (((long_u)(rgb) >>  8) & 0xFF)
+# define BLUE(rgb)  (((long_u)(rgb)      ) & 0xFF)
 
     static void
 term_rgb_color(char_u *s, guicolor_T rgb)
 {
-#define MAX_COLOR_STR_LEN 100
+# define MAX_COLOR_STR_LEN 100
     char	buf[MAX_COLOR_STR_LEN];
 
     if (*s == NUL)
 	return;
     vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
-#ifdef FEAT_VTP
+# ifdef FEAT_VTP
     if (use_vtp() && (p_tgc || t_colors >= 256))
     {
 	out_flush();
@@ -3285,7 +3285,7 @@ term_rgb_color(char_u *s, guicolor_T rgb)
 	vtp_printf(buf);
     }
     else
-#endif
+# endif
 	OUT_STR(buf);
 }
 
@@ -4399,13 +4399,13 @@ term_cursor_color(char_u *color)
     int
 blink_state_is_inverted(void)
 {
-#ifdef FEAT_TERMRESPONSE
+# ifdef FEAT_TERMRESPONSE
     return rbm_status.tr_progress == STATUS_GOT
 	&& rcs_status.tr_progress == STATUS_GOT
 		&& initial_cursor_blink != initial_cursor_shape_blink;
-#else
+# else
     return FALSE;
-#endif
+# endif
 }
 
 /*
@@ -4862,9 +4862,9 @@ set_mouse_topline(win_T *wp)
 is_mouse_topline(win_T *wp)
 {
     return orig_topline == wp->w_topline
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	&& orig_topfill == wp->w_topfill
-#endif
+# endif
 	;
 }
 #endif
@@ -6855,14 +6855,14 @@ replace_termcodes(
 		result[dlen++] = KS_SPECIAL;
 		result[dlen++] = KE_FILLER;
 	    }
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	    else if (*src == CSI)
 	    {
 		result[dlen++] = K_SPECIAL;
 		result[dlen++] = KS_EXTRA;
 		result[dlen++] = (int)KE_CSI;
 	    }
-# endif
+#endif
 	    else
 		result[dlen++] = *src;
 	    ++src;
@@ -7130,7 +7130,7 @@ req_more_codes_from_term(void)
     static void
 got_code_from_term(char_u *code, int len)
 {
-#define XT_LEN 100
+# define XT_LEN 100
     char_u	name[4];
     char_u	str[XT_LEN];
     int		i;
@@ -7171,18 +7171,18 @@ got_code_from_term(char_u *code, int len)
 	    {
 		// Color count is not a key code.
 		int val = atoi((char *)str);
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 		if (val == t_colors)
 		    ch_log(NULL, "got_code_from_term(Co): no change (%d)", val);
 		else
 		    ch_log(NULL,
 			       "got_code_from_term(Co): changed from %d to %d",
 								t_colors, val);
-#endif
+# endif
 		may_adjust_color_count(val);
 	    }
-#if 0
-#ifdef FEAT_TERMGUICOLORS
+# if 0
+#  ifdef FEAT_TERMGUICOLORS
 	    // when RGB result comes back, it is supported when the result contains an '='
 	    else if (name[0] == 'R' && name[1] == 'G' && name[2] == 'B' && code[9] == '=')
 	    {
@@ -7191,15 +7191,15 @@ got_code_from_term(char_u *code, int len)
 		// there are 8 bits per color channel
 		if (val == 8 && !p_tgc_set)
 		{
-#ifdef FEAT_EVAL
+#   ifdef FEAT_EVAL
 		    ch_log(NULL, "got_code_from_term(RGB): xterm-direct colors detected");
-#endif
+#   endif
 		    // RGB capability set, enable termguicolors
 		    set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
 		}
 	    }
-#endif
-#endif
+#  endif
+# endif
 	    else
 	    {
 		i = find_term_bykeys(str);
@@ -7207,27 +7207,27 @@ got_code_from_term(char_u *code, int len)
 					    && name[1] == termcodes[i].name[1])
 		{
 		    // Existing entry with the same name and code - skip.
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 		    ch_log(NULL, "got_code_from_term(): Entry %c%c did not change",
 							     name[0], name[1]);
-#endif
+# endif
 		}
 		else
 		{
 		    if (i >= 0)
 		    {
 			// Delete an existing entry using the same code.
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 			ch_log(NULL, "got_code_from_term(): Deleting entry %c%c with matching keys %s",
 			      termcodes[i].name[0], termcodes[i].name[1], str);
-#endif
+# endif
 			del_termcode_idx(i);
 		    }
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 		    else
 			ch_log(NULL, "got_code_from_term(): Adding entry %c%c with keys %s",
 							name[0], name[1], str);
-#endif
+# endif
 		    add_termcode(name, str, ATC_FROM_TERM);
 		}
 	    }
@@ -7466,14 +7466,14 @@ static const char_u ansi_table[16][3] = {
   {255, 255, 255}, // white
 };
 
-#if defined(MSWIN)
+# if defined(MSWIN)
 // Mapping between cterm indices < 16 and their counterpart in the ANSI palette.
 static const char_u cterm_ansi_idx[] = {
     0, 4, 2, 6, 1, 5, 3, 7, 8, 12, 10, 14, 9, 13, 11, 15
 };
-#endif
+# endif
 
-#define ANSI_INDEX_NONE 0
+# define ANSI_INDEX_NONE 0
 
     void
 ansi_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
@@ -7501,11 +7501,11 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 
     if (nr < 16)
     {
-#if defined(MSWIN)
+# if defined(MSWIN)
 	idx = cterm_ansi_idx[nr];
-#else
+# else
 	idx = nr;
-#endif
+# endif
 	*r = ansi_table[idx][0];
 	*g = ansi_table[idx][1];
 	*b = ansi_table[idx][2];
