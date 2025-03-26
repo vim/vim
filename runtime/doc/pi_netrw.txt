@@ -1,4 +1,4 @@
-*netrw.txt*
+*netrw.txt*	*pi_netrw.txt*
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
