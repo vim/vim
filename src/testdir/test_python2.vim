@@ -406,6 +406,107 @@ func Test_python_list()
         \ 'Vim(python):TypeError: index must be int or slice, not dict')
 endfunc
 
+" Test for the python Tuple object
+func Test_python_tuple()
+  " Try to convert a null tuple
+  call AssertException(["py l = vim.eval('test_null_tuple()')"],
+        \ 'Vim(python):SystemError: error return without exception set')
+
+  " Try to convert a Tuple with a null Tuple item
+  call AssertException(["py t = vim.eval('(test_null_tuple(),)')"],
+        \ 'Vim(python):SystemError: error return without exception set')
+
+  " Try to convert a List with a null Tuple item
+  call AssertException(["py t = vim.eval('[test_null_tuple()]')"],
+        \ 'Vim(python):SystemError: error return without exception set')
+
+  " Try to convert a Tuple with a null List item
+  call AssertException(["py t = vim.eval('(test_null_list(),)')"],
+        \ 'Vim(python):SystemError: error return without exception set')
+
+  " Try to bind a null Tuple variable (works because an empty tuple is used)
+  let cmds =<< trim END
+    let t = test_null_tuple()
+    py tt = vim.bindeval('t')
+  END
+  call AssertException(cmds, '')
+
+  " Creating a tuple using different iterators
+  py t1 = vim.Tuple(['abc', 20, 1.2, (4, 5)])
+  call assert_equal(('abc', 20, 1.2, (4, 5)), pyeval('t1'))
+  py t2 = vim.Tuple('abc')
+  call assert_equal(('a', 'b', 'c'), pyeval('t2'))
+  py t3 = vim.Tuple({'color': 'red', 'model': 'ford'})
+  call assert_equal(('color', 'model'), pyeval('t3'))
+  py t4 = vim.Tuple()
+  call assert_equal((), pyeval('t4'))
+  py t5 = vim.Tuple(x**2 for x in range(5))
+  call assert_equal((0, 1, 4, 9, 16), pyeval('t5'))
+  py t6 = vim.Tuple(('abc', 20, 1.2, (4, 5)))
+  call assert_equal(('abc', 20, 1.2, (4, 5)), pyeval('t6'))
+
+  " Convert between Vim tuple/list and python tuple/list
+  py t = vim.Tuple(vim.bindeval("('a', ('b',), ['c'], {'s': 'd'})"))
+  call assert_equal(('a', ('b',), ['c'], {'s': 'd'}), pyeval('t'))
+  call assert_equal(['a', ('b',), ['c'], {'s': 'd'}], pyeval('list(t)'))
+  call assert_equal(('a', ('b',), ['c'], {'s': 'd'}), pyeval('tuple(t)'))
+
+  py l = vim.List(vim.bindeval("['e', ('f',), ['g'], {'s': 'h'}]"))
+  call assert_equal(('e', ('f',), ['g'], {'s': 'h'}), pyeval('tuple(l)'))
+
+  " Tuple assignment
+  py tt = vim.bindeval('("a", "b")')
+  call AssertException(['py tt[0] = 10'],
+        \ "Vim(python):TypeError: 'vim.tuple' object does not support item assignment")
+  py tt = vim.bindeval('("a", "b")')
+  call AssertException(['py tt[0:1] = (10, 20)'],
+        \ "Vim(python):TypeError: 'vim.tuple' object does not support item assignment")
+
+  " iterating over tuple from Python
+  py print([x for x in vim.bindeval("('a', 'b')")])
+
+  " modifying a list item within a tuple
+  let t = ('a', ['b', 'c'], 'd')
+  py vim.bindeval('t')[1][1] = 'x'
+  call assert_equal(('a', ['b', 'x'], 'd'), t)
+
+  " length of a tuple
+  let t = ()
+  py p_t = vim.bindeval('t')
+  call assert_equal(0, pyeval('len(p_t)'))
+  let t = ('a', )
+  py p_t = vim.bindeval('t')
+  call assert_equal(1, pyeval('len(p_t)'))
+  let t = ('a', 'b', 'c')
+  py p_t = vim.bindeval('t')
+  call assert_equal(3, pyeval('len(p_t)'))
+
+  " membership test
+  let t = ('a', 'b', 'c')
+  py p_t = vim.bindeval('t')
+  call assert_true(pyeval("b'c' in p_t"))
+  call assert_true(pyeval("b'd' not in p_t"))
+
+  py x = vim.eval('("a", (2), [3], {})')
+  call assert_equal(('a', '2', ['3'], {}), pyeval('x'))
+
+  " Using a keyword argument for a tuple
+  call AssertException(['py x = vim.Tuple(a=1)'],
+        \ 'Vim(python):TypeError: tuple constructor does not accept keyword arguments')
+
+  " Using dict as an index
+  call AssertException(['py x = tt[{}]'],
+        \ 'Vim(python):TypeError: index must be int or slice, not dict')
+  call AssertException(['py x = tt["abc"]'],
+        \ 'Vim(python):TypeError: index must be int or slice, not str')
+
+  call AssertException(['py del tt.locked'],
+        \ 'Vim(python):AttributeError: cannot delete vim.Tuple attributes')
+
+  call AssertException(['py tt.foobar = 1'],
+        \ 'Vim(python):AttributeError: cannot set attribute foobar')
+endfunc
+
 " Test for the python Dict object
 func Test_python_dict()
   let d = {}
@@ -787,10 +888,23 @@ func Test_python_lock_scope_attr()
         \ 'Vim(python):TypeError: cannot modify fixed list')
 endfunc
 
+" Test for locking/unlocking a tuple
+func Test_tuple_lock()
+  let t = (1, 2, 3)
+  py t = vim.bindeval('t')
+  py t.locked = True
+  call assert_equal(1, islocked('t'))
+  py t.locked = False
+  call assert_equal(0, islocked('t'))
+endfunc
+
 " Test for pyeval()
 func Test_python_pyeval()
   let l = pyeval('range(3)')
   call assert_equal([0, 1, 2], l)
+
+  let t = pyeval('("a", "b", "c")')
+  call assert_equal(("a", "b", "c"), t)
 
   let d = pyeval('{"a": "b", "c": 1, "d": ["e"]}')
   call assert_equal([['a', 'b'], ['c', 1], ['d', ['e']]], sort(items(d)))
@@ -812,18 +926,20 @@ func Test_python_pyeval()
   call AssertException(['let v = pyeval("vim")'], 'E859:')
 endfunc
 
-" Test for py3eval with locals
+" Test for pyeval with locals
 func Test_python_pyeval_locals()
   let str = 'a string'
   let num = 0xbadb33f
   let d = {'a': 1, 'b': 2, 'c': str}
   let l = [ str, num, d ]
+  let t = ( str, num, d )
 
   let locals = #{
         \ s: str,
         \ n: num,
         \ d: d,
         \ l: l,
+        \ t: t,
         \ }
 
   " check basics
@@ -831,6 +947,8 @@ func Test_python_pyeval_locals()
   call assert_equal(0xbadb33f, pyeval('n', locals))
   call assert_equal(d, pyeval('d', locals))
   call assert_equal(l, pyeval('l', locals))
+  call assert_equal(t, pyeval('t', locals))
+  call assert_equal('a-b-c', 'b"-".join(t)'->pyeval({'t': ('a', 'b', 'c')}))
 
   py << trim EOF
   def __UpdateDict(d, upd):
@@ -995,6 +1113,92 @@ func Test_python_list_slice()
   py ll = vim.bindeval('l')
   call AssertException(["py x = ll[:]"],
         \ 'Vim(python):SystemError: error return without exception set')
+endfunc
+
+" Slice
+func Test_python_tuple_slice()
+  py tt = vim.bindeval('(0, 1, 2, 3, 4, 5)')
+  py t = tt[:4]
+  call assert_equal((0, 1, 2, 3), pyeval('t'))
+  py t = tt[2:]
+  call assert_equal((2, 3, 4, 5), pyeval('t'))
+  py t = tt[:-4]
+  call assert_equal((0, 1), pyeval('t'))
+  py t = tt[-2:]
+  call assert_equal((4, 5), pyeval('t'))
+  py t = tt[2:4]
+  call assert_equal((2, 3), pyeval('t'))
+  py t = tt[4:2]
+  call assert_equal((), pyeval('t'))
+  py t = tt[-4:-2]
+  call assert_equal((2, 3), pyeval('t'))
+  py t = tt[-2:-4]
+  call assert_equal((), pyeval('t'))
+  py t = tt[:]
+  call assert_equal((0, 1, 2, 3, 4, 5), pyeval('t'))
+  py t = tt[0:6]
+  call assert_equal((0, 1, 2, 3, 4, 5), pyeval('t'))
+  py t = tt[-10:10]
+  call assert_equal((0, 1, 2, 3, 4, 5), pyeval('t'))
+  py t = tt[4:2:-1]
+  call assert_equal((4, 3), pyeval('t'))
+  py t = tt[::2]
+  call assert_equal((0, 2, 4), pyeval('t'))
+  py t = tt[4:2:1]
+  call assert_equal((), pyeval('t'))
+
+  " Error case: Use an invalid index
+  call AssertException(['py x = tt[-10]'], 'Vim(python):IndexError: tuple index out of range')
+
+  " Use a step value of 0
+  call AssertException(['py x = tt[0:3:0]'],
+        \ 'Vim(python):ValueError: slice step cannot be zero')
+
+  " Error case: Invalid slice type
+  call AssertException(["py x = tt['abc']"],
+        \ "Vim(python):TypeError: index must be int or slice, not str")
+
+  " Error case: List with a null tuple item
+  let t = (test_null_tuple(),)
+  py tt = vim.bindeval('t')
+  call AssertException(["py x = tt[:]"], 'Vim(python):SystemError: error return without exception set')
+endfunc
+
+func Test_python_pytuple_to_vimtuple()
+  let t = pyeval("('a', 'b')")
+  call assert_equal(('a', 'b'), t)
+  let t = pyeval("()")
+  call assert_equal((), t)
+  let t = pyeval("('x',)")
+  call assert_equal(('x',), t)
+  let t = pyeval("((1, 2), (), (3, 4))")
+  call assert_equal(((1, 2), (), (3, 4)), t)
+  let t = pyeval("((1, 2), {'a': 10}, [5, 6])")
+  call assert_equal(((1, 2), {'a': 10}, [5, 6]), t)
+
+  " Invalid python tuple
+  py << trim END
+    class FailingIter(object):
+      def __iter__(self):
+        raise NotImplementedError('iter')
+  END
+  call assert_fails('call pyeval("(1, FailingIter, 2)")',
+        \ 'E859: Failed to convert returned python object to a Vim value')
+
+  py del FailingIter
+endfunc
+
+" Test for tuple garbage collection
+func Test_python_tuple_garbage_collect()
+  let t = (1, (2, 3), [4, 5], {'a': 6})
+  py py_t = vim.bindeval('t')
+  let save_testing = v:testing
+  let v:testing = 1
+  call test_garbagecollect_now()
+  let v:testing = save_testing
+
+  let new_t = pyeval('py_t')
+  call assert_equal((1, (2, 3), [4, 5], {'a': 6}), new_t)
 endfunc
 
 " Vars
@@ -1976,6 +2180,7 @@ func Test_python_dir_method()
             ('range',      vim.current.range),
             ('dictionary', vim.bindeval('{}')),
             ('list',       vim.bindeval('[]')),
+            ('tuple',       vim.bindeval('()')),
             ('function',   vim.bindeval('function("tr")')),
             ('output',     sys.stdout),
         ):
@@ -1991,6 +2196,7 @@ func Test_python_dir_method()
     range:__dir__,__members__,append,end,start
     dictionary:__dir__,__members__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
     list:__dir__,__members__,extend,locked
+    tuple:__dir__,__members__,locked
     function:__dir__,__members__,args,auto_rebind,self,softspace
     output:__dir__,__members__,close,closed,flush,isatty,readable,seekable,softspace,writable,write,writelines
   END
@@ -2003,7 +2209,9 @@ func Test_python_new()
   call assert_equal({'a': 1}, pyeval('vim.Dictionary(a=1)'))
   call assert_equal({'a': 1}, pyeval('vim.Dictionary(((''a'', 1),))'))
   call assert_equal([], pyeval('vim.List()'))
+  call assert_equal((), pyeval('vim.Tuple()'))
   call assert_equal(['a', 'b', 'c', '7'], pyeval('vim.List(iter(''abc7''))'))
+  call assert_equal(('a', 'b', 'c', '7'), pyeval('vim.Tuple(iter(''abc7''))'))
   call assert_equal(function('tr'), pyeval('vim.Function(''tr'')'))
   call assert_equal(function('tr', [123, 3, 4]),
         \ pyeval('vim.Function(''tr'', args=[123, 3, 4])'))

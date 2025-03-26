@@ -2050,7 +2050,7 @@ get_lval_subscript(
 	var2.v_type = VAR_UNKNOWN;
     }
 
-    if (lp->ll_tuple != NULL)
+    if (lp->ll_tuple != NULL && (flags & GLV_READ_ONLY) == 0)
     {
 	if (!quiet)
 	    emsg(_(e_tuple_is_immutable));
