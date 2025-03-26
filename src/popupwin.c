@@ -4573,15 +4573,6 @@ popup_hide_info(void)
 }
 
 /*
- * Returns TRUE if a popup extends into the cmdline area.
- */
-    int
-popup_overlaps_cmdline(void)
-{
-    return popup_on_cmdline;
-}
-
-/*
  * Close any info popup.
  */
     void
@@ -4593,6 +4584,15 @@ popup_close_info(void)
 	popup_close_with_retval(wp, -1);
 }
 #endif
+
+/*
+ * Returns TRUE if a popup extends into the cmdline area.
+ */
+    int
+popup_overlaps_cmdline(void)
+{
+    return popup_on_cmdline;
+}
 
 #if defined(HAS_MESSAGE_WINDOW) || defined(PROTO)
 
