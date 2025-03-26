@@ -2163,8 +2163,6 @@ get_lval(
 	    }
 	}
 	lp->ll_name = lp->ll_exp_name;
-	if (lp->ll_name != NULL)
-	    lp->ll_name_end = lp->ll_name + STRLEN(lp->ll_name);
     }
     else
     {
