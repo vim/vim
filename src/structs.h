@@ -3571,14 +3571,17 @@ struct file_buffer
  * and how many lines it occupies in that buffer.  When the lines are missing
  * in the buffer the df_count[] is zero.  This is all counted in
  * buffer lines.
- * There is always at least one unchanged line in between the diffs.
- * Otherwise it would have been included in the diff above or below it.
+ * There is always at least one unchanged line in between the diffs (unless
+ * linematch is used).  Otherwise it would have been included in the diff above
+ * or below it.
  * df_lnum[] + df_count[] is the lnum below the change.  When in one buffer
  * lines have been inserted, in the other buffer df_lnum[] is the line below
  * the insertion and df_count[] is zero.  When appending lines at the end of
  * the buffer, df_lnum[] is one beyond the end!
  * This is using a linked list, because the number of differences is expected
  * to be reasonable small.  The list is sorted on lnum.
+ * Each diffblock also contains a cached list of inline diff of changes within
+ * the block, used for highlighting.
  */
 typedef struct diffblock_S diff_T;
 struct diffblock_S
@@ -3588,6 +3591,37 @@ struct diffblock_S
     linenr_T	df_count[DB_COUNT];	// nr of inserted/changed lines
     int is_linematched;  // has the linematch algorithm ran on this diff hunk to divide it into
 			  // smaller diff hunks?
+
+    int		has_changes;		// has cached list of inline changes
+    garray_T	df_changes;		// list of inline changes (diffline_change_T)
+};
+
+/*
+ * Each entry stores a single inline change within a diff block. Line numbers
+ * are recorded as relative offsets, and columns are byte offsets, not
+ * character counts.
+ * Ranges are [start,end), with the end being exclusive.
+ */
+typedef struct diffline_change_S diffline_change_T;
+struct diffline_change_S
+{
+    colnr_T	dc_start[DB_COUNT];	// byte offset of start of range in the line
+    colnr_T	dc_end[DB_COUNT];	// 1 paste byte offset of end of range in line
+    int		dc_start_lnum_off[DB_COUNT];	// starting line offset
+    int		dc_end_lnum_off[DB_COUNT];	// end line offset
+};
+
+/*
+ * Describes a single line's list of inline changes. Use diff_change_parse() to
+ * parse this.
+ */
+typedef struct diffline_S diffline_T;
+struct diffline_S
+{
+    diffline_change_T *changes;
+    int num_changes;
+    int bufidx;
+    int lineoff;
 };
 #endif
 

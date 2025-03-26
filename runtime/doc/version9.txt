@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 23
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41553,6 +41553,16 @@ Enum support for Vim9 script |:enum|
 
 Support for protected _new() method
 
+Diff mode ~
+---------
+Include the "linematch" algorithm for the 'diffopt' setting.  This aligns
+changes between buffers on similar lines improving the diff highlighting in
+Vim
+
+Improve the diff highlighting for changes within a line.  Configurable using
+the "inline" sub option value for the 'diffopt' setting, with "inline:simple"
+being added to the default "diffopt" value (but this does not change how diff
+mode works).
 							*new-other-9.2*
 Other new features ~
 ------------------
@@ -41570,10 +41580,6 @@ Support highlighting the matched text and the completion kind for insert-mode
 completion and command-line completion in |ins-completion-menu|, see
 |complete-items|
 
-Include the "linematch" algorithm for the 'diffopt' setting.  This aligns
-changes between buffers on similar lines improving the diff highlighting in
-Vim
-
 Support for the |Tuple| data type in Vim script and Vim9 script.
 
 							*changed-9.2*
@@ -41589,7 +41595,6 @@ Default values: ~
   increased to 12pt to accomodate modern high-dpi monitors
 - the default value of the 'keyprotocol' option has been updated and support
   for the ghostty terminal emulator (using kitty protocol) has been added
-
 
 Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
@@ -41702,7 +41707,8 @@ Autocommands: ~
 
 Highlighting: ~
 
-|hl-ComplMatchIns|	matched text of the currently inserted completion.
+|hl-ComplMatchIns|	matched text of the currently inserted completion
+|hl-DiffTextAdd|	added text within a changed line
 |hl-MsgArea|		highlighting of the Command-line and messages area
 |hl-PmenuMatch|		Popup menu: highlighting of matched text
 |hl-PmenuMatchSel|	Popup menu: highlighting of matched text in selected

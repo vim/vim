@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Mar 14
+*options.txt*	For Vim version 9.1.  Last change: 2025 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2910,7 +2910,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'dip'* *'diffopt'*
-'diffopt' 'dip'		string	(default "internal,filler,closeoff")
+'diffopt' 'dip'		string	(default
+				 "internal,filler,closeoff,inline:simple")
 			global
 			{not available when compiled without the |+diff|
 			feature}
@@ -2974,6 +2975,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 		indent-heuristic
 				Use the indent heuristic for the internal
 				diff library.
+
+		inline:{text}	Highlight inline differences within a change.
+				See |view-diffs|.  Supported values are:
+
+				none    Do not perform inline highlighting.
+				simple  Highlight from first different
+					character to the last one in each
+					line. This is the default if nothing
+					is set.
+				char    Use internal diff to perform a
+					character-wise diff and highlight the
+					difference.
+				word    Use internal diff to perform a
+					|word|-wise diff and highlight the
+					difference.
 
 		internal	Use the internal diff library.  This is
 				ignored when 'diffexpr' is set.  *E960*
@@ -4392,10 +4408,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     v:Visual,V:VisualNOS,w:WarningMsg,
 				     W:WildMenu,f:Folded,F:FoldColumn,
 				     A:DiffAdd,C:DiffChange,D:DiffDelete,
-				     T:DiffText,>:SignColumn,-:Conceal,
-				     B:SpellBad,P:SpellCap,R:SpellRare,
-				     L:SpellLocal,+:Pmenu,=:PmenuSel,
-				     k:PmenuMatch,<:PmenuMatchSel,
+				     T:DiffText,E:DiffTextAdd,>:SignColumn,
+				     -:Conceal,B:SpellBad,P:SpellCap,
+				     R:SpellRare, L:SpellLocal,+:Pmenu,
+				     =:PmenuSel, k:PmenuMatch,<:PmenuMatchSel,
 				     [:PmenuKind,]:PmenuKindSel,
 				     {:PmenuExtra,}:PmenuExtraSel,
 				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
@@ -4447,7 +4463,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-DiffAdd|	 A  added line in diff mode
 	|hl-DiffChange|	 C  changed line in diff mode
 	|hl-DiffDelete|	 D  deleted line in diff mode
-	|hl-DiffText|	 T  inserted text in diff mode
+	|hl-DiffText|	 T  changed text in diff mode
+	|hl-DiffTextAdd|   E  inserted text in diff mode
 	|hl-SignColumn|	 >  column used for |signs|
 	|hl-Conceal|	 -  the placeholders used for concealed characters
 			    (see 'conceallevel')
