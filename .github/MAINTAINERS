@@ -562,6 +562,7 @@ runtime/syntax/ninja.vim		@nico
 runtime/syntax/nix.vim			@equill
 runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
+runtime/syntax/omnimark.vim @kennypete
 runtime/syntax/ondir.vim		@jparise
 runtime/syntax/opencl.vim		@Freed-Wu
 runtime/syntax/openvpn.vim		@ObserverOfTime
