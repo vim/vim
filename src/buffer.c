@@ -545,8 +545,6 @@ close_buffer(
     int		wipe_buf = (action == DOBUF_WIPE || action == DOBUF_WIPE_REUSE);
     int		del_buf = (action == DOBUF_DEL || wipe_buf);
 
-    CHECK_CURBUF;
-
     // Force unloading or deleting when 'bufhidden' says so.
     // The caller must take care of NOT deleting/freeing when 'bufhidden' is
     // "hide" (otherwise we could never free or delete a buffer).
