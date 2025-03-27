@@ -357,8 +357,6 @@ https://github.com/vim/vim/pull/5566
 
 PR #11579 to add visualtext(), return Visually selected text.
 
-PR #12032: Support Python 3 stable ABI.
-
 PR #11860: Add more info to 'colorcolumn': display a character and highlight
 for each separate entry.  Disadvantage: option value gets very complicated
 with multiple entries, e.g. every 8 columns.
@@ -705,8 +703,6 @@ Statusline highlighting error, off by one. (#5599)
 find them. (Max Kukartsev, #6218)
 
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
-
-Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
 
 "--cleanFOO" does not result in an error. (#5537)
 
@@ -1490,8 +1486,6 @@ github with a URL like this:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
 Diff for version.c contains more context, can't skip a patch.
 
-Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
-
 Comparing nested structures with "==" uses a different comparator than when
 comparing individual items.
 
@@ -1513,9 +1507,6 @@ before combining them.
 C highlighting: modern C allows: /* comment */ #ifdef
 and also line continuation after #include.
 I can't recommend it though.
-
-Build with Python on Mac does not always use the right library.
-(Kazunobu Kuriyama, 2015 Mar 28)
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
@@ -1792,13 +1783,6 @@ Problem with refresh:always in completion. (Tyler Wade, 2013 Mar 17)
 
 b:undo_ftplugin cannot call a script-local function. (Boris Danilov, 2013 Jan
 7)
-
-Win32: The Python interface only works with one version of Python, selected at
-compile time.  Can this be made to work with version 2.1 and 2.2 dynamically?
-
-Python: Be able to define a Python function that can be called directly from
-Vim script.  Requires converting the arguments and return value, like with
-vim.bindeval().
 
 Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 2012 Aug 4)
@@ -2911,6 +2895,20 @@ Quickfix/Location List:
     More generic solution: support a filter (e.g., by calling a function).
 7   Add a command that goes back to the position from before jumping to the
     first quickfix location.
+
+
+Python Interface:
+-   Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
+-   Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
+-   Build with Python on Mac does not always use the right library.
+    (Kazunobu Kuriyama, 2015 Mar 28)
+-   Win32: The Python interface only works with one version of Python,
+    selected at compile time.  Can this be made to work with version 2.1 and
+    2.2 dynamically?
+-   Be able to define a Python function that can be called directly from Vim
+    script.  Requires converting the arguments and return value, like with
+    vim.bindeval().
+
 
 Vi incompatibility:
 -   Try new POSIX tests, made after my comments. (Geoff Clare, 2005 April 7)
