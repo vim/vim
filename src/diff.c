@@ -3598,7 +3598,6 @@ diff_find_change(
 
 	// Create a mock diffline struct. We always only have one so no need to
 	// allocate memory.
-	idx = diff_buf_idx(wp->w_buffer);;
 	CLEAR_FIELD(simple_diffline_change);
 	diffline->changes = &simple_diffline_change;
 	diffline->num_changes = 1;
