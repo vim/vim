@@ -143,7 +143,7 @@ os_win32.txt:
 
 pi_netrw.txt: ../pack/dist/opt/netrw/doc/netrw.txt
 	cp ../pack/dist/opt/netrw/doc/netrw.txt $@.tmp
-	sed -e '1s/\(.*\)/\0	*pi_netrw.txt*/' $@.tmp > $@ && \
+	sed -e '1s/\(.*\)/\1	*pi_netrw.txt*/' $@.tmp > $@ && \
 	rm -f $@.tmp
 
 vietnamese.txt:
