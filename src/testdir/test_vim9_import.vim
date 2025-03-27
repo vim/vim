@@ -657,6 +657,7 @@ def Test_import_export_expr_map()
 enddef
 
 def Test_import_in_filetype()
+  CheckFeature quickfix
   # check that :import works when the buffer is locked
   mkdir('ftplugin', 'pR')
   var export_lines =<< trim END

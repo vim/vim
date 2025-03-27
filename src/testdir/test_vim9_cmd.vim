@@ -2108,12 +2108,14 @@ enddef
 
 " Test for the 'previewpopup' option
 def Test_previewpopup()
+  CheckFeature quickfix
   set previewpopup=height:10,width:60
   pedit Xppfile
   s:check_previewpopup('Xppfile')
 enddef
 
 def Test_previewpopup_pbuffer()
+  CheckFeature quickfix
   set previewpopup=height:10,width:60
   edit Xppfile
   pbuffer

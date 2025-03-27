@@ -3718,6 +3718,7 @@ def Test_invalid_function_name()
 enddef
 
 def Test_partial_call()
+  CheckFeature quickfix
   var lines =<< trim END
       var Xsetlist: func
       Xsetlist = function('setloclist', [0])
@@ -4574,6 +4575,7 @@ def Test_multiple_funcref()
 enddef
 
 def Test_cexpr_errmsg_line_number()
+  CheckFeature quickfix
   var lines =<< trim END
       vim9script
       def Func()

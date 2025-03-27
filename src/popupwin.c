@@ -40,10 +40,10 @@ static int  message_win_time = 3000;
 // hit-enter prompt.
 static int    start_message_win_timer = FALSE;
 
-static int popup_on_cmdline = FALSE;
-
 static void may_start_message_win_timer(win_T *wp);
 #endif
+
+static int popup_on_cmdline = FALSE;
 
 static void popup_adjust_position(win_T *wp);
 
@@ -4587,15 +4587,6 @@ popup_hide_info(void)
 }
 
 /*
- * Returns TRUE if a popup extends into the cmdline area.
- */
-    int
-popup_overlaps_cmdline(void)
-{
-    return popup_on_cmdline;
-}
-
-/*
  * Close any info popup.
  */
     void
@@ -4607,6 +4598,15 @@ popup_close_info(void)
 	popup_close_with_retval(wp, -1);
 }
 #endif
+
+/*
+ * Returns TRUE if a popup extends into the cmdline area.
+ */
+    int
+popup_overlaps_cmdline(void)
+{
+    return popup_on_cmdline;
+}
 
 #if defined(HAS_MESSAGE_WINDOW) || defined(PROTO)
 
