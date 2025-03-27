@@ -190,8 +190,6 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyTuple_New py3_PyTuple_New
 # define PyTuple_GetItem py3_PyTuple_GetItem
 # define PyTuple_SetItem py3_PyTuple_SetItem
-# undef PyTuple_SET_ITEM
-# define PyTuple_SET_ITEM py3_PyTuple_SET_ITEM
 # define PyTuple_Size py3_PyTuple_Size
 # define PySequence_Check py3_PySequence_Check
 # define PySequence_Size py3_PySequence_Size
@@ -377,7 +375,6 @@ static int (*py3_PyList_Insert)(PyObject *, int, PyObject *);
 static Py_ssize_t (*py3_PyList_Size)(PyObject *);
 static PyObject* (*py3_PyTuple_New)(Py_ssize_t size);
 static int (*py3_PyTuple_SetItem)(PyObject *, Py_ssize_t, PyObject *);
-static int (*py3_PyTuple_SET_ITEM)(PyObject *, Py_ssize_t, PyObject *);
 static Py_ssize_t (*py3_PyTuple_Size)(PyObject *);
 static int (*py3_PySequence_Check)(PyObject *);
 static Py_ssize_t (*py3_PySequence_Size)(PyObject *);
@@ -595,7 +592,6 @@ static struct
     {"PyTuple_New", (PYTHON_PROC*)&py3_PyTuple_New},
     {"PyTuple_GetItem", (PYTHON_PROC*)&py3_PyTuple_GetItem},
     {"PyTuple_SetItem", (PYTHON_PROC*)&py3_PyTuple_SetItem},
-    {"PyTuple_SET_ITEM", (PYTHON_PROC*)&py3_PyTuple_SET_ITEM},
     {"PyTuple_Size", (PYTHON_PROC*)&py3_PyTuple_Size},
     {"PySequence_Check", (PYTHON_PROC*)&py3_PySequence_Check},
     {"PySequence_Size", (PYTHON_PROC*)&py3_PySequence_Size},
