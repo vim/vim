@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 26
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41627,6 +41627,7 @@ Options: ~
 - 'rulerformat' now supports the |stl-%!| item
 - use 'smoothscroll' logic for CTRL-F / CTRL-B for pagewise scrolling
   and CTRL-D / CTRL-U for half-pagewise scrolling
+- 'pummaxwidth' maximum width for the completion popup menu
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|

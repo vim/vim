@@ -843,6 +843,7 @@ $quote	eval.txt	/*$quote*
 'pm'	options.txt	/*'pm'*
 'pmbcs'	options.txt	/*'pmbcs'*
 'pmbfn'	options.txt	/*'pmbfn'*
+'pmw'	options.txt	/*'pmw'*
 'popt'	options.txt	/*'popt'*
 'pp'	options.txt	/*'pp'*
 'preserveindent'	options.txt	/*'preserveindent'*
@@ -860,6 +861,7 @@ $quote	eval.txt	/*$quote*
 'prompt'	options.txt	/*'prompt'*
 'pt'	options.txt	/*'pt'*
 'pumheight'	options.txt	/*'pumheight'*
+'pummaxwidth'	options.txt	/*'pummaxwidth'*
 'pumwidth'	options.txt	/*'pumwidth'*
 'pvh'	options.txt	/*'pvh'*
 'pvp'	options.txt	/*'pvp'*
