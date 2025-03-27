@@ -311,6 +311,13 @@ func Test_set_completion()
   " Expand key codes.
   call feedkeys(":set <H\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set <Help> <Home>', @:)
+  " <BackSpace> (alt name) and <BS> should both show up in auto-complete
+  call feedkeys(":set <B\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set <BackSpace> <Bar> <BS> <Bslash>', @:)
+  " <ScrollWheelDown> has alt name <MouseUp> but it should not show up here
+  " nor show up as duplicates
+  call feedkeys(":set <ScrollWheel\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set <ScrollWheelDown> <ScrollWheelLeft> <ScrollWheelRight> <ScrollWheelUp>', @:)
 
   " Expand terminal options.
   call feedkeys(":set t_A\<C-A>\<C-B>\"\<CR>", 'tx')
