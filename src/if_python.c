@@ -202,6 +202,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyList_Size dll_PyList_Size
 # define PyList_Type (*dll_PyList_Type)
 # define PyTuple_GetItem dll_PyTuple_GetItem
+# define PyTuple_SetItem dll_PyTuple_SetItem
 # define PyTuple_New dll_PyTuple_New
 # define PyTuple_Size dll_PyTuple_Size
 # define PyTuple_Type (*dll_PyTuple_Type)
@@ -358,7 +359,6 @@ static PyInt(*dll_PyList_Size)(PyObject *);
 static PyTypeObject* dll_PyList_Type;
 static PyObject*(*dll_PyTuple_GetItem)(PyObject *, PyInt);
 static int(*dll_PyTuple_SetItem)(PyObject *, PyInt, PyObject *);
-static int(*dll_PyTuple_SET_ITEM)(PyObject *, PyInt, PyObject *);
 static PyObject*(*dll_PyTuple_New)(PyInt size);
 static PyInt(*dll_PyTuple_Size)(PyObject *);
 static PyTypeObject* dll_PyTuple_Type;
@@ -549,7 +549,6 @@ static struct
     {"PyList_Type", (PYTHON_PROC*)&dll_PyList_Type},
     {"PyTuple_GetItem", (PYTHON_PROC*)&dll_PyTuple_GetItem},
     {"PyTuple_SetItem", (PYTHON_PROC*)&dll_PyTuple_SetItem},
-    {"PyTuple_SET_ITEM", (PYTHON_PROC*)&dll_PyTuple_SET_ITEM},
     {"PyTuple_New", (PYTHON_PROC*)&dll_PyTuple_New},
     {"PyTuple_Size", (PYTHON_PROC*)&dll_PyTuple_Size},
     {"PyTuple_Type", (PYTHON_PROC*)&dll_PyTuple_Type},
