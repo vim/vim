@@ -7396,8 +7396,8 @@ ft-idris2-plugin	filetype.txt	/*ft-idris2-plugin*
 ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-plugin	filetype.txt	/*ft-java-plugin*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
-ft-javascript-plugin	filetype.txt	/*ft-javascript-plugin*
 ft-javascript-omni	insert.txt	/*ft-javascript-omni*
+ft-javascript-plugin	filetype.txt	/*ft-javascript-plugin*
 ft-jq-syntax	syntax.txt	/*ft-jq-syntax*
 ft-json-plugin	filetype.txt	/*ft-json-plugin*
 ft-json-syntax	syntax.txt	/*ft-json-syntax*
