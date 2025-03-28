@@ -4670,6 +4670,21 @@ qf_update_win_titlevar(qf_info_T *qi)
     curwin = save_curwin;
 }
 
+    static void
+trigger_QuickFixChanged(qf_info_T *qi)
+{
+    save_v_event_T	save_v_event;
+    dict_T		*v_event = get_v_event(&save_v_event);
+    qf_list_T		*qfl = qf_get_list(qi, qi->qf_curlist);
+
+    (void)dict_add_number(v_event, IS_QF_STACK(qi) ? "quickfix_id" :
+					    "loclist_id", qfl->qf_id);
+    dict_set_items_ro(v_event);
+    apply_autocmds(EVENT_QUICKFIXCHANGED, NULL, NULL, FALSE, qf_find_buf(qi));
+
+    restore_v_event(v_event, &save_v_event);
+}
+
 /*
  * Find the quickfix buffer.  If it exists, update the contents.
  */
@@ -4683,7 +4698,10 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
     // Check if a buffer for the quickfix list exists.  Update it.
     buf = qf_find_buf(qi);
     if (buf == NULL)
+    {
+	trigger_QuickFixChanged(qi);
 	return;
+    }
 
     linenr_T	old_line_count = buf->b_ml.ml_line_count;
     int		qf_winid = 0;
@@ -4738,6 +4756,7 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
     if ((win = qf_find_win(qi)) != NULL && old_line_count < win->w_botline)
 	redraw_buf_later(buf, UPD_NOT_VALID);
 
+    trigger_QuickFixChanged(qi);
     // always called after incr_quickfix_busy()
     decr_quickfix_busy();
 }
@@ -7935,8 +7954,12 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 
     if (newlist || retval == OK)
 	qf_list_changed(qfl);
+
     if (newlist)
 	qf_update_buffer(qi, NULL);
+
+    if (!newlist && retval == OK)
+	trigger_QuickFixChanged(qi);
 
     return retval;
 }

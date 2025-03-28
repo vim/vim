@@ -1422,6 +1422,7 @@ enum auto_event
     EVENT_MENUPOPUP,		// just before popup menu is displayed
     EVENT_MODECHANGED,		// after changing the mode
     EVENT_OPTIONSET,		// option was set
+    EVENT_QUICKFIXCHANGED,	// after quickfix list has been changed
     EVENT_QUICKFIXCMDPOST,	// after :make, :grep etc.
     EVENT_QUICKFIXCMDPRE,	// before :make, :grep etc.
     EVENT_QUITPRE,		// before :quit
