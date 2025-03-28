@@ -1589,7 +1589,7 @@ regatom(int *flagp)
 		case 'u':   // %uabcd hex 4
 		case 'U':   // %U1234abcd hex 8
 			  {
-			      long i;
+			      vimlong_T i;
 
 			      switch (c)
 			      {
@@ -1612,7 +1612,7 @@ regatom(int *flagp)
 			      if (i == 0)
 				  regc(0x0a);
 			      else
-				  regmbc(i);
+				  regmbc((int)i);
 			      regc(NUL);
 			      *flagp |= HASWIDTH;
 			      break;
@@ -1831,6 +1831,10 @@ collection:
 				|| *regparse == 'U')
 			{
 			    startc = coll_get_char();
+			    // max UTF-8 Codepoint is U+10FFFF,
+			    // but allow values until INT_MAX
+			    if (startc == INT_MAX)
+				EMSG_RET_NULL(_(e_unicode_val_too_large));
 			    if (startc == 0)
 				regc(0x0a);
 			    else
@@ -2131,7 +2135,7 @@ regpiece(int *flagp)
 		int	lop = END;
 		long	nr;
 
-		nr = getdecchrs();
+		nr = (long)getdecchrs();
 		switch (no_Magic(getchr()))
 		{
 		    case '=': lop = MATCH; break;		  // \@=
@@ -2610,7 +2614,7 @@ vim_regcomp_had_eol(void)
     static int
 coll_get_char(void)
 {
-    long	nr = -1;
+    vimlong_T	nr = -1;
 
     switch (*regparse++)
     {
@@ -2620,13 +2624,15 @@ coll_get_char(void)
 	case 'u': nr = gethexchrs(4); break;
 	case 'U': nr = gethexchrs(8); break;
     }
-    if (nr < 0 || nr > INT_MAX)
+    if (nr < 0)
     {
 	// If getting the number fails be backwards compatible: the character
 	// is a backslash.
 	--regparse;
 	nr = '\\';
     }
+    if (nr > INT_MAX)
+	nr = INT_MAX;
     return nr;
 }
 

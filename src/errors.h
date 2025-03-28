@@ -3716,3 +3716,5 @@ EXTERN char e_variadic_tuple_must_end_with_list_type_str[]
 EXTERN char e_cannot_use_variadic_tuple_in_concatenation[]
 	INIT(= N_("E1540: Cannot use a variadic tuple in concatenation"));
 #endif
+EXTERN char e_unicode_val_too_large[]
+	INIT(= N_("E1541: Value too large, max Unicode codepoint is U+10FFFF"));

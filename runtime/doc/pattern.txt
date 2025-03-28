@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 9.1.  Last change: 2025 Mar 21
+*pattern.txt*   For Vim version 9.1.  Last change: 2025 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1222,7 +1222,8 @@ x	A single character, with no special meaning, matches itself
 		\o40	octal number of character up to 0o377
 		\x20	hexadecimal number of character up to 0xff
 		\u20AC	hex. number of multibyte character up to 0xffff
-		\U1234	hex. number of multibyte character up to 0xffffffff
+		\U1234	hex. number of multibyte character up to 8 characters
+			0xffffffff |E1541|
 	  NOTE: The other backslash codes mentioned above do not work inside
 	  []!
 	- Matching with a collection can be slow, because each character in
@@ -1263,7 +1264,8 @@ x	A single character, with no special meaning, matches itself
 \%u20AC	Matches the character specified with up to four hexadecimal
 	characters.
 \%U1234abcd	Matches the character specified with up to eight hexadecimal
-	characters, up to 0x7fffffff
+	characters, up to 0x7fffffff (the maximum allowed value is INT_MAX
+	|E1541|, but the maximum valid Unicode codepoint is U+10FFFF).
 
 ==============================================================================
 7. Ignoring case in a pattern					*/ignorecase*
