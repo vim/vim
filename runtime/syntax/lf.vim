@@ -78,7 +78,6 @@ syn keyword  lfOptions
     \ cut
     \ cutfmt
     \ delete
-    \ delete
     \ dircache
     \ dircounts
     \ dirfirst
@@ -140,10 +139,8 @@ syn keyword  lfOptions
     \ on-redraw
     \ on-select
     \ open
-    \ open
     \ page-down
     \ page-up
-    \ paste
     \ paste
     \ period
     \ pre-cd
@@ -159,7 +156,6 @@ syn keyword  lfOptions
     \ relativenumber
     \ reload
     \ rename
-    \ rename
     \ reverse
     \ roundbox
     \ rulerfmt
@@ -174,7 +170,6 @@ syn keyword  lfOptions
     \ selectfmt
     \ selmode
     \ setfilter
-    \ shell
     \ shell
     \ shell-async
     \ shell-pipe
