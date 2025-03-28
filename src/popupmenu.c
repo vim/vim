@@ -342,6 +342,10 @@ pum_display(
 		    if (p_pmw > 0 && pum_width > p_pmw)
 			pum_width = p_pmw;
 		}
+		else if (p_pmw > 0 && pum_width > p_pmw)
+		{
+		    pum_width = p_pmw;
+		}
 	    }
 
 	}
