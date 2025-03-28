@@ -2035,10 +2035,24 @@ wipe_qf_buffer(qf_info_T *qi)
     qfbuf = buflist_findnr(qi->qf_bufnr);
     if (qfbuf != NULL && qfbuf->b_nwindows == 0)
     {
+	int buf_was_null = FALSE;
+	// can happen when curwin is going to be closed e.g. curwin->w_buffer
+	// was already closed in win_close(), and we are now closing the
+	// window related location list buffer from win_free_mem()
+	// but close_buffer() calls CHECK_CURBUF() macro and requires
+	// curwin->w_buffer == curbuf
+	if (curwin->w_buffer == NULL)
+	{
+	    curwin->w_buffer = curbuf;
+	    buf_was_null = TRUE;
+	}
+
 	// If the quickfix buffer is not loaded in any window, then
 	// wipe the buffer.
 	close_buffer(NULL, qfbuf, DOBUF_WIPE, FALSE, FALSE);
 	qi->qf_bufnr = INVALID_QFBUFNR;
+	if (buf_was_null)
+	    curwin->w_buffer = NULL;
     }
 }
 
