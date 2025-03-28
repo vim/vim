@@ -24,6 +24,7 @@ listitem_T *list_find_index(list_T *l, long *idx);
 long list_idx_of_item(list_T *l, listitem_T *item);
 void list_append(list_T *l, listitem_T *item);
 int list_append_tv(list_T *l, typval_T *tv);
+int list_set_item_move(list_T *l, listitem_T *li, typval_T *tv);
 int list_append_dict(list_T *list, dict_T *dict);
 int list_append_list(list_T *list1, list_T *list2);
 int list_append_string(list_T *l, char_u *str, int len);
