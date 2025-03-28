@@ -731,7 +731,7 @@ pum_redraw(void)
 				char_u		*old_rt = NULL;
 				char_u		*orig_rt = NULL;
 
-				cells = vim_strsize(rt);
+				cells = mb_string2cells(rt, -1);
 				need_ellipsis = p_pmw > ellipsis_width
 						    && pum_width == p_pmw
 						    && cells > pum_width;
