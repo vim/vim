@@ -210,9 +210,6 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PySequence_Size dll_PySequence_Size
 # define PySequence_GetItem dll_PySequence_GetItem
 # define PySequence_Fast dll_PySequence_Fast
-# define PyTuple_Size dll_PyTuple_Size
-# define PyTuple_GetItem dll_PyTuple_GetItem
-# define PyTuple_Type (*dll_PyTuple_Type)
 # define PySlice_GetIndicesEx dll_PySlice_GetIndicesEx
 # define PyImport_ImportModule dll_PyImport_ImportModule
 # define PyDict_New dll_PyDict_New
@@ -556,9 +553,6 @@ static struct
     {"PySequence_Check", (PYTHON_PROC*)&dll_PySequence_Check},
     {"PySequence_GetItem", (PYTHON_PROC*)&dll_PySequence_GetItem},
     {"PySequence_Fast", (PYTHON_PROC*)&dll_PySequence_Fast},
-    {"PyTuple_GetItem", (PYTHON_PROC*)&dll_PyTuple_GetItem},
-    {"PyTuple_Size", (PYTHON_PROC*)&dll_PyTuple_Size},
-    {"PyTuple_Type", (PYTHON_PROC*)&dll_PyTuple_Type},
     {"PySlice_GetIndicesEx", (PYTHON_PROC*)&dll_PySlice_GetIndicesEx},
     {"PyImport_ImportModule", (PYTHON_PROC*)&dll_PyImport_ImportModule},
     {"PyDict_GetItemString", (PYTHON_PROC*)&dll_PyDict_GetItemString},
