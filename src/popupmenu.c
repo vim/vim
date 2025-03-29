@@ -574,6 +574,53 @@ pum_user_attr_combine(int idx, int type, int attr)
     return user_attr[type] > 0 ? hl_combine_attr(attr, user_attr[type]) : attr;
 }
 
+    static void
+pum_get_ellipsis_info(int *cells, int *bytes)
+{
+    int i;
+    if (curwin->w_fill_chars.ellipsis != NULL)
+    {
+        for (i = 0; curwin->w_fill_chars.ellipsis[i] != NUL; i++)
+        {
+	    *cells += utf_char2cells(curwin->w_fill_chars.ellipsis[i]);
+	    *bytes += utf_char2len(curwin->w_fill_chars.ellipsis[i]);
+        }
+    }
+    else
+    {
+        *cells = *bytes = 3;
+    }
+}
+
+    static char_u *
+pum_append_ellipsis(char_u *str)
+{
+    int i;
+    if (curwin->w_fill_chars.ellipsis == NULL)
+    {
+        memcpy(str, "...", 3);
+        return str + 3;
+    }
+
+#ifdef FEAT_RIGHTLEFT
+    if (pum_rl)
+    {
+	int len = 0;
+	while (curwin->w_fill_chars.ellipsis[len] != NUL)
+	    len++;
+
+	for (i = len - 1; i >= 0; i--)
+	    str += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis[i], str);
+    }
+    else
+#endif
+    {
+	for (i = 0; curwin->w_fill_chars.ellipsis[i] != NUL; i++)
+	    str += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis[i], str);
+    }
+    return str;
+}
+
 /*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
@@ -606,11 +653,17 @@ pum_redraw(void)
     int		scroll_range = pum_size - pum_height;
     int		need_ellipsis = FALSE;
     int		char_cells = 0;
-    int		ellipsis_width = 3;
+    int		ellipsis_cells = 0;
+    int		ellipsis_bytes = 0;
     int		over_cell = 0;
     char_u	*new_str = NULL;
     int		kept_len = 0;
     char_u	*last_char = NULL;
+    char_u	*ptr = NULL;
+    char_u	*next_item = NULL;
+    int		next_cells = 0;
+    int		ellipsis_skip = FALSE;
+    int		reduce = 0;
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
@@ -652,6 +705,9 @@ pum_redraw(void)
     screen_zindex = POPUPMENU_ZINDEX;
 #endif
 
+    if (pum_width == p_pmw)
+	pum_get_ellipsis_info(&ellipsis_cells, &ellipsis_bytes);
+
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
@@ -688,7 +744,19 @@ pum_redraw(void)
 		attr = pum_user_attr_combine(idx, item_type, attr);
 	    width = 0;
 	    s = NULL;
+	    ellipsis_skip = FALSE;
+	    need_ellipsis = FALSE;
+	    next_cells = 0;
+	    over_cell = 0;
+	    reduce = 0;
 	    p = pum_get_item(idx, item_type);
+	    if (j + 1 < 3)
+	    {
+		next_item = pum_get_item(idx, order[j + 1]);
+		if (next_item != NULL)
+		    next_cells = (*mb_string2cells)(next_item, STRLEN(next_item));
+	    }
+
 	    if (p != NULL)
 		for ( ; ; MB_PTR_ADV(p))
 		{
@@ -732,9 +800,13 @@ pum_redraw(void)
 				char_u		*orig_rt = NULL;
 
 				cells = mb_string2cells(rt, -1);
-				need_ellipsis = p_pmw > ellipsis_width
-						    && pum_width == p_pmw
-						    && cells > pum_width;
+				need_ellipsis = p_pmw > ellipsis_cells
+					    && pum_width == p_pmw
+					    && ((totwidth + cells > pum_width)
+						    || (j < 2 && next_cells > 0
+							&& next_cells + cells + totwidth + 1 > pum_width
+							&& totwidth + cells + ellipsis_cells + 1 > pum_width));
+
 				if (cells > pum_width)
 				{
 				    do
@@ -744,42 +816,7 @@ pum_redraw(void)
 					MB_PTR_ADV(rt);
 				    } while (cells > pum_width);
 
-				    if (need_ellipsis)
-				    {
-					orig_rt = rt;
-					while (*orig_rt != NUL)
-					{
-					    char_cells = has_mbyte ? (*mb_ptr2cells)(orig_rt) : 1;
-					    if (used_cells + char_cells > ellipsis_width)
-						break;
-					    used_cells += char_cells;
-					    MB_PTR_ADV(orig_rt);
-					    last_char = orig_rt;
-					}
-
-					if (last_char != NULL)
-					{
-					    if (used_cells < ellipsis_width)
-					    {
-						over_cell = ellipsis_width - used_cells;
-						MB_PTR_ADV(orig_rt);
-						last_char = orig_rt;
-					    }
-					    kept_len = (int)STRLEN(last_char);
-					    new_str = alloc(ellipsis_width + over_cell + kept_len + 1);
-					    if (!new_str)
-						return;
-					    vim_memset(new_str, '.', ellipsis_width);
-					    if (over_cell > 0)
-						vim_memset(new_str + ellipsis_width, ' ', over_cell);
-					    memcpy(new_str + ellipsis_width + over_cell, last_char, kept_len);
-					    new_str[ellipsis_width + kept_len + over_cell] = NUL;
-					    old_rt = rt_start;
-					    rt = rt_start = new_str;
-					    vim_free(old_rt);
-					}
-				    }
-				    else if (cells < pum_width)
+				    if (cells < pum_width)
 				    {
 					// Most left character requires 2-cells
 					// but only 1 cell is available on
@@ -787,6 +824,92 @@ pum_redraw(void)
 					// the pum item.
 					*(--rt) = '<';
 					cells++;
+				    }
+				}
+
+				if (need_ellipsis)
+				{
+				    cells = mb_string2cells(rt, -1);
+				    orig_rt = rt;
+				    if (cells + totwidth > pum_width - totwidth)
+				    {
+					while (*orig_rt != NUL)
+					{
+					    char_cells = has_mbyte ? (*mb_ptr2cells)(orig_rt) : 1;
+					    if (cells - char_cells < pum_width - totwidth - ellipsis_cells)
+						break;
+					    cells -= char_cells;
+					    MB_PTR_ADV(orig_rt);
+					}
+				    }
+
+				    if (pum_width - totwidth == ellipsis_cells)
+				    {
+					used_cells = ellipsis_cells;
+					last_char = orig_rt + (int)STRLEN(orig_rt);
+					ellipsis_skip = TRUE;
+				    }
+				    else if (totwidth + cells >= pum_width)
+				    {
+					while (*orig_rt != NUL)
+					{
+					    char_cells = has_mbyte ? (*mb_ptr2cells)(orig_rt) : 1;
+					    if (used_cells + char_cells > ellipsis_cells)
+					    {
+						if (used_cells == 0)
+						{
+						    used_cells = char_cells;
+						    last_char = orig_rt;
+						}
+						break;
+					    }
+					    used_cells += char_cells;
+					    MB_PTR_ADV(orig_rt);
+					    last_char = orig_rt;
+					}
+				    }
+				    else
+				    {
+					used_cells = pum_width - (totwidth + cells);
+					last_char = orig_rt;
+					ellipsis_skip = TRUE;
+					if (used_cells == ellipsis_cells + 1)
+					{
+					    over_cell = 1;
+					    used_cells = ellipsis_cells;
+					}
+				    }
+
+				    if (last_char != NULL)
+				    {
+					if (used_cells != ellipsis_cells)
+					{
+					    over_cell = abs(ellipsis_cells - used_cells);
+					    if (*orig_rt != NUL)
+					    {
+						MB_PTR_ADV(orig_rt);
+						last_char = orig_rt;
+					    }
+					}
+
+					kept_len = (int)STRLEN(last_char);
+					new_str = alloc(ellipsis_bytes + over_cell + kept_len + 1);
+					if (!new_str)
+					    return;
+
+					ptr = pum_append_ellipsis(new_str);
+					if (over_cell > 0)
+					{
+					    vim_memset(ptr, ' ', over_cell);
+					    ptr += over_cell;
+					}
+					memcpy(ptr, last_char, kept_len);
+					ptr[kept_len] = NUL;
+					old_rt = rt_start;
+					rt = rt_start = new_str;
+					vim_free(old_rt);
+					cells = mb_string2cells(rt, -1);
+					width = cells;
 				    }
 				}
 
@@ -813,9 +936,13 @@ pum_redraw(void)
 			    int		cells = (*mb_string2cells)(st, size);
 			    int		used_cells = 0;
 			    char_u	*st_end = NULL;
-			    need_ellipsis = p_pmw > ellipsis_width
+
+			    need_ellipsis = p_pmw > ellipsis_cells
 					&& pum_width == p_pmw
-					&& col + cells > pum_col + pum_width;
+					&& ((totwidth + cells > pum_width)
+					    || (j < 2 && next_cells > 0 &&
+						    next_cells + cells + totwidth + 1 > pum_width
+						    && totwidth + cells + ellipsis_cells + 1 > pum_width));
 
 			    // only draw the text that fits
 			    while (size > 0
@@ -835,35 +962,83 @@ pum_redraw(void)
 			    if (need_ellipsis)
 			    {
 				st_end = st + size;
-				while (st_end > st)
+				// current cells can only place ellipsis.
+				if (cells <= ellipsis_cells)
 				{
-				    char_cells = has_mbyte ? (*mb_ptr2cells)(st_end) : 1;
-				    if (used_cells + char_cells > ellipsis_width)
-					break;
-				    used_cells += char_cells;
-				    MB_PTR_BACK(st, st_end);
+				    used_cells = ellipsis_cells;
+				    last_char = st;
+				    ellipsis_skip = TRUE;
+				    if (pum_width - totwidth != ellipsis_cells
+					    && pum_width - totwidth - cells > 0)
+					over_cell = pum_width - totwidth - cells;
+				}
+				else if (totwidth + cells >= pum_width)
+				{
+				    // totwidth plus cells of the current item
+				    // exceeds the limit and needs to be truncated.
+				    while (st_end > st)
+				    {
+					char_cells = has_mbyte ? (*mb_ptr2cells)(st_end) : 1;
+					if (used_cells + char_cells > ellipsis_cells)
+					{
+					    if (used_cells == 0)
+					    {
+						used_cells = char_cells;
+						last_char = st_end;
+					    }
+					    break;
+					}
+					used_cells += char_cells;
+					MB_PTR_BACK(st, st_end);
+					last_char = st_end;
+				    }
+				}
+				else
+				{
+				    // current item can be displayed completely
+				    // but the space separator plus the width
+				    // of the next item is greater than the width.
+				    used_cells = pum_width - (totwidth + cells);
 				    last_char = st_end;
+				    ellipsis_skip = TRUE;
+				    if (used_cells == ellipsis_cells + 1)
+				    {
+					over_cell = 1;
+					used_cells = ellipsis_cells;
+				    }
 				}
 
 				if (last_char != NULL && st_end > st)
 				{
-				    if (used_cells < ellipsis_width)
+				    if (used_cells != ellipsis_cells)
 				    {
-					MB_PTR_BACK(st, st_end);
-					last_char = st_end;
-					over_cell = ellipsis_width - used_cells;
+					over_cell = abs(ellipsis_cells - used_cells);
+					if (st_end > st)
+					{
+					    MB_PTR_BACK(st, st_end);
+					    last_char = st_end;
+					}
 				    }
+
 				    kept_len = last_char - st;
-				    new_str = alloc(ellipsis_width + over_cell + kept_len + 1);
+				    size = ellipsis_bytes + over_cell + kept_len;
+				    new_str = alloc(size + 1);
 				    if (!new_str)
 					return;
-				    memcpy(new_str, st, kept_len);
+				    if (kept_len > 0)
+					memcpy(new_str, st, kept_len);
+				    ptr = new_str + kept_len;
 				    if (over_cell > 0)
-					vim_memset(new_str + kept_len, ' ', over_cell);
-				    vim_memset(new_str + kept_len + over_cell, '.', ellipsis_width);
-				    new_str[kept_len + ellipsis_width + over_cell] = NUL;
+				    {
+					vim_memset(ptr, ' ', over_cell);
+					ptr += over_cell;
+				    }
+				    ptr = pum_append_ellipsis(ptr);
+				    *ptr = NUL;
 				    vim_free(st);
 				    st = new_str;
+				    cells = (*mb_string2cells)(st, size);
+				    width = cells;
 				}
 			    }
 
@@ -872,7 +1047,6 @@ pum_redraw(void)
 			    else
 				pum_screen_puts_with_attrs(row, col, cells,
 							      st, size, attrs);
-
 			    vim_free(st);
 			}
 			col += width;
@@ -916,31 +1090,50 @@ pum_redraw(void)
 				&& pum_get_item(idx, order[j + 2]) == NULL)))
 		    || basic_width + n >= pum_width)
 		break;
+
+	    if (!ellipsis_skip)
+	    {
 #ifdef FEAT_RIGHTLEFT
-	    if (pum_rl)
-	    {
-		screen_fill(row, row + 1, pum_col - basic_width - n + 1,
-						col + 1, ' ', ' ', orig_attr);
-		col = pum_col - basic_width - n;
-	    }
-	    else
+		if (pum_rl)
+		{
+		    if (p_pmw > 0 && pum_width == p_pmw && width < basic_width
+			    && j< 2 && p_pmw - (basic_width + n) < ellipsis_cells)
+			reduce = ellipsis_cells - (p_pmw - (basic_width + n));
+		    screen_fill(row, row + 1, pum_col - basic_width - n + 1 + reduce,
+						    col + 1, ' ', ' ', orig_attr);
+		    col = pum_col - basic_width - n + reduce;
+		}
+		else
 #endif
-	    {
-		screen_fill(row, row + 1, col, pum_col + basic_width + n,
-							' ', ' ', orig_attr);
-		col = pum_col + basic_width + n;
+		{
+		    int end_col = pum_col + basic_width + n;
+		    // When the next item is shown as an ellipsis and there
+		    // is not enough room to display the ellipsis, reduce the
+		    // fill space count.
+		    if (p_pmw > 0 && pum_width == p_pmw && width < basic_width
+			    && j < 2 && p_pmw - (basic_width + n) < ellipsis_cells)
+			reduce = ellipsis_cells - (p_pmw - (basic_width + n));
+		    screen_fill(row, row + 1, col, end_col - reduce, ' ', ' ', orig_attr);
+		    col = pum_col + basic_width + n - reduce;
+		}
 	    }
-	    totwidth = basic_width + n;
+	    totwidth = basic_width + n - reduce;
+	    if (ellipsis_skip)
+		break;
 	}
 
+	if (!ellipsis_skip)
+	{
 #ifdef FEAT_RIGHTLEFT
-	if (pum_rl)
-	    screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1, ' ',
-							    ' ', orig_attr);
-	else
+	    if (pum_rl)
+		screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1, ' ',
+								' ', orig_attr);
+	    else
 #endif
-	    screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ',
-								orig_attr);
+		screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ',
+								    orig_attr);
+	}
+
 	if (pum_scrollbar > 0)
 	{
 #ifdef FEAT_RIGHTLEFT
