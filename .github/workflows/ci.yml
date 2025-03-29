@@ -264,14 +264,13 @@ jobs:
         if: (!contains(matrix.extra, 'unittests'))
         run: |
           "${SRCDIR}"/vim --version
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
           if ${{ matrix.features == 'huge' }}; then
             # Also check that optional and dynamic features are configured and working
             "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
               -c "let g:required=['gettext', 'sodium', 'sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
-              -S ci/if_ver.vim -c quit
-          else
-            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
-              -S ci/if_ver.vim -c quit
+              -S ci/if_feat_check.vim -c quit
           fi
 
       - name: Test
@@ -397,14 +396,13 @@ jobs:
       - name: Check version
         run: |
           "${SRCDIR}"/vim --version
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
           if ${{ matrix.features == 'huge' }}; then
             # Also check that optional and dynamic features are configured and working
             "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
               -c "let g:required=['sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
-              -S ci/if_ver.vim -c quit
-          else
-            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
-              -S ci/if_ver.vim -c quit
+              -S ci/if_feat_check.vim -c quit
           fi
 
       - name: Install packages for testing
@@ -669,17 +667,18 @@ jobs:
             start /wait src\gvim -u NONE -i NONE -c "redir > version.txt | ver | q" || exit 1
             type version.txt
             echo.
-            start /wait src\gvim -u NONE -i NONE -c "redir! > version.txt | so ci\if_ver.vim | q"
+            start /wait src\gvim -u NONE -i NONE -c "redir! > version.txt | so ci\if_ver-1.vim | q"
+            start /wait src\gvim -u NONE -i NONE -c "redir >> version.txt | so ci\if_ver-2.vim | q"
             type version.txt
             del version.txt
           ) else (
             src\vim --version || exit 1
+            src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+            src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
             if "${{ matrix.features }}"=="HUGE" (
               src\vim -u NONE -i NONE --not-a-term -esNX -V1 ^
                 -c "let g:required=['gettext', 'sodium', 'sound', 'python3', 'lua']" ^
-                -S ci/if_ver.vim -c quit
-            ) else (
-              src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver.vim -c quit
+                -S ci/if_feat_check.vim -c quit
             )
           )
 
