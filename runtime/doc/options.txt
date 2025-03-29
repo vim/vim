@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Mar 26
+*options.txt*	For Vim version 9.1.  Last change: 2025 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2995,8 +2995,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				none    Do not perform inline highlighting.
 				simple  Highlight from first different
 					character to the last one in each
-					line. This is the default if nothing
-					is set.
+					line.  This is the default if no
+					`inline:` value is set.
 				char    Use internal diff to perform a
 					character-wise diff and highlight the
 					difference.
@@ -6502,6 +6502,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Determines the maximum number of items to show in the popup menu for
 	Insert mode completion.  When zero as much space as available is used.
+	|ins-completion-menu|.
+
+						*'pummaxwidth'* *'pmw'*
+'pummaxwidth' 'pmw'	number	(default 0)
+			global
+	Determines the maximum width to use for the popup menu for completion.
+	When zero, there is no maximum width limit, otherwise the popup menu
+	will never be wider than this value.  Truncated text will be indicated
+	by "..." at the end.  Takes precedence over 'pumwidth'.
 	|ins-completion-menu|.
 
 						*'pumwidth'* *'pw'*

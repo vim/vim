@@ -1097,12 +1097,6 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	if (ret == NULL)
 	    return NULL;
 
-	if (PyDict_SetItemString(lookup_dict, ptrBuf, ret))
-	{
-	    Py_DECREF(ret);
-	    return NULL;
-	}
-
 	for (int idx = 0; idx < len; idx++)
 	{
 	    typval_T	*item_tv = TUPLE_ITEM(tuple, idx);
@@ -1113,7 +1107,13 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 		Py_DECREF(ret);
 		return NULL;
 	    }
-	    PyTuple_SET_ITEM(ret, idx, newObj);
+	    PyTuple_SetItem(ret, idx, newObj);
+	}
+
+	if (PyDict_SetItemString(lookup_dict, ptrBuf, ret))
+	{
+	    Py_DECREF(ret);
+	    return NULL;
 	}
     }
     else if (our_tv->v_type == VAR_DICT)
@@ -3440,7 +3440,7 @@ TupleSlice(
 	    return NULL;
 	}
 
-	PyTuple_SET_ITEM(tuple, i, item);
+	PyTuple_SetItem(tuple, i, item);
     }
 
     return tuple;

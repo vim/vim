@@ -1226,6 +1226,7 @@ def Test_nocatch_return_in_try()
 enddef
 
 def Test_cnext_works_in_catch()
+  CheckFeature quickfix
   var lines =<< trim END
       vim9script
       au BufEnter * eval 1 + 2
@@ -1541,6 +1542,7 @@ def Test_abort_after_error()
 enddef
 
 def Test_cexpr_vimscript()
+  CheckFeature quickfix
   # only checks line continuation
   set errorformat=File\ %f\ line\ %l
   var lines =<< trim END
@@ -3991,6 +3993,7 @@ func Test_vim9script_not_global()
 endfunc
 
 def Test_vim9_copen()
+  CheckFeature quickfix
   # this was giving an error for setting w:quickfix_title
   copen
   quit

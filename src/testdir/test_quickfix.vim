@@ -6891,4 +6891,12 @@ func Test_chi_and_lhi_are_independent()
   set lhistory&
 endfunc
 
+func Test_quickfix_close_buffer_crash()
+  new
+  lexpr 'test' | lopen
+  wincmd k
+  lclose
+  wincmd q
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

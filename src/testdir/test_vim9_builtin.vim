@@ -1759,6 +1759,7 @@ def Test_garbagecollect()
 enddef
 
 def Test_get()
+  CheckFeature quickfix
   v9.CheckSourceDefAndScriptFailure(['get("a", 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1531: Argument of get() must be a List, Tuple, Dictionary or Blob'])
   [3, 5, 2]->get(1)->assert_equal(5)
   [3, 5, 2]->get(3)->assert_equal(0)
@@ -1980,11 +1981,13 @@ def Test_getline()
 enddef
 
 def Test_getloclist()
+  CheckFeature quickfix
   v9.CheckSourceDefAndScriptFailure(['getloclist("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['getloclist(1, [])'], ['E1013: Argument 2: type mismatch, expected dict<any> but got list<any>', 'E1206: Dictionary required for argument 2'])
 enddef
 
 def Test_getloclist_return_type()
+  CheckFeature quickfix
   var l = getloclist(1)
   l->assert_equal([])
 
@@ -2012,11 +2015,13 @@ def Test_getpos()
 enddef
 
 def Test_getqflist()
+  CheckFeature quickfix
   v9.CheckSourceDefAndScriptFailure(['getqflist([])'], ['E1013: Argument 1: type mismatch, expected dict<any> but got list<any>', 'E1206: Dictionary required for argument 1'])
   call assert_equal({}, getqflist({}))
 enddef
 
 def Test_getqflist_return_type()
+  CheckFeature quickfix
   var l = getqflist()
   l->assert_equal([])
 
