@@ -845,7 +845,7 @@ pum_redraw(void)
 				    last_char = st_end;
 				}
 
-				if (last_char != NULL)
+				if (last_char != NULL && st_end > st)
 				{
 				    if (used_cells < ellipsis_width)
 				    {
