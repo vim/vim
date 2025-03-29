@@ -574,6 +574,41 @@ pum_user_attr_combine(int idx, int type, int attr)
     return user_attr[type] > 0 ? hl_combine_attr(attr, user_attr[type]) : attr;
 }
 
+    static void
+pum_get_ellipsis_info(int *cells, int *bytes)
+{
+    int i;
+    if (curwin->w_fill_chars.ellipsis != NULL)
+    {
+        for (i = 0; curwin->w_fill_chars.ellipsis[i] != NUL; i++)
+        {
+	    *cells += utf_char2cells(curwin->w_fill_chars.ellipsis[i]);
+	    *bytes += utf_char2len(curwin->w_fill_chars.ellipsis[i]);
+        }
+    }
+    else
+    {
+        *cells = *bytes =  3;
+    }
+}
+
+    static char_u *
+pum_append_ellipsis(char_u *str)
+{
+    int i;
+    if (curwin->w_fill_chars.ellipsis != NULL)
+    {
+        for (i = 0; curwin->w_fill_chars.ellipsis[i] != NUL; i++)
+	    str += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis[i], str);
+    }
+    else
+    {
+        memcpy(str, "...", 3);
+        str += 3;
+    }
+    return str;
+}
+
 /*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
@@ -606,7 +641,8 @@ pum_redraw(void)
     int		scroll_range = pum_size - pum_height;
     int		need_ellipsis = FALSE;
     int		char_cells = 0;
-    int		ellipsis_width = 3;
+    int		ellipsis_cells = 0;
+    int		ellipsis_bytes = 0;
     int		over_cell = 0;
     char_u	*new_str = NULL;
     int		kept_len = 0;
@@ -688,6 +724,8 @@ pum_redraw(void)
 		attr = pum_user_attr_combine(idx, item_type, attr);
 	    width = 0;
 	    s = NULL;
+	    ellipsis_cells = 0;
+	    need_ellipsis = FALSE;
 	    p = pum_get_item(idx, item_type);
 	    if (p != NULL)
 		for ( ; ; MB_PTR_ADV(p))
@@ -732,7 +770,8 @@ pum_redraw(void)
 				char_u		*orig_rt = NULL;
 
 				cells = vim_strsize(rt);
-				need_ellipsis = p_pmw > ellipsis_width
+				pum_get_ellipsis_info(&ellipsis_cells, &ellipsis_bytes);
+				need_ellipsis = p_pmw > ellipsis_cells
 						    && pum_width == p_pmw
 						    && cells > pum_width;
 				if (cells > pum_width)
@@ -750,8 +789,15 @@ pum_redraw(void)
 					while (*orig_rt != NUL)
 					{
 					    char_cells = has_mbyte ? (*mb_ptr2cells)(orig_rt) : 1;
-					    if (used_cells + char_cells > ellipsis_width)
+					    if (used_cells + char_cells > ellipsis_cells)
+					    {
+						if (used_cells == 0)
+						{
+						    used_cells = char_cells;
+						    last_char = orig_rt;
+						}
 						break;
+					    }
 					    used_cells += char_cells;
 					    MB_PTR_ADV(orig_rt);
 					    last_char = orig_rt;
@@ -759,21 +805,23 @@ pum_redraw(void)
 
 					if (last_char != NULL)
 					{
-					    if (used_cells < ellipsis_width)
+					    if (used_cells != ellipsis_cells)
 					    {
-						over_cell = ellipsis_width - used_cells;
+						over_cell = abs(ellipsis_cells - used_cells);
 						MB_PTR_ADV(orig_rt);
 						last_char = orig_rt;
 					    }
+
 					    kept_len = STRLEN(last_char);
-					    new_str = alloc(ellipsis_width + over_cell + kept_len + 1);
+					    new_str = alloc(ellipsis_bytes + over_cell + kept_len + 1);
 					    if (!new_str)
 						return;
-					    vim_memset(new_str, '.', ellipsis_width);
+
+					    p = pum_append_ellipsis(new_str);
 					    if (over_cell > 0)
-						vim_memset(new_str + ellipsis_width, ' ', over_cell);
-					    memcpy(new_str + ellipsis_width + over_cell, last_char, kept_len);
-					    new_str[ellipsis_width + kept_len + over_cell] = NUL;
+						vim_memset(p, ' ', over_cell);
+					    memcpy(p + over_cell, last_char, kept_len);
+					    p[over_cell + kept_len] = NUL;
 					    old_rt = rt_start;
 					    rt = rt_start = new_str;
 					    vim_free(old_rt);
@@ -813,7 +861,9 @@ pum_redraw(void)
 			    int		cells = (*mb_string2cells)(st, size);
 			    int		used_cells = 0;
 			    char_u	*st_end = NULL;
-			    need_ellipsis = p_pmw > ellipsis_width
+
+			    pum_get_ellipsis_info(&ellipsis_cells, &ellipsis_bytes);
+			    need_ellipsis = p_pmw > ellipsis_cells
 					&& pum_width == p_pmw
 					&& col + cells > pum_col + pum_width;
 
@@ -838,8 +888,15 @@ pum_redraw(void)
 				while (st_end > st)
 				{
 				    char_cells = has_mbyte ? (*mb_ptr2cells)(st_end) : 1;
-				    if (used_cells + char_cells > ellipsis_width)
+				    if (used_cells + char_cells > ellipsis_cells)
+				    {
+					if (used_cells == 0)
+					{
+					    used_cells = char_cells;
+					    last_char = st_end;
+					}
 					break;
+				    }
 				    used_cells += char_cells;
 				    MB_PTR_BACK(st, st_end);
 				    last_char = st_end;
@@ -847,21 +904,29 @@ pum_redraw(void)
 
 				if (last_char != NULL)
 				{
-				    if (used_cells < ellipsis_width)
+				    if (used_cells != ellipsis_cells)
 				    {
-					MB_PTR_BACK(st, st_end);
-					last_char = st_end;
-					over_cell = ellipsis_width - used_cells;
+					over_cell = abs(ellipsis_cells - used_cells);
+					if (st_end > st)
+					{
+					    MB_PTR_BACK(st, st_end);
+					    last_char = st_end;
+					}
 				    }
+
 				    kept_len = last_char - st;
-				    new_str = alloc(ellipsis_width + over_cell + kept_len + 1);
+				    new_str = alloc(ellipsis_bytes + over_cell + kept_len + 1);
 				    if (!new_str)
 					return;
 				    memcpy(new_str, st, kept_len);
+				    p = new_str + kept_len;
 				    if (over_cell > 0)
-					vim_memset(new_str + kept_len, ' ', over_cell);
-				    vim_memset(new_str + kept_len + over_cell, '.', ellipsis_width);
-				    new_str[kept_len + ellipsis_width + over_cell] = NUL;
+				    {
+					vim_memset(p, ' ', over_cell);
+					p += over_cell;
+				    }
+				    p = pum_append_ellipsis(p);
+				    *p = NUL;
 				    vim_free(st);
 				    st = new_str;
 				}
