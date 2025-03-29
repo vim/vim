@@ -427,9 +427,9 @@ static void	skipchr_keepstart(void);
 static int	peekchr(void);
 static void	skipchr(void);
 static void	ungetchr(void);
-static long	gethexchrs(int maxinputlen);
+static vimlong_T	gethexchrs(int maxinputlen);
 static long	getoctchrs(void);
-static long	getdecchrs(void);
+static vimlong_T	getdecchrs(void);
 static int	coll_get_char(void);
 static int	prog_magic_wrong(void);
 static int	cstrncmp(char_u *s1, char_u *s2, int *n);
@@ -979,7 +979,7 @@ ungetchr(void)
  * The parameter controls the maximum number of input characters. This will be
  * 2 when reading a \%x20 sequence and 4 when reading a \%u20AC sequence.
  */
-    static long
+    static vimlong_T
 gethexchrs(int maxinputlen)
 {
     long_u	nr = 0;
@@ -998,14 +998,14 @@ gethexchrs(int maxinputlen)
 
     if (i == 0)
 	return -1;
-    return (long)nr;
+    return nr;
 }
 
 /*
  * Get and return the value of the decimal string immediately after the
  * current position. Return -1 for invalid.  Consumes all digits.
  */
-    static long
+    static vimlong_T
 getdecchrs(void)
 {
     long_u	nr = 0;
@@ -1025,7 +1025,7 @@ getdecchrs(void)
 
     if (i == 0)
 	return -1;
-    return (long)nr;
+    return nr;
 }
 
 /*
