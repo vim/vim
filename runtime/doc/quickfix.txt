@@ -50,21 +50,6 @@ used to get the identifier assigned to a list. There is also a quickfix list
 number which may change whenever more than 'chistory' lists are added to a
 quickfix stack.
 
-					*quickfix-list-allocation* *E1520*
-Note that when allocating or resizing a location or quickfix list stack, if a
-memory error occurs, it will try allocating one less than the given size,
-until there is a successful allocation. If allocation still fails when just
-allocating enough memory for a single quickfix list or the original
-maximum stack size (when resizing), an error is returned. When shrinking a
-quickfix/location list stack, please note that if it fails, then any lists
-that would be removed in order to fit the new stack size, will still be
-removed.
-
-			*backup-global-quickfix-list-stack* *E1521* *E1522*
-When dynamic memory allocation fails for the global quickfix list when
-allocating the stack, a statically allocated backup stack is used in its place
-that can hold up to 10 quickfix lists. This stack cannot be resized.
-
 						*location-list* *E776*
 A location list is a window-local quickfix list. You get one after commands
 like `:lvimgrep`, `:lgrep`, `:lhelpgrep`, `:lmake`, etc., which create a

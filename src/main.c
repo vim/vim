@@ -1030,7 +1030,6 @@ common_init_2(mparm_T *paramp)
     if (qf_init_global_stack() == FAIL)
     {
 	emsg(e_failed_allocating_quickfix_stack);
-	exit(1);
     }
 #endif
 }
