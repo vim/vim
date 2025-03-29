@@ -2029,13 +2029,21 @@ func Test_pum_maxwidth_multibyte()
   CheckScreendump
 
   let lines =<< trim END
+    let g:change = 0
     func Omni_test(findstart, base)
       if a:findstart
         return col(".")
       endif
+      if g:change == 0
+        return [
+          \ #{word: "123456789_123456789_123456789_"},
+          \ #{word: "一二三四五六七八九十"},
+          \ ]
+      endif
       return [
-        \ #{word: "123456789_123456789_123456789_"},
-        \ #{word: "一二三四五六七八九十"},
+        \ #{word: "foo", menu: "fooMenu", kind: "fooKind"},
+        \ #{word: "bar", menu: "barMenu", kind: "barKind"},
+        \ #{word: "baz", menu: "bazMenu", kind: "bazKind"},
         \ ]
     endfunc
     set omnifunc=Omni_test
@@ -2063,6 +2071,21 @@ func Test_pum_maxwidth_multibyte()
   call term_sendkeys(buf, ":set pummaxwidth=2\<CR>")
   call term_sendkeys(buf, "S\<C-X>\<C-O>")
   call VerifyScreenDump(buf, 'Test_pum_maxwidth_08', {'rows': 8})
+  call term_sendkeys(buf, "\<ESC>")
+
+  call term_sendkeys(buf, ":set pummaxwidth=14\<CR>")
+  call term_sendkeys(buf, ":let g:change=1\<CR>S\<C-X>\<C-O>")
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_10', {'rows': 8})
+  call term_sendkeys(buf, "\<ESC>")
+
+  call term_sendkeys(buf, ":set fcs+=ellipsis:_\<CR>")
+  call term_sendkeys(buf, ":let g:change=0\<CR>S\<C-X>\<C-O>")
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_11', {'rows': 8})
+  call term_sendkeys(buf, "\<ESC>")
+
+  call term_sendkeys(buf, ":set fcs+=ellipsis:…\<CR>")
+  call term_sendkeys(buf, "S\<C-X>\<C-O>")
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_12', {'rows': 8})
   call term_sendkeys(buf, "\<ESC>")
 
   call StopVimInTerminal(buf)
