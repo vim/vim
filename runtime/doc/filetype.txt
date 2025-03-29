@@ -752,6 +752,13 @@ To enable the recognition of Markdown comments each time after removing
 re-source "javaformat.vim" for Vim versions greater than `8.2.1397`: >
 	runtime autoload/javaformat.vim
 <
+JAVASCRIPT						*ft-javascript-plugin*
+
+To enable prettier formatting of JavaScript files, set the following variable
+in your vimrc: >
+
+	let g:javascript_formatter = 'prettier'
+
 JSON-FORMAT						*ft-json-plugin*
 
 JSON filetype can be extended to use 'formatexpr' and "json.FormatExpr()"
