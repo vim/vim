@@ -4712,7 +4712,8 @@ static struct charstab filltab[] =
     CHARSTAB_ENTRY(&fill_chars.foldsep,	    "foldsep"),
     CHARSTAB_ENTRY(&fill_chars.diff,	    "diff"),
     CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
-    CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline")
+    CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline"),
+    CHARSTAB_ENTRY(NULL,		    "ellipsis"),
 };
 static lcs_chars_T lcs_chars;
 static struct charstab lcstab[] =
@@ -4762,6 +4763,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
     char_u  *last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
+    int	    ellipsis_len = 0;
 
     struct charstab *tab;
 
@@ -4826,6 +4828,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		fill_chars.diff = '-';
 		fill_chars.eob = '~';
 		fill_chars.lastline = '@';
+		fill_chars.ellipsis = NULL;
 	    }
 	}
 	p = value;
@@ -4914,6 +4917,47 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		    break;
 		}
 
+		if (!is_listchars && STRCMP(tab[i].name.string, "ellipsis") == 0)
+		{
+		    if (round == 0)
+		    {
+			ellipsis_len = 0;
+			while (*s != NUL && *s != ',')
+			{
+			    c1 = get_encoded_char_adv(&s);
+			    if (!vim_isprintc(c1))
+				return field_value_err(errbuf, errbuflen,
+				     e_wrong_character_width_for_field_str,
+				     tab[i].name.string);
+			    ++ellipsis_len;
+			}
+			if (ellipsis_len == 0)
+			    return field_value_err(errbuf, errbuflen,
+				e_wrong_number_of_characters_for_field_str,
+				tab[i].name.string);
+		    }
+		    else
+		    {
+			vim_free(fill_chars.ellipsis);
+			fill_chars.ellipsis = ALLOC_MULT(int, ellipsis_len + 1);
+
+			if (fill_chars.ellipsis != NULL)
+			{
+			    int pos = 0;
+			    while (*s != NUL && *s != ',' && pos < ellipsis_len)
+			    {
+				c1 = get_encoded_char_adv(&s);
+				fill_chars.ellipsis[pos++] = c1;
+			    }
+			    fill_chars.ellipsis[pos] = NUL;
+			}
+		    }
+
+		    p = s;
+		    break;
+		}
+
+
 		c2 = c3 = 0;
 		if (*s == NUL)
 		    return field_value_err(errbuf, errbuflen,
@@ -4986,6 +5030,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 	}
 	else
 	{
+	    vim_free(wp->w_fill_chars.ellipsis);
 	    wp->w_fill_chars = fill_chars;
 	}
     }
