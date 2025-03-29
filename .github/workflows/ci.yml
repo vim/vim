@@ -264,33 +264,21 @@ jobs:
         if: (!contains(matrix.extra, 'unittests'))
         run: |
           "${SRCDIR}"/vim --version
-          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
-          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+          if ${{ matrix.features == 'huge' }}; then
+            # Also check that optional and dynamic features are configured and working
+            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
+              -c "let g:required=['gettext', 'sodium', 'sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
+              -S ci/if_ver.vim -c quit
+          else
+            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
+              -S ci/if_ver.vim -c quit
+          fi
 
       - name: Test
         if: matrix.architecture != 'arm64'
         timeout-minutes: 25
         run: |
           make ${SHADOWOPT} ${TEST}
-
-      - name: Check feature flags
-        if: (!contains(matrix.extra, 'unittests') && matrix.features == 'huge')
-        run: |
-          # Check that optional or dynamic features are configured and working
-          FEATURES=( \
-            gettext \
-            sodium \
-            sound \
-            perl \
-            python3 \
-            lua \
-            ruby \
-            tcl \
-          )
-          for feat in "${FEATURES[@]}"; do
-            echo "Checking has('${feat}')"
-            "${SRCDIR}"/vim -u NONE -i NONE -es -c "if has('${feat}') | quit | else | cquit | endif"
-          done
 
 
       # `sg audio` does not work on arm64 runner due to permission ('Incorrect password' error).
@@ -409,25 +397,15 @@ jobs:
       - name: Check version
         run: |
           "${SRCDIR}"/vim --version
-          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
-          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
-
-      - name: Check feature flags
-        if: (matrix.features == 'huge')
-        run: |
-          # Check that optional or dynamic features are configured and working
-          FEATURES=( \
-            sound \
-            perl \
-            python3 \
-            lua \
-            ruby \
-            tcl \
-          )
-          for feat in "${FEATURES[@]}"; do
-            echo "Checking has('${feat}')"
-            "${SRCDIR}"/vim -u NONE -i NONE -es -c "if has('${feat}') | quit | else | cquit | endif"
-          done
+          if ${{ matrix.features == 'huge' }}; then
+            # Also check that optional and dynamic features are configured and working
+            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
+              -c "let g:required=['sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
+              -S ci/if_ver.vim -c quit
+          else
+            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
+              -S ci/if_ver.vim -c quit
+          fi
 
       - name: Install packages for testing
         run: |
@@ -691,14 +669,18 @@ jobs:
             start /wait src\gvim -u NONE -i NONE -c "redir > version.txt | ver | q" || exit 1
             type version.txt
             echo.
-            start /wait src\gvim -u NONE -i NONE -c "redir! > version.txt | so ci\if_ver-1.vim | q"
-            start /wait src\gvim -u NONE -i NONE -c "redir >> version.txt | so ci\if_ver-2.vim | q"
+            start /wait src\gvim -u NONE -i NONE -c "redir! > version.txt | so ci\if_ver.vim | q"
             type version.txt
             del version.txt
           ) else (
             src\vim --version || exit 1
-            src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
-            src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+            if "${{ matrix.features }}"=="HUGE" (
+              src\vim -u NONE -i NONE --not-a-term -esNX -V1 ^
+                -c "let g:required=['gettext', 'sodium', 'sound', 'python3', 'lua']" ^
+                -S ci/if_ver.vim -c quit
+            ) else (
+              src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver.vim -c quit
+            )
           )
 
       #- name: Prepare Artifact
