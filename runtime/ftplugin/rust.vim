@@ -57,6 +57,50 @@ setlocal includeexpr=rust#IncludeExpr(v:fname)
 
 setlocal suffixesadd=.rs
 
+if !exists("*" .. expand("<SID>") .. "RustfmtConfigOptions")
+function s:RustfmtConfigOptions()
+    let l:rustfmt_toml = findfile('rustfmt.toml', expand('%:p:h') . ';')
+    if l:rustfmt_toml !=# ''
+        return '--config-path '.shellescape(fnamemodify(l:rustfmt_toml, ":p"))
+    endif
+
+    let l:_rustfmt_toml = findfile('.rustfmt.toml', expand('%:p:h') . ';')
+    if l:_rustfmt_toml !=# ''
+        return '--config-path '.shellescape(fnamemodify(l:_rustfmt_toml, ":p"))
+    endif
+
+    " Default to edition 2018 in case no rustfmt.toml was found.
+    return '--edition 2018'
+endfunction
+endif
+
+if get(g:, "rustfmt_fail_silently", 0) && exists('##ShellFilterPost')
+    augroup rust.vim.FailSilently
+        autocmd! * <buffer>
+        autocmd ShellFilterPost <buffer> if v:shell_error | execute 'echom "shell filter returned error " . v:shell_error . ", undoing changes"' | undo | endif
+    augroup END
+endif
+
+if !get(b:, "rustfmt_autosave", get(g:, "rustfmt_autosave", 0))
+    if get(b:, "rustfmt_autosave_if_config_present", get(g:, "rustfmt_autosave_if_config_present", 0)) &&
+    \ (findfile('rustfmt.toml', '.;') !=# '' || findfile('.rustfmt.toml', '.;') !=# '')
+        let b:_rustfmt_autosave_because_of_config = 1
+        let b:rustfmt_autosave = 1
+    endif
+endif
+if get(b:, "rustfmt_autosave", get(g:, "rustfmt_autosave", 0))
+    augroup rust.vim.Autosave
+        autocmd! * <buffer>
+        autocmd BufWrite <buffer> normal! m'gggqGg`'
+    augroup END
+endif
+
+if executable('rustfmt')
+    let &l:formatprg = get(g:, 'rustfmt_command', 'rustfmt') . ' ' .
+                \ get(g:, 'rustfmt_options', '') . ' ' .
+                \ s:RustfmtConfigOptions()
+endif
+
 if exists("g:ftplugin_rust_source_path")
     let &l:path=g:ftplugin_rust_source_path . ',' . &l:path
 endif
