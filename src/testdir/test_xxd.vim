@@ -294,39 +294,39 @@ endfunc
 func Test_xxd_patch()
   let cmd1 = 'silent !' .. s:xxd_cmd .. ' -r Xxxdin Xxxdfile'
   let cmd2 = 'silent !' .. s:xxd_cmd .. ' -g1 Xxxdfile > Xxxdout'
-  call writefile(["2: 41 41", "8: 42 42"], 'Xxxdin', 'D')
-  call writefile(['::::::::'], 'Xxxdfile', 'D')
+  silent! call writefile(["2: 41 41", "8: 42 42"], 'Xxxdin', 'D')
+  silent! call writefile(['::::::::'], 'Xxxdfile', 'D')
   exe cmd1
   exe cmd2
-  call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
+  silent! call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
 
-  call writefile(["2: 43 43 ", "8: 44 44"], 'Xxxdin')
+  silent! call writefile(["2: 43 43 ", "8: 44 44"], 'Xxxdin')
   exe cmd1
   exe cmd2
-  call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 44 44                    ::CC::::DD'], readfile('Xxxdout'))
+  silent! call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 44 44                    ::CC::::DD'], readfile('Xxxdout'))
 
-  call writefile(["2: 45 45  ", "8: 46 46"], 'Xxxdin')
+  silent! call writefile(["2: 45 45  ", "8: 46 46"], 'Xxxdin')
   exe cmd1
   exe cmd2
-  call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 46 46                    ::EE::::FF'], readfile('Xxxdout'))
+  silent! call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 46 46                    ::EE::::FF'], readfile('Xxxdout'))
 
-  call writefile(["2: 41 41", "08: 42 42"], 'Xxxdin')
-  call writefile(['::::::::'], 'Xxxdfile')
+  silent! call writefile(["2: 41 41", "08: 42 42"], 'Xxxdin')
+  silent! call writefile(['::::::::'], 'Xxxdfile')
   exe cmd1
   exe cmd2
-  call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
+  silent! call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
 
-  call writefile(["2: 43 43 ", "09: 44 44"], 'Xxxdin')
+  silent! call writefile(["2: 43 43 ", "09: 44 44"], 'Xxxdin')
   exe cmd1
   exe cmd2
-  call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 42 44 44                 ::CC::::BDD'], readfile('Xxxdout'))
+  silent! call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 42 44 44                 ::CC::::BDD'], readfile('Xxxdout'))
 
-  call writefile(["2: 45 45  ", "0a: 46 46"], 'Xxxdin')
+  silent! call writefile(["2: 45 45  ", "0a: 46 46"], 'Xxxdin')
   exe cmd1
   exe cmd2
-  call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 42 44 46 46              ::EE::::BDFF'], readfile('Xxxdout'))
+  silent! call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 42 44 46 46              ::EE::::BDFF'], readfile('Xxxdout'))
 
-  call delete('Xxxdout')
+  silent! call delete('Xxxdout')
 endfunc
 
 func Test_xxd_patch_with_bitdump()
@@ -381,33 +381,33 @@ endfunc
 func Test_xxd_bit_dump()
   new
   exe 'r! printf "123456" | ' . s:xxd_cmd . ' -b1'
-  call assert_match('00000000: 00110001 00110010 00110011 00110100 00110101 00110110  123456', join(getline(1, 3)))
+  silent! call assert_match('00000000: 00110001 00110010 00110011 00110100 00110101 00110110  123456', join(getline(1, 3)))
   bwipe!
 endfunc
 
 func Test_xxd_revert_bit_dump()
   new
   exe 'r! printf "00000000: 01000001 01100010 01000011 01100100 01000101 01100110 01000111 01101000  AbCdEfGh" | ' . s:xxd_cmd . ' -r -b1 -c 8'
-  call assert_match('AbCdEfGh', join(getline(1, 3)))
+  silent! call assert_match('AbCdEfGh', join(getline(1, 3)))
   bwipe!
 
   new
   exe 'r! printf "00000000: 01000001 01100010 01000011 01100100 01000101 01100110  AbCdEf\n00000006: 01000111 01101000                                      Gh\n" | ' . s:xxd_cmd . ' -r -b1'
-  call assert_match('AbCdEfGh', join(getline(1, 3)))
+  silent! call assert_match('AbCdEfGh', join(getline(1, 3)))
   bwipe!
 endfunc
 
 func Test_xxd_roundtrip_large_bit_dump()
   new
   exe 'r! printf "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" | ' . s:xxd_cmd . ' -b | ' . s:xxd_cmd . ' -r -b'
-  call assert_match('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678', join(getline(1, 3)))
+  silent! call assert_match('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678', join(getline(1, 3)))
   bwipe!
 endfunc
 
 func Test_xxd_version()
   new
   exe 'r! ' . s:xxd_cmd . ' -v'
-  call assert_match('xxd 20\d\d-\d\d-\d\d by Juergen Weigert et al\.', join(getline(1, 3)))
+  silent! call assert_match('xxd 20\d\d-\d\d-\d\d by Juergen Weigert et al\.', join(getline(1, 3)))
   bwipe!
 endfunc
 
@@ -417,7 +417,7 @@ func Test_xxd_min_cols()
     for fmt in ['', '-b', '-e', '-i', '-p', ]
       new
       exe 'r! printf "ignored" | ' . s:xxd_cmd . ' ' . cols . ' ' . fmt
-      call assert_match("invalid number of columns", join(getline(1, '$')))
+      silent! call assert_match("invalid number of columns", join(getline(1, '$')))
       bwipe!
     endfor
   endfor
@@ -429,7 +429,7 @@ func Test_xxd_max_cols()
     for fmt in ['', '-b', '-e' ]
       new
       exe 'r! printf "ignored" | ' . s:xxd_cmd . ' ' . cols . ' ' . fmt
-      call assert_match("invalid number of columns", join(getline(1, '$')))
+      silent! call assert_match("invalid number of columns", join(getline(1, '$')))
       bwipe!
     endfor
   endfor
@@ -444,31 +444,31 @@ func Test_xxd_buffer_overflow()
   endif
   new
   let input = repeat('A', 256)
-  call writefile(['-9223372036854775808: ' . repeat("\e[1;32m41\e[0m ", 256) . ' ' . repeat("\e[1;32mA\e[0m", 256)], 'Xxdexpected', 'D')
+  silent! call writefile(['-9223372036854775808: ' . repeat("\e[1;32m41\e[0m ", 256) . ' ' . repeat("\e[1;32mA\e[0m", 256)], 'Xxdexpected', 'D')
   exe 'r! printf ' . input . '| ' . s:xxd_cmd . ' -Ralways -g1 -c256 -d -o 9223372036854775808 > Xxdout'
-  call assert_equalfile('Xxdexpected', 'Xxdout')
-  call delete('Xxdout')
+  silent! call assert_equalfile('Xxdexpected', 'Xxdout')
+  silent! call delete('Xxdout')
   bwipe!
 endfunc
 
 " -c0 selects the format specific default column value, as if no -c was given
 " except for -ps, where it disables extra newlines
 func Test_xxd_c0_is_def_cols()
-  call writefile(["abcdefghijklmnopqrstuvwxyz0123456789"], 'Xxdin', 'D')
+  silent! call writefile(["abcdefghijklmnopqrstuvwxyz0123456789"], 'Xxdin', 'D')
   for cols in ['-c0', '-c 0', '-cols 0']
     for fmt in ['', '-b', '-e', '-i']
       exe 'r! ' . s:xxd_cmd . ' ' . fmt ' Xxdin > Xxdout1'
       exe 'r! ' . s:xxd_cmd . ' ' . cols . ' ' . fmt ' Xxdin > Xxdout2'
-      call assert_equalfile('Xxdout1', 'Xxdout2')
+      silent! call assert_equalfile('Xxdout1', 'Xxdout2')
     endfor
   endfor
-  call delete('Xxdout1')
-  call delete('Xxdout2')
+  silent! call delete('Xxdout1')
+  silent! call delete('Xxdout2')
 endfunc
 
 " all output in a single line for -c0 -ps
 func Test_xxd_plain_one_line()
-  call writefile([
+  silent! call writefile([
         \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -482,22 +482,22 @@ func Test_xxd_plain_one_line()
     let out = join(getline(2, '$'))
     bwipe!
     " newlines in xxd output result in spaces in the string variable out
-    call assert_notmatch(" ", out)
+    silent! call assert_notmatch(" ", out)
     " xxd output must be non-empty and comprise only lower case hex digits
-    call assert_match("^[0-9a-f][0-9a-f]*$", out)
+    silent! call assert_match("^[0-9a-f][0-9a-f]*$", out)
   endfor
 endfunc
 
 func Test_xxd_little_endian_with_cols()
   enew!
-  call writefile(["ABCDEF"], 'Xxdin', 'D')
+  silent! call writefile(["ABCDEF"], 'Xxdin', 'D')
   exe 'r! ' .. s:xxd_cmd .. ' -e -c6 ' .. ' Xxdin'
-  call assert_equal('00000000: 44434241     4645  ABCDEF', getline(2))
+  silent! call assert_equal('00000000: 44434241     4645  ABCDEF', getline(2))
 
   enew!
-  call writefile(["ABCDEFGHI"], 'Xxdin', 'D')
+  silent! call writefile(["ABCDEFGHI"], 'Xxdin', 'D')
   exe 'r! ' .. s:xxd_cmd .. ' -e -c9 ' .. ' Xxdin'
-  call assert_equal('00000000: 44434241 48474645       49  ABCDEFGHI', getline(2))
+  silent! call assert_equal('00000000: 44434241 48474645       49  ABCDEFGHI', getline(2))
 
   bwipe!
 endfunc
@@ -526,7 +526,7 @@ let data = [
     \ "000000d0: d0d1 d2d3 d4d5 d6d7 d8d9 dadb dcdd dedf  ................",
     \ "000000e0: e0e1 e2e3 e4e5 e6e7 e8e9 eaeb eced eeef  ................",
     \ "000000f0: f0f1 f2f3 f4f5 f6f7 f8f9 fafb fcfd feff  ................"]
-call writefile(data,'Xinput')
+silent! call writefile(data,'Xinput')
 
   silent exe '!' . s:xxd_cmd . ' -r < Xinput > XXDfile'
 
@@ -551,7 +551,7 @@ call writefile(data,'Xinput')
       \ "000000e0: e0e1 e2e3 e4e5 e6e7 e8e9 eaeb eced eeef  ................",
       \ "000000f0: f0f1 f2f3 f4f5 f6f7 f8f9 fafb fcfd feff  ................"]
 
-  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  silent! call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
 
   "Test: color=always
   let s:test += 1
@@ -624,10 +624,10 @@ call writefile(data,'Xinput')
       \ "000000f4: \e[1;31mf4\e[0m\e[1;31mf5\e[0m \e[1;31mf6\e[0m\e[1;31mf7\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
       \ "000000f8: \e[1;31mf8\e[0m\e[1;31mf9\e[0m \e[1;31mfa\e[0m\e[1;31mfb\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
       \ "000000fc: \e[1;31mfc\e[0m\e[1;31mfd\e[0m \e[1;31mfe\e[0m\e[1;34mff\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;34m.\e[0m"]
-  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  silent! call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
 
-  call delete('Xinput')
-  call delete('XXDfile')
+  silent! call delete('Xinput')
+  silent! call delete('XXDfile')
 
 endfunc
 
