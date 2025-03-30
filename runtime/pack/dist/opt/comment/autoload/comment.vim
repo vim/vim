@@ -144,7 +144,7 @@ export def ObjComment(inner: bool)
         var spaces = matchstr(getline(pos_end[1]), '\%>.c\s*')
         pos_end[2] += spaces->len()
         if getline(pos_end[1])[pos_end[2] : ] =~ '^\s*$'
-            && (pos_start[2] == 1 || getline(pos_start[1])[ : pos_start[2]] =~ '^\s*$')
+            && (pos_start[2] <= 1 || getline(pos_start[1])[ : pos_start[2]] =~ '^\s*$')
             if search('\v\s*\_$(\s*\n)+', 'eW', 0, 200) > 0
                 pos_end = getcurpos()
             endif
