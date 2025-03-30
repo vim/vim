@@ -3716,13 +3716,15 @@ EXTERN char e_variadic_tuple_must_end_with_list_type_str[]
 EXTERN char e_cannot_use_variadic_tuple_in_concatenation[]
 	INIT(= N_("E1540: Cannot use a variadic tuple in concatenation"));
 #endif
+EXTERN char e_unicode_val_too_large[]
+	INIT(= N_("E1541: Value too large, max Unicode codepoint is U+10FFFF"));
 #ifdef FEAT_QUICKFIX
 EXTERN char e_cannot_have_negative_or_zero_number_of_quickfix[]
-	INIT(= N_("E1541: Cannot have a negative or zero number of quickfix/location lists"));
+	INIT(= N_("E1542: Cannot have a negative or zero number of quickfix/location lists"));
 EXTERN char e_cannot_have_more_than_hundred_quickfix[]
-	INIT(= N_("E1542: Cannot have more than a hundred quickfix/location lists"));
+	INIT(= N_("E1543: Cannot have more than a hundred quickfix/location lists"));
 EXTERN char e_failed_resizing_quickfix_stack[]
-	INIT(= N_("E1543: Failed resizing the quickfix/location list stack"));
+	INIT(= N_("E1544: Failed resizing the quickfix/location list stack"));
 EXTERN char e_failed_allocating_quickfix_stack[]
-	INIT(= N_("E1544: Failed allocating memory for quickfix/location list stack"));
+	INIT(= N_("E1545: Failed allocating memory for quickfix/location list stack"));
 #endif
