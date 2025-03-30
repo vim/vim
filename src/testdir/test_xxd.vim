@@ -667,13 +667,13 @@ func Test_xxd_color2()
   let buf = RunVimInTerminal('', #{rows: 20, cmd: 'sh'})
   call term_sendkeys(buf,  s:xxd_cmd .. " -R never  < XXDfile_colors\<cr>")
   call TermWait(buf)
-  call VerifyScreenDump(buf, 'Test_xxd_color_0', {})
+  silent call VerifyScreenDump(buf, 'Test_xxd_color_0', {})
 
   call TermWait(buf)
   call term_sendkeys(buf,  "clear\<CR>")
   call term_sendkeys(buf,  s:xxd_cmd .. " -R always  < XXDfile_colors\<cr>")
   call TermWait(buf)
-  call VerifyScreenDump(buf, 'Test_xxd_color_1', {})
+  silent call VerifyScreenDump(buf, 'Test_xxd_color_1', {})
 
   call term_sendkeys(buf,  "exit\<CR>")
 
