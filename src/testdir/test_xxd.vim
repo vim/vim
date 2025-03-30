@@ -380,7 +380,7 @@ endfunc
 
 func Test_xxd_bit_dump()
   new
-  exe 'r! printf "123456" | ' . s:xxd_cmd . ' -b1'
+  silent exe 'r! printf "123456" | ' . s:xxd_cmd . ' -b1'
   call assert_match('00000000: 00110001 00110010 00110011 00110100 00110101 00110110  123456', join(getline(1, 3)))
   bwipe!
 endfunc
