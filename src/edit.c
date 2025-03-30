@@ -3022,7 +3022,7 @@ get_last_insert_save(void)
 	return NULL;
 
     if (insert.length > 0 && s[insert.length - 1] == ESC)	// remove trailing ESC
-	s[insert.length - 1] = NUL;
+	s[--insert.length] = NUL;
     return s;
 }
 
