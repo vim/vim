@@ -61,7 +61,7 @@ function! s:RustfmtWriteMode()
     endif
 endfunction
 
-function! s:RustfmtConfigOptions()
+function! rustfmt#RustfmtConfigOptions()
     let l:rustfmt_toml = findfile('rustfmt.toml', expand('%:p:h') . ';')
     if l:rustfmt_toml !=# ''
         return '--config-path '.shellescape(fnamemodify(l:rustfmt_toml, ":p"))
