@@ -3727,4 +3727,6 @@ EXTERN char e_failed_resizing_quickfix_stack[]
 	INIT(= N_("E1544: Failed resizing the quickfix/location list stack"));
 EXTERN char e_failed_allocating_quickfix_stack[]
 	INIT(= N_("E1545: Failed allocating memory for quickfix/location list stack"));
+EXTERN char e_no_quickfix_list[]
+	INIT(= N_("E1546: No quickfix list"));
 #endif
