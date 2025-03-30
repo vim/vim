@@ -487,12 +487,7 @@ endfunc
 
 func Test_textobj_trailing_spaces_comment()
   CheckScreendump
-  let lines =<< trim END
-    # print("hello")   
-    # print("world")   
-    #
-    print("!")
-  END
+  let lines = ['# print("hello")   ', '# print("world")   ', "#", 'print("!")']
 
   let input_file = "test_textobj_trailing_spaces_input.py"
   call writefile(lines, input_file, "D")
@@ -513,13 +508,7 @@ endfunc
 
 func Test_textobj_trailing_spaces_last_comment()
   CheckScreendump
-  let lines =<< trim END
-    # print("hello")   
-    # print("world")   
-    #
-
-
-  END
+  let lines = ['# print("hello")   ', '# print("world")   ', "#", '', '']
 
   let input_file = "test_textobj_trailing_spaces_last_input.py"
   call writefile(lines, input_file, "D")
