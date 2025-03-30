@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 26
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11923,7 +11923,7 @@ trunc({expr})							*trunc()*
 		Return type: |Float|
 
 
-tuple2list({list})					*tuple2list()*
+tuple2list({tuple})					*tuple2list()*
 		Create a List from a shallow copy of the tuple items.
 		Examples: >
 			tuple2list((1, 2, 3))		returns [1, 2, 3]
