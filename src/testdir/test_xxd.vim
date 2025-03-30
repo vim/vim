@@ -657,7 +657,7 @@ func Test_xxd_color2()
         \ "000000e0: e0e1 e2e3 e4e5 e6e7 e8e9 eaeb eced eeef  ................",
         \ "000000f0: f0f1 f2f3 f4f5 f6f7 f8f9 fafb fcfd feff  ................"]
   silent! call writefile(data, 'Xinput', 'D')
-  silent! call system(s:xxd_cmd .. ' -r < Xinput > XXDfile_colors')
+  silent! call system(s:xxd_cmd .. ' -r < Xinput > XXDfile_colors 2>/dev/null')
 
   let $PS1 = '$ '
   " Start a terminal session using a shell
