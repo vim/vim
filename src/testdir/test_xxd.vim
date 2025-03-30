@@ -656,28 +656,28 @@ func Test_xxd_color2()
         \ "000000d0: d0d1 d2d3 d4d5 d6d7 d8d9 dadb dcdd dedf  ................",
         \ "000000e0: e0e1 e2e3 e4e5 e6e7 e8e9 eaeb eced eeef  ................",
         \ "000000f0: f0f1 f2f3 f4f5 f6f7 f8f9 fafb fcfd feff  ................"]
-  silent call writefile(data, 'Xinput', 'D')
-  silent call system(s:xxd_cmd .. ' -r < Xinput > XXDfile_colors')
+  silent! call writefile(data, 'Xinput', 'D')
+  silent! call system(s:xxd_cmd .. ' -r < Xinput > XXDfile_colors')
 
   let $PS1 = '$ '
   " Start a terminal session using a shell
   let buf = RunVimInTerminal('', #{rows: 20, cmd: 'sh'})
 
   " Run xxd with color=never and verify screendump silently
-  silent call term_sendkeys(buf, s:xxd_cmd .. " -R never  < XXDfile_colors\<cr>")
-  silent call TermWait(buf)
-  silent call VerifyScreenDump(buf, 'Test_xxd_color_0', {})
+  silent! call term_sendkeys(buf, s:xxd_cmd .. " -R never  < XXDfile_colors\<cr>")
+  silent! call TermWait(buf)
+  silent! call VerifyScreenDump(buf, 'Test_xxd_color_0', {})
 
   " Clear the screen and run xxd with color=always, then verify silently
-  silent call TermWait(buf)
-  silent call term_sendkeys(buf, "clear\<CR>")
-  silent call term_sendkeys(buf, s:xxd_cmd .. " -R always  < XXDfile_colors\<cr>")
-  silent call TermWait(buf)
-  silent call VerifyScreenDump(buf, 'Test_xxd_color_1', {})
+  silent! call TermWait(buf)
+  silent! call term_sendkeys(buf, "clear\<CR>")
+  silent! call term_sendkeys(buf, s:xxd_cmd .. " -R always  < XXDfile_colors\<cr>")
+  silent! call TermWait(buf)
+  silent! call VerifyScreenDump(buf, 'Test_xxd_color_1', {})
 
   " Exit the terminal session
-  silent call term_sendkeys(buf, "exit\<CR>")
-  silent call delete('XXDfile_colors')
+  silent! call term_sendkeys(buf, "exit\<CR>")
+  silent! call delete('XXDfile_colors')
   unlet! $PS1
 endfunc
 " vim: shiftwidth=2 sts=2 expandtab
