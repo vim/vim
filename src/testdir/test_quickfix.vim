@@ -6866,8 +6866,8 @@ endfunc
 func Xtest_invalid_history_num(cchar)
   call s:setup_commands(a:cchar)
 
-  call assert_fails('Xsethist -10000', "E1541:")
-  call assert_fails('Xsethist 10000', "E1542:")
+  call assert_fails('Xsethist -10000', "E1542:")
+  call assert_fails('Xsethist 10000', "E1543:")
   Xsethistdefault
 endfunc
 
