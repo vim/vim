@@ -292,41 +292,41 @@ func Test_xxd()
 endfunc
 
 func Test_xxd_patch()
-  let cmd1 = 'silent !' .. s:xxd_cmd .. ' -r Xxxdin Xxxdfile'
-  let cmd2 = 'silent !' .. s:xxd_cmd .. ' -g1 Xxxdfile > Xxxdout'
-  call writefile(["2: 41 41", "8: 42 42"], 'Xxxdin', 'D')
-  call writefile(['::::::::'], 'Xxxdfile', 'D')
-  exe cmd1
-  exe cmd2
-  call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
+  silent let cmd1 = 'silent !' .. s:xxd_cmd .. ' -r Xxxdin Xxxdfile'
+  silent let cmd2 = 'silent !' .. s:xxd_cmd .. ' -g1 Xxxdfile > Xxxdout'
+  silent call writefile(["2: 41 41", "8: 42 42"], 'Xxxdin', 'D')
+  silent call writefile(['::::::::'], 'Xxxdfile', 'D')
+  silent exe cmd1
+  silent exe cmd2
+  silent call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
 
-  call writefile(["2: 43 43 ", "8: 44 44"], 'Xxxdin')
-  exe cmd1
-  exe cmd2
-  call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 44 44                    ::CC::::DD'], readfile('Xxxdout'))
+  silent call writefile(["2: 43 43 ", "8: 44 44"], 'Xxxdin')
+  silent exe cmd1
+  silent exe cmd2
+  silent call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 44 44                    ::CC::::DD'], readfile('Xxxdout'))
 
-  call writefile(["2: 45 45  ", "8: 46 46"], 'Xxxdin')
-  exe cmd1
-  exe cmd2
-  call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 46 46                    ::EE::::FF'], readfile('Xxxdout'))
+  silent call writefile(["2: 45 45  ", "8: 46 46"], 'Xxxdin')
+  silent exe cmd1
+  silent exe cmd2
+  silent call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 46 46                    ::EE::::FF'], readfile('Xxxdout'))
 
-  call writefile(["2: 41 41", "08: 42 42"], 'Xxxdin')
-  call writefile(['::::::::'], 'Xxxdfile')
-  exe cmd1
-  exe cmd2
-  call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
+  silent call writefile(["2: 41 41", "08: 42 42"], 'Xxxdin')
+  silent call writefile(['::::::::'], 'Xxxdfile')
+  silent exe cmd1
+  silent exe cmd2
+  silent call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
 
-  call writefile(["2: 43 43 ", "09: 44 44"], 'Xxxdin')
-  exe cmd1
-  exe cmd2
-  call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 42 44 44                 ::CC::::BDD'], readfile('Xxxdout'))
+  silent call writefile(["2: 43 43 ", "09: 44 44"], 'Xxxdin')
+  silent exe cmd1
+  silent exe cmd2
+  silent call assert_equal(['00000000: 3a 3a 43 43 3a 3a 3a 3a 42 44 44                 ::CC::::BDD'], readfile('Xxxdout'))
 
-  call writefile(["2: 45 45  ", "0a: 46 46"], 'Xxxdin')
-  exe cmd1
-  exe cmd2
-  call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 42 44 46 46              ::EE::::BDFF'], readfile('Xxxdout'))
+  silent call writefile(["2: 45 45  ", "0a: 46 46"], 'Xxxdin')
+  silent exe cmd1
+  silent exe cmd2
+  silent call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 42 44 46 46              ::EE::::BDFF'], readfile('Xxxdout'))
 
-  call delete('Xxxdout')
+  silent call delete('Xxxdout')
 endfunc
 
 func Test_xxd_patch_with_bitdump()
