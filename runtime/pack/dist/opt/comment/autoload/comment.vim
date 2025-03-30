@@ -134,7 +134,7 @@ export def ObjComment(inner: bool)
         search('\S', 'beW', 0, 200, () => !IsComment())
     else
         if search('\%$', 'W', 0, 200) > 0
-            search('\ze\S', 'beW', 0, 200, () => !IsComment())
+            search('\ze\S', 'beW', line('.'), 200, () => !IsComment())
         endif
     endif
 
