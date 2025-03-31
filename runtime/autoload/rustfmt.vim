@@ -84,7 +84,7 @@ function! s:RustfmtCommandRange(filename, line1, line2)
 
     let l:arg = {"file": shellescape(a:filename), "range": [a:line1, a:line2]}
     let l:write_mode = s:RustfmtWriteMode()
-    let l:rustfmt_config = s:RustfmtConfigOptions()
+    let l:rustfmt_config = rustfmt#RustfmtConfigOptions()
 
     " FIXME: When --file-lines gets to be stable, add version range checking
     " accordingly.
@@ -99,7 +99,7 @@ endfunction
 
 function! s:RustfmtCommand()
     let write_mode = g:rustfmt_emit_files ? '--emit=stdout' : '--write-mode=display'
-    let config = s:RustfmtConfigOptions()
+    let config = rustfmt#RustfmtConfigOptions()
     return join([g:rustfmt_command, write_mode, config, g:rustfmt_options])
 endfunction
 
