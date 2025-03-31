@@ -1370,8 +1370,7 @@ In the first state these keys have a special meaning:
 		  the cursor.  This reduces the list of matches, often to one
 		  entry, and switches to the second state.
 Any non-special character:
-		  Stop completion without changing the match and insert the
-		  typed character.
+		  Add this character and reduce the number of matches.
 
 In the second and third state these keys have a special meaning:
 <BS> and CTRL-H   Delete one character, find the matches for the shorter word
