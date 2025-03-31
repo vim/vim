@@ -3387,4 +3387,32 @@ func Test_complete_multiline_marks()
   delfunc Omni_test
 endfunc
 
+" When a match is inserted and a new character is added, the menu should update
+" to display items matching the new prefix.
+func Test_complete_append_selected_match()
+  func PrintMenuWords()
+    let info = complete_info(["selected", "matches"])
+    call map(info.matches, {_, v -> v.word})
+    return info
+  endfunc
+
+  new
+  call setline(1, ["fo", "foo", "foobar", "fobarbaz"])
+  exe "normal! Gof\<c-n>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('fo{''matches'': [''fo'', ''foo'', ''foobar'', ''fobarbaz''], ''selected'': 0}', getline(5))
+  %d
+  call setline(1, ["fo", "foo", "foobar", "fobarbaz"])
+  exe "normal! Gof\<c-n>o\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('foo{''matches'': [''foo'', ''foobar''], ''selected'': 1}', getline(5))
+  %d
+  set completeopt=menu,noselect
+  call setline(1, ["fo", "foo", "foobar", "fobarbaz"])
+  exe "normal! Gof\<c-n>\<c-n>o\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('foo{''matches'': [''foo'', ''foobar''], ''selected'': 1}', getline(5))
+  bw!
+
+  set completeopt&
+  delfunc PrintMenuWords
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

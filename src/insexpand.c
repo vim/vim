@@ -2021,16 +2021,6 @@ ins_compl_win_active(win_T *wp UNUSED)
 }
 
 /*
- * Selected one of the matches.  When FALSE the match was edited or using the
- * longest common string.
- */
-    int
-ins_compl_used_match(void)
-{
-    return compl_used_match;
-}
-
-/*
  * Initialize get longest common string.
  */
     void
