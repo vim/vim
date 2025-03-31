@@ -637,59 +637,55 @@ edit(
 	{
 	    // BS: Delete one character from "compl_leader".
 	    if ((c == K_BS || c == Ctrl_H)
-			&& curwin->w_cursor.col > ins_compl_col()
-			&& (c = ins_compl_bs()) == NUL)
+		    && curwin->w_cursor.col > ins_compl_col()
+		    && (c = ins_compl_bs()) == NUL)
 		continue;
 
-	    // When no match was selected or it was edited.
-	    if (!ins_compl_used_match())
+	    // CTRL-L: Add one character from the current match to
+	    // "compl_leader".  Except when at the original match and
+	    // there is nothing to add, CTRL-L works like CTRL-P then.
+	    if (c == Ctrl_L
+		    && (!ctrl_x_mode_line_or_eval()
+			|| ins_compl_long_shown_match()))
 	    {
-		// CTRL-L: Add one character from the current match to
-		// "compl_leader".  Except when at the original match and
-		// there is nothing to add, CTRL-L works like CTRL-P then.
-		if (c == Ctrl_L
-			&& (!ctrl_x_mode_line_or_eval()
-			    || ins_compl_long_shown_match()))
-		{
-		    ins_compl_addfrommatch();
-		    continue;
-		}
-
-		// A non-white character that fits in with the current
-		// completion: Add to "compl_leader".
-		if (ins_compl_accept_char(c))
-		{
-#if defined(FEAT_EVAL)
-		    // Trigger InsertCharPre.
-		    char_u *str = do_insert_char_pre(c);
-		    char_u *p;
-
-		    if (str != NULL)
-		    {
-			for (p = str; *p != NUL; MB_PTR_ADV(p))
-			    ins_compl_addleader(PTR2CHAR(p));
-			vim_free(str);
-		    }
-		    else
-#endif
-			ins_compl_addleader(c);
-		    continue;
-		}
-
-		// Pressing CTRL-Y selects the current match.  When
-		// ins_compl_enter_selects() is set the Enter key does the
-		// same.
-		if ((c == Ctrl_Y || (ins_compl_enter_selects()
-				    && (c == CAR || c == K_KENTER || c == NL)))
-			&& stop_arrow() == OK)
-		{
-		    ins_compl_delete();
-		    ins_compl_insert(FALSE, FALSE);
-		}
-		// Delete preinserted text when typing special chars
-		else if (IS_WHITE_NL_OR_NUL(c) && ins_compl_preinsert_effect())
-		    ins_compl_delete();
+		ins_compl_addfrommatch();
+		continue;
 	    }
+
+	    // A non-white character that fits in with the current
+	    // completion: Add to "compl_leader".
+	    if (ins_compl_accept_char(c))
+	    {
+#if defined(FEAT_EVAL)
+		// Trigger InsertCharPre.
+		char_u *str = do_insert_char_pre(c);
+		char_u *p;
+
+		if (str != NULL)
+		{
+		    for (p = str; *p != NUL; MB_PTR_ADV(p))
+			ins_compl_addleader(PTR2CHAR(p));
+		    vim_free(str);
+		}
+		else
+#endif
+		    ins_compl_addleader(c);
+		continue;
+	    }
+
+	    // Pressing CTRL-Y selects the current match.  When
+	    // ins_compl_enter_selects() is set the Enter key does the
+	    // same.
+	    if ((c == Ctrl_Y || (ins_compl_enter_selects()
+			    && (c == CAR || c == K_KENTER || c == NL)))
+		    && stop_arrow() == OK)
+	    {
+		ins_compl_delete();
+		ins_compl_insert(FALSE, FALSE);
+	    }
+	    // Delete preinserted text when typing special chars
+	    else if (IS_WHITE_NL_OR_NUL(c) && ins_compl_preinsert_effect())
+		ins_compl_delete();
 	}
 
 	// Prepare for or stop CTRL-X mode.  This doesn't do completion, but
