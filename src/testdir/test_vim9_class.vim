@@ -12481,4 +12481,44 @@ def Test_super_keyword()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using a list of objects
+def Test_method_call_from_list_of_objects()
+  var lines =<< trim END
+    vim9script
+
+    class C
+      def F(): string
+        return 'C.F'
+      enddef
+    endclass
+
+  class D
+    var x: string
+    def new(this.x)
+    enddef
+    def F(): string
+      return 'D.F'
+    enddef
+  endclass
+
+  var obj1 = C.new()
+  var obj2 = D.new('a')
+
+  def CheckObjectList()
+    var items = [obj1, obj2]
+    assert_equal('list<any>', typename(items))
+    assert_equal('C.F', items[0].F())
+    assert_equal('D.F', items[1].F())
+  enddef
+
+  CheckObjectList()
+
+  var items2 = [obj1, obj2]
+  assert_equal('list<any>', typename(items2))
+  assert_equal('C.F', items2[0].F())
+  assert_equal('D.F', items2[1].F())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
