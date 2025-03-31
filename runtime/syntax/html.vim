@@ -3,7 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainers: Jorge Maldonado Ventura <jorgesumle@freakspot.net>
 "			Claudio Fleiner <claudio@fleiner.com>
-" Last Change:		2023 Nov 28
+" Last Change:		2025 Apr 16
 " 2024 Jul 30 by Vim Project: increase syn-sync-minlines to 250
 
 " See :help html.vim for some comments and a description of the options
@@ -325,7 +325,8 @@ if main_syntax == "html"
 endif
 
 " Folding
-" Originally by Ingo Karkat and Marcus Zanona
+" (Originally written by Ingo Karkat and Marcus Zanona; see
+" https://vi.stackexchange.com/questions/2306/html-syntax-folding-in-vim .)
 if get(g:, "html_syntax_folding", 0)
   syn region htmlFold start="<\z(\<\%(area\|base\|br\|col\|command\|embed\|hr\|img\|input\|keygen\|link\|meta\|param\|source\|track\|wbr\>\)\@![a-z-]\+\>\)\%(\_s*\_[^/]\?>\|\_s\_[^>]*\_[^>/]>\)" end="</\z1\_s*>" fold transparent keepend extend containedin=htmlHead,htmlH\d
   " fold comments (the real ones and the old Netscape ones)
