@@ -608,7 +608,16 @@ edit(
 		    if (c != K_IGNORE && c != K_NOP)
 			vungetc(c);
 		    count = 0;
-		    nomove = TRUE;
+
+		    if (!bt_prompt(curwin->w_buffer)
+#ifdef FEAT_TERMINAL
+			    && !bt_terminal(curwin->w_buffer)
+#endif
+			    && stop_insert_mode)
+			// :stopinsert command via callback or via server command
+			nomove = FALSE;
+		    else
+			nomove = TRUE;
 		    ins_compl_prep(ESC);
 		    goto doESCkey;
 		}
