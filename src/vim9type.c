@@ -764,7 +764,7 @@ oc_typval2type(typval_T *tv)
     if (tv->vval.v_object != NULL)
 	return &tv->vval.v_object->obj_class->class_object_type;
 
-    return &t_object;
+    return &t_object_any;
 }
 
 /*
@@ -1307,8 +1307,11 @@ check_type_maybe(
 		return MAYBE;	// use runtime type check
 	    if (actual->tt_type != VAR_OBJECT)
 		return FAIL;	// don't use tt_class
-	    if (actual->tt_class == NULL)
-		return OK;	// A null object matches
+	    if (actual->tt_class == NULL)    // null object
+		return OK;
+	    // t_object_any matches any object except for an enum item
+	    if (expected == &t_object_any && !IS_ENUM(actual->tt_class))
+		return OK;
 
 	    // For object method arguments, do a invariant type check in
 	    // an extended class.  For all others, do a covariance type check.
@@ -2122,6 +2125,11 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 	    common_type_var_func(type1, type2, dest, type_gap);
 	    return;
 	}
+	else if (type1->tt_type == VAR_OBJECT)
+	{
+	    *dest = &t_object_any;
+	    return;
+	}
     }
 
     *dest = &t_any;
@@ -2428,7 +2436,7 @@ type_name_class_or_obj(char *name, type_T *type, char **tofree)
 	    name = "enum";
     }
     else
-	class_name = (char_u *)"Unknown";
+	class_name = (char_u *)"any";
 
     size_t len = STRLEN(name) + STRLEN(class_name) + 3;
     *tofree = alloc(len);

@@ -5180,7 +5180,7 @@ def Test_null_values()
       [null_dict, 1, '{}', 4, 'dict<any>'],
       [null_function, 1, "function('')", 2, 'func(...): unknown'],
       [null_list, 1, '[]', 3, 'list<any>'],
-      [null_object, 1, 'object of [unknown]', 13, 'object<Unknown>'],
+      [null_object, 1, 'object of [unknown]', 13, 'object<any>'],
       [null_partial, 1, "function('')", 2, 'func(...): unknown'],
       [null_string, 1, "''", 1, 'string']
     ]

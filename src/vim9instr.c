@@ -756,7 +756,7 @@ generate_SETTYPE(
 generate_PUSHOBJ(cctx_T *cctx)
 {
     RETURN_OK_IF_SKIP(cctx);
-    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_object) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_object_any) == NULL)
 	return FAIL;
     return OK;
 }
@@ -2142,7 +2142,8 @@ generate_PCALL(
 
     RETURN_OK_IF_SKIP(cctx);
 
-    if (type->tt_type == VAR_ANY || type->tt_type == VAR_UNKNOWN)
+    if (type->tt_type == VAR_ANY || type->tt_type == VAR_UNKNOWN
+						|| type == &t_object_any)
 	ret_type = &t_any;
     else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
     {
@@ -2213,7 +2214,9 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
     // check for dict type
     type = get_type_on_stack(cctx, 0);
     if (type->tt_type != VAR_DICT
-		   && type->tt_type != VAR_ANY && type->tt_type != VAR_UNKNOWN)
+	    && type->tt_type != VAR_OBJECT
+	    && type->tt_type != VAR_ANY
+	    && type->tt_type != VAR_UNKNOWN)
     {
 	char *tofree;
 
