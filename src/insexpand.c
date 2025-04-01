@@ -1797,7 +1797,7 @@ ins_compl_files(
     if (in_fuzzy_collect)
     {
 	leader = ins_compl_leader();
-	leader_len = ins_compl_leader_len();
+	leader_len = (int)ins_compl_leader_len();
     }
 
     for (i = 0; i < count && !got_int && !compl_interrupted; i++)
@@ -4642,7 +4642,7 @@ ins_compl_delete(void)
     int	has_preinsert = ins_compl_preinsert_effect();
     if (has_preinsert)
     {
-	col += ins_compl_leader_len();
+	col += (int)ins_compl_leader_len();
 	curwin->w_cursor.col = compl_ins_end_col;
     }
 
