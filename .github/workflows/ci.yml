@@ -620,11 +620,13 @@ jobs:
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
               DYNAMIC_PYTHON3_STABLE_ABI=%PYTHON3_STABLE% ^
-              DYNAMIC_SODIUM=yes SODIUM=%SODIUM_DIR%
+              DYNAMIC_SODIUM=yes SODIUM=%SODIUM_DIR% ^
+              CI_FLAGS=/we4267
           ) else (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
-              GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }}
+              GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} ^
+              CI_FLAGS=/we4267
           )
 
       - name: Build (MinGW)
