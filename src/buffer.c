@@ -2926,6 +2926,8 @@ ExpandBufnames(
 		p = home_replace_save(buf, p);
 	    else
 		p = vim_strsave(p);
+	    if (p == NULL)
+		return FAIL;
 
 	    if (!fuzzy)
 	    {
@@ -4030,8 +4032,11 @@ maketitle(void)
 	    else
 	    {
 		p = transstr(gettail(curbuf->b_fname));
-		vim_strncpy(buf, p, SPACE_FOR_FNAME);
-		vim_free(p);
+		if (p != NULL)
+		{
+		    vim_strncpy(buf, p, SPACE_FOR_FNAME);
+		    vim_free(p);
+		}
 	    }
 
 #ifdef FEAT_TERMINAL
@@ -4084,8 +4089,11 @@ maketitle(void)
 		if (off < SPACE_FOR_DIR)
 		{
 		    p = transstr(buf + off);
-		    vim_strncpy(buf + off, p, (size_t)(SPACE_FOR_DIR - off));
-		    vim_free(p);
+		    if (p != NULL)
+		    {
+			vim_strncpy(buf + off, p, (size_t)(SPACE_FOR_DIR - off));
+			vim_free(p);
+		    }
 		}
 		else
 		{
@@ -4767,25 +4775,29 @@ build_stl_str_hl(
 		size_t new_fmt_len = parsed_usefmt
 						 + str_length + fmt_length + 3;
 		char_u *new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
-		char_u *new_fmt_p = new_fmt;
 
-		new_fmt_p = (char_u *)memcpy(new_fmt_p, usefmt, parsed_usefmt)
-							       + parsed_usefmt;
-		new_fmt_p = (char_u *)memcpy(new_fmt_p , str, str_length)
-								  + str_length;
-		new_fmt_p = (char_u *)memcpy(new_fmt_p, "%}", 2) + 2;
-		new_fmt_p = (char_u *)memcpy(new_fmt_p , s, fmt_length)
-								  + fmt_length;
-		*new_fmt_p = 0;
-		new_fmt_p = NULL;
+		if (new_fmt != NULL)
+		{
+		    char_u *new_fmt_p = new_fmt;
 
-		if (usefmt != fmt)
-		    vim_free(usefmt);
-		VIM_CLEAR(str);
-		usefmt = new_fmt;
-		s = usefmt + parsed_usefmt;
-		evaldepth++;
-		continue;
+		    new_fmt_p = (char_u *)memcpy(new_fmt_p, usefmt, parsed_usefmt)
+								   + parsed_usefmt;
+		    new_fmt_p = (char_u *)memcpy(new_fmt_p , str, str_length)
+								      + str_length;
+		    new_fmt_p = (char_u *)memcpy(new_fmt_p, "%}", 2) + 2;
+		    new_fmt_p = (char_u *)memcpy(new_fmt_p , s, fmt_length)
+								      + fmt_length;
+		    *new_fmt_p = 0;
+		    new_fmt_p = NULL;
+
+		    if (usefmt != fmt)
+			vim_free(usefmt);
+		    VIM_CLEAR(str);
+		    usefmt = new_fmt;
+		    s = usefmt + parsed_usefmt;
+		    evaldepth++;
+		    continue;
+		}
 	    }
 #endif
 	    break;
