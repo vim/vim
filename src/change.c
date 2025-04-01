@@ -1203,8 +1203,8 @@ ins_str(char_u *s, size_t slen)
     mch_memmove(newp + col, s, slen);
     mch_memmove(newp + col + slen, oldp + col, (size_t)(oldlen - col + 1));
     ml_replace(lnum, newp, FALSE);
-    inserted_bytes(lnum, col, slen);
-    curwin->w_cursor.col += slen;
+    inserted_bytes(lnum, col, (int)slen);
+    curwin->w_cursor.col += (colnr_T)slen;
 }
 
 /*
