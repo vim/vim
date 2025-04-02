@@ -1917,8 +1917,6 @@ qf_init(win_T	    *wp,
 	if (qi == NULL)
 	    return FAIL;
     }
-    if (qi->qf_lists == NULL)
-	return FAIL;
 
     return qf_init_ext(qi, qi->qf_curlist, efile, curbuf, NULL, errorformat,
 	    newlist, (linenr_T)0, (linenr_T)0, qf_title, enc);
@@ -2098,8 +2096,6 @@ wipe_qf_buffer(qf_info_T *qi)
     static void
 qf_free_list_stack_items(qf_info_T *qi)
 {
-    if (qi->qf_lists == NULL)
-	return;
     for (int i = 0; i < qi->qf_listcount; ++i)
 	qf_free(qf_get_list(qi, i));
 }
@@ -2390,9 +2386,6 @@ ll_resize_stack(win_T *wp, int n)
     static int
 qf_resize_stack(qf_info_T *qi, int n)
 {
-    if (qi->qf_lists == NULL)
-	return FAIL;
-
     qf_list_T *new;
     int amount_to_rm = 0, i;
     size_t lsz = sizeof(*qi->qf_lists);
@@ -2550,16 +2543,13 @@ qf_cmd_get_stack(exarg_T *eap, int print_emsg)
     if (is_loclist_cmd(eap->cmdidx))
     {
 	qi = GET_LOC_LIST(curwin);
-	if (qi == NULL || qi->qf_lists == NULL)
+	if (qi == NULL)
 	{
-error:
 	    if (print_emsg)
 		emsg(_(e_no_location_list));
 	    return NULL;
 	}
     }
-    if (qi->qf_lists == NULL)
-	goto error;
 
     return qi;
 }
@@ -2583,8 +2573,6 @@ qf_cmd_get_or_alloc_stack(exarg_T *eap, win_T **pwinp)
 	    return NULL;
 	*pwinp = curwin;
     }
-    if (qi->qf_lists == NULL)
-	return NULL;
 
     return qi;
 }
@@ -2986,8 +2974,6 @@ qflist_valid(win_T *wp, int_u qf_id)
 	if (qi == NULL)
 	    return FALSE;
     }
-    if (qi->qf_lists == NULL)
-	return FALSE;
 
     for (i = 0; i < qi->qf_listcount; ++i)
 	if (qi->qf_lists[i].qf_id == qf_id)
@@ -3850,14 +3836,7 @@ qf_jump_newwin(qf_info_T	*qi,
     int			retval = OK;
 
     if (qi == NULL)
-    {
 	qi = &ql_info;
-	if (qi->qf_lists == NULL)
-	{
-	    emsg(_(e_no_quickfix_list));
-	    return;
-	}
-    }
 
     if (qf_stack_empty(qi) || qf_list_empty(qf_get_curlist(qi)))
     {
@@ -4373,11 +4352,6 @@ qf_mark_adjust(
 	    return;
 	qi = wp->w_llist;
     }
-    else if (qi->qf_lists == NULL)
-    {
-	emsg(_(e_no_quickfix_list));
-	return;
-    }
 
     for (idx = 0; idx < qi->qf_listcount; ++idx)
     {
@@ -4464,13 +4438,6 @@ qf_view_result(int split)
 
     if (IS_LL_WINDOW(curwin))
 	qi = GET_LOC_LIST(curwin);
-    else
-	if (qi->qf_lists == NULL)
-	{
-	    emsg(_(e_no_quickfix_list));
-	    return;
-	}
-
 
     if (qf_list_empty(qf_get_curlist(qi)))
     {
@@ -4785,11 +4752,6 @@ qf_current_entry(win_T *wp)
     if (IS_LL_WINDOW(wp))
 	// In the location list window, use the referenced location list
 	qi = wp->w_llist_ref;
-    else if (qi->qf_lists == NULL)
-	{
-	    emsg(_(e_no_quickfix_list));
-	    return 0;
-	}
 
     return qf_get_curlist(qi)->qf_index;
 }
@@ -5477,12 +5439,6 @@ ex_make(exarg_T *eap)
     int_u	save_qfid;
     char_u	*errorformat = p_efm;
     int		newlist = TRUE;
-
-    if (qi->qf_lists == NULL)
-    {
-	emsg(_(e_no_quickfix_list));
-	return;
-    }
 
     // Redirect ":grep" to ":vimgrep" if 'grepprg' is "internal".
     if (grep_internal(eap->cmdidx))
@@ -6219,12 +6175,6 @@ ex_cfile(exarg_T *eap)
     char_u	*au_name = NULL;
     int_u	save_qfid = 0;		// init for gcc
     int		res;
-
-    if (qi->qf_lists == NULL)
-    {
-	emsg(_(e_no_quickfix_list));
-	return;
-    }
 
     au_name = cfile_get_auname(eap->cmdidx);
     if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
@@ -7213,8 +7163,6 @@ get_errorlist(
 	    if (qi == NULL)
 		return FAIL;
 	}
-	else if (qi->qf_lists == NULL)
-	    return FAIL;
     }
 
     if (eidx < 0)
@@ -7634,8 +7582,6 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
-    else if (qi->qf_lists == NULL)
-	return FAIL;
 
     flags = qf_getprop_keys2flags(what, (wp != NULL));
 
@@ -8290,8 +8236,6 @@ set_errorlist(
 	if (qi == NULL)
 	    return FAIL;
     }
-    else if (qi->qf_lists == NULL)
-	return FAIL;
 
     if (action == 'f')
     {
@@ -8381,9 +8325,6 @@ set_ref_in_quickfix(int copyID)
     int		abort = FALSE;
     tabpage_T	*tp;
     win_T	*win;
-
-    if (ql_info.qf_lists == NULL)
-	return TRUE;
 
     abort = mark_quickfix_ctx(&ql_info, copyID);
     if (abort)
@@ -8893,12 +8834,6 @@ ex_helpgrep(exarg_T *eap)
     char_u	*au_name =  NULL;
     char_u	*lang = NULL;
     int		updated = FALSE;
-
-    if (qi->qf_lists == NULL)
-    {
-	emsg(_(e_no_quickfix_list));
-	return;
-    }
 
     switch (eap->cmdidx)
     {
