@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Mar 30
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Apr 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5149,13 +5149,15 @@ executable.  It takes the following arguments:
 	filetype	string
 	executable	string
 
-						      *dist#vim9#Open()* *:Open*
+					*dist#vim9#Open()* *:Open* *:URLOpen*
 						      *g:Openprg* *gx*
 dist#vim9#Open(file: string) ~
 
 Opens `path` with the system default handler (macOS `open`, Windows
 `explorer.exe`, Linux `xdg-open`, …). If the variable |g:Openprg| exists the
 string specified in the variable is used instead.
+
+The |:Open| user command uses file completion for its argument.
 
 This function is by default called using the gx mapping.  In visual mode
 tries to open the visually selected text.
@@ -5175,12 +5177,17 @@ Usage: >vim
 	:call dist#vim9#Open(<path>)
 	:Open <path>
 <
+							*package-open*
+The |:Open| and |:Launch| command are provided by the included plugin
+$VIMRUNTIME/plugin/openPlugin.vim
 
-						  *dist#vim9#Launch()* *:Launch*
+						*dist#vim9#Launch()* *:Launch*
 dist#vim9#Launch(file: string) ~
 
 Launches <args> with the appropriate system programs. Intended for launching
 GUI programs within Vim.
+
+The |:Launch| user command uses shell completion for its first argument.
 
 NOTE: escaping of <args> is left to the user
 

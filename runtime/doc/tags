@@ -2188,6 +2188,7 @@ $quote	eval.txt	/*$quote*
 :TermdebugCommand	terminal.txt	/*:TermdebugCommand*
 :Texplore	pi_netrw.txt	/*:Texplore*
 :Tutor	pi_tutor.txt	/*:Tutor*
+:URLOpen	eval.txt	/*:URLOpen*
 :Until	terminal.txt	/*:Until*
 :Up	terminal.txt	/*:Up*
 :UseVimball	pi_vimball.txt	/*:UseVimball*
@@ -9448,6 +9449,7 @@ package-hlyank	usr_05.txt	/*package-hlyank*
 package-justify	usr_25.txt	/*package-justify*
 package-matchit	usr_05.txt	/*package-matchit*
 package-nohlsearch	usr_05.txt	/*package-nohlsearch*
+package-open	eval.txt	/*package-open*
 package-termdebug	terminal.txt	/*package-termdebug*
 package-translate_example	repeat.txt	/*package-translate_example*
 package-translation	repeat.txt	/*package-translation*

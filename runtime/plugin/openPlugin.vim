@@ -3,12 +3,20 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2025 Feb 01
+# Last Change:  2025 Apr 02
+
+if exists("g:loaded_openPlugin") || &cp
+  finish
+endif
+g:loaded_openPlugin = 1
 
 import autoload 'dist/vim9.vim'
 
 command -complete=shellcmd -nargs=1 Launch vim9.Launch(trim(<q-args>))
-command -complete=file -nargs=1 Open vim9.Open(trim(<q-args>))
+
+# technically, -nargs=1 is correct, but this throws E480: No match 
+# when the argument contains a wildchar on Windows
+command -complete=file -nargs=* Open vim9.Open(trim(<q-args>))
 
 const no_gx = get(g:, "nogx", get(g:, "netrw_nogx", false))
 if !no_gx
