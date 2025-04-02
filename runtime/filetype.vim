@@ -561,6 +561,9 @@ au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 " Cue
 au BufNewFile,BufRead *.cue			setf cue
 
+" DAX
+au BufNewFile,BufRead *.dax			setf dax
+
 " Debian devscripts
 au BufNewFile,BufRead devscripts.conf,.devscripts	setf sh
 

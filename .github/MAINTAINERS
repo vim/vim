@@ -149,6 +149,7 @@ runtime/ftplugin/csv.vim		@habamax
 runtime/ftplugin/cucumber.vim		@tpope
 runtime/ftplugin/cuda.vim		@ribru17
 runtime/ftplugin/dart.vim	@ribru17
+runtime/ftplugin/dax.vim		@anarion80
 runtime/ftplugin/deb822sources.vim	@jamessan
 runtime/ftplugin/debchangelog.vim	@jamessan
 runtime/ftplugin/debcontrol.vim		@jamessan
@@ -457,6 +458,7 @@ runtime/syntax/cucumber.vim		@tpope
 runtime/syntax/d.vim			@JesseKPhillips
 runtime/syntax/dart.vim			@pr3d4t0r
 runtime/syntax/datascript.vim		@dpelle
+runtime/syntax/dax.vim			@anarion80
 runtime/syntax/deb822sources.vim	@jamessan
 runtime/syntax/debchangelog.vim		@jamessan
 runtime/syntax/debcontrol.vim		@jamessan
