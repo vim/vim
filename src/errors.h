@@ -3725,6 +3725,6 @@ EXTERN char e_cannot_have_more_than_hundred_quickfix[]
 	INIT(= N_("E1543: Cannot have more than a hundred quickfix/location lists"));
 EXTERN char e_failed_resizing_quickfix_stack[]
 	INIT(= N_("E1544: Failed resizing the quickfix/location list stack"));
-EXTERN char e_failed_allocating_quickfix_stack[]
-	INIT(= N_("E1545: Failed allocating memory for quickfix/location list stack"));
+EXTERN char e_no_quickfix_stack[]
+	INIT(= N_("E1545: Global quickfix list stack unavailable"));
 #endif

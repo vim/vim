@@ -118,7 +118,8 @@ struct qf_info_S
     int		qf_bufnr;	    // quickfix window buffer number
 };
 
-static qf_info_T ql_info;	// global quickfix list
+static qf_info_T ql_info_actual; // global quickfix list
+static qf_info_T *ql_info;	// points to ql_info_actual if memory allocation is sucessful.
 static int_u last_qf_id = 0;	// Last used quickfix list id
 
 #define FMT_PATTERNS 14		// maximum number of % recognized
@@ -1909,14 +1910,12 @@ qf_init(win_T	    *wp,
 	char_u	    *qf_title,
 	char_u	    *enc)
 {
-    qf_info_T	    *qi = &ql_info;
+    qf_info_T	    *qi = ql_info;
 
     if (wp != NULL)
-    {
 	qi = ll_get_or_alloc_list(wp);
-	if (qi == NULL)
-	    return FAIL;
-    }
+    if (qi == NULL)
+	return FAIL;
 
     return qf_init_ext(qi, qi->qf_curlist, efile, curbuf, NULL, errorformat,
 	    newlist, (linenr_T)0, (linenr_T)0, qf_title, enc);
@@ -2050,7 +2049,9 @@ locstack_queue_delreq(qf_info_T *qi)
     int
 qf_stack_get_bufnr(void)
 {
-    return ql_info.qf_bufnr;
+    if (ql_info == NULL)
+	return INVALID_QFBUFNR;
+    return ql_info->qf_bufnr;
 }
 
 /*
@@ -2150,7 +2151,7 @@ ll_free_all(qf_info_T **pqi)
     void
 qf_free_all(win_T *wp)
 {
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
 
     if (wp != NULL)
     {
@@ -2158,11 +2159,8 @@ qf_free_all(win_T *wp)
 	ll_free_all(&wp->w_llist);
 	ll_free_all(&wp->w_llist_ref);
     }
-    else
-    {
-	// quickfix list
-	qf_free_list_stack_items(qi);
-    }
+    else if (qi != NULL)
+	qf_free_list_stack_items(qi); // quickfix list
 }
 
 /*
@@ -2351,7 +2349,13 @@ qf_add_entry(
     int
 qf_resize_global_stack(int n)
 {
-    if (qf_resize_stack(&ql_info, n) == FAIL)
+    if (ql_info == NULL)
+    {
+	emsg(_(e_no_quickfix_stack));
+	return FAIL;
+    }
+
+    if (qf_resize_stack(ql_info, n) == FAIL)
 	return FAIL;
 
     return OK;
@@ -2426,13 +2430,14 @@ qf_resize_stack(qf_info_T *qi, int n)
    int
 qf_init_global_stack(void)
 {
-    ql_info.qf_lists = qf_alloc_list_stack(p_chi);
+    ql_info_actual.qf_lists = qf_alloc_list_stack(p_chi);
 
-    if (ql_info.qf_lists == NULL)
+    if (ql_info_actual.qf_lists == NULL)
 	return FAIL;
 
-    ql_info.qfl_type = QFLT_QUICKFIX;
-    ql_info.qf_maxcount = p_chi;
+    ql_info = &ql_info_actual;
+    ql_info->qfl_type = QFLT_QUICKFIX;
+    ql_info->qf_maxcount = p_chi;
     return OK;
 }
 
@@ -2538,7 +2543,7 @@ ll_get_or_alloc_list(win_T *wp)
     static qf_info_T *
 qf_cmd_get_stack(exarg_T *eap, int print_emsg)
 {
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
 
     if (is_loclist_cmd(eap->cmdidx))
     {
@@ -2550,6 +2555,8 @@ qf_cmd_get_stack(exarg_T *eap, int print_emsg)
 	    return NULL;
 	}
     }
+    if (qi == NULL)
+	emsg(_(e_no_quickfix_stack));
 
     return qi;
 }
@@ -2564,7 +2571,7 @@ qf_cmd_get_stack(exarg_T *eap, int print_emsg)
     static qf_info_T *
 qf_cmd_get_or_alloc_stack(exarg_T *eap, win_T **pwinp)
 {
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
 
     if (is_loclist_cmd(eap->cmdidx))
     {
@@ -2963,7 +2970,7 @@ qf_guess_filepath(qf_list_T *qfl, char_u *filename)
     static int
 qflist_valid(win_T *wp, int_u qf_id)
 {
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
     int		i;
 
     if (wp != NULL)
@@ -2971,9 +2978,9 @@ qflist_valid(win_T *wp, int_u qf_id)
 	if (!win_valid(wp))
 	    return FALSE;
 	qi = GET_LOC_LIST(wp);	    // Location list
-	if (qi == NULL)
-	    return FALSE;
     }
+    if (qi == NULL)
+	return FALSE;
 
     for (i = 0; i < qi->qf_listcount; ++i)
 	if (qi->qf_lists[i].qf_id == qf_id)
@@ -3836,7 +3843,14 @@ qf_jump_newwin(qf_info_T	*qi,
     int			retval = OK;
 
     if (qi == NULL)
-	qi = &ql_info;
+    {
+	if (ql_info == NULL)
+	{
+	    emsg(_(e_no_quickfix_stack));
+	    return;
+	}
+	qi = ql_info;
+    }
 
     if (qf_stack_empty(qi) || qf_list_empty(qf_get_curlist(qi)))
     {
@@ -4340,7 +4354,7 @@ qf_mark_adjust(
     int		i;
     qfline_T	*qfp;
     int		idx;
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
     int		found_one = FALSE;
     int		buf_has_flag = wp == NULL ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
 
@@ -4352,6 +4366,8 @@ qf_mark_adjust(
 	    return;
 	qi = wp->w_llist;
     }
+    else if (qi == NULL)
+	return;
 
     for (idx = 0; idx < qi->qf_listcount; ++idx)
     {
@@ -4434,10 +4450,15 @@ qf_types(int c, int nr)
     void
 qf_view_result(int split)
 {
-    qf_info_T   *qi = &ql_info;
+    qf_info_T   *qi = ql_info;
 
     if (IS_LL_WINDOW(curwin))
 	qi = GET_LOC_LIST(curwin);
+    else if (qi == NULL)
+    {
+	emsg(_(e_no_quickfix_stack));
+	return;
+    }
 
     if (qf_list_empty(qf_get_curlist(qi)))
     {
@@ -4747,11 +4768,13 @@ ex_cbottom(exarg_T *eap)
      linenr_T
 qf_current_entry(win_T *wp)
 {
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
 
     if (IS_LL_WINDOW(wp))
 	// In the location list window, use the referenced location list
 	qi = wp->w_llist_ref;
+    else if (qi == NULL)
+	return 0;
 
     return qf_get_curlist(qi)->qf_index;
 }
@@ -5433,7 +5456,7 @@ ex_make(exarg_T *eap)
     char_u	*cmd;
     char_u	*enc = NULL;
     win_T	*wp = NULL;
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
     int		res;
     char_u	*au_name = NULL;
     int_u	save_qfid;
@@ -5498,6 +5521,12 @@ ex_make(exarg_T *eap)
 	if (qi == NULL)
 	    goto cleanup;
     }
+    else if (qi == NULL)
+    {
+	emsg(_(e_no_quickfix_stack));
+	goto cleanup;
+    }
+
     if (res >= 0)
 	qf_list_changed(qf_get_curlist(qi));
 
@@ -6171,7 +6200,7 @@ ex_cfile(exarg_T *eap)
 {
     char_u	*enc = NULL;
     win_T	*wp = NULL;
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
     char_u	*au_name = NULL;
     int_u	save_qfid = 0;		// init for gcc
     int		res;
@@ -6227,6 +6256,12 @@ ex_cfile(exarg_T *eap)
 	    decr_quickfix_busy();
 	    return;
 	}
+    }
+    else if (qi == NULL)
+    {
+	emsg(_(e_no_quickfix_stack));
+	decr_quickfix_busy();
+	return;
     }
     if (res >= 0)
 	qf_list_changed(qf_get_curlist(qi));
@@ -7156,13 +7191,15 @@ get_errorlist(
 
     if (qi == NULL)
     {
-	qi = &ql_info;
+	qi = ql_info;
 	if (wp != NULL)
 	{
 	    qi = GET_LOC_LIST(wp);
 	    if (qi == NULL)
 		return FAIL;
 	}
+	else if (qi == NULL)
+	    return FAIL;
     }
 
     if (eidx < 0)
@@ -7569,7 +7606,7 @@ qf_getprop_qftf(qf_list_T *qfl, dict_T *retdict)
     static int
 qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 {
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
     qf_list_T	*qfl;
     int		status = OK;
     int		qf_idx = INVALID_QFIDX;
@@ -7582,6 +7619,8 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
+    else if (qi == NULL)
+	return FAIL;
 
     flags = qf_getprop_keys2flags(what, (wp != NULL));
 
@@ -8227,7 +8266,7 @@ set_errorlist(
 	char_u	*title,
 	dict_T	*what)
 {
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
     int		retval = OK;
 
     if (wp != NULL)
@@ -8235,6 +8274,11 @@ set_errorlist(
 	qi = ll_get_or_alloc_list(wp);
 	if (qi == NULL)
 	    return FAIL;
+    }
+    else if (qi == NULL)
+    {
+	emsg(_(e_no_quickfix_stack));
+	return FAIL;
     }
 
     if (action == 'f')
@@ -8326,11 +8370,14 @@ set_ref_in_quickfix(int copyID)
     tabpage_T	*tp;
     win_T	*win;
 
-    abort = mark_quickfix_ctx(&ql_info, copyID);
+    if (ql_info == NULL)
+	return TRUE;
+
+    abort = mark_quickfix_ctx(ql_info, copyID);
     if (abort)
 	return abort;
 
-    abort = mark_quickfix_user_data(&ql_info, copyID);
+    abort = mark_quickfix_user_data(ql_info, copyID);
     if (abort)
 	return abort;
 
@@ -8829,7 +8876,7 @@ ex_helpgrep(exarg_T *eap)
     regmatch_T	regmatch;
     char_u	*save_cpo;
     int		save_cpo_allocated;
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = ql_info;
     int		new_qi = FALSE;
     char_u	*au_name =  NULL;
     char_u	*lang = NULL;
@@ -8855,6 +8902,11 @@ ex_helpgrep(exarg_T *eap)
 	qi = hgr_get_ll(&new_qi);
 	if (qi == NULL)
 	    return;
+    }
+    else if (qi == NULL)
+    {
+	emsg(_(e_no_quickfix_stack));
+	return;
     }
 
     // Make 'cpoptions' empty, the 'l' flag should not be used here.

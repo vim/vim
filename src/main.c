@@ -1028,9 +1028,7 @@ common_init_2(mparm_T *paramp)
 #ifdef FEAT_QUICKFIX
     // initialize global quickfix list
     if (qf_init_global_stack() == FAIL)
-    {
-	emsg(e_failed_allocating_quickfix_stack);
-    }
+	emsg(_(e_no_quickfix_stack));
 #endif
 }
 
