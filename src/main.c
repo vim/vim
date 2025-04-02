@@ -1027,8 +1027,9 @@ common_init_2(mparm_T *paramp)
 
 #ifdef FEAT_QUICKFIX
     // initialize global quickfix list
-    if (qf_init_global_stack() == FAIL)
-	emsg(_(e_no_quickfix_stack));
+    // don't send an error message when memory allocation fails
+    // do it when the user tries to access the quickfix list
+    qf_init_global_stack();
 #endif
 }
 

@@ -2555,7 +2555,7 @@ qf_cmd_get_stack(exarg_T *eap, int print_emsg)
 	    return NULL;
 	}
     }
-    if (qi == NULL)
+    if (qi == NULL && print_emsg)
 	emsg(_(e_no_quickfix_stack));
 
     return qi;
@@ -5522,10 +5522,7 @@ ex_make(exarg_T *eap)
 	    goto cleanup;
     }
     else if (qi == NULL)
-    {
-	emsg(_(e_no_quickfix_stack));
 	goto cleanup;
-    }
 
     if (res >= 0)
 	qf_list_changed(qf_get_curlist(qi));
@@ -6259,7 +6256,6 @@ ex_cfile(exarg_T *eap)
     }
     else if (qi == NULL)
     {
-	emsg(_(e_no_quickfix_stack));
 	decr_quickfix_busy();
 	return;
     }
