@@ -23,6 +23,7 @@ SRC_ALL =	\
 		ci/appveyor.bat \
 		ci/config.mk*.sed \
 		ci/if_ver*.vim \
+		ci/if_feat_check.vim \
 		ci/setup-xvfb.sh \
 		ci/remove_snap.sh \
 		src/Make_all.mak \

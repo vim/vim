@@ -2962,7 +2962,7 @@ stuff_inserted(
 
     do
     {
-	stuffReadbuffLen(insert.string, insert.length);
+	stuffReadbuffLen(insert.string, (long)insert.length);
 	// a trailing "0" is inserted as "<C-V>048", "^" as "<C-V>^"
 	switch (last)
 	{
@@ -3022,7 +3022,7 @@ get_last_insert_save(void)
 	return NULL;
 
     if (insert.length > 0 && s[insert.length - 1] == ESC)	// remove trailing ESC
-	s[insert.length - 1] = NUL;
+	s[--insert.length] = NUL;
     return s;
 }
 
@@ -5468,7 +5468,7 @@ do_insert_char_pre(int c)
 
     // Lock the text to avoid weird things from happening.
     ++textlock;
-    set_vim_var_string(VV_CHAR, buf, buflen);  // set v:char
+    set_vim_var_string(VV_CHAR, buf, (int)buflen);  // set v:char
 
     res = NULL;
     if (ins_apply_autocmds(EVENT_INSERTCHARPRE))

@@ -1,24 +1,25 @@
 vim9script
 
-# Vim indent plugin file
+# Vim syntax file
 # Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
-# Last Change: 2024-01-15
+# Last Change: 2025-03-28
 
 if exists("b:current_syntax")
   finish
 endif
 
-syntax keyword odinKeyword using transmute cast distinct opaque where dynamic
+syntax keyword odinKeyword using transmute cast auto_cast distinct opaque where dynamic
 syntax keyword odinKeyword struct enum union const bit_field bit_set
 syntax keyword odinKeyword package proc map import export foreign
 syntax keyword odinKeyword size_of offset_of type_info_of typeid_of type_of align_of
 syntax keyword odinKeyword return defer
-syntax keyword odinKeyword or_return or_else
 syntax keyword odinKeyword inline no_inline
+syntax keyword odinKeyword asm context
 
-syntax keyword odinConditional if when else do for switch case continue break
+syntax keyword odinConditional if when else do for switch case fallthrough
+syntax keyword odinConditional continue or_continue break or_break or_return or_else
 syntax keyword odinType string cstring bool b8 b16 b32 b64 rune any rawptr
 syntax keyword odinType f16 f32 f64 f16le f16be f32le f32be f64le f64be
 syntax keyword odinType u8 u16 u32 u64 u128 u16le u32le u64le u128le u16be

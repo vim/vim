@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Mar 23
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Mar 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -541,7 +541,8 @@ example, to add up all the numbers in a list: >
 A Tuple is an ordered sequence of items.  An item can be of any type.  Items
 can be accessed by their index number.  A Tuple is immutable.
 
-A Tuple uses less memory compared to a List and provides O(1) lookup time.
+A Tuple is similar to a List but uses less memory and provides O(1) lookup
+time for an item.
 
 Tuple creation ~
 						*E1526* *E1527*
@@ -577,6 +578,15 @@ To avoid an error for an invalid index use the |get()| function.  When an item
 is not available it returns zero or the default value you specify: >
 	:echo get(mytuple, idx)
 	:echo get(mytuple, idx, "NONE")
+
+
+Tuple modification ~
+							*tuple-modification*
+A tuple is immutable and items cannot be added or removed from a tuple.  But
+List and Dict items within a tuple can be modified: >
+	:let tuple = (1, [2, 3], {'a': 4})
+	:let tuple[1][0] = 10
+	:let tuple[2]['a'] = 20
 
 
 Tuple concatenation ~

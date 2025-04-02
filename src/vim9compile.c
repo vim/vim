@@ -2498,7 +2498,8 @@ compile_load_lhs(
 						  : get_type_on_stack(cctx, 0);
 
 	if (lhs->lhs_type->tt_type == VAR_CLASS
-		|| lhs->lhs_type->tt_type == VAR_OBJECT)
+		|| (lhs->lhs_type->tt_type == VAR_OBJECT
+		    && lhs->lhs_type != &t_object_any))
 	{
 	    // Check whether the class or object variable is modifiable
 	    if (!lhs_class_member_modifiable(lhs, var_start, cctx))
@@ -2522,7 +2523,7 @@ compile_load_lhs(
 	return OK;
     }
 
-    return  generate_loadvar(cctx, lhs);
+    return generate_loadvar(cctx, lhs);
 }
 
 /*

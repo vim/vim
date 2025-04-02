@@ -10942,6 +10942,7 @@ tuple-concatenation	eval.txt	/*tuple-concatenation*
 tuple-functions	usr_41.txt	/*tuple-functions*
 tuple-identity	eval.txt	/*tuple-identity*
 tuple-index	eval.txt	/*tuple-index*
+tuple-modification	eval.txt	/*tuple-modification*
 tuple-type	vim9.txt	/*tuple-type*
 tuple2list()	builtin.txt	/*tuple2list()*
 tutor	usr_01.txt	/*tutor*

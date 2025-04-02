@@ -478,7 +478,7 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
 	else
 	{
 	    if (matched_len < 0 && MB_STRNICMP(ptr, leader, leader_len) == 0)
-		matched_len = leader_len;
+		matched_len = (int)leader_len;
 	    if (matched_len > 0)
 	    {
 		new_attr = highlight_attr[is_select ? HLF_PMSI : HLF_PMNI];
@@ -765,7 +765,7 @@ pum_redraw(void)
 						MB_PTR_ADV(orig_rt);
 						last_char = orig_rt;
 					    }
-					    kept_len = STRLEN(last_char);
+					    kept_len = (int)STRLEN(last_char);
 					    new_str = alloc(ellipsis_width + over_cell + kept_len + 1);
 					    if (!new_str)
 						return;
@@ -845,7 +845,7 @@ pum_redraw(void)
 				    last_char = st_end;
 				}
 
-				if (last_char != NULL)
+				if (last_char != NULL && st_end > st)
 				{
 				    if (used_cells < ellipsis_width)
 				    {
