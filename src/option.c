@@ -4762,7 +4762,7 @@ did_set_xhistory(optset_T *args)
     }
 
     if (is_p_chi)
-	err = qf_resize_global_stack(*arg);
+	err = qf_resize_quickfix_stack(*arg);
     else
 	err = ll_resize_stack(curwin, *arg);
 

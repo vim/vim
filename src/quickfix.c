@@ -2347,7 +2347,7 @@ qf_add_entry(
  * returns FAIL on failure and OK on success.
  */
     int
-qf_resize_global_stack(int n)
+qf_resize_quickfix_stack(int n)
 {
     if (ql_info == NULL)
     {
@@ -2428,7 +2428,7 @@ qf_resize_stack(qf_info_T *qi, int n)
  * Returns FAIL on failure and OK on success.
  */
    int
-qf_init_global_stack(void)
+qf_init_quickfix_stack(void)
 {
     ql_info_actual.qf_lists = qf_alloc_list_stack(p_chi);
 

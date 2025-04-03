@@ -1029,7 +1029,7 @@ common_init_2(mparm_T *paramp)
     // initialize global quickfix list
     // don't send an error message when memory allocation fails
     // do it when the user tries to access the quickfix list
-    qf_init_global_stack();
+    qf_init_quickfix_stack();
 #endif
 }
 
