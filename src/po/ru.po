@@ -9487,7 +9487,7 @@ msgstr "E1249: Наименование группы подсветки прев
 
 #, c-format
 msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
-msgstr "E1250: В функции %s тип аргумента должен быть List, String или BLOB"
+msgstr "E1250: В функции %s тип аргумента должен быть List, String, Dictionary или BLOB"
 
 #, c-format
 msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
@@ -10284,7 +10284,7 @@ msgstr "E1524: Не допускается использовать кортеж
 #, c-format
 msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
 msgstr ""
-"E1525: В функции %s тип аргумента должен быть List, Tuple, String или BLOB"
+"E1525: В функции %s тип аргумента должен быть List, Tuple, String, Dictionary или BLOB"
 
 #, c-format
 msgid "E1526: Missing end of Tuple ')': %s"
