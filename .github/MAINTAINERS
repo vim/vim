@@ -255,6 +255,7 @@ runtime/ftplugin/plsql.vim		@lee-lindley
 runtime/ftplugin/pod.vim		@petdance @dkearns
 runtime/ftplugin/poefilter.vim		@ObserverOfTime
 runtime/ftplugin/postscr.vim		@mrdubya
+runtime/ftplugin/pq.vim			@anarion80
 runtime/ftplugin/prisma.vim		@ribru17
 runtime/ftplugin/proto.vim		@Limero
 runtime/ftplugin/ps1.vim		@heaths
@@ -580,6 +581,7 @@ runtime/syntax/plsql.vim		@lee-lindley
 runtime/syntax/pod.vim			@petdance
 runtime/syntax/poefilter.vim		@ObserverOfTime
 runtime/syntax/postscr.vim		@mrdubya
+runtime/syntax/pq.vim			@anarion80
 runtime/syntax/privoxy.vim		@dkearns
 runtime/syntax/progress.vim		@rdnlsmith
 runtime/syntax/prolog.vim		@XVilka

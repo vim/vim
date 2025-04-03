@@ -1967,6 +1967,9 @@ au BufNewFile,BufRead	*.ps1,*.psd1,*.psm1,*.pssc	setf ps1
 au BufNewFile,BufRead	*.ps1xml			setf ps1xml
 au BufNewFile,BufRead	*.cdxml,*.psc1			setf xml
 
+" Power Query M
+au BufNewFile,BufRead *.pq			setf pq
+
 " Printcap and Termcap
 au BufNewFile,BufRead *printcap
 	\ let b:ptcap_type = "print" | setf ptcap
