@@ -88,7 +88,7 @@ char *did_set_winminheight(optset_T *args);
 char *did_set_winminwidth(optset_T *args);
 char *did_set_winwidth(optset_T *args);
 char *did_set_wrap(optset_T *args);
-char * did_set_xhistory(optset_T *args);
+char *did_set_xhistory(optset_T *args);
 void check_redraw(long_u flags);
 int findoption(char_u *arg);
 getoption_T get_option_value(char_u *name, long *numval, char_u **stringval, int *flagsp, int scope);
