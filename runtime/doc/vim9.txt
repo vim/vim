@@ -1467,6 +1467,7 @@ The following builtin types are supported:
 	blob
 	list<{type}>
 	dict<{type}>
+	object<{type}>
 	job
 	channel
 	tuple<{type}>

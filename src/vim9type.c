@@ -1785,6 +1785,63 @@ on_err:
 }
 
 /*
+ * Parse a "object" type at "*arg" and advance over it.
+ * When "give_error" is TRUE give error messages, otherwise be quiet.
+ * Return NULL for failure.
+ */
+    static type_T *
+parse_type_object(char_u **arg, garray_T *type_gap, int give_error)
+{
+    char_u	*arg_start = *arg;
+    type_T	*object_type;
+    int		prev_called_emsg = called_emsg;
+
+    // object<X> or object<any>
+    if (**arg != '<')
+    {
+	if (give_error)
+	{
+	    if (*skipwhite(*arg) == '<')
+		semsg(_(e_no_white_space_allowed_before_str_str), "<", *arg);
+	    else
+		semsg(_(e_missing_type_after_str), "object");
+	}
+
+	// only "object" is specified
+	return NULL;
+    }
+
+    // skip spaces following "object<"
+    *arg = skipwhite(*arg + 1);
+
+    object_type = parse_type(arg, type_gap, give_error);
+    if (object_type == NULL)
+	return NULL;
+
+    *arg = skipwhite(*arg);
+    if (**arg != '>' && called_emsg == prev_called_emsg)
+    {
+	if (give_error)
+	    semsg(_(e_missing_gt_after_type_str), arg_start);
+	return NULL;
+    }
+    ++*arg;
+
+    if (object_type->tt_type == VAR_ANY)
+	return &t_object_any;
+
+    if (object_type->tt_type != VAR_OBJECT)
+    {
+	// specified type is not a class
+	if (give_error)
+	    semsg(_(e_class_name_not_found_str), arg_start);
+	return NULL;
+    }
+
+    return object_type;
+}
+
+/*
  * Parse a user defined type at "*arg" and advance over it.
  * It can be a class or an interface or a typealias name, possibly imported.
  * Return NULL if a type is not found.
@@ -1930,6 +1987,13 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	    {
 		*arg += len;
 		return &t_number;
+	    }
+	    break;
+	case 'o':
+	    if (len == 6 && STRNCMP(*arg, "object", len) == 0)
+	    {
+		*arg += len;
+		return parse_type_object(arg, type_gap, give_error);
 	    }
 	    break;
 	case 's':

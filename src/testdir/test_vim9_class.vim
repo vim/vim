@@ -12808,4 +12808,178 @@ def Test_dict_of_objects()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using the type() and typename() functions with a variable of type
+" object
+def Test_type_typename_funcs_with_object_variable()
+  var lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+
+    class B
+    endclass
+
+    var o1: object<any>
+    assert_equal([13, 'object<any>'], [type(o1), typename(o1)])
+
+    var o2: object<A>
+    assert_equal([13, 'object<any>'], [type(o2), typename(o2)])
+
+    var o3: A
+    assert_equal([13, 'object<any>'], [type(o3), typename(o3)])
+
+    var o4 = A.new()
+    assert_equal([13, 'object<A>'], [type(o4), typename(o4)])
+
+    var l = [A.new(), B.new()]
+    assert_equal([13, 'object<B>'], [type(l[1]), typename(l[1])])
+
+    var d = {o_a: A.new(), o_b: B.new()}
+    assert_equal([13, 'object<B>'], [type(d.o_b), typename(d.o_b)])
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for object<any> type
+def Test_object_any_type()
+  # assigning different objects to variable of type object<any>
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    var x: object<any>
+    x = A.new()
+    assert_true(instanceof(x, A))
+    x = B.new()
+    assert_true(instanceof(x, B))
+    x = null_object
+    assert_true(instanceof(x, null_class))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Use a list of object<any> variable
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    var l: list<object<any>>
+    l->add(A.new())
+    l->add(B.new())
+    assert_true(instanceof(l[0], A))
+    assert_true(instanceof(l[1], B))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using object<any> as a function argument type and the return type
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    def Fn(x: object<any>): object<any>
+      return x
+    enddef
+    assert_true(instanceof(Fn(A.new()), A))
+    assert_true(instanceof(Fn(B.new()), B))
+  END
+
+  # Try assigning a different type of value to a object<any> variable
+  lines =<< trim END
+    var x: object<any> = []
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got list<any>', 'E1012: Type mismatch; expected object<any> but got list<any>'])
+
+  # Try assigning a different type of value to a object<any> variable
+  lines =<< trim END
+    var x: object<any>
+    x = 0z10
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got blob', 'E1012: Type mismatch; expected object<any> but got blob'])
+
+  # Try adding a different type of value to a list<object<any>> variable
+  lines =<< trim END
+    var x: list<object<any>>
+    x->add({})
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got dict<any>', 'E1012: Type mismatch; expected object<any> but got dict<any>'])
+
+  # Try adding a different type of value to a dict<object<any>> variable
+  lines =<< trim END
+    var x: dict<object<any>>
+    x['a'] = {}
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got dict<any>', 'E1012: Type mismatch; expected object<any> but got dict<any>'])
+enddef
+
+" Test for object<{class}> type
+def Test_object_of_class_type()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var x: object<A>
+    x = A.new()
+    assert_true(instanceof(x, A))
+    var y: object<A> = A.new()
+    assert_true(instanceof(y, A))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    var x: object<A>
+    x = B.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<A> but got object<B>')
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    def Fn(x: object<A>): object<B>
+      return B.new()
+    enddef
+    assert_true(instanceof(Fn(A.new()), B))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    var x: object
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1008: Missing <type> after object', 'E1008: Missing <type> after object'])
+
+  lines =<< trim END
+    var x: object <any>
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1068: No white space allowed before ''<'':  <any>', 'E1068: No white space allowed before ''<'':  <any>'])
+
+  lines =<< trim END
+    var x: object<any
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1009: Missing > after type: <any', 'E1009: Missing > after type: <any'])
+
+  lines =<< trim END
+    var x: object<any,any>
+  END
+  v9.CheckSourceDefFailure(lines, 'E1009: Missing > after type: <any,any>')
+
+  lines =<< trim END
+    vim9script
+    var x: object<any,any>
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: ,any>')
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
