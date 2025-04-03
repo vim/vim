@@ -4037,6 +4037,8 @@ maketitle(void)
 		    vim_strncpy(buf, p, SPACE_FOR_FNAME);
 		    vim_free(p);
 		}
+		else
+		    STRCPY(buf, "");
 	    }
 
 #ifdef FEAT_TERMINAL
