@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Mar 27
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41552,6 +41552,8 @@ Add support for internal builtin functions with vim9 objects, see
 Enum support for Vim9 script |:enum|
 
 Support for protected _new() method
+
+Add support for object<{type}> as variable data type |vim9-types|
 
 Diff mode ~
 ---------
