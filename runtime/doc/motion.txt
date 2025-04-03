@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 9.1.  Last change: 2024 Dec 17
+*motion.txt*    For Vim version 9.1.  Last change: 2025 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -895,12 +895,12 @@ Numbered mark should be stored.  See |viminfo-file-marks|.
 
 
 							*'[* *`[*
-'[  `[			To the first character of the previously changed
-			or yanked text.
+'[  `[			To the first character of the previously changed,
+			or yanked text.  Also set when writing the buffer.
 
 							*']* *`]*
 ']  `]			To the last character of the previously changed or
-			yanked text.
+			yanked text.  Also set when writing the buffer.
 
 After executing an operator the Cursor is put at the beginning of the text
 that was operated upon.  After a put command ("p" or "P") the cursor is
