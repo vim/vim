@@ -662,7 +662,7 @@ vim_main2(void)
     // script, need to output an extra newline on exit.
     if ((did_emsg || msg_didout) && *T_TI != NUL)
 	{
-		if (params.edit_type != EDIT_STDIN)
+	if (params.edit_type != EDIT_STDIN)
             newline_on_exit = TRUE;
         else
             newline_on_exit = FALSE;
