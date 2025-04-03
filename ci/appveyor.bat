@@ -71,7 +71,7 @@ cd src
 echo "Building MSVC 64bit console Version"
 nmake -f Make_mvc.mak CPU=AMD64 ^
     OLE=no GUI=no IME=yes ICONV=yes DEBUG=no ^
-    FEATURES=%FEATURE%
+    FEATURES=%FEATURE% CI_CFLAGS=/we4267
 if not exist vim.exe (
     echo Build failure.
     exit 1
@@ -85,11 +85,11 @@ if "%FEATURE%" == "HUGE" (
         OLE=no GUI=yes IME=yes ICONV=yes DEBUG=no POSTSCRIPT=yes ^
         PYTHON_VER=27 DYNAMIC_PYTHON=yes PYTHON=C:\Python27-x64 ^
         PYTHON3_VER=%PYTHON3_VER% DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
-        FEATURES=%FEATURE%
+        FEATURES=%FEATURE% CI_CFLAGS=/we4267
 ) ELSE (
     nmake -f Make_mvc.mak CPU=AMD64 ^
         OLE=no GUI=yes IME=yes ICONV=yes DEBUG=no ^
-        FEATURES=%FEATURE%
+        FEATURES=%FEATURE% CI_CFLAGS=/we4267
 )
 if not exist gvim.exe (
     echo Build failure.
