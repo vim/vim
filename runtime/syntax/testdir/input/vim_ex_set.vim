@@ -93,7 +93,7 @@ set path=
       \abc,def
 
 
-" CompilerSet
+" :CompilerSet
 
 CompilerSet makeprg=ant
 CompilerSet errorformat=\ %#[%.%#]\ %#%f:%l:%v:%*\\d:%*\\d:\ %t%[%^:]%#:%m,
@@ -110,4 +110,15 @@ set quoteescape=\\
 echo "Foo"
 set quoteescape=\
 echo "Foo"
+
+
+" Issue #16913 (vim syntax: set langmap may have wrong highlight)
+
+set langmap+=ФЫВАПРОЛДЖЭЁ;ASDFGHJKL\\:\\"\\|
+set langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
+
+set langmap+=ФЫВАПРОЛДЖЭЁ;ASDFGHJKL\\:\\"\\|
+      \ langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
+
+set langmap+=ФЫВАПРОЛДЖЭЁ;ASDFGHJKL\\:\\"\\| langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
 
