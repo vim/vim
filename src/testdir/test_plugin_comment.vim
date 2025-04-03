@@ -1,3 +1,5 @@
+" Test for the comment package
+
 source check.vim
 source term_util.vim
 
@@ -105,7 +107,6 @@ func Test_bothends_uncomment()
   call assert_equal(["int main() {", "  return 0;", "}"], result)
 endfunc
 
-
 func Test_mixed_comment()
   CheckScreendump
   let lines =<< trim END
@@ -175,6 +176,56 @@ func Test_mixed_indent_comment()
   let result = readfile(output_file)
 
   call assert_equal(["/* int main() { */", "\t/* if 1 { */", "\t  /* return 0; */",  "\t/* } */", "    /* return 1; */", "/* } */"], result)
+endfunc
+
+func Test_buffer_first_col_comment()
+  CheckScreendump
+  let lines =<< trim END
+    def Hello():
+      print("Hello")
+      pass
+  END
+
+  let input_file = "test_first_col_comment_input.py"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" -c "let b:comment_first_col=1" ' .. input_file, {})
+
+  call term_sendkeys(buf, "jgcc")
+  let output_file = "comment_first_col_test.py"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["def Hello():", '#   print("Hello")', "  pass"], result)
+endfunc
+
+func Test_global_first_col_comment()
+  CheckScreendump
+  let lines =<< trim END
+    def Hello():
+      print("Hello")
+      pass
+  END
+
+  let input_file = "test_first_col_comment_input.py"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" -c "let g:comment_first_col=1" ' .. input_file, {})
+
+  call term_sendkeys(buf, "jgcj")
+  let output_file = "comment_first_col_test.py"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(["def Hello():", '#   print("Hello")', "#   pass"], result)
 endfunc
 
 func Test_textobj_icomment()
@@ -434,6 +485,72 @@ func Test_textobj_noleading_space_comment2()
   call assert_equal(["int main() {", "}"], result)
 endfunc
 
+func Test_textobj_trailing_spaces_comment()
+  CheckScreendump
+  let lines = ['# print("hello")   ', '# print("world")   ', "#", 'print("!")']
+
+  let input_file = "test_textobj_trailing_spaces_input.py"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "jdac")
+  let output_file = "comment_textobj_trailing_spaces_comment.py"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(['print("!")'], result)
+endfunc
+
+func Test_textobj_trailing_spaces_last_comment()
+  CheckScreendump
+  let lines = ['# print("hello")   ', '# print("world")   ', "#", '', '']
+
+  let input_file = "test_textobj_trailing_spaces_last_input.py"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "jdac")
+  let output_file = "comment_textobj_trailing_spaces_last_comment.py"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal([], result)
+endfunc
+
+func Test_textobj_last_line_empty_comment()
+  CheckScreendump
+  let lines =<< trim END
+    # print("hello")
+    #
+    #
+  END
+
+  let input_file = "test_textobj_last_line_empty_input.py"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dac")
+  let output_file = "comment_textobj_last_line_empty_comment.py"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal([], result)
+endfunc
 func Test_textobj_cursor_on_leading_space_comment()
   CheckScreendump
   let lines =<< trim END
@@ -457,7 +574,7 @@ func Test_textobj_cursor_on_leading_space_comment()
 
   let result = readfile(output_file)
 
-  call assert_equal(["int main() {", "", "}"], result)
+  call assert_equal(["int main() {", "}"], result)
 endfunc
 
 func Test_textobj_conseq_comment()
@@ -513,4 +630,50 @@ func Test_textobj_conseq_comment2()
   let result = readfile(output_file)
 
   call assert_equal(["int main() {", "    printf(\"hello\");", "", "    // world", "    printf(\"world\");", "}"], result)
+endfunc
+
+func Test_inline_comment()
+  CheckScreendump
+  let lines =<< trim END
+    echo "Hello" This should be a comment
+  END
+
+  let input_file = "test_inline_comment_input.vim"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" -c "nnoremap <expr> gC comment#Toggle()..''$''" ' .. input_file, {})
+
+  call term_sendkeys(buf, "fTgC")
+
+  let output_file = "comment_inline_test.vim"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+  call assert_equal(['echo "Hello" " This should be a comment'], result)
+endfunc
+
+func Test_inline_uncomment()
+  CheckScreendump
+  let lines =<< trim END
+    echo "Hello" " This should be a comment
+  END
+
+  let input_file = "test_inline_uncomment_input.vim"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" -c "nnoremap <expr> gC comment#Toggle()..''$''" ' .. input_file, {})
+
+  call term_sendkeys(buf, '$F"gC')
+
+  let output_file = "uncomment_inline_test.vim"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+  call assert_equal(['echo "Hello" This should be a comment'], result)
 endfunc

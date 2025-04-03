@@ -540,8 +540,8 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 #define t_super			(static_types[84])
 #define t_const_super		(static_types[85])
 
-#define t_object		(static_types[86])
-#define t_const_object		(static_types[87])
+#define t_object_any		(static_types[86])
+#define t_const_object_any	(static_types[87])
 
 #define t_class			(static_types[88])
 #define t_const_class		(static_types[89])
@@ -731,7 +731,7 @@ EXTERN type_T static_types[96]
     {VAR_CLASS, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
     {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
 
-    // 86: t_object
+    // 86: t_object_any
     {VAR_OBJECT, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
     {VAR_OBJECT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 

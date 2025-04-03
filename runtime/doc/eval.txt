@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Mar 23
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Apr 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -541,7 +541,8 @@ example, to add up all the numbers in a list: >
 A Tuple is an ordered sequence of items.  An item can be of any type.  Items
 can be accessed by their index number.  A Tuple is immutable.
 
-A Tuple uses less memory compared to a List and provides O(1) lookup time.
+A Tuple is similar to a List but uses less memory and provides O(1) lookup
+time for an item.
 
 Tuple creation ~
 						*E1526* *E1527*
@@ -577,6 +578,15 @@ To avoid an error for an invalid index use the |get()| function.  When an item
 is not available it returns zero or the default value you specify: >
 	:echo get(mytuple, idx)
 	:echo get(mytuple, idx, "NONE")
+
+
+Tuple modification ~
+							*tuple-modification*
+A tuple is immutable and items cannot be added or removed from a tuple.  But
+List and Dict items within a tuple can be modified: >
+	:let tuple = (1, [2, 3], {'a': 4})
+	:let tuple[1][0] = 10
+	:let tuple[2]['a'] = 20
 
 
 Tuple concatenation ~
@@ -5139,13 +5149,15 @@ executable.  It takes the following arguments:
 	filetype	string
 	executable	string
 
-						      *dist#vim9#Open()* *:Open*
+					*dist#vim9#Open()* *:Open* *:URLOpen*
 						      *g:Openprg* *gx*
 dist#vim9#Open(file: string) ~
 
 Opens `path` with the system default handler (macOS `open`, Windows
 `explorer.exe`, Linux `xdg-open`, …). If the variable |g:Openprg| exists the
 string specified in the variable is used instead.
+
+The |:Open| user command uses file completion for its argument.
 
 This function is by default called using the gx mapping.  In visual mode
 tries to open the visually selected text.
@@ -5165,12 +5177,17 @@ Usage: >vim
 	:call dist#vim9#Open(<path>)
 	:Open <path>
 <
+							*package-open*
+The |:Open| and |:Launch| command are provided by the included plugin
+$VIMRUNTIME/plugin/openPlugin.vim
 
-						  *dist#vim9#Launch()* *:Launch*
+						*dist#vim9#Launch()* *:Launch*
 dist#vim9#Launch(file: string) ~
 
 Launches <args> with the appropriate system programs. Intended for launching
 GUI programs within Vim.
+
+The |:Launch| user command uses shell completion for its first argument.
 
 NOTE: escaping of <args> is left to the user
 

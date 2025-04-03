@@ -2684,7 +2684,8 @@ compile_subscript(
 	    type = get_type_on_stack(cctx, 0);
 	    if (type != &t_unknown
 		    && (type->tt_type == VAR_CLASS
-					       || type->tt_type == VAR_OBJECT))
+			|| (type->tt_type == VAR_OBJECT
+			    && type != &t_object_any)))
 	    {
 		// class member: SomeClass.varname
 		// class method: SomeClass.SomeMethod()

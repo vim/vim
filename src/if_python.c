@@ -201,13 +201,15 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PyList_SetItem dll_PyList_SetItem
 # define PyList_Size dll_PyList_Size
 # define PyList_Type (*dll_PyList_Type)
+# define PyTuple_GetItem dll_PyTuple_GetItem
+# define PyTuple_SetItem dll_PyTuple_SetItem
+# define PyTuple_New dll_PyTuple_New
+# define PyTuple_Size dll_PyTuple_Size
+# define PyTuple_Type (*dll_PyTuple_Type)
 # define PySequence_Check dll_PySequence_Check
 # define PySequence_Size dll_PySequence_Size
 # define PySequence_GetItem dll_PySequence_GetItem
 # define PySequence_Fast dll_PySequence_Fast
-# define PyTuple_Size dll_PyTuple_Size
-# define PyTuple_GetItem dll_PyTuple_GetItem
-# define PyTuple_Type (*dll_PyTuple_Type)
 # define PySlice_GetIndicesEx dll_PySlice_GetIndicesEx
 # define PyImport_ImportModule dll_PyImport_ImportModule
 # define PyDict_New dll_PyDict_New
@@ -352,13 +354,15 @@ static PyObject*(*dll_PyList_New)(PyInt size);
 static int(*dll_PyList_SetItem)(PyObject *, PyInt, PyObject *);
 static PyInt(*dll_PyList_Size)(PyObject *);
 static PyTypeObject* dll_PyList_Type;
+static PyObject*(*dll_PyTuple_GetItem)(PyObject *, PyInt);
+static int(*dll_PyTuple_SetItem)(PyObject *, PyInt, PyObject *);
+static PyObject*(*dll_PyTuple_New)(PyInt size);
+static PyInt(*dll_PyTuple_Size)(PyObject *);
+static PyTypeObject* dll_PyTuple_Type;
 static int (*dll_PySequence_Check)(PyObject *);
 static PyInt(*dll_PySequence_Size)(PyObject *);
 static PyObject*(*dll_PySequence_GetItem)(PyObject *, PyInt);
 static PyObject*(*dll_PySequence_Fast)(PyObject *, const char *);
-static PyInt(*dll_PyTuple_Size)(PyObject *);
-static PyObject*(*dll_PyTuple_GetItem)(PyObject *, PyInt);
-static PyTypeObject* dll_PyTuple_Type;
 static int (*dll_PySlice_GetIndicesEx)(PySliceObject *r, PyInt length,
 		     PyInt *start, PyInt *stop, PyInt *step,
 		     PyInt *slicelen);
@@ -540,13 +544,15 @@ static struct
     {"PyList_SetItem", (PYTHON_PROC*)&dll_PyList_SetItem},
     {"PyList_Size", (PYTHON_PROC*)&dll_PyList_Size},
     {"PyList_Type", (PYTHON_PROC*)&dll_PyList_Type},
+    {"PyTuple_GetItem", (PYTHON_PROC*)&dll_PyTuple_GetItem},
+    {"PyTuple_SetItem", (PYTHON_PROC*)&dll_PyTuple_SetItem},
+    {"PyTuple_New", (PYTHON_PROC*)&dll_PyTuple_New},
+    {"PyTuple_Size", (PYTHON_PROC*)&dll_PyTuple_Size},
+    {"PyTuple_Type", (PYTHON_PROC*)&dll_PyTuple_Type},
     {"PySequence_Size", (PYTHON_PROC*)&dll_PySequence_Size},
     {"PySequence_Check", (PYTHON_PROC*)&dll_PySequence_Check},
     {"PySequence_GetItem", (PYTHON_PROC*)&dll_PySequence_GetItem},
     {"PySequence_Fast", (PYTHON_PROC*)&dll_PySequence_Fast},
-    {"PyTuple_GetItem", (PYTHON_PROC*)&dll_PyTuple_GetItem},
-    {"PyTuple_Size", (PYTHON_PROC*)&dll_PyTuple_Size},
-    {"PyTuple_Type", (PYTHON_PROC*)&dll_PyTuple_Type},
     {"PySlice_GetIndicesEx", (PYTHON_PROC*)&dll_PySlice_GetIndicesEx},
     {"PyImport_ImportModule", (PYTHON_PROC*)&dll_PyImport_ImportModule},
     {"PyDict_GetItemString", (PYTHON_PROC*)&dll_PyDict_GetItemString},
@@ -786,6 +792,7 @@ static PyObject *TabPageGetattr(PyObject *, char *);
 static PyObject *RangeGetattr(PyObject *, char *);
 static PyObject *DictionaryGetattr(PyObject *, char*);
 static PyObject *ListGetattr(PyObject *, char *);
+static PyObject *TupleGetattr(PyObject *, char *);
 static PyObject *FunctionGetattr(PyObject *, char *);
 
 #ifndef Py_VISIT
@@ -1508,6 +1515,17 @@ ListGetattr(PyObject *self, char *name)
 	return ObjectDir(NULL, ListAttrs);
 
     return Py_FindMethod(ListMethods, self, name);
+}
+
+    static PyObject *
+TupleGetattr(PyObject *self, char *name)
+{
+    if (strcmp(name, "locked") == 0)
+	return PyInt_FromLong(((TupleObject *)(self))->tuple->tv_lock);
+    else if (strcmp(name, "__members__") == 0)
+	return ObjectDir(NULL, TupleAttrs);
+
+    return Py_FindMethod(TupleMethods, self, name);
 }
 
     static PyObject *

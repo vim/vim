@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Mar 23
+*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Mar 30
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -862,7 +862,7 @@ Tuple manipulation:					*tuple-functions*
 	reverse()		reverse the order of items in a Tuple
 	slice()			take a slice of a Tuple
 	string()		string representation of a Tuple
-	tuple2list()		convert a Tuple of items into a list
+	tuple2list()		convert a Tuple into a List
 
 Dictionary manipulation:				*dict-functions*
 	get()			get an entry without an error for a wrong key

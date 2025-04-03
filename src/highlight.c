@@ -241,6 +241,7 @@ static char *(highlight_init_both[]) = {
 #ifdef FEAT_DIFF
     CENT("DiffText term=reverse cterm=bold ctermbg=Red",
 	 "DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red"),
+    "default link DiffTextAdd DiffText",
 #endif
     CENT("PmenuSbar ctermbg=Grey",
 	 "PmenuSbar ctermbg=Grey guibg=Grey"),

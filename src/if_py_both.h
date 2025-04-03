@@ -152,13 +152,14 @@ static PyObject* Vim_PyObject_New(PyTypeObject *type, size_t objsize)
 
 # define PyList_GET_ITEM(list, i) PyList_GetItem(list, i)
 # define PyList_GET_SIZE(o) PyList_Size(o)
-# define PyTuple_GET_ITEM(o, pos) PyTuple_GetItem(o, pos)
-# define PyTuple_GET_SIZE(o) PyTuple_Size(o)
 
 // PyList_SET_ITEM and PyList_SetItem have slightly different behaviors. The
 // former will leave the old item dangling, and the latter will decref on it.
 // Since we only use this on new lists, this difference doesn't matter.
 # define PyList_SET_ITEM(list, i, item) PyList_SetItem(list, i, item)
+
+# define PyTuple_GET_ITEM(o, pos) PyTuple_GetItem(o, pos)
+# define PyTuple_GET_SIZE(o) PyTuple_Size(o)
 
 # if Py_LIMITED_API < 0x03080000
 // PyIter_check only became part of stable ABI in 3.8, and there is no easy way
@@ -1014,11 +1015,14 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
     // Check if we run into a recursive loop.  The item must be in lookup_dict
     // then and we can use it again.
     if ((our_tv->v_type == VAR_LIST && our_tv->vval.v_list != NULL)
+	    || (our_tv->v_type == VAR_TUPLE && our_tv->vval.v_tuple != NULL)
 	    || (our_tv->v_type == VAR_DICT && our_tv->vval.v_dict != NULL))
     {
 	sprintf(ptrBuf, "%p",
 		our_tv->v_type == VAR_LIST ? (void *)our_tv->vval.v_list
-					   : (void *)our_tv->vval.v_dict);
+		    : our_tv->v_type == VAR_TUPLE ?
+			(void *)our_tv->vval.v_tuple
+			: (void *)our_tv->vval.v_dict);
 
 	if ((ret = PyDict_GetItemString(lookup_dict, ptrBuf)))
 	{
@@ -1077,6 +1081,39 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 		return NULL;
 	    }
 	    Py_DECREF(newObj);
+	}
+    }
+    else if (our_tv->v_type == VAR_TUPLE)
+    {
+	tuple_T	*tuple = our_tv->vval.v_tuple;
+	int	len;
+
+	if (tuple == NULL)
+	    return NULL;
+
+	len = TUPLE_LEN(tuple);
+
+	ret = PyTuple_New(len);
+	if (ret == NULL)
+	    return NULL;
+
+	for (int idx = 0; idx < len; idx++)
+	{
+	    typval_T	*item_tv = TUPLE_ITEM(tuple, idx);
+
+	    newObj = VimToPython(item_tv, depth + 1, lookup_dict);
+	    if (!newObj)
+	    {
+		Py_DECREF(ret);
+		return NULL;
+	    }
+	    PyTuple_SetItem(ret, idx, newObj);
+	}
+
+	if (PyDict_SetItemString(lookup_dict, ptrBuf, ret))
+	{
+	    Py_DECREF(ret);
+	    return NULL;
 	}
     }
     else if (our_tv->v_type == VAR_DICT)
@@ -1800,6 +1837,7 @@ typedef struct pylinkedlist_S {
 
 static pylinkedlist_T *lastdict = NULL;
 static pylinkedlist_T *lastlist = NULL;
+static pylinkedlist_T *lasttuple = NULL;
 static pylinkedlist_T *lastfunc = NULL;
 
     static void
@@ -3213,6 +3251,355 @@ static PyMappingMethods ListAsMapping = {
 static struct PyMethodDef ListMethods[] = {
     {"extend",	(PyCFunction)ListConcatInPlace,	METH_O,		""},
     {"__dir__",	(PyCFunction)ListDir,		METH_NOARGS,	""},
+    { NULL,	NULL,				0,		NULL}
+};
+
+DEFINE_PY_TYPE_OBJECT(TupleType);
+
+typedef struct
+{
+    PyObject_HEAD
+    tuple_T	*tuple;
+    pylinkedlist_T	ref;
+} TupleObject;
+
+#define NEW_TUPLE(tuple) TupleNew(TupleTypePtr, tuple)
+
+    static PyObject *
+TupleNew(PyTypeObject *subtype, tuple_T *tuple)
+{
+    TupleObject	*self;
+
+    if (tuple == NULL)
+	return NULL;
+
+    self = (TupleObject *) Py_TYPE_GET_TP_ALLOC(subtype)(subtype, 0);
+    if (self == NULL)
+	return NULL;
+    self->tuple = tuple;
+    ++tuple->tv_refcount;
+
+    pyll_add((PyObject *)(self), &self->ref, &lasttuple);
+
+    return (PyObject *)(self);
+}
+
+    static tuple_T *
+py_tuple_alloc(void)
+{
+    tuple_T	*ret;
+
+    if (!(ret = tuple_alloc()))
+    {
+	PyErr_NoMemory();
+	return NULL;
+    }
+    ++ret->tv_refcount;
+
+    return ret;
+}
+
+    static int
+tuple_py_concat(tuple_T *t, PyObject *obj, PyObject *lookup_dict)
+{
+    PyObject	*iterator;
+    PyObject	*item;
+
+    if (!(iterator = PyObject_GetIter(obj)))
+	return -1;
+
+    while ((item = PyIter_Next(iterator)))
+    {
+	typval_T    new_tv;
+
+	if (_ConvertFromPyObject(item, &new_tv, lookup_dict) == -1)
+	{
+	    Py_DECREF(item);
+	    Py_DECREF(iterator);
+	    return -1;
+	}
+
+	Py_DECREF(item);
+
+	if (tuple_append_tv(t, &new_tv) == FAIL)
+	{
+	    Py_DECREF(iterator);
+	    return -1;
+	}
+    }
+
+    Py_DECREF(iterator);
+
+    // Iterator may have finished due to an exception
+    if (PyErr_Occurred())
+	return -1;
+
+    return 0;
+}
+
+    static PyObject *
+TupleConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
+{
+    tuple_T	*tuple;
+    PyObject	*obj = NULL;
+
+    if (kwargs)
+    {
+	PyErr_SET_STRING(PyExc_TypeError,
+		N_("tuple constructor does not accept keyword arguments"));
+	return NULL;
+    }
+
+    if (!PyArg_ParseTuple(args, "|O", &obj))
+	return NULL;
+
+    if (!(tuple = py_tuple_alloc()))
+	return NULL;
+
+    if (obj)
+    {
+	PyObject	*lookup_dict;
+
+	if (!(lookup_dict = PyDict_New()))
+	{
+	    tuple_unref(tuple);
+	    return NULL;
+	}
+
+	if (tuple_py_concat(tuple, obj, lookup_dict) == -1)
+	{
+	    Py_DECREF(lookup_dict);
+	    tuple_unref(tuple);
+	    return NULL;
+	}
+
+	Py_DECREF(lookup_dict);
+    }
+
+    return TupleNew(subtype, tuple);
+}
+
+    static void
+TupleDestructor(PyObject *self_obj)
+{
+    TupleObject *self = (TupleObject *)self_obj;
+    pyll_remove(&self->ref, &lasttuple);
+    tuple_unref(self->tuple);
+
+    DESTRUCTOR_FINISH(self);
+}
+
+    static PyInt
+TupleLength(TupleObject *self)
+{
+    return ((PyInt)(tuple_len(self->tuple)));
+}
+
+    static PyObject *
+TupleIndex(TupleObject *self, Py_ssize_t index)
+{
+    PyInt	len = TupleLength(self);
+
+    if (index < 0)
+	index = len + index;
+
+    if (index < 0 || index >= len)
+    {
+	PyErr_SET_STRING(PyExc_IndexError, N_("tuple index out of range"));
+	return NULL;
+    }
+    return ConvertToPyObject(TUPLE_ITEM(self->tuple, index));
+}
+
+/*
+ * Return a new tuple object for the tuple slice starting from the index
+ * "first" and of length "slicelen" skipping "step" items.
+ */
+    static PyObject *
+TupleSlice(
+    TupleObject		*self,
+    Py_ssize_t		first,
+    Py_ssize_t		step,
+    Py_ssize_t		slicelen)
+{
+    PyInt	i;
+    PyObject	*tuple;
+
+    tuple = PyTuple_New(slicelen);
+    if (tuple == NULL)
+	return NULL;
+
+    for (i = 0; i < slicelen; ++i)
+    {
+	PyObject	*item;
+
+	item = TupleIndex(self, first + i * step);
+	if (item == NULL)
+	{
+	    Py_DECREF(tuple);
+	    return NULL;
+	}
+
+	PyTuple_SetItem(tuple, i, item);
+    }
+
+    return tuple;
+}
+
+    static PyObject *
+TupleItem(TupleObject *self, PyObject* idx)
+{
+#if PY_MAJOR_VERSION < 3
+    if (PyInt_Check(idx))
+    {
+	long _idx = PyInt_AsLong(idx);
+	return TupleIndex(self, _idx);
+    }
+    else
+#endif
+    if (PyLong_Check(idx))
+    {
+	long _idx = PyLong_AsLong(idx);
+	return TupleIndex(self, _idx);
+    }
+    else if (PySlice_Check(idx))
+    {
+	Py_ssize_t start, stop, step, slicelen;
+
+	if (PySlice_GetIndicesEx((PySliceObject_T *)idx, TupleLength(self),
+				 &start, &stop, &step, &slicelen) < 0)
+	    return NULL;
+	return TupleSlice(self, start, step, slicelen);
+    }
+    else
+    {
+	RAISE_INVALID_INDEX_TYPE(idx);
+	return NULL;
+    }
+}
+
+typedef struct
+{
+    tuple_T	*tuple;
+    int		index;
+} tupleiterinfo_T;
+
+    static void
+TupleIterDestruct(void *arg)
+{
+    tupleiterinfo_T *tii = (tupleiterinfo_T*)arg;
+    tuple_unref(tii->tuple);
+    PyMem_Free(tii);
+}
+
+    static PyObject *
+TupleIterNext(void **arg)
+{
+    PyObject	*ret;
+    tupleiterinfo_T **tii = (tupleiterinfo_T**)arg;
+
+    if ((*tii)->index >= TUPLE_LEN((*tii)->tuple))
+	return NULL;
+
+    if (!(ret = ConvertToPyObject(TUPLE_ITEM((*tii)->tuple, (*tii)->index))))
+	return NULL;
+
+    (*tii)->index++;
+
+    return ret;
+}
+
+    static PyObject *
+TupleIter(PyObject *self_obj)
+{
+    TupleObject	*self = (TupleObject*)self_obj;
+    tupleiterinfo_T	*tii;
+    tuple_T	*t = self->tuple;
+
+    if (!(tii = PyMem_New(tupleiterinfo_T, 1)))
+    {
+	PyErr_NoMemory();
+	return NULL;
+    }
+
+    tii->tuple = t;
+    tii->index = 0;
+    ++t->tv_refcount;
+
+    return IterNew(tii,
+	    TupleIterDestruct, TupleIterNext,
+	    NULL, NULL, (PyObject *)self);
+}
+
+static char *TupleAttrs[] = {
+    "locked",
+    NULL
+};
+
+    static PyObject *
+TupleDir(PyObject *self, PyObject *args UNUSED)
+{
+    return ObjectDir(self, TupleAttrs);
+}
+
+    static int
+TupleSetattr(PyObject *self_obj, char *name, PyObject *valObject)
+{
+    TupleObject *self = (TupleObject*)self_obj;
+    if (valObject == NULL)
+    {
+	PyErr_SET_STRING(PyExc_AttributeError,
+		N_("cannot delete vim.Tuple attributes"));
+	return -1;
+    }
+
+    if (strcmp(name, "locked") == 0)
+    {
+	if (self->tuple->tv_lock == VAR_FIXED)
+	{
+	    PyErr_SET_STRING(PyExc_TypeError, N_("cannot modify fixed tuple"));
+	    return -1;
+	}
+	else
+	{
+	    int		istrue = PyObject_IsTrue(valObject);
+	    if (istrue == -1)
+		return -1;
+	    else if (istrue)
+		self->tuple->tv_lock = VAR_LOCKED;
+	    else
+		self->tuple->tv_lock = 0;
+	}
+	return 0;
+    }
+    else
+    {
+	PyErr_FORMAT(PyExc_AttributeError, N_("cannot set attribute %s"), name);
+	return -1;
+    }
+}
+
+static PySequenceMethods TupleAsSeq = {
+    (lenfunc)		TupleLength,	 // sq_length,	  len(x)
+    (binaryfunc)	0,		 // RangeConcat, sq_concat,  x+y
+    0,					 // RangeRepeat, sq_repeat,  x*n
+    (PyIntArgFunc)	TupleIndex,	 // sq_item,	  x[i]
+    0,					 // was_sq_slice,     x[i:j]
+    (PyIntObjArgProc)	0,		 // sq_as_item,  x[i]=v
+    0,					 // was_sq_ass_slice, x[i:j]=v
+    0,					 // sq_contains
+    (binaryfunc)	0,		 // sq_inplace_concat
+    0,					 // sq_inplace_repeat
+};
+
+static PyMappingMethods TupleAsMapping = {
+    /* mp_length	*/ (lenfunc) TupleLength,
+    /* mp_subscript     */ (binaryfunc) TupleItem,
+    /* mp_ass_subscript */ (objobjargproc) 0,
+};
+
+static struct PyMethodDef TupleMethods[] = {
+    {"__dir__",	(PyCFunction)TupleDir,		METH_NOARGS,	""},
     { NULL,	NULL,				0,		NULL}
 };
 
@@ -6219,6 +6606,7 @@ set_ref_in_py(const int copyID)
 {
     pylinkedlist_T	*cur;
     list_T		*ll;
+    tuple_T		*tt;
     int			i;
     int			abort = FALSE;
     FunctionObject	*func;
@@ -6236,6 +6624,15 @@ set_ref_in_py(const int copyID)
 	{
 	    ll = ((ListObject *) (cur->pll_obj))->list;
 	    abort = set_ref_in_list(ll, copyID);
+	}
+    }
+
+    if (lasttuple != NULL)
+    {
+	for (cur = lasttuple ; !abort && cur != NULL ; cur = cur->pll_prev)
+	{
+	    tt = ((TupleObject *) (cur->pll_obj))->tuple;
+	    abort = set_ref_in_tuple(tt, copyID);
 	}
     }
 
@@ -6461,6 +6858,27 @@ pyseq_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     return 0;
 }
 
+    static int
+pytuple_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
+{
+    tuple_T	*t;
+
+    if (!(t = py_tuple_alloc()))
+	return -1;
+
+    tv->v_type = VAR_TUPLE;
+    tv->vval.v_tuple = t;
+
+    if (tuple_py_concat(t, obj, lookup_dict) == -1)
+    {
+	tuple_unref(t);
+	return -1;
+    }
+
+    --t->tv_refcount;
+    return 0;
+}
+
 typedef int (*pytotvfunc)(PyObject *, typval_T *, PyObject *);
 
     static int
@@ -6504,6 +6922,8 @@ convert_dl(PyObject *obj, typval_T *tv,
 	    ++tv->vval.v_dict->dv_refcount;
 	else if (tv->v_type == VAR_LIST)
 	    ++tv->vval.v_list->lv_refcount;
+	else if (tv->v_type == VAR_TUPLE)
+	    ++tv->vval.v_tuple->tv_refcount;
     }
     else
     {
@@ -6607,6 +7027,12 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	tv->vval.v_list = (((ListObject *)(obj))->list);
 	++tv->vval.v_list->lv_refcount;
     }
+    else if (PyType_IsSubtype(obj->ob_type, TupleTypePtr))
+    {
+	tv->v_type = VAR_TUPLE;
+	tv->vval.v_tuple = (((TupleObject *)(obj))->tuple);
+	++tv->vval.v_tuple->tv_refcount;
+    }
     else if (PyType_IsSubtype(obj->ob_type, FunctionTypePtr))
     {
 	FunctionObject *func = (FunctionObject *) obj;
@@ -6680,6 +7106,8 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	if (PyErr_Occurred())
 	    return -1;
     }
+    else if (PyTuple_Check(obj))
+	return convert_dl(obj, tv, pytuple_to_tv, lookup_dict);
     else if (PyDict_Check(obj))
 	return convert_dl(obj, tv, pydict_to_tv, lookup_dict);
     else if (PyFloat_Check(obj))
@@ -6742,6 +7170,8 @@ ConvertToPyObject(typval_T *tv)
 	    return PyFloat_FromDouble((double) tv->vval.v_float);
 	case VAR_LIST:
 	    return NEW_LIST(tv->vval.v_list);
+	case VAR_TUPLE:
+	    return NEW_TUPLE(tv->vval.v_tuple);
 	case VAR_DICT:
 	    return NEW_DICTIONARY(tv->vval.v_dict);
 	case VAR_FUNC:
@@ -6777,7 +7207,6 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
-	case VAR_TUPLE:		// FIXME: Need to add support for tuple
 	    Py_INCREF(Py_None);
 	    return Py_None;
 	case VAR_BOOL:
@@ -7002,6 +7431,27 @@ init_structs(void)
     ListType.tp_setattr = ListSetattr;
 #endif
 
+    // Tuple type
+    CLEAR_FIELD(TupleType);
+    TupleType.tp_name = "vim.tuple";
+    TupleType.tp_dealloc = TupleDestructor;
+    TupleType.tp_basicsize = sizeof(TupleObject);
+    TupleType.tp_as_sequence = &TupleAsSeq;
+    TupleType.tp_as_mapping = &TupleAsMapping;
+    TupleType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE;
+    TupleType.tp_doc = "tuple pushing modifications to Vim structure";
+    TupleType.tp_methods = TupleMethods;
+    TupleType.tp_iter = TupleIter;
+    TupleType.tp_new = TupleConstructor;
+    TupleType.tp_alloc = PyType_GenericAlloc;
+#if PY_MAJOR_VERSION >= 3
+    TupleType.tp_getattro = TupleGetattro;
+    TupleType.tp_setattro = TupleSetattro;
+#else
+    TupleType.tp_getattr = TupleGetattr;
+    TupleType.tp_setattr = TupleSetattr;
+#endif
+
     CLEAR_FIELD(FunctionType);
     FunctionType.tp_name = "vim.function";
     FunctionType.tp_basicsize = sizeof(FunctionObject);
@@ -7064,6 +7514,7 @@ init_types(void)
     PYTYPE_READY(CurrentType);
     PYTYPE_READY(DictionaryType);
     PYTYPE_READY(ListType);
+    PYTYPE_READY(TupleType);
     PYTYPE_READY(FunctionType);
     PYTYPE_READY(OptionsType);
     PYTYPE_READY(OutputType);
@@ -7101,6 +7552,7 @@ shutdown_types(void)
     PYTYPE_CLEANUP(CurrentType);
     PYTYPE_CLEANUP(DictionaryType);
     PYTYPE_CLEANUP(ListType);
+    PYTYPE_CLEANUP(TupleType);
     PYTYPE_CLEANUP(FunctionType);
     PYTYPE_CLEANUP(OptionsType);
     PYTYPE_CLEANUP(OutputType);
@@ -7239,6 +7691,7 @@ populate_module(PyObject *m)
 	{"TabPage",    (PyObject *)TabPageTypePtr},
 	{"Dictionary", (PyObject *)DictionaryTypePtr},
 	{"List",       (PyObject *)ListTypePtr},
+	{"Tuple",      (PyObject *)TupleTypePtr},
 	{"Function",   (PyObject *)FunctionTypePtr},
 	{"Options",    (PyObject *)OptionsTypePtr},
 #if PY_VERSION_HEX < 0x030700f0

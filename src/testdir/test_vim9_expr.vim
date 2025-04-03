@@ -3292,6 +3292,7 @@ def SetSomeVar()
 enddef
 
 def Test_expr9_option()
+  CheckFeature quickfix
   var lines =<< trim END
       # option
       set ts=11
@@ -3639,6 +3640,7 @@ def Test_expr9_call_autoload()
 enddef
 
 def Test_expr9_method_call()
+  CheckFeature quickfix
   var lines =<< trim END
       new
       setline(1, ['first', 'last'])

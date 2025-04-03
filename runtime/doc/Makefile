@@ -142,7 +142,9 @@ os_win32.txt:
 	touch $@
 
 pi_netrw.txt: ../pack/dist/opt/netrw/doc/netrw.txt
-	cp ../pack/dist/opt/netrw/doc/netrw.txt $@
+	cp ../pack/dist/opt/netrw/doc/netrw.txt $@.tmp
+	sed -e '1s/$$/	*pi_netrw.txt*/' $@.tmp > $@ && \
+	rm -f $@.tmp
 
 vietnamese.txt:
 	touch $@

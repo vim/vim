@@ -564,7 +564,7 @@ def Test_using_null_class()
   lines =<< trim END
     vim9script
     assert_equal(12, type(null_class))
-    assert_equal('class<Unknown>', typename(null_class))
+    assert_equal('class<any>', typename(null_class))
   END
   v9.CheckSourceSuccess(lines)
 enddef
@@ -643,7 +643,6 @@ def Test_object_not_set()
   END
   v9.CheckSourceFailure(lines, 'E1360: Using a null object', 1)
 
-  # TODO: this should not give an error but be handled at runtime
   lines =<< trim END
     vim9script
 
@@ -660,7 +659,7 @@ def Test_object_not_set()
     enddef
     Func()
   END
-  v9.CheckSourceFailure(lines, 'E1363: Incomplete type', 1)
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 1)
 
   # Reference a object variable through a null class object which is stored in a
   # variable of type "any".
@@ -710,7 +709,7 @@ def Test_null_object_assign_compare()
     def F(): any
       return nullo
     enddef
-    assert_equal('object<Unknown>', typename(F()))
+    assert_equal('object<any>', typename(F()))
 
     var o0 = F()
     assert_true(o0 == null_object)
@@ -12477,6 +12476,334 @@ def Test_super_keyword()
 
     var b = B.new()
     assert_equal('A.Foo B.Foo', b.Bar())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using a list of objects
+def Test_method_call_from_list_of_objects()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      var n: list<number> = [100, 101]
+      def F(): string
+        return 'A.F'
+      enddef
+    endclass
+
+    class B
+      var name: string
+      var n: list<number> = [200, 201]
+      def new(this.name)
+      enddef
+      def F(): string
+        return 'B.F'
+      enddef
+    endclass
+
+    var obj1 = A.new()
+    var obj2 = B.new('b1')
+
+    def CheckObjectList()
+      var objlist = [obj1, obj2]
+      assert_equal('list<object<any>>', typename(objlist))
+
+      # Use a member function
+      assert_equal('A.F', objlist[0].F())
+      assert_equal('B.F', objlist[1].F())
+
+      # Use a member variable on the RHS
+      assert_equal([100, 101], objlist[0].n)
+      assert_equal([200, 201], objlist[1].n)
+
+      # Use a member variable on the LHS
+      objlist[0].n[1] = 110
+      objlist[1].n[1] = 210
+      assert_equal([100, 110], objlist[0].n)
+      assert_equal([200, 210], objlist[1].n)
+
+      # Iterate using a for loop
+      var s1 = []
+      for o in objlist
+        add(s1, o.F())
+      endfor
+      assert_equal(['A.F', 'B.F'], s1)
+
+      # Iterate using foreach()
+      var s2 = []
+      foreach(objlist, (k, v) => add(s2, v.F()))
+      assert_equal(['A.F', 'B.F'], s2)
+
+      # Add a new list item
+      objlist->add(B.new('b2'))
+      assert_equal('b2', objlist[2].name)
+    enddef
+
+    CheckObjectList()
+
+    var objlist = [A.new(), B.new('b2')]
+    assert_equal('list<object<any>>', typename(objlist))
+
+    # Use a member function
+    assert_equal('A.F', objlist[0].F())
+    assert_equal('B.F', objlist[1].F())
+
+    # Use a member variable on the RHS
+    assert_equal([100, 101], objlist[0].n)
+    assert_equal([200, 201], objlist[1].n)
+
+    # Use a member variable on the LHS
+    objlist[0].n[1] = 110
+    objlist[1].n[1] = 210
+    assert_equal([100, 110], objlist[0].n)
+    assert_equal([200, 210], objlist[1].n)
+
+    # Iterate using a for loop
+    var s1 = []
+    for o in objlist
+      add(s1, o.F())
+    endfor
+    assert_equal(['A.F', 'B.F'], s1)
+
+    # Iterate using foreach()
+    var s2 = []
+    foreach(objlist, (k, v) => add(s2, v.F()))
+    assert_equal(['A.F', 'B.F'], s2)
+
+    # Add a new list item
+    objlist->add(B.new('b2'))
+    assert_equal('b2', objlist[2].name)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+
+    class B
+    endclass
+
+    var objlist = [A.new(), B.new()]
+    def Fn()
+      objlist->add(10)
+    enddef
+
+    try
+      Fn()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got number')
+    endtry
+
+    try
+      objlist->add(10)
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got number')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Adding an enum to a List of objects should fail
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    enum C
+      Red,
+      Green,
+    endenum
+    var items = [A.new(), B.new()]
+    def Fn()
+      items->add(C.Red)
+    enddef
+
+    try
+      Fn()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got enum<C>')
+    endtry
+
+    try
+      items->add(C.Green)
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got enum<C>')
+    endtry
+
+    var items2 = [C.Red, C.Green]
+    def Fn2()
+      items2->add(A.new())
+    enddef
+    try
+      Fn2()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected enum<C> but got object<A>')
+    endtry
+
+    try
+      items2->add(B.new())
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected enum<C> but got object<B>')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using a dict of objects
+def Test_dict_of_objects()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      var n: list<number> = [100, 101]
+      def F(): string
+        return 'A.F'
+      enddef
+    endclass
+
+    class B
+      var name: string
+      var n: list<number> = [200, 201]
+      def new(this.name)
+      enddef
+      def F(): string
+        return 'B.F'
+      enddef
+    endclass
+
+    var obj1 = A.new()
+    var obj2 = B.new('b1')
+
+    def CheckObjectDict()
+      var objdict = {o_a: obj1, o_b: obj2}
+      assert_equal('dict<object<any>>', typename(objdict))
+
+      # Use a member function
+      assert_equal('A.F', objdict.o_a.F())
+      assert_equal('B.F', objdict.o_b.F())
+
+      # Use a member variable on the RHS
+      assert_equal([100, 101], objdict.o_a.n)
+      assert_equal([200, 201], objdict.o_b.n)
+
+      # Use a member variable on the LHS
+      objdict.o_a.n[1] = 110
+      objdict.o_b.n[1] = 210
+      assert_equal([100, 110], objdict.o_a.n)
+      assert_equal([200, 210], objdict.o_b.n)
+
+      # Iterate using a for loop
+      var l = []
+      for v in values(objdict)
+        add(l, v.F())
+      endfor
+      assert_equal(['A.F', 'B.F'], l)
+
+      # Iterate using foreach()
+      l = []
+      foreach(objdict, (k, v) => add(l, v.F()))
+      assert_equal(['A.F', 'B.F'], l)
+
+      # Add a new dict item
+      objdict['o_b2'] = B.new('b2')
+      assert_equal('b2', objdict.o_b2.name)
+    enddef
+
+    CheckObjectDict()
+
+    var objdict = {o_a: A.new(), o_b: B.new('b2')}
+    assert_equal('dict<object<any>>', typename(objdict))
+    assert_equal('A.F', objdict.o_a.F())
+    assert_equal('B.F', objdict.o_b.F())
+    assert_equal([100, 101], objdict.o_a.n)
+    assert_equal([200, 201], objdict.o_b.n)
+
+    var l = []
+    for v in values(objdict)
+      add(l, v.F())
+    endfor
+    assert_equal(['A.F', 'B.F'], l)
+
+    # Add a new dict item
+    objdict['o_b2'] = B.new('b2')
+    assert_equal('b2', objdict.o_b2.name)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B
+    endclass
+    class C
+    endclass
+    var objdict = {a: A.new(), b: B.new()}
+    def Fn()
+      objdict['c'] = C.new()
+    enddef
+
+    try
+      Fn()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got number')
+    endtry
+
+    try
+      objdict['c'] = C.new()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got number')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Adding an enum to a Dict of objects should fail
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    enum C
+      Red,
+      Green,
+    endenum
+    var items = {o_a: A.new(), o_b: B.new()}
+    def Fn()
+      items['o_c'] = C.Red
+    enddef
+
+    try
+      Fn()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got enum<C>')
+    endtry
+
+    try
+      items['o_c'] = C.Green
+    catch
+      assert_exception('Vim(var):E1012: Type mismatch; expected object<any> but got enum<C>')
+    endtry
+
+    var items2 = {red: C.Red, green: C.Green}
+    def Fn2()
+      items2['o_a'] = A.new()
+    enddef
+    try
+      Fn2()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected enum<C> but got object<A>')
+    endtry
+
+    try
+      items2['o_a'] = B.new()
+    catch
+      assert_exception('Vim(var):E1012: Type mismatch; expected enum<C> but got object<B>')
+    endtry
   END
   v9.CheckSourceSuccess(lines)
 enddef

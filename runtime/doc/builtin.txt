@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 23
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Mar 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5896,8 +5896,8 @@ indexof({object}, {expr} [, {opts}])			*indexof()*
 		v:true.  {object} must be a |List|, a |Tuple| or a |Blob|.
 
 		If {object} is a |List| or a |Tuple|, evaluate {expr} for each
-		item in the List until the expression is v:true and return the
-		index of this item.
+		item in the List or Tuple until the expression is v:true
+		and return the index of this item.
 
 		If {object} is a |Blob| evaluate {expr} for each byte in the
 		Blob until the expression is v:true and return the index of
@@ -8336,13 +8336,14 @@ py3eval({expr} [, {locals}])				*py3eval()*
 		converted to Vim data structures.
 		If a {locals} |Dictionary| is given, it defines set of local
 		variables available in the expression. The keys are variable
-		names and the values are the variable values. |Dictionary| and
-		|List| values are referenced, and may be updated by the
-		expression (as if |python-bindeval| was used).
+		names and the values are the variable values. |Dictionary|,
+		|List| and |Tuple| values are referenced, and may be updated
+		by the expression (as if |python-bindeval| was used).
 		Numbers and strings are returned as they are (strings are
 		copied though, Unicode strings are additionally converted to
 		'encoding').
 		Lists are represented as Vim |List| type.
+		Tuples are represented as Vim |Tuple| type.
 		Dictionaries are represented as Vim |Dictionary| type with
 		keys converted to strings.
 		Note that in a `:def` function local variables are not visible
@@ -8364,6 +8365,7 @@ pyeval({expr} [, {locals}])				*pyeval()*
 		Numbers and strings are returned as they are (strings are
 		copied though).
 		Lists are represented as Vim |List| type.
+		Tuples are represented as Vim |Tuple| type.
 		Dictionaries are represented as Vim |Dictionary| type,
 		non-string keys result in error.
 		Note that in a `:def` function local variables are not visible
@@ -11921,7 +11923,7 @@ trunc({expr})							*trunc()*
 		Return type: |Float|
 
 
-tuple2list({list})					*tuple2list()*
+tuple2list({tuple})					*tuple2list()*
 		Create a List from a shallow copy of the tuple items.
 		Examples: >
 			tuple2list((1, 2, 3))		returns [1, 2, 3]

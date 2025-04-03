@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2025 Mar 23
+*testing.txt*	For Vim version 9.1.  Last change: 2025 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -68,7 +68,7 @@ test_feedinput({string})				*test_feedinput()*
 
 
 test_garbagecollect_now()			 *test_garbagecollect_now()*
-		Like garbagecollect(), but executed right away.  This must
+		Like |garbagecollect()|, but executed right away.  This must
 		only be called directly to avoid any structure to exist
 		internally, and |v:testing| must have been set before calling
 		any function.   *E1142*

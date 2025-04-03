@@ -243,6 +243,7 @@ def s:Cexpr()
 enddef
 
 def Test_disassemble_cexpr()
+  CheckFeature quickfix
   var res = execute('disass s:Cexpr')
   assert_match('<SNR>\d*_Cexpr.*' ..
         ' var errors = "list of errors"\_s*' ..

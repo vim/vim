@@ -308,7 +308,7 @@ arg_object(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
     if (type->tt_type == VAR_OBJECT
 	    || type_any_or_unknown(type))
 	return OK;
-    arg_type_mismatch(&t_object, type, context->arg_idx + 1);
+    arg_type_mismatch(&t_object_any, type, context->arg_idx + 1);
     return FAIL;
 }
 
@@ -8632,6 +8632,9 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	    else if (lv.ll_list != NULL)
 		// List item.
 		rettv->vval.v_number = tv_islocked(&lv.ll_li->li_tv);
+	    else if (lv.ll_tuple != NULL)
+		// Tuple item.
+		rettv->vval.v_number = tv_islocked(lv.ll_tv);
 	    else
 		// Dictionary item.
 		rettv->vval.v_number = tv_islocked(&lv.ll_di->di_tv);

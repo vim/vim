@@ -1352,10 +1352,10 @@ ins_compl_build_pum(void)
     int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
     int		fuzzy_filter = (cur_cot_flags & COT_FUZZY) != 0;
     int		fuzzy_sort = fuzzy_filter && !(cur_cot_flags & COT_NOSORT);
-
     compl_T	*match_head = NULL;
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
+    int		update_shown_match = fuzzy_filter;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
@@ -1365,6 +1365,10 @@ ins_compl_build_pum(void)
     // match after it, don't highlight anything.
     if (match_at_original_text(compl_shown_match))
 	shown_match_ok = TRUE;
+
+    if (fuzzy_filter && ctrl_x_mode_normal() && compl_leader.string == NULL
+	    && compl_shown_match->cp_score > 0)
+	update_shown_match = FALSE;
 
     if (compl_leader.string != NULL
 	    && STRCMP(compl_leader.string, compl_orig_text.string) == 0
@@ -1415,7 +1419,8 @@ ins_compl_build_pum(void)
 		    shown_compl = compl;
 		// Update the maximum fuzzy score and the shown match
 		// if the current item's score is higher
-		if (fuzzy_sort && compl->cp_score > max_fuzzy_score)
+		if (fuzzy_sort && compl->cp_score > max_fuzzy_score
+			&& update_shown_match)
 		{
 		    did_find_shown_match = TRUE;
 		    max_fuzzy_score = compl->cp_score;
@@ -1797,7 +1802,7 @@ ins_compl_files(
     if (in_fuzzy_collect)
     {
 	leader = ins_compl_leader();
-	leader_len = ins_compl_leader_len();
+	leader_len = (int)ins_compl_leader_len();
     }
 
     for (i = 0; i < count && !got_int && !compl_interrupted; i++)
@@ -4642,7 +4647,7 @@ ins_compl_delete(void)
     int	has_preinsert = ins_compl_preinsert_effect();
     if (has_preinsert)
     {
-	col += ins_compl_leader_len();
+	col += (int)ins_compl_leader_len();
 	curwin->w_cursor.col = compl_ins_end_col;
     }
 

@@ -2050,7 +2050,7 @@ get_lval_subscript(
 	var2.v_type = VAR_UNKNOWN;
     }
 
-    if (lp->ll_tuple != NULL)
+    if (lp->ll_tuple != NULL && (flags & GLV_READ_ONLY) == 0)
     {
 	if (!quiet)
 	    emsg(_(e_tuple_is_immutable));
@@ -2373,7 +2373,7 @@ set_var_lval(
 
 	    // handle +=, -=, *=, /=, %= and .=
 	    di = NULL;
-	    if (eval_variable(lp->ll_name, (int)(lp->ll_name_end - lp->ll_name),
+	    if (eval_variable(lp->ll_name, (int)STRLEN(lp->ll_name),
 				 lp->ll_sid, &tv, &di, EVAL_VAR_VERBOSE) == OK)
 	    {
 		if (di != NULL && check_typval_is_value(&di->di_tv) == FAIL)
