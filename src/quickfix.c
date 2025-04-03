@@ -7189,13 +7189,10 @@ get_errorlist(
     {
 	qi = ql_info;
 	if (wp != NULL)
-	{
 	    qi = GET_LOC_LIST(wp);
-	    if (qi == NULL)
-		return FAIL;
-	}
-	else if (qi == NULL)
+	if (qi == NULL)
 	    return FAIL;
+
     }
 
     if (eidx < 0)
