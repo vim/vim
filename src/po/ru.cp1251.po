@@ -22,10 +22,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9011249.270325\n"
+"Project-Id-Version: RuVim_0.9011270.030425\n"
 "Report-Msgid-Bugs-To: The Vim Project, <vim-dev@vim.org>\n"
-"POT-Creation-Date: 2025-03-27 22:13+0300\n"
-"PO-Revision-Date: 2025-03-28 07:35+0300\n"
+"POT-Creation-Date: 2025-04-03 17:45+0300\n"
+"PO-Revision-Date: 2025-04-03 19:22+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -2026,7 +2026,7 @@ msgstr "-g\t\t\tЗапуск программы с графическим интерфейсом (как \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
 msgstr ""
-"-f  или --nofork\tПри запуске ГИП из активной задачи не отключаться от неё"
+"-f  или --nofork\tНе отключаться от активной задачи при запуске ГИП"
 
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tЗапуск программы в режиме Vi (как \"vi\")"
@@ -2134,13 +2134,13 @@ msgstr "--noplugin\t\tЗапуск программы без внешних подключаемых модулей"
 # \n\t\t.. для умещения в 80 столбцов (С. Алёшин)
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
 msgstr ""
-"-p[N]\t\tСоздать вкладки для N файлов (по умолчанию создаётся\n"
+"-p[N]\t\tСоздать N вкладок для файлов (по умолчанию создаётся\n"
 "\t\t\t   по одной вкладке на каждый файл)"
 
 # \n\t\t.. для умещения в 80 столбцов (С. Алёшин)
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr ""
-"-o[N]\t\tСоздание окон для N файлов (по умолчанию создаётся\n"
+"-o[N]\t\tСоздать N окон для файлов (по умолчанию создаётся\n"
 "\t\t\t   по одному окну на каждый файл)"
 
 msgid "-O[N]\t\tLike -o but split vertically"
@@ -9487,7 +9487,9 @@ msgstr "E1249: Наименование группы подсветки превышает допустимую длину"
 
 #, c-format
 msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
-msgstr "E1250: В функции %s тип аргумента должен быть List, String или BLOB"
+msgstr ""
+"E1250: В функции %s тип аргумента должен быть List, String, Dictionary или "
+"BLOB"
 
 #, c-format
 msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
@@ -9501,8 +9503,8 @@ msgstr "E1252: Тип данных аргумента номер %d должен быть String, List или BLOB"
 
 #, c-format
 msgid "E1253: String, List, Tuple or Blob required for argument %d"
-msgstr "E1253: Тип данных аргумента номер %d должен быть String, List, Tuple "
-"или BLOB"
+msgstr ""
+"E1253: Тип данных аргумента номер %d должен быть String, List, Tuple или BLOB"
 
 msgid "E1254: Cannot use script variable in for loop"
 msgstr ""
@@ -9534,8 +9536,7 @@ msgid "E1260: Cannot unlet an imported item: %s"
 msgstr "E1260: Не допускается удаление компонента в импортированных данных %s"
 
 msgid "E1261: Cannot import .vim without using \"as\""
-msgstr ""
-"E1261: Импорт командного файла без указания ключевого слова \"as\""
+msgstr "E1261: Импорт командного файла без указания ключевого слова \"as\""
 
 #, c-format
 msgid "E1262: Cannot import the same script twice: %s"
@@ -9698,8 +9699,8 @@ msgstr ""
 #, c-format
 msgid "E1301: String, Number, List, Tuple or Blob required for argument %d"
 msgstr ""
-"E1301: Тип данных аргумента номер %d должен быть String, Number, List, Tuple"
-" или BLOB"
+"E1301: Тип данных аргумента номер %d должен быть String, Number, List, Tuple "
+"или BLOB"
 
 msgid "E1302: Script variable was deleted"
 msgstr "E1302: Переменная командного файла была удалена"
@@ -10284,7 +10285,8 @@ msgstr "E1524: Не допускается использовать кортежи в функции %s"
 #, c-format
 msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
 msgstr ""
-"E1525: В функции %s тип аргумента должен быть List, Tuple, String или BLOB"
+"E1525: В функции %s тип аргумента должен быть List, Tuple, String, Dictionary"
+" или BLOB"
 
 #, c-format
 msgid "E1526: Missing end of Tuple ')': %s"
@@ -10332,21 +10334,22 @@ msgid "E1536: Tuple required"
 msgstr "E1536: Тип данных должен быть Tuple"
 
 msgid "E1537: Less targets than Tuple items"
-msgstr ""
-"E1537: Количество переменных меньше количества элементов кортежа"
+msgstr "E1537: Количество переменных меньше количества элементов кортежа"
 
 msgid "E1538: More targets than Tuple items"
-msgstr ""
-"E1538: Количество переменных больше количества элементов кортежа"
+msgstr "E1538: Количество переменных больше количества элементов кортежа"
 
 #, c-format
 msgid "E1539: Variadic tuple must end with a list type: %s"
 msgstr "E1539: Вариационный кортеж должен заканчиваться типом данных List %s"
 
-
 msgid "E1540: Cannot use a variadic tuple in concatenation"
 msgstr "E1540: Не допускается объединение вариационных кортежей"
 
+msgid "E1541: Value too large, max Unicode codepoint is U+10FFFF"
+msgstr ""
+"E1541: Значение превышает допустимую величину кодовой позиции Юникода "
+"U+10FFFF"
 
 # #Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 msgid "--No lines in buffer--"
@@ -10539,8 +10542,7 @@ msgstr "состояние блокировки объекта не может быть изменено"
 
 msgid "tuple constructor does not accept keyword arguments"
 msgstr ""
-"не допускается использовать в конструкторе кортежа зарезервированные "
-"слова"
+"не допускается использовать в конструкторе кортежа зарезервированные слова"
 
 msgid "tuple index out of range"
 msgstr "индекс кортежа выходит за границы диапазона"
@@ -10840,7 +10842,7 @@ msgid "nroff macro names that separate sections"
 msgstr "разделитель параграфов в терминах макроязыка nroff"
 
 msgid "list of directory names used for file searching"
-msgstr "каталоги, в которых выполняется поиск файлов"
+msgstr "каталоги в которых выполняется поиск файлов"
 
 msgid ":cd without argument goes to the home directory"
 msgstr ""
@@ -10903,7 +10905,7 @@ msgid "tags"
 msgstr "Индексирование"
 
 msgid "use binary searching in tags files"
-msgstr "использовать для поиска в файлах индексов бинарный поиск"
+msgstr "использовать для файлов индексов бинарный поиск"
 
 msgid "number of significant characters in a tag name or zero"
 msgstr ""
@@ -10980,13 +10982,13 @@ msgstr ""
 "параметре 'breakat'"
 
 msgid "preserve indentation in wrapped text"
-msgstr "при разбивке длинных строк сохранить отступы"
+msgstr "сохранение отступов при переносе длинных строк"
 
 msgid "adjust breakindent behaviour"
 msgstr "настройки, используемые для параметра 'breakindent'"
 
 msgid "which characters might cause a line break"
-msgstr "символы, после которых выполняется разбивка длинных строк"
+msgstr "символы, после которых может выполняться разбивка строк"
 
 msgid "string to put before wrapped screen lines"
 msgstr ""
@@ -11090,10 +11092,10 @@ msgid "use GUI colors for the terminal"
 msgstr "использовать группы подсветки ГИП для терминала"
 
 msgid "highlight the screen column of the cursor"
-msgstr "подсветка столбца в позиции каретки"
+msgstr "подсветка столбца экрана в котором находится каретка"
 
 msgid "highlight the screen line of the cursor"
-msgstr "подсветка строки в позиции каретки"
+msgstr "подсветка строки экрана в которой находится каретка"
 
 msgid "specifies which area 'cursorline' highlights"
 msgstr "область подсветки, используемая при включённом 'cursorline'"
@@ -11269,7 +11271,7 @@ msgid "terminal connection is fast"
 msgstr "соединение с терминалом является высокоскоростным"
 
 msgid "request terminal key codes when an xterm is detected"
-msgstr "запрос кодов клавиш при обнаружении терминала xterm"
+msgstr "запрос действующих параметров терминала при обнаружении xterm"
 
 # ~!: Matvey Tarasov
 msgid "terminal that requires extra redrawing"
@@ -11334,7 +11336,7 @@ msgstr ""
 "указатель «мыши»"
 
 msgid "hide the mouse pointer while typing"
-msgstr "скрыть указатель «мыши» при наборе текста"
+msgstr "скрывать указатель «мыши» при наборе текста"
 
 msgid "report mouse movement events"
 msgstr "активировать оповещение по событию перемещения указателя «мыши»"
@@ -11384,7 +11386,7 @@ msgid "size of toolbar icons"
 msgstr "размер значков на панели инструментов"
 
 msgid "room (in pixels) left above/below the window"
-msgstr "область экрана, остающаяся не занятой окном программы (в пикселях)"
+msgstr "область экрана (в пикселях), остающаяся не занятой окном программы"
 
 msgid "list of ASCII characters that can be combined into complex shapes"
 msgstr "перечень символов кодировки ASCII, используемых в составных символах"
@@ -11422,10 +11424,10 @@ msgid "delay in milliseconds before a balloon may pop up"
 msgstr "задержка в мс перед отображением всплывающей выноски"
 
 msgid "use balloon evaluation in the GUI"
-msgstr "использовать всплывающие выноски в графическом интерфейсе"
+msgstr "включение всплывающих выносок в графическом интерфейсе"
 
 msgid "use balloon evaluation in the terminal"
-msgstr "использовать всплывающие выноски в окне терминала"
+msgstr "включение всплывающих выносок в окне терминала"
 
 msgid "expression to show in balloon eval"
 msgstr "функция, используемая для создания всплывающей выноски"
@@ -11615,6 +11617,9 @@ msgstr "максимальная высота всплывающего меню при подстановке"
 
 msgid "minimum width of the popup menu"
 msgstr "минимальная ширина всплывающего меню при подстановке"
+
+msgid "maximum width of the popup menu"
+msgstr "максимальная ширина всплывающего меню при подстановке"
 
 msgid "user defined function for Insert mode completion"
 msgstr "пользовательская функция при подстановке в режиме вставки"
@@ -11823,7 +11828,7 @@ msgid "options for using diff mode"
 msgstr "настройки, используемые для режима сверки различий"
 
 msgid "expression used to obtain a diff file"
-msgstr "функция, используемая для получения файла различий"
+msgstr "функция, используемая для создания файла различий"
 
 msgid "expression used to patch a file"
 msgstr "функция, используемая для внесения исправлений в файл"
@@ -11901,13 +11906,13 @@ msgstr "создавать резервную копию файла после его изменения"
 
 msgid "patterns that specify for which files a backup is not made"
 msgstr ""
-"шаблоны, указывающие, для каких файлов не создавать резервные\n"
-"копии"
+"не создавать резервные копии для файлов, которые соответствуют\n"
+"заданным шаблонам"
 
 msgid "whether to make the backup as a copy or rename the existing file"
 msgstr ""
-"метод создания резервной копии — или копированием, или переименованием\n"
-"файла"
+"метод создания резервной копии — или копированием,\n"
+"или переименованием файла"
 
 msgid "list of directories to put backup files in"
 msgstr "каталоги, в которых могут размещаться резервные копии файла"
@@ -12125,7 +12130,7 @@ msgid "specifies printable characters"
 msgstr "задаёт печатаемые символы"
 
 msgid "specifies escape characters in a string"
-msgstr "задаёт экранирующие символы, используемые в строке"
+msgstr "задаёт экранирующие символы используемые в строке"
 
 msgid "display the buffer right-to-left"
 msgstr "отображать содержимое буфера справа налево"
