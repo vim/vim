@@ -4761,9 +4761,10 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
     int	    c1 = 0, c2 = 0, c3 = 0;
     char_u  *last_multispace = NULL;  // Last occurrence of "multispace:"
     char_u  *last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
+    char_u  *last_ellipsis = NULL;    // Last occurrence of "ellipsis:"
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
-    int	    ellipsis_len = 0;
+    int	    ellipsis_len = 0;	      // Length of fcs-ellipsis string
 
     struct charstab *tab;
 
@@ -4828,7 +4829,15 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		fill_chars.diff = '-';
 		fill_chars.eob = '~';
 		fill_chars.lastline = '@';
-		fill_chars.ellipsis = NULL;
+
+		if (ellipsis_len > 0)
+		{
+		    fill_chars.ellipsis = ALLOC_MULT(int, ellipsis_len + 1);
+		    if (fill_chars.ellipsis != NULL)
+			fill_chars.ellipsis[ellipsis_len] = NUL;
+		}
+		else
+		    fill_chars.ellipsis = NULL;
 	    }
 	}
 	p = value;
@@ -4840,6 +4849,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		    continue;
 
 		s = p + tab[i].name.length + 1;
+
 		if (is_listchars && STRCMP(tab[i].name.string, "multispace") == 0)
 		{
 		    if (round == 0)
@@ -4861,7 +4871,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    return field_value_err(errbuf, errbuflen,
 				    e_wrong_number_of_characters_for_field_str,
 				    tab[i].name.string);
-			p = s;
 		    }
 		    else
 		    {
@@ -4873,8 +4882,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    if (p == last_multispace && lcs_chars.multispace != NULL)
 				lcs_chars.multispace[multispace_pos++] = c1;
 			}
-			p = s;
 		    }
+		    p = s;
 		    break;
 		}
 
@@ -4882,7 +4891,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		{
 		    if (round == 0)
 		    {
-			// get length of lcs-leadmultispace string in first
+			// Get length of lcs-leadmultispace string in first
 			// round
 			last_lmultispace = p;
 			lead_multispace_len = 0;
@@ -4900,7 +4909,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    return field_value_err(errbuf, errbuflen,
 				    e_wrong_number_of_characters_for_field_str,
 				    tab[i].name.string);
-			p = s;
 		    }
 		    else
 		    {
@@ -4912,8 +4920,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    if (p == last_lmultispace && lcs_chars.leadmultispace != NULL)
 				lcs_chars.leadmultispace[multispace_pos++] = c1;
 			}
-			p = s;
 		    }
+		    p = s;
 		    break;
 		}
 
@@ -4921,6 +4929,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		{
 		    if (round == 0)
 		    {
+			// Get length of fcs-ellipsis string in first round
+			last_ellipsis = p;
 			ellipsis_len = 0;
 			while (*s != NUL && *s != ',')
 			{
@@ -4932,27 +4942,22 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    ++ellipsis_len;
 			}
 			if (ellipsis_len == 0)
+			    // fcs-ellipsis cannot be an empty string
 			    return field_value_err(errbuf, errbuflen,
 				e_wrong_number_of_characters_for_field_str,
 				tab[i].name.string);
 		    }
 		    else
 		    {
-			vim_free(fill_chars.ellipsis);
-			fill_chars.ellipsis = ALLOC_MULT(int, ellipsis_len + 1);
+			int pos = 0;
 
-			if (fill_chars.ellipsis != NULL)
+			while (*s != NUL && *s != ',')
 			{
-			    int pos = 0;
-			    while (*s != NUL && *s != ',' && pos < ellipsis_len)
-			    {
-				c1 = get_encoded_char_adv(&s);
+			    c1 = get_encoded_char_adv(&s);
+			    if (p == last_ellipsis && fill_chars.ellipsis != NULL)
 				fill_chars.ellipsis[pos++] = c1;
-			    }
-			    fill_chars.ellipsis[pos] = NUL;
 			}
 		    }
-
 		    p = s;
 		    break;
 		}
