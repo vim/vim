@@ -61,7 +61,7 @@ endif
 
 if has("folding") && get(g:, "lua_folding", 0)
   setlocal foldmethod=expr
-  setlocal foldexpr=s:LuaFold(v:lnum)
+  setlocal foldexpr=s:LuaFold()
   let b:lua_lasttick = -1
   let b:undo_ftplugin ..= " | setl foldexpr< foldmethod< | unlet! b:lua_lasttick b:lua_foldlists"
 endif
@@ -86,49 +86,98 @@ function s:LuaInclude(fname) abort
   return fname
 endfunction
 
-let s:patterns = [
-      \ ['do', 'end'],
-      \ ['if\s+.+\s+then', 'end'],
-      \ ['repeat', 'until\s+.+'],
-      \ ['for\s+.+\s+do', 'end'],
-      \ ['while\s+.+\s+do', 'end'],
-      \ ['function.+', 'end'],
-      \ ['return\s+function.+', 'end'],
-      \ ['local\s+function\s+.+', 'end'],
-      \ ]
+if !has('vim9script')
+  let s:patterns = [
+      	\ ['do', 'end'],
+      	\ ['if\s+.+\s+then', 'end'],
+      	\ ['repeat', 'until\s+.+'],
+      	\ ['for\s+.+\s+do', 'end'],
+      	\ ['while\s+.+\s+do', 'end'],
+      	\ ['function.+', 'end'],
+      	\ ['return\s+function.+', 'end'],
+      	\ ['local\s+function\s+.+', 'end'],
+      	\ ]
 
-function s:LuaFold(lnum) abort
-  if b:lua_lasttick == b:changedtick
-    return b:lua_foldlists[a:lnum - 1]
-  endif
-  let b:lua_lasttick = b:changedtick
+  function s:LuaFold() abort
+    if b:lua_lasttick == b:changedtick
+      return b:lua_foldlists[v:lnum - 1]
+    endif
+    let b:lua_lasttick = b:changedtick
 
-  let b:lua_foldlists = []
-  let foldlist = []
-  let buf = getline(1, "$")
-  for line in buf
-    for t in s:patterns
-      let tagopen  = '\v^\s*' .. t[0] ..'\s*$'
-      let tagclose = '\v^\s*' .. t[1] ..'\s*$'
-      if line =~# tagopen
-	call add(foldlist, t)
-	break
-      elseif line =~# tagclose
-	if len(foldlist) > 0 && line =~# foldlist[-1][1]
-	  call remove(foldlist, -1)
-	else
-	  let foldlist = []
-	endif
-	break
-      endif
+    let b:lua_foldlists = []
+    let foldlist = []
+    let buf = getline(1, "$")
+    for line in buf
+      for t in s:patterns
+      	let tagopen  = '\v^\s*' .. t[0] ..'\s*$'
+      	let tagclose = '\v^\s*' .. t[1] ..'\s*$'
+      	if line =~# tagopen
+	  call add(foldlist, t)
+	  break
+      	elseif line =~# tagclose
+	  if len(foldlist) > 0 && line =~# foldlist[-1][1]
+	    call remove(foldlist, -1)
+	  else
+	    let foldlist = []
+	  endif
+	  break
+      	endif
+      endfor
+      call add(b:lua_foldlists, len(foldlist))
     endfor
-    call add(b:lua_foldlists, len(foldlist))
-  endfor
 
-  return lua_foldlists[a:lnum - 1]
-endfunction
+    return b:lua_foldlists[v:lnum - 1]
+  endfunction
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
+  let &cpo = s:cpo_save
+  unlet s:cpo_save
+
+  finish
+else
+  def s:LuaFold(): number
+    var patterns = [
+      	  \ ['do', 'end'],
+      	  \ ['if\s+.+\s+then', 'end'],
+      	  \ ['repeat', 'until\s+.+'],
+      	  \ ['for\s+.+\s+do', 'end'],
+      	  \ ['while\s+.+\s+do', 'end'],
+      	  \ ['function.+', 'end'],
+      	  \ ['return\s+function.+', 'end'],
+      	  \ ['local\s+function\s+.+', 'end'],
+      	  \ ]
+
+    if b:lua_lasttick == b:changedtick
+      return b:lua_foldlists[v:lnum - 1]
+    endif
+    b:lua_lasttick = b:changedtick
+
+    b:lua_foldlists = []
+    var foldlist = []
+    var buf = getline(1, "$")
+    for line in buf
+      for t in patterns
+      	var tagopen  = '\v^\s*' .. t[0] .. '\s*$'
+      	var tagclose = '\v^\s*' .. t[1] .. '\s*$'
+      	if line =~# tagopen
+	  add(foldlist, t)
+	  break
+      	elseif line =~# tagclose
+	  if len(foldlist) > 0 && line =~# foldlist[-1][1]
+	    remove(foldlist, -1)
+	  else
+	    foldlist = []
+	  endif
+	  break
+      	endif
+      endfor
+      add(b:lua_foldlists, len(foldlist))
+    endfor
+
+    return b:lua_foldlists[v:lnum - 1]
+  enddef
+
+  let &cpo = s:cpo_save
+  unlet s:cpo_save
+endif
 
 " vim: nowrap sw=2 sts=2 ts=8 noet:
