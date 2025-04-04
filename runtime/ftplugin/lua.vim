@@ -110,6 +110,7 @@ if !has('vim9script')
     let buf = getline(1, "$")
     for line in buf
       for t in s:patterns
+      	let end = 0
       	let tagopen  = '\v^\s*' .. t[0] ..'\s*$'
       	let tagclose = '\v^\s*' .. t[1] ..'\s*$'
       	if line =~# tagopen
@@ -118,13 +119,14 @@ if !has('vim9script')
       	elseif line =~# tagclose
 	  if len(foldlist) > 0 && line =~# foldlist[-1][1]
 	    call remove(foldlist, -1)
+      	    let end = 1
 	  else
 	    let foldlist = []
 	  endif
 	  break
       	endif
       endfor
-      call add(b:lua_foldlists, len(foldlist))
+      call add(b:lua_foldlists, len(foldlist) + end)
     endfor
 
     return b:lua_foldlists[v:lnum - 1]
@@ -156,6 +158,7 @@ else
     var foldlist = []
     var buf = getline(1, "$")
     for line in buf
+      var end = 0
       for t in patterns
       	var tagopen  = '\v^\s*' .. t[0] .. '\s*$'
       	var tagclose = '\v^\s*' .. t[1] .. '\s*$'
@@ -164,6 +167,7 @@ else
 	  break
       	elseif line =~# tagclose
 	  if len(foldlist) > 0 && line =~# foldlist[-1][1]
+	    end = 1
 	    remove(foldlist, -1)
 	  else
 	    foldlist = []
@@ -171,7 +175,7 @@ else
 	  break
       	endif
       endfor
-      add(b:lua_foldlists, len(foldlist))
+      add(b:lua_foldlists, len(foldlist) + end)
     endfor
 
     return b:lua_foldlists[v:lnum - 1]
