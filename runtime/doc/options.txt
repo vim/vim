@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 06
+*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3604,7 +3604,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'fillchars' 'fcs'	string	(default "vert:|,fold:-,eob:~,lastline:@")
 			global or local to window |global-local|
 	Characters to fill the statuslines, vertical separators, special
-	lines in the window and ellipsis in |popupmenu|.
+	lines in the window, and ellipsis in |ins-completion-menu|.
 	It is a comma-separated list of items.  Each item has a name, a colon
 	and the value of that item: |E1511|
 

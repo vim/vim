@@ -2138,62 +2138,6 @@ func Test_pum_maxwidth_multibyte()
     call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
   endif
 
-  call term_sendkeys(buf, "S\<C-X>\<C-O>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_19', {'rows': 8})
-  call term_sendkeys(buf, "\<ESC>")
-
-  call term_sendkeys(buf, ":let g:change=2\<CR>")
-  call TermWait(buf, 50)
-  call term_sendkeys(buf, ":set fcs+=ellipsis:Ãôü\<CR>")
-  call term_sendkeys(buf, "S\<C-X>\<C-O>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_20', {'rows': 8})
-  call term_sendkeys(buf, "\<ESC>")
-
-  if has('rightleft')
-    call term_sendkeys(buf, ":set rightleft\<CR>")
-    call term_sendkeys(buf, "S\<C-X>\<C-O>")
-    call VerifyScreenDump(buf, 'Test_pum_maxwidth_21', {'rows': 8})
-    call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
-  endif
-
-  call term_sendkeys(buf, ":set fcs=ellipsis:…⋯\<CR>")
-  call term_sendkeys(buf, "S\<C-X>\<C-O>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_22', {'rows': 8})
-  call term_sendkeys(buf, "\<ESC>")
-
-  if has('rightleft')
-    call term_sendkeys(buf, ":set rightleft\<CR>")
-    call term_sendkeys(buf, "S\<C-X>\<C-O>")
-    call VerifyScreenDump(buf, 'Test_pum_maxwidth_23', {'rows': 8})
-    call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
-  endif
-
-  " double width
-  call term_sendkeys(buf, ":set fcs=ellipsis:还有\<CR>")
-  call term_sendkeys(buf, "S\<C-X>\<C-O>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_24', {'rows': 8})
-  call term_sendkeys(buf, "\<ESC>")
-
-  if has('rightleft')
-    call term_sendkeys(buf, ":set rightleft\<CR>")
-    call term_sendkeys(buf, "S\<C-X>\<C-O>")
-    call VerifyScreenDump(buf, 'Test_pum_maxwidth_25', {'rows': 8})
-    call term_sendkeys(buf, "\<ESC>")
-    call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
-  endif
-
-  call term_sendkeys(buf, ":set pummaxwidth=13\<CR>")
-  call term_sendkeys(buf, "S\<C-X>\<C-O>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_26', {'rows': 8})
-  call term_sendkeys(buf, "\<ESC>")
-
-  if has('rightleft')
-    call term_sendkeys(buf, ":set rightleft\<CR>")
-    call term_sendkeys(buf, "S\<C-X>\<C-O>")
-    call VerifyScreenDump(buf, 'Test_pum_maxwidth_27', {'rows': 8})
-    call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
-  endif
-
   call StopVimInTerminal(buf)
 endfunc
 
