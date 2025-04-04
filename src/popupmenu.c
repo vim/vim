@@ -754,7 +754,8 @@ pum_redraw(void)
 	    {
 		next_item = pum_get_item(idx, order[j + 1]);
 		if (next_item != NULL)
-		    next_cells = (*mb_string2cells)(next_item, STRLEN(next_item));
+		    next_cells = (*mb_string2cells)(next_item,
+						    (int)STRLEN(next_item));
 	    }
 
 	    if (p != NULL)
