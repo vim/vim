@@ -3309,10 +3309,17 @@ diff_find_change_inline_diff(
 	    char_u *s;
 	    for (s = curline; *s != NUL;)
 	    {
-		// Always use the first buffer's 'iskeyword' to have a consistent diff
 		int new_in_keyword = FALSE;
 		if (diff_flags & DIFF_INLINE_WORD)
-		    new_in_keyword = vim_iswordp_buf(s, curtab->tp_diffbuf[file1_idx]);
+		{
+		    // Always use the first buffer's 'iskeyword' to have a
+		    // consistent diff.
+		    // For multibyte chars, only treat alphanumeric chars
+		    // (class 2) as "word", as other classes such as emojis and
+		    // CJK ideographs do not usually benefit from word diff as
+		    // Vim doesn't have a good way to segment them.
+		    new_in_keyword = (mb_get_class_buf(s, curtab->tp_diffbuf[file1_idx]) == 2);
+		}
 		if (in_keyword && !new_in_keyword)
 		{
 		    ga_append(curstr, NL);
