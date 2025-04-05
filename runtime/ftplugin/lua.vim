@@ -110,11 +110,13 @@ if !has('vim9script')
     let buf = getline(1, "$")
     for line in buf
       for t in s:patterns
+      	let open = 0
       	let end = 0
       	let tagopen  = '\v^\s*' .. t[0] ..'\s*$'
       	let tagclose = '\v^\s*' .. t[1] ..'\s*$'
       	if line =~# tagopen
 	  call add(foldlist, t)
+      	  let open = 1
 	  break
       	elseif line =~# tagclose
 	  if len(foldlist) > 0 && line =~# foldlist[-1][1]
@@ -126,7 +128,10 @@ if !has('vim9script')
 	  break
       	endif
       endfor
-      call add(b:lua_foldlists, len(foldlist) + end)
+      let prefix = ''
+      if open | let prefix = '>' | endif
+      if end | let prefix = '<' | endif
+      call add(b:lua_foldlists, prefix..len(foldlist) + end)
     endfor
 
     return b:lua_foldlists[v:lnum - 1]
@@ -137,7 +142,7 @@ if !has('vim9script')
 
   finish
 else
-  def s:LuaFold(): number
+  def s:LuaFold(): string
     if b:lua_lasttick == b:changedtick
       return b:lua_foldlists[v:lnum - 1]
     endif
@@ -147,12 +152,14 @@ else
     var foldlist = []
     var buf = getline(1, "$")
     for line in buf
+      var open = 0
       var end = 0
       for t in patterns
       	var tagopen  = '\v^\s*' .. t[0] .. '\s*$'
       	var tagclose = '\v^\s*' .. t[1] .. '\s*$'
       	if line =~# tagopen
 	  add(foldlist, t)
+      	  open = 1
 	  break
       	elseif line =~# tagclose
 	  if len(foldlist) > 0 && line =~# foldlist[-1][1]
@@ -164,7 +171,10 @@ else
 	  break
       	endif
       endfor
-      add(b:lua_foldlists, len(foldlist) + end)
+      var prefix = ''
+      if open | prefix = '>' | endif
+      if end | prefix = '<' | endif
+      add(b:lua_foldlists, prefix..len(foldlist) + end)
     endfor
 
     return b:lua_foldlists[v:lnum - 1]
