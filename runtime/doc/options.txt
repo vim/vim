@@ -3603,7 +3603,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'fillchars'* *'fcs'*
 'fillchars' 'fcs'	string	(default "vert:|,fold:-,eob:~,lastline:@")
 			global or local to window |global-local|
-	Characters to fill the statuslines, vertical separators, special
+	Characters to fill the statuslines, vertical separators and special
 	lines in the window.
 	It is a comma-separated list of items.  Each item has a name, a colon
 	and the value of that item: |E1511|
@@ -6513,10 +6513,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Determines the maximum width to use for the popup menu for completion.
 	When zero, there is no maximum width limit, otherwise the popup menu
-	will never be wider than this value.  Truncated text will be indicated
-	by an ellipsis "..." at the end.  The ellipsis character(s) can be
-	customized with the 'fillchars' option by setting the "ellipsis:"
-	value.
+	will never be wider than this value.  Truncated text will be use the
+	"ellipsis" of 'fillchars' option.
+
 	This option takes precedence over 'pumwidth'.
 	|ins-completion-menu|.
 
