@@ -203,7 +203,7 @@ let test_values = {
       \ 'fileformats': [['', 'dos', 'dos,unix'], ['xxx']],
       \ 'fillchars': [['', 'stl:x', 'stlnc:x', 'vert:x', 'fold:x', 'foldopen:x',
       \		'foldclose:x', 'foldsep:x', 'diff:x', 'eob:x', 'lastline:x',
-      \		'ellipsis:___', 'ellipsis:___,eob:x,ellipsis:_',
+      \		'ellipsis:_', 'ellipsis:_,eob:x,ellipsis:_',
       \		'stl:\ ,vert:\|,fold:\\,ellipsis:…,diff:x'],
       \		['xxx', 'vert:', 'ellipsis:', "ellipsis:\b"]],
       \ 'foldclose': [['', 'all'], ['xxx']],
