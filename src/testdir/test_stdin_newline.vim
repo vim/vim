@@ -8,13 +8,13 @@ func Test_stdin_no_newline()
   CheckExecutable echo
 
   let $PS1 = 'TEST_PROMPT> '
-  let buf = RunVimInTerminal('', #{rows: 10, cmd: 'sh'})
-  call TermWait(buf, 500)  " Wait for shell to start
+  let buf = RunVimInTerminal('', #{rows: 20, cmd: 'bash --noprofile --norc'})
+  call TermWait(buf, 1000)  " Wait for shell to start
 
 
   call term_sendkeys(buf, "echo hello | ../vim --not-a-term -u NONE -c ':q!' -\<CR>")
 
-  call TermWait(buf, 2000)
+  call TermWait(buf, 5000)
 
   " colleting all lines after cmd execution in vim terminal
   let lines = []
