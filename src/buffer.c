@@ -73,12 +73,12 @@ static int	top_file_num = 1;	// highest file number
 static garray_T buf_reuse = GA_EMPTY;	// file numbers to recycle
 
 /*
- * Calculate the percentage that line_nr is of nr_lines.
+ * Calculate the percentage that `part` is of the `whole`.
  */
     static int
-calc_percentage(long line_nr, long nr_lines)
+calc_percentage(long part, long whole)
 {
-    return (int)(((double)line_nr / (double)nr_lines) * 100.0);
+    return (int)(((double)part / (double)whole) * 100.0);
 }
 
 /*
