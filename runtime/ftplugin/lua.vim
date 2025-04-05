@@ -87,18 +87,18 @@ function s:LuaInclude(fname) abort
   return fname
 endfunction
 
-if !has('vim9script')
-  let s:patterns = [
-      	\ ['do', 'end'],
-      	\ ['if\s+.+\s+then', 'end'],
-      	\ ['repeat', 'until\s+.+'],
-      	\ ['for\s+.+\s+do', 'end'],
-      	\ ['while\s+.+\s+do', 'end'],
-      	\ ['function.+', 'end'],
-      	\ ['return\s+function.+', 'end'],
-      	\ ['local\s+function\s+.+', 'end'],
-      	\ ]
+let s:patterns = [
+      \ ['do', 'end'],
+      \ ['if\s+.+\s+then', 'end'],
+      \ ['repeat', 'until\s+.+'],
+      \ ['for\s+.+\s+do', 'end'],
+      \ ['while\s+.+\s+do', 'end'],
+      \ ['function.+', 'end'],
+      \ ['return\s+function.+', 'end'],
+      \ ['local\s+function\s+.+', 'end'],
+      \ ]
 
+if !has('vim9script')
   function s:LuaFold() abort
     if b:lua_lasttick == b:changedtick
       return b:lua_foldlists[v:lnum - 1]
@@ -138,17 +138,6 @@ if !has('vim9script')
   finish
 else
   def s:LuaFold(): number
-    var patterns = [
-      	  \ ['do', 'end'],
-      	  \ ['if\s+.+\s+then', 'end'],
-      	  \ ['repeat', 'until\s+.+'],
-      	  \ ['for\s+.+\s+do', 'end'],
-      	  \ ['while\s+.+\s+do', 'end'],
-      	  \ ['function.+', 'end'],
-      	  \ ['return\s+function.+', 'end'],
-      	  \ ['local\s+function\s+.+', 'end'],
-      	  \ ]
-
     if b:lua_lasttick == b:changedtick
       return b:lua_foldlists[v:lnum - 1]
     endif
