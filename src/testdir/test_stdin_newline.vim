@@ -15,7 +15,6 @@ func Test_stdin_no_newline()
   call term_sendkeys(buf, "echo hello > temp.txt\<CR>")
   call TermWait(buf, 500)
 
-  " Run Vim with input from stdin using bash -c (ensures consistent behavior)
   call term_sendkeys(buf, "bash -c '../vim --not-a-term -u NONE -c \":q!\" -' < temp.txt\<CR>")
   call TermWait(buf, 3000)
 
@@ -24,11 +23,6 @@ func Test_stdin_no_newline()
   for i in range(1, term_getsize(buf)[0])
     call add(lines, term_getline(buf, i))
   endfor
-
-  for l in lines
-    echomsg 'DEBUG LINE: ' . l
-  endfor
-
 
   " Find the command line in output
   let cmd_line = -1
