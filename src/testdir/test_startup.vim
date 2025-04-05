@@ -788,14 +788,14 @@ func Test_stdin_no_newline()
 
   let $PS1 = 'TEST_PROMPT> '
   let buf = RunVimInTerminal('', #{rows: 20, cmd: 'bash --noprofile --norc'})
-  call TermWait(buf, 1000)
+  call TermWait(buf, 100)
 
   " Write input to temp file
   call term_sendkeys(buf, "echo hello > temp.txt\<CR>")
-  call TermWait(buf, 500)
+  call TermWait(buf, 200)
 
   call term_sendkeys(buf, "bash -c '../vim --not-a-term -u NONE -c \":q!\" -' < temp.txt\<CR>")
-  call TermWait(buf, 3000)
+  call TermWait(buf, 200)
 
   " Capture terminal output
   let lines = []
@@ -834,7 +834,7 @@ func Test_stdin_no_newline()
   " Clean up temp file and exit shell
   call term_sendkeys(buf, "rm -f temp.txt\<CR>")
   call term_sendkeys(buf, "exit\<CR>")
-  call TermWait(buf, 1000)
+  call TermWait(buf, 200)
 
   if job_status(term_getjob(buf)) ==# 'run'
     call StopVimInTerminal(buf)
