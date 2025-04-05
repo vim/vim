@@ -642,7 +642,7 @@ class, then the type of the variable is set.
 The following reserved keyword names cannot be used as an object or class
 variable name: "super", "this", "true", "false", "null", "null_blob",
 "null_dict", "null_function", "null_list", "null_partial", "null_string",
-"null_channel" and "null_job".
+"null_channel", "null_job", "null_object" and "null_class".
 
 Extending a class ~
 							*extends*
