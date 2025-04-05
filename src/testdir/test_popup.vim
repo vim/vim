@@ -2019,7 +2019,7 @@ func Test_pum_maxwidth()
 
   call term_sendkeys(buf, ":set lines=10 columns=32\<CR>")
   call term_sendkeys(buf, "GA\<C-N>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_09', {'rows': 10, 'cols': 32})
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_05', {'rows': 10, 'cols': 32})
   call term_sendkeys(buf, "\<Esc>3Gdd\"zp")
 
   call StopVimInTerminal(buf)
@@ -2070,19 +2070,19 @@ func Test_pum_maxwidth_multibyte()
 
   call term_sendkeys(buf, ":set pummaxwidth=10\<CR>")
   call term_sendkeys(buf, "S\<C-X>\<C-O>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_06', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_07', {'rows': 8})
   call term_sendkeys(buf, "\<ESC>")
 
   if has('rightleft')
     call term_sendkeys(buf, ":set rightleft\<CR>")
     call term_sendkeys(buf, "S\<C-X>\<C-O>")
-    call VerifyScreenDump(buf, 'Test_pum_maxwidth_07', {'rows': 8})
+    call VerifyScreenDump(buf, 'Test_pum_maxwidth_08', {'rows': 8})
     call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
   endif
 
   call term_sendkeys(buf, ":set pummaxwidth=2\<CR>")
   call term_sendkeys(buf, "S\<C-X>\<C-O>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_08', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_09', {'rows': 8})
   call term_sendkeys(buf, "\<ESC>")
 
   call term_sendkeys(buf, ":set pummaxwidth=14\<CR>")

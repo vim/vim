@@ -4713,7 +4713,7 @@ static struct charstab filltab[] =
     CHARSTAB_ENTRY(&fill_chars.diff,	    "diff"),
     CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
     CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline"),
-    CHARSTAB_ENTRY(&fill_chars. ellipsis,   "ellipsis"),
+    CHARSTAB_ENTRY(&fill_chars.ellipsis,    "ellipsis"),
 };
 static lcs_chars_T lcs_chars;
 static struct charstab lcstab[] =
