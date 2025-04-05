@@ -3451,7 +3451,7 @@ buflist_list(exarg_T *eap)
 	    ro_char = !buf->b_p_ma ? '-' : (buf->b_p_ro ? '=' : ' ');
 
 	msg_putchar('\n');
-	len = vim_snprintf_safelen((char *)IObuff, IOSIZE - 20, "%3d%c%c%c%c%c \"%s\"",
+	len = (int)vim_snprintf_safelen((char *)IObuff, IOSIZE - 20, "%3d%c%c%c%c%c \"%s\"",
 		buf->b_fnum,
 		buf->b_p_bl ? ' ' : 'u',
 		buf == curbuf ? '%' :
@@ -3883,7 +3883,7 @@ fileinfo(
 	else
 	    name = curbuf->b_ffname;
 	home_replace(shorthelp ? curbuf : NULL, name, (char_u *)buffer + bufferlen,
-					  (int)IOSIZE - bufferlen, TRUE);
+					  IOSIZE - (int)bufferlen, TRUE);
 	bufferlen += STRLEN(buffer + bufferlen);
     }
 
@@ -4085,7 +4085,7 @@ maketitle(void)
 		buf[buflen++] = ' ';
 		buf[buflen++] = '(';
 		home_replace(curbuf, curbuf->b_ffname,
-					buf + buflen, SPACE_FOR_DIR - buflen, TRUE);
+					buf + buflen, SPACE_FOR_DIR - (int)buflen, TRUE);
 #ifdef BACKSLASH_IN_FILENAME
 		// avoid "c:/name" to be reduced to "c"
 		if (SAFE_isalpha(buf[buflen]) && buf[buflen + 1] == ':')
