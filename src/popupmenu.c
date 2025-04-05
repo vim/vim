@@ -588,7 +588,7 @@ pum_redraw(void)
     hlf_T	*hlfs; // array used for highlights
     hlf_T	hlf;
     int		attr;
-    int		i, j, k;
+    int		i, j;
     int		idx;
     char_u	*s;
     char_u	*p = NULL;
