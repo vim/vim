@@ -826,7 +826,7 @@ pum_redraw(void)
 
 			    if (pum_width == p_pmw && totwidth + 1 + cells >= pum_width)
 			    {
-				int remaining = pum_width - totwidth - 1;
+				remaining = pum_width - totwidth - 1;
 				st_end = st + size;
 				if (cells > remaining)
 				{
