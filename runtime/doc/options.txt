@@ -3604,7 +3604,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'fillchars' 'fcs'	string	(default "vert:|,fold:-,eob:~,lastline:@")
 			global or local to window |global-local|
 	Characters to fill the statuslines, vertical separators, special
-	lines in the window, and ellipsis in |ins-completion-menu|.
+	lines in the window.
 	It is a comma-separated list of items.  Each item has a name, a colon
 	and the value of that item: |E1511|
 
@@ -3619,7 +3619,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  diff		'-'		deleted lines of the 'diff' option
 	  eob		'~'		empty lines below the end of a buffer
 	  lastline	'@'		'display' contains lastline/truncate
-	  ellipsis	''		for text truncated by 'pummaxwidth'
+	  ellipsis	'>'		for text truncated.
 
 	Any one that is omitted will fall back to the default.
 
