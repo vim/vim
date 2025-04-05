@@ -660,7 +660,7 @@ vim_main2(void)
 #if defined(UNIX) || defined(VMS)
     // When switching screens and something caused a message from a vimrc
     // script, need to output an extra newline on exit.
-    if ((did_emsg || msg_didout) && *T_TI != NUL)
+    if ((did_emsg || msg_didout) && *T_TI != NUL && params.edit_type != EDIT_STDIN)
 	{
 		if (params.edit_type != EDIT_STDIN)
 	            newline_on_exit = TRUE;
