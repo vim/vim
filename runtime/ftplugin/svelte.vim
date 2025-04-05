@@ -29,7 +29,7 @@ if exists("loaded_matchit") && !exists("b:match_words")
     \ '{#\(if\|each\)[^}]*}:{\:else[^}]*}:{\/\(if\|each\)},' .
     \ '{#await[^}]*}:{\:then[^}]*}:{\:catch[^}]*}:{\/await},' .
     \ '{#snippet[^}]*}:{\/snippet},' .
-    \ '{#key[^}]*}:{\/key},'
+    \ '{#key[^}]*}:{\/key}'
   let b:html_set_match_words = 1
   let b:undo_ftplugin ..= " | unlet! b:match_ignorecase b:match_words b:html_set_match_words"
 endif
