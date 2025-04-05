@@ -3848,6 +3848,7 @@ typedef struct
     int	diff;
     int	eob;
     int	lastline;
+    int ellipsis;
 } fill_chars_T;
 
 /*
