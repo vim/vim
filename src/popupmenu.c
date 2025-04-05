@@ -770,10 +770,12 @@ pum_redraw(void)
 				    if (!new_str)
 					return;
 				    ptr = new_str;
-				    if (curwin->w_fill_chars.ellipsis != NULL)
+				    if (curwin->w_fill_chars.ellipsis != NUL)
 				    {
-					for (k = 0; curwin->w_fill_chars.ellipsis[k] != NUL; k++)
-					    ptr += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis[k], ptr);
+					if (curwin->w_fill_chars.ellipsis == '>')
+					    *ptr++ = '<';
+					else
+					    ptr += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis, ptr);
 				    }
 				    else
 					*ptr++ = '<';
@@ -852,11 +854,8 @@ pum_redraw(void)
 				    ptr += over_cell;
 				}
 
-				if (curwin->w_fill_chars.ellipsis != NULL)
-				{
-				    for (k = 0; curwin->w_fill_chars.ellipsis[k] != NUL; k++)
-					ptr += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis[k], ptr);
-				}
+				if (curwin->w_fill_chars.ellipsis != NUL)
+				    ptr += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis, ptr);
 				else
 				    *ptr++ = '>';
 
