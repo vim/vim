@@ -5,40 +5,46 @@ source term_util.vim
 func Test_stdin_no_newline()
   CheckScreendump
   CheckUnix
-  CheckExecutable echo
+  CheckExecutable bash
 
   let $PS1 = 'TEST_PROMPT> '
   let buf = RunVimInTerminal('', #{rows: 20, cmd: 'bash --noprofile --norc'})
-  call TermWait(buf, 1000)  " Wait for shell to start
+  call TermWait(buf, 1000)
 
+  " Write input to temp file
+  call term_sendkeys(buf, "echo hello > temp.txt\<CR>")
+  call TermWait(buf, 500)
 
-  call term_sendkeys(buf, "echo hello | ../vim --not-a-term -u NONE -c ':q!' -\<CR>")
+  " Run Vim with input from stdin using bash -c (ensures consistent behavior)
+  call term_sendkeys(buf, "bash -c '../vim --not-a-term -u NONE -c \":q!\" -' < temp.txt\<CR>")
+  call TermWait(buf, 3000)
 
-  call TermWait(buf, 5000)
-
-  " colleting all lines after cmd execution in vim terminal
+  " Capture terminal output
   let lines = []
   for i in range(1, term_getsize(buf)[0])
-    let line = term_getline(buf, i)
-    call add(lines, line)
+    call add(lines, term_getline(buf, i))
   endfor
 
-  " Find the command line first as it will appear
+  for l in lines
+    echomsg 'DEBUG LINE: ' . l
+  endfor
+
+
+  " Find the command line in output
   let cmd_line = -1
   for i in range(len(lines))
-    if lines[i] =~ '.*echo hello.*vim.*'
+    if lines[i] =~ '.*vim.*--not-a-term.*'
       let cmd_line = i
       break
     endif
   endfor
 
-  " Check that the next non-empty line is the TEST_PROMPT>
   if cmd_line == -1
     call assert_report('Command line not found in terminal output')
   else
     let next_line = -1
     for i in range(cmd_line + 1, len(lines))
-      if i < len(lines) && lines[i] != ''
+      if lines[i] =~ '\S'
         let next_line = i
         break
       endif
@@ -48,15 +54,15 @@ func Test_stdin_no_newline()
       call assert_report('No prompt found after command execution')
     else
       call assert_equal(cmd_line + 1, next_line, 'Prompt should be on the immediate next line')
-      call assert_match($PS1, lines[next_line], 'Line should contain the prompt PS1')
+      call assert_match('.*TEST_PROMPT>.*', lines[next_line], 'Line should contain the prompt PS1')
     endif
   endif
 
-
+  " Clean up temp file and exit shell
+  call term_sendkeys(buf, "rm -f temp.txt\<CR>")
   call term_sendkeys(buf, "exit\<CR>")
   call TermWait(buf, 1000)
 
-  " Only try to stop if job is still running
   if job_status(term_getjob(buf)) ==# 'run'
     call StopVimInTerminal(buf)
   endif
