@@ -4713,7 +4713,7 @@ static struct charstab filltab[] =
     CHARSTAB_ENTRY(&fill_chars.diff,	    "diff"),
     CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
     CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline"),
-    CHARSTAB_ENTRY(NULL,		    "ellipsis"),
+    CHARSTAB_ENTRY(&fill_chars. ellipsis,   "ellipsis"),
 };
 static lcs_chars_T lcs_chars;
 static struct charstab lcstab[] =
@@ -4764,7 +4764,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
     char_u  *last_ellipsis = NULL;    // Last occurrence of "ellipsis:"
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
-    int	    ellipsis_len = 0;	      // Length of fcs-ellipsis string
 
     struct charstab *tab;
 
@@ -4829,15 +4828,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		fill_chars.diff = '-';
 		fill_chars.eob = '~';
 		fill_chars.lastline = '@';
-
-		if (ellipsis_len > 0)
-		{
-		    fill_chars.ellipsis = ALLOC_MULT(int, ellipsis_len + 1);
-		    if (fill_chars.ellipsis != NULL)
-			fill_chars.ellipsis[ellipsis_len] = NUL;
-		}
-		else
-		    fill_chars.ellipsis = NULL;
+		fill_chars.ellipsis = '>';
 	    }
 	}
 	p = value;
@@ -4929,39 +4920,27 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		{
 		    if (round == 0)
 		    {
-			// Get length of fcs-ellipsis string in first round
 			last_ellipsis = p;
-			ellipsis_len = 0;
-			while (*s != NUL && *s != ',')
-			{
-			    c1 = get_encoded_char_adv(&s);
-			    if (!vim_isprintc(c1))
-				return field_value_err(errbuf, errbuflen,
-				     e_wrong_character_width_for_field_str,
-				     tab[i].name.string);
-			    ++ellipsis_len;
-			}
-			if (ellipsis_len == 0)
-			    // fcs-ellipsis cannot be an empty string
+			c1 = get_encoded_char_adv(&s);
+			if (!vim_isprintc(c1) || char2cells(c1) != 1)
+			    return field_value_err(errbuf, errbuflen,
+				e_wrong_character_width_for_field_str,
+				tab[i].name.string);
+
+			if (*s != NUL && *s != ',')
 			    return field_value_err(errbuf, errbuflen,
 				e_wrong_number_of_characters_for_field_str,
 				tab[i].name.string);
 		    }
 		    else
 		    {
-			int pos = 0;
-
-			while (*s != NUL && *s != ',')
-			{
-			    c1 = get_encoded_char_adv(&s);
-			    if (p == last_ellipsis && fill_chars.ellipsis != NULL)
-				fill_chars.ellipsis[pos++] = c1;
-			}
+			c1 = get_encoded_char_adv(&s);
+			if (p == last_ellipsis)
+			    fill_chars.ellipsis = c1;
 		    }
 		    p = s;
 		    break;
 		}
-
 
 		c2 = c3 = 0;
 		if (*s == NUL)
@@ -5035,7 +5014,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 	}
 	else
 	{
-	    vim_free(wp->w_fill_chars.ellipsis);
 	    wp->w_fill_chars = fill_chars;
 	}
     }
