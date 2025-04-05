@@ -20,6 +20,6 @@ let b:did_ftplugin = 1
 setlocal commentstring=#\ %s
 setlocal formatoptions-=t
 
-let b:undo_ftplugin = "setlocal commentstring< | setlocal formatoptions<"
+let b:undo_ftplugin = "setlocal commentstring< formatoptions<"
 
 " vim: ts=8 ft=vim
