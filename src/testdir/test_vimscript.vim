@@ -7521,6 +7521,7 @@ endfunc
 
 " Test for 'for' loop failures
 func Test_for_loop_failure()
+  CheckFeature job
   func ForFn()
     for x in test_null_job()
     endfor
