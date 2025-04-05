@@ -301,7 +301,6 @@ NEW_TESTS = \
 	test_startup_utf8 \
 	test_stat \
 	test_statusline \
-	test_stdin_newline \
 	test_substitute \
 	test_suspend \
 	test_swap \
@@ -557,7 +556,6 @@ NEW_TESTS_RES = \
 	test_startup.res \
 	test_stat.res \
 	test_statusline.res \
-	test_stdin_newline.res \
 	test_substitute.res \
 	test_suspend.res \
 	test_swap.res \
