@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Feb 16
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -641,8 +641,8 @@ class, then the type of the variable is set.
 
 The following reserved keyword names cannot be used as an object or class
 variable name: "super", "this", "true", "false", "null", "null_blob",
-"null_dict", "null_function", "null_list", "null_partial", "null_string",
-"null_channel" and "null_job".
+"null_channel", "null_class", "null_dict", "null_function", "null_job",
+"null_list", "null_object", "null_partial" and "null_string".
 
 Extending a class ~
 							*extends*

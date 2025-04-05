@@ -1119,36 +1119,52 @@ check_script_var_type(
 }
 
 // words that cannot be used as a variable
+// Keep this array sorted, as bsearch() is used to search this array.
 static char *reserved[] = {
-    "true",
     "false",
     "null",
     "null_blob",
+    "null_channel",
+    "null_class",
     "null_dict",
     "null_function",
+    "null_job",
     "null_list",
-    "null_tuple",
+    "null_object",
     "null_partial",
     "null_string",
-    "null_channel",
-    "null_job",
+    "null_tuple",
     "super",
     "this",
-    NULL
+    "true",
 };
 
+/*
+ * String compare function used for bsearch()
+ */
+    static int
+comp_names(const void *s1, const void *s2)
+{
+    return STRCMP(*(char **)s1, *(char **)s2);
+}
+
+/*
+ * Returns OK if "name" is not a reserved keyword.  Otherwise returns FAIL.
+ */
     int
 check_reserved_name(char_u *name, int is_objm_access)
 {
-    int idx;
+    // "this" can be used in an object method
+    if (is_objm_access && STRCMP("this", name) == 0)
+	return OK;
 
-    for (idx = 0; reserved[idx] != NULL; ++idx)
-	if (STRCMP(reserved[idx], name) == 0
-		&& !(STRCMP("this", name) == 0 && is_objm_access))
-	{
-	    semsg(_(e_cannot_use_reserved_name_str), name);
-	    return FAIL;
-	}
+    if (bsearch(&name, reserved, ARRAY_LENGTH(reserved),
+				sizeof(reserved[0]), comp_names) != NULL)
+    {
+	semsg(_(e_cannot_use_reserved_name_str), name);
+	return FAIL;
+    }
+
     return OK;
 }
 

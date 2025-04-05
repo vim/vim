@@ -333,6 +333,9 @@ tuple_type_add_types(
     return OK;
 }
 
+/*
+ * Get a list type, based on the member item type in "member_type".
+ */
     type_T *
 get_list_type(type_T *member_type, garray_T *type_gap)
 {
@@ -367,9 +370,7 @@ get_list_type(type_T *member_type, garray_T *type_gap)
  * "tuple_types_ga".
  */
     type_T *
-get_tuple_type(
-    garray_T	*tuple_types_gap,
-    garray_T	*type_gap)
+get_tuple_type(garray_T *tuple_types_gap, garray_T *type_gap)
 {
     type_T	*type;
     type_T	**tuple_types = tuple_types_gap->ga_data;
@@ -397,6 +398,9 @@ get_tuple_type(
     return type;
 }
 
+/*
+ * Get a dict type, based on the member item type in "member_type".
+ */
     type_T *
 get_dict_type(type_T *member_type, garray_T *type_gap)
 {
