@@ -3424,4 +3424,72 @@ func Test_complete_append_selected_match_default()
   delfunc PrintMenuWords
 endfunc
 
+function Test_complete_match()
+  set isexpand=.,/,->,abc,/*,_
+  func TestComplete()
+    let [startcol, expandchar] = complete_match()
+    if startcol >= 0
+      let line = getline('.')
+
+      let items = []
+      if expandchar == '/*'
+        let items = ['/** */']
+      elseif expandchar =~ '^/'
+        let items = ['/*! */', '// TODO:', '// fixme:']
+      elseif expandchar =~ '^\.' && startcol < 4
+        let items = ['length()', 'push()', 'pop()', 'slice()']
+      elseif expandchar =~ '^\.' && startcol > 4
+        let items = ['map()', 'filter()', 'reduce()']
+      elseif expandchar =~ '^\abc'
+        let items = ['def', 'ghk']
+      elseif expandchar =~ '^\->'
+        let items = ['free()', 'xfree()']
+      else
+        let items = ['test1', 'test2', 'test3']
+      endif
+
+      call complete(expandchar =~ '^/' ? startcol : startcol + strlen(expandchar), items)
+    endif
+  endfunc
+
+  new
+  inoremap <buffer> <F5> <cmd>call TestComplete()<CR>
+
+  call feedkeys("S/*\<F5>\<C-Y>", 'tx')
+  call assert_equal('/** */', getline('.'))
+
+  call feedkeys("S/\<F5>\<C-N>\<C-Y>", 'tx')
+  call assert_equal('// TODO:', getline('.'))
+
+  call feedkeys("Swp.\<F5>\<C-N>\<C-Y>", 'tx')
+  call assert_equal('wp.push()', getline('.'))
+
+  call feedkeys("Swp.property.\<F5>\<C-N>\<C-Y>", 'tx')
+  call assert_equal('wp.property.filter()', getline('.'))
+
+  call feedkeys("Sp->\<F5>\<C-N>\<C-Y>", 'tx')
+  call assert_equal('p->xfree()', getline('.'))
+
+  call feedkeys("Swp->property.\<F5>\<C-Y>", 'tx')
+  call assert_equal('wp->property.map()', getline('.'))
+
+  call feedkeys("Sabc\<F5>\<C-Y>", 'tx')
+  call assert_equal('abcdef', getline('.'))
+
+  call feedkeys("S_\<F5>\<C-Y>", 'tx')
+  call assert_equal('_test1', getline('.'))
+
+  set ise&
+  call feedkeys("Sabc \<ESC>:let g:result=complete_match()\<CR>", 'tx')
+  call assert_equal([1, 'abc'], g:result)
+
+  call assert_fails('call complete_match(99, 0)', 'E966:')
+  call assert_fails('call complete_match(1, 99)', 'E964:')
+  call assert_fails('call complete_match(1)', 'E474:')
+
+  bw!
+  set isexpand&
+  delfunc TestComplete
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

@@ -66,4 +66,9 @@ void ins_compl_insert(int in_compl_func, int move_cursor);
 void ins_compl_check_keys(int frequency, int in_compl_func);
 int ins_complete(int c, int enable_pum);
 void free_insexpand_stuff(void);
+int ins_compl_preinsert_effect(void);
+int ins_compl_lnum_in_range(linenr_T lnum);
+char_u *find_line_end(char_u *ptr);
+void f_complete_match(typval_T *argvars UNUSED, typval_T *rettv);
+
 /* vim: set ft=c : */
