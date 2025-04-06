@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 03
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41729,6 +41729,7 @@ Ex-Commands: ~
 
 Options: ~
 
+'chistory'		Size of the quickfix stack |quickfix-stack|.
 'completefuzzycollect'	Enable fuzzy collection of candiates for (some)
 			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
@@ -41736,6 +41737,8 @@ Options: ~
 'eventignorewin'	autocommand events that are ignored in a window
 'findfunc'		Vim function to obtain the results for a |:find|
 			command
+'lhistory'		Size of the location list stack |quickfix-stack|.
+'completefuzzycollect'	Enable fuzzy collection of candiates for (some)
 'messagesopt'		configure |:messages| and |hit-enter| prompt
 'winfixbuf'		Keep buffer focused in a window
 'tabclose'		Which tab page to focus after closing a tab page

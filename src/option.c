@@ -4735,6 +4735,44 @@ did_set_wrap(optset_T *args UNUSED)
     return NULL;
 }
 
+#ifdef FEAT_QUICKFIX
+/*
+ * Process the new 'chistory' or 'lhistory' option value. 'chistory' will
+ * be used if args->os_varp is the same as p_chi, else 'lhistory'.
+ */
+    char *
+did_set_xhistory(optset_T *args)
+{
+    int is_p_chi = (long*)args->os_varp == &p_chi;
+    int err;
+    long *arg = (is_p_chi) ? &p_chi :(long*)args->os_varp;
+
+    // cannot have zero or negative number of quickfix lists in a stack
+    if (*arg < 1)
+    {
+	*arg = args->os_oldval.number;
+	return e_cannot_have_negative_or_zero_number_of_quickfix;
+    }
+
+    // cannot have more than 100 quickfix lists in a stack
+    if (*arg > 100)
+    {
+	*arg = args->os_oldval.number;
+	return e_cannot_have_more_than_hundred_quickfix;
+    }
+
+    if (is_p_chi)
+	err = qf_resize_quickfix_stack(*arg);
+    else
+	err = ll_resize_stack(curwin, *arg);
+
+    if (err == FAIL)
+	return e_failed_resizing_quickfix_stack;
+
+    return NULL;
+}
+#endif
+
 /*
  * Set the value of a boolean option, and take care of side effects.
  * Returns NULL for success, or an error message for an error.
@@ -6653,6 +6691,7 @@ get_varp(struct vimoption *p)
 	case PV_WFW:	return (char_u *)&(curwin->w_p_wfw);
 #if defined(FEAT_QUICKFIX)
 	case PV_PVW:	return (char_u *)&(curwin->w_p_pvw);
+	case PV_LHI:	return (char_u *)&(curwin->w_p_lhi);
 #endif
 #ifdef FEAT_RIGHTLEFT
 	case PV_RL:	return (char_u *)&(curwin->w_p_rl);
@@ -6972,6 +7011,9 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #endif
 #ifdef FEAT_SIGNS
     to->wo_scl = copy_option_val(from->wo_scl);
+#endif
+#ifdef FEAT_QUICKFIX
+    to->wo_lhi = from->wo_lhi;
 #endif
 
 #ifdef FEAT_EVAL
