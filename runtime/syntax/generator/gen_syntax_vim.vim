@@ -300,6 +300,7 @@ function s:get_vim_command_type(cmd_name)
 		normal
 		popup
 		public
+		redir
 		return
 		set
 		setglobal
