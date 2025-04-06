@@ -2072,6 +2072,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 		|i_CTRL-X_CTRL-D|
 	]	tag completion
 	t	same as "]"
+	f	call the function given with the 'completefunc' option
+	f{func}	call the function {func}.  Multiple "f" flags can be given.
+		See |complete-functions| for an explanation of how the function
+		is invoked and what it should return.  The value can be the
+		name of a function or a |Funcref|.  For |Funcref,| spaces
+		must be escaped with a backslash, and commas with double
+		backslashes.  If the {func}'s reply sets 'refresh' to
+		'always', it will be called whenever the leading text changes.
+		Completion matches are always inserted at the keyword
+		boundary, regardless of column returned by {func} when
+		a:findstart is 1.  This ensures {func} remains compatible with
+		other completion sources.  If needed, {func} can modify the
+		inserted text later using |CompleteDonePre|.
 
 	Unloaded buffers are not loaded, thus their autocmds |:autocmd| are
 	not executed, this may lead to unexpected completions from some files
