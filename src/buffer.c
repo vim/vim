@@ -78,7 +78,11 @@ static garray_T buf_reuse = GA_EMPTY;	// file numbers to recycle
     static int
 calc_percentage(long part, long whole)
 {
-    return (int)(((double)part / (double)whole) * 100.0);
+    // With 32 bit longs and more than 21,474,836 lines multiplying by 100
+    // causes an overflow, thus for large numbers divide instead.
+    return (part > 1000000L)
+	? (int)(part / (whole / 100L))
+	: (int)((part * 100L) / whole);
 }
 
 /*
