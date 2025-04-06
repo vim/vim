@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
-" Last Change: 2025 Mar 09
+" Last Change: 2025 Apr 06
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -734,9 +734,9 @@ function s:update_syntax_vim_file(vim_info)
 		let lnum = s:search_and_check('vimVarName', base_fname, str_info)
 		let lnum = s:append_syn_any(lnum, str_info, li)
 
-		" vimUserAttrbCmplt
+		" vimUserAttrComplete
 		let li = a:vim_info.compl_name
-		let lnum = s:search_and_check('vimUserCmdAttrCmplt', base_fname, str_info)
+		let lnum = s:search_and_check('vimUserCmdAttrComplete', base_fname, str_info)
 		let lnum = s:append_syn_any(lnum, str_info, li)
 
 		" vimUserAttrbAddr
