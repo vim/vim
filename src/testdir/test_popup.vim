@@ -2065,7 +2065,7 @@ func Test_pum_maxwidth_multibyte()
   call TermWait(buf)
 
   call term_sendkeys(buf, "S\<C-X>\<C-O>")
-  call VerifyScreenDump(buf, 'Test_pum_maxwidth_05', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_06', {'rows': 8})
   call term_sendkeys(buf, "\<ESC>")
 
   call term_sendkeys(buf, ":set pummaxwidth=10\<CR>")
