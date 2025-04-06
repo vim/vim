@@ -112,12 +112,12 @@ function s:LuaFold() abort
       let open = 0
       let end = 0
       let tagopen  = '\v^\s*' .. t[0] ..'\s*$'
-      let tagclose = '\v^\s*' .. t[1] ..'\s*$'
+      let tagend = '\v^\s*' .. t[1] ..'\s*$'
       if line =~# tagopen
         call add(foldlist, t)
         let open = 1
         break
-      elseif line =~# tagclose
+      elseif line =~# tagend
         if len(foldlist) > 0 && line =~# foldlist[-1][1]
           call remove(foldlist, -1)
           let end = 1
@@ -127,10 +127,10 @@ function s:LuaFold() abort
         break
       endif
     endfor
-    let prefix = ''
-    if open | let prefix = '>' | endif
-    if end | let prefix = '<' | endif
-    call add(b:lua_foldlists, prefix..len(foldlist) + end)
+    let prefix = ""
+    if open == 1 | let prefix = ">" | endif
+    if end == 1 | let prefix = "<" | endif
+    let b:lua_foldlists += [prefix..(len(foldlist) + end)]
   endfor
 
   return b:lua_foldlists[v:lnum - 1]
@@ -158,12 +158,12 @@ def s:LuaFold(): string
     var end = 0
     for t in patterns
       var tagopen  = '\v^\s*' .. t[0] .. '\s*$'
-      var tagclose = '\v^\s*' .. t[1] .. '\s*$'
+      var tagend = '\v^\s*' .. t[1] .. '\s*$'
       if line =~# tagopen
         add(foldlist, t)
         open = 1
         break
-      elseif line =~# tagclose
+      elseif line =~# tagend
         if len(foldlist) > 0 && line =~# foldlist[-1][1]
           end = 1
           remove(foldlist, -1)
@@ -174,9 +174,9 @@ def s:LuaFold(): string
       endif
     endfor
     var prefix = ""
-    if open | prefix = ">" | endif
-    if end | prefix = "<" | endif
-    add(b:lua_foldlists, prefix..(len(foldlist) + end))
+    if open == 1 | prefix = ">" | endif
+    if end == 1 | prefix = "<" | endif
+    b:lua_foldlists += [prefix .. (len(foldlist) + end)]
   endfor
   return b:lua_foldlists[v:lnum - 1]
 enddef
