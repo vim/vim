@@ -608,6 +608,7 @@ pum_redraw(void)
     char_u	*new_str = NULL;
     char_u	*ptr = NULL;
     int		remaining = 0;
+    int		fcs_trunc = curwin->w_fill_chars.trunc;
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
@@ -746,15 +747,17 @@ pum_redraw(void)
 				    }
 				}
 
-				if (pum_width == p_pmw && totwidth + 1 + cells >= pum_width)
+				// truncated
+				if (pum_width == p_pmw
+					&& totwidth + 1 + cells >= pum_width)
 				{
-				    remaining = pum_width - totwidth - 1;
-				    char_u *orig_rt = rt;
-				    char_u *old_rt = NULL;
-				    int over_cell = 0;
-				    int size = 0;
-				    cells = mb_string2cells(rt, -1);
+				    char_u  *orig_rt = rt;
+				    char_u  *old_rt = NULL;
+				    int	    over_cell = 0;
+				    int	    size = 0;
 
+				    remaining = pum_width - totwidth - 1;
+				    cells = mb_string2cells(rt, -1);
 				    if (cells > remaining)
 				    {
 					while (cells > remaining)
@@ -766,21 +769,21 @@ pum_redraw(void)
 				    size = (int)STRLEN(orig_rt);
 				    if (cells < remaining)
 					over_cell =  remaining - cells;
-				    new_str = alloc(size + over_cell + 2);
+				    new_str = alloc(size + over_cell + 1 + utf_char2len(fcs_trunc));
 				    if (!new_str)
 					return;
 				    ptr = new_str;
-				    if (curwin->w_fill_chars.ellipsis != NUL)
-				    {
-					if (curwin->w_fill_chars.ellipsis == '>')
-					    *ptr++ = '<';
-					else
-					    ptr += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis, ptr);
-				    }
+				    if (fcs_trunc != NUL && fcs_trunc != '>')
+					ptr += (*mb_char2bytes)(fcs_trunc, ptr);
 				    else
 					*ptr++ = '<';
+				    if (over_cell)
+				    {
+					vim_memset(ptr, ' ', over_cell);
+					ptr += over_cell;
+				    }
 				    memcpy(ptr, orig_rt, size);
-				    ptr[size + over_cell + 2] = NUL;
+				    ptr[size] = NUL;
 				    old_rt = rt_start;
 				    rt = rt_start = new_str;
 				    vim_free(old_rt);
@@ -826,10 +829,11 @@ pum_redraw(void)
 				    --cells;
 			    }
 
-			    if (pum_width == p_pmw && totwidth + 1 + cells >= pum_width)
+			    // truncated
+			    if (pum_width == p_pmw
+				    && totwidth + 1 + cells >= pum_width)
 			    {
 				remaining = pum_width - totwidth - 1;
-				st_end = st + size;
 				if (cells > remaining)
 				{
 				    st_end = st + size;
@@ -843,7 +847,7 @@ pum_redraw(void)
 
 				if (cells < remaining)
 				    over_cell =  remaining - cells;
-				new_str = alloc(size + over_cell + 2);
+				new_str = alloc(size + over_cell + 1 + utf_char2len(fcs_trunc));
 				if (!new_str)
 				    return;
 				memcpy(new_str, st, size);
@@ -854,16 +858,16 @@ pum_redraw(void)
 				    ptr += over_cell;
 				}
 
-				if (curwin->w_fill_chars.ellipsis != NUL)
-				    ptr += (*mb_char2bytes)(curwin->w_fill_chars.ellipsis, ptr);
+				if (fcs_trunc != NUL)
+				    ptr += (*mb_char2bytes)(fcs_trunc, ptr);
 				else
 				    *ptr++ = '>';
 
 				*ptr = NUL;
 				vim_free(st);
 				st = new_str;
-				cells = (*mb_string2cells)(st, size + over_cell + 1);
-				size += over_cell + 1;
+				cells = mb_string2cells(st, -1);
+				size = (int)STRLEN(st);
 				width = cells;
 			    }
 

@@ -4713,7 +4713,7 @@ static struct charstab filltab[] =
     CHARSTAB_ENTRY(&fill_chars.diff,	    "diff"),
     CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
     CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline"),
-    CHARSTAB_ENTRY(&fill_chars.ellipsis,    "ellipsis"),
+    CHARSTAB_ENTRY(&fill_chars.trunc,	    "trunc"),
 };
 static lcs_chars_T lcs_chars;
 static struct charstab lcstab[] =
@@ -4761,7 +4761,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
     int	    c1 = 0, c2 = 0, c3 = 0;
     char_u  *last_multispace = NULL;  // Last occurrence of "multispace:"
     char_u  *last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
-    char_u  *last_ellipsis = NULL;    // Last occurrence of "ellipsis:"
+    char_u  *last_trunc = NULL;	      // Last occurrence of "trunc:"
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
 
@@ -4828,7 +4828,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		fill_chars.diff = '-';
 		fill_chars.eob = '~';
 		fill_chars.lastline = '@';
-		fill_chars.ellipsis = '>';
+		fill_chars.trunc = '>';
 	    }
 	}
 	p = value;
@@ -4916,11 +4916,11 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		    break;
 		}
 
-		if (!is_listchars && STRCMP(tab[i].name.string, "ellipsis") == 0)
+		if (!is_listchars && STRCMP(tab[i].name.string, "trunc") == 0)
 		{
 		    if (round == 0)
 		    {
-			last_ellipsis = p;
+			last_trunc = p;
 			c1 = get_encoded_char_adv(&s);
 			if (!vim_isprintc(c1) || char2cells(c1) != 1)
 			    return field_value_err(errbuf, errbuflen,
@@ -4935,8 +4935,8 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		    else
 		    {
 			c1 = get_encoded_char_adv(&s);
-			if (p == last_ellipsis)
-			    fill_chars.ellipsis = c1;
+			if (p == last_trunc)
+			    fill_chars.trunc = c1;
 		    }
 		    p = s;
 		    break;
