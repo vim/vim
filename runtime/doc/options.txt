@@ -2668,7 +2668,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 					*E1193* *E1194* *E1195* *E1196* *E1230*
 					*E1197* *E1198* *E1199* *E1200* *E1201*
 	   xchacha20	XChaCha20 Cipher with Poly1305 Message Authentication
-			Code.  Medium strong till strong encryption.
+			Code.  Medium strong to strong encryption.
 			Encryption is provided by the libsodium library, it
 			requires Vim to be built with |+sodium|.
 			It adds a seed and a message authentication code (MAC)
