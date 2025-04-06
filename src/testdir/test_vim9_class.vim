@@ -1921,6 +1921,21 @@ def Test_class_member()
   END
   v9.CheckSourceFailure(lines, "E1004: White space required before and after '='", 3)
 
+  # Space is not allowed before the object member variable name
+  lines =<< trim END
+    vim9script
+    class A
+      var n: number = 10
+    endclass
+
+    def Fn()
+      var a = A.new()
+      var y = a. n
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, "E1202: No white space allowed after '.': . n", 2)
+
   # Access a non-existing member
   lines =<< trim END
     vim9script
@@ -3469,6 +3484,39 @@ def Test_super_dispatch()
     assert_equal('A', TestA(C.new()))
   END
   v9.CheckSourceSuccess(lines)
+
+  # Invoking a class method in the parent class using "super" should fail
+  lines =<< trim END
+    vim9script
+
+    class A
+      static def Fn(): string
+        return 'A'
+      enddef
+    endclass
+
+    class B extends A
+      static def Fn(): string
+        return super.Fn()
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1325: Method "Fn" not found in class "B"')
+
+  # Missing name after "super" keyword
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B extends A
+      def Fn()
+        var x = super.()
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1127: Missing name after dot', 1)
 enddef
 
 def Test_class_import()
@@ -12454,6 +12502,24 @@ def Test_super_keyword()
   END
   v9.CheckSourceSuccess(lines)
 
+  # Using 'super' to access an static class variable in the parent should fail
+  lines =<< trim END
+    vim9script
+
+    class A
+      static var foo: string = 'xxx'
+    endclass
+
+    class B extends A
+      def GetString(): string
+        return super.foo
+      enddef
+    endclass
+
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1326: Variable "foo" not found in object "B"')
+
   # Using super to access an overriden method in the parent class
   lines =<< trim END
     vim9script
@@ -12980,6 +13046,13 @@ def Test_object_of_class_type()
     var x: object<any,any>
   END
   v9.CheckSourceFailure(lines, 'E488: Trailing characters: ,any>')
+
+  lines =<< trim END
+    var x: object<number>
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, [
+        \ 'E1353: Class name not found: <number>',
+        \ 'E1353: Class name not found: <number>'])
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

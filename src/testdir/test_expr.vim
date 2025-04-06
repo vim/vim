@@ -1060,6 +1060,16 @@ func Test_bitwise_shift()
   END
   call v9.CheckDefAndScriptSuccess(lines)
 
+  " Error in the second expression of "<<"
+  let lines =<< trim END
+    vim9script
+    def Fn()
+      var x = 1 << y
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E1001: Variable not found: y')
+
   let lines =<< trim END
     # Use in a lambda function
     const DivBy2Ref_A = (n: number): number => n >> 1

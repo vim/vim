@@ -4055,6 +4055,22 @@ def Test_error_in_autoload_script()
   &rtp = save_rtp
 enddef
 
+" Test for sourcing a Vim9 script with a function script variable and "noclear".
+" The type for the variable is dynamically allocated and should be freed.
+def Test_source_func_script_var()
+  var lines =<< trim END
+    vim9script noclear
+    var Fn: func(list<any>): number
+    Fn = function('min')
+    assert_equal(2, Fn([4, 2]))
+  END
+  new
+  setline(1, lines)
+  source
+  source
+  bw!
+enddef
+
 def Test_error_in_autoload_script_foldexpr()
   var save_rtp = &rtp
   mkdir('Xvim/autoload', 'pR')
