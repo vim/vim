@@ -3620,7 +3620,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  eob		'~'		empty lines below the end of a buffer
 	  lastline	'@'		'display' contains lastline/truncate
 	  trunc		'>'		for text truncated in the
-	  				|ins-completion-menu|.
+					|ins-completion-menu|.
 
 	Any one that is omitted will fall back to the default.
 
