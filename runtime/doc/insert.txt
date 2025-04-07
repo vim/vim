@@ -1481,6 +1481,11 @@ Complete properties and their appropriate values according to CSS 2.1
 specification.
 
 
+HELP							*ft-help-omni*
+
+|i_CTRL-X_CTRL-O| provides completion of Vim help tags
+
+
 HTML							*ft-html-omni*
 XHTML							*ft-xhtml-omni*
 

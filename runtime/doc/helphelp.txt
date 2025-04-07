@@ -471,6 +471,11 @@ highlighting.  So do these:
 You can find the details in $VIMRUNTIME/syntax/help.vim
 
 
+COMPLETION
+
+See |ft-help-omni|
+
+
 GENDER NEUTRAL LANGUAGE
 
 						*gender-neutral* *inclusion*

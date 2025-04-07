@@ -7394,6 +7394,7 @@ ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
 ft-hare	filetype.txt	/*ft-hare*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*
+ft-help-omni	insert.txt	/*ft-help-omni*
 ft-html-indent	indent.txt	/*ft-html-indent*
 ft-html-omni	insert.txt	/*ft-html-omni*
 ft-html-syntax	syntax.txt	/*ft-html-syntax*
