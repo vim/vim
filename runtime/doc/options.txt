@@ -2076,7 +2076,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	f{func}	call the function {func}.  Multiple "f" flags can be given.
 		See |complete-functions| for an explanation of how the function
 		is invoked and what it should return.  The value can be the
-		name of a function or a |Funcref|.  For |Funcref,| spaces
+		name of a function or a |Funcref|.  For |Funcref|, spaces
 		must be escaped with a backslash, and commas with double
 		backslashes.  If the {func}'s reply sets 'refresh' to
 		'always', it will be called whenever the leading text changes.

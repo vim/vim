@@ -4469,17 +4469,19 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 get_cpt_func_callback(char_u *funcname)
 {
     static callback_T	cb;
-    static char_u	buf[LSIZE];
+    char_u		buf[LSIZE];
     int			slen;
+    char_u		*name;
 
     slen = copy_option_part(&funcname, buf, LSIZE, ",");
     if (slen > 0)
     {
-	free_callback(&cb);
-	if (option_set_callback_func(buf, &cb))
+	name = vim_strnsave(buf, slen);
+	if (name)
 	{
-	    cb.cb_free_name = FALSE;
-	    return &cb;
+	    free_callback(&cb);
+	    if (option_set_callback_func(name, &cb))
+		return &cb;
 	}
     }
     return NULL;
@@ -4489,6 +4491,7 @@ get_cpt_func_callback(char_u *funcname)
 /*
  * Retrieve new completion matches by invoking callback "cb".
  */
+#ifdef FEAT_COMPL_FUNC
     static void
 expand_cpt_function(callback_T *cb)
 {
@@ -4499,6 +4502,7 @@ expand_cpt_function(callback_T *cb)
     // Undo insertion
     ins_compl_delete();
 }
+#endif
 
 /*
  * get the next set of completion matches for "type".
