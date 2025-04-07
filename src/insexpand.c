@@ -4480,6 +4480,7 @@ get_cpt_func_callback(char_u *funcname)
 	return &cb;
     return NULL;
 }
+#endif
 
 /*
  * Retrieve new completion matches by invoking callback "cb".
