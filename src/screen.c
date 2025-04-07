@@ -4761,7 +4761,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
     int	    c1 = 0, c2 = 0, c3 = 0;
     char_u  *last_multispace = NULL;  // Last occurrence of "multispace:"
     char_u  *last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
-    char_u  *last_trunc = NULL;	      // Last occurrence of "trunc:"
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
 
@@ -4911,32 +4910,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 			    if (p == last_lmultispace && lcs_chars.leadmultispace != NULL)
 				lcs_chars.leadmultispace[multispace_pos++] = c1;
 			}
-		    }
-		    p = s;
-		    break;
-		}
-
-		if (!is_listchars && STRCMP(tab[i].name.string, "trunc") == 0)
-		{
-		    if (round == 0)
-		    {
-			last_trunc = p;
-			c1 = get_encoded_char_adv(&s);
-			if (!vim_isprintc(c1) || char2cells(c1) != 1)
-			    return field_value_err(errbuf, errbuflen,
-				e_wrong_character_width_for_field_str,
-				tab[i].name.string);
-
-			if (*s != NUL && *s != ',')
-			    return field_value_err(errbuf, errbuflen,
-				e_wrong_number_of_characters_for_field_str,
-				tab[i].name.string);
-		    }
-		    else
-		    {
-			c1 = get_encoded_char_adv(&s);
-			if (p == last_trunc)
-			    fill_chars.trunc = c1;
 		    }
 		    p = s;
 		    break;
