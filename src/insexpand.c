@@ -778,7 +778,7 @@ cfc_has_mode(void)
  * Returns TRUE if matches should be sorted based on proximity to the cursor.
  */
     static int
-is_nearest_active()
+is_nearest_active(void)
 {
     unsigned int flags = get_cot_flags();
 
