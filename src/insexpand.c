@@ -6264,10 +6264,10 @@ cpt_compl_src_clear(void)
  * Initialize the info associated with completion sources.
  */
     static int
-cpt_compl_src_init(char_u *p_cpt)
+cpt_compl_src_init(char_u *cpt_str)
 {
     int	    count = 0;
-    char_u  *p = p_cpt;
+    char_u  *p = cpt_str;
 
     while (*p)
     {
@@ -6329,7 +6329,7 @@ ins_compl_make_linear(void)
  * cpt_value_idx) from the completion list.
  */
     static compl_T *
-remove_old_matches()
+remove_old_matches(void)
 {
     compl_T *sublist_start = NULL, *sublist_end = NULL, *insert_at = NULL;
     compl_T *current, *next;
@@ -6396,7 +6396,7 @@ remove_old_matches()
  * 'refresh:always' flag.
  */
     static void
-get_cpt_func_completion_matches(callback_T *cb)
+get_cpt_func_completion_matches(callback_T *cb UNUSED)
 {
 #ifdef FEAT_COMPL_FUNC
     int	ret;
