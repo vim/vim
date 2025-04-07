@@ -6348,7 +6348,7 @@ remove_old_matches()
 		sublist_start = current;
 	    sublist_end = current;
 	    if (!compl_shown_removed && compl_shown_match == current)
-		compl_shown_removed = true;
+		compl_shown_removed = TRUE;
 	}
 
 	if ((forward && current->cp_cpt_value_idx > cpt_value_idx) || (!forward && insert_at))
@@ -6398,6 +6398,7 @@ remove_old_matches()
     static void
 get_cpt_func_completion_matches(callback_T *cb)
 {
+#ifdef FEAT_COMPL_FUNC
     int	ret;
     int	startcol;
 
@@ -6411,6 +6412,7 @@ get_cpt_func_completion_matches(callback_T *cb)
 	cpt_func_refresh_always[cpt_value_idx] = compl_opt_refresh_always;
 	compl_opt_refresh_always = FALSE;
     }
+#endif
 }
 
 /*
@@ -6420,6 +6422,7 @@ get_cpt_func_completion_matches(callback_T *cb)
     static void
 cpt_compl_refresh(void)
 {
+#ifdef FEAT_COMPL_FUNC
     char_u	*p_cpt;
     char_u	*p;
     callback_T	*cb;
@@ -6454,5 +6457,5 @@ cpt_compl_refresh(void)
     vim_free(p_cpt);
     // Make the list cyclic
     compl_matches = ins_compl_make_cyclic();
+#endif
 }
-
