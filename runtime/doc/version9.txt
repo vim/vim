@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 06
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41613,7 +41613,7 @@ Completion: ~
 - New option value for 'completeopt':
 	"nosort"	- do not sort completion results
 	"preinsert"	- highlight to be inserted values
-- handle multi-line completion as expected
+- handle multi-line completion items as expected
 - improved commandline completion for the |:hi| command
 - New option value for 'wildmode':
 	"noselect"	- do not auto select an entry in the wildmenu
@@ -41629,7 +41629,8 @@ Options: ~
 - 'rulerformat' now supports the |stl-%!| item
 - use 'smoothscroll' logic for CTRL-F / CTRL-B for pagewise scrolling
   and CTRL-D / CTRL-U for half-pagewise scrolling
-- 'pummaxwidth' maximum width for the completion popup menu
+- New option value for 'fillchars':
+  	"trunc"		- configure truncation indicator, 'pummaxwidth'
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|
@@ -41734,11 +41735,11 @@ Options: ~
 			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup
+'completemaxwidth'	maximum width for the completion popup menu
 'eventignorewin'	autocommand events that are ignored in a window
 'findfunc'		Vim function to obtain the results for a |:find|
 			command
 'lhistory'		Size of the location list stack |quickfix-stack|.
-'completefuzzycollect'	Enable fuzzy collection of candiates for (some)
 'messagesopt'		configure |:messages| and |hit-enter| prompt
 'winfixbuf'		Keep buffer focused in a window
 'tabclose'		Which tab page to focus after closing a tab page
