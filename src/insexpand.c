@@ -173,7 +173,9 @@ static int	  ctrl_x_mode = CTRL_X_NORMAL;
 
 static int	  compl_matches = 0;	    // number of completion matches
 static string_T	  compl_pattern = {NULL, 0};	 // search pattern for matching items
+#ifdef FEAT_COMPL_FUNC
 static string_T	  cpt_compl_pattern = {NULL, 0}; // pattern returned by func in 'cpt'
+#endif
 static int	  compl_direction = FORWARD;
 static int	  compl_shows_dir = FORWARD;
 static int	  compl_pending = 0;	    // > 1 for postponed CTRL-N
@@ -234,10 +236,10 @@ static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
 static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
+static callback_T *get_cpt_func_callback(char_u *funcname);
 # endif
 static void get_cpt_func_completion_matches(callback_T *cb);
 static int cpt_compl_src_init(char_u *p_cpt);
-static callback_T *get_cpt_func_callback(char_u *funcname);
 static int is_cpt_func_refresh_always(void);
 static void cpt_compl_src_clear(void);
 static void cpt_compl_refresh(void);
@@ -4462,6 +4464,7 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 /*
  * Return the callback function associated with "funcname".
  */
+#ifdef FEAT_COMPL_FUNC
     static callback_T *
 get_cpt_func_callback(char_u *funcname)
 {
@@ -4481,6 +4484,7 @@ get_cpt_func_callback(char_u *funcname)
     }
     return NULL;
 }
+#endif
 
 /*
  * Retrieve new completion matches by invoking callback "cb".
@@ -6312,6 +6316,7 @@ is_cpt_func_refresh_always(void)
 /*
  * Make the completion list non-cyclic.
  */
+#ifdef FEAT_COMPL_FUNC
     static void
 ins_compl_make_linear(void)
 {
@@ -6323,11 +6328,13 @@ ins_compl_make_linear(void)
     m->cp_next = NULL;
     compl_first_match->cp_prev = NULL;
 }
+#endif
 
 /*
  * Remove the matches linked to the current completion source (as indicated by
  * cpt_value_idx) from the completion list.
  */
+#ifdef FEAT_COMPL_FUNC
     static compl_T *
 remove_old_matches(void)
 {
@@ -6390,6 +6397,7 @@ remove_old_matches(void)
 
     return insert_at;
 }
+#endif
 
 /*
  * Retrieve completion matches using the callback function "cb" and store the
@@ -6423,18 +6431,17 @@ get_cpt_func_completion_matches(callback_T *cb UNUSED)
 cpt_compl_refresh(void)
 {
 #ifdef FEAT_COMPL_FUNC
-    char_u	*p_cpt;
+    char_u	*cpt;
     char_u	*p;
     callback_T	*cb;
-    compl_T	*compl_last_match;
 
     // Make the completion list linear (non-cyclic)
     ins_compl_make_linear();
     // Make a copy of 'cpt' in case the buffer gets wiped out
-    p_cpt = vim_strsave(curbuf->b_p_cpt);
+    cpt = vim_strsave(curbuf->b_p_cpt);
 
     cpt_value_idx = 0;
-    for (p = p_cpt; *p; cpt_value_idx++)
+    for (p = cpt; *p; cpt_value_idx++)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
@@ -6454,7 +6461,7 @@ cpt_compl_refresh(void)
     }
     cpt_value_idx = -1;
 
-    vim_free(p_cpt);
+    vim_free(cpt);
     // Make the list cyclic
     compl_matches = ins_compl_make_cyclic();
 #endif
