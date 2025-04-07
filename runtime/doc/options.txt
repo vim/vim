@@ -2088,12 +2088,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	f{func}	call the function {func}. Multiple "f" flags may be specified.
 		Refer to |complete-functions| for details on how the function
 		is invoked and what it should return.  The value can be the
+<<<<<<< HEAD
 		name of a function or a |Funcref|.  For |Funcref| values,
 		spaces must be escaped with a backslash ('\'), and commas with
 		double backslashes ('\\') (see |option-backslash|).
 		If the Dict returned by the {func} includes {"refresh": "always"},
 		the function will be invoked again whenever the leading text
 		changes.
+=======
+		name of a function or a |Funcref|.  For |Funcref|, spaces
+		must be escaped with a backslash, and commas with double
+		backslashes.  If the {func}'s reply sets 'refresh' to
+		'always', it will be called whenever the leading text changes.
+>>>>>>> 273a640c6 (Fix warnings)
 		Completion matches are always inserted at the keyword
 		boundary, regardless of the column returned by {func} when
 		a:findstart is 1.  This ensures compatibility with other

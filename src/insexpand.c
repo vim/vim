@@ -4474,6 +4474,7 @@ get_cpt_func_callback(char_u *funcname)
     static callback_T	cb;
     char_u		buf[LSIZE];
     int			slen;
+    char_u		*name;
 
     slen = copy_option_part(&funcname, buf, LSIZE, ",");
     if (slen > 0  && option_set_callback_func(buf, &cb))
@@ -4485,6 +4486,7 @@ get_cpt_func_callback(char_u *funcname)
 /*
  * Retrieve new completion matches by invoking callback "cb".
  */
+#ifdef FEAT_COMPL_FUNC
     static void
 expand_cpt_function(callback_T *cb)
 {
