@@ -234,13 +234,13 @@ static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
 static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
-static int is_cpt_func_refresh_always(void);
-static void cpt_compl_refresh(void);
+# endif
 static void get_cpt_func_completion_matches(callback_T *cb);
-static void cpt_compl_src_clear(void);
 static int cpt_compl_src_init(char_u *p_cpt);
 static callback_T *get_cpt_func_callback(char_u *funcname);
-# endif
+static int is_cpt_func_refresh_always(void);
+static void cpt_compl_src_clear(void);
+static void cpt_compl_refresh(void);
 static int  ins_compl_key2dir(int c);
 static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
@@ -1817,7 +1817,7 @@ ins_compl_files(
     if (in_fuzzy_collect)
     {
 	leader = ins_compl_leader();
-	leader_len = ins_compl_leader_len();
+	leader_len = (int)ins_compl_leader_len();
     }
 
     for (i = 0; i < count && !got_int && !compl_interrupted; i++)
@@ -4747,7 +4747,7 @@ ins_compl_delete(void)
     int	has_preinsert = ins_compl_preinsert_effect();
     if (has_preinsert)
     {
-	col += ins_compl_leader_len();
+	col += (int)ins_compl_leader_len();
 	curwin->w_cursor.col = compl_ins_end_col;
     }
 
@@ -6333,8 +6333,8 @@ remove_old_matches()
 {
     compl_T *sublist_start = NULL, *sublist_end = NULL, *insert_at = NULL;
     compl_T *current, *next;
-    bool compl_shown_removed = false;
-    bool forward = compl_dir_forward();
+    int compl_shown_removed = FALSE;
+    int forward = compl_dir_forward();
 
     // Identify the sublist of old matches that needs removal
     for (current = compl_first_match; current != NULL; current = current->cp_next)
