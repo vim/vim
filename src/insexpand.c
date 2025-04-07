@@ -6402,6 +6402,7 @@ remove_old_matches(void)
     static void
 get_cpt_func_completion_matches(callback_T *cb UNUSED)
 {
+#ifdef FEAT_COMPL_FUNC
     int	ret;
     int	startcol;
 
@@ -6415,6 +6416,7 @@ get_cpt_func_completion_matches(callback_T *cb UNUSED)
 	cpt_func_refresh_always[cpt_value_idx] = compl_opt_refresh_always;
 	compl_opt_refresh_always = FALSE;
     }
+#endif
 }
 #endif
 
