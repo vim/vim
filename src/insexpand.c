@@ -4471,15 +4471,17 @@ get_cpt_func_callback(char_u *funcname)
     static callback_T	cb;
     char_u		buf[LSIZE];
     int			slen;
-    char_u		*name;
+    static char_u	*name;
 
     slen = copy_option_part(&funcname, buf, LSIZE, ",");
     if (slen > 0)
     {
+	free_callback(&cb);
+	if (name)
+	    vim_free(name);
 	name = vim_strnsave(buf, slen);
 	if (name)
 	{
-	    free_callback(&cb);
 	    if (option_set_callback_func(name, &cb))
 		return &cb;
 	}
