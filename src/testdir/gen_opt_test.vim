@@ -73,6 +73,7 @@ let test_values = {
       \		[]],
       \
       "\ number options
+      \ 'chistory': [[1, 2, 10, 50], [1000, -1]],
       \ 'cmdheight': [[1, 2, 10], [-1, 0]],
       \ 'cmdwinheight': [[1, 2, 10], [-1, 0]],
       \ 'columns': [[12, 80, 10000], [-1, 0, 10]],
@@ -83,6 +84,7 @@ let test_values = {
       \ 'iminsert': [[0, 1, 2], [-1, 3, 999]],
       \ 'imsearch': [[-1, 0, 1, 2], [-2, 3, 999]],
       \ 'imstyle': [[0, 1], [-1, 2, 999]],
+      \ 'lhistory': [[1, 2, 10, 50], [1000, -1]],
       \ 'lines': [[2, 24, 1000], [-1, 0, 1]],
       \ 'linespace': [[-1, 0, 2, 4, 999], ['']],
       \ 'numberwidth': [[1, 4, 8, 10, 11, 20], [-1, 0, 21]],
@@ -201,8 +203,9 @@ let test_values = {
       \ 'fileformats': [['', 'dos', 'dos,unix'], ['xxx']],
       \ 'fillchars': [['', 'stl:x', 'stlnc:x', 'vert:x', 'fold:x', 'foldopen:x',
       \		'foldclose:x', 'foldsep:x', 'diff:x', 'eob:x', 'lastline:x',
-      \		'stl:\ ,vert:\|,fold:\\,diff:x'],
-      \		['xxx', 'vert:']],
+      \		'trunc:_', 'trunc:_,eob:x,trunc:_',
+      \		'stl:\ ,vert:\|,fold:\\,trunc:…,diff:x'],
+      \		['xxx', 'vert:', 'trunc:', "trunc:\b"]],
       \ 'foldclose': [['', 'all'], ['xxx']],
       \ 'foldmethod': [['manual', 'indent', 'expr', 'marker', 'syntax', 'diff'],
       \		['', 'xxx', 'expr,diff']],

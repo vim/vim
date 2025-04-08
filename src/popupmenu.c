@@ -604,13 +604,10 @@ pum_redraw(void)
     int		last_isabbr = FALSE;
     int		orig_attr = -1;
     int		scroll_range = pum_size - pum_height;
-    int		need_ellipsis = FALSE;
-    int		char_cells = 0;
-    int		ellipsis_width = 3;
-    int		over_cell = 0;
     char_u	*new_str = NULL;
-    int		kept_len = 0;
-    char_u	*last_char = NULL;
+    char_u	*ptr = NULL;
+    int		remaining = 0;
+    int		fcs_trunc = curwin->w_fill_chars.trunc;
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
@@ -727,14 +724,8 @@ pum_redraw(void)
 			    {
 				char_u		*rt_start = rt;
 				int		cells;
-				int		used_cells = 0;
-				char_u		*old_rt = NULL;
-				char_u		*orig_rt = NULL;
 
-				cells = mb_string2cells(rt, -1);
-				need_ellipsis = p_pmw > ellipsis_width
-						    && pum_width == p_pmw
-						    && cells > pum_width;
+				cells = mb_string2cells(rt , -1);
 				if (cells > pum_width)
 				{
 				    do
@@ -744,42 +735,7 @@ pum_redraw(void)
 					MB_PTR_ADV(rt);
 				    } while (cells > pum_width);
 
-				    if (need_ellipsis)
-				    {
-					orig_rt = rt;
-					while (*orig_rt != NUL)
-					{
-					    char_cells = has_mbyte ? (*mb_ptr2cells)(orig_rt) : 1;
-					    if (used_cells + char_cells > ellipsis_width)
-						break;
-					    used_cells += char_cells;
-					    MB_PTR_ADV(orig_rt);
-					    last_char = orig_rt;
-					}
-
-					if (last_char != NULL)
-					{
-					    if (used_cells < ellipsis_width)
-					    {
-						over_cell = ellipsis_width - used_cells;
-						MB_PTR_ADV(orig_rt);
-						last_char = orig_rt;
-					    }
-					    kept_len = (int)STRLEN(last_char);
-					    new_str = alloc(ellipsis_width + over_cell + kept_len + 1);
-					    if (!new_str)
-						return;
-					    vim_memset(new_str, '.', ellipsis_width);
-					    if (over_cell > 0)
-						vim_memset(new_str + ellipsis_width, ' ', over_cell);
-					    memcpy(new_str + ellipsis_width + over_cell, last_char, kept_len);
-					    new_str[ellipsis_width + kept_len + over_cell] = NUL;
-					    old_rt = rt_start;
-					    rt = rt_start = new_str;
-					    vim_free(old_rt);
-					}
-				    }
-				    else if (cells < pum_width)
+				    if (cells < pum_width)
 				    {
 					// Most left character requires 2-cells
 					// but only 1 cell is available on
@@ -788,6 +744,50 @@ pum_redraw(void)
 					*(--rt) = '<';
 					cells++;
 				    }
+				}
+
+				// truncated
+				if (pum_width == p_pmw
+					&& totwidth + 1 + cells >= pum_width)
+				{
+				    char_u  *orig_rt = rt;
+				    char_u  *old_rt = NULL;
+				    int	    over_cell = 0;
+				    int	    size = 0;
+
+				    remaining = pum_width - totwidth - 1;
+				    cells = mb_string2cells(rt, -1);
+				    if (cells > remaining)
+				    {
+					while (cells > remaining)
+					{
+					    MB_PTR_ADV(orig_rt);
+					    cells -= has_mbyte ? (*mb_ptr2cells)(orig_rt) : 1;
+					}
+				    }
+				    size = (int)STRLEN(orig_rt);
+				    if (cells < remaining)
+					over_cell =  remaining - cells;
+				    new_str = alloc(size + over_cell + 1 + utf_char2len(fcs_trunc));
+				    if (!new_str)
+					return;
+				    ptr = new_str;
+				    if (fcs_trunc != NUL && fcs_trunc != '>')
+					ptr += (*mb_char2bytes)(fcs_trunc, ptr);
+				    else
+					*ptr++ = '<';
+				    if (over_cell)
+				    {
+					vim_memset(ptr, ' ', over_cell);
+					ptr += over_cell;
+				    }
+				    memcpy(ptr, orig_rt, size);
+				    ptr[size] = NUL;
+				    old_rt = rt_start;
+				    rt = rt_start = new_str;
+				    vim_free(old_rt);
+				    cells = mb_string2cells(rt, -1);
+				    width = cells;
 				}
 
 				if (attrs == NULL)
@@ -809,13 +809,10 @@ pum_redraw(void)
 		    {
 			if (st != NULL)
 			{
-			    int		size = (int)STRLEN(st);
-			    int		cells = (*mb_string2cells)(st, size);
-			    int		used_cells = 0;
-			    char_u	*st_end = NULL;
-			    need_ellipsis = p_pmw > ellipsis_width
-					&& pum_width == p_pmw
-					&& col + cells > pum_col + pum_width;
+			    int size = (int)STRLEN(st);
+			    int cells = (*mb_string2cells)(st, size);
+			    char_u *st_end = NULL;
+			    int over_cell = 0;
 
 			    // only draw the text that fits
 			    while (size > 0
@@ -831,40 +828,46 @@ pum_redraw(void)
 				    --cells;
 			    }
 
-			    // Add '...' indicator if truncated due to p_pmw
-			    if (need_ellipsis)
+			    // truncated
+			    if (pum_width == p_pmw
+				    && totwidth + 1 + cells >= pum_width)
 			    {
-				st_end = st + size;
-				while (st_end > st)
+				remaining = pum_width - totwidth - 1;
+				if (cells > remaining)
 				{
-				    char_cells = has_mbyte ? (*mb_ptr2cells)(st_end) : 1;
-				    if (used_cells + char_cells > ellipsis_width)
-					break;
-				    used_cells += char_cells;
-				    MB_PTR_BACK(st, st_end);
-				    last_char = st_end;
-				}
-
-				if (last_char != NULL && st_end > st)
-				{
-				    if (used_cells < ellipsis_width)
+				    st_end = st + size;
+				    while (st_end > st && cells > remaining)
 				    {
 					MB_PTR_BACK(st, st_end);
-					last_char = st_end;
-					over_cell = ellipsis_width - used_cells;
+					cells -= has_mbyte ? (*mb_ptr2cells)(st_end) : 1;
 				    }
-				    kept_len = last_char - st;
-				    new_str = alloc(ellipsis_width + over_cell + kept_len + 1);
-				    if (!new_str)
-					return;
-				    memcpy(new_str, st, kept_len);
-				    if (over_cell > 0)
-					vim_memset(new_str + kept_len, ' ', over_cell);
-				    vim_memset(new_str + kept_len + over_cell, '.', ellipsis_width);
-				    new_str[kept_len + ellipsis_width + over_cell] = NUL;
-				    vim_free(st);
-				    st = new_str;
+				    size = st_end - st;
 				}
+
+				if (cells < remaining)
+				    over_cell =  remaining - cells;
+				new_str = alloc(size + over_cell + 1 + utf_char2len(fcs_trunc));
+				if (!new_str)
+				    return;
+				memcpy(new_str, st, size);
+				ptr = new_str + size;
+				if (over_cell > 0)
+				{
+				    vim_memset(ptr, ' ', over_cell);
+				    ptr += over_cell;
+				}
+
+				if (fcs_trunc != NUL)
+				    ptr += (*mb_char2bytes)(fcs_trunc, ptr);
+				else
+				    *ptr++ = '>';
+
+				*ptr = NUL;
+				vim_free(st);
+				st = new_str;
+				cells = mb_string2cells(st, -1);
+				size = (int)STRLEN(st);
+				width = cells;
 			    }
 
 			    if (attrs == NULL)

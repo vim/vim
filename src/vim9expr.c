@@ -404,7 +404,10 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     char_u *name = *arg;
     char_u *name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
     if (name_end == name)
+    {
+	emsg(_(e_missing_name_after_dot));
 	return FAIL;
+    }
     size_t len = name_end - name;
 
     if (*name_end == '(')

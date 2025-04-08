@@ -1,4 +1,5 @@
 " Vim filetype plugin file.
+
 " Language:		Lua
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Max Ischenko <mfi@ukr.net>
@@ -6,7 +7,8 @@
 "			C.D. MacEachern <craig.daniel.maceachern@gmail.com>
 "			Tyler Miller <tmillr@proton.me>
 "			Phạm Bình An <phambinhanctb2004@gmail.com>
-" Last Change:		2025 Feb 27
+"			@konfekt
+" Last Change:		2025 Apr 04
 
 if exists("b:did_ftplugin")
   finish
@@ -61,7 +63,7 @@ endif
 
 if has("folding") && get(g:, "lua_folding", 0)
   setlocal foldmethod=expr
-  setlocal foldexpr=s:LuaFold(v:lnum)
+  setlocal foldexpr=s:LuaFold()
   let b:lua_lasttick = -1
   let b:undo_ftplugin ..= " | setl foldexpr< foldmethod< | unlet! b:lua_lasttick b:lua_foldlists"
 endif
@@ -97,9 +99,9 @@ let s:patterns = [
       \ ['local\s+function\s+.+', 'end'],
       \ ]
 
-function s:LuaFold(lnum) abort
+function s:LuaFold() abort
   if b:lua_lasttick == b:changedtick
-    return b:lua_foldlists[a:lnum - 1]
+    return b:lua_foldlists[v:lnum - 1]
   endif
   let b:lua_lasttick = b:changedtick
 
@@ -108,25 +110,77 @@ function s:LuaFold(lnum) abort
   let buf = getline(1, "$")
   for line in buf
     for t in s:patterns
+      let open = 0
+      let end = 0
       let tagopen  = '\v^\s*' .. t[0] ..'\s*$'
-      let tagclose = '\v^\s*' .. t[1] ..'\s*$'
+      let tagend = '\v^\s*' .. t[1] ..'\s*$'
       if line =~# tagopen
 	call add(foldlist, t)
+	let open = 1
 	break
-      elseif line =~# tagclose
+      elseif line =~# tagend
 	if len(foldlist) > 0 && line =~# foldlist[-1][1]
 	  call remove(foldlist, -1)
+	  let end = 1
 	else
 	  let foldlist = []
 	endif
 	break
       endif
     endfor
-    call add(b:lua_foldlists, len(foldlist))
+    let prefix = ""
+    if open == 1 | let prefix = ">" | endif
+    if end == 1 | let prefix = "<" | endif
+    let b:lua_foldlists += [prefix..(len(foldlist) + end)]
   endfor
 
-  return lua_foldlists[a:lnum - 1]
+  return b:lua_foldlists[v:lnum - 1]
 endfunction
+
+if !has('vim9script')
+  let &cpo = s:cpo_save
+  unlet s:cpo_save
+
+  finish
+endif
+
+delfunction! s:LuaFold
+def s:LuaFold(): string
+  if b:lua_lasttick == b:changedtick
+    return b:lua_foldlists[v:lnum - 1]
+  endif
+  b:lua_lasttick = b:changedtick
+
+  b:lua_foldlists = []
+  var foldlist = []
+  var buf = getline(1, "$")
+  for line in buf
+    var open = 0
+    var end = 0
+    for t in patterns
+      var tagopen  = '\v^\s*' .. t[0] .. '\s*$'
+      var tagend = '\v^\s*' .. t[1] .. '\s*$'
+      if line =~# tagopen
+	add(foldlist, t)
+	open = 1
+	break
+      elseif line =~# tagend
+	if len(foldlist) > 0 && line =~# foldlist[-1][1]
+	  end = 1
+	  remove(foldlist, -1)
+	else
+	  foldlist = []
+	endif
+	break
+      endif
+    endfor
+    var prefix = ""
+    if open == 1 | prefix = ">" | endif
+    if end == 1 | prefix = "<" | endif
+    b:lua_foldlists += [prefix .. (len(foldlist) + end)]
+  endfor
+  return b:lua_foldlists[v:lnum - 1]
+enddef
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

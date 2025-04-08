@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Mar 28
+" Last Change:	2025 Apr 07
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -371,7 +371,7 @@ call <SID>AddOption("sidescrolloff", gettext("minimal number of columns to keep 
 call append("$", " \tset siso=" . &siso)
 call <SID>AddOption("display", gettext("include \"lastline\" to show the last line even if it doesn't fit\ninclude \"uhex\" to show unprintable characters as a hex number"))
 call <SID>OptionG("dy", &dy)
-call <SID>AddOption("fillchars", gettext("characters to use for the status line, folds and filler lines"))
+call <SID>AddOption("fillchars", gettext("characters to use for the status line, folds, diffs, buffer text, filler lines and truncation in the completion menu"))
 call <SID>OptionG("fcs", &fcs)
 call <SID>AddOption("cmdheight", gettext("number of lines used for the command-line"))
 call append("$", " \tset ch=" . &ch)
@@ -404,6 +404,13 @@ if has("linebreak")
   call <SID>AddOption("numberwidth", gettext("number of columns to use for the line number"))
   call append("$", "\t" .. s:local_to_window)
   call <SID>OptionL("nuw")
+endif
+if has("quickfix")
+  call <SID>AddOption("chistory", gettext("maximum number of quickfix lists that can be stored in history"))
+  call <SID>OptionL("chi")
+  call <SID>AddOption("lhistory", gettext("maximum number of location lists that can be stored in history"))
+  call append("$", "\t" .. s:local_to_window)
+  call <SID>OptionL("lhi")
 endif
 if has("conceal")
   call <SID>AddOption("conceallevel", gettext("controls whether concealable text is hidden"))
