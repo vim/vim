@@ -2102,7 +2102,7 @@ qf_free_list_stack_items(qf_info_T *qi)
 }
 
 /*
- * Free a qf_ifo_T struct completely
+ * Free a qf_info_T struct completely
  */
     static void
 qf_free_lists(qf_info_T *qi)
@@ -2499,8 +2499,6 @@ qf_alloc_stack(qfltype_T qfltype, int n)
 
 /*
  * Allocate memory for qf_lists member of qf_info_T struct.
- * 'actual' is the actual amount of lists that have been allocated for
- * (only set when function returns sucessfully)
  */
     static qf_list_T *
 qf_alloc_list_stack(int n)
