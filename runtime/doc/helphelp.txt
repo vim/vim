@@ -476,8 +476,8 @@ COMPLETION						*ft-help-omni*
 To get completion for help tags when writing a tag reference, you can use the
 |i_CTRL-X_CTRL-O| command.
 
-GENDER NEUTRAL LANGUAGE
 
+GENDER NEUTRAL LANGUAGE
 						*gender-neutral* *inclusion*
 Vim is for everybody, no matter race, gender or anything.  For new or updated
 help text, gender neutral language is recommended.  Some of the help text is
