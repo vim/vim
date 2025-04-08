@@ -3425,7 +3425,7 @@ func Test_complete_append_selected_match_default()
 endfunc
 
 " Test 'nearest' flag of 'completeopt'
-func Test_nearest_order()
+func Test_nearest_cpt_option()
 
   func PrintMenuWords()
     let info = complete_info(["selected", "matches"])
@@ -3500,6 +3500,17 @@ func Test_nearest_order()
   %d
   exe "normal! o\<c-p>\<c-r>=PrintMenuWords()\<cr>"
   call assert_equal('', getline(1))
+
+  " Reposition match: node is at tail but score is too small
+  %d
+  call setline(1, ["foo1", "bar1", "bar2", "foo2", "foo1"])
+  exe "normal! of\<c-n>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('f{''matches'': [''foo1'', ''foo2''], ''selected'': -1}', getline(2))
+  " Reposition match: node is in middle but score is too big
+  %d
+  call setline(1, ["foo1", "bar1", "bar2", "foo3", "foo1", "foo2"])
+  exe "normal! of\<c-n>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('f{''matches'': [''foo1'', ''foo3'', ''foo2''], ''selected'': -1}', getline(2))
 
   set completeopt=menu,longest,nearest
   %d
