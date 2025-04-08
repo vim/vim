@@ -237,8 +237,8 @@ static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
 static callback_T *get_cpt_func_callback(char_u *funcname);
-# endif
 static void get_cpt_func_completion_matches(callback_T *cb);
+# endif
 static int cpt_compl_src_init(char_u *p_cpt);
 static int is_cpt_func_refresh_always(void);
 static void cpt_compl_src_clear(void);
@@ -6407,10 +6407,10 @@ remove_old_matches(void)
  * Retrieve completion matches using the callback function "cb" and store the
  * 'refresh:always' flag.
  */
+#ifdef FEAT_COMPL_FUNC
     static void
 get_cpt_func_completion_matches(callback_T *cb UNUSED)
 {
-#ifdef FEAT_COMPL_FUNC
     int	ret;
     int	startcol;
 
@@ -6424,8 +6424,8 @@ get_cpt_func_completion_matches(callback_T *cb UNUSED)
 	cpt_func_refresh_always[cpt_value_idx] = compl_opt_refresh_always;
 	compl_opt_refresh_always = FALSE;
     }
-#endif
 }
+#endif
 
 /*
  * Retrieve completion matches from functions in the 'cpt' option where the
