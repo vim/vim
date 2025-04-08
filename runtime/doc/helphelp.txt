@@ -471,10 +471,10 @@ highlighting.  So do these:
 You can find the details in $VIMRUNTIME/syntax/help.vim
 
 
-COMPLETION
+COMPLETION						*ft-help-omni*
 
-See |ft-help-omni|
-
+To get completion for help tags when writing a tag reference, you can use the
+|i_CTRL-X_CTRL-O| command.
 
 GENDER NEUTRAL LANGUAGE
 
