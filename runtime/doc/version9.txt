@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 07
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41735,16 +41735,16 @@ Options: ~
 			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup
-'completemaxwidth'	maximum width for the completion popup menu
 'eventignorewin'	autocommand events that are ignored in a window
 'findfunc'		Vim function to obtain the results for a |:find|
 			command
 'lhistory'		Size of the location list stack |quickfix-stack|.
 'messagesopt'		configure |:messages| and |hit-enter| prompt
-'winfixbuf'		Keep buffer focused in a window
+'pummaxwidth'		maximum width for the completion popup menu
 'tabclose'		Which tab page to focus after closing a tab page
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
+'winfixbuf'		Keep buffer focused in a window
 
 ==============================================================================
 INCOMPATIBLE CHANGES					*incompatible-9.2*
