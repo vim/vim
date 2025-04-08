@@ -604,8 +604,6 @@ pum_redraw(void)
     int		last_isabbr = FALSE;
     int		orig_attr = -1;
     int		scroll_range = pum_size - pum_height;
-    char_u	*new_str = NULL;
-    char_u	*ptr = NULL;
     int		remaining = 0;
     int		fcs_trunc = curwin->w_fill_chars.trunc;
 
@@ -722,10 +720,19 @@ pum_redraw(void)
 
 			    if (rt != NULL)
 			    {
-				char_u		*rt_start = rt;
-				int		cells;
+				char_u	    *rt_start = rt;
+				int	    cells;
+				int	    over_cell = 0;
+				int	    truncated = FALSE;
 
 				cells = mb_string2cells(rt , -1);
+				truncated = pum_width == p_pmw
+						&& pum_width - totwidth < cells;
+
+				if (pum_width == p_pmw && !truncated
+					&& (j + 1 < 3 && pum_get_item(idx, order[j + 1]) != NULL))
+				    truncated = TRUE;
+
 				if (cells > pum_width)
 				{
 				    do
@@ -746,13 +753,9 @@ pum_redraw(void)
 				    }
 				}
 
-				// truncated
-				if (pum_width == p_pmw
-					&& totwidth + 1 + cells >= pum_width)
+				if (truncated)
 				{
 				    char_u  *orig_rt = rt;
-				    char_u  *old_rt = NULL;
-				    int	    over_cell = 0;
 				    int	    size = 0;
 
 				    remaining = pum_width - totwidth - 1;
@@ -768,26 +771,19 @@ pum_redraw(void)
 				    size = (int)STRLEN(orig_rt);
 				    if (cells < remaining)
 					over_cell =  remaining - cells;
-				    new_str = alloc(size + over_cell + 1 + utf_char2len(fcs_trunc));
-				    if (!new_str)
-					return;
-				    ptr = new_str;
+
+				    cells = mb_string2cells(orig_rt, size);
+				    width = cells + over_cell + 1;
+				    rt = orig_rt;
+
 				    if (fcs_trunc != NUL && fcs_trunc != '>')
-					ptr += (*mb_char2bytes)(fcs_trunc, ptr);
+					screen_putchar(fcs_trunc, row, col - width + 1, attr);
 				    else
-					*ptr++ = '<';
-				    if (over_cell)
-				    {
-					vim_memset(ptr, ' ', over_cell);
-					ptr += over_cell;
-				    }
-				    memcpy(ptr, orig_rt, size);
-				    ptr[size] = NUL;
-				    old_rt = rt_start;
-				    rt = rt_start = new_str;
-				    vim_free(old_rt);
-				    cells = mb_string2cells(rt, -1);
-				    width = cells;
+					screen_putchar('<', row, col - width + 1, attr);
+
+				    if (over_cell > 0)
+					screen_fill(row, row + 1, col - width + 2,
+						    col - width + 2 + over_cell, ' ', ' ', attr);
 				}
 
 				if (attrs == NULL)
@@ -809,10 +805,16 @@ pum_redraw(void)
 		    {
 			if (st != NULL)
 			{
-			    int size = (int)STRLEN(st);
-			    int cells = (*mb_string2cells)(st, size);
-			    char_u *st_end = NULL;
-			    int over_cell = 0;
+			    int		size = (int)STRLEN(st);
+			    int		cells = (*mb_string2cells)(st, size);
+			    char_u	*st_end = NULL;
+			    int		over_cell = 0;
+			    int		truncated = pum_width == p_pmw
+						&& pum_width - totwidth < cells;
+
+			    if (pum_width == p_pmw && !truncated
+				    && (j + 1 < 3 && pum_get_item(idx, order[j + 1]) != NULL))
+				truncated = TRUE;
 
 			    // only draw the text that fits
 			    while (size > 0
@@ -829,8 +831,7 @@ pum_redraw(void)
 			    }
 
 			    // truncated
-			    if (pum_width == p_pmw
-				    && totwidth + 1 + cells >= pum_width)
+			    if (truncated)
 			    {
 				remaining = pum_width - totwidth - 1;
 				if (cells > remaining)
@@ -846,28 +847,8 @@ pum_redraw(void)
 
 				if (cells < remaining)
 				    over_cell =  remaining - cells;
-				new_str = alloc(size + over_cell + 1 + utf_char2len(fcs_trunc));
-				if (!new_str)
-				    return;
-				memcpy(new_str, st, size);
-				ptr = new_str + size;
-				if (over_cell > 0)
-				{
-				    vim_memset(ptr, ' ', over_cell);
-				    ptr += over_cell;
-				}
-
-				if (fcs_trunc != NUL)
-				    ptr += (*mb_char2bytes)(fcs_trunc, ptr);
-				else
-				    *ptr++ = '>';
-
-				*ptr = NUL;
-				vim_free(st);
-				st = new_str;
-				cells = mb_string2cells(st, -1);
-				size = (int)STRLEN(st);
-				width = cells;
+				cells = mb_string2cells(st, size);
+				width = cells + over_cell + 1;
 			    }
 
 			    if (attrs == NULL)
@@ -875,6 +856,18 @@ pum_redraw(void)
 			    else
 				pum_screen_puts_with_attrs(row, col, cells,
 							      st, size, attrs);
+			    if (truncated)
+			    {
+				if (over_cell > 0)
+				    screen_fill(row, row + 1, col + cells,
+					    col + cells + over_cell, ' ', ' ', attr);
+				if (fcs_trunc != NUL)
+				    screen_putchar(fcs_trunc, row,
+					    col + cells + over_cell, attr);
+				else
+				    screen_putchar('>', row,
+					    col + cells + over_cell, attr);
+			    }
 
 			    vim_free(st);
 			}
