@@ -270,6 +270,7 @@ runtime/ftplugin/qml.vim		@ChaseKnowlden
 runtime/ftplugin/racket.vim		@benknoble
 runtime/ftplugin/rasi.vim		@fymyte
 runtime/ftplugin/readline.vim		@dkearns
+runtime/ftplugin/remind.vim		@joereynolds
 runtime/ftplugin/rescript.vim		@ribru17
 runtime/ftplugin/routeros.vim		@zainin
 runtime/ftplugin/rst.vim		@marshallward
