@@ -4029,32 +4029,38 @@ maketitle(void)
 	{
 	    char_u  *p;
 
-	    // format: "fname + (path) (1 of 2) - VIM"
+	    // format: "<filename> [flags] <(path)> [argument info] <- servername>"
+	    // example:
+	    //	    buffer.c + (/home/vim/src) (1 of 2) - VIM
 
-#define SPACE_FOR_FNAME (IOSIZE - 100)
-#define SPACE_FOR_DIR   (IOSIZE - 20)
-#define SPACE_FOR_ARGNR (IOSIZE - 10)  // at least room for " - VIM"
+	    // reserve some space for different parts of the title.
+	    // use sizeof() to introduce 'size_t' so we don't have to
+	    // cast sizes to it.
+#define SPACE_FOR_FNAME (sizeof(buf) - 100)
+#define SPACE_FOR_DIR   (sizeof(buf) - 20)
+#define SPACE_FOR_ARGNR (sizeof(buf) - 10)  // at least room for " - VIM"
+
+	    // file name
 	    if (curbuf->b_fname == NULL)
-		buflen += vim_snprintf_safelen((char *)buf,
-		    (size_t)SPACE_FOR_FNAME, "%s", _("[No Name]"));
+		buflen = vim_snprintf_safelen((char *)buf,
+		    SPACE_FOR_FNAME, "%s", _("[No Name]"));
 #ifdef FEAT_TERMINAL
 	    else if (curbuf->b_term != NULL)
-		buflen += vim_snprintf_safelen((char *)buf,
-		    (size_t)SPACE_FOR_FNAME, "%s", term_get_status_text(curbuf->b_term));
+		buflen = vim_snprintf_safelen((char *)buf,
+		    SPACE_FOR_FNAME, "%s",
+		    term_get_status_text(curbuf->b_term));
 #endif
 	    else
 	    {
-		p = transstr(gettail(curbuf->b_fname));
-		if (p != NULL)
-		{
-		    buflen += vim_snprintf_safelen((char *)buf,
-			(size_t)SPACE_FOR_FNAME, "%s", p);
-		    vim_free(p);
-		}
-		else
-		    STRCPY(buf, "");
+		buflen = vim_snprintf_safelen((char *)buf,
+		    SPACE_FOR_FNAME, "%s",
+		    ((p = transstr(gettail(curbuf->b_fname))) != NULL)
+			? p
+			: (char_u *)"");
+		vim_free(p);
 	    }
 
+	    // flags
 #ifdef FEAT_TERMINAL
 	    if (curbuf->b_term == NULL)
 #endif
@@ -4063,88 +4069,114 @@ maketitle(void)
 			+ (curbuf->b_p_ro * 2)
 			+ (!curbuf->b_p_ma * 4))
 		{
-		    case 1: p = (char_u *)" +"; break;
-		    case 2: p = (char_u *)" ="; break;
-		    case 3: p = (char_u *)" =+"; break;
+		    case 1:
+			// file was modified
+			buflen += vim_snprintf_safelen(
+			    (char *)buf + buflen,
+			    sizeof(buf) - buflen, " +");
+			break;
+		    case 2:
+			// file is readonly
+			buflen += vim_snprintf_safelen(
+			    (char *)buf + buflen,
+			    sizeof(buf) - buflen, " =");
+			break;
+		    case 3:
+			// file was modified and is readonly
+			buflen += vim_snprintf_safelen(
+			    (char *)buf + buflen,
+			    sizeof(buf) - buflen, " =+");
+			break;
 		    case 4:
-		    case 6: p = (char_u *)" -"; break;
+		    case 6:
+			// file cannot be modified
+			buflen += vim_snprintf_safelen(
+			    (char *)buf + buflen,
+			    sizeof(buf) - buflen, " -");
+			break;
 		    case 5:
-		    case 7: p = (char_u *)" -+"; break;
-		    default: p = (char_u *)""; break;
+		    case 7:
+			// file cannot be modified but was modified
+			buflen += vim_snprintf_safelen(
+			    (char *)buf + buflen,
+			    sizeof(buf) - buflen, " -+");
+			break;
+		    default:
+			break;
 		}
-		if (*p != NUL)
-		    buflen += vim_snprintf_safelen((char *)buf + buflen,
-			sizeof(buf) - buflen, "%s", p);
 	    }
 
+	    // path (surrounded by '()')
 	    if (curbuf->b_fname != NULL
 #ifdef FEAT_TERMINAL
 		    && curbuf->b_term == NULL
 #endif
 		    )
 	    {
-		size_t	off;
-
 		// Get path of file, replace home dir with ~
-		buf[buflen++] = ' ';
-		buf[buflen++] = '(';
+		buflen += vim_snprintf_safelen((char *)buf + buflen,
+		    sizeof(buf) - buflen, " (");
+
 		home_replace(curbuf, curbuf->b_ffname,
-					buf + buflen, SPACE_FOR_DIR - (int)buflen, TRUE);
+		    buf + buflen, (int)(SPACE_FOR_DIR - buflen), TRUE);
+
 #ifdef BACKSLASH_IN_FILENAME
 		// avoid "c:/name" to be reduced to "c"
 		if (SAFE_isalpha(buf[buflen]) && buf[buflen + 1] == ':')
-		    buflen += 2;
+		    buflen += 2;			// step over "c:"
 #endif
-		off = buflen;
-		// remove the file name
-		p = gettail_sep(buf + off);
-		if (p == buf + off)
+
+		// determine if we have a help or normal buffer
+		p = gettail_sep(buf + buflen);
+		if (p == buf + buflen)
 		{
-		    // must be a help buffer
-		    vim_strncpy(buf + off, (char_u *)_("help"),
-					   (size_t)(SPACE_FOR_DIR - off - 1));
+		    // help buffer
+		    buflen += vim_snprintf_safelen((char *)buf + buflen,
+			SPACE_FOR_DIR - buflen, "%s)", _("help"));
 		}
 		else
-		    *p = NUL;
-
-		// Translate unprintable chars and concatenate.  Keep some
-		// room for the server name.  When there is no room (very long
-		// file name) use (...).
-		if (off < SPACE_FOR_DIR)
 		{
-		    p = transstr(buf + off);
-		    if (p != NULL)
+		    // normal buffer
+
+		    // Translate unprintable chars and concatenate.  Keep some
+		    // room for the server name.  When there is no room (very long
+		    // file name) use (...).
+		    if (buflen < SPACE_FOR_DIR)
 		    {
-			buflen += vim_snprintf_safelen((char *)buf + off,
-			    SPACE_FOR_DIR - off, "%s", (char *)p);
+			// remove the file name
+			*p = NUL;
+
+			buflen += vim_snprintf_safelen((char *)buf + buflen,
+			    SPACE_FOR_DIR - buflen, "%s)",
+			    ((p = transstr(buf + buflen)) != NULL)
+				? p
+				: (char_u *)"");
 			vim_free(p);
 		    }
+		    else
+			buflen += vim_snprintf_safelen((char *)buf + buflen,
+			    SPACE_FOR_ARGNR - buflen, "...)");
 		}
-		else
-		    buflen += vim_snprintf_safelen((char *)buf + off,
-			SPACE_FOR_DIR - off, "...");
-
-		buflen += vim_snprintf_safelen((char *)buf + buflen,
-		    IOSIZE - buflen, ")");
 	    }
 
+	    // argument info
 	    buflen += append_arg_number(curwin, buf + buflen,
 		SPACE_FOR_ARGNR - buflen, FALSE);
 
+	    // servername
+	    buflen += vim_snprintf_safelen((char *)buf + buflen,
+		sizeof(buf) - buflen, " - %s",
 #if defined(FEAT_CLIENTSERVER)
-	    if (serverName != NULL)
-		buflen += vim_snprintf_safelen((char *)buf + buflen,
-		    sizeof(buf) - buflen, " - %s", serverName);
-	    else
+		(serverName != NULL)
+		    ? serverName :
 #endif
-		buflen += vim_snprintf_safelen((char *)buf + buflen,
-		    sizeof(buf) - buflen, " - VIM");
+		    (char_u *)"VIM");
 
 	    if (maxlen > 0)
 	    {
 		// make it shorter by removing a bit in the middle
 		if (vim_strsize(buf) > maxlen)
-		    trunc_string(buf, buf, maxlen, IOSIZE);
+		    trunc_string(buf, buf, maxlen, sizeof(buf));
 	    }
 	}
     }
@@ -4171,7 +4203,6 @@ maketitle(void)
 	    name = buf_spname(curbuf);
 	    if (name == NULL)
 		name = gettail(curbuf->b_ffname);
-	    *icon_str = NUL;
 	    // Truncate name at 100 bytes.
 	    namelen = (int)STRLEN(name);
 	    if (namelen > 100)
@@ -4181,8 +4212,8 @@ maketitle(void)
 		    namelen += (*mb_tail_off)(name, name + namelen) + 1;
 		name += namelen;
 	    }
-	    STRCPY(icon_str, name);
-	    trans_characters(icon_str, IOSIZE);
+	    STRCPY(buf, name);
+	    trans_characters(buf, sizeof(buf));
 	}
     }
 
