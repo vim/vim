@@ -203,4 +203,5 @@ int check_ff_value(char_u *p);
 void save_clear_shm_value(void);
 void restore_shm_value(void);
 void export_myvimdir(void);
+char *did_set_pumborder(optset_T *args);
 /* vim: set ft=c : */

@@ -257,6 +257,7 @@ static char *(highlight_init_both[]) = {
     "default link CursorLineSign SignColumn",
     "default link CursorLineFold FoldColumn",
     "default link CurSearch Search",
+    "default link PmenuBorder Pmenu",
     "default link PmenuKind Pmenu",
     "default link PmenuKindSel PmenuSel",
     "default link PmenuMatch Pmenu",
