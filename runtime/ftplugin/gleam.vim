@@ -10,7 +10,8 @@ let b:did_ftplugin = 1
 
 setlocal comments=://,:///,:////
 setlocal commentstring=//\ %s
+setlocal formatprg=gleam\ format\ --stdin
 
-let b:undo_ftplugin = "setlocal comments< commentstring<"
+let b:undo_ftplugin = "setlocal comments< commentstring< formatprg<"
 
 " vim: sw=2 sts=2 et
