@@ -519,6 +519,7 @@ EXTERN unsigned cfc_flags;	// flags from "completefuzzycollect"
 EXTERN char_u	*p_cia;		// 'completeitemalign'
 EXTERN unsigned cia_flags;	// order flags of 'completeitemalign'
 EXTERN char_u	*p_cot;		// 'completeopt'
+EXTERN char_u	*p_pbr;		// 'pumborder'
 EXTERN unsigned	cot_flags;	// flags from 'completeopt'
 // Keep in sync with p_cot_values in optionstr.c
 #define COT_MENU	0x001
