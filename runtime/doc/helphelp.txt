@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Jan 11
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Apr 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -471,8 +471,13 @@ highlighting.  So do these:
 You can find the details in $VIMRUNTIME/syntax/help.vim
 
 
-GENDER NEUTRAL LANGUAGE
+FILETYPE COMPLETION					*ft-help-omni*
 
+To get completion for help tags when writing a tag reference, you can use the
+|i_CTRL-X_CTRL-O| command.
+
+
+GENDER NEUTRAL LANGUAGE
 						*gender-neutral* *inclusion*
 Vim is for everybody, no matter race, gender or anything.  For new or updated
 help text, gender neutral language is recommended.  Some of the help text is
