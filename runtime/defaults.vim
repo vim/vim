@@ -107,6 +107,7 @@ if 1
       \ let line = line("'\"")
       \ | if line >= 1 && line <= line("$") && &filetype !~# 'commit'
       \      && index(['xxd', 'gitrebase', 'tutor'], &filetype) == -1
+      \      && !&diff
       \ |   execute "normal! g`\""
       \ | endif
 
