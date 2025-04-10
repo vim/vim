@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Jan 25
+# Last Change:		2025 Apr 10
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -875,16 +875,16 @@ export def SetFileTypeSH(name: string, setft = true): string
   if setft && expand("<amatch>") =~ g:ft_ignore_pat
     return ''
   endif
-  if name =~ '\<csh\>'
+  if name =~ '^csh$' || name =~ '^#!.\{-2,}\<csh\>'
     # Some .sh scripts contain #!/bin/csh.
     return SetFileTypeShell("csh", setft)
-  elseif name =~ '\<tcsh\>'
+  elseif name =~ '^tcsh$' || name =~ '^#!.\{-2,}\<tcsh\>'
     # Some .sh scripts contain #!/bin/tcsh.
     return SetFileTypeShell("tcsh", setft)
-  elseif name =~ '\<zsh\>'
+  elseif name =~ '^zsh$' || name =~ '^#!.\{-2,}\<zsh\>'
     # Some .sh scripts contain #!/bin/zsh.
     return SetFileTypeShell("zsh", setft)
-  elseif name =~ '\<ksh\>'
+  elseif name =~ '^ksh$' || name =~ '^#!.\{-2,}\<ksh\>'
     b:is_kornshell = 1
     if exists("b:is_bash")
       unlet b:is_bash
@@ -892,7 +892,8 @@ export def SetFileTypeSH(name: string, setft = true): string
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif exists("g:bash_is_sh") || name =~ '\<bash\>' || name =~ '\<bash2\>'
+  elseif exists("g:bash_is_sh") || name =~ '^bash2\=$' ||
+	  \ name =~ '^#!.\{-2,}\<bash2\=\>'
     b:is_bash = 1
     if exists("b:is_kornshell")
       unlet b:is_kornshell
@@ -900,7 +901,7 @@ export def SetFileTypeSH(name: string, setft = true): string
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif name =~ '\<sh\>' || name =~ '\<dash\>'
+  elseif name =~ '^\%(da\)\=sh$' || name =~ '^#!.\{-2,}\<\%(da\)\=sh\>'
     # Ubuntu links "sh" to "dash", thus it is expected to work the same way
     b:is_sh = 1
     if exists("b:is_kornshell")
