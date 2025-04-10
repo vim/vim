@@ -76,11 +76,11 @@ syn match makeCmdNextLine	"\\\n."he=e-1 contained
 " some directives
 syn match makePreCondit	"^ *\(ifn\=\(eq\|def\)\>\|else\(\s\+ifn\=\(eq\|def\)\)\=\>\|endif\>\)"
 syn match makeInclude	"^ *[-s]\=include\s.*$"
-syn match makeStatement	"^ *vpath"
+syn match makeStatement	"^ *vpath\>"
 syn match makeExport    "^ *\(export\|unexport\)\>"
 syn match makeOverride	"^ *override\>"
 " Statements / Functions (GNU make)
-syn match makeStatement contained "(\(abspath\|addprefix\|addsuffix\|and\|basename\|call\|dir\|error\|eval\|file\|filter-out\|filter\|findstring\|firstword\|flavor\|foreach\|guile\|if\|info\|join\|lastword\|notdir\|or\|origin\|patsubst\|realpath\|shell\|sort\|strip\|subst\|suffix\|value\|warning\|wildcard\|word\|wordlist\|words\)\>"ms=s+1
+syn match makeStatement contained "[({]\(abspath\|addprefix\|addsuffix\|and\|basename\|call\|dir\|error\|eval\|file\|filter-out\|filter\|findstring\|firstword\|flavor\|foreach\|guile\|if\|info\|join\|lastword\|notdir\|or\|origin\|patsubst\|realpath\|shell\|sort\|strip\|subst\|suffix\|value\|warning\|wildcard\|word\|wordlist\|words\)\>"ms=s+1
 
 " Comment
 if !exists("make_no_comments")
