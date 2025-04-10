@@ -1,3 +1,4 @@
+#!/bin/dash
 # Issue #17026 (bash highlighting requires space after $())
 # https://github.com/vim/vim/issues/17026#issuecomment-2774112284
 
