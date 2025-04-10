@@ -1560,9 +1560,14 @@ did_set_commentstring(optset_T *args)
 did_set_complete(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
+<<<<<<< HEAD
     char_u	*p = NULL;
+=======
+    char_u	*p, *t;
+>>>>>>> 951eac55a (rebase)
     char_u	buffer[LSIZE];
     char_u	*buf_ptr;
+    char_u	char_before = NUL;
     int		escape;
 
     for (p = *varp; *p; )
@@ -1591,16 +1596,40 @@ did_set_complete(optset_T *args)
 	if (vim_strchr((char_u *)".wbuksid]tUfo", *buffer) == NULL)
 	    return illegal_char(args->os_errbuf, args->os_errbuflen, *buffer);
 
-	if (!vim_strchr((char_u *)"ksf", *buffer) && *(buffer + 1) != NUL)
+	if (vim_strchr((char_u *)"ksf", *buffer) == NULL && *(buffer + 1) != NUL
+		&& *(buffer + 1) != '^')
+	    char_before = *buffer;
+	else
+	{
+	    // Test for a number after '^'
+	    if ((t = vim_strchr(buffer, '^')) != NULL)
+	    {
+		*t++ = NUL;
+		if (!*t)
+		    char_before = '^';
+		else
+		{
+		    for (; *t; t++)
+		    {
+			if (!vim_isdigit(*t))
+			{
+			    char_before = '^';
+			    break;
+			}
+		    }
+		}
+	    }
+	}
+	if (char_before != NUL)
 	{
 	    if (args->os_errbuf)
 	    {
 		vim_snprintf((char *)args->os_errbuf, args->os_errbuflen,
-			_(e_illegal_character_after_chr), *buffer);
+			_(e_illegal_character_after_chr), char_before);
 		return args->os_errbuf;
 	    }
+	    return NULL;
 	}
-
 	// Skip comma and spaces
 	while (*p == ',' || *p == ' ')
 	    p++;
