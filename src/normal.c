@@ -3074,10 +3074,10 @@ handle_tabmenu(void)
     {
 	case TABLINE_MENU_CLOSE:
 	    if (current_tab == 0)
-		do_cmdline_cmd((char_u *)"tabclose");
+		do_cmdline_cmd((char_u *)"confirm tabclose");
 	    else
 	    {
-		vim_snprintf((char *)IObuff, IOSIZE, "tabclose %d",
+		vim_snprintf((char *)IObuff, IOSIZE, "confirm tabclose %d",
 								 current_tab);
 		do_cmdline_cmd(IObuff);
 	    }
