@@ -2085,7 +2085,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 		|i_CTRL-X_CTRL-D|
 	]	tag completion
 	t	same as "]"
-	f	call the function given with the 'completefunc' option
 	f{func}	call the function {func}. Multiple "f" flags may be specified.
 		Refer to |complete-functions| for details on how the function
 		is invoked and what it should return.  The value can be the
@@ -2104,6 +2103,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		If generating matches is potentially slow, |complete_check()|
 		should be used to avoid blocking and preserve editor
 		responsiveness.
+	f	equivalent to using "f{func}", where the function is taken from
+		the 'completefunc' option.
+	o	equivalent to using "f{func}", where the function is taken from
+		the 'omnifunc' option.
 
 	Unloaded buffers are not loaded, thus their autocmds |:autocmd| are
 	not executed, this may lead to unexpected completions from some files

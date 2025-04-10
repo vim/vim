@@ -3803,11 +3803,14 @@ process_next_cpt_value(
 	    }
 	}
 #ifdef FEAT_COMPL_FUNC
-	else if (*st->e_cpt == 'f')
+	else if (*st->e_cpt == 'f' || *st->e_cpt == 'o')
 	{
 	    compl_type = CTRL_X_FUNCTION;
-	    st->func_cb = (*++st->e_cpt != ',' && *st->e_cpt != NUL)
-		? get_cpt_func_callback(st->e_cpt) : &curbuf->b_cfu_cb;
+	    if (*st->e_cpt == 'o')
+		st->func_cb = &curbuf->b_ofu_cb;
+	    else
+		st->func_cb = (*++st->e_cpt != ',' && *st->e_cpt != NUL)
+		    ? get_cpt_func_callback(st->e_cpt) : &curbuf->b_cfu_cb;
 	    if (!st->func_cb)
 		compl_type = -1;
 	}
@@ -6452,10 +6455,13 @@ cpt_compl_refresh(void)
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
 
-	if (*p == 'f' && cpt_func_refresh_always[cpt_value_idx])
+	if (cpt_func_refresh_always[cpt_value_idx])
 	{
-	    cb = (*(p + 1) != ',' && *(p + 1) != NUL)
-		? get_cpt_func_callback(p + 1) : &curbuf->b_cfu_cb;
+	    if (*p == 'o')
+		cb = &curbuf->b_ofu_cb;
+	    else if (*p == 'f')
+		cb = (*(p + 1) != ',' && *(p + 1) != NUL)
+		    ? get_cpt_func_callback(p + 1) : &curbuf->b_cfu_cb;
 	    if (cb)
 	    {
 		compl_curr_match = remove_old_matches();

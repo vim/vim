@@ -130,10 +130,15 @@ func Test_omni_dash()
   new
   exe "normal Gofind -\<C-x>\<C-o>"
   call assert_equal("find -help", getline('$'))
+  %d
+  set complete=o
+  exe "normal Gofind -\<C-n>"
+  " 'complete' inserts at 'iskeyword' boundary (so you get --help)
+  call assert_equal("find --help", getline('$'))
 
   bwipe!
   delfunc Omni
-  set omnifunc=
+  set omnifunc= complete&
 endfunc
 
 func Test_omni_throw()
@@ -153,11 +158,21 @@ func Test_omni_throw()
     call assert_exception('he he he')
     call assert_equal(1, g:CallCount)
   endtry
+  %d
+  set complete=o
+  let g:CallCount = 0
+  try
+    exe "normal ifoo\<C-n>"
+    call assert_false(v:true, 'command should have failed')
+  catch
+    call assert_exception('he he he')
+    call assert_equal(1, g:CallCount)
+  endtry
 
   bwipe!
   delfunc Omni
   unlet g:CallCount
-  set omnifunc=
+  set omnifunc= complete&
 endfunc
 
 func Test_omni_autoload()
@@ -211,6 +226,10 @@ func Test_completefunc_args()
   set omnifunc=
 
   set complete=fCompleteFunc
+  call feedkeys("i\<C-N>\<Esc>", 'x')
+  call assert_equal([1, 1], s:args[0])
+  call assert_equal(0, s:args[1][0])
+  set complete=o
   call feedkeys("i\<C-N>\<Esc>", 'x')
   call assert_equal([1, 1], s:args[0])
   call assert_equal(0, s:args[1][0])

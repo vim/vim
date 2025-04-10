@@ -1588,7 +1588,7 @@ did_set_complete(optset_T *args)
 	}
 	*buf_ptr = NUL;
 
-	if (vim_strchr((char_u *)".wbuksid]tUf", *buffer) == NULL)
+	if (vim_strchr((char_u *)".wbuksid]tUfo", *buffer) == NULL)
 	    return illegal_char(args->os_errbuf, args->os_errbuflen, *buffer);
 
 	if (!vim_strchr((char_u *)"ksf", *buffer) && *(buffer + 1) != NUL)
@@ -1611,7 +1611,7 @@ did_set_complete(optset_T *args)
 expand_set_complete(optexpand_T *args, int *numMatches, char_u ***matches)
 {
     static char *(p_cpt_values[]) = {
-	".", "w", "b", "u", "k", "kspell", "s", "i", "d", "]", "t", "U", "f",
+	".", "w", "b", "u", "k", "kspell", "s", "i", "d", "]", "t", "U", "f", "o",
 	NULL};
     return expand_set_opt_string(
 	    args,
