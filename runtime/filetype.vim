@@ -3186,7 +3186,7 @@ au BufNewFile,BufRead */etc/sensors.d/[^.]*	call s:StarSetf('sensors')
 au BufNewFile,BufRead */etc/logcheck/*.d*/*	call s:StarSetf('logcheck')
 
 " Makefile
-au BufNewFile,BufRead [mM]akefile*		call s:StarSetf('make')
+au BufNewFile,BufRead [mM]akefile*		if expand('<afile>:t') !~ g:ft_ignore_pat | call dist#ft#FTmake() | endif
 
 " Ruby Makefile
 au BufNewFile,BufRead [rR]akefile*		call s:StarSetf('ruby')
