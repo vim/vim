@@ -811,8 +811,7 @@ reposition_match(compl_T *match)
 	    {
 		insert_after = current;
 		current = current->cp_next;
-	    }
-	    while (current && current->cp_score > 0 &&
+	    } while (current && current->cp_score > 0 &&
 		    current->cp_score < match->cp_score);
 	}
 	else
@@ -832,34 +831,29 @@ reposition_match(compl_T *match)
 	    {
 		current = insert_after;
 		insert_after = insert_after->cp_prev;
-	    }
-	    while (insert_after && insert_after->cp_score > 0 &&
+	    } while (insert_after && insert_after->cp_score > 0 &&
 		    insert_after->cp_score > match->cp_score);
 	}
 	else
 	    return;
     }
 
-    // Remove the match from its current position
-    if (match->cp_prev)
-	match->cp_prev->cp_next = match->cp_next;
-    else
-	compl_first_match = match->cp_next;
-
-    if (match->cp_next)
-	match->cp_next->cp_prev = match->cp_prev;
-
-    // Insert the match at the correct position
-    match->cp_next = current;
-    match->cp_prev = insert_after;
-
     if (insert_after)
-	insert_after->cp_next = match;
-    else
-	compl_first_match = match; // match becomes the new head
+    {
+	// Remove the match from its current position
+	if (match->cp_prev)
+	    match->cp_prev->cp_next = match->cp_next;
+	else
+	    compl_first_match = match->cp_next;
+	if (match->cp_next)
+	    match->cp_next->cp_prev = match->cp_prev;
 
-    if (current)
+	// Insert the match at the correct position
+	match->cp_next = current;
+	match->cp_prev = insert_after;
+	insert_after->cp_next = match;
 	current->cp_prev = match;
+    }
 }
 
 /*
