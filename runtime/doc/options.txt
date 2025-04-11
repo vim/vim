@@ -2090,7 +2090,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		is invoked and what it should return.  The value can be the
 		name of a function or a |Funcref|.  For |Funcref| values,
 		spaces must be escaped with a backslash ('\'), and commas with
-		double backslashes ('\\').
+		double backslashes ('\\') (see |option-backslash|).
 		If the {func} result includes 'refresh' set to 'always',
 		the function will be invoked again whenever the leading text
 		changes.
