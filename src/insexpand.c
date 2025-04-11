@@ -794,7 +794,7 @@ is_nearest_active(void)
     static void
 reposition_match(compl_T *match)
 {
-    compl_T *current = NULL;
+    compl_T *insert_before = NULL;
     compl_T *insert_after = NULL;
 
     // Node is at head and score is too big
@@ -806,13 +806,13 @@ reposition_match(compl_T *match)
 	    // <c-p>: compl_first_match is at head and newly inserted node
 	    compl_first_match = compl_curr_match = match->cp_next;
 	    // Find the correct position in ascending order
-	    current = match->cp_next;
+	    insert_before = match->cp_next;
 	    do
 	    {
-		insert_after = current;
-		current = current->cp_next;
-	    } while (current && current->cp_score > 0 &&
-		    current->cp_score < match->cp_score);
+		insert_after = insert_before;
+		insert_before = insert_before->cp_next;
+	    } while (insert_before && insert_before->cp_score > 0 &&
+		    insert_before->cp_score < match->cp_score);
 	}
 	else
 	    return;
@@ -829,7 +829,7 @@ reposition_match(compl_T *match)
 	    insert_after = match->cp_prev;
 	    do
 	    {
-		current = insert_after;
+		insert_before = insert_after;
 		insert_after = insert_after->cp_prev;
 	    } while (insert_after && insert_after->cp_score > 0 &&
 		    insert_after->cp_score > match->cp_score);
@@ -849,10 +849,10 @@ reposition_match(compl_T *match)
 	    match->cp_next->cp_prev = match->cp_prev;
 
 	// Insert the match at the correct position
-	match->cp_next = current;
+	match->cp_next = insert_before;
 	match->cp_prev = insert_after;
 	insert_after->cp_next = match;
-	current->cp_prev = match;
+	insert_before->cp_prev = match;
     }
 }
 
