@@ -4714,6 +4714,7 @@ static struct charstab filltab[] =
     CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
     CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline"),
     CHARSTAB_ENTRY(&fill_chars.trunc,	    "trunc"),
+    CHARSTAB_ENTRY(&fill_chars.truncrl,	    "truncrl"),
 };
 static lcs_chars_T lcs_chars;
 static struct charstab lcstab[] =
@@ -4828,6 +4829,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		fill_chars.eob = '~';
 		fill_chars.lastline = '@';
 		fill_chars.trunc = '>';
+		fill_chars.truncrl = '<';
 	    }
 	}
 	p = value;

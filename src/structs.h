@@ -3851,6 +3851,7 @@ typedef struct
     int	eob;
     int	lastline;
     int trunc;
+    int truncrl;
 } fill_chars_T;
 
 /*

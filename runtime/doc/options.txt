@@ -3621,6 +3621,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  lastline	'@'		'display' contains lastline/truncate
 	  trunc		'>'		truncated text in the
 					|ins-completion-menu|.
+	  truncrl	'<'		same as "trunc' in 'rightleft' mode
 
 	Any one that is omitted will fall back to the default.
 
