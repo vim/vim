@@ -605,7 +605,14 @@ pum_redraw(void)
     int		orig_attr = -1;
     int		scroll_range = pum_size - pum_height;
     int		remaining = 0;
-    int		fcs_trunc = curwin->w_fill_chars.trunc;
+    int		fcs_trunc;
+
+#ifdef  FEAT_RIGHTLEFT
+    if (pum_rl)
+	fcs_trunc = curwin->w_fill_chars.truncrl;
+    else
+#endif
+	fcs_trunc = curwin->w_fill_chars.trunc;
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
@@ -776,7 +783,7 @@ pum_redraw(void)
 				    width = cells + over_cell + 1;
 				    rt = orig_rt;
 
-				    if (fcs_trunc != NUL && fcs_trunc != '>')
+				    if (fcs_trunc != NUL)
 					screen_putchar(fcs_trunc, row, col - width + 1, attr);
 				    else
 					screen_putchar('<', row, col - width + 1, attr);
