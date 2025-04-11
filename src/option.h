@@ -535,6 +535,7 @@ EXTERN unsigned	cot_flags;	// flags from 'completeopt'
 #define COT_FUZZY	    0x100   // TRUE: fuzzy match enabled
 #define COT_NOSORT	    0x200   // TRUE: fuzzy match without qsort score
 #define COT_PREINSERT	    0x400   // TRUE: preinsert
+#define COT_NEAREST	    0x800   // TRUE: prioritize matches close to cursor
 
 #define CFC_KEYWORD         0x001
 #define CFC_FILES           0x002
