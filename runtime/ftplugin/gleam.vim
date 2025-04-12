@@ -1,7 +1,8 @@
 " Vim filetype plugin file
-" Language:    Gleam
-" Maintainer:  Trilowy (https://github.com/trilowy)
-" Last Change: 2024 Oct 13
+" Language:            Gleam
+" Maintainer:          Kirill Morozov <kirill@robotix.pro>
+" Previous Maintainer: Trilowy (https://github.com/trilowy)
+" Last Change:         2025-04-12
 
 if exists('b:did_ftplugin')
   finish
