@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 08
+*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -212,7 +212,7 @@ A few examples: >
    :set makeprg=make,file	    results in "make,file"
    :set makeprg=make\\,file	    results in "make\,file"
    :set tags=tags,file		    results in "tags" and "file"
-   :set tags=tags\\,file	    results in "tags,file"
+   :set tags=tags\\,file	    results in "tags\,file"
    :let &tags='tags\,file'	    (same as above)
 
 The "|" character separates a ":set" command from a following command.  To
