@@ -4834,14 +4834,25 @@ build_stl_str_hl(
 		    && evaldepth < MAX_STL_EVAL_DEPTH)
 	    {
 		size_t parsed_usefmt = (size_t)(block_start - usefmt);
-		size_t new_fmt_len = (parsed_usefmt
-			+ STRLEN(str) + STRLEN(s) + 3) * sizeof(char_u);
-		char_u *new_fmt = (char_u *)alloc(new_fmt_len);
+		size_t str_length = strlen((const char *)str);
+		size_t fmt_length = strlen((const char *)s);
+		size_t new_fmt_len = parsed_usefmt
+						 + str_length + fmt_length + 3;
+		char_u *new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
 
 		if (new_fmt != NULL)
 		{
-		    vim_snprintf((char *)new_fmt, new_fmt_len, "%.*s%s%s%s",
-			(int)parsed_usefmt, usefmt, str, "%}", s);
+		    char_u *new_fmt_p = new_fmt;
+
+		    new_fmt_p = (char_u *)memcpy(new_fmt_p, usefmt, parsed_usefmt)
+								   + parsed_usefmt;
+		    new_fmt_p = (char_u *)memcpy(new_fmt_p , str, str_length)
+								      + str_length;
+		    new_fmt_p = (char_u *)memcpy(new_fmt_p, "%}", 2) + 2;
+		    new_fmt_p = (char_u *)memcpy(new_fmt_p , s, fmt_length)
+								      + fmt_length;
+		    *new_fmt_p = 0;
+		    new_fmt_p = NULL;
 
 		    if (usefmt != fmt)
 			vim_free(usefmt);
