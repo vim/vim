@@ -2911,4 +2911,15 @@ func Test_pacmanlog()
   filetype off
 endfunc
 
+func Test_mbsync_file()
+  filetype on
+
+  call writefile(['IMAPAccount account-name', 'Host 10.0.0.1', 'Port 993', 'User user', 'PassCmd "echo 123"'], 'test.mbsyncrc', 'D')
+  split test.mbsyncrc
+  call assert_equal('mbsync', &filetype)
+  bwipe!
+
+  filetype off
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

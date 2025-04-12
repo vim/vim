@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Mar 18
+" Last Change:	2025 Apr 13
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -3348,6 +3348,8 @@ au BufNewFile,BufRead *.blp			setf blueprint
 
 " Blueprint build system file
 au BufNewFile,BufRead *.bp			setf bp
+
+au BufNewFile,BufRead *.mbsyncrc,*isyncrc	setf mbsync
 
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.
