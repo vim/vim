@@ -602,7 +602,7 @@ CClink = $(CC)
 #CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
 #CFLAGS = -g -Wall -Wmissing-prototypes
 #CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
-CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes -Wpedantic
+#CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
@@ -696,9 +696,9 @@ LINT_OPTIONS = -beprxzF
 # $ export ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
 # $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
 # When running tests output can be found in testdir/asan.*
-SANITIZER_CFLAGS = -g -O0 -fsanitize-recover=all \
-		   -fsanitize=address -fsanitize=undefined \
-		   -fno-omit-frame-pointer
+# SANITIZER_CFLAGS = -g -O0 -fsanitize-recover=all \
+#		     -fsanitize=address -fsanitize=undefined \
+#		     -fno-omit-frame-pointer
 
 # Similarly when compiling with clang and using ubsan.
 # $ export UBSAN_OPTIONS="print_stacktrace=1 log_path=ubsan"
@@ -1105,7 +1105,7 @@ INSTALL_DATA_R	= cp -r
 
 ### Program to run on installed binary.  Use the second one to disable strip.
 #STRIP = strip
-STRIP = /bin/true
+#STRIP = /bin/true
 
 ### Permissions for binaries  {{{1
 BINMOD = 755

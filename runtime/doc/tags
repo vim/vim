@@ -3645,6 +3645,8 @@ $quote	eval.txt	/*$quote*
 :winp	gui.txt	/*:winp*
 :winpos	gui.txt	/*:winpos*
 :winsize	gui.txt	/*:winsize*
+:wl	wayland.txt	/*:wl*
+:wlrestore	wayland.txt	/*:wlrestore*
 :wn	editing.txt	/*:wn*
 :wnext	editing.txt	/*:wnext*
 :wp	editing.txt	/*:wp*
@@ -4637,6 +4639,8 @@ E1539	vim9.txt	/*E1539*
 E154	helphelp.txt	/*E154*
 E1540	eval.txt	/*E1540*
 E1541	vi_diff.txt	/*E1541*
+E1546	wayland.txt	/*E1546*
+E1547	wayland.txt	/*E1547*
 E155	sign.txt	/*E155*
 E156	sign.txt	/*E156*
 E157	sign.txt	/*E157*
@@ -11535,7 +11539,14 @@ w:var	eval.txt	/*w:var*
 waittime	channel.txt	/*waittime*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
 wayland	wayland.txt	/*wayland*
-wayland-communication	wayland.txt	/*wayland-communication*
+wayland-and-x11	wayland.txt	/*wayland-and-x11*
+wayland-connection	wayland.txt	/*wayland-connection*
+wayland-gnome	wayland.txt	/*wayland-gnome*
+wayland-gui	wayland.txt	/*wayland-gui*
+wayland-no-data-control	wayland.txt	/*wayland-no-data-control*
+wayland-primary-selection	wayland.txt	/*wayland-primary-selection*
+wayland-selections	wayland.txt	/*wayland-selections*
+wayland-what	wayland.txt	/*wayland-what*
 wayland.txt	wayland.txt	/*wayland.txt*
 wdl-syntax	syntax.txt	/*wdl-syntax*
 wdl.vim	syntax.txt	/*wdl.vim*

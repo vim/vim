@@ -786,7 +786,7 @@ K			Run a program to lookup the keyword under the
 			If the value was never specified, then it uses the
 			value of $DISPLAY environment variable as it was when
 			Vim was started.
-			{only available when compiled with the |+xterm-clipboard|
+			{only available when compiled with the |+xterm_clipboard|
 			feature}
 
 							*:restoreclip* *:rest*

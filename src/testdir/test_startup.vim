@@ -559,7 +559,7 @@ func Test_invalid_args()
   CheckUnix
   CheckNotGui
 
-  for opt in ['-Y', '--does-not-exist']
+  for opt in ['-K', '--does-not-exist']
     let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
     call assert_equal(1, v:shell_error)
     call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])

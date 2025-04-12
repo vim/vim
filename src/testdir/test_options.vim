@@ -522,7 +522,13 @@ func Test_set_completion_string_values()
   call assert_equal('internal', getcompletion('set casemap=', 'cmdline')[1])
   if exists('+clipboard')
     call assert_match('unnamed', getcompletion('set clipboard=', 'cmdline')[1])
-    call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[1])
+  endif
+  if exists('+clipmethod')
+    if has('unix') || has('vms')
+      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[1])
+    else
+      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[0])
+    endif
   endif
   call assert_equal('.', getcompletion('set complete=', 'cmdline')[1])
   call assert_equal('menu', getcompletion('set completeopt=', 'cmdline')[1])

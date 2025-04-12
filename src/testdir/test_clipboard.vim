@@ -20,7 +20,7 @@ func Test_clipmethod_order()
   set cpm=wayland,x11
 
   call assert_equal("wayland", v:clipmethod)
-  
+
   :wlrestore 1239
 
   call assert_equal("x11", v:clipmethod)
@@ -60,7 +60,7 @@ func Test_clipmethod_is_none_when_gui()
     call writefile([v:clipmethod], 'Cbdscript', 'a')
     quit
   END
-   
+
   call writefile(lines, 'Cbdscript', 'D')
   call system($'{GetVimCommand()} -S Cbdscript')
   call assert_equal(['wayland', 'none', 'none'], readfile('Cbdscript'))
@@ -70,7 +70,7 @@ endfunc
 func Test_restoreclip_switches()
   " TODO: How to do this (possibly run a separate wayland compositor?)
 
-  " Creating a symlink to the current wayland display and then removing it 
+  " Creating a symlink to the current wayland display and then removing it
   " wont work because display file descriptor is still valid
 endfunc
 

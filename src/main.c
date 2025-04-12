@@ -2452,8 +2452,8 @@ command_line_scan(mparm_T *parmp)
 		x_no_connect = TRUE;
 #endif
 		break;
-	    case 'Y':
-#ifdef UNIX
+	    case 'Y':		// "-Y" don't connect to wayland compositor
+#if defined(UNIX) && defined(FEAT_WAYLAND)
 		wayland_no_connect = TRUE;
 #endif
 		break;

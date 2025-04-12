@@ -487,6 +487,8 @@ SRC_UNIX =	\
 		src/gui_x11_pm.h \
 		src/wlr-data-control-unstable-v1.c \
 		src/wlr-data-control-unstable-v1.h \
+		src/ext-data-control-unstable-v1.c \
+		src/ext-data-control-unstable-v1.h \
 		src/if_xcmdsrv.c \
 		src/link.sh \
 		src/installman.sh \
@@ -512,6 +514,8 @@ SRC_UNIX =	\
 		src/testdir/Makefile \
 		src/testdir/unix.vim \
 		src/toolcheck \
+		src/protocols/ext-data-control-v1.xml \
+		src/protocols/wlr-data-control-unstable-v1.xml \
 		src/vim_icon.xbm \
 		src/vim_mask.xbm \
 		src/vimtutor \
