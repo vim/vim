@@ -677,3 +677,26 @@ func Test_inline_uncomment()
   let result = readfile(output_file)
   call assert_equal(['echo "Hello" This should be a comment'], result)
 endfunc
+
+func Test_textobj_selection_exclusive_inline_comment()
+  CheckScreendump
+  let lines =<< trim END
+    print("Hello") # selection exclusive
+  END
+
+  let input_file = "test_selection_exclusive_inline_comment_input.py"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "set selection=exclusive" -c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "dac")
+
+  let output_file = "test_selection_exclusive_inline_comment.py"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+  call assert_equal(['print("Hello")'], result)
+endfunc
