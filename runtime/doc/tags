@@ -1580,6 +1580,7 @@ $quote	eval.txt	/*$quote*
 -V	starting.txt	/*-V*
 -W	starting.txt	/*-W*
 -X	starting.txt	/*-X*
+-Y	starting.txt	/*-Y*
 -Z	starting.txt	/*-Z*
 -b	starting.txt	/*-b*
 -background	gui_x11.txt	/*-background*

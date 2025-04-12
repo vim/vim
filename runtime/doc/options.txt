@@ -1855,19 +1855,22 @@ A jump table for the options with a short description can be found at |Q_op|.
 	exclude:{pattern}
 			Defines a pattern that is matched against the name of
 			the terminal 'term'.  If there is a match, no
-			connection will be made to the X server.  This is
-			useful in this situation:
+			connection will be made to the X server or wayland
+			compositor.  This is useful in this situation:
 			- Running Vim in a console.
-			- $DISPLAY is set to start applications on another
-			  display.
-			- You do not want to connect to the X server in the
-			  console, but do want this in a terminal emulator.
-			To never connect to the X server use: >
+			- $DISPLAY/$WAYLAND_DISPLAY is set to start
+			   applications on another display.
+			- You do not want to connect to the X server/Wayland
+			  compositor in the console, but do want this in a
+			  terminal emulator.
+			To never connect to the X server/Wayland compositor
+			use: >
 				exclude:.*
-<			This has the same effect as using the |-X| argument.
+<			This has the same effect as using the |-X| or |-Y| argument.
 			Note that when there is no connection to the X server
 			the window title won't be restored and the clipboard
-			cannot be accessed.
+			cannot be accessed. This is the same for Wayland,
+			except there is no title restoring.
 			The value of 'magic' is ignored, {pattern} is
 			interpreted as if 'magic' was on.
 			The rest of the option value will be used for
