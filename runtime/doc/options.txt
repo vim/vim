@@ -9664,13 +9664,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	specified.
 
 	Some useful combinations of colon-separated values:
-	"longest:full"	    	Start with the longest common string and show
+	"longest:full"		Start with the longest common string and show
 				'wildmenu' (if enabled).  Does not cycle
 				through full matches.
-	"list:full"	    	List all matches and complete first match.
-	"list:longest"	    	List all matches and complete till the longest
+	"list:full"		List all matches and complete first match.
+	"list:longest"		List all matches and complete till the longest
 				common prefix.
-	"list:lastused"     	List all matches.  When completing buffers,
+	"list:lastused"		List all matches.  When completing buffers,
 				sort them by most recently used (excluding the
 				current buffer).
 	"noselect:lastused"	Do not preselect the first item in 'wildmenu'
