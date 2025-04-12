@@ -1816,7 +1816,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			not support the primary-selection-unstable-v1
 			protocol, then the regular selection is used in its
 			place.  Only available with the |+X11| or
-			|+wayland_clipboard| feature.  Availability can be 
+			|+wayland_clipboard| feature.  Availability can be
 			checked with: >
 			if has('unnamedplus')
 <
@@ -1879,7 +1879,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				 otherwise: "")
 
 			global
-			{only when the |+xterm_clipboard| or |+wayland_clipboard| 
+			{only when the |+xterm_clipboard| or |+wayland_clipboard|
 			features are included}
 	Specifies which method of accessing the system clipboard is used,
 	depending on which method works first or is available.  Supported
@@ -4545,7 +4545,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-Visual|	 v  Visual mode
 	|hl-VisualNOS|	 V  Visual mode when Vim does is "Not Owning the
 			    Selection" Only X11 Gui's |gui-x11|,
-			    |xterm-clipboard| and |wayland-selections|.
+			    |xterm-clipboard| and |wayland-selections|
 	|hl-WarningMsg|	 w  warning messages
 	|hl-WildMenu|	 W  wildcard matches displayed for 'wildmenu'
 	|hl-Folded|	 f  line used for closed folds

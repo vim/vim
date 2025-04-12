@@ -20,7 +20,8 @@
  * 10..35 = registers 'a' to 'z' ('A' to 'Z' for appending)
  *     36 = delete register '-'
  *     37 = Selection register '*'. Only if FEAT_CLIPBOARD defined
- *     38 = Clipboard register '+'. Only if FEAT_CLIPBOARD and FEAT_X11 defined
+ *     38 = Clipboard register '+'. Only if FEAT_CLIPBOARD and FEAT_X11
+ *                                  or FEAT_WAYLAND_CLIPBOARD defined
  */
 static yankreg_T	y_regs[NUM_REGISTERS];
 

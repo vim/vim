@@ -2695,7 +2695,7 @@ vwl_choose_offer(Clipboard_T *cbd, void **cbd_offer, void *offer,
 	}
     }
 
-    if(*cbd_offer == NULL)
+    if (*cbd_offer == NULL)
 	*cbd_offer = offer;
 }
 
@@ -3222,7 +3222,7 @@ exit:
  * Call choose_clipmethod().
  */
     void
-ex_restoreclip(exarg_T *eap)
+ex_restoreclip(exarg_T *eap UNUSED)
 {
     clipmethod_T prev = clipmethod;
 

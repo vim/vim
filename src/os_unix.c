@@ -1369,11 +1369,14 @@ sigcont_handler SIGDEFARG(sigarg)
 #endif
 
 #if defined(FEAT_CLIPBOARD)
-# if defined(USE_SYSTEM) && (defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD))
+# if defined(USE_SYSTEM) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
 static void *clip_star_save = NULL;
 static void *clip_plus_save = NULL;
 # endif
 
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
 /*
  * Called when Vim is going to sleep or execute a shell command.
  * We can't respond to requests for the X or wayland selections.
@@ -1399,6 +1402,7 @@ loose_clipboard(void)
 #endif
     }
 }
+#endif
 
 # if defined(USE_SYSTEM) && (defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD))
 /*

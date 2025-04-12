@@ -4,7 +4,7 @@
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
-Wayland Protocol Support 				*wayland*
+Wayland Protocol Support				*wayland*
 
 1. What is Wayland		|wayland-what|
 2. Connecting to Wayland	|wayland-connection|
@@ -16,10 +16,10 @@ Wayland Protocol Support 				*wayland*
 
 The Wayland protocol specifies a set of protocols that governs how the display
 server, commonly known as a compositor, and clients communicate.  As a
-protocol, the de facto library currently that implements it is libwayland, which 
+protocol, the de facto library currently that implements it is libwayland, which
 Vim uses.  While Wayland clients are commonly associated to have windows, this
 is not mandatory, and currently Vim only uses the data control protocols using
-the Wayland protocol, see *wayland-selections* for more information.
+the Wayland protocol, see |wayland-selections| for more information.
 
 ==============================================================================
 2. Connecting to Wayland				*wayland-connection*
@@ -52,7 +52,7 @@ your Wayland compositor supports either of these protocols by running the
 wayland-info command, which should be bunded with libwayland on your system: >
 	wayland-info | grep -E '(ext_data_control|zwlr_data_control)'
 <If grep finds a match, then you have either or both protocols on your system.
-If you don't get any match, then please see *wayland-no-data-control* for more
+If you don't get any match, then please see |wayland-no-data-control| for more
 information.
 
 If you come from X11, then the regular wayland selection is equivalent to the
@@ -60,7 +60,7 @@ CLIPBOARD selection in X11, and the primary wayland selection equates to the
 X11 primary selection.  Accessing these selections is the same as X11 in Vim,
 in which the + register is the regular selection, and the * register is the
 primary selection, note that your compositor may not support primary
-selections, see *wayland-primary-selection* for more details.
+selections, see |wayland-primary-selection| for more details.
 
 							*wayland-and-x11*
 If your version of vim comes compiled with both X11 and Wayland support, then
@@ -71,8 +71,8 @@ Vim determines which one to use when accessing the clipboard using the
 If you find X11 style primary selections useful, then to check if your
 compositor supports the primary-selection-unstable-v1 protocol, check if
 zwp_primary_selection_device_manager_v1 is found using the method found in
-*wayland-selections*, using wayland-info.  If your compositor does not support 
-the protocol, then any interactions with the * register will use the regular 
+*wayland-selections*, using wayland-info.  If your compositor does not support
+the protocol, then any interactions with the * register will use the regular
 selection instead.
 
 				 *wayland-no-data-control* *wayland-gnome*
@@ -87,9 +87,9 @@ the above explanation applies.
 Wayland specific commands:
 							*:wlrestore* *:wl*
 :wl[estore] [display]	Reinitializes the connection to the wayland compositor.
-			[display] should be in the format of the $DISPLAY 
+			[display] should be in the format of the $DISPLAY
 			environment variable (e.g. "wayland-0"), see
-			*wayland-connection* for more details.  If [display]
+			|wayland-connection| for more details.  If [display]
 			is omitted, then it reinitializes the connection using
 			the same value as was used for the previous execution
 			of this command.  If the value was never specified,
@@ -101,10 +101,10 @@ Wayland error messages:
 							*E1546*
 Vim failed communicating with the wayland compositor.  This is likely due to
 the Wayland compositor process being killed.  Try the `:wlrestore` command to
-try connecting again.  See *wayland-connection* for more details.
+try connecting again.  See |wayland-connection| for more details.
 
 							*E1547*
-Vim failed communicating with the wayland compositor.  See *E1546* for more
+Vim failed communicating with the wayland compositor.  See |E1546| for more
 details.
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
