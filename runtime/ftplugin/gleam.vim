@@ -11,8 +11,11 @@ let b:did_ftplugin = 1
 
 setlocal comments=://,:///,:////
 setlocal commentstring=//\ %s
+setlocal expandtab
 setlocal formatprg=gleam\ format\ --stdin
+setlocal shiftwidth=2
+setlocal softtabstop=2
 
-let b:undo_ftplugin = "setlocal comments< commentstring< formatprg<"
+let b:undo_ftplugin = "setlocal com< cms< fp< et< sw< sts<"
 
 " vim: sw=2 sts=2 et
