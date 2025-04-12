@@ -458,7 +458,7 @@ Now go on to the next lesson.
 # Lesson 4.1: CURSOR LOCATION AND FILE STATUS
 
 ** Type `<C-g>`{normal} to show your location in a file and the file status.
- Type `G`{normal} to move to a line in the file. **
+ Type `{count}G`{normal} to move to line {count} in the file. **
 
 NOTE: Read this entire lesson before executing any of the steps!!
 
@@ -933,11 +933,18 @@ default. To start using more features you have to create a "vimrc" file.
  3. Press `<C-d>`{normal} and Vim will show a list of commands that start
      with "e".
 
- 4. Press `<Tab>`{normal} and Vim will complete the command name to ":edit".
+ 4. Press `<Tab>`{normal} and Vim will show a menu with possible completions.
 
- 5. Now add a space and the start of an existing file name: `:edit FIL`{vim}
+ 5. Use `<Tab>`{normal} or `<C-n>`{normal} to go to the next match. Or use
+    `<S-Tab>`{normal} or `<C-p>`{normal} to go to the previous match.
 
- 6. Press `<Tab>`{normal}. Vim will complete the name (if it is unique).
+ 6. Choose the entry `edit`{vim}. Now you can see that the word `edit`{vim}
+    have been automatically inserted to the command line.
+
+ 7. Now add a space and the start of an existing file name: `:edit FIL`{vim}
+
+ 8. Press `<Tab>`{normal}. Vim will show a completion menu with list of file
+    names that start with `FIL`
 
 NOTE: Completion works for many commands. It is especially useful for
       `:help`{vim}.
@@ -956,7 +963,7 @@ NOTE: Completion works for many commands. It is especially useful for
  5. Create a vimrc startup script to keep your preferred settings.
 
  6. While in command mode, press `<C-d>`{normal} to see possible completions.
-     Press `<Tab>`{normal} to use one completion.
+     Press `<Tab>`{normal} to use the completion menu.
 
 # CONCLUSION
 
