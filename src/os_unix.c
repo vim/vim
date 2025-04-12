@@ -1,5 +1,4 @@
 /* vi:set ts=8 sts=4 sw=4 noet:
- *
  * VIM - Vi IMproved	by Bram Moolenaar
  *	      OS/2 port by Paul Slootman
  *	      VMS merge by Zoltan Arpadffy
@@ -125,6 +124,71 @@ static void sig_sysmouse SIGPROTOARG;
 # define SIGWINCH SIGWINDOW
 #endif
 
+#ifdef FEAT_WAYLAND
+#include <wayland-client.h>
+
+static void vwl_registry_listener_global(void *data UNUSED,
+	struct wl_registry *registry UNUSED, uint32_t name,
+	const char *interface, uint32_t version);
+static void vwl_registry_listener_global_remove(void *data UNUSED,
+	struct wl_registry *registry UNUSED, uint32_t name);
+
+static struct wl_registry_listener vwl_registry_listener = {
+    .global = vwl_registry_listener_global,
+    .global_remove = vwl_registry_listener_global_remove
+};
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+#include "wlr-data-control-unstable-v1.h"
+#include "ext-data-control-unstable-v1.h"
+
+// Dummy functions
+static void vzwlr_da_source_device_v1_listener_data_offer(void *data,
+	struct zwlr_data_control_device_v1 *device,
+	struct zwlr_data_control_offer_v1 *offer);
+static void vzwlr_da_source_device_v1_listener_selection(void *data,
+	struct zwlr_data_control_device_v1 *device,
+	struct zwlr_data_control_offer_v1 *offer);
+static void vzwlr_da_source_device_v1_listener_primary_selection(void *data,
+	struct zwlr_data_control_device_v1 *device,
+	struct zwlr_data_control_offer_v1 *offer);
+
+static void vzwlr_da_source_device_v1_listener_finished(void *data,
+	struct zwlr_data_control_device_v1 *device);
+
+// Dummy functions
+static void vext_da_source_device_v1_listener_data_offer(void *data,
+	struct ext_data_control_device_v1 *device,
+	struct ext_data_control_offer_v1 *offer);
+static void vext_da_source_device_v1_listener_selection(void *data,
+	struct ext_data_control_device_v1 *device,
+	struct ext_data_control_offer_v1 *offer);
+static void vext_da_source_device_v1_listener_primary_selection(void *data,
+	struct ext_data_control_device_v1 *device,
+	struct ext_data_control_offer_v1 *offer);
+
+static void vext_da_source_device_v1_listener_finished(void *data,
+	struct ext_data_control_device_v1 *device);
+
+static struct zwlr_data_control_device_v1_listener
+    vzwlr_da_source_device_v1_listener = {
+	.data_offer = vzwlr_da_source_device_v1_listener_data_offer,
+	.selection = vzwlr_da_source_device_v1_listener_selection,
+	.primary_selection = vzwlr_da_source_device_v1_listener_primary_selection,
+	.finished = vzwlr_da_source_device_v1_listener_finished
+    };
+static struct ext_data_control_device_v1_listener
+    vext_da_source_device_v1_listener = {
+	.data_offer = vext_da_source_device_v1_listener_data_offer,
+	.selection = vext_da_source_device_v1_listener_selection,
+	.primary_selection = vext_da_source_device_v1_listener_primary_selection,
+	.finished = vext_da_source_device_v1_listener_finished
+    };
+
+#endif
+
+#endif
+
 #ifdef FEAT_X11
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
@@ -133,6 +197,7 @@ static void sig_sysmouse SIGPROTOARG;
 #  include <X11/Intrinsic.h>
 #  include <X11/Shell.h>
 #  include <X11/StringDefs.h>
+
 static Widget	xterm_Shell = (Widget)0;
 static void clip_update(void);
 static void xterm_update(void);
@@ -1303,33 +1368,39 @@ sigcont_handler SIGDEFARG(sigarg)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-# ifdef USE_SYSTEM
+#if defined(FEAT_CLIPBOARD)
+# if defined(USE_SYSTEM) && (defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD))
 static void *clip_star_save = NULL;
 static void *clip_plus_save = NULL;
 # endif
 
 /*
  * Called when Vim is going to sleep or execute a shell command.
- * We can't respond to requests for the X selections.  Lose them, otherwise
- * other applications will hang.  But first copy the text to cut buffer 0.
+ * We can't respond to requests for the X or wayland selections.
+ * Lose them, otherwise other applications will hang.  But first
+ * copy the text to cut buffer 0 (for X11). Wayland users must have
+ * a clipboard manager to replicate such behaviour.
  */
     static void
 loose_clipboard(void)
 {
     if (clip_star.owned || clip_plus.owned)
     {
+#ifdef FEAT_X11
 	x11_export_final_selection();
+#endif
 	if (clip_star.owned)
 	    clip_lose_selection(&clip_star);
 	if (clip_plus.owned)
 	    clip_lose_selection(&clip_plus);
+#ifdef FEAT_X11
 	if (x11_display != NULL)
 	    XFlush(x11_display);
+#endif
     }
 }
 
-# ifdef USE_SYSTEM
+# if defined(USE_SYSTEM) && (defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD))
 /*
  * Save clipboard text to restore later.
  */
@@ -1385,7 +1456,8 @@ mch_suspend(void)
     settmode(TMODE_COOK);
     out_flush();	    // needed to disable mouse on some systems
 
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
     loose_clipboard();
 # endif
 # if defined(SIGCONT)
@@ -1810,7 +1882,7 @@ x_IOerror_handler(Display *dpy UNUSED)
  * (e.g. through tmux).
  */
     static void
-may_restore_clipboard(void)
+may_restore_x11_clipboard(void)
 {
     // No point in restoring the connecting if we are exiting or dying.
     if (!exiting && !v_dying && xterm_dpy_retry_count > 0)
@@ -1844,13 +1916,15 @@ ex_xrestore(exarg_T *eap)
 	xterm_display = (char *)vim_strnsave(eap->arg, arglen);
 	xterm_display_allocated = TRUE;
     }
-    smsg(_("restoring display %s"), xterm_display == NULL
+    smsg(_("restoring X11 display %s"), xterm_display == NULL
 		    ? (char *)mch_getenv((char_u *)"DISPLAY") : xterm_display);
 
     clear_xterm_clip();
     x11_window = 0;
     xterm_dpy_retry_count = 5;  // Try reconnecting five times
-    may_restore_clipboard();
+    may_restore_x11_clipboard();
+
+    choose_clipmethod();
 }
 #endif
 
@@ -4836,8 +4910,11 @@ mch_call_shell_system(
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);	    // set to normal mode
 
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
     save_clipboard();
+#endif
     loose_clipboard();
 # endif
 
@@ -4899,7 +4976,8 @@ mch_call_shell_system(
 	settmode(TMODE_RAW);	// set to raw mode
     }
     resettitle();
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
     restore_clipboard();
 # endif
     return x;
@@ -6505,8 +6583,11 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 #endif
 #ifndef HAVE_SELECT
 			// each channel may use in, out and err
-	struct pollfd   fds[6 + 3 * MAX_OPEN_CHANNELS];
+	struct pollfd   fds[6 + 4 * MAX_OPEN_CHANNELS];
 	int		nfd;
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	int             wayland_idx = -1;
+#endif
 # ifdef FEAT_XCLIPBOARD
 	int		xterm_idx = -1;
 # endif
@@ -6530,6 +6611,16 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	fds[0].events = POLLIN;
 	nfd = 1;
 
+# ifdef FEAT_WAYLAND_CLIPBOARD
+	vwl_may_restore_connection(FALSE);
+	if (vwl_data_control_valid())
+	{
+	    wayland_idx = nfd;
+	    fds[nfd].fd = vwl_display_fd;
+	    fds[nfd].events = POLLIN;
+	    nfd++;
+	}
+#endif
 # ifdef FEAT_XCLIPBOARD
 	may_restore_clipboard();
 	if (xterm_Shell != (Widget)0)
@@ -6575,6 +6666,11 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    // MzThreads scheduling is required and timeout occurred
 	    finished = FALSE;
 # endif
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	if (vwl_data_control_valid() && (fds[wayland_idx].revents & POLLIN))
+	    vwl_dispatch_queue(TRUE);
+#endif
 
 # ifdef FEAT_XCLIPBOARD
 	if (xterm_Shell != (Widget)0 && (fds[xterm_idx].revents & POLLIN))
@@ -6656,8 +6752,19 @@ select_eintr:
 # endif
 	maxfd = fd;
 
+# ifdef FEAT_WAYLAND_CLIPBOARD
+	vwl_may_restore_connection(FALSE);
+	if (vwl_data_control_valid())
+	{
+	    FD_SET(vwl_display_fd, &rfds);
+
+	    if (maxfd < vwl_display_fd)
+		maxfd = vwl_display_fd;
+	}
+#endif
+
 # ifdef FEAT_XCLIPBOARD
-	may_restore_clipboard();
+	may_restore_x11_clipboard();
 	if (xterm_Shell != (Widget)0)
 	{
 	    FD_SET(ConnectionNumber(xterm_dpy), &rfds);
@@ -6744,6 +6851,11 @@ select_eintr:
 	    // loop if MzThreads must be scheduled and timeout occurred
 	    finished = FALSE;
 # endif
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	if (ret > 0 && vwl_data_control_valid() && FD_ISSET(vwl_display_fd, &rfds))
+	    vwl_dispatch_queue();
+#endif
 
 # ifdef FEAT_XCLIPBOARD
 	if (ret > 0 && xterm_Shell != (Widget)0
@@ -8846,3 +8958,591 @@ start_timeout(long msec)
 }
 # endif // PROF_NSEC
 #endif  // FEAT_RELTIME
+
+#ifdef FEAT_WAYLAND
+
+/*
+ * Helper function for wl_display_flush. Returns OK on sucess and
+ * FAIL on failure.
+ */
+    int
+vwl_flush_requests(void)
+{
+    int ret;
+#ifndef HAVE_SELECT
+    struct pollfd fds = {
+	.fd = vwl_display_fd,
+	.events = POLLOUT
+    };
+#else
+    fd_set wfds;
+    struct timeval tv;
+
+    FD_ZERO(&wfds);
+    FD_SET(vwl_display_fd, &wfds);
+
+    tv.tv_sec = 3;
+    tv.tv_usec = 0;
+#endif
+
+    if (vwl_display == NULL)
+	return FAIL;
+
+    // Send requests to compositor, difference from wl_display_roundtrip
+    // is that it doesn't block and does not wait for reponses from the
+    // compositor (or process events).
+
+    // Will try to write as much data, and if there is data that has not been
+    // written, errno is set to EAGAIN and -1 is returned. Therefore, we should
+    // poll the display fd until it is writable again.
+    while (errno = 0, (ret = wl_display_flush(vwl_display)) == -1
+	    && errno == EAGAIN)
+    {
+	// Abort after 3 seconds if fd is still not writable
+#ifndef HAVE_SELECT
+	if (poll(&fds, 1, 3000) <= 0)
+#else
+	if (select(vwl_display_fd + 1, NULL, &wfds, NULL, &tv) <= 0)
+#endif
+	    return FAIL;
+    }
+    // return FAIL on error or timeout
+    if ((errno != 0 && errno != EAGAIN) || ret == -1)
+	return FAIL;
+
+    return OK;
+}
+
+/*
+ * Helper function for wl_display_roundtrip. Returns OK on sucess and
+ * FAIL on failure.
+ */
+    int
+vwl_send_requests(void)
+{
+    if (vwl_display == NULL)
+	return FAIL;
+
+    if (wl_display_roundtrip(vwl_display) == -1)
+	return FAIL;
+    return OK;
+}
+
+/*
+ * Helper function for wl_display_dispatch, returns OK on sucess and
+ * FAIL on failure.
+ */
+    int
+vwl_dispatch_queue(void)
+{
+    if (vwl_display == NULL || vwl_flush_requests() == FAIL)
+	return FAIL;
+
+    // Poll until there are events to read
+#ifndef HAVE_SELECT
+    struct pollfd pfd = {
+	.fd = vwl_display_fd,
+	.events = POLLIN
+    }
+
+    if (poll(&pfds, 1, p_wtm) > 0)
+    {
+#else
+    fd_set rfds;
+    struct timeval tv;
+
+    FD_ZERO(&rfds);
+    FD_SET(vwl_display_fd, &rfds);
+
+    tv.tv_sec = 0;
+    tv.tv_usec = p_wtm * 1000;
+
+    if (select(vwl_display_fd + 1, &rfds, NULL, NULL, &tv) > 0)
+    {
+#endif
+	if (wl_display_dispatch(vwl_display) == -1)
+	    return FAIL;
+    }
+    else
+	return FAIL;
+
+    return OK;
+}
+
+/*
+ * Return TRUE if the connection to the wayland compositor is valid.
+ */
+    int
+vwl_still_connected(void)
+{
+    if (vwl_display == NULL)
+	return FALSE;
+    if (wl_display_get_error(vwl_display) == -1 ||
+	    vwl_flush_requests() == FAIL)
+	return FALSE;
+    return TRUE;
+}
+
+/*
+ * Check if we are still connected to the wayland compositor. If not, then attempt
+ * to reconnect up to `vwl_connection_restore_tries_max` times. If parameter `reset`
+ * is TRUE then reset the amount of tries to zero. Returns if attempt to connect
+ * succeded or not.
+ */
+    int
+vwl_may_restore_connection(int reset)
+{
+    if (reset)
+	vwl_connection_restore_tries = 0;
+
+    // Try reconnecting up to 'vwl_connection_restore_tries_max' times
+    if (!exiting && !v_dying && vwl_connection_restore_tries <
+	    vwl_connection_restore_tries_max)
+    {
+	// Only attempt reconnecting if current connection is invalid
+	if (!vwl_still_connected())
+	{
+	    vwl_disconnect_client();
+	    if (vwl_connect_client(vwl_display_strname) == OK)
+		return OK;
+	    vwl_connection_restore_tries++;
+	    return FAIL;
+	}
+	return OK;
+    }
+
+    return FAIL;
+}
+
+/*
+ * Will be called for each global object the compositor supports, bind to the ones
+ * we need.
+ */
+    static void
+vwl_registry_listener_global(void *data UNUSED,
+	struct wl_registry *registry UNUSED, uint32_t name,
+	const char *interface, uint32_t version)
+{
+#ifdef FEAT_WAYLAND_CLIPBOARD
+    if (strcmp(interface, zwlr_data_control_manager_v1_interface.name) == 0
+	    && vzwlr_da_manager_v1 == NULL)
+    {
+	vzwlr_da_manager_v1 = wl_registry_bind(vwl_registry, name,
+		&zwlr_data_control_manager_v1_interface, version);
+	vzwlr_da_manager_v1_name = name;
+    }
+    else if (strcmp(interface, ext_data_control_manager_v1_interface.name) == 0
+	    && vext_da_manager_v1 == NULL)
+    {
+	vext_da_manager_v1 = wl_registry_bind(vwl_registry, name,
+		&ext_data_control_manager_v1_interface, version);
+	vext_da_manager_v1_name = name;
+    }
+    else if (strcmp(interface, "zwp_primary_selection_device_manager_v1") == 0)
+    {
+	// We are just checking if primary selection is supported, no need to bind
+	// to anything.
+	vwl_primary_sel_supported = TRUE;
+	vzwp_primary_sel_manager_v1_name = name;
+    }
+#endif
+    if (strcmp(interface, wl_seat_interface.name) == 0 && vwl_seat == NULL)
+    {
+	vwl_seat = wl_registry_bind(vwl_registry, name, &wl_seat_interface,
+		version);
+	vwl_seat_name = name;
+    }
+}
+
+/*
+ * Called when global object is removed, if so destroy it on our side and do any
+ * necessary cleanup/freeing.
+ */
+    static void
+vwl_registry_listener_global_remove(void *data UNUSED,
+	struct wl_registry *registry UNUSED, uint32_t name)
+{
+    if (name == vwl_seat_name)
+    {
+	wl_seat_destroy(vwl_seat);
+	vwl_seat = NULL;
+
+	// Data control requires a seat
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	vwl_disconnect_data_control();
+#endif
+    }
+#ifdef FEAT_WAYLAND_CLIPBOARD
+    else if (name == vzwlr_da_manager_v1_name
+	    || name == vext_da_manager_v1_name)
+    {
+	vwl_disconnect_data_control();
+    }
+    else if (name == vzwp_primary_sel_manager_v1_name)
+    {
+	vwl_primary_sel_supported = FALSE;
+    }
+#endif
+}
+
+/*
+ * Connect to the wayland compositor and get its registry, then add a listener
+ * so we can bind to the global objects we need. Returns OK on success and returns
+ * FAIL on failure.
+ */
+    int
+vwl_connect_client(char *display)
+{
+    if (wayland_no_connect)
+	return FAIL;
+
+    if (vwl_display == NULL)
+    {
+	vwl_display = wl_display_connect(display);
+
+	if (vwl_display == NULL)
+	    goto error;
+	vwl_display_fd = wl_display_get_fd(vwl_display);
+    }
+
+    if (vwl_registry == NULL)
+    {
+	vwl_registry = wl_display_get_registry(vwl_display);
+
+	if (vwl_registry == NULL)
+	    goto error;
+	if (wl_registry_add_listener(vwl_registry, &vwl_registry_listener, NULL)
+		== -1)
+	    goto error;
+    }
+
+    if ((vwl_display == NULL && vwl_registry == NULL)
+	    || vwl_send_requests() == FAIL)
+	goto error;
+
+    return OK;
+error:
+    vwl_disconnect_client();
+    return FAIL;
+}
+
+/*
+ * Disconnect from the wayland compositor and cleanup/free everything.
+ */
+    void
+vwl_disconnect_client(void)
+{
+#ifdef FEAT_WAYLAND_CLIPBOARD
+    vwl_disconnect_data_control();
+#endif
+    if (vwl_seat != NULL)
+    {
+	wl_seat_destroy(vwl_seat);
+	vwl_seat = NULL;
+    }
+
+    if (vwl_registry != NULL)
+    {
+	wl_registry_destroy(vwl_registry);
+	vwl_registry = NULL;
+    }
+
+    if (vwl_display != NULL)
+    {
+	wl_display_disconnect(vwl_display);
+	vwl_display = NULL;
+    }
+}
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+
+/*
+ * Dummy function
+ */
+static void vzwlr_da_source_device_v1_listener_data_offer(void *data UNUSED,
+	struct zwlr_data_control_device_v1 *device UNUSED,
+	struct zwlr_data_control_offer_v1 *offer UNUSED)
+{
+}
+
+/*
+ * Dummy function
+ */
+static void vzwlr_da_source_device_v1_listener_selection(void *data UNUSED,
+	struct zwlr_data_control_device_v1 *device UNUSED,
+	struct zwlr_data_control_offer_v1 *offer)
+{
+    if (offer != NULL)
+	zwlr_data_control_offer_v1_destroy(offer);
+}
+
+/*
+ * Dummy function
+ */
+static void vzwlr_da_source_device_v1_listener_primary_selection(void *data UNUSED,
+	struct zwlr_data_control_device_v1 *device UNUSED,
+	struct zwlr_data_control_offer_v1 *offer)
+{
+    if (offer != NULL)
+	zwlr_data_control_offer_v1_destroy(offer);
+}
+
+/*
+ *
+ */
+static void vzwlr_da_source_device_v1_listener_finished(void *data UNUSED,
+	struct zwlr_data_control_device_v1 *device)
+{
+    // Should always be true
+    if (device == vzwlr_source_da_device_v1)
+	vzwlr_source_da_device_v1 = NULL;
+
+    zwlr_data_control_device_v1_destroy(device);
+}
+
+/*
+ * Dummy function
+ */
+static void vext_da_source_device_v1_listener_data_offer(void *data UNUSED,
+	struct ext_data_control_device_v1 *device UNUSED,
+	struct ext_data_control_offer_v1 *offer UNUSED)
+{
+}
+
+/*
+ * Dummy function
+ */
+static void vext_da_source_device_v1_listener_selection(void *data UNUSED,
+	struct ext_data_control_device_v1 *device UNUSED,
+	struct ext_data_control_offer_v1 *offer)
+{
+    if (offer != NULL)
+	ext_data_control_offer_v1_destroy(offer);
+}
+
+/*
+ * Dummy function
+ */
+static void vext_da_source_device_v1_listener_primary_selection(void *data UNUSED,
+	struct ext_data_control_device_v1 *device UNUSED,
+	struct ext_data_control_offer_v1 *offer)
+{
+    if (offer != NULL)
+	ext_data_control_offer_v1_destroy(offer);
+}
+
+/*
+ * Destroy the device used for source operations when it is finished.
+ */
+static void vext_da_source_device_v1_listener_finished(void *data UNUSED,
+	struct ext_data_control_device_v1 *device)
+{
+    // Should always be true
+    if (device == vext_source_da_device_v1)
+	vzwlr_source_da_device_v1 = NULL;
+
+    ext_data_control_device_v1_destroy(device);
+}
+
+/*
+ * Initialize/set the stuff we need in order to use the data control protocol.
+ * Should always before called before doing anything related to transferring
+ * data in wayland (data control). Note that this does not call clip_init() in
+ * any way, instead caller should call it when this functon returns OK (as needed).
+ */
+    int
+vwl_connect_data_control(void)
+{
+    if (vwl_may_restore_connection(TRUE) == FAIL || vwl_seat == NULL)
+	return FAIL;
+
+    // Prioritize ext-data-control over zwlr-data-control
+    if (vext_da_manager_v1 != NULL)
+    {
+	// Cleanup before using new protocol if we were using a different
+	// protocol before.
+	if (vwl_cur_da_protocol != VWL_DA_PROTOCOL_UNKNOWN
+		&& vwl_cur_da_protocol != VWL_DA_PROTOCOL_EXT)
+	    vwl_disconnect_data_control();
+
+	vwl_cur_da_protocol = VWL_DA_PROTOCOL_EXT;
+
+	if (vext_source_da_device_v1 == NULL)
+	{
+	    vext_source_da_device_v1 =
+		ext_data_control_manager_v1_get_data_device(
+			vext_da_manager_v1, vwl_seat);
+
+	    if (vext_source_da_device_v1 == NULL)
+		return FAIL;
+
+	    // Listen solely for the finished event
+            if (ext_data_control_device_v1_add_listener(
+                    vext_source_da_device_v1,
+                    &vext_da_source_device_v1_listener, NULL) == -1 ||
+                vwl_send_requests() == FAIL)
+	    {
+		ext_data_control_device_v1_destroy(vext_source_da_device_v1);
+		vext_source_da_device_v1 = NULL;
+		return FAIL;
+	    }
+	}
+    }
+    else if (vzwlr_da_manager_v1 != NULL)
+    {
+	if (vwl_cur_da_protocol != VWL_DA_PROTOCOL_UNKNOWN
+		&& vwl_cur_da_protocol != VWL_DA_PROTOCOL_ZWLR)
+	    vwl_disconnect_data_control();
+
+	vwl_cur_da_protocol = VWL_DA_PROTOCOL_ZWLR;
+
+	if (vzwlr_source_da_device_v1 == NULL)
+	{
+	    vzwlr_source_da_device_v1 =
+		zwlr_data_control_manager_v1_get_data_device(
+			vzwlr_da_manager_v1, vwl_seat);
+
+            if (vzwlr_source_da_device_v1 == NULL)
+                return FAIL;
+            if (zwlr_data_control_device_v1_add_listener(
+                    vzwlr_source_da_device_v1,
+                    &vzwlr_da_source_device_v1_listener, NULL) == -1 ||
+                vwl_send_requests() == FAIL)
+            {
+                zwlr_data_control_device_v1_destroy(vzwlr_source_da_device_v1);
+                vzwlr_source_da_device_v1 = NULL;
+                return FAIL;
+            }
+        }
+    }
+    else
+	return FAIL;
+    return OK;
+}
+
+/*
+ * Cleanup/free everything related to data control. Note: destroys the manager,
+ * so only way to get back data control is to reconnect display unless it is
+ * given in a new global event.
+ */
+    void
+vwl_disconnect_data_control(void)
+{
+    // Lose any selections we own
+    if (clip_star.owned)
+	clip_lose_selection(&clip_star);
+    if (clip_plus.owned)
+	clip_lose_selection(&clip_plus);
+
+    if (vzwlr_da_manager_v1 != NULL)
+    {
+	zwlr_data_control_manager_v1_destroy(vzwlr_da_manager_v1);
+	vzwlr_da_manager_v1 = NULL;
+    }
+    if (vzwlr_source_da_device_v1 != NULL)
+    {
+	zwlr_data_control_device_v1_destroy(vzwlr_source_da_device_v1);
+	vzwlr_source_da_device_v1 = NULL;
+    }
+    if (vext_da_manager_v1 != NULL)
+    {
+	ext_data_control_manager_v1_destroy(vext_da_manager_v1);
+	vext_da_manager_v1 = NULL;
+    }
+    if (vext_source_da_device_v1 != NULL)
+    {
+	ext_data_control_device_v1_destroy(vext_source_da_device_v1);
+	vext_source_da_device_v1 = NULL;
+    }
+    vwl_send_requests();
+}
+
+/*
+ * Returns TRUE if all the objects we need are still valid in order to use the
+ * data control protocol.
+ */
+    int
+vwl_data_control_valid(void)
+{
+    if (!vwl_still_connected() || vwl_seat == NULL)
+	return FALSE;
+
+    if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
+    {
+	if (vzwlr_da_manager_v1 == NULL || vzwlr_source_da_device_v1 == NULL)
+	    return FALSE;
+    }
+    else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
+    {
+	if (vext_da_manager_v1 == NULL || vext_source_da_device_v1 == NULL)
+	    return FALSE;
+    }
+    else
+	return FALSE;
+
+    return TRUE;
+}
+
+#endif // FEAT_WAYLAND_CLIPBOARD
+
+/*
+ * Disconnect then reconnect wayland connection, and update clipmethod.
+ */
+    void
+ex_wlrestore(exarg_T *eap)
+{
+    char *display;
+
+    if (eap->arg == NULL || STRLEN(eap->arg) == 0)
+	// Use current display name if none given
+	display = vwl_display_strname;
+    else
+	display = (char*)eap->arg;
+
+    vwl_disconnect_client();
+    vwl_set_display_strname(display, FALSE);
+
+    if (vwl_connect_client(vwl_display_strname) == OK)
+	smsg(_("restoring wayland display %s"), vwl_display_strname);
+    else
+    {
+	vwl_set_display_strname("", TRUE);
+	smsg(_("failed restoring, lost connection to wayland display %s"),
+		vwl_display_strname);
+    }
+#ifdef FEAT_WAYLAND_CLIPBOARD
+    // Must reconnect data control because get_clipmethod() uses
+    // vwl_data_control_valid()
+    vwl_connect_data_control();
+#endif
+#ifdef FEAT_CLIPBOARD
+    choose_clipmethod();
+#endif
+}
+
+/*
+ * Set vwl_display_strname to display. Note that this allocate a copy of the
+ * string, unless NULL is passed. Note that if NULL is passed then
+ * v:wayland_display and vwl_display_strname is set to $WAYLAND_DISPLAY.
+ */
+    void
+vwl_set_display_strname(char *display, int only_vvar)
+{
+    if (display == NULL)
+	display = (char*)mch_getenv((char_u*)"WAYLAND_DISPLAY");
+    // Don't want to be freeing vwl_display_strname then trying to copy it after
+    else if (display == vwl_display_strname)
+	return;
+
+    if (!only_vvar)
+    {
+	vim_free(vwl_display_strname);
+	vwl_display_strname = (char*)vim_strsave((char_u*)display);
+    }
+
+#ifdef FEAT_EVAL
+    set_vim_var_string(VV_WAYLAND_DISPLAY, (char_u*)display, -1);
+#endif
+}
+
+#endif // FEAT_WAYLAND

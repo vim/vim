@@ -3730,3 +3730,9 @@ EXTERN char e_no_quickfix_stack[]
 #endif
 EXTERN char e_cannot_switch_to_a_closing_buffer[]
 	INIT(= N_("E1546: Cannot switch to a closing buffer"));
+#ifdef FEAT_WAYLAND
+EXTERN char e_wayland_failed_sending_requests[]
+	INIT(= N_("E1547: Error sending requests to wayland compositor"));
+EXTERN char e_wayland_failed_dispatching_requests[]
+	INIT(= N_("E1548: Error dispatching requests from wayland compositor"));
+#endif

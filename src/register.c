@@ -1170,7 +1170,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
     linenr_T		yankendlnum = oap->end.lnum;
     char_u		*pnew;
     struct block_def	bd;
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+#if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD))
     int			did_star = FALSE;
 #endif
 
@@ -1396,12 +1396,12 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 	clip_own_selection(&clip_star);
 	clip_gen_set_selection(&clip_star);
-# ifdef FEAT_X11
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
 	did_star = TRUE;
 # endif
     }
 
-# ifdef FEAT_X11
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
     // If we were yanking to the '+' register, send result to selection.
     // Also copy to the '*' register, in case auto-select is off.  But not when
     // 'clipboard' has "unnamedplus" and not "unnamed"; and not when
