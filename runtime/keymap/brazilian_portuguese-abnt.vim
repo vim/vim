@@ -68,4 +68,6 @@ loadkeymap
 ® | ASCII HORIZONTAL SLASH
 [= / ASCII SLASH
 '= ? ASCII INTERROGATION
-` ' ASCII QUOTE
+<<<<<<< HEAD
+` ' ASCII SINGLE QUOTE
+>>>>>>> 22cdd3434 ( Changes to be committed:)
