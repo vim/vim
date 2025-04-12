@@ -606,7 +606,7 @@ static struct vimoption options[] =
     {"clipboard",   "cb",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_CLIPBOARD
 			    (char_u *)&p_cb, PV_NONE, did_set_clipboard, expand_set_clipboard,
-# ifdef FEAT_XCLIPBOARD
+# if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 			    {(char_u *)"autoselect,exclude:cons\\|linux",
 							       (char_u *)0L}
 # else
@@ -615,6 +615,21 @@ static struct vimoption options[] =
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)"", (char_u *)0L}
+#endif
+			    SCTX_INIT},
+    {"clipmethod", "cpm",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+#ifdef FEAT_CLIPBOARD
+			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,
+#ifdef UNIX
+			    {(char_u *)"wayland,x11", (char_u *)0L}
+#elif VMS
+			    {(char_u *)"x11", (char_u *)0L}
+#else
+			    {(char_u *)"", (char_u *)0L}
+#endif
+# else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
     {"cmdheight",   "ch",   P_NUM|P_VI_DEF|P_RALL,
@@ -2938,6 +2953,24 @@ static struct vimoption options[] =
     {"winwidth",   "wiw",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_wiw, PV_NONE, did_set_winwidth, NULL,
 			    {(char_u *)20L, (char_u *)0L} SCTX_INIT},
+    {"wlrtimeoutlen", "wrm", P_NUM|P_VI_DEF,
+#ifdef FEAT_WAYLAND_CLIPBOARD
+			    (char_u *)&p_wrm, PV_NONE, did_set_wltimeout, NULL,
+			    {(char_u *)10L, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
+    {"wltimeoutlen", "wtm", P_NUM|P_VI_DEF,
+#ifdef FEAT_WAYLAND_CLIPBOARD
+			    (char_u *)&p_wtm, PV_NONE, did_set_wltimeout, NULL,
+			    {(char_u *)3000L, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"wrap",	    NULL,   P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_WRAP, did_set_wrap, NULL,
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},

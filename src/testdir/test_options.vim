@@ -522,6 +522,7 @@ func Test_set_completion_string_values()
   call assert_equal('internal', getcompletion('set casemap=', 'cmdline')[1])
   if exists('+clipboard')
     call assert_match('unnamed', getcompletion('set clipboard=', 'cmdline')[1])
+    call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[1])
   endif
   call assert_equal('.', getcompletion('set complete=', 'cmdline')[1])
   call assert_equal('menu', getcompletion('set completeopt=', 'cmdline')[1])
@@ -2592,6 +2593,7 @@ func Test_string_option_revert_on_failure()
   endif
   if has('clipboard_working')
     call add(optlist, ['clipboard', 'unnamed', 'a123'])
+    call add(optlist, ['clipmethod', 'wayland', 'a123'])
   endif
   if has('win32')
     call add(optlist, ['completeslash', 'slash', 'a123'])

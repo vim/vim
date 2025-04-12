@@ -3728,3 +3728,9 @@ EXTERN char e_failed_resizing_quickfix_stack[]
 EXTERN char e_no_quickfix_stack[]
 	INIT(= N_("E1545: Quickfix list stack unavailable"));
 #endif
+#ifdef FEAT_WAYLAND
+EXTERN char e_wayland_failed_sending_requests[]
+	INIT(= N_("E1546: Error sending requests to wayland compositor"));
+EXTERN char e_wayland_failed_dispatching_requests[]
+	INIT(= N_("E1547: Error dispatching requests from wayland compositor"));
+#endif

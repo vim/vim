@@ -92,4 +92,16 @@ void xsmp_close(void);
 void stop_timeout(void);
 volatile sig_atomic_t *start_timeout(long msec);
 void delete_timer(void);
+int vwl_flush_requests(void);
+int vwl_send_requests(void);
+int vwl_dispatch_queue(void);
+int vwl_still_connected(void);
+int vwl_may_restore_connection(int reset);
+int vwl_connect_client(char *display);
+void vwl_disconnect_client(void);
+int vwl_connect_data_control(void);
+void vwl_disconnect_data_control(void);
+int vwl_data_control_valid(void);
+void ex_wlrestore(exarg_T *eap);
+void vwl_set_display_strname(char *display, int only_vvar);
 /* vim: set ft=c : */

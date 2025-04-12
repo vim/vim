@@ -971,9 +971,9 @@ EXTERN int	gui_win_y INIT(= -1);
 #endif
 
 #ifdef FEAT_CLIPBOARD
-EXTERN Clipboard_T clip_star;	// PRIMARY selection in X11
-# ifdef FEAT_X11
-EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11
+EXTERN Clipboard_T clip_star;	// PRIMARY selection in X11/Wayland
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
+EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11/Wayland
 # else
 #  define clip_plus clip_star	// there is only one clipboard
 #  define ONE_CLIPBOARD
@@ -2063,4 +2063,57 @@ EXTERN char_u showcmd_buf[SHOWCMD_BUFLEN];
 
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc_set INIT(= FALSE);
+#endif
+
+// Wayland global variables
+#ifdef FEAT_WAYLAND
+EXTERN struct wl_display *vwl_display;
+EXTERN struct wl_registry *vwl_registry;
+EXTERN struct wl_seat *vwl_seat;
+EXTERN uint32_t vwl_seat_name;
+EXTERN int vwl_display_fd;
+
+#define vwl_connection_restore_tries_max 5
+EXTERN int vwl_connection_restore_tries INIT(= vwl_connection_restore_tries_max);
+
+// Wayland display name (ex. wayland-0). If NULL then wl_connect_display will
+// automatically choose what display to conenct to.
+EXTERN char *vwl_display_strname;
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+// If the compositor supports primary-selection-unstable-v1 protocol
+// (Needed for X11 style primary selection). If it doesn't, then do stuff as
+// normally with clip_star, but use the regular selection in place of
+// unsupported primary.
+EXTERN int vwl_primary_sel_supported INIT(= FALSE);
+
+// Used to check if the primary selection global object has been removed.
+// We don't actually bind to it.
+EXTERN int vzwp_primary_sel_manager_v1_name;
+
+// Current data control protocol to use
+EXTERN vwl_da_protocol_T vwl_cur_da_protocol INIT(= VWL_DA_PROTOCOL_UNKNOWN);
+
+EXTERN struct zwlr_data_control_manager_v1 *vzwlr_da_manager_v1;
+EXTERN uint32_t vzwlr_da_manager_v1_name;
+EXTERN struct ext_data_control_manager_v1 *vext_da_manager_v1;
+EXTERN uint32_t vext_da_manager_v1_name;
+
+// Data device that should only be used for source operations
+EXTERN struct zwlr_data_control_device_v1 *vzwlr_source_da_device_v1;
+EXTERN struct ext_data_control_device_v1 *vext_source_da_device_v1;
+
+#endif // FEAT_WAYLAND_CLIPBOARD
+#endif // FEAT_WAYLAND
+
+// If we've already warned about missing/unavailable clipboard
+EXTERN int did_warn_clipboard INIT(= FALSE);
+
+#ifdef FEAT_CLIPBOARD
+EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
+#endif
+
+#if defined(UNIX)
+// Don't connect to wayland compositor if TRUE
+EXTERN int	wayland_no_connect INIT(= FALSE);
 #endif

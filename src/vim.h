@@ -194,6 +194,10 @@
 # define FEAT_X11
 #endif
 
+#if defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
+#define FEAT_WAYLAND
+#endif
+
 #ifdef NO_X11_INCLUDES
     // In os_mac_conv.c and os_macosx.m NO_X11_INCLUDES is defined to avoid
     // X11 headers.  Disable all X11 related things to avoid conflicts.
@@ -2210,7 +2214,9 @@ typedef int sock_T;
 #define VV_TYPE_ENUMVALUE 109
 #define VV_STACKTRACE	110
 #define VV_TYPE_TUPLE	111
-#define VV_LEN		112	// number of v: vars
+#define VV_WAYLAND_DISPLAY 112
+#define VV_CLIPMETHOD 113
+#define VV_LEN		114	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2250,6 +2256,9 @@ typedef int sock_T;
 # define VIM_ATOM_NAME "_VIM_TEXT"
 # define VIMENC_ATOM_NAME "_VIMENC_TEXT"
 
+#define MIME_TEXT_UTF8 "text/plain;charset=utf-8"
+#define MIME_TEXT "text/plain"
+
 // Selection states for modeless selection
 # define SELECT_CLEARED		0
 # define SELECT_IN_PROGRESS	1
@@ -2264,6 +2273,21 @@ typedef int sock_T;
 #   define WM_OLE (WM_APP+0)
 #  endif
 # endif
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+typedef enum {
+    VWL_DA_PROTOCOL_UNKNOWN,
+    VWL_DA_PROTOCOL_ZWLR,
+    VWL_DA_PROTOCOL_EXT
+} vwl_da_protocol_T;
+#endif // FEAT_WAYLAND_CLIPBOARD
+
+typedef enum {
+    CLIPMETHOD_FAIL,
+    CLIPMETHOD_NONE,
+    CLIPMETHOD_WAYLAND,
+    CLIPMETHOD_X11,
+} clipmethod_T;
 
 // Info about selected text
 typedef struct
@@ -2304,6 +2328,28 @@ typedef struct
     int_u	format;		// Vim's own special clipboard format
     int_u	format_raw;	// Vim's raw text clipboard format
 # endif
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+    union {
+	struct zwlr_data_control_source_v1 *zwlr;
+	struct ext_data_control_source_v1 *ext;
+	void *check; // Used to check if union is null
+    } source;
+
+    union {
+	struct zwlr_data_control_offer_v1 *zwlr;
+	struct ext_data_control_offer_v1 *ext;
+	void *check;
+    } offer;
+    const char *cur_mime; // Current mime type for selection
+    int cur_mime_priority; // Priority of mime type compared to others
+
+    // Set to FALSE before attempting to receive a selection, and set to TRUE
+    // once we have received it. This is so any other events that happen after
+    // when we've already received the selection are ignored.
+    int got_selection;
+#endif
+
 # ifdef FEAT_GUI_HAIKU
     // No clipboard at the moment. TODO?
 # endif

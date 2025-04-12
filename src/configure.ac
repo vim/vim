@@ -2389,6 +2389,45 @@ AC_ARG_ENABLE(fontset,
 AC_MSG_RESULT($enable_fontset)
 dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
 
+
+AC_MSG_CHECKING(--with-wayland argument)
+AC_ARG_WITH(wayland,
+	[  --with-wayland	  Include support for the Wayland protocol.])
+
+test -z "$with_wayland" && with_wayland=yes
+if test "$with_wayland" = yes; then
+  AC_MSG_RESULT(yes)
+  AC_MSG_CHECKING(if wayland client header files can be found)
+  cppflags_save=$CPPFLAGS
+  CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <wayland-client.h>], )],
+	AC_MSG_RESULT(yes),
+	AC_MSG_RESULT(no); no_wl=yes)
+  CPPFLAGS=$cppflags_save
+
+  if test "$no_wl" = yes; then
+    with_wayland=no
+  else
+    AC_CHECK_LIB(wayland-client, wl_display_connect,[no_wl=no])
+
+    if test "$no_wl" = no; then
+      AC_DEFINE(HAVE_WAYLAND)
+      WAYLAND_LIBS="-lwayland-client";
+      AC_SUBST(WAYLAND_LIBS)
+      WAYLAND_SRC="wlr-data-control-unstable-v1.c ext-data-control-unstable-v1.c"
+      AC_SUBST(WAYLAND_SRC)
+      WAYLAND_OBJ="objects/wlr-data-control-unstable-v1.o \
+	objects/ext-data-control-unstable-v1.o"
+      AC_SUBST(WAYLAND_OBJ)
+
+    else
+      with_wayland=no
+    fi
+  fi
+else
+  AC_MSG_RESULT(no)
+fi
+
 test -z "$with_x" && with_x=yes
 test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
 if test "$with_x" = no; then
