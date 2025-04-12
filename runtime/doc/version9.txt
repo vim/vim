@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 08
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41631,6 +41631,7 @@ Options: ~
   and CTRL-D / CTRL-U for half-pagewise scrolling
 - New option value for 'fillchars':
   	"trunc"		- configure truncation indicator, 'pummaxwidth'
+  	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|
