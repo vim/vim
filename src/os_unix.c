@@ -9173,14 +9173,14 @@ vwl_registry_listener_global_remove(void *data UNUSED,
 
 	// Data control requires a seat
 #ifdef FEAT_WAYLAND_CLIPBOARD
-	vwl_disconnect_data_control();
+	vwl_disconnect_data_control(FALSE);
 #endif
     }
 #ifdef FEAT_WAYLAND_CLIPBOARD
     else if (name == vzwlr_da_manager_v1_name
 	    || name == vext_da_manager_v1_name)
     {
-	vwl_disconnect_data_control();
+	vwl_disconnect_data_control(FALSE);
     }
     else if (name == vzwp_primary_sel_manager_v1_name)
     {
@@ -9237,7 +9237,7 @@ error:
 vwl_disconnect_client(void)
 {
 #ifdef FEAT_WAYLAND_CLIPBOARD
-    vwl_disconnect_data_control();
+    vwl_disconnect_data_control(FALSE);
 #endif
     if (vwl_seat != NULL)
     {
@@ -9367,7 +9367,9 @@ vwl_connect_data_control(void)
 	// protocol before.
 	if (vwl_cur_da_protocol != VWL_DA_PROTOCOL_UNKNOWN
 		&& vwl_cur_da_protocol != VWL_DA_PROTOCOL_EXT)
-	    vwl_disconnect_data_control();
+	    // Pass TRUE so that we don't destroy vext_da_manager_v1, same for the
+	    // wlr manager too.
+	    vwl_disconnect_data_control(TRUE);
 
 	vwl_cur_da_protocol = VWL_DA_PROTOCOL_EXT;
 
@@ -9396,7 +9398,7 @@ vwl_connect_data_control(void)
     {
 	if (vwl_cur_da_protocol != VWL_DA_PROTOCOL_UNKNOWN
 		&& vwl_cur_da_protocol != VWL_DA_PROTOCOL_ZWLR)
-	    vwl_disconnect_data_control();
+	    vwl_disconnect_data_control(TRUE);
 
 	vwl_cur_da_protocol = VWL_DA_PROTOCOL_ZWLR;
 
@@ -9427,10 +9429,11 @@ vwl_connect_data_control(void)
 /*
  * Cleanup/free everything related to data control. Note: destroys the manager,
  * so only way to get back data control is to reconnect display unless it is
- * given in a new global event.
+ * given in a new global event. If no_reconnect is TRUE, then don't destroy any
+ * objects that would require disconnecting and reconnecting the wayland display.
  */
     void
-vwl_disconnect_data_control(void)
+vwl_disconnect_data_control(int no_reconnect)
 {
     // Lose any selections we own
     if (clip_star.owned)
@@ -9438,7 +9441,7 @@ vwl_disconnect_data_control(void)
     if (clip_plus.owned)
 	clip_lose_selection(&clip_plus);
 
-    if (vzwlr_da_manager_v1 != NULL)
+    if (vzwlr_da_manager_v1 != NULL && !no_reconnect)
     {
 	zwlr_data_control_manager_v1_destroy(vzwlr_da_manager_v1);
 	vzwlr_da_manager_v1 = NULL;
@@ -9448,7 +9451,7 @@ vwl_disconnect_data_control(void)
 	zwlr_data_control_device_v1_destroy(vzwlr_source_da_device_v1);
 	vzwlr_source_da_device_v1 = NULL;
     }
-    if (vext_da_manager_v1 != NULL)
+    if (vext_da_manager_v1 != NULL && !no_reconnect)
     {
 	ext_data_control_manager_v1_destroy(vext_da_manager_v1);
 	vext_da_manager_v1 = NULL;
@@ -9507,18 +9510,21 @@ ex_wlrestore(exarg_T *eap)
     vwl_set_display_strname(display, FALSE);
 
     if (vwl_connect_client(vwl_display_strname) == OK)
+    {
 	smsg(_("restoring wayland display %s"), vwl_display_strname);
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+    // Must reconnect data control because get_clipmethod() uses
+    // vwl_data_control_valid()
+    vwl_connect_data_control();
+#endif
+    }
     else
     {
 	vwl_set_display_strname("", TRUE);
 	smsg(_("failed restoring, lost connection to wayland display %s"),
 		vwl_display_strname);
     }
-#ifdef FEAT_WAYLAND_CLIPBOARD
-    // Must reconnect data control because get_clipmethod() uses
-    // vwl_data_control_valid()
-    vwl_connect_data_control();
-#endif
 #ifdef FEAT_CLIPBOARD
     choose_clipmethod();
 #endif

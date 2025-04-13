@@ -100,7 +100,7 @@ int vwl_may_restore_connection(int reset);
 int vwl_connect_client(char *display);
 void vwl_disconnect_client(void);
 int vwl_connect_data_control(void);
-void vwl_disconnect_data_control(void);
+void vwl_disconnect_data_control(int no_reconnect);
 int vwl_data_control_valid(void);
 void ex_wlrestore(exarg_T *eap);
 void vwl_set_display_strname(char *display, int only_vvar);
