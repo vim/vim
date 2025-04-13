@@ -355,7 +355,7 @@ jobs:
         if: matrix.runner == 'macos-15'
         run: |
           # Xcode 16 has compiler bugs which are fixed in 16.2+
-          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode_16.3.app/Contents/Developer
 
       - name: Set up environment
         run: |
