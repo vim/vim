@@ -472,6 +472,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     matlab: ['file.m'],
     maxima: ['file.demo', 'file.dmt', 'file.dm1', 'file.dm2', 'file.dm3',
                 'file.wxm', 'maxima-init.mac'],
+    mbsync: ['.mbsyncrc', 'file.mbsyncrc', 'isyncrc'],
     mediawiki: ['file.mw',  'file.wiki'],
     mel: ['file.mel'],
     mermaid: ['file.mmd', 'file.mmdc', 'file.mermaid'],
@@ -2908,19 +2909,6 @@ func Test_pacmanlog()
     call assert_equal('pacmanlog', &filetype, 'for text: ' .. string(fname))
     bwipe!
   endfor
-  filetype off
-endfunc
-
-func Test_mbsync_file()
-  filetype on
-
-  for fname in ['.mbsyncrc', 'isyncrc']
-    call writefile(['IMAPAccount account-name', 'Host 10.0.0.1', 'Port 993', 'User user', 'PassCmd "echo 123"'], fname, 'D')
-    exe 'split ' .. fname
-    call assert_equal('mbsync', &filetype, 'for text: ' .. string(fname))
-    bwipe!
-  endfor
-
   filetype off
 endfunc
 

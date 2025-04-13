@@ -3349,7 +3349,7 @@ au BufNewFile,BufRead *.blp			setf blueprint
 " Blueprint build system file
 au BufNewFile,BufRead *.bp			setf bp
 
-au BufNewFile,BufRead *.mbsyncrc,*isyncrc	setf mbsync
+au BufNewFile,BufRead .mbsyncrc,*.mbsyncrc,isyncrc	setf mbsync
 
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.
