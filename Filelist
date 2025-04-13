@@ -863,6 +863,7 @@ RT_SCRIPTS =	\
 		runtime/indent/testdir/*.vim \
 		runtime/indent/testdir/*.in \
 		runtime/indent/testdir/*.ok \
+		runtime/indent/testdir/tools/* \
 		runtime/ftplugin/*.vim \
 		runtime/ftplugin/logtalk.dict \
 		runtime/ftplugin/README.txt \
