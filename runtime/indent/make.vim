@@ -21,6 +21,8 @@ endif
 
 let s:comment_rx = '^\s*#'
 let s:rule_rx = '^[^ \t#:][^#:]*:\{1,2}\%([^=:]\|$\)'
+" .PHONY, .DELETE_ON_ERROR, etc
+let s:rule_special = '^\.[A-Z_]\+\s*:'
 let s:continued_rule_rx = '^[^#:]*:\{1,2}\%([^=:]\|$\)'
 let s:continuation_rx = '\\$'
 let s:assignment_rx = '^\s*\h\w*\s*[+:?]\==\s*\zs.*\\$'
@@ -50,7 +52,7 @@ function GetMakeIndent()
   if prev_line =~ s:continuation_rx
     if prev_prev_line =~ s:continuation_rx
       return indent(prev_lnum)
-    elseif prev_line =~ s:rule_rx
+    elseif prev_line =~ s:rule_rx && prev_line !~ s:rule_special
       return shiftwidth()
     elseif prev_line =~ s:assignment_rx
       call cursor(prev_lnum, 1)
@@ -81,15 +83,15 @@ function GetMakeIndent()
       let line = getline(lnum)
     endwhile
     let folded_lnum = lnum + 1
-    if folded_line =~ s:rule_rx
-      if getline(v:lnum) =~ s:rule_rx
+    if folded_line =~ s:rule_rx && prev_line !~ s:rule_special
+      if getline(v:lnum) =~ s:rule_rx && prev_line !~ s:rule_special
         return 0
       else
         return &ts
       endif
     else
 "    elseif folded_line =~ s:folded_assignment_rx
-      if getline(v:lnum) =~ s:rule_rx
+      if getline(v:lnum) =~ s:rule_rx && prev_line !~ s:rule_special
         return 0
       else
         return indent(folded_lnum)
@@ -98,8 +100,8 @@ function GetMakeIndent()
 "      " TODO: ?
 "      return indent(prev_lnum)
     endif
-  elseif prev_line =~ s:rule_rx
-    if getline(v:lnum) =~ s:rule_rx
+  elseif prev_line =~ s:rule_rx && prev_line !~ s:rule_special
+    if getline(v:lnum) =~ s:rule_rx && prev_line !~ s:rule_special
       return 0
     else
       return &ts
