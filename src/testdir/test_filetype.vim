@@ -181,7 +181,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cobol: ['file.cbl', 'file.cob'],
     coco: ['file.atg'],
     conaryrecipe: ['file.recipe'],
-    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags', '.mbsyncrc'],
+    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags'],
     config: ['configure.in', 'configure.ac', '/etc/hostname.file', 'any/etc/hostname.file'],
     confini: ['pacman.conf', 'paru.conf', 'mpv.conf', 'any/.aws/config', 'any/.aws/credentials', 'file.nmconnection'],
     context: ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
