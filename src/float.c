@@ -55,7 +55,6 @@ string2float(
     {
 	char_u	    buf[100];
 	char_u	    *p;
-	char_u	    *p_end = NULL;
 	int	    quotes = 0;
 
 	vim_strncpy(buf, (char_u *)s, 99);
@@ -65,10 +64,7 @@ string2float(
 	    if (*p == '\'')
 	    {
 		++quotes;
-		if (p_end == NULL)
-		    p_end = p + STRLEN(p);
-		mch_memmove(p, p + 1, (size_t)(p_end - (p + 1)) + 1);	    // +1 for NUL
-		--p_end;
+		mch_memmove(p, p + 1, STRLEN(p));
 	    }
 	    if (!vim_isdigit(*p))
 		break;
