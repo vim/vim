@@ -191,6 +191,47 @@ func Test_client_server()
         \ has('unix') ? ['E573:.*abc'] : 'E258:')
 endfunc
 
+func Test_client_server_stopinsert()
+  " test does not work on MS-Windows
+  CheckNotMSWindows
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+  call Check_X11_Connection()
+  let fname = 'Xclientserver_stop.txt'
+  let name = 'XVIMTEST2'
+  call writefile(['one two three'], fname, 'D')
+
+  let cmd .= ' -c "set virtualedit=onemore"'
+  let cmd .= ' -c "call cursor(1, 14)"'
+  let cmd .= ' -c "startinsert"'
+  let cmd .= ' --servername ' . name
+  let cmd .= ' ' .. fname
+  let job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+
+  " Takes a short while for the server to be active.
+  " When using valgrind it takes much longer.
+  call WaitForAssert({-> assert_match(name, serverlist())})
+
+  call remote_expr(name, 'execute("stopinsert")')
+
+  call assert_equal('n', name->remote_expr("mode(1)"))
+  call assert_equal('13', name->remote_expr("col('.')"))
+
+  eval name->remote_send(":qa!\<CR>")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
 " Uncomment this line to get a debugging log
 " call ch_logfile('channellog', 'w')
 

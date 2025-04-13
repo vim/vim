@@ -4839,6 +4839,117 @@ list_functions(regmatch_T *regmatch)
 }
 
 /*
+ * ":function /pat": list functions matching pattern.
+ */
+    static char_u *
+list_functions_matching_pat(exarg_T *eap)
+{
+    char_u	*p;
+    char_u	c;
+
+    p = skip_regexp(eap->arg + 1, '/', TRUE);
+    if (!eap->skip)
+    {
+	regmatch_T	regmatch;
+
+	c = *p;
+	*p = NUL;
+	regmatch.regprog = vim_regcomp(eap->arg + 1, RE_MAGIC);
+	*p = c;
+	if (regmatch.regprog != NULL)
+	{
+	    regmatch.rm_ic = p_ic;
+	    list_functions(&regmatch);
+	    vim_regfree(regmatch.regprog);
+	}
+    }
+    if (*p == '/')
+	++p;
+
+    return p;
+}
+
+/*
+ * List function "name".
+ * Returns the function pointer or NULL on failure.
+ */
+    static ufunc_T *
+list_one_function(exarg_T *eap, char_u *name, char_u *p, int is_global)
+{
+    ufunc_T	*fp = NULL;
+    int		j;
+
+    if (!ends_excmd(*skipwhite(p)))
+    {
+	semsg(_(e_trailing_characters_str), p);
+	return NULL;
+    }
+
+    set_nextcmd(eap, p);
+
+    if (eap->nextcmd != NULL)
+	*p = NUL;
+
+    if (eap->skip || got_int)
+	return NULL;
+
+    fp = find_func(name, is_global);
+    if (fp == NULL && ASCII_ISUPPER(*eap->arg))
+    {
+	char_u *up = untrans_function_name(name);
+
+	// With Vim9 script the name was made script-local, if not
+	// found try again with the original name.
+	if (up != NULL)
+	    fp = find_func(up, FALSE);
+    }
+
+    if (fp == NULL)
+    {
+	emsg_funcname(e_undefined_function_str, eap->arg);
+	return NULL;
+    }
+
+    // Check no function was added or removed from a timer, e.g. at
+    // the more prompt.  "fp" may then be invalid.
+    int prev_ht_changed = func_hashtab.ht_changed;
+
+    if (list_func_head(fp, TRUE) != OK)
+	return fp;
+
+    for (j = 0; j < fp->uf_lines.ga_len && !got_int; ++j)
+    {
+	if (FUNCLINE(fp, j) == NULL)
+	    continue;
+	msg_putchar('\n');
+	msg_outnum((long)(j + 1));
+	if (j < 9)
+	    msg_putchar(' ');
+	if (j < 99)
+	    msg_putchar(' ');
+	if (function_list_modified(prev_ht_changed))
+	    break;
+	msg_prt_line(FUNCLINE(fp, j), FALSE);
+	out_flush();	// show a line at a time
+	ui_breakcheck();
+    }
+
+    if (!got_int)
+    {
+	msg_putchar('\n');
+	if (!function_list_modified(prev_ht_changed))
+	{
+	    if (fp->uf_def_status != UF_NOT_COMPILED)
+		msg_puts("   enddef");
+	    else
+		msg_puts("   endfunction");
+	}
+    }
+
+    return fp;
+}
+
+/*
  * ":function" also supporting nested ":def".
  * When "name_arg" is not NULL this is a nested function, using "name_arg" for
  * the function name.
@@ -4858,7 +4969,6 @@ define_function(
 	int         obj_member_count)
 {
     int		j;
-    int		c;
     int		saved_did_emsg = FALSE;
     char_u	*name = name_arg;
     size_t	namelen = 0;
@@ -4888,9 +4998,7 @@ define_function(
     int		vim9script = in_vim9script();
     imported_T	*import = NULL;
 
-    /*
-     * ":function" without argument: list functions.
-     */
+    // ":function" without argument: list functions.
     if (ends_excmd2(eap->cmd, eap->arg))
     {
 	if (!eap->skip)
@@ -4904,24 +5012,7 @@ define_function(
      */
     if (*eap->arg == '/')
     {
-	p = skip_regexp(eap->arg + 1, '/', TRUE);
-	if (!eap->skip)
-	{
-	    regmatch_T	regmatch;
-
-	    c = *p;
-	    *p = NUL;
-	    regmatch.regprog = vim_regcomp(eap->arg + 1, RE_MAGIC);
-	    *p = c;
-	    if (regmatch.regprog != NULL)
-	    {
-		regmatch.rm_ic = p_ic;
-		list_functions(&regmatch);
-		vim_regfree(regmatch.regprog);
-	    }
-	}
-	if (*p == '/')
-	    ++p;
+	p = list_functions_matching_pat(eap);
 	set_nextcmd(eap, p);
 	return NULL;
     }
@@ -5027,67 +5118,7 @@ define_function(
      */
     if (!paren)
     {
-	if (!ends_excmd(*skipwhite(p)))
-	{
-	    semsg(_(e_trailing_characters_str), p);
-	    goto ret_free;
-	}
-	set_nextcmd(eap, p);
-	if (eap->nextcmd != NULL)
-	    *p = NUL;
-	if (!eap->skip && !got_int)
-	{
-	    fp = find_func(name, is_global);
-	    if (fp == NULL && ASCII_ISUPPER(*eap->arg))
-	    {
-		char_u *up = untrans_function_name(name);
-
-		// With Vim9 script the name was made script-local, if not
-		// found try again with the original name.
-		if (up != NULL)
-		    fp = find_func(up, FALSE);
-	    }
-
-	    if (fp != NULL)
-	    {
-		// Check no function was added or removed from a timer, e.g. at
-		// the more prompt.  "fp" may then be invalid.
-		int prev_ht_changed = func_hashtab.ht_changed;
-
-		if (list_func_head(fp, TRUE) == OK)
-		{
-		    for (j = 0; j < fp->uf_lines.ga_len && !got_int; ++j)
-		    {
-			if (FUNCLINE(fp, j) == NULL)
-			    continue;
-			msg_putchar('\n');
-			msg_outnum((long)(j + 1));
-			if (j < 9)
-			    msg_putchar(' ');
-			if (j < 99)
-			    msg_putchar(' ');
-			if (function_list_modified(prev_ht_changed))
-			    break;
-			msg_prt_line(FUNCLINE(fp, j), FALSE);
-			out_flush();	// show a line at a time
-			ui_breakcheck();
-		    }
-		    if (!got_int)
-		    {
-			msg_putchar('\n');
-			if (!function_list_modified(prev_ht_changed))
-			{
-			    if (fp->uf_def_status != UF_NOT_COMPILED)
-				msg_puts("   enddef");
-			    else
-				msg_puts("   endfunction");
-			}
-		    }
-		}
-	    }
-	    else
-		emsg_funcname(e_undefined_function_str, eap->arg);
-	}
+	fp = list_one_function(eap, name, p, is_global);
 	goto ret_free;
     }
 

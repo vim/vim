@@ -181,7 +181,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cobol: ['file.cbl', 'file.cob'],
     coco: ['file.atg'],
     conaryrecipe: ['file.recipe'],
-    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags', '.mbsyncrc'],
+    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags'],
     config: ['configure.in', 'configure.ac', '/etc/hostname.file', 'any/etc/hostname.file'],
     confini: ['pacman.conf', 'paru.conf', 'mpv.conf', 'any/.aws/config', 'any/.aws/credentials', 'file.nmconnection'],
     context: ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
@@ -472,6 +472,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     matlab: ['file.m'],
     maxima: ['file.demo', 'file.dmt', 'file.dm1', 'file.dm2', 'file.dm3',
                 'file.wxm', 'maxima-init.mac'],
+    mbsync: ['.mbsyncrc', 'file.mbsyncrc', 'isyncrc'],
     mediawiki: ['file.mw',  'file.wiki'],
     mel: ['file.mel'],
     mermaid: ['file.mmd', 'file.mmdc', 'file.mermaid'],
@@ -2814,6 +2815,7 @@ func Test_pro_file()
   call writefile(['x = findgen(100)/10'], 'Xfile.pro', 'D')
   split Xfile.pro
   call assert_equal('idlang', &filetype)
+  bwipe!
 
   filetype off
 endfunc
@@ -2847,6 +2849,7 @@ func Test_pl_file()
   call writefile(['%data = (1, 2, 3);'], 'Xfile.pl', 'D')
   split Xfile.pl
   call assert_equal('perl', &filetype)
+  bwipe!
 
   filetype off
 endfunc
@@ -2892,6 +2895,7 @@ func Test_org_file()
   call writefile(['* org Headline', '*some bold text*', '/some italic text/'], 'Xfile.org', 'D')
   split Xfile.org
   call assert_equal('org', &filetype)
+  bwipe!
 
   filetype off
 endfunc
