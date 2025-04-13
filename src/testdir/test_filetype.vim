@@ -2914,10 +2914,12 @@ endfunc
 func Test_mbsync_file()
   filetype on
 
-  call writefile(['IMAPAccount account-name', 'Host 10.0.0.1', 'Port 993', 'User user', 'PassCmd "echo 123"'], 'test.mbsyncrc', 'D')
-  split test.mbsyncrc
-  call assert_equal('mbsync', &filetype)
-  bwipe!
+  for fname in ['.mbsyncrc', 'isyncrc']
+    call writefile(['IMAPAccount account-name', 'Host 10.0.0.1', 'Port 993', 'User user', 'PassCmd "echo 123"'], fname, 'D')
+    exe 'split ' .. fname
+    call assert_equal('mbsync', &filetype, 'for text: ' .. string(fname))
+    bwipe!
+  endfor
 
   filetype off
 endfunc
