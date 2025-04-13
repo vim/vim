@@ -1329,4 +1329,30 @@ func Test_viminfo_oldfiles_filter()
   let &viminfofile = _viminfofile
 endfunc
 
+func Test_viminfo_gobal_var()
+  let _viminfofile = &viminfofile
+  let _viminfo = &viminfo
+  let &viminfofile=''
+  set viminfo+=!
+  let lines = [
+    \ '# comment line',
+    \ "",
+    \ '# Viminfo version',
+    \ '|1,4',
+    \ "",
+    \ '*encoding=utf-8',
+    \ "",
+    \ '# global variables:',
+    \ "!VAL\tFLO\t-in",
+    \ "!VAR\tFLO\t-inf",
+    \ "",
+    \ ]
+  call writefile(lines, 'Xviminfo2', 'D')
+  rviminfo! Xviminfo2
+  call assert_equal(0.0, g:VAL)
+  call assert_equal(str2float("-inf"), g:VAR)
+  let &viminfofile = _viminfofile
+  let &viminfo = _viminfo
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
