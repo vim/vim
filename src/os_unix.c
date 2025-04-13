@@ -9533,7 +9533,9 @@ ex_wlrestore(exarg_T *eap)
 /*
  * Set vwl_display_strname to display. Note that this allocate a copy of the
  * string, unless NULL is passed. Note that if NULL is passed then
- * v:wayland_display and vwl_display_strname is set to $WAYLAND_DISPLAY.
+ * v:wayland_display and vwl_display_strname is set to $WAYLAND_DISPLAY. If
+ * only_vvar is TRUE then only change the v:wayland_display variable, and not
+ * alsothe internal global variable.
  */
     void
 vwl_set_display_strname(char *display, int only_vvar)
