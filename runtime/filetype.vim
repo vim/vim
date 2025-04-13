@@ -1554,7 +1554,7 @@ au BufNewFile,BufRead *.nb,*.wl			setf mma
 au BufNewFile,BufRead *.mel			setf mel
 
 " mbsync
-au BufNewFile,BufRead .mbsyncrc			setf conf
+au BufNewFile,BufRead *.mbsyncrc,isyncrc	setf mbsync
 
 " mcmeta
 au BufNewFile,BufRead *.mcmeta			setf json
@@ -3348,8 +3348,6 @@ au BufNewFile,BufRead *.blp			setf blueprint
 
 " Blueprint build system file
 au BufNewFile,BufRead *.bp			setf bp
-
-au BufNewFile,BufRead .mbsyncrc,*.mbsyncrc,isyncrc	setf mbsync
 
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.
