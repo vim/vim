@@ -1067,6 +1067,22 @@ The above enum definition is equivalent to the following class definition: >
       public const ordinal: number
     endclass
 <
+A enum can contain object variables and methods just like a regular
+class: >
+
+    enum Color
+	Cyan([0, 255, 255]),
+	Magenta([255, 0, 255]),
+	Gray([128, 128, 128])
+
+	var rgb_values: list<number>
+
+	def Get_RGB(): list<number>
+	    return this.rgb_values
+	enddef
+    endenum
+    echo Color.Magenta.Get_RGB()
+<
 ==============================================================================
 
 9.  Rationale
