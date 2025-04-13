@@ -41,7 +41,7 @@ string2float(
 	*value = INFINITY;
 	return 3;
     }
-    if (STRNICMP(text, "-inf", 3) == 0)
+    if (STRNICMP(text, "-inf", 4) == 0)
     {
 	*value = -INFINITY;
 	return 4;
@@ -55,6 +55,7 @@ string2float(
     {
 	char_u	    buf[100];
 	char_u	    *p;
+	char_u	    *p_end = NULL;
 	int	    quotes = 0;
 
 	vim_strncpy(buf, (char_u *)s, 99);
@@ -64,7 +65,10 @@ string2float(
 	    if (*p == '\'')
 	    {
 		++quotes;
-		mch_memmove(p, p + 1, STRLEN(p));
+		if (p_end == NULL)
+		    p_end = p + STRLEN(p);
+		mch_memmove(p, p + 1, (size_t)(p_end - (p + 1)) + 1);	    // +1 for NUL
+		--p_end;
 	    }
 	    if (!vim_isdigit(*p))
 		break;
