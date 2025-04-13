@@ -2487,6 +2487,33 @@ vim_snprintf(char *str, size_t str_m, const char *fmt, ...)
     return str_l;
 }
 
+/*
+ * Like vim_snprintf() except the return value can be safely used to increment a
+ * buffer length.
+ * Normal `snprintf()` (and `vim_snprintf()`) returns the number of bytes that
+ * would have been copied if the destination buffer was large enough.
+ * This means that you cannot rely on it's return value for the destination
+ * length because the destination may be shorter than the source. This function
+ * guarantees the returned length will never be greater than the destination length.
+ */
+    size_t
+vim_snprintf_safelen(char *str, size_t str_m, const char *fmt, ...)
+{
+    va_list ap;
+    int	    str_l;
+
+    va_start(ap, fmt);
+    str_l = vim_vsnprintf(str, str_m, fmt, ap);
+    va_end(ap);
+
+    if (str_l < 0)
+    {
+	*str = NUL;
+	return 0;
+    }
+    return ((size_t)str_l >= str_m) ? str_m - 1 : (size_t)str_l;
+}
+
     int
 vim_vsnprintf(
     char	*str,

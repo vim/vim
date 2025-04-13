@@ -174,7 +174,7 @@ static callback_T qftf_cb;
 static void     qf_pop_stack(qf_info_T *qi, int adjust);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static int	qf_add_entry(qf_list_T *qfl, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, long end_lnum, int col, int end_col, int vis_col, char_u *pattern, int nr, int type, typval_T *user_data, int valid);
-static int      qf_resize_stack(qf_info_T *qi, int n);
+static int      qf_resize_stack_base(qf_info_T *qi, int n);
 static void     qf_sync_llw_to_win(win_T *llw);
 static void     qf_sync_win_to_llw(win_T *pwp);
 static qf_info_T *qf_alloc_stack(qfltype_T qfltype, int n);
@@ -2102,7 +2102,7 @@ qf_free_list_stack_items(qf_info_T *qi)
 }
 
 /*
- * Free a qf_ifo_T struct completely
+ * Free a qf_info_T struct completely
  */
     static void
 qf_free_lists(qf_info_T *qi)
@@ -2343,19 +2343,16 @@ qf_add_entry(
 }
 
 /*
- * Resize global quickfix stack to be able to hold n amount of lists.
+ * Resize quickfix stack to be able to hold n amount of lists.
  * returns FAIL on failure and OK on success.
  */
     int
-qf_resize_quickfix_stack(int n)
+qf_resize_stack(int n)
 {
     if (ql_info == NULL)
-    {
-	emsg(_(e_no_quickfix_stack));
 	return FAIL;
-    }
 
-    if (qf_resize_stack(ql_info, n) == FAIL)
+    if (qf_resize_stack_base(ql_info, n) == FAIL)
 	return FAIL;
 
     return OK;
@@ -2368,30 +2365,36 @@ qf_resize_quickfix_stack(int n)
     int
 ll_resize_stack(win_T *wp, int n)
 {
-    // check if current window is a location list window;
+    // check if given window is a location list window;
     // if so then sync its 'lhistory' to the parent window or vice versa
-    if (IS_LL_WINDOW(curwin))
+    if (IS_LL_WINDOW(wp))
 	qf_sync_llw_to_win(wp);
     else
 	qf_sync_win_to_llw(wp);
 
     qf_info_T *qi = ll_get_or_alloc_list(wp);
+    if (qi == NULL)
+	return FAIL;
 
-    if (qf_resize_stack(qi, n) == FAIL)
+    if (qf_resize_stack_base(qi, n) == FAIL)
 	return FAIL;
 
     return OK;
 }
 
 /*
- * Resize quickfix stack to be able to hold n amount of quickfix lists.
+ * Resize quickfix/location lists stack to be able to hold n amount of lists.
  * Returns FAIL on failure and OK on success.
  */
     static int
-qf_resize_stack(qf_info_T *qi, int n)
+qf_resize_stack_base(qf_info_T *qi, int n)
 {
     qf_list_T *new;
     int amount_to_rm = 0, i;
+
+    if (qi == NULL)
+	return FAIL;
+
     size_t lsz = sizeof(*qi->qf_lists);
 
     if (n == qi->qf_maxcount)
@@ -2424,21 +2427,12 @@ qf_resize_stack(qf_info_T *qi, int n)
 }
 
 /*
- * Initialize global quickfix list, should only be called once.
- * Returns FAIL on failure and OK on success.
+ * Initialize quickfix list, should only be called once.
  */
-   int
-qf_init_quickfix_stack(void)
+   void
+qf_init_stack(void)
 {
-    ql_info_actual.qf_lists = qf_alloc_list_stack(p_chi);
-
-    if (ql_info_actual.qf_lists == NULL)
-	return FAIL;
-
-    ql_info = &ql_info_actual;
-    ql_info->qfl_type = QFLT_QUICKFIX;
-    ql_info->qf_maxcount = p_chi;
-    return OK;
+    ql_info = qf_alloc_stack(QFLT_QUICKFIX, p_chi);
 }
 
 /*
@@ -2480,22 +2474,24 @@ qf_alloc_stack(qfltype_T qfltype, int n)
 {
     qf_info_T *qi;
 
-    qi = ALLOC_CLEAR_ONE_ID(qf_info_T, aid_qf_qfinfo);
-    if (qi == NULL)
-	return NULL;
-
-    qi->qf_refcount++;
+    if (qfltype == QFLT_QUICKFIX)
+	qi = &ql_info_actual;
+    else
+    {
+	qi = ALLOC_CLEAR_ONE_ID(qf_info_T, aid_qf_qfinfo);
+	if (qi == NULL)
+	    return NULL;
+	qi->qf_refcount++;
+    }
     qi->qfl_type = qfltype;
     qi->qf_bufnr = INVALID_QFBUFNR;
-
     qi->qf_lists = qf_alloc_list_stack(n);
-
     if (qi->qf_lists == NULL)
     {
-	vim_free(qi);
+	if (qfltype != QFLT_QUICKFIX)
+	    vim_free(qi);
 	return NULL;
     }
-
     qi->qf_maxcount = n;
 
     return qi;
@@ -2503,8 +2499,6 @@ qf_alloc_stack(qfltype_T qfltype, int n)
 
 /*
  * Allocate memory for qf_lists member of qf_info_T struct.
- * 'actual' is the actual amount of lists that have been allocated for
- * (only set when function returns sucessfully)
  */
     static qf_list_T *
 qf_alloc_list_stack(int n)
@@ -8259,20 +8253,15 @@ set_errorlist(
 	char_u	*title,
 	dict_T	*what)
 {
-    qf_info_T	*qi = ql_info;
+    qf_info_T	*qi;
     int		retval = OK;
 
     if (wp != NULL)
-    {
 	qi = ll_get_or_alloc_list(wp);
-	if (qi == NULL)
-	    return FAIL;
-    }
-    else if (qi == NULL)
-    {
-	emsg(_(e_no_quickfix_stack));
+    else
+	qi = ql_info;
+    if (qi == NULL)
 	return FAIL;
-    }
 
     if (action == 'f')
     {

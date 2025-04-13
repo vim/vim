@@ -181,7 +181,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cobol: ['file.cbl', 'file.cob'],
     coco: ['file.atg'],
     conaryrecipe: ['file.recipe'],
-    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags', '.mbsyncrc'],
+    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags'],
     config: ['configure.in', 'configure.ac', '/etc/hostname.file', 'any/etc/hostname.file'],
     confini: ['pacman.conf', 'paru.conf', 'mpv.conf', 'any/.aws/config', 'any/.aws/credentials', 'file.nmconnection'],
     context: ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
@@ -472,6 +472,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     matlab: ['file.m'],
     maxima: ['file.demo', 'file.dmt', 'file.dm1', 'file.dm2', 'file.dm3',
                 'file.wxm', 'maxima-init.mac'],
+    mbsync: ['.mbsyncrc', 'file.mbsyncrc', 'isyncrc'],
     mediawiki: ['file.mw',  'file.wiki'],
     mel: ['file.mel'],
     mermaid: ['file.mmd', 'file.mmdc', 'file.mermaid'],
@@ -1635,20 +1636,36 @@ func Test_haredoc_file()
 endfunc
 
 func Test_help_file()
+  func! s:Check_help_with_iskeyword(fname)
+    exe 'split' a:fname
+    call assert_equal('help', &filetype)
+    bwipe!
+    set iskeyword+=:
+    exe 'split' a:fname
+    call assert_equal('help', &filetype)
+    bwipe!
+    set iskeyword&
+  endfunc
+
   set nomodeline
   filetype on
   call assert_true(mkdir('doc', 'pR'))
 
   call writefile(['some text', 'vim:ft=help:'], 'doc/help.txt', 'D')
-  split doc/help.txt
-  call assert_equal('help', &filetype)
-  bwipe!
+  call s:Check_help_with_iskeyword('doc/help.txt')
 
   call writefile(['some text', 'Copyright: |manual-copyright| vim:ft=help:'],
         \ 'doc/help1.txt', 'D')
-  split doc/help1.txt
-  call assert_equal('help', &filetype)
-  bwipe!
+  call s:Check_help_with_iskeyword('doc/help1.txt')
+
+  call writefile(['some text', 'vim:noet:ft=help:'], 'doc/help2.txt', 'D')
+  call s:Check_help_with_iskeyword('doc/help2.txt')
+
+  call writefile(['some text', 'vim: noet ft=help'], 'doc/help3.txt', 'D')
+  call s:Check_help_with_iskeyword('doc/help3.txt')
+
+  call writefile(['some text', 'vim: ft=help noet'], 'doc/help4.txt', 'D')
+  call s:Check_help_with_iskeyword('doc/help4.txt')
 
   call writefile(['some text'], 'doc/nothelp.txt', 'D')
   split doc/nothelp.txt
@@ -2798,6 +2815,7 @@ func Test_pro_file()
   call writefile(['x = findgen(100)/10'], 'Xfile.pro', 'D')
   split Xfile.pro
   call assert_equal('idlang', &filetype)
+  bwipe!
 
   filetype off
 endfunc
@@ -2831,6 +2849,7 @@ func Test_pl_file()
   call writefile(['%data = (1, 2, 3);'], 'Xfile.pl', 'D')
   split Xfile.pl
   call assert_equal('perl', &filetype)
+  bwipe!
 
   filetype off
 endfunc
@@ -2876,6 +2895,7 @@ func Test_org_file()
   call writefile(['* org Headline', '*some bold text*', '/some italic text/'], 'Xfile.org', 'D')
   split Xfile.org
   call assert_equal('org', &filetype)
+  bwipe!
 
   filetype off
 endfunc

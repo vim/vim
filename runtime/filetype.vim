@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Mar 18
+" Last Change:	2025 Apr 13
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -53,7 +53,7 @@ endfunc
 
 " Vim help file, set ft explicitly, because 'modeline' might be off
 au BufNewFile,BufRead */doc/*.txt
-	\  if getline('$') =~ '\(^\|\s\)vim:.*\<\(ft\|filetype\)=help\>'
+	\  if getline('$') =~ '\%(^\|\s\)vim:\%(.*\%(:\|\s\)\)\?\%(ft\|filetype\)=help\%(:\|\s\|$\)'
 	\|   setf help
 	\| endif
 
@@ -1554,7 +1554,7 @@ au BufNewFile,BufRead *.nb,*.wl			setf mma
 au BufNewFile,BufRead *.mel			setf mel
 
 " mbsync
-au BufNewFile,BufRead .mbsyncrc			setf conf
+au BufNewFile,BufRead *.mbsyncrc,isyncrc	setf mbsync
 
 " mcmeta
 au BufNewFile,BufRead *.mcmeta			setf json
