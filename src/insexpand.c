@@ -4474,29 +4474,16 @@ get_cpt_func_callback(char_u *funcname)
     static callback_T	cb;
     char_u		buf[LSIZE];
     int			slen;
-    static char_u	*name = NULL;
 
     slen = copy_option_part(&funcname, buf, LSIZE, ",");
-    if (slen > 0)
-    {
-	free_callback(&cb);
-	if (name)
-	    vim_free(name);
-	name = vim_strnsave(buf, slen);
-	if (name)
-	{
-	    if (option_set_callback_func(name, &cb))
-		return &cb;
-	}
-    }
+    if (slen > 0  && option_set_callback_func(buf, &cb))
+	return &cb;
     return NULL;
 }
-#endif
 
 /*
  * Retrieve new completion matches by invoking callback "cb".
  */
-#ifdef FEAT_COMPL_FUNC
     static void
 expand_cpt_function(callback_T *cb)
 {
