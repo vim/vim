@@ -155,7 +155,7 @@ clip_init(int can_use)
 	// No need to init again if cbd is already available
 	if (can_use && cb->available)
 	    goto skip;
-	    
+
 	cb->available  = can_use;
 	cb->owned      = FALSE;
 	cb->start.lnum = 0;
