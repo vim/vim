@@ -4474,7 +4474,7 @@ get_cpt_func_callback(char_u *funcname)
     static callback_T	cb;
     char_u		buf[LSIZE];
     int			slen;
-    static char_u	*name;
+    static char_u	*name = NULL;
 
     slen = copy_option_part(&funcname, buf, LSIZE, ",");
     if (slen > 0)
