@@ -3120,6 +3120,7 @@ cursor_correct(void)
 			    ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT|VALID_CROW);
 	}
     }
+    check_cursor_moved(curwin);
     curwin->w_valid |= VALID_TOPLINE;
 }
 
