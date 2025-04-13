@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Mar 18
+" Last Change:	2025 Apr 13
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -1554,7 +1554,7 @@ au BufNewFile,BufRead *.nb,*.wl			setf mma
 au BufNewFile,BufRead *.mel			setf mel
 
 " mbsync
-au BufNewFile,BufRead .mbsyncrc			setf conf
+au BufNewFile,BufRead *.mbsyncrc,isyncrc	setf mbsync
 
 " mcmeta
 au BufNewFile,BufRead *.mcmeta			setf json

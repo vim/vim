@@ -231,6 +231,7 @@ runtime/ftplugin/m17ndb.vim		@dseomn
 runtime/ftplugin/m3build.vim		@dkearns
 runtime/ftplugin/m3quake.vim		@dkearns
 runtime/ftplugin/markdown.vim		@tpope
+runtime/ftplugin/mbsync.vim		@fymyte
 runtime/ftplugin/mediawiki.vim		@avidseeker
 runtime/ftplugin/meson.vim		@Liambeguin
 runtime/ftplugin/modula2.vim		@dkearns
@@ -554,6 +555,7 @@ runtime/syntax/mailcap.vim		@dkearns
 runtime/syntax/make.vim			@rohieb
 runtime/syntax/mallard.vim		@jhradilek
 runtime/syntax/markdown.vim		@tpope
+runtime/syntax/mbsync.vim		@fymyte
 runtime/syntax/mason.vim		@petdance
 runtime/syntax/mediawiki.vim		@avidseeker
 runtime/syntax/meson.vim		@Liambeguin

@@ -7430,6 +7430,7 @@ ft-markdown-syntax	syntax.txt	/*ft-markdown-syntax*
 ft-masm-syntax	syntax.txt	/*ft-masm-syntax*
 ft-mathematica-syntax	syntax.txt	/*ft-mathematica-syntax*
 ft-matlab-indent	indent.txt	/*ft-matlab-indent*
+ft-mbsync-syntax	syntax.txt	/*ft-mbsync-syntax*
 ft-mediawiki-syntax	syntax.txt	/*ft-mediawiki-syntax*
 ft-metafont	ft_mp.txt	/*ft-metafont*
 ft-metafont-intro	ft_mp.txt	/*ft-metafont-intro*
@@ -8854,6 +8855,7 @@ matlab-indent	indent.txt	/*matlab-indent*
 matlab-indenting	indent.txt	/*matlab-indenting*
 max()	builtin.txt	/*max()*
 maxcol-variable	eval.txt	/*maxcol-variable*
+mbsync.vim	syntax.txt	/*mbsync.vim*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
 mbyte-XIM	mbyte.txt	/*mbyte-XIM*
 mbyte-combining	mbyte.txt	/*mbyte-combining*

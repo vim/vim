@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Mar 27
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2450,6 +2450,12 @@ Empty *.m files will automatically be presumed to be Matlab files unless you
 have the following in your .vimrc: >
 
 	let filetype_m = "mma"
+
+MBSYNC					*mbsync.vim* *ft-mbsync-syntax*
+
+The mbsync application uses a configuration file to setup mailboxes names,
+user and password. All files ending with `.mbsyncrc` or with the name
+`isyncrc` will be recognized as mbsync configuration files.
 
 MEDIAWIKI					*ft-mediawiki-syntax*
 
