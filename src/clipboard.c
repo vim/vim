@@ -152,6 +152,10 @@ clip_init(int can_use)
     cb = &clip_star;
     for (;;)
     {
+	// No need to init again if cbd is already available
+	if (can_use && cb->available)
+	    goto skip;
+	    
 	cb->available  = can_use;
 	cb->owned      = FALSE;
 	cb->start.lnum = 0;
@@ -160,6 +164,7 @@ clip_init(int can_use)
 	cb->end.col    = 0;
 	cb->state      = SELECT_CLEARED;
 
+skip:
 	if (cb == &clip_plus)
 	    break;
 	cb = &clip_plus;
@@ -3231,8 +3236,23 @@ ex_restoreclip(exarg_T *eap UNUSED)
     if (clipmethod == CLIPMETHOD_NONE)
 	smsg(_("Could not find a way to access the clipboard."));
     else if (clipmethod != prev)
+    {
 	smsg(_("Switched to clipboard method '%s'."),
 		clipmethod_to_str(clipmethod));
+	if (prev == CLIPMETHOD_X11)
+	{
+#ifdef FEAT_XCLIPBOARD
+	    clear_xterm_clip();
+#endif
+	}
+	else if (prev == CLIPMETHOD_WAYLAND)
+	{
+#ifdef FEAT_WAYLAND
+	    vwl_disconnect_client();
+	    vwl_set_display_strname("", TRUE);
+#endif
+	}
+    }
 }
 
 #endif // FEAT_CLIPBOARD
