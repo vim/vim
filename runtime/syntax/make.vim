@@ -13,32 +13,8 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-" Priority:
-" - 3: filename: BSDmakefile or GNUmakefile
-" - 2: user's setting: g:make_*
-" - 1: file content
-if get(b:, 'make_bsd') == 2
-  unlet! b:make_gnu
-  unlet! b:make_microsoft
-elseif get(b:, 'make_gnu') == 2
-  unlet! b:make_bsd
-  unlet! b:make_microsoft
-else
-  " filename is Makefile etc
-  if get(g:, 'make_bsd')
-    let    b:make_bsd = 1
-    unlet! b:make_gnu
-    unlet! b:make_microsoft
-  elseif get(g:, 'make_gnu')
-    unlet! b:make_bsd
-    let    b:make_gnu = 1
-    unlet! b:make_microsoft
-  elseif get(g:, 'make_microsoft')
-    unlet! b:make_bsd
-    unlet! b:make_gnu
-    let    b:make_microsoft = 1
-  endif
-endif
+" enable GNU extension when b:make_flavor is not set—detection failed or Makefile is POSIX-compliant
+let s:make_flavor = 'gnu'
 
 " some special characters
 syn match makeSpecial	"^\s*[@+-]\+"
@@ -48,14 +24,16 @@ syn match makeNextLine	"\\\n\s*"
 syn region makeDefine start="^\s*define\s" end="^\s*endef\s*\(#.*\)\?$"
 	\ contains=makeStatement,makeIdent,makePreCondit,makeDefine
 
-" Microsoft Makefile specials
-syn case ignore
-syn match makeInclude	"^!\s*include\s.*$"
-syn match makePreCondit "^!\s*\(cmdswitches\|error\|message\|include\|if\|ifdef\|ifndef\|else\|else\s*if\|else\s*ifdef\|else\s*ifndef\|endif\|undef\)\>"
-syn case match
+if get(b:, 'make_flavor', s:make_flavor) == 'microsoft'
+  " Microsoft Makefile specials
+  syn case ignore
+  syn match makeInclude	"^!\s*include\s.*$"
+  syn match makePreCondit "^!\s*\(cmdswitches\|error\|message\|include\|if\|ifdef\|ifndef\|else\|else\s*if\|else\s*ifdef\|else\s*ifndef\|endif\|undef\)\>"
+  syn case match
+endif
 
 " identifiers
-if get(b:, "make_microsoft")
+if get(b:, 'make_flavor', s:make_flavor) == 'microsoft'
   syn region makeIdent	start="\$(" end=")" contains=makeStatement,makeIdent
   syn region makeIdent	start="\${" end="}" contains=makeStatement,makeIdent
 else
@@ -86,19 +64,27 @@ syn match makeTarget           "^[~A-Za-z0-9_./$(){}%*@-][A-Za-z0-9_./\t $(){}%*
 	\ skipnl nextgroup=makeCommands,makeCommandError
 
 syn region makeSpecTarget	transparent matchgroup=makeSpecTarget
-	\ start="^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|NOTPARALLEL\|DELETE_ON_ERROR\|POSIX\)\>\s*:\{1,2}[^:=]"rs=e-1
+	\ start="^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|NOTPARALLEL\|POSIX\)\>\s*:\{1,2}[^:=]"rs=e-1
 	\ end="[^\\]$" keepend
 	\ contains=makeIdent,makeSpecTarget,makeNextLine,makeComment skipnl nextGroup=makeCommands
-syn match makeSpecTarget	"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|NOTPARALLEL\|DELETE_ON_ERROR\|POSIX\)\>\s*::\=\s*$"
+syn match makeSpecTarget	"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|NOTPARALLEL\|POSIX\)\>\s*::\=\s*$"
 	\ contains=makeIdent,makeComment
 	\ skipnl nextgroup=makeCommands,makeCommandError
-if get(b:, "make_gnu") || (!get(b:, "make_bsd") && !get(b:, "make_microsoft"))
-  " GNU
+
+if get(b:, 'make_flavor', s:make_flavor) == 'bsd'
   syn region makeSpecTarget	transparent matchgroup=makeSpecTarget
-	\ start="^\.\(EXPORT_ALL_VARIABLES\|INTERMEDIATE\|KEEP_STATE\|LIBPATTERNS\|ONESHELL\|SECONDARY\)\>\s*:\{1,2}[^:=]"rs=e-1
+	\ start="^\.DELETE_ON_ERROR\>\s*:\{1,2}[^:=]"rs=e-1
 	\ end="[^\\]$" keepend
 	\ contains=makeIdent,makeSpecTarget,makeNextLine,makeComment skipnl nextGroup=makeCommands
-  syn match makeSpecTarget	"^\.\(EXPORT_ALL_VARIABLES\|INTERMEDIATE\|KEEP_STATE\|LIBPATTERNS\|ONESHELL\|SECONDARY\)\>\s*::\=\s*$"
+  syn match makeSpecTarget	"^\.DELETE_ON_ERROR\>\s*::\=\s*$"
+	\ contains=makeIdent,makeComment
+	\ skipnl nextgroup=makeCommands,makeCommandError
+elseif get(b:, 'make_flavor', s:make_flavor) == 'gnu'
+  syn region makeSpecTarget	transparent matchgroup=makeSpecTarget
+	\ start="^\.\(EXPORT_ALL_VARIABLES\|DELETE_ON_ERROR\|INTERMEDIATE\|KEEP_STATE\|LIBPATTERNS\|ONESHELL\|SECONDARY\)\>\s*:\{1,2}[^:=]"rs=e-1
+	\ end="[^\\]$" keepend
+	\ contains=makeIdent,makeSpecTarget,makeNextLine,makeComment skipnl nextGroup=makeCommands
+  syn match makeSpecTarget	"^\.\(EXPORT_ALL_VARIABLES\|DELETE_ON_ERROR\|INTERMEDIATE\|KEEP_STATE\|LIBPATTERNS\|ONESHELL\|SECONDARY\)\>\s*::\=\s*$"
 	\ contains=makeIdent,makeComment
 	\ skipnl nextgroup=makeCommands,makeCommandError
 endif
@@ -113,7 +99,7 @@ syn match makeCmdNextLine	"\\\n."he=e-1 contained
 " some directives
 syn match makeInclude	"^ *[-s]\=include\s.*$"
 syn match makeExport    "^ *\(export\|unexport\)\>"
-if get(b:, "make_gnu") || (!get(b:, "make_bsd") && !get(b:, "make_microsoft"))
+if get(b:, 'make_flavor', s:make_flavor) == 'gnu'
   " Statements / Functions (GNU make)
   syn match makePreCondit	"^ *\(ifn\=\(eq\|def\)\>\|else\(\s\+ifn\=\(eq\|def\)\)\=\>\|endif\>\)"
   syn match makeStatement	"^ *vpath\>"
@@ -123,7 +109,7 @@ endif
 
 " Comment
 if !exists("make_no_comments")
-  if get(b:, "make_microsoft")
+  if get(b:, 'make_flavor', s:make_flavor) == 'microsoft'
     syn match   makeComment	"#.*" contains=@Spell,makeTodo
   else
     syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=@Spell,makeTodo
