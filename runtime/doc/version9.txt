@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 12
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41617,6 +41617,10 @@ Completion: ~
 - improved commandline completion for the |:hi| command
 - New option value for 'wildmode':
 	"noselect"	- do not auto select an entry in the wildmenu
+- New flags for 'complete':
+	"f{func}"	- complete using given function
+	"f"		- complete using 'completefunc'
+	"o"		- complete using 'omnifunc'
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have
