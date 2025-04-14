@@ -1329,7 +1329,7 @@ func Test_viminfo_oldfiles_filter()
   let &viminfofile = _viminfofile
 endfunc
 
-func Test_viminfo_gobal_var()
+func Test_viminfo_global_var()
   let _viminfofile = &viminfofile
   let _viminfo = &viminfo
   let &viminfofile=''
