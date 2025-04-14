@@ -6253,8 +6253,7 @@ spell_back_to_badword(void)
     static void
 cpt_compl_src_clear(void)
 {
-    vim_free(cpt_func_refresh_always);
-    cpt_func_refresh_always = NULL;
+    VIM_CLEAR(cpt_func_refresh_always);
     cpt_value_idx = -1;
     cpt_value_count = 0;
 }
