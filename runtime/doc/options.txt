@@ -2091,7 +2091,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		name of a function or a |Funcref|.  For |Funcref| values,
 		spaces must be escaped with a backslash ('\'), and commas with
 		double backslashes ('\\') (see |option-backslash|).
-		If the Dict returned by the {func} includes {'refresh': 'always'},
+		If the Dict returned by the {func} includes {"refresh": "always"},
 		the function will be invoked again whenever the leading text
 		changes.
 		Completion matches are always inserted at the keyword
