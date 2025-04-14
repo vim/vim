@@ -1558,7 +1558,7 @@ did_set_commentstring(optset_T *args)
 did_set_complete(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
-    char_u	*p;
+    char_u	*p = NULL;
     char_u	buffer[LSIZE];
     char_u	*buf_ptr;
     int		escape;
