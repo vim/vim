@@ -595,11 +595,15 @@ enddef
 # This function checks if one of the first five lines start with a dot.  In
 # that case it is probably an nroff file: 'filetype' is set and 1 is returned.
 export def FTnroff(): number
-  if getline(1)[0] .. getline(2)[0] .. getline(3)[0]
-    			.. getline(4)[0] .. getline(5)[0] =~ '\.'
-    setf nroff
-    return 1
-  endif
+  var n = 1
+  while n < 5
+    var line = getline(n)
+    if line =~ '^\.\S\S\?'
+      setf nroff
+      return 1
+    endif
+    n += 1
+  endwhile
   return 0
 enddef
 
