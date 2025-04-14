@@ -41,7 +41,7 @@ string2float(
 	*value = INFINITY;
 	return 3;
     }
-    if (STRNICMP(text, "-inf", 3) == 0)
+    if (STRNICMP(text, "-inf", 4) == 0)
     {
 	*value = -INFINITY;
 	return 4;
