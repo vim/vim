@@ -1727,6 +1727,13 @@ func Test_complete_item_refresh_always()
   exe "normal! iup\<C-N>\<BS>\<BS>\<BS>\<BS>\<BS>"
   call assert_equal('up', getline(1))
   call assert_equal(6, g:CallCount)
+  %d
+  let g:CallCount = 0
+  set omnifunc=Tcomplete
+  set complete=o
+  exe "normal! iup\<C-N>\<BS>\<BS>\<BS>\<BS>\<BS>"
+  call assert_equal('up', getline(1))
+  call assert_equal(6, g:CallCount)
   bw!
   set completeopt&
   set complete&
@@ -1810,7 +1817,7 @@ func Test_cpt_func_refresh_always_fail()
   call assert_equal(4, g:CallCount)
   %d
   " refresh will stop when -3 is returned
-  set complete=.,ffunction('CompleteFailIntermittent'\\,\ [-3])
+  set complete=.,,\ ffunction('CompleteFailIntermittent'\\,\ [-3])
   call setline(1, 'fooo1')
   let g:CallCount = 0
   exe "normal! Gof\<C-N>o\<bs>\<c-r>=complete_info([\"items\", \"selected\"])\<cr>"
