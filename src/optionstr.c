@@ -1600,7 +1600,8 @@ did_set_complete(optset_T *args)
 	}
 
 	// Skip comma and spaces
-	while (*p == ',' || *p == ' ') p++;
+	while (*p == ',' || *p == ' ')
+	    p++;
     }
     return NULL;
 }
