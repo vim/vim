@@ -2073,29 +2073,53 @@ func Test_Cmdline()
 
   au! CmdlineEnter : let g:entered = expand('<afile>')
   au! CmdlineLeave : let g:left = expand('<afile>')
+  au! CmdlineLeavePre : let g:leftpre = expand('<afile>')
   let g:entered = 0
   let g:left = 0
+  let g:leftpre = 0
   call feedkeys(":echo 'hello'\<CR>", 'xt')
   call assert_equal(':', g:entered)
   call assert_equal(':', g:left)
+  call assert_equal(':', g:leftpre)
   au! CmdlineEnter
   au! CmdlineLeave
+  au! CmdlineLeavePre
 
   let save_shellslash = &shellslash
   set noshellslash
   au! CmdlineEnter / let g:entered = expand('<afile>')
   au! CmdlineLeave / let g:left = expand('<afile>')
+  au! CmdlineLeavePre / let g:leftpre = expand('<afile>')
   let g:entered = 0
   let g:left = 0
+  let g:leftpre = 0
   new
   call setline(1, 'hello')
   call feedkeys("/hello\<CR>", 'xt')
   call assert_equal('/', g:entered)
   call assert_equal('/', g:left)
+  call assert_equal('/', g:leftpre)
   bwipe!
   au! CmdlineEnter
   au! CmdlineLeave
+  au! CmdlineLeavePre
   let &shellslash = save_shellslash
+
+  let g:left = "cancelled"
+  let g:leftpre = "cancelled"
+  au! CmdlineLeave : let g:left = "triggered"
+  au! CmdlineLeavePre : let g:leftpre = "triggered"
+  call feedkeys(":echo 'hello'\<esc>", 'xt')
+  call assert_equal('triggered', g:left)
+  call assert_equal('triggered', g:leftpre)
+  let g:left = "cancelled"
+  let g:leftpre = "cancelled"
+  au! CmdlineLeave : let g:left = "triggered"
+  call feedkeys(":echo 'hello'\<c-c>", 'xt')
+  call assert_equal('triggered', g:left)
+  call assert_equal('triggered', g:leftpre)
+  au! CmdlineLeave
+  au! CmdlineLeavePre
 
   au! CursorMovedC : let g:pos += [getcmdpos()]
   let g:pos = []
