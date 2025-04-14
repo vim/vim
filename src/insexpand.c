@@ -212,7 +212,7 @@ static int	  compl_selected_item = -1;
 
 static int	  *compl_fuzzy_scores;
 
-static int	  *cpt_func_refresh_always; // array indicating which 'cpt' functions have 'refresh:always' set
+static int	  *cpt_func_refresh_always;  // array indicating which 'cpt' functions have 'refresh:always' set
 static int	  cpt_value_count;  // total number of completion sources specified in the 'cpt' option
 static int	  cpt_value_idx;    // index of the current completion source being expanded
 
