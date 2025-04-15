@@ -557,17 +557,47 @@ export def FTm()
 enddef
 
 export def FTmake()
-  # Check if it is a Microsoft Makefile
-  unlet! b:make_microsoft
+  # Check if it is a BSD, GNU, or Microsoft Makefile
+  unlet! b:make_flavor
+
+  # 1. filename
+  if expand('%:t') == 'BSDmakefile'
+    b:make_flavor = 'bsd'
+    setf make
+    return
+  elseif expand('%:t') == 'GNUmakefile'
+    b:make_flavor = 'gnu'
+    setf make
+    return
+  endif
+
+  # 2. user's setting
+  if exists('g:make_flavor')
+    b:make_flavor = g:make_flavor
+    setf make
+    return
+  elseif get(g:, 'make_microsoft')
+    echom "make_microsoft is deprecated; try g:make_flavor = 'microsoft' instead"
+    b:make_flavor = 'microsoft'
+    setf make
+    return
+  endif
+
+  # 3. try to detect a flavor from file content
   var n = 1
   while n < 1000 && n <= line('$')
     var line = getline(n)
     if line =~? '^\s*!\s*\(ifn\=\(def\)\=\|include\|message\|error\)\>'
-      b:make_microsoft = 1
+      b:make_flavor = 'microsoft'
       break
-    elseif line =~ '^ *ifn\=\(eq\|def\)\>' || line =~ '^ *[-s]\=include\s'
+    elseif line =~ '^\.\%(export\|error\|for\|if\%(n\=\%(def\|make\)\)\=\|info\|warning\)\>'
+      b:make_flavor = 'bsd'
       break
-    elseif line =~ '^ *\w\+\s*[!?:+]='
+    elseif line =~ '^ *\%(ifn\=\%(eq\|def\)\|define\|override\)\>'
+      b:make_flavor = 'gnu'
+      break
+    elseif line =~ '\$[({][a-z-]\+\s\+\S\+'  # a function call, e.g. $(shell pwd)
+      b:make_flavor = 'gnu'
       break
     endif
     n += 1
