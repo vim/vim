@@ -1,7 +1,7 @@
 " Vim compiler file
 " Language:	jq
 " Maintainer:	Vito <vito.blog@gmail.com>
-" Last Change:	2024 Apr 17
+" Last Change:	2025 Apr 16
 " Upstream: https://github.com/vito-c/jq.vim
 "
 " Quit when a (custom) syntax file was already loaded
@@ -10,7 +10,7 @@ if exists('b:current_syntax')
 endif
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 " syn include @jqHtml syntax/html.vim  " Doc comment HTML
 

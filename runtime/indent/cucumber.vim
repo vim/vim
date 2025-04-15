@@ -1,14 +1,14 @@
 " Vim indent file
 " Language:	Cucumber
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2023 Dec 28
+" Last Change:	2025 Apr 16
 
 if exists("b:did_indent")
   finish
 endif
 let b:did_indent = 1
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 setlocal autoindent
 setlocal indentexpr=GetCucumberIndent()

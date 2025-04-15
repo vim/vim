@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Mojo
 " Maintainer:	Riley Bruins <ribru17@gmail.com>
-" Last Change:	2024 Jul 07
+" Last Change:	2025 Apr 16
 
 if exists('b:did_ftplugin')
   finish
@@ -9,7 +9,7 @@ endif
 let b:did_ftplugin = 1
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 setlocal include=^\\s*\\(from\\\|import\\)
 setlocal define=^\\s*\\(\\(async\\s\\+\\)\\?def\\\|class\\)

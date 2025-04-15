@@ -2,14 +2,14 @@
 " Language:		Modula-2
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	pf@artcom0.north.de (Peter Funk)
-" Last Change:		2024 Jan 04
+" Last Change:		2025 Apr 16
 
 if exists("b:current_syntax")
   finish
 endif
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 let dialect = modula2#GetDialect()
 exe "runtime! syntax/modula2/opt/" .. dialect .. ".vim"

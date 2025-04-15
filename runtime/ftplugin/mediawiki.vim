@@ -1,7 +1,7 @@
 " Language: MediaWiki
 " Maintainer: Avid Seeker <avidseeker7@protonmail.com>
 " Home: http://en.wikipedia.org/wiki/Wikipedia:Text_editor_support#Vim
-" Last Change: 2024 Jul 14
+" Last Change: 2025 Apr 16
 " Credits: chikamichi
 "
 
@@ -11,7 +11,7 @@ endif
 let b:did_ftplugin = 1
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 " Many MediaWiki wikis prefer line breaks only at the end of paragraphs
 " (like in a text processor), which results in long, wrapping lines.

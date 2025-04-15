@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	rasi (Rofi Advanced Style Information)
 " Maintainer:	Pierrick Guillaume  <pierguill@gmail.com>
-" Last Change:	2024 May 21
+" Last Change:	2025 Apr 16
 "
 " Syntax support for rasi config file
 
@@ -13,7 +13,7 @@ if exists('b:current_syntax')
 endif
 let b:current_syntax = 'rasi'
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 " String {{{
 syn region rasiString    start=+"+ skip=+\\"+ end=+"+ oneline contained

@@ -2,7 +2,8 @@
 " Language:     LambdaProlog (Teyjus)
 " Maintainer:   Markus Mottl  <markus.mottl@gmail.com>
 " URL:          http://www.ocaml.info/vim/ftplugin/lprolog.vim
-" Last Change:  2023 Aug 28 - added undo_ftplugin (Vim Project)
+" Last Change:  2025 Apr 16
+"               2023 Aug 28 - added undo_ftplugin (Vim Project)
 "               2006 Feb 05
 "               2001 Sep 16 - fixed 'no_mail_maps'-bug (MM)
 "               2001 Sep 02 - initial release  (MM)
@@ -13,7 +14,7 @@ if exists("b:did_ftplugin")
 endif
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 " Don't do other file type settings for this buffer
 let b:did_ftplugin = 1

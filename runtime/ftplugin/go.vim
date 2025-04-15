@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Go
 " Maintainer:	David Barnett (https://github.com/google/vim-ft-go is archived)
-" Last Change:	2014 Aug 16
+" Last Change:	2025 Apr 16
 " 2024 Jul 16 by Vim Project (add recommended indent style)
 " 2025 Mar 07 by Vim Project (add formatprg and keywordprg option #16804)
 " 2025 Mar 18 by Vim Project (use :term for 'keywordprg' #16911)
@@ -12,7 +12,7 @@ endif
 let b:did_ftplugin = 1
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 setlocal formatoptions-=t
 setlocal formatprg=gofmt

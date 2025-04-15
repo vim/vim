@@ -7,6 +7,7 @@
 " Last Changes:
 "	2024 May 24 by Riley Bruins <ribru17@gmail.com> ('commentstring' #14843)
 "	2025 Feb 12 by Wu, Zhenyu <wuzhenyu@ustc.edu> (matchit configuration #16619)
+"	2025 Apr 16 by Eisuke Kawashima (cpoptions #17121)
 
 if exists("b:did_ftplugin")
   finish
@@ -14,7 +15,7 @@ endif
 let b:did_ftplugin = 1
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 setlocal commentstring=.\\\"\ %s
 setlocal comments=:.\\\"

@@ -2,7 +2,7 @@
 " Language:     Asymptote
 " Maintainer:   Avid Seeker <avidseeker7@protonmail.com>
 "               Andy Hammerlindl
-" Last Change:  2022 Jan 05
+" Last Change:  2025 Apr 16
 
 " Hacked together from Bram Moolenaar's C syntax file, and Claudio Fleiner's
 " Java syntax file.
@@ -12,7 +12,7 @@ if exists("b:current_syntax")
 endif
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 " useful C/C++/Java keywords
 syn keyword     asyStatement     break return continue unravel

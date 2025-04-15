@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:             Tera
 " Maintainer:           Muntasir Mahmud <muntasir.joypurhat@gmail.com>
-" Last Change:          2025 Mar 08
+" Last Change:          2025 Apr 16
 
 if exists("b:did_ftplugin")
   finish
@@ -9,7 +9,7 @@ endif
 let b:did_ftplugin = 1
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 setlocal autoindent
 

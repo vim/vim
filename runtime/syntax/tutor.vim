@@ -3,7 +3,7 @@ if exists("b:current_syntax")
 endif
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 syn include @VIM syntax/vim.vim
 unlet b:current_syntax

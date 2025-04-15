@@ -2,7 +2,7 @@
 " Language:    Typst
 " Previous Maintainer:  Gregory Anders
 " Maintainer:  Luca Saccarola <github.e41mv@aleeas.com>
-" Last Change: 2024 Dec 09
+" Last Change: 2025 Apr 16
 " Based on:    https://github.com/kaarmu/typst.vim
 
 if exists('b:current_syntax')
@@ -10,7 +10,7 @@ if exists('b:current_syntax')
 endif
 
 let s:cpo_save = &cpo
-set cpo-=C
+set cpo&vim
 
 syntax sync fromstart
 syntax spell toplevel
