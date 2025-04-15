@@ -1411,6 +1411,11 @@ normalchar:
 	       )
 	    did_cursorhold = FALSE;
 
+	// Check if we need to cancel completion mode because the window
+	// or tab page was changed
+	if (ins_compl_active() && !ins_compl_win_active(curwin))
+	    ins_compl_cancel();
+
 	// If the cursor was moved we didn't just insert a space
 	if (arrow_used)
 	    inserted_space = FALSE;
