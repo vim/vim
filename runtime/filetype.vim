@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Apr 13
+" Last Change:	2025 Apr 15
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -1726,7 +1726,7 @@ au BufNewFile,BufRead *.me
 	\   setf nroff |
 	\ endif
 au BufNewFile,BufRead *.tr,*.nr,*.roff,*.tmac,*.mom	setf nroff
-au BufNewFile,BufRead *.[1-9]			call dist#ft#FTnroff()
+au BufNewFile,BufRead *.[0-9],*.[013]p,*.[1-8]x,*.3{am,perl,pm,posix,type},*.[nlop]	call dist#ft#FTnroff()
 
 " Nroff or Objective C++
 au BufNewFile,BufRead *.mm			call dist#ft#FTmm()
