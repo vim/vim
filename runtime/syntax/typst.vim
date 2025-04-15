@@ -9,6 +9,9 @@ if exists('b:current_syntax')
     finish
 endif
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 syntax sync fromstart
 syntax spell toplevel
 
@@ -469,5 +472,8 @@ highlight default typstMarkupItalic                     term=italic             
 highlight default typstMarkupBoldItalic                 term=bold,italic        cterm=bold,italic       gui=bold,italic
 
 let b:current_syntax = 'typst'
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " }}}1

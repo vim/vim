@@ -11,6 +11,9 @@ if exists('b:did_ftplugin')
 endif
 let b:did_ftplugin = 1
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 setlocal formatoptions-=t
 setlocal formatprg=gofmt
 
@@ -44,5 +47,8 @@ if !exists('*' .. expand('<SID>') .. 'GoKeywordPrg')
     endtry
   endfunc
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: sw=2 sts=2 et

@@ -2,6 +2,9 @@ if exists("b:current_syntax")
     finish
 endif
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 syn include @VIM syntax/vim.vim
 unlet b:current_syntax
 syn include @TUTORSHELL syntax/sh.vim
@@ -75,3 +78,5 @@ hi def link tutorInlineX tutorX
 hi def link tutorShellPrompt Delimiter
 
 let b:current_syntax = "tutor"
+let &cpo = s:cpo_save
+unlet s:cpo_save

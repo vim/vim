@@ -8,6 +8,9 @@ if exists('b:did_ftplugin')
 endif
 let b:did_ftplugin = 1
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 setlocal include=^\\s*\\(from\\\|import\\)
 setlocal define=^\\s*\\(\\(async\\s\\+\\)\\?def\\\|class\\)
 
@@ -39,3 +42,6 @@ let b:undo_ftplugin = 'setlocal include<'
       \ . '|setlocal suffixesadd<'
       \ . '|setlocal comments<'
       \ . '|setlocal commentstring<'
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

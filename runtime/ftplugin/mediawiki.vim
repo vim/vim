@@ -10,6 +10,9 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 " Many MediaWiki wikis prefer line breaks only at the end of paragraphs
 " (like in a text processor), which results in long, wrapping lines.
 setlocal wrap linebreak
@@ -40,3 +43,6 @@ setlocal foldmethod=expr
 
 let b:undo_ftplugin = "setl commentstring< comments< formatoptions< foldexpr< foldmethod<"
 let b:undo_ftplugin += " matchpairs< linebreak< wrap< textwidth<"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

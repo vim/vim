@@ -7,6 +7,9 @@ if exists("b:current_syntax")
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 syn sync maxlines=1
 syn region pacmanlogMsg start='\S' end='$' keepend contains=pacmanlogTransaction,pacmanlogALPMMsg
 syn region pacmanlogTag start='\['hs=s+1 end='\]'he=e-1 keepend nextgroup=pacmanlogMsg
@@ -39,3 +42,6 @@ hi def link pacmanlogPackageName    Normal
 hi def link pacmanlogPackageVersion Comment
 
 let b:current_syntax = "pacmanlog"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

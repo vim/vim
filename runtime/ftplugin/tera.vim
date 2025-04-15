@@ -8,6 +8,9 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 setlocal autoindent
 
 setlocal commentstring={#\ %s\ #}
@@ -28,3 +31,6 @@ setlocal softtabstop=2
 let b:undo_ftplugin = "setlocal autoindent< commentstring< comments< " ..
       \ "includeexpr< suffixesadd< expandtab< shiftwidth< softtabstop<"
 let b:undo_ftplugin .= "|unlet! b:match_ignorecase b:match_words"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

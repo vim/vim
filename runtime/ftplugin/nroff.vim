@@ -13,6 +13,9 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 setlocal commentstring=.\\\"\ %s
 setlocal comments=:.\\\"
 setlocal sections+=Sh
@@ -30,3 +33,6 @@ if exists('loaded_matchit')
         \ . ',^\.\s*FS\>:^\.\s*FE\>'
   let b:undo_ftplugin .= "| unlet b:match_words"
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

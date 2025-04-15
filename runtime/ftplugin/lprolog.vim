@@ -12,6 +12,9 @@ if exists("b:did_ftplugin")
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 " Don't do other file type settings for this buffer
 let b:did_ftplugin = 1
 
@@ -43,3 +46,6 @@ if !exists("no_plugin_maps") && !exists("no_lprolog_maps")
   vnoremap <buffer> <Plug>BUncomOn <ESC>:'<,'><CR>`<O<ESC>0i/*<ESC>`>o<ESC>0i*/<ESC>`<
   vnoremap <buffer> <Plug>BUncomOff <ESC>:'<,'><CR>`<dd`>dd`<
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

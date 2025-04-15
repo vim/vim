@@ -12,6 +12,8 @@ if exists('b:current_syntax')
   finish
 endif
 let b:current_syntax = 'rasi'
+let s:cpo_save = &cpo
+set cpo-=C
 
 " String {{{
 syn region rasiString    start=+"+ skip=+\\"+ end=+"+ oneline contained
@@ -294,5 +296,8 @@ hi def link rasiInvProperty     rasiError
 hi def link rasiInvPropertyId   rasiError
 hi def link rasiInvPropertyVal  rasiError
 " }}}
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim:ts=8

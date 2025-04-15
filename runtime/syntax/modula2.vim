@@ -8,9 +8,15 @@ if exists("b:current_syntax")
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 let dialect = modula2#GetDialect()
 exe "runtime! syntax/modula2/opt/" .. dialect .. ".vim"
 
 let b:current_syntax = "modula2"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: nowrap sw=2 sts=2 ts=8 noet:

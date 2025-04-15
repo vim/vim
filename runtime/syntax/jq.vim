@@ -9,6 +9,9 @@ if exists('b:current_syntax')
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 " syn include @jqHtml syntax/html.vim  " Doc comment HTML
 
 " jqTodo
@@ -128,3 +131,6 @@ hi def link jqString                 String
 hi def link jqInterpolationDelimiter Delimiter
 hi def link jqConditional            Conditional
 hi def link jqNumber                 Number
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

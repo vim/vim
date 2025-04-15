@@ -11,6 +11,9 @@ if exists("b:current_syntax")
   finish
 endif
 
+let s:cpo_save = &cpo
+set cpo-=C
+
 " useful C/C++/Java keywords
 syn keyword     asyStatement     break return continue unravel
 syn keyword     asyConditional   if else
@@ -241,3 +244,5 @@ hi def link asyTodo                 Todo
 hi def link asyPathSpec             Statement
 
 let b:current_syntax = "asy"
+let &cpo = s:cpo_save
+unlet s:cpo_save
