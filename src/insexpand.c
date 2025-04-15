@@ -105,7 +105,7 @@ struct compl_S
 					// cp_flags has CP_FREE_FNAME
     int		cp_flags;		// CP_ values
     int		cp_number;		// sequence number
-    int		cp_score;		// fuzzy match score
+    int		cp_score;		// fuzzy match score or proximity score
     int		cp_in_match_array;	// collected by compl_match_array
     int		cp_user_abbr_hlattr;	// highlight attribute for abbr
     int		cp_user_kind_hlattr;	// highlight attribute for kind
@@ -793,6 +793,88 @@ cfc_has_mode(void)
 }
 
 /*
+ * Returns TRUE if matches should be sorted based on proximity to the cursor.
+ */
+    static int
+is_nearest_active(void)
+{
+    unsigned int flags = get_cot_flags();
+
+    return (flags & COT_NEAREST) && !(flags & COT_FUZZY);
+}
+
+/*
+ * Repositions a match in the completion list based on its proximity score.
+ * If the match is at the head and has a higher score than the next node,
+ * or if it's in the middle/tail and has a lower score than the previous node,
+ * it is moved to the correct position while maintaining ascending order.
+ */
+    static void
+reposition_match(compl_T *match)
+{
+    compl_T *insert_before = NULL;
+    compl_T *insert_after = NULL;
+
+    // Node is at head and score is too big
+    if (!match->cp_prev)
+    {
+	if (match->cp_next && match->cp_next->cp_score > 0 &&
+		match->cp_next->cp_score < match->cp_score)
+	{
+	    // <c-p>: compl_first_match is at head and newly inserted node
+	    compl_first_match = compl_curr_match = match->cp_next;
+	    // Find the correct position in ascending order
+	    insert_before = match->cp_next;
+	    do
+	    {
+		insert_after = insert_before;
+		insert_before = insert_before->cp_next;
+	    } while (insert_before && insert_before->cp_score > 0 &&
+		    insert_before->cp_score < match->cp_score);
+	}
+	else
+	    return;
+    }
+    // Node is at tail or in the middle but score is too small
+    else
+    {
+	if (match->cp_prev->cp_score > 0 && match->cp_prev->cp_score > match->cp_score)
+	{
+	    // <c-n>: compl_curr_match (and newly inserted match) is at tail
+	    if (!match->cp_next)
+		compl_curr_match = compl_curr_match->cp_prev;
+	    // Find the correct position in ascending order
+	    insert_after = match->cp_prev;
+	    do
+	    {
+		insert_before = insert_after;
+		insert_after = insert_after->cp_prev;
+	    } while (insert_after && insert_after->cp_score > 0 &&
+		    insert_after->cp_score > match->cp_score);
+	}
+	else
+	    return;
+    }
+
+    if (insert_after)
+    {
+	// Remove the match from its current position
+	if (match->cp_prev)
+	    match->cp_prev->cp_next = match->cp_next;
+	else
+	    compl_first_match = match->cp_next;
+	if (match->cp_next)
+	    match->cp_next->cp_prev = match->cp_prev;
+
+	// Insert the match at the correct position
+	match->cp_next = insert_before;
+	match->cp_prev = insert_after;
+	insert_after->cp_next = match;
+	insert_before->cp_prev = match;
+    }
+}
+
+/*
  * Add a match to the list of matches. The arguments are:
  *     str       - text of the match to add
  *     len       - length of "str". If -1, then the length of "str" is
@@ -849,7 +931,14 @@ ins_compl_add(
 		    && STRNCMP(match->cp_str.string, str, len) == 0
 		    && ((int)match->cp_str.length <= len
 						 || match->cp_str.string[len] == NUL))
+	    {
+		if (is_nearest_active() && score > 0 && score < match->cp_score)
+		{
+		    match->cp_score = score;
+		    reposition_match(match);
+		}
 		return NOTDONE;
+	    }
 	    match = match->cp_next;
 	} while (match != NULL && !is_first_match(match));
     }
@@ -960,6 +1049,9 @@ ins_compl_add(
     else	// if there's nothing before, it is the first match
 	compl_first_match = match;
     compl_curr_match = match;
+
+    if (is_nearest_active() && score > 0)
+	reposition_match(match);
 
     // Find the longest common string if still doing that.
     if (compl_get_longest && (flags & CP_ORIGINAL_TEXT) == 0 && !cfc_has_mode())
@@ -4367,6 +4459,7 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
     int		in_collect = (cfc_has_mode() && compl_length > 0);
     char_u	*leader = ins_compl_leader();
     int		score = 0;
+    int		in_curbuf = st->ins_buf == curbuf;
 
     // If 'infercase' is set, don't use 'smartcase' here
     save_p_scs = p_scs;
@@ -4378,7 +4471,7 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
     //	buffer is a good idea, on the other hand, we always set
     //	wrapscan for curbuf to avoid missing matches -- Acevedo,Webb
     save_p_ws = p_ws;
-    if (st->ins_buf != curbuf)
+    if (!in_curbuf)
 	p_ws = FALSE;
     else if (*st->e_cpt == '.')
 	p_ws = TRUE;
@@ -4443,7 +4536,7 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 	    break;
 
 	// when ADDING, the text before the cursor matches, skip it
-	if (compl_status_adding() && st->ins_buf == curbuf
+	if (compl_status_adding() && in_curbuf
 		&& start_pos->lnum == st->cur_match_pos->lnum
 		&& start_pos->col  == st->cur_match_pos->col)
 	    continue;
@@ -4454,8 +4547,16 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 	if (ptr == NULL || (ins_compl_has_preinsert() && STRCMP(ptr, compl_pattern.string) == 0))
 	    continue;
 
+	if (is_nearest_active() && in_curbuf)
+	{
+	    score = st->cur_match_pos->lnum - curwin->w_cursor.lnum;
+	    if (score < 0)
+		score = -score;
+	    score++;
+	}
+
 	if (ins_compl_add_infercase(ptr, len, p_ic,
-			st->ins_buf == curbuf ? NULL : st->ins_buf->b_sfname,
+			in_curbuf ? NULL : st->ins_buf->b_sfname,
 			0, cont_s_ipos, score) != NOTDONE)
 	{
 	    if (in_collect && score == compl_first_match->cp_next->cp_score)
