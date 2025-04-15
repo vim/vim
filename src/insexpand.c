@@ -6427,7 +6427,7 @@ cpt_compl_refresh(void)
 #ifdef FEAT_COMPL_FUNC
     char_u	*cpt;
     char_u	*p;
-    callback_T	*cb;
+    callback_T	*cb = NULL;
 
     // Make the completion list linear (non-cyclic)
     ins_compl_make_linear();
