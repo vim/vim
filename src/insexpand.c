@@ -236,8 +236,8 @@ static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
 static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
-static callback_T *get_cpt_func_callback(char_u *funcname);
 static void get_cpt_func_completion_matches(callback_T *cb);
+static callback_T *get_cpt_func_callback(char_u *funcname);
 # endif
 static int cpt_compl_src_init(char_u *p_cpt);
 static int is_cpt_func_refresh_always(void);
@@ -1368,6 +1368,7 @@ ins_compl_build_pum(void)
     int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
     int		fuzzy_filter = (cur_cot_flags & COT_FUZZY) != 0;
     int		fuzzy_sort = fuzzy_filter && !(cur_cot_flags & COT_NOSORT);
+
     compl_T	*match_head = NULL;
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
@@ -1818,7 +1819,7 @@ ins_compl_files(
     if (in_fuzzy_collect)
     {
 	leader = ins_compl_leader();
-	leader_len = (int)ins_compl_leader_len();
+	leader_len = ins_compl_leader_len();
     }
 
     for (i = 0; i < count && !got_int && !compl_interrupted; i++)
@@ -4746,7 +4747,7 @@ ins_compl_delete(void)
     int	has_preinsert = ins_compl_preinsert_effect();
     if (has_preinsert)
     {
-	col += (int)ins_compl_leader_len();
+	col += ins_compl_leader_len();
 	curwin->w_cursor.col = compl_ins_end_col;
     }
 

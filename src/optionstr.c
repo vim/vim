@@ -1551,6 +1551,8 @@ did_set_commentstring(optset_T *args)
 }
 #endif
 
+#define MAX_TOKENS 100  // Maximum unique substrings to check
+
 /*
  * Check if value for 'complete' is valid when 'complete' option is changed.
  */
