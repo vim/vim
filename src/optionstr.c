@@ -1560,11 +1560,7 @@ did_set_commentstring(optset_T *args)
 did_set_complete(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
-<<<<<<< HEAD
-    char_u	*p = NULL;
-=======
     char_u	*p, *t;
->>>>>>> 951eac55a (rebase)
     char_u	buffer[LSIZE];
     char_u	*buf_ptr;
     char_u	char_before = NUL;

@@ -212,11 +212,6 @@ static int	  compl_selected_item = -1;
 
 static int	  *compl_fuzzy_scores;
 
-<<<<<<< HEAD
-static int	  *cpt_func_refresh_always;  // array indicating which 'cpt' functions have 'refresh:always' set
-static int	  cpt_value_count;  // total number of completion sources specified in the 'cpt' option
-static int	  cpt_value_idx;    // index of the current completion source being expanded
-=======
 // Define the structure for completion source (in 'cpt' option) information
 typedef struct cpt_source_T
 {
@@ -227,7 +222,6 @@ typedef struct cpt_source_T
 static cpt_source_T *cpt_sources_array; // Pointer to the array of completion sources
 static int	    cpt_sources_count;  // Total number of completion sources specified in the 'cpt' option
 static int	    cpt_sources_index;  // Index of the current completion source being expanded
->>>>>>> 951eac55a (rebase)
 
 // "compl_match_array" points the currently displayed list of entries in the
 // popup menu.  It is NULL when there is no popup menu.
@@ -4512,26 +4506,10 @@ get_cpt_func_callback(char_u *funcname)
     static callback_T	cb;
     char_u		buf[LSIZE];
     int			slen;
-    static char_u	*name;
 
     slen = copy_option_part(&funcname, buf, LSIZE, ",");
-<<<<<<< HEAD
     if (slen > 0  && option_set_callback_func(buf, &cb))
 	return &cb;
-=======
-    if (slen > 0)
-    {
-	free_callback(&cb);
-	if (name)
-	    vim_free(name);
-	name = vim_strsave(buf);
-	if (name)
-	{
-	    if (option_set_callback_func(name, &cb))
-		return &cb;
-	}
-    }
->>>>>>> 951eac55a (rebase)
     return NULL;
 }
 #endif
@@ -6372,16 +6350,9 @@ spell_back_to_badword(void)
     static void
 cpt_sources_clear(void)
 {
-<<<<<<< HEAD
-    VIM_CLEAR(cpt_func_refresh_always);
-    cpt_value_idx = -1;
-    cpt_value_count = 0;
-=======
-    vim_free(cpt_sources_array);
-    cpt_sources_array = NULL;
+    VIM_CLEAR(cpt_sources_array);
     cpt_sources_index = -1;
     cpt_sources_count = 0;
->>>>>>> 951eac55a (rebase)
 }
 
 /*
