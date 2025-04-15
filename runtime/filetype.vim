@@ -2793,7 +2793,7 @@ au BufNewFile,BufRead *.tape			setf vhs
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst,*.vho  setf vhdl
 
 " Vim script
-au BufNewFile,BufRead *.vim,.exrc,_exrc,.netrwhist	setf vim
+au BufNewFile,BufRead *.vim,.exrc,_exrc,.netrwhist,vifmrc	setf vim
 
 " Viminfo file
 au BufNewFile,BufRead .viminfo,_viminfo		setf viminfo
