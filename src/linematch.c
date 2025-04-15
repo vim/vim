@@ -401,6 +401,7 @@ linematch_nbuffers(
 
     size_t memsize = 1;
     size_t memsize_decisions = 0;
+
     for (size_t i = 0; i < ndiffs; i++)
     {
 	assert(diff_len[i] >= 0);
@@ -410,12 +411,16 @@ linematch_nbuffers(
 
     // create the flattened path matrix
     diffcmppath_T *diffcmppath = lalloc(sizeof(diffcmppath_T) * memsize, TRUE);
+    if (diffcmppath == NULL)
+	return 0;
+
     // allocate memory here
+    size_t n = (size_t)pow(2.0, (double)ndiffs);
     for (size_t i = 0; i < memsize; i++)
     {
 	diffcmppath[i].df_lev_score = 0;
 	diffcmppath[i].df_path_n = 0;
-	for (size_t j = 0; j < (size_t)pow(2, (double)ndiffs); j++)
+	for (size_t j = 0; j < n; j++)
 	    diffcmppath[i].df_choice_mem[j] = -1;
     }
 
@@ -428,6 +433,12 @@ linematch_nbuffers(
     diffcmppath_T *startNode = &diffcmppath[u];
 
     *decisions = lalloc(sizeof(int) * memsize_decisions, TRUE);
+    if (*decisions == NULL)
+    {
+	vim_free(diffcmppath);
+	return 0;
+    }
+
     size_t n_optimal = 0;
     test_charmatch_paths(startNode, 0);
     while (startNode->df_path_n > 0)
