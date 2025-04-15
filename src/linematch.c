@@ -401,7 +401,6 @@ linematch_nbuffers(
 
     size_t memsize = 1;
     size_t memsize_decisions = 0;
-
     for (size_t i = 0; i < ndiffs; i++)
     {
 	assert(diff_len[i] >= 0);
