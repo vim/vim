@@ -1474,7 +1474,7 @@ ins_compl_build_pum(void)
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
     int		update_shown_match = fuzzy_filter;
-    int		match_count;
+    int		match_count = 0;
     int		cur_source = -1;
     int		max_matches_found = FALSE;
     int		is_forward = compl_shows_dir_forward() && !fuzzy_filter;
