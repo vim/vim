@@ -2307,16 +2307,20 @@ findServer(char_u *name)
     void
 serverSetName(char_u *name)
 {
+    size_t	namelen;
     char_u	*ok_name;
     HWND	hwnd = 0;
     int		i = 0;
     char_u	*p;
 
     // Leave enough space for a 9-digit suffix to ensure uniqueness!
-    ok_name = alloc(STRLEN(name) + 10);
+    namelen = STRLEN(name);
+    ok_name = alloc(namelen + 10);
+    if (ok_name == NULL)
+	return;
 
     STRCPY(ok_name, name);
-    p = ok_name + STRLEN(name);
+    p = ok_name + namelen;
 
     for (;;)
     {
