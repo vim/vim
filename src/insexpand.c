@@ -1422,7 +1422,7 @@ ins_compl_build_pum(void)
 	    }
 	    else if (cpt_sources_array && !max_matches_found)
 	    {
-		max_matches = cpt_sources_array[cur_source].max_matches;
+		int max_matches = cpt_sources_array[cur_source].max_matches;
 		if (max_matches > 0 && match_count > max_matches)
 		    max_matches_found = TRUE;
 	    }
