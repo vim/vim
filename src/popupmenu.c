@@ -691,6 +691,10 @@ pum_redraw(void)
 	    width = 0;
 	    s = NULL;
 	    p = pum_get_item(idx, item_type);
+
+	    if (j + 1 < 3)
+		next_isempty = pum_get_item(idx, order[j + 1]) == NULL;
+
 	    if (p != NULL)
 		for ( ; ; MB_PTR_ADV(p))
 		{
@@ -731,15 +735,13 @@ pum_redraw(void)
 				int	    cells;
 				int	    over_cell = 0;
 				int	    truncated = FALSE;
+				int	    pad = next_isempty ? 0 : 2;
 
 				cells = mb_string2cells(rt , -1);
 				truncated = pum_width == p_pmw
-						&& pum_width - totwidth < cells;
+					    && pum_width - totwidth < cells + pad;
 
-				if (pum_width == p_pmw && !truncated
-					&& (j + 1 < 3 && pum_get_item(idx, order[j + 1]) != NULL))
-				    truncated = TRUE;
-
+				// only draw the text that fits
 				if (cells > pum_width)
 				{
 				    do
@@ -816,12 +818,9 @@ pum_redraw(void)
 			    int		cells = (*mb_string2cells)(st, size);
 			    char_u	*st_end = NULL;
 			    int		over_cell = 0;
+			    int		pad = next_isempty ? 0 : 2;
 			    int		truncated = pum_width == p_pmw
-						&& pum_width - totwidth < cells;
-
-			    if (pum_width == p_pmw && !truncated
-				    && (j + 1 < 3 && pum_get_item(idx, order[j + 1]) != NULL))
-				truncated = TRUE;
+					    && pum_width - totwidth < cells + pad;
 
 			    // only draw the text that fits
 			    while (size > 0
@@ -909,9 +908,6 @@ pum_redraw(void)
 		n = items_width_array[order[1]] + (last_isabbr ? 0 : 1);
 	    else
 		n = order[j] == CPT_ABBR ? 1 : 0;
-
-	    if (j + 1 < 3)
-		next_isempty = pum_get_item(idx, order[j + 1]) == NULL;
 
 	    // Stop when there is nothing more to display.
 	    if (j == 2

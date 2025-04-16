@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 14
+*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2207,6 +2207,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   menuone  Use the popup menu also when there is only one match.
 		    Useful when there is additional information about the
 		    match, e.g., what file it comes from.
+
+	   nearest  Matches are presented in order of proximity to the cursor
+		    position.  This applies only to matches from the current
+		    buffer.  No effect if "fuzzy" is present.
 
 	   noinsert Do not insert any text for a match until the user selects
 		    a match from the menu.  Only works in combination with
