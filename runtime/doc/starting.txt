@@ -1504,8 +1504,6 @@ Note that Views and Sessions are not perfect:
   default value though.
 - Existing mappings will be overwritten without warning.  An existing mapping
   may cause an error for ambiguity.
-- When storing manual folds and when storing manually opened/closed folds,
-  changes in the file between saving and loading the view will mess it up.
 - The Vim script is not very efficient.  But still faster than typing the
   commands yourself!
 
