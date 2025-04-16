@@ -1,4 +1,5 @@
 /* os_mswin.c */
+void SaveInst(HINSTANCE hInst);
 void mch_exit_g(int r);
 void mch_early_init(void);
 int mch_input_isatty(void);
