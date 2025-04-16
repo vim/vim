@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 15
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41622,6 +41622,8 @@ Completion: ~
 	"f{func}"	- complete using given function
 	"f"		- complete using 'completefunc'
 	"o"		- complete using 'omnifunc'
+- allow to limit matches for the 'complete' sources by using the
+  "{flag}^<limit>" notation
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have
