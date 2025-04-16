@@ -2000,6 +2000,47 @@ func Test_QuitPre()
   bwipe Xbar
 endfunc
 
+func Test_Cmdline_Trigger()
+  autocmd CmdlineLeavePre : let g:log = "CmdlineLeavePre"
+  new
+  let g:log = ''
+  nnoremap <F1> <Cmd>echo "hello"<CR>
+  call feedkeys("\<F1>", 'x')
+  call assert_equal('', g:log)
+  nunmap <F1>
+  let g:log = ''
+  nnoremap <F1> :echo "hello"<CR>
+  call feedkeys("\<F1>", 'x')
+  call assert_equal('CmdlineLeavePre', g:log)
+  nunmap <F1>
+  let g:log = ''
+  split
+  call assert_equal('', g:log)
+  call feedkeys(":echo hello", "tx")
+  call assert_equal('CmdlineLeavePre', g:log)
+  let g:log = ''
+  close
+  call assert_equal('', g:log)
+  call feedkeys(":echo hello", "tx")
+  call assert_equal('CmdlineLeavePre', g:log)
+  let g:log = ''
+  tabnew
+  call assert_equal('', g:log)
+  call feedkeys(":echo hello", "tx")
+  call assert_equal('CmdlineLeavePre', g:log)
+  let g:log = ''
+  split
+  call assert_equal('', g:log)
+  call feedkeys(":echo hello", "tx")
+  call assert_equal('CmdlineLeavePre', g:log)
+  let g:log = ''
+  tabclose
+  call assert_equal('', g:log)
+  call feedkeys(":echo hello", "tx")
+  call assert_equal('CmdlineLeavePre', g:log)
+  bw!
+endfunc
+
 func Test_Cmdline()
   au! CmdlineChanged : let g:text = getcmdline()
   let g:text = 0
