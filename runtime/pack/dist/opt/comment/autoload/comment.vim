@@ -158,6 +158,9 @@ export def ObjComment(inner: bool)
     else
         cursor(pos_end[1], pos_end[2])
         normal! v
+        if &selection == 'exclusive'
+            normal! lo
+        endif
         cursor(pos_start[1], pos_start[2])
     endif
 enddef

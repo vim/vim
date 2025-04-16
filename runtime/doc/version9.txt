@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 08
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41613,10 +41613,15 @@ Completion: ~
 - New option value for 'completeopt':
 	"nosort"	- do not sort completion results
 	"preinsert"	- highlight to be inserted values
+	"nearest"	- sort completion results by distance to cursor
 - handle multi-line completion items as expected
 - improved commandline completion for the |:hi| command
 - New option value for 'wildmode':
 	"noselect"	- do not auto select an entry in the wildmenu
+- New flags for 'complete':
+	"f{func}"	- complete using given function
+	"f"		- complete using 'completefunc'
+	"o"		- complete using 'omnifunc'
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have
@@ -41631,6 +41636,7 @@ Options: ~
   and CTRL-D / CTRL-U for half-pagewise scrolling
 - New option value for 'fillchars':
   	"trunc"		- configure truncation indicator, 'pummaxwidth'
+  	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|

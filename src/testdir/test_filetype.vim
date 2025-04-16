@@ -181,7 +181,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cobol: ['file.cbl', 'file.cob'],
     coco: ['file.atg'],
     conaryrecipe: ['file.recipe'],
-    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags', '.mbsyncrc'],
+    conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags'],
     config: ['configure.in', 'configure.ac', '/etc/hostname.file', 'any/etc/hostname.file'],
     confini: ['pacman.conf', 'paru.conf', 'mpv.conf', 'any/.aws/config', 'any/.aws/credentials', 'file.nmconnection'],
     context: ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
@@ -472,6 +472,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     matlab: ['file.m'],
     maxima: ['file.demo', 'file.dmt', 'file.dm1', 'file.dm2', 'file.dm3',
                 'file.wxm', 'maxima-init.mac'],
+    mbsync: ['.mbsyncrc', 'file.mbsyncrc', 'isyncrc'],
     mediawiki: ['file.mw',  'file.wiki'],
     mel: ['file.mel'],
     mermaid: ['file.mmd', 'file.mmdc', 'file.mermaid'],
@@ -2814,6 +2815,7 @@ func Test_pro_file()
   call writefile(['x = findgen(100)/10'], 'Xfile.pro', 'D')
   split Xfile.pro
   call assert_equal('idlang', &filetype)
+  bwipe!
 
   filetype off
 endfunc
@@ -2847,6 +2849,7 @@ func Test_pl_file()
   call writefile(['%data = (1, 2, 3);'], 'Xfile.pl', 'D')
   split Xfile.pl
   call assert_equal('perl', &filetype)
+  bwipe!
 
   filetype off
 endfunc
@@ -2854,15 +2857,48 @@ endfunc
 func Test_make_file()
   filetype on
 
+  " BSD Makefile
+  call writefile([''], 'BSDmakefile', 'D')
+  split BSDmakefile
+  call assert_equal('bsd', get(b:, 'make_flavor', ''))
+  bwipe!
+
+  call writefile(['.ifmake all', '.endif'], 'XMakefile.mak', 'D')
+  split XMakefile.mak
+  call assert_equal('bsd', get(b:, 'make_flavor', ''))
+  bwipe!
+
+  " GNU Makefile
+  call writefile([''], 'GNUmakefile', 'D')
+  split GNUmakefile
+  call assert_equal('gnu', get(b:, 'make_flavor', ''))
+  bwipe!
+
+  call writefile(['ifeq ($(foo),foo)', 'endif'], 'XMakefile.mak', 'D')
+  split XMakefile.mak
+  call assert_equal('gnu', get(b:, 'make_flavor', ''))
+  bwipe!
+
+  call writefile(['define foo', 'endef'], 'XMakefile.mak', 'D')
+  split XMakefile.mak
+  call assert_equal('gnu', get(b:, 'make_flavor', ''))
+  bwipe!
+
+  call writefile(['vim := $(wildcard *.vim)'], 'XMakefile.mak', 'D')
+  split XMakefile.mak
+  call assert_equal('gnu', get(b:, 'make_flavor', ''))
+  bwipe!
+
   " Microsoft Makefile
   call writefile(['# Makefile for Windows', '!if "$(VIMDLL)" == "yes"'], 'XMakefile.mak', 'D')
   split XMakefile.mak
-  call assert_equal(1, get(b:, 'make_microsoft', 0))
+  call assert_equal('microsoft', get(b:, 'make_flavor', ''))
   bwipe!
 
+  " BSD or GNU
   call writefile(['# get the list of tests', 'include testdir/Make_all.mak'], 'XMakefile.mak', 'D')
   split XMakefile.mak
-  call assert_equal(0, get(b:, 'make_microsoft', 0))
+  call assert_notequal('microsoft', get(b:, 'make_flavor', ''))
   bwipe!
 
   filetype off
@@ -2886,12 +2922,27 @@ func Test_map_file()
   filetype off
 endfunc
 
+func Test_nroff_file()
+  filetype on
+
+  call writefile(['.TH vim 1 "YYYY Mth DD"'], 'Xfile.1', 'D')
+  split Xfile.1
+  call assert_equal('nroff', &filetype)
+  bwipe!
+
+  call writefile(['. /etc/profile'], 'Xfile.1', 'D')
+  split Xfile.1
+  call assert_notequal('nroff', &filetype)
+  bwipe!
+endfunc
+
 func Test_org_file()
   filetype on
 
   call writefile(['* org Headline', '*some bold text*', '/some italic text/'], 'Xfile.org', 'D')
   split Xfile.org
   call assert_equal('org', &filetype)
+  bwipe!
 
   filetype off
 endfunc

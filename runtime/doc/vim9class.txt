@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Apr 05
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1066,6 +1066,22 @@ The above enum definition is equivalent to the following class definition: >
       public const name: string
       public const ordinal: number
     endclass
+<
+A enum can contain object variables and methods just like a regular
+class: >
+
+    enum Color
+	Cyan([0, 255, 255]),
+	Magenta([255, 0, 255]),
+	Gray([128, 128, 128])
+
+	var rgb_values: list<number>
+
+	def Get_RGB(): list<number>
+	    return this.rgb_values
+	enddef
+    endenum
+    echo Color.Magenta.Get_RGB()
 <
 ==============================================================================
 

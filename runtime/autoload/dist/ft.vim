@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Jan 25
+# Last Change:		2025 Apr 15
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -557,17 +557,47 @@ export def FTm()
 enddef
 
 export def FTmake()
-  # Check if it is a Microsoft Makefile
-  unlet! b:make_microsoft
+  # Check if it is a BSD, GNU, or Microsoft Makefile
+  unlet! b:make_flavor
+
+  # 1. filename
+  if expand('%:t') == 'BSDmakefile'
+    b:make_flavor = 'bsd'
+    setf make
+    return
+  elseif expand('%:t') == 'GNUmakefile'
+    b:make_flavor = 'gnu'
+    setf make
+    return
+  endif
+
+  # 2. user's setting
+  if exists('g:make_flavor')
+    b:make_flavor = g:make_flavor
+    setf make
+    return
+  elseif get(g:, 'make_microsoft')
+    echom "make_microsoft is deprecated; try g:make_flavor = 'microsoft' instead"
+    b:make_flavor = 'microsoft'
+    setf make
+    return
+  endif
+
+  # 3. try to detect a flavor from file content
   var n = 1
   while n < 1000 && n <= line('$')
     var line = getline(n)
     if line =~? '^\s*!\s*\(ifn\=\(def\)\=\|include\|message\|error\)\>'
-      b:make_microsoft = 1
+      b:make_flavor = 'microsoft'
       break
-    elseif line =~ '^ *ifn\=\(eq\|def\)\>' || line =~ '^ *[-s]\=include\s'
+    elseif line =~ '^\.\%(export\|error\|for\|if\%(n\=\%(def\|make\)\)\=\|info\|warning\)\>'
+      b:make_flavor = 'bsd'
       break
-    elseif line =~ '^ *\w\+\s*[!?:+]='
+    elseif line =~ '^ *\%(ifn\=\%(eq\|def\)\|define\|override\)\>'
+      b:make_flavor = 'gnu'
+      break
+    elseif line =~ '\$[({][a-z-]\+\s\+\S\+'  # a function call, e.g. $(shell pwd)
+      b:make_flavor = 'gnu'
       break
     endif
     n += 1
@@ -595,11 +625,15 @@ enddef
 # This function checks if one of the first five lines start with a dot.  In
 # that case it is probably an nroff file: 'filetype' is set and 1 is returned.
 export def FTnroff(): number
-  if getline(1)[0] .. getline(2)[0] .. getline(3)[0]
-    			.. getline(4)[0] .. getline(5)[0] =~ '\.'
-    setf nroff
-    return 1
-  endif
+  var n = 1
+  while n < 5
+    var line = getline(n)
+    if line =~ '^\.\S\S\?'
+      setf nroff
+      return 1
+    endif
+    n += 1
+  endwhile
   return 0
 enddef
 
@@ -875,16 +909,16 @@ export def SetFileTypeSH(name: string, setft = true): string
   if setft && expand("<amatch>") =~ g:ft_ignore_pat
     return ''
   endif
-  if name =~ '\<csh\>'
+  if name =~ '^csh$' || name =~ '^#!.\{-2,}\<csh\>'
     # Some .sh scripts contain #!/bin/csh.
     return SetFileTypeShell("csh", setft)
-  elseif name =~ '\<tcsh\>'
+  elseif name =~ '^tcsh$' || name =~ '^#!.\{-2,}\<tcsh\>'
     # Some .sh scripts contain #!/bin/tcsh.
     return SetFileTypeShell("tcsh", setft)
-  elseif name =~ '\<zsh\>'
+  elseif name =~ '^zsh$' || name =~ '^#!.\{-2,}\<zsh\>'
     # Some .sh scripts contain #!/bin/zsh.
     return SetFileTypeShell("zsh", setft)
-  elseif name =~ '\<ksh\>'
+  elseif name =~ '^ksh$' || name =~ '^#!.\{-2,}\<ksh\>'
     b:is_kornshell = 1
     if exists("b:is_bash")
       unlet b:is_bash
@@ -892,7 +926,8 @@ export def SetFileTypeSH(name: string, setft = true): string
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif exists("g:bash_is_sh") || name =~ '\<bash\>' || name =~ '\<bash2\>'
+  elseif exists("g:bash_is_sh") || name =~ '^bash2\=$' ||
+	  \ name =~ '^#!.\{-2,}\<bash2\=\>'
     b:is_bash = 1
     if exists("b:is_kornshell")
       unlet b:is_kornshell
@@ -900,7 +935,7 @@ export def SetFileTypeSH(name: string, setft = true): string
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif name =~ '\<sh\>' || name =~ '\<dash\>'
+  elseif name =~ '^\%(da\)\=sh$' || name =~ '^#!.\{-2,}\<\%(da\)\=sh\>'
     # Ubuntu links "sh" to "dash", thus it is expected to work the same way
     b:is_sh = 1
     if exists("b:is_kornshell")

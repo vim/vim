@@ -9326,6 +9326,12 @@ ex_stopinsert(exarg_T *eap UNUSED)
 {
     restart_edit = 0;
     stop_insert_mode = TRUE;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+    // when called from remote_expr in insert mode, make sure insert mode is
+    // ended by adding K_NOP to the typeahead buffer
+    if (vgetc_busy)
+       ins_char_typebuf(K_NOP, 0);
+#endif
     clearmode();
 }
 

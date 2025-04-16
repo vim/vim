@@ -66,4 +66,5 @@ void ins_compl_insert(int in_compl_func, int move_cursor);
 void ins_compl_check_keys(int frequency, int in_compl_func);
 int ins_complete(int c, int enable_pum);
 void free_insexpand_stuff(void);
+int ins_compl_cancel(void);
 /* vim: set ft=c : */
