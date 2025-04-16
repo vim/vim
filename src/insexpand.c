@@ -1476,7 +1476,6 @@ ins_compl_build_pum(void)
     int		update_shown_match = fuzzy_filter;
     int		match_count;
     int		cur_source = -1;
-    int		max_matches;
     int		max_matches_found = FALSE;
     int		is_forward = compl_shows_dir_forward() && !fuzzy_filter;
 
@@ -4620,12 +4619,10 @@ get_cpt_func_callback(char_u *funcname)
 	return &cb;
     return NULL;
 }
-#endif
 
 /*
  * Retrieve new completion matches by invoking callback "cb".
  */
-#ifdef FEAT_COMPL_FUNC
     static void
 expand_cpt_function(callback_T *cb)
 {
@@ -6474,19 +6471,15 @@ cpt_sources_init(void)
     char_u  buf[LSIZE];
     int	    slen;
     int	    count = 0;
-    char_u  *p = curbuf->b_p_cpt, *t;
-    int	    src_max_matches[100] = {0};
+    char_u  *p;
 
-    while (*p)
+    for (p = curbuf->b_p_cpt; *p;)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
 	if (*p) // If not end of string, count this segment
 	{
-	    vim_memset(buf, 0, LSIZE);
-	    slen = copy_option_part(&p, buf, LSIZE, ","); // Advance p
-	    if (slen > 0 && (t = vim_strchr(buf, '^')) != NULL)
-		src_max_matches[count] = atoi((char *)t + 1);
+	    (void)copy_option_part(&p, buf, LSIZE, ","); // Advance p
 	    count++;
 	}
     }
@@ -6500,9 +6493,22 @@ cpt_sources_init(void)
 	    cpt_sources_count = 0;
 	    return FAIL;
 	}
-	if (count < 100)
-	    while (--count >= 0)
-		cpt_sources_array[count].max_matches = src_max_matches[count];
+	count = 0;
+	for (p = curbuf->b_p_cpt; *p;)
+	{
+	    while (*p == ',' || *p == ' ') // Skip delimiters
+		p++;
+	    if (*p) // If not end of string, count this segment
+	    {
+		char_u *t;
+
+		vim_memset(buf, 0, LSIZE);
+		slen = copy_option_part(&p, buf, LSIZE, ","); // Advance p
+		if (slen > 0 && (t = vim_strchr(buf, '^')) != NULL)
+		    cpt_sources_array[count].max_matches = atoi((char *)t + 1);
+		count++;
+	    }
+	}
     }
     return OK;
 }
