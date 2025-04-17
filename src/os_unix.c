@@ -9549,11 +9549,13 @@ vwl_set_display_strname(char *display, int only_vvar)
     if (!only_vvar)
     {
 	vim_free(vwl_display_strname);
-	vwl_display_strname = (char*)vim_strsave((char_u*)display);
+	vwl_display_strname = display == NULL ? "" :
+	    (char*)vim_strsave((char_u*)display);
     }
 
 #ifdef FEAT_EVAL
-    set_vim_var_string(VV_WAYLAND_DISPLAY, (char_u*)display, -1);
+    set_vim_var_string(VV_WAYLAND_DISPLAY,
+	    display == NULL ? (char_u*)"" : (char_u*)display, -1);
 #endif
 }
 
