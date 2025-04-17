@@ -2782,7 +2782,7 @@ format_overflow_error(const char *pstart)
 	semsg(_(e_out_of_memory_allocating_nr_bytes), arglen);
 }
 
-#define MAX_ALLOWED_STRING_WIDTH 6400
+#define MAX_ALLOWED_STRING_WIDTH 1048576    // 1 MiB
 
     static int
 get_unsigned_int(
