@@ -6010,7 +6010,6 @@ ins_compl_start(void)
     if (line_invalid)
 	line = ml_get(curwin->w_cursor.lnum);
 
-    int in_fuzzy = get_cot_flags() & COT_FUZZY;
     if (compl_status_adding())
     {
 	edit_submode_pre = (char_u *)_(" Adding");
@@ -6028,7 +6027,7 @@ ins_compl_start(void)
 	    compl_col = curwin->w_cursor.col;
 	    compl_lnum = curwin->w_cursor.lnum;
 	}
-	else if (ctrl_x_mode_normal() && in_fuzzy)
+	else if (ctrl_x_mode_normal() && cfc_has_mode())
 	{
 	    compl_startpos = curwin->w_cursor;
 	    compl_cont_status &= CONT_S_IPOS;

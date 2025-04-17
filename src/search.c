@@ -5370,30 +5370,6 @@ search_for_fuzzy_match(
 						    len, &current_pos, score);
 		    if (found_new_match)
 		    {
-			if (ctrl_x_mode_normal())
-			{
-			    if (STRNCMP(*ptr, pattern, *len) == 0 && pattern[*len] == NUL)
-			    {
-				char_u	*next_word_end = find_word_start(*ptr + *len);
-				if (*next_word_end != NUL && *next_word_end != NL)
-				{
-				    // Find end of the word.
-				    if (has_mbyte)
-					while (*next_word_end != NUL)
-					{
-					    int l = (*mb_ptr2len)(next_word_end);
-
-					    if (l < 2 && !vim_iswordc(*next_word_end))
-						break;
-					    next_word_end += l;
-					}
-				    else
-				       next_word_end = find_word_end(next_word_end);
-				}
-
-				*len = next_word_end - *ptr;
-			    }
-			}
 			*pos = current_pos;
 			break;
 		    }
