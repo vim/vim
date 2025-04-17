@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2025 Apr 15
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Apr 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -661,6 +661,16 @@ possibilities: >
 <
 The `:Cycle` command is also mapped to the CTRL-A and CTRL-X keys.
 For details, see `git-rebase --help`.
+
+GLEAM						*ft-gleam-plugin*
+
+By default the following options are set for the recommended gleam style: >
+
+	setlocal expandtab shiftwidth=2 softtabstop=2
+
+To disable this behavior, set the following variable in your vimrc: >
+
+	let g:gleam_recommended_style = 0
 
 GO							*ft-go-plugin*
 

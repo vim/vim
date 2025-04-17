@@ -7390,6 +7390,7 @@ ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
 ft-gdscript-plugin	filetype.txt	/*ft-gdscript-plugin*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
 ft-gitrebase-plugin	filetype.txt	/*ft-gitrebase-plugin*
+ft-gleam-plugin	filetype.txt	/*ft-gleam-plugin*
 ft-go-plugin	filetype.txt	/*ft-go-plugin*
 ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
@@ -10683,6 +10684,7 @@ tar-contents	pi_tar.txt	/*tar-contents*
 tar-copyright	pi_tar.txt	/*tar-copyright*
 tar-history	pi_tar.txt	/*tar-history*
 tar-manual	pi_tar.txt	/*tar-manual*
+tar-mappings	pi_tar.txt	/*tar-mappings*
 tar-options	pi_tar.txt	/*tar-options*
 tar-usage	pi_tar.txt	/*tar-usage*
 tcl	if_tcl.txt	/*tcl*
