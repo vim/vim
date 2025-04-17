@@ -119,7 +119,7 @@ struct qf_info_S
 };
 
 static qf_info_T ql_info_actual; // global quickfix list
-static qf_info_T *ql_info;	// points to ql_info_actual if memory allocation is sucessful.
+static qf_info_T *ql_info;	// points to ql_info_actual if memory allocation is successful.
 static int_u last_qf_id = 0;	// Last used quickfix list id
 
 #define FMT_PATTERNS 14		// maximum number of % recognized

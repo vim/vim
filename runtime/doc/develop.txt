@@ -192,7 +192,7 @@ For any non-trivial change, please always create a pull request on github,
 since this triggers the test suite.
 
 							*style-clang-format*
-sound.c and sign.c can be (semi-) automatically formated using the
+sound.c and sign.c can be (semi-) automatically formatted using the
 `clang-format` formatter according to the distributed .clang-format file.
 Other source files do not yet correspond to the .clang-format file.  This may
 change in the future and they may be reformatted as well.

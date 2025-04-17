@@ -2786,7 +2786,7 @@ nv_zet(cmdarg_T *cap)
 		}
 		break;
 
-		// "zp", "zP" in block mode put without addind trailing spaces
+		// "zp", "zP" in block mode put without adding trailing spaces
     case 'P':
     case 'p':  nv_put(cap);
 	       break;
