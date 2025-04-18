@@ -854,8 +854,7 @@ ex_formatter(exarg_T *eap)
 	return;
     }
 
-    buf = alloc(STRLEN(eap->arg) + 14);
-    if (buf == NULL)
+    buf = alloc(STRLEN(eap->arg) + 15);
 	return;
 
     if (eap->forceit)
