@@ -6410,7 +6410,6 @@ c_no_tab_space_error	syntax.txt	/*c_no_tab_space_error*
 c_no_trail_space_error	syntax.txt	/*c_no_trail_space_error*
 c_no_utf	syntax.txt	/*c_no_utf*
 c_space_errors	syntax.txt	/*c_space_errors*
-c_syntax_for_h	syntax.txt	/*c_syntax_for_h*
 c_wildchar	cmdline.txt	/*c_wildchar*
 call()	builtin.txt	/*call()*
 carriage-return	intro.txt	/*carriage-return*

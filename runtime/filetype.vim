@@ -436,9 +436,7 @@ au BufNewFile,BufRead *.ixx,*.mpp setf cpp
 " https://clang.llvm.org/docs/StandardCPlusPlusModules.html#file-name-requirement
 au BufNewFile,BufRead *.cppm,*.ccm,*.cxxm,*.c++m setf cpp
 
-" .h files can be C, Ch C++, ObjC or ObjC++.
-" Set c_syntax_for_h if you want C, ch_syntax_for_h if you want Ch. ObjC is
-" detected automatically.
+" .h files can be C, C++, Ch, Objective-C, or Objective-C++.
 au BufNewFile,BufRead *.h			call dist#ft#FTheader()
 
 " Ch (CHscript)
