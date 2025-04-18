@@ -9189,6 +9189,23 @@ vwl_registry_listener_global_remove(void *data UNUSED,
 }
 
 /*
+ * Redirect libwayland logging to use ch_log instead.
+ */
+static void vwl_log_handler(const char *fmt, va_list args)
+{
+    size_t len = STRLEN(fmt) + STRLEN("LIBWAYLAND: ") + 1;
+    char *format = alloc(len);
+
+    if (format == NULL)
+	return;
+    // Subtract one to remove newline that libwayland puts
+    vim_snprintf(format, len - 1, "LIBWAYLAND: %s", fmt);
+    ch_vlog(NULL, format, args);
+
+    free(format);
+}
+
+/*
  * Connect to the wayland compositor and get its registry, then add a listener
  * so we can bind to the global objects we need. Returns OK on success and returns
  * FAIL on failure.
@@ -9201,6 +9218,9 @@ vwl_connect_client(char *display)
 
     if (vwl_display == NULL)
     {
+	// Must set log handler before we connect display in order to work
+	wl_log_set_handler_client(vwl_log_handler);
+
 	vwl_display = wl_display_connect(display);
 
 	if (vwl_display == NULL)
