@@ -2531,7 +2531,8 @@ vwl_da_send_data(Clipboard_T *cbd, int fd, const char *mime)
 {
     long_u length;
     char_u *string;
-    ssize_t written = 0, total = 0;
+    ssize_t written = 0;
+    size_t total = 0;
     int did_vimenc = TRUE;
     int motion_type;
 #ifndef HAVE_SELECT
@@ -2585,7 +2586,7 @@ vwl_da_send_data(Clipboard_T *cbd, int fd, const char *mime)
     if (STRCMP(mime, VIMENC_ATOM_NAME) == 0)
 	did_vimenc = FALSE;
 
-    while (total < length &&
+    while (total < (size_t)length &&
 #ifndef HAVE_SELECT
 	    poll(&pfd, 1, p_wtm) > 0)
 #else
@@ -2687,11 +2688,11 @@ vwl_choose_offer(Clipboard_T *cbd, void **cbd_offer, void *offer,
 	return;
 
     // Mimes with lower indexes in the array are prioritized first
-    for (int i = 0; i < sizeof(supported_mimes)/sizeof(*supported_mimes); i++)
+    for (size_t i = 0; i < sizeof(supported_mimes)/sizeof(*supported_mimes); i++)
     {
 	const char *m = supported_mimes[i];
 
-	if ((cbd->cur_mime == NULL || i < cbd->cur_mime_priority)
+	if ((cbd->cur_mime == NULL || i < (size_t)cbd->cur_mime_priority)
 		&& STRCMP(mime, m) == 0)
 	{
 	    cbd->cur_mime = m;
@@ -2708,9 +2709,9 @@ vwl_choose_offer(Clipboard_T *cbd, void **cbd_offer, void *offer,
  * Handles sending the offers we support sending to the compositor.
  */
     static void
-vwl_export_offers(void *source, vwl_da_protocol_T protocol)
+vwl_export_offers(void *source, vwl_da_protocol_T protocol UNUSED)
 {
-    for (int i = 0; i < sizeof(supported_mimes)/sizeof(*supported_mimes); i++)
+    for (size_t i = 0; i < sizeof(supported_mimes)/sizeof(*supported_mimes); i++)
     {
 	if (STRCMP(supported_mimes[i], MIME_TEXT_UTF8) == 0
 		&& !enc_utf8)
@@ -2745,7 +2746,7 @@ vzwlr_da_offer_v1_listener_offer(void *data,
  */
     static void
 vzwlr_da_device_v1_listener_data_offer(void *data,
-	struct zwlr_data_control_device_v1 *device,
+	struct zwlr_data_control_device_v1 *device UNUSED,
 	struct zwlr_data_control_offer_v1 *offer)
 {
     if (offer == NULL)
@@ -2760,7 +2761,7 @@ vzwlr_da_device_v1_listener_data_offer(void *data,
  */
     static void
 vzwlr_da_device_v1_listener_selection(void *data,
-	struct zwlr_data_control_device_v1 *device,
+	struct zwlr_data_control_device_v1 *device UNUSED,
 	struct zwlr_data_control_offer_v1 *offer)
 {
     vwl_da_setup_data_receive(data, &clip_plus, offer,
@@ -2773,7 +2774,7 @@ vzwlr_da_device_v1_listener_selection(void *data,
  */
     static void
 vzwlr_da_device_v1_listener_primary_selection(void *data,
-	struct zwlr_data_control_device_v1 *device,
+	struct zwlr_data_control_device_v1 *device UNUSED,
 	struct zwlr_data_control_offer_v1 *offer)
 {
     vwl_da_setup_data_receive(data, &clip_star, offer,
@@ -2806,7 +2807,8 @@ vzwlr_da_device_v1_listener_finished(void *data,
  */
     static void
 vzwlr_da_source_v1_listener_send(void *data,
-	struct zwlr_data_control_source_v1 *source, const char *mime, int fd)
+	struct zwlr_data_control_source_v1 *source UNUSED,
+	const char *mime, int fd)
 {
     vwl_da_send_data(data, fd, mime);
 }
@@ -2817,7 +2819,7 @@ vzwlr_da_source_v1_listener_send(void *data,
  */
     static void
 vzwlr_da_source_v1_listener_cancelled(void *data,
-	struct zwlr_data_control_source_v1 *source)
+	struct zwlr_data_control_source_v1 *source UNUSED)
 {
     clip_lose_selection(data);
 }
@@ -2833,7 +2835,7 @@ vext_da_offer_v1_listener_offer(void *data,
 
     static void
 vext_da_device_v1_listener_data_offer(void *data,
-	struct ext_data_control_device_v1 *device,
+	struct ext_data_control_device_v1 *device UNUSED,
 	struct ext_data_control_offer_v1 *offer)
 {
     if (offer == NULL)
@@ -2845,7 +2847,7 @@ vext_da_device_v1_listener_data_offer(void *data,
 
     static void
 vext_da_device_v1_listener_selection(void *data,
-	struct ext_data_control_device_v1 *device,
+	struct ext_data_control_device_v1 *device UNUSED,
 	struct ext_data_control_offer_v1 *offer)
 {
     vwl_da_setup_data_receive(data, &clip_plus, offer,
@@ -2855,7 +2857,7 @@ vext_da_device_v1_listener_selection(void *data,
 
     static void
 vext_da_device_v1_listener_primary_selection(void *data,
-	struct ext_data_control_device_v1 *device,
+	struct ext_data_control_device_v1 *device UNUSED,
 	struct ext_data_control_offer_v1 *offer)
 {
     vwl_da_setup_data_receive(data, &clip_star, offer,
@@ -2881,14 +2883,15 @@ vext_da_device_v1_listener_finished(void *data,
 
     static void
 vext_da_source_v1_listener_send(void *data,
-	struct ext_data_control_source_v1 *source, const char *mime, int fd)
+	struct ext_data_control_source_v1 *source UNUSED,
+	const char *mime, int fd)
 {
     vwl_da_send_data(data, fd, mime);
 }
 
     static void
 vext_da_source_v1_listener_cancelled(void *data,
-	struct ext_data_control_source_v1 *source)
+	struct ext_data_control_source_v1 *source UNUSED)
 {
     clip_lose_selection(data);
 }
@@ -2900,7 +2903,7 @@ vext_da_source_v1_listener_cancelled(void *data,
     void
 clip_wl_request_selection(Clipboard_T *cbd)
 {
-    void *device;
+    void *device = NULL;
     if (vwl_connect_data_control() == FAIL)
     {
 	return;
@@ -2934,10 +2937,13 @@ clip_wl_request_selection(Clipboard_T *cbd)
     if (vwl_send_requests() == FAIL)
 	emsg(_(e_wayland_failed_sending_requests));
 
-    if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
-	zwlr_data_control_device_v1_destroy(device);
-    else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
-	ext_data_control_device_v1_destroy(device);
+    if (device != NULL)
+    {
+	if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
+	    zwlr_data_control_device_v1_destroy(device);
+	else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
+	    ext_data_control_device_v1_destroy(device);
+    }
 
     vwl_send_requests();
 }
@@ -2949,7 +2955,7 @@ clip_wl_request_selection(Clipboard_T *cbd)
     int
 clip_wl_own_selection(Clipboard_T *cbd)
 {
-    void *source;
+    void *source = NULL;
     int use_regular = FALSE; // Always use regular selection if TRUE
 
     if (vwl_connect_data_control() == FAIL)
@@ -3023,15 +3029,18 @@ clip_wl_own_selection(Clipboard_T *cbd)
     {
 	emsg(_(e_wayland_failed_dispatching_requests));
 
-	if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
+	if (source != NULL)
 	{
-	    zwlr_data_control_source_v1_destroy(source);
-	    cbd->source.zwlr = NULL;
-	}
-	else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
-	{
-	    ext_data_control_source_v1_destroy(source);
-	    cbd->source.ext = NULL;
+	    if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
+	    {
+		zwlr_data_control_source_v1_destroy(source);
+		cbd->source.zwlr = NULL;
+	    }
+	    else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
+	    {
+		ext_data_control_source_v1_destroy(source);
+		cbd->source.ext = NULL;
+	    }
 	}
 
 	return FAIL;
@@ -3116,10 +3125,17 @@ get_clipmethod(char_u *str)
 	else if (STRCMP(buf, "x11") == 0)
 	{
 #ifdef FEAT_XCLIPBOARD
-	    // Not sure how to determine if X11 connnection is invalid...
-
+	    // x_IOerror_handler() in os_unix.c should set xterm_dpy to NULL
+	    // if we lost connection to the X server.
 	    if (xterm_dpy != NULL)
+	    {
+		// If the X connection is lost then that handler will longjmp
+		// somewhere else, in that case we will call choose_clipmethod()
+		// again from there, and this if block won't be executed since
+		// xterm_dpy will be set to NULL.
+		xterm_update();
 		method = CLIPMETHOD_X11;
+	    }
 #endif
 	}
 	else
