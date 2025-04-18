@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Apr 15
+" Last Change:	2025 Apr 18
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -424,14 +424,14 @@ au BufNewFile,BufRead *.cpp
 au BufNewFile,BufRead *.cypher			setf cypher
 
 " C++
-au BufNewFile,BufRead *.cxx,*.c++,*.hh,*.hxx,*.hpp,*.ipp,*.moc,*.tcc,*.inl setf cpp
+au BufNewFile,BufRead *.cxx,*.c++,*.hh,*.hxx,*.hpp,*.ipp,*.ixx,*.moc,*.tcc,*.inl setf cpp
 if has("fname_case")
 	au BufNewFile,BufRead *.C,*.H if !&fileignorecase | setf cpp | endif
 endif
 
 " C++ 20 modules (clang)
 " https://clang.llvm.org/docs/StandardCPlusPlusModules.html#file-name-requirement
-au BufNewFile,BufRead *.cppm,*.ccm,*.cxxm,*.c++m setf cpp
+au BufNewFile,BufRead *.cppm,*.ccm,*.cxxm,*.c++m,*.mpp setf cpp
 
 " .h files can be C, Ch C++, ObjC or ObjC++.
 " Set c_syntax_for_h if you want C, ch_syntax_for_h if you want Ch. ObjC is
