@@ -653,7 +653,8 @@ vim_main2(void)
 #endif
     {
 	vwl_set_display_strname(NULL, FALSE);
-	vwl_connect_client(vwl_display_strname);
+	if (vwl_connect_client(vwl_display_strname) == OK)
+	    TIME_MSG("connected to wayland display");
 #ifdef FEAT_WAYLAND_CLIPBOARD
 	if (vwl_connect_data_control() == OK)
 	{

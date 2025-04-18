@@ -2089,7 +2089,7 @@ EXTERN int vwl_primary_sel_supported INIT(= FALSE);
 
 // Used to check if the primary selection global object has been removed.
 // We don't actually bind to it.
-EXTERN int vzwp_primary_sel_manager_v1_name;
+EXTERN uint32_t vzwp_primary_sel_manager_v1_name;
 
 // Current data control protocol to use
 EXTERN vwl_da_protocol_T vwl_cur_da_protocol INIT(= VWL_DA_PROTOCOL_UNKNOWN);
