@@ -1493,11 +1493,11 @@ tuple<number>			a tuple with a single item of type |Number|
 tuple<number, string>		a tuple with two items of type |Number| and
 				|String|
 tuple<number, float, bool>	a tuple with three items of type |Number|,
-				|Float| and |Boolean|.
+				|Float| and |Boolean|
 tuple<...list<number>>		a variadic tuple with zero or more items of
-				type |Number|.
+				type |Number|
 tuple<number, ...list<string>>	a tuple with an item of type |Number| followed
-				by zero or more items of type |String|.
+				by zero or more items of type |String|
 
 Examples: >
     var myTuple: tuple<number> = (20,)

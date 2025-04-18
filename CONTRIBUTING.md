@@ -33,13 +33,13 @@ terms.  To sign off a commit, simply use the -s flag when committing:
 
 ```sh
 git commit -s
-```  
+```
 
 This ensures that every contribution is properly documented and traceable,
 aligning with industry standards used in projects like the Linux Kernel or
 the git project.  By making Signed-off commits a standard practice, we help
 maintain a legally compliant and well-governed codebase while fostering trust
-within our contributor community. 
+within our contributor community.
 
 When merging PRs into Vim, the current maintainer @chrisbra usually adds missing
 `Signed-off-by` trailers for the author user name and email address as well for
@@ -71,7 +71,7 @@ Or open [the todo file][todo list] on GitHub to see the latest version.
 # Syntax, indent and other runtime files
 
 The latest version of these files can be obtained from the repository.
-They are usually not updated with numbered patches. However, they may 
+They are usually not updated with numbered patches. However, they may
 or may not work with older Vim releases (since they may contain new features).
 
 If you find a problem with one of these files or have a suggestion for
