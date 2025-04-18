@@ -4434,7 +4434,7 @@ mch_report_winsize(int fd, int rows, int cols)
     ws.ws_col = cols;
     ws.ws_row = rows;
 
-    // calcurate and set tty pixel size
+    // calculate and set tty pixel size
     struct cellsize cs;
     mch_calc_cell_size(&cs);
 

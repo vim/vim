@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 16
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41594,7 +41594,7 @@ Default values: ~
 - the default 'backspace' option for Vim has been set to "indent,eol,start"
   and removed from |defaults.vim|
 - the default fontsize for the GTK builds of Vim (Windows and Unix) has been
-  increased to 12pt to accomodate modern high-dpi monitors
+  increased to 12pt to accommodate modern high-dpi monitors
 - the default value of the 'keyprotocol' option has been updated and support
   for the ghostty terminal emulator (using kitty protocol) has been added
 
@@ -41739,7 +41739,7 @@ Ex-Commands: ~
 Options: ~
 
 'chistory'		Size of the quickfix stack |quickfix-stack|.
-'completefuzzycollect'	Enable fuzzy collection of candiates for (some)
+'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
 			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup

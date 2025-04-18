@@ -3229,7 +3229,7 @@ diff_refine_inline_char_highlight(diff_T *dp_orig, garray_T *linemap, int idx1)
 }
 
 /*
- * Find the inline difference within a diff block among differnt buffers.  Do
+ * Find the inline difference within a diff block among different buffers.  Do
  * this by splitting each block's content into characters or words, and then
  * use internal xdiff to calculate the per-character/word diff.  The result is
  * stored in dp instead of returned by the function.
@@ -4548,7 +4548,7 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     {
 	// Remember the results if using simple since it's recalculated per
 	// call. Otherwise just call diff_find_change() every time since
-	// internally the result is cached interally.
+	// internally the result is cached internally.
 	cache_results = FALSE;
     }
 
