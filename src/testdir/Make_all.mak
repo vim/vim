@@ -434,6 +434,7 @@ NEW_TESTS_RES = \
 	test_float_func.res \
 	test_fnameescape.res \
 	test_fold.res \
+	test_format.res \
 	test_functions.res \
 	test_function_lists.res \
 	test_getcwd.res \
