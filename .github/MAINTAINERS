@@ -63,6 +63,7 @@ runtime/compiler/eruby.vim		@dkearns
 runtime/compiler/fbc.vim		@dkearns
 runtime/compiler/gawk.vim		@dkearns
 runtime/compiler/gjs.vim		@dkearns
+runtime/compiler/gleam.vim		@kirillmorozov
 runtime/compiler/gm2.vim		@dkearns
 runtime/compiler/go.vim			@dbarnett
 runtime/compiler/groff.vim		@Konfekt
@@ -500,6 +501,7 @@ runtime/syntax/gitconfig.vim		@tpope
 runtime/syntax/gitignore.vim		@ObserverOfTime
 runtime/syntax/gitolite.vim		@sitaramc
 runtime/syntax/gitrebase.vim		@tpope
+runtime/syntax/gleam.vim		@kirillmorozov
 runtime/syntax/glsl.vim		@gpanders
 runtime/syntax/go.vim			@bhcleek
 runtime/syntax/goaccess.vim		@meonkeys
