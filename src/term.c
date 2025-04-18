@@ -1710,7 +1710,7 @@ static char *(key_names[]) =
     // Do those ones first, both may cause a screen redraw.
     "Co",
     // disabled, because it switches termguicolors, but that
-    // is noticable and confuses users
+    // is noticeable and confuses users
     // "RGB",
 # endif
     "ku", "kd", "kr", "kl",
