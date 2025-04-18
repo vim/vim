@@ -200,7 +200,6 @@ static struct ext_data_control_device_v1_listener
 
 static Widget	xterm_Shell = (Widget)0;
 static void clip_update(void);
-static void xterm_update(void);
 # endif
 
 Window	    x11_window = 0;
@@ -8411,7 +8410,7 @@ clip_update(void)
  * nothing in the X event queue (& no timers pending), then we return
  * immediately.
  */
-    static void
+    void
 xterm_update(void)
 {
     XEvent event;
@@ -9514,8 +9513,6 @@ ex_wlrestore(exarg_T *eap)
 	smsg(_("restoring wayland display %s"), vwl_display_strname);
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
-    // Must reconnect data control because get_clipmethod() uses
-    // vwl_data_control_valid()
     vwl_connect_data_control();
 #endif
     }

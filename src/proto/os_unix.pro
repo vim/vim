@@ -82,6 +82,7 @@ void setup_term_clip(void);
 void start_xterm_trace(int button);
 void stop_xterm_trace(void);
 void clear_xterm_clip(void);
+void xterm_update(void);
 int clip_xterm_own_selection(Clipboard_T *cbd);
 void clip_xterm_lose_selection(Clipboard_T *cbd);
 void clip_xterm_request_selection(Clipboard_T *cbd);
