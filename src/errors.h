@@ -3728,3 +3728,7 @@ EXTERN char e_failed_resizing_quickfix_stack[]
 EXTERN char e_no_quickfix_stack[]
 	INIT(= N_("E1545: Quickfix list stack unavailable"));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_formatter_not_supported_str[]
+	INIT(= N_("E1546: Formatter not supported: %s"));
+#endif

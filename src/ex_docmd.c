@@ -294,6 +294,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_finally		ex_ni
 # define ex_incdec		ex_ni
 # define ex_finish		ex_ni
+# define ex_formatter		ex_ni
 # define ex_function		ex_ni
 # define ex_if			ex_ni
 # define ex_let			ex_ni
