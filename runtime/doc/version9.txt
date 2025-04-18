@@ -41637,8 +41637,8 @@ Options: ~
 - use 'smoothscroll' logic for CTRL-F / CTRL-B for pagewise scrolling
   and CTRL-D / CTRL-U for half-pagewise scrolling
 - New option value for 'fillchars':
-  	"trunc"		- configure truncation indicator, 'pummaxwidth'
-  	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
+	"trunc"		- configure truncation indicator, 'pummaxwidth'
+	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|
