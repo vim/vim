@@ -11,7 +11,10 @@ endif
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
-let b:undo_ftplugin = "setl commentstring< comments<"
+let b:undo_ftplugin = "setl commentstring< comments< iskeyword< | unlet! b:match_words"
+
+let b:match_words = "\<if\>:\<then\>:\<else\>,\<let\>:\<in\>"
 
 setlocal comments=:#
 setlocal commentstring=#\ %s
+setlocal iskeyword+=-
