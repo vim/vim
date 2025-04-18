@@ -449,6 +449,35 @@ main
 #endif // NO_VIM_MAIN
 #endif // PROTO
 
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+/*
+ * Restore the state after a fatal X error.
+ */
+    static void
+x_restore_state(void)
+{
+    State = MODE_NORMAL;
+    VIsual_active = FALSE;
+    got_int = TRUE;
+    need_wait_return = FALSE;
+    global_busy = FALSE;
+    exmode_active = 0;
+    skip_redraw = FALSE;
+    RedrawingDisabled = 0;
+    no_wait_return = 0;
+    vgetc_busy = 0;
+# ifdef FEAT_EVAL
+    emsg_skip = 0;
+# endif
+    emsg_off = 0;
+    setmouse();
+    settmode(TMODE_RAW);
+    starttermcap();
+    scroll_start();
+    redraw_later_clear();
+}
+#endif
+
 /*
  * vim_main2() is needed for FEAT_MZSCHEME, but we define it always to keep
  * things simple.
@@ -790,9 +819,28 @@ vim_main2(void)
 	    getout(1);
     }
 
-    // Execute any "+", "-c" and "-S" arguments.
-    if (params.n_commands > 0)
-	exe_commands(&params);
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+    // Temporarily set x_jump_env to here in case there is an X11 IO error,
+    // because x_jump_env is only actually set in main_loop(), before
+    // exe_commands(). May not be the best since solution since commands
+    // passed via the command line can be very broad like sourcing a file,
+    // in which an X IO error results in the command being partially done.
+    // In theory we can use SETJMP in RealWaitForChar(), but the stack frame
+    // for that may possibly exit and then LONGJMP is called on it.
+    int jump_result = SETJMP(x_jump_env);
+
+    if (jump_result == 0)
+    {
+#endif
+	// Execute any "+", "-c" and "-S" arguments.
+	if (params.n_commands > 0)
+	    exe_commands(&params);
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+    }
+    else
+	// Restore state and continue just like what main_loop() does.
+	x_restore_state();
+#endif
 
     // Must come before the may_req_ calls.
     starting = 0;
@@ -1245,27 +1293,7 @@ main_loop(
     // properly, but at least we don't exit unexpectedly when the X server
     // exits while Vim is running in a console.
     if (!cmdwin && !noexmode && SETJMP(x_jump_env))
-    {
-	State = MODE_NORMAL;
-	VIsual_active = FALSE;
-	got_int = TRUE;
-	need_wait_return = FALSE;
-	global_busy = FALSE;
-	exmode_active = 0;
-	skip_redraw = FALSE;
-	RedrawingDisabled = 0;
-	no_wait_return = 0;
-	vgetc_busy = 0;
-# ifdef FEAT_EVAL
-	emsg_skip = 0;
-# endif
-	emsg_off = 0;
-	setmouse();
-	settmode(TMODE_RAW);
-	starttermcap();
-	scroll_start();
-	redraw_later_clear();
-    }
+	x_restore_state();
 #endif
 
     clear_oparg(&oa);
