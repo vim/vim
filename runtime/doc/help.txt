@@ -187,6 +187,9 @@ GUI ~
 |gui_w32.txt|	Win32 GUI
 |gui_x11.txt|	X11 GUI
 
+System Integration ~
+|wayland.txt|	Wayland protocol support
+
 Interfaces ~
 |if_cscop.txt|	using Cscope with Vim
 |if_lua.txt|	Lua interface

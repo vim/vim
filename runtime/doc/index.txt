@@ -1585,6 +1585,7 @@ tag		command		action ~
 |:redrawtabline|  :redrawt[abline]  force a redraw of the tabline
 |:registers|	:reg[isters]	display the contents of registers
 |:resize|	:res[ize]	change current window height
+|:restoreclip|    :rest[oreclip]  reset 'clipmethod'
 |:retab|	:ret[ab]	change tab size
 |:return|	:retu[rn]	return from a user function
 |:rewind|	:rew[ind]	go to the first file in the argument list
@@ -1774,6 +1775,7 @@ tag		command		action ~
 |:winsize|	:wi[nsize]	get or set window size (obsolete)
 |:wincmd|	:winc[md]	execute a Window (CTRL-W) command
 |:winpos|	:winp[os]	get or set window position
+|:wlrestore|	:wl[restore]	restores the Wayland compositor connection
 |:wnext|	:wn[ext]	write to a file and go to next file in
 				argument list
 |:wprevious|	:wp[revious]	write to a file and go to previous file in

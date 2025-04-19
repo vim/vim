@@ -146,6 +146,9 @@ gui_start(char_u *arg UNUSED)
 	    emsg(msg);
 #endif
     }
+    else
+	// Reset clipmethod to CLIPMETHOD_NONE
+	choose_clipmethod();
 
     vim_free(old_term);
 

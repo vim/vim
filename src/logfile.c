@@ -101,6 +101,20 @@ ch_log_lead(const char *what, channel_T *ch UNUSED, ch_part_T part UNUSED)
 }
 
 #ifndef PROTO  // prototype is in proto.h
+
+    void
+ch_vlog(channel_T *ch, const char *fmt, va_list ap)
+{
+    if (log_fd == NULL)
+	return;
+
+    ch_log_lead("", ch, PART_COUNT);
+    vfprintf(log_fd, fmt, ap);
+    fputc('\n', log_fd);
+    fflush(log_fd);
+    did_repeated_msg = 0;
+}
+
     void
 ch_log(channel_T *ch, const char *fmt, ...)
 {

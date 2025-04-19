@@ -272,6 +272,7 @@ void mbyte_im_set_active(int active_arg);
 
 # ifdef FEAT_EVAL
 // Not generated automatically so that we can add an extra attribute.
+void ch_vlog(channel_T *ch, const char *fmt, va_list ap);
 void ch_log(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 void ch_error(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 # endif

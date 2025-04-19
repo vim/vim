@@ -278,6 +278,7 @@ NEW_TESTS = \
 	test_search \
 	test_search_stat \
 	test_searchpos \
+	test_clipboard \
 	test_selectmode \
 	test_set \
 	test_sha256 \
@@ -539,6 +540,7 @@ NEW_TESTS_RES = \
 	test_scrollbind.res \
 	test_search.res \
 	test_search_stat.res \
+	test_clipboard.res \
 	test_selectmode.res \
 	test_shell.res \
 	test_shortpathname.res \

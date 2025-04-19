@@ -1785,7 +1785,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						  for X-windows, "" otherwise)
 			global
 			{only in GUI versions or when the |+xterm_clipboard|
-			feature is included}
+			or |+wayland_clipboard| features are included}
 	This option is a list of comma-separated names.
 	Note: if one of the items is "exclude:", then you can't add an item
 	after that.  Therefore do not append an item with += but use ^= to
@@ -1812,10 +1812,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			register.  When "unnamed" is also included to the
 			option, yank operations (but not delete, change or
 			put) will additionally copy the text into register
-			'*'.
-			Only available with the |+X11| feature.
-			Availability can be checked with: >
-				if has('unnamedplus')
+			'*'. If wayland is being used and the compositor does
+			not support the primary-selection-unstable-v1
+			protocol, then the regular selection is used in its
+			place.  Only available with the |+X11| or
+			|+wayland_clipboard| feature.  Availability can be
+			checked with: >
+			if has('unnamedplus')
 <
 						*clipboard-autoselect*
 	autoselect	Works like the 'a' flag in 'guioptions': If present,
@@ -1852,23 +1855,53 @@ A jump table for the options with a short description can be found at |Q_op|.
 	exclude:{pattern}
 			Defines a pattern that is matched against the name of
 			the terminal 'term'.  If there is a match, no
-			connection will be made to the X server.  This is
-			useful in this situation:
+			connection will be made to the X server or wayland
+			compositor.  This is useful in this situation:
 			- Running Vim in a console.
-			- $DISPLAY is set to start applications on another
-			  display.
-			- You do not want to connect to the X server in the
-			  console, but do want this in a terminal emulator.
-			To never connect to the X server use: >
+			- $DISPLAY/$WAYLAND_DISPLAY is set to start
+			   applications on another display.
+			- You do not want to connect to the X server/Wayland
+			  compositor in the console, but do want this in a
+			  terminal emulator.
+			To never connect to the X server/Wayland compositor
+			use: >
 				exclude:.*
-<			This has the same effect as using the |-X| argument.
+<			This has the same effect as using the |-X| or |-Y| argument.
 			Note that when there is no connection to the X server
 			the window title won't be restored and the clipboard
-			cannot be accessed.
+			cannot be accessed. This is the same for Wayland,
+			except there is no title restoring.
 			The value of 'magic' is ignored, {pattern} is
 			interpreted as if 'magic' was on.
 			The rest of the option value will be used for
 			{pattern}, this must be the last entry.
+
+						*'clipmethod'* *'cpm'*
+'clipmethod' 'cpm'	string	(default for Unix: "wayland,x11",
+				 for VMS: "x11",
+				 otherwise: "")
+
+			global
+			{only when the |+xterm_clipboard| or |+wayland_clipboard|
+			features are included}
+	Specifies which method of accessing the system clipboard is used,
+	depending on which method works first or is available.  Supported
+	methods are:
+		wayland		Wayland selections
+		x11		X11 selections
+
+	Note: This option is ignored and is useless when either the GUI
+	is running or if Vim is run on a system without wayland or X11
+	support, such as Windows or macOS.  The GUI or system way of accessing
+	the clipboard is always used instead.
+
+	The option value is a list of comma separated items.  The list is parsed
+	left to right in order, and the first method that Vim determines is
+	available or is working is used as the actual method for accessing the
+	clipboard.
+
+	The current method that is being used can be found in the |v:clipmethod|
+	variable.
 
 						*'cmdheight'* *'ch'*
 'cmdheight' 'ch'	number	(default 1)
@@ -4514,8 +4547,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-VertSplit|	 c  column used to separate vertically split windows
 	|hl-Visual|	 v  Visual mode
 	|hl-VisualNOS|	 V  Visual mode when Vim does is "Not Owning the
-			    Selection" Only X11 Gui's |gui-x11| and
-			    |xterm-clipboard|.
+			    Selection" Only X11 Gui's |gui-x11|,
+			    |xterm-clipboard| and |wayland-selections|
 	|hl-WarningMsg|	 w  warning messages
 	|hl-WildMenu|	 W  wildcard matches displayed for 'wildmenu'
 	|hl-Folded|	 f  line used for closed folds
@@ -9893,6 +9926,29 @@ A jump table for the options with a short description can be found at |Q_op|.
 	width of the current window.
 	'winwidth' applies to the current window.  Use 'winminwidth' to set
 	the minimal width for other windows.
+
+						*'wlrtimeoutlen'* *'wrm'*
+'wlrtimeoutlen' 'wrm'	number	(default 10)
+			global
+			{only when the |+wayland_clipboard| feature is included}
+	The timeout in milliseconds to be used to check if there is any more
+	data to be received when Vim is the receiving wayland client.  In the
+	Wayland protocol, data is transferred over file descriptors, therefore
+	when Vim is receiving data, it must know when it has received all of
+	it.  This option is the timeout to use until vim determines that it has
+	received all the data.
+
+						*'wltimeoutlen'* *'wtm'*
+'wltimeoutlen' 'wtm'	number	(default 3000)
+			global
+			{only when the |+wayland_clipboard| feature is included}
+	The timeout in milliseconds to be used to determine when Vim times out
+	when it is waiting for data to be first received or when it can write
+	data.  In the Wayland protocol, data is received over file descriptors.
+	This option determines the timeout when Vim has started reading a file
+	descriptor and is waiting for data to be first written over it.  This
+	option also applies to when Vim is waiting for a file descriptor to be
+	writable again, such as when it is transferring data.
 
 						*'wrap'* *'nowrap'*
 'wrap'			boolean	(default on)

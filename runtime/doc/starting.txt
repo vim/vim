@@ -559,6 +559,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		client-server messages), call the |serverlist()| function.
 		This does not enable the XSMP handler though.
 
+							*-Y*
+-Y		Do not try connecting to the Wayland compositor. Is only
+		relevant for Unix when compiled with the |+wayland| feature,
+		otherwise it's ignored. Note that this will make any feature
+		that uses Wayland unavailable, such as the clipboard.
+
 							*-s*
 -s {scriptin}	The script file "scriptin" is read.  The characters in the
 		file are interpreted as if you had typed them.  The same can

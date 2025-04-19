@@ -81,6 +81,7 @@ DOCS = \
 	popup.txt \
 	print.txt \
 	quickfix.txt \
+	wayland.txt \
 	quickref.txt \
 	quotes.txt \
 	recover.txt \
@@ -236,6 +237,7 @@ HTMLS = \
 	popup.html \
 	print.html \
 	quickfix.html \
+	wayland.html \
 	quickref.html \
 	quotes.html \
 	recover.html \
