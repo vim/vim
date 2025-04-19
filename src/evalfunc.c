@@ -2092,6 +2092,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_cindent},
     {"clearmatches",	0, 1, FEARG_1,	    arg1_number,
 			ret_void,	    f_clearmatches},
+    {"cmdcomplete_info",0, 0, 0,	    NULL,
+			ret_dict_any,	    f_cmdcomplete_info},
     {"col",		1, 2, FEARG_1,	    arg2_string_or_list_number,
 			ret_number,	    f_col},
     {"complete",	2, 2, FEARG_2,	    arg2_number_list,

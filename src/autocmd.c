@@ -110,6 +110,7 @@ static keyvalue_T event_tab[NUM_EVENTS] = {
     KEYVALUE_ENTRY(EVENT_CMDLINECHANGED, "CmdlineChanged"),
     KEYVALUE_ENTRY(EVENT_CMDLINEENTER, "CmdlineEnter"),
     KEYVALUE_ENTRY(EVENT_CMDLINELEAVE, "CmdlineLeave"),
+    KEYVALUE_ENTRY(EVENT_CMDLINELEAVEPRE, "CmdlineLeavePre"),
     KEYVALUE_ENTRY(EVENT_CMDUNDEFINED, "CmdUndefined"),
     KEYVALUE_ENTRY(EVENT_CMDWINENTER, "CmdwinEnter"),
     KEYVALUE_ENTRY(EVENT_CMDWINLEAVE, "CmdwinLeave"),
@@ -2253,6 +2254,7 @@ apply_autocmds_group(
 		|| event == EVENT_SYNTAX
 		|| event == EVENT_CMDLINECHANGED
 		|| event == EVENT_CMDLINEENTER
+		|| event == EVENT_CMDLINELEAVEPRE
 		|| event == EVENT_CMDLINELEAVE
 		|| event == EVENT_CURSORMOVEDC
 		|| event == EVENT_CMDWINENTER
