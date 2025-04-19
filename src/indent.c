@@ -524,7 +524,7 @@ set_indent(
     char_u	*s;
     int		todo;
     int		ind_len;	    // measured in characters
-    int		line_len;
+    int		line_len;	    // size of the line (including the NUL)
     int		doit = FALSE;
     int		ind_done = 0;	    // measured in spaces
 #ifdef FEAT_VARTABS
@@ -540,6 +540,7 @@ set_indent(
     todo = size;
     ind_len = 0;
     p = oldline = ml_get_curline();
+    line_len = ml_get_curline_len() + 1;
 
     // Calculate the buffer size for the new indent, and check to see if it
     // isn't already set
@@ -660,8 +661,10 @@ set_indent(
     if (flags & SIN_INSERT)
 	p = oldline;
     else
+    {
 	p = skipwhite(p);
-    line_len = (int)STRLEN(p) + 1;
+	line_len -= (int)(p - oldline);
+    }
 
     // If 'preserveindent' and 'expandtab' are both set keep the original
     // characters and allocate accordingly.  We will fill the rest with spaces
@@ -1330,7 +1333,7 @@ change_indent(
     // MODE_VREPLACE state needs to know what the line was like before changing
     if (State & VREPLACE_FLAG)
     {
-	orig_line = vim_strsave(ml_get_curline());  // Deal with NULL below
+	orig_line = vim_strnsave(ml_get_curline(), ml_get_curline_len());  // Deal with NULL below
 	orig_col = curwin->w_cursor.col;
     }
 
@@ -1508,7 +1511,7 @@ change_indent(
 	    return;
 
 	// Save new line
-	new_line = vim_strsave(ml_get_curline());
+	new_line = vim_strnsave(ml_get_curline(), ml_get_curline_len());
 	if (new_line == NULL)
 	    return;
 
@@ -1758,6 +1761,7 @@ ex_retab(exarg_T *eap)
     for (lnum = eap->line1; !got_int && lnum <= eap->line2; ++lnum)
     {
 	ptr = ml_get(lnum);
+	old_len = ml_get_len(lnum);
 	col = 0;
 	vcol = 0;
 	did_undo = FALSE;
@@ -1821,7 +1825,6 @@ ex_retab(exarg_T *eap)
 
 			// len is actual number of white characters used
 			len = num_spaces + num_tabs;
-			old_len = (long)STRLEN(ptr);
 			new_len = old_len - col + start_col + len + 1;
 			if (new_len <= 0 || new_len >= MAXCOL)
 			{
@@ -1845,6 +1848,7 @@ ex_retab(exarg_T *eap)
 			    first_line = lnum;
 			last_line = lnum;
 			ptr = new_line;
+			old_len = new_len - 1;
 			col = start_col + len;
 		    }
 		}
@@ -2000,8 +2004,7 @@ lisp_match(char_u *p)
 
     while (*word != NUL)
     {
-	(void)copy_option_part(&word, buf, LSIZE, ",");
-	len = (int)STRLEN(buf);
+	len = copy_option_part(&word, buf, LSIZE, ",");
 	if (STRNCMP(buf, p, len) == 0 && IS_WHITE_OR_NUL(p[len]))
 	    return TRUE;
     }
