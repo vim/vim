@@ -10,6 +10,7 @@ int check_fname(void);
 int buf_write_all(buf_T *buf, int forceit);
 void ex_listdo(exarg_T *eap);
 void ex_compiler(exarg_T *eap);
+void ex_formatter(exarg_T *eap);
 void init_pyxversion(void);
 void ex_pyxfile(exarg_T *eap);
 void ex_pyx(exarg_T *eap);
