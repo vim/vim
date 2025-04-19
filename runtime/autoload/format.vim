@@ -14,13 +14,7 @@ function! format#FormatExpr()
   let l1 = v:lnum
   let l2 = (v:lnum + v:count) - 1
 
-  let tempfile = tempname()
-
-  call getline(l1, l2)->writefile(tempfile)
-
-  let output = systemlist(expandcmd(&formatprg) .. ' < ' .. tempfile)
-
-  call delete(tempfile)
+  silent let output = systemlist(expandcmd(&formatprg), getline(l1, l2))
 
   if v:shell_error
     echohl WarningMsg | echo 'Shell error: ' .. v:shell_error | echohl None
