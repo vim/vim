@@ -383,7 +383,7 @@ def Test_type_with_extra_white()
   var lines =<< trim END
       const x : number = 3
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1059')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1059:')
 enddef
 
 def Test_keep_type_after_assigning_null()
@@ -532,8 +532,8 @@ def Test_assign_unpack()
   lines =<< trim END
       [v1, v2] = [1, 2]
   END
-  v9.CheckDefFailure(lines, 'E1089', 1)
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E1089', 2)
+  v9.CheckDefFailure(lines, 'E1089:', 1)
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1089:', 2)
 
   lines =<< trim END
       var v1: number

@@ -1037,7 +1037,7 @@ def Test_execute()
 
   v9.CheckSourceDefAndScriptFailure(['execute(123)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1'])
   v9.CheckSourceDefFailure(['execute([123])'], 'E1013: Argument 1: type mismatch, expected list<string> but got list<number>')
-  v9.CheckSourceDefExecFailure(['echo execute(["xx", 123])'], 'E492')
+  v9.CheckSourceDefExecFailure(['echo execute(["xx", 123])'], 'E492:')
   v9.CheckSourceDefAndScriptFailure(['execute("xx", 123)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
 enddef
 
