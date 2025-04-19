@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Apr 18
+" Last Change:	2025 Apr 19
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -436,9 +436,8 @@ au BufNewFile,BufRead *.ixx,*.mpp setf cpp
 " https://clang.llvm.org/docs/StandardCPlusPlusModules.html#file-name-requirement
 au BufNewFile,BufRead *.cppm,*.ccm,*.cxxm,*.c++m setf cpp
 
-" .h files can be C, Ch C++, ObjC or ObjC++.
-" Set c_syntax_for_h if you want C, ch_syntax_for_h if you want Ch. ObjC is
-" detected automatically.
+" .h files can be C, C++, Ch, Objective-C, or Objective-C++.
+" Set g_filetype_h to set a different filetype
 au BufNewFile,BufRead *.h			call dist#ft#FTheader()
 
 " Ch (CHscript)
