@@ -1147,13 +1147,13 @@ func Test_undo_ftplugin_on_buffer_reuse()
   enew
   bw defaults.vim
   let b:undo_ftplugin = ':bw'
-  call assert_fails(':e $VIMRUNTIME/defaults.vim', 'E937')
+  call assert_fails(':e $VIMRUNTIME/defaults.vim', 'E937:')
 
   " try to split the window
   enew
   bw defaults.vim
   let b:undo_ftplugin = ':sp $VIMRUNTIME/defaults.vim'
-  call assert_fails(':e $VIMRUNTIME/defaults.vim', 'E242')
+  call assert_fails(':e $VIMRUNTIME/defaults.vim', 'E242:')
 
   bwipe!
   filetype off
