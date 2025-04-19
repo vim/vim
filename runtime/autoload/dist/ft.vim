@@ -639,13 +639,14 @@ export def FTmms()
   setf mmix
 enddef
 
-# This function checks if one of the first five lines start with a dot.  In
-# that case it is probably an nroff file: 'filetype' is set and 1 is returned.
+# This function checks if one of the first five lines start with a typical
+# nroff pattern in man files.  In that case it is probably an nroff file:
+# 'filetype' is set and 1 is returned.
 export def FTnroff(): number
   var n = 1
-  while n < 5
+  while n <= 5
     var line = getline(n)
-    if line =~ '^\.\S\S\?'
+    if line =~ '^\%([.'']\s*\%(TH\|D[dt]\|S[Hh]\|d[es]1\?\|so\)\s\+\S\|[.'']\s*ig\>\|\%([.'']\s*\)\?\\"\)'
       setf nroff
       return 1
     endif
