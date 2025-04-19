@@ -22,7 +22,19 @@ setlocal comments=:.\\\"
 setlocal sections+=Sh
 setlocal define=.\s*de
 
-let b:undo_ftplugin = 'setlocal commentstring< comments< sections< define<'
+if get(b:, 'preprocs_as_sections')
+  setlocal sections=EQTSPS[\ G1GS
+endif
+
+" XXX 'sections<' does not work
+let b:undo_ftplugin = 'setlocal commentstring< comments< sections& define<'
+
+if get(b:, 'nroff_is_groff')
+  " groff_ms exdented paragraphs are not in the default paragraphs list.
+  setlocal paragraphs+=XP
+  " XXX 'paragraphs<' does not work
+  let b:undo_ftplugin .= ' paragraphs&'
+endif
 
 if exists('loaded_matchit')
   let b:match_words = '^\.\s*ie\>:^\.\s*el\>'
