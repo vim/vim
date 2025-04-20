@@ -28,7 +28,7 @@ setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 setlocal commentstring=//\ %s
 
 " The following suffixes should be implied when resolving filenames
-setlocal suffixesadd+=.tsx,.jsx,.ts,.d.ts,.vue,.mjs,.js,.cjs,.json
+setlocal suffixesadd+=.tsx,.jsx,.ts,.d.ts,.vue,.mjs,.js,.cjs,.json,.jsm,.es6,.es
 
 " The following suffixes should have low priority
 "   .snap    jest snapshot
