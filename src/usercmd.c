@@ -71,6 +71,7 @@ static keyvalue_T command_complete_tab[] =
     KEYVALUE_ENTRY(EXPAND_FILES, "file"),
     KEYVALUE_ENTRY(EXPAND_FILES_IN_PATH, "file_in_path"),
     KEYVALUE_ENTRY(EXPAND_FILETYPE, "filetype"),
+    KEYVALUE_ENTRY(EXPAND_FILETYPECMD, "filetypecmd"),
     KEYVALUE_ENTRY(EXPAND_FUNCTIONS, "function"),
     KEYVALUE_ENTRY(EXPAND_HELP, "help"),
     KEYVALUE_ENTRY(EXPAND_HIGHLIGHT, "highlight"),
