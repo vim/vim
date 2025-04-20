@@ -69,6 +69,4 @@ loadkeymap
 ~ " ASCII DOUBLE QUOTES
 '- ? ASCII EXCLAMATION
 '= | ASCII VERTICAL SLASH
-<<<<<<< HEAD
 ` ' ASCII SINGLE QUOTE
->>>>>>> 22cdd3434 ( Changes to be committed:)
