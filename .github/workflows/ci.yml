@@ -29,6 +29,7 @@ jobs:
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
+      WAYLAND_DISPLAY: 'wayland-1'
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
@@ -114,6 +115,7 @@ jobs:
         run: |
           # This is added by default, and it is often broken, but we don't need anything from it
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+
           PKGS=( \
             gettext \
             libgtk2.0-dev:${{ matrix.architecture }} \
@@ -123,6 +125,7 @@ jobs:
             libxt-dev:${{ matrix.architecture }} \
             locales-all \
             software-properties-common \
+            sway \
           )
           if ${{ matrix.features == 'huge' }}; then
             LUA_VER=${{ matrix.lua_ver || '5.4' }}
@@ -143,6 +146,7 @@ jobs:
               libattr1-dev
             )
           fi
+
           sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
@@ -232,6 +236,8 @@ jobs:
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
+          # Sway requires user session
+          bash ci/setup-sway.sh
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')

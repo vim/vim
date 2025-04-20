@@ -25,6 +25,7 @@ SRC_ALL =	\
 		ci/if_ver*.vim \
 		ci/if_feat_check.vim \
 		ci/setup-xvfb.sh \
+		ci/setup-sway.sh \
 		ci/remove_snap.sh \
 		src/Make_all.mak \
 		src/README.md \
