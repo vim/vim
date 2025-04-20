@@ -98,7 +98,9 @@ g8			Print the hex values of the bytes used in the
 
 						*:p* *:pr* *:print* *E749*
 :[range]p[rint] [flags]
-			Print [range] lines (default current line).
+			Print [range] lines (default current line). Can also
+			be spelled `:[range]|` due to Vi compatibility (see
+			|:bar|). Gives an error in an empty buffer.
 			Note: If you are looking for a way to print your text
 			on paper see |:hardcopy|.  In the GUI you can use the
 			File.Print menu entry.
