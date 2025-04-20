@@ -240,13 +240,13 @@ func Test_blob_compare()
       VAR b1 = 0z0011
       echo b1 == 9
   END
-  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072', 'E1072'])
+  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072:', 'E1072:'])
 
   let lines =<< trim END
       VAR b1 = 0z0011
       echo b1 != 9
   END
-  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072', 'E1072'])
+  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072:', 'E1072:'])
 
   let lines =<< trim END
       VAR b1 = 0z0011
