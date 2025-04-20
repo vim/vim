@@ -72,6 +72,20 @@ static int	buf_free_count = 0;
 static int	top_file_num = 1;	// highest file number
 static garray_T buf_reuse = GA_EMPTY;	// file numbers to recycle
 
+    static void
+trigger_undo_ftplugin(buf_T *buf, win_T *win)
+{
+    window_layout_lock();
+    buf->b_locked++;
+    win->w_locked = TRUE;
+    // b:undo_ftplugin may be set, undo it
+    do_cmdline_cmd((char_u*)"if exists('b:undo_ftplugin') | :legacy :exe \
+	    b:undo_ftplugin | endif");
+    buf->b_locked--;
+    win->w_locked = FALSE;
+    window_layout_unlock();
+}
+
 /*
  * Calculate the percentage that `part` is of the `whole`.
  */
@@ -2206,6 +2220,7 @@ buflist_new(
     if ((flags & BLN_CURBUF) && curbuf_reusable())
     {
 	buf = curbuf;
+	trigger_undo_ftplugin(buf, curwin);
 	// It's like this buffer is deleted.  Watch out for autocommands that
 	// change curbuf!  If that happens, allocate a new buffer anyway.
 	buf_freeall(buf, BFA_WIPE | BFA_DEL);

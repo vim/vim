@@ -712,7 +712,7 @@ def Test_expr4_equal()
 
   v9.CheckDefExecAndScriptFailure(['var x: any = "a"', 'echo x == true'], 'E1072: Cannot compare string with bool', 2)
   v9.CheckDefExecAndScriptFailure(["var x: any = true", 'echo x == ""'], 'E1072: Cannot compare bool with string', 2)
-  v9.CheckDefExecAndScriptFailure(["var x: any = 99", 'echo x == true'], ['E1138', 'E1072:'], 2)
+  v9.CheckDefExecAndScriptFailure(["var x: any = 99", 'echo x == true'], ['E1138:', 'E1072:'], 2)
   v9.CheckDefExecAndScriptFailure(["var x: any = 'a'", 'echo x == 99'], ['E1030:', 'E1072:'], 2)
 
   lines =<< trim END
@@ -1610,7 +1610,7 @@ def Test_expr6_vim9script()
   lines =<< trim END
       echo 0z1234 - 44
   END
-  v9.CheckDefAndScriptFailure(lines, ['E1036', 'E974:'], 1)
+  v9.CheckDefAndScriptFailure(lines, ['E1036:', 'E974:'], 1)
 
   lines =<< trim END
       echo 'abc' is? 'abc'
@@ -1865,8 +1865,8 @@ def Test_expr7()
   v9.CheckDefFailure(["var d = 6 * "], 'E1097:', 3)
   v9.CheckScriptFailure(['vim9script', "var d = 6 * "], 'E15:', 2)
 
-  v9.CheckDefAndScriptFailure(['echo 1 / 0'], 'E1154', 1)
-  v9.CheckDefAndScriptFailure(['echo 1 % 0'], 'E1154', 1)
+  v9.CheckDefAndScriptFailure(['echo 1 / 0'], 'E1154:', 1)
+  v9.CheckDefAndScriptFailure(['echo 1 % 0'], 'E1154:', 1)
 
   g:zero = 0
   v9.CheckDefExecFailure(['echo 123 / g:zero'], 'E1154: Divide by zero')
@@ -1876,19 +1876,19 @@ def Test_expr7()
         'g:one = 1.0',
         'g:two = 2.0',
         'echo g:one % g:two',
-        ], 'E804', 3)
+        ], 'E804:', 3)
 
   lines =<< trim END
     var n = 0
     eval 1 / n
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1154', 2)
+  v9.CheckDefExecAndScriptFailure(lines, 'E1154:', 2)
 
   lines =<< trim END
     var n = 0
     eval 1 % n
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1154', 2)
+  v9.CheckDefExecAndScriptFailure(lines, 'E1154:', 2)
 enddef
 
 def Test_expr7_vim9script()
@@ -2185,7 +2185,7 @@ def Test_expr9_string()
 
   v9.CheckDefAndScriptFailure(['var x = "abc'], 'E114:', 1)
   v9.CheckDefAndScriptFailure(["var x = 'abc"], 'E115:', 1)
-  v9.CheckDefFailure(["if 0", "echo 'xx", "endif"], 'E115', 2)
+  v9.CheckDefFailure(["if 0", "echo 'xx", "endif"], 'E115:', 2)
 
   # interpolated string
   var val = 'val'
@@ -2556,28 +2556,28 @@ def Test_expr9_lambda_block()
   lines =<< trim END
       map([1, 2], (k, v) => { redrawt })
   END
-  v9.CheckDefAndScriptFailure(lines, 'E488')
+  v9.CheckDefAndScriptFailure(lines, 'E488:')
 
   lines =<< trim END
       var Func = (nr: int) => {
               echo nr
             }
   END
-  v9.CheckDefAndScriptFailure(lines, 'E1010', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1010:', 1)
 
   lines =<< trim END
       var Func = (nr: number): int => {
               return nr
             }
   END
-  v9.CheckDefAndScriptFailure(lines, 'E1010', 1)
+  v9.CheckDefAndScriptFailure(lines, 'E1010:', 1)
 
   lines =<< trim END
       var Func = (nr: number): int => {
               return nr
   END
-  v9.CheckDefFailure(lines, 'E1171', 0)  # line nr is function start
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E1171', 2)
+  v9.CheckDefFailure(lines, 'E1171:', 0)  # line nr is function start
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1171:', 2)
 
   lines =<< trim END
       var Func = (nr: number): int => {

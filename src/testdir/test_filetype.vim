@@ -188,7 +188,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cook: ['file.cook'],
     corn: ['file.corn'],
     cpon: ['file.cpon'],
-    cpp: ['file.cxx', 'file.c++', 'file.hh', 'file.hxx', 'file.hpp', 'file.ipp', 'file.moc', 'file.tcc', 'file.inl', 'file.tlh', 'file.cppm', 'file.ccm', 'file.cxxm', 'file.c++m'],
+    cpp: ['file.cxx', 'file.c++', 'file.hh', 'file.hxx', 'file.hpp', 'file.ipp', 'file.ixx', 'file.moc', 'file.tcc', 'file.inl', 'file.tlh', 'file.cppm', 'file.ccm', 'file.cxxm', 'file.c++m', 'file.mpp'],
     cqlang: ['file.cql'],
     crm: ['file.crm'],
     crontab: ['crontab', 'crontab.file', '/etc/cron.d/file', 'any/etc/cron.d/file'],
@@ -239,7 +239,9 @@ def s:GetFilenameChecks(): dict<list<string>>
              '.coveragerc', '.pypirc', '.gitlint', '.oelint.cfg', 'pylintrc', '.pylintrc',
              '/home/user/.config/bpython/config', '/home/user/.config/mypy/config', '.wakatime.cfg', '.replyrc',
              'psprint.conf', 'sofficerc', 'any/.config/lxqt/globalkeyshortcuts.conf', 'any/.config/screengrab/screengrab.conf',
-             'any/.local/share/flatpak/repo/config', '.notmuch-config', '.notmuch-config.myprofile',
+             'any/.local/share/flatpak/repo/config',
+             '.alsoftrc', 'alsoft.conf', 'alsoft.ini', 'alsoftrc.sample',
+             '.notmuch-config', '.notmuch-config.myprofile',
              '~/.config/notmuch/myprofile/config'] + WhenConfigHome('$XDG_CONFIG_HOME/notmuch/myprofile/config'),
     dot: ['file.dot', 'file.gv'],
     dracula: ['file.drac', 'file.drc', 'file.lvs', 'file.lpe', 'drac.file'],
@@ -1127,6 +1129,34 @@ func Test_filetype_indent_off()
   call assert_equal(['filetype detection:ON  plugin:OFF  indent:OFF'],
         \ execute('filetype')->split("\n"))
   close
+endfunc
+
+func Test_undo_ftplugin_on_buffer_reuse()
+  filetype on
+
+  new
+  let b:undo_ftplugin = ":let g:var='exists'"
+  let g:bufnr = bufnr('%')
+  " no changes done to the buffer, so the buffer will be re-used
+  e $VIMRUNTIME/defaults.vim
+  call assert_equal(g:bufnr, bufnr('%'))
+  call assert_equal('exists', get(g:, 'var', 'fail'))
+  unlet! g:bufnr g:var
+
+  " try to wipe the buffer
+  enew
+  bw defaults.vim
+  let b:undo_ftplugin = ':bw'
+  call assert_fails(':e $VIMRUNTIME/defaults.vim', 'E937:')
+
+  " try to split the window
+  enew
+  bw defaults.vim
+  let b:undo_ftplugin = ':sp $VIMRUNTIME/defaults.vim'
+  call assert_fails(':e $VIMRUNTIME/defaults.vim', 'E242:')
+
+  bwipe!
+  filetype off
 endfunc
 
 """""""""""""""""""""""""""""""""""""""""""""""""

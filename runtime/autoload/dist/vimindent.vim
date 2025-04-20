@@ -2,7 +2,7 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2024 Dec 26
+# Last Change:  2025 Apr 13
 #
 # Includes changes from The Vim Project:
 #  - 2024 Feb 09: Fix indent after literal Dict (A. Radev via #13966)
@@ -981,8 +981,10 @@ def SearchPair( # {{{3
     if end == '[' || end == ']'
         e = e->escape('[]')
     endif
+    # VIM_INDENT_TEST_TRACE_START
     return searchpair('\C' .. s, (middle == '' ? '' : '\C' .. middle), '\C' .. e,
         flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
+    # VIM_INDENT_TEST_TRACE_END dist#vimindent#SearchPair
 enddef
 
 def SearchPairStart( # {{{3
@@ -1268,7 +1270,9 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
 
     var pos: list<number> = getcurpos()
     cursor(line.lnum, 1)
+    # VIM_INDENT_TEST_TRACE_START
     var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
+    # VIM_INDENT_TEST_TRACE_END dist#vimindent#NonCommentedMatch
     setpos('.', pos)
     return match_lnum > 0
 enddef

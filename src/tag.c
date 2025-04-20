@@ -1481,6 +1481,7 @@ find_tagfunc_tags(
     save_pos = curwin->w_cursor;
     result = call_callback(&curbuf->b_tfu_cb, 0, &rettv, 3, args);
     curwin->w_cursor = save_pos;	// restore the cursor position
+    check_cursor();			// make sure cursor position is valid
     --d->dv_refcount;
 
     if (result == FAIL)
