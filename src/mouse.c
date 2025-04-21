@@ -1902,16 +1902,6 @@ retnomove:
 	    // Drag the status line
 	    count = row - W_WINROW(dragwin) - dragwin->w_height + 1
 							     - on_status_line;
-#ifdef FEAT_TERMINAL
-	    if (bt_terminal(dragwin->w_buffer))
-	    {
-		win_T *curwin_save = curwin;
-		curwin = dragwin;
-		update_topline();
-		validate_cursor();
-		curwin = curwin_save;
-	    }
-#endif
 	    win_drag_status_line(dragwin, count);
 	    did_drag |= count;
 	}
