@@ -1595,15 +1595,17 @@ stdin (standard input) will not be interactive.
 
 GROFF					*quickfix-groff* *compiler-groff*
 
-The GROFF compiler plugin uses the mom macro set (documented in the groff_mom
-manpage) as input and expects that the output file type extension is passed to
-make, say :make html or :make pdf.
-
+The GROFF compiler plugin runs groff on the buffer.  Groff output device can
+be specified by `b:groff_output_dev` or `g:groff_output_dev`, which defaults
+to `utf8`, i.e. plain text in UTF-8.  Groff macro package can be specified by
+`b:groff_macro_pkg` or `g:groff_macro_pkg`, which defaults to `mom`.
 Additional arguments can be passed to groff by setting them in
-`b:groff_compiler_args` or `g:groff_compiler_args`. The `language` argument
+`b:groff_compiler_args` or `g:groff_compiler_args`.  The `language` argument
 passed to groff is set using 'spelllang'; it can be overridden by setting
-`b:groff_compiler_lang`. The default encoding is `UTF-8` and can be changed
-by setting `b:groff_compiler_encoding` or `g:groff_compiler_encoding`.
+`b:groff_compiler_lang`.  The default encoding is `UTF-8` and can be changed
+by setting `b:groff_compiler_encoding` or `g:groff_compiler_encoding`.  See
+man groff(1) for valid options.  Eventually :make runs something like: >
+	!groff -Kutf8 -mom -Tutf8 <buffer>
 
 PANDOC					*quickfix-pandoc* *compiler-pandoc*
 
