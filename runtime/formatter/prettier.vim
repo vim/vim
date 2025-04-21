@@ -23,5 +23,10 @@ if exists("current_formatter")
 endif
 let current_formatter = "prettier"
 
-FormatterSet formatprg=npx\ --yes\ prettier\ --stdin-filepath\ %
+if get(g:, "fmt_prettier_allow_installation", 0)
+  FormatterSet formatprg=npx\ --yes\ prettier\ --stdin-filepath\ %
+else
+  FormatterSet formatprg=npx\ --no\ prettier\ --stdin-filepath\ %
+endif
+
 FormatterSet formatexpr=format#FormatExpr()
