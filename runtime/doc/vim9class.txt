@@ -1067,8 +1067,7 @@ The above enum definition is equivalent to the following class definition: >
       public const ordinal: number
     endclass
 <
-A enum can contain object variables and methods just like a regular
-class: >
+A enum can contain object variables and methods just like a regular class: >
 
     enum Color
 	Cyan([0, 255, 255]),
