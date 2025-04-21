@@ -141,6 +141,7 @@ runtime/ftplugin/chatito.vim		@ObserverOfTime
 runtime/ftplugin/chicken.vim		@evhan
 runtime/ftplugin/clojure.vim		@axvr
 runtime/ftplugin/cmakecache.vim		@ribru17
+runtime/ftplugin/cobweb.vim		@FabricSoul
 runtime/ftplugin/cook.vim		@ribru17
 runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
@@ -334,6 +335,7 @@ runtime/indent/bst.vim			@tpope
 runtime/indent/cdl.vim			@dkearns
 runtime/indent/chatito.vim		@ObserverOfTime
 runtime/indent/clojure.vim		@axvr
+runtime/indent/cobweb.vim		@FabricSoul
 runtime/indent/config.vim		@dkearns
 runtime/indent/cs.vim			@nickspoons
 runtime/indent/css.vim			@dkearns
@@ -458,6 +460,7 @@ runtime/syntax/chatito.vim		@ObserverOfTime
 runtime/syntax/chicken.vim		@evhan
 runtime/syntax/chuck.vim		@gacallea
 runtime/syntax/clojure.vim		@axvr
+runtime/syntax/cobweb.vim		@FabricSoul
 runtime/syntax/cs.vim			@nickspoons
 runtime/syntax/csv.vim		@habamax
 runtime/syntax/cucumber.vim		@tpope
