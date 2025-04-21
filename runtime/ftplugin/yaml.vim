@@ -17,19 +17,20 @@ setlocal comments=:# commentstring=#\ %s expandtab
 setlocal formatoptions-=t formatoptions+=croql
 
 " rime input method engine uses `*.custom.yaml` as its config files
-if expand('%:r:e') ==# 'custom'
-  if !exists('current_compiler')
-    compiler rime_deployer
-    let b:undo_ftplugin ..= "| compiler make"
-  endif
-  setlocal include=__include:\\s*
-  let b:undo_ftplugin ..= " inc<"
-endif
-
 if !exists("g:yaml_recommended_style") || g:yaml_recommended_style != 0
   let b:undo_ftplugin ..= " sw< sts<"
   setlocal shiftwidth=2 softtabstop=2
 endif
+
+if expand('%:r:e') ==# 'custom'
+  setlocal include=__include:\\s*
+  let b:undo_ftplugin ..= " inc<"
+  if !exists('current_compiler')
+    compiler rime_deployer
+    let b:undo_ftplugin ..= " | compiler make"
+  endif
+endif
+
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
