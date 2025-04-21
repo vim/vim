@@ -3260,7 +3260,8 @@ finddir({name} [, {path} [, {count}]])				*finddir()*
 		Can also be used as a |method|: >
 			GetName()->finddir()
 <
-		Return type: |String|
+		Return type: list<string> if {count} is negative, |String|
+		otherwise
 
 
 findfile({name} [, {path} [, {count}]])				*findfile()*
@@ -3274,7 +3275,8 @@ findfile({name} [, {path} [, {count}]])				*findfile()*
 		Can also be used as a |method|: >
 			GetName()->findfile()
 <
-		Return type: |String|
+		Return type: list<string> if {count} is negative, |String|
+		otherwise
 
 
 flatten({list} [, {maxdepth}])					*flatten()*
