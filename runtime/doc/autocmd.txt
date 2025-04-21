@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Apr 04
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -398,6 +398,7 @@ Name			triggered by ~
 |CmdlineChanged|	after a change was made to the command-line text
 |CmdlineEnter|		after the cursor moves to the command line
 |CmdlineLeave|		before the cursor leaves the command line
+|CmdlineLeavePre|	before preparing to leave the command line
 
 |InsertEnter|		starting Insert mode
 |InsertChange|		when typing <Insert> while in Insert or Replace mode
@@ -639,6 +640,18 @@ CmdlineLeave			Before leaving the command line; including
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
+							*CmdlineLeavePre*
+CmdlineLeavePre			Just before leaving the command line, and
+				before |CmdlineLeave|.  Useful for capturing
+				completion info with |cmdcomplete_info()|, as
+				this information is cleared before
+				|CmdlineLeave| is triggered.  Triggered for
+				non-interactive use of ":" in a mapping, but
+				not when using |<Cmd>|.  Also triggered when
+				abandoning the command line by typing CTRL-C
+				or <Esc>.  <afile> is set to a single
+				character indicating the command-line type.
+				See |cmdwin-char| for details.
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for

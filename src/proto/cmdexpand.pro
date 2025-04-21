@@ -23,4 +23,5 @@ int wildmenu_translate_key(cmdline_info_T *cclp, int key, expand_T *xp, int did_
 int wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp);
 void wildmenu_cleanup(cmdline_info_T *cclp);
 void f_getcompletion(typval_T *argvars, typval_T *rettv);
+void f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv);
 /* vim: set ft=c : */

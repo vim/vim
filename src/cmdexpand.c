@@ -32,6 +32,8 @@ static int compl_match_arraysize;
 // First column in cmdline of the matched item for completion.
 static int compl_startcol;
 static int compl_selected;
+// cmdline before expansion
+static char_u *cmdline_orig = NULL;
 
 #define SHOW_MATCH(m) (showtail ? showmatches_gettail(matches[m]) : matches[m])
 
@@ -432,6 +434,7 @@ cmdline_pum_remove(cmdline_info_T *cclp UNUSED)
 
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
+    compl_match_arraysize = 0;
     p_lz = FALSE;  // avoid the popup menu hanging around
     update_screen(0);
     p_lz = save_p_lz;
@@ -1112,6 +1115,7 @@ ExpandInit(expand_T *xp)
     xp->xp_backslash = XP_BS_NONE;
     xp->xp_prefix = XP_PREFIX_NONE;
     xp->xp_numfiles = -1;
+    VIM_CLEAR(cmdline_orig);
 }
 
 /*
@@ -1237,6 +1241,10 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
     int		columns;
     int		attr;
     int		showtail;
+
+    // Save cmdline before expansion
+    if (ccline->cmdbuff != NULL)
+	cmdline_orig = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
 
     if (xp->xp_numfiles == -1)
     {
@@ -4298,5 +4306,37 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     }
     vim_free(pat);
     ExpandCleanup(&xpc);
+}
+
+/*
+ * "cmdcomplete_info()" function
+ */
+    void
+f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    cmdline_info_T  *ccline = get_cmdline_info();
+    dict_T	    *retdict;
+    list_T	    *li;
+    int		    idx;
+    int		    ret = OK;
+
+    if (rettv_dict_alloc(rettv) == FAIL || ccline == NULL
+	    || ccline->xpc == NULL || ccline->xpc->xp_files == NULL)
+	return;
+    retdict = rettv->vval.v_dict;
+    ret = dict_add_string(retdict, "cmdline_orig", cmdline_orig);
+    if (ret == OK)
+	ret = dict_add_number(retdict, "pum_visible", pum_visible());
+    if (ret == OK)
+	ret = dict_add_number(retdict, "selected", ccline->xpc->xp_selected);
+    if (ret == OK)
+    {
+	li = list_alloc();
+	if (li == NULL)
+	    return;
+	ret = dict_add_list(retdict, "matches", li);
+	for (idx = 0; ret == OK && idx < ccline->xpc->xp_numfiles; idx++)
+	    list_append_string(li, ccline->xpc->xp_files[idx], -1);
+    }
 }
 #endif // FEAT_EVAL
