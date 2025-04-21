@@ -21,7 +21,7 @@ jobs:
 
     env:
       CC: ${{ matrix.compiler }}
-      GCC_VER: 13
+      GCC_VER: 14
       CLANG_VER: 20
       TEST: test
       SRCDIR: ./src
@@ -149,7 +149,8 @@ jobs:
         if:  matrix.compiler == 'gcc'
         run: |
           # ubuntu-toolchain-r/test PPA for gcc-13 compiler
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          # disabled because the installation failed, causing test failures
+          # sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update -y
           sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100

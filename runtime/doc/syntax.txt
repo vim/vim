@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Apr 15
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Apr 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1056,8 +1056,12 @@ Variable		Highlight ~
 *c_ansi_typedefs*	 ... but do standard ANSI types
 *c_ansi_constants*	 ... but do standard ANSI constants
 *c_no_utf*		don't highlight \u and \U in strings
-*c_syntax_for_h*	for *.h files use C syntax instead of C++ and use objc
-			syntax instead of objcpp
+*c_syntax_for_h*	use C syntax for *.h files instead of C++/ObjC/ObjC++
+			(NOTE: This variable is deprecated and no longer
+			 necessary, as *.h files now default to C, unless the
+			 file contains C++ or Objective-C syntax. If the
+			 automated detection fails, the default filetype can
+			 be adjusted using `g:filetype_h`.)
 *c_no_if0*		don't highlight "#if 0" blocks as comments
 *c_no_cformat*		don't highlight %-formats in strings
 *c_no_c99*		don't highlight C99 standard items
@@ -1116,8 +1120,11 @@ the C syntax file.  See |c.vim| for all the settings that are available for C.
 
 By setting a variable you can tell Vim to use Ch syntax for *.h files, instead
 of C or C++: >
-	:let ch_syntax_for_h = 1
+	:let g:filetype_h = 'ch'
 
+NOTE: In previous versions of Vim, the following (now-deprecated) variable was
+used, but is no longer the preferred approach: >
+	:let ch_syntax_for_h = 1
 
 CHILL						*chill.vim* *ft-chill-syntax*
 

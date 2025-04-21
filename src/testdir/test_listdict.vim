@@ -1412,7 +1412,7 @@ func Test_listdict_index()
   call v9.CheckLegacyAndVim9Failure(['VAR d = {"k": 10}', 'echo d[1 : 2]'], 'E719:')
 
   call assert_fails("let v = [4, 6][{-> 1}]", 'E729:')
-  call v9.CheckDefAndScriptFailure(['var v = [4, 6][() => 1]'], ['E1012', 'E703:'])
+  call v9.CheckDefAndScriptFailure(['var v = [4, 6][() => 1]'], ['E1012:', 'E703:'])
 
   call v9.CheckLegacyAndVim9Failure(['VAR v = range(5)[2 : []]'], ['E730:', 'E1012:', 'E730:'])
 

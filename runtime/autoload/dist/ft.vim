@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Apr 15
+# Last Change:		2025 Apr 21
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -203,19 +203,36 @@ export def FTlpc()
   setf c
 enddef
 
-export def FTheader()
-  if match(getline(1, min([line("$"), 200])), '^@\(interface\|end\|class\)') > -1
-    if exists("g:c_syntax_for_h")
-      setf objc
-    else
-      setf objcpp
+# Searches within the first `maxlines` lines of the file for distinctive
+# Objective-C or C++ syntax and returns the appropriate filetype. Returns a
+# null_string if the search was inconclusive.
+def CheckObjCOrCpp(maxlines = 100): string
+  var n = 1
+  while n < maxlines && n <= line('$')
+    const line = getline(n)
+    if line =~ '\v^\s*\@%(class|interface|end)>'
+      return 'objcpp'
+    elseif line =~ '\v^\s*%(class|namespace|template|using)>'
+      return 'cpp'
     endif
-  elseif exists("g:c_syntax_for_h")
+    ++n
+  endwhile
+  return null_string
+enddef
+
+# Determines whether a *.h file is C, C++, Ch, or Objective-C/Objective-C++.
+export def FTheader()
+  if exists('g:filetype_h')
+    execute $'setf {g:filetype_h}'
+  elseif exists('g:c_syntax_for_h')
     setf c
-  elseif exists("g:ch_syntax_for_h")
+  elseif exists('g:ch_syntax_for_h')
     setf ch
   else
-    setf cpp
+    # Search the first 100 lines of the file for distinctive Objective-C or C++
+    # syntax and set the filetype accordingly. Otherwise, use C as the default
+    # filetype.
+    execute $'setf {CheckObjCOrCpp() ?? 'c'}'
   endif
 enddef
 
@@ -622,13 +639,14 @@ export def FTmms()
   setf mmix
 enddef
 
-# This function checks if one of the first five lines start with a dot.  In
-# that case it is probably an nroff file: 'filetype' is set and 1 is returned.
+# This function checks if one of the first five lines start with a typical
+# nroff pattern in man files.  In that case it is probably an nroff file:
+# 'filetype' is set and 1 is returned.
 export def FTnroff(): number
   var n = 1
-  while n < 5
+  while n <= 5
     var line = getline(n)
-    if line =~ '^\.\S\S\?'
+    if line =~ '^\%([.'']\s*\%(TH\|D[dt]\|S[Hh]\|d[es]1\?\|so\)\s\+\S\|[.'']\s*ig\>\|\%([.'']\s*\)\?\\"\)'
       setf nroff
       return 1
     endif
