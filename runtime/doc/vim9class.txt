@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Apr 13
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Apr 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1067,8 +1067,7 @@ The above enum definition is equivalent to the following class definition: >
       public const ordinal: number
     endclass
 <
-A enum can contain object variables and methods just like a regular
-class: >
+A enum can contain object variables and methods just like a regular class: >
 
     enum Color
 	Cyan([0, 255, 255]),
