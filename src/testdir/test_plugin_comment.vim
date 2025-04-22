@@ -59,6 +59,29 @@ func Test_basic_uncomment()
   call assert_equal(["# vim9script", "", "def Hello()", '  echo "Hello"', "enddef"], result)
 endfunc
 
+func Test_caseinsensitive_uncomment()
+  CheckScreendump
+  let lines =<< trim END
+      rem echo "Hello"
+  END
+
+  let input_file = "test_caseinsensitive_uncomment_input.bat"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "gcc")
+  let output_file = "comment_testinsensitive_uncomment_test.bat"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal(['echo "Hello"'], result)
+endfunc
+
 func Test_bothends_comment()
   CheckScreendump
   let lines =<< trim END
@@ -551,6 +574,7 @@ func Test_textobj_last_line_empty_comment()
 
   call assert_equal([], result)
 endfunc
+
 func Test_textobj_cursor_on_leading_space_comment()
   CheckScreendump
   let lines =<< trim END

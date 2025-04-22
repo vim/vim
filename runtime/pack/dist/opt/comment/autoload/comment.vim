@@ -1,7 +1,7 @@
 vim9script
 
 # Maintainer: Maxim Kim <habamax@gmail.com>
-# Last Update: 2025-03-30
+# Last Update: 2025-04-22
 #
 # Toggle comments
 # Usage:
@@ -26,8 +26,8 @@ export def Toggle(...args: list<string>): string
     if len(cms_l) == 1 && lnum1 == lnum2 && first_col < start_col
         var line_start = getline(lnum1)[0 : start_col - 1]
         var line_end = getline(lnum1)[start_col : -1]
-        line_end = line_end =~ $'^\s*{cms_l[0]}' ?
-                    \ substitute(line_end, $'^\s*\zs{cms_l[0]}\s\ze\s*', line_end =~ '^\s' ? ' ' : '', '') :
+        line_end = line_end =~ $'\c^\s*{cms_l[0]}' ?
+                    \ substitute(line_end, $'\c^\s*\zs{cms_l[0]}\s\ze\s*', line_end =~ '^\s' ? ' ' : '', '') :
                     \ printf(substitute(cms, '%s\@!', '%%', ''), line_end)
         setline(lnum1, line_start .. line_end)
         return ''
@@ -49,7 +49,7 @@ export def Toggle(...args: list<string>): string
         endif
         indent_spaces = indent_spaces || (stridx(indent_str, ' ') != -1)
         indent_tabs = indent_tabs || (stridx(indent_str, "\t") != -1)
-        if getline(lnum) !~ $'^\s*{cms_l[0]}.*{cms_l[1]}$'
+        if getline(lnum) !~ $'\c^\s*{cms_l[0]}.*{cms_l[1]}$'
             comment = true
         endif
     endfor
@@ -69,7 +69,7 @@ export def Toggle(...args: list<string>): string
                     strpart(getline(lnum), strlen(indent_current)))
             endif
         else
-            line = substitute(getline(lnum), $'^\s*\zs{cms_l[0]} \?\| \?{cms_l[1]}$', '', 'g')
+            line = substitute(getline(lnum), $'\c^\s*\zs{cms_l[0]} \?\| \?{cms_l[1]}$', '', 'g')
         endif
         add(lines, line)
     endfor
