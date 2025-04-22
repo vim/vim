@@ -1,19 +1,55 @@
 " Vim :augroup command
+" VIM_TEST_SETUP let g:vimsyn_folding = "a"
+" VIM_TEST_SETUP setl fdc=2 fdl=999 fdm=syntax
+" VIM_TEST_SETUP highlight link vimAugroupName Todo
+
 
 augroup foo
-  autocmd BufRead * echomsg "Foo"
+  autocmd!
+  autocmd BufRead * echo "Foo"
 augroup END
 
-augroup foo | autocmd! | augroup END
+augroup  foo | autocmd! | augroup END
 augroup! foo
 
 augroup !@#$%^&*()_+
   autocmd BufRead * echomsg "Foo"
 augroup END
 
-augroup !@#$%^&*()_+ | autocmd! | augroup END
+augroup  !@#$%^&*()_+ | autocmd! | augroup END
 augroup! !@#$%^&*()_+
+
+augroup  !@#$%^&*()_+ | autocmd! | augroup END
+augroup! !@#$%^&*()_+
+
+augroup  no\|echo | autocmd! | augroup END
+augroup! no\|echo
+
+augroup  no\"echo | autocmd! | augroup END
+augroup! no\"echo
+
+augroup  \|echo\| | autocmd! | augroup END
+augroup! \|echo\|
+
+augroup  \"echo\" | autocmd! | augroup END
+augroup! \"echo\"
+
+augroup  \|\" | autocmd! | augroup END
+augroup! \|\"
+
+augroup  \"\| | autocmd! | augroup END
+augroup! \"\|
+
+" FIXME: required comment prefix
+augroup  foo"comment    " start bad fold
+augroup  foo|echo "Foo"
+augroup END             " terminate bad fold
+augroup! foo"comment
+augroup! foo|echo "Foo"
+
 
 " list groups
 augroup
+augroup | echo "Foo"
+augroup " comment
 
