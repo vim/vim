@@ -17,7 +17,7 @@ setlocal comments=:# commentstring=#\ %s expandtab
 setlocal formatoptions-=t formatoptions+=croql
 
 " rime input method engine uses `*.custom.yaml` as its config files
-if !exists("g:yaml_recommended_style") || g:yaml_recommended_style != 0
+if get(g:, "yaml_recommended_style",1)
   let b:undo_ftplugin ..= " sw< sts<"
   setlocal shiftwidth=2 softtabstop=2
 endif
