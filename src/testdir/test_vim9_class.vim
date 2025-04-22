@@ -12544,6 +12544,35 @@ def Test_super_keyword()
     assert_equal('A.Foo B.Foo', b.Bar())
   END
   v9.CheckSourceSuccess(lines)
+
+  # Test for using super in a lambda function to invoke a base class method from
+  # the new() method.
+  lines =<< trim END
+    vim9script
+
+    def G(F: func): string
+      return F()
+    enddef
+
+    class Base
+      def F(): string
+        return 'Base.F()'
+      enddef
+    endclass
+
+    class Foo extends Base
+      var s: string = 'x'
+      def new()
+        this.s = G((): string => {
+          return super.F()
+        })
+      enddef
+    endclass
+
+    var f = Foo.new()
+    assert_equal('Base.F()', f.s)
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for using a list of objects
