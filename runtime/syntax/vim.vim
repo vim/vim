@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Apr 10
+" Last Change:	   2025 Apr 23
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -114,9 +114,12 @@ syn keyword vimErrSetting contained invakm invaltkeymap invanti invantialias inv
 
 " AutoCmd Events {{{2
 syn case ignore
-" GEN_SYN_VIM: vimAutoEvent, START_STR='syn keyword vimAutoEvent contained', END_STR=''
-syn keyword vimAutoEvent contained BufAdd BufCreate BufDelete BufEnter BufFilePost BufFilePre BufHidden BufLeave BufNew BufNewFile BufRead BufReadCmd BufReadPost BufReadPre BufUnload BufWinEnter BufWinLeave BufWipeout BufWrite BufWriteCmd BufWritePost BufWritePre CmdlineChanged CmdlineEnter CmdlineLeave CmdUndefined CmdwinEnter CmdwinLeave ColorScheme ColorSchemePre CompleteChanged CompleteDone CompleteDonePre CursorHold CursorHoldI CursorMoved CursorMovedC CursorMovedI DiffUpdated DirChanged DirChangedPre EncodingChanged ExitPre FileAppendCmd FileAppendPost FileAppendPre FileChangedRO FileChangedShell FileChangedShellPost FileEncoding FileReadCmd FileReadPost FileReadPre FileType FileWriteCmd FileWritePost FileWritePre FilterReadPost FilterReadPre FilterWritePost
-syn keyword vimAutoEvent contained FilterWritePre FocusGained FocusLost FuncUndefined GUIEnter GUIFailed InsertChange InsertCharPre InsertEnter InsertLeave InsertLeavePre KeyInputPre MenuPopup ModeChanged OptionSet QuickFixCmdPost QuickFixCmdPre QuitPre RemoteReply SafeState SafeStateAgain SessionLoadPost SessionWritePost ShellCmdPost ShellFilterPost SigUSR1 SourceCmd SourcePost SourcePre SpellFileMissing StdinReadPost StdinReadPre SwapExists Syntax TabClosed TabClosedPre TabEnter TabLeave TabNew TermChanged TerminalOpen TerminalWinOpen TermResponse TermResponseAll TextChanged TextChangedI TextChangedP TextChangedT TextYankPost User VimEnter VimLeave VimLeavePre VimResized VimResume VimSuspend WinClosed WinEnter WinLeave WinNew WinNewPre WinResized WinScrolled
+" GEN_SYN_VIM: vimAutoEvent, START_STR='syn keyword vimAutoEvent contained', END_STR='skipwhite nextgroup=vimAutoEventSep,@vimAutocmdPattern'
+syn keyword vimAutoEvent contained BufAdd BufCreate BufDelete BufEnter BufFilePost BufFilePre BufHidden BufLeave BufNew BufNewFile BufRead BufReadCmd BufReadPost BufReadPre BufUnload BufWinEnter BufWinLeave BufWipeout BufWrite BufWriteCmd BufWritePost BufWritePre CmdlineChanged CmdlineEnter CmdlineLeave CmdUndefined CmdwinEnter CmdwinLeave ColorScheme ColorSchemePre CompleteChanged CompleteDone CompleteDonePre CursorHold CursorHoldI CursorMoved CursorMovedC CursorMovedI DiffUpdated DirChanged DirChangedPre EncodingChanged ExitPre FileAppendCmd FileAppendPost FileAppendPre FileChangedRO FileChangedShell FileChangedShellPost FileEncoding FileReadCmd FileReadPost FileReadPre FileType FileWriteCmd FileWritePost FileWritePre FilterReadPost FilterReadPre FilterWritePost skipwhite nextgroup=vimAutoEventSep,@vimAutocmdPattern
+syn keyword vimAutoEvent contained FilterWritePre FocusGained FocusLost FuncUndefined GUIEnter GUIFailed InsertChange InsertCharPre InsertEnter InsertLeave InsertLeavePre KeyInputPre MenuPopup ModeChanged OptionSet QuickFixCmdPost QuickFixCmdPre QuitPre RemoteReply SafeState SafeStateAgain SessionLoadPost SessionWritePost ShellCmdPost ShellFilterPost SigUSR1 SourceCmd SourcePost SourcePre SpellFileMissing StdinReadPost StdinReadPre SwapExists Syntax TabClosed TabClosedPre TabEnter TabLeave TabNew TermChanged TerminalOpen TerminalWinOpen TermResponse TermResponseAll TextChanged TextChangedI TextChangedP TextChangedT TextYankPost VimEnter VimLeave VimLeavePre VimResized VimResume VimSuspend WinClosed WinEnter WinLeave WinNew WinNewPre WinResized WinScrolled skipwhite nextgroup=vimAutoEventSep,@vimAutocmdPattern
+
+syn keyword	vimAutoEvent	contained	User	skipwhite nextgroup=vimUserAutoEvent
+syn match	vimUserAutoEvent	contained	"\<\h\w*\>"	skipwhite nextgroup=vimAutoEventSep,@vimAutocmdPattern
 
 " Highlight commonly used Groupnames {{{2
 syn keyword vimGroup contained	Comment Constant String Character Number Boolean Float Identifier Function Statement Conditional Repeat Label Operator Keyword Exception PreProc Include Define Macro PreCondit Type StorageClass Structure Typedef Special SpecialChar Tag Delimiter SpecialComment Debug Underlined Ignore Error Todo
@@ -280,7 +283,7 @@ syn match	vimNumber	'\<0z\%(\x\x\)\+\%(\.\%(\x\x\)\+\)*'	skipwhite nextgroup=vim
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimFor,vimFunction,vimFuncFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimThrow,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimFor,vimFunction,vimFuncFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimThrow,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList
 syn cluster vim9CmdList	contains=vim9Abstract,vim9Class,vim9Const,vim9Enum,vim9Export,vim9Final,vim9For,vim9Interface,vim9Type,vim9Var
 syn match vimCmdSep	"\\\@1<!|"	skipwhite nextgroup=@vimCmdList,vimSubst1,vimFunc
 syn match vimCmdSep	":\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
@@ -369,21 +372,32 @@ syn keyword vimFTOption contained	detect indent off on plugin
 " Augroup : vimAugroupError removed because long augroups caused sync'ing problems. {{{2
 " ======= : Trade-off: Increasing synclines with slower editing vs augroup END error checking.
 syn cluster vimAugroupList	contains=@vimCmdList,vimFilter,vimFunc,vimLineComment,vimSpecFile,vimOper,vimNumber,vimOperParen,@vimComment,vimString,vimSubst,vimRegister,vimCmplxRepeat,vimNotation,vimCtrlChar,vimContinue
-syn match   vimAugroup	"\<aug\%[roup]\>" contains=vimAugroupKey,vimAugroupBang skipwhite nextgroup=vimAugroupBang,vimAutoCmdGroup
-if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'a'
-  syn region  vimAugroup  fold	start="\<aug\%[roup]\>\ze\s\+\%([eE][nN][dD]\)\@!\S\+" matchgroup=vimAugroupKey end="\<aug\%[roup]\>\ze\s\+[eE][nN][dD]\>" contains=vimAutoCmd,@vimAugroupList,vimAugroupkey skipwhite nextgroup=vimAugroupEnd
-else
-  syn region  vimAugroup	start="\<aug\%[roup]\>\ze\s\+\%([eE][nN][dD]\)\@!\S\+" matchgroup=vimAugroupKey end="\<aug\%[roup]\>\ze\s\+[eE][nN][dD]\>" contains=vimAutoCmd,@vimAugroupList,vimAugroupkey skipwhite nextgroup=vimAugroupEnd
-endif
+
+" define
+VimFolda syn region vimAugroup
+      \ start="\<aug\%[roup]\>\ze\s\+\%([eE][nN][dD]\)\@!\S\+"
+      \ matchgroup=vimAugroupKey
+      \ end="\<aug\%[roup]\>\ze\s\+[eE][nN][dD]\>"
+      \ skipwhite nextgroup=vimAugroupEnd
+      \ contains=vimAutocmd,@vimAugroupList,vimAugroupkey
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_noaugrouperror")
-  syn match   vimAugroupError	"\<aug\%[roup]\>\s\+[eE][nN][dD]\>"
+  syn match	vimAugroupError	"\<aug\%[roup]\>\s\+[eE][nN][dD]\>"
 endif
 
-syn match   vimAutoCmdGroup	contained "\S\+"
-syn match   vimAugroupEnd	contained "\c\<END\>"
-syn match   vimAugroupBang	contained "\a\@1<=!" skipwhite nextgroup=vimAutoCmdGroup
-syn keyword vimAugroupKey	contained aug[roup]  skipwhite nextgroup=vimAugroupBang,vimAutoCmdGroup,vimAugroupEnd
+" TODO: Vim9 comment
+syn match	vimAugroupName	contained	"\%(\\["|[:space:]]\|[^"|[:space:]]\)\+"
+syn match	vimAugroupEnd	contained	"\c\<END\>"
+syn match	vimAugroupBang	contained	"\a\@1<=!"	skipwhite nextgroup=vimAugroupName
+syn keyword	vimAugroupKey	contained	aug[roup] 	skipwhite nextgroup=vimAugroupBang,vimAugroupName,vimAugroupEnd
 
+" remove
+syn match	vimAugroup	"\<aug\%[roup]!"		skipwhite nextgroup=vimAugroupName contains=vimAugroupKey,vimAugroupBang 
+
+" list
+VimL syn match	vimAugroup	"\<aug\%[roup]\>\ze\s*\%(["|]\|$\)"	skipwhite nextgroup=vimCmdSep,vimComment  contains=vimAugroupKey
+Vim9 syn match 	vimAugroup	"\<aug\%[roup]\>\ze\s*\%([#|]\|$\)"	skipwhite nextgroup=vimCmdSep,vim9Comment contains=vimAugroupKey
+
+" hi def link vimAugroupEnd Special
 " Operators: {{{2
 " =========
 syn cluster	vimOperGroup	contains=@vimContinue,@vimExprList,vim9Comment
@@ -942,16 +956,83 @@ syn keyword vimAbb ab[breviate] ca[bbrev] cnorea[bbrev] cuna[bbrev] ia[bbrev] in
 " GEN_SYN_VIM: vimCommand abclear, START_STR='syn keyword vimAbb', END_STR='skipwhite nextgroup=vimMapMod'
 syn keyword vimAbb abc[lear] cabc[lear] iabc[lear] skipwhite nextgroup=vimMapMod
 
-" Autocmd: {{{2
-" =======
-syn match	vimAutoCmdBang	contained	"\a\@1<=!"	skipwhite nextgroup=vimAutoEventList
-syn match	vimAutoEventList	contained	"\%(\a\+,\)*\a\+"	contains=vimAutoEvent nextgroup=vimAutoCmdSpace
-syn match	vimAutoCmdSpace	contained	"\s\+"	nextgroup=vimAutoCmdSfxList
-syn match	vimAutoCmdSfxList	contained	"\S*"	skipwhite nextgroup=vimAutoCmdMod,vimAutoCmdBlock
-syn keyword	vimAutoCmd	au[tocmd]		skipwhite nextgroup=vimAutoCmdBang,vimAutoEventList
-syn keyword	vimAutoCmd	do[autocmd] doautoa[ll]	skipwhite nextgroup=vimAutoEventList
-syn match	vimAutoCmdMod	"\(++\)\=\(once\|nested\)"	skipwhite nextgroup=vimAutoCmdBlock
-syn region	vimAutoCmdBlock	contained	matchgroup=vimSep start="{" end="^\s*\zs}" contains=@vimDefBodyList
+" Filename Patterns: {{{2
+" =================
+
+syn match	vimWildcardQuestion	contained	"?"
+syn match	vimWildcardStar		contained	"*"
+
+syn match	vimWildcardBraceComma	contained	","
+syn region	vimWildcardBrace		contained
+      \ matchgroup=vimWildcard
+      \ start="{"
+      \ end="}"
+      \ contains=vimWildcardEscape,vimWildcardBrace,vimWildcardBraceComma,vimWildcardQuestion,vimWildcardStar,vimWildcardBracket
+      \ oneline
+
+syn match	vimWildcardIntervalNumber	contained	"\d\+"
+syn match	vimWildcardInterval	contained	"\\\\\\{\d\+\%(,\d\+\)\=\\}" contains=vimWildcardIntervalNumber
+
+
+syn match	vimWildcardBracket	contained	"\[\%(\^\=]\=\%(\\.\|\[\([:.=]\)[^:.=]\+\1]\|[^][:space:]]\)*\)\@>]"
+      \ contains=vimWildcardBracketStart,vimWildcardEscape
+
+syn match	vimWildcardBracketCharacter	contained	"."	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketHyphen,vimWildcardBracketEnd
+syn match	vimWildcardBracketRightBracket	contained	"]"	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketEnd
+syn match	vimWildcardBracketHyphen	contained	"-]\@!"	nextgroup=@vimWildcardBracketCharacter
+syn match	vimWildcardBracketEscape	contained	"\\."	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketHyphen,vimWildcardBracketEnd
+syn match	vimWildcardBracketCharacterClass	contained	"\[:[^:]\+:]"	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketEnd
+syn match	vimWildcardBracketEquivalenceClass	contained	"\[=[^=]\+=]"	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketEnd
+syn match	vimWildcardBracketCollatingSymbol	contained	"\[\.[^.]\+\.]"	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketEnd
+
+syn match	vimWildcardBracketStart	contained	"\["	nextgroup=vimWildcardBracketCaret,vimWildcardBracketRightBracket,@vimWildcardBracketCharacter
+syn match	vimWildcardBracketCaret	contained	"\^"	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketRightBracket 
+syn match	vimWildcardBracketEnd	contained	"]"
+
+syn cluster	vimWildcardBracketCharacter	contains=vimWildcardBracketCharacter,vimWildcardBracketEscape,vimWildcardBracketCharacterClass,vimWildcardBracketEquivalenceClass,vimWildcardBracketCollatingSymbol
+
+syn match	vimWildcardEscape	contained	"\\."
+
+syn cluster	vimWildcard		contains=vimWildcardQuestion,vimWildcardStar,vimWildcardBrace,vimWildcardBracket,vimWildcardInterval
+
+" Autocmd and Doauto{cmd,all}: {{{2
+" ===========================
+
+" TODO: explicitly match the {cmd} arg rather than bailing out to TOP
+syn region	vimAutocmdBlock	contained	matchgroup=vimSep start="{" end="^\s*\zs}" contains=@vimDefBodyList
+
+syn match	vimAutocmdGroup	contained	"\%(\\["|[:space:]]\|[^"|[:space:]]\)\+" skipwhite nextgroup=vimAutoEvent,vimAutoEventGlob
+syn match	vimAutocmdBang	contained	"\a\@1<=!"		     skipwhite nextgroup=vimAutocmdGroup,vimAutoEvent,vimAutoEventGlob
+
+" TODO: cleaner handling of | in pattern position
+"     : match pattern items in addition to wildcards
+syn region	vimAutocmdPattern	contained
+      \ start="|\@!\S"
+      \ skip="\\\\\|\\[,[:space:]]"
+      \ end="\ze[,[:space:]]"
+      \ end="$"
+      \ skipwhite nextgroup=vimAutocmdPatternSep,vimAutocmdMod,vimAutocmdBlock
+      \ contains=vimEnvvar,@vimWildcard,vimAutocmdPatternEscape
+syn match	vimAutocmdBufferPattern	contained	"<buffer\%(=\%(\d\+\|abuf\)\)\=>" skipwhite nextgroup=vimAutocmdPatternSep,vimAutocmdMod,vimAutocmdBlock
+" trailing pattern separator comma allowed
+syn match	vimAutocmdPatternSep	contained	","	                skipwhite nextgroup=@vimAutocmdPattern,vimAutocmdMod,vimAutocmdBlock
+syn match	vimAutocmdPatternEscape	contained	"\\."
+syn cluster	vimAutocmdPattern		contains=vimAutocmdPattern,vimAutocmdBufferPattern
+
+" TODO: Vim9 requires '++' prefix
+syn match	vimAutocmdMod	contained	"\%(++\)\=\<nested\>" skipwhite nextgroup=vimAutocmdMod,vimAutocmdBlock
+syn match	vimAutocmdMod	contained	"++once\>"	skipwhite nextgroup=vimAutocmdMod,vimAutocmdBlock
+
+" higher priority than vimAutocmdGroup, assume no group is so named
+syn match	vimAutoEventGlob	contained	"*"	skipwhite nextgroup=@vimAutocmdPattern
+syn match	vimAutoEventSep	contained	"\a\@1<=,"	nextgroup=vimAutoEvent
+
+syn match	vimAutocmd		"\<au\%[tocmd]\>"	skipwhite nextgroup=vimAutocmdBang,vimAutocmdGroup,vimAutoEvent,vimAutoEventGlob
+
+
+syn match	vimDoautocmdMod	contained	"<nomodeline>"		skipwhite nextgroup=vimAutocmdGroup,vimAutoEvent
+syn match	vimDoautocmd		"\<do\%[autocmd]\>"	skipwhite nextgroup=vimDoautocmdMod,vimAutocmdGroup,vimAutoEvent
+syn match	vimDoautocmd		"\<doautoa\%[ll]\>"	skipwhite nextgroup=vimDoautocmdMod,vimAutocmdGroup,vimAutoEvent
 
 " Echo And Execute: -- prefer strings! {{{2
 " ================
@@ -1706,10 +1787,14 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimAugroupBang	vimBang
  hi def link vimAugroupError	vimError
  hi def link vimAugroupKey	vimCommand
- hi def link vimAutoCmd	vimCommand
- hi def link vimAutoCmdBang	vimBang
+ hi def link vimAutocmd	vimCommand
+ hi def link vimAutocmdBang	vimBang
+ hi def link vimAutocmdPatternEscape	Special
  hi def link vimAutoEvent	Type
- hi def link vimAutoCmdMod	Special
+ hi def link vimAutoEventGlob	Type
+ hi def link vimAutocmdBufferPattern	Special
+ hi def link vimAutocmdMod	Special
+ hi def link vimAutocmdPatternSep	vimSep
  hi def link vimBang	vimOper
  hi def link vimBehaveBang	vimBang
  hi def link vimBehaveModel	vimBehave
@@ -1735,6 +1820,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimDefParam	vimVar
  hi def link vimDelcommand	vimCommand
  hi def link vimDelcommandAttr	vimUserCmdAttr
+ hi def link vimDoautocmd	vimCommand
+ hi def link vimDoautocmdMod	Special
  hi def link vimEcho	vimCommand
  hi def link vimEchohlNone	vimGroup
  hi def link vimEchohl	vimCommand
@@ -1950,6 +2037,24 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimVimVar	Identifier
  hi def link vimVimVarName	Identifier
  hi def link vimWarn	WarningMsg
+ hi def link vimWildcard	Special
+ hi def link vimWildcardBraceComma	vimWildcard
+ hi def link vimWildcardBracket	vimWildcard
+ hi def link vimWildcardBracketCaret	vimWildcard
+ hi def link vimWildcardBracketCharacter	Normal
+ hi def link vimWildcardBracketCharacter	Normal
+ hi def link vimWildcardBracketCharacterClass	vimWildCard
+ hi def link vimWildcardBracketCollatingSymbol	vimWildCard
+ hi def link vimWildcardBracketEnd		vimWildcard
+ hi def link vimWildcardBracketEquivalenceClass	vimWildCard
+ hi def link vimWildcardBracketEscape	vimWildcard
+ hi def link vimWildcardBracketHyphen	vimWildcard
+ hi def link vimWildcardBracketRightBracket	vimWildcardBracketCharacter
+ hi def link vimWildcardBracketStart	vimWildcard
+ hi def link vimWildcardEscape	vimWildcard
+ hi def link vimWildcardInterval	vimWildcard
+ hi def link vimWildcardQuestion	vimWildcard
+ hi def link vimWildcardStar	vimWildcard
 
  hi def link vim9Abstract	vimCommand
  hi def link vim9Boolean	Boolean
