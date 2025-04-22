@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Apr 21
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Apr 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1834,7 +1834,7 @@ clearmatches([{win}])					*clearmatches()*
 		Return type: |Number|
 
 
-cmdcomplete_info([{what}])				*cmdcomplete_info()*
+cmdcomplete_info()					*cmdcomplete_info()*
 		Returns a |Dictionary| with information about cmdline
 		completion.  See |cmdline-completion|.
 		The items are:

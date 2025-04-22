@@ -1916,8 +1916,7 @@ getcmdline_int(
 	}
 
 	// Trigger CmdlineLeavePre autocommand
-	if (ccline.cmdfirstc != NUL && (c == '\n' || c == '\r' || c == K_KENTER
-		    || c == ESC || c == Ctrl_C))
+	if (c == '\n' || c == '\r' || c == K_KENTER || c == ESC || c == Ctrl_C)
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 
 	// The wildmenu is cleared if the pressed key is not used for
