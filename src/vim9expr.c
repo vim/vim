@@ -1647,6 +1647,11 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     ++ufunc->uf_refcount;
     clear_tv(&rettv);
 
+    if (cctx->ctx_ufunc != NULL)
+	// This lambda might be defined in a class method.  Inherit the class
+	// from the current function.
+	ufunc->uf_defclass = cctx->ctx_ufunc->uf_defclass;
+
     // Compile it here to get the return type.  The return type is optional,
     // when it's missing use t_unknown.  This is recognized in
     // compile_return().
