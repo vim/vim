@@ -7596,8 +7596,9 @@ failed:
 	if (msg != NULL)
 	{
 	    emsg(msg);
-	    winpty_error_free(winpty_err);
+	    vim_free(msg);
 	}
+	winpty_error_free(winpty_err);
     }
     return FAIL;
 }
