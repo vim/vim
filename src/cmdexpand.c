@@ -1244,7 +1244,10 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 
     // Save cmdline before expansion
     if (ccline->cmdbuff != NULL)
+    {
+	vim_free(cmdline_orig);
 	cmdline_orig = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
+    }
 
     if (xp->xp_numfiles == -1)
     {
