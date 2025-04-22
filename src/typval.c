@@ -1305,6 +1305,7 @@ tv_stringify(typval_T *varp, char_u *buf)
     {
 	typval_T tmp;
 
+	init_tv(&tmp);
 	f_string(varp, &tmp);
 	tv_get_string_buf(&tmp, buf);
 	clear_tv(varp);
