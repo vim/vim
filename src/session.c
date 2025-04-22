@@ -1072,7 +1072,7 @@ ex_loadview(exarg_T *eap)
     if (fname == NULL)
 	return;
 
-    do_source(fname, FALSE, DOSO_NONE, NULL);
+    (void)do_source(fname, FALSE, DOSO_NONE, NULL);
     vim_free(fname);
 }
 
