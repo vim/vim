@@ -3508,7 +3508,6 @@ do_more_prompt(int typed_char)
     static void
 mch_errmsg_c(char *str)
 {
-    int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode = 0;
     HANDLE  h = GetStdHandle(STD_ERROR_HANDLE);
@@ -3516,10 +3515,14 @@ mch_errmsg_c(char *str)
     if (GetConsoleMode(h, &mode) && enc_codepage >= 0
 	    && (int)GetConsoleCP() != enc_codepage)
     {
+	int	len = (int)STRLEN(str);
 	WCHAR	*w = enc_to_utf16((char_u *)str, &len);
 
-	WriteConsoleW(h, w, len, &nwrite, NULL);
-	vim_free(w);
+	if (w != NULL)
+	{
+	    WriteConsoleW(h, w, len, &nwrite, NULL);
+	    vim_free(w);
+	}
     }
     else
     {
@@ -3614,19 +3617,21 @@ mch_errmsg(char *str)
     static void
 mch_msg_c(char *str)
 {
-    int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode;
     HANDLE  h = GetStdHandle(STD_OUTPUT_HANDLE);
 
-
     if (GetConsoleMode(h, &mode) && enc_codepage >= 0
 	    && (int)GetConsoleCP() != enc_codepage)
     {
+	int	len = (int)STRLEN(str);
 	WCHAR	*w = enc_to_utf16((char_u *)str, &len);
 
-	WriteConsoleW(h, w, len, &nwrite, NULL);
-	vim_free(w);
+	if (w != NULL)
+	{
+	    WriteConsoleW(h, w, len, &nwrite, NULL);
+	    vim_free(w);
+	}
     }
     else
     {

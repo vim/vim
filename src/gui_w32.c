@@ -3673,7 +3673,7 @@ gui_mch_exit(int rc UNUSED)
     static char_u *
 logfont2name(LOGFONTW lf)
 {
-    char	*p;
+    size_t	res_size;
     char	*res;
     char	*charset_name;
     char	*quality_name;
@@ -3686,43 +3686,46 @@ logfont2name(LOGFONTW lf)
     charset_name = charset_id2name((int)lf.lfCharSet);
     quality_name = quality_id2name((int)lf.lfQuality);
 
-    res = alloc(strlen(font_name) + 30
-		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)
-		    + (quality_name == NULL ? 0 : strlen(quality_name) + 2));
+    res_size = STRLEN(font_name) + 30
+		    + (charset_name == NULL ? 0 : STRLEN(charset_name) + 2)
+		    + (quality_name == NULL ? 0 : STRLEN(quality_name) + 2);
+    res = alloc(res_size);
     if (res != NULL)
     {
+	char	*p;
+	size_t	plen;
+
 	p = res;
 	// make a normal font string out of the lf thing:
 	points = pixels_to_points(
 			 lf.lfHeight < 0 ? -lf.lfHeight : lf.lfHeight, TRUE);
 	if (lf.lfWeight == FW_NORMAL || lf.lfWeight == FW_BOLD)
-	    sprintf((char *)p, "%s:h%d", font_name, points);
+	    plen = vim_snprintf_safelen(
+		(char *)p, res_size, "%s:h%d", font_name, points);
 	else
-	    sprintf((char *)p, "%s:h%d:W%ld", font_name, points, lf.lfWeight);
+	    plen = vim_snprintf_safelen(
+		(char *)p, res_size, "%s:h%d:W%ld", font_name, points, lf.lfWeight);
+
+	// replace spaces with underscores.
 	while (*p)
 	{
 	    if (*p == ' ')
 		*p = '_';
 	    ++p;
 	}
-	if (lf.lfItalic)
-	    STRCAT(p, ":i");
-	if (lf.lfWeight == FW_BOLD)
-	    STRCAT(p, ":b");
-	if (lf.lfUnderline)
-	    STRCAT(p, ":u");
-	if (lf.lfStrikeOut)
-	    STRCAT(p, ":s");
+
+	plen += vim_snprintf_safelen(
+	    (char *)p + plen,
+	    res_size,
+	    "%s%s%s%s",
+	    lf.lfItalic ? ":i" : "",
+	    lf.lfWeight ? ":b" : "",
+	    lf.lfUnderline ? ":u" : "",
+	    lf.lfStrikeOut ? ":s" : "");
 	if (charset_name != NULL)
-	{
-	    STRCAT(p, ":c");
-	    STRCAT(p, charset_name);
-	}
+	    plen += vim_snprintf_safelen((char *)p + plen, res_size - plen, ":c%s", charset_name);
 	if (quality_name != NULL)
-	{
-	    STRCAT(p, ":q");
-	    STRCAT(p, quality_name);
-	}
+	    vim_snprintf((char *)p + plen, res_size - plen, ":q%s", quality_name);
     }
 
     vim_free(font_name);
@@ -5051,7 +5054,7 @@ _OnMenuSelect(HWND hwnd, WPARAM wParam, LPARAM lParam)
 #endif
 
     static BOOL
-_OnGetDpiScaledSize(HWND hwnd, UINT dpi, SIZE *size)
+_OnGetDpiScaledSize(HWND hwnd UNUSED, UINT dpi, SIZE *size)
 {
     int		old_width, old_height;
     int		new_width, new_height;
@@ -7127,8 +7130,11 @@ dialog_callback(
 
 	    GetDlgItemTextW(hwnd, DLG_NONBUTTON_CONTROL + 2, wp, IOSIZE);
 	    p = utf16_to_enc(wp, NULL);
-	    vim_strncpy(s_textfield, p, IOSIZE);
-	    vim_free(p);
+	    if (p != NULL)
+	    {
+		vim_strncpy(s_textfield, p, IOSIZE);
+		vim_free(p);
+	    }
 	    vim_free(wp);
 	}
 

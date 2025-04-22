@@ -3810,10 +3810,13 @@ mch_dirname(
     if (GetLongPathNameW(wbuf, wcbuf, _MAX_PATH) != 0)
     {
 	p = utf16_to_enc(wcbuf, NULL);
-	if (STRLEN(p) >= (size_t)len)
+	if (p != NULL)
 	{
-	    // long path name is too long, fall back to short one
-	    VIM_CLEAR(p);
+	    if (STRLEN(p) >= (size_t)len)
+	    {
+		// long path name is too long, fall back to short one
+		VIM_CLEAR(p);
+	    }
 	}
     }
     if (p == NULL)
