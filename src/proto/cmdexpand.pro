@@ -11,6 +11,7 @@ int cmdline_compl_is_fuzzy(void);
 char_u *ExpandOne(expand_T *xp, char_u *str, char_u *orig, int options, int mode);
 void ExpandInit(expand_T *xp);
 void ExpandCleanup(expand_T *xp);
+void clear_cmdline_orig(void);
 int showmatches(expand_T *xp, int wildmenu);
 char_u *addstar(char_u *fname, int len, int context);
 void set_expand_context(expand_T *xp);
