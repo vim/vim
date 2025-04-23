@@ -854,6 +854,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_SHELLCMDLINE	60
 #define EXPAND_FINDFUNC		61
 #define EXPAND_HIGHLIGHT_GROUP  62
+#define EXPAND_FILETYPECMD	63
 
 
 // Values for exmode_active (0 is no exmode)
