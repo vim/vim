@@ -3180,10 +3180,12 @@ get_logfont(
 		    if (cp->name == NULL && verbose)
 		    {
 			char_u *s = utf16_to_enc(p, NULL);
-
-			semsg(_(e_illegal_str_name_str_in_font_name_str),
-							   "charset", s, name);
-			vim_free(s);
+			if (s != NULL)
+			{
+			    semsg(_(e_illegal_str_name_str_in_font_name_str),
+							       "charset", s, name);
+			    vim_free(s);
+			}
 			break;
 		    }
 		    break;
@@ -3202,9 +3204,12 @@ get_logfont(
 		    if (qp->name == NULL && verbose)
 		    {
 			char_u *s = utf16_to_enc(p, NULL);
-			semsg(_(e_illegal_str_name_str_in_font_name_str),
-							   "quality", s, name);
-			vim_free(s);
+			if (s != NULL)
+			{
+			    semsg(_(e_illegal_str_name_str_in_font_name_str),
+							       "quality", s, name);
+			    vim_free(s);
+			}
 			break;
 		    }
 		    break;
