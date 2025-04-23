@@ -54,6 +54,7 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_FILES_IN_PATH
 	    && xp->xp_context != EXPAND_FILETYPE
 	    && xp->xp_context != EXPAND_FINDFUNC
+	    && xp->xp_context != EXPAND_FORMATTER
 	    && xp->xp_context != EXPAND_HELP
 	    && xp->xp_context != EXPAND_KEYMAP
 	    && xp->xp_context != EXPAND_OLD_SETTING
@@ -1450,6 +1451,7 @@ addstar(
 		|| context == EXPAND_HELP
 		|| context == EXPAND_COLORS
 		|| context == EXPAND_COMPILER
+		|| context == EXPAND_FORMATTER
 		|| context == EXPAND_OWNSYNTAX
 		|| context == EXPAND_FILETYPE
 		|| context == EXPAND_KEYMAP
@@ -2469,6 +2471,11 @@ set_context_by_cmdname(
 	    set_context_in_runtime_cmd(xp, arg);
 	    break;
 
+	case CMD_formatter:
+	    xp->xp_context = EXPAND_FORMATTER;
+	    xp->xp_pattern = arg;
+	    break;
+
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 	case CMD_language:
 	    return set_context_in_lang_cmd(xp, arg);
@@ -3203,6 +3210,11 @@ ExpandFromContext(
     if (xp->xp_context == EXPAND_COMPILER)
     {
 	char *directories[] = {"compiler", NULL};
+	return ExpandRTDir(pat, 0, numMatches, matches, directories);
+    }
+    if (xp->xp_context == EXPAND_FORMATTER)
+    {
+	char *directories[] = {"formatter", NULL};
 	return ExpandRTDir(pat, 0, numMatches, matches, directories);
     }
     if (xp->xp_context == EXPAND_OWNSYNTAX)

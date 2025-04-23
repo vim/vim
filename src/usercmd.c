@@ -55,6 +55,7 @@ static keyvalue_T command_complete_tab[] =
     KEYVALUE_ENTRY(EXPAND_COLORS, "color"),
     KEYVALUE_ENTRY(EXPAND_COMMANDS, "command"),
     KEYVALUE_ENTRY(EXPAND_COMPILER, "compiler"),
+    KEYVALUE_ENTRY(EXPAND_FORMATTER, "formatter"),
 #if defined(FEAT_CSCOPE)
     KEYVALUE_ENTRY(EXPAND_CSCOPE, "cscope"),
 #endif

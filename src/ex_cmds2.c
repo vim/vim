@@ -835,6 +835,79 @@ ex_compiler(exarg_T *eap)
 }
 #endif
 
+#ifdef FEAT_EVAL
+/*
+ * ":formatter[!] {name}"
+ */
+    void
+ex_formatter(exarg_T *eap)
+{
+    char_u	*buf;
+    char_u	*old_cur_comp = NULL;
+    char_u	*p;
+
+    if (*eap->arg == NUL)
+    {
+	// List all formatter scripts.
+	do_cmdline_cmd((char_u *)"echo globpath(&rtp, 'formatter/*.vim')");
+					// ) keep the indenter happy...
+	return;
+    }
+
+    buf = alloc(STRLEN(eap->arg) + 15);
+	return;
+
+    if (eap->forceit)
+    {
+	// ":formatter! {name}" sets global options
+	do_cmdline_cmd((char_u *)
+		"command -nargs=* -keepscript FormatterSet set <args>");
+    }
+    else
+    {
+	// ":formatter! {name}" sets local options.
+	// To remain backwards compatible "current_formatter" is always
+	// used.  A user's formatter plugin may set it, the distributed
+	// plugin will then skip the settings.  Afterwards set
+	// "b:current_formatter" and restore "current_formatter".
+	// Explicitly prepend "g:" to make it work in a function.
+	old_cur_comp = get_var_value((char_u *)"g:current_formatter");
+	if (old_cur_comp != NULL)
+	    old_cur_comp = vim_strsave(old_cur_comp);
+	do_cmdline_cmd((char_u *)
+		"command -nargs=* -keepscript FormatterSet setlocal <args>");
+    }
+    do_unlet((char_u *)"g:current_formatter", TRUE);
+    do_unlet((char_u *)"b:current_formatter", TRUE);
+
+    sprintf((char *)buf, "formatter/%s.vim", eap->arg);
+    if (source_runtime(buf, DIP_ALL) == FAIL)
+	semsg(_(e_formatter_not_supported_str), eap->arg);
+    vim_free(buf);
+
+    do_cmdline_cmd((char_u *)":delcommand FormatterSet");
+
+    // Set "b:current_formatter" from "current_formatter".
+    p = get_var_value((char_u *)"g:current_formatter");
+    if (p != NULL)
+	set_internal_string_var((char_u *)"b:current_formatter", p);
+
+    // Restore "current_formatter" for ":formatter {name}".
+    if (!eap->forceit)
+    {
+	if (old_cur_comp != NULL)
+	{
+	    set_internal_string_var((char_u *)"g:current_formatter",
+		    old_cur_comp);
+	    vim_free(old_cur_comp);
+	}
+	else
+	    do_unlet((char_u *)"g:current_formatter", TRUE);
+    }
+}
+#endif
+
+
 #if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON) || defined(PROTO)
 
 # if (defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
