@@ -2699,7 +2699,7 @@ ins_compl_stop(int c, int prev_mode, int retval)
     char_u	*word = NULL;
 
     // Remove pre-inserted text when present.
-    if (ins_compl_preinsert_effect())
+    if (ins_compl_preinsert_effect() && ins_compl_win_active(curwin))
 	ins_compl_delete();
 
     // Get here when we have finished typing a sequence of ^N and
