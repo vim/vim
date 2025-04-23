@@ -1115,7 +1115,6 @@ ExpandInit(expand_T *xp)
     xp->xp_backslash = XP_BS_NONE;
     xp->xp_prefix = XP_PREFIX_NONE;
     xp->xp_numfiles = -1;
-    VIM_CLEAR(cmdline_orig);
 }
 
 /*
@@ -1130,6 +1129,12 @@ ExpandCleanup(expand_T *xp)
 	xp->xp_numfiles = -1;
     }
     VIM_CLEAR(xp->xp_orig);
+}
+
+    void
+clear_cmdline_orig(void)
+{
+    VIM_CLEAR(cmdline_orig);
 }
 
 /*

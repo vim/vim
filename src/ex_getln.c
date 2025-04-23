@@ -1663,6 +1663,7 @@ getcmdline_int(
 
     ExpandInit(&xpc);
     ccline.xpc = &xpc;
+    clear_cmdline_orig();
 
 #ifdef FEAT_RIGHTLEFT
     if (curwin->w_p_rl && *curwin->w_p_rlc == 's'
@@ -2567,6 +2568,7 @@ returncmd:
 
     ExpandCleanup(&xpc);
     ccline.xpc = NULL;
+    clear_cmdline_orig();
 
 #ifdef FEAT_SEARCH_EXTRA
     finish_incsearch_highlighting(gotesc, &is_state, FALSE);
