@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Apr 21
+" Last Change:	2025 Apr 24
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -2061,9 +2061,9 @@ au BufNewFile,BufRead *.arr			setf pyret
 au BufNewFile,BufRead *.pyx,*.pyx+,*.pxd,*.pxi	setf pyrex
 
 " Python, Python Shell Startup and Python Stub Files
-" Quixote (Python-based web framework)
+" Quixote (Python-based web framework) and IPython
 au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,.python_history,.jline-jython.history	setf python
-au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
+au BufNewFile,BufRead *.ipy,*.ptl,*.pyi,SConstruct		   setf python
 
 " QL
 au BufRead,BufNewFile *.ql,*.qll		setf ql
