@@ -665,11 +665,8 @@ auto_format(
     int		prev_line)	// may start in previous line
 {
     pos_T	pos;
-    colnr_T	len;
     char_u	*old;
-    char_u	*new, *pnew;
     int		wasatend;
-    int		cc;
 
     if (!has_format_option(FO_AUTO))
 	return;
@@ -688,6 +685,8 @@ auto_format(
     wasatend = (pos.col == ml_get_curline_len());
     if (*old != NUL && !trailblank && wasatend)
     {
+	int cc;
+
 	dec_cursor();
 	cc = gchar_cursor();
 	if (!WHITECHAR(cc) && curwin->w_cursor.col > 0
@@ -740,11 +739,13 @@ auto_format(
     // formatted.
     if (!wasatend && has_format_option(FO_WHITE_PAR))
     {
-	new = ml_get_curline();
-	len = ml_get_curline_len();
+	char_u	*new = ml_get_curline();
+	colnr_T	len = ml_get_curline_len();
 	if (curwin->w_cursor.col == len)
 	{
-	    pnew = vim_strnsave(new, len + 2);
+	    char_u *pnew = vim_strnsave(new, len + 2);
+	    if (pnew == NULL)
+		return;
 	    pnew[len] = ' ';
 	    pnew[len + 1] = NUL;
 	    ml_replace(curwin->w_cursor.lnum, pnew, FALSE);
