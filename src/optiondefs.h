@@ -90,6 +90,7 @@
 # define PV_INEX	OPT_BUF(BV_INEX)
 #endif
 #define PV_INF		OPT_BUF(BV_INF)
+#define PV_ISE		OPT_BOTH(OPT_BUF(BV_ISE))
 #define PV_ISK		OPT_BUF(BV_ISK)
 #ifdef FEAT_CRYPT
 # define PV_KEY		OPT_BUF(BV_KEY)
@@ -1458,6 +1459,10 @@ static struct vimoption options[] =
     {"insertmode",  "im",   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_im, PV_NONE, did_set_insertmode, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"isexpand",    "ise",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+			    (char_u *)&p_ise, PV_ISE, did_set_isexpand, NULL,
+			    {(char_u *)"", (char_u *)0L}
+			    SCTX_INIT},
     {"isfname",	    "isf",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 			    (char_u *)&p_isf, PV_NONE, did_set_isopt, NULL,
 			    {

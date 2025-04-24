@@ -3551,6 +3551,147 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
+ * Add match item to the return list.
+ * Returns FAIL if out of memory, OK otherwise.
+ */
+    static int
+add_match_to_list(
+    typval_T  *rettv,
+    char_u    *str,
+    int        len,
+    int        pos)
+{
+    list_T    *match;
+    int        ret;
+
+    match = list_alloc();
+    if (match == NULL)
+        return FAIL;
+
+    if ((ret = list_append_number(match, pos + 1)) == FAIL
+	    || (ret = list_append_string(match, str, len)) == FAIL
+	    || (ret = list_append_list(rettv->vval.v_list, match)) == FAIL)
+    {
+        vim_free(match);
+        return FAIL;
+    }
+
+    return OK;
+}
+
+/*
+ * "complete_match()" function
+ */
+    void
+f_complete_match(typval_T *argvars, typval_T *rettv)
+{
+    linenr_T    lnum;
+    colnr_T     col;
+    char_u      *line = NULL;
+    char_u      *ise = NULL;
+    regmatch_T  regmatch;
+    char_u      *before_cursor = NULL;
+    char_u      *cur_end = NULL;
+    char_u      *trig = NULL;
+    int          bytepos = 0;
+    char_u	part[MAXPATHL];
+    int		ret;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    ise = curbuf->b_p_ise[0] != NUL ? curbuf->b_p_ise : p_ise;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	lnum = curwin->w_cursor.lnum;
+	col = curwin->w_cursor.col;
+    }
+    else if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	emsg(_(e_invalid_argument));
+	return;
+    }
+    else
+    {
+	lnum = (linenr_T)tv_get_number(&argvars[0]);
+	col = (colnr_T)tv_get_number(&argvars[1]);
+	if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
+	{
+	    semsg(_(e_invalid_line_number_nr), lnum);
+	    return;
+	}
+	if (col < 1 || col > ml_get_buf_len(curbuf, lnum))
+	{
+	    semsg(_(e_invalid_column_number_nr), col + 1);
+	    return;
+	}
+    }
+
+    line = ml_get_buf(curbuf, lnum, FALSE);
+    if (line == NULL)
+	return;
+
+    before_cursor = vim_strnsave(line, col);
+    if (before_cursor == NULL)
+	return;
+
+    if (ise == NULL || *ise == NUL)
+    {
+	regmatch.regprog = vim_regcomp((char_u *)"\\k\\+$", RE_MAGIC);
+	if (regmatch.regprog != NULL)
+	{
+	    if (vim_regexec_nl(&regmatch, before_cursor, (colnr_T)0))
+	    {
+		bytepos = (int)(regmatch.startp[0] - before_cursor);
+		trig = vim_strnsave(regmatch.startp[0],
+			regmatch.endp[0] - regmatch.startp[0]);
+		if (trig == NULL)
+		{
+		    vim_free(before_cursor);
+		    return;
+		}
+
+		ret = add_match_to_list(rettv, trig, -1, bytepos);
+		vim_free(trig);
+		if (ret == FAIL)
+		{
+		    vim_free(trig);
+		    vim_regfree(regmatch.regprog);
+		    return;
+		}
+	    }
+	    vim_regfree(regmatch.regprog);
+	}
+    }
+    else
+    {
+	char_u	*p = ise;
+	cur_end = before_cursor + (int)STRLEN(before_cursor);
+
+	while (*p != NUL)
+	{
+	    int len = copy_option_part(&p, part, MAXPATHL, ",");
+
+	    if (len > 0 && len <= col)
+	    {
+		if (STRNCMP(cur_end - len, part, len) == 0)
+		{
+		    bytepos = col - len;
+		    if (add_match_to_list(rettv, part, len, bytepos) == FAIL)
+		    {
+			vim_free(before_cursor);
+			return;
+		    }
+		}
+	    }
+	}
+    }
+
+    vim_free(before_cursor);
+}
+
+/*
  * Return Insert completion mode name string
  */
     static char_u *

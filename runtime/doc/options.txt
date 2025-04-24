@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 19
+*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4982,6 +4982,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	has a lowercase letter where the typed text has an uppercase letter,
 	and there is a letter before it, the completed part is made uppercase.
 	With 'noinfercase' the match is used as-is.
+
+						*'isexpand'* *'ise'*
+'isexpand' 'ise'	string	(default: "")
+			local to buffer
+	Defines characters and patterns for completion in insert mode. Used by
+	the |complete_match()| function to determine the starting position for
+	completion. This is a comma-separated list of triggers. Each trigger
+	can be:
+	- A single character like "." or "/"
+	- A sequence of characters like "->", "/*", or "/**"
+
+	Note: Use "\\," to add a literal comma as trigger character, see
+	|option-backslash|.
 
 			*'insertmode'* *'im'* *'noinsertmode'* *'noim'*
 'insertmode' 'im'	boolean	(default off)
