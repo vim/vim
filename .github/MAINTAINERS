@@ -187,6 +187,7 @@ runtime/ftplugin/goaccess.vim		@meonkeys
 runtime/ftplugin/gomod.vim		@yu-yk
 runtime/ftplugin/gprof.vim		@dpelle
 runtime/ftplugin/graphql.vim		@jparise
+runtime/ftplugin/groff.vim		@e-kwsm
 runtime/ftplugin/gyp.vim		@ObserverOfTime
 runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hare.vim		@selenebun
