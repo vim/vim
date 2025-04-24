@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Jan 20
+# Last Change:	2025 Apr 24
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 export def DetectFiletype()
@@ -26,8 +26,9 @@ def DetectFromHashBang(firstline: string)
   # "#!/usr/bin/bash" to make matching easier.
   # Recognize only a few {options} that are commonly used.
   if line1 =~ '^#!\s*\S*\<env\s'
-    line1 = substitute(line1, '\S\+=\S\+', '', 'g')
-    line1 = substitute(line1, '\(-[iS]\|--ignore-environment\|--split-string\)', '', '')
+    line1 = substitute(line1, '\s\zs--split-string[ \t=]', '', '')
+    line1 = substitute(line1, '\s\zs[A-Za-z0-9_]\+=\S*\ze\s', '', 'g')
+    line1 = substitute(line1, '\s\zs\%(-[iS]\+\|--ignore-environment\)\ze\s', '', 'g')
     line1 = substitute(line1, '\<env\s\+', '', '')
   endif
 
