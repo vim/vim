@@ -369,7 +369,7 @@ internal_format(
 	{
 	    // In MODE_VREPLACE state, we will backspace over the text to be
 	    // wrapped, so save a copy now to put on the next line.
-	    saved_text = vim_strsave(ml_get_cursor());
+	    saved_text = vim_strnsave(ml_get_cursor(), ml_get_cursor_len());
 	    curwin->w_cursor.col = orig_col;
 	    if (saved_text == NULL)
 		break;	// Can't do it, out of memory
@@ -552,9 +552,7 @@ same_leader(
     char_u  *leader2_flags)
 {
     int	    idx1 = 0, idx2 = 0;
-    char_u  *p;
     char_u  *line1;
-    char_u  *line2;
 
     if (leader1_len == 0)
 	return (leader2_len == 0);
@@ -566,6 +564,8 @@ same_leader(
     // some text after it and the second line has the 'm' flag.
     if (leader1_flags != NULL)
     {
+	char_u	*p;
+
 	for (p = leader1_flags; *p && *p != ':'; ++p)
 	{
 	    if (*p == COM_FIRST)
@@ -589,9 +589,11 @@ same_leader(
 
     // Get current line and next line, compare the leaders.
     // The first line has to be saved, only one line can be locked at a time.
-    line1 = vim_strsave(ml_get(lnum));
+    line1 = vim_strnsave(ml_get(lnum), ml_get_len(lnum));
     if (line1 != NULL)
     {
+	char_u  *line2;
+
 	for (idx1 = 0; VIM_ISWHITE(line1[idx1]); ++idx1)
 	    ;
 	line2 = ml_get(lnum + 1);
