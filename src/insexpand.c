@@ -3592,7 +3592,6 @@ f_complete_match(typval_T *argvars, typval_T *rettv)
     regmatch_T  regmatch;
     char_u      *before_cursor = NULL;
     char_u      *cur_end = NULL;
-    char_u      *trig = NULL;
     int          bytepos = 0;
     char_u	part[MAXPATHL];
     int		ret;
@@ -3643,20 +3642,21 @@ f_complete_match(typval_T *argvars, typval_T *rettv)
 	{
 	    if (vim_regexec_nl(&regmatch, before_cursor, (colnr_T)0))
 	    {
-		bytepos = (int)(regmatch.startp[0] - before_cursor);
-		trig = vim_strnsave(regmatch.startp[0],
+		char_u	*trig = vim_strnsave(regmatch.startp[0],
 			regmatch.endp[0] - regmatch.startp[0]);
 		if (trig == NULL)
 		{
 		    vim_free(before_cursor);
+		    vim_regfree(regmatch.regprog);
 		    return;
 		}
 
+		bytepos = (int)(regmatch.startp[0] - before_cursor);
 		ret = add_match_to_list(rettv, trig, -1, bytepos);
 		vim_free(trig);
 		if (ret == FAIL)
 		{
-		    vim_free(trig);
+		    vim_free(before_cursor);
 		    vim_regfree(regmatch.regprog);
 		    return;
 		}
