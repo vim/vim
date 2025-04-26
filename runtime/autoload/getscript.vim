@@ -85,16 +85,13 @@ endif
 if !exists("g:GetLatestVimScripts_allowautoinstall")
  let g:GetLatestVimScripts_allowautoinstall= 1
 endif
+" set up default scriptaddr address
+if !exists("g:GetLatestVimScripts_scriptaddr")
+ let g:GetLatestVimScripts_scriptaddr = 'https://raw.githubusercontent.com/vim/vim/ba8ca4dae1ae4f5670bdcbacf550b83c333240e5/GetLatestVimScripts.dist'
+endif
 
-" Set up default script addresses by sourcing GetLatestVimScripts.dist
-if !exists('g:GetLatestVimScripts_scriptaddr') || !exists('g:GetLatestVimScripts_downloadaddr')
-  if filereadable(expand('../../GetLatestVimScripts.dist'))
-    source ../../GetLatestVimScripts.dist
-  else
-    " fallback if the dist file does not exist
-    let g:GetLatestVimScripts_scriptaddr = 'https://www.vim.org/scripts/script.php?script_id='
-    let g:GetLatestVimScripts_downloadaddr = 'https://www.vim.org/scripts/download_script.php?src_id='
-  endif
+if !exists("g:GetLatestVimScripts_downloadaddr")
+  let g:GetLatestVimScripts_downloadaddr = 'https://raw.githubusercontent.com/vim/vim/ba8ca4dae1ae4f5670bdcbacf550b83c333240e5/GetLatestVimScripts.dist'
 endif
 
 " define decompression tools (on windows this allows redirection to wsl or git tools).
