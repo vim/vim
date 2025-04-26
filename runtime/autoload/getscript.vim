@@ -88,19 +88,11 @@ endif
 
 " set up default scriptaddr address
 if !exists("g:GetLatestVimScripts_scriptaddr")
- let g:GetLatestVimScripts_scriptaddr = 'https://www.vim.org/scripts/script.php?script_id='
+ let g:GetLatestVimScripts_scriptaddr = 'https://www.vim.org/scripts/script.php?script_id=' || 'https://raw.githubusercontent.com/vim-scripts/GetLatestVimScripts/refs/heads/master/GetLatest/GetLatestVimScripts.dist'
 endif
 
 if !exists("g:GetLatestVimScripts_downloadaddr")
   let g:GetLatestVimScripts_downloadaddr = 'https://www.vim.org/scripts/download_script.php?src_id='
-endif
-
-" Check if the first URL is reachable
-if executable('curl')
-  let s:test_url = system('curl --silent --head --fail ' . shellescape(g:GetLatestVimScripts_downloadaddr) . ' || echo "fail"')
-  if s:test_url =~ 'fail'
-    let g:GetLatestVimScripts_downloadaddr = 'https://raw.githubusercontent.com/vim-scripts/GetLatestVimScripts/refs/heads/master/GetLatest/GetLatestVimScripts.dist'
-  endif
 endif
 
 " define decompression tools (on windows this allows redirection to wsl or git tools).
