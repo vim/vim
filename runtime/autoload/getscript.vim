@@ -85,6 +85,7 @@ endif
 if !exists("g:GetLatestVimScripts_allowautoinstall")
  let g:GetLatestVimScripts_allowautoinstall= 1
 endif
+
 " set up default scriptaddr address
 if !exists("g:GetLatestVimScripts_scriptaddr")
  let g:GetLatestVimScripts_scriptaddr = 'https://raw.githubusercontent.com/vim/vim/ba8ca4dae1ae4f5670bdcbacf550b83c333240e5/GetLatestVimScripts.dist'
