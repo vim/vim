@@ -36,22 +36,22 @@ func SetUp()
     call CheckTool('download')    " for HTTP fetch (curl or wget)
     call CheckTool('tar')         " for .tar.xz unpacking
 
-    " add the required GetLatest dir (note ~ maps to $HOME)
+    " create the GetLatest dir under ~/.vim
     call mkdir(s:scriptdir, 'p')
     let &runtimepath = s:scriptdir . ',' . expand('~/.vim/runtime')
 
-    " add plugin dir
+    " add plugin and doc dirs
     call mkdir(expand('~/' . s:dotvim . '/plugin'), 'p')
-
-    " doc file is required for the packages which use :helptags
     let docdir = expand('~/' . s:dotvim . '/doc')
     call mkdir(docdir, 'p')
+
+    " write empty tags file
     exe 'split ' . docdir . '/tags'
     w!
     bwipe!
 
-    " load required plugins, getscript.vim would be loaded manually by the test
-    " (instead of relying on autoload) because set up depends on shell selection
+    " load GLVS plugin plus dependencies
+    runtime plugin/GetLatestVimScripts.vim
     runtime plugin/vimballPlugin.vim
     runtime plugin/getscriptPlugin.vim
 endfunc
@@ -150,19 +150,13 @@ endfunc
 
 func TearDown()
     call delete(expand('~/' . s:dotvim), 'rf')
-
-    " getscript.vim include guard
     unlet! g:loaded_getscript g:loaded_getscriptPlugin
-    " remove all globals (shell dependents)
-    let script_globals = keys(g:)
-    call filter(script_globals, 'v:val =~ "GetLatestVimScripts_"')
+    let script_globals = filter(keys(g:), 'v:val =~ "GetLatestVimScripts_"')
     if !empty(script_globals)
         call map(script_globals, '"g:" . v:val')
         exe 'unlet ' . join(script_globals)
     endif
 endfunc
-
-" Ancillary functions
 
 func SetShell(shell)
     if a:shell ==# 'default'
@@ -171,18 +165,13 @@ func SetShell(shell)
         if !has('win32')
             throw 'Skipped: powershell desktop is missing'
         endif
-        set shell=powershell shellcmdflag=-NoProfile\ -Command shellxquote=\"  \
-        set shellpipe=2>&1\ | Out-File\ -Encoding\ default shellredir=2>&1\ | Out-File\ -Encoding\ default
+        set shell=powershell shellcmdflag=-NoProfile\ -Command shellxquote=\" shellpipe=2>&1\ | Out-File\ -Encoding\ default shellredir=2>&1\ | Out-File\ -Encoding\ default
     elseif a:shell ==# 'pwsh'
         if !executable('pwsh')
             throw 'Skipped: powershell core is missing'
         endif
         set shell=pwsh shellcmdflag=-NoProfile\ -c shellpipe=>%s\ 2>&1 shellredir=>%s\ 2>&1
-        if has('win32')
-            set shellxquote=\"
-        else
-            set shellxquote=
-        endif
+        if has('win32') | set shellxquote=\" | else | set shellxquote= | endif
     else
         call assert_report('Trying to select an unknown shell')
     endif
@@ -203,192 +192,107 @@ endfunc
 
 func ValidateInstall(package)
     call assert_true(has_key(s:packages, a:package), 'This package is unexpected')
-
     if has_key(s:packages[a:package], 'package')
-        let pkgfile = expand('~/' . s:dotvim . '/' . s:packages[a:package]['package'])
-        call assert_true(filereadable(pkgfile), 'The plugin was not downloaded')
+        call assert_true(filereadable(expand('~/' . s:dotvim . '/' . s:packages[a:package]['package'])), 'The plugin was not downloaded')
     endif
-
     call assert_true(has_key(s:packages[a:package], 'files'), 'This package lacks validation files')
     for file in s:packages[a:package]['files']
-        let filepath = expand('~/' . s:dotvim . '/' . file)
-        call assert_true(filereadable(filepath), 'The plugin was not installed')
+        call assert_true(filereadable(expand('~/' . s:dotvim . '/' . file)), 'The plugin was not installed')
     endfor
 endfunc
 
 " Tests
-"
+
 func Test_glvs_default_vmb()
-    " select different shells
     call SetShell('default')
-
-    " add the corresponding script
     call SelectScript('vmb')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vmb')
 endfunc
 
 func Test_glvs_pwsh_vmb()
-    " select different shells
     call SetShell('pwsh')
-
-    " add the corresponding script
     call SelectScript('vmb')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vmb')
 endfunc
 
 func Test_glvs_powershell_vmb()
-    " select different shells
     call SetShell('powershell')
-
-    " add the corresponding script
     call SelectScript('vmb')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vmb')
 endfunc
 
 func Test_glvs_default_vim_bz2()
     call CheckTool('bunzip2')
-
-    " select different shells
     call SetShell('default')
-
-    " add the corresponding script
     call SelectScript('vim.bz2')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vim.bz2')
 endfunc
 
 func Test_glvs_powershell_vim_bz2()
     call CheckTool('bunzip2')
-
-    " select different shells
     call SetShell('powershell')
-
-    " add the corresponding script
     call SelectScript('vim.bz2')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vim.bz2')
 endfunc
 
 func Test_glvs_pwsh_vim_bz2()
     call CheckTool('bunzip2')
-
-    " select different shells
     call SetShell('pwsh')
-
-    " add the corresponding script
     call SelectScript('vim.bz2')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vim.bz2')
 endfunc
 
 func Test_glvs_default_vba_gz()
     call CheckTool('gunzip')
-
-    " select different shells
     call SetShell('default')
-
-    " add the corresponding script
     call SelectScript('vba.gz')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vba.gz')
 endfunc
 
 func Test_glvs_powershell_vba_gz()
     call CheckTool('gunzip')
-
-    " select different shells
     call SetShell('powershell')
-
-    " add the corresponding script
     call SelectScript('vba.gz')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vba.gz')
 endfunc
 
 func Test_glvs_pwsh_vba_gz()
     call CheckTool('gunzip')
-
-    " select different shells
     call SetShell('pwsh')
-
-    " add the corresponding script
     call SelectScript('vba.gz')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('vba.gz')
 endfunc
 
 func Test_glvs_default_tar_xz()
     call CheckTool('unxz')
-
-    " select different shells
     call SetShell('default')
-
-    " add the corresponding script
     call SelectScript('tar.xz')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('tar.xz')
 endfunc
 
 func Test_glvs_powershell_tar_xz()
     call CheckTool('unxz')
-
-    " select different shells
     call SetShell('powershell')
-
-    " add the corresponding script
     call SelectScript('tar.xz')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('tar.xz')
 endfunc
 
 func Test_glvs_pwsh_tar_xz()
     call CheckTool('unxz')
-
-    " select different shells
     call SetShell('pwsh')
-
-    " add the corresponding script
     call SelectScript('tar.xz')
-
-    " load the plugins specified
     GLVS
-
     call ValidateInstall('tar.xz')
 endfunc
 
