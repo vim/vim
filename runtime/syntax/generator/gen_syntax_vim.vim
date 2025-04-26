@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
-" Last Change: 2025 Apr 23
+" Last Change: 2025 Apr 27
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -274,11 +274,13 @@ function s:get_vim_command_type(cmd_name)
 		echomsg
 		echon
 		echowindow
+		else
 		elseif
 		endclass
 		enddef
 		endenum
 		endfunction
+		endif
 		endinterface
 		enum
 		execute

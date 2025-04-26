@@ -40,10 +40,17 @@ augroup! \|\"
 augroup  \"\| | autocmd! | augroup END
 augroup! \"\|
 
-" FIXME: required comment prefix
-augroup  foo"comment    " start bad fold
+
+augroup  foo"comment
+  au!
+  au BufRead * echo "Foo"
+augroup END"comment
+
 augroup  foo|echo "Foo"
-augroup END             " terminate bad fold
+  au!
+  au BufRead * echo "Foo"
+augroup END|echo "Foo"
+
 augroup! foo"comment
 augroup! foo|echo "Foo"
 
