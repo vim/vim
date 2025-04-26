@@ -95,10 +95,10 @@ if !exists("g:GetLatestVimScripts_downloadaddr")
   let g:GetLatestVimScripts_downloadaddr = 'https://www.vim.org/scripts/download_script.php?src_id='
 endif
 
-" Check if the first URL is reachable (requires external command like curl)
+" Check if the first URL is reachable
 if executable('curl')
-  let l:test_url = system('curl --silent --head --fail ' . shellescape(g:GetLatestVimScripts_downloadaddr) . ' || echo "fail"')
-  if l:test_url =~ 'fail'
+  let s:test_url = system('curl --silent --head --fail ' . shellescape(g:GetLatestVimScripts_downloadaddr) . ' || echo "fail"')
+  if s:test_url =~ 'fail'
     let g:GetLatestVimScripts_downloadaddr = 'https://raw.githubusercontent.com/vim-scripts/GetLatestVimScripts/refs/heads/master/GetLatest/GetLatestVimScripts.dist'
   endif
 endif
