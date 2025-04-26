@@ -5,9 +5,9 @@ set nocp
 set cpo&vim
 
 " constants
-const s:dotvim= has("win32") ? "vimfiles" : ".vim"
-const s:scriptdir = "$HOME/" . s:dotvim . "/GetLatest"
-const s:vimdir = expand("<script>:h:h:h")
+const s:dotvim = has('win32') ? 'vimfiles' : '.vim'
+const s:scriptdir = expand('~/' . s:dotvim . '/GetLatest')
+const s:vimdir   = expand('<script>:h:h:h')
 const s:packages = {
     \ 'vmb': {
         \ 'spec': '4979 1 :AutoInstall: AnsiEsc.vim',
@@ -36,17 +36,17 @@ func SetUp()
     call CheckTool('download')    " for HTTP fetch (curl or wget)
     call CheckTool('tar')         " for .tar.xz unpacking
 
-    " add the required GetLatest dir (note $HOME is a dummy)
-    call mkdir(s:scriptdir, "p")
-    let &runtimepath = "$HOME/" . s:dotvim . "," . s:vimdir . "/runtime"
+    " add the required GetLatest dir (note ~ maps to $HOME)
+    call mkdir(s:scriptdir, 'p')
+    let &runtimepath = s:scriptdir . ',' . expand('~/.vim/runtime')
 
     " add plugin dir
-    call mkdir("$HOME/" . s:dotvim . "/plugin")
+    call mkdir(expand('~/' . s:dotvim . '/plugin'), 'p')
 
     " doc file is required for the packages which use :helptags
-    let docdir = "$HOME/" . s:dotvim . "/doc"
-    call mkdir(docdir, "p")
-    exe "split " . docdir . "/tags"
+    let docdir = expand('~/' . s:dotvim . '/doc')
+    call mkdir(docdir, 'p')
+    exe 'split ' . docdir . '/tags'
     w!
     bwipe!
 
@@ -57,70 +57,69 @@ func SetUp()
 endfunc
 
 func CheckTool(tool)
-    " define tools location
     if has('win32')
         if executable('git')
-           let git_path = trim(system('powershell -Command "Split-Path (Split-Path (gcm git).Source)"'))
+            let git_path = trim(system('powershell -Command "Split-Path (Split-Path (gcm git).Source)"'))
         endif
 
-        if a:tool == 'bunzip2'
-          if executable('bunzip2')
-              let g:GetLatestVimScripts_bunzip2= "bunzip2"
-          elseif executable('7z')
-              let g:GetLatestVimScripts_bunzip2= "7z x"
-          elseif exists('git_path')
-              let g:GetLatestVimScripts_bunzip2= git_path . '\usr\bin\bunzip2'
-          else
-              throw "Skipped: Missing tool to decompress .bz2 files"
-          endif
-        endif
-
-        if a:tool == 'gunzip'
-          if executable('gunzip')
-              let g:GetLatestVimScripts_gunzip= "gunzip"
-          elseif executable('7z')
-              let g:GetLatestVimScripts_gunzip="7z e"
-          elseif exists('git_path')
-              let g:GetLatestVimScripts_gunzip= git_path . '\usr\bin\gunzip'
-          else
-              throw "Skipped: Missing tool to decompress .gz files"
-          endif
-        endif
-
-        if a:tool == 'unxz'
-          if executable('unxz')
-              let g:GetLatestVimScripts_unxz= "unxz"
-          elseif executable('7z')
-              let g:GetLatestVimScripts_unxz="7z x"
-          elseif exists('git_path')
-              let g:GetLatestVimScripts_unxz= git_path . '\mingw64\bin\unxz'
-          else
-              throw "Skipped: Missing tool to decompress .xz files"
-          endif
-        endif
-    else
-        " Mac or Unix
         if a:tool ==# 'bunzip2'
             if executable('bunzip2')
-                let g:GetLatestVimScripts_bunzip2= "bunzip2"
+                let g:GetLatestVimScripts_bunzip2 = 'bunzip2'
+            elseif executable('7z')
+                let g:GetLatestVimScripts_bunzip2 = '7z x'
+            elseif exists('git_path')
+                let g:GetLatestVimScripts_bunzip2 = git_path . '\usr\bin\bunzip2'
             else
-                throw "Skipped: Missing tool to decompress .bz2 files"
+                throw 'Skipped: Missing tool to decompress .bz2 files'
             endif
         endif
 
         if a:tool ==# 'gunzip'
             if executable('gunzip')
-                let g:GetLatestVimScripts_gunzip= "gunzip"
+                let g:GetLatestVimScripts_gunzip = 'gunzip'
+            elseif executable('7z')
+                let g:GetLatestVimScripts_gunzip = '7z e'
+            elseif exists('git_path')
+                let g:GetLatestVimScripts_gunzip = git_path . '\usr\bin\gunzip'
             else
-                throw "Skipped: Missing tool to decompress .gz files"
+                throw 'Skipped: Missing tool to decompress .gz files'
             endif
         endif
 
         if a:tool ==# 'unxz'
             if executable('unxz')
-                let g:GetLatestVimScripts_unxz= "unxz"
+                let g:GetLatestVimScripts_unxz = 'unxz'
+            elseif executable('7z')
+                let g:GetLatestVimScripts_unxz = '7z x'
+            elseif exists('git_path')
+                let g:GetLatestVimScripts_unxz = git_path . '\mingw64\bin\unxz'
             else
-                throw "Skipped: Missing tool to decompress .xz files"
+                throw 'Skipped: Missing tool to decompress .xz files'
+            endif
+        endif
+    else
+        " Mac or Unix
+        if a:tool ==# 'bunzip2'
+            if executable('bunzip2')
+                let g:GetLatestVimScripts_bunzip2 = 'bunzip2'
+            else
+                throw 'Skipped: Missing tool to decompress .bz2 files'
+            endif
+        endif
+
+        if a:tool ==# 'gunzip'
+            if executable('gunzip')
+                let g:GetLatestVimScripts_gunzip = 'gunzip'
+            else
+                throw 'Skipped: Missing tool to decompress .gz files'
+            endif
+        endif
+
+        if a:tool ==# 'unxz'
+            if executable('unxz')
+                let g:GetLatestVimScripts_unxz = 'unxz'
+            else
+                throw 'Skipped: Missing tool to decompress .xz files'
             endif
         endif
 
@@ -150,52 +149,48 @@ func CheckTool(tool)
 endfunc
 
 func TearDown()
-    call delete("$HOME/" . s:dotvim, "rf")
+    call delete(expand('~/' . s:dotvim), 'rf')
 
     " getscript.vim include guard
     unlet! g:loaded_getscript g:loaded_getscriptPlugin
     " remove all globals (shell dependents)
     let script_globals = keys(g:)
     call filter(script_globals, 'v:val =~ "GetLatestVimScripts_"')
-    if len(script_globals)
+    if !empty(script_globals)
         call map(script_globals, '"g:" . v:val')
-        exe "unlet " . script_globals->join()
+        exe 'unlet ' . join(script_globals)
     endif
 endfunc
 
 " Ancillary functions
 
 func SetShell(shell)
-    " select different shells
-    if a:shell == "default"
+    if a:shell ==# 'default'
         set shell& shellcmdflag& shellxquote& shellpipe& shellredir&
-    elseif a:shell == "powershell"
-        if !has("win32")
+    elseif a:shell ==# 'powershell'
+        if !has('win32')
             throw 'Skipped: powershell desktop is missing'
         endif
         set shell=powershell shellcmdflag=-NoProfile\ -Command shellxquote=\"  \
-        set shellpipe=2>&1  \| Out-File\ -Encoding\ default shellredir=2>&1  \| Out-File\ -Encoding\ default
-    elseif a:shell == "pwsh"
-        if !executable("pwsh")
+        set shellpipe=2>&1\ | Out-File\ -Encoding\ default shellredir=2>&1\ | Out-File\ -Encoding\ default
+    elseif a:shell ==# 'pwsh'
+        if !executable('pwsh')
             throw 'Skipped: powershell core is missing'
         endif
         set shell=pwsh shellcmdflag=-NoProfile\ -c shellpipe=>%s\ 2>&1 shellredir=>%s\ 2>&1
-        if has("win32")
+        if has('win32')
             set shellxquote=\"
         else
             set shellxquote=
         endif
     else
-        call assert_report("Trying to select and unknown shell")
+        call assert_report('Trying to select an unknown shell')
     endif
-
-    " reload script to force new shell options
     runtime autoload/getscript.vim
 endfunc
 
 func SelectScript(package)
-    " add the corresponding file
-    exe "split " . s:scriptdir . "/GetLatestVimScripts.dat"
+    exe 'split ' . s:scriptdir . '/GetLatestVimScripts.dat'
     let scripts =<< trim END
         ScriptID SourceID Filename
         --------------------------
@@ -207,19 +202,17 @@ func SelectScript(package)
 endfunc
 
 func ValidateInstall(package)
-    " check the package is expected
-    call assert_true(s:packages->has_key(a:package), "This package is unexpected")
+    call assert_true(has_key(s:packages, a:package), 'This package is unexpected')
 
-    " check if installation work out
-    if s:packages[a:package]->has_key('package')
-        let check = filereadable("$HOME/" . s:dotvim . "/" . s:packages[a:package]['package'])
-        call assert_true(check, "The plugin was not downloaded")
+    if has_key(s:packages[a:package], 'package')
+        let pkgfile = expand('~/' . s:dotvim . '/' . s:packages[a:package]['package'])
+        call assert_true(filereadable(pkgfile), 'The plugin was not downloaded')
     endif
 
-    call assert_true(s:packages[a:package]->has_key('files'), "This package lacks validation files")
+    call assert_true(has_key(s:packages[a:package], 'files'), 'This package lacks validation files')
     for file in s:packages[a:package]['files']
-        let check = filereadable("$HOME/" . s:dotvim . "/" . file)
-        call assert_true(check, "The plugin was not installed")
+        let filepath = expand('~/' . s:dotvim . '/' . file)
+        call assert_true(filereadable(filepath), 'The plugin was not installed')
     endfor
 endfunc
 
