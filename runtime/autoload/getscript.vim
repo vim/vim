@@ -88,11 +88,11 @@ endif
 
 " set up default scriptaddr address
 if !exists("g:GetLatestVimScripts_scriptaddr")
- let g:GetLatestVimScripts_scriptaddr = 'https://www.vim.org/scripts/script.php?script_id='
+ let g:GetLatestVimScripts_scriptaddr = '../../GetLatestVimScripts.dist'
 endif
 
 if !exists("g:GetLatestVimScripts_downloadaddr")
-  let g:GetLatestVimScripts_downloadaddr = 'https://www.vim.org/scripts/download_script.php?src_id='
+  let g:GetLatestVimScripts_downloadaddr = '../../GetLatestVimScripts.dist'
 endif
 
 " define decompression tools (on windows this allows redirection to wsl or git tools).
