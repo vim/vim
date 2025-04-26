@@ -245,6 +245,8 @@ func Test_termwinscroll()
 endfunc
 
 func Test_termwinscroll_topline()
+  CheckNotMSWindows
+
   set termwinscroll=1000 mouse=a
   terminal
   call assert_equal(2, winnr('$'))
