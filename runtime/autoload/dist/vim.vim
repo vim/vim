@@ -1,5 +1,5 @@
 " Vim runtime support library,
-" runs the vim9 script version or legacy script version
+" runs the Vim9 script version or legacy script version
 " on demand (mostly for Neovim compatability)
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>

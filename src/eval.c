@@ -2284,7 +2284,7 @@ get_lval(
     {
 	where_T	    where = WHERE_INIT;
 
-	// In a vim9 script, do type check and make sure the variable is
+	// In a Vim9 script, do type check and make sure the variable is
 	// writable.
 	if (check_typval_type(lp->ll_valtype, rettv, where) == FAIL)
 	    return NULL;

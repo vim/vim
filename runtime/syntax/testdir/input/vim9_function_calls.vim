@@ -7,7 +7,7 @@ clearmatches()
 echo "Foo" | clearmatches()
 
 
-# Issue 16721 (vimscript highlight of builtin function after |)
+# Issue 16721 (Vim script highlight of builtin function after |)
 
 &directory = $'{$MYVIMDIR}/.data/swap/'
 &backupdir = $'{$MYVIMDIR}/.data/backup//'

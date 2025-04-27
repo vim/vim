@@ -8,7 +8,7 @@
 
 " THE ORIGINAL AUTHOR'S NOTES:
 "
-" This is my very first vim script, I hope to have
+" This is my very first Vim script, I hope to have
 " done it the right way.
 "
 " I must directly or indirectly thank the author of java.vim and ruby.vim:

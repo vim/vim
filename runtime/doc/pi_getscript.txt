@@ -156,7 +156,7 @@ may have.  As an example, consider: >
 
 	" GetLatestVimScripts: 884  1 :AutoInstall: AutoAlign.vim
 
-This comment line tells getscript.vim to check vimscript #884 and that the
+This comment line tells getscript.vim to check Vim script #884 and that the
 script is automatically installable.  Getscript will also use this line to
 help build the GetLatestVimScripts.dat file, by including a line such as: >
 

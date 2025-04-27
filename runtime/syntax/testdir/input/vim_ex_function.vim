@@ -177,7 +177,7 @@ function Foo(...)
 endfunction
 
 
-" Issue #16243 (vimscript def parameters syntax highlight is wrong)
+" Issue #16243 (Vim script def parameters syntax highlight is wrong)
 
 function Test(lines = [line('.'), line('.')])
 endfunction

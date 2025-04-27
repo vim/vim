@@ -74,7 +74,7 @@ The ActiveState one should work, Strawberry Perl is a good alternative.
 			|script-here|.
 
 
-Example vim script: >
+Example Vim script: >
 
 	function! WhitePearl()
 	perl << EOF

@@ -149,7 +149,7 @@ def Foo()
 enddef
 
 
-# Issue #16227 (Vimscript ternary expression highlighting)
+# Issue #16227 (Vim script ternary expression highlighting)
 
 var foo = 'foo'                         # comment
 var bar = foo == 'foo' ? 'bar' : 'baz'

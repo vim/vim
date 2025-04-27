@@ -4267,7 +4267,7 @@ func Test_ex_command_completion()
   " required for :*
   set cpo+=*
   let list = filter(getcompletion('', 'command'), 'exists(":" . v:val) == 0')
-  " :++ and :-- are only valid in Vim9 Script context, so they can be ignored
+  " :++ and :-- are only valid in Vim9 script context, so they can be ignored
   call assert_equal(['++', '--'], sort(list))
   call assert_equal(2, exists(':k'))
   call assert_equal(0, exists(':ke'))
