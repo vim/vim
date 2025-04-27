@@ -2034,8 +2034,11 @@ complete_info([{what}])				*complete_info()*
 		Return type: dict<any>
 
 complete_match([{lnum}, {col}])			*complete_match()*
-		Returns a List of matches found according to the 'isexpand'
-		option. Each match is represented as a List containing
+		Searches backward from the given position and returns a List
+		of matches according to the 'isexpand' option. When no
+		arguments are provided, uses the current cursor position.
+
+		Each match is represented as a List containing
 		[startcol, trigger_text] where:
 		- startcol: column position where completion should start,
 		  or -1 if no trigger position is found. For multi-character
@@ -2046,9 +2049,6 @@ complete_match([{lnum}, {col}])			*complete_match()*
 
 		When 'isexpand' is empty, uses the 'iskeyword' pattern
 		"\k\+$" to find the start of the current keyword.
-
-		When no arguments are provided, uses the current cursor
-		position.
 
 		Examples: >
 	set isexpand=.,->,/,/*,abc

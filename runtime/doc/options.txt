@@ -4996,6 +4996,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note: Use "\\," to add a literal comma as trigger character, see
 	|option-backslash|.
 
+	Examples: >
+		set isexpand=.,->,/*,\\,
+<
+
 			*'insertmode'* *'im'* *'noinsertmode'* *'noim'*
 'insertmode' 'im'	boolean	(default off)
 			global
