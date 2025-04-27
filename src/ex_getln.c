@@ -1620,6 +1620,7 @@ getcmdline_int(
     int		did_save_ccline = FALSE;
     int		cmdline_type;
     int		wild_type = 0;
+    int		event_cmdlineleavepre_triggered = FALSE;
 
     // one recursion level deeper
     ++depth;
@@ -1917,8 +1918,15 @@ getcmdline_int(
 	}
 
 	// Trigger CmdlineLeavePre autocommand
-	if (c == '\n' || c == '\r' || c == K_KENTER || c == ESC || c == Ctrl_C)
+	if (KeyTyped && (c == '\n' || c == '\r' || c == K_KENTER || c == ESC
+#ifdef UNIX
+		    || c == intr_char
+#endif
+		    || c == Ctrl_C))
+	{
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
+	    event_cmdlineleavepre_triggered = TRUE;
+	}
 
 	// The wildmenu is cleared if the pressed key is not used for
 	// navigating the wild menu (i.e. the key is not 'wildchar' or
@@ -2607,6 +2615,10 @@ returncmd:
     // When the command line was typed, no need for a wait-return prompt.
     if (some_key_typed)
 	need_wait_return = FALSE;
+
+    // Trigger CmdlineLeavePre autocommands if not already triggered.
+    if (!event_cmdlineleavepre_triggered)
+	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 
     // Trigger CmdlineLeave autocommands.
     trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVE);
