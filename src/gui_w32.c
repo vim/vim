@@ -9077,7 +9077,7 @@ test_gui_w32_sendevent_mouse(dict_T *args)
 	if (dict_get_bool(args, "cell", FALSE))
 	{
 	    // calculate the middle of the character cell
-	    // Note: Cell coordinates are 1-based from vimscript
+	    // Note: Cell coordinates are 1-based from Vim script
 	    int pY = (row - 1) * gui.char_height + gui.char_height / 2;
 	    int pX = (col - 1) * gui.char_width + gui.char_width / 2;
 	    gui_mouse_moved(pX, pY);

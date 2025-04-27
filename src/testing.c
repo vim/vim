@@ -1411,7 +1411,7 @@ test_gui_mouse_event(dict_T *args)
 	if (dict_get_bool(args, "cell", FALSE))
 	{
 	    // calculate the middle of the character cell
-	    // Note: Cell coordinates are 1-based from vimscript
+	    // Note: Cell coordinates are 1-based from Vim script
 	    pY = (row - 1) * gui.char_height + gui.char_height / 2;
 	    pX = (col - 1) * gui.char_width + gui.char_width / 2;
 	}

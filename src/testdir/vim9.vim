@@ -1,6 +1,6 @@
 vim9script
 
-# Utility functions for testing vim9 script
+# Utility functions for testing Vim9 script
 
 # Use a different file name for each run.
 var sequence = 1

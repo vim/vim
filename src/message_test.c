@@ -34,7 +34,7 @@
 // - warning: format ‘%S’ expects argument of type ‘wchar_t *’, but argument 4 has type ‘char *’
 // - warning: unknown conversion type character ‘b’ in format
 //
-// These formats are in practise only used from vim script printf()
+// These formats are in practise only used from Vim script printf()
 // function and never as literals in C code.
 char *fmt_012p = "%012p";
 char *fmt_5S   = "%5S";
@@ -158,12 +158,12 @@ test_trunc_string_mbyte(void)
 /*
  * Test vim_snprintf() with a focus on checking that truncation is
  * correct when buffer is small, since it cannot be tested from
- * vim script tests. Check that:
+ * Vim script tests. Check that:
  * - no buffer overflows happens (with valgrind or asan)
  * - output string is always NUL terminated.
  *
  * Not all formats of vim_snprintf() are checked here. They are
- * checked more exhaustively in Test_printf*() vim script tests.
+ * checked more exhaustively in Test_printf*() Vim script tests.
  */
     static void
 test_vim_snprintf(void)
@@ -290,7 +290,7 @@ test_vim_snprintf(void)
 	assert(bsize == 0 || STRNCMP(buf, "\x01\x02", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	// %p format is not tested in vim script tests Test_printf*()
+	// %p format is not tested in Vim script tests Test_printf*()
 	// as it only makes sense in C code.
 	// NOTE: SunOS libc doesn't use the prefix "0x" on %p.
 #ifdef SUN_SYSTEM

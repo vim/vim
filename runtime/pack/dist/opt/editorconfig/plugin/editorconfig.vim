@@ -325,7 +325,7 @@ call s:EditorConfigEnable(1)
 " UseConfigFiles function for different modes {{{1
 
 function! s:UseConfigFiles_VimCore(bufnr, target)
-" Use the vimscript EditorConfig core
+" Use the Vim script EditorConfig core
     try
         let l:config = editorconfig_core#handler#get_configurations(
             \ { 'target': a:target } )

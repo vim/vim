@@ -11383,6 +11383,7 @@ vim-modes-intro	intro.txt	/*vim-modes-intro*
 vim-raku	ft_raku.txt	/*vim-raku*
 vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-script-library	eval.txt	/*vim-script-library*
+vim-script-notation	usr_41.txt	/*vim-script-notation*
 vim-security	intro.txt	/*vim-security*
 vim-shebang	various.txt	/*vim-shebang*
 vim-tutor-create	pi_tutor.txt	/*vim-tutor-create*

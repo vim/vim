@@ -1976,7 +1976,7 @@ struct ufunc_S
 #define FC_DEAD	    0x80	// function kept only for reference to dfunc
 #define FC_EXPORT   0x100	// "export def Func()"
 #define FC_NOARGS   0x200	// no a: variables in lambda
-#define FC_VIM9	    0x400	// defined in vim9 script file
+#define FC_VIM9	    0x400	// defined in Vim9 script file
 #define FC_CFUNC    0x800	// defined as Lua C func
 #define FC_COPY	    0x1000	// copy of another function by
 				// copy_lambda_to_global_func()

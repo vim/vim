@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Apr 18
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2043,7 +2043,7 @@ The script name after `import` can be:
 
 If the name does not end in ".vim" then the use of "as name" is required.
 
-Once a vim9 script file has been imported, the result is cached and used the
+Once a Vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.
 
 It is not allowed to import the same script twice, also when using two
@@ -2056,7 +2056,7 @@ line, there can be no line break: >
 	echo that
 		.name  # Error!
 <						*import-map*
-When you've imported a function from one script into a vim9 script you can
+When you've imported a function from one script into a Vim9 script you can
 refer to the imported function in a mapping by prefixing it with |<SID>|: >
 	noremap <silent> ,a :call <SID>name.Function()<CR>
 

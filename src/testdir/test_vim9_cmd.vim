@@ -159,7 +159,7 @@ def Test_cmdmod_execute()
   v9.CheckScriptSuccess(lines)
   delfunc g:TheFunc
 
-  # vim9cmd execute(cmd) executes code in vim9 script context
+  # vim9cmd execute(cmd) executes code in Vim9 script context
   lines =<< trim END
     vim9cmd execute("g:vim9executetest = 'bar'")
     call assert_equal('bar', g:vim9executetest)
@@ -176,7 +176,7 @@ def Test_cmdmod_execute()
   unlet g:vim9executetest1
   unlet g:vim9executetest2
 
-  # legacy call execute(cmd) executes code in vim script context
+  # legacy call execute(cmd) executes code in Vim script context
   lines =<< trim END
     vim9script
     legacy call execute("let g:vim9executetest = 'bar'")
