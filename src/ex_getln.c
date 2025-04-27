@@ -1919,7 +1919,10 @@ getcmdline_int(
 
 	// Trigger CmdlineLeavePre autocommand
 	if (KeyTyped && (c == '\n' || c == '\r' || c == K_KENTER || c == ESC
-		    || c == Ctrl_C || c == intr_char))
+#ifdef UNIX
+		    || c == intr_char
+#endif
+		    || c == Ctrl_C))
 	{
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 	    event_cmdlineleavepre_triggered = TRUE;
