@@ -66,24 +66,24 @@ static char *ctrl_x_msgs[] =
 
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
 static char *ctrl_x_mode_names[] = {
-	"keyword",
-	"ctrl_x",
-	"scroll",
-	"whole_line",
-	"files",
-	"tags",
-	"path_patterns",
-	"path_defines",
-	"unknown",	    // CTRL_X_FINISHED
-	"dictionary",
-	"thesaurus",
-	"cmdline",
-	"function",
-	"omni",
-	"spell",
-	NULL,		    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
-	"eval",
-	"cmdline",
+    "keyword",
+    "ctrl_x",
+    "scroll",
+    "whole_line",
+    "files",
+    "tags",
+    "path_patterns",
+    "path_defines",
+    "unknown",		    // CTRL_X_FINISHED
+    "dictionary",
+    "thesaurus",
+    "cmdline",
+    "function",
+    "omni",
+    "spell",
+    NULL,		    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
+    "eval",
+    "cmdline",
 };
 #endif
 
@@ -1020,13 +1020,13 @@ ins_compl_add(
 	{
 	    if (current->cp_score < score)
 	    {
-	        match->cp_next = current;
-	        match->cp_prev = current->cp_prev;
-	        if (current->cp_prev)
+		match->cp_next = current;
+		match->cp_prev = current->cp_prev;
+		if (current->cp_prev)
 		    current->cp_prev->cp_next = match;
-	        current->cp_prev = match;
-	        inserted = TRUE;
-	        break;
+		current->cp_prev = match;
+		inserted = TRUE;
+		break;
 	    }
 	    prev = current;
 	    current = current->cp_next;
@@ -3018,11 +3018,11 @@ ins_compl_next_buf(buf_T *buf, int flag)
 
 	while (TRUE)
 	{
-	   // Move to next window (wrap to first window if at the end)
-	   wp = (wp->w_next != NULL) ? wp->w_next : firstwin;
-	   // Break if we're back at start or found an unscanned buffer
-	   if (wp == curwin || !wp->w_buffer->b_scanned)
-	       break;
+	    // Move to next window (wrap to first window if at the end)
+	    wp = (wp->w_next != NULL) ? wp->w_next : firstwin;
+	    // Break if we're back at start or found an unscanned buffer
+	    if (wp == curwin || !wp->w_buffer->b_scanned)
+		break;
 	}
 	buf = wp->w_buffer;
     }
@@ -3303,7 +3303,7 @@ theend:
 get_user_highlight_attr(char_u *hlname)
 {
     if (hlname != NULL && *hlname != NUL)
-        return syn_name2attr(hlname);
+	return syn_name2attr(hlname);
     return -1;
 }
 /*
@@ -3459,8 +3459,8 @@ set_completion(colnr_T startcol, list_T *list)
     }
     compl_orig_text.length = (size_t)compl_length;
     if (ins_compl_add(compl_orig_text.string,
-		  (int)compl_orig_text.length, NULL, NULL, NULL, 0,
-		  flags | CP_FAST, FALSE, NULL, 0) != OK)
+			(int)compl_orig_text.length, NULL, NULL, NULL, 0,
+			flags | CP_FAST, FALSE, NULL, 0) != OK)
 	return;
 
     ctrl_x_mode = CTRL_X_EVAL;
@@ -3566,14 +3566,14 @@ add_match_to_list(
 
     match = list_alloc();
     if (match == NULL)
-        return FAIL;
+	return FAIL;
 
     if ((ret = list_append_number(match, pos + 1)) == FAIL
 	    || (ret = list_append_string(match, str, len)) == FAIL
 	    || (ret = list_append_list(rettv->vval.v_list, match)) == FAIL)
     {
-        vim_free(match);
-        return FAIL;
+	vim_free(match);
+	return FAIL;
     }
 
     return OK;
@@ -3769,12 +3769,12 @@ fill_complete_info_dict(dict_T *di, compl_T *match, int add_match)
     dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
     dict_add_string(di, "info", match->cp_text[CPT_INFO]);
     if (add_match)
-        dict_add_bool(di, "match", match->cp_in_match_array);
+	dict_add_bool(di, "match", match->cp_in_match_array);
     if (match->cp_user_data.v_type == VAR_UNKNOWN)
-        // Add an empty string for backwards compatibility
-        dict_add_string(di, "user_data", (char_u *)"");
+	// Add an empty string for backwards compatibility
+	dict_add_string(di, "user_data", (char_u *)"");
     else
-        dict_add_tv(di, "user_data", &match->cp_user_data);
+	dict_add_tv(di, "user_data", &match->cp_user_data);
 }
 
 /*
@@ -4226,7 +4226,7 @@ fuzzy_longest_match(void)
     compl_T	*nn_compl = NULL;
 
     if (compl_num_bests == 0)
-        return;
+	return;
 
     nn_compl = compl_first_match->cp_next->cp_next;
     if (nn_compl && nn_compl != compl_first_match)
@@ -4248,12 +4248,12 @@ fuzzy_longest_match(void)
 
     compl_best_matches = (compl_T **)alloc(compl_num_bests * sizeof(compl_T *));
     if (compl_best_matches == NULL)
-      return;
+	return;
     while (compl != NULL && i < compl_num_bests)
     {
-      compl_best_matches[i] = compl;
-      compl = compl->cp_next;
-      i++;
+	compl_best_matches[i] = compl;
+	compl = compl->cp_next;
+	i++;
     }
 
     prefix = compl_best_matches[0]->cp_str.string;
@@ -4262,9 +4262,9 @@ fuzzy_longest_match(void)
     for (i = 1; i < compl_num_bests; i++)
     {
 	match_str = compl_best_matches[i]->cp_str.string;
-        prefix_ptr = prefix;
-        match_ptr = match_str;
-        j = 0;
+	prefix_ptr = prefix;
+	match_ptr = match_str;
+	j = 0;
 
 	while (j < prefix_len && *match_ptr != NUL && *prefix_ptr != NUL)
 	{
@@ -4437,11 +4437,11 @@ get_next_filename_completion(void)
 
 	    for (i = 0; i < fuzzy_indices.ga_len; ++i)
 	    {
-	        match = matches[fuzzy_indices_data[i]];
+		match = matches[fuzzy_indices_data[i]];
 		current_score = compl_fuzzy_scores[fuzzy_indices_data[i]];
 		if (ins_compl_add(match, -1, NULL, NULL, NULL, dir,
-		        CP_FAST | ((p_fic || p_wic) ? CP_ICASE : 0),
-		        FALSE, NULL, current_score) == OK)
+			CP_FAST | ((p_fic || p_wic) ? CP_ICASE : 0),
+			FALSE, NULL, current_score) == OK)
 		    dir = FORWARD;
 
 		if (need_collect_bests)
@@ -4654,7 +4654,7 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 
 	if (in_collect)
 	{
-	     found_new_match = search_for_fuzzy_match(st->ins_buf,
+	    found_new_match = search_for_fuzzy_match(st->ins_buf,
 			    st->cur_match_pos, leader, compl_direction,
 			    start_pos, &len, &ptr, &score);
 	}
@@ -5249,7 +5249,7 @@ find_comp_when_fuzzy(void)
     if (is_forward)
 	target_idx = compl_selected_item + 1;
     else if (is_backward)
-      target_idx = compl_selected_item == -1 ? compl_match_arraysize - 1
+	target_idx = compl_selected_item == -1 ? compl_match_arraysize - 1
 						: compl_selected_item - 1;
 
     score = compl_match_array[target_idx].pum_score;
@@ -5257,9 +5257,9 @@ find_comp_when_fuzzy(void)
 
     comp = compl_first_match;
     do {
-      if (comp->cp_score == score && (str == comp->cp_str.string || str == comp->cp_text[CPT_ABBR]))
-	  return comp;
-      comp = comp->cp_next;
+	if (comp->cp_score == score && (str == comp->cp_str.string || str == comp->cp_text[CPT_ABBR]))
+	    return comp;
+	comp = comp->cp_next;
     } while (comp != NULL && !is_first_match(comp));
 
     return NULL;
