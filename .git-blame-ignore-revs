@@ -13,3 +13,5 @@
 # change indentation style of netrw plugin
 c363ca1ecd1f8db03663ef98dcf41eeacc3c22c7
 c673b805ad80d0aef07e745d412a2bf298ba1c07
+# fix indentation style in insexpand.c v9.1.1352
+355db99d12a89f05765948b33eecd6d9733e16bb
