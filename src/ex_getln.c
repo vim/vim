@@ -2560,6 +2560,9 @@ cmdline_changed:
     }
 
 returncmd:
+    // Trigger CmdlineLeavePre autocommands if not already triggered.
+    if (!event_cmdlineleavepre_triggered)
+	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 
 #ifdef FEAT_RIGHTLEFT
     cmdmsg_rl = FALSE;
@@ -2615,10 +2618,6 @@ returncmd:
     // When the command line was typed, no need for a wait-return prompt.
     if (some_key_typed)
 	need_wait_return = FALSE;
-
-    // Trigger CmdlineLeavePre autocommands if not already triggered.
-    if (!event_cmdlineleavepre_triggered)
-	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 
     // Trigger CmdlineLeave autocommands.
     trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVE);
