@@ -2002,7 +2002,7 @@ endfunc
 
 func Test_Cmdline_Trigger()
   autocmd CmdlineLeavePre : let g:log = "CmdlineLeavePre"
-  autocmd CmdlineLeavePre : let g:log2 = "CmdlineLeave"
+  autocmd CmdlineLeave : let g:log2 = "CmdlineLeave"
   new
   let g:log = ''
   let g:log2 = ''
