@@ -288,15 +288,6 @@ update_script_var_block_id(char_u *name, int block_id)
 }
 
 /*
- * Return TRUE if the script context is Vim9 script.
- */
-    int
-script_is_vim9(void)
-{
-    return SCRIPT_ITEM(current_sctx.sc_sid)->sn_version == SCRIPT_VERSION_VIM9;
-}
-
-/*
  * Lookup a variable (without s: prefix) in the current script.
  * "cctx" is NULL at the script level, "cstack" is NULL in a function.
  * Returns OK or FAIL.
@@ -306,7 +297,7 @@ script_var_exists(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 {
     if (current_sctx.sc_sid <= 0)
 	return FAIL;
-    if (script_is_vim9())
+    if (current_script_is_vim9())
     {
 	// Check script variables that were visible where the function was
 	// defined.
