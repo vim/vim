@@ -513,18 +513,23 @@ stat_impl(const char *name, stat_T *stp, const int resolve)
     // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
     // UTF-8.
     char_u	buf[_MAX_PATH * 3 + 1];
+    size_t	buflen;
     char_u	*p;
     WCHAR	*wp;
     int		n;
 
     vim_strncpy((char_u *)buf, (char_u *)name, sizeof(buf) - 1);
-    p = buf + STRLEN(buf);
+    buflen = STRLEN(buf);
+    p = buf + buflen;
     if (p > buf)
 	MB_PTR_BACK(buf, p);
 
     // Remove trailing '\\' except root path.
     if (p > buf && (*p == '\\' || *p == '/') && p[-1] != ':')
+    {
 	*p = NUL;
+	buflen = (size_t)(p - buf);
+    }
 
     if ((buf[0] == '\\' && buf[1] == '\\') || (buf[0] == '/' && buf[1] == '/'))
     {
@@ -534,7 +539,7 @@ stat_impl(const char *name, stat_T *stp, const int resolve)
 	{
 	    p = vim_strpbrk(p + 1, (char_u *)"\\/");
 	    if (p == NULL)
-		STRCAT(buf, "\\");
+		STRCPY(buf + buflen, "\\");
 	}
     }
 
@@ -874,11 +879,6 @@ mch_libcall(
     int		*number_result)
 {
     HINSTANCE		hinstLib;
-    MYSTRPROCSTR	ProcAdd;
-    MYINTPROCSTR	ProcAddI;
-    char_u		*retval_str = NULL;
-    int			retval_int = 0;
-    size_t		len;
 
     BOOL fRunTimeLinkSuccess = FALSE;
 
@@ -888,6 +888,10 @@ mch_libcall(
     // If the handle is valid, try to get the function address.
     if (hinstLib != NULL)
     {
+	char_u	*retval_str = NULL;
+	int	retval_int = 0;
+	size_t	len;
+
 # ifdef HAVE_TRY_EXCEPT
 	__try
 	{
@@ -895,25 +899,53 @@ mch_libcall(
 	if (argstring != NULL)
 	{
 	    // Call with string argument
-	    ProcAdd = (MYSTRPROCSTR)GetProcAddress(hinstLib, (LPCSTR)funcname);
-	    if ((fRunTimeLinkSuccess = (ProcAdd != NULL)) != 0)
+	    if (string_result == NULL)
 	    {
-		if (string_result == NULL)
-		    retval_int = ((MYSTRPROCINT)ProcAdd)((LPSTR)argstring);
-		else
-		    retval_str = (char_u *)(ProcAdd)((LPSTR)argstring);
+		char_u *(WINAPI *proc)(char_u *);
+
+		proc = (void *)GetProcAddress(hinstLib, (LPCSTR)funcname);
+		if (proc != NULL)
+		{
+		    fRunTimeLinkSuccess = TRUE;
+		    retval_str = proc(argstring);
+		}
+	    }
+	    else
+	    {
+		int (WINAPI *proc)(char_u *);
+
+		proc = (void *)GetProcAddress(hinstLib, (LPCSTR)funcname);
+		if (proc != NULL)
+		{
+		    fRunTimeLinkSuccess = TRUE;
+		    retval_int = proc(argstring);
+		}
 	    }
 	}
 	else
 	{
 	    // Call with number argument
-	    ProcAddI = (MYINTPROCSTR) GetProcAddress(hinstLib, (LPCSTR)funcname);
-	    if ((fRunTimeLinkSuccess = (ProcAddI != NULL)) != 0)
+	    if (string_result == NULL)
 	    {
-		if (string_result == NULL)
-		    retval_int = ((MYINTPROCINT)ProcAddI)(argint);
-		else
-		    retval_str = (char_u *)(ProcAddI)(argint);
+		char_u *(WINAPI *proc)(int);
+
+		proc = (void *)GetProcAddress(hinstLib, (LPCSTR)funcname);
+		if (proc != NULL)
+		{
+		    fRunTimeLinkSuccess = TRUE;
+		    retval_str = proc(argint);
+		}
+	    }
+	    else
+	    {
+		int (WINAPI *proc)(int);
+
+		proc = (void *)GetProcAddress(hinstLib, (LPCSTR)funcname);
+		if (proc != NULL)
+		{
+		    fRunTimeLinkSuccess = TRUE;
+		    retval_int = proc(argint);
+		}
 	    }
 	}
 
@@ -935,7 +967,7 @@ mch_libcall(
 	{
 	    if (GetExceptionCode() == EXCEPTION_STACK_OVERFLOW)
 		_resetstkoflw();
-	    fRunTimeLinkSuccess = 0;
+	    fRunTimeLinkSuccess = FALSE;
 	}
 # endif
 
@@ -2077,13 +2109,18 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		res = alloc(len);
 		if (res != NULL)
-		    vim_snprintf((char *)res, len, "%s: \"%s\"", err, str);
+		    reply.cbData = (DWORD)vim_snprintf_safelen(
+			(char *)res, len, "%s: \"%s\"", err, str);
+		else
+		    reply.cbData = 0;
 		reply.dwData = COPYDATA_ERROR_RESULT;
 	    }
 	    else
+	    {
+		reply.cbData = (DWORD)STRLEN(res) + 1;
 		reply.dwData = COPYDATA_RESULT;
+	    }
 	    reply.lpData = res;
-	    reply.cbData = (DWORD)STRLEN(res) + 1;
 
 	    if (serverSendEnc(sender) < 0)
 		retval = -1;
@@ -2226,12 +2263,16 @@ enumWindowsGetServer(HWND hwnd, LPARAM lparam)
     }
 
     // If we are looking for an alternate server, remember this name.
-    if (altname_buf_ptr != NULL
-	    && STRNICMP(server, id->name, STRLEN(id->name)) == 0
-	    && vim_isdigit(server[STRLEN(id->name)]))
+    if (altname_buf_ptr != NULL)
     {
-	STRCPY(altname_buf_ptr, server);
-	altname_buf_ptr = NULL;	    // don't use another name
+	size_t	namelen = STRLEN(id->name);
+
+	if (STRNICMP(server, id->name, namelen) == 0
+	    && vim_isdigit(server[namelen]))
+	{
+	    STRCPY(altname_buf_ptr, server);
+	    altname_buf_ptr = NULL;	    // don't use another name
+	}
     }
 
     // Otherwise, keep looking
@@ -2413,6 +2454,7 @@ serverSendToVim(
     int		 timeout,		// timeout in seconds or zero
     int		 silent)		// don't complain about no server
 {
+    size_t	namelen;
     HWND	target;
     COPYDATASTRUCT data;
     char_u	*retval = NULL;
@@ -2426,7 +2468,8 @@ serverSendToVim(
 
     // If the server name does not end in a digit then we look for an
     // alternate name.  e.g. when "name" is GVIM then we may find GVIM2.
-    if (STRLEN(name) > 1 && !vim_isdigit(name[STRLEN(name) - 1]))
+    namelen = STRLEN(name);
+    if (namelen > 1 && !vim_isdigit(name[namelen - 1]))
 	altname_buf_ptr = altname_buf;
     altname_buf[0] = NUL;
     target = findServer(name);
@@ -2644,63 +2687,65 @@ serverProcessPendingMessages(void)
 
 struct charset_pair
 {
-    char	*name;
+    string_T	name;
     BYTE	charset;
 };
 
+#define STRING_INIT(s) \
+    {(char_u *)(s), STRLEN_LITERAL(s)}
 static struct charset_pair
 charset_pairs[] =
 {
-    {"ANSI",		ANSI_CHARSET},
-    {"CHINESEBIG5",	CHINESEBIG5_CHARSET},
-    {"DEFAULT",		DEFAULT_CHARSET},
-    {"HANGEUL",		HANGEUL_CHARSET},
-    {"OEM",		OEM_CHARSET},
-    {"SHIFTJIS",	SHIFTJIS_CHARSET},
-    {"SYMBOL",		SYMBOL_CHARSET},
-    {"ARABIC",		ARABIC_CHARSET},
-    {"BALTIC",		BALTIC_CHARSET},
-    {"EASTEUROPE",	EASTEUROPE_CHARSET},
-    {"GB2312",		GB2312_CHARSET},
-    {"GREEK",		GREEK_CHARSET},
-    {"HEBREW",		HEBREW_CHARSET},
-    {"JOHAB",		JOHAB_CHARSET},
-    {"MAC",		MAC_CHARSET},
-    {"RUSSIAN",		RUSSIAN_CHARSET},
-    {"THAI",		THAI_CHARSET},
-    {"TURKISH",		TURKISH_CHARSET},
+    {STRING_INIT("ANSI"),		ANSI_CHARSET},
+    {STRING_INIT("CHINESEBIG5"),	CHINESEBIG5_CHARSET},
+    {STRING_INIT("DEFAULT"),		DEFAULT_CHARSET},
+    {STRING_INIT("HANGEUL"),		HANGEUL_CHARSET},
+    {STRING_INIT("OEM"),		OEM_CHARSET},
+    {STRING_INIT("SHIFTJIS"),		SHIFTJIS_CHARSET},
+    {STRING_INIT("SYMBOL"),		SYMBOL_CHARSET},
+    {STRING_INIT("ARABIC"),		ARABIC_CHARSET},
+    {STRING_INIT("BALTIC"),		BALTIC_CHARSET},
+    {STRING_INIT("EASTEUROPE"),		EASTEUROPE_CHARSET},
+    {STRING_INIT("GB2312"),		GB2312_CHARSET},
+    {STRING_INIT("GREEK"),		GREEK_CHARSET},
+    {STRING_INIT("HEBREW"),		HEBREW_CHARSET},
+    {STRING_INIT("JOHAB"),		JOHAB_CHARSET},
+    {STRING_INIT("MAC"),		MAC_CHARSET},
+    {STRING_INIT("RUSSIAN"),		RUSSIAN_CHARSET},
+    {STRING_INIT("THAI"),		THAI_CHARSET},
+    {STRING_INIT("TURKISH"),		TURKISH_CHARSET}
 # ifdef VIETNAMESE_CHARSET
-    {"VIETNAMESE",	VIETNAMESE_CHARSET},
+    ,
+    {STRING_INIT("VIETNAMESE"),		VIETNAMESE_CHARSET}
 # endif
-    {NULL,		0}
 };
 
 struct quality_pair
 {
-    char	*name;
+    string_T	name;
     DWORD	quality;
 };
 
 static struct quality_pair
 quality_pairs[] = {
 # ifdef CLEARTYPE_QUALITY
-    {"CLEARTYPE",	CLEARTYPE_QUALITY},
+    {STRING_INIT("CLEARTYPE"),		CLEARTYPE_QUALITY},
 # endif
 # ifdef ANTIALIASED_QUALITY
-    {"ANTIALIASED",	ANTIALIASED_QUALITY},
+    {STRING_INIT("ANTIALIASED"),	ANTIALIASED_QUALITY},
 # endif
 # ifdef NONANTIALIASED_QUALITY
-    {"NONANTIALIASED",	NONANTIALIASED_QUALITY},
+    {STRING_INIT("NONANTIALIASED"),	NONANTIALIASED_QUALITY},
 # endif
 # ifdef PROOF_QUALITY
-    {"PROOF",		PROOF_QUALITY},
+    {STRING_INIT("PROOF"),		PROOF_QUALITY},
 # endif
 # ifdef DRAFT_QUALITY
-    {"DRAFT",		DRAFT_QUALITY},
+    {STRING_INIT("DRAFT"),		DRAFT_QUALITY},
 # endif
-    {"DEFAULT",		DEFAULT_QUALITY},
-    {NULL,		0}
+    {STRING_INIT("DEFAULT"),		DEFAULT_QUALITY}
 };
+#undef STRING_INIT
 
 /*
  * Convert a charset ID to a name.
@@ -2709,12 +2754,15 @@ quality_pairs[] = {
     char *
 charset_id2name(int id)
 {
-    struct charset_pair *cp;
+    int	i;
 
-    for (cp = charset_pairs; cp->name != NULL; ++cp)
-	if ((BYTE)id == cp->charset)
-	    break;
-    return cp->name;
+    for (i = 0; i < (int)ARRAY_LENGTH(charset_pairs); ++i)
+    {
+	if ((BYTE)id == charset_pairs[i].charset)
+	    return (char *)charset_pairs[i].name.string;
+    }
+
+    return NULL;
 }
 
 /*
@@ -2724,12 +2772,15 @@ charset_id2name(int id)
     char *
 quality_id2name(DWORD id)
 {
-    struct quality_pair *qp;
+    int	i;
 
-    for (qp = quality_pairs; qp->name != NULL; ++qp)
-	if (id == qp->quality)
-	    break;
-    return qp->name;
+    for (i = 0; i < (int)ARRAY_LENGTH(quality_pairs); ++i)
+    {
+	if (id == quality_pairs[i].quality)
+	    return (char *)quality_pairs[i].name.string;
+    }
+
+    return NULL;
 }
 
 // The default font height in 100% scaling (96dpi).
@@ -2956,6 +3007,7 @@ gui_mch_expand_font(optexpand_T *args, void *param UNUSED, int (*add_match)(char
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
     {
 	char buf[30];
+	int	i;
 
 	// Always fill in with the current font size as first option for
 	// convenience. We simply round to the closest integer for simplicity.
@@ -2968,19 +3020,18 @@ gui_mch_expand_font(optexpand_T *args, void *param UNUSED, int (*add_match)(char
 	// 'q' as we fill in all the values below.
 	static char *(p_gfn_win_opt_values[]) = {
 	    "h" , "w" , "W" , "b" , "i" , "u" , "s"};
-	for (size_t i = 0; i < ARRAY_LENGTH(p_gfn_win_opt_values); i++)
+	for (i = 0; i < (int)ARRAY_LENGTH(p_gfn_win_opt_values); i++)
 	    add_match((char_u *)p_gfn_win_opt_values[i]);
 
-	struct charset_pair *cp;
-	for (cp = charset_pairs; cp->name != NULL; ++cp)
+	for (i = 0; i < (int)ARRAY_LENGTH(charset_pairs); ++i)
 	{
-	    vim_snprintf(buf, ARRAY_LENGTH(buf), "c%s", cp->name);
+	    vim_snprintf(buf, sizeof(buf), "c%s", charset_pairs[i].name.string);
 	    add_match((char_u *)buf);
 	}
-	struct quality_pair *qp;
-	for (qp = quality_pairs; qp->name != NULL; ++qp)
+
+	for (i = 0; i < (int)ARRAY_LENGTH(quality_pairs); ++i)
 	{
-	    vim_snprintf(buf, ARRAY_LENGTH(buf), "q%s", qp->name);
+	    vim_snprintf(buf, sizeof(buf), "q%s", quality_pairs[i].name.string);
 	    add_match((char_u *)buf);
 	}
 	return;
@@ -3039,7 +3090,7 @@ set_default_logfont(LOGFONTW *lf)
     const char *defaultfontname = N_("DefaultFontNameForWindows");
     char *fontname = _(defaultfontname);
 
-    if (strcmp(fontname, defaultfontname) == 0)
+    if (STRCMP(fontname, defaultfontname) == 0)
 	fontname = "Consolas";
 
     *lf = s_lfDefault;
@@ -3167,53 +3218,51 @@ get_logfont(
 		lf->lfStrikeOut = TRUE;
 		break;
 	    case L'c':
+		for (i = 0; i < (int)ARRAY_LENGTH(charset_pairs); ++i)
 		{
-		    struct charset_pair *cp;
-
-		    for (cp = charset_pairs; cp->name != NULL; ++cp)
-			if (utf16ascncmp(p, cp->name, strlen(cp->name)) == 0)
-			{
-			    lf->lfCharSet = cp->charset;
-			    p += strlen(cp->name);
-			    break;
-			}
-		    if (cp->name == NULL && verbose)
+		    if (utf16ascncmp(p, (char *)charset_pairs[i].name.string,
+			    charset_pairs[i].name.length) == 0)
 		    {
-			char_u *s = utf16_to_enc(p, NULL);
-			if (s != NULL)
-			{
-			    semsg(_(e_illegal_str_name_str_in_font_name_str),
-							       "charset", s, name);
-			    vim_free(s);
-			}
+			lf->lfCharSet = charset_pairs[i].charset;
+			p += charset_pairs[i].name.length;
 			break;
 		    }
-		    break;
 		}
+
+		if (i == (int)ARRAY_LENGTH(charset_pairs) && verbose)
+		{
+		    char_u *s = utf16_to_enc(p, NULL);
+		    if (s != NULL)
+		    {
+			semsg(_(e_illegal_str_name_str_in_font_name_str),
+							   "charset", s, name);
+			vim_free(s);
+		    }
+		}
+		break;
 	    case L'q':
+		for (i = 0; i < (int)ARRAY_LENGTH(quality_pairs); ++i)
 		{
-		    struct quality_pair *qp;
-
-		    for (qp = quality_pairs; qp->name != NULL; ++qp)
-			if (utf16ascncmp(p, qp->name, strlen(qp->name)) == 0)
-			{
-			    lf->lfQuality = qp->quality;
-			    p += strlen(qp->name);
-			    break;
-			}
-		    if (qp->name == NULL && verbose)
+		    if (utf16ascncmp(p, (char *)quality_pairs[i].name.string,
+			    quality_pairs[i].name.length) == 0)
 		    {
-			char_u *s = utf16_to_enc(p, NULL);
-			if (s != NULL)
-			{
-			    semsg(_(e_illegal_str_name_str_in_font_name_str),
-							       "quality", s, name);
-			    vim_free(s);
-			}
+			lf->lfQuality = quality_pairs[i].quality;
+			p += quality_pairs[i].name.length;
 			break;
 		    }
-		    break;
 		}
+
+		if (i == (int)ARRAY_LENGTH(quality_pairs) && verbose)
+		{
+		    char_u *s = utf16_to_enc(p, NULL);
+		    if (s != NULL)
+		    {
+			semsg(_(e_illegal_str_name_str_in_font_name_str),
+							   "quality", s, name);
+			vim_free(s);
+		    }
+		}
+		break;
 	    default:
 		if (verbose)
 		    semsg(_(e_illegal_char_nr_in_font_name_str), p[-1], name);
