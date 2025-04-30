@@ -764,10 +764,10 @@ mch_check_messages(void)
  * and returns an allocated string.
  * Return OK if it worked, FAIL if not.
  */
-typedef char_u *(WINAPI *MYSTRPROCSTR)(char_u *);
-typedef int (WINAPI *MYSTRPROCINT)(char_u *);
-typedef char_u *(WINAPI *MYINTPROCSTR)(int);
-typedef int (WINAPI *MYINTPROCINT)(int);
+typedef char_u *(*MYSTRPROCSTR)(char_u *);
+typedef int (*MYSTRPROCINT)(char_u *);
+typedef char_u *(*MYINTPROCSTR)(int);
+typedef int (*MYINTPROCINT)(int);
 
 /*
  * Check if a pointer points to a valid NUL terminated string.
