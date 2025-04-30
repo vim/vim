@@ -517,8 +517,6 @@ stat_impl(const char *name, stat_T *stp, const int resolve)
     char_u	*p;
     WCHAR	*wp;
     int		n;
-//FILE *out = fopen("e:/tmp/trace.txt", "a");
-//fprintf(out, "enter stat_impl()\n");
 
     vim_strncpy((char_u *)buf, (char_u *)name, sizeof(buf) - 1);
     buflen = STRLEN(buf);
@@ -526,14 +524,12 @@ stat_impl(const char *name, stat_T *stp, const int resolve)
     if (p > buf)
 	MB_PTR_BACK(buf, p);
 
-//fprintf(out, "stat_impl: A: buf '%s' (%zu:%zu)\n", buf, buflen, STRLEN(buf));
     // Remove trailing '\\' except root path.
     if (p > buf && (*p == '\\' || *p == '/') && p[-1] != ':')
     {
 	*p = NUL;
 	buflen = (size_t)(p - buf);
     }
-//fprintf(out, "stat_impl: B: buf '%s' (%zu:%zu)\n", buf, buflen, STRLEN(buf));
 
     if ((buf[0] == '\\' && buf[1] == '\\') || (buf[0] == '/' && buf[1] == '/'))
     {
@@ -543,14 +539,9 @@ stat_impl(const char *name, stat_T *stp, const int resolve)
 	{
 	    p = vim_strpbrk(p + 1, (char_u *)"\\/");
 	    if (p == NULL)
-//{
 		STRCPY(buf + buflen, "\\");
-//buflen++;
-//fprintf(out, "stat_impl: C: buf '%s' (%zu:%zu)\n", buf, buflen, STRLEN(buf));
-//}
 	}
     }
-//fprintf(out, "stat_impl: D: buf '%s' (%zu:%zu)\n", buf, buflen, STRLEN(buf));
 
     wp = enc_to_utf16(buf, NULL);
     if (wp == NULL)
@@ -558,8 +549,6 @@ stat_impl(const char *name, stat_T *stp, const int resolve)
 
     n = mswin_stat_impl(wp, stp, resolve);
     vim_free(wp);
-//fprintf(out, "leave stat_impl()\n");
-//fclose(out);
     return n;
 }
 
@@ -775,10 +764,10 @@ mch_check_messages(void)
  * and returns an allocated string.
  * Return OK if it worked, FAIL if not.
  */
-typedef LPTSTR (*MYSTRPROCSTR)(LPTSTR);
-typedef LPTSTR (*MYINTPROCSTR)(int);
-typedef int (*MYSTRPROCINT)(LPTSTR);
-typedef int (*MYINTPROCINT)(int);
+typedef char_u *(WINAPI *MYSTRPROCSTR)(char_u *);
+typedef int (WINAPI *MYSTRPROCINT)(char_u *);
+typedef char_u *(WINAPI *MYINTPROCSTR)(int);
+typedef int (WINAPI *MYINTPROCINT)(int);
 
 /*
  * Check if a pointer points to a valid NUL terminated string.
@@ -912,9 +901,9 @@ mch_libcall(
 	    // Call with string argument
 	    if (string_result != NULL)
 	    {
-		char_u *(WINAPI *proc)(char_u *);
+		MYSTRPROCSTR proc;
 
-		proc = (void *)GetProcAddress(hinstLib, (LPCSTR)funcname);
+		proc = (MYSTRPROCSTR)GetProcAddress(hinstLib, (LPCSTR)funcname);
 		if (proc != NULL)
 		{
 		    fRunTimeLinkSuccess = TRUE;
@@ -923,9 +912,9 @@ mch_libcall(
 	    }
 	    else
 	    {
-		int (WINAPI *proc)(char_u *);
+		MYSTRPROCINT proc;
 
-		proc = (void *)GetProcAddress(hinstLib, (LPCSTR)funcname);
+		proc = (MYSTRPROCINT)GetProcAddress(hinstLib, (LPCSTR)funcname);
 		if (proc != NULL)
 		{
 		    fRunTimeLinkSuccess = TRUE;
@@ -938,9 +927,9 @@ mch_libcall(
 	    // Call with number argument
 	    if (string_result != NULL)
 	    {
-		char_u *(WINAPI *proc)(int);
+		MYINTPROCSTR proc;
 
-		proc = (void *)GetProcAddress(hinstLib, (LPCSTR)funcname);
+		proc = (MYINTPROCSTR)GetProcAddress(hinstLib, (LPCSTR)funcname);
 		if (proc != NULL)
 		{
 		    fRunTimeLinkSuccess = TRUE;
@@ -949,9 +938,9 @@ mch_libcall(
 	    }
 	    else
 	    {
-		int (WINAPI *proc)(int);
+		MYINTPROCINT proc;
 
-		proc = (void *)GetProcAddress(hinstLib, (LPCSTR)funcname);
+		proc = (MYINTPROCINT)GetProcAddress(hinstLib, (LPCSTR)funcname);
 		if (proc != NULL)
 		{
 		    fRunTimeLinkSuccess = TRUE;
@@ -985,7 +974,6 @@ mch_libcall(
 	// Free the DLL module.
 	(void)FreeLibrary(hinstLib);
     }
-
 
     if (!fRunTimeLinkSuccess)
     {
