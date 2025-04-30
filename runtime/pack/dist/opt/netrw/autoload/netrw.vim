@@ -6283,6 +6283,7 @@ fun! s:NetrwMarkFileCopy(islocal,...)
     if isdirectory(s:NetrwFile(args))
       "    call Decho("args<".args."> is a directory",'~'.expand("<slnum>"))
       let copycmd= g:netrw_localcopydircmd
+      let copycmdopt= g:netrw_localcopydircmdopt
       "    call Decho("using copydircmd<".copycmd.">",'~'.expand("<slnum>"))
       if !g:netrw_cygwin && has("win32")
         " window's xcopy doesn't copy a directory to a target properly.  Instead, it copies a directory's
@@ -6293,6 +6294,7 @@ fun! s:NetrwMarkFileCopy(islocal,...)
       endif
     else
       let copycmd= g:netrw_localcopycmd
+      let copycmdopt= g:netrw_localcopycmdopt
     endif
     if g:netrw_localcopycmd =~ '\s'
       let copycmd     = substitute(copycmd,'\s.*$','','')
@@ -6303,9 +6305,9 @@ fun! s:NetrwMarkFileCopy(islocal,...)
     endif
     "   call Decho("args   <".args.">",'~'.expand("<slnum>"))
     "   call Decho("tgt    <".tgt.">",'~'.expand("<slnum>"))
-    "   call Decho("copycmd<".copycmd.">",'~'.expand("<slnum>"))
-    "   call Decho("system(".copycmd." '".args."' '".tgt."')",'~'.expand("<slnum>"))
-    call system(copycmd.g:netrw_localcopycmdopt." '".args."' '".tgt."'")
+    "   call Decho("copycmd<".copycmd.copycmdopt.">",'~'.expand("<slnum>"))
+    "   call Decho("system(".copycmd.copycmdopt." '".args."' '".tgt."')",'~'.expand("<slnum>"))
+    call system(copycmd.copycmdopt." '".args."' '".tgt."'")
     if v:shell_error != 0
       if exists("b:netrw_curdir") && b:netrw_curdir != getcwd() && g:netrw_keepdir
         call netrw#ErrorMsg(s:ERROR,"copy failed; perhaps due to vim's current directory<".getcwd()."> not matching netrw's (".b:netrw_curdir.") (see :help netrw-cd)",101)
