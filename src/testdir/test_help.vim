@@ -205,5 +205,18 @@ func Test_help_using_visual_match()
   call v9.CheckScriptFailure(lines, 'E149:')
 endfunc
 
+func Test_helptag_navigation()
+  let tempdir = tempname()
+  let tempfile = tempdir . '/test.txt'
+  call mkdir(tempdir, 'p')
+  call writefile(['', '*[tag*', '', '|[tag|'], tempfile)
+  exe 'helptags' tempdir
+  exe 'edit' tempfile
+  set ft=help
+  call cursor(4, 2)
+  exe "normal! \<C-]>"
+  call assert_equal(2, line('.'))
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

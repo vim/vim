@@ -542,6 +542,7 @@ exuberant ctags		This is a very good one.  It works for C, C++, Java,
 			many items.  See http://ctags.sourceforge.net.
 			No new version since 2009.
 etags			Connected to Emacs.  Supports many languages.
+|:helptags|		For Vim's |help| files.
 JTags			For Java, in Java.  It can be found at
 			http://www.fleiner.com/jtags/.
 ptags.py		For Python, in Python.  Found in your Python source
