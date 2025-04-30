@@ -2085,7 +2085,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		|i_CTRL-X_CTRL-D|
 	]	tag completion
 	t	same as "]"
-	f{func}	call the function {func}. Multiple "f" flags may be specified.
+	f{func}	call the function {func}.  Multiple "f" flags may be specified.
 		Refer to |complete-functions| for details on how the function
 		is invoked and what it should return.  The value can be the
 		name of a function or a |Funcref|.  For |Funcref| values,
@@ -2128,9 +2128,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	An optional match limit can be specified for a completion source by
 	appending a caret ("^") followed by a {count} to the source flag.
 	For example: ".^9,w,u,t^5" limits matches from the current buffer
-	to 9 and from tags to 5. Other sources remain unlimited.
-	The match limit takes effect only during forward completion (CTRL-N)
-	and is ignored during backward completion (CTRL-P).
+	to 9 and from tags to 5.  Other sources remain unlimited.
+	Note: The match limit takes effect only during forward completion
+	(CTRL-N) and is ignored during backward completion (CTRL-P).
 
 						*'completefunc'* *'cfu'*
 'completefunc' 'cfu'	string	(default: empty)
@@ -3656,7 +3656,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  lastline	'@'		'display' contains lastline/truncate
 	  trunc		'>'		truncated text in the
 					|ins-completion-menu|.
-	  truncrl	'<'		same as "trunc' in 'rightleft' mode
+	  truncrl	'<'		same as "trunc" in 'rightleft' mode
 
 	Any one that is omitted will fall back to the default.
 
@@ -4986,10 +4986,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'isexpand'* *'ise'*
 'isexpand' 'ise'	string	(default: "")
 			local to buffer
-	Defines characters and patterns for completion in insert mode. Used by
-	the |complete_match()| function to determine the starting position for
-	completion. This is a comma-separated list of triggers. Each trigger
-	can be:
+	Defines characters and patterns for completion in insert mode.  Used
+	by the |complete_match()| function to determine the starting position
+	for completion.  This is a comma-separated list of triggers.  Each
+	trigger can be:
 	- A single character like "." or "/"
 	- A sequence of characters like "->", "/*", or "/**"
 
@@ -9747,8 +9747,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	First press: longest common substring
 	Second press: list all matches >
 		:set wildmode=noselect:full
-<	Show 'wildmenu' without completing or selecting on first press
-	Cycle full matches on second press >
+<	First press: show 'wildmenu' without completing or selecting
+	Second press: cycle full matches >
 		:set wildmode=noselect:lastused,full
 <	Same as above, but buffer matches are sorted by time last used
 	More info here: |cmdline-completion|.
