@@ -208,7 +208,7 @@ endfunc
 func Test_helptag_navigation()
   let helpdir = tempname()
   let tempfile = helpdir . '/test.txt'
-  call mkdir(helpdir, 'p')
+  call mkdir(helpdir, 'pR')
   " Vim must not escape `[` in tag
   call writefile(['', '*[tag*', '', '|[tag|'], tempfile)
   exe 'helptags' helpdir
