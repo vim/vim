@@ -206,16 +206,18 @@ func Test_help_using_visual_match()
 endfunc
 
 func Test_helptag_navigation()
-  let tempdir = tempname()
-  let tempfile = tempdir . '/test.txt'
-  call mkdir(tempdir, 'p')
+  filetype plugin on
+  let helpdir = tempname()
+  let tempfile = helpdir . '/test.txt'
+  call mkdir(helpdir, 'p')
   call writefile(['', '*[tag*', '', '|[tag|'], tempfile)
-  exe 'helptags' tempdir
-  exe 'edit' tempfile
-  set ft=help
-  call cursor(4, 2)
+  exe 'helptags' helpdir
+  exe 'sp' tempfile
+  exe 'lcd' helpdircall cursor(4, 2)
+  let &l:iskeyword='!-~,^*,^|,^",192-255'
   exe "normal! \<C-]>"
   call assert_equal(2, line('.'))
+  bw
 endfunc
 
 
