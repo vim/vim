@@ -2688,6 +2688,14 @@ def Test_unlet()
    'vim9script',
    'var svar = 123',
    'def Func()',
+   '  vim9cmd unlet s:svar',
+   'enddef',
+   'defcompile',
+   ], 'E1081:')
+  v9.CheckScriptFailure([
+   'vim9script',
+   'var svar = 123',
+   'def Func()',
    '  unlet s:svar',
    'enddef',
    'defcompile',
