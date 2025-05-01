@@ -206,7 +206,6 @@ func Test_help_using_visual_match()
 endfunc
 
 func Test_helptag_navigation()
-  filetype plugin on
   let helpdir = tempname()
   let tempfile = helpdir . '/test.txt'
   call mkdir(helpdir, 'p')
