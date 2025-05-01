@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 9.1.  Last change: 2025 Apr 30
+*tagsrch.txt*   For Vim version 9.1.  Last change: 2025 May 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -526,7 +526,7 @@ directory where the tag file is.
 ==============================================================================
 5. Tags file format				*tags-file-format* *E431*
 
-						*ctags* *jtags*
+						*ctags*
 A tags file can be created with an external command, for example "ctags".  It
 will contain a tag for each function.  Some versions of "ctags" will also make
 a tag for each "#defined" macro, typedefs, enums, etc.
@@ -542,13 +542,11 @@ exuberant ctags		This is a very good one.  It works for C, C++, Java,
 			many items.  See http://ctags.sourceforge.net.
 			No new version since 2009.
 etags			Connected to Emacs.  Supports many languages.
-JTags			For Java, in Java.  It can be found at
-			http://www.fleiner.com/jtags/.
+|:helptags|		For Vim's |help| files
 ptags.py		For Python, in Python.  Found in your Python source
 			directory at Tools/scripts/ptags.py.
-ptags			For Perl, in Perl.  It can be found at (link seems
-			dead):
-			http://www.eleves.ens.fr:8080/home/nthiery/Tags/.
+ptags			For Perl, in Perl.  It can be found at
+			https://metacpan.org/pod/Vim::Tag
 gnatxref		For Ada.  See http://www.gnuada.org/.  gnatxref is
 			part of the gnat package.
 

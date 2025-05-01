@@ -8602,7 +8602,6 @@ jsbterm-mouse	options.txt	/*jsbterm-mouse*
 json.vim	syntax.txt	/*json.vim*
 json_decode()	builtin.txt	/*json_decode()*
 json_encode()	builtin.txt	/*json_encode()*
-jtags	tagsrch.txt	/*jtags*
 jump-motions	motion.txt	/*jump-motions*
 jumplist	motion.txt	/*jumplist*
 jumplist-stack	motion.txt	/*jumplist-stack*
