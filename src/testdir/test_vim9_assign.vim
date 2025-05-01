@@ -2499,12 +2499,11 @@ def Test_unlet()
   assert_false(exists('g:somevar'))
   unlet! g:somevar
 
-  # also works for script-local variable in legacy Vim script
-  s:somevar = 'legacy'
+  # script-local variable cannot be removed in Vim9 script
+  s:somevar = 'local'
   assert_true(exists('s:somevar'))
-  unlet s:somevar
-  assert_false(exists('s:somevar'))
-  unlet! s:somevar
+  v9.CheckDefExecFailure(['unlet s:somevar'], 'E1081:', 1)
+  v9.CheckDefExecFailure(['unlet! s:somevar'], 'E1081:', 1)
 
   if 0
     unlet g:does_not_exist
@@ -2677,13 +2676,21 @@ def Test_unlet()
    'enddef',
    'defcompile',
    ], 'E1081:')
-  v9.CheckScriptFailure([
+  v9.CheckScriptSuccess([
    'vim9script',
    'var svar = 123',
    'func Func()',
    '  unlet s:svar',
    'endfunc',
    'Func()',
+   ])
+  v9.CheckScriptFailure([
+   'vim9script',
+   'var svar = 123',
+   'def Func()',
+   '  vim9cmd unlet s:svar',
+   'enddef',
+   'defcompile',
    ], 'E1081:')
   v9.CheckScriptFailure([
    'vim9script',
