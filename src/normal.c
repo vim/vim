@@ -3579,7 +3579,7 @@ nv_ident(cmdarg_T *cap)
 	    aux_ptr = (char_u *)(magic_isset() ? "/?.*~[^$\\" : "/?^$\\");
 	else if (tag_cmd)
 	{
-	    if (curbuf->b_help)
+	    if (STRCMP(curbuf->b_p_ft, "help") == 0)
 		// ":help" handles unescaped argument
 		aux_ptr = (char_u *)"";
 	    else
