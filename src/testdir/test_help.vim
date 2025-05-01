@@ -206,14 +206,15 @@ func Test_help_using_visual_match()
 endfunc
 
 func Test_helptag_navigation()
+  source $VIMRUNTIME/defaults.vim
   let helpdir = tempname()
   let tempfile = helpdir . '/test.txt'
   call mkdir(helpdir, 'p')
   call writefile(['', '*[tag*', '', '|[tag|'], tempfile)
   exe 'helptags' helpdir
   exe 'sp' tempfile
-  exe 'lcd' helpdircall cursor(4, 2)
-  let &l:iskeyword='!-~,^*,^|,^",192-255'
+  exe 'lcd' helpdir 'call cursor(4, 2)'
+  setl ft=help
   exe "normal! \<C-]>"
   call assert_equal(2, line('.'))
   bw
