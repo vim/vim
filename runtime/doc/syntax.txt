@@ -4007,22 +4007,6 @@ improve screen updating rates (see |:syn-sync| for more on this). >
 	(g:vim_minlines and g:vim_maxlines are deprecated variants of
 	these two options)
 
-						*g:vimsyn_embed*
-The g:vimsyn_embed option allows users to select what, if any, types of
-embedded script highlighting they wish to have. >
-
-   g:vimsyn_embed == 0   : don't support any embedded scripts
-   g:vimsyn_embed =~ 'l' : support embedded Lua
-   g:vimsyn_embed =~ 'm' : support embedded MzScheme
-   g:vimsyn_embed =~ 'p' : support embedded Perl
-   g:vimsyn_embed =~ 'P' : support embedded Python
-   g:vimsyn_embed =~ 'r' : support embedded Ruby
-   g:vimsyn_embed =~ 't' : support embedded Tcl
-<
-By default, g:vimsyn_embed is a string supporting interpreters that your vim
-itself supports.  Concatenate the indicated characters to support multiple
-types of embedded interpreters (e.g., g:vimsyn_embed = "mp" supports embedded
-mzscheme and embedded perl).
 						*g:vimsyn_folding*
 Some folding is now supported with when 'foldmethod' is set to "syntax": >
 
