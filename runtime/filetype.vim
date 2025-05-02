@@ -1023,6 +1023,14 @@ au BufNewFile,BufRead *.gjs			setf javascript.glimmer
 " Gnuplot scripts
 au BufNewFile,BufRead *.gpi,*.gnuplot,.gnuplot_history	setf gnuplot
 
+" GNU Radio Companion files
+au BufNewFile,BufRead *.grc
+	\ if getline(1) =~# '<?xml' |
+	\   setf xml |
+	\ else |
+	\   setf yaml |
+	\ endif
+
 " Go (Google)
 au BufNewFile,BufRead *.go			setf go
 au BufNewFile,BufRead Gopkg.lock		setf toml
