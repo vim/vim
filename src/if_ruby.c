@@ -1720,10 +1720,10 @@ ruby_io_init(void)
 
     rb_stdout = rb_obj_alloc(rb_cObject);
     rb_stderr = rb_obj_alloc(rb_cObject);
-    rb_define_singleton_method(rb_stdout, "write", (RUBY_PROC)vim_message, 1);
-    rb_define_singleton_method(rb_stdout, "flush", (RUBY_PROC)f_nop, 0);
-    rb_define_singleton_method(rb_stderr, "write", (RUBY_PROC)vim_message, 1);
-    rb_define_singleton_method(rb_stderr, "flush", (RUBY_PROC)f_nop, 0);
+    rb_define_singleton_method(rb_stdout, "write", (void*)vim_message, 1);
+    rb_define_singleton_method(rb_stdout, "flush", (void*)f_nop, 0);
+    rb_define_singleton_method(rb_stderr, "write", (void*)vim_message, 1);
+    rb_define_singleton_method(rb_stderr, "flush", (void*)f_nop, 0);
     rb_define_global_function("p", f_p, -1);
 }
 
@@ -1757,36 +1757,36 @@ ruby_vim_init(void)
 						rb_eStandardError);
 
     cBuffer = rb_define_class_under(mVIM, "Buffer", rb_cObject);
-    rb_define_singleton_method(cBuffer, "current", (RUBY_PROC)buffer_s_current, 0);
-    rb_define_singleton_method(cBuffer, "count", (RUBY_PROC)buffer_s_count, 0);
-    rb_define_singleton_method(cBuffer, "[]", (RUBY_PROC)buffer_s_aref, 1);
-    rb_define_method(cBuffer, "name", (RUBY_PROC)buffer_name, 0);
-    rb_define_method(cBuffer, "number", (RUBY_PROC)buffer_number, 0);
-    rb_define_method(cBuffer, "count", (RUBY_PROC)buffer_count, 0);
-    rb_define_method(cBuffer, "length", (RUBY_PROC)buffer_count, 0);
-    rb_define_method(cBuffer, "[]", (RUBY_PROC)buffer_aref, 1);
-    rb_define_method(cBuffer, "[]=", (RUBY_PROC)buffer_aset, 2);
-    rb_define_method(cBuffer, "delete", (RUBY_PROC)buffer_delete, 1);
-    rb_define_method(cBuffer, "append", (RUBY_PROC)buffer_append, 2);
+    rb_define_singleton_method(cBuffer, "current", (void*)buffer_s_current, 0);
+    rb_define_singleton_method(cBuffer, "count", (void*)buffer_s_count, 0);
+    rb_define_singleton_method(cBuffer, "[]", (void*)buffer_s_aref, 1);
+    rb_define_method(cBuffer, "name", (void*)buffer_name, 0);
+    rb_define_method(cBuffer, "number", (void*)buffer_number, 0);
+    rb_define_method(cBuffer, "count", (void*)buffer_count, 0);
+    rb_define_method(cBuffer, "length", (void*)buffer_count, 0);
+    rb_define_method(cBuffer, "[]", (void*)buffer_aref, 1);
+    rb_define_method(cBuffer, "[]=", (void*)buffer_aset, 2);
+    rb_define_method(cBuffer, "delete", (void*)buffer_delete, 1);
+    rb_define_method(cBuffer, "append", (void*)buffer_append, 2);
 
     // Added line manipulation functions
     //   SegPhault - 03/07/05
-    rb_define_method(cBuffer, "line_number", (RUBY_PROC)current_line_number, 0);
-    rb_define_method(cBuffer, "line", (RUBY_PROC)line_s_current, 0);
-    rb_define_method(cBuffer, "line=", (RUBY_PROC)set_current_line, 1);
+    rb_define_method(cBuffer, "line_number", (void*)current_line_number, 0);
+    rb_define_method(cBuffer, "line", (void*)line_s_current, 0);
+    rb_define_method(cBuffer, "line=", (void*)set_current_line, 1);
 
 
     cVimWindow = rb_define_class_under(mVIM, "Window", rb_cObject);
-    rb_define_singleton_method(cVimWindow, "current", (RUBY_PROC)window_s_current, 0);
-    rb_define_singleton_method(cVimWindow, "count", (RUBY_PROC)window_s_count, 0);
-    rb_define_singleton_method(cVimWindow, "[]", (RUBY_PROC)window_s_aref, 1);
-    rb_define_method(cVimWindow, "buffer", (RUBY_PROC)window_buffer, 0);
-    rb_define_method(cVimWindow, "height", (RUBY_PROC)window_height, 0);
-    rb_define_method(cVimWindow, "height=", (RUBY_PROC)window_set_height, 1);
-    rb_define_method(cVimWindow, "width", (RUBY_PROC)window_width, 0);
-    rb_define_method(cVimWindow, "width=", (RUBY_PROC)window_set_width, 1);
-    rb_define_method(cVimWindow, "cursor", (RUBY_PROC)window_cursor, 0);
-    rb_define_method(cVimWindow, "cursor=", (RUBY_PROC)window_set_cursor, 1);
+    rb_define_singleton_method(cVimWindow, "current", (void*)window_s_current, 0);
+    rb_define_singleton_method(cVimWindow, "count", (void*)window_s_count, 0);
+    rb_define_singleton_method(cVimWindow, "[]", (void*)window_s_aref, 1);
+    rb_define_method(cVimWindow, "buffer", (void*)window_buffer, 0);
+    rb_define_method(cVimWindow, "height", (void*)window_height, 0);
+    rb_define_method(cVimWindow, "height=", (void*)window_set_height, 1);
+    rb_define_method(cVimWindow, "width", (void*)window_width, 0);
+    rb_define_method(cVimWindow, "width=", (void*)window_set_width, 1);
+    rb_define_method(cVimWindow, "cursor", (void*)window_cursor, 0);
+    rb_define_method(cVimWindow, "cursor=", (void*)window_set_cursor, 1);
 
     rb_define_virtual_variable("$curbuf", buffer_s_current_getter, 0);
     rb_define_virtual_variable("$curwin", window_s_current_getter, 0);
