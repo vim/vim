@@ -2928,11 +2928,13 @@ get_member_tv(
 	object_T *obj = rettv->vval.v_object;
 	typval_T *tv = (typval_T *)(obj + 1) + m_idx;
 	copy_tv(tv, rettv);
+	set_tv_type(rettv, m->ocm_type);
 	object_unref(obj);
     }
     else
     {
 	copy_tv(&cl->class_members_tv[m_idx], rettv);
+	set_tv_type(rettv, m->ocm_type);
 	class_unref(cl);
     }
 
