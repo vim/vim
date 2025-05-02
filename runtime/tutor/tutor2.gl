@@ -1,0 +1,215 @@
+===============================================================================
+=     B e n v i d o   a o   t u t o r   d o   V I M      -    Versión 1.7     =
+===============================================================================
+=                        C A P Í T U L O   D O U S                            =
+===============================================================================
+
+     Hic Sunt Dracones: se este é o súa primeira exposición ao vim, e
+     prefire iniciarse no capítulo introducturio, pode saír premendo
+     :q <ENTER> .
+
+     O tempo aproximado requerido para completar este capítulo é de 
+     8-10 minutos, dependendo de canto tempo use na experimentación.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			Lección 2.1.1: OS REXISTROS CON NOME 
+
+
+  ** Almacene dúas palabras copiadas de xeito consecutivo, e logo pégueas. ** 
+
+  1. Mova o cursor ata a liña inferior sinalada con --->.
+ 
+  2. Navegue ata calquera carácter da palabra 'Xoán' e escriba  "ayiw .
+
+NEMÓNICO: 
+     dentro do rexistro(")
+     chamado (a) 
+     pega (y)ank 
+     o interior (i)nner 
+     da palabra (w)ord
+
+  3. Navegue cara a adiante ata a palabra 'galetas' 
+     (  fl  ou  4fe  ou  $b  ou  /gal <ENTER> ) e teclee  "byiw .
+
+  4. Navegue ata calquera carácter da palabra 'Uxío' e teclee 
+     ciw <C-r>a<ESC>
+
+NEMÓNICO:
+     cambia (c)hange
+     o interior (i)nner
+     da palabra (w)ord 
+     co <contido do rexistro (r)egister>
+     chamado (a)
+
+  5. Navegue ata calquera punto da palabra 'tartas' e teclee 
+     ciw<C-r>b<ESC>
+
+--->  a) De eiquí en adiante, Xoán ficará encarregado das racións de galetas.
+      b) Xa que logo, Uxío somentes terá poderes no que respecta ás tartas.
+
+NOTA: O borrado tamén funciona nos rexistros, é dicir: 
+      "sdiw  borrará a palabra baixo o cursor e ficaráa no rexistro s. 
+
+REFERENCIAS:  Rexistros            :h registers
+              Rexistros con come:  :h quotea
+              Movemento            :h motion.txt<enter> /inner<enter>
+              CTRL-R               :h insert<enter> /CTRL-R<enter>
+ 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lección 2.1.2: O REXISTRO DE EXPRESIÓN
+
+
+ ** Insira o resultado dos cáculos sobre a marcha. ** 
+
+  1. Mova o cursor ata a liña sinalada con --->.
+
+  2. Navegue ata calquera carácter do número que aparece na liña. 
+
+  3. Teclee  ciw<C-r>=60*60*24<ENTER> .
+
+  4. Na seguinte liña, entre no modo Inserir e engada a data de hoxe con: 
+     <C-r>=system('date')<ENTER>
+
+NOTA: Tódalas chamadas a sistema son dependentes do sistema operativo.
+      Por exemplo, en Windows pode usar:
+      system('date /t')  ou  :r!date /t
+
+---> Esquecín o número exacto de segundos que ten un día; son 84600?
+---> A data de hoxe é: 
+
+NOTA: O mesmo pódese obter con  :pu=system('date')
+      ou, premendo menos teclas, con  :r!date .
+
+REFERENCIAS:  Rexistro de experesión    :h quote=
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Lección 2.1.3: OS REXISTROS NUMERADOS
+
+
+  ** Prema  yy  e mais  dd  para ve-lo seu efecto nos rexistros. **
+
+  1. Mova o cursor ata a liña sinalada con --->.
+
+  2. Copie a liña 0, e logo inspeccione os rexitros con  :reg<enter> .
+
+  3. Borre a liña 0 con "cdd, e logo inspeccione os rexistros.
+     (Onde espera que estea o contido da liña 0?)
+
+  4. Continúe borrando cada liña sucesivamente, inspeccionando os rexistros
+     sobre a marcha.
+
+NOTA: Debería decatarse de que as liñas borradas máis antigas móvense cara a
+      embaixo na lista, consonte se engaden as novas liñas borradas. 
+
+  5. Agora, poña (p) os seguintes rexistros en orde: c, 7, 4, 8, 2.
+     Por exemplo, usando  "7p .
+
+---> 0. Esta
+     9. cambalear
+     8. mensaxe 
+     7. é
+     6. en
+     5. eixo
+     4. unha
+     3. guerra
+     2. secreta.
+     1. tributo
+
+NOTA: O borrado de liñas enteiras (dd) permanece máis tempo nos rexistros 
+      numerados có copiado de liñas enteiras ou de texto máis pequeno.   
+
+REFERENCIAS:  Rexistros numerados    :h quote00
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Lección 2.1.4: A BELEZA DAS MARCAS
+
+
+  ** Evitando conta-las liñas de código **
+
+NOTA: Un problema frecuente que acontece cando se programa é o desprazamento
+      entre pedazos de código. A seguinte técnica axuda a evita-lo cálculo
+      de números de liña asociados a operacions coma  "a147d  ou
+      :945,1091d a  ou, incluso peor, usando primeiro
+      <C-r>=1091-945<ENTER> .
+
+  1. Mova o cursor ata a liña sinalada con --->.
+
+  2. Vaia á primeira liña da función e márquea con  ma .
+
+NOTA: A posición exacta na liña NON é importante!
+
+  3. Navegue ata a fin da liña, e deseguido ata a fin do bloque de código
+     con  $% .
+
+  4. Borre o bloque e póñao no rexistro 'a' con  "ad'a .
+
+NEMÓNICO: 
+     Dentro do rexistro(")
+     con nome de rexistro (a) 
+     pon o borrado (d)eletion
+     dende o cursor ata a liña que contén a marca(')
+     de nome de marca (a)
+
+  5. Pegue o bloque entre BBB e CCC con  "ap .
+
+NOTA: Practique esta operación múltiples veces,
+      ata chegar a facelo fluidamente:  ma$%"ad'a
+
+---> AAA
+     function itGotRealBigRealFast() {
+       if ( somethingIsTrue ) {
+         doIt()
+       }
+       // the taxonomy of our function has changed and it
+       // no longer makes alphabetical sense in its current position
+
+       // imagine hundreds of lines of code
+
+       // naively you could navigate to the start and end and record or
+       // remember each line number
+     }
+     BBB
+     CCC
+
+NOTA: As marcas e mailos rexistros non comparten un espazo común de nomes, 
+      de xeito que un rexistro 'a' é completamente independente dunha
+      marca 'a'. En troques, isto non acontece entre os rexistros
+      e mailas macros.
+
+REFERENCIAS:  Marcas                :h marks
+              Movemento de marcas   :h mark-motions  (diferencia entre ' e  `)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       Lección 2.1 RESUMO
+
+  1. Gardar texto (por medio de copiar ou borrar), e recuperalo (pegar) dende
+     un total de 26 rexistros (a-z).
+  2. Pegar unha palbra enteira dende calquer sitio dentro dunha palara:  yiw
+  3. Cambiar unha palabra enteira dende calquer punto de palabra:        ciw
+  4. Inserir texto directamente dende os rexistros en modo Inserir:   (C-r)a
+  5. Inseri-lo resultado de operacións aritméticas simples no modo
+     Inserir:  (C-r)=60*60<ENTER>
+  6. Inseri-los resultados de chamadas ao sistema no modo Inserir: 
+     (C-r)=system('ls -1')
+  7. Inspecciona-los rexistros con  :reg .
+  8. Aprende-lo destino final do borrado de liñas enteiras (dd) nos
+     rexistros numerados, é dicir, descendendo dende o reistro 1 ao 9. 
+     Decatarse de que o borrado de liñas enteiras presérvase nos rexistros
+     numerados máis tempo que calquera outra operación.   
+  9. Aprende-lo destino final de tódalas copias feitas nos rexistros 
+     numerados e cómo son de efímeros. 
+ 10. Situar marcas dende o modo de comandos  m[a-zA-Z0-9] .
+ 11. Moverse a una liña cunha marca con  ' .
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Isto conclúe o capítulo dows do Vim Tutor. Este é traballo en progreso.  
+  Este capítulo foi escrito por Paul D. Parker.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Traducido do inglés ao galego por Fernando Vilariño.
+  Correo electrónico: fernando@cvc.uab.es.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
