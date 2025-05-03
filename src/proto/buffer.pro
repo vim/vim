@@ -5,7 +5,6 @@ int open_buffer(int read_stdin, exarg_T *eap, int flags_arg);
 void set_bufref(bufref_T *bufref, buf_T *buf);
 int bufref_valid(bufref_T *bufref);
 int buf_valid(buf_T *buf);
-int buf_locked(buf_T *buf);
 int close_buffer(win_T *win, buf_T *buf, int action, int abort_if_last, int ignore_abort);
 void buf_clear_file(buf_T *buf);
 void buf_freeall(buf_T *buf, int flags);
