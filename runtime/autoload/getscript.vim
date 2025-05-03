@@ -95,6 +95,42 @@ if !exists("g:GetLatestVimScripts_downloadaddr")
   let g:GetLatestVimScripts_downloadaddr = 'https://www.vim.org/scripts/download_script.php?src_id='
 endif
 
+" Check status code of scriptaddr and downloadaddr
+function! CheckVimScriptURLs(script_id, src_id)
+  if !executable('curl')
+    echohl ErrorMsg
+    echom 'Error: curl is not available on your system.'
+    echohl None
+    return
+  endif
+
+  " Check scriptaddr
+  let script_url = g:GetLatestVimScripts_scriptaddr . a:script_id
+  let script_cmd = 'curl -s -I -o /dev/null -w "%{http_code}" ' . shellescape(script_url)
+  let script_status = system(script_cmd)
+
+  if script_status ==# '200'
+    echom 'Script page is reachable: ' . script_url
+  else
+    echohl ErrorMsg
+    echom 'Error: Failed to reach script page. HTTP status: ' . script_status
+    echohl None
+  endif
+
+  " Check downloadaddr
+  let download_url = g:GetLatestVimScripts_downloadaddr . a:src_id
+  let download_cmd = 'curl -s -I -o /dev/null -w "%{http_code}" ' . shellescape(download_url)
+  let download_status = system(download_cmd)
+
+  if download_status ==# '200'
+    echom 'Download link is reachable: ' . download_url
+  else
+    echohl ErrorMsg
+    echom 'Error: Failed to reach download link. HTTP status: ' . download_status
+    echohl None
+  endif
+endfunction
+
 " define decompression tools (on windows this allows redirection to wsl or git tools).
 " Note tar is available as builtin since Windows 11.
 if !exists("g:GetLatestVimScripts_bunzip2")
@@ -469,6 +505,9 @@ fun! s:GetOneScript(...)
   let scriptaddr = g:GetLatestVimScripts_scriptaddr.scriptid
   let tmpfile    = tempname()
   let v:errmsg   = ""
+
+  " Check if the URLs are reachable
+  call CheckVimScriptURLs(scriptid, srcid)
 
   " make up to three tries at downloading the description
   let itry= 1
