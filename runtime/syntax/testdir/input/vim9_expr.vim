@@ -2,6 +2,22 @@ vim9script
 # Vim9-script expressions
 
 
+# Number
+
+# ' separated
+
+echo   1'000'000
+echo   1'000'000.00
+echo  -1'000'000
+echo  -1'000'000.00
+
+echo   0b1000'0000
+echo   0o1000'0000
+echo   0x1000'0000
+echo  -0b1000'0000
+echo  -0o1000'0000
+echo  -0x1000'0000
+
 # Dictionary
 
 echo {}
