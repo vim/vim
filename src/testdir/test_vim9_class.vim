@@ -13084,4 +13084,73 @@ def Test_object_of_class_type()
         \ 'E1353: Class name not found: <number>'])
 enddef
 
+" Test for the object and class member type
+def Test_obj_class_member_type()
+  var lines =<< trim END
+    vim9script
+    class L
+      var l: list<number>
+    endclass
+    var obj_L = L.new([10, 20])
+    assert_equal('list<number>', typename(obj_L.l))
+    obj_L.l->add('a')
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got string', 7)
+
+  lines =<< trim END
+    vim9script
+    class T
+      var t: list<tuple<string>>
+    endclass
+    var obj_T = T.new([('a',), ('b',)])
+    assert_equal('list<tuple<string>>', typename(obj_T.t))
+    obj_T.t->add([('c', 10, true)])
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<string> but got list<tuple<string, number, bool>>', 7)
+
+  lines =<< trim END
+    vim9script
+    class D
+      var d: dict<number>
+    endclass
+    var obj_D = D.new({a: 10, b: 20})
+    assert_equal('dict<number>', typename(obj_D.d))
+    obj_D.d->extend({c: 'C'})
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string> in extend()', 7)
+
+  lines =<< trim END
+    vim9script
+    class L
+      public static var l: list<number>
+    endclass
+    L.l = [10, 20]
+    assert_equal('list<number>', typename(L.l))
+    L.l->add('a')
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got string', 7)
+
+  lines =<< trim END
+    vim9script
+    class T
+      public static var t: list<tuple<string>>
+    endclass
+    T.t = [('a',), ('b',)]
+    assert_equal('list<tuple<string>>', typename(T.t))
+    T.t->add([('c', 10, true)])
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<string> but got list<tuple<string, number, bool>>', 7)
+
+  lines =<< trim END
+    vim9script
+    class D
+      public static var d: dict<number>
+    endclass
+    D.d = {a: 10, b: 20}
+    assert_equal('dict<number>', typename(D.d))
+    D.d->extend({c: 'C'})
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string> in extend()', 7)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
