@@ -215,7 +215,7 @@ them:
 - flexible array members: Not supported by HP-UX C compiler (John Marriott)
 
 
-COMMENTS					       *style-comments*
+COMMENTS						*style-comments*
 
 Try to avoid putting multiline comments inside a function body: if the
 function is so complex that you need to separately comment parts of it, you
@@ -231,7 +231,7 @@ For everything else use: >
 <
 
 
-INDENTATION					      *style-indentation*
+INDENTATION						*style-indentation*
 
 We use 4 space to indent the code. If you are using Vim to edit the source,
 you don't need to do anything due to the |modeline|.
@@ -239,7 +239,7 @@ you don't need to do anything due to the |modeline|.
 For other editors an `.editorconfig` is provided at the root of the repo.
 
 
-DECLARATIONS	                                     *style-declarations*
+DECLARATIONS						*style-declarations*
 
 Declare, when possible, `for` loop variables in the guard:
 OK: >
@@ -260,55 +260,72 @@ Wrong: >
 <
 
 
-BRACES							   *style-braces*
+BRACES							*style-braces*
 
 All curly braces must be returned onto a new line:
 OK: >
     if (cond)
     {
-       cmd;
-       cmd;
+	cmd;
+	cmd;
     }
     else
     {
-       cmd;
-       cmd;
+	cmd;
+	cmd;
     }
 <
 Wrong: >
     if (cond) {
-       cmd;
-       cmd;
+	cmd;
+	cmd;
     } else {
-       cmd;
-       cmd;
+	cmd;
+	cmd;
     }
 <
 OK: >
     while (cond)
     {
 	cmd;
+	cmd;
     }
 <
 Wrong: >
     while (cond) {
 	cmd;
+	cmd;
     }
+<
+OK: >
+    do
+    {
+	cmd;
+	cmd;
+    }
+    while (cond);
+<
+Wrong: >
+    do {
+	cmd;
+	cmd;
+    } while (cond);
 <
 When a block has one line, including comments, the braces can be left out.
 OK: >
     if (cond)
+    {
+	/*
+	 * comment
+	 */
 	cmd;
-    else
-	cmd;
+    }
 <
 Wrong: >
     if (cond)
 	/*
 	 * comment
 	 */
-	cmd;
-    else
 	cmd;
 <
 When an `if`/`else` has braces on one block, the other should have it too.
