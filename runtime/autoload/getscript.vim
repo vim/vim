@@ -104,13 +104,9 @@ function! CheckVimScriptURLs(script_id, src_id)
     return
   endif
 
-  " Create a temporary file in a more reliable location
-  let temp_dir = has('win32') ? $TEMP : '/tmp'
-  let temp_file = temp_dir . '/vim_script_check_' . localtime() . '.tmp'
-
-  " Check scriptaddr
+  " Check scriptaddr using curl's -I flag to only get headers
   let script_url = g:GetLatestVimScripts_scriptaddr . a:script_id
-  let script_cmd = 'curl -s -I -o ' . shellescape(temp_file) . ' -w "%{http_code}" ' . shellescape(script_url)
+  let script_cmd = 'curl -s -I -w "%{http_code}" ' . shellescape(script_url)
   let script_status = system(script_cmd)
 
   if script_status ==# '200'
@@ -121,9 +117,9 @@ function! CheckVimScriptURLs(script_id, src_id)
     echohl None
   endif
 
-  " Check downloadaddr
+  " Check downloadaddr using curl's -I flag to only get headers
   let download_url = g:GetLatestVimScripts_downloadaddr . a:src_id
-  let download_cmd = 'curl -s -I -o ' . shellescape(temp_file) . ' -w "%{http_code}" ' . shellescape(download_url)
+  let download_cmd = 'curl -s -I -w "%{http_code}" ' . shellescape(download_url)
   let download_status = system(download_cmd)
 
   if download_status ==# '200'
@@ -132,11 +128,6 @@ function! CheckVimScriptURLs(script_id, src_id)
     echohl ErrorMsg
     echom 'Error: Failed to reach download link. HTTP status: ' . download_status
     echohl None
-  endif
-
-  " Clean up temporary file
-  if filereadable(temp_file)
-    call delete(temp_file)
   endif
 endfunction
 
