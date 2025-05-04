@@ -3592,8 +3592,8 @@ popup_do_filter(int c)
     {
 	popup_reset_handled(POPUP_HANDLED_2);
 	wp = find_next_popup(FALSE, POPUP_HANDLED_2);
-        if (wp != NULL)
-        {
+	if (wp != NULL)
+	{
 	    popup_close_with_retval(wp, -1);
 	    res = TRUE;
 	}

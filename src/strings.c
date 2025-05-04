@@ -603,9 +603,9 @@ vim_strnicmp_asc(char *s1, char *s2, size_t len)
     {
        i = TOLOWER_ASC(*s1) - TOLOWER_ASC(*s2);
        if (i != 0)
-           break;			// this character is different
+	   break;			// this character is different
        if (*s1 == NUL)
-           break;			// strings match until NUL
+	   break;			// strings match until NUL
        ++s1;
        ++s2;
        --len;

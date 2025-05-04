@@ -406,10 +406,10 @@ cin_islabel_skip(char_u **s)
 
     while (vim_isIDc(**s))
     {
-        if (has_mbyte)
-            (*s) += (*mb_ptr2len)(*s);
-        else
-            (*s)++;
+	if (has_mbyte)
+	    (*s) += (*mb_ptr2len)(*s);
+	else
+	    (*s)++;
     }
 
     *s = cin_skipcomment(*s);

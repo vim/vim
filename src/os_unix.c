@@ -4440,14 +4440,14 @@ mch_report_winsize(int fd, int rows, int cols)
 
     if (cs.cs_xpixel == -1)
     {
-        // failed get pixel size.
-        ws.ws_xpixel = 0;
-        ws.ws_ypixel = 0;
+	// failed get pixel size.
+	ws.ws_xpixel = 0;
+	ws.ws_ypixel = 0;
     }
     else
     {
-        ws.ws_xpixel = cols * cs.cs_xpixel;
-        ws.ws_ypixel = rows * cs.cs_ypixel;
+	ws.ws_xpixel = cols * cs.cs_xpixel;
+	ws.ws_ypixel = rows * cs.cs_ypixel;
     }
 
     retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
