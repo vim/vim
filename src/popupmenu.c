@@ -228,7 +228,7 @@ pum_display(
 	pum_size = size;
 	pum_compute_size();
 	max_width = pum_base_width;
-        if (p_pmw > 0 && max_width > p_pmw)
+	if (p_pmw > 0 && max_width > p_pmw)
 	    max_width = p_pmw;
 
 	// Calculate column
@@ -785,61 +785,61 @@ pum_process_item(
 
     for ( ; ; MB_PTR_ADV(p))
     {
-        if (s == NULL)
-            s = p;
-        w = ptr2cells(p);
-        if (*p != NUL && *p != TAB && *totwidth_ptr + w <= pum_width)
-        {
-            width += w;
-            continue;
-        }
+	if (s == NULL)
+	    s = p;
+	w = ptr2cells(p);
+	if (*p != NUL && *p != TAB && *totwidth_ptr + w <= pum_width)
+	{
+	    width += w;
+	    continue;
+	}
 
-        // Display the text that fits or comes before a Tab.
-        // First convert it to printable characters.
-        char_u  *st;
-        int     *attrs = NULL;
-        int     saved = *p;
+	// Display the text that fits or comes before a Tab.
+	// First convert it to printable characters.
+	char_u  *st;
+	int     *attrs = NULL;
+	int     saved = *p;
 
-        if (saved != NUL)
-            *p = NUL;
-        st = transstr(s);
-        if (saved != NUL)
-            *p = saved;
+	if (saved != NUL)
+	    *p = NUL;
+	st = transstr(s);
+	if (saved != NUL)
+	    *p = saved;
 
-        if (item_type == CPT_ABBR)
-            attrs = pum_compute_text_attrs(st, hlf,
-                      pum_array[idx].pum_user_abbr_hlattr);
+	if (item_type == CPT_ABBR)
+	    attrs = pum_compute_text_attrs(st, hlf,
+		      pum_array[idx].pum_user_abbr_hlattr);
 #ifdef FEAT_RIGHTLEFT
-        if (pum_rl)
-            col = pum_display_rtl_text(row, col, st, attr, attrs,
-                    width, pum_width, *totwidth_ptr, next_isempty);
-        else
+	if (pum_rl)
+	    col = pum_display_rtl_text(row, col, st, attr, attrs,
+		    width, pum_width, *totwidth_ptr, next_isempty);
+	else
 #endif
-            col = pum_display_ltr_text(row, col, st, attr, attrs,
-                    width, pum_width, *totwidth_ptr, next_isempty);
+	    col = pum_display_ltr_text(row, col, st, attr, attrs,
+		    width, pum_width, *totwidth_ptr, next_isempty);
 
-        if (attrs != NULL)
-            VIM_CLEAR(attrs);
+	if (attrs != NULL)
+	    VIM_CLEAR(attrs);
 
-        if (*p != TAB)
-            break;
+	if (*p != TAB)
+	    break;
 
-        // Display two spaces for a Tab.
+	// Display two spaces for a Tab.
 #ifdef FEAT_RIGHTLEFT
-        if (pum_rl)
-        {
-            screen_puts_len((char_u *)"  ", 2, row, col - 1, attr);
-            col -= 2;
-        }
-        else
+	if (pum_rl)
+	{
+	    screen_puts_len((char_u *)"  ", 2, row, col - 1, attr);
+	    col -= 2;
+	}
+	else
 #endif
-        {
-            screen_puts_len((char_u *)"  ", 2, row, col, attr);
-            col += 2;
-        }
-        *totwidth_ptr += 2;
-        s = NULL;  // start text at next char
-        width = 0;
+	{
+	    screen_puts_len((char_u *)"  ", 2, row, col, attr);
+	    col += 2;
+	}
+	*totwidth_ptr += 2;
+	s = NULL;  // start text at next char
+	width = 0;
     }
 
     return col;
@@ -856,7 +856,7 @@ pum_draw_scrollbar(
 	int	thumb_height)
 {
     if (pum_scrollbar <= 0)
-        return;
+	return;
 
     int attr = (i >= thumb_pos && i < thumb_pos + thumb_height) ?
 			highlight_attr[HLF_PST] : highlight_attr[HLF_PSB];

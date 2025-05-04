@@ -2268,12 +2268,12 @@ qf_add_entry(
     if (buf != NULL &&
 	buf->b_ffname != NULL && fullname != NULL)
     {
-        if (fnamecmp(fullname, buf->b_ffname) != 0)
-        {
-            p = shorten_fname1(fullname);
-            if (p != NULL)
+	if (fnamecmp(fullname, buf->b_ffname) != 0)
+	{
+	    p = shorten_fname1(fullname);
+	    if (p != NULL)
 		qfp->qf_fname = vim_strsave(p);
-        }
+	}
     }
     vim_free(fullname);
     if ((qfp->qf_text = vim_strsave(mesg)) == NULL)
@@ -7893,7 +7893,7 @@ qf_add_entries(
 	{
 	    entry_to_select = entry;
 	    entry_to_select_index = qfl->qf_count;
-        }
+	}
     }
 
     // Check if any valid error entries are added to the list.

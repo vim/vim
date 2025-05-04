@@ -1127,17 +1127,17 @@ messagesopt_changed(void)
 
     // Either "wait" or "hit-enter" is required
     if (!(messages_flags_new & (MESSAGES_HIT_ENTER | MESSAGES_WAIT)))
-        return FAIL;
+	return FAIL;
 
     // "history" must be set
     if (!(messages_flags_new & MESSAGES_HISTORY))
-        return FAIL;
+	return FAIL;
 
     if (messages_history_new < 0 || messages_history_new > 10000)
-        return FAIL;
+	return FAIL;
 
     if (messages_wait_new < 0 || messages_wait_new > 10000)
-        return FAIL;
+	return FAIL;
 
     msg_flags = messages_flags_new;
     msg_wait = messages_wait_new;
