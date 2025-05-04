@@ -590,7 +590,7 @@ cin_isdefault(char_u *s)
 /*
  * Recognize a switch label: "case .*:" or "default:".
  */
-     static int
+    static int
 cin_iscase(
     char_u *s,
     int strict) // Allow relaxed check of case statement for JS
@@ -1296,7 +1296,7 @@ done:
     static int
 cin_isif(char_u *p)
 {
- return (STRNCMP(p, "if", 2) == 0 && !vim_isIDc(p[2]));
+    return (STRNCMP(p, "if", 2) == 0 && !vim_isIDc(p[2]));
 }
 
     static int
@@ -2415,15 +2415,15 @@ get_c_indent(void)
 			&& trypos->lnum == our_paren_pos.lnum
 			&& trypos->col == our_paren_pos.col)
 		{
-			amount = get_indent_lnum(lnum);	// XXX
+		    amount = get_indent_lnum(lnum);	// XXX
 
-			if (theline[0] == ')')
-			{
-			    if (our_paren_pos.lnum != lnum
-						       && cur_amount > amount)
-				cur_amount = amount;
-			    amount = -1;
-			}
+		    if (theline[0] == ')')
+		    {
+			if (our_paren_pos.lnum != lnum
+				&& cur_amount > amount)
+			    cur_amount = amount;
+			amount = -1;
+		    }
 		    break;
 		}
 	    }
@@ -3961,7 +3961,7 @@ in_cinkeys(
 	{
 	    case '*': try_match = (*look == '*'); break;
 	    case '!': try_match = (*look == '!'); break;
-	     default: try_match = (*look != '*'); break;
+	    default: try_match = (*look != '*'); break;
 	}
 	if (*look == '*' || *look == '!')
 	    ++look;
