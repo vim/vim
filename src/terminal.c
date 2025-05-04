@@ -53,10 +53,10 @@
 
 // This is VTermScreenCell without the characters, thus much smaller.
 typedef struct {
-  VTermScreenCellAttrs	attrs;
-  char			width;
-  VTermColor		fg;
-  VTermColor		bg;
+    VTermScreenCellAttrs	attrs;
+    char			width;
+    VTermColor			fg;
+    VTermColor			bg;
 } cellattr_T;
 
 typedef struct sb_line_S {
@@ -3634,15 +3634,15 @@ handle_bell(void *user UNUSED)
 }
 
 static VTermScreenCallbacks screen_callbacks = {
-  handle_damage,	// damage
-  handle_moverect,	// moverect
-  handle_movecursor,	// movecursor
-  handle_settermprop,	// settermprop
-  handle_bell,		// bell
-  handle_resize,	// resize
-  handle_pushline,	// sb_pushline
-  NULL,			// sb_popline
-  NULL			// sb_clear
+    handle_damage,		// damage
+    handle_moverect,		// moverect
+    handle_movecursor,		// movecursor
+    handle_settermprop,		// settermprop
+    handle_bell,		// bell
+    handle_resize,		// resize
+    handle_pushline,		// sb_pushline
+    NULL,			// sb_popline
+    NULL			// sb_clear
 };
 
 /*
@@ -4858,13 +4858,13 @@ parse_csi(
 }
 
 static VTermStateFallbacks state_fallbacks = {
-  NULL,		// control
-  parse_csi,	// csi
-  parse_osc,	// osc
-  NULL,		// dcs
-  NULL,		// apc
-  NULL,		// pm
-  NULL		// sos
+    NULL,		// control
+    parse_csi,		// csi
+    parse_osc,		// osc
+    NULL,		// dcs
+    NULL,		// apc
+    NULL,		// pm
+    NULL		// sos
 };
 
 /*
