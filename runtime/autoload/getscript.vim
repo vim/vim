@@ -104,10 +104,35 @@ function! CheckVimScriptURLs(script_id, src_id)
     return
   endif
 
-  " Check scriptaddr using curl's -I flag to only get headers
-  let script_url = g:GetLatestVimScripts_scriptaddr . a:script_id
-  let script_cmd = 'curl -s -I -w "%{http_code}" ' . shellescape(script_url)
-  let script_status = system(script_cmd)
+  " Handle PowerShell differently
+  if &shell =~? '\<pwsh\>\|\<powershell\>'
+    " For PowerShell, use direct command output
+    let script_url = g:GetLatestVimScripts_scriptaddr . a:script_id
+    let script_cmd = 'curl -s -I -w "%{http_code}" ' . shellescape(script_url)
+    let script_status = system(script_cmd)
+    let script_status = substitute(script_status, '\n$', '', '')
+
+    let download_url = g:GetLatestVimScripts_downloadaddr . a:src_id
+    let download_cmd = 'curl -s -I -w "%{http_code}" ' . shellescape(download_url)
+    let download_status = system(download_cmd)
+    let download_status = substitute(download_status, '\n$', '', '')
+  else
+    " For other shells, use temporary files
+    let temp_script = tempname()
+    let temp_download = tempname()
+    
+    let script_url = g:GetLatestVimScripts_scriptaddr . a:script_id
+    let script_cmd = 'curl -s -I -w "%{http_code}" ' . shellescape(script_url) . ' > ' . shellescape(temp_script)
+    call system(script_cmd)
+    let script_status = readfile(temp_script, 'b')[0]
+    call delete(temp_script)
+
+    let download_url = g:GetLatestVimScripts_downloadaddr . a:src_id
+    let download_cmd = 'curl -s -I -w "%{http_code}" ' . shellescape(download_url) . ' > ' . shellescape(temp_download)
+    call system(download_cmd)
+    let download_status = readfile(temp_download, 'b')[0]
+    call delete(temp_download)
+  endif
 
   if script_status ==# '200'
     echom 'Script page is reachable: ' . script_url
@@ -116,11 +141,6 @@ function! CheckVimScriptURLs(script_id, src_id)
     echom 'Error: Failed to reach script page. HTTP status: ' . script_status
     echohl None
   endif
-
-  " Check downloadaddr using curl's -I flag to only get headers
-  let download_url = g:GetLatestVimScripts_downloadaddr . a:src_id
-  let download_cmd = 'curl -s -I -w "%{http_code}" ' . shellescape(download_url)
-  let download_status = system(download_cmd)
 
   if download_status ==# '200'
     echom 'Download link is reachable: ' . download_url
