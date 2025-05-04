@@ -124,7 +124,6 @@ runtime/doc/vimtutor-ru.UTF-8.1		@RestorerZ
 runtime/doc/xxd-ru.1			@RestorerZ
 runtime/doc/xxd-ru.UTF-8.1		@RestorerZ
 runtime/ftplugin/abaqus.vim		@costerwi
-runtime/ftplugin/abnf.vim		@A4-Tacks
 runtime/ftplugin/antlr4.vim		@jiangyinzuo
 runtime/ftplugin/apache.vim		@dubgeiser
 runtime/ftplugin/arduino.vim		@k-takata
@@ -431,6 +430,7 @@ runtime/lang/menu_ru_ru.koi8-r.vim	@RestorerZ
 runtime/lang/menu_ru_ru.utf-8.vim	@RestorerZ
 runtime/pack/dist/opt/cfilter/plugin/cfilter.vim	@yegappan
 runtime/pack/dist/opt/comment/	@habamax
+runtime/pack/dist/opt/helptoc/	@kennypete
 runtime/pack/dist/opt/matchit/		@chrisbra
 runtime/pack/dist/opt/nohlsearch/		@habamax
 runtime/plugin/manpager.vim		@Konfekt
