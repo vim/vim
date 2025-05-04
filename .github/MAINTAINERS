@@ -124,6 +124,7 @@ runtime/doc/vimtutor-ru.UTF-8.1		@RestorerZ
 runtime/doc/xxd-ru.1			@RestorerZ
 runtime/doc/xxd-ru.UTF-8.1		@RestorerZ
 runtime/ftplugin/abaqus.vim		@costerwi
+runtime/ftplugin/abnf.vim		@A4-Tacks
 runtime/ftplugin/antlr4.vim		@jiangyinzuo
 runtime/ftplugin/apache.vim		@dubgeiser
 runtime/ftplugin/arduino.vim		@k-takata
