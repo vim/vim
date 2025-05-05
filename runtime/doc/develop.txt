@@ -230,7 +230,6 @@ For everything else use: >
     // comment
 <
 
-
 INDENTATION						*style-indentation*
 
 We use 4 space to indent the code. If you are using Vim to edit the source,
@@ -258,7 +257,6 @@ Wrong: >
     int n;
     int *ptr;
 <
-
 
 BRACES							*style-braces*
 
@@ -302,6 +300,13 @@ OK: >
     {
 	cmd;
 	cmd;
+    } while (cond);
+<
+or >
+    do
+    {
+	cmd;
+	cmd;
     }
     while (cond);
 <
@@ -311,78 +316,17 @@ Wrong: >
 	cmd;
     } while (cond);
 <
-When a block has one line, including comments, the braces can be left out.
-OK: >
-    if (cond)
-    {
-	/*
-	 * comment
-	 */
-	cmd;
-    }
-<
-Wrong: >
-    if (cond)
-	/*
-	 * comment
-	 */
-	cmd;
-<
-When an `if`/`else` has braces on one block, the other should have it too.
-OK: >
-    if (cond)
-    {
-	cmd;
-    }
-    else
-    {
-	cmd;
-	cmd;
-    }
-<
-Wrong: >
-    if (cond)
-	cmd;
-    else
-    {
-	cmd;
-	cmd;
-    }
-
-    if (cond)
-    {
-	cmd;
-	cmd;
-    }
-    else
-	cmd;
-<
-OK: >
-    while (cond)
-	cmd;
-<
-Wrong:
->
-    while (cond)
-	if (cond)
-	    cmd;
-<
-
 
 TYPES							    *style-types*
 
-Use descriptive types. You can find a list of them in the src/structs.h file
-and probably in a typedef in the file you are working on.
-
+Use descriptive types. These are defined in src/vim.h, src/structs.h etc.
 Note that all custom types are postfixed with "_T"
 
-OK: >
-    int is_valid_line_number(linenr_T lnum);
+Example: >
+    linenr_T
+    buf_T
+    pos_T
 <
-Wrong: >
-    int is_valid_line_number(unsigned long lnum);
-<
-
 
 SPACES AND PUNCTUATION					   *style-spaces*
 
@@ -403,8 +347,8 @@ Wrong:  func(arg1,arg2);	for (i = 0;i < 2;++i)
 
 Use a space before and after '=', '+', '/', etc.
 
-Wrong:	var=a*5;
 OK:	var = a * 5;
+Wrong:	var=a*5;
 
 Use empty lines to group similar actions together.
 
@@ -428,7 +372,6 @@ Wrong: >
 	buf = rbuf;
     while (buf != NULL && !got_int)
 <
-
 
 FUNCTIONS						*style-functions*
 
