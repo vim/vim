@@ -7415,6 +7415,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"tabsidebar",
+#if defined(FEAT_TABSIDEBAR)
+		1
+#else
+		0
+#endif
+		},
 	{"tag_binary", 1},	// graduated feature
 	{"tcl",
 #if defined(FEAT_TCL) && !defined(DYNAMIC_TCL)

@@ -984,7 +984,17 @@ EXTERN unsigned	swb_flags;
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
 #define SWB_USELAST		0x020
+
 EXTERN char_u	*p_spk;		// 'splitkeep'
+
+#if defined(FEAT_TABSIDEBAR)
+EXTERN char_u	*p_tsb;		// 'tabsidebar'
+EXTERN long	p_stsb;		// 'showtabsidebar'
+EXTERN long	p_tsbw;		// 'tabsidebarwrap'
+EXTERN long	p_tsba;		// 'tabsidebaralign'
+EXTERN long	p_tsbc;		// 'tabsidebarcolumns'
+#endif
+
 #ifdef FEAT_SYN_HL
 EXTERN char_u	*p_syn;		// 'syntax'
 #endif

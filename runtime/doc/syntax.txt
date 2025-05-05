@@ -5991,6 +5991,12 @@ TabLine		Tab pages line, not active tab page label.
 TabLineFill	Tab pages line, where there are no labels.
 							*hl-TabLineSel*
 TabLineSel	Tab pages line, active tab page label.
+							*hl-TabSideBar*
+TabSideBar	tabsidebar, not active tab page label
+							*hl-TabSideBarFill*
+TabSideBarFill	tabsidebar, where there are no labels
+							*hl-TabSideBarSel*
+TabSideBarSel	tabsidebar, active tab page label
 							*hl-Terminal*
 Terminal	|terminal| window (see |terminal-size-color|).
 							*hl-Title*

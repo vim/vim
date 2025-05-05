@@ -555,6 +555,11 @@ static char *(features[]) =
 #if defined(USE_SYSTEM) && defined(UNIX)
 	"+system()",
 #endif
+#if defined(FEAT_TABSIDEBAR)
+	"+tabsidebar",
+#else
+	"-tabsidebar",
+#endif
 	"+tag_binary",
 	"-tag_old_static",
 	"-tag_any_white",

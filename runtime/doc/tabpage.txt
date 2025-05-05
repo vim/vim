@@ -14,7 +14,8 @@ when used in combination with more than one tab page.
 2. Commands			|tab-page-commands|
 3. Other items			|tab-page-other|
 4. Setting 'tabline'		|setting-tabline|
-5. Setting 'guitablabel'	|setting-guitablabel|
+5. Setting 'tabsidebar'		|setting-tabsidebar|
+6. Setting 'guitablabel'	|setting-guitablabel|
 
 {not able to use multiple tab pages when the |+windows| feature was disabled
 at compile time}
@@ -364,8 +365,8 @@ The 'tabline' option allows you to define your preferred way to tab pages
 labels.  This isn't easy, thus an example will be given here.
 
 For basics see the 'statusline' option.  The same items can be used in the
-'tabline' option.  Additionally, the |tabpagebuflist()|, |tabpagenr()| and
-|tabpagewinnr()| functions are useful.
+'tabline' and 'tabsidebar' option.  Additionally, the |tabpagebuflist()|,
+|tabpagenr()| and |tabpagewinnr()| functions are useful.
 
 Since the number of tab labels will vary, you need to use an expression for
 the whole option.  Something like: >
@@ -418,7 +419,72 @@ clever way when there is not enough room.  Check the 'columns' option for the
 space available.
 
 ==============================================================================
-5. Setting 'guitablabel'				*setting-guitablabel*
+5. Setting 'tabsidebar'				*tabsidebar* *setting-tabsidebar*
+
+TabSideBar is a vertical sidebar that displays tab page labels along the side
+of the window. It looks like this:
+>
+	+-----------+----------------------------------
+	|(1)        |text text text text text text text
+	|  ~/aaa.txt|text text text text text text text
+	|(2)        |text text text text text text text
+	|  ~/.vimrc |text text text text text text text
+	|(3)        |text text text text text text text
+	|  ~/bbb.js |text text text text text text text
+	|  ~/ccc.css|text text text text text text text
+	|           |text text text text text text text
+	|           |text text text text text text text
+	|           |text text text text text text text
+<
+To configure the TabSideBar, use following options: 'tabsidebar',
+'showtabsidebar', 'tabsidebaralign', 'tabsidebarcolumns', 'tabsidebarwrap'
+and the "tabsidebar" item in 'fillchars'.
+The 'tabsidebar' and 'showtabsidebar' options are function similar to the
+|'statusline'| or |'tabline'|.
+
+The 'tabsidebarcolumns' option specifies the width of the TabSideBar:
+>
+              +------ &tabsidebarcolumns
+              |
+         <----+----->
+	+-----------+----------------------------------
+	|(1)        |text text text text text text text
+	|  ~/aaa.txt|text text text text text text text
+	|(2)        |text text text text text text text
+<
+The 'tabsidebaralign' option determines whether the TabSideBar is displayed
+on the right side of the window:
+>
+	+----------------------------------+-----------
+	|text text text text text text text|(1)
+	|text text text text text text text|  ~/aaa.txt
+	|text text text text text text text|(2)
+<
+The 'tabsidebarwrap' option controls whether lines in TabSideBar are wraped:
+>
+	+-----------+----------------------------------
+	|(1)        |text text text text text text text
+	|  ~/long_lo|text text text text text text text
+	|ng_file_nam|text text text text text text text
+	|e.txt      |text text text text text text text
+	|(2)        |text text text text text text text
+
+The "tabsidebar" item in 'fillchars' defines the vertical separator between
+the TabSideBar and the main window:
+>
+                    +------ This is
+                    |
+                    v
+	+-----------+----------------------------------
+	|(1)        |text text text text text text text
+	|  ~/aaa.txt|text text text text text text text
+	|(2)        |text text text text text text text
+<
+You can customize the appearance of the tab page labels using the highlight
+groups: |hl-TabSideBar| |hl-TabSideBarSel| |hl-TabSideBarFill|
+
+==============================================================================
+6. Setting 'guitablabel'				*setting-guitablabel*
 
 When the GUI tab pages line is displayed, 'guitablabel' can be used to
 specify the label to display for each tab page.  Unlike 'tabline', which

@@ -4454,9 +4454,16 @@ scroll_region_set(win_T *wp, int off)
 {
     OUT_STR(tgoto((char *)T_CS, W_WINROW(wp) + wp->w_height - 1,
 							 W_WINROW(wp) + off));
+#if defined(FEAT_TABSIDEBAR)
+    if (*T_CSV != NUL)
+	OUT_STR(tgoto((char *)T_CSV,
+		wp->w_wincol + wp->w_width - 1 + TSB_LCOL(NULL),
+		wp->w_wincol + TSB_LCOL(NULL)));
+#else
     if (*T_CSV != NUL && wp->w_width != Columns)
 	OUT_STR(tgoto((char *)T_CSV, wp->w_wincol + wp->w_width - 1,
 							       wp->w_wincol));
+#endif
     screen_start();		    // don't know where cursor is now
 }
 
@@ -4468,7 +4475,7 @@ scroll_region_reset(void)
 {
     OUT_STR(tgoto((char *)T_CS, (int)Rows - 1, 0));
     if (*T_CSV != NUL)
-	OUT_STR(tgoto((char *)T_CSV, (int)Columns - 1, 0));
+	OUT_STR(tgoto((char *)T_CSV, COLUMNS_WITHOUT_TSB() - 1, 0));
     screen_start();		    // don't know where cursor is now
 }
 

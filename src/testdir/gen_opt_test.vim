@@ -406,6 +406,8 @@ while 1
   let [pre_processing, post_processing] = get(test_prepost, fullname, [[], []])
   let script += pre_processing
 
+  " Setting an option can only fail when it's implemented.
+  call add(script, $"if exists('+{fullname}')")
   if line =~ 'P_BOOL'
     for opt in [fullname, shortname]
       for cmd in ['set', 'setlocal', 'setglobal']
@@ -439,8 +441,6 @@ while 1
     endfor
 
     " Failure tests
-    " Setting an option can only fail when it's implemented.
-    call add(script, $"if exists('+{fullname}')")
     for opt in [fullname, shortname]
       for cmd in ['set', 'setlocal', 'setglobal']
 	for val in invalid_values
@@ -464,7 +464,6 @@ while 1
 	endfor
       endfor
     endfor
-    call add(script, "endif")
   endif
 
   " Cannot change 'termencoding' in GTK
@@ -475,6 +474,8 @@ while 1
     call add(script, $"let [&g:{fullname}, &l:{fullname}] = l:saved")
     call add(script, 'endif')
   endif
+
+  call add(script, "endif")
 
   let script += post_processing
   call add(script, 'endfunc')

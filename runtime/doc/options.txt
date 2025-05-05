@@ -3654,6 +3654,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  diff		'-'		deleted lines of the 'diff' option
 	  eob		'~'		empty lines below the end of a buffer
 	  lastline	'@'		'display' contains lastline/truncate
+	  tabsidebar	' '		vertical separators for tabsidebar
 	  trunc		'>'		truncated text in the
 					|ins-completion-menu|.
 	  truncrl	'<'		same as "trunc" in 'rightleft' mode
@@ -7690,6 +7691,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	line.
 	See |tab-page| for more information about tab pages.
 
+						*'showtabsidebar'* *'stsb'*
+'showtabsidebar' 'stsb'	number	(default 0)
+			global
+			{not in Vi}
+			{not available when compiled without the |+tabsidebar|
+			feature}
+	The value of this option specifies when the tabsidebar with tab page
+	labels will be displayed:
+		0: never
+		1: only if there are at least two tab pages
+		2: always
+	This is non-GUI implementation of the tabsidebar only.
+	See |tab-page| for more information about tab page labels.
+
 						*'sidescroll'* *'ss'*
 'sidescroll' 'ss'	number	(default 0)
 			global
@@ -8406,6 +8421,64 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Maximum number of tab pages to be opened by the |-p| command line
 	argument or the ":tab all" command. |tabpage|
+
+				*'tabsidebar'* *'tsb'* *g:actual_curtabpage*
+'tabsidebar' 'tsb'			string	(default empty)
+			global
+			{not in Vi}
+	When non empty, this option determines the content of the tabsidebar.
+	The option consists of printf style '%' items interspersed with
+	normal text, similar to the |'statusline'| or |'tabline'|.
+
+	You can use |g:actual_curtabpage| within a function assigned to
+	tabsidebar. |g:actual_curtabpage| represents current tab's label number.
+	This option can contain line breaks.
+>
+	set tabsidebar=%!TabSideBar()
+	function! TabSideBar() abort
+	  return printf("(%2d)\\n  %%f", g:actual_curtabpage)
+	endfunction
+<
+	The result is:
+>
+	+-----------+---------------------------------
+	|(1)        |
+	|  ~/aaa.txt|
+	|(2)        |
+	|  ~/.vimrc |
+	|           |
+	|           |
+	|           |
+<
+
+
+					*'tabsidebaralign'* *'tsba'*
+					*'notabsidebaralign'* *'notsba'*
+'tabsidebaralign' 'tsba'		boolean	(default off)
+			global
+			{not in Vi}
+	The value of this option specifies the position of tabsidebar:
+		off: left-aligned
+		on: right-aligned
+
+					*'tabsidebarcolumns'* *'tsbc'*
+					*'notabsidebarcolumns'* *'notsbc'*
+'tabsidebarcolumns' 'tsbc'		number	(default 0)
+			global
+			{not in Vi}
+	When bigger than zero, this option determines the content of
+	tabsidebar at the left of the Vim window.
+	|'tabsidebarcolumns'| is the column size of tabsidebar.
+
+						*'tabsidebarwrap'* *'tsbw'*
+'tabsidebarwrap' 'tsbw'		boolean	(default off)
+			global
+			{not in Vi}
+	This option changes how the content of tabsidebar is displayed.
+	When on, each lines of the content longer than |'tabsidebarcolumns'|
+	will wrap and displaying continues on the next line.
+	When off, each lines of the content will not wrap and only part of
+	long one will be displayed.
 
 						*'tabstop'* *'ts'*
 'tabstop' 'ts'		number	(default 8)
