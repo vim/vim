@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2025 Apr 18
+*develop.txt*   For Vim version 9.1.  Last change: 2025 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -215,7 +215,7 @@ them:
 - flexible array members: Not supported by HP-UX C compiler (John Marriott)
 
 
-COMMENTS					       *style-comments*
+COMMENTS						*style-comments*
 
 Try to avoid putting multiline comments inside a function body: if the
 function is so complex that you need to separately comment parts of it, you
@@ -230,8 +230,7 @@ For everything else use: >
     // comment
 <
 
-
-INDENTATION					      *style-indentation*
+INDENTATION						*style-indentation*
 
 We use 4 space to indent the code. If you are using Vim to edit the source,
 you don't need to do anything due to the |modeline|.
@@ -239,7 +238,7 @@ you don't need to do anything due to the |modeline|.
 For other editors an `.editorconfig` is provided at the root of the repo.
 
 
-DECLARATIONS	                                     *style-declarations*
+DECLARATIONS						*style-declarations*
 
 Declare, when possible, `for` loop variables in the guard:
 OK: >
@@ -259,113 +258,75 @@ Wrong: >
     int *ptr;
 <
 
-
-BRACES							   *style-braces*
+BRACES							*style-braces*
 
 All curly braces must be returned onto a new line:
 OK: >
     if (cond)
     {
-       cmd;
-       cmd;
+	cmd;
+	cmd;
     }
     else
     {
-       cmd;
-       cmd;
+	cmd;
+	cmd;
     }
 <
 Wrong: >
     if (cond) {
-       cmd;
-       cmd;
+	cmd;
+	cmd;
     } else {
-       cmd;
-       cmd;
+	cmd;
+	cmd;
     }
 <
 OK: >
     while (cond)
     {
+	cmd;
 	cmd;
     }
 <
 Wrong: >
     while (cond) {
 	cmd;
+	cmd;
     }
 <
-When a block has one line, including comments, the braces can be left out.
 OK: >
-    if (cond)
+    do
+    {
 	cmd;
-    else
 	cmd;
+    } while (cond);
+<
+or >
+    do
+    {
+	cmd;
+	cmd;
+    }
+    while (cond);
 <
 Wrong: >
-    if (cond)
-	/*
-	 * comment
-	 */
+    do {
 	cmd;
-    else
 	cmd;
+    } while (cond);
 <
-When an `if`/`else` has braces on one block, the other should have it too.
-OK: >
-    if (cond)
-    {
-	cmd;
-    }
-    else
-    {
-	cmd;
-	cmd;
-    }
-<
-Wrong: >
-    if (cond)
-	cmd;
-    else
-    {
-	cmd;
-	cmd;
-    }
-
-    if (cond)
-    {
-	cmd;
-	cmd;
-    }
-    else
-	cmd;
-<
-OK: >
-    while (cond)
-	cmd;
-<
-Wrong:
->
-    while (cond)
-	if (cond)
-	    cmd;
-<
-
 
 TYPES							    *style-types*
 
-Use descriptive types. You can find a list of them in the src/structs.h file
-and probably in a typedef in the file you are working on.
-
+Use descriptive types. These are defined in src/vim.h, src/structs.h etc.
 Note that all custom types are postfixed with "_T"
 
-OK: >
-    int is_valid_line_number(linenr_T lnum);
+Example: >
+    linenr_T
+    buf_T
+    pos_T
 <
-Wrong: >
-    int is_valid_line_number(unsigned long lnum);
-<
-
 
 SPACES AND PUNCTUATION					   *style-spaces*
 
@@ -386,8 +347,8 @@ Wrong:  func(arg1,arg2);	for (i = 0;i < 2;++i)
 
 Use a space before and after '=', '+', '/', etc.
 
-Wrong:	var=a*5;
 OK:	var = a * 5;
+Wrong:	var=a*5;
 
 Use empty lines to group similar actions together.
 
@@ -411,7 +372,6 @@ Wrong: >
 	buf = rbuf;
     while (buf != NULL && !got_int)
 <
-
 
 FUNCTIONS						*style-functions*
 
