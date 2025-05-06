@@ -249,11 +249,9 @@ static char *(highlight_init_both[]) = {
 	 "TabLineSel term=bold cterm=bold gui=bold"),
     CENT("TabLineFill term=reverse cterm=reverse",
 	 "TabLineFill term=reverse cterm=reverse gui=reverse"),
-#if defined(FEAT_TABSIDEBAR)
     "default link TabSideBar TabLine",
     "default link TabSideBarSel TabLineSel",
     "default link TabSideBarFill TabLineFill",
-#endif
 #ifdef FEAT_GUI
     "Cursor guibg=fg guifg=bg",
     "lCursor guibg=fg guifg=bg", // should be different, but what?
