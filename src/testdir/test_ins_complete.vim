@@ -4294,6 +4294,8 @@ func Test_smartcase_normal_mode()
 
   call TestInner("\<c-n>")
   call TestInner("\<c-p>")
+  call TestInner("\<c-x>\<c-n>")
+  call TestInner("\<c-x>\<c-p>")
 
   delfunc PrintMenu
   delfunc TestInner
