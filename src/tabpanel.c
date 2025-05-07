@@ -339,7 +339,7 @@ screen_puts_len_for_tabpanel(
 			? COLUMNS_WITHOUT_TPL()
 			: 0;
 		if ((TPLMODE_REDRAW == tplmode)
-		       	&& (0 <= (*pargs->prow - pargs->offsetrow)
+			&& (0 <= (*pargs->prow - pargs->offsetrow)
 			&& (*pargs->prow - pargs->offsetrow) < pargs->maxrow))
 		    screen_puts(buf, *pargs->prow - pargs->offsetrow,
 			    *pargs->pcol + off, attr);

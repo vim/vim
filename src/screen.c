@@ -215,11 +215,11 @@ win_draw_end(
     if (wp->w_p_rl)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + TPL_LCOL(wp), W_ENDCOL(wp) - 1 - n + TPL_LCOL(wp),
-		c2, c2, attr);
+		wp->w_wincol + TPL_LCOL(wp), W_ENDCOL(wp) - 1 - n +
+		TPL_LCOL(wp), c2, c2, attr);
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_ENDCOL(wp) - 1 - n + TPL_LCOL(wp), W_ENDCOL(wp) - n + TPL_LCOL(wp),
-		c1, c2, attr);
+		W_ENDCOL(wp) - 1 - n + TPL_LCOL(wp), W_ENDCOL(wp) - n +
+		TPL_LCOL(wp), c1, c2, attr);
     }
     else
 #endif
@@ -3926,10 +3926,11 @@ screen_del_lines(
 		linecopy(j - line_count, j, wp);
 	    j -= line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp), wp->w_width,
-								   clear_attr);
+		lineclear(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp),
+			wp->w_width, clear_attr);
 	    else
-		lineinvalid(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp), wp->w_width);
+		lineinvalid(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp),
+			wp->w_width);
 	    LineWraps[j] = FALSE;
 	}
 	else

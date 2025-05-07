@@ -1186,7 +1186,7 @@ $quote	eval.txt	/*$quote*
 'tabline'	options.txt	/*'tabline'*
 'tabpagemax'	options.txt	/*'tabpagemax'*
 'tabpanel'	options.txt	/*'tabpanel'*
-'tabpanelopt	options.txt	/*'tabpanelopt*
+'tabpanelopt'	options.txt	/*'tabpanelopt'*
 'tabstop'	options.txt	/*'tabstop'*
 'tag'	options.txt	/*'tag'*
 'tagbsearch'	options.txt	/*'tagbsearch'*

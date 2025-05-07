@@ -34,6 +34,58 @@ function! Test_tabpanel_mouse()
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal(3, tabpagenr())
 
+  call feedkeys("\<LeftMouse>", 'xt')
+  call test_setmouse(2, 3)
+  let pos = getmousepos()
+  call assert_equal(2, pos['winrow'])
+  call assert_equal(0, pos['wincol'])
+  call assert_equal(2, pos['screenrow'])
+  call assert_equal(3, pos['screencol'])
+
+  call test_setmouse(1, 11)
+  call feedkeys("\<LeftMouse>", 'xt')
+  let pos = getmousepos()
+  call assert_equal(1, pos['winrow'])
+  call assert_equal(1, pos['wincol'])
+  call assert_equal(1, pos['screenrow'])
+  call assert_equal(11, pos['screencol'])
+
+  new
+  wincmd x
+
+  call test_setmouse(10, 11)
+  call feedkeys("\<LeftMouse>", 'xt')
+  let pos = getmousepos()
+  call assert_equal(10, pos['winrow'])
+  call assert_equal(1, pos['wincol'])
+  call assert_equal(10, pos['screenrow'])
+  call assert_equal(11, pos['screencol'])
+
+  tabonly!
+  call s:reset()
+  let &mouse = save_mouse
+  let &showtabline = save_showtabline
+endfunc
+
+function! Test_tabpanel_drawing()
+  CheckScreendump
+
+
+  call test_setmouse(1, 11)
+  call feedkeys("\<LeftMouse>", 'xt')
+  let pos = getmousepos()
+  call assert_equal(1, pos['winrow'])
+  call assert_equal(1, pos['wincol'])
+
+  new
+  wincmd x
+
+  call test_setmouse(10, 11)
+  call feedkeys("\<LeftMouse>", 'xt')
+  let pos = getmousepos()
+  call assert_equal(10, pos['winrow'])
+  call assert_equal(1, pos['wincol'])
+
   tabonly!
   call s:reset()
   let &mouse = save_mouse

@@ -8450,7 +8450,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|           |
 <
 
-					*'tabpanelopt* *'tplo'*
+					*'tabpanelopt'* *'tplo'*
 'tabpanelopt' 'tplo'		string	(default "")
 			global
 			{not in Vi}
