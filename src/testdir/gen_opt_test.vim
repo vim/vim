@@ -379,8 +379,17 @@ let test_prepost = {
       \ 'verbosefile': [[], ['call delete("Xfile")']],
       \}
 
-const invalid_options = test_values->keys()
+let invalid_options = test_values->keys()
       \->filter({-> v:val !~# '^other' && !exists($"&{v:val}")})
+for s:skip_option in [
+  \ [!has('tabpanel'), 'tabpanel'],
+  \ [!has('tabpanel'), 'tabpanelopts'],
+  \ [!has('tabpanel'), 'showtabpanel'],
+  \ ]
+  if s:skip_option[0]
+    call remove(invalid_options, s:skip_option[1])
+  endif
+endfor
 if !empty(invalid_options)
   throw $"Invalid option name in test_values: '{invalid_options->join("', '")}'"
 endif

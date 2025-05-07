@@ -316,12 +316,7 @@ func Test_set_completion()
 
   " Expand abbreviation of options.
   call feedkeys(":set ts\<C-A>\<C-B>\"\<CR>", 'tx')
-  let opts = []
-  if has('tabpanel')
-    let opts += ['tabpanel', 'tabpanelopts']
-  endif
-  let opts += ['tabstop', 'thesaurus', 'thesaurusfunc', 'ttyscroll']
-  call assert_equal('"set ' .. join(opts), @:)
+  call assert_equal('"set tabstop thesaurus thesaurusfunc ttyscroll', @:)
 
   " Expand current value
   call feedkeys(":set suffixes=\<C-A>\<C-B>\"\<CR>", 'tx')
