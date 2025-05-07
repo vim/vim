@@ -422,7 +422,7 @@ space available.
 5. Setting 'tabpanel'				*tabpanel* *setting-tabpanel*
 
 TabPanel is a vertical sidebar that displays tab page labels along the side
-of the window. It looks like this:
+of the window.  It looks like this:
 >
 	+-----------+----------------------------------
 	|(1)        |text text text text text text text
@@ -451,15 +451,16 @@ The "columns:" of 'tabpanelopt' option specifies the width of the TabPanel:
 	|  ~/aaa.txt|text text text text text text text
 	|(2)        |text text text text text text text
 <
-The "align:" of 'tabpanelopt' option determines whether the TabPanel is displayed
-on the right side of the window:
+The "align:" of 'tabpanelopt' option determines whether the TabPanel is
+displayed on the right side of the window:
 >
 	+----------------------------------+-----------
 	|text text text text text text text|(1)
 	|text text text text text text text|  ~/aaa.txt
 	|text text text text text text text|(2)
 <
-The "wrap" of 'tabpanelopt' option controls whether lines in TabPanel are wraped:
+The "wrap" of 'tabpanelopt' option controls whether lines in TabPanel are
+wraped:
 >
 	+-----------+----------------------------------
 	|(1)        |text text text text text text text

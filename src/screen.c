@@ -3428,7 +3428,8 @@ win_do_lines(
 	return FAIL;
 
     // only a few lines left: redraw is faster
-    if (mayclear && Rows - line_count < 5 && wp->w_width == COLUMNS_WITHOUT_TPL())
+    if (mayclear && Rows - line_count < 5
+	    && wp->w_width == COLUMNS_WITHOUT_TPL())
     {
 	if (!no_win_do_lines_ins)
 	    screenclear();	    // will set wp->w_lines_valid to 0
@@ -3469,7 +3470,8 @@ win_do_lines(
      */
     if (scroll_region || wp->w_width != COLUMNS_WITHOUT_TPL())
     {
-	if (scroll_region && (wp->w_width == COLUMNS_WITHOUT_TPL() || *T_CSV != NUL))
+	if (scroll_region && (wp->w_width == COLUMNS_WITHOUT_TPL()
+		    || *T_CSV != NUL))
 	    scroll_region_set(wp, row);
 	if (del)
 	    retval = screen_del_lines(W_WINROW(wp) + row, 0, line_count,
@@ -3477,7 +3479,8 @@ win_do_lines(
 	else
 	    retval = screen_ins_lines(W_WINROW(wp) + row, 0, line_count,
 					   wp->w_height - row, clear_attr, wp);
-	if (scroll_region && (wp->w_width == COLUMNS_WITHOUT_TPL() || *T_CSV != NUL))
+	if (scroll_region && (wp->w_width == COLUMNS_WITHOUT_TPL()
+		    || *T_CSV != NUL))
 	    scroll_region_reset();
 	return retval;
     }
@@ -3686,10 +3689,11 @@ screen_ins_lines(
 		linecopy(j + line_count, j, wp);
 	    j += line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp), wp->w_width,
-								   clear_attr);
+		lineclear(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp),
+			wp->w_width, clear_attr);
 	    else
-		lineinvalid(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp), wp->w_width);
+		lineinvalid(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp),
+			wp->w_width);
 	    LineWraps[j] = FALSE;
 	}
 	else
@@ -3704,7 +3708,8 @@ screen_ins_lines(
 	    LineOffset[j + line_count] = temp;
 	    LineWraps[j + line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp + TPL_LCOL(wp), COLUMNS_WITHOUT_TPL(), clear_attr);
+		lineclear(temp + TPL_LCOL(wp), COLUMNS_WITHOUT_TPL(),
+			clear_attr);
 	    else
 		lineinvalid(temp + TPL_LCOL(wp), COLUMNS_WITHOUT_TPL());
 	}
@@ -3940,7 +3945,8 @@ screen_del_lines(
 	    LineOffset[j - line_count] = temp;
 	    LineWraps[j - line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp + TPL_LCOL(NULL), COLUMNS_WITHOUT_TPL(), clear_attr);
+		lineclear(temp + TPL_LCOL(NULL), COLUMNS_WITHOUT_TPL(),
+			clear_attr);
 	    else
 		lineinvalid(temp + TPL_LCOL(NULL), COLUMNS_WITHOUT_TPL());
 	}

@@ -660,14 +660,16 @@ pum_display_rtl_text(
 
 	if (over_cell > 0)
 	    screen_fill(row, row + 1, col - width + 2 + TPL_LCOL(NULL),
-		    col - width + 2 + over_cell + TPL_LCOL(NULL), ' ', ' ', attr);
+		    col - width + 2 + over_cell + TPL_LCOL(NULL), ' ', ' ',
+		    attr);
     }
 
     if (attrs == NULL)
-	screen_puts_len(rt, (int)STRLEN(rt), row, col - cells + 1 + TPL_LCOL(NULL), attr);
+	screen_puts_len(rt, (int)STRLEN(rt), row,
+		col - cells + 1 + TPL_LCOL(NULL), attr);
     else
-	pum_screen_puts_with_attrs(row, col - cells + 1 + TPL_LCOL(NULL), cells, rt,
-		(int)STRLEN(rt), attrs);
+	pum_screen_puts_with_attrs(row, col - cells + 1 + TPL_LCOL(NULL),
+		cells, rt, (int)STRLEN(rt), attrs);
 
     vim_free(rt_start);
     VIM_CLEAR(st);
@@ -745,7 +747,8 @@ pum_display_ltr_text(
     if (attrs == NULL)
 	screen_puts_len(st, size, row, col + TPL_LCOL(NULL), attr);
     else
-	pum_screen_puts_with_attrs(row, col + TPL_LCOL(NULL), cells, st, size, attrs);
+	pum_screen_puts_with_attrs(row, col + TPL_LCOL(NULL), cells, st, size,
+		attrs);
 
     if (truncated)
     {
@@ -1002,8 +1005,9 @@ pum_redraw(void)
 	    else
 #endif
 	    {
-		screen_fill(row, row + 1, col + TPL_LCOL(NULL), pum_col + basic_width + n + TPL_LCOL(NULL),
-							' ', ' ', orig_attr);
+		screen_fill(row, row + 1, col + TPL_LCOL(NULL),
+			pum_col + basic_width + n + TPL_LCOL(NULL), ' ', ' ',
+			orig_attr);
 		col = pum_col + basic_width + n;
 	    }
 	    totwidth = basic_width + n;
@@ -1011,12 +1015,14 @@ pum_redraw(void)
 
 #ifdef FEAT_RIGHTLEFT
 	if (pum_rl)
-	    screen_fill(row, row + 1, pum_col - pum_width + 1 + TPL_LCOL(NULL), col + 1 + TPL_LCOL(NULL), ' ',
-							    ' ', orig_attr);
+	    screen_fill(row, row + 1,
+		    pum_col - pum_width + 1 + TPL_LCOL(NULL),
+		    col + 1 + TPL_LCOL(NULL), ' ', ' ', orig_attr);
 	else
 #endif
-	    screen_fill(row, row + 1, col + TPL_LCOL(NULL), pum_col + pum_width + TPL_LCOL(NULL), ' ', ' ',
-								orig_attr);
+	    screen_fill(row, row + 1, col + TPL_LCOL(NULL),
+		    pum_col + pum_width + TPL_LCOL(NULL),
+		    ' ', ' ', orig_attr);
 	pum_draw_scrollbar(row, i, thumb_pos, thumb_height);
 
 	++row;

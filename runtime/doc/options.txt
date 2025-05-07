@@ -8471,14 +8471,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 				(default 20)
 
 		vert:{n}	Use a vertical separator for TabPanel.
-				This vertical separator must be 1 byte character.
+				This vertical separator must be 1 byte
+				character.
 				(default off)
 
 		wrap		How the content of tabpanel is displayed.
-				When on, each lines of the content longer than the size of TabPenel
-				will wrap and displaying continues on the next line.
-				When off, each lines of the content will not wrap and only part of
-				long one will be displayed.
+				When on, each lines of the content longer
+				than the size of TabPenel will wrap and
+				displaying continues on the next line.
+				When off, each lines of the content will not
+				wrap and only part of long one will be
+				displayed.
 				(default off)
 
 	Examples: >

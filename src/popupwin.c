@@ -4080,8 +4080,8 @@ update_popups(void (*win_update)(win_T *wp))
 	// adjust w_winrow and w_wincol for border and padding, since
 	// win_update() doesn't handle them.
 	top_off = popup_top_extra(wp);
-	left_extra = wp->w_popup_padding[3] + wp->w_popup_border[3] + TPL_LCOL(NULL)
-							 - wp->w_popup_leftoff;
+	left_extra = wp->w_popup_padding[3] + wp->w_popup_border[3]
+		+ TPL_LCOL(NULL) - wp->w_popup_leftoff;
 	if (wp->w_wincol + left_extra < 0)
 	    left_extra = -wp->w_wincol;
 	wp->w_winrow += top_off;
@@ -4228,8 +4228,8 @@ update_popups(void (*win_update)(win_T *wp))
 	if (top_padding > 0 || wp->w_popup_padding[2] > 0)
 	{
 	    padcol = wincol + wp->w_popup_border[3];
-	    padendcol = wp->w_wincol + total_width - wp->w_popup_border[1] + TPL_LCOL(NULL)
-							 - wp->w_has_scrollbar;
+	    padendcol = wp->w_wincol + total_width - wp->w_popup_border[1]
+		    + TPL_LCOL(NULL) - wp->w_has_scrollbar;
 	    if (padcol < 0)
 	    {
 		padendcol += padcol;
