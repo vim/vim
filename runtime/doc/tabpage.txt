@@ -439,7 +439,7 @@ of the window.  It looks like this:
 To configure the TabPanel, use following options: 'tabpanel',
 'showtabpanel', 'tabpanelopt'.
 The 'tabpanel' and 'showtabpanel' options are function similar to the
-|'statusline'| or |'tabline'|.
+'statusline' or 'tabline'.
 
 The "columns:" of 'tabpanelopt' option specifies the width of the TabPanel:
 >
