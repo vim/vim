@@ -6,7 +6,7 @@ CheckFeature tabpanel
 
 function! s:reset()
   set tabpanel&
-  set tabpanelopts&
+  set tabpanelopt&
   set showtabpanel&
 endfunc
 
@@ -22,7 +22,7 @@ function! Test_tabpanel_mouse()
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal(3, tabpagenr())
 
-  set showtabpanel=2 tabpanelopts=columns:10
+  set showtabpanel=2 tabpanelopt=columns:10
 
   call test_setmouse(1, 1)
   call feedkeys("\<LeftMouse>", 'xt')
@@ -55,7 +55,7 @@ function! Test_tabpanel_drawing()
 
     set showtabline=0
     set showtabpanel=0
-    set tabpanelopts=columns:16
+    set tabpanelopt=columns:16
     set tabpanel=
     silent edit Xtabpanel1
 
@@ -64,12 +64,12 @@ function! Test_tabpanel_drawing()
     nnoremap \03 <Cmd>call setline(1, ['a', 'b', 'c'])<CR>
     nnoremap \04 <Cmd>silent tabnew Xtabpanel2<CR><Cmd>call setline(1, ['d', 'e', 'f'])<CR>
     nnoremap \05 <Cmd>set tabpanel=%!MyTabPanel()<CR>
-    nnoremap \06 <Cmd>set tabpanelopts+=align:right<CR>
-    nnoremap \07 <Cmd>set tabpanelopts+=columns:10<CR>
-    nnoremap \08 <Cmd>set tabpanelopts+=wrap<CR>
+    nnoremap \06 <Cmd>set tabpanelopt+=align:right<CR>
+    nnoremap \07 <Cmd>set tabpanelopt+=columns:10<CR>
+    nnoremap \08 <Cmd>set tabpanelopt+=wrap<CR>
     nnoremap \09 gt
-    nnoremap \10 <Cmd>set tabpanelopts-=align:right<CR>
-    nnoremap \11 <Cmd>set showtabpanel=1 tabpanelopts+=vert:<Bslash><Bar><CR>
+    nnoremap \10 <Cmd>set tabpanelopt-=align:right<CR>
+    nnoremap \11 <Cmd>set showtabpanel=1 tabpanelopt+=vert:<Bslash><Bar><CR>
     nnoremap \12 <Cmd>tab terminal NONE<CR><C-w>N
     nnoremap \13 <Cmd>tabclose!<CR><Cmd>tabclose!<CR>
   END
@@ -96,7 +96,7 @@ function! Test_tabpanel_drawing_with_popupwin()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopts=columns:20
+    set tabpanelopt=columns:20
     set showtabline=0
     tabnew
     setlocal buftype=nofile
@@ -133,7 +133,7 @@ function! Test_tabpanel_drawing_fill_tailing()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopts=columns:20
+    set tabpanelopt=columns:20
     set showtabline=0
     e aaa.txt
     tabnew
@@ -157,7 +157,7 @@ function! Test_tabpanel_drawing_pum()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopts=columns:20
+    set tabpanelopt=columns:20
     set showtabline=0
     e aaa.txt
     tabnew
@@ -181,7 +181,7 @@ function! Test_tabpanel_scrolling()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopts=columns:20
+    set tabpanelopt=columns:20
     set showtabline=0
     set nowrap
     set number
@@ -212,7 +212,7 @@ function! Test_tabpanel_many_tabpages()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopts=columns:10,wrap
+    set tabpanelopt=columns:10,wrap
     set showtabline=0
     set tabpanel=%{g:actual_curtabpage}:%f
     execute join(repeat(['tabnew'], 20), ' | ')
@@ -236,7 +236,7 @@ function! Test_tabpanel_visual()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopts=columns:10
+    set tabpanelopt=columns:10
     set showtabline=0
     tabnew
     call setbufline(bufnr(), 1, ['aaa1 bbb1 ccc1 ddd1', 'aaa2 bbb2 ccc2 ddd2', 'aaa3 bbb3 ccc3 ddd3', 'aaa4 bbb4 ccc4 ddd4'])
@@ -260,7 +260,7 @@ function! Test_tabpanel_commandline()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopts=columns:10
+    set tabpanelopt=columns:10
     set showtabline=0
     tabnew
   END
@@ -283,7 +283,7 @@ function! Test_tabpanel_tabline_and_tabpanel()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopts=columns:10,vert:@
+    set tabpanelopt=columns:10,vert:@
     set showtabline=2
     e aaa.txt
     tabnew

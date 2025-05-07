@@ -8450,8 +8450,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|           |
 <
 
-					*'tabpanelopts* *'tplo'*
-'tabpanelopts' 'tplo'		string	(default "")
+					*'tabpanelopt* *'tplo'*
+'tabpanelopt' 'tplo'		string	(default "")
 			global
 			{not in Vi}
 	Option settings for diff mode.  It can consist of the following items.
@@ -8475,16 +8475,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 				(default off)
 
 		wrap		How the content of tabpanel is displayed.
-				When on, each lines of the content longer than |'tabpanelcolumns'|
+				When on, each lines of the content longer than the size of TabPenel
 				will wrap and displaying continues on the next line.
 				When off, each lines of the content will not wrap and only part of
 				long one will be displayed.
 				(default off)
 
 	Examples: >
-		:set tabpanelopts=columns:16,wrap,align:right
-		:set tabpanelopts=
-		:set tabpanelopts=vert:\|,align:right
+		:set tabpanelopt=columns:16,wrap,align:right
+		:set tabpanelopt=
+		:set tabpanelopt=vert:\|,align:right
 <
 
 						*'tabstop'* *'ts'*

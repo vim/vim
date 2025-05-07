@@ -303,7 +303,7 @@ let test_values = {
       \ 'tabclose': [['', 'left', 'uselast', 'left,uselast'], ['xxx']],
       \ 'tabline': [['', 'xxx'], ['%$', '%{', '%{%', '%{%}', '%(', '%)']],
       \ 'tabpanel': [['', 'aaa', 'bbb'], []],
-      \ 'tabpanelopts': [['', 'align:left', 'align:right', 'wrap', 'vert:\|',
+      \ 'tabpanelopt': [['', 'align:left', 'align:right', 'wrap', 'vert:\|',
       \		'vert:@', 'vert:', 'columns:0', 'columns:20', 'columns:999'],
       \		['xxx', 'align:', 'align:middle', 'colomns:', 'cols:10',
       \		'cols:-1']],
@@ -383,7 +383,7 @@ let invalid_options = test_values->keys()
       \->filter({-> v:val !~# '^other' && !exists($"&{v:val}")})
 for s:skip_option in [
   \ [!has('tabpanel'), 'tabpanel'],
-  \ [!has('tabpanel'), 'tabpanelopts'],
+  \ [!has('tabpanel'), 'tabpanelopt'],
   \ [!has('tabpanel'), 'showtabpanel'],
   \ ]
   if s:skip_option[0]

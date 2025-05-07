@@ -53,7 +53,7 @@ typedef struct {
 } tabpanel_T;
 
     int
-tabpanelopts_changed(void)
+tabpanelopt_changed(void)
 {
     char_u	*p;
 

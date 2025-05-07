@@ -990,7 +990,7 @@ EXTERN char_u	*p_spk;		// 'splitkeep'
 #if defined(FEAT_TABPANEL)
 EXTERN char_u	*p_tpl;		// 'tabpanel'
 EXTERN long	p_stpl;		// 'showtabpanel'
-EXTERN char_u	*p_tplo;	// 'tabpanelopts'
+EXTERN char_u	*p_tplo;	// 'tabpanelopt'
 #endif
 
 #ifdef FEAT_SYN_HL

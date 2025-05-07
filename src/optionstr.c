@@ -3552,12 +3552,12 @@ did_set_rulerformat(optset_T *args)
 
 #if defined(FEAT_TABPANEL)
 /*
- * Process the new 'tabpanelopts' option value.
+ * Process the new 'tabpanelopt' option value.
  */
     char *
-did_set_tabpanelopts(optset_T *args)
+did_set_tabpanelopt(optset_T *args)
 {
-    if (tabpanelopts_changed() == FAIL)
+    if (tabpanelopt_changed() == FAIL)
 	return e_invalid_argument;
 
     shell_new_columns();
@@ -3566,7 +3566,7 @@ did_set_tabpanelopts(optset_T *args)
 }
 
     int
-expand_set_tabpanelopts(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_tabpanelopt(optexpand_T *args, int *numMatches, char_u ***matches)
 {
     return expand_set_opt_string(
 	    args,
