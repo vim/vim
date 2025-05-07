@@ -185,7 +185,7 @@ draw_tabpanel(void)
 
     // Reset got_int to avoid build_stl_str_hl() isn't evaluted.
     got_int = FALSE;
-    if (tpl_vert != '\0')
+    if (tpl_vert != NUL)
     {
 	do_by_tplmode(TPLMODE_GET_CURTAB_ROW, (is_right ? 1 : 0),
 		maxwidth - (is_right ? 0 : 1), &curtab_row, NULL);
@@ -199,7 +199,7 @@ draw_tabpanel(void)
     }
 
     // draw vert separater
-    if ((tpl_vert != '\0') && (1 < maxwidth))
+    if ((tpl_vert != NUL) && (1 < maxwidth))
 	for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
 	    screen_fill(vsrow - 1, vsrow,
 		    (is_right ? COLUMNS_WITHOUT_TPL() + 0 : maxwidth - 1),
