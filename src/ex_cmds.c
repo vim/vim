@@ -1854,8 +1854,8 @@ ex_file(exarg_T *eap)
 	if (rename_buffer(eap->arg) == FAIL)
 	    return;
 	redraw_tabline = TRUE;
-#if defined(FEAT_TABSIDEBAR)
-	redraw_tabsidebar = TRUE;
+#if defined(FEAT_TABPANEL)
+	redraw_tabpanel = TRUE;
 #endif
     }
 
@@ -2103,8 +2103,8 @@ do_write(exarg_T *eap)
 	    {
 		curbuf->b_p_ro = FALSE;
 		redraw_tabline = TRUE;
-#if defined(FEAT_TABSIDEBAR)
-		redraw_tabsidebar = TRUE;
+#if defined(FEAT_TABPANEL)
+		redraw_tabpanel = TRUE;
 #endif
 	    }
 	}

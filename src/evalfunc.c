@@ -7415,8 +7415,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"tabsidebar",
-#if defined(FEAT_TABSIDEBAR)
+	{"tabpanel",
+#if defined(FEAT_TABPANEL)
 		1
 #else
 		0

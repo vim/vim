@@ -308,7 +308,7 @@ NEW_TESTS = \
 	test_syntax \
 	test_system \
 	test_tab \
-	test_tabsidebar \
+	test_tabpanel \
 	test_tabline \
 	test_tabpage \
 	test_tagcase \
@@ -565,7 +565,7 @@ NEW_TESTS_RES = \
 	test_syntax.res \
 	test_system.res \
 	test_tab.res \
-	test_tabsidebar.res \
+	test_tabpanel.res \
 	test_tabpage.res \
 	test_tagjump.res \
 	test_taglist.res \

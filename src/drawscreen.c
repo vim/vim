@@ -209,8 +209,8 @@ update_screen(int type_arg)
 		    redraw_cmdline = TRUE;
 		redraw_tabline = TRUE;
 	    }
-#if defined(FEAT_TABSIDEBAR)
-	    redraw_tabsidebar = TRUE;
+#if defined(FEAT_TABPANEL)
+	    redraw_tabpanel = TRUE;
 #endif
 	}
 	msg_scrolled = 0;
@@ -268,9 +268,9 @@ update_screen(int type_arg)
     if (redraw_tabline || type >= UPD_NOT_VALID)
 	draw_tabline();
 
-#if defined(FEAT_TABSIDEBAR)
-    if (redraw_tabsidebar || type >= UPD_NOT_VALID)
-	draw_tabsidebar();
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel || type >= UPD_NOT_VALID)
+	draw_tabpanel();
 #endif
 
 #ifdef FEAT_SYN_HL
@@ -339,9 +339,9 @@ update_screen(int type_arg)
 	    win_redr_status(wp, TRUE); // any popup menu will be redrawn below
 	}
     }
-#if defined(FEAT_TABSIDEBAR)
-    if (redraw_tabsidebar)
-	draw_tabsidebar();
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
 #endif
 #if defined(FEAT_SEARCH_EXTRA)
     end_search_hl();
@@ -541,13 +541,13 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    plen = this_ru_col - 1;
 	}
 
-	screen_puts(p, row, wp->w_wincol + TSB_LCOL(wp), attr);
-	screen_fill(row, row + 1, plen + wp->w_wincol + TSB_LCOL(wp),
-			this_ru_col + wp->w_wincol + TSB_LCOL(wp), fillchar, fillchar, attr);
+	screen_puts(p, row, wp->w_wincol + TPL_LCOL(wp), attr);
+	screen_fill(row, row + 1, plen + wp->w_wincol + TPL_LCOL(wp),
+			this_ru_col + wp->w_wincol + TPL_LCOL(wp), fillchar, fillchar, attr);
 	if ((NameBufflen = get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)) > 0
 		&& (this_ru_col - plen) > (NameBufflen + 1))
 	    screen_puts(NameBuff, row, (int)(this_ru_col - NameBufflen
-						   - 1 + wp->w_wincol + TSB_LCOL(wp)), attr);
+						   - 1 + wp->w_wincol + TPL_LCOL(wp)), attr);
 
 	win_redr_ruler(wp, TRUE, ignore_pum);
 
@@ -572,8 +572,8 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    fillchar = fillchar_status(&attr, wp);
 	else
 	    fillchar = fillchar_vsep(&attr, wp);
-	if (W_ENDCOL(wp) < COLUMNS_WITHOUT_TSB())
-	    screen_putchar(fillchar, row, W_ENDCOL(wp) + TSB_LCOL(wp), attr);
+	if (W_ENDCOL(wp) < COLUMNS_WITHOUT_TPL())
+	    screen_putchar(fillchar, row, W_ENDCOL(wp) + TPL_LCOL(wp), attr);
     }
     busy = FALSE;
 }
@@ -633,9 +633,9 @@ showruler(int always)
     if (redraw_tabline)
 	draw_tabline();
 
-#if defined(FEAT_TABSIDEBAR)
-    if (redraw_tabsidebar)
-	draw_tabsidebar();
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
 #endif
 }
 
@@ -798,11 +798,11 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	    buffer[bufferlen] = NUL;
 	}
 
-	screen_puts(buffer, row, this_ru_col + off + TSB_LCOL(wp), attr);
+	screen_puts(buffer, row, this_ru_col + off + TPL_LCOL(wp), attr);
 	n1 = redraw_cmdline;
 	screen_fill(row, row + 1,
-		this_ru_col + off + bufferlen + TSB_LCOL(wp),
-		(off + width) + TSB_LCOL(wp),
+		this_ru_col + off + bufferlen + TPL_LCOL(wp),
+		(off + width) + TPL_LCOL(wp),
 		fillchar, fillchar, attr);
 	// don't redraw the cmdline because of showing the ruler
 	redraw_cmdline = n1;
@@ -1043,7 +1043,7 @@ redraw_win_toolbar(win_T *wp)
     }
     wp->w_winbar_items[item_idx].wb_menu = NULL; // end marker
 
-    screen_line(wp, wp->w_winrow, wp->w_wincol + TSB_LCOL(wp), wp->w_width,
+    screen_line(wp, wp->w_winrow, wp->w_wincol + TPL_LCOL(wp), wp->w_width,
 							  wp->w_width, -1, 0);
 }
 #endif
@@ -1378,7 +1378,7 @@ fold_line(
     }
 #endif
 
-    screen_line(wp, row + W_WINROW(wp), wp->w_wincol + TSB_LCOL(wp),
+    screen_line(wp, row + W_WINROW(wp), wp->w_wincol + TPL_LCOL(wp),
 						wp->w_width, wp->w_width, -1, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
@@ -2689,8 +2689,8 @@ win_update(win_T *wp)
 	    // Last line isn't finished: Display "@@@" at the end.
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
-		    (start_col < wp->w_wincol ? wp->w_wincol : start_col) + TSB_LCOL(wp),
-		    (int)W_ENDCOL(wp) + TSB_LCOL(wp),
+		    (start_col < wp->w_wincol ? wp->w_wincol : start_col) + TPL_LCOL(wp),
+		    (int)W_ENDCOL(wp) + TPL_LCOL(wp),
 		    symbol, symbol, HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
@@ -2915,9 +2915,9 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 	    win_redr_status(wp, FALSE);
     }
 
-#if defined(FEAT_TABSIDEBAR)
-    if (redraw_tabsidebar)
-	draw_tabsidebar();
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
 #endif
 
     update_finish();
@@ -2952,9 +2952,9 @@ updateWindow(win_T *wp)
     if (redraw_tabline)
 	draw_tabline();
 
-#if defined(FEAT_TABSIDEBAR)
-    if (redraw_tabsidebar)
-	draw_tabsidebar();
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
 #endif
 
     if (wp->w_redr_status || p_ru
@@ -3356,9 +3356,9 @@ redraw_statuslines(void)
     if (redraw_tabline)
 	draw_tabline();
 
-#if defined(FEAT_TABSIDEBAR)
-    if (redraw_tabsidebar)
-	draw_tabsidebar();
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
 #endif
 }
 

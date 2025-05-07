@@ -8,23 +8,36 @@
  */
 
 /*
- * tabsidebar.c:
+ * tabpanel.c:
  */
 
 #include "vim.h"
 
-#if defined(FEAT_TABSIDEBAR) || defined(PROTO)
+#if defined(FEAT_TABPANEL) || defined(PROTO)
 
-static void do_by_tsbmode(int tsbmode, int col_start, int col_end, int* pcurtab_row, int* ptabpagenr);
+static void do_by_tplmode(int tplmode, int col_start, int col_end, int* pcurtab_row, int* ptabpagenr);
 
-// set pcurtab_row. don't redraw tabsidebar.
-#define TSBMODE_GET_CURTAB_ROW	0
-// set ptabpagenr. don't redraw tabsidebar.
-#define TSBMODE_GET_TABPAGENR	1
-// redraw tabsidebar.
-#define TSBMODE_REDRAW		2
+// set pcurtab_row. don't redraw tabpanel.
+#define TPLMODE_GET_CURTAB_ROW	0
+// set ptabpagenr. don't redraw tabpanel.
+#define TPLMODE_GET_TABPAGENR	1
+// redraw tabpanel.
+#define TPLMODE_REDRAW		2
 
-#define TSB_FILLCHAR		' '
+#define TPL_FILLCHAR		' '
+
+// tpl_wrap's values
+#define WRAP_OFF		0
+#define WRAP_ON			1
+// tpl_align's values
+#define ALIGN_LEFT		0
+#define ALIGN_RIGHT		1
+
+static int tpl_wrap = WRAP_OFF;
+static int tpl_align = ALIGN_LEFT;
+static int tpl_columns = 20;
+static char tpl_vert = '\0';
+
 
 typedef struct {
     win_T   *wp;
@@ -37,37 +50,123 @@ typedef struct {
     int	attr;
     int	col_start;
     int	col_end;
-} tabsidebar_T;
+} tabpanel_T;
+
+    int
+tabpanelopts_changed(void)
+{
+    char_u	*p;
+
+    tpl_wrap = WRAP_OFF;
+    tpl_align = ALIGN_LEFT;
+    tpl_columns = 20;
+    tpl_vert = '\0';
+
+    p = p_tplo;
+    while (*p != NUL)
+    {
+	if (STRNCMP(p, "wrap", 4) == 0)
+	{
+	    p += 4;
+	    tpl_wrap = WRAP_ON;
+	}
+	else if (STRNCMP(p, "align:left", 10) == 0)
+	{
+	    p += 10;
+	    tpl_align = ALIGN_LEFT;
+	}
+	else if (STRNCMP(p, "align:right", 11) == 0)
+	{
+	    p += 11;
+	    tpl_align = ALIGN_RIGHT;
+	}
+	else if (STRNCMP(p, "columns:", 8) == 0 && VIM_ISDIGIT(p[8]))
+	{
+	    p += 8;
+	    tpl_columns = getdigits(&p);
+	}
+	else if (STRNCMP(p, "vert:", 5) == 0)
+	{
+	    p += 5;
+	    if (*p != NUL && *p != ',')
+	    {
+		tpl_vert = *p;
+		++p;
+	    }
+	}
+
+	if (*p != ',' && *p != NUL)
+	    return FAIL;
+	if (*p == ',')
+	    ++p;
+    }
+
+    return OK;
+}
 
 /*
- * draw the tabsidebar.
+ * Return the width of tabpanel.
+ */
+    int
+tabpanel_width(void)
+{
+    if (msg_scrolled != 0)
+	return 0;
+
+    switch (p_stpl)
+    {
+	case 0:
+	    return 0;
+	case 1:
+	    if (first_tabpage->tp_next == NULL)
+		return 0;
+    }
+    if (Columns < tpl_columns)
+	return 0;
+    else
+	return tpl_columns;
+}
+
+/*
+ * Return the offset of a window considering the width of tabpanel.
+ */
+    int
+tabpanel_leftcol(win_T	*wp)
+{
+    if (cmdline_pum_active())
+	return 0;
+    else if (wp != NULL && WIN_IS_POPUP(wp))
+	return 0;
+    else
+	return tpl_align == ALIGN_RIGHT ? 0 : tabpanel_width();
+}
+
+/*
+ * draw the tabpanel.
  */
     void
-draw_tabsidebar(void)
+draw_tabpanel(void)
 {
     int		saved_KeyTyped = KeyTyped;
     int		saved_got_int = got_int;
-    int		maxwidth = tabsidebar_width();
+    int		maxwidth = tabpanel_width();
+    int		vs_attr = HL_ATTR(HLF_C);
     int		curtab_row = 0;
 #ifndef MSWIN
     int		row = 0;
     int		off = 0;
 #endif
-    int	        vs_char = 0;
-    int		vertsplit = 0;
     int		vsrow = 0;
+    int		is_right = tpl_align == ALIGN_RIGHT;
 
     if (0 == maxwidth)
 	return;
-
-    vs_char = curwin->w_fill_chars.tabsidebar;
-    vertsplit = vs_char != ' ';
 
 #ifndef MSWIN
     // We need this section only for the Vim running on WSL.
     for (row = 0; row < cmdline_row; row++)
     {
-	if (p_tsba)
+	if (is_right)
 	    off = LineOffset[row] + Columns - maxwidth;
 	else
 	    off = LineOffset[row];
@@ -80,51 +179,48 @@ draw_tabsidebar(void)
 
     // Reset got_int to avoid build_stl_str_hl() isn't evaluted.
     got_int = FALSE;
-    if (vertsplit)
+    if (tpl_vert != '\0')
     {
-	do_by_tsbmode(TSBMODE_GET_CURTAB_ROW, (p_tsba ? 1 : 0), maxwidth - (p_tsba ? 0 : 1), &curtab_row, NULL);
-	do_by_tsbmode(TSBMODE_REDRAW, (p_tsba ? 1 : 0), maxwidth - (p_tsba ? 0 : 1), &curtab_row, NULL);
+	do_by_tplmode(TPLMODE_GET_CURTAB_ROW, (is_right ? 1 : 0), maxwidth - (is_right ? 0 : 1), &curtab_row, NULL);
+	do_by_tplmode(TPLMODE_REDRAW, (is_right ? 1 : 0), maxwidth - (is_right ? 0 : 1), &curtab_row, NULL);
     }
     else
     {
-	do_by_tsbmode(TSBMODE_GET_CURTAB_ROW, 0, maxwidth, &curtab_row, NULL);
-	do_by_tsbmode(TSBMODE_REDRAW, 0, maxwidth, &curtab_row, NULL);
+	do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth, &curtab_row, NULL);
+	do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth, &curtab_row, NULL);
     }
 
     // draw vert separater
-    if (vertsplit && (1 < maxwidth))
-    {
-	int	vs_attr = HL_ATTR(HLF_C);
+    if ((tpl_vert != '\0') && (1 < maxwidth))
 	for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
 	    screen_fill(vsrow - 1, vsrow,
-		    (p_tsba ? COLUMNS_WITHOUT_TSB() + 0 : maxwidth - 1),
-		    (p_tsba ? COLUMNS_WITHOUT_TSB() + 1 : maxwidth),
-		    vs_char, vs_char, vs_attr);
-    }
+		    (is_right ? COLUMNS_WITHOUT_TPL() + 0 : maxwidth - 1),
+		    (is_right ? COLUMNS_WITHOUT_TPL() + 1 : maxwidth),
+		    tpl_vert, tpl_vert, vs_attr);
 
     got_int |= saved_got_int;
 
     // A user function may reset KeyTyped, restore it.
     KeyTyped = saved_KeyTyped;
 
-    redraw_tabsidebar = FALSE;
+    redraw_tabpanel = FALSE;
 }
 
 /*
- * Return tabpagenr when clicking and dragging in tabsidebar.
+ * Return tabpagenr when clicking and dragging in tabpanel.
  */
     int
-get_tabpagenr_on_tabsidebar(void)
+get_tabpagenr_on_tabpanel(void)
 {
-    int		maxwidth = tabsidebar_width();
+    int		maxwidth = tabpanel_width();
     int		curtab_row = 0;
     int		tabpagenr = 0;
 
     if (0 == maxwidth)
 	return -1;
 
-    do_by_tsbmode(TSBMODE_GET_CURTAB_ROW, 0, maxwidth, &curtab_row, NULL);
-    do_by_tsbmode(TSBMODE_GET_TABPAGENR, 0, maxwidth, &curtab_row, &tabpagenr);
+    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth, &curtab_row, NULL);
+    do_by_tplmode(TPLMODE_GET_TABPAGENR, 0, maxwidth, &curtab_row, &tabpagenr);
 
     return tabpagenr;
 }
@@ -134,30 +230,30 @@ get_tabpagenr_on_tabsidebar(void)
  */
     static void
 screen_fill_tailing_area(
-	int	tsbmode,
+	int	tplmode,
 	int	row_start,
 	int	row_end,
 	int	col_start,
 	int	col_end,
 	int	attr)
 {
-    if (TSBMODE_REDRAW == tsbmode)
+    if (TPLMODE_REDRAW == tplmode)
 	screen_fill(row_start, row_end,
-		(p_tsba ? COLUMNS_WITHOUT_TSB() : 0) + col_start,
-		(p_tsba ? COLUMNS_WITHOUT_TSB() : 0) + col_end,
-		TSB_FILLCHAR, TSB_FILLCHAR, attr);
+		((tpl_align == ALIGN_RIGHT) ? COLUMNS_WITHOUT_TPL() : 0) + col_start,
+		((tpl_align == ALIGN_RIGHT) ? COLUMNS_WITHOUT_TPL() : 0) + col_end,
+		TPL_FILLCHAR, TPL_FILLCHAR, attr);
 }
 
 /*
- * screen_puts_len() for tabsidebar.
+ * screen_puts_len() for tabpanel.
  */
     static void
-screen_puts_len_for_tabsidebar(
-	int	tsbmode,
+screen_puts_len_for_tabpanel(
+	int	tplmode,
 	char_u	*p,
 	int	len,
 	int	attr,
-	tabsidebar_T *pargs)
+	tabpanel_T *pargs)
 {
     int		j, k;
     int		chlen;
@@ -167,14 +263,14 @@ screen_puts_len_for_tabsidebar(
 
     for (j = 0; j < len;)
     {
-	if ((TSBMODE_GET_CURTAB_ROW != tsbmode) && (pargs->maxrow <= (*pargs->prow - pargs->offsetrow)))
+	if ((TPLMODE_GET_CURTAB_ROW != tplmode) && (pargs->maxrow <= (*pargs->prow - pargs->offsetrow)))
 	    break;
 
 	if ((p[j] == '\n') || (p[j] == '\r'))
 	{
 	    // fill the tailing area of current row.
 	    if (0 <= (*pargs->prow - pargs->offsetrow) && (*pargs->prow - pargs->offsetrow) < pargs->maxrow)
-		screen_fill_tailing_area(tsbmode, *pargs->prow - pargs->offsetrow, *pargs->prow - pargs->offsetrow + 1, *pargs->pcol, pargs->col_end, attr);
+		screen_fill_tailing_area(tplmode, *pargs->prow - pargs->offsetrow, *pargs->prow - pargs->offsetrow + 1, *pargs->pcol, pargs->col_end, attr);
 	    (*pargs->prow)++;
 	    *pargs->pcol = pargs->col_start;
 	    j++;
@@ -208,13 +304,13 @@ screen_puts_len_for_tabsidebar(
 	    {
 		// fill the tailing area of current row.
 		if (0 <= (*pargs->prow - pargs->offsetrow) && (*pargs->prow - pargs->offsetrow) < pargs->maxrow)
-		    screen_fill_tailing_area(tsbmode, *pargs->prow - pargs->offsetrow, *pargs->prow - pargs->offsetrow + 1, *pargs->pcol, pargs->col_end, attr);
+		    screen_fill_tailing_area(tplmode, *pargs->prow - pargs->offsetrow, *pargs->prow - pargs->offsetrow + 1, *pargs->pcol, pargs->col_end, attr);
 		*pargs->pcol = pargs->col_end;
 
 		if (pargs->col_end < chcells)
 		    break;
 
-		if (p_tsbw)
+		if (tpl_wrap == WRAP_ON)
 		{
 		    (*pargs->prow)++;
 		    *pargs->pcol = pargs->col_start;
@@ -223,8 +319,8 @@ screen_puts_len_for_tabsidebar(
 
 	    if ((*pargs->pcol) + chcells <= pargs->col_end)
 	    {
-		if ((TSBMODE_REDRAW == tsbmode) && (0 <= (*pargs->prow - pargs->offsetrow) && (*pargs->prow - pargs->offsetrow) < pargs->maxrow))
-		    screen_puts(buf, *pargs->prow - pargs->offsetrow, *pargs->pcol + (p_tsba ? COLUMNS_WITHOUT_TSB() : 0), attr);
+		if ((TPLMODE_REDRAW == tplmode) && (0 <= (*pargs->prow - pargs->offsetrow) && (*pargs->prow - pargs->offsetrow) < pargs->maxrow))
+		    screen_puts(buf, *pargs->prow - pargs->offsetrow, *pargs->pcol + ((tpl_align == ALIGN_RIGHT) ? COLUMNS_WITHOUT_TPL() : 0), attr);
 		(*pargs->pcol) += chcells;
 	    }
 	}
@@ -232,10 +328,10 @@ screen_puts_len_for_tabsidebar(
 }
 
 /*
- * default tabsidebar drawing behavior if 'tabsidebar' option is empty.
+ * default tabpanel drawing behavior if 'tabpanel' option is empty.
  */
     static void
-draw_tabsidebar_default(int tsbmode, tabsidebar_T *pargs)
+draw_tabpanel_default(int tplmode, tabpanel_T *pargs)
 {
     int		modified;
     int		wincount;
@@ -251,7 +347,7 @@ draw_tabsidebar_default(int tsbmode, tabsidebar_T *pargs)
 	if (1 < wincount)
 	{
 	    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
-	    screen_puts_len_for_tabsidebar(tsbmode, NameBuff, (int)STRLEN(NameBuff),
+	    screen_puts_len_for_tabpanel(tplmode, NameBuff, (int)STRLEN(NameBuff),
 #if defined(FEAT_SYN_HL)
 		    hl_combine_attr(pargs->attr, HL_ATTR(HLF_T)),
 #else
@@ -262,28 +358,28 @@ draw_tabsidebar_default(int tsbmode, tabsidebar_T *pargs)
 	if (modified)
 	{
 	    buf[0] = '+';
-	    screen_puts_len_for_tabsidebar(tsbmode, buf, 1, pargs->attr, pargs);
+	    screen_puts_len_for_tabpanel(tplmode, buf, 1, pargs->attr, pargs);
 	}
 
-	buf[0] = TSB_FILLCHAR;
-	screen_puts_len_for_tabsidebar(tsbmode, buf, 1, pargs->attr, pargs);
+	buf[0] = TPL_FILLCHAR;
+	screen_puts_len_for_tabpanel(tplmode, buf, 1, pargs->attr, pargs);
     }
 
     get_trans_bufname(pargs->cwp->w_buffer);
     shorten_dir(NameBuff);
-    screen_puts_len_for_tabsidebar(tsbmode, NameBuff, (int)STRLEN(NameBuff), pargs->attr, pargs);
+    screen_puts_len_for_tabpanel(tplmode, NameBuff, (int)STRLEN(NameBuff), pargs->attr, pargs);
 
     // fill the tailing area of current row.
     if (0 <= (*pargs->prow - pargs->offsetrow) && (*pargs->prow - pargs->offsetrow) < pargs->maxrow)
-	screen_fill_tailing_area(tsbmode, *pargs->prow - pargs->offsetrow, *pargs->prow - pargs->offsetrow + 1, *pargs->pcol, pargs->col_end, pargs->attr);
+	screen_fill_tailing_area(tplmode, *pargs->prow - pargs->offsetrow, *pargs->prow - pargs->offsetrow + 1, *pargs->pcol, pargs->col_end, pargs->attr);
     *pargs->pcol = pargs->col_end;
 }
 
 /*
- * default tabsidebar drawing behavior if 'tabsidebar' option is NOT empty.
+ * default tabpanel drawing behavior if 'tabpanel' option is NOT empty.
  */
     static void
-draw_tabsidebar_userdefined(int tsbmode, tabsidebar_T *pargs)
+draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
 {
     char_u	*p;
     int		p_crb_save;
@@ -306,7 +402,7 @@ draw_tabsidebar_userdefined(int tsbmode, tabsidebar_T *pargs)
 
     build_stl_str_hl(pargs->cwp, buf, sizeof(buf),
 	    p, opt_name, opt_scope,
-	    TSB_FILLCHAR, sizeof(buf), &hltab, &tabtab);
+	    TPL_FILLCHAR, sizeof(buf), &hltab, &tabtab);
 
     vim_free(p);
     pargs->cwp->w_p_crb = p_crb_save;
@@ -315,7 +411,7 @@ draw_tabsidebar_userdefined(int tsbmode, tabsidebar_T *pargs)
     p = buf;
     for (n = 0; hltab[n].start != NULL; n++)
     {
-	screen_puts_len_for_tabsidebar(tsbmode, p, (int)(hltab[n].start - p), curattr, pargs);
+	screen_puts_len_for_tabpanel(tplmode, p, (int)(hltab[n].start - p), curattr, pargs);
 	p = hltab[n].start;
 	if (hltab[n].userhl == 0)
 	    curattr = pargs->attr;
@@ -334,37 +430,37 @@ draw_tabsidebar_userdefined(int tsbmode, tabsidebar_T *pargs)
 	else
 	    curattr = highlight_user[hltab[n].userhl - 1];
     }
-    screen_puts_len_for_tabsidebar(tsbmode, p, (int)STRLEN(p), curattr, pargs);
+    screen_puts_len_for_tabpanel(tplmode, p, (int)STRLEN(p), curattr, pargs);
 
     // fill the tailing area of current row.
     if (0 <= (*pargs->prow - pargs->offsetrow) && (*pargs->prow - pargs->offsetrow) < pargs->maxrow)
-	screen_fill_tailing_area(tsbmode, *pargs->prow - pargs->offsetrow, *pargs->prow - pargs->offsetrow + 1, *pargs->pcol, pargs->col_end, curattr);
+	screen_fill_tailing_area(tplmode, *pargs->prow - pargs->offsetrow, *pargs->prow - pargs->offsetrow + 1, *pargs->pcol, pargs->col_end, curattr);
     *pargs->pcol = pargs->col_end;
 }
 
 /*
- * do something by tsbmode for drawing tabsidebar.
+ * do something by tplmode for drawing tabpanel.
  */
     static void
-do_by_tsbmode(int tsbmode, int col_start, int col_end, int* pcurtab_row, int* ptabpagenr)
+do_by_tplmode(int tplmode, int col_start, int col_end, int* pcurtab_row, int* ptabpagenr)
 {
     int		len = 0;
     char_u	*p = NULL;
-    int		attr_tsbf = HL_ATTR(HLF_TSBF);
-    int		attr_tsbs = HL_ATTR(HLF_TSBS);
-    int		attr_tsb = HL_ATTR(HLF_TSB);
+    int		attr_tplf = HL_ATTR(HLF_TPLF);
+    int		attr_tpls = HL_ATTR(HLF_TPLS);
+    int		attr_tpl = HL_ATTR(HLF_TPL);
     int		col = col_start;
     int		row = 0;
     tabpage_T	*tp = NULL;
     typval_T	v;
-    tabsidebar_T    args;
+    tabpanel_T    args;
 
     args.maxrow = cmdline_row;
     args.offsetrow = 0;
     args.col_start = col_start;
     args.col_end = col_end;
 
-    if (TSBMODE_GET_CURTAB_ROW != tsbmode)
+    if (TPLMODE_GET_CURTAB_ROW != tplmode)
 	if (0 < args.maxrow)
 	    while (args.offsetrow + args.maxrow <= *pcurtab_row)
 		args.offsetrow += args.maxrow;
@@ -373,7 +469,7 @@ do_by_tsbmode(int tsbmode, int col_start, int col_end, int* pcurtab_row, int* pt
 
     for (row = 0; tp != NULL; row++)
     {
-	if ((TSBMODE_GET_CURTAB_ROW != tsbmode) && (args.maxrow <= (row - args.offsetrow)))
+	if ((TPLMODE_GET_CURTAB_ROW != tplmode) && (args.maxrow <= (row - args.offsetrow)))
 	    break;
 
 	col = col_start;
@@ -384,15 +480,15 @@ do_by_tsbmode(int tsbmode, int col_start, int col_end, int* pcurtab_row, int* pt
 
 	if (tp->tp_topframe == topframe)
 	{
-	    args.attr = attr_tsbs;
-	    if (TSBMODE_GET_CURTAB_ROW == tsbmode)
+	    args.attr = attr_tpls;
+	    if (TPLMODE_GET_CURTAB_ROW == tplmode)
 	    {
 		*pcurtab_row = row;
 		break;
 	    }
 	}
 	else
-	    args.attr = attr_tsb;
+	    args.attr = attr_tpl;
 
 	if (tp == curtab)
 	{
@@ -406,7 +502,7 @@ do_by_tsbmode(int tsbmode, int col_start, int col_end, int* pcurtab_row, int* pt
 	}
 
 	len = 0;
-	p = p_tsb;
+	p = p_tpl;
 	if (p != NULL)
 	    len = (int)STRLEN(p);
 
@@ -422,7 +518,7 @@ do_by_tsbmode(int tsbmode, int col_start, int col_end, int* pcurtab_row, int* pt
 		{
 		    // fill the tailing area of current row.
 		    if (0 <= (row - args.offsetrow) && (row - args.offsetrow) < args.maxrow)
-			screen_fill_tailing_area(tsbmode, row - args.offsetrow, row - args.offsetrow + 1, col, args.col_end, args.attr);
+			screen_fill_tailing_area(tplmode, row - args.offsetrow, row - args.offsetrow + 1, col, args.col_end, args.attr);
 		    row++;
 		    col = col_start;
 		    p2++;
@@ -440,7 +536,7 @@ do_by_tsbmode(int tsbmode, int col_start, int col_end, int* pcurtab_row, int* pt
 		args.user_defined = buf;
 		args.prow = &row;
 		args.pcol = &col;
-		draw_tabsidebar_userdefined(tsbmode, &args);
+		draw_tabpanel_userdefined(tplmode, &args);
 
 		p2 += i2;
 		i2 = 0;
@@ -451,22 +547,22 @@ do_by_tsbmode(int tsbmode, int col_start, int col_end, int* pcurtab_row, int* pt
 	    args.user_defined = NULL;
 	    args.prow = &row;
 	    args.pcol = &col;
-	    draw_tabsidebar_default(tsbmode, &args);
+	    draw_tabpanel_default(tplmode, &args);
 	}
 
 	do_unlet((char_u *)"g:actual_curtabpage", TRUE);
 
 	tp = tp->tp_next;
 
-	if ((TSBMODE_GET_TABPAGENR == tsbmode) && (mouse_row <= (row - args.offsetrow)))
+	if ((TPLMODE_GET_TABPAGENR == tplmode) && (mouse_row <= (row - args.offsetrow)))
 	{
 	    *ptabpagenr = v.vval.v_number;
 	    break;
 	}
     }
 
-    // fill the area of TabSideBarFill.
-    screen_fill_tailing_area(tsbmode, row - args.offsetrow, args.maxrow, args.col_start, args.col_end, attr_tsbf);
+    // fill the area of TabPanelFill.
+    screen_fill_tailing_area(tplmode, row - args.offsetrow, args.maxrow, args.col_start, args.col_end, attr_tplf);
 }
 
-#endif // FEAT_TABSIDEBAR
+#endif // FEAT_TABPANEL

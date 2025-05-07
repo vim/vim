@@ -491,7 +491,7 @@ N  *+statusline*	Options 'statusline', 'rulerformat' and special
 -  *+sun_workshop*	Removed: |workshop|
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
-H  *+tabsidebar*	Support for |tabsidebar|
+H  *+tabpanel*	Support for |tabpanel|
 T  *+tag_binary*	binary searching in tags file |tag-binary-search|
 -  *+tag_old_static*	Removed; method for static tags |tag-old-static|
 -  *+tag_any_white*	Removed; was to allow any white space in tags files

@@ -89,11 +89,6 @@ void win_new_width(win_T *wp, int width);
 void win_comp_scroll(win_T *wp);
 void command_height(void);
 void last_status(int morewin);
-#ifdef FEAT_TABSIDEBAR
-int tabsidebar_width(void);
-int columns_without_tabsidebar(void);
-int tabsidebar_leftcol(win_T	*wp);
-#endif
 int tabline_height(void);
 int last_stl_height(int morewin);
 int min_rows(void);

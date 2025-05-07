@@ -524,10 +524,10 @@
 #endif
 
 /*
- * +tabsidebar		Tab SideBar
+ * +tabpanel		Tab SideBar
  */
 #ifdef FEAT_HUGE
-# define FEAT_TABSIDEBAR
+# define FEAT_TABPANEL
 #endif
 
 /*

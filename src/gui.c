@@ -4891,8 +4891,8 @@ xy2win(int x, int y, mouse_find_T popup)
     row = Y_2_ROW(y);
     col = X_2_COL(x);
 
-#if defined(FEAT_TABSIDEBAR)
-    col -= TSB_LCOL(NULL);
+#if defined(FEAT_TABPANEL)
+    col -= TPL_LCOL(NULL);
 #endif
 
     if (row < 0 || col < 0)		// before first window
@@ -5364,8 +5364,8 @@ gui_wingoto_xy(int x, int y)
     int		col = X_2_COL(x);
     win_T	*wp;
 
-#if defined(FEAT_TABSIDEBAR)
-	col -= TSB_LCOL(NULL);
+#if defined(FEAT_TABPANEL)
+	col -= TPL_LCOL(NULL);
 #endif
 
     if (row < 0 || col < 0)

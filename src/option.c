@@ -3107,8 +3107,8 @@ redraw_titles(void)
 {
     need_maketitle = TRUE;
     redraw_tabline = TRUE;
-#if defined(FEAT_TABSIDEBAR)
-    redraw_tabsidebar = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
 #endif
 }
 
@@ -8835,22 +8835,12 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 #endif
 }
 
-#if defined(FEAT_TABSIDEBAR)
+#if defined(FEAT_TABPANEL)
 /*
- * Process the new 'showtabsidebar' option value.
+ * Process the new 'showtabpanel' option value.
  */
     char *
-did_set_showtabsidebar(optset_T *args)
-{
-    shell_new_columns();
-    return NULL;
-}
-
-/*
- * Process the new 'tabsidebarcolumns' option value.
- */
-    char *
-did_set_tabsidebarcolumns(optset_T *args)
+did_set_showtabpanel(optset_T *args)
 {
     shell_new_columns();
     return NULL;

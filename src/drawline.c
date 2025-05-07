@@ -874,7 +874,7 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int clear_end)
 	}
     }
 
-    screen_line(wp, wlv->screen_row, wp->w_wincol + TSB_LCOL(wp), wlv->col,
+    screen_line(wp, wlv->screen_row, wp->w_wincol + TPL_LCOL(wp), wlv->col,
 		    clear_end ? wp->w_width : -wp->w_width,
 		    wlv->vcol - 1, wlv->screen_line_flags);
 }
@@ -4354,7 +4354,7 @@ win_line(
 #ifdef FEAT_PROP_POPUP
 		     && !text_prop_above && !text_prop_follows
 #endif
-		     && wp->w_width == COLUMNS_WITHOUT_TSB())
+		     && wp->w_width == COLUMNS_WITHOUT_TPL())
 	    {
 		// Remember that the line wraps, used for modeless copy.
 		LineWraps[wlv.screen_row - 1] = TRUE;

@@ -762,8 +762,6 @@ $quote	eval.txt	/*$quote*
 'noswapfile'	options.txt	/*'noswapfile'*
 'noswf'	options.txt	/*'noswf'*
 'nota'	options.txt	/*'nota'*
-'notabsidebaralign'	options.txt	/*'notabsidebaralign'*
-'notabsidebarcolumns'	options.txt	/*'notabsidebarcolumns'*
 'notagbsearch'	options.txt	/*'notagbsearch'*
 'notagrelative'	options.txt	/*'notagrelative'*
 'notagstack'	options.txt	/*'notagstack'*
@@ -784,8 +782,6 @@ $quote	eval.txt	/*$quote*
 'noto'	options.txt	/*'noto'*
 'notop'	options.txt	/*'notop'*
 'notr'	options.txt	/*'notr'*
-'notsba'	options.txt	/*'notsba'*
-'notsbc'	options.txt	/*'notsbc'*
 'nottimeout'	options.txt	/*'nottimeout'*
 'nottybuiltin'	options.txt	/*'nottybuiltin'*
 'nottyfast'	options.txt	/*'nottyfast'*
@@ -963,7 +959,7 @@ $quote	eval.txt	/*$quote*
 'showmatch'	options.txt	/*'showmatch'*
 'showmode'	options.txt	/*'showmode'*
 'showtabline'	options.txt	/*'showtabline'*
-'showtabsidebar'	options.txt	/*'showtabsidebar'*
+'showtabpanel'	options.txt	/*'showtabpanel'*
 'shq'	options.txt	/*'shq'*
 'si'	options.txt	/*'si'*
 'sidescroll'	options.txt	/*'sidescroll'*
@@ -1017,8 +1013,8 @@ $quote	eval.txt	/*$quote*
 'statusline'	options.txt	/*'statusline'*
 'stl'	options.txt	/*'stl'*
 'stmp'	options.txt	/*'stmp'*
+'stpl'	options.txt	/*'stpl'*
 'sts'	options.txt	/*'sts'*
-'stsb'	options.txt	/*'stsb'*
 'su'	options.txt	/*'su'*
 'sua'	options.txt	/*'sua'*
 'suffixes'	options.txt	/*'suffixes'*
@@ -1189,10 +1185,8 @@ $quote	eval.txt	/*$quote*
 'tabclose'	options.txt	/*'tabclose'*
 'tabline'	options.txt	/*'tabline'*
 'tabpagemax'	options.txt	/*'tabpagemax'*
-'tabsidebar'	options.txt	/*'tabsidebar'*
-'tabsidebaralign'	options.txt	/*'tabsidebaralign'*
-'tabsidebarcolumns'	options.txt	/*'tabsidebarcolumns'*
-'tabsidebarwrap'	options.txt	/*'tabsidebarwrap'*
+'tabpanel'	options.txt	/*'tabpanel'*
+'tabpanelopts	options.txt	/*'tabpanelopts*
 'tabstop'	options.txt	/*'tabstop'*
 'tag'	options.txt	/*'tag'*
 'tagbsearch'	options.txt	/*'tagbsearch'*
@@ -1243,13 +1237,11 @@ $quote	eval.txt	/*$quote*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
 'top'	options.txt	/*'top'*
+'tpl'	options.txt	/*'tpl'*
+'tplo'	options.txt	/*'tplo'*
 'tpm'	options.txt	/*'tpm'*
 'tr'	options.txt	/*'tr'*
 'ts'	options.txt	/*'ts'*
-'tsb'	options.txt	/*'tsb'*
-'tsba'	options.txt	/*'tsba'*
-'tsbc'	options.txt	/*'tsbc'*
-'tsbw'	options.txt	/*'tsbw'*
 'tsl'	options.txt	/*'tsl'*
 'tsr'	options.txt	/*'tsr'*
 'tsrfu'	options.txt	/*'tsrfu'*
@@ -1492,7 +1484,7 @@ $quote	eval.txt	/*$quote*
 +sun_workshop	various.txt	/*+sun_workshop*
 +syntax	various.txt	/*+syntax*
 +system()	various.txt	/*+system()*
-+tabsidebar	various.txt	/*+tabsidebar*
++tabpanel	various.txt	/*+tabpanel*
 +tag_any_white	various.txt	/*+tag_any_white*
 +tag_binary	various.txt	/*+tag_binary*
 +tag_old_static	various.txt	/*+tag_old_static*
@@ -8286,9 +8278,9 @@ hl-TOhtmlProgress	syntax.txt	/*hl-TOhtmlProgress*
 hl-TabLine	syntax.txt	/*hl-TabLine*
 hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
 hl-TabLineSel	syntax.txt	/*hl-TabLineSel*
-hl-TabSideBar	syntax.txt	/*hl-TabSideBar*
-hl-TabSideBarFill	syntax.txt	/*hl-TabSideBarFill*
-hl-TabSideBarSel	syntax.txt	/*hl-TabSideBarSel*
+hl-TabPanel	syntax.txt	/*hl-TabPanel*
+hl-TabPanelFill	syntax.txt	/*hl-TabPanelFill*
+hl-TabPanelSel	syntax.txt	/*hl-TabPanelSel*
 hl-Terminal	syntax.txt	/*hl-Terminal*
 hl-Title	syntax.txt	/*hl-Title*
 hl-ToolbarButton	gui.txt	/*hl-ToolbarButton*
@@ -10080,7 +10072,7 @@ settagstack()	builtin.txt	/*settagstack()*
 setting-guifont	gui.txt	/*setting-guifont*
 setting-guitablabel	tabpage.txt	/*setting-guitablabel*
 setting-tabline	tabpage.txt	/*setting-tabline*
-setting-tabsidebar	tabpage.txt	/*setting-tabsidebar*
+setting-tabpanel	tabpage.txt	/*setting-tabpanel*
 setuid	change.txt	/*setuid*
 setwinvar()	builtin.txt	/*setwinvar()*
 sftp	pi_netrw.txt	/*sftp*
@@ -10671,7 +10663,7 @@ tabpage.txt	tabpage.txt	/*tabpage.txt*
 tabpagebuflist()	builtin.txt	/*tabpagebuflist()*
 tabpagenr()	builtin.txt	/*tabpagenr()*
 tabpagewinnr()	builtin.txt	/*tabpagewinnr()*
-tabsidebar	tabpage.txt	/*tabsidebar*
+tabpanel	tabpage.txt	/*tabpanel*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-binary-search	tagsrch.txt	/*tag-binary-search*

@@ -232,8 +232,8 @@ do_mouse(
     int		moved;		// Has cursor moved?
     int		in_status_line;	// mouse in status line
     static int	in_tab_line = FALSE; // mouse clicked in tab line
-#if defined(FEAT_TABSIDEBAR)
-    static int	in_tabsidebar = FALSE; // mouse clicked in tabsidebar
+#if defined(FEAT_TABPANEL)
+    static int	in_tabpanel = FALSE; // mouse clicked in tabpanel
 #endif
     int		in_sep_line;	// mouse in vertical separator line
     int		c1, c2;
@@ -346,14 +346,14 @@ do_mouse(
 	{
 	    got_click = FALSE;
 	    if (in_tab_line
-#if defined(FEAT_TABSIDEBAR)
-		|| in_tabsidebar
+#if defined(FEAT_TABPANEL)
+		|| in_tabpanel
 #endif
 		    )
 	    {
 		in_tab_line = FALSE;
-#if defined(FEAT_TABSIDEBAR)
-		in_tabsidebar = FALSE;
+#if defined(FEAT_TABPANEL)
+		in_tabpanel = FALSE;
 #endif
 		return FALSE;
 	    }
@@ -480,14 +480,14 @@ do_mouse(
     start_visual.lnum = 0;
 
     // Check for clicking in the tab page line.
-#if defined(FEAT_TABSIDEBAR)
-    if (mouse_col < TSB_LCOL(NULL))
+#if defined(FEAT_TABPANEL)
+    if (mouse_col < TPL_LCOL(NULL))
     {
 	if (is_drag)
 	{
-	    if (in_tabsidebar)
+	    if (in_tabpanel)
 	    {
-		c1 = get_tabpagenr_on_tabsidebar();
+		c1 = get_tabpagenr_on_tabpanel();
 		tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
 								? c1 - 1 : c1);
 	    }
@@ -501,8 +501,8 @@ do_mouse(
 # endif
 		&& mouse_col < Columns)
 	{
-	    in_tabsidebar = TRUE;
-	    c1 = get_tabpagenr_on_tabsidebar();
+	    in_tabpanel = TRUE;
+	    c1 = get_tabpagenr_on_tabpanel();
 	    if (c1 >= 0)
 	    {
 		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
@@ -543,9 +543,9 @@ do_mouse(
 	}
 	return TRUE;
     }
-    else if (is_drag && in_tabsidebar)
+    else if (is_drag && in_tabpanel)
     {
-	c1 = get_tabpagenr_on_tabsidebar();
+	c1 = get_tabpagenr_on_tabpanel();
 	tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
 	return FALSE;
     }
@@ -1725,10 +1725,10 @@ jump_to_mouse(
     int		mouse_char = ' ';
 #endif
 
-#if defined(FEAT_TABSIDEBAR)
-    col -= TSB_LCOL(NULL);
+#if defined(FEAT_TABPANEL)
+    col -= TPL_LCOL(NULL);
     if (col < 0)
-	return IN_TABSIDEBAR;
+	return IN_TABPANEL;
 #endif
 
     mouse_past_bottom = FALSE;
@@ -1815,7 +1815,7 @@ retnomove:
 
     if (!(flags & MOUSE_FOCUS))
     {
-	if (row < 0 || col + TSB_LCOL(NULL) < 0) // check if it makes sense
+	if (row < 0 || col + TPL_LCOL(NULL) < 0) // check if it makes sense
 	    return IN_UNKNOWN;
 
 	// find the window where the row is in and adjust "row" and "col" to be

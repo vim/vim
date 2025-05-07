@@ -3654,7 +3654,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  diff		'-'		deleted lines of the 'diff' option
 	  eob		'~'		empty lines below the end of a buffer
 	  lastline	'@'		'display' contains lastline/truncate
-	  tabsidebar	' '		vertical separators for tabsidebar
 	  trunc		'>'		truncated text in the
 					|ins-completion-menu|.
 	  truncrl	'<'		same as "trunc" in 'rightleft' mode
@@ -7691,18 +7690,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	line.
 	See |tab-page| for more information about tab pages.
 
-						*'showtabsidebar'* *'stsb'*
-'showtabsidebar' 'stsb'	number	(default 0)
+						*'showtabpanel'* *'stpl'*
+'showtabpanel' 'stpl'	number	(default 0)
 			global
 			{not in Vi}
-			{not available when compiled without the |+tabsidebar|
+			{not available when compiled without the |+tabpanel|
 			feature}
-	The value of this option specifies when the tabsidebar with tab page
+	The value of this option specifies when the tabpanel with tab page
 	labels will be displayed:
 		0: never
 		1: only if there are at least two tab pages
 		2: always
-	This is non-GUI implementation of the tabsidebar only.
+	This is non-GUI implementation of the tabpanel only.
 	See |tab-page| for more information about tab page labels.
 
 						*'sidescroll'* *'ss'*
@@ -8422,20 +8421,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Maximum number of tab pages to be opened by the |-p| command line
 	argument or the ":tab all" command. |tabpage|
 
-				*'tabsidebar'* *'tsb'* *g:actual_curtabpage*
-'tabsidebar' 'tsb'			string	(default empty)
+				*'tabpanel'* *'tpl'* *g:actual_curtabpage*
+'tabpanel' 'tpl'			string	(default empty)
 			global
 			{not in Vi}
-	When non empty, this option determines the content of the tabsidebar.
+	When non empty, this option determines the content of the tabpanel.
 	The option consists of printf style '%' items interspersed with
-	normal text, similar to the |'statusline'| or |'tabline'|.
+	normal text, similar to the 'statusline' or 'tabline'.
 
 	You can use |g:actual_curtabpage| within a function assigned to
-	tabsidebar. |g:actual_curtabpage| represents current tab's label number.
+	tabpanel. |g:actual_curtabpage| represents current tab's label number.
 	This option can contain line breaks.
 >
-	set tabsidebar=%!TabSideBar()
-	function! TabSideBar() abort
+	set tabpanel=%!TabPanel()
+	function! TabPanel() abort
 	  return printf("(%2d)\\n  %%f", g:actual_curtabpage)
 	endfunction
 <
@@ -8451,34 +8450,42 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|           |
 <
 
-
-					*'tabsidebaralign'* *'tsba'*
-					*'notabsidebaralign'* *'notsba'*
-'tabsidebaralign' 'tsba'		boolean	(default off)
+					*'tabpanelopts* *'tplo'*
+'tabpanelopts' 'tplo'		string	(default "")
 			global
 			{not in Vi}
-	The value of this option specifies the position of tabsidebar:
-		off: left-aligned
-		on: right-aligned
+	Option settings for diff mode.  It can consist of the following items.
+	All are optional.  Items must be separated by a comma.
 
-					*'tabsidebarcolumns'* *'tsbc'*
-					*'notabsidebarcolumns'* *'notsbc'*
-'tabsidebarcolumns' 'tsbc'		number	(default 0)
-			global
-			{not in Vi}
-	When bigger than zero, this option determines the content of
-	tabsidebar at the left of the Vim window.
-	|'tabsidebarcolumns'| is the column size of tabsidebar.
+		align:{text}	Specified the position of tabpanel.
+				Currently supported position are:
 
-						*'tabsidebarwrap'* *'tsbw'*
-'tabsidebarwrap' 'tsbw'		boolean	(default off)
-			global
-			{not in Vi}
-	This option changes how the content of tabsidebar is displayed.
-	When on, each lines of the content longer than |'tabsidebarcolumns'|
-	will wrap and displaying continues on the next line.
-	When off, each lines of the content will not wrap and only part of
-	long one will be displayed.
+				left	left-aligned
+				right	right-aligned
+
+				(default "left")
+
+		columns:{n}	Use the size (in char) of TabPanel.
+				The TabPenel is never shown when using zero
+				or less than the size of Vim window.
+				(default 20)
+
+		vert:{n}	Use a vertical separator for TabPanel.
+				This vertical separator must be 1 byte character.
+				(default off)
+
+		wrap		How the content of tabpanel is displayed.
+				When on, each lines of the content longer than |'tabpanelcolumns'|
+				will wrap and displaying continues on the next line.
+				When off, each lines of the content will not wrap and only part of
+				long one will be displayed.
+				(default off)
+
+	Examples: >
+		:set tabpanelopts=columns:16,wrap,align:right
+		:set tabpanelopts=
+		:set tabpanelopts=vert:\|,align:right
+<
 
 						*'tabstop'* *'ts'*
 'tabstop' 'ts'		number	(default 8)

@@ -555,10 +555,10 @@ static char *(features[]) =
 #if defined(USE_SYSTEM) && defined(UNIX)
 	"+system()",
 #endif
-#if defined(FEAT_TABSIDEBAR)
-	"+tabsidebar",
+#if defined(FEAT_TABPANEL)
+	"+tabpanel",
 #else
-	"-tabsidebar",
+	"-tabpanel",
 #endif
 	"+tag_binary",
 	"-tag_old_static",

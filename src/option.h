@@ -987,12 +987,10 @@ EXTERN unsigned	swb_flags;
 
 EXTERN char_u	*p_spk;		// 'splitkeep'
 
-#if defined(FEAT_TABSIDEBAR)
-EXTERN char_u	*p_tsb;		// 'tabsidebar'
-EXTERN long	p_stsb;		// 'showtabsidebar'
-EXTERN long	p_tsbw;		// 'tabsidebarwrap'
-EXTERN long	p_tsba;		// 'tabsidebaralign'
-EXTERN long	p_tsbc;		// 'tabsidebarcolumns'
+#if defined(FEAT_TABPANEL)
+EXTERN char_u	*p_tpl;		// 'tabpanel'
+EXTERN long	p_stpl;		// 'showtabpanel'
+EXTERN char_u	*p_tplo;	// 'tabpanelopts'
 #endif
 
 #ifdef FEAT_SYN_HL

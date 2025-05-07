@@ -858,7 +858,7 @@ OBJ = \
 	$(OUTDIR)/spellsuggest.o \
 	$(OUTDIR)/strings.o \
 	$(OUTDIR)/syntax.o \
-	$(OUTDIR)/tabsidebar.o \
+	$(OUTDIR)/tabpanel.o \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
 	$(OUTDIR)/testing.o \
