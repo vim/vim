@@ -631,6 +631,7 @@ endfunc
 
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
+  CheckScreendump
   CheckRunVimInTerminal
   call writefile([
 	\ '/* comment line at the top */',

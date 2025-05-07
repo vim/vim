@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Apr 24
+*version9.txt*  For Vim version 9.1.  Last change: 2025 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41641,6 +41641,7 @@ Options: ~
 - New option value for 'fillchars':
 	"trunc"		- configure truncation indicator, 'pummaxwidth'
 	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
+- adjust for GTK3 dropping some mouse cursors 'mouseshape'
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|

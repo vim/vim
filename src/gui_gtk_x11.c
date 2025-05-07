@@ -2767,57 +2767,19 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
     static GdkCursor *
 create_blank_pointer(void)
 {
-    GdkWindow	*root_window = NULL;
-#if GTK_CHECK_VERSION(3,0,0)
-    GdkPixbuf   *blank_mask;
-#else
-    GdkPixmap	*blank_mask;
-#endif
     GdkCursor	*cursor;
+
 #if GTK_CHECK_VERSION(3,0,0)
-    GdkRGBA	color = { 0.0, 0.0, 0.0, 0.0 };
+    GdkDisplay  *disp = gtk_widget_get_display(gui.mainwin);
+    cursor = gdk_cursor_new_from_name(disp, "none");
 #else
-    GdkColor	color = { 0, 0, 0, 0 };
-    char	blank_data[] = { 0x0 };
-#endif
-
-#if GTK_CHECK_VERSION(3,12,0)
-    {
-	GdkWindow * const win = gtk_widget_get_window(gui.mainwin);
-	GdkScreen * const scrn = gdk_window_get_screen(win);
-	root_window = gdk_screen_get_root_window(scrn);
-    }
-#else
-    root_window = gtk_widget_get_root_window(gui.mainwin);
-#endif
-
     // Create a pseudo blank pointer, which is in fact one pixel by one pixel
     // in size.
-#if GTK_CHECK_VERSION(3,0,0)
-    {
-	cairo_surface_t *surf;
-	cairo_t		*cr;
-
-	surf = cairo_image_surface_create(CAIRO_FORMAT_A1, 1, 1);
-	cr = cairo_create(surf);
-
-	cairo_set_source_rgba(cr,
-			     color.red,
-			     color.green,
-			     color.blue,
-			     color.alpha);
-	cairo_rectangle(cr, 0, 0, 1, 1);
-	cairo_fill(cr);
-	cairo_destroy(cr);
-
-	blank_mask = gdk_pixbuf_get_from_surface(surf, 0, 0, 1, 1);
-	cairo_surface_destroy(surf);
-
-	cursor = gdk_cursor_new_from_pixbuf(gdk_window_get_display(root_window),
-					    blank_mask, 0, 0);
-	g_object_unref(blank_mask);
-    }
-#else
+    GdkWindow	*root_window = NULL;
+    GdkColor	color = { 0, 0, 0, 0 };
+    GdkPixmap	*blank_mask;
+    char	blank_data[] = { 0x0 };
+    root_window = gtk_widget_get_root_window(gui.mainwin);
     blank_mask = gdk_bitmap_create_from_data(root_window, blank_data, 1, 1);
     cursor = gdk_cursor_new_from_pixmap(blank_mask, blank_mask,
 					&color, &color, 0, 0);
@@ -4569,11 +4531,14 @@ gui_mch_open(void)
 
     pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
     pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
+
+# if !GTK_CHECK_VERSION(3,0,0)
     // For GTK2 changing the size of the form widget doesn't cause window
     // resizing.
     if (gtk_socket_id == 0)
 	gtk_window_resize(GTK_WINDOW(gui.mainwin), pixel_width, pixel_height);
     update_window_manager_hints(0, 0);
+# endif
 
     if (foreground_argument != NULL)
 	fg_pixel = gui_get_color((char_u *)foreground_argument);
@@ -7242,6 +7207,28 @@ gui_mch_mousehide(int hide)
 
 #if defined(FEAT_MOUSESHAPE) || defined(PROTO)
 
+# if GTK_CHECK_VERSION(3,0,0)
+static const char * mshape_css_names[] =
+{
+    "default",                  // arrow aka GDK_LEFT_PTR
+    "blank",                    // blank aka GDK_CURSOR_IS_PIXMAP
+    "text",                     // beam aka GDK_XTERM
+    "ns-resize",                // updown aka GDK_SB_V_DOUBLE_ARROW
+    "nwse-resize",              // udsizing aka GDK_SIZING
+    "ew-resize",                // leftright aka GDK_SB_H_DOUBLE_ARROW
+    "ew-resize",                // lrsizing aka GDK_SIZING
+    "progress",                 // busy aka GDK_WATCH
+    "not-allowed",              // no aka GDK_X_CURSOR
+    "crosshair",                // crosshair aka GDK_CROSSHAIR
+    "pointer",                  // hand1 aka GDK_HAND1
+    "pointer",                  // hand2 aka GDK_HAND2
+    "default",                  // pencil aka GDK_PENCIL (no css analogue)
+    "help",                     // question aka GDK_QUESTION_ARROW
+    "default",                  // right-arrow aka GDK_RIGHT_PTR (no css analogue)
+    "default",                  // up-arrow aka GDK_CENTER_PTR (no css analogue)
+    "default"                   // GDK_LEFT_PTR (no css analogue)
+};
+# else
 // Table for shape IDs.  Keep in sync with the mshape_names[] table in
 // misc2.c!
 static const int mshape_ids[] =
@@ -7264,12 +7251,17 @@ static const int mshape_ids[] =
     GDK_CENTER_PTR,		// up-arrow
     GDK_LEFT_PTR		// last one
 };
+# endif // GTK_CHECK_VERSION(3,0,0)
 
     void
 mch_set_mouse_shape(int shape)
 {
-    int		   id;
     GdkCursor	   *c;
+    int		   id;                    // Only id or css_name is used.
+# if GTK_CHECK_VERSION(3,0,0)
+    const char     *css_name = "default";
+    GdkDisplay     *disp;
+# endif
 
     if (gtk_widget_get_window(gui.drawarea) == NULL)
 	return;
@@ -7287,12 +7279,22 @@ mch_set_mouse_shape(int shape)
 	    else
 		id &= ~1;	// they are always even (why?)
 	}
+# if GTK_CHECK_VERSION(3,0,0)
+	else if (shape < (int)ARRAY_LENGTH(mshape_css_names))
+	    css_name = mshape_css_names[shape];
+# else
 	else if (shape < (int)ARRAY_LENGTH(mshape_ids))
 	    id = mshape_ids[shape];
+# endif
 	else
 	    return;
+# if GTK_CHECK_VERSION(3,0,0)
+	disp = gtk_widget_get_display(gui.drawarea);
+	c = gdk_cursor_new_from_name(disp, css_name);
+# else
 	c = gdk_cursor_new_for_display(
 		gtk_widget_get_display(gui.drawarea), (GdkCursorType)id);
+# endif
 	gdk_window_set_cursor(gtk_widget_get_window(gui.drawarea), c);
 # if GTK_CHECK_VERSION(3,0,0)
 	g_object_unref(G_OBJECT(c));

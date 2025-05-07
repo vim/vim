@@ -48,6 +48,10 @@ enddef
 " message.  Use this when using the same dump file with different options.
 " Returns non-zero when verification fails.
 func VerifyScreenDump(buf, filename, options, ...)
+  if has('gui_running') && exists("g:check_screendump_called") && g:check_screendump_called == v:false
+      echoerr "VerifyScreenDump() called from a test that lacks a CheckScreendump guard."
+      return 1
+  endif
   let reference = 'dumps/' . a:filename . '.dump'
   let filter = 'dumps/' . a:filename . '.vim'
   let testfile = 'failed/' . a:filename . '.dump'
