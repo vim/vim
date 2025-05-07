@@ -502,6 +502,11 @@ static struct vimoption options[] =
 			    (char_u *)&p_bomb, PV_BOMB,
 			    did_set_eof_eol_fixeol_bomb, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+#ifdef FEAT_PROP_POPUP
+    {"borderchars", "boc",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+			    (char_u *)&p_boc, PV_NONE, did_set_borderchars, NULL,
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+#endif
     {"breakat",	    "brk",  P_STRING|P_VI_DEF|P_RALL|P_FLAGLIST,
 #ifdef FEAT_LINEBREAK
 			    (char_u *)&p_breakat, PV_NONE, did_set_breakat, NULL,

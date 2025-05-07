@@ -132,6 +132,8 @@ let test_values = {
       \		'list:-1', 'column:10', 'column:-5', 'min:1,sbr,shift:2'],
       \		['xxx', 'min', 'min:x', 'min:-1', 'shift:x', 'sbr:1', 'list:x',
       \		'column:x']],
+      \ 'borderchars': [['single', 'rounded', 'bold', '+,-,+,\|,+,-,+,\|'],
+      \		['xxx']],
       \ 'browsedir': [['', 'last', 'buffer', 'current', './Xdir\ with\ space'],
       \		['xxx']],
       \ 'bufhidden': [['', 'hide', 'unload', 'delete', 'wipe'],
