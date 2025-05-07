@@ -37,8 +37,7 @@ static void do_by_tplmode(int tplmode, int col_start, int col_end,
 static int tpl_wrap = WRAP_OFF;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
-static char tpl_vert = '\0';
-
+static char_u tpl_vert = NUL;
 
 typedef struct {
     win_T   *wp;
@@ -57,11 +56,10 @@ typedef struct {
 tabpanelopt_changed(void)
 {
     char_u	*p;
-
-    tpl_wrap = WRAP_OFF;
-    tpl_align = ALIGN_LEFT;
-    tpl_columns = 20;
-    tpl_vert = '\0';
+    int		new_wrap = WRAP_OFF;
+    int		new_align = ALIGN_LEFT;
+    int		new_columns = 20;
+    char_u	new_vert = NUL;
 
     p = p_tplo;
     while (*p != NUL)
@@ -69,29 +67,29 @@ tabpanelopt_changed(void)
 	if (STRNCMP(p, "wrap", 4) == 0)
 	{
 	    p += 4;
-	    tpl_wrap = WRAP_ON;
+	    new_wrap = WRAP_ON;
 	}
 	else if (STRNCMP(p, "align:left", 10) == 0)
 	{
 	    p += 10;
-	    tpl_align = ALIGN_LEFT;
+	    new_align = ALIGN_LEFT;
 	}
 	else if (STRNCMP(p, "align:right", 11) == 0)
 	{
 	    p += 11;
-	    tpl_align = ALIGN_RIGHT;
+	    new_align = ALIGN_RIGHT;
 	}
 	else if (STRNCMP(p, "columns:", 8) == 0 && VIM_ISDIGIT(p[8]))
 	{
 	    p += 8;
-	    tpl_columns = getdigits(&p);
+	    new_columns = getdigits(&p);
 	}
 	else if (STRNCMP(p, "vert:", 5) == 0)
 	{
 	    p += 5;
 	    if (*p != NUL && *p != ',')
 	    {
-		tpl_vert = *p;
+		new_vert = *p;
 		++p;
 	    }
 	}
@@ -101,6 +99,11 @@ tabpanelopt_changed(void)
 	if (*p == ',')
 	    ++p;
     }
+
+    tpl_wrap = new_wrap;
+    tpl_align = new_align;
+    tpl_columns = new_columns;
+    tpl_vert = new_vert;
 
     return OK;
 }
@@ -417,7 +420,7 @@ draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
     stl_hlrec_T *tabtab;
     int		curattr;
     int		n;
-    char_u	*opt_name = (char_u *)"tabline";
+    char_u	*opt_name = (char_u *)"tabpanel";
     int         opt_scope = OPT_LOCAL;
 
     // Temporarily reset 'cursorbind', we don't want a side effect from moving

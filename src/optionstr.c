@@ -29,8 +29,7 @@ static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 static char *(p_briopt_values[]) = {"shift:", "min:", "sbr", "list:", "column:", NULL};
 #endif
 #if defined(FEAT_TABPANEL)
-static char *(p_tpl_values[]) = {"wrap", "align:", "columns:", "vert:",
-    NULL};
+static char *(p_tpl_values[]) = {"wrap", "align:", "columns:", "vert:", NULL};
 #endif
 #if defined(FEAT_DIFF)
 // Note: Keep this in sync with diffopt_changed()

@@ -1725,11 +1725,9 @@ jump_to_mouse(
     int		mouse_char = ' ';
 #endif
 
-#if defined(FEAT_TABPANEL)
     col -= TPL_LCOL(NULL);
     if (col < 0)
 	return IN_TABPANEL;
-#endif
 
     mouse_past_bottom = FALSE;
     mouse_past_eol = FALSE;
@@ -3335,11 +3333,9 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    winid = wp->w_id;
 	    winrow = row + 1;
 	    wincol = col + 1;
-# if defined(FEAT_TABPANEL)
 	    wincol -= TPL_LCOL(NULL);
 	    if (wincol < 0)
 		wincol = 0;
-# endif
 	    row -= top_off;
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)

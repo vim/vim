@@ -857,11 +857,7 @@ screen_line(
     {
 	// For a window that has a right neighbor, draw the separator char
 	// right of the window contents.  But not on top of a popup window.
-#if defined(FEAT_TABPANEL)
 	if (coloff + col < TPL_LCOL(NULL) + COLUMNS_WITHOUT_TPL())
-#else
-	if (coloff + col < Columns)
-#endif
 	{
 	    if (!skip_for_popup(row, col + coloff))
 	    {
