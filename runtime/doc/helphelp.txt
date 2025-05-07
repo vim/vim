@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Apr 21
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 May 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -287,9 +287,11 @@ The latter supports the following normal commands: >
 	<Home>     | select first entry
 	<End>      | select last entry
 
-The plugin can also provide a table of contents in man pages, markdown files,
-and terminal buffers.  In the latter, the entries will be the past executed
-shell commands.  To find those, the following pattern is used: >
+The plugin can also provide a table of contents in buffers of the following
+filetypes: asciidoc, html, man, markdown, tex, vim, and xhtml.  In addition
+it also provide a table of contents for a terminal buffer, which produces
+entries that are the past executed shell commands.  To find those, by default,
+the following pattern is used: >
 
 	^\w\+@\w\+:\f\+\$\s
 
@@ -302,6 +304,9 @@ dictionary variable: >
 Tip: After inserting a pattern to look for with the `/` command, if you press
 <Esc> instead of <CR>, you can then get more context for each remaining entry
 by pressing `J` or `K`.
+
+Refer |helptoc.vim| for more details about helptoc, particularly about using
+it with filetypes other than help, and configuring its options.
 
 ==============================================================================
 2. Translated help files				*help-translated*
