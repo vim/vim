@@ -4731,7 +4731,7 @@ getmousepos()						*getmousepos()*
 		If not over a window, e.g. when in the command line, then only
 		"screenrow" and "screencol" are valid, the others are zero.
 
-		When on the TabPanel, "wincol" value is zero.
+		When on the tabpanel, "wincol" value is zero.
 
 		When on the status line below a window or the vertical
 		separator right of a window, the "line" and "column" values

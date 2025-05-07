@@ -421,8 +421,8 @@ space available.
 ==============================================================================
 5. Setting 'tabpanel'				*tabpanel* *setting-tabpanel*
 
-TabPanel is a vertical sidebar that displays tab page labels along the side
-of the window.  It looks like this:
+The tabpanel is a vertical sidebar that displays tab page labels along the
+side of the window.  It looks like this:
 >
 	+-----------+----------------------------------
 	|(1)        |text text text text text text text
@@ -436,12 +436,12 @@ of the window.  It looks like this:
 	|           |text text text text text text text
 	|           |text text text text text text text
 <
-To configure the TabPanel, use following options: 'tabpanel',
+To configure the tabpanel, use following options: 'tabpanel',
 'showtabpanel', 'tabpanelopt'.
 The 'tabpanel' and 'showtabpanel' options are function similar to the
 'statusline' or 'tabline'.
 
-The "columns:" of 'tabpanelopt' option specifies the width of the TabPanel:
+The "columns:" of 'tabpanelopt' option specifies the width of the tabpanel:
 >
               +------ This width
               |
@@ -451,7 +451,7 @@ The "columns:" of 'tabpanelopt' option specifies the width of the TabPanel:
 	|  ~/aaa.txt|text text text text text text text
 	|(2)        |text text text text text text text
 <
-The "align:" of 'tabpanelopt' option determines whether the TabPanel is
+The "align:" of 'tabpanelopt' option determines whether the tabpanel is
 displayed on the right side of the window:
 >
 	+----------------------------------+-----------
@@ -459,7 +459,7 @@ displayed on the right side of the window:
 	|text text text text text text text|  ~/aaa.txt
 	|text text text text text text text|(2)
 <
-The "wrap" of 'tabpanelopt' option controls whether lines in TabPanel are
+The "wrap" of 'tabpanelopt' option controls whether lines in tabpanel are
 wraped:
 >
 	+-----------+----------------------------------
@@ -470,7 +470,7 @@ wraped:
 	|(2)        |text text text text text text text
 
 The "vert:" of 'tabpanelopt' option defines the vertical separator between
-the TabPanel and the main window:
+the tabpanel and the main window:
 >
                     +------ This is
                     |

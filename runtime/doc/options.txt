@@ -8454,33 +8454,33 @@ A jump table for the options with a short description can be found at |Q_op|.
 'tabpanelopt' 'tplo'		string	(default "")
 			global
 			{not in Vi}
-	Option settings for diff mode.  It can consist of the following items.
-	All are optional.  Items must be separated by a comma.
+	Option settings for 'tabpanel',  It can consist of the following
+	items.  All are optional.  Items must be separated by a comma.
 
 		align:{text}	Specified the position of tabpanel.
-				Currently supported position are:
+				Currently supported positions are:
 
 				left	left-aligned
 				right	right-aligned
 
 				(default "left")
 
-		columns:{n}	Use the size (in char) of TabPanel.
-				The TabPenel is never shown when using zero
+		columns:{n}	Use the size (in char) of tabpanel.
+				The tabpanel is never shown when using zero
 				or less than the size of Vim window.
 				(default 20)
 
-		vert:{n}	Use a vertical separator for TabPanel.
-				This vertical separator must be 1 byte
+		vert:{n}	Use a vertical separator for tabpanel.
+				This vertical separator must be single-byte
 				character.
 				(default off)
 
 		wrap		How the content of tabpanel is displayed.
-				When on, each lines of the content longer
+				When on, each line of the content longer
 				than the size of TabPenel will wrap and
 				displaying continues on the next line.
-				When off, each lines of the content will not
-				wrap and only part of long one will be
+				When off, each line of the content will not
+				wrap and only part of long lines will be
 				displayed.
 				(default off)
 

@@ -1455,9 +1455,9 @@ if exists("&mzschemedll")
   call <SID>OptionG("mzschemegcdll", &mzschemegcdll)
 endif
 if has("tabpanel")
-  call <SID>AddOption("showtabpanel", gettext("0, 1 or 2; when to use a tab pages in TabPanel"))
-  call <SID>AddOption("tabpanel", gettext("custom tab pages in TabPanel"))
-  call <SID>AddOption("tabpanelopt", gettext("options for using TabPanel"))
+  call <SID>AddOption("showtabpanel", gettext("0, 1 or 2; when to use a tab pages in tabpanel"))
+  call <SID>AddOption("tabpanel", gettext("custom tab pages in tabpanel"))
+  call <SID>AddOption("tabpanelopt", gettext("options for using tabpanel"))
 endif
 
 set cpo&vim
