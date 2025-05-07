@@ -522,6 +522,7 @@ func Test_terminal_scrollback()
 endfunc
 
 func Test_terminal_postponed_scrollback()
+  CheckScreendump
   " tail -f only works on Unix
   CheckUnix
 
@@ -1298,6 +1299,7 @@ endfunc
 
 " Run this first, it fails when run after other tests.
 func Test_aa_terminal_focus_events()
+  CheckScreendump
   CheckNotGui
   CheckUnix
   CheckRunVimInTerminal
@@ -1475,6 +1477,7 @@ func Test_terminal_open_autocmd()
 endfunc
 
 func Test_open_term_from_cmd()
+  CheckScreendump
   CheckUnix
   CheckRunVimInTerminal
 
@@ -1497,6 +1500,7 @@ func Test_open_term_from_cmd()
 endfunc
 
 func Test_combining_double_width()
+  CheckScreendump
   CheckUnix
   CheckRunVimInTerminal
 
@@ -1666,6 +1670,7 @@ func Test_terminal_dumpload()
 endfunc
 
 func Test_terminal_dumpload_dump()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -2168,6 +2173,7 @@ func Test_terminal_ansicolors_default()
 endfunc
 
 func Test_terminal_ansicolors_default_reset_tgc()
+  CheckScreendump
   CheckFeature termguicolors
   CheckRunVimInTerminal
 
@@ -2261,6 +2267,7 @@ func Test_terminal_ansicolors_func()
 endfunc
 
 func Test_terminal_all_ansi_colors()
+  CheckScreendump
   CheckRunVimInTerminal
 
   " Use all the ANSI colors.

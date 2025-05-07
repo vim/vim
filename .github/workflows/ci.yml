@@ -111,22 +111,50 @@ jobs:
         run: |
           sudo bash ci/remove_snap.sh
 
+      - name: Enable debug packages
+        run: |
+          # Some of the ASAN suppressions are in libraries linked with dlopen
+          # and symbolization of them requires these debug packages.
+          sudo apt install ubuntu-dbgsym-keyring
+          sudo cp ci/ddebs.list /etc/apt/sources.list.d/ddebs.list
+          sudo cp ci/pinned-pkgs /etc/apt/preferences.d/pinned-pkgs
+
       - name: Install packages
         run: |
           # This is added by default, and it is often broken, but we don't need anything from it
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-
           PKGS=( \
             gettext \
-            libgtk2.0-dev:${{ matrix.architecture }} \
+            libgtk-3-dev:${{ matrix.architecture }} \
+            libgtk-3-bin:${{ matrix.architecture }} \
             desktop-file-utils \
+            libc6-dbgsym:${{ matrix.architecture }} \
             libtool-bin \
             libncurses-dev:${{ matrix.architecture }} \
             libxt-dev:${{ matrix.architecture }} \
+            libegl-mesa0:${{ matrix.architecture }} \
+            libegl1:${{ matrix.architecture }} \
+            libegl1-mesa-dev:${{ matrix.architecture }} \
+            libepoxy-dev:${{ matrix.architecture }} \
+            libwayland-egl1:${{ matrix.architecture }} \
+            libwayland-client0:${{ matrix.architecture }} \
+            libwayland-cursor0:${{ matrix.architecture }} \
             locales-all \
             software-properties-common \
             sway \
           )
+          if ${{ contains(matrix.extra, 'asan') }} && ${{ contains(matrix.architecture, 'native') }}; then
+          PKGS+=( \
+            libepoxy0-dbgsym:${{ matrix.architecture }} \
+            libxdamage1-dbgsym:${{ matrix.architecture }} \
+            libxcb1-dbgsym:${{ matrix.architecture }} \
+            libgtk-3-bin-dbgsym:${{ matrix.architecture }} \
+            libgtk-3-0t64-dbgsym:${{ matrix.architecture }} \
+            libglib2.0-0t64-dbgsym:${{ matrix.architecture }} \
+            libglib2.0-bin-dbgsym:${{ matrix.architecture }} \
+            libglib2.0-dev-bin-dbgsym:${{ matrix.architecture }} \
+          )
+          fi
           if ${{ matrix.features == 'huge' }}; then
             LUA_VER=${{ matrix.lua_ver || '5.4' }}
             PKGS+=( \
@@ -146,8 +174,7 @@ jobs:
               libattr1-dev
             )
           fi
-
-          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
@@ -225,6 +252,8 @@ jobs:
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
           fi
           echo "CFLAGS=${CFLAGS}"
+          # Disables GTK attempt to integrate with the accessibility service that does run in CI.
+          echo "NO_AT_BRIDGE=1"
           ) >> $GITHUB_ENV
 
       - name: Set up system
@@ -281,15 +310,6 @@ jobs:
           fi
 
       - name: Test
-        if: matrix.architecture != 'arm64'
-        timeout-minutes: 25
-        run: |
-          make ${SHADOWOPT} ${TEST}
-
-
-      # `sg audio` does not work on arm64 runner due to permission ('Incorrect password' error).
-      - name: Test on arm64
-        if: matrix.architecture == 'arm64'
         timeout-minutes: 25
         run: |
           make ${SHADOWOPT} ${TEST}
