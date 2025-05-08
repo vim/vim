@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Apr 30
+*options.txt*	For Vim version 9.1.  Last change: 2025 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6038,7 +6038,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	This option tells Vim what the mouse pointer should look like in
 	different modes.  The option is a comma-separated list of parts, much
-	like used for 'guicursor'.  Each part consist of a mode/location-list
+	like used for 'guicursor'.  Each part consists of a mode/location-list
 	and an argument-list:
 		mode-list:shape,mode-list:shape,..
 	The mode-list is a dash separated list of these modes/locations:
@@ -6066,26 +6066,26 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The shape is one of the following:
 	avail	name		looks like ~
-	w x	arrow		Normal mouse pointer
-	w x	blank		no pointer at all (use with care!)
-	w x	beam		I-beam
-	w x	updown		up-down sizing arrows
-	w x	leftright	left-right sizing arrows
-	w x	busy		The system's usual busy pointer
-	w x	no		The system's usual 'no input' pointer
-	  x	udsizing	indicates up-down resizing
-	  x	lrsizing	indicates left-right resizing
-	  x	crosshair	like a big thin +
-	  x	hand1		black hand
-	  x	hand2		white hand
-	  x	pencil		what you write with
-	  x	question	big ?
-	  x	rightup-arrow	arrow pointing right-up
-	w x	up-arrow	arrow pointing up
+	w x g   arrow		Normal mouse pointer
+	w x     blank		no pointer at all (use with care!)
+	w x g   beam		I-beam
+	w x g	updown		up-down sizing arrows
+	w x g	leftright	left-right sizing arrows
+	w x g	busy		The system's usual busy pointer
+	w x g	no		The system's usual 'no input' pointer
+	  x g	udsizing	indicates up-down resizing
+	  x g	lrsizing	indicates left-right resizing
+	  x g	crosshair	like a big thin +
+	  x g   hand1		black hand
+	  x g	hand2		white hand
+	  x     pencil		what you write with
+	  x g	question	big ?
+	  x     rightup-arrow	arrow pointing right-up
+	w x     up-arrow	arrow pointing up
 	  x	<number>	any X11 pointer number (see X11/cursorfont.h)
 
 	The "avail" column contains a 'w' if the shape is available for Win32,
-	x for X11.
+	x for X11 (including GTK+ 2), g for GTK+ 3.
 	Any modes not specified or shapes not available use the normal mouse
 	pointer.
 

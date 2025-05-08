@@ -5,9 +5,9 @@ CheckFeature popupwin
 CheckFeature textprop
 
 source screendump.vim
-CheckScreendump
 
 func Test_textprop_popup()
+  CheckScreendump
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	call setline(50, 'some text to work with')
@@ -55,6 +55,7 @@ func Test_textprop_popup()
 endfunc
 
 func Test_textprop_popup_corners()
+  CheckScreendump
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	call setline(50, 'now working with some longer text here')
@@ -115,6 +116,7 @@ func Test_textprop_popup_corners()
 endfunc
 
 func Test_textprop_popup_offsets()
+  CheckScreendump
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	call setline(50, 'now working with some longer text here')

@@ -3204,6 +3204,7 @@ def Test_nested_closure_fails()
 enddef
 
 def Run_Test_closure_in_for_loop_fails()
+  CheckScreendump
   var lines =<< trim END
     vim9script
     redraw
@@ -3600,6 +3601,7 @@ func Test_silent_echo()
 endfunc
 
 def Run_Test_silent_echo()
+  CheckScreendump
   var lines =<< trim END
     vim9script
     def EchoNothing()
@@ -4645,6 +4647,7 @@ def Test_invalid_redir()
 enddef
 
 func Test_keytyped_in_nested_function()
+  CheckScreendump
   CheckRunVimInTerminal
 
   call Run_Test_keytyped_in_nested_function()
