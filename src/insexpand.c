@@ -805,9 +805,7 @@ cfc_has_mode(void)
     static int
 is_nearest_active(void)
 {
-    unsigned int flags = get_cot_flags();
-
-    return (flags & COT_NEAREST) && !(flags & COT_FUZZY);
+    return (get_cot_flags() & (COT_NEAREST | COT_FUZZY)) == COT_NEAREST;
 }
 
 /*
