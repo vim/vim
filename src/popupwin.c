@@ -899,7 +899,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    // Also set border width if not already set
 	    // Check if border is specified separately in the options
 	    di = dict_find(dict, (char_u *)"border", -1);
-	    if (di == NULL)
+	    if (di == NULL && (enc_utf8 && *p_ambw == 's'))
 	    {
 		int	i;
 		// Set default border width to 1 for all sides
@@ -4851,15 +4851,10 @@ popup_parse_borderchars(int *border_chars)
 			       0x256D, 0x256E, 0x256F, 0x2570 } },
 	{ (char_u *)"bold",   { 0x2501, 0x2503, 0x2501, 0x2503,
 			      0x250F, 0x2513, 0x251B, 0x2517 } },
-	{ (char_u *)"solid",  { 0x20, 0x20, 0x20, 0x20,
-			      0x20, 0x20, 0x20, 0x20 } },
     };
 
     if (!vim_strchr(p, ','))
     {
-	if (!(enc_utf8 && *p_ambw == 's'))
-	    return FALSE;
-
 	for (i = 0; i < (int)ARRAY_LENGTH(defaults); i++)
 	{
 	    if (STRCMP(p, defaults[i].name) == 0)
@@ -4874,6 +4869,11 @@ popup_parse_borderchars(int *border_chars)
 	}
 	return FALSE;
     }
+
+    if (STRNCMP(p, "custom:", 7) != 0)
+	return FALSE;
+
+    p += 7;
 
     // Parse comma-separated values
     while (*p != NUL)

@@ -1461,7 +1461,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   "double"  - Double line border.
 	   "rounded" - Rounded border.
 	   "bold"    - Bold border.
-	   "solid"   - Space characters.
 
 	For custom characters, list the 8 characters in this order:
 	   1. top border character
@@ -1481,11 +1480,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    " Use a predefined style
 	    set popupborderchars=single
 
-	    " Custom ASCII border
-	    set popupborderchars=-,|,-,|,+,+,+,+
-
-	    " Custom Unicode border
-	    set popupborderchars=─,│,─,│,┌,┐,┘,└
+	    " Custom border
+	    set borderchars=custom:+,-,+,\|,+,-,+,\|
 <
 
 						*'breakat'* *'brk'*
