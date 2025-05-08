@@ -799,15 +799,49 @@ cfc_has_mode(void)
 	return FALSE;
 }
 
+#define COT_CHECK_HAS     0
+#define COT_CHECK_ANY     1
+#define COT_CHECK_NOT     2
+#define COT_CHECK_HAS_NOT 3
+
+/*
+ * Check 'completeopt' flags according to specified mode.
+ *
+ * mode:
+ * COT_CHECK_HAS     : check if all flags in 'has_flags' are set
+ * COT_CHECK_ANY     : check if any flag in 'has_flags' is set
+ * COT_CHECK_NOT     : check if no flag in 'not_flags' is set
+ * COT_CHECK_HAS_NOT : check if all flags in 'has_flags' are set AND
+ *                        no flag in 'not_flags' is set
+ *
+ * Returns TRUE if the condition is met, FALSE otherwise.
+ */
+    static int
+check_cot_flags(int mode, unsigned int has_flags, unsigned int not_flags)
+{
+    unsigned int flags = curbuf->b_cot_flags != 0 ? curbuf->b_cot_flags : cot_flags;
+    switch (mode)
+    {
+	case COT_CHECK_HAS:
+	    return (flags & has_flags) == has_flags;
+	case COT_CHECK_ANY:
+	    return (has_flags == 0) ? TRUE : ((flags & has_flags) != 0);
+	case COT_CHECK_NOT:
+	    return (flags & not_flags) == 0;
+	case COT_CHECK_HAS_NOT:
+	    return ((flags & has_flags) == has_flags) &&
+		   ((flags & not_flags) == 0);
+    }
+    return FALSE;
+}
+
 /*
  * Returns TRUE if matches should be sorted based on proximity to the cursor.
  */
     static int
 is_nearest_active(void)
 {
-    unsigned int flags = get_cot_flags();
-
-    return (flags & COT_NEAREST) && !(flags & COT_FUZZY);
+    return check_cot_flags(COT_CHECK_HAS_NOT, COT_NEAREST, COT_FUZZY);
 }
 
 /*
@@ -1104,7 +1138,7 @@ ins_compl_col_range_attr(linenr_T lnum, int col)
     int	    start_col;
     int	    attr;
 
-    if ((get_cot_flags() & COT_FUZZY)
+    if (check_cot_flags(COT_CHECK_HAS, COT_FUZZY, 0)
 	    || (attr = syn_name2attr((char_u *)"ComplMatchIns")) == 0)
 	return -1;
 
@@ -1341,7 +1375,7 @@ ins_compl_del_pum(void)
 pum_wanted(void)
 {
     // 'completeopt' must contain "menu" or "menuone"
-    if ((get_cot_flags() & COT_ANY_MENU) == 0)
+    if (!check_cot_flags(COT_CHECK_ANY, COT_ANY_MENU, 0))
 	return FALSE;
 
     // The display looks bad on a B&W display.
@@ -1374,7 +1408,7 @@ pum_enough_matches(void)
 	compl = compl->cp_next;
     } while (!is_first_match(compl));
 
-    if (get_cot_flags() & COT_MENUONE)
+    if (check_cot_flags(COT_CHECK_HAS, COT_MENUONE, 0))
 	return (i >= 1);
     return (i >= 2);
 }
@@ -1466,10 +1500,9 @@ ins_compl_build_pum(void)
     int		i = 0;
     int		cur = -1;
     int		max_fuzzy_score = 0;
-    unsigned int cur_cot_flags = get_cot_flags();
-    int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
-    int		fuzzy_filter = (cur_cot_flags & COT_FUZZY) != 0;
-    int		fuzzy_sort = fuzzy_filter && !(cur_cot_flags & COT_NOSORT);
+    int		compl_no_select = check_cot_flags(COT_CHECK_HAS, COT_NOSELECT, 0);
+    int		fuzzy_filter = check_cot_flags(COT_CHECK_HAS, COT_FUZZY, 0);
+    int		fuzzy_sort = fuzzy_filter && check_cot_flags(COT_CHECK_NOT, 0, COT_NOSORT);
     compl_T	*match_head = NULL;
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
@@ -2235,9 +2268,7 @@ ins_compl_len(void)
     static int
 ins_compl_has_preinsert(void)
 {
-    int cur_cot_flags = get_cot_flags();
-    return (cur_cot_flags & (COT_PREINSERT | COT_FUZZY | COT_MENUONE))
-	== (COT_PREINSERT | COT_MENUONE);
+     return check_cot_flags(COT_CHECK_HAS_NOT, COT_PREINSERT | COT_MENUONE, COT_FUZZY);
 }
 
 /*
@@ -2911,7 +2942,7 @@ ins_compl_prep(int c)
     if (ctrl_x_mode_not_defined_yet()
 			   || (ctrl_x_mode_normal() && !compl_started))
     {
-	compl_get_longest = (get_cot_flags() & COT_LONGEST) != 0;
+	compl_get_longest = check_cot_flags(COT_CHECK_HAS, COT_LONGEST, 0);
 	compl_used_match = TRUE;
     }
 
@@ -3429,10 +3460,9 @@ set_completion(colnr_T startcol, list_T *list)
     int save_w_wrow = curwin->w_wrow;
     int save_w_leftcol = curwin->w_leftcol;
     int flags = CP_ORIGINAL_TEXT;
-    unsigned int cur_cot_flags = get_cot_flags();
-    int compl_longest = (cur_cot_flags & COT_LONGEST) != 0;
-    int compl_no_insert = (cur_cot_flags & COT_NOINSERT) != 0;
-    int compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
+    int compl_longest = check_cot_flags(COT_CHECK_HAS, COT_LONGEST, 0);
+    int compl_no_insert = check_cot_flags(COT_CHECK_HAS, COT_NOINSERT, 0);
+    int compl_no_select = check_cot_flags(COT_CHECK_HAS, COT_NOSELECT, 0);
 
     // If already doing completions stop it.
     if (ctrl_x_mode_not_default())
@@ -3793,7 +3823,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 #define CI_WHAT_MATCHES		0x20
 #define CI_WHAT_ALL		0xff
     int		what_flag;
-    int		compl_fuzzy_match = (get_cot_flags() & COT_FUZZY) != 0;
+    int		compl_fuzzy_match = check_cot_flags(COT_CHECK_HAS, COT_FUZZY, 0);
 
     if (what_list == NULL)
 	what_flag = CI_WHAT_ALL & ~(CI_WHAT_MATCHES | CI_WHAT_COMPLETED);
@@ -5306,9 +5336,8 @@ find_next_completion_match(
 {
     int	    found_end = FALSE;
     compl_T *found_compl = NULL;
-    unsigned int cur_cot_flags = get_cot_flags();
-    int	    compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
-    int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
+    int compl_no_select = check_cot_flags(COT_CHECK_HAS, COT_NOSELECT, 0);
+    int compl_fuzzy_match = check_cot_flags(COT_CHECK_HAS, COT_FUZZY, 0);
     int	    cpt_sources_active = compl_match_array && cpt_sources_array;
 
     while (--todo >= 0)
@@ -5435,9 +5464,8 @@ ins_compl_next(
     int	    advance;
     int	    started = compl_started;
     buf_T   *orig_curbuf = curbuf;
-    unsigned int cur_cot_flags = get_cot_flags();
-    int	    compl_no_insert = (cur_cot_flags & COT_NOINSERT) != 0;
-    int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
+    int	    compl_no_insert = check_cot_flags(COT_CHECK_HAS, COT_NOINSERT, 0);
+    int	    compl_fuzzy_match = check_cot_flags(COT_CHECK_HAS, COT_FUZZY, 0);
     int	    compl_preinsert = ins_compl_has_preinsert();
 
     // When user complete function return -1 for findstart which is next
