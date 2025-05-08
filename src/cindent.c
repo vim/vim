@@ -2447,7 +2447,8 @@ get_c_indent(void)
 		char_u	    *line;
 
 		trypos = &our_paren_pos;
-		do {
+		do
+		{
 		    outermost = *trypos;
 		    curwin->w_cursor.lnum = outermost.lnum;
 		    curwin->w_cursor.col = outermost.col;

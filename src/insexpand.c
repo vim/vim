@@ -5246,7 +5246,8 @@ find_comp_when_fuzzy(void)
     str = compl_match_array[target_idx].pum_text;
 
     comp = compl_first_match;
-    do {
+    do
+    {
 	if (comp->cp_score == score && (str == comp->cp_str.string || str == comp->cp_text[CPT_ABBR]))
 	    return comp;
 	comp = comp->cp_next;
