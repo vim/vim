@@ -1523,8 +1523,8 @@ ins_compl_build_pum(void)
 	}
 
 	// Apply 'smartcase' behavior during normal mode
-	if (ctrl_x_mode_normal() && compl_leader.string &&
-		!ignorecase(compl_leader.string) && !fuzzy_filter)
+	if (ctrl_x_mode_normal() && !p_inf && compl_leader.string
+		&& !ignorecase(compl_leader.string) && !fuzzy_filter)
 	    compl->cp_flags &= ~CP_ICASE;
 
 	if (!match_at_original_text(compl)

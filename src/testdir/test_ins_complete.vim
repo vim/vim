@@ -4226,8 +4226,8 @@ func Test_smartcase_normal_mode()
   func! TestInner(key)
     let pr = "\<c-r>=PrintMenu()\<cr>"
 
-    set completeopt=menuone,noselect ignorecase smartcase
     new
+    set completeopt=menuone,noselect ignorecase smartcase
     call setline(1, ["Fast", "FAST", "False", "FALSE", "fast", "false"])
     exe $"normal! ggOF{a:key}{pr}"
     call assert_equal('F{''matches'': [''Fast'', ''FAST'', ''False'',
@@ -4288,15 +4288,14 @@ func Test_smartcase_normal_mode()
     call assert_equal('f{''matches'': []}', getline(1))
     exe $"normal! ggOf{a:key}a\<bs>{pr}"
     call assert_equal('f{''matches'': []}', getline(1))
-    bw!
     set ignorecase& smartcase& completeopt&
+    bw!
   endfunc
 
   call TestInner("\<c-n>")
   call TestInner("\<c-p>")
   call TestInner("\<c-x>\<c-n>")
   call TestInner("\<c-x>\<c-p>")
-
   delfunc PrintMenu
   delfunc TestInner
 endfunc
