@@ -3835,7 +3835,7 @@ get_tabline_label(
 		    wincount,
 		    modified ? "+" : "");
 
-	    // Make sure resulting NameBuff will not exceed it's bounds.
+	    // Make sure resulting NameBuff will not exceed its bounds.
 	    if (NameBufflen + buflen < MAXPATHL)
 	    {
 		mch_memmove(NameBuff + buflen, NameBuff, NameBufflen + 1);	// +1 for NUL
