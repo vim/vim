@@ -6652,6 +6652,7 @@ compl-keyword	insert.txt	/*compl-keyword*
 compl-omni	insert.txt	/*compl-omni*
 compl-omni-filetypes	insert.txt	/*compl-omni-filetypes*
 compl-spelling	insert.txt	/*compl-spelling*
+compl-states	insert.txt	/*compl-states*
 compl-stop	insert.txt	/*compl-stop*
 compl-tag	insert.txt	/*compl-tag*
 compl-thesaurus	insert.txt	/*compl-thesaurus*

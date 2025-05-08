@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 May 07
+*options.txt*	For Vim version 9.1.  Last change: 2025 May 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7756,9 +7756,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Override the 'ignorecase' option if the search pattern contains upper
 	case characters.  Only used when the search pattern is typed and
 	'ignorecase' option is on.  Used for the commands "/", "?", "n", "N",
-	":g" and ":s".  Not used for "*", "#", "gd", tag search, etc.  After
-	"*" and "#" you can make 'smartcase' used by doing a "/" command,
-	recalling the search pattern from history and hitting <Enter>.
+	":g" and ":s" and when filtering matches for the completion menu
+	|compl-states|.
+	Not used for "*", "#", "gd", tag search, etc.  After "*" and "#" you
+	can make 'smartcase' used by doing a "/" command, recalling the search
+	pattern from history and hitting <Enter>.
 	NOTE: This option is reset when 'compatible' is set.
 
 			     *'smartindent'* *'si'* *'nosmartindent'* *'nosi'*

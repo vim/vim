@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Apr 27
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 May 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -194,9 +194,8 @@ filter({expr1}, {expr2})	List/Dict/Blob/String
 					remove items from {expr1} where
 					{expr2} is 0
 finddir({name} [, {path} [, {count}]])
-				String	find directory {name} in {path}
 findfile({name} [, {path} [, {count}]])
-				String	find file {name} in {path}
+				String/List find dir/file {name} in {path}
 flatten({list} [, {maxdepth}])	List	flatten {list} up to {maxdepth} levels
 flattennew({list} [, {maxdepth}])
 				List	flatten a copy of {list}
@@ -2286,6 +2285,7 @@ cursor({list})
 		Can also be used as a |method|: >
 			GetCursorPos()->cursor()
 <
+		Returns 0 when the position could be set, -1 otherwise.
 		Return type: |Number|
 
 
@@ -3167,7 +3167,7 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		Can also be used as a |method|: >
 			GetInput()->feedkeys()
 <
-		Return type: |String| or list<string> depending on {list}
+		Return type: |Number|
 
 
 filecopy({from}, {to})					*filecopy()*
@@ -4964,7 +4964,7 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		Can also be used as a |method|: >
 			GetRegname()->getreg()
 <
-		Return type: |String|
+		Return type: |String| or list<string> depending on {list}
 
 
 getreginfo([{regname}])					*getreginfo()*
@@ -9830,6 +9830,7 @@ setcursorcharpos({list})
 		Can also be used as a |method|: >
 			GetCursorPos()->setcursorcharpos()
 <
+		Returns 0 when the position could be set, -1 otherwise.
 		Return type: |Number|
 
 
