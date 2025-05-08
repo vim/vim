@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 May 07
+*version9.txt*  For Vim version 9.1.  Last change: 2025 May 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41626,6 +41626,7 @@ Completion: ~
   "{flag}^<limit>" notation
 - add ":filetype" command completion
 - add "filetypecmd" completion type for |getcompletion()|
+- 'smartcase' applies to completion filtering
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have

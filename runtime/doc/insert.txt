@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2025 Apr 14
+*insert.txt*    For Vim version 9.1.  Last change: 2025 May 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1347,6 +1347,7 @@ use all space available.
 The 'pumwidth' option can be used to set a minimum width.  The default is 15
 characters.
 
+							*compl-states*
 There are three states:
 1. A complete match has been inserted, e.g., after using CTRL-N or CTRL-P.
 2. A cursor key has been used to select another match.  The match was not

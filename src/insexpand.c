@@ -1507,7 +1507,7 @@ ins_compl_build_pum(void)
 		match_count = 1;
 		max_matches_found = FALSE;
 	    }
-	    else if (cpt_sources_array && !max_matches_found)
+	    else if (cpt_sources_array != NULL && !max_matches_found)
 	    {
 		int max_matches = cpt_sources_array[cur_source].max_matches;
 		if (max_matches > 0 && match_count > max_matches)
@@ -1515,10 +1515,16 @@ ins_compl_build_pum(void)
 	    }
 	}
 
+	// Apply 'smartcase' behavior during normal mode
+	if (ctrl_x_mode_normal() && !p_inf && compl_leader.string
+		&& !ignorecase(compl_leader.string) && !fuzzy_filter)
+	    compl->cp_flags &= ~CP_ICASE;
+
 	if (!match_at_original_text(compl)
 		&& !max_matches_found
 		&& (compl_leader.string == NULL
-		    || ins_compl_equal(compl, compl_leader.string, (int)compl_leader.length)
+		    || ins_compl_equal(compl, compl_leader.string,
+			(int)compl_leader.length)
 		    || (fuzzy_filter && compl->cp_score > 0)))
 	{
 	    ++compl_match_arraysize;
