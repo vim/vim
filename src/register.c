@@ -2068,7 +2068,8 @@ do_put(
 	    else
 	    {
 		totlen = count * yanklen;
-		do {
+		do
+		{
 		    oldp = ml_get(lnum);
 		    oldlen = ml_get_len(lnum);
 		    if (lnum > start_lnum)

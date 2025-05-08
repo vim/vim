@@ -825,7 +825,8 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 		 * each direction. If it bumps into any other changes, merge
 		 * them.
 		 */
-		do {
+		do
+		{
 			groupsize = g.end - g.start;
 
 			/*

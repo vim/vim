@@ -5344,7 +5344,8 @@ search_for_fuzzy_match(
     if (whole_line && start_pos->lnum != pos->lnum)
 	current_pos.lnum += dir;
 
-    do {
+    do
+    {
 
 	// Check if looped around and back to start position
 	if (looped_around && EQUAL_POS(current_pos, circly_end))
