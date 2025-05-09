@@ -4379,7 +4379,7 @@ win_line(
 									  == 2
 				 || (*mb_off2cells)(
 				     LineOffset[wlv.screen_row - 1]
-							    + (int)Columns - 2,
+							    + (int)COLUMNS_WITHOUT_TPL() - 2,
 				     LineOffset[wlv.screen_row]
 						      + screen_Columns) == 2)))
 		{
@@ -4389,17 +4389,17 @@ win_line(
 		    // auto-wrap, we overwrite the character.
 		    if (screen_cur_col != wp->w_width)
 			screen_char(LineOffset[wlv.screen_row - 1]
-						       + (unsigned)Columns - 1,
-				       wlv.screen_row - 1, (int)(Columns - 1));
+						       + (unsigned)COLUMNS_WITHOUT_TPL() - 1,
+				       wlv.screen_row - 1, (int)(COLUMNS_WITHOUT_TPL() - 1));
 
 		    // When there is a multi-byte character, just output a
 		    // space to keep it simple.
 		    if (has_mbyte && MB_BYTE2LEN(ScreenLines[LineOffset[
-				     wlv.screen_row - 1] + (Columns - 1)]) > 1)
+				     wlv.screen_row - 1] + (COLUMNS_WITHOUT_TPL() - 1)]) > 1)
 			out_char(' ');
 		    else
 			out_char(ScreenLines[LineOffset[wlv.screen_row - 1]
-							    + (Columns - 1)]);
+							    + (COLUMNS_WITHOUT_TPL() - 1)]);
 		    // force a redraw of the first char on the next line
 		    ScreenAttrs[LineOffset[wlv.screen_row]] = (sattr_T)-1;
 		    screen_start();	// don't know where cursor is now

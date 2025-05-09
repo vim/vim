@@ -351,4 +351,23 @@ function! Test_tabpanel_tabline_and_tabpanel()
   call StopVimInTerminal(buf)
 endfunc
 
+function! Test_tabpanel_dont_overflow_into_tabpanel()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=columns:10
+    set showtabline=2
+    tabnew
+    call setline(1, repeat('x', 100))
+    set wrap
+  END
+  call writefile(lines, 'XTest_tabpanel_dont_overflow_into_tabpanel', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_dont_overflow_into_tabpanel', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_dont_overflow_into_tabpanel_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
