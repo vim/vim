@@ -5183,3 +5183,47 @@ struct cellsize {
     int cs_ypixel;
 };
 #endif
+
+
+#ifdef FEAT_WAYLAND
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+
+// Wayland selections
+typedef enum {
+    WAYLAND_SELECTION_NONE	    = 0x0,
+    WAYLAND_SELECTION_REGULAR	    = 0x1,
+    WAYLAND_SELECTION_PRIMARY	    = 0x2,
+    WAYLAND_SELECTION_CLEAR	    = 0x4,
+} wayland_selection_T;
+
+// Bitmask for Wayland selections
+typedef int wayland_sbitmask_T;
+
+// Callback for receiving data
+typedef void (*wayland_cb_receive_data_func_T)(
+	void *user_data,
+	const char *mime_type,
+	int fd,
+	wayland_selection_T type);
+
+// Callback for each offer source client supports sending to us.
+// 'current_mime_types' are the current mime types that have been chosen to
+// receive from.
+typedef void (*wayland_cb_choose_offer_func_T)(
+	void *user_data,
+	const char *mime_type,
+	garray_T *current_mime_types);
+
+// Callback when another client wants us to send data to them
+typedef void (*wayland_cb_send_data_func_T)(
+	void *user_data,
+	const char *mime_type,
+	int fd,
+	wayland_selection_T type);
+
+
+
+# endif // FEAT_WAYLAND_CLIPBOARD
+
+#endif // FEAT_WAYLAND

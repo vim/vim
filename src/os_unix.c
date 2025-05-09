@@ -1,5 +1,4 @@
 /* vi:set ts=8 sts=4 sw=4 noet:
- *
  * VIM - Vi IMproved	by Bram Moolenaar
  *	      OS/2 port by Paul Slootman
  *	      VMS merge by Zoltan Arpadffy
@@ -133,9 +132,9 @@ static void sig_sysmouse SIGPROTOARG;
 #  include <X11/Intrinsic.h>
 #  include <X11/Shell.h>
 #  include <X11/StringDefs.h>
+
 static Widget	xterm_Shell = (Widget)0;
 static void clip_update(void);
-static void xterm_update(void);
 # endif
 
 Window	    x11_window = 0;
@@ -1303,33 +1302,43 @@ sigcont_handler SIGDEFARG(sigarg)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-# ifdef USE_SYSTEM
+#if defined(FEAT_CLIPBOARD)
+# if defined(USE_SYSTEM) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
 static void *clip_star_save = NULL;
 static void *clip_plus_save = NULL;
 # endif
 
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
 /*
  * Called when Vim is going to sleep or execute a shell command.
- * We can't respond to requests for the X selections.  Lose them, otherwise
- * other applications will hang.  But first copy the text to cut buffer 0.
+ * We can't respond to requests for the X or wayland selections.
+ * Lose them, otherwise other applications will hang.  But first
+ * copy the text to cut buffer 0 (for X11). Wayland users must have
+ * a clipboard manager to replicate such behaviour.
  */
     static void
 loose_clipboard(void)
 {
     if (clip_star.owned || clip_plus.owned)
     {
+#ifdef FEAT_X11
 	x11_export_final_selection();
+#endif
 	if (clip_star.owned)
 	    clip_lose_selection(&clip_star);
 	if (clip_plus.owned)
 	    clip_lose_selection(&clip_plus);
+#ifdef FEAT_X11
 	if (x11_display != NULL)
 	    XFlush(x11_display);
+#endif
     }
 }
+#endif
 
-# ifdef USE_SYSTEM
+# if defined(USE_SYSTEM) && (defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD))
 /*
  * Save clipboard text to restore later.
  */
@@ -1385,7 +1394,8 @@ mch_suspend(void)
     settmode(TMODE_COOK);
     out_flush();	    // needed to disable mouse on some systems
 
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
     loose_clipboard();
 # endif
 # if defined(SIGCONT)
@@ -1810,7 +1820,7 @@ x_IOerror_handler(Display *dpy UNUSED)
  * (e.g. through tmux).
  */
     static void
-may_restore_clipboard(void)
+may_restore_x11_clipboard(void)
 {
     // No point in restoring the connecting if we are exiting or dying.
     if (!exiting && !v_dying && xterm_dpy_retry_count > 0)
@@ -1844,13 +1854,15 @@ ex_xrestore(exarg_T *eap)
 	xterm_display = (char *)vim_strnsave(eap->arg, arglen);
 	xterm_display_allocated = TRUE;
     }
-    smsg(_("restoring display %s"), xterm_display == NULL
+    smsg(_("restoring X11 display %s"), xterm_display == NULL
 		    ? (char *)mch_getenv((char_u *)"DISPLAY") : xterm_display);
 
     clear_xterm_clip();
     x11_window = 0;
     xterm_dpy_retry_count = 5;  // Try reconnecting five times
-    may_restore_clipboard();
+    may_restore_x11_clipboard();
+
+    choose_clipmethod();
 }
 #endif
 
@@ -4836,8 +4848,11 @@ mch_call_shell_system(
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);	    // set to normal mode
 
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
     save_clipboard();
+#endif
     loose_clipboard();
 # endif
 
@@ -4899,7 +4914,8 @@ mch_call_shell_system(
 	settmode(TMODE_RAW);	// set to raw mode
     }
     resettitle();
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+# if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
     restore_clipboard();
 # endif
     return x;
@@ -6505,8 +6521,11 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 #endif
 #ifndef HAVE_SELECT
 			// each channel may use in, out and err
-	struct pollfd   fds[6 + 3 * MAX_OPEN_CHANNELS];
+	struct pollfd   fds[7 + 3 * MAX_OPEN_CHANNELS];
 	int		nfd;
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	int             wayland_idx = -1;
+#endif
 # ifdef FEAT_XCLIPBOARD
 	int		xterm_idx = -1;
 # endif
@@ -6530,6 +6549,15 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	fds[0].events = POLLIN;
 	nfd = 1;
 
+# ifdef FEAT_WAYLAND_CLIPBOARD
+	if (wayland_client_is_connected())
+	{
+	    wayland_idx = nfd;
+	    fds[nfd].fd = vwl_display_fd;
+	    fds[nfd].events = POLLIN;
+	    nfd++;
+	}
+#endif
 # ifdef FEAT_XCLIPBOARD
 	may_restore_clipboard();
 	if (xterm_Shell != (Widget)0)
@@ -6575,6 +6603,11 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    // MzThreads scheduling is required and timeout occurred
 	    finished = FALSE;
 # endif
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	if (fds[wayland_idx].revents & POLLIN)
+	    wayland_client_update();
+#endif
 
 # ifdef FEAT_XCLIPBOARD
 	if (xterm_Shell != (Widget)0 && (fds[xterm_idx].revents & POLLIN))
@@ -6656,8 +6689,18 @@ select_eintr:
 # endif
 	maxfd = fd;
 
+# ifdef FEAT_WAYLAND_CLIPBOARD
+	if (wayland_client_is_connected())
+	{
+	    FD_SET(wayland_display_fd, &rfds);
+
+	    if (maxfd < wayland_display_fd)
+		maxfd = wayland_display_fd;
+	}
+#endif
+
 # ifdef FEAT_XCLIPBOARD
-	may_restore_clipboard();
+	may_restore_x11_clipboard();
 	if (xterm_Shell != (Widget)0)
 	{
 	    FD_SET(ConnectionNumber(xterm_dpy), &rfds);
@@ -6744,6 +6787,11 @@ select_eintr:
 	    // loop if MzThreads must be scheduled and timeout occurred
 	    finished = FALSE;
 # endif
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	if (ret > 0 && FD_ISSET(wayland_display_fd, &rfds))
+	    wayland_client_update();
+#endif
 
 # ifdef FEAT_XCLIPBOARD
 	if (ret > 0 && xterm_Shell != (Widget)0
@@ -8295,7 +8343,7 @@ clip_update(void)
  * nothing in the X event queue (& no timers pending), then we return
  * immediately.
  */
-    static void
+    void
 xterm_update(void)
 {
     XEvent event;
@@ -8846,3 +8894,7 @@ start_timeout(long msec)
 }
 # endif // PROF_NSEC
 #endif  // FEAT_RELTIME
+
+#ifdef FEAT_WAYLAND
+
+#endif

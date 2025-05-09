@@ -32,6 +32,8 @@ int expand_set_buftype(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_casemap(optset_T *args);
 int expand_set_casemap(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_clipboard(optexpand_T *args, int *numMatches, char_u ***matches);
+char * did_set_clipmethod(optset_T *args);
+int expand_set_clipmethod(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_chars_option(optset_T *args);
 int expand_set_chars_option(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_cinoptions(optset_T *args);

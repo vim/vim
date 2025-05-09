@@ -667,13 +667,35 @@ vim_main2(void)
 # endif
     {
 	setup_term_clip();
-	TIME_MSG("setup clipboard");
+	TIME_MSG("setup x11 clipboard");
     }
 #endif
 
 #ifdef FEAT_CLIENTSERVER
     // Prepare for being a Vim server.
     prepare_server(&params);
+#endif
+
+#ifdef FEAT_WAYLAND
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+#endif
+    {
+	if (wayland_init_client(wayland_display_name) == OK)
+	{
+	    TIME_MSG("connected to wayland display");
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	    // TODO: add option to configure which seat to use?
+	    if (wayland_cb_init("seat0") == OK)
+		TIME_MSG("setup wayland clipboard");
+	}
+#endif
+    }
+#endif
+
+#ifdef FEAT_CLIPBOARD
+    choose_clipmethod();
 #endif
 
     /*
@@ -2460,6 +2482,11 @@ command_line_scan(mparm_T *parmp)
 		x_no_connect = TRUE;
 #endif
 		break;
+	    case 'Y':		// "-Y" don't connect to wayland compositor
+#if defined(FEAT_WAYLAND)
+		wayland_no_connect = TRUE;
+#endif
+		break;
 
 	    case 'Z':		// "-Z"  restricted mode
 		restricted = TRUE;
@@ -3664,6 +3691,9 @@ usage(void)
     main_msg(_("-display <display>\tConnect Vim to this particular X-server"));
 # endif
     main_msg(_("-X\t\t\tDo not connect to X server"));
+#endif
+#if defined(UNIX) && defined(FEAT_WAYLAND)
+    main_msg(_("-Y\t\t\tDo not connect to wayland compositor"));
 #endif
 #ifdef FEAT_CLIENTSERVER
     main_msg(_("--remote <files>\tEdit <files> in a Vim server if possible"));
