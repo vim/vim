@@ -3307,6 +3307,17 @@ did_set_optexpr(optset_T *args)
 #endif
 
 /*
+ *  The 'pumborder' option is changed
+ */
+    char *
+did_set_pumborder(optset_T *args UNUSED)
+{
+    if (!pum_parse_border())
+	return e_invalid_argument;
+    return NULL;
+}
+
+/*
  * The 'pastetoggle' option is changed.
  */
     char *

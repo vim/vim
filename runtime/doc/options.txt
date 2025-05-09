@@ -4470,7 +4470,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     A:DiffAdd,C:DiffChange,D:DiffDelete,
 				     T:DiffText,E:DiffTextAdd,>:SignColumn,
 				     -:Conceal,B:SpellBad,P:SpellCap,
-				     R:SpellRare, L:SpellLocal,+:Pmenu,
+				     R:SpellRare, L:SpellLocal,
+				     +:Pmenu,I:PmenuBorder,
 				     =:PmenuSel, k:PmenuMatch,<:PmenuMatchSel,
 				     [:PmenuKind,]:PmenuKindSel,
 				     {:PmenuExtra,}:PmenuExtraSel,
@@ -6560,6 +6561,29 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	When on a ":" prompt is used in Ex mode.
 
+						*'pumborder'* *'pbr'*
+'pumborder' 'pbr'	string	(default "")
+			global
+	When non-empty, specifies the border style used for the
+	|ins-completion-menu| during completion. This affects how the border
+	around the popup menu is drawn.
+	Possible values are:
+		"single"    a single-line border
+		"double"    a double-line border
+		"rounded"   a rounded border using box-drawing characters
+		"solid"     a solid block-style border
+		"shadow"    a shadow-like border style
+
+	Alternatively, a custom border style can be defined by specifying
+	a comma-separated list of eight border characters.  The expected
+	order is as follows:
+		Top-left corner, Top border, Top-right corner, Right border
+		Bot-right corner, Bot border, Bot-left corner, Left border
+
+	Example: >
+		:set pumborder=rounded
+		:set pumborder=+,-,+,\|,+,-,+,\|
+<
 						*'pumheight'* *'ph'*
 'pumheight' 'ph'	number	(default 0)
 			global

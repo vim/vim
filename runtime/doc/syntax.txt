@@ -5915,6 +5915,8 @@ NonText		'@' at the end of the window, "<<<" at the start of the window
 Normal		Normal text.
 							*hl-Pmenu*
 Pmenu		Popup menu: Normal item.
+							*hl-PmenuBorder*
+PmenuBorder	Popup menu: Border character.
 							*hl-PmenuSel*
 PmenuSel	Popup menu: Selected item.
 							*hl-PmenuKind*
