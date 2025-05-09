@@ -257,6 +257,15 @@
 # define __ARGS(x)  x
 #endif
 
+#ifdef FEAT_WAYLAND
+# include "wayland.h"
+#endif
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+# include "wlr-data-control-unstable-v1.h"
+# include "ext-data-control-unstable-v1.h"
+#endif
+
 #if (defined(UNIX) || defined(VMS)) \
 	&& (!defined(MACOS_X) || defined(HAVE_CONFIG_H))
 # include "os_unix.h"	    // bring lots of system header files
@@ -2330,27 +2339,6 @@ typedef struct
     int_u	format;		// Vim's own special clipboard format
     int_u	format_raw;	// Vim's raw text clipboard format
 # endif
-
-#ifdef FEAT_WAYLAND_CLIPBOARD
-    union {
-	struct zwlr_data_control_source_v1 *zwlr;
-	struct ext_data_control_source_v1 *ext;
-	void *check; // Used to check if union is null
-    } source;
-
-    union {
-	struct zwlr_data_control_offer_v1 *zwlr;
-	struct ext_data_control_offer_v1 *ext;
-	void *check;
-    } offer;
-    const char *cur_mime; // Current mime type for selection
-    int cur_mime_priority; // Priority of mime type compared to others
-
-    // Set to FALSE before attempting to receive a selection, and set to TRUE
-    // once we have received it. This is so any other events that happen after
-    // when we've already received the selection are ignored.
-    int got_selection;
-#endif
 
 # ifdef FEAT_GUI_HAIKU
     // No clipboard at the moment. TODO?

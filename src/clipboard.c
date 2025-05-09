@@ -19,16 +19,6 @@
 # include "winclip.pro"
 #endif
 
-#ifdef FEAT_WAYLAND
-#include <wayland-client.h>
-
-#ifdef FEAT_WAYLAND_CLIPBOARD
-#include "wlr-data-control-unstable-v1.h"
-#include "ext-data-control-unstable-v1.h"
-#endif
-
-#endif
-
 // Functions for copying and pasting text between applications.
 // This is always included in a GUI version, but may also be included when the
 // clipboard and mouse is available to a terminal version such as xterm.
@@ -40,79 +30,6 @@
 // for them.
 
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)
-
-#ifdef FEAT_WAYLAND_CLIPBOARD
-static void vzwlr_da_offer_v1_listener_offer(void *data,
-	struct zwlr_data_control_offer_v1 *offer, const char *mime_type);
-
-static void vzwlr_da_device_v1_listener_data_offer(void *data,
-	struct zwlr_data_control_device_v1 *device,
-	struct zwlr_data_control_offer_v1 *offer);
-static void vzwlr_da_device_v1_listener_selection(void *data,
-	struct zwlr_data_control_device_v1 *device,
-	struct zwlr_data_control_offer_v1 *offer);
-static void vzwlr_da_device_v1_listener_primary_selection(void *data,
-	struct zwlr_data_control_device_v1 *device,
-	struct zwlr_data_control_offer_v1 *offer);
-static void vzwlr_da_device_v1_listener_finished(void *data,
-	struct zwlr_data_control_device_v1 *device);
-
-static void vext_da_offer_v1_listener_offer(void *data,
-	struct ext_data_control_offer_v1 *offer, const char *mime);
-
-static void vext_da_device_v1_listener_data_offer(void *data,
-	struct ext_data_control_device_v1 *device,
-	struct ext_data_control_offer_v1 *offer);
-static void vext_da_device_v1_listener_selection(void *data,
-	struct ext_data_control_device_v1 *device,
-	struct ext_data_control_offer_v1 *offer);
-static void vext_da_device_v1_listener_primary_selection(void *data,
-	struct ext_data_control_device_v1 *device,
-	struct ext_data_control_offer_v1 *offer);
-static void vext_da_device_v1_listener_finished(void *data,
-	struct ext_data_control_device_v1 *device);
-
-static void vzwlr_da_source_v1_listener_send(void *data,
-	struct zwlr_data_control_source_v1 *source, const char *mime, int fd);
-static void vzwlr_da_source_v1_listener_cancelled(void *data,
-	struct zwlr_data_control_source_v1 *source);
-
-static void vext_da_source_v1_listener_send(void *data,
-	struct ext_data_control_source_v1 *source, const char *mime, int fd);
-static void vext_da_source_v1_listener_cancelled(void *data,
-	struct ext_data_control_source_v1 *source);
-
-static struct zwlr_data_control_device_v1_listener vzwlr_da_device_v1_listener = {
-    .data_offer = vzwlr_da_device_v1_listener_data_offer,
-    .selection = vzwlr_da_device_v1_listener_selection,
-    .primary_selection = vzwlr_da_device_v1_listener_primary_selection,
-    .finished = vzwlr_da_device_v1_listener_finished
-};
-
-static struct ext_data_control_device_v1_listener vext_da_device_v1_listener = {
-    .data_offer = vext_da_device_v1_listener_data_offer,
-    .selection = vext_da_device_v1_listener_selection,
-    .primary_selection = vext_da_device_v1_listener_primary_selection,
-    .finished = vext_da_device_v1_listener_finished
-};
-
-static struct zwlr_data_control_offer_v1_listener vzwlr_da_offer_v1_listener = {
-    .offer = vzwlr_da_offer_v1_listener_offer
-};
-
-static struct ext_data_control_offer_v1_listener vext_da_offer_v1_listener = {
-    .offer = vext_da_offer_v1_listener_offer
-};
-
-static struct zwlr_data_control_source_v1_listener vzwlr_da_source_v1_listener = {
-    .send = vzwlr_da_source_v1_listener_send,
-    .cancelled = vzwlr_da_source_v1_listener_cancelled
-};
-
-static struct ext_data_control_source_v1_listener vext_da_source_v1_listener = {
-    .send = vext_da_source_v1_listener_send,
-    .cancelled = vext_da_source_v1_listener_cancelled
-};
 
 // Mime types we support sending and receiving
 // Mimes with a lower index in the array are prioritized first when we are
@@ -128,9 +45,9 @@ static const char *supported_mimes[] = {
 };
 
 #if (defined(FEAT_WAYLAND_CLIPBOARD) && defined(USE_SYSTEM)) || defined(PROTO)
+static void clip_wl_receive_data(Clipboard_T *cbd, int fd);
+int clip_wl_choose_offer( void *data, const char *mime_type);
 static int clip_wl_owner_exists(Clipboard_T *cbd);
-#endif
-
 #endif
 
 /*
@@ -2411,65 +2328,74 @@ adjust_clip_reg(int *rp)
  * depending on whenether cbd is clip_star or clip_plus.
  */
     static void
-vwl_da_receive_data(Clipboard_T *cbd, int fd)
+clip_wl_receive_data(void *user_data,
+	const char *mime_type, int fd, wayland_selection_T selection)
 {
+    Clipboard_T *cbd = user_data;
     char_u *start, *buf, *tmp, *final, *enc;
     int	motion_type = MAUTO;
     ssize_t r = 0;
-    size_t total = 0, max_total = 4096; // initial buffer size if 4096 bytes
+    size_t total = 0, max_total = 10; // Initial buffer size, 4096 bytes seems
+					// reasonable.
 #ifndef HAVE_SELECT
     struct pollfd pfd = {
 	.fd = fd,
 	.events = POLLIN
     };
-
-    if (poll(&pfd, 1, p_wtm) <= 0)
-	return;
 #else
     fd_set rfds;
     struct timeval tv;
-
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
-
     tv.tv_sec = 0;
     tv.tv_usec = p_wtm * 1000;
-
-    if (select(fd + 1, &rfds, NULL, NULL, &tv) <= 0)
-	return;
-    tv.tv_sec = 0;
-    tv.tv_usec = p_wrm * 1000;
 #endif
+
+    // Make pipe (read end) non-blocking
+    if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) == -1)
+	return;
 
     if ((buf = alloc_clear(max_total)) == NULL)
 	return;
     start = buf;
 
-    while ((r = read(fd, start, max_total - 1 - total)) > 0)
+    // Only poll before reading when we first start, then we do non-blocking
+    // reads and check for EAGAIN or EINTR to poll again.
+    goto poll_data;
+
+    while (errno = 0, TRUE)
     {
+	r = read(fd, start, max_total - 1 - total);
+
+	if (r == 0)
+	    break;
+	else if (r < 0)
+	{
+	    if (errno == EAGAIN || errno == EINTR)
+	    {
+poll_data:
+#ifndef HAVE_SELECT
+		if (poll(&pfd, 1, p_wtm) > 0)
+#else
+		if (select(fd + 1, &rfds, NULL, NULL, &tv) > 0)
+#endif
+		    continue;
+	    }
+	    break;
+	}
+
 	start += r;
 	total += (size_t)r;
 
-	// Break out of loop if we have read all the data
-#ifndef HAVE_SELECT
-	if (poll(&pfd, 1, p_wrm) <= 0)
-	    break;
-#else
-	if (select(fd + 1, &rfds, NULL, NULL, &tv) <= 0)
-	    break;
-#endif
-
 	// Realloc if we are at the end of the buffer
-	if (total == max_total - 1)
+	if (total >= max_total - 1)
 	{
 	    tmp = vim_realloc(buf, max_total * 2);
-
 	    if (tmp == NULL)
 		break;
 	    max_total *= 2; // Double buffer size each time
 	    buf = tmp;
 	    start = buf + total;
-
 	    // Zero out the newly allocated memory part
 	    vim_memset(buf + total, 0, max_total - total);
 	}
@@ -2481,14 +2407,15 @@ vwl_da_receive_data(Clipboard_T *cbd, int fd)
 	vim_free(buf);
 	return;
     }
+
     final = buf;
 
-    if (STRCMP(cbd->cur_mime, VIM_ATOM_NAME) == 0)
+    if (STRCMP(mime_type, VIM_ATOM_NAME) == 0 && total >= 2)
     {
 	motion_type = *final++;;
 	total--;
     }
-    else if (STRCMP(cbd->cur_mime, VIMENC_ATOM_NAME) == 0)
+    else if (STRCMP(mime_type, VIMENC_ATOM_NAME) == 0 && total >= 3)
     {
 	vimconv_T conv;
 	int convlen;
@@ -2499,22 +2426,23 @@ vwl_da_receive_data(Clipboard_T *cbd, int fd)
 
 	// Get encoding of selection
 	enc = final;
+
 	// Skip the encoding type including null terminator in final text
 	final += STRLEN(final) + 1;
+
 	// Subtract pointers to get length of encoding;
 	total -= final - enc;
 
 	conv.vc_type = CONV_NONE;
 	convert_setup(&conv, enc, p_enc);
-
 	if (conv.vc_type != CONV_NONE)
 	{
-	    convlen = total;
-	    tmp = string_convert(&conv, final, &convlen);
-	    total = convlen;
-	    if (tmp != NULL)
+	   convlen = total;
+	   tmp = string_convert(&conv, final, &convlen);
+	   total = convlen;
+	   if (tmp != NULL)
 		final = tmp;
-	    convert_setup(&conv, NULL, NULL);
+	   convert_setup(&conv, NULL, NULL);
 	}
     }
 
@@ -2523,556 +2451,168 @@ vwl_da_receive_data(Clipboard_T *cbd, int fd)
 }
 
 /*
- * Write data from either the clip or plus register to the file descriptor that
- * the receiving client will read from.
+ *
  */
     static void
-vwl_da_send_data(Clipboard_T *cbd, int fd, const char *mime)
+clip_wl_choose_offer(void *data, const char *mime_type, garray_T *current)
 {
-    long_u length;
-    char_u *string;
-    ssize_t written = 0;
-    size_t total = 0;
-    int did_vimenc = TRUE;
-    int motion_type;
-#ifndef HAVE_SELECT
-    struct pollfd pfd = {
-	.fd = fd,
-	.events = POLLOUT
-    };
-#else
-    fd_set wfds;
-    struct timeval tv;
+    Clipboard_T *cbd = data;
+    static int mime_priority;
+    int len = sizeof(supported_mimes) / sizeof(*supported_mimes);
 
-    FD_ZERO(&wfds);
-    FD_SET(fd, &wfds);
-
-    tv.tv_sec = 0;
-    tv.tv_usec = p_wtm * 1000;
-#endif
-
-    // Shouldn't happen unless there is a bug.
-    if (!cbd->owned)
+    if (current->ga_len == 0)
     {
-	close(fd);
-	return;
+	ga_grow(current, 1);
+	mime_priority = -1;
     }
 
-    // Get the current selection
-    clip_get_selection(cbd);
-    motion_type = clip_convert_selection(&string, &length, cbd);
-
-    if (motion_type < 0)
-	goto exit;
-
-    // When using the vim specific formats, the first byte is always the
-    // motion type.
-    if (STRCMP(mime, VIM_ATOM_NAME) == 0 || STRCMP(mime, VIMENC_ATOM_NAME) == 0)
+    for (int i = 0; i < len; i++)
     {
-
-#ifndef HAVE_SELECT
-	if (poll(&pfd, 1, p_wtm) > 0)
-#else
-	if (select(fd + 1, NULL, &wfds, NULL, &tv) > 0)
-#endif
-	{
-	    // We cast to char so that we only send one byte
-	    written = write(fd, (char_u*)&motion_type, sizeof((char_u)motion_type));
-	    if (written == -1)
-		goto exit;
-	}
-    }
-
-    if (STRCMP(mime, VIMENC_ATOM_NAME) == 0)
-	did_vimenc = FALSE;
-
-    while (total < (size_t)length &&
-#ifndef HAVE_SELECT
-	    poll(&pfd, 1, p_wtm) > 0)
-#else
-	    select(fd + 1, NULL, &wfds, NULL, &tv) > 0)
-#endif
-    {
-	// For the vimenc format, after the first byte is the encoding type,
-	// which is null terminated. Make sure we write that before writing
-	// the actual seleciton.
-	if (!did_vimenc)
-	{
-	    if (total == STRLEN(p_enc) + 1)
-	    {
-		total = 0;
-		did_vimenc = TRUE;
-		continue;
-	    }
-	    else
-		// Include null terminator
-		written = write(fd, p_enc + total, STRLEN(p_enc) + 1 - total);
-	}
-	else
-	    // write the actual selection to the fd
-	    written = write(fd, string + total, length - total);
-
-	if (written == -1)
-	    break;
-	total += written;
-    }
-
-exit:
-    vim_free(string);
-    close(fd);
-}
-
-/*
- * Should be called on a selection or primary_selection event from a data control
- * device. Handles calling the receive function and setting up the pipe, along
- * with freeing everything that needs to be freed afterwards.
- */
-    static void
-vwl_da_setup_data_receive(Clipboard_T *cbd, Clipboard_T *cmp_cbd,
-	void *offer, void **cmp_offer, vwl_da_protocol_T protocol)
-{
-    // Check if primary selection is not supported, if so then use regular
-    // selection in its place.
-    if (cbd == &clip_star && cmp_cbd == &clip_plus
-	    && !vwl_primary_sel_supported)
-	cmp_cbd = cbd;
-
-    if (cbd != cmp_cbd || cbd->cur_mime == NULL || offer == NULL
-	    || offer != *cmp_offer)
-	goto exit;
-    // Signal that we can just ignore all selection/offer events after this
-    cbd->got_selection = TRUE;
-
-    int fds[2];
-
-    if (pipe(fds) == -1)
-    {
-	verb_msg(_("Could not open pipe"));
-	goto exit;
-    }
-
-    if (protocol == VWL_DA_PROTOCOL_ZWLR)
-	zwlr_data_control_offer_v1_receive(*cmp_offer, cbd->cur_mime, fds[1]);
-    else if (protocol == VWL_DA_PROTOCOL_EXT)
-	ext_data_control_offer_v1_receive(*cmp_offer, cbd->cur_mime, fds[1]);
-
-    if (vwl_flush_requests() == OK)
-	vwl_da_receive_data(cbd, fds[0]);
-    else
-	emsg(_(e_wayland_failed_sending_requests));
-
-    close(fds[0]);
-    close(fds[1]);
-exit:
-    if (*cmp_offer != NULL)
-    {
-	if (protocol == VWL_DA_PROTOCOL_ZWLR)
-	    zwlr_data_control_offer_v1_destroy(*cmp_offer);
-	else if (protocol == VWL_DA_PROTOCOL_EXT)
-	    ext_data_control_offer_v1_destroy(*cmp_offer);
-
-	*cmp_offer = NULL;
-    }
-    cbd->cur_mime = NULL;
-}
-
-/*
- * Handles checking which offer has the mime type we want. Should be called
- * when we receive an offer.
- */
-    static void
-vwl_choose_offer(Clipboard_T *cbd, void **cbd_offer, void *offer,
-	const char *mime)
-{
-    if (cbd->got_selection || offer == NULL)
-	return;
-
-    // Mimes with lower indexes in the array are prioritized first
-    for (size_t i = 0; i < sizeof(supported_mimes)/sizeof(*supported_mimes); i++)
-    {
-	const char *m = supported_mimes[i];
-
-	if ((cbd->cur_mime == NULL || i < (size_t)cbd->cur_mime_priority)
-		&& STRCMP(mime, m) == 0)
-	{
-	    cbd->cur_mime = m;
-	    cbd->cur_mime_priority = i;
-	    break;
-	}
-    }
-
-    if (*cbd_offer == NULL)
-	*cbd_offer = offer;
-}
-
-/*
- * Handles sending the offers we support sending to the compositor.
- */
-    static void
-vwl_export_offers(void *source, vwl_da_protocol_T protocol UNUSED)
-{
-    for (size_t i = 0; i < sizeof(supported_mimes)/sizeof(*supported_mimes); i++)
-    {
-	if (STRCMP(supported_mimes[i], MIME_TEXT_UTF8) == 0
-		&& !enc_utf8)
-	    // Skip utf8 if encoding is not set to it
-	    continue;
-
-	if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
-	    zwlr_data_control_source_v1_offer(source, supported_mimes[i]);
-	else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
-	    ext_data_control_source_v1_offer(source, supported_mimes[i]);
-	else
+        if (STRCMP(mime_type, supported_mimes[i]) == 0
+		&& (i < mime_priority || mime_priority == -1))
+        {
+	    mime_priority = i;
+	    ((const char **)current->ga_data)[0] = supported_mimes[i];
+	    current->ga_len = current->ga_len == 0 ? 1 : current->ga_len;
 	    return;
+	}
     }
 }
 
 /*
- * Called after the data offer event, showing a new mime type that the source
- * client supports sending.
- */
-    static void
-vzwlr_da_offer_v1_listener_offer(void *data,
-	struct zwlr_data_control_offer_v1 *offer, const char *mime)
-{
-    vwl_choose_offer(data, (void**)(&((Clipboard_T*) data)->offer.zwlr),
-	    offer, mime);
-
-}
-
-/*
- * This will always be sent before a selection event in order to advertise the
- * mime types the selection supports.
- */
-    static void
-vzwlr_da_device_v1_listener_data_offer(void *data,
-	struct zwlr_data_control_device_v1 *device UNUSED,
-	struct zwlr_data_control_offer_v1 *offer)
-{
-    if (offer == NULL)
-	return;
-
-    zwlr_data_control_offer_v1_add_listener(offer,
-		&vzwlr_da_offer_v1_listener, data);
-}
-
-/*
- * Called for the regular selection.
- */
-    static void
-vzwlr_da_device_v1_listener_selection(void *data,
-	struct zwlr_data_control_device_v1 *device UNUSED,
-	struct zwlr_data_control_offer_v1 *offer)
-{
-    vwl_da_setup_data_receive(data, &clip_plus, offer,
-	    (void**)&(((Clipboard_T*)data)->offer.zwlr),
-	    VWL_DA_PROTOCOL_ZWLR);
-}
-
-/*
- * Called for the primary selection if supported.
- */
-    static void
-vzwlr_da_device_v1_listener_primary_selection(void *data,
-	struct zwlr_data_control_device_v1 *device UNUSED,
-	struct zwlr_data_control_offer_v1 *offer)
-{
-    vwl_da_setup_data_receive(data, &clip_star, offer,
-	    (void**)&(((Clipboard_T*)data)->offer.zwlr),
-	    VWL_DA_PROTOCOL_ZWLR);
-}
-
-/*
- * Data device is finished, if so then destroy it and the current offer if any.
- */
-    static void
-vzwlr_da_device_v1_listener_finished(void *data,
-	struct zwlr_data_control_device_v1 *device)
-{
-    Clipboard_T *cbd = data;
-
-    zwlr_data_control_device_v1_destroy(device);
-
-    if (cbd->offer.zwlr != NULL)
-    {
-	zwlr_data_control_offer_v1_destroy(cbd->offer.zwlr);
-	cbd->offer.zwlr = NULL;
-    }
-    cbd->cur_mime = NULL;
-}
-
-/*
- * Called when a client requests to receive data from us, and can either
- * be a primary or regular selection.
- */
-    static void
-vzwlr_da_source_v1_listener_send(void *data,
-	struct zwlr_data_control_source_v1 *source UNUSED,
-	const char *mime, int fd)
-{
-    vwl_da_send_data(data, fd, mime);
-}
-
-/*
- * Called when the current data source has been replaced by another, such as
- * when the user copies from another application.
- */
-    static void
-vzwlr_da_source_v1_listener_cancelled(void *data,
-	struct zwlr_data_control_source_v1 *source UNUSED)
-{
-    clip_lose_selection(data);
-}
-
-    static void
-vext_da_offer_v1_listener_offer(void *data,
-	struct ext_data_control_offer_v1 *offer, const char *mime)
-{
-    vwl_choose_offer(data, (void**)(&((Clipboard_T*) data)->offer.ext),
-	    offer, mime);
-
-}
-
-    static void
-vext_da_device_v1_listener_data_offer(void *data,
-	struct ext_data_control_device_v1 *device UNUSED,
-	struct ext_data_control_offer_v1 *offer)
-{
-    if (offer == NULL)
-	return;
-
-    ext_data_control_offer_v1_add_listener(offer,
-		&vext_da_offer_v1_listener, data);
-}
-
-    static void
-vext_da_device_v1_listener_selection(void *data,
-	struct ext_data_control_device_v1 *device UNUSED,
-	struct ext_data_control_offer_v1 *offer)
-{
-    vwl_da_setup_data_receive(data, &clip_plus, offer,
-	    (void**)&(((Clipboard_T*)data)->offer.ext),
-	    VWL_DA_PROTOCOL_EXT);
-}
-
-    static void
-vext_da_device_v1_listener_primary_selection(void *data,
-	struct ext_data_control_device_v1 *device UNUSED,
-	struct ext_data_control_offer_v1 *offer)
-{
-    vwl_da_setup_data_receive(data, &clip_star, offer,
-	    (void**)&(((Clipboard_T*)data)->offer.zwlr),
-	    VWL_DA_PROTOCOL_EXT);
-}
-
-    static void
-vext_da_device_v1_listener_finished(void *data,
-	struct ext_data_control_device_v1 *device)
-{
-    Clipboard_T *cbd = data;
-
-    ext_data_control_device_v1_destroy(device);
-
-    if (cbd->offer.ext != NULL)
-    {
-	ext_data_control_offer_v1_destroy(cbd->offer.ext);
-	cbd->offer.ext = NULL;
-    }
-    cbd->cur_mime = NULL;
-}
-
-    static void
-vext_da_source_v1_listener_send(void *data,
-	struct ext_data_control_source_v1 *source UNUSED,
-	const char *mime, int fd)
-{
-    vwl_da_send_data(data, fd, mime);
-}
-
-    static void
-vext_da_source_v1_listener_cancelled(void *data,
-	struct ext_data_control_source_v1 *source UNUSED)
-{
-    clip_lose_selection(data);
-}
-
-/*
- * Get the current selection and fill the respective register for cbd with
- * the data.
+ * Get the current selection and fill the respective register for cbd with the
+ * data.
  */
     void
 clip_wl_request_selection(Clipboard_T *cbd)
 {
-    void *device = NULL;
-    if (vwl_connect_data_control() == FAIL)
-    {
+    wayland_selection_T selection;
+
+    if (cbd == &clip_star)
+	selection = WAYLAND_SELECTION_PRIMARY;
+    else if (cbd == &clip_plus)
+	selection = WAYLAND_SELECTION_REGULAR;
+    else
 	return;
-    }
-    cbd->got_selection = FALSE;
 
-    if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
-    {
-	device = zwlr_data_control_manager_v1_get_data_device(
-		vzwlr_da_manager_v1, vwl_seat);
-
-	if (device == NULL)
-	    return;
-
-	zwlr_data_control_device_v1_add_listener(device,
-		&vzwlr_da_device_v1_listener, cbd);
-
-    }
-    else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
-    {
-	device = ext_data_control_manager_v1_get_data_device(
-		vext_da_manager_v1, vwl_seat);
-
-	if (device == NULL)
-	    return;
-
-	ext_data_control_device_v1_add_listener(device,
-		&vext_da_device_v1_listener, cbd);
-    }
-
-    if (vwl_send_requests() == FAIL)
-	emsg(_(e_wayland_failed_sending_requests));
-
-    if (device != NULL)
-    {
-	if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
-	    zwlr_data_control_device_v1_destroy(device);
-	else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
-	    ext_data_control_device_v1_destroy(device);
-    }
-
-    vwl_send_requests();
+    wayland_cb_receive_selection(
+	    clip_wl_receive_data,
+	    clip_wl_choose_offer,
+	    selection,
+	    cbd, FALSE);
 }
 
 /*
- * Start listening for requests from other wayland clients in order to
- * receive data from us. Returns OK on success and FAIL on failure.
+ * Write data from either the clip or plus register to the file descriptor that
+ * the receiving client will read from.
+ */
+    /* static void */
+/* vwl_da_send_data(Clipboard_T *cbd, int fd, const char *mime) */
+/* { */
+    /* long_u length; */
+    /* char_u *string; */
+    /* ssize_t written = 0; */
+    /* size_t total = 0; */
+    /* int did_vimenc = TRUE; */
+    /* int motion_type; */
+/* #ifndef HAVE_SELECT */
+    /* struct pollfd pfd = { */
+	/* .fd = fd, */
+	/* .events = POLLOUT */
+    /* }; */
+/* #else */
+    /* fd_set wfds; */
+    /* struct timeval tv; */
+    /* FD_ZERO(&wfds); */
+    /* FD_SET(fd, &wfds); */
+    /* tv.tv_sec = 0; */
+    /* tv.tv_usec = p_wtm * 1000; */
+/* #endif */
+    /* // Shouldn't happen unless there is a bug. */
+    /* if (!cbd->owned) */
+    /* { */
+	/* close(fd); */
+	/* return; */
+    /* } */
+    /* // Get the current selection */
+    /* clip_get_selection(cbd); */
+    /* motion_type = clip_convert_selection(&string, &length, cbd); */
+    /* if (motion_type < 0) */
+	/* goto exit; */
+    /* // When using the vim specific formats, the first byte is always the motion */
+    /* // type. */
+    /* if (STRCMP(mime, VIM_ATOM_NAME) == 0 || STRCMP(mime, VIMENC_ATOM_NAME) == 0) */
+    /* { */
+/* #ifndef HAVE_SELECT */
+	/* if (poll(&pfd, 1, p_wtm) > 0) */
+/* #else */
+	/* if (select(fd + 1, NULL, &wfds, NULL, &tv) > 0) */
+/* #endif */
+	/* { */
+	   /* // We cast to char so that we only send one byte */
+	   /* written = write(fd, (char_u*)&motion_type, sizeof((char_u)motion_type)); */
+	   /* if (written == -1) */
+		/* goto exit; */
+	/* } */
+    /* } */
+    /* if (STRCMP(mime, VIMENC_ATOM_NAME) == 0) */
+	/* did_vimenc = FALSE; */
+    /* while (total < (size_t)length && */
+/* #ifndef HAVE_SELECT */
+	   /* poll(&pfd, 1, p_wtm) > 0) */
+/* #else */
+	   /* select(fd + 1, NULL, &wfds, NULL, &tv) > 0) */
+/* #endif */
+    /* { */
+	/* // For the vimenc format, after the first byte is the encoding type, */
+	/* // which is null terminated. Make sure we write that before writing the */
+	/* // actual seleciton. */
+	/* if (!did_vimenc) */
+	/* { */
+	   /* if (total == STRLEN(p_enc) + 1) */
+	   /* { */
+		/* total = 0; */
+		/* did_vimenc = TRUE; */
+		/* continue; */
+	   /* } */
+	   /* else */
+		/* // Include null terminator */
+		/* written = write(fd, p_enc + total, STRLEN(p_enc) + 1 - total); */
+	/* } */
+	/* else */
+	   /* // write the actual selection to the fd */
+	   /* written = write(fd, string + total, length - total); */
+	/* if (written == -1) */
+	   /* break; */
+	/* total += written; */
+    /* } */
+/* exit: */
+    /* vim_free(string); */
+    /* close(fd); */
+/* } */
+
+/*
+ * Start listening for requests from other wayland clients in order to receive
+ * data from us. Returns OK on success and FAIL on failure.
  */
     int
 clip_wl_own_selection(Clipboard_T *cbd)
 {
-    void *source = NULL;
-    int use_regular = FALSE; // Always use regular selection if TRUE
-
-    if (vwl_connect_data_control() == FAIL)
-	return FAIL;
-
-    // Source is already created, no need to to recreate it again,
-    // because we only send the data when the receiver asks.
-    if (cbd->source.check != NULL)
-	return OK;
-
-    // If primary selection is not supported by the compositor, use the
-    // regular selection in its place.
-    if (cbd == &clip_star && !vwl_primary_sel_supported)
-	use_regular = TRUE;
-
-    if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
-    {
-	source = zwlr_data_control_manager_v1_create_data_source(
-		vzwlr_da_manager_v1);
-
-	cbd->source.zwlr = source;
-
-	if (source == NULL)
-	    return FAIL;
-
-	if (zwlr_data_control_source_v1_add_listener(source,
-		    &vzwlr_da_source_v1_listener, cbd) == -1)
-	{
-	    zwlr_data_control_source_v1_destroy(source);
-	    return FAIL;
-	}
-
-	// Advertise the mime types we support sending
-	vwl_export_offers(source, VWL_DA_PROTOCOL_ZWLR);
-
-	if (cbd == &clip_plus || use_regular)
-	    zwlr_data_control_device_v1_set_selection(vzwlr_source_da_device_v1,
-		    source);
-	else if (cbd == &clip_star)
-	    zwlr_data_control_device_v1_set_primary_selection(
-		    vzwlr_source_da_device_v1, source);
-    }
-    else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
-    {
-	source = ext_data_control_manager_v1_create_data_source(
-		vext_da_manager_v1);
-
-	cbd->source.ext = source;
-
-	if (source == NULL)
-	    return FAIL;
-
-	if (ext_data_control_source_v1_add_listener(source,
-		    &vext_da_source_v1_listener, cbd) == -1)
-	{
-	    ext_data_control_source_v1_destroy(source);
-	    return FAIL;
-	}
-
-	vwl_export_offers(source, VWL_DA_PROTOCOL_EXT);
-
-	if (cbd == &clip_plus || use_regular)
-	    ext_data_control_device_v1_set_selection(vext_source_da_device_v1,
-		    source);
-	else if (cbd == &clip_star)
-	    ext_data_control_device_v1_set_primary_selection(
-		    vext_source_da_device_v1, source);
-    }
-
-    if (vwl_dispatch_queue() == FAIL)
-    {
-	emsg(_(e_wayland_failed_dispatching_requests));
-
-	if (source != NULL)
-	{
-	    if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_ZWLR)
-	    {
-		zwlr_data_control_source_v1_destroy(source);
-		cbd->source.zwlr = NULL;
-	    }
-	    else if (vwl_cur_da_protocol == VWL_DA_PROTOCOL_EXT)
-	    {
-		ext_data_control_source_v1_destroy(source);
-		cbd->source.ext = NULL;
-	    }
-	}
-
-	return FAIL;
-    }
-
     return OK;
 }
 
 /*
- * Destroy the current data source, essentially disowning the selection.
- * Note that the the cancelled event is not sent when the data source is
- * destroyed.
+ * Destroy the current data source, essentially disowning the selection. Note
+ * that the the cancelled event is not sent when the data source is destroyed.
  */
     void
 clip_wl_lose_selection(Clipboard_T *cbd)
 {
-    if (cbd->source.zwlr != NULL)
-    {
-	zwlr_data_control_source_v1_destroy(cbd->source.zwlr);
-	cbd->source.zwlr = NULL;
-    }
-    if (cbd->source.ext != NULL)
-    {
-	ext_data_control_source_v1_destroy(cbd->source.ext);
-	cbd->source.ext = NULL;
-    }
-    vwl_send_requests();
 }
 
 /*
- * Send the current selection to the clipboard.  Do nothing for wayland because we
- * will fill in the selection only when requested by another client.
+ * Send the current selection to the clipboard.  Do nothing for wayland because
+ * we will fill in the selection only when requested by another client.
  */
     void
 clip_wl_set_selection(Clipboard_T *cbd UNUSED)
@@ -3089,7 +2629,7 @@ clip_wl_set_selection(Clipboard_T *cbd UNUSED)
     static int
 clip_wl_owner_exists(Clipboard_T *cbd)
 {
-    return cbd->source.check != NULL;
+    return TRUE;
 }
 #endif
 
@@ -3118,15 +2658,15 @@ get_clipmethod(char_u *str)
 	if (STRCMP(buf, "wayland") == 0)
 	{
 #ifdef FEAT_WAYLAND_CLIPBOARD
-	    if (vwl_data_control_valid())
+	    if (wayland_cb_is_ready())
 		method = CLIPMETHOD_WAYLAND;
 #endif
 	}
 	else if (STRCMP(buf, "x11") == 0)
 	{
 #ifdef FEAT_XCLIPBOARD
-	    // x_IOerror_handler() in os_unix.c should set xterm_dpy to NULL
-	    // if we lost connection to the X server.
+	    // x_IOerror_handler() in os_unix.c should set xterm_dpy to NULL if
+	    // we lost connection to the X server.
 	    if (xterm_dpy != NULL)
 	    {
 		// If the X connection is lost then that handler will longjmp
@@ -3176,13 +2716,14 @@ clipmethod_to_str(clipmethod_T method)
 }
 
 /*
- * Sets the current clipmethod to use given by `get_clipmethod()`. Returns an error
- * message on failure else NULL.
+ * Sets the current clipmethod to use given by `get_clipmethod()`. Returns an
+ * error message on failure else NULL.
  */
     char *
 choose_clipmethod(void)
 {
-    // We call get_clipmethod first so that we can catch any errors, even if clipmethod is useless
+    // We call get_clipmethod first so that we can catch any errors, even if
+    // clipmethod is useless
     clipmethod_T method = get_clipmethod(p_cpm);
 
     if (method == CLIPMETHOD_FAIL)
@@ -3199,8 +2740,8 @@ choose_clipmethod(void)
     }
 #endif
 #else
-    // If on a system like windows or macos, then clipmethod is irrelevant,
-    // we use their way of accessing the clipboard.
+    // If on a system like windows or macos, then clipmethod is irrelevant, we
+    // use their way of accessing the clipboard.
     method = CLIPMETHOD_NONE;
     goto exit;
 #endif
@@ -3264,8 +2805,8 @@ ex_restoreclip(exarg_T *eap UNUSED)
 	else if (prev == CLIPMETHOD_WAYLAND)
 	{
 #ifdef FEAT_WAYLAND
-	    vwl_disconnect_client();
-	    vwl_set_display_strname("", TRUE);
+	    /* vwl_disconnect_client(); */
+	    /* vwl_set_display_strname("", TRUE); */
 #endif
 	}
     }

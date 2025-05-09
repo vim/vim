@@ -174,6 +174,7 @@ void mbyte_im_set_active(int active_arg);
 #  include "profiler.pro"
 # endif
 # include "quickfix.pro"
+# include "wayland.pro"
 # include "regexp.pro"
 # include "register.pro"
 # include "scriptfile.pro"

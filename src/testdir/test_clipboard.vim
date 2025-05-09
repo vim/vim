@@ -1,20 +1,21 @@
 " Tests for clipmethod and selections
 
 source check.vim
+source shared.vim
 CheckFeature clipboard_working
 CheckFeature unix
+CheckFeature job
+CheckFeature clientserver
+CheckFeature x11
 
 if $WAYLAND_DISPLAY == "" || $DISPLAY == ""
   throw "Skipped: Either Wayland or X11 is not available, need both"
 endif
 
-" Some random (...) number
 let s:xserver_name = ':166151155'
 
-" Should be covered by $DISPLAY environment variable but Xwayland
-" might not be running yet so...
-if executable("Xwayland") != 1
-  throw "Skipped: Xwayland is not available"
+if executable("Xvfb") != 1
+  throw "Skipped: Xvfb is not available"
 endif
 
 " Used internally by Start_wayland_compositor()
@@ -46,63 +47,31 @@ func s:Start_wayland_compositor()
         \ 'exit_cb': function('s:Start_compositor_exit')
         \ })
 
-  if job_status(s:wayland_compositor_job) != "run"
-    throw "Error: Wayland compositor not running"
-  endif
-
-  " Wait until compositor is fully running
-  while empty(s:wayland_display_name)
-    sleep 100m " Allow vim to process callbacks
-  endwhile
+  call WaitForAssert({-> assert_equal("run", job_status(s:wayland_compositor_job))})
+  call WaitForAssert({-> assert_match('.\+', s:wayland_display_name)})
 endfunc
 
 func s:End_wayland_compositor()
   call job_stop(s:wayland_compositor_job, 'term')
 
   " Block until compositor is actually gone
-  while job_status(s:wayland_compositor_job) != "dead"
-  endwhile
-endfunc
-
-" Used internally by Start_X11_server()
-func s:Start_xserver_output(channel, msg)
-  let s:xserver_online = v:true
-endfunc
-
-" Used internally by Start_X11_server()
-func s:Start_xserver_exit(job, status)
-  if !s:xserver_online
-    throw "X11 server exited when starting up"
-  endif
+  call WaitForAssert({-> assert_equal("dead", job_status(s:wayland_compositor_job))})
 endfunc
 
 " Start a separate X11 server instance
 func s:Start_X11_server()
-  " Use Xwayland for now
-  " Xwayland uses stderr for logs
   let s:xserver_online = v:false
-  let s:x11_server_job = job_start(['Xwayland', '-verbose', '3', s:xserver_name], {
-        \ 'err_io': 'pipe',
-        \ 'err_cb': function('s:Start_xserver_output'),
-        \ 'err_mode': 'nl',
-        \ 'exit_cb': function('s:Start_xserver_exit')
-        \ })
+  let s:x11_server_job = job_start(['Xvfb', s:xserver_name], { })
 
-  if job_status(s:x11_server_job) != "run"
-    throw "Error: X11 server not running"
-  endif
-
-  while !s:xserver_online
-    sleep 100m " Allow vim to process callbacks
-  endwhile
+  call WaitForAssert({-> assert_equal("run", job_status(s:x11_server_job))})
+  call WaitFor({-> system("DISPLAY=" . s:xserver_name . " xdpyinfo 2> /dev/null") =~? '.\+'})
 endfunc
 
 func s:End_X11_server()
-  call job_stop(s:x11_server_job, 'term')
+  call job_stop(s:x11_server_job)
 
-  " Block until compositor is actually gone
-  while job_status(s:x11_server_job) != "dead"
-  endwhile
+  " Block until X server is actually gone
+  call WaitForAssert({-> assert_equal("dead", job_status(s:x11_server_job))})
 endfunc
 
 " Test if no available clipmethod sets v:clipmethod to none and deinits clipboard
@@ -145,7 +114,7 @@ func Test_clipmethod_order()
   set cpm&
 endfunc
 
-" Test if clipmethod is set to none when gui is started
+" Test if clipmethod is set to 'none' when gui is started
 func Test_clipmethod_is_none_when_gui()
   CheckCanRunGui
 
@@ -165,7 +134,7 @@ func Test_clipmethod_is_none_when_gui()
 endfunc
 
 " TODO: add test for when we switch data control protocols
-" Test if :restoreclip switches methods when old one doesn't work
+" Test if :restoreclip switches methods when current one doesn't work
 func Test_restoreclip_switches()
   call s:Start_wayland_compositor()
 
@@ -182,14 +151,59 @@ func Test_restoreclip_switches()
   call assert_equal("x11", v:clipmethod)
 
   " Do the same but kill a X11 server
-  " For some reason ending the job directly makes vim seg fault?
-  " No idea, leaving this out for now...
-  " set cpm=x11
-  " call s:Start_X11_server()
 
-  " exe 'xrestore ' . s:xserver_name
+  " X11 error handling relies on longjmp magic, but essentially if the X server
+  " is killed then it will simply abandon the current commands, making the test
+  " hang. This will only happen for commands given from the command line, which
+  " is why we cannot just directly call Vim or use the actual Vim instance thats
+  " doing all the testing, since main_loop() is never executed. Therefore we
+  " should start a separate Vim instance and communicate with it remotely, so we
+  " can execute the actual testing stuff with main_loop() running.
+  call s:Start_X11_server()
 
-  " call s:End_X11_server()
+  let lines =<< trim END
+    set cpm=x11
+    source shared.vim
+
+    func Test()
+      restoreclip
+
+      if v:clipmethod ==# 'none'
+        return 1
+      endif
+      return 0
+    endfunc
+
+    func DoIt()
+      call WaitFor(function('Test'))
+
+      if v:clipmethod == 'none'
+        call writefile(['SUCCESS'], 'Xtest')
+      else
+        call writefile(['FAIL'], 'Xtest')
+      endif
+      quitall
+    endfunc
+  END
+
+  call writefile(lines, 'Xtester', 'D')
+
+  let l:name = 'XVIMTEST'
+  let l:cmd = GetVimCommand() . ' -S Xtester --servername ' . l:name
+  let l:job = job_start(cmd, { 'stoponexit': 'kill', 'out_io': 'null'})
+
+  call WaitForAssert({-> assert_equal("run", job_status(l:job))})
+  call WaitForAssert({-> assert_match(name, serverlist())})
+
+  " Change x server to the one will be killing, then block until v:clipmethod is
+  " none.
+  call remote_send(l:name, ":xrestore " . s:xserver_name . ' | call DoIt()' . "\<CR>")
+
+  call s:End_X11_server()
+  call WaitFor({-> filereadable('Xtest')})
+  " For some reason readfile sometimes returns an empty list despite the file
+  " existing, this why WaitForAssert() is used.
+  call WaitForAssert({-> assert_equal(['SUCCESS'], readfile('Xtest'))}, 1000)
 
   set cpm&
 endfunc

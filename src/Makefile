@@ -602,14 +602,14 @@ CClink = $(CC)
 #CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
 #CFLAGS = -g -Wall -Wmissing-prototypes
 #CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
-#CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
+CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
 # Note: If you use -Wextra and get warnings in GTK code about function
 #       parameters, you can add -Wno-cast-function-type (but not with clang)
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
-# CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-deprecated-declarations -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+CFLAGS += -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-deprecated-declarations -D_REENTRANT # -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 # Add -Wpedantic to find // comments and other C99 constructs.
 # Better disable Perl and Python to avoid a lot of warnings.
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
@@ -697,8 +697,8 @@ LINT_OPTIONS = -beprxzF
 # $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
 # When running tests output can be found in testdir/asan.*
 # SANITIZER_CFLAGS = -g -O0 -fsanitize-recover=all \
-#		     -fsanitize=address -fsanitize=undefined \
-#		     -fno-omit-frame-pointer
+		     # -fsanitize=address -fsanitize=undefined \
+		     # -fno-omit-frame-pointer
 
 # Similarly when compiling with clang and using ubsan.
 # $ export UBSAN_OPTIONS="print_stacktrace=1 log_path=ubsan"
@@ -1105,7 +1105,7 @@ INSTALL_DATA_R	= cp -r
 
 ### Program to run on installed binary.  Use the second one to disable strip.
 #STRIP = strip
-#STRIP = /bin/true
+STRIP = /bin/true
 
 ### Permissions for binaries  {{{1
 BINMOD = 755
@@ -3626,6 +3626,9 @@ objects/viminfo.o: viminfo.c
 objects/window.o: window.c
 	$(CCC) -o $@ window.c
 
+objects/wayland.o: wayland.c
+	$(CCC) -o $@ wayland.c
+
 objects/wlr-data-control-unstable-v1.o: wlr-data-control-unstable-v1.c
 	$(CCC) -o $@ wlr-data-control-unstable-v1.c
 
@@ -4499,6 +4502,12 @@ objects/channel.o: channel.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
+objects/wayland.o: wayland.c vim.h protodef.h auto/config.h feature.h wayland.h \
+ wlr-data-control-unstable-v1.h ext-data-control-unstable-v1.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h xdiff/xdiff.h xdiff/../vim.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
 objects/wlr-data-control-unstable-v1.o: wlr-data-control-unstable-v1.c vim.h \
  protodef.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.h \
  keymap.h termdefs.h macros.h option.h beval.h structs.h regexp.h gui.h \

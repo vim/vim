@@ -2414,10 +2414,10 @@ if test "$with_wayland" = yes; then
       AC_DEFINE(HAVE_WAYLAND)
       WAYLAND_LIBS="-lwayland-client";
       AC_SUBST(WAYLAND_LIBS)
-      WAYLAND_SRC="wlr-data-control-unstable-v1.c ext-data-control-unstable-v1.c"
+      WAYLAND_SRC="wlr-data-control-unstable-v1.c ext-data-control-unstable-v1.c wayland.c"
       AC_SUBST(WAYLAND_SRC)
       WAYLAND_OBJ="objects/wlr-data-control-unstable-v1.o \
-	objects/ext-data-control-unstable-v1.o"
+	objects/ext-data-control-unstable-v1.o objects/wayland.o"
       AC_SUBST(WAYLAND_OBJ)
 
     else

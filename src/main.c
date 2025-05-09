@@ -681,18 +681,19 @@ vim_main2(void)
     if (!gui.in_use)
 #endif
     {
-	vwl_set_display_strname(NULL, FALSE);
-	if (vwl_connect_client(vwl_display_strname) == OK)
-	    TIME_MSG("connected to wayland display");
-#ifdef FEAT_WAYLAND_CLIPBOARD
-	if (vwl_connect_data_control() == OK)
+	if (wayland_init_client(wayland_display_name) == OK)
 	{
-	    clip_init(TRUE);
-	    TIME_MSG("setup wayland clipboard");
+	    TIME_MSG("connected to wayland display");
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	    // TODO: add option to configure which seat to use?
+	    if (wayland_cb_init("seat0") == OK)
+		TIME_MSG("setup wayland clipboard");
 	}
 #endif
     }
 #endif
+
 #ifdef FEAT_CLIPBOARD
     choose_clipmethod();
 #endif
@@ -2482,7 +2483,7 @@ command_line_scan(mparm_T *parmp)
 #endif
 		break;
 	    case 'Y':		// "-Y" don't connect to wayland compositor
-#if defined(UNIX) && defined(FEAT_WAYLAND)
+#if defined(FEAT_WAYLAND)
 		wayland_no_connect = TRUE;
 #endif
 		break;
