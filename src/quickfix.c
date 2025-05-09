@@ -7078,7 +7078,7 @@ wipe_dummy_buffer(buf_T *buf, char_u *dirname_start)
 		    break;
 		}
 	if (!did_one)
-	    return;
+	    goto fail;
     }
 
     if (curbuf != buf && buf->b_nwindows == 0)	// safety check
@@ -7102,7 +7102,13 @@ wipe_dummy_buffer(buf_T *buf, char_u *dirname_start)
 	if (dirname_start != NULL)
 	    // When autocommands/'autochdir' option changed directory: go back.
 	    restore_start_dir(dirname_start);
+
+	return;
     }
+
+fail:
+    // Keeping the buffer, remove the dummy flag.
+    buf->b_flags &= ~BF_DUMMY;
 }
 
 /*
