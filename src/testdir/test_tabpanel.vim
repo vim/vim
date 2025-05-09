@@ -370,4 +370,53 @@ function! Test_tabpanel_dont_overflow_into_tabpanel()
   call StopVimInTerminal(buf)
 endfunc
 
+function! Test_tabpanel_dont_vert_is_multibytes()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=columns:10,vert:あ
+    set showtabline=2
+    tabnew
+  END
+  call writefile(lines, 'XTest_tabpanel_vert_is_multibytes', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibytes', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_0', {})
+
+  call term_sendkeys(buf, ":set tabpanelopt=columns:10,vert:aあ\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_1', {})
+
+  call term_sendkeys(buf, ":set tabpanelopt=columns:1,vert:あ\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_2', {})
+
+  call term_sendkeys(buf, ":set tabpanelopt=columns:2,vert:あ\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function! Test_tabpanel_dont_vert_is_multibytes_right()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=align:right,columns:10,vert:aあ
+    set showtabline=2
+    tabnew
+  END
+  call writefile(lines, 'XTest_tabpanel_vert_is_multibytes_right', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibytes_right', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_1', {})
+
+  " TODO:
+  "call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:1,vert:あ\<cr>")
+  "call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_2', {})
+  "call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:2,vert:あ\<cr>")
+  "call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

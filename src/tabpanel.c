@@ -37,7 +37,7 @@ static void do_by_tplmode(int tplmode, int col_start, int col_end,
 static int tpl_wrap = WRAP_OFF;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
-static char_u tpl_vert = NUL;
+static char_u *tpl_vert = NULL;
 
 typedef struct {
     win_T   *wp;
@@ -56,10 +56,11 @@ typedef struct {
 tabpanelopt_changed(void)
 {
     char_u	*p;
+    int		vert_size = 0;
     int		new_wrap = WRAP_OFF;
     int		new_align = ALIGN_LEFT;
     int		new_columns = 20;
-    char_u	new_vert = NUL;
+    char_u	*new_vert = NULL;
 
     p = p_tplo;
     while (*p != NUL)
@@ -87,11 +88,19 @@ tabpanelopt_changed(void)
 	else if (STRNCMP(p, "vert:", 5) == 0)
 	{
 	    p += 5;
-	    if (*p != NUL && *p != ',')
+	    while (*p != NUL && *p != ',')
 	    {
-		new_vert = *p;
 		++p;
+		++vert_size;
 	    }
+	    if (vert_size < IOSIZE - 1)
+	    {
+		vim_strncpy(IObuff, p - vert_size, vert_size);
+		IObuff[vert_size] = NUL;
+		new_vert = vim_strsave(IObuff);
+	    }
+	    else
+		return FAIL;
 	}
 
 	if (*p != ',' && *p != NUL)
@@ -99,6 +108,9 @@ tabpanelopt_changed(void)
 	if (*p == ',')
 	    ++p;
     }
+
+    if (tpl_vert != NULL)
+	vim_free(tpl_vert);
 
     tpl_wrap = new_wrap;
     tpl_align = new_align;
@@ -154,6 +166,8 @@ draw_tabpanel(void)
     int		saved_KeyTyped = KeyTyped;
     int		saved_got_int = got_int;
     int		maxwidth = tabpanel_width();
+    int		vert_len = 0;
+    int		vert_cells = 0;
     int		vs_attr = HL_ATTR(HLF_C);
     int		curtab_row = 0;
 #ifndef MSWIN
@@ -165,6 +179,26 @@ draw_tabpanel(void)
 
     if (0 == maxwidth)
 	return;
+
+    if (tpl_vert == NULL)
+	tpl_vert = vim_strsave((char_u*)"");
+
+    vert_len = 0;
+    vert_cells = 0;
+    while (*(tpl_vert + vert_len) != NUL)
+    {
+	int cell = ptr2cells(tpl_vert + vert_len);
+	if (vert_cells + cell <= maxwidth)
+	{
+	    if (has_mbyte)
+		vert_len += (*mb_ptr2len)(tpl_vert + vert_len);
+	    else
+		vert_len += (int)STRLEN(tpl_vert + vert_len);
+	    vert_cells += cell;
+	}
+	else
+	    break;
+    }
 
 #ifndef MSWIN
     // We need this section only for the Vim running on WSL.
@@ -185,12 +219,12 @@ draw_tabpanel(void)
 
     // Reset got_int to avoid build_stl_str_hl() isn't evaluted.
     got_int = FALSE;
-    if (tpl_vert != NUL)
+    if (0 < vert_len)
     {
-	do_by_tplmode(TPLMODE_GET_CURTAB_ROW, (is_right ? 1 : 0),
-		maxwidth - (is_right ? 0 : 1), &curtab_row, NULL);
-	do_by_tplmode(TPLMODE_REDRAW, (is_right ? 1 : 0),
-		maxwidth - (is_right ? 0 : 1), &curtab_row, NULL);
+	do_by_tplmode(TPLMODE_GET_CURTAB_ROW, (is_right ? vert_cells : 0),
+		maxwidth - (is_right ? 0 : vert_cells), &curtab_row, NULL);
+	do_by_tplmode(TPLMODE_REDRAW, (is_right ? vert_cells : 0),
+		maxwidth - (is_right ? 0 : vert_cells), &curtab_row, NULL);
     }
     else
     {
@@ -199,12 +233,10 @@ draw_tabpanel(void)
     }
 
     // draw vert separater
-    if ((tpl_vert != NUL) && (1 < maxwidth))
-	for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
-	    screen_fill(vsrow - 1, vsrow,
-		    (is_right ? COLUMNS_WITHOUT_TPL() + 0 : maxwidth - 1),
-		    (is_right ? COLUMNS_WITHOUT_TPL() + 1 : maxwidth),
-		    tpl_vert, tpl_vert, vs_attr);
+    for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
+	screen_puts_len(tpl_vert, vert_len, vsrow - 1,
+		(is_right ? COLUMNS_WITHOUT_TPL() : maxwidth - vert_cells),
+		vs_attr);
 
     got_int |= saved_got_int;
 

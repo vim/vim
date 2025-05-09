@@ -8473,8 +8473,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				(default 20)
 
 		vert:{n}	Use a vertical separator for tabpanel.
-				This vertical separator must be single-byte
-				character.
+				This vertical separator can contain multi-byte
+				characters.
 				(default off)
 
 		wrap		How the content of tabpanel is displayed.
@@ -8490,6 +8490,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set tabpanelopt=columns:16,wrap,align:right
 		:set tabpanelopt=
 		:set tabpanelopt=vert:\|,align:right
+		:set tabpanelopt=columns:16,vert:｜
 <
 
 						*'tabstop'* *'ts'*
