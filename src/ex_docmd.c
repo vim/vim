@@ -247,6 +247,9 @@ static void	ex_later(exarg_T *eap);
 static void	ex_redir(exarg_T *eap);
 static void	ex_redrawstatus(exarg_T *eap);
 static void	ex_redrawtabline(exarg_T *eap);
+#if defined(FEAT_TABPANEL)
+static void	ex_redrawtabpanel(exarg_T *eap);
+#endif
 static void	close_redir(void);
 static void	ex_mark(exarg_T *eap);
 static void	ex_startinsert(exarg_T *eap);
@@ -8989,6 +8992,27 @@ ex_redrawtabline(exarg_T *eap UNUSED)
     p_lz = save_p_lz;
     out_flush();
 }
+
+#if defined(FEAT_TABPANEL)
+/*
+ * ":redrawtabpanel": force redraw of the tabpanel
+ */
+    static void
+ex_redrawtabpanel(exarg_T *eap UNUSED)
+{
+    int save_RedrawingDisabled = RedrawingDisabled;
+    RedrawingDisabled = 0;
+
+    int save_p_lz = p_lz;
+    p_lz = FALSE;
+
+    draw_tabpanel();
+
+    RedrawingDisabled = save_RedrawingDisabled;
+    p_lz = save_p_lz;
+    out_flush();
+}
+#endif
 
     static void
 close_redir(void)

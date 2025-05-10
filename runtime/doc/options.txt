@@ -8431,6 +8431,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The option consists of printf style '%' items interspersed with
 	normal text, similar to the 'statusline' or 'tabline'.
 
+	When changing something that is used in 'tabpanel' that does not
+	trigger it to be updated, use |:redrawtabpanel|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
+
 	You can use |g:actual_curtabpage| within a function assigned to
 	tabpanel. |g:actual_curtabpage| represents current tab's label number.
 	This option can contain line breaks.
