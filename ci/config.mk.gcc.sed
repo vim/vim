@@ -1,1 +1,1 @@
-/^CFLAGS[[:blank:]]*=/s/$/ -Wno-error=maybe-uninitialized/
+/^CFLAGS[[:blank:]]*=/s/$/ -Wno-error=maybe-uninitialized -Wunused-parameter/
