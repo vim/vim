@@ -4532,13 +4532,11 @@ gui_mch_open(void)
     pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
     pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
 
-# if !GTK_CHECK_VERSION(3,0,0)
     // For GTK2 changing the size of the form widget doesn't cause window
     // resizing.
     if (gtk_socket_id == 0)
 	gtk_window_resize(GTK_WINDOW(gui.mainwin), pixel_width, pixel_height);
     update_window_manager_hints(0, 0);
-# endif
 
     if (foreground_argument != NULL)
 	fg_pixel = gui_get_color((char_u *)foreground_argument);

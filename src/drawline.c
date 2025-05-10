@@ -388,7 +388,8 @@ handle_lnum_col(
 	// If 'signcolumn' is set to 'number' and a sign is present
 	// in 'lnum', then display the sign instead of the line
 	// number.
-	if ((*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u') && sign_present)
+	if ((*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u') && sign_present
+		&& wlv->sattr.sat_text != NULL)
 	    get_sign_display_info(TRUE, wp, wlv);
 	else
 #endif
