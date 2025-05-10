@@ -303,7 +303,7 @@ let test_values = {
       \ 'tabclose': [['', 'left', 'uselast', 'left,uselast'], ['xxx']],
       \ 'tabline': [['', 'xxx'], ['%$', '%{', '%{%', '%{%}', '%(', '%)']],
       \ 'tabpanel': [['', 'aaa', 'bbb'], []],
-      \ 'tabpanelopt': [['', 'align:left', 'align:right', 'wrap', 'vert:\|',
+      \ 'tabpanelopt': [['', 'align:left', 'align:right', 'vert:\|',
       \		'vert:@', 'vert:', 'columns:0', 'columns:20', 'columns:999'],
       \		['xxx', 'align:', 'align:middle', 'colomns:', 'cols:10',
       \		'cols:-1']],

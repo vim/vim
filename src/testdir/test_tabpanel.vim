@@ -70,31 +70,6 @@ endfunc
 function! Test_tabpanel_drawing()
   CheckScreendump
 
-
-  call test_setmouse(1, 11)
-  call feedkeys("\<LeftMouse>", 'xt')
-  let pos = getmousepos()
-  call assert_equal(1, pos['winrow'])
-  call assert_equal(1, pos['wincol'])
-
-  new
-  wincmd x
-
-  call test_setmouse(10, 11)
-  call feedkeys("\<LeftMouse>", 'xt')
-  let pos = getmousepos()
-  call assert_equal(10, pos['winrow'])
-  call assert_equal(1, pos['wincol'])
-
-  tabonly!
-  call s:reset()
-  let &mouse = save_mouse
-  let &showtabline = save_showtabline
-endfunc
-
-function! Test_tabpanel_drawing()
-  CheckScreendump
-
   let lines =<< trim END
     function! MyTabPanel()
       let n = g:actual_curtabpage
@@ -117,13 +92,8 @@ function! Test_tabpanel_drawing()
     nnoremap \04 <Cmd>silent tabnew Xtabpanel2<CR><Cmd>call setline(1, ['d', 'e', 'f'])<CR>
     nnoremap \05 <Cmd>set tabpanel=%!MyTabPanel()<CR>
     nnoremap \06 <Cmd>set tabpanelopt+=align:right<CR>
-    nnoremap \07 <Cmd>set tabpanelopt+=columns:10<CR>
-    nnoremap \08 <Cmd>set tabpanelopt+=wrap<CR>
-    nnoremap \09 gt
-    nnoremap \10 <Cmd>set tabpanelopt-=align:right<CR>
-    nnoremap \11 <Cmd>set showtabpanel=1 tabpanelopt+=vert:<Bslash><Bar><CR>
-    nnoremap \12 <Cmd>tab terminal NONE<CR><C-w>N
-    nnoremap \13 <Cmd>tabclose!<CR><Cmd>tabclose!<CR>
+    nnoremap \07 <Cmd>tab terminal NONE<CR><C-w>N
+    nnoremap \08 <Cmd>tabclose!<CR><Cmd>tabclose!<CR>
   END
   call writefile(lines, 'XTest_tabpanel', 'D')
 
@@ -131,12 +101,9 @@ function! Test_tabpanel_drawing()
 
   call VerifyScreenDump(buf, 'Test_tabpanel_drawing_00', {})
 
-  for i in range(1, 13)
+  for i in range(1, 8)
     let n = printf('%02d', i)
     call term_sendkeys(buf, '\' .. n)
-    if i == 10
-      call term_sendkeys(buf, ":redraw!\<cr>")
-    endif
     call VerifyScreenDump(buf, 'Test_tabpanel_drawing_' .. n, {})
   endfor
 
@@ -264,9 +231,9 @@ function! Test_tabpanel_many_tabpages()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopt=columns:10,wrap
+    set tabpanelopt=columns:10
     set showtabline=0
-    set tabpanel=%{g:actual_curtabpage}:%f
+    set tabpanel=%{g:actual_curtabpage}:tab
     execute join(repeat(['tabnew'], 20), ' | ')
   END
   call writefile(lines, 'XTest_tabpanel_many_tabpages', 'D')
@@ -415,6 +382,36 @@ function! Test_tabpanel_dont_vert_is_multibytes_right()
   "call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_2', {})
   "call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:2,vert:あ\<cr>")
   "call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function! Test_tabpanel_eval_tabpanel_statusline_tabline()
+  CheckScreendump
+
+  let lines =<< trim END
+    function! Expr()
+      return "$%=[%f]%=$"
+    endfunction
+    set laststatus=2
+    set showtabline=2
+    set showtabpanel=2
+    set statusline=%!Expr()
+    set tabline=%!Expr()
+    set tabpanel=%!Expr()
+    set tabpanelopt=columns:10,vert:\|
+    e aaa
+    tabnew
+    e bbb
+    tabnew
+    e ccc
+  END
+  call writefile(lines, 'XTest_tabpanel_eval_tabpanel_statusline_tabline', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_eval_tabpanel_statusline_tabline', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_statusline_tabline_0', {})
+  call term_sendkeys(buf, ":set tabpanelopt+=align:right\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_statusline_tabline_1', {})
 
   call StopVimInTerminal(buf)
 endfunc

@@ -27,14 +27,12 @@ static void do_by_tplmode(int tplmode, int col_start, int col_end,
 
 #define TPL_FILLCHAR		' '
 
-// tpl_wrap's values
-#define WRAP_OFF		0
-#define WRAP_ON			1
 // tpl_align's values
 #define ALIGN_LEFT		0
 #define ALIGN_RIGHT		1
 
-static int tpl_wrap = WRAP_OFF;
+static char_u *opt_name = (char_u *)"tabpanel";
+static int opt_scope = OPT_LOCAL;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
 static char_u *tpl_vert = NULL;
@@ -57,7 +55,6 @@ tabpanelopt_changed(void)
 {
     char_u	*p;
     int		vert_size = 0;
-    int		new_wrap = WRAP_OFF;
     int		new_align = ALIGN_LEFT;
     int		new_columns = 20;
     char_u	*new_vert = NULL;
@@ -65,12 +62,7 @@ tabpanelopt_changed(void)
     p = p_tplo;
     while (*p != NUL)
     {
-	if (STRNCMP(p, "wrap", 4) == 0)
-	{
-	    p += 4;
-	    new_wrap = WRAP_ON;
-	}
-	else if (STRNCMP(p, "align:left", 10) == 0)
+	if (STRNCMP(p, "align:left", 10) == 0)
 	{
 	    p += 10;
 	    new_align = ALIGN_LEFT;
@@ -112,7 +104,6 @@ tabpanelopt_changed(void)
     if (tpl_vert != NULL)
 	vim_free(tpl_vert);
 
-    tpl_wrap = new_wrap;
     tpl_align = new_align;
     tpl_columns = new_columns;
     tpl_vert = new_vert;
@@ -382,12 +373,6 @@ screen_puts_len_for_tabpanel(
 
 		if (pargs->col_end < chcells)
 		    break;
-
-		if (tpl_wrap == WRAP_ON)
-		{
-		    (*pargs->prow)++;
-		    *pargs->pcol = pargs->col_start;
-		}
 	    }
 
 	    if ((*pargs->pcol) + chcells <= pargs->col_end)
@@ -474,8 +459,6 @@ draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
     stl_hlrec_T *tabtab;
     int		curattr;
     int		n;
-    char_u	*opt_name = (char_u *)"tabpanel";
-    int         opt_scope = OPT_LOCAL;
 
     // Temporarily reset 'cursorbind', we don't want a side effect from moving
     // the cursor away and back.
@@ -488,7 +471,7 @@ draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
 
     build_stl_str_hl(pargs->cwp, buf, sizeof(buf),
 	    p, opt_name, opt_scope,
-	    TPL_FILLCHAR, sizeof(buf), &hltab, &tabtab);
+	    TPL_FILLCHAR, pargs->col_end - pargs->col_start, &hltab, &tabtab);
 
     vim_free(p);
     pargs->cwp->w_p_crb = p_crb_save;
@@ -528,6 +511,37 @@ draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
 		*pargs->prow - pargs->offsetrow + 1, *pargs->pcol,
 		pargs->col_end, curattr);
     *pargs->pcol = pargs->col_end;
+}
+
+    static char_u *
+starts_with_percent_and_bang(char_u *fmt, int len, tabpanel_T *pargs)
+{
+#ifdef FEAT_EVAL
+    char_u	*usefmt = fmt;
+    int		use_sandbox;
+
+    // if "fmt" was set insecurely it needs to be evaluated in the sandbox
+    use_sandbox = was_set_insecurely(opt_name, opt_scope);
+
+    // When the format starts with "%!" then evaluate it as an expression and
+    // use the result as the actual format string.
+    if (1 < len && usefmt[0] == '%' && usefmt[1] == '!')
+    {
+	typval_T	tv;
+
+	tv.v_type = VAR_NUMBER;
+	tv.vval.v_number = pargs->cwp->w_id;
+	set_var((char_u *)"g:tabpanel_winid", &tv, FALSE);
+
+	usefmt = eval_to_string_safe(usefmt + 2, use_sandbox, FALSE, FALSE);
+	if (usefmt == NULL)
+	    usefmt = fmt;
+
+	do_unlet((char_u *)"g:tabpanel_winid", TRUE);
+    }
+#endif
+
+    return usefmt;
 }
 
 /*
@@ -607,7 +621,7 @@ do_by_tplmode(
 	if (0 < len)
 	{
 	    char_u	buf[IOSIZE];
-	    char_u*	p2 = p;
+	    char_u*	p2 = starts_with_percent_and_bang(p, len, &args);
 	    size_t	i2 = 0;
 
 	    while (p2[i2] != '\0')

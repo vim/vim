@@ -8481,17 +8481,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				characters.
 				(default off)
 
-		wrap		How the content of tabpanel is displayed.
-				When on, each line of the content longer
-				than the size of TabPenel will wrap and
-				displaying continues on the next line.
-				When off, each line of the content will not
-				wrap and only part of long lines will be
-				displayed.
-				(default off)
-
 	Examples: >
-		:set tabpanelopt=columns:16,wrap,align:right
+		:set tabpanelopt=columns:16,align:right
 		:set tabpanelopt=
 		:set tabpanelopt=vert:\|,align:right
 		:set tabpanelopt=columns:16,vert:｜
