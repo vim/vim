@@ -5384,13 +5384,11 @@ gui_mch_do_spawn(char_u *arg)
 	{
 	    if (*p == L'"')
 	    {
-		while (*p && *p != L'"')
-		    ++p;
-		if (*p)
-		    ++p;
+		// Skip quoted strings
+		while (*++p && *p != L'"');
 	    }
-	    else
-		++p;
+
+	    ++p;
 	}
 	cmd = p;
     }
