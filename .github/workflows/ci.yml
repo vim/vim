@@ -190,9 +190,14 @@ jobs:
       - name: Install clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
         run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }} main"
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor | sudo tee /usr/share/keyrings/llvm-archive-keyring.gpg > /dev/null
+          echo "Types: deb
+          URIs: https://apt.llvm.org/${DISTRIB_CODENAME}/
+          Suites: llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
+          Components: main
+          Signed-By: /usr/share/keyrings/llvm-archive-keyring.gpg" | sudo tee /etc/apt/sources.list.d/llvm-toolchain.sources > /dev/null
+          sudo apt-get update -y
           sudo apt-get install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ env.CLANG_VER }} 100
           sudo update-alternatives --set clang /usr/bin/clang-${{ env.CLANG_VER }}
