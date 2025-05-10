@@ -516,26 +516,26 @@ draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
     static char_u *
 starts_with_percent_and_bang(char_u *fmt, int len, tabpanel_T *pargs)
 {
-#ifdef FEAT_EVAL
     char_u	*usefmt = fmt;
-    int		use_sandbox;
 
+#ifdef FEAT_EVAL
     // if "fmt" was set insecurely it needs to be evaluated in the sandbox
-    use_sandbox = was_set_insecurely(opt_name, opt_scope);
+    int	use_sandbox = was_set_insecurely(opt_name, opt_scope);
 
     // When the format starts with "%!" then evaluate it as an expression and
     // use the result as the actual format string.
     if (1 < len && usefmt[0] == '%' && usefmt[1] == '!')
     {
 	typval_T	tv;
+	char_u		*p = NULL;
 
 	tv.v_type = VAR_NUMBER;
 	tv.vval.v_number = pargs->cwp->w_id;
 	set_var((char_u *)"g:tabpanel_winid", &tv, FALSE);
 
-	usefmt = eval_to_string_safe(usefmt + 2, use_sandbox, FALSE, FALSE);
-	if (usefmt == NULL)
-	    usefmt = fmt;
+	p = eval_to_string_safe(usefmt + 2, use_sandbox, FALSE, FALSE);
+	if (p != NULL)
+	    usefmt = p;
 
 	do_unlet((char_u *)"g:tabpanel_winid", TRUE);
     }
