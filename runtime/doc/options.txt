@@ -3663,7 +3663,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Example: >
 	    :set fillchars=stl:\ ,stlnc:\ ,vert:\|,fold:-,diff:-
 <
-	All items single-byte and multibyte characters are supported.  But
+	All items support single-byte and multibyte characters.  But
 	double-width characters are not supported. |E1512|
 
 	The highlighting used for these items:
