@@ -7026,7 +7026,11 @@ load_dummy_buffer(
 	    aucmd_restbuf(&aco);
 
 	    if (newbuf_to_wipe.br_buf != NULL && bufref_valid(&newbuf_to_wipe))
-		wipe_buffer(newbuf_to_wipe.br_buf, FALSE);
+	    {
+		block_autocmds();
+		wipe_dummy_buffer(newbuf_to_wipe.br_buf, NULL);
+		unblock_autocmds();
+	    }
 	}
 
 	// Add back the "dummy" flag, otherwise buflist_findname_stat() won't
@@ -7052,8 +7056,8 @@ load_dummy_buffer(
 
 /*
  * Wipe out the dummy buffer that load_dummy_buffer() created. Restores
- * directory to "dirname_start" prior to returning, if autocmds or the
- * 'autochdir' option have changed it.
+ * directory to "dirname_start" if not NULL prior to returning, if autocmds or
+ * the 'autochdir' option have changed it.
  */
     static void
 wipe_dummy_buffer(buf_T *buf, char_u *dirname_start)
@@ -7095,8 +7099,9 @@ wipe_dummy_buffer(buf_T *buf, char_u *dirname_start)
 	// new aborting error, interrupt, or uncaught exception.
 	leave_cleanup(&cs);
 #endif
-	// When autocommands/'autochdir' option changed directory: go back.
-	restore_start_dir(dirname_start);
+	if (dirname_start != NULL)
+	    // When autocommands/'autochdir' option changed directory: go back.
+	    restore_start_dir(dirname_start);
     }
 }
 
