@@ -419,4 +419,25 @@ function! Test_tabpanel_dont_vert_is_multibytes_right()
   call StopVimInTerminal(buf)
 endfunc
 
+function! Test_tabpanel_intro()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=1
+    set tabpanelopt=columns:20
+    set showtabline=0
+    intro
+  END
+  call writefile(lines, 'XTest_tabpanel_intro', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_intro', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_intro_0', {})
+  call term_sendkeys(buf, ":tabnew\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_intro_1', {})
+  call term_sendkeys(buf, ":intro\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_intro_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
