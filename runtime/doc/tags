@@ -3148,6 +3148,8 @@ $quote	eval.txt	/*$quote*
 :redrawstatus	various.txt	/*:redrawstatus*
 :redrawt	various.txt	/*:redrawt*
 :redrawtabline	various.txt	/*:redrawtabline*
+:redrawtabp	various.txt	/*:redrawtabp*
+:redrawtabpanel	various.txt	/*:redrawtabpanel*
 :reg	change.txt	/*:reg*
 :registers	change.txt	/*:registers*
 :res	windows.txt	/*:res*

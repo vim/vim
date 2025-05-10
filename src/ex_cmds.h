@@ -1292,11 +1292,9 @@ EXCMD(CMD_redrawstatus,	"redrawstatus",	ex_redrawstatus,
 EXCMD(CMD_redrawtabline, "redrawtabline", ex_redrawtabline,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
-#if defined(FEAT_TABPANEL)
 EXCMD(CMD_redrawtabpanel, "redrawtabpanel", ex_redrawtabpanel,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
-#endif
 EXCMD(CMD_registers,	"registers",	ex_display,
 	EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
