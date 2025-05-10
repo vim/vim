@@ -411,6 +411,9 @@ EXTERN int	p_asd;		// 'autoshelldir'
 EXTERN int	p_ai;		// 'autoindent'
 EXTERN int	p_bin;		// 'binary'
 EXTERN int	p_bomb;		// 'bomb'
+#ifdef FEAT_PROP_POPUP
+EXTERN char_u	*p_boc;		// 'borderchars'
+#endif
 EXTERN int	p_bl;		// 'buflisted'
 EXTERN int	p_cin;		// 'cindent'
 EXTERN char_u	*p_cink;	// 'cinkeys'
