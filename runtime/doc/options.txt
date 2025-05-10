@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 May 08
+*options.txt*	For Vim version 9.1.  Last change: 2025 May 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3663,9 +3663,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Example: >
 	    :set fillchars=stl:\ ,stlnc:\ ,vert:\|,fold:-,diff:-
 <
-	For the "stl", "stlnc", "foldopen", "foldclose" and "foldsep" items
-	single-byte and multibyte characters are supported.  But double-width
-	characters are not supported. |E1512|
+	All items support single-byte and multibyte characters.  But
+	double-width characters are not supported. |E1512|
 
 	The highlighting used for these items:
 	  item name	highlight group ~
