@@ -219,24 +219,46 @@ draw_tabpanel(void)
 
     // Reset got_int to avoid build_stl_str_hl() isn't evaluted.
     got_int = FALSE;
+
     if (0 < vert_len)
     {
-	do_by_tplmode(TPLMODE_GET_CURTAB_ROW, (is_right ? vert_cells : 0),
-		maxwidth - (is_right ? 0 : vert_cells), &curtab_row, NULL);
-	do_by_tplmode(TPLMODE_REDRAW, (is_right ? vert_cells : 0),
-		maxwidth - (is_right ? 0 : vert_cells), &curtab_row, NULL);
+	if (is_right)
+	{
+	    // draw main contents in tabpanel
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, vert_cells,
+		    maxwidth - vert_cells, &curtab_row, NULL);
+	    do_by_tplmode(TPLMODE_REDRAW, vert_cells, maxwidth, &curtab_row,
+		    NULL);
+	    // clear for multi-byte vert separater
+	    screen_fill(0, cmdline_row, COLUMNS_WITHOUT_TPL(),
+		    COLUMNS_WITHOUT_TPL() + vert_cells,
+		    TPL_FILLCHAR, TPL_FILLCHAR, vs_attr);
+	    // draw vert separater in tabpanel
+	    for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
+		screen_puts_len(tpl_vert, vert_len, vsrow - 1,
+			COLUMNS_WITHOUT_TPL(), vs_attr);
+	}
+	else
+	{
+	    // draw main contents in tabpanel
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth - vert_cells,
+		    &curtab_row, NULL);
+	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - vert_cells,
+		    &curtab_row, NULL);
+	    // clear for multi-byte vert separater
+	    screen_fill(0, cmdline_row, maxwidth - vert_cells,
+		    maxwidth, TPL_FILLCHAR, TPL_FILLCHAR, vs_attr);
+	    // draw vert separater in tabpanel
+	    for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
+		screen_puts_len(tpl_vert, vert_len, vsrow - 1,
+			maxwidth - vert_cells, vs_attr);
+	}
     }
     else
     {
 	do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth, &curtab_row, NULL);
 	do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth, &curtab_row, NULL);
     }
-
-    // draw vert separater
-    for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
-	screen_puts_len(tpl_vert, vert_len, vsrow - 1,
-		(is_right ? COLUMNS_WITHOUT_TPL() : maxwidth - vert_cells),
-		vs_attr);
 
     got_int |= saved_got_int;
 
