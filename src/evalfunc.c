@@ -7417,11 +7417,11 @@ f_has(typval_T *argvars, typval_T *rettv)
 		},
 	{"tabpanel",
 #if defined(FEAT_TABPANEL)
-		1
+		1,
 #else
-		0
+		0,
 #endif
-		},
+	},
 	{"tag_binary", 1},	// graduated feature
 	{"tcl",
 #if defined(FEAT_TCL) && !defined(DYNAMIC_TCL)

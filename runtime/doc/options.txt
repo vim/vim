@@ -8441,7 +8441,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 >
 	set tabpanel=%!TabPanel()
 	function! TabPanel() abort
-	  return printf("(%2d)\\n  %%f", g:actual_curtabpage)
+	  return printf("(%2d)\n  %%f", g:actual_curtabpage)
 	endfunction
 <
 	The result is:
