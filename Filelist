@@ -151,6 +151,7 @@ SRC_ALL =	\
 		src/strings.c \
 		src/structs.h \
 		src/syntax.c \
+		src/tabpanel.c \
 		src/tag.c \
 		src/term.c \
 		src/terminal.c \
@@ -335,6 +336,7 @@ SRC_ALL =	\
 		src/proto/spellsuggest.pro \
 		src/proto/strings.pro \
 		src/proto/syntax.pro \
+		src/proto/tabpanel.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \
 		src/proto/terminal.pro \

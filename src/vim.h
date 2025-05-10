@@ -919,6 +919,14 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define FINDFILE_DIR	1	// only directories
 #define FINDFILE_BOTH	2	// files and directories
 
+#if defined(FEAT_TABPANEL)
+# define COLUMNS_WITHOUT_TPL()		(Columns - tabpanel_width())
+# define TPL_LCOL(W)			tabpanel_leftcol(W)
+#else
+# define COLUMNS_WITHOUT_TPL()		Columns
+# define TPL_LCOL(W)			0
+#endif
+
 #define W_ENDCOL(wp)	((wp)->w_wincol + (wp)->w_width)
 #ifdef FEAT_MENU
 # define W_WINROW(wp)	((wp)->w_winrow + (wp)->w_winbar_height)
@@ -1547,6 +1555,9 @@ typedef enum
     , HLF_ST	    // status lines of terminal windows
     , HLF_STNC	    // status lines of not-current terminal windows
     , HLF_MSG	    // message area
+    , HLF_TPL	    // tabpanel
+    , HLF_TPLS	    // tabpanel selected
+    , HLF_TPLF	    // tabpanel filler
     , HLF_COUNT	    // MUST be the last one
 } hlf_T;
 
@@ -1558,7 +1569,8 @@ typedef enum
 		  'B', 'P', 'R', 'L', \
 		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', \
 		  '*', '#', '_', '!', '.', 'o', 'q', \
-		  'z', 'Z', 'g'}
+		  'z', 'Z', 'g', \
+		  '%', '^', '&' }
 
 /*
  * Values for behaviour in spell_move_to
@@ -2077,6 +2089,7 @@ typedef int sock_T;
 #define IN_STATUS_LINE		2	// on status or command line
 #define IN_SEP_LINE		4	// on vertical separator line
 #define IN_OTHER_WIN		8	// in other window but can't go there
+#define IN_TABPANEL		16	// in tabpanel
 #define CURSOR_MOVED		0x100
 #define MOUSE_FOLD_CLOSE	0x200	// clicked on '-' in fold column
 #define MOUSE_FOLD_OPEN		0x400	// clicked on '+' in fold column

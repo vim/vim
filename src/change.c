@@ -142,6 +142,9 @@ changed_internal(void)
     ml_setflags(curbuf);
     check_status(curbuf);
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
     need_maketitle = TRUE;	    // set window title later
 }
 
@@ -917,6 +920,9 @@ unchanged(buf_T *buf, int ff, int always_inc_changedtick)
 	    save_file_ff(buf);
 	check_status(buf);
 	redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+	redraw_tabpanel = TRUE;
+#endif
 	need_maketitle = TRUE;	    // set window title later
 	++CHANGEDTICK(buf);
     }

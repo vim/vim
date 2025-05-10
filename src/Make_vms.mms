@@ -424,6 +424,7 @@ SRC = \
 	spellsuggest.c \
 	strings.c \
 	syntax.c \
+	tabpanel.c \
 	tag.c \
 	term.c \
 	terminal.c \
@@ -559,6 +560,7 @@ OBJ = \
 	spellsuggest.obj \
 	strings.obj \
 	syntax.obj \
+	tabpanel.obj \
 	tag.obj \
 	term.obj \
 	terminal.obj \
@@ -1143,6 +1145,10 @@ strings.obj : strings.c vim.h [.auto]config.h feature.h os_unix.h \
  regexp.h gui.h beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h \
  proto.h errors.h globals.h
 syntax.obj : syntax.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ errors.h globals.h
+tabpanel.obj : tabpanel.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h

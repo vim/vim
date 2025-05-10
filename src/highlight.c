@@ -249,6 +249,9 @@ static char *(highlight_init_both[]) = {
 	 "TabLineSel term=bold cterm=bold gui=bold"),
     CENT("TabLineFill term=reverse cterm=reverse",
 	 "TabLineFill term=reverse cterm=reverse gui=reverse"),
+    "default link TabPanel TabLine",
+    "default link TabPanelSel TabLineSel",
+    "default link TabPanelFill TabLineFill",
 #ifdef FEAT_GUI
     "Cursor guibg=fg guifg=bg",
     "lCursor guibg=fg guifg=bg", // should be different, but what?

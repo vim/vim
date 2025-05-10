@@ -232,6 +232,9 @@ do_mouse(
     int		moved;		// Has cursor moved?
     int		in_status_line;	// mouse in status line
     static int	in_tab_line = FALSE; // mouse clicked in tab line
+#if defined(FEAT_TABPANEL)
+    static int	in_tabpanel = FALSE; // mouse clicked in tabpanel
+#endif
     int		in_sep_line;	// mouse in vertical separator line
     int		c1, c2;
 #if defined(FEAT_FOLDING)
@@ -342,9 +345,16 @@ do_mouse(
 	if (!is_drag)			// release, reset got_click
 	{
 	    got_click = FALSE;
-	    if (in_tab_line)
+	    if (in_tab_line
+#if defined(FEAT_TABPANEL)
+		|| in_tabpanel
+#endif
+		    )
 	    {
 		in_tab_line = FALSE;
+#if defined(FEAT_TABPANEL)
+		in_tabpanel = FALSE;
+#endif
 		return FALSE;
 	    }
 	}
@@ -468,6 +478,78 @@ do_mouse(
 	jump_flags |= MOUSE_FOCUS | MOUSE_DID_MOVE;
 
     start_visual.lnum = 0;
+
+    // Check for clicking in the tab page line.
+#if defined(FEAT_TABPANEL)
+    if (mouse_col < TPL_LCOL(NULL))
+    {
+	if (is_drag)
+	{
+	    if (in_tabpanel)
+	    {
+		c1 = get_tabpagenr_on_tabpanel();
+		tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
+								? c1 - 1 : c1);
+	    }
+	    return FALSE;
+	}
+
+	// click in a tab selects that tab page
+	if (is_click
+# ifdef FEAT_CMDWIN
+		&& cmdwin_type == 0
+# endif
+		&& mouse_col < Columns)
+	{
+	    in_tabpanel = TRUE;
+	    c1 = get_tabpagenr_on_tabpanel();
+	    if (c1 >= 0)
+	    {
+		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
+		{
+		    // double click opens new page
+		    end_visual_mode();
+		    tabpage_new();
+		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
+		}
+		else
+		{
+		    // Go to specified tab page, or next one if not clicking
+		    // on a label.
+		    goto_tabpage(c1);
+
+		    // It's like clicking on the status line of a window.
+		    if (curwin != old_curwin)
+			end_visual_mode();
+		}
+	    }
+	    else
+	    {
+		tabpage_T	*tp;
+
+		// Close the current or specified tab page.
+		if (c1 == -999)
+		    tp = curtab;
+		else
+		    tp = find_tabpage(-c1);
+		if (tp == curtab)
+		{
+		    if (first_tabpage->tp_next != NULL)
+			tabpage_close(FALSE);
+		}
+		else if (tp != NULL)
+		    tabpage_close_other(tp, FALSE);
+	    }
+	}
+	return TRUE;
+    }
+    else if (is_drag && in_tabpanel)
+    {
+	c1 = get_tabpagenr_on_tabpanel();
+	tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
+	return FALSE;
+    }
+#endif
 
     if (TabPageIdxs != NULL)  // only when initialized
     {
@@ -1643,6 +1725,10 @@ jump_to_mouse(
     int		mouse_char = ' ';
 #endif
 
+    col -= TPL_LCOL(NULL);
+    if (col < 0)
+	return IN_TABPANEL;
+
     mouse_past_bottom = FALSE;
     mouse_past_eol = FALSE;
 
@@ -1727,7 +1813,7 @@ retnomove:
 
     if (!(flags & MOUSE_FOCUS))
     {
-	if (row < 0 || col < 0)			// check if it makes sense
+	if (row < 0 || col + TPL_LCOL(NULL) < 0) // check if it makes sense
 	    return IN_UNKNOWN;
 
 	// find the window where the row is in and adjust "row" and "col" to be
@@ -3247,6 +3333,9 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    winid = wp->w_id;
 	    winrow = row + 1;
 	    wincol = col + 1;
+	    wincol -= TPL_LCOL(NULL);
+	    if (wincol < 0)
+		wincol = 0;
 	    row -= top_off;
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)

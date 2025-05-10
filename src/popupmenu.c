@@ -656,22 +656,24 @@ pum_display_rtl_text(
 	width = cells + over_cell + 1;
 	rt = orig_rt;
 
-	screen_putchar(truncrl, row, col - width + 1, attr);
+	screen_putchar(truncrl, row, col - width + 1 + TPL_LCOL(NULL), attr);
 
 	if (over_cell > 0)
-	    screen_fill(row, row + 1, col - width + 2,
-		    col - width + 2 + over_cell, ' ', ' ', attr);
+	    screen_fill(row, row + 1, col - width + 2 + TPL_LCOL(NULL),
+		    col - width + 2 + over_cell + TPL_LCOL(NULL), ' ', ' ',
+		    attr);
     }
 
     if (attrs == NULL)
-	screen_puts_len(rt, (int)STRLEN(rt), row, col - cells + 1, attr);
+	screen_puts_len(rt, (int)STRLEN(rt), row,
+		col - cells + 1 + TPL_LCOL(NULL), attr);
     else
-	pum_screen_puts_with_attrs(row, col - cells + 1, cells, rt,
-		(int)STRLEN(rt), attrs);
+	pum_screen_puts_with_attrs(row, col - cells + 1 + TPL_LCOL(NULL),
+		cells, rt, (int)STRLEN(rt), attrs);
 
     vim_free(rt_start);
     VIM_CLEAR(st);
-    return col - width;
+    return col - width + TPL_LCOL(NULL);
 }
 #endif
 
@@ -743,17 +745,18 @@ pum_display_ltr_text(
     }
 
     if (attrs == NULL)
-	screen_puts_len(st, size, row, col, attr);
+	screen_puts_len(st, size, row, col + TPL_LCOL(NULL), attr);
     else
-	pum_screen_puts_with_attrs(row, col, cells, st, size, attrs);
+	pum_screen_puts_with_attrs(row, col + TPL_LCOL(NULL), cells, st, size,
+		attrs);
 
     if (truncated)
     {
 	if (over_cell > 0)
-	    screen_fill(row, row + 1, col + cells,
-		    col + cells + over_cell, ' ', ' ', attr);
+	    screen_fill(row, row + 1, col + cells + TPL_LCOL(NULL),
+		    col + cells + over_cell + TPL_LCOL(NULL), ' ', ' ', attr);
 
-	screen_putchar(trunc, row, col + cells + over_cell, attr);
+	screen_putchar(trunc, row, col + cells + over_cell + TPL_LCOL(NULL), attr);
     }
 
     VIM_CLEAR(st);
@@ -863,10 +866,10 @@ pum_draw_scrollbar(
 
 #ifdef FEAT_RIGHTLEFT
     if (pum_rl)
-	screen_putchar(' ', row, pum_col - pum_width, attr);
+	screen_putchar(' ', row, pum_col - pum_width + TPL_LCOL(NULL), attr);
     else
 #endif
-	screen_putchar(' ', row, pum_col + pum_width, attr);
+	screen_putchar(' ', row, pum_col + pum_width + TPL_LCOL(NULL), attr);
 }
 
 /*
@@ -949,12 +952,12 @@ pum_redraw(void)
 	if (pum_rl)
 	{
 	    if (pum_col < curwin->w_wincol + curwin->w_width - 1)
-		screen_putchar(' ', row, pum_col + 1, attr);
+		screen_putchar(' ', row, pum_col + 1 + TPL_LCOL(NULL), attr);
 	}
 	else
 #endif
 	    if (pum_col > 0)
-		screen_putchar(' ', row, pum_col - 1, attr);
+		screen_putchar(' ', row, pum_col - 1 + TPL_LCOL(NULL), attr);
 
 	// Display each entry, use two spaces for a Tab.
 	// Do this 3 times and order from p_cia
@@ -995,15 +998,16 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 	    if (pum_rl)
 	    {
-		screen_fill(row, row + 1, pum_col - basic_width - n + 1,
-						col + 1, ' ', ' ', orig_attr);
+		screen_fill(row, row + 1, pum_col - basic_width - n + 1 + TPL_LCOL(NULL),
+						col + 1 + TPL_LCOL(NULL), ' ', ' ', orig_attr);
 		col = pum_col - basic_width - n;
 	    }
 	    else
 #endif
 	    {
-		screen_fill(row, row + 1, col, pum_col + basic_width + n,
-							' ', ' ', orig_attr);
+		screen_fill(row, row + 1, col + TPL_LCOL(NULL),
+			pum_col + basic_width + n + TPL_LCOL(NULL), ' ', ' ',
+			orig_attr);
 		col = pum_col + basic_width + n;
 	    }
 	    totwidth = basic_width + n;
@@ -1011,12 +1015,14 @@ pum_redraw(void)
 
 #ifdef FEAT_RIGHTLEFT
 	if (pum_rl)
-	    screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1, ' ',
-							    ' ', orig_attr);
+	    screen_fill(row, row + 1,
+		    pum_col - pum_width + 1 + TPL_LCOL(NULL),
+		    col + 1 + TPL_LCOL(NULL), ' ', ' ', orig_attr);
 	else
 #endif
-	    screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ',
-								orig_attr);
+	    screen_fill(row, row + 1, col + TPL_LCOL(NULL),
+		    pum_col + pum_width + TPL_LCOL(NULL),
+		    ' ', ' ', orig_attr);
 	pum_draw_scrollbar(row, i, thumb_pos, thumb_height);
 
 	++row;
@@ -1396,6 +1402,9 @@ pum_undisplay(void)
     pum_array = NULL;
     redraw_all_later(UPD_NOT_VALID);
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
     if (pum_in_cmdline)
     {
 	clear_cmdline = TRUE;

@@ -162,6 +162,7 @@ SRC += \
 	strings.c \
 	syntax.c \
 	tag.c \
+	tabpanel.c \
 	term.c \
 	termlib.c \
 	testing.c \
