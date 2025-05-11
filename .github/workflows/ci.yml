@@ -739,6 +739,7 @@ jobs:
               exit 0
             fi
           fi
+          choco install curl --no-progress
 
       - name: Test and show the result of testing gVim
         if: matrix.GUI == 'yes' || matrix.VIMDLL == 'yes'
