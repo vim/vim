@@ -3657,11 +3657,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  trunc		'>'		truncated text in the
 					|ins-completion-menu|.
 	  truncrl	'<'		same as "trunc" in 'rightleft' mode
+	  tpl_vert	'|'		vertical separators of 'tabpanel'
 
 	Any one that is omitted will fall back to the default.
 
 	Example: >
-	    :set fillchars=stl:\ ,stlnc:\ ,vert:\|,fold:-,diff:-
+	    :set fillchars=stl:\ ,stlnc:\ ,vert:\|,fold:-,diff:-,tpl_vert:\|
 <
 	All items support single-byte and multibyte characters.  But
 	double-width characters are not supported. |E1512|
@@ -8475,16 +8476,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 				or less than the size of Vim window.
 				(default 20)
 
-		vert:{n}	Use a vertical separator for tabpanel.
-				This vertical separator can contain multi-byte
-				characters.
+		vert		Use a vertical separator for tabpanel.
+				This vertical separator is used "tpl_vert" of
+				'fillchars'.
 				(default off)
 
 	Examples: >
 		:set tabpanelopt=columns:16,align:right
 		:set tabpanelopt=
-		:set tabpanelopt=vert:\|,align:right
-		:set tabpanelopt=columns:16,vert:｜
+		:set tabpanelopt=vert,align:right
+		:set tabpanelopt=columns:16
 <
 
 						*'tabstop'* *'ts'*

@@ -4745,6 +4745,9 @@ static struct charstab filltab[] =
     CHARSTAB_ENTRY(&fill_chars.diff,	    "diff"),
     CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
     CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline"),
+#if defined(FEAT_TABPANEL)
+    CHARSTAB_ENTRY(&fill_chars.tpl_vert,    "tpl_vert"),
+#endif
     CHARSTAB_ENTRY(&fill_chars.trunc,	    "trunc"),
     CHARSTAB_ENTRY(&fill_chars.truncrl,	    "truncrl"),
 };
@@ -4860,6 +4863,9 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		fill_chars.diff = '-';
 		fill_chars.eob = '~';
 		fill_chars.lastline = '@';
+#if defined(FEAT_TABPANEL)
+		fill_chars.tpl_vert = '|';
+#endif
 		fill_chars.trunc = '>';
 		fill_chars.truncrl = '<';
 	    }

@@ -302,7 +302,8 @@ function! Test_tabpanel_tabline_and_tabpanel()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopt=columns:10,vert:@
+    set tabpanelopt=columns:10,vert
+    set fillchars=tpl_vert:│
     set showtabline=2
     e aaa.txt
     tabnew
@@ -337,28 +338,29 @@ function! Test_tabpanel_dont_overflow_into_tabpanel()
   call StopVimInTerminal(buf)
 endfunc
 
-function! Test_tabpanel_dont_vert_is_multibytes()
+function! Test_tabpanel_dont_vert_is_multibytes_left()
   CheckScreendump
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopt=columns:10,vert:あ
+    set tabpanelopt=columns:10,vert
+    set fillchars=tpl_vert:│
     set showtabline=2
     tabnew
   END
-  call writefile(lines, 'XTest_tabpanel_vert_is_multibytes', 'D')
+  call writefile(lines, 'XTest_tabpanel_vert_is_multibyte_lefts', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibytes', {'rows': 10, 'cols': 45})
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_0', {})
+  let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibyte_lefts', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_0', {})
 
-  call term_sendkeys(buf, ":set tabpanelopt=columns:10,vert:aあ\<cr>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_1', {})
+  call term_sendkeys(buf, ":set tabpanelopt=columns:1,vert\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_1', {})
 
-  call term_sendkeys(buf, ":set tabpanelopt=columns:1,vert:あ\<cr>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_2', {})
+  call term_sendkeys(buf, ":set tabpanelopt=columns:10,vert\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_2', {})
 
-  call term_sendkeys(buf, ":set tabpanelopt=columns:2,vert:あ\<cr>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_3', {})
+  call term_sendkeys(buf, ":set tabpanelopt=columns:2,vert\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_3', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -368,20 +370,24 @@ function! Test_tabpanel_dont_vert_is_multibytes_right()
 
   let lines =<< trim END
     set showtabpanel=2
-    set tabpanelopt=align:right,columns:10,vert:aあ
+    set tabpanelopt=align:right,columns:10,vert
+    set fillchars=tpl_vert:│
     set showtabline=2
     tabnew
   END
   call writefile(lines, 'XTest_tabpanel_vert_is_multibytes_right', 'D')
 
   let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibytes_right', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_0', {})
+
+  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:1,vert\<cr>")
   call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_1', {})
 
-  " TODO:
-  "call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:1,vert:あ\<cr>")
-  "call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_2', {})
-  "call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:2,vert:あ\<cr>")
-  "call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_3', {})
+  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:10,vert\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_2', {})
+
+  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:2,vert\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_3', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -399,7 +405,8 @@ function! Test_tabpanel_eval_tabpanel_statusline_tabline()
     set statusline=%!Expr()
     set tabline=%!Expr()
     set tabpanel=%!Expr()
-    set tabpanelopt=columns:10,vert:\|
+    set tabpanelopt=columns:10,vert
+    set fillchars=tpl_vert:│
     e aaa
     tabnew
     e bbb
@@ -412,6 +419,60 @@ function! Test_tabpanel_eval_tabpanel_statusline_tabline()
   call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_statusline_tabline_0', {})
   call term_sendkeys(buf, ":set tabpanelopt+=align:right\<cr>")
   call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_statusline_tabline_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function! Test_tabpanel_noeval_tabpanel_statusline_tabline()
+  CheckScreendump
+
+  let lines =<< trim END
+    set laststatus=2
+    set showtabline=2
+    set showtabpanel=2
+    set statusline=$%=[%f]%=$
+    set tabline=$%=[%f]%=$
+    set tabpanel=$%=[%f]%=$
+    set tabpanelopt=columns:10,vert
+    set fillchars=tpl_vert:│
+    e aaa
+    tabnew
+    e bbb
+    tabnew
+    e ccc
+  END
+  call writefile(lines, 'XTest_tabpanel_noeval_tabpanel_statusline_tabline', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_noeval_tabpanel_statusline_tabline', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_noeval_tabpanel_statusline_tabline_0', {})
+  call term_sendkeys(buf, ":set tabpanelopt+=align:right\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_noeval_tabpanel_statusline_tabline_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function! Test_tabpanel_eval_tabpanel_with_linebreaks()
+  CheckScreendump
+
+  let lines =<< trim END
+    function! Expr()
+      return "top\n$%=[%f]%=$\nbottom"
+    endfunction
+    set showtabpanel=2
+    set tabpanel=%!Expr()
+    set tabpanelopt=columns:10
+    e aaa
+    tabnew
+    e bbb
+    tabnew
+    e ccc
+  END
+  call writefile(lines, 'XTest_tabpanel_eval_tabpanel_with_linebreaks', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_eval_tabpanel_with_linebreaks', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_with_linebreaks_0', {})
+  call term_sendkeys(buf, ":set tabpanelopt+=align:right\<cr>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_with_linebreaks_1', {})
 
   call StopVimInTerminal(buf)
 endfunc

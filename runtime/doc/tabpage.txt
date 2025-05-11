@@ -469,8 +469,8 @@ wraped:
 	|e.txt      |text text text text text text text
 	|(2)        |text text text text text text text
 
-The "vert:" of 'tabpanelopt' option defines the vertical separator between
-the tabpanel and the main window:
+The "vert" of 'tabpanelopt' option defines whether a vertical separator is
+displayed between the tabpanel and the main window:
 >
                     +------ This is
                     |
@@ -480,6 +480,8 @@ the tabpanel and the main window:
 	|  ~/aaa.txt|text text text text text text text
 	|(2)        |text text text text text text text
 <
+The vertical separator is used "tpl_vert" of 'fillchars'.
+
 You can customize the appearance of the tab page labels using the highlight
 groups: |hl-TabPanel| |hl-TabPanelSel| |hl-TabPanelFill|
 

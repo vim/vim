@@ -27,6 +27,12 @@ static void do_by_tplmode(int tplmode, int col_start, int col_end,
 
 #define TPL_FILLCHAR		' '
 
+#define VERT_LEN		1
+
+// tpl_vert's values
+#define VERT_OFF		0
+#define VERT_ON			1
+
 // tpl_align's values
 #define ALIGN_LEFT		0
 #define ALIGN_RIGHT		1
@@ -35,7 +41,7 @@ static char_u *opt_name = (char_u *)"tabpanel";
 static int opt_scope = OPT_LOCAL;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
-static char_u *tpl_vert = NULL;
+static int tpl_vert = VERT_OFF;
 
 typedef struct {
     win_T   *wp;
@@ -54,10 +60,9 @@ typedef struct {
 tabpanelopt_changed(void)
 {
     char_u	*p;
-    int		vert_size = 0;
     int		new_align = ALIGN_LEFT;
     int		new_columns = 20;
-    char_u	*new_vert = NULL;
+    int		new_vert = VERT_OFF;
 
     p = p_tplo;
     while (*p != NUL)
@@ -77,22 +82,10 @@ tabpanelopt_changed(void)
 	    p += 8;
 	    new_columns = getdigits(&p);
 	}
-	else if (STRNCMP(p, "vert:", 5) == 0)
+	else if (STRNCMP(p, "vert", 4) == 0)
 	{
-	    p += 5;
-	    while (*p != NUL && *p != ',')
-	    {
-		++p;
-		++vert_size;
-	    }
-	    if (vert_size < IOSIZE - 1)
-	    {
-		vim_strncpy(IObuff, p - vert_size, vert_size);
-		IObuff[vert_size] = NUL;
-		new_vert = vim_strsave(IObuff);
-	    }
-	    else
-		return FAIL;
+	    p += 4;
+	    new_vert = VERT_ON;
 	}
 
 	if (*p != ',' && *p != NUL)
@@ -100,9 +93,6 @@ tabpanelopt_changed(void)
 	if (*p == ',')
 	    ++p;
     }
-
-    if (tpl_vert != NULL)
-	vim_free(tpl_vert);
 
     tpl_align = new_align;
     tpl_columns = new_columns;
@@ -157,39 +147,17 @@ draw_tabpanel(void)
     int		saved_KeyTyped = KeyTyped;
     int		saved_got_int = got_int;
     int		maxwidth = tabpanel_width();
-    int		vert_len = 0;
-    int		vert_cells = 0;
     int		vs_attr = HL_ATTR(HLF_C);
     int		curtab_row = 0;
 #ifndef MSWIN
     int		row = 0;
     int		off = 0;
 #endif
-    int		vsrow = 0;
+int		vsrow = 0;
     int		is_right = tpl_align == ALIGN_RIGHT;
 
     if (0 == maxwidth)
 	return;
-
-    if (tpl_vert == NULL)
-	tpl_vert = vim_strsave((char_u*)"");
-
-    vert_len = 0;
-    vert_cells = 0;
-    while (*(tpl_vert + vert_len) != NUL)
-    {
-	int cell = ptr2cells(tpl_vert + vert_len);
-	if (vert_cells + cell <= maxwidth)
-	{
-	    if (has_mbyte)
-		vert_len += (*mb_ptr2len)(tpl_vert + vert_len);
-	    else
-		vert_len += (int)STRLEN(tpl_vert + vert_len);
-	    vert_cells += cell;
-	}
-	else
-	    break;
-    }
 
 #ifndef MSWIN
     // We need this section only for the Vim running on WSL.
@@ -211,38 +179,38 @@ draw_tabpanel(void)
     // Reset got_int to avoid build_stl_str_hl() isn't evaluted.
     got_int = FALSE;
 
-    if (0 < vert_len)
+    if (tpl_vert == VERT_ON)
     {
 	if (is_right)
 	{
 	    // draw main contents in tabpanel
-	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, vert_cells,
-		    maxwidth - vert_cells, &curtab_row, NULL);
-	    do_by_tplmode(TPLMODE_REDRAW, vert_cells, maxwidth, &curtab_row,
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, VERT_LEN,
+		    maxwidth - VERT_LEN, &curtab_row, NULL);
+	    do_by_tplmode(TPLMODE_REDRAW, VERT_LEN, maxwidth, &curtab_row,
 		    NULL);
 	    // clear for multi-byte vert separater
 	    screen_fill(0, cmdline_row, COLUMNS_WITHOUT_TPL(),
-		    COLUMNS_WITHOUT_TPL() + vert_cells,
+		    COLUMNS_WITHOUT_TPL() + VERT_LEN,
 		    TPL_FILLCHAR, TPL_FILLCHAR, vs_attr);
 	    // draw vert separater in tabpanel
-	    for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
-		screen_puts_len(tpl_vert, vert_len, vsrow - 1,
+	    for (vsrow = 0; vsrow < cmdline_row; vsrow++)
+		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
 			COLUMNS_WITHOUT_TPL(), vs_attr);
 	}
 	else
 	{
 	    // draw main contents in tabpanel
-	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth - vert_cells,
+	    do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth - VERT_LEN,
 		    &curtab_row, NULL);
-	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - vert_cells,
+	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - VERT_LEN,
 		    &curtab_row, NULL);
 	    // clear for multi-byte vert separater
-	    screen_fill(0, cmdline_row, maxwidth - vert_cells,
+	    screen_fill(0, cmdline_row, maxwidth - VERT_LEN,
 		    maxwidth, TPL_FILLCHAR, TPL_FILLCHAR, vs_attr);
 	    // draw vert separater in tabpanel
-	    for (vsrow = 1; vsrow < cmdline_row + 1; vsrow++)
-		screen_puts_len(tpl_vert, vert_len, vsrow - 1,
-			maxwidth - vert_cells, vs_attr);
+	    for (vsrow = 0; vsrow < cmdline_row; vsrow++)
+		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
+			maxwidth - VERT_LEN, vs_attr);
 	}
     }
     else
@@ -514,9 +482,18 @@ draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
 }
 
     static char_u *
-starts_with_percent_and_bang(char_u *fmt, int len, tabpanel_T *pargs)
+starts_with_percent_and_bang(tabpanel_T *pargs)
 {
-    char_u	*usefmt = fmt;
+    int		len = 0;
+    char_u	*usefmt = p_tpl;
+
+    if (usefmt == NULL)
+	return NULL;
+
+    len = (int)STRLEN(usefmt);
+
+    if (len == 0)
+	return NULL;
 
 #ifdef FEAT_EVAL
     // if "fmt" was set insecurely it needs to be evaluated in the sandbox
@@ -555,8 +532,6 @@ do_by_tplmode(
 	int	*pcurtab_row,
 	int	*ptabpagenr)
 {
-    int		len = 0;
-    char_u	*p = NULL;
     int		attr_tplf = HL_ATTR(HLF_TPLF);
     int		attr_tpls = HL_ATTR(HLF_TPLS);
     int		attr_tpl = HL_ATTR(HLF_TPL);
@@ -613,20 +588,16 @@ do_by_tplmode(
 	    args.wp = tp->tp_firstwin;
 	}
 
-	len = 0;
-	p = p_tpl;
-	if (p != NULL)
-	    len = (int)STRLEN(p);
-
-	if (0 < len)
+	char_u*	usefmt = starts_with_percent_and_bang(&args);
+	if (usefmt != NULL)
 	{
 	    char_u	buf[IOSIZE];
-	    char_u*	p2 = starts_with_percent_and_bang(p, len, &args);
-	    size_t	i2 = 0;
+	    char_u	*p = usefmt;
+	    size_t	i = 0;
 
-	    while (p2[i2] != '\0')
+	    while (p[i] != '\0')
 	    {
-		while ((p2[i2] == '\n') || (p2[i2] == '\r'))
+		while ((p[i] == '\n') || (p[i] == '\r'))
 		{
 		    // fill the tailing area of current row.
 		    if (0 <= (row - args.offsetrow)
@@ -637,27 +608,29 @@ do_by_tplmode(
 				col, args.col_end, args.attr);
 		    row++;
 		    col = col_start;
-		    p2++;
+		    p++;
 		}
 
-		while ((p2[i2] != '\n') && (p2[i2] != '\r')
-			&& (p2[i2] != '\0'))
+		while ((p[i] != '\n') && (p[i] != '\r')
+			&& (p[i] != '\0'))
 		{
-		    if (i2 + 1 >= sizeof(buf))
+		    if (i + 1 >= sizeof(buf))
 			break;
-		    buf[i2] = p2[i2];
-		    i2++;
+		    buf[i] = p[i];
+		    i++;
 		}
-		buf[i2] = '\0';
+		buf[i] = '\0';
 
 		args.user_defined = buf;
 		args.prow = &row;
 		args.pcol = &col;
 		draw_tabpanel_userdefined(tplmode, &args);
 
-		p2 += i2;
-		i2 = 0;
+		p += i;
+		i = 0;
 	    }
+	    if (usefmt != p_tpl)
+		VIM_CLEAR(usefmt);
 	}
 	else
 	{
