@@ -107,7 +107,10 @@
 # undef SIZEOF_TIME_T
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <ruby.h>
+#pragma GCC diagnostic pop
 #include <ruby/encoding.h>
 
 // See above.
