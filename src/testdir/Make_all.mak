@@ -328,6 +328,7 @@ NEW_TESTS = \
 	test_true_false \
 	test_trycatch \
 	test_tuple \
+	test_plugin_tutor \
 	test_undo \
 	test_unlet \
 	test_user_func \
@@ -581,6 +582,7 @@ NEW_TESTS_RES = \
 	test_true_false.res \
 	test_trycatch.res \
 	test_tuple.res \
+	test_plugin_tutor.res \
 	test_undo.res \
 	test_user_func.res \
 	test_usercommands.res \

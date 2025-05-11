@@ -12,15 +12,6 @@ call tutor#SetupVim()
 
 " Buffer Settings: {{{1
 setlocal noreadonly
-if !exists('g:tutor_debug') || g:tutor_debug == 0
-    setlocal buftype=nofile
-    setlocal concealcursor+=inv
-    setlocal conceallevel=2
-else
-    setlocal buftype=
-    setlocal concealcursor&
-    setlocal conceallevel=0
-endif
 setlocal noundofile
 
 setlocal keywordprg=:help
@@ -46,14 +37,7 @@ call tutor#SetNormalMappings()
 sign define tutorok text=✓ texthl=tutorOK
 sign define tutorbad text=✗ texthl=tutorX
 
-if !exists('g:tutor_debug') || g:tutor_debug == 0
-    call tutor#ApplyMarks()
-    autocmd! TextChanged,TextChangedI <buffer> call tutor#ApplyMarksOnChanged()
-endif
-
-let b:undo_ftplugin = 'unlet! g:tutor_debug |'
-let b:undo_ftplugin ..= 'setl concealcursor< conceallevel< |'
-let b:undo_ftplugin ..= 'setl foldmethod< foldexpr< foldlevel< |'
-let b:undo_ftplugin ..= 'setl buftype< undofile< keywordprg< iskeyword< |'
+let b:undo_ftplugin = "setl foldmethod< foldexpr< foldlevel< undofile< keywordprg< iskeyword< |"
+    \ . "call tutor#EnableInteractive(v:false) |"
 
 " vim: fdm=marker
