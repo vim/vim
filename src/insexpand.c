@@ -5236,9 +5236,8 @@ find_comp_when_fuzzy(void)
 
     if ((is_forward && compl_selected_item == compl_match_arraysize - 1)
 	    || (is_backward && compl_selected_item == 0))
-	return compl_first_match != compl_shown_match ?
-	    (is_forward ? compl_shown_match->cp_next : compl_first_match) :
-	    (compl_first_match->cp_prev ? compl_first_match->cp_prev : NULL);
+	return match_at_original_text(compl_first_match)
+			    ? compl_first_match : compl_first_match->cp_prev;
 
     if (is_forward)
 	target_idx = compl_selected_item + 1;
