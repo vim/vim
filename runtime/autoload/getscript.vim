@@ -606,40 +606,24 @@ endfun
 " Check status code of scriptaddr and downloadaddr
 " return v:true if the script is downloadable or v:false in case of errors
 fun CheckVimScriptURL(script_id, src_id)
-  if !executable('curl')
+  " doesn't work with powershell
+  if !executable('curl') || &shell =~? 'pwsh\|powershell'
     return v:true
   endif
   let output = has("win32") ? ' -o NUL ' : ' -o /dev/null '
 
-  " Handle PowerShell differently
-  if &shell =~? '\<pwsh\>\|\<powershell\>'
-    " For PowerShell, use direct command output
-    let script_url = g:GetLatestVimScripts_scriptaddr . a:script_id
-    let script_cmd = 'curl -s -I -w "%{http_code}"' . output . shellescape(script_url)
-    let script_status = system(script_cmd)
-    let script_status = substitute(script_status, '\n$', '', '')
+  let temp = tempname()
+  defer delete(temp)
+  let script_url = g:GetLatestVimScripts_scriptaddr . a:script_id
+  let download_url = g:GetLatestVimScripts_downloadaddr . a:src_id
 
-    let download_url = g:GetLatestVimScripts_downloadaddr . a:src_id
-    let download_cmd = 'curl -s -I -w "%{http_code}"' . output . shellescape(download_url)
-    let download_status = system(download_cmd)
-    let download_status = substitute(download_status, '\n$', '', '')
-  else
-    " For other shells, use temporary files
-    let temp_script = tempname()
-    let temp_download = tempname()
+  let script_cmd = 'curl -s -I -w "%{http_code}"' . output . shellescape(script_url) . ' >' . shellescape(temp)
+  call system(script_cmd)
+  let script_status = readfile(temp, 'b')[0]
 
-    let script_url = g:GetLatestVimScripts_scriptaddr . a:script_id
-    let script_cmd = 'curl -s -I -w "%{http_code}"' . output . shellescape(script_url) . ' >' . shellescape(temp_script)
-    call system(script_cmd)
-    let script_status = readfile(temp_script, 'b')[0]
-    call delete(temp_script)
-
-    let download_url = g:GetLatestVimScripts_downloadaddr . a:src_id
-    let download_cmd = 'curl -s -I -w "%{http_code}"' . output . shellescape(download_url) . ' >' . shellescape(temp_download)
-    call system(download_cmd)
-    let download_status = readfile(temp_download, 'b')[0]
-    call delete(temp_download)
-  endif
+  let download_cmd = 'curl -s -I -w "%{http_code}"' . output . shellescape(download_url) . ' >' . shellescape(temp)
+  call system(download_cmd)
+  let download_status = readfile(temp, 'b')[0]
 
   if script_status !=# '200'
     let s:message += [ printf('Error: Failed to reach script: %s', a:script_id) ]
@@ -651,7 +635,7 @@ fun CheckVimScriptURL(script_id, src_id)
     return v:false
   endif
   return v:true
-endfunction
+endfun
 
 " ---------------------------------------------------------------------
 " Restore Options: {{{1
