@@ -781,7 +781,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din, linenr_T start, linenr_T end)
     char_u	*ptr;
 
     if (end < 0)
-      end = buf->b_ml.ml_line_count;
+	end = buf->b_ml.ml_line_count;
 
     if (buf->b_ml.ml_flags & ML_EMPTY)
     {
@@ -2395,10 +2395,10 @@ diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus)
     if (lnum >= wp->w_topline && lnum < wp->w_botline
 				&& !dp->is_linematched && diff_linematch(dp)
 				&& diff_check_sanity(curtab, dp))
-      run_linematch_algorithm(dp);
+	run_linematch_algorithm(dp);
 
     if (dp->is_linematched)
-      return linematched_filler_lines(dp, idx, lnum, linestatus);
+	return linematched_filler_lines(dp, idx, lnum, linestatus);
 
     if (lnum < dp->df_lnum[idx] + dp->df_count[idx])
     {

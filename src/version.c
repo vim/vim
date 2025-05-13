@@ -3807,9 +3807,9 @@ list_version(void)
 # if defined(USE_GTK3)
     msg_puts(_("with GTK3 GUI."));
 # elif defined(FEAT_GUI_GNOME)
-     msg_puts(_("with GTK2-GNOME GUI."));
+    msg_puts(_("with GTK2-GNOME GUI."));
 # else
-     msg_puts(_("with GTK2 GUI."));
+    msg_puts(_("with GTK2 GUI."));
 # endif
 #elif defined(FEAT_GUI_MOTIF)
     msg_puts(_("with X11-Motif GUI."));

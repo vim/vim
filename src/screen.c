@@ -1580,7 +1580,7 @@ end_search_hl(void)
 }
 #endif
 
-      static void
+    static void
 screen_start_highlight(int attr)
 {
     attrentry_T *aep = NULL;
@@ -1738,7 +1738,7 @@ screen_start_highlight(int attr)
     }
 }
 
-      void
+    void
 screen_stop_highlight(void)
 {
     int	    do_ME = FALSE;	    // output T_ME code
@@ -3544,7 +3544,7 @@ screen_ins_lines(
      * - redrawing for a callback and there is a modeless selection
      * - there is a popup window
      */
-     if (!screen_valid(TRUE)
+    if (!screen_valid(TRUE)
 	     || line_count <= 0 || line_count > p_ttyscroll
 	     || end > Rows
 #ifdef FEAT_CLIPBOARD

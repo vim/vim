@@ -7302,13 +7302,13 @@ update_tcap(int attr)
 	return;
     while (p->bt_string != NULL)
     {
-      if (p->bt_entry == (int)KS_ME)
-	  p->bt_string = &ksme_str[0];
-      else if (p->bt_entry == (int)KS_MR)
-	  p->bt_string = &ksmr_str[0];
-      else if (p->bt_entry == (int)KS_MD)
-	  p->bt_string = &ksmd_str[0];
-      ++p;
+	if (p->bt_entry == (int)KS_ME)
+	    p->bt_string = &ksme_str[0];
+	else if (p->bt_entry == (int)KS_MR)
+	    p->bt_string = &ksmr_str[0];
+	else if (p->bt_entry == (int)KS_MD)
+	    p->bt_string = &ksmd_str[0];
+	++p;
     }
 }
 

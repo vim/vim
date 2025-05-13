@@ -410,15 +410,15 @@ static int	nextchr;	// used for ungetchr()
 
 typedef struct
 {
-     char_u	*regparse;
-     int	prevchr_len;
-     int	curchr;
-     int	prevchr;
-     int	prevprevchr;
-     int	nextchr;
-     int	at_start;
-     int	prev_at_start;
-     int	regnpar;
+    char_u	*regparse;
+    int		prevchr_len;
+    int		curchr;
+    int		prevchr;
+    int		prevprevchr;
+    int		nextchr;
+    int		at_start;
+    int		prev_at_start;
+    int		regnpar;
 } parse_state_T;
 
 static void	initchr(char_u *);
@@ -1641,9 +1641,9 @@ re_mult_next(char *what)
 {
     if (re_multi_type(peekchr()) == MULTI_MULT)
     {
-       semsg(_(e_nfa_regexp_cannot_repeat_str), what);
-       rc_did_emsg = TRUE;
-       return FAIL;
+	semsg(_(e_nfa_regexp_cannot_repeat_str), what);
+	rc_did_emsg = TRUE;
+	return FAIL;
     }
     return OK;
 }

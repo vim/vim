@@ -467,36 +467,38 @@ restore_dbg_stuff(struct dbg_stuff *dsp)
 
 /*
  * Check if ffname differs from fnum.
- * fnum is a buffer number. 0 == current buffer, 1-or-more must be a valid buffer ID.
+ * fnum is a buffer number. 0 == current buffer, 1-or-more must be a valid
+ * buffer ID.
  * ffname is a full path to where a buffer lives on-disk or would live on-disk.
  *
  */
     static int
 is_other_file(int fnum, char_u *ffname)
 {
-  if (fnum != 0)
-  {
-    if (fnum == curbuf->b_fnum)
-      return FALSE;
+    if (fnum != 0)
+    {
+	if (fnum == curbuf->b_fnum)
+	    return FALSE;
 
-    return TRUE;
-  }
+	return TRUE;
+    }
 
-  if (ffname == NULL)
-    return TRUE;
+    if (ffname == NULL)
+	return TRUE;
 
-  if (*ffname == NUL)
-    return FALSE;
+    if (*ffname == NUL)
+	return FALSE;
 
-  // TODO: Need a reliable way to know whether a buffer is meant to live on-disk
-  // !curbuf->b_dev_valid is not always available (example: missing on Windows)
-  if (curbuf->b_sfname != NULL
-      && *curbuf->b_sfname != NUL)
-    // This occurs with unsaved buffers. In which case `ffname`
-    // actually corresponds to curbuf->b_sfname
-    return fnamecmp(ffname, curbuf->b_sfname) != 0;
+    // TODO: Need a reliable way to know whether a buffer is meant to live
+    // on-disk !curbuf->b_dev_valid is not always available (example: missing
+    // on Windows)
+    if (curbuf->b_sfname != NULL
+	    && *curbuf->b_sfname != NUL)
+	// This occurs with unsaved buffers. In which case `ffname` actually
+	// corresponds to curbuf->b_sfname
+	return fnamecmp(ffname, curbuf->b_sfname) != 0;
 
-  return otherfile(ffname);
+    return otherfile(ffname);
 }
 
 /*
@@ -2715,7 +2717,7 @@ static char ex_error_buf[MSG_BUF_LEN];
  * Uses a static buffer, only the last error will be kept.
  * "msg" will be translated, caller should use N_().
  */
-     char *
+    char *
 ex_errmsg(char *msg, char_u *arg)
 {
     vim_snprintf(ex_error_buf, MSG_BUF_LEN, _(msg), arg);
@@ -9330,7 +9332,7 @@ ex_stopinsert(exarg_T *eap UNUSED)
     // when called from remote_expr in insert mode, make sure insert mode is
     // ended by adding K_NOP to the typeahead buffer
     if (vgetc_busy)
-       ins_char_typebuf(K_NOP, 0);
+	ins_char_typebuf(K_NOP, 0);
 #endif
     clearmode();
 }
@@ -10375,5 +10377,5 @@ get_pressedreturn(void)
     void
 set_pressedreturn(int val)
 {
-     ex_pressedreturn = val;
+    ex_pressedreturn = val;
 }
