@@ -272,6 +272,8 @@ let test_values = {
       \		['xxx', 'xxx,c:yes', 'xxx:', 'xxx:,c:yes']],
       \ 'printoptions': [['', 'header:0', 'left:10pc,top:5pc'],
       \		['xxx', 'header:-1']],
+      \	'pumborder': [['', 'single', 'rounded', '+,-,+,\|,+,-,+,\|'],
+      \         ['xxx', '+,-,+,\|,+,-,+,']],
       \ 'scrollopt': [['', 'ver', 'hor', 'jump', 'ver,hor'], ['xxx']],
       \ 'renderoptions': [[''], ['xxx']],
       \ 'rightleftcmd': [['search'], ['xxx']],

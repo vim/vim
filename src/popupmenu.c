@@ -39,6 +39,8 @@ static int pum_win_height;
 static int pum_win_col;
 static int pum_win_wcol;
 static int pum_win_width;
+static int pum_border_chars[8];
+static int pum_has_border = FALSE;
 
 // Some parts are not updated when a popup menu is visible.  Setting this flag
 // makes pum_visible() return FALSE even when there is a popup menu.
@@ -104,6 +106,7 @@ pum_display(
     int		content_width;
     int		right_edge_col;
     int		redo_count = 0;
+    int		border_cells = pum_has_border ? 2 : 0;
 #if defined(FEAT_QUICKFIX)
     win_T	*pvwin;
 #endif
@@ -161,7 +164,7 @@ pum_display(
 
 	// Put the pum below "pum_win_row" if possible.  If there are few lines
 	// decide on where there is more room.
-	if (pum_win_row + 2 >= below_row - pum_height
+	if (pum_win_row + 2 + border_cells >= below_row - pum_height
 		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
 	    // pum above "pum_win_row"
@@ -188,6 +191,14 @@ pum_display(
 		pum_row += pum_height - p_ph;
 		pum_height = p_ph;
 	    }
+
+	    if (pum_has_border && border_cells + pum_row + pum_height > pum_win_row)
+	    {
+		if (pum_row < 2)
+		    pum_height -= border_cells;
+		else
+		    pum_row -= border_cells;
+	    }
 	}
 	else
 	{
@@ -209,6 +220,10 @@ pum_display(
 	    pum_height = MIN(below_row - pum_row, size);
 	    if (p_ph > 0 && pum_height > p_ph)
 		pum_height = p_ph;
+
+	    if ((State == MODE_CMDLINE)
+		    && pum_row + pum_height + border_cells  >= cmdline_row)
+		pum_height -= border_cells;
 	}
 
 	// don't display when we only have room for one line
@@ -376,6 +391,9 @@ pum_display(
 		pum_col = Columns - max_width;
 	    pum_width = max_width - pum_scrollbar;
 	}
+
+	if (pum_col + border_cells + pum_width > Columns)
+	    pum_col -= border_cells;
 
 	// Set selected item and redraw.  If the window size changed need to
 	// redo the positioning.  Limit this to two times, when there is not
@@ -869,6 +887,148 @@ pum_draw_scrollbar(
 	screen_putchar(' ', row, pum_col + pum_width, attr);
 }
 
+    int
+pum_parse_border(void)
+{
+    int		i;
+    char_u	*p = p_pbr;
+    char_u	*next = NULL;
+    int		this_char;
+    int		comb[MAX_MCO];
+    char_u	buf[10];
+    int		len;
+    int		tmp[8];
+
+    struct {
+	char_u *name;
+	int c[8];
+    } defaults[] = {
+	{ (char_u *)"double", { 0x2554, 0x2550, 0x2557, 0x2551,
+				  0x255D, 0x2550, 0x255A, 0x2551 } },
+	{ (char_u *)"single", { 0x250C, 0x2500, 0x2510, 0x2502,
+				  0x2518, 0x2500, 0x2514, 0x2502 } },
+	{ (char_u *)"rounded",  { 0x256D, 0x2500, 0x256E, 0x2502,
+				  0x256F, 0x2500, 0x2570, 0x2502 } },
+	{ (char_u *)"bold",   { 0x250F, 0x2501, 0x2513, 0x2503,
+				  0x251B, 0x2501, 0x2517, 0x2503 } },
+	{ (char_u *)"solid",  { 0x20, 0x20, 0x20, 0x20,
+				  0x20, 0x20, 0x20, 0x20 } },
+    };
+
+    if (*p_pbr == NUL)
+    {
+	pum_has_border = FALSE;
+	return TRUE;
+    }
+
+    for (i = 0; i < 5; i++)
+    {
+	if (STRCMP(p_pbr, defaults[i].name) == 0)
+	{
+	    memcpy(pum_border_chars, defaults[i].c, 8 * sizeof(int));
+	    pum_has_border = TRUE;
+	    return TRUE;
+	}
+    }
+
+    for (i = 0; i < 8; i++)
+    {
+	next = vim_strchr(p, ',');
+	if (next)
+	{
+	    len = (int)(next - p);
+	    if (len > 9)
+		len = 9;
+	    vim_strncpy(buf, p, len);
+	    buf[len] = NUL;
+	    p = next + 1;
+	}
+	else
+	{
+	    vim_strncpy(buf, p, 9);
+	    buf[9] = NUL;
+	    p += STRLEN(buf);
+	}
+	this_char = utfc_ptr2char(buf, comb);
+	if (!vim_isprintc(this_char))
+	{
+	    pum_has_border = FALSE;
+	    return FALSE;
+	}
+	tmp[i] = this_char;
+    }
+
+    if (*p != NUL)
+    {
+	pum_has_border = FALSE;
+	return FALSE;
+    }
+
+    memcpy(pum_border_chars, tmp, 8 * sizeof(int));
+    pum_has_border = TRUE;
+    return TRUE;
+}
+
+    static void
+pum_draw_border(int *border_char, int thumb_pos, int thumb_height)
+{
+    int i;
+    int row = pum_row;
+    int col = pum_col;
+    int attr = syn_name2attr((char_u *)"PmenuBorder");
+    int width = pum_width - (State & MODE_CMDLINE ? 1 : 0);
+    int height = pum_height;
+
+#ifdef FEAT_RIGHTLEFT
+    if (pum_rl)
+    {
+	// topright leftright  botright botleft
+	screen_putchar(border_char[2], row, col + 1, attr);
+	screen_putchar(border_char[0], row, col - width, attr);
+	screen_putchar(border_char[4], row + height + 1, col + 1, attr);
+	screen_putchar(border_char[6], row + height + 1, col - width, attr);
+
+	// top bot
+	for (i = 0; i < width; i++)
+	{
+	    screen_putchar(border_char[1], row, col - i, attr);
+	    screen_putchar(border_char[5], row + height + 1, col - i, attr);
+	}
+
+	// left right
+	for (i = 1; i < height + 1; i++)
+	{
+	    screen_putchar(border_char[3], row + i, col + 1, attr);
+	    if (!pum_scrollbar || i < thumb_pos || i >= thumb_pos + thumb_height)
+		screen_putchar(border_char[7], row + i, col - width, attr);
+	}
+    }
+    else
+#endif
+    {
+	// topleft topright botleft  botright
+	screen_putchar(border_char[0], row, col, attr);
+	screen_putchar(border_char[2], row, col + width, attr);
+	screen_putchar(border_char[6], row + height + 1, col, attr);
+	screen_putchar(border_char[4], row + height + 1, col + width, attr);
+
+	// top bot
+	for (i = 1; i < width; i++)
+	{
+	    screen_putchar(border_char[1], row, col + i, attr);
+	    screen_putchar(border_char[5], row + height + 1, col + i, attr);
+	}
+
+	// left right
+	for (i = 1; i < height + 1; i++)
+	{
+	    screen_putchar(border_char[7], row + i, col, attr);
+	    if (!pum_scrollbar || i - 1 < thumb_pos || i - 1 >= thumb_pos + thumb_height)
+		screen_putchar(border_char[3], row + i, col + width, attr);
+	}
+    }
+}
+
 /*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
@@ -895,7 +1055,9 @@ pum_redraw(void)
     int		basic_width;  // first item width
     int		last_isabbr = FALSE;
     int		orig_attr = -1;
-    int		scroll_range = pum_size - pum_height;
+    int		border_cells = pum_has_border ? 2 : 0;
+    int		scroll_range = pum_size - pum_height + border_cells;
+    int		col_off = pum_has_border > 0 ? 1 : 0;
 
     hlf_T	hlfsNorm[3];
     hlf_T	hlfsSel[3];
@@ -937,6 +1099,9 @@ pum_redraw(void)
     screen_zindex = POPUPMENU_ZINDEX;
 #endif
 
+    if (pum_has_border > 0)
+	++row;
+
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
@@ -944,21 +1109,31 @@ pum_redraw(void)
 	hlf = hlfs[0]; // start with "word" highlight
 	attr = highlight_attr[hlf];
 
-	// prepend a space if there is room
-#ifdef FEAT_RIGHTLEFT
-	if (pum_rl)
+	if (!pum_has_border)
 	{
-	    if (pum_col < curwin->w_wincol + curwin->w_width - 1)
-		screen_putchar(' ', row, pum_col + 1, attr);
-	}
-	else
+	    // prepend a space if there is room
+#ifdef FEAT_RIGHTLEFT
+	    if (pum_rl)
+	    {
+		if (pum_col < curwin->w_wincol + curwin->w_width - 1)
+		    screen_putchar(' ', row, pum_col + 1, attr);
+	    }
+	    else
 #endif
-	    if (pum_col > 0)
-		screen_putchar(' ', row, pum_col - 1, attr);
+		if (pum_col > 0)
+		    screen_putchar(' ', row, pum_col - 1, attr);
+	}
 
 	// Display each entry, use two spaces for a Tab.
 	// Do this 3 times and order from p_cia
 	col = pum_col;
+	if (pum_has_border > 0)
+	{
+#ifdef FEAT_RIGHTLEFT
+	    if (!pum_rl)
+#endif
+		++col;
+	}
 	totwidth = 0;
 	pum_align_order(order);
 	basic_width = items_width_array[order[0]];
@@ -1002,9 +1177,9 @@ pum_redraw(void)
 	    else
 #endif
 	    {
-		screen_fill(row, row + 1, col, pum_col + basic_width + n,
+		screen_fill(row, row + 1, col, pum_col + basic_width + n + col_off,
 							' ', ' ', orig_attr);
-		col = pum_col + basic_width + n;
+		col = pum_col + basic_width + n + col_off;
 	    }
 	    totwidth = basic_width + n;
 	}
@@ -1018,9 +1193,11 @@ pum_redraw(void)
 	    screen_fill(row, row + 1, col, pum_col + pum_width, ' ', ' ',
 								orig_attr);
 	pum_draw_scrollbar(row, i, thumb_pos, thumb_height);
-
 	++row;
     }
+
+    if (pum_has_border && pum_window != NULL)
+	pum_draw_border(pum_border_chars, thumb_pos, thumb_height);
 
 #ifdef FEAT_PROP_POPUP
     screen_zindex = 0;
