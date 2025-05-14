@@ -25,7 +25,7 @@
 #     http://www.matcode.com/mpress.htm
 #
 # Maintained by Ron Aaron <ronaharon@yahoo.com> et al.
-# Updated 2014 Oct 13.
+# Last Update: 2025 May 14.
 
 #>>>>> choose options:
 # FEATURES=[TINY | NORMAL | HUGE]
@@ -58,6 +58,7 @@ GUI=yes
 
 # Set to no if you do not want to use DirectWrite (DirectX).
 # MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
+# Note: Does not work with AARCH64
 DIRECTX=yes
 
 # Disable Color emoji support
@@ -66,6 +67,7 @@ DIRECTX=yes
 
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
+# For AARCH64, set to native
 # If not set, it will be automatically detected. (Normally i686 or x86-64.)
 #ARCH=i686
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
@@ -221,9 +223,14 @@ MKDIR = mkdir
 DIRSLASH = \\
  endif
 endif
+
+# for AARCH64, set to clang
+# CC := clang
 # set $CC to "gcc" unless it matches "clang"
 ifeq ($(findstring clang,$(CC)),)
 CC := $(CROSS_COMPILE)gcc
+else ifeq ($(findstring clang,$(CXX)),)
+CXX := clang++
 endif
 # set $CXX to "g++" unless it matches "clang"
 ifeq ($(findstring clang,$(CXX)),)
@@ -238,8 +245,15 @@ WINDRES := llvm-windres
 endif
 
 # Get the default ARCH.
+# clang on AARCH64 does not like the native arch64-w64-windows-gnu
+# so set to native instead
 ifndef ARCH
+ARCH := $(shell $(CC) -dumpmachine)
+ ifeq ($(ARCH), aarch64-w64-windows-gnu)
+ARCH := native
+ else
 ARCH := $(shell $(CC) -dumpmachine | sed -e "s/-.*//" -e "s/_/-/" -e "s/^mingw32$$/i686/")
+ endif
 endif
 
 
@@ -718,6 +732,9 @@ XPM = xpm/x86
   ifeq ($(ARCH),x86-64)
 XPM = xpm/x64
   endif
+  ifeq ($(ARCH),native)
+XPM = no
+  endif
  endif
  ifdef XPM
   ifneq ($(XPM),no)
@@ -1186,7 +1203,7 @@ tee/tee.exe: tee/tee.c
 	$(MAKE) -C tee -f Make_ming.mak CC='$(CC)'
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
-	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE) CXX='$(CXX)' STATIC_STDCPLUS=$(STATIC_STDCPLUS)
+	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE) CXX=$(CXX) STATIC_STDCPLUS=$(STATIC_STDCPLUS)
 
 tags: notags
 	$(CTAGS) $(TAGS_FILES)

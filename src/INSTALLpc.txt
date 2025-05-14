@@ -1,4 +1,4 @@
-INSTALLpc.txt - Installation of Vim on PC - Last Update: 2024 Dec 27
+INSTALLpc.txt - Installation of Vim on PC - Last Update: 2025 May 14
 
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
@@ -183,7 +183,9 @@ src/INSTALLpc.txt file for instructions.
 2. MSYS2 with MinGW
 ===================
 
-2.1. Setup the basic msys2 environment
+2.1 Buidling x86 32bit or 64bit versions.
+
+2.1.1. Setup the basic msys2 environment
 
 Go to the official page of MSYS2: https://www.msys2.org
 Download an installer:
@@ -208,7 +210,7 @@ If pacman complains that `catgets` and `libcatgets` conflict with another
 package, select `y` to remove them.
 
 
-2.2. Install additional packages for building Vim
+2.1.2. Install additional packages for building Vim
 
 The following package groups are required for building Vim:
 
@@ -230,7 +232,7 @@ Or you can use the `pacboy` command to avoid long package names:
 
 The suffix ":" means that it disables the package name translation.
 The suffix ":m" means both i686 and x86_64.  You can also use the ":i" suffix
-to install only i686, and the ":x" suffix to install only x86_64.
+to install only i686, the ":x" suffix for x86_64 and ":a" for "aarch64".
 (See `pacboy help` for the help.)
 
 See also the pacman page in ArchWiki for the general usage of pacman:
@@ -241,7 +243,7 @@ MSYS2 has its own git package, and you can also install it via pacman:
     $ pacman -S git
 
 
-2.3. Keep the build environment up-to-date
+2.1.3. Keep the build environment up-to-date
 
 After you have installed the build environment, you may want to keep it
 up-to-date (E.g. always use the latest GCC).
@@ -249,7 +251,7 @@ In that case, you just need to execute the command:
     $ pacman -Syu
 
 
-2.4. Build Vim
+2.1.4. Build Vim
 
 Select one of the following icon from the Start Menu:
 
@@ -276,7 +278,7 @@ This command is in msys32.bat.  Or for the 64 bit compiler use msys64.bat:
 If you have msys64 in another location you will need to adjust the paths for
 that.
 
-2.5. Build Vim with Clang
+2.1.5. Build Vim with Clang
 
 The following package group is required for building Vim with Clang:
 
@@ -299,6 +301,71 @@ To build Vim with the address sanitizer (ASAN), execute the following command:
 
     CC=clang
     CXX=clang++
+    make -f Make_ming.mak DEBUG=yes ASAN=yes
+
+2.2 Buidling an Arch64 version of Vim
+
+2.2.1. Setup the basic msys2 environment
+
+See also https://www.msys2.org/wiki/arm64/
+Go to the official page of MSYS2: https://www.msys2.org
+
+Download the self-extracting archive:
+
+* msys2-base-x86_64-latest.sfx.exe
+
+Execute the self-extracting archive into a folder of your choice.
+In the extracted folder, run clangarm64.exe
+This will open a MSYS2 terminal window for you.
+
+Execute:
+    $ pacman -Syu
+
+And restart MSYS2 console. Then execute:
+    $ pacman -Su
+
+
+2.2.2. Install additional packages for building Vim
+
+    $ pacman -S mingw-w64-clang-aarch64-clang mingw-w64-clang-aarch64-toolchain base-devel git
+
+Or you can use the `pacboy` command to avoid long package names:
+
+    $ pacboy -S base-devel: toolchain:a
+
+The suffix ":" means that it disables the package name translation.
+The suffix ":m" means both i686 and x86_64.  You can also use the ":i" suffix
+to install only i686, the ":x" suffix for x86_64 and ":a" for "aarch64".
+(See `pacboy help` for the help.)
+
+See also the pacman page in ArchWiki for the general usage of pacman:
+    https://wiki.archlinux.org/index.php/pacman
+
+2.2.3. Keep the build environment up-to-date
+
+After you have installed the build environment, you may want to keep it
+up-to-date (E.g. always use the latest GCC).
+In that case, you just need to execute the command:
+    $ pacman -Syu
+
+
+2.2.4. Build Vim
+
+Before building look through notes for MinGW in part 3 below.
+
+Go to the source directory of Vim, then execute the make command.  E.g.:
+
+    CC=clang
+    CXX=clang++
+    make -f Make_ming.mak
+    make -f Make_ming.mak GUI=yes
+    make -f Make_ming.mak GUI=no DEBUG=yes
+
+NOTE: you can't execute vim.exe in the MSYS2 console, open a normal Windows
+console for that.
+
+To build Vim with the address sanitizer (ASAN), execute the following command:
+
     make -f Make_ming.mak DEBUG=yes ASAN=yes
 
 3. MinGW
