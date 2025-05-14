@@ -2220,13 +2220,14 @@ buflist_new(
     buf = NULL;
     if ((flags & BLN_CURBUF) && curbuf_reusable())
     {
+	bufref_T bufref;
+
 	buf = curbuf;
+	set_bufref(&bufref, buf);
 	trigger_undo_ftplugin(buf, curwin);
 	// It's like this buffer is deleted.  Watch out for autocommands that
 	// change curbuf!  If that happens, allocate a new buffer anyway.
 	buf_freeall(buf, BFA_WIPE | BFA_DEL);
-	if (buf != curbuf)   // autocommands deleted the buffer!
-	    return NULL;
 #ifdef FEAT_EVAL
 	if (aborting())		// autocmds may abort script processing
 	{
@@ -2234,6 +2235,8 @@ buflist_new(
 	    return NULL;
 	}
 #endif
+	if (!bufref_valid(&bufref))
+	    buf = NULL;		// buf was deleted; allocate a new buffer
     }
     if (buf != curbuf || curbuf == NULL)
     {
