@@ -51,7 +51,7 @@ endfunction
 
 execute 'CompilerSet makeprg=pandoc'..escape(
     \ ' --standalone'..
-    \ (s:PandocFiletype(&filetype) ==# 'markdown' && (getline(1) =~# '^%\s\+\S\+' || (search('^title:\s+\S+', 'cnw') > 0)) ?
+    \ (s:PandocFiletype(&filetype) ==# 'markdown' && (getline(1) =~# '^%\s\+\S\+' || (search('^title:\s\+\S\+', 'cnw') > 0)) ?
     \ '' : ' --metadata title=%:t:r:S')..
     \ ' '..s:PandocLang()..
     \ ' --from='..s:PandocFiletype(&filetype)..
