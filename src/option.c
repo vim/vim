@@ -6429,6 +6429,9 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_EFM:
 	    clear_string_option(&buf->b_p_efm);
 	    break;
+	case PV_GEFM:
+	    clear_string_option(&buf->b_p_gefm);
+	    break;
 	case PV_GP:
 	    clear_string_option(&buf->b_p_gp);
 	    break;
@@ -6508,6 +6511,7 @@ get_varp_scope(struct vimoption *p, int scope)
 #endif
 #ifdef FEAT_QUICKFIX
 	    case PV_EFM:  return (char_u *)&(curbuf->b_p_efm);
+	    case PV_GEFM: return (char_u *)&(curbuf->b_p_gefm);
 	    case PV_GP:   return (char_u *)&(curbuf->b_p_gp);
 	    case PV_MP:   return (char_u *)&(curbuf->b_p_mp);
 #endif
@@ -6626,6 +6630,8 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:	return *curbuf->b_p_efm != NUL
 				    ? (char_u *)&(curbuf->b_p_efm) : p->var;
+	case PV_GEFM:	return *curbuf->b_p_gefm != NUL
+				    ? (char_u *)&(curbuf->b_p_gefm) : p->var;
 	case PV_GP:	return *curbuf->b_p_gp != NUL
 				    ? (char_u *)&(curbuf->b_p_gp) : p->var;
 	case PV_MP:	return *curbuf->b_p_mp != NUL
@@ -7415,6 +7421,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_bkc = empty_option;
 	    buf->b_bkc_flags = 0;
 #ifdef FEAT_QUICKFIX
+	    buf->b_p_gefm = empty_option;
 	    buf->b_p_gp = empty_option;
 	    buf->b_p_mp = empty_option;
 	    buf->b_p_efm = empty_option;

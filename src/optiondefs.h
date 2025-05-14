@@ -33,6 +33,7 @@
 #define PV_BT		OPT_BUF(BV_BT)
 #ifdef FEAT_QUICKFIX
 # define PV_EFM		OPT_BOTH(OPT_BUF(BV_EFM))
+# define PV_GEFM	OPT_BOTH(OPT_BUF(BV_GEFM))
 # define PV_GP		OPT_BOTH(OPT_BUF(BV_GP))
 # define PV_MP		OPT_BOTH(OPT_BUF(BV_MP))
 #endif
@@ -1154,7 +1155,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"grepformat",  "gfm",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_QUICKFIX
-			    (char_u *)&p_gefm, PV_NONE, NULL, NULL,
+			    (char_u *)&p_gefm, PV_GEFM, NULL, NULL,
 			    {(char_u *)DFLT_GREPFORMAT, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
