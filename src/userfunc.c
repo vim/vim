@@ -2136,16 +2136,15 @@ generic_func_get_types(char_u *start, garray_T *types_gap, garray_T *gtfn_gap)
     return p;
 }
 
-    static type_T *
-get_generic_type_by_name(ufunc_T *fp, char_u name)
+    static int
+get_generic_type_index(ufunc_T *fp, type_T *t)
 {
     for (int i = 0; i < fp->uf_generic_count; i++)
     {
-	if (fp->uf_generic_list[i].tt_generic->gt_name == name)
-	    return &fp->uf_generic_list[i];
+	if (&fp->uf_generic_list[i] == t)
+	    return i;
     }
-
-    return NULL;
+    return -1;
 }
 
 /*
@@ -2599,67 +2598,59 @@ generic_func_add(ufunc_T *fp, char_u *key, garray_T *gftn_gap)
 
     hash = hash_hash(key);
     hi = hash_lookup(ht, key, hash);
-    if (HASHITEM_EMPTY(hi))
+    if (!HASHITEM_EMPTY(hi))
+	return NULL;
+
+    gfitem_T    *gfitem = alloc(sizeof(gfitem_T) + STRLEN(key));
+    if (gfitem == NULL)
+	return NULL;
+
+    STRCPY(gfitem->gfi_name, key);
+
+    ufunc_T *new_fp = copy_function(fp);
+    if (new_fp == NULL)
     {
-	gfitem_T    *gfitem = alloc(sizeof(gfitem_T) + STRLEN(key));
-	if (gfitem != NULL)
+	vim_free(gfitem);
+	return NULL;
+    }
+
+    gfitem->gfi_ufunc = new_fp;
+    gfitem->gfi_ufunc->uf_def_status = UF_TO_BE_COMPILED;
+    gfitem->gfi_ufunc->uf_namelen = 0;
+    gfitem->gfi_ufunc->uf_name[0] = NUL;
+
+
+    // Replace the t_any generic types with the actual types
+    for (int i = 0; i < fp->uf_generic_count; i++)
+    {
+	gf_type_name_T  *gftn_item;
+	gftn_item = (gf_type_name_T *)gftn_gap->ga_data + i;
+	generic_T *gt = &new_fp->uf_generic_types[i];
+	gt->gt_type = gftn_item->gftn_type;
+    }
+
+    for (int i = 0; i < fp->uf_args.ga_len; i++)
+    {
+	if (fp->uf_arg_types[i]->tt_type == VAR_ANY)
 	{
-	    STRCPY(gfitem->gfi_name, key);
-
-	    ufunc_T *new_fp = copy_function(fp);
-	    if (new_fp == NULL)
-	    {
-		vim_free(gfitem);
-		return NULL;
-	    }
-
-	    gfitem->gfi_ufunc = new_fp;
-	    gfitem->gfi_ufunc->uf_def_status = UF_TO_BE_COMPILED;
-	    gfitem->gfi_ufunc->uf_namelen = 0;
-	    gfitem->gfi_ufunc->uf_name[0] = NUL;
-
-
-	    // Replace the t_any generic types with the actual types
-	    for (int i = 0; i < fp->uf_generic_count; i++)
-	    {
-		gf_type_name_T  *gftn_item;
-		gftn_item = (gf_type_name_T *)gftn_gap->ga_data + i;
-		generic_T *gt = &new_fp->uf_generic_types[i];
-		gt->gt_type = gftn_item->gftn_type;
-	    }
-
-	    for (int i = 0; i < new_fp->uf_args.ga_len; i++)
-	    {
-		if (new_fp->uf_arg_types[i]->tt_type == VAR_GENERIC)
-		{
-		    new_fp->uf_arg_types[i] = get_generic_type_by_name(new_fp,
-			    new_fp->uf_arg_types[i]->tt_generic->gt_name);
-		    if (new_fp->uf_arg_types[i] == NULL)
-		    {
-			vim_free(gfitem);
-			return NULL;
-		    }
-		}
-	    }
-
-	    if (new_fp->uf_ret_type->tt_type == VAR_GENERIC)
-	    {
-		new_fp->uf_ret_type = get_generic_type_by_name(new_fp,
-				new_fp->uf_ret_type->tt_generic->gt_name);
-		if (new_fp->uf_ret_type == NULL)
-		{
-		    vim_free(gfitem);
-		    return NULL;
-		}
-	    }
-
-	    hash_add_item(ht, hi, gfitem->gfi_name, hash);
-
-	    return new_fp;
+	    int idx = get_generic_type_index(fp, fp->uf_arg_types[i]);
+	    if (idx != -1)
+		new_fp->uf_arg_types[i] =
+		    new_fp->uf_generic_types[idx].gt_type;
 	}
     }
 
-    return NULL;
+    if (fp->uf_ret_type->tt_type == VAR_ANY)
+    {
+	int idx = get_generic_type_index(fp, fp->uf_ret_type);
+	if (idx != -1)
+	    new_fp->uf_ret_type =
+		new_fp->uf_generic_types[idx].gt_type;
+    }
+
+    hash_add_item(ht, hi, gfitem->gfi_name, hash);
+
+    return new_fp;
 }
 
     static ufunc_T *
@@ -2667,7 +2658,6 @@ generic_lookup_func(ufunc_T *fp, garray_T *gftn_gap, garray_T *gfkey_gap)
 {
     hashtab_T	*ht = &fp->uf_generic_functab;
     hashitem_T	*hi;
-
 
     for (int i = 0; i < gftn_gap->ga_len; i++)
     {
@@ -2968,13 +2958,12 @@ func_clear_items(ufunc_T *fp)
     VIM_CLEAR(fp->uf_va_name);
     clear_func_type_list(&fp->uf_type_list, &fp->uf_func_type);
 
-    if (fp->uf_generic_flags & UF_GENERIC_FUNC)
+    if (fp->uf_generic)
     {
-	vim_free(fp->uf_generic_list);
-	fp->uf_generic_list = NULL;
+	VIM_CLEAR(fp->uf_generic_list);
 	VIM_CLEAR(fp->uf_generic_types);
 	free_generic_functab(&fp->uf_generic_functab);
-	fp->uf_generic_flags = 0;
+	fp->uf_generic = FALSE;
     }
 
     // Increment the refcount of this function to avoid it being freed
@@ -4326,8 +4315,8 @@ call_func(
 		    fp = find_func(p, is_global);
 	    }
 
-	    if (fp != NULL && (fp->uf_generic_flags & UF_GENERIC_FUNC)
-		    && gftn_gap != NULL && gftn_gap->ga_len > 0)
+	    if (fp != NULL && fp->uf_generic && gftn_gap != NULL
+						&& gftn_gap->ga_len > 0)
 	    {
 		// generic function call
 		fp = generic_func_get(fp, gftn_gap);
@@ -4369,7 +4358,7 @@ call_func(
 		    error = may_check_argument_types(funcexe, argvars, argcount,
 				       TRUE, (name != NULL) ? name : funcname);
 
-		if (fp->uf_generic_flags & UF_GENERIC_FUNC)
+		if (fp->uf_generic)
 		{
 		    if (gftn_gap->ga_len < fp->uf_generic_count)
 			error = FCERR_GENERIC_TOOFEW;
@@ -5276,7 +5265,8 @@ get_generic_func_type_args(
 	    &((type_T *)generic_list_gap->ga_data)[generic_list_gap->ga_len];
 	generic_list_gap->ga_len++;
 
-	gt->tt_type = VAR_GENERIC;
+	CLEAR_POINTER(gt);
+	gt->tt_type = VAR_ANY;
 
 	if (ga_grow(generic_types_gap, 1) == FAIL)
 	    return NULL;
@@ -5285,8 +5275,7 @@ get_generic_func_type_args(
 	generic_types_gap->ga_len++;
 
 	generic->gt_name = *p;
-	generic->gt_type = &t_any;
-	gt->tt_generic = generic;
+	generic->gt_type = gt;
 
 	p++;		// skip the generic type name
 
@@ -5433,7 +5422,7 @@ define_function(
 
 	    if (*p == '<')
 	    {
-		// generics
+		// generic function
 		p++;
 
 		while (*p && *p != '>')
@@ -5941,7 +5930,7 @@ define_function(
 
 	if (generic_list.ga_len > 0)
 	{
-	    fp->uf_generic_flags = UF_GENERIC_FUNC | UF_GENERIC_TEMPLATE;
+	    fp->uf_generic = TRUE;
 	    fp->uf_generic_count = generic_list.ga_len;
 	    fp->uf_generic_list = (type_T *)generic_list.ga_data;
 	    ga_init(&generic_list);
@@ -6486,7 +6475,7 @@ copy_function(ufunc_T *fp)
     ga_init(&ufunc->uf_type_list);
 
     // copy the generic function information
-    if (fp->uf_generic_flags & UF_GENERIC_FUNC)
+    if (fp->uf_generic)
     {
 	int	sz;
 
@@ -6506,9 +6495,8 @@ copy_function(ufunc_T *fp)
 	memcpy(ufunc->uf_generic_types, fp->uf_generic_types, sz);
 
 	for (int i = 0; i < fp->uf_generic_count; i++)
-	    ufunc->uf_generic_list[i].tt_generic = &ufunc->uf_generic_types[i];
+	    ufunc->uf_generic_types[i].gt_type = &ufunc->uf_generic_list[i];
 	hash_init(&ufunc->uf_generic_functab);
-	ufunc->uf_generic_flags &= ~UF_GENERIC_TEMPLATE;
     }
 
     // TODO:   partial_T	*uf_partial;

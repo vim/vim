@@ -2170,22 +2170,6 @@ get_lval(
 
 	if (vim9script)
 	{
-#if 0
-	    if (*p == '<')
-	    {
-		// generic function
-		p++;
-		p = skiptoangleclosebracket(p);
-		if (*p != '>')
-		{
-		    semsg(_(e_missing_closing_angle_bracket_in_generics), name);
-		    return NULL;
-		}
-		p++;
-		lp->ll_name_end = p;
-	    }
-#endif
-
 	    // "a: type" is declaring variable "a" with a type, not "a:".
 	    // However, "g:[key]" is indexing a dictionary.
 	    if (p == name + 2 && p[-1] == ':' && *p != '[')
@@ -2703,7 +2687,6 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	case VAR_OBJECT:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	case VAR_TUPLE:
 	    break;
 
@@ -5088,7 +5071,7 @@ eval9_var_func_name(
 		char_u	*generic_start = *arg;
 
 		*arg += 1;
-		*arg = skiptoangleclosebracket(*arg);
+		*arg = skiptocloseanglebracket(*arg);
 		if (**arg != '>')
 		{
 		    semsg(_(e_missing_closing_angle_bracket_in_generics),
@@ -5835,7 +5818,6 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	    return FAIL;
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	    if (verbose)
 		check_typval_is_value(rettv);
 	    return FAIL;
@@ -5919,7 +5901,6 @@ eval_index_inner(
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	    break; // not evaluating, skipping over subscript
 
 	case VAR_NUMBER:
@@ -6673,9 +6654,6 @@ echo_string_core(
 	    r = *tofree;
 	    if (r == NULL)
 		r = (char_u *)"";
-	    break;
-	case VAR_GENERIC:
-	    // TODO: Use the contained type to echo this value
 	    break;
     }
 
@@ -7550,7 +7528,6 @@ item_copy(
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:

@@ -107,7 +107,6 @@ free_tv(typval_T *varp)
 	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_INSTR:
-	case VAR_GENERIC:
 	    break;
     }
     vim_free(varp);
@@ -184,9 +183,6 @@ clear_tv(typval_T *varp)
 	case VAR_TYPEALIAS:
 	    typealias_unref(varp->vval.v_typealias);
 	    varp->vval.v_typealias = NULL;
-	    break;
-	case VAR_GENERIC:
-	    varp->vval.v_generic = NULL;
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -277,7 +273,6 @@ tv_get_bool_or_number_chk(
 	    break;
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
@@ -410,7 +405,6 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    break;
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
@@ -1246,7 +1240,6 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
@@ -1469,12 +1462,6 @@ copy_tv(typval_T *from, typval_T *to)
 		to->vval.v_typealias = from->vval.v_typealias;
 		++to->vval.v_typealias->ta_refcount;
 	    }
-	    break;
-	case VAR_GENERIC:
-	    if (from->vval.v_generic == NULL)
-		to->vval.v_generic = NULL;
-	    else
-		to->vval.v_generic = from->vval.v_generic;
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
@@ -2282,9 +2269,6 @@ tv_equal(
 
 	case VAR_TYPEALIAS:
 	    return tv1->vval.v_typealias == tv2->vval.v_typealias;
-
-	case VAR_GENERIC:
-	    return tv1->vval.v_generic == tv2->vval.v_generic;
 
 	case VAR_UNKNOWN:
 	case VAR_ANY:

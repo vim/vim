@@ -27,7 +27,7 @@ def Test_generic_function_declaration()
     enddef
     defcompile
   END
-  v9.CheckScriptFailure(lines, 'E1552: Empty Generics')
+  v9.CheckScriptFailure(lines, 'E1552: Empty type list in generic function')
 
   lines =<< trim END
     vim9script
@@ -35,7 +35,7 @@ def Test_generic_function_declaration()
     enddef
     defcompile
   END
-  v9.CheckScriptFailure(lines, 'E1550: Missing comma in Generics: T()')
+  v9.CheckScriptFailure(lines, 'E1550: Missing comma after type in generics function: T()')
 
   lines =<< trim END
     vim9script
@@ -70,7 +70,7 @@ def Test_generic_function_invoke()
     enddef
     Fn<>()
   END
-  v9.CheckScriptFailure(lines, 'E1552: Empty Generics', 4)
+  v9.CheckScriptFailure(lines, 'E1552: Empty type list in generic function', 4)
 
   lines =<< trim END
     vim9script
@@ -111,6 +111,30 @@ def Test_generic_function_invoke()
     Fn <number>()
   END
   v9.CheckScriptFailure(lines, 'E492: Not an editor command: Fn <number>()', 4)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>()
+    enddef
+    Fn<number, >()
+  END
+  v9.CheckScriptFailure(lines, 'E1008: Missing <type> after <number, >()', 4)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T, X>()
+    enddef
+    Fn<number, abc>()
+  END
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: abc', 4)
+
+  lines =<< trim END
+    vim9script
+    def Fn<T>()
+    enddef
+    Fn<number string>()
+  END
+  v9.CheckScriptFailure(lines, 'E1550: Missing comma after type in generics function: <number string>()', 4)
 enddef
 
 def Test_generic_func_single_arg()
@@ -161,6 +185,148 @@ def Test_generic_nested_call()
     assert_equal(10, Fn<number>(0, 10))
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_generic_failure_in_def_function()
+  var lines =<< trim END
+    vim9script
+
+    def Fn<T>()
+    enddef
+
+    def Foo()
+      Fn<abc>()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: abc', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Foo()
+      Fn<abc>()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: abc', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn<T>()
+    enddef
+
+    def Foo()
+      Fn<number, string>()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1553: Too many generic types for function: Fn', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn<A, B>()
+    enddef
+
+    def Foo()
+      Fn<number>()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1554: Not enough generic types for function: Fn', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn<T>()
+    enddef
+
+    def Foo()
+      Fn<>()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1552: Empty type list in generic function', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn<A, B>(x: A, y: B)
+    enddef
+
+    def Foo()
+      Fn(10, 'abc')
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1554: Not enough generic types for function: Fn', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn(x: number)
+    enddef
+
+    def Foo()
+      Fn<number>(10)
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1556: Unknown generic function: Fn', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn<A, B>(x: A, y: B)
+    enddef
+
+    def Foo()
+      Fn<number, string>(10)
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E119: Not enough arguments for function', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn<T>()
+    enddef
+
+    def Foo()
+      Fn<number, >()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1008: Missing <type> after <number, >()', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn<T, X>()
+    enddef
+
+    def Foo()
+      Fn<number, abc>()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: abc', 1)
+
+  lines =<< trim END
+    vim9script
+
+    def Fn<T>()
+    enddef
+
+    def Foo()
+      Fn<number string>()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1550: Missing comma after type in generics function: <number string>()', 1)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -1518,7 +1518,6 @@ typedef enum
     VAR_OBJECT,		// "v_object" is used
     VAR_TYPEALIAS,	// "v_typealias" is used
     VAR_TUPLE,		// "v_tuple" is used
-    VAR_GENERIC,	// "v_generic" is used
 } vartype_T;
 
 // A type specification.
@@ -1530,7 +1529,6 @@ struct type_S {
     type_T	    *tt_member;	    // for list, dict, func return type
     class_T	    *tt_class;	    // for class and object
     type_T	    **tt_args;	    // func argument types, allocated
-    generic_T	    *tt_generic;    // generic type name and concrete type
 };
 
 typedef struct {
@@ -1688,7 +1686,6 @@ struct typval_S
 	object_T	*v_object;	// object value (can be NULL)
 	typealias_T	*v_typealias;	// user-defined type name
 	tuple_T		*v_tuple;	// tuple
-	generic_T	*v_generic;	// generic
     }		vval;
 };
 
@@ -1907,9 +1904,6 @@ typedef enum {
     UF_COMPILE_ERROR	    // compilation error, cannot execute
 } def_status_T;
 
-#define UF_GENERIC_FUNC		0x1
-#define UF_GENERIC_TEMPLATE	0x2
-
 /*
  * Structure to hold info for a user function.
  * When adding a field check copy_lambda_to_global_func().
@@ -1952,7 +1946,7 @@ struct ufunc_S
     void	*uf_cb_state;   // state of uf_cb
 # endif
 
-    int		uf_generic_flags;    // Is this a generic function?
+    int		uf_generic;	    // Is this a generic function?
     int		uf_generic_count;   // number of generic type arguments
     type_T	*uf_generic_list;   // list of allocated generic types
     generic_T	*uf_generic_types;  // generic types

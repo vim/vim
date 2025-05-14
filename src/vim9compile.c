@@ -2808,7 +2808,6 @@ push_default_value(
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	case VAR_SPECIAL:  // cannot happen
 	    // This is skipped for local variables, they are always
 	    // initialized to zero.  But in a "for" or "while" loop

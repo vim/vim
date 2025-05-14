@@ -1376,10 +1376,30 @@ compile_call(
 	ufunc = find_func(name, FALSE);
 	if (ufunc != NULL)
 	{
-	    if ((ufunc->uf_generic_flags & UF_GENERIC_FUNC)
-						&& gftn_table.ga_len > 0)
+	    if (ufunc->uf_generic)
+	    {
+		if (gftn_table.ga_len < ufunc->uf_generic_count)
+		{
+		    emsg_funcname(e_not_enough_generic_types_for_function_str,
+								namebuf);
+		    goto theend;
+		}
+		else if (gftn_table.ga_len > ufunc->uf_generic_count)
+		{
+		    emsg_funcname(e_too_many_generic_types_for_function_str,
+								namebuf);
+		    goto theend;
+		}
+
 		// generic function call
 		ufunc = generic_func_get(ufunc, &gftn_table);
+	    }
+	    else if (gftn_table.ga_len != 0)
+	    {
+		emsg_funcname(e_unknown_generic_function_str, namebuf);
+		goto theend;
+	    }
+
 	    if (!func_is_global(ufunc))
 	    {
 		res = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
@@ -1387,7 +1407,7 @@ compile_call(
 	    }
 	    if (!has_g_namespace
 			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL
-			  && !(ufunc->uf_generic_flags & UF_GENERIC_FUNC))
+			  && !ufunc->uf_generic)
 	    {
 		// A function name without g: prefix must be found locally
 		// A generic function has the name emptied out.
@@ -3014,7 +3034,7 @@ compile_expr9(
 	if (*p == '<')
 	{
 	    p++;
-	    p = skiptoangleclosebracket(p);
+	    p = skiptocloseanglebracket(p);
 	    if (*p != '>')
 	    {
 		semsg(_(e_missing_closing_angle_bracket_in_generics), *arg);

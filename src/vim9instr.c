@@ -206,8 +206,6 @@ may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
     RETURN_OK_IF_SKIP(cctx);
     type = get_type_on_stack(cctx, -1 - offset);
     tt_type = type->tt_type;
-    if (tt_type == VAR_GENERIC)
-	tt_type = type->tt_generic->gt_type->tt_type;
 
     switch (tt_type)
     {
@@ -251,7 +249,6 @@ may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 			 to_string_error(type->tt_type);
 			 return FAIL;
     }

@@ -1990,25 +1990,24 @@ skiptohex(char_u *q)
 }
 
 /*
- * skip to the '>' character (or NUL after the string) skipping inner '<' and
- * '> brackets.
+ * skip to the '>' character (or NUL after the string) skipping inner nested
+ * '<' and '> brackets.
  */
     char_u *
-skiptoangleclosebracket(char_u *q)
+skiptocloseanglebracket(char_u *q)
 {
     char_u	*p = q;
     int		level = 0;
 
     while (*p != NUL)	// skip to the outermose angle bracket
     {
-	if (*p == '<')
+	if (*p == '<')	// nested '<'
 	    level++;
 	if (*p == '>')
 	{
 	    if (level == 0)
 		break;
-	    else
-		level--;
+	    level--;
 	}
 	++p;
     }

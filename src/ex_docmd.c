@@ -3714,7 +3714,7 @@ find_ex_command(
 	    {
 		// generics
 		p++;
-		p = skiptoangleclosebracket(p);
+		p = skiptocloseanglebracket(p);
 		if (*p && *p == '>')
 		    p++;
 	    }

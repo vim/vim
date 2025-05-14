@@ -1326,11 +1326,6 @@ check_type_maybe(
 {
     int ret = OK;
 
-    if (expected->tt_type == VAR_GENERIC)
-	expected = expected->tt_generic->gt_type;
-    if (actual->tt_type == VAR_GENERIC)
-	actual = actual->tt_generic->gt_type;
-
     // When expected is "unknown" we accept any actual type.
     // When expected is "any" we accept any actual type except "void".
     if (expected->tt_type != VAR_UNKNOWN
@@ -1975,22 +1970,17 @@ parse_type_user_defined(
     }
 
     // Check whether it is a generic type
-    if (len == 1 && ufunc != NULL && (ufunc->uf_generic_flags & UF_GENERIC_FUNC))
+    if (len == 1 && ufunc != NULL && ufunc->uf_generic)
     {
 	for (int i = 0; i < ufunc->uf_generic_count; i++)
 	{
-	    type_T *gt;
+	    generic_T *generic;
 
-	    gt = ((type_T *)ufunc->uf_generic_list) + i;
-	    if (gt->tt_generic->gt_name == **arg)
+	    generic = ((generic_T *)ufunc->uf_generic_types) + i;
+	    if (generic->gt_name == **arg)
 	    {
-#if 0
-		type_T *type = copy_type(gm->gm_type, type_gap);
-#else
-		type_T *type = gt;
-#endif
+		type_T *type = generic->gt_type;
 		*arg += len;
-
 		return type;
 	    }
 	}
@@ -2155,7 +2145,6 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_CHANNEL:
 	case VAR_INSTR:
 	case VAR_TYPEALIAS:
-	case VAR_GENERIC:
 	    break;  // not composite is always OK
 	case VAR_OBJECT:
 	case VAR_CLASS:
@@ -2497,7 +2486,6 @@ vartype_name(vartype_T type)
 	case VAR_CLASS: return "class";
 	case VAR_OBJECT: return "object";
 	case VAR_TYPEALIAS: return "typealias";
-	case VAR_GENERIC: return "generic";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";
@@ -2715,9 +2703,6 @@ type_name(type_T *type, char **tofree)
 
 	case VAR_FUNC:
 	    return type_name_func(type, tofree);
-
-	case VAR_GENERIC:
-	    return type_name(type->tt_generic->gt_type, tofree);
 
 	default:
 	    break;
