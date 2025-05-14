@@ -1576,6 +1576,7 @@ BASIC_SRC = \
 	spellsuggest.c \
 	strings.c \
 	syntax.c \
+	tabpanel.c \
 	tag.c \
 	term.c \
 	terminal.c \
@@ -1737,6 +1738,7 @@ OBJ_COMMON = \
 	objects/spellsuggest.o \
 	objects/strings.o \
 	objects/syntax.o \
+	objects/tabpanel.o \
 	objects/tag.o \
 	objects/term.o \
 	objects/terminal.o \
@@ -1930,6 +1932,7 @@ PRO_AUTO = \
 	spellsuggest.pro \
 	strings.pro \
 	syntax.pro \
+	tabpanel.pro \
 	tag.pro \
 	term.pro \
 	terminal.pro \
@@ -3547,6 +3550,9 @@ objects/strings.o: strings.c
 objects/syntax.o: syntax.c
 	$(CCC) -o $@ syntax.c
 
+objects/tabpanel.o: tabpanel.c
+	$(CCC) -o $@ tabpanel.c
+
 objects/tag.o: tag.c
 	$(CCC) -o $@ tag.c
 
@@ -4212,6 +4218,11 @@ objects/strings.o: strings.c vim.h protodef.h auto/config.h feature.h os_unix.h 
 objects/syntax.o: syntax.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/tabpanel.o: tabpanel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
 objects/tag.o: tag.c vim.h protodef.h auto/config.h feature.h os_unix.h \

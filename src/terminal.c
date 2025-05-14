@@ -1351,7 +1351,7 @@ update_cursor(term_T *term, int redraw)
 	// do not use the window cursor position
 	position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
 	windgoto(W_WINROW(curwin) + curwin->w_wrow,
-		 curwin->w_wincol + curwin->w_wcol);
+		 curwin->w_wincol + curwin->w_wcol + TPL_LCOL(NULL));
     }
     if (redraw)
     {
@@ -1430,6 +1430,10 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	if (buffer == curbuf && (State & MODE_CMDLINE) == 0)
 	{
 	    update_screen(UPD_VALID_NO_UPDATE);
+#if defined(FEAT_TABPANEL)
+	    if (redraw_tabpanel)
+		draw_tabpanel();
+#endif
 	    // update_screen() can be slow, check the terminal wasn't closed
 	    // already
 	    if (buffer == curbuf && curbuf->b_term != NULL)
@@ -4116,7 +4120,8 @@ term_update_window(win_T *wp)
 #ifdef FEAT_MENU
 				+ winbar_height(wp)
 #endif
-				, wp->w_wincol, pos.col, wp->w_width, -1,
+				, wp->w_wincol + TPL_LCOL(wp), pos.col,
+				wp->w_width, -1,
 #ifdef FEAT_PROP_POPUP
 				popup_is_popup(wp) ? SLF_POPUP :
 #endif

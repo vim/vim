@@ -524,6 +524,13 @@
 #endif
 
 /*
+ * +tabpanel		Tab SideBar
+ */
+#ifdef FEAT_HUGE
+# define FEAT_TABPANEL
+#endif
+
+/*
  * +browse		":browse" command.
  *			or just the ":browse" command modifier
  */

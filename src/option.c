@@ -3107,6 +3107,9 @@ redraw_titles(void)
 {
     need_maketitle = TRUE;
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
 }
 
 /*
@@ -8831,6 +8834,18 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
     return FAIL;
 #endif
 }
+
+#if defined(FEAT_TABPANEL)
+/*
+ * Process the new 'showtabpanel' option value.
+ */
+    char *
+did_set_showtabpanel(optset_T *args)
+{
+    shell_new_columns();
+    return NULL;
+}
+#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
     static void

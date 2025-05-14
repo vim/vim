@@ -94,6 +94,7 @@ let test_values = {
       \ 'scrolljump': [[-100, -1, 0, 1, 2, 15], [-101, 999]],
       \ 'scrolloff': [[0, 1, 8, 999], [-1]],
       \ 'shiftwidth': [[0, 1, 8, 999], [-1]],
+      \ 'showtabpanel': [[0, 1, 2], []],
       \ 'sidescroll': [[0, 1, 8, 999], [-1]],
       \ 'sidescrolloff': [[0, 1, 8, 999], [-1]],
       \ 'tabstop': [[1, 4, 8, 12, 9999], [-1, 0, 10000]],
@@ -301,6 +302,11 @@ let test_values = {
       \		['xxx']],
       \ 'tabclose': [['', 'left', 'uselast', 'left,uselast'], ['xxx']],
       \ 'tabline': [['', 'xxx'], ['%$', '%{', '%{%', '%{%}', '%(', '%)']],
+      \ 'tabpanel': [['', 'aaa', 'bbb'], []],
+      \ 'tabpanelopt': [['', 'align:left', 'align:right', 'vert', 'columns:0',
+      \		'columns:20', 'columns:999'],
+      \		['xxx', 'align:', 'align:middle', 'colomns:', 'cols:10',
+      \		'cols:-1']],
       \ 'tagcase': [['followic', 'followscs', 'ignore', 'match', 'smart'],
       \		['', 'xxx', 'smart,match']],
       \ 'termencoding': [has('gui_gtk') ? [] : ['', 'utf-8'], ['xxx']],
@@ -373,8 +379,17 @@ let test_prepost = {
       \ 'verbosefile': [[], ['call delete("Xfile")']],
       \}
 
-const invalid_options = test_values->keys()
+let invalid_options = test_values->keys()
       \->filter({-> v:val !~# '^other' && !exists($"&{v:val}")})
+for s:skip_option in [
+  \ [!has('tabpanel'), 'tabpanel'],
+  \ [!has('tabpanel'), 'tabpanelopt'],
+  \ [!has('tabpanel'), 'showtabpanel'],
+  \ ]
+  if s:skip_option[0]
+    call remove(invalid_options, s:skip_option[1])
+  endif
+endfor
 if !empty(invalid_options)
   throw $"Invalid option name in test_values: '{invalid_options->join("', '")}'"
 endif
@@ -406,6 +421,8 @@ while 1
   let [pre_processing, post_processing] = get(test_prepost, fullname, [[], []])
   let script += pre_processing
 
+  " Setting an option can only fail when it's implemented.
+  call add(script, $"if exists('+{fullname}')")
   if line =~ 'P_BOOL'
     for opt in [fullname, shortname]
       for cmd in ['set', 'setlocal', 'setglobal']
@@ -439,8 +456,6 @@ while 1
     endfor
 
     " Failure tests
-    " Setting an option can only fail when it's implemented.
-    call add(script, $"if exists('+{fullname}')")
     for opt in [fullname, shortname]
       for cmd in ['set', 'setlocal', 'setglobal']
 	for val in invalid_values
@@ -464,7 +479,6 @@ while 1
 	endfor
       endfor
     endfor
-    call add(script, "endif")
   endif
 
   " Cannot change 'termencoding' in GTK
@@ -475,6 +489,8 @@ while 1
     call add(script, $"let [&g:{fullname}, &l:{fullname}] = l:saved")
     call add(script, 'endif')
   endif
+
+  call add(script, "endif")
 
   let script += post_processing
   call add(script, 'endfunc')

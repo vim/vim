@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2025 Apr 21
+*various.txt*   For Vim version 9.1.  Last change: 2025 May 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -35,6 +35,12 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 :redrawt[abline]	Redraw the tabline.  Useful to update the tabline when
 			'tabline' includes an item that doesn't trigger
 			automatic updating.
+
+				*E1547* *:redrawtabp* *:redrawtabpanel*
+:redrawtabp[anel]	Redraw the tabline.  Useful to update the tabpanel
+			when 'tabpanel' includes an item that doesn't trigger
+			automatic updating.
+
 
 							*N<Del>*
 <Del>			When entering a number: Remove the last digit.
@@ -491,6 +497,7 @@ N  *+statusline*	Options 'statusline', 'rulerformat' and special
 -  *+sun_workshop*	Removed: |workshop|
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
+H  *+tabpanel*		Support for |tabpanel|
 T  *+tag_binary*	binary searching in tags file |tag-binary-search|
 -  *+tag_old_static*	Removed; method for static tags |tag-old-static|
 -  *+tag_any_white*	Removed; was to allow any white space in tags files

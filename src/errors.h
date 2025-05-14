@@ -3730,3 +3730,5 @@ EXTERN char e_no_quickfix_stack[]
 #endif
 EXTERN char e_cannot_switch_to_a_closing_buffer[]
 	INIT(= N_("E1546: Cannot switch to a closing buffer"));
+EXTERN char e_cannot_not_support_redrawtabpanel[]
+	INIT(= N_("E1547: This version of Vim does support :redrawtabpanel"));

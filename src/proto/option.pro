@@ -1,4 +1,5 @@
 /* option.c */
+char *did_set_showtabpanel(optset_T *args);
 void set_init_1(int clean_arg);
 void set_fencs_unicode(void);
 void set_string_default(char *name, char_u *val);

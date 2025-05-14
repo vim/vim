@@ -3851,6 +3851,9 @@ typedef struct
     int	diff;
     int	eob;
     int	lastline;
+#if defined(FEAT_TABPANEL)
+    int	tpl_vert;
+#endif
     int trunc;
     int truncrl;
 } fill_chars_T;

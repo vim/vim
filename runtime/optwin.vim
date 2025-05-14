@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Apr 24
+" Last Change:	2025 May 14
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -1453,6 +1453,11 @@ if exists("&mzschemedll")
   call <SID>OptionG("mzschemedll", &mzschemedll)
   call <SID>AddOption("mzschemegcdll", gettext("name of the MzScheme GC dynamic library"))
   call <SID>OptionG("mzschemegcdll", &mzschemegcdll)
+endif
+if has("tabpanel")
+  call <SID>AddOption("showtabpanel", gettext("0, 1 or 2; when to use a tab pages in tabpanel"))
+  call <SID>AddOption("tabpanel", gettext("custom tab pages in tabpanel"))
+  call <SID>AddOption("tabpanelopt", gettext("options for using tabpanel"))
 endif
 
 set cpo&vim

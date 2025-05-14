@@ -779,6 +779,7 @@ OBJ = \
 	$(OUTDIR)\spellsuggest.obj \
 	$(OUTDIR)\strings.obj \
 	$(OUTDIR)\syntax.obj \
+	$(OUTDIR)\tabpanel.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
 	$(OUTDIR)\testing.obj \
@@ -1778,6 +1779,8 @@ $(OUTDIR)/strings.obj:	$(OUTDIR) strings.c  $(INCL)
 
 $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 
+$(OUTDIR)/tabpanel.obj:	$(OUTDIR) tabpanel.c  $(INCL)
+
 $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
 
 $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
@@ -2001,6 +2004,7 @@ proto.h: \
 	proto/spellsuggest.pro \
 	proto/strings.pro \
 	proto/syntax.pro \
+	proto/tabpanel.pro \
 	proto/tag.pro \
 	proto/term.pro \
 	proto/testing.pro \

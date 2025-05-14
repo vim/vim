@@ -4345,4 +4345,9 @@ func Test_cmdcomplete_info()
   set wildoptions&
 endfunc
 
+func Test_redrawtabpanel_error()
+  CheckNotFeature tabpanel
+  call assert_fails(':redrawtabpanel', 'E1547:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

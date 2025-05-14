@@ -1879,6 +1879,9 @@ set_fileformat(
     // This may cause the buffer to become (un)modified.
     check_status(curbuf);
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
     need_maketitle = TRUE;	    // set window title later
 }
 

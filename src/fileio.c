@@ -3534,6 +3534,9 @@ shorten_fnames(int force)
     }
     status_redraw_all();
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
     popup_update_preview_title();
 #endif

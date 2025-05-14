@@ -311,6 +311,7 @@ NEW_TESTS = \
 	test_tab \
 	test_tabline \
 	test_tabpage \
+	test_tabpanel \
 	test_tagcase \
 	test_tagfunc \
 	test_tagjump \
@@ -567,6 +568,7 @@ NEW_TESTS_RES = \
 	test_system.res \
 	test_tab.res \
 	test_tabpage.res \
+	test_tabpanel.res \
 	test_tagjump.res \
 	test_taglist.res \
 	test_tcl.res \

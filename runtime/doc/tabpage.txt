@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 9.1.  Last change: 2024 Jul 12
+*tabpage.txt*   For Vim version 9.1.  Last change: 2025 May 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14,7 +14,8 @@ when used in combination with more than one tab page.
 2. Commands			|tab-page-commands|
 3. Other items			|tab-page-other|
 4. Setting 'tabline'		|setting-tabline|
-5. Setting 'guitablabel'	|setting-guitablabel|
+5. Setting 'tabpanel'		|setting-tabpanel|
+6. Setting 'guitablabel'	|setting-guitablabel|
 
 {not able to use multiple tab pages when the |+windows| feature was disabled
 at compile time}
@@ -364,8 +365,8 @@ The 'tabline' option allows you to define your preferred way to tab pages
 labels.  This isn't easy, thus an example will be given here.
 
 For basics see the 'statusline' option.  The same items can be used in the
-'tabline' option.  Additionally, the |tabpagebuflist()|, |tabpagenr()| and
-|tabpagewinnr()| functions are useful.
+'tabline' and 'tabpanel' option.  Additionally, the |tabpagebuflist()|,
+|tabpagenr()| and |tabpagewinnr()| functions are useful.
 
 Since the number of tab labels will vary, you need to use an expression for
 the whole option.  Something like: >
@@ -418,7 +419,74 @@ clever way when there is not enough room.  Check the 'columns' option for the
 space available.
 
 ==============================================================================
-5. Setting 'guitablabel'				*setting-guitablabel*
+5. Setting 'tabpanel'				*tabpanel* *setting-tabpanel*
+
+The tabpanel is a vertical sidebar that displays tab page labels along the
+side of the window.  It looks like this:
+>
+	+-----------+----------------------------------
+	|(1)        |text text text text text text text
+	|  ~/aaa.txt|text text text text text text text
+	|(2)        |text text text text text text text
+	|  ~/.vimrc |text text text text text text text
+	|(3)        |text text text text text text text
+	|  ~/bbb.js |text text text text text text text
+	|  ~/ccc.css|text text text text text text text
+	|           |text text text text text text text
+	|           |text text text text text text text
+	|           |text text text text text text text
+<
+To configure the tabpanel, use following options: 'tabpanel',
+'showtabpanel', 'tabpanelopt'.
+The 'tabpanel' and 'showtabpanel' options are function similar to the
+'statusline' or 'tabline'.
+
+The "columns:" of 'tabpanelopt' option specifies the width of the tabpanel:
+>
+              +------ This width
+              |
+         <----+----->
+	+-----------+----------------------------------
+	|(1)        |text text text text text text text
+	|  ~/aaa.txt|text text text text text text text
+	|(2)        |text text text text text text text
+<
+The "align:" of 'tabpanelopt' option determines whether the tabpanel is
+displayed on the right side of the window:
+>
+	+----------------------------------+-----------
+	|text text text text text text text|(1)
+	|text text text text text text text|  ~/aaa.txt
+	|text text text text text text text|(2)
+<
+The "wrap" of 'tabpanelopt' option controls whether lines in tabpanel are
+wraped:
+>
+	+-----------+----------------------------------
+	|(1)        |text text text text text text text
+	|  ~/long_lo|text text text text text text text
+	|ng_file_nam|text text text text text text text
+	|e.txt      |text text text text text text text
+	|(2)        |text text text text text text text
+
+The "vert" of 'tabpanelopt' option defines whether a vertical separator is
+displayed between the tabpanel and the main window:
+>
+                    +------ This is
+                    |
+                    v
+	+-----------+----------------------------------
+	|(1)        |text text text text text text text
+	|  ~/aaa.txt|text text text text text text text
+	|(2)        |text text text text text text text
+<
+The vertical separator is used "tpl_vert" of 'fillchars'.
+
+You can customize the appearance of the tab page labels using the highlight
+groups: |hl-TabPanel| |hl-TabPanelSel| |hl-TabPanelFill|
+
+==============================================================================
+6. Setting 'guitablabel'				*setting-guitablabel*
 
 When the GUI tab pages line is displayed, 'guitablabel' can be used to
 specify the label to display for each tab page.  Unlike 'tabline', which

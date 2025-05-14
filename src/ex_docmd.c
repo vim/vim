@@ -247,6 +247,7 @@ static void	ex_later(exarg_T *eap);
 static void	ex_redir(exarg_T *eap);
 static void	ex_redrawstatus(exarg_T *eap);
 static void	ex_redrawtabline(exarg_T *eap);
+static void	ex_redrawtabpanel(exarg_T *eap);
 static void	close_redir(void);
 static void	ex_mark(exarg_T *eap);
 static void	ex_startinsert(exarg_T *eap);
@@ -8233,7 +8234,7 @@ ex_sleep(exarg_T *eap)
     {
 	n = W_WINROW(curwin) + curwin->w_wrow - msg_scrolled;
 	if (n >= 0)
-	    windgoto(n, curwin->w_wincol + curwin->w_wcol);
+	    windgoto(n, curwin->w_wincol + curwin->w_wcol + TPL_LCOL(curwin));
     }
 
     len = eap->line2;
@@ -8986,6 +8987,29 @@ ex_redrawtabline(exarg_T *eap UNUSED)
     p_lz = FALSE;
 
     draw_tabline();
+
+    RedrawingDisabled = save_RedrawingDisabled;
+    p_lz = save_p_lz;
+    out_flush();
+}
+
+/*
+ * ":redrawtabpanel": force redraw of the tabpanel
+ */
+    static void
+ex_redrawtabpanel(exarg_T *eap UNUSED)
+{
+    int save_RedrawingDisabled = RedrawingDisabled;
+    RedrawingDisabled = 0;
+
+    int save_p_lz = p_lz;
+    p_lz = FALSE;
+
+#if defined(FEAT_TABPANEL)
+    draw_tabpanel();
+#else
+    emsg(_(e_cannot_not_support_redrawtabpanel));
+#endif
 
     RedrawingDisabled = save_RedrawingDisabled;
     p_lz = save_p_lz;

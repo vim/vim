@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 May 08
+*version9.txt*  For Vim version 9.1.  Last change: 2025 May 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41584,6 +41584,8 @@ completion and command-line completion in |ins-completion-menu|, see
 
 Support for the |Tuple| data type in Vim script and Vim9 script.
 
+Support for a vertical |tabpanel| window similar to the 'tabline'.
+
 							*changed-9.2*
 Changed~
 -------
@@ -41732,6 +41734,9 @@ Highlighting: ~
 |hl-PmenuMatch|		Popup menu: highlighting of matched text
 |hl-PmenuMatchSel|	Popup menu: highlighting of matched text in selected
 			line
+|hl-TabPanel|		|tabpanel|: not active tab page label
+|hl-TabPanelFill|	|tabpanel|: filler space
+|hl-TabPanelSel|	|tabpanel|: active tab page label
 
 Commands: ~
 
@@ -41742,6 +41747,7 @@ Ex-Commands: ~
 |:iput|			like |:put| but adjust indent
 |:pbuffer|		Edit buffer [N] from the buffer list in the preview
 			window
+|:redrawtabpanel|	Force updating the 'tabpanel'.
 
 Options: ~
 
@@ -41757,7 +41763,11 @@ Options: ~
 'lhistory'		Size of the location list stack |quickfix-stack|.
 'messagesopt'		configure |:messages| and |hit-enter| prompt
 'pummaxwidth'		maximum width for the completion popup menu
+'showtabpanel'		When to show the |tabpanel|
 'tabclose'		Which tab page to focus after closing a tab page
+'tabpanel'		Optional vertical panel for displaying tabpages
+			|tabpanel|
+'tabpanelopt'		Optional settings for the |tabpanel|
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
 'winfixbuf'		Keep buffer focused in a window

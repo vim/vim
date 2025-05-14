@@ -959,6 +959,7 @@ $quote	eval.txt	/*$quote*
 'showmatch'	options.txt	/*'showmatch'*
 'showmode'	options.txt	/*'showmode'*
 'showtabline'	options.txt	/*'showtabline'*
+'showtabpanel'	options.txt	/*'showtabpanel'*
 'shq'	options.txt	/*'shq'*
 'si'	options.txt	/*'si'*
 'sidescroll'	options.txt	/*'sidescroll'*
@@ -1012,6 +1013,7 @@ $quote	eval.txt	/*$quote*
 'statusline'	options.txt	/*'statusline'*
 'stl'	options.txt	/*'stl'*
 'stmp'	options.txt	/*'stmp'*
+'stpl'	options.txt	/*'stpl'*
 'sts'	options.txt	/*'sts'*
 'su'	options.txt	/*'su'*
 'sua'	options.txt	/*'sua'*
@@ -1183,6 +1185,8 @@ $quote	eval.txt	/*$quote*
 'tabclose'	options.txt	/*'tabclose'*
 'tabline'	options.txt	/*'tabline'*
 'tabpagemax'	options.txt	/*'tabpagemax'*
+'tabpanel'	options.txt	/*'tabpanel'*
+'tabpanelopt'	options.txt	/*'tabpanelopt'*
 'tabstop'	options.txt	/*'tabstop'*
 'tag'	options.txt	/*'tag'*
 'tagbsearch'	options.txt	/*'tagbsearch'*
@@ -1233,6 +1237,8 @@ $quote	eval.txt	/*$quote*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
 'top'	options.txt	/*'top'*
+'tpl'	options.txt	/*'tpl'*
+'tplo'	options.txt	/*'tplo'*
 'tpm'	options.txt	/*'tpm'*
 'tr'	options.txt	/*'tr'*
 'ts'	options.txt	/*'ts'*
@@ -1478,6 +1484,7 @@ $quote	eval.txt	/*$quote*
 +sun_workshop	various.txt	/*+sun_workshop*
 +syntax	various.txt	/*+syntax*
 +system()	various.txt	/*+system()*
++tabpanel	various.txt	/*+tabpanel*
 +tag_any_white	various.txt	/*+tag_any_white*
 +tag_binary	various.txt	/*+tag_binary*
 +tag_old_static	various.txt	/*+tag_old_static*
@@ -3141,6 +3148,8 @@ $quote	eval.txt	/*$quote*
 :redrawstatus	various.txt	/*:redrawstatus*
 :redrawt	various.txt	/*:redrawt*
 :redrawtabline	various.txt	/*:redrawtabline*
+:redrawtabp	various.txt	/*:redrawtabp*
+:redrawtabpanel	various.txt	/*:redrawtabpanel*
 :reg	change.txt	/*:reg*
 :registers	change.txt	/*:registers*
 :res	windows.txt	/*:res*
@@ -4630,6 +4639,7 @@ E1539	vim9.txt	/*E1539*
 E154	helphelp.txt	/*E154*
 E1540	eval.txt	/*E1540*
 E1541	vi_diff.txt	/*E1541*
+E1547	various.txt	/*E1547*
 E155	sign.txt	/*E155*
 E156	sign.txt	/*E156*
 E157	sign.txt	/*E157*
@@ -7589,6 +7599,7 @@ g:Netrw_corehandler	pi_netrw.txt	/*g:Netrw_corehandler*
 g:Netrw_funcref	pi_netrw.txt	/*g:Netrw_funcref*
 g:Openprg	eval.txt	/*g:Openprg*
 g:actual_curbuf	options.txt	/*g:actual_curbuf*
+g:actual_curtabpage	options.txt	/*g:actual_curtabpage*
 g:actual_curwin	options.txt	/*g:actual_curwin*
 g:ada#Comment	ft_ada.txt	/*g:ada#Comment*
 g:ada#Ctags_Kinds	ft_ada.txt	/*g:ada#Ctags_Kinds*
@@ -8272,6 +8283,9 @@ hl-TOhtmlProgress	syntax.txt	/*hl-TOhtmlProgress*
 hl-TabLine	syntax.txt	/*hl-TabLine*
 hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
 hl-TabLineSel	syntax.txt	/*hl-TabLineSel*
+hl-TabPanel	syntax.txt	/*hl-TabPanel*
+hl-TabPanelFill	syntax.txt	/*hl-TabPanelFill*
+hl-TabPanelSel	syntax.txt	/*hl-TabPanelSel*
 hl-Terminal	syntax.txt	/*hl-Terminal*
 hl-Title	syntax.txt	/*hl-Title*
 hl-ToolbarButton	gui.txt	/*hl-ToolbarButton*
@@ -10063,6 +10077,7 @@ settagstack()	builtin.txt	/*settagstack()*
 setting-guifont	gui.txt	/*setting-guifont*
 setting-guitablabel	tabpage.txt	/*setting-guitablabel*
 setting-tabline	tabpage.txt	/*setting-tabline*
+setting-tabpanel	tabpage.txt	/*setting-tabpanel*
 setuid	change.txt	/*setuid*
 setwinvar()	builtin.txt	/*setwinvar()*
 sftp	pi_netrw.txt	/*sftp*
@@ -10653,6 +10668,7 @@ tabpage.txt	tabpage.txt	/*tabpage.txt*
 tabpagebuflist()	builtin.txt	/*tabpagebuflist()*
 tabpagenr()	builtin.txt	/*tabpagenr()*
 tabpagewinnr()	builtin.txt	/*tabpagewinnr()*
+tabpanel	tabpage.txt	/*tabpanel*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-binary-search	tagsrch.txt	/*tag-binary-search*
