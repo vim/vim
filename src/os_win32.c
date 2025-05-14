@@ -5089,8 +5089,8 @@ mch_system_piped(char *cmd, int options)
     // About "Inherit handles" being TRUE: this command can be litigious,
     // handle inheritance was deactivated for pending temp file, but, if we
     // deactivate it, the pipes don't work for some reason.
-     vim_create_process(p, TRUE, CREATE_DEFAULT_ERROR_MODE,
-	     &si, &pi, NULL, NULL);
+    vim_create_process(p, TRUE, CREATE_DEFAULT_ERROR_MODE,
+						&si, &pi, NULL, NULL);
 
     if (p != cmd)
 	vim_free(p);

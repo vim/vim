@@ -4386,10 +4386,10 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     }
 
     if (cmdline_fuzzy_completion_supported(&xpc))
-       // when fuzzy matching, don't modify the search string
-       pat = vim_strsave(xpc.xp_pattern);
+	// when fuzzy matching, don't modify the search string
+	pat = vim_strsave(xpc.xp_pattern);
     else
-       pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
+	pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
 
     if (rettv_list_alloc(rettv) == OK && pat != NULL)
     {

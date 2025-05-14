@@ -4172,11 +4172,11 @@ msg_warn_missing_clipboard(void)
     if (!global_busy && !did_warn_clipboard)
     {
 #ifdef FEAT_CLIPBOARD
-       msg(_("W23: Clipboard register not available, using register 0"));
+	msg(_("W23: Clipboard register not available, using register 0"));
 #else
-       msg(_("W24: Clipboard register not available. See :h W24"));
+	msg(_("W24: Clipboard register not available. See :h W24"));
 #endif
-       did_warn_clipboard = TRUE;
+	did_warn_clipboard = TRUE;
     }
 }
 

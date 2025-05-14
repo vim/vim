@@ -201,7 +201,7 @@ redraw_for_cursorcolumn(win_T *wp)
  * Returns the number of columns of overlap with buffer text, excluding the
  * extra padding on the ledge.
  */
-     int
+    int
 sms_marker_overlap(win_T *wp, int extra2)
 {
     if (extra2 == -1)

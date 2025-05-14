@@ -1377,7 +1377,7 @@ gui_motif_update_mousemodel(vimmenu_T *menu)
 
     // When GUI hasn't started the menus have not been created.
     if (!gui.in_use)
-      return;
+	return;
 
     while (menu)
     {

@@ -106,8 +106,8 @@ win_id2wp_tp(int id, tabpage_T **tpp)
 	}
 #ifdef FEAT_PROP_POPUP
     // popup windows are in separate lists
-     FOR_ALL_TABPAGES(tp)
-	 FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+    FOR_ALL_TABPAGES(tp)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	     if (wp->w_id == id)
 	     {
 		 if (tpp != NULL)

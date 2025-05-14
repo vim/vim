@@ -1606,7 +1606,7 @@ static yankreg_T *y_read_regs = NULL;
     static void
 prepare_viminfo_registers(void)
 {
-     y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
+    y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
 }
 
     static void

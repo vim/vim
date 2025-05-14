@@ -7247,7 +7247,7 @@ find_hi_in_scoped_ht(char_u *name, hashtab_T **pht)
     char_u	*varname;
 
     if (current_funccal == NULL || current_funccal->fc_func->uf_scoped == NULL)
-      return NULL;
+	return NULL;
 
     // Search in parent scope, which can be referenced from a lambda.
     current_funccal = current_funccal->fc_func->uf_scoped;
