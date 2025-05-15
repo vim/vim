@@ -101,7 +101,7 @@ parse_member(
 	    return FAIL;
 	}
 	type_arg = skipwhite(colon + 1);
-	type = parse_type(&type_arg, type_list, TRUE);
+	type = parse_type(&type_arg, type_list, NULL, NULL, TRUE);
 	if (type == NULL)
 	    return FAIL;
 	*has_type = TRUE;
@@ -1436,7 +1436,8 @@ add_default_constructor(
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
 
     ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, CF_CLASS,
-			    cl->class_obj_members, cl->class_obj_member_count);
+			    cl->class_obj_members, cl->class_obj_member_count,
+			    NULL);
 
     ga_clear_strings(&lines_to_free);
     vim_free(fga.ga_data);
@@ -1519,7 +1520,7 @@ add_classfuncs_objmethods(
 		// methods may be overruled, then "super.Method()" is used to
 		// find a method from the parent.
 		ufunc_T *pf = (extends_cl->class_obj_methods)[i];
-		(*fup)[gap->ga_len + i] = copy_function(pf);
+		(*fup)[gap->ga_len + i] = copy_function(pf, 0);
 
 		// If the child class overrides a function from the parent
 		// the signature must be equal.
@@ -2430,7 +2431,8 @@ early_ret:
 	    else
 		class_flags = abstract_method ? CF_ABSTRACT_METHOD : CF_CLASS;
 	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free,
-			class_flags, objmembers.ga_data, objmembers.ga_len);
+			class_flags, objmembers.ga_data, objmembers.ga_len,
+			NULL);
 	    ga_clear_strings(&lines_to_free);
 
 	    if (uf != NULL)
@@ -2837,7 +2839,7 @@ ex_type(exarg_T *eap)
     }
 
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
-    type_T *type = parse_type(&arg, &si->sn_type_list, TRUE);
+    type_T *type = parse_type(&arg, &si->sn_type_list, NULL, NULL, TRUE);
     if (type == NULL)
 	return;
 
@@ -2953,6 +2955,7 @@ call_oc_method(
     char_u	*name_end,
     evalarg_T	*evalarg,
     char_u	**arg,
+    garray_T	*gftn_gap,	// generic types
     typval_T	*rettv)
 {
     ufunc_T	*fp;
@@ -2999,6 +3002,14 @@ call_oc_method(
 	// Cannot access a protected method outside of a class
 	semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 	return FAIL;
+    }
+
+    // process generic function call
+    if (fp != NULL)
+    {
+	fp = generic_func_get(fp, gftn_gap);
+	if (fp == NULL)
+	    return FAIL;
     }
 
     char_u *argp = name_end;
@@ -3086,6 +3097,7 @@ class_object_index(
     evalarg_T	*evalarg,
     int		verbose UNUSED)	// give error messages
 {
+    int	ret = FAIL;
     if (VIM_ISWHITE((*arg)[1]))
     {
 	semsg(_(e_no_white_space_allowed_after_str_str), ".", *arg);
@@ -3119,10 +3131,25 @@ class_object_index(
 	return FAIL;
     }
 
+    garray_T	gftn_table;
+    garray_T	types_ga;
+
+    ga_init2(&gftn_table, sizeof(gf_type_name_T), 10);
+    ga_init2(&types_ga, sizeof(type_T *), 10);
+
+    if (*name_end == '<')
+    {
+	// calling a generic method
+	name_end = parse_generic_func_type_args(name, len, name + len,
+						&types_ga, &gftn_table, NULL);
+	if (name_end == NULL)
+	    goto done;
+    }
+
     if (*name_end == '(')
 	// Invoke the class or object method
-	return call_oc_method(cl, name, len, name_end, evalarg, arg, rettv);
-
+	ret = call_oc_method(cl, name, len, name_end, evalarg, arg,
+							&gftn_table, rettv);
     else if (rettv->v_type == VAR_OBJECT || rettv->v_type == VAR_CLASS)
     {
 	// Search in the object member variable table and the class member
@@ -3131,7 +3158,8 @@ class_object_index(
 	if (get_member_tv(cl, is_object, name, len, NULL, rettv) == OK)
 	{
 	    *arg = name_end;
-	    return OK;
+	    ret = OK;
+	    goto done;
 	}
 
 	// could be a class method or an object method
@@ -3143,22 +3171,27 @@ class_object_index(
 	    if (*name == '_')
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
-		return FAIL;
+		goto done;
 	    }
 
 	    if (obj_method_to_partial_tv(is_object ? rettv->vval.v_object :
 						NULL, fp, rettv) == FAIL)
-		return FAIL;
+		goto done;
 
 	    *arg = name_end;
-	    return OK;
+	    ret = OK;
+	    goto done;
 	}
 
 	if (did_emsg == did_emsg_save)
 	    member_not_found_msg(cl, rettv->v_type, name, len);
     }
 
-    return FAIL;
+done:
+    ga_clear(&gftn_table);
+    clear_type_list(&types_ga);
+
+    return ret;
 }
 
 /*
@@ -3194,6 +3227,13 @@ find_class_func(char_u **arg)
     len = fname_end - fname;
 
     fp = method_lookup(cl, tv.v_type, fname, len, NULL);
+
+    if (fp != NULL)
+    {
+	fp = eval_generic_func(fp, fname, &fname_end);
+	if (fp != NULL)
+	    *arg = fname_end;
+    }
 
 fail_after_eval:
     clear_tv(&tv);

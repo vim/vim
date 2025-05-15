@@ -2264,7 +2264,7 @@ vim_regsub_both(
 		if (expr->v_type == VAR_FUNC)
 		{
 		    s = expr->vval.v_string;
-		    call_func(s, -1, &rettv, 1, argv, &funcexe);
+		    call_func(s, -1, &rettv, 1, argv, NULL, &funcexe);
 		}
 		else if (expr->v_type == VAR_PARTIAL)
 		{
@@ -2272,7 +2272,7 @@ vim_regsub_both(
 
 		    s = partial_name(partial);
 		    funcexe.fe_partial = partial;
-		    call_func(s, -1, &rettv, 1, argv, &funcexe);
+		    call_func(s, -1, &rettv, 1, argv, NULL, &funcexe);
 		}
 		else if (expr->v_type == VAR_INSTR)
 		{

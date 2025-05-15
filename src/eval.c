@@ -291,7 +291,7 @@ eval_expr_partial(
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_evaluate = TRUE;
 	funcexe.fe_partial = partial;
-	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+	if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	    return FAIL;
     }
 
@@ -323,7 +323,7 @@ eval_expr_func(
 
     CLEAR_FIELD(funcexe);
     funcexe.fe_evaluate = TRUE;
-    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+    if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	return FAIL;
 
     return OK;
@@ -944,7 +944,7 @@ call_vim_function(
     if (name == NULL)
 	name = func;
 
-    ret = call_func(name, -1, rettv, argc, argv, &funcexe);
+    ret = call_func(name, -1, rettv, argc, argv, NULL, &funcexe);
 
     if (ret == FAIL)
 	clear_tv(rettv);
@@ -1620,12 +1620,12 @@ get_lval_tuple(
  * The method index, method function pointer and method type are returned in
  * "lp".
  */
-    static void
+    static int
 get_lval_oc_method(
     lval_T	*lp,
     class_T	*cl,
     char_u	*key,
-    char_u	*key_end,
+    char_u	**key_end,
     vartype_T	v_type)
 {
     // Look for a method with this name.
@@ -1637,8 +1637,13 @@ get_lval_oc_method(
 	ufunc_T	*fp;
 
 	fp = method_lookup(cl, round == 1 ? VAR_CLASS : VAR_OBJECT,
-						key, key_end - key, &m_idx);
+						key, *key_end - key, &m_idx);
 	lp->ll_oi = m_idx;
+
+	// process generic method (if present)
+	if (fp && (fp = eval_generic_func(fp, key, key_end)) == NULL)
+	    return FAIL;
+
 	if (fp != NULL)
 	{
 	    lp->ll_ufunc = fp;
@@ -1646,6 +1651,8 @@ get_lval_oc_method(
 	    break;
 	}
     }
+
+    return OK;
 }
 
 /*
@@ -1711,7 +1718,7 @@ get_lval_oc_variable(
 get_lval_class_or_obj(
     lval_T	*lp,
     char_u	*key,
-    char_u	*key_end,
+    char_u	**key_end,
     vartype_T	v_type,
     class_T	*cl_exec,
     int		flags,
@@ -1747,19 +1754,20 @@ get_lval_class_or_obj(
     lp->ll_valtype = NULL;
 
     if (flags & GLV_PREFER_FUNC)
-	get_lval_oc_method(lp, cl, key, key_end, v_type);
+	if (get_lval_oc_method(lp, cl, key, key_end, v_type) == FAIL)
+	    return FAIL;
 
     // Look for object/class member variable
     if (lp->ll_valtype == NULL)
     {
-	if (get_lval_oc_variable(lp, cl, key, key_end, v_type, cl_exec, flags)
+	if (get_lval_oc_variable(lp, cl, key, *key_end, v_type, cl_exec, flags)
 								== FAIL)
 	    return FAIL;
     }
 
     if (lp->ll_valtype == NULL)
     {
-	member_not_found_msg(cl, v_type, key, key_end - key);
+	member_not_found_msg(cl, v_type, key, *key_end - key);
 	return FAIL;
     }
 
@@ -2039,7 +2047,7 @@ get_lval_subscript(
 	}
 	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
 	{
-	    if (get_lval_class_or_obj(lp, key, p, v_type, cl_exec, flags,
+	    if (get_lval_class_or_obj(lp, key, &p, v_type, cl_exec, flags,
 							quiet) == FAIL)
 		goto done;
 	}
@@ -2213,7 +2221,7 @@ get_lval(
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp,
 			       &SCRIPT_ITEM(current_sctx.sc_sid)->sn_type_list,
-			       !quiet);
+			       NULL, NULL, !quiet);
 		if (lp->ll_type == NULL && !quiet)
 		    return NULL;
 		lp->ll_name_end = tp;
@@ -4725,7 +4733,7 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, TRUE);
+	want_type = parse_type(arg, &type_list, NULL, NULL, TRUE);
 	if (want_type == NULL && (evaluate || **arg != '>'))
 	{
 	    clear_type_list(&type_list);
@@ -4973,7 +4981,7 @@ eval9_nested_expr(
 
     if (vim9script)
     {
-	ret = get_lambda_tv(arg, rettv, TRUE, evalarg);
+	ret = get_lambda_tv(arg, rettv, TRUE, evalarg, NULL);
 	if (ret == OK && evaluate)
 	{
 	    ufunc_T *ufunc = rettv->vval.v_partial->pt_func;
@@ -5062,7 +5070,8 @@ eval9_var_func_name(
 	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), s);
 	    ret = FAIL;
 	}
-	else if ((vim9script ? **arg : *skipwhite(*arg)) == '(')
+	else if ((vim9script ? **arg : *skipwhite(*arg)) == '('
+				|| (vim9script && generic_func_call(arg)))
 	{
 	    // "name(..."  recursive!
 	    *arg = skipwhite(*arg);
@@ -5079,6 +5088,11 @@ eval9_var_func_name(
 		*name_start = s;
 		ret = eval_variable(s, len, 0, rettv, NULL,
 					EVAL_VAR_VERBOSE + EVAL_VAR_IMPORT);
+
+		// skip generic function arguments (if present)
+		if (ret == OK && vim9script && **arg == '<'
+						&& rettv->v_type == VAR_FUNC)
+		    ret = skip_generic_func_type_args(arg);
 	    }
 	}
 	else
@@ -5230,7 +5244,7 @@ eval9(
     case '{':	if (vim9script)
 		    ret = NOTDONE;
 		else
-		    ret = get_lambda_tv(arg, rettv, vim9script, evalarg);
+		    ret = get_lambda_tv(arg, rettv, vim9script, evalarg, NULL);
 		if (ret == NOTDONE)
 		    ret = eval_dict(arg, rettv, evalarg, FALSE);
 		break;
@@ -5471,7 +5485,7 @@ eval_lambda(
     if (**arg == '{')
     {
 	// ->{lambda}()
-	ret = get_lambda_tv(arg, rettv, FALSE, evalarg);
+	ret = get_lambda_tv(arg, rettv, FALSE, evalarg, NULL);
     }
     else
     {
@@ -7373,7 +7387,19 @@ handle_subscript(
 	    else
 	    {
 		rettv->v_type = VAR_FUNC;
-		rettv->vval.v_string = vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
+		if (**arg == '<')
+		{
+		    char_u *s = get_generic_func_name(ufunc, arg);
+		    if (s != NULL)
+			rettv->vval.v_string = s;
+		    else
+			ret = FAIL;
+		}
+		else
+		{
+		    rettv->vval.v_string =
+			vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
+		}
 	    }
 	    continue;
 	}
