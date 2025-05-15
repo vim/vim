@@ -2252,6 +2252,7 @@ typedef int sock_T;
 #define VAR_TYPE_ENUM	    15
 #define VAR_TYPE_ENUMVALUE  16
 #define VAR_TYPE_TUPLE	    17
+#define VAR_TYPE_GENERIC    18
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
