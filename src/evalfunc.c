@@ -742,7 +742,7 @@ check_map_filter_arg2(
 {
     type_T *expected_member = NULL;
     type_T *(args[2]);
-    type_T t_func_exp = {VAR_FUNC, 2, 0, 0, NULL, NULL, args};
+    type_T t_func_exp = {VAR_FUNC, 2, 0, 0, NULL, NULL, args, NULL};
 
     if (context->arg_types[0].type_curr->tt_type == VAR_LIST
 	    || context->arg_types[0].type_curr->tt_type == VAR_DICT)
@@ -876,7 +876,7 @@ arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
     if (type->tt_type == VAR_FUNC)
     {
 	type_T *(args[2]);
-	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, NULL, args};
+	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, NULL, args, NULL};
 
 	if (context->arg_types[0].type_curr->tt_type == VAR_LIST)
 	    args[0] = context->arg_types[0].type_curr->tt_member;
@@ -3339,8 +3339,10 @@ internal_func_check_arg_types(
     for (int i = 0; i < argcount && argchecks[i] != NULL; ++i)
     {
 	context.arg_idx = i;
-	if (argchecks[i](types[i].type_curr, types[i].type_decl,
-							    &context) == FAIL)
+	type_T *t = types[i].type_curr;
+	if (t && t->tt_type == VAR_GENERIC)
+	    t = t->tt_generic->gt_type;
+	if (argchecks[i](t, types[i].type_decl, &context) == FAIL)
 	    return FAIL;
     }
     return OK;
@@ -4413,6 +4415,10 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    n = argvars[0].vval.v_typealias == NULL
 		|| argvars[0].vval.v_typealias->ta_name == NULL
 		|| *argvars[0].vval.v_typealias->ta_name == NUL;
+	    break;
+
+	case VAR_GENERIC:
+	    n = argvars[0].vval.v_generic == NULL;
 	    break;
 
 	case VAR_UNKNOWN:
@@ -8732,6 +8738,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
+	case VAR_GENERIC:
 	    emsg(_(e_invalid_type_for_len));
 	    break;
     }
@@ -12464,6 +12471,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
 	case VAR_TYPEALIAS: n = VAR_TYPE_TYPEALIAS; break;
+	case VAR_GENERIC: n = VAR_TYPE_GENERIC; break;
 	case VAR_CLASS:
 	    {
 		class_T *cl = argvars[0].vval.v_class;

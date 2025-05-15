@@ -55,6 +55,7 @@ char_u *skiphex(char_u *q);
 char_u *skiptobin(char_u *q);
 char_u *skiptodigit(char_u *q);
 char_u *skiptohex(char_u *q);
+char_u *skiptoangleclosebracket(char_u *q);
 int vim_isdigit(int c);
 int vim_isxdigit(int c);
 int vim_isbdigit(int c);

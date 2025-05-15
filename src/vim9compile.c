@@ -2104,7 +2104,7 @@ compile_lhs_set_type(cctx_T *cctx, lhs_T *lhs, char_u *var_end, int is_decl)
 	}
 
 	p = skipwhite(var_end + 1);
-	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
+	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc, TRUE);
 	if (lhs->lhs_type == NULL)
 	    return FAIL;
 
@@ -2808,6 +2808,7 @@ push_default_value(
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
+	case VAR_GENERIC:
 	case VAR_SPECIAL:  // cannot happen
 	    // This is skipped for local variables, they are always
 	    // initialized to zero.  But in a "for" or "while" loop

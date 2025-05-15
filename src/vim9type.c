@@ -1326,6 +1326,11 @@ check_type_maybe(
 {
     int ret = OK;
 
+    if (expected->tt_type == VAR_GENERIC)
+	expected = expected->tt_generic->gt_type;
+    if (actual->tt_type == VAR_GENERIC)
+	actual = actual->tt_generic->gt_type;
+
     // When expected is "unknown" we accept any actual type.
     // When expected is "any" we accept any actual type except "void".
     if (expected->tt_type != VAR_UNKNOWN
@@ -1601,7 +1606,7 @@ parse_type_member(
     }
     *arg = skipwhite(*arg + 1);
 
-    member_type = parse_type(arg, type_gap, give_error);
+    member_type = parse_type(arg, type_gap, NULL, give_error);
     if (member_type == NULL)
 	return NULL;
 
@@ -1665,7 +1670,7 @@ parse_type_func(char_u **arg, size_t len, garray_T *type_gap, int give_error)
 		return NULL;
 	    }
 
-	    type = parse_type(&p, type_gap, give_error);
+	    type = parse_type(&p, type_gap, NULL, give_error);
 	    if (type == NULL)
 		return NULL;
 	    if ((flags & TTFLAG_VARARGS) != 0 && type->tt_type != VAR_LIST)
@@ -1725,7 +1730,7 @@ parse_type_func(char_u **arg, size_t len, garray_T *type_gap, int give_error)
 	if (!VIM_ISWHITE(**arg) && give_error)
 	    semsg(_(e_white_space_required_after_str_str), ":", *arg - 1);
 	*arg = skipwhite(*arg);
-	ret_type = parse_type(arg, type_gap, give_error);
+	ret_type = parse_type(arg, type_gap, NULL, give_error);
 	if (ret_type == NULL)
 	    return NULL;
     }
@@ -1792,7 +1797,7 @@ parse_type_tuple(char_u **arg, garray_T *type_gap, int give_error)
 	    p += 3;
 	}
 
-	type = parse_type(&p, type_gap, give_error);
+	type = parse_type(&p, type_gap, NULL, give_error);
 	if (type == NULL)
 	    goto on_err;
 
@@ -1889,7 +1894,7 @@ parse_type_object(char_u **arg, garray_T *type_gap, int give_error)
     // skip spaces following "object<"
     *arg = skipwhite(*arg + 1);
 
-    object_type = parse_type(arg, type_gap, give_error);
+    object_type = parse_type(arg, type_gap, NULL, give_error);
     if (object_type == NULL)
 	return NULL;
 
@@ -1926,6 +1931,7 @@ parse_type_user_defined(
     char_u	**arg,
     size_t	len,
     garray_T	*type_gap,
+    ufunc_T	*ufunc,
     int		give_error)
 {
     int		did_emsg_before = did_emsg;
@@ -1968,6 +1974,28 @@ parse_type_user_defined(
 	clear_tv(&tv);
     }
 
+    // Check whether it is a generic type
+    if (len == 1 && ufunc != NULL && (ufunc->uf_generic_flags & UF_GENERIC_FUNC))
+    {
+	for (int i = 0; i < ufunc->uf_generic_count; i++)
+	{
+	    type_T *gt;
+
+	    gt = ((type_T *)ufunc->uf_generic_list) + i;
+	    if (gt->tt_generic->gt_name == **arg)
+	    {
+#if 0
+		type_T *type = copy_type(gm->gm_type, type_gap);
+#else
+		type_T *type = gt;
+#endif
+		*arg += len;
+
+		return type;
+	    }
+	}
+    }
+
     if (give_error && (did_emsg == did_emsg_before))
     {
 	char_u	*p = skip_type(*arg, FALSE);
@@ -1987,7 +2015,7 @@ parse_type_user_defined(
  * Return NULL for failure.
  */
     type_T *
-parse_type(char_u **arg, garray_T *type_gap, int give_error)
+parse_type(char_u **arg, garray_T *type_gap, ufunc_T *ufunc, int give_error)
 {
     char_u  *p = *arg;
     size_t  len;
@@ -2095,7 +2123,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
     }
 
     // User defined type
-    return parse_type_user_defined(arg, len, type_gap, give_error);
+    return parse_type_user_defined(arg, len, type_gap, ufunc, give_error);
 }
 
 /*
@@ -2127,6 +2155,7 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_CHANNEL:
 	case VAR_INSTR:
 	case VAR_TYPEALIAS:
+	case VAR_GENERIC:
 	    break;  // not composite is always OK
 	case VAR_OBJECT:
 	case VAR_CLASS:
@@ -2468,6 +2497,7 @@ vartype_name(vartype_T type)
 	case VAR_CLASS: return "class";
 	case VAR_OBJECT: return "object";
 	case VAR_TYPEALIAS: return "typealias";
+	case VAR_GENERIC: return "generic";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";
@@ -2685,6 +2715,9 @@ type_name(type_T *type, char **tofree)
 
 	case VAR_FUNC:
 	    return type_name_func(type, tofree);
+
+	case VAR_GENERIC:
+	    return type_name(type->tt_generic->gt_type, tofree);
 
 	default:
 	    break;

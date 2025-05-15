@@ -1205,7 +1205,7 @@ invoke_defer_funcs(ectx_T *ectx)
 	exception_state_save(&estate);
 	exception_state_clear();
 
-	(void)call_func(name, -1, &rettv, argcount, argvars, &funcexe);
+	(void)call_func(name, -1, &rettv, argcount, argvars, NULL, &funcexe);
 
 	exception_state_restore(&estate);
 
@@ -8097,6 +8097,7 @@ tv2bool(typval_T *tv)
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_GENERIC:
 	    break;
     }
     return FALSE;

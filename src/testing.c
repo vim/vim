@@ -1096,6 +1096,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	case VAR_SPECIAL:
 	case VAR_STRING:
 	case VAR_INSTR:
+	case VAR_GENERIC:
 	    break;
 
 	case VAR_JOB:

@@ -29,6 +29,16 @@ static funccall_T *current_funccal = NULL;
 // item in it is still being used.
 static funccall_T *previous_funccal = NULL;
 
+typedef struct gfitem_S gfitem_T;
+struct gfitem_S
+{
+    ufunc_T	*gfi_ufunc;
+    char_u	gfi_name[1];	// actually longer
+};
+
+#define GFITEM_KEY_OFF	offsetof(gfitem_T, gfi_name)
+#define HI2GFITEM(hi)	((gfitem_T *)((hi)->hi_key - GFITEM_KEY_OFF))
+
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 static void func_clear(ufunc_T *fp, int force);
 static int func_free(ufunc_T *fp, int force);
@@ -570,7 +580,7 @@ parse_argument_types(
 			}
 		    }
 		    else
-			type = parse_type(&p, &fp->uf_type_list, TRUE);
+			type = parse_type(&p, &fp->uf_type_list, fp, TRUE);
 		}
 		if (type == NULL)
 		    return FAIL;
@@ -606,7 +616,7 @@ parse_argument_types(
 	    fp->uf_va_type = &t_list_any;
 	else
 	{
-	    fp->uf_va_type = parse_type(&p, &fp->uf_type_list, TRUE);
+	    fp->uf_va_type = parse_type(&p, &fp->uf_type_list, fp, TRUE);
 	    if (fp->uf_va_type != NULL && fp->uf_va_type->tt_type != VAR_LIST)
 	    {
 		semsg(_(e_variable_arguments_type_must_be_list_str),
@@ -630,7 +640,7 @@ parse_return_type(ufunc_T *fp, char_u *ret_type)
     {
 	char_u *p = ret_type;
 
-	fp->uf_ret_type = parse_type(&p, &fp->uf_type_list, TRUE);
+	fp->uf_ret_type = parse_type(&p, &fp->uf_type_list, fp, TRUE);
 	if (fp->uf_ret_type == NULL)
 	{
 	    fp->uf_ret_type = &t_void;
@@ -1854,7 +1864,7 @@ get_lambda_tv(
 	    if (ret_type != NULL)
 	    {
 		fp->uf_ret_type = parse_type(&ret_type,
-						      &fp->uf_type_list, TRUE);
+					      &fp->uf_type_list, NULL, TRUE);
 		if (fp->uf_ret_type == NULL)
 		    goto errret;
 	    }
@@ -2056,6 +2066,89 @@ emsg_funcname(char *ermsg, char_u *name)
 }
 
 /*
+ * Parse the concrete types specified when calling a generic function between
+ * "<" and ">".
+ * The "start" argument points to the opening angle bracket ("<").  New types
+ * are allocated from the "types_gap" grow array.  The parsed arguments and
+ * their name are stored in "gtfn_gap".
+ * On success, returns a pointer to the character after the closing angle
+ * bracket (">").  Returns NULL on failure.
+ */
+    char_u *
+generic_func_get_types(char_u *start, garray_T *types_gap, garray_T *gtfn_gap)
+{
+    gf_type_name_T	*gftn_item;
+    type_T		*type_arg;
+    char_u		*p = start;
+
+    ++p;	// skip the '<'
+
+    while (*p && *p != '>')
+    {
+	p = skipwhite(p);
+
+	if (*p == NUL || *p == '>')
+	{
+	    semsg(_(e_missing_type_after_str), start);
+	    return NULL;
+	}
+
+	char_u	    *type_name = p;
+
+	type_arg = parse_type(&p, types_gap, NULL, TRUE);
+	if (type_arg == NULL)
+	    return NULL;
+
+	if (ga_grow(gtfn_gap, 1) == FAIL)
+	    return NULL;
+	gftn_item = (gf_type_name_T *)gtfn_gap->ga_data + gtfn_gap->ga_len;
+	gtfn_gap->ga_len++;
+
+	char_u	save_p = *p;
+	*p = NUL;
+	vim_strncpy(gftn_item->gftn_name, type_name,
+						sizeof(gftn_item->gftn_name));
+	*p = save_p;
+
+	gftn_item->gftn_type = type_arg;
+
+	p = skipwhite(p);
+	if (*p != ',' && *p != '>')
+	{
+	    semsg(_(e_missing_comma_in_generics), start);
+	    return NULL;
+	}
+	if (*p == ',')
+	    p++;
+    }
+    if (*p != '>')
+    {
+	semsg(_(e_missing_gt_after_type_str), start);
+	return NULL;
+    }
+    if (gtfn_gap->ga_len == 0)
+    {
+	emsg(_(e_empty_generics));
+	return NULL;
+    }
+    ++p;
+
+    return p;
+}
+
+    static type_T *
+get_generic_type_by_name(ufunc_T *fp, char_u name)
+{
+    for (int i = 0; i < fp->uf_generic_count; i++)
+    {
+	if (fp->uf_generic_list[i].tt_generic->gt_name == name)
+	    return &fp->uf_generic_list[i];
+    }
+
+    return NULL;
+}
+
+/*
  * Get function arguments at "*arg" and advance it.
  * Return them in "*argvars[MAX_FUNC_ARGS + 1]" and the count in "argcount".
  * On failure FAIL is returned but the "argvars[argcount]" are still set.
@@ -2145,14 +2238,27 @@ get_func_tv(
     funcexe_T	*funcexe)	// various values
 {
     char_u	*argp;
-    int		ret;
+    int		ret = FAIL;
     typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
     int		argcount = 0;			// number of arguments found
     int		vim9script = in_vim9script();
+    garray_T	gftn_table;
+    garray_T	types_ga;
     int		evaluate = evalarg == NULL
 			       ? FALSE : (evalarg->eval_flags & EVAL_EVALUATE);
 
     argp = *arg;
+    ga_init2(&gftn_table, sizeof(gf_type_name_T), 10);
+    ga_init2(&types_ga, sizeof(type_T *), 10);
+
+    // Get the types of a generic function
+    if (vim9script && len != -1 && name[len] == '<')
+    {
+	// calling a generic function
+	if (generic_func_get_types(name + len, &types_ga, &gftn_table) == NULL)
+	    goto ret_free;
+    }
+
     ret = get_func_arguments(&argp, evalarg,
 	    (funcexe->fe_partial == NULL ? 0 : funcexe->fe_partial->pt_argc),
 			       argvars, &argcount, builtin_function(name, -1));
@@ -2174,7 +2280,7 @@ get_func_tv(
 								  &argvars[i];
 	}
 
-	ret = call_func(name, len, rettv, argcount, argvars, funcexe);
+	ret = call_func(name, len, rettv, argcount, argvars, &gftn_table, funcexe);
 	if (vim9script && did_emsg > did_emsg_before)
 	{
 	    // An error in a builtin function does not return FAIL, but we do
@@ -2200,6 +2306,11 @@ get_func_tv(
 	*arg = argp;
     else
 	*arg = skipwhite(argp);
+
+ret_free:
+    ga_clear(&gftn_table);
+    clear_type_list(&types_ga);
+
     return ret;
 }
 
@@ -2479,6 +2590,153 @@ add_nr_var(
     v->di_tv.vval.v_number = nr;
 }
 
+    static ufunc_T *
+generic_func_add(ufunc_T *fp, char_u *key, garray_T *gftn_gap)
+{
+    hashtab_T	*ht = &fp->uf_generic_functab;
+    long_u	hash;
+    hashitem_T	*hi;
+
+    hash = hash_hash(key);
+    hi = hash_lookup(ht, key, hash);
+    if (HASHITEM_EMPTY(hi))
+    {
+	gfitem_T    *gfitem = alloc(sizeof(gfitem_T) + STRLEN(key));
+	if (gfitem != NULL)
+	{
+	    STRCPY(gfitem->gfi_name, key);
+
+	    ufunc_T *new_fp = copy_function(fp);
+	    if (new_fp == NULL)
+	    {
+		vim_free(gfitem);
+		return NULL;
+	    }
+
+	    gfitem->gfi_ufunc = new_fp;
+	    gfitem->gfi_ufunc->uf_def_status = UF_TO_BE_COMPILED;
+	    gfitem->gfi_ufunc->uf_namelen = 0;
+	    gfitem->gfi_ufunc->uf_name[0] = NUL;
+
+
+	    // Replace the t_any generic types with the actual types
+	    for (int i = 0; i < fp->uf_generic_count; i++)
+	    {
+		gf_type_name_T  *gftn_item;
+		gftn_item = (gf_type_name_T *)gftn_gap->ga_data + i;
+		generic_T *gt = &new_fp->uf_generic_types[i];
+		gt->gt_type = gftn_item->gftn_type;
+	    }
+
+	    for (int i = 0; i < new_fp->uf_args.ga_len; i++)
+	    {
+		if (new_fp->uf_arg_types[i]->tt_type == VAR_GENERIC)
+		{
+		    new_fp->uf_arg_types[i] = get_generic_type_by_name(new_fp,
+			    new_fp->uf_arg_types[i]->tt_generic->gt_name);
+		    if (new_fp->uf_arg_types[i] == NULL)
+		    {
+			vim_free(gfitem);
+			return NULL;
+		    }
+		}
+	    }
+
+	    if (new_fp->uf_ret_type->tt_type == VAR_GENERIC)
+	    {
+		new_fp->uf_ret_type = get_generic_type_by_name(new_fp,
+				new_fp->uf_ret_type->tt_generic->gt_name);
+		if (new_fp->uf_ret_type == NULL)
+		{
+		    vim_free(gfitem);
+		    return NULL;
+		}
+	    }
+
+	    hash_add_item(ht, hi, gfitem->gfi_name, hash);
+
+	    return new_fp;
+	}
+    }
+
+    return NULL;
+}
+
+    static ufunc_T *
+generic_lookup_func(ufunc_T *fp, garray_T *gftn_gap, garray_T *gfkey_gap)
+{
+    hashtab_T	*ht = &fp->uf_generic_functab;
+    hashitem_T	*hi;
+
+
+    for (int i = 0; i < gftn_gap->ga_len; i++)
+    {
+	gf_type_name_T  *gftn_item;
+
+	gftn_item = (gf_type_name_T *)gftn_gap->ga_data + i;
+	ga_concat(gfkey_gap, gftn_item->gftn_name);
+
+	if (i != gftn_gap->ga_len - 1)
+	    ga_append(gfkey_gap, '_');
+    }
+    ga_append(gfkey_gap, NUL);
+
+    char_u	*key = ((char_u *)gfkey_gap->ga_data);
+
+    hi = hash_find(ht, key);
+
+    if (HASHITEM_EMPTY(hi))
+	return NULL;
+
+    gfitem_T	*gfitem = HI2GFITEM(hi);
+    return gfitem->gfi_ufunc;
+}
+
+/*
+ * Return a concrete function from the generic function "fp" with the types
+ * specified in 'gftn_gap'.  If it doesn't exists, then create a new one.
+ */
+    ufunc_T *
+generic_func_get(ufunc_T *fp, garray_T *gftn_gap)
+{
+    // generic function call
+    garray_T gfkey_ga;
+
+    ga_init2(&gfkey_ga, 1, 80);
+
+    // Look up the function with specific types
+    ufunc_T	*generic_fp = generic_lookup_func(fp, gftn_gap, &gfkey_ga);
+    if (generic_fp == NULL)
+	// generic function with these type arguments doesn't exist.
+	// Create a new one.
+	generic_fp = generic_func_add(fp, (char_u *)gfkey_ga.ga_data,
+								gftn_gap);
+    ga_clear(&gfkey_ga);
+
+    return generic_fp;
+}
+
+    static void
+free_generic_functab(hashtab_T *ht)
+{
+    long	todo;
+    hashitem_T	*hi;
+
+    todo = (long)ht->ht_used;
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    gfitem_T    *gfitem = HI2GFITEM(hi);
+
+	    func_clear_free(gfitem->gfi_ufunc, FALSE);
+	    vim_free(gfitem);
+	    --todo;
+	}
+    }
+    hash_clear(ht);
+}
+
 /*
  * Free "fc".
  */
@@ -2709,6 +2967,15 @@ func_clear_items(ufunc_T *fp)
     VIM_CLEAR(fp->uf_block_ids);
     VIM_CLEAR(fp->uf_va_name);
     clear_func_type_list(&fp->uf_type_list, &fp->uf_func_type);
+
+    if (fp->uf_generic_flags & UF_GENERIC_FUNC)
+    {
+	vim_free(fp->uf_generic_list);
+	fp->uf_generic_list = NULL;
+	VIM_CLEAR(fp->uf_generic_types);
+	free_generic_functab(&fp->uf_generic_functab);
+	fp->uf_generic_flags = 0;
+    }
 
     // Increment the refcount of this function to avoid it being freed
     // recursively when the partial is freed.
@@ -3731,7 +3998,7 @@ func_call(
 		++funcexe.fe_object->obj_refcount;
 	}
 	funcexe.fe_selfdict = selfdict;
-	r = call_func(name, -1, rettv, argc, argv, &funcexe);
+	r = call_func(name, -1, rettv, argc, argv, NULL, &funcexe);
     }
 
     // Free the arguments.
@@ -3784,7 +4051,7 @@ call_callback(
 	    ++funcexe.fe_object->obj_refcount;
     }
     ++callback_depth;
-    ret = call_func(callback->cb_name, len, rettv, argcount, argvars, &funcexe);
+    ret = call_func(callback->cb_name, len, rettv, argcount, argvars, NULL, &funcexe);
     --callback_depth;
 
     // When a :def function was called that uses :try an error would be turned
@@ -3855,6 +4122,12 @@ user_func_error(funcerror_T error, char_u *name, int found_var)
 		emsg_funcname(e_calling_dict_function_without_dictionary_str,
 									 name);
 		break;
+	case FCERR_GENERIC_TOOMANY:
+		emsg_funcname(e_too_many_generic_types_for_function_str, name);
+		break;
+	case FCERR_GENERIC_TOOFEW:
+		emsg_funcname(e_not_enough_generic_types_for_function_str, name);
+		break;
 	case FCERR_OTHER:
 	case FCERR_FAILED:
 		// assume the error message was already given
@@ -3906,6 +4179,7 @@ call_func(
     int		argcount_in,	// number of "argvars"
     typval_T	*argvars_in,	// vars for arguments, must have "argcount"
 				// PLUS ONE elements!
+    garray_T	*gftn_gap,	// generic types
     funcexe_T	*funcexe)	// more arguments
 {
     int		ret = FAIL;
@@ -4052,6 +4326,13 @@ call_func(
 		    fp = find_func(p, is_global);
 	    }
 
+	    if (fp != NULL && (fp->uf_generic_flags & UF_GENERIC_FUNC)
+		    && gftn_gap != NULL && gftn_gap->ga_len > 0)
+	    {
+		// generic function call
+		fp = generic_func_get(fp, gftn_gap);
+	    }
+
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
 		error = FCERR_DELETED;
 	    else if (fp != NULL)
@@ -4087,6 +4368,15 @@ call_func(
 		if (need_arg_check)
 		    error = may_check_argument_types(funcexe, argvars, argcount,
 				       TRUE, (name != NULL) ? name : funcname);
+
+		if (fp->uf_generic_flags & UF_GENERIC_FUNC)
+		{
+		    if (gftn_gap->ga_len < fp->uf_generic_count)
+			error = FCERR_GENERIC_TOOFEW;
+		    else if (gftn_gap->ga_len > fp->uf_generic_count)
+			error = FCERR_GENERIC_TOOMANY;
+		}
+
 		if (error == FCERR_NONE || error == FCERR_UNKNOWN)
 		    error = call_user_func_check(fp, argcount, argvars, rettv,
 							    funcexe, selfdict);
@@ -4949,6 +5239,81 @@ list_one_function(exarg_T *eap, char_u *name, char_u *p, int is_global)
     return fp;
 }
 
+    static char_u *
+get_generic_func_type_args(
+    char_u	*p,
+    garray_T	*generic_list_gap,
+    garray_T	*generic_types_gap)
+{
+    // generic function
+    char_u	    *start = ++p;
+
+    while (*p && *p != '>')
+    {
+	p = skipwhite(p);
+
+	if (*p == NUL || *p == '>')
+	{
+	    semsg(_(e_missing_type_after_str), start);
+	    return NULL;
+	}
+
+	if (!ASCII_ISUPPER(*p))
+	{
+	    semsg(_(e_generic_type_name_must_be_uppercase_letter_str), p);
+	    return NULL;
+	}
+
+	if (ASCII_ISALNUM(*(p + 1)))
+	{
+	    semsg(_(e_generic_typename_not_a_single_letter), p);
+	    return NULL;
+	}
+
+	if (ga_grow(generic_list_gap, 1) == FAIL)
+	    return NULL;
+	type_T *gt =
+	    &((type_T *)generic_list_gap->ga_data)[generic_list_gap->ga_len];
+	generic_list_gap->ga_len++;
+
+	gt->tt_type = VAR_GENERIC;
+
+	if (ga_grow(generic_types_gap, 1) == FAIL)
+	    return NULL;
+	generic_T *generic =
+	    &((generic_T *)generic_types_gap->ga_data)[generic_types_gap->ga_len];
+	generic_types_gap->ga_len++;
+
+	generic->gt_name = *p;
+	generic->gt_type = &t_any;
+	gt->tt_generic = generic;
+
+	p++;		// skip the generic type name
+
+	p = skipwhite(p);
+	if (*p != ',' && *p != '>')
+	{
+	    semsg(_(e_missing_comma_in_generics), start);
+	    return NULL;
+	}
+	if (*p == ',')
+	    p++;
+    }
+    if (*p != '>')
+    {
+	semsg(_(e_missing_gt_after_type_str), start);
+	return NULL;
+    }
+    if (generic_list_gap->ga_len == 0)
+    {
+	emsg(_(e_empty_generics));
+	return NULL;
+    }
+    p++;
+
+    return p;
+}
+
 /*
  * ":function" also supporting nested ":def".
  * When "name_arg" is not NULL this is a nested function, using "name_arg" for
@@ -4982,6 +5347,8 @@ define_function(
     garray_T	arg_objm;
     garray_T	default_args;
     garray_T	newlines;
+    garray_T	generic_types;
+    garray_T	generic_list;
     int		varargs = FALSE;
     int		flags = 0;
     char_u	*ret_type = NULL;
@@ -5021,6 +5388,8 @@ define_function(
     ga_init(&argtypes);
     ga_init(&arg_objm);
     ga_init(&default_args);
+    ga_init2(&generic_list, sizeof(type_T), 10);
+    ga_init2(&generic_types, sizeof(generic_T), 10);
 
     /*
      * Get the function name.  There are these situations:
@@ -5061,6 +5430,16 @@ define_function(
 								     eap->arg);
 		return NULL;
 	    }
+
+	    if (*p == '<')
+	    {
+		// generics
+		p++;
+
+		while (*p && *p != '>')
+		    p++;
+	    }
+
 	    p = eap->arg;
 	}
 
@@ -5120,6 +5499,15 @@ define_function(
     {
 	fp = list_one_function(eap, name, p, is_global);
 	goto ret_free;
+    }
+
+    p = skipwhite(p);
+    if (vim9script && eap->cmdidx == CMD_def && *p == '<')
+    {
+	// generic function
+	p = get_generic_func_type_args(p, &generic_list, &generic_types);
+	if (p == NULL)
+	    goto ret_free;
     }
 
     /*
@@ -5551,6 +5939,17 @@ define_function(
 
 	fp->uf_def_status = UF_TO_BE_COMPILED;
 
+	if (generic_list.ga_len > 0)
+	{
+	    fp->uf_generic_flags = UF_GENERIC_FUNC | UF_GENERIC_TEMPLATE;
+	    fp->uf_generic_count = generic_list.ga_len;
+	    fp->uf_generic_list = (type_T *)generic_list.ga_data;
+	    ga_init(&generic_list);
+	    fp->uf_generic_types = (generic_T *)generic_types.ga_data;
+	    ga_init(&generic_types);
+	    hash_init(&fp->uf_generic_functab);
+	}
+
 	// error messages are for the first function line
 	SOURCING_LNUM = sourcing_lnum_top;
 
@@ -5674,6 +6073,8 @@ errret_keep:
 ret_free:
     ga_clear_strings(&argtypes);
     ga_clear(&arg_objm);
+    ga_clear(&generic_list);
+    ga_clear(&generic_types);
     vim_free(fudi.fd_newkey);
     if (name != name_arg)
 	vim_free(name);
@@ -6051,7 +6452,11 @@ copy_function(ufunc_T *fp)
 	return NULL;
 
     // Most things can just be copied.
+    // The call to alloc_ufunc() above allocates a new uf_name_exp.  So save
+    // and restore it.
+    char_u *save_uf_name_exp = ufunc->uf_name_exp;
     *ufunc = *fp;
+    ufunc->uf_name_exp = save_uf_name_exp;
 
     ufunc->uf_def_status = UF_TO_BE_COMPILED;
     ufunc->uf_dfunc_idx = 0;
@@ -6079,6 +6484,32 @@ copy_function(ufunc_T *fp)
 
     // make uf_type_list empty
     ga_init(&ufunc->uf_type_list);
+
+    // copy the generic function information
+    if (fp->uf_generic_flags & UF_GENERIC_FUNC)
+    {
+	int	sz;
+
+	sz = fp->uf_generic_count * sizeof(type_T);
+	ufunc->uf_generic_list = alloc_clear(sz);
+	if (ufunc->uf_generic_list == NULL)
+	    return NULL;
+	memcpy(ufunc->uf_generic_list, fp->uf_generic_list, sz);
+
+	sz = fp->uf_generic_count * sizeof(generic_T);
+	ufunc->uf_generic_types = alloc_clear(sz);
+	if (ufunc->uf_generic_types == NULL)
+	{
+	    vim_free(ufunc->uf_generic_list);
+	    return NULL;
+	}
+	memcpy(ufunc->uf_generic_types, fp->uf_generic_types, sz);
+
+	for (int i = 0; i < fp->uf_generic_count; i++)
+	    ufunc->uf_generic_list[i].tt_generic = &ufunc->uf_generic_types[i];
+	hash_init(&ufunc->uf_generic_functab);
+	ufunc->uf_generic_flags &= ~UF_GENERIC_TEMPLATE;
+    }
 
     // TODO:   partial_T	*uf_partial;
 
@@ -6583,7 +7014,7 @@ handle_defer_one(funccall_T *funccal)
 	exception_state_save(&estate);
 	exception_state_clear();
 
-	call_func(name, -1, &rettv, dr->dr_argcount, dr->dr_argvars, &funcexe);
+	call_func(name, -1, &rettv, dr->dr_argcount, dr->dr_argvars, NULL, &funcexe);
 
 	exception_state_restore(&estate);
 

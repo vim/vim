@@ -74,6 +74,7 @@ typedef struct dictvar_S	dict_T;
 typedef struct partial_S	partial_T;
 typedef struct blobvar_S	blob_T;
 typedef struct tuplevar_S	tuple_T;
+typedef struct genericvar_S	generic_T;
 
 typedef struct window_S		win_T;
 typedef struct wininfo_S	wininfo_T;
@@ -1493,6 +1494,7 @@ typedef struct instr_S instr_T;
 typedef struct class_S class_T;
 typedef struct object_S object_T;
 typedef struct typealias_S typealias_T;
+typedef struct gf_type_name_S gf_type_name_T;
 
 typedef enum
 {
@@ -1515,7 +1517,8 @@ typedef enum
     VAR_CLASS,		// "v_class" is used (also used for interface)
     VAR_OBJECT,		// "v_object" is used
     VAR_TYPEALIAS,	// "v_typealias" is used
-    VAR_TUPLE		// "v_tuple" is used
+    VAR_TUPLE,		// "v_tuple" is used
+    VAR_GENERIC,	// "v_generic" is used
 } vartype_T;
 
 // A type specification.
@@ -1527,6 +1530,7 @@ struct type_S {
     type_T	    *tt_member;	    // for list, dict, func return type
     class_T	    *tt_class;	    // for class and object
     type_T	    **tt_args;	    // func argument types, allocated
+    generic_T	    *tt_generic;    // generic type name and concrete type
 };
 
 typedef struct {
@@ -1684,6 +1688,7 @@ struct typval_S
 	object_T	*v_object;	// object value (can be NULL)
 	typealias_T	*v_typealias;	// user-defined type name
 	tuple_T		*v_tuple;	// tuple
+	generic_T	*v_generic;	// generic
     }		vval;
 };
 
@@ -1696,6 +1701,17 @@ struct typval_S
 #define VAR_LOCKED	    1	// locked with lock(), can use unlock()
 #define VAR_FIXED	    2	// locked forever
 #define VAR_ITEMS_LOCKED    4	// items of non-materialized list locked
+
+#define MAX_TYPE_NAME_LEN	80
+
+/*
+ * Generics
+ */
+struct gf_type_name_S
+{
+    char_u	gftn_name[MAX_TYPE_NAME_LEN];
+    type_T	*gftn_type;
+};
 
 /*
  * Structure to hold an item of a list: an internal variable without a name.
@@ -1838,6 +1854,15 @@ struct tuplevar_S
     char	tv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 
+/*
+ * Structure to hold info about a generic.
+ */
+struct genericvar_S
+{
+    char_u	gt_name;	// generic type name
+    type_T	*gt_type;	// concrete type
+};
+
 typedef int (*cfunc_T)(int argcount, typval_T *argvars, typval_T *rettv, void *state);
 typedef void (*cfunc_free_T)(void *state);
 
@@ -1882,6 +1907,9 @@ typedef enum {
     UF_COMPILE_ERROR	    // compilation error, cannot execute
 } def_status_T;
 
+#define UF_GENERIC_FUNC		0x1
+#define UF_GENERIC_TEMPLATE	0x2
+
 /*
  * Structure to hold info for a user function.
  * When adding a field check copy_lambda_to_global_func().
@@ -1923,6 +1951,12 @@ struct ufunc_S
     cfunc_free_T uf_cb_free;    // callback function to free cfunc
     void	*uf_cb_state;   // state of uf_cb
 # endif
+
+    int		uf_generic_flags;    // Is this a generic function?
+    int		uf_generic_count;   // number of generic type arguments
+    type_T	*uf_generic_list;   // list of allocated generic types
+    generic_T	*uf_generic_types;  // generic types
+    hashtab_T	uf_generic_functab; // generic function table
 
     garray_T	uf_lines;	// function lines
 

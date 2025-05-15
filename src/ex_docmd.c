@@ -3710,6 +3710,15 @@ find_ex_command(
 		// "&option" can be followed by "->" or "=", check below
 	    }
 
+	    if (*p == '<' && vim9)
+	    {
+		// generics
+		p++;
+		p = skiptoangleclosebracket(p);
+		if (*p && *p == '>')
+		    p++;
+	    }
+
 	    swp = skipwhite(p);
 
 	    if (

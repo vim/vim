@@ -291,7 +291,7 @@ eval_expr_partial(
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_evaluate = TRUE;
 	funcexe.fe_partial = partial;
-	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+	if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	    return FAIL;
     }
 
@@ -323,7 +323,7 @@ eval_expr_func(
 
     CLEAR_FIELD(funcexe);
     funcexe.fe_evaluate = TRUE;
-    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+    if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	return FAIL;
 
     return OK;
@@ -944,7 +944,7 @@ call_vim_function(
     if (name == NULL)
 	name = func;
 
-    ret = call_func(name, -1, rettv, argc, argv, &funcexe);
+    ret = call_func(name, -1, rettv, argc, argv, NULL, &funcexe);
 
     if (ret == FAIL)
 	clear_tv(rettv);
@@ -2170,6 +2170,22 @@ get_lval(
 
 	if (vim9script)
 	{
+#if 0
+	    if (*p == '<')
+	    {
+		// generic function
+		p++;
+		p = skiptoangleclosebracket(p);
+		if (*p != '>')
+		{
+		    semsg(_(e_missing_closing_angle_bracket_in_generics), name);
+		    return NULL;
+		}
+		p++;
+		lp->ll_name_end = p;
+	    }
+#endif
+
 	    // "a: type" is declaring variable "a" with a type, not "a:".
 	    // However, "g:[key]" is indexing a dictionary.
 	    if (p == name + 2 && p[-1] == ':' && *p != '[')
@@ -2213,7 +2229,7 @@ get_lval(
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp,
 			       &SCRIPT_ITEM(current_sctx.sc_sid)->sn_type_list,
-			       !quiet);
+			       NULL, !quiet);
 		if (lp->ll_type == NULL && !quiet)
 		    return NULL;
 		lp->ll_name_end = tp;
@@ -2687,6 +2703,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	case VAR_OBJECT:
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
+	case VAR_GENERIC:
 	case VAR_TUPLE:
 	    break;
 
@@ -4725,7 +4742,7 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, TRUE);
+	want_type = parse_type(arg, &type_list, NULL, TRUE);
 	if (want_type == NULL && (evaluate || **arg != '>'))
 	{
 	    clear_type_list(&type_list);
@@ -5060,11 +5077,30 @@ eval9_var_func_name(
 	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), s);
 	    ret = FAIL;
 	}
-	else if ((vim9script ? **arg : *skipwhite(*arg)) == '(')
+	else if ((vim9script ? **arg : *skipwhite(*arg)) == '('
+					|| (vim9script && **arg == '<'))
 	{
 	    // "name(..."  recursive!
 	    *arg = skipwhite(*arg);
-	    ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
+	    if (**arg == '<')
+	    {
+		// generics
+		char_u	*generic_start = *arg;
+
+		*arg += 1;
+		*arg = skiptoangleclosebracket(*arg);
+		if (**arg != '>')
+		{
+		    semsg(_(e_missing_closing_angle_bracket_in_generics),
+			    generic_start);
+		    ret = FAIL;
+		}
+		else
+		    *arg += 1;
+	    }
+
+	    if (ret == OK)
+		ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
 	}
 	else if (evaluate)
 	{
@@ -5799,6 +5835,7 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	    return FAIL;
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
+	case VAR_GENERIC:
 	    if (verbose)
 		check_typval_is_value(rettv);
 	    return FAIL;
@@ -5882,6 +5919,7 @@ eval_index_inner(
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_GENERIC:
 	    break; // not evaluating, skipping over subscript
 
 	case VAR_NUMBER:
@@ -6635,6 +6673,9 @@ echo_string_core(
 	    r = *tofree;
 	    if (r == NULL)
 		r = (char_u *)"";
+	    break;
+	case VAR_GENERIC:
+	    // TODO: Use the contained type to echo this value
 	    break;
     }
 
@@ -7509,6 +7550,7 @@ item_copy(
 	case VAR_CLASS:
 	case VAR_OBJECT:
 	case VAR_TYPEALIAS:
+	case VAR_GENERIC:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:
