@@ -4613,6 +4613,9 @@ E1425	vim9class.txt	/*E1425*
 E1426	vim9class.txt	/*E1426*
 E1429	vim9class.txt	/*E1429*
 E143	autocmd.txt	/*E143*
+E1432	vim9.txt	/*E1432*
+E1433	vim9.txt	/*E1433*
+E1434	vim9.txt	/*E1434*
 E144	various.txt	/*E144*
 E145	starting.txt	/*E145*
 E146	change.txt	/*E146*
@@ -4672,7 +4675,17 @@ E1548	wayland.txt	/*E1548*
 E1549	options.txt	/*E1549*
 E155	sign.txt	/*E155*
 E1550	options.txt	/*E1550*
+E1552	vim9.txt	/*E1552*
+E1553	vim9.txt	/*E1553*
+E1554	vim9.txt	/*E1554*
+E1555	vim9.txt	/*E1555*
+E1556	vim9.txt	/*E1556*
+E1557	vim9.txt	/*E1557*
+E1558	vim9.txt	/*E1558*
+E1559	vim9.txt	/*E1559*
 E156	sign.txt	/*E156*
+E1560	vim9.txt	/*E1560*
+E1561	vim9.txt	/*E1561*
 E157	sign.txt	/*E157*
 E158	sign.txt	/*E158*
 E159	sign.txt	/*E159*
@@ -7956,6 +7969,9 @@ gdb	debug.txt	/*gdb*
 gdb-version	terminal.txt	/*gdb-version*
 ge	motion.txt	/*ge*
 gender-neutral	helphelp.txt	/*gender-neutral*
+generic-function-call	vim9.txt	/*generic-function-call*
+generic-function-declaration	vim9.txt	/*generic-function-declaration*
+generic-functions	vim9.txt	/*generic-functions*
 get()	builtin.txt	/*get()*
 get()-blob	builtin.txt	/*get()-blob*
 get()-dict	builtin.txt	/*get()-dict*
@@ -11017,6 +11033,7 @@ type-casting	vim9.txt	/*type-casting*
 type-checking	vim9.txt	/*type-checking*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
+type-variable-naming	vim9.txt	/*type-variable-naming*
 typealias	vim9class.txt	/*typealias*
 typename()	builtin.txt	/*typename()*
 typescript.vim	syntax.txt	/*typescript.vim*

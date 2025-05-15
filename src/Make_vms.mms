@@ -446,6 +446,7 @@ SRC = \
 	vim9compile.c \
 	vim9execute.c \
 	vim9expr.c \
+	vim9generics.c \
 	vim9instr.c \
 	vim9script.c \
 	vim9type.c \
@@ -582,6 +583,7 @@ OBJ = \
 	vim9compile.obj \
 	vim9execute.obj \
 	vim9expr.obj \
+	vim9generics.obj \
 	vim9instr.obj \
 	vim9script.obj \
 	vim9type.obj \
@@ -1222,6 +1224,10 @@ vim9execute.obj : vim9execute.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
 vim9expr.obj : vim9expr.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ errors.h globals.h version.h
+vim9generics.obj : vim9generics.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h

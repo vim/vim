@@ -1598,6 +1598,7 @@ BASIC_SRC = \
 	vim9compile.c \
 	vim9execute.c \
 	vim9expr.c \
+	vim9generics.c \
 	vim9instr.c \
 	vim9script.c \
 	vim9type.c \
@@ -1771,6 +1772,7 @@ OBJ_COMMON = \
 	objects/vim9compile.o \
 	objects/vim9execute.o \
 	objects/vim9expr.o \
+	objects/vim9generics.o \
 	objects/vim9instr.o \
 	objects/vim9script.o \
 	objects/vim9type.o \
@@ -1967,6 +1969,7 @@ PRO_AUTO = \
 	vim9compile.pro \
 	vim9execute.pro \
 	vim9expr.pro \
+	vim9generics.pro \
 	vim9instr.pro \
 	vim9script.pro \
 	vim9type.pro \
@@ -3630,6 +3633,9 @@ objects/vim9execute.o: vim9execute.c
 objects/vim9expr.o: vim9expr.c
 	$(CCC) -o $@ vim9expr.c
 
+objects/vim9generics.o: vim9generics.c
+	$(CCC) -o $@ vim9generics.c
+
 objects/vim9instr.o: vim9instr.c
 	$(CCC) -o $@ vim9instr.c
 
@@ -4357,6 +4363,11 @@ objects/vim9expr.o: vim9expr.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h vim9.h
+objects/vim9generics.o: vim9generics.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h proto/gui_beval.pro structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h vim9.h
 objects/vim9instr.o: vim9instr.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h proto/gui_beval.pro structs.h regexp.h gui.h \
