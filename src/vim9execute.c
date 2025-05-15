@@ -1205,7 +1205,7 @@ invoke_defer_funcs(ectx_T *ectx)
 	exception_state_save(&estate);
 	exception_state_clear();
 
-	(void)call_func(name, -1, &rettv, argcount, argvars, &funcexe);
+	(void)call_func(name, -1, &rettv, argcount, argvars, NULL, &funcexe);
 
 	exception_state_restore(&estate);
 
@@ -1522,6 +1522,14 @@ call_by_name(
 	return call_bfunc(func_idx, argcount, ectx);
     }
 
+    char_u	cc;
+    char_u	*bracket_start = generic_func_find_open_angle_bracket(name);
+    if (bracket_start != NULL)
+    {
+	cc = *bracket_start;
+	*bracket_start = NUL;
+    }
+
     ufunc = find_func(name, FALSE);
 
     if (ufunc == NULL)
@@ -1533,11 +1541,36 @@ call_by_name(
 	    ufunc = find_func(name, FALSE);
 
 	if (vim9_aborting(prev_uncaught_emsg))
+	{
+	    if (bracket_start != NULL)
+		*bracket_start = cc;
 	    return FAIL;  // bail out if loading the script caused an error
+	}
     }
+
+    if (bracket_start != NULL)
+	*bracket_start = cc;
 
     if (ufunc != NULL)
     {
+	if (IS_GENERIC_FUNC(ufunc))
+	{
+	    garray_T	gftn_table;
+	    garray_T	types_ga;
+
+	    ga_init2(&gftn_table, sizeof(gf_type_name_T), 10);
+	    ga_init2(&types_ga, sizeof(type_T *), 10);
+
+	    if (parse_generic_func_type_args(name, bracket_start - name,
+			bracket_start, &types_ga, &gftn_table) == NULL)
+		return FAIL;
+
+	    ufunc = generic_func_get(ufunc, &gftn_table);
+
+	    ga_clear(&gftn_table);
+	    clear_type_list(&types_ga);
+	}
+
 	if (check_ufunc_arg_types(ufunc, argcount, 0, ectx) == FAIL)
 	    return FAIL;
 
@@ -5068,7 +5101,7 @@ exec_instructions(ectx_T *ectx)
 		    ea.cmd = ea.arg = iptr->isn_arg.string;
 		    ga_init2(&lines_to_free, sizeof(char_u *), 50);
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    define_function(&ea, NULL, &lines_to_free, 0, NULL, 0);
+		    define_function(&ea, NULL, &lines_to_free, 0, NULL, 0, NULL);
 		    ga_clear_strings(&lines_to_free);
 		}
 		break;
