@@ -177,6 +177,7 @@ SRC_ALL =	\
 		src/vim9compile.c \
 		src/vim9execute.c \
 		src/vim9expr.c \
+		src/vim9generics.c \
 		src/vim9instr.c \
 		src/vim9script.c \
 		src/vim9type.c \
@@ -362,6 +363,7 @@ SRC_ALL =	\
 		src/proto/vim9compile.pro \
 		src/proto/vim9execute.pro \
 		src/proto/vim9expr.pro \
+		src/proto/vim9generics.pro \
 		src/proto/vim9instr.pro \
 		src/proto/vim9script.pro \
 		src/proto/vim9type.pro \
