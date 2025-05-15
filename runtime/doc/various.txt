@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2025 May 14
+*various.txt*   For Vim version 9.1.  Last change: 2025 May 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -37,7 +37,7 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 			automatic updating.
 
 				*E1547* *:redrawtabp* *:redrawtabpanel*
-:redrawtabp[anel]	Redraw the tabline.  Useful to update the tabpanel
+:redrawtabp[anel]	Redraw the tabpanel  Useful to update the tabpanel
 			when 'tabpanel' includes an item that doesn't trigger
 			automatic updating.
 
