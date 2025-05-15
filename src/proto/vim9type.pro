@@ -1,6 +1,7 @@
 /* vim9type.c */
 type_T *get_type_ptr(garray_T *type_gap);
 type_T *copy_type(type_T *type, garray_T *type_gap);
+type_T *copy_type_deep(type_T *type, garray_T *type_gap);
 void clear_type_list(garray_T *gap);
 void clear_func_type_list(garray_T *gap, type_T **func_type);
 type_T *alloc_type(type_T *type);
@@ -25,7 +26,7 @@ int check_type(type_T *expected, type_T *actual, int give_msg, where_T where);
 int check_type_maybe(type_T *expected, type_T *actual, int give_msg, where_T where);
 int check_argument_types(type_T *type, typval_T *argvars, int argcount, typval_T *base_tv, char_u *name);
 char_u *skip_type(char_u *start, int optional);
-type_T *parse_type(char_u **arg, garray_T *type_gap, int give_error);
+type_T *parse_type(char_u **arg, garray_T *type_gap, ufunc_T *ufunc, cctx_T *cctx, int give_error);
 int equal_type(type_T *type1, type_T *type2, int flags);
 void common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap);
 type_T *get_item_type(type_T *type);
