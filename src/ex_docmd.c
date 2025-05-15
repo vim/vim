@@ -3710,6 +3710,21 @@ find_ex_command(
 		// "&option" can be followed by "->" or "=", check below
 	    }
 
+	    if (*p == '<' && vim9)
+	    {
+		// generic function
+		p++;
+		p = generic_func_find_close_angle_bracket(p);
+		if (p == NULL)
+		{
+		    semsg(_(e_missing_closing_angle_bracket_in_generic_function),
+			    eap->cmd);
+		    eap->cmdidx = CMD_SIZE;
+		    return p;
+		}
+		p++;
+	    }
+
 	    swp = skipwhite(p);
 
 	    if (
