@@ -3299,7 +3299,17 @@ ExpandFromContext(
     if (xp->xp_context == EXPAND_FILETYPE)
     {
 	char *directories[] = {"syntax", "indent", "ftplugin", NULL};
-	return ExpandRTDir(pat, 0, numMatches, matches, directories);
+	int ret = ExpandRTDir(pat, 0, numMatches, matches, directories);
+	if (ret == OK)
+	{
+	    int i, j = 0;
+	    for (i = 0; i < *numMatches; ++i)
+		// exclude items containing underscore
+		if (strchr((*matches)[i], '_') == NULL)
+		    (*matches)[j++] = (*matches)[i];
+	    *numMatches = j;
+	}
+	return ret;
     }
 #ifdef FEAT_KEYMAP
     if (xp->xp_context == EXPAND_KEYMAP)
