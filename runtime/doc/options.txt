@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 May 14
+*options.txt*	For Vim version 9.1.  Last change: 2025 May 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4062,7 +4062,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'grepformat'* *'gfm'*
 'grepformat' 'gfm'	string	(default "%f:%l:%m,%f:%l%m,%f  %l%m")
-			global
+			global or local to buffer |global-local|
 	Format to recognize for the ":grep" command output.
 	This is a scanf-like string that uses the same format as the
 	'errorformat' option: see |errorformat|.

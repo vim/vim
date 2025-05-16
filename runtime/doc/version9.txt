@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 May 14
+*version9.txt*  For Vim version 9.1.  Last change: 2025 May 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41634,17 +41634,19 @@ Options: ~
 - the default for 'commentstring' contains whitespace padding to have
   automatic comments look nicer |comment-install|
 - 'completeopt' is now a |global-local| option.
-- 'nrformats' accepts the new "blank" suboption, to determine a signed or
-  unsigned number based on whitespace in front of a minus sign.
 - add 'cpoptions' flag "z" |cpo-z|, to disable some (traditional) vi
   behaviour/inconsistency (see |d-special| and |cw|).
+- new option values for 'fillchars':
+	"trunc"		- configure truncation indicator, 'pummaxwidth'
+	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
+	"tpl_vert"	- separators for the 'tabpanel'
+- 'grepformat' is now a |global-local| option.
+- adjust for GTK3 dropping some mouse cursors 'mouseshape'
+- 'nrformats' accepts the new "blank" suboption, to determine a signed or
+  unsigned number based on whitespace in front of a minus sign.
 - 'rulerformat' now supports the |stl-%!| item
 - use 'smoothscroll' logic for CTRL-F / CTRL-B for pagewise scrolling
   and CTRL-D / CTRL-U for half-pagewise scrolling
-- New option value for 'fillchars':
-	"trunc"		- configure truncation indicator, 'pummaxwidth'
-	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
-- adjust for GTK3 dropping some mouse cursors 'mouseshape'
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|
