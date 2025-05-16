@@ -2086,7 +2086,7 @@ win_equal(
 	dir = *p_ead;
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
 		      topframe, dir, 0, tabline_height(),
-					   (int)COLUMNS_WITHOUT_TPL(), topframe->fr_height);
+		      (int)COLUMNS_WITHOUT_TPL(), topframe->fr_height);
     if (!is_aucmd_win(next_curwin))
 	win_fix_scroll(TRUE);
 }
@@ -3463,6 +3463,10 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	redraw_tabline = TRUE;
 	if (h != tabline_height())
 	    shell_new_rows();
+#if defined(FEAT_TABPANEL)
+	redraw_tabpanel = TRUE;
+#endif
+	shell_new_columns();
     }
 
     // Free the memory used for the window.

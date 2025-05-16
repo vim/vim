@@ -16,7 +16,7 @@
 #if defined(FEAT_TABPANEL) || defined(PROTO)
 
 static void do_by_tplmode(int tplmode, int col_start, int col_end,
-	int* pcurtab_row, int* ptabpagenr);
+	int *pcurtab_row, int *ptabpagenr);
 
 // set pcurtab_row. don't redraw tabpanel.
 #define TPLMODE_GET_CURTAB_ROW	0
@@ -29,10 +29,6 @@ static void do_by_tplmode(int tplmode, int col_start, int col_end,
 
 #define VERT_LEN		1
 
-// tpl_vert's values
-#define VERT_OFF		0
-#define VERT_ON			1
-
 // tpl_align's values
 #define ALIGN_LEFT		0
 #define ALIGN_RIGHT		1
@@ -41,7 +37,7 @@ static char_u *opt_name = (char_u *)"tabpanel";
 static int opt_scope = OPT_LOCAL;
 static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
-static int tpl_vert = VERT_OFF;
+static int tpl_is_vert = FALSE;
 
 typedef struct {
     win_T   *wp;
@@ -62,7 +58,7 @@ tabpanelopt_changed(void)
     char_u	*p;
     int		new_align = ALIGN_LEFT;
     int		new_columns = 20;
-    int		new_vert = VERT_OFF;
+    int		new_is_vert = FALSE;
 
     p = p_tplo;
     while (*p != NUL)
@@ -85,7 +81,7 @@ tabpanelopt_changed(void)
 	else if (STRNCMP(p, "vert", 4) == 0)
 	{
 	    p += 4;
-	    new_vert = VERT_ON;
+	    new_is_vert = TRUE;
 	}
 
 	if (*p != ',' && *p != NUL)
@@ -96,7 +92,7 @@ tabpanelopt_changed(void)
 
     tpl_align = new_align;
     tpl_columns = new_columns;
-    tpl_vert = new_vert;
+    tpl_is_vert = new_is_vert;
 
     return OK;
 }
@@ -130,9 +126,7 @@ tabpanel_width(void)
     int
 tabpanel_leftcol(win_T *wp)
 {
-    if (cmdline_pum_active())
-	return 0;
-    else if (wp != NULL && WIN_IS_POPUP(wp))
+    if (cmdline_pum_active() || (wp != NULL && WIN_IS_POPUP(wp)))
 	return 0;
     else
 	return tpl_align == ALIGN_RIGHT ? 0 : tabpanel_width();
@@ -156,7 +150,7 @@ draw_tabpanel(void)
 int		vsrow = 0;
     int		is_right = tpl_align == ALIGN_RIGHT;
 
-    if (0 == maxwidth)
+    if (maxwidth == 0)
 	return;
 
 #ifndef MSWIN
@@ -168,8 +162,7 @@ int		vsrow = 0;
 	else
 	    off = LineOffset[row];
 
-	vim_memset(ScreenLines + off, ' ',
-		(size_t)maxwidth * sizeof(schar_T));
+	vim_memset(ScreenLines + off, ' ', (size_t)maxwidth * sizeof(schar_T));
 	if (enc_utf8)
 	    vim_memset(ScreenLinesUC + off, -1,
 		(size_t)maxwidth * sizeof(u8char_T));
@@ -179,7 +172,7 @@ int		vsrow = 0;
     // Reset got_int to avoid build_stl_str_hl() isn't evaluted.
     got_int = FALSE;
 
-    if (tpl_vert == VERT_ON)
+    if (tpl_is_vert)
     {
 	if (is_right)
 	{
@@ -237,7 +230,7 @@ get_tabpagenr_on_tabpanel(void)
     int		curtab_row = 0;
     int		tabpagenr = 0;
 
-    if (0 == maxwidth)
+    if (maxwidth == 0)
 	return -1;
 
     do_by_tplmode(TPLMODE_GET_CURTAB_ROW, 0, maxwidth, &curtab_row, NULL);
@@ -260,7 +253,7 @@ screen_fill_tailing_area(
 	int	attr)
 {
     int is_right = tpl_align == ALIGN_RIGHT;
-    if (TPLMODE_REDRAW == tplmode)
+    if (tplmode == TPLMODE_REDRAW)
 	screen_fill(row_start, row_end,
 		(is_right ? COLUMNS_WITHOUT_TPL() : 0) + col_start,
 		(is_right ? COLUMNS_WITHOUT_TPL() : 0) + col_end,
@@ -282,19 +275,19 @@ screen_puts_len_for_tabpanel(
     int		chlen;
     int		chcells;
     char_u	buf[IOSIZE];
-    char_u*	temp;
+    char_u	*temp;
 
     for (j = 0; j < len;)
     {
-	if ((TPLMODE_GET_CURTAB_ROW != tplmode)
-		&& (pargs->maxrow <= (*pargs->prow - pargs->offsetrow)))
+	if (tplmode != TPLMODE_GET_CURTAB_ROW
+		&& pargs->maxrow <= *pargs->prow - pargs->offsetrow)
 	    break;
 
-	if ((p[j] == '\n') || (p[j] == '\r'))
+	if (p[j] == '\n' || p[j] == '\r')
 	{
 	    // fill the tailing area of current row.
-	    if (0 <= (*pargs->prow - pargs->offsetrow)
-		    && (*pargs->prow - pargs->offsetrow) < pargs->maxrow)
+	    if (*pargs->prow - pargs->offsetrow >= 0
+		    && *pargs->prow - pargs->offsetrow < pargs->maxrow)
 		screen_fill_tailing_area(tplmode,
 			*pargs->prow - pargs->offsetrow,
 			*pargs->prow - pargs->offsetrow + 1,
@@ -331,8 +324,8 @@ screen_puts_len_for_tabpanel(
 	    if (pargs->col_end < (*pargs->pcol) + chcells)
 	    {
 		// fill the tailing area of current row.
-		if (0 <= (*pargs->prow - pargs->offsetrow)
-			&& (*pargs->prow - pargs->offsetrow) < pargs->maxrow)
+		if (*pargs->prow - pargs->offsetrow >= 0
+			&& *pargs->prow - pargs->offsetrow < pargs->maxrow)
 		    screen_fill_tailing_area(tplmode,
 			    *pargs->prow - pargs->offsetrow,
 			    *pargs->prow - pargs->offsetrow + 1,
@@ -343,17 +336,17 @@ screen_puts_len_for_tabpanel(
 		    break;
 	    }
 
-	    if ((*pargs->pcol) + chcells <= pargs->col_end)
+	    if (*pargs->pcol + chcells <= pargs->col_end)
 	    {
 		int off = (tpl_align == ALIGN_RIGHT)
 			? COLUMNS_WITHOUT_TPL()
 			: 0;
-		if ((TPLMODE_REDRAW == tplmode)
-			&& (0 <= (*pargs->prow - pargs->offsetrow)
-			&& (*pargs->prow - pargs->offsetrow) < pargs->maxrow))
+		if (TPLMODE_REDRAW == tplmode
+			&& (*pargs->prow - pargs->offsetrow >= 0
+			&& *pargs->prow - pargs->offsetrow < pargs->maxrow))
 		    screen_puts(buf, *pargs->prow - pargs->offsetrow,
 			    *pargs->pcol + off, attr);
-		(*pargs->pcol) += chcells;
+		*pargs->pcol += chcells;
 	    }
 	}
     }
@@ -376,9 +369,9 @@ draw_tabpanel_default(int tplmode, tabpanel_T *pargs)
 	if (bufIsChanged(pargs->wp->w_buffer))
 	    modified = TRUE;
 
-    if (modified || 1 < wincount)
+    if (modified || wincount > 1)
     {
-	if (1 < wincount)
+	if (wincount > 1)
 	{
 	    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
 	    len = (int)STRLEN(NameBuff);
@@ -406,8 +399,8 @@ draw_tabpanel_default(int tplmode, tabpanel_T *pargs)
     screen_puts_len_for_tabpanel(tplmode, NameBuff, len, pargs->attr, pargs);
 
     // fill the tailing area of current row.
-    if (0 <= (*pargs->prow - pargs->offsetrow)
-	    && (*pargs->prow - pargs->offsetrow) < pargs->maxrow)
+    if (*pargs->prow - pargs->offsetrow >= 0
+	    && *pargs->prow - pargs->offsetrow < pargs->maxrow)
 	screen_fill_tailing_area(tplmode, *pargs->prow - pargs->offsetrow,
 		*pargs->prow - pargs->offsetrow + 1,
 		*pargs->pcol, pargs->col_end, pargs->attr);
@@ -473,8 +466,8 @@ draw_tabpanel_userdefined(int tplmode, tabpanel_T *pargs)
     screen_puts_len_for_tabpanel(tplmode, p, (int)STRLEN(p), curattr, pargs);
 
     // fill the tailing area of current row.
-    if (0 <= (*pargs->prow - pargs->offsetrow)
-	    && (*pargs->prow - pargs->offsetrow) < pargs->maxrow)
+    if (*pargs->prow - pargs->offsetrow >= 0
+	    && *pargs->prow - pargs->offsetrow < pargs->maxrow)
 	screen_fill_tailing_area(tplmode, *pargs->prow - pargs->offsetrow,
 		*pargs->prow - pargs->offsetrow + 1, *pargs->pcol,
 		pargs->col_end, curattr);
@@ -501,7 +494,7 @@ starts_with_percent_and_bang(tabpanel_T *pargs)
 
     // When the format starts with "%!" then evaluate it as an expression and
     // use the result as the actual format string.
-    if (1 < len && usefmt[0] == '%' && usefmt[1] == '!')
+    if (len > 1 && usefmt[0] == '%' && usefmt[1] == '!')
     {
 	typval_T	tv;
 	char_u		*p = NULL;
@@ -539,24 +532,23 @@ do_by_tplmode(
     int		row = 0;
     tabpage_T	*tp = NULL;
     typval_T	v;
-    tabpanel_T    args;
+    tabpanel_T	args;
 
     args.maxrow = cmdline_row;
     args.offsetrow = 0;
     args.col_start = col_start;
     args.col_end = col_end;
 
-    if (TPLMODE_GET_CURTAB_ROW != tplmode)
-	if (0 < args.maxrow)
-	    while (args.offsetrow + args.maxrow <= *pcurtab_row)
-		args.offsetrow += args.maxrow;
+    if (tplmode != TPLMODE_GET_CURTAB_ROW && args.maxrow > 0)
+	while (args.offsetrow + args.maxrow <= *pcurtab_row)
+	    args.offsetrow += args.maxrow;
 
     tp = first_tabpage;
 
     for (row = 0; tp != NULL; row++)
     {
-	if ((TPLMODE_GET_CURTAB_ROW != tplmode)
-		&& (args.maxrow <= (row - args.offsetrow)))
+	if (tplmode != TPLMODE_GET_CURTAB_ROW
+		&& args.maxrow <= row - args.offsetrow)
 	    break;
 
 	col = col_start;
@@ -568,7 +560,7 @@ do_by_tplmode(
 	if (tp->tp_topframe == topframe)
 	{
 	    args.attr = attr_tpls;
-	    if (TPLMODE_GET_CURTAB_ROW == tplmode)
+	    if (tplmode == TPLMODE_GET_CURTAB_ROW)
 	    {
 		*pcurtab_row = row;
 		break;
@@ -588,20 +580,20 @@ do_by_tplmode(
 	    args.wp = tp->tp_firstwin;
 	}
 
-	char_u*	usefmt = starts_with_percent_and_bang(&args);
+	char_u *usefmt = starts_with_percent_and_bang(&args);
 	if (usefmt != NULL)
 	{
 	    char_u	buf[IOSIZE];
 	    char_u	*p = usefmt;
 	    size_t	i = 0;
 
-	    while (p[i] != '\0')
+	    while (p[i] != NUL)
 	    {
-		while ((p[i] == '\n') || (p[i] == '\r'))
+		while (p[i] == '\n' || p[i] == '\r')
 		{
 		    // fill the tailing area of current row.
-		    if (0 <= (row - args.offsetrow)
-			    && (row - args.offsetrow) < args.maxrow)
+		    if (row - args.offsetrow >= 0
+			    && row - args.offsetrow < args.maxrow)
 			screen_fill_tailing_area(tplmode,
 				row - args.offsetrow,
 				row - args.offsetrow + 1,
@@ -611,15 +603,14 @@ do_by_tplmode(
 		    p++;
 		}
 
-		while ((p[i] != '\n') && (p[i] != '\r')
-			&& (p[i] != '\0'))
+		while (p[i] != '\n' && p[i] != '\r' && (p[i] != NUL))
 		{
 		    if (i + 1 >= sizeof(buf))
 			break;
 		    buf[i] = p[i];
 		    i++;
 		}
-		buf[i] = '\0';
+		buf[i] = NUL;
 
 		args.user_defined = buf;
 		args.prow = &row;
@@ -644,7 +635,7 @@ do_by_tplmode(
 
 	tp = tp->tp_next;
 
-	if ((TPLMODE_GET_TABPAGENR == tplmode)
+	if ((tplmode == TPLMODE_GET_TABPAGENR)
 		&& (mouse_row <= (row - args.offsetrow)))
 	{
 	    *ptabpagenr = v.vval.v_number;
