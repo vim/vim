@@ -291,7 +291,7 @@ eval_expr_partial(
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_evaluate = TRUE;
 	funcexe.fe_partial = partial;
-	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+	if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	    return FAIL;
     }
 
@@ -323,7 +323,7 @@ eval_expr_func(
 
     CLEAR_FIELD(funcexe);
     funcexe.fe_evaluate = TRUE;
-    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+    if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	return FAIL;
 
     return OK;
@@ -944,7 +944,7 @@ call_vim_function(
     if (name == NULL)
 	name = func;
 
-    ret = call_func(name, -1, rettv, argc, argv, &funcexe);
+    ret = call_func(name, -1, rettv, argc, argv, NULL, &funcexe);
 
     if (ret == FAIL)
 	clear_tv(rettv);
@@ -2213,7 +2213,7 @@ get_lval(
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp,
 			       &SCRIPT_ITEM(current_sctx.sc_sid)->sn_type_list,
-			       !quiet);
+			       NULL, !quiet);
 		if (lp->ll_type == NULL && !quiet)
 		    return NULL;
 		lp->ll_name_end = tp;
@@ -4725,7 +4725,7 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, TRUE);
+	want_type = parse_type(arg, &type_list, NULL, TRUE);
 	if (want_type == NULL && (evaluate || **arg != '>'))
 	{
 	    clear_type_list(&type_list);
@@ -5060,11 +5060,30 @@ eval9_var_func_name(
 	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), s);
 	    ret = FAIL;
 	}
-	else if ((vim9script ? **arg : *skipwhite(*arg)) == '(')
+	else if ((vim9script ? **arg : *skipwhite(*arg)) == '('
+					|| (vim9script && **arg == '<'))
 	{
 	    // "name(..."  recursive!
 	    *arg = skipwhite(*arg);
-	    ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
+	    if (**arg == '<')
+	    {
+		// generics
+		char_u	*generic_start = *arg;
+
+		*arg += 1;
+		*arg = skiptocloseanglebracket(*arg);
+		if (**arg != '>')
+		{
+		    semsg(_(e_missing_closing_angle_bracket_in_generics),
+			    generic_start);
+		    ret = FAIL;
+		}
+		else
+		    *arg += 1;
+	    }
+
+	    if (ret == OK)
+		ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
 	}
 	else if (evaluate)
 	{

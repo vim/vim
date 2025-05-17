@@ -2252,6 +2252,7 @@ typedef int sock_T;
 #define VAR_TYPE_ENUM	    15
 #define VAR_TYPE_ENUMVALUE  16
 #define VAR_TYPE_TUPLE	    17
+#define VAR_TYPE_GENERIC    18
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
@@ -2410,6 +2411,8 @@ typedef enum {
     FCERR_DELETED,	// function was deleted
     FCERR_NOTMETHOD,	// function cannot be used as a method
     FCERR_FAILED,	// error while executing the function
+    FCERR_GENERIC_TOOMANY,	// too many generic types
+    FCERR_GENERIC_TOOFEW,	// too few generic types
 } funcerror_T;
 
 /*

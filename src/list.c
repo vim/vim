@@ -2075,7 +2075,7 @@ item_compare2(const void *s1, const void *s2)
     funcexe.fe_evaluate = TRUE;
     funcexe.fe_partial = partial;
     funcexe.fe_selfdict = sortinfo->item_compare_selfdict;
-    res = call_func(func_name, -1, &rettv, 2, argv, &funcexe);
+    res = call_func(func_name, -1, &rettv, 2, argv, NULL, &funcexe);
     clear_tv(&argv[0]);
     clear_tv(&argv[1]);
 

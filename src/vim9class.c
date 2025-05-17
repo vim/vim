@@ -101,7 +101,7 @@ parse_member(
 	    return FAIL;
 	}
 	type_arg = skipwhite(colon + 1);
-	type = parse_type(&type_arg, type_list, TRUE);
+	type = parse_type(&type_arg, type_list, NULL, TRUE);
 	if (type == NULL)
 	    return FAIL;
 	*has_type = TRUE;
@@ -2837,7 +2837,7 @@ ex_type(exarg_T *eap)
     }
 
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
-    type_T *type = parse_type(&arg, &si->sn_type_list, TRUE);
+    type_T *type = parse_type(&arg, &si->sn_type_list, NULL, TRUE);
     if (type == NULL)
 	return;
 

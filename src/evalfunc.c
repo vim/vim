@@ -3339,8 +3339,8 @@ internal_func_check_arg_types(
     for (int i = 0; i < argcount && argchecks[i] != NULL; ++i)
     {
 	context.arg_idx = i;
-	if (argchecks[i](types[i].type_curr, types[i].type_decl,
-							    &context) == FAIL)
+	type_T *t = types[i].type_curr;
+	if (argchecks[i](t, types[i].type_decl, &context) == FAIL)
 	    return FAIL;
     }
     return OK;
@@ -5199,6 +5199,14 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	name = s;
 	trans_name = save_function_name(&name, &is_global, FALSE,
 		   TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL);
+	if (*name == '<')
+	{
+	    // generic function
+	    name++;
+	    name = skiptocloseanglebracket(name);
+	    if (*name == '>')
+		name++;
+	}
 	if (*name != NUL)
 	    s = NULL;
     }

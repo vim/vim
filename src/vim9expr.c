@@ -1196,6 +1196,7 @@ compile_call(
     int		has_g_namespace;
     ca_special_T special_fn;
     imported_T	*import;
+    garray_T	gftn_table;
 
     if (varlen >= sizeof(namebuf))
     {
@@ -1275,7 +1276,21 @@ compile_call(
     else
 	special_fn = CA_NOT_SPECIAL;
 
-    *arg = skipwhite(*arg + varlen + 1);
+    ga_init2(&gftn_table, sizeof(gf_type_name_T), 10);
+
+    if (*(*arg + varlen) == '<')
+    {
+	// generic function
+	*arg = generic_func_get_types(*arg + varlen, cctx->ctx_type_list,
+							&gftn_table);
+	if (*arg == NULL)
+	    goto theend;
+	*arg += 1;	    // skip '('
+    }
+    else
+	*arg += varlen + 1;
+
+    *arg = skipwhite(*arg);
     if (compile_arguments(arg, cctx, &argcount, special_fn) == FAIL)
 	goto theend;
 
@@ -1361,15 +1376,41 @@ compile_call(
 	ufunc = find_func(name, FALSE);
 	if (ufunc != NULL)
 	{
+	    if (ufunc->uf_generic)
+	    {
+		if (gftn_table.ga_len < ufunc->uf_generic_count)
+		{
+		    emsg_funcname(e_not_enough_generic_types_for_function_str,
+								namebuf);
+		    goto theend;
+		}
+		else if (gftn_table.ga_len > ufunc->uf_generic_count)
+		{
+		    emsg_funcname(e_too_many_generic_types_for_function_str,
+								namebuf);
+		    goto theend;
+		}
+
+		// generic function call
+		ufunc = generic_func_get(ufunc, &gftn_table);
+	    }
+	    else if (gftn_table.ga_len != 0)
+	    {
+		emsg_funcname(e_unknown_generic_function_str, namebuf);
+		goto theend;
+	    }
+
 	    if (!func_is_global(ufunc))
 	    {
 		res = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
 		goto theend;
 	    }
 	    if (!has_g_namespace
-			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL)
+			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL
+			  && !ufunc->uf_generic)
 	    {
-		// A function name without g: prefix must be found locally.
+		// A function name without g: prefix must be found locally
+		// A generic function has the name emptied out.
 		emsg_funcname(e_unknown_function_str, namebuf);
 		goto theend;
 	    }
@@ -1422,6 +1463,7 @@ compile_call(
 	emsg_funcname(e_unknown_function_str, namebuf);
 
 theend:
+    ga_clear(&gftn_table);
     vim_free(tofree);
     return res;
 }
@@ -2988,9 +3030,22 @@ compile_expr9(
 	    return FAIL;
 	}
 
+	size_t namelen = p - *arg;
+	if (*p == '<')
+	{
+	    p++;
+	    p = skiptocloseanglebracket(p);
+	    if (*p != '>')
+	    {
+		semsg(_(e_missing_closing_angle_bracket_in_generics), *arg);
+		return FAIL;
+	    }
+	    p++;
+	}
+
 	if (*p == '(')
 	{
-	    r = compile_call(arg, p - *arg, cctx, ppconst, 0);
+	    r = compile_call(arg, namelen, cctx, ppconst, 0);
 	}
 	else
 	{
@@ -3033,7 +3088,7 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (**arg == '<' && eval_isnamec1((*arg)[1]))
     {
 	++*arg;
-	want_type = parse_type(arg, cctx->ctx_type_list, TRUE);
+	want_type = parse_type(arg, cctx->ctx_type_list, cctx->ctx_ufunc, TRUE);
 	if (want_type == NULL)
 	    return FAIL;
 

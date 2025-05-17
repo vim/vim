@@ -1990,6 +1990,31 @@ skiptohex(char_u *q)
 }
 
 /*
+ * skip to the '>' character (or NUL after the string) skipping inner nested
+ * '<' and '> brackets.
+ */
+    char_u *
+skiptocloseanglebracket(char_u *q)
+{
+    char_u	*p = q;
+    int		level = 0;
+
+    while (*p != NUL)	// skip to the outermose angle bracket
+    {
+	if (*p == '<')	// nested '<'
+	    level++;
+	if (*p == '>')
+	{
+	    if (level == 0)
+		break;
+	    level--;
+	}
+	++p;
+    }
+    return p;
+}
+
+/*
  * Variant of isdigit() that can handle characters > 0x100.
  * We don't use isdigit() here, because on some systems it also considers
  * superscript 1 to be a digit.
