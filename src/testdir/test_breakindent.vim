@@ -1168,11 +1168,13 @@ endfunc
 func Test_breakindent_list_split()
   10new
   61vsplit
+  setlocal tabstop=8 breakindent
   put =s:input
   30vsplit
   wincmd l
   setlocal list listchars=tab:<->,eol:$
   wincmd h
+
   let expect = [
       \ "^IabcdefghijklmnopqrstuvwxyzAB|<------>abcdefghijklmnopqrstuv",
       \ "  CDEFGHIJKLMNOP$             |        wxyzABCDEFGHIJKLMNOP$ ",
