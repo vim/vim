@@ -279,6 +279,7 @@ NEW_TESTS = \
 	test_search \
 	test_search_stat \
 	test_searchpos \
+	test_clipmethod \
 	test_selectmode \
 	test_set \
 	test_sha256 \
@@ -343,6 +344,7 @@ NEW_TESTS = \
 	test_vimscript \
 	test_virtualedit \
 	test_visual \
+	test_wayland \
 	test_winbar \
 	test_winbuf_close \
 	test_window_cmd \
@@ -542,6 +544,7 @@ NEW_TESTS_RES = \
 	test_scrollbind.res \
 	test_search.res \
 	test_search_stat.res \
+	test_clipmethod.res \
 	test_selectmode.res \
 	test_shell.res \
 	test_shortpathname.res \
@@ -594,6 +597,7 @@ NEW_TESTS_RES = \
 	test_vimscript.res \
 	test_virtualedit.res \
 	test_visual.res \
+	test_wayland.res \
 	test_winbar.res \
 	test_winbuf_close.res \
 	test_window_cmd.res \
