@@ -2089,7 +2089,6 @@ typedef int sock_T;
 #define IN_STATUS_LINE		2	// on status or command line
 #define IN_SEP_LINE		4	// on vertical separator line
 #define IN_OTHER_WIN		8	// in other window but can't go there
-#define IN_TABPANEL		16	// in tabpanel
 #define CURSOR_MOVED		0x100
 #define MOUSE_FOLD_CLOSE	0x200	// clicked on '-' in fold column
 #define MOUSE_FOLD_OPEN		0x400	// clicked on '+' in fold column

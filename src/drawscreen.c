@@ -541,13 +541,13 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    plen = this_ru_col - 1;
 	}
 
-	screen_puts(p, row, wp->w_wincol + TPL_LCOL(wp), attr);
-	screen_fill(row, row + 1, plen + wp->w_wincol + TPL_LCOL(wp),
-			this_ru_col + wp->w_wincol + TPL_LCOL(wp), fillchar, fillchar, attr);
+	screen_puts(p, row, wp->w_wincol, attr);
+	screen_fill(row, row + 1, plen + wp->w_wincol,
+			this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
 	if ((NameBufflen = get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)) > 0
 		&& (this_ru_col - plen) > (NameBufflen + 1))
 	    screen_puts(NameBuff, row, (int)(this_ru_col - NameBufflen
-						   - 1 + wp->w_wincol + TPL_LCOL(wp)), attr);
+						   - 1 + wp->w_wincol), attr);
 
 	win_redr_ruler(wp, TRUE, ignore_pum);
 
@@ -572,8 +572,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    fillchar = fillchar_status(&attr, wp);
 	else
 	    fillchar = fillchar_vsep(&attr, wp);
-	if (W_ENDCOL(wp) < COLUMNS_WITHOUT_TPL())
-	    screen_putchar(fillchar, row, W_ENDCOL(wp) + TPL_LCOL(wp), attr);
+	screen_putchar(fillchar, row, W_ENDCOL(wp), attr);
     }
     busy = FALSE;
 }
@@ -798,11 +797,11 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	    buffer[bufferlen] = NUL;
 	}
 
-	screen_puts(buffer, row, this_ru_col + off + TPL_LCOL(wp), attr);
+	screen_puts(buffer, row, this_ru_col + off, attr);
 	n1 = redraw_cmdline;
 	screen_fill(row, row + 1,
-		this_ru_col + off + bufferlen + TPL_LCOL(wp),
-		(off + width) + TPL_LCOL(wp),
+		this_ru_col + off + bufferlen,
+		(off + width),
 		fillchar, fillchar, attr);
 	// don't redraw the cmdline because of showing the ruler
 	redraw_cmdline = n1;
@@ -1043,7 +1042,7 @@ redraw_win_toolbar(win_T *wp)
     }
     wp->w_winbar_items[item_idx].wb_menu = NULL; // end marker
 
-    screen_line(wp, wp->w_winrow, wp->w_wincol + TPL_LCOL(wp), wp->w_width,
+    screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width,
 							  wp->w_width, -1, 0);
 }
 #endif
@@ -1378,8 +1377,8 @@ fold_line(
     }
 #endif
 
-    screen_line(wp, row + W_WINROW(wp), wp->w_wincol + TPL_LCOL(wp),
-						wp->w_width, wp->w_width, -1, 0);
+    screen_line(wp, row + W_WINROW(wp), wp->w_wincol, wp->w_width, wp->w_width,
+	    -1, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
     // updated (saves a call to plines() later).
@@ -2613,13 +2612,16 @@ win_update(win_T *wp)
 
 	for (k = 0; k < Rows; ++k)
 	    if (enc_utf8)
-		if ((*mb_off2cells)(LineOffset[k] + Columns - 2,
+		if ((*mb_off2cells)(LineOffset[k] + topframe->fr_width - 2,
 					   LineOffset[k] + screen_Columns) > 1)
-		    screen_draw_rectangle(k, Columns - 2, 1, 2, FALSE);
+		    screen_draw_rectangle(k, topframe->fr_width - 2, 1, 2,
+			    FALSE);
 		else
-		    screen_draw_rectangle(k, Columns - 1, 1, 1, FALSE);
+		    screen_draw_rectangle(k, topframe->fr_width - 1, 1, 1,
+			    FALSE);
 	    else
-		screen_char(LineOffset[k] + Columns - 1, k, Columns - 1);
+		screen_char(LineOffset[k] + topframe->fr_width - 1, k,
+			Columns - 1);
     }
 #endif
 
@@ -2689,8 +2691,8 @@ win_update(win_T *wp)
 	    // Last line isn't finished: Display "@@@" at the end.
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
-		    (start_col < wp->w_wincol ? wp->w_wincol : start_col) + TPL_LCOL(wp),
-		    (int)W_ENDCOL(wp) + TPL_LCOL(wp),
+		    (start_col < wp->w_wincol ? wp->w_wincol : start_col),
+		    (int)W_ENDCOL(wp),
 		    symbol, symbol, HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
