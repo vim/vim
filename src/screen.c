@@ -156,13 +156,13 @@ screen_fill_end(
     if (wp->w_p_rl)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_ENDCOL(wp) - nn + TPL_LCOL(wp), (int)W_ENDCOL(wp) - off + TPL_LCOL(wp),
+		W_ENDCOL(wp) - nn + NOUSE_TPL_LCOL(wp), (int)W_ENDCOL(wp) - off + TPL_LCOL(wp),
 		c1, c2, attr);
     }
     else
 #endif
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + off + TPL_LCOL(wp), (int)wp->w_wincol + nn + TPL_LCOL(wp),
+		wp->w_wincol + off + NOUSE_TPL_LCOL(wp), (int)wp->w_wincol + nn + TPL_LCOL(wp),
 		c1, c2, attr);
     return nn;
 }
@@ -215,17 +215,17 @@ win_draw_end(
     if (wp->w_p_rl)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + TPL_LCOL(wp), W_ENDCOL(wp) - 1 - n +
-		TPL_LCOL(wp), c2, c2, attr);
+		wp->w_wincol + NOUSE_TPL_LCOL(wp), W_ENDCOL(wp) - 1 - n +
+		NOUSE_TPL_LCOL(wp), c2, c2, attr);
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_ENDCOL(wp) - 1 - n + TPL_LCOL(wp), W_ENDCOL(wp) - n +
-		TPL_LCOL(wp), c1, c2, attr);
+		W_ENDCOL(wp) - 1 - n + NOUSE_TPL_LCOL(wp), W_ENDCOL(wp) - n +
+		NOUSE_TPL_LCOL(wp), c1, c2, attr);
     }
     else
 #endif
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + n + TPL_LCOL(wp), (int)W_ENDCOL(wp) + TPL_LCOL(wp),
+		wp->w_wincol + n + NOUSE_TPL_LCOL(wp), (int)W_ENDCOL(wp) + NOUSE_TPL_LCOL(wp),
 		c1, c2, attr);
     }
 
@@ -922,13 +922,13 @@ draw_vsep_win(win_T *wp, int row)
     if (!wp->w_vsep_width)
 	return;
 
-    if (COLUMNS_WITHOUT_TPL() <= W_ENDCOL(wp) + 1)
-	return;
-
+//    if (COLUMNS_WITHOUT_TPL() <= W_ENDCOL(wp) + 1)
+//	return;
+//
     // draw the vertical separator right of this window
     c = fillchar_vsep(&hl, wp);
     screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
-	    W_ENDCOL(wp) + TPL_LCOL(wp), W_ENDCOL(wp) + 1 + TPL_LCOL(wp),
+	    W_ENDCOL(wp) + NOUSE_TPL_LCOL(wp), W_ENDCOL(wp) + 1 + NOUSE_TPL_LCOL(wp),
 	    c, ' ', hl);
 }
 
@@ -1155,7 +1155,7 @@ win_redr_custom(
     for (n = 0; hltab[n].start != NULL; n++)
     {
 	len = (int)(hltab[n].start - p);
-	screen_puts_len(p, len, row, col + TPL_LCOL(wp), curattr);
+	screen_puts_len(p, len, row, col + NOUSE_TPL_LCOL(wp), curattr);
 	col += vim_strnsize(p, len);
 	p = hltab[n].start;
 
@@ -1176,7 +1176,7 @@ win_redr_custom(
 	else
 	    curattr = highlight_user[hltab[n].userhl - 1];
     }
-    screen_puts(p, row, col + TPL_LCOL(wp), curattr);
+    screen_puts(p, row, col + NOUSE_TPL_LCOL(wp), curattr);
 
     if (wp == NULL)
     {
@@ -2140,7 +2140,7 @@ redraw_block(int row, int end, win_T *wp)
 	col = wp->w_wincol;
 	width = wp->w_width;
     }
-    screen_draw_rectangle(row, col + TPL_LCOL(wp), end - row, width, FALSE);
+    screen_draw_rectangle(row, col + NOUSE_TPL_LCOL(wp), end - row, width, FALSE);
 }
 
     void
@@ -2919,8 +2919,8 @@ linecopy(int to, int from, win_T *wp)
     unsigned	off_from = LineOffset[from] + wp->w_wincol;
 
 #if defined(FEAT_TABPANEL)
-    off_to += TPL_LCOL(wp);
-    off_from += TPL_LCOL(wp);
+    off_to += NOUSE_TPL_LCOL(wp);
+    off_from += NOUSE_TPL_LCOL(wp);
 #endif
 
     mch_memmove(ScreenLines + off_to, ScreenLines + off_from,
@@ -3256,7 +3256,7 @@ setcursor_mayforce(int force)
 			   && (*mb_ptr2cells)(ml_get_cursor()) == 2
 			   && vim_isprintc(gchar_cursor())) ? 2 : 1)) :
 #endif
-					    curwin->w_wcol) + TPL_LCOL(NULL));
+					    curwin->w_wcol) + NOUSE_TPL_LCOL(NULL));
     }
 }
 
@@ -3326,7 +3326,7 @@ win_ins_lines(
 	if (lastrow > Rows)
 	    lastrow = Rows;
 	screen_fill(nextrow - line_count, lastrow - line_count,
-		  wp->w_wincol + TPL_LCOL(wp), (int)W_ENDCOL(wp) + TPL_LCOL(wp),
+		  wp->w_wincol + NOUSE_TPL_LCOL(wp), (int)W_ENDCOL(wp) + NOUSE_TPL_LCOL(wp),
 		  ' ', ' ', 0);
     }
 
@@ -3442,7 +3442,7 @@ win_do_lines(
     if (row + line_count >= wp->w_height)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
-		wp->w_wincol + TPL_LCOL(wp), (int)W_ENDCOL(wp) + TPL_LCOL(wp),
+		wp->w_wincol + NOUSE_TPL_LCOL(wp), (int)W_ENDCOL(wp) + NOUSE_TPL_LCOL(wp),
 		' ', ' ', 0);
 	return OK;
     }
@@ -3685,10 +3685,10 @@ screen_ins_lines(
 		linecopy(j + line_count, j, wp);
 	    j += line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp),
+		lineclear(LineOffset[j] + wp->w_wincol + NOUSE_TPL_LCOL(wp),
 			wp->w_width, clear_attr);
 	    else
-		lineinvalid(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp),
+		lineinvalid(LineOffset[j] + wp->w_wincol + NOUSE_TPL_LCOL(wp),
 			wp->w_width);
 	    LineWraps[j] = FALSE;
 	}
@@ -3704,10 +3704,10 @@ screen_ins_lines(
 	    LineOffset[j + line_count] = temp;
 	    LineWraps[j + line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp + TPL_LCOL(wp), COLUMNS_WITHOUT_TPL(),
+		lineclear(temp + NOUSE_TPL_LCOL(wp), COLUMNS_WITHOUT_TPL(),
 			clear_attr);
 	    else
-		lineinvalid(temp + TPL_LCOL(wp), COLUMNS_WITHOUT_TPL());
+		lineinvalid(temp + NOUSE_TPL_LCOL(wp), COLUMNS_WITHOUT_TPL());
 	}
     }
 
@@ -3922,10 +3922,10 @@ screen_del_lines(
 		linecopy(j - line_count, j, wp);
 	    j -= line_count;
 	    if (can_clear((char_u *)" "))
-		lineclear(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp),
+		lineclear(LineOffset[j] + wp->w_wincol + NOUSE_TPL_LCOL(wp),
 			wp->w_width, clear_attr);
 	    else
-		lineinvalid(LineOffset[j] + wp->w_wincol + TPL_LCOL(wp),
+		lineinvalid(LineOffset[j] + wp->w_wincol + NOUSE_TPL_LCOL(wp),
 			wp->w_width);
 	    LineWraps[j] = FALSE;
 	}
@@ -3942,10 +3942,10 @@ screen_del_lines(
 	    LineOffset[j - line_count] = temp;
 	    LineWraps[j - line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp + TPL_LCOL(NULL), COLUMNS_WITHOUT_TPL(),
+		lineclear(temp + NOUSE_TPL_LCOL(NULL), COLUMNS_WITHOUT_TPL(),
 			clear_attr);
 	    else
-		lineinvalid(temp + TPL_LCOL(NULL), COLUMNS_WITHOUT_TPL());
+		lineinvalid(temp + NOUSE_TPL_LCOL(NULL), COLUMNS_WITHOUT_TPL());
 	}
     }
 
