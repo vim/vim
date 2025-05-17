@@ -280,6 +280,7 @@ endfun
 " ---------------------------------------------------------------------
 " tar#Read: {{{2
 fun! tar#Read(fname,mode)
+  let pwdkeep = getcwd()
   let repkeep= &report
   set report=10
   let tarfile = substitute(a:fname,'tarfile:\(.\{-}\)::.*$','\1','')
@@ -432,11 +433,14 @@ if v:shell_error != 0
   set nomod
 
   let &report= repkeep
+  exe "cd ".pwdkeep
+  silent exe "file tarfile::".escape_file
 endfun
 
 " ---------------------------------------------------------------------
 " tar#Write: {{{2
 fun! tar#Write(fname)
+  let pwdkeep = getcwd()
   let repkeep= &report
   set report=10
   " temporary buffer variable workaround because too fucking tired. but it works now
@@ -569,6 +573,7 @@ fun! tar#Write(fname)
   setlocal nomod
 
   let &report= repkeep
+  exe "cd ".pwdkeep
 endfun
 
 " ---------------------------------------------------------------------
