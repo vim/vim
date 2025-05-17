@@ -1171,7 +1171,7 @@ func Test_breakindent_list_split()
   setlocal tabstop=8 breakindent list listchars=tab:<->,eol:$
   put =s:input
   30vsplit
-  setlocal listchars=eol:$
+  setlocal breakindent list tabstop=8 listchars=tab:<->,eol:$
   let expect = [
       \ "^IabcdefghijklmnopqrstuvwxyzAB|<------>abcdefghijklmnopqrstuv",
       \ "  CDEFGHIJKLMNOP$             |        wxyzABCDEFGHIJKLMNOP$ ",
