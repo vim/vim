@@ -1092,20 +1092,20 @@ func Test_clipboard_regs_not_working()
 endfunc
 
 " Check for W23 with a Vim with clipboard support,
-" but when the connection to the X11 server does not work
+" but when there is no available clipmethod
 func Test_clipboard_regs_not_working2()
   CheckNotMac
   CheckRunVimInTerminal
   CheckFeature clipboard
-  let display=$DISPLAY
-  unlet $DISPLAY
+  set clipmethod=
   " Run in a separate Vim instance because changing 'encoding' may cause
   " trouble for later tests.
   let lines =<< trim END
-      unlet $DISPLAY
+      set clipmethod=
       call setline(1, 'abcdefg')
       let a=execute(':norm! "+yy')
       call writefile([a], 'Xclipboard_result.txt')
+      set clipmethod&
   END
   call writefile(lines, 'XTest_clipboard', 'D')
   let buf = RunVimInTerminal('-S XTest_clipboard', {})
@@ -1113,7 +1113,7 @@ func Test_clipboard_regs_not_working2()
   call StopVimInTerminal(buf)
   let result = readfile('Xclipboard_result.txt')
   call assert_match("^\\nW23:", result[0])
-  let $DISPLAY=display
+  set clipmethod&
 endfunc
 
 " This caused use-after-free

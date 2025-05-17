@@ -373,6 +373,12 @@ static void	ex_folddo(exarg_T *eap);
 #if !defined(FEAT_X11) || !defined(FEAT_XCLIPBOARD)
 # define ex_xrestore		ex_ni
 #endif
+#if !defined(FEAT_WAYLAND)
+# define ex_wlrestore		ex_ni
+#endif
+#if !defined(FEAT_CLIPBOARD)
+# define ex_clipreset		ex_ni
+#endif
 #if !defined(FEAT_PROP_POPUP)
 # define ex_popupclear		ex_ni
 #endif
