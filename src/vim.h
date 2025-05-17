@@ -926,6 +926,8 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 # define COLUMNS_WITHOUT_TPL()		Columns
 # define TPL_LCOL(W)			0
 #endif
+# define NOUSE_COLUMNS_WITHOUT_TPL()		Columns
+# define NOUSE_TPL_LCOL(W)			0
 
 #define W_ENDCOL(wp)	((wp)->w_wincol + (wp)->w_width)
 #ifdef FEAT_MENU
