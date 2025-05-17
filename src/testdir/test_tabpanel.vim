@@ -521,6 +521,42 @@ function Test_tabpanel_equalalways()
   call StopVimInTerminal(buf)
 endfunc
 
+function Test_tabpanel_quitall()
+  CheckScreendump
+
+  let lines =<< trim END
+    tabnew
+    set showtabpanel=1
+    set laststatus=2
+    call setline(1, 'aaa')
+    normal gt
+    silent! quitall
+  END
+  call writefile(lines, 'XTest_tabpanel_quitall', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_quitall', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_quitall_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function Test_tabpanel_ruler()
+  CheckScreendump
+
+  let lines =<< trim END
+    tabnew
+    set statusline& laststatus=0
+    set rulerformat& ruler
+    set showtabpanel=1
+  END
+  call writefile(lines, 'XTest_tabpanel_ruler', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_ruler', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_ruler_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 function Test_tabpanel_error()
   set tabpanel=%!NonExistingFunc()
   try
@@ -532,5 +568,4 @@ function Test_tabpanel_error()
   set tabpanel&vim
   set showtabpanel&vim
 endfunc
-
 " vim: shiftwidth=2 sts=2 expandtab
