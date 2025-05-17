@@ -798,11 +798,14 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	    buffer[bufferlen] = NUL;
 	}
 
-	screen_puts(buffer, row, this_ru_col + off + TPL_LCOL(wp), attr);
+	// Do not add TPL_LCOL(wp) if the row is cmdline
+	// because the width of cmdline is always Columns.
+	if (row != Rows - 1)
+	    off += TPL_LCOL(wp);
+
+	screen_puts(buffer, row, this_ru_col + off, attr);
 	n1 = redraw_cmdline;
-	screen_fill(row, row + 1,
-		this_ru_col + off + bufferlen + TPL_LCOL(wp),
-		(off + width) + TPL_LCOL(wp),
+	screen_fill(row, row + 1, this_ru_col + off + bufferlen, off + width,
 		fillchar, fillchar, attr);
 	// don't redraw the cmdline because of showing the ruler
 	redraw_cmdline = n1;
