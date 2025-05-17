@@ -504,6 +504,7 @@ EXTERN char_u	*p_cedit;	// 'cedit'
 EXTERN long	p_cwh;		// 'cmdwinheight'
 #ifdef FEAT_CLIPBOARD
 EXTERN char_u	*p_cb;		// 'clipboard'
+EXTERN char_u	*p_cpm;		// 'clipmethod'
 #endif
 EXTERN long	p_ch;		// 'cmdheight'
 #ifdef FEAT_FOLDING
@@ -888,6 +889,7 @@ EXTERN int	p_scf;		// 'scrollfocus'
 #endif
 EXTERN long	p_so;		// 'scrolloff'
 EXTERN char_u	*p_sbo;		// 'scrollopt'
+EXTERN char_u	*p_wse;		// 'wlseat'
 EXTERN char_u	*p_sections;	// 'sections'
 EXTERN int	p_secure;	// 'secure'
 EXTERN char_u	*p_sel;		// 'selection'
@@ -1132,6 +1134,7 @@ EXTERN long	p_wh;		// 'winheight'
 EXTERN long	p_wmh;		// 'winminheight'
 EXTERN long	p_wmw;		// 'winminwidth'
 EXTERN long	p_wiw;		// 'winwidth'
+EXTERN long     p_wtm;		// 'wltimeoutlen'
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 EXTERN char_u	*p_winptydll;	// 'winptydll'
 #endif

@@ -9,6 +9,8 @@
 /* Define unless no X support found */
 #undef HAVE_X11
 
+#undef HAVE_WAYLAND
+
 /* Define when terminfo support found */
 #undef TERMINFO
 
