@@ -59,6 +59,7 @@ tabpanelopt_changed(void)
     int		new_align = ALIGN_LEFT;
     int		new_columns = 20;
     int		new_is_vert = FALSE;
+    int		do_equal = 0;
 
     p = p_tplo;
     while (*p != NUL)
@@ -90,9 +91,19 @@ tabpanelopt_changed(void)
 	    ++p;
     }
 
+    // Whether all the windows are automatically made the same size
+    // when tabpanel size is changed.
+    do_equal = p_ea && tpl_columns != new_columns;
+
     tpl_align = new_align;
     tpl_columns = new_columns;
     tpl_is_vert = new_is_vert;
+
+    shell_new_columns();
+    redraw_tabpanel = TRUE;
+
+    if (do_equal)
+	win_equal(curwin, FALSE, 0);
 
     return OK;
 }

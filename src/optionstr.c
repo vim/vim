@@ -3561,8 +3561,6 @@ did_set_tabpanelopt(optset_T *args)
     if (tabpanelopt_changed() == FAIL)
 	return e_invalid_argument;
 
-    shell_new_columns();
-
     return NULL;
 }
 

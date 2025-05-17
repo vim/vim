@@ -496,4 +496,29 @@ function Test_tabpanel_tabonly()
   call StopVimInTerminal(buf)
 endfunc
 
+function Test_tabpanel_equalalways()
+  CheckScreendump
+
+  let lines =<< trim END
+    tabnew
+    set showtabpanel=1
+    set tabpanelopt=columns:20
+    set equalalways
+    split
+    vsplit
+  END
+  call writefile(lines, 'XTest_tabpanel_equalalways', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_equalalways', {'rows': 10, 'cols': 78})
+  call VerifyScreenDump(buf, 'Test_tabpanel_equalalways_0', {})
+  call term_sendkeys(buf, ":set tabpanelopt=columns:10\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_equalalways_1', {})
+  call term_sendkeys(buf, ":set tabpanelopt=columns:30\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_equalalways_2', {})
+  call term_sendkeys(buf, ":set tabpanelopt=columns:5\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_equalalways_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
