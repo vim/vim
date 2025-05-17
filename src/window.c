@@ -71,6 +71,7 @@ static win_T *win_alloc(win_T *after, int hidden);
 #define NOWIN		((win_T *)-1)	// non-existing window
 
 #define ROWS_AVAIL (Rows - p_ch - tabline_height())
+#define COLUMNS_AVAIL (Columns - tabpanel_width())
 
 // flags for win_enter_ext()
 #define WEE_UNDO_SYNC			0x01
@@ -2085,8 +2086,8 @@ win_equal(
     if (dir == 0)
 	dir = *p_ead;
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
-		      topframe, dir, 0, tabline_height(),
-		      (int)COLUMNS_WITHOUT_TPL(), topframe->fr_height);
+		      topframe, dir, TPL_LCOL(NULL), tabline_height(),
+		      COLUMNS_WITHOUT_TPL(), topframe->fr_height);
     if (!is_aucmd_win(next_curwin))
 	win_fix_scroll(TRUE);
 }
@@ -4747,6 +4748,7 @@ win_new_tabpage(int after)
 
 	win_init_size();
 	firstwin->w_winrow = tabline_height();
+	firstwin->w_wincol = TPL_LCOL(NULL);
 	firstwin->w_prev_winrow = firstwin->w_winrow;
 	win_comp_scroll(curwin);
 
@@ -6193,13 +6195,19 @@ shell_new_columns(void)
     if (firstwin == NULL)	// not initialized yet
 	return;
 
+    int w = COLUMNS_AVAIL;
+
     // First try setting the widths of windows with 'winfixwidth'.  If that
     // doesn't result in the right width, forget about that option.
-    frame_new_width(topframe, COLUMNS_WITHOUT_TPL(), FALSE, TRUE);
-    if (!frame_check_width(topframe, COLUMNS_WITHOUT_TPL()))
-	frame_new_width(topframe, COLUMNS_WITHOUT_TPL(), FALSE, FALSE);
+    frame_new_width(topframe, w, FALSE, TRUE);
+    if (!frame_check_width(topframe, w))
+	frame_new_width(topframe, w, FALSE, FALSE);
 
     (void)win_comp_pos();		// recompute w_winrow and w_wincol
+
+    if (!skip_win_fix_scroll)
+	win_fix_scroll(TRUE);
+
 #if 0
     // Disabled: don't want making the screen smaller make a window larger.
     if (p_ea)
@@ -6269,7 +6277,7 @@ win_size_restore(garray_T *gap)
 win_comp_pos(void)
 {
     int		row = tabline_height();
-    int		col = 0;
+    int		col = tabpanel_leftcol(NULL);
 
     frame_comp_pos(topframe, &row, &col);
     return row;
