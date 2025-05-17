@@ -523,6 +523,13 @@ func Test_set_completion_string_values()
   if exists('+clipboard')
     call assert_match('unnamed', getcompletion('set clipboard=', 'cmdline')[1])
   endif
+  if exists('+clipmethod')
+    if has('unix') || has('vms')
+      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[1])
+    else
+      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[0])
+    endif
+  endif
   call assert_equal('.', getcompletion('set complete=', 'cmdline')[1])
   call assert_equal('menu', getcompletion('set completeopt=', 'cmdline')[1])
   call assert_equal('keyword', getcompletion('set completefuzzycollect=', 'cmdline')[0])
@@ -2593,6 +2600,7 @@ func Test_string_option_revert_on_failure()
   endif
   if has('clipboard_working')
     call add(optlist, ['clipboard', 'unnamed', 'a123'])
+    call add(optlist, ['clipmethod', 'wayland', 'a123'])
   endif
   if has('win32')
     call add(optlist, ['completeslash', 'slash', 'a123'])
