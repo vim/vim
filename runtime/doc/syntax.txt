@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 May 10
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3996,6 +3996,7 @@ names whose syntax definitions will be included in Typst files. Example: >
 
 VIM			*vim.vim*		*ft-vim-syntax*
 			*g:vimsyn_minlines*	*g:vimsyn_maxlines*
+
 There is a trade-off between more accurate syntax highlighting versus screen
 updating speed.  To improve accuracy, you may wish to increase the
 g:vimsyn_minlines variable.  The g:vimsyn_maxlines variable may be used to
@@ -4019,10 +4020,9 @@ embedded script highlighting they wish to have. >
    g:vimsyn_embed =~ 'r' : support embedded Ruby
    g:vimsyn_embed =~ 't' : support embedded Tcl
 <
-By default, g:vimsyn_embed is a string supporting interpreters that your vim
-itself supports.  Concatenate the indicated characters to support multiple
-types of embedded interpreters (e.g., g:vimsyn_embed = "mp" supports embedded
-mzscheme and embedded perl).
+By default, g:vimsyn_embed is unset, and the Lua and Python script interfaces
+are supported.
+
 						*g:vimsyn_folding*
 Some folding is now supported with when 'foldmethod' is set to "syntax": >
 
@@ -4031,15 +4031,15 @@ Some folding is now supported with when 'foldmethod' is set to "syntax": >
    g:vimsyn_folding =~ 'c' : fold Vim9 classes
    g:vimsyn_folding =~ 'e' : fold Vim9 enums
    g:vimsyn_folding =~ 'f' : fold functions
-   g:vimsyn_folding =~ 'h' : fold heredocs
+   g:vimsyn_folding =~ 'h' : fold let heredocs
    g:vimsyn_folding =~ 'i' : fold Vim9 interfaces
    g:vimsyn_folding =~ 'H' : fold Vim9 legacy headers
-   g:vimsyn_folding =~ 'l' : fold Lua      script
-   g:vimsyn_folding =~ 'm' : fold MzScheme script
-   g:vimsyn_folding =~ 'p' : fold Perl     script
-   g:vimsyn_folding =~ 'P' : fold Python   script
-   g:vimsyn_folding =~ 'r' : fold Ruby     script
-   g:vimsyn_folding =~ 't' : fold Tcl      script
+   g:vimsyn_folding =~ 'l' : fold Lua      heredocs
+   g:vimsyn_folding =~ 'm' : fold MzScheme heredocs
+   g:vimsyn_folding =~ 'p' : fold Perl     heredocs
+   g:vimsyn_folding =~ 'P' : fold Python   heredocs
+   g:vimsyn_folding =~ 'r' : fold Ruby     heredocs
+   g:vimsyn_folding =~ 't' : fold Tcl      heredocs
 <
 
 By default, g:vimsyn_folding is unset.  Concatenate the indicated characters

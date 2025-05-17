@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 May 14
+" Last Change:	   2025 May 16
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -35,10 +35,10 @@ syn cluster vimCommentGroup	contains=vimTodo,@Spell
 " GEN_SYN_VIM: vimCommand normal, START_STR='syn keyword vimCommand contained', END_STR='nextgroup=vimBang'
 syn keyword vimCommand contained abo[veleft] al[l] ar[gs] arga[dd] argd[elete] argdo argded[upe] arge[dit] argg[lobal] argl[ocal] argu[ment] as[cii] b[uffer] bN[ext] ba[ll] bad[d] balt bd[elete] bel[owright] bf[irst] bl[ast] bm[odified] bn[ext] bo[tright] bp[revious] br[ewind] brea[k] breaka[dd] breakd[el] breakl[ist] bro[wse] buffers bufd[o] bun[load] bw[ipeout] c[hange] cN[ext] cNf[ile] cabo[ve] cad[dbuffer] cadde[xpr] caddf[ile] caf[ter] cb[uffer] cbe[fore] cbel[ow] cbo[ttom] cc ccl[ose] cd cdo ce[nter] cex[pr] cf[ile] cfd[o] cfir[st] cg[etfile] cgetb[uffer] cgete[xpr] chd[ir] changes che[ckpath] checkt[ime] chi[story] cl[ist] cla[st] clo[se] cle[arjumps] cn[ext] cnew[er] cnf[ile] co[py] col[der] colo[rscheme] com[mand] comc[lear] comp[iler] con[tinue] conf[irm] nextgroup=vimBang
 syn keyword vimCommand contained cons[t] cope[n] cp[revious] cpf[ile] cq[uit] cr[ewind] cs[cope] cst[ag] cw[indow] d[elete] delm[arks] deb[ug] defc[ompile] defe[r] delf[unction] di[splay] dif[fupdate] diffg[et] diffo[ff] diffp[atch] diffpu[t] diffs[plit] difft[his] dig[raphs] disa[ssemble] dj[ump] dli[st] dr[op] ds[earch] dsp[lit] e[dit] ea[rlier] em[enu] endfo[r] endt[ry] endw[hile] ene[w] ev[al] ex exi[t] exu[sage] f[ile] files filet[ype] fin[d] fina[lly] fini[sh] fir[st] fix[del] fo[ld] foldc[lose] foldd[oopen] folddoc[losed] foldo[pen] g[lobal] go[to] gu[i] gv[im] h[elp] helpc[lose] helpf[ind] helpt[ags] ha[rdcopy] hi[ghlight] hid[e] his[tory] hor[izontal] ij[ump] il[ist] imp[ort] int[ro] ip[ut] is[earch] isp[lit] j[oin] ju[mps] k kee[pmarks] keepj[umps] keepp[atterns] nextgroup=vimBang
-syn keyword vimCommand contained keepa[lt] l[ist] lN[ext] lNf[ile] la[st] lab[ove] lan[guage] lad[dexpr] laddb[uffer] laddf[ile] laf[ter] lat[er] lb[uffer] lbe[fore] lbel[ow] lbo[ttom] lc[d] lch[dir] lcl[ose] lcs[cope] ld[o] le[ft] lefta[bove] lex[pr] leg[acy] lf[ile] lfd[o] lfir[st] lg[etfile] lgetb[uffer] lgete[xpr] lgr[ep] lgrepa[dd] lhi[story] ll lla[st] lli[st] lmak[e] lne[xt] lnew[er] lnf[ile] lo[adview] loc[kmarks] lockv[ar] lol[der] lop[en] lp[revious] lpf[ile] lr[ewind] lt[ag] lua luad[o] luaf[ile] lw[indow] ls m[ove] ma[rk] marks menut[ranslate] mes[sages] mk[exrc] mks[ession] mksp[ell] mkv[imrc] mkvie[w] mod[e] mz[scheme] mzf[ile] n[ext] nb[key] nbc[lose] nbs[tart] noa[utocmd] noh[lsearch] nos[wapfile] nu[mber] o[pen] ol[dfiles] on[ly] opt[ions] ow[nsyntax] nextgroup=vimBang
-syn keyword vimCommand contained p[rint] pa[ckadd] packl[oadall] pb[uffer] pc[lose] pe[rl] perld[o] ped[it] po[p] pp[op] pre[serve] prev[ious] pro[mptfind] promptr[epl] prof[ile] profd[el] ps[earch] pt[ag] ptN[ext] ptf[irst] ptj[ump] ptl[ast] ptn[ext] ptp[revious] ptr[ewind] pts[elect] pu[t] pw[d] py[thon] pyd[o] pyf[ile] py3 py3d[o] python3 py3f[ile] pyx pyxd[o] pythonx pyxf[ile] q[uit] quita[ll] qa[ll] r[ead] rec[over] red[o] redr[aw] redraws[tatus] redrawt[abline] redrawtabp[anel] reg[isters] res[ize] ret[ab] rew[ind] ri[ght] rightb[elow] ru[ntime] rub[y] rubyd[o] rubyf[ile] rund[o] rv[iminfo] sN[ext] sa[rgument] sal[l] san[dbox] sav[eas] sb[uffer] sbN[ext] sba[ll] sbf[irst] sbl[ast] sbm[odified] sbn[ext] sbp[revious] sbr[ewind] scr[iptnames] scripte[ncoding] nextgroup=vimBang
-syn keyword vimCommand contained scriptv[ersion] scs[cope] setf[iletype] sf[ind] sfir[st] sh[ell] sim[alt] sig[n] sil[ent] sla[st] sn[ext] so[urce] sp[lit] spe[llgood] spelld[ump] spelli[nfo] spellr[epall] spellra[re] spellu[ndo] spellw[rong] spr[evious] sre[wind] st[op] sta[g] star[tinsert] startg[replace] startr[eplace] stopi[nsert] stj[ump] sts[elect] sun[hide] sus[pend] sv[iew] sw[apname] synti[me] sync[bind] smi[le] t tN[ext] ta[g] tags tab tabc[lose] tabd[o] tabe[dit] tabf[ind] tabfir[st] tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] tcl tcld[o] tclf[ile] te[aroff] ter[minal] tf[irst] tj[ump] tl[ast] tn[ext] to[pleft] tp[revious] tr[ewind] try ts[elect] u[ndo] undoj[oin] undol[ist] unh[ide] unlo[ckvar] nextgroup=vimBang
-syn keyword vimCommand contained uns[ilent] up[date] v[global] ve[rsion] verb[ose] vert[ical] vi[sual] vie[w] vim9[cmd] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wi[nsize] winc[md] wind[o] winp[os] wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] z dl dell delel deletl deletel dp dep delp delep deletp deletep a i nextgroup=vimBang
+syn keyword vimCommand contained keepa[lt] l[ist] lN[ext] lNf[ile] la[st] lab[ove] lan[guage] lad[dexpr] laddb[uffer] laddf[ile] laf[ter] lat[er] lb[uffer] lbe[fore] lbel[ow] lbo[ttom] lc[d] lch[dir] lcl[ose] lcs[cope] ld[o] le[ft] lefta[bove] lex[pr] leg[acy] lf[ile] lfd[o] lfir[st] lg[etfile] lgetb[uffer] lgete[xpr] lgr[ep] lgrepa[dd] lhi[story] ll lla[st] lli[st] lmak[e] lne[xt] lnew[er] lnf[ile] lo[adview] loc[kmarks] lockv[ar] lol[der] lop[en] lp[revious] lpf[ile] lr[ewind] lt[ag] lw[indow] ls m[ove] ma[rk] marks menut[ranslate] mes[sages] mk[exrc] mks[ession] mksp[ell] mkv[imrc] mkvie[w] mod[e] n[ext] nb[key] nbc[lose] nbs[tart] noa[utocmd] noh[lsearch] nos[wapfile] nu[mber] o[pen] ol[dfiles] on[ly] opt[ions] ow[nsyntax] p[rint] pa[ckadd] packl[oadall] pb[uffer] nextgroup=vimBang
+syn keyword vimCommand contained pc[lose] ped[it] po[p] pp[op] pre[serve] prev[ious] pro[mptfind] promptr[epl] prof[ile] profd[el] ps[earch] pt[ag] ptN[ext] ptf[irst] ptj[ump] ptl[ast] ptn[ext] ptp[revious] ptr[ewind] pts[elect] pu[t] pw[d] q[uit] quita[ll] qa[ll] r[ead] rec[over] red[o] redr[aw] redraws[tatus] redrawt[abline] redrawtabp[anel] reg[isters] res[ize] ret[ab] rew[ind] ri[ght] rightb[elow] ru[ntime] rub[y] rubyd[o] rubyf[ile] rund[o] rv[iminfo] sN[ext] sa[rgument] sal[l] san[dbox] sav[eas] sb[uffer] sbN[ext] sba[ll] sbf[irst] sbl[ast] sbm[odified] sbn[ext] sbp[revious] sbr[ewind] scr[iptnames] scripte[ncoding] scriptv[ersion] scs[cope] setf[iletype] sf[ind] sfir[st] sh[ell] sim[alt] sig[n] sil[ent] sla[st] sn[ext] so[urce] sp[lit] spe[llgood] spelld[ump] nextgroup=vimBang
+syn keyword vimCommand contained spelli[nfo] spellr[epall] spellra[re] spellu[ndo] spellw[rong] spr[evious] sre[wind] st[op] sta[g] star[tinsert] startg[replace] startr[eplace] stopi[nsert] stj[ump] sts[elect] sun[hide] sus[pend] sv[iew] sw[apname] synti[me] sync[bind] smi[le] t tN[ext] ta[g] tags tab tabc[lose] tabd[o] tabe[dit] tabf[ind] tabfir[st] tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] te[aroff] ter[minal] tf[irst] tj[ump] tl[ast] tn[ext] to[pleft] tp[revious] tr[ewind] try ts[elect] u[ndo] undoj[oin] undol[ist] unh[ide] unlo[ckvar] uns[ilent] up[date] v[global] ve[rsion] verb[ose] vert[ical] vi[sual] vie[w] vim9[cmd] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wi[nsize] winc[md] wind[o] winp[os] nextgroup=vimBang
+syn keyword vimCommand contained wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] z dl dell delel deletl deletel dp dep delp delep deletp deletep a i nextgroup=vimBang
 
 " Lower priority for _new_ to distinguish constructors from the command.
 syn match   vimCommand contained	"\<new\>(\@!"
@@ -286,7 +286,7 @@ syn match	vimNumber	'\<0z\%(\x\x\)\+\%(\.\%(\x\x\)\+\)*'	skipwhite nextgroup=@vi
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,@vimEcho,vimElse,vimEnddef,vimEndfunction,vimEndif,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimFor,vimFunction,vimFuncFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimThrow,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,@vimEcho,vimElse,vimEnddef,vimEndfunction,vimEndif,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimFor,vimFunction,vimFuncFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimThrow,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList,vimLua,vimMzScheme,vimPerl,vimPython,vimPython3,vimPythonX,vimRuby,vimTcl
 syn cluster vim9CmdList	contains=vim9Abstract,vim9Class,vim9Const,vim9Enum,vim9Export,vim9Final,vim9For,vim9Interface,vim9Type,vim9Var
 syn match vimCmdSep	"\\\@1<!|"	skipwhite nextgroup=@vimCmdList,vimSubst1,vimFunc
 syn match vimCmdSep	":\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
@@ -453,7 +453,7 @@ syn match	vim9LambdaOperatorComment contained "#.*" skipwhite skipempty nextgrou
 syn cluster	vimFuncList	contains=vimFuncBang,vimFunctionError,vimFuncKey,vimFuncScope,vimFuncSID,Tag
 syn cluster	vimDefList	contains=vimFuncBang,vimFunctionError,vimDefKey,vimFuncScope,vimFuncSID,Tag
 
-syn cluster	vimFuncBodyCommon	contains=@vimCmdList,vimCmplxRepeat,vimContinue,vimCtrlChar,vimDef,vimFBVar,vimFunc,vimFunction,vimLetHereDoc,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegister,vimSpecFile,vimString,vimSubst,vimFuncFold,vimDefFold
+syn cluster	vimFuncBodyCommon	contains=@vimCmdList,vimCmplxRepeat,vimContinue,vimCtrlChar,vimDef,vimFBVar,vimFunc,vimFunction,vimLetHeredoc,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegister,vimSpecFile,vimString,vimSubst,vimFuncFold,vimDefFold
 syn cluster	vimFuncBodyList	contains=@vimFuncBodyCommon,vimComment,vimLineComment,vimInsert,vimConst,vimLet,vimSearch
 syn cluster	vimDefBodyList	contains=@vimFuncBodyCommon,vim9Comment,vim9LineComment,vim9Block,vim9Const,vim9Final,vim9Var,vim9Null,vim9Boolean,vim9For,vim9LhsVariable,vim9LhsVariableList,vim9LhsRegister,vim9Search,@vimSpecialVar
 
@@ -954,16 +954,16 @@ syn region	vimUnletVars	contained
       \ nextgroup=vimCmdSep,vimComment
       \ contains=@vimContinue,vimEnvvar,vimVar,vimVimVar
 
-VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='\%(^\z(\s*\)\S.*\)\@<==<<\s*trim\%(\s\+\)\@>\z(\L\S*\)'	matchgroup=vimLetHereDocStop end='^\z1\=\z2$' extend
-VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\%(\s*\)\@>\z(\L\S*\)'			matchgroup=vimLetHereDocStop end='^\z1$' extend
-VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='\%(^\z(\s*\)\S.*\)\@<==<<\s*\%(trim\s\+eval\|eval\s\+trim\)\%(\s\+\)\@>\z(\L\S*\)'	matchgroup=vimLetHereDocStop end='^\z1\=\z2$' contains=@vimStringInterpolation extend
-VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s*eval\%(\s\+\)\@>\z(\L\S*\)'			matchgroup=vimLetHereDocStop end='^\z1$' contains=@vimStringInterpolation extend
+VimFoldh syn region vimLetHeredoc	matchgroup=vimLetHeredocStart start='\%(^\z(\s*\)\S.*\)\@<==<<\s*trim\%(\s\+\)\@>\z(\L\S*\)'	matchgroup=vimLetHeredocStop end='^\z1\=\z2$' extend
+VimFoldh syn region vimLetHeredoc	matchgroup=vimLetHeredocStart start='=<<\%(\s*\)\@>\z(\L\S*\)'			matchgroup=vimLetHeredocStop end='^\z1$' extend
+VimFoldh syn region vimLetHeredoc	matchgroup=vimLetHeredocStart start='\%(^\z(\s*\)\S.*\)\@<==<<\s*\%(trim\s\+eval\|eval\s\+trim\)\%(\s\+\)\@>\z(\L\S*\)'	matchgroup=vimLetHeredocStop end='^\z1\=\z2$' contains=@vimStringInterpolation extend
+VimFoldh syn region vimLetHeredoc	matchgroup=vimLetHeredocStart start='=<<\s*eval\%(\s\+\)\@>\z(\L\S*\)'			matchgroup=vimLetHeredocStop end='^\z1$' contains=@vimStringInterpolation extend
 
 Vim9 syn keyword	vim9Const	const	skipwhite nextgroup=vim9Variable,vim9VariableList
 Vim9 syn keyword	vim9Final	final	skipwhite nextgroup=vim9Variable,vim9VariableList
 Vim9 syn keyword	vim9Var	var	skipwhite nextgroup=vim9Variable,vim9VariableList
 
-syn match	vim9Variable	contained	"\<\h\w*\>"	skipwhite nextgroup=vimTypeSep,vimLetHereDoc,vimOper
+syn match	vim9Variable	contained	"\<\h\w*\>"	skipwhite nextgroup=vimTypeSep,vimLetHeredoc,vimOper
 syn region	vim9VariableList	contained	start="\[" end="]" contains=@vimContinue,@vimSpecialVar,vim9Variable
 
 " Lockvar and Unlockvar: {{{2
@@ -1549,6 +1549,345 @@ syn region	vimHiLink	contained matchgroup=Type start="\%(\<hi\%[ghlight]!\=\s\+\
 " ==================
 syn match	vimCtrlChar	"[--]"
 
+" Embedded Scripts:  {{{2
+" ================
+"   perl,ruby	: Benoit Cerrina
+"   python,tcl	: Johannes Zellner
+"   mzscheme, lua : Charles Campbell
+
+" Allows users to specify the type of embedded script highlighting
+" they want:  (lua/mzscheme/perl/python/ruby/tcl support)
+"   g:vimsyn_embed == 0   : don't embed any scripts
+"   g:vimsyn_embed =~# 'l' : embed Lua
+"   g:vimsyn_embed =~# 'm' : embed MzScheme
+"   g:vimsyn_embed =~# 'p' : embed Perl
+"   g:vimsyn_embed =~# 'P' : embed Python
+"   g:vimsyn_embed =~# 'r' : embed Ruby
+"   g:vimsyn_embed =~# 't' : embed Tcl
+
+let s:interfaces = get(g:, "vimsyn_embed", "lP")
+
+" [-- lua --] {{{3
+if s:interfaces =~# 'l'
+  syn include @vimLuaScript syntax/lua.vim
+  unlet b:current_syntax
+  syn clear luaParenError " See issue #11277
+endif
+
+syn keyword	vimLua	lua	skipwhite nextgroup=vimLuaHeredoc,vimLuaStatement
+syn keyword	vimLua	luado	skipwhite nextgroup=vimLuaStatement
+syn keyword	vimLua	luafile
+
+syn region	vimLuaStatement	contained
+      \ start="\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimLuaScript,@vimContinue
+VimFoldl syn region vimLuaHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\s*\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1$+
+      \ contains=@vimLuaScript
+VimFoldl syn region vimLuaHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\.$+
+      \ contains=@vimLuaScript
+VimFoldl syn region vimLuaHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\s\+\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\z2$+
+      \ contains=@vimLuaScript
+VimFoldl syn region vimLuaHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\.$+
+      \ contains=@vimLuaScript
+
+" [-- mzscheme --] {{{3
+if s:interfaces =~# 'm'
+  let s:iskKeep = &isk
+  syn include @vimMzSchemeScript syntax/scheme.vim
+  unlet b:current_syntax
+  let &isk = s:iskKeep
+endif
+
+syn keyword	vimMzScheme	mz[scheme]	skipwhite nextgroup=vimMzSchemeHeredoc,vimMzSchemeStatement
+syn keyword	vimMzScheme	mzf[ile]
+
+syn region	vimMzSchemeStatement	contained
+      \ start="\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimMzSchemeScript,@vimContinue
+VimFoldm syn region vimMzSchemeHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\s*\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1$+
+      \ contains=@vimMzSchemeScript
+VimFoldm syn region vimMzSchemeHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\.$+
+      \ contains=@vimMzSchemeScript
+VimFoldm syn region vimMzSchemeHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\s\+\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\z2$+
+      \ contains=@vimMzSchemeScript
+VimFoldm syn region vimMzSchemeHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\.$+
+      \ contains=@vimMzSchemeScript
+
+" [-- perl --] {{{3
+if s:interfaces =~# 'p'
+  syn include @vimPerlScript syntax/perl.vim
+  unlet b:current_syntax
+endif
+
+syn keyword	vimPerl	pe[rl]	skipwhite nextgroup=vimPerlHeredoc,vimPerlStatement
+syn keyword	vimPerl	perld[o]	skipwhite nextgroup=vimPerlStatement
+
+syn region	vimPerlStatement	contained
+       \ start="\S"
+       \ skip=+\n\s*\%(\\\|["#]\\ \)+
+       \ end="$"
+       \ contains=@vimPerlScript,@vimContinue
+VimFoldp syn region vimPerlHeredoc	contained
+       \ matchgroup=vimScriptHeredocStart
+       \ start=+<<\s*\z(\S\+\)\ze\s*$+
+       \ matchgroup=vimScriptHeredocStop
+       \ end=+^\z1$+ contains=@vimPerlScript
+VimFoldp syn region vimPerlHeredoc	contained
+       \ matchgroup=vimScriptHeredocStart
+       \ start=+<<\ze\s*$+	matchgroup=vimScriptHeredocStop
+       \ end=+^\.$+
+       \ contains=@vimPerlScript
+VimFoldp syn region vimPerlHeredoc	contained
+       \ matchgroup=vimScriptHeredocStart
+       \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\s\+\z(\S\+\)\ze\s*$+
+       \ matchgroup=vimScriptHeredocStop
+       \ end=+^\z1\=\z2$+
+       \ contains=@vimPerlScript
+VimFoldp syn region vimPerlHeredoc	contained
+       \ matchgroup=vimScriptHeredocStart
+       \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\ze\s*$+
+       \ matchgroup=vimScriptHeredocStop
+       \ end=+^\z1\=\.$+
+       \ contains=@vimPerlScript
+
+" [-- python --] {{{3
+if s:interfaces =~# 'P'
+  syn include @vimPythonScript syntax/python2.vim
+  unlet b:current_syntax
+endif
+
+syn keyword	vimPython	py[thon]	skipwhite nextgroup=vimPythonHeredoc,vimPythonStatement
+syn keyword	vimPython	pydo	skipwhite nextgroup=vimPythonStatement
+syn keyword	vimPython	pyfile
+
+syn region	vimPythonStatement	contained
+      \ start="\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimPythonScript,@vimContinue
+VimFoldP syn region vimPythonHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\s*\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1$+
+      \ contains=@vimPythonScript
+VimFoldP syn region vimPythonHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\.$+
+      \ contains=@vimPythonScript
+VimFoldP syn region vimPythonHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\s\+\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\z2$+
+      \ contains=@vimPythonScript
+VimFoldP syn region vimPythonHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\.$+
+      \ contains=@vimPythonScript
+
+" [-- python3 --] {{{3
+if s:interfaces =~# 'P'
+  syn include @vimPython3Script syntax/python.vim
+  unlet b:current_syntax
+endif
+
+syn keyword	vimPython3	python3 py3	skipwhite nextgroup=vimPython3Heredoc,vimPython3Statement
+syn keyword	vimPython3	py3do	skipwhite nextgroup=vimPython3Statement
+syn keyword	vimPython3	py3file
+
+syn region	vimPython3Statement	contained
+      \ start="\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimPython3Script,@vimContinue
+VimFoldP syn region vimPython3Heredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\s*\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1$+
+      \ contains=@vimPython3Script
+VimFoldP syn region vimPython3Heredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\.$+
+      \ contains=@vimPython3Script
+VimFoldP syn region vimPython3Heredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\s\+\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\z2$+
+      \ contains=@vimPython3Script
+VimFoldP syn region vimPython3Heredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\.$+
+      \ contains=@vimPython3Script
+
+" [-- pythonx --] {{{3
+if s:interfaces =~# 'P'
+  if &pyxversion == 2
+    syn cluster vimPythonXScript contains=@vimPythonScript
+  else
+    syn cluster vimPythonXScript contains=@vimPython3Script
+  endif
+endif
+
+syn keyword	vimPythonX	pythonx pyx	skipwhite nextgroup=vimPythonXHeredoc,vimPythonXStatement
+syn keyword	vimPythonX	pyxdo	skipwhite nextgroup=vimPythonXStatement
+syn keyword	vimPythonX	pyxfile
+
+syn region	vimPythonXStatement	contained
+      \ start="\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimPythonXScript,@vimContinue
+VimFoldP syn region vimPythonXHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\s*\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1$+
+      \ contains=@vimPythonXScript
+VimFoldP syn region vimPythonXHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\.$+
+      \ contains=@vimPythonXScript
+VimFoldP syn region vimPythonXHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\s\+\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\z2$+
+      \ contains=@vimPythonXScript
+VimFoldP syn region vimPythonXHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\.$+
+      \ contains=@vimPythonXScript
+
+" [-- ruby --] {{{3
+if s:interfaces =~# 'r'
+  syn include @vimRubyScript syntax/ruby.vim
+  unlet b:current_syntax
+endif
+
+syn keyword	vimRuby	rub[y]	skipwhite nextgroup=vimRubyHeredoc,vimRubyStatement
+syn keyword	vimRuby	rubyd[o]	skipwhite nextgroup=vimRubyStatement
+syn keyword	vimRuby	rubyf[ile]
+
+syn region	vimRubyStatement	contained
+      \ start="\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimRubyScript,@vimContinue
+VimFoldr syn region vimRubyHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\s*\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1$+
+      \ contains=@vimRubyScript
+VimFoldr syn region vimRubyHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\ze\s*$+	matchgroup=vimScriptHeredocStop
+      \ end=+^\.$+
+      \ contains=@vimRubyScript
+VimFoldr syn region vimRubyHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\s\+\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\z2$+
+      \ contains=@vimRubyScript
+VimFoldr syn region vimRubyHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\.$+
+      \ contains=@vimRubyScript
+
+" [-- tcl --] {{{3
+if s:interfaces =~# 't'
+  syn include @vimTclScript syntax/tcl.vim
+  unlet b:current_syntax
+endif
+
+syn keyword	vimTcl	tcl	skipwhite nextgroup=vimTclHeredoc,vimTclStatement
+syn keyword	vimTcl	tcld[o]	skipwhite nextgroup=vimTclStatement
+syn keyword	vimTcl	tclf[ile]
+syn region	vimTclStatement	contained
+      \ start="\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimTclScript,@vimContinue
+VimFoldt syn region vimTclHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\s*\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1$+
+      \ contains=@vimTclScript
+VimFoldt syn region vimTclHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+<<\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\.$+
+      \ contains=@vimTclScript
+VimFoldt syn region vimTclHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\s\+\z(\S\+\)\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\z2$+
+      \ contains=@vimTclScript
+VimFoldt syn region vimTclHeredoc	contained
+      \ matchgroup=vimScriptHeredocStart
+      \ start=+\%(^\z(\s*\)\S.*\)\@<=<<\s*trim\ze\s*$+
+      \ matchgroup=vimScriptHeredocStop
+      \ end=+^\z1\=\.$+
+      \ contains=@vimTclScript
+
+unlet s:interfaces
 " Beginners - Patterns that involve ^ {{{2
 " =========
 Vim9 syn region	vim9LineComment	start=+^[ \t:]*\zs#.*$+ skip=+\n\s*\\\|\n\s*#\\ + end="$" contains=@vimCommentGroup,vimCommentString,vim9CommentTitle extend
@@ -1595,206 +1934,6 @@ if s:vim9script
   syn keyword vim9Vim9Script	vim9s[cript] nextgroup=vim9Vim9ScriptArg skipwhite
 endif
 
-" Embedded Scripts:  {{{2
-" ================
-"   perl,ruby     : Benoit Cerrina
-"   python,tcl    : Johannes Zellner
-"   mzscheme, lua : Charles Campbell
-
-" Allows users to specify the type of embedded script highlighting
-" they want:  (perl/python/ruby/tcl support)
-"   g:vimsyn_embed == 0   : don't embed any scripts
-"   g:vimsyn_embed =~# 'l' : embed Lua      (but only if vim supports it)
-"   g:vimsyn_embed =~# 'm' : embed MzScheme (but only if vim supports it)
-"   g:vimsyn_embed =~# 'p' : embed Perl     (but only if vim supports it)
-"   g:vimsyn_embed =~# 'P' : embed Python   (but only if vim supports it)
-"   g:vimsyn_embed =~# 'r' : embed Ruby     (but only if vim supports it)
-"   g:vimsyn_embed =~# 't' : embed Tcl      (but only if vim supports it)
-if !exists("g:vimsyn_embed")
- let g:vimsyn_embed= "lmpPr"
-endif
-
-" [-- lua --] {{{3
-let s:luapath= fnameescape(expand("<sfile>:p:h")."/lua.vim")
-if !filereadable(s:luapath)
- for s:luapath in split(globpath(&rtp,"syntax/lua.vim"),"\n")
-  if filereadable(fnameescape(s:luapath))
-   let s:luapath= fnameescape(s:luapath)
-   break
-  endif
- endfor
-endif
-if (g:vimsyn_embed =~# 'l' && has("lua")) && filereadable(s:luapath)
- unlet! b:current_syntax
- syn cluster vimFuncBodyList	add=vimLuaRegion
- exe "syn include @vimLuaScript ".s:luapath
- VimFoldl syn region vimLuaRegion matchgroup=vimScriptDelim start=+^\z(\s*\)lua\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+	contains=@vimLuaScript
- VimFoldl syn region vimLuaRegion matchgroup=vimScriptDelim start=+lua\s*<<\s*\z(\S*\)+ end=+^\z1$+		contains=@vimLuaScript
- VimFoldl syn region vimLuaRegion matchgroup=vimScriptDelim start=+^\z(\s*\)lua\s*<<\s*trim\s*$+ end=+^\z1\.$+	contains=@vimLuaScript
- VimFoldl syn region vimLuaRegion matchgroup=vimScriptDelim start=+lua\s*<<\s*$+ end=+^\.$+		contains=@vimLuaScript
- syn cluster vimFuncBodyList	add=vimLuaRegion
-else
- syn region vimEmbedError start=+^\z(\s*\)lua\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+
- syn region vimEmbedError start=+lua\s*<<\s*\z(\S*\)+ end=+^\z1$+
- syn region vimEmbedError start=+^\z(\s*\)lua\s*<<\s*trim\s\*$+ end=+^\z1\.$+
- syn region vimEmbedError start=+lua\s*<<\s*$+ end=+^\.$+
-endif
-unlet s:luapath
-
-" [-- perl --] {{{3
-let s:perlpath= fnameescape(expand("<sfile>:p:h")."/perl.vim")
-if !filereadable(s:perlpath)
- for s:perlpath in split(globpath(&rtp,"syntax/perl.vim"),"\n")
-  if filereadable(fnameescape(s:perlpath))
-   let s:perlpath= fnameescape(s:perlpath)
-   break
-  endif
- endfor
-endif
-if (g:vimsyn_embed =~# 'p' && has("perl")) && filereadable(s:perlpath)
- unlet! b:current_syntax
- syn cluster vimFuncBodyList	add=vimPerlRegion
- exe "syn include @vimPerlScript ".s:perlpath
- VimFoldp syn region vimPerlRegion	matchgroup=vimScriptDelim start=+^\z(\s*\)pe\%[rl]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+	contains=@vimPerlScript
- VimFoldp syn region vimPerlRegion	matchgroup=vimScriptDelim start=+pe\%[rl]\s*<<\s*\z(\S*\)+ end=+^\z1$+		contains=@vimPerlScript
- VimFoldp syn region vimPerlRegion	matchgroup=vimScriptDelim start=+^\z(\s*\)pe\%[rl]\s*<<\s*trim\s*$+ end=+^\z1\.$+	contains=@vimPerlScript
- VimFoldp syn region vimPerlRegion	matchgroup=vimScriptDelim start=+pe\%[rl]\s*<<\s*$+ end=+\.$+		contains=@vimPerlScript
- syn cluster vimFuncBodyList	add=vimPerlRegion
-else
- syn region vimEmbedError start=+^\z(\s*\)pe\%[rl]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+
- syn region vimEmbedError start=+pe\%[rl]\s*<<\s*\z(\S*\)+ end=+^\z1$+
- syn region vimEmbedError start=+^\z(\s*\)pe\%[rl]\s*<<\s*trim\s\*$+ end=+^\z1\.$+
- syn region vimEmbedError start=+pe\%[rl]\s*<<\s*$+ end=+^\.$+
-endif
-unlet s:perlpath
-
-" [-- ruby --] {{{3
-let s:rubypath= fnameescape(expand("<sfile>:p:h")."/ruby.vim")
-if !filereadable(s:rubypath)
- for s:rubypath in split(globpath(&rtp,"syntax/ruby.vim"),"\n")
-  if filereadable(fnameescape(s:rubypath))
-   let s:rubypath= fnameescape(s:rubypath)
-   break
-  endif
- endfor
-endif
-if (g:vimsyn_embed =~# 'r' && has("ruby")) && filereadable(s:rubypath)
- syn cluster vimFuncBodyList	add=vimRubyRegion
- unlet! b:current_syntax
- exe "syn include @vimRubyScript ".s:rubypath
- VimFoldr syn region vimRubyRegion	matchgroup=vimScriptDelim start=+^\z(\s*\)rub\%[y]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+	contains=@vimRubyScript
- VimFoldr syn region vimRubyRegion	matchgroup=vimScriptDelim start=+rub\%[y]\s*<<\s*\z(\S*\)+ end=+^\z1$+		contains=@vimRubyScript
- VimFoldr syn region vimRubyRegion	matchgroup=vimScriptDelim start=+^\z(\s*\)rub\%[y]\s*<<\s*trim\s*$+ end=+^\z1\.$+	contains=@vimRubyScript
- VimFoldr syn region vimRubyRegion	matchgroup=vimScriptDelim start=+rub\%[y]\s*<<\s*$+ end=+\.$+		contains=@vimRubyScript
- syn cluster vimFuncBodyList	add=vimRubyRegion
-else
- syn region vimEmbedError start=+^\z(\s*\)rub\%[y]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+
- syn region vimEmbedError start=+rub\%[y]\s*<<\s*\z(\S.*\)+ end=+^\z1$+
- syn region vimEmbedError start=+^\z(\s*\)rub\%[y]\s*<<\s*trim\s\*$+ end=+^\z1\.$+
- syn region vimEmbedError start=+rub\%[y]\s*<<\s*$+ end=+^\.$+
-endif
-unlet s:rubypath
-
-" [-- python --] {{{3
-let s:pythonpath= fnameescape(expand("<sfile>:p:h")."/python.vim")
-if !filereadable(s:pythonpath)
- for s:pythonpath in split(globpath(&rtp,"syntax/python.vim"),"\n")
-  if filereadable(fnameescape(s:pythonpath))
-   let s:pythonpath= fnameescape(s:pythonpath)
-   break
-  endif
- endfor
-endif
-if g:vimsyn_embed =~# 'P' && has("pythonx") && filereadable(s:pythonpath)
- unlet! b:current_syntax
- syn cluster vimFuncBodyList	add=vimPythonRegion
- exe "syn include @vimPythonScript ".s:pythonpath
- VimFoldP syn region vimPythonRegion matchgroup=vimScriptDelim start=+^\z(\s*\)py\%[thon][3x]\=\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+	contains=@vimPythonScript
- VimFoldP syn region vimPythonRegion matchgroup=vimScriptDelim start=+py\%[thon][3x]\=\s*<<\s*\z(\S\+\)+ end=+^\z1$+		contains=@vimPythonScript
- VimFoldP syn region vimPythonRegion matchgroup=vimScriptDelim start=+^\z(\s*\)py\%[thon][3x]\=\s*<<\s*trim\s*$+ end=+^\z1\.$+	contains=@vimPythonScript
- VimFoldP syn region vimPythonRegion matchgroup=vimScriptDelim start=+py\%[thon][3x]\=\s*<<\s*$+ end=+^\.$+			contains=@vimPythonScript
- VimFoldP syn region vimPythonRegion matchgroup=vimScriptDelim start=+Py\%[thon]2or3\s*<<\s*\%(trim\s*\)\=\z(\S\+\)+ end=+^\z1$+	contains=@vimPythonScript
- VimFoldP syn region vimPythonRegion matchgroup=vimScriptDelim start=+Py\%[thon]2or3\s*<<\s*\%(trim\s*\)\=$+ end=+^\.$+		contains=@vimPythonScript
- syn cluster vimFuncBodyList	add=vimPythonRegion
-else
- syn region vimEmbedError start=+^\z(\s*\)py\%[thon][3x]\=\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+
- syn region vimEmbedError start=+py\%[thon][3x]\=\s*<<\s*\z(\S\+\)+ end=+^\z1$+
- syn region vimEmbedError start=+^\z(\s*\)py\%[thon][3x]\=\s*<<\s*trim\s*$+ end=+^\z1\.$+
- syn region vimEmbedError start=+py\%[thon][3x]\=\s*<<\s*$+ end=+^\.$+
-endif
-unlet s:pythonpath
-
-" [-- tcl --] {{{3
-if has("win32") || has("win95") || has("win64") || has("win16")
- " apparently has("tcl") has been hanging vim on some windows systems with cygwin
- let s:trytcl= (&shell !~ '\<\%(bash\>\|4[nN][tT]\|\<zsh\)\>\%(\.exe\)\=$')
-else
- let s:trytcl= 1
-endif
-if s:trytcl
- let s:tclpath= fnameescape(expand("<sfile>:p:h")."/tcl.vim")
- if !filereadable(s:tclpath)
-  for s:tclpath in split(globpath(&rtp,"syntax/tcl.vim"),"\n")
-   if filereadable(fnameescape(s:tclpath))
-    let s:tclpath= fnameescape(s:tclpath)
-    break
-   endif
-  endfor
- endif
- if (g:vimsyn_embed =~# 't' && has("tcl")) && filereadable(s:tclpath)
-  unlet! b:current_syntax
-  syn cluster vimFuncBodyList	add=vimTclRegion
-  exe "syn include @vimTclScript ".s:tclpath
-  VimFoldt syn region vimTclRegion matchgroup=vimScriptDelim start=+^\z(\s*\)tc\%[l]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+	contains=@vimTclScript
-  VimFoldt syn region vimTclRegion matchgroup=vimScriptDelim start=+tc\%[l]\=\s*<<\s*\z(\S*\)+ end=+^\z1$+		contains=@vimTclScript
-  VimFoldt syn region vimTclRegion matchgroup=vimScriptDelim start=+^\z(\s*\)tc\%[l]\s*<<\s*trim\s*$+ end=+^\z1\.$+	contains=@vimTclScript
-  VimFoldt syn region vimTclRegion matchgroup=vimScriptDelim start=+tc\%[l]\=\s*<<\s*$+ end=+^\.$+		contains=@vimTclScript
-  syn cluster vimFuncBodyList	add=vimTclScript
- else
-  syn region vimEmbedError start=+^\z(\s*\)tc\%[l]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+
-  syn region vimEmbedError start=+tc\%[l]\=\s*<<\s*\z(\S*\)+ end=+^\z1$+
-  syn region vimEmbedError start=+^\z(\s*\)tc\%[l]\s*<<\s*trim\s\*$+ end=+^\z1\.$+
-  syn region vimEmbedError start=+tc\%[l]\=\s*<<\s*$+ end=+^\.$+
- endif
- unlet s:tclpath
-else
- syn region vimEmbedError start=+^\z(\s*\)tc\%[l]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+
- syn region vimEmbedError start=+tc\%[l]\=\s*<<\s*\z(\S*\)+ end=+^\z1$+
- syn region vimEmbedError start=+^\z(\s*\)tc\%[l]\s*<<\s*trim\s\*$+ end=+^\z1\.$+
- syn region vimEmbedError start=+tc\%[l]\=\s*<<\s*$+ end=+^\.$+
-endif
-unlet s:trytcl
-
-" [-- mzscheme --] {{{3
-let s:mzschemepath= fnameescape(expand("<sfile>:p:h")."/scheme.vim")
-if !filereadable(s:mzschemepath)
- for s:mzschemepath in split(globpath(&rtp,"syntax/mzscheme.vim"),"\n")
-  if filereadable(fnameescape(s:mzschemepath))
-   let s:mzschemepath= fnameescape(s:mzschemepath)
-   break
-  endif
- endfor
-endif
-if (g:vimsyn_embed =~# 'm' && has("mzscheme")) && filereadable(s:mzschemepath)
- unlet! b:current_syntax
- let s:iskKeep= &isk
- syn cluster vimFuncBodyList	add=vimMzSchemeRegion
- exe "syn include @vimMzSchemeScript ".s:mzschemepath
- let &isk= s:iskKeep
- unlet s:iskKeep
- VimFoldm syn region vimMzSchemeRegion matchgroup=vimScriptDelim start=+^\z(\s*\)mz\%[scheme]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+	contains=@vimMzSchemeScript
- VimFoldm syn region vimMzSchemeRegion matchgroup=vimScriptDelim start=+mz\%[scheme]\s*<<\s*\z(\S*\)+ end=+^\z1$+	contains=@vimMzSchemeScript
- VimFoldm syn region vimMzSchemeRegion matchgroup=vimScriptDelim start=+^\z(\s*\)mz\%[scheme]\s*<<\s*trim\s*$+ end=+^\z1\.$+	contains=@vimMzSchemeScript
- VimFoldm syn region vimMzSchemeRegion matchgroup=vimScriptDelim start=+mz\%[scheme]\s*<<\s*$+ end=+^\.$+		contains=@vimMzSchemeScript
- syn cluster vimFuncBodyList	add=vimMzSchemeRegion
-else
- syn region vimEmbedError start=+^\z(\s*\)mz\%[scheme]\s*<<\s*trim\s\+\z(\S\+\)+ end=+^\z1\z2$+
- syn region vimEmbedError start=+mz\%[scheme]\s*<<\s*\z(\S*\)+ end=+^\z1$+
- syn region vimEmbedError start=+^\z(\s*\)mz\%[scheme]\s*<<\s*trim\s\*$+ end=+^\z1\.$+
- syn region vimEmbedError start=+mz\%[scheme]\s*<<\s*$+ end=+^\.$+
-endif
-unlet s:mzschemepath
-
 " Synchronize (speed) {{{2
 "============
 if exists("g:vimsyn_minlines")
@@ -1814,7 +1953,6 @@ if !exists("skip_vim_syntax_inits")
   hi def link vimBehaveError	vimError
   hi def link vimCollClassErr	vimError
   hi def link vimErrSetting	vimError
-  hi def link vimEmbedError	vimError
   hi def link vimFTError	vimError
   hi def link vimFunctionError	vimError
   hi def link vimFunc         	vimError
@@ -1943,11 +2081,12 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimLambdaBrace	Delimiter
  hi def link vimLambdaOperator	vimOper
  hi def link vimLet	vimCommand
- hi def link vimLetHereDoc	vimString
- hi def link vimLetHereDocStart	Special
- hi def link vimLetHereDocStop	Special
+ hi def link vimLetHeredoc	vimString
+ hi def link vimLetHeredocStart	Special
+ hi def link vimLetHeredocStop	Special
  hi def link vimLetRegister	vimRegister
  hi def link vimLineComment	vimComment
+ hi def link vimLua	vimCommand
  hi def link vimMake	vimCommand
  hi def link vimMakeadd	vimCommand
  hi def link vimMakeBang	vimBang
@@ -1973,6 +2112,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimMenutranslateComment	vimComment
  hi def link vim9MethodName	vimFuncName
  hi def link vimMtchComment	vimComment
+ hi def link vimMzScheme	vimCommand
+ hi def link vimNonText	NonText
  hi def link vimNormal	vimCommand
  hi def link vimNotation	Special
  hi def link vimNotFunc	vimCommand
@@ -1992,8 +2133,12 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimPatSepZone	vimString
  hi def link vimPatSepZ	vimPatSep
  hi def link vimPattern	Type
+ hi def link vimPerl	vimCommand
  hi def link vimPlainMark	vimMark
  hi def link vimPlainRegister	vimRegister
+ hi def link vimPython	vimCommand
+ hi def link vimPython3	vimCommand
+ hi def link vimPythonX	vimCommand
  hi def link vimQuoteEscape	vimEscape
  hi def link vimRedir	vimCommand
  hi def link vimRedirBang	vimBang
@@ -2003,7 +2148,10 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimRedirEnd	Special
  hi def link vimRedirRegister	vimRegister
  hi def link vimRegister	SpecialChar
+ hi def link vimRuby	vimCommand
  hi def link vimScriptDelim	Comment
+ hi def link vimScriptHeredocStart	vimLetHeredocStart
+ hi def link vimScriptHeredocStop	vimLetHeredocStop
  hi def link vimSearch	vimString
  hi def link vimSearchDelim	Delimiter
  hi def link vimSep	Delimiter
@@ -2068,6 +2216,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSynSpell	Type
  hi def link vimSyntax	vimCommand
  hi def link vimSynType	vimSpecial
+ hi def link vimTcl	vimCommand
  hi def link vimThrow	vimCommand
  hi def link vimTodo	Todo
  hi def link vimType	Type
