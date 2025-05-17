@@ -4724,6 +4724,21 @@ did_set_winwidth(optset_T *args UNUSED)
 }
 
 /*
+ * Process the new 'wltimeoutlen' option value.
+ */
+    char *
+did_set_wltimeoutlen(optset_T *args)
+{
+    if (p_wtm < 0)
+    {
+	p_wtm = args->os_oldval.number;
+	return e_argument_must_be_positive;
+    }
+
+    return NULL;
+}
+
+/*
  * Process the updated 'wrap' option value.
  */
     char *
