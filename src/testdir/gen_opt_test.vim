@@ -115,6 +115,7 @@ let test_values = {
       \ 'winminheight': [[0, 1], [-1]],
       \ 'winminwidth': [[0, 1, 10], [-1]],
       \ 'winwidth': [[1, 10, 999], [-1, 0]],
+      \ 'wltimeoutlen': [[1, 10, 999],[-1]],
       \
       "\ string options
       \ 'ambiwidth': [['', 'single', 'double'], ['xxx']],
@@ -148,6 +149,7 @@ let test_values = {
       \		'autoselectplus', 'autoselectml', 'html', 'exclude:vimdisplay',
       \		'autoselect,unnamed', 'unnamed,exclude:.*'],
       \		['xxx', 'exclude:\\ze*', 'exclude:\\%(']],
+      \ 'clipmethod': [['wayland', 'x11', 'wayland,x11', ''],['xxx', '--', 'wayland,,', ',x11']],
       \ 'colorcolumn': [['', '8', '+2', '1,+1,+3'], ['xxx', '-a', '1,', '1;']],
       \ 'comments': [['', 'b:#', 'b:#,:%'], ['xxx', '-']],
       \ 'commentstring': [['', '/*\ %s\ */'], ['xxx']],

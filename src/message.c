@@ -71,8 +71,6 @@ static int msg_wait = 0;
 static FILE *verbose_fd = NULL;
 static int  verbose_did_open = FALSE;
 
-static int  did_warn_clipboard = FALSE;
-
 /*
  * When writing messages to the screen, there are many different situations.
  * A number of variables is used to remember the current state:
