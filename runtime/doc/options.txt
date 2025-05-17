@@ -1450,6 +1450,40 @@ A jump table for the options with a short description can be found at |Q_op|.
 	don't see it when editing.  When you don't change the options, the BOM
 	will be restored when writing the file.
 
+							*borderchars* *boc*
+'borderchars' 'boc'	string	(default empty)
+			global
+	The option can be set to a predefined style or a comma-separated list of
+	characters:
+
+	Predefined styles:
+	   "single"  - Single line border.
+	   "double"  - Double line border.
+	   "rounded" - Rounded border.
+	   "bold"    - Bold border.
+
+	For custom characters, list the 8 characters in this order:
+	   1. top border character
+	   2. right border character
+	   3. bottom border character
+	   4. left border character
+	   5. top-left corner character
+	   6. top-right corner character
+	   7. bottom-right corner character
+	   8. bottom-left corner character
+
+	Setting just this option does not automatically enable borders. You must
+	either also set 'border' in the popup options or let this feature
+	automatically add borders when default border characters are used.
+
+	Examples: >
+	    " Use a predefined style
+	    set popupborderchars=single
+
+	    " Custom border
+	    set borderchars=custom:+,-,+,\|,+,-,+,\|
+<
+
 						*'breakat'* *'brk'*
 'breakat' 'brk'		string	(default " ^I!@*-+;:,./?")
 			global
