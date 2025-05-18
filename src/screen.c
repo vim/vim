@@ -156,13 +156,13 @@ screen_fill_end(
     if (wp->w_p_rl)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_ENDCOL(wp) - nn + NOUSE_TPL_LCOL(wp), (int)W_ENDCOL(wp) - off + TPL_LCOL(wp),
+		W_ENDCOL(wp) - nn + NOUSE_TPL_LCOL(wp), (int)W_ENDCOL(wp) - off + NOUSE_TPL_LCOL(wp),
 		c1, c2, attr);
     }
     else
 #endif
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + off + NOUSE_TPL_LCOL(wp), (int)wp->w_wincol + nn + TPL_LCOL(wp),
+		wp->w_wincol + off + NOUSE_TPL_LCOL(wp), (int)wp->w_wincol + nn + NOUSE_TPL_LCOL(wp),
 		c1, c2, attr);
     return nn;
 }
@@ -395,9 +395,9 @@ blocked_by_popup(int row, int col)
 
     if (!popup_visible)
 	return FALSE;
-    if (col < TPL_LCOL(NULL))
-	return FALSE;
-    off = row * screen_Columns + col - TPL_LCOL(NULL);
+//    if (col < TPL_LCOL(NULL))
+//	return FALSE;
+    off = row * screen_Columns + col - NOUSE_TPL_LCOL(NULL);
     return popup_mask[off] > screen_zindex || popup_transparent[off];
 }
 #endif
@@ -857,7 +857,7 @@ screen_line(
     {
 	// For a window that has a right neighbor, draw the separator char
 	// right of the window contents.  But not on top of a popup window.
-	if (coloff + col < TPL_LCOL(NULL) + COLUMNS_WITHOUT_TPL())
+	if (coloff + col < NOUSE_TPL_LCOL(NULL) + NOUSE_COLUMNS_WITHOUT_TPL())
 	{
 	    if (!skip_for_popup(row, col + coloff))
 	    {
@@ -1056,6 +1056,7 @@ win_redr_custom(
 	// Use 'tabline'.  Always at the first line of the screen.
 	stl = p_tal;
 	row = 0;
+	col = TPL_LCOL(NULL);
 	fillchar = ' ';
 	attr = HL_ATTR(HLF_TPF);
 	maxwidth = COLUMNS_WITHOUT_TPL();
@@ -1181,7 +1182,7 @@ win_redr_custom(
     if (wp == NULL)
     {
 	// Fill the TabPageIdxs[] array for clicking in the tab pagesline.
-	col = 0;
+	col = TPL_LCOL(NULL);
 	len = 0;
 	p = buf;
 	fillchar = 0;
@@ -1193,7 +1194,7 @@ win_redr_custom(
 	    p = tabtab[n].start;
 	    fillchar = tabtab[n].userhl;
 	}
-	while (col < COLUMNS_WITHOUT_TPL())
+	while (col < NOUSE_COLUMNS_WITHOUT_TPL())
 	    TabPageIdxs[col++] = fillchar;
     }
 

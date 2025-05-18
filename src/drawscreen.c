@@ -572,8 +572,9 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    fillchar = fillchar_status(&attr, wp);
 	else
 	    fillchar = fillchar_vsep(&attr, wp);
-	if (W_ENDCOL(wp) < COLUMNS_WITHOUT_TPL())
-	    screen_putchar(fillchar, row, W_ENDCOL(wp) + NOUSE_TPL_LCOL(wp), attr);
+//	if (W_ENDCOL(wp) < COLUMNS_WITHOUT_TPL())
+//	    screen_putchar(fillchar, row, W_ENDCOL(wp) + NOUSE_TPL_LCOL(wp), attr);
+	screen_putchar(fillchar, row, W_ENDCOL(wp), attr);
     }
     busy = FALSE;
 }
