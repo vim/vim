@@ -33,7 +33,7 @@ with ten fingers can work very fast.  Additionally, function keys can be
 mapped to commands by the user, and the mouse can be used.
 
 Vim runs under MS-Windows (7, 8, 10, 11), macOS, Haiku, VMS and almost all
-flavours of UNIX.  Porting to other systems should not be very difficult.
+flavours of UNIX,and BSD systems.  Porting to other systems should not be very difficult.
 Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000/XP/Vista,
 Amiga DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
 
