@@ -1725,10 +1725,6 @@ jump_to_mouse(
     int		mouse_char = ' ';
 #endif
 
-    col -= TPL_LCOL(NULL);
-    if (col < 0)
-	return IN_TABPANEL;
-
     mouse_past_bottom = FALSE;
     mouse_past_eol = FALSE;
 
@@ -1813,7 +1809,7 @@ retnomove:
 
     if (!(flags & MOUSE_FOCUS))
     {
-	if (row < 0 || col + TPL_LCOL(NULL) < 0) // check if it makes sense
+	if (row < 0 || col + NOUSE_TPL_LCOL(NULL) < 0) // check if it makes sense
 	    return IN_UNKNOWN;
 
 	// find the window where the row is in and adjust "row" and "col" to be
@@ -3221,6 +3217,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 
     fp = topframe;
     *rowp -= firstwin->w_winrow;
+    *colp -= TPL_LCOL(NULL);
     for (;;)
     {
 	if (fp->fr_layout == FR_LEAF)
@@ -3333,9 +3330,9 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    winid = wp->w_id;
 	    winrow = row + 1;
 	    wincol = col + 1;
-	    wincol -= TPL_LCOL(NULL);
-	    if (wincol < 0)
-		wincol = 0;
+//	    wincol -= TPL_LCOL(NULL);
+//	    if (wincol < 0)
+//		wincol = 0;
 	    row -= top_off;
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
