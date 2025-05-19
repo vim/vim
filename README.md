@@ -63,7 +63,7 @@ Some popular places to get the latest Vim:
 
 If you obtained a binary distribution you don't need to compile Vim.  If you
 obtained a source distribution, all the stuff for compiling Vim is in the
-[`src`](./src/) directory.  See [`src/INSTALL`](./src/INSTALL) for instructions.
+[`src`](./src/) directory.  See [`src/INSTALL`](Documentation) for instructions.
 
 ## Installation
 
