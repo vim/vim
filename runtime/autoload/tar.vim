@@ -15,6 +15,7 @@
 "   2025 Mar 02 by Vim Project: determine the compression using readblob()
 "                               instead of shelling out to file(1)
 "   2025 Apr 16 by Vim Project: decouple from netrw by adding s:WinPath()
+"   2025 May 19 by Vim Project: restore working directory after read/write
 "
 "	Contains many ideas from Michael Toren's <tar.vim>
 "
@@ -306,10 +307,10 @@ fun! tar#Read(fname,mode)
 
   " attempt to change to the indicated directory
   try
-   exe "cd ".fnameescape(tmpdir)
+   exe "lcd ".fnameescape(tmpdir)
   catch /^Vim\%((\a\+)\)\=:E344/
    redraw!
-   echohl Error | echo "***error*** (tar#Write) cannot cd to temporary directory" | Echohl None
+   echohl Error | echo "***error*** (tar#Write) cannot lcd to temporary directory" | Echohl None
    let &report= repkeep
    return
   endtry
@@ -319,7 +320,7 @@ fun! tar#Read(fname,mode)
    call s:Rmdir("_ZIPVIM_")
   endif
   call mkdir("_ZIPVIM_")
-  cd _ZIPVIM_
+  lcd _ZIPVIM_
 
   if has("win32unix") && executable("cygpath")
    " assuming cygwin
@@ -413,9 +414,9 @@ fun! tar#Read(fname,mode)
    redraw!
 
 if v:shell_error != 0
-   cd ..
+   lcd ..
    call s:Rmdir("_ZIPVIM_")
-   exe "cd ".fnameescape(curdir)
+   exe "lcd ".fnameescape(curdir)
    echohl Error | echo "***error*** (tar#Read) sorry, unable to open or extract ".tarfile." with ".fname | echohl None
   endif
 
@@ -432,14 +433,16 @@ if v:shell_error != 0
   set nomod
 
   let &report= repkeep
+  exe "lcd ".fnameescape(curdir)
+  silent exe "file tarfile::".escape_file
 endfun
 
 " ---------------------------------------------------------------------
 " tar#Write: {{{2
 fun! tar#Write(fname)
+  let pwdkeep= getcwd()
   let repkeep= &report
   set report=10
-  " temporary buffer variable workaround because too fucking tired. but it works now
   let curdir= b:curdir
   let tmpdir= b:tmpdir
 
@@ -563,9 +566,9 @@ fun! tar#Write(fname)
   endif
 
   " cleanup and restore current directory
-  cd ..
+  lcd ..
   call s:Rmdir("_ZIPVIM_")
-  exe "cd ".fnameescape(curdir)
+  exe "lcd ".fnameescape(pwdkeep)
   setlocal nomod
 
   let &report= repkeep
@@ -807,7 +810,7 @@ fun! tar#Vimuntar(...)
   if simplify(curdir) != simplify(vimhome)
    " copy (possibly compressed) tarball to .vim/vimfiles
    call system(s:WinPath(g:tar_copycmd)." ".shellescape(tartail)." ".shellescape(vimhome))
-   exe "cd ".fnameescape(vimhome)
+   exe "lcd ".fnameescape(vimhome)
   endif
 
   " if necessary, decompress the tarball; then, extract it
@@ -821,7 +824,7 @@ fun! tar#Vimuntar(...)
     if simplify(curdir) != simplify(tarhome)
      " remove decompressed tarball, restore directory
      call delete(tartail.".tar")
-     exe "cd ".fnameescape(curdir)
+     exe "lcd ".fnameescape(curdir)
     endif
     return
    endif
@@ -839,7 +842,7 @@ fun! tar#Vimuntar(...)
   if simplify(tarhome) != simplify(vimhome)
    " remove decompressed tarball, restore directory
    call delete(vimhome."/".tarbase.".tar")
-   exe "cd ".fnameescape(curdir)
+   exe "lcd ".fnameescape(curdir)
   endif
 endfun
 
