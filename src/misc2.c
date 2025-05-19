@@ -1213,7 +1213,7 @@ handle_x_keys(int key)
 get_special_key_name(int c, int modifiers)
 {
     static char_u string[MAX_KEY_NAME_LEN + 1];
-    int	    i, idx;
+    int	    i, idx, len;
     int	    table_idx;
 
     string[0] = '<';
@@ -1286,10 +1286,11 @@ get_special_key_name(int c, int modifiers)
 	// Not a special key, only modifiers, output directly
 	else
 	{
-	    if (has_mbyte && (*mb_char2len)(c) > 1)
-		idx += (*mb_char2bytes)(c, string + idx);
-	    else if (vim_isprintc(c))
+	    len = (*mb_char2len)(c);
+	    if (len == 1 && vim_isprintc(c))
 		string[idx++] = c;
+	    else if (has_mbyte && len > 1)
+		idx += (*mb_char2bytes)(c, string + idx);
 	    else
 	    {
 		char_u	*s = transchar(c);

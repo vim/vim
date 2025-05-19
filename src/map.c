@@ -2143,6 +2143,7 @@ makemap(
 put_escstr(FILE *fd, char_u *strstart, int what)
 {
     char_u	*str = strstart;
+    char_u      *p;
     int		c;
     int		modifiers;
 
@@ -2156,8 +2157,6 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 
     for ( ; *str != NUL; ++str)
     {
-	char_u	*p;
-
 	// Check for a multi-byte character, which may contain escaped
 	// K_SPECIAL and CSI bytes
 	p = mb_unescape(&str);
@@ -2180,9 +2179,21 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 	    {
 		modifiers = str[2];
 		str += 3;
-		c = *str;
+
+		// Modifiers can be applied too to multi-byte characters.
+		p = mb_unescape(&str);
+
+		if (p == NULL)
+		{
+		    // manually advance str if mb_unescape() fails
+		    p = str;
+		    str += (*mb_ptr2len)(str);
+		}
+
+		c = (*mb_ptr2char)(p);
+		--str;
 	    }
-	    if (c == K_SPECIAL)
+	    else if (c == K_SPECIAL)
 	    {
 		c = TO_SPECIAL(str[1], str[2]);
 		str += 2;
