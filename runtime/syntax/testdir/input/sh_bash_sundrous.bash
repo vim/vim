@@ -52,7 +52,6 @@ tr
 tty
 uname
 uniq
-vmstate
 wc
 xargs
 xgrep

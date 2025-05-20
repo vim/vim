@@ -417,19 +417,15 @@ if exists("b:is_bash")
  syn cluster shCommandSubList add=bashSpecialVariables,bashStatement
  syn cluster shCaseList add=bashAdminStatement,bashStatement
  syn keyword bashSpecialVariables contained auto_resume BASH BASH_ALIASES BASH_ARGC BASH_ARGV BASH_CMDS BASH_COMMAND BASH_ENV BASH_EXECUTION_STRING BASH_LINENO BASHOPTS BASHPID BASH_REMATCH BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION BASH_XTRACEFD CDPATH COLUMNS COMP_CWORD COMP_KEY COMP_LINE COMP_POINT COMPREPLY COMP_TYPE COMP_WORDBREAKS COMP_WORDS COPROC COPROC_PID DIRSTACK EMACS ENV EUID FCEDIT FIGNORE FUNCNAME FUNCNEST GLOBIGNORE GROUPS histchars HISTCMD HISTCONTROL HISTFILE HISTFILESIZE HISTIGNORE HISTSIZE HISTTIMEFORMAT HOME HOSTFILE HOSTNAME HOSTTYPE IFS IGNOREEOF INPUTRC LANG LC_ALL LC_COLLATE LC_CTYPE LC_MESSAGES LC_NUMERIC LINENO LINES MACHTYPE MAIL MAILCHECK MAILPATH MAPFILE OLDPWD OPTARG OPTERR OPTIND OSTYPE PATH PIPESTATUS POSIXLY_CORRECT PPID PROMPT_COMMAND PS0 PS1 PS2 PS3 PS4 PWD RANDOM READLINE_LINE READLINE_POINT REPLY SECONDS SHELL SHELLOPTS SHLVL TIMEFORMAT TIMEOUT TMPDIR UID
- syn keyword bashStatement cat chmod clear complete cp du egrep expr fgrep find getconf gnufind gnugrep grep head less ls mkdir mv rm rmdir rpm sed sleep sort strip stty tail
- syn keyword bashStatement basename chgrp chown cksum cmp comm cut date dirname fmt fold iconv id join ln logname md5sum mkfifo mktemp od paste pathchk readlink realpath rev sha1sum sha224sum sha256sum sha384sum sha512sum sum sync tee tr tty uname uniq vmstate wc xargs xgrep
+ syn keyword bashStatement basename cat chgrp chmod chown cksum clear cmp comm command compgen complete cp cut date dirname du egrep expr fgrep find fmt fold getconf gnufind gnugrep grep head iconv id join less ln logname ls md5sum mkdir mkfifo mktemp mv od paste pathchk readlink realpath rev rm rmdir rpm sed sha1sum sha224sum sha256sum sha384sum sha512sum sleep sort strip stty sum sync tail tee tr tty uname uniq wc xargs xgrep
  syn keyword bashAdminStatement daemon killall killproc nice reload restart start status stop
- syn keyword bashStatement	command compgen
 endif
 
 if exists("b:is_kornshell") || exists("b:is_posix")
  syn cluster shCommandSubList add=kshSpecialVariables,kshStatement
  syn cluster shCaseList add=kshStatement
  syn keyword kshSpecialVariables contained CDPATH COLUMNS EDITOR ENV ERRNO FCEDIT FIGNORE FPATH HISTCMD HISTEDIT HISTFILE HISTSIZE HOME IFS JOBMAX KSH_VERSION LANG LC_ALL LC_COLLATE LC_CTYPE LC_MESSAGES LC_NUMERIC LC_TIME LINENO LINES MAIL MAILCHECK MAILPATH OLDPWD OPTARG OPTIND PATH PPID PS1 PS2 PS3 PS4 PWD RANDOM REPLY SECONDS SHELL SHLVL SRANDOM TMOUT VISUAL
- syn keyword kshStatement cat chmod clear cp du egrep expr fgrep find grep head killall less ls mkdir mv nice printenv rm rmdir sed sort strip stty tail tput
- syn keyword kshStatement command setgroups setsenv
- syn keyword kshStatement basename chgrp chown cksum cmp comm cut date dirname fmt fold iconv id join ln logname md5sum mkfifo mktemp od paste pathchk readlink realpath rev sha1sum sha224sum sha256sum sha2sum sha384sum sha512sum sum sync tee tr tty uname uniq vmstate wc xargs xgrep
+ syn keyword kshStatement basename cat chgrp chmod chown cksum clear cmp comm command cp cut date dirname du egrep expr fgrep find fmt fold grep head iconv id join killall less ln logname ls md5sum mkdir mkfifo mktemp mv nice od paste pathchk printenv readlink realpath rev rm rmdir sed setgroups setsenv sha1sum sha224sum sha256sum sha2sum sha384sum sha512sum sort strip stty sum sync tail tee tput tr tty uname uniq vmstate wc xargs xgrep
 endif
 
 syn match   shSource	"^\.\s"
