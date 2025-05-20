@@ -359,10 +359,8 @@ syn match  shComma     contained	","
 syn match shCaseBar	contained skipwhite "\(^\|[^\\]\)\(\\\\\)*\zs|"		nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote
 syn match shCaseStart	contained skipwhite skipnl "("			nextgroup=shCase,shCaseBar
 syn match shCaseLabel	contained skipwhite	"\%(\\.\|[-a-zA-Z0-9_*.]\)\+"	contains=shBracketExpr
-if exists("b:is_bash")
+if exists("b:is_bash") || exists("b:is_kornshell")
  ShFoldIfDoFor syn region	shCase	contained skipwhite skipnl matchgroup=shSnglCase start="\%(\\.\|[^#$()'" \t]\)\{-}\zs)"  end=";;" end=";&" end=";;&" end="esac"me=s-1	contains=@shCaseList	nextgroup=shCaseStart,shCase,shComment
-elseif exists("b:is_kornshell")
- ShFoldIfDoFor syn region	shCase	contained skipwhite skipnl matchgroup=shSnglCase start="\%(\\.\|[^#$()'" \t]\)\{-}\zs)"  end=";;" end=";&" end="esac"me=s-1	contains=@shCaseList	nextgroup=shCaseStart,shCase,shComment
 else
  ShFoldIfDoFor syn region	shCase	contained skipwhite skipnl matchgroup=shSnglCase start="\%(\\.\|[^#$()'" \t]\)\{-}\zs)"  end=";;" end="esac"me=s-1		contains=@shCaseList	nextgroup=shCaseStart,shCase,shComment
 endif
@@ -419,7 +417,8 @@ if exists("b:is_bash")
  syn cluster shCommandSubList add=bashSpecialVariables,bashStatement
  syn cluster shCaseList add=bashAdminStatement,bashStatement
  syn keyword bashSpecialVariables contained auto_resume BASH BASH_ALIASES BASH_ARGC BASH_ARGV BASH_CMDS BASH_COMMAND BASH_ENV BASH_EXECUTION_STRING BASH_LINENO BASHOPTS BASHPID BASH_REMATCH BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION BASH_XTRACEFD CDPATH COLUMNS COMP_CWORD COMP_KEY COMP_LINE COMP_POINT COMPREPLY COMP_TYPE COMP_WORDBREAKS COMP_WORDS COPROC COPROC_PID DIRSTACK EMACS ENV EUID FCEDIT FIGNORE FUNCNAME FUNCNEST GLOBIGNORE GROUPS histchars HISTCMD HISTCONTROL HISTFILE HISTFILESIZE HISTIGNORE HISTSIZE HISTTIMEFORMAT HOME HOSTFILE HOSTNAME HOSTTYPE IFS IGNOREEOF INPUTRC LANG LC_ALL LC_COLLATE LC_CTYPE LC_MESSAGES LC_NUMERIC LINENO LINES MACHTYPE MAIL MAILCHECK MAILPATH MAPFILE OLDPWD OPTARG OPTERR OPTIND OSTYPE PATH PIPESTATUS POSIXLY_CORRECT PPID PROMPT_COMMAND PS0 PS1 PS2 PS3 PS4 PWD RANDOM READLINE_LINE READLINE_POINT REPLY SECONDS SHELL SHELLOPTS SHLVL TIMEFORMAT TIMEOUT TMPDIR UID
- syn keyword bashStatement chmod clear complete du egrep expr fgrep find gnufind gnugrep grep head less ls mkdir mv rm rmdir rpm sed sleep sort strip tail
+ syn keyword bashStatement cat chmod clear complete cp du egrep expr fgrep find getconf gnufind gnugrep grep head less ls mkdir mv rm rmdir rpm sed sleep sort strip stty tail
+ syn keyword bashStatement basename chgrp chown cksum cmp comm cut date dirname fmt fold iconv id join ln logname md5sum mkfifo mktemp od paste pathchk readlink realpath rev sha1sum sha224sum sha256sum sha384sum sha512sum sum sync tee tr tty uname uniq vmstate wc xargs xgrep
  syn keyword bashAdminStatement daemon killall killproc nice reload restart start status stop
  syn keyword bashStatement	command compgen
 endif
@@ -427,9 +426,10 @@ endif
 if exists("b:is_kornshell") || exists("b:is_posix")
  syn cluster shCommandSubList add=kshSpecialVariables,kshStatement
  syn cluster shCaseList add=kshStatement
- syn keyword kshSpecialVariables contained CDPATH COLUMNS EDITOR ENV ERRNO FCEDIT FPATH HISTFILE HISTSIZE HOME IFS LINENO LINES MAIL MAILCHECK MAILPATH OLDPWD OPTARG OPTIND PATH PPID PS1 PS2 PS3 PS4 PWD RANDOM REPLY SECONDS SHELL TMOUT VISUAL
+ syn keyword kshSpecialVariables contained CDPATH COLUMNS EDITOR ENV ERRNO FCEDIT FIGNORE FPATH HISTCMD HISTEDIT HISTFILE HISTSIZE HOME IFS JOBMAX KSH_VERSION LANG LC_ALL LC_COLLATE LC_CTYPE LC_MESSAGES LC_NUMERIC LC_TIME LINENO LINES MAIL MAILCHECK MAILPATH OLDPWD OPTARG OPTIND PATH PPID PS1 PS2 PS3 PS4 PWD RANDOM REPLY SECONDS SHELL SHLVL SRANDOM TMOUT VISUAL
  syn keyword kshStatement cat chmod clear cp du egrep expr fgrep find grep head killall less ls mkdir mv nice printenv rm rmdir sed sort strip stty tail tput
  syn keyword kshStatement command setgroups setsenv
+ syn keyword kshStatement basename chgrp chown cksum cmp comm cut date dirname fmt fold iconv id join ln logname md5sum mkfifo mktemp od paste pathchk readlink realpath rev sha1sum sha224sum sha256sum sha2sum sha384sum sha512sum sum sync tee tr tty uname uniq vmstate wc xargs xgrep
 endif
 
 syn match   shSource	"^\.\s"
@@ -595,6 +595,7 @@ endif
 " ========================================
 if exists("b:is_kornshell")
  syn match  shDerefVar	contained	"\.\+"	nextgroup=@shDerefVarList
+ syn region shDeref	matchgroup=PreProc start="\${\ze[\.]" end="}"	contains=@shDerefVarList,shDerefPSR,shDerefPPS
 endif
 
 " ksh: ${!var[*]} array index list syntax: {{{1
@@ -633,10 +634,10 @@ syn region  shDerefVarArray   contained	matchgroup=shDeref start="\[" end="]"	co
 "    ksh bash : ${parameter##pattern} remove large left  pattern
 "    ksh bash : ${parameter%pattern}  remove small right pattern
 "    ksh bash : ${parameter%%pattern} remove large right pattern
-"        bash : ${parameter^pattern}  Case modification
-"        bash : ${parameter^^pattern} Case modification
-"        bash : ${parameter,pattern}  Case modification
-"        bash : ${parameter,,pattern} Case modification
+"    ksh bash : ${parameter^pattern}  Case modification
+"    ksh bash : ${parameter^^pattern} Case modification
+"    ksh bash : ${parameter,pattern}  Case modification
+"    ksh bash : ${parameter,,pattern} Case modification
 "        bash : ${@:start:qty}        display command line arguments from start to start+qty-1 (inferred)
 "        bash : ${parameter@operator} transforms parameter (operator∈[uULqEPARa])
 syn cluster shDerefPatternList	contains=shDerefPattern,shDerefString
@@ -655,8 +656,10 @@ if exists("b:is_bash") || exists("b:is_kornshell") || exists("b:is_posix")
  call s:GenerateBracketExpressionItems({'itemGroup': 'shDerefPattern', 'bracketGroup': 'shBracketExprDelim', 'extraArgs': 'contained nextgroup=shDerefPattern'})
  syn match  shDerefEscape	contained	'\%(\\\\\)*\\.'
 endif
-if exists("b:is_bash")
+if exists("b:is_bash") || exists("b:is_kornshell")
  syn match  shDerefOp	contained	"[,^]\{1,2}"	nextgroup=@shDerefPatternList
+endif
+if exists("b:is_bash")
  syn match  shDerefOp	contained	"@[uULQEPAKa]"
 endif
 syn region shDerefString	contained	matchgroup=shDerefDelim start=+\%(\\\)\@<!'+ end=+'+
@@ -671,15 +674,15 @@ if exists("b:is_bash") || exists("b:is_kornshell") || exists("b:is_posix")
  syn match  shDerefLen	contained	":[^}]\+"	contains=shDeref,shDerefSimple,shArithmetic
 endif
 
-if exists("b:is_bash")
- " bash : ${parameter/pattern/string}
- " bash : ${parameter//pattern/string}
+if exists("b:is_bash") || exists("b:is_kornshell")
+ " bash ksh : ${parameter/pattern/string}
+ " bash ksh : ${parameter//pattern/string}
  syn match  shDerefPPS	contained	'/\{1,2}'	nextgroup=shDerefPPSleft
  syn region shDerefPPSleft	contained	start='.'	skip=@\%(\\\\\)*\\/@ matchgroup=shDerefOp	end='/' end='\ze}' end='"'	nextgroup=shDerefPPSright	contains=@shPPSLeftList
  syn region shDerefPPSright	contained	start='.'	skip=@\%(\\\\\)\+@		end='\ze}'				contains=@shPPSRightList
 
- " bash : ${parameter/#pattern/string}
- " bash : ${parameter/%pattern/string}
+ " bash ksh : ${parameter/#pattern/string}
+ " bash ksh : ${parameter/%pattern/string}
  syn match  shDerefPSR	contained	'/[#%]'	nextgroup=shDerefPSRleft,shDoubleQuote,shSingleQuote
  syn region shDerefPSRleft	contained	start='[^"']'	skip=@\%(\\\\\)*\\/@ matchgroup=shDerefOp	end='/' end='\ze}'	nextgroup=shDerefPSRright	contains=shBracketExpr
  syn region shDerefPSRright	contained	start='.'	skip=@\%(\\\\\)\+@		end='\ze}'
@@ -706,7 +709,7 @@ if exists("b:is_kornshell") || exists("b:is_posix")
  if exists("b:is_posix")
   syn keyword shStatement command
  else
-  syn keyword shStatement time
+  syn keyword shStatement alarm eloop fds mkservice pids poll time
  endif
 
 " Additional bash Keywords: {{{1
