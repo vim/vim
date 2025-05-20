@@ -4757,4 +4757,29 @@ func Test_textprop_with_wincolor()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_textprop_materialize_list()
+	let ids = range(3)
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	let ids = range(3) + []
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	let ids = range(3)
+	let ids[0] = ids[0]
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	let ids = range(3)
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	call assert_equal([], prop_list(1, #{ids: range(3) + [] }))
+
+	let ids = range(3)
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	let ids = range(0, 3)
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	call assert_equal([], prop_list(1, #{ids: 3->range()}))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
