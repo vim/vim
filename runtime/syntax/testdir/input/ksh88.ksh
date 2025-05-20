@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/ksh88
 
 # Rendering namespace variables
 echo ${.foo.bar[adsf]} ${foo.bar[1][2]} ${foo.bar[1][az]} ${.foo.bar[1][2]}
@@ -6,7 +6,9 @@ echo ${.foo[var]} ${.foo.bar[1]} ${.foo.bar[*]} ${foo.bar##baz} ${.foo.bar##baz}
 echo ${.foo.bar[3]##baz} ${.foo.bar[z]##baz} ${sh.version/V/b} ${.sh.version/V/b}
 echo ${foo/%bar/foo} ${foo/#bar/foo} ${foo.bar/%bar/foo} ${foo.bar[d]/#bar/foo}
 echo ${.foo/%barfoo} ${.foo.bar/#bar/foo} ${.bar.foo/%bar/foo} ${.bar/#bar/foo}
+echo ${foo/%barfoo} ${foo/bar/foo} ${barfoo//bar/foo} ${bar/#bar/foo}
 echo ${.sh.version^^} ${.sh.version,,} ${KSH_VERSION^} ${KSH_VERSION,}
+
 # 'alarm' builtin (present in ksh93u+, ksh93v- and the 93u+m dev branch).
 alarm --man
 # The fds and pids builtins. These ksh93 builtins have existed since 2005-05-22
@@ -86,14 +88,59 @@ poll --man
 # mkservice and eloop (rarely provided; requires SHOPT_MKSERVICE)
 mkservice --man; eloop --help
 
+# some mksh builtins
+bind; rename
+
 # ;& and ;;& in case statements
 case x in
-	bar) false ;&
-	foo) true ;;&
-	*) print ${$bar} ;;	# 93v-
+	bar) false ${baz:1} ;&
+	foo) true ${foo:0:0} ;;&
+	*) print ${bar} ;;
 esac
 
+# Below is subshare syntax supported by both ksh93 and mksh.
+print ${ echo one }
+print ${	echo two
+}
+print ${
+echo three	}
+print ${ echo 'four'; }
+print ${ echo 'five' ;}
+print ${ echo 'six'
+}
+print ${	echo 'seven'	}
+echo ${ print 'eight'	}
+typeset nine=${ pwd; }
+
+# Value substitutions of the form ${|command} are only
+# supported by mksh, not ksh93.
+if ! command eval '((.sh.version >= 20070703))' 2>/dev/null; then
+	valsubfunc() {
+		REPLY=$1
+	}
+	echo ${|valsubfunc ten}
+	print "${|valsubfunc eleven;}"
+	printf '%s' "${|valsubfunc twelve	}"
+	unlucky=${|valsubfunc thirteen
+}
+	typeset notafloat=${|valsubfunc notanumber	}
+	print $unlucky $notanumber
+	${|echo foo}
+	${|echo bar
+}
+fi
+
+# ======
+# Shared-state command substitutions using the syntax ${<file;}
+# are only supported by ksh93, not mksh.
+echo ${
+	printf %s str
+} > /tmp/strfile
+echo ${</tmp/strfile;}
+
+exit 0
 # ksh88 and ksh93 non-dot special variables
 print ${ RANDOM= SRANDOM= SHLVL= JOBMAX= KSH_VERSION= FIGNORE= LC_TIME= LC_NUMERIC= LC_MESSAGES= LC_CTYPE= LC_COLLATE= LC_ALL= LANG= FPATH= PS4= OPTIND= OPTARG= true ;}
 print $(LINENO= SECONDS= TMOUT= PPID= LINES= COLUMNS= VISUAL= OLDPWD= PS3= MAILPATH= CDPATH= FCEDIT= HISTCMD= HISTEDIT= HISTSIZE= HISTFILE= ENV= MAILCHECK= EDITOR= SHELL= false)
-print $(REPLY= MAIL= HOME= PWD= IFS= PS2= PS1= PATH= ERRNO= :)  # ERRNO is provided by ksh88 but not ksh93
+print $(REPLY= MAIL= HOME= PWD= IFS= PS2= PS1= PATH= SH_OPTIONS= ERRNO= COMP_CWORD= COMP_LINE= COMP_POINT= COMP_WORDS= COMP_KEY= COMPREPLY= COMP_WORDBREAKS= COMP_TYPE= compgen)
+print $(BASHPID= EPOCHREALTIME= EXECSHELL= KSHEGID= KSHGID= KSHUID= KSH_MATCH= PATHSEP= PGRP= PIPESTATUS= TMPDIR= USER_ID= VPATH= CSWIDTH= complete)
