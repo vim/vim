@@ -3216,8 +3216,14 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 #endif
 
     fp = topframe;
+
+    if (*colp < firstwin->w_wincol
+	    || *colp >= firstwin->w_wincol + fp->fr_width
+	    || *rowp < firstwin->w_winrow)
+	return NULL;
+
     *rowp -= firstwin->w_winrow;
-    *colp -= TPL_LCOL(NULL);
+    *colp -= firstwin->w_wincol;
     for (;;)
     {
 	if (fp->fr_layout == FR_LEAF)
