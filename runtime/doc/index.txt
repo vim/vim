@@ -171,6 +171,7 @@ commands in CTRL-X submode				*i_CTRL-X_index*
 |i_CTRL-X_CTRL-Z|	CTRL-X CTRL-Z	stop completion, keeping the text as-is
 |i_CTRL-X_CTRL-]|	CTRL-X CTRL-]	complete tags
 |i_CTRL-X_s|		CTRL-X s	spelling suggestions
+|i_CTRL-X_CTRL-R|	CTRL-X CTRL-R	complete words from registers
 
 commands in completion mode (see |popupmenu-keys|)
 
