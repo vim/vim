@@ -2185,7 +2185,6 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 
 		if (p == NULL)
 		{
-		    // manually advance str if mb_unescape() fails
 		    c = *str;
 		}
 		else
