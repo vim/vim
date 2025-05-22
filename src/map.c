@@ -2186,14 +2186,16 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 		if (p == NULL)
 		{
 		    // manually advance str if mb_unescape() fails
-		    p = str;
-		    str += (*mb_ptr2len)(str);
+		    c = *str;
 		}
-
-		c = (*mb_ptr2char)(p);
-		--str;
+		else
+		{
+		    // retrieve codepoint (character number) from unescaped string
+		    c = (*mb_ptr2char)(p);
+		    --str;
+		}
 	    }
-	    else if (c == K_SPECIAL)
+	    if (c == K_SPECIAL)
 	    {
 		c = TO_SPECIAL(str[1], str[2]);
 		str += 2;
