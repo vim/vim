@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 May 17
+" Last Change:	   2025 May 22
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -1551,7 +1551,6 @@ let s:interfaces = get(g:, "vimsyn_embed", "lP")
 if s:interfaces =~# 'l'
   syn include @vimLuaScript syntax/lua.vim
   unlet b:current_syntax
-  syn clear luaParenError " See issue #11277
 endif
 
 syn keyword	vimLua	lua	skipwhite nextgroup=vimLuaHeredoc,vimLuaStatement
