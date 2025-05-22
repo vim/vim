@@ -312,7 +312,8 @@ CClink = $(CC)
 #CONF_ARGS5 = --without-local-dir
 
 # Use this one if you distribute a modified version of Vim.
-#CONF_ARGS6 = --with-modified-by="John Doe"
+CONF_ARGS6 = --with-modified-by="Iago Jacob"#by Iago
+VIMNAME = vim2#by Iago
 
 # GUI - For creating Vim with GUI (gvim) (B)
 # Uncomment this line when you don't want to get the GUI version, although you
@@ -954,7 +955,7 @@ TOOLS = xxd/xxd$(EXEEXT)
 ### prefix	the top directory for the data (default "/usr/local")
 #
 # Uncomment the next line to install Vim in your home directory.
-#prefix = $(HOME)
+prefix = $(HOME)#by Iago
 
 ### exec_prefix	is the top directory for the executable (default $(prefix))
 #
