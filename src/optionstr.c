@@ -29,7 +29,9 @@ static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 static char *(p_briopt_values[]) = {"shift:", "min:", "sbr", "list:", "column:", NULL};
 #endif
 #if defined(FEAT_TABPANEL)
-static char *(p_tpl_values[]) = {"wrap", "align:", "columns:", "vert:", NULL};
+// Note: Keep this in sync with tabpanelopt_changed()
+static char *(p_tplo_values[]) = {"align:", "columns:", "vert", NULL};
+static char *(p_tplo_align_values[]) = {"left", "right", NULL};
 #endif
 #if defined(FEAT_DIFF)
 // Note: Keep this in sync with diffopt_changed()
@@ -3567,10 +3569,29 @@ did_set_tabpanelopt(optset_T *args)
     int
 expand_set_tabpanelopt(optexpand_T *args, int *numMatches, char_u ***matches)
 {
+    expand_T *xp = args->oe_xp;
+
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	// Within "align:", we have a subgroup of possible options.
+	int align_len = (int)STRLEN("align:");
+	if (xp->xp_pattern - args->oe_set_arg >= align_len &&
+		STRNCMP(xp->xp_pattern - align_len, "align:", align_len) == 0)
+	{
+	    return expand_set_opt_string(
+		    args,
+		    p_tplo_align_values,
+		    ARRAY_LENGTH(p_tplo_align_values) - 1,
+		    numMatches,
+		    matches);
+	}
+	return FAIL;
+    }
+
     return expand_set_opt_string(
 	    args,
-	    p_tpl_values,
-	    ARRAY_LENGTH(p_tpl_values) - 1,
+	    p_tplo_values,
+	    ARRAY_LENGTH(p_tplo_values) - 1,
 	    numMatches,
 	    matches);
 }
