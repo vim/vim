@@ -2144,8 +2144,7 @@ win_equal_rec(
 	    // frame.
 	    n = frame_minwidth(topfr, NOWIN);
 	    // add one for the rightmost window, it doesn't have a separator
-	    // TODO: tabpanelopt=align:right is not work properly
-	    if (col + width == NOUSE_COLUMNS_WITHOUT_TPL())
+	    if (col + width >= firstwin->w_wincol + topframe->fr_width)
 		extra_sep = 1;
 	    else
 		extra_sep = 0;
@@ -4567,7 +4566,7 @@ win_alloc_firstwin(win_T *oldwin)
     if (curwin->w_frame == NULL)
 	return FAIL;
     topframe = curwin->w_frame;
-    topframe->fr_width = COLUMNS_WITHOUT_TPL();
+    topframe->fr_width = Columns;
     topframe->fr_height = Rows - p_ch;
 
     return OK;
