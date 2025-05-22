@@ -64,15 +64,21 @@ tabpanelopt_changed(void)
     p = p_tplo;
     while (*p != NUL)
     {
-	if (STRNCMP(p, "align:left", 10) == 0)
+	if (STRNCMP(p, "align:", 6) == 0)
 	{
-	    p += 10;
-	    new_align = ALIGN_LEFT;
-	}
-	else if (STRNCMP(p, "align:right", 11) == 0)
-	{
-	    p += 11;
-	    new_align = ALIGN_RIGHT;
+	    p += 6;
+	    if (STRNCMP(p, "left", 4) == 0)
+	    {
+		p += 4;
+		new_align = ALIGN_LEFT;
+	    }
+	    else if (STRNCMP(p, "right", 5) == 0)
+	    {
+		p += 5;
+		new_align = ALIGN_RIGHT;
+	    }
+	    else
+		return FAIL;
 	}
 	else if (STRNCMP(p, "columns:", 8) == 0 && VIM_ISDIGIT(p[8]))
 	{
