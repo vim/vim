@@ -313,7 +313,7 @@ CClink = $(CC)
 
 # Use this one if you distribute a modified version of Vim.
 CONF_ARGS6 = --with-modified-by="Iago Jacob"#by Iago
-VIMNAME = vim2#by Iago
+VIMNAME = uwu#by Iago
 
 # GUI - For creating Vim with GUI (gvim) (B)
 # Uncomment this line when you don't want to get the GUI version, although you
