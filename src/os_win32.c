@@ -6430,7 +6430,7 @@ termcap_mode_end(void)
 
     // Switch back to main screen buffer.
     if (exiting && use_alternate_screen_buffer)
-        vtp_printf("\033[?1049l");
+	vtp_printf("\033[?1049l");
 
     if (!USE_WT && (p_rs || exiting))
     {
