@@ -4566,7 +4566,7 @@ win_alloc_firstwin(win_T *oldwin)
     if (curwin->w_frame == NULL)
 	return FAIL;
     topframe = curwin->w_frame;
-    topframe->fr_width = Columns;
+    topframe->fr_width = Columns - tabpanel_width();
     topframe->fr_height = Rows - p_ch;
 
     return OK;
@@ -4596,8 +4596,8 @@ win_init_size(void)
     firstwin->w_height = ROWS_AVAIL;
     firstwin->w_prev_height = ROWS_AVAIL;
     topframe->fr_height = ROWS_AVAIL;
-    firstwin->w_width = Columns;
-    topframe->fr_width = Columns;
+    firstwin->w_width = topframe->fr_width;
+    topframe->fr_width = topframe->fr_width;
 }
 
 /*
@@ -4971,7 +4971,7 @@ leave_tabpage(
     tp->tp_lastwin = lastwin;
     tp->tp_old_Rows = Rows;
     if (tp->tp_old_Columns != -1)
-	tp->tp_old_Columns = Columns;
+	tp->tp_old_Columns = topframe->fr_width;
     firstwin = NULL;
     lastwin = NULL;
     return OK;
@@ -5034,12 +5034,12 @@ enter_tabpage(
 #endif
 		))
 	shell_new_rows();
-    if (curtab->tp_old_Columns != Columns)
+    if (curtab->tp_old_Columns != topframe->fr_width)
     {
 	if (starting == 0)
 	{
 	    shell_new_columns();	// update window widths
-	    curtab->tp_old_Columns = Columns;
+	    curtab->tp_old_Columns = topframe->fr_width;
 	}
 	else
 	    curtab->tp_old_Columns = -1;  // update window widths later
@@ -5805,8 +5805,8 @@ win_alloc(win_T *after, int hidden)
      */
     if (!hidden)
 	win_append(after, new_wp);
-    new_wp->w_wincol = 0;
-    new_wp->w_width = Columns;
+    new_wp->w_wincol = tabpanel_leftcol(NULL);
+    new_wp->w_width = Columns - tabpanel_width();
 
     // position the display and the cursor at the top of the file.
     new_wp->w_topline = 1;
@@ -6771,7 +6771,7 @@ win_setminwidth(void)
     // loop until there is a 'winminheight' that is possible
     while (p_wmw > 0)
     {
-	room = Columns;
+	room = topframe->fr_width;
 	needed = frame_minwidth(topframe, NULL);
 	if (room >= needed)
 	    break;
