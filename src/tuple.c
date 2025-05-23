@@ -518,6 +518,9 @@ eval_tuple(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    // Add the first item to the tuple from "rettv"
 	    if (tuple_append_tv(tuple, rettv) == FAIL)
 		return FAIL;
+	    // The first item in "rettv" is added to the tuple.  Set the rettv
+	    // type to unknown, so that the caller doesn't free it.
+	    rettv->v_type = VAR_UNKNOWN;
 	}
     }
 
