@@ -919,15 +919,15 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define FINDFILE_DIR	1	// only directories
 #define FINDFILE_BOTH	2	// files and directories
 
-#if defined(FEAT_TABPANEL)
-# define COLUMNS_WITHOUT_TPL()		(Columns - tabpanel_width())
-# define TPL_LCOL(W)			tabpanel_leftcol(W)
-#else
-# define COLUMNS_WITHOUT_TPL()		Columns
-# define TPL_LCOL(W)			0
-#endif
-# define NOUSE_COLUMNS_WITHOUT_TPL()		Columns
-# define NOUSE_TPL_LCOL(W)			0
+//#if defined(FEAT_TABPANEL)
+//# define COLUMNS_WITHOUT_TPL()		(Columns - tabpanel_width())
+//# define TPL_LCOL(W)			tabpanel_leftcol(W)
+//#else
+//# define COLUMNS_WITHOUT_TPL()		Columns
+//# define TPL_LCOL(W)			0
+//#endif
+//# define NOUSE_COLUMNS_WITHOUT_TPL()		Columns
+//# define NOUSE_TPL_LCOL(W)			0
 
 #define W_ENDCOL(wp)	((wp)->w_wincol + (wp)->w_width)
 #ifdef FEAT_MENU

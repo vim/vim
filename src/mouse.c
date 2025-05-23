@@ -481,7 +481,7 @@ do_mouse(
 
     // Check for clicking in the tab page line.
 #if defined(FEAT_TABPANEL)
-    if (mouse_col < TPL_LCOL(NULL))
+    if (mouse_col < firstwin->w_wincol)
     {
 	if (is_drag)
 	{
@@ -1809,7 +1809,7 @@ retnomove:
 
     if (!(flags & MOUSE_FOCUS))
     {
-	if (row < 0 || col + NOUSE_TPL_LCOL(NULL) < 0) // check if it makes sense
+	if (row < 0 || col < 0) // check if it makes sense
 	    return IN_UNKNOWN;
 
 	// find the window where the row is in and adjust "row" and "col" to be
@@ -3336,9 +3336,6 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    winid = wp->w_id;
 	    winrow = row + 1;
 	    wincol = col + 1;
-//	    wincol -= TPL_LCOL(NULL);
-//	    if (wincol < 0)
-//		wincol = 0;
 	    row -= top_off;
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)

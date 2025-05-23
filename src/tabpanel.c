@@ -198,14 +198,10 @@ int		vsrow = 0;
 		    maxwidth - VERT_LEN, &curtab_row, NULL);
 	    do_by_tplmode(TPLMODE_REDRAW, VERT_LEN, maxwidth, &curtab_row,
 		    NULL);
-	    // clear for multi-byte vert separater
-	    screen_fill(0, cmdline_row, COLUMNS_WITHOUT_TPL(),
-		    COLUMNS_WITHOUT_TPL() + VERT_LEN,
-		    TPL_FILLCHAR, TPL_FILLCHAR, vs_attr);
 	    // draw vert separater in tabpanel
 	    for (vsrow = 0; vsrow < cmdline_row; vsrow++)
 		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
-			COLUMNS_WITHOUT_TPL(), vs_attr);
+			topframe->fr_width, vs_attr);
 	}
 	else
 	{
@@ -214,9 +210,6 @@ int		vsrow = 0;
 		    &curtab_row, NULL);
 	    do_by_tplmode(TPLMODE_REDRAW, 0, maxwidth - VERT_LEN,
 		    &curtab_row, NULL);
-	    // clear for multi-byte vert separater
-	    screen_fill(0, cmdline_row, maxwidth - VERT_LEN,
-		    maxwidth, TPL_FILLCHAR, TPL_FILLCHAR, vs_attr);
 	    // draw vert separater in tabpanel
 	    for (vsrow = 0; vsrow < cmdline_row; vsrow++)
 		screen_putchar(curwin->w_fill_chars.tpl_vert, vsrow,
@@ -272,8 +265,8 @@ screen_fill_tailing_area(
     int is_right = tpl_align == ALIGN_RIGHT;
     if (tplmode == TPLMODE_REDRAW)
 	screen_fill(row_start, row_end,
-		(is_right ? COLUMNS_WITHOUT_TPL() : 0) + col_start,
-		(is_right ? COLUMNS_WITHOUT_TPL() : 0) + col_end,
+		(is_right ? topframe->fr_width : 0) + col_start,
+		(is_right ? topframe->fr_width : 0) + col_end,
 		TPL_FILLCHAR, TPL_FILLCHAR, attr);
 }
 
@@ -356,7 +349,7 @@ screen_puts_len_for_tabpanel(
 	    if (*pargs->pcol + chcells <= pargs->col_end)
 	    {
 		int off = (tpl_align == ALIGN_RIGHT)
-			? COLUMNS_WITHOUT_TPL()
+			? topframe->fr_width
 			: 0;
 		if (TPLMODE_REDRAW == tplmode
 			&& (*pargs->prow - pargs->offsetrow >= 0
