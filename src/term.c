@@ -3630,7 +3630,17 @@ win_new_shellsize(void)
     if (old_Columns != Columns)
     {
 	old_Columns = Columns;
-	shell_new_columns();	// update window sizes
+
+	tabpage_T *save_curtab = curtab;
+	tabpage_T *tp;
+	FOR_ALL_TABPAGES(tp)
+	{
+	    unuse_tabpage(curtab);
+	    use_tabpage(tp);
+	    shell_new_columns();
+	}
+	unuse_tabpage(curtab);
+	use_tabpage(save_curtab);
     }
 }
 
