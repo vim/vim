@@ -123,6 +123,7 @@ SynMenu C.C:c
 SynMenu C.C++:cpp
 SynMenu C.C#:cs
 SynMenu C.Cabal\ Haskell\ build\ file:cabal
+SynMenu C.Caddyfile:caddyfile
 SynMenu C.Calendar:calendar
 SynMenu C.Cascading\ Style\ Sheets:css
 SynMenu C.CDL:cdl
