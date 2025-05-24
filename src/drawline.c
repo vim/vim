@@ -4355,7 +4355,7 @@ win_line(
 #ifdef FEAT_PROP_POPUP
 		     && !text_prop_above && !text_prop_follows
 #endif
-		     && wp->w_width == topframe->fr_width)
+		     && wp->w_width == Columns)
 	    {
 		// Remember that the line wraps, used for modeless copy.
 		LineWraps[wlv.screen_row - 1] = TRUE;
