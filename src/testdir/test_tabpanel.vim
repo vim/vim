@@ -21,7 +21,7 @@ function Test_tabpanel_with_many_vsplit()
   END
   call writefile(lines, 'XTest_tabpanel_with_many_vsplit', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_tabpanel_with_many_vsplit', {'rows': 24, 'cols': 80})
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_many_vsplit', {'rows': 10, 'cols': 80})
   call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_0', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
   call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_1', {})
