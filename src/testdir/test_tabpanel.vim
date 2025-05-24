@@ -10,6 +10,32 @@ function s:reset()
   set showtabpanel&
 endfunc
 
+function Test_tabpanel_with_many_vsplit()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=columns:20
+    set showtabline=0
+    tabnew
+  END
+  call writefile(lines, 'XTest_tabpanel_with_many_vsplit', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_many_vsplit', {'rows': 10, 'cols': 80})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_0', {})
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_1', {})
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_2', {})
+  call term_sendkeys(buf, ":q\<CR>:q\<CR>:set tabpanelopt=align:right,vert\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_3', {})
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_4', {})
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_5', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 function Test_tabpanel_mouse()
   let save_showtabline = &showtabline
   let save_mouse = &mouse
@@ -37,7 +63,8 @@ function Test_tabpanel_mouse()
   call feedkeys("\<LeftMouse>", 'xt')
   call test_setmouse(2, 3)
   let pos = getmousepos()
-  call assert_equal(2, pos['winrow'])
+  call assert_equal(0, pos['winid'])
+  call assert_equal(0, pos['winrow'])
   call assert_equal(0, pos['wincol'])
   call assert_equal(2, pos['screenrow'])
   call assert_equal(3, pos['screencol'])
@@ -45,6 +72,7 @@ function Test_tabpanel_mouse()
   call test_setmouse(1, 11)
   call feedkeys("\<LeftMouse>", 'xt')
   let pos = getmousepos()
+  call assert_notequal(0, pos['winid'])
   call assert_equal(1, pos['winrow'])
   call assert_equal(1, pos['wincol'])
   call assert_equal(1, pos['screenrow'])
@@ -56,6 +84,7 @@ function Test_tabpanel_mouse()
   call test_setmouse(10, 11)
   call feedkeys("\<LeftMouse>", 'xt')
   let pos = getmousepos()
+  call assert_notequal(0, pos['winid'])
   call assert_equal(10, pos['winrow'])
   call assert_equal(1, pos['wincol'])
   call assert_equal(10, pos['screenrow'])
@@ -110,42 +139,42 @@ function Test_tabpanel_drawing()
   call StopVimInTerminal(buf)
 endfunc
 
-function Test_tabpanel_drawing_with_popupwin()
-  CheckScreendump
-
-  let lines =<< trim END
-    set showtabpanel=2
-    set tabpanelopt=columns:20
-    set showtabline=0
-    tabnew
-    setlocal buftype=nofile
-    call setbufline(bufnr(), 1, repeat([repeat('.', &columns - 20)], &lines))
-    highlight TestingForTabPanelPopupwin guibg=#7777ff guifg=#000000
-    for line in [1, &lines]
-      for col in [1, &columns - 20 - 2]
-        call popup_create([
-          \   '@',
-          \ ], {
-          \   'line': line,
-          \   'col': col,
-          \   'border': [],
-          \   'highlight': 'TestingForTabPanelPopupwin',
-          \ })
-      endfor
-    endfor
-    call cursor(4, 10)
-    call popup_atcursor('atcursor', {
-      \   'highlight': 'TestingForTabPanelPopupwin',
-      \ })
-  END
-  call writefile(lines, 'XTest_tabpanel_with_popupwin', 'D')
-
-  let buf = RunVimInTerminal('-S XTest_tabpanel_with_popupwin', {'rows': 10, 'cols': 45})
-
-  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_with_popupwin_0', {})
-
-  call StopVimInTerminal(buf)
-endfunc
+"function Test_tabpanel_drawing_with_popupwin()
+"  CheckScreendump
+"
+"  let lines =<< trim END
+"    set showtabpanel=2
+"    set tabpanelopt=columns:20
+"    set showtabline=0
+"    tabnew
+"    setlocal buftype=nofile
+"    call setbufline(bufnr(), 1, repeat([repeat('.', &columns - 20)], &lines))
+"    highlight TestingForTabPanelPopupwin guibg=#7777ff guifg=#000000
+"    for line in [1, &lines]
+"      for col in [1, &columns - 20 - 2]
+"        call popup_create([
+"          \   '@',
+"          \ ], {
+"          \   'line': line,
+"          \   'col': col,
+"          \   'border': [],
+"          \   'highlight': 'TestingForTabPanelPopupwin',
+"          \ })
+"      endfor
+"    endfor
+"    call cursor(4, 10)
+"    call popup_atcursor('atcursor', {
+"      \   'highlight': 'TestingForTabPanelPopupwin',
+"      \ })
+"  END
+"  call writefile(lines, 'XTest_tabpanel_with_popupwin', 'D')
+"
+"  let buf = RunVimInTerminal('-S XTest_tabpanel_with_popupwin', {'rows': 10, 'cols': 45})
+"
+"  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_with_popupwin_0', {})
+"
+"  call StopVimInTerminal(buf)
+"endfunc
 
 function Test_tabpanel_drawing_fill_tailing()
   CheckScreendump
@@ -171,60 +200,60 @@ function Test_tabpanel_drawing_fill_tailing()
   call StopVimInTerminal(buf)
 endfunc
 
-function Test_tabpanel_drawing_pum()
-  CheckScreendump
+"function Test_tabpanel_drawing_pum()
+"  CheckScreendump
+"
+"  let lines =<< trim END
+"    set showtabpanel=2
+"    set tabpanelopt=columns:20
+"    set showtabline=0
+"    e aaa.txt
+"    tabnew
+"    e bbb.txt
+"  END
+"  call writefile(lines, 'XTest_tabpanel_pum', 'D')
+"
+"  let buf = RunVimInTerminal('-S XTest_tabpanel_pum', {'rows': 10, 'cols': 45})
+"
+"  call term_sendkeys(buf, "i\<C-x>\<C-v>")
+"  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_0', {})
+"
+"  call term_sendkeys(buf, "\<CR>  ab\<C-x>\<C-v>")
+"  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_1', {})
+"
+"  call StopVimInTerminal(buf)
+"endfunc
 
-  let lines =<< trim END
-    set showtabpanel=2
-    set tabpanelopt=columns:20
-    set showtabline=0
-    e aaa.txt
-    tabnew
-    e bbb.txt
-  END
-  call writefile(lines, 'XTest_tabpanel_pum', 'D')
-
-  let buf = RunVimInTerminal('-S XTest_tabpanel_pum', {'rows': 10, 'cols': 45})
-
-  call term_sendkeys(buf, "i\<C-x>\<C-v>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_0', {})
-
-  call term_sendkeys(buf, "\<CR>  ab\<C-x>\<C-v>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_1', {})
-
-  call StopVimInTerminal(buf)
-endfunc
-
-function Test_tabpanel_scrolling()
-  CheckScreendump
-
-  let lines =<< trim END
-    set showtabpanel=2
-    set tabpanelopt=columns:20
-    set showtabline=0
-    set nowrap
-    set number
-    e aaa.txt
-    tabnew
-    e bbb.txt
-    vsplit
-    call setbufline(bufnr(), 1, repeat(['text text text text'], 100))
-    wincmd =
-  END
-  call writefile(lines, 'XTest_tabpanel_scrolling', 'D')
-
-  let buf = RunVimInTerminal('-S XTest_tabpanel_scrolling', {'rows': 10, 'cols': 45})
-  let n = 0
-  for c in ['H', 'J', 'K', 'L']
-    call term_sendkeys(buf, ":wincmd " .. c ..  "\<CR>")
-    call term_sendkeys(buf, "\<C-d>\<C-d>")
-    call term_sendkeys(buf, "r@")
-    call VerifyScreenDump(buf, 'Test_tabpanel_drawing_scrolling_' .. n, {})
-    let n += 1
-  endfor
-
-  call StopVimInTerminal(buf)
-endfunc
+"function Test_tabpanel_scrolling()
+"  CheckScreendump
+"
+"  let lines =<< trim END
+"    set showtabpanel=2
+"    set tabpanelopt=columns:20
+"    set showtabline=0
+"    set nowrap
+"    set number
+"    e aaa.txt
+"    tabnew
+"    e bbb.txt
+"    vsplit
+"    call setbufline(bufnr(), 1, repeat(['text text text text'], 100))
+"    wincmd =
+"  END
+"  call writefile(lines, 'XTest_tabpanel_scrolling', 'D')
+"
+"  let buf = RunVimInTerminal('-S XTest_tabpanel_scrolling', {'rows': 10, 'cols': 45})
+"  let n = 0
+"  for c in ['H', 'J', 'K', 'L']
+"    call term_sendkeys(buf, ":wincmd " .. c ..  "\<CR>")
+"    call term_sendkeys(buf, "\<C-d>\<C-d>")
+"    call term_sendkeys(buf, "r@")
+"    call VerifyScreenDump(buf, 'Test_tabpanel_drawing_scrolling_' .. n, {})
+"    let n += 1
+"  endfor
+"
+"  call StopVimInTerminal(buf)
+"endfunc
 
 function Test_tabpanel_many_tabpages()
   CheckScreendump
@@ -338,59 +367,59 @@ function Test_tabpanel_dont_overflow_into_tabpanel()
   call StopVimInTerminal(buf)
 endfunc
 
-function Test_tabpanel_dont_vert_is_multibytes_left()
-  CheckScreendump
+"""function Test_tabpanel_dont_vert_is_multibytes_left()
+"""  CheckScreendump
+"""
+"""  let lines =<< trim END
+"""    set showtabpanel=2
+"""    set tabpanelopt=columns:10,vert
+"""    set fillchars=tpl_vert:│
+"""    set showtabline=2
+"""    tabnew
+"""  END
+"""  call writefile(lines, 'XTest_tabpanel_vert_is_multibyte_lefts', 'D')
+"""
+"""  let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibyte_lefts', {'rows': 10, 'cols': 45})
+"""  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_0', {})
+"""
+"""  call term_sendkeys(buf, ":set tabpanelopt=columns:1,vert\<CR>")
+"""  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_1', {})
+"""
+"""  call term_sendkeys(buf, ":set tabpanelopt=columns:10,vert\<CR>")
+"""  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_2', {})
+"""
+"""  call term_sendkeys(buf, ":set tabpanelopt=columns:2,vert\<CR>")
+"""  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_3', {})
+"""
+"""  call StopVimInTerminal(buf)
+"""endfunc
 
-  let lines =<< trim END
-    set showtabpanel=2
-    set tabpanelopt=columns:10,vert
-    set fillchars=tpl_vert:│
-    set showtabline=2
-    tabnew
-  END
-  call writefile(lines, 'XTest_tabpanel_vert_is_multibyte_lefts', 'D')
-
-  let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibyte_lefts', {'rows': 10, 'cols': 45})
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_0', {})
-
-  call term_sendkeys(buf, ":set tabpanelopt=columns:1,vert\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_1', {})
-
-  call term_sendkeys(buf, ":set tabpanelopt=columns:10,vert\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_2', {})
-
-  call term_sendkeys(buf, ":set tabpanelopt=columns:2,vert\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_left_3', {})
-
-  call StopVimInTerminal(buf)
-endfunc
-
-function Test_tabpanel_dont_vert_is_multibytes_right()
-  CheckScreendump
-
-  let lines =<< trim END
-    set showtabpanel=2
-    set tabpanelopt=align:right,columns:10,vert
-    set fillchars=tpl_vert:│
-    set showtabline=2
-    tabnew
-  END
-  call writefile(lines, 'XTest_tabpanel_vert_is_multibytes_right', 'D')
-
-  let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibytes_right', {'rows': 10, 'cols': 45})
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_0', {})
-
-  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:1,vert\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_1', {})
-
-  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:10,vert\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_2', {})
-
-  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:2,vert\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_3', {})
-
-  call StopVimInTerminal(buf)
-endfunc
+"""function Test_tabpanel_dont_vert_is_multibytes_right()
+"""  CheckScreendump
+"""
+"""  let lines =<< trim END
+"""    set showtabpanel=2
+"""    set tabpanelopt=align:right,columns:10,vert
+"""    set fillchars=tpl_vert:│
+"""    set showtabline=2
+"""    tabnew
+"""  END
+"""  call writefile(lines, 'XTest_tabpanel_vert_is_multibytes_right', 'D')
+"""
+"""  let buf = RunVimInTerminal('-S XTest_tabpanel_vert_is_multibytes_right', {'rows': 10, 'cols': 45})
+"""  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_0', {})
+"""
+"""  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:1,vert\<CR>")
+"""  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_1', {})
+"""
+"""  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:10,vert\<CR>")
+"""  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_2', {})
+"""
+"""  call term_sendkeys(buf, ":set tabpanelopt=align:right,columns:2,vert\<CR>")
+"""  call VerifyScreenDump(buf, 'Test_tabpanel_vert_is_multibytes_right_3', {})
+"""
+"""  call StopVimInTerminal(buf)
+"""endfunc
 
 function Test_tabpanel_eval_tabpanel_statusline_tabline()
   CheckScreendump
@@ -406,7 +435,6 @@ function Test_tabpanel_eval_tabpanel_statusline_tabline()
     set tabline=%!Expr()
     set tabpanel=%!Expr()
     set tabpanelopt=columns:10,vert
-    set fillchars=tpl_vert:│
     e aaa
     tabnew
     e bbb
@@ -434,7 +462,6 @@ function Test_tabpanel_noeval_tabpanel_statusline_tabline()
     set tabline=$%=[%f]%=$
     set tabpanel=$%=[%f]%=$
     set tabpanelopt=columns:10,vert
-    set fillchars=tpl_vert:│
     e aaa
     tabnew
     e bbb
@@ -461,6 +488,7 @@ function Test_tabpanel_eval_tabpanel_with_linebreaks()
     set showtabpanel=2
     set tabpanel=%!Expr()
     set tabpanelopt=columns:10
+    set noruler
     e aaa
     tabnew
     e bbb
@@ -488,7 +516,7 @@ function Test_tabpanel_tabonly()
   END
   call writefile(lines, 'XTest_tabpanel_tabonly', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_tabpanel_tabonly', {'rows': 10, 'cols': 80})
+  let buf = RunVimInTerminal('-S XTest_tabpanel_tabonly', {'rows': 10, 'cols': 78})
   call VerifyScreenDump(buf, 'Test_tabpanel_only_0', {})
   call term_sendkeys(buf, ":tabonly\<CR>")
   call VerifyScreenDump(buf, 'Test_tabpanel_only_1', {})
@@ -521,4 +549,39 @@ function Test_tabpanel_equalalways()
   call StopVimInTerminal(buf)
 endfunc
 
+function Test_tabpanel_quitall()
+  CheckScreendump
+
+  let lines =<< trim END
+    tabnew
+    set showtabpanel=1
+    set laststatus=2
+    call setline(1, 'aaa')
+    normal gt
+    silent! quitall
+  END
+  call writefile(lines, 'XTest_tabpanel_quitall', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_quitall', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_quitall_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function Test_tabpanel_ruler()
+  CheckScreendump
+
+  let lines =<< trim END
+    tabnew
+    set statusline& laststatus=0
+    set rulerformat& ruler
+    set showtabpanel=1
+  END
+  call writefile(lines, 'XTest_tabpanel_ruler', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_ruler', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_ruler_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

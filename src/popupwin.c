@@ -86,7 +86,7 @@ popup_options_one(dict_T *dict, char_u *key)
     if (STRCMP(key, "line") == 0)
 	n = screen_screenrow() + 1 + n;
     else // "col"
-	n = screen_screencol() + 1 + n - TPL_LCOL(NULL);
+	n = screen_screencol() + 1 + n;
 
     // Zero means "not set", use -1 instead.
     if (n == 0)
@@ -1545,7 +1545,7 @@ popup_adjust_position(win_T *wp)
     }
     if (center_hor)
     {
-	wp->w_wincol = (Columns - wp->w_width - extra_width - TPL_LCOL(NULL)) / 2;
+	wp->w_wincol = (Columns - wp->w_width - extra_width) / 2;
 	if (wp->w_wincol < 0)
 	    wp->w_wincol = 0;
     }
@@ -4081,7 +4081,7 @@ update_popups(void (*win_update)(win_T *wp))
 	// win_update() doesn't handle them.
 	top_off = popup_top_extra(wp);
 	left_extra = wp->w_popup_padding[3] + wp->w_popup_border[3]
-		+ TPL_LCOL(NULL) - wp->w_popup_leftoff;
+							- wp->w_popup_leftoff;
 	if (wp->w_wincol + left_extra < 0)
 	    left_extra = -wp->w_wincol;
 	wp->w_winrow += top_off;
@@ -4163,7 +4163,7 @@ update_popups(void (*win_update)(win_T *wp))
 	}
 
 	// Title goes on top of border or padding.
-	title_wincol = wp->w_wincol + 1 + TPL_LCOL(NULL);
+	title_wincol = wp->w_wincol + 1;
 	if (wp->w_popup_title != NULL)
 	{
 	    title_len = vim_strsize(wp->w_popup_title);
@@ -4191,7 +4191,7 @@ update_popups(void (*win_update)(win_T *wp))
 		      wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
 	}
 
-	wincol = wp->w_wincol - wp->w_popup_leftoff + TPL_LCOL(NULL);
+	wincol = wp->w_wincol - wp->w_popup_leftoff;
 	top_padding = wp->w_popup_padding[0];
 	if (wp->w_popup_border[0] > 0)
 	{
@@ -4229,7 +4229,7 @@ update_popups(void (*win_update)(win_T *wp))
 	{
 	    padcol = wincol + wp->w_popup_border[3];
 	    padendcol = wp->w_wincol + total_width - wp->w_popup_border[1]
-		    + TPL_LCOL(NULL) - wp->w_has_scrollbar;
+							- wp->w_has_scrollbar;
 	    if (padcol < 0)
 	    {
 		padendcol += padcol;
@@ -4327,7 +4327,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    if (wp->w_has_scrollbar)
 	    {
 		int line = i - top_off;
-		int scroll_col = wp->w_wincol + total_width - 1 + TPL_LCOL(NULL)
+		int scroll_col = wp->w_wincol + total_width - 1
 						       - wp->w_popup_border[1];
 
 		if (line >= 0 && line < wp->w_height)

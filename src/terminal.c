@@ -1351,7 +1351,7 @@ update_cursor(term_T *term, int redraw)
 	// do not use the window cursor position
 	position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
 	windgoto(W_WINROW(curwin) + curwin->w_wrow,
-		 curwin->w_wincol + curwin->w_wcol + TPL_LCOL(NULL));
+		 curwin->w_wincol + curwin->w_wcol);
     }
     if (redraw)
     {
@@ -4120,8 +4120,7 @@ term_update_window(win_T *wp)
 #ifdef FEAT_MENU
 				+ winbar_height(wp)
 #endif
-				, wp->w_wincol + TPL_LCOL(wp), pos.col,
-				wp->w_width, -1,
+				, wp->w_wincol, pos.col, wp->w_width, -1,
 #ifdef FEAT_PROP_POPUP
 				popup_is_popup(wp) ? SLF_POPUP :
 #endif
