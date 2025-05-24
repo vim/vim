@@ -5805,7 +5805,7 @@ win_alloc(win_T *after, int hidden)
      */
     if (!hidden)
 	win_append(after, new_wp);
-    new_wp->w_wincol = TPL_LCOL(W);
+    new_wp->w_wincol = TPL_LCOL(NULL);
     new_wp->w_width = COLUMNS_WITHOUT_TPL();
 
     // position the display and the cursor at the top of the file.
