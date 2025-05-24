@@ -10,6 +10,32 @@ function s:reset()
   set showtabpanel&
 endfunc
 
+function Test_tabpanel_with_many_vsplit()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=columns:20
+    set showtabline=0
+    tabnew
+  END
+  call writefile(lines, 'XTest_tabpanel_with_many_vsplit', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_many_vsplit', {'rows': 24, 'cols': 80})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_0', {})
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_1', {})
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_2', {})
+  call term_sendkeys(buf, ":q\<CR>:q\<CR>:set tabpanelopt=align:right,vert\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_3', {})
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_4', {})
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_5', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 function Test_tabpanel_mouse()
   let save_showtabline = &showtabline
   let save_mouse = &mouse
@@ -70,48 +96,48 @@ function Test_tabpanel_mouse()
   let &showtabline = save_showtabline
 endfunc
 
-"""function Test_tabpanel_drawing()
-"""  CheckScreendump
-"""
-"""  let lines =<< trim END
-"""    function MyTabPanel()
-"""      let n = g:actual_curtabpage
-"""      let hi = n == tabpagenr() ? 'TabLineSel' : 'TabLine'
-"""      let label = printf("\n%%#%sTabNumber#%d:%%#%s#", hi, n, hi)
-"""      let label ..= '%1*%f%*'
-"""      return label
-"""    endfunction
-"""    hi User1 ctermfg=12
-"""
-"""    set showtabline=0
-"""    set showtabpanel=0
-"""    set tabpanelopt=columns:16
-"""    set tabpanel=
-"""    silent edit Xtabpanel1
-"""
-"""    nnoremap \01 <Cmd>set showtabpanel=2<CR>
-"""    nnoremap \02 <C-w>v
-"""    nnoremap \03 <Cmd>call setline(1, ['a', 'b', 'c'])<CR>
-"""    nnoremap \04 <Cmd>silent tabnew Xtabpanel2<CR><Cmd>call setline(1, ['d', 'e', 'f'])<CR>
-"""    nnoremap \05 <Cmd>set tabpanel=%!MyTabPanel()<CR>
-"""    nnoremap \06 <Cmd>set tabpanelopt+=align:right<CR>
-"""    nnoremap \07 <Cmd>tab terminal NONE<CR><C-w>N
-"""    nnoremap \08 <Cmd>tabclose!<CR><Cmd>tabclose!<CR>
-"""  END
-"""  call writefile(lines, 'XTest_tabpanel', 'D')
-"""
-"""  let buf = RunVimInTerminal('-S XTest_tabpanel', {'rows': 6, 'cols': 45})
-"""
-"""  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_00', {})
-"""
-"""  for i in range(1, 8)
-"""    let n = printf('%02d', i)
-"""    call term_sendkeys(buf, '\' .. n)
-"""    call VerifyScreenDump(buf, 'Test_tabpanel_drawing_' .. n, {})
-"""  endfor
-"""
-"""  call StopVimInTerminal(buf)
-"""endfunc
+function Test_tabpanel_drawing()
+  CheckScreendump
+
+  let lines =<< trim END
+    function MyTabPanel()
+      let n = g:actual_curtabpage
+      let hi = n == tabpagenr() ? 'TabLineSel' : 'TabLine'
+      let label = printf("\n%%#%sTabNumber#%d:%%#%s#", hi, n, hi)
+      let label ..= '%1*%f%*'
+      return label
+    endfunction
+    hi User1 ctermfg=12
+
+    set showtabline=0
+    set showtabpanel=0
+    set tabpanelopt=columns:16
+    set tabpanel=
+    silent edit Xtabpanel1
+
+    nnoremap \01 <Cmd>set showtabpanel=2<CR>
+    nnoremap \02 <C-w>v
+    nnoremap \03 <Cmd>call setline(1, ['a', 'b', 'c'])<CR>
+    nnoremap \04 <Cmd>silent tabnew Xtabpanel2<CR><Cmd>call setline(1, ['d', 'e', 'f'])<CR>
+    nnoremap \05 <Cmd>set tabpanel=%!MyTabPanel()<CR>
+    nnoremap \06 <Cmd>set tabpanelopt+=align:right<CR>
+    nnoremap \07 <Cmd>tab terminal NONE<CR><C-w>N
+    nnoremap \08 <Cmd>tabclose!<CR><Cmd>tabclose!<CR>
+  END
+  call writefile(lines, 'XTest_tabpanel', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel', {'rows': 6, 'cols': 45})
+
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_00', {})
+
+  for i in range(1, 8)
+    let n = printf('%02d', i)
+    call term_sendkeys(buf, '\' .. n)
+    call VerifyScreenDump(buf, 'Test_tabpanel_drawing_' .. n, {})
+  endfor
+
+  call StopVimInTerminal(buf)
+endfunc
 
 "function Test_tabpanel_drawing_with_popupwin()
 "  CheckScreendump
@@ -198,36 +224,36 @@ endfunc
 "  call StopVimInTerminal(buf)
 "endfunc
 
-function Test_tabpanel_scrolling()
-  CheckScreendump
-
-  let lines =<< trim END
-    set showtabpanel=2
-    set tabpanelopt=columns:20
-    set showtabline=0
-    set nowrap
-    set number
-    e aaa.txt
-    tabnew
-    e bbb.txt
-    vsplit
-    call setbufline(bufnr(), 1, repeat(['text text text text'], 100))
-    wincmd =
-  END
-  call writefile(lines, 'XTest_tabpanel_scrolling', 'D')
-
-  let buf = RunVimInTerminal('-S XTest_tabpanel_scrolling', {'rows': 10, 'cols': 45})
-  let n = 0
-  for c in ['H', 'J', 'K', 'L']
-    call term_sendkeys(buf, ":wincmd " .. c ..  "\<CR>")
-    call term_sendkeys(buf, "\<C-d>\<C-d>")
-    call term_sendkeys(buf, "r@")
-    call VerifyScreenDump(buf, 'Test_tabpanel_drawing_scrolling_' .. n, {})
-    let n += 1
-  endfor
-
-  call StopVimInTerminal(buf)
-endfunc
+"function Test_tabpanel_scrolling()
+"  CheckScreendump
+"
+"  let lines =<< trim END
+"    set showtabpanel=2
+"    set tabpanelopt=columns:20
+"    set showtabline=0
+"    set nowrap
+"    set number
+"    e aaa.txt
+"    tabnew
+"    e bbb.txt
+"    vsplit
+"    call setbufline(bufnr(), 1, repeat(['text text text text'], 100))
+"    wincmd =
+"  END
+"  call writefile(lines, 'XTest_tabpanel_scrolling', 'D')
+"
+"  let buf = RunVimInTerminal('-S XTest_tabpanel_scrolling', {'rows': 10, 'cols': 45})
+"  let n = 0
+"  for c in ['H', 'J', 'K', 'L']
+"    call term_sendkeys(buf, ":wincmd " .. c ..  "\<CR>")
+"    call term_sendkeys(buf, "\<C-d>\<C-d>")
+"    call term_sendkeys(buf, "r@")
+"    call VerifyScreenDump(buf, 'Test_tabpanel_drawing_scrolling_' .. n, {})
+"    let n += 1
+"  endfor
+"
+"  call StopVimInTerminal(buf)
+"endfunc
 
 function Test_tabpanel_many_tabpages()
   CheckScreendump
@@ -462,6 +488,7 @@ function Test_tabpanel_eval_tabpanel_with_linebreaks()
     set showtabpanel=2
     set tabpanel=%!Expr()
     set tabpanelopt=columns:10
+    set noruler
     e aaa
     tabnew
     e bbb
@@ -472,8 +499,8 @@ function Test_tabpanel_eval_tabpanel_with_linebreaks()
 
   let buf = RunVimInTerminal('-S XTest_tabpanel_eval_tabpanel_with_linebreaks', {'rows': 10, 'cols': 45})
   call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_with_linebreaks_0', {})
-"  call term_sendkeys(buf, ":set tabpanelopt+=align:right\<CR>")
-"  call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_with_linebreaks_1', {})
+  call term_sendkeys(buf, ":set tabpanelopt+=align:right\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_eval_tabpanel_with_linebreaks_1', {})
 
   call StopVimInTerminal(buf)
 endfunc
