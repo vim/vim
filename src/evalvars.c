@@ -3194,6 +3194,31 @@ eval_variable(
 	    int	    has_g_prefix = STRNCMP(name, "g:", 2) == 0;
 	    ufunc_T *ufunc = find_func(name, FALSE);
 
+	    if (ufunc && IS_GENERIC_FUNC(ufunc) && cc == '<')
+	    {
+		// generic function
+		garray_T	gftn_table;
+		garray_T	types_ga;
+		char_u		*s = name + len;
+
+		ga_init2(&gftn_table, sizeof(gf_type_name_T), 10);
+		ga_init2(&types_ga, sizeof(type_T *), 10);
+
+		// get the generic function with the supplied types
+		s = parse_generic_func_type_args(name, s - name, s, &types_ga,
+								&gftn_table);
+		if (s == NULL)
+		    ufunc = NULL;
+		else
+		{
+		    // generic function call
+		    ufunc = generic_func_get(ufunc, &gftn_table);
+		}
+
+		ga_clear(&gftn_table);
+		clear_type_list(&types_ga);
+	    }
+
 	    // In Vim9 script we can get a function reference by using the
 	    // function name.  For a global non-autoload function "g:" is
 	    // required.
@@ -3201,6 +3226,7 @@ eval_variable(
 					    || !func_requires_g_prefix(ufunc)))
 	    {
 		found = TRUE;
+
 		if (rettv != NULL)
 		{
 		    rettv->v_type = VAR_FUNC;

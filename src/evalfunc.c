@@ -3339,8 +3339,8 @@ internal_func_check_arg_types(
     for (int i = 0; i < argcount && argchecks[i] != NULL; ++i)
     {
 	context.arg_idx = i;
-	if (argchecks[i](types[i].type_curr, types[i].type_decl,
-							    &context) == FAIL)
+	type_T *t = types[i].type_curr;
+	if (argchecks[i](t, types[i].type_decl, &context) == FAIL)
 	    return FAIL;
     }
     return OK;
@@ -5162,6 +5162,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     partial_T   *arg_pt = NULL;
     char_u	*trans_name = NULL;
     int		is_global = FALSE;
+    char_u	*generic_func_start = NULL;
 
     if (in_vim9script()
 	    && (check_for_string_or_func_arg(argvars, 0) == FAIL
@@ -5199,6 +5200,15 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	name = s;
 	trans_name = save_function_name(&name, &is_global, FALSE,
 		   TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL);
+	if (*name == '<')
+	{
+	    // generic function
+	    generic_func_start = name;
+	    name++;
+	    name = generic_func_find_close_angle_bracket(name);
+	    if (*name == '>')
+		name++;
+	}
 	if (*name != NUL)
 	    s = NULL;
     }
@@ -5363,8 +5373,18 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	{
 	    // result is a VAR_FUNC
 	    rettv->v_type = VAR_FUNC;
-	    rettv->vval.v_string = name;
-	    func_ref(name);
+	    if (generic_func_start == NULL)
+	    {
+		rettv->vval.v_string = name;
+		func_ref(name);
+	    }
+	    else
+	    {
+		STRCPY(IObuff, name);
+		STRCAT(IObuff, generic_func_start);
+		rettv->vval.v_string = vim_strsave(IObuff);
+		vim_free(name);
+	    }
 	}
     }
 theend:

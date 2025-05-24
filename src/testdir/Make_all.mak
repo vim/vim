@@ -48,6 +48,7 @@ TEST_VIM9 = \
 	test_vim9_expr \
 	test_vim9_fails \
 	test_vim9_func \
+	test_vim9_generics \
 	test_vim9_import \
 	test_vim9_python3 \
 	test_vim9_script \
@@ -63,6 +64,7 @@ TEST_VIM9_RES = \
 	test_vim9_expr.res \
 	test_vim9_fails.res \
 	test_vim9_func.res \
+	test_vim9_generics.res \
 	test_vim9_import.res \
 	test_vim9_python3.res \
 	test_vim9_script.res \

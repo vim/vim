@@ -1130,7 +1130,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		    goto failed;
 		}
 		p = skipwhite(p + 1);
-		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
+		lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc, TRUE);
 		if (lhs_type == NULL)
 		    goto failed;
 	    }

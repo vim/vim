@@ -291,7 +291,7 @@ eval_expr_partial(
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_evaluate = TRUE;
 	funcexe.fe_partial = partial;
-	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+	if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	    return FAIL;
     }
 
@@ -323,7 +323,7 @@ eval_expr_func(
 
     CLEAR_FIELD(funcexe);
     funcexe.fe_evaluate = TRUE;
-    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+    if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	return FAIL;
 
     return OK;
@@ -944,7 +944,7 @@ call_vim_function(
     if (name == NULL)
 	name = func;
 
-    ret = call_func(name, -1, rettv, argc, argv, &funcexe);
+    ret = call_func(name, -1, rettv, argc, argv, NULL, &funcexe);
 
     if (ret == FAIL)
 	clear_tv(rettv);
@@ -2213,7 +2213,7 @@ get_lval(
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp,
 			       &SCRIPT_ITEM(current_sctx.sc_sid)->sn_type_list,
-			       !quiet);
+			       NULL, !quiet);
 		if (lp->ll_type == NULL && !quiet)
 		    return NULL;
 		lp->ll_name_end = tp;
@@ -4725,7 +4725,7 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, TRUE);
+	want_type = parse_type(arg, &type_list, NULL, TRUE);
 	if (want_type == NULL && (evaluate || **arg != '>'))
 	{
 	    clear_type_list(&type_list);
@@ -5023,6 +5023,34 @@ eval9_nested_expr(
 }
 
 /*
+ * Returns TRUE if "*arg" is points to a call to a generic function.  For a
+ * generic function call, "*arg" points to "<", followed by one or more types,
+ * the closing ">" and the opening "(".  If TRUE, on return, "*arg" points to
+ * the character after the closing angle bracket.
+ */
+    static int
+generic_func_call(char_u **arg)
+{
+    char_u	*p = *arg;
+
+    if (*p != '<')
+	return FALSE;
+
+    p++;	// skip opening "<"
+    p = generic_func_find_close_angle_bracket(p);
+    if (*p != '>')
+	return FALSE;
+
+    p++;	// skip closing ">"
+
+    if (*p != '(')
+	return FALSE;
+
+    *arg = p;
+    return TRUE;
+}
+
+/*
 * Handle be a variable or function name.
 * Can also be a curly-braces kind of name: {expr}.
 */
@@ -5062,7 +5090,8 @@ eval9_var_func_name(
 	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), s);
 	    ret = FAIL;
 	}
-	else if ((vim9script ? **arg : *skipwhite(*arg)) == '(')
+	else if ((vim9script ? **arg : *skipwhite(*arg)) == '('
+				|| (vim9script && generic_func_call(arg)))
 	{
 	    // "name(..."  recursive!
 	    *arg = skipwhite(*arg);
@@ -5079,6 +5108,14 @@ eval9_var_func_name(
 		*name_start = s;
 		ret = eval_variable(s, len, 0, rettv, NULL,
 					EVAL_VAR_VERBOSE + EVAL_VAR_IMPORT);
+		if (vim9script && **arg == '<' && rettv->v_type == VAR_FUNC)
+		{
+		    // skip generic function arguments
+		    *arg += 1;
+		    *arg = generic_func_find_close_angle_bracket(*arg);
+		    if (**arg == '>')
+			*arg += 1;
+		}
 	    }
 	}
 	else

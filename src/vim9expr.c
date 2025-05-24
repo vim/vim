@@ -355,7 +355,8 @@ inside_class_hierarchy(cctx_T *cctx_arg, class_T *cl)
     static int
 compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 {
-    int m_idx;
+    int		m_idx;
+    int		ret = FAIL;
 
     if (VIM_ISWHITE((*arg)[1]))
     {
@@ -410,6 +411,19 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
     size_t len = name_end - name;
 
+    garray_T	gftn_table;
+
+    ga_init2(&gftn_table, sizeof(gf_type_name_T), 10);
+
+    if (*name_end == '<')
+    {
+	// generic method call
+	name_end = parse_generic_func_type_args(name, len, name_end,
+					cctx->ctx_type_list, &gftn_table);
+	if (name_end == NULL)
+	    return FAIL;
+    }
+
     if (*name_end == '(')
     {
 	int	function_count;
@@ -458,14 +472,14 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    if (ocm == NULL || ocm->ocm_type->tt_type != VAR_FUNC)
 	    {
 		method_not_found_msg(cl, type->tt_type, name, len);
-		return FAIL;
+		goto done;
 	    }
 	    if (type->tt_type == VAR_CLASS)
 	    {
 		// Remove the class type from the stack
 		--cctx->ctx_type_stack.ga_len;
 		if (generate_CLASSMEMBER(cctx, TRUE, cl, m_idx) == FAIL)
-		    return FAIL;
+		    goto done;
 	    }
 	    else
 	    {
@@ -478,7 +492,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		    status = generate_GET_OBJ_MEMBER(cctx, m_idx,
 							ocm->ocm_type);
 		if (status == FAIL)
-		    return FAIL;
+		    goto done;
 	    }
 	}
 
@@ -488,7 +502,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // allowed.
 	    semsg(_(e_abstract_method_str_direct), ufunc->uf_name,
 		    ufunc->uf_defclass->class_name);
-	    return FAIL;
+	    goto done;
 	}
 
 	// A private object method can be used only inside the class where it
@@ -502,7 +516,20 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		     && cctx->ctx_ufunc->uf_class != cl)))
 	{
 	    semsg(_(e_cannot_access_protected_method_str), name);
-	    return FAIL;
+	    goto done;
+	}
+
+	if (ufunc != NULL && IS_GENERIC_FUNC(ufunc))
+	{
+	    // generic function call
+	    ufunc = generic_func_get(ufunc, &gftn_table);
+	    if (ufunc == NULL)
+		goto done;
+	}
+	else if (gftn_table.ga_len != 0)
+	{
+	    emsg_funcname(e_unknown_generic_function_str, name);
+	    goto done;
 	}
 
 	// Compile the arguments and call the class function or object method.
@@ -511,14 +538,19 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	*arg = skipwhite(name_end + 1);
 	int argcount = 0;
 	if (compile_arguments(arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
-	    return FAIL;
+	    goto done;
 
 	if (ocm != NULL)
-	    return generate_PCALL(cctx, argcount, name, ocm->ocm_type, TRUE);
+	{
+	    ret = generate_PCALL(cctx, argcount, name, ocm->ocm_type, TRUE);
+	    goto done;
+	}
 	if (type->tt_type == VAR_OBJECT
 		     && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
-	    return generate_CALL(cctx, ufunc, cl, fi, argcount, is_super);
-	return generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
+	    ret = generate_CALL(cctx, ufunc, cl, fi, argcount, is_super);
+	else
+	    ret = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
+	goto done;
     }
 
     if (type->tt_type == VAR_OBJECT)
@@ -530,13 +562,15 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    {
 		emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name, 0, cl);
-		return FAIL;
+		goto done;
 	    }
 
 	    *arg = name_end;
 	    if (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED))
-		return generate_GET_ITF_MEMBER(cctx, cl, m_idx, m->ocm_type);
-	    return generate_GET_OBJ_MEMBER(cctx, m_idx, m->ocm_type);
+		ret = generate_GET_ITF_MEMBER(cctx, cl, m_idx, m->ocm_type);
+	    else
+		ret = generate_GET_OBJ_MEMBER(cctx, m_idx, m->ocm_type);
+	    goto done;
 	}
 
 	// Could be an object method reference: "obj.Func".
@@ -548,12 +582,13 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
-		return FAIL;
+		goto done;
 	    }
 	    *arg = name_end;
 	    // Remove the object type from the stack
 	    --cctx->ctx_type_stack.ga_len;
-	    return generate_FUNCREF(cctx, fp, cl, TRUE, m_idx, NULL);
+	    ret = generate_FUNCREF(cctx, fp, cl, TRUE, m_idx, NULL);
+	    goto done;
 	}
 
 	member_not_found_msg(cl, VAR_OBJECT, name, len);
@@ -572,13 +607,14 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    {
 		emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name, 0, cl);
-		return FAIL;
+		goto done;
 	    }
 
 	    *arg = name_end;
 	    // Remove the class type from the stack
 	    --cctx->ctx_type_stack.ga_len;
-	    return generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+	    ret = generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+	    goto done;
 	}
 
 	// Could be a class method reference: "class.Func".
@@ -590,18 +626,21 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
-		return FAIL;
+		goto done;
 	    }
 	    *arg = name_end;
 	    // Remove the class type from the stack
 	    --cctx->ctx_type_stack.ga_len;
-	    return generate_FUNCREF(cctx, fp, cl, FALSE, m_idx, NULL);
+	    ret = generate_FUNCREF(cctx, fp, cl, FALSE, m_idx, NULL);
+	    goto done;
 	}
 
 	member_not_found_msg(cl, VAR_CLASS, name, len);
     }
 
-    return FAIL;
+done:
+    ga_clear(&gftn_table);
+    return ret;
 }
 
 /*
@@ -1196,6 +1235,7 @@ compile_call(
     int		has_g_namespace;
     ca_special_T special_fn;
     imported_T	*import;
+    garray_T	gftn_table;
 
     if (varlen >= sizeof(namebuf))
     {
@@ -1275,7 +1315,21 @@ compile_call(
     else
 	special_fn = CA_NOT_SPECIAL;
 
-    *arg = skipwhite(*arg + varlen + 1);
+    ga_init2(&gftn_table, sizeof(gf_type_name_T), 10);
+
+    if (*(*arg + varlen) == '<')
+    {
+	// generic function
+	*arg = parse_generic_func_type_args(*arg, varlen, *arg + varlen,
+					cctx->ctx_type_list, &gftn_table);
+	if (*arg == NULL)
+	    goto theend;
+	*arg += 1;	    // skip '('
+    }
+    else
+	*arg += varlen + 1;
+
+    *arg = skipwhite(*arg);
     if (compile_arguments(arg, cctx, &argcount, special_fn) == FAIL)
 	goto theend;
 
@@ -1361,15 +1415,30 @@ compile_call(
 	ufunc = find_func(name, FALSE);
 	if (ufunc != NULL)
 	{
+	    if (IS_GENERIC_FUNC(ufunc))
+	    {
+		// generic function call
+		ufunc = generic_func_get(ufunc, &gftn_table);
+		if (ufunc == NULL)
+		    goto theend;
+	    }
+	    else if (gftn_table.ga_len != 0)
+	    {
+		emsg_funcname(e_unknown_generic_function_str, namebuf);
+		goto theend;
+	    }
+
 	    if (!func_is_global(ufunc))
 	    {
 		res = generate_CALL(cctx, ufunc, NULL, 0, argcount, FALSE);
 		goto theend;
 	    }
 	    if (!has_g_namespace
-			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL)
+			  && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL
+			  && !IS_GENERIC_FUNC(ufunc))
 	    {
-		// A function name without g: prefix must be found locally.
+		// A function name without g: prefix must be found locally
+		// A generic function has the name emptied out.
 		emsg_funcname(e_unknown_function_str, namebuf);
 		goto theend;
 	    }
@@ -1422,6 +1491,7 @@ compile_call(
 	emsg_funcname(e_unknown_function_str, namebuf);
 
 theend:
+    ga_clear(&gftn_table);
     vim_free(tofree);
     return res;
 }
@@ -2988,9 +3058,19 @@ compile_expr9(
 	    return FAIL;
 	}
 
+	size_t namelen = p - *arg;
+	if (*p == '<')
+	{
+	    p++;
+	    p = generic_func_find_close_angle_bracket(p);
+	    if (*p != '>')
+		return FAIL;
+	    p++;
+	}
+
 	if (*p == '(')
 	{
-	    r = compile_call(arg, p - *arg, cctx, ppconst, 0);
+	    r = compile_call(arg, namelen, cctx, ppconst, 0);
 	}
 	else
 	{
@@ -3033,7 +3113,7 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (**arg == '<' && eval_isnamec1((*arg)[1]))
     {
 	++*arg;
-	want_type = parse_type(arg, cctx->ctx_type_list, TRUE);
+	want_type = parse_type(arg, cctx->ctx_type_list, cctx->ctx_ufunc, TRUE);
 	if (want_type == NULL)
 	    return FAIL;
 
