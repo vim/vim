@@ -4566,7 +4566,7 @@ win_alloc_firstwin(win_T *oldwin)
     if (curwin->w_frame == NULL)
 	return FAIL;
     topframe = curwin->w_frame;
-    topframe->fr_width = Columns - tabpanel_width();
+    topframe->fr_width = COLUMNS_WITHOUT_TPL();
     topframe->fr_height = Rows - p_ch;
 
     return OK;
@@ -5805,8 +5805,8 @@ win_alloc(win_T *after, int hidden)
      */
     if (!hidden)
 	win_append(after, new_wp);
-    new_wp->w_wincol = tabpanel_leftcol(NULL);
-    new_wp->w_width = Columns - tabpanel_width();
+    new_wp->w_wincol = TPL_LCOL(W);
+    new_wp->w_width = COLUMNS_WITHOUT_TPL();
 
     // position the display and the cursor at the top of the file.
     new_wp->w_topline = 1;
@@ -6197,7 +6197,7 @@ shell_new_columns(void)
     if (firstwin == NULL)	// not initialized yet
 	return;
 
-    int w = Columns - tabpanel_width();
+    int w = COLUMNS_WITHOUT_TPL();
 
     // First try setting the widths of windows with 'winfixwidth'.  If that
     // doesn't result in the right width, forget about that option.
@@ -6283,7 +6283,7 @@ win_size_restore(garray_T *gap)
 win_comp_pos(void)
 {
     int		row = tabline_height();
-    int		col = tabpanel_leftcol(NULL);
+    int		col = TPL_LCOL(NULL);
 
     frame_comp_pos(topframe, &row, &col);
     return row;
