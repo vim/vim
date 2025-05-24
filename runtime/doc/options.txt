@@ -3633,7 +3633,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	one dot may appear.
 	This option is not copied to another buffer, independent of the 's' or
 	'S' flag in 'cpoptions'.
-	Only alphanumeric characters, '-' and '_' can be used.
+	Only alphanumeric characters, '.', '-' and '_' can be used.
 
 						*'fillchars'* *'fcs'*
 'fillchars' 'fcs'	string	(default "vert:|,fold:-,eob:~,lastline:@")
