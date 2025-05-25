@@ -1,5 +1,7 @@
 " Test for checking the source code style.
 
+let s:list_of_c_files = []
+
 def s:ReportError(fname: string, lnum: number, msg: string)
   if lnum > 0
     assert_report(fname .. ' line ' .. lnum .. ': ' .. msg)
@@ -22,18 +24,20 @@ def s:PerformCheck(fname: string, pattern: string, msg: string, skip: string)
   endwhile
 enddef
 
+def s:Get_C_source_files(): list<string>
+  if empty(list_of_c_files)
+    var list = glob('../*.[ch]', 0, 1) + ['../xxd/xxd.c']
+    # Some files are auto-generated and may contain space errors, so skip those
+    list_of_c_files = filter(list, (i, v) => v !~ 'dlldata.c\|if_ole.h\|iid_ole.c')
+  endif
+  return list_of_c_files
+enddef
+
 def Test_source_files()
-  for fname in glob('../*.[ch]', 0, 1) + ['../xxd/xxd.c']
+  for fname in Get_C_source_files()
     bwipe!
     g:ignoreSwapExists = 'e'
     exe 'edit ' .. fname
-
-    # Some files are generated files and may contain space errors.
-    if fname =~ 'dlldata.c'
-        || fname =~ 'if_ole.h'
-        || fname =~ 'iid_ole.c'
-      continue
-    endif
 
     PerformCheck(fname, ' \t', 'space before Tab', '')
 
@@ -164,7 +168,7 @@ def Test_help_files()
 enddef
 
 def Test_indent_of_source_files()
-  for fname in glob('../*.[ch]', 0, 1) + ['../xxd/xxd.c']
+  for fname in Get_C_source_files()
     execute 'tabnew ' .. fname
     if &expandtab
       continue

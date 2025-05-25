@@ -62,19 +62,26 @@ tabpanelopt_changed(void)
     int		new_align = ALIGN_LEFT;
     int		new_columns = 20;
     int		new_is_vert = FALSE;
+    int		do_equal = 0;
 
     p = p_tplo;
     while (*p != NUL)
     {
-	if (STRNCMP(p, "align:left", 10) == 0)
+	if (STRNCMP(p, "align:", 6) == 0)
 	{
-	    p += 10;
-	    new_align = ALIGN_LEFT;
-	}
-	else if (STRNCMP(p, "align:right", 11) == 0)
-	{
-	    p += 11;
-	    new_align = ALIGN_RIGHT;
+	    p += 6;
+	    if (STRNCMP(p, "left", 4) == 0)
+	    {
+		p += 4;
+		new_align = ALIGN_LEFT;
+	    }
+	    else if (STRNCMP(p, "right", 5) == 0)
+	    {
+		p += 5;
+		new_align = ALIGN_RIGHT;
+	    }
+	    else
+		return FAIL;
 	}
 	else if (STRNCMP(p, "columns:", 8) == 0 && VIM_ISDIGIT(p[8]))
 	{
@@ -93,9 +100,19 @@ tabpanelopt_changed(void)
 	    ++p;
     }
 
+    // Whether all the windows are automatically made the same size
+    // when tabpanel size is changed.
+    do_equal = p_ea && tpl_columns != new_columns;
+
     tpl_align = new_align;
     tpl_columns = new_columns;
     tpl_is_vert = new_is_vert;
+
+    shell_new_columns();
+    redraw_tabpanel = TRUE;
+
+    if (do_equal)
+	win_equal(curwin, FALSE, 0);
 
     return OK;
 }

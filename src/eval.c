@@ -5000,6 +5000,8 @@ eval9_nested_expr(
 	else
 	{
 	    ret = eval1(arg, rettv, evalarg);	// recursive!
+	    if (ret != OK)
+		return ret;
 
 	    *arg = skipwhite_and_linebreak(*arg, evalarg);
 
