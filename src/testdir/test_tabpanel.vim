@@ -496,4 +496,24 @@ function Test_tabpanel_tabonly()
   call StopVimInTerminal(buf)
 endfunc
 
+function Test_tabpanel_non_existent()
+  CheckScreendump
+
+  let lines =<< trim END
+    tabnew
+    set showtabpanel=1
+  END
+  call writefile(lines, 'XTest_tabpanel_non_existent', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_non_existent', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_non_existent_0', {})
+  call term_sendkeys(buf, ":set tabpanel=%!NonExistent()\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_non_existent_1', {})
+  call term_sendkeys(buf, "\<C-l>")
+  call term_sendkeys(buf, ":set tabpanel=aaa\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_non_existent_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

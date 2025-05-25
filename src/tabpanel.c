@@ -39,6 +39,9 @@ static int tpl_align = ALIGN_LEFT;
 static int tpl_columns = 20;
 static int tpl_is_vert = FALSE;
 
+// tpl_error will contain p_tpl's value if an error is occurred.
+static char_u *tpl_error = NULL;
+
 typedef struct {
     win_T   *wp;
     win_T   *cwp;
@@ -506,6 +509,12 @@ starts_with_percent_and_bang(tabpanel_T *pargs)
 	p = eval_to_string_safe(usefmt + 2, use_sandbox, FALSE, FALSE);
 	if (p != NULL)
 	    usefmt = p;
+	else
+	{
+	    // When an error is occurred in eval_to_string_safe.
+	    usefmt = NULL;
+	    tpl_error = p_tpl;
+	}
 
 	do_unlet((char_u *)"g:tabpanel_winid", TRUE);
     }
@@ -533,6 +542,8 @@ do_by_tplmode(
     tabpage_T	*tp = NULL;
     typval_T	v;
     tabpanel_T	args;
+    char_u	*curr_tpl = p_tpl;
+    char_u	*usefmt = NULL;
 
     args.maxrow = cmdline_row;
     args.offsetrow = 0;
@@ -580,7 +591,8 @@ do_by_tplmode(
 	    args.wp = tp->tp_firstwin;
 	}
 
-	char_u *usefmt = starts_with_percent_and_bang(&args);
+	if (tpl_error != curr_tpl)
+	    usefmt = starts_with_percent_and_bang(&args);
 	if (usefmt != NULL)
 	{
 	    char_u	buf[IOSIZE];
@@ -620,7 +632,7 @@ do_by_tplmode(
 		p += i;
 		i = 0;
 	    }
-	    if (usefmt != p_tpl)
+	    if (usefmt != curr_tpl)
 		VIM_CLEAR(usefmt);
 	}
 	else
