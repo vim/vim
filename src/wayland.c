@@ -22,6 +22,7 @@
 # include "wlr-data-control-unstable-v1.h"
 # include "ext-data-control-unstable-v1.h"
 # include "xdg-shell.h"
+# include "gtk-shell.h"
 #endif
 
 // Struct that represents a seat. (Should be accessed via
@@ -49,6 +50,8 @@ typedef struct {
     struct wl_compositor *wl_compositor;
 
     struct xdg_wm_base *xdg_wm_base;
+
+    struct gtk_shell1 *gtk_shell1;
 #endif
 } vwl_global_objects_T;
 
@@ -180,8 +183,9 @@ typedef struct {
 		    // until it is set to FALSE, so don't take it literally.
     int shm_fd;
 
-    struct wl_surface *surface;
+    struct wl_surface *wl_surface;
     struct xdg_surface *xdg_surface;
+    struct gtk_surface1 *gtk_surface;
     struct xdg_toplevel *xdg_toplevel;
 
     // Keyboard object from seat
@@ -621,6 +625,7 @@ vwl_disconnect_display(void)
     destroy_gobject(wl_shm)
     destroy_gobject(wl_compositor)
     destroy_gobject(xdg_wm_base)
+    destroy_gobject(gtk_shell1)
 
     for (int i = 0; i < vwl_seats.ga_len; i++)
 	vwl_destroy_seat(&((vwl_seat_T *)vwl_seats.ga_data)[i]);
@@ -667,6 +672,7 @@ vwl_listen_to_registry(void)
 	destroy_gobject(wl_shm)
 	destroy_gobject(wl_compositor)
 	destroy_gobject(xdg_wm_base)
+	destroy_gobject(gtk_shell1)
     }
     else
 	// Be ready for ping events
@@ -722,10 +728,12 @@ vwl_registry_listener_global(
 	set_gobject(wl_shm, 1)
 
     else if (STRCMP(interface, wl_compositor_interface.name) == 0)
-	set_gobject(wl_compositor, 2)
+	set_gobject(wl_compositor, 1)
 
     else if (STRCMP(interface, xdg_wm_base_interface.name) == 0)
 	set_gobject(xdg_wm_base, 1)
+    else if (STRCMP(interface, gtk_shell1_interface.name) == 0)
+	set_gobject(gtk_shell1, 1)
 #endif
 
     if (chosen_interface == NULL || version < min_version)
@@ -982,10 +990,15 @@ vwl_cb_destroy_surfaces(void)
 	xdg_surface_destroy(vwl_clipboard.xdg_surface);
 	vwl_clipboard.xdg_surface = NULL;
     }
-    if (vwl_clipboard.surface != NULL)
+    if (vwl_clipboard.gtk_surface != NULL)
     {
-	wl_surface_destroy(vwl_clipboard.surface);
-	vwl_clipboard.surface = NULL;
+	gtk_surface1_destroy(vwl_clipboard.gtk_surface);
+	vwl_clipboard.gtk_surface = NULL;
+    }
+    if (vwl_clipboard.wl_surface != NULL)
+    {
+	wl_surface_destroy(vwl_clipboard.wl_surface);
+	vwl_clipboard.wl_surface = NULL;
     }
     if (vwl_clipboard.keyboard != NULL)
     {
@@ -1008,7 +1021,7 @@ vwl_cb_steal_focus(
 {
     // Get keyboard object and starting listening for the Enter event.
     struct wl_keyboard *kb;
-    int ret;
+    int ret = OK;
 
     vwl_clipboard.keyboard = kb = vwl_seat_get_keyboard(seat);
     if (kb == NULL)
@@ -1021,12 +1034,21 @@ vwl_cb_steal_focus(
 
     vwl_display_roundtrip(&vwl_display);
 
-    vwl_clipboard.surface = wl_compositor_create_surface(
+    vwl_clipboard.wl_surface = wl_compositor_create_surface(
 	    vwl_gobjects.wl_compositor);
     vwl_clipboard.xdg_surface = xdg_wm_base_get_xdg_surface(
-	    vwl_gobjects.xdg_wm_base, vwl_clipboard.surface);
+	    vwl_gobjects.xdg_wm_base, vwl_clipboard.wl_surface);
     vwl_clipboard.xdg_toplevel = xdg_surface_get_toplevel(
 	    vwl_clipboard.xdg_surface);
+
+    // Use gtk-shell surface if available
+    if (vwl_gobjects.gtk_shell1 != NULL)
+    {
+	msg("using gtk-shell surface");
+	vwl_clipboard.gtk_surface = gtk_shell1_get_gtk_surface(
+		vwl_gobjects.gtk_shell1, vwl_clipboard.wl_surface);
+    }
+
     xdg_toplevel_set_title(vwl_clipboard.xdg_toplevel, "vim-clipboard");
 
     xdg_surface_add_listener(
@@ -1036,35 +1058,40 @@ vwl_cb_steal_focus(
 
     // Do a commit before attaching the buffer so we can start receiving events,
     // possibly the Enter event even before we actually display the surface.
-    wl_surface_commit(vwl_clipboard.surface);
+    wl_surface_commit(vwl_clipboard.wl_surface);
 
     // Need to also configure the xdg_surface before we attach a buffer
     if (vwl_display_roundtrip(&vwl_display) == FAIL)
     {
-	vwl_cb_destroy_surfaces();
-	return FAIL;
+	ret = FAIL;
+	goto exit;
     }
 
+    // We may get Enter event before we attach the buffer
     if (vwl_clipboard.have_focus)
-	return OK;
+	goto exit;
 
     // Can't attach buffer since it is still being used
     if (!vwl_clipboard.buf_available)
     {
-	vwl_cb_destroy_surfaces();
-	return FAIL;
+	ret = FAIL;
+	goto exit;
     }
     vwl_clipboard.buf_available = FALSE;
 
-    wl_surface_attach(vwl_clipboard.surface, vwl_clipboard.buffer, 0, 0);
-    wl_surface_damage(vwl_clipboard.surface, 0, 0, 1, 1);
+    wl_surface_attach(vwl_clipboard.wl_surface, vwl_clipboard.buffer, 0, 0);
+    wl_surface_damage(vwl_clipboard.wl_surface, 0, 0, 1, 1);
 
-    wl_surface_commit(vwl_clipboard.surface);
+    if (vwl_clipboard.gtk_surface != NULL)
+	gtk_surface1_present(vwl_clipboard.gtk_surface, 0);
+
+    wl_surface_commit(vwl_clipboard.wl_surface);
 
     vwl_clipboard.on_focus = on_focus;
 
     ret = vwl_display_roundtrip(&vwl_display);
 
+exit:
     vwl_clipboard.on_focus = NULL;
     vwl_cb_destroy_surfaces();
 
