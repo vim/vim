@@ -4526,4 +4526,29 @@ func Test_complete_match()
   delfunc TestComplete
 endfunc
 
+" Issue #17363
+func Test_complete_safe()
+  set complete=b,u,t,i,f^9
+  set completefunc=ComplFunc
+  func Completefunc(findstart, base)
+    if findstart == 1
+      return 1
+    else
+      return {words: ['word'], refresh: 'always'}
+    endif
+  endfunc
+
+  enew
+  file foo1
+  enew
+  file foo2
+  " Following caused Vim to crash in linux
+  exe "normal! Gof\<c-n>\<esc>R"
+  bw!
+  bw!
+  set completefunc&
+  set complete&
+  delfunc ComplFunc
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
