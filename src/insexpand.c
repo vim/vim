@@ -4905,7 +4905,7 @@ strip_caret_numbers_in_place(char_u *str)
  * Safely advance the cpt_sources_index by one.
  */
     static void
-advance_cpt_sources_index_safe()
+advance_cpt_sources_index_safe(void)
 {
     cpt_sources_index++;
     if (cpt_sources_index >= cpt_sources_count)
