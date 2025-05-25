@@ -202,29 +202,37 @@ function Test_tabpanel_drawing_fill_tailing()
   call StopVimInTerminal(buf)
 endfunc
 
-"function Test_tabpanel_drawing_pum()
-"  CheckScreendump
-"
-"  let lines =<< trim END
-"    set showtabpanel=2
-"    set tabpanelopt=columns:20
-"    set showtabline=0
-"    e aaa.txt
-"    tabnew
-"    e bbb.txt
-"  END
-"  call writefile(lines, 'XTest_tabpanel_pum', 'D')
-"
-"  let buf = RunVimInTerminal('-S XTest_tabpanel_pum', {'rows': 10, 'cols': 45})
-"
-"  call term_sendkeys(buf, "i\<C-x>\<C-v>")
-"  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_0', {})
-"
-"  call term_sendkeys(buf, "\<CR>  ab\<C-x>\<C-v>")
-"  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_1', {})
-"
-"  call StopVimInTerminal(buf)
-"endfunc
+function Test_tabpanel_drawing_pum()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=columns:20
+    set showtabline=0
+    e aaa.txt
+    tabnew
+    e bbb.txt
+  END
+  call writefile(lines, 'XTest_tabpanel_pum', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_pum', {'rows': 10, 'cols': 45})
+
+  call term_sendkeys(buf, "i\<CR>aa\<CR>aaaa\<CR>aaac\<CR>aaab\<CR>\<Esc>")
+  call term_sendkeys(buf, "ggi\<C-X>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_0', {})
+
+  call term_sendkeys(buf, "\<Esc>Go  a\<C-X>\<C-P>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_1', {})
+
+  call term_sendkeys(buf, "\<C-U>\<CR>\<Esc>")
+  call term_sendkeys(buf, ":set tabpanelopt+=align:right\<CR>")
+  let num = 45 - 20 - 2  " term-win-width - tabpanel-columns - 2
+  call term_sendkeys(buf, num .. "a \<Esc>")
+  call term_sendkeys(buf, "a\<C-X>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_pum_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 
 "function Test_tabpanel_scrolling()
 "  CheckScreendump
