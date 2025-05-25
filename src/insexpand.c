@@ -4904,17 +4904,18 @@ strip_caret_numbers_in_place(char_u *str)
 /*
  * Safely advance the cpt_sources_index by one.
  */
-    static void
+    static int
 advance_cpt_sources_index_safe(void)
 {
-    cpt_sources_index++;
-    if (cpt_sources_index >= cpt_sources_count)
+    if (cpt_sources_index < cpt_sources_count - 1)
     {
-#ifdef FEAT_EVAL
-	semsg(_(e_list_index_out_of_range_nr), cpt_sources_index);
-#endif
-	getout(4);
+	cpt_sources_index++;
+	return OK;
     }
+#ifdef FEAT_EVAL
+    semsg(_(e_list_index_out_of_range_nr), cpt_sources_index + 1);
+#endif
+    return FAIL;
 }
 
 /*
@@ -4934,7 +4935,7 @@ ins_compl_get_exp(pos_T *ini)
     int		i;
     int		found_new_match;
     int		type = ctrl_x_mode;
-    int		advance_cpt_idx = FALSE;
+    int		may_advance_cpt_idx = FALSE;
 
     if (!compl_started)
     {
@@ -4982,14 +4983,14 @@ ins_compl_get_exp(pos_T *ini)
 					&& (!compl_started || st.found_all))
 	{
 	    int status = process_next_cpt_value(&st, &type, ini,
-		    cfc_has_mode(), &advance_cpt_idx);
+		    cfc_has_mode(), &may_advance_cpt_idx);
 
 	    if (status == INS_COMPL_CPT_END)
 		break;
 	    if (status == INS_COMPL_CPT_CONT)
 	    {
-		if (advance_cpt_idx)
-		    advance_cpt_sources_index_safe();
+		if (may_advance_cpt_idx && !advance_cpt_sources_index_safe())
+		    break;
 		continue;
 	    }
 	}
@@ -5002,8 +5003,8 @@ ins_compl_get_exp(pos_T *ini)
 	// get the next set of completion matches
 	found_new_match = get_next_completion_match(type, &st, ini);
 
-	if (advance_cpt_idx)
-	    advance_cpt_sources_index_safe();
+	if (may_advance_cpt_idx && !advance_cpt_sources_index_safe())
+	    break;
 
 	// break the loop for specialized modes (use 'complete' just for the
 	// generic ctrl_x_mode == CTRL_X_NORMAL) or when we've found a new
@@ -6869,7 +6870,7 @@ cpt_compl_refresh(void)
 
 	(void)copy_option_part(&p, IObuff, IOSIZE, ","); // Advance p
 	if (may_advance_cpt_index(p))
-	    advance_cpt_sources_index_safe();
+	    (void)advance_cpt_sources_index_safe();
     }
     cpt_sources_index = -1;
 
