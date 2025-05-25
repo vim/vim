@@ -1585,9 +1585,10 @@ aucmd_prepbuf(
 #ifdef FEAT_AUTOCHDIR
     int		save_acd;
 #endif
+    int		same_buffer = buf == curbuf;
 
     // Find a window that is for the new buffer
-    if (buf == curbuf)		// be quick when buf is curbuf
+    if (same_buffer)		// be quick when buf is curbuf
 	win = curwin;
     else
 	FOR_ALL_WINDOWS(win)
@@ -1677,9 +1678,10 @@ aucmd_prepbuf(
     aco->new_curwin_id = curwin->w_id;
     set_bufref(&aco->new_curbuf, curbuf);
 
-    // disable the Visual area, the position may be invalid in another buffer
     aco->save_VIsual_active = VIsual_active;
-    VIsual_active = FALSE;
+    if (!same_buffer)
+	// disable the Visual area, position may be invalid in another buffer
+	VIsual_active = FALSE;
 }
 
 /*
