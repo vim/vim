@@ -4910,7 +4910,9 @@ advance_cpt_sources_index_safe(void)
     cpt_sources_index++;
     if (cpt_sources_index >= cpt_sources_count)
     {
+#ifdef FEAT_EVAL
 	semsg(_(e_list_index_out_of_range_nr), cpt_sources_index);
+#endif
 	getout(4);
     }
 }
