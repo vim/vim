@@ -10,7 +10,7 @@ function s:reset()
   set showtabpanel&
 endfunc
 
-function Test_tabpanel_with_many_vsplit()
+function Test_tabpanel_with_vsplit()
   CheckScreendump
 
   let lines =<< trim END
@@ -19,20 +19,22 @@ function Test_tabpanel_with_many_vsplit()
     set showtabline=0
     tabnew
   END
-  call writefile(lines, 'XTest_tabpanel_with_many_vsplit', 'D')
+  call writefile(lines, 'XTest_tabpanel_with_vsplit', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_tabpanel_with_many_vsplit', {'rows': 10, 'cols': 80})
-  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_0', {})
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_vsplit', {'rows': 10, 'cols': 78})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_vsplit_0', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_1', {})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_vsplit_1', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_2', {})
-  call term_sendkeys(buf, ":q\<CR>:q\<CR>:set tabpanelopt=align:right,vert\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_3', {})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_vsplit_2', {})
+
+  call term_sendkeys(buf, ":only\<CR>")
+  call term_sendkeys(buf, ":set tabpanelopt=align:right,vert\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_vsplit_3', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_4', {})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_vsplit_4', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
-  call VerifyScreenDump(buf, 'Test_tabpanel_with_many_vsplit_5', {})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_vsplit_5', {})
   call StopVimInTerminal(buf)
 endfunc
 
