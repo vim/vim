@@ -8992,9 +8992,9 @@ static sig_atomic_t *timeout_flag = &timeout_flags[0];
 
 
     static void CALLBACK
-set_flag(void *param UNUSED, BOOLEAN unused2 UNUSED)
+set_flag(void *param, BOOLEAN unused2 UNUSED)
 {
-    *timeout_flag = TRUE;
+    *(sig_atomic_t *)param = TRUE;
 }
 
 /*
