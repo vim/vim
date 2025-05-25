@@ -4126,6 +4126,11 @@ func Test_complete_match_count()
   exe "normal! Gof\<c-n>\<c-r>=PrintMenuWords()\<cr>"
   call assert_equal('fo{''matches'': [''fo'', ''foo1'', ''foo2''], ''selected'': 0}', getline(5))
   5d
+  set cpt=.^1,,,f^2,,,
+  call setline(1, ["fo", "foo", "foobar", "fobarbaz"])
+  exe "normal! Gof\<c-n>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('fo{''matches'': [''fo'', ''foo1'', ''foo2''], ''selected'': 0}', getline(5))
+  5d
   exe "normal! Gof\<c-n>\<c-n>\<c-r>=PrintMenuWords()\<cr>"
   call assert_equal('foo1{''matches'': [''fo'', ''foo1'', ''foo2''], ''selected'': 1}', getline(5))
   5d
