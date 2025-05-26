@@ -4526,29 +4526,40 @@ func Test_complete_match()
   delfunc TestComplete
 endfunc
 
-" Issue #17363
-func Test_complete_safe()
-  set complete=b,u,t,i,f^9
-  set completefunc=ComplFunc
-  func Complfunc(findstart, base)
-    if findstart == 1
-      return 1
+" Test refresh:always with unloaded buffers (issue #17363)
+func Test_complete_unloaded_buf_refresh_always()
+  func! TestComplete(findstart, base)
+    if a:findstart
+      let line = getline('.')
+      let start = col('.') - 1
+      while start > 0 && line[start - 1] =~ '\a'
+        let start -= 1
+      endwhile
+      return start
     else
-      return {words: ['word'], refresh: 'always'}
+      let g:CallCount += 1
+      let res = ["update1", "update12", "update123"]
+      return #{words: res, refresh: 'always'}
     endif
   endfunc
 
-  enew
-  file foo1
-  enew
-  file foo2
-  " Following caused Vim to crash in linux
-  exe "normal! Gof\<c-n>\<esc>R"
+  let g:CallCount = 0
+  set completeopt=menu,longest
+  set completefunc=TestComplete
+  set complete=b,u,t,i,f
+  badd foo1
+  badd foo2
+  new
+  exe "normal! iup\<C-N>\<BS>\<BS>\<BS>\<BS>\<BS>"
+  call assert_equal('up', getline(1))
+  call assert_equal(6, g:CallCount)
+  bd! foo1
+  bd! foo2
   bw!
-  bw!
-  set completefunc&
+  set completeopt&
   set complete&
-  delfunc ComplFunc
+  set completefunc&
+  delfunc TestComplete
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
