@@ -594,9 +594,9 @@ the system, mostly it is something like 256 or 1024 characters.
 There are five main ways to use tabs in Vim:
 
 1. Always keep 'tabstop' at 8, set 'softtabstop' and 'shiftwidth' to 4
-   (or 3 or whatever you prefer) and use 'noexpandtab'.  Then Vim
+   and use 'noexpandtab'.  Then Vim
    will use a mix of tabs and spaces, but typing <Tab> and <BS> will
-   behave like a tab appears every 4 (or 3) characters.
+   behave like a tab appears every 4 characters.
    This is the recommended way, the file will look the same with other
    tools and when listing it in a terminal.
 
@@ -605,7 +605,7 @@ There are five main ways to use tabs in Vim:
    formatting will never be messed up when 'tabstop' is changed (leave
    it at 8 just in case).  The file will be a bit larger.
    You do need to check if no Tabs exist in the file.  You can get rid
-   of them by first setting 'expandtab' and using `%retab!`, making
+   of them by first setting 'expandtab' and using |:retab!|, making
    sure the value of 'tabstop' is set correctly.
 
 3. Set 'tabstop' and 'shiftwidth' to whatever you prefer and use
@@ -614,7 +614,7 @@ There are five main ways to use tabs in Vim:
    You do need to check if no Tabs exist in the file, just like in the
    item just above.
 
-4. Set 'tabstop' and 'shiftwidth' to whatever you prefer and use a
+4. Set 'tabstop' and 'shiftwidth' to whatever you prefer via a 
    |modeline| to set these values when editing the file again.  Only
    works when using Vim to edit the file, other tools assume a tabstop
    is worth 8 spaces.
@@ -8538,7 +8538,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	It is also used to visually represent the Horizontal Tabulation
 	characters (ASCII 9, caret notation: ^I) already present in a file.
-	Example: with `ts=8` the following two lines
+	Example: with `:set tabstop=8` the following two lines
 >
 		1234^I9
 		1234    9
