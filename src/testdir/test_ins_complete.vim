@@ -4530,7 +4530,7 @@ endfunc
 func Test_complete_safe()
   set complete=b,u,t,i,f^9
   set completefunc=ComplFunc
-  func Completefunc(findstart, base)
+  func Complfunc(findstart, base)
     if findstart == 1
       return 1
     else
