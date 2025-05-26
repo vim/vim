@@ -3924,9 +3924,9 @@ screen_del_lines(
 	    LineOffset[j - line_count] = temp;
 	    LineWraps[j - line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp, topframe->fr_width, clear_attr);
+		lineclear(temp, (int)Columns, clear_attr);
 	    else
-		lineinvalid(temp, topframe->fr_width);
+		lineinvalid(temp, (int)Columns);
 	}
     }
 

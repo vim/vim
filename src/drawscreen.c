@@ -1377,7 +1377,8 @@ fold_line(
     }
 #endif
 
-    screen_line(wp, row, wp->w_wincol, wp->w_width, wp->w_width, -1, 0);
+    screen_line(wp, row + W_WINROW(wp), wp->w_wincol, wp->w_width, wp->w_width,
+	    -1, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
     // updated (saves a call to plines() later).
