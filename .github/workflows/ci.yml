@@ -334,6 +334,14 @@ jobs:
             true
           )
 
+      - name: Regenerate Configure Script
+        if: contains(matrix.extra, 'unittests')
+        run: |
+          # This will exit with an error code if the generated configure script differs from configure.ac
+          cd src 
+          make autoconf
+          git diff --exit-code -- auto/configure
+
       - name: Generate gcov files
         if: matrix.coverage
         run: |
