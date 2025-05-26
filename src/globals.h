@@ -1614,7 +1614,7 @@ EXTERN int	autocmd_bufnr INIT(= 0);     // fnum for <abuf> on cmdline
 EXTERN char_u	*autocmd_match INIT(= NULL); // name for <amatch> on cmdline
 EXTERN int	aucmd_cmdline_changed_count INIT(= 0);
 
-EXTERN int	did_cursorhold INIT(= FALSE); // set when CursorHold t'gerd
+EXTERN int	did_cursorhold INIT(= TRUE);  // set when CursorHold t'gerd
 EXTERN pos_T	last_cursormoved	      // for CursorMoved event
 # ifdef DO_INIT
 		    = {0, 0, 0}

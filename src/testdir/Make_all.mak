@@ -119,6 +119,7 @@ NEW_TESTS = \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
+	test_cursorhold_gui_startup.vim \
 	test_cursorline \
 	test_curswant \
 	test_debugger \
@@ -403,6 +404,7 @@ NEW_TESTS_RES = \
 	test_crypt.res \
 	test_cscope.res \
 	test_cursor_func.res \
+	test_cursorhold_gui_startup.res \
 	test_cursorline.res \
 	test_curswant.res \
 	test_debugger.res \
