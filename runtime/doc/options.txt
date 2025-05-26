@@ -593,38 +593,42 @@ the system, mostly it is something like 256 or 1024 characters.
 					 	*using-tabs* *tabs-usage*
 There are five main ways to use tabs in Vim:
 
-1. Always keep 'tabstop' at 8, set 'softtabstop' and 'shiftwidth' to 4
-   and use 'noexpandtab'.  Then Vim
-   will use a mix of tabs and spaces, but typing <Tab> and <BS> will
-   behave like a tab appears every 4 characters.
-   This is the recommended way, the file will look the same with other
+1. Keep 'tabstop' at 8, set 'softtabstop' and 'shiftwidth' to whatever
+   you prefer and use 'noexpandtab'.  Then Vim will display
+   Horizontal Tabulation characters (ASCII 9, caret notation: ^I)
+   using the traditional 8 columns spacing between tab stops.
+   But when typing <Tab> and <BS>, it will use a mix of spaces and ^I
+   so that the two keys behave as if they were following 'softtabstop'.
+   This is the recommended way, the file will look the same in other
    tools and when listing it in a terminal.
 
 2. Set 'softtabstop' and 'shiftwidth' to whatever you prefer and use
-   'expandtab'.  This way you will always insert spaces.  The
-   formatting will never be messed up when 'tabstop' is changed (leave
+   'expandtab'.  This way you will always insert spaces.
+   The formatting will never be messed up when 'tabstop' is changed (leave
    it at 8 just in case).  The file will be a bit larger.
-   You do need to check if no Tabs exist in the file.  You can get rid
-   of them by first setting 'expandtab' and using |:retab!|, making
-   sure the value of 'tabstop' is set correctly.
+   You can get rid of any ^I already present in the file
+   by first setting 'expandtab' and using |:retab!|, making sure
+   the value of 'tabstop' is set correctly.
 
-3. Set 'tabstop' and 'shiftwidth' to whatever you prefer and use
-   'expandtab'.  This way you will always insert spaces.  The
-   formatting will never be messed up when 'tabstop' is changed.
-   You do need to check if no Tabs exist in the file, just like in the
-   item just above.
+3. Set 'tabstop' and 'shiftwidth' to whatever you prefer and use 'expandtab'.
+   This way you will always insert spaces, never ^I.
+   The formatting will never be messed up when 'tabstop' is changed,
+   unless ^I were already present in the file.
 
-4. Set 'tabstop' and 'shiftwidth' to whatever you prefer via a 
-   |modeline| to set these values when editing the file again.  Only
-   works when using Vim to edit the file, other tools assume a tabstop
-   is worth 8 spaces.
+4. Set 'tabstop' and 'shiftwidth' to whatever you prefer using a
+   |modeline| to set these values when editing the file again.
 
-5. Always set 'tabstop' and 'shiftwidth' to the same value, and
-   'noexpandtab'.  This should then work (for initial indents only)
-   for any tabstop setting that people use.  It might be nice to have
-   tabs after the first non-blank inserted as spaces if you do this
-   though.  Otherwise aligned comments will be wrong when 'tabstop' is
-   changed.
+5. Set 'tabstop' and 'shiftwidth' to the same value, and 'noexpandtab'.
+   This should then work (for initial indents only) for any tabstop setting
+   that people use.  It might be nice to have tabs after the first non-blank
+   inserted as spaces if you do this though.
+   Otherwise aligned comments will be wrong when 'tabstop' is changed.
+
+NOTE: for options 3. 4. and 5. keep in mind that traditionally other tools
+such as `cat` or `git` have their (virtual) horizontal tab stops
+separated by 8 columns, and will display the tab characters ^I
+present in a file accordingly.
+
 
 ==============================================================================
 2. Automatically setting options			*auto-setting*
