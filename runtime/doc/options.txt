@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 May 16
+*options.txt*	For Vim version 9.1.  Last change: 2025 May 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4658,7 +4658,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'ignorecase' 'ic'	boolean	(default off)
 			global
 	Ignore case in search patterns, |cmdline-completion|, when
-	searching in the tags file, and non-|Vim9| |expr-==|.
+	searching in the tags file, non-|Vim9| |expr-==| and for Insert-mode
+	completion |ins-completion|.
 	Also see 'smartcase' and 'tagcase'.
 	Can be overruled by using "\c" or "\C" in the pattern, see
 	|/ignorecase|.

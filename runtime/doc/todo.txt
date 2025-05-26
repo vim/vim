@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2025 Apr 24
+*todo.txt*      For Vim version 9.1.  Last change: 2025 May 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4764,7 +4764,6 @@ Insert mode completion/expansion:
 7   When expanding $HOME/dir with ^X^F keep the $HOME (with an option?).
 7   Add CTRL-X command in Insert mode like CTRL-X CTRL-N, that completes WORDS
     instead of words.
-8   Add CTRL-X CTRL-R: complete words from register contents.
 8   Add completion of previously inserted texts (like what CTRL-A does).
     Requires remembering a number of insertions.
 8   Add 'f' flag to 'complete': Expand file names.

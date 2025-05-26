@@ -17,6 +17,7 @@ int ctrl_x_mode_spell(void);
 int ctrl_x_mode_line_or_eval(void);
 int ctrl_x_mode_not_default(void);
 int ctrl_x_mode_not_defined_yet(void);
+int ctrl_x_mode_register(void);
 int compl_status_adding(void);
 int compl_status_sol(void);
 int compl_status_local(void);

@@ -6654,6 +6654,7 @@ compl-generic	insert.txt	/*compl-generic*
 compl-keyword	insert.txt	/*compl-keyword*
 compl-omni	insert.txt	/*compl-omni*
 compl-omni-filetypes	insert.txt	/*compl-omni-filetypes*
+compl-register-words	insert.txt	/*compl-register-words*
 compl-spelling	insert.txt	/*compl-spelling*
 compl-states	insert.txt	/*compl-states*
 compl-stop	insert.txt	/*compl-stop*
@@ -8425,6 +8426,7 @@ i_CTRL-X_CTRL-L	insert.txt	/*i_CTRL-X_CTRL-L*
 i_CTRL-X_CTRL-N	insert.txt	/*i_CTRL-X_CTRL-N*
 i_CTRL-X_CTRL-O	insert.txt	/*i_CTRL-X_CTRL-O*
 i_CTRL-X_CTRL-P	insert.txt	/*i_CTRL-X_CTRL-P*
+i_CTRL-X_CTRL-R	insert.txt	/*i_CTRL-X_CTRL-R*
 i_CTRL-X_CTRL-S	insert.txt	/*i_CTRL-X_CTRL-S*
 i_CTRL-X_CTRL-T	insert.txt	/*i_CTRL-X_CTRL-T*
 i_CTRL-X_CTRL-U	insert.txt	/*i_CTRL-X_CTRL-U*
