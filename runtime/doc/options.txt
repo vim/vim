@@ -8529,7 +8529,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'tabstop' 'ts'		number	(default 8)
 			local to buffer
 	Number of columns between two (virtual) horizontal tab stops.
-	The value must be between 1 and 10000.
+	The value must be at least 1 and at most 9999.
 
 	In insert mode, this is one of the settings that influence
 	what characters Vim writes in a file when <Tab> is used
