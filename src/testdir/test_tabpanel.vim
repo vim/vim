@@ -488,7 +488,7 @@ function Test_tabpanel_tabonly()
   END
   call writefile(lines, 'XTest_tabpanel_tabonly', 'D')
 
-  let buf = RunVimInTerminal('-S XTest_tabpanel_tabonly', {'rows': 10, 'cols': 80})
+  let buf = RunVimInTerminal('-S XTest_tabpanel_tabonly', {'rows': 10, 'cols': 78})
   call VerifyScreenDump(buf, 'Test_tabpanel_only_0', {})
   call term_sendkeys(buf, ":tabonly\<CR>")
   call VerifyScreenDump(buf, 'Test_tabpanel_only_1', {})
