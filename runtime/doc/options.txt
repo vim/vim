@@ -8558,7 +8558,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	See also |using-tabs| for recommendations.
 
 
-
 			*'tagbsearch'* *'tbs'* *'notagbsearch'* *'notbs'*
 'tagbsearch' 'tbs'	boolean	(default on)
 			global
