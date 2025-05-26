@@ -4091,7 +4091,7 @@ process_next_cpt_value(
 	    }
 	}
 #ifdef FEAT_COMPL_FUNC
-	else if (*st->e_cpt == 'f' || *st->e_cpt == 'o')
+	else if (*st->e_cpt == 'F' || *st->e_cpt == 'o')
 	{
 	    compl_type = CTRL_X_FUNCTION;
 	    if (*st->e_cpt == 'o')
@@ -6916,7 +6916,7 @@ cpt_compl_refresh(void)
 	{
 	    if (*p == 'o')
 		cb = &curbuf->b_ofu_cb;
-	    else if (*p == 'f')
+	    else if (*p == 'F')
 		cb = (*(p + 1) != ',' && *(p + 1) != NUL)
 		    ? get_cpt_func_callback(p + 1) : &curbuf->b_cfu_cb;
 	    if (cb)

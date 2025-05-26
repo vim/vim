@@ -41624,8 +41624,8 @@ Completion: ~
 - New option value for 'wildmode':
 	"noselect"	- do not auto select an entry in the wildmenu
 - New flags for 'complete':
-	"f{func}"	- complete using given function
-	"f"		- complete using 'completefunc'
+	"F{func}"	- complete using given function
+	"F"		- complete using 'completefunc'
 	"o"		- complete using 'omnifunc'
 - allow to limit matches for the 'complete' sources by using the
   "{flag}^<limit>" notation
