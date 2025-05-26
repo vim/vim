@@ -521,4 +521,16 @@ function Test_tabpanel_equalalways()
   call StopVimInTerminal(buf)
 endfunc
 
+function Test_tabpanel_error()
+  set tabpanel=%!NonExistingFunc()
+  try
+    set showtabpanel=2
+    redraw!
+  catch /^Vim\%((\a\+)\)\=:E117:/
+  endtry
+  call assert_true(empty(&tabpanel))
+  set tabpanel&vim
+  set showtabpanel&vim
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -496,6 +496,7 @@ starts_with_percent_and_bang(tabpanel_T *pargs)
 {
     int		len = 0;
     char_u	*usefmt = p_tpl;
+    int		did_emsg_before = did_emsg;
 
     if (usefmt == NULL)
 	return NULL;
@@ -525,6 +526,13 @@ starts_with_percent_and_bang(tabpanel_T *pargs)
 	    usefmt = p;
 
 	do_unlet((char_u *)"g:tabpanel_winid", TRUE);
+
+	if (did_emsg > did_emsg_before)
+	{
+	    usefmt = NULL;
+	    set_string_option_direct((char_u *)"tabpanel", -1, (char_u *)"",
+		    OPT_FREE | OPT_GLOBAL, SID_ERROR);
+	}
     }
 #endif
 
