@@ -590,7 +590,7 @@ the system, mostly it is something like 256 or 1024 characters.
 <			You need to restart for this to take effect.
 
 
-					 	*using-tabs* *tabs-usage*
+						*using-tabs* *tabs-usage*
 There are five main ways to use tabs in Vim:
 
 1. Keep 'tabstop' at 8, set 'softtabstop' and 'shiftwidth' to whatever
