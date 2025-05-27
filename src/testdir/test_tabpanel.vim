@@ -234,36 +234,36 @@ function Test_tabpanel_drawing_pum()
   call StopVimInTerminal(buf)
 endfunc
 
-"function Test_tabpanel_scrolling()
-"  CheckScreendump
-"
-"  let lines =<< trim END
-"    set showtabpanel=2
-"    set tabpanelopt=columns:20
-"    set showtabline=0
-"    set nowrap
-"    set number
-"    e aaa.txt
-"    tabnew
-"    e bbb.txt
-"    vsplit
-"    call setbufline(bufnr(), 1, repeat(['text text text text'], 100))
-"    wincmd =
-"  END
-"  call writefile(lines, 'XTest_tabpanel_scrolling', 'D')
-"
-"  let buf = RunVimInTerminal('-S XTest_tabpanel_scrolling', {'rows': 10, 'cols': 45})
-"  let n = 0
-"  for c in ['H', 'J', 'K', 'L']
-"    call term_sendkeys(buf, ":wincmd " .. c ..  "\<CR>")
-"    call term_sendkeys(buf, "\<C-d>\<C-d>")
-"    call term_sendkeys(buf, "r@")
-"    call VerifyScreenDump(buf, 'Test_tabpanel_drawing_scrolling_' .. n, {})
-"    let n += 1
-"  endfor
-"
-"  call StopVimInTerminal(buf)
-"endfunc
+function Test_tabpanel_scrolling()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=columns:20
+    set showtabline=0
+    set nowrap
+    set number
+    e aaa.txt
+    tabnew
+    e bbb.txt
+    vsplit
+    call setbufline(bufnr(), 1, repeat(['text text text text'], 100))
+    wincmd =
+  END
+  call writefile(lines, 'XTest_tabpanel_scrolling', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_scrolling', {'rows': 10, 'cols': 45})
+  let n = 0
+  for c in ['H', 'J', 'K', 'L']
+    call term_sendkeys(buf, ":wincmd " .. c ..  "\<CR>")
+    call term_sendkeys(buf, "\<C-d>\<C-d>")
+    call term_sendkeys(buf, "r@")
+    call VerifyScreenDump(buf, 'Test_tabpanel_drawing_scrolling_' .. n, {})
+    let n += 1
+  endfor
+
+  call StopVimInTerminal(buf)
+endfunc
 
 function Test_tabpanel_many_tabpages()
   CheckScreendump

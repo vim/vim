@@ -366,6 +366,9 @@ char_needs_redraw(int off_from, int off_to, int cols)
 			    && ScreenLines[off_from + 1]
 						!= ScreenLines[off_to + 1])))))
 	return TRUE;
+    // TODO: This is a temporary solution until the root cause is fixed.
+    if (firstwin->w_wincol > 0)
+	return TRUE;
     return FALSE;
 }
 
