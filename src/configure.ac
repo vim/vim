@@ -15,7 +15,6 @@ AC_PROG_CC		dnl required by almost everything
 AC_PROG_CPP		dnl required by header file checks
 AC_PROG_EGREP		dnl required by AC_EGREP_CPP
 AC_PROG_FGREP		dnl finds working grep -F
-AC_PROG_AWK		dnl required for "make html" in ../doc
 
 dnl Don't strip if we don't have it
 AC_CHECK_PROG(STRIP, strip, strip, :)
