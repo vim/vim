@@ -529,6 +529,14 @@ function Test_tabpanel_error()
   catch /^Vim\%((\a\+)\)\=:E117:/
   endtry
   call assert_true(empty(&tabpanel))
+
+  try
+    set tabpanel=%{my#util#TabPanelHighlight}%t
+    redraw!
+  catch /^Vim\%((\a\+)\)\=:E121:/
+  endtry
+  call assert_true(empty(&tabpanel))
+
   set tabpanel&vim
   set showtabpanel&vim
 endfunc
