@@ -5518,12 +5518,7 @@ mch_call_shell(
 	szShellTitle, ARRAY_LENGTH(szShellTitle) - 4);
     if (szShellTitlelen > 0)
     {
-	if (cmd == NULL)
-	{
-	    wcscpy(szShellTitle + szShellTitlelen, L" :sh");
-	    SetConsoleTitleW(szShellTitle);
-	}
-	else
+	if (cmd != NULL)
 	{
 	    WCHAR *wn = enc_to_utf16((char_u *)cmd, NULL);
 
