@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 May 14
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 May 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2007,6 +2007,7 @@ complete_info([{what}])				*complete_info()*
 		   "omni"	     Omni completion |i_CTRL-X_CTRL-O|
 		   "spell"	     Spelling suggestions |i_CTRL-X_s|
 		   "eval"	     |complete()| completion
+		   "register"	     Words from registers |i_CTRL-X_CTRL-R|
 		   "unknown"	     Other internal modes
 
 		If the optional {what} list argument is supplied, then only
