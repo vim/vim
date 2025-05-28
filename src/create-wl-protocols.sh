@@ -6,6 +6,3 @@ wayland-scanner private-code protocols/wlr-data-control-unstable-v1.xml wlr-data
 
 wayland-scanner client-header protocols/xdg-shell.xml xdg-shell.h
 wayland-scanner private-code protocols/xdg-shell.xml xdg-shell.c
-
-wayland-scanner client-header protocols/gtk-shell.xml gtk-shell.h
-wayland-scanner private-code protocols/gtk-shell.xml gtk-shell.c

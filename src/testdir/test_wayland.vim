@@ -468,7 +468,7 @@ func Test_wayland_seat()
   call system('wl-copy "TESTING"')
   call assert_equal('TESTING', getreg('+'))
 
-  set wlseat=
+  set wlseat=UNKNOWN
 
   call assert_equal('', getreg('+'))
 
