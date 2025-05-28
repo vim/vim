@@ -3377,6 +3377,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Otherwise this is a comma-separated list of event names.  Example: >
 	    :set ei=WinEnter,WinLeave
 <
+	To ignore all but some events, a "-" prefix can be used: >
+	    :set ei=all,-WinLeave
+<
 						*'eventignorewin'* *'eiw'*
 'eventignorewin' 'eiw'	string	(default "")
 			window-local
