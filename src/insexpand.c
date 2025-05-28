@@ -1439,6 +1439,71 @@ trigger_complete_changed_event(int cur)
 #endif
 
 /*
+ * Trim compl_match_array to enforce max_matches per completion source.
+ *
+ * Note: This special-case trimming is a workaround because compl_match_array
+ * becomes inconsistent with compl_first_match (list) after former is sorted by
+ * fuzzy score. The two structures end up in different orders.
+ * Ideally, compl_first_match list should have been sorted instead.
+ */
+    static void
+trim_compl_match_array(void)
+{
+    int		i, src_idx, limit, new_size = 0, *match_counts = NULL;
+    pumitem_T	*trimmed = NULL;
+    int		trimmed_idx = 0;
+
+    // Count current matches per source.
+    match_counts = ALLOC_CLEAR_MULT(int, cpt_sources_count);
+    if (match_counts == NULL)
+	return;
+    for (i = 0; i < compl_match_arraysize; i++)
+    {
+	src_idx = compl_match_array[i].pum_cpt_source_idx;
+	if (src_idx != -1)
+	    match_counts[src_idx]++;
+    }
+
+    // Calculate size of trimmed array, respecting max_matches per source.
+    for (i = 0; i < cpt_sources_count; i++)
+    {
+	limit = cpt_sources_array[i].max_matches;
+	new_size += (limit > 0 && match_counts[i] > limit)
+	    ? limit : match_counts[i];
+    }
+
+    if (new_size == compl_match_arraysize)
+	goto theend;
+
+    // Create trimmed array while enforcing per-source limits
+    trimmed = ALLOC_CLEAR_MULT(pumitem_T, new_size);
+    if (trimmed == NULL)
+	goto theend;
+    vim_memset(match_counts, 0, sizeof(int) * cpt_sources_count);
+    for (i = 0; i < compl_match_arraysize; i++)
+    {
+	src_idx = compl_match_array[i].pum_cpt_source_idx;
+	if (src_idx != -1)
+	{
+	    limit = cpt_sources_array[src_idx].max_matches;
+	    if (limit <= 0 || match_counts[src_idx] < limit)
+	    {
+		trimmed[trimmed_idx++] = compl_match_array[i];
+		match_counts[src_idx]++;
+	    }
+	}
+	else
+	    trimmed[trimmed_idx++] = compl_match_array[i];
+    }
+    vim_free(compl_match_array);
+    compl_match_array = trimmed;
+    compl_match_arraysize = new_size;
+
+theend:
+    vim_free(match_counts);
+}
+
+/*
  * pumitem qsort compare func
  */
     static int
@@ -1477,7 +1542,7 @@ ins_compl_build_pum(void)
     int		match_count = 0;
     int		cur_source = -1;
     int		max_matches_found = FALSE;
-    int		is_forward = compl_shows_dir_forward() && !fuzzy_filter;
+    int		is_forward = compl_shows_dir_forward();
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
@@ -1506,7 +1571,7 @@ ins_compl_build_pum(void)
 	if (fuzzy_filter && compl_leader.string != NULL && compl_leader.length > 0)
 	    compl->cp_score = fuzzy_match_str(compl->cp_str.string, compl_leader.string);
 
-	if (is_forward && compl->cp_cpt_source_idx != -1)
+	if (is_forward && !fuzzy_sort && compl->cp_cpt_source_idx != -1)
 	{
 	    if (cur_source != compl->cp_cpt_source_idx)
 	    {
@@ -1579,7 +1644,7 @@ ins_compl_build_pum(void)
 		    shown_match_ok = TRUE;
 		}
 	    }
-	    if (is_forward && compl->cp_cpt_source_idx != -1)
+	    if (is_forward && !fuzzy_sort && compl->cp_cpt_source_idx != -1)
 		match_count++;
 	    i++;
 	}
@@ -1627,6 +1692,7 @@ ins_compl_build_pum(void)
 	compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
 	compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
 	compl_match_array[i].pum_score = compl->cp_score;
+	compl_match_array[i].pum_cpt_source_idx = compl->cp_cpt_source_idx;
 	compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
 	compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
 	compl_match_array[i++].pum_extra = compl->cp_text[CPT_MENU] != NULL
@@ -1645,6 +1711,9 @@ ins_compl_build_pum(void)
 				       sizeof(pumitem_T), ins_compl_fuzzy_cmp);
 	shown_match_ok = TRUE;
     }
+
+    if (is_forward && fuzzy_sort && cpt_sources_array != NULL)
+	trim_compl_match_array(); // Truncate by max_matches in 'cpt'
 
     if (!shown_match_ok)    // no displayed match at all
 	cur = -1;
