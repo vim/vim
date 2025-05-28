@@ -479,9 +479,11 @@ do_mouse(
 
     start_visual.lnum = 0;
 
-    // Check for clicking in the tab page line.
+    // Check for clicking in the tab page panel.
 #if defined(FEAT_TABPANEL)
-    if (mouse_col < firstwin->w_wincol)
+    if ((mouse_col < firstwin->w_wincol
+	    || mouse_col >= firstwin->w_wincol + topframe->fr_width)
+	    && mouse_row < firstwin->w_winrow + topframe->fr_height)
     {
 	if (is_drag)
 	{
@@ -499,7 +501,7 @@ do_mouse(
 # ifdef FEAT_CMDWIN
 		&& cmdwin_type == 0
 # endif
-		&& mouse_col < Columns)
+		)
 	{
 	    in_tabpanel = TRUE;
 	    c1 = get_tabpagenr_on_tabpanel();
@@ -568,7 +570,8 @@ do_mouse(
 	    }
 
 	    // click in a tab selects that tab page
-	    if (is_click && cmdwin_type == 0 && mouse_col < Columns)
+	    if (is_click && cmdwin_type == 0
+		    && mouse_col < firstwin->w_wincol + topframe->fr_width)
 	    {
 		in_tab_line = TRUE;
 		c1 = TabPageIdxs[mouse_col];
