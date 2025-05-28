@@ -2794,17 +2794,18 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
     // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
     // UTF-8.
     char_u	buf[_MAX_PATH * 3];
-    size_t	len = STRLEN(name);
-    size_t	tmplen;
-    char_u	*p, *e, *e2;
-    char_u	*pathbuf = NULL;
-    char_u	*pathext = NULL;
-    char_u	*pathextbuf = NULL;
+    size_t	buflen;
+    size_t	namelen = STRLEN(name);
+    char_u	*p;
+    string_T	pathbuf = {NULL, 0};
+    int		pathbuf_allocated = FALSE;
+    string_T	pathext = {NULL, 0};
+    int		pathext_allocated = FALSE;
     char_u	*shname = NULL;
     int		noext = FALSE;
     int		retval = FALSE;
 
-    if (len >= sizeof(buf))	// safety check
+    if (namelen >= sizeof(buf))		// safety check
 	return FALSE;
 
     // Using the name directly when a Unix-shell like 'shell'.
@@ -2816,17 +2817,25 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 
     if (use_pathext)
     {
-	pathext = mch_getenv("PATHEXT");
-	if (pathext == NULL)
-	    pathext = (char_u *)".com;.exe;.bat;.cmd";
+	pathext.string = mch_getenv("PATHEXT");
+	if (pathext.string == NULL)
+	{
+	    pathext.string = (char_u *)".com;.exe;.bat;.cmd";
+	    pathext.length = 19;
+	}
+	else
+	    pathext.length = STRLEN(pathext.string);
 
 	if (noext == FALSE)
 	{
+	    char_u  *e;
+	    size_t  plen;
+
 	    /*
 	     * Loop over all extensions in $PATHEXT.
 	     * Check "name" ends with extension.
 	     */
-	    p = pathext;
+	    p = pathext.string;
 	    while (*p)
 	    {
 		if (p[0] == ';'
@@ -2838,10 +2847,10 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 		}
 		e = vim_strchr(p, ';');
 		if (e == NULL)
-		    e = p + STRLEN(p);
-		tmplen = e - p;
+		    e = pathext.string + pathext.length;
+		plen = (size_t)(e - p);
 
-		if (_strnicoll(name + len - tmplen, (char *)p, tmplen) == 0)
+		if (_strnicoll(name + namelen - plen, (char *)p, plen) == 0)
 		{
 		    noext = TRUE;
 		    break;
@@ -2853,20 +2862,27 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
     }
 
     // Prepend single "." to pathext, it means no extension added.
-    if (pathext == NULL)
-	pathext = (char_u *)".";
+    if (pathext.string == NULL)
+    {
+	pathext.string = (char_u *)".";
+	pathext.length = 1;
+    }
     else if (noext == TRUE)
     {
-	if (pathextbuf == NULL)
-	    pathextbuf = alloc(STRLEN(pathext) + 3);
-	if (pathextbuf == NULL)
+	char_u	*tmp;
+
+	tmp = alloc(pathext.length + 3);
+	if (tmp == NULL)
 	{
 	    retval = FALSE;
 	    goto theend;
 	}
-	STRCPY(pathextbuf, ".;");
-	STRCAT(pathextbuf, pathext);
-	pathext = pathextbuf;
+
+	STRCPY(tmp, ".;");
+	STRCPY(tmp + 2, pathext.string);
+	pathext.string = tmp;
+	pathext.length += 2;
+	pathext_allocated = TRUE;
     }
 
     // Use $PATH when "use_path" is TRUE and "name" is basename.
@@ -2875,18 +2891,23 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	p = mch_getenv("PATH");
 	if (p != NULL)
 	{
-	    pathbuf = alloc(STRLEN(p) + 3);
-	    if (pathbuf == NULL)
+	    size_t  plen = STRLEN(p);
+
+	    pathbuf.string = alloc(plen + 3);
+	    if (pathbuf.string == NULL)
 	    {
 		retval = FALSE;
 		goto theend;
 	    }
 
 	    if (mch_getenv("NoDefaultCurrentDirectoryInExePath") == NULL)
-		STRCPY(pathbuf, ".;");
-	    else
-		*pathbuf = NUL;
-	    STRCAT(pathbuf, p);
+	    {
+		STRCPY(pathbuf.string, ".;");
+		pathbuf.length = 2;
+	    }
+	    STRCPY(pathbuf.string + pathbuf.length, p);
+	    pathbuf.length += plen;
+	    pathbuf_allocated = TRUE;
 	}
     }
 
@@ -2894,9 +2915,16 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
      * Walk through all entries in $PATH to check if "name" exists there and
      * is an executable file.
      */
-    p = (pathbuf != NULL) ? pathbuf : (char_u *)".";
+    if (pathbuf.string == NULL)
+    {
+	pathbuf.string = (char_u *)".";
+	pathbuf.length = 1;
+    }
+    p = pathbuf.string;
     while (*p)
     {
+	char_u	*e;
+
 	if (*p == ';') // Skip empty entry
 	{
 	    ++p;
@@ -2904,50 +2932,57 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	}
 	e = vim_strchr(p, ';');
 	if (e == NULL)
-	    e = p + STRLEN(p);
+	    e = pathbuf.string + pathbuf.length;
 
-	if (e - p + len + 2 > sizeof(buf))
+	if (e - p + namelen + 2 > sizeof(buf))
 	{
 	    retval = FALSE;
 	    goto theend;
 	}
 	// A single "." that means current dir.
 	if (e - p == 1 && *p == '.')
+	{
 	    STRCPY(buf, name);
+	    buflen = namelen;
+	}
 	else
 	{
-	    vim_strncpy(buf, p, e - p);
-	    add_pathsep(buf);
-	    STRCAT(buf, name);
+	    buflen = vim_snprintf_safelen(
+		(char *)buf,
+		sizeof(buf),
+		"%.*s%s%s", (int)(e - p), p,
+		!after_pathsep(p, e - 1) ? PATHSEPSTR : "",
+		name);
 	}
-	tmplen = STRLEN(buf);
 
 	/*
 	 * Loop over all extensions in $PATHEXT.
 	 * Check "name" with extension added.
 	 */
-	p = pathext;
+	p = pathext.string;
 	while (*p)
 	{
+	    char_u  *e2;
+
 	    if (*p == ';')
 	    {
 		// Skip empty entry
 		++p;
 		continue;
 	    }
-	    e2 = vim_strchr(p, (int)';');
+	    e2 = vim_strchr(p, ';');
 	    if (e2 == NULL)
-		e2 = p + STRLEN(p);
+		e2 = pathext.string + pathext.length;
 
 	    if (!(p[0] == '.' && (p[1] == NUL || p[1] == ';')))
 	    {
 		// Not a single "." that means no extension is added.
-		if (e2 - p + tmplen + 1 > sizeof(buf))
+		if (e2 - p + buflen + 1 > sizeof(buf))
 		{
 		    retval = FALSE;
 		    goto theend;
 		}
-		vim_strncpy(buf + tmplen, p, e2 - p);
+		vim_strncpy(buf + buflen, p, e2 - p);
 	    }
 	    if (executable_file((char *)buf, path))
 	    {
@@ -2962,8 +2997,10 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
     }
 
 theend:
-    free(pathextbuf);
-    free(pathbuf);
+    if (pathbuf_allocated)
+	free(pathbuf.string);
+    if (pathext_allocated)
+	free(pathext.string);
     return retval;
 }
 
