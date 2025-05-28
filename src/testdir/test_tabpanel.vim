@@ -141,42 +141,43 @@ function Test_tabpanel_drawing()
   call StopVimInTerminal(buf)
 endfunc
 
-"function Test_tabpanel_drawing_with_popupwin()
-"  CheckScreendump
-"
-"  let lines =<< trim END
-"    set showtabpanel=2
-"    set tabpanelopt=columns:20
-"    set showtabline=0
-"    tabnew
-"    setlocal buftype=nofile
-"    call setbufline(bufnr(), 1, repeat([repeat('.', &columns - 20)], &lines))
-"    highlight TestingForTabPanelPopupwin guibg=#7777ff guifg=#000000
-"    for line in [1, &lines]
-"      for col in [1, &columns - 20 - 2]
-"        call popup_create([
-"          \   '@',
-"          \ ], {
-"          \   'line': line,
-"          \   'col': col,
-"          \   'border': [],
-"          \   'highlight': 'TestingForTabPanelPopupwin',
-"          \ })
-"      endfor
-"    endfor
-"    call cursor(4, 10)
-"    call popup_atcursor('atcursor', {
-"      \   'highlight': 'TestingForTabPanelPopupwin',
-"      \ })
-"  END
-"  call writefile(lines, 'XTest_tabpanel_with_popupwin', 'D')
-"
-"  let buf = RunVimInTerminal('-S XTest_tabpanel_with_popupwin', {'rows': 10, 'cols': 45})
-"
-"  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_with_popupwin_0', {})
-"
-"  call StopVimInTerminal(buf)
-"endfunc
+function Test_tabpanel_drawing_with_popupwin()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=columns:20
+    set showtabline=0
+    tabnew
+    setlocal buftype=nofile
+    let pcol = getwininfo(bufwinid(bufnr()))[0].width
+    call setbufline(bufnr(), 1, repeat([repeat('.', pcol)], &lines))
+    highlight TestingForTabPanelPopupwin guibg=#7777ff guifg=#000000
+    for line in [1, &lines]
+      for col in [1, 29 + pcol - 2]
+        call popup_create([
+          \   '@',
+          \ ], {
+          \   'line': line,
+          \   'col': col,
+          \   'border': [],
+          \   'highlight': 'TestingForTabPanelPopupwin',
+          \ })
+      endfor
+    endfor
+    call cursor(4, 10)
+    call popup_atcursor('atcursor', {
+      \   'highlight': 'TestingForTabPanelPopupwin',
+      \ })
+  END
+  call writefile(lines, 'XTest_tabpanel_with_popupwin', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_popupwin', {'rows': 10, 'cols': 45})
+
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_with_popupwin_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 
 function Test_tabpanel_drawing_fill_tailing()
   CheckScreendump
