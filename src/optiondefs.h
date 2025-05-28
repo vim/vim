@@ -2978,7 +2978,7 @@ static struct vimoption options[] =
     {"wlseat",	    "wse",  P_STRING|P_VI_DEF,
 #ifdef FEAT_WAYLAND
 			    (char_u *)&p_wse, PV_NONE, did_set_wlseat, NULL,
-			    {(char_u *)"seat0", (char_u *)0L}
+			    {(char_u *)"", (char_u *)0L}
 # else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)NULL, (char_u *)0L}
