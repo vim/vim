@@ -10669,7 +10669,6 @@ tabpagebuflist()	builtin.txt	/*tabpagebuflist()*
 tabpagenr()	builtin.txt	/*tabpagenr()*
 tabpagewinnr()	builtin.txt	/*tabpagewinnr()*
 tabpanel	tabpage.txt	/*tabpanel*
-tabs-usage	options.txt	/*tabs-usage*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-binary-search	tagsrch.txt	/*tag-binary-search*
@@ -11029,7 +11028,6 @@ userfunc.txt	userfunc.txt	/*userfunc.txt*
 using-<Plug>	usr_51.txt	/*using-<Plug>*
 using-menus	gui.txt	/*using-menus*
 using-scripts	repeat.txt	/*using-scripts*
-using-tabs	options.txt	/*using-tabs*
 using-xxd	tips.txt	/*using-xxd*
 using_CTRL-V	map.txt	/*using_CTRL-V*
 usr	usr_toc.txt	/*usr*
