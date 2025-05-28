@@ -431,17 +431,15 @@ wait_for_single_object(
     void
 mch_get_exe_name(void)
 {
-    // Maximum length of $PATH is more than MAXPATHL.  8191 is often mentioned
-    // as the maximum length that works.  Add 1 for a NUL byte and 5 for
-    // "PATH=".
-#define MAX_ENV_PATH_LEN (8191 + 1 + 5)
-    WCHAR	temp[MAX_ENV_PATH_LEN];
-    WCHAR	buf[MAX_PATH];
     int		updated = FALSE;
     static int	enc_prev = -1;
+    WCHAR	*p;
+    size_t	plen;
 
     if (exe_name == NULL || exe_pathw == NULL || enc_prev != enc_codepage)
     {
+	WCHAR	buf[MAX_PATH];
+
 	// store the name of the executable, may be used for $VIM
 	GetModuleFileNameW(NULL, buf, MAX_PATH);
 	if (*buf != NUL)
@@ -467,33 +465,47 @@ mch_get_exe_name(void)
     // Append our starting directory to $PATH, so that when doing
     // "!xxd" it's found in our starting directory.  Needed because
     // SearchPath() also looks there.
-    WCHAR *p = _wgetenv(L"PATH");
-    if (p == NULL || wcslen(p) + wcslen(exe_pathw) + 2 + 5 < MAX_ENV_PATH_LEN)
-    {
-	wcscpy(temp, L"PATH=");
+    p = _wgetenv(L"PATH");
+    plen = 0;
 
-	if (p == NULL || *p == NUL)
-	    wcscat(temp, exe_pathw);
+    // Maximum length of $PATH is more than MAXPATHL. 8191 is often mentioned
+    // as the maximum length that works. Add 1 for a potential ';', 1 for the
+    // NUL byte and 5 for "PATH=".
+#define MAX_ENV_PATH_LEN (8191 + 2 + 5)
+
+    if (p == NULL
+	|| (plen = wcslen(p)) + wcslen(exe_pathw) + 2 + 5 < MAX_ENV_PATH_LEN)
+    {
+	WCHAR	temp[MAX_ENV_PATH_LEN] = L"PATH=";
+	size_t	templen = 5;
+
+	if (plen == 0)
+	    wcscpy(temp + templen, exe_pathw);
 	else
 	{
-	    wcscat(temp, p);
+	    wcscpy(temp + templen, p);
+	    templen += plen;
 
 	    // Check if exe_path is already included in $PATH.
 	    if (wcsstr(temp, exe_pathw) == NULL)
 	    {
 		// Append ';' if $PATH doesn't end with it.
-		size_t len = wcslen(temp);
-		if (temp[len - 1] != L';')
-		    wcscat(temp, L";");
+		if (temp[templen - 1] != L';')
+		{
+		    wcscpy(temp + templen, L";");
+		    ++templen;
+		}
 
-		wcscat(temp, exe_pathw);
+		wcscpy(temp + templen, exe_pathw);
 	    }
 	}
+
 	_wputenv(temp);
 #ifdef libintl_wputenv
 	libintl_wputenv(temp);
 #endif
     }
+#undef MAX_ENV_PATH_LEN
 }
 
 /*
