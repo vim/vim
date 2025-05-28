@@ -3011,12 +3011,15 @@ mch_init_g(void)
 
     // Look for 'vimrun'
     {
-	char_u vimrun_location[_MAX_PATH + 4];
+	char_u	vimrun_location[_MAX_PATH + 4];
 	size_t	vimrun_locationlen;
+	size_t	exepathlen = (size_t)(gettail(exe_name) - exe_name);
 
 	// First try in same directory as gvim.exe
-	STRCPY(vimrun_location, exe_name);
-	STRCPY(gettail(vimrun_location), "vimrun.exe");
+	vim_strncpy(vimrun_location, exe_name, exepathlen);
+	STRCPY(vimrun_location + exepathlen, "vimrun.exe");
+	vimrun_locationlen = exepathlen + 10;
+
 	if (mch_getperm(vimrun_location) >= 0)
 	{
 	    char_u  *tmp;
@@ -3025,14 +3028,18 @@ mch_init_g(void)
 	    {
 		// Enclose path with white space in double quotes.
 		mch_memmove(vimrun_location + 1, vimrun_location,
-						 STRLEN(vimrun_location) + 1);
+						 vimrun_locationlen + 1);
+		++exepathlen;
 		*vimrun_location = '"';
-		STRCPY(gettail(vimrun_location), "vimrun\" ");
+		STRCPY(vimrun_location + exepathlen, "vimrun\" ");
+		vimrun_locationlen = exepathlen + 8;
 	    }
 	    else
-		STRCPY(gettail(vimrun_location), "vimrun ");
+	    {
+		STRCPY(vimrun_location + exepathlen, "vimrun ");
+		vimrun_locationlen = exepathlen + 7;
+	    }
 
-	    vimrun_locationlen = STRLEN(vimrun_location);
 	    tmp = vim_strnsave(vimrun_location, vimrun_locationlen);
 	    if (tmp != NULL)
 	    {
