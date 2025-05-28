@@ -5508,26 +5508,25 @@ mch_call_shell(
     int		x = 0;
     int		tmode = cur_tmode;
     WCHAR	szShellTitle[512];
-    size_t	szShellTitlelen;
 
 #ifdef FEAT_EVAL
     ch_log(NULL, "executing shell command: %s", cmd);
 #endif
     // Change the title to reflect that we are in a subshell.
-    szShellTitlelen = (size_t)GetConsoleTitleW(
-	szShellTitle, ARRAY_LENGTH(szShellTitle) - 4);
-    if (szShellTitlelen > 0)
+    if (GetConsoleTitleW(szShellTitle, ARRAY_LENGTH(szShellTitle) - 4) > 0)
     {
-	if (cmd != NULL)
+	if (cmd == NULL)
+	    wcscat(szShellTitle, L" :sh");
+	else
 	{
 	    WCHAR *wn = enc_to_utf16((char_u *)cmd, NULL);
 
 	    if (wn != NULL)
 	    {
-		wcscpy(szShellTitle + szShellTitlelen, L" - !");
-		szShellTitlelen += 4;
-		if ((szShellTitlelen + wcslen(wn) < ARRAY_LENGTH(szShellTitle)))
-		    wcscpy(szShellTitle + szShellTitlelen, wn);
+		wcscat(szShellTitle, L" - !");
+		if ((wcslen(szShellTitle) + wcslen(wn) <
+			    ARRAY_LENGTH(szShellTitle)))
+		    wcscat(szShellTitle, wn);
 		SetConsoleTitleW(szShellTitle);
 		vim_free(wn);
 	    }
@@ -5728,17 +5727,14 @@ mch_call_shell(
 	}
 	else
 	{
-	    size_t  p_shlen = STRLEN(p_sh);
-	    size_t  p_shcflen = STRLEN(p_shcf);
-
 	    cmdlen =
 #ifdef FEAT_GUI_MSWIN
 		((gui.in_use || gui.starting) ?
 		    (!s_dont_use_vimrun && p_stmp ?
-			vimrun_path.length : p_shlen + p_shcflen)
+			vimrun_path.length : STRLEN(p_sh) + STRLEN(p_shcf))
 		    : 0) +
 #endif
-		p_shlen + p_shcflen + STRLEN(cmd) + 10;
+		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
 
 	    newcmd = alloc(cmdlen);
 	    if (newcmd != NULL)
@@ -5771,7 +5767,7 @@ mch_call_shell(
 		    // Use vimrun to execute the command.  It opens a console
 		    // window, which can be closed without killing Vim.
 		    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
-			    vimrun_path.string,
+			    vimrun_path,
 			    (msg_silent != 0 || (options & SHELL_DOOUT))
 								 ? "-s " : "",
 			    p_sh, p_shcf, cmd);
