@@ -5514,7 +5514,8 @@ mch_call_shell(
     ch_log(NULL, "executing shell command: %s", cmd);
 #endif
     // Change the title to reflect that we are in a subshell.
-    szShellTitlelen = (size_t)GetConsoleTitleW(szShellTitle, sizeof(szShellTitle) - 4);
+    szShellTitlelen = (size_t)GetConsoleTitleW(
+	szShellTitle, ARRAY_LENGTH(szShellTitle) - 4);
     if (szShellTitlelen > 0)
     {
 	if (cmd == NULL)
@@ -5530,7 +5531,7 @@ mch_call_shell(
 	    {
 		wcscpy(szShellTitle + szShellTitlelen, L" - !");
 		szShellTitlelen += 4;
-		if ((szShellTitlelen + wcslen(wn) < sizeof(szShellTitle)))
+		if ((szShellTitlelen + wcslen(wn) < ARRAY_LENGTH(szShellTitle)))
 		    wcscpy(szShellTitle + szShellTitlelen, wn);
 		SetConsoleTitleW(szShellTitle);
 		vim_free(wn);
@@ -7928,6 +7929,8 @@ copy_substream(HANDLE sh, void *context, WCHAR *to, WCHAR *substream, long len)
     WCHAR   *to_name;
 
     to_name = malloc((wcslen(to) + wcslen(substream) + 1) * sizeof(WCHAR));
+    if (to_name == NULL)
+	return;
     wcscpy(to_name, to);
     wcscat(to_name, substream);
 
