@@ -431,7 +431,7 @@ same was true for <BS>.
 THE ISSUE WITH TABS AND INDENTATION
 
 In Vim, the number of columns between two (virtual) horizontal tab stops
-is controled by 'tabstop' and is set to eight by default.  Although you can
+is controlled by 'tabstop' and is set to eight by default.  Although you can
 change it, you quickly run into trouble later.  Other programs won't know what
 tabstop value you used.  They probably use the default value of eight, and
 your text suddenly looks very different.  Also, most printers use a fixed
@@ -448,7 +448,7 @@ tab character to make your indent.
   To remedy this, `vi` had the 'shiftwidth' option.  When set to 4, on a new
 line, pressing <C-t> would indent the line by 4 spaces, a result impossible
 to get with the <Tab> key and 'tabstop' set to 8.  To optimize space, `vi`
-would also silently remove packs of spaces and replace then with tab
+would also silently remove packs of spaces and replace them with tab
 characters.  The following shows what happens pressing <C-t> a few times.
 A "." stands for a space character and "------->" for a tab character.
 
@@ -482,7 +482,7 @@ this was not the default everywhere.  Everytime text was displayed with the
 wrong 'tabstop' value, it would ruin the alignment of the text.
   In the meantime, computers got much better and the few octets saved by using
 tabs was no longer making any real difference.  It became possible to use only
-spaces and thus garantee the same resulting text everywhere.  But using only
+spaces and thus guarantee the same resulting text everywhere.  But using only
 spaces was impossible in `vi` without sacrificing features.  Remember that
 'autoindent' would systematically try to input a tab character when it could.
   So in Vim 4.0 introduced the 'expantab' option.  When set, Vim will replace
@@ -498,7 +498,7 @@ to remove only one character at a time.
 CHANGING TABS IN SPACES (AND BACK)
 
 Setting 'expandtab' does not immediately affect existing tab characters.
-Vim will occasionnally convert a tab character to spaces while rewriting
+Vim will occasionally convert a tab character to spaces while rewriting
 the indent of a line.
   In order to purge a file from all its horizontal tab characters, Vim 5.3
 introduced the |:retab| command.  Use these commands: >
@@ -532,7 +532,7 @@ When using only spaces, or a mix of spaces and horizontal tabs, one gets the
 unpleasant feeling that the two keys <Tab> and <BS> do not act in mirror, as
 they do when using only tab characters.
   Vim 5.4 introduced the 'softtabstop' option.  On top of the (hard) tab stops
-using to display the horizontal tab characters in the text, Vim adds extra
+used to display the horizontal tab characters in the text, Vim adds extra
 soft tab stops dedicated only to the cursor.  When 'softtabstop' is set to a
 positive value, and the <Tab> key will push the cursor to the next soft tab
 stop.  Vim will insert the correct combination of tab characters and spaces to
@@ -562,7 +562,7 @@ As we said before, the ASCII table was designed to remotely control
 teleprinters.  A given teleprinter could be configured to have their physical
 tab stops have variable spacing.  After all, the ^I control character was
 only stipulating: go to the next tab stop wherever it is.
-  Vim 7.3 introduced 'vartabstop' to emulate the same functionnality.  For
+  Vim 7.3 introduced 'vartabstop' to emulate the same functionality.  For
 example if Vim was compiled with `+vartabs` and `:set vartabstop=2,4` one gets
 
 	actual character	result ~
@@ -584,7 +584,7 @@ EXAMPLES OF CONFIGURATION
 If you want only tabs, then you have nothing to configure, this is
 the default in Vim.
 
-  If you want to write C code like it were Python (only spaces, with indents
+  If you want to write C code as if it were Python (only spaces, with indents
 of 4 spaces), here is what you can use: >
 
 	:set shiftwidth=4
