@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 May 26
+*version9.txt*  For Vim version 9.1.  Last change: 2025 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41684,6 +41684,8 @@ Others: ~
   and decouple it from |netrw|
 - new digraph "APPROACHES THE LIMIT" using ".="
 - |CTRL-C| always closes the active |popup-window|.
+- the configure script will favor using GTK3 over GTK2 when auto-detecting the
+  gui toolkit
 
 							*added-9.2*
 Added ~
