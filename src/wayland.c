@@ -9,8 +9,6 @@
 /*
  * wayland.c: Stuff related to wayland
  */
-// TODO: visual select actually copies to regular selection with 'autoselect'
-//	wayland protocol error when XDG_RUNTIME_DIR not set
 
 #include "vim.h"
 
@@ -582,6 +580,10 @@ vwl_connect_display(const char *display)
     if (wayland_no_connect)
 	return FAIL;
 
+    // We will get an error if XDG_RUNTIME_DIR is not set.
+    if (mch_getenv("XDG_RUNTIME_DIR") == NULL)
+	return FAIL;
+
     // Must set log handler before we connect display in order to work.
     wl_log_set_handler_client(vwl_log_handler);
 
@@ -839,14 +841,19 @@ vwl_destroy_seat(vwl_seat_T *seat)
 
 /*
  * Return a seat with the give name/label. If none exists then NULL is returned.
+ * If NULL or an empty string is passed as the label then the first available
+ * seat found is used.
  */
     static vwl_seat_T *
 vwl_get_seat(const char *label)
 {
+    if ((STRCMP(label, "") == 0 || label == NULL) && vwl_seats.ga_len > 0)
+	 return &((vwl_seat_T *)vwl_seats.ga_data)[0];
+
     for (int i = 0; i < vwl_seats.ga_len; i++)
     {
 	vwl_seat_T *seat = &((vwl_seat_T *)vwl_seats.ga_data)[i];
-	if (seat->label != NULL && STRCMP(seat->label, label) == 0)
+	if (STRCMP(seat->label, label) == 0)
 	    return seat;
     }
     return NULL;
