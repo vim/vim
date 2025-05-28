@@ -67,7 +67,7 @@ typedef enum {
     VWL_DATA_PROTOCOL_NONE,
     VWL_DATA_PROTOCOL_EXT,
     VWL_DATA_PROTOCOL_WLR,
-    VWL_DATA_PROTOCOL_CORE,	    // To be implemented
+    VWL_DATA_PROTOCOL_CORE,
     VWL_DATA_PROTOCOL_PRIMARY,	    // To be implemented
 } vwl_data_protocol_T;
 
@@ -444,6 +444,7 @@ vwl_display_roundtrip(vwl_display_T *display)
     // If the compositor keeps sending us events but never sends us the 'done'
     // event, then we will just loop indefinitely. This practically has a zero
     // chance of happening, but lets handle it by checking the elapsed time.
+    // TODO: Maybe this is just overcomplicating things.
     gettimeofday(&start, NULL);
 
     // Wait till we get the done event (which will set 'done' to TRUE)
@@ -1013,11 +1014,13 @@ vwl_cb_steal_focus(
 	void (*on_focus)(void *data, uint32_t serial),
 	void *data)
 {
-    // Get keyboard object and starting listening for the Enter event.
+    struct timeval start, now;
     struct wl_keyboard *kb;
     int ret;
 
+    // Get keyboard object and starting listening for the Enter event.
     vwl_clipboard.keyboard = kb = vwl_seat_get_keyboard(seat);
+
     if (kb == NULL)
 	// Seat doesn't have a keyboard
 	return FAIL;
@@ -1026,7 +1029,11 @@ vwl_cb_steal_focus(
 
     wl_keyboard_add_listener(kb, &vwl_cb_keyboard_listener, data);
 
-    vwl_display_roundtrip(&vwl_display);
+    if (vwl_display_roundtrip(&vwl_display) == FAIL)
+    {
+	wl_keyboard_destroy(kb);
+	return FAIL;
+    }
 
     vwl_clipboard.surface = wl_compositor_create_surface(
 	    vwl_gobjects.wl_compositor);
@@ -1048,19 +1055,23 @@ vwl_cb_steal_focus(
     // Need to also configure the xdg_surface before we attach a buffer
     if (vwl_display_roundtrip(&vwl_display) == FAIL)
     {
-	vwl_cb_destroy_surfaces();
-	return FAIL;
+	ret = FAIL;
+	goto exit;
     }
 
     if (vwl_clipboard.have_focus)
-	return OK;
+    {
+	ret = OK;
+	goto exit;
+    }
 
     // Can't attach buffer since it is still being used
     if (!vwl_clipboard.buf_available)
     {
-	vwl_cb_destroy_surfaces();
-	return FAIL;
+	ret = FAIL;
+	goto exit;
     }
+
     vwl_clipboard.buf_available = FALSE;
 
     wl_surface_attach(vwl_clipboard.surface, vwl_clipboard.buffer, 0, 0);
@@ -1070,12 +1081,32 @@ vwl_cb_steal_focus(
 
     vwl_clipboard.on_focus = on_focus;
 
-    ret = vwl_display_roundtrip(&vwl_display);
+    gettimeofday(&start, NULL);
 
-    vwl_clipboard.on_focus = NULL;
-    vwl_cb_destroy_surfaces();
+    // Dispatch events until we receive the Enter event. Add a max delay of
+    // 'p_wtm' when waiting for it (could be up to twice that length if you
+    // includ the worst case scenario when dispatching events).
+    while ((ret = vwl_display_dispatch(&vwl_display, NULL)) == OK)
+    {
+	if (vwl_clipboard.have_focus == TRUE)
+	    break;
 
-    vwl_display_flush(&vwl_display);
+	gettimeofday(&now, NULL);
+
+	if (now.tv_usec - start.tv_usec >= p_wtm * 1000)
+	{
+	    ret = FAIL;
+	    break;
+	}
+    }
+
+    if (ret == FAIL)
+    {
+exit:
+	vwl_clipboard.on_focus = NULL;
+	vwl_cb_destroy_surfaces();
+	vwl_display_flush(&vwl_display);
+    }
 
     return ret;
 }
@@ -1095,6 +1126,11 @@ vwl_cb_keyboard_listener_enter(
 
     if (vwl_clipboard.on_focus != NULL)
 	vwl_clipboard.on_focus(data, serial);
+
+    vwl_clipboard.on_focus = NULL;
+    vwl_cb_destroy_surfaces();
+    vwl_display_flush(&vwl_display);
+
 }
 
 // Dummy functions to handle keyboard events we don't care about.
