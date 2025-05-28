@@ -427,7 +427,6 @@ vwl_display_roundtrip(vwl_display_T *display)
 {
     struct wl_callback *callback;
     int ret = OK, num = 0, done = FALSE;
-    struct timeval start, now;
 
     if (display->proxy == NULL)
 	return FAIL;
@@ -441,25 +440,10 @@ vwl_display_roundtrip(vwl_display_T *display)
 
     wl_callback_add_listener(callback, &vwl_callback_listener, &done);
 
-    // If the compositor keeps sending us events but never sends us the 'done'
-    // event, then we will just loop indefinitely. This practically has a zero
-    // chance of happening, but lets handle it by checking the elapsed time.
-    // TODO: Maybe this is just overcomplicating things.
-    gettimeofday(&start, NULL);
-
-    // Wait till we get the done event (which will set 'done' to TRUE)
+    // Wait till we get the done event (which will set `done` to TRUE)
     while (ret == OK && !done && num >= 0)
-    {
 	ret = vwl_display_dispatch(display, &num);
 
-	if (ret == OK)
-	{
-	    gettimeofday(&now, NULL);
-
-	    if (now.tv_usec - start.tv_usec >= p_wtm * 1000)
-		ret = FAIL;
-	}
-    }
     if (ret == FAIL)
     {
 	if (!done)
