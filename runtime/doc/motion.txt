@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 9.1.  Last change: 2025 Apr 03
+*motion.txt*    For Vim version 9.1.  Last change: 2025 May 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -809,12 +809,12 @@ m<  or  m>		Set the |'<| or |'>| mark.  Useful to change what the
 			start and end position.
 
 						*:ma* *:mark* *E191*
-:[range]ma[rk] {a-zA-Z'}
-			Set mark {a-zA-Z'} at last line number in [range],
-			column 0.  Default is cursor line.
+:[range]ma[rk] {a-zA-Z`'[]<>}
+			Set mark {a-zA-Z`'[]<>} at last line number in
+			[range], column 0.  Default is cursor line.
 
 						*:k*
-:[range]k{a-zA-Z'}	Same as :mark, but the space before the mark name can
+:[range]k{a-zA-Z`'[]<>}	Same as :mark, but the space before the mark name can
 			be omitted.
 			This command is not supported in |Vim9| script,
 			because it is too easily confused with a variable
