@@ -446,7 +446,7 @@ spaces, a good compromise.
 as eight spaces and you want to use an indent of four spaces, you can't use a
 tab character to make your indent.
   To remedy this, `vi` had the 'shiftwidth' option.  When set to 4, on a new
-line, pressing <C-t> would indent the line by 4 spaces, a result impossible
+line, pressing <C-t> in Insert mode would indent the line by 4 spaces, a result impossible
 to get with the <Tab> key and 'tabstop' set to 8.  To optimize space, `vi`
 would also silently remove packs of spaces and replace them with tab
 characters.  The following shows what happens pressing <C-t> a few times.
@@ -517,7 +517,7 @@ string.  To check if these exist, you could use this: >
 
 	/"[^"\t]*\t[^"]*"
 
-It's recommended not to actual ^I characters inside a string.  Replace them
+It's recommended not to use actual tab characters inside a string.  Replace them
 with "\t" to avoid trouble.
 
 The other way around works just as well: >
