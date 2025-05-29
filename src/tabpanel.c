@@ -164,7 +164,7 @@ draw_tabpanel(void)
     int		row = 0;
     int		off = 0;
 #endif
-int		vsrow = 0;
+    int		vsrow = 0;
     int		is_right = tpl_align == ALIGN_RIGHT;
 
     if (maxwidth == 0)
