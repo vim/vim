@@ -111,7 +111,7 @@ static const int nv_cmds[] =
 {
     NVCMD(NUL,		nv_error,	0,			0),
     NVCMD(Ctrl_A,	nv_addsub,	0,			0),
-    NVCMD(Ctrl_B,	nv_page,	NV_STS,			BACKWARD),
+//    NVCMD(Ctrl_B,	nv_page,	NV_STS,			BACKWARD),
     NVCMD(Ctrl_C,	nv_esc,		0,			TRUE),
     NVCMD(Ctrl_D,	nv_halfpage,	0,			0),
     NVCMD(Ctrl_E,	nv_scroll_line,	0,			TRUE),
@@ -121,6 +121,8 @@ static const int nv_cmds[] =
     NVCMD(Ctrl_I,	nv_pcmark,	0,			0),
     NVCMD(NL,		nv_down,	0,			FALSE),
     NVCMD(Ctrl_K,	nv_error,	0,			0),
+    NVCMD(Ctrl_B,	nv_binsearch,	0,			0),
+    NVCMD(Ctrl_N,	nv_binsearch,	0,			0),
     NVCMD(Ctrl_L,	nv_clear,	0,			0),
     NVCMD(CAR,		nv_down,	0,			TRUE),
     NVCMD(Ctrl_N,	nv_down,	NV_STS,			FALSE),

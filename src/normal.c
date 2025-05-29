@@ -122,6 +122,7 @@ static void	nv_nbcmd(cmdarg_T *cap);
 static void	nv_drop(cmdarg_T *cap);
 #endif
 static void	nv_cursorhold(cmdarg_T *cap);
+static void	nv_binsearch(cmdarg_T *cap);
 
 // Declare nv_cmds[].
 #define DO_DECLARE_NVCMD
@@ -7570,4 +7571,70 @@ nv_cursorhold(cmdarg_T *cap)
     apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
     did_cursorhold = TRUE;
     cap->retval |= CA_COMMAND_BUSY;	// don't call edit() now
+}
+/*
+ * This will be one of the binsearch functions. (Ctrl_J to move down and Ctrl_K to move up ???)
+ * for now, I'm fooling around to test stuff
+ */
+    static void
+nv_binsearch(cmdarg_T *cap)
+{
+    static linenr_T upper_bound=0,
+		    lower_bound=0,
+		    center_line=0;	//upper bound and lower bound refer to the line number, i.e. the lower bound
+    int c = 0;
+    
+    static int binsearch_mode = FALSE;
+								//appears at the top of the window (since line number grows downward)
+    
+    if(!binsearch_mode)
+    {
+	binsearch_mode = TRUE;
+        center_line = curwin->w_cursor.lnum;
+	
+	validate_botline();	    // make sure curwin->w_botline is valid
+	upper_bound = curwin->w_botline;
+	lower_bound = curwin->w_topline;
+    }
+
+    cap->oap->motion_type = MLINE;
+
+    while(TRUE)
+    {
+    c = vgetc();
+
+    if(c == Ctrl_B)
+    {
+	binsearch_mode = FALSE;
+	vungetc(c);
+	return;
+
+    }
+    if(c==Ctrl_J)
+    {
+
+    lower_bound=center_line;
+    center_line = (center_line + upper_bound)/2;
+    curwin->w_cursor.lnum =center_line;
+    vungetc(Ctrl_B);
+    return;
+
+    }
+
+    if(c==Ctrl_K)
+    {
+
+    upper_bound=center_line;
+    center_line = (center_line + lower_bound)/2;
+    curwin->w_cursor.lnum =center_line;
+    vungetc(Ctrl_B);
+    return;
+    
+    }
+    break;
+
+    }
+    vungetc(c);
+
+    binsearch_mode = FALSE;
 }
