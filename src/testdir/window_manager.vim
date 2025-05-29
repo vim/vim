@@ -56,8 +56,10 @@ func Start_wayland_compositor()
   let s:wayland_display_name = ""
 
   " When using systemd, sway sets some environment variables like
-  " WAYLAND_DISPLAY, couldn't find a way to not do this so just save the
-  " environment then restore it
+  " WAYLAND_DISPLAY, this is because of /etc/sway/config.d/50-systemd-user.conf,
+  " but there isn't a way for sway to not use the system config, so I guess just
+  " save the environment then restore it.
+
   if system("ps --no-headers -o comm 1") =~? "systemd"
     call system("systemctl show-environment --user --no-pager > wlsaveenv.txt")
   endif
