@@ -458,13 +458,14 @@ a few times.
 	<C-t><C-t>			------->
 	<C-t><C-t><C-t>			------->....
 
-Similarly with `set tabstop=8 shiftwidth=2` one has
+  Similarly pressing <C-d> in Insert mode would decrease the indent.  Hence
+with `set tabstop=8 shiftwidth=2` one has
 
 	type				result ~
 	<C-t><Tab><C-t>			..----->..
 	<C-t><Tab><C-t><C-d>		------->
 
-A third option that one could set in `vi` was 'autoindent'.  It copies the
+  A third option that one could set in `vi` was 'autoindent'.  It copies the
 indent level of the previous lines, 
 
 	type				result ~
