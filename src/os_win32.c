@@ -3703,6 +3703,8 @@ mch_exit(int r)
 #endif
 
 #ifdef VIMDLL
+    if (vimrun_path_allocated)
+	vim_free(vimrun_path.string);
     if (gui.in_use || gui.starting)
 	mch_exit_g(r);
     else
