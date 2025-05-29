@@ -55,6 +55,13 @@ endfunc
 func Start_wayland_compositor()
   let s:wayland_display_name = ""
 
+  " When using systemd, sway sets some environment variables like
+  " WAYLAND_DISPLAY, couldn't find a way to not do this so just save the
+  " environment then restore it
+  if system("ps --no-headers -o comm 1") =~? "systemd"
+    call system("systemctl show-environment --user --no-pager > wlsaveenv.txt")
+  endif
+
   let l:wayland_compositor_job = job_start(['sway', '--verbose'], {
         \ 'err_io': 'pipe',
         \ 'err_cb': function('s:Start_compositor_output'),
@@ -74,6 +81,14 @@ func End_wayland_compositor(job)
 
   " Block until compositor is actually gone
   call WaitForAssert({-> assert_equal("dead", job_status(a:job))})
+
+  " Restore environment
+  if system("ps --no-headers -o comm 1") =~? "systemd"
+    for line in readfile("wlsaveenv.txt")
+      call system("systemctl set-environment --user " .. line)
+    endfor
+    call delete("wlsaveenv.txt")
+  endif
 endfunc
 
 " Start a separate X11 server instance
