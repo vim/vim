@@ -583,9 +583,14 @@ soft tab stops.  With `:set varsofttabstop=2,4` one gets
 
 EXAMPLES OF CONFIGURATION
 
-If you want only tabs, then you have nothing to configure, this is
-the default in Vim.
+By default, Vim is configured to use only tabs: >
 
+	:set tabstop=8
+	:set shiftwidth=8
+	:set noexpandtab
+	:set softtabstop=0
+	:set nosmarttab
+<
   If you want to write C code as if it were Python (only spaces, with indents
 of 4 spaces), here is what you can use: >
 
@@ -593,8 +598,8 @@ of 4 spaces), here is what you can use: >
 	:set softtabstop=-1
 	:set expandtab
 <
-  You want the same behaviour as above, but on top of that you want the
-ability to finely align code.  You can use: >
+  You would like the same behaviour as above, but on top of that you would
+also like the ability to finely align code?  You can use: >
 
 	:set shiftwidth=4
 	:set softtabstop=2
