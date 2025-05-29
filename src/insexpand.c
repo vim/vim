@@ -7062,8 +7062,7 @@ remove_old_matches(void)
     static void
 get_cpt_func_completion_matches(callback_T *cb UNUSED)
 {
-    int	    ret;
-    int	    startcol = cpt_sources_array[cpt_sources_index].cs_startcol;
+    int	startcol = cpt_sources_array[cpt_sources_index].cs_startcol;
 
     VIM_CLEAR_STRING(cpt_compl_pattern);
 
