@@ -1016,7 +1016,7 @@ vwl_cb_steal_focus(
 
     wl_keyboard_add_listener(kb, &vwl_cb_keyboard_listener, data);
 
-    if (vwl_display_roundtrip(&vwl_display) == FAIL)
+    if (vwl_display_dispatch(&vwl_display, NULL) == FAIL)
     {
 	wl_keyboard_destroy(kb);
 	return FAIL;
@@ -1117,7 +1117,6 @@ vwl_cb_keyboard_listener_enter(
     vwl_clipboard.on_focus = NULL;
     vwl_cb_destroy_surfaces();
     vwl_display_flush(&vwl_display);
-
 }
 
 // Dummy functions to handle keyboard events we don't care about.
@@ -1230,12 +1229,12 @@ vwl_gen_data_device_listener_data_offer(void *data, void *offer_proxy)
     tmp_vwl_offer = alloc(sizeof(*tmp_vwl_offer));
 
     if (tmp_vwl_offer != NULL)
-    { \
-	tmp_vwl_offer->proxy = offer_proxy; \
-	tmp_vwl_offer->protocol = device->protocol; \
+    {
+	tmp_vwl_offer->proxy = offer_proxy;
+	tmp_vwl_offer->protocol = device->protocol;
 
 	vwl_data_device_listener.data_offer(device, tmp_vwl_offer);
-    } \
+    }
 }
 
     static void
@@ -1707,7 +1706,6 @@ wayland_cb_init(const char *seat)
 	    vwl_clipboard.shm_pool = wl_shm_create_pool(
 		    vwl_gobjects.wl_shm, fd, size);
 
-
 	    vwl_clipboard.buffer = wl_shm_pool_create_buffer(
 		    vwl_clipboard.shm_pool,
 		    0, x, y,
@@ -2021,7 +2019,7 @@ wayland_cb_receive_data(const char *mime_type, wayland_selection_T selection)
 vwl_data_source_listener_send(
 	vwl_data_source_T *source,
 	const char *mime_type,
-	int fd)
+	int32_t fd)
 {
     vwl_clipboard_selection_T *clip_sel = source->data;
 
