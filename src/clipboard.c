@@ -2807,7 +2807,7 @@ choose_clipmethod(void)
 #endif
 
 	method = CLIPMETHOD_NONE;
-	goto exit;
+	goto lose_sel_exit;
     }
 #endif
 #else
@@ -2831,6 +2831,9 @@ choose_clipmethod(void)
     // Disown clipboard if we are switching to a new method
     if (clipmethod != CLIPMETHOD_NONE && method != clipmethod)
     {
+#if defined(FEAT_GUI)
+lose_sel_exit:
+#endif
 	if (clip_star.owned)
 	    clip_lose_selection(&clip_star);
 	if (clip_plus.owned)
