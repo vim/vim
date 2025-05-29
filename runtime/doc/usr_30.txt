@@ -546,7 +546,7 @@ reach the nearest soft tab stop.  The following example uses
 	<Tab>			....
 	<Tab><Tab>a		------->a
 	<Tab><Tab>a<Tab>	------->a...
-	<Tab><Tab><Tab><BS>	------->a
+	<Tab><Tab>a<Tab><BS>	------->a
 
   To maintain global coherence, one can `:set softtabstop=-1` so that
 the value of 'shiftwidth' is use for the number of columns between two soft
