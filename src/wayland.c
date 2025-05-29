@@ -62,6 +62,31 @@ typedef struct {
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
 
+typedef struct {
+    struct wl_shm_pool *pool;
+    int fd;
+
+    struct wl_buffer *buffer;
+    int available;
+
+    int width, height, stride, size;
+} vwl_buffer_store_T;
+
+typedef struct {
+    void *user_data;
+    void (*on_focus)(void *data, uint32_t serial);
+
+    struct wl_surface *surface;
+    struct wl_keyboard *keyboard;
+
+    struct {
+	struct xdg_surface *surface;
+	struct xdg_toplevel *toplevel;
+    } shell;
+
+    int got_focus;
+} vwl_fs_surface_T; // fs = focus steal
+
 // Wayland protocols for accessing the selection
 typedef enum {
     VWL_DATA_PROTOCOL_NONE,
@@ -160,33 +185,7 @@ typedef struct {
     vwl_clipboard_selection_T regular;
     vwl_clipboard_selection_T primary;
 
-    // These are used to create a surface to steal focus. They will only be
-    // initialized and used only if there are no data control protocols
-    // available.
-
-    // The backing memory store used by the buffer
-    struct wl_shm_pool *shm_pool;
-
-    // The buffer will be reused over and over for new surfaces.
-    struct wl_buffer *buffer;
-    // If the buffer is available to be used/reused. We could also just create a
-    // new buffer with the same shm_pool everytime, but our use case is simple
-    // since we only have one surface every time.
-    int buf_available;
-
-    int have_focus; // If we have focus, note that it will remain TRUE once set
-		    // until it is set to FALSE, so don't take it literally.
-    int shm_fd;
-
-    struct wl_surface *surface;
-    struct xdg_surface *xdg_surface;
-    struct xdg_toplevel *xdg_toplevel;
-
-    // Keyboard object from seat
-    struct wl_keyboard *keyboard;
-
-    void (*on_focus)(void *data, uint32_t serial);
-
+    vwl_buffer_store_T *fs_buffer;
 } vwl_clipboard_T;
 
 #endif // FEAT_WAYLAND_CLIPBOARD
@@ -200,6 +199,9 @@ static int vwl_display_dispatch(vwl_display_T *display, int *num_dispatched);
 static void vwl_log_handler(const char *fmt, va_list args);
 static int vwl_connect_display(const char *display);
 static void vwl_disconnect_display(void);
+
+static void vwl_xdg_wm_base_listener_ping(void *data, struct xdg_wm_base *base,
+	uint32_t serial);
 static int vwl_listen_to_registry(void);
 
 static void vwl_registry_listener_global(void *data, struct wl_registry *registry,
@@ -218,32 +220,33 @@ static struct wl_keyboard * vwl_seat_get_keyboard(vwl_seat_T *seat);
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
 
-static void vwl_cb_buffer_listener_release(void *data, struct wl_buffer *buffer);
-static void vwl_xdg_wm_base_listener_ping(void *data, struct xdg_wm_base *base,
-	uint32_t serial);
+static int vwl_core_data_protocol_available(void);
 static void vwl_xdg_surface_listener_configure(void *data,
 	struct xdg_surface *surface, uint32_t serial);
-static int vwl_core_data_protocol_available(void);
 
-static void vwl_cb_destroy_surfaces(void);
+static void vwl_bs_buffer_listener_release(void *data, struct wl_buffer *buffer);
+static void vwl_destroy_buffer_store(vwl_buffer_store_T *store);
+static vwl_buffer_store_T *vwl_init_buffer_store(int width, int height);
 
-static int vwl_cb_steal_focus(vwl_seat_T *seat,
-	void (*on_focus)(void *data, uint32_t serial), void *data);
+static void vwl_destroy_fs_surface(vwl_fs_surface_T *store);
+static int vwl_init_fs_surface(vwl_seat_T *seat,
+	vwl_buffer_store_T *buffer_store,
+	void (*on_focus)(void *, uint32_t), void *user_data);
 
-static void vwl_cb_keyboard_listener_enter(void *data,
+static void vwl_fs_keyboard_listener_enter(void *data,
     struct wl_keyboard *keyboard, uint32_t serial,
     struct wl_surface *surface, struct wl_array *keys);
-static void vwl_cb_keyboard_listener_keymap(void *data,
+static void vwl_fs_keyboard_listener_keymap(void *data,
 	struct wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size);
-static void vwl_cb_keyboard_listener_leave(void *data,
+static void vwl_fs_keyboard_listener_leave(void *data,
     struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface);
-static void vwl_cb_keyboard_listener_key(void *data,
+static void vwl_fs_keyboard_listener_key(void *data,
     struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
     uint32_t key, uint32_t state);
-static void vwl_cb_keyboard_listener_modifiers(void *data,
+static void vwl_fs_keyboard_listener_modifiers(void *data,
 	struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed,
 	uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
-static void vwl_cb_keyboard_listener_repeat_info(void *data,
+static void vwl_fs_keyboard_listener_repeat_info(void *data,
     struct wl_keyboard *keyboard, int32_t rate, int32_t delay);
 
 static void vwl_gen_data_device_listener_data_offer(void *data,
@@ -288,7 +291,7 @@ static void vwl_data_source_listener_send(vwl_data_source_T *source,
 	const char *mime_type, int fd);
 static void vwl_data_source_listener_cancelled(vwl_data_source_T *source);
 
-static void vwl_cb_own_selection_set_selection(void *data, uint32_t serial);
+static void vwl_on_focus_set_selection(void *data, uint32_t serial);
 
 static void wayland_set_display(const char *display);
 
@@ -316,16 +319,16 @@ struct xdg_surface_listener vwl_xdg_surface_listener = {
 };
 
 struct wl_buffer_listener vwl_cb_buffer_listener = {
-    .release = vwl_cb_buffer_listener_release
+    .release = vwl_bs_buffer_listener_release
 };
 
-struct wl_keyboard_listener vwl_cb_keyboard_listener = {
-    .enter = vwl_cb_keyboard_listener_enter,
-    .key = vwl_cb_keyboard_listener_key,
-    .keymap = vwl_cb_keyboard_listener_keymap,
-    .leave = vwl_cb_keyboard_listener_leave,
-    .modifiers = vwl_cb_keyboard_listener_modifiers,
-    .repeat_info =vwl_cb_keyboard_listener_repeat_info
+struct wl_keyboard_listener vwl_fs_keyboard_listener = {
+    .enter = vwl_fs_keyboard_listener_enter,
+    .key = vwl_fs_keyboard_listener_key,
+    .keymap = vwl_fs_keyboard_listener_keymap,
+    .leave = vwl_fs_keyboard_listener_leave,
+    .modifiers = vwl_fs_keyboard_listener_modifiers,
+    .repeat_info =vwl_fs_keyboard_listener_repeat_info
 };
 
 # endif // FEAT_WAYLAND_CLIPBOARD
@@ -353,10 +356,6 @@ garray_T vwl_seats;
 vwl_clipboard_T vwl_clipboard = {
     .regular.selection = WAYLAND_SELECTION_REGULAR,
     .primary.selection = WAYLAND_SELECTION_PRIMARY,
-
-    // Don't want to be actually closing the fd for stdout (0) if
-    // wayland_cb_init never sets it, so set it to -1
-    .shm_fd = -1
 };
 #endif
 
@@ -624,6 +623,18 @@ vwl_disconnect_display(void)
 	wl_display_disconnect(vwl_display.proxy);
 	vwl_display.proxy = NULL;
     }
+}
+
+/*
+ * Tells the compositor we are still responsive.
+ */
+    static void
+vwl_xdg_wm_base_listener_ping(
+	void *data UNUSED,
+	struct xdg_wm_base *base,
+	uint32_t serial)
+{
+    xdg_wm_base_pong(base, serial);
 }
 
 /*
@@ -915,26 +926,16 @@ wayland_client_update(void)
 #ifdef FEAT_WAYLAND_CLIPBOARD
 
 /*
- * Called when compositor isn't using the buffer anymore, we can reuse it again.
+ * If the core data protocol and focus stealing method is available.
  */
-    static void
-vwl_cb_buffer_listener_release(
-	void *data UNUSED,
-	struct wl_buffer *buffer UNUSED)
+    static int
+vwl_core_data_protocol_available(void)
 {
-    vwl_clipboard.buf_available = TRUE;
-}
-
-/*
- * Tells the compositor we are still responsive.
- */
-    static void
-vwl_xdg_wm_base_listener_ping(
-	void *data UNUSED,
-	struct xdg_wm_base *base,
-	uint32_t serial)
-{
-    xdg_wm_base_pong(base, serial);
+    return vwl_gobjects.wl_compositor != NULL &&
+	vwl_gobjects.wl_data_device_manager != NULL &&
+	vwl_gobjects.wl_shm != NULL &&
+	vwl_gobjects.xdg_wm_base != NULL &&
+	p_wst;
 }
 
 /*
@@ -950,179 +951,234 @@ vwl_xdg_surface_listener_configure(
 }
 
 /*
- * If the core data protocol and focus stealing method is available.
- */
-    static int
-vwl_core_data_protocol_available(void)
-{
-    return vwl_gobjects.wl_compositor != NULL &&
-	vwl_gobjects.wl_shm != NULL &&
-	vwl_gobjects.xdg_wm_base != NULL &&
-	p_wst;
-}
-
-/*
- * Destroy the surface used to steal focus. Also includes the keyboard object.
+ * Called when compositor isn't using the buffer anymore, we can reuse it again.
  */
     static void
-vwl_cb_destroy_surfaces(void)
+vwl_bs_buffer_listener_release(
+	void *data,
+	struct wl_buffer *buffer UNUSED)
 {
-    if (vwl_clipboard.xdg_toplevel != NULL)
-    {
-	xdg_toplevel_destroy(vwl_clipboard.xdg_toplevel);
-	vwl_clipboard.xdg_toplevel = NULL;
-    }
-    if (vwl_clipboard.xdg_surface != NULL)
-    {
-	xdg_surface_destroy(vwl_clipboard.xdg_surface);
-	vwl_clipboard.xdg_surface = NULL;
-    }
-    if (vwl_clipboard.surface != NULL)
-    {
-	wl_surface_destroy(vwl_clipboard.surface);
-	vwl_clipboard.surface = NULL;
-    }
-    if (vwl_clipboard.keyboard != NULL)
-    {
-	wl_keyboard_destroy(vwl_clipboard.keyboard);
-	vwl_clipboard.keyboard = NULL;
-    }
+    vwl_buffer_store_T *store = data;
+
+    store->available = TRUE;
+}
+
+    static void
+vwl_destroy_buffer_store(vwl_buffer_store_T *store)
+{
+    if (store->buffer != NULL)
+	wl_buffer_destroy(store->buffer);
+    if (store->pool != NULL)
+	wl_shm_pool_destroy(store->pool);
+
+    close(store->fd);
+
+    vim_free(store);
 }
 
 /*
- * Steal focus by creating a surface, waiting for the Enter event from the
- * keyboard object from the seat, and calling `on_focus` upon focus gained.
- * Returns FAIL on failure and OK on success. Everything is guaranteed to happen
- * within the parent stack frame, so `data` can be stack allocated.
+ *
  */
-    static int
-vwl_cb_steal_focus(
-	vwl_seat_T *seat,
-	void (*on_focus)(void *data, uint32_t serial),
-	void *data)
+    static vwl_buffer_store_T *
+vwl_init_buffer_store(int width, int height)
 {
-    struct timeval start, now;
-    struct wl_keyboard *kb;
-    int ret;
+    int fd, r;
+    vwl_buffer_store_T *store;
 
-    // Get keyboard object and starting listening for the Enter event.
-    vwl_clipboard.keyboard = kb = vwl_seat_get_keyboard(seat);
+    if (vwl_gobjects.wl_shm == NULL)
+	return NULL;
 
-    if (kb == NULL)
-	// Seat doesn't have a keyboard
-	return FAIL;
+    store = alloc(sizeof(*store));
 
-    vwl_clipboard.have_focus = FALSE;
+    if (store == NULL)
+	return NULL;
 
-    wl_keyboard_add_listener(kb, &vwl_cb_keyboard_listener, data);
+    store->available = FALSE;
+
+    store->width = width;
+    store->height = height;
+    store->stride = store->width * 4;
+    store->size = store->stride * store->height;
+
+    fd = mch_create_anon_file();
+    r = ftruncate(fd, store->size);
+
+    if (r == -1)
+    {
+	if (fd >= 0)
+	    close(fd);
+	return NULL;
+    }
+
+    store->pool = wl_shm_create_pool(vwl_gobjects.wl_shm, fd, store->size);
+    store->buffer = wl_shm_pool_create_buffer(
+	    store->pool,
+	    0,
+	    store->width,
+	    store->height,
+	    store->stride,
+	    WL_SHM_FORMAT_ARGB8888);
+
+    store->fd = fd;
+
+    wl_buffer_add_listener(store->buffer, &vwl_cb_buffer_listener, store);
 
     if (vwl_display_dispatch(&vwl_display, NULL) == FAIL)
     {
-	wl_keyboard_destroy(kb);
+	vwl_destroy_buffer_store(store);
+	return NULL;
+    }
+
+    store->available = TRUE;
+
+    return store;
+}
+
+/*
+ *
+ */
+    static void
+vwl_destroy_fs_surface(vwl_fs_surface_T *store)
+{
+    if (store->shell.toplevel != NULL)
+	xdg_toplevel_destroy(store->shell.toplevel);
+    if (store->shell.surface != NULL)
+	xdg_surface_destroy(store->shell.surface);
+    if (store->surface != NULL)
+	wl_surface_destroy(store->surface);
+    if (store->keyboard != NULL)
+    {
+	if (wl_keyboard_get_version(store->keyboard) >= 3)
+	    wl_keyboard_release(store->keyboard);
+	else
+	    wl_keyboard_destroy(store->keyboard);
+    }
+    vim_free(store);
+}
+
+/*
+ *
+ */
+    static int
+vwl_init_fs_surface(
+	vwl_seat_T *seat,
+	vwl_buffer_store_T *buffer_store,
+	void (*on_focus)(void *, uint32_t),
+	void *user_data)
+{
+    vwl_fs_surface_T *store;
+
+    if (vwl_gobjects.wl_compositor == NULL || vwl_gobjects.xdg_wm_base == NULL)
 	return FAIL;
-    }
 
-    vwl_clipboard.surface = wl_compositor_create_surface(
-	    vwl_gobjects.wl_compositor);
-    vwl_clipboard.xdg_surface = xdg_wm_base_get_xdg_surface(
-	    vwl_gobjects.xdg_wm_base, vwl_clipboard.surface);
-    vwl_clipboard.xdg_toplevel = xdg_surface_get_toplevel(
-	    vwl_clipboard.xdg_surface);
-    xdg_toplevel_set_title(vwl_clipboard.xdg_toplevel, "vim-clipboard");
+    store = alloc(sizeof(*store));
 
-    xdg_surface_add_listener(
-	    vwl_clipboard.xdg_surface,
-	    &vwl_xdg_surface_listener,
-	    NULL);
+    if (store == NULL)
+	return FAIL;
 
-    // Do a commit before attaching the buffer so we can start receiving events,
-    // possibly the Enter event even before we actually display the surface.
-    wl_surface_commit(vwl_clipboard.surface);
+    // Get keyboard
+    store->keyboard = vwl_seat_get_keyboard(seat);
 
-    // Need to also configure the xdg_surface before we attach a buffer
+    if (store->keyboard == NULL)
+	goto fail;
+
+    wl_keyboard_add_listener(store->keyboard, &vwl_fs_keyboard_listener, store);
+
+    if (vwl_display_dispatch(&vwl_display, NULL) == FAIL)
+	goto fail;
+
+    store->surface = wl_compositor_create_surface(vwl_gobjects.wl_compositor);
+    store->shell.surface = xdg_wm_base_get_xdg_surface(
+	    vwl_gobjects.xdg_wm_base, store->surface);
+    store->shell.toplevel = xdg_surface_get_toplevel(store->shell.surface);
+
+    xdg_toplevel_set_title(store->shell.toplevel, "Vim clipboard");
+
+    xdg_surface_add_listener(store->shell.surface,
+	    &vwl_xdg_surface_listener, NULL);
+
+    wl_surface_commit(store->surface);
+
+    store->on_focus = on_focus;
+    store->user_data = user_data;
+    store->got_focus = FALSE;
+
     if (vwl_display_roundtrip(&vwl_display) == FAIL)
+	goto fail;
+
+    // We may get the enter event early, if we do then we will set `got_focus`
+    // to TRUE.
+    if (store->got_focus)
+	goto early_exit;
+
+    // Buffer hasn't been released yet, abort. This shouldn't happen but still
+    // check for it.
+    if (!buffer_store->available)
+	goto fail;
+
+    buffer_store->available = FALSE;
+
+    wl_surface_attach(store->surface, buffer_store->buffer, 0, 0);
+    wl_surface_damage(store->surface, 0, 0,
+	    buffer_store->width, buffer_store->height);
+    wl_surface_commit(store->surface);
+
     {
-	ret = FAIL;
-	goto exit;
-    }
+	// Dispatch events until we receive the enter event. Add a max delay of
+	// 'p_wtm' when waiting for it (may be longer depending on how long we
+	// poll when dispatching events)
+	struct timeval start, now;
 
-    if (vwl_clipboard.have_focus)
-    {
-	ret = OK;
-	goto exit;
-    }
+	gettimeofday(&start, NULL);
 
-    // Can't attach buffer since it is still being used
-    if (!vwl_clipboard.buf_available)
-    {
-	ret = FAIL;
-	goto exit;
-    }
-
-    vwl_clipboard.buf_available = FALSE;
-
-    wl_surface_attach(vwl_clipboard.surface, vwl_clipboard.buffer, 0, 0);
-    wl_surface_damage(vwl_clipboard.surface, 0, 0, 1, 1);
-
-    wl_surface_commit(vwl_clipboard.surface);
-
-    vwl_clipboard.on_focus = on_focus;
-
-    gettimeofday(&start, NULL);
-
-    // Dispatch events until we receive the Enter event. Add a max delay of
-    // 'p_wtm' when waiting for it (may be longer depending on how long we poll
-    // when dispatching events)
-    while ((ret = vwl_display_dispatch(&vwl_display, NULL)) == OK)
-    {
-	if (vwl_clipboard.have_focus == TRUE)
-	    break;
-
-	gettimeofday(&now, NULL);
-
-	if (now.tv_usec - start.tv_usec >= p_wtm * 1000)
+	while (vwl_display_dispatch(&vwl_display, NULL) == OK)
 	{
-	    ret = FAIL;
-	    break;
+	    if (store->got_focus)
+		break;
+
+	    gettimeofday(&now, NULL);
+
+	    if ((now.tv_sec * 1000000 + now.tv_usec) -
+		    (start.tv_sec * 1000000 + start.tv_usec)
+		    >= p_wtm * 1000)
+		goto fail;
 	}
     }
+early_exit:
+    vwl_destroy_fs_surface(store);
+    vwl_display_flush(&vwl_display);
 
-    if (ret == FAIL)
-    {
-exit:
-	vwl_clipboard.on_focus = NULL;
-	vwl_cb_destroy_surfaces();
-	vwl_display_flush(&vwl_display);
-    }
+    return OK;
+fail:
+    vwl_destroy_fs_surface(store);
+    vwl_display_flush(&vwl_display);
 
-    return ret;
+    return FAIL;
 }
 
 /*
  * Called when the keyboard focus is on our surface
  */
     static void
-vwl_cb_keyboard_listener_enter(
+vwl_fs_keyboard_listener_enter(
     void *data,
     struct wl_keyboard *keyboard UNUSED,
     uint32_t serial,
     struct wl_surface *surface UNUSED,
     struct wl_array *keys UNUSED)
 {
-    vwl_clipboard.have_focus = TRUE;
+    vwl_fs_surface_T *store = data;
 
-    if (vwl_clipboard.on_focus != NULL)
-	vwl_clipboard.on_focus(data, serial);
+    store->got_focus = TRUE;
 
-    vwl_clipboard.on_focus = NULL;
-    vwl_cb_destroy_surfaces();
-    vwl_display_flush(&vwl_display);
+    if (store->on_focus != NULL)
+	store->on_focus(store->user_data, serial);
 }
 
 // Dummy functions to handle keyboard events we don't care about.
 
     static void
-vwl_cb_keyboard_listener_keymap(
+vwl_fs_keyboard_listener_keymap(
     void *data UNUSED,
     struct wl_keyboard *keyboard UNUSED,
     uint32_t format UNUSED,
@@ -1133,7 +1189,7 @@ vwl_cb_keyboard_listener_keymap(
 }
 
     static void
-vwl_cb_keyboard_listener_leave(
+vwl_fs_keyboard_listener_leave(
     void *data UNUSED,
     struct wl_keyboard *keyboard UNUSED,
     uint32_t serial UNUSED,
@@ -1142,7 +1198,7 @@ vwl_cb_keyboard_listener_leave(
 }
 
     static void
-vwl_cb_keyboard_listener_key(
+vwl_fs_keyboard_listener_key(
     void *data UNUSED,
     struct wl_keyboard *keyboard UNUSED,
     uint32_t serial UNUSED,
@@ -1153,7 +1209,7 @@ vwl_cb_keyboard_listener_key(
 }
 
     static void
-vwl_cb_keyboard_listener_modifiers(
+vwl_fs_keyboard_listener_modifiers(
     void *data UNUSED,
     struct wl_keyboard *keyboard UNUSED,
     uint32_t serial UNUSED,
@@ -1165,7 +1221,7 @@ vwl_cb_keyboard_listener_modifiers(
 }
 
     static void
-vwl_cb_keyboard_listener_repeat_info(
+vwl_fs_keyboard_listener_repeat_info(
     void *data UNUSED,
     struct wl_keyboard *keyboard UNUSED,
     int32_t rate UNUSED,
@@ -1692,36 +1748,7 @@ wayland_cb_init(const char *seat)
     if (vwl_core_data_protocol_available() &&
 	    (vwl_clipboard.regular.requires_focus ||
 	     vwl_clipboard.primary.requires_focus))
-    {
-	int x = 1, y = 1, stride = x * 4, size = stride * y;
-	int fd = mch_create_anon_file();
-	int r = ftruncate(fd, size);
-
-
-	// If fd is -1, any attempts after to use the data device manager should
-	// fail since focus is never gained.
-	if (r == 0)
-	{
-	    // Prepare buffer
-	    vwl_clipboard.shm_pool = wl_shm_create_pool(
-		    vwl_gobjects.wl_shm, fd, size);
-
-	    vwl_clipboard.buffer = wl_shm_pool_create_buffer(
-		    vwl_clipboard.shm_pool,
-		    0, x, y,
-		    stride,
-		    WL_SHM_FORMAT_ARGB8888);
-	    vwl_clipboard.buf_available = TRUE;
-	    vwl_clipboard.shm_fd = fd;
-
-	    wl_buffer_add_listener(
-		    vwl_clipboard.buffer,
-		    &vwl_cb_buffer_listener,
-		    NULL);
-	}
-	else if (fd >= 0)
-	    close(fd);
-    }
+	vwl_clipboard.fs_buffer = vwl_init_buffer_store(1, 1);
 
     // Get data devices for each selection. If one of the above function calls
     // results in an unavailable manager, then the device coming from it will
@@ -1773,20 +1800,11 @@ wayland_cb_init(const char *seat)
     void
 wayland_cb_uninit(void)
 {
-    vwl_cb_destroy_surfaces();
-
-   if (vwl_clipboard.buffer != NULL)
+    if (vwl_clipboard.fs_buffer != NULL)
     {
-	wl_buffer_destroy(vwl_clipboard.buffer);
-	vwl_clipboard.buffer = NULL;
+	vwl_destroy_buffer_store(vwl_clipboard.fs_buffer);
+	vwl_clipboard.fs_buffer = NULL;
     }
-    if (vwl_clipboard.shm_pool != NULL)
-    {
-	wl_shm_pool_destroy(vwl_clipboard.shm_pool);
-	vwl_clipboard.shm_pool = NULL;
-    }
-    if (vwl_clipboard.shm_fd >= 0)
-	close(vwl_clipboard.shm_fd);
 
     // Destroy the current offer if it exists
     vwl_data_offer_destroy(vwl_clipboard.regular.offer, TRUE);
@@ -1805,7 +1823,6 @@ wayland_cb_uninit(void)
     vwl_display_flush(&vwl_display);
 
     vim_memset(&vwl_clipboard, 0, sizeof(vwl_clipboard));
-    vwl_clipboard.shm_fd = -1;
     vwl_clipboard.regular.selection = WAYLAND_SELECTION_REGULAR;
     vwl_clipboard.primary.selection = WAYLAND_SELECTION_PRIMARY;
 }
@@ -1954,7 +1971,8 @@ wayland_cb_get_mime_types(wayland_selection_T selection)
     {
 	// We don't care about the on_focus callback since once we gain focus
 	// the data offer events will come immediately.
-	if (vwl_cb_steal_focus(vwl_clipboard.seat, NULL, NULL) == FAIL)
+	if (vwl_init_fs_surface(vwl_clipboard.seat,
+		    vwl_clipboard.fs_buffer, NULL, NULL) == FAIL)
 	    return NULL;
     }
     else if (vwl_display_roundtrip(&vwl_display) == FAIL)
@@ -1971,20 +1989,14 @@ wayland_cb_get_mime_types(wayland_selection_T selection)
 wayland_cb_receive_data(const char *mime_type, wayland_selection_T selection)
 {
     vwl_clipboard_selection_T *clip_sel;
-    vwl_data_offer_T *offer;
+
     // Create pipe that source client will write to
     int fds[2];
 
     if (selection == WAYLAND_SELECTION_REGULAR)
-    {
 	clip_sel = &vwl_clipboard.regular;
-	offer = vwl_clipboard.regular.offer;
-    }
     else if (selection == WAYLAND_SELECTION_PRIMARY)
-    {
 	clip_sel = &vwl_clipboard.primary;
-	offer = vwl_clipboard.primary.offer;
-    }
     else
 	return -1;
 
@@ -1992,13 +2004,13 @@ wayland_cb_receive_data(const char *mime_type, wayland_selection_T selection)
 	    !vwl_clipboard_selection_is_ready(clip_sel))
 	return -1;
 
-    if (offer == NULL || offer->proxy == NULL)
+    if (clip_sel->offer == NULL || clip_sel->offer->proxy == NULL)
 	return -1;
 
     if (pipe(fds) == -1)
 	return -1;
 
-    vwl_data_offer_receive(offer, mime_type, fds[1]);
+    vwl_data_offer_receive(clip_sel->offer, mime_type, fds[1]);
 
     close(fds[1]); // Close before we read data so that when the source client
 		   // closes their end we receive an EOF.
@@ -2036,6 +2048,8 @@ vwl_data_source_listener_cancelled(vwl_data_source_T *source)
 {
     vwl_clipboard_selection_T *clip_sel = source->data;
 
+    msg("cancelled");
+
     if (clip_sel->send_cb != NULL)
 	clip_sel->cancelled_cb(clip_sel->selection);
     vwl_data_source_destroy(source, FALSE);
@@ -2045,7 +2059,7 @@ vwl_data_source_listener_cancelled(vwl_data_source_T *source)
  * Set the selection when we gain focus
  */
     static void
-vwl_cb_own_selection_set_selection(void *data, uint32_t serial)
+vwl_on_focus_set_selection(void *data, uint32_t serial)
 {
     vwl_clipboard_selection_T *clip_sel = data;
 
@@ -2100,8 +2114,8 @@ wayland_cb_own_selection(
     if (clip_sel->requires_focus)
     {
 	// Call set_selection later when we gain focus
-	if (vwl_cb_steal_focus(vwl_clipboard.seat,
-		vwl_cb_own_selection_set_selection, clip_sel) == FAIL)
+	if (vwl_init_fs_surface(vwl_clipboard.seat, vwl_clipboard.fs_buffer,
+		    vwl_on_focus_set_selection, clip_sel) == FAIL)
 	    goto fail;
     }
     else
