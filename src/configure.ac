@@ -2638,62 +2638,66 @@ dnl Test for GTK, and define GTK_CFLAGS, GTK_LIBDIR and GTK_LIBS
 dnl
 AC_DEFUN(AM_PATH_GTK,
 [
-  if test "X$GTK_CONFIG" != "Xno" -o "X$PKG_CONFIG" != "Xno"; then
+  dnl Even if we don't end up using the pkg-config name, the min_gtk_version
+  dnl will be used when compiling the gtktest program below.
+  min_gtk_version="$1"
+
+  dnl Attempt to source flags from pkg-config if it is installed.
+  if test "$PKG_CONFIG" != "no"; then
+    AS_CASE([$min_gtk_version],
+	    [2.*], [gtk_pkg_name="gtk+-2.0"],
+	    [3.*], [gtk_pkg_name="gtk+-3.0"],
+		   [AC_MSG_FAILURE([The configure script does not know which pkg-config name to use for GTK $min_gtk_version"])])
+
+    AC_MSG_CHECKING([for pkg-config $gtk_pkg_name])
+    AS_IF(["$PKG_CONFIG" --exists "$gtk_pkg_name"],
+	  [
+	     AC_MSG_RESULT(found)
+	     AC_MSG_CHECKING([for GTK - version >= $min_gtk_version])
+	     dnl We should be using PKG_CHECK_MODULES() instead of this hack.
+	     dnl But I guess the dependency on pkgconfig.m4 is not wanted or
+	     dnl something like that.
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags $gtk_pkg_name`
+	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
+	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
+	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
+	       sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+	     gtk_minor_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
+	       sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+	     gtk_micro_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
+	       sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+	     AC_MSG_RESULT([yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version])
+	   ],
+	   [
+	      GTK_CFLAGS=""
+	      GTK_LIBDIR=""
+	      GTK_LIBS=""
+	      AC_MSG_RESULT([no; consider installing your distro GTK -dev package])
+	      if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
+		AC_MSG_ERROR([pkg-config could not find $gtk_pkg_name])
+	      fi
+	    ])
+  fi
+
+  dnl Regardless of whether we sources the GTK compilation flags from
+  dnl pkg-config above versus the user specifying them in CFLAGS and LIBS, try
+  dnl to compile the test program.
+  dnl
+  dnl Default to outcome flag to "yes" because disabling the check should be
+  dnl considered the same as assuming it would succeed.
+  gtktest_success="yes"
+  if test "$enable_gtktest" = "yes"; then
   {
-    no_gtk=""
-    if (test "X$SKIP_GTK2" != "XYES" -a "X$PKG_CONFIG" != "Xno") \
-	  && $PKG_CONFIG --exists gtk+-2.0; then
-    {
-      min_gtk_version=ifelse([$1], ,2.2.0,$1)
-      AC_MSG_CHECKING(for GTK - version >= $min_gtk_version)
-      dnl We should be using PKG_CHECK_MODULES() instead of this hack.
-      dnl But I guess the dependency on pkgconfig.m4 is not wanted or
-      dnl something like that.
-      GTK_CFLAGS=`$PKG_CONFIG --cflags gtk+-2.0`
-      GTK_LIBDIR=`$PKG_CONFIG --libs-only-L gtk+-2.0`
-      GTK_LIBS=`$PKG_CONFIG --libs gtk+-2.0`
-      gtk_major_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
-	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
-      gtk_minor_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
-	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
-      gtk_micro_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
-	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
-    }
-    elif (test "X$SKIP_GTK3" != "XYES" -a "X$PKG_CONFIG" != "Xno") \
-	  && $PKG_CONFIG --exists gtk+-3.0; then
-    {
-      min_gtk_version=ifelse([$1], ,3.0.0,$1)
-      AC_MSG_CHECKING(for GTK - version >= $min_gtk_version)
+    ac_save_CFLAGS="$CFLAGS"
+    ac_save_LIBS="$LIBS"
+    CFLAGS="$CFLAGS $GTK_CFLAGS"
+    LIBS="$LIBS $GTK_LIBS"
 
-      GTK_CFLAGS=`$PKG_CONFIG --cflags gtk+-3.0`
-      GTK_LIBDIR=`$PKG_CONFIG --libs-only-L gtk+-3.0`
-      GTK_LIBS=`$PKG_CONFIG --libs gtk+-3.0`
-      gtk_major_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
-	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
-      gtk_minor_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
-	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
-      gtk_micro_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
-	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
-    }
-    else
-      dnl Put some text before the "no" to hint at installing the gtk-dev
-      dnl packages.
-      AC_MSG_CHECKING(for GTK -dev package)
-      no_gtk=yes
-    fi
-
-    if test "x$enable_gtktest" = "xyes" -a "x$no_gtk" = "x"; then
-    {
-      ac_save_CFLAGS="$CFLAGS"
-      ac_save_LIBS="$LIBS"
-      CFLAGS="$CFLAGS $GTK_CFLAGS"
-      LIBS="$LIBS $GTK_LIBS"
-
-      dnl
-      dnl Now check if the installed GTK is sufficiently new.
-      dnl
-      rm -f conf.gtktest
-      AC_RUN_IFELSE([AC_LANG_SOURCE([
+    dnl
+    dnl Now check if the installed GTK is sufficiently new.
+    dnl
+    AC_MSG_CHECKING([ability to compile GTK test program])
+    AC_RUN_IFELSE([AC_LANG_SOURCE([
 #include <gtk/gtk.h>
 #include <stdio.h>
 #if STDC_HEADERS
@@ -2704,62 +2708,53 @@ AC_DEFUN(AM_PATH_GTK,
 int
 main ()
 {
-int major, minor, micro;
-char *tmp_version;
+	int ex_major = $gtk_major_version;
+	int ex_minor = $gtk_minor_version;
+	int ex_micro = $gtk_micro_version;
 
-system ("touch conf.gtktest");
+	#if $gtk_major_version == 2
+	guint ob_major = gtk_major_version;
+	guint ob_minor = gtk_minor_version;
+	guint ob_micro = gtk_micro_version;
+	#else
+	guint ob_major = gtk_get_major_version();
+	guint ob_minor = gtk_get_minor_version();
+	guint ob_micro = gtk_get_micro_version();
+	#endif
 
-/* HP/UX 9 (%@#!) writes to sscanf strings */
-tmp_version = g_strdup("$min_gtk_version");
-if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
-   printf("%s, bad version string\n", "$min_gtk_version");
-   g_free(tmp_version);
-   exit(1);
- }
-
-g_free(tmp_version);
-
-if ((gtk_major_version > major) ||
-    ((gtk_major_version == major) && (gtk_minor_version > minor)) ||
-    ((gtk_major_version == major) && (gtk_minor_version == minor) &&
-				     (gtk_micro_version >= micro)))
-{
-    return 0;
+	if ((ob_major > ex_major) ||
+		((ob_major == ex_major)
+			&& (ob_minor > ex_minor)) ||
+		((ob_major == ex_major)
+			&& (ob_minor == ex_minor)
+			&& (ob_micro >= ex_micro)))
+		return 0;
+	else
+		return 1;
 }
-return 1;
-}
-])],, no_gtk=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
-      CFLAGS="$ac_save_CFLAGS"
-      LIBS="$ac_save_LIBS"
-    }
-    fi
-    if test "x$no_gtk" = x ; then
-      if test "x$enable_gtktest" = "xyes"; then
-	AC_MSG_RESULT(yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version)
-      else
-	AC_MSG_RESULT(found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version)
-      fi
-      ifelse([$2], , :, [$2])
-    else
-    {
-      AC_MSG_RESULT(no)
-      GTK_CFLAGS=""
-      GTK_LIBS=""
-      ifelse([$3], , :, [$3])
-      if test "$fail_if_missing" = "yes" -a "X$gui_auto" != "Xyes"; then
-	AC_MSG_ERROR([could not configure GTK])
-      fi
-    }
-    fi
+])],
+    [gtktest_success="yes"; AC_MSG_RESULT(yes)],
+    [gtktest_success="no"; AC_MSG_RESULT(no)],
+    [echo $ac_n "cross compiling; assumed OK... $ac_c"])
+    CFLAGS="$ac_save_CFLAGS"
+    LIBS="$ac_save_LIBS"
   }
-  else
-    GTK_CFLAGS=""
-    GTK_LIBS=""
-    ifelse([$3], , :, [$3])
   fi
+
+  if test "$gtktest_success" = "yes"; then
+    ifelse([$2], , :, [$2])
+  else
+    dnl Reset flags sourced from pkg-config if the compilation test failed.
+    GTK_CFLAGS=""
+    GTK_LIBDIR=""
+    GTK_LIBS=""
+    if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
+      AC_MSG_ERROR([Failed to compile GTK test program.])
+    fi
+  fi
+
   AC_SUBST(GTK_CFLAGS)
   AC_SUBST(GTK_LIBS)
-  rm -f conf.gtktest
 ])
 
 dnl ---------------------------------------------------------------------------
@@ -2832,16 +2827,43 @@ AC_DEFUN([GNOME_INIT],[
 	GNOME_INIT_HOOK([],fail)
 ])
 
-if test "X$PKG_CONFIG" = "X"; then
+if test -z "$PKG_CONFIG"; then
   AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
 fi
 
+dnl ---------------------------------------------------------------------------
+dnl Check for GTK3. If it succeeds, skip the check for GTK2.
+dnl ---------------------------------------------------------------------------
+if test -z "$SKIP_GTK3"; then
+  AC_MSG_CHECKING(--disable-gtktest argument)
+  AC_ARG_ENABLE(gtktest, [  --disable-gtktest       Do not try to compile and run a test GTK program],
+	, enable_gtktest=yes)
+  if test "x$enable_gtktest" = "xyes" ; then
+    AC_MSG_RESULT(gtk test enabled)
+  else
+    AC_MSG_RESULT(gtk test disabled)
+  fi
+
+  if test "x$PKG_CONFIG" != "xno"; then
+    AM_PATH_GTK(3.0.0,
+		[GUI_LIB_LOC="$GTK_LIBDIR"
+		 GTK_LIBNAME="$GTK_LIBS"
+		 GUI_INC_LOC="$GTK_CFLAGS"])
+    if test -n "$GTK_CFLAGS"; then
+      SKIP_GTK2=YES
+      SKIP_GNOME=YES
+      SKIP_MOTIF=YES
+      GUITYPE=GTK
+      AC_SUBST(GTK_LIBNAME)
+      AC_DEFINE(USE_GTK3)
+    fi
+  fi
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl Check for GTK2.  If it fails, then continue on for Motif as before...
 dnl ---------------------------------------------------------------------------
 if test -z "$SKIP_GTK2"; then
-
   AC_MSG_CHECKING(--disable-gtktest argument)
   AC_ARG_ENABLE(gtktest, [  --disable-gtktest       Do not try to compile and run a test GTK program],
 	, enable_gtktest=yes)
@@ -2854,21 +2876,14 @@ if test -z "$SKIP_GTK2"; then
   if test "x$PKG_CONFIG" != "xno"; then
     dnl First try finding version 2.2.0 or later.  The 2.0.x series has
     dnl problems (bold fonts, --remote doesn't work).
-    dnl Disable checking for GTK3 here, otherwise it's found when GTK2 is not
-    dnl found.
-    save_skip_gtk3=$SKIP_GTK3
-    SKIP_GTK3=YES
     AM_PATH_GTK(2.2.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		GUI_INC_LOC="$GTK_CFLAGS"], )
-    if test "x$GTK_CFLAGS" != "x"; then
-      SKIP_GTK3=YES
+		 GUI_INC_LOC="$GTK_CFLAGS"])
+    if test -n "$GTK_CFLAGS"; then
       SKIP_MOTIF=YES
       GUITYPE=GTK
       AC_SUBST(GTK_LIBNAME)
-    else
-      SKIP_GTK3=$save_skip_gtk3
     fi
   fi
   if test "x$GUITYPE" = "xGTK"; then
@@ -2884,41 +2899,6 @@ if test -z "$SKIP_GTK2"; then
 	GTK_LIBNAME="$GTK_LIBNAME $GNOME_LIBDIR $GNOME_LIBS"
       fi
     }
-    fi
-  fi
-fi
-
-
-dnl ---------------------------------------------------------------------------
-dnl Check for GTK3.
-dnl ---------------------------------------------------------------------------
-if test -z "$SKIP_GTK3"; then
-
-  AC_MSG_CHECKING(--disable-gtktest argument)
-  AC_ARG_ENABLE(gtktest, [  --disable-gtktest       Do not try to compile and run a test GTK program],
-	, enable_gtktest=yes)
-  if test "x$enable_gtktest" = "xyes" ; then
-    AC_MSG_RESULT(gtk test enabled)
-  else
-    AC_MSG_RESULT(gtk test disabled)
-  fi
-
-  if test "x$PKG_CONFIG" != "xno"; then
-    save_skip_gtk2=$SKIP_GTK2
-    SKIP_GTK2=YES
-    AM_PATH_GTK(3.0.0,
-		[GUI_LIB_LOC="$GTK_LIBDIR"
-		 GTK_LIBNAME="$GTK_LIBS"
-		GUI_INC_LOC="$GTK_CFLAGS"], )
-    if test "x$GTK_CFLAGS" != "x"; then
-      SKIP_GTK2=YES
-      SKIP_GNOME=YES
-      SKIP_MOTIF=YES
-      GUITYPE=GTK
-      AC_SUBST(GTK_LIBNAME)
-      AC_DEFINE(USE_GTK3)
-    else
-      SKIP_GTK2=$save_skip_gtk2
     fi
   fi
 fi
@@ -4743,4 +4723,4 @@ dnl write output files
 AC_CONFIG_FILES(auto/config.mk:config.mk.in)
 AC_OUTPUT
 
-dnl vim: set sw=2 tw=78 fo+=l:
+dnl vim: set sw=2 sts=2 tw=78 fo+=l:

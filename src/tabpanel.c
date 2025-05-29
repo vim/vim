@@ -530,8 +530,8 @@ starts_with_percent_and_bang(tabpanel_T *pargs)
 	if (did_emsg > did_emsg_before)
 	{
 	    usefmt = NULL;
-	    set_string_option_direct((char_u *)"tabpanel", -1, (char_u *)"",
-		    OPT_FREE | OPT_GLOBAL, SID_ERROR);
+	    set_string_option_direct(opt_name, -1, (char_u *)"",
+		    OPT_FREE | opt_scope, SID_ERROR);
 	}
     }
 #endif
@@ -641,6 +641,12 @@ do_by_tplmode(
 		args.prow = &row;
 		args.pcol = &col;
 		draw_tabpanel_userdefined(tplmode, &args);
+		// p_tpl could have been freed in build_stl_str_hl()
+		if (p_tpl == NULL || *p_tpl == NUL)
+		{
+		    usefmt = NULL;
+		    break;
+		}
 
 		p += i;
 		i = 0;
