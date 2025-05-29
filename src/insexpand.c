@@ -6189,6 +6189,7 @@ get_cmdline_compl_info(char_u *line, colnr_T curs_col)
     return OK;
 }
 
+#ifdef FEAT_COMPL_FUNC
 /*
  * Set global variables related to completion:
  * compl_col, compl_length, compl_pattern, and cpt_compl_pattern.
@@ -6199,7 +6200,6 @@ set_compl_globals(
     colnr_T	curs_col UNUSED,
     int		is_cpt_compl UNUSED)
 {
-#ifdef FEAT_COMPL_FUNC
     char_u	*line = NULL;
     string_T	*pattern = NULL;
     int		len;
@@ -6224,11 +6224,9 @@ set_compl_globals(
 	compl_col = startcol;
 	compl_length = len;
     }
-
     return OK;
-#endif
-    return FAIL;
 }
+#endif
 
 /*
  * Get the pattern, column and length for user defined completion ('omnifunc',
