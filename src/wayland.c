@@ -551,9 +551,9 @@ vwl_log_handler(const char *fmt, va_list args)
 }
 
 /*
- * Connect to the display with name; passing NULL will use $WAYLAND_DISPLAY.
- * Additionally get the registry object but will not starting listening. Returns
- * OK on sucess and FAIL on failure.
+ * Connect to the display with name; passing NULL will use libwayland's way of
+ * getting the display. Additionally get the registry object but will not
+ * starting listening. Returns OK on sucess and FAIL on failure.
  */
     static int
 vwl_connect_display(const char *display)
@@ -863,6 +863,7 @@ wayland_init_client(const char *display)
 	return FAIL;
 
     wayland_display_fd = vwl_display.fd;
+    wayland_set_display(display);
 
     return OK;
 }
@@ -877,6 +878,8 @@ wayland_uninit_client(void)
     wayland_cb_uninit();
 #endif
     vwl_disconnect_display();
+
+    wayland_set_display("");
 }
 
 /*
@@ -1068,8 +1071,8 @@ vwl_cb_steal_focus(
     gettimeofday(&start, NULL);
 
     // Dispatch events until we receive the Enter event. Add a max delay of
-    // 'p_wtm' when waiting for it (could be up to twice that length if you
-    // includ the worst case scenario when dispatching events).
+    // 'p_wtm' when waiting for it (may be longer depending on how long we poll
+    // when dispatching events)
     while ((ret = vwl_display_dispatch(&vwl_display, NULL)) == OK)
     {
 	if (vwl_clipboard.have_focus == TRUE)
@@ -1686,7 +1689,7 @@ wayland_cb_init(const char *seat)
 	    &vwl_clipboard.primary.manager,
 	    WAYLAND_SELECTION_PRIMARY);
 
-    // Initialize shm pool and buffer if 'wlsteal' is set
+    // Initialize shm pool and buffer if core data protocol is available
     if (vwl_core_data_protocol_available() &&
 	    (vwl_clipboard.regular.requires_focus ||
 	     vwl_clipboard.primary.requires_focus))
@@ -2010,7 +2013,6 @@ wayland_cb_receive_data(const char *mime_type, wayland_selection_T selection)
     return -1;
 }
 
-
 /*
  * Callback for send event. Just call the user callback which will handle it and
  * do the writing stuff.
@@ -2190,9 +2192,7 @@ wayland_cb_reload(void)
 #endif // FEAT_WAYLAND_CLIPBOARD
 
 /*
- * Disconnect then reconnect wayland connection, and update clipmethod, only if
- * current display connection is invalid, if shebang is passed, or if switching
- * to a new display.
+ * Disconnect then reconnect wayland connection, and update clipmethod.
  */
     void
 ex_wlrestore(exarg_T *eap)
@@ -2205,40 +2205,44 @@ ex_wlrestore(exarg_T *eap)
     else
 	display = (char*)eap->arg;
 
-    if (eap->forceit || !wayland_client_is_connected(TRUE) ||
-	    STRCMP(wayland_display_name, display == NULL ? "" : display))
+    // Return early if shebang is not passed, we are still connected, and if not
+    // changing to a new wayland display.
+    if (!eap->forceit && wayland_client_is_connected(TRUE) &&
+	    display == wayland_display_name &&
+	    (wayland_display_name != NULL &&
+	     STRCMP(wayland_display_name, display) == 0))
+	return;
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+    if (clipmethod == CLIPMETHOD_WAYLAND)
     {
-#ifdef FEAT_WAYLAND_CLIPBOARD
-	if (clipmethod == CLIPMETHOD_WAYLAND)
-	{
-	    // Lose any selections we own
-	    if (clip_star.owned)
-		clip_lose_selection(&clip_star);
-	    if (clip_plus.owned)
-		clip_lose_selection(&clip_plus);
-	}
-#endif
-
-	wayland_uninit_client();
-	wayland_set_display(display);
-
-	if (wayland_init_client(wayland_display_name) == OK)
-	{
-	    smsg(_("restoring wayland display %s"), wayland_display_name);
-
-#ifdef FEAT_WAYLAND_CLIPBOARD
-	    wayland_cb_init((char*)p_wse);
-#endif
-	}
-	else
-	{
-	    wayland_set_display("");
-	    smsg(_("failed restoring, lost connection to wayland display %s"),
-		    wayland_display_name);
-	}
-
-	choose_clipmethod();
+	// Lose any selections we own
+	if (clip_star.owned)
+	    clip_lose_selection(&clip_star);
+	if (clip_plus.owned)
+	    clip_lose_selection(&clip_plus);
     }
+#endif
+
+    if (display != NULL)
+	display = (char*)vim_strsave((char_u*)display);
+
+    wayland_uninit_client();
+
+    if (wayland_init_client(display) == OK)
+    {
+	smsg(_("restoring wayland display %s"), wayland_display_name);
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	wayland_cb_init((char*)p_wse);
+#endif
+    }
+    else
+	msg(_("failed restoring, lost connection to wayland display"));
+
+    vim_free(display);
+
+    choose_clipmethod();
 }
 
 /*
@@ -2254,12 +2258,13 @@ wayland_set_display(const char *display)
     else if (display == wayland_display_name)
 	// Don't want to be freeing vwl_display_strname then trying to copy it
 	// after.
-	return;
+	goto exit;
 
     vim_free(wayland_display_name);
     wayland_display_name = display == NULL ? NULL :
 	(char*)vim_strsave((char_u*)display);
 
+exit:
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_WAYLAND_DISPLAY,
 	    display == NULL ? (char_u*)"" : (char_u*)display, -1);
