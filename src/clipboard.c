@@ -2583,8 +2583,7 @@ clip_wl_send_data(
 		continue;
 	    }
 	    // We cast to char so that we only send one byte
-	    written = write( fd, (char_u*)&motion_type,
-		    sizeof((char_u)motion_type));
+	    written = write( fd, (char_u*)&motion_type, 1);
 	   skip_len_check = TRUE;
 	}
 	else if (!did_vimenc)
@@ -2803,7 +2802,6 @@ choose_clipmethod(void)
 	// We only interact with wayland for the clipboard, we can just deinit
 	// everything.
 	wayland_uninit_client();
-	wayland_set_display("");
 #endif
 
 	method = CLIPMETHOD_NONE;
@@ -2831,7 +2829,8 @@ choose_clipmethod(void)
     // Disown clipboard if we are switching to a new method
     if (clipmethod != CLIPMETHOD_NONE && method != clipmethod)
     {
-#if defined(FEAT_GUI)
+#if (defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)) \
+	&& defined(FEAT_GUI)
 lose_sel_exit:
 #endif
 	if (clip_star.owned)
@@ -2840,8 +2839,7 @@ lose_sel_exit:
 	    clip_lose_selection(&clip_plus);
     }
 
-#if defined(FEAT_GUI) || (!defined(FEAT_XCLIPBOARD) \
-	&& !defined(FEAT_WAYLAND_CLIPBOARD))
+#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
 exit:
 #endif
 
