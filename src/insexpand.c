@@ -1468,7 +1468,7 @@ trim_compl_match_array(void)
     // Calculate size of trimmed array, respecting max_matches per source.
     for (i = 0; i < cpt_sources_count; i++)
     {
-	limit = cpt_sources_array[i].max_matches;
+	limit = cpt_sources_array[i].cs_max_matches;
 	new_size += (limit > 0 && match_counts[i] > limit)
 	    ? limit : match_counts[i];
     }
@@ -1486,7 +1486,7 @@ trim_compl_match_array(void)
 	src_idx = compl_match_array[i].pum_cpt_source_idx;
 	if (src_idx != -1)
 	{
-	    limit = cpt_sources_array[src_idx].max_matches;
+	    limit = cpt_sources_array[src_idx].cs_max_matches;
 	    if (limit <= 0 || match_counts[src_idx] < limit)
 	    {
 		trimmed[trimmed_idx++] = compl_match_array[i];
