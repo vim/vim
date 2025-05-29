@@ -2209,9 +2209,9 @@ ex_wlrestore(exarg_T *eap)
 	    STRCMP(wayland_display_name, display == NULL ? "" : display))
     {
 #ifdef FEAT_WAYLAND_CLIPBOARD
-	// Lose any selections we own
 	if (clipmethod == CLIPMETHOD_WAYLAND)
 	{
+	    // Lose any selections we own
 	    if (clip_star.owned)
 		clip_lose_selection(&clip_star);
 	    if (clip_plus.owned)
@@ -2227,7 +2227,7 @@ ex_wlrestore(exarg_T *eap)
 	    smsg(_("restoring wayland display %s"), wayland_display_name);
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
-	    wayland_cb_init("seat0");
+	    wayland_cb_init((char*)p_wse);
 #endif
 	}
 	else
@@ -2243,9 +2243,8 @@ ex_wlrestore(exarg_T *eap)
 
 /*
  * Set wayland_display_name to display. Note that this allocate a copy of the
- * string, unless NULL is passed. Note that if NULL is passed then
- * v:wayland_display is set to $WAYLAND_DISPLAY, but wayland_display_name is
- * set to NULL.
+ * string, unless NULL is passed. If NULL is passed then v:wayland_display is
+ * set to $WAYLAND_DISPLAY, but wayland_display_name is set to NULL.
  */
     static void
 wayland_set_display(const char *display)

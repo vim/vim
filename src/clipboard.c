@@ -2799,7 +2799,12 @@ choose_clipmethod(void)
 #if defined(FEAT_GUI)
     if (gui.in_use)
     {
-	wayland_cb_uninit();
+#ifdef FEAT_WAYLAND
+	// We only interact with wayland for the clipboard, we can just deinit
+	// everything.
+	wayland_uninit_client();
+	wayland_set_display("");
+#endif
 
 	method = CLIPMETHOD_NONE;
 	goto exit;
