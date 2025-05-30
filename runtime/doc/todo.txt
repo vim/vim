@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2025 May 26
+*todo.txt*      For Vim version 9.1.  Last change: 2025 May 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4702,8 +4702,6 @@ Autocommands:
 
 
 Omni completion:
--   Add a flag to 'complete' to be able to do omni completion with CTRL-N (and
-    mix it with other kinds of completion).
 -   Ideas from the Vim 7 BOF at SANE:
 	- For interpreted languages, use the interpreter to obtain information.
 	  Should work for Java (Eclipse does this), Python, Tcl, etc.
