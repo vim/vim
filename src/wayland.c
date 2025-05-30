@@ -656,10 +656,11 @@ vwl_listen_to_registry(void)
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
     // If we have a suitable data control protocol discard the rest.
-    if (vwl_gobjects.ext_data_control_manager_v1 != NULL ||
+    if ((vwl_gobjects.ext_data_control_manager_v1 != NULL ||
 	    (vwl_gobjects.zwlr_data_control_manager_v1 != NULL &&
 	     zwlr_data_control_manager_v1_get_version(
-		 vwl_gobjects.zwlr_data_control_manager_v1) > 1))
+		 vwl_gobjects.zwlr_data_control_manager_v1) > 1)) &&
+	    !p_wst)
     {
 	destroy_gobject(wl_data_device_manager)
 	destroy_gobject(wl_shm)
@@ -890,7 +891,7 @@ wayland_uninit_client(void)
 #endif
     vwl_disconnect_display();
 
-    wayland_set_display("");
+    wayland_set_display(NULL);
 }
 
 /*
@@ -931,11 +932,10 @@ wayland_client_update(void)
     static int
 vwl_core_data_protocol_available(void)
 {
-    return vwl_gobjects.wl_compositor != NULL &&
+    return p_wst && vwl_gobjects.wl_compositor != NULL &&
 	vwl_gobjects.wl_data_device_manager != NULL &&
 	vwl_gobjects.wl_shm != NULL &&
-	vwl_gobjects.xdg_wm_base != NULL &&
-	p_wst;
+	vwl_gobjects.xdg_wm_base != NULL;
 }
 
 /*
@@ -1592,7 +1592,16 @@ vwl_get_data_device_manager(
 	wayland_selection_T selection)
 {
     // Prioritize data control protocols first then try using the focus steal
-    // method with the core protocol data objects.
+    // method with the core protocol data objects. This is unless 'wlsteal' is
+    // set, then prioritize the core protocol first.
+
+    // Check for the core protocol first in case 'wlsteal' is set.
+    if (vwl_core_data_protocol_available())
+    {
+	if (vwl_gobjects.wl_data_device_manager != NULL
+		&& selection == WAYLAND_SELECTION_REGULAR)
+	    set_manager(wl_data_device_manager, VWL_DATA_PROTOCOL_CORE, TRUE)
+    }
 
     // Ext data control protocol supports both selections, try it first
     if (vwl_gobjects.ext_data_control_manager_v1 != NULL)
@@ -1606,13 +1615,6 @@ vwl_get_data_device_manager(
 	if ((selection == WAYLAND_SELECTION_PRIMARY && ver >= 2)
 		|| selection == WAYLAND_SELECTION_REGULAR)
 	    set_manager(zwlr_data_control_manager_v1, VWL_DATA_PROTOCOL_WLR, FALSE)
-    }
-
-    if (vwl_core_data_protocol_available())
-    {
-	if (vwl_gobjects.wl_data_device_manager != NULL
-		&& selection == WAYLAND_SELECTION_REGULAR)
-	    set_manager(wl_data_device_manager, VWL_DATA_PROTOCOL_CORE, TRUE)
     }
 
     manager->protocol = VWL_DATA_PROTOCOL_NONE;
@@ -2193,7 +2195,14 @@ wayland_cb_reload(void)
 	    clip_lose_selection(&clip_plus);
     }
 
-    wayland_cb_uninit();
+    if (!vwl_core_data_protocol_available())
+    {
+	// Reset connection in order to regain required globals
+	wayland_uninit_client();
+	wayland_init_client(wayland_display_name);
+    }
+    else
+	wayland_cb_uninit();
 
     if (wayland_cb_init((char*)p_wse) == FAIL)
 	return FAIL;
