@@ -8429,7 +8429,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'tabpanel' 'tpl'			string	(default empty)
 			global
 			{not in Vi}
-	When non empty, this option determines the content of the |tabpanel|.
+	When non-empty, this option determines the content of the |tabpanel|.
 	The option consists of printf style '%' items interspersed with
 	normal text, similar to the 'statusline' or 'tabline'.
 
@@ -8465,7 +8465,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Optional settings for the |tabpanel|,  It can consist of the following
 	items.  Items must be separated by a comma.
 
-		align:{text}	Specified the position of tabpanel.
+		align:{text}	Specifies the position of the tabpanel.
 				Currently supported positions are:
 
 				left	left-aligned
@@ -8473,13 +8473,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 				(default "left")
 
-		columns:{n}	Use the size (in char) of tabpanel.
+		columns:{n}	Use the size (in characters) of the tabpanel.
 				The tabpanel is never shown when using zero
 				or less than the size of Vim window.
 				(default 20)
 
 		vert		Use a vertical separator for tabpanel.
-				This vertical separator is used "tpl_vert" of
+				This vertical separator used is "tpl_vert" of
 				'fillchars'.
 				(default off)
 
