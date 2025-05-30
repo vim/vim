@@ -4696,6 +4696,7 @@ win_new_tabpage(int after)
     tabpage_T	*prev_tp = curtab;
     tabpage_T	*newtp;
     int		n;
+    int prev_columns = COLUMNS_WITHOUT_TPL();
 
     if (cmdwin_type != 0)
     {
@@ -4764,6 +4765,10 @@ win_new_tabpage(int after)
 	entering_window(curwin);
 #endif
 
+#if defined(FEAT_TABPANEL)
+	if (prev_columns != COLUMNS_WITHOUT_TPL())
+	    shell_new_columns();
+#endif
 	redraw_all_later(UPD_NOT_VALID);
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);

@@ -10,6 +10,32 @@ function s:reset()
   set showtabpanel&
 endfunc
 
+function Test_tabpanel_showtabpanel_eq_1()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=1
+    set noruler
+  END
+  call writefile(lines, 'XTest_tabpanel_stpl_eq_1', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_stpl_eq_1', {'rows': 10, 'cols': 78})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_1_0', {})
+  call term_sendkeys(buf, ":tabnew\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_1_1', {})
+  call term_sendkeys(buf, ":tabclose\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_1_0', {})
+
+  call term_sendkeys(buf, ":set tabpanelopt=align:right\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_1_0', {})
+  call term_sendkeys(buf, ":tabnew\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_1_2', {})
+  call term_sendkeys(buf, ":tabclose\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_1_0', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 function Test_tabpanel_with_vsplit()
   CheckScreendump
 
