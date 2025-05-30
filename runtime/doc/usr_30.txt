@@ -499,33 +499,25 @@ to remove only one character at a time.
 
 CHANGING TABS IN SPACES (AND BACK)
 
-Setting 'expandtab' does not immediately affect existing tab characters.
-Vim will occasionally convert a tab character to spaces while rewriting
-the indent of a line.
-  In order to purge a file from all its horizontal tab characters, Vim 5.3
+Setting 'expandtab' does not immediately affect existing tab characters.  In
+order to purge a file from all its horizontal tab characters, Vim 5.3
 introduced the |:retab| command.  Use these commands: >
 
 	:set expandtab
-	:%retab
-
-Now Vim will have changed all indents to use spaces instead of tabs.  However,
-all tabs that come after a non-blank character are kept.  If you want these to
-be converted as well, add a !: >
-
-	:%retab!
+	:retab
 
 This is a little bit dangerous, because it can also change tabs inside a
 string.  To check if these exist, you could use this: >
 
 	/"[^"\t]*\t[^"]*"
 
-It's recommended not to use actual tab characters inside a string.  Replace them
-with "\t" to avoid trouble.
+It's recommended not to use actual tab characters inside a string.  Replace
+them with "\t" to avoid trouble.
 
-The other way around works just as well: >
+  The other way around works just as well: >
 
 	:set noexpandtab
-	:%retab!
+	:retab!
 
 
 SOFT TAB STOPS
