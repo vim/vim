@@ -4597,7 +4597,6 @@ win_init_size(void)
     firstwin->w_prev_height = ROWS_AVAIL;
     topframe->fr_height = ROWS_AVAIL;
     firstwin->w_width = topframe->fr_width;
-    topframe->fr_width = topframe->fr_width;
 }
 
 /*
@@ -4696,7 +4695,9 @@ win_new_tabpage(int after)
     tabpage_T	*prev_tp = curtab;
     tabpage_T	*newtp;
     int		n;
+#if defined(FEAT_TABPANEL)
     int prev_columns = COLUMNS_WITHOUT_TPL();
+#endif
 
     if (cmdwin_type != 0)
     {
@@ -4764,7 +4765,6 @@ win_new_tabpage(int after)
 #ifdef FEAT_JOB_CHANNEL
 	entering_window(curwin);
 #endif
-
 #if defined(FEAT_TABPANEL)
 	if (prev_columns != COLUMNS_WITHOUT_TPL())
 	    shell_new_columns();
