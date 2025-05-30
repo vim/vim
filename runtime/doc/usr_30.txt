@@ -487,7 +487,7 @@ tabs was no longer making any real difference.  It became possible to use only
 spaces and thus guarantee the same resulting text everywhere.  But using only
 spaces was impossible in `vi` without sacrificing features.  Remember that
 'autoindent' would systematically try to input a tab character when it could.
-  So in Vim 4.0 introduced the 'expantab' option.  When set, Vim will replace
+  So Vim 4.0 introduced the 'expantab' option.  When set, Vim will replace
 any horizontal tab character that it would normally insert with an equivalent
 number of spaces, to end up with the same visual effect. <BS> would continue
 to remove only one character at a time.
