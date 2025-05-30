@@ -417,7 +417,7 @@ was common to optimize the size of source code with the following trick.
   The ASCII table was first designed to remotely control teleprinters.  When
 control character 9 (the Horizontal Tab, caret notation: ^I) was sent to a
 teleprinter, it would move the carriage to the next tab stop.  Assuming tab
-stops were separated by 8 columns (the typical standard), this means that a
+stops were separated by 8 columns (a typical standard), this means that a
 single control character could produce the same visual effect as up to 8 space
 characters.  For example, the following two lines will display identically >
 
@@ -478,19 +478,20 @@ but the new line is produced by optimizing the number of characters used.
 
 JUST SPACES
 
-But using the Horizontal Tab control character to save up space came with
-a drawback.  Although tab stops were supposed to be separated by 8 columns,
-this was not the default everywhere.  Everytime text was displayed with the
-wrong 'tabstop' value, it would ruin the alignment of the text.
+But separating tab stops with 8 columns was not universal: IBM had a standard
+at 10 columns, and today some Go developers write code with `tabstop=4`.  Every
+time text is displayed with a different 'tabstop' value, it risks misaligning
+the text, especially once the file is shared and opened on another machine.
   In the meantime, computers got much better and the few octets saved by using
-tabs was no longer making any real difference.  It became possible to use only
-spaces and thus guarantee the same resulting text everywhere.  But using only
-spaces was impossible in `vi` without sacrificing features.  Remember that
+tabs were no longer making any real difference.  It became possible to use
+only spaces and thus guarantee the same resulting text everywhere.  But using
+only spaces was impossible in `vi` without sacrificing features.  Remember that
 'autoindent' would systematically try to input a tab character when it could.
-  So Vim 4.0 introduced the 'expantab' option.  When set, Vim will replace
-any horizontal tab character that it would normally insert with an equivalent
-number of spaces, to end up with the same visual effect. <BS> would continue
-to remove only one character at a time.
+  Vim 4.0 made working with only spaces as convenient as working only with
+tabs (or a mix of tabs and spaces), by introducing the 'expandtab' option.
+When set, Vim will replace any horizontal tab character it would normally
+insert with an equivalent number of spaces, to end up with the same visual
+effect. <BS> would continue to remove only one character at a time.
 
 	type				result ~
 	<Tab>				........
