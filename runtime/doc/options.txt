@@ -5719,6 +5719,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Maximum value is 6.
 	Even when this option is set to 2 you can still edit text with more
 	combining characters, you just can't see them.  Use |g8| or |ga|.
+	When set to 0, you will not be able to see any combining characters.
 	See |mbyte-combining|.
 
 						*'maxfuncdepth'* *'mfd'*
