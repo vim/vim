@@ -2619,14 +2619,14 @@ close_last_window_tabpage(
     // Since goto_tabpage_tp above did not trigger *Enter autocommands, do
     // that now.
     apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
-    apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
-    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
-    if (old_curbuf != curbuf)
-	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #if defined(FEAT_TABPANEL)
     if (p_stpl > 0)
 	shell_new_columns();
 #endif
+    apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
+    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+    if (old_curbuf != curbuf)
+	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
     return TRUE;
 }
 
@@ -4767,7 +4767,19 @@ win_new_tabpage(int after)
 #endif
 #if defined(FEAT_TABPANEL)
 	if (prev_columns != COLUMNS_WITHOUT_TPL())
+	{
+	    tabpage_T *save_curtab = curtab;
+
+	    unuse_tabpage(curtab);
+	    use_tabpage(prev_tp);
+	    shell_new_rows();
 	    shell_new_columns();
+
+	    unuse_tabpage(curtab);
+	    use_tabpage(save_curtab);
+	    shell_new_rows();
+	    shell_new_columns();
+	}
 #endif
 	redraw_all_later(UPD_NOT_VALID);
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
