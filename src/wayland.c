@@ -2048,8 +2048,6 @@ vwl_data_source_listener_cancelled(vwl_data_source_T *source)
 {
     vwl_clipboard_selection_T *clip_sel = source->data;
 
-    msg("cancelled");
-
     if (clip_sel->send_cb != NULL)
 	clip_sel->cancelled_cb(clip_sel->selection);
     vwl_data_source_destroy(source, FALSE);
