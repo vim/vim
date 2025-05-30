@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 9.1.  Last change: 2025 May 14
+*tabpage.txt*   For Vim version 9.1.  Last change: 2025 May 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -436,9 +436,9 @@ side of the window.  It looks like this:
 	|           |text text text text text text text
 	|           |text text text text text text text
 <
-To configure the tabpanel, use following options: 'tabpanel',
-'showtabpanel', 'tabpanelopt'.
-The 'tabpanel' and 'showtabpanel' options are function similar to the
+To configure the tabpanel, use the following options: 'tabpanel',
+'showtabpanel' and 'tabpanelopt'.
+The 'tabpanel' and 'showtabpanel' options function similar to
 'statusline' or 'tabline'.
 
 The "columns:" of 'tabpanelopt' option specifies the width of the tabpanel:
@@ -480,7 +480,7 @@ displayed between the tabpanel and the main window:
 	|  ~/aaa.txt|text text text text text text text
 	|(2)        |text text text text text text text
 <
-The vertical separator is used "tpl_vert" of 'fillchars'.
+The vertical separator used is "tpl_vert" of 'fillchars'.
 
 You can customize the appearance of the tab page labels using the highlight
 groups: |hl-TabPanel| |hl-TabPanelSel| |hl-TabPanelFill|
