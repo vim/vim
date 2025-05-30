@@ -481,9 +481,9 @@ do_mouse(
 
     // Check for clicking in the tab page panel.
 #if defined(FEAT_TABPANEL)
-    if ((mouse_col < firstwin->w_wincol
-	    || mouse_col >= firstwin->w_wincol + topframe->fr_width)
-	    && mouse_row < firstwin->w_winrow + topframe->fr_height)
+    if (mouse_row < firstwin->w_winrow + topframe->fr_height
+	&& (mouse_col < firstwin->w_wincol
+		|| mouse_col >= firstwin->w_wincol + topframe->fr_width))
     {
 	if (is_drag)
 	{
