@@ -590,8 +590,8 @@ of 4 spaces), here is what you can use: >
 	:set softtabstop=-1
 	:set expandtab
 <
-  You would like the same behaviour as above, but on top of that you would
-also like the ability to finely align code?  You can use: >
+  If you want the same behavior but with better control over alignment
+(e.g.  lining up parameters or comments in multiples of 2 spaces), use: >
 
 	:set shiftwidth=4
 	:set softtabstop=2
