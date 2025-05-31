@@ -868,15 +868,19 @@ vwl_seat_get_keyboard(vwl_seat_T *seat)
     int
 wayland_init_client(const char *display)
 {
-    if (vwl_connect_display(display) == FAIL)
-	return FAIL;
-    if (vwl_listen_to_registry() == FAIL)
-	return FAIL;
-
-    wayland_display_fd = vwl_display.fd;
     wayland_set_display(display);
 
+    if (vwl_connect_display(display) == FAIL ||
+	    vwl_listen_to_registry() == FAIL)
+	goto fail;
+
+    wayland_display_fd = vwl_display.fd;
+
     return OK;
+fail:
+    // Set v:wayland_display to empty string (but not wayland_display_name)
+    wayland_set_display("");
+    return FAIL;
 }
 
 /*
@@ -2218,12 +2222,12 @@ ex_wlrestore(exarg_T *eap)
     // Return early if shebang is not passed, we are still connected, and if not
     // changing to a new wayland display.
     if (!eap->forceit && wayland_client_is_connected(TRUE) &&
-	    display == wayland_display_name &&
-	    (wayland_display_name != NULL &&
-	     STRCMP(wayland_display_name, display) == 0))
+	    (display == wayland_display_name ||
+	     (wayland_display_name != NULL &&
+	      STRCMP(wayland_display_name, display) == 0)))
 	return;
 
-#ifdef FEAT_WAYLAND_CLIPBOARD
+# ifdef FEAT_WAYLAND_CLIPBOARD
     if (clipmethod == CLIPMETHOD_WAYLAND)
     {
 	// Lose any selections we own
@@ -2270,9 +2274,12 @@ wayland_set_display(const char *display)
 	// after.
 	goto exit;
 
-    vim_free(wayland_display_name);
-    wayland_display_name = display == NULL ? NULL :
-	(char*)vim_strsave((char_u*)display);
+    // Leave unchanged if display is empty (but not NULL)
+    if (STRCMP(display, "") != 0)
+    {
+	vim_free(wayland_display_name);
+	wayland_display_name = (char*)vim_strsave((char_u*)display);
+    }
 
 exit:
 #ifdef FEAT_EVAL
