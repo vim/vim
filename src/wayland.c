@@ -975,6 +975,9 @@ vwl_bs_buffer_listener_release(
     store->available = TRUE;
 }
 
+/*
+ * Destroy a buffer store structure.
+ */
     static void
 vwl_destroy_buffer_store(vwl_buffer_store_T *store)
 {
@@ -989,7 +992,7 @@ vwl_destroy_buffer_store(vwl_buffer_store_T *store)
 }
 
 /*
- *
+ * Initialize a buffer and its backing memory pool.
  */
     static vwl_buffer_store_T *
 vwl_init_buffer_store(int width, int height)
@@ -1047,7 +1050,7 @@ vwl_init_buffer_store(int width, int height)
 }
 
 /*
- *
+ * Destroy a focus stealing store structure.
  */
     static void
 vwl_destroy_fs_surface(vwl_fs_surface_T *store)
@@ -1069,7 +1072,8 @@ vwl_destroy_fs_surface(vwl_fs_surface_T *store)
 }
 
 /*
- *
+ * Create an invisible surface in order to gain focus and call on_focus() with
+ * serial that was given.
  */
     static int
 vwl_init_fs_surface(
