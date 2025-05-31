@@ -61,7 +61,7 @@ extern "C" {
  *
  * @section page_ifaces_wp_primary_selection_unstable_v1 Interfaces
  * - @subpage page_iface_zwp_primary_selection_device_manager_v1 - X primary selection emulation
- * - @subpage page_iface_zwp_primary_selection_device_v1 - 
+ * - @subpage page_iface_zwp_primary_selection_device_v1 -
  * - @subpage page_iface_zwp_primary_selection_offer_v1 - offer to transfer primary selection contents
  * - @subpage page_iface_zwp_primary_selection_source_v1 - offer to replace the contents of the primary selection
  * @section page_copyright_wp_primary_selection_unstable_v1 Copyright
