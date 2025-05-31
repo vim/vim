@@ -483,4 +483,24 @@ func Test_wayland_seat()
   set wlseat&
 endfunc
 
+" Test focus stealing
+func Test_wayland_focus_steal()
+  set cpm=wayland
+  set wlstealf
+
+  call system('wl-copy test')
+
+  call assert_equal('test', getreg('+'))
+
+  call system('wl-copy twice')
+
+  call assert_equal('twice', getreg('+'))
+
+  call setreg('+', 'VIM')
+
+  call assert_equal('VIM', system('wl-paste -n'))
+
+  set nowlstealf
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
