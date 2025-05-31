@@ -31,10 +31,8 @@ command to override the $WAYLAND_DISPLAY environment variable in Vim.
 							*wayland-seat*
 Functionality such as the clipboard for Wayland requires a seat to use.  A
 Wayland seat can consist of a keyboard, pointer, and touch device(s).  The
-seat to use can be set with the 'wlseat' option.  It is set to seat0 by
-default which should be the default seat for a Wayland session.  Note that
-this is not the same as the seats created by logind or seatd, but is
-essentially equivalent.
+seat to use can be set with the 'wlseat' option.  Note that this is not the
+same as the seats created by logind or seatd, but is essentially equivalent.
 
 							*wayland-gui*
 See |gui-wayland|.  Please note that when using the GUI, Vim uses the toolkit
