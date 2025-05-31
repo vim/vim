@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 May 04
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 May 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -305,8 +305,9 @@ Tip: After inserting a pattern to look for with the `/` command, if you press
 <Esc> instead of <CR>, you can then get more context for each remaining entry
 by pressing `J` or `K`.
 
-Refer |helptoc.vim| for more details about helptoc, particularly about using
-it with filetypes other than help, and configuring its options.
+Refer to |helptoc.txt| for more details about helptoc, particularly about
+using it with filetypes other than help, and configuring its options.
+Note:  You need to `packadd helptoc` before you can jump to |helptoc.txt|.
 
 ==============================================================================
 2. Translated help files				*help-translated*
