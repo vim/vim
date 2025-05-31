@@ -1077,7 +1077,7 @@ vwl_init_fs_surface(
     if (vwl_gobjects.wl_compositor == NULL || vwl_gobjects.xdg_wm_base == NULL)
 	return FAIL;
 
-    store = alloc(sizeof(*store));
+    store = alloc_clear(sizeof(*store));
 
     if (store == NULL)
 	return FAIL;
