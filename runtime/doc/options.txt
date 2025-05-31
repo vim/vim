@@ -7496,11 +7496,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'shiftwidth'* *'sw'*
 'shiftwidth' 'sw'	number	(default 8)
 			local to buffer
-	Width, in columns, of an indentation level.
-
-	Used by 'autoident', |<<|, |>>|, 'cindent', etc.
-	A value of 0 makes Vim use the current 'tabstop' instead.
-	Use |shiftwidth()| to obtain the effective value in scripts.
+	Number of columns that make up one level of (auto)indentation.  Used
+	by |'cindent'|, |<<|, |>>|, etc.
+	If set to 0, Vim uses the current 'tabstop' value.  Use |shiftwidth()|
+	to obtain the effective value in scripts.
 
 						*'shortmess'* *'shm'*
 'shortmess' 'shm'	string	(Vim default "filnxtToOS", Vi default: "S",
