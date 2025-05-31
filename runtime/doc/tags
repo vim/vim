@@ -8580,6 +8580,7 @@ i}	motion.txt	/*i}*
 j	motion.txt	/*j*
 java-cinoptions	indent.txt	/*java-cinoptions*
 java-indenting	indent.txt	/*java-indenting*
+java-package-info-url	syntax.txt	/*java-package-info-url*
 java.vim	syntax.txt	/*java.vim*
 javascript-cinoptions	indent.txt	/*javascript-cinoptions*
 javascript-indenting	indent.txt	/*javascript-indenting*
