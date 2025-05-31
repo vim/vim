@@ -621,7 +621,7 @@ do_by_tplmode(
 		    p++;
 		}
 
-		while (p[i] != '\n' && p[i] != '\r' && (p[i] != NUL))
+		while (p[i] != '\n' && p[i] != '\r' && p[i] != NUL)
 		{
 		    if (i + 1 >= sizeof(buf))
 			break;
