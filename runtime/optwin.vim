@@ -817,6 +817,12 @@ if has('wayland')
   call <SID>AddOption("wlseat", gettext("Wayland seat to use"))
   call <SID>OptionG("wse", &wse)
 endif
+if has("wayland_clipboard")
+  call <SID>AddOption("wlsteal", gettext("Enable wayland focus stealing functionality in order to acess the clipboard"))
+  call <SID>BinOptionG("wst", &wst)
+  call <SID>AddOption("wlstealf", gettext("Forcibly enable wayland focus stealing functionality in order to acess the clipboard"))
+  call <SID>BinOptionG("wtf", &wtf)
+endif
 call <SID>AddOption("keymodel", gettext("\"startsel\" and/or \"stopsel\"; what special keys can do"))
 call <SID>OptionG("km", &km)
 

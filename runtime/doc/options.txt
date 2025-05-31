@@ -10003,20 +10003,39 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wlseat'* *'wse'*
 'wlseat' 'wse'		string	(default "")
 			global
+			{only when the |+wayland| feature is included}
 	Specifies the Wayland seat to use for Wayland functionality,
 	specifically the clipboard. If the seat does not exist, then the
 	option will still be set to the new value, with the Wayland clipboard
 	being unavailable as a result. If an empty value is passed then the
 	first seat found available is used.
 
+					*'wlsteal'* *'wst'* *'nowlsteal'* *'nowst'*
+'wlsteal' 'wst'		boolean  (default off)
+			global
+			{only when the |+wayland_clipboard| feature is included}
+	When enabled, then allow Vim to steal focus by creating a temporary
+	surface, in order to access the clipboard. For more information see
+	|wayland-focus-steal|.
+
+					*'wlstealf'* *'wtf'* *'nowlstealf'* *'nowtf'*
+'wlstealf' 'wtf'	boolean  (default off)
+			global
+			{only when the |+wayland_clipboard| feature is included}
+	Essentially the same as the 'wlsteal' option. However if this option
+	is enabled, then forcibly make Vim steal focus, even if a data control
+	protocol is available.
+
 						*'wltimeoutlen'* *'wtm'*
 'wltimeoutlen' 'wtm'	number	(default 3000)
 			global
-			{only when the |+wayland_clipboard| feature is included}
+			{only when the |+wayland| feature is included}
 	The timeout in milliseconds to be used to determine when Vim times out
 	when polling a file descriptor within the Wayland protocol. This can
 	include, polling the Wayland display file descriptor for events,
 	polling for data to be read, or polling until a fd is writable.
+	Additionally, this option is also used as the maximum timeout when
+	waiting for a surface to gain focus, see |wayland-focus-steal|.
 
 						*'wrap'* *'nowrap'*
 'wrap'			boolean	(default on)
