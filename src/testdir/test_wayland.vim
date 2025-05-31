@@ -485,6 +485,11 @@ endfunc
 
 " Test focus stealing
 func Test_wayland_focus_steal()
+  " Check if we have keyboard capability for seat
+  if system("wayland-info -i wl_seat | grep capabilities") !~? "keyboard"
+    throw "Skipped: seat does not have keyboard"
+  endif
+
   set cpm=wayland
   set wlstealf
 
