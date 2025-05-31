@@ -174,38 +174,39 @@ endfunc
 function Test_tabpanel_drawing_with_popupwin()
   CheckScreendump
 
+  let tcols = 45
   let lines =<< trim END
-    set showtabpanel=2
+    set showtabpanel=0
     set tabpanelopt=columns:20
     set showtabline=0
+    set nowrap
+    set noruler
     tabnew
     setlocal buftype=nofile
-    let pcol = getwininfo(bufwinid(bufnr()))[0].width
-    call setbufline(bufnr(), 1, repeat([repeat('.', pcol)], &lines))
-    highlight TestingForTabPanelPopupwin guibg=#7777ff guifg=#000000
-    for line in [1, &lines]
-      for col in [1, 29 + pcol - 2]
-        call popup_create([
-          \   '@',
-          \ ], {
-          \   'line': line,
-          \   'col': col,
-          \   'border': [],
-          \   'highlight': 'TestingForTabPanelPopupwin',
-          \ })
-      endfor
+    call setbufline(bufnr(), 1, repeat([repeat('.', &columns)], &lines - &ch))
+    for col in [1, &columns - 2]
+      call popup_create(['@'],
+            \ {
+            \   'line': 1,
+            \   'col': col,
+            \   'border': [],
+            \   'highlight': 'ErrorMsg',
+            \ })
     endfor
-    call cursor(4, 10)
+    call cursor(5, 10)
     call popup_atcursor('atcursor', {
-      \   'highlight': 'TestingForTabPanelPopupwin',
+      \   'highlight': 'Question',
       \ })
   END
   call writefile(lines, 'XTest_tabpanel_with_popupwin', 'D')
-
-  let buf = RunVimInTerminal('-S XTest_tabpanel_with_popupwin', {'rows': 10, 'cols': 45})
-
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_popupwin', {'rows': 10, 'cols': tcols})
   call VerifyScreenDump(buf, 'Test_tabpanel_drawing_with_popupwin_0', {})
-
+  call term_sendkeys(buf, ":set showtabpanel=2\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_with_popupwin_1', {})
+  call term_sendkeys(buf, ":set tabpanelopt+=align:right\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_with_popupwin_2', {})
+  call term_sendkeys(buf, ":set showtabpanel=0\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_with_popupwin_0', {})
   call StopVimInTerminal(buf)
 endfunc
 

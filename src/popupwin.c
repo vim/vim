@@ -1673,10 +1673,12 @@ popup_adjust_position(win_T *wp)
     else if (wp->w_winrow < 0)
 	wp->w_winrow = 0;
 
-    if (wp->w_wincol > firstwin->w_wincol + topframe->fr_width)
-	wp->w_wincol = firstwin->w_wincol + topframe->fr_width;
+    if (wp->w_wincol + wp->w_width > firstwin->w_wincol + topframe->fr_width)
+	wp->w_wincol = firstwin->w_wincol + topframe->fr_width - wp->w_width;
     else if (wp->w_wincol < firstwin->w_wincol)
 	wp->w_wincol = firstwin->w_wincol;
+    if (wp->w_wincol < 0)
+	wp->w_wincol = 0;
 
     if (wp->w_height != org_height)
 	win_comp_scroll(wp);
