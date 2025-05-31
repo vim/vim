@@ -4650,7 +4650,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     funcexe.fe_firstline = 1L;
     funcexe.fe_lastline = 1L;
     funcexe.fe_evaluate = TRUE;
-    if (call_func(func, -1, &rettv, 2, argvars, &funcexe) == OK)
+    if (call_func(func, -1, &rettv, 2, argvars, NULL, &funcexe) == OK)
     {
 	clear_tv(&rettv);
 	ch_log(channel, "Function %s called", func);
