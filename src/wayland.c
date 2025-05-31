@@ -20,6 +20,7 @@
 # include "wlr-data-control-unstable-v1.h"
 # include "ext-data-control-unstable-v1.h"
 # include "xdg-shell.h"
+# include "primary-selection-unstable-v1.h"
 #endif
 
 // Struct that represents a seat. (Should be accessed via
