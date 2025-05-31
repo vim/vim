@@ -655,11 +655,14 @@ vwl_listen_to_registry(void)
 	return FAIL;
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
-    // If we have a suitable data control protocol discard the rest.
-    if (vwl_gobjects.ext_data_control_manager_v1 != NULL ||
+    // If we have a suitable data control protocol discard the rest, only if
+    // 'wlstealf' is not set. If we only have wlr data control protocol but its
+    // version is 1, then don't discard globals if we also have the primary
+    // selection protocol.
+    if (!p_wtf && (vwl_gobjects.ext_data_control_manager_v1 != NULL ||
 	    (vwl_gobjects.zwlr_data_control_manager_v1 != NULL &&
 	     zwlr_data_control_manager_v1_get_version(
-		 vwl_gobjects.zwlr_data_control_manager_v1) > 1))
+		 vwl_gobjects.zwlr_data_control_manager_v1) > 1)))
     {
 	destroy_gobject(wl_data_device_manager)
 	destroy_gobject(wl_shm)
@@ -935,11 +938,10 @@ wayland_client_update(void)
     static int
 vwl_core_data_protocol_available(void)
 {
-    return vwl_gobjects.wl_compositor != NULL &&
+    return (p_wst || p_wtf) && vwl_gobjects.wl_compositor != NULL &&
 	vwl_gobjects.wl_data_device_manager != NULL &&
 	vwl_gobjects.wl_shm != NULL &&
-	vwl_gobjects.xdg_wm_base != NULL &&
-	p_wst;
+	vwl_gobjects.xdg_wm_base != NULL;
 }
 
 /*
@@ -1596,7 +1598,10 @@ vwl_get_data_device_manager(
 	wayland_selection_T selection)
 {
     // Prioritize data control protocols first then try using the focus steal
-    // method with the core protocol data objects.
+    // method with the core protocol data objects. if 'wlstealf' is set then
+    // only try the core protocol.
+    if (p_wtf)
+	goto core_protocol;
 
     // Ext data control protocol supports both selections, try it first
     if (vwl_gobjects.ext_data_control_manager_v1 != NULL)
@@ -1612,6 +1617,7 @@ vwl_get_data_device_manager(
 	    set_manager(zwlr_data_control_manager_v1, VWL_DATA_PROTOCOL_WLR, FALSE)
     }
 
+core_protocol:
     if (vwl_core_data_protocol_available())
     {
 	if (vwl_gobjects.wl_data_device_manager != NULL
