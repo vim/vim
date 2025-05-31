@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 May 30
+*options.txt*	For Vim version 9.1.  Last change: 2025 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3376,6 +3376,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	events are ignored, autocommands will not be executed.
 	Otherwise this is a comma-separated list of event names.  Example: >
 	    :set ei=WinEnter,WinLeave
+<
+	To ignore all but some events, a "-" prefix can be used: >
+	    :set ei=all,-WinLeave
 <
 						*'eventignorewin'* *'eiw'*
 'eventignorewin' 'eiw'	string	(default "")
