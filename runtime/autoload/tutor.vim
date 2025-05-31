@@ -128,14 +128,6 @@ function! s:Locale()
     return split(l:lang, '_')
 endfunction
 
-function! s:GlobPath(lp, pat)
-    if version >= 704 && has('patch279')
-        return globpath(a:lp, a:pat, 1, 1)
-    else
-        return split(globpath(a:lp, a:pat, 1), '\n')
-    endif
-endfunction
-
 function! s:Sort(a, b)
     let mod_a = fnamemodify(a:a, ':t')
     let mod_b = fnamemodify(a:b, ':t')
@@ -161,16 +153,15 @@ endfunction
 function! tutor#GlobTutorials(name, locale)
     let locale = a:locale
     " search for tutorials:
-    " 1. non-localized
-    let l:tutors = s:GlobPath(&rtp, 'tutor/'.a:name.'.tutor')
-    " 2. localized for current locale
-    let l:locale_tutors = s:GlobPath(&rtp, 'tutor/'.locale.'/'.a:name.'.tutor')
-    " 3. fallback to 'en'
-    if len(l:locale_tutors) == 0
-        let l:locale_tutors = s:GlobPath(&rtp, 'tutor/en/'.a:name.'.tutor')
+    " 1. localized for current locale
+    let tutors = globpath(&rtp, 'tutor/'.locale.'/'.a:name.'.tutor', 1, 1)
+    if len(tutors) == 0
+        " If no localized tutorials found, fallback to 'en'
+        let tutors = globpath(&rtp, 'tutor/en/'.a:name.'.tutor', 1, 1)
     endif
-    call extend(l:tutors, l:locale_tutors)
-    return uniq(sort(l:tutors, 's:Sort'), 's:Sort')
+    " 2. non-localized
+    call extend(tutors, globpath(&rtp, 'tutor/'.a:name.'.tutor', 1, 1))
+    return uniq(sort(tutors, 's:Sort'), 's:Sort')
 endfunction
 
 function! tutor#TutorCmd(tutor_name)
