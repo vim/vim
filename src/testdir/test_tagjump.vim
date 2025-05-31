@@ -1650,4 +1650,25 @@ func Test_tag_excmd_with_nostartofline()
   set startofline&
 endfunc
 
+func Test_tag_excmd_with_number_vim9script()
+  call writefile(["1#1\tXfile\t2;\"\ti"], 'Xtags', 'D')
+  call writefile(['f', 'foobar'], 'Xfile', 'D')
+  let list =<< trim END
+  vim9script
+  command! Tag call Tag()
+  def Tag(): void
+    exe "tag 1#1"
+  enddef
+  END
+  call writefile(list, 'Xtags.vim', 'D')
+
+  setlocal tags=Xtags
+  so Xtags.vim
+  :Tag
+  call assert_equal('Xfile', bufname('%'))
+  call assert_equal(2, line('.'))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -3714,6 +3714,7 @@ jumpto_tag(
 #endif
     size_t	len;
     char_u	*lbuf;
+    int		isdigit = FALSE;
 
     if (postponed_split == 0 && !check_can_set_curbuf_forceit(forceit))
 	return FAIL;
@@ -3725,7 +3726,7 @@ jumpto_tag(
     if (lbuf != NULL)
 	mch_memmove(lbuf, lbuf_arg, len);
 
-    pbuf = alloc(LSIZE);
+    pbuf = alloc_clear(LSIZE);
 
     // parse the match line into the tagp structure
     if (pbuf == NULL || lbuf == NULL || parse_match(lbuf, &tagp) == FAIL)
@@ -3740,14 +3741,21 @@ jumpto_tag(
 
     // copy the command to pbuf[], remove trailing CR/NL
     str = tagp.command;
-    for (pbuf_end = pbuf; *str && *str != '\n' && *str != '\r'; )
+    if (VIM_ISDIGIT(*str))
+    {
+	// need to inject a ':' for a proper Vim9 :nr command
+	isdigit = TRUE;
+	pbuf[0] = ':';
+    }
+    for (pbuf_end = pbuf + isdigit;
+	    *str && *str != '\n' && *str != '\r'; )
     {
 #ifdef FEAT_EMACS_TAGS
 	if (tagp.is_etag && *str == ',')// stop at ',' after line number
 	    break;
 #endif
 	*pbuf_end++ = *str++;
-	if (pbuf_end - pbuf + 1 >= LSIZE)
+	if (pbuf_end - pbuf + 1 + isdigit >= LSIZE)
 	    break;
     }
     *pbuf_end = NUL;
@@ -3760,6 +3768,9 @@ jumpto_tag(
 	 * Remove the "<Tab>fieldname:value" stuff; we don't need it here.
 	 */
 	str = pbuf;
+	// skip over the ':'
+	if (isdigit)
+	    str++;
 	if (find_extra(&str) == OK)
 	{
 	    pbuf_end = str;
