@@ -9103,11 +9103,17 @@ ex_mark(exarg_T *eap)
 	return;
     }
 
+    if (VIM_ISDIGIT(eap->arg[0]))	// viminfo write marks only
+    {
+	semsg(_(e_invalid_argument_str), eap->arg);
+	return;
+    }
+
     pos = curwin->w_cursor;		// save curwin->w_cursor
     curwin->w_cursor.lnum = eap->line2;
     beginline(BL_WHITE | BL_FIX);
     if (setmark(*eap->arg) == FAIL)	// set mark
-	emsg(_(e_argument_must_be_letter_or_forward_backward_quote));
+	semsg(_(e_invalid_argument_str), eap->arg);
     curwin->w_cursor = pos;		// restore curwin->w_cursor
 }
 
