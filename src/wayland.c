@@ -48,7 +48,10 @@ typedef struct {
     struct wl_compositor *wl_compositor;
 
     struct xdg_wm_base *xdg_wm_base;
-#endif
+
+    struct zwp_primary_selection_device_manager_v1
+	*zwp_primary_selection_device_manager_v1;
+# endif
 } vwl_global_objects_T;
 
 // Struct wrapper for wayland display and registry
@@ -94,7 +97,7 @@ typedef enum {
     VWL_DATA_PROTOCOL_EXT,
     VWL_DATA_PROTOCOL_WLR,
     VWL_DATA_PROTOCOL_CORE,
-    VWL_DATA_PROTOCOL_PRIMARY,	    // To be implemented
+    VWL_DATA_PROTOCOL_PRIMARY
 } vwl_data_protocol_T;
 
 // DATA RELATED OBJECT WRAPPERS
@@ -221,7 +224,7 @@ static struct wl_keyboard * vwl_seat_get_keyboard(vwl_seat_T *seat);
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
 
-static int vwl_core_data_protocol_available(void);
+static int vwl_focus_stealing_available(void);
 static void vwl_xdg_surface_listener_configure(void *data,
 	struct xdg_surface *surface, uint32_t serial);
 
@@ -608,6 +611,7 @@ vwl_disconnect_display(void)
     destroy_gobject(wl_shm)
     destroy_gobject(wl_compositor)
     destroy_gobject(xdg_wm_base)
+    destroy_gobject(zwp_primary_selection_device_manager_v1)
 
     for (int i = 0; i < vwl_seats.ga_len; i++)
 	vwl_destroy_seat(&((vwl_seat_T *)vwl_seats.ga_data)[i]);
@@ -689,7 +693,7 @@ vwl_listen_to_registry(void)
 
 /*
  * Callback for global event, for each global interface the compositor supports.
- * Keep in sync with global remove callback and vwl_disconnect_display().
+ * Keep in sync with vwl_disconnect_display().
  */
     static void
 vwl_registry_listener_global(
@@ -728,6 +732,10 @@ vwl_registry_listener_global(
 
     else if (STRCMP(interface, xdg_wm_base_interface.name) == 0)
 	set_gobject(xdg_wm_base, 1)
+
+    else if (STRCMP(interface,
+		zwp_primary_selection_device_manager_v1_interface.name) == 0)
+	set_gobject(zwp_primary_selection_device_manager_v1, 1)
 #endif
 
     if (chosen_interface == NULL || version < min_version)
@@ -740,10 +748,8 @@ vwl_registry_listener_global(
 	// Add seat to vwl_seats array, as we can have multiple seats.
 	vwl_add_seat(proxy);
     else
-    {
 	// Hold proxy & name in the vwl_gobject struct
 	*object_member = proxy;
-    }
 }
 
 /*
@@ -934,13 +940,12 @@ wayland_client_update(void)
 #ifdef FEAT_WAYLAND_CLIPBOARD
 
 /*
- * If the core data protocol and focus stealing method is available.
+ * If globals required for focus stealing method is available.
  */
     static int
-vwl_core_data_protocol_available(void)
+vwl_focus_stealing_available(void)
 {
     return (p_wst || p_wtf) && vwl_gobjects.wl_compositor != NULL &&
-	vwl_gobjects.wl_data_device_manager != NULL &&
 	vwl_gobjects.wl_shm != NULL &&
 	vwl_gobjects.xdg_wm_base != NULL;
 }
@@ -1378,7 +1383,9 @@ VWL_FUNC_DATA_DEVICE_DATA_OFFER(
 	ext_data_control_device_v1, ext_data_control_offer_v1)
 VWL_FUNC_DATA_DEVICE_DATA_OFFER(
 	zwlr_data_control_device_v1, zwlr_data_control_offer_v1)
-VWL_FUNC_DATA_DEVICE_DATA_OFFER( wl_data_device, wl_data_offer)
+VWL_FUNC_DATA_DEVICE_DATA_OFFER(wl_data_device, wl_data_offer)
+VWL_FUNC_DATA_DEVICE_DATA_OFFER(
+	zwp_primary_selection_device_v1, zwp_primary_selection_offer_v1)
 
 VWL_FUNC_DATA_DEVICE_SELECTION(
 	ext_data_control_device_v1, ext_data_control_offer_v1,
@@ -1396,6 +1403,9 @@ VWL_FUNC_DATA_DEVICE_SELECTION(
 VWL_FUNC_DATA_DEVICE_SELECTION(
 	zwlr_data_control_device_v1, zwlr_data_control_offer_v1,
 	primary_selection, WAYLAND_SELECTION_PRIMARY, VWL_DATA_PROTOCOL_WLR)
+VWL_FUNC_DATA_DEVICE_SELECTION(
+	zwp_primary_selection_device_v1, zwp_primary_selection_offer_v1,
+	primary_selection, WAYLAND_SELECTION_PRIMARY, VWL_DATA_PROTOCOL_PRIMARY)
 
 VWL_FUNC_DATA_DEVICE_FINISHED(ext_data_control_device_v1)
 VWL_FUNC_DATA_DEVICE_FINISHED(zwlr_data_control_device_v1)
@@ -1403,16 +1413,21 @@ VWL_FUNC_DATA_DEVICE_FINISHED(zwlr_data_control_device_v1)
 VWL_FUNC_DATA_SOURCE_SEND(ext_data_control_source_v1)
 VWL_FUNC_DATA_SOURCE_SEND(zwlr_data_control_source_v1)
 VWL_FUNC_DATA_SOURCE_SEND(wl_data_source)
+VWL_FUNC_DATA_SOURCE_SEND(zwp_primary_selection_source_v1)
 
 VWL_FUNC_DATA_SOURCE_CANCELLED(ext_data_control_source_v1)
 VWL_FUNC_DATA_SOURCE_CANCELLED(zwlr_data_control_source_v1)
 VWL_FUNC_DATA_SOURCE_CANCELLED(wl_data_source)
+VWL_FUNC_DATA_SOURCE_CANCELLED(zwp_primary_selection_source_v1)
 
 VWL_FUNC_DATA_OFFER_OFFER(ext_data_control_offer_v1)
 VWL_FUNC_DATA_OFFER_OFFER(zwlr_data_control_offer_v1)
 VWL_FUNC_DATA_OFFER_OFFER(wl_data_offer)
+VWL_FUNC_DATA_OFFER_OFFER(zwp_primary_selection_offer_v1)
 
 // Listener handlers
+
+// DATA DEVICES
 struct zwlr_data_control_device_v1_listener
 zwlr_data_control_device_v1_listener = {
     .data_offer = zwlr_data_control_device_v1_listener_data_offer,
@@ -1434,6 +1449,13 @@ struct wl_data_device_listener wl_data_device_listener = {
     .selection = wl_data_device_listener_selection,
 };
 
+struct zwp_primary_selection_device_v1_listener
+zwp_primary_selection_device_v1_listener = {
+    .selection = zwp_primary_selection_device_v1_listener_primary_selection,
+    .data_offer = zwp_primary_selection_device_v1_listener_data_offer
+};
+
+// DATA SOURCES
 struct zwlr_data_control_source_v1_listener
 zwlr_data_control_source_v1_listener = {
     .send = zwlr_data_control_source_v1_listener_send,
@@ -1451,6 +1473,13 @@ struct wl_data_source_listener wl_data_source_listener = {
     .cancelled = wl_data_source_listener_cancelled
 };
 
+struct zwp_primary_selection_source_v1_listener
+zwp_primary_selection_source_v1_listener = {
+    .send = zwp_primary_selection_source_v1_listener_send,
+    .cancelled = zwp_primary_selection_source_v1_listener_cancelled,
+};
+
+// OFFERS
 struct zwlr_data_control_offer_v1_listener
 zwlr_data_control_offer_v1_listener = {
     .offer = zwlr_data_control_offer_v1_listener_offer
@@ -1463,6 +1492,11 @@ ext_data_control_offer_v1_listener = {
 
 struct wl_data_offer_listener wl_data_offer_listener = {
     .offer = wl_data_offer_listener_offer
+};
+
+struct zwp_primary_selection_offer_v1_listener
+zwp_primary_selection_offer_v1_listener = {
+    .offer = zwp_primary_selection_offer_v1_listener_offer
 };
 
 // `type` is also used as the user data
@@ -1484,6 +1518,10 @@ struct wl_data_offer_listener wl_data_offer_listener = {
 	case VWL_DATA_PROTOCOL_CORE: \
 	    wl_data_##type##_add_listener(type->proxy, \
 		    &wl_data_##type##_listener, type); \
+	    break; \
+	case VWL_DATA_PROTOCOL_PRIMARY: \
+	    zwp_primary_selection_##type##_v1_add_listener(type->proxy, \
+		    &zwp_primary_selection_##type##_v1_listener, type); \
 	    break; \
 	default: \
 	    break; \
@@ -1552,6 +1590,10 @@ vwl_data_device_set_selection(
 		ext_data_control_device_v1_set_primary_selection(
 			device->proxy, source->proxy);
 		break;
+	    case VWL_DATA_PROTOCOL_PRIMARY:
+		zwp_primary_selection_device_v1_set_selection(
+			device->proxy, source->proxy, serial);
+		break;
 	    default:
 		break;
 	}
@@ -1575,6 +1617,9 @@ vwl_data_offer_receive(vwl_data_offer_T *offer, const char *mime_type, int fd)
 	    break;
 	case VWL_DATA_PROTOCOL_CORE:
 	    wl_data_offer_receive(offer->proxy, mime_type, fd);
+	    break;
+	case VWL_DATA_PROTOCOL_PRIMARY:
+	    zwp_primary_selection_offer_v1_receive(offer->proxy, mime_type, fd);
 	    break;
 	default:
 	    break;
@@ -1600,9 +1645,9 @@ vwl_get_data_device_manager(
 {
     // Prioritize data control protocols first then try using the focus steal
     // method with the core protocol data objects. if 'wlstealf' is set then
-    // only try the core protocol.
+    // only try doing focus stealing.
     if (p_wtf)
-	goto core_protocol;
+	goto focus_steal;
 
     // Ext data control protocol supports both selections, try it first
     if (vwl_gobjects.ext_data_control_manager_v1 != NULL)
@@ -1618,12 +1663,17 @@ vwl_get_data_device_manager(
 	    set_manager(zwlr_data_control_manager_v1, VWL_DATA_PROTOCOL_WLR, FALSE)
     }
 
-core_protocol:
-    if (vwl_core_data_protocol_available())
+focus_steal:
+    if (vwl_focus_stealing_available())
     {
 	if (vwl_gobjects.wl_data_device_manager != NULL
 		&& selection == WAYLAND_SELECTION_REGULAR)
 	    set_manager(wl_data_device_manager, VWL_DATA_PROTOCOL_CORE, TRUE)
+
+	else if (vwl_gobjects.zwp_primary_selection_device_manager_v1 != NULL
+		&& selection == WAYLAND_SELECTION_PRIMARY)
+	    set_manager(zwp_primary_selection_device_manager_v1,
+		    VWL_DATA_PROTOCOL_PRIMARY, TRUE)
     }
 
     manager->protocol = VWL_DATA_PROTOCOL_NONE;
@@ -1656,6 +1706,10 @@ vwl_get_data_device(
 	    device->proxy = wl_data_device_manager_get_data_device(
 		    manager->proxy, seat->proxy);
 	    break;
+	case VWL_DATA_PROTOCOL_PRIMARY:
+	    device->proxy = zwp_primary_selection_device_manager_v1_get_device(
+		    manager->proxy, seat->proxy);
+	    break;
 	default:
 	    device->protocol = VWL_DATA_PROTOCOL_NONE;
 	    return;
@@ -1685,6 +1739,11 @@ vwl_create_data_source(
 	    source->proxy =
 		wl_data_device_manager_create_data_source(manager->proxy);
 	    break;
+	case VWL_DATA_PROTOCOL_PRIMARY:
+	    source->proxy =
+		zwp_primary_selection_device_manager_v1_create_source(
+			manager->proxy);
+	    break;
 	default:
 	    source->protocol = VWL_DATA_PROTOCOL_NONE;
 	    return;
@@ -1708,6 +1767,9 @@ vwl_data_source_offer(vwl_data_source_T *source, const char *mime_type)
 	    break;
 	case VWL_DATA_PROTOCOL_CORE:
 	    wl_data_source_offer(source->proxy, mime_type);
+	    break;
+	case VWL_DATA_PROTOCOL_PRIMARY:
+	    zwp_primary_selection_source_v1_offer(source->proxy, mime_type);
 	    break;
 	default:
 	    break;
@@ -1756,7 +1818,7 @@ wayland_cb_init(const char *seat)
 	    WAYLAND_SELECTION_PRIMARY);
 
     // Initialize shm pool and buffer if core data protocol is available
-    if (vwl_core_data_protocol_available() &&
+    if (vwl_focus_stealing_available() &&
 	    (vwl_clipboard.regular.requires_focus ||
 	     vwl_clipboard.primary.requires_focus))
 	vwl_clipboard.fs_buffer = vwl_init_buffer_store(1, 1);
