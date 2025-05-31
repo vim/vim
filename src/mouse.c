@@ -479,9 +479,11 @@ do_mouse(
 
     start_visual.lnum = 0;
 
-    // Check for clicking in the tab page line.
+    // Check for clicking in the tab page panel.
 #if defined(FEAT_TABPANEL)
-    if (mouse_col < TPL_LCOL(NULL))
+    if (mouse_row < firstwin->w_winrow + topframe->fr_height
+	&& (mouse_col < firstwin->w_wincol
+		|| mouse_col >= firstwin->w_wincol + topframe->fr_width))
     {
 	if (is_drag)
 	{
@@ -499,7 +501,7 @@ do_mouse(
 # ifdef FEAT_CMDWIN
 		&& cmdwin_type == 0
 # endif
-		&& mouse_col < Columns)
+		)
 	{
 	    in_tabpanel = TRUE;
 	    c1 = get_tabpagenr_on_tabpanel();
@@ -568,7 +570,8 @@ do_mouse(
 	    }
 
 	    // click in a tab selects that tab page
-	    if (is_click && cmdwin_type == 0 && mouse_col < Columns)
+	    if (is_click && cmdwin_type == 0
+		    && mouse_col < firstwin->w_wincol + topframe->fr_width)
 	    {
 		in_tab_line = TRUE;
 		c1 = TabPageIdxs[mouse_col];
@@ -1725,10 +1728,6 @@ jump_to_mouse(
     int		mouse_char = ' ';
 #endif
 
-    col -= TPL_LCOL(NULL);
-    if (col < 0)
-	return IN_TABPANEL;
-
     mouse_past_bottom = FALSE;
     mouse_past_eol = FALSE;
 
@@ -1813,7 +1812,7 @@ retnomove:
 
     if (!(flags & MOUSE_FOCUS))
     {
-	if (row < 0 || col + TPL_LCOL(NULL) < 0) // check if it makes sense
+	if (row < 0 || col < 0) // check if it makes sense
 	    return IN_UNKNOWN;
 
 	// find the window where the row is in and adjust "row" and "col" to be
@@ -3220,7 +3219,14 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 #endif
 
     fp = topframe;
+
+    if (*colp < firstwin->w_wincol
+	    || *colp >= firstwin->w_wincol + fp->fr_width
+	    || *rowp < firstwin->w_winrow)
+	return NULL;
+
     *rowp -= firstwin->w_winrow;
+    *colp -= firstwin->w_wincol;
     for (;;)
     {
 	if (fp->fr_layout == FR_LEAF)
@@ -3333,9 +3339,6 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    winid = wp->w_id;
 	    winrow = row + 1;
 	    wincol = col + 1;
-	    wincol -= TPL_LCOL(NULL);
-	    if (wincol < 0)
-		wincol = 0;
 	    row -= top_off;
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
