@@ -1260,6 +1260,9 @@ vwl_fs_keyboard_listener_repeat_info(
 	case VWL_DATA_PROTOCOL_CORE: \
 	    wl_data_##type##_destroy(type->proxy); \
 	    break; \
+	case VWL_DATA_PROTOCOL_PRIMARY: \
+	    zwp_primary_selection_##type##_v1_destroy(type->proxy); \
+	    break; \
 	default: \
 	    break; \
     } \

@@ -3003,7 +3003,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"wltimeoutlen", "wtm", P_NUM|P_VI_DEF,
-#ifdef FEAT_WAYLAND_CLIPBOARD
+#ifdef FEAT_WAYLAND
 			    (char_u *)&p_wtm, PV_NONE, did_set_wltimeoutlen, NULL,
 			    {(char_u *)3000L, (char_u *)0L}
 #else
