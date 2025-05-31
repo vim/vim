@@ -1137,6 +1137,7 @@ EXTERN long	p_wiw;		// 'winwidth'
 EXTERN char_u	*p_wse;		// 'wlseat'
 # ifdef FEAT_WAYLAND_CLIPBOARD
 EXTERN int	p_wst;		// 'wlsteal'
+EXTERN int	p_wtf;		// 'wlstealf'
 # endif
 EXTERN long     p_wtm;		// 'wltimeoutlen'
 #endif
