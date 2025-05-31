@@ -1020,6 +1020,8 @@ Short explanation of each option:		*option-list*
 'winptydll'		    name of the winpty dynamic library
 'winwidth'	  'wiw'     minimal number of columns for current window
 'wlseat'	  'wse'     the wayland seat to use
+'wlsteal'	  'wst'     allow focus stealing functionality for wayland
+'wlstealf'	  'wtf'     forcibly make Vim use focus stealing functionality
 'wltimeoutlen'    'wtm'     timeout to use when polling in wayland
 'wrap'			    long lines wrap and continue on the next line
 'wrapmargin'	  'wm'	    chars from the right where wrapping starts

@@ -4725,7 +4725,7 @@ did_set_winwidth(optset_T *args UNUSED)
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
 /*
- * Process the new 'wlsteal' option value.
+ * Process the new 'wlsteal' or 'wlstealf' option value.
  */
     char *
 did_set_wlsteal(optset_T *args UNUSED)

@@ -805,6 +805,8 @@ $quote	eval.txt	/*$quote*
 'nowinfixheight'	options.txt	/*'nowinfixheight'*
 'nowinfixwidth'	options.txt	/*'nowinfixwidth'*
 'nowiv'	options.txt	/*'nowiv'*
+'nowlsteal'	options.txt	/*'nowlsteal'*
+'nowlstealf'	options.txt	/*'nowlstealf'*
 'nowmnu'	options.txt	/*'nowmnu'*
 'nowrap'	options.txt	/*'nowrap'*
 'nowrapscan'	options.txt	/*'nowrapscan'*
@@ -812,6 +814,8 @@ $quote	eval.txt	/*$quote*
 'nowriteany'	options.txt	/*'nowriteany'*
 'nowritebackup'	options.txt	/*'nowritebackup'*
 'nows'	options.txt	/*'nows'*
+'nowst'	options.txt	/*'nowst'*
+'nowtf'	options.txt	/*'nowtf'*
 'noxtermcodes'	options.txt	/*'noxtermcodes'*
 'nrformats'	options.txt	/*'nrformats'*
 'nu'	options.txt	/*'nu'*
@@ -1336,6 +1340,8 @@ $quote	eval.txt	/*$quote*
 'wiv'	options.txt	/*'wiv'*
 'wiw'	options.txt	/*'wiw'*
 'wlseat'	options.txt	/*'wlseat'*
+'wlsteal'	options.txt	/*'wlsteal'*
+'wlstealf'	options.txt	/*'wlstealf'*
 'wltimeoutlen'	options.txt	/*'wltimeoutlen'*
 'wm'	options.txt	/*'wm'*
 'wmh'	options.txt	/*'wmh'*
@@ -1351,6 +1357,8 @@ $quote	eval.txt	/*$quote*
 'writedelay'	options.txt	/*'writedelay'*
 'ws'	options.txt	/*'ws'*
 'wse'	options.txt	/*'wse'*
+'wst'	options.txt	/*'wst'*
+'wtf'	options.txt	/*'wtf'*
 'wtm'	options.txt	/*'wtm'*
 'ww'	options.txt	/*'ww'*
 'xtermcodes'	options.txt	/*'xtermcodes'*
@@ -11568,9 +11576,9 @@ warningmsg-variable	eval.txt	/*warningmsg-variable*
 wayland	wayland.txt	/*wayland*
 wayland-and-x11	wayland.txt	/*wayland-and-x11*
 wayland-connection	wayland.txt	/*wayland-connection*
+wayland-focus-steal	wayland.txt	/*wayland-focus-steal*
 wayland-gnome	wayland.txt	/*wayland-gnome*
 wayland-gui	wayland.txt	/*wayland-gui*
-wayland-no-data-control	wayland.txt	/*wayland-no-data-control*
 wayland-primary-selection	wayland.txt	/*wayland-primary-selection*
 wayland-seat	wayland.txt	/*wayland-seat*
 wayland-selections	wayland.txt	/*wayland-selections*

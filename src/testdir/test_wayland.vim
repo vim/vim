@@ -488,17 +488,22 @@ func Test_wayland_focus_steal()
   set cpm=wayland
   set wlstealf
 
-  call system('wl-copy test')
+  call system('wl-copy regular')
 
-  call assert_equal('test', getreg('+'))
+  call assert_equal('regular', getreg('+'))
 
-  call system('wl-copy twice')
+  call system('wl-copy -p primary')
 
-  call assert_equal('twice', getreg('+'))
+  call assert_equal('primary', getreg('*'))
 
-  call setreg('+', 'VIM')
+  call setreg('+', 'REGULAR')
 
-  call assert_equal('VIM', system('wl-paste -n'))
+  call assert_equal('REGULAR', system('wl-paste -n'))
+
+  call setreg('*', 'PRIMARY')
+
+  call assert_equal('PRIMARY', system('wl-paste -p -n'))
+
 
   set nowlstealf
 endfunc
