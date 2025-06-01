@@ -110,16 +110,18 @@ access the clipboard, by creating a temporary transparent top-level surface.
 This is by default disabled and can be enabled via the 'wlsteal' option, or
 the 'wlstealf' option if you want to forcibly enable it (such as when a data
 control protocol is available).  Moreover, a seat that has a keyboard is also
-required, see 'wlseat'.  Note that this method can have several side effects
-from the result of focus stealing.  For example, if you have a taskbar that
-shows currently opened apps in your desktop environment, then when Vim
-attempts to steal focus, it may "flicker," as if a window was opened then
-immediately closed after.  Additionally, if you are in fullscreen mode, this
-focus stealing won't work, because the created surface won't ever gain focus.
-If this happens, then Vim may temporarily freeze up to 'wltimeoutlen' * 2
-milliseconds, while waiting for the surface to gain focus, which will never
-happen.  The reason it is multiplied by two is because it also includes the
-worst possible case scenario when polling the Wayland file descriptor, however
-it usually is just 'wltimeoutlen' milliseconds alone instead.
+required, see 'wlseat', and the xdg-shell protocol must be available.
+
+Note that this method can have several side effects from the result of focus
+stealing.  For example, if you have a taskbar that shows currently opened apps
+in your desktop environment, then when Vim attempts to steal focus, it may
+"flicker," as if a window was opened then immediately closed after.
+Additionally, if you are in fullscreen mode, this focus stealing won't work,
+because the created surface won't ever gain focus.  If this happens, then Vim
+may temporarily freeze up to 'wltimeoutlen' * 2 milliseconds, while waiting
+for the surface to gain focus, which will never happen.  The reason it is
+multiplied by two is because it also includes the worst possible case scenario
+when polling the Wayland file descriptor, however it usually is just
+'wltimeoutlen' milliseconds alone instead.
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:js
