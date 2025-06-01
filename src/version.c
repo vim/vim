@@ -710,6 +710,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    1425,
+/**/
     1424,
 /**/
     1423,
@@ -4110,7 +4112,7 @@ intro_message(
 
     // start displaying the message lines after half of the blank lines
     row = blanklines / 2;
-    if ((row >= 2 && COLUMNS_WITHOUT_TPL() >= 50) || colon)
+    if ((row >= 2 && topframe->fr_width >= 50) || colon)
     {
 	for (i = 0; i < (int)ARRAY_LENGTH(lines); ++i)
 	{
@@ -4193,7 +4195,7 @@ do_intro_line(
 	}
 	col += (int)STRLEN(vers);
     }
-    col = (COLUMNS_WITHOUT_TPL() - col) / 2;
+    col = (topframe->fr_width - col) / 2;
     if (col < 0)
 	col = 0;
 
@@ -4212,14 +4214,14 @@ do_intro_line(
 	    else
 		clen += byte2cells(p[l]);
 	}
-	screen_puts_len(p, l, row, col + TPL_LCOL(NULL),
+	screen_puts_len(p, l, row, col + firstwin->w_wincol,
 		*p == '<' ? HL_ATTR(HLF_8) : attr);
 	col += clen;
     }
 
     // Add the version number to the version line.
     if (add_version)
-	screen_puts(vers, row, col + TPL_LCOL(NULL), 0);
+	screen_puts(vers, row, col + firstwin->w_wincol, 0);
 }
 
 /*

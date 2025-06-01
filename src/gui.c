@@ -4907,8 +4907,6 @@ xy2win(int x, int y, mouse_find_T popup)
     row = Y_2_ROW(y);
     col = X_2_COL(x);
 
-    col -= TPL_LCOL(NULL);
-
     if (row < 0 || col < 0)		// before first window
 	return NULL;
     wp = mouse_find_win(&row, &col, popup);
@@ -5378,8 +5376,6 @@ gui_wingoto_xy(int x, int y)
     int		row = Y_2_ROW(y);
     int		col = X_2_COL(x);
     win_T	*wp;
-
-    col -= TPL_LCOL(NULL);
 
     if (row < 0 || col < 0)
 	return;

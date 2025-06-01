@@ -3630,7 +3630,17 @@ win_new_shellsize(void)
     if (old_Columns != Columns)
     {
 	old_Columns = Columns;
-	shell_new_columns();	// update window sizes
+
+	tabpage_T *save_curtab = curtab;
+	tabpage_T *tp;
+	FOR_ALL_TABPAGES(tp)
+	{
+	    unuse_tabpage(curtab);
+	    use_tabpage(tp);
+	    shell_new_columns();
+	}
+	unuse_tabpage(curtab);
+	use_tabpage(save_curtab);
     }
 }
 
@@ -4454,16 +4464,9 @@ scroll_region_set(win_T *wp, int off)
 {
     OUT_STR(tgoto((char *)T_CS, W_WINROW(wp) + wp->w_height - 1,
 							 W_WINROW(wp) + off));
-#if defined(FEAT_TABPANEL)
-    if (*T_CSV != NUL)
-	OUT_STR(tgoto((char *)T_CSV,
-		wp->w_wincol + wp->w_width - 1 + TPL_LCOL(NULL),
-		wp->w_wincol + TPL_LCOL(NULL)));
-#else
-    if (*T_CSV != NUL && wp->w_width != Columns)
+    if (*T_CSV != NUL && wp->w_width != topframe->fr_width)
 	OUT_STR(tgoto((char *)T_CSV, wp->w_wincol + wp->w_width - 1,
 							       wp->w_wincol));
-#endif
     screen_start();		    // don't know where cursor is now
 }
 
@@ -4475,7 +4478,7 @@ scroll_region_reset(void)
 {
     OUT_STR(tgoto((char *)T_CS, (int)Rows - 1, 0));
     if (*T_CSV != NUL)
-	OUT_STR(tgoto((char *)T_CSV, COLUMNS_WITHOUT_TPL() - 1, 0));
+	OUT_STR(tgoto((char *)T_CSV, topframe->fr_width - 1, 0));
     screen_start();		    // don't know where cursor is now
 }
 
