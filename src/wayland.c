@@ -2350,6 +2350,10 @@ wayland_set_display(const char *display)
 	// after.
 	goto exit;
 
+    if (display == NULL)
+	// $WAYLAND_DISPLAY is not set
+	display = "";
+
     // Leave unchanged if display is empty (but not NULL)
     if (STRCMP(display, "") != 0)
     {
