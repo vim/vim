@@ -1446,18 +1446,20 @@ trigger_complete_changed_event(int cur)
  * becomes inconsistent with compl_first_match (list) after former is sorted by
  * fuzzy score. The two structures end up in different orders.
  * Ideally, compl_first_match list should have been sorted instead.
+ *
+ * Returns recalculated index of shown match.
  */
-    static void
-trim_compl_match_array(void)
+    static int
+trim_compl_match_array(int shown_match_idx)
 {
     int		i, src_idx, limit, new_size = 0, *match_counts = NULL;
     pumitem_T	*trimmed = NULL;
-    int		trimmed_idx = 0;
+    int		trimmed_idx = 0, remove_count = 0;
 
     // Count current matches per source.
     match_counts = ALLOC_CLEAR_MULT(int, cpt_sources_count);
     if (match_counts == NULL)
-	return;
+	return shown_match_idx;
     for (i = 0; i < compl_match_arraysize; i++)
     {
 	src_idx = compl_match_array[i].pum_cpt_source_idx;
@@ -1492,6 +1494,8 @@ trim_compl_match_array(void)
 		trimmed[trimmed_idx++] = compl_match_array[i];
 		match_counts[src_idx]++;
 	    }
+	    else if (i < shown_match_idx)
+		remove_count++;
 	}
 	else
 	    trimmed[trimmed_idx++] = compl_match_array[i];
@@ -1502,6 +1506,7 @@ trim_compl_match_array(void)
 
 theend:
     vim_free(match_counts);
+    return shown_match_idx - remove_count;
 }
 
 /*
@@ -1713,8 +1718,8 @@ ins_compl_build_pum(void)
 	shown_match_ok = TRUE;
     }
 
-    if (is_forward && fuzzy_sort && cpt_sources_array != NULL)
-	trim_compl_match_array(); // Truncate by max_matches in 'cpt'
+    if (fuzzy_sort && cpt_sources_array != NULL)
+	cur = trim_compl_match_array(cur); // Truncate by max_matches in 'cpt'
 
     if (!shown_match_ok)    // no displayed match at all
 	cur = -1;
