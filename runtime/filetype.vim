@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
-" Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 May 02
+" Maintainer:		The Vim Project <https://github.com/vim/vim>
+" Last Change:		2025 Jun 03
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -600,7 +600,6 @@ endif
 
 " Execline (s6) scripts
 au BufNewFile,BufRead *s6*/\(up\|down\|run\|finish\)    setf execline
-au BufNewFile,BufRead s6-*                              setf execline
 
 " Fontconfig config files
 au BufNewFile,BufRead fonts.conf			setf xml
@@ -1585,9 +1584,6 @@ au BufNewFile,BufRead *.mmd,*.mmdc,*.mermaid	setf mermaid
 au BufNewFile,BufRead meson.build,meson.options,meson_options.txt setf meson
 au BufNewFile,BufRead *.wrap			setf dosini
 
-" Messages (logs mostly)
-au BufNewFile,BufRead */log/{auth,cron,daemon,debug,kern,lpr,mail,messages,news/news,syslog,user}{,.log,.err,.info,.warn,.crit,.notice}{,.[0-9]*,-[0-9]*} setf messages
-
 " Metafont
 au BufNewFile,BufRead *.mf			setf mf
 
@@ -1710,7 +1706,7 @@ au BufNewFile,BufRead .netrc			setf netrc
 au BufNewFile,BufRead */neofetch/config.conf	setf sh
 
 " Nginx
-au BufNewFile,BufRead *.nginx,nginx*.conf,*nginx.conf,*/etc/nginx/*,*/usr/local/nginx/conf/*,*/nginx/*.conf			setf nginx
+au BufNewFile,BufRead *.nginx,nginx*.conf,*nginx.conf,*/nginx/*.conf	setf nginx
 
 " Nim file
 au BufNewFile,BufRead *.nim,*.nims,*.nimble	setf nim
@@ -1794,7 +1790,7 @@ au BufNewFile,BufRead opam,*.opam,*.opam.template,opam.locked,*.opam.locked setf
 au BufNewFile,BufRead .alsoftrc,alsoft.conf,alsoft.ini,alsoftrc.sample setf dosini
 
 " OpenFOAM
-au BufNewFile,BufRead [a-zA-Z0-9]*Dict\(.*\)\=,[a-zA-Z]*Properties\(.*\)\=,*Transport\(.*\),fvSchemes,fvSolution,fvConstrains,fvModels,*/constant/g,*/0\(\.orig\)\=/* call dist#ft#FTfoam()
+au BufNewFile,BufRead fvSchemes,fvSolution,fvConstrains,fvModels,*/constant/g	call dist#ft#FTfoam()
 
 " OpenROAD
 au BufNewFile,BufRead *.or				setf openroad
@@ -1908,9 +1904,6 @@ au BufNewFile,BufRead *.pod			setf pod
 " Also .phpt for php tests.
 " Also .theme for Drupal theme files.
 au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp,*.phpt,*.theme	setf php
-
-" PHP config
-au BufNewFile,BufRead php.ini-*,php-fpm.conf*,www.conf*		setf dosini
 
 " Pike and Cmod
 au BufNewFile,BufRead *.pike,*.pmod		setf pike
@@ -3153,6 +3146,9 @@ au BufNewFile,BufRead Dockerfile.*,Containerfile.*	call s:StarSetf('dockerfile')
 " Dracula
 au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')
 
+" Execline (s6) scripts
+au BufNewFile,BufRead s6-*			call s:StarSetf('execline')
+
 " Fvwm
 au BufNewFile,BufRead */.fvwm/*			call s:StarSetf('fvwm')
 au BufNewFile,BufRead *fvwmrc*,*fvwm95*.hook
@@ -3211,6 +3207,10 @@ au BufNewFile,BufRead {neo,}mutt[[:alnum:]._-]\\\{6\}	setf mail
 
 au BufNewFile,BufRead reportbug-*		call s:StarSetf('mail')
 
+" Messages (logs mostly)
+au BufNewFile,BufRead */log/{auth,cron,daemon,debug,kern,lpr,mail,messages,news/news,syslog,user}{,.log,.err,.info,.warn,.crit,.notice}{,.[0-9]*,-[0-9]*}
+      \ 					call s:StarSetf('messages')
+
 " Modconf
 au BufNewFile,BufRead */etc/modutils/*
 	\ if executable(expand("<afile>")) != 1
@@ -3232,17 +3232,29 @@ au BufNewFile,BufRead neomuttrc*,Neomuttrc*		call s:StarSetf('neomuttrc')
 " Nfs
 au BufNewFile,BufRead nfs.conf,nfsmount.conf		setf dosini
 
+" Nginx
+au BufNewFile,BufRead */etc/nginx/*,*/usr/local/nginx/conf/*	call s:StarSetf('nginx')
+
 " Nroff macros
 au BufNewFile,BufRead tmac.*			call s:StarSetf('nroff')
 
 " OpenBSD hostname.if
 au BufNewFile,BufRead */etc/hostname.*		call s:StarSetf('config')
 
+" OpenFOAM
+au BufNewFile,BufRead [a-zA-Z0-9]*Dict{,.*},[a-zA-Z]*Properties{,.*},*Transport.*,*/0{,.orig}/*
+      \ if expand("<amatch>") !~ g:ft_ignore_pat
+      \|  call dist#ft#FTfoam()
+      \|endif
+
 " Pam conf
 au BufNewFile,BufRead */etc/pam.d/*		call s:StarSetf('pamconf')
 
 " Pandoc
 au BufNewFile,BufRead,BufFilePost *.pandoc,*.pdk,*.pd,*.pdc	setf pandoc
+
+" PHP config
+au BufNewFile,BufRead php.ini-*,php-fpm.conf*,www.conf*		call s:StarSetf('dosini')
 
 " Printcap and Termcap
 au BufNewFile,BufRead *printcap*
@@ -3285,7 +3297,7 @@ au BufNewFile,BufRead .tcshrc*	call dist#ft#SetFileTypeShell("tcsh")
 au BufNewFile,BufRead .login*,.cshrc*  call dist#ft#CSH()
 
 " tmux configuration with arbitrary extension
-au BufNewFile,BufRead {.,}tmux*.conf*		setf tmux
+au BufNewFile,BufRead {.,}tmux*.conf*		call s:StarSetf('tmux')
 
 " Universal Scene Description
 au BufNewFile,BufRead *.usda,*.usd		setf usd
