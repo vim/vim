@@ -2129,8 +2129,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	appending a caret ("^") followed by a {count} to the source flag.
 	For example: ".^9,w,u,t^5" limits matches from the current buffer
 	to 9 and from tags to 5.  Other sources remain unlimited.
-	Note: The match limit takes effect only during forward completion
-	(CTRL-N) and is ignored during backward completion (CTRL-P).
 
 						*'completefunc'* *'cfu'*
 'completefunc' 'cfu'	string	(default: empty)
