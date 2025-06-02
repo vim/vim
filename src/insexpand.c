@@ -6987,7 +6987,6 @@ is_cpt_func_refresh_always(void)
 /*
  * Make the completion list non-cyclic.
  */
-#ifdef FEAT_COMPL_FUNC
     static void
 ins_compl_make_linear(void)
 {
@@ -6999,7 +6998,6 @@ ins_compl_make_linear(void)
     m->cp_next = NULL;
     compl_first_match->cp_prev = NULL;
 }
-#endif
 
 /*
  * Remove the matches linked to the current completion source (as indicated by
