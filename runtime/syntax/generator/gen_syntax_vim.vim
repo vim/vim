@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 May 28
+" Last Change: 2025 Jun 01
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -318,6 +318,8 @@ function s:get_vim_command_type(cmd_name)
 		perl
 		perldo
 		popup
+		profdel
+		profile
 		public
 		python
 		pyfile

@@ -127,3 +127,9 @@ let Foo = {-> {-> #{
 		\ {-> execute("echo 'Handler called'", "")},
 		\ {'repeat': 3})
 
+
+" Issue https://github.com/vim/vim/pull/17420#issuecomment-2927798687
+" (string immediately after -> operator)
+
+let [func, _func_] = [{->"func"}(), 'func']
+
