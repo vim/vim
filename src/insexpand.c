@@ -1577,7 +1577,7 @@ ins_compl_build_pum(void)
 	if (cur_source != -1 && is_cpt_completion)
 	{
 	    match_count[cur_source]++;
-	    int max_matches = cpt_sources_array[cur_source].max_matches;
+	    int max_matches = cpt_sources_array[cur_source].cs_max_matches;
 	    if (max_matches > 0 && match_count[cur_source] > max_matches)
 		match_limit_exceeded = TRUE;
 	}
