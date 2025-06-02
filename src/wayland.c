@@ -299,34 +299,34 @@ static void vwl_on_focus_set_selection(void *data, uint32_t serial);
 
 static void wayland_set_display(const char *display);
 
-vwl_data_device_listener_T vwl_data_device_listener = {
+static vwl_data_device_listener_T vwl_data_device_listener = {
     .data_offer = vwl_data_device_listener_data_offer,
     .selection = vwl_data_device_listener_selection,
     .finished = vwl_data_device_listener_finished
 };
 
-vwl_data_source_listener_T vwl_data_source_listener = {
+static vwl_data_source_listener_T vwl_data_source_listener = {
     .send = vwl_data_source_listener_send,
     .cancelled = vwl_data_source_listener_cancelled
 };
 
-vwl_data_offer_listener_T vwl_data_offer_listener = {
+static vwl_data_offer_listener_T vwl_data_offer_listener = {
     .offer = vwl_data_offer_listener_offer
 };
 
-struct xdg_wm_base_listener vwl_xdg_wm_base_listener = {
+static struct xdg_wm_base_listener vwl_xdg_wm_base_listener = {
     .ping = vwl_xdg_wm_base_listener_ping
 };
 
-struct xdg_surface_listener vwl_xdg_surface_listener = {
+static struct xdg_surface_listener vwl_xdg_surface_listener = {
     .configure = vwl_xdg_surface_listener_configure
 };
 
-struct wl_buffer_listener vwl_cb_buffer_listener = {
+static struct wl_buffer_listener vwl_cb_buffer_listener = {
     .release = vwl_bs_buffer_listener_release
 };
 
-struct wl_keyboard_listener vwl_fs_keyboard_listener = {
+static struct wl_keyboard_listener vwl_fs_keyboard_listener = {
     .enter = vwl_fs_keyboard_listener_enter,
     .key = vwl_fs_keyboard_listener_key,
     .keymap = vwl_fs_keyboard_listener_keymap,
@@ -337,27 +337,27 @@ struct wl_keyboard_listener vwl_fs_keyboard_listener = {
 
 # endif // FEAT_WAYLAND_CLIPBOARD
 
-struct wl_callback_listener vwl_callback_listener = {
+static struct wl_callback_listener vwl_callback_listener = {
     .done = vwl_callback_done
 };
 
-struct wl_registry_listener vwl_registry_listener = {
+static struct wl_registry_listener vwl_registry_listener = {
     .global = vwl_registry_listener_global,
     .global_remove = vwl_registry_listener_global_remove
 };
 
-struct wl_seat_listener vwl_seat_listener = {
+static struct wl_seat_listener vwl_seat_listener = {
     .name = vwl_seat_listener_name,
     .capabilities = vwl_seat_listener_capabilities
 };
 
-vwl_display_T vwl_display;
-vwl_global_objects_T vwl_gobjects;
-garray_T vwl_seats;
+static vwl_display_T vwl_display;
+static vwl_global_objects_T vwl_gobjects;
+static garray_T vwl_seats;
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
 // Make sure to sync this with vwl_cb_uninit since it memsets this to zero
-vwl_clipboard_T vwl_clipboard = {
+static vwl_clipboard_T vwl_clipboard = {
     .regular.selection = WAYLAND_SELECTION_REGULAR,
     .primary.selection = WAYLAND_SELECTION_PRIMARY,
 };
