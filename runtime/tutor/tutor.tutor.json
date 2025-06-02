@@ -2,8 +2,8 @@
   "expect": {
 	"56": "This is text with **important information**",
 	"57": "This is text with **important information**",
-	"64": "Document '&variable'",
-	"65": "Document '&variable'",
+	"64": "TODO: Document '&variable'",
+	"65": "TODO: Document '&variable'",
 	"71": "# This is a level 1 header",
 	"72": "# This is a level 1 header",
 	"73": "### This is a level 3 header",
