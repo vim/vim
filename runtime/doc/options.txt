@@ -7795,19 +7795,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 				 *'smarttab'* *'sta'* *'nosmarttab'* *'nosta'*
 'smarttab' 'sta'	boolean	(default off)
 			global
-	When on, a <Tab> in front of a line inserts blanks according to
-	'shiftwidth'.  'tabstop' or 'softtabstop' is used in other places.  A
-	<BS> will delete a 'shiftwidth' worth of space at the start of the
-	line.
-	When off, a <Tab> always inserts blanks according to 'tabstop' or
-	'softtabstop'.  'shiftwidth' is only used for shifting text left or
-	right |shift-left-right|.
-	What gets inserted (a <Tab> or spaces) depends on the 'expandtab'
-	option.  Also see |ins-expandtab|.  When 'expandtab' is not set, the
-	number of spaces is minimized by using <Tab>s.
-	This option is reset when 'paste' is set and restored when 'paste' is
-	reset.
-	NOTE: This option is reset when 'compatible' is set.
+	When enabled, and the cursor is in Insert mode within an indent level
+	(i.e. when all the characters before the cursor are tabs or spaces),
+	Vim will behave as if 'softtabstop' were set with the value of
+	'shiftwidth'.  Outside of an indent, this option has no effect.
+	  This option is reset when 'compatible' is set; it is temporarily
+	disabled when 'paste' is enabled, and restored when 'paste' is turned
+	off.
+	Have a look at section |30.5| of the user guide for detailed
+	explanations on how Vim works with tabs and spaces.
 
 			*'smoothscroll'* *'sms'* *'nosmoothscroll'* *'nosms'*
 'smoothscroll' 'sms'	boolean  (default off)
