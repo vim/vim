@@ -4935,35 +4935,83 @@ get_register_completion(void)
 
 	reg = (yankreg_T *)reg_ptr;
 
-	for (int j = 0; j < reg->y_size; j++)
+	if (compl_status_adding())
 	{
-	    char_u *str = reg->y_array[j].string;
-	    if (str == NULL)
-		continue;
-
-	    char_u *p = str;
-	    while (*p != NUL)
+	    for (int j = 0; j < reg->y_size; j++)
 	    {
-		p = find_word_start(p);
-		if (*p == NUL)
-		    break;
+		char_u *str = reg->y_array[j].string;
+		if (str == NULL)
+		    continue;
 
-		char_u *word_end = find_word_end(p);
+		int str_len = (int)STRLEN(str);
+		if (str_len == 0)
+		    continue;
 
-		// Add the word to the completion list
-		int len = (int)(word_end - p);
-		if (len > 0 && (!compl_orig_text.string
-			    || (p_ic ? STRNICMP(p, compl_orig_text.string,
-						compl_orig_text.length) == 0
-				: STRNCMP(p, compl_orig_text.string,
-					    compl_orig_text.length) == 0)))
+		if (!compl_orig_text.string
+			|| (p_ic ? STRNICMP(str, compl_orig_text.string,
+					    compl_orig_text.length) == 0
+				: STRNCMP(str, compl_orig_text.string,
+					    compl_orig_text.length) == 0))
 		{
-		    if (ins_compl_add_infercase(p, len, p_ic, NULL,
-							dir, FALSE, 0) == OK)
+		    if (ins_compl_add_infercase(str, str_len, p_ic, NULL, dir, FALSE, 0) == OK)
 			dir = FORWARD;
 		}
+	    }
+	}
+	else
+	{
+	    for (int j = 0; j < reg->y_size; j++)
+	    {
+		char_u *str = reg->y_array[j].string;
+		if (str == NULL)
+		    continue;
 
-		p = word_end;
+		// Calculate the safe end of string to avoid null byte issues
+		char_u *str_end = str + STRLEN(str);
+		char_u *p = str;
+
+		// Safely iterate through the string
+		while (p < str_end && *p != NUL)
+		{
+		    char_u *old_p = p;
+		    p = find_word_start(p);
+		    if (p >= str_end || *p == NUL)
+			break;
+
+		    char_u *word_end = find_word_end(p);
+
+		    if (word_end <= p)
+		    {
+			if (has_mbyte)
+			    word_end = p + (*mb_ptr2len)(p);
+			else
+			    word_end = p + 1;
+		    }
+
+		    if (word_end > str_end)
+			word_end = str_end;
+
+		    int len = (int)(word_end - p);
+		    if (len > 0 && (!compl_orig_text.string
+				|| (p_ic ? STRNICMP(p, compl_orig_text.string,
+						    compl_orig_text.length) == 0
+					: STRNCMP(p, compl_orig_text.string,
+						    compl_orig_text.length) == 0)))
+		    {
+			if (ins_compl_add_infercase(p, len, p_ic, NULL,
+						    dir, FALSE, 0) == OK)
+			    dir = FORWARD;
+		    }
+
+		    p = word_end;
+
+		    if (p <= old_p)
+		    {
+			p = old_p + 1;
+			if (has_mbyte && p < str_end)
+			    p = old_p + (*mb_ptr2len)(old_p);
+		    }
+		}
 	    }
 	}
 
@@ -6379,7 +6427,7 @@ get_spell_compl_info(int startcol UNUSED, colnr_T curs_col UNUSED)
     static int
 compl_get_info(char_u *line, int startcol, colnr_T curs_col, int *line_invalid)
 {
-    if (ctrl_x_mode_normal()
+    if (ctrl_x_mode_normal() || ctrl_x_mode_register()
 	    || (ctrl_x_mode & CTRL_X_WANT_IDENT
 		&& !thesaurus_func_complete(ctrl_x_mode)))
     {
@@ -6409,10 +6457,6 @@ compl_get_info(char_u *line, int startcol, colnr_T curs_col, int *line_invalid)
 	if (get_spell_compl_info(startcol, curs_col) == FAIL)
 	    return FAIL;
 	*line_invalid = TRUE;	// "line" may have become invalid
-    }
-    else if (ctrl_x_mode_register())
-    {
-	return get_normal_compl_info(line, startcol, curs_col);
     }
     else
     {
@@ -6480,7 +6524,7 @@ ins_compl_continue_search(char_u *line)
 	if (compl_length < 1)
 	    compl_cont_status &= CONT_LOCAL;
     }
-    else if (ctrl_x_mode_line_or_eval())
+    else if (ctrl_x_mode_line_or_eval() || ctrl_x_mode_register())
 	compl_cont_status = CONT_ADDING | CONT_N_ADDS;
     else
 	compl_cont_status = 0;
