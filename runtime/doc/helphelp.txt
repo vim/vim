@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 May 31
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Jun 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -412,7 +412,7 @@ in such a modeline, that can have undesired consequences.
 
 TAGS
 
-To define a help tag, place the name between asterisks (*tag-name*).  The
+To define a help tag, place the name between asterisks ("*tag-name*").  The
 tag-name should be different from all the Vim help tag names and ideally
 should begin with the name of the Vim plugin.  The tag name is usually right
 aligned on a line.
