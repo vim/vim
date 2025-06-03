@@ -164,8 +164,7 @@ static int write_input_record_buffer(INPUT_RECORD* irEvents, int nLength);
 #ifdef FEAT_GUI_MSWIN
 static int s_dont_use_vimrun = TRUE;
 static int need_vimrun_warning = FALSE;
-static string_T vimrun_path = {(char_u *)"vimrun ", 7};
-static int vimrun_path_allocated = FALSE;
+static char *vimrun_path = "vimrun ";
 #endif
 
 static int win32_getattrs(char_u *name);
@@ -1968,12 +1967,14 @@ write_input_record_buffer(INPUT_RECORD* irEvents, int nLength)
 
     while (nCount < nLength)
     {
-	event_node = malloc(sizeof(input_record_buffer_node_T));
+	event_node = alloc(sizeof(input_record_buffer_node_T));
 	if (event_node == NULL)
 	    return -1;
-	input_record_buffer.length++;
+
 	event_node->ir = irEvents[nCount++];
 	event_node->next = NULL;
+
+	input_record_buffer.length++;
 	if (input_record_buffer.tail == NULL)
 	{
 	    input_record_buffer.head = event_node;
@@ -3020,43 +3021,25 @@ mch_init_g(void)
 
     // Look for 'vimrun'
     {
-	char_u	vimrun_location[_MAX_PATH + 4];
-	size_t	vimrun_locationlen;
-	size_t	exepathlen = (size_t)(gettail(exe_name) - exe_name);
+	char_u vimrun_location[_MAX_PATH + 4];
 
 	// First try in same directory as gvim.exe
-	vim_strncpy(vimrun_location, exe_name, exepathlen);
-	STRCPY(vimrun_location + exepathlen, "vimrun.exe");
-	vimrun_locationlen = exepathlen + 10;
-
+	STRCPY(vimrun_location, exe_name);
+	STRCPY(gettail(vimrun_location), "vimrun.exe");
 	if (mch_getperm(vimrun_location) >= 0)
 	{
-	    char_u  *tmp;
-
 	    if (*skiptowhite(vimrun_location) != NUL)
 	    {
 		// Enclose path with white space in double quotes.
 		mch_memmove(vimrun_location + 1, vimrun_location,
-						 vimrun_locationlen + 1);
+						 STRLEN(vimrun_location) + 1);
 		*vimrun_location = '"';
-		++exepathlen;
-		STRCPY(vimrun_location + exepathlen, "vimrun\" ");
-		vimrun_locationlen = exepathlen + 8;
+		STRCPY(gettail(vimrun_location), "vimrun\" ");
 	    }
 	    else
-	    {
-		STRCPY(vimrun_location + exepathlen, "vimrun ");
-		vimrun_locationlen = exepathlen + 7;
-	    }
+		STRCPY(gettail(vimrun_location), "vimrun ");
 
-	    tmp = vim_strnsave(vimrun_location, vimrun_locationlen);
-	    if (tmp != NULL)
-	    {
-		vimrun_path.string = tmp;
-		vimrun_path.length = vimrun_locationlen;
-		vimrun_path_allocated = TRUE;
-	    }
-
+	    vimrun_path = (char *)vim_strsave(vimrun_location);
 	    s_dont_use_vimrun = FALSE;
 	}
 	else if (executable_exists("vimrun.exe", NULL, TRUE, FALSE))
@@ -3664,16 +3647,10 @@ mch_exit(int r)
 
 #ifdef VIMDLL
     if (gui.in_use || gui.starting)
-    {
-	if (vimrun_path_allocated)
-	    vim_free(vimrun_path.string);
 	mch_exit_g(r);
-    }
     else
 	mch_exit_c(r);
 #elif defined(FEAT_GUI_MSWIN)
-    if (vimrun_path_allocated)
-	vim_free(vimrun_path.string);
     mch_exit_g(r);
 #else
     mch_exit_c(r);
@@ -3712,10 +3689,12 @@ fname_case(
     char_u	*name,
     int		len)
 {
+    int	    flen;
     WCHAR   *p;
     WCHAR   buf[_MAX_PATH + 1];
 
-    if (*name == NUL)
+    flen = (int)STRLEN(name);
+    if (flen == 0)
 	return;
 
     slash_adjust(name);
@@ -3730,10 +3709,8 @@ fname_case(
 
 	if (q != NULL)
 	{
-	    size_t  namelen = STRLEN(name);
-
-	    if (len > 0 || namelen >= STRLEN(q))
-		vim_strncpy(name, q, (len > 0) ? len - 1 : namelen);
+	    if (len > 0 || flen >= (int)STRLEN(q))
+		vim_strncpy(name, q, (len > 0) ? len - 1 : flen);
 	    vim_free(q);
 	}
     }
@@ -5695,7 +5672,7 @@ mch_call_shell(
 #ifdef FEAT_GUI_MSWIN
 		((gui.in_use || gui.starting) ?
 		    (!s_dont_use_vimrun && p_stmp ?
-			vimrun_path.length : STRLEN(p_sh) + STRLEN(p_shcf))
+			STRLEN(vimrun_path) : STRLEN(p_sh) + STRLEN(p_shcf))
 		    : 0) +
 #endif
 		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
@@ -5731,7 +5708,7 @@ mch_call_shell(
 		    // Use vimrun to execute the command.  It opens a console
 		    // window, which can be closed without killing Vim.
 		    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
-			    vimrun_path.string,
+			    vimrun_path,
 			    (msg_silent != 0 || (options & SHELL_DOOUT))
 								 ? "-s " : "",
 			    p_sh, p_shcf, cmd);
@@ -7883,9 +7860,10 @@ copy_substream(HANDLE sh, void *context, WCHAR *to, WCHAR *substream, long len)
     HANDLE  hTo;
     WCHAR   *to_name;
 
-    to_name = malloc((wcslen(to) + wcslen(substream) + 1) * sizeof(WCHAR));
+    to_name = alloc((wcslen(to) + wcslen(substream) + 1) * sizeof(WCHAR));
     if (to_name == NULL)
 	return;
+
     wcscpy(to_name, to);
     wcscat(to_name, substream);
 
@@ -8127,9 +8105,9 @@ copy_extattr(char_u *from, char_u *to)
     if (fromf == NULL || tof == NULL)
 	goto theend;
     STRCPY(fromf, "\\??\\");
-    STRCPY(fromf + STRLEN_LITERAL("\\??\\"), from);
+    STRCAT(fromf, from);
     STRCPY(tof, "\\??\\");
-    STRCPY(tof + STRLEN_LITERAL("\\??\\"), to);
+    STRCAT(tof, to);
 
     // Convert the names to wide characters.
     fromw = enc_to_utf16(fromf, NULL);
@@ -8230,7 +8208,7 @@ get_cmd_argsW(char ***argvp)
     ArglistW = CommandLineToArgvW(GetCommandLineW(), &nArgsW);
     if (ArglistW != NULL)
     {
-	argv = malloc((nArgsW + 1) * sizeof(char *));
+	argv = alloc((nArgsW + 1) * sizeof(char *));
 	if (argv != NULL)
 	{
 	    argc = nArgsW;
@@ -8262,7 +8240,7 @@ get_cmd_argsW(char ***argvp)
     {
 	if (used_file_indexes != NULL)
 	    free(used_file_indexes);
-	used_file_indexes = malloc(argc * sizeof(int));
+	used_file_indexes = alloc(argc * sizeof(int));
     }
 
     if (argvp != NULL)
