@@ -4905,11 +4905,11 @@ get_register_completion(void)
     int		dir = compl_direction;
     yankreg_T	*reg = NULL;
     void	*reg_ptr = NULL;
+    int		adding_mode = compl_status_adding();
 
     for (int i = 0; i < NUM_REGISTERS; i++)
     {
 	int regname = 0;
-
 	if (i == 0)
 	    regname = '"';    // unnamed register
 	else if (i < 10)
@@ -4935,14 +4935,14 @@ get_register_completion(void)
 
 	reg = (yankreg_T *)reg_ptr;
 
-	if (compl_status_adding())
+	for (int j = 0; j < reg->y_size; j++)
 	{
-	    for (int j = 0; j < reg->y_size; j++)
-	    {
-		char_u *str = reg->y_array[j].string;
-		if (str == NULL)
-		    continue;
+	    char_u *str = reg->y_array[j].string;
+	    if (str == NULL)
+		continue;
 
+	    if (adding_mode)
+	    {
 		int str_len = (int)STRLEN(str);
 		if (str_len == 0)
 		    continue;
@@ -4953,19 +4953,13 @@ get_register_completion(void)
 				: STRNCMP(str, compl_orig_text.string,
 					    compl_orig_text.length) == 0))
 		{
-		    if (ins_compl_add_infercase(str, str_len, p_ic, NULL, dir, FALSE, 0) == OK)
+		    if (ins_compl_add_infercase(str, str_len, p_ic, NULL,
+							dir, FALSE, 0) == OK)
 			dir = FORWARD;
 		}
 	    }
-	}
-	else
-	{
-	    for (int j = 0; j < reg->y_size; j++)
+	    else
 	    {
-		char_u *str = reg->y_array[j].string;
-		if (str == NULL)
-		    continue;
-
 		// Calculate the safe end of string to avoid null byte issues
 		char_u *str_end = str + STRLEN(str);
 		char_u *p = str;
