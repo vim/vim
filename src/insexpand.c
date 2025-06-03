@@ -3459,17 +3459,22 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 ins_compl_add_list(list_T *list)
 {
     listitem_T	*li;
-    int		dir = compl_direction;
 
     // Go through the List with matches and add each of them.
     CHECK_LIST_MATERIALIZE(list);
-    FOR_ALL_LIST_ITEMS(list, li)
+    if (compl_direction == FORWARD)
     {
-	if (ins_compl_add_tv(&li->li_tv, dir, TRUE) == OK)
-	    // if dir was BACKWARD then honor it just once
-	    dir = FORWARD;
-	else if (did_emsg)
-	    break;
+	FOR_ALL_LIST_ITEMS(list, li)
+	    if (ins_compl_add_tv(&li->li_tv, FORWARD, TRUE) == FAIL
+		    && did_emsg)
+		break;
+    }
+    else
+    {
+	FOR_ALL_LIST_ITEMS_REVERSE(list, li)
+	    if (ins_compl_add_tv(&li->li_tv, BACKWARD, TRUE) == FAIL
+		    && did_emsg)
+		break;
     }
 }
 
