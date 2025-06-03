@@ -82,6 +82,7 @@ syn match mbsIAConfStTunnel       '^Tunnel\s\+\ze.*$'         contains=mbsIAConf
 syn match mbsIAConfStAuthMechs    '^AuthMechs\s\+\ze.*$'      contains=mbsIAConfItemK contained nextgroup=mbsPath transparent
 syn keyword mbsIAConfSSLTypeOpt None STARTTLS IMAPS contained
 syn match mbsIAConfStSSLType      '^SSLType\s\+\ze.*$'        contains=mbsIAConfItemK contained nextgroup=mbsIAConfSSLTypeOpt transparent
+syn match mbsIAConfStTLSType      '^TLSType\s\+\ze.*$'        contains=mbsIAConfItemK contained nextgroup=mbsIAConfSSLTypeOpt transparent
 syn match mbsIAConfSSLVersionsOpt '\%(SSLv3\|TLSv1\%(.[123]\)\?\)\%(\s\+\%(SSLv3\|TLSv1\%(.[123]\)\?\)\)*' contained
 syn match mbsIAConfStSSLVersions  '^SSLVersions\s\+\ze.*$'    contains=mbsIAConfItemK contained nextgroup=mbsIAConfSSLVersionsOpt transparent
 syn match mbsIAConfStSystemCertificates  '^SystemCertificates\s\+\ze.*$'    contains=mbsIAConfItemK contained nextgroup=mbsBool transparent
@@ -96,7 +97,7 @@ syn cluster mbsIAConfItem contains=mbsIAConfSt.*
 
 syn keyword mbsIAConfItemK
   \ IMAPAccount Host Port Timeout User UserCmd Pass PassCmd UseKeychain Tunnel
-  \ AuthMechs SSLType SSLVersions SystemCertificates CertificateFile ClientCertificate
+  \ AuthMechs SSLType TLSType SSLVersions SystemCertificates CertificateFile ClientCertificate
   \ ClientKey CipherString PipelineDepth DisableExtension[s] contained
 
 syn region mbsIMAP4AccontsStore start="^IMAPAccount" end="^$" end="\%$" contains=@mbsGlobConfItem,mbsCommentL,@mbsIAConfItem,mbsError transparent
