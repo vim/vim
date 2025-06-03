@@ -7795,10 +7795,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 				 *'smarttab'* *'sta'* *'nosmarttab'* *'nosta'*
 'smarttab' 'sta'	boolean	(default off)
 			global
-	When enabled, and the cursor is in Insert mode within an indent level
-	(i.e. when there is only whitespace before the cursor), Vim will
-	behave as if 'softtabstop' were set with the value of 'shiftwidth'.
-	Outside of an indent, this option has no effect.
+	When enabled, the <Tab> key will indent by 'shiftwidth' if the cursor
+	is in leading whitespace.  The <BS> key will have the opposite effect.
+	All as if 'softtabstop' were set with the value of 'shiftwidth'.
 	This option is reset when 'compatible' is set; it is temporarily
 	disabled when 'paste' is enabled, and restored when 'paste' is turned
 	off.

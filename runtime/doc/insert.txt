@@ -555,11 +555,11 @@ cursor.  You will have to delete 'softtabstop' characters first, and then type
 extra spaces to get where you want to be.
 
 							*ins-smarttab*
-When the 'smarttab' option is on, and the cursor is in Insert mode within an
-indent (i.e. when there are only blanks in front of the cursor), Vim will
-behave as if 'softtabstop' were set with the value of 'shiftwidth'.  This
-option allows the user to set 'softtabstop' to a value other than 'shiftwidth'
-and still use the <Tab> key for indentation.
+When the 'smarttab' option is on, the <Tab> key will indent by 'shiftwidth'
+if the cursor is in leading whitespace.  The <BS> key will have the opposite
+effect.  All as if 'softtabstop' were set with the value of 'shiftwidth'.
+This option allows the user to set 'softtabstop' to a value other than
+'shiftwidth' and still use the <Tab> key for indentation.
 
 ==============================================================================
 5. Replace mode				*Replace* *Replace-mode* *mode-replace*
