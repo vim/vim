@@ -7799,7 +7799,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	(i.e. when there is only whitespace before the cursor), Vim will
 	behave as if 'softtabstop' were set with the value of 'shiftwidth'.
 	Outside of an indent, this option has no effect.
-	  This option is reset when 'compatible' is set; it is temporarily
+	This option is reset when 'compatible' is set; it is temporarily
 	disabled when 'paste' is enabled, and restored when 'paste' is turned
 	off.
 	Have a look at section |30.5| of the user guide for detailed
