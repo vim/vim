@@ -4110,6 +4110,12 @@ func Test_complete_match_count()
   set cpt=.^1,w
   exe "normal! Gof\<c-n>\<c-r>=PrintMenuWords()\<cr>"
   call assert_equal('f{''matches'': [''fo''], ''selected'': -1}', getline(5))
+  " With non-matching items
+  %d
+  call setline(1, ["free", "freebar", "foo", "fobarbaz"])
+  set cpt=.^2,w
+  exe "normal! Gofo\<c-n>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('fo{''matches'': [''foo'', ''fobarbaz''], ''selected'': -1}', getline(5))
   set cot&
 
   func ComplFunc(findstart, base)

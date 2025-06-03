@@ -1571,75 +1571,77 @@ ins_compl_build_pum(void)
     {
 	compl->cp_in_match_array = FALSE;
 
-	// Limit number of items from each source if max_items is set.
-	int match_limit_exceeded = FALSE;
-	int cur_source = compl->cp_cpt_source_idx;
-	if (cur_source != -1 && is_cpt_completion)
-	{
-	    match_count[cur_source]++;
-	    int max_matches = cpt_sources_array[cur_source].cs_max_matches;
-	    if (max_matches > 0 && match_count[cur_source] > max_matches)
-		match_limit_exceeded = TRUE;
-	}
-
 	// Apply 'smartcase' behavior during normal mode
 	if (ctrl_x_mode_normal() && !p_inf && compl_leader.string
 		&& !ignorecase(compl_leader.string) && !fuzzy_filter)
 	    compl->cp_flags &= ~CP_ICASE;
 
 	if (!match_at_original_text(compl)
-		&& !match_limit_exceeded
 		&& (compl_leader.string == NULL
 		    || ins_compl_equal(compl, compl_leader.string,
 			(int)compl_leader.length)
 		    || (fuzzy_filter && compl->cp_score > 0)))
 	{
-	    ++compl_match_arraysize;
-	    compl->cp_in_match_array = TRUE;
-	    if (match_head == NULL)
-		match_head = compl;
-	    else
-		match_tail->cp_match_next = compl;
-	    match_tail = compl;
-
-	    if (!shown_match_ok && !fuzzy_filter)
+	    // Limit number of items from each source if max_items is set.
+	    int match_limit_exceeded = FALSE;
+	    int cur_source = compl->cp_cpt_source_idx;
+	    if (cur_source != -1 && is_cpt_completion)
 	    {
-		if (compl == compl_shown_match || did_find_shown_match)
-		{
-		    // This item is the shown match or this is the
-		    // first displayed item after the shown match.
-		    compl_shown_match = compl;
-		    did_find_shown_match = TRUE;
-		    shown_match_ok = TRUE;
-		}
+		match_count[cur_source]++;
+		int max_matches = cpt_sources_array[cur_source].cs_max_matches;
+		if (max_matches > 0 && match_count[cur_source] > max_matches)
+		    match_limit_exceeded = TRUE;
+	    }
+
+	    if (!match_limit_exceeded)
+	    {
+		++compl_match_arraysize;
+		compl->cp_in_match_array = TRUE;
+		if (match_head == NULL)
+		    match_head = compl;
 		else
-		    // Remember this displayed match for when the
-		    // shown match is just below it.
-		    shown_compl = compl;
-		cur = i;
-	    }
-	    else if (fuzzy_filter)
-	    {
-		if (i == 0)
-		    shown_compl = compl;
-		// Update the maximum fuzzy score and the shown match
-		// if the current item's score is higher
-		if (fuzzy_sort && compl->cp_score > max_fuzzy_score
-			&& update_shown_match)
-		{
-		    did_find_shown_match = TRUE;
-		    max_fuzzy_score = compl->cp_score;
-		    if (!compl_no_select)
-			compl_shown_match = compl;
-		}
+		    match_tail->cp_match_next = compl;
+		match_tail = compl;
 
-		if (!shown_match_ok && compl == compl_shown_match)
+		if (!shown_match_ok && !fuzzy_filter)
 		{
+		    if (compl == compl_shown_match || did_find_shown_match)
+		    {
+			// This item is the shown match or this is the
+			// first displayed item after the shown match.
+			compl_shown_match = compl;
+			did_find_shown_match = TRUE;
+			shown_match_ok = TRUE;
+		    }
+		    else
+			// Remember this displayed match for when the
+			// shown match is just below it.
+			shown_compl = compl;
 		    cur = i;
-		    shown_match_ok = TRUE;
 		}
+		else if (fuzzy_filter)
+		{
+		    if (i == 0)
+			shown_compl = compl;
+		    // Update the maximum fuzzy score and the shown match
+		    // if the current item's score is higher
+		    if (fuzzy_sort && compl->cp_score > max_fuzzy_score
+			    && update_shown_match)
+		    {
+			did_find_shown_match = TRUE;
+			max_fuzzy_score = compl->cp_score;
+			if (!compl_no_select)
+			    compl_shown_match = compl;
+		    }
+
+		    if (!shown_match_ok && compl == compl_shown_match)
+		    {
+			cur = i;
+			shown_match_ok = TRUE;
+		    }
+		}
+		i++;
 	    }
-	    i++;
 	}
 
 	if (compl == compl_shown_match && !fuzzy_filter)
