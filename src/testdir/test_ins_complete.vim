@@ -4099,9 +4099,9 @@ func Test_complete_match_count()
   call assert_equal('fo{''matches'': [''fo''], ''selected'': 0}', getline(5))
   5d
   " max_matches is ignored for backward search
-  " exe "normal! Gof\<c-p>\<c-r>=PrintMenuWords()\<cr>"
-  " call assert_equal('fobarbaz{''matches'': [''fo'', ''foo'', ''foobar'', ''fobarbaz''], ''selected'': 3}', getline(5))
-  " 5d
+  exe "normal! Gof\<c-p>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('fobarbaz{''matches'': [''fo'', ''foo'', ''foobar'', ''fobarbaz''], ''selected'': 3}', getline(5))
+  5d
   set cpt=.^2,w
   exe "normal! Gof\<c-n>\<c-r>=PrintMenuWords()\<cr>"
   call assert_equal('fo{''matches'': [''fo'', ''foo''], ''selected'': 0}', getline(5))

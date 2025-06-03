@@ -1585,7 +1585,7 @@ ins_compl_build_pum(void)
 	    // Limit number of items from each source if max_items is set.
 	    int match_limit_exceeded = FALSE;
 	    int cur_source = compl->cp_cpt_source_idx;
-	    if (cur_source != -1 && is_cpt_completion)
+	    if (is_forward && cur_source != -1 && is_cpt_completion)
 	    {
 		match_count[cur_source]++;
 		int max_matches = cpt_sources_array[cur_source].cs_max_matches;
