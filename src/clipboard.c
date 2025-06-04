@@ -2336,19 +2336,20 @@ adjust_clip_reg(int *rp)
     static void
 clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 {
-    char_u *start, *buf, *tmp, *final, *enc;
-    int	motion_type = MAUTO;
-    ssize_t r = 0;
-    size_t total = 0, max_total = 4096; // Initial buffer size, 4096 bytes seems
-					// reasonable.
+    char_u	    *start, *buf, *tmp, *final, *enc;
+    int		    motion_type = MAUTO;
+    ssize_t	    r = 0;
+    size_t	    total = 0, max_total = 4096; // Initial buffer size, 4096
+						 // bytes seems reasonable.
 #ifndef HAVE_SELECT
-    struct pollfd pfd = {
+    struct pollfd   pfd = {
 	.fd = fd,
 	.events = POLLIN
     };
 #else
     fd_set rfds;
-    struct timeval tv;
+    struct timeval  tv;
+
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
     tv.tv_sec = 0;
@@ -2461,11 +2462,11 @@ poll_data:
     void
 clip_wl_request_selection(Clipboard_T *cbd)
 {
-    wayland_selection_T selection;
-    garray_T *mime_types;
-    int len = sizeof(supported_mimes)/sizeof(*supported_mimes);
-    int fd;
-    const char *chosen_mime = NULL;
+    wayland_selection_T	    selection;
+    garray_T		    *mime_types;
+    int			    len;
+    int			    fd;
+    const char		    *chosen_mime = NULL;
 
     if (cbd == &clip_star)
 	selection = WAYLAND_SELECTION_PRIMARY;
@@ -2483,6 +2484,8 @@ clip_wl_request_selection(Clipboard_T *cbd)
 	clip_free_selection(cbd);
 	return;
     }
+
+    len = sizeof(supported_mimes)/sizeof(*supported_mimes);
 
     // Loop through and pick the one we want to receive from
     for (int i = 0; i < len && chosen_mime == NULL; i++)
@@ -2515,26 +2518,28 @@ clip_wl_request_selection(Clipboard_T *cbd)
  */
     static void
 clip_wl_send_data(
-	const char *mime_type,
-	int fd,
+	const char	    *mime_type,
+	int		    fd,
 	wayland_selection_T selection)
 {
-    Clipboard_T *cbd;
-    long_u length;
-    char_u *string;
-    ssize_t written = 0;
-    size_t total = 0;
-    int did_vimenc = TRUE, did_motion_type = TRUE;
-    int motion_type;
-    int skip_len_check = FALSE;
+    Clipboard_T	    *cbd;
+    long_u	    length;
+    char_u	    *string;
+    ssize_t	    written = 0;
+    size_t	    total = 0;
+    int		    did_vimenc = TRUE;
+    int		    did_motion_type = TRUE;
+    int		    motion_type;
+    int		    skip_len_check = FALSE;
 #ifndef HAVE_SELECT
-    struct pollfd pfd = {
+    struct pollfd   pfd = {
 	.fd = fd,
 	.events = POLLOUT
     };
 #else
-    fd_set wfds;
-    struct timeval tv;
+    fd_set	    wfds;
+    struct timeval  tv;
+
     FD_ZERO(&wfds);
     FD_SET(fd, &wfds);
     tv.tv_sec = 0;
@@ -2703,8 +2708,8 @@ clip_wl_owner_exists(Clipboard_T *cbd)
     static clipmethod_T
 get_clipmethod(char_u *str)
 {
-    int		len = (int)STRLEN(str) + 1;
-    char_u	*buf = alloc(len);
+    int		len	= (int)STRLEN(str) + 1;
+    char_u	*buf	= alloc(len);
 
     if (buf == NULL)
 	return CLIPMETHOD_FAIL;
