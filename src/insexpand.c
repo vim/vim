@@ -3459,22 +3459,17 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
 ins_compl_add_list(list_T *list)
 {
     listitem_T	*li;
+    int		dir = compl_direction;
 
     // Go through the List with matches and add each of them.
     CHECK_LIST_MATERIALIZE(list);
-    if (compl_direction == FORWARD)
+    FOR_ALL_LIST_ITEMS(list, li)
     {
-	FOR_ALL_LIST_ITEMS(list, li)
-	    if (ins_compl_add_tv(&li->li_tv, FORWARD, TRUE) == FAIL
-		    && did_emsg)
-		break;
-    }
-    else
-    {
-	FOR_ALL_LIST_ITEMS_REVERSE(list, li)
-	    if (ins_compl_add_tv(&li->li_tv, BACKWARD, TRUE) == FAIL
-		    && did_emsg)
-		break;
+	if (ins_compl_add_tv(&li->li_tv, dir, TRUE) == OK)
+	    // if dir was BACKWARD then honor it just once
+	    dir = FORWARD;
+	else if (did_emsg)
+	    break;
     }
 }
 
@@ -5318,6 +5313,12 @@ ins_compl_get_exp(pos_T *ini)
 
 	    compl_started = FALSE;
 	}
+
+	// For `^P` completion, reset `compl_cur_match` to the head to avoid
+	// mixing matches from different sources.
+	if (!compl_dir_forward())
+	    while (compl_curr_match->cp_prev)
+		compl_curr_match = compl_curr_match->cp_prev;
     }
     cpt_sources_index = -1;
     compl_started = TRUE;

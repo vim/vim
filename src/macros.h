@@ -484,16 +484,6 @@
 #define FOR_ALL_LIST_ITEMS(l, li) \
     for ((li) = (l) == NULL ? NULL : (l)->lv_first; (li) != NULL; (li) = (li)->li_next)
 
-// Reverse iterate over all items in a list when only lv_first is exposed
-#define FOR_ALL_LIST_ITEMS_REVERSE(l, li)             \
-    for ((li) = (l) == NULL || (l)->lv_first == NULL  \
-			? NULL                        \
-			: (l)->lv_first;              \
-	(li) != NULL && (li)->li_next != NULL;        \
-	(li) = (li)->li_next)                         \
-	    /* empty */;                              \
-    for (; (li) != NULL; (li) = (li)->li_prev)
-
 // Iterate over all the items in a hash table
 #define FOR_ALL_HASHTAB_ITEMS(ht, hi, todo) \
     for ((hi) = (ht)->ht_array; (todo) > 0; ++(hi))
