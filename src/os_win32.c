@@ -3028,6 +3028,8 @@ mch_init_g(void)
 	STRCPY(gettail(vimrun_location), "vimrun.exe");
 	if (mch_getperm(vimrun_location) >= 0)
 	{
+	    char  *p;
+
 	    if (*skiptowhite(vimrun_location) != NUL)
 	    {
 		// Enclose path with white space in double quotes.
@@ -3039,7 +3041,9 @@ mch_init_g(void)
 	    else
 		STRCPY(gettail(vimrun_location), "vimrun ");
 
-	    vimrun_path = (char *)vim_strsave(vimrun_location);
+	    p = (char *)vim_strsave(vimrun_location);
+	    if (p != NULL)
+		vimrun_path = p;
 	    s_dont_use_vimrun = FALSE;
 	}
 	else if (executable_exists("vimrun.exe", NULL, TRUE, FALSE))
