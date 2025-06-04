@@ -2342,10 +2342,10 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
     size_t	    total = 0, max_total = 4096; // Initial buffer size, 4096
 						 // bytes seems reasonable.
 #ifndef HAVE_SELECT
-    struct pollfd   pfd = {
-	.fd = fd,
-	.events = POLLIN
-    };
+    struct pollfd   pfd
+
+    pfd.fd = fd,
+    pfd.events = POLLIN
 #else
     fd_set rfds;
     struct timeval  tv;
@@ -2485,7 +2485,7 @@ clip_wl_request_selection(Clipboard_T *cbd)
 	return;
     }
 
-    len = sizeof(supported_mimes)/sizeof(*supported_mimes);
+    len = ARRAY_LENGTH(supported_mimes);
 
     // Loop through and pick the one we want to receive from
     for (int i = 0; i < len && chosen_mime == NULL; i++)
@@ -2532,10 +2532,10 @@ clip_wl_send_data(
     int		    motion_type;
     int		    skip_len_check = FALSE;
 #ifndef HAVE_SELECT
-    struct pollfd   pfd = {
-	.fd = fd,
-	.events = POLLOUT
-    };
+    struct pollfd   pfd
+
+    pfd.fd = fd,
+    pfd.events = POLLOUT
 #else
     fd_set	    wfds;
     struct timeval  tv;

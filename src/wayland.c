@@ -392,10 +392,10 @@ vwl_display_flush(vwl_display_T *display)
 {
     int		    ret;
 #ifndef HAVE_SELECT
-    struct pollfd   fds = {
-	.fd = display->fd,
-	.events = POLLOUT
-    };
+    struct pollfd   fds;
+
+    fds.fd = display->fd;
+    fds.events = POLLOUT;
 #else
     fd_set	    wfds;
     struct timeval  tv;
@@ -488,10 +488,10 @@ vwl_display_dispatch(vwl_display_T *display, int *num_dispatched)
 {
     int		    num, ret = 0;
 #ifndef HAVE_SELECT
-    struct pollfd   fds = {
-	.fd = display->fd,
-	.events = POLLOUT
-    };
+    struct pollfd   fds;
+
+    fds.fd = display->fd;
+    fds.events = POLLOUT;
 #else
     fd_set	    wfds;
     struct timeval  tv;
