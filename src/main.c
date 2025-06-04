@@ -678,23 +678,22 @@ vim_main2(void)
 #endif
 
 #ifdef FEAT_WAYLAND
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     if (!gui.in_use)
-#endif
+# endif
     {
 	if (wayland_init_client(wayland_display_name) == OK)
 	{
 	    TIME_MSG("connected to wayland display");
 
-#ifdef FEAT_WAYLAND_CLIPBOARD
-	    // TODO: add option/command to configure which seat to use?
+# ifdef FEAT_WAYLAND_CLIPBOARD
 	    if (wayland_cb_init((char*)p_wse) == OK)
 	    {
 		TIME_MSG("setup wayland clipboard");
 		clip_init(TRUE);
 	    }
 	}
-#endif
+# endif
     }
 #endif
 

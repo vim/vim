@@ -26,11 +26,11 @@
 // Struct that represents a seat. (Should be accessed via
 // vwl_get_seat()).
 typedef struct {
-    struct wl_seat *proxy;
-
-    char *label;	    // Name of seat as text (e.g. seat0, seat1...).
-    uint32_t capabilities;  // Bitmask of the capabilites of the seat
-			    // (pointer, keyboard, touch).
+    struct wl_seat  *proxy;
+    char	    *label;	    // Name of seat as text (e.g. seat0,
+				    // seat1...).
+    uint32_t	    capabilities;  // Bitmask of the capabilites of the seat
+				   // (pointer, keyboard, touch).
 } vwl_seat_T;
 
 // Global objects
@@ -39,15 +39,15 @@ typedef struct {
     // Data control protocols
     struct zwlr_data_control_manager_v1 *zwlr_data_control_manager_v1;
 
-    struct ext_data_control_manager_v1 *ext_data_control_manager_v1;
+    struct ext_data_control_manager_v1	*ext_data_control_manager_v1;
 
-    struct wl_data_device_manager *wl_data_device_manager;
+    struct wl_data_device_manager	*wl_data_device_manager;
 
-    struct wl_shm *wl_shm;
+    struct wl_shm			*wl_shm;
 
-    struct wl_compositor *wl_compositor;
+    struct wl_compositor		*wl_compositor;
 
-    struct xdg_wm_base *xdg_wm_base;
+    struct xdg_wm_base			*xdg_wm_base;
 
     struct zwp_primary_selection_device_manager_v1
 	*zwp_primary_selection_device_manager_v1;
@@ -56,8 +56,8 @@ typedef struct {
 
 // Struct wrapper for wayland display and registry
 typedef struct {
-    struct wl_display *proxy;
-    int fd;			// File descriptor for display
+    struct wl_display	*proxy;
+    int			fd;	// File descriptor for display
 
     struct {
 	struct wl_registry *proxy;
@@ -67,24 +67,27 @@ typedef struct {
 #ifdef FEAT_WAYLAND_CLIPBOARD
 
 typedef struct {
-    struct wl_shm_pool *pool;
-    int fd;
+    struct wl_shm_pool	*pool;
+    int			fd;
 
-    struct wl_buffer *buffer;
-    int available;
+    struct wl_buffer	*buffer;
+    int			available;
 
-    int width, height, stride, size;
+    int			width;
+    int			height;
+    int			stride;
+    int			size;
 } vwl_buffer_store_T;
 
 typedef struct {
-    void *user_data;
-    void (*on_focus)(void *data, uint32_t serial);
+    void		    *user_data;
+    void		    (*on_focus)(void *data, uint32_t serial);
 
-    struct wl_surface *surface;
-    struct wl_keyboard *keyboard;
+    struct wl_surface	    *surface;
+    struct wl_keyboard	    *keyboard;
 
     struct {
-	struct xdg_surface *surface;
+	struct xdg_surface  *surface;
 	struct xdg_toplevel *toplevel;
     } shell;
 
@@ -106,26 +109,27 @@ typedef enum {
 // vwl_clipboard_selection_T pointer.
 
 typedef struct {
-    void *proxy;
-    void *data; // Is not set when a new offer is created on a data_offer event.
-		// Only set when listening to a data offer.
+    void		*proxy;
+    void		*data; // Is not set when a new offer is created on a
+			       // data_offer event. Only set when listening to a
+			       // data offer.
     vwl_data_protocol_T protocol;
 } vwl_data_offer_T;
 
 typedef struct {
-    void *proxy;
-    void *data;
+    void		*proxy;
+    void		*data;
     vwl_data_protocol_T protocol;
 } vwl_data_source_T;
 
 typedef struct {
-    void *proxy;
-    void *data;
+    void		*proxy;
+    void		*data;
     vwl_data_protocol_T protocol;
 } vwl_data_device_T;
 
 typedef struct {
-    void *proxy;
+    void		*proxy;
     vwl_data_protocol_T protocol;
 } vwl_data_device_manager_T;
 
@@ -157,25 +161,28 @@ typedef struct {
 typedef struct
 {
     // What selection this refers to
-    wayland_selection_T selection;
+    wayland_selection_T		selection;
 
     // Do not destroy here
-    vwl_data_device_manager_T manager;
+    vwl_data_device_manager_T	manager;
 
-    vwl_data_device_T device;
-    vwl_data_source_T source;
-    vwl_data_offer_T *offer;	// Current offer for the selection
+    vwl_data_device_T		device;
+    vwl_data_source_T		source;
+    vwl_data_offer_T		*offer;	// Current offer for the selection
 
-    garray_T mime_types;	// Mime types supported by the current offer
+    garray_T			mime_types;	// Mime types supported by the
+						// current offer
 
-    garray_T tmp_mime_types;	// Temporary array for mime types when we are
-				// receiving them. When the selection event
-				// arrives and it is the one we want, then copy it
-				// over to mime_types
+    garray_T			tmp_mime_types;	// Temporary array for mime
+						// types when we are receiving
+						// them. When the selection
+						// event arrives and it is the
+						// one we want, then copy it
+						// over to mime_types
 
     // To be populated by callbacks from outside this file
-    wayland_cb_send_data_func_T send_cb;
-    wayland_cb_selection_cancelled_func_T cancelled_cb;
+    wayland_cb_send_data_func_T		    send_cb;
+    wayland_cb_selection_cancelled_func_T   cancelled_cb;
 
     int requires_focus;		// If focus needs to be given to us to work
 } vwl_clipboard_selection_T;
@@ -184,180 +191,193 @@ typedef struct
 typedef struct {
     // Do not destroy here, will be destroyed when vwl_disconnect_display() is
     // called.
-    vwl_seat_T *seat;
+    vwl_seat_T			*seat;
 
-    vwl_clipboard_selection_T regular;
-    vwl_clipboard_selection_T primary;
+    vwl_clipboard_selection_T	regular;
+    vwl_clipboard_selection_T	primary;
 
-    vwl_buffer_store_T *fs_buffer;
+    vwl_buffer_store_T		*fs_buffer;
 } vwl_clipboard_T;
 
 #endif // FEAT_WAYLAND_CLIPBOARD
 
-static int vwl_display_flush(vwl_display_T *display);
-static void vwl_callback_done(void *data, struct wl_callback *callback,
-	uint32_t cb_data);
-static int vwl_display_roundtrip(vwl_display_T *display);
-static int vwl_display_dispatch(vwl_display_T *display, int *num_dispatched);
+static int	vwl_display_flush(vwl_display_T *display);
+static void	vwl_callback_done(void *data, struct wl_callback *callback,
+		    uint32_t cb_data);
+static int	vwl_display_roundtrip(vwl_display_T *display);
+static int	vwl_display_dispatch(vwl_display_T *display,
+		    int *num_dispatched);
 
-static void vwl_log_handler(const char *fmt, va_list args);
-static int vwl_connect_display(const char *display);
-static void vwl_disconnect_display(void);
+static void	vwl_log_handler(const char *fmt, va_list args);
+static int	vwl_connect_display(const char *display);
+static void	vwl_disconnect_display(void);
 
-static void vwl_xdg_wm_base_listener_ping(void *data, struct xdg_wm_base *base,
-	uint32_t serial);
-static int vwl_listen_to_registry(void);
+static void	vwl_xdg_wm_base_listener_ping(void *data,
+		    struct xdg_wm_base *base, uint32_t serial);
+static int	vwl_listen_to_registry(void);
 
-static void vwl_registry_listener_global(void *data, struct wl_registry *registry,
-	uint32_t name, const char *interface, uint32_t version);
-static void vwl_registry_listener_global_remove(void *data,
-	struct wl_registry *registry,  uint32_t name);
+static void	vwl_registry_listener_global(void *data,
+		    struct wl_registry *registry, uint32_t name,
+		    const char *interface, uint32_t version);
+static void	vwl_registry_listener_global_remove(void *data,
+		    struct wl_registry *registry,  uint32_t name);
 
-static void vwl_add_seat(struct wl_seat *seat);
-static void vwl_seat_listener_name(void *data, struct wl_seat *seat,
-	const char *name);
-static void vwl_seat_listener_capabilities(void *data, struct wl_seat *seat,
-	uint32_t capabilities);
-static void vwl_destroy_seat(vwl_seat_T *seat);
-static vwl_seat_T * vwl_get_seat(const char *label);
-static struct wl_keyboard * vwl_seat_get_keyboard(vwl_seat_T *seat);
+static void	vwl_add_seat(struct wl_seat *seat);
+static void	vwl_seat_listener_name(void *data, struct wl_seat *seat,
+		    const char *name);
+static void	vwl_seat_listener_capabilities(void *data, struct wl_seat *seat,
+		    uint32_t capabilities);
+static void	vwl_destroy_seat(vwl_seat_T *seat);
+
+static vwl_seat_T	    *vwl_get_seat(const char *label);
+static struct wl_keyboard   *vwl_seat_get_keyboard(vwl_seat_T *seat);
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
 
-static int vwl_focus_stealing_available(void);
-static void vwl_xdg_surface_listener_configure(void *data,
-	struct xdg_surface *surface, uint32_t serial);
+static int	vwl_focus_stealing_available(void);
+static void	vwl_xdg_surface_listener_configure(void *data,
+		    struct xdg_surface *surface, uint32_t serial);
 
-static void vwl_bs_buffer_listener_release(void *data, struct wl_buffer *buffer);
-static void vwl_destroy_buffer_store(vwl_buffer_store_T *store);
+static void	vwl_bs_buffer_listener_release(void *data,
+		    struct wl_buffer *buffer);
+static void	vwl_destroy_buffer_store(vwl_buffer_store_T *store);
 static vwl_buffer_store_T *vwl_init_buffer_store(int width, int height);
 
-static void vwl_destroy_fs_surface(vwl_fs_surface_T *store);
-static int vwl_init_fs_surface(vwl_seat_T *seat,
-	vwl_buffer_store_T *buffer_store,
-	void (*on_focus)(void *, uint32_t), void *user_data);
+static void	vwl_destroy_fs_surface(vwl_fs_surface_T *store);
+static int	vwl_init_fs_surface(vwl_seat_T *seat,
+		    vwl_buffer_store_T *buffer_store,
+		    void (*on_focus)(void *, uint32_t), void *user_data);
 
-static void vwl_fs_keyboard_listener_enter(void *data,
-    struct wl_keyboard *keyboard, uint32_t serial,
-    struct wl_surface *surface, struct wl_array *keys);
-static void vwl_fs_keyboard_listener_keymap(void *data,
-	struct wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size);
-static void vwl_fs_keyboard_listener_leave(void *data,
-    struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface);
-static void vwl_fs_keyboard_listener_key(void *data,
-    struct wl_keyboard *keyboard, uint32_t serial, uint32_t time,
-    uint32_t key, uint32_t state);
-static void vwl_fs_keyboard_listener_modifiers(void *data,
-	struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed,
-	uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
-static void vwl_fs_keyboard_listener_repeat_info(void *data,
-    struct wl_keyboard *keyboard, int32_t rate, int32_t delay);
+static void	vwl_fs_keyboard_listener_enter(void *data,
+		    struct wl_keyboard *keyboard, uint32_t serial,
+		    struct wl_surface *surface, struct wl_array *keys);
+static void	vwl_fs_keyboard_listener_keymap(void *data,
+		    struct wl_keyboard *keyboard, uint32_t format,
+		    int fd, uint32_t size);
+static void	vwl_fs_keyboard_listener_leave(void *data,
+		    struct wl_keyboard *keyboard, uint32_t serial,
+		    struct wl_surface *surface);
+static void	vwl_fs_keyboard_listener_key(void *data,
+		    struct wl_keyboard *keyboard, uint32_t serial,
+		    uint32_t time, uint32_t key, uint32_t state);
+static void	vwl_fs_keyboard_listener_modifiers(void *data,
+		    struct wl_keyboard *keyboard, uint32_t serial,
+		    uint32_t mods_depressed, uint32_t mods_latched,
+		    uint32_t mods_locked, uint32_t group);
+static void	vwl_fs_keyboard_listener_repeat_info(void *data,
+		    struct wl_keyboard *keyboard, int32_t rate, int32_t delay);
 
-static void vwl_gen_data_device_listener_data_offer(void *data,
-	void *offer_proxy);
-static void vwl_gen_data_device_listener_selection(void *data,
-	void *offer_proxy, wayland_selection_T selection,
-	vwl_data_protocol_T protocol);
+static void	vwl_gen_data_device_listener_data_offer(void *data,
+		    void *offer_proxy);
+static void	vwl_gen_data_device_listener_selection(void *data,
+		    void *offer_proxy, wayland_selection_T selection,
+		    vwl_data_protocol_T protocol);
 
-static void vwl_data_device_destroy(vwl_data_device_T *device, int alloced);
-static void vwl_data_offer_destroy(vwl_data_offer_T *offer, int alloced);
-static void vwl_data_source_destroy(vwl_data_source_T *source, int alloced);
+static void	vwl_data_device_destroy(vwl_data_device_T *device, int alloced);
+static void	vwl_data_offer_destroy(vwl_data_offer_T *offer, int alloced);
+static void	vwl_data_source_destroy(vwl_data_source_T *source, int alloced);
 
-static void vwl_data_device_add_listener(vwl_data_device_T *device, void *data);
-static void vwl_data_source_add_listener(vwl_data_source_T *source, void *data);
-static void vwl_data_offer_add_listener(vwl_data_offer_T *offer, void *data);
+static void	vwl_data_device_add_listener(vwl_data_device_T *device,
+		    void *data);
+static void	vwl_data_source_add_listener(vwl_data_source_T *source,
+		    void *data);
+static void	vwl_data_offer_add_listener(vwl_data_offer_T *offer,
+		    void *data);
 
-static void vwl_data_device_set_selection(vwl_data_device_T *device,
-	vwl_data_source_T *source, uint32_t serial, wayland_selection_T selection);
-static void vwl_data_offer_receive(vwl_data_offer_T *offer,
-	const char *mime_type, int fd);
-static int vwl_get_data_device_manager(vwl_data_device_manager_T *manager,
-	wayland_selection_T selection);
-static void vwl_get_data_device(vwl_data_device_manager_T *manager,
-	vwl_seat_T *seat, vwl_data_device_T *device);
-static void vwl_create_data_source(vwl_data_device_manager_T *manager,
-	vwl_data_source_T *source);
-static void vwl_data_source_offer(vwl_data_source_T *source,
-	const char *mime_type);
+static void	vwl_data_device_set_selection(vwl_data_device_T *device,
+		    vwl_data_source_T *source, uint32_t serial,
+		    wayland_selection_T selection);
+static void	vwl_data_offer_receive(vwl_data_offer_T *offer,
+		    const char *mime_type, int fd);
+static int	vwl_get_data_device_manager(vwl_data_device_manager_T *manager,
+		    wayland_selection_T selection);
+static void	vwl_get_data_device(vwl_data_device_manager_T *manager,
+		    vwl_seat_T *seat, vwl_data_device_T *device);
+static void	vwl_create_data_source(vwl_data_device_manager_T *manager,
+		    vwl_data_source_T *source);
+static void	vwl_data_source_offer(vwl_data_source_T *source,
+		    const char *mime_type);
 
-static void vwl_clipboard_free_mime_types(vwl_clipboard_selection_T *clip_sel);
-static int vwl_clipboard_selection_is_ready(vwl_clipboard_selection_T *clip_sel);
+static void	vwl_clipboard_free_mime_types(
+		    vwl_clipboard_selection_T *clip_sel);
+static int	vwl_clipboard_selection_is_ready(
+		    vwl_clipboard_selection_T *clip_sel);
 
-static void vwl_data_device_listener_data_offer(
-	vwl_data_device_T *device, vwl_data_offer_T *offer);
-static void vwl_data_offer_listener_offer(vwl_data_offer_T *offer,
-	const char *mime_type);
-static void vwl_data_device_listener_selection(vwl_data_device_T *device,
-	vwl_data_offer_T *offer, wayland_selection_T selection);
-static void vwl_data_device_listener_finished(vwl_data_device_T *device);
+static void	vwl_data_device_listener_data_offer(
+		    vwl_data_device_T *device, vwl_data_offer_T *offer);
+static void	vwl_data_offer_listener_offer(vwl_data_offer_T *offer,
+		    const char *mime_type);
+static void	vwl_data_device_listener_selection(vwl_data_device_T *device,
+		    vwl_data_offer_T *offer, wayland_selection_T selection);
+static void	vwl_data_device_listener_finished(vwl_data_device_T *device);
 
-static void vwl_data_source_listener_send(vwl_data_source_T *source,
-	const char *mime_type, int fd);
-static void vwl_data_source_listener_cancelled(vwl_data_source_T *source);
+static void	vwl_data_source_listener_send(vwl_data_source_T *source,
+		    const char *mime_type, int fd);
+static void	vwl_data_source_listener_cancelled(vwl_data_source_T *source);
 
-static void vwl_on_focus_set_selection(void *data, uint32_t serial);
+static void	vwl_on_focus_set_selection(void *data, uint32_t serial);
 
-static void wayland_set_display(const char *display);
+static void	wayland_set_display(const char *display);
 
-static vwl_data_device_listener_T vwl_data_device_listener = {
-    .data_offer = vwl_data_device_listener_data_offer,
-    .selection = vwl_data_device_listener_selection,
-    .finished = vwl_data_device_listener_finished
+static vwl_data_device_listener_T   vwl_data_device_listener = {
+    .data_offer	    = vwl_data_device_listener_data_offer,
+    .selection	    = vwl_data_device_listener_selection,
+    .finished	    = vwl_data_device_listener_finished
 };
 
-static vwl_data_source_listener_T vwl_data_source_listener = {
-    .send = vwl_data_source_listener_send,
-    .cancelled = vwl_data_source_listener_cancelled
+static vwl_data_source_listener_T   vwl_data_source_listener = {
+    .send	    = vwl_data_source_listener_send,
+    .cancelled	    = vwl_data_source_listener_cancelled
 };
 
-static vwl_data_offer_listener_T vwl_data_offer_listener = {
-    .offer = vwl_data_offer_listener_offer
+static vwl_data_offer_listener_T    vwl_data_offer_listener = {
+    .offer	    = vwl_data_offer_listener_offer
 };
 
-static struct xdg_wm_base_listener vwl_xdg_wm_base_listener = {
-    .ping = vwl_xdg_wm_base_listener_ping
+static struct xdg_wm_base_listener  vwl_xdg_wm_base_listener = {
+    .ping	    = vwl_xdg_wm_base_listener_ping
 };
 
-static struct xdg_surface_listener vwl_xdg_surface_listener = {
-    .configure = vwl_xdg_surface_listener_configure
+static struct xdg_surface_listener  vwl_xdg_surface_listener = {
+    .configure	    = vwl_xdg_surface_listener_configure
 };
 
-static struct wl_buffer_listener vwl_cb_buffer_listener = {
-    .release = vwl_bs_buffer_listener_release
+static struct wl_buffer_listener    vwl_cb_buffer_listener = {
+    .release	    = vwl_bs_buffer_listener_release
 };
 
-static struct wl_keyboard_listener vwl_fs_keyboard_listener = {
-    .enter = vwl_fs_keyboard_listener_enter,
-    .key = vwl_fs_keyboard_listener_key,
-    .keymap = vwl_fs_keyboard_listener_keymap,
-    .leave = vwl_fs_keyboard_listener_leave,
-    .modifiers = vwl_fs_keyboard_listener_modifiers,
-    .repeat_info =vwl_fs_keyboard_listener_repeat_info
+static struct wl_keyboard_listener  vwl_fs_keyboard_listener = {
+    .enter	    = vwl_fs_keyboard_listener_enter,
+    .key	    = vwl_fs_keyboard_listener_key,
+    .keymap	    = vwl_fs_keyboard_listener_keymap,
+    .leave	    = vwl_fs_keyboard_listener_leave,
+    .modifiers	    = vwl_fs_keyboard_listener_modifiers,
+    .repeat_info    = vwl_fs_keyboard_listener_repeat_info
 };
 
-# endif // FEAT_WAYLAND_CLIPBOARD
+#endif // FEAT_WAYLAND_CLIPBOARD
 
-static struct wl_callback_listener vwl_callback_listener = {
-    .done = vwl_callback_done
+static struct wl_callback_listener  vwl_callback_listener = {
+    .done	    = vwl_callback_done
 };
 
-static struct wl_registry_listener vwl_registry_listener = {
-    .global = vwl_registry_listener_global,
-    .global_remove = vwl_registry_listener_global_remove
+static struct wl_registry_listener  vwl_registry_listener = {
+    .global	    = vwl_registry_listener_global,
+    .global_remove  = vwl_registry_listener_global_remove
 };
 
-static struct wl_seat_listener vwl_seat_listener = {
-    .name = vwl_seat_listener_name,
-    .capabilities = vwl_seat_listener_capabilities
+static struct wl_seat_listener	    vwl_seat_listener = {
+    .name	    = vwl_seat_listener_name,
+    .capabilities   = vwl_seat_listener_capabilities
 };
 
-static vwl_display_T vwl_display;
-static vwl_global_objects_T vwl_gobjects;
-static garray_T vwl_seats;
+static vwl_display_T		    vwl_display;
+static vwl_global_objects_T	    vwl_gobjects;
+static garray_T			    vwl_seats;
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
 // Make sure to sync this with vwl_cb_uninit since it memsets this to zero
-static vwl_clipboard_T vwl_clipboard = {
+static vwl_clipboard_T		    vwl_clipboard = {
     .regular.selection = WAYLAND_SELECTION_REGULAR,
     .primary.selection = WAYLAND_SELECTION_PRIMARY,
 };
@@ -370,15 +390,15 @@ static vwl_clipboard_T vwl_clipboard = {
     static int
 vwl_display_flush(vwl_display_T *display)
 {
-    int ret;
+    int		    ret;
 #ifndef HAVE_SELECT
-    struct pollfd fds = {
+    struct pollfd   fds = {
 	.fd = display->fd,
 	.events = POLLOUT
     };
 #else
-    fd_set wfds;
-    struct timeval tv;
+    fd_set	    wfds;
+    struct timeval  tv;
 
     FD_ZERO(&wfds);
     FD_SET(display->fd, &wfds);
@@ -428,8 +448,8 @@ vwl_callback_done(void *data, struct wl_callback *callback,
     static int
 vwl_display_roundtrip(vwl_display_T *display)
 {
-    struct wl_callback *callback;
-    int ret = OK, num = 0, done = FALSE;
+    struct wl_callback	*callback;
+    int			ret = OK, num = 0, done = FALSE;
 
     if (display->proxy == NULL)
 	return FAIL;
@@ -466,15 +486,15 @@ vwl_display_roundtrip(vwl_display_T *display)
     static int
 vwl_display_dispatch(vwl_display_T *display, int *num_dispatched)
 {
-    int num, ret = 0;
+    int		    num, ret = 0;
 #ifndef HAVE_SELECT
-    struct pollfd fds = {
+    struct pollfd   fds = {
 	.fd = display->fd,
 	.events = POLLOUT
     };
 #else
-    fd_set wfds;
-    struct timeval tv;
+    fd_set	    wfds;
+    struct timeval  tv;
 
     FD_ZERO(&wfds);
     FD_SET(display->fd, &wfds);
@@ -534,9 +554,9 @@ vwl_display_dispatch(vwl_display_T *display, int *num_dispatched)
 vwl_log_handler(const char *fmt, va_list args)
 {
     // 512 bytes should be big enough
-    char *buf = alloc(512);
-    char *prefix = _("wayland protocol error -> ");
-    size_t len = STRLEN(prefix);
+    char	*buf	= alloc(512);
+    char	*prefix = _("wayland protocol error -> ");
+    size_t	len	= STRLEN(prefix);
 
     if (buf == NULL)
 	return;
@@ -697,17 +717,17 @@ vwl_listen_to_registry(void)
  */
     static void
 vwl_registry_listener_global(
-	void *data UNUSED,
-	struct wl_registry *registry UNUSED,
-	uint32_t name,
-	const char *interface,
-	uint32_t version)
+	void		    *data UNUSED,
+	struct wl_registry  *registry UNUSED,
+	uint32_t	    name,
+	const char	    *interface,
+	uint32_t	    version)
 {
 
-    const struct wl_interface *chosen_interface = NULL;
-    void *proxy;
-    uint32_t min_version;
-    void **object_member;
+    const struct wl_interface	*chosen_interface = NULL;
+    void			*proxy;
+    uint32_t			min_version;
+    void			**object_member;
 
     if (STRCMP(interface, wl_seat_interface.name) == 0)
     {
@@ -760,9 +780,9 @@ vwl_registry_listener_global(
  */
     static void
 vwl_registry_listener_global_remove(
-	void *data UNUSED,
-	struct wl_registry *registry UNUSED,
-	uint32_t name UNUSED)
+	void		    *data UNUSED,
+	struct wl_registry  *registry UNUSED,
+	uint32_t	    name UNUSED)
 {
 }
 
@@ -798,8 +818,10 @@ vwl_add_seat(struct wl_seat *seat_proxy)
  * Callback for seat text label/name
  */
     static void
-vwl_seat_listener_name(void *data, struct wl_seat *seat_proxy UNUSED,
-	const char *name)
+vwl_seat_listener_name(
+	void		*data,
+	struct wl_seat	*seat_proxy UNUSED,
+	const char	*name)
 {
     vwl_seat_T *seat = data;
 
@@ -810,8 +832,10 @@ vwl_seat_listener_name(void *data, struct wl_seat *seat_proxy UNUSED,
  * Callback for seat capabilities
  */
     static void
-vwl_seat_listener_capabilities(void *data, struct wl_seat *seat_proxy UNUSED,
-	uint32_t capabilities)
+vwl_seat_listener_capabilities(
+	void		*data,
+	struct wl_seat	*seat_proxy UNUSED,
+	uint32_t	capabilities)
 {
     vwl_seat_T *seat = data;
 
@@ -962,9 +986,9 @@ vwl_focus_stealing_available(void)
  */
     static void
 vwl_xdg_surface_listener_configure(
-	void *data UNUSED,
-	struct xdg_surface *surface,
-	uint32_t serial)
+	void		    *data UNUSED,
+	struct xdg_surface  *surface,
+	uint32_t	    serial)
 {
     xdg_surface_ack_configure(surface, serial);
 }
@@ -974,8 +998,8 @@ vwl_xdg_surface_listener_configure(
  */
     static void
 vwl_bs_buffer_listener_release(
-	void *data,
-	struct wl_buffer *buffer UNUSED)
+	void		    *data,
+	struct wl_buffer    *buffer UNUSED)
 {
     vwl_buffer_store_T *store = data;
 
@@ -1004,8 +1028,8 @@ vwl_destroy_buffer_store(vwl_buffer_store_T *store)
     static vwl_buffer_store_T *
 vwl_init_buffer_store(int width, int height)
 {
-    int fd, r;
-    vwl_buffer_store_T *store;
+    int			fd, r;
+    vwl_buffer_store_T	*store;
 
     if (vwl_gobjects.wl_shm == NULL)
 	return NULL;
@@ -1084,10 +1108,10 @@ vwl_destroy_fs_surface(vwl_fs_surface_T *store)
  */
     static int
 vwl_init_fs_surface(
-	vwl_seat_T *seat,
-	vwl_buffer_store_T *buffer_store,
-	void (*on_focus)(void *, uint32_t),
-	void *user_data)
+	vwl_seat_T	    *seat,
+	vwl_buffer_store_T  *buffer_store,
+	void		    (*on_focus)(void *, uint32_t),
+	void		    *user_data)
 {
     vwl_fs_surface_T *store;
 
@@ -1184,11 +1208,11 @@ fail:
  */
     static void
 vwl_fs_keyboard_listener_enter(
-    void *data,
-    struct wl_keyboard *keyboard UNUSED,
-    uint32_t serial,
-    struct wl_surface *surface UNUSED,
-    struct wl_array *keys UNUSED)
+    void		*data,
+    struct wl_keyboard	*keyboard UNUSED,
+    uint32_t		serial,
+    struct wl_surface	*surface UNUSED,
+    struct wl_array	*keys UNUSED)
 {
     vwl_fs_surface_T *store = data;
 
@@ -1202,53 +1226,53 @@ vwl_fs_keyboard_listener_enter(
 
     static void
 vwl_fs_keyboard_listener_keymap(
-    void *data UNUSED,
-    struct wl_keyboard *keyboard UNUSED,
-    uint32_t format UNUSED,
-    int fd,
-    uint32_t size UNUSED)
+    void		*data UNUSED,
+    struct wl_keyboard	*keyboard UNUSED,
+    uint32_t		format UNUSED,
+    int			fd,
+    uint32_t		size UNUSED)
 {
     close(fd);
 }
 
     static void
 vwl_fs_keyboard_listener_leave(
-    void *data UNUSED,
-    struct wl_keyboard *keyboard UNUSED,
-    uint32_t serial UNUSED,
-    struct wl_surface *surface UNUSED)
+    void		*data UNUSED,
+    struct wl_keyboard	*keyboard UNUSED,
+    uint32_t		serial UNUSED,
+    struct wl_surface	*surface UNUSED)
 {
 }
 
     static void
 vwl_fs_keyboard_listener_key(
-    void *data UNUSED,
-    struct wl_keyboard *keyboard UNUSED,
-    uint32_t serial UNUSED,
-    uint32_t time UNUSED,
-    uint32_t key UNUSED,
-    uint32_t state UNUSED)
+    void		*data UNUSED,
+    struct wl_keyboard	*keyboard UNUSED,
+    uint32_t		serial UNUSED,
+    uint32_t		time UNUSED,
+    uint32_t		key UNUSED,
+    uint32_t		state UNUSED)
 {
 }
 
     static void
 vwl_fs_keyboard_listener_modifiers(
-    void *data UNUSED,
-    struct wl_keyboard *keyboard UNUSED,
-    uint32_t serial UNUSED,
-    uint32_t mods_depressed UNUSED,
-    uint32_t mods_latched UNUSED,
-    uint32_t mods_locked UNUSED,
-    uint32_t group UNUSED)
+    void		*data UNUSED,
+    struct wl_keyboard	*keyboard UNUSED,
+    uint32_t		serial UNUSED,
+    uint32_t		mods_depressed UNUSED,
+    uint32_t		mods_latched UNUSED,
+    uint32_t		mods_locked UNUSED,
+    uint32_t		group UNUSED)
 {
 }
 
     static void
 vwl_fs_keyboard_listener_repeat_info(
-    void *data UNUSED,
-    struct wl_keyboard *keyboard UNUSED,
-    int32_t rate UNUSED,
-    int32_t delay UNUSED)
+    void		*data UNUSED,
+    struct wl_keyboard	*keyboard UNUSED,
+    int32_t		rate UNUSED,
+    int32_t		delay UNUSED)
 {
 }
 
@@ -1308,6 +1332,7 @@ static vwl_data_offer_T *tmp_vwl_offer;
 vwl_gen_data_device_listener_data_offer(void *data, void *offer_proxy)
 {
     vwl_data_device_T *device = data;
+
     tmp_vwl_offer = alloc(sizeof(*tmp_vwl_offer));
 
     if (tmp_vwl_offer != NULL)
@@ -1321,8 +1346,8 @@ vwl_gen_data_device_listener_data_offer(void *data, void *offer_proxy)
 
     static void
 vwl_gen_data_device_listener_selection(
-	void *data,
-	void *offer_proxy,
+	void		    *data,
+	void		    *offer_proxy,
 	wayland_selection_T selection,
 	vwl_data_protocol_T protocol)
 {
@@ -1444,73 +1469,73 @@ VWL_FUNC_DATA_OFFER_OFFER(zwp_primary_selection_offer_v1)
 // DATA DEVICES
 struct zwlr_data_control_device_v1_listener
 zwlr_data_control_device_v1_listener = {
-    .data_offer = zwlr_data_control_device_v1_listener_data_offer,
-    .selection = zwlr_data_control_device_v1_listener_selection,
+    .data_offer	    = zwlr_data_control_device_v1_listener_data_offer,
+    .selection	    = zwlr_data_control_device_v1_listener_selection,
     .primary_selection = zwlr_data_control_device_v1_listener_primary_selection,
-    .finished = zwlr_data_control_device_v1_listener_finished
+    .finished	    = zwlr_data_control_device_v1_listener_finished
 };
 
 struct ext_data_control_device_v1_listener
 ext_data_control_device_v1_listener = {
-    .data_offer = ext_data_control_device_v1_listener_data_offer,
-    .selection = ext_data_control_device_v1_listener_selection,
+    .data_offer	    = ext_data_control_device_v1_listener_data_offer,
+    .selection	    = ext_data_control_device_v1_listener_selection,
     .primary_selection = ext_data_control_device_v1_listener_primary_selection,
-    .finished = ext_data_control_device_v1_listener_finished
+    .finished	    = ext_data_control_device_v1_listener_finished
 };
 
 struct wl_data_device_listener wl_data_device_listener = {
-    .data_offer = wl_data_device_listener_data_offer,
-    .selection = wl_data_device_listener_selection,
+    .data_offer	    = wl_data_device_listener_data_offer,
+    .selection	    = wl_data_device_listener_selection,
 };
 
 struct zwp_primary_selection_device_v1_listener
 zwp_primary_selection_device_v1_listener = {
-    .selection = zwp_primary_selection_device_v1_listener_primary_selection,
-    .data_offer = zwp_primary_selection_device_v1_listener_data_offer
+    .selection	= zwp_primary_selection_device_v1_listener_primary_selection,
+    .data_offer	    = zwp_primary_selection_device_v1_listener_data_offer
 };
 
 // DATA SOURCES
 struct zwlr_data_control_source_v1_listener
 zwlr_data_control_source_v1_listener = {
-    .send = zwlr_data_control_source_v1_listener_send,
-    .cancelled = zwlr_data_control_source_v1_listener_cancelled
+    .send	    = zwlr_data_control_source_v1_listener_send,
+    .cancelled	    = zwlr_data_control_source_v1_listener_cancelled
 };
 
 struct ext_data_control_source_v1_listener
 ext_data_control_source_v1_listener = {
-    .send = ext_data_control_source_v1_listener_send,
-    .cancelled = ext_data_control_source_v1_listener_cancelled
+    .send	    = ext_data_control_source_v1_listener_send,
+    .cancelled	    = ext_data_control_source_v1_listener_cancelled
 };
 
 struct wl_data_source_listener wl_data_source_listener = {
-    .send = wl_data_source_listener_send,
-    .cancelled = wl_data_source_listener_cancelled
+    .send	    = wl_data_source_listener_send,
+    .cancelled	    = wl_data_source_listener_cancelled
 };
 
 struct zwp_primary_selection_source_v1_listener
 zwp_primary_selection_source_v1_listener = {
-    .send = zwp_primary_selection_source_v1_listener_send,
-    .cancelled = zwp_primary_selection_source_v1_listener_cancelled,
+    .send	    = zwp_primary_selection_source_v1_listener_send,
+    .cancelled	    = zwp_primary_selection_source_v1_listener_cancelled,
 };
 
 // OFFERS
 struct zwlr_data_control_offer_v1_listener
 zwlr_data_control_offer_v1_listener = {
-    .offer = zwlr_data_control_offer_v1_listener_offer
+    .offer	    = zwlr_data_control_offer_v1_listener_offer
 };
 
 struct ext_data_control_offer_v1_listener
 ext_data_control_offer_v1_listener = {
-    .offer = ext_data_control_offer_v1_listener_offer
+    .offer	    = ext_data_control_offer_v1_listener_offer
 };
 
 struct wl_data_offer_listener wl_data_offer_listener = {
-    .offer = wl_data_offer_listener_offer
+    .offer	    = wl_data_offer_listener_offer
 };
 
 struct zwp_primary_selection_offer_v1_listener
 zwp_primary_selection_offer_v1_listener = {
-    .offer = zwp_primary_selection_offer_v1_listener_offer
+    .offer	    = zwp_primary_selection_offer_v1_listener_offer
 };
 
 // `type` is also used as the user data
@@ -1567,9 +1592,9 @@ vwl_data_offer_add_listener(vwl_data_offer_T *offer, void *data)
  */
     static void
 vwl_data_device_set_selection(
-	vwl_data_device_T *device,
-	vwl_data_source_T *source,
-	uint32_t serial,
+	vwl_data_device_T   *device,
+	vwl_data_source_T   *source,
+	uint32_t	    serial,
 	wayland_selection_T selection)
 {
     if (selection == WAYLAND_SELECTION_REGULAR)
@@ -1654,8 +1679,8 @@ vwl_data_offer_receive(vwl_data_offer_T *offer, const char *mime_type, int fd)
  */
     static int
 vwl_get_data_device_manager(
-	vwl_data_device_manager_T *manager,
-	wayland_selection_T selection)
+	vwl_data_device_manager_T   *manager,
+	wayland_selection_T	    selection)
 {
     // Prioritize data control protocols first then try using the focus steal
     // method with the core protocol data objects. if 'wlstealf' is set then
@@ -1700,9 +1725,9 @@ focus_steal:
  */
     static void
 vwl_get_data_device(
-	vwl_data_device_manager_T *manager,
-	vwl_seat_T *seat,
-	vwl_data_device_T *device)
+	vwl_data_device_manager_T   *manager,
+	vwl_seat_T		    *seat,
+	vwl_data_device_T	    *device)
 {
     switch (manager->protocol)
     {
@@ -1736,8 +1761,8 @@ vwl_get_data_device(
  */
     static void
 vwl_create_data_source(
-	vwl_data_device_manager_T *manager,
-	vwl_data_source_T *source)
+	vwl_data_device_manager_T   *manager,
+	vwl_data_source_T	    *source)
 {
     switch (manager->protocol)
     {
@@ -1930,8 +1955,8 @@ vwl_clipboard_selection_is_ready(vwl_clipboard_selection_T *clip_sel)
  */
     static void
 vwl_data_device_listener_data_offer(
-	vwl_data_device_T *device,
-	vwl_data_offer_T *offer)
+	vwl_data_device_T   *device,
+	vwl_data_offer_T    *offer)
 {
     vwl_clipboard_selection_T *clip_sel = device->data;
 
@@ -1966,12 +1991,12 @@ vwl_data_offer_listener_offer(vwl_data_offer_T *offer, const char *mime_type)
  */
     static void
 vwl_data_device_listener_selection(
-	vwl_data_device_T *device UNUSED,
-	vwl_data_offer_T *offer,
+	vwl_data_device_T   *device UNUSED,
+	vwl_data_offer_T    *offer,
 	wayland_selection_T selection)
 {
-    vwl_clipboard_selection_T *clip_sel = device->data;
-    vwl_data_offer_T *prev_offer = clip_sel->offer;
+    vwl_clipboard_selection_T	*clip_sel = device->data;
+    vwl_data_offer_T		*prev_offer = clip_sel->offer;
 
     // Save offer if it selection and clip_sel match, else discard it
     if (clip_sel->selection == selection)
@@ -2116,9 +2141,9 @@ wayland_cb_receive_data(const char *mime_type, wayland_selection_T selection)
  */
     static void
 vwl_data_source_listener_send(
-	vwl_data_source_T *source,
-	const char *mime_type,
-	int32_t fd)
+	vwl_data_source_T   *source,
+	const char	    *mime_type,
+	int32_t		    fd)
 {
     vwl_clipboard_selection_T *clip_sel = source->data;
 
@@ -2162,11 +2187,11 @@ vwl_on_focus_set_selection(void *data, uint32_t serial)
  */
     int
 wayland_cb_own_selection(
-	wayland_cb_send_data_func_T send_cb,
-	wayland_cb_selection_cancelled_func_T cancelled_cb,
-	const char **mime_types,
-	int len,
-	wayland_selection_T selection)
+	wayland_cb_send_data_func_T		send_cb,
+	wayland_cb_selection_cancelled_func_T	cancelled_cb,
+	const char				**mime_types,
+	int					len,
+	wayland_selection_T			selection)
 {
     vwl_clipboard_selection_T *clip_sel;
 
@@ -2358,6 +2383,8 @@ wayland_set_display(const char *display)
 	goto exit;
 
     if (display == NULL)
+	// $WAYLAND_DISPLAY is not set
+	display = "";
 
     // Leave unchanged if display is empty (but not NULL)
     if (STRCMP(display, "") != 0)

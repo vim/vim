@@ -493,8 +493,8 @@ SRC_UNIX =	\
 		src/gui_x11_pm.h \
 		src/wlr-data-control-unstable-v1.c \
 		src/wlr-data-control-unstable-v1.h \
-		src/ext-data-control-unstable-v1.c \
-		src/ext-data-control-unstable-v1.h \
+		src/ext-data-control-v1.c \
+		src/ext-data-control-v1.h \
 		src/xdg-shell.c \
 		src/xdg-shell.h \
 		src/primary-selection-unstable-v1.c \
