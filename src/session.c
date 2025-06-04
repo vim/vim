@@ -680,17 +680,13 @@ makeopens(
     if (put_line(fd, "endif") == FAIL)
 	goto fail;
 
-    // save 'shortmess' if not storing options
+    // Save 'shortmess' if not storing options.
     if ((ssop_flags & SSOP_OPTIONS) == 0
 	    && put_line(fd, "let s:shortmess_save = &shortmess") == FAIL)
 	goto fail;
 
-    // set 'shortmess' for the following.  Add the 'A' flag if it was there
-    if (put_line(fd, "if &shortmess =~ 'A'") == FAIL
-	    || put_line(fd, "  set shortmess+=aoOA") == FAIL
-	    || put_line(fd, "else") == FAIL
-	    || put_line(fd, "  set shortmess+=aoO") == FAIL
-	    || put_line(fd, "endif") == FAIL)
+    // Set 'shortmess' for the following.
+    if (put_line(fd, "set shortmess+=aoO") == FAIL)
 	goto fail;
 
     // Now save the current files, current buffer first.
