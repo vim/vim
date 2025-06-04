@@ -1472,7 +1472,9 @@ cp_set_prev(void* node, void* prev)
     static int
 cp_compare_fuzzy(const void* a, const void* b)
 {
-    return ((compl_T*)b)->cp_score - ((compl_T*)a)->cp_score;
+    int score_a = ((compl_T*)a)->cp_score;
+    int score_b = ((compl_T*)b)->cp_score;
+    return (score_b > score_a) ? 1 : (score_b < score_a) ? -1 : 0;
 }
 
 /*
