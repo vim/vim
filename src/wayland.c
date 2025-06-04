@@ -18,7 +18,7 @@
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
 # include "wlr-data-control-unstable-v1.h"
-# include "ext-data-control-unstable-v1.h"
+# include "ext-data-control-v1.h"
 # include "xdg-shell.h"
 # include "primary-selection-unstable-v1.h"
 #endif
