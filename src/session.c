@@ -687,9 +687,9 @@ makeopens(
 
     // set 'shortmess' for the following.  Add the 'A' flag if it was there
     if (put_line(fd, "if &shortmess =~ 'A'") == FAIL
-	    || put_line(fd, "  set shortmess=aoOA") == FAIL
+	    || put_line(fd, "  set shortmess+=aoOA") == FAIL
 	    || put_line(fd, "else") == FAIL
-	    || put_line(fd, "  set shortmess=aoO") == FAIL
+	    || put_line(fd, "  set shortmess+=aoO") == FAIL
 	    || put_line(fd, "endif") == FAIL)
 	goto fail;
 
