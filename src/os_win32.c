@@ -3043,8 +3043,10 @@ mch_init_g(void)
 
 	    p = (char *)vim_strsave(vimrun_location);
 	    if (p != NULL)
+	    {
 		vimrun_path = p;
-	    s_dont_use_vimrun = FALSE;
+		s_dont_use_vimrun = FALSE;
+	    }
 	}
 	else if (executable_exists("vimrun.exe", NULL, TRUE, FALSE))
 	    s_dont_use_vimrun = FALSE;
