@@ -3638,8 +3638,8 @@ objects/wayland.o: wayland.c
 objects/wlr-data-control-unstable-v1.o: wlr-data-control-unstable-v1.c
 	$(CCC) -o $@ wlr-data-control-unstable-v1.c
 
-objects/ext-data-control-unstable-v1.o: ext-data-control-unstable-v1.c
-	$(CCC) -o $@ ext-data-control-unstable-v1.c
+objects/ext-data-control-v1.o: ext-data-control-v1.c
+	$(CCC) -o $@ ext-data-control-v1.c
 
 objects/xdg-shell.o: xdg-shell.c
 	$(CCC) -o $@ xdg-shell.c
@@ -4520,7 +4520,7 @@ objects/channel.o: channel.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
 objects/wlr-data-control-unstable-v1.o: wlr-data-control-unstable-v1.c
-objects/ext-data-control-unstable-v1.o: ext-data-control-unstable-v1.c
+objects/ext-data-control-v1.o: ext-data-control-v1.c
 objects/xdg-shell.o: xdg-shell.c
 objects/primary-selection-unstable-v1.o: primary-selection-unstable-v1.c
 objects/wayland.o: wayland.c vim.h protodef.h auto/config.h feature.h os_unix.h \
@@ -4528,7 +4528,7 @@ objects/wayland.o: wayland.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h xdiff/xdiff.h xdiff/../vim.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h errors.h \
- wlr-data-control-unstable-v1.h ext-data-control-unstable-v1.h \
+ wlr-data-control-unstable-v1.h ext-data-control-v1.h \
  xdg-shell.h primary-selection-unstable-v1.h
 objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
 objects/vterm_encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \

@@ -818,7 +818,7 @@ if has('wayland')
   call <SID>OptionG("wse", &wse)
 endif
 if has("wayland_clipboard")
-  call <SID>AddOption("wlsteal", gettext("Enable wayland focus stealing functionality in order to acess the clipboard"))
+  call <SID>AddOption("wlsteal", gettext("Enable wayland focus stealing functionality in order to access the clipboard"))
   call <SID>BinOptionG("wst", &wst)
   call <SID>AddOption("wlstealf", gettext("Forcibly enable wayland focus stealing functionality in order to acess the clipboard"))
   call <SID>BinOptionG("wtf", &wtf)
