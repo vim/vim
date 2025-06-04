@@ -1489,7 +1489,6 @@ ins_compl_build_pum(void)
     int		shown_match_ok = FALSE;
     int		i = 0;
     int		cur = -1;
-    int		max_fuzzy_score = 0;
     unsigned int cur_cot_flags = get_cot_flags();
     int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
     int		fuzzy_filter = (cur_cot_flags & COT_FUZZY) != 0;
@@ -1497,7 +1496,6 @@ ins_compl_build_pum(void)
     compl_T	*match_head = NULL;
     compl_T	*match_tail = NULL;
     compl_T	*match_next = NULL;
-    int		update_shown_match = fuzzy_filter;
     int		*match_count = NULL;
     int		is_forward = compl_shows_dir_forward();
     int		is_cpt_completion = (cpt_sources_array != NULL);
@@ -1509,10 +1507,6 @@ ins_compl_build_pum(void)
     // match after it, don't highlight anything.
     if (match_at_original_text(compl_shown_match))
 	shown_match_ok = TRUE;
-
-    if (fuzzy_filter && ctrl_x_mode_normal() && compl_leader.string == NULL
-	    && compl_shown_match->cp_score > 0)
-	update_shown_match = FALSE;
 
     if (compl_leader.string != NULL
 	    && STRCMP(compl_leader.string, compl_orig_text.string) == 0
@@ -1623,16 +1617,6 @@ ins_compl_build_pum(void)
 		{
 		    if (i == 0)
 			shown_compl = compl;
-		    // Update the maximum fuzzy score and the shown match
-		    // if the current item's score is higher
-		    if (fuzzy_sort && compl->cp_score > max_fuzzy_score
-			    && update_shown_match)
-		    {
-			did_find_shown_match = TRUE;
-			max_fuzzy_score = compl->cp_score;
-			if (!compl_no_select)
-			    compl_shown_match = compl;
-		    }
 
 		    if (!shown_match_ok && compl == compl_shown_match)
 		    {
@@ -1688,7 +1672,6 @@ ins_compl_build_pum(void)
 			    ? compl->cp_text[CPT_ABBR] : compl->cp_str.string;
 	compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
 	compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
-	compl_match_array[i].pum_score = compl->cp_score;
 	compl_match_array[i].pum_cpt_source_idx = compl->cp_cpt_source_idx;
 	compl_match_array[i].pum_user_abbr_hlattr = compl->cp_user_abbr_hlattr;
 	compl_match_array[i].pum_user_kind_hlattr = compl->cp_user_kind_hlattr;
@@ -5534,44 +5517,6 @@ ins_compl_show_filename(void)
 }
 
 /*
- * Find a completion item when 'completeopt' contains "fuzzy".
- */
-    static compl_T *
-find_comp_when_fuzzy(void)
-{
-    int		score;
-    char_u*	str;
-    int		target_idx = -1;
-    int		is_forward = compl_shows_dir_forward();
-    int		is_backward = compl_shows_dir_backward();
-    compl_T	*comp = NULL;
-
-    if ((is_forward && compl_selected_item == compl_match_arraysize - 1)
-	    || (is_backward && compl_selected_item == 0))
-	return match_at_original_text(compl_first_match)
-			    ? compl_first_match : compl_first_match->cp_prev;
-
-    if (is_forward)
-	target_idx = compl_selected_item + 1;
-    else if (is_backward)
-	target_idx = compl_selected_item == -1 ? compl_match_arraysize - 1
-						: compl_selected_item - 1;
-
-    score = compl_match_array[target_idx].pum_score;
-    str = compl_match_array[target_idx].pum_text;
-
-    comp = compl_first_match;
-    do
-    {
-	if (comp->cp_score == score && (str == comp->cp_str.string || str == comp->cp_text[CPT_ABBR]))
-	    return comp;
-	comp = comp->cp_next;
-    } while (comp != NULL && !is_first_match(comp));
-
-    return NULL;
-}
-
-/*
  * Find the appropriate completion item when 'complete' ('cpt') includes
  * a 'max_matches' postfix. In this case, we search for a match where
  * 'cp_in_match_array' is set, indicating that the match is also present
@@ -5621,9 +5566,7 @@ find_next_completion_match(
     {
 	if (compl_shows_dir_forward() && compl_shown_match->cp_next != NULL)
 	{
-	    if (compl_match_array != NULL && compl_fuzzy_match)
-		compl_shown_match = find_comp_when_fuzzy();
-	    else if (cpt_sources_active)
+	    if (cpt_sources_active)
 		compl_shown_match = find_comp_when_cpt_sources();
 	    else
 		compl_shown_match = compl_shown_match->cp_next;
@@ -5635,9 +5578,7 @@ find_next_completion_match(
 		&& compl_shown_match->cp_prev != NULL)
 	{
 	    found_end = is_first_match(compl_shown_match);
-	    if (compl_match_array != NULL && compl_fuzzy_match)
-		compl_shown_match = find_comp_when_fuzzy();
-	    else if (cpt_sources_active)
+	    if (cpt_sources_active)
 		compl_shown_match = find_comp_when_cpt_sources();
 	    else
 		compl_shown_match = compl_shown_match->cp_prev;
