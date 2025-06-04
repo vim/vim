@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.1.  Last change: 2025 Jun 03
+*editing.txt*   For Vim version 9.1.  Last change: 2025 Jun 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1348,7 +1348,7 @@ may want to add >
 <
 as the final filter on Windows or >
 
-	All Files\t(*)\t*\n"
+	All Files\t(*)\t*\n
 <
 on other platforms, so that the user can still access any desired file.
 
