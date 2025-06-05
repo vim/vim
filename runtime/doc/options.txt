@@ -9875,7 +9875,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note: Do not confuse this with the height of the Vim window, use
 	'lines' for that.
 
-						*'winfixbuf'*
+						*'winfixbuf'* *'wfb'*
 'winfixbuf' 'wfb'	boolean	(default off)
 			local to window
 	If enabled, the window and the buffer it is displaying are paired.
