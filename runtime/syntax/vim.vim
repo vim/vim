@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Jun 02
+" Last Change:	   2025 Jun 05
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -727,7 +727,12 @@ endif
 
 " Blocks: {{{2
 " ======
-Vim9 syn region	vim9Block	matchgroup=vimSep start="{" end="^\s*\zs}" contains=@vimDefBodyList
+Vim9 syn region	vim9Block
+      \ matchgroup=vimSep
+      \ start="{\ze\s*\%($\|[#|]\)"
+      \ end="^\s*\zs}"
+      \ skipwhite nextgroup=vim9Comment,vimCmdSep
+      \ contains=@vimDefBodyList
 
 " Keymaps: {{{2
 " =======
