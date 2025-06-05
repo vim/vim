@@ -6227,7 +6227,7 @@ shell_new_columns(void)
     if (!skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
 #ifdef FEAT_GUI
-    if (gui.in_use)
+    if (gui.in_use && !gui.starting)
     {
 	if (scroll_region)
 	    scroll_region_reset();
