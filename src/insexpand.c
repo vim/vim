@@ -5269,7 +5269,7 @@ ins_compl_get_exp(pos_T *ini)
 	    compl_started = FALSE;
 	}
 
-	// For `^P` completion, reset `compl_cur_match` to the head to avoid
+	// For `^P` completion, reset `compl_curr_match` to the head to avoid
 	// mixing matches from different sources.
 	if (!compl_dir_forward())
 	    while (compl_curr_match->cp_prev)
@@ -5478,8 +5478,6 @@ ins_compl_insert(int in_compl_func, int move_cursor)
 	set_vim_var_dict(VV_COMPLETED_ITEM, dict);
     }
 #endif
-    if (!in_compl_func)
-	compl_curr_match = compl_shown_match;
 }
 
 /*
