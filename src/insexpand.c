@@ -1413,9 +1413,10 @@ cp_compare_nearest(const void* a, const void* b)
  * Set fuzzy score.
  */
     static void
-set_fuzzy_score(void)
+set_fuzzy_score(int *need_sort)
 {
     compl_T     *compl = compl_first_match->cp_prev;
+    int		last_score = -1;
 
     if (compl_leader.string != NULL && compl_leader.length > 0)
     {
@@ -1424,6 +1425,12 @@ set_fuzzy_score(void)
 	{
 	    compl->cp_score = fuzzy_match_str(compl->cp_str.string,
 		    compl_leader.string);
+	    if (compl->cp_score > 0)
+	    {
+		if (last_score > 0 && compl->cp_score > last_score)
+		    *need_sort = TRUE;
+		last_score = compl->cp_score;
+	    }
 	    compl = compl->cp_next;
 	} while (compl != NULL && !is_first_match(compl));
     }
@@ -1485,6 +1492,13 @@ ins_compl_build_pum(void)
     int		*match_count = NULL;
     int		is_forward = compl_shows_dir_forward();
     int		is_cpt_completion = (cpt_sources_array != NULL);
+    int		need_sort = FALSE;
+    int		has_scores = FALSE;
+    int		update_shown_match = fuzzy_filter;
+
+    if (fuzzy_filter && ctrl_x_mode_normal()
+      && compl_leader.string == NULL && compl_shown_match->cp_score > 0)
+	update_shown_match = FALSE;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
@@ -2314,6 +2328,8 @@ ins_compl_need_restart(void)
     static void
 ins_compl_new_leader(void)
 {
+    int	    need_resort = FALSE;
+
     ins_compl_del_pum();
     ins_compl_delete();
     ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
@@ -2350,10 +2366,10 @@ ins_compl_new_leader(void)
 
     // When 'cot' contains "fuzzy" set the cp_score
     if (get_cot_flags() & COT_FUZZY)
-	set_fuzzy_score();
+	set_fuzzy_score(&need_resort);
     // Sort the matches linked list based on fuzzy score
     int	cur_cot_flags = get_cot_flags();
-    if ((cur_cot_flags & COT_FUZZY) && !(cur_cot_flags & COT_NOSORT))
+    if (need_resort && (cur_cot_flags & COT_FUZZY) && !(cur_cot_flags & COT_NOSORT))
     {
 	sort_compl_match_list(cp_compare_fuzzy);
 	if ((cur_cot_flags & COT_NOINSERT) && !(cur_cot_flags & COT_NOSELECT)
