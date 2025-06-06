@@ -1500,6 +1500,13 @@ ins_compl_build_pum(void)
     int		*match_count = NULL;
     int		is_forward = compl_shows_dir_forward();
     int		is_cpt_completion = (cpt_sources_array != NULL);
+    int		need_sort = FALSE;
+    int		has_scores = FALSE;
+    int		update_shown_match = fuzzy_filter;
+
+    if (fuzzy_filter && ctrl_x_mode_normal()
+      && compl_leader.string == NULL && compl_shown_match->cp_score > 0)
+	update_shown_match = FALSE;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
@@ -1519,16 +1526,24 @@ ins_compl_build_pum(void)
     // set the cp_score for later comparisons.
     if (fuzzy_filter && compl_leader.string != NULL && compl_leader.length > 0)
     {
+	int last_score = -1;
 	compl = compl_first_match;
 	do
 	{
 	    compl->cp_score = fuzzy_match_str(compl->cp_str.string, compl_leader.string);
+	    if (compl->cp_score > 0)
+	    {
+		has_scores = TRUE;
+		if (last_score > 0 && compl->cp_score > last_score)
+		    need_sort = TRUE;
+		last_score = compl->cp_score;
+	    }
 	    compl = compl->cp_next;
 	} while (compl != NULL && !is_first_match(compl));
     }
 
     // Sort the linked list based on fuzzy score
-    if (fuzzy_sort && compl_leader.string != NULL && compl_leader.length > 0
+    if (fuzzy_sort && has_scores && need_sort
 	    && !is_first_match(compl_first_match->cp_next))
     {
 	compl = compl_first_match->cp_prev;
