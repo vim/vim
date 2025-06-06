@@ -2352,8 +2352,18 @@ ins_compl_new_leader(void)
     if (get_cot_flags() & COT_FUZZY)
 	set_fuzzy_score();
     // Sort the matches linked list based on fuzzy score
-    if ((get_cot_flags() & COT_FUZZY) && !(get_cot_flags() & COT_NOSORT))
+    int	cot_flags = get_cot_flags();
+    if ((cot_flags & COT_FUZZY) && !(cot_flags & COT_NOSORT))
+    {
 	sort_compl_match_list(cp_compare_fuzzy);
+	if ((cot_flags & COT_NOINSERT) && !(cot_flags & COT_NOSELECT)
+		&& compl_first_match)
+	{
+	    compl_shown_match = compl_first_match;
+	    if (compl_shows_dir_forward())
+		compl_shown_match = compl_first_match->cp_next;
+	}
+    }
 
     compl_enter_selects = !compl_used_match && compl_selected_item != -1;
 
