@@ -3194,6 +3194,17 @@ eval_variable(
 	    int	    has_g_prefix = STRNCMP(name, "g:", 2) == 0;
 	    ufunc_T *ufunc = find_func(name, FALSE);
 
+	    if (ufunc != NULL)
+	    {
+		// Check whether this is a generic function
+		ufunc = eval_generic_func(ufunc, name, len, cc);
+		if (ufunc == NULL)
+		{
+		    ret = FAIL;
+		    goto done;
+		}
+	    }
+
 	    // In Vim9 script we can get a function reference by using the
 	    // function name.  For a global non-autoload function "g:" is
 	    // required.
@@ -3201,6 +3212,7 @@ eval_variable(
 					    || !func_requires_g_prefix(ufunc)))
 	    {
 		found = TRUE;
+
 		if (rettv != NULL)
 		{
 		    rettv->v_type = VAR_FUNC;

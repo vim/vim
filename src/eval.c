@@ -291,7 +291,7 @@ eval_expr_partial(
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_evaluate = TRUE;
 	funcexe.fe_partial = partial;
-	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+	if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	    return FAIL;
     }
 
@@ -323,7 +323,7 @@ eval_expr_func(
 
     CLEAR_FIELD(funcexe);
     funcexe.fe_evaluate = TRUE;
-    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+    if (call_func(s, -1, rettv, argc, argv, NULL, &funcexe) == FAIL)
 	return FAIL;
 
     return OK;
@@ -944,7 +944,7 @@ call_vim_function(
     if (name == NULL)
 	name = func;
 
-    ret = call_func(name, -1, rettv, argc, argv, &funcexe);
+    ret = call_func(name, -1, rettv, argc, argv, NULL, &funcexe);
 
     if (ret == FAIL)
 	clear_tv(rettv);
@@ -2213,7 +2213,7 @@ get_lval(
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp,
 			       &SCRIPT_ITEM(current_sctx.sc_sid)->sn_type_list,
-			       !quiet);
+			       NULL, NULL, !quiet);
 		if (lp->ll_type == NULL && !quiet)
 		    return NULL;
 		lp->ll_name_end = tp;
@@ -4725,7 +4725,7 @@ eval8(
     {
 	++*arg;
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	want_type = parse_type(arg, &type_list, TRUE);
+	want_type = parse_type(arg, &type_list, NULL, NULL, TRUE);
 	if (want_type == NULL && (evaluate || **arg != '>'))
 	{
 	    clear_type_list(&type_list);
@@ -4973,7 +4973,7 @@ eval9_nested_expr(
 
     if (vim9script)
     {
-	ret = get_lambda_tv(arg, rettv, TRUE, evalarg);
+	ret = get_lambda_tv(arg, rettv, TRUE, evalarg, NULL);
 	if (ret == OK && evaluate)
 	{
 	    ufunc_T *ufunc = rettv->vval.v_partial->pt_func;
@@ -5062,7 +5062,8 @@ eval9_var_func_name(
 	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), s);
 	    ret = FAIL;
 	}
-	else if ((vim9script ? **arg : *skipwhite(*arg)) == '(')
+	else if ((vim9script ? **arg : *skipwhite(*arg)) == '('
+				|| (vim9script && generic_func_call(arg)))
 	{
 	    // "name(..."  recursive!
 	    *arg = skipwhite(*arg);
@@ -5079,6 +5080,17 @@ eval9_var_func_name(
 		*name_start = s;
 		ret = eval_variable(s, len, 0, rettv, NULL,
 					EVAL_VAR_VERBOSE + EVAL_VAR_IMPORT);
+		if (ret == OK && vim9script &&
+			**arg == '<' && rettv->v_type == VAR_FUNC)
+		{
+		    // skip generic function arguments
+		    *arg += 1;
+		    char_u *p = generic_func_find_close_angle_bracket(*arg);
+		    if (p != NULL)
+			*arg = p + 1;	// skip ">"
+		    else
+			ret = FAIL;
+		}
 	    }
 	}
 	else
@@ -5230,7 +5242,7 @@ eval9(
     case '{':	if (vim9script)
 		    ret = NOTDONE;
 		else
-		    ret = get_lambda_tv(arg, rettv, vim9script, evalarg);
+		    ret = get_lambda_tv(arg, rettv, vim9script, evalarg, NULL);
 		if (ret == NOTDONE)
 		    ret = eval_dict(arg, rettv, evalarg, FALSE);
 		break;
@@ -5471,7 +5483,7 @@ eval_lambda(
     if (**arg == '{')
     {
 	// ->{lambda}()
-	ret = get_lambda_tv(arg, rettv, FALSE, evalarg);
+	ret = get_lambda_tv(arg, rettv, FALSE, evalarg, NULL);
     }
     else
     {
@@ -7373,7 +7385,39 @@ handle_subscript(
 	    else
 	    {
 		rettv->v_type = VAR_FUNC;
-		rettv->vval.v_string = vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
+		if (**arg == '<')
+		{
+		    if (IS_GENERIC_FUNC(ufunc))
+		    {
+			char_u	*end_bracket =
+			    generic_func_find_close_angle_bracket(*arg + 1);
+
+			if (end_bracket == NULL)
+			{
+			    semsg(_(e_missing_closing_angle_bracket_in_generic_function),
+				    *arg);
+			    ret = FAIL;
+			    break;
+			}
+
+			vim_strncpy(IObuff, ufunc->uf_name, ufunc->uf_namelen);
+			vim_strncpy(IObuff + ufunc->uf_namelen, *arg,
+						    end_bracket - *arg + 1);
+			rettv->vval.v_string = vim_strsave(IObuff);
+			*arg = end_bracket + 1;
+		    }
+		    else
+		    {
+			emsg_funcname(e_unknown_generic_function_str,
+				ufunc->uf_name);
+			ret = FAIL;
+		    }
+		}
+		else
+		{
+		    rettv->vval.v_string =
+			vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
+		}
 	    }
 	    continue;
 	}
