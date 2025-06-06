@@ -2411,7 +2411,7 @@ ins_compl_new_leader(void)
     if (compl_match_array == NULL)
 	compl_enter_selects = FALSE;
     else if (ins_compl_has_preinsert() && compl_leader.length > 0)
-	ins_compl_insert(FALSE, TRUE);
+	ins_compl_insert(TRUE);
 }
 
 /*
@@ -5440,12 +5440,11 @@ ins_compl_expand_multiple(char_u *str)
 
 /*
  * Insert the new text being completed.
- * "in_compl_func" is TRUE when called from complete_check().
  * "move_cursor" is used when 'completeopt' includes "preinsert" and when TRUE
  * cursor needs to move back from the inserted text to the compl_leader.
  */
     void
-ins_compl_insert(int in_compl_func, int move_cursor)
+ins_compl_insert(int move_cursor)
 {
     int		compl_len = get_compl_len();
     int		preinsert = ins_compl_has_preinsert();
@@ -5735,7 +5734,7 @@ ins_compl_next(
     else if (insert_match)
     {
 	if (!compl_get_longest || compl_used_match)
-	    ins_compl_insert(in_compl_func, TRUE);
+	    ins_compl_insert(TRUE);
 	else
 	    ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
     }
