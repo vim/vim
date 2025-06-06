@@ -337,7 +337,13 @@ do_mouse(
 
     // Ignore drag and release events if we didn't get a click.
     if (is_click)
+    {
 	got_click = TRUE;
+	in_tab_line = FALSE;
+#if defined(FEAT_TABPANEL)
+	in_tabpanel = FALSE;
+#endif
+    }
     else
     {
 	if (!got_click)			// didn't get click, ignore

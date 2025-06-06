@@ -92,6 +92,13 @@ function Test_tabpanel_mouse()
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal(3, tabpagenr())
 
+  " Confirm that tabpagenr() does not change when dragging outside the tabpanel
+  call test_setmouse(3, 30)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call test_setmouse(1, 30)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call assert_equal(3, tabpagenr())
+
   call feedkeys("\<LeftMouse>", 'xt')
   call test_setmouse(2, 3)
   let pos = getmousepos()

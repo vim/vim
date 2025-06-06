@@ -6226,7 +6226,14 @@ shell_new_columns(void)
 
     if (!skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
-
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	if (scroll_region)
+	    scroll_region_reset();
+	scroll_start();	// may scroll the screen to the right position
+    }
+#endif
     redraw_tabline = TRUE;
 #if defined(FEAT_TABPANEL)
     redraw_tabpanel = TRUE;

@@ -339,10 +339,6 @@ update_screen(int type_arg)
 	    win_redr_status(wp, TRUE); // any popup menu will be redrawn below
 	}
     }
-#if defined(FEAT_TABPANEL)
-    if (redraw_tabpanel)
-	draw_tabpanel();
-#endif
 #if defined(FEAT_SEARCH_EXTRA)
     end_search_hl();
 #endif

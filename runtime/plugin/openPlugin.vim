@@ -17,6 +17,9 @@ command -complete=shellcmd -nargs=1 Launch vim9.Launch(trim(<q-args>))
 # technically, -nargs=1 is correct, but this throws E480: No match 
 # when the argument contains a wildchar on Windows
 command -complete=file -nargs=* Open vim9.Open(trim(<q-args>))
+# Use URLOpen when you don't want completion to happen
+# (or because you want to avoid cmdline-special)
+command -nargs=1 URLOpen vim9.Open(trim(<q-args>))
 
 const no_gx = get(g:, "nogx", get(g:, "netrw_nogx", false))
 if !no_gx
