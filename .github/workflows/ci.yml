@@ -125,6 +125,10 @@ jobs:
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           PKGS=( \
             gettext \
+            x11-utils \
+            sway \
+            wl-clipboard \
+            wayland-utils \
             libgtk-3-dev:${{ matrix.architecture }} \
             libgtk-3-bin:${{ matrix.architecture }} \
             desktop-file-utils \
@@ -141,7 +145,6 @@ jobs:
             libwayland-cursor0:${{ matrix.architecture }} \
             locales-all \
             software-properties-common \
-            sway \
           )
           if ${{ contains(matrix.extra, 'asan') }} && ${{ contains(matrix.architecture, 'native') }}; then
           PKGS+=( \
