@@ -389,6 +389,7 @@ syn keyword ngxDirective proxy_buffering
 syn keyword ngxDirective proxy_buffers
 syn keyword ngxDirective proxy_busy_buffers_size
 syn keyword ngxDirective proxy_cache
+syn keyword ngxDirective proxy_cache_background_update
 syn keyword ngxDirective proxy_cache_bypass
 syn keyword ngxDirective proxy_cache_convert_head
 syn keyword ngxDirective proxy_cache_key
