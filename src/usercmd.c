@@ -600,17 +600,21 @@ uc_list(char_u *name, size_t name_len)
 		msg_putchar('|');
 		--len;
 	    }
-	    while (len-- > 0)
-		msg_putchar(' ');
+	    if (len != 0)
+		msg_puts(&"    "[4 - len]);
 
 	    msg_outtrans_attr(cmd->uc_name, HL_ATTR(HLF_D));
 	    len = (int)cmd->uc_namelen + 4;
 
-	    do
+	    if (len < 21)
 	    {
-		msg_putchar(' ');
-		++len;
-	    } while (len < 22);
+		// Field padding spaces   12345678901234567
+		static char spaces[18] = "                 ";
+		msg_puts(&spaces[len - 4]);
+		len = 21;
+	    }
+	    msg_putchar(' ');
+	    ++len;
 
 	    // "over" is how much longer the name is than the column width for
 	    // the name, we'll try to align what comes after.

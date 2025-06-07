@@ -109,6 +109,7 @@ NEW_TESTS = \
 	test_cmdwin \
 	test_codestyle \
 	test_command_count \
+	test_command_list \
 	test_comments \
 	test_comparators \
 	test_compiler \
@@ -394,6 +395,7 @@ NEW_TESTS_RES = \
 	test_cmdwin.res \
 	test_codestyle.res \
 	test_command_count.res \
+	test_command_list.res \
 	test_comments.res \
 	test_comparators.res \
 	test_conceal.res \
