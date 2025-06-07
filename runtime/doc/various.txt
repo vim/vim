@@ -41,7 +41,6 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 			when 'tabpanel' includes an item that doesn't trigger
 			automatic updating.
 
-
 							*N<Del>*
 <Del>			When entering a number: Remove the last digit.
 			Note: if you like to use <BS> for this, add this
