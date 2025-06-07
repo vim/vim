@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 05
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7704,7 +7704,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'showtabpanel'* *'stpl'*
 'showtabpanel' 'stpl'	number	(default 0)
 			global
-			{not in Vi}
 			{not available when compiled without the |+tabpanel|
 			feature}
 	The value of this option specifies when the |tabpanel| with tab page
@@ -7712,7 +7711,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 		0: never
 		1: only if there are at least two tab pages
 		2: always
-	This is for the non-GUI implementation of the tabpanel only.
 	See |tab-page| for more information about tab page labels.
 
 						*'sidescroll'* *'ss'*
@@ -8430,9 +8428,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	argument or the ":tab all" command. |tabpage|
 
 				*'tabpanel'* *'tpl'* *g:actual_curtabpage*
-'tabpanel' 'tpl'			string	(default empty)
+'tabpanel' 'tpl'	string	(default empty)
 			global
-			{not in Vi}
 	When non-empty, this option determines the content of the |tabpanel|.
 	The option consists of printf style '%' items interspersed with
 	normal text, similar to the 'statusline' or 'tabline'.
@@ -8443,12 +8440,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	You can use |g:actual_curtabpage| within a function assigned to
 	tabpanel. |g:actual_curtabpage| represents current tab's label number.
-	This option can contain line breaks:
->
-	set tabpanel=%!TabPanel()
-	function! TabPanel() abort
-	  return printf("(%2d)\n  %%f", g:actual_curtabpage)
-	endfunction
+	The option value can contain line breaks: >
+
+		set tabpanel=%!TabPanel()
+		function! TabPanel() abort
+		  return printf("(%2d)\n  %%f", g:actual_curtabpage)
+		endfunction
 <
 	The result is:
 >
@@ -8461,30 +8458,28 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|           |
 	|           |
 <
-
 					*'tabpanelopt'* *'tplo'*
-'tabpanelopt' 'tplo'		string	(default "")
+'tabpanelopt' 'tplo'	string	(default "")
 			global
-			{not in Vi}
 	Optional settings for the |tabpanel|,  It can consist of the following
 	items.  Items must be separated by a comma.
 
 		align:{text}	Specifies the position of the tabpanel.
 				Currently supported positions are:
 
-				left	left-aligned
-				right	right-aligned
+				left	left-side
+				right	right-side
 
 				(default "left")
 
-		columns:{n}	Use the size (in characters) of the tabpanel.
-				The tabpanel is never shown when using zero
-				or less than the size of Vim window.
+		columns:{n}	Number of columns of the tabpanel.
+				If this value is 0 or less than 'columns', the
+				tab panel will not be displayed.
 				(default 20)
 
 		vert		Use a vertical separator for tabpanel.
-				This vertical separator used is "tpl_vert" of
-				'fillchars'.
+				The vertical separator character is taken from
+				"tpl_vert" in 'fillchars'.
 				(default off)
 
 	Examples: >
@@ -8493,16 +8488,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set tabpanelopt=vert,align:right
 		:set tabpanelopt=columns:16
 <
-
 						*'tabstop'* *'ts'*
 'tabstop' 'ts'		number	(default 8)
 			local to buffer
 	Defines the column multiple used to display the Horizontal Tab
-	character (ASCII 9); a Horizontal Tab always advances to the next
-	tab stop.
+	character (ASCII 9); a Horizontal Tab always advances to the next tab
+	stop.
 	The value must be at least 1 and at most 9999.
-	If Vim was compiled with |+vartabs| and |'vartabstop'| is set, this option
-	is ignored.
+	If Vim was compiled with |+vartabs| and |'vartabstop'| is set, this
+	option is ignored.
 	Leave it at 8 unless you have a strong reason (see usr |30.5|).
 
 

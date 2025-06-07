@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2025 May 15
+*various.txt*   For Vim version 9.1.  Last change: 2025 Jun 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,7 +40,6 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 :redrawtabp[anel]	Redraw the tabpanel  Useful to update the tabpanel
 			when 'tabpanel' includes an item that doesn't trigger
 			automatic updating.
-
 
 							*N<Del>*
 <Del>			When entering a number: Remove the last digit.
