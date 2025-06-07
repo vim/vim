@@ -3396,7 +3396,6 @@ func Test_complete_opt_fuzzy()
       return [#{word: "foo"}, #{word: "foobar"}, #{word: "fooBaz"}, #{word: "foobala"}, #{word: "你好吗"}, #{word: "我好"}]
     endif
     return [#{word: "for i = .."}, #{word: "bar"}, #{word: "foo"}, #{word: "for .. ipairs"}, #{word: "for .. pairs"}]
-    endif
   endfunc
 
   new
