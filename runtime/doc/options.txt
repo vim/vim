@@ -8440,7 +8440,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	You can use |g:actual_curtabpage| within a function assigned to
 	tabpanel. |g:actual_curtabpage| represents current tab's label number.
-	This option can contain line breaks: >
+	The option value can contain line breaks: >
 
 		set tabpanel=%!TabPanel()
 		function! TabPanel() abort
