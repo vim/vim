@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Jun 05
+" Last Change:	   2025 Jun 07
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -390,7 +390,7 @@ if s:vim9script
             \\|
           \\%(^\s*#.*\)\@<=$
             \\|
-          \\n\s*\\\|\n\s*#\\ 
+          \\n\s*\\\|\n\s*#\\
         \+
         \ matchgroup=vimCommand
         \ end="\s\+\zsas\ze\s\+\h"
@@ -437,7 +437,7 @@ syn match	vimAugroupBang	contained	"\a\@1<=!"	skipwhite nextgroup=vimAugroupName
 syn keyword	vimAugroupKey	contained	aug[roup] 	skipwhite nextgroup=vimAugroupBang,vimAugroupName,vimAugroupEnd
 
 " remove
-syn match	vimAugroup	"\<aug\%[roup]!"		skipwhite nextgroup=vimAugroupName contains=vimAugroupKey,vimAugroupBang 
+syn match	vimAugroup	"\<aug\%[roup]!"		skipwhite nextgroup=vimAugroupName contains=vimAugroupKey,vimAugroupBang
 
 " list
 VimL syn match	vimAugroup	"\<aug\%[roup]\>\ze\s*\%(["|]\|$\)"	skipwhite nextgroup=vimCmdSep,vimComment  contains=vimAugroupKey
@@ -1117,7 +1117,7 @@ syn match	vimWildcardBracketEquivalenceClass	contained	"\[=[^=]\+=]"	nextgroup=@
 syn match	vimWildcardBracketCollatingSymbol	contained	"\[\.[^.]\+\.]"	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketEnd
 
 syn match	vimWildcardBracketStart	contained	"\["	nextgroup=vimWildcardBracketCaret,vimWildcardBracketRightBracket,@vimWildcardBracketCharacter
-syn match	vimWildcardBracketCaret	contained	"\^"	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketRightBracket 
+syn match	vimWildcardBracketCaret	contained	"\^"	nextgroup=@vimWildcardBracketCharacter,vimWildcardBracketRightBracket
 syn match	vimWildcardBracketEnd	contained	"]"
 
 syn cluster	vimWildcardBracketCharacter	contains=vimWildcardBracketCharacter,vimWildcardBracketEscape,vimWildcardBracketCharacterClass,vimWildcardBracketEquivalenceClass,vimWildcardBracketCollatingSymbol
@@ -1194,7 +1194,7 @@ syn region	vimExecute	matchgroup=vimCommand start="\<exe\%[cute]\>" skip=+\\|\|\
 syn match	vimExFilter		"\<filt\%[er]\>"	skipwhite nextgroup=vimExFilterBang,vimExFilterPattern
 syn match	vimExFilterBang	 contained	"\a\@1<=!"	skipwhite nextgroup=vimExFilterPattern
 syn region	vimExFilterPattern contained
-      \ start="[[:ident:]]"	
+      \ start="[[:ident:]]"
       \ end="\ze[[:space:]\n]"
       \ skipwhite nextgroup=@vimCmdList
       \ contains=@vimSubstList
@@ -1251,7 +1251,7 @@ syn match	vimVimgrep		"\<l\=vim\%[grep]\>"	skipwhite nextgroup=vimVimgrepBang,vi
 syn match	vimVimgrepadd		"\<l\=vimgrepa\%[dd]\>"	skipwhite nextgroup=vimVimgrepBang,vimVimgrepPattern
 syn match	vimVimgrepBang	  contained	"\a\@1<=!"		skipwhite nextgroup=vimVimgrepPattern
 syn region	vimVimgrepPattern   contained
-      \ start="[[:ident:]]"			    
+      \ start="[[:ident:]]"
       \ end="\ze[[:space:]\n]"
       \ skipwhite nextgroup=vimVimgrepFile,vimCmdSep
       \ contains=@vimSubstList
