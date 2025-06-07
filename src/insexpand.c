@@ -1494,11 +1494,6 @@ ins_compl_build_pum(void)
     int		is_cpt_completion = (cpt_sources_array != NULL);
     int		need_sort = FALSE;
     int		has_scores = FALSE;
-    int		update_shown_match = fuzzy_filter;
-
-    if (fuzzy_filter && ctrl_x_mode_normal()
-      && compl_leader.string == NULL && compl_shown_match->cp_score > 0)
-	update_shown_match = FALSE;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
