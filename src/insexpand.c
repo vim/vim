@@ -2411,7 +2411,7 @@ ins_compl_new_leader(void)
     if (compl_match_array == NULL)
 	compl_enter_selects = FALSE;
     else if (ins_compl_has_preinsert() && compl_leader.length > 0)
-	ins_compl_insert(FALSE, TRUE);
+	ins_compl_insert(TRUE);
 }
 
 /*
@@ -5268,6 +5268,12 @@ ins_compl_get_exp(pos_T *ini)
 
 	    compl_started = FALSE;
 	}
+
+	// For `^P` completion, reset `compl_curr_match` to the head to avoid
+	// mixing matches from different sources.
+	if (!compl_dir_forward())
+	    while (compl_curr_match->cp_prev)
+		compl_curr_match = compl_curr_match->cp_prev;
     }
     cpt_sources_index = -1;
     compl_started = TRUE;
@@ -5434,12 +5440,11 @@ ins_compl_expand_multiple(char_u *str)
 
 /*
  * Insert the new text being completed.
- * "in_compl_func" is TRUE when called from complete_check().
  * "move_cursor" is used when 'completeopt' includes "preinsert" and when TRUE
  * cursor needs to move back from the inserted text to the compl_leader.
  */
     void
-ins_compl_insert(int in_compl_func, int move_cursor)
+ins_compl_insert(int move_cursor)
 {
     int		compl_len = get_compl_len();
     int		preinsert = ins_compl_has_preinsert();
@@ -5472,8 +5477,6 @@ ins_compl_insert(int in_compl_func, int move_cursor)
 	set_vim_var_dict(VV_COMPLETED_ITEM, dict);
     }
 #endif
-    if (!in_compl_func)
-	compl_curr_match = compl_shown_match;
 }
 
 /*
@@ -5669,8 +5672,7 @@ ins_compl_next(
     int	    allow_get_expansion,
     int	    count,		// repeat completion this many times; should
 				// be at least 1
-    int	    insert_match,	// Insert the newly selected match
-    int	    in_compl_func)	// called from complete_check()
+    int	    insert_match)	// Insert the newly selected match
 {
     int	    num_matches = -1;
     int	    todo = count;
@@ -5731,7 +5733,7 @@ ins_compl_next(
     else if (insert_match)
     {
 	if (!compl_get_longest || compl_used_match)
-	    ins_compl_insert(in_compl_func, TRUE);
+	    ins_compl_insert(TRUE);
 	else
 	    ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
     }
@@ -5817,7 +5819,7 @@ ins_compl_check_keys(int frequency, int in_compl_func)
 	    c = safe_vgetc();	// Eat the character
 	    compl_shows_dir = ins_compl_key2dir(c);
 	    (void)ins_compl_next(FALSE, ins_compl_key2count(c),
-				      c != K_UP && c != K_DOWN, in_compl_func);
+				      c != K_UP && c != K_DOWN);
 	}
 	else
 	{
@@ -5840,7 +5842,7 @@ ins_compl_check_keys(int frequency, int in_compl_func)
 	int todo = compl_pending > 0 ? compl_pending : -compl_pending;
 
 	compl_pending = 0;
-	(void)ins_compl_next(FALSE, todo, TRUE, in_compl_func);
+	(void)ins_compl_next(FALSE, todo, TRUE);
     }
 }
 
@@ -6687,7 +6689,7 @@ ins_complete(int c, int enable_pum)
     // Find next match (and following matches).
     save_w_wrow = curwin->w_wrow;
     save_w_leftcol = curwin->w_leftcol;
-    n = ins_compl_next(TRUE, ins_compl_key2count(c), insert_match, FALSE);
+    n = ins_compl_next(TRUE, ins_compl_key2count(c), insert_match);
 
     // may undisplay the popup menu
     ins_compl_upd_pum();
