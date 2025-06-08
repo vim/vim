@@ -223,8 +223,8 @@ tag		char	      note action in Normal mode	~
 |CTRL-N|	CTRL-N		1  same as "j"
 |CTRL-O|	CTRL-O		1  go to N older entry in jump list
 |CTRL-P|	CTRL-P		1  same as "k"
-|CTRL-Q|	CTRL-Q		   enter binary search cursor
-				   movement, see |binsearch|
+|CTRL-Q|	CTRL-Q		   used for terminal control flow, or enter
+				   binary search cursormovement, see |binsearch|
 |CTRL-R|	CTRL-R		2  redo changes which were undone with 'u'
 		CTRL-S		   not used, or used for terminal control flow
 |CTRL-T|	CTRL-T		   jump to N older Tag in tag list
