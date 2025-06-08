@@ -4413,6 +4413,10 @@ fuzzy_match_compute_score(
     // Apply unmatched penalty
     unmatched = strSz - numMatches;
     score += UNMATCHED_LETTER_PENALTY * unmatched;
+    // In a long string, not all matches may be found due to the recursion limit.
+    // If at least one match is found, reset the score to a non-negative value.
+    if (score < 0 && numMatches > 0)
+	score = 0;
 
     // Apply ordering bonuses
     for (i = 0; i < numMatches; ++i)
