@@ -7603,6 +7603,7 @@ nv_binsearch(cmdarg_T *cap)
     {
     c = vgetc();
 
+    //if the user typed Ctrl_B again, they want to re-start the binary search
     if(c == Ctrl_B)
     {
 	binsearch_mode = FALSE;
@@ -7615,7 +7616,7 @@ nv_binsearch(cmdarg_T *cap)
 
     lower_bound=center_line;
     center_line = (center_line + upper_bound)/2;
-    curwin->w_cursor.lnum =center_line;
+    cursor_down(center_line - lower_bound, TRUE);
     vungetc(Ctrl_B);
     return;
 
@@ -7626,7 +7627,7 @@ nv_binsearch(cmdarg_T *cap)
 
     upper_bound=center_line;
     center_line = (center_line + lower_bound)/2;
-    curwin->w_cursor.lnum =center_line;
+    cursor_up(upper_bound - center_line, TRUE);
     vungetc(Ctrl_B);
     return;
     
