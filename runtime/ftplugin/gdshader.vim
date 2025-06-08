@@ -8,6 +8,8 @@ vim9script
 if exists("b:did_ftplugin") | finish | endif
 b:did_ftplugin = 1
 
-b:undo_ftplugin = 'setlocal suffixesadd<'
+b:undo_ftplugin = 'setlocal suffixesadd< comments< commentstring<'
 
 setlocal suffixesadd=.gdshader
+setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
+setlocal commentstring=//\ %s
