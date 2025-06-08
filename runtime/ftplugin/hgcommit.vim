@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	hg (Mercurial) commit file
 " Maintainer:	Ken Takata <kentkt at csc dot jp>
-" Last Change:	2016 Jan 6
+" Last Change:	2025 Jun 8
 " Filenames:	hg-editor-*.txt
 " License:	VIM License
 " URL:		https://github.com/k-takata/hg-vim
@@ -13,4 +13,7 @@ let b:did_ftplugin = 1
 
 setlocal nomodeline
 
-let b:undo_ftplugin = 'setl modeline<'
+setlocal comments=:HG\:
+setlocal commentstring=HG:\ %s
+
+let b:undo_ftplugin = 'setl modeline< com< cms<'
