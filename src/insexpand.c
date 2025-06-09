@@ -1492,8 +1492,6 @@ ins_compl_build_pum(void)
     int		*match_count = NULL;
     int		is_forward = compl_shows_dir_forward();
     int		is_cpt_completion = (cpt_sources_array != NULL);
-    int		need_sort = FALSE;
-    int		has_scores = FALSE;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
