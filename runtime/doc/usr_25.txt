@@ -558,6 +558,32 @@ The "gR" command uses Virtual Replace mode.  This preserves the layout:
 
 	inp	0.786	0.534	0.693 ~
 
+
+REFORMATTING TABS IN TABLES
+
+You edit a file that contains tabular data and the original author of the file
+decided to align the tabular data using tab characters (instead of spaces).
+Alas, they were using tab stops separated by 4 columns and Vim's default
+is 8 columns; the table looks wrong!  What can be done?
+  To fix the appearance without modifying the file, adjust the setting
+temporarily: >
+
+	:set tabstop=4
+
+This updates the visual layout, but the file itself remains unchanged.
+  Another possibility is to permanently reformat the file.  For this Vim
+provides the |retab| command.  First, set 'tabstop' to match original layout
+(as above), then run: >
+
+	:retab 8
+
+The ":retab" command will change 'tabstop' to 8, while changing the text such
+that it looks the same.  It changes spans of white space into tabs and spaces
+for this.  You can now write the file.
+   Warning: When using ":retab" on a program, it may change white space inside
+a string constant.  Therefore it's a good habit to use "\t" instead of a
+real tab.
+
 ==============================================================================
 
 Next chapter: |usr_26.txt|  Repeating
