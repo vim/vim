@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2025 Jun 07
+*various.txt*   For Vim version 9.1.  Last change: 2025 Jun 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -514,7 +514,7 @@ T  *+title*		Setting the window 'title' and 'icon'; Always enabled
 N  *+toolbar*		|gui-toolbar|
 T  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
-H  *+vartabs*		Variable-width tabstops. |'vartabstop'|
+H  *+vartabs*		Variable-width tab stops. |'vartabstop'|
 T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
 T  *+vim9script*	|Vim9| script

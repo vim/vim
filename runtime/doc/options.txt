@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 07
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7803,11 +7803,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	When enabled, the <Tab> key will indent by 'shiftwidth' if the cursor
 	is in leading whitespace.  The <BS> key has the opposite effect.
-	This behaves as if 'softtabstop' is set to the value of 'shiftwidth'.
+	In leading whitespace, this has the same effect as setting
+	'softtabstop' to the value of 'shiftwidth'.
 	This option is reset when 'compatible' is set; it is temporarily
 	disabled when 'paste' is enabled, and restored when 'paste' is turned
 	off.
-	Have a look at section |30.5| of the user guide for detailed
+	NOTE: in most cases, using 'softtabstop' is a better option.  Have a
+	look at section |30.5| of the user guide for detailed
 	explanations on how Vim works with tabs and spaces.
 
 			*'smoothscroll'* *'sms'* *'nosmoothscroll'* *'nosms'*
