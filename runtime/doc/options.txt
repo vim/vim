@@ -2249,6 +2249,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    completion in the preview window.  Only works in
 		    combination with "menu" or "menuone".
 
+	This option does not apply to |cmdline-completion|. See 'wildoptions'
+	for that.
+
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)
 			global
@@ -9809,6 +9812,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'wildoptions' 'wop'	string	(default "")
 			global
 	A list of words that change how |cmdline-completion| is done.
+
 	The following values are supported:
 	  fuzzy		Use |fuzzy-matching| to find completion matches. When
 			this value is specified, wildcard expansion will not
@@ -9825,6 +9829,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			is displayed per line.  Often used tag kinds are:
 				d	#define
 				f	function
+
+	This option does not apply to |ins-completion|. See 'completeopt' for
+	that.
 
 						*'winaltkeys'* *'wak'*
 'winaltkeys' 'wak'	string	(default "menu")
