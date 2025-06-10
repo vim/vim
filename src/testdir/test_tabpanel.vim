@@ -653,4 +653,25 @@ function Test_tabpanel_error()
   set tabpanel&vim
   set showtabpanel&vim
 endfunc
+
+function Test_tabpanel_with_msg_scrolled()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    tabnew
+    set modified
+    tabfirst
+  END
+  call writefile(lines, 'XTest_tabpanel_with_msg_scrolled', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_msg_scrolled', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_msg_scrolled_0', {})
+  call term_sendkeys(buf, ":qa\<CR>")
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_msg_scrolled_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

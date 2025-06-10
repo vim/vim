@@ -120,9 +120,6 @@ tabpanelopt_changed(void)
     int
 tabpanel_width(void)
 {
-    if (msg_scrolled != 0)
-	return 0;
-
     switch (p_stpl)
     {
 	case 0:
