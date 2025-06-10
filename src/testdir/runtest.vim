@@ -56,10 +56,17 @@ silent! endwhile
 " In the GUI we can always change the screen size.
 if has('gui_running')
   if has('gui_gtk')
-    " to keep screendump size unchanged
+    " Use e.g. SetUp() and TearDown() to change "&guifont" when needed;
+    " otherwise, keep the following value to match current screendumps.
     set guifont=Monospace\ 10
   endif
-  set columns=80 lines=25
+
+  func s:SetDefaultOptionsForGUIBuilds()
+    set columns=80 lines=25
+  endfunc
+else
+  func s:SetDefaultOptionsForGUIBuilds()
+  endfunc
 endif
 
 " Check that the screen size is at least 24 x 80 characters.
@@ -271,6 +278,9 @@ func RunTheTest(test)
   " The test may change the current directory. Save and restore the
   " directory after executing the test.
   let save_cwd = getcwd()
+
+  " Permit "SetUp()" implementations to override default settings.
+  call s:SetDefaultOptionsForGUIBuilds()
 
   if exists("*SetUp")
     try
@@ -605,6 +615,8 @@ for g:testfunc in sort(s:tests)
 
   " A test can set g:test_is_flaky to retry running the test.
   let g:test_is_flaky = 0
+
+  let g:check_screendump_called = v:false
 
   " A test can set g:max_run_nr to change the max retry count.
   let g:max_run_nr = 5

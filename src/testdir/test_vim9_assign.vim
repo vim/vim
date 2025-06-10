@@ -326,6 +326,8 @@ def Test_reserved_name()
                'null_list',
                'null_partial',
                'null_string',
+               'null_object',
+               'null_class',
                ] + more_names
     v9.CheckDefExecAndScriptFailure(['var ' .. name .. ' =  0'], 'E1034:')
     v9.CheckDefExecAndScriptFailure(['var ' .. name .. ': bool'], 'E1034:')
@@ -381,7 +383,7 @@ def Test_type_with_extra_white()
   var lines =<< trim END
       const x : number = 3
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1059')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1059:')
 enddef
 
 def Test_keep_type_after_assigning_null()
@@ -530,15 +532,15 @@ def Test_assign_unpack()
   lines =<< trim END
       [v1, v2] = [1, 2]
   END
-  v9.CheckDefFailure(lines, 'E1089', 1)
-  v9.CheckScriptFailure(['vim9script'] + lines, 'E1089', 2)
+  v9.CheckDefFailure(lines, 'E1089:', 1)
+  v9.CheckScriptFailure(['vim9script'] + lines, 'E1089:', 2)
 
   lines =<< trim END
       var v1: number
       var v2: number
       [v1, v2] = ''
   END
-  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected list<any> but got string', 3)
+  v9.CheckDefFailure(lines, 'E1535: List or Tuple required', 3)
 
   lines =<< trim END
     g:values = [false, 0]
@@ -2497,12 +2499,11 @@ def Test_unlet()
   assert_false(exists('g:somevar'))
   unlet! g:somevar
 
-  # also works for script-local variable in legacy Vim script
-  s:somevar = 'legacy'
+  # script-local variable cannot be removed in Vim9 script
+  s:somevar = 'local'
   assert_true(exists('s:somevar'))
-  unlet s:somevar
-  assert_false(exists('s:somevar'))
-  unlet! s:somevar
+  v9.CheckDefExecFailure(['unlet s:somevar'], 'E1081:', 1)
+  v9.CheckDefExecFailure(['unlet! s:somevar'], 'E1081:', 1)
 
   if 0
     unlet g:does_not_exist
@@ -2675,13 +2676,21 @@ def Test_unlet()
    'enddef',
    'defcompile',
    ], 'E1081:')
-  v9.CheckScriptFailure([
+  v9.CheckScriptSuccess([
    'vim9script',
    'var svar = 123',
    'func Func()',
    '  unlet s:svar',
    'endfunc',
    'Func()',
+   ])
+  v9.CheckScriptFailure([
+   'vim9script',
+   'var svar = 123',
+   'def Func()',
+   '  vim9cmd unlet s:svar',
+   'enddef',
+   'defcompile',
    ], 'E1081:')
   v9.CheckScriptFailure([
    'vim9script',

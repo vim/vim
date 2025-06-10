@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Feb 23
+*version9.txt*  For Vim version 9.1.  Last change: 2025 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41553,10 +41553,23 @@ Enum support for Vim9 script |:enum|
 
 Support for protected _new() method
 
+Add support for object<{type}> as variable data type |vim9-types|
+
+Diff mode ~
+---------
+Include the "linematch" algorithm for the 'diffopt' setting.  This aligns
+changes between buffers on similar lines improving the diff highlighting in
+Vim
+
+Improve the diff highlighting for changes within a line.  Configurable using
+the "inline" sub option value for the 'diffopt' setting, with "inline:simple"
+being added to the default "diffopt" value (but this does not change how diff
+mode works).
 							*new-other-9.2*
 Other new features ~
 ------------------
-The new plugins |comment-install| and |nohlsearch-install| are included.
+The new packages |package-comment|, |package-nohlsearch| and |package-hlyank|
+are included.
 
 Support for Wayland UI.
 
@@ -41569,9 +41582,12 @@ Support highlighting the matched text and the completion kind for insert-mode
 completion and command-line completion in |ins-completion-menu|, see
 |complete-items|
 
-Include the "linematch" algorithm for the 'diffopt' setting.  This aligns
-changes between buffers on similar lines improving the diff highlighting in
-Vim
+Support for the |Tuple| data type in Vim script and Vim9 script.
+
+Support for a vertical |tabpanel| window similar to the 'tabline'.
+
+New Insert-mode completion: |i_CTRL-X_CTRL-R| to complete words from
+registers.
 
 							*changed-9.2*
 Changed~
@@ -41583,10 +41599,9 @@ Default values: ~
 - the default 'backspace' option for Vim has been set to "indent,eol,start"
   and removed from |defaults.vim|
 - the default fontsize for the GTK builds of Vim (Windows and Unix) has been
-  increased to 12pt to accomodate modern high-dpi monitors
+  increased to 12pt to accommodate modern high-dpi monitors
 - the default value of the 'keyprotocol' option has been updated and support
   for the ghostty terminal emulator (using kitty protocol) has been added
-
 
 Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
@@ -41603,17 +41618,35 @@ Completion: ~
 - New option value for 'completeopt':
 	"nosort"	- do not sort completion results
 	"preinsert"	- highlight to be inserted values
-- handle multi-line completion as expected
+	"nearest"	- sort completion results by distance to cursor
+- handle multi-line completion items as expected
 - improved commandline completion for the |:hi| command
+- New option value for 'wildmode':
+	"noselect"	- do not auto select an entry in the wildmenu
+- New flags for 'complete':
+	"F{func}"	- complete using given function
+	"F"		- complete using 'completefunc'
+	"o"		- complete using 'omnifunc'
+- allow to limit matches for the 'complete' sources by using the
+  "{flag}^<limit>" notation
+- add ":filetype" command completion
+- add "filetypecmd" completion type for |getcompletion()|
+- 'smartcase' applies to completion filtering
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have
   automatic comments look nicer |comment-install|
 - 'completeopt' is now a |global-local| option.
-- 'nrformats' accepts the new "blank" suboption, to determine a signed or
-  unsigned number based on whitespace in front of a minus sign.
 - add 'cpoptions' flag "z" |cpo-z|, to disable some (traditional) vi
   behaviour/inconsistency (see |d-special| and |cw|).
+- new option values for 'fillchars':
+	"trunc"		- configure truncation indicator, 'pummaxwidth'
+	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
+	"tpl_vert"	- separators for the 'tabpanel'
+- 'grepformat' is now a |global-local| option.
+- adjust for GTK3 dropping some mouse cursors 'mouseshape'
+- 'nrformats' accepts the new "blank" suboption, to determine a signed or
+  unsigned number based on whitespace in front of a minus sign.
 - 'rulerformat' now supports the |stl-%!| item
 - use 'smoothscroll' logic for CTRL-F / CTRL-B for pagewise scrolling
   and CTRL-D / CTRL-U for half-pagewise scrolling
@@ -41650,6 +41683,9 @@ Others: ~
 - add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
   and decouple it from |netrw|
 - new digraph "APPROACHES THE LIMIT" using ".="
+- |CTRL-C| always closes the active |popup-window|.
+- the configure script will favor using GTK3 over GTK2 when auto-detecting the
+  gui toolkit
 
 							*added-9.2*
 Added ~
@@ -41662,6 +41698,8 @@ Functions: ~
 |base64_encode()|	encode a blob into a base64 string
 |blob2str()|		convert a blob into a List of strings
 |bindtextdomain()|	set message lookup translation base path
+|cmdcomplete_info()|	get current cmdline completion info
+|complete_match()|	get completion and trigger info
 |diff()|		diff two Lists of strings
 |filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items
@@ -41673,18 +41711,23 @@ Functions: ~
 |getstacktrace()|	get current stack trace of Vim scripts
 |id()|			get unique identifier for a Dict, List, Object,
 			Channel or Blob variable
+|list2tuple()|		turn a List of items into a Tuple
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
 |ngettext()|		lookup single/plural message translation
 |popup_setbuf()|	switch to a different buffer in a popup
 |str2blob()|		convert a List of strings into a blob
+|test_null_tuple()|	return a null tuple
+|tuple2list()|		turn a Tuple of items into a List
 
 
 Autocommands: ~
 
+|CmdlineLeavePre|	before preparing to leave the command line
 |CursorMovedC|		after the cursor was moved in the command-line
 |KeyInputPre|		before processing any key event in any mode
 |SessionWritePost|	after writing the session file |:mksession|
+|TabClosedPre|		before closing a |tabpage|.
 |TermResponseAll|	after the terminal response to |t_RV| and others is
 			received
 |WinNewPre|		before creating a new window
@@ -41692,30 +41735,49 @@ Autocommands: ~
 
 Highlighting: ~
 
-|hl-ComplMatchIns|	matched text of the currently inserted completion.
+|hl-ComplMatchIns|	matched text of the currently inserted completion
+|hl-DiffTextAdd|	added text within a changed line
 |hl-MsgArea|		highlighting of the Command-line and messages area
 |hl-PmenuMatch|		Popup menu: highlighting of matched text
 |hl-PmenuMatchSel|	Popup menu: highlighting of matched text in selected
 			line
+|hl-TabPanel|		|tabpanel|: not active tab page label
+|hl-TabPanelFill|	|tabpanel|: filler space
+|hl-TabPanelSel|	|tabpanel|: active tab page label
 
 Commands: ~
 
 |[r| and |]r|		to move the cursor to previous/next rare word
+
+Ex-Commands: ~
+
+|:iput|			like |:put| but adjust indent
 |:pbuffer|		Edit buffer [N] from the buffer list in the preview
 			window
+|:redrawtabpanel|	Force updating the 'tabpanel'.
 
 Options: ~
 
+'chistory'		Size of the quickfix stack |quickfix-stack|.
+'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
+			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup
 'eventignorewin'	autocommand events that are ignored in a window
 'findfunc'		Vim function to obtain the results for a |:find|
 			command
+'isexpand'		defines triggers for completion
+'lhistory'		Size of the location list stack |quickfix-stack|.
 'messagesopt'		configure |:messages| and |hit-enter| prompt
-'winfixbuf'		Keep buffer focused in a window
+'pummaxwidth'		maximum width for the completion popup menu
+'showtabpanel'		When to show the |tabpanel|
 'tabclose'		Which tab page to focus after closing a tab page
+'tabpanel'		Optional vertical panel for displaying tabpages
+			|tabpanel|
+'tabpanelopt'		Optional settings for the |tabpanel|
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
+'winfixbuf'		Keep buffer focused in a window
 
 ==============================================================================
 INCOMPATIBLE CHANGES					*incompatible-9.2*

@@ -369,6 +369,7 @@ typedef enum {
 #define WIM_LONGEST	0x02
 #define WIM_LIST	0x04
 #define WIM_BUFLASTUSED	0x08
+#define WIM_NOSELECT	0x10
 
 // flags for the 'wildoptions' option
 // each defined char should be unique over all values.
@@ -513,6 +514,8 @@ EXTERN char_u	*p_cpt;		// 'complete'
 EXTERN int	p_confirm;	// 'confirm'
 #endif
 EXTERN int	p_cp;		// 'compatible'
+EXTERN char_u	*p_cfc;		// 'completefuzzycollect'
+EXTERN unsigned cfc_flags;	// flags from "completefuzzycollect"
 EXTERN char_u	*p_cia;		// 'completeitemalign'
 EXTERN unsigned cia_flags;	// order flags of 'completeitemalign'
 EXTERN char_u	*p_cot;		// 'completeopt'
@@ -532,11 +535,18 @@ EXTERN unsigned	cot_flags;	// flags from 'completeopt'
 #define COT_FUZZY	    0x100   // TRUE: fuzzy match enabled
 #define COT_NOSORT	    0x200   // TRUE: fuzzy match without qsort score
 #define COT_PREINSERT	    0x400   // TRUE: preinsert
+#define COT_NEAREST	    0x800   // TRUE: prioritize matches close to cursor
+
+#define CFC_KEYWORD         0x001
+#define CFC_FILES           0x002
+#define CFC_WHOLELINE       0x004
+
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char_u	*p_csl;		// 'completeslash'
 #endif
 EXTERN long	p_ph;		// 'pumheight'
 EXTERN long	p_pw;		// 'pumwidth'
+EXTERN long	p_pmw;		// 'pummaxwidth'
 EXTERN char_u	*p_com;		// 'comments'
 EXTERN char_u	*p_cpo;		// 'cpoptions'
 #ifdef FEAT_CSCOPE
@@ -721,6 +731,7 @@ EXTERN char_u	*p_inde;	// 'indentexpr'
 EXTERN char_u	*p_indk;	// 'indentkeys'
 #endif
 EXTERN int	p_im;		// 'insertmode'
+EXTERN char_u	*p_ise;		// 'isexpand'
 EXTERN char_u	*p_isf;		// 'isfname'
 EXTERN char_u	*p_isi;		// 'isident'
 EXTERN char_u	*p_isk;		// 'iskeyword'
@@ -850,6 +861,7 @@ EXTERN char_u	*p_rop;		// 'renderoptions'
 EXTERN long	p_report;	// 'report'
 #if defined(FEAT_QUICKFIX)
 EXTERN long	p_pvh;		// 'previewheight'
+EXTERN long     p_chi;          // 'chistory'
 #endif
 #ifdef MSWIN
 EXTERN int	p_rs;		// 'restorescreen'
@@ -972,7 +984,15 @@ EXTERN unsigned	swb_flags;
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
 #define SWB_USELAST		0x020
+
 EXTERN char_u	*p_spk;		// 'splitkeep'
+
+#if defined(FEAT_TABPANEL)
+EXTERN char_u	*p_tpl;		// 'tabpanel'
+EXTERN long	p_stpl;		// 'showtabpanel'
+EXTERN char_u	*p_tplo;	// 'tabpanelopt'
+#endif
+
 #ifdef FEAT_SYN_HL
 EXTERN char_u	*p_syn;		// 'syntax'
 #endif
@@ -1137,6 +1157,7 @@ enum
     , BV_BT
 #ifdef FEAT_QUICKFIX
     , BV_EFM
+    , BV_GEFM
     , BV_GP
     , BV_MP
 #endif
@@ -1194,6 +1215,7 @@ enum
     , BV_INEX
 #endif
     , BV_INF
+    , BV_ISE
     , BV_ISK
 #ifdef FEAT_CRYPT
     , BV_KEY
@@ -1314,6 +1336,7 @@ enum
 #endif
 #if defined(FEAT_QUICKFIX)
     , WV_PVW
+    , WV_LHI
 #endif
 #ifdef FEAT_RIGHTLEFT
     , WV_RL

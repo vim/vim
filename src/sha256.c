@@ -40,7 +40,7 @@
     (b)[(i) + 3] = (char_u)((n)      );   \
 }
 
-     void
+    void
 sha256_start(context_sha256_T *ctx)
 {
     ctx->total[0] = 0;

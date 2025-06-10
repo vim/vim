@@ -2,7 +2,7 @@
 " THESE FUNCTIONS DON'T COMMIT TO ANY BACKWARDS COMPATIBILITY. SO CHANGES AND
 " BREAKAGES IF USED OUTSIDE OF NETRW.VIM ARE EXPECTED.
 
-let s:slash = &shellslash ? '/' : '\'
+let s:slash = !exists('+shellslash') || &shellslash ? '/' : '\'
 
 " netrw#fs#PathJoin: Appends a new part to a path taking different systems into consideration {{{
 
@@ -160,6 +160,30 @@ function! netrw#fs#WinPath(path)
     endif
 
     return path
+endfunction
+
+" }}}
+" netrw#fs#Remove: deletes a file. {{{
+"           Uses Steve Hall's idea to insure that Windows paths stay
+"           acceptable.  No effect on Unix paths.
+
+function! netrw#fs#Remove(path)
+    let path = netrw#fs#WinPath(a:path)
+
+    if !g:netrw_cygwin && has("win32") && exists("+shellslash")
+        let sskeep = &shellslash
+        setl noshellslash
+        let result = delete(path)
+        let &shellslash = sskeep
+    else
+        let result = delete(path)
+    endif
+
+    if result < 0
+        call netrw#ErrorMsg(netrw#LogLevel('WARNING'), printf('delete("%s") failed!', path), 71)
+    endif
+
+    return result
 endfunction
 
 " }}}

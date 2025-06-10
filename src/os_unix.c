@@ -4396,9 +4396,9 @@ mch_calc_cell_size(struct cellsize *cs_out)
 
    if (retval == -1 || ws.ws_col == 0 || ws.ws_row == 0)
    {
-       cs_out->cs_xpixel = -1;
-       cs_out->cs_ypixel = -1;
-       return;
+	cs_out->cs_xpixel = -1;
+	cs_out->cs_ypixel = -1;
+	return;
    }
 
    // calculate parent tty's pixel per cell.
@@ -4434,20 +4434,20 @@ mch_report_winsize(int fd, int rows, int cols)
     ws.ws_col = cols;
     ws.ws_row = rows;
 
-    // calcurate and set tty pixel size
+    // calculate and set tty pixel size
     struct cellsize cs;
     mch_calc_cell_size(&cs);
 
     if (cs.cs_xpixel == -1)
     {
-        // failed get pixel size.
-        ws.ws_xpixel = 0;
-        ws.ws_ypixel = 0;
+	// failed get pixel size.
+	ws.ws_xpixel = 0;
+	ws.ws_ypixel = 0;
     }
     else
     {
-        ws.ws_xpixel = cols * cs.cs_xpixel;
-        ws.ws_ypixel = rows * cs.cs_ypixel;
+	ws.ws_xpixel = cols * cs.cs_xpixel;
+	ws.ws_ypixel = rows * cs.cs_ypixel;
     }
 
     retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
@@ -5260,14 +5260,13 @@ mch_call_shell_fork(
 		    else if (wpid == 0) // child
 		    {
 			linenr_T    lnum = curbuf->b_op_start.lnum;
-			int	    written = 0;
+			size_t	    written = 0;
 			char_u	    *lp = ml_get(lnum);
 			size_t	    lplen = (size_t)ml_get_len(lnum);
 
 			close(fromshell_fd);
 			for (;;)
 			{
-			    lplen -= written;
 			    if (lplen == 0)
 				len = 0;
 			    else if (lp[written] == NL)
@@ -5278,10 +5277,10 @@ mch_call_shell_fork(
 				char_u	*s = vim_strchr(lp + written, NL);
 
 				len = write(toshell_fd, (char *)lp + written,
-					   s == NULL ? lplen
+					   s == NULL ? lplen - written
 					      : (size_t)(s - (lp + written)));
 			    }
-			    if (len == (int)lplen)
+			    if (len == (int)(lplen - written))
 			    {
 				// Finished a line, add a NL, unless this line
 				// should not have one.
@@ -5305,7 +5304,7 @@ mch_call_shell_fork(
 				written = 0;
 			    }
 			    else if (len > 0)
-				written += len;
+				written += (size_t)len;
 			}
 			_exit(0);
 		    }
@@ -6970,9 +6969,9 @@ mch_expand_wildcards(
     }
     if (shell_style == STYLE_ECHO)
     {
-       if (strstr((char *)gettail(p_sh), "bash") != NULL)
+	if (strstr((char *)gettail(p_sh), "bash") != NULL)
 	    shell_style = STYLE_GLOBSTAR;
-       else if (strstr((char *)gettail(p_sh), "sh") != NULL)
+	else if (strstr((char *)gettail(p_sh), "sh") != NULL)
 	    shell_style = STYLE_VIMGLOB;
     }
 

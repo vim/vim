@@ -29,4 +29,4 @@ autocmd_add([{
     once:	true,
 }])
 
-g:java_syntax_previews = [476]
+g:java_syntax_previews = [476, 494]

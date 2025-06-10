@@ -35,7 +35,7 @@ func Test_blob_create()
       call assert_fails('VAR b = 0z1.1')
       call assert_fails('VAR b = 0z.')
       call assert_fails('VAR b = 0z001122.')
-      call assert_fails('call get("", 1)', 'E896:')
+      call assert_fails('call get("", 1)', 'E1531:')
       call assert_equal(0, len(test_null_blob()))
       call assert_equal(0z, copy(test_null_blob()))
   END
@@ -240,13 +240,13 @@ func Test_blob_compare()
       VAR b1 = 0z0011
       echo b1 == 9
   END
-  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072', 'E1072'])
+  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072:', 'E1072:'])
 
   let lines =<< trim END
       VAR b1 = 0z0011
       echo b1 != 9
   END
-  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072', 'E1072'])
+  call v9.CheckLegacyAndVim9Failure(lines, ['E977:', 'E1072:', 'E1072:'])
 
   let lines =<< trim END
       VAR b1 = 0z0011
@@ -786,6 +786,7 @@ endfunc
 
 func Test_blob_repeat()
   call assert_equal(0z, repeat(0z00, 0))
+  call assert_equal(0z, repeat(0z, 1))
   call assert_equal(0z00, repeat(0z00, 1))
   call assert_equal(0z0000, repeat(0z00, 2))
   call assert_equal(0z00000000, repeat(0z0000, 2))

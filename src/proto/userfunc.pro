@@ -2,8 +2,7 @@
 void func_init(void);
 hashtab_T *func_tbl_get(void);
 char_u *make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize);
-char_u *get_lambda_name(void);
-size_t get_lambda_name_len(void);
+string_T get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **type, int no_autoload, int new_function, int *found_var);
@@ -49,6 +48,7 @@ char_u *save_function_name(char_u **name, int *is_global, int skip, int flags, f
 void list_functions(regmatch_T *regmatch);
 ufunc_T *define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free, int class_flags, ocmember_T *obj_members, int obj_member_count);
 void ex_function(exarg_T *eap);
+int get_func_arity(char_u *name, int *required, int *optional, int *varargs);
 ufunc_T *find_func_by_name(char_u *name, compiletype_T *compile_type);
 void defcompile_function(ufunc_T *ufunc, class_T *cl);
 void ex_defcompile(exarg_T *eap);
@@ -95,5 +95,4 @@ int set_ref_in_call_stack(int copyID);
 int set_ref_in_functions(int copyID);
 int set_ref_in_func_args(int copyID);
 int set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID);
-int get_func_arity(char_u *name, int *required, int *optional, int *varargs);
 /* vim: set ft=c : */

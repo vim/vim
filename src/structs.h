@@ -73,6 +73,7 @@ typedef struct listvar_S	list_T;
 typedef struct dictvar_S	dict_T;
 typedef struct partial_S	partial_T;
 typedef struct blobvar_S	blob_T;
+typedef struct tuplevar_S	tuple_T;
 
 typedef struct window_S		win_T;
 typedef struct wininfo_S	wininfo_T;
@@ -275,6 +276,8 @@ typedef struct
 #if defined(FEAT_QUICKFIX)
     int		wo_pvw;
 # define w_p_pvw w_onebuf_opt.wo_pvw	// 'previewwindow'
+    long        wo_lhi;
+# define w_p_lhi w_onebuf_opt.wo_lhi    // 'lhistory'
 #endif
 #ifdef FEAT_RIGHTLEFT
     int		wo_rl;
@@ -1511,7 +1514,8 @@ typedef enum
     VAR_INSTR,		// "v_instr" is used
     VAR_CLASS,		// "v_class" is used (also used for interface)
     VAR_OBJECT,		// "v_object" is used
-    VAR_TYPEALIAS	// "v_typealias" is used
+    VAR_TYPEALIAS,	// "v_typealias" is used
+    VAR_TUPLE		// "v_tuple" is used
 } vartype_T;
 
 // A type specification.
@@ -1679,6 +1683,7 @@ struct typval_S
 	class_T		*v_class;	// class value (can be NULL)
 	object_T	*v_object;	// object value (can be NULL)
 	typealias_T	*v_typealias;	// user-defined type name
+	tuple_T		*v_tuple;	// tuple
     }		vval;
 };
 
@@ -1818,6 +1823,21 @@ struct blobvar_S
     char	bv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 
+/*
+ * Structure to hold info about a tuple.
+ */
+struct tuplevar_S
+{
+    garray_T	tv_items;	// tuple items
+    type_T	*tv_type;	// current type, allocated by alloc_type()
+    tuple_T	*tv_copytuple;	// copied tuple used by deepcopy()
+    tuple_T	*tv_used_next;	// next tuple in used tuples list
+    tuple_T	*tv_used_prev;	// previous tuple in used tuples list
+    int		tv_refcount;	// reference count
+    int		tv_copyID;	// ID used by deepcopy()
+    char	tv_lock;	// zero, VAR_LOCKED, VAR_FIXED
+};
+
 typedef int (*cfunc_T)(int argcount, typval_T *argvars, typval_T *rettv, void *state);
 typedef void (*cfunc_free_T)(void *state);
 
@@ -1846,6 +1866,8 @@ typedef struct
     blob_T	*fi_blob;	// blob being used
     char_u	*fi_string;	// copy of string being used
     int		fi_byte_idx;	// byte index in fi_string
+    tuple_T	*fi_tuple;	// tuple being used
+    int		fi_tuple_idx;	// tuple index in fi_tuple
     int		fi_cs_flags;	// cs_flags or'ed together
 } forinfo_T;
 
@@ -1954,7 +1976,7 @@ struct ufunc_S
 #define FC_DEAD	    0x80	// function kept only for reference to dfunc
 #define FC_EXPORT   0x100	// "export def Func()"
 #define FC_NOARGS   0x200	// no a: variables in lambda
-#define FC_VIM9	    0x400	// defined in vim9 script file
+#define FC_VIM9	    0x400	// defined in Vim9 script file
 #define FC_CFUNC    0x800	// defined as Lua C func
 #define FC_COPY	    0x1000	// copy of another function by
 				// copy_lambda_to_global_func()
@@ -2821,6 +2843,15 @@ typedef struct list_stack_S
 } list_stack_T;
 
 /*
+ * structure used for explicit stack while garbage collecting tuples
+ */
+typedef struct tuple_stack_S
+{
+    tuple_T			*tuple;
+    struct tuple_stack_S	*prev;
+} tuple_stack_T;
+
+/*
  * Structure used for iterating over dictionary items.
  * Initialize with dict_iterate_start().
  */
@@ -3041,7 +3072,7 @@ struct file_buffer
     int		b_locked;	// Buffer is being closed or referenced, don't
 				// let autocommands wipe it out.
     int		b_locked_split;	// Buffer is being closed, don't allow opening
-				// a new window with it.
+				// it in more windows.
 
     /*
      * b_ffname has the full path of the file (NULL for no name).
@@ -3271,6 +3302,7 @@ struct file_buffer
     char_u	*b_p_fo;	// 'formatoptions'
     char_u	*b_p_flp;	// 'formatlistpat'
     int		b_p_inf;	// 'infercase'
+    char_u	*b_p_ise;	// 'isexpand' local value
     char_u	*b_p_isk;	// 'iskeyword'
 #ifdef FEAT_FIND_ID
     char_u	*b_p_def;	// 'define' local value
@@ -3339,6 +3371,7 @@ struct file_buffer
      * local values for options which are normally global
      */
 #ifdef FEAT_QUICKFIX
+    char_u	*b_p_gefm;	// 'grepformat' local value
     char_u	*b_p_gp;	// 'grepprg' local value
     char_u	*b_p_mp;	// 'makeprg' local value
     char_u	*b_p_efm;	// 'errorformat' local value
@@ -3542,14 +3575,17 @@ struct file_buffer
  * and how many lines it occupies in that buffer.  When the lines are missing
  * in the buffer the df_count[] is zero.  This is all counted in
  * buffer lines.
- * There is always at least one unchanged line in between the diffs.
- * Otherwise it would have been included in the diff above or below it.
+ * There is always at least one unchanged line in between the diffs (unless
+ * linematch is used).  Otherwise it would have been included in the diff above
+ * or below it.
  * df_lnum[] + df_count[] is the lnum below the change.  When in one buffer
  * lines have been inserted, in the other buffer df_lnum[] is the line below
  * the insertion and df_count[] is zero.  When appending lines at the end of
  * the buffer, df_lnum[] is one beyond the end!
  * This is using a linked list, because the number of differences is expected
  * to be reasonable small.  The list is sorted on lnum.
+ * Each diffblock also contains a cached list of inline diff of changes within
+ * the block, used for highlighting.
  */
 typedef struct diffblock_S diff_T;
 struct diffblock_S
@@ -3559,6 +3595,37 @@ struct diffblock_S
     linenr_T	df_count[DB_COUNT];	// nr of inserted/changed lines
     int is_linematched;  // has the linematch algorithm ran on this diff hunk to divide it into
 			  // smaller diff hunks?
+
+    int		has_changes;		// has cached list of inline changes
+    garray_T	df_changes;		// list of inline changes (diffline_change_T)
+};
+
+/*
+ * Each entry stores a single inline change within a diff block. Line numbers
+ * are recorded as relative offsets, and columns are byte offsets, not
+ * character counts.
+ * Ranges are [start,end), with the end being exclusive.
+ */
+typedef struct diffline_change_S diffline_change_T;
+struct diffline_change_S
+{
+    colnr_T	dc_start[DB_COUNT];	// byte offset of start of range in the line
+    colnr_T	dc_end[DB_COUNT];	// 1 past byte offset of end of range in line
+    int		dc_start_lnum_off[DB_COUNT];	// starting line offset
+    int		dc_end_lnum_off[DB_COUNT];	// end line offset
+};
+
+/*
+ * Describes a single line's list of inline changes. Use diff_change_parse() to
+ * parse this.
+ */
+typedef struct diffline_S diffline_T;
+struct diffline_S
+{
+    diffline_change_T *changes;
+    int num_changes;
+    int bufidx;
+    int lineoff;
 };
 #endif
 
@@ -3785,6 +3852,11 @@ typedef struct
     int	diff;
     int	eob;
     int	lastline;
+#if defined(FEAT_TABPANEL)
+    int	tpl_vert;
+#endif
+    int trunc;
+    int truncrl;
 } fill_chars_T;
 
 /*
@@ -4492,8 +4564,7 @@ typedef struct
     char_u	*pum_kind;		// extra kind text (may be truncated)
     char_u	*pum_extra;		// extra menu text (may be truncated)
     char_u	*pum_info;		// extra info
-    int		pum_score;		// fuzzy match score
-    int		pum_idx;		// index of item before sorting by score
+    int		pum_cpt_source_idx;	// index of completion source in 'cpt'
     int		pum_user_abbr_hlattr;	// highlight attribute for abbr
     int		pum_user_kind_hlattr;	// highlight attribute for kind
 } pumitem_T;
@@ -4511,9 +4582,9 @@ typedef struct
 } tagname_T;
 
 typedef struct {
-  UINT32_T total[2];
-  UINT32_T state[8];
-  char_u   buffer[64];
+    UINT32_T total[2];
+    UINT32_T state[8];
+    char_u   buffer[64];
 } context_sha256_T;
 
 /*
@@ -4692,6 +4763,7 @@ typedef struct lval_S
     char_u	*ll_newkey;	// New key for Dict in alloc. mem or NULL.
     type_T	*ll_valtype;	// type expected for the value or NULL
     blob_T	*ll_blob;	// The Blob or NULL
+    tuple_T	*ll_tuple;	// tuple or NULL
     ufunc_T	*ll_ufunc;	// The function or NULL
     object_T	*ll_object;	// The object or NULL, class is not NULL
     class_T	*ll_class;	// The class or NULL, object may be NULL

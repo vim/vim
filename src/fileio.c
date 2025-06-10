@@ -3534,6 +3534,9 @@ shorten_fnames(int force)
     }
     status_redraw_all();
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
     popup_update_preview_title();
 #endif
@@ -5476,6 +5479,8 @@ vim_tempname(
     // "sh".  NOTE: This also checks 'shellcmdflag' to help those people who
     // didn't set 'shellslash' but only if not using PowerShell.
     retval = utf16_to_enc(itmp, NULL);
+    if (retval == NULL)
+	return NULL;
     shname = gettail(p_sh);
     if ((*p_shcf == '-' && !(strstr((char *)shname, "powershell") != NULL
 			     || strstr((char *)shname, "pwsh") != NULL ))

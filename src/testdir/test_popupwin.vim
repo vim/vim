@@ -148,7 +148,7 @@ func Test_popup_with_border_and_padding()
 	\ lastline: 1,
 	\ scrollbar: 0,
 	\ visible: 1}
-  let winid = popup_create('hello border', #{line: 2, col: 3, border: []})",
+  let winid = popup_create('hello border', #{line: 2, col: 3, border: []})
   call assert_equal(with_border_or_padding, winid->popup_getpos())
   let options = popup_getoptions(winid)
   call assert_equal([], options.border)
@@ -3898,6 +3898,24 @@ func Test_popupwin_cancel()
   call assert_equal({}, popup_getpos(win3))
 endfunc
 
+func Test_popupwin_cancel_with_without_filter()
+  let win1 = popup_create('with filter', #{line: 5, filter: {... -> 0}})
+  let win2 = popup_create('no filter', #{line: 10})
+
+  call assert_equal(5, popup_getpos(win1).line)
+  call assert_equal(10, popup_getpos(win2).line)
+
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal({}, popup_getpos(win1))
+  call assert_equal(10, popup_getpos(win2).line)
+
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal({}, popup_getpos(win1))
+  call assert_equal({}, popup_getpos(win2))
+
+  call popup_clear()
+endfunc
+
 func Test_popupwin_filter_redraw()
   " Create two popups with a filter that closes the popup when typing "0".
   " Both popups should close, even though the redraw also calls
@@ -4403,6 +4421,31 @@ func Test_popupwin_clears_cmdline_on_hide()
   call VerifyScreenDump(buf, 'Test_popupwin_hide_clear_cmdline_01', {})
 
   " clean up
+  call StopVimInTerminal(buf)
+
+  let lines =<< trim END
+    set completeopt=menuone,noinsert,noselect,popup,fuzzy
+    set completepopup=border:off
+    let g:list = [
+      \ {"word": "one", "info": "one\ntwo\nthree\nfour\nfive"},
+      \ {"word": "two", "info": "one\ntwo\nthree\nfour\nfive"},
+      \ {"word": "three", "info": "one\ntwo\nthree\nfour\nfive"},
+      \ {"word": "four", "info": "one\ntwo\nthree\nfour\nfive"},
+      \ {"word": "five", "info": "one\ntwo\nthree\nfour\nfive"}
+      \ ]
+    call setline(1, repeat(['foobar'], &lines))
+    inoremap <f5> <cmd>call complete(1, g:list)<cr>
+  END
+  call writefile(lines, 'XtestPopup_win3', 'D')
+  let buf = RunVimInTerminal('-S XtestPopup_win3', #{rows: 15})
+  call term_sendkeys(buf, "Go\<F5>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>")
+  call term_wait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_info_popupwin_clears_cmdline_on_hide_01', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call term_wait(buf, 500)
+  call VerifyScreenDump(buf, 'Test_info_popupwin_clears_cmdline_on_hide_02', {})
+
   call StopVimInTerminal(buf)
 endfunc
 

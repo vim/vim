@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   scan:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     env:
       CC: gcc
@@ -36,7 +36,6 @@ jobs:
             gettext \
             libcanberra-dev \
             libperl-dev \
-            python2-dev \
             python3-dev \
             liblua5.4-dev \
             lua5.4 \
@@ -53,7 +52,7 @@ jobs:
           echo "$(pwd)/cov-scan/bin" >> $GITHUB_PATH
           (
           echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
-          echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+          echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
           ) >> $GITHUB_ENV
 
       - name: Configure

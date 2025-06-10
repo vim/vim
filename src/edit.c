@@ -78,8 +78,8 @@ static colnr_T	Insstart_textlen;	// length of line when insert started
 static colnr_T	Insstart_blank_vcol;	// vcol for first inserted blank
 static int	update_Insstart_orig = TRUE; // set Insstart_orig to Insstart
 
-static char_u	*last_insert = NULL;	// the text of the previous insert,
-					// K_SPECIAL and CSI are escaped
+static string_T	last_insert = {NULL, 0};    // the text of the previous insert,
+					    // K_SPECIAL and CSI are escaped
 static int	last_insert_skip; // nr of chars in front of previous insert
 static int	new_insert_skip;  // nr of chars in front of current insert
 static int	did_restart_edit;	// "restart_edit" when calling edit()
@@ -146,7 +146,6 @@ edit(
 #ifdef FEAT_CONCEAL
     int		cursor_line_was_concealed;
 #endif
-    int		ins_completion = FALSE;
 
     // Remember whether editing was restarted after CTRL-O.
     did_restart_edit = restart_edit;
@@ -416,14 +415,10 @@ edit(
      * Get the current length of the redo buffer, those characters have to be
      * skipped if we want to get to the inserted characters.
      */
-    ptr = get_inserted();
-    if (ptr == NULL)
-	new_insert_skip = 0;
-    else
-    {
-	new_insert_skip = (int)get_inserted_len();
-	vim_free(ptr);
-    }
+    string_T inserted = get_inserted();
+    new_insert_skip = (int)inserted.length;
+    if (inserted.string != NULL)
+	vim_free(inserted.string);
 
     old_indent = 0;
 
@@ -613,7 +608,16 @@ edit(
 		    if (c != K_IGNORE && c != K_NOP)
 			vungetc(c);
 		    count = 0;
-		    nomove = TRUE;
+
+		    if (!bt_prompt(curwin->w_buffer)
+#ifdef FEAT_TERMINAL
+			    && !bt_terminal(curwin->w_buffer)
+#endif
+			    && stop_insert_mode)
+			// :stopinsert command via callback or via server command
+			nomove = FALSE;
+		    else
+			nomove = TRUE;
 		    ins_compl_prep(ESC);
 		    goto doESCkey;
 		}
@@ -637,11 +641,8 @@ edit(
 	 * and the cursor is still in the completed word.  Only when there is
 	 * a match, skip this when no matches were found.
 	 */
-	ins_completion = ins_compl_active()
-	    && curwin->w_cursor.col >= ins_compl_col()
-	    && ins_compl_has_shown_match();
-
-	if (ins_completion && pum_wanted())
+	if (ins_compl_active() && curwin->w_cursor.col >= ins_compl_col()
+		&& ins_compl_has_shown_match() && pum_wanted())
 	{
 	    // BS: Delete one character from "compl_leader".
 	    if ((c == K_BS || c == Ctrl_H)
@@ -699,8 +700,6 @@ edit(
 		    ins_compl_delete();
 	    }
 	}
-	else if (ins_completion && !pum_wanted() && ins_compl_preinsert_effect())
-	    ins_compl_delete();
 
 	// Prepare for or stop CTRL-X mode.  This doesn't do completion, but
 	// it does fix up the text when finishing completion.
@@ -930,6 +929,8 @@ doESCkey:
 	    break;
 
 	case Ctrl_R:	// insert the contents of a register
+	    if (ctrl_x_mode_register() && !ins_compl_active())
+		goto docomplete;
 	    ins_reg();
 	    auto_format(FALSE, TRUE);
 	    inserted_space = FALSE;
@@ -1412,6 +1413,11 @@ normalchar:
 	       )
 	    did_cursorhold = FALSE;
 
+	// Check if we need to cancel completion mode because the window
+	// or tab page was changed
+	if (ins_compl_active() && !ins_compl_win_active(curwin))
+	    ins_compl_cancel();
+
 	// If the cursor was moved we didn't just insert a space
 	if (arrow_used)
 	    inserted_space = FALSE;
@@ -1819,12 +1825,12 @@ undisplay_dollar(void)
  * MODE_VREPLACE modes.
  */
     void
-truncate_spaces(char_u *line)
+truncate_spaces(char_u *line, size_t len)
 {
     int	    i;
 
     // find start of trailing white space
-    for (i = (int)STRLEN(line) - 1; i >= 0 && VIM_ISWHITE(line[i]); i--)
+    for (i = (int)len - 1; i >= 0 && VIM_ISWHITE(line[i]); i--)
     {
 	if (State & REPLACE_FLAG)
 	    replace_join(0);	    // remove a NUL from the replace stack
@@ -2191,7 +2197,7 @@ insertchar(
 	    i -= middle_len;
 
 	    // Check some expected things before we go on
-	    if (i >= 0 && lead_end[end_len - 1] == end_comment_pending)
+	    if (i >= 0 && end_len > 0 && lead_end[end_len - 1] == end_comment_pending)
 	    {
 		// Backspace over all the stuff we want to replace
 		backspace_until_column(i);
@@ -2451,7 +2457,7 @@ stop_insert(
     int		nomove)			// <c-\><c-o>, don't move cursor
 {
     int		cc;
-    char_u	*ptr;
+    string_T	inserted;
 
     stop_redo_ins();
     replace_flush();		// abandon replace stack
@@ -2461,16 +2467,16 @@ stop_insert(
      * Don't do it when "restart_edit" was set and nothing was inserted,
      * otherwise CTRL-O w and then <Left> will clear "last_insert".
      */
-    ptr = get_inserted();
-    int added = ptr == NULL ? 0 : (int)get_inserted_len() - new_insert_skip;
+    inserted = get_inserted();
+    int added = inserted.string == NULL ? 0 : (int)inserted.length - new_insert_skip;
     if (did_restart_edit == 0 || added > 0)
     {
-	vim_free(last_insert);
-	last_insert = ptr;
+	vim_free(last_insert.string);
+	last_insert = inserted;			    // structure copy
 	last_insert_skip = added < 0 ? 0 : new_insert_skip;
     }
     else
-	vim_free(ptr);
+	vim_free(inserted.string);
 
     if (!arrow_used && end_insert_pos != NULL)
     {
@@ -2522,6 +2528,7 @@ stop_insert(
 		&& end_insert_pos->lnum <= curbuf->b_ml.ml_line_count)
 	{
 	    pos_T	tpos = curwin->w_cursor;
+	    colnr_T	prev_col = end_insert_pos->col;
 
 	    curwin->w_cursor = *end_insert_pos;
 	    check_cursor_col();  // make sure it is not past the line
@@ -2537,7 +2544,7 @@ stop_insert(
 	    }
 	    if (curwin->w_cursor.lnum != tpos.lnum)
 		curwin->w_cursor = tpos;
-	    else
+	    else if (curwin->w_cursor.col < prev_col)
 	    {
 		// reset tpos, could have been invalidated in the loop above
 		tpos = curwin->w_cursor;
@@ -2576,18 +2583,22 @@ set_last_insert(int c)
 {
     char_u	*s;
 
-    vim_free(last_insert);
-    last_insert = alloc(MB_MAXBYTES * 3 + 5);
-    if (last_insert == NULL)
+    vim_free(last_insert.string);
+    last_insert.string = alloc(MB_MAXBYTES * 3 + 5);
+    if (last_insert.string == NULL)
+    {
+	last_insert.length = 0;
 	return;
+    }
 
-    s = last_insert;
+    s = last_insert.string;
     // Use the CTRL-V only when entering a special char
     if (c < ' ' || c == DEL)
 	*s++ = Ctrl_V;
     s = add_char2buf(c, s);
     *s++ = ESC;
-    *s++ = NUL;
+    *s = NUL;
+    last_insert.length = (size_t)(s - last_insert.string);
     last_insert_skip = 0;
 }
 
@@ -2595,7 +2606,7 @@ set_last_insert(int c)
     void
 free_last_insert(void)
 {
-    VIM_CLEAR(last_insert);
+    VIM_CLEAR_STRING(last_insert);
 }
 #endif
 
@@ -2921,13 +2932,11 @@ stuff_inserted(
     long    count,	// Repeat this many times
     int	    no_esc)	// Don't add an ESC at the end
 {
-    char_u	*esc_ptr;
-    char_u	*ptr;
-    char_u	*last_ptr;
-    char_u	last = NUL;
+    string_T	insert;				// text to be inserted
+    char_u	last = ' ';
 
-    ptr = get_last_insert();
-    if (ptr == NULL)
+    insert = get_last_insert();
+    if (insert.string == NULL)
     {
 	emsg(_(e_no_inserted_text_yet));
 	return FAIL;
@@ -2936,35 +2945,60 @@ stuff_inserted(
     // may want to stuff the command character, to start Insert mode
     if (c != NUL)
 	stuffcharReadbuff(c);
-    if ((esc_ptr = vim_strrchr(ptr, ESC)) != NULL)
-	*esc_ptr = NUL;	    // remove the ESC
 
-    // when the last char is either "0" or "^" it will be quoted if no ESC
-    // comes after it OR if it will inserted more than once and "ptr"
-    // starts with ^D.	-- Acevedo
-    last_ptr = (esc_ptr ? esc_ptr : ptr + STRLEN(ptr)) - 1;
-    if (last_ptr >= ptr && (*last_ptr == '0' || *last_ptr == '^')
-	    && (no_esc || (*ptr == Ctrl_D && count > 1)))
+    if (insert.length > 0)
     {
-	last = *last_ptr;
-	*last_ptr = NUL;
+	char_u	*p;
+
+	// look for the last ESC in 'insert'
+	for (p = insert.string + insert.length - 1; p >= insert.string; --p)
+	{
+	    if (*p == ESC)
+	    {
+		insert.length = (size_t)(p - insert.string);
+		break;
+	    }
+	}
+    }
+
+    if (insert.length > 0)
+    {
+	char_u	*p = insert.string + insert.length - 1;
+
+	// when the last char is either "0" or "^" it will be quoted if no ESC
+	// comes after it OR if it will insert more than once and "ptr"
+	// starts with ^D.	-- Acevedo
+	if ((*p == '0' || *p == '^')
+		&& (no_esc || (*insert.string == Ctrl_D && count > 1)))
+	{
+	    last = *p;
+	    --insert.length;
+	}
     }
 
     do
     {
-	stuffReadbuff(ptr);
+	stuffReadbuffLen(insert.string, (long)insert.length);
 	// a trailing "0" is inserted as "<C-V>048", "^" as "<C-V>^"
-	if (last)
-	    stuffReadbuff(
-		       (char_u *)(last == '0' ? "\026\060\064\070" : "\026^"));
+	switch (last)
+	{
+	case '0':
+#define TEXT_TO_INSERT "\026\060\064\070"
+	    stuffReadbuffLen((char_u *)TEXT_TO_INSERT, STRLEN_LITERAL(TEXT_TO_INSERT));
+#undef TEXT_TO_INSERT
+	    break;
+
+	case '^':
+#define TEXT_TO_INSERT "\026^"
+	    stuffReadbuffLen((char_u *)TEXT_TO_INSERT, STRLEN_LITERAL(TEXT_TO_INSERT));
+#undef TEXT_TO_INSERT
+	    break;
+
+	default:
+	    break;
+	}
     }
     while (--count > 0);
-
-    if (last)
-	*last_ptr = last;
-
-    if (esc_ptr != NULL)
-	*esc_ptr = ESC;	    // put the ESC back
 
     // may want to stuff a trailing ESC, to get out of Insert mode
     if (!no_esc)
@@ -2973,12 +3007,18 @@ stuff_inserted(
     return OK;
 }
 
-    char_u *
+    string_T
 get_last_insert(void)
 {
-    if (last_insert == NULL)
-	return NULL;
-    return last_insert + last_insert_skip;
+    string_T insert = {NULL, 0};
+
+    if (last_insert.string != NULL)
+    {
+	insert.string = last_insert.string + last_insert_skip;
+	insert.length = (size_t)(last_insert.length - last_insert_skip);
+    }
+
+    return insert;
 }
 
 /*
@@ -2988,18 +3028,17 @@ get_last_insert(void)
     char_u *
 get_last_insert_save(void)
 {
+    string_T	insert = get_last_insert();
     char_u	*s;
-    int		len;
 
-    if (last_insert == NULL)
+    if (insert.string == NULL)
 	return NULL;
-    len = (int)STRLEN(last_insert + last_insert_skip);
-    s = vim_strnsave(last_insert + last_insert_skip, len);
+    s = vim_strnsave(insert.string, insert.length);
     if (s == NULL)
 	return NULL;
 
-    if (len > 0 && s[len - 1] == ESC)	// remove trailing ESC
-	s[len - 1] = NUL;
+    if (insert.length > 0 && s[insert.length - 1] == ESC)	// remove trailing ESC
+	s[--insert.length] = NUL;
     return s;
 }
 
@@ -3847,7 +3886,7 @@ ins_start_select(int c)
 		buf[1] = KS_MODIFIER;
 		buf[2] = mod_mask;
 		buf[3] = NUL;
-		stuffReadbuff(buf);
+		stuffReadbuffLen(buf, 3L);
 	    }
 	    stuffcharReadbuff(c);
 	    return TRUE;
@@ -5424,6 +5463,7 @@ do_insert_char_pre(int c)
 {
     char_u	*res;
     char_u	buf[MB_MAXBYTES + 1];
+    size_t	buflen;
     int		save_State = State;
 
     // Return quickly when there is nothing to do.
@@ -5434,16 +5474,17 @@ do_insert_char_pre(int c)
 	return NULL;
 
     if (has_mbyte)
-	buf[(*mb_char2bytes)(c, buf)] = NUL;
+	buflen = (*mb_char2bytes)(c, buf);
     else
     {
 	buf[0] = c;
-	buf[1] = NUL;
+	buflen = 1;
     }
+    buf[buflen] = NUL;
 
     // Lock the text to avoid weird things from happening.
     ++textlock;
-    set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
+    set_vim_var_string(VV_CHAR, buf, (int)buflen);  // set v:char
 
     res = NULL;
     if (ins_apply_autocmds(EVENT_INSERTCHARPRE))

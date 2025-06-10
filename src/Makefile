@@ -1576,6 +1576,7 @@ BASIC_SRC = \
 	spellsuggest.c \
 	strings.c \
 	syntax.c \
+	tabpanel.c \
 	tag.c \
 	term.c \
 	terminal.c \
@@ -1584,6 +1585,7 @@ BASIC_SRC = \
 	textobject.c \
 	textprop.c \
 	time.c \
+	tuple.c \
 	typval.c \
 	ui.c \
 	undo.c \
@@ -1736,6 +1738,7 @@ OBJ_COMMON = \
 	objects/spellsuggest.o \
 	objects/strings.o \
 	objects/syntax.o \
+	objects/tabpanel.o \
 	objects/tag.o \
 	objects/term.o \
 	objects/terminal.o \
@@ -1744,6 +1747,7 @@ OBJ_COMMON = \
 	objects/textobject.o \
 	objects/textprop.o \
 	objects/time.o \
+	objects/tuple.o \
 	objects/typval.o \
 	objects/ui.o \
 	objects/undo.o \
@@ -1928,6 +1932,7 @@ PRO_AUTO = \
 	spellsuggest.pro \
 	strings.pro \
 	syntax.pro \
+	tabpanel.pro \
 	tag.pro \
 	term.pro \
 	terminal.pro \
@@ -1937,6 +1942,7 @@ PRO_AUTO = \
 	textobject.pro \
 	textprop.pro \
 	time.pro \
+	tuple.pro \
 	typval.pro \
 	ui.pro \
 	undo.pro \
@@ -2034,7 +2040,7 @@ autoconf:
 	-rm -rf autom4te.cache
 	-rm -f auto/config.status auto/config.cache
 
-# Run vim script to generate the Ex command lookup table.
+# Run Vim script to generate the Ex command lookup table.
 # This only needs to be run when a command name has been added or changed.
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
@@ -2042,7 +2048,7 @@ autoconf:
 cmdidxs: ex_cmds.h
 	vim --clean -X --not-a-term -S create_cmdidxs.vim -c quit
 
-# Run vim script to generate the normal/visual mode command lookup table.
+# Run Vim script to generate the normal/visual mode command lookup table.
 # This only needs to be run when a new normal/visual mode command has been
 # added.
 # This requires a "vim" executable with the +eval feature.
@@ -2354,6 +2360,7 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(VIMTARGET) $(DEST_RT) \
 		$(DEST_IMPORT) $(DEST_IMPORT)/dist \
 		$(DEST_PLUG) \
 	       	$(DEST_TUTOR) $(DEST_TUTOR)/en $(DEST_TUTOR)/it $(DEST_TUTOR)/sr \
+		$(DEST_TUTOR)/ru \
 		$(DEST_SPELL) $(DEST_COMP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 # Generate the help tags with ":helptags" to handle all languages.
@@ -2484,15 +2491,17 @@ installgtutorbin: $(DEST_BIN)
 	$(INSTALL_DATA) gvimtutor $(DEST_BIN)/$(GVIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(GVIMNAME)tutor
 
-installtutor: $(DEST_RT) $(DEST_TUTOR)/en $(DEST_TUTOR)/it $(DEST_TUTOR)/sr
+installtutor: $(DEST_RT) $(DEST_TUTOR)/en $(DEST_TUTOR)/it $(DEST_TUTOR)/sr $(DEST_TUTOR)/ru
 	-$(INSTALL_DATA) $(TUTORSOURCE)/README* $(TUTORSOURCE)/tutor* $(DEST_TUTOR)
 	-$(INSTALL_DATA) $(TUTORSOURCE)/en/* $(DEST_TUTOR)/en/
 	-$(INSTALL_DATA) $(TUTORSOURCE)/it/* $(DEST_TUTOR)/it/
+	-$(INSTALL_DATA) $(TUTORSOURCE)/ru/* $(DEST_TUTOR)/ru/
 	-$(INSTALL_DATA) $(TUTORSOURCE)/sr/* $(DEST_TUTOR)/sr/
 	-rm -f $(DEST_TUTOR)/*.info
 	chmod $(HELPMOD) $(DEST_TUTOR)/*
 	chmod $(DIRMOD) $(DEST_TUTOR)/en
 	chmod $(DIRMOD) $(DEST_TUTOR)/it
+	chmod $(DIRMOD) $(DEST_TUTOR)/ru
 	chmod $(DIRMOD) $(DEST_TUTOR)/sr
 
 # Install the spell files, if they exist.  This assumes at least the English
@@ -2715,7 +2724,7 @@ $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
 		$(DEST_PACK) $(DEST_TOOLS) \
 		$(DEST_TUTOR) $(DEST_TUTOR)/en $(DEST_TUTOR)/it \
-		$(DEST_TUTOR)/sr \
+		$(DEST_TUTOR)/sr $(DEST_TUTOR)/ru \
 		$(DEST_SPELL) \
 		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
 		$(DEST_AUTO)/cargo $(DEST_AUTO)/rust \
@@ -2901,6 +2910,7 @@ uninstall_runtime:
 	-rm -rf $(DEST_PACK)
 	-rm -rf $(DEST_TUTOR)/en
 	-rm -rf $(DEST_TUTOR)/it
+	-rm -rf $(DEST_TUTOR)/ru
 	-rm -rf $(DEST_TUTOR)/sr
 	-rm -rf $(DEST_TUTOR)
 	-rm -rf $(DEST_SPELL)
@@ -3540,6 +3550,9 @@ objects/strings.o: strings.c
 objects/syntax.o: syntax.c
 	$(CCC) -o $@ syntax.c
 
+objects/tabpanel.o: tabpanel.c
+	$(CCC) -o $@ tabpanel.c
+
 objects/tag.o: tag.c
 	$(CCC) -o $@ tag.c
 
@@ -3563,6 +3576,9 @@ objects/textprop.o: textprop.c
 
 objects/time.o: time.c
 	$(CCC) -o $@ time.c
+
+objects/tuple.o: tuple.c
+	$(CCC) -o $@ tuple.c
 
 objects/typval.o: typval.c
 	$(CCC) -o $@ typval.c
@@ -4204,6 +4220,11 @@ objects/syntax.o: syntax.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
+objects/tabpanel.o: tabpanel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
 objects/tag.o: tag.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
@@ -4240,6 +4261,11 @@ objects/textprop.o: textprop.c vim.h protodef.h auto/config.h feature.h os_unix.
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
 objects/time.o: time.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/tuple.o: tuple.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \

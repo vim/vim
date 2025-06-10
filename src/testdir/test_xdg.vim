@@ -21,7 +21,7 @@ func Test_xdg_rc_detection()
   let rc = s:get_rcs()
   let before =<< trim CODE
     call writefile([expand('$MYVIMRC')], "XMY_VIMRC")
-    call writefile([expand('$MYVIMRCDIR')], "XMY_VIMDIR")
+    call writefile([expand('$MYVIMDIR')], "XMY_VIMDIR")
     quit!
   CODE
   call RunVim(before, [], "")
@@ -58,21 +58,30 @@ func Test_xdg_runtime_files()
   " g:rc_one|two|three|four is to verify, that the other
   " init files are not sourced
   " g:rc is to verify which rc file has been loaded.
+  " g:rc_vimdir is to verify $MYVIMDIR is set and valid
   let file1 =<< trim CODE
     let g:rc_one = 'one'
     let g:rc = '.vimrc'
+    let g:rc_vimdir = expand('~/.vim/')
+    call assert_equal(g:rc_vimdir, $MYVIMDIR)
   CODE
   let file2 =<< trim CODE
     let g:rc_two = 'two'
     let g:rc = '.vim/vimrc'
+    let g:rc_vimdir = expand('~/.vim/')
+    call assert_equal(g:rc_vimdir, $MYVIMDIR)
   CODE
   let file3 =<< trim CODE
     let g:rc_three = 'three'
     let g:rc = '.config/vim/vimrc'
+    let g:rc_vimdir = expand('~/.config/vim/')
+    call assert_equal(g:rc_vimdir, $MYVIMDIR)
   CODE
   let file4 =<< trim CODE
     let g:rc_four = 'four'
     let g:rc = 'xdg/vim/vimrc'
+    let g:rc_vimdir = expand('~/xdg/vim/')
+    call assert_equal(g:rc_vimdir, $MYVIMDIR)
   CODE
   call writefile(file1, rc1)
   call writefile(file2, rc2)
@@ -87,7 +96,7 @@ func Test_xdg_runtime_files()
     call assert_match('XfakeHOME/\.vimrc', $MYVIMRC)
     call assert_match('XfakeHOME/.vim/', $MYVIMDIR)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
-    call assert_equal(#{rc_one: 'one', rc: '.vimrc'}, g:)
+    call assert_equal(#{rc_one: 'one', rc: '.vimrc', rc_vimdir: $MYVIMDIR}, g:)
     call assert_match('XfakeHOME/\.vim/view', &viewdir)
     call writefile(v:errors, 'Xresult')
     quit
@@ -103,7 +112,7 @@ func Test_xdg_runtime_files()
     call assert_match('XfakeHOME/\.vim/vimrc', $MYVIMRC)
     call assert_match('XfakeHOME/\.vim/', $MYVIMDIR)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
-    call assert_equal(#{rc_two: 'two', rc: '.vim/vimrc'}, g:)
+    call assert_equal(#{rc_two: 'two', rc: '.vim/vimrc', rc_vimdir: $MYVIMDIR}, g:)
     call assert_match('XfakeHOME/\.vim/view', &viewdir)
     call writefile(v:errors, 'Xresult')
     quit
@@ -123,7 +132,7 @@ func Test_xdg_runtime_files()
     call assert_match('XfakeHOME/\.config/vim/vimrc', $MYVIMRC, msg)
     call assert_match('XfakeHOME/\.config/vim/', $MYVIMDIR, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
-    call assert_equal(#{rc_three: 'three', rc: '.config/vim/vimrc'}, g:)
+    call assert_equal(#{rc_three: 'three', rc: '.config/vim/vimrc', rc_vimdir: $MYVIMDIR}, g:)
     call assert_match('XfakeHOME/\.config/vim/view', &viewdir)
     call writefile(v:errors, 'Xresult')
     quit
@@ -141,8 +150,21 @@ func Test_xdg_runtime_files()
     call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC, msg)
     call assert_match('XfakeHOME/xdg/vim/', $MYVIMDIR, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
-    call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/vimrc'}, g:)
+    call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/vimrc', rc_vimdir: $MYVIMDIR}, g:)
     call assert_match('XfakeHOME/xdg/vim/view, &viewdir)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
+  " Test for $MYVIMDIR changes when updating runtimepath
+  let lines =<< trim END
+    let msg = $'HOME="{$HOME}", XDG_CONFIG_HOME="{$XDG_CONFIG_HOME}" rtp-prepend'
+    set rtp^=/non-existing
+    call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC, msg)
+    call assert_match('/non-existing', $MYVIMDIR, msg)
     call writefile(v:errors, 'Xresult')
     quit
   END
@@ -267,13 +289,14 @@ func Test_zzz_xdg_runtime_files()
   call delete(rc2)
 
   " Test for ~/.config/vim/gvimrc
+  " MYVIMDIR is only set to ~/config/.vim if ~/.config/vim/vimrc exists!
   let lines =<< trim END
     " Ignore the "failed to create input context" error.
     call test_ignore_error('E285')
     gui -f
     let msg = $'HOME="{$HOME}", ~="{expand("~")}"'
     call assert_match('Xhome/\.config/vim/gvimrc', $MYGVIMRC, msg)
-    call assert_match('Xhome/\.config/vim/', $MYVIMDIR, msg)
+    call assert_match('Xhome/\.vim/', $MYVIMDIR, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_three: 'three', rc: '.config/vim/gvimrc'}, g:)
     call writefile(v:errors, 'Xresult')
@@ -286,6 +309,7 @@ func Test_zzz_xdg_runtime_files()
   call delete(rc3)
 
   " Test for ~/xdg/vim/gvimrc
+  " MYVIMDIR is only set to ~/xdg/vim if ~/xdg/vim/vimrc exists!
   let $XDG_CONFIG_HOME=expand('~/xdg/')
   let lines =<< trim END
     " Ignore the "failed to create input context" error.
@@ -293,7 +317,7 @@ func Test_zzz_xdg_runtime_files()
     gui -f
     let msg = $'HOME="{$HOME}", XDG_CONFIG_HOME="{$XDG_CONFIG_HOME}"'
     call assert_match('Xhome/xdg/vim/gvimrc', $MYGVIMRC, msg)
-    call assert_match('Xhome/xdg/vim/', $MYVIMDIR, msg)
+    call assert_match('Xhome/\.vim/', $MYVIMDIR, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/gvimrc'}, g:)
     call writefile(v:errors, 'Xresult')

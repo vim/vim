@@ -1,4 +1,5 @@
 /* option.c */
+char *did_set_showtabpanel(optset_T *args);
 void set_init_1(int clean_arg);
 void set_fencs_unicode(void);
 void set_string_default(char *name, char_u *val);
@@ -69,7 +70,6 @@ char *did_set_showtabline(optset_T *args);
 char *did_set_smoothscroll(optset_T *args);
 char *did_set_spell(optset_T *args);
 char *did_set_swapfile(optset_T *args);
-char *did_set_tabclose(optset_T *args);
 char *did_set_termguicolors(optset_T *args);
 char *did_set_termwinscroll(optset_T *args);
 char *did_set_terse(optset_T *args);
@@ -89,6 +89,7 @@ char *did_set_winminheight(optset_T *args);
 char *did_set_winminwidth(optset_T *args);
 char *did_set_winwidth(optset_T *args);
 char *did_set_wrap(optset_T *args);
+char *did_set_xhistory(optset_T *args);
 void check_redraw(long_u flags);
 int findoption(char_u *arg);
 getoption_T get_option_value(char_u *name, long *numval, char_u **stringval, int *flagsp, int scope);

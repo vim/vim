@@ -201,7 +201,7 @@ redraw_for_cursorcolumn(win_T *wp)
  * Returns the number of columns of overlap with buffer text, excluding the
  * extra padding on the ledge.
  */
-     int
+    int
 sms_marker_overlap(win_T *wp, int extra2)
 {
     if (extra2 == -1)
@@ -3120,6 +3120,7 @@ cursor_correct(void)
 			    ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT|VALID_CROW);
 	}
     }
+    check_cursor_moved(curwin);
     curwin->w_valid |= VALID_TOPLINE;
 }
 
@@ -3211,12 +3212,15 @@ static int scroll_with_sms(int dir, long count, long *curscount)
 	// extra for scrolling backward so that consuming skipcol is symmetric.
 	if (labs(curwin->w_topline - prev_topline) > (dir == BACKWARD))
 	    fixdir = dir * -1;
-	while (curwin->w_skipcol > 0
-	    && curwin->w_topline < curbuf->b_ml.ml_line_count)
-	{
-	    scroll_redraw(fixdir == FORWARD, 1);
-	    *curscount += (fixdir == dir ? 1 : -1);
-	}
+
+	int width1 = curwin->w_width - curwin_col_off();
+	int width2 = width1 + curwin_col_off2();
+	count = 1 + (curwin->w_skipcol - width1 - 1) / width2;
+	if (fixdir == FORWARD)
+	    count = 1 + (linetabsize_eol(curwin, curwin->w_topline)
+			    - curwin->w_skipcol - width1 + width2 - 1) / width2;
+	scroll_redraw(fixdir == FORWARD, count);
+	*curscount += count * (fixdir == dir ? 1 : -1);
     }
     curwin->w_p_sms = prev_sms;
 

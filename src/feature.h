@@ -524,6 +524,13 @@
 #endif
 
 /*
+ * +tabpanel		Tab SideBar
+ */
+#ifdef FEAT_HUGE
+# define FEAT_TABPANEL
+#endif
+
+/*
  * +browse		":browse" command.
  *			or just the ":browse" command modifier
  */
@@ -1015,18 +1022,19 @@
  * +tgetent
  */
 
-/*
- * The Netbeans feature requires +eval.
- */
-#if !defined(FEAT_EVAL) && defined(FEAT_NETBEANS_INTG)
-# undef FEAT_NETBEANS_INTG
-#endif
 
 /*
  * The +channel feature requires +eval.
  */
 #if !defined(FEAT_EVAL) && defined(FEAT_JOB_CHANNEL)
 # undef FEAT_JOB_CHANNEL
+#endif
+
+/*
+ * The Netbeans feature requires +eval and +job_channel
+ */
+#if (!defined(FEAT_EVAL) || !defined(FEAT_JOB_CHANNEL)) && defined(FEAT_NETBEANS_INTG)
+# undef FEAT_NETBEANS_INTG
 #endif
 
 /*

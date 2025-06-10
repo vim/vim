@@ -683,36 +683,28 @@ make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize)
 }
 
 static char_u	lambda_name[8 + NUMBUFLEN];
-static size_t	lambda_namelen = 0;
 
 /*
  * Get a name for a lambda.  Returned in static memory.
  */
-    char_u *
+    string_T
 get_lambda_name(void)
 {
     static int	lambda_no = 0;
     int		n;
+    string_T	ret;
 
     n = vim_snprintf((char *)lambda_name, sizeof(lambda_name), "<lambda>%d", ++lambda_no);
     if (n < 1)
-	lambda_namelen = 0;
+	ret.length = 0;
     else
     if (n >= (int)sizeof(lambda_name))
-	lambda_namelen = sizeof(lambda_name) - 1;
+	ret.length = sizeof(lambda_name) - 1;
     else
-	lambda_namelen = (size_t)n;
+	ret.length = (size_t)n;
 
-    return lambda_name;
-}
-
-/*
- * Get the length of the last lambda name.
- */
-    size_t
-get_lambda_name_len(void)
-{
-    return lambda_namelen;
+    ret.string = lambda_name;
+    return ret;
 }
 
 /*
@@ -756,11 +748,10 @@ alloc_ufunc(char_u *name, size_t namelen)
     char_u *
 register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 {
-    char_u	*name = get_lambda_name();
-    size_t	namelen = get_lambda_name_len();
+    string_T	name = get_lambda_name();
     ufunc_T	*fp;
 
-    fp = alloc_ufunc(name, namelen);
+    fp = alloc_ufunc(name.string, name.length);
     if (fp == NULL)
 	return NULL;
 
@@ -776,7 +767,7 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 
     hash_add(&func_hashtab, UF2HIKEY(fp), "add C function");
 
-    return name;
+    return name.string;
 }
 #endif
 
@@ -1477,8 +1468,7 @@ lambda_function_body(
     char_u	*cmdline = NULL;
     int		ret = FAIL;
     partial_T	*pt;
-    char_u	*name;
-    size_t	namelen;
+    string_T	name;
     int		lnum_save = -1;
     linenr_T	sourcing_lnum_top = SOURCING_LNUM;
     char_u	*line_arg = NULL;
@@ -1597,8 +1587,7 @@ lambda_function_body(
     }
 
     name = get_lambda_name();
-    namelen = get_lambda_name_len();
-    ufunc = alloc_ufunc(name, namelen);
+    ufunc = alloc_ufunc(name.string, name.length);
     if (ufunc == NULL)
 	goto erret;
     if (hash_add(&func_hashtab, UF2HIKEY(ufunc), "add function") == FAIL)
@@ -1805,10 +1794,9 @@ get_lambda_tv(
 	int	    flags = FC_LAMBDA;
 	char_u	    *p;
 	char_u	    *line_end;
-	char_u	    *name = get_lambda_name();
-	size_t	    namelen = get_lambda_name_len();
+	string_T    name = get_lambda_name();
 
-	fp = alloc_ufunc(name, namelen);
+	fp = alloc_ufunc(name.string, name.length);
 	if (fp == NULL)
 	    goto errret;
 	fp->uf_def_status = UF_NOT_COMPILED;
@@ -3287,7 +3275,7 @@ call_user_func(
     save_did_emsg = did_emsg;
     did_emsg = FALSE;
 
-    if (default_arg_err && (fp->uf_flags & FC_ABORT))
+    if (default_arg_err && (fp->uf_flags & FC_ABORT || trylevel > 0 ))
     {
 	did_emsg = TRUE;
 	retval = FCERR_FAILED;
@@ -4851,6 +4839,117 @@ list_functions(regmatch_T *regmatch)
 }
 
 /*
+ * ":function /pat": list functions matching pattern.
+ */
+    static char_u *
+list_functions_matching_pat(exarg_T *eap)
+{
+    char_u	*p;
+    char_u	c;
+
+    p = skip_regexp(eap->arg + 1, '/', TRUE);
+    if (!eap->skip)
+    {
+	regmatch_T	regmatch;
+
+	c = *p;
+	*p = NUL;
+	regmatch.regprog = vim_regcomp(eap->arg + 1, RE_MAGIC);
+	*p = c;
+	if (regmatch.regprog != NULL)
+	{
+	    regmatch.rm_ic = p_ic;
+	    list_functions(&regmatch);
+	    vim_regfree(regmatch.regprog);
+	}
+    }
+    if (*p == '/')
+	++p;
+
+    return p;
+}
+
+/*
+ * List function "name".
+ * Returns the function pointer or NULL on failure.
+ */
+    static ufunc_T *
+list_one_function(exarg_T *eap, char_u *name, char_u *p, int is_global)
+{
+    ufunc_T	*fp = NULL;
+    int		j;
+
+    if (!ends_excmd(*skipwhite(p)))
+    {
+	semsg(_(e_trailing_characters_str), p);
+	return NULL;
+    }
+
+    set_nextcmd(eap, p);
+
+    if (eap->nextcmd != NULL)
+	*p = NUL;
+
+    if (eap->skip || got_int)
+	return NULL;
+
+    fp = find_func(name, is_global);
+    if (fp == NULL && ASCII_ISUPPER(*eap->arg))
+    {
+	char_u *up = untrans_function_name(name);
+
+	// With Vim9 script the name was made script-local, if not
+	// found try again with the original name.
+	if (up != NULL)
+	    fp = find_func(up, FALSE);
+    }
+
+    if (fp == NULL)
+    {
+	emsg_funcname(e_undefined_function_str, eap->arg);
+	return NULL;
+    }
+
+    // Check no function was added or removed from a timer, e.g. at
+    // the more prompt.  "fp" may then be invalid.
+    int prev_ht_changed = func_hashtab.ht_changed;
+
+    if (list_func_head(fp, TRUE) != OK)
+	return fp;
+
+    for (j = 0; j < fp->uf_lines.ga_len && !got_int; ++j)
+    {
+	if (FUNCLINE(fp, j) == NULL)
+	    continue;
+	msg_putchar('\n');
+	msg_outnum((long)(j + 1));
+	if (j < 9)
+	    msg_putchar(' ');
+	if (j < 99)
+	    msg_putchar(' ');
+	if (function_list_modified(prev_ht_changed))
+	    break;
+	msg_prt_line(FUNCLINE(fp, j), FALSE);
+	out_flush();	// show a line at a time
+	ui_breakcheck();
+    }
+
+    if (!got_int)
+    {
+	msg_putchar('\n');
+	if (!function_list_modified(prev_ht_changed))
+	{
+	    if (fp->uf_def_status != UF_NOT_COMPILED)
+		msg_puts("   enddef");
+	    else
+		msg_puts("   endfunction");
+	}
+    }
+
+    return fp;
+}
+
+/*
  * ":function" also supporting nested ":def".
  * When "name_arg" is not NULL this is a nested function, using "name_arg" for
  * the function name.
@@ -4870,7 +4969,6 @@ define_function(
 	int         obj_member_count)
 {
     int		j;
-    int		c;
     int		saved_did_emsg = FALSE;
     char_u	*name = name_arg;
     size_t	namelen = 0;
@@ -4900,9 +4998,7 @@ define_function(
     int		vim9script = in_vim9script();
     imported_T	*import = NULL;
 
-    /*
-     * ":function" without argument: list functions.
-     */
+    // ":function" without argument: list functions.
     if (ends_excmd2(eap->cmd, eap->arg))
     {
 	if (!eap->skip)
@@ -4916,24 +5012,7 @@ define_function(
      */
     if (*eap->arg == '/')
     {
-	p = skip_regexp(eap->arg + 1, '/', TRUE);
-	if (!eap->skip)
-	{
-	    regmatch_T	regmatch;
-
-	    c = *p;
-	    *p = NUL;
-	    regmatch.regprog = vim_regcomp(eap->arg + 1, RE_MAGIC);
-	    *p = c;
-	    if (regmatch.regprog != NULL)
-	    {
-		regmatch.rm_ic = p_ic;
-		list_functions(&regmatch);
-		vim_regfree(regmatch.regprog);
-	    }
-	}
-	if (*p == '/')
-	    ++p;
+	p = list_functions_matching_pat(eap);
 	set_nextcmd(eap, p);
 	return NULL;
     }
@@ -5039,67 +5118,7 @@ define_function(
      */
     if (!paren)
     {
-	if (!ends_excmd(*skipwhite(p)))
-	{
-	    semsg(_(e_trailing_characters_str), p);
-	    goto ret_free;
-	}
-	set_nextcmd(eap, p);
-	if (eap->nextcmd != NULL)
-	    *p = NUL;
-	if (!eap->skip && !got_int)
-	{
-	    fp = find_func(name, is_global);
-	    if (fp == NULL && ASCII_ISUPPER(*eap->arg))
-	    {
-		char_u *up = untrans_function_name(name);
-
-		// With Vim9 script the name was made script-local, if not
-		// found try again with the original name.
-		if (up != NULL)
-		    fp = find_func(up, FALSE);
-	    }
-
-	    if (fp != NULL)
-	    {
-		// Check no function was added or removed from a timer, e.g. at
-		// the more prompt.  "fp" may then be invalid.
-		int prev_ht_changed = func_hashtab.ht_changed;
-
-		if (list_func_head(fp, TRUE) == OK)
-		{
-		    for (j = 0; j < fp->uf_lines.ga_len && !got_int; ++j)
-		    {
-			if (FUNCLINE(fp, j) == NULL)
-			    continue;
-			msg_putchar('\n');
-			msg_outnum((long)(j + 1));
-			if (j < 9)
-			    msg_putchar(' ');
-			if (j < 99)
-			    msg_putchar(' ');
-			if (function_list_modified(prev_ht_changed))
-			    break;
-			msg_prt_line(FUNCLINE(fp, j), FALSE);
-			out_flush();	// show a line at a time
-			ui_breakcheck();
-		    }
-		    if (!got_int)
-		    {
-			msg_putchar('\n');
-			if (!function_list_modified(prev_ht_changed))
-			{
-			    if (fp->uf_def_status != UF_NOT_COMPILED)
-				msg_puts("   enddef");
-			    else
-				msg_puts("   endfunction");
-			}
-		    }
-		}
-	    }
-	    else
-		emsg_funcname(e_undefined_function_str, eap->arg);
-	}
+	fp = list_one_function(eap, name, p, is_global);
 	goto ret_free;
     }
 
@@ -7228,7 +7247,7 @@ find_hi_in_scoped_ht(char_u *name, hashtab_T **pht)
     char_u	*varname;
 
     if (current_funccal == NULL || current_funccal->fc_func->uf_scoped == NULL)
-      return NULL;
+	return NULL;
 
     // Search in parent scope, which can be referenced from a lambda.
     current_funccal = current_funccal->fc_func->uf_scoped;
@@ -7298,9 +7317,9 @@ set_ref_in_previous_funccal(int copyID)
     for (fc = previous_funccal; fc != NULL; fc = fc->fc_caller)
     {
 	fc->fc_copyID = copyID + 1;
-	if (set_ref_in_ht(&fc->fc_l_vars.dv_hashtab, copyID + 1, NULL)
-		|| set_ref_in_ht(&fc->fc_l_avars.dv_hashtab, copyID + 1, NULL)
-		|| set_ref_in_list_items(&fc->fc_l_varlist, copyID + 1, NULL))
+	if (set_ref_in_ht(&fc->fc_l_vars.dv_hashtab, copyID + 1, NULL, NULL)
+		|| set_ref_in_ht(&fc->fc_l_avars.dv_hashtab, copyID + 1, NULL, NULL)
+		|| set_ref_in_list_items(&fc->fc_l_varlist, copyID + 1, NULL, NULL))
 	    return TRUE;
     }
     return FALSE;
@@ -7312,9 +7331,9 @@ set_ref_in_funccal(funccall_T *fc, int copyID)
     if (fc->fc_copyID != copyID)
     {
 	fc->fc_copyID = copyID;
-	if (set_ref_in_ht(&fc->fc_l_vars.dv_hashtab, copyID, NULL)
-		|| set_ref_in_ht(&fc->fc_l_avars.dv_hashtab, copyID, NULL)
-		|| set_ref_in_list_items(&fc->fc_l_varlist, copyID, NULL)
+	if (set_ref_in_ht(&fc->fc_l_vars.dv_hashtab, copyID, NULL, NULL)
+		|| set_ref_in_ht(&fc->fc_l_avars.dv_hashtab, copyID, NULL, NULL)
+		|| set_ref_in_list_items(&fc->fc_l_varlist, copyID, NULL, NULL)
 		|| set_ref_in_func(NULL, fc->fc_func, copyID))
 	    return TRUE;
     }
@@ -7377,7 +7396,7 @@ set_ref_in_func_args(int copyID)
 
     for (i = 0; i < funcargs.ga_len; ++i)
 	if (set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
-							  copyID, NULL, NULL))
+						copyID, NULL, NULL, NULL))
 	    return TRUE;
     return FALSE;
 }

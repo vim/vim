@@ -1,0 +1,3 @@
+deb http://ddebs.ubuntu.com noble main restricted universe multiverse
+deb http://ddebs.ubuntu.com noble-updates main restricted universe multiverse
+deb http://ddebs.ubuntu.com noble-proposed main restricted universe multiverse

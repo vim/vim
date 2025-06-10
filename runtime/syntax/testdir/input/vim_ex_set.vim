@@ -1,5 +1,6 @@
 " Vim :set command
 
+
 set
 set!
 set all
@@ -37,12 +38,17 @@ set backspace-=nostop
 
 set ai nosi sw=3 tw=3
 
-set <t_#4>=^[Ot " FIXME
-set <M-b>=^[b   " FIXME
+set <t_#4>=^[Ot
+set <M-b>=^[b
 
 setlocal autoread
 setglobal noautoread
 set autoread<
+
+set " comment
+set | echo "Foo"
+set! " comment
+set! | echo "Foo"
 
 
 " :help option-backslash
@@ -93,9 +99,32 @@ set path=
       \abc,def
 
 
-" CompilerSet
+" :CompilerSet
 
 CompilerSet makeprg=ant
 CompilerSet errorformat=\ %#[%.%#]\ %#%f:%l:%v:%*\\d:%*\\d:\ %t%[%^:]%#:%m,
     \%A\ %#[%.%#]\ %f:%l:\ %m,%-Z\ %#[%.%#]\ %p^,%C\ %#[%.%#]\ %#%m
+
+
+" Unreported issue (double backslash)
+
+setlocal com=s1:/*,mb:*,ex:*/,b:--,be:\\
+echo "Foo"
+setlocal include=^\\s*\\%(so\\%[urce]\\\|ru\\%[ntime]\\)[!\ ]\ *\\zs[^\\|]*
+echo "Foo"
+set quoteescape=\\
+echo "Foo"
+set quoteescape=\
+echo "Foo"
+
+
+" Issue #16913 (vim syntax: set langmap may have wrong highlight)
+
+set langmap+=ФЫВАПРОЛДЖЭЁ;ASDFGHJKL\\:\\"\\|
+set langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
+
+set langmap+=ФЫВАПРОЛДЖЭЁ;ASDFGHJKL\\:\\"\\|
+      \ langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
+
+set langmap+=ФЫВАПРОЛДЖЭЁ;ASDFGHJKL\\:\\"\\| langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
 

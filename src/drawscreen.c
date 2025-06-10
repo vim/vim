@@ -209,6 +209,9 @@ update_screen(int type_arg)
 		    redraw_cmdline = TRUE;
 		redraw_tabline = TRUE;
 	    }
+#if defined(FEAT_TABPANEL)
+	    redraw_tabpanel = TRUE;
+#endif
 	}
 	msg_scrolled = 0;
 	need_wait_return = FALSE;
@@ -264,6 +267,11 @@ update_screen(int type_arg)
     // Redraw the tab pages line if needed.
     if (redraw_tabline || type >= UPD_NOT_VALID)
 	draw_tabline();
+
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel || type >= UPD_NOT_VALID)
+	draw_tabpanel();
+#endif
 
 #ifdef FEAT_SYN_HL
     // Correct stored syntax highlighting info for changes in each displayed
@@ -532,7 +540,6 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	screen_puts(p, row, wp->w_wincol, attr);
 	screen_fill(row, row + 1, plen + wp->w_wincol,
 			this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
-
 	if ((NameBufflen = get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)) > 0
 		&& (this_ru_col - plen) > (NameBufflen + 1))
 	    screen_puts(NameBuff, row, (int)(this_ru_col - NameBufflen
@@ -620,6 +627,11 @@ showruler(int always)
     // Redraw the tab pages line if needed.
     if (redraw_tabline)
 	draw_tabline();
+
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
+#endif
 }
 
     void
@@ -1026,8 +1038,8 @@ redraw_win_toolbar(win_T *wp)
     }
     wp->w_winbar_items[item_idx].wb_menu = NULL; // end marker
 
-    screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width, wp->w_width, -1,
-									    0);
+    screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width,
+							  wp->w_width, -1, 0);
 }
 #endif
 
@@ -1361,8 +1373,8 @@ fold_line(
     }
 #endif
 
-    screen_line(wp, row + W_WINROW(wp), wp->w_wincol,
-					      wp->w_width, wp->w_width, -1, 0);
+    screen_line(wp, row + W_WINROW(wp), wp->w_wincol, wp->w_width, wp->w_width,
+	    -1, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
     // updated (saves a call to plines() later).
@@ -2596,13 +2608,16 @@ win_update(win_T *wp)
 
 	for (k = 0; k < Rows; ++k)
 	    if (enc_utf8)
-		if ((*mb_off2cells)(LineOffset[k] + Columns - 2,
+		if ((*mb_off2cells)(LineOffset[k] + topframe->fr_width - 2,
 					   LineOffset[k] + screen_Columns) > 1)
-		    screen_draw_rectangle(k, Columns - 2, 1, 2, FALSE);
+		    screen_draw_rectangle(k, topframe->fr_width - 2, 1, 2,
+			    FALSE);
 		else
-		    screen_draw_rectangle(k, Columns - 1, 1, 1, FALSE);
+		    screen_draw_rectangle(k, topframe->fr_width - 1, 1, 1,
+			    FALSE);
 	    else
-		screen_char(LineOffset[k] + Columns - 1, k, Columns - 1);
+		screen_char(LineOffset[k] + topframe->fr_width - 1, k,
+			Columns - 1);
     }
 #endif
 
@@ -2672,7 +2687,7 @@ win_update(win_T *wp)
 	    // Last line isn't finished: Display "@@@" at the end.
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
-		    start_col < wp->w_wincol ? wp->w_wincol : start_col,
+		    (start_col < wp->w_wincol ? wp->w_wincol : start_col),
 		    (int)W_ENDCOL(wp),
 		    symbol, symbol, HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
@@ -2898,6 +2913,11 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 	    win_redr_status(wp, FALSE);
     }
 
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
+#endif
+
     update_finish();
 }
 #endif
@@ -2929,6 +2949,11 @@ updateWindow(win_T *wp)
     // When the screen was cleared redraw the tab pages line.
     if (redraw_tabline)
 	draw_tabline();
+
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
+#endif
 
     if (wp->w_redr_status || p_ru
 # ifdef FEAT_STL_OPT
@@ -3328,6 +3353,11 @@ redraw_statuslines(void)
 	    win_redr_status(wp, FALSE);
     if (redraw_tabline)
 	draw_tabline();
+
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
+#endif
 }
 
 /*

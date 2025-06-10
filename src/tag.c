@@ -1481,6 +1481,7 @@ find_tagfunc_tags(
     save_pos = curwin->w_cursor;
     result = call_callback(&curbuf->b_tfu_cb, 0, &rettv, 3, args);
     curwin->w_cursor = save_pos;	// restore the cursor position
+    check_cursor();			// make sure cursor position is valid
     --d->dv_refcount;
 
     if (result == FAIL)
@@ -1834,7 +1835,8 @@ findtags_in_help_init(findtags_state_T *st)
  * Use the function set in 'tagfunc' (if configured and enabled) to get the
  * tags.
  * Return OK if at least 1 tag has been successfully found, NOTDONE if the
- * 'tagfunc' is not used or the 'tagfunc' returns v:null and FAIL otherwise.
+ * 'tagfunc' is not used, still executing or the 'tagfunc' returned v:null and
+ * FAIL otherwise.
  */
     static int
 findtags_apply_tfu(findtags_state_T *st, char_u *pat, char_u *buf_ffname)
@@ -3712,6 +3714,7 @@ jumpto_tag(
 #endif
     size_t	len;
     char_u	*lbuf;
+    int		isdigit = FALSE;
 
     if (postponed_split == 0 && !check_can_set_curbuf_forceit(forceit))
 	return FAIL;
@@ -3723,7 +3726,7 @@ jumpto_tag(
     if (lbuf != NULL)
 	mch_memmove(lbuf, lbuf_arg, len);
 
-    pbuf = alloc(LSIZE);
+    pbuf = alloc_clear(LSIZE);
 
     // parse the match line into the tagp structure
     if (pbuf == NULL || lbuf == NULL || parse_match(lbuf, &tagp) == FAIL)
@@ -3738,14 +3741,21 @@ jumpto_tag(
 
     // copy the command to pbuf[], remove trailing CR/NL
     str = tagp.command;
-    for (pbuf_end = pbuf; *str && *str != '\n' && *str != '\r'; )
+    if (VIM_ISDIGIT(*str))
+    {
+	// need to inject a ':' for a proper Vim9 :nr command
+	isdigit = TRUE;
+	pbuf[0] = ':';
+    }
+    for (pbuf_end = pbuf + isdigit;
+	    *str && *str != '\n' && *str != '\r'; )
     {
 #ifdef FEAT_EMACS_TAGS
 	if (tagp.is_etag && *str == ',')// stop at ',' after line number
 	    break;
 #endif
 	*pbuf_end++ = *str++;
-	if (pbuf_end - pbuf + 1 >= LSIZE)
+	if (pbuf_end - pbuf + 1 + isdigit >= LSIZE)
 	    break;
     }
     *pbuf_end = NUL;
@@ -3758,6 +3768,9 @@ jumpto_tag(
 	 * Remove the "<Tab>fieldname:value" stuff; we don't need it here.
 	 */
 	str = pbuf;
+	// skip over the ':'
+	if (isdigit)
+	    str++;
 	if (find_extra(&str) == OK)
 	{
 	    pbuf_end = str;
@@ -3997,6 +4010,8 @@ jumpto_tag(
 	    ++sandbox;
 #endif
 	    curwin->w_cursor.lnum = 1;		// start command in line 1
+	    curwin->w_cursor.col = 0;
+	    curwin->w_cursor.coladd = 0;
 	    do_cmdline_cmd(pbuf);
 	    retval = OK;
 

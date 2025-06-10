@@ -218,6 +218,7 @@ func Test_crash1_3()
 endfunc
 
 func Test_crash2()
+  CheckScreendump
   " The following used to crash Vim
   let opts = #{wait_for_ruler: 0, rows: 20}
   let args = ' -u NONE -i NONE -n -e -s -S '

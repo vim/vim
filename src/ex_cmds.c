@@ -1854,6 +1854,9 @@ ex_file(exarg_T *eap)
 	if (rename_buffer(eap->arg) == FAIL)
 	    return;
 	redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+	redraw_tabpanel = TRUE;
+#endif
     }
 
     // print file name if no argument or 'F' is not in 'shortmess'
@@ -2100,6 +2103,9 @@ do_write(exarg_T *eap)
 	    {
 		curbuf->b_p_ro = FALSE;
 		redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+		redraw_tabpanel = TRUE;
+#endif
 	    }
 	}
 
@@ -2743,9 +2749,9 @@ do_ecmd(
 	}
 	if (buf == NULL)
 	    goto theend;
-	// autocommands try to edit a file that is going to be removed,
-	// abort
-	if (buf_locked(buf))
+	// autocommands try to edit a closing buffer, which like splitting, can
+	// result in more windows displaying it; abort
+	if (buf->b_locked_split)
 	{
 	    // window was split, but not editing the new buffer,
 	    // reset b_nwindows again
@@ -2753,6 +2759,7 @@ do_ecmd(
 		    && curwin->w_buffer != NULL
 		    && curwin->w_buffer->b_nwindows > 1)
 		--curwin->w_buffer->b_nwindows;
+	    emsg(_(e_cannot_switch_to_a_closing_buffer));
 	    goto theend;
 	}
 	if (curwin->w_alt_fnum == buf->b_fnum && prev_alt_fnum != 0)

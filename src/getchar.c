@@ -88,11 +88,6 @@ static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 
 static size_t	last_recorded_len = 0;	// number of last recorded chars
 
-static size_t	last_get_recorded_len = 0;	// length of the string returned from the
-						// last call to get_recorded()
-static size_t	last_get_inserted_len = 0;	// length of the string returned from the
-						// last call to get_inserted()
-
 #ifdef FEAT_EVAL
 mapblock_T	*last_used_map = NULL;
 int		last_used_sid = -1;
@@ -173,8 +168,9 @@ get_buffcont(
 get_recorded(void)
 {
     char_u	*p;
+    size_t	len;
 
-    p = get_buffcont(&recordbuff, TRUE, &last_get_recorded_len);
+    p = get_buffcont(&recordbuff, TRUE, &len);
     if (p == NULL)
 	return NULL;
 
@@ -184,52 +180,33 @@ get_recorded(void)
      * Remove the characters that were added the last time, these must be the
      * (possibly mapped) characters that stopped the recording.
      */
-    if (last_get_recorded_len >= last_recorded_len)
+    if (len >= last_recorded_len)
     {
-	last_get_recorded_len -= last_recorded_len;
-	p[last_get_recorded_len] = NUL;
+	len -= last_recorded_len;
+	p[len] = NUL;
     }
 
     /*
      * When stopping recording from Insert mode with CTRL-O q, also remove the
      * CTRL-O.
      */
-    if (last_get_recorded_len > 0 && restart_edit != 0
-				    && p[last_get_recorded_len - 1] == Ctrl_O)
-    {
-	--last_get_recorded_len;
-	p[last_get_recorded_len] = NUL;
-    }
+    if (len > 0 && restart_edit != 0 && p[len - 1] == Ctrl_O)
+	p[len - 1] = NUL;
 
     return (p);
-}
-
-/*
- * Return the length of string returned from the last call of get_recorded().
- */
-    size_t
-get_recorded_len(void)
-{
-    return last_get_recorded_len;
 }
 
 /*
  * Return the contents of the redo buffer as a single string.
  * K_SPECIAL and CSI in the returned string are escaped.
  */
-    char_u *
+    string_T
 get_inserted(void)
 {
-    return get_buffcont(&redobuff, FALSE, &last_get_inserted_len);
-}
-
-/*
- * Return the length of string returned from the last call of get_inserted().
- */
-    size_t
-get_inserted_len(void)
-{
-    return last_get_inserted_len;
+    size_t len = 0;
+    char_u *str = get_buffcont(&redobuff, FALSE, &len);
+    string_T ret = { str, len };
+    return ret;
 }
 
 /*
@@ -728,7 +705,7 @@ stuffRedoReadbuff(char_u *s)
     add_buff(&readbuf2, s, -1L);
 }
 
-    static void
+    void
 stuffReadbuffLen(char_u *s, long len)
 {
     add_buff(&readbuf1, s, len);
@@ -2627,7 +2604,7 @@ parse_queued_messages(void)
     // If memory allocation fails during startup we'll exit but curbuf or
     // curwin could be NULL.
     if (curbuf == NULL || curwin == NULL)
-       return;
+	return;
 
     old_curbuf_fnum = curbuf->b_fnum;
     old_curwin_id = curwin->w_id;

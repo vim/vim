@@ -1130,6 +1130,7 @@ call_yank_do_autocmd(int regname)
     void
 end_visual_mode(void)
 {
+    VIsual_select_exclu_adj = FALSE;
     end_visual_mode_keep_button();
     reset_held_button();
 }
@@ -2785,7 +2786,7 @@ nv_zet(cmdarg_T *cap)
 		}
 		break;
 
-		// "zp", "zP" in block mode put without addind trailing spaces
+		// "zp", "zP" in block mode put without adding trailing spaces
     case 'P':
     case 'p':  nv_put(cap);
 	       break;
@@ -3073,10 +3074,10 @@ handle_tabmenu(void)
     {
 	case TABLINE_MENU_CLOSE:
 	    if (current_tab == 0)
-		do_cmdline_cmd((char_u *)"tabclose");
+		do_cmdline_cmd((char_u *)"confirm tabclose");
 	    else
 	    {
-		vim_snprintf((char *)IObuff, IOSIZE, "tabclose %d",
+		vim_snprintf((char *)IObuff, IOSIZE, "confirm tabclose %d",
 								 current_tab);
 		do_cmdline_cmd(IObuff);
 	    }
@@ -3578,7 +3579,7 @@ nv_ident(cmdarg_T *cap)
 	    aux_ptr = (char_u *)(magic_isset() ? "/?.*~[^$\\" : "/?^$\\");
 	else if (tag_cmd)
 	{
-	    if (curbuf->b_help)
+	    if (STRCMP(curbuf->b_p_ft, "help") == 0)
 		// ":help" handles unescaped argument
 		aux_ptr = (char_u *)"";
 	    else
@@ -4058,7 +4059,7 @@ nv_gotofile(cmdarg_T *cap)
 #endif
 
     if (!check_can_set_curbuf_disabled())
-      return;
+	return;
 
     ptr = grab_file_name(cap->count1, &lnum);
 
@@ -4248,6 +4249,15 @@ normal_search(
 nv_csearch(cmdarg_T *cap)
 {
     int		t_cmd;
+    int		cursor_dec = FALSE;
+
+    // If adjusted cursor position previously, unadjust it.
+    if (*p_sel == 'e' && VIsual_active && VIsual_mode == 'v'
+		&& VIsual_select_exclu_adj)
+    {
+	unadjust_for_sel();
+	cursor_dec = TRUE;
+    }
 
     if (cap->cmdchar == 't' || cap->cmdchar == 'T')
 	t_cmd = TRUE;
@@ -4258,6 +4268,9 @@ nv_csearch(cmdarg_T *cap)
     if (IS_SPECIAL(cap->nchar) || searchc(cap, t_cmd) == FAIL)
     {
 	clearopbeep(cap->oap);
+	// Revert unadjust when failed.
+	if (cursor_dec)
+	    adjust_for_sel(cap);
 	return;
     }
 
@@ -5534,6 +5547,8 @@ nv_visual(cmdarg_T *cap)
 	    n_start_visual_mode(cap->cmdchar);
 	    if (VIsual_mode != 'V' && *p_sel == 'e')
 		++cap->count1;  // include one more char
+	    else
+		VIsual_select_exclu_adj = FALSE;
 	    if (cap->count0 > 0 && --cap->count1 > 0)
 	    {
 		// With a count select that many characters or lines.
@@ -6703,6 +6718,7 @@ adjust_for_sel(cmdarg_T *cap)
 	else
 	    ++curwin->w_cursor.col;
 	cap->oap->inclusive = FALSE;
+	VIsual_select_exclu_adj = TRUE;
     }
 }
 
@@ -6728,6 +6744,7 @@ unadjust_for_sel(void)
 unadjust_for_sel_inner(pos_T *pp)
 {
     colnr_T	cs, ce;
+    VIsual_select_exclu_adj = FALSE;
 
     if (pp->coladd > 0)
 	--pp->coladd;

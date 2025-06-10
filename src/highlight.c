@@ -241,6 +241,7 @@ static char *(highlight_init_both[]) = {
 #ifdef FEAT_DIFF
     CENT("DiffText term=reverse cterm=bold ctermbg=Red",
 	 "DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red"),
+    "default link DiffTextAdd DiffText",
 #endif
     CENT("PmenuSbar ctermbg=Grey",
 	 "PmenuSbar ctermbg=Grey guibg=Grey"),
@@ -248,6 +249,9 @@ static char *(highlight_init_both[]) = {
 	 "TabLineSel term=bold cterm=bold gui=bold"),
     CENT("TabLineFill term=reverse cterm=reverse",
 	 "TabLineFill term=reverse cterm=reverse gui=reverse"),
+    "default link TabPanel TabLine",
+    "default link TabPanelSel TabLineSel",
+    "default link TabPanelFill TabLineFill",
 #ifdef FEAT_GUI
     "Cursor guibg=fg guifg=bg",
     "lCursor guibg=fg guifg=bg", // should be different, but what?

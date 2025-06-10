@@ -239,11 +239,13 @@ NEW_TESTS = \
 	test_partial \
 	test_paste \
 	test_perl \
+	test_plugin_comment \
 	test_plugin_glvs \
 	test_plugin_man \
 	test_plugin_matchparen \
 	test_plugin_termdebug \
 	test_plugin_tohtml \
+	test_plugin_tutor \
 	test_plugin_zip \
 	test_plus_arg_edit \
 	test_popup \
@@ -309,6 +311,7 @@ NEW_TESTS = \
 	test_tab \
 	test_tabline \
 	test_tabpage \
+	test_tabpanel \
 	test_tagcase \
 	test_tagfunc \
 	test_tagjump \
@@ -326,6 +329,7 @@ NEW_TESTS = \
 	test_timers \
 	test_true_false \
 	test_trycatch \
+	test_tuple \
 	test_undo \
 	test_unlet \
 	test_user_func \
@@ -432,6 +436,7 @@ NEW_TESTS_RES = \
 	test_float_func.res \
 	test_fnameescape.res \
 	test_fold.res \
+	test_format.res \
 	test_functions.res \
 	test_function_lists.res \
 	test_getcwd.res \
@@ -502,11 +507,13 @@ NEW_TESTS_RES = \
 	test_partial.res \
 	test_paste.res \
 	test_perl.res \
+	test_plugin_comment.res \
 	test_plugin_glvs.res \
 	test_plugin_man.res \
 	test_plugin_matchparen.res \
 	test_plugin_termdebug.res \
 	test_plugin_tohtml.res \
+	test_plugin_tutor.res \
 	test_plugin_zip.res \
 	test_plus_arg_edit.res \
 	test_popup.res \
@@ -561,6 +568,7 @@ NEW_TESTS_RES = \
 	test_system.res \
 	test_tab.res \
 	test_tabpage.res \
+	test_tabpanel.res \
 	test_tagjump.res \
 	test_taglist.res \
 	test_tcl.res \
@@ -576,6 +584,7 @@ NEW_TESTS_RES = \
 	test_timers.res \
 	test_true_false.res \
 	test_trycatch.res \
+	test_tuple.res \
 	test_undo.res \
 	test_user_func.res \
 	test_usercommands.res \

@@ -1,4 +1,4 @@
-*pi_gzip.txt*   For Vim version 9.1.  Last change: 2025 Feb 06
+*pi_gzip.txt*   For Vim version 9.1.  Last change: 2025 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,6 +29,7 @@ with these extensions:
 
 	extension	compression ~
 	*.bz2		bzip2
+	*.bz3		bzip3
 	*.gz		gzip
 	*.lz		lzip
 	*.lz4		lz4

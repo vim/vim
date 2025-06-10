@@ -770,13 +770,10 @@ func Test_set_guioptions()
 endfunc
 
 func Test_scrollbars()
-  " this test sometimes fails on CI
-  let g:test_is_flaky = 1
-
   " buffer with 200 lines
-  new
   call setline(1, repeat(['one', 'two'], 100))
-  set guioptions+=rlb
+  set scrolloff=0
+  set guioptions=rlbk
 
   " scroll to move line 11 at top, moves the cursor there
   let args = #{which: 'left', value: 10, dragging: 0}
@@ -826,6 +823,7 @@ func Test_scrollbars()
   call assert_fails("call test_gui_event('scrollbar', #{which: 'a', value: 1, dragging: 0})", 'E475:')
 
   set guioptions&
+  set scrolloff&
   set wrap&
   bwipe!
 endfunc
@@ -1747,6 +1745,41 @@ endfunc
 func Test_gui_csi_keytrans()
   call assert_equal('<C-L>', keytrans("\x9b\xfc\x04L"))
   call assert_equal('<C-D>', keytrans("\x9b\xfc\x04D"))
+endfunc
+
+" Test that CursorHold is NOT triggered at startup before a keypress
+func Test_CursorHold_not_triggered_at_startup()
+  defer delete('Xcursorhold.log')
+  defer delete('Xcursorhold_test.vim')
+  call writefile([
+        \ 'set updatetime=300',
+        \ 'let g:cursorhold_triggered = 0',
+        \ 'autocmd CursorHold * let g:cursorhold_triggered += 1 | call writefile(["CursorHold triggered"], "Xcursorhold.log", "a")',
+        \ 'call timer_start(400, {-> execute(''call writefile(["g:cursorhold_triggered=" . g:cursorhold_triggered], "Xcursorhold.log", "a") | qa!'')})',
+        \ ], 'Xcursorhold_test.vim')
+
+  let vimcmd = v:progpath . ' -g -f -N -u NONE -i NONE -S Xcursorhold_test.vim'
+  call system(vimcmd)
+
+  let lines = filereadable('Xcursorhold.log') ? readfile('Xcursorhold.log') : []
+
+  " Assert that CursorHold did NOT trigger at startup
+  call assert_false(index(lines, 'CursorHold triggered') != -1)
+  let found = filter(copy(lines), 'v:val =~ "^g:cursorhold_triggered="')
+  call assert_equal(['g:cursorhold_triggered=0'], found)
+endfunc
+
+" Test that buffer names are shown at the end in the :Buffers menu
+func Test_Buffers_Menu()
+  doautocmd LoadBufferMenu VimEnter
+
+  let name = '天'
+  exe ':badd ' .. name
+  let nr = bufnr('$')
+
+  let cmd = printf(':amenu Buffers.%s\ (%d)', name, nr)
+  let menu = split(execute(cmd), '\n')[1]
+  call assert_match('^9999 '.. name, menu)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

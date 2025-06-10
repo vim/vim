@@ -15,6 +15,7 @@
 
 static int	cmd_showtail;	// Only show path tail in lists ?
 
+static void	set_context_for_wildcard_arg(exarg_T *eap, char_u *arg, int usefilter, expand_T *xp, int *complp);
 static int	ExpandFromContext(expand_T *xp, char_u *, char_u ***, int *, int);
 static char_u	*showmatches_gettail(char_u *s);
 static int	expand_showtail(expand_T *xp);
@@ -31,6 +32,8 @@ static int compl_match_arraysize;
 // First column in cmdline of the matched item for completion.
 static int compl_startcol;
 static int compl_selected;
+// cmdline before expansion
+static char_u *cmdline_orig = NULL;
 
 #define SHOW_MATCH(m) (showtail ? showmatches_gettail(matches[m]) : matches[m])
 
@@ -50,6 +53,7 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_FILES
 	    && xp->xp_context != EXPAND_FILES_IN_PATH
 	    && xp->xp_context != EXPAND_FILETYPE
+	    && xp->xp_context != EXPAND_FILETYPECMD
 	    && xp->xp_context != EXPAND_FINDFUNC
 	    && xp->xp_context != EXPAND_HELP
 	    && xp->xp_context != EXPAND_KEYMAP
@@ -229,7 +233,17 @@ nextwild(
 
     if (xp->xp_numfiles == -1)
     {
-	set_expand_context(xp);
+#ifdef FEAT_EVAL
+	if (ccline->input_fn && ccline->xp_context == EXPAND_COMMANDS)
+	{
+	    // Expand commands typed in input() function
+	    set_cmd_context(xp, ccline->cmdbuff, ccline->cmdlen, ccline->cmdpos, FALSE);
+	}
+	else
+#endif
+	{
+	    set_expand_context(xp);
+	}
 	cmd_showtail = expand_showtail(xp);
     }
 
@@ -276,6 +290,9 @@ nextwild(
 	{
 	    int use_options = options |
 		    WILD_HOME_REPLACE|WILD_ADD_SLASH|WILD_SILENT;
+	    if (use_options & WILD_KEEP_SOLE_ITEM)
+		use_options &= ~WILD_KEEP_SOLE_ITEM;
+
 	    if (escape)
 		use_options |= WILD_ESCAPE;
 
@@ -330,7 +347,7 @@ nextwild(
 
     if (xp->xp_numfiles <= 0 && p2 == NULL)
 	beep_flush();
-    else if (xp->xp_numfiles == 1)
+    else if (xp->xp_numfiles == 1 && !(options & WILD_KEEP_SOLE_ITEM))
 	// free expanded pattern
 	(void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
 
@@ -366,7 +383,7 @@ cmdline_pum_create(
     }
 
     // Compute the popup menu starting column
-    compl_startcol = vim_strsize(ccline->cmdbuff) + 1;
+    compl_startcol = ccline == NULL ? 0 : vim_strsize(ccline->cmdbuff) + 1;
     columns = vim_strsize(xp->xp_pattern);
     if (showtail)
     {
@@ -406,13 +423,19 @@ cmdline_pum_active(void)
  * items and refresh the screen.
  */
     void
-cmdline_pum_remove(void)
+cmdline_pum_remove(cmdline_info_T *cclp UNUSED)
 {
     int save_p_lz = p_lz;
     int	save_KeyTyped = KeyTyped;
+#ifdef FEAT_EVAL
+    int	save_RedrawingDisabled = RedrawingDisabled;
+    if (cclp->input_fn)
+	RedrawingDisabled = 0;
+#endif
 
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
+    compl_match_arraysize = 0;
     p_lz = FALSE;  // avoid the popup menu hanging around
     update_screen(0);
     p_lz = save_p_lz;
@@ -421,12 +444,16 @@ cmdline_pum_remove(void)
     // When a function is called (e.g. for 'foldtext') KeyTyped might be reset
     // as a side effect.
     KeyTyped = save_KeyTyped;
+#ifdef FEAT_EVAL
+    if (cclp->input_fn)
+	RedrawingDisabled = save_RedrawingDisabled;
+#endif
 }
 
     void
 cmdline_pum_cleanup(cmdline_info_T *cclp)
 {
-    cmdline_pum_remove();
+    cmdline_pum_remove(cclp);
     wildmenu_cleanup(cclp);
 }
 
@@ -1009,7 +1036,7 @@ ExpandOne(
 
 	// The entries from xp_files may be used in the PUM, remove it.
 	if (compl_match_array != NULL)
-	    cmdline_pum_remove();
+	    cmdline_pum_remove(get_cmdline_info());
     }
     xp->xp_selected = 0;
 
@@ -1103,6 +1130,12 @@ ExpandCleanup(expand_T *xp)
 	xp->xp_numfiles = -1;
     }
     VIM_CLEAR(xp->xp_orig);
+}
+
+    void
+clear_cmdline_orig(void)
+{
+    VIM_CLEAR(cmdline_orig);
 }
 
 /*
@@ -1214,6 +1247,13 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
     int		columns;
     int		attr;
     int		showtail;
+
+    // Save cmdline before expansion
+    if (ccline->cmdbuff != NULL)
+    {
+	vim_free(cmdline_orig);
+	cmdline_orig = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
+    }
 
     if (xp->xp_numfiles == -1)
     {
@@ -2019,6 +2059,18 @@ set_context_in_lang_cmd(expand_T *xp, char_u *arg)
 }
 #endif
 
+static enum
+{
+    EXP_FILETYPECMD_ALL,	// expand all :filetype values
+    EXP_FILETYPECMD_PLUGIN,	// expand plugin on off
+    EXP_FILETYPECMD_INDENT,	// expand indent on off
+    EXP_FILETYPECMD_ONOFF,	// expand on off
+} filetype_expand_what;
+
+#define EXPAND_FILETYPECMD_PLUGIN 0x01
+#define EXPAND_FILETYPECMD_INDENT 0x02
+#define EXPAND_FILETYPECMD_ONOFF  0x04
+
 #ifdef FEAT_EVAL
 static enum
 {
@@ -2103,6 +2155,53 @@ set_context_in_scriptnames_cmd(expand_T *xp, char_u *arg)
     return NULL;
 }
 #endif
+
+/*
+ * Set the completion context for the :filetype command. Always returns NULL.
+ */
+    static char_u *
+set_context_in_filetype_cmd(expand_T *xp, char_u *arg)
+{
+    char_u *p;
+    int    val = 0;
+
+    xp->xp_context = EXPAND_FILETYPECMD;
+    xp->xp_pattern = arg;
+    filetype_expand_what = EXP_FILETYPECMD_ALL;
+
+    p = skipwhite(arg);
+    if (*p == NUL)
+	return NULL;
+
+    for (;;)
+    {
+	if (STRNCMP(p, "plugin", 6) == 0)
+	{
+	    val |= EXPAND_FILETYPECMD_PLUGIN;
+	    p = skipwhite(p + 6);
+	    continue;
+	}
+	if (STRNCMP(p, "indent", 6) == 0)
+	{
+	    val |= EXPAND_FILETYPECMD_INDENT;
+	    p = skipwhite(p + 6);
+	    continue;
+	}
+	break;
+    }
+
+    if ((val & EXPAND_FILETYPECMD_PLUGIN) && (val & EXPAND_FILETYPECMD_INDENT))
+	filetype_expand_what = EXP_FILETYPECMD_ONOFF;
+    else if ((val & EXPAND_FILETYPECMD_PLUGIN))
+	filetype_expand_what = EXP_FILETYPECMD_INDENT;
+    else if ((val & EXPAND_FILETYPECMD_INDENT))
+	filetype_expand_what = EXP_FILETYPECMD_PLUGIN;
+
+    xp->xp_pattern = p;
+
+    return NULL;
+}
+
 
 /*
  * Set the completion context in 'xp' for command 'cmd' with index 'cmdidx'.
@@ -2476,6 +2575,8 @@ set_context_by_cmdname(
 	case CMD_scriptnames:
 	    return set_context_in_scriptnames_cmd(xp, arg);
 #endif
+	case CMD_filetype:
+	    return set_context_in_filetype_cmd(xp, arg);
 
 	default:
 	    break;
@@ -2701,6 +2802,7 @@ set_cmd_context(
 {
 #ifdef FEAT_EVAL
     cmdline_info_T	*ccline = get_cmdline_info();
+    int			context;
 #endif
     int		old_char = NUL;
     char_u	*nextcomm;
@@ -2723,6 +2825,12 @@ set_cmd_context(
 	xp->xp_context = ccline->xp_context;
 	xp->xp_pattern = ccline->cmdbuff;
 	xp->xp_arg = ccline->xp_arg;
+	if (xp->xp_context == EXPAND_SHELLCMDLINE)
+	{
+	    context = xp->xp_context;
+	    set_context_for_wildcard_arg(NULL, xp->xp_pattern, FALSE, xp,
+								     &context);
+	}
     }
     else
 #endif
@@ -2903,6 +3011,29 @@ get_behave_arg(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * ":filetype {plugin,indent}" command.
+ */
+    static char_u *
+get_filetypecmd_arg(expand_T *xp UNUSED, int idx)
+{
+    char *opts_all[] = {"indent", "plugin", "on", "off"};
+    char *opts_plugin[] = {"plugin", "on", "off"};
+    char *opts_indent[] = {"indent", "on", "off"};
+    char *opts_onoff[] = {"on", "off"};
+
+    if (filetype_expand_what == EXP_FILETYPECMD_ALL && idx < 4)
+	return (char_u *)opts_all[idx];
+    if (filetype_expand_what == EXP_FILETYPECMD_PLUGIN && idx < 3)
+	return (char_u *)opts_plugin[idx];
+    if (filetype_expand_what == EXP_FILETYPECMD_INDENT && idx < 3)
+	return (char_u *)opts_indent[idx];
+    if (filetype_expand_what == EXP_FILETYPECMD_ONOFF && idx < 2)
+	return (char_u *)opts_onoff[idx];
+    return NULL;
+}
+
 #ifdef FEAT_EVAL
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
@@ -2994,6 +3125,7 @@ ExpandOther(
     {
 	{EXPAND_COMMANDS, get_command_name, FALSE, TRUE},
 	{EXPAND_BEHAVE, get_behave_arg, TRUE, TRUE},
+	{EXPAND_FILETYPECMD, get_filetypecmd_arg, TRUE, TRUE},
 	{EXPAND_MAPCLEAR, get_mapclear_arg, TRUE, TRUE},
 	{EXPAND_MESSAGES, get_messages_arg, TRUE, TRUE},
 	{EXPAND_HISTORY, get_history_arg, TRUE, TRUE},
@@ -4249,13 +4381,15 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 								     &context);
 	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
 	}
+	if (xpc.xp_context == EXPAND_FILETYPECMD)
+	    filetype_expand_what = EXP_FILETYPECMD_ALL;
     }
 
     if (cmdline_fuzzy_completion_supported(&xpc))
-       // when fuzzy matching, don't modify the search string
-       pat = vim_strsave(xpc.xp_pattern);
+	// when fuzzy matching, don't modify the search string
+	pat = vim_strsave(xpc.xp_pattern);
     else
-       pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
+	pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
 
     if (rettv_list_alloc(rettv) == OK && pat != NULL)
     {
@@ -4268,5 +4402,37 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     }
     vim_free(pat);
     ExpandCleanup(&xpc);
+}
+
+/*
+ * "cmdcomplete_info()" function
+ */
+    void
+f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    cmdline_info_T  *ccline = get_cmdline_info();
+    dict_T	    *retdict;
+    list_T	    *li;
+    int		    idx;
+    int		    ret = OK;
+
+    if (rettv_dict_alloc(rettv) == FAIL || ccline == NULL
+	    || ccline->xpc == NULL || ccline->xpc->xp_files == NULL)
+	return;
+    retdict = rettv->vval.v_dict;
+    ret = dict_add_string(retdict, "cmdline_orig", cmdline_orig);
+    if (ret == OK)
+	ret = dict_add_number(retdict, "pum_visible", pum_visible());
+    if (ret == OK)
+	ret = dict_add_number(retdict, "selected", ccline->xpc->xp_selected);
+    if (ret == OK)
+    {
+	li = list_alloc();
+	if (li == NULL)
+	    return;
+	ret = dict_add_list(retdict, "matches", li);
+	for (idx = 0; ret == OK && idx < ccline->xpc->xp_numfiles; idx++)
+	    list_append_string(li, ccline->xpc->xp_files[idx], -1);
+    }
 }
 #endif // FEAT_EVAL

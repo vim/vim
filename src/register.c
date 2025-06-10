@@ -28,7 +28,7 @@ static yankreg_T	*y_current;	    // ptr to current yankreg
 static int		y_append;	    // TRUE when appending
 static yankreg_T	*y_previous = NULL; // ptr to last written yankreg
 
-static int	stuff_yank(int, char_u *, size_t);
+static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
 static int	put_in_typebuf(char_u *s, int esc, int colon, int silent);
 static int	yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space);
@@ -419,7 +419,7 @@ do_record(int c)
 	    old_y_previous = y_previous;
 	    old_y_current = y_current;
 
-	    retval = stuff_yank(regname, p, get_recorded_len());
+	    retval = stuff_yank(regname, p);
 
 	    y_previous = old_y_previous;
 	    y_current = old_y_current;
@@ -435,8 +435,10 @@ do_record(int c)
  * return FAIL for failure, OK otherwise
  */
     static int
-stuff_yank(int regname, char_u *p, size_t plen)
+stuff_yank(int regname, char_u *p)
 {
+    size_t  plen;
+
     // check for read-only register
     if (regname != 0 && !valid_yank_reg(regname, TRUE))
     {
@@ -449,6 +451,7 @@ stuff_yank(int regname, char_u *p, size_t plen)
 	return OK;
     }
 
+    plen = STRLEN(p);
     get_yank_register(regname, TRUE);
     if (y_append && y_current->y_array != NULL)
     {
@@ -843,7 +846,7 @@ insert_reg(
 	{
 	    for (i = 0; i < y_current->y_size; ++i)
 	    {
-		if (regname == '-')
+		if (regname == '-' && y_current->y_type == MCHAR)
 		{
 		    int dir = BACKWARD;
 		    if ((State & REPLACE_FLAG) != 0)
@@ -864,11 +867,13 @@ insert_reg(
 		    do_put(regname, NULL, dir, 1L, PUT_CURSEND);
 		}
 		else
+		{
 		    stuffescaped(y_current->y_array[i].string, literally);
-		// Insert a newline between lines and after last line if
-		// y_type is MLINE.
-		if (y_current->y_type == MLINE || i < y_current->y_size - 1)
-		    stuffcharReadbuff('\n');
+		    // Insert a newline between lines and after last line if
+		    // y_type is MLINE.
+		    if (y_current->y_type == MLINE || i < y_current->y_size - 1)
+			stuffcharReadbuff('\n');
+		}
 	    }
 	}
     }
@@ -1371,6 +1376,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    curbuf->b_op_start.col = 0;
 	    curbuf->b_op_end.col = MAXCOL;
 	}
+	if (yanktype != MLINE && !oap->inclusive)
+	    // Exclude the end position.
+	    decl(&curbuf->b_op_end);
     }
 
 #ifdef FEAT_CLIPBOARD
@@ -2060,7 +2068,8 @@ do_put(
 	    else
 	    {
 		totlen = count * yanklen;
-		do {
+		do
+		{
 		    oldp = ml_get(lnum);
 		    oldlen = ml_get_len(lnum);
 		    if (lnum > start_lnum)
@@ -2373,6 +2382,7 @@ ex_display(exarg_T *eap)
     char_u	*arg = eap->arg;
     int		clen;
     int		type;
+    string_T	insert;
 
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
@@ -2465,7 +2475,8 @@ ex_display(exarg_T *eap)
     }
 
     // display last inserted text
-    if ((p = get_last_insert()) != NULL
+    insert = get_last_insert();
+    if ((p = insert.string) != NULL
 		  && (arg == NULL || vim_strchr(arg, '.') != NULL) && !got_int
 						      && !message_filtered(p))
     {

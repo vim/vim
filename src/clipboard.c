@@ -2221,7 +2221,7 @@ adjust_clip_reg(int *rp)
 					   && clip_plus.available) ? '+' : '*';
     }
     if ((!clip_star.available && *rp == '*') ||
-           (!clip_plus.available && *rp == '+'))
+	   (!clip_plus.available && *rp == '+'))
     {
 	msg_warn_missing_clipboard();
 	*rp = 0;

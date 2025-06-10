@@ -21,14 +21,15 @@ jobs:
 
     env:
       CC: ${{ matrix.compiler }}
-      GCC_VER: 13
-      CLANG_VER: 19
+      GCC_VER: 14
+      CLANG_VER: 20
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
+      WAYLAND_DISPLAY: 'wayland-1'
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
@@ -110,20 +111,50 @@ jobs:
         run: |
           sudo bash ci/remove_snap.sh
 
+      - name: Enable debug packages
+        run: |
+          # Some of the ASAN suppressions are in libraries linked with dlopen
+          # and symbolization of them requires these debug packages.
+          sudo apt install ubuntu-dbgsym-keyring
+          sudo cp ci/ddebs.list /etc/apt/sources.list.d/ddebs.list
+          sudo cp ci/pinned-pkgs /etc/apt/preferences.d/pinned-pkgs
+
       - name: Install packages
         run: |
           # This is added by default, and it is often broken, but we don't need anything from it
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           PKGS=( \
             gettext \
-            libgtk2.0-dev:${{ matrix.architecture }} \
+            libgtk-3-dev:${{ matrix.architecture }} \
+            libgtk-3-bin:${{ matrix.architecture }} \
             desktop-file-utils \
+            libc6-dbgsym:${{ matrix.architecture }} \
             libtool-bin \
             libncurses-dev:${{ matrix.architecture }} \
             libxt-dev:${{ matrix.architecture }} \
+            libegl-mesa0:${{ matrix.architecture }} \
+            libegl1:${{ matrix.architecture }} \
+            libegl1-mesa-dev:${{ matrix.architecture }} \
+            libepoxy-dev:${{ matrix.architecture }} \
+            libwayland-egl1:${{ matrix.architecture }} \
+            libwayland-client0:${{ matrix.architecture }} \
+            libwayland-cursor0:${{ matrix.architecture }} \
             locales-all \
             software-properties-common \
+            sway \
           )
+          if ${{ contains(matrix.extra, 'asan') }} && ${{ contains(matrix.architecture, 'native') }}; then
+          PKGS+=( \
+            libepoxy0-dbgsym:${{ matrix.architecture }} \
+            libxdamage1-dbgsym:${{ matrix.architecture }} \
+            libxcb1-dbgsym:${{ matrix.architecture }} \
+            libgtk-3-bin-dbgsym:${{ matrix.architecture }} \
+            libgtk-3-0t64-dbgsym:${{ matrix.architecture }} \
+            libglib2.0-0t64-dbgsym:${{ matrix.architecture }} \
+            libglib2.0-bin-dbgsym:${{ matrix.architecture }} \
+            libglib2.0-dev-bin-dbgsym:${{ matrix.architecture }} \
+          )
+          fi
           if ${{ matrix.features == 'huge' }}; then
             LUA_VER=${{ matrix.lua_ver || '5.4' }}
             PKGS+=( \
@@ -143,13 +174,14 @@ jobs:
               libattr1-dev
             )
           fi
-          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
           # ubuntu-toolchain-r/test PPA for gcc-13 compiler
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          # disabled because the installation failed, causing test failures
+          # sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update -y
           sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
@@ -158,9 +190,14 @@ jobs:
       - name: Install clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
         run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }} main"
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor | sudo tee /usr/share/keyrings/llvm-archive-keyring.gpg > /dev/null
+          echo "Types: deb
+          URIs: https://apt.llvm.org/${DISTRIB_CODENAME}/
+          Suites: llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
+          Components: main
+          Signed-By: /usr/share/keyrings/llvm-archive-keyring.gpg" | sudo tee /etc/apt/sources.list.d/llvm-toolchain.sources > /dev/null
+          sudo apt-get update -y
           sudo apt-get install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ env.CLANG_VER }} 100
           sudo update-alternatives --set clang /usr/bin/clang-${{ env.CLANG_VER }}
@@ -220,6 +257,8 @@ jobs:
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
           fi
           echo "CFLAGS=${CFLAGS}"
+          # Disables GTK attempt to integrate with the accessibility service that does run in CI.
+          echo "NO_AT_BRIDGE=1"
           ) >> $GITHUB_ENV
 
       - name: Set up system
@@ -231,6 +270,8 @@ jobs:
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
+          # Sway requires user session
+          bash ci/setup-sway.sh
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
@@ -266,17 +307,14 @@ jobs:
           "${SRCDIR}"/vim --version
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+          if ${{ matrix.features == 'huge' }}; then
+            # Also check that optional and dynamic features are configured and working
+            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
+              -c "let g:required=['gettext', 'sodium', 'sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
+              -S ci/if_feat_check.vim -c quit
+          fi
 
       - name: Test
-        if: matrix.architecture != 'arm64'
-        timeout-minutes: 25
-        run: |
-          make ${SHADOWOPT} ${TEST}
-
-
-      # `sg audio` does not work on arm64 runner due to permission ('Incorrect password' error).
-      - name: Test on arm64
-        if: matrix.architecture == 'arm64'
         timeout-minutes: 25
         run: |
           make ${SHADOWOPT} ${TEST}
@@ -349,7 +387,7 @@ jobs:
         if: matrix.runner == 'macos-15'
         run: |
           # Xcode 16 has compiler bugs which are fixed in 16.2+
-          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
 
       - name: Set up environment
         run: |
@@ -392,6 +430,12 @@ jobs:
           "${SRCDIR}"/vim --version
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+          if ${{ matrix.features == 'huge' }}; then
+            # Also check that optional and dynamic features are configured and working
+            "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 \
+              -c "let g:required=['sound', 'perl', 'python3', 'lua', 'ruby', 'tcl']" \
+              -S ci/if_feat_check.vim -c quit
+          fi
 
       - name: Install packages for testing
         run: |
@@ -608,11 +652,13 @@ jobs:
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
               DYNAMIC_PYTHON3_STABLE_ABI=%PYTHON3_STABLE% ^
-              DYNAMIC_SODIUM=yes SODIUM=%SODIUM_DIR%
+              DYNAMIC_SODIUM=yes SODIUM=%SODIUM_DIR% ^
+              CI_FLAGS=/we4267
           ) else (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
-              GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }}
+              GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} ^
+              CI_FLAGS=/we4267
           )
 
       - name: Build (MinGW)
@@ -663,6 +709,11 @@ jobs:
             src\vim --version || exit 1
             src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
             src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+            if "${{ matrix.features }}"=="HUGE" (
+              src\vim -u NONE -i NONE --not-a-term -esNX -V1 ^
+                -c "let g:required=['gettext', 'sodium', 'sound', 'python3', 'lua']" ^
+                -S ci/if_feat_check.vim -c quit
+            )
           )
 
       #- name: Prepare Artifact

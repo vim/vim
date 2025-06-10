@@ -142,6 +142,9 @@ changed_internal(void)
     ml_setflags(curbuf);
     check_status(curbuf);
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
     need_maketitle = TRUE;	    // set window title later
 }
 
@@ -476,7 +479,10 @@ changed_common(
 #endif
 #ifdef FEAT_DIFF
     if (curwin->w_p_diff && diff_internal())
+    {
 	curtab->tp_diff_update = TRUE;
+	diff_update_line(lnum);
+    }
 #endif
 
     // set the '. mark
@@ -914,6 +920,9 @@ unchanged(buf_T *buf, int ff, int always_inc_changedtick)
 	    save_file_ff(buf);
 	check_status(buf);
 	redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+	redraw_tabpanel = TRUE;
+#endif
 	need_maketitle = TRUE;	    // set window title later
 	++CHANGEDTICK(buf);
     }
@@ -1200,8 +1209,8 @@ ins_str(char_u *s, size_t slen)
     mch_memmove(newp + col, s, slen);
     mch_memmove(newp + col + slen, oldp + col, (size_t)(oldlen - col + 1));
     ml_replace(lnum, newp, FALSE);
-    inserted_bytes(lnum, col, slen);
-    curwin->w_cursor.col += slen;
+    inserted_bytes(lnum, col, (int)slen);
+    curwin->w_cursor.col += (colnr_T)slen;
 }
 
 /*
@@ -1672,7 +1681,8 @@ open_line(
 		)
 	    && in_cinkeys(dir == FORWARD
 		? KEY_OPEN_FORW
-		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum));
+		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum))
+	    && !(flags & OPENLINE_FORCE_INDENT);
 
     // Find out if the current line starts with a comment leader.
     // This may then be inserted in front of the new line.
@@ -2234,7 +2244,7 @@ open_line(
 	    saved_line[curwin->w_cursor.col] = NUL;
 	    // Remove trailing white space, unless OPENLINE_KEEPTRAIL used.
 	    if (trunc_line && !(flags & OPENLINE_KEEPTRAIL))
-		truncate_spaces(saved_line);
+		truncate_spaces(saved_line, curwin->w_cursor.col);
 	    ml_replace(curwin->w_cursor.lnum, saved_line, FALSE);
 	    saved_line = NULL;
 	    if (did_append)

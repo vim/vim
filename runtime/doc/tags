@@ -129,10 +129,13 @@ $quote	eval.txt	/*$quote*
 'cdpath'	options.txt	/*'cdpath'*
 'cedit'	options.txt	/*'cedit'*
 'cf'	options.txt	/*'cf'*
+'cfc'	options.txt	/*'cfc'*
 'cfu'	options.txt	/*'cfu'*
 'ch'	options.txt	/*'ch'*
 'character'	intro.txt	/*'character'*
 'charconvert'	options.txt	/*'charconvert'*
+'chi'	options.txt	/*'chi'*
+'chistory'	options.txt	/*'chistory'*
 'ci'	options.txt	/*'ci'*
 'cia'	options.txt	/*'cia'*
 'cin'	options.txt	/*'cin'*
@@ -162,6 +165,7 @@ $quote	eval.txt	/*$quote*
 'compatible'	options.txt	/*'compatible'*
 'complete'	options.txt	/*'complete'*
 'completefunc'	options.txt	/*'completefunc'*
+'completefuzzycollect'	options.txt	/*'completefuzzycollect'*
 'completeitemalign'	options.txt	/*'completeitemalign'*
 'completeopt'	options.txt	/*'completeopt'*
 'completepopup'	options.txt	/*'completepopup'*
@@ -432,6 +436,8 @@ $quote	eval.txt	/*$quote*
 'infercase'	options.txt	/*'infercase'*
 'insertmode'	options.txt	/*'insertmode'*
 'is'	options.txt	/*'is'*
+'ise'	options.txt	/*'ise'*
+'isexpand'	options.txt	/*'isexpand'*
 'isf'	options.txt	/*'isf'*
 'isfname'	options.txt	/*'isfname'*
 'isi'	options.txt	/*'isi'*
@@ -461,6 +467,8 @@ $quote	eval.txt	/*$quote*
 'lazyredraw'	options.txt	/*'lazyredraw'*
 'lbr'	options.txt	/*'lbr'*
 'lcs'	options.txt	/*'lcs'*
+'lhi'	options.txt	/*'lhi'*
+'lhistory'	options.txt	/*'lhistory'*
 'linebreak'	options.txt	/*'linebreak'*
 'lines'	options.txt	/*'lines'*
 'linespace'	options.txt	/*'linespace'*
@@ -841,6 +849,7 @@ $quote	eval.txt	/*$quote*
 'pm'	options.txt	/*'pm'*
 'pmbcs'	options.txt	/*'pmbcs'*
 'pmbfn'	options.txt	/*'pmbfn'*
+'pmw'	options.txt	/*'pmw'*
 'popt'	options.txt	/*'popt'*
 'pp'	options.txt	/*'pp'*
 'preserveindent'	options.txt	/*'preserveindent'*
@@ -858,6 +867,7 @@ $quote	eval.txt	/*$quote*
 'prompt'	options.txt	/*'prompt'*
 'pt'	options.txt	/*'pt'*
 'pumheight'	options.txt	/*'pumheight'*
+'pummaxwidth'	options.txt	/*'pummaxwidth'*
 'pumwidth'	options.txt	/*'pumwidth'*
 'pvh'	options.txt	/*'pvh'*
 'pvp'	options.txt	/*'pvp'*
@@ -949,6 +959,7 @@ $quote	eval.txt	/*$quote*
 'showmatch'	options.txt	/*'showmatch'*
 'showmode'	options.txt	/*'showmode'*
 'showtabline'	options.txt	/*'showtabline'*
+'showtabpanel'	options.txt	/*'showtabpanel'*
 'shq'	options.txt	/*'shq'*
 'si'	options.txt	/*'si'*
 'sidescroll'	options.txt	/*'sidescroll'*
@@ -1002,6 +1013,7 @@ $quote	eval.txt	/*$quote*
 'statusline'	options.txt	/*'statusline'*
 'stl'	options.txt	/*'stl'*
 'stmp'	options.txt	/*'stmp'*
+'stpl'	options.txt	/*'stpl'*
 'sts'	options.txt	/*'sts'*
 'su'	options.txt	/*'su'*
 'sua'	options.txt	/*'sua'*
@@ -1173,6 +1185,8 @@ $quote	eval.txt	/*$quote*
 'tabclose'	options.txt	/*'tabclose'*
 'tabline'	options.txt	/*'tabline'*
 'tabpagemax'	options.txt	/*'tabpagemax'*
+'tabpanel'	options.txt	/*'tabpanel'*
+'tabpanelopt'	options.txt	/*'tabpanelopt'*
 'tabstop'	options.txt	/*'tabstop'*
 'tag'	options.txt	/*'tag'*
 'tagbsearch'	options.txt	/*'tagbsearch'*
@@ -1223,6 +1237,8 @@ $quote	eval.txt	/*$quote*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
 'top'	options.txt	/*'top'*
+'tpl'	options.txt	/*'tpl'*
+'tplo'	options.txt	/*'tplo'*
 'tpm'	options.txt	/*'tpm'*
 'tr'	options.txt	/*'tr'*
 'ts'	options.txt	/*'ts'*
@@ -1289,6 +1305,7 @@ $quote	eval.txt	/*$quote*
 'wcr'	options.txt	/*'wcr'*
 'wd'	options.txt	/*'wd'*
 'weirdinvert'	options.txt	/*'weirdinvert'*
+'wfb'	options.txt	/*'wfb'*
 'wfh'	options.txt	/*'wfh'*
 'wfw'	options.txt	/*'wfw'*
 'wh'	options.txt	/*'wh'*
@@ -1468,6 +1485,7 @@ $quote	eval.txt	/*$quote*
 +sun_workshop	various.txt	/*+sun_workshop*
 +syntax	various.txt	/*+syntax*
 +system()	various.txt	/*+system()*
++tabpanel	various.txt	/*+tabpanel*
 +tag_any_white	various.txt	/*+tag_any_white*
 +tag_binary	various.txt	/*+tag_binary*
 +tag_old_static	various.txt	/*+tag_old_static*
@@ -2140,6 +2158,7 @@ $quote	eval.txt	/*$quote*
 :Lfilter	quickfix.txt	/*:Lfilter*
 :LogiPat	pi_logipat.txt	/*:LogiPat*
 :Man	filetype.txt	/*:Man*
+:ManReload	filetype.txt	/*:ManReload*
 :MkVimball	pi_vimball.txt	/*:MkVimball*
 :N	editing.txt	/*:N*
 :Nexplore	pi_netrw.txt	/*:Nexplore*
@@ -2183,6 +2202,7 @@ $quote	eval.txt	/*$quote*
 :TermdebugCommand	terminal.txt	/*:TermdebugCommand*
 :Texplore	pi_netrw.txt	/*:Texplore*
 :Tutor	pi_tutor.txt	/*:Tutor*
+:URLOpen	eval.txt	/*:URLOpen*
 :Until	terminal.txt	/*:Until*
 :Up	terminal.txt	/*:Up*
 :UseVimball	pi_vimball.txt	/*:UseVimball*
@@ -2707,6 +2727,8 @@ $quote	eval.txt	/*$quote*
 :insert	insert.txt	/*:insert*
 :interface	vim9class.txt	/*:interface*
 :intro	starting.txt	/*:intro*
+:ip	change.txt	/*:ip*
+:iput	change.txt	/*:iput*
 :is	tagsrch.txt	/*:is*
 :isearch	tagsrch.txt	/*:isearch*
 :isp	tagsrch.txt	/*:isp*
@@ -3127,6 +3149,8 @@ $quote	eval.txt	/*$quote*
 :redrawstatus	various.txt	/*:redrawstatus*
 :redrawt	various.txt	/*:redrawt*
 :redrawtabline	various.txt	/*:redrawtabline*
+:redrawtabp	various.txt	/*:redrawtabp*
+:redrawtabpanel	various.txt	/*:redrawtabpanel*
 :reg	change.txt	/*:reg*
 :registers	change.txt	/*:registers*
 :res	windows.txt	/*:res*
@@ -4067,6 +4091,7 @@ Cmdline-mode	cmdline.txt	/*Cmdline-mode*
 CmdlineChanged	autocmd.txt	/*CmdlineChanged*
 CmdlineEnter	autocmd.txt	/*CmdlineEnter*
 CmdlineLeave	autocmd.txt	/*CmdlineLeave*
+CmdlineLeavePre	autocmd.txt	/*CmdlineLeavePre*
 CmdwinEnter	autocmd.txt	/*CmdwinEnter*
 CmdwinLeave	autocmd.txt	/*CmdwinLeave*
 ColorScheme	autocmd.txt	/*ColorScheme*
@@ -4586,9 +4611,36 @@ E1512	options.txt	/*E1512*
 E1513	message.txt	/*E1513*
 E1514	options.txt	/*E1514*
 E1515	builtin.txt	/*E1515*
+E1516	builtin.txt	/*E1516*
+E1517	eval.txt	/*E1517*
+E1518	eval.txt	/*E1518*
+E1519	eval.txt	/*E1519*
 E152	helphelp.txt	/*E152*
+E1520	eval.txt	/*E1520*
+E1521	eval.txt	/*E1521*
+E1522	eval.txt	/*E1522*
+E1523	eval.txt	/*E1523*
+E1524	eval.txt	/*E1524*
+E1525	builtin.txt	/*E1525*
+E1526	eval.txt	/*E1526*
+E1527	eval.txt	/*E1527*
+E1528	vim9.txt	/*E1528*
+E1529	vim9.txt	/*E1529*
 E153	helphelp.txt	/*E153*
+E1530	vim9.txt	/*E1530*
+E1531	vim9.txt	/*E1531*
+E1532	eval.txt	/*E1532*
+E1533	eval.txt	/*E1533*
+E1534	vim9.txt	/*E1534*
+E1535	eval.txt	/*E1535*
+E1536	eval.txt	/*E1536*
+E1537	eval.txt	/*E1537*
+E1538	eval.txt	/*E1538*
+E1539	vim9.txt	/*E1539*
 E154	helphelp.txt	/*E154*
+E1540	eval.txt	/*E1540*
+E1541	vi_diff.txt	/*E1541*
+E1547	various.txt	/*E1547*
 E155	sign.txt	/*E155*
 E156	sign.txt	/*E156*
 E157	sign.txt	/*E157*
@@ -5756,6 +5808,7 @@ TSQL	ft_sql.txt	/*TSQL*
 TTpro-telnet	syntax.txt	/*TTpro-telnet*
 Tab	intro.txt	/*Tab*
 TabClosed	autocmd.txt	/*TabClosed*
+TabClosedPre	autocmd.txt	/*TabClosedPre*
 TabEnter	autocmd.txt	/*TabEnter*
 TabLeave	autocmd.txt	/*TabLeave*
 TabNew	autocmd.txt	/*TabNew*
@@ -5778,6 +5831,8 @@ TextChangedP	autocmd.txt	/*TextChangedP*
 TextChangedT	autocmd.txt	/*TextChangedT*
 TextYankPost	autocmd.txt	/*TextYankPost*
 Transact-SQL	ft_sql.txt	/*Transact-SQL*
+Tuple	eval.txt	/*Tuple*
+Tuples	eval.txt	/*Tuples*
 U	undo.txt	/*U*
 UTF-8	mbyte.txt	/*UTF-8*
 UTF8-xterm	mbyte.txt	/*UTF8-xterm*
@@ -6527,6 +6582,7 @@ close_cb	channel.txt	/*close_cb*
 closure	eval.txt	/*closure*
 cmdarg-variable	eval.txt	/*cmdarg-variable*
 cmdbang-variable	eval.txt	/*cmdbang-variable*
+cmdcomplete_info()	builtin.txt	/*cmdcomplete_info()*
 cmdline-arguments	vi_diff.txt	/*cmdline-arguments*
 cmdline-changed	version5.txt	/*cmdline-changed*
 cmdline-completion	cmdline.txt	/*cmdline-completion*
@@ -6587,6 +6643,7 @@ compiler-ruff	quickfix.txt	/*compiler-ruff*
 compiler-select	quickfix.txt	/*compiler-select*
 compiler-spotbugs	quickfix.txt	/*compiler-spotbugs*
 compiler-tex	quickfix.txt	/*compiler-tex*
+compiler-tsc	quickfix.txt	/*compiler-tsc*
 compiler-typst	quickfix.txt	/*compiler-typst*
 compiler-vaxada	ft_ada.txt	/*compiler-vaxada*
 compl-current	insert.txt	/*compl-current*
@@ -6598,7 +6655,9 @@ compl-generic	insert.txt	/*compl-generic*
 compl-keyword	insert.txt	/*compl-keyword*
 compl-omni	insert.txt	/*compl-omni*
 compl-omni-filetypes	insert.txt	/*compl-omni-filetypes*
+compl-register-words	insert.txt	/*compl-register-words*
 compl-spelling	insert.txt	/*compl-spelling*
+compl-states	insert.txt	/*compl-states*
 compl-stop	insert.txt	/*compl-stop*
 compl-tag	insert.txt	/*compl-tag*
 compl-thesaurus	insert.txt	/*compl-thesaurus*
@@ -6619,6 +6678,7 @@ complete_add()	builtin.txt	/*complete_add()*
 complete_check()	builtin.txt	/*complete_check()*
 complete_info()	builtin.txt	/*complete_info()*
 complete_info_mode	builtin.txt	/*complete_info_mode*
+complete_match()	builtin.txt	/*complete_match()*
 completed_item-variable	eval.txt	/*completed_item-variable*
 completion-functions	usr_41.txt	/*completion-functions*
 complex-change	change.txt	/*complex-change*
@@ -6717,6 +6777,7 @@ creating-menus	gui.txt	/*creating-menus*
 credits	intro.txt	/*credits*
 crontab	options.txt	/*crontab*
 cs-find	if_cscop.txt	/*cs-find*
+cs.vim	syntax.txt	/*cs.vim*
 cs7-problem	term.txt	/*cs7-problem*
 cscope	if_cscop.txt	/*cscope*
 cscope-commands	if_cscop.txt	/*cscope-commands*
@@ -7314,6 +7375,7 @@ ft-context-intro	ft_context.txt	/*ft-context-intro*
 ft-context-mappings	ft_context.txt	/*ft-context-mappings*
 ft-context-settings	ft_context.txt	/*ft-context-settings*
 ft-cpp-syntax	syntax.txt	/*ft-cpp-syntax*
+ft-cs-syntax	syntax.txt	/*ft-cs-syntax*
 ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
 ft-css-omni	insert.txt	/*ft-css-omni*
 ft-csv-syntax	syntax.txt	/*ft-csv-syntax*
@@ -7343,14 +7405,18 @@ ft-freebasic-syntax	syntax.txt	/*ft-freebasic-syntax*
 ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
 ft-gdscript-plugin	filetype.txt	/*ft-gdscript-plugin*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
+ft-gitrebase-plugin	filetype.txt	/*ft-gitrebase-plugin*
+ft-gleam-plugin	filetype.txt	/*ft-gleam-plugin*
 ft-go-plugin	filetype.txt	/*ft-go-plugin*
 ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
 ft-hare	filetype.txt	/*ft-hare*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*
+ft-help-omni	helphelp.txt	/*ft-help-omni*
 ft-html-indent	indent.txt	/*ft-html-indent*
 ft-html-omni	insert.txt	/*ft-html-omni*
+ft-html-plugin	filetype.txt	/*ft-html-plugin*
 ft-html-syntax	syntax.txt	/*ft-html-syntax*
 ft-htmlos-syntax	syntax.txt	/*ft-htmlos-syntax*
 ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
@@ -7384,6 +7450,7 @@ ft-markdown-syntax	syntax.txt	/*ft-markdown-syntax*
 ft-masm-syntax	syntax.txt	/*ft-masm-syntax*
 ft-mathematica-syntax	syntax.txt	/*ft-mathematica-syntax*
 ft-matlab-indent	indent.txt	/*ft-matlab-indent*
+ft-mbsync-syntax	syntax.txt	/*ft-mbsync-syntax*
 ft-mediawiki-syntax	syntax.txt	/*ft-mediawiki-syntax*
 ft-metafont	ft_mp.txt	/*ft-metafont*
 ft-metafont-intro	ft_mp.txt	/*ft-metafont-intro*
@@ -7417,6 +7484,7 @@ ft-php-syntax	syntax.txt	/*ft-php-syntax*
 ft-php3-syntax	syntax.txt	/*ft-php3-syntax*
 ft-phtml-syntax	syntax.txt	/*ft-phtml-syntax*
 ft-plaintex-syntax	syntax.txt	/*ft-plaintex-syntax*
+ft-plsql-plugin	filetype.txt	/*ft-plsql-plugin*
 ft-posix-syntax	syntax.txt	/*ft-posix-syntax*
 ft-postscr-syntax	syntax.txt	/*ft-postscr-syntax*
 ft-ppwiz-syntax	syntax.txt	/*ft-ppwiz-syntax*
@@ -7480,6 +7548,7 @@ ft-xml-omni	insert.txt	/*ft-xml-omni*
 ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
 ft-yaml-indent	indent.txt	/*ft-yaml-indent*
+ft-yaml-plugin	filetype.txt	/*ft-yaml-plugin*
 ft-yaml-syntax	syntax.txt	/*ft-yaml-syntax*
 ft-zig-plugin	filetype.txt	/*ft-zig-plugin*
 ft-zimbu-plugin	filetype.txt	/*ft-zimbu-plugin*
@@ -7532,6 +7601,7 @@ g:Netrw_corehandler	pi_netrw.txt	/*g:Netrw_corehandler*
 g:Netrw_funcref	pi_netrw.txt	/*g:Netrw_funcref*
 g:Openprg	eval.txt	/*g:Openprg*
 g:actual_curbuf	options.txt	/*g:actual_curbuf*
+g:actual_curtabpage	options.txt	/*g:actual_curtabpage*
 g:actual_curwin	options.txt	/*g:actual_curwin*
 g:ada#Comment	ft_ada.txt	/*g:ada#Comment*
 g:ada#Ctags_Kinds	ft_ada.txt	/*g:ada#Ctags_Kinds*
@@ -7578,6 +7648,7 @@ g:filetype_csh	syntax.txt	/*g:filetype_csh*
 g:filetype_haredoc	ft_hare.txt	/*g:filetype_haredoc*
 g:filetype_md	syntax.txt	/*g:filetype_md*
 g:filetype_r	syntax.txt	/*g:filetype_r*
+g:ft_man_implementation	filetype.txt	/*g:ft_man_implementation*
 g:ftplugin_rust_source_path	ft_rust.txt	/*g:ftplugin_rust_source_path*
 g:gnat	ft_ada.txt	/*g:gnat*
 g:gnat.Error_Format	ft_ada.txt	/*g:gnat.Error_Format*
@@ -7649,7 +7720,6 @@ g:netrw_dav_cmd	pi_netrw.txt	/*g:netrw_dav_cmd*
 g:netrw_decompress	pi_netrw.txt	/*g:netrw_decompress*
 g:netrw_dirhistmax	pi_netrw.txt	/*g:netrw_dirhistmax*
 g:netrw_dynamic_maxfilenamelen	pi_netrw.txt	/*g:netrw_dynamic_maxfilenamelen*
-g:netrw_errorlvl	pi_netrw.txt	/*g:netrw_errorlvl*
 g:netrw_fastbrowse	pi_netrw.txt	/*g:netrw_fastbrowse*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
 g:netrw_ffkeep	pi_netrw.txt	/*g:netrw_ffkeep*
@@ -7718,7 +7788,6 @@ g:netrw_sshport	pi_netrw.txt	/*g:netrw_sshport*
 g:netrw_timefmt	pi_netrw.txt	/*g:netrw_timefmt*
 g:netrw_tmpfile_escape	pi_netrw.txt	/*g:netrw_tmpfile_escape*
 g:netrw_uid	pi_netrw.txt	/*g:netrw_uid*
-g:netrw_use_errorwindow	pi_netrw.txt	/*g:netrw_use_errorwindow*
 g:netrw_use_noswf	pi_netrw.txt	/*g:netrw_use_noswf*
 g:netrw_use_nt_rcp	pi_netrw.txt	/*g:netrw_use_nt_rcp*
 g:netrw_usetab	pi_netrw.txt	/*g:netrw_usetab*
@@ -7859,6 +7928,7 @@ get()-blob	builtin.txt	/*get()-blob*
 get()-dict	builtin.txt	/*get()-dict*
 get()-func	builtin.txt	/*get()-func*
 get()-list	builtin.txt	/*get()-list*
+get()-tuple	builtin.txt	/*get()-tuple*
 get-ms-debuggers	debug.txt	/*get-ms-debuggers*
 getbufinfo()	builtin.txt	/*getbufinfo()*
 getbufline()	builtin.txt	/*getbufline()*
@@ -8165,6 +8235,7 @@ hl-DiffAdd	syntax.txt	/*hl-DiffAdd*
 hl-DiffChange	syntax.txt	/*hl-DiffChange*
 hl-DiffDelete	syntax.txt	/*hl-DiffDelete*
 hl-DiffText	syntax.txt	/*hl-DiffText*
+hl-DiffTextAdd	syntax.txt	/*hl-DiffTextAdd*
 hl-Directory	syntax.txt	/*hl-Directory*
 hl-EndOfBuffer	syntax.txt	/*hl-EndOfBuffer*
 hl-ErrorMsg	syntax.txt	/*hl-ErrorMsg*
@@ -8213,6 +8284,9 @@ hl-TOhtmlProgress	syntax.txt	/*hl-TOhtmlProgress*
 hl-TabLine	syntax.txt	/*hl-TabLine*
 hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
 hl-TabLineSel	syntax.txt	/*hl-TabLineSel*
+hl-TabPanel	syntax.txt	/*hl-TabPanel*
+hl-TabPanelFill	syntax.txt	/*hl-TabPanelFill*
+hl-TabPanelSel	syntax.txt	/*hl-TabPanelSel*
 hl-Terminal	syntax.txt	/*hl-Terminal*
 hl-Title	syntax.txt	/*hl-Title*
 hl-ToolbarButton	gui.txt	/*hl-ToolbarButton*
@@ -8234,6 +8308,7 @@ hlexists()	builtin.txt	/*hlexists()*
 hlget()	builtin.txt	/*hlget()*
 hlsearch-variable	eval.txt	/*hlsearch-variable*
 hlset()	builtin.txt	/*hlset()*
+hlyank-install	usr_05.txt	/*hlyank-install*
 holy-grail	index.txt	/*holy-grail*
 home	intro.txt	/*home*
 home-replace	editing.txt	/*home-replace*
@@ -8351,6 +8426,7 @@ i_CTRL-X_CTRL-L	insert.txt	/*i_CTRL-X_CTRL-L*
 i_CTRL-X_CTRL-N	insert.txt	/*i_CTRL-X_CTRL-N*
 i_CTRL-X_CTRL-O	insert.txt	/*i_CTRL-X_CTRL-O*
 i_CTRL-X_CTRL-P	insert.txt	/*i_CTRL-X_CTRL-P*
+i_CTRL-X_CTRL-R	insert.txt	/*i_CTRL-X_CTRL-R*
 i_CTRL-X_CTRL-S	insert.txt	/*i_CTRL-X_CTRL-S*
 i_CTRL-X_CTRL-T	insert.txt	/*i_CTRL-X_CTRL-T*
 i_CTRL-X_CTRL-U	insert.txt	/*i_CTRL-X_CTRL-U*
@@ -8504,6 +8580,7 @@ i}	motion.txt	/*i}*
 j	motion.txt	/*j*
 java-cinoptions	indent.txt	/*java-cinoptions*
 java-indenting	indent.txt	/*java-indenting*
+java-package-info-url	syntax.txt	/*java-package-info-url*
 java.vim	syntax.txt	/*java.vim*
 javascript-cinoptions	indent.txt	/*javascript-cinoptions*
 javascript-indenting	indent.txt	/*javascript-indenting*
@@ -8544,7 +8621,6 @@ jsbterm-mouse	options.txt	/*jsbterm-mouse*
 json.vim	syntax.txt	/*json.vim*
 json_decode()	builtin.txt	/*json_decode()*
 json_encode()	builtin.txt	/*json_encode()*
-jtags	tagsrch.txt	/*jtags*
 jump-motions	motion.txt	/*jump-motions*
 jumplist	motion.txt	/*jumplist*
 jumplist-stack	motion.txt	/*jumplist-stack*
@@ -8638,6 +8714,7 @@ list-modification	eval.txt	/*list-modification*
 list-repeat	windows.txt	/*list-repeat*
 list2blob()	builtin.txt	/*list2blob()*
 list2str()	builtin.txt	/*list2str()*
+list2tuple()	builtin.txt	/*list2tuple()*
 listener_add()	builtin.txt	/*listener_add()*
 listener_flush()	builtin.txt	/*listener_flush()*
 listener_remove()	builtin.txt	/*listener_remove()*
@@ -8802,6 +8879,7 @@ matlab-indent	indent.txt	/*matlab-indent*
 matlab-indenting	indent.txt	/*matlab-indenting*
 max()	builtin.txt	/*max()*
 maxcol-variable	eval.txt	/*maxcol-variable*
+mbsync.vim	syntax.txt	/*mbsync.vim*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
 mbyte-XIM	mbyte.txt	/*mbyte-XIM*
 mbyte-combining	mbyte.txt	/*mbyte-combining*
@@ -9398,9 +9476,11 @@ package-doc	repeat.txt	/*package-doc*
 package-documentation	repeat.txt	/*package-documentation*
 package-editorconfig	usr_05.txt	/*package-editorconfig*
 package-helptoc	helphelp.txt	/*package-helptoc*
+package-hlyank	usr_05.txt	/*package-hlyank*
 package-justify	usr_25.txt	/*package-justify*
 package-matchit	usr_05.txt	/*package-matchit*
 package-nohlsearch	usr_05.txt	/*package-nohlsearch*
+package-open	eval.txt	/*package-open*
 package-termdebug	terminal.txt	/*package-termdebug*
 package-translate_example	repeat.txt	/*package-translate_example*
 package-translation	repeat.txt	/*package-translation*
@@ -9479,6 +9559,7 @@ phtml.vim	syntax.txt	/*phtml.vim*
 pi_getscript.txt	pi_getscript.txt	/*pi_getscript.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
 pi_logipat.txt	pi_logipat.txt	/*pi_logipat.txt*
+pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
 pi_tar.txt	pi_tar.txt	/*pi_tar.txt*
@@ -9640,6 +9721,7 @@ python-2-and-3	if_pyth.txt	/*python-2-and-3*
 python-Dictionary	if_pyth.txt	/*python-Dictionary*
 python-Function	if_pyth.txt	/*python-Function*
 python-List	if_pyth.txt	/*python-List*
+python-Tuple	if_pyth.txt	/*python-Tuple*
 python-VIM_SPECIAL_PATH	if_pyth.txt	/*python-VIM_SPECIAL_PATH*
 python-_get_paths	if_pyth.txt	/*python-_get_paths*
 python-bindeval	if_pyth.txt	/*python-bindeval*
@@ -9717,6 +9799,7 @@ quickfix-pandoc	quickfix.txt	/*quickfix-pandoc*
 quickfix-parse	quickfix.txt	/*quickfix-parse*
 quickfix-perl	quickfix.txt	/*quickfix-perl*
 quickfix-size	quickfix.txt	/*quickfix-size*
+quickfix-stack	quickfix.txt	/*quickfix-stack*
 quickfix-title	quickfix.txt	/*quickfix-title*
 quickfix-valid	quickfix.txt	/*quickfix-valid*
 quickfix-window	quickfix.txt	/*quickfix-window*
@@ -9997,6 +10080,7 @@ settagstack()	builtin.txt	/*settagstack()*
 setting-guifont	gui.txt	/*setting-guifont*
 setting-guitablabel	tabpage.txt	/*setting-guitablabel*
 setting-tabline	tabpage.txt	/*setting-tabline*
+setting-tabpanel	tabpage.txt	/*setting-tabpanel*
 setuid	change.txt	/*setuid*
 setwinvar()	builtin.txt	/*setwinvar()*
 sftp	pi_netrw.txt	/*sftp*
@@ -10310,6 +10394,7 @@ subscript	eval.txt	/*subscript*
 substitute()	builtin.txt	/*substitute()*
 substitute-CR	version6.txt	/*substitute-CR*
 substring	eval.txt	/*substring*
+subtuple	eval.txt	/*subtuple*
 suffixes	cmdline.txt	/*suffixes*
 suspend	starting.txt	/*suspend*
 swap-exists-choices	usr_11.txt	/*swap-exists-choices*
@@ -10559,6 +10644,7 @@ t_ti	term.txt	/*t_ti*
 t_tp	version4.txt	/*t_tp*
 t_ts	term.txt	/*t_ts*
 t_ts_old	version4.txt	/*t_ts_old*
+t_tuple-variable	eval.txt	/*t_tuple-variable*
 t_typealias-variable	eval.txt	/*t_typealias-variable*
 t_u7	term.txt	/*t_u7*
 t_ue	term.txt	/*t_ue*
@@ -10585,6 +10671,7 @@ tabpage.txt	tabpage.txt	/*tabpage.txt*
 tabpagebuflist()	builtin.txt	/*tabpagebuflist()*
 tabpagenr()	builtin.txt	/*tabpagenr()*
 tabpagewinnr()	builtin.txt	/*tabpagewinnr()*
+tabpanel	tabpage.txt	/*tabpanel*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
 tag-binary-search	tagsrch.txt	/*tag-binary-search*
@@ -10621,6 +10708,7 @@ tar-contents	pi_tar.txt	/*tar-contents*
 tar-copyright	pi_tar.txt	/*tar-copyright*
 tar-history	pi_tar.txt	/*tar-history*
 tar-manual	pi_tar.txt	/*tar-manual*
+tar-mappings	pi_tar.txt	/*tar-mappings*
 tar-options	pi_tar.txt	/*tar-options*
 tar-usage	pi_tar.txt	/*tar-usage*
 tcl	if_tcl.txt	/*tcl*
@@ -10795,6 +10883,7 @@ test_null_job()	testing.txt	/*test_null_job()*
 test_null_list()	testing.txt	/*test_null_list()*
 test_null_partial()	testing.txt	/*test_null_partial()*
 test_null_string()	testing.txt	/*test_null_string()*
+test_null_tuple()	testing.txt	/*test_null_tuple()*
 test_option_not_set()	testing.txt	/*test_option_not_set()*
 test_override()	testing.txt	/*test_override()*
 test_refcount()	testing.txt	/*test_refcount()*
@@ -10880,6 +10969,14 @@ try-echoerr	eval.txt	/*try-echoerr*
 try-finally	eval.txt	/*try-finally*
 try-nested	eval.txt	/*try-nested*
 try-nesting	eval.txt	/*try-nesting*
+tuple	eval.txt	/*tuple*
+tuple-concatenation	eval.txt	/*tuple-concatenation*
+tuple-functions	usr_41.txt	/*tuple-functions*
+tuple-identity	eval.txt	/*tuple-identity*
+tuple-index	eval.txt	/*tuple-index*
+tuple-modification	eval.txt	/*tuple-modification*
+tuple-type	vim9.txt	/*tuple-type*
+tuple2list()	builtin.txt	/*tuple2list()*
 tutor	usr_01.txt	/*tutor*
 two-engines	pattern.txt	/*two-engines*
 type()	builtin.txt	/*type()*
@@ -11076,6 +11173,7 @@ v:t_none	eval.txt	/*v:t_none*
 v:t_number	eval.txt	/*v:t_number*
 v:t_object	eval.txt	/*v:t_object*
 v:t_string	eval.txt	/*v:t_string*
+v:t_tuple	eval.txt	/*v:t_tuple*
 v:t_typealias	eval.txt	/*v:t_typealias*
 v:termblinkresp	eval.txt	/*v:termblinkresp*
 v:termrbgresp	eval.txt	/*v:termrbgresp*
@@ -11215,6 +11313,7 @@ variable-categories	vim9.txt	/*variable-categories*
 variable-scope	eval.txt	/*variable-scope*
 variable-types	vim9.txt	/*variable-types*
 variables	eval.txt	/*variables*
+variadic-tuple	vim9.txt	/*variadic-tuple*
 various	various.txt	/*various*
 various-cmds	various.txt	/*various-cmds*
 various-functions	usr_41.txt	/*various-functions*
@@ -11304,6 +11403,7 @@ vim-modes-intro	intro.txt	/*vim-modes-intro*
 vim-raku	ft_raku.txt	/*vim-raku*
 vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-script-library	eval.txt	/*vim-script-library*
+vim-script-notation	usr_41.txt	/*vim-script-notation*
 vim-security	intro.txt	/*vim-security*
 vim-shebang	various.txt	/*vim-shebang*
 vim-tutor-create	pi_tutor.txt	/*vim-tutor-create*

@@ -4,6 +4,15 @@ echo 'It''s a string'
 echo 'tab: \t, new line: \n, backslash: \\'
 echo "tab: \t, new line: \n, backslash: \\"
 
+" string starts immediately after line continuation character - tests a
+" comment/string distinguishing implementation quirk
+echo "foo"
+      \"bar"
+      \ "baz"
+echo 'foo'
+      \'bar'
+      \ 'baz'
+
 " String escape sequences
 
 echo "\316 - \31 - \3 - \x1f - \xf - \X1F - \XF - \u02a4 - \U000002a4 - \b - \e - \f - \n - \r - \t - \\ - \" - \<C-W>"
@@ -21,6 +30,13 @@ echo "\<*C->>"
 echo "\<C->>>"
 echo "\<*C->>>"
 
+echo ""
+echo "\""
+echo "foo\""
+echo "\"foo"
+echo "foo\"bar"
+
+echo ''
 echo ''''
 echo '''foo'
 echo 'foo'''
@@ -29,6 +45,7 @@ echo 'foo''bar'
 " Unreported issue (incorrectly matches as vimString vimMark vimOper NONE)
 " https://github.com/tpope/vim-unimpaired/blob/6d44a6dc2ec34607c41ec78acf81657248580bf1/plugin/unimpaired.vim#L232
 let cmd = 'put!=repeat(nr2char(10), v:count1)|silent '']+'
+
 
 " String interpolation
 
@@ -39,10 +56,61 @@ echo $'Highlight interpolation:\t{{ { $'nested: {{ {1 + 2} }}' } }}'
 echo $"Highlight interpolation:\t{{ { string({"foo": "bar"}) } }}"
 echo $"Highlight interpolation:\t{{ { $"nested: {{ {1 + 2} }}" } }}"
 
-echo $''''
-echo $'''foo'
-echo $'foo'''
-echo $'foo''bar'
+
+" Continued string
+
+let s = "
+      "\ comment
+      \ part 1
+      "\ comment
+      \ part 2
+      "\ comment
+      \" " tail comment
+
+let s = "\"
+      \\" part 1 \"
+      "\ escape sequence
+      \ \"part 2\"
+      \\"" " tail comment
+
+let s = '
+      "\ comment
+      \ part 1
+      "\ comment
+      \ part 2
+      "\ comment
+      \' " tail comment
+
+let s = '''
+      \'' part 1 ''
+      "\ escape sequence
+      \ ''part 2''
+      \''' " tail comment
+
+let s = $"
+      "\ comment
+      \ part 1
+      "\ comment
+      \ part 2
+      "\ comment
+      \" " tail comment
+
+let s = $'
+      "\ comment
+      \ part 1
+      "\ comment
+      \ part 2
+      "\ comment
+      \' " tail comment
+
+call strlen("part 1
+      "\ comment
+      \ part 2")
+
+call append(0, "part 1
+      "\ comment
+      \ part 2")
+
 
 " Number
 
@@ -99,6 +167,94 @@ echo [1, 'two', 1 + 2, "fo" .. "ur"]
 
 " Issue #5830 (Incorrect syntax highlighting in Vim script when omitting space in list of string)
 let l = ['a','b','c']
+
+" Dictionary
+
+echo {}
+echo { 'foo': 21 * 2 }
+echo { "foo": 21 * 2 }
+echo {    42: 21 * 2 }
+
+echo { "foo":  { 'bar': 21 * 2 } }
+echo { "foo":  { "bar": 21 * 2 } }
+echo { "foo":  {    42: 21 * 2 } }
+echo { "foo": #{   bar: 21 * 2 } }
+echo { "foo": #{ -bar-: 21 * 2 } }
+echo { "foo": #{    42: 21 * 2 } }
+
+echo { 'foo':  { 'bar': 21 * 2 } }
+echo { 'foo':  { "bar": 21 * 2 } }
+echo { 'foo':  {    42: 21 * 2 } }
+echo { 'foo': #{   bar: 21 * 2 } }
+echo { 'foo': #{ -bar-: 21 * 2 } }
+echo { 'foo': #{    42: 21 * 2 } }
+
+echo {    42:  { 'bar': 21 * 2 } }
+echo {    42:  { "bar": 21 * 2 } }
+echo {    42:  {    42: 21 * 2 } }
+echo {    42: #{   bar: 21 * 2 } }
+echo {    42: #{ -bar-: 21 * 2 } }
+echo {    42: #{    42: 21 * 2 } }
+
+echo {
+      "\ comment
+      \ "foo": { "bar": 21 * 2 }
+      \}
+
+" TODO: arbitrary expression keys
+
+" Literal Dictionary
+
+echo #{}
+echo #{   foo: 21 * 2 }
+echo #{ -foo-: 21 * 2 }
+echo #{    42: 21 * 2 }
+
+echo #{ foo: #{   bar: 21 * 2 } }
+echo #{ foo: #{ -bar-: 21 * 2 } }
+echo #{ foo: #{    42: 21 * 2 } }
+echo #{ foo:  { "bar": 21 * 2 } }
+echo #{ foo:  { 'bar': 21 * 2 } }
+echo #{ foo:  {    42: 21 * 2 } }
+
+echo #{ -foo-: #{   bar: 21 * 2 } }
+echo #{ -foo-: #{ -bar-: 21 * 2 } }
+echo #{ -foo-: #{    42: 21 * 2 } }
+echo #{ -foo-:  { "bar": 21 * 2 } }
+echo #{ -foo-:  { 'bar': 21 * 2 } }
+echo #{ -foo-:  {    42: 21 * 2 } }
+
+echo #{ 42: #{   bar: 21 * 2 } }
+echo #{ 42: #{ -bar-: 21 * 2 } }
+echo #{ 42: #{    42: 21 * 2 } }
+echo #{ 42:  { "bar": 21 * 2 } }
+echo #{ 42:  { 'bar': 21 * 2 } }
+echo #{ 42:  {    42: 21 * 2 } }
+
+echo #{
+      "\ comment
+      \  foo: #{
+      \    bar: 21 * 2
+      \  }
+      \}
+
+" match as keys not scope dictionaries
+echo #{ b: 42, w: 42, t: 42, g: 42, l: 42, s: 42, a: 42, v: 42  }
+
+" Tuple
+
+echo ()
+echo (42,)
+echo ((11, 12), (21, 22), (31, 32))
+echo (1,
+      \ 2,
+      \ 3,
+      \ 4
+      \)
+echo (1, 'two', 1 + 2, "fo" .. "ur")
+
+echo foo + (42, 87)
+echo (42, 87) + foo
 
 " Register
 
@@ -213,12 +369,17 @@ let foo = foo +
       \ bar +
       \ "baz"
 
+let foo = foo +
+      "\ "comment string"
+      \ bar
+
 " Function calls
 
 call Foo(v:true, v:false, v:null)
 
 
 " Issue #16221 (vimString becomes vimVar when preceded by !)
+
 let bar = !'g:bar'->exists()
 
 

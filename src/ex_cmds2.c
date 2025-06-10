@@ -789,7 +789,7 @@ ex_compiler(exarg_T *eap)
     {
 	// ":compiler! {name}" sets global options
 	do_cmdline_cmd((char_u *)
-		"command -nargs=* CompilerSet set <args>");
+		"command -nargs=* -keepscript CompilerSet set <args>");
     }
     else
     {

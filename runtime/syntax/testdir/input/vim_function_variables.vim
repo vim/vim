@@ -32,8 +32,8 @@ function Foo()
   let b:foo[1:] = expr
   let b:foo[:] = expr
 
-  let bfoo["key"] = expr
-  let bfoo['key'] = expr
+  let b:foo["key"] = expr
+  let b:foo['key'] = expr
 
   let b:foo += expr
   let b:foo -= expr
@@ -103,25 +103,25 @@ function Foo()
   let t:foo .= expr
   let t:foo ..= expr
 
-  let v:foo = expr
+  let v:true = expr
 
-  let v:foo[0] = expr
+  let v:true[0] = expr
 
-  let v:foo[1:2] = expr
-  let v:foo[:2] = expr
-  let v:foo[1:] = expr
-  let v:foo[:] = expr
+  let v:true[1:2] = expr
+  let v:true[:2] = expr
+  let v:true[1:] = expr
+  let v:true[:] = expr
 
-  let v:foo["key"] = expr
-  let v:foo['key'] = expr
+  let v:true["key"] = expr
+  let v:true['key'] = expr
 
-  let v:foo += expr
-  let v:foo -= expr
-  let v:foo *= expr
-  let v:foo /= expr
-  let v:foo %= expr
-  let v:foo .= expr
-  let v:foo ..= expr
+  let v:true += expr
+  let v:true -= expr
+  let v:true *= expr
+  let v:true /= expr
+  let v:true %= expr
+  let v:true .= expr
+  let v:true ..= expr
 
   let w:foo = expr
 
@@ -151,38 +151,38 @@ function Foo()
   let @f .= expr
   let @f ..= expr
 
-  let &foo = expr
+  let &ari = expr
 
   let &t_k1 = "\<Esc>[234;"
 
-  let &foo .= expr
-  let &foo ..= expr
-  let &foo += expr
-  let &foo -= expr
+  let &ari .= expr
+  let &ari ..= expr
+  let &ari += expr
+  let &ari -= expr
 
-  let &l:foo = expr
+  let &l:aleph = expr
 
-  let &l:foo .= expr
-  let &l:foo ..= expr
-  let &l:foo += expr
-  let &l:foo -= expr
+  let &l:aleph .= expr
+  let &l:aleph ..= expr
+  let &l:aleph += expr
+  let &l:aleph -= expr
 
-  let &g:foo = expr
+  let &g:aleph = expr
 
-  let &g:foo .= expr
-  let &g:foo ..= expr
-  let &g:foo += expr
-  let &g:foo -= expr
+  let &g:aleph .= expr
+  let &g:aleph ..= expr
+  let &g:aleph += expr
+  let &g:aleph -= expr
 
   let [foo, bar] = expr
   let [foo,
 	\ bar] = expr
-  let [v:foo, v:bar] = expr
-  let [v:foo,
-	\ v:bar] = expr
-  let [&foo, &bar] = expr
-  let [&foo,
-	\  &bar] = expr
+  let [v:true, v:false] = expr
+  let [v:true,
+	\ v:false] = expr
+  let [&ari, &bkc] = expr
+  let [&ari,
+	\  &bkc] = expr
   let [$foo, $bar] = expr
   let [$foo,
 	\  $bar] = expr
@@ -199,18 +199,18 @@ function Foo()
   let [foo,
 	\ bar;
 	\ baz] = expr
-  let [v:foo, v:bar; v:baz] = expr
-  let [v:foo,
-	\ v:bar;
-	\ v:baz] = expr
+  let [v:true, v:false; v:none] = expr
+  let [v:true,
+	\ v:false;
+	\ v:none] = expr
   let [$foo, $bar; $baz] = expr
   let [$foo,
 	\ $bar;
 	\ $baz] = expr
-  let [&foo, &bar; &baz] = expr
-  let [&foo,
-	\ &bar;
-	\ &baz] = expr
+  let [&ari, &bkc; &cmp] = expr
+  let [&ari,
+	\ &bkc;
+	\ &cmp] = expr
   let [@a, @b; @c] = expr
   let [@a,
 	\ @b;
@@ -380,5 +380,34 @@ END
   unlockvar 2 foo | echo "Foo"
   unlockvar 2 foo bar " comment
   unlockvar 2 foo bar | echo "Foo"
+
+" Scope dictionaries
+
+echo get(b:, 'foo', 42)
+echo get(w:, 'foo', 42)
+echo get(t:, 'foo', 42)
+echo get(g:, 'foo', 42)
+echo get(l:, 'foo', 42)
+echo get(s:, 'foo', 42)
+echo get(a:, 'foo', 42)
+echo get(v:, 'foo', 42)
+
+for k in keys(b:) | echo b:[k] | endfor
+for k in keys(w:) | echo w:[k] | endfor
+for k in keys(t:) | echo t:[k] | endfor
+for k in keys(g:) | echo g:[k] | endfor
+for k in keys(l:) | echo l:[k] | endfor
+for k in keys(s:) | echo s:[k] | endfor
+for k in keys(a:) | echo a:[k] | endfor
+for k in keys(v:) | echo v:[k] | endfor
+
+" Neovim-specific variables (not highlighted by default)
+
+echo v:lua v:msgpack_types v:relnum v:stderr v:termrequest v:virtnum
+
+echo &channel &inccommand &mousescroll &pumblend &redrawdebug &scrollback
+echo &shada &shadafile &statuscolumn &termpastefilter &termsync &winbar
+echo &winblend &winhighlight
+
 endfunction
 

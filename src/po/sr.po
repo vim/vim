@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-21 15:11+0400\n"
-"PO-Revision-Date: 2025-01-21 15:26+0400\n"
+"POT-Creation-Date: 2025-03-10 11:46+0400\n"
+"PO-Revision-Date: 2025-03-10 11:51+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -7449,9 +7449,6 @@ msgstr "E1043: Неважећа команда након :export"
 msgid "E1044: Export with invalid argument"
 msgstr "E1044: Export са неважећим аргументом"
 
-msgid "E1045: Import nesting too deep"
-msgstr "E1045: Import угњеждавање је сувише дубоко"
-
 #, c-format
 msgid "E1047: Syntax error in import: %s"
 msgstr "E1047: Синтаксна грешка у import: %s"
@@ -8124,6 +8121,10 @@ msgid "E1234: legacy must be followed by a command"
 msgstr "E1234: иза legacy мора да следи команда"
 
 #, c-format
+msgid "E1235: Bool or Number required for argument %d"
+msgstr "E1235: За аргумент %d се захтева тип Логички или Број"
+
+#, c-format
 msgid "E1236: Cannot use %s itself, it is imported"
 msgstr "E1236: Не може да се користи просто %s, увезено је"
 
@@ -8698,6 +8699,9 @@ msgstr "E1393: Тип може да се дефинише само у Vim9 ск�
 #, c-format
 msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: Име типа мора да почне великим словом: %s"
+
+msgid "E1395: Using a null class"
+msgstr "E1395: Користи се null класа"
 
 #, c-format
 msgid "E1396: Type alias \"%s\" already exists"
@@ -10035,6 +10039,9 @@ msgstr "израз који „gq” користи да форматира ли
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
 msgstr "наводи како ради довршавање у режиму Уметање за CTRL-N и CTRL-P"
 
+msgid "use fuzzy collection for specific completion modes"
+msgstr "за одређене режиме довршавања се користи фази колекција"
+
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "да ли се за довршавање у режиму Уметање користи искачући мени"
 
@@ -10638,6 +10645,9 @@ msgstr ""
 msgid "list of autocommand events which are to be ignored"
 msgstr "листа догађаја аутокоманди који треба да се игноришу"
 
+msgid "list of autocommand events which are to be ignored in a window"
+msgstr "листа догађаја аутокоманди који треба да се игноришу у прозору"
+
 msgid "load plugin scripts when starting up"
 msgstr "скрипте додатака се учитавају током покретања"
 
@@ -10651,7 +10661,7 @@ msgid "use the 'g' flag for \":substitute\""
 msgstr "користи се заставица ’g’ за „:substitute”"
 
 msgid "'g' and 'c' flags of \":substitute\" toggle"
-msgstr "’g’ и ’c’ заставице команде \":substitute\" мењају стање"
+msgstr "’g’ и ’c’ заставице команде „:substitute” мењају стање"
 
 msgid "allow reading/writing devices"
 msgstr "дозвољава се читање/упис на уређаје"

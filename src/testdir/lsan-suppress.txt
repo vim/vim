@@ -11,3 +11,6 @@ leak:libperl.so.*
 leak:libpython*.so.*
 leak:libruby*.so.*
 leak:libxcb*.so.*
+# The renderer leaks 128 bytes of metadata when run under CI. Seems to only
+# happen with software rendering.
+leak:gdk_x11_screen_init_gl

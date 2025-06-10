@@ -2,6 +2,71 @@ vim9script
 # Vim9-script expressions
 
 
+# Number
+
+# ' separated
+
+echo   1'000'000
+echo   1'000'000.00
+echo  -1'000'000
+echo  -1'000'000.00
+
+echo   0b1000'0000
+echo   0o1000'0000
+echo   0x1000'0000
+echo  -0b1000'0000
+echo  -0o1000'0000
+echo  -0x1000'0000
+
+# Dictionary
+
+echo {}
+echo {   foo: 21 * 2 }
+echo { -foo-: 21 * 2 }
+echo {    42: 21 * 2 }
+echo { 'foo': 21 * 2 }
+echo { "foo": 21 * 2 }
+
+echo { foo: {   bar: 21 * 2 } }
+echo { foo: { -bar-: 21 * 2 } }
+echo { foo: {    42: 21 * 2 } }
+echo { foo: { 'bar': 21 * 2 } }
+echo { foo: { "bar": 21 * 2 } }
+
+echo { -foo-: {   bar: 21 * 2 } }
+echo { -foo-: { -bar-: 21 * 2 } }
+echo { -foo-: {    42: 21 * 2 } }
+echo { -foo-: { 'bar': 21 * 2 } }
+echo { -foo-: { "bar": 21 * 2 } }
+
+echo { 42: {   bar: 21 * 2 } }
+echo { 42: { -bar-: 21 * 2 } }
+echo { 42: {    42: 21 * 2 } }
+echo { 42: { 'bar': 21 * 2 } }
+echo { 42: { "bar": 21 * 2 } }
+
+echo { 'foo': {   bar: 21 * 2 } }
+echo { 'foo': { -bar-: 21 * 2 } }
+echo { 'foo': {    42: 21 * 2 } }
+echo { 'foo': { "bar": 21 * 2 } }
+echo { 'foo': { 'bar': 21 * 2 } }
+
+echo { "foo": {   bar: 21 * 2 } }
+echo { "foo": { -bar-: 21 * 2 } }
+echo { "foo": {    42: 21 * 2 } }
+echo { "foo": { 'bar': 21 * 2 } }
+echo { "foo": { "bar": 21 * 2 } }
+
+echo {
+  # comment
+  foo: {
+    bar: 21 * 2
+  }
+}
+
+# match as keys not scope dictionaries
+echo { b: 42, w: 42, t: 42, g: 42, l: 42, s: 42, a: 42, v: 42  }
+
 # Operators
 
 # Ternary
@@ -100,7 +165,7 @@ def Foo()
 enddef
 
 
-# Issue #16227 (Vimscript ternary expression highlighting)
+# Issue #16227 (Vim script ternary expression highlighting)
 
 var foo = 'foo'                         # comment
 var bar = foo == 'foo' ? 'bar' : 'baz'

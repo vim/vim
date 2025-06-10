@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Feb 08
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -387,6 +387,7 @@ Name			triggered by ~
 |TabNew|		after creating a new tab page
 |WinClosed|		after closing a window
 |TabClosed|		after closing a tab page
+|TabClosedPre|		before closing a tab page
 |WinEnter|		after entering another window
 |WinLeave|		before leaving a window
 |TabEnter|		after entering another tab page
@@ -397,6 +398,7 @@ Name			triggered by ~
 |CmdlineChanged|	after a change was made to the command-line text
 |CmdlineEnter|		after the cursor moves to the command line
 |CmdlineLeave|		before the cursor leaves the command line
+|CmdlineLeavePre|	before preparing to leave the command line
 
 |InsertEnter|		starting Insert mode
 |InsertChange|		when typing <Insert> while in Insert or Replace mode
@@ -592,7 +594,8 @@ BufWriteCmd			Before writing the whole buffer to a file.
 				The buffer contents should not be changed.
 				When the command resets 'modified' the undo
 				information is adjusted to mark older undo
-				states as 'modified', like |:write| does.
+				states as 'modified', like |:write| does.  Use
+				the |'[| and |']| marks for the range of lines.
 				|Cmd-event|
 							*BufWritePost*
 BufWritePost			After writing the whole buffer to a file
@@ -603,6 +606,8 @@ CmdUndefined			When a user command is used but it isn't
 				when it's used.  The pattern is matched
 				against the command name.  Both <amatch> and
 				<afile> are set to the name of the command.
+				This is triggered even when inside an
+				autocommand defined without |autocmd-nested|.
 				NOTE: Autocompletion won't work until the
 				command is defined.  An alternative is to
 				always define the user command and have it
@@ -635,6 +640,18 @@ CmdlineLeave			Before leaving the command line; including
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
+							*CmdlineLeavePre*
+CmdlineLeavePre			Just before leaving the command line, and
+				before |CmdlineLeave|.  Useful for capturing
+				completion info with |cmdcomplete_info()|, as
+				this information is cleared before
+				|CmdlineLeave| is triggered.  Triggered for
+				non-interactive use of ":" in a mapping, but
+				not when using |<Cmd>|.  Also triggered when
+				abandoning the command line by typing CTRL-C
+				or <Esc>.  <afile> is set to a single
+				character indicating the command-line type.
+				See |cmdwin-char| for details.
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for
@@ -883,14 +900,14 @@ FileType			When the 'filetype' option has been set.  The
 FileWriteCmd			Before writing to a file, when not writing the
 				whole buffer.  Should do the writing to the
 				file.  Should not change the buffer.  Use the
-				'[ and '] marks for the range of lines.
+				|'[| and |']| marks for the range of lines.
 				|Cmd-event|
 							*FileWritePost*
 FileWritePost			After writing to a file, when not writing the
 				whole buffer.
 							*FileWritePre*
 FileWritePre			Before writing to a file, when not writing the
-				whole buffer.  Use the '[ and '] marks for the
+				whole buffer.  Use the |'[| and |']| marks for the
 				range of lines.
 							*FilterReadPost*
 FilterReadPost			After reading a file from a filter command.
@@ -934,7 +951,9 @@ FuncUndefined			When a user function is used but it isn't
 				when it's used.  The pattern is matched
 				against the function name.  Both <amatch> and
 				<afile> are set to the name of the function.
-				Not triggered when compiling a |Vim9|
+				This is triggered even when inside an
+				autocommand defined without |autocmd-nested|,
+				but not triggered when compiling a |Vim9|
 				function.
 				NOTE: When writing Vim scripts a better
 				alternative is to use an autoloaded function.
@@ -1228,6 +1247,10 @@ Syntax				When the 'syntax' option has been set.  The
 				See |:syn-on|.
 							*TabClosed*
 TabClosed			After closing a tab page.
+							*TabClosedPre*
+TabClosedPre			Before closing a tab page.  The window layout
+				is locked, thus opening and closing of windows
+				is prohibited.
 							*TabEnter*
 TabEnter			Just after entering a tab page. |tab-page|
 				After triggering the WinEnter and before
@@ -1342,6 +1365,10 @@ TextYankPost			After text has been yanked or deleted in the
 				called recursively.
 				It is not allowed to change the buffer text,
 				see |textlock|. *E1064*
+				Also triggered indirectly when Vim tries to
+				become owner of the Visual selection because
+				of setting "autoselect" for 'guioptions' or
+				'clipboard'.
 				{only when compiled with the +eval feature}
 
 							*User*
@@ -1466,6 +1493,13 @@ WinScrolled			After any window in the current tab page
 				scrolled the text (horizontally or vertically)
 				or changed width or height.  See
 				|win-scrolled-resized|.
+
+				Note: This can not be skipped with
+				`:noautocmd`, because it triggers after
+				processing normal commands when Vim is back in
+				the main loop.  If you want to disable this,
+				consider setting the 'eventignore' option
+				instead.
 
 				The pattern is matched against the |window-ID|
 				of the first window that scrolled or resized.

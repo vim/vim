@@ -1,7 +1,7 @@
 /* charset.c */
 int init_chartab(void);
 int buf_init_chartab(buf_T *buf, int global);
-int check_isopt(char_u *isopt);
+int check_isopt(char_u *var);
 void trans_characters(char_u *buf, int bufsize);
 char_u *transstr(char_u *s);
 char_u *str_foldcase(char_u *str, int orglen, char_u *buf, int buflen);

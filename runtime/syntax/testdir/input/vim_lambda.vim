@@ -1,4 +1,7 @@
 " Vim lambda expressions
+" VIM_TEST_SETUP hi link vimLambdaOperator Todo
+" VIM_TEST_SETUP hi link vimLambdaBrace    Todo
+" VIM_TEST_SETUP hi link vimFuncParam	   Identifier
 
 
 let expr = 42
@@ -56,12 +59,17 @@ let Foo = {x,
       \ z -> expr}
 
 let Foo = {
+      "\ comment
       \ x,
+      "\ comment
       \ y,
+      "\ comment
       \ z
+      "\ comment
       \ ->
       "\ comment
       \ expr
+      "\ comment
       \ }
 
 let Foo = {-> [
@@ -94,6 +102,7 @@ let Foo = {-> {-> #{
       \ b: 83
       \}}}
 
+
 " :help lambda
 
 :let F = {arg1, arg2 -> arg1 - arg2}
@@ -117,4 +126,10 @@ let Foo = {-> {-> #{
 :let timer = timer_start(500,
 		\ {-> execute("echo 'Handler called'", "")},
 		\ {'repeat': 3})
+
+
+" Issue https://github.com/vim/vim/pull/17420#issuecomment-2927798687
+" (string immediately after -> operator)
+
+let [func, _func_] = [{->"func"}(), 'func']
 

@@ -951,18 +951,6 @@ func Test_mode()
   execute "normal! gR\<C-o>g@l\<Esc>"
   call assert_equal('n-niV', g:current_modes)
 
-  " Test statusline updates for overstrike mode
-  if CanRunVimInTerminal()
-    let buf = RunVimInTerminal('', {'rows': 12})
-    call term_sendkeys(buf, ":set laststatus=2 statusline=%!mode(1)\<CR>")
-    call term_sendkeys(buf, ":")
-    call TermWait(buf)
-    call VerifyScreenDump(buf, 'Test_mode_1', {})
-    call term_sendkeys(buf, "\<Insert>")
-    call TermWait(buf)
-    call VerifyScreenDump(buf, 'Test_mode_2', {})
-    call StopVimInTerminal(buf)
-  endif
 
   if has('terminal')
     term
@@ -988,6 +976,22 @@ func Test_mode()
   set complete&
   set operatorfunc&
   delfunction OperatorFunc
+endfunc
+
+" Test for the mode() function using Screendump feature
+func Test_mode_screendump()
+  CheckScreendump
+
+  " Test statusline updates for overstrike mode
+  let buf = RunVimInTerminal('', {'rows': 12})
+  call term_sendkeys(buf, ":set laststatus=2 statusline=%!mode(1)\<CR>")
+  call term_sendkeys(buf, ":")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_mode_1', {})
+  call term_sendkeys(buf, "\<Insert>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_mode_2', {})
+  call StopVimInTerminal(buf)
 endfunc
 
 " Test for append()
@@ -1028,7 +1032,7 @@ func Test_setline()
   call setline(3, test_null_list())
   call setline(2, ["baz"])
   call assert_equal(['bar', 'baz'], getline(1, '$'))
-  close!
+  bw!
 endfunc
 
 func Test_getbufvar()
@@ -2244,6 +2248,21 @@ func Test_input_func()
 
   call assert_fails("call input('F:', '', 'invalid')", 'E180:')
   call assert_fails("call input('F:', '', [])", 'E730:')
+
+  " Test for using "command" as the completion function
+  call feedkeys(":let c = input('Command? ', '', 'command')\<CR>"
+        \ .. "echo bufnam\<C-A>\<CR>", 'xt')
+  call assert_equal('echo bufname(', c)
+
+  " Test for using "shellcmdline" as the completion function
+  call feedkeys(":let c = input('Shell? ', '', 'shellcmdline')\<CR>"
+        \ .. "vim test_functions.\<C-A>\<CR>", 'xt')
+  call assert_equal('vim test_functions.vim', c)
+  if executable('whoami')
+    call feedkeys(":let c = input('Shell? ', '', 'shellcmdline')\<CR>"
+          \ .. "whoam\<C-A>\<CR>", 'xt')
+    call assert_match('\<whoami\>', c)
+  endif
 endfunc
 
 " Test for the inputdialog() function
@@ -4417,10 +4436,10 @@ func Test_str2blob()
 
     call assert_fails("call str2blob(['abc'], [])", 'E1206: Dictionary required for argument 2')
     call assert_fails("call str2blob(['abc'], {'encoding': []})", 'E730: Using a List as a String')
-    call assert_fails("call str2blob(['abc'], {'encoding': 'ab12xy'})", 'E1515: Unable to convert to ''ab12xy'' encoding')
-    call assert_fails("call str2blob(['ŝş'], {'encoding': 'latin1'})", 'E1515: Unable to convert to ''latin1'' encoding')
-    call assert_fails("call str2blob(['அஇ'], {'encoding': 'latin1'})", 'E1515: Unable to convert to ''latin1'' encoding')
-    call assert_fails("call str2blob(['🁰🁳'], {'encoding': 'latin1'})", 'E1515: Unable to convert to ''latin1'' encoding')
+    call assert_fails("call str2blob(['abc'], {'encoding': 'ab12xy'})", 'E1516: Unable to convert to ''ab12xy'' encoding')
+    call assert_fails("call str2blob(['ŝş'], {'encoding': 'latin1'})", 'E1516: Unable to convert to ''latin1'' encoding')
+    call assert_fails("call str2blob(['அஇ'], {'encoding': 'latin1'})", 'E1516: Unable to convert to ''latin1'' encoding')
+    call assert_fails("call str2blob(['🁰🁳'], {'encoding': 'latin1'})", 'E1516: Unable to convert to ''latin1'' encoding')
   END
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
