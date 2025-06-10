@@ -144,6 +144,11 @@ main
     atexit(vim_mem_profile_dump);
 #endif
 
+    /*
+     * Various initialisations #1 shared with tests.
+     */
+    common_init_1();
+
 #if defined(STARTUPTIME) || defined(FEAT_JOB_CHANNEL)
     // Need to find "--startuptime" and "--log" before actually parsing
     // arguments.
@@ -185,9 +190,9 @@ main
 #endif
 
     /*
-     * Various initialisations shared with tests.
+     * Various initialisations #2 shared with tests.
      */
-    common_init(&params);
+    common_init_2(&params);
 
 #ifdef VIMDLL
     // Check if the current executable file is for the GUI subsystem.
@@ -444,6 +449,35 @@ main
 #endif // NO_VIM_MAIN
 #endif // PROTO
 
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+/*
+ * Restore the state after a fatal X error.
+ */
+    static void
+x_restore_state(void)
+{
+    State = MODE_NORMAL;
+    VIsual_active = FALSE;
+    got_int = TRUE;
+    need_wait_return = FALSE;
+    global_busy = FALSE;
+    exmode_active = 0;
+    skip_redraw = FALSE;
+    RedrawingDisabled = 0;
+    no_wait_return = 0;
+    vgetc_busy = 0;
+# ifdef FEAT_EVAL
+    emsg_skip = 0;
+# endif
+    emsg_off = 0;
+    setmouse();
+    settmode(TMODE_RAW);
+    starttermcap();
+    scroll_start();
+    redraw_later_clear();
+}
+#endif
+
 /*
  * vim_main2() is needed for FEAT_MZSCHEME, but we define it always to keep
  * things simple.
@@ -655,7 +689,7 @@ vim_main2(void)
 #if defined(UNIX) || defined(VMS)
     // When switching screens and something caused a message from a vimrc
     // script, need to output an extra newline on exit.
-    if ((did_emsg || msg_didout) && *T_TI != NUL)
+    if ((did_emsg || msg_didout) && *T_TI != NUL && params.edit_type != EDIT_STDIN)
 	newline_on_exit = TRUE;
 #endif
 
@@ -785,9 +819,28 @@ vim_main2(void)
 	    getout(1);
     }
 
-    // Execute any "+", "-c" and "-S" arguments.
-    if (params.n_commands > 0)
-	exe_commands(&params);
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+    // Temporarily set x_jump_env to here in case there is an X11 IO error,
+    // because x_jump_env is only actually set in main_loop(), before
+    // exe_commands(). May not be the best solution since commands passed via
+    // the command line can be very broad like sourcing a file, in which case
+    // an X IO error results in the command being partially done. In theory we
+    // could use SETJMP in RealWaitForChar(), but the stack frame for that may
+    // possibly exit and then LONGJMP is called on it.
+    int jump_result = SETJMP(x_jump_env);
+
+    if (jump_result == 0)
+    {
+#endif
+	// Execute any "+", "-c" and "-S" arguments.
+	if (params.n_commands > 0)
+	    exe_commands(&params);
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+    }
+    else
+	// Restore state and continue just like what main_loop() does.
+	x_restore_state();
+#endif
 
     // Must come before the may_req_ calls.
     starting = 0;
@@ -900,10 +953,10 @@ vim_main2(void)
 }
 
 /*
- * Initialisation shared by main() and some tests.
+ * Initialisation #1 shared by main() and some tests.
  */
     void
-common_init(mparm_T *paramp)
+common_init_1(void)
 {
     estack_init();
     cmdline_init();
@@ -925,7 +978,15 @@ common_init(mparm_T *paramp)
 	    || (NameBuff = alloc(MAXPATHL)) == NULL)
 	mch_exit(0);
     TIME_MSG("Allocated generic buffers");
+}
 
+
+/*
+ * Initialisation #2 shared by main() and some tests.
+ */
+    void
+common_init_2(mparm_T *paramp)
+{
 #ifdef NBDEBUG
     // Wait a moment for debugging NetBeans.  Must be after allocating
     // NameBuff.
@@ -1010,6 +1071,13 @@ common_init(mparm_T *paramp)
 
 #ifdef FEAT_SIGNS
     init_signs();
+#endif
+
+#ifdef FEAT_QUICKFIX
+    // initialize quickfix list
+    // don't send an error message when memory allocation fails
+    // do it when the user tries to access the quickfix list
+    qf_init_stack();
 #endif
 }
 
@@ -1222,30 +1290,10 @@ main_loop(
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
     // Setup to catch a terminating error from the X server.  Just ignore
     // it, restore the state and continue.  This might not always work
-    // properly, but at least we don't exit unexpectedly when the X server
-    // exits while Vim is running in a console.
+    // properly, but at least we hopefully don't exit unexpectedly when the X
+    // server exits while Vim is running in a console.
     if (!cmdwin && !noexmode && SETJMP(x_jump_env))
-    {
-	State = MODE_NORMAL;
-	VIsual_active = FALSE;
-	got_int = TRUE;
-	need_wait_return = FALSE;
-	global_busy = FALSE;
-	exmode_active = 0;
-	skip_redraw = FALSE;
-	RedrawingDisabled = 0;
-	no_wait_return = 0;
-	vgetc_busy = 0;
-# ifdef FEAT_EVAL
-	emsg_skip = 0;
-# endif
-	emsg_off = 0;
-	setmouse();
-	settmode(TMODE_RAW);
-	starttermcap();
-	scroll_start();
-	redraw_later_clear();
-    }
+	x_restore_state();
 #endif
 
     clear_oparg(&oa);

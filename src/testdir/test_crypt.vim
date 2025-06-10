@@ -344,7 +344,7 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
     " should fail
     norm! u
     call assert_match('Already at oldest change', execute(':1mess'))
-    call assert_fails('verbose rundo ' .. fnameescape(ufile), 'E822')
+    call assert_fails('verbose rundo ' .. fnameescape(ufile), 'E822:')
     bw!
     set undolevels& cryptmethod& undofile&
     call delete('Xcrypt_sodium_undo.txt')
@@ -357,8 +357,8 @@ func Test_encrypt_xchacha20_missing()
     return
   endif
   sp Xcrypt_sodium_undo.txt
-  call assert_fails(':set cryptmethod=xchacha20', 'E474')
-  call assert_fails(':set cryptmethod=xchacha20v2', 'E474')
+  call assert_fails(':set cryptmethod=xchacha20', 'E474:')
+  call assert_fails(':set cryptmethod=xchacha20v2', 'E474:')
   bw!
   set cm&
 endfunc

@@ -388,7 +388,8 @@ handle_lnum_col(
 	// If 'signcolumn' is set to 'number' and a sign is present
 	// in 'lnum', then display the sign instead of the line
 	// number.
-	if ((*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u') && sign_present)
+	if ((*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u') && sign_present
+		&& wlv->sattr.sat_text != NULL)
 	    get_sign_display_info(TRUE, wp, wlv);
 	else
 #endif
@@ -461,8 +462,8 @@ handle_lnum_col(
 	  if (wp->w_p_cul
 		  && wlv->lnum == wp->w_cursor.lnum
 		  && (wp->w_p_culopt_flags & CULOPT_NBR)
-		  && (wlv->row == wlv->startrow + wlv->filler_lines
-		      || (wlv->row > wlv->startrow + wlv->filler_lines
+		  && (wlv->row == lnum_row
+		      || (wlv->row > lnum_row
 			 && (wp->w_p_culopt_flags & CULOPT_LINE))))
 	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLN));
 #endif
@@ -1139,6 +1140,7 @@ win_line(
     long	vcol_prev = -1;		// "wlv.vcol" of previous character
     char_u	*line;			// current line
     char_u	*ptr;			// current position in "line"
+    int		in_curline = wp == curwin && lnum == curwin->w_cursor.lnum;
 
 #ifdef FEAT_PROP_POPUP
     char_u	*p_extra_free2 = NULL;   // another p_extra to be freed
@@ -1171,7 +1173,8 @@ win_line(
     int		vi_attr = 0;		// attributes for Visual and incsearch
 					// highlighting
     int		area_attr = 0;		// attributes desired by highlighting
-    int		search_attr = 0;	// attributes desired by 'hlsearch'
+    int		search_attr = 0;	// attributes desired by 'hlsearch' or
+					// ComplMatchIns
 #ifdef FEAT_SYN_HL
     int		vcol_save_attr = 0;	// saved attr for 'cursorcolumn'
     int		syntax_attr = 0;	// attributes desired by syntax
@@ -1212,7 +1215,7 @@ win_line(
     int		word_end = 0;		// last byte with same spell_attr
     int		cur_checked_col = 0;	// checked column for current line
 #endif
-    int		extra_check = 0;	// has extra highlighting
+    int		extra_check = FALSE;	// has extra highlighting
     int		multi_attr = 0;		// attributes desired by multibyte
     int		mb_l = 1;		// multi-byte byte length
     int		mb_c = 0;		// decoded multi-byte character
@@ -1221,6 +1224,8 @@ win_line(
 #ifdef FEAT_DIFF
     int		change_start = MAXCOL;	// first col of changed area
     int		change_end = -1;	// last col of changed area
+    diffline_T	line_changes;
+    int		change_index = -1;
 #endif
     colnr_T	trailcol = MAXCOL;	// start of trailing spaces
     colnr_T	leadcol = 0;		// start of leading spaces
@@ -1415,8 +1420,7 @@ win_line(
 	    }
 
 	    // Check if the character under the cursor should not be inverted
-	    if (!highlight_match && lnum == curwin->w_cursor.lnum
-								&& wp == curwin
+	    if (!highlight_match && in_curline
 #ifdef FEAT_GUI
 		    && !gui.in_use
 #endif
@@ -1466,25 +1470,54 @@ win_line(
     }
 
 #ifdef FEAT_DIFF
-    wlv.filler_lines = diff_check(wp, lnum);
-    if (wlv.filler_lines < 0)
+
+    int linestatus = 0;
+    wlv.filler_lines = diff_check_with_linestatus(wp, lnum, &linestatus);
+
+    CLEAR_FIELD(line_changes);
+
+    if (wlv.filler_lines < 0 || linestatus < 0)
     {
-	if (wlv.filler_lines == -1)
+	if (wlv.filler_lines == -1 || linestatus == -1)
 	{
-	    if (diff_find_change(wp, lnum, &change_start, &change_end))
+	    if (diff_find_change(wp, lnum, &line_changes))
+	    {
 		wlv.diff_hlf = HLF_ADD;	// added line
-	    else if (change_start == 0)
-		wlv.diff_hlf = HLF_TXD;	// changed text
+	    }
+	    else if (line_changes.num_changes > 0)
+	    {
+		int added = diff_change_parse(
+			&line_changes, &line_changes.changes[0],
+			&change_start, &change_end);
+		if (change_start == 0)
+		{
+		    if (added)
+			wlv.diff_hlf = HLF_TXA;	// added text on changed line
+		    else
+			wlv.diff_hlf = HLF_TXD;	// changed text on changed line
+		}
+		else
+		    wlv.diff_hlf = HLF_CHD;	// unchanged text on changed line
+		change_index = 0;
+	    }
 	    else
+	    {
 		wlv.diff_hlf = HLF_CHD;	// changed line
+		change_index = 0;
+	    }
 	}
 	else
-	    wlv.diff_hlf = HLF_ADD;		// added line
-	wlv.filler_lines = 0;
+	    wlv.diff_hlf = HLF_ADD;
+
+	if (linestatus == 0)
+	    wlv.filler_lines = 0;
+
 	area_highlighting = TRUE;
     }
+
     if (lnum == wp->w_topline)
 	wlv.filler_lines = wp->w_topfill;
+
     wlv.filler_todo = wlv.filler_lines;
 #endif
 
@@ -1868,6 +1901,10 @@ win_line(
     }
 #endif
 
+    if ((State & MODE_INSERT) && ins_compl_win_active(wp)
+			    && (in_curline || ins_compl_lnum_in_range(lnum)))
+	area_highlighting = TRUE;
+
 #ifdef FEAT_SYN_HL
     // Cursor line highlighting for 'cursorline' in the current window.
     if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
@@ -2011,9 +2048,7 @@ win_line(
 #endif
 
 	// When still displaying '$' of change command, stop at cursor.
-	if (dollar_vcol >= 0 && wp == curwin
-		&& lnum == wp->w_cursor.lnum
-		&& wlv.vcol >= (long)wp->w_virtcol)
+	if (dollar_vcol >= 0 && in_curline && wlv.vcol >= (long)wp->w_virtcol)
 	{
 	    wlv_screen_line(wp, &wlv, FALSE);
 	    // Pretend we have finished updating the window.  Except when
@@ -2263,7 +2298,7 @@ win_line(
 				}
 
 				if (above)
-				    wlv.vcol_off_tp = vim_strsize(wlv.p_extra);
+				    wlv.vcol_off_tp += vim_strsize(wlv.p_extra);
 
 				if (lcs_eol_one < 0
 					&& wp->w_p_wrap
@@ -2391,9 +2426,9 @@ win_line(
 			|| (noinvcur && (colnr_T)wlv.vcol == wp->w_virtcol)))
 		*area_attr_p = 0;		// stop highlighting
 
-#ifdef FEAT_SEARCH_EXTRA
 	    if (wlv.n_extra == 0)
 	    {
+#ifdef FEAT_SEARCH_EXTRA
 		// Check for start/end of 'hlsearch' and other matches.
 		// After end, check for start/end of next match.
 		// When another match, have to check for start again.
@@ -2408,19 +2443,47 @@ win_line(
 		// and bad things happen.
 		if (*ptr == NUL)
 		    has_match_conc = 0;
-	    }
+#else
+		search_attr = 0;
 #endif
+
+		// Check if ComplMatchIns highlight is needed.
+		if ((State & MODE_INSERT) && ins_compl_win_active(wp)
+			    && (in_curline || ins_compl_lnum_in_range(lnum)))
+		{
+		    int ins_match_attr =
+			ins_compl_col_range_attr(lnum, (int)(ptr - line));
+		    if (ins_match_attr > 0)
+			search_attr =
+			    hl_combine_attr(search_attr, ins_match_attr);
+		}
+	    }
 
 #ifdef FEAT_DIFF
 	    if (wlv.diff_hlf != (hlf_T)0)
 	    {
+		if (line_changes.num_changes > 0
+			&& change_index >= 0
+			&& change_index < line_changes.num_changes - 1)
+		{
+		    if (ptr - line >= line_changes.changes[change_index+1].dc_start[line_changes.bufidx])
+			change_index += 1;
+		}
+		int added = FALSE;
+		if (line_changes.num_changes > 0 && change_index >= 0 && change_index < line_changes.num_changes)
+		{
+		    added = diff_change_parse(&line_changes,
+			    &line_changes.changes[change_index],
+			    &change_start,
+			    &change_end);
+		}
 		// When there is extra text (e.g. virtual text) it gets the
 		// diff highlighting for the line, but not for changed text.
 		if (wlv.diff_hlf == HLF_CHD && ptr - line >= change_start
 							   && wlv.n_extra == 0)
-		    wlv.diff_hlf = HLF_TXD;		// changed text
-		if (wlv.diff_hlf == HLF_TXD
-			&& ((ptr - line > change_end && wlv.n_extra == 0)
+		    wlv.diff_hlf = added ? HLF_TXA : HLF_TXD;	// added/changed text
+		if ((wlv.diff_hlf == HLF_TXD || wlv.diff_hlf == HLF_TXA)
+			&& ((ptr - line >= change_end && wlv.n_extra == 0)
 			       || (wlv.n_extra > 0 && wlv.extra_for_textprop)))
 		    wlv.diff_hlf = HLF_CHD;		// changed line
 		wlv.line_attr = HL_ATTR(wlv.diff_hlf);
@@ -3478,7 +3541,7 @@ win_line(
 			wlv.char_attr = wlv.sattr.sat_linehl;
 #endif
 # ifdef FEAT_DIFF
-		    if (wlv.diff_hlf == HLF_TXD)
+		    if (wlv.diff_hlf == HLF_TXD || wlv.diff_hlf == HLF_TXA)
 		    {
 			wlv.diff_hlf = HLF_CHD;
 			if (vi_attr == 0 || wlv.char_attr != vi_attr)
@@ -3607,8 +3670,7 @@ win_line(
 	// With 'virtualedit' we may never reach cursor position, but we still
 	// need to correct the cursor column, so do that at end of line.
 	if (!did_wcol && wlv.draw_state == WL_LINE
-		&& wp == curwin && lnum == wp->w_cursor.lnum
-		&& conceal_cursor_line(wp)
+		&& in_curline && conceal_cursor_line(wp)
 		&& (wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
 	{
 # ifdef FEAT_RIGHTLEFT
@@ -3695,7 +3757,7 @@ win_line(
 #endif
 	// Handle the case where we are in column 0 but not on the first
 	// character of the line and the user wants us to show us a
-	// special character (via 'listchars' option "precedes:<char>".
+	// special character (via 'listchars' option "precedes:<char>").
 	if (lcs_prec_todo != NUL
 		&& wp->w_p_list
 		&& (wp->w_p_wrap ? (wp->w_skipcol > 0 && wlv.row == 0)
@@ -3704,6 +3766,7 @@ win_line(
 		&& wlv.filler_todo <= 0
 #endif
 		&& wlv.draw_state > WL_NR
+		&& skip_cells <= 0
 		&& c != NUL)
 	{
 	    c = wp->w_lcs_chars.prec;
@@ -3849,7 +3912,7 @@ win_line(
 
 		// Update w_cline_height and w_cline_folded if the cursor line
 		// was updated (saves a call to plines() later).
-		if (wp == curwin && lnum == curwin->w_cursor.lnum)
+		if (in_curline)
 		{
 		    curwin->w_cline_row = startrow;
 		    curwin->w_cline_height = wlv.row - startrow;
@@ -4317,7 +4380,7 @@ win_line(
 									  == 2
 				 || (*mb_off2cells)(
 				     LineOffset[wlv.screen_row - 1]
-							    + (int)Columns - 2,
+							    + (int)topframe->fr_width - 2,
 				     LineOffset[wlv.screen_row]
 						      + screen_Columns) == 2)))
 		{
@@ -4327,17 +4390,17 @@ win_line(
 		    // auto-wrap, we overwrite the character.
 		    if (screen_cur_col != wp->w_width)
 			screen_char(LineOffset[wlv.screen_row - 1]
-						       + (unsigned)Columns - 1,
-				       wlv.screen_row - 1, (int)(Columns - 1));
+						       + (unsigned)topframe->fr_width - 1,
+				       wlv.screen_row - 1, (int)(topframe->fr_width - 1));
 
 		    // When there is a multi-byte character, just output a
 		    // space to keep it simple.
 		    if (has_mbyte && MB_BYTE2LEN(ScreenLines[LineOffset[
-				     wlv.screen_row - 1] + (Columns - 1)]) > 1)
+				     wlv.screen_row - 1] + (topframe->fr_width - 1)]) > 1)
 			out_char(' ');
 		    else
 			out_char(ScreenLines[LineOffset[wlv.screen_row - 1]
-							    + (Columns - 1)]);
+							    + (topframe->fr_width - 1)]);
 		    // force a redraw of the first char on the next line
 		    ScreenAttrs[LineOffset[wlv.screen_row]] = (sattr_T)-1;
 		    screen_start();	// don't know where cursor is now

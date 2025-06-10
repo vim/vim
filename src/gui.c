@@ -357,7 +357,7 @@ gui_read_child_pipe(int fd)
     if (bytes_read < 0)
 	return GUI_CHILD_IO_ERROR;
     buffer[bytes_read] = NUL;
-    if (strcmp(buffer, "ok") == 0)
+    if (STRCMP(buffer, "ok") == 0)
 	return GUI_CHILD_OK;
     return GUI_CHILD_FAILED;
 }
@@ -488,6 +488,7 @@ gui_init_check(void)
 gui_init(void)
 {
     win_T	*wp;
+    tabpage_T	*tp;
     static int	recursive = 0;
 
     /*
@@ -695,7 +696,7 @@ gui_init(void)
     gui_reset_scroll_region();
 
     // Create initial scrollbars
-    FOR_ALL_WINDOWS(wp)
+    FOR_ALL_TAB_WINDOWS(tp, wp)
     {
 	gui_create_scrollbar(&wp->w_scrollbars[SBAR_LEFT], SBAR_LEFT, wp);
 	gui_create_scrollbar(&wp->w_scrollbars[SBAR_RIGHT], SBAR_RIGHT, wp);
@@ -2329,6 +2330,8 @@ gui_outstr_nowrap(
 # endif
        )
     {
+	size_t	slen = 2;		    // 2 spaces by default
+
 # ifdef FEAT_NETBEANS_INTG
 	if (*s == MULTISIGN_BYTE)
 	    multi_sign = TRUE;
@@ -2337,14 +2340,16 @@ gui_outstr_nowrap(
 	if (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u' &&
 		(curwin->w_p_nu || curwin->w_p_rnu))
 	{
-	    sprintf((char *)extra, "%*c ", number_width(curwin), ' ');
-	    s = extra;
+	    int	n = number_width(curwin);
+
+	    slen = MIN(n, (int)sizeof(extra) - 1);
 	}
-	else
-	    s = (char_u *)"  ";
+	vim_memset(extra, ' ', slen);
+	extra[slen] = NUL;
+	s = extra;
 	if (len == 1 && col > 0)
 	    --col;
-	len = (int)STRLEN(s);
+	len = (int)slen;
 	if (len > 2)
 	    // right align sign icon in the number column
 	    signcol = col + len - 3;
@@ -3755,10 +3760,6 @@ get_tabline_label(
     tabpage_T	*tp,
     int		tooltip)	// TRUE: get tooltip
 {
-    int		modified = FALSE;
-    char_u	buf[40];
-    int		wincount;
-    win_T	*wp;
     char_u	**opt;
 
     // Use 'guitablabel' or 'guitabtooltip' if it's set.
@@ -3804,26 +3805,42 @@ get_tabline_label(
     // use a default label.
     if (**opt == NUL || *NameBuff == NUL)
     {
+	win_T	*wp;
+	int	wincount = 0;
+	int	modified = FALSE;
+
 	// Get the buffer name into NameBuff[] and shorten it.
 	get_trans_bufname(tp == curtab ? curbuf : tp->tp_curwin->w_buffer);
 	if (!tooltip)
 	    shorten_dir(NameBuff);
 
-	wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
-	for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
+	FOR_ALL_WINDOWS_IN_TAB(tp, wp)
+	{
+	    ++wincount;
 	    if (bufIsChanged(wp->w_buffer))
 		modified = TRUE;
+	}
+
 	if (modified || wincount > 1)
 	{
+	    char_u  buf[40] = "+ ";		// Tentatively assume modified only
+	    size_t  buflen = 2;
+	    size_t  NameBufflen = STRLEN(NameBuff);
+
 	    if (wincount > 1)
-		vim_snprintf((char *)buf, sizeof(buf), "%d", wincount);
-	    else
-		buf[0] = NUL;
-	    if (modified)
-		STRCAT(buf, "+");
-	    STRCAT(buf, " ");
-	    STRMOVE(NameBuff + STRLEN(buf), NameBuff);
-	    mch_memmove(NameBuff, buf, STRLEN(buf));
+		buflen = vim_snprintf_safelen(
+		    (char *)buf,
+		    sizeof(buf),
+		    "%d%s ",
+		    wincount,
+		    modified ? "+" : "");
+
+	    // Make sure resulting NameBuff will not exceed its bounds.
+	    if (NameBufflen + buflen < MAXPATHL)
+	    {
+		mch_memmove(NameBuff + buflen, NameBuff, NameBufflen + 1);	// +1 for NUL
+		mch_memmove(NameBuff, buf, buflen);
+	    }
 	}
     }
 }
@@ -4478,13 +4495,15 @@ gui_do_scroll(void)
     /*
      * Don't call updateWindow() when nothing has changed (it will overwrite
      * the status line!).
+     *
+     * Check for ScreenLines, because in ex-mode, we don't have a valid display.
      */
-    if (old_topline != wp->w_topline
+    if (ScreenLines != NULL && (old_topline != wp->w_topline
 	    || wp->w_redr_type != 0
 #ifdef FEAT_DIFF
 	    || old_topfill != wp->w_topfill
 #endif
-	    )
+	    ))
     {
 	int type = UPD_VALID;
 
@@ -4887,6 +4906,7 @@ xy2win(int x, int y, mouse_find_T popup)
 
     row = Y_2_ROW(y);
     col = X_2_COL(x);
+
     if (row < 0 || col < 0)		// before first window
 	return NULL;
     wp = mouse_find_win(&row, &col, popup);
@@ -5155,10 +5175,11 @@ get_find_dialog_text(
 	text = arg;
     if (text != NULL)
     {
-	text = vim_strsave(text);
+	int len = (int)STRLEN(text);
+
+	text = vim_strnsave(text, len);
 	if (text != NULL)
 	{
-	    int len = (int)STRLEN(text);
 	    int i;
 
 	    // Remove "\V"
@@ -5286,7 +5307,7 @@ gui_do_findrepl(
 
 		    del_bytes((long)(regmatch.endp[0] - regmatch.startp[0]),
 								FALSE, FALSE);
-		    ins_str(repl_text);
+		    ins_str(repl_text, STRLEN(repl_text));
 		}
 	    }
 	    else

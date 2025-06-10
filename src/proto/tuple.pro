@@ -1,0 +1,34 @@
+/* tuple.c */
+tuple_T *tuple_alloc(void);
+tuple_T *tuple_alloc_with_items(int count);
+void tuple_set_item(tuple_T *tuple, int idx, typval_T *tv);
+int rettv_tuple_alloc(typval_T *rettv);
+void rettv_tuple_set(typval_T *rettv, tuple_T *tuple);
+int rettv_tuple_set_with_items(typval_T *rettv, int count);
+void tuple_unref(tuple_T *tuple);
+int tuple_free_nonref(int copyID);
+void tuple_free_items(int copyID);
+void tuple_free(tuple_T *tuple);
+long tuple_len(tuple_T *tuple);
+int tuple_equal(tuple_T *t1, tuple_T *t2, int ic);
+typval_T *tuple_find(tuple_T *tuple, long n);
+int tuple_append_tv(tuple_T *tuple, typval_T *tv);
+int tuple_concat(tuple_T *t1, tuple_T *t2, typval_T *tv);
+tuple_T *tuple_slice(tuple_T *tuple, long n1, long n2);
+int tuple_slice_or_index(tuple_T *tuple, int range, varnumber_T n1_arg, varnumber_T n2_arg, int exclusive, typval_T *rettv, int verbose);
+tuple_T *tuple_copy(tuple_T *orig, int deep, int top, int copyID);
+int eval_tuple(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error);
+void tuple_lock(tuple_T *tuple, int deep, int lock, int check_refcount);
+int tuple_join(garray_T *gap, tuple_T *tuple, char_u *sep, int echo_style, int restore_copyID, int copyID);
+char_u *tuple2string(typval_T *tv, int copyID, int restore_copyID);
+void tuple_foreach(tuple_T *tuple, filtermap_T filtermap, typval_T *expr);
+long tuple_count(tuple_T *tuple, typval_T *needle, long idx, int ic);
+void tuple2items(typval_T *argvars, typval_T *rettv);
+int index_tuple(tuple_T *tuple, typval_T *tv, int start_idx, int ic);
+int indexof_tuple(tuple_T *tuple, long startidx, typval_T *expr);
+varnumber_T tuple_max_min(tuple_T *tuple, int domax, int *error);
+void tuple_repeat(tuple_T *tuple, int n, typval_T *rettv);
+void tuple_reverse(tuple_T *tuple, typval_T *rettv);
+void tuple_reduce(typval_T *argvars, typval_T *expr, typval_T *rettv);
+int check_tuples_addable(type_T *type1, type_T *type2);
+/* vim: set ft=c : */

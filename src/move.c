@@ -201,7 +201,7 @@ redraw_for_cursorcolumn(win_T *wp)
  * Returns the number of columns of overlap with buffer text, excluding the
  * extra padding on the ledge.
  */
-     int
+    int
 sms_marker_overlap(win_T *wp, int extra2)
 {
     if (extra2 == -1)
@@ -1621,7 +1621,7 @@ f_virtcol2col(typval_T *argvars UNUSED, typval_T *rettv)
  */
 static void cursor_correct_sms(void)
 {
-    if (!curwin->w_p_sms ||!curwin->w_p_wrap
+    if (!curwin->w_p_sms || !curwin->w_p_wrap
 	|| curwin->w_cursor.lnum != curwin->w_topline)
 	return;
 
@@ -1631,8 +1631,7 @@ static void cursor_correct_sms(void)
     int	    so_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
     int	    space_cols = (curwin->w_height - 1) * width2;
     int	    overlap, top, bot;
-    int	    size = so == 0 ? 0 : win_linetabsize(curwin, curwin->w_topline,
-				    ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+    int	    size = so == 0 ? 0 : linetabsize_eol(curwin, curwin->w_topline);
 
     if (curwin->w_topline == 1 && curwin->w_skipcol == 0)
 	so_cols = 0;               // Ignore 'scrolloff' at top of buffer.
@@ -1645,10 +1644,10 @@ static void cursor_correct_sms(void)
     if (so_cols >= width1 && so_cols > size)
 	so_cols -= width1;
 
-    // If there is no marker or we have non-zero scrolloff, just ignore it.
-    overlap = (curwin->w_skipcol == 0 || so_cols != 0) ? 0
-					    : sms_marker_overlap(curwin, -1);
-    top = curwin->w_skipcol + overlap + so_cols;
+    overlap = curwin->w_skipcol == 0 ? 0
+			: sms_marker_overlap(curwin, curwin->w_width - width2);
+    // If we have non-zero scrolloff, ignore marker overlap.
+    top = curwin->w_skipcol + (so_cols != 0 ? so_cols : overlap);
     bot = curwin->w_skipcol + width1 + (curwin->w_height - 1) * width2
 								    - so_cols;
     validate_virtcol();
@@ -1667,12 +1666,28 @@ static void cursor_correct_sms(void)
 
     if (col != curwin->w_virtcol)
     {
+	int rc;
+
 	curwin->w_curswant = col;
-	coladvance(curwin->w_curswant);
+	rc = coladvance(curwin->w_curswant);
 	// validate_virtcol() marked various things as valid, but after
 	// moving the cursor they need to be recomputed
 	curwin->w_valid &=
 	    ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT|VALID_CROW|VALID_VIRTCOL);
+	if (rc == FAIL && curwin->w_skipcol > 0
+		&& curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
+	{
+	    validate_virtcol();
+	    if (curwin->w_virtcol < curwin->w_skipcol + overlap)
+	    {
+		// Cursor still not visible: move it to the next line instead.
+		curwin->w_cursor.lnum++;
+		curwin->w_cursor.col = 0;
+		curwin->w_cursor.coladd = 0;
+		curwin->w_curswant = 0;
+		curwin->w_valid &= ~VALID_VIRTCOL;
+	    }
+	}
     }
 }
 
@@ -1813,8 +1828,7 @@ scrolldown(
 #endif
 		if (do_sms)
 		{
-		    int size = win_linetabsize(curwin, curwin->w_topline,
-				   ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+		    int size = linetabsize_eol(curwin, curwin->w_topline);
 		    if (size > width1)
 		    {
 			curwin->w_skipcol = width1;
@@ -1911,7 +1925,7 @@ scrollup(
 	colnr_T	    prev_skipcol = curwin->w_skipcol;
 
 	if (do_sms)
-	    size = linetabsize(curwin, curwin->w_topline);
+	    size = linetabsize_eol(curwin, curwin->w_topline);
 
 	// diff mode: first consume "topfill"
 	// 'smoothscroll': increase "w_skipcol" until it goes over the end of
@@ -1966,7 +1980,7 @@ scrollup(
 # endif
 		    curwin->w_skipcol = 0;
 		    if (todo > 1 && do_sms)
-			size = linetabsize(curwin, curwin->w_topline);
+			size = linetabsize_eol(curwin, curwin->w_topline);
 		}
 	    }
 	}
@@ -2043,7 +2057,7 @@ adjust_skipcol(void)
     }
 
     validate_virtcol();
-    overlap = sms_marker_overlap(curwin, -1);
+    overlap = sms_marker_overlap(curwin, curwin->w_width - width2);
     while (curwin->w_skipcol > 0
 	    && curwin->w_virtcol < curwin->w_skipcol + overlap + scrolloff_cols)
     {
@@ -2066,8 +2080,7 @@ adjust_skipcol(void)
     // Avoid adjusting for 'scrolloff' beyond the text line height.
     if (scrolloff_cols > 0)
     {
-	int size = win_linetabsize(curwin, curwin->w_topline,
-				    ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+	int size = linetabsize_eol(curwin, curwin->w_topline);
 	size = width1 + width2 * ((size - width1 + width2 - 1) / width2);
 	while (col > size)
 	    col -= width2;
@@ -3107,6 +3120,7 @@ cursor_correct(void)
 			    ~(VALID_WROW|VALID_WCOL|VALID_CHEIGHT|VALID_CROW);
 	}
     }
+    check_cursor_moved(curwin);
     curwin->w_valid |= VALID_TOPLINE;
 }
 
@@ -3198,12 +3212,15 @@ static int scroll_with_sms(int dir, long count, long *curscount)
 	// extra for scrolling backward so that consuming skipcol is symmetric.
 	if (labs(curwin->w_topline - prev_topline) > (dir == BACKWARD))
 	    fixdir = dir * -1;
-	while (curwin->w_skipcol > 0
-	    && curwin->w_topline < curbuf->b_ml.ml_line_count)
-	{
-	    scroll_redraw(fixdir == FORWARD, 1);
-	    *curscount += (fixdir == dir ? 1 : -1);
-	}
+
+	int width1 = curwin->w_width - curwin_col_off();
+	int width2 = width1 + curwin_col_off2();
+	count = 1 + (curwin->w_skipcol - width1 - 1) / width2;
+	if (fixdir == FORWARD)
+	    count = 1 + (linetabsize_eol(curwin, curwin->w_topline)
+			    - curwin->w_skipcol - width1 + width2 - 1) / width2;
+	scroll_redraw(fixdir == FORWARD, count);
+	*curscount += count * (fixdir == dir ? 1 : -1);
     }
     curwin->w_p_sms = prev_sms;
 
@@ -3285,8 +3302,11 @@ pagescroll(int dir, long count, int half)
 	{
 	    // Place cursor at top or bottom of window.
 	    validate_botline();
-	    curwin->w_cursor.lnum = (dir == FORWARD ? curwin->w_topline
+	    linenr_T lnum = (dir == FORWARD ? curwin->w_topline
 						    : curwin->w_botline - 1);
+	    // In silent Ex mode the value of w_botline - 1 may be 0,
+	    // but cursor lnum needs to be at least 1.
+	    curwin->w_cursor.lnum = MAX(lnum, 1);
 	}
     }
 

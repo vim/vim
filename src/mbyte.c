@@ -828,8 +828,8 @@ remove_bom(char_u *s)
  * Get class of pointer:
  * 0 for blank or NUL
  * 1 for punctuation
- * 2 for an (ASCII) word character
- * >2 for other word characters
+ * 2 for an alphanumeric word character
+ * >2 for other word characters, including CJK and emoji
  */
     int
 mb_get_class(char_u *p)
@@ -2104,6 +2104,17 @@ utf_ptr2len(char_u *p)
 utf_byte2len(int b)
 {
     return utf8len_tab[b];
+}
+
+/*
+ * Return length of UTF-8 character, obtained from the first byte.
+ * "b" must be between 0 and 255!
+ * Returns 0 for an invalid first byte value.
+ */
+    int
+utf_byte2len_zero(int b)
+{
+    return utf8len_tab_zero[b];
 }
 
 /*
@@ -4344,7 +4355,7 @@ theend:
     convert_setup(&vimconv, NULL, NULL);
 }
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_SPELL) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if string "s" is a valid utf-8 string.
  * When "end" is NULL stop at the first NUL.  Otherwise stop at "end".

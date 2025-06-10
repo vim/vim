@@ -18,17 +18,46 @@ allowable length of strings.  For example:
  drop-down lists on the .vimrc page - 55 characters.
 Characters in this case mean characters of the English alphabet.
 
-If you do not yet have a translated "uganda.txt" file and a main "README.txt"
+Once the message translation file is ready, it must be included in the
+"gvim.nsi" file.
+Find the line "# Include support for other languages:" in the file "gvim.nsi"
+and specify the name of the file with your translation below the line
+!if ${HAVE_MULTI_LANG}, similar to the entries already there. File names are
+specified in alphabetical order.
+
+If you do not yet have a translated "LICENSE" file and/or a main "README.txt"
 file, set the following values:
 
 for the license file
-LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
+LicenseLangString page_lic_file 0 "..\lang\LICENSE.nsis.txt"
 
 for the readme.txt file
 LangString vim_readme_file 0 "README.txt"
 
 Once you have the translations of these files, then set the values for these
 variables similarly to what is done in the other translation files.
-Also add the appropriate entries to the "gvim.nsi" file as done for other
-languages.
+Translation files should be located in the "lang" subdirectory of the root
+directory. The name of the files is as follows: "README.xx.txt", where xx is the
+language code according to ISO639.
 
+
+There are two ways to test the installer in different languages:
+
+1. Find and uncomment the "!define MUI_LANGDLL_ALWAYSSHOW" line in the
+   "gvim.nsi" file and rebuild the installer.
+   Now every time you run it, you will see a dialog box with the possibility to
+   select the language of the installer.
+
+2. If the Vim editor is already installed in your system, delete the
+   "Installer Language" parameter in the Windows registry under
+   "HKEY_CURRENT_USER\Software\Vim".
+   Or you can create a file "NoLangInstallerVim.reg" with the following content:
+
+	Windows Registry Editor Version 5.00
+
+	[HKEY_CURRENT_USER\Software\Vim]
+	"Installer Language"=-
+
+   and apply it by double-clicking on it.
+   After these steps, when you start the installer, a window with the installer
+   language selection will also be displayed. 

@@ -997,6 +997,7 @@ static digr_T digraphdefault[] = {
 	{'?', '=', 0x2245},
 	{'?', '2', 0x2248},
 	{'=', '?', 0x224c},
+	{'.', '=', 0x2250},
 	{'H', 'I', 0x2253},
 	{'!', '=', 0x2260},
 	{'=', '3', 0x2261},
@@ -2115,18 +2116,15 @@ f_digraph_getlist(typval_T *argvars, typval_T *rettv)
 # ifdef FEAT_DIGRAPHS
     int     flag_list_all;
 
-    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+    if (check_for_opt_bool_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type == VAR_UNKNOWN)
 	flag_list_all = FALSE;
     else
     {
-	int	    error = FALSE;
-	varnumber_T flag = tv_get_number_chk(&argvars[0], &error);
+	varnumber_T flag = tv_get_bool(&argvars[0]);
 
-	if (error)
-	    return;
 	flag_list_all = flag ? TRUE : FALSE;
     }
 

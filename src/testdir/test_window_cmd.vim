@@ -68,7 +68,7 @@ func Test_cmdheight_not_changed()
 
   tabonly!
   only
-  set winminwidth& cmdheight&
+  set winminheight& cmdheight&
   augroup Maximize
     au!
   augroup END
@@ -1258,6 +1258,7 @@ func Run_noroom_for_newwindow_test(dir_arg)
 
     " Preview window
     call assert_fails(dir .. 'pedit Xnorfile2', 'E36:')
+    call assert_fails(dir .. 'pbuffer', 'E36:')
     call setline(1, 'abc')
     call assert_fails(dir .. 'psearch abc', 'E36:')
   endif
@@ -1975,6 +1976,18 @@ func Test_splitkeep_misc()
 
   %bwipeout!
   set splitbelow&
+  set splitkeep&
+endfunc
+
+func Test_splitkeep_screen_cursor_pos()
+  new
+  set splitkeep=screen
+  call setline(1, ["longer than the last", "shorter"])
+  norm! $
+  wincmd s
+  close
+  call assert_equal([0, 1, 20, 0], getpos('.'))
+  %bwipeout!
   set splitkeep&
 endfunc
 

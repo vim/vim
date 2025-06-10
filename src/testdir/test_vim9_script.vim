@@ -595,6 +595,27 @@ def Test_autocommand_block()
   unlet g:otherVar
 enddef
 
+def Test_block_in_a_string()
+  var lines =<< trim END
+    vim9script
+
+    def Foo(): string
+      var x = ' => { # abc'
+      return x
+    enddef
+
+    assert_equal(' => { # abc', Foo())
+
+    def Bar(): string
+      var x = " => { # abc"
+      return x
+    enddef
+
+    assert_equal(" => { # abc", Bar())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 func g:NoSuchFunc()
   echo 'none'
 endfunc
@@ -924,6 +945,47 @@ def Test_try_catch_throw()
       endif
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # test that the v:exception stacks are correctly restored
+  try
+    try
+      throw 101
+    catch
+      assert_equal('101', v:exception)
+      try
+      catch
+      finally
+        assert_equal('101', v:exception) # finally shouldn't clear if it doesn't own it
+      endtry
+      assert_equal('101', v:exception)
+      throw 102 # Re-throw inside catch block
+    endtry
+  catch
+    assert_equal('102', v:exception)
+    try
+      throw 103 # throw inside nested exception stack
+    catch
+      assert_equal('103', v:exception)
+    endtry
+    assert_equal('102', v:exception) # restored stack
+  finally
+    assert_equal('', v:exception) # finally should clear if it owns the exception
+  endtry
+  try
+    try
+      throw 104
+    catch
+      try
+        exec 'nonexistent_cmd' # normal exception inside nested exception stack
+      catch
+        assert_match('E492:', v:exception)
+      endtry
+      eval [][0] # normal exception inside catch block
+    endtry
+  catch
+    assert_match('E684:', v:exception)
+  endtry
+  assert_equal('', v:exception) # All exceptions properly popped
 enddef
 
 def Test_unreachable_after()
@@ -1164,6 +1226,7 @@ def Test_nocatch_return_in_try()
 enddef
 
 def Test_cnext_works_in_catch()
+  CheckFeature quickfix
   var lines =<< trim END
       vim9script
       au BufEnter * eval 1 + 2
@@ -1396,11 +1459,23 @@ def Test_throw_line_number()
     eval 2 + 2
     throw 'exception'
   enddef
+  def Func2()
+    eval 1 + 1
+    eval 2 + 2
+    eval 3 + 3
+    throw 'exception'
+  enddef
   try
     Func()
   catch /exception/
+    try
+      Func2()
+    catch /exception/
+      assert_match('line 4', v:throwpoint)
+    endtry
     assert_match('line 3', v:throwpoint)
   endtry
+  assert_match('', v:throwpoint)
 enddef
 
 
@@ -1467,6 +1542,7 @@ def Test_abort_after_error()
 enddef
 
 def Test_cexpr_vimscript()
+  CheckFeature quickfix
   # only checks line continuation
   set errorformat=File\ %f\ line\ %l
   var lines =<< trim END
@@ -2038,6 +2114,12 @@ def Test_if_const_expr()
       .. 'ccc'
       )->setline(1)
   endif
+
+  if 1
+    # do nothing
+  else
+    var [a] = [10]
+  endif
 enddef
 
 def Test_if_const_expr_fails()
@@ -2234,6 +2316,15 @@ def Test_echowindow_cmd()
 
   # output goes in message window
   popup_clear()
+
+  # Invalid range
+  var lines =<< trim END
+    def Foo()
+      :$echowindow "foo"
+    enddef
+    defcompile
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E16: Invalid range')
 enddef
 
 def Test_for_outside_of_function()
@@ -3902,6 +3993,7 @@ func Test_vim9script_not_global()
 endfunc
 
 def Test_vim9_copen()
+  CheckFeature quickfix
   # this was giving an error for setting w:quickfix_title
   copen
   quit
@@ -3961,6 +4053,22 @@ def Test_error_in_autoload_script()
   v9.CheckScriptSuccess(lines)
 
   &rtp = save_rtp
+enddef
+
+" Test for sourcing a Vim9 script with a function script variable and "noclear".
+" The type for the variable is dynamically allocated and should be freed.
+def Test_source_func_script_var()
+  var lines =<< trim END
+    vim9script noclear
+    var Fn: func(list<any>): number
+    Fn = function('min')
+    assert_equal(2, Fn([4, 2]))
+  END
+  new
+  setline(1, lines)
+  source
+  source
+  bw!
 enddef
 
 def Test_error_in_autoload_script_foldexpr()
@@ -4066,6 +4174,7 @@ func Test_no_redraw_when_restoring_cpo()
 endfunc
 
 def Run_test_no_redraw_when_restoring_cpo()
+  CheckScreendump
   var lines =<< trim END
     vim9script
     export def Func()
@@ -4097,6 +4206,7 @@ func Test_reject_declaration()
 endfunc
 
 def Run_test_reject_declaration()
+  CheckScreendump
   var buf = g:RunVimInTerminal('', {'rows': 6})
   term_sendkeys(buf, ":vim9cmd var x: number\<CR>")
   g:VerifyScreenDump(buf, 'Test_vim9_reject_declaration_1', {})
@@ -4723,11 +4833,13 @@ def Test_profile_with_lambda()
 enddef
 
 func Test_misplaced_type()
+  CheckScreendump
   CheckRunVimInTerminal
   call Run_Test_misplaced_type()
 endfunc
 
 def Run_Test_misplaced_type()
+  CheckScreendump
   writefile(['let g:somevar = "asdf"'], 'XTest_misplaced_type', 'D')
   var buf = g:RunVimInTerminal('-S XTest_misplaced_type', {'rows': 6})
   term_sendkeys(buf, ":vim9cmd echo islocked('somevar: string')\<CR>")
@@ -5088,7 +5200,7 @@ def Test_null_values()
       [null_dict, 1, '{}', 4, 'dict<any>'],
       [null_function, 1, "function('')", 2, 'func(...): unknown'],
       [null_list, 1, '[]', 3, 'list<any>'],
-      [null_object, 1, 'object of [unknown]', 13, 'object<Unknown>'],
+      [null_object, 1, 'object of [unknown]', 13, 'object<any>'],
       [null_partial, 1, "function('')", 2, 'func(...): unknown'],
       [null_string, 1, "''", 1, 'string']
     ]
@@ -5131,6 +5243,29 @@ def Test_unknown_type_in_typecast()
     var i: number = <number>true
   END
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got bool', 2)
+enddef
+
+" Test for calling a function as a method with a list argument
+" This exercises some conditions in the assignment statement parsing code.
+def Test_method_call_with_list_arg()
+  var lines =<< trim END
+    vim9script
+
+    def Foo(l: list<number>)
+      g:save_list = l
+    enddef
+
+    def Bar()
+      var a = 10
+      var b = 20
+      [a, b]->Foo()
+    enddef
+
+    g:save_list = []
+    Bar()
+    assert_equal([10, 20], g:save_list)
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Keep this last, it messes up highlighting.

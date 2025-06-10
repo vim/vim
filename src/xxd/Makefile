@@ -5,3 +5,4 @@ xxd: xxd.c
 
 clean:
 	rm -f xxd xxd.o
+	rm -rf xxd.dSYM

@@ -52,6 +52,11 @@
 # include <perliol.h>
 #endif
 
+#if defined(DYNAMIC_PERL) && ((PERL_REVISION == 5) && (PERL_VERSION >= 38))
+// Copy/pasted from perl.h
+const char PL_memory_wrap[] = "panic: memory wrap";
+#endif
+
 /* Workaround for perl < 5.8.7 */
 #ifndef PERLIO_FUNCS_DECL
 # ifdef PERLIO_FUNCS_CONST
@@ -192,7 +197,7 @@ typedef int perl_key;
 #  define Perl_croak_xs_usage dll_Perl_croak_xs_usage
 # endif
 # ifndef PROTO
-#  ifdef PERL_IMPLICIT_CONTEXT
+#  if defined(PERL_IMPLICIT_CONTEXT)
 #   define Perl_croak_nocontext dll_Perl_croak_nocontext
 #  endif
 #  define Perl_call_argv dll_Perl_call_argv
@@ -352,7 +357,7 @@ static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const para
 						    __attribute__noreturn__;
 #  endif
 # endif
-# ifdef PERL_IMPLICIT_CONTEXT
+# if defined(PERL_IMPLICIT_CONTEXT)
 static void (*Perl_croak_nocontext)(const char*, ...) __attribute__noreturn__;
 # endif
 static I32 (*Perl_dowantarray)(pTHX);
@@ -633,9 +638,9 @@ static struct {
 #  ifdef USE_ITHREADS
     {"PL_thr_key", (PERL_PROC*)&dll_PL_thr_key},
 #  endif
-# ifdef PERL_USE_THREAD_LOCAL
+#  ifdef PERL_USE_THREAD_LOCAL
     {"PL_current_context", (PERL_PROC*)&dll_PL_current_context},
-# endif
+#  endif
 # else
     {"Perl_Idefgv_ptr", (PERL_PROC*)&Perl_Idefgv_ptr},
     {"Perl_Ierrgv_ptr", (PERL_PROC*)&Perl_Ierrgv_ptr},
@@ -1474,6 +1479,19 @@ vim_IOLayer_init(void)
 // would cause linking errors in dynamic builds as we don't link against Perl
 // during build time. Manually fix it here by redirecting these functions
 // towards the dynamically loaded version.
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 38)
+#  undef Perl_croak_nocontext
+void Perl_croak_nocontext(const char *pat, ...)
+{
+    dTHX;
+    va_list args;
+    va_start(args, pat);
+    (*dll_Perl_croak_nocontext)(pat, &args);
+    NOT_REACHED; /* NOTREACHED */
+    va_end(args);
+}
+# endif
 
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
 #  undef Perl_sv_free2

@@ -1747,6 +1747,9 @@ nb_do_cmd(
 	    {
 		check_status(buf->bufp);
 		redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+		redraw_tabpanel = TRUE;
+#endif
 		maketitle();
 		update_screen(0);
 	    }
@@ -2561,7 +2564,7 @@ set_ref_in_nb_channel(int copyID)
 
     tv.v_type = VAR_CHANNEL;
     tv.vval.v_channel = nb_channel;
-    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
+    abort = set_ref_in_item(&tv, copyID, NULL, NULL, NULL);
     return abort;
 }
 #endif

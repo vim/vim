@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 9.1.  Last change: 2024 Sep 08
+*windows.txt*   For Vim version 9.1.  Last change: 2025 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -968,8 +968,8 @@ A few peculiarities:
   trigger the ATTENTION and responding "A" for Abort, the preview window will
   become empty.
 
-						*:pta* *:ptag*
-:pta[g][!] [tagname]
+						*:pt* *:ptag*
+:pt[ag][!] [tagname]
 		Does ":tag[!] [tagname]" and shows the found tag in a
 		"Preview" window without changing the current buffer or cursor
 		position.  If a "Preview" window already exists, it is re-used
@@ -1005,6 +1005,16 @@ CTRL-W g }						*CTRL-W_g}*
 		it.  Make the new Preview window (if required) N high.  If N is
 		not given, 'previewheight' is used.
 
+							*:pb* *:pbuffer*
+:[N]pb[uffer][!] [+cmd] [N]
+		Edit buffer [N] from the buffer list in the preview window.
+		If [N] is not given, the current buffer remains being edited.
+		See |:buffer-!| for [!].  This will also edit a buffer that is
+		not in the buffer list, without setting the 'buflisted' flag.
+		The notation with single quotes does not work here,
+		`:pbuffer 12'345'` uses 12'345' as a buffer name.
+		Also see |+cmd|.
+
 							*:ped* *:pedit*
 :ped[it][!] [++opt] [+cmd] {file}
 		Edit {file} in the preview window.  The preview window is
@@ -1012,6 +1022,8 @@ CTRL-W g }						*CTRL-W_g}*
 		position isn't changed.  Useful example: >
 			:pedit +/fputc /usr/include/stdio.h
 <
+		Also see |++opt| and |+cmd|.
+
 							*:ps* *:psearch*
 :[range]ps[earch][!] [count] [/]pattern[/]
 		Works like |:ijump| but shows the found match in the preview
@@ -1269,7 +1281,7 @@ list of buffers. |unlisted-buffer|
 		[!].  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
 		The notation with single quotes does not work here,
-		`:buf 12'345'` uses 12'345 as a buffer name.
+		`:buf 12'345'` uses 12'345' as a buffer name.
 		Also see |+cmd|.
 
 :[N]b[uffer][!] [+cmd] {bufname}				*{bufname}*
@@ -1277,7 +1289,9 @@ list of buffers. |unlisted-buffer|
 		name also works, so long as it is unique in the list of
 		buffers.
 		Note that a buffer whose name is a number cannot be referenced
-		by that name; use the buffer number instead.
+		by that name; use the buffer number instead.  Same is true if
+		the buffer name starts with a `+`, it will be interpreted as
+		the start of a |+cmd|.
 		Insert a backslash before a space in a buffer name.
 		See |:buffer-!| for [!].
 		This will also edit a buffer that is not in the buffer list,

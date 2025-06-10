@@ -272,7 +272,7 @@ im_add_to_input(char_u *str, int len)
 	gui_mch_mousehide(TRUE);
 }
 
-     static void
+    static void
 im_preedit_window_set_position(void)
 {
     int x, y, width, height;

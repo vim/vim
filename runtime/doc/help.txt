@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 9.1.  Last change: 2024 May 27
+*help.txt*	For Vim version 9.1.  Last change: 2024 Dec 06
 
 			VIM - main help file
 									 k
@@ -180,6 +180,7 @@ Language support ~
 |hebrew.txt|	Hebrew language support and editing
 |russian.txt|	Russian language support and editing
 |hangulin.txt|	Hangul (Korean) input mode
+|vietnamese.txt|  Vietnamese language support and editing
 
 GUI ~
 |gui.txt|	Graphical User Interface (GUI)
@@ -232,6 +233,7 @@ Standard plugins ~
 |pi_paren.txt|     Highlight matching parens
 |pi_spec.txt|      Filetype plugin to work with rpm spec files
 |pi_tar.txt|       Tar file explorer
+|pi_tutor.txt|     Interactive tutorial for Vim
 |pi_vimball.txt|   Create a self-installing Vim script
 |pi_zip.txt|       Zip archive explorer
 

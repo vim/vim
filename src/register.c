@@ -198,6 +198,15 @@ valid_yank_reg(
 #endif
 							)
 	return TRUE;
+#ifndef FEAT_CLIPBOARD
+    // clipboard support not enabled in this build
+    else if (regname == '*' || regname == '+')
+    {
+	// Warn about missing clipboard support once
+	msg_warn_missing_clipboard();
+	return FALSE;
+    }
+#endif
     return FALSE;
 }
 
@@ -428,7 +437,7 @@ do_record(int c)
     static int
 stuff_yank(int regname, char_u *p)
 {
-    size_t	plen;
+    size_t  plen;
 
     // check for read-only register
     if (regname != 0 && !valid_yank_reg(regname, TRUE))
@@ -837,7 +846,7 @@ insert_reg(
 	{
 	    for (i = 0; i < y_current->y_size; ++i)
 	    {
-		if (regname == '-')
+		if (regname == '-' && y_current->y_type == MCHAR)
 		{
 		    int dir = BACKWARD;
 		    if ((State & REPLACE_FLAG) != 0)
@@ -858,11 +867,13 @@ insert_reg(
 		    do_put(regname, NULL, dir, 1L, PUT_CURSEND);
 		}
 		else
+		{
 		    stuffescaped(y_current->y_array[i].string, literally);
-		// Insert a newline between lines and after last line if
-		// y_type is MLINE.
-		if (y_current->y_type == MLINE || i < y_current->y_size - 1)
-		    stuffcharReadbuff('\n');
+		    // Insert a newline between lines and after last line if
+		    // y_type is MLINE.
+		    if (y_current->y_type == MLINE || i < y_current->y_size - 1)
+			stuffcharReadbuff('\n');
+		}
 	    }
 	}
     }
@@ -1173,10 +1184,12 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	return OK;
 
 #ifdef FEAT_CLIPBOARD
-    if (!clip_star.available && oap->regname == '*')
+    if ((!clip_star.available && oap->regname == '*') ||
+	(!clip_plus.available && oap->regname == '+'))
+    {
 	oap->regname = 0;
-    else if (!clip_plus.available && oap->regname == '+')
-	oap->regname = 0;
+	msg_warn_missing_clipboard();
+    }
 #endif
 
     if (!deleting)		    // op_delete() already set y_current
@@ -1363,6 +1376,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    curbuf->b_op_start.col = 0;
 	    curbuf->b_op_end.col = MAXCOL;
 	}
+	if (yanktype != MLINE && !oap->inclusive)
+	    // Exclude the end position.
+	    decl(&curbuf->b_op_end);
     }
 
 #ifdef FEAT_CLIPBOARD
@@ -2052,7 +2068,8 @@ do_put(
 	    else
 	    {
 		totlen = count * yanklen;
-		do {
+		do
+		{
 		    oldp = ml_get(lnum);
 		    oldlen = ml_get_len(lnum);
 		    if (lnum > start_lnum)
@@ -2238,7 +2255,7 @@ error:
 	    // Put the '] mark on the first byte of the last inserted character.
 	    // Correct the length for change in indent.
 	    curbuf->b_op_end.lnum = new_lnum;
-	    col = (colnr_T)y_array[y_size - 1].length - lendiff;
+	    col = MAX(0, (colnr_T)y_array[y_size - 1].length - lendiff);
 	    if (col > 1)
 	    {
 		curbuf->b_op_end.col = col - 1;
@@ -2365,6 +2382,7 @@ ex_display(exarg_T *eap)
     char_u	*arg = eap->arg;
     int		clen;
     int		type;
+    string_T	insert;
 
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
@@ -2409,7 +2427,8 @@ ex_display(exarg_T *eap)
 
 #ifdef FEAT_EVAL
 	if (name == MB_TOLOWER(redir_reg)
-		|| (redir_reg == '"' && yb == y_previous))
+		|| (vim_strchr((char_u *)"\"*+", redir_reg) != NULL &&
+		    (yb == y_previous || yb == &y_regs[0])))
 	    continue;	    // do not list register being written to, the
 			    // pointer can be freed
 #endif
@@ -2456,7 +2475,8 @@ ex_display(exarg_T *eap)
     }
 
     // display last inserted text
-    if ((p = get_last_insert()) != NULL
+    insert = get_last_insert();
+    if ((p = insert.string) != NULL
 		  && (arg == NULL || vim_strchr(arg, '.') != NULL) && !got_int
 						      && !message_filtered(p))
     {
@@ -3008,12 +3028,17 @@ str_to_reg(
 	{
 	    int charlen = 0;
 
-	    for (i = start; i < len; ++i)	// find the end of the line
+	    for (i = start; i < len;)	// find the end of the line
 	    {
 		if (str[i] == '\n')
 		    break;
 		if (type == MBLOCK)
 		    charlen += mb_ptr2cells_len(str + i, len - i);
+
+		if (str[i] == NUL)
+		    i++; // registers can have NUL chars
+		else
+		    i += mb_ptr2len_len(str + i, len - i);
 	    }
 	    i -= start;			// i is now length of line
 	    if (charlen > maxlen)

@@ -2,10 +2,12 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2023 Jun 29
+# Last Change:  2025 Apr 13
 #
-# Includes Changes from Vim:
+# Includes changes from The Vim Project:
 #  - 2024 Feb 09: Fix indent after literal Dict (A. Radev via #13966)
+#  - 2024 Nov 08: Fix indent after :silent! function (D. Kearns via #16009)
+#  - 2024 Dec 26: Fix indent for enums (Jim Zhou via #16293)
 
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
@@ -171,6 +173,7 @@ const MODIFIERS: dict<string> = {
     def: ['export', 'static'],
     class: ['export', 'abstract', 'export abstract'],
     interface: ['export'],
+    enum: ['export'],
 }
 #     ...
 #     class: ['export', 'abstract', 'export abstract'],
@@ -295,7 +298,7 @@ patterns = []
     endfor
 }
 
-const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]\s\+\)\=\%({patterns->join('\|')}\)\>\%(\s\|$\|!\)\@='
+const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]!\=\s\+\)\=\%({patterns->join('\|')}\)\>\%(\s\|$\|!\)\@='
 
 # STARTS_CURLY_BLOCK {{{3
 
@@ -633,6 +636,7 @@ def Offset( # {{{2
     elseif !line_A.isfirst
             && (line_B->EndsWithLineContinuation()
             || line_A.text =~ LINE_CONTINUATION_AT_SOL)
+            && !(line_B->EndsWithComma() && line_A.lnum->IsInside('EnumBlock'))
         return shiftwidth()
     endif
 
@@ -977,8 +981,10 @@ def SearchPair( # {{{3
     if end == '[' || end == ']'
         e = e->escape('[]')
     endif
+    # VIM_INDENT_TEST_TRACE_START
     return searchpair('\C' .. s, (middle == '' ? '' : '\C' .. middle), '\C' .. e,
         flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
+    # VIM_INDENT_TEST_TRACE_END dist#vimindent#SearchPair
 enddef
 
 def SearchPairStart( # {{{3
@@ -1050,6 +1056,22 @@ def ContinuesBelowBracketBlock( # {{{3
 enddef
 
 def IsInside(lnum: number, syntax: string): bool # {{{3
+    if syntax == 'EnumBlock'
+        var cur_pos = getpos('.')
+        cursor(lnum, 1)
+        var enum_pos = search('^\C\s*\%(export\s\)\=\s*enum\s\+\S\+', 'bnW')
+        var endenum_pos = search('^\C\s*endenum\>', 'bnW')
+        setpos('.', cur_pos)
+
+        if enum_pos == 0 && endenum_pos == 0
+            return false
+        endif
+        if (enum_pos > 0 && (endenum_pos == 0 || enum_pos > endenum_pos))
+            return true
+        endif
+        return false
+    endif
+
     if !exists('b:vimindent')
             || !b:vimindent->has_key($'is_{syntax}')
         return false
@@ -1248,7 +1270,9 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
 
     var pos: list<number> = getcurpos()
     cursor(line.lnum, 1)
+    # VIM_INDENT_TEST_TRACE_START
     var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
+    # VIM_INDENT_TEST_TRACE_END dist#vimindent#NonCommentedMatch
     setpos('.', pos)
     return match_lnum > 0
 enddef

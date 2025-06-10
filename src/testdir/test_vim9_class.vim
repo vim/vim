@@ -544,7 +544,7 @@ def Test_using_null_class()
   var lines =<< trim END
     @_ = null_class.member
   END
-  v9.CheckDefExecAndScriptFailure(lines, ['E715: Dictionary required', 'E1363: Incomplete type'])
+  v9.CheckDefExecAndScriptFailure(lines, ['E1395: Using a null class', 'E1363: Incomplete type'])
 
   # Test for using a null class as a value
   lines =<< trim END
@@ -564,7 +564,7 @@ def Test_using_null_class()
   lines =<< trim END
     vim9script
     assert_equal(12, type(null_class))
-    assert_equal('class<Unknown>', typename(null_class))
+    assert_equal('class<any>', typename(null_class))
   END
   v9.CheckSourceSuccess(lines)
 enddef
@@ -643,7 +643,6 @@ def Test_object_not_set()
   END
   v9.CheckSourceFailure(lines, 'E1360: Using a null object', 1)
 
-  # TODO: this should not give an error but be handled at runtime
   lines =<< trim END
     vim9script
 
@@ -660,7 +659,7 @@ def Test_object_not_set()
     enddef
     Func()
   END
-  v9.CheckSourceFailure(lines, 'E1363: Incomplete type', 1)
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 1)
 
   # Reference a object variable through a null class object which is stored in a
   # variable of type "any".
@@ -710,7 +709,7 @@ def Test_null_object_assign_compare()
     def F(): any
       return nullo
     enddef
-    assert_equal('object<Unknown>', typename(F()))
+    assert_equal('object<any>', typename(F()))
 
     var o0 = F()
     assert_true(o0 == null_object)
@@ -784,7 +783,7 @@ def Test_member_any_used_as_object()
     vim9script
 
     class Inner
-      var value: number = 0
+      public var value: number = 0
     endclass
 
     class Outer
@@ -1922,6 +1921,21 @@ def Test_class_member()
   END
   v9.CheckSourceFailure(lines, "E1004: White space required before and after '='", 3)
 
+  # Space is not allowed before the object member variable name
+  lines =<< trim END
+    vim9script
+    class A
+      var n: number = 10
+    endclass
+
+    def Fn()
+      var a = A.new()
+      var y = a. n
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, "E1202: No white space allowed after '.': . n", 2)
+
   # Access a non-existing member
   lines =<< trim END
     vim9script
@@ -2385,6 +2399,22 @@ def Test_interface_basics()
     endinterface
   END
   v9.CheckSourceFailure(lines, 'E1345: Not a valid command in an interface: return 5', 6)
+
+  # Test for "interface" cannot be abbreviated
+  lines =<< trim END
+    vim9script
+    inte Something
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: inte Something', 2)
+
+  # Test for "endinterface" cannot be abbreviated
+  lines =<< trim END
+    vim9script
+    interface Something
+    endin
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: endin', 3)
 
   # Additional commands after "interface name"
   lines =<< trim END
@@ -3045,27 +3075,6 @@ def Test_class_extends()
 
   lines =<< trim END
     vim9script
-    class Base
-      var name: string
-      def ToString(): string
-        return this.name
-      enddef
-    endclass
-
-    class Child extends Base
-      var age: number
-      def ToString(): string
-        return super.ToString() .. ': ' .. this.age
-      enddef
-    endclass
-
-    var o = Child.new('John', 42)
-    assert_equal('John: 42', o.ToString())
-  END
-  v9.CheckSourceSuccess(lines)
-
-  lines =<< trim END
-    vim9script
     class Child
       var age: number
       def ToString(): number
@@ -3077,49 +3086,6 @@ def Test_class_extends()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: ToString', 9)
-
-  lines =<< trim END
-    vim9script
-    class Child
-      var age: number
-      def ToString(): string
-        return super .ToString() .. ': ' .. this.age
-      enddef
-    endclass
-    var o = Child.new(42)
-    echo o.ToString()
-  END
-  v9.CheckSourceFailure(lines, 'E1356: "super" must be followed by a dot', 1)
-
-  lines =<< trim END
-    vim9script
-    class Base
-      var name: string
-      def ToString(): string
-        return this.name
-      enddef
-    endclass
-
-    var age = 42
-    def ToString(): string
-      return super.ToString() .. ': ' .. age
-    enddef
-    echo ToString()
-  END
-  v9.CheckSourceFailure(lines, 'E1357: Using "super" not in a class method', 1)
-
-  lines =<< trim END
-    vim9script
-    class Child
-      var age: number
-      def ToString(): string
-        return super.ToString() .. ': ' .. this.age
-      enddef
-    endclass
-    var o = Child.new(42)
-    echo o.ToString()
-  END
-  v9.CheckSourceFailure(lines, 'E1358: Using "super" not in a child class', 1)
 
   lines =<< trim END
     vim9script
@@ -3228,45 +3194,24 @@ def Test_using_base_class()
   END
   v9.CheckSourceSuccess(lines)
   unlet g:result
-
-  # Using super, Child invokes Base method which has optional arg. #12471
-  lines =<< trim END
-    vim9script
-
-    class Base
-      var success: bool = false
-      def Method(arg = 0)
-        this.success = true
-      enddef
-    endclass
-
-    class Child extends Base
-      def new()
-        super.Method()
-      enddef
-    endclass
-
-    var obj = Child.new()
-    assert_equal(true, obj.success)
-  END
-  v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using a method from the super class
 def Test_super_dispatch()
   # See #15448 and #15463
   var lines =<< trim END
     vim9script
 
     class A
-        def String(): string
-            return 'A'
-        enddef
+      def String(): string
+        return 'A'
+      enddef
     endclass
 
     class B extends A
-        def String(): string
-            return super.String()
-        enddef
+      def String(): string
+        return super.String()
+      enddef
     endclass
 
     class C extends B
@@ -3280,30 +3225,30 @@ def Test_super_dispatch()
     vim9script
 
     class A
-        def F(): string
-            return 'AA'
-        enddef
+      def F(): string
+        return 'AA'
+      enddef
     endclass
 
     class B extends A
-        def F(): string
-            return 'BB'
-        enddef
-        def S(): string
-            return super.F()
-        enddef
-        def S0(): string
-            return this.S()
-        enddef
+      def F(): string
+        return 'BB'
+      enddef
+      def S(): string
+        return super.F()
+      enddef
+      def S0(): string
+        return this.S()
+      enddef
     endclass
 
     class C extends B
-        def F(): string
-            return 'CC'
-        enddef
-        def ToB(): string
-            return super.F()
-        enddef
+      def F(): string
+        return 'CC'
+      enddef
+      def ToB(): string
+        return super.F()
+      enddef
     endclass
 
     assert_equal('AA', B.new().S())
@@ -3325,51 +3270,51 @@ def Test_super_dispatch()
     var call_chain: list<string>
 
     abstract class A
-        abstract def _G(): string
+      abstract def _G(): string
 
-        def F(): string
-            call_chain->add('A.F()')
-            return this._G()
-        enddef
-        def _H(): string
-            call_chain->add('A._H()')
-            return this.F()
-        enddef
+      def F(): string
+        call_chain->add('A.F()')
+        return this._G()
+      enddef
+      def _H(): string
+        call_chain->add('A._H()')
+        return this.F()
+      enddef
     endclass
 
     class B extends A
-        def _G(): string
-            call_chain->add('B.G()')
-            return 'BBB'
-        enddef
-        def SF(): string
-            call_chain->add('B.SF()')
-            return super._H()
-        enddef
+      def _G(): string
+        call_chain->add('B.G()')
+        return 'BBB'
+      enddef
+      def SF(): string
+        call_chain->add('B.SF()')
+        return super._H()
+      enddef
     endclass
 
     class C extends B
     endclass
 
     class D extends C
-        def SF(): string
-            call_chain->add('D.SF()')
-            return super.SF()
-        enddef
+      def SF(): string
+        call_chain->add('D.SF()')
+        return super.SF()
+      enddef
     endclass
 
     class E extends D
-        def SF(): string
-            call_chain->add('E.SF()')
-            return super.SF()
-        enddef
+      def SF(): string
+        call_chain->add('E.SF()')
+        return super.SF()
+      enddef
     endclass
 
     class F extends E
-        def _G(): string
-            call_chain->add('F._G()')
-            return 'FFF'
-        enddef
+      def _G(): string
+        call_chain->add('F._G()')
+        return 'FFF'
+      enddef
     endclass
 
     # E.new() -> A.F() -> B._G()
@@ -3385,6 +3330,193 @@ def Test_super_dispatch()
     assert_equal(['E.SF()', 'D.SF()', 'B.SF()', 'A._H()', 'A.F()', 'F._G()'], call_chain)
   END
   v9.CheckSourceSuccess(lines)
+
+  # problems with method dispatch: super -> abstract
+  # https://github.com/vim/vim/issues/15514
+  lines =<< trim END
+    vim9script
+    abstract class B
+      abstract def ToString(): string
+    endclass
+
+    class C extends B
+      def ToString(): string
+        return super.ToString()
+      enddef
+    endclass
+
+    try
+      defcompile C.ToString
+      call assert_false(1, 'command should have failed')
+    catch
+      call assert_exception('E1431: Abstract method "ToString" in class "B" cannot be accessed directly')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # problems with method dispatch: super -> abstract -> concrete
+  lines =<< trim END
+    vim9script
+
+    class A
+      def ToString()
+        echo 'A'
+      enddef
+    endclass
+
+    abstract class B extends A
+      abstract def ToString()
+    endclass
+
+    class C extends B
+      def ToString()
+        super.ToString()
+      enddef
+    endclass
+
+    try
+      defcompile C.ToString
+      call assert_false(1, 'command should have failed')
+    catch
+      call assert_exception('E1431: Abstract method "ToString" in class "B" cannot be accessed directly')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Invoking a super method and an interface method which have the same name.
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def ToString(): string
+    endinterface
+
+    # Note that A does not implement I.
+    class A
+      def ToString(): string
+        return 'A'
+      enddef
+    endclass
+
+    class B extends A implements I
+      def ToString(): string
+        return super.ToString()
+      enddef
+    endclass
+
+     def TestI(i: I): string
+       return i.ToString()
+     enddef
+
+     assert_equal('A', B.new().ToString())
+     assert_equal('A', TestI(B.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # super and an abstract class with no abstract methods
+  lines =<< trim END
+    vim9script
+
+    class A
+      def ToString(): string
+        return 'A'
+      enddef
+    endclass
+
+    # An abstract class with no abstract methods.
+    abstract class B extends A
+    endclass
+
+    class C extends B
+      def ToString(): string
+        return super.ToString()
+      enddef
+    endclass
+
+    def TestA(a: A): string
+      return a.ToString()
+    enddef
+
+    def TestB(b: B): string
+      return b.ToString()
+    enddef
+
+    assert_equal('A', C.new().ToString())
+    assert_equal('A', TestA(A.new()))
+    assert_equal('A', TestA(C.new()))
+    assert_equal('A', TestB(C.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # super and an abstract class with no abstract methods and the initial
+  # implements clause
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def ToString(): string
+    endinterface
+
+    # Note that A does not implement I.
+    class A
+      def ToString(): string
+        return 'A'
+      enddef
+    endclass
+
+    # An abstract class with no abstract methods.
+    abstract class B extends A implements I
+    endclass
+
+    class C extends B implements I
+      def ToString(): string
+        return super.ToString()
+      enddef
+    endclass
+
+    # Note that A.ToString() is different from I.ToString().
+    def TestA(a: A): string
+      return a.ToString()
+    enddef
+
+    assert_equal('A', C.new().ToString())
+    assert_equal('A', TestA(A.new()))
+    assert_equal('A', TestA(C.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Invoking a class method in the parent class using "super" should fail
+  lines =<< trim END
+    vim9script
+
+    class A
+      static def Fn(): string
+        return 'A'
+      enddef
+    endclass
+
+    class B extends A
+      static def Fn(): string
+        return super.Fn()
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1325: Method "Fn" not found in class "B"')
+
+  # Missing name after "super" keyword
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B extends A
+      def Fn()
+        var x = super.()
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1127: Missing name after dot', 1)
 enddef
 
 def Test_class_import()
@@ -3524,6 +3656,14 @@ def Test_abstract_class()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1316: Class can only be defined in Vim9 script', 1)
+
+  # Test for "abstract" cannot be abbreviated
+  lines =<< trim END
+    vim9script
+    abs class A
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1065: Command cannot be shortened: abs class A', 2)
 
   # Additional commands after "abstract class"
   lines =<< trim END
@@ -4321,23 +4461,20 @@ def Test_lockvar_object_variable()
   END
   v9.CheckSourceFailure(lines, 'E1335: Variable "val4" in class "C" is not writable')
 
-  # TODO: the following tests use type "any" for argument. Need a run time
-  #       check for access. Probably OK as is for now.
-
   # read-only lockvar from object method arg
   lines =<< trim END
     vim9script
 
     class C
       var val5: number
-      def Lock(o_any: any)
-        lockvar o_any.val5
+      def Lock(c: C)
+        lockvar c.val5
       enddef
     endclass
     var o = C.new(3)
     o.Lock(C.new(5))
   END
-  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val5" in class "C"')
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "c.val5" in class "C"')
 
   # read-only lockvar from class method arg
   lines =<< trim END
@@ -4345,14 +4482,14 @@ def Test_lockvar_object_variable()
 
     class C
       var val6: number
-      static def Lock(o_any: any)
-        lockvar o_any.val6
+      static def Lock(c: C)
+        lockvar c.val6
       enddef
     endclass
     var o = C.new(3)
     C.Lock(o)
   END
-  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val6" in class "C"')
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "c.val6" in class "C"')
 
   #
   # lockvar of public object variable
@@ -4420,14 +4557,14 @@ def Test_lockvar_object_variable()
 
     class C
       public var val5: number
-      def Lock(o_any: any)
-        lockvar o_any.val5
+      def Lock(c: C)
+        lockvar c.val5
       enddef
     endclass
     var o = C.new(3)
     o.Lock(C.new(5))
   END
-  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val5" in class "C"', 1)
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "c.val5" in class "C"', 1)
 
   # lockvar from class method arg
   lines =<< trim END
@@ -4435,14 +4572,14 @@ def Test_lockvar_object_variable()
 
     class C
       public var val6: number
-      static def Lock(o_any: any)
-        lockvar o_any.val6
+      static def Lock(c: C)
+        lockvar c.val6
       enddef
     endclass
     var o = C.new(3)
     C.Lock(o)
   END
-  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val6" in class "C"', 1)
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "c.val6" in class "C"', 1)
 enddef
 
 " Test trying to lock a class variable from various places
@@ -6075,44 +6212,151 @@ enddef
 
 " Test for using an interface method using a child object when it is overridden
 " by the child class.
-" FIXME: This test fails.
-" def Test_interface_overridden_method_from_child()
-"   var lines =<< trim END
-"     vim9script
-"
-"     interface A
-"       def Foo(): string
-"     endinterface
-"
-"     class B implements A
-"       def Foo(): string
-"         return 'b-foo'
-"       enddef
-"     endclass
-"
-"     class C extends B
-"       def Bar(): string
-"         return 'bar'
-"       enddef
-"       def Foo(): string
-"         return 'c-foo'
-"       enddef
-"     endclass
-"
-"     def T1(a: A)
-"       assert_equal('c-foo', a.Foo())
-"     enddef
-"
-"     def T2(b: B)
-"       assert_equal('c-foo', b.Foo())
-"     enddef
-"
-"     var c = C.new()
-"     T1(c)
-"     T2(c)
-"   END
-"   v9.CheckSourceSuccess(lines)
-" enddef
+def Test_interface_overridden_method_from_child()
+  var lines =<< trim END
+    vim9script
+
+    interface A
+      def Foo(): string
+    endinterface
+
+    class B implements A
+      def Foo(): string
+        return 'b-foo'
+      enddef
+    endclass
+
+    class C extends B
+      def Bar(): string
+        return 'bar'
+      enddef
+      def Foo(): string
+        return 'c-foo'
+      enddef
+    endclass
+
+    def T1(a: A)
+      assert_equal('c-foo', a.Foo())
+    enddef
+
+    def T2(b: B)
+      assert_equal('c-foo', b.Foo())
+    enddef
+
+    var c = C.new()
+    T1(c)
+    T2(c)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for interface inheritance
+def Test_interface_inheritance()
+  var lines =<< trim END
+    vim9script
+
+    interface A
+      def A_Fn(): string
+    endinterface
+
+    interface B
+      def B_Fn(): string
+    endinterface
+
+    interface C
+      def C_Fn(): string
+    endinterface
+
+    class C1 implements A
+      def A_Fn(): string
+        return 'c1-a'
+      enddef
+    endclass
+
+    class C2 extends C1 implements B
+      def B_Fn(): string
+        return 'c2-b'
+      enddef
+      def A_Fn(): string
+        return 'c2-a'
+      enddef
+    endclass
+
+    class C3 extends C2 implements C
+      def C_Fn(): string
+        return 'c3-c'
+      enddef
+      def A_Fn(): string
+        return 'c3-a'
+      enddef
+      def B_Fn(): string
+        return 'c3-b'
+      enddef
+    endclass
+
+    def T1(a: A, s: string)
+      assert_equal(s, a.A_Fn())
+    enddef
+
+    def T2(b: B, s: string)
+      assert_equal(s, b.B_Fn())
+    enddef
+
+    def T3(c: C, s: string)
+      assert_equal(s, c.C_Fn())
+    enddef
+
+    def T4(c1: C1)
+      T1(c1, 'c3-a')
+    enddef
+
+    def T5(c2: C2)
+      T1(c2, 'c3-a')
+      T2(c2, 'c3-b')
+    enddef
+
+    def T6(c3: C3)
+      T1(c3, 'c3-a')
+      T2(c3, 'c3-b')
+      T3(c3, 'c3-c')
+    enddef
+
+    var o3 = C3.new()
+    T4(o3)
+    T5(o3)
+    T6(o3)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Both the parent and child classes implement the same interface
+  lines =<< trim END
+    vim9script
+
+    interface I
+      def Foo(): string
+    endinterface
+
+    class A implements I
+      def Foo(): string
+        return 'A-foo'
+      enddef
+    endclass
+
+    class B implements I
+      def Foo(): string
+        return 'B-foo'
+      enddef
+    endclass
+
+    def Bar(i1: I): string
+      return i1.Foo()
+    enddef
+
+    var b = B.new()
+    assert_equal('B-foo', Bar(b))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
 
 " Test for abstract methods
 def Test_abstract_method()
@@ -6264,6 +6508,39 @@ def Test_abstract_method()
     assert_equal('foo', A.Foo())
   END
   v9.CheckSourceSuccess(lines)
+
+    # Invoke method returning a value through the abstract class. See #15432.
+  lines =<< trim END
+    vim9script
+
+    abstract class A
+        abstract def String(): string
+    endclass
+
+    class B extends A
+        def String(): string
+            return 'B'
+        enddef
+    endclass
+
+    def F(o: A)
+        assert_equal('B', o.String())
+    enddef
+    F(B.new())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Invoke abstract method returning a value does not compile
+  lines =<< trim END
+    vim9script
+
+    abstract class A
+      abstract def String(): string
+        return 'X'
+      enddef
+    endclass
+  END
+  v9.CheckScriptFailure(lines, "E1318: Not a valid command in a class: return 'X'")
 enddef
 
 " Test for calling a class method from a subclass
@@ -7232,6 +7509,69 @@ def Test_interface_extends_with_dup_members()
     var c = C.new()
     T1(c)
     T2(c)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for implementing an interface with different ordering for the interface
+" member variables.
+def Test_implement_interface_with_different_variable_order()
+  var lines =<< trim END
+    vim9script
+
+    interface IX
+      var F: func(): string
+    endinterface
+
+    class X implements IX
+      var x: number
+      var F: func(): string = () => 'ok'
+    endclass
+
+    def Foo(ix: IX): string
+      return ix.F()
+    enddef
+
+    var x0 = X.new(0)
+    assert_equal('ok', Foo(x0))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for inheriting interfaces from an imported super class
+def Test_interface_inheritance_with_imported_super()
+  var lines =<< trim END
+    vim9script
+
+    export interface I
+      def F(): string
+    endinterface
+
+    export class A implements I
+      def F(): string
+        return 'A'
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xinheritintfimportclass.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import './Xinheritintfimportclass.vim' as i_imp
+
+    # class C extends i_imp.A
+    class C extends i_imp.A implements i_imp.I
+      def F(): string
+        return 'C'
+      enddef
+    endclass
+
+    def TestI(i: i_imp.I): string
+        return i.F()
+    enddef
+
+    assert_equal('C', TestI(C.new()))
   END
   v9.CheckSourceSuccess(lines)
 enddef
@@ -11211,6 +11551,1606 @@ def Test_class_cast()
     defcompile F
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using a variable of type "any" with an object
+def Test_any_obj_var_type()
+  var lines =<< trim END
+    vim9script
+    class A
+      var name: string = "foobar"
+      def Foo(): string
+        return "func foo"
+      enddef
+    endclass
+
+    def CheckVals(x: any)
+      assert_equal("foobar", x.name)
+      assert_equal("func foo", x.Foo())
+    enddef
+
+    var a = A.new()
+    CheckVals(a)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Try to set a non-existing variable
+  lines =<< trim END
+    vim9script
+    class A
+      var name: string = "foobar"
+    endclass
+
+    def SetNonExistingVar(x: any)
+      x.bar = [1, 2, 3]
+    enddef
+
+    var a = A.new()
+    SetNonExistingVar(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1326: Variable "bar" not found in object "A"', 1)
+
+  # Try to read a non-existing variable
+  lines =<< trim END
+    vim9script
+    class A
+      var name: string = "foobar"
+    endclass
+
+    def GetNonExistingVar(x: any)
+      var i: dict<any> = x.bar
+    enddef
+
+    var a = A.new()
+    GetNonExistingVar(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1326: Variable "bar" not found in object "A"', 1)
+
+  # Try to invoke a non-existing method
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo(): number
+        return 10
+      enddef
+    endclass
+
+    def CallNonExistingMethod(x: any)
+      var i: number = x.Bar()
+    enddef
+
+    var a = A.new()
+    CallNonExistingMethod(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1326: Variable "Bar" not found in object "A"', 1)
+
+  # Use an object which is a Dict value
+  lines =<< trim END
+    vim9script
+    class Foo
+      def Bar(): number
+        return 369
+      enddef
+    endclass
+
+    def GetValue(FooDict: dict<any>): number
+      var n: number = 0
+      for foo in values(FooDict)
+        n += foo.Bar()
+      endfor
+      return n
+    enddef
+
+    var d = {'x': Foo.new()}
+    assert_equal(369, GetValue(d))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Nested data.  Object containing a Dict containing another Object.
+  lines =<< trim END
+    vim9script
+    class Context
+      public var state: dict<any> = {}
+    endclass
+
+    class Metadata
+      public var value = 0
+    endclass
+
+    var ctx = Context.new()
+    ctx.state["meta"] = Metadata.new(2468)
+
+    const foo = ctx.state.meta.value
+
+    def F(): number
+      const bar = ctx.state.meta.value
+      return bar
+    enddef
+
+    assert_equal(2468, F())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Accessing an object from a method inside the class using any type
+  lines =<< trim END
+    vim9script
+    class C
+      def _G(): string
+        return '_G'
+      enddef
+      static def S(o_any: any): string
+        return o_any._G()
+      enddef
+    endclass
+
+    var o1 = C.new()
+    assert_equal('_G', C.S(o1))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Modifying an object private variable from a method in another class using
+  # any type
+  lines =<< trim END
+    vim9script
+
+    class A
+      var num = 10
+    endclass
+
+    class B
+      def SetVal(x: any)
+        x.num = 20
+      enddef
+    endclass
+
+    var a = A.new()
+    var b = B.new()
+    b.SetVal(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1335: Variable "num" in class "A" is not writable', 1)
+
+  # Accessing a object protected variable from a method in another class using
+  # any type
+  lines =<< trim END
+    vim9script
+
+    class A
+      var _num = 10
+    endclass
+
+    class B
+      def GetVal(x: any): number
+        return x._num
+      enddef
+    endclass
+
+    var a = A.new()
+    var b = B.new()
+    var i = b.GetVal(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access protected variable "_num" in class "A"', 1)
+
+  # Accessing an object returned from an imported function and class
+  lines =<< trim END
+    vim9script
+    export class Foo
+      public var name: string
+    endclass
+
+    export def ReturnFooObject(): Foo
+      var r = Foo.new('star')
+      return r
+    enddef
+  END
+  writefile(lines, 'Xanyvar1.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+
+    import './Xanyvar1.vim'
+
+    def GetName(): string
+      var whatever = Xanyvar1.ReturnFooObject()
+      return whatever.name
+    enddef
+
+    assert_equal('star', GetName())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Try to modify a private object variable using a variable of type "any"
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var n: number = 10
+    endclass
+    def Fn(x: any)
+      x.n = 20
+    enddef
+    var a = Foo.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1335: Variable "n" in class "Foo" is not writable', 1)
+
+  # Try to read a protected object variable using a variable of type "any"
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var _n: number = 10
+    endclass
+    def Fn(x: any): number
+      return x._n
+    enddef
+
+    var a = Foo.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access protected variable "_n" in class "Foo"', 1)
+
+  # Read a protected object variable using a variable of type "any" in an object
+  # method
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var _n: number = 10
+      def Fn(x: any): number
+        return x._n
+      enddef
+    endclass
+
+    var a = Foo.new()
+    assert_equal(10, a.Fn(a))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Try to call a protected object method using a "any" type variable
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      def _GetVal(): number
+        return 234
+      enddef
+    endclass
+    def Fn(x: any): number
+      return x._GetVal()
+    enddef
+
+    var a = Foo.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1366: Cannot access protected method: _GetVal', 1)
+
+  # Call a protected object method using a "any" type variable from another
+  # object method
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      def _GetVal(): number
+        return 234
+      enddef
+      def FooVal(x: any): number
+        return x._GetVal()
+      enddef
+    endclass
+
+    var a = Foo.new()
+    assert_equal(234, a.FooVal(a))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Method chaining
+  lines =<< trim END
+    vim9script
+
+    export class T
+      var id: number = 268
+      def F(): any
+        return this
+      enddef
+    endclass
+
+    def H()
+      var a = T.new().F().F()
+      assert_equal(268, a.id)
+    enddef
+    H()
+
+    var b: T = T.new().F().F()
+    assert_equal(268, b.id)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Using a null object to access a member variable
+  lines =<< trim END
+    vim9script
+    def Fn(x: any): number
+      return x.num
+    enddef
+
+    Fn(null_object)
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object', 1)
+
+  # Using a null object to invoke a method
+  lines =<< trim END
+    vim9script
+    def Fn(x: any)
+      x.Foo()
+    enddef
+
+    Fn(null_object)
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object', 1)
+
+  # Try to change a const object variable using a "any" variable
+  lines =<< trim END
+    vim9script
+    class A
+      public const v1: number = 123
+    endclass
+
+    def Fn(o: any)
+      o.v1 = 321
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot change read-only variable "v1" in class "A"', 1)
+
+  # Try to change a final object variable using a "any" variable
+  lines =<< trim END
+    vim9script
+    class A
+      public final v1: number = 123
+    endclass
+
+    def Fn(o: any)
+      o.v1 = 321
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot change read-only variable "v1" in class "A"', 1)
+
+  # Assign a different type of value to an "any" type object variable
+  lines =<< trim END
+    vim9script
+    class A
+      public var v1: list<any> = [1, 2]
+    endclass
+
+    def Fn(o: A)
+      o.v1 = 'abc'
+    enddef
+
+    var a = A.new()
+    Fn(a)
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected list<any> but got string', 1)
+enddef
+
+" Test for using an object method with mapnew()
+def Test_mapnew_with_instance_method()
+  var lines =<< trim END
+    vim9script
+
+    class Foo
+      var str: string
+      var nums: list<number> = [1, 2, 3]
+
+      def InstanceMethod(n: number): string
+        return this.str .. n
+      enddef
+
+      def MapperMethod(idx: number, elem: number): string
+        return elem->this.InstanceMethod()
+      enddef
+
+      def MapTest()
+        this.str = "foo"
+        var l = ['foo1', 'foo2', 'foo3']
+        assert_equal(l, this.nums->mapnew(this.MapperMethod))
+      enddef
+    endclass
+
+    Foo.new().MapTest()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Error in the mapnew() function
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var str: string
+      var nums: list<number> = [1, 2, 3]
+
+      def InstanceMethod(n: number): string
+        throw "InstanceMethod failed"
+      enddef
+
+      def MapperMethod(idx: number, elem: number): string
+        return elem->this.InstanceMethod()
+      enddef
+
+      def MapTest()
+        this.str = "foo"
+        var caught_exception: bool = false
+        try
+          this.nums->mapnew(this.MapperMethod)
+        catch /InstanceMethod failed/
+          caught_exception = true
+        endtry
+        assert_true(caught_exception)
+      enddef
+    endclass
+
+    Foo.new().MapTest()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using an object method in a method call.
+def Test_use_object_method_in_a_method_call()
+  var lines =<< trim END
+    vim9script
+
+    class Foo
+      def Cost(nums: list<number>): number
+        return nums[0] * nums[1]
+      enddef
+
+      def ShowCost(): string
+        var g = [4, 5]
+        return $"Cost is: {g->this.Cost()}"
+      enddef
+    endclass
+
+    var d = Foo.new()
+    assert_equal('Cost is: 20', d.ShowCost())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for using a non-existing object method in string interpolation
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      def Cost(nums: list<number>): number
+        return nums[0] * nums[1]
+      enddef
+
+      def ShowCost(): string
+        var g = [4, 5]
+        echo $"Cost is: {g->this.NewCost()}"
+      enddef
+    endclass
+
+    var d = Foo.new()
+    d.ShowCost()
+  END
+  v9.CheckSourceFailure(lines, 'E1326: Variable "NewCost" not found in object "Foo"')
+enddef
+
+" Test for referencing an object variable which is not yet initialized
+def Test_uninitialized_object_var()
+  var lines =<< trim END
+    vim9script
+    class Foo
+      const two: number = Foo.Two(this)
+      const one: number = 1
+
+      static def Two(that: Foo): number
+        return that.one + 2
+      enddef
+    endclass
+
+    echo Foo.Two(Foo.new())
+  END
+  v9.CheckSourceFailure(lines, "E1430: Uninitialized object variable 'one' referenced")
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const one: number = Foo.One(this)
+
+      static def One(that: Foo): number
+        return 1
+      enddef
+    endclass
+
+    assert_equal(1, Foo.One(Foo.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const one: number = 1
+      const two: number = Foo.Two(this)
+
+      static def Two(that: Foo): number
+        return that.one + 1
+      enddef
+    endclass
+
+    assert_equal(2, Foo.Two(Foo.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const Id: func(any): any = ((_) => (v) => v)(this)
+
+      static def Id(that: Foo): func(any): any
+        return that.Id
+      enddef
+    endclass
+
+    assert_equal(5, Foo.Id(Foo.new())(5))
+    assert_equal(7, Foo.new().Id(7))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const Id: func(any): any = ((that) => (_) => that)(this)
+
+      static def Id(that: Foo): func(any): any
+          return that.Id
+      enddef
+    endclass
+
+    const Id0: func(any): any = Foo.Id(Foo.new())
+    const Id1: func(any): any = Foo.new().Id
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Foo
+      const Id: any = Foo.Id(this)
+
+      static def Id(that: Foo): any
+          return that.Id
+      enddef
+    endclass
+
+    const Id2: any = Foo.Id(Foo.new())
+    const Id3: any = Foo.new().Id
+  END
+  v9.CheckSourceFailure(lines, "E1430: Uninitialized object variable 'Id' referenced")
+
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var x: string = ''
+      var Y: func(): string = () => this.x
+    endclass
+
+    var foo = Foo.new('ok')
+    assert_equal('ok', foo.Y())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var x: string = this.x
+    endclass
+
+    var foo = Foo.new('ok')
+  END
+  v9.CheckSourceFailure(lines, "E1430: Uninitialized object variable 'x' referenced")
+enddef
+
+" Test for initializing member variables of compound type in the constructor
+def Test_constructor_init_compound_member_var()
+  var lines =<< trim END
+    vim9script
+
+    class Foo
+      var v1: string = "aaa"
+      var v2: list<number> = [1, 2]
+      var v3: dict<string> = {a: 'a', b: 'b'}
+    endclass
+
+    class Bar
+      var v4: string = "bbb"
+      var v5: Foo = Foo.new()
+      var v6: list<number> = [1, 2]
+    endclass
+
+    var b: Bar = Bar.new()
+    assert_equal("aaa", b.v5.v1)
+    assert_equal([1, 2], b.v5.v2)
+    assert_equal({a: 'a', b: 'b'}, b.v5.v3)
+    assert_equal("bbb", b.v4)
+    assert_equal([1, 2], b.v6)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using a concrete method in an abstract extended class which is
+" further extended
+def Test_abstract_method_across_hierarchy()
+  var lines =<< trim END
+    vim9script
+
+    abstract class A
+      abstract def Foo(): string
+    endclass
+
+    abstract class B extends A
+      abstract def Bar(): string
+    endclass
+
+    class C extends B
+      def Foo(): string
+        return 'foo'
+      enddef
+
+      def Bar(): string
+        return 'bar'
+      enddef
+    endclass
+
+    def Fn1(a: A): string
+      return a.Foo()
+    enddef
+
+    def Fn2(b: B): string
+      return b.Bar()
+    enddef
+
+    var c = C.new()
+    assert_equal('foo', Fn1(c))
+    assert_equal('bar', Fn2(c))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    abstract class A
+      abstract def Foo(): string
+    endclass
+
+    abstract class B extends A
+      abstract def Bar(): string
+    endclass
+
+    class C extends B
+      def Bar(): string
+        return 'bar'
+      enddef
+    endclass
+
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1373: Abstract method "Foo" is not implemented')
+
+  lines =<< trim END
+    vim9script
+
+    abstract class A
+      abstract def M1(): string
+      abstract def M2(): string
+    endclass
+
+    abstract class B extends A
+      def M1(): string
+        return 'B: M1'
+      enddef
+
+      def M2(): string
+        return 'B: M2'
+      enddef
+    endclass
+
+    class C1 extends B
+      def M1(): string
+        return 'C1: M1'
+      enddef
+    endclass
+
+    class C2 extends B
+      def M2(): string
+        return 'C2: M2'
+      enddef
+    endclass
+
+    class D1 extends C1
+    endclass
+
+    class D2 extends C2
+    endclass
+
+    var l: list<string> = []
+    for Type in ['C1', 'C2', 'D1', 'D2']
+      l->add(eval($'{Type}.new().M1()'))
+      l->add(eval($'{Type}.new().M2()'))
+    endfor
+    assert_equal(['C1: M1', 'B: M2', 'B: M1', 'C2: M2', 'C1: M1', 'B: M2', 'B: M1', 'C2: M2'], l)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    abstract class A
+      abstract def M1(): string
+      abstract def M2(): string
+    endclass
+
+    class B extends A
+      def M1(): string
+        return 'B: M1'
+      enddef
+
+      def M2(): string
+        return 'B: M2'
+      enddef
+    endclass
+
+    abstract class C extends B
+    endclass
+
+    class D1 extends C
+      def M1(): string
+        return 'D1: M1'
+      enddef
+    endclass
+
+    class D2 extends C
+      def M2(): string
+        return 'D2: M2'
+      enddef
+    endclass
+
+    class E1 extends D1
+    endclass
+
+    class E2 extends D2
+    endclass
+
+    var l: list<string> = []
+    for Type in ['B', 'D1', 'D2', 'E1', 'E2']
+      l->add(eval($'{Type}.new().M1()'))
+      l->add( eval($'{Type}.new().M2()'))
+    endfor
+    assert_equal(['B: M1', 'B: M2', 'D1: M1', 'B: M2', 'B: M1', 'D2: M2', 'D1: M1', 'B: M2', 'B: M1', 'D2: M2'], l)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using a protected new() method (singleton design pattern)
+def Test_protected_new_method()
+  var lines =<< trim END
+    vim9script
+    class A
+      def _new()
+      enddef
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1325: Method "new" not found in class "A"', 6)
+
+  lines =<< trim END
+    vim9script
+    class A
+      static var _instance: A
+      var str: string
+      def _new(str: string)
+        this.str = str
+      enddef
+      static def GetInstance(str: string): A
+        if _instance == null
+          _instance = A._new(str)
+        endif
+        return _instance
+      enddef
+    endclass
+    var a: A = A.GetInstance('foo')
+    var b: A = A.GetInstance('bar')
+    assert_equal('foo', a.str)
+    assert_equal('foo', b.str)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using 'super' in a closure function inside an object method
+def Test_super_in_closure()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      const _value: number
+
+      def Fn(): func(any): number
+        return (_: any) => this._value
+      enddef
+    endclass
+
+    class B extends A
+      def Fn(): func(any): number
+        return (_: any) => super._value
+      enddef
+    endclass
+
+    assert_equal(100, A.new(100).Fn()(null))
+    assert_equal(200, B.new(200).Fn()(null))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using 'super' to access methods and variables
+def Test_super_keyword()
+  var lines =<< trim END
+    vim9script
+    class Base
+      var name: string
+      def ToString(): string
+        return this.name
+      enddef
+    endclass
+
+    class Child extends Base
+      var age: number
+      def ToString(): string
+        return super.ToString() .. ': ' .. this.age
+      enddef
+    endclass
+
+    var o = Child.new('John', 42)
+    assert_equal('John: 42', o.ToString())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Child
+      var age: number
+      def ToString(): string
+        return super .ToString() .. ': ' .. this.age
+      enddef
+    endclass
+    var o = Child.new(42)
+    echo o.ToString()
+  END
+  v9.CheckSourceFailure(lines, 'E1356: "super" must be followed by a dot', 1)
+
+  lines =<< trim END
+    vim9script
+    class Base
+      var name: string
+      def ToString(): string
+        return this.name
+      enddef
+    endclass
+
+    var age = 42
+    def ToString(): string
+      return super.ToString() .. ': ' .. age
+    enddef
+    echo ToString()
+  END
+  v9.CheckSourceFailure(lines, 'E1357: Using "super" not in a class method', 1)
+
+  lines =<< trim END
+    vim9script
+    class Child
+      var age: number
+      def ToString(): string
+        return super.ToString() .. ': ' .. this.age
+      enddef
+    endclass
+    var o = Child.new(42)
+    echo o.ToString()
+  END
+  v9.CheckSourceFailure(lines, 'E1358: Using "super" not in a child class', 1)
+
+  # Using super, Child invokes Base method which has optional arg. #12471
+  lines =<< trim END
+    vim9script
+
+    class Base
+      var success: bool = false
+      def Method(arg = 0)
+        this.success = true
+      enddef
+    endclass
+
+    class Child extends Base
+      def new()
+        super.Method()
+      enddef
+    endclass
+
+    var obj = Child.new()
+    assert_equal(true, obj.success)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using 'super' to access an object variable in the parent
+  lines =<< trim END
+    vim9script
+
+    class A
+      var foo: string = 'xxx'
+    endclass
+
+    class B extends A
+      def GetString(): string
+        return super.foo
+      enddef
+    endclass
+
+    var b: B = B.new()
+    echo b.GetString()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using 'super' to access an static class variable in the parent should fail
+  lines =<< trim END
+    vim9script
+
+    class A
+      static var foo: string = 'xxx'
+    endclass
+
+    class B extends A
+      def GetString(): string
+        return super.foo
+      enddef
+    endclass
+
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1326: Variable "foo" not found in object "B"')
+
+  # Using super to access an overriden method in the parent class
+  lines =<< trim END
+    vim9script
+
+    class A
+      def Foo(): string
+        return 'A.Foo'
+      enddef
+    endclass
+
+    class B extends A
+      def Foo(): string
+        return 'B.Foo'
+      enddef
+
+      def Bar(): string
+        return $'{super.Foo()} {this.Foo()}'
+      enddef
+    endclass
+
+    var b = B.new()
+    assert_equal('A.Foo B.Foo', b.Bar())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for using super in a lambda function to invoke a base class method from
+  # the new() method.
+  lines =<< trim END
+    vim9script
+
+    def G(F: func): string
+      return F()
+    enddef
+
+    class Base
+      def F(): string
+        return 'Base.F()'
+      enddef
+    endclass
+
+    class Foo extends Base
+      var s: string = 'x'
+      def new()
+        this.s = G((): string => {
+          return super.F()
+        })
+      enddef
+    endclass
+
+    var f = Foo.new()
+    assert_equal('Base.F()', f.s)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using a list of objects
+def Test_method_call_from_list_of_objects()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      var n: list<number> = [100, 101]
+      def F(): string
+        return 'A.F'
+      enddef
+    endclass
+
+    class B
+      var name: string
+      var n: list<number> = [200, 201]
+      def new(this.name)
+      enddef
+      def F(): string
+        return 'B.F'
+      enddef
+    endclass
+
+    var obj1 = A.new()
+    var obj2 = B.new('b1')
+
+    def CheckObjectList()
+      var objlist = [obj1, obj2]
+      assert_equal('list<object<any>>', typename(objlist))
+
+      # Use a member function
+      assert_equal('A.F', objlist[0].F())
+      assert_equal('B.F', objlist[1].F())
+
+      # Use a member variable on the RHS
+      assert_equal([100, 101], objlist[0].n)
+      assert_equal([200, 201], objlist[1].n)
+
+      # Use a member variable on the LHS
+      objlist[0].n[1] = 110
+      objlist[1].n[1] = 210
+      assert_equal([100, 110], objlist[0].n)
+      assert_equal([200, 210], objlist[1].n)
+
+      # Iterate using a for loop
+      var s1 = []
+      for o in objlist
+        add(s1, o.F())
+      endfor
+      assert_equal(['A.F', 'B.F'], s1)
+
+      # Iterate using foreach()
+      var s2 = []
+      foreach(objlist, (k, v) => add(s2, v.F()))
+      assert_equal(['A.F', 'B.F'], s2)
+
+      # Add a new list item
+      objlist->add(B.new('b2'))
+      assert_equal('b2', objlist[2].name)
+    enddef
+
+    CheckObjectList()
+
+    var objlist = [A.new(), B.new('b2')]
+    assert_equal('list<object<any>>', typename(objlist))
+
+    # Use a member function
+    assert_equal('A.F', objlist[0].F())
+    assert_equal('B.F', objlist[1].F())
+
+    # Use a member variable on the RHS
+    assert_equal([100, 101], objlist[0].n)
+    assert_equal([200, 201], objlist[1].n)
+
+    # Use a member variable on the LHS
+    objlist[0].n[1] = 110
+    objlist[1].n[1] = 210
+    assert_equal([100, 110], objlist[0].n)
+    assert_equal([200, 210], objlist[1].n)
+
+    # Iterate using a for loop
+    var s1 = []
+    for o in objlist
+      add(s1, o.F())
+    endfor
+    assert_equal(['A.F', 'B.F'], s1)
+
+    # Iterate using foreach()
+    var s2 = []
+    foreach(objlist, (k, v) => add(s2, v.F()))
+    assert_equal(['A.F', 'B.F'], s2)
+
+    # Add a new list item
+    objlist->add(B.new('b2'))
+    assert_equal('b2', objlist[2].name)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+
+    class B
+    endclass
+
+    var objlist = [A.new(), B.new()]
+    def Fn()
+      objlist->add(10)
+    enddef
+
+    try
+      Fn()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got number')
+    endtry
+
+    try
+      objlist->add(10)
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got number')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Adding an enum to a List of objects should fail
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    enum C
+      Red,
+      Green,
+    endenum
+    var items = [A.new(), B.new()]
+    def Fn()
+      items->add(C.Red)
+    enddef
+
+    try
+      Fn()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got enum<C>')
+    endtry
+
+    try
+      items->add(C.Green)
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got enum<C>')
+    endtry
+
+    var items2 = [C.Red, C.Green]
+    def Fn2()
+      items2->add(A.new())
+    enddef
+    try
+      Fn2()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected enum<C> but got object<A>')
+    endtry
+
+    try
+      items2->add(B.new())
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected enum<C> but got object<B>')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using a dict of objects
+def Test_dict_of_objects()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      var n: list<number> = [100, 101]
+      def F(): string
+        return 'A.F'
+      enddef
+    endclass
+
+    class B
+      var name: string
+      var n: list<number> = [200, 201]
+      def new(this.name)
+      enddef
+      def F(): string
+        return 'B.F'
+      enddef
+    endclass
+
+    var obj1 = A.new()
+    var obj2 = B.new('b1')
+
+    def CheckObjectDict()
+      var objdict = {o_a: obj1, o_b: obj2}
+      assert_equal('dict<object<any>>', typename(objdict))
+
+      # Use a member function
+      assert_equal('A.F', objdict.o_a.F())
+      assert_equal('B.F', objdict.o_b.F())
+
+      # Use a member variable on the RHS
+      assert_equal([100, 101], objdict.o_a.n)
+      assert_equal([200, 201], objdict.o_b.n)
+
+      # Use a member variable on the LHS
+      objdict.o_a.n[1] = 110
+      objdict.o_b.n[1] = 210
+      assert_equal([100, 110], objdict.o_a.n)
+      assert_equal([200, 210], objdict.o_b.n)
+
+      # Iterate using a for loop
+      var l = []
+      for v in values(objdict)
+        add(l, v.F())
+      endfor
+      assert_equal(['A.F', 'B.F'], l)
+
+      # Iterate using foreach()
+      l = []
+      foreach(objdict, (k, v) => add(l, v.F()))
+      assert_equal(['A.F', 'B.F'], l)
+
+      # Add a new dict item
+      objdict['o_b2'] = B.new('b2')
+      assert_equal('b2', objdict.o_b2.name)
+    enddef
+
+    CheckObjectDict()
+
+    var objdict = {o_a: A.new(), o_b: B.new('b2')}
+    assert_equal('dict<object<any>>', typename(objdict))
+    assert_equal('A.F', objdict.o_a.F())
+    assert_equal('B.F', objdict.o_b.F())
+    assert_equal([100, 101], objdict.o_a.n)
+    assert_equal([200, 201], objdict.o_b.n)
+
+    var l = []
+    for v in values(objdict)
+      add(l, v.F())
+    endfor
+    assert_equal(['A.F', 'B.F'], l)
+
+    # Add a new dict item
+    objdict['o_b2'] = B.new('b2')
+    assert_equal('b2', objdict.o_b2.name)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B
+    endclass
+    class C
+    endclass
+    var objdict = {a: A.new(), b: B.new()}
+    def Fn()
+      objdict['c'] = C.new()
+    enddef
+
+    try
+      Fn()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got number')
+    endtry
+
+    try
+      objdict['c'] = C.new()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got number')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Adding an enum to a Dict of objects should fail
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    enum C
+      Red,
+      Green,
+    endenum
+    var items = {o_a: A.new(), o_b: B.new()}
+    def Fn()
+      items['o_c'] = C.Red
+    enddef
+
+    try
+      Fn()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected object<any> but got enum<C>')
+    endtry
+
+    try
+      items['o_c'] = C.Green
+    catch
+      assert_exception('Vim(var):E1012: Type mismatch; expected object<any> but got enum<C>')
+    endtry
+
+    var items2 = {red: C.Red, green: C.Green}
+    def Fn2()
+      items2['o_a'] = A.new()
+    enddef
+    try
+      Fn2()
+    catch
+      assert_exception('Vim(eval):E1012: Type mismatch; expected enum<C> but got object<A>')
+    endtry
+
+    try
+      items2['o_a'] = B.new()
+    catch
+      assert_exception('Vim(var):E1012: Type mismatch; expected enum<C> but got object<B>')
+    endtry
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using the type() and typename() functions with a variable of type
+" object
+def Test_type_typename_funcs_with_object_variable()
+  var lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+
+    class B
+    endclass
+
+    var o1: object<any>
+    assert_equal([13, 'object<any>'], [type(o1), typename(o1)])
+
+    var o2: object<A>
+    assert_equal([13, 'object<any>'], [type(o2), typename(o2)])
+
+    var o3: A
+    assert_equal([13, 'object<any>'], [type(o3), typename(o3)])
+
+    var o4 = A.new()
+    assert_equal([13, 'object<A>'], [type(o4), typename(o4)])
+
+    var l = [A.new(), B.new()]
+    assert_equal([13, 'object<B>'], [type(l[1]), typename(l[1])])
+
+    var d = {o_a: A.new(), o_b: B.new()}
+    assert_equal([13, 'object<B>'], [type(d.o_b), typename(d.o_b)])
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for object<any> type
+def Test_object_any_type()
+  # assigning different objects to variable of type object<any>
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    var x: object<any>
+    x = A.new()
+    assert_true(instanceof(x, A))
+    x = B.new()
+    assert_true(instanceof(x, B))
+    x = null_object
+    assert_true(instanceof(x, null_class))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Use a list of object<any> variable
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    var l: list<object<any>>
+    l->add(A.new())
+    l->add(B.new())
+    assert_true(instanceof(l[0], A))
+    assert_true(instanceof(l[1], B))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using object<any> as a function argument type and the return type
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    def Fn(x: object<any>): object<any>
+      return x
+    enddef
+    assert_true(instanceof(Fn(A.new()), A))
+    assert_true(instanceof(Fn(B.new()), B))
+  END
+
+  # Try assigning a different type of value to a object<any> variable
+  lines =<< trim END
+    var x: object<any> = []
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got list<any>', 'E1012: Type mismatch; expected object<any> but got list<any>'])
+
+  # Try assigning a different type of value to a object<any> variable
+  lines =<< trim END
+    var x: object<any>
+    x = 0z10
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got blob', 'E1012: Type mismatch; expected object<any> but got blob'])
+
+  # Try adding a different type of value to a list<object<any>> variable
+  lines =<< trim END
+    var x: list<object<any>>
+    x->add({})
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got dict<any>', 'E1012: Type mismatch; expected object<any> but got dict<any>'])
+
+  # Try adding a different type of value to a dict<object<any>> variable
+  lines =<< trim END
+    var x: dict<object<any>>
+    x['a'] = {}
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1012: Type mismatch; expected object<any> but got dict<any>', 'E1012: Type mismatch; expected object<any> but got dict<any>'])
+enddef
+
+" Test for object<{class}> type
+def Test_object_of_class_type()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var x: object<A>
+    x = A.new()
+    assert_true(instanceof(x, A))
+    var y: object<A> = A.new()
+    assert_true(instanceof(y, A))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    var x: object<A>
+    x = B.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<A> but got object<B>')
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B
+    endclass
+    def Fn(x: object<A>): object<B>
+      return B.new()
+    enddef
+    assert_true(instanceof(Fn(A.new()), B))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    var x: object
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1008: Missing <type> after object', 'E1008: Missing <type> after object'])
+
+  lines =<< trim END
+    var x: object <any>
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1068: No white space allowed before ''<'':  <any>', 'E1068: No white space allowed before ''<'':  <any>'])
+
+  lines =<< trim END
+    var x: object<any
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, ['E1009: Missing > after type: <any', 'E1009: Missing > after type: <any'])
+
+  lines =<< trim END
+    var x: object<any,any>
+  END
+  v9.CheckSourceDefFailure(lines, 'E1009: Missing > after type: <any,any>')
+
+  lines =<< trim END
+    vim9script
+    var x: object<any,any>
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: ,any>')
+
+  lines =<< trim END
+    var x: object<number>
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, [
+        \ 'E1353: Class name not found: <number>',
+        \ 'E1353: Class name not found: <number>'])
+enddef
+
+" Test for the object and class member type
+def Test_obj_class_member_type()
+  var lines =<< trim END
+    vim9script
+    class L
+      var l: list<number>
+    endclass
+    var obj_L = L.new([10, 20])
+    assert_equal('list<number>', typename(obj_L.l))
+    obj_L.l->add('a')
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got string', 7)
+
+  lines =<< trim END
+    vim9script
+    class T
+      var t: list<tuple<string>>
+    endclass
+    var obj_T = T.new([('a',), ('b',)])
+    assert_equal('list<tuple<string>>', typename(obj_T.t))
+    obj_T.t->add([('c', 10, true)])
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<string> but got list<tuple<string, number, bool>>', 7)
+
+  lines =<< trim END
+    vim9script
+    class D
+      var d: dict<number>
+    endclass
+    var obj_D = D.new({a: 10, b: 20})
+    assert_equal('dict<number>', typename(obj_D.d))
+    obj_D.d->extend({c: 'C'})
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string> in extend()', 7)
+
+  lines =<< trim END
+    vim9script
+    class L
+      public static var l: list<number>
+    endclass
+    L.l = [10, 20]
+    assert_equal('list<number>', typename(L.l))
+    L.l->add('a')
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got string', 7)
+
+  lines =<< trim END
+    vim9script
+    class T
+      public static var t: list<tuple<string>>
+    endclass
+    T.t = [('a',), ('b',)]
+    assert_equal('list<tuple<string>>', typename(T.t))
+    T.t->add([('c', 10, true)])
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected tuple<string> but got list<tuple<string, number, bool>>', 7)
+
+  lines =<< trim END
+    vim9script
+    class D
+      public static var d: dict<number>
+    endclass
+    D.d = {a: 10, b: 20}
+    assert_equal('dict<number>', typename(D.d))
+    D.d->extend({c: 'C'})
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string> in extend()', 7)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -10,6 +10,24 @@ source mouse.vim
 source view_util.vim
 source term_util.vim
 
+func s:TermGuiColorsTest()
+  CheckNotMSWindows
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  if !executable('tput')
+    throw "Skipped: tput not executable!"
+  endif
+  if has("gui_running")
+    throw "Skipped: does not work in GUI mode"
+  endif
+  call system('tput -Txterm-direct RGB 2>/dev/null')
+  if v:shell_error
+    throw "Skipped: xterm-direct $TERM has no RGB capability"
+  endif
+endfunc
+
+
 func Test_term_mouse_left_click()
   new
   let save_mouse = &mouse
@@ -301,7 +319,7 @@ func Test_term_mouse_middle_click_no_clipboard()
   let &ttymouse = save_ttymouse
   let &term = save_term
   let &mouse = save_mouse
-  close!
+  bw!
 endfunc
 
 func Test_term_mouse_middle_click_insert_mode()
@@ -370,7 +388,7 @@ func Test_term_mouse_switch_win_insert_mode()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for using the mouse to increase the height of the cmdline window
@@ -1051,7 +1069,7 @@ func Test_mouse_alt_leftclick()
   let &ttymouse = save_ttymouse
   set mousetime& mousemodel&
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 func Test_xterm_mouse_click_in_fold_columns()
@@ -1276,7 +1294,7 @@ func Test_term_mouse_visual_mode()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for displaying the popup menu using the right mouse click
@@ -1311,7 +1329,7 @@ func Test_term_mouse_popup_menu()
   let &ttymouse = save_ttymouse
   let &mousemodel = save_mousemodel
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for 'mousemodel' set to popup_setpos to move the cursor where the popup
@@ -1437,7 +1455,7 @@ func Test_term_mouse_popup_menu_setpos()
   let &ttymouse = save_ttymouse
   let &mousemodel = save_mousemodel
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for searching for the word under the cursor using Shift-Right or
@@ -1476,7 +1494,7 @@ func Test_term_mouse_search()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
-  close!
+  bw!
 endfunc
 
 " Test for selecting an entry in the quickfix/location list window using the
@@ -2732,12 +2750,61 @@ func Test_terminal_builtin_without_gui()
   CheckNotMSWindows
 
   " builtin_gui should not be output by :set term=xxx
-  let output = systemlist("TERM=dumb " .. v:progpath .. " --clean -c ':set t_ti= t_te=' -c 'set term=xxx' -c ':q!'")
+  let output = systemlist("TERM=dumb " .. v:progpath .. " --not-a-term --clean -c ':set t_ti= t_te=' -c 'set term=xxx' -c ':q!'")
   redraw!
   call map(output, {_, val -> trim(val)})
   call assert_equal(-1, index(output, 'builtin_gui'))
   call assert_notequal(-1, index(output, 'builtin_dumb'))
 endfunc
 
+func Test_xterm_direct_enables_termguicolors()
+  call s:TermGuiColorsTest()
+  " TERM=xterm-direct enables termguicolors
+  let colors  = systemlist('tput -Txterm-direct colors')[0]
+  defer delete('XTerm-direct.txt')
+
+  let buf = RunVimInTerminal('--cmd ":set noswapfile" --clean XTerm-direct.txt',
+        \  {'rows': 10, 'env': {'TERM': 'xterm-direct'}})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":$put ='TERM: ' .. &term\<cr>")
+  " doesn't work. Vim cannot query xterm colors in the embedded terminal?
+  "call term_sendkeys(buf, ":$put ='Colors: ' .. &t_Co\<cr>")
+  call term_sendkeys(buf, ":$put ='Termguicolors: ' .. &tgc\<cr>")
+  call term_sendkeys(buf, ":wq\<cr>")
+  call TermWait(buf)
+
+  let result=readfile('XTerm-direct.txt')
+  " call assert_equal(['', 'TERM: xterm-direct', 'Colors: ' .. colors, 'Termguicolors: 1'], result)
+  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 0'], result)
+  " cleanup
+  bw!
+  close
+endfunc
+
+func Test_xterm_direct_no_termguicolors()
+  " unfortunately doesn't work with libvterm
+  call s:TermGuiColorsTest()
+
+  let lines =<< trim END
+      set notermguicolors noswapfile
+      set t_Co=16777216
+  END
+  call writefile(lines, 'XtermDirect', 'D')
+  defer delete('XTerm-direct2.txt')
+
+  let buf = RunVimInTerminal('-S XtermDirect --clean XTerm-direct2.txt',
+        \  {'rows': 10, 'env': {'TERM': 'xterm-direct'}})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":$put ='TERM: ' .. &term\<cr>")
+  call term_sendkeys(buf, ":$put ='Termguicolors: ' .. &tgc\<cr>")
+  call term_sendkeys(buf, ":wq\<cr>")
+  call TermWait(buf)
+
+  let result=readfile('XTerm-direct2.txt')
+  call assert_equal(['', 'TERM: xterm-direct', 'Termguicolors: 0'], result)
+  " cleanup
+  bw!
+  close
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

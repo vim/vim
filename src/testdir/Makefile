@@ -96,7 +96,7 @@ clean:
 	-rm -f opt_test.vim test_result.log $(CLEANUP_FILES)
 	-rm -rf $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
-	-rm -f asan.*
+	-rm -f asan.* asan_test_*
 	-rm -f guidialog guidialogfile
 
 # Delete the files produced by benchmarking, so they can run again.

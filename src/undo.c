@@ -3124,7 +3124,7 @@ ex_undolist(exarg_T *eap UNUSED)
 
 	    // we have to call STRLEN() here because add_time() does not report
 	    // the number of characters added.
-	    len += STRLEN(IObuff + len);
+	    len += (int)STRLEN(IObuff + len);
 	    if (uhp->uh_save_nr > 0)
 	    {
 		int n = (len >= 33) ? 0 : 33 - len;

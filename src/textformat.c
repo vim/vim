@@ -369,7 +369,7 @@ internal_format(
 	{
 	    // In MODE_VREPLACE state, we will backspace over the text to be
 	    // wrapped, so save a copy now to put on the next line.
-	    saved_text = vim_strsave(ml_get_cursor());
+	    saved_text = vim_strnsave(ml_get_cursor(), ml_get_cursor_len());
 	    curwin->w_cursor.col = orig_col;
 	    if (saved_text == NULL)
 		break;	// Can't do it, out of memory
@@ -434,7 +434,7 @@ internal_format(
 			// add the additional whitespace needed after the
 			// comment leader for the numbered list.
 			for (i = 0; i < padding; i++)
-			    ins_str((char_u *)" ");
+			    ins_str((char_u *)" ", 1);
 		    }
 		    else
 		    {
@@ -552,9 +552,7 @@ same_leader(
     char_u  *leader2_flags)
 {
     int	    idx1 = 0, idx2 = 0;
-    char_u  *p;
     char_u  *line1;
-    char_u  *line2;
 
     if (leader1_len == 0)
 	return (leader2_len == 0);
@@ -566,6 +564,8 @@ same_leader(
     // some text after it and the second line has the 'm' flag.
     if (leader1_flags != NULL)
     {
+	char_u	*p;
+
 	for (p = leader1_flags; *p && *p != ':'; ++p)
 	{
 	    if (*p == COM_FIRST)
@@ -589,9 +589,11 @@ same_leader(
 
     // Get current line and next line, compare the leaders.
     // The first line has to be saved, only one line can be locked at a time.
-    line1 = vim_strsave(ml_get(lnum));
+    line1 = vim_strnsave(ml_get(lnum), ml_get_len(lnum));
     if (line1 != NULL)
     {
+	char_u  *line2;
+
 	for (idx1 = 0; VIM_ISWHITE(line1[idx1]); ++idx1)
 	    ;
 	line2 = ml_get(lnum + 1);
@@ -665,11 +667,8 @@ auto_format(
     int		prev_line)	// may start in previous line
 {
     pos_T	pos;
-    colnr_T	len;
     char_u	*old;
-    char_u	*new, *pnew;
     int		wasatend;
-    int		cc;
 
     if (!has_format_option(FO_AUTO))
 	return;
@@ -688,6 +687,8 @@ auto_format(
     wasatend = (pos.col == ml_get_curline_len());
     if (*old != NUL && !trailblank && wasatend)
     {
+	int cc;
+
 	dec_cursor();
 	cc = gchar_cursor();
 	if (!WHITECHAR(cc) && curwin->w_cursor.col > 0
@@ -740,11 +741,13 @@ auto_format(
     // formatted.
     if (!wasatend && has_format_option(FO_WHITE_PAR))
     {
-	new = ml_get_curline();
-	len = ml_get_curline_len();
+	char_u	*new = ml_get_curline();
+	colnr_T	len = ml_get_curline_len();
 	if (curwin->w_cursor.col == len)
 	{
-	    pnew = vim_strnsave(new, len + 2);
+	    char_u *pnew = vim_strnsave(new, len + 2);
+	    if (pnew == NULL)
+		return;
 	    pnew[len] = ' ';
 	    pnew[len + 1] = NUL;
 	    ml_replace(curwin->w_cursor.lnum, pnew, FALSE);
@@ -1163,13 +1166,24 @@ format_lines(
 		State = MODE_INSERT;	// for open_line()
 		smd_save = p_smd;
 		p_smd = FALSE;
+
 		insertchar(NUL, INSCHAR_FORMAT
 			+ (do_comments ? INSCHAR_DO_COM : 0)
 			+ (do_comments && do_comments_list
 						       ? INSCHAR_COM_LIST : 0)
 			+ (avoid_fex ? INSCHAR_NO_FEX : 0), second_indent);
+
 		State = old_State;
 		p_smd = smd_save;
+		// Cursor and mouse shape shapes may have been updated (e.g. by
+		// :normal) in insertchar(), so they need to be updated here.
+#ifdef CURSOR_SHAPE
+		ui_cursor_shape();
+#endif
+#ifdef FEAT_MOUSESHAPE
+		update_mouseshape(-1);
+#endif
+
 		second_indent = -1;
 		// at end of par.: need to set indent of next par.
 		need_set_indent = is_end_par;

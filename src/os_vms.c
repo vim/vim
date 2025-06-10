@@ -686,9 +686,9 @@ vms_fixfilename(void *instring)
     }
 
 #ifdef DEBUG
-     char		 *tmpbuf = NULL;
-     tmpbuf = ALLOC_MULT(char, buflen);
-     strcpy(tmpbuf, instring);
+    char		 *tmpbuf = NULL;
+    tmpbuf = ALLOC_MULT(char, buflen);
+    strcpy(tmpbuf, instring);
 #endif
 
     Fspec_Rms = buf;				// for decc$to_vms

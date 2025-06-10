@@ -945,6 +945,7 @@ func Test_incsearch_cmdline_modifier()
 endfunc
 
 func Test_incsearch_scrolling()
+  CheckScreendump
   CheckRunVimInTerminal
   call assert_equal(0, &scrolloff)
   call writefile([
@@ -1541,15 +1542,44 @@ func Test_large_hex_chars2()
   try
     /[\Ufffffc1f]
   catch
-    call assert_match('E486:', v:exception)
+    call assert_match('E1541:', v:exception)
   endtry
   try
     set re=1
     /[\Ufffffc1f]
   catch
-    call assert_match('E486:', v:exception)
+    call assert_match('E1541:', v:exception)
   endtry
   set re&
+endfunc
+
+func Test_large_hex_chars3()
+  " Validate max number of Unicode char
+  try
+    /[\UFFFFFFFF]
+  catch
+    call assert_match('E1541:', v:exception)
+  endtry
+  try
+    /[\UFFFFFFF]
+  catch
+    call assert_match('E486:', v:exception)
+  endtry
+  try
+    /\%#=2[\d32-\UFFFFFFFF]
+  catch
+    call assert_match('E1541:', v:exception)
+  endtry
+  try
+    /\%#=1[\UFFFFFFFF]
+  catch
+    call assert_match('E1541:', v:exception)
+  endtry
+  try
+    /\%#=1[\d32-\UFFFFFFFF]
+  catch
+    call assert_match('E945:', v:exception)
+  endtry
 endfunc
 
 func Test_one_error_msg()

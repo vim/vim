@@ -1439,7 +1439,7 @@ get_prop_ids_from_list(list_T *l, int *num_ids)
 {
     int		*prop_ids;
     listitem_T	*li;
-    int		i;
+    int		i = 0;
     int		id;
     int		error;
 
@@ -1449,7 +1449,7 @@ get_prop_ids_from_list(list_T *l, int *num_ids)
     if (prop_ids == NULL)
 	return NULL;
 
-    i = 0;
+    CHECK_LIST_MATERIALIZE(l);
     FOR_ALL_LIST_ITEMS(l, li)
     {
 	error = FALSE;

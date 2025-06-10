@@ -543,11 +543,15 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last, int max)
 gchar_pos(pos_T *pos)
 {
     char_u	*ptr;
+    int		ptrlen;
 
     // When searching columns is sometimes put at the end of a line.
     if (pos->col == MAXCOL)
 	return NUL;
+    ptrlen = ml_get_len(pos->lnum);
     ptr = ml_get_pos(pos);
+    if (pos->col > ptrlen)
+	return NUL;
     if (has_mbyte)
 	return (*mb_ptr2char)(ptr);
     return (int)*ptr;

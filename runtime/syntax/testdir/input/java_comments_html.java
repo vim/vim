@@ -1,8 +1,8 @@
 // VIM_TEST_SETUP unlet! g:java_no_tab_space_error g:java_ignore_javadoc
 // VIM_TEST_SETUP unlet! g:java_no_trail_space_error
-// VIM_TEST_SETUP let [g:java_space_errors,g:java_comment_strings]=[1,1]
-// VIM_TEST_SETUP let g:java_ignore_markdown = 1
-
+// VIM_TEST_SETUP unlet! g:java_consent_to_html_syntax_folding
+// VIM_TEST_SETUP let[g:java_space_errors,g:java_comment_strings]=[1,1]
+// VIM_TEST_SETUP let[g:java_ignore_markdown,g:html_syntax_folding]=[1,1]
 
 
 

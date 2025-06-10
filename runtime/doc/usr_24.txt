@@ -1,4 +1,4 @@
-*usr_24.txt*	For Vim version 9.1.  Last change: 2018 Mar 18
+*usr_24.txt*	For Vim version 9.1.  Last change: 2025 Jun 02
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -187,6 +187,7 @@ with a certain type of item:
 	CTRL-X CTRL-D		macro definitions (also in included files)
 	CTRL-X CTRL-I		current and included files
 	CTRL-X CTRL-K		words from a dictionary
+	CTRL-X CTRL-R		contents from registers
 	CTRL-X CTRL-T		words from a thesaurus
 	CTRL-X CTRL-]		tags
 	CTRL-X CTRL-V		Vim command line

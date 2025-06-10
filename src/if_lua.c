@@ -595,7 +595,7 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    if (tv->vval.v_number <= VVAL_TRUE)
-		lua_pushinteger(L, (int) tv->vval.v_number);
+		lua_pushboolean(L, (int) tv->vval.v_number);
 	    else
 		lua_pushnil(L);
 	    break;

@@ -1,6 +1,6 @@
 /* getchar.c */
 char_u *get_recorded(void);
-char_u *get_inserted(void);
+string_T get_inserted(void);
 int stuff_empty(void);
 int readbuf1_empty(void);
 void typeahead_noflush(int c);
@@ -16,6 +16,7 @@ void AppendCharToRedobuff(int c);
 void AppendNumberToRedobuff(long n);
 void stuffReadbuff(char_u *s);
 void stuffRedoReadbuff(char_u *s);
+void stuffReadbuffLen(char_u *s, long len);
 void stuffReadbuffSpec(char_u *s);
 void stuffcharReadbuff(int c);
 void stuffnumReadbuff(long n);

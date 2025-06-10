@@ -237,6 +237,89 @@ estack_sfile(estack_arg_T which UNUSED)
 #endif
 }
 
+#ifdef FEAT_EVAL
+    static void
+stacktrace_push_item(
+	list_T		*l,
+	ufunc_T		*fp,
+	char_u		*event,
+	linenr_T	lnum,
+	char_u		*filepath)
+{
+    dict_T	*d;
+    typval_T	tv;
+
+    d = dict_alloc_lock(VAR_FIXED);
+    if (d == NULL)
+	return;
+
+    tv.v_type = VAR_DICT;
+    tv.v_lock = VAR_LOCKED;
+    tv.vval.v_dict = d;
+
+    if (fp != NULL)
+	dict_add_func(d, "funcref", fp);
+    if (event != NULL)
+	dict_add_string(d, "event", event);
+    dict_add_number(d, "lnum", lnum);
+    dict_add_string(d, "filepath", filepath);
+
+    list_append_tv(l, &tv);
+}
+
+/*
+ * Create the stacktrace from exestack.
+ */
+    list_T *
+stacktrace_create(void)
+{
+    list_T	*l;
+    int		i;
+
+    l = list_alloc();
+    if (l == NULL)
+	return NULL;
+
+    for (i = 0; i < exestack.ga_len; ++i)
+    {
+	estack_T *entry = &((estack_T *)exestack.ga_data)[i];
+	linenr_T lnum = entry->es_lnum;
+
+	if (entry->es_type == ETYPE_SCRIPT)
+	    stacktrace_push_item(l, NULL, NULL, lnum, entry->es_name);
+	else if (entry->es_type == ETYPE_UFUNC)
+	{
+	    ufunc_T *fp = entry->es_info.ufunc;
+	    sctx_T sctx = fp->uf_script_ctx;
+	    char_u *filepath = sctx.sc_sid > 0 ?
+				   get_scriptname(sctx.sc_sid) : (char_u *)"";
+
+	    lnum += sctx.sc_lnum;
+	    stacktrace_push_item(l, fp, NULL, lnum, filepath);
+	}
+	else if (entry->es_type == ETYPE_AUCMD)
+	{
+	    sctx_T sctx = *acp_script_ctx(entry->es_info.aucmd);
+	    char_u *filepath = sctx.sc_sid > 0 ?
+				   get_scriptname(sctx.sc_sid) : (char_u *)"";
+
+	    lnum += sctx.sc_lnum;
+	    stacktrace_push_item(l, NULL, entry->es_name, lnum, filepath);
+	}
+    }
+    return l;
+}
+
+/*
+ * getstacktrace() function
+ */
+    void
+f_getstacktrace(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv_list_set(rettv, stacktrace_create());
+}
+#endif
+
 /*
  * Get DIP_ flags from the [where] argument of a :runtime command.
  * "*argp" is advanced to after the [where] argument if it is found.

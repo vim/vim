@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 9.1.  Last change: 2024 Oct 06
+*motion.txt*    For Vim version 9.1.  Last change: 2025 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -121,6 +121,12 @@ This cannot be repeated: >
 	   call search("f")<CR>
 	endif<CR>
 Note that when using ":" any motion becomes characterwise exclusive.
+
+					*inclusive-motion-selection-exclusive*
+When 'selection' is "exclusive", |Visual| mode is active and an inclusive
+motion has been used, the cursor position will be adjusted by another
+character to the right, so that the Visual selection includes the expected
+text and can be acted upon.
 
 								*forced-motion*
 FORCING A MOTION TO BE LINEWISE, CHARACTERWISE OR BLOCKWISE
@@ -889,12 +895,12 @@ Numbered mark should be stored.  See |viminfo-file-marks|.
 
 
 							*'[* *`[*
-'[  `[			To the first character of the previously changed
-			or yanked text.
+'[  `[			To the first character of the previously changed,
+			or yanked text.  Also set when writing the buffer.
 
 							*']* *`]*
 ']  `]			To the last character of the previously changed or
-			yanked text.
+			yanked text.  Also set when writing the buffer.
 
 After executing an operator the Cursor is put at the beginning of the text
 that was operated upon.  After a put command ("p" or "P") the cursor is

@@ -466,6 +466,7 @@ hi def link jsonArray Special
 hi def link jsonNull Function
 hi def link jsonBool Boolean
 
+delcommand Builtin
 let b:current_syntax = "8th"
 let &cpo = s:cpo_save
 unlet s:cpo_save

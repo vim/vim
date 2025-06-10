@@ -1142,7 +1142,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 			// freed later, also need to free "buf" later
 			value->bv_tofree = buf;
 		    s = sconv;
-		    len = STRLEN(s);
+		    len = (int)STRLEN(s);
 		    converted = TRUE;
 		}
 	    }
@@ -1263,6 +1263,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 		case 'L': type = VAR_LIST; break;
 		case 'B': type = VAR_BLOB; break;
 		case 'X': type = VAR_SPECIAL; break;
+		case 'T': type = VAR_TUPLE; break;
 	    }
 
 	    tab = vim_strchr(tab, '\t');
@@ -1270,7 +1271,8 @@ read_viminfo_varlist(vir_T *virp, int writing)
 	    {
 		tv.v_type = type;
 		if (type == VAR_STRING || type == VAR_DICT
-			|| type == VAR_LIST || type == VAR_BLOB)
+			|| type == VAR_LIST || type == VAR_BLOB
+			|| type == VAR_TUPLE)
 		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
 		else if (type == VAR_FLOAT)
@@ -1282,7 +1284,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 					     || tv.vval.v_number == VVAL_TRUE))
 			tv.v_type = VAR_BOOL;
 		}
-		if (type == VAR_DICT || type == VAR_LIST)
+		if (type == VAR_DICT || type == VAR_LIST || type == VAR_TUPLE)
 		{
 		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
 
@@ -1370,7 +1372,7 @@ write_viminfo_varlist(FILE *fp)
 
 			      s = "DIC";
 			      if (di != NULL && !set_ref_in_ht(
-						 &di->dv_hashtab, copyID, NULL)
+					 &di->dv_hashtab, copyID, NULL, NULL)
 				      && di->dv_copyID == copyID)
 				  // has a circular reference, can't turn the
 				  // value into a string
@@ -1384,8 +1386,22 @@ write_viminfo_varlist(FILE *fp)
 
 			      s = "LIS";
 			      if (l != NULL && !set_ref_in_list_items(
-							       l, copyID, NULL)
+						       l, copyID, NULL, NULL)
 				      && l->lv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_TUPLE:
+			  {
+			      tuple_T	*tuple = this_var->di_tv.vval.v_tuple;
+			      int	copyID = get_copyID();
+
+			      s = "TUP";
+			      if (tuple != NULL && !set_ref_in_tuple_items(
+					       tuple, copyID, NULL, NULL)
+				      && tuple->tv_copyID == copyID)
 				  // has a circular reference, can't turn the
 				  // value into a string
 				  continue;
@@ -1590,7 +1606,7 @@ static yankreg_T *y_read_regs = NULL;
     static void
 prepare_viminfo_registers(void)
 {
-     y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
+    y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
 }
 
     static void
@@ -2883,7 +2899,8 @@ read_viminfo_up_to_marks(
 		if (virp->vir_version < VIMINFO_VERSION_WITH_REGISTERS)
 		    eof = read_viminfo_register(virp, forceit);
 		else
-		    do {
+		    do
+		    {
 			eof = viminfo_readline(virp);
 		    } while (!eof && (virp->vir_line[0] == TAB
 						|| virp->vir_line[0] == '<'));

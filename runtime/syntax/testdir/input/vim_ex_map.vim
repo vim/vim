@@ -5,6 +5,20 @@ map! lhs rhs
 map 
 map lhs rhs
 
+map <buffer><expr><nowait><script><silent><special><unique> lhs rhs
+map <buffer> <expr> <nowait> <script> <silent> <special> <unique> lhs rhs
+
+" :map special arguments are case sensitive, <BUFFER> is the LHS
+map <BUFFER> rhs
+
+map <Leader>lhs      rhs
+map <LocalLeader>lhs rhs
+
+map lhs <Leader>rhs
+map lhs <LocalLeader>rhs
+
+map lhs <Plug>rhs
+
 mapclear  <buffer>
 mapclear! <buffer>
 nmapclear <buffer>
@@ -32,10 +46,10 @@ map lhs :search('foo\\|bar')<CR>:echo "rhs"<CR>
 
 " multiline RHS
 
-map <leader>baz 
-  \ :echo (<bar>
+map <Leader>baz 
+  \ :echo (<Bar>
   \
-  \'bar')<cr>
+  \'bar')<CR>
   "\ comment
 
 map lhs 
@@ -89,14 +103,14 @@ enddef
 
 " Issue  #12672
 
-nnoremap <leader>foo :echo call(
+nnoremap <Leader>foo :echo call(
   "\ comment
   \ {x->x},
-  \ ['foo'])<cr>
+  \ ['foo'])<CR>
 
-nnoremap <leader>bar :echo (
+nnoremap <Leader>bar :echo (
   \
-  \ 'bar')<cr>
+  \ 'bar')<CR>
 
 
 " Example:

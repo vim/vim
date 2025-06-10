@@ -1,0 +1,349 @@
+*helptoc.txt*   For Vim version 9.1.  Last change:  2025 May 04
+
+
+			  VIM REFERENCE MANUAL
+
+Interactive table of contents for help buffers and several other filetypes
+
+==============================================================================
+
+
+1. OVERVIEW						*HelpToc-overview*
+
+The helptoc.vim plugin provides one command, :HelpToc, which generates a
+hierarchical table of contents in a popup window, which is based on the
+structure of a Vim buffer.  It was designed initially for help buffers,
+but it also works with buffers of the following types:
+	- asciidoc
+	- html
+	- man
+	- markdown
+	- terminal
+	- tex
+	- vim		Note: only with numbered fold markers, e.g. {{{1
+	- xhtml
+
+1.1 The :HelpToc command				*HelpToc-:HelpToc*
+
+The :HelpToc command takes no arguments and it cannot be executed from an
+unsupported filetype.  Also, it cannot be used to generate a table of contents
+for an inactive buffer.
+
+For most buffers of the supported types, :HelpToc may be entered directly
+in Vim's |Command-line-mode|.  How to use it from Vim's |Terminal-Job| mode is
+explained in |HelpToc-terminal-buftype|.
+
+You may choose to map :HelpToc to keys making it easier to use.  These are
+examples of what could be used: >
+
+	nnoremap <Leader>ht <Cmd>HelpToc<CR>
+	tnoremap <C-t><C-t> <Cmd>HelpToc<CR>
+<
+
+2. DETAILS						*HelpToc-details*
+
+When the :HelpToc command is executed from an active buffer of a supported
+type, a popup window is produced.  The window contains a hierarchical and
+interactive table of contents.  The entries are based on the "headings" in
+the buffer.
+
+Jumping to an entry's position in the buffer can be achieved by pressing
+enter on the applicable entry.  Navigation, and other commands applicable to
+the popup window, such as expanding and contracting levels, fuzzy searching,
+and jumping to the previous or next entry (leaving the table of contents
+itself displayed, using J and K), is provided at |help-TOC|, so that is not
+reproduced in this help file.
+
+
+3. TYPES						*HelpToc-types*
+
+Some filetypes have more predictable structures than others.  For example,
+markdown and asciidoc make the identification of headings (aside from edge
+cases, such as when in quotes) straightforward.  Some filetypes do not have
+such obvious or reliable headings/levels (particularly help buffers).
+Further, in some instances, how to enter the :HelpToc command is not
+necessarily obvious, e.g., when in a Vim |terminal-window|.  So, the following
+headings address specific details regarding the in-scope types.
+
+3.1 asciidoc					*HelpToc-asciidoc-filetype*
+
+The heading levels in asciidoc are typically identified by lines starting
+with a "=" (up to six, one per level), one or more blank characters, and the
+heading text.  :HelpToc will generate a table of contents based on either
+that form of heading type or, because asciidoc also allows for ATX heading
+level syntax (i.e., using the "#" character), headings using that format too.
+
+As asciidoc is very structured, its table of contents entries are presented
+in a standardized form - see |HelpToc-standardized-toc|.  So, the initial
+"=" or "#" characters and the following space from the related heading are
+not included in the table of contents' entries.
+
+3.2 html					*HelpToc-html-filetype*
+
+HTML provides for six levels of headings, <h1> to <h6>, which may be either
+upper or lower case and preceded by all sorts of content like <!--comments-->.
+:HelpToc will produce a table of contents based on the six heading levels.
+
+As HTML is very structured, its table of contents entries are presented
+in a standardized form - see |HelpToc-standardized-toc|.  So, the <h1> to <h6>
+tags, any preceding content, and any trailing content after the heading text,
+is not included in the table of contents' entries.
+
+3.3 man pages					*HelpToc-man-filetype*
+
+Retrieving man pages is typically performed in the terminal.  To use :HelpToc
+to generate a table of contents, the |man.vim| filetype plugin is a
+prerequisite.  It is provided with Vim, and may be sourced with: >
+
+	:runtime ftplugin/man.vim
+<
+Once sourced, the |:Man| command will open the applicable man page in a new
+buffer (of "man" filetype).  For example: >
+
+	:Man pwd
+<
+Once in the man buffer, entering :HelpToc opens the table of contents popup,
+with level 1 containing section names like NAME, SYNOPSIS, etc.  Levels
+below 1 include subsections and options, with the level depending on the
+number of spaces preceding the content.
+
+The table of contents for a man buffer's popup window has the same syntax
+highlighting as man pages.  This reflects that its content is reproduced
+as-is, i.e., no preceding tags, level-indicating data, etc., need be omitted
+for optimal presentation.
+
+3.4 markdown					*HelpToc-markdown-filetype*
+
+The headings and levels in markdown typically are ATX formatted headings
+(lines starting with up to three spaces, one to six "#", then (optionally)
+one or blank characters and the heading text).  The alternate form,
+setext, uses up to three spaces, the heading 1 text, followed by a
+line of one or more "=".  The setext heading 2 is similar, but for one or
+more "-" instead of "=".  There is no heading 3+ in setext.  ATX and setext
+headings are supported.
+
+As markdown is very structured, its table of contents entries are presented
+in a standardized form - see |HelpToc-standardized-toc|.  So, they do not
+include any leading spaces, any initial "#" characters and the following blank
+character(s) in the table of contents' entries.
+
+3.5 terminal					*HelpToc-terminal-buftype*
+
+There are no explicit "headings" for a terminal buffer.  However, :HelpToc
+displays the history of executed shell commands.  Those may be specified
+by changing the pattern used to match the Vim terminal's prompt.
+See |HelpToc-configuration| for examples.
+
+To access the terminal's table of contents, from the Vim's |Terminal-Job| mode
+enter CTRL-W N to go to |Terminal-Normal| mode.  From there, enter :HelpToc to
+generate the table of contents.  If you use the terminal's table of contents
+a lot, an appropriate mapping may make it easier than using CTRL-W N - e.g.: >
+
+          tnoremap <C-t><C-t> <Cmd>HelpToc<CR>
+<
+As the terminal has only "level 1", the table of contents is presented in a
+standardized form - see |HelpToc-standardized-toc| - including only the history
+list of commands.  The prompt itself is also omitted since it adds no value
+repeating it for every entry.
+
+3.6 tex						*HelpToc-tex-filetype*
+
+In LaTeX, a document may be structured hierarchically using part, chapter,
+and sectioning commands.  Document structure levels are:
+	\part{}
+	\chapter{}
+	\section{}
+	\subsection{}
+	\subsubsection{}
+
+To keep things simpler, \part{} is supported, though treated as being at
+the same level as chapter.  Consequently, there are four levels displayed
+for a tex filetype's table of contents, regardless of the \documentclass{},
+i.e., part and chapter (at level 1), section (level 2), subsection (level 3),
+and subsubsection (level 4).
+
+Also supported are:
+	- The "*" used to produce unnumbered headings, which are not intended
+	  for reproduction in a table of contents: >
+		\section*{Unnumbered section heading not produced in the TOC}
+<	- Manual toc entries using \addcontentsline, for example: >
+		\addcontentsline{toc}{section}{entry in the TOC only!}
+<
+The table of contents for a tex filetype is in a standardized form -
+see |HelpToc-standardized-toc|.  Omitted are: the "\", the part, chapter,
+*section, or addcontentsline, and the left and right curly
+brackets preceding and following each heading's text.
+
+3.7 vim						*HelpToc-vim-filetype*
+
+Vimscript and Vim9 script do not have headings or levels inherently like
+markup languages.  However, Vim provides for |folds| defined by markers (|{{{|),
+which themselves may be succeeded by a number explicitly indicating the fold
+level.  This is the structure recognized and supported by helptoc.vim.
+So, for example, the following would produce three table of contents entries: >
+
+	vim9script
+	# Variables {{{1
+	var b: bool = true
+	var s: string = $"Fold markers are great?  {b}!"
+	# Functions {{{1
+	def MyFunction(): void #{{{2
+	  echo s
+	enddef
+	MyFunction()
+<
+The table of contents for that script would appear like this:
+	Variables
+	Functions
+	| MyFunction(): void
+
+Note: The numbered |{{{| marker structure is the only one supported by
+      helptoc.vim for the vim filetype.
+
+As the {{{1 to {{{6 markers make the "headings" explicit, the table of
+contents is in a standardized form - see |HelpToc-standardized-toc|.
+It does not include any leading comment markers (i.e., either # or ") and
+omits the markers themselves.
+
+3.8 xhtml					*HelpToc-xhtml-filetype*
+
+Although XHTML, being XML, is more strictly structured than HTML/HTML5,
+there is no practical difference in treatment required for the xhtml filetype
+because, at the heading level, the tags that matter are very similar.
+See |HelpToc-html-filetype| for how an xhtml filetype's table of contents is
+supported.
+
+
+4. STANDARDIZED TOC				*HelpToc-standardized-toc*
+
+The table of contents for a help buffer, terminal, or man page, make sense
+being presented in the form they appear, minus trailing content (such as tags).
+
+The table of contents for a markdown, asciidoc, [x]html, terminal, or tex
+buffer have superfluous content if the entire line was to be returned.
+For example:
+- Markdown has "#" characters before headings when using ATX heading notation.
+- Asciidoc will have either those or, more often, "=" characters before its
+  headings.
+- HTML, aside from the "<h" headings, may have additional tags, comments,
+  and whitespace before its headings.
+- The Vim terminal has the shell prompt, which adds nothing if repeated for
+  every heading (and may be very long).
+- LaTeX has "\" level indicators like "\section{" and a trailing "}".
+Consequently, standardising these filetypes' tables of contents, removing
+the "noise", and indicating the contents level of each entry, makes sense.
+
+HelpToc standardizes the markdown, asciidoc, [x]html, terminal and tex tables
+of contents by removing extraneous characters, markup indicators, and tags.
+It also applies simple, unobtrusive syntax highlighting to the text and level
+indicators.  By default, it will appear like the following example (though
+any level indicators will be less prominent, using |NonText| highlight group).
+
+	Level 1
+	| Level 2
+	| | Level 3
+	| | | Level 4
+	| | | | Level 5
+	| | | | | Level 6
+
+Note: The "| " level indicator may be changed - see |HelpToc-configuration|.
+
+
+5. CONFIGURATION				*HelpToc-configuration*
+
+All configuration is achieved utilizing the g:helptoc dictionary.  Any of the
+following may be adjusted to meet your needs or preferences:
+
+g:helptoc key	 what it controls
+-------------	 ----------------
+shell_prompt	 The terminal prompt, used for creating a table of contents
+		 for the terminal (history list).  The default is,
+		 '^\w\+@\w\+:\f\+\$\s', which should match many users' bash
+		 prompt.  To change it, either interactively or in your .vimrc,
+		 use (for example for a bare Bourne shell "$ " prompt): >
+			vim9 g:helptoc.shell_prompt = '^\$\s'
+
+<level_indicator  This key's value controls the level indicator used in
+		 standardized tables of contents.  The default is '| '
+		 (i.e., a vertical bar and a space), but may be changed to
+		 whatever you want.  For example, for a broken bar and space: >
+			vim9 g:helptoc.level_indicator = '¦ '
+<
+popup_border	 By default, the table of contents border will appear above,
+		 right, below, and left of the popup window.  If you prefer
+		 not to have the border on the right and left (for example
+		 only), you can achieve that with: >
+			vim9 g:helptoc.popup_border = [1, 0, 1, 0]
+<popup_borderchars
+		 The default border characters for the table of contents popup
+		 window is the list ['─', '│', '─', '│', '┌', '┐', '┘', '└'].
+		 There's nothing wrong with those box drawing characters,
+		 though, for example, if you wanted a border that only uses
+		 ASCII characters, you could make the border spaces only: >
+			vim9 g:helptoc.popup_borderchars = [' ']
+<popup_borderhighlight
+		 The default border highlight group is Normal.  You can change
+		 that, perhaps in combination with popup_borderchars, above,
+		 to create a very clearly prominent border.  For example, if
+		 the popup_borderchars are made [' '], like above, the border
+		 could be made a solid colour different to the background
+		 with: >
+			vim9 g:helptoc.popup_borderhighlight = ['Cursor']
+
+<			  Note: Choosing a highlight group that persists when
+				colorschemes change may be a good idea if you
+				do choose to customize this.
+
+popup_drag	By default, table of contents popup windows may be dragged
+		with a mouse.  If you want to prevent that from happening,
+		for whatever reason, you may deactivate it with: >
+			vim9 g:helptoc.popup_drag = false
+<
+popup_close	Table of contents popups have "none" as the default setting
+		for this option.  If you use a mouse, you may want either
+		to have the option to close popup windows by clicking on them
+		or to have a clickable "X" in the top right corner.  For the
+		former, use "click", and for the latter, use "button", e.g.: >
+			vim9 g:helptoc.popup_close = "button"
+<popup_scrollbar
+		No scrollbar is provided on helptoc popups by default.  If you
+		do want scrollbars (which may be useful as an indicator of how
+		far through the table of contents you are, not just for using
+		with a mouse) you may choose to have them with: >
+			vim9 g:helptoc.popup_scrollbar = true
+<
+NOTE: Information about the "popup_*" options, above, relate to popup options,
+which are explained at the 'second argument' part of |popup_create-arguments|.
+
+
+6. LIMITATIONS					*HelpToc-limitations*
+
+- The help filetype may have edge case formatting patterns.  Those may result
+  in some "headings" not being identified and/or may impact the heading levels
+  of entries in the table of contents itself.
+- Terminal window table of contents may not be active (insofar as jumping to
+  entries going to the Vim terminal's related command line).  For example, if
+  Vim's terminal is set to Windows PowerShell Core, the table of contents will
+  display successfully, though the entries go nowhere when Enter, J, or K are
+  entered on them.
+- The tex filetype may have variable sectioning commands depending on the
+  document class.  Consequently, some compromises are made, though they should
+  have minimal impact.  Specifically:
+  * In instances where \part{} and \chapter{} appear in the same buffer, they
+    will both present at the top level in the table of contents.  This should
+    be a minor matter because, in many instances, chapters will be in a
+    separate document using \include{}.
+  * An article or beamer \documentclass without a \part{} (or any document
+    with neither any \part{} nor any \chapter{} command) will have no content
+    at level 1.  Consequently, its table of contents entries will all appear
+    preceded by at least one "| " (by default) because its headings start at
+    level 2 (presuming \section{} is present).
+- The vim filetype is only supported where numbered fold markers are applied.
+  This is intentional (including not handling unnumbered markers, which, when
+  used in combination with numbered ones, may be used for folding comments).
+  helptoc.vim itself provides an exemplar of how to use numbered fold markers,
+  not only for folds, but to support generating a useful table of contents
+  using :HelpToc.
+
+==============================================================================
+vim:tw=78:ts=8:fo=tcq2:ft=help:

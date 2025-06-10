@@ -209,7 +209,7 @@ endfunc
 
 func Test_echohl_completion()
   call feedkeys(":echohl no\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"echohl NonText Normal none', @:)
+  call assert_equal('"echohl NONE NonText Normal', @:)
 endfunc
 
 func Test_syntax_arg_skipped()
@@ -631,6 +631,7 @@ endfunc
 
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
+  CheckScreendump
   CheckRunVimInTerminal
   call writefile([
 	\ '/* comment line at the top */',
@@ -949,7 +950,7 @@ func Test_syn_contained_transparent()
 endfunc
 
 func Test_syn_include_contains_TOP()
-  let l:case = "TOP in included syntax means its group list name"
+  let l:case = "TOP in included syntax refers to top level of that included syntax"
   new
   syntax include @INCLUDED syntax/c.vim
   syntax region FencedCodeBlockC start=/```c/ end=/```/ contains=@INCLUDED
@@ -960,6 +961,18 @@ func Test_syn_include_contains_TOP()
   " cCppOutElse has contains=TOP
   let l:expected = ["cType"]
   eval AssertHighlightGroups(5, 1, l:expected, 1, l:case)
+  syntax clear
+  bw!
+endfunc
+
+func Test_syn_include_contains_TOP_excluding()
+  new
+  syntax include @INCLUDED syntax/c.vim
+  syntax region FencedCodeBlockC start=/```c/ end=/```/ contains=@INCLUDED
+
+  call setline(1,  ['```c', '#if 0', 'int', '#else', 'int', '#if', '#endif', '```' ])
+  let l:expected = ["cCppOutElse", "cConditional"]
+  eval AssertHighlightGroups(6, 1, l:expected, 1)
   syntax clear
   bw!
 endfunc

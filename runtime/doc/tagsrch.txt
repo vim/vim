@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 9.1.  Last change: 2024 Aug 01
+*tagsrch.txt*   For Vim version 9.1.  Last change: 2025 May 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -526,7 +526,7 @@ directory where the tag file is.
 ==============================================================================
 5. Tags file format				*tags-file-format* *E431*
 
-						*ctags* *jtags*
+						*ctags*
 A tags file can be created with an external command, for example "ctags".  It
 will contain a tag for each function.  Some versions of "ctags" will also make
 a tag for each "#defined" macro, typedefs, enums, etc.
@@ -542,13 +542,11 @@ exuberant ctags		This is a very good one.  It works for C, C++, Java,
 			many items.  See http://ctags.sourceforge.net.
 			No new version since 2009.
 etags			Connected to Emacs.  Supports many languages.
-JTags			For Java, in Java.  It can be found at
-			http://www.fleiner.com/jtags/.
+|:helptags|		For Vim's |help| files
 ptags.py		For Python, in Python.  Found in your Python source
 			directory at Tools/scripts/ptags.py.
-ptags			For Perl, in Perl.  It can be found at (link seems
-			dead):
-			http://www.eleves.ens.fr:8080/home/nthiery/Tags/.
+ptags			For Perl, in Perl.  It can be found at
+			https://metacpan.org/pod/Vim::Tag
 gnatxref		For Ada.  See http://www.gnuada.org/.  gnatxref is
 			part of the gnat package.
 
@@ -894,8 +892,8 @@ Common arguments for the commands above:
 7. Using 'tagfunc'						*tag-function*
 
 It is possible to provide Vim with a function which will generate a list of
-tags used for commands like |:tag|, |:tselect| and Normal mode tag commands
-like |CTRL-]|.
+tags used for commands like |:tag|, |:tselect|, Normal mode tag commands like
+|CTRL-]| and for the |taglist()| function.
 
 The function used for generating the taglist is specified by setting the
 'tagfunc' option.  The function will be called with three arguments:
@@ -914,7 +912,7 @@ Currently up to three flags may be passed to the tag function:
 	        (mnemonic: the tag function may use the context around the
 		cursor to perform a better job of generating the tag list.)
   'i'		In Insert mode, the user was completing a tag (with
-		|i_CTRL-X_CTRL-]| or 'completeopt' contains `t`).
+		|i_CTRL-X_CTRL-]| or 'complete' contains "`t`" or "`]`").
   'r'		The first argument to tagfunc should be interpreted as a
 		|pattern| (see |tag-regexp|), such as when using: >
 		  :tag /pat
@@ -950,15 +948,14 @@ It is not allowed to close a window or change window from inside 'tagfunc'.
 The following is a hypothetical example of a function used for 'tagfunc'.  It
 uses the output of |taglist()| to generate the result: a list of tags in the
 inverse order of file names.
->
-	function TagFunc(pattern, flags, info)
-	  function CompareFilenames(item1, item2)
-	    let f1 = a:item1['filename']
-	    let f2 = a:item2['filename']
-	    return f1 >=# f2 ?
-			\ -1 : f1 <=# f2 ? 1 : 0
-	  endfunction
+>vim
+	function CompareFilenames(item1, item2)
+	  let f1 = a:item1['filename']
+	  let f2 = a:item2['filename']
+	  return f1 >=# f2 ? -1 : f1 <=# f2 ? 1 : 0
+	endfunction
 
+	function TagFunc(pattern, flags, info)
 	  let result = taglist(a:pattern)
 	  call sort(result, "CompareFilenames")
 
@@ -966,5 +963,7 @@ inverse order of file names.
 	endfunc
 	set tagfunc=TagFunc
 <
+Note: When executing |taglist()| the 'tagfunc' function won't be called
+recursively.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

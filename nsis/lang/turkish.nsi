@@ -20,15 +20,15 @@ LangString ^UninstallCaption ${LANG_TURKISH} \
 # Translated license file for the license page                            {{{1
 ##############################################################################
 
-LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
-#LicenseLangString page_lic_file ${LANG_TURKISH} "${VIMRT}\doc\uganda.nsis.trx"
+LicenseLangString page_lic_file 0 "..\lang\LICENSE.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_TURKISH} "..\lang\LICENSE.tr.nsis.txt"
 
 ##############################################################################
 # Translated README.txt file, which is opened after installation          {{{1
 ##############################################################################
 
 LangString vim_readme_file 0 "README.txt"
-#LangString vim_readme_file ${LANG_TURKISH} "README.trx.txt"
+#LangString vim_readme_file ${LANG_TURKISH} "README.tr.txt"
 
 ##############################################################################
 

@@ -67,14 +67,20 @@ static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
 static void accept_modifiers_for_function_keys(void);
 
-    // Change this to "if 1" to debug what happens with termresponse.
-#  if 0
-#   define DEBUG_TERMRESPONSE
-static void log_tr(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
-#   define LOG_TR(msg) log_tr msg
-#  else
-#   define LOG_TR(msg) do { /**/ } while (0)
-#  endif
+#if 0  // Change to 1 to enable ch_log() calls for termresponse debugging.
+# define DEBUG_TERMRESPONSE
+# define LOG_TR1(str) \
+		ch_log(NULL, "TermResp: %s " str, \
+			must_redraw == UPD_NOT_VALID ? "NV" \
+			: must_redraw == UPD_CLEAR ? "CL" : "  ")
+# define LOG_TRN(fmt,...) \
+		ch_log(NULL, "TermResp: %s " fmt, \
+			must_redraw == UPD_NOT_VALID ? "NV" \
+			: must_redraw == UPD_CLEAR ? "CL" : "  ", __VA_ARGS__)
+#else
+# define LOG_TR1(str) do { /**/ } while (0)
+# define LOG_TRN(fmt,...) do { /**/ } while (0)
+#endif
 
 #ifdef HAVE_TGETENT
 static char *invoke_tgetent(char_u *, char_u *);
@@ -98,7 +104,7 @@ typedef struct {
     time_t		    tr_start;	// when request was sent, -1 for never
 } termrequest_T;
 
-# define TERMREQUEST_INIT {STATUS_GET, -1}
+#define TERMREQUEST_INIT {STATUS_GET, -1}
 
 // Request Terminal Version status:
 static termrequest_T crv_status = TERMREQUEST_INIT;
@@ -137,9 +143,9 @@ static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
     &xcc_status,
-#  ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
     &rfg_status,
-#  endif
+# endif
     &rbg_status,
     &rbm_status,
     &rcs_status,
@@ -167,9 +173,9 @@ int write_t_8u_state = FALSE;
 # ifndef HAVE_OSPEED
 #  ifdef OSPEED_EXTERN
 extern short ospeed;
-#   else
+#  else
 short ospeed;
-#   endif
+#  endif
 # endif
 # ifndef HAVE_UP_BC_PC
 #  ifdef UP_BC_PC_EXTERN
@@ -229,33 +235,33 @@ typedef struct
 static tcap_entry_T builtin_ansi[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
+#endif
     {(int)KS_CL,	"\033[H\033[2J"},
     {(int)KS_ME,	"\033[0m"},
     {(int)KS_MR,	"\033[7m"},
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},		// guessed
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
 
     {(int)KS_NAME,	NULL}  // end marker
 };
@@ -269,17 +275,17 @@ static tcap_entry_T builtin_ansi[] = {
 static tcap_entry_T builtin_vt320[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
+#endif
     {(int)KS_CL,	"\033[H\033[2J"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_CCO,	"8"},			// allow 8 colors
@@ -299,16 +305,16 @@ static tcap_entry_T builtin_vt320[] = {
     {(int)KS_UT,	"y"},
     {(int)KS_XN,	"y"},
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {K_UP,		"\033[A"},
     {K_DOWN,		"\033[B"},
     {K_RIGHT,		"\033[C"},
@@ -369,11 +375,11 @@ static tcap_entry_T builtin_vt320[] = {
 static tcap_entry_T builtin_vt52[] = {
     {(int)KS_CE,	"\033K"},
     {(int)KS_CD,	"\033J"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033Y%p1%' '%+%c%p2%' '%+%c"},
-#  else
+#else
     {(int)KS_CM,	"\033Y%+ %+ "},
-#  endif
+#endif
     {(int)KS_LE,	"\b"},
     {(int)KS_SR,	"\033I"},
     {(int)KS_AL,	"\033L"},
@@ -397,22 +403,22 @@ static tcap_entry_T builtin_vt52[] = {
 static tcap_entry_T builtin_xterm[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CS,	"\033[%i%p1%d;%p2%dr"},
-#  else
+#else
     {(int)KS_CS,	"\033[%i%d;%dr"},
-#  endif
+#endif
     {(int)KS_CL,	"\033[H\033[2J"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_ME,	"\033[m"},
@@ -429,30 +435,30 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_VE,	"\033[?25h"},
     {(int)KS_VS,	"\033[?12h"},
     {(int)KS_CVS,	"\033[?12l"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CSH,	"\033[%p1%d q"},
-#  else
+#else
     {(int)KS_CSH,	"\033[%d q"},
-#  endif
+#endif
     {(int)KS_CRC,	"\033[?12$p"},
     {(int)KS_CRS,	"\033P$q q\033\\"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
+#endif
     {(int)KS_SR,	"\033M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {(int)KS_KS,	"\033[?1h\033="},
     {(int)KS_KE,	"\033[?1l\033>"},
-#  ifdef FEAT_XTERM_SAVE
+#ifdef FEAT_XTERM_SAVE
     {(int)KS_TI,	"\0337\033[?47h"},
     {(int)KS_TE,	"\033[?47l\0338"},
-#  endif
+#endif
     // These are now under control of the 'keyprotocol' option, see
     // "builtin_mok2".
     // {(int)KS_CTI,	"\033[>4;2m"},
@@ -464,15 +470,15 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_FS,	"\007"},
     {(int)KS_CSC,	"\033]12;"},
     {(int)KS_CEC,	"\007"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CWS,	"\033[8;%p1%d;%p2%dt"},
     {(int)KS_CWP,	"\033[3;%p1%d;%p2%dt"},
     {(int)KS_CGP,	"\033[13t"},
-#  else
+#else
     {(int)KS_CWS,	"\033[8;%d;%dt"},
     {(int)KS_CWP,	"\033[3;%d;%dt"},
     {(int)KS_CGP,	"\033[13t"},
-#  endif
+#endif
     {(int)KS_CRV,	"\033[>c"},
     {(int)KS_CXM,	"\033[?1006;1000%?%p1%{1}%=%th%el%;"},
     {(int)KS_RFG,	"\033]10;?\007"},
@@ -485,10 +491,10 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_CRT,	"\033[23;2t"},
     {(int)KS_SSI,	"\033[22;1t"},
     {(int)KS_SRI,	"\033[23;1t"},
-#  if (defined(UNIX) || defined(VMS))
+#if (defined(UNIX) || defined(VMS))
     {(int)KS_FD,	"\033[?1004l"},
     {(int)KS_FE,	"\033[?1004h"},
-#  endif
+#endif
 
     {K_UP,		"\033O*A"},
     {K_DOWN,		"\033O*B"},
@@ -652,23 +658,23 @@ static tcap_entry_T builtin_iris_ansi[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
+#endif
 #if 0	// The scroll region is not working as Vim expects.
-#  ifdef TERMINFO
+# ifdef TERMINFO
     {(int)KS_CS,	"\033[%i%p1%d;%p2%dr"},
-#  else
+# else
     {(int)KS_CS,	"\033[%i%d;%dr"},
-#  endif
+# endif
 #endif
     {(int)KS_CL,	"\033[H\033[2J"},
     {(int)KS_VE,	"\033[9/y\033[12/y"},	// These aren't documented
@@ -685,42 +691,42 @@ static tcap_entry_T builtin_iris_ansi[] = {
     {(int)KS_CZR,	"\033[23m"},		// italic mode off
     {(int)KS_US,	"\033[4m"},		// underline on
     {(int)KS_UE,	"\033[24m"},		// underline off
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAB,	"\033[4%p1%dm"},    // set background color (ANSI)
     {(int)KS_CAF,	"\033[3%p1%dm"},    // set foreground color (ANSI)
     {(int)KS_CSB,	"\033[102;%p1%dm"}, // set screen background color
     {(int)KS_CSF,	"\033[101;%p1%dm"}, // set screen foreground color
-#  else
+#else
     {(int)KS_CAB,	"\033[4%dm"},	    // set background color (ANSI)
     {(int)KS_CAF,	"\033[3%dm"},	    // set foreground color (ANSI)
     {(int)KS_CSB,	"\033[102;%dm"},    // set screen background color
     {(int)KS_CSF,	"\033[101;%dm"},    // set screen foreground color
-#  endif
+#endif
     {(int)KS_MS,	"y"},		// guessed
     {(int)KS_UT,	"y"},		// guessed
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
+#endif
     {(int)KS_SR,	"\033M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {(int)KS_CIS,	"\033P3.y"},
     {(int)KS_CIE,	"\234"},    // ST "String Terminator"
     {(int)KS_TS,	"\033P1.y"},
     {(int)KS_FS,	"\234"},    // ST "String Terminator"
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CWS,	"\033[203;%p1%d;%p2%d/y"},
     {(int)KS_CWP,	"\033[205;%p1%d;%p2%d/y"},
-#  else
+#else
     {(int)KS_CWS,	"\033[203;%d;%d/y"},
     {(int)KS_CWP,	"\033[205;%d;%d/y"},
-#  endif
+#endif
     {K_UP,		"\033[A"},
     {K_DOWN,		"\033[B"},
     {K_LEFT,		"\033[D"},
@@ -783,27 +789,27 @@ static tcap_entry_T builtin_pcansi[] = {
     {(int)KS_US,	"\033[36;41m"},	// underscore mode: cyan text on red
     {(int)KS_UE,	"\033[0m"},	// underscore mode end
     {(int)KS_CCO,	"8"},		// allow 8 colors
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
     {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
-#  else
+#else
     {(int)KS_CAB,	"\033[4%dm"},	// set background color
     {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
-#  endif
+#endif
     {(int)KS_OP,	"\033[0m"},	// reset colors
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},		// guessed
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {K_UP,		"\316H"},
     {K_DOWN,		"\316P"},
     {K_LEFT,		"\316K"},
@@ -852,19 +858,19 @@ static tcap_entry_T builtin_pcansi[] = {
 static tcap_entry_T builtin_win32[] = {
     {(int)KS_CE,	"\033|K"},	// clear to end of line
     {(int)KS_AL,	"\033|L"},	// add new blank line
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033|%p1%dL"},	// add number of new blank lines
-#  else
+#else
     {(int)KS_CAL,	"\033|%dL"},	// add number of new blank lines
-#  endif
+#endif
     {(int)KS_DL,	"\033|M"},	// delete line
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033|%p1%dM"},	// delete number of lines
     {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
-#  else
+#else
     {(int)KS_CDL,	"\033|%dM"},	// delete number of lines
     {(int)KS_CSV,	"\033|%d;%dV"},
-#  endif
+#endif
     {(int)KS_CL,	"\033|J"},	// clear screen
     {(int)KS_CD,	"\033|j"},	// clear to end of display
     {(int)KS_VI,	"\033|v"},	// cursor invisible
@@ -885,31 +891,31 @@ static tcap_entry_T builtin_win32[] = {
     {(int)KS_US,	"\033|67m"},	// underscore: cyan text on red
     {(int)KS_UE,	"\033|0m"},	// underscore end
     {(int)KS_CCO,	"16"},		// allow 16 colors
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAB,	"\033|%p1%db"},	// set background color
     {(int)KS_CAF,	"\033|%p1%df"},	// set foreground color
-#  else
+#else
     {(int)KS_CAB,	"\033|%db"},	// set background color
     {(int)KS_CAF,	"\033|%df"},	// set foreground color
-#  endif
+#endif
 
     {(int)KS_MS,	"y"},		// save to move cur in reverse mode
     {(int)KS_UT,	"y"},
     {(int)KS_XN,	"y"},
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"}, // cursor motion
-#  else
+#else
     {(int)KS_CM,	"\033|%i%d;%dH"}, // cursor motion
-#  endif
+#endif
     {(int)KS_VB,	"\033|B"},	// visual bell
     {(int)KS_TI,	"\033|S"},	// put terminal in termcap mode
     {(int)KS_TE,	"\033|E"},	// out of termcap mode
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"}, // scroll region
-#  else
+#else
     {(int)KS_CS,	"\033|%i%d;%dr"}, // scroll region
-#  endif
+#endif
 
     {K_UP,		"\316H"},
     {K_DOWN,		"\316P"},
@@ -1037,17 +1043,17 @@ static tcap_entry_T builtin_amiga[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
+#else
     {(int)KS_CAL,	"\033[%dL"},
-#  endif
+#endif
     {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
+#else
     {(int)KS_CDL,	"\033[%dM"},
-#  endif
+#endif
     {(int)KS_CL,	"\014"},
     {(int)KS_VI,	"\033[0 p"},
     {(int)KS_VE,	"\033[1 p"},
@@ -1062,31 +1068,31 @@ static tcap_entry_T builtin_amiga[] = {
     {(int)KS_CZR,	"\033[0m"},
 #if defined(__amigaos4__) || defined(__MORPHOS__) || defined(__AROS__)
     {(int)KS_CCO,	"8"},		// allow 8 colors
-#  ifdef TERMINFO
+# ifdef TERMINFO
     {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
     {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
-#  else
+# else
     {(int)KS_CAB,	"\033[4%dm"},	// set background color
     {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
-#  endif
+# endif
     {(int)KS_OP,	"\033[m"},	// reset colors
 #endif
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},		// guessed
     {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
+#else
     {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
+#endif
 #if defined(__MORPHOS__)
     {(int)KS_SR,	"\033M"},
 #endif
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
+#else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
+#endif
     {K_UP,		"\233A"},
     {K_DOWN,		"\233B"},
     {K_LEFT,		"\233D"},
@@ -1152,38 +1158,38 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_CE,	"[CE]"},
     {(int)KS_CD,	"[CD]"},
     {(int)KS_AL,	"[AL]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CAL,	"[CAL%p1%d]"},
-#  else
+#else
     {(int)KS_CAL,	"[CAL%d]"},
-#  endif
+#endif
     {(int)KS_DL,	"[DL]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CDL,	"[CDL%p1%d]"},
-#  else
+#else
     {(int)KS_CDL,	"[CDL%d]"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CS,	"[%p1%dCS%p2%d]"},
-#  else
+#else
     {(int)KS_CS,	"[%dCS%d]"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CSV,	"[%p1%dCSV%p2%d]"},
-#  else
+#else
     {(int)KS_CSV,	"[%dCSV%d]"},
-#  endif
-#  ifdef TERMINFO
+#endif
+#ifdef TERMINFO
     {(int)KS_CAB,	"[CAB%p1%d]"},
     {(int)KS_CAF,	"[CAF%p1%d]"},
     {(int)KS_CSB,	"[CSB%p1%d]"},
     {(int)KS_CSF,	"[CSF%p1%d]"},
-#  else
+#else
     {(int)KS_CAB,	"[CAB%d]"},
     {(int)KS_CAF,	"[CAF%d]"},
     {(int)KS_CSB,	"[CSB%d]"},
     {(int)KS_CSF,	"[CSF%d]"},
-#  endif
+#endif
     {(int)KS_CAU,	"[CAU%d]"},
     {(int)KS_OP,	"[OP]"},
     {(int)KS_LE,	"[LE]"},
@@ -1209,17 +1215,17 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_MS,	"[MS]"},
     {(int)KS_UT,	"[UT]"},
     {(int)KS_XN,	"[XN]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CM,	"[%p1%dCM%p2%d]"},
-#  else
+#else
     {(int)KS_CM,	"[%dCM%d]"},
-#  endif
+#endif
     {(int)KS_SR,	"[SR]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CRI,	"[CRI%p1%d]"},
-#  else
+#else
     {(int)KS_CRI,	"[CRI%d]"},
-#  endif
+#endif
     {(int)KS_VB,	"[VB]"},
     {(int)KS_KS,	"[KS]"},
     {(int)KS_KE,	"[KE]"},
@@ -1231,13 +1237,13 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_CEC,	"[CEC]"},
     {(int)KS_TS,	"[TS]"},
     {(int)KS_FS,	"[FS]"},
-#  ifdef TERMINFO
+#ifdef TERMINFO
     {(int)KS_CWS,	"[%p1%dCWS%p2%d]"},
     {(int)KS_CWP,	"[%p1%dCWP%p2%d]"},
-#  else
+#else
     {(int)KS_CWS,	"[%dCWS%d]"},
     {(int)KS_CWP,	"[%dCWP%d]"},
-#  endif
+#endif
     {(int)KS_CRV,	"[CRV]"},
     {(int)KS_CXM,	"[CXM]"},
     {(int)KS_U7,	"[U7]"},
@@ -1661,6 +1667,13 @@ set_color_count(int nr)
 	sprintf((char *)nr_colors, "%d", t_colors);
     else
 	*nr_colors = NUL;
+#if 0
+# ifdef FEAT_TERMGUICOLORS
+    // xterm-direct, enable termguicolors, when it wasn't set yet
+    if (t_colors == 0x1000000 && !p_tgc_set)
+	set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
+# endif
+#endif
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
 }
 
@@ -1683,7 +1696,7 @@ may_adjust_color_count(int val)
     {
 	int r = redraw_asap(UPD_CLEAR);
 
-	log_tr("Received t_Co, redraw_asap(): %d", r);
+	LOG_TRN("Received t_Co, redraw_asap(): %d", r);
     }
 #else
     redraw_asap(UPD_CLEAR);
@@ -1694,8 +1707,11 @@ may_adjust_color_count(int val)
 static char *(key_names[]) =
 {
 # ifdef FEAT_TERMRESPONSE
-    // Do this one first, it may cause a screen redraw.
+    // Do those ones first, both may cause a screen redraw.
     "Co",
+    // disabled, because it switches termguicolors, but that
+    // is noticeable and confuses users
+    // "RGB",
 # endif
     "ku", "kd", "kr", "kl",
     "#2", "#4", "%i", "*7",
@@ -1778,9 +1794,9 @@ get_term_entries(int *height, int *width)
 	if (term_strings_not_set(string_names[i].dest))
 	{
 	    TERM_STR(string_names[i].dest) = TGETSTR(string_names[i].name, &tp);
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	    set_term_option_sctx_idx(string_names[i].name, -1);
-#endif
+# endif
 	}
     }
 
@@ -1828,9 +1844,9 @@ get_term_entries(int *height, int *width)
     if (term_strings_not_set(KS_CCO))
     {
 	set_color_count(tgetnum("Co"));
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	set_term_option_sctx_idx("Co", -1);
-#endif
+# endif
     }
 
 # ifndef hpux
@@ -2232,9 +2248,9 @@ set_termname(char_u *term)
 	    reset_option_was_set((char_u *)"ttym");
 	}
 	if (p == NULL
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 		|| gui.in_use
-#  endif
+# endif
 		)
 	    check_mouse_termcode();	// set mouse termcode anyway
     }
@@ -2289,7 +2305,7 @@ set_termname(char_u *term)
     full_screen = TRUE;		// we can use termcap codes from now on
     set_term_defaults();	// use current values as defaults
 #ifdef FEAT_TERMRESPONSE
-    LOG_TR(("setting crv_status to STATUS_GET"));
+    LOG_TR1("setting crv_status to STATUS_GET");
     crv_status.tr_progress = STATUS_GET;	// Get terminal version later
     write_t_8u_state = FALSE;
 #endif
@@ -2408,11 +2424,11 @@ invoke_tgetent(char_u *tbuf, char_u *term)
 	    return _(e_cannot_open_termcap_file);
 	if (i == 0)
 # endif
-#ifdef TERMINFO
+# ifdef TERMINFO
 	    return _(e_terminal_entry_not_found_in_terminfo);
-#else
+# else
 	    return _(e_terminal_entry_not_found_in_termcap);
-#endif
+# endif
     }
     return NULL;
 }
@@ -3074,7 +3090,7 @@ static int winpos_x = -1;
 static int winpos_y = -1;
 static int did_request_winpos = 0;
 
-# if defined(FEAT_EVAL) || defined(FEAT_TERMINAL) || defined(PROTO)
+#  if defined(FEAT_EVAL) || defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Try getting the Vim window position from the terminal.
  * Returns OK or FAIL.
@@ -3247,21 +3263,21 @@ term_bg_default(void)
 
 #if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
 
-#define RED(rgb)   (((long_u)(rgb) >> 16) & 0xFF)
-#define GREEN(rgb) (((long_u)(rgb) >>  8) & 0xFF)
-#define BLUE(rgb)  (((long_u)(rgb)      ) & 0xFF)
+# define RED(rgb)   (((long_u)(rgb) >> 16) & 0xFF)
+# define GREEN(rgb) (((long_u)(rgb) >>  8) & 0xFF)
+# define BLUE(rgb)  (((long_u)(rgb)      ) & 0xFF)
 
     static void
 term_rgb_color(char_u *s, guicolor_T rgb)
 {
-#define MAX_COLOR_STR_LEN 100
+# define MAX_COLOR_STR_LEN 100
     char	buf[MAX_COLOR_STR_LEN];
 
     if (*s == NUL)
 	return;
     vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
-#ifdef FEAT_VTP
+# ifdef FEAT_VTP
     if (use_vtp() && (p_tgc || t_colors >= 256))
     {
 	out_flush();
@@ -3269,7 +3285,7 @@ term_rgb_color(char_u *s, guicolor_T rgb)
 	vtp_printf(buf);
     }
     else
-#endif
+# endif
 	OUT_STR(buf);
 }
 
@@ -3564,8 +3580,9 @@ get_bytes_from_buf(char_u *buf, char_u *bytes, int num_bytes)
     void
 check_shellsize(void)
 {
-    if (Rows < min_rows())	// need room for one window and command line
-	Rows = min_rows();
+    // need room for one window and command line
+    if (Rows < min_rows_for_all_tabpages())
+	Rows = min_rows_for_all_tabpages();
     limit_screen_size();
 
     // make sure these values are not invalid
@@ -3613,7 +3630,17 @@ win_new_shellsize(void)
     if (old_Columns != Columns)
     {
 	old_Columns = Columns;
-	shell_new_columns();	// update window sizes
+
+	tabpage_T *save_curtab = curtab;
+	tabpage_T *tp;
+	FOR_ALL_TABPAGES(tp)
+	{
+	    unuse_tabpage(curtab);
+	    use_tabpage(tp);
+	    shell_new_columns();
+	}
+	unuse_tabpage(curtab);
+	use_tabpage(save_curtab);
     }
 }
 
@@ -4068,7 +4095,7 @@ may_req_termresponse(void)
 	    && *T_CRV != NUL)
     {
 	MAY_WANT_TO_LOG_THIS;
-	LOG_TR(("Sending CRV request"));
+	LOG_TR1("Sending CRV request");
 	out_str(T_CRV);
 	termrequest_sent(&crv_status);
 	// check for the characters now, otherwise they might be eaten by
@@ -4107,7 +4134,7 @@ check_terminal_behavior(void)
 	// changes cursor position, so it must be called immediately after
 	// entering termcap mode.
 	MAY_WANT_TO_LOG_THIS;
-	LOG_TR(("Sending request for ambiwidth check"));
+	LOG_TR1("Sending request for ambiwidth check");
 	// Do this in the second row.  In the first row the returned sequence
 	// may be CSI 1;2R, which is the same as <S-F3>.
 	term_windgoto(1, 0);
@@ -4136,7 +4163,7 @@ check_terminal_behavior(void)
 	// handles test sequence incorrectly, a garbage string is displayed and
 	// the cursor does move.
 	MAY_WANT_TO_LOG_THIS;
-	LOG_TR(("Sending xterm compatibility test sequence."));
+	LOG_TR1("Sending xterm compatibility test sequence.");
 	// Do this in the third row.  Second row is used by ambiguous
 	// character width check.
 	term_windgoto(2, 0);
@@ -4187,7 +4214,7 @@ may_req_bg_color(void)
 	if (rfg_status.tr_progress == STATUS_GET && *T_RFG != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR(("Sending FG request"));
+	    LOG_TR1("Sending FG request");
 	    out_str(T_RFG);
 	    termrequest_sent(&rfg_status);
 	    didit = TRUE;
@@ -4198,7 +4225,7 @@ may_req_bg_color(void)
 	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR(("Sending BG request"));
+	    LOG_TR1("Sending BG request");
 	    out_str(T_RBG);
 	    termrequest_sent(&rbg_status);
 	    didit = TRUE;
@@ -4214,32 +4241,6 @@ may_req_bg_color(void)
     }
 }
 
-# ifdef DEBUG_TERMRESPONSE
-    static void
-log_tr(const char *fmt, ...)
-{
-    static FILE *fd_tr = NULL;
-    static proftime_T start;
-    proftime_T now;
-    va_list ap;
-
-    if (fd_tr == NULL)
-    {
-	fd_tr = fopen("termresponse.log", "w");
-	profile_start(&start);
-    }
-    now = start;
-    profile_end(&now);
-    fprintf(fd_tr, "%s: %s ", profile_msg(&now),
-				must_redraw == UPD_NOT_VALID ? "NV"
-				     : must_redraw == UPD_CLEAR ? "CL" : "  ");
-    va_start(ap, fmt);
-    vfprintf(fd_tr, fmt, ap);
-    va_end(ap);
-    fputc('\n', fd_tr);
-    fflush(fd_tr);
-}
-# endif
 #endif
 
 /*
@@ -4408,13 +4409,13 @@ term_cursor_color(char_u *color)
     int
 blink_state_is_inverted(void)
 {
-#ifdef FEAT_TERMRESPONSE
+# ifdef FEAT_TERMRESPONSE
     return rbm_status.tr_progress == STATUS_GOT
 	&& rcs_status.tr_progress == STATUS_GOT
 		&& initial_cursor_blink != initial_cursor_shape_blink;
-#else
+# else
     return FALSE;
-#endif
+# endif
 }
 
 /*
@@ -4463,7 +4464,7 @@ scroll_region_set(win_T *wp, int off)
 {
     OUT_STR(tgoto((char *)T_CS, W_WINROW(wp) + wp->w_height - 1,
 							 W_WINROW(wp) + off));
-    if (*T_CSV != NUL && wp->w_width != Columns)
+    if (*T_CSV != NUL && wp->w_width != topframe->fr_width)
 	OUT_STR(tgoto((char *)T_CSV, wp->w_wincol + wp->w_width - 1,
 							       wp->w_wincol));
     screen_start();		    // don't know where cursor is now
@@ -4477,7 +4478,9 @@ scroll_region_reset(void)
 {
     OUT_STR(tgoto((char *)T_CS, (int)Rows - 1, 0));
     if (*T_CSV != NUL)
-	OUT_STR(tgoto((char *)T_CSV, (int)Columns - 1, 0));
+	OUT_STR(tgoto((char *)T_CSV,
+		    firstwin->w_wincol + topframe->fr_width - 1,
+		    firstwin->w_wincol));
     screen_start();		    // don't know where cursor is now
 }
 
@@ -4835,7 +4838,7 @@ switch_to_8bit(void)
 	need_gather = TRUE;		// need to fill termleader[]
     }
     detected_8bit = TRUE;
-    LOG_TR(("Switching to 8 bit"));
+    LOG_TR1("Switching to 8 bit");
 }
 
 #ifdef CHECK_DOUBLE_CLICK
@@ -4871,9 +4874,9 @@ set_mouse_topline(win_T *wp)
 is_mouse_topline(win_T *wp)
 {
     return orig_topline == wp->w_topline
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	&& orig_topfill == wp->w_topfill
-#endif
+# endif
 	;
 }
 #endif
@@ -4988,7 +4991,7 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
     {
 	char *aw = NULL;
 
-	LOG_TR(("Received U7 status: %s", tp));
+	LOG_TRN("Received U7 status: %s", tp);
 	u7_status.tr_progress = STATUS_GOT;
 	did_cursorhold = TRUE;
 	if (arg[1] == 2)
@@ -5005,7 +5008,7 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 	    {
 		int r = redraw_asap(UPD_CLEAR);
 
-		log_tr("set 'ambiwidth', redraw_asap(): %d", r);
+		LOG_TRN("set 'ambiwidth', redraw_asap(): %d", r);
 	    }
 #else
 	    redraw_asap(UPD_CLEAR);
@@ -5021,7 +5024,7 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
     {
 	int value;
 
-	LOG_TR(("Received compatibility test result: %s", tp));
+	LOG_TRN("Received compatibility test result: %s", tp);
 	xcc_status.tr_progress = STATUS_GOT;
 
 	// Third row: xterm compatibility test.
@@ -5045,7 +5048,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
     // version.
     int version = arg[1];
 
-    LOG_TR(("Received CRV response: %s", tp));
+    LOG_TRN("Received CRV response: %s", tp);
     crv_status.tr_progress = STATUS_GOT;
     did_cursorhold = TRUE;
 
@@ -5088,7 +5091,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// terminals the request should be ignored.
 	if (version >= 141 && p_xtermcodes)
 	{
-	    LOG_TR(("Enable checking for XT codes"));
+	    LOG_TR1("Enable checking for XT codes");
 	    check_for_codes = TRUE;
 	    need_gather = TRUE;
 	    req_codes_from_term();
@@ -5258,7 +5261,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& *T_CRS != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR(("Sending cursor style request"));
+	    LOG_TR1("Sending cursor style request");
 	    out_str(T_CRS);
 	    termrequest_sent(&rcs_status);
 	    need_flush = TRUE;
@@ -5273,7 +5276,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& *T_CRC != NUL)
 	{
 	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR(("Sending cursor blink mode request"));
+	    LOG_TR1("Sending cursor blink mode request");
 	    out_str(T_CRC);
 	    termrequest_sent(&rbm_status);
 	    need_flush = TRUE;
@@ -5645,7 +5648,7 @@ handle_csi(
     {
 	initial_cursor_blink = (arg[1] == '1');
 	rbm_status.tr_progress = STATUS_GOT;
-	LOG_TR(("Received cursor blinking mode response: %s", tp));
+	LOG_TRN("Received cursor blinking mode response: %s", tp);
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
 	*slen = csi_len;
@@ -5778,7 +5781,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 			char *new_bg_val = (3 * '6' < *tp_r + *tp_g +
 					     *tp_b) ? "light" : "dark";
 
-			LOG_TR(("Received RBG response: %s", tp));
+			LOG_TRN("Received RBG response: %s", tp);
 #ifdef FEAT_TERMRESPONSE
 			rbg_status.tr_progress = STATUS_GOT;
 # ifdef FEAT_TERMINAL
@@ -5800,7 +5803,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 #if defined(FEAT_TERMRESPONSE) && defined(FEAT_TERMINAL)
 		    else
 		    {
-			LOG_TR(("Received RFG response: %s", tp));
+			LOG_TRN("Received RFG response: %s", tp);
 			rfg_status.tr_progress = STATUS_GOT;
 			fg_r = rval;
 			fg_g = gval;
@@ -5823,7 +5826,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 	    }
     if (i == len)
     {
-	LOG_TR(("not enough characters for RB"));
+	LOG_TR1("not enough characters for RB");
 	return FAIL;
     }
     return OK;
@@ -5853,6 +5856,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 {
     int i, j;
 
+    LOG_TRN("Received DCS response: %s", (char*)tp);
     j = 1 + (tp[0] == ESC);
     if (len < j + 3)
 	i = len; // need more chars
@@ -5909,7 +5913,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 				       (number & 1) ? FALSE : TRUE;
 		rcs_status.tr_progress = STATUS_GOT;
 #endif
-		LOG_TR(("Received cursor shape response: %s", tp));
+		LOG_TRN("Received cursor shape response: %s", tp);
 
 		key_name[0] = (int)KS_EXTRA;
 		key_name[1] = (int)KE_IGNORE;
@@ -5928,7 +5932,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
     {
 	// These codes arrive many together, each code can be
 	// truncated at any point.
-	LOG_TR(("not enough characters for XT"));
+	LOG_TR1("not enough characters for XT");
 	return FAIL;
     }
     return OK;
@@ -6280,7 +6284,7 @@ check_termcode(
 		{
 #ifdef DEBUG_TERMRESPONSE
 		    if (resp == -1)
-			LOG_TR(("Not enough characters for CSI sequence"));
+			LOG_TR1("Not enough characters for CSI sequence");
 #endif
 		    return resp;
 		}
@@ -6571,7 +6575,7 @@ check_termcode(
     }
 
 #ifdef FEAT_TERMRESPONSE
-    LOG_TR(("normal character"));
+    LOG_TR1("normal character");
 #endif
 
     return 0;			    // no match found
@@ -6863,14 +6867,14 @@ replace_termcodes(
 		result[dlen++] = KS_SPECIAL;
 		result[dlen++] = KE_FILLER;
 	    }
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	    else if (*src == CSI)
 	    {
 		result[dlen++] = K_SPECIAL;
 		result[dlen++] = KS_EXTRA;
 		result[dlen++] = (int)KE_CSI;
 	    }
-# endif
+#endif
 	    else
 		result[dlen++] = *src;
 	    ++src;
@@ -7099,7 +7103,7 @@ req_codes_from_term(void)
     static void
 req_more_codes_from_term(void)
 {
-    char	buf[23];  // extra size to shut up LGTM
+    char	buf[32];  // extra size to shut up LGTM
     int		old_idx = xt_index_out;
 
     // Don't do anything when going to exit.
@@ -7113,8 +7117,11 @@ req_more_codes_from_term(void)
 	char *key_name = key_names[xt_index_out];
 
 	MAY_WANT_TO_LOG_THIS;
-	LOG_TR(("Requesting XT %d: %s", xt_index_out, key_name));
-	sprintf(buf, "\033P+q%02x%02x\033\\", key_name[0], key_name[1]);
+	LOG_TRN("Requesting XT %d: %s", xt_index_out, key_name);
+	if (key_name[2] != NUL)
+	    sprintf(buf, "\033P+q%02x%02x%02x\033\\", key_name[0], key_name[1], key_name[2]);
+	else
+	    sprintf(buf, "\033P+q%02x%02x\033\\", key_name[0], key_name[1]);
 	out_str_nf((char_u *)buf);
 	++xt_index_out;
     }
@@ -7125,7 +7132,9 @@ req_more_codes_from_term(void)
 }
 
 /*
- * Decode key code response from xterm: '<Esc>P1+r<name>=<string><Esc>\'.
+ * Decode key code response from xterm:
+ * '<Esc>P1+r<name>=<string><Esc>\' if it is enabled/supported
+ * '<Esc>P0+r<Esc>\'                if it not enabled
  * A "0" instead of the "1" indicates a code that isn't supported.
  * Both <name> and <string> are encoded in hex.
  * "code" points to the "0" or "1".
@@ -7133,22 +7142,26 @@ req_more_codes_from_term(void)
     static void
 got_code_from_term(char_u *code, int len)
 {
-#define XT_LEN 100
-    char_u	name[3];
+# define XT_LEN 100
+    char_u	name[4];
     char_u	str[XT_LEN];
     int		i;
     int		j = 0;
     int		c;
 
     // A '1' means the code is supported, a '0' means it isn't.
+    // If it is supported, there must be a '=' following
     // When half the length is > XT_LEN we can't use it.
-    // Our names are currently all 2 characters.
-    if (code[0] == '1' && code[7] == '=' && len / 2 < XT_LEN)
+    if (code[0] == '1' && (code[7] == '=' || code[9] == '=') && len / 2 < XT_LEN)
     {
 	// Get the name from the response and find it in the table.
 	name[0] = hexhex2nr(code + 3);
 	name[1] = hexhex2nr(code + 5);
-	name[2] = NUL;
+	if (code[9] == '=')
+	    name[2] = hexhex2nr(code + 7);
+	else
+	    name[2] = NUL;
+	name[3] = NUL;
 	for (i = 0; key_names[i] != NULL; ++i)
 	{
 	    if (STRCMP(key_names[i], name) == 0)
@@ -7158,27 +7171,47 @@ got_code_from_term(char_u *code, int len)
 	    }
 	}
 
-	LOG_TR(("Received XT %d: %s", xt_index_in, (char *)name));
+	LOG_TRN("Received XT %d: %s", xt_index_in, (char *)name);
 
 	if (key_names[i] != NULL)
 	{
-	    for (i = 8; (c = hexhex2nr(code + i)) >= 0; i += 2)
+	    i = (code[7] == '=') ? 8 : 10;
+	    for (; (c = hexhex2nr(code + i)) >= 0; i += 2)
 		str[j++] = c;
 	    str[j] = NUL;
 	    if (name[0] == 'C' && name[1] == 'o')
 	    {
 		// Color count is not a key code.
 		int val = atoi((char *)str);
-#if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 		if (val == t_colors)
 		    ch_log(NULL, "got_code_from_term(Co): no change (%d)", val);
 		else
 		    ch_log(NULL,
 			       "got_code_from_term(Co): changed from %d to %d",
 								t_colors, val);
-#endif
+# endif
 		may_adjust_color_count(val);
 	    }
+# if 0
+#  ifdef FEAT_TERMGUICOLORS
+	    // when RGB result comes back, it is supported when the result contains an '='
+	    else if (name[0] == 'R' && name[1] == 'G' && name[2] == 'B' && code[9] == '=')
+	    {
+		int val = atoi((char *)str);
+		// only enable it, if termguicolors hasn't been set yet and
+		// there are 8 bits per color channel
+		if (val == 8 && !p_tgc_set)
+		{
+#   ifdef FEAT_EVAL
+		    ch_log(NULL, "got_code_from_term(RGB): xterm-direct colors detected");
+#   endif
+		    // RGB capability set, enable termguicolors
+		    set_option_value((char_u *)"termguicolors", 1L, NULL, 0);
+		}
+	    }
+#  endif
+# endif
 	    else
 	    {
 		i = find_term_bykeys(str);
@@ -7186,27 +7219,27 @@ got_code_from_term(char_u *code, int len)
 					    && name[1] == termcodes[i].name[1])
 		{
 		    // Existing entry with the same name and code - skip.
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 		    ch_log(NULL, "got_code_from_term(): Entry %c%c did not change",
 							     name[0], name[1]);
-#endif
+# endif
 		}
 		else
 		{
 		    if (i >= 0)
 		    {
 			// Delete an existing entry using the same code.
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 			ch_log(NULL, "got_code_from_term(): Deleting entry %c%c with matching keys %s",
 			      termcodes[i].name[0], termcodes[i].name[1], str);
-#endif
+# endif
 			del_termcode_idx(i);
 		    }
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 		    else
 			ch_log(NULL, "got_code_from_term(): Adding entry %c%c with keys %s",
 							name[0], name[1], str);
-#endif
+# endif
 		    add_termcode(name, str, ATC_FROM_TERM);
 		}
 	    }
@@ -7281,13 +7314,13 @@ update_tcap(int attr)
 	return;
     while (p->bt_string != NULL)
     {
-      if (p->bt_entry == (int)KS_ME)
-	  p->bt_string = &ksme_str[0];
-      else if (p->bt_entry == (int)KS_MR)
-	  p->bt_string = &ksmr_str[0];
-      else if (p->bt_entry == (int)KS_MD)
-	  p->bt_string = &ksmd_str[0];
-      ++p;
+	if (p->bt_entry == (int)KS_ME)
+	    p->bt_string = &ksme_str[0];
+	else if (p->bt_entry == (int)KS_MR)
+	    p->bt_string = &ksmr_str[0];
+	else if (p->bt_entry == (int)KS_MD)
+	    p->bt_string = &ksmd_str[0];
+	++p;
     }
 }
 
@@ -7445,14 +7478,14 @@ static const char_u ansi_table[16][3] = {
   {255, 255, 255}, // white
 };
 
-#if defined(MSWIN)
+# if defined(MSWIN)
 // Mapping between cterm indices < 16 and their counterpart in the ANSI palette.
 static const char_u cterm_ansi_idx[] = {
     0, 4, 2, 6, 1, 5, 3, 7, 8, 12, 10, 14, 9, 13, 11, 15
 };
-#endif
+# endif
 
-#define ANSI_INDEX_NONE 0
+# define ANSI_INDEX_NONE 0
 
     void
 ansi_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
@@ -7462,7 +7495,7 @@ ansi_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 	*r = ansi_table[nr][0];
 	*g = ansi_table[nr][1];
 	*b = ansi_table[nr][2];
-	*ansi_idx = nr;
+	*ansi_idx = nr + 1;
     }
     else
     {
@@ -7480,11 +7513,11 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 
     if (nr < 16)
     {
-#if defined(MSWIN)
+# if defined(MSWIN)
 	idx = cterm_ansi_idx[nr];
-#else
+# else
 	idx = nr;
-#endif
+# endif
 	*r = ansi_table[idx][0];
 	*g = ansi_table[idx][1];
 	*b = ansi_table[idx][2];
