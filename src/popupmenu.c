@@ -165,7 +165,6 @@ pum_display(
 		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
 	    // pum above "pum_win_row"
-
 	    if (State == MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
@@ -192,17 +191,17 @@ pum_display(
 	else
 	{
 	    // pum below "pum_win_row"
-
 	    if (State == MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
 	    else
 	    {
-		// Leave two lines of context if possible
+		// Leave one line of context when wrap is enabled,
+		// three lines otherwise
 		validate_cheight();
 		cline_visible_offset = curwin->w_cline_row +
 				    curwin->w_cline_height - curwin->w_wrow;
-		context_lines = MIN(3, cline_visible_offset);
+		context_lines = MIN(curwin->w_cline_height > 1 ? 1 : 3, cline_visible_offset);
 	    }
 
 	    pum_row = pum_win_row + context_lines;
