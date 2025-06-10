@@ -19,7 +19,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 setlocal commentstring=.\\\"\ %s
-setlocal comments=:.\\\"
+setlocal comments=b:.\\\",b:\\\"
 setlocal sections+=Sh
 setlocal define=.\s*de
 
