@@ -5,6 +5,8 @@ estack_T *estack_push_ufunc(ufunc_T *ufunc, long lnum);
 int estack_top_is_ufunc(ufunc_T *ufunc, long lnum);
 estack_T *estack_pop(void);
 char_u *estack_sfile(estack_arg_T which);
+list_T *stacktrace_create(void);
+void f_getstacktrace(typval_T *argvars, typval_T *rettv);
 void ex_runtime(exarg_T *eap);
 void set_context_in_runtime_cmd(expand_T *xp, char_u *arg);
 int find_script_by_name(char_u *name);

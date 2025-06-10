@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-11 10:10+0200\n"
-"PO-Revision-Date: 2024-08-11 10:36+0100\n"
+"POT-Creation-Date: 2025-02-28 22:25+0100\n"
+"PO-Revision-Date: 2025-02-28 22:50+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -149,8 +149,8 @@ msgid "Top"
 msgstr "Cim"
 
 #. localized percentage value
-msgid "%d%%"
-msgstr "%d%%"
+msgid "%s%d%%"
+msgstr "%s%d%%"
 
 msgid " (%d of %d)"
 msgstr "(%d di %d)"
@@ -727,10 +727,10 @@ msgstr "[Unix]"
 msgid "[unix format]"
 msgstr "[in formato Unix]"
 
-msgid "%ld line, "
-msgid_plural "%ld lines, "
-msgstr[0] "%ld riga,"
-msgstr[1] "%ld righe,"
+msgid "%s%ld line, "
+msgid_plural "%s%ld lines, "
+msgstr[0] "%s%ld riga,"
+msgstr[1] "%s%ld righe,"
 
 msgid "%lld byte"
 msgid_plural "%lld bytes"
@@ -1287,8 +1287,8 @@ msgstr " Completamento definito dall'utente (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Completamento globale (^O^N^P)"
 
-msgid " Spelling suggestion (^s^N^P)"
-msgstr " Suggerimento ortografico (^s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Suggerimento ortografico (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Completamento Parola Locale (^N^P)"
@@ -2214,6 +2214,12 @@ msgstr "-- Ancora --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr " SPAZIO/d/j: schermo/pagina/riga giù, b/u/k: su, q: abbandona "
+
+msgid "W23: Clipboard register not available, using register 0"
+msgstr "W23: Registro clipboard non disponibile, uso registro 0"
+
+msgid "W24: Clipboard register not available. See :h W24"
+msgstr "W24: Registro clipboard non disponibile. Vedere :h W24"
 
 msgid "Question"
 msgstr "Domanda"
@@ -7480,6 +7486,9 @@ msgstr "E1233: exists_compiled() si può usare solo in una funzione :def"
 msgid "E1234: legacy must be followed by a command"
 msgstr "E1234: legacy dev'essere seguito da un comando"
 
+msgid "E1235: Bool or Number required for argument %d"
+msgstr "E1235: Numero o valore Booleano richiesto per argomento %d"
+
 msgid "E1236: Cannot use %s itself, it is imported"
 msgstr "E1236: Impossibile usare %s stesso, è importato"
 
@@ -7992,6 +8001,9 @@ msgstr "E1393: Il Tipo può essere definito solo negli script Vim9"
 msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: Il nome di un Tipo deve iniziare con una lettera maiuscola: %s"
 
+msgid "E1395: Using a null class"
+msgstr "E1395: Uso di una Classe nulla"
+
 msgid "E1396: Type alias \"%s\" already exists"
 msgstr "E1396: Il Tipo alias \"%s\" esiste già"
 
@@ -8083,6 +8095,15 @@ msgstr "E1428: Valore di Enum duplicato: %s"
 msgid "E1429: Class can only be used in a script"
 msgstr "E1429: Class si può usare solo in uno script"
 
+msgid "E1430: Uninitialized object variable '%s' referenced"
+msgstr "E1430: Riferimento alla variabile oggetto '%s' non inizializzata"
+
+msgid ""
+"E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"
+msgstr ""
+"E1431: Il Metodo Astratto \"%s\" nella Classe \"%s\" non può essere acceduto "
+"direttamente"
+
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
 "E1500: Non si possono mischiare argomenti posizionali e non posizionali: %s"
@@ -8133,6 +8154,12 @@ msgstr "E1512: Larghezza carattere errata per campo \"%s\""
 msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
 msgstr ""
 "E1513: Non riesco a passare a un altro buffer. Opzione 'winfixbuf' attiva"
+
+msgid "E1514: 'findfunc' did not return a List type"
+msgstr "E1514: 'findfunc' non ha restituito un tipo Lista"
+
+msgid "E1515: Unable to convert %s '%s' encoding"
+msgstr "E1515: Impossibile convertire codifica %s '%s'"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -8967,8 +8994,7 @@ msgid "0, 1 or 2; when to use a tab pages line"
 msgstr "0, 1 o 2; utilizzo della riga che descrive pagine di schede"
 
 msgid "behaviour when closing tab pages: left, uselast or empty"
-msgstr ""
-"comportamento alla chiusura di pagine di schede: left, uselast o empty"
+msgstr "comportamento alla chiusura di pagine di schede: left, uselast o empty"
 
 msgid "maximum number of tab pages to open for -p and \"tab all\""
 msgstr ""
@@ -9196,6 +9222,9 @@ msgstr ""
 msgid "list of flags to make messages shorter"
 msgstr "lista di flag su come abbreviare messaggi"
 
+msgid "options for outputting messages"
+msgstr "opzioni per emettere messaggi"
+
 msgid "show (partial) command keys in location given by 'showcmdloc'"
 msgstr "mostrare (una parte dei) tasti di comando nella riga di status"
 
@@ -9328,6 +9357,9 @@ msgstr ""
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "se usare un menù dinamico per il completamento in modo Insert"
+
+msgid "popup menu item align order"
+msgstr "ordine di allineamento elemento menù bolla (popup)"
 
 msgid "options for the Insert mode completion info popup"
 msgstr ""
@@ -9992,6 +10024,9 @@ msgstr ""
 
 msgid "list of autocommand events which are to be ignored"
 msgstr "lista di autocomandi per eventi da ignorare"
+
+msgid "list of autocommand events which are to be ignored in a window"
+msgstr "list di eventi di autocomandi da ignorare in una finestra"
 
 msgid "load plugin scripts when starting up"
 msgstr "caricare script plugin alla partenza di Vim"

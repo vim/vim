@@ -2932,8 +2932,8 @@ EXTERN char e_using_bool_as_number[]
 	INIT(= N_("E1138: Using a Bool as a Number"));
 EXTERN char e_missing_matching_bracket_after_dict_key[]
 	INIT(= N_("E1139: Missing matching bracket after dict key"));
-EXTERN char e_for_argument_must_be_sequence_of_lists[]
-	INIT(= N_("E1140: :for argument must be a sequence of lists"));
+EXTERN char e_for_argument_must_be_sequence_of_lists_or_tuples[]
+	INIT(= N_("E1140: :for argument must be a sequence of lists or tuples"));
 EXTERN char e_indexable_type_required[]
 	INIT(= N_("E1141: Indexable type required"));
 EXTERN char e_calling_test_garbagecollect_now_while_v_testing_is_not_set[]
@@ -3146,8 +3146,8 @@ EXTERN char e_string_or_dict_required_for_argument_nr[]
 	INIT(= N_("E1223: String or Dictionary required for argument %d"));
 EXTERN char e_string_number_or_list_required_for_argument_nr[]
 	INIT(= N_("E1224: String, Number or List required for argument %d"));
-EXTERN char e_string_list_or_dict_required_for_argument_nr[]
-	INIT(= N_("E1225: String, List or Dictionary required for argument %d"));
+EXTERN char e_string_list_tuple_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1225: String, List, Tuple or Dictionary required for argument %d"));
 EXTERN char e_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1226: List or Blob required for argument %d"));
 EXTERN char e_list_or_dict_required_for_argument_nr[]
@@ -3172,7 +3172,8 @@ EXTERN char e_exists_compiled_can_only_be_used_in_def_function[]
 EXTERN char e_legacy_must_be_followed_by_command[]
 	INIT(= N_("E1234: legacy must be followed by a command"));
 #ifdef FEAT_EVAL
-// E1235 unused
+EXTERN char e_bool_or_number_required_for_argument_nr[]
+	INIT(= N_("E1235: Bool or Number required for argument %d"));
 EXTERN char e_cannot_use_str_itself_it_is_imported[]
 	INIT(= N_("E1236: Cannot use %s itself, it is imported"));
 #endif
@@ -3217,10 +3218,12 @@ EXTERN char e_highlight_group_name_too_long[]
 #ifdef FEAT_EVAL
 EXTERN char e_argument_of_str_must_be_list_string_dictionary_or_blob[]
 	INIT(= N_("E1250: Argument of %s must be a List, String, Dictionary or Blob"));
-EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
-	INIT(= N_("E1251: List, Dictionary, Blob or String required for argument %d"));
+EXTERN char e_list_tuple_dict_blob_or_string_required_for_argument_nr[]
+	INIT(= N_("E1251: List, Tuple, Dictionary, Blob or String required for argument %d"));
 EXTERN char e_string_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1252: String, List or Blob required for argument %d"));
+EXTERN char e_string_list_tuple_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1253: String, List, Tuple or Blob required for argument %d"));
 // E1253 unused
 EXTERN char e_cannot_use_script_variable_in_for_loop[]
 	INIT(= N_("E1254: Cannot use script variable in for loop"));
@@ -3350,8 +3353,8 @@ EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
 	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
-EXTERN char e_string_number_list_or_blob_required_for_argument_nr[]
-	INIT(= N_("E1301: String, Number, List or Blob required for argument %d"));
+EXTERN char e_repeatable_type_required_for_argument_nr[]
+	INIT(= N_("E1301: String, Number, List, Tuple or Blob required for argument %d"));
 EXTERN char e_script_variable_was_deleted[]
 	INIT(= N_("E1302: Script variable was deleted"));
 EXTERN char e_custom_list_completion_function_does_not_return_list_but_str[]
@@ -3507,7 +3510,7 @@ EXTERN char e_abstract_must_be_followed_by_def[]
 	INIT(= N_("E1371: Abstract must be followed by \"def\""));
 EXTERN char e_abstract_method_in_concrete_class[]
 	INIT(= N_("E1372: Abstract method \"%s\" cannot be defined in a concrete class"));
-EXTERN char e_abstract_method_str_not_found[]
+EXTERN char e_abstract_method_str_not_implemented[]
 	INIT(= N_("E1373: Abstract method \"%s\" is not implemented"));
 EXTERN char e_class_variable_str_accessible_only_inside_class_str[]
 	INIT(= N_("E1374: Class variable \"%s\" accessible only inside class \"%s\""));
@@ -3551,7 +3554,8 @@ EXTERN char e_type_can_only_be_defined_in_vim9_script[]
 	INIT(= N_("E1393: Type can only be defined in Vim9 script"));
 EXTERN char e_type_name_must_start_with_uppercase_letter_str[]
 	INIT(= N_("E1394: Type name must start with an uppercase letter: %s"));
-// E1395 unused
+EXTERN char e_using_null_class[]
+	INIT(= N_("E1395: Using a null class"));
 EXTERN char e_typealias_already_exists_for_str[]
 	INIT(= N_("E1396: Type alias \"%s\" already exists"));
 EXTERN char e_missing_typealias_name[]
@@ -3616,8 +3620,12 @@ EXTERN char e_duplicate_enum_str[]
 	INIT(= N_("E1428: Duplicate enum value: %s"));
 EXTERN char e_class_can_only_be_used_in_script[]
 	INIT(= N_("E1429: Class can only be used in a script"));
+EXTERN char e_uninitialized_object_var_reference[]
+	INIT(= N_("E1430: Uninitialized object variable '%s' referenced"));
+EXTERN char e_abstract_method_str_direct[]
+	INIT(= N_("E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"));
 #endif
-// E1429 - E1499 unused (reserved for Vim9 class support)
+// E1432 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
@@ -3654,3 +3662,73 @@ EXTERN char e_winfixbuf_cannot_go_to_buffer[]
 	INIT(= N_("E1513: Cannot switch buffer. 'winfixbuf' is enabled"));
 EXTERN char e_invalid_return_type_from_findfunc[]
 	INIT(= N_("E1514: 'findfunc' did not return a List type"));
+EXTERN char e_str_encoding_from_failed[]
+	INIT(= N_("E1515: Unable to convert from '%s' encoding"));
+EXTERN char e_str_encoding_to_failed[]
+	INIT(= N_("E1516: Unable to convert to '%s' encoding"));
+#ifdef FEAT_EVAL
+EXTERN char e_can_only_compare_tuple_with_tuple[]
+	INIT(= N_("E1517: Can only compare Tuple with Tuple"));
+EXTERN char e_invalid_operation_for_tuple[]
+	INIT(= N_("E1518: Invalid operation for Tuple"));
+EXTERN char e_tuple_index_out_of_range_nr[]
+	INIT(= N_("E1519: Tuple index out of range: %ld"));
+EXTERN char e_using_tuple_as_number[]
+	INIT(= N_("E1520: Using a Tuple as a Number"));
+EXTERN char e_using_tuple_as_float[]
+	INIT(= N_("E1521: Using a Tuple as a Float"));
+EXTERN char e_using_tuple_as_string[]
+	INIT(= N_("E1522: Using a Tuple as a String"));
+EXTERN char e_string_list_tuple_or_blob_required[]
+	INIT(= N_("E1523: String, List, Tuple or Blob required"));
+EXTERN char e_cannot_use_tuple_with_function_str[]
+	INIT(= N_("E1524: Cannot use a tuple with function %s"));
+EXTERN char e_argument_of_str_must_be_list_tuple_string_dictionary_or_blob[]
+	INIT(= N_("E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"));
+EXTERN char e_missing_end_of_tuple_rsp_str[]
+	INIT(= N_("E1526: Missing end of Tuple ')': %s"));
+EXTERN char e_missing_comma_in_tuple_str[]
+	INIT(= N_("E1527: Missing comma in Tuple: %s"));
+EXTERN char e_list_or_tuple_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1528: List or Tuple or Blob required for argument %d"));
+EXTERN char e_list_or_tuple_required_for_argument_nr[]
+	INIT(= N_("E1529: List or Tuple required for argument %d"));
+EXTERN char e_list_or_tuple_or_dict_required_for_argument_nr[]
+	INIT(= N_("E1530: List or Tuple or Dictionary required for argument %d"));
+EXTERN char e_argument_of_str_must_be_list_tuple_dictionary_or_blob[]
+	INIT(= N_("E1531: Argument of %s must be a List, Tuple, Dictionary or Blob"));
+EXTERN char e_tuple_is_immutable[]
+	INIT(= N_("E1532: Cannot modify a tuple"));
+EXTERN char e_cannot_slice_tuple[]
+	INIT(= N_("E1533: Cannot slice a tuple"));
+EXTERN char e_tuple_required_for_argument_nr[]
+	INIT(= N_("E1534: Tuple required for argument %d"));
+EXTERN char e_list_or_tuple_required[]
+	INIT(= N_("E1535: List or Tuple required"));
+EXTERN char e_tuple_required[]
+	INIT(= N_("E1536: Tuple required"));
+EXTERN char e_less_targets_than_tuple_items[]
+	INIT(= N_("E1537: Less targets than Tuple items"));
+EXTERN char e_more_targets_than_tuple_items[]
+	INIT(= N_("E1538: More targets than Tuple items"));
+EXTERN char e_variadic_tuple_must_end_with_list_type_str[]
+	INIT(= N_("E1539: Variadic tuple must end with a list type: %s"));
+EXTERN char e_cannot_use_variadic_tuple_in_concatenation[]
+	INIT(= N_("E1540: Cannot use a variadic tuple in concatenation"));
+#endif
+EXTERN char e_unicode_val_too_large[]
+	INIT(= N_("E1541: Value too large, max Unicode codepoint is U+10FFFF"));
+#ifdef FEAT_QUICKFIX
+EXTERN char e_cannot_have_negative_or_zero_number_of_quickfix[]
+	INIT(= N_("E1542: Cannot have a negative or zero number of quickfix/location lists"));
+EXTERN char e_cannot_have_more_than_hundred_quickfix[]
+	INIT(= N_("E1543: Cannot have more than a hundred quickfix/location lists"));
+EXTERN char e_failed_resizing_quickfix_stack[]
+	INIT(= N_("E1544: Failed resizing the quickfix/location list stack"));
+EXTERN char e_no_quickfix_stack[]
+	INIT(= N_("E1545: Quickfix list stack unavailable"));
+#endif
+EXTERN char e_cannot_switch_to_a_closing_buffer[]
+	INIT(= N_("E1546: Cannot switch to a closing buffer"));
+EXTERN char e_cannot_not_support_redrawtabpanel[]
+	INIT(= N_("E1547: This version of Vim does support :redrawtabpanel"));

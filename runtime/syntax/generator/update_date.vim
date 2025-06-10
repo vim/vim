@@ -2,7 +2,6 @@
 "     '" Last Change:  '
 "
 language C
-silent new ../vim.vim
 normal gg
 let pat = '^"\s*Last\s*Change:\s\+'
 let lnum = search(pat, 'We', 10)

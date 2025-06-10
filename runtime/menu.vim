@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Aug 10
+" Last Change:	2025 Jun 04
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
@@ -693,12 +693,7 @@ def s:BMAdd()
     if s:bmenu_count == &menuitems && s:bmenu_short == 0
       s:BMShow()
     else
-      var name = expand("<afile>")
-      var num = str2nr(expand("<abuf>"))
-      if s:BMCanAdd(name, num)
-	s:BMFilename(name, num)
-	s:bmenu_count += 1
-      endif
+      s:BMRedraw()
     endif
   endif
 enddef
@@ -746,6 +741,10 @@ def s:BMShow()
   s:bmenu_count = 0
   s:bmenu_items = {}
 
+  s:BMRedraw()
+enddef
+
+def s:BMRedraw()
   # Remove old menu, if it exists; keep one entry to avoid a torn off menu to
   # disappear.  Use try/catch to avoid setting v:errmsg
   try 
@@ -768,48 +767,36 @@ def s:BMShow()
   unmenu &Buffers.Dummy
 
   # figure out how many buffers there are
+  var buffer_menu_items = []
   var buf = 1
   while buf <= bufnr('$')
-    if s:BMCanAdd(bufname(buf), buf)
-      s:bmenu_count = s:bmenu_count + 1
+    var name = bufname(buf)
+    if s:BMCanAdd(name, buf)
+      add(buffer_menu_items, [substitute(name, ".", '\L\0', ""), name, buf])
     endif
     buf += 1
   endwhile
+  s:bmenu_count = len(buffer_menu_items)
+
   if s:bmenu_count <= &menuitems
     s:bmenu_short = 0
   endif
 
   # iterate through buffer list, adding each buffer to the menu:
-  buf = 1
-  while buf <= bufnr('$')
-    var name = bufname(buf)
-    if s:BMCanAdd(name, buf)
-      call s:BMFilename(name, buf)
-    endif
-    buf += 1
-  endwhile
+  sort(buffer_menu_items)
+
+  var i = 0
+  for menu_item in buffer_menu_items
+    s:BMFilename(menu_item[1], menu_item[2], i)
+    i += 1
+  endfor
+
   s:bmenu_wait = 0
   aug buffer_list
     au!
     au BufCreate,BufFilePost * call s:BMAdd()
     au BufDelete,BufFilePre * call s:BMRemove()
   aug END
-enddef
-
-def s:BMHash(name: string): number
-  # Make name all upper case, so that chars are between 32 and 96
-  var nm = substitute(name, ".*", '\U\0', "")
-  var sp: number
-  if has("ebcdic")
-    # HACK: Replace all non alphabetics with 'Z'
-    #       Just to make it work for now.
-    nm = substitute(nm, "[^A-Z]", 'Z', "g")
-    sp = char2nr('A') - 1
-  else
-    sp = char2nr(' ')
-  endif
-  # convert first six chars into a number for sorting:
-  return (char2nr(nm[0]) - sp) * 0x800000 + (char2nr(nm[1]) - sp) * 0x20000 + (char2nr(nm[2]) - sp) * 0x1000 + (char2nr(nm[3]) - sp) * 0x80 + (char2nr(nm[4]) - sp) * 0x20 + (char2nr(nm[5]) - sp)
 enddef
 
 def s:BMHash2(name: string): string
@@ -832,17 +819,16 @@ def s:BMHash2(name: string): string
 enddef
 
 " Insert a buffer name into the buffer menu.
-def s:BMFilename(name: string, num: number)
+def s:BMFilename(name: string, num: number, index: number)
   var munge = s:BMMunge(name, num)
-  var hash = s:BMHash(munge)
   var cmd: string
   if s:bmenu_short == 0
     s:bmenu_items[num] = munge
-    cmd = 'an ' .. g:bmenu_priority .. '.' .. hash .. ' &Buffers.' .. munge
+    cmd = 'an ' .. g:bmenu_priority .. '.9999.' .. index .. ' &Buffers.' .. munge
   else
     var menu_name = s:BMHash2(munge) .. munge
     s:bmenu_items[num] = menu_name
-    cmd = 'an ' .. g:bmenu_priority .. '.' .. hash .. '.' .. hash .. ' &Buffers.' .. menu_name
+    cmd = 'an ' .. g:bmenu_priority .. '.9999.0.' .. index .. ' &Buffers.' .. menu_name
   endif
   exe cmd .. ' :confirm b' .. num .. '<CR>'
 enddef

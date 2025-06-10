@@ -173,6 +173,7 @@ func Test_map_filter_fails()
   call assert_fails("let l = filter([1, 2], {a, b, c -> 1})", 'E119:')
   call assert_fails('call foreach([1], "xyzzy")', 'E492:')
   call assert_fails('call foreach([1], "let a = foo")', 'E121:')
+  call assert_fails('call foreach(test_null_function(), "")', 'E1525:')
 endfunc
 
 func Test_map_and_modify()

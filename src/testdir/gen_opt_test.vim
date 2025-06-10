@@ -73,6 +73,7 @@ let test_values = {
       \		[]],
       \
       "\ number options
+      \ 'chistory': [[1, 2, 10, 50], [1000, -1]],
       \ 'cmdheight': [[1, 2, 10], [-1, 0]],
       \ 'cmdwinheight': [[1, 2, 10], [-1, 0]],
       \ 'columns': [[12, 80, 10000], [-1, 0, 10]],
@@ -83,15 +84,17 @@ let test_values = {
       \ 'iminsert': [[0, 1, 2], [-1, 3, 999]],
       \ 'imsearch': [[-1, 0, 1, 2], [-2, 3, 999]],
       \ 'imstyle': [[0, 1], [-1, 2, 999]],
+      \ 'lhistory': [[1, 2, 10, 50], [1000, -1]],
       \ 'lines': [[2, 24, 1000], [-1, 0, 1]],
       \ 'linespace': [[-1, 0, 2, 4, 999], ['']],
       \ 'numberwidth': [[1, 4, 8, 10, 11, 20], [-1, 0, 21]],
       \ 'regexpengine': [[0, 1, 2], [-1, 3, 999]],
       \ 'report': [[0, 1, 2, 9999], [-1]],
-      \ 'scroll': [[0, 1, 2, 20], [-1, 999]],
-      \ 'scrolljump': [[-100, -1, 0, 1, 2, 20], [-101, 999]],
+      \ 'scroll': [[0, 1, 2, 15], [-1, 999]],
+      \ 'scrolljump': [[-100, -1, 0, 1, 2, 15], [-101, 999]],
       \ 'scrolloff': [[0, 1, 8, 999], [-1]],
       \ 'shiftwidth': [[0, 1, 8, 999], [-1]],
+      \ 'showtabpanel': [[0, 1, 2], []],
       \ 'sidescroll': [[0, 1, 8, 999], [-1]],
       \ 'sidescrolloff': [[0, 1, 8, 999], [-1]],
       \ 'tabstop': [[1, 4, 8, 12, 9999], [-1, 0, 10000]],
@@ -155,8 +158,11 @@ let test_values = {
       \		['xxx']],
       \ 'concealcursor': [['', 'n', 'v', 'i', 'c', 'nvic'], ['xxx']],
       \ 'completeopt': [['', 'menu', 'menuone', 'longest', 'preview', 'popup',
-      \		'popuphidden', 'noinsert', 'noselect', 'fuzzy', 'menu,longest'],
+      \		'popuphidden', 'noinsert', 'noselect', 'fuzzy', "preinsert", 'menu,longest'],
       \		['xxx', 'menu,,,longest,']],
+      \ 'completefuzzycollect': [['', 'keyword', 'files', 'whole_line',
+      \		'keyword,whole_line', 'files,whole_line', 'keyword,files,whole_line'],
+      \		['xxx', 'keyword,,,whole_line,']],
       \ 'completeitemalign': [['abbr,kind,menu', 'menu,abbr,kind'],
       \		['', 'xxx', 'abbr', 'abbr,menu', 'abbr,menu,kind,abbr',
       \		'abbr1234,kind,menu']],
@@ -178,22 +184,29 @@ let test_values = {
       \		'icase', 'iwhite', 'iwhiteall', 'horizontal', 'vertical',
       \		'closeoff', 'hiddenoff', 'foldcolumn:0', 'foldcolumn:12',
       \		'followwrap', 'internal', 'indent-heuristic', 'algorithm:myers',
-      \		'algorithm:minimal', 'algorithm:patience',
-      \		'algorithm:histogram', 'icase,iwhite'],
-      \		['xxx', 'foldcolumn:xxx', 'algorithm:xxx', 'algorithm:']],
+      \		'icase,iwhite', 'algorithm:minimal', 'algorithm:patience',
+      \		'algorithm:histogram', 'inline:none', 'inline:simple',
+      \		'inline:char', 'inline:word', 'inline:char,inline:word', 'linematch:5'],
+      \		['xxx', 'foldcolumn:', 'foldcolumn:x', 'foldcolumn:xxx',
+      \		'linematch:', 'linematch:x', 'linematch:xxx', 'algorithm:',
+      \		'algorithm:xxx', 'context:', 'context:x', 'context:xxx',
+      \		'inline:xxx']],
       \ 'display': [['', 'lastline', 'truncate', 'uhex', 'lastline,uhex'],
       \		['xxx']],
       \ 'eadirection': [['', 'both', 'ver', 'hor'], ['xxx', 'ver,hor']],
       \ 'encoding': [['latin1'], ['xxx', '']],
-      \ 'eventignore': [['', 'WinEnter', 'WinLeave,winenter', 'all,WinEnter'],
+      \ 'eventignore': [['', 'WinEnter', 'WinLeave,winenter', 'all,WinEnter', 'all,-WinLeave'],
       \		['xxx']],
+      \ 'eventignorewin': [['', 'WinEnter', 'WinLeave,winenter', 'all,WinEnter', 'all,-WinLeave'],
+      \		['xxx', 'WinNew']],
       \ 'fileencoding': [['', 'latin1', 'xxx'], []],
       \ 'fileformat': [['', 'dos', 'unix', 'mac'], ['xxx']],
       \ 'fileformats': [['', 'dos', 'dos,unix'], ['xxx']],
       \ 'fillchars': [['', 'stl:x', 'stlnc:x', 'vert:x', 'fold:x', 'foldopen:x',
       \		'foldclose:x', 'foldsep:x', 'diff:x', 'eob:x', 'lastline:x',
-      \		'stl:\ ,vert:\|,fold:\\,diff:x'],
-      \		['xxx', 'vert:']],
+      \		'trunc:_', 'trunc:_,eob:x,trunc:_',
+      \		'stl:\ ,vert:\|,fold:\\,trunc:…,diff:x'],
+      \		['xxx', 'vert:', 'trunc:', "trunc:\b"]],
       \ 'foldclose': [['', 'all'], ['xxx']],
       \ 'foldmethod': [['manual', 'indent', 'expr', 'marker', 'syntax', 'diff'],
       \		['', 'xxx', 'expr,diff']],
@@ -217,6 +230,7 @@ let test_values = {
       \ 'imactivatekey': [['', 'S-space'], ['xxx']],
       \ 'isfname': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'isident': [['', '@', '@,48-52'], ['xxx', '@48']],
+      \ 'isexpand': [['', '.,->', '/,/*,\\,'], [',,', '\\,,']],
       \ 'iskeyword': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'isprint': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'jumpoptions': [['', 'stack'], ['xxx']],
@@ -232,6 +246,14 @@ let test_values = {
       \		'eol:\\u21b5', 'eol:\\U000021b5', 'eol:x,space:y'],
       \		['xxx', 'eol:']],
       \ 'matchpairs': [['', '(:)', '(:),<:>'], ['xxx']],
+      \ 'messagesopt': [['hit-enter,history:1', 'hit-enter,history:10000',
+      \		'history:100,wait:100', 'history:0,wait:0',
+      \		'hit-enter,history:1,wait:1'],
+      \		['xxx', 'history:500', 'hit-enter,history:-1',
+      \		'hit-enter,history:10001', 'history:0,wait:10001',
+      \		'hit-enter', 'history:10,wait:99999999999999999999',
+      \		'history:99999999999999999999,wait:10', 'wait:10',
+      \		'history:-10', 'history:10,wait:-10']],
       \ 'mkspellmem': [['10000,100,12'], ['', 'xxx', '10000,100']],
       \ 'mouse': [['', 'n', 'v', 'i', 'c', 'h', 'a', 'r', 'nvi'],
       \		['xxx', 'n,v,i']],
@@ -280,6 +302,11 @@ let test_values = {
       \		['xxx']],
       \ 'tabclose': [['', 'left', 'uselast', 'left,uselast'], ['xxx']],
       \ 'tabline': [['', 'xxx'], ['%$', '%{', '%{%', '%{%}', '%(', '%)']],
+      \ 'tabpanel': [['', 'aaa', 'bbb'], []],
+      \ 'tabpanelopt': [['', 'align:left', 'align:right', 'vert', 'columns:0',
+      \		'columns:20', 'columns:999'],
+      \		['xxx', 'align:', 'align:middle', 'colomns:', 'cols:10',
+      \		'cols:-1']],
       \ 'tagcase': [['followic', 'followscs', 'ignore', 'match', 'smart'],
       \		['', 'xxx', 'smart,match']],
       \ 'termencoding': [has('gui_gtk') ? [] : ['', 'utf-8'], ['xxx']],
@@ -309,6 +336,7 @@ let test_values = {
       \		'bs'],
       \		['xxx']],
       \ 'wildmode': [['', 'full', 'longest', 'list', 'lastused', 'list:full',
+      \		'noselect', 'noselect,full', 'noselect:lastused,full',
       \		'full,longest', 'full,full,full,full'],
       \		['xxx', 'a4', 'full,full,full,full,full']],
       \ 'wildoptions': [['', 'tagfile', 'pum', 'fuzzy'], ['xxx']],
@@ -351,8 +379,17 @@ let test_prepost = {
       \ 'verbosefile': [[], ['call delete("Xfile")']],
       \}
 
-const invalid_options = test_values->keys()
+let invalid_options = test_values->keys()
       \->filter({-> v:val !~# '^other' && !exists($"&{v:val}")})
+for s:skip_option in [
+  \ [!has('tabpanel'), 'tabpanel'],
+  \ [!has('tabpanel'), 'tabpanelopt'],
+  \ [!has('tabpanel'), 'showtabpanel'],
+  \ ]
+  if s:skip_option[0]
+    call remove(invalid_options, s:skip_option[1])
+  endif
+endfor
 if !empty(invalid_options)
   throw $"Invalid option name in test_values: '{invalid_options->join("', '")}'"
 endif
@@ -384,6 +421,8 @@ while 1
   let [pre_processing, post_processing] = get(test_prepost, fullname, [[], []])
   let script += pre_processing
 
+  " Setting an option can only fail when it's implemented.
+  call add(script, $"if exists('+{fullname}')")
   if line =~ 'P_BOOL'
     for opt in [fullname, shortname]
       for cmd in ['set', 'setlocal', 'setglobal']
@@ -417,8 +456,6 @@ while 1
     endfor
 
     " Failure tests
-    " Setting an option can only fail when it's implemented.
-    call add(script, $"if exists('+{fullname}')")
     for opt in [fullname, shortname]
       for cmd in ['set', 'setlocal', 'setglobal']
 	for val in invalid_values
@@ -442,7 +479,6 @@ while 1
 	endfor
       endfor
     endfor
-    call add(script, "endif")
   endif
 
   " Cannot change 'termencoding' in GTK
@@ -453,6 +489,8 @@ while 1
     call add(script, $"let [&g:{fullname}, &l:{fullname}] = l:saved")
     call add(script, 'endif')
   endif
+
+  call add(script, "endif")
 
   let script += post_processing
   call add(script, 'endfunc')

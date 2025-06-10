@@ -209,6 +209,9 @@ update_screen(int type_arg)
 		    redraw_cmdline = TRUE;
 		redraw_tabline = TRUE;
 	    }
+#if defined(FEAT_TABPANEL)
+	    redraw_tabpanel = TRUE;
+#endif
 	}
 	msg_scrolled = 0;
 	need_wait_return = FALSE;
@@ -264,6 +267,11 @@ update_screen(int type_arg)
     // Redraw the tab pages line if needed.
     if (redraw_tabline || type >= UPD_NOT_VALID)
 	draw_tabline();
+
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel || type >= UPD_NOT_VALID)
+	draw_tabpanel();
+#endif
 
 #ifdef FEAT_SYN_HL
     // Correct stored syntax highlighting info for changes in each displayed
@@ -425,11 +433,8 @@ statusline_row(win_T *wp)
 win_redr_status(win_T *wp, int ignore_pum UNUSED)
 {
     int		row;
-    char_u	*p;
-    int		len;
     int		fillchar;
     int		attr;
-    int		this_ru_col;
     static int  busy = FALSE;
 
     // It's possible to get here recursively when 'statusline' (indirectly)
@@ -463,11 +468,17 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 #endif
     else
     {
+	char_u	*p;
+	int	plen;
+	int	NameBufflen;
+	int	this_ru_col;
+	int	n;			// scratch value
+
 	fillchar = fillchar_status(&attr, wp);
 
 	get_trans_bufname(wp->w_buffer);
 	p = NameBuff;
-	len = (int)STRLEN(p);
+	plen = (int)STRLEN(p);
 
 	if ((bt_help(wp->w_buffer)
 #ifdef FEAT_QUICKFIX
@@ -475,74 +486,63 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 #endif
 		    || bufIsChanged(wp->w_buffer)
 		    || wp->w_buffer->b_p_ro)
-		&& len < MAXPATHL - 1)
-	    *(p + len++) = ' ';
-	if (bt_help(wp->w_buffer))
+		&& plen < MAXPATHL - 1)
 	{
-	    vim_snprintf((char *)p + len, MAXPATHL - len, "%s", _("[Help]"));
-	    len += (int)STRLEN(p + len);
+	    *(p + plen++) = ' ';	// replace NUL with space
+	    *(p + plen) = NUL;		// NUL terminate the string
 	}
+	if (bt_help(wp->w_buffer))
+	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", _("[Help]"));
 #ifdef FEAT_QUICKFIX
 	if (wp->w_p_pvw)
-	{
-	    vim_snprintf((char *)p + len, MAXPATHL - len, "%s", _("[Preview]"));
-	    len += (int)STRLEN(p + len);
-	}
+	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", _("[Preview]"));
 #endif
 	if (bufIsChanged(wp->w_buffer) && !bt_terminal(wp->w_buffer))
-	{
-	    vim_snprintf((char *)p + len, MAXPATHL - len, "%s", "[+]");
-	    len += (int)STRLEN(p + len);
-	}
+	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", "[+]");
 	if (wp->w_buffer->b_p_ro)
-	{
-	    vim_snprintf((char *)p + len, MAXPATHL - len, "%s", _("[RO]"));
-	    len += (int)STRLEN(p + len);
-	}
+	    plen += vim_snprintf((char *)p + plen, MAXPATHL - plen, "%s", _("[RO]"));
 
 	this_ru_col = ru_col - (Columns - wp->w_width);
-	if (this_ru_col < (wp->w_width + 1) / 2)
-	    this_ru_col = (wp->w_width + 1) / 2;
+	n = (wp->w_width + 1) / 2;
+	if (this_ru_col < n)
+	    this_ru_col = n;
 	if (this_ru_col <= 1)
 	{
 	    p = (char_u *)"<";		// No room for file name!
-	    len = 1;
+	    plen = 1;
 	}
 	else if (has_mbyte)
 	{
-	    int	clen = 0, i;
+	    int	i;
 
 	    // Count total number of display cells.
-	    clen = mb_string2cells(p, -1);
+	    plen = mb_string2cells(p, -1);
 
 	    // Find first character that will fit.
 	    // Going from start to end is much faster for DBCS.
-	    for (i = 0; p[i] != NUL && clen >= this_ru_col - 1;
+	    for (i = 0; p[i] != NUL && plen >= this_ru_col - 1;
 		    i += (*mb_ptr2len)(p + i))
-		clen -= (*mb_ptr2cells)(p + i);
-	    len = clen;
+		plen -= (*mb_ptr2cells)(p + i);
 	    if (i > 0)
 	    {
 		p = p + i - 1;
 		*p = '<';
-		++len;
+		++plen;
 	    }
-
 	}
-	else if (len > this_ru_col - 1)
+	else if (plen > this_ru_col - 1)
 	{
-	    p += len - (this_ru_col - 1);
+	    p += plen - (this_ru_col - 1);
 	    *p = '<';
-	    len = this_ru_col - 1;
+	    plen = this_ru_col - 1;
 	}
 
 	screen_puts(p, row, wp->w_wincol, attr);
-	screen_fill(row, row + 1, len + wp->w_wincol,
+	screen_fill(row, row + 1, plen + wp->w_wincol,
 			this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
-
-	if (get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)
-		&& (this_ru_col - len) > (int)(STRLEN(NameBuff) + 1))
-	    screen_puts(NameBuff, row, (int)(this_ru_col - STRLEN(NameBuff)
+	if ((NameBufflen = get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)) > 0
+		&& (this_ru_col - plen) > (NameBufflen + 1))
+	    screen_puts(NameBuff, row, (int)(this_ru_col - NameBufflen
 						   - 1 + wp->w_wincol), attr);
 
 	win_redr_ruler(wp, TRUE, ignore_pum);
@@ -550,7 +550,8 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	// Draw the 'showcmd' information if 'showcmdloc' == "statusline".
 	if (p_sc && *p_sloc == 's')
 	{
-	    int	width = MIN(10, this_ru_col - len - 2);
+	    n = this_ru_col - plen - 2;		    // perform the calculation here so we only do it once
+	    int	width = MIN(10, n);
 
 	    if (width > 0)
 		screen_puts_len(showcmd_buf, width, row,
@@ -626,24 +627,17 @@ showruler(int always)
     // Redraw the tab pages line if needed.
     if (redraw_tabline)
 	draw_tabline();
+
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
+#endif
 }
 
     void
 win_redr_ruler(win_T *wp, int always, int ignore_pum)
 {
-#define RULER_BUF_LEN 70
-    char_u	buffer[RULER_BUF_LEN];
-    int		row;
-    int		fillchar;
-    int		attr;
-    int		empty_line = FALSE;
-    colnr_T	virtcol;
-    int		i;
-    size_t	len;
-    int		o;
-    int		this_ru_col;
-    int		off = 0;
-    int		width;
+    int	empty_line = FALSE;
 
     // If 'ruler' off don't do anything
     if (!p_ru)
@@ -661,6 +655,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
     if (wp == lastwin && lastwin->w_status_height == 0)
 	if (edit_submode != NULL)
 	    return;
+
     // Don't draw the ruler when the popup menu is visible, it may overlap.
     // Except when the popup menu will be redrawn anyway.
     if (!ignore_pum && pum_visible())
@@ -698,6 +693,21 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 #endif
 	    || empty_line != wp->w_ru_empty)
     {
+	int	row;
+	int	fillchar;
+	int	attr;
+	int	off;
+	int	width;
+	colnr_T	virtcol;
+#define RULER_BUF_LEN 70
+	char_u	buffer[RULER_BUF_LEN];
+	int	bufferlen;
+	char_u	rel_pos[RULER_BUF_LEN];
+	int	rel_poslen;
+	int	this_ru_col;
+	int	n1;			    // scratch value
+	int	n2;			    // scratch value
+
 	cursor_off();
 	if (wp->w_status_height)
 	{
@@ -724,16 +734,11 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	    wp->w_p_list = TRUE;
 	}
 
-	/*
-	 * Some sprintfs return the length, some return a pointer.
-	 * To avoid portability problems we use strlen() here.
-	 */
-	vim_snprintf((char *)buffer, RULER_BUF_LEN, "%ld,",
+	bufferlen = vim_snprintf((char *)buffer, RULER_BUF_LEN, "%ld,",
 		(wp->w_buffer->b_ml.ml_flags & ML_EMPTY)
 		    ? 0L
 		    : (long)(wp->w_cursor.lnum));
-	len = STRLEN(buffer);
-	col_print(buffer + len, RULER_BUF_LEN - len,
+	bufferlen += col_print(buffer + bufferlen, RULER_BUF_LEN - bufferlen,
 			empty_line ? 0 : (int)wp->w_cursor.col + 1,
 			(int)virtcol + 1);
 
@@ -742,56 +747,60 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	 * On the last line, don't print in the last column (scrolls the
 	 * screen up on some terminals).
 	 */
-	i = (int)STRLEN(buffer);
-	get_rel_pos(wp, buffer + i + 1, RULER_BUF_LEN - i - 1);
-	o = i + vim_strsize(buffer + i + 1);
+	rel_poslen = get_rel_pos(wp, rel_pos, RULER_BUF_LEN);
+	n1 = bufferlen + vim_strsize(rel_pos);
 	if (wp->w_status_height == 0)	// can't use last char of screen
-	    ++o;
+	    ++n1;
+
 	this_ru_col = ru_col - (Columns - width);
-	if (this_ru_col < 0)
-	    this_ru_col = 0;
 	// Never use more than half the window/screen width, leave the other
 	// half for the filename.
-	if (this_ru_col < (width + 1) / 2)
-	    this_ru_col = (width + 1) / 2;
-	if (this_ru_col + o < width)
+	n2 = (width + 1) / 2;
+	if (this_ru_col < n2)
+	    this_ru_col = n2;
+	if (this_ru_col + n1 < width)
 	{
-	    // need at least 3 chars left for get_rel_pos() + NUL
-	    while (this_ru_col + o < width && RULER_BUF_LEN > i + 4)
+	    // need at least space for rel_pos + NUL
+	    while (this_ru_col + n1 < width
+		    && RULER_BUF_LEN > bufferlen + rel_poslen + 1)	// +1 for NUL
 	    {
 		if (has_mbyte)
-		    i += (*mb_char2bytes)(fillchar, buffer + i);
+		    bufferlen += (*mb_char2bytes)(fillchar, buffer + bufferlen);
 		else
-		    buffer[i++] = fillchar;
-		++o;
+		    buffer[bufferlen++] = fillchar;
+		++n1;
 	    }
-	    get_rel_pos(wp, buffer + i, RULER_BUF_LEN - i);
+	    bufferlen += vim_snprintf((char *)buffer + bufferlen, RULER_BUF_LEN - bufferlen,
+			    "%s", rel_pos);
 	}
 	// Truncate at window boundary.
 	if (has_mbyte)
 	{
-	    o = 0;
-	    for (i = 0; buffer[i] != NUL; i += (*mb_ptr2len)(buffer + i))
+	    for (n1 = 0, n2 = 0; buffer[n1] != NUL; n1 += (*mb_ptr2len)(buffer + n1))
 	    {
-		o += (*mb_ptr2cells)(buffer + i);
-		if (this_ru_col + o > width)
+		n2 += (*mb_ptr2cells)(buffer + n1);
+		if (this_ru_col + n2 > width)
 		{
-		    buffer[i] = NUL;
+		    bufferlen = n1;
+		    buffer[bufferlen] = NUL;
 		    break;
 		}
 	    }
 	}
-	else if (this_ru_col + (int)STRLEN(buffer) > width)
-	    buffer[width - this_ru_col] = NUL;
+	else if (this_ru_col + bufferlen > width)
+	{
+	    bufferlen = width - this_ru_col;
+	    buffer[bufferlen] = NUL;
+	}
 
 	screen_puts(buffer, row, this_ru_col + off, attr);
-	i = redraw_cmdline;
+	n1 = redraw_cmdline;
 	screen_fill(row, row + 1,
-		this_ru_col + off + (int)STRLEN(buffer),
+		this_ru_col + off + bufferlen,
 		(off + width),
 		fillchar, fillchar, attr);
 	// don't redraw the cmdline because of showing the ruler
-	redraw_cmdline = i;
+	redraw_cmdline = n1;
 	wp->w_ru_cursor = wp->w_cursor;
 	wp->w_ru_virtcol = wp->w_virtcol;
 	wp->w_ru_empty = empty_line;
@@ -948,9 +957,10 @@ text_to_screenline(win_T *wp, char_u *text, int col)
     else
     {
 	int len = (int)STRLEN(text);
+	int n = wp->w_width - col;
 
-	if (len > wp->w_width - col)
-	    len = wp->w_width - col;
+	if (len > n)
+	    len = n;
 	if (len > 0)
 	{
 #ifdef FEAT_RIGHTLEFT
@@ -1028,8 +1038,8 @@ redraw_win_toolbar(win_T *wp)
     }
     wp->w_winbar_items[item_idx].wb_menu = NULL; // end marker
 
-    screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width, wp->w_width, -1,
-									    0);
+    screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width,
+							  wp->w_width, -1, 0);
 }
 #endif
 
@@ -1217,7 +1227,7 @@ fold_line(
 		}
 	    }
 
-	    sprintf((char *)buf, fmt, w, num);
+	    vim_snprintf((char *)buf, sizeof(buf), fmt, w, num);
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		// the line number isn't reversed
@@ -1363,8 +1373,8 @@ fold_line(
     }
 #endif
 
-    screen_line(wp, row + W_WINROW(wp), wp->w_wincol,
-					      wp->w_width, wp->w_width, -1, 0);
+    screen_line(wp, row + W_WINROW(wp), wp->w_wincol, wp->w_width, wp->w_width,
+	    -1, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
     // updated (saves a call to plines() later).
@@ -2048,8 +2058,7 @@ win_update(win_T *wp)
 			{
 			    colnr_T t;
 
-			    pos.col = (int)STRLEN(ml_get_buf(wp->w_buffer,
-							     pos.lnum, FALSE));
+			    pos.col = (int)ml_get_buf_len(wp->w_buffer, pos.lnum);
 			    getvvcol(wp, &pos, NULL, NULL, &t);
 			    if (toc < t)
 				toc = t;
@@ -2255,6 +2264,7 @@ win_update(win_T *wp)
 				// match in fixed position might need redraw
 				// if lines were inserted or deleted
 				|| (wp->w_match_head != NULL
+						    && buf->b_mod_set
 						    && buf->b_mod_xlines != 0)
 #endif
 				))))
@@ -2536,8 +2546,8 @@ win_update(win_T *wp)
 	    // - 'number' is set and below inserted/deleted lines, or
 	    // - 'relativenumber' is set and cursor moved vertically,
 	    // the text doesn't need to be redrawn, but the number column does.
-	    if ((wp->w_p_nu && mod_top != 0
-			&& lnum >= mod_bot && buf->b_mod_xlines != 0)
+	    if ((wp->w_p_nu && mod_top != 0 && lnum >= mod_bot
+			&& buf->b_mod_set && buf->b_mod_xlines != 0)
 		    || (wp->w_p_rnu
 			&& wp->w_last_cursor_lnum_rnu != wp->w_cursor.lnum))
 	    {
@@ -2598,13 +2608,16 @@ win_update(win_T *wp)
 
 	for (k = 0; k < Rows; ++k)
 	    if (enc_utf8)
-		if ((*mb_off2cells)(LineOffset[k] + Columns - 2,
+		if ((*mb_off2cells)(LineOffset[k] + topframe->fr_width - 2,
 					   LineOffset[k] + screen_Columns) > 1)
-		    screen_draw_rectangle(k, Columns - 2, 1, 2, FALSE);
+		    screen_draw_rectangle(k, topframe->fr_width - 2, 1, 2,
+			    FALSE);
 		else
-		    screen_draw_rectangle(k, Columns - 1, 1, 1, FALSE);
+		    screen_draw_rectangle(k, topframe->fr_width - 1, 1, 1,
+			    FALSE);
 	    else
-		screen_char(LineOffset[k] + Columns - 1, k, Columns - 1);
+		screen_char(LineOffset[k] + topframe->fr_width - 1, k,
+			Columns - 1);
     }
 #endif
 
@@ -2674,7 +2687,7 @@ win_update(win_T *wp)
 	    // Last line isn't finished: Display "@@@" at the end.
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
-		    start_col < wp->w_wincol ? wp->w_wincol : start_col,
+		    (start_col < wp->w_wincol ? wp->w_wincol : start_col),
 		    (int)W_ENDCOL(wp),
 		    symbol, symbol, HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
@@ -2900,6 +2913,11 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 	    win_redr_status(wp, FALSE);
     }
 
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
+#endif
+
     update_finish();
 }
 #endif
@@ -2931,6 +2949,11 @@ updateWindow(win_T *wp)
     // When the screen was cleared redraw the tab pages line.
     if (redraw_tabline)
 	draw_tabline();
+
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
+#endif
 
     if (wp->w_redr_status || p_ru
 # ifdef FEAT_STL_OPT
@@ -3330,6 +3353,11 @@ redraw_statuslines(void)
 	    win_redr_status(wp, FALSE);
     if (redraw_tabline)
 	draw_tabline();
+
+#if defined(FEAT_TABPANEL)
+    if (redraw_tabpanel)
+	draw_tabpanel();
+#endif
 }
 
 /*
@@ -3367,9 +3395,21 @@ redrawWinline(
     win_T	*wp,
     linenr_T	lnum)
 {
-    if (wp->w_redraw_top == 0 || wp->w_redraw_top > lnum)
-	wp->w_redraw_top = lnum;
-    if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < lnum)
-	wp->w_redraw_bot = lnum;
-    redraw_win_later(wp, UPD_VALID);
+    redraw_win_range_later(wp, lnum, lnum);
+}
+
+    void
+redraw_win_range_later(
+    win_T	*wp,
+    linenr_T	first,
+    linenr_T	last)
+{
+    if (last >= wp->w_topline && first < wp->w_botline)
+    {
+	if (wp->w_redraw_top == 0 || wp->w_redraw_top > first)
+	    wp->w_redraw_top = first;
+	if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < last)
+	    wp->w_redraw_bot = last;
+	redraw_win_later(wp, UPD_VALID);
+    }
 }

@@ -430,6 +430,9 @@
 /* Define if there is a working dgettext(). */
 #undef HAVE_DGETTEXT
 
+/* Define if there is a working dngettext(). */
+#undef HAVE_DNGETTEXT
+
 /* Define if _nl_msg_cat_cntr is present. */
 #undef HAVE_NL_MSG_CAT_CNTR
 

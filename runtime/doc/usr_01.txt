@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 9.1.  Last change: 2024 Nov 03
+*usr_01.txt*	For Vim version 9.1.  Last change: 2024 Dec 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -110,15 +110,16 @@ For more info see |vimrc| and |compatible-default|.
 For the interactive tutor, see |vim-tutor-mode|
 
 Instead of reading the text (boring!) you can use the vimtutor to learn your
-first Vim commands.  This is a 30-minute tutorial that teaches the most basic
-Vim functionality hands-on.
+first Vim commands.  This is a 30-minute tutorial provided in 2 chapters, that
+teaches the most basic Vim functionality hands-on.
 
 On Unix, if Vim has been properly installed, you can start it from the shell:
 >
 	vimtutor
 
-On MS-Windows you can find it in the Program/Vim menu.  Or execute
-vimtutor.bat in the $VIMRUNTIME directory.
+On MS-Windows you can find it in the "Program/Vim 9.1" menu.  Or execute
+vimtutor.bat from the installation directory (You can use `:echo $VIMRUNTIME`
+from within Vim to find this directory).
 
 This will make a copy of chapter 1 tutor file, so that you can edit it without
 the risk of damaging the original.  To continue with chapter 2, you can use
@@ -145,13 +146,13 @@ On other systems, you have to do a little work:
 
 1. Copy the tutor file.  You can do this with Vim (it knows where to find it):
 >
-	vim --clean -c 'e $VIMRUNTIME/tutor/tutor' -c 'w! TUTORCOPY' -c 'q'
+	vim --clean -c 'e $VIMRUNTIME/tutor/tutor1' -c 'w! TUTORCOPY' -c 'q'
 <
    This will write the file "TUTORCOPY" in the current directory.  To use a
 translated version of the tutor, append the two-letter language code to the
 filename.  For French:
 >
-	vim --clean -c 'e $VIMRUNTIME/tutor/tutor.fr' -c 'w! TUTORCOPY' -c 'q'
+	vim --clean -c 'e $VIMRUNTIME/tutor/tutor1.fr' -c 'w! TUTORCOPY' -c 'q'
 <
 2. Edit the copied file with Vim:
 >

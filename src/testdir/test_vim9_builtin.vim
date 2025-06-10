@@ -357,6 +357,16 @@ def Test_blob2list()
   v9.CheckSourceDefAndScriptFailure(['blob2list(10)'], ['E1013: Argument 1: type mismatch, expected blob but got number', 'E1238: Blob required for argument 1'])
 enddef
 
+def Test_blob2str()
+  0z6162->blob2str()->assert_equal(["ab"])
+  blob2str(0z)->assert_equal([])
+
+  var l: list<string> = blob2str(0zC2ABC2BB)
+  assert_equal(["«»"], l)
+
+  v9.CheckSourceDefAndScriptFailure(['blob2str("ab")'], ['E1013: Argument 1: type mismatch, expected blob but got string', 'E1238: Blob required for argument 1'])
+enddef
+
 def Test_browse()
   CheckFeature browse
 
@@ -540,7 +550,7 @@ def Test_call_imports()
     const Imported = i_imp.Imported
     const foo = i_imp.foo
 
-    assert_fails('call("i_imp.foo", [])', 'E117:') # foo is not a function
+    assert_fails('call("i_imp.foo", [])', ['E46:', 'E117:']) # foo is not a function
     assert_fails('call("foo", [])', 'E117:') # foo is not a function
     assert_fails('call("i_xxx.foo", [])', 'E117:') # i_xxx not imported file
   END
@@ -872,7 +882,7 @@ enddef
 def Test_count()
   count('ABC ABC ABC', 'b', true)->assert_equal(3)
   count('ABC ABC ABC', 'b', false)->assert_equal(0)
-  v9.CheckSourceDefAndScriptFailure(['count(10, 1)'], 'E1225: String, List or Dictionary required for argument 1')
+  v9.CheckSourceDefAndScriptFailure(['count(10, 1)'], 'E1225: String, List, Tuple or Dictionary required for argument 1')
   v9.CheckSourceDefAndScriptFailure(['count("a", [1], 2)'], ['E1013: Argument 3: type mismatch, expected bool but got number', 'E1212: Bool required for argument 3'])
   v9.CheckSourceDefAndScriptFailure(['count("a", [1], 0, "b")'], ['E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4'])
   count([1, 2, 2, 3], 2)->assert_equal(2)
@@ -963,6 +973,18 @@ enddef
 def Test_digraph_getlist()
   v9.CheckSourceDefAndScriptFailure(['digraph_getlist(10)'], ['E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['digraph_getlist("")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1'])
+
+  var lines =<< trim END
+    var l = digraph_getlist(true)
+    assert_notequal([], l)
+    l = digraph_getlist(false)
+    assert_equal([], l)
+    l = digraph_getlist(1)
+    assert_notequal([], l)
+    l = digraph_getlist(0)
+    assert_equal([], l)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
 enddef
 
 def Test_digraph_set()
@@ -1015,7 +1037,7 @@ def Test_execute()
 
   v9.CheckSourceDefAndScriptFailure(['execute(123)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1'])
   v9.CheckSourceDefFailure(['execute([123])'], 'E1013: Argument 1: type mismatch, expected list<string> but got list<number>')
-  v9.CheckSourceDefExecFailure(['echo execute(["xx", 123])'], 'E492')
+  v9.CheckSourceDefExecFailure(['echo execute(["xx", 123])'], 'E492:')
   v9.CheckSourceDefAndScriptFailure(['execute("xx", 123)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
 enddef
 
@@ -1508,7 +1530,7 @@ def Test_filter()
   END
   v9.CheckSourceScriptSuccess(lines)
 
-  v9.CheckSourceDefAndScriptFailure(['filter(1.1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['filter(1.1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got float', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['filter([1, 2], 4)'], ['E1256: String or function required for argument 2', 'E1024: Using a Number as a String'])
 
   lines =<< trim END
@@ -1625,6 +1647,11 @@ def Test_foldtextresult()
   assert_equal('', foldtextresult('.'))
 enddef
 
+def Test_foreach()
+  CheckFeature job
+  v9.CheckSourceDefAndScriptFailure(['foreach(test_null_job(), "")'], ['E1013: Argument 1: type mismatch, expected list<any> but got job', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1'])
+enddef
+
 def Test_fullcommand()
   assert_equal('next', fullcommand('n'))
   assert_equal('noremap', fullcommand('no'))
@@ -1733,7 +1760,8 @@ def Test_garbagecollect()
 enddef
 
 def Test_get()
-  v9.CheckSourceDefAndScriptFailure(['get("a", 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E896: Argument of get() must be a List, Dictionary or Blob'])
+  CheckFeature quickfix
+  v9.CheckSourceDefAndScriptFailure(['get("a", 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1531: Argument of get() must be a List, Tuple, Dictionary or Blob'])
   [3, 5, 2]->get(1)->assert_equal(5)
   [3, 5, 2]->get(3)->assert_equal(0)
   [3, 5, 2]->get(3, 9)->assert_equal(9)
@@ -1816,8 +1844,10 @@ def Test_getchar()
   endwhile
   getchar(true)->assert_equal(0)
   getchar(1)->assert_equal(0)
-  v9.CheckSourceDefAndScriptFailure(['getchar(2)'], ['E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1'])
-  v9.CheckSourceDefAndScriptFailure(['getchar("1")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1'])
+  v9.CheckSourceDefExecAndScriptFailure(['getchar(2)'], 'E1023: Using a Number as a Bool: 2')
+  v9.CheckSourceDefExecAndScriptFailure(['getchar(-2)'], 'E1023: Using a Number as a Bool: -2')
+  v9.CheckSourceDefAndScriptFailure(['getchar("1")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1235: Bool or Number required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['getchar(1, 1)'], ['E1013: Argument 2: type mismatch, expected dict<any> but got number', 'E1206: Dictionary required for argument 2'])
 enddef
 
 def Test_getcharpos()
@@ -1829,8 +1859,14 @@ def Test_getcharpos()
 enddef
 
 def Test_getcharstr()
-  v9.CheckSourceDefAndScriptFailure(['getcharstr(2)'], ['E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1'])
-  v9.CheckSourceDefAndScriptFailure(['getcharstr("1")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1'])
+  while len(getcharstr(0)) > 0
+  endwhile
+  getcharstr(true)->assert_equal('')
+  getcharstr(1)->assert_equal('')
+  v9.CheckSourceDefExecAndScriptFailure(['getcharstr(2)'], 'E1023: Using a Number as a Bool: 2')
+  v9.CheckSourceDefExecAndScriptFailure(['getcharstr(-2)'], 'E1023: Using a Number as a Bool: -2')
+  v9.CheckSourceDefAndScriptFailure(['getcharstr("1")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1235: Bool or Number required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['getcharstr(1, 1)'], ['E1013: Argument 2: type mismatch, expected dict<any> but got number', 'E1206: Dictionary required for argument 2'])
 enddef
 
 def Test_getcompletion()
@@ -1946,11 +1982,13 @@ def Test_getline()
 enddef
 
 def Test_getloclist()
+  CheckFeature quickfix
   v9.CheckSourceDefAndScriptFailure(['getloclist("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['getloclist(1, [])'], ['E1013: Argument 2: type mismatch, expected dict<any> but got list<any>', 'E1206: Dictionary required for argument 2'])
 enddef
 
 def Test_getloclist_return_type()
+  CheckFeature quickfix
   var l = getloclist(1)
   l->assert_equal([])
 
@@ -1978,11 +2016,13 @@ def Test_getpos()
 enddef
 
 def Test_getqflist()
+  CheckFeature quickfix
   v9.CheckSourceDefAndScriptFailure(['getqflist([])'], ['E1013: Argument 1: type mismatch, expected dict<any> but got list<any>', 'E1206: Dictionary required for argument 1'])
   call assert_equal({}, getqflist({}))
 enddef
 
 def Test_getqflist_return_type()
+  CheckFeature quickfix
   var l = getqflist()
   l->assert_equal([])
 
@@ -2246,7 +2286,7 @@ enddef
 
 def Test_index()
   index(['a', 'b', 'a', 'B'], 'b', 2, true)->assert_equal(3)
-  v9.CheckSourceDefAndScriptFailure(['index("a", "a")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1226: List or Blob required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['index("a", "a")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1528: List or Tuple or Blob required for argument 1'])
   v9.CheckSourceDefFailure(['index(["1"], 1)'], 'E1013: Argument 2: type mismatch, expected string but got number')
   v9.CheckSourceDefAndScriptFailure(['index(0z10, "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
   v9.CheckSourceDefAndScriptFailure(['index([1], 1, "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
@@ -2391,7 +2431,7 @@ def Test_instanceof()
     enddef
     Bar()
   END
-  v9.CheckSourceScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected object<Unknown> but got string')
+  v9.CheckSourceScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected object<any> but got string')
 
   lines =<< trim END
     vim9script
@@ -2509,7 +2549,7 @@ def Test_job_stop()
 enddef
 
 def Test_join()
-  v9.CheckSourceDefAndScriptFailure(['join("abc")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1211: List required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['join("abc")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1529: List or Tuple required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['join([], 2)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   join([''], '')->assert_equal('')
 enddef
@@ -2630,9 +2670,9 @@ enddef
 
 def Test_map()
   if has('channel')
-    v9.CheckSourceDefAndScriptFailure(['map(test_null_channel(), "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+    v9.CheckSourceDefAndScriptFailure(['map(test_null_channel(), "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got channel', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1'])
   endif
-  v9.CheckSourceDefAndScriptFailure(['map(1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['map(1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['map([1, 2], 4)'], ['E1256: String or function required for argument 2', 'E1024: Using a Number as a String'])
 
   # type of dict remains dict<any> even when type of values changes
@@ -2863,9 +2903,9 @@ enddef
 
 def Test_mapnew()
   if has('channel')
-    v9.CheckSourceDefAndScriptFailure(['mapnew(test_null_job(), "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got job', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+    v9.CheckSourceDefAndScriptFailure(['mapnew(test_null_job(), "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got job', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1'])
   endif
-  v9.CheckSourceDefAndScriptFailure(['mapnew(1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Dictionary, Blob or String required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['mapnew(1, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1'])
 enddef
 
 def Test_mapset()
@@ -3042,7 +3082,7 @@ def Test_max()
           ? [1, max([2, 3])]
           : [4, 5]
   assert_equal([4, 5], l2)
-  v9.CheckSourceDefAndScriptFailure(['max(5)'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1227: List or Dictionary required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['max(5)'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1530: List or Tuple or Dictionary required for argument 1'])
 enddef
 
 def Test_menu_info()
@@ -3064,7 +3104,7 @@ def Test_min()
           ? [1, min([2, 3])]
           : [4, 5]
   assert_equal([4, 5], l2)
-  v9.CheckSourceDefAndScriptFailure(['min(5)'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1227: List or Dictionary required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['min(5)'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1530: List or Tuple or Dictionary required for argument 1'])
 enddef
 
 def Test_mkdir()
@@ -3423,7 +3463,7 @@ def Test_readfile()
 enddef
 
 def Test_reduce()
-  v9.CheckSourceDefAndScriptFailure(['reduce({a: 10}, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E1252: String, List or Blob required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['reduce({a: 10}, "1")'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<number>', 'E1253: String, List, Tuple or Blob required for argument 1'])
   assert_equal(6, [1, 2, 3]->reduce((r, c) => r + c, 0))
   assert_equal(11, 0z0506->reduce((r, c) => r + c, 0))
 enddef
@@ -3586,8 +3626,8 @@ def Test_rename()
 enddef
 
 def Test_repeat()
-  v9.CheckSourceDefAndScriptFailure(['repeat(1.1, 2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1301: String, Number, List or Blob required for argument 1'])
-  v9.CheckSourceDefAndScriptFailure(['repeat({a: 10}, 2)'], ['E1013: Argument 1: type mismatch, expected string but got dict<', 'E1301: String, Number, List or Blob required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['repeat(1.1, 2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1301: String, Number, List, Tuple or Blob required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['repeat({a: 10}, 2)'], ['E1013: Argument 1: type mismatch, expected string but got dict<', 'E1301: String, Number, List, Tuple or Blob required for argument 1'])
   var lines =<< trim END
       assert_equal('aaa', repeat('a', 3))
       assert_equal('111', repeat(1, 3))
@@ -3608,7 +3648,7 @@ def Test_resolve()
 enddef
 
 def Test_reverse()
-  v9.CheckSourceDefAndScriptFailure(['reverse(10)'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1252: String, List or Blob required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['reverse(10)'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1253: String, List, Tuple or Blob required for argument 1'])
 enddef
 
 def Test_reverse_return_type()
@@ -4313,6 +4353,13 @@ def Test_state()
   assert_equal('', state('a'))
 enddef
 
+def Test_str2blob()
+  ["ab"]->str2blob()->assert_equal(0z6162)
+  str2blob([""])->assert_equal(0z)
+
+  v9.CheckSourceDefAndScriptFailure(['str2blob("ab")'], ['E1013: Argument 1: type mismatch, expected list<string> but got string', 'E1211: List required for argument 1'])
+enddef
+
 def Test_str2float()
   str2float("1.00")->assert_equal(1.00)
   str2float("2e-2")->assert_equal(0.02)
@@ -4960,7 +5007,7 @@ enddef
 
 def Test_win_findbuf()
   v9.CheckSourceDefAndScriptFailure(['win_findbuf("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
-  assert_equal([], win_findbuf(1000))
+  assert_equal([], win_findbuf(9999))
   assert_equal([win_getid()], win_findbuf(bufnr('')))
 enddef
 

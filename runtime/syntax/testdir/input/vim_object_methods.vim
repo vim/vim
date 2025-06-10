@@ -1,5 +1,7 @@
 vim9script
-# VIM_TEST_SETUP hi link vimMethodName Todo
+
+# VIM_TEST_SETUP hi link vim9MethodName Special
+# VIM_TEST_SETUP hi link vim9This Todo
 
 
 # Vim |builtin-object-methods| and namesake builtin functions.

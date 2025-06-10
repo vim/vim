@@ -16,6 +16,7 @@
 #include "vim.h"
 
 static void add_msg_hist(char_u *s, int len, int attr);
+static void check_msg_hist(void);
 static void hit_return_msg(void);
 static void msg_home_replace_attr(char_u *fname, int attr);
 static void msg_puts_attr_len(char *str, int maxlen, int attr);
@@ -51,9 +52,26 @@ struct msg_hist
 static struct msg_hist *first_msg_hist = NULL;
 static struct msg_hist *last_msg_hist = NULL;
 static int msg_hist_len = 0;
+static int msg_hist_max = 500;		// The default max value is 500
+
+// flags obtained from the 'messagesopt' option
+#define MESSAGES_HIT_ENTER	0x001
+#define MESSAGES_WAIT		0x002
+#define MESSAGES_HISTORY	0x004
+
+// args in 'messagesopt' option
+#define MESSAGES_OPT_HIT_ENTER "hit-enter"
+#define MESSAGES_OPT_WAIT "wait:"
+#define MESSAGES_OPT_HISTORY "history:"
+
+// The default is "hit-enter,history:500"
+static int msg_flags = MESSAGES_HIT_ENTER | MESSAGES_HISTORY;
+static int msg_wait = 0;
 
 static FILE *verbose_fd = NULL;
 static int  verbose_did_open = FALSE;
+
+static int  did_warn_clipboard = FALSE;
 
 /*
  * When writing messages to the screen, there are many different situations.
@@ -1009,10 +1027,6 @@ add_msg_hist(
     if (msg_hist_off || msg_silent != 0)
 	return;
 
-    // Don't let the message history get too big
-    while (msg_hist_len > MAX_MSG_HIST_LEN)
-	(void)delete_first_msg();
-
     // allocate an entry and add the message at the end of the history
     p = ALLOC_ONE(struct msg_hist);
     if (p == NULL)
@@ -1037,6 +1051,8 @@ add_msg_hist(
     if (first_msg_hist == NULL)
 	first_msg_hist = last_msg_hist;
     ++msg_hist_len;
+
+    check_msg_hist();
 }
 
 /*
@@ -1057,6 +1073,78 @@ delete_first_msg(void)
     vim_free(p->msg);
     vim_free(p);
     --msg_hist_len;
+    return OK;
+}
+
+    static void
+check_msg_hist(void)
+{
+    // Don't let the message history get too big
+    while (msg_hist_len > 0 && msg_hist_len > msg_hist_max)
+	(void)delete_first_msg();
+}
+
+
+    int
+messagesopt_changed(void)
+{
+    char_u	*p;
+    int		messages_flags_new = 0;
+    int		messages_wait_new = 0;
+    int		messages_history_new = 0;
+
+    p = p_mopt;
+    while (*p != NUL)
+    {
+	if (STRNCMP(p, MESSAGES_OPT_HIT_ENTER,
+	     STRLEN_LITERAL(MESSAGES_OPT_HIT_ENTER)) == 0)
+	{
+	    p += STRLEN_LITERAL(MESSAGES_OPT_HIT_ENTER);
+	    messages_flags_new |= MESSAGES_HIT_ENTER;
+	}
+	else if (STRNCMP(p, MESSAGES_OPT_WAIT,
+		  STRLEN_LITERAL(MESSAGES_OPT_WAIT)) == 0
+	    && VIM_ISDIGIT(p[STRLEN_LITERAL(MESSAGES_OPT_WAIT)]))
+	{
+	    p += STRLEN_LITERAL(MESSAGES_OPT_WAIT);
+	    messages_wait_new = getdigits(&p);
+	    messages_flags_new |= MESSAGES_WAIT;
+	}
+	else if (STRNCMP(p, MESSAGES_OPT_HISTORY,
+		  STRLEN_LITERAL(MESSAGES_OPT_HISTORY)) == 0
+	    && VIM_ISDIGIT(p[STRLEN_LITERAL(MESSAGES_OPT_HISTORY)]))
+	{
+	    p += STRLEN_LITERAL(MESSAGES_OPT_HISTORY);
+	    messages_history_new = getdigits(&p);
+	    messages_flags_new |= MESSAGES_HISTORY;
+	}
+
+	if (*p != ',' && *p != NUL)
+	    return FAIL;
+	if (*p == ',')
+	    ++p;
+    }
+
+    // Either "wait" or "hit-enter" is required
+    if (!(messages_flags_new & (MESSAGES_HIT_ENTER | MESSAGES_WAIT)))
+	return FAIL;
+
+    // "history" must be set
+    if (!(messages_flags_new & MESSAGES_HISTORY))
+	return FAIL;
+
+    if (messages_history_new < 0 || messages_history_new > 10000)
+	return FAIL;
+
+    if (messages_wait_new < 0 || messages_wait_new > 10000)
+	return FAIL;
+
+    msg_flags = messages_flags_new;
+    msg_wait = messages_wait_new;
+
+    msg_hist_max = messages_history_new;
+    check_msg_hist();
+
     return OK;
 }
 
@@ -1220,87 +1308,90 @@ wait_return(int redraw)
 	if (need_check_timestamps)
 	    check_timestamps(FALSE);
 
-	hit_return_msg();
-
-	do
+	if (msg_flags & MESSAGES_HIT_ENTER)
 	{
-	    // Remember "got_int", if it is set vgetc() probably returns a
-	    // CTRL-C, but we need to loop then.
-	    had_got_int = got_int;
+	    hit_return_msg();
 
-	    // Don't do mappings here, we put the character back in the
-	    // typeahead buffer.
-	    ++no_mapping;
-	    ++allow_keys;
+	    do
+	    {
+		// Remember "got_int", if it is set vgetc() probably returns a
+		// CTRL-C, but we need to loop then.
+		had_got_int = got_int;
 
-	    // Temporarily disable Recording. If Recording is active, the
-	    // character will be recorded later, since it will be added to the
-	    // typebuf after the loop
-	    save_reg_recording = reg_recording;
-	    save_scriptout = scriptout;
-	    reg_recording = 0;
-	    scriptout = NULL;
-	    c = safe_vgetc();
-	    if (had_got_int && !global_busy)
-		got_int = FALSE;
-	    --no_mapping;
-	    --allow_keys;
-	    reg_recording = save_reg_recording;
-	    scriptout = save_scriptout;
+		// Don't do mappings here, we put the character back in the
+		// typeahead buffer.
+		++no_mapping;
+		++allow_keys;
+
+		// Temporarily disable Recording. If Recording is active, the
+		// character will be recorded later, since it will be added to
+		// the typebuf after the loop
+		save_reg_recording = reg_recording;
+		save_scriptout = scriptout;
+		reg_recording = 0;
+		scriptout = NULL;
+		c = safe_vgetc();
+		if (had_got_int && !global_busy)
+		    got_int = FALSE;
+		--no_mapping;
+		--allow_keys;
+		reg_recording = save_reg_recording;
+		scriptout = save_scriptout;
 
 #ifdef FEAT_CLIPBOARD
-	    // Strange way to allow copying (yanking) a modeless selection at
-	    // the hit-enter prompt.  Use CTRL-Y, because the same is used in
-	    // Cmdline-mode and it's harmless when there is no selection.
-	    if (c == Ctrl_Y && clip_star.state == SELECT_DONE)
-	    {
-		clip_copy_modeless_selection(TRUE);
-		c = K_IGNORE;
-	    }
+		// Strange way to allow copying (yanking) a modeless selection
+		// at the hit-enter prompt.  Use CTRL-Y, because the same is
+		// used in Cmdline-mode and it's harmless when there is no
+		// selection.
+		if (c == Ctrl_Y && clip_star.state == SELECT_DONE)
+		{
+		    clip_copy_modeless_selection(TRUE);
+		    c = K_IGNORE;
+		}
 #endif
 
-	    /*
-	     * Allow scrolling back in the messages.
-	     * Also accept scroll-down commands when messages fill the screen,
-	     * to avoid that typing one 'j' too many makes the messages
-	     * disappear.
-	     */
-	    if (p_more && !p_cp)
-	    {
-		if (c == 'b' || c == 'k' || c == 'u' || c == 'g'
-						|| c == K_UP || c == K_PAGEUP)
+		/*
+		* Allow scrolling back in the messages.
+		* Also accept scroll-down commands when messages fill the
+		* screen, to avoid that typing one 'j' too many makes the
+		* messages disappear.
+		*/
+		if (p_more && !p_cp)
 		{
-		    if (msg_scrolled > Rows)
-			// scroll back to show older messages
-			do_more_prompt(c);
-		    else
+		    if (c == 'b' || c == 'k' || c == 'u' || c == 'g'
+						|| c == K_UP || c == K_PAGEUP)
 		    {
-			msg_didout = FALSE;
-			c = K_IGNORE;
-			msg_col =
+			if (msg_scrolled > Rows)
+			    // scroll back to show older messages
+			    do_more_prompt(c);
+			else
+			{
+			    msg_didout = FALSE;
+			    c = K_IGNORE;
+			    msg_col =
 #ifdef FEAT_RIGHTLEFT
-			    cmdmsg_rl ? Columns - 1 :
+				cmdmsg_rl ? Columns - 1 :
 #endif
-			    0;
+				0;
+			}
+			if (quit_more)
+			{
+			    c = CAR;		// just pretend CR was hit
+			    quit_more = FALSE;
+			    got_int = FALSE;
+			}
+			else if (c != K_IGNORE)
+			{
+			    c = K_IGNORE;
+			    hit_return_msg();
+			}
 		    }
-		    if (quit_more)
-		    {
-			c = CAR;		// just pretend CR was hit
-			quit_more = FALSE;
-			got_int = FALSE;
-		    }
-		    else if (c != K_IGNORE)
-		    {
+		    else if (msg_scrolled > Rows - 2
+			    && (c == 'j' || c == 'd' || c == 'f'
+					    || c == K_DOWN || c == K_PAGEDOWN))
 			c = K_IGNORE;
-			hit_return_msg();
-		    }
 		}
-		else if (msg_scrolled > Rows - 2
-			 && (c == 'j' || c == 'd' || c == 'f'
-					   || c == K_DOWN || c == K_PAGEDOWN))
-		    c = K_IGNORE;
-	    }
-	} while ((had_got_int && c == Ctrl_C)
+	    } while ((had_got_int && c == Ctrl_C)
 				|| c == K_IGNORE
 #ifdef FEAT_GUI
 				|| c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR
@@ -1319,19 +1410,26 @@ wait_return(int redraw)
 					|| c == K_X1MOUSE
 					|| c == K_X2MOUSE))
 				);
-	ui_breakcheck();
+	    ui_breakcheck();
 
-	// Avoid that the mouse-up event causes Visual mode to start.
-	if (c == K_LEFTMOUSE || c == K_MIDDLEMOUSE || c == K_RIGHTMOUSE
-					  || c == K_X1MOUSE || c == K_X2MOUSE)
-	    (void)jump_to_mouse(MOUSE_SETPOS, NULL, 0);
-	else if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
+	    // Avoid that the mouse-up event causes Visual mode to start.
+	    if (c == K_LEFTMOUSE || c == K_MIDDLEMOUSE || c == K_RIGHTMOUSE
+					|| c == K_X1MOUSE || c == K_X2MOUSE)
+		(void)jump_to_mouse(MOUSE_SETPOS, NULL, 0);
+	    else if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
+	    {
+		// Put the character back in the typeahead buffer.  Don't use
+		// the stuff buffer, because lmaps wouldn't work.
+		ins_char_typebuf(vgetc_char, vgetc_mod_mask);
+		do_redraw = TRUE;	// need a redraw even though there is
+					// typeahead
+	    }
+	}
+	else
 	{
-	    // Put the character back in the typeahead buffer.  Don't use the
-	    // stuff buffer, because lmaps wouldn't work.
-	    ins_char_typebuf(vgetc_char, vgetc_mod_mask);
-	    do_redraw = TRUE;	    // need a redraw even though there is
-				    // typeahead
+	    c = CAR;
+	    // Wait to allow the user to verify the output.
+	    do_sleep(msg_wait, TRUE);
 	}
     }
     redir_off = FALSE;
@@ -1649,7 +1747,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 
     // When drawing over the command line no need to clear it later or remove
     // the mode message.
-    if (msg_row >= cmdline_row && msg_col == 0)
+    if (msg_silent == 0 && len > 0 && msg_row >= cmdline_row && msg_col == 0)
     {
 	clear_cmdline = FALSE;
 	mode_displayed = FALSE;
@@ -3410,7 +3508,6 @@ do_more_prompt(int typed_char)
     static void
 mch_errmsg_c(char *str)
 {
-    int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode = 0;
     HANDLE  h = GetStdHandle(STD_ERROR_HANDLE);
@@ -3418,10 +3515,14 @@ mch_errmsg_c(char *str)
     if (GetConsoleMode(h, &mode) && enc_codepage >= 0
 	    && (int)GetConsoleCP() != enc_codepage)
     {
+	int	len = (int)STRLEN(str);
 	WCHAR	*w = enc_to_utf16((char_u *)str, &len);
 
-	WriteConsoleW(h, w, len, &nwrite, NULL);
-	vim_free(w);
+	if (w != NULL)
+	{
+	    WriteConsoleW(h, w, len, &nwrite, NULL);
+	    vim_free(w);
+	}
     }
     else
     {
@@ -3516,19 +3617,21 @@ mch_errmsg(char *str)
     static void
 mch_msg_c(char *str)
 {
-    int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode;
     HANDLE  h = GetStdHandle(STD_OUTPUT_HANDLE);
 
-
     if (GetConsoleMode(h, &mode) && enc_codepage >= 0
 	    && (int)GetConsoleCP() != enc_codepage)
     {
+	int	len = (int)STRLEN(str);
 	WCHAR	*w = enc_to_utf16((char_u *)str, &len);
 
-	WriteConsoleW(h, w, len, &nwrite, NULL);
-	vim_free(w);
+	if (w != NULL)
+	{
+	    WriteConsoleW(h, w, len, &nwrite, NULL);
+	    vim_free(w);
+	}
     }
     else
     {
@@ -4058,6 +4161,23 @@ msg_advance(int col)
 #endif
 	while (msg_col < col)
 	    msg_putchar(' ');
+}
+
+/*
+ * Warn about missing Clipboard Support
+ */
+    void
+msg_warn_missing_clipboard(void)
+{
+    if (!global_busy && !did_warn_clipboard)
+    {
+#ifdef FEAT_CLIPBOARD
+	msg(_("W23: Clipboard register not available, using register 0"));
+#else
+	msg(_("W24: Clipboard register not available. See :h W24"));
+#endif
+	did_warn_clipboard = TRUE;
+    }
 }
 
 #if defined(FEAT_CON_DIALOG) || defined(PROTO)

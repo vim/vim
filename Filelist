@@ -17,12 +17,18 @@ SRC_ALL =	\
 		.gitignore \
 		.hgignore \
 		.appveyor.yml \
+		.clang-format \
 		.codecov.yml \
+		.editorconfig \
 		ci/appveyor.bat \
 		ci/config.mk*.sed \
 		ci/if_ver*.vim \
+		ci/if_feat_check.vim \
 		ci/setup-xvfb.sh \
+		ci/setup-sway.sh \
 		ci/remove_snap.sh \
+		ci/ddebs.list \
+		ci/pinned-pkgs \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.c \
@@ -50,6 +56,7 @@ SRC_ALL =	\
 		src/debugger.c \
 		src/dict.c \
 		src/diff.c \
+		src/linematch.c \
 		src/digraph.c \
 		src/drawline.c \
 		src/drawscreen.c \
@@ -144,6 +151,7 @@ SRC_ALL =	\
 		src/strings.c \
 		src/structs.h \
 		src/syntax.c \
+		src/tabpanel.c \
 		src/tag.c \
 		src/term.c \
 		src/terminal.c \
@@ -154,6 +162,7 @@ SRC_ALL =	\
 		src/textobject.c \
 		src/textprop.c \
 		src/time.c \
+		src/tuple.c \
 		src/typval.c \
 		src/ui.c \
 		src/undo.c \
@@ -220,13 +229,17 @@ SRC_ALL =	\
 		src/testdir/samples/*.html \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/*.vim \
+		src/testdir/samples/poc.zip \
 		src/testdir/samples/test000 \
 		src/testdir/samples/test.zip \
+		src/testdir/samples/test_undo.txt.undo \
 		src/testdir/samples/testa.zip \
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
 		src/testdir/crash/* \
+		src/testdir/ru_RU/LC_MESSAGES/Makefile \
+		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.po \
 		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.mo \
 		src/proto.h \
 		src/protodef.h \
@@ -283,6 +296,7 @@ SRC_ALL =	\
 		src/proto/insexpand.pro \
 		src/proto/job.pro \
 		src/proto/json.pro \
+		src/proto/linematch.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
 		src/proto/logfile.pro \
@@ -322,6 +336,7 @@ SRC_ALL =	\
 		src/proto/spellsuggest.pro \
 		src/proto/strings.pro \
 		src/proto/syntax.pro \
+		src/proto/tabpanel.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \
 		src/proto/terminal.pro \
@@ -331,6 +346,7 @@ SRC_ALL =	\
 		src/proto/textobject.pro \
 		src/proto/textprop.pro \
 		src/proto/time.pro \
+		src/proto/tuple.pro \
 		src/proto/typval.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
@@ -604,6 +620,8 @@ SRC_DOS =	\
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
 		nsis/gvim_version.nsh \
+		nsis/Makefile \
+		nsis/Make_mvc.mak \
 		nsis/README.txt \
 		nsis/lang/*.nsi \
 		nsis/lang/README.txt \
@@ -761,9 +779,12 @@ RT_ALL =	\
 		runtime/tools/README.txt \
 		runtime/tools/[a-z]*[a-z0-9] \
 		runtime/tutor/README.txt \
-		runtime/tutor/tutor \
+		runtime/tutor/tutor1 \
+		runtime/tutor/tutor1.utf-8 \
 		runtime/tutor/en/vim-01-beginner.tutor \
 		runtime/tutor/en/vim-01-beginner.tutor.json \
+		runtime/tutor/en/vim-02-beginner.tutor \
+		runtime/tutor/en/vim-02-beginner.tutor.json \
 		runtime/tutor/tutor.tutor \
 		runtime/tutor/tutor.tutor.json \
 		runtime/tutor/tutor.vim \
@@ -791,7 +812,10 @@ RT_ALL =	\
 		runtime/pack/dist/opt/editorconfig/ftdetect/editorconfig.vim \
 		runtime/pack/dist/opt/editorconfig/plugin/editorconfig.vim \
 		runtime/pack/dist/opt/helptoc/autoload/helptoc.vim \
+		runtime/pack/dist/opt/helptoc/doc/helptoc.txt \
+		runtime/pack/dist/opt/helptoc/doc/tags \
 		runtime/pack/dist/opt/helptoc/plugin/helptoc.vim \
+		runtime/pack/dist/opt/hlyank/plugin/hlyank.vim \
 		runtime/pack/dist/opt/justify/plugin/justify.vim \
 		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
 		runtime/pack/dist/opt/matchit/doc/matchit.txt \
@@ -801,6 +825,17 @@ RT_ALL =	\
 		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
 		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
 		runtime/pack/dist/opt/termdebug/plugin/termdebug.vim \
+		runtime/pack/dist/opt/netrw/LICENSE.txt \
+		runtime/pack/dist/opt/netrw/README.md \
+		runtime/pack/dist/opt/netrw/autoload/netrw.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw/fs.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw/os.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw/msg.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrwSettings.vim \
+		runtime/pack/dist/opt/netrw/autoload/netrw_gitignore.vim \
+		runtime/pack/dist/opt/netrw/doc/netrw.txt \
+		runtime/pack/dist/opt/netrw/plugin/netrwPlugin.vim \
+		runtime/pack/dist/opt/netrw/syntax/netrw.vim
 
 # Runtime files for all distributions without CR/LF translation.
 RT_ALL_BIN =	\
@@ -835,6 +870,7 @@ RT_SCRIPTS =	\
 		runtime/indent/testdir/*.vim \
 		runtime/indent/testdir/*.in \
 		runtime/indent/testdir/*.ok \
+		runtime/indent/testdir/tools/* \
 		runtime/ftplugin/*.vim \
 		runtime/ftplugin/logtalk.dict \
 		runtime/ftplugin/README.txt \
@@ -855,6 +891,7 @@ RT_SCRIPTS =	\
 		runtime/syntax/testdir/input/setup/*.* \
 		runtime/syntax/testdir/dumps/*.dump \
 		runtime/syntax/testdir/dumps/*.vim \
+		runtime/syntax/testdir/tools/* \
 		runtime/syntax/generator/Makefile \
 		runtime/syntax/generator/README.md \
 		runtime/syntax/generator/gen_syntax_vim.vim \
@@ -1027,7 +1064,8 @@ IN_README_DIR = \
 
 # Generic language files.
 LANG_GEN = \
-		README.??x.txt \
+		lang/README.*.txt \
+		lang/LICENSE.*.txt \
 		runtime/doc/*-da.1 \
 		runtime/doc/*-da.UTF-8.1 \
 		runtime/doc/*-de.1 \
@@ -1043,7 +1081,6 @@ LANG_GEN = \
 		runtime/doc/*-ru.UTF-8.1 \
 		runtime/doc/*-tr.1 \
 		runtime/doc/*-tr.UTF-8.1 \
-		runtime/doc/uganda.??x \
 		runtime/lang/README.txt \
 		runtime/lang/Makefile \
 		runtime/lang/Make_all.mak \
@@ -1053,19 +1090,30 @@ LANG_GEN = \
 		runtime/tutor/README.*.txt \
 		runtime/tutor/Makefile \
 		runtime/tutor/Make_all.mak \
-		runtime/tutor/tutor.utf-8 \
-		runtime/tutor/tutor.?? \
-		runtime/tutor/tutor.??.utf-8 \
-		runtime/tutor/tutor.??.euc \
-		runtime/tutor/tutor.??.sjis \
-		runtime/tutor/tutor.??.iso9 \
-		runtime/tutor/tutor.??.big5 \
-		runtime/tutor/tutor.??.cp1250 \
-		runtime/tutor/tutor.??.cp1251 \
-		runtime/tutor/tutor.??.cp737 \
-		runtime/tutor/tutor.??_??.utf-8 \
-		runtime/tutor/tutor.bar \
-		runtime/tutor/tutor.bar.utf-8 \
+		runtime/tutor/it/vim-01-beginner.tutor \
+		runtime/tutor/it/vim-01-beginner.tutor.json \
+		runtime/tutor/ru/vim-01-beginner.tutor \
+		runtime/tutor/ru/vim-01-beginner.tutor.json \
+		runtime/tutor/ru/vim-02-beginner.tutor \
+		runtime/tutor/ru/vim-02-beginner.tutor.json \
+		runtime/tutor/sr/vim-01-beginner.tutor \
+		runtime/tutor/sr/vim-01-beginner.tutor.json \
+		runtime/tutor/sr/vim-02-beginner.tutor \
+		runtime/tutor/sr/vim-02-beginner.tutor.json \
+		runtime/tutor/tutor1.?? \
+		runtime/tutor/tutor1.??.utf-8 \
+		runtime/tutor/tutor1.??.euc \
+		runtime/tutor/tutor1.??.sjis \
+		runtime/tutor/tutor1.??.iso9 \
+		runtime/tutor/tutor1.??.big5 \
+		runtime/tutor/tutor1.??.cp1250 \
+		runtime/tutor/tutor1.??.cp1251 \
+		runtime/tutor/tutor1.??.cp737 \
+		runtime/tutor/tutor1.??_??.utf-8 \
+		runtime/tutor/tutor1.bar \
+		runtime/tutor/tutor1.bar.utf-8 \
+		runtime/tutor/tutor2.?? \
+		runtime/tutor/tutor2.??.utf-8 \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
@@ -1124,6 +1172,8 @@ IGNORE = \
 		.github/workflows/label.yml \
 		SECURITY.md \
 		ci/unlisted.make \
+		ci/hlgroups.make \
+		ci/hlgroups.ignore \
 		src/libvterm/CODE-MAP \
 		runtime/syntax/testdir/input/html_html \
 

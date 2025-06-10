@@ -34,6 +34,10 @@ autocmd BufNewFile * {
   \ continuing comment
   \ continuing comment
 
+var foo = 42 # commment
+  \ continuing comment
+  \ continuing comment
+
 # :Foo
       \ arg1
       #\ comment
@@ -51,6 +55,18 @@ echo "TOP"
       \ arg2
 
 
+# Expression comments
+
+var foo = { # comment
+  # comment
+  bar: 42, # comment
+  # comment
+  # comment
+  baz: 42 # comment
+  # comment
+} # comment
+
+
 # Issue: #13047
 
 if !exists(":DiffOrig")
@@ -62,3 +78,15 @@ endif
 # Issue: #11307 and #11560
 
 # This is what we call " blah
+
+
+# PR: #14975
+# https://github.com/vim/vim/pull/14975#issuecomment-2832643115
+
+var d = {
+    a: 0,
+# a ' quote {{{
+#}}}
+b: 0,
+}
+

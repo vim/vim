@@ -123,6 +123,7 @@ SRC += \
 	indent.c \
 	insexpand.c \
 	json.c \
+	linematch.c\
 	list.c \
 	locale.c \
 	logfile.c \
@@ -161,6 +162,7 @@ SRC += \
 	strings.c \
 	syntax.c \
 	tag.c \
+	tabpanel.c \
 	term.c \
 	termlib.c \
 	testing.c \
@@ -168,6 +170,7 @@ SRC += \
 	textobject.c \
 	textprop.c \
 	time.c \
+	tuple.c \
 	typval.c \
 	ui.c \
 	undo.c \

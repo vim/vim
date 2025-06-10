@@ -57,6 +57,7 @@ endfunc
 " "wait_for_ruler" - if zero then don't wait for ruler to show
 " "no_clean" - if non-zero then remove "--clean" from the command
 " "cmd"  - run any other command, e.g. "xxd" (used in xxd test)
+" "env"  - additional environment variables, e.g. $TERM variable
 func RunVimInTerminal(arguments, options)
   " If Vim doesn't exit a swap file remains, causing other tests to fail.
   " Remove it here.
@@ -109,6 +110,10 @@ func RunVimInTerminal(arguments, options)
 
   " Accept other options whose name starts with 'term_'.
   call extend(options, filter(copy(a:options), 'v:key =~# "^term_"'))
+  " Accept the env dict
+  if !empty(get(a:options, 'env', {}))
+    let options.env = get(a:options, 'env')
+  endif
 
   let buf = term_start(cmd, options)
 
@@ -152,14 +157,14 @@ func StopVimInTerminal(buf, kill = 1)
   call assert_equal("running", term_getstatus(a:buf))
 
   " Wait for all the pending updates to terminal to complete
-  call TermWait(a:buf)
+  call TermWait(a:buf, 1)
 
   " CTRL-O : works both in Normal mode and Insert mode to start a command line.
   " In Command-line it's inserted, the CTRL-U removes it again.
   call term_sendkeys(a:buf, "\<C-O>:\<C-U>qa!\<cr>")
 
   " Wait for all the pending updates to terminal to complete
-  call TermWait(a:buf)
+  call TermWait(a:buf, 1)
 
   " Wait for the terminal to end.
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})

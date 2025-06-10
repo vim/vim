@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Apr 13
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Apr 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -51,7 +51,6 @@ An interface is used to specify properties of an object:
 
 The class hierarchy allows for single inheritance.  Otherwise interfaces are
 to be used where needed.
-
 
 Class modeling ~
 
@@ -121,7 +120,6 @@ using the object name followed by a dot following by the member: >
 							*E1405* *E1406*
 A class name cannot be used as an expression.  A class name cannot be used in
 the left-hand-side of an assignment.
-
 
 Object variable write access ~
 						    *read-only-variable*
@@ -271,6 +269,9 @@ no need to call "super()" or "new()" on the parent.
 							*E1365*
 When defining the new() method the return type should not be specified.  It
 always returns an object of the class.
+
+The new() method can be made a protected method by using "_new()".  This can
+be used to support the singleton design pattern.
 
 							*E1386*
 When invoking an object method, the method name should be preceded by the
@@ -623,12 +624,14 @@ once.  They can appear in any order, although this order is recommended: >
 	extends ClassName
 	implements InterfaceName, OtherInterface
 	specifies SomeInterface
-<							*E1355* *E1369*
+<
+The "specifies" feature is currently not implemented.
+
+							*E1355* *E1369*
 Each variable and method name can be used only once.  It is not possible to
 define a method with the same name and different type of arguments.  It is not
 possible to use a public and protected member variable with the same name.  An
 object variable name used in a super class cannot be reused in a child class.
-
 
 Object Variable Initialization ~
 
@@ -638,8 +641,8 @@ class, then the type of the variable is set.
 
 The following reserved keyword names cannot be used as an object or class
 variable name: "super", "this", "true", "false", "null", "null_blob",
-"null_dict", "null_function", "null_list", "null_partial", "null_string",
-"null_channel" and "null_job".
+"null_channel", "null_class", "null_dict", "null_function", "null_job",
+"null_list", "null_object", "null_partial" and "null_string".
 
 Extending a class ~
 							*extends*
@@ -686,13 +689,12 @@ A class can implement one or more interfaces.  The "implements" keyword can
 only appear once *E1350* .  Multiple interfaces can be specified, separated by
 commas.  Each interface name can appear only once. *E1351*
 
-
 A class defining an interface ~
 							*specifies*
 A class can declare its interface, the object variables and methods, with a
 named interface.  This avoids the need for separately specifying the
 interface, which is often done in many languages, especially Java.
-
+TODO: This is currently not implemented.
 
 Items in a class ~
 						*E1318* *E1325* *E1388*
@@ -733,25 +735,25 @@ Some of the builtin functions like |empty()|, |len()| and |string()| can be
 used with an object.  An object can implement a method with the same name as
 these builtin functions to return an object-specific value.
 
-                                                       *E1412*
+							*E1412*
 The following builtin methods are supported:
-                                                       *object-empty()*
+							*object-empty()*
     empty()  Invoked by the |empty()| function to check whether an object is
 	     empty.  If this method is missing, then true is returned.  This
 	     method should not accept any arguments and must return a boolean.
-                                                       *object-len()*
+							*object-len()*
     len()    Invoked by the |len()| function to return the length of an
 	     object.  If this method is missing in the class, then an error is
 	     given and zero is returned.  This method should not accept any
 	     arguments and must return a number.
-                                                       *object-string()*
+							*object-string()*
     string() Invoked by the |string()| function to get a textual
 	     representation of an object.  Also used by the |:echo| command
 	     for an object.  If this method is missing in the class, then a
 	     built-in default textual representation is used.  This method
 	     should not accept any arguments and must return a string.
 
-                                                       *E1413*
+							*E1413*
 A class method cannot be used as a builtin method.
 
 Defining an interface ~
@@ -783,7 +785,6 @@ An interface can only be defined in a |Vim9| script file.  *E1342*
 An interface cannot "implement" another interface but it can "extend" another
 interface. *E1381*
 
-
 null object ~
 
 When a variable is declared to have the type of an object, but it is not
@@ -791,7 +792,6 @@ initialized, the value is null.  When trying to use this null object Vim often
 does not know what class was supposed to be used.  Vim then cannot check if
 a variable name is correct and you will get a "Using a null object" error,
 even when the variable name is invalid. *E1360* *E1362*
-
 
 Default constructor ~
 							*default-constructor*
@@ -873,6 +873,33 @@ Note that the method name must start with "new".  If there is no method called
 "new()" then the default constructor is added, even though there are other
 constructor methods.
 
+Using variable type "any" for an Object~
+							*obj-var-type-any*
+You can use a variable declared with type "any" to hold an object.  e.g.
+>
+    vim9script
+    class A
+	var n = 10
+	def Get(): number
+	    return this.n
+	enddef
+    endclass
+
+    def Fn(o: any)
+	echo o.n
+	echo o.Get()
+    enddef
+
+    var a = A.new()
+    Fn(a)
+<
+In this example, Vim cannot determine the type of the parameter "o" for
+function Fn() at compile time.  It can be either a |Dict| or an |Object|
+value.  Therefore, at runtime, when the type is known, the object member
+variable and method are looked up.  This process is not efficient, so it is
+recommended to use a more specific type whenever possible for better
+efficiency.
+
 Compiling methods in a Class ~
 							*class-compile*
 The |:defcompile| command can be used to compile all the class and object
@@ -924,11 +951,11 @@ aliased: >
 						*enum* *E1418* *E1419* *E1420*
 An enum is a type that can have one of a list of values.  Example: >
 
-    :enum Color
+    enum Color
 	White,
 	Red,
 	Green, Blue, Black
-    :endenum
+    endenum
 <
 						*enumvalue* *E1422*
 The enum values are separated by commas.  More than one enum value can be
@@ -1040,6 +1067,21 @@ The above enum definition is equivalent to the following class definition: >
       public const ordinal: number
     endclass
 <
+A enum can contain object variables and methods just like a regular class: >
+
+    enum Color
+	Cyan([0, 255, 255]),
+	Magenta([255, 0, 255]),
+	Gray([128, 128, 128])
+
+	var rgb_values: list<number>
+
+	def Get_RGB(): list<number>
+	    return this.rgb_values
+	enddef
+    endenum
+    echo Color.Magenta.Get_RGB()
+<
 ==============================================================================
 
 9.  Rationale
@@ -1088,7 +1130,6 @@ For |Vim9| script using the same method name for all constructors seemed like
 the right choice, and by calling it new() the relation between the caller and
 the method being called is obvious.
 
-
 No overloading of the constructor ~
 
 In Vim script, both legacy and |Vim9| script, there is no overloading of
@@ -1109,7 +1150,6 @@ That way multiple constructors with different arguments are possible, while it
 is very easy to see which constructor is being used.  And the type of
 arguments can be properly checked.
 
-
 No overloading of methods ~
 
 Same reasoning as for the constructor: It is often not obvious what type
@@ -1117,7 +1157,6 @@ arguments have, which would make it difficult to figure out what method is
 actually being called.  Better just give the methods a different name, then
 type checking will make sure it works as you intended.  This rules out
 polymorphism, which we don't really need anyway.
-
 
 Single inheritance and interfaces ~
 
@@ -1133,7 +1172,6 @@ checking.  When an interface is changed any class that declares to implement
 it will be checked if that change was also changed.  The mechanism to assume a
 class implements an interface just because the methods happen to match is
 brittle and leads to obscure problems, let's not do that.
-
 
 Using "this.variable" everywhere ~
 
@@ -1153,7 +1191,6 @@ variables.  Simple and consistent.  When looking at the code inside a class
 it's also directly clear which variable references are object variables and
 which aren't.
 
-
 Using class variables ~
 
 Using "static variable" to declare a class variable is very common, nothing
@@ -1166,7 +1203,6 @@ TypeScript prepends the class name before the class variable name, also inside
 the class.  This has two problems: The class name can be rather long, taking
 up quite a bit of space, and when the class is renamed all these places need
 to be changed too.
-
 
 Declaring object and class variables ~
 
@@ -1220,7 +1256,6 @@ However, it is more common for languages to reuse their general variable and
 function declaration syntax for class/object variables and methods.  Vim9 also
 reuses the general function declaration syntax for methods.  So, for the sake
 of consistency, we require "var" in these declarations.
-
 
 Using "ClassName.new()" to construct an object ~
 
@@ -1284,7 +1319,6 @@ access requires work to be done for all places where that access exists.
 An alternative would have been using the "protected" keyword, just like
 "public" changes the access in the other direction.  Well, that's just to
 reduce the number of keywords.
-
 
 No private object variables ~
 

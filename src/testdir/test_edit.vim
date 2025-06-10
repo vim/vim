@@ -198,7 +198,7 @@ func Test_edit_07()
     endif
   endfu
   au InsertCharPre <buffer> :call DoIt()
-  call feedkeys("A\<f5>\<c-p>u\<cr>\<c-l>\<cr>", 'tx')
+  call feedkeys("A\<f5>\<c-p>u\<C-Y>\<c-l>\<cr>", 'tx')
   call assert_equal(["Jan\<c-l>",''], 1->getline('$'))
   %d
   call setline(1, 'J')
@@ -458,6 +458,64 @@ func Test_autoindent_remove_indent()
   call StopVimInTerminal(buf)
   call assert_equal(["\tfoo", '', repeat('x', 20)], readfile('Xarifile'))
   call delete('Xarifile')
+endfunc
+
+func Test_edit_esc_after_CR_autoindent()
+  new
+  setlocal autoindent
+  autocmd InsertLeavePre * let g:prev_cursor = getpos('.')
+
+  call setline(1, 'foobar')
+  exe "normal! $hi\<CR>\<Esc>"
+  call assert_equal(['foob', 'ar'], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_equal([0, 2, 1, 0], getpos("'^"))
+  call assert_equal([0, 2, 1, 0], g:prev_cursor)
+  %d
+
+  call setline(1, 'foobar')
+  exe "normal! $i\<CR>\<Esc>"
+  call assert_equal(['fooba', 'r'], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_equal([0, 2, 1, 0], getpos("'^"))
+  call assert_equal([0, 2, 1, 0], g:prev_cursor)
+  %d
+
+  call setline(1, 'foobar')
+  exe "normal! A\<CR>\<Esc>"
+  call assert_equal(['foobar', ''], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_equal([0, 2, 1, 0], getpos("'^"))
+  call assert_equal([0, 2, 1, 0], g:prev_cursor)
+  %d
+
+  call setline(1, '  foobar')
+  exe "normal! $hi\<CR>\<Esc>"
+  call assert_equal(['  foob', '  ar'], getline(1, '$'))
+  call assert_equal([0, 2, 2, 0], getpos('.'))
+  call assert_equal([0, 2, 3, 0], getpos("'^"))
+  call assert_equal([0, 2, 3, 0], g:prev_cursor)
+  %d
+
+  call setline(1, '  foobar')
+  exe "normal! $i\<CR>\<Esc>"
+  call assert_equal(['  fooba', '  r'], getline(1, '$'))
+  call assert_equal([0, 2, 2, 0], getpos('.'))
+  call assert_equal([0, 2, 3, 0], getpos("'^"))
+  call assert_equal([0, 2, 3, 0], g:prev_cursor)
+  %d
+
+  call setline(1, '  foobar')
+  exe "normal! A\<CR>\<Esc>"
+  call assert_equal(['  foobar', ''], getline(1, '$'))
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  call assert_equal([0, 2, 1, 0], getpos("'^"))
+  call assert_equal([0, 2, 1, 0], g:prev_cursor)
+  %d
+
+  autocmd! InsertLeavePre
+  unlet g:prev_cursor
+  bwipe!
 endfunc
 
 func Test_edit_CR()
@@ -1963,6 +2021,7 @@ endfunc
 
 " Test for positioning cursor after CTRL-R expression failed
 func Test_edit_ctrl_r_failed()
+  CheckScreendump
   CheckRunVimInTerminal
 
   let buf = RunVimInTerminal('', #{rows: 6, cols: 60})
@@ -2025,7 +2084,7 @@ endfunc
 func Test_read_invalid()
   set encoding=latin1
   " This was not properly checking for going past the end.
-  call assert_fails('r`=', 'E484')
+  call assert_fails('r`=', 'E484:')
   set encoding=utf-8
 endfunc
 
@@ -2291,6 +2350,17 @@ func Test_edit_backspace_smarttab_virtual_text()
   call CloseWindow()
   call prop_type_delete('theprop')
   set smarttab&
+endfunc
+
+func Test_edit_CAR()
+  set cot=menu,menuone,noselect
+  new
+
+  call feedkeys("Shello hero\<CR>h\<C-x>\<C-N>e\<CR>", 'tx')
+  call assert_equal(['hello hero', 'he', ''], getline(1, '$'))
+
+  bw!
+  set cot&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

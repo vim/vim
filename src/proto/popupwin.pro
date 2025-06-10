@@ -64,6 +64,7 @@ void f_popup_findpreview(typval_T *argvars, typval_T *rettv);
 int popup_create_preview_window(int info);
 void popup_close_preview(void);
 void popup_hide_info(void);
+int popup_overlaps_cmdline(void);
 void popup_close_info(void);
 win_T *popup_get_message_win(void);
 void popup_show_message_win(void);

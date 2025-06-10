@@ -532,6 +532,29 @@ dict_add_callback(dict_T *d, char *key, callback_T *cb)
 }
 
 /*
+ * Add a function entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_func(dict_T *d, char *key, ufunc_T *fp)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    item->di_tv.v_type = VAR_FUNC;
+    item->di_tv.vval.v_string = vim_strnsave(fp->uf_name, fp->uf_namelen);
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    func_ref(item->di_tv.vval.v_string);
+    return OK;
+}
+
+/*
  * Initializes "iter" for iterating over dictionary items with
  * dict_iterate_next().
  * If "var" is not a Dict or an empty Dict then there will be nothing to
@@ -1531,7 +1554,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 	return;
 
     if ((what == DICT2LIST_ITEMS
-		? check_for_string_or_list_or_dict_arg(argvars, 0)
+		? check_for_string_list_tuple_or_dict_arg(argvars, 0)
 		: check_for_dict_arg(argvars, 0)) == FAIL)
 	return;
 
@@ -1594,6 +1617,8 @@ f_items(typval_T *argvars, typval_T *rettv)
 	string2items(argvars, rettv);
     else if (argvars[0].v_type == VAR_LIST)
 	list2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	tuple2items(argvars, rettv);
     else
 	dict2list(argvars, rettv, DICT2LIST_ITEMS);
 }

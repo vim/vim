@@ -2,8 +2,10 @@
 " Maintainer: This runtime file is looking for a new maintainer.
 " Original Author:	Charles E. Campbell
 " Date:			Apr 11, 2016
-" Version:	37
+" Version:	37 (with modifications from the Vim Project)
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
+"  Last Change:
+"   2025 Feb 28 by Vim Project: add support for bzip3 (#16755)
 " Copyright: (c) 2004-2011 by Charles E. Campbell
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
 "            (see |copyright|) except use "Vimball" instead of "Vim".
@@ -527,6 +529,26 @@ fun! vimball#Decompress(fname,...)
 	call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "bzip2 -d" may have failed with <'.a:fname.">")
    endif
    let fname= substitute(a:fname,'\.bz2$','','')
+   exe "e ".escape(fname,' \')
+   if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
+
+  elseif expand("%") =~ '.*\.bz3' && executable("bunzip3")
+   " handle *.bz3 with bunzip3
+   silent exe "!bunzip3 ".shellescape(a:fname)
+   if v:shell_error != 0
+	call vimball#ShowMesg(s:WARNING,"(vimball#Decompress) bunzip3 may have failed with <".a:fname.">")
+   endif
+   let fname= substitute(a:fname,'\.bz3$','','')
+   exe "e ".escape(fname,' \')
+   if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
+
+  elseif expand("%") =~ '.*\.bz3' && executable("bzip3")
+   " handle *.bz3 with bzip3 -d
+   silent exe "!bzip3 -d ".shellescape(a:fname)
+   if v:shell_error != 0
+	call vimball#ShowMesg(s:WARNING,'(vimball#Decompress) "bzip3 -d" may have failed with <'.a:fname.">")
+   endif
+   let fname= substitute(a:fname,'\.bz3$','','')
    exe "e ".escape(fname,' \')
    if a:0 == 0| call vimball#ShowMesg(s:USAGE,"Source this file to extract it! (:so %)") | endif
 

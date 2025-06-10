@@ -218,25 +218,57 @@ op_shift(oparg_T *oap, int curs_top, int amount)
     }
 }
 
+#ifdef FEAT_VARTABS
 /*
- * Shift the current line one shiftwidth left (if left != 0) or right
- * leaves cursor on first blank in the line.
+ * Return the tabstop width at the index of the variable tabstop array.  If an
+ * index greater than the length of the array is given, the last tabstop width
+ * in the array is returned.
  */
-    void
-shift_line(
-    int	left,
-    int	round,
-    int	amount,
-    int call_changed_bytes)	// call changed_bytes()
+    static int
+get_vts(int *vts_array, int index)
 {
-    vimlong_T	count;
-    int		i, j;
-    int		sw_val = trim_to_int(get_sw_value_indent(curbuf, left));
+    int	ts;
 
-    if (sw_val == 0)
-	sw_val = 1;		// shouldn't happen, just in case
+    if (index < 1)
+	ts = 0;
+    else if (index <= vts_array[0])
+	ts = vts_array[index];
+    else
+	ts = vts_array[vts_array[0]];
 
-    count = get_indent();	// get current indent
+    return ts;
+}
+
+/*
+ * Return the sum of all the tabstops through the index-th.
+ */
+    static int
+get_vts_sum(int *vts_array, int index)
+{
+    int	sum = 0;
+    int	i;
+
+    // Perform the summation for indices within the actual array.
+    for (i = 1; i <= index && i <= vts_array[0]; i++)
+	sum += vts_array[i];
+
+    // Add tabstops whose indices exceed the actual array.
+    if (i <= index)
+	sum += vts_array[vts_array[0]] * (index - vts_array[0]);
+
+    return sum;
+}
+#endif
+
+    static vimlong_T
+get_new_sw_indent(
+    int		left,		// TRUE if shift is to the left
+    int		round,		// TRUE if new indent is to be to a tabstop
+    vimlong_T	amount,		// Number of shifts
+    vimlong_T	sw_val)
+{
+    vimlong_T	count = get_indent();
+    vimlong_T	i, j;
 
     if (round)			// round off indent
     {
@@ -252,19 +284,123 @@ shift_line(
 	}
 	else
 	    i += amount;
-	count = (vimlong_T)i * (vimlong_T)sw_val;
+	count = i * sw_val;
     }
-    else		// original vi indent
+    else			// original vi indent
     {
 	if (left)
 	{
-	    count -= (vimlong_T)sw_val * (vimlong_T)amount;
+	    count -= sw_val * amount;
 	    if (count < 0)
 		count = 0;
 	}
 	else
-	    count += (vimlong_T)sw_val * (vimlong_T)amount;
+	    count += sw_val * amount;
     }
+
+    return count;
+}
+
+#ifdef FEAT_VARTABS
+    static vimlong_T
+get_new_vts_indent(
+    int	left,			// TRUE if shift is to the left
+    int	round,			// TRUE if new indent is to be to a tabstop
+    int	amount,			// Number of shifts
+    int	*vts_array)
+{
+    vimlong_T	indent = get_indent();
+    int		vtsi = 0;
+    int		vts_indent = 0;
+    int		ts = 0;		// Silence uninitialized variable warning.
+    int		offset;		// Extra indent spaces to the right of the
+				// tabstop
+
+    // Find the tabstop at or to the left of the current indent.
+    while (vts_indent <= indent)
+    {
+	vtsi++;
+	ts = get_vts(vts_array, vtsi);
+	vts_indent += ts;
+    }
+    vts_indent -= ts;
+    vtsi--;
+
+    offset = indent - vts_indent;
+
+    if (round)
+    {
+	if (left)
+	{
+	    if (offset == 0)
+		indent = get_vts_sum(vts_array, vtsi - amount);
+	    else
+		indent = get_vts_sum(vts_array, vtsi - (amount - 1));
+	}
+	else
+	    indent = get_vts_sum(vts_array, vtsi + amount);
+    }
+    else
+    {
+	if (left)
+	{
+	    if (amount > vtsi)
+		indent = 0;
+	    else
+		indent = get_vts_sum(vts_array, vtsi - amount) + offset;
+	}
+	else
+	    indent = get_vts_sum(vts_array, vtsi + amount) + offset;
+    }
+
+    return indent;
+}
+#endif
+
+/*
+ * Shift the current line 'amount' shiftwidth(s) left (if 'left' is TRUE) or
+ * right.
+ *
+ * The rules for choosing a shiftwidth are:  If 'shiftwidth' is non-zero, use
+ * 'shiftwidth'; else if 'vartabstop' is not empty, use 'vartabstop'; else use
+ * 'tabstop'.  The Vim documentation says nothing about 'softtabstop' or
+ * 'varsofttabstop' affecting the shiftwidth, and neither affects the
+ * shiftwidth in current versions of Vim, so they are not considered here.
+ */
+    void
+shift_line(
+    int	left,			// TRUE if shift is to the left
+    int	round,			// TRUE if new indent is to be to a tabstop
+    int	amount,			// Number of shifts
+    int	call_changed_bytes)	// call changed_bytes()
+{
+    vimlong_T	count;
+    long	sw_val = curbuf->b_p_sw;
+    long	ts_val = curbuf->b_p_ts;
+#ifdef FEAT_VARTABS
+    int		*vts_array = curbuf->b_p_vts_array;
+#endif
+
+    if (sw_val != 0)
+	// 'shiftwidth' is not zero; use it as the shift size.
+	count = get_new_sw_indent(left, round, amount, sw_val);
+    else
+#ifdef FEAT_VARTABS
+	if ((vts_array == NULL) || (vts_array[0] == 0))
+#endif
+    {
+	// 'shiftwidth is zero and 'vartabstop' is empty; use 'tabstop' as the
+	// shift size.
+	count = get_new_sw_indent(left, round, amount, ts_val);
+    }
+#ifdef FEAT_VARTABS
+    else
+    {
+	// 'shiftwidth is zero and 'vartabstop' is defined; use 'vartabstop'
+	// to determine the new indent.
+	count = get_new_vts_indent(left, round, amount, vts_array);
+    }
+#endif
 
     // Set new indent
     if (State & VREPLACE_FLAG)
@@ -2450,6 +2586,7 @@ charwise_block_prep(
     colnr_T startcol = 0, endcol = MAXCOL;
     colnr_T cs, ce;
     char_u *p;
+    int	plen = ml_get_len(lnum);
 
     p = ml_get(lnum);
     bdp->startspaces = 0;
@@ -2510,7 +2647,7 @@ charwise_block_prep(
     else
 	bdp->textlen = endcol - startcol + inclusive;
     bdp->textcol = startcol;
-    bdp->textstart = p + startcol;
+    bdp->textstart = startcol <= plen ? p + startcol : p;
 }
 
 /*
@@ -2659,8 +2796,6 @@ do_addsub(
     linenr_T	Prenum1)
 {
     int		col;
-    char_u	*buf1;
-    char_u	buf2[NUMBUFLEN];
     int		pre;		// 'X'/'x': hex; '0': octal; 'B'/'b': bin
     static int	hexupper = FALSE;	// 0xABC
     uvarnumber_T	n;
@@ -2875,6 +3010,10 @@ do_addsub(
     }
     else
     {
+	char_u	*buf1;
+	int	buf1len;
+	char_u	buf2[NUMBUFLEN];
+	int	buf2len;
 	pos_T	save_pos;
 	int	i;
 
@@ -3037,20 +3176,20 @@ do_addsub(
 	    for (bit = bits; bit > 0; bit--)
 		if ((n >> (bit - 1)) & 0x1) break;
 
-	    for (i = 0; bit > 0 && i < (NUMBUFLEN - 1); bit--)
-		buf2[i++] = ((n >> (bit - 1)) & 0x1) ? '1' : '0';
+	    for (buf2len = 0; bit > 0 && buf2len < (NUMBUFLEN - 1); bit--)
+		buf2[buf2len++] = ((n >> (bit - 1)) & 0x1) ? '1' : '0';
 
-	    buf2[i] = '\0';
+	    buf2[buf2len] = NUL;
 	}
 	else if (pre == 0)
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llu", n);
+	    buf2len = vim_snprintf((char *)buf2, NUMBUFLEN, "%llu", n);
 	else if (pre == '0')
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llo", n);
+	    buf2len = vim_snprintf((char *)buf2, NUMBUFLEN, "%llo", n);
 	else if (pre && hexupper)
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llX", n);
+	    buf2len = vim_snprintf((char *)buf2, NUMBUFLEN, "%llX", n);
 	else
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llx", n);
-	length -= (int)STRLEN(buf2);
+	    buf2len = vim_snprintf((char *)buf2, NUMBUFLEN, "%llx", n);
+	length -= buf2len;
 
 	/*
 	 * Adjust number of zeros to the new number of digits, so the
@@ -3062,8 +3201,10 @@ do_addsub(
 	    while (length-- > 0)
 		*ptr++ = '0';
 	*ptr = NUL;
+	buf1len = (int)(ptr - buf1);
 
-	STRCAT(buf1, buf2);
+	STRCPY(buf1 + buf1len, buf2);
+	buf1len += buf2len;
 
 	// Insert just after the first character to be removed, so that any
 	// text properties will be adjusted.  Then delete the old number
@@ -3071,7 +3212,7 @@ do_addsub(
 	save_pos = curwin->w_cursor;
 	if (todel > 0)
 	    inc_cursor();
-	ins_str(buf1);		// insert the new number
+	ins_str(buf1, (size_t)buf1len);		// insert the new number
 	vim_free(buf1);
 
 	// del_char() will also mark line needing displaying

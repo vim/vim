@@ -1,4 +1,4 @@
-// VIM_TEST_SETUP let g:java_syntax_previews = [455]
+// VIM_TEST_SETUP let g:java_syntax_previews = [455, 488]
 
 
 

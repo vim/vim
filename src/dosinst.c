@@ -2695,8 +2695,8 @@ request_choice(void)
 
     printf("\n\nInstall will do for you:\n");
     for (i = 0; i < choice_count; ++i)
-      if (choices[i].active)
-	  printf("%2d  %s\n", i + 1, choices[i].text);
+	if (choices[i].active)
+	    printf("%2d  %s\n", i + 1, choices[i].text);
     printf("To change an item, enter its number\n\n");
     printf("Enter item number, h (help), d (do it) or q (quit): ");
 }

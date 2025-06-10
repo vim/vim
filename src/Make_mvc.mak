@@ -533,7 +533,7 @@ CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 CFLAGS = -c /W3 /GF /nologo -I. -Iproto -DHAVE_PATHDEF -DWIN32 -DHAVE_STDINT_H \
 		$(CSCOPE_DEFS) $(TERM_DEFS) $(SOUND_DEFS) $(NETBEANS_DEFS) \
 		$(NBDEBUG_DEFS) $(XPM_DEFS) $(SOD_DEFS) $(SOD_INC) \
-		$(CHANNEL_DEFS) $(DEFINES) \
+		$(CHANNEL_DEFS) $(DEFINES) $(CI_CFLAGS) \
 		-DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 		/source-charset:utf-8
 
@@ -738,6 +738,7 @@ OBJ = \
 	$(OUTDIR)\indent.obj \
 	$(OUTDIR)\insexpand.obj \
 	$(OUTDIR)\json.obj \
+	$(OUTDIR)\linematch.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\locale.obj \
 	$(OUTDIR)\logfile.obj \
@@ -778,6 +779,7 @@ OBJ = \
 	$(OUTDIR)\spellsuggest.obj \
 	$(OUTDIR)\strings.obj \
 	$(OUTDIR)\syntax.obj \
+	$(OUTDIR)\tabpanel.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
 	$(OUTDIR)\testing.obj \
@@ -785,6 +787,7 @@ OBJ = \
 	$(OUTDIR)\textobject.obj \
 	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\time.obj \
+	$(OUTDIR)\tuple.obj \
 	$(OUTDIR)\typval.obj \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
@@ -1428,14 +1431,14 @@ clean: testclean
 	$(MAKE) /NOLOGO -f Make_mvc.mak clean
 	cd ..
 
-# Run vim script to generate the Ex command lookup table.
+# Run Vim script to generate the Ex command lookup table.
 # This only needs to be run when a command name has been added or changed.
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
 	vim --clean -N -X --not-a-term -u create_cmdidxs.vim -c quit
 
-# Run vim script to generate the normal/visual mode command lookup table.
+# Run Vim script to generate the normal/visual mode command lookup table.
 # This only needs to be run when a new normal/visual mode command has been
 # added.  If this fails because you don't have Vim yet:
 #   - change nv_cmds[] in nv_cmds.h to add the new normal/visual mode command.
@@ -1675,6 +1678,8 @@ $(OUTDIR)/job.obj:	$(OUTDIR) job.c $(INCL)
 
 $(OUTDIR)/json.obj:	$(OUTDIR) json.c  $(INCL)
 
+$(OUTDIR)/linematch.obj:	$(OUTDIR) linematch.c  $(INCL)
+
 $(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
 
 $(OUTDIR)/locale.obj:	$(OUTDIR) locale.c  $(INCL)
@@ -1774,6 +1779,8 @@ $(OUTDIR)/strings.obj:	$(OUTDIR) strings.c  $(INCL)
 
 $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 
+$(OUTDIR)/tabpanel.obj:	$(OUTDIR) tabpanel.c  $(INCL)
+
 $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
 
 $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
@@ -1787,6 +1794,8 @@ $(OUTDIR)/textobject.obj:	$(OUTDIR) textobject.c  $(INCL)
 $(OUTDIR)/textprop.obj:	$(OUTDIR) textprop.c  $(INCL)
 
 $(OUTDIR)/time.obj:	$(OUTDIR) time.c  $(INCL)
+
+$(OUTDIR)/tuple.obj:	$(OUTDIR) tuple.c  $(INCL)
 
 $(OUTDIR)/typval.obj:	$(OUTDIR) typval.c  $(INCL)
 
@@ -1954,6 +1963,7 @@ proto.h: \
 	proto/indent.pro \
 	proto/insexpand.pro \
 	proto/json.pro \
+	proto/linematch.pro \
 	proto/list.pro \
 	proto/locale.pro \
 	proto/logfile.pro \
@@ -1994,6 +2004,7 @@ proto.h: \
 	proto/spellsuggest.pro \
 	proto/strings.pro \
 	proto/syntax.pro \
+	proto/tabpanel.pro \
 	proto/tag.pro \
 	proto/term.pro \
 	proto/testing.pro \
@@ -2001,6 +2012,7 @@ proto.h: \
 	proto/textobject.pro \
 	proto/textprop.pro \
 	proto/time.pro \
+	proto/tuple.pro \
 	proto/typval.pro \
 	proto/ui.pro \
 	proto/undo.pro \

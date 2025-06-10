@@ -193,7 +193,7 @@ set_init_default_backupskip(void)
 		itemlen = vim_snprintf((char *)item, itemsize, "%s%s*", p, (has_trailing_path_sep) ? "" : PATHSEPSTR);
 
 		if (find_dup_item(ga.ga_data, item, itemlen, options[opt_idx].flags) == NULL
-			&& ga_grow(&ga, itemseplen + itemlen + 1) == OK)
+			&& ga_grow(&ga, (int)(itemseplen + itemlen + 1)) == OK)
 		{
 		    ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len,
 				    itemseplen + itemlen + 1,
@@ -3107,6 +3107,9 @@ redraw_titles(void)
 {
     need_maketitle = TRUE;
     redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
 }
 
 /*
@@ -3417,13 +3420,13 @@ did_set_cmdheight(optset_T *args)
     char *errmsg = NULL;
 
     // if p_ch changed value, change the command line height
-    if (p_ch < 1)
+    if (p_ch < MIN_CMDHEIGHT)
     {
 	errmsg = e_argument_must_be_positive;
-	p_ch = 1;
+	p_ch = MIN_CMDHEIGHT;
     }
-    if (p_ch > Rows - min_rows() + 1)
-	p_ch = Rows - min_rows() + 1;
+    if (p_ch > Rows - min_rows() + MIN_CMDHEIGHT)
+	p_ch = Rows - min_rows() + MIN_CMDHEIGHT;
 
     // Only compute the new window layout when startup has been
     // completed. Otherwise the frame sizes may be wrong.
@@ -4296,6 +4299,7 @@ did_set_termguicolors(optset_T *args UNUSED)
 #  endif
 	    !has_vtp_working())
     {
+	p_tgc_set = TRUE;
 	p_tgc = 0;
 	return e_24_bit_colors_are_not_supported_on_this_environment;
     }
@@ -4320,6 +4324,7 @@ did_set_termguicolors(optset_T *args UNUSED)
     term_update_palette_all();
     term_update_wincolor_all();
 # endif
+    p_tgc_set = TRUE;
 
     return NULL;
 }
@@ -4733,6 +4738,44 @@ did_set_wrap(optset_T *args UNUSED)
     return NULL;
 }
 
+#ifdef FEAT_QUICKFIX
+/*
+ * Process the new 'chistory' or 'lhistory' option value. 'chistory' will
+ * be used if args->os_varp is the same as p_chi, else 'lhistory'.
+ */
+    char *
+did_set_xhistory(optset_T *args)
+{
+    int is_p_chi = (long*)args->os_varp == &p_chi;
+    int err;
+    long *arg = (is_p_chi) ? &p_chi :(long*)args->os_varp;
+
+    // cannot have zero or negative number of quickfix lists in a stack
+    if (*arg < 1)
+    {
+	*arg = args->os_oldval.number;
+	return e_cannot_have_negative_or_zero_number_of_quickfix;
+    }
+
+    // cannot have more than 100 quickfix lists in a stack
+    if (*arg > 100)
+    {
+	*arg = args->os_oldval.number;
+	return e_cannot_have_more_than_hundred_quickfix;
+    }
+
+    if (is_p_chi)
+	err = qf_resize_stack(*arg);
+    else
+	err = ll_resize_stack(curwin, *arg);
+
+    if (err == FAIL)
+	return e_failed_resizing_quickfix_stack;
+
+    return NULL;
+}
+#endif
+
 /*
  * Set the value of a boolean option, and take care of side effects.
  * Returns NULL for success, or an error message for an error.
@@ -4834,15 +4877,15 @@ check_num_option_bounds(
     size_t	errbuflen,
     char	*errmsg)
 {
-    if (Rows < min_rows() && full_screen)
+    if (Rows < min_rows_for_all_tabpages() && full_screen)
     {
 	if (errbuf != NULL)
 	{
 	    vim_snprintf(errbuf, errbuflen,
-		    _(e_need_at_least_nr_lines), min_rows());
+		    _(e_need_at_least_nr_lines), min_rows_for_all_tabpages());
 	    errmsg = errbuf;
 	}
-	Rows = min_rows();
+	Rows = min_rows_for_all_tabpages();
     }
     if (Columns < MIN_COLUMNS && full_screen)
     {
@@ -6360,6 +6403,9 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_cot);
 	    buf->b_cot_flags = 0;
 	    break;
+	case PV_ISE:
+	    clear_string_option(&buf->b_p_ise);
+	    break;
 	case PV_DICT:
 	    clear_string_option(&buf->b_p_dict);
 	    break;
@@ -6382,6 +6428,9 @@ unset_global_local_option(char_u *name, void *from)
 # ifdef FEAT_QUICKFIX
 	case PV_EFM:
 	    clear_string_option(&buf->b_p_efm);
+	    break;
+	case PV_GEFM:
+	    clear_string_option(&buf->b_p_gefm);
 	    break;
 	case PV_GP:
 	    clear_string_option(&buf->b_p_gp);
@@ -6462,6 +6511,7 @@ get_varp_scope(struct vimoption *p, int scope)
 #endif
 #ifdef FEAT_QUICKFIX
 	    case PV_EFM:  return (char_u *)&(curbuf->b_p_efm);
+	    case PV_GEFM: return (char_u *)&(curbuf->b_p_gefm);
 	    case PV_GP:   return (char_u *)&(curbuf->b_p_gp);
 	    case PV_MP:   return (char_u *)&(curbuf->b_p_mp);
 #endif
@@ -6478,6 +6528,7 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
 #endif
 	    case PV_COT:  return (char_u *)&(curbuf->b_p_cot);
+	    case PV_ISE:  return (char_u *)&(curbuf->b_p_ise);
 	    case PV_DICT: return (char_u *)&(curbuf->b_p_dict);
 	    case PV_TSR:  return (char_u *)&(curbuf->b_p_tsr);
 #ifdef FEAT_COMPL_FUNC
@@ -6560,6 +6611,8 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_COT:	return *curbuf->b_p_cot != NUL
 				    ? (char_u *)&(curbuf->b_p_cot) : p->var;
+	case PV_ISE:	return *curbuf->b_p_ise != NUL
+				    ? (char_u *)&(curbuf->b_p_ise) : p->var;
 	case PV_DICT:	return *curbuf->b_p_dict != NUL
 				    ? (char_u *)&(curbuf->b_p_dict) : p->var;
 	case PV_TSR:	return *curbuf->b_p_tsr != NUL
@@ -6577,6 +6630,8 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:	return *curbuf->b_p_efm != NUL
 				    ? (char_u *)&(curbuf->b_p_efm) : p->var;
+	case PV_GEFM:	return *curbuf->b_p_gefm != NUL
+				    ? (char_u *)&(curbuf->b_p_gefm) : p->var;
 	case PV_GP:	return *curbuf->b_p_gp != NUL
 				    ? (char_u *)&(curbuf->b_p_gp) : p->var;
 	case PV_MP:	return *curbuf->b_p_mp != NUL
@@ -6626,6 +6681,7 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_DIFF
 	case PV_DIFF:	return (char_u *)&(curwin->w_p_diff);
 #endif
+	case PV_EIW:	return (char_u *)&(curwin->w_p_eiw);
 #ifdef FEAT_FOLDING
 	case PV_FDC:	return (char_u *)&(curwin->w_p_fdc);
 	case PV_FEN:	return (char_u *)&(curwin->w_p_fen);
@@ -6650,6 +6706,7 @@ get_varp(struct vimoption *p)
 	case PV_WFW:	return (char_u *)&(curwin->w_p_wfw);
 #if defined(FEAT_QUICKFIX)
 	case PV_PVW:	return (char_u *)&(curwin->w_p_pvw);
+	case PV_LHI:	return (char_u *)&(curwin->w_p_lhi);
 #endif
 #ifdef FEAT_RIGHTLEFT
 	case PV_RL:	return (char_u *)&(curwin->w_p_rl);
@@ -6939,6 +6996,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_diff = from->wo_diff;
     to->wo_diff_saved = from->wo_diff_saved;
 #endif
+    to->wo_eiw = copy_option_val(from->wo_eiw);
 #ifdef FEAT_CONCEAL
     to->wo_cocu = copy_option_val(from->wo_cocu);
     to->wo_cole = from->wo_cole;
@@ -6968,6 +7026,9 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #endif
 #ifdef FEAT_SIGNS
     to->wo_scl = copy_option_val(from->wo_scl);
+#endif
+#ifdef FEAT_QUICKFIX
+    to->wo_lhi = from->wo_lhi;
 #endif
 
 #ifdef FEAT_EVAL
@@ -7004,6 +7065,7 @@ check_winopt(winopt_T *wop UNUSED)
 # endif
     check_string_option(&wop->wo_fmr);
 #endif
+    check_string_option(&wop->wo_eiw);
 #ifdef FEAT_SIGNS
     check_string_option(&wop->wo_scl);
 #endif
@@ -7052,6 +7114,7 @@ clear_winopt(winopt_T *wop UNUSED)
 # endif
     clear_string_option(&wop->wo_fmr);
 #endif
+    clear_string_option(&wop->wo_eiw);
 #ifdef FEAT_SIGNS
     clear_string_option(&wop->wo_scl);
 #endif
@@ -7358,6 +7421,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_bkc = empty_option;
 	    buf->b_bkc_flags = 0;
 #ifdef FEAT_QUICKFIX
+	    buf->b_p_gefm = empty_option;
 	    buf->b_p_gp = empty_option;
 	    buf->b_p_mp = empty_option;
 	    buf->b_p_efm = empty_option;
@@ -7383,6 +7447,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_cot_flags = 0;
 	    buf->b_p_dict = empty_option;
 	    buf->b_p_tsr = empty_option;
+	    buf->b_p_ise = empty_option;
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_tsrfu = empty_option;
 #endif
@@ -8412,57 +8477,10 @@ vimrc_found(char_u *fname, char_u *envname)
 	    if (p != NULL)
 	    {
 		vim_setenv(envname, p);
-		if (vim_getenv((char_u *)"MYVIMDIR", &dofree) == NULL)
-		{
-		    size_t  usedlen = 0;
-		    int     len = 0;
-		    char_u  *fbuf = NULL;
-
-		    if (STRNCMP(gettail(fname), ".vimrc", 6) == 0)
-		    {
-			len = STRLEN(p) - 2;
-			p[len] = '/';
-		    }
-		    else if (STRNCMP(gettail(fname), ".gvimrc", 7) == 0)
-		    {
-			len = STRLEN(p);
-			char_u  *buf = alloc(len);
-			if (buf != NULL)
-			{
-			    mch_memmove(buf, fname, len - 7);
-			    mch_memmove(buf + len - 7, (char_u *)".vim/", 5);
-			    len -= 2;  // decrement len, so that we can set len+1 = NUL below
-			    vim_free(p);
-			    p = buf;
-			}
-		    }
-#ifdef MSWIN
-		    else if (STRNCMP(gettail(fname), "_vimrc", 6) == 0)
-		    {
-			len = STRLEN(p) + 4; // remove _vimrc, add vimfiles/
-			char_u  *buf = alloc(len);
-			if (buf != NULL)
-			{
-			    mch_memmove(buf, fname, len - 10);
-			    mch_memmove(buf + len - 10, (char_u *)"vimfiles\\", 9);
-			    len -= 2;  // decrement len, so that we can set len+1 = NUL below
-			    vim_free(p);
-			    p = buf;
-			}
-		    }
-#endif
-		    else
-			(void)modify_fname((char_u *)":h", FALSE, &usedlen, &p, &fbuf, &len);
-
-		    if (p != NULL)
-		    {
-			// keep the directory separator
-			p[len + 1] = NUL;
-			vim_setenv((char_u *)"MYVIMDIR", p);
-		    }
-		}
 		vim_free(p);
 	    }
+	    // Set $MYVIMDIR
+	    export_myvimdir();
 	}
 	else if (dofree)
 	    vim_free(p);
@@ -8786,15 +8804,33 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 	vim_free(cb.cb_name);
     free_tv(tv);
 
-    if (in_vim9script() && funcname && (vim_strchr(optval, '.') != NULL))
+    char_u  *dot = NULL;
+    if (in_vim9script() && funcname
+				&& ((dot = vim_strchr(optval, '.')) != NULL))
     {
-	// When a Vim9 imported function name is used, it is expanded by the
-	// call to get_callback() above to <SNR>_funcname.   Revert the name to
-	// back to "import.funcname".
 	if (optcb->cb_free_name)
 	    vim_free(optcb->cb_name);
-	optcb->cb_name = vim_strsave(optval);
-	optcb->cb_free_name = TRUE;
+
+	imported_T *import = find_imported(optval, dot - optval, FALSE);
+	if (import != NULL && SCRIPT_ID_VALID(import->imp_sid)
+				&& !(import->imp_flags & IMP_FLAGS_AUTOLOAD))
+	{
+	    char_u	fnamebuf[MAX_FUNC_NAME_LEN];
+
+	    // Imported non-autoloaded function.  Replace the import script
+	    // name (import.funcname) with the script ID (<SNR>123_funcname)
+	    vim_snprintf((char *)fnamebuf, sizeof(fnamebuf), "<SNR>%d_%s",
+						import->imp_sid, dot + 1);
+	    optcb->cb_name = vim_strsave(fnamebuf);
+	    optcb->cb_free_name = TRUE;
+	}
+	else
+	{
+	    // Imported autoloaded function.  Store the function name as
+	    // "import.funcname".
+	    optcb->cb_name = vim_strsave(optval);
+	    optcb->cb_free_name = TRUE;
+	}
     }
     // when using Vim9 style "import.funcname" it needs to be expanded to
     // "import#funcname".
@@ -8805,6 +8841,18 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
     return FAIL;
 #endif
 }
+
+#if defined(FEAT_TABPANEL)
+/*
+ * Process the new 'showtabpanel' option value.
+ */
+    char *
+did_set_showtabpanel(optset_T *args)
+{
+    shell_new_columns();
+    return NULL;
+}
+#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
     static void

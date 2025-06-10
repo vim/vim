@@ -2091,7 +2091,8 @@ VimDialog::VimDialog(int type, const char *title, const char *message,
     float buttonsHeight   = 0;
     BString strButtons(buttons);
     strButtons.RemoveAll("&");
-    do {
+    do
+    {
 	int32 end = strButtons.FindFirst('\n');
 	if (end != B_ERROR)
 	    strButtons.SetByteAt(end, '\0');

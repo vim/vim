@@ -10,7 +10,16 @@ VIMRUNTIME = ..
 # If a test succeeds a testdir/*.out file will be written.
 # If a test fails a testdir/*.fail file will be written.
 test:
-	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term -u testdir/runtest.vim
+	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term -u testdir/runtest.vim || \
+		{ \
+			retval=$$?; \
+			for fail in testdir/*.fail; do \
+				[ -f "$$fail" ] || continue; \
+				echo "$$fail:"; \
+				cat "$$fail"; \
+			done; \
+			exit $$retval; \
+		}
 	@echo "INDENT TESTS: DONE"
 
 

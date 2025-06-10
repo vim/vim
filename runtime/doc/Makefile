@@ -49,16 +49,6 @@ vimtutor.man: vimtutor.1
 xxd.man: xxd.1
 	nroff -man $? | sed -e s/.//g > $@
 
-uganda.nsis.txt : uganda.???
-	for dpn in $?; do \
-	  trg=$@; \
-          sed -e 's/[ 	]*\*.*\*//g' -e 's/vim:tw=[[:digit:]][[:digit:]]:.*//' \
-            $${dpn} | uniq > $${trg%txt}$${dpn##*.}; \
-	done
-# This files needs to be in dos fileformat for NSIS.
-	$(VIMPROG) -e -X -u NONE --cmd "set notitle noicon nocp noml viminfo=" \
-	  -c "argdo write ++ff=dos" -c "qa" uganda.nsis.???
-
 # Awk version of .txt to .html conversion.
 html: noerrors tags $(HTMLS)
 	@if test -f errors.log; then more errors.log; fi
@@ -93,7 +83,7 @@ test_urls:
 	$(VIMPROG) --clean -S test_urls.vim
 
 clean:
-	-rm -f doctags *.html tags.ref
+	-rm -f doctags *.html tags.ref tags-* vim-stylesheet.css
 
 # These files are in the extra archive, skip if not present
 
@@ -149,6 +139,14 @@ os_risc.txt:
 	touch $@
 
 os_win32.txt:
+	touch $@
+
+pi_netrw.txt: ../pack/dist/opt/netrw/doc/netrw.txt
+	cp ../pack/dist/opt/netrw/doc/netrw.txt $@.tmp
+	sed -e '1s/$$/	*pi_netrw.txt*/' $@.tmp > $@ && \
+	rm -f $@.tmp
+
+vietnamese.txt:
 	touch $@
 
 # In *BSD, the variable '$<' is used in suffix-transformation rules (in GNU this

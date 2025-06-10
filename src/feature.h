@@ -138,11 +138,6 @@
  */
 
 /*
- * Message history is fixed at 200 messages.
- */
-#define MAX_MSG_HIST_LEN 200
-
-/*
  * +folding		Fold lines.
  */
 #ifdef FEAT_NORMAL
@@ -526,6 +521,13 @@
 	|| defined(FEAT_GUI_HAIKU) \
 	|| defined(FEAT_GUI_MSWIN))
 # define FEAT_GUI_TABLINE
+#endif
+
+/*
+ * +tabpanel		Tab SideBar
+ */
+#ifdef FEAT_HUGE
+# define FEAT_TABPANEL
 #endif
 
 /*
@@ -1020,18 +1022,19 @@
  * +tgetent
  */
 
-/*
- * The Netbeans feature requires +eval.
- */
-#if !defined(FEAT_EVAL) && defined(FEAT_NETBEANS_INTG)
-# undef FEAT_NETBEANS_INTG
-#endif
 
 /*
  * The +channel feature requires +eval.
  */
 #if !defined(FEAT_EVAL) && defined(FEAT_JOB_CHANNEL)
 # undef FEAT_JOB_CHANNEL
+#endif
+
+/*
+ * The Netbeans feature requires +eval and +job_channel
+ */
+#if (!defined(FEAT_EVAL) || !defined(FEAT_JOB_CHANNEL)) && defined(FEAT_NETBEANS_INTG)
+# undef FEAT_NETBEANS_INTG
 #endif
 
 /*

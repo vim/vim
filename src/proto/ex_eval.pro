@@ -11,6 +11,7 @@ char *get_exception_string(void *value, except_type_T type, char_u *cmdname, int
 int throw_exception(void *value, except_type_T type, char_u *cmdname);
 void discard_current_exception(void);
 void catch_exception(except_T *excp);
+void finish_exception(except_T *excp);
 void exception_state_save(exception_state_T *estate);
 void exception_state_restore(exception_state_T *estate);
 void exception_state_clear(void);

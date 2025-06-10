@@ -470,7 +470,7 @@ func Test_Visual_Block()
 	      \ "\t{",
 	      \ "\t}"], getline(1, '$'))
 
-  close!
+  bw!
 endfunc
 
 " Test for 'p'ut in visual block mode
@@ -1080,7 +1080,7 @@ func Test_star_register()
 
   delmarks < >
   call assert_fails('*yank', 'E20:')
-  close!
+  bw!
 endfunc
 
 " Test for changing text in visual mode with 'exclusive' selection
@@ -1096,7 +1096,51 @@ func Test_exclusive_selection()
   call assert_equal('l      one', getline(1))
   set virtualedit&
   set selection&
-  close!
+  bw!
+endfunc
+
+" Test for inclusive motion in visual mode with 'exclusive' selection
+func Test_inclusive_motion_selection_exclusive()
+  func s:compare_exclu_inclu(line, keys, expected_exclu)
+    let msg = "data: '" . a:line . "' operation: '" . a:keys . "'"
+    call setline(1, a:line)
+    set selection=exclusive
+    call feedkeys(a:keys, 'xt')
+    call assert_equal(a:expected_exclu, getpos('.'), msg)
+    let pos_ex = col('.')
+    set selection=inclusive
+    call feedkeys(a:keys, 'xt')
+    let pos_in = col('.')
+    call assert_equal(1, pos_ex - pos_in, msg)
+  endfunc
+
+  new
+  " Test 'e' motion
+  set selection=exclusive
+  call setline(1, 'eins zwei drei')
+  norm! ggvey
+  call assert_equal('eins', @")
+  call setline(1, 'abc(abc)abc')
+  norm! ggveeed
+  call assert_equal(')abc', getline(1))
+  call setline(1, 'abc(abc)abc')
+  norm! gg3lvey
+  call assert_equal('(abc', @")
+  call s:compare_exclu_inclu('abc(abc)abc', 'ggveee', [0, 1, 8, 0])
+  " Test 'f' motion
+  call s:compare_exclu_inclu('geschwindigkeit', 'ggvfefe', [0, 1, 14, 0])
+  call s:compare_exclu_inclu('loooooooooooong', 'ggv2fo2fo2fo', [0, 1, 8, 0])
+  " Test 't' motion
+  call s:compare_exclu_inclu('geschwindigkeit', 'ggv2te', [0, 1, 13, 0])
+  call s:compare_exclu_inclu('loooooooooooong', 'gglv2to2to2to', [0, 1, 6, 0])
+  " Test ';' motion
+  call s:compare_exclu_inclu('geschwindigkeit', 'ggvfi;;', [0, 1, 15, 0])
+  call s:compare_exclu_inclu('geschwindigkeit', 'ggvti;;', [0, 1, 14, 0])
+  call s:compare_exclu_inclu('loooooooooooong', 'ggv2fo;;', [0, 1, 6, 0])
+  call s:compare_exclu_inclu('loooooooooooong', 'ggvl2to;;', [0, 1, 6, 0])
+  " Clean up
+  set selection&
+  bw!
 endfunc
 
 " Test for starting linewise visual with a count.
@@ -1153,7 +1197,7 @@ func Test_visual_inner_block()
   8,9d
   call cursor(5, 1)
   call assert_beeps('normal ViBiB')
-  close!
+  bw!
 endfunc
 
 func Test_visual_put_in_block()
@@ -1559,10 +1603,12 @@ endfunc
 func Test_visual_hl_with_showbreak()
   CheckScreendump
 
+  " Redraw at the end is necessary due to https://github.com/vim/vim/issues/16620
   let lines =<< trim END
     setlocal showbreak=+
     call setline(1, repeat('a', &columns + 10))
     normal g$v4lo
+    redraw
   END
   call writefile(lines, 'XTest_visual_sbr', 'D')
 
@@ -2712,6 +2758,70 @@ func Test_visual_block_cursor_insert_enter()
   exe ":norm! \<c-v>3jcw\<cr>"
   call assert_equal(['asdfw', 'asdf', 'asdfasdf', 'asdfasdf', 'asdfasdf'], getline(1, '$'))
   bwipe!
+endfunc
+
+func Test_visual_block_exclusive_selection()
+  new
+  set selection=exclusive
+  call setline(1, ['asöd asdf', 'asdf asdf', 'as€d asdf', 'asdf asdf'])
+  call cursor(1, 1)
+  exe ":norm! \<c-v>eh3j~"
+  call assert_equal(['ASÖd asdf', 'ASDf asdf', 'AS€d asdf', 'ASDf asdf'], getline(1, '$'))
+  exe ":norm! 1v~"
+  call assert_equal(['asöd asdf', 'asdf asdf', 'as€d asdf', 'asdf asdf'], getline(1, '$'))
+  bwipe!
+  set selection&vim
+endfunc
+
+func Test_visual_block_exclusive_selection_adjusted()
+  new
+  " Test that the end-position of the visual selection is adjusted for exclusive selection
+  set selection=exclusive
+  call setline(1, ['asöd asdf  ', 'asdf asdf  ', 'as€d asdf  ', 'asdf asdf  '])
+  call cursor(1, 1)
+  " inclusive motion
+  exe ":norm! \<c-v>e3jy"
+  call assert_equal([0, 4, 5, 0], getpos("'>"))
+  " exclusive motion
+  exe ":norm! \<c-v>ta3jy"
+  call assert_equal([0, 4, 6, 0], getpos("'>"))
+  " another inclusive motion
+  exe ":norm! \<c-v>g_3jy"
+  call assert_equal([0, 4, 10, 0], getpos("'>"))
+
+  " Reset selection option to Vim default
+  set selection&vim
+  call cursor(1, 1)
+
+  " inclusive motion
+  exe ":norm! \<c-v>e3jy"
+  call assert_equal([0, 4, 4, 0], getpos("'>"))
+  " exclusive motion
+  exe ":norm! \<c-v>ta3jy"
+  call assert_equal([0, 4, 5, 0], getpos("'>"))
+  " another inclusive motion
+  exe ":norm! \<c-v>g_3jy"
+  call assert_equal([0, 4, 9, 0], getpos("'>"))
+  bwipe!
+  set selection&vim
+endfunc
+
+" the following caused a Heap-Overflow, because Vim was accessing outside of a
+" line end
+func Test_visual_pos_buffer_heap_overflow()
+  set virtualedit=all
+  args Xa Xb
+  all
+  call setline(1, ['', '', ''])
+  call cursor(3, 1)
+  wincmd w
+  call setline(1, 'foobar')
+  normal! $lv0
+  all
+  call setreg('"', 'baz')
+  normal! [P
+  set virtualedit=
+  bw! Xa Xb
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

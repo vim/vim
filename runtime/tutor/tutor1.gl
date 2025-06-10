@@ -1,0 +1,1048 @@
+===============================================================================
+=     B e n v i d o   a o   t u t o r   d o   V I M      -    Versión 1.7     =
+===============================================================================
+
+
+     Vim é un editor moi potente que dispón de moitos comandos, demasiados
+     para ser explicados nun tutor coma este. Este tutor está deseñado
+     para describir comandos dabondo para que vostede sexa capaz de
+     aprender fácilmente a usa-lo Vim como un editor de propósito xeral.
+
+     O tempo necesario para completa-lo tutor é aproximadamente de 30
+     minutos, dependendo de canto tempo se adique á experimentación.      
+
+     Os comandos destas leccións modificarán o texto. Faga unha copia deste
+     ficheiro para practicar (con «vimtutor», isto xa é unha copia).
+
+     É importante lembrar que este tutor está pensado para ensinar coa 
+     práctica. Isto significa que cómpre executa-los comandos para 
+     aprendelos axeitadamente. Se únicamente le o texto, esqueceránselle
+     os comandos!
+
+     Agora, asegúrese de que a tecla de bloqueo de maiúsculas NON está
+     activada e prema a tecla  j  para move-lo cursor, de xeito que o texto
+     da Lección 1.1.1 abranga completamente a pantalla.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                          LECCIÓN 1.1.1: MOVE-LO CURSOR
+
+
+ ** Para move-lo cursor, prema as teclas h,j,k,l do xeito indicado. **
+      ^
+      k       Indicación: A tecla h está á esquerda, e móveo á esquerda.
+ < h	 l >		  A tecla l está á dereita, e móveo á dereita.
+      j			  A tecla j semella unha frecha e apunta 
+      v                    cara a embaixo. 
+
+  1. Mova o cursor pola pantalla ata que sinta comodidade facendo a acción.
+
+  2. Manteña premida a tecla  j  ata que se repita automáticamente.
+     Agora xa sabe como chegar á lección seguinte.
+
+  3. Utilizando a tecla abaixo, vaia á lección 1.1.2.
+
+NOTA: Se alguna vez non está seguro sobre algo que tecleara, prema <ESC>
+      para situarse no modo Normal. Logo, volva a teclear a orde que desexaba.
+
+NOTA: As teclas de movemento do cursor tamén funcionan. Pero usando hjkl
+      poderá moverse moito máis rápido unha vez que se acostume.
+      De verdade!
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                          LECCIÓN 1.1.2: SAÍR DO VIM
+
+
+NOTA: Antes de executar algún dos seguintes pasos, lea primeiro a lección
+      enteira!!
+
+  1. Prema a tecla <ESC> (para asegurarse de que está no modo Normal).
+
+  2. Escriba:  :q! <INTRO>
+     Isto provoca a saída do editor REXEITANDO calquer cambio que fora feito.
+
+  3. Regrese eiquí executando o comando que o trouxo a este tutor.
+     Este puido ser:   vimtutor <INTRO>
+
+  4. Se memorizou estes pasos, e se sinte con confianza, execute os
+     pasos do 1 ao 3 para saír e volver a entrar ao editor. 
+
+NOTA: :q! <INTRO> descarta cualquer cambio que realizara.
+      En próximas leccións, aprenderá como garda-los cambios nun arquivo.
+
+  5. Mova o cursor ata a Lección 1.1.3.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                     LECCIÓN 1.1.3: EDITAR TEXTO - BORRAR
+
+
+  ** Prema  x  para elimina-lo carácter baixo o cursor. **
+
+  1. Mova o cursor á liña de embaixo sinalada con --->.
+
+  2. Para corrixi-los erros, mova o cursor ata que estea sobre o
+     carácter que vai ser borrado.
+
+  3. Prema a tecla  x  para elimina-lo carácter non desexado.
+
+  4. Repita os pasos 2 a 4 ata que a frase sexa a correcta.
+
+---> A vvaca saltooooou soobree aa lúúúúúúúa.
+
+  5. Agora que a liña está correcta, continúe coa Lección 1.1.4.
+
+NOTA: A medida que vaia avanzando neste tutor, non tente memorizar,
+      aprenda practicando.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  LECCIÓN 1.1.4: EDITAR TEXTO - INSERIR
+
+
+  ** Prema  i  para inserir texto. **
+
+  1. Mova o cursor á primeira liña de embaixo sinalada con --->.
+
+  2. Para facer que a primeira liña sexa igual ca segunda, mova o cursor 
+     ata que estea sobre o carácter ANTES do texto que vai ser inserido.
+
+  3. Prema  i  e escriba os carácteres a engadir.
+
+  4. A medida que sexa corrixido cada erro, prema <ESC> para volver ao modo
+     Normal. Repita os pasos 2 a 4 para corrixi-la frase.
+
+---> Flta texto nesta .
+---> Falta algo de texto nesta liña.
+
+  5. Cuando se sinta con comodidade inserindo texto, pase á lección 1.1.5.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                      LECCIÓN 1.1.5: EDITAR TEXTO - ENGADIR
+
+
+  ** Prema  A  para engadir texto. **
+
+  1. Mova o cursor á primeira liña inferior marcada con --->.
+     Non importa sobre qué carácter estea o cursor nesta liña.
+
+  2. Prema  A  e escriba o texto necesario.
+
+  3. Cuando o texto estea engadido, prema <ESC> para volver ao modo Normal.
+
+  4. Mova o cursor á segunda liña marcada con ---> e repita os pasos 2 e 3
+     para corrixir esta frase.
+
+---> Falta algún texto nes
+     Falta algún texto nesta liña.
+---> Tamén falta alg
+     Tamén falta algún texto eiquí.
+
+  5. Cuando se sinta con comodidade engadindo texto, pase á lección 1.1.6.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                      LECCIÓN 1.1.6: EDITAR UN ARQUIVO
+
+
+  ** Use  :wq  para gardar un arquivo e saír **
+
+NOTA: Antes de executar os seguintes pasos, lea a lección enteira!!
+
+  1.  Se ten acceso a outra terminal, faga os seguintes puntos nela.
+      Se non é así, saia deste tutor como fixo na lección 1.1.2:  :q!
+
+  2. No símbolo do sistema escriba este comando:  vim arquivo.txt <INTRO>
+     'vim' é o comando para arrincar o editor Vim,
+     'arquivo.txt' é o nome do arquivo que quere editar.
+     Utilice o nome dun arquivo que poida cambiar.
+
+  3. Insira e elimine texto como xa aprendeu nas leccións anteriores.
+
+  4. Garde o arquivo cos cambios e saia do Vim con:  :wq <INTRO>
+
+  5. Se xa saiu do vimtutor no paso 1, reinicie vimtutor e baixe ata
+     o seguinte resumo.
+
+  6. Despois de le-los pasos anteriores e telos entendido: fágaos.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			    RESUMO DA LECCIÓN 1.1
+
+
+  1. O cursor móvese utilizando as teclas das frechas ou as teclas hjkl.
+	 h (esquerda)	   j (abaixo)	  k (arriba)	  l (dereita)
+
+  2. Para acceder ao Vim dende o símbolo do sistema escriba:
+     vim nome_arquivo <INTRO>
+
+  3. Para saír do Vim escriba: <ESC> :q! <INTRO> para eliminar tódolos
+     cambios.
+     Ou escriba:  <ESC>  :wq  <INTRO> para garda-los cambios.
+
+  4. Para borrar un carácter baixo o cursor en modo Normal prema:  x  .
+
+  5. Para inserir ou engadir texto escriba:
+     i  escriba o texto a inserir <ESC> insire o texto antes do cursor
+     A  escriba o texto a engadir <ESC> engade o texto ao final da liña
+
+NOTA: Premendo <ESC> tórnase ao modo Normal ou cancélase unha orde non
+      desexada ou incompleta.
+
+  Agora continúe coa Lección 1.2.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    LECCIÓN 1.2.1:  COMANDOS PARA BORRAR
+
+
+  ** Escriba  dw  para borrar unha palabra **
+
+  1. Prema <ESC> para asegurarse de que está no modo Normal.
+
+  2. Mova o cursor á liña inferior sinalada con --->.
+
+  3. Mova o cursor ao comezo dunha palabra que desexe borrar.
+
+  4. Prema  dw  para facer que a palabra desapareza.
+
+NOTA: A letra  d  aparecerá na última liña inferior dereita da pantalla
+      namentres a escribe. O Vim está esperando que escriba  w .
+      Se ve outro carácter que non sexa  d  , é que escribiu algo mal. Prema 
+      <ESC> e comece de novo.
+
+---> Hai algunhas palabras pásao ben que non pertencen papel a esta frase.
+
+  5. Repita os pasos 3 e 4 ata que a frase sexa correcta e pase á
+     lección 1.2.2.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    LECCIÓN 1.2.2: MÁIS COMANDOS PARA BORRAR
+
+
+  ** Escriba  d$  para borrar ata o final da liña. **
+
+  1. Prema  <ESC>  para asegurarse de que está no modo Normal.
+
+  2. Mova o cursor á liña inferior sinalada con --->.
+
+  3. Mova o cursor ao final da liña correcta (DESPOIS do primeiro . ).
+
+  4. Escriba  d$  para borrar ata o final da liña.
+
+---> Alguén escribiu o final desta liña dúas veces. esta liña dúas veces.
+
+  Pase á lección 1.2.3 para entender qué está pasando.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  LECCIÓN 1.2.3: SOBRE OPERADORES E MOVEMENTOS
+
+
+  Moitos comandos que cambian texto están compostos por un operador e máis
+  un movemento.
+  O formato para o comando 'eliminar' co operador de borrado  d  é o
+  seguinte:
+
+    d   movemento
+
+  Onde:
+    d         - é o operador para borrar.
+    movemento - é o texto sobre o que o comando vai operar (lista inferior).
+
+  Eiquí, unha lista resumida de movementos:
+   w - ata o comezo da seguinte palabra, EXCLUÍNDO o seu primero carácter.
+   e - ata o final da palabra actual, INCLUÍNDO o último carácter.
+   $ - ata o final da liña, INCLUÍNDO o último carácter.
+
+  Polo tanto, ao escribir  de  borraráse dende a posición do cursor ata o
+  final da palabra.
+
+NOTA: Premendo únicamente o movemento, estando no modo Normal sen un
+      operador, moveráse o cursor como se especifica na lista anterior.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+             LECCIÓN 1.2.4: UTILIZAR UN CONTADOR PARA UN MOVEMENTO
+
+
+  ** Ao escribir un número denantes dun movemento, repítise o movemento
+  o número de veces. **
+
+  1. Mova o cursor ao comezo da liña marcada con --->.
+
+  2. Escriba  2w  para mover o cursor dúas palabras cara a adiante.
+
+  3. Escriba  3e  para mover o cursor ao final da terceira palabra cara a
+     adiante.
+
+  4. Escriba  0  (cero) para coloca-lo cursor ao inicio da liña.
+
+  5. Repita os pasos 2 e 3 con diferentes números.
+
+---> Isto é só unha liña con palabras onde poder moverse.
+
+  Pase á lección 1.2.5.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              LECCIÓN 1.2.5: UTILIZAR UN CONTADOR PARA BORRAR MÁIS
+
+
+  ** Ao escribir un número cun operador, repítese ese número de veces. **
+
+  En combinación co operador de borrado e o movemento mencionado
+  anteriormente, engada un contador antes do movemento para eliminar máis:
+	 d   número   movemento
+
+  1. Mova o cursor ao inicio da primeira palabra en MAIÚSCULAS na liña 
+     marcada con --->.
+
+  2. Escriba  d2w  para elimina-las dúas palabras en MAIÚSCULAS.
+
+  3. Repita os pasos 1 e 2 con diferentes contadores para elimina-las
+     seguintes palabras en MAIÚSCULAS cun comando.
+
+--->  Esta ABC DE cadea FGHI JK LMN OP de palabras foi Q RS TUV limpada.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                       LECCIÓN 1.2.6: OPERACIÓN EN LIÑAS
+
+
+  ** Escriba  dd   para eliminar unha liña completa. **
+
+  Debido á frecuencia coa que se elimina unha liña completa, os deseñadores
+  do Vim decidiron que sería máis sinxelo simplemente escribir dúas letras 
+  d  para eliminar unha liña.
+
+  1. Mova o cursor á segunda liña do párrafo inferior.
+
+  2. Escriba  dd  para elimina-la liña.
+
+  3. Agora, móvase á cuarta liña.
+
+  4. Escriba   2dd   para eliminar dúas liñas á vez.
+
+--->  1)  As rosas son vermellas,
+--->  2)  o barro é divertido,
+--->  3)  a violeta é azul,
+--->  4)  teño un coche,
+--->  5)  os reloxos dan a hora,
+--->  6)  o azucere é dóce
+--->  7)  e ti tamén o es.
+
+  A duplicación para borrar liñas tamén funcionan cos operadores
+  mencionados anteriormente.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                       LECCIÓN 1.2.7: O COMANDO DESFACER 
+
+
+  ** Prema  u  para desfacer os últimos comandos,
+            U  para desfacer unha liña enteira.       **
+
+  1. Mova o cursor á liña inferior sinalada con ---> e sitúeo baixo o
+     primeiro erro.
+
+  2. Prema  x  para borra-lo primeiro carácter non desexado.
+
+  3. Prema agora  u  para desface-lo último comando executado.
+
+  4. Agora, corrixa tódolos erros da liña usando o comando  x.
+
+  5. Prema agora  U  maiúsculo para devolver a liña ao seu estado orixinal.
+
+  6. Prema agora  u  unhas poucas veces máis para desface-lo feito por  U  e
+     mailos comandos previos.
+
+  7. Agora, prema CTRL-R (manteña pulsada a tecla CTRL e prema R) unhas
+     cantas veces para volver a executar os comandos (desface-lo desfeito).
+
+---> Corrrixa os erros dee esttta liña e vooolva ponelos coon desfacer.
+
+  Estes son uns comandos moi útiles. Agora, vaiamos ao resumo da lección 1.2.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			    RESUMO DA LECCIÓN 1.2
+
+
+  1. Para borrar dende o cursor ata a seguinte palabra prema:	     dw
+  2. Para borrar dende o cursor ata o final da palabra prema:        de
+  3. Para borrar dende o cursor ata o final dunha liña prema:	     d$
+  4. Para borrar unha liña enteira prema:                            dd
+  5. Para repetir un movemento, antepoña un número:                  2w
+  6. O formato para un comando de cambio é:
+               operador  [número]  movemento
+     onde:
+       comando    - é o que hai que facer, por exemplo,  d  para borrar
+       [número]   - é un número opcional para repetir o movemento
+       movemento  - móvese sobre o texto no que operar, como w (palabra),
+                    $ (ata o final da liña), etc.
+
+  7. Para moverse ao inicio da liña utilice un cero:    0
+  8. Para desfacer acciones previas prema:              u (u minúsculo)
+     Para desfacer tódolos cambios dunha liña prema:    U (U mAIÚSCULO)
+     Para desface-lo desfeito prema:                    CTRL-R
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                      LECCIÓN 1.3.1: O COMANDO «PUT» (PÓR)
+
+
+  ** Prema  p  para pór (pegar) despois do cursor o último que borrou. **
+
+  1. Mova o cursor á primeira liña inferior marcada con --->.
+
+  2. Escriba  dd  para borra-la liña e almacenala nun rexistro do Vim.
+
+  3. Mova o cursor á liña c) por RIBA de onde debería esta-la liña 
+     eliminada.
+
+  4. Prema   p   para pega-la liña borrada por BAIXO do cursor.
+
+  5. Repita os pasos 2 a 4 para por tódalas liñas na orde correcta.
+
+---> d) Podes aprendela ti?
+---> b) A violeta é azul,
+---> c) a intelixencia apréndese,
+---> a) as rosas son vermellas.
+     
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   LECCIÓN 1.3.2: O COMANDO «REPLACE» (TROCAR)
+
+
+  ** Prema  rx  para troca-lo carácter baixo o cursor con  x . **
+
+  1. Mova o cursor á primeira liña inferior marcada con --->.
+
+  2. Mova o cursor para situalo sobre o primeiro erro.
+
+  3. Prema   r	 e despois o carácter que debería ir aí.
+
+  4. Repita os pasos 2 e 3 ata que a primeira liña sexa igual á segunda.
+
+---> Cande esti lita fui escrita alguér premeu alginhas teclas equibocadas!
+---> Cando esta liña foi escrita alguén premeu algunhas teclas equivocadas!
+
+  5. Agora pase á lección 1.3.3.
+
+NOTA: Lembre que debería aprender practicando.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                         LECCIÓN 1.3.3: O COMANDO CAMBIAR
+
+
+  ** Para cambiar ata o final dunha palabra, escriba  ce . **
+
+  1. Mova o cursor á primeria liña inferior marcada con --->.
+
+  2. Sitúe o cursor no u de lubrs.
+
+  3. Escriba  ce  e corrixa a palabra (neste caso, escriba 'iña').
+
+  4. Prema <ESC> e mova o cursor ao seguinte erro a cambiar.
+
+  5. Repita os pasos 3 e 4 ata que a primeira frase sexa igual á segunda.
+
+---> Esta lubrs ten unhas poucas pskavtad que corrixir co comando change.
+---> Esta liña ten unhas poucas palabras que corrixir co comando cambiar.
+
+  Teña en conta que  ce  elimina a palabra e entra no modo Inserir.
+    cc  fai o mesmo para toda a liña.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   LECCIÓN 1.3.4: MÁIS CAMBIOS USANDO  c
+
+
+  ** O operador cambio utilízase cos mesmos movementos que borrar. **
+
+  1. O operador cambio funciona do mesmo xeito que borrar. O formato é:
+
+       c   [número]   movemento
+
+  2. Os movementos son tamén os mesmos, como  w (palabra) ou 
+  $ (fin da liña).
+
+  3. Mova o cursor á primeira liña inferior sinalada con --->.
+
+  4. Mova o cursor ao primeiro erro.
+
+  5. Prema  c$  e escriba o resto da liña para que sexa como a segunda,
+     e prema <ESC>.
+
+---> O final desta liña necesita algunha axuda para que sexa como a segunda.
+---> O final desta liña necesita ser corrixido usando o comando  c$.
+
+NOTA: Pode utiliza-lo retorno de carro para corrixir erros mentres escribe.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			    RESUMO DA LECCIÓN 1.3
+
+
+  1. Para volver a pór ou pega-lo texto que acaba de borrarse,
+     escriba  p . Isto pega o texto despois do cursor (se borrou unha
+     liña, ao pegala, esta situaráse na liña baixo do cursor).
+
+  2. Para troca-lo carácter baixo do cursor, prema  r  e logo o
+     carácter que quere que estea no seu lugar.
+
+  3. O operador cambio permítelle cambiar dende a posición do cursor
+     ata onde leve o movemento indicado. Por exemplo, prema  ce
+     para cambiar dende o cursor ata o final da palabra, ou  c$
+     para cambiar ata o final da liña.
+
+  4. O formato para cambio é:
+
+	 c   [número]   movemento
+
+  Pase agora á lección seguinte.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            LECCIÓN 1.4.1: UBICACIÓN DO CURSOR E ESTADO DO ARQUIVO
+
+
+  ** Prema CTRL-G para mostra-la súa situación no ficheiro e mailo estado.
+     Prema G para moverse a unha determinada liña do fichero. **
+
+NOTA: Lea esta lección enteira antes de executar calquera dos pasos!!
+
+  1. Manteña premida a tecla Ctrl e prema  g . Chamamos a isto CTRL-G.
+     Aparecerá unha mensaxe na parte inferior da páxina co nome do arquivo
+     e a posición do cursor no arquivo. 
+     Lembre o número de liña para o paso 3.
+
+NOTA: Seica poida ve-la posición do cursor no recanto inferior da dereita
+      da pantalla. Isto acontece cando a opción 'ruler' (regra) está
+      habilitada (consulte  :help 'ruler' )
+
+  2. Prema  G  para move-lo cursor ata a parte inferior do arquivo.
+     Prema  gg  para move-lo cursor ao inicio do arquivo.
+
+  3. Escriba o número da liña na que estaba e despois  G . Isto
+     tornaráo á liña na que estaba cuando pulsou CTRL-G.
+
+  4. Se se atopa con seguridade para poder facer isto, 
+     execute os pasos 1 a 3.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                     LECCIÓN 1.4.2: O COMANDO «SEARCH» (BUSCAR)
+
+
+  ** Escriba  /  seguido dun texto para busca-lo texto. **
+
+  1. En modo Normal, prema o carácter  / . Fíxese que tanto o carácter  /
+     como o cursor aparecen na derradeira liña da pantalla, o mesmo que
+     o comando  : .
+
+  2. Escriba agora   errroor   <INTRO>. Esta é a palabra que quere buscar.
+
+  3. Para repeti-la busca do mesmo texto outra vez, simplemente prema  n .
+     Para busca-lo mesmo texto na dirección oposta, prema  N .
+
+  4. Se quere buscar un texto na dirección oposta (cara a enriba),
+     utilice o comando  ?  en troques de  / .
+  
+  5. Para regresar ao lugar de onde procedía, prema  CTRL-O  (manteña pulsado
+     Ctrl mentres pulsa a tecla  o). Repita o proceso para voltar máis atrás.
+     CTRL-I vai cara a adiante.
+
+---> "errroor" non é o xeito correcto de escribir erro; errroor é un erro.
+
+NOTA: Cando a busca chega ao final do arquivo, continuará dende o comezo,
+      agás que a opción 'wrapscan' estea desactivada.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  LECCIÓN 1.4.3: BUSCA PARA COMPROBAR PARÉNTESES
+
+
+  ** Prema  %  para atopa-la paréntese correspondente a ),] ou } . **
+
+  1. Sitúe o cursor en cualquera dos carácteres (, [ o { na liña inferior
+     sinalada con --->.
+
+  2. Prema agora o carácter  %  .
+
+  3. O cursor moveráse á parella de peche da paréntese, corchete
+     ou chave correspondente.
+
+  4. Prema  %  para move-lo cursor ata a outra parella do carácter.
+
+  5. Mova o cursor a outra (,),[,],{ o } e vexa o que fai % .
+
+---> Isto ( é unha liña de proba con (, [, ], {, e } nela. ))
+
+NOTA: Isto é moi útil na detección de erros nun programa con parénteses,
+     corchetes ou chaves sen parella.
+      
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        LECCIÓN 1.4.4: O COMANDO SUBSTITUÍR
+
+
+  ** Escriba  :s/vello/novo/g  para substituír 'vello' por 'novo'. **
+
+  1. Mova o cursor á liña inferior sinalada con --->.
+
+  2. Escriba  :s/aas/as/  <INTRO> . Teña en conta que este comando cambia
+     só o primeiro achado -na liña- da expresión que quere cambiar.
+  
+  3. Agora escriba  :s/aas/a/g . Ao engadir a opción  g  , o Vim fará
+     a substitución global na liña, cambiando tódo-los achados
+     do termo "aas" na liña.
+
+---> Coido que aas mellores épocas para aas frores son aas primaveras.
+
+  4. Para cambiar cada achado da cadea de carácteres entre dúas liñas:
+  Escriba  :#,#s/vello/novo/g   onde #,# son os números de liña do rango
+                                de liñas onde se realizará a substitución.
+  Escriba  :%s/vello/novo/g     para cambiar cada achado en todo o arquivo.
+  Escriba  :%s/vello/novo/gc    para atopar cada achado en todo o arquivo,
+                                pedindo confirmación para face-la
+                                substitución ou non.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                             RESUMO DA LECCIÓN 1.4
+
+
+  1. CTRL-G  mostra a posición do cursor no ficheiro e mailo seu estado.
+             G  move o cursor ao final do arquivo.
+     número  G  move o cursor a ese número de liña.
+            gg  move o cursor á primeira liña do arquivo.
+
+  2. Escribindo  /  seguido dun texto busca o texto cara a ADIANTE.
+     Escribindo  ?  seguido dun texto busca o texto cara a ATRÁS.
+     Despois dunha busca, prema  n  para atopar o achado.
+
+  3. Premendo  %  cando o cursor está sobre (,), [,], { o } localiza
+     a parella correspondente.
+
+  4. Para cambiar vello por novo no primeiro achado dunha liña escriba
+                                                          :s/vello/novo
+   Para cambiar tódo-los vello por novo nunha liña escriba 
+                                                          :s/vello/novo/g
+   Para cambiar texto entre dous números de liña escriba
+                                                          :#,#s/vello/novo/g
+   Para cambiar vello por novo en todo o fichero escriba
+                                                          :%s/vello/novo/g
+   Para pedir confirmación en cada caso engada  'c'
+                                                          :%s/vello/novo/gc
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                LECCIÓN 1.5.1: CÓMO EXECUTAR UN COMANDO EXTERNO
+
+
+  ** Escriba  :!  seguido dun comando externo para executar ese comando. **
+
+  1. Escriba o conocido comando  :  para situar o cursor ao final da
+     pantalla. Isto permitirálle introducir un comando.
+
+  2. Agora escriba o carácter  !  (signo de admiración). Isto permitirálle
+     executar calquer mandato do sistema.
+
+  3. Como exemplo escriba  ls  despois do ! e logo prema <INTRO>. Isto
+     mostrarálle unha lista do seu directorio, igual que se estiviese no 
+     símbolo do sistema. Se  ls  non funciona, utilice	:!dir .
+
+NOTA: Deste xeito é posible executar cualquer comando externo,
+      tamén incluíndo argumentos.
+
+NOTA: Tódolos comandos  :  deben finalizarse premendo <INTRO>.
+      De agora en diante, non sempre se mencionará.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  LECCIÓN 1.5.2: MÁIS SOBRE GARDAR FICHEIROS
+
+
+  ** Para garda-los cambios feitos nun ficheiro,
+	escriba  :w NOME_DE_FICHEIRO **
+
+  1. Escriba  :!dir  ou  :!ls  para ver unha lista dos arquivos 
+     do seu directorio.
+     Xa sabe que debe pulsar <INTRO> despois.
+
+  2. Elixa un nome de ficheiro que todavía non exista, como TEST.
+
+  3. Agora escriba  :w TEST  (onde TEST é o nome de ficheiro elixido).
+
+  4. Esta acción garda todo o ficheiro  (Vim Tutor)  baixo o nome TEST.
+     Para comprobalo, escriba  :!dir  ou  :!ls  de novo e vexa
+     o seu directorio.
+
+NOTA: Se saíra do Vim e volvera a entrar de novo con  vim TEST , o
+      arquivo sería unha copia exacta do tutorial cuando o guardou.
+
+  5. Agora, elimine o arquivo escribindo (Windows):  :!del TEST
+                                         ou (Unix):  :!rm TEST
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   LECCIÓN 1.5.3: SELECCIONAR TEXTO PARA GARDAR
+
+
+  ** Para gardar parte do arquivo, escriba  v  movemento  :w arquivo **
+
+  1. Mova o cursor a esta liña.
+
+  2. Prema  v  e mova o cursor ata o quinto elemento inferior. Vexa que
+     o texto é salientado.
+
+  3. Prema o carácter  :  Na parte inferior da pantalla aparecerá
+     :'<,'>
+
+  4. Prema  w TEST  , onde TEST é un nome de arquivo que aínda non existe.
+     Verifique que ve  :'<,'>w TEST  antes de premer <INTRO>.
+
+  5. Vim escribirá as liñas seleccionadas no arquivo TEST. Utilice
+     :!dir  o  :!ls  para velo. Non o elimine todavía! Utilizarémolo
+     na seguinte lección.
+
+NOTA: Ao pulsar  v  iniciá a selección visual. Pode move-lo cursor para
+      face-la selección máis grande ou pequena. Despois, pode utilizar un
+      operador para facer algo co texto. Por exemplo,  d  eliminará
+      o texto seleccionado.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                 LECCIÓN 1.5.4: RECUPERANDO E MESTURANDO FICHEIROS
+
+
+  ** Para inseri-lo contido dun ficheiro escriba  :r NOME_DO_FICHEIRO **
+
+  1. Sitúe o cursor xusto por riba desta liña.
+
+NOTA: Despois de executar o paso 2 verá o texto da lección 1.5.3. Despois
+      DESCENDA ata ver de novo esta lección.
+
+  2. Agora recupere o arquivo TEST utilizando o comando  :r TEST  , onde
+     TEST é o nome que ven de utilizar.
+     O arquivo que recuperou colocaráse embaixo da liña onde se atope
+     o cursor.
+
+  3. Para verificar que se recuperou o arquivo, suba o cursor e 
+     comprobe que agora hai dúas copias da lección 1.5.3, a orixinal e
+     maila versión do arquivo.
+
+NOTA: Tamén pode le-la saída dun comando externo. Por exemplo,
+        :r !ls  le a saída do comando ls e pégao baixo da liña
+      onde se atopa o cursor.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                           RESUMO DA LECCIÓN 1.5
+
+
+  1. :!comando  executa un comando externo.
+     Alguns exemplos útiles son:
+     (Windows)     (Unix)
+	  :!dir          :!ls           -  mostra o contido dun directorio.
+	  :!del arquivo  :!rm arquivo   -  borra o ficheiro arquivo.
+
+  2. :w arquivo escribe o arquivo actual no disco co nome de arquivo.
+
+  3. v movemento  :w arquivo  guarda as liñas seleccionadas visualmente
+     no arquivo arquivo.
+
+  4. :r arquivo  recupera do disco o arquivo arquivo e pégao embaixo
+     da posición do cursor.
+
+  5. :r !dir  le a saída do comando dir e pégao embaixo da
+     posición do cursor.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                      LECCIÓN 1.6.1: O COMANDO «OPEN» (ABRIR)
+
+
+  ** Prema  o  para abrir unha liña embaixo do cursor
+  e situarse no modo inserir **
+
+  1. Mova o cursor á liña inferior sinalada con --->.
+
+  2. Prema a letra minúscula  o  para abrir unha liña por EMBAIXO do cursor
+     e situarse en modo Inserir.
+  
+  3. Agora, escriba algún texto, e despois prema <ESC> para saír do modo
+     Inserir.
+
+---> Despois de pulsar  o  , o cursor sitúase na liña aberta en modo Inserir.
+
+  4. Para abrir unha liña por RIBA do cursor, simplemente prema un O
+     MAIÚSCULO, en troques dun o minúsculo. Probe isto na liña seguinte.
+
+---> Abra unha liña sobre esta, pulsando O cuando o cursor estea nesta liña.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                LECCIÓN 1.6.2: O COMANDO «APPEND» (ENGADIR)
+
+
+  ** Prema  a  para inserir texto despois do cursor. **
+
+  1. Mova o cursor ao inicio da primeira liña inferior sinalada con --->.
+
+  2. Escriba  e  ata que o cursor estea ao final de  li .
+
+  3. Escriba un  a  (minúsculo) para engadir texto despois do cursor.
+
+  4. Complete a palabra coma na liña inferior. Prema <ESC> para saír
+     do modo Inserir.
+  
+  5. Utilice  e  para moverse ata a seguinte palabra incompleta e 
+     repita os pasos 3 e 4.
+
+---> Esta li permit practi cómo enga texto a unha
+---> Esta liña permitirálle practicar cómo engadir texto a unha liña.
+
+NOTA: a, i e A  entran no modo Inserir; a única diferencia é
+      onde se colocan os carácteres inseridos.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              LECCIÓN 1.6.3: OUTRA VERSIÓN DE «REPLACE» (SUBSTITUÍR)
+
+
+  ** Prema un  R  MAIÚSCULO para substituír máis dun carácter. **
+
+  1. Mova o cursor á primeira liña inferior sinalada con --->.
+     Mova o cursor ao inicio da primeira  xxx .
+
+  2. Agora prema  R   e escriba o número que aparece na liña inferior.
+     Isto substituirá o texto  xxx .
+  
+  3. Prema <ESC> para abandoa-lo modo Substituír.
+     Observe que o resto da liña fica sen modificacions.
+
+  4. Repita os pasos para substituí-lo texto  xxx  que queda.
+
+---> Sumar 123 a xxx da un resultado de xxx.
+---> Sumar 123 a 456 da un resultado de 579.
+
+NOTA: O modo Substituír é como o modo Inserir, pero cada carácter escrito
+      elimina un carácter xa existente.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                     LECCIÓN 1.6.4: COPIAR E PEGAR TEXTO
+
+
+  ** Utilice o operador  e  para copiar texto e  p  para pegalo. **
+
+  1. Mova o cursor á liña inferior marcada con ---> e posicione o 
+     cursor despois de "a)". 
+
+  2. Inicie o modo Visual con  v
+     e mova o cursor xusto antes de "primeiro".
+
+  3. Prema  e  para copiar («yank») o texto salientado.
+
+  4. Mova o cursor ao final da seguinte liña mediante:  j$
+
+  5. Prema  p  para pór (pegar) o texto. Despois escriba: o segundo <ESC>.
+
+  6. Utilice o modo visual para seleccionar " elemento.", e cópieo con  y.
+     Mova o cursor ao final da seguinte liña con j$  e pegue o texto
+     xusto acabado de copiar con  p .
+
+--->  a) este é o primeiro elemento.
+      b)
+
+NOTA: Tamén pode utilizar  e  como un operador:  yw  copia unha palabra,
+      yy  copia a liña completa onde está o cursor; despois  p  pegará
+      esa liña.
+    
+ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   LECCIÓN 1.6.5: ACTIVAR («SET») UNHA OPCIÓN
+
+
+  ** Active unha opción para buscar ou substituír ignorando
+  se o texto está en MAIÚSCULAS ou minúsculas **
+
+  1. Busque a cadea de texto 'ignorar' escribindo:  /ignorar <INTRO>
+     Repita a busca varias veces pulsando  n .
+
+  2. Active a opción 'ic' ("Ignore case" ou ignorar maiúsculas e minúsculas) 
+     mediante:  :set ic
+
+  3. Agora, busque de novo 'ignorar' pulsando  n .
+     Observe que agora tamén se acha Ignorar e IGNORAR.
+
+  4. Active as opcions 'hlsearch' e 'incsearch' escribindo:  :set hls is
+
+  5. Agora escriba de novo o comando de busca
+     e vexa qué acontece:  /ignore <INTRO>
+
+  6. Para inhabilitar ou ignorar a distinción entre MAIÚSCULAS e minúsculas     
+     escriba:  :set noic
+
+NOTA:  Para elimina-lo salientado das coincidencias escriba:  :nohlsearch
+NOTA:  Se quere ignora-las MAIÚSCULAS e minúsculas, só para un comando
+       de busca, utilice  \c  na frase:  /ignorar\c <INTRO>
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			   RESUMO DA LECCIÓN 1.6
+
+
+  1. Escriba  o  para abrir unha liña por BAIXO da posición do cursor e 
+     entrar en modo Inserir.
+     Escriba  O  para abrir unha liña por RIBA da posición do cursor e
+     entrar en modo Inserir
+
+  2. Escriba  a  para inserir texto despois do cursor.
+     Escriba  A  para inserir texto ao final da liña.
+
+  3. O comando  e  move o cursor ao final dunha palabra.
+
+  4. O operador  e  copia («yank») texto;  p  pégao (pon).
+
+  5. Ao escribir un  R  MAIÚSCULO, entra no modo Substituír ata que
+     se preme  <ESC>  .
+
+  6. Ao escribir  :set xxx , actívase a opción 'xxx'.
+     Algunas opcións son:
+  	'ic' 'ignorecase'	ignorar maiúsculas/minúsculas ao buscar
+	'is' 'incsearch'	amosa-las coincidencias parciais para
+                                a busca dunha frase
+	'hls' 'hlsearch'	salienta tódalas coincidencias da frases
+
+     Pode utilizar tanto os nomes longos coma os curtos das opcions.
+
+  7. Engada "no" para inhabilitar unha opción:   :set noic
+ 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                          LECCIÓN 7: OBTER AXUDA
+
+
+  ** Utilice o sistema de axuda en liña **
+
+  O Vim dispón dun sistema de axuda en liña. Para comezar, probe unha
+  destas tres formas:
+	- prema a tecla <AXUDA> (se dispón dela)
+	- prema a tecla <F1> (se dispón dela)
+	- escriba  :help <INTRO>
+
+  Lea o texto na xanela de axuda para descubrir cómo funciona a axuda.
+  Escriba  CTRL-W CTRL-W  para chimpar dunha xanela a outra.
+  Escriba  :q <INTRO>  para pechar a xanela de axuda.
+
+  Pode atopar axuda en case calquer tema engadindo un argumento ao
+  comando  :help . Probe estes (non esqueza premer <INTRO>):
+
+  :help w 
+  :help c_CTRL-D
+  :help insert-index 
+  :help user-manua
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   LECCIÓN 1.7.2: CREAR UN SCRIPT DE INICIO
+
+
+  ** Habilitar funcionalidades no Vim **
+
+  O Vim ten moitas máis funcionalidades que o Vi, pero algunhas están
+  inhabilitadas de xeito predeterminado.
+  Para empezar a utilizar máis funcionalidades debería crear un arquivo
+  chamado "vimrc".
+
+  1. Comece a edita-lo arquivo "vimrc". Isto depende do seu sistema:
+	:e ~/.vimrc		para Unix
+	:e ~/_vimrc		para Windows
+
+  2. Agora lea o contenido do arquivo "vimrc" de exemplo:
+	:r $VIMRUNTIME/vimrc_example.vim
+
+  3. Garde o arquivo mediante:
+	:w
+
+  A próxima vez que inicie o Vim, este usará o salientado de sintaxe.
+  Pode engadir tódolos seus axustes preferidos a este arquivo "vimrc".
+  Para máis información escriba  :help vimrc-intro
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                          LECCIÓN 1.7.3: COMPLETADO
+
+
+  ** Completado da liña de comandos con CTRL-D ou <TAB> . **
+
+  1. Asegúrese de que o Vim non está no modo compatible:  :set nocp
+
+  2. Vexa qué arquivos existen no directorio con:  :!ls  ou  :!dir
+
+  3. Escriba o inicio dun comando:  :e
+
+  4. Prema  CTRL-D  e o Vim mostrará a lista de comandos que empezan con "e".
+
+  5. Engada  d<TAB>  e o Vim completará o nome do comando a ":edit".
+
+  6. Agora engada un espacio e o inicio do nome dun arquivo:  :edit FIL
+
+  7. Prema <TAB>.  Vim completará o nome (se só hai un).
+
+NOTA:  O completado funciona con moitos comandos. Só prema CTRL-D ou
+       <TAB>.  É especialmente útil para  :help .
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       RESUMO DA LECCIÓN 1.7
+
+
+  1. Escriba  :help  ou prema <F1> ou <HELP> para abri-la xanela de axuda.
+
+  2. Escriba  :help cmd  para atopar axuda sobre  cmd .
+
+  3. Escriba  CTRL-W CTRL-W  para chimpar a outra xanela.
+
+  4. Escriba  :q  para pecha-la xanela de axuda.
+
+  5. Cree un ficheiro vimrc de inicio para garda-los sus axustes preferidos.
+
+  6. Cuando escriba un comando  :  prema CTRL-D para ver posibles opcións.
+     Prema <TAB> para utilizar unha das opcións de completado.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Aquí conclúe o tutor do Vim. Está pensado para dar unha visión breve do
+  editor Vim, suficiente para permitirlle usa-lo editor de forma bastante
+  sinxela. Está moi lonxe de estar completo pois o Vim ten moitísimos máis
+  comandos. Lea o seguinte manual de usuario: ":help user-manual".
+
+  Para lecturas e estudos posteriores, recoméndase o libro:
+	Vim - Vi Improved - de Steve Oualline
+	Editado por: New Riders
+  o primeiro libro adicado completamente ao Vim. Especialmente útil para
+  principiantes.  Ten moitos exemplos e imaxes.
+  Vexa https://iccf-holland.org/click5.html
+
+  Este tutorial foi escrito por Michael C. Pierce e Robert K. Ware,
+  Colorado School of Mines utilizando ideas subministradas por Charles Smith,
+  Colorado State University.
+  E-mail: bware@mines.colorado.edu.
+
+  Modificado para Vim por Bram Moolenaar.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Traducido do inglés ao galego por Fernando Vilariño.
+  Correo electrónico: fernando@cvc.uab.es.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Nov 06
+*version9.txt*  For Vim version 9.1.  Last change: 2025 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31790,7 +31790,7 @@ Changed ~
 - The features |++builtin_terms|, |+cmdline_info|, |+cmdwin|, |+file_in_path|,
   |+float|, |+path_extra|, |+textobjects|, |+wildignore| and |+wildmenu| are
   available in all the builds.
-- Support for Windows-XP is dropped.
+- Support for Windows-XP is dropped (starting with v9.0.0496)
 - Support for VisVim is removed.
 - The "small" and "big" builds are dropped in favor of "tiny" and "huge"
   builds.
@@ -31849,14 +31849,14 @@ Autocommands: ~
 
 Commands: ~
 
-|:abstract|		define a Vim9 abstract class
-|:class|		start of a class specification
+|:abstract|		declare a Vim9 abstract class
+|:class|		start of a class declaration
 |:defer|		call function when current function is done
 |:echowindow|		same as :echomsg, but use a popup window
-|:endinterface|		end of an interface specification
-|:endclass|		end of a class specification
+|:endinterface|		end of an interface declaration
+|:endclass|		end of a class declaration
 |:horizontal|		following window command works horizontally
-|:interface|		start of an interface specification
+|:interface|		start of an interface declaration
 |:public|		prefix for a class or object member
 |:static|		prefix for a class member or function
 |:this|			prefix for an object member
@@ -41551,62 +41551,141 @@ Add support for internal builtin functions with vim9 objects, see
 
 Enum support for Vim9 script |:enum|
 
+Support for protected _new() method
+
+Add support for object<{type}> as variable data type |vim9-types|
+
+Diff mode ~
+---------
+Include the "linematch" algorithm for the 'diffopt' setting.  This aligns
+changes between buffers on similar lines improving the diff highlighting in
+Vim
+
+Improve the diff highlighting for changes within a line.  Configurable using
+the "inline" sub option value for the 'diffopt' setting, with "inline:simple"
+being added to the default "diffopt" value (but this does not change how diff
+mode works).
 							*new-other-9.2*
 Other new features ~
 ------------------
-The new plugins |comment-install| and |nohlsearch-install| are included.
+The new packages |package-comment|, |package-nohlsearch| and |package-hlyank|
+are included.
 
 Support for Wayland UI.
 
 Support for the XDG Desktop Specification |xdg-base-dir|
 
-Support highlighting the matched text for insert-mode completion and
-command-line completion in |ins-completion-menu|.
-
-Support highlighting the completion kind in |ins-completion-menu|, see
-|complete-items|.
-
 Support for translating messages in Vim script plugins using the |gettext()|
 and |bindtextdomain()| functions.
+
+Support highlighting the matched text and the completion kind for insert-mode
+completion and command-line completion in |ins-completion-menu|, see
+|complete-items|
+
+Support for the |Tuple| data type in Vim script and Vim9 script.
+
+Support for a vertical |tabpanel| window similar to the 'tabline'.
+
+New Insert-mode completion: |i_CTRL-X_CTRL-R| to complete words from
+registers.
 
 							*changed-9.2*
 Changed~
 -------
-- use 'smoothscroll' logic for CTRL-F and CTRL-B for pagewise scrolling
-- use 'smoothscroll' logic for CTRL-D and CTRL-U for half-pagewise scrolling
-- the default for 'commentstring' contains whitespace padding to have
-  automatic comments look nicer |comment-install|
-- 'completeopt' is now a |global-local| option.
-- 'nrformats' accepts the new "blank" suboption, to determine a signed or
-  unsigned number based on whitespace in front of a minus sign.
-- allow to specify a priority when defining a new sign |:sign-define|
-- provide information about function arguments using the get(func, "arity")
-  function |get()-func|
-- |:bwipe| also wipes jumplist and tagstack data
-- moving in the buffer list using |:bnext| and similar commands, behaves as
-  documented and skips help buffers (if not run from a help buffer, else
-  moves to the next/previous help buffer).
+
+Default values: ~
+- the default 'history' option value has been increased to 200 and removed
+  from |defaults.vim|
+- the default 'backspace' option for Vim has been set to "indent,eol,start"
+  and removed from |defaults.vim|
+- the default fontsize for the GTK builds of Vim (Windows and Unix) has been
+  increased to 12pt to accommodate modern high-dpi monitors
+- the default value of the 'keyprotocol' option has been updated and support
+  for the ghostty terminal emulator (using kitty protocol) has been added
+
+Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
   add the "cd_in_path" completion type for e.g. |:command-complete| and
   |getcompletion()|
 - allow to complete shell commands and files using the new shellcmdline
   completion type using |:command-complete| and |getcmdcomplpat()|
-- add 'cpoptions' flag "z" |cpo-z|, to disable some (traditional) vi
-  behaviour/inconsistency (see |d-special| and |cw|).
 - allow to specify additional attributes in the completion menu (allows to
   mark deprecated attributes from LSP server) |complete-items|
-- the regex engines match correctly case-insensitive multi-byte characters
-  (and apply proper case folding)
+- the completed word and completion type are provided when handling the
+  |CompleteDone| autocommand in the |v:event| dictionary
+- |complete_info()| returns the list of matches shown in the poppu menu via
+  the "matches" key
+- New option value for 'completeopt':
+	"nosort"	- do not sort completion results
+	"preinsert"	- highlight to be inserted values
+	"nearest"	- sort completion results by distance to cursor
+- handle multi-line completion items as expected
+- improved commandline completion for the |:hi| command
+- New option value for 'wildmode':
+	"noselect"	- do not auto select an entry in the wildmenu
+- New flags for 'complete':
+	"F{func}"	- complete using given function
+	"F"		- complete using 'completefunc'
+	"o"		- complete using 'omnifunc'
+- allow to limit matches for the 'complete' sources by using the
+  "{flag}^<limit>" notation
+- add ":filetype" command completion
+- add "filetypecmd" completion type for |getcompletion()|
+- 'smartcase' applies to completion filtering
+
+Options: ~
+- the default for 'commentstring' contains whitespace padding to have
+  automatic comments look nicer |comment-install|
+- 'completeopt' is now a |global-local| option.
+- add 'cpoptions' flag "z" |cpo-z|, to disable some (traditional) vi
+  behaviour/inconsistency (see |d-special| and |cw|).
+- new option values for 'fillchars':
+	"trunc"		- configure truncation indicator, 'pummaxwidth'
+	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'
+	"tpl_vert"	- separators for the 'tabpanel'
+- 'grepformat' is now a |global-local| option.
+- adjust for GTK3 dropping some mouse cursors 'mouseshape'
+- 'nrformats' accepts the new "blank" suboption, to determine a signed or
+  unsigned number based on whitespace in front of a minus sign.
+- 'rulerformat' now supports the |stl-%!| item
+- use 'smoothscroll' logic for CTRL-F / CTRL-B for pagewise scrolling
+  and CTRL-D / CTRL-U for half-pagewise scrolling
+
+Ex commands: ~
+- allow to specify a priority when defining a new sign |:sign-define|
+- |:bwipe| also wipes jumplist and tagstack data
+- moving in the buffer list using |:bnext| and similar commands, behaves as
+  documented and skips help buffers (if not run from a help buffer, else
+  moves to the next/previous help buffer).
 - |:keeppatterns| preserves the last substitute pattern when used with |:s|
+
+Functions: ~
+- provide information about function arguments using the get(func, "arity")
+  function |get()-func|
 - |setqflist()| and |setloclist()| can optionally try to preserve the current
   selection in the quickfix list with the "u" action.
+- allow to pass local Vim script variables to python interpreter |py3eval()|
+- |getwininfo()| now also returns the "leftcol" property for a window
+- |v:stacktrace| The stack trace of the exception most recently caught and
+  not finished
+- Add the optional {opts} |Dict| argument to |getchar()| to control: cursor
+  behaviour, return type and whether or not to simplify the returned key
+
+Others: ~
+- the regex engines match correctly case-insensitive multi-byte characters
+  (and apply proper case folding)
 - the putty terminal is detected using an |TermResponse| autocommand in
   |defaults.vim| and Vim switches to a dark background
 - the |help-TOC| package is included to ease navigating the documentation.
 - an interactive tutor plugin has been included |vim-tutor-mode|, can be
   started via |:Tutor|
 - improve the |vimtutor| and add a second chapter for more advanced tips
-- allow to pass local Vim script variables to python interpreter |py3eval()|
+- add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
+  and decouple it from |netrw|
+- new digraph "APPROACHES THE LIMIT" using ".="
+- |CTRL-C| always closes the active |popup-window|.
+- the configure script will favor using GTK3 over GTK2 when auto-detecting the
+  gui toolkit
 
 							*added-9.2*
 Added ~
@@ -41615,26 +41694,40 @@ Various syntax, indent and other plugins were added.
 
 Functions: ~
 
+|base64_decode()|	decode a base64 string into a blob
+|base64_encode()|	encode a blob into a base64 string
+|blob2str()|		convert a blob into a List of strings
 |bindtextdomain()|	set message lookup translation base path
+|cmdcomplete_info()|	get current cmdline completion info
+|complete_match()|	get completion and trigger info
 |diff()|		diff two Lists of strings
 |filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items
+|getcellpixels()|	get List of terminal cell pixel size
 |getcmdcomplpat()|	Shell command line completion
 |getcmdprompt()|	get prompt for input()/confirm()
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
+|getstacktrace()|	get current stack trace of Vim scripts
 |id()|			get unique identifier for a Dict, List, Object,
 			Channel or Blob variable
+|list2tuple()|		turn a List of items into a Tuple
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
+|ngettext()|		lookup single/plural message translation
 |popup_setbuf()|	switch to a different buffer in a popup
+|str2blob()|		convert a List of strings into a blob
+|test_null_tuple()|	return a null tuple
+|tuple2list()|		turn a Tuple of items into a List
 
 
 Autocommands: ~
 
+|CmdlineLeavePre|	before preparing to leave the command line
 |CursorMovedC|		after the cursor was moved in the command-line
 |KeyInputPre|		before processing any key event in any mode
 |SessionWritePost|	after writing the session file |:mksession|
+|TabClosedPre|		before closing a |tabpage|.
 |TermResponseAll|	after the terminal response to |t_RV| and others is
 			received
 |WinNewPre|		before creating a new window
@@ -41642,26 +41735,49 @@ Autocommands: ~
 
 Highlighting: ~
 
+|hl-ComplMatchIns|	matched text of the currently inserted completion
+|hl-DiffTextAdd|	added text within a changed line
 |hl-MsgArea|		highlighting of the Command-line and messages area
 |hl-PmenuMatch|		Popup menu: highlighting of matched text
 |hl-PmenuMatchSel|	Popup menu: highlighting of matched text in selected
 			line
+|hl-TabPanel|		|tabpanel|: not active tab page label
+|hl-TabPanelFill|	|tabpanel|: filler space
+|hl-TabPanelSel|	|tabpanel|: active tab page label
 
 Commands: ~
 
 |[r| and |]r|		to move the cursor to previous/next rare word
 
+Ex-Commands: ~
+
+|:iput|			like |:put| but adjust indent
+|:pbuffer|		Edit buffer [N] from the buffer list in the preview
+			window
+|:redrawtabpanel|	Force updating the 'tabpanel'.
 
 Options: ~
 
+'chistory'		Size of the quickfix stack |quickfix-stack|.
+'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
+			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup
+'eventignorewin'	autocommand events that are ignored in a window
 'findfunc'		Vim function to obtain the results for a |:find|
 			command
-'winfixbuf'		Keep buffer focused in a window
+'isexpand'		defines triggers for completion
+'lhistory'		Size of the location list stack |quickfix-stack|.
+'messagesopt'		configure |:messages| and |hit-enter| prompt
+'pummaxwidth'		maximum width for the completion popup menu
+'showtabpanel'		When to show the |tabpanel|
 'tabclose'		Which tab page to focus after closing a tab page
+'tabpanel'		Optional vertical panel for displaying tabpages
+			|tabpanel|
+'tabpanelopt'		Optional settings for the |tabpanel|
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
+'winfixbuf'		Keep buffer focused in a window
 
 ==============================================================================
 INCOMPATIBLE CHANGES					*incompatible-9.2*
@@ -41707,4 +41823,4 @@ features, but does not include runtime file changes (syntax, indent, ftplugin,
 documentation, etc.)
 
 
- vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:
+ vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:nofoldenable

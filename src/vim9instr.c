@@ -224,6 +224,7 @@ may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
 
 	// conversion possible when tolerant
 	case VAR_LIST:
+	case VAR_TUPLE:
 	case VAR_DICT:
 			 if (tostring_flags & TOSTRING_TOLERANT)
 			 {
@@ -281,6 +282,58 @@ check_number_or_float(type_T *typ1, type_T *typ2, char_u *op)
 }
 
 /*
+ * Append the tuple item types from "tuple_type" to the grow array "gap".
+ */
+    static int
+ga_append_tuple_types(type_T *tuple_type, garray_T *gap)
+{
+    for (int i = 0; i < tuple_type->tt_argcount; i++)
+    {
+	if (ga_grow(gap, 1) == FAIL)
+	    return FAIL;
+
+	((type_T **)gap->ga_data)[gap->ga_len] = tuple_type->tt_args[i];
+	gap->ga_len++;
+    }
+
+    return OK;
+}
+
+/*
+ * When concatenating two tuples, the resulting tuple gets a union of item
+ * types from both the tuples.  This function sets the union tuple type in the
+ * stack.
+ *
+ * Returns OK on success and FAIL on memory allocation failure.
+ */
+    static int
+set_tuple_union_type_on_stack(type_T *type1, type_T *type2, cctx_T *cctx)
+{
+    // The concatenated tuple has the union of types from both the tuples
+    garray_T	tuple_types_ga;
+
+    ga_init2(&tuple_types_ga, sizeof(type_T *), 10);
+
+    if (type1->tt_argcount > 0)
+	ga_append_tuple_types(type1, &tuple_types_ga);
+    if (!(type1->tt_flags & TTFLAG_VARARGS) && (type2->tt_argcount > 0))
+	ga_append_tuple_types(type2, &tuple_types_ga);
+
+    type_T *new_tuple_type = get_tuple_type(&tuple_types_ga,
+							cctx->ctx_type_list);
+    // result inherits the variadic flag from the operands
+    new_tuple_type->tt_flags |= (type1->tt_flags & TTFLAG_VARARGS)
+					| (type2->tt_flags & TTFLAG_VARARGS);
+
+    // set the type on the stack for the resulting tuple
+    set_type_on_stack(cctx, new_tuple_type, 0);
+
+    ga_clear(&tuple_types_ga);
+
+    return OK;
+}
+
+/*
  * Generate instruction for "+".  For a list this creates a new list.
  */
     int
@@ -294,11 +347,12 @@ generate_add_instr(
     isn_T	*isn = generate_instr_drop(cctx,
 		      vartype == VAR_NUMBER ? ISN_OPNR
 		    : vartype == VAR_LIST ? ISN_ADDLIST
+		    : vartype == VAR_TUPLE ? ISN_ADDTUPLE
 		    : vartype == VAR_BLOB ? ISN_ADDBLOB
 		    : vartype == VAR_FLOAT ? ISN_OPFLOAT
 		    : ISN_OPANY, 1);
 
-    if (vartype != VAR_LIST && vartype != VAR_BLOB
+    if (vartype != VAR_LIST && vartype != VAR_BLOB && vartype != VAR_TUPLE
 	    && type1->tt_type != VAR_ANY
 	    && type1->tt_type != VAR_UNKNOWN
 	    && type2->tt_type != VAR_ANY
@@ -320,6 +374,14 @@ generate_add_instr(
 	    && type1->tt_type == VAR_LIST && type2->tt_type == VAR_LIST
 	    && type1->tt_member != type2->tt_member)
 	set_type_on_stack(cctx, &t_list_any, 0);
+    else if (vartype == VAR_TUPLE)
+    {
+	if (!check_tuples_addable(type1, type2))
+	    return FAIL;
+
+	if (set_tuple_union_type_on_stack(type1, type2, cctx) == FAIL)
+	    return FAIL;
+    }
 
     return isn == NULL ? FAIL : OK;
 }
@@ -335,6 +397,7 @@ operator_type(type_T *type1, type_T *type2)
     if (type1->tt_type == type2->tt_type
 	    && (type1->tt_type == VAR_NUMBER
 		|| type1->tt_type == VAR_LIST
+		|| type1->tt_type == VAR_TUPLE
 		|| type1->tt_type == VAR_FLOAT
 		|| type1->tt_type == VAR_BLOB))
 	return type1->tt_type;
@@ -461,6 +524,7 @@ get_compare_isn(
 	    case VAR_STRING: isntype = ISN_COMPARESTRING; break;
 	    case VAR_BLOB: isntype = ISN_COMPAREBLOB; break;
 	    case VAR_LIST: isntype = ISN_COMPARELIST; break;
+	    case VAR_TUPLE: isntype = ISN_COMPARETUPLE; break;
 	    case VAR_DICT: isntype = ISN_COMPAREDICT; break;
 	    case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
 	    case VAR_OBJECT: isntype = ISN_COMPAREOBJECT; break;
@@ -692,7 +756,7 @@ generate_SETTYPE(
 generate_PUSHOBJ(cctx_T *cctx)
 {
     RETURN_OK_IF_SKIP(cctx);
-    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_object) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_object_any) == NULL)
 	return FAIL;
     return OK;
 }
@@ -743,6 +807,11 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	    if (tv->vval.v_list != NULL)
 		iemsg("non-empty list constant not supported");
 	    generate_NEWLIST(cctx, 0, TRUE);
+	    break;
+	case VAR_TUPLE:
+	    if (tv->vval.v_tuple != NULL)
+		iemsg("non-empty tuple constant not supported");
+	    generate_NEWTUPLE(cctx, 0, TRUE);
 	    break;
 	case VAR_DICT:
 	    if (tv->vval.v_dict != NULL)
@@ -1009,7 +1078,7 @@ generate_GETITEM(cctx_T *cctx, int index, int with_op)
 
     RETURN_OK_IF_SKIP(cctx);
 
-    item_type = type->tt_member;
+    item_type = get_item_type(type);
     if ((isn = generate_instr(cctx, ISN_GETITEM)) == NULL)
 	return FAIL;
     isn->isn_arg.getitem.gi_index = index;
@@ -1370,6 +1439,45 @@ generate_NEWLIST(cctx_T *cctx, int count, int use_null)
 }
 
 /*
+ * Generate an ISN_NEWTUPLE instruction for "count" items.
+ * "use_null" is TRUE for null_tuple.
+ */
+    int
+generate_NEWTUPLE(cctx_T *cctx, int count, int use_null)
+{
+    isn_T	*isn;
+    type_T	*type;
+    type_T	*decl_type;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_NEWTUPLE)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = use_null ? -1 : count;
+
+    // Get the member type and the declared member type from all the items on
+    // the stack.
+    garray_T	tuple_types_ga;
+    ga_init2(&tuple_types_ga, sizeof(type_T *), 10);
+
+    if (get_tuple_type_from_stack(count, &tuple_types_ga, cctx) < 0)
+    {
+	ga_clear(&tuple_types_ga);
+	return FAIL;
+    }
+
+    type = get_tuple_type(&tuple_types_ga, cctx->ctx_type_list);
+    decl_type = &t_tuple_any;
+
+    ga_clear(&tuple_types_ga);
+
+    // drop the value types
+    cctx->ctx_type_stack.ga_len -= count;
+
+    // add the tuple type to the type stack
+    return push_type_stack2(cctx, type, decl_type);
+}
+
+/*
  * Generate an ISN_NEWDICT instruction.
  * "use_null" is TRUE for null_dict.
  */
@@ -1445,7 +1553,7 @@ generate_FUNCREF(
 	}
     }
     if (ufunc->uf_def_status == UF_NOT_COMPILED || cl != NULL)
-	extra->fre_func_name = vim_strsave(ufunc->uf_name);
+	extra->fre_func_name = vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
     if (ufunc->uf_def_status != UF_NOT_COMPILED && cl == NULL)
     {
 	if (isn_idx == NULL && ufunc->uf_def_status == UF_TO_BE_COMPILED)
@@ -1912,7 +2020,7 @@ generate_CALL(
     {
 	// A user function may be deleted and redefined later, can't use the
 	// ufunc pointer, need to look it up again at runtime.
-	isn->isn_arg.ufunc.cuf_name = vim_strsave(ufunc->uf_name);
+	isn->isn_arg.ufunc.cuf_name = vim_strnsave(ufunc->uf_name, ufunc->uf_namelen);
 	isn->isn_arg.ufunc.cuf_argcount = argcount;
     }
 
@@ -2034,7 +2142,8 @@ generate_PCALL(
 
     RETURN_OK_IF_SKIP(cctx);
 
-    if (type->tt_type == VAR_ANY || type->tt_type == VAR_UNKNOWN)
+    if (type->tt_type == VAR_ANY || type->tt_type == VAR_UNKNOWN
+						|| type == &t_object_any)
 	ret_type = &t_any;
     else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
     {
@@ -2105,7 +2214,9 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
     // check for dict type
     type = get_type_on_stack(cctx, 0);
     if (type->tt_type != VAR_DICT
-		   && type->tt_type != VAR_ANY && type->tt_type != VAR_UNKNOWN)
+	    && type->tt_type != VAR_OBJECT
+	    && type->tt_type != VAR_ANY
+	    && type->tt_type != VAR_UNKNOWN)
     {
 	char *tofree;
 
@@ -2188,15 +2299,17 @@ generate_SOURCE(cctx_T *cctx, int sid)
 }
 
 /*
- * Generate an ISN_PUT instruction.
+ * Generate an ISN_PUT or ISN_IPUT instruction depending on fixindent.
  */
     int
-generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
+generate_PUT(cctx_T *cctx, int regname, linenr_T lnum, int fixindent)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_PUT)) == NULL)
+    isn = (fixindent) ? generate_instr(cctx, ISN_IPUT) :
+			generate_instr(cctx, ISN_PUT);
+    if (isn == NULL)
 	return FAIL;
     isn->isn_arg.put.put_regname = regname;
     isn->isn_arg.put.put_lnum = lnum;
@@ -2506,6 +2619,23 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
     return OK;
 }
 
+/*
+ * Generate instruction to set the script context.  Used to evaluate an
+ * object member variable initialization expression in the context of the
+ * script where the class is defined.
+ */
+    int
+generate_SCRIPTCTX_SET(cctx_T *cctx, sctx_T new_sctx)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_SCRIPTCTX_SET)) == NULL)
+	return FAIL;
+    isn->isn_arg.setsctx = new_sctx;
+    return OK;
+}
+
 #if defined(FEAT_PROFILE) || defined(PROTO)
     void
 may_generate_prof_end(cctx_T *cctx, int prof_lnum)
@@ -2719,6 +2849,7 @@ delete_instr(isn_T *isn)
 	case ISN_2STRING_ANY:
 	case ISN_ADDBLOB:
 	case ISN_ADDLIST:
+	case ISN_ADDTUPLE:
 	case ISN_ANYINDEX:
 	case ISN_ANYSLICE:
 	case ISN_BCALL:
@@ -2737,6 +2868,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPAREFLOAT:
 	case ISN_COMPAREFUNC:
 	case ISN_COMPARELIST:
+	case ISN_COMPARETUPLE:
 	case ISN_COMPARENR:
 	case ISN_COMPARENULL:
 	case ISN_COMPAREOBJECT:
@@ -2768,6 +2900,8 @@ delete_instr(isn_T *isn)
 	case ISN_LISTAPPEND:
 	case ISN_LISTINDEX:
 	case ISN_LISTSLICE:
+	case ISN_TUPLEINDEX:
+	case ISN_TUPLESLICE:
 	case ISN_LOAD:
 	case ISN_LOADBDICT:
 	case ISN_LOADGDICT:
@@ -2781,6 +2915,7 @@ delete_instr(isn_T *isn)
 	case ISN_NEGATENR:
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:
+	case ISN_NEWTUPLE:
 	case ISN_NEWPARTIAL:
 	case ISN_OPANY:
 	case ISN_OPFLOAT:
@@ -2797,6 +2932,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHOBJ:
 	case ISN_PUSHSPEC:
 	case ISN_PUT:
+	case ISN_IPUT:
 	case ISN_REDIREND:
 	case ISN_REDIRSTART:
 	case ISN_RETURN:
@@ -2821,6 +2957,7 @@ delete_instr(isn_T *isn)
 	case ISN_UNPACK:
 	case ISN_USEDICT:
 	case ISN_WHILE:
+	case ISN_SCRIPTCTX_SET:
 	// nothing allocated
 	break;
     }
