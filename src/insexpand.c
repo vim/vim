@@ -1415,17 +1415,19 @@ cp_compare_nearest(const void* a, const void* b)
     static void
 set_fuzzy_score(void)
 {
-    if (compl_leader.string != NULL && compl_leader.length > 0)
-    {
-	compl_T *compl = compl_first_match;
+    compl_T *compl;
 
-	do
-	{
-	    compl->cp_score = fuzzy_match_str(compl->cp_str.string,
-		    compl_leader.string);
-	    compl = compl->cp_next;
-	} while (compl != NULL && !is_first_match(compl));
-    }
+    if (!compl_first_match
+	    || compl_leader.string == NULL || compl_leader.length == 0)
+	return;
+
+    compl = compl_first_match;
+    do
+    {
+	compl->cp_score = fuzzy_match_str(compl->cp_str.string,
+		compl_leader.string);
+	compl = compl->cp_next;
+    } while (compl != NULL && !is_first_match(compl));
 }
 
 /*
@@ -1434,11 +1436,12 @@ set_fuzzy_score(void)
     static void
 sort_compl_match_list(int (*compare)(const void *, const void *))
 {
-    compl_T     *compl = compl_first_match->cp_prev;
+    compl_T     *compl;
 
     if (!compl_first_match || is_first_match(compl_first_match->cp_next))
 	return;
 
+    compl = compl_first_match->cp_prev;
     ins_compl_make_linear();
     if (compl_shows_dir_forward())
     {
