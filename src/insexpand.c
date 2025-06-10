@@ -1415,11 +1415,10 @@ cp_compare_nearest(const void* a, const void* b)
     static void
 set_fuzzy_score(void)
 {
-    compl_T     *compl = compl_first_match->cp_prev;
-
     if (compl_leader.string != NULL && compl_leader.length > 0)
     {
-	compl = compl_first_match;
+	compl_T *compl = compl_first_match;
+
 	do
 	{
 	    compl->cp_score = fuzzy_match_str(compl->cp_str.string,

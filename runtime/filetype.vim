@@ -932,7 +932,7 @@ au BufNewFile,BufRead *.fsh			setf fsh
 au BufNewFile,BufRead *.fsi,*.fsx		setf fsharp
 
 " GDB command files
-au BufNewFile,BufRead .gdbinit,gdbinit,.gdbearlyinit,gdbearlyinit,*.gdb		setf gdb
+au BufNewFile,BufRead .gdbinit,gdbinit,.cuda-gdbinit,cuda-gdbinit,.gdbearlyinit,gdbearlyinit,*.gdb		setf gdb
 
 " GDMO
 au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
