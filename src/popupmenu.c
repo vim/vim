@@ -165,7 +165,6 @@ pum_display(
 		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
 	    // pum above "pum_win_row"
-
 	    if (State == MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
@@ -192,13 +191,12 @@ pum_display(
 	else
 	{
 	    // pum below "pum_win_row"
-
 	    if (State == MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
 	    else
 	    {
-		// Leave two lines of context if possible
+		// Leave three lines of context if possible
 		validate_cheight();
 		cline_visible_offset = curwin->w_cline_row +
 				    curwin->w_cline_height - curwin->w_wrow;
