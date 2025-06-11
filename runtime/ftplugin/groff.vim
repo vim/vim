@@ -12,7 +12,7 @@ let b:nroff_is_groff = 1
 runtime! ftplugin/nroff.vim
 
 setlocal commentstring=\\#\ %s
-setlocal comments.=b:.\\\",b:\\#,b:\\\"
+setlocal comments=b:.\\\",b:\\#,b:\\\"
 
 let b:undo_ftplugin .= '| unlet! b:nroff_is_groff'
 let b:did_ftplugin = 1
