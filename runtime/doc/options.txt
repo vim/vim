@@ -7838,10 +7838,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'shiftwidth'.  If you plan to use 'sts' and 'shiftwidth' with
 	different values, you might consider setting 'smarttab'.
 
-	'softtabstop' is temporarily set to 0 when |'paste'| is on and reset
-	when it is turned off.  It is also reset when |'compatible'| is set.
+	'softtabstop' is temporarily set to 0 when 'paste' is on and reset
+	when it is turned off.  It is also reset when 'compatible' is set.
 
-	The 'L' flag in |‘cpoptions’| alters tab behavior when |'list'| is
+	The 'L' flag in 'cpoptions' alters tab behavior when 'list' is
 	enabled.  See also |ins-expandtab| ans user manual section |30.5| for
 	in-depth explanations.
 
