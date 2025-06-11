@@ -9317,8 +9317,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	and each subsequent tab stop 8 columns apart.
 
 	Note: this setting overrides 'tabstop'.
-	On UNIX, it is recommended to keep the default value tabstop value of
-	8.  Consider setting 'varsofttabstop' instead.
+	On UNIX, it is recommended to keep the default tabstop value of 8.
+	Consider setting 'varsofttabstop' instead.
 	See section |30.5| of the user manual for detailed explanations on how
 	Vim works with tabs and spaces.
 
