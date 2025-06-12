@@ -1,5 +1,6 @@
 " Vim :execute command
 
+
 " :help :execute
 
 execute "buffer" nextbuf
@@ -15,8 +16,22 @@ if 0
 endif
 execute 'while i < 5 | echo i | let i = i + 1 | endwhile'
 
+
+" trailing bar vs OR operator
+
+" OR operator
+execute foo || bar ? "Foo" : "NotFoo"
+execute foo ||
+      \ bar ? "Foo" : "NotFoo"
+
 " following command is :|"
-execute "call Foo()" | |
+execute "Foo" | |
+
+" invalid expression
+execute "Foo" ||
+
+
+" line continuations
 
 execute "call"
       "\ comment
@@ -27,11 +42,14 @@ execute
       "\ comment
       \ "Foo()"
 
+
+" trailing bar and comments
+
 " :execute without {expr}
 execute| echo "Foo"
 
 " trailing comment needs |
-execute "foo" | " comment
+execute "Foo" | " comment
 
 
 " Issue #9987 (parenthesised argument - not a function call)
@@ -39,3 +57,4 @@ execute "foo" | " comment
 " FIXME: execute is ex command not builtin function
 let foo = {'arg': "call Foo()"}
 execute (foo.arg)
+
