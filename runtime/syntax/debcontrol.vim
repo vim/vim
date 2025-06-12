@@ -34,7 +34,7 @@ let s:archs = [
       \, 'sh3', 'sh4eb', 'sh4', 'sh', 'sparc64', 'sparc', 'x32'
       \ ]
 let s:pairs = [
-      \ 'hurd-i386', 'kfreebsd-i386', 'kfreebsd-amd64', 'knetbsd-i386'
+      \ 'hurd-i386', 'hurd-amd64', 'kfreebsd-i386', 'kfreebsd-amd64', 'knetbsd-i386'
       \, 'kopensolaris-i386', 'netbsd-alpha', 'netbsd-i386'
       \ ]
 
