@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Dec 01
+" Last Change:	2025 Apr 10
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
