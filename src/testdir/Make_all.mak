@@ -331,6 +331,7 @@ NEW_TESTS = \
 	test_trycatch \
 	test_tuple \
 	test_undo \
+	test_uniq \
 	test_unlet \
 	test_user_func \
 	test_usercommands \
@@ -586,6 +587,7 @@ NEW_TESTS_RES = \
 	test_trycatch.res \
 	test_tuple.res \
 	test_undo.res \
+	test_uniq.res \
 	test_user_func.res \
 	test_usercommands.res \
 	test_vartabs.res \

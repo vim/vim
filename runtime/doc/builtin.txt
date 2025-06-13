@@ -12143,6 +12143,7 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 			:let newlist = uniq(copy(mylist))
 <		The default compare function uses the string representation of
 		each item.  For the use of {func} and {dict} see |sort()|.
+		For deduplicating text in the current buffer, use |:uniq|.
 
 		Returns zero if {list} is not a |List|.
 
