@@ -402,7 +402,7 @@ handle_lnum_col(
 					       || (wp->w_p_nu && wp->w_p_rnu)))
 	  {
 	      long num;
-	      char *fmt = "%*ld ";
+	      char *fmt = "%*X ";
 
 	      if (wp->w_p_nu && !wp->w_p_rnu)
 		  // 'number' + 'norelativenumber'
@@ -415,7 +415,7 @@ handle_lnum_col(
 		  {
 		      // 'number' + 'relativenumber'
 		      num = wlv->lnum;
-		      fmt = "%-*ld ";
+		      fmt = "%-*X ";
 		  }
 	      }
 
