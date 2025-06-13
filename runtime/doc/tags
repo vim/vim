@@ -3331,6 +3331,9 @@ $quote	eval.txt	/*$quote*
 :so	repeat.txt	/*:so*
 :sor	change.txt	/*:sor*
 :sort	change.txt	/*:sort*
+:sort-l	change.txt	/*:sort-l*
+:sort-u	change.txt	/*:sort-u*
+:sort-uniq	change.txt	/*:sort-uniq*
 :source	repeat.txt	/*:source*
 :source!	repeat.txt	/*:source!*
 :source-range	repeat.txt	/*:source-range*
@@ -3565,6 +3568,8 @@ $quote	eval.txt	/*$quote*
 :undolist	undo.txt	/*:undolist*
 :unh	windows.txt	/*:unh*
 :unhide	windows.txt	/*:unhide*
+:uni	change.txt	/*:uni*
+:uniq	change.txt	/*:uniq*
 :unl	eval.txt	/*:unl*
 :unlet	eval.txt	/*:unlet*
 :unlet-$	eval.txt	/*:unlet-$*
@@ -6864,6 +6869,7 @@ debugger-support	debugger.txt	/*debugger-support*
 debugger.txt	debugger.txt	/*debugger.txt*
 dec-mouse	options.txt	/*dec-mouse*
 decada_members	ft_ada.txt	/*decada_members*
+deduplicating	change.txt	/*deduplicating*
 deepcopy()	builtin.txt	/*deepcopy()*
 default-constructor	vim9class.txt	/*default-constructor*
 defaults.vim	starting.txt	/*defaults.vim*
@@ -11015,6 +11021,7 @@ undofile()	builtin.txt	/*undofile()*
 undotree()	builtin.txt	/*undotree()*
 unicode	mbyte.txt	/*unicode*
 uniq()	builtin.txt	/*uniq()*
+unique	change.txt	/*unique*
 unix	os_unix.txt	/*unix*
 unlisted-buffer	windows.txt	/*unlisted-buffer*
 up-down-motions	motion.txt	/*up-down-motions*
