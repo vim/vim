@@ -4449,4 +4449,44 @@ func Test_popupwin_clears_cmdline_on_hide()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popupwin_borderchars_option()
+  CheckScreendump
+
+  let lines =<< trim END
+    set borderchars=custom:+,-,+,\|,+,-,+,\|
+    command Test call popup_create(['another one', 'another two', 'another three'], #{line: 3, col: 25, minwidth: 20})
+  END
+  call writefile(lines, 'XtestPopup_borderchars', 'D')
+  let buf = RunVimInTerminal('-S XtestPopup_borderchars', {})
+  call term_sendkeys(buf, ":Test\<CR>")
+  call term_wait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_popupwin_borderchars_option_01', {})
+
+  call term_sendkeys(buf, "\<C-C>\<CR>")
+  call term_wait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_popupwin_borderchars_option_02', {})
+
+  call term_sendkeys(buf, ":set borderchars=single | Test\<CR>")
+  call term_wait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_popupwin_borderchars_option_03', {})
+  call term_sendkeys(buf, "\<C-C>\<CR>")
+
+  call term_sendkeys(buf, ":set borderchars=double | Test\<CR>")
+  call term_wait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_popupwin_borderchars_option_04', {})
+  call term_sendkeys(buf, "\<C-C>\<CR>")
+
+  call term_sendkeys(buf, ":set borderchars=rounded | Test\<CR>")
+  call term_wait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_popupwin_borderchars_option_05', {})
+  call term_sendkeys(buf, "\<C-C>\<CR>")
+
+  call term_sendkeys(buf, ":set borderchars=bold | Test\<CR>")
+  call term_wait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_popupwin_borderchars_option_06', {})
+  call term_sendkeys(buf, "\<C-C>\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
