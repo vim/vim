@@ -593,10 +593,14 @@ print_colored_line(FILE *fp, char *l, char *colors)
 xxdline(FILE *fp, char *l, char *colors, int nz)
 {
   static char z[LLEN_NO_COLOR+1];
+  static char z_colors[LLEN_NO_COLOR+1];
   static signed char zero_seen = 0;
 
   if (!nz && zero_seen == 1)
-    strcpy(z, l);
+    {
+      strcpy(z, l);
+      memcpy(z_colors, colors, strlen(z));
+    }
 
   if (nz || !zero_seen++)
     {
@@ -605,7 +609,9 @@ xxdline(FILE *fp, char *l, char *colors, int nz)
 	  if (nz < 0)
 	    zero_seen--;
 	  if (zero_seen == 2)
-	    print_colored_line(fp, z, colors);
+	    {
+	      print_colored_line(fp, z, z_colors);
+	    }
 	  if (zero_seen > 2)
 	    fputs_or_die("*\n", fp);
 	}
