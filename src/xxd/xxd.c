@@ -572,9 +572,7 @@ print_colored_line(FILE *fp, char *l, char *colors)
       fputs_or_die(l_colored, fp);
     }
   else
-    {
-      fputs_or_die(l, fp);
-    }
+    fputs_or_die(l, fp);
 }
 
 /*
@@ -609,9 +607,7 @@ xxdline(FILE *fp, char *l, char *colors, int nz)
 	  if (nz < 0)
 	    zero_seen--;
 	  if (zero_seen == 2)
-	    {
-	      print_colored_line(fp, z, z_colors);
-	    }
+	    print_colored_line(fp, z, z_colors);
 	  if (zero_seen > 2)
 	    fputs_or_die("*\n", fp);
 	}
