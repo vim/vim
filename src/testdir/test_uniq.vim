@@ -262,6 +262,8 @@ func Test_uniq_cmd()
   call assert_fails('uniq c', 'E475:')
   call assert_fails('uniq #pat%', 'E475:')
   call assert_fails('uniq /\%(/', 'E475:')
+  call assert_fails('333uniq', 'E16:')
+  call assert_fails('1,999uniq', 'E16:')
 
   enew!
 endfunc
