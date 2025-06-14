@@ -1009,10 +1009,13 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Ceci conclut le Tutoriel Vim. Le but était de vous donner un bref aperçu de
-  l'éditeur Vim, juste assez pour vous permettre d'utiliser l'éditeur
-  relativement facilement. Il est loin d'être complet, vu que Vim a beaucoup
-  plus de commandes. Un Manuel de l'utilisateur est disponible en anglais :
+  Voilà, c'est la fin du chapitre 1 de ce tutoriel. Vous pouvez maintenant
+  passer au chapitre 2.
+
+  Le but était de vous donner un bref aperçu de l'éditeur Vim, juste assez pour
+  vous permettre d'utiliser l'éditeur relativement facilement.
+  Il est loin d'être complet, vu que Vim a beaucoup plus de commandes.
+  Un Manuel de l'utilisateur est disponible en anglais :
     :help user-manual
 
   Pour continuer à découvrir et à apprendre Vim, il existe un livre traduit en

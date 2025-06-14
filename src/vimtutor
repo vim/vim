@@ -68,7 +68,8 @@ zh Chinese
 
     echo "Chapter: 2"
     printf "\tLang: %-3s => %s\n" \
-en English\(default\)
+en English\(default\) \
+fr French
     echo "================================================================================================"
 }
 
