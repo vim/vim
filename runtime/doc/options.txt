@@ -3390,6 +3390,27 @@ A jump table for the options with a short description can be found at |Q_op|.
 	buffers, for which window and buffer related autocommands can be
 	ignored indefinitely without affecting the global 'eventignore'.
 
+	Note: The following events are considered to happen outside of window
+	context and thus cannot be ignored by 'eventignorewin'.
+		|CmdlineChanged|, |CmdlineEnter|, |CmdlineLeave|,
+		|CmdlineLeavePre|, |CmdUndefined|, |CmdwinEnter|,
+		|CmdwinLeave|, |ColorScheme|, |ColorSchemePre|,
+		|CompleteChanged|, |CompleteDone|, |CompleteDonePre|,
+		|DiffUpdated|, |DirChanged|, |DirChangedPre|,
+		|EncodingChanged|, |ExitPre|, |FocusGained|, |FocusLost|,
+		|FuncUndefined|, |GUIEnter|, |GUIFailed|, |KeyInputPre|,
+		|MenuPopup|, |ModeChanged|, |OptionSet|, |QuickFixCmdPost|,
+		|QuickFixCmdPre|, |QuitPre|, |RemoteReply|, |SafeState|,
+		|SafeStateAgain|, |SessionLoadPost|, |SessionWritePost|,
+		|ShellCmdPost|, |SigUSR1|, |SourceCmd|, |SourcePost|,
+		|SourcePre|, |SpellFileMissing|, |StdinReadPost|,
+		|StdinReadPre|, |SwapExists|, |Syntax|, |TabClosed|,
+		|TabClosedPre|, |TabEnter|, |TabLeave|, |TabNew|,
+		|TermChanged|, |TerminalOpen|, |TerminalWinOpen|,
+		|TermResponse|, |TermResponseAll|, |User|, |VimEnter|,
+		|VimLeave|, |VimLeavePre|, |VimResized|, |VimResume|,
+		|VimSuspend|, |WinNew|, |WinNewPre|
+
 				 *'expandtab'* *'et'* *'noexpandtab'* *'noet'*
 'expandtab' 'et'	boolean	(default off)
 			local to buffer
