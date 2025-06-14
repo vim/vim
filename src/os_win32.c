@@ -3735,12 +3735,11 @@ mch_exit(int r)
 #endif
 
 #ifdef VIMDLL
+    if (vimrun_path_allocated)
+	vim_free(vimrun_path.string);
+
     if (gui.in_use || gui.starting)
-    {
-	if (vimrun_path_allocated)
-	    vim_free(vimrun_path.string);
 	mch_exit_g(r);
-    }
     else
 	mch_exit_c(r);
 #elif defined(FEAT_GUI_MSWIN)
@@ -3802,10 +3801,15 @@ fname_case(
 
 	if (q != NULL)
 	{
-	    size_t  namelen = STRLEN(name);
+	    if (len > 0)
+		vim_strncpy(name, q, len - 1);
+	    else
+	    {
+		size_t  namelen = STRLEN(name);
 
-	    if (len > 0 || namelen >= STRLEN(q))
-		vim_strncpy(name, q, (len > 0) ? len - 1 : namelen);
+		if (namelen >= STRLEN(q))
+		    vim_strncpy(name, q, namelen);
+	    }
 	    vim_free(q);
 	}
     }
