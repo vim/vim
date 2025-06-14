@@ -3614,8 +3614,10 @@ win_new_shellsize(void)
 {
     static int	old_Rows = 0;
     static int	old_Columns = 0;
+    static int	old_coloff = 0;
 
-    if (old_Rows != Rows || old_Columns != Columns)
+    if (old_Rows != Rows || old_Columns != COLUMNS_WITHOUT_TPL()
+	    || old_coloff != TPL_LCOL(NULL))
 	ui_new_shellsize();
     if (old_Rows != Rows)
     {
@@ -3627,20 +3629,12 @@ win_new_shellsize(void)
 	old_Rows = Rows;
 	shell_new_rows();	// update window sizes
     }
-    if (old_Columns != Columns)
+    if (old_Columns != COLUMNS_WITHOUT_TPL() || old_coloff != TPL_LCOL(NULL))
     {
-	old_Columns = Columns;
+	old_Columns = COLUMNS_WITHOUT_TPL();
+	old_coloff = TPL_LCOL(NULL);
 
-	tabpage_T *save_curtab = curtab;
-	tabpage_T *tp;
-	FOR_ALL_TABPAGES(tp)
-	{
-	    unuse_tabpage(curtab);
-	    use_tabpage(tp);
-	    shell_new_columns();
-	}
-	unuse_tabpage(curtab);
-	use_tabpage(save_curtab);
+	shell_new_columns();
     }
 }
 

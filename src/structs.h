@@ -3654,6 +3654,7 @@ struct tabpage_S
     long	    tp_old_Rows;    // Rows when Tab page was left
     long	    tp_old_Columns; // Columns when Tab page was left, -1 when
 				    // calling shell_new_columns() postponed
+    int		    tp_old_coloff;  // Column offset when Tab page was left
     long	    tp_ch_used;	    // value of 'cmdheight' when frame size
 				    // was set
 #ifdef FEAT_GUI

@@ -10,6 +10,25 @@ function s:reset()
   set showtabpanel&
 endfunc
 
+function Test_tabpanel_showtabpanel_eq_0()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    call setbufline(bufnr(), 1, ['aaa','bbb','ccc','ddd'])
+    tabnew 0000
+  END
+  call writefile(lines, 'XTest_tabpanel_stpl_eq_0', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_stpl_eq_0', {'rows': 10, 'cols': 78})
+  call term_sendkeys(buf, ":set showtabpanel=0\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_0', {})
+  call term_sendkeys(buf, ":tabnext\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_1', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 function Test_tabpanel_showtabpanel_eq_1()
   CheckScreendump
 

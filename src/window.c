@@ -3463,9 +3463,6 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	redraw_tabline = TRUE;
 	if (h != tabline_height())
 	    shell_new_rows();
-#if defined(FEAT_TABPANEL)
-	redraw_tabpanel = TRUE;
-#endif
 	shell_new_columns();
     }
 
@@ -4767,19 +4764,7 @@ win_new_tabpage(int after)
 #endif
 #if defined(FEAT_TABPANEL)
 	if (prev_columns != COLUMNS_WITHOUT_TPL())
-	{
-	    tabpage_T *save_curtab = curtab;
-
-	    unuse_tabpage(curtab);
-	    use_tabpage(prev_tp);
-	    shell_new_rows();
 	    shell_new_columns();
-
-	    unuse_tabpage(curtab);
-	    use_tabpage(save_curtab);
-	    shell_new_rows();
-	    shell_new_columns();
-	}
 #endif
 	redraw_all_later(UPD_NOT_VALID);
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
@@ -4988,7 +4973,10 @@ leave_tabpage(
     tp->tp_lastwin = lastwin;
     tp->tp_old_Rows = Rows;
     if (tp->tp_old_Columns != -1)
+    {
 	tp->tp_old_Columns = topframe->fr_width;
+	tp->tp_old_coloff = firstwin->w_wincol;
+    }
     firstwin = NULL;
     lastwin = NULL;
     return OK;
@@ -5051,12 +5039,14 @@ enter_tabpage(
 #endif
 		))
 	shell_new_rows();
-    if (curtab->tp_old_Columns != topframe->fr_width)
+    if (curtab->tp_old_Columns != COLUMNS_WITHOUT_TPL()
+	    || curtab->tp_old_coloff != TPL_LCOL(NULL))
     {
 	if (starting == 0)
 	{
 	    shell_new_columns();	// update window widths
 	    curtab->tp_old_Columns = topframe->fr_width;
+	    curtab->tp_old_coloff = firstwin->w_wincol;
 	}
 	else
 	    curtab->tp_old_Columns = -1;  // update window widths later
