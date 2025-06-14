@@ -2313,6 +2313,29 @@ wayland_cb_reload(void)
 
 #endif // FEAT_WAYLAND_CLIPBOARD
 
+static int wayland_ct_restore_count = 0;
+
+/*
+ * Attempts to restore the Wayland display connection. Returns OK if display
+ * connection was/is now valid, else FAIL if the display connection is invalid.
+ */
+    int
+wayland_may_restore_connection(void)
+{
+    // No point in restoring the connection if we are exiting or dying.
+    if (exiting || v_dying || wayland_ct_restore_count <= 0)
+	return FAIL;
+    // No point if we still are already connected properly
+    if (wayland_client_is_connected(TRUE))
+	return OK;
+
+    --wayland_ct_restore_count;
+    wayland_uninit_client();
+    wayland_init_client(wayland_display_name);
+
+    return OK;
+}
+
 /*
  * Disconnect then reconnect wayland connection, and update clipmethod.
  */
@@ -2346,10 +2369,14 @@ ex_wlrestore(exarg_T *eap)
     }
 #endif
 
+
     if (display != NULL)
 	display = (char*)vim_strsave((char_u*)display);
 
     wayland_uninit_client();
+
+    // Reset amount of available tries to reconnect the display to 5
+    wayland_ct_restore_count = 5;
 
     if (wayland_init_client(display) == OK)
     {

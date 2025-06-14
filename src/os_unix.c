@@ -6567,7 +6567,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	nfd = 1;
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
-	if (wayland_client_is_connected())
+	if (wayland_may_restore_connection())
 	{
 	    wayland_idx = nfd;
 	    fds[nfd].fd = vwl_display_fd;
@@ -6622,6 +6622,10 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 # endif
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
+	// Technically we should first call wl_display_prepare_read() before
+	// polling the fd, then read and dispatch after we poll. However that is
+	// only needed for multi threaded environments to prevent deadlocks so
+	// we are fine.
 	if (fds[wayland_idx].revents & POLLIN)
 	    wayland_client_update();
 #endif
@@ -6707,7 +6711,8 @@ select_eintr:
 	maxfd = fd;
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
-	if (wayland_client_is_connected(TRUE))
+
+	if (wayland_may_restore_connection())
 	{
 	    FD_SET(wayland_display_fd, &rfds);
 
@@ -6806,6 +6811,10 @@ select_eintr:
 # endif
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
+	// Technically we should first call wl_display_prepare_read() before
+	// polling the fd, then read and dispatch after we poll. However that is
+	// only needed for multi threaded environments to prevent deadlocks so
+	// we are fine.
 	if (ret > 0 && FD_ISSET(wayland_display_fd, &rfds))
 	    wayland_client_update();
 #endif

@@ -12,5 +12,6 @@ void wayland_cb_lose_selection(wayland_selection_T selection);
 int wayland_cb_selection_is_owned(wayland_selection_T selection);
 int wayland_cb_is_ready(void);
 int wayland_cb_reload(void);
+int wayland_may_restore_connection(void);
 void ex_wlrestore(exarg_T *eap);
 /* vim: set ft=c : */
