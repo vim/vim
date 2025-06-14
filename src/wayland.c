@@ -384,8 +384,8 @@ static vwl_clipboard_T		    vwl_clipboard = {
 #endif
 
 /*
- * Like wl_display_flush but polls the display fd with a timeout. Returns FAIL
- * on failure and OK on success.
+ * Like wl_display_flush but always writes all data to the display fd. Returns
+ * FAIL on failure and OK on success.
  */
     static int
 vwl_display_flush(vwl_display_T *display)
@@ -411,7 +411,7 @@ vwl_display_flush(vwl_display_T *display)
 	return FAIL;
 
     // Send the requests we have made to the compositor, until we have written
-    // nall the data. Poll in order to check if the display fd is writable, if
+    // all the data. Poll in order to check if the display fd is writable, if
     // not, then wait until it is and continue writing or until we timeout.
     while (errno = 0, (ret = wl_display_flush(display->proxy)) == -1
 	    && errno == EAGAIN)
@@ -449,7 +449,8 @@ vwl_callback_done(void *data, struct wl_callback *callback,
 vwl_display_roundtrip(vwl_display_T *display)
 {
     struct wl_callback	*callback;
-    int			ret = OK, num = 0, done = FALSE;
+    int			ret = OK, done = FALSE;
+    struct timeval start, now;
 
     if (display->proxy == NULL)
 	return FAIL;
@@ -463,9 +464,26 @@ vwl_display_roundtrip(vwl_display_T *display)
 
     wl_callback_add_listener(callback, &vwl_callback_listener, &done);
 
-    // Wait till we get the done event (which will set `done` to TRUE)
-    while (ret == OK && !done && num >= 0)
-	ret = vwl_display_dispatch(display, &num);
+    gettimeofday(&start, NULL);
+
+    // Wait till we get the done event (which will set `done` to TRUE), unless
+    // we timeout
+    while (TRUE)
+    {
+	ret = vwl_display_dispatch(display, NULL);
+
+	if (done || ret == FAIL)
+	    break;
+
+	gettimeofday(&now, NULL);
+
+	if ((now.tv_sec * 1000000 + now.tv_usec) -
+		(start.tv_sec * 1000000 + start.tv_usec) >= p_wtm * 1000)
+	{
+	    ret = FAIL;
+	    break;
+	}
+    }
 
     if (ret == FAIL)
     {
@@ -486,18 +504,18 @@ vwl_display_roundtrip(vwl_display_T *display)
     static int
 vwl_display_dispatch(vwl_display_T *display, int *num_dispatched)
 {
-    int		    num, ret = 0;
+    int		    num;
 #ifndef HAVE_SELECT
     struct pollfd   fds;
 
     fds.fd = display->fd;
-    fds.events = POLLOUT;
+    fds.events = POLLIN;
 #else
-    fd_set	    wfds;
+    fd_set	    rfds;
     struct timeval  tv;
 
-    FD_ZERO(&wfds);
-    FD_SET(display->fd, &wfds);
+    FD_ZERO(&rfds);
+    FD_SET(display->fd, &rfds);
 
     tv.tv_sec = 0;
     tv.tv_usec = p_wtm * 1000;
@@ -506,45 +524,29 @@ vwl_display_dispatch(vwl_display_T *display, int *num_dispatched)
     if (display->proxy == NULL)
 	return FAIL;
 
-    while (wl_display_prepare_read(display->proxy) == -1)
-	// Dispatch any queued events so that we can start reading
-	if (wl_display_dispatch_pending(display->proxy) == -1)
-	    return FAIL;
-
     // Send any requests before we starting blocking to read display fd
     if (vwl_display_flush(display) == FAIL)
-    {
-	wl_display_cancel_read(display->proxy);
 	return FAIL;
-    }
+
+    // No need to call wl_display_prepare_read() because Vim is single threaded.
 
     // Poll until there is data to read from the display fd.
 #ifndef HAVE_SELECT
     if (poll(&fds, 1, p_wtm) <= 0)
 #else
-	if (select(display->fd + 1, NULL, &wfds, NULL, &tv) <= 0)
+    if (select(display->fd + 1, &rfds, NULL, NULL, &tv) <= 0)
 #endif
-	{
-	    wl_display_cancel_read(display->proxy);
 	    return FAIL;
-	}
 
-    // Read events into the queue
-    ret = wl_display_read_events(display->proxy);
+    num = wl_display_dispatch(display->proxy);
 
-    // Always dispatch events
-
-    // Dispatch those events (call the handlers associated for each event)
-    if ((num = wl_display_dispatch_pending(display->proxy)) == -1)
-	return FAIL;
-
-    if (ret == -1)
-	return FAIL;
-
-    if (num_dispatched != NULL)
-	*num_dispatched = num;
-
-    return OK;
+    if (num != -1)
+    {
+	if (num_dispatched != NULL)
+	    *num_dispatched = num;
+	return OK;
+    }
+    return FAIL;
 }
 
 /*
