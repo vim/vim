@@ -7581,10 +7581,9 @@ nv_binsearch(cmdarg_T *cap)
     static linenr_T upper_bound=0,
 		    lower_bound=0,
 		    center_bound=0;	//upper bound and lower bound refer to the line number, i.e. the lower bound
-					//appears at the top of the window (since line number grows downward).
+    static int binsearch_mode = FALSE;	//appears at the top of the window (since line number grows downward).
+
     int c = 0;
-    
-    static int binsearch_mode = FALSE;
     
     if(!binsearch_mode)			//initialize upper and lower bounds and center_bound
     {
@@ -7607,7 +7606,8 @@ nv_binsearch(cmdarg_T *cap)
     {
 	binsearch_mode = FALSE;
 	vungetc(c);
-	return;
+	finish_op = FALSE;	    //we set finish_op to FALSE whenever we return so it can resume operator pending commands
+	return;			    //only after we exit binsearch for good.
 
     }
     if(c==Ctrl_J)
@@ -7617,8 +7617,8 @@ nv_binsearch(cmdarg_T *cap)
     center_bound = (center_bound + upper_bound)/2;
     cursor_down(center_bound - lower_bound, TRUE);	//use cursor_down to move instead of any other method
     vungetc(Ctrl_Q);					//like, say, curwin->w_cursor.lnum =center_line, just in case.
-    return;						//we return after every cursor movement 
-							//to update whatever visual efect may be triggered by
+    finish_op = FALSE;					//we return after every cursor movement 
+    return;						//to update whatever visual efect may be triggered by
 							//cursor movement, like visual mode.
 							//unget Ctrl_Q to make sure we will come back to
 							//this function after we go back to main and update visual effects.
@@ -7631,13 +7631,16 @@ nv_binsearch(cmdarg_T *cap)
     center_bound = (center_bound + lower_bound)/2;
     cursor_up(upper_bound - center_bound, TRUE);
     vungetc(Ctrl_Q);
+    finish_op = FALSE;
     return;
     
     }
     break;
 
     }
-    vungetc(c);	//unget c to resume the command that interrupted the binary search
-
+    vungetc(c);		    //unget c to resume the command that interrupted the binary search
+    finish_op = FALSE;	    //this line is necessary to avoid the processing of the pending operator
+			    //from clashing with vungetc().
     binsearch_mode = FALSE;
+
 }
