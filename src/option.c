@@ -4723,6 +4723,47 @@ did_set_winwidth(optset_T *args UNUSED)
     return errmsg;
 }
 
+#ifdef FEAT_WAYLAND_CLIPBOARD
+/*
+ * Process the new 'wlsteal' or 'wlstealf' option value.
+ */
+    char *
+did_set_wlsteal(optset_T *args UNUSED)
+{
+    // If wlstealf is set reset the wayland connection completely in order to
+    // regain the required globals.
+    if ((int*)args->os_varp == &p_wtf)
+    {
+	wayland_uninit_client();
+	wayland_init_client(wayland_display_name);
+	wayland_cb_init((char*)p_wse);
+    }
+    else
+	wayland_cb_reload();
+
+    choose_clipmethod();
+
+    return NULL;
+}
+#endif
+
+#ifdef FEAT_WAYLAND
+/*
+ * Process the new 'wltimeoutlen' option value.
+ */
+    char *
+did_set_wltimeoutlen(optset_T *args)
+{
+    if (p_wtm < 0)
+    {
+	p_wtm = args->os_oldval.number;
+	return e_argument_must_be_positive;
+    }
+
+    return NULL;
+}
+#endif
+
 /*
  * Process the updated 'wrap' option value.
  */
