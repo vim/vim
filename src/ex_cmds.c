@@ -656,7 +656,7 @@ ex_uniq(exarg_T *eap)
     size_t	i;
     char_u	*p;
     char_u	*s;
-    long	deleted;
+    long	deleted = 0;
     int		change_occurred = FALSE; // Buffer contents changed.
 
     // Uniq one line is really quick!
@@ -690,9 +690,7 @@ ex_uniq(exarg_T *eap)
 	}
     }
 
-    /*
-     * Get the longest line length for allocating "sortbuf".
-     */
+    // Get the longest line length for allocating "sortbuf".
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
     {
 	s = ml_get(lnum);
@@ -710,44 +708,28 @@ ex_uniq(exarg_T *eap)
     lnum = eap->line2;
     for (i = 0; i < count; ++i)
     {
-	//linenr_T get_lnum = nrs[eap->forceit ? count - i - 1 : i].lnum;
 	linenr_T get_lnum = eap->line1 + i;
 
-	// If the original line number of the line being placed is not the same
-	// as "lnum" (accounting for offset), we know that the buffer changed.
-	if (get_lnum + ((linenr_T)count - 1) != lnum)
-	    change_occurred = TRUE;
-
 	s = ml_get(get_lnum);
-	if (i == 0 || string_compare(s, sortbuf1) != 0)
+	if (i > 0 && string_compare(s, sortbuf1) == 0)
 	{
-	    // Copy the line into a buffer, it may become invalid in
-	    // ml_append(). And it's needed for "unique".
-	    STRCPY(sortbuf1, s);
-	    if (ml_append(lnum++, sortbuf1, (colnr_T)0, FALSE) == FAIL)
-		break;
+	    ml_delete(get_lnum);
+	    i--;
+	    count--;
+	    deleted++;
+	    change_occurred = TRUE;
 	}
+	else
+	    STRCPY(sortbuf1, s);
+
 	fast_breakcheck();
 	if (got_int)
 	    goto uniqend;
     }
 
-    // delete the original lines if appending worked
-    if (i == count)
-	for (i = 0; i < count; ++i)
-	    ml_delete(eap->line1);
-    else
-	count = 0;
-
-    // Adjust marks for deleted (or added) lines and prepare for displaying.
-    deleted = (long)(count - (lnum - eap->line2));
-    if (deleted > 0)
-    {
-	mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
-	msgmore(-deleted);
-    }
-    else if (deleted < 0)
-	mark_adjust(eap->line2, MAXLNUM, -deleted, 0L);
+    // Adjust marks for deleted lines and prepare for displaying.
+    mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+    msgmore(-deleted);
 
     if (change_occurred || deleted != 0)
 	changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);

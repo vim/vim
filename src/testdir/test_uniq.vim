@@ -326,4 +326,19 @@ func Test_uniq_with_marks()
   close!
 endfunc
 
+" Test for undo after a :uniq
+func Test_uniq_undo()
+  new
+  let li = ['cc', 'cc', 'aa', 'bb', 'bb', 'bb', 'bb', 'aa']
+  call writefile(li, 'XfileUniq', 'D')
+  edit XfileUniq
+  uniq
+  call assert_equal(['cc', 'aa', 'bb', 'aa'], getline(1, '$'))
+  call assert_true(&modified)
+  undo
+  call assert_equal(li, getline(1, '$'))
+  call assert_false(&modified)
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
