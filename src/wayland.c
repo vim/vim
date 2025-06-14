@@ -17,10 +17,10 @@
 #include <wayland-client.h>
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
-# include "wlr-data-control-unstable-v1.h"
-# include "ext-data-control-v1.h"
-# include "xdg-shell.h"
-# include "primary-selection-unstable-v1.h"
+# include "auto/wayland/wlr-data-control-unstable-v1.h"
+# include "auto/wayland/ext-data-control-v1.h"
+# include "auto/wayland/xdg-shell.h"
+# include "auto/wayland/primary-selection-unstable-v1.h"
 #endif
 
 // Struct that represents a seat. (Should be accessed via
