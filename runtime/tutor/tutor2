@@ -123,7 +123,7 @@ NOTE: a common conundrum when coding is moving around large chunks of code.
 
   1. Move the cursor to the line below marked --->
 
-  2. Go to the first line of the function and set mark (a) it with   ma
+  2. Go to the first line of the function and set mark (a) with   ma
 
 NOTE: exact position on line is NOT important!
 
