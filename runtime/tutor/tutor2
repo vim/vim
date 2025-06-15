@@ -6,7 +6,7 @@
 
      Hic Sunt Dracones: if this is your first exposure to vim and you
      intended to avail yourself of the introductory chapter, kindly type
-     :q<enter> and try again.
+     :q<Enter> and try again.
 
      The approximate time required to complete this chapter is 8-10 minutes,
      depending upon how much time is spent with experimentation.
@@ -23,14 +23,14 @@
 
 MNEMONIC: into register(") named (a) (y)ank (i)nner (w)ord
 
-  3. Navigate forward to the word 'cookie' (fk or 2fc or $2b or /co<enter>)
+  3. Navigate forward to the word 'cookie' (fk or 2fc or $2b or /co<Enter>)
      and type   "byiw
 
-  4. Navigate to any point on the word 'Vince' and type   ciw<C-r>a<ESC>
+  4. Navigate to any point on the word 'Vince' and type   ciw<Ctrl-r>a<ESC>
 
 MNEMONIC: (c)hange (i)nner (w)ord with <contents of (r)egister> named (a)
 
-  5. Navigate to any point on the word 'cake' and type   ciw<C-r>b<ESC>
+  5. Navigate to any point on the word 'cake' and type   ciw<Ctrl-r>b<ESC>
 
 --->  a) Edward will henceforth be in charge of the cookie rations
       b) In this capacity, Vince will have sole cake discretionary powers
@@ -40,8 +40,8 @@ NOTE: Delete also works into registers, i.e. "sdiw will delete the word under
 
 REFERENCE: 	Registers 	:h registers
 		Named Registers :h quotea
-		Motion 		:h motion.txt<enter> /inner<enter>
-		CTRL-R		:h insert<enter> /CTRL-R<enter>
+		Motion 		:h motion.txt<Enter> /inner<Enter>
+		CTRL-R		:h insert<Enter> /CTRL-R<Enter>
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -54,10 +54,10 @@ REFERENCE: 	Registers 	:h registers
 
   2. Navigate to any point on the supplied number
 
-  3. Type ciw<C-r>=60*60*24<enter>
+  3. Type ciw<Ctrl-r> followed by  =60*60*24<Enter>
 
   4. On the next line, enter insert mode and add today's date with 
-     <C-r>=system('date')<enter>
+     <Ctrl-r> followed by  =system('date')<Enter>
 
 NOTE: All calls to system are OS dependent, e.g. on Windows use 
       system('date /t')   or  :r!date /t
@@ -79,17 +79,18 @@ REFERENCE: 	Expression Register 	:h quote=
 
   1. Move the cursor to the line below marked --->
 
-  2. yank the zeroth line, then inspect registers with :reg<enter>
+  2. yank the zeroth line, then inspect registers with :reg<Enter>
 
   3. delete line 0. with "cdd, then inspect registers
      (Where do you expect line 0 to be?)
 
-  4. continue deleting each successive line, inspecting :reg as you go
+  4. continue deleting each successive line (with dd), inspecting :reg as you go
 
 NOTE: You should notice that old full-line deletions move down the list
       as new full-line deletions are added
 
-  5. Now (p)aste the following registers in order; c, 7, 4, 8, 2. i.e. "7p
+  5. Now (p)aste the following registers in order: c, 7, 4, 8, 2.
+     i.e.  "cp then  "7p etc.
 
 ---> 0. This
      9. wobble
@@ -118,18 +119,18 @@ REFERENCE: 	Numbered Registers 	:h quote0
 NOTE: a common conundrum when coding is moving around large chunks of code.
       The following technique helps avoid number line calculations associated
       with operations like   "a147d   or   :945,1091d a   or even worse using
-      i<C-r>=1091-945<enter>   first
+      i<Ctrl-r>=1091-945<Enter>   first
 
   1. Move the cursor to the line below marked --->
 
-  2. Go to the first line of the function and mark it with   ma
+  2. Go to the first line of the function and set mark (a) with   ma
 
 NOTE: exact position on line is NOT important!
 
   3. Navigate to the end of the line and then the end of the code block 
      with   $%
 
-  4. Delete the block into register a with   "ad'a
+  4. Delete the block into register (a) with   "ad'a
 
 MNEMONIC: into register(") named (a) put the (d)eletion from the cursor to the
           LINE containing mark(') (a)
@@ -154,8 +155,8 @@ NOTE: practice this operation multiple times to become fluent   ma$%"ad'a
      BBB
      CCC
 
-NOTE: marks and registers do not share a namespace, therefore register a is
-      completely independent of mark a. This is not true of registers and
+NOTE: marks and registers do not share a namespace, therefore register (a) is
+      completely independent of mark (a). This is not true of registers and
       macros.
 
 REFERENCE: 	Marks 		:h marks
@@ -170,22 +171,24 @@ REFERENCE: 	Marks 		:h marks
      26 registers (a-z) 
   2. Yank a whole word from anywhere within a word:   yiw
   3. Change a whole word from anywhere within a word:   ciw
-  4. Insert text directly from registers in insert mode:   (C-r)a
+  4. Insert text directly from registers in insert mode:   <Ctrl-r>a
 
-  5. Insert the results of simple arithmetic operations: (C-r)=60*60<enter>
+  5. Insert the results of simple arithmetic operations: <Ctrl-r> followed by
+     =60*60<Enter>
      in insert mode
-  6. Insert the results of system calls: (C-r)=system('ls -1')
+  6. Insert the results of system calls: <C-r> followed by  =system('ls -1')
      in insert mode
 
   7. Inspect registers with   :reg
-  8. Learn the final destination of whole line deletions: dd in the numbered
-     registers, i.e. descending from register 1 - 9.  Appreciate that whole
-     line deletions are preserved in the numbered registers longer than any
-     other operation
+  8. Understand that whole-line deletions (with dd) are specially preserved in
+     the numbered registers ("1 through "9). This creates a deletion
+     history, from the most recent in "1 to the oldest in "9, that isn't
+     overwritten by smaller edits, making these deletions available for much
+     longer.
   9. Learn the final destination of all yanks in the numbered registers and
      how ephemeral they are
 
- 10. Place marks from command mode   m[a-zA-Z0-9]
+ 10. Place marks from Normal mode   m[a-zA-Z0-9]
  11. Move line-wise to a mark with   '
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
