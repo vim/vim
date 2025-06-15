@@ -106,7 +106,6 @@ tabpanelopt_changed(void)
     tpl_is_vert = new_is_vert;
 
     shell_new_columns();
-    redraw_tabpanel = TRUE;
 
     if (do_equal)
 	win_equal(curwin, FALSE, 0);
