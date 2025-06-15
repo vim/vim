@@ -7582,8 +7582,8 @@ nv_binsearch(cmdarg_T *cap)
 		    lower_bound=0,
 		    center_bound=0;	//upper bound and lower bound refer to the line number, i.e. the lower bound
     static int binsearch_mode = FALSE,	//appears at the top of the window (since line number grows downward).
-	       old_op_type = 0,
-	       returned = FALSE,
+	       old_op_type = OP_NOP,
+	       returned = TRUE,
 	       old_motion_type = 0;
 
     int c = 0;
@@ -7607,8 +7607,6 @@ nv_binsearch(cmdarg_T *cap)
 	cap->oap->op_type = OP_NOP;	//we will unset the op_type so we only process the pending operator after we're done with the binsearch
     }
 
-//    cap->oap->motion_type = MLINE;	//default motion type is line-wise
-
     while(TRUE)				//binsearch loop
     {
     c = vgetc();
@@ -7618,7 +7616,8 @@ nv_binsearch(cmdarg_T *cap)
     {
 	binsearch_mode = FALSE;
 	vungetc(c);
-	return;
+	finish_op = TRUE;			      //make vim remember there is an operator pending;  necessary
+	return;					      //for motion type support
     }
     if(c==Ctrl_J)
     {
@@ -7627,8 +7626,8 @@ nv_binsearch(cmdarg_T *cap)
     center_bound = (center_bound + upper_bound)/2;
     cursor_down(center_bound - lower_bound, TRUE);	//use cursor_down to move instead of any other method
     vungetc(Ctrl_Q);					//like, say, curwin->w_cursor.lnum =center_line, just in case.
-    return;	        				//we return after every cursor movement 
-							//to update whatever visual efect may be triggered by
+    finish_op = TRUE;	       				//we return after every cursor movement 
+    return;						//to update whatever visual efect may be triggered by
 							//cursor movement, like visual mode.
 							//unget Ctrl_Q to make sure we will come back to
 							//this function after we go back to main and update visual effects.
@@ -7641,6 +7640,7 @@ nv_binsearch(cmdarg_T *cap)
     center_bound = (center_bound + lower_bound)/2;
     cursor_up(upper_bound - center_bound, TRUE);
     vungetc(Ctrl_Q);
+    finish_op = TRUE;
     return;
     
     }
@@ -7650,7 +7650,9 @@ nv_binsearch(cmdarg_T *cap)
     vungetc(c);			    //unget c to resume the command that interrupted the binary search
     binsearch_mode = FALSE;
     cap->oap->op_type = old_op_type;//resume pending operator
-    cap->oap->motion_type = old_motion_type;
+    cap->oap->motion_type = old_motion_type;//old_motion_type;//conserve motion type
+    if(old_op_type != OP_NOP)
+	finish_op = TRUE;
     returned = TRUE;
 
 }
