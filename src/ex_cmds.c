@@ -644,6 +644,106 @@ sortend:
 }
 
 /*
+ * ":uniq".
+ */
+    void
+ex_uniq(exarg_T *eap)
+{
+    int		len;
+    linenr_T	lnum;
+    long	maxlen = 0;
+    size_t	count = (size_t)(eap->line2 - eap->line1 + 1);
+    size_t	i;
+    char_u	*p;
+    char_u	*s;
+    long	deleted = 0;
+    int		change_occurred = FALSE; // Buffer contents changed.
+
+    // Uniq one line is really quick!
+    if (count <= 1)
+	return;
+
+    if (u_save((linenr_T)(eap->line1 - 1), (linenr_T)(eap->line2 + 1)) == FAIL)
+	return;
+    sortbuf1 = NULL;
+    sort_ic = sort_lc = 0;
+
+    for (p = eap->arg; *p != NUL; ++p)
+    {
+	if (VIM_ISWHITE(*p))
+	    ;
+	else if (*p == 'i')
+	    sort_ic = TRUE;
+	else if (*p == 'l')
+	    sort_lc = TRUE;
+	else if (*p == '"')	// comment start
+	    break;
+	else if (eap->nextcmd == NULL && check_nextcmd(p) != NULL)
+	{
+	    eap->nextcmd = check_nextcmd(p);
+	    break;
+	}
+	else
+	{
+	    semsg(_(e_invalid_argument_str), p);
+	    goto uniqend;
+	}
+    }
+
+    // Get the longest line length for allocating "sortbuf".
+    for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
+    {
+	s = ml_get(lnum);
+	len = ml_get_len(lnum);
+	if (maxlen < len)
+	    maxlen = len;
+    }
+
+    // Allocate a buffer that can hold the longest line.
+    sortbuf1 = alloc(maxlen + 1);
+    if (sortbuf1 == NULL)
+	goto uniqend;
+
+    // Insert the lines in the sorted order below the last one.
+    lnum = eap->line2;
+    for (i = 0; i < count; ++i)
+    {
+	linenr_T get_lnum = eap->line1 + i;
+
+	s = ml_get(get_lnum);
+	if (i > 0 && string_compare(s, sortbuf1) == 0)
+	{
+	    ml_delete(get_lnum);
+	    i--;
+	    count--;
+	    deleted++;
+	    change_occurred = TRUE;
+	}
+	else
+	    STRCPY(sortbuf1, s);
+
+	fast_breakcheck();
+	if (got_int)
+	    goto uniqend;
+    }
+
+    // Adjust marks for deleted lines and prepare for displaying.
+    mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+    msgmore(-deleted);
+
+    if (change_occurred || deleted != 0)
+	changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
+
+    curwin->w_cursor.lnum = eap->line1;
+    beginline(BL_WHITE | BL_FIX);
+
+uniqend:
+    vim_free(sortbuf1);
+    if (got_int)
+	emsg(_(e_interrupted));
+}
+
+/*
  * :move command - move lines line1-line2 to line dest
  *
  * return FAIL for failure, OK otherwise
