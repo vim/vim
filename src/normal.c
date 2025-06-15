@@ -5676,9 +5676,6 @@ nv_gv_cmd(cmdarg_T *cap)
     pos_T	tpos;
     int		i;
 
-    if (checkclearop(cap->oap))
-	return;
-
     if (curbuf->b_visual.vi_start.lnum == 0
 	    || curbuf->b_visual.vi_start.lnum > curbuf->b_ml.ml_line_count
 	    || curbuf->b_visual.vi_end.lnum == 0)
