@@ -205,8 +205,8 @@ static int	vwl_display_flush(vwl_display_T *display);
 static void	vwl_callback_done(void *data, struct wl_callback *callback,
 		    uint32_t cb_data);
 static int	vwl_display_roundtrip(vwl_display_T *display);
-static int	vwl_display_dispatch(vwl_display_T *display,
-		    int *num_dispatched);
+static int	vwl_display_dispatch(vwl_display_T *display);
+static int vwl_display_dispatch_any(vwl_display_T *display);
 
 static void	vwl_log_handler(const char *fmt, va_list args);
 static int	vwl_connect_display(const char *display);
@@ -384,49 +384,16 @@ static vwl_clipboard_T		    vwl_clipboard = {
 #endif
 
 /*
- * Like wl_display_flush but always writes all data to the display fd. Returns
- * FAIL on failure and OK on success.
+ * Helper function for wl_display_flush. Returns FAIL on failure and OK on
+ * success.
  */
     static int
 vwl_display_flush(vwl_display_T *display)
 {
-    int		    ret;
-#ifndef HAVE_SELECT
-    struct pollfd   fds;
-
-    fds.fd = display->fd;
-    fds.events = POLLOUT;
-#else
-    fd_set	    wfds;
-    struct timeval  tv;
-
-    FD_ZERO(&wfds);
-    FD_SET(display->fd, &wfds);
-
-    tv.tv_sec = 0;
-    tv.tv_usec = p_wtm * 1000;
-#endif
-
     if (display->proxy == NULL)
 	return FAIL;
-
-    // Send the requests we have made to the compositor, until we have written
-    // all the data. Poll in order to check if the display fd is writable, if
-    // not, then wait until it is and continue writing or until we timeout.
-    while (errno = 0, (ret = wl_display_flush(display->proxy)) == -1
-	    && errno == EAGAIN)
-    {
-#ifndef HAVE_SELECT
-	if (poll(&fds, 1, p_wtm) <= 0)
-#else
-	    if (select(display->fd + 1, NULL, &wfds, NULL, &tv) <= 0)
-#endif
-		return FAIL;
-    }
-    // Return FAIL on error or timeout
-    if ((errno != 0 && errno != EAGAIN) || ret == -1)
+    if (wl_display_flush(display->proxy) == -1)
 	return FAIL;
-
     return OK;
 }
 
@@ -449,7 +416,7 @@ vwl_callback_done(void *data, struct wl_callback *callback,
 vwl_display_roundtrip(vwl_display_T *display)
 {
     struct wl_callback	*callback;
-    int			ret = OK, done = FALSE;
+    int			ret, done = FALSE;
     struct timeval start, now;
 
     if (display->proxy == NULL)
@@ -470,9 +437,9 @@ vwl_display_roundtrip(vwl_display_T *display)
     // we timeout
     while (TRUE)
     {
-	ret = vwl_display_dispatch(display, NULL);
+	ret = vwl_display_dispatch(display);
 
-	if (done || ret == FAIL)
+	if (done || ret == -1)
 	    break;
 
 	gettimeofday(&now, NULL);
@@ -480,12 +447,12 @@ vwl_display_roundtrip(vwl_display_T *display)
 	if ((now.tv_sec * 1000000 + now.tv_usec) -
 		(start.tv_sec * 1000000 + start.tv_usec) >= p_wtm * 1000)
 	{
-	    ret = FAIL;
+	    ret = -1;
 	    break;
 	}
     }
 
-    if (ret == FAIL)
+    if (ret == -1)
     {
 	if (!done)
 	    wl_callback_destroy(callback);
@@ -497,38 +464,41 @@ vwl_display_roundtrip(vwl_display_T *display)
 
 /*
  * Like wl_display_roundtrip but polls the display fd with a timeout. Returns
- * FAIL on failure and OK on success. If num_dispatched is not NULL then the
- * variable it points to will be set to the amount of events dispatched, unless
- * FAIL is returned.
+ * number of events dispatched on success else -1 on failure.
  */
     static int
-vwl_display_dispatch(vwl_display_T *display, int *num_dispatched)
+vwl_display_dispatch(vwl_display_T *display)
 {
-    int		    num;
 #ifndef HAVE_SELECT
     struct pollfd   fds;
 
-    fds.fd = display->fd;
-    fds.events = POLLIN;
+    fds.fd	    = display->fd;
+    fds.events	    = POLLIN;
 #else
-    fd_set	    rfds;
+    fd_set          rfds;
     struct timeval  tv;
 
     FD_ZERO(&rfds);
     FD_SET(display->fd, &rfds);
 
-    tv.tv_sec = 0;
-    tv.tv_usec = p_wtm * 1000;
+    tv.tv_sec	    = 0;
+    tv.tv_usec	    = p_wtm * 1000;
 #endif
 
     if (display->proxy == NULL)
-	return FAIL;
+	return -1;
+
+    while (wl_display_prepare_read(display->proxy) == -1)
+	// Dispatch any queued events so that we can start reading
+	if (wl_display_dispatch_pending(display->proxy) == -1)
+	    return -1;
 
     // Send any requests before we starting blocking to read display fd
     if (vwl_display_flush(display) == FAIL)
-	return FAIL;
-
-    // No need to call wl_display_prepare_read() because Vim is single threaded.
+    {
+	wl_display_cancel_read(display->proxy);
+	return -1;
+    }
 
     // Poll until there is data to read from the display fd.
 #ifndef HAVE_SELECT
@@ -536,17 +506,48 @@ vwl_display_dispatch(vwl_display_T *display, int *num_dispatched)
 #else
     if (select(display->fd + 1, &rfds, NULL, NULL, &tv) <= 0)
 #endif
-	    return FAIL;
+	{
+	    wl_display_cancel_read(display->proxy);
+	    return -1;
+	}
 
-    num = wl_display_dispatch(display->proxy);
+    // Read events into the queue
+    if (wl_display_read_events(display->proxy) == -1)
+	return -1;
 
-    if (num != -1)
+    // Dispatch those events (call the handlers associated for each event)
+    return wl_display_dispatch_pending(display->proxy);
+}
+
+/*
+ * Same as vwl_display_dispatch but poll/select is never called. This is useful
+ * is poll/select was already called before or if you just want to dispatch any
+ * events that happen to be waiting to be dispatched on the display fd.
+ */
+    static int
+vwl_display_dispatch_any(vwl_display_T *display)
+{
+    if (display->proxy == NULL)
+	return -1;
+
+    while (wl_display_prepare_read(display->proxy) == -1)
+	// Dispatch any queued events so that we can start reading
+	if (wl_display_dispatch_pending(display->proxy) == -1)
+	    return -1;
+
+    // Send any requests before we starting blocking to read display fd
+    if (vwl_display_flush(display) == FAIL)
     {
-	if (num_dispatched != NULL)
-	    *num_dispatched = num;
-	return OK;
+	wl_display_cancel_read(display->proxy);
+	return -1;
     }
-    return FAIL;
+
+    // Read events into the queue
+    if (wl_display_read_events(display->proxy) == -1)
+	return -1;
+
+    // Dispatch those events (call the handlers associated for each event)
+    return wl_display_dispatch_pending(display->proxy);
 }
 
 /*
@@ -906,7 +907,8 @@ vwl_seat_get_keyboard(vwl_seat_T *seat)
 /*
  * Connects to the wayland display with given name and binds to global objects
  * as needed. If display is NULL then the $WAYLAND_DISPLAY environment variable
- * will be used (handled by libwayland).
+ * will be used (handled by libwayland). Returns FAIL on failure and OK on
+ * success
  */
     int
 wayland_init_client(const char *display)
@@ -962,12 +964,13 @@ error:
 }
 
 /*
- * Flush requests and process new Wayland events.
+ * Flush requests and process new Wayland events, does not poll the display file
+ * descriptor.
  */
     int
 wayland_client_update(void)
 {
-    return vwl_display_dispatch(&vwl_display, NULL);
+    return vwl_display_dispatch_any(&vwl_display) == -1 ? FAIL : OK;
 }
 
 #ifdef FEAT_WAYLAND_CLIPBOARD
@@ -1071,7 +1074,7 @@ vwl_init_buffer_store(int width, int height)
 
     wl_buffer_add_listener(store->buffer, &vwl_cb_buffer_listener, store);
 
-    if (vwl_display_dispatch(&vwl_display, NULL) == FAIL)
+    if (vwl_display_dispatch(&vwl_display) == -1)
     {
 	vwl_destroy_buffer_store(store);
 	return NULL;
@@ -1133,7 +1136,7 @@ vwl_init_fs_surface(
 
     wl_keyboard_add_listener(store->keyboard, &vwl_fs_keyboard_listener, store);
 
-    if (vwl_display_dispatch(&vwl_display, NULL) == FAIL)
+    if (vwl_display_dispatch(&vwl_display) == -1)
 	goto fail;
 
     store->surface = wl_compositor_create_surface(vwl_gobjects.wl_compositor);
@@ -1180,7 +1183,7 @@ vwl_init_fs_surface(
 
 	gettimeofday(&start, NULL);
 
-	while (vwl_display_dispatch(&vwl_display, NULL) == OK)
+	while (vwl_display_dispatch(&vwl_display) != -1)
 	{
 	    if (store->got_focus)
 		break;
@@ -2324,18 +2327,21 @@ static int wayland_ct_restore_count = 0;
     int
 wayland_may_restore_connection(void)
 {
-    // No point in restoring the connection if we are exiting or dying.
-    if (exiting || v_dying || wayland_ct_restore_count <= 0)
-	return FAIL;
     // No point if we still are already connected properly
     if (wayland_client_is_connected(TRUE))
 	return OK;
 
+    // No point in restoring the connection if we are exiting or dying.
+    if (exiting || v_dying || wayland_ct_restore_count <= 0)
+    {
+	wayland_set_display("");
+	return FAIL;
+    }
+
     --wayland_ct_restore_count;
     wayland_uninit_client();
-    wayland_init_client(wayland_display_name);
 
-    return OK;
+    return wayland_init_client(wayland_display_name);
 }
 
 /*
