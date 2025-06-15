@@ -1434,7 +1434,7 @@ win_split_ins(
     }
 
     if (flags & (WSP_TOP | WSP_BOT))
-	(void)win_comp_pos();
+	win_comp_pos();
 
      // Both windows need redrawing.  Update all status lines, in case they
      // show something related to the window count or position.
@@ -1855,7 +1855,7 @@ win_exchange(long Prenum)
     frame_fix_width(curwin);
     frame_fix_width(wp);
 
-    (void)win_comp_pos();		// recompute window positions
+    win_comp_pos();		// recompute window positions
 
     if (wp->w_buffer != curbuf)
 	reset_VIsual_and_resel();
@@ -1943,7 +1943,7 @@ win_rotate(int upwards, int count)
 	frame_fix_width(wp2);
 
 	// recompute w_winrow and w_wincol for all windows
-	(void)win_comp_pos();
+	win_comp_pos();
     }
 
     redraw_all_later(UPD_NOT_VALID);
@@ -1972,7 +1972,7 @@ win_splitmove(win_T *wp, int size, int flags)
     winframe_remove(wp, &dir, NULL, &unflat_altfr);
     win_remove(wp, NULL);
     last_status(FALSE);	    // may need to remove last status line
-    (void)win_comp_pos();   // recompute window positions
+    win_comp_pos();   // recompute window positions
 
     // Split a window on the desired side and put "wp" there.
     if (win_split_ins(size, flags, wp, dir, unflat_altfr) == FAIL)
@@ -2064,7 +2064,7 @@ win_move_after(win_T *win1, win_T *win2)
 	win_append(win2, win1);
 	frame_append(win2->w_frame, win1->w_frame);
 
-	(void)win_comp_pos();	// recompute w_winrow for all windows
+	win_comp_pos();	// recompute w_winrow for all windows
 	redraw_later(UPD_NOT_VALID);
     }
     win_enter(win1, FALSE);
@@ -5822,7 +5822,7 @@ win_alloc(win_T *after, int hidden)
      */
     if (!hidden)
 	win_append(after, new_wp);
-    new_wp->w_wincol = TPL_LCOL(NULL);
+    new_wp->w_wincol = TPL_LCOL();
     new_wp->w_width = COLUMNS_WITHOUT_TPL();
 
     // position the display and the cursor at the top of the file.
@@ -6187,7 +6187,7 @@ shell_new_rows(void)
     if (!frame_check_height(topframe, h))
 	frame_new_height(topframe, h, FALSE, FALSE, FALSE);
 
-    (void)win_comp_pos();		// recompute w_winrow and w_wincol
+    win_comp_pos();		// recompute w_winrow and w_wincol
     compute_cmdrow();
     curtab->tp_ch_used = p_ch;
 
@@ -6222,7 +6222,7 @@ shell_new_columns(void)
     if (!frame_check_width(topframe, w))
 	frame_new_width(topframe, w, FALSE, FALSE);
 
-    (void)win_comp_pos();		// recompute w_winrow and w_wincol
+    win_comp_pos();		// recompute w_winrow and w_wincol
 
     if (!skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
@@ -6287,7 +6287,7 @@ win_size_restore(garray_T *gap)
 	    }
 	}
 	// recompute the window positions
-	(void)win_comp_pos();
+	win_comp_pos();
     }
 }
 
@@ -6296,14 +6296,13 @@ win_size_restore(garray_T *gap)
  * frames.
  * Returns the row just after the last window.
  */
-    int
+    void
 win_comp_pos(void)
 {
     int		row = tabline_height();
-    int		col = TPL_LCOL(NULL);
+    int		col = TPL_LCOL();
 
     frame_comp_pos(topframe, &row, &col);
-    return row;
 }
 
 /*
@@ -6602,7 +6601,7 @@ win_setwidth_win(int width, win_T *wp)
     frame_setwidth(wp->w_frame, width + wp->w_vsep_width);
 
     // recompute the window positions
-    (void)win_comp_pos();
+    win_comp_pos();
 
     redraw_all_later(UPD_NOT_VALID);
 }
@@ -7026,7 +7025,7 @@ win_drag_vsep_line(win_T *dragwin, int offset)
 	else
 	    fr = fr->fr_next;
     }
-    (void)win_comp_pos();
+    win_comp_pos();
     redraw_all_later(UPD_NOT_VALID);
 }
 
@@ -7490,7 +7489,7 @@ last_status_rec(frame_T *fr, int statusline)
 	    {
 		frame_new_height(fp, fp->fr_height - 1, FALSE, FALSE, FALSE);
 		frame_fix_height(wp);
-		(void)win_comp_pos();
+		win_comp_pos();
 	    }
 	    else
 		win_new_height(wp, wp->w_height - 1);

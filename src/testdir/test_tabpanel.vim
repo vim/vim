@@ -674,4 +674,31 @@ function Test_tabpanel_with_msg_scrolled()
 
   call StopVimInTerminal(buf)
 endfunc
+
+function Test_tabpanel_with_cmdline_pum()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    tabnew aaa
+    set wildoptions+=pum
+    func TimerCb(timer)
+      tabnew bbb
+    endfunc
+    call timer_start(100, 'TimerCb')
+  END
+  call writefile(lines, 'XTest_tabpanel_with_cmdline_pum', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_cmdline_pum', {'rows': 10, 'cols': 45})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_0', {})
+  call term_sendkeys(buf, ":set\<Tab>")
+  call term_wait(buf, 120)
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_1', {})
+  call term_sendkeys(buf, "\<Esc>:tabclose\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab
