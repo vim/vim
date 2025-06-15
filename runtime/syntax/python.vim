@@ -155,6 +155,33 @@ syn region  pythonRawString matchgroup=pythonTripleQuotes
       \ start=+[uU]\=[rR]\z('''\|"""\)+ end="\z1" keepend
       \ contains=pythonSpaceError,pythonDoctest,@Spell
 
+" F-strings (formatted string literals)
+" https://docs.python.org/3/reference/lexical_analysis.html#f-strings
+syn region  pythonFString
+    \ matchgroup=pythonQuotes
+    \ start=/\cF\z(['"]\)/
+    \ end=/\z1/
+    \ skip=/\\\\\|\\\z1/
+    \ contains=pythonFStringField,pythonEscape,@Spell
+syn region  pythonFString
+    \ matchgroup=pythonTripleQuotes
+    \ start=/\cF\z('''\|"""\)/
+    \ end=/\z1/
+    \ contains=pythonFStringField,pythonEscape,pythonSpaceError,pythonDoctest,@Spell
+    \ keepend
+syn region  pythonRawFString
+    \ matchgroup=pythonQuotes
+    \ start=/\c\%(FR\|RF\)\z(['"]\)/
+    \ end=/\z1/
+    \ skip=/\\\\\|\\\z1/
+    \ contains=pythonFStringField,@Spell
+syn region  pythonRawFString
+    \ matchgroup=pythonTripleQuotes
+    \ start=/\c\%(FR\|RF\)\z('''\|"""\)/
+    \ end=/\z1/
+    \ contains=pythonFStringField,pythonSpaceError,pythonDoctest,@Spell
+    \ keepend
+
 syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
 syn match   pythonEscape	"\\\o\{1,3}" contained
 syn match   pythonEscape	"\\x\x\{2}" contained
@@ -162,6 +189,26 @@ syn match   pythonEscape	"\%(\\u\x\{4}\|\\U\x\{8}\)" contained
 " Python allows case-insensitive Unicode IDs: http://www.unicode.org/charts/
 syn match   pythonEscape	"\\N{\a\+\%(\s\a\+\)*}" contained
 syn match   pythonEscape	"\\$"
+
+" F-string replacement fields
+"
+" `skip` is complicated because:
+"
+" - Format specifications may include nested replacement fields
+"
+"       { \_[^}]\+ }
+"
+" - Python 3.12 allows comments in f-string fields, but `#` is also a format
+"   specification - https://docs.python.org/3/library/string.html#formatspec
+"
+"       \%( : \%( .\= [<>=^] \)\= [-+ ]\= \)\@4<! #.* $
+"
+syn region  pythonFStringField
+    \ matchgroup=pythonFStringDelim
+    \ start=/{\@1<!{{\@!/
+    \ end=/}/
+    \ skip=/{\_[^}]\+}\|\%(:\%(.\=[<>=^]\)\=[-+ ]\=\)\@4<!#.*$/
+    \ contained
 
 " It is very important to understand all details before changing the
 " regular expressions below or their order.
@@ -312,9 +359,13 @@ hi def link pythonComment		Comment
 hi def link pythonTodo			Todo
 hi def link pythonString		String
 hi def link pythonRawString		String
+hi def link pythonFString		String
+hi def link pythonRawFString		String
 hi def link pythonQuotes		String
 hi def link pythonTripleQuotes		pythonQuotes
 hi def link pythonEscape		Special
+hi def link pythonFStringField		Identifier
+hi def link pythonFStringDelim		Special
 if !exists("python_no_number_highlight")
   hi def link pythonNumber		Number
 endif
