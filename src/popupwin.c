@@ -891,6 +891,23 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    }
 	}
     }
+    else if (*p_boc != NUL)
+    {
+	// Use default borderchars option when "borderchars" is not specified
+	if (popup_parse_borderchars(wp->w_border_char))
+	{
+	    // Also set border width if not already set
+	    // Check if border is specified separately in the options
+	    di = dict_find(dict, (char_u *)"border", -1);
+	    if (di == NULL && (enc_utf8 && *p_ambw == 's'))
+	    {
+		int	i;
+		// Set default border width to 1 for all sides
+		for (i = 0; i < 4; ++i)
+		    wp->w_popup_border[i] = 1;
+	    }
+	}
+    }
 
     check_highlight(dict, "scrollbarhighlight", &wp->w_scrollbar_highlight);
     check_highlight(dict, "thumbhighlight", &wp->w_thumb_highlight);
@@ -4812,5 +4829,86 @@ popup_update_preview_title(void)
 	popup_set_title(wp);
 }
 # endif
+
+    int
+popup_parse_borderchars(int *border_chars)
+{
+    int         i;
+    char_u     *p = p_boc;
+    char_u      buf[10];
+    int         len;
+    int         this_char;
+    int         comb[MAX_MCO];
+    int         count = 0;
+    int         tmp[8];
+
+    if (*p == NUL)
+	return TRUE;
+
+    struct {
+	char_u *name;
+	int c[8];
+    } defaults[] = {
+	// Order: top, right, bottom, left, topleft, topright, botright, botleft
+	{ (char_u *)"double", { 0x2550, 0x2551, 0x2550, 0x2551,
+			       0x2554, 0x2557, 0x255D, 0x255A } },
+	{ (char_u *)"single", { 0x2500, 0x2502, 0x2500, 0x2502,
+			       0x250C, 0x2510, 0x2518, 0x2514 } },
+	{ (char_u *)"rounded", { 0x2500, 0x2502, 0x2500, 0x2502,
+			       0x256D, 0x256E, 0x256F, 0x2570 } },
+	{ (char_u *)"bold",   { 0x2501, 0x2503, 0x2501, 0x2503,
+			      0x250F, 0x2513, 0x251B, 0x2517 } },
+    };
+
+    if (!vim_strchr(p, ','))
+    {
+	for (i = 0; i < (int)ARRAY_LENGTH(defaults); i++)
+	{
+	    if (STRCMP(p, defaults[i].name) == 0)
+	    {
+		if (border_chars != NULL)
+		{
+		    for (int j = 0; j < 8; j++)
+			border_chars[j] = defaults[i].c[j];
+		}
+		return TRUE;
+	    }
+	}
+	return FALSE;
+    }
+
+    if (STRNCMP(p, "custom:", 7) != 0)
+	return FALSE;
+
+    p += 7;
+
+    // Parse comma-separated values
+    while (*p != NUL)
+    {
+	len = copy_option_part(&p, buf, sizeof(buf), ",");
+	if (len == 0)
+	    break;
+
+	this_char = utfc_ptr2char(buf, comb);
+	if (!vim_isprintc(this_char))
+	    return FALSE;
+
+	if (count >= 8)
+	    return FALSE;
+
+	tmp[count++] = this_char;
+
+	if (*p == ',')
+	    p++;  // Move past the comma
+    }
+
+    if (count != 8)
+	return FALSE;
+
+    if (border_chars != NULL)
+	memmove(border_chars, tmp, 8 * sizeof(int));
+
+    return TRUE;
+}
 
 #endif // FEAT_PROP_POPUP
