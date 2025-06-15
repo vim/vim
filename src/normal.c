@@ -7583,7 +7583,8 @@ nv_binsearch(cmdarg_T *cap)
 		    center_bound=0;	//upper bound and lower bound refer to the line number, i.e. the lower bound
     static int binsearch_mode = FALSE,	//appears at the top of the window (since line number grows downward).
 	       old_op_type = 0,
-	       returned = FALSE;
+	       returned = FALSE,
+	       old_motion_type = 0;
 
     int c = 0;
     
@@ -7596,18 +7597,19 @@ nv_binsearch(cmdarg_T *cap)
 	upper_bound = curwin->w_botline;
 	lower_bound = curwin->w_topline;
 	
-	if(returned)
+	if(returned)			    //necessary to not forget the operator pending if we do two binary searches in a row
 	{
-	    old_op_type = cap->oap->op_type;
 	    returned = FALSE;
+	    old_op_type = cap->oap->op_type;
+	    old_motion_type = cap->oap->motion_type;
 	}
 
-	cap->oap->op_type = OP_NOP;
+	cap->oap->op_type = OP_NOP;	//we will unset the op_type so we only process the pending operator after we're done with the binsearch
     }
 
-    cap->oap->motion_type = MLINE;
+//    cap->oap->motion_type = MLINE;	//default motion type is line-wise
 
-    while(TRUE)
+    while(TRUE)				//binsearch loop
     {
     c = vgetc();
 
@@ -7645,9 +7647,10 @@ nv_binsearch(cmdarg_T *cap)
     break;
 
     }
-    vungetc(c);		    //unget c to resume the command that interrupted the binary search
+    vungetc(c);			    //unget c to resume the command that interrupted the binary search
     binsearch_mode = FALSE;
-    cap->oap->op_type = old_op_type;
+    cap->oap->op_type = old_op_type;//resume pending operator
+    cap->oap->motion_type = old_motion_type;
     returned = TRUE;
 
 }
