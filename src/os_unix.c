@@ -1867,7 +1867,6 @@ ex_xrestore(exarg_T *eap)
     x11_window = 0;
     xterm_dpy_retry_count = 5;  // Try reconnecting five times
     may_restore_x11_clipboard();
-    choose_clipmethod();
 }
 #endif
 

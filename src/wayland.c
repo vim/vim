@@ -2398,8 +2398,6 @@ ex_wlrestore(exarg_T *eap)
 	msg(_("failed restoring, lost connection to wayland display"));
 
     vim_free(display);
-
-    choose_clipmethod();
 }
 
 /*
