@@ -137,12 +137,9 @@ tabpanel_width(void)
  * Return the offset of a window considering the width of tabpanel.
  */
     int
-tabpanel_leftcol(win_T *wp)
+tabpanel_leftcol(void)
 {
-    if (cmdline_pum_active() || (wp != NULL && WIN_IS_POPUP(wp)))
-	return 0;
-    else
-	return tpl_align == ALIGN_RIGHT ? 0 : tabpanel_width();
+    return tpl_align == ALIGN_RIGHT ? 0 : tabpanel_width();
 }
 
 /*

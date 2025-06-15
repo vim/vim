@@ -921,10 +921,10 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 
 #if defined(FEAT_TABPANEL)
 # define COLUMNS_WITHOUT_TPL()		(Columns - tabpanel_width())
-# define TPL_LCOL(W)			tabpanel_leftcol(W)
+# define TPL_LCOL()			tabpanel_leftcol()
 #else
 # define COLUMNS_WITHOUT_TPL()		Columns
-# define TPL_LCOL(W)			0
+# define TPL_LCOL()			0
 #endif
 
 #define W_ENDCOL(wp)	((wp)->w_wincol + (wp)->w_width)
