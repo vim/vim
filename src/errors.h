@@ -3732,3 +3732,27 @@ EXTERN char e_cannot_switch_to_a_closing_buffer[]
 	INIT(= N_("E1546: Cannot switch to a closing buffer"));
 EXTERN char e_cannot_not_support_redrawtabpanel[]
 	INIT(= N_("E1547: This version of Vim does support :redrawtabpanel"));
+#ifdef FEAT_EVAL
+EXTERN char e_generic_typename_not_a_single_letter[]
+	INIT(= N_("E1548: Generic type name is not a single character: %s"));
+EXTERN char e_generic_type_name_must_be_uppercase_letter_str[]
+	INIT(= N_("E1549: Generic type name must be a single uppercase letter: %s"));
+EXTERN char e_missing_comma_in_generic_function[]
+	INIT(= N_("E1550: Missing comma after type in generic function: %s"));
+EXTERN char e_missing_closing_angle_bracket_in_generic_function[]
+	INIT(= N_("E1551: Missing '>' in generic function: %s"));
+EXTERN char e_empty_type_list_for_generic_function_str[]
+	INIT(= N_("E1552: Empty type list specified for generic function '%s'"));
+EXTERN char e_too_many_types_for_generic_function_str[]
+	INIT(= N_("E1553: Too many types specified for generic function '%s'"));
+EXTERN char e_not_enough_types_for_generic_function_str[]
+	INIT(= N_("E1554: Not enough types specified for generic function '%s'"));
+EXTERN char e_unknown_generic_function_str[]
+	INIT(= N_("E1555: Unknown generic function: %s"));
+EXTERN char e_generic_func_missing_type_args_str[]
+	INIT(= N_("E1556: Type arguments missing for generic function '%s'"));
+EXTERN char e_not_a_generic_function_str[]
+	INIT(= N_("E1557: Not a generic function: %s"));
+EXTERN char e_duplicate_generic_type_str[]
+	INIT(= N_("E1558: Duplicate generic type: %s"));
+#endif
