@@ -4,8 +4,8 @@
 =			    C H A P I T R E   DEUX			      =
 ===============================================================================
 
-     Hic sunt dracones : si c’est la première fois que vous utilisez Vim
-     et que vous souhaitez accéder au tutoriel d’introduction, tapez
+     Hic sunt dracones : si cʼest la première fois que vous utilisez Vim
+     et que vous souhaitez accéder au tutoriel dʼintroduction, tapez
      les deux touches :q suivi de la touche <Enter> et recommencez.
 
      Il vous faudra entre 8 et 10 minutes pour terminer ce chapitre, selon
@@ -19,12 +19,12 @@
 
   1. Déplacez le curseur sur la ligne ci-dessous commençant par : --->
 
-  2. Placez-vous n’importe où dans le mot 'Édouard' et tapez   "ayiw
+  2. Placez-vous nʼimporte où dans le mot 'Édouard' et tapez   "ayiw
 
 MNEMONIC : into register(") named (a) (y)ank (i)nner (w)ord,
   soit en français : copie le mot sous-jacent dans le registre (a)
 
-  3. Avancez jusqu’au mot 'chouquettes' (fq ou 2fc ou $ ou /ch<Enter>)
+  3. Avancez jusquʼau mot 'chouquettes' (fq ou 2fc ou $ ou /ch<Enter>)
      et tapez   "byiw
 
   4. Rendez-vous sur le mot 'Vincent' et tapez   ciw<Ctrl-r>a<ESC>
@@ -36,7 +36,7 @@ MNEMONIC: (c)hange (i)nner (w)ord with <contents of (r)egister> named (a)
 
 --->  a) Édouard aura toute autorité sur le contingentement des chouquettes
       b) À ce titre, Vincent exercera seul le pouvoir discrétionnaire sur
-      l’attribution des croissants.
+      lʼattribution des croissants.
 
 NOTE : On peut aussi utiliser les registres avec la commande de suppression.
        Taper  "sdiw supprimera le mot sous-jacent et en conservera une copie
@@ -49,10 +49,10 @@ RÉFÉRENCES: 	Registers 	:h registers
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		     Leçon 2.1.2 : LE REGISTRE D’EXPRESSIONS
+		     Leçon 2.1.2 : LE REGISTRE DʼEXPRESSIONS
 
 
-	     ** Insérer à la volée le résultat d’un calcul **
+	     ** Insérer à la volée le résultat dʼun calcul **
 
   1. Déplacez le curseur sur la ligne ci-dessous commençant par : --->
 
@@ -63,12 +63,12 @@ RÉFÉRENCES: 	Registers 	:h registers
   4. Sur la ligne suivante, en mode Insertion, ajoutez la date du jour avec
      <Ctrl-r> suivi de  =system('date')<Enter>
 
-NOTE : Tous les appels système dépendent de votre système d’exploitation. Par
+NOTE : Tous les appels système dépendent de votre système dʼexploitation. Par
       exemple sur MS-Windows, utilisez plutôt
       system('date /t')   ou  :r!date /t
 
 ---> Dans une journée, il y a 100 secondes.
-     Aujourd’hui, nous sommes :
+     Aujourdʼhui, nous sommes :
 
 NOTE: on arrive au même résultat avec  :pu=system('date')
       ou, plus court  :r!date
@@ -122,12 +122,12 @@ RÉFÉRENCE : 	Numbered Registers 	:h quote0
 		      Leçon 2.1.4 : LA BEAUTÉ DES MARQUES
 
 
-		** L'Art d’éviter les calculs pour le codeur décérébré **
+		** Lʼart dʼéviter les calculs pour le codeur décérébré **
 
 NOTE : En programmation, déplacer de gros blocs de code est souvent une vraie
-       corvée. Le souci n’est pas la difficulté de l’opération, mais la
-       gymnastique mentale qu’imposent les calculs de numéros de ligne — une
-       tâche fastidieuse et source d’erreurs.
+       corvée. Le souci nʼest pas la difficulté de lʼopération, mais la
+       gymnastique mentale quʼimposent les calculs de numéros de ligne — une
+       tâche fastidieuse et source dʼerreurs.
        La technique qui suit vous épargne justement ce tracas pour des
        opérations comme   "a147d   ou   :945,1091d a   ou pire encore
        i<Ctrl-r>=1091-945<Enter>   
@@ -180,16 +180,16 @@ RÉFÉRENCE: 	Marks 		:h marks
 			       Leçon 2.1 RÉSUMÉ
 
 
-  1. Utiliser l'un des 26 registres nommés (a-z) pour conserver
+  1. Utiliser lʼun des 26 registres nommés (a-z) pour conserver
      (copier/supprimer) et coller du texte.
   2. Copier un mot entier en plaçant le curseur sur le mot :   yiw
   3. Changer un mot entier en plaçant le curseur sur le mot :   ciw
   4. Insérer du texte directement depuis un registre, en mode Insertion :
      <Ctrl-r>a
 
-  5. Insérer le résultat d’une opération arithmétique simple :
+  5. Insérer le résultat dʼune opération arithmétique simple :
      <Ctrl-r>=60*60<Enter> en mode Insertion
-  6. Insérer le résultat d’un appel système : <Ctrl-r>=system('ls -1')
+  6. Insérer le résultat dʼun appel système : <Ctrl-r>=system('ls -1')
      en mode Insertion
 
   7. Inspecter les registres avec   :reg
@@ -200,7 +200,7 @@ RÉFÉRENCE: 	Marks 		:h marks
      numérotés et à quel point elles sont éphémères
 
  10. Placer des marques depuis le mode Normal   m[a-zA-Z0-9]
- 11. Se déplacer ligne par ligne jusqu’à une marque avec   '
+ 11. Se déplacer ligne par ligne jusquʼà une marque avec   '
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
