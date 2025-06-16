@@ -180,7 +180,7 @@ REFERENCE: 	Marks 		:h marks
      in insert mode
 
   7. Inspect registers with   :reg
-  8. Understand that whole-line deletions (with dd) are specially preserved in
+  8. Understand that whole-line deletions (with dd) are preserved in
      the numbered registers ("1 through "9). This creates a deletion
      history, from the most recent in "1 to the oldest in "9, that isn't
      overwritten by smaller edits, making these deletions available for much
