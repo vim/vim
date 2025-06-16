@@ -58,9 +58,6 @@ tutor1.es tutor2.es:
 tutor1.fr.utf-8: tutor1.fr
 	iconv -f ISO-8859-1 -t UTF-8 $? >$@
 
-tutor2.fr: tutor2.fr.utf-8
-	iconv -f UTF-8 -t ISO-8859-1 $? >$@
-
 tutor1.hr tutor2.hr:
 	iconv -f UTF-8 -t ISO-8859-2 $@.utf-8 >$@
 
