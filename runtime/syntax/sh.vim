@@ -147,8 +147,8 @@ endif
 if !exists("g:sh_fold_enabled")
  let g:sh_fold_enabled= 0
 elseif g:sh_fold_enabled != 0 && !has("folding")
- let g:sh_fold_enabled= 0
  echomsg "Ignoring g:sh_fold_enabled=".g:sh_fold_enabled."; need to re-compile vim for +fold support"
+ let g:sh_fold_enabled= 0
 endif
 let s:sh_fold_functions= and(g:sh_fold_enabled,1)
 let s:sh_fold_heredoc  = and(g:sh_fold_enabled,2)
