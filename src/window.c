@@ -6204,6 +6204,8 @@ shell_new_columns(void)
     if (firstwin == NULL)	// not initialized yet
 	return;
 
+    int save_wincol = firstwin->w_wincol;
+    int save_fr_width = topframe->fr_width;
     int w = COLUMNS_WITHOUT_TPL();
 
     // First try setting the widths of windows with 'winfixwidth'.  If that
@@ -6214,6 +6216,9 @@ shell_new_columns(void)
 
     win_comp_pos();		// recompute w_winrow and w_wincol
 
+    if (p_ea && (firstwin->w_wincol != save_wincol
+		|| topframe->fr_width != save_fr_width))
+	win_equal(curwin, FALSE, 0);
     if (!skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
 
