@@ -1673,7 +1673,7 @@ aucmd_prepbuf(
 #endif
 
 	(void)win_split_ins(0, WSP_TOP | WSP_FORCE_ROOM, auc_win, 0, NULL);
-	(void)win_comp_pos();   // recompute window positions
+	win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
 	p_acd = save_acd;
@@ -1749,7 +1749,7 @@ win_found:
 	    close_tabpage(curtab);
 
 	restore_snapshot(SNAP_AUCMD_IDX, FALSE);
-	(void)win_comp_pos();   // recompute window positions
+	win_comp_pos();   // recompute window positions
 	unblock_autocmds();
 
 	save_curwin = win_find_by_id(aco->save_curwin_id);
