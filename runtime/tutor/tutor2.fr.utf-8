@@ -112,7 +112,7 @@ NOTE : Vous devriez remarquer que les anciennes lignes supprimées descendent
 
 NOTE : Les lignes entièrement supprimées (via dd) restent beaucoup plus
        longtemps dans les registres numérotés que les lignes copiées (via yy)
-       ou les suppressions impliquants des mouvements plus courts.
+       ou les suppressions impliquant des mouvements plus courts.
 
 RÉFÉRENCE : 	Numbered Registers 	:h quote0
 
