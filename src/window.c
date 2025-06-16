@@ -5040,7 +5040,7 @@ enter_tabpage(
 		))
 	shell_new_rows();
     if (curtab->tp_old_Columns != COLUMNS_WITHOUT_TPL()
-	    || curtab->tp_old_coloff != TPL_LCOL(NULL))
+	    || curtab->tp_old_coloff != TPL_LCOL())
     {
 	if (starting == 0)
 	{
