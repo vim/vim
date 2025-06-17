@@ -45,4 +45,5 @@ char *did_set_cedit(optset_T *args);
 int is_in_cmdwin(void);
 char_u *script_get(exarg_T *eap, char_u *cmd);
 void get_user_input(typval_T *argvars, typval_T *rettv, int inputdialog, int secret);
+int parse_pattern_and_range(pos_T *is_start, int *search_delim, int *skiplen, int *patlen);
 /* vim: set ft=c : */
