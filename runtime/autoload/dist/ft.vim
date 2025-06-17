@@ -184,9 +184,18 @@ enddef
 export def FTll()
   if getline(1) =~ ';\|\<source_filename\>\|\<target\>'
     setf llvm
-  else
-    setf lifelines
+    return
   endif
+  var n = 1
+  while n < 100 && n <= line("$")
+    var line = getline(n)
+    if line =~ '^\s*%'
+      setf lex
+      return
+    endif
+    n += 1
+  endwhile
+  setf lifelines
 enddef
 
 export def FTlpc()
