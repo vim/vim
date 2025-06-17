@@ -1420,7 +1420,7 @@ au BufNewFile,BufRead */etc/sensors.conf,*/etc/sensors3.conf	setf sensors
 " LFTP
 au BufNewFile,BufRead lftp.conf,.lftprc,*lftp/rc	setf lftp
 
-" Lifelines (or Lex for C++!)
+" Lifelines, LLVM, or Lex for C++
 au BufNewFile,BufRead *.ll			call dist#ft#FTll()
 
 " Lilo: Linux loader

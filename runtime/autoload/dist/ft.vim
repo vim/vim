@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Apr 21
+# Last Change:		2025 Jun 17
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -184,9 +184,18 @@ enddef
 export def FTll()
   if getline(1) =~ ';\|\<source_filename\>\|\<target\>'
     setf llvm
-  else
-    setf lifelines
+    return
   endif
+  var n = 1
+  while n < 100 && n <= line("$")
+    var line = getline(n)
+    if line =~ '^\s*%'
+      setf lex
+      return
+    endif
+    n += 1
+  endwhile
+  setf lifelines
 enddef
 
 export def FTlpc()
