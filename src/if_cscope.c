@@ -933,7 +933,7 @@ err_closing:
 		goto err_closing;
 #endif
 	    }
-	    cmdlen += expand_env((char_u *)csinfo[i].ppath, (char_u *)ppath, MAXPATHL);
+	    cmdlen += (int)expand_env((char_u *)csinfo[i].ppath, (char_u *)ppath, MAXPATHL);
 	}
 
 	if (csinfo[i].flags)
