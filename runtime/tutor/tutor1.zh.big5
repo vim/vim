@@ -26,7 +26,7 @@
 	     ^
 	     k		    ´£¥Ü¡J h ªºÁä¦ì¤_¥ªÃä¡A¨C¦¸«ö¤U´N·|¦V¥ª²¾°Ê¡C
        < h	 l >		   l ªºÁä¦ì¤_¥kÃä¡A¨C¦¸«ö¤U´N·|¦V¥k²¾°Ê¡C
-	     j			   j Áä¬İş¨Ó«Ü¶H¤@¤ä¦yºİ¤è¦V´Â¤Uªº½bÀY¡C
+	     j			   j Áä¬İ°_¨Ó«Ü¶H¤@¤ä¦yºİ¤è¦V´Â¤Uªº½bÀY¡C
 	     v
 
   1. ½ĞÀH·N¦b«Ì¹õ¤º²¾°Ê¥ú¼Ğ¡Aª½¦Ü±zÄ±±oµÎªA¬°¤î¡C
@@ -35,7 +35,7 @@
 
 ---> ²{¦b±zÀ³¸Ó¤w¸g¾Ç·|¦p¦ó²¾°Ê¨ì¤U¤@Á¿§a¡C
 
-  3. ²{¦b½Ğ¨Ï¥Î¤U¦æÁä¡A±N¥ú¼Ğ²¾°Ê¨ì²Ä¤@Á¿²Ä¤G¸`¡C
+  3. ²{¦b½Ğ¨Ï¥Î¤U¦æÁä¡A±N¥ú¼Ğ²¾°Ê¨ì²Ä¤GÁ¿¡C
 
 ´£¥Ü¡J¦pªG±z¤£´±½T©w±z©Ò«ö¤Uªº¦r¥À¡A½Ğ«ö¤U<ESC>Áä¦^¨ì¥¿±`(Normal)¼Ò¦¡¡C
       µM«á¦A¦¸±qÁä½L¿é¤J±z·Q­nªº©R¥O¡C
@@ -105,7 +105,7 @@
 
   3. µM«á«ö¤U i Áä¡A±µµÛ¿é¤J¥²­nªº¤å¥»¦r²Å¡C
 
-  4. ©Ò¦³¤å¥»m­×¥¿§¹²¦¡A½Ğ«ö¤U <ESC> Áäªğ¦^¥¿±`¼Ò¦¡¡C
+  4. ©Ò¦³¤å¥»³£­×¥¿§¹²¦¡A½Ğ«ö¤U <ESC> Áäªğ¦^¥¿±`¼Ò¦¡¡C
      ­«´_¨BÆJ2¦Ü¨BÆJ4¥H«K­×¥¿¥y¤l¡C
 
 ---> There is text misng this .
@@ -128,7 +128,7 @@
 
 	<ESC>   :q!	 <¦^¨®>
 
-     ©ÎÍ¿é¤J¥H¤U©R¥O«O¦s©Ò¦³­×§ï¡J
+     ©ÎªÌ¿é¤J¥H¤U©R¥O«O¦s©Ò¦³­×§ï¡J
 
 	<ESC>   :wq	 <¦^¨®>
 
@@ -138,7 +138,7 @@
 
 	 i     ¿é¤J¥²­n¤å¥»	<ESC>
 
-¯S§O´£¥Ü¡J«ö¤U <ESC> Áä·|±a±z¦^¨ì¥¿±`¼Ò¦¡©ÎÍ¨ú®ø¤@­Ó¤£´Á±æ©ÎÍ³¡¤À§¹¦¨
+¯S§O´£¥Ü¡J«ö¤U <ESC> Áä·|±a±z¦^¨ì¥¿±`¼Ò¦¡©ÎªÌ¨ú®ø¤@­Ó¤£´Á±æ©ÎªÌ³¡¤À§¹¦¨
 ªº©R¥O¡C
 
 ¦n¤F¡A²Ä¤@Á¿¨ì¦¹µ²§ô¡C¤U­±±µ¤U¨ÓÄ~Äò²Ä¤GÁ¿ªº¤º®e¡C
@@ -196,7 +196,7 @@
 
   §R°£©R¥O d ªº®æ¦¡¦p¤U¡J
 
-	 [number]   d	object	    ©ÎÍ     d	 [number]   object
+	 [number]   d	object	    ©ÎªÌ     d	 [number]   object
 
   ¨ä·N¦p¤U¡J
     number - ¥Nªí°õ¦æ©R¥Oªº¦¸¼Æ(¥i¿ï¶µ¡A¯Ê¬Ù³]¸m¬° 1 )¡C
@@ -209,7 +209,7 @@
     $ - ±q·í«e¥ú¼Ğ·í«e¦ì¸mª½¨ì·í«e¦æ¥½¡C
 
 ¯S§O´£¥Ü¡J
-    ¹ï¤_«i¤_±´¯ÁÍ¡A½Ğ¦b¥¿±`¼Ò¦¡¤U­±¶È«ö¥Nªí¬ÛÀ³¹ï¶HªºÁä¦Ó¤£¨Ï¥Î©R¥O¡A«h
+    ¹ï¤_«i¤_±´¯ÁªÌ¡A½Ğ¦b¥¿±`¼Ò¦¡¤U­±¶È«ö¥Nªí¬ÛÀ³¹ï¶HªºÁä¦Ó¤£¨Ï¥Î©R¥O¡A«h
     ±N¬İ¨ì¥ú¼Ğªº²¾°Ê¥¿¦p¤W­±ªº¹ï¶H¦Cªí©Ò¥Nªíªº¤@¼Ë¡C
 
 
@@ -221,7 +221,7 @@
 
 	       ** ¿é¤J dd ¥i¥H§R°£¾ã¤@­Ó·í«e¦æ¡C **
 
-  Å³¤_¾ã¦æ§R°£ªº°ªÀW«×¡AVIM ªº³]­pÍ¨M©w­nÂ²¤Æ¾ã¦æ§R°£¡A¶È»İ­n¦b¦P¤@¦æ¤W
+  Å³¤_¾ã¦æ§R°£ªº°ªÀW«×¡AVIM ªº³]­pªÌ¨M©w­nÂ²¤Æ¾ã¦æ§R°£¡A¶È»İ­n¦b¦P¤@¦æ¤W
   À»¥´¨â¦¸ d ´N¥i¥H§R°£±¼¥ú¼Ğ©Ò¦bªº¾ã¦æ¤F¡C
 
   1. ½Ğ±N¥ú¼Ğ²¾°Ê¨ì¥»¸`¤¤¤U­±ªºµu¥y¬q¸¨¤¤ªº²Ä¤G¦æ¡C
@@ -249,14 +249,14 @@
   2. ¿é¤J x §R°£²Ä¤@­Ó¤£·Q«O¯dªº¦r¥À¡C
   3. µM«á¿é¤J u ºM®ø³Ì«á°õ¦æªº(¤@¦¸)©R¥O¡C
   4. ³o¦¸­n¨Ï¥Î x ­×¥¿¥»¦æªº©Ò¦³¿ù»~¡C
-  5. ²{¦b¿é¤J¤@­Ó¤j¼gªº U ¡A©´_¨ì¸Ó¦æªº­ì©lª¬ºA¡C
+  5. ²{¦b¿é¤J¤@­Ó¤j¼gªº U ¡A«ì´_¨ì¸Ó¦æªº­ì©lª¬ºA¡C
   6. ±µµÛ¦h¦¸¿é¤J u ¥HºM®ø U ¥H¤Î§ó«eªº©R¥O¡C
   7. µM«á¦h¦¸¿é¤J CTRL-R (¥ı«ö¤U CTRL Áä¤£©ñ¶}¡A±µµÛ¿é¤J R Áä) ¡A³o¼Ë´N
-     ¥i¥H°õ¦æ©´_©R¥O¡A¤]´N¬OºM®ø±¼ºM®ø©R¥O¡C
+     ¥i¥H°õ¦æ«ì´_©R¥O¡A¤]´N¬OºM®ø±¼ºM®ø©R¥O¡C
 
 ---> Fiix the errors oon thhis line and reeplace them witth undo.
 
-  8. ³o¨Çm¬O«D±`¦³¥Îªº©R¥O¡C¤U­±¬O²Ä¤GÁ¿ªº¤pµ²¤F¡C
+  8. ³o¨Ç³£¬O«D±`¦³¥Îªº©R¥O¡C¤U­±¬O²Ä¤GÁ¿ªº¤pµ²¤F¡C
 
 
 
@@ -273,7 +273,7 @@
 
   4. ¦b¥¿±`¼Ò¦¡¤U¤@­Ó©R¥Oªº®æ¦¡¬O¡J
 
-       [number]   command   object     ©ÎÍ     command	[number]   object
+       [number]   command   object     ©ÎªÌ     command	[number]   object
      ¨ä·N¬O¡J
        number - ¥Nªíªº¬O©R¥O°õ¦æªº¦¸¼Æ
        command - ¥Nªí­n°µªº¨Æ±¡¡A¤ñ¦p d ¥Nªí§R°£
@@ -282,7 +282,7 @@
 
   5. ±ıºM®ø¥H«eªº¾Ş§@¡A½Ğ¿é¤J¡Ju (¤p¼gªºu)
      ±ıºM®ø¦b¤@¦æ¤¤©Ò°µªº§ï°Ê¡A½Ğ¿é¤J¡JU (¤j¼gªºU)
-     ±ıºM®ø¥H«eªººM®ø©R¥O¡A©´_¥H«eªº¾Ş§@µ²ªG¡A½Ğ¿é¤J¡JCTRL-R
+     ±ıºM®ø¥H«eªººM®ø©R¥O¡A«ì´_¥H«eªº¾Ş§@µ²ªG¡A½Ğ¿é¤J¡JCTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 ²Ä¤TÁ¿²Ä¤@¸`¡J¸m¤JÃş©R¥O
@@ -334,7 +334,7 @@
 			²Ä¤TÁ¿²Ä¤T¸`¡J§ó§ïÃş©R¥O
 
 
-	   ** ­n§ïÅÜ¤@­Ó³æ¦r/³æµüªº³¡¤À©ÎÍ¥ş³¡¡A½Ğ¿é¤J cw **
+	   ** ­n§ïÅÜ¤@­Ó³æ¦r/³æµüªº³¡¤À©ÎªÌ¥ş³¡¡A½Ğ¿é¤J cw **
 
   1. ½Ğ±N¥ú¼Ğ²¾°Ê¨ì¥»¸`¤¤¤U­±¼Ğ°O¦³ ---> ªº²Ä¤@¦æ¡C
 
@@ -361,7 +361,7 @@
 
   1. §ó§ïÃş«ü¥Oªº¤u§@¤è¦¡¸ò§R°£Ãş©R¥O¬O¤@­Pªº¡C¾Ş§@®æ¦¡¬O¡J
 
-       [number]   c   object	   ©ÎÍ	    c	[number]   object
+       [number]   c   object	   ©ÎªÌ	    c	[number]   object
 
   2. ¹ï¶H°Ñ¼Æ¤]¬O¤@¼Ëªº¡A¤ñ¦p w ¥Nªí³æ¦r/³æµü¡A$¥Nªí¦æ¥½µ¥µ¥¡C
 
@@ -393,7 +393,7 @@
 
   4. §ó§ïÃş©R¥Oªº®æ¦¡¬O¡J
 
-	 [number]   c	object	      ©ÎÍ	c   [number]   object
+	 [number]   c	object	      ©ÎªÌ	c   [number]   object
 
 ¤U­±§Ú­ÌÄ~Äò¾Ç²ß¤U¤@Á¿¡C
 
@@ -427,7 +427,7 @@
 
      ** ¿é¤J / ¥H¤Î§ÀÀHªº¦r²Å¦ê¥i¥H¥Î¥H¦b·í«e¤å¥ó¤¤¬d§ä¸Ó¦r²Å¦ê¡C**
 
-  1. ¦b¥¿±`¼Ò¦¡¤U¿é¤J / ¦r²Å¡C±z¦¹®É·|ª`·N¨ì¸Ó¦r²Å©M¥ú¼Ğm·|¥X²{¦b«Ì¹õ©³
+  1. ¦b¥¿±`¼Ò¦¡¤U¿é¤J / ¦r²Å¡C±z¦¹®É·|ª`·N¨ì¸Ó¦r²Å©M¥ú¼Ğ³£·|¥X²{¦b«Ì¹õ©³
      ³¡¡A³o¸ò : ©R¥O¬O¤@¼Ëªº¡C
 
   2. ±µµÛ¿é¤J errroor <¦^¨®>¡C¨º­Óerrroor´N¬O±z­n¬d§äªº¦r²Å¦ê¡C
@@ -500,7 +500,7 @@
   2. ¿é¤J / µM«áºòÀH¤@­Ó¦r²Å¦ê¬O«h¬O¦b·í«e©Ò½s¿èªº¤åÀÉ¤¤¦V«á¬d§ä¸Ó¦r²Å¦ê¡C
      ¿é¤J°İ¸¹ ? µM«áºòÀH¤@­Ó¦r²Å¦ê¬O«h¬O¦b·í«e©Ò½s¿èªº¤åÀÉ¤¤¦V«e¬d§ä¸Ó¦r
      ²Å¦ê¡C§¹¦¨¤@¦¸¬d§ä¤§«á«ö n Áä«h¬O­«´_¤W¤@¦¸ªº©R¥O¡A¥i¦b¦P¤@¤è¦V¤W¬d
-     §ä¤U¤@­Ó¦r²Å¦ê©Ò¦b¡F©ÎÍ«ö Shift-N ¦V¬Û¤Ï¤è¦V¬d§ä¤U¸Ó¦r²Å¦ê©Ò¦b¡C
+     §ä¤U¤@­Ó¦r²Å¦ê©Ò¦b¡F©ÎªÌ«ö Shift-N ¦V¬Û¤Ï¤è¦V¬d§ä¤U¸Ó¦r²Å¦ê©Ò¦b¡C
 
   3. ¦pªG¥ú¼Ğ·í«e¦ì¸m¬O¬A¸¹(¡B)¡B[¡B]¡B{¡B}¡A«ö % ¥i¥H±N¥ú¼Ğ²¾°Ê¨ì°t¹ïªº
      ¬A¸¹¤W¡C
@@ -523,12 +523,12 @@
   2. ±µµÛ¿é¤J·P¹Ä¸¹ ! ³o­Ó¦r²Å¡A³o¼Ë´N¤¹³\±z°õ¦æ¥~³¡ªº shell ©R¥O¤F¡C
 
   3. §Ú­Ì¥H ls ©R¥O¬°¨Ò¡C¿é¤J !ls <¦^¨®> ¡C¸Ó©R¥O´N·|¦CÁ|¥X±z·í«e¥Ø¿ıªº
-     ¤º®e¡A´N¦p¦P±z¦b©R¥O¦æ´£¥Ü²Å¤U¿é¤J ls ©R¥Oªºµ²ªG¤@¼Ë¡C¦pªG !ls ¨Sş
+     ¤º®e¡A´N¦p¦P±z¦b©R¥O¦æ´£¥Ü²Å¤U¿é¤J ls ©R¥Oªºµ²ªG¤@¼Ë¡C¦pªG !ls ¨S°_
      §@¥Î¡A±z¥i¥H¸Õ¸Õ :!dir ¬İ¬İ¡C
 
----> ´£¥Ü¡J ©Ò¦³ªº¥~³¡©R¥Om¥i¥H¥H³oºØ¤è¦¡°õ¦æ¡C
+---> ´£¥Ü¡J ©Ò¦³ªº¥~³¡©R¥O³£¥i¥H¥H³oºØ¤è¦¡°õ¦æ¡C
 
----> ´£¥Ü¡J ©Ò¦³ªº : ©R¥Om¥²¶·¥H <¦^¨®> §i²×¡C
+---> ´£¥Ü¡J ©Ò¦³ªº : ©R¥O³£¥²¶·¥H <¦^¨®> §i²×¡C
 
 
 
@@ -539,7 +539,7 @@
 
 	     ** ­n±N¹ï¤å¥óªº§ï°Ê«O¦s¨ì¤å¥ó¤¤¡A½Ğ¿é¤J :w FILENAME **
 
-  1. ¿é¤J :!dir ©ÎÍ :!ls Àòª¾·í«e¥Ø¿ıªº¤º®e¡C±zÀ³·í¤wª¾¹D³Ì«áÁÙ±oºV
+  1. ¿é¤J :!dir ©ÎªÌ :!ls Àòª¾·í«e¥Ø¿ıªº¤º®e¡C±zÀ³·í¤wª¾¹D³Ì«áÁÙ±oºV
      <¦^¨®> §a¡C
 
   2. ¿ï¾Ü¤@­Ó©|¥¼¦s¦b¤å¥ó¦W¡A¤ñ¦p TEST ¡C
@@ -562,13 +562,13 @@
 
 		** ­n«O¦s¤å¥óªº³¡¤À¤º®e¡A½Ğ¿é¤J :#,# w FILENAME **
 
-  1. ¦A¨Ó°õ¦æ¤@¦¸ :!dir ©ÎÍ :!ls Àòª¾·í«e¥Ø¿ıªº¤º®e¡AµM«á¿ï¾Ü¤@­Ó¦X¾Aªº
+  1. ¦A¨Ó°õ¦æ¤@¦¸ :!dir ©ÎªÌ :!ls Àòª¾·í«e¥Ø¿ıªº¤º®e¡AµM«á¿ï¾Ü¤@­Ó¦X¾Aªº
      ¤£­«¦Wªº¤å¥ó¦W¡A¤ñ¦p TEST ¡C
 
   2. ±µµÛ±N¥ú¼Ğ²¾°Ê¦Ü¥»­¶ªº³Ì³»ºİ¡AµM«á«ö CTRL-g §ä¨ì¸Ó¦æªº¦æ¸¹¡C§O§Ñ¤F
      ¦æ¸¹®@¡C
 
-  3. ±µµÛ§â¥ú¼Ğ²¾°Ê¦Ü¥»­¶ªº³Ì©³ºİ¡A¦A«ö¤@¦¸ CTRL-g ¡C¤]§O§Ñ¤F³o­Ó¦æ¸¹®@¡C
+  3. ±µµÛ§â¥ú¼Ğ²¾°Ê¦Ü¥»­¶ªº³Ì©³ºİ¡A¦A«ö¤@¦¸ CTRL-g ¡C¤]§O§Ñ¤F³o­Ó¦æ¦n®@¡C
 
   4. ¬°¤F¥u«O¦s¤å³¹ªº¬Y­Ó³¡¤À¡A½Ğ¿é¤J :#,# w TEST ¡C³o¸Ìªº #,# ´N¬O¤W­±
      ­n¨D±z°O¦íªº¦æ¸¹(³»ºİ¦æ¸¹,©³ºİ¦æ¸¹)¡A¦Ó TEST ´N¬O¿ï©wªº¤å¥ó¦W¡C
@@ -700,7 +700,7 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 			    ²Ä¤»Á¿²Ä¥|¸`¡J³]¸mÃş©R¥Oªº¿ï¶µ
 
 
-		  ** ³]¸m¥i¨Ï¬d§ä©ÎÍ´À´«¥i©¿²¤¤j¤p¼gªº¿ï¶µ **
+		  ** ³]¸m¥i¨Ï¬d§ä©ÎªÌ´À´«¥i©¿²¤¤j¤p¼gªº¿ï¶µ **
 
 
   1. ­n¬d§ä³æµü ignore ¥i¦b¥¿±`¼Ò¦¡¤U¿é¤J /ignore ¡C­n­«´_¬d§ä¸Óµü¡A¥i¥H
@@ -772,13 +772,13 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 
 			 ** ±Ò¥Îvimªº¥\¯à **
 
-  Vimªº¥\¯à¯S©Ê­n¤ñvi¦h±o¦h¡A¦ı¤j³¡¤À¥\¯àm¨S¦³¯Ê¬Ù¿E¬¡¡C¬°¤F±Ò°Ê§ó¦hªº
+  Vimªº¥\¯à¯S©Ê­n¤ñvi¦h±o¦h¡A¦ı¤j³¡¤À¥\¯à³£¨S¦³¯Ê¬Ù¿E¬¡¡C¬°¤F±Ò°Ê§ó¦hªº
   ¥\¯à¡A±z±o³Ğ«Ø¤@­Óvimrc¤å¥ó¡C
 
   1. ¶}©l½s¿èvimrc¤å¥ó¡A³o¨ú¨M¤_±z©Ò¨Ï¥Îªº¾Ş§@¨t²Î¡J
 
      :edit ~/.vimrc		³o¬OUnix¨t²Î©Ò¨Ï¥Îªº©R¥O
-     :edit ~/_vimrc		³o¬OWindows¨t²Î©Ò¨Ï¥Îªº©R¥O
+     :edit $VIM/_vimrc		³o¬OWindows¨t²Î©Ò¨Ï¥Îªº©R¥O
 
   2. ±µµÛ¾É¤Jvimrc­S¨Ò¤å¥ó¡J
 
@@ -801,15 +801,15 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 
   ¬°¤F§ó¶i¤@¨Bªº°Ñ¦Ò©M¾Ç²ß¡A¥H¤U³o¥»®Ñ­È±o±ÀÂË¡J
 
-	Vim - Vi Improved - §@Í¡JSteve Oualline
+	Vim - Vi Improved - §@ªÌ¡JSteve Oualline
 	¥Xª©ªÀ¡JNew Riders
 
-  ³o¬O²Ä¤@¥»§¹¥şÁ¿¸Ñvimªº®ÑÄy¡C¹ï¤_ªì¾ÇÍ¯S§O¦³¥Î¡C¨ä¤¤ÁÙ¥]§t¦³¤j¶q¹ê¨Ò
-  ©M¹Ï¥Ü¡C±ıª¾¸Ô±¡¡A½Ğ³X°İ https://iccf-holland.org/click5.html
+  ³o¬O²Ä¤@¥»§¹¥şÁ¿¸Ñvimªº®ÑÄy¡C¹ï¤_ªì¾ÇªÌ¯S§O¦³¥Î¡C¨ä¤¤ÁÙ¥]§t¦³¤j¶q¹ê¨Ò
+  ©M¹Ï¥Ü¡C±ıª¾¸Ô±¡¡A½Ğ³X°İ http://iccf-holland.org/click5.html
 
   ¥H¤U³o¥»®Ñ¤ñ¸û¦Ñ¤F¦Ó¥B¤º®e¥D­n¬Ovi¦Ó¤£¬Ovim¡A¦ı¬O¤]­È±o±ÀÂË¡J
 
-	Learning the Vi Editor - §@Í¡JLinda Lamb
+	Learning the Vi Editor - §@ªÌ¡JLinda Lamb
 	¥Xª©ªÀ¡JO'Reilly & Associates Inc.
 
   ³o¬O¤@¥»¤£¿ùªº®Ñ¡A³q¹L¥¦±z´X¥G¯à°÷¤F¸Ñ¨ì¥ş³¡vi¯à°÷°µ¨ìªº¨Æ±¡¡C¦¹®Ñªº²Ä
@@ -817,7 +817,7 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 
   ¥»±Ğµ{¬O¥Ñ¨Ó¦ÛCalorado School of MineseªºMichael C. Pierce¡BRobert K.
   Ware ©Ò½s¼gªº¡A¨ä¤¤¨Ó¦ÛColorado State UniversityªºCharles Smith´£¨Ñ¤F
-  «Ü¦h³Ğ·N¡C½sÍ³q«H¦a§}¬O¡J
+  «Ü¦h³Ğ·N¡C½sªÌ³q«H¦a§}¬O¡J
 
 	bware@mines.colorado.edu
 
@@ -825,9 +825,9 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 
 
 
-  Ä¶¨îÍªş¨¥¡J
+  Ä¶¨îªÌªş¨¥¡J
   ===========
-      Â²Åé¤¤¤å±Ğµ{Â½Ä¶ª©¤§Ä¶¨îÍ¬°±ç©÷®õ <beos@turbolinux.com.cn>¡AÁÙ¦³
+      Â²Åé¤¤¤å±Ğµ{Â½Ä¶ª©¤§Ä¶¨îªÌ¬°±ç©÷®õ <beos@turbolinux.com.cn>¡AÁÙ¦³
       ¥t¥~¤@­ÓÁp¨t¦a§}¡Jlinuxrat@gnuchina.org¡C
 
       ÁcÅé¤¤¤å±Ğµ{¬O±qÂ²Åé¤¤¤å±Ğµ{Â½Ä¶ª©¨Ï¥Î Debian GNU/Linux ¤¤¤å¶µ¥Ø¤p
@@ -843,10 +843,10 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
       ·PÁÂ xuandong@sh163.net ªº«ü¥¿¡A±N¨â³B¿ù§O¦r­×¥¿¡C
 
       2002¦~03¤ë18¤é ±ç©÷®õ <linuxrat@gnuchina.org>
-      ®Ú¾ÚBram Moolenaar¥ı¥Í¦b2002¦~03¤ë16¤éªº¨Ó«H­n¨D¡A±Nvimtutor1.4¤¤Ä¶
+      ®Ú¾ÚBram Molenaar¥ı¥Í¦b2002¦~03¤ë16¤éªº¨Ó«H­n¨D¡A±Nvimtutor1.4¤¤Ä¶
       ª©¤É¯Å¨ìvimtutor1.5¡C
 
       2001¦~11¤ë15¤é ±ç©÷®õ <linuxrat@gnuchina.org>
-      ±Nvimtutor1.4¤¤Ä¶ª©´£¥æµ¹Bram Moolenaar©MSven Guckes¡C
+      ±Nvimtutor1.4¤¤Ä¶ª©´£¥æµ¹Bram Molenaar©MSven Guckes¡C
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
