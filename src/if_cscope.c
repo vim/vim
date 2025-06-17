@@ -828,6 +828,7 @@ cs_create_connection(int i)
     int		cmdlen;
     int		len;
     char	*prog, *cmd, *ppath = NULL;
+    size_t	proglen;
 #ifdef MSWIN
     int		fd;
     SECURITY_ATTRIBUTES sa;
@@ -869,7 +870,6 @@ err_closing:
     {
 	char **argv = NULL;
 	int argc = 0;
-	size_t proglen;
 
 	if (dup2(to_cs[0], STDIN_FILENO) == -1)
 	    PERROR("cs_create_connection 1");
