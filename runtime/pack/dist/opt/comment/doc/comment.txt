@@ -86,4 +86,42 @@ Options:
     target specific filetype(s).
 
 ==============================================================================
+Mappings:
+
+The following |<Plug>| mappings are included, which you can use to customise the
+keyboard mappings.
+
+*<Plug>(comment-toggle)*
+    Normal and visual modes, mapped to gc by default
+
+*<Plug>(comment-toggle-line)*
+    Normal mode only, mapped to gcc by default
+
+*<Plug>(comment-toggle-end)*
+    Normal mode only, not mapped by default
+
+*<Plug>(comment-text-object-inner)*
+    Operator pending and visual modes, mapped to ic by default
+
+*<Plug>(comment-text-object-outer)*
+    Operator pending and visual modes, mapped to ac by default
+
+The default keyboard mappings are shown below, you can copy these if you wish
+to customise them in your vimrc:
+>
+    nmap gc <Plug>(comment-toggle)
+    xmap gc <Plug>(comment-toggle)
+    nmap gcc <Plug>(comment-toggle-line)
+
+    omap ic <Plug>(comment-text-object-inner)
+    omap ac <Plug>(comment-text-object-outer)
+    xmap ic <Plug>(comment-text-object-inner)
+    xmap ac <Plug>(comment-text-object-outer)
+<
+As there is no default mapping for <Plug>(comment-toggle-end), to enable this
+you must add a mapping to your vimrc, e.g.
+>
+     nmap gC <Plug>(comment-toggle-end)
+<
+==============================================================================
 vim:tw=78:ts=8:fo=tcq2:ft=help:
