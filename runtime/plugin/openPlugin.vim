@@ -34,10 +34,12 @@ if !no_gx
   enddef
 
   if maparg('gx', 'n') == ""
-    nnoremap <unique> gx <scriptcmd>vim9.Open(GetWordUnderCursor())<CR>
+    nnoremap <Plug>(open-word-under-cursor) <scriptcmd>vim9.Open(GetWordUnderCursor())<CR>
+    nmap gx <Plug>(open-word-under-cursor)
   endif
   if maparg('gx', 'x') == ""
-    xnoremap <unique> gx <scriptcmd>vim9.Open(getregion(getpos('v'), getpos('.'), { type: mode() })->join())<CR>
+    xnoremap <Plug>(open-word-under-cursor) <scriptcmd>vim9.Open(getregion(getpos('v'), getpos('.'), { type: mode() })->join())<CR>
+    xmap gx <Plug>(open-word-under-cursor)
   endif
 endif
 
