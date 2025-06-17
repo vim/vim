@@ -548,8 +548,7 @@ cs_add_common(
     if ((fname = alloc(MAXPATHL + 1)) == NULL)
 	goto add_err;
 
-    expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
-    len = STRLEN(fname);
+    len = expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
     fbuf = (char_u *)fname;
     (void)modify_fname((char_u *)":p", FALSE, &usedlen,
 					      (char_u **)&fname, &fbuf, &len);
@@ -870,6 +869,7 @@ err_closing:
     {
 	char **argv = NULL;
 	int argc = 0;
+	size_t proglen;
 
 	if (dup2(to_cs[0], STDIN_FILENO) == -1)
 	    PERROR("cs_create_connection 1");
@@ -916,10 +916,10 @@ err_closing:
 	    goto err_closing;
 #endif
 	}
-	expand_env(p_csprg, (char_u *)prog, MAXPATHL);
+	proglen = expand_env(p_csprg, (char_u *)prog, MAXPATHL);
 
 	// alloc space to hold the cscope command
-	cmdlen = (int)(strlen(prog) + strlen(csinfo[i].fname) + 32);
+	cmdlen = (int)(proglen + strlen(csinfo[i].fname) + 32);
 	if (csinfo[i].ppath)
 	{
 	    // expand the prepend path for env var's
@@ -933,9 +933,7 @@ err_closing:
 		goto err_closing;
 #endif
 	    }
-	    expand_env((char_u *)csinfo[i].ppath, (char_u *)ppath, MAXPATHL);
-
-	    cmdlen += (int)strlen(ppath);
+	    cmdlen += expand_env((char_u *)csinfo[i].ppath, (char_u *)ppath, MAXPATHL);
 	}
 
 	if (csinfo[i].flags)
