@@ -1276,6 +1276,16 @@ expand_set_breakindentopt(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+    char *
+did_set_borderchars(optset_T *args UNUSED)
+{
+    if (popup_parse_borderchars(NULL) == FALSE)
+	return e_invalid_argument;
+    return NULL;
+}
+#endif
+
 #if defined(FEAT_BROWSE) || defined(PROTO)
 /*
  * The 'browsedir' option is changed.
