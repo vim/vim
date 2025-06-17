@@ -204,67 +204,55 @@ set_search_match(pos_T *t)
 }
 
 /*
- * Return TRUE when 'incsearch' highlighting is to be done.
- * Sets search_first_line and search_last_line to the address range.
- * May change the last search pattern.
+ * Parses the :[range]s/foo like commands and returns details needed for
+ * incsearch and wildmenu completion.
+ * Returns TRUE if pattern is valid.
+ * Sets skiplen, patlen, search_first_line, and search_last_line.
  */
-    static int
-do_incsearch_highlighting(
-	int		    firstc,
-	int		    *search_delim,
-	incsearch_state_T   *is_state,
-	int		    *skiplen,
-	int		    *patlen)
+    int
+parse_pattern_and_range(
+	pos_T	*incsearch_start,
+	int	*search_delim,
+	int	*skiplen,
+	int	*patlen)
 {
-    char_u	*cmd;
+    char_u	*cmd, *p, *end;
     cmdmod_T	dummy_cmdmod;
-    char_u	*p;
-    int		delim_optional = FALSE;
-    int		delim;
-    char_u	*end;
-    char	*dummy;
     exarg_T	ea;
     pos_T	save_cursor;
+    int		delim_optional = FALSE;
+    int		delim;
     int		use_last_pat;
-    int		retval = FALSE;
     magic_T     magic = 0;
+    char	*dummy;
 
     *skiplen = 0;
     *patlen = ccline.cmdlen;
 
-    if (!p_is || cmd_silent)
-	return FALSE;
-
-    // by default search all lines
+    // Default range
     search_first_line = 0;
     search_last_line = MAXLNUM;
 
-    if (firstc == '/' || firstc == '?')
-    {
-	*search_delim = firstc;
-	return TRUE;
-    }
-    if (firstc != ':')
-	return FALSE;
-
-    ++emsg_off;
     CLEAR_FIELD(ea);
     ea.line1 = 1;
     ea.line2 = 1;
     ea.cmd = ccline.cmdbuff;
     ea.addr_type = ADDR_LINES;
 
+    // Skip over command modifiers
     parse_command_modifiers(&ea, &dummy, &dummy_cmdmod, TRUE);
 
+    // Skip over the range to find the command.
     cmd = skip_range(ea.cmd, TRUE, NULL);
-    if (vim_strchr((char_u *)"sgvl", *cmd) == NULL)
-	goto theend;
 
-    // Skip over "substitute" to find the pattern separator.
+    if (vim_strchr((char_u *)"sgvl", *cmd) == NULL)
+	return FALSE;
+
+    // Skip over command name to find pattern separator
     for (p = cmd; ASCII_ISALPHA(*p); ++p)
 	;
     if (*skipwhite(p) == NUL)
-	goto theend;
+	return FALSE;
 
     if (STRNCMP(cmd, "substitute", p - cmd) == 0
 	    || STRNCMP(cmd, "smagic", p - cmd) == 0
@@ -285,83 +273,113 @@ do_incsearch_highlighting(
 	while (ASCII_ISALPHA(*(p = skipwhite(p))))
 	    ++p;
 	if (*p == NUL)
-	    goto theend;
+	    return FALSE;
     }
     else if (STRNCMP(cmd, "vimgrep", MAX(p - cmd, 3)) == 0
-	|| STRNCMP(cmd, "vimgrepadd", MAX(p - cmd, 8)) == 0
-	|| STRNCMP(cmd, "lvimgrep", MAX(p - cmd, 2)) == 0
-	|| STRNCMP(cmd, "lvimgrepadd", MAX(p - cmd, 9)) == 0
-	|| STRNCMP(cmd, "global", p - cmd) == 0)
+	    || STRNCMP(cmd, "vimgrepadd", MAX(p - cmd, 8)) == 0
+	    || STRNCMP(cmd, "lvimgrep", MAX(p - cmd, 2)) == 0
+	    || STRNCMP(cmd, "lvimgrepadd", MAX(p - cmd, 9)) == 0
+	    || STRNCMP(cmd, "global", p - cmd) == 0)
     {
-	// skip over "!"
+	// skip optional "!"
 	if (*p == '!')
 	{
 	    p++;
 	    if (*skipwhite(p) == NUL)
-		goto theend;
+		return FALSE;
 	}
 	if (*cmd != 'g')
 	    delim_optional = TRUE;
     }
     else
-	goto theend;
+	return FALSE;
 
     p = skipwhite(p);
     delim = (delim_optional && vim_isIDc(*p)) ? ' ' : *p++;
     *search_delim = delim;
-    end = skip_regexp_ex(p, delim, magic_isset(), NULL, NULL, &magic);
 
+    end = skip_regexp_ex(p, delim, magic_isset(), NULL, NULL, &magic);
     use_last_pat = end == p && *end == delim;
 
     if (end == p && !use_last_pat)
-	goto theend;
+	return FALSE;
 
-    // Don't do 'hlsearch' highlighting if the pattern matches everything.
+    // Skip if the pattern matches everything (e.g., for 'hlsearch')
     if (!use_last_pat)
     {
 	char c = *end;
-	int  empty;
+	int empty;
 
 	*end = NUL;
 	empty = empty_pattern_magic(p, (size_t)(end - p), magic);
 	*end = c;
 	if (empty)
-	    goto theend;
+	    return FALSE;
     }
 
-    // found a non-empty pattern or //
+    // Found a non-empty pattern or //
     *skiplen = (int)(p - ccline.cmdbuff);
     *patlen = (int)(end - p);
 
-    // parse the address range
+    // Parse the address range
     save_cursor = curwin->w_cursor;
-    curwin->w_cursor = is_state->search_start;
+    curwin->w_cursor = *incsearch_start;
+
     parse_cmd_address(&ea, &dummy, TRUE);
+
     if (ea.addr_count > 0)
     {
-	// Allow for reverse match.
-	if (ea.line2 < ea.line1)
-	{
-	    search_first_line = ea.line2;
-	    search_last_line = ea.line1;
-	}
-	else
-	{
-	    search_first_line = ea.line1;
-	    search_last_line = ea.line2;
-	}
+	int reverse_match = ea.line2 < ea.line1;
+	search_first_line = reverse_match ? ea.line2 : ea.line1;
+	search_last_line = reverse_match ? ea.line1 : ea.line2;
     }
     else if (cmd[0] == 's' && cmd[1] != 'o')
-    {
 	// :s defaults to the current line
-	search_first_line = curwin->w_cursor.lnum;
-	search_last_line = curwin->w_cursor.lnum;
-    }
+	search_first_line = search_last_line = curwin->w_cursor.lnum;
 
     curwin->w_cursor = save_cursor;
-    retval = TRUE;
-theend:
+    return TRUE;
+}
+
+/*
+ * Return TRUE when 'incsearch' highlighting is to be done.
+ * Sets search_first_line and search_last_line to the address range.
+ * May change the last search pattern.
+ */
+    static int
+do_incsearch_highlighting(
+	int		    firstc,
+	int		    *search_delim,
+	incsearch_state_T   *is_state,
+	int		    *skiplen,
+	int		    *patlen)
+{
+    int retval = FALSE;
+
+    *skiplen = 0;
+    *patlen = ccline.cmdlen;
+
+    if (!p_is || cmd_silent)
+	return FALSE;
+
+    // By default search all lines
+    search_first_line = 0;
+    search_last_line = MAXLNUM;
+
+    if (firstc == '/' || firstc == '?')
+    {
+	*search_delim = firstc;
+	return TRUE;
+    }
+
+    if (firstc != ':')
+	return FALSE;
+
+    ++emsg_off;
+    retval = parse_pattern_and_range(&is_state->search_start, search_delim,
+	    skiplen, patlen);
     --emsg_off;
+
     return retval;
 }
 
@@ -905,7 +923,8 @@ cmdline_wildchar_complete(
 	int		*did_wild_list,
 	int		*wim_index_p,
 	expand_T	*xp,
-	int		*gotesc)
+	int		*gotesc,
+	pos_T		*pre_incsearch_pos)
 {
     int		wim_index = *wim_index_p;
     int		res;
@@ -938,6 +957,14 @@ cmdline_wildchar_complete(
     }
     else		    // typed p_wc first time
     {
+	if (c == p_wc || c == p_wcm)
+	{
+	    options |= WILD_MAY_EXPAND_PATTERN;
+	    if (pre_incsearch_pos)
+		xp->xp_pre_incsearch_pos = *pre_incsearch_pos;
+	    else
+		xp->xp_pre_incsearch_pos = curwin->w_cursor;
+	}
 	wim_index = 0;
 	j = ccline.cmdpos;
 	// if 'wildmode' first contains "longest", get longest
@@ -1927,6 +1954,10 @@ getcmdline_int(
 	{
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 	    event_cmdlineleavepre_triggered = TRUE;
+#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+	    if ((c == ESC || c == Ctrl_C) && (wim_flags[0] & WIM_LIST))
+		set_no_hlsearch(TRUE);
+#endif
 	}
 
 	// The wildmenu is cleared if the pressed key is not used for
@@ -2021,7 +2052,13 @@ getcmdline_int(
 	if ((c == p_wc && !gotesc && KeyTyped) || c == p_wcm)
 	{
 	    res = cmdline_wildchar_complete(c, firstc != '@', &did_wild_list,
-		    &wim_index, &xpc, &gotesc);
+		    &wim_index, &xpc, &gotesc,
+#ifdef FEAT_SEARCH_EXTRA
+		    &is_state.search_start
+#else
+		    NULL
+#endif
+		    );
 	    if (res == CMDLINE_CHANGED)
 		goto cmdline_changed;
 	}
@@ -2056,6 +2093,16 @@ getcmdline_int(
 	// further.
 	if (wild_type == WILD_CANCEL || wild_type == WILD_APPLY)
 	{
+#ifdef FEAT_SEARCH_EXTRA
+	    // Apply search highlighting
+	    if (wild_type == WILD_APPLY)
+	    {
+		if (is_state.winid != curwin->w_id)
+		    init_incsearch_state(&is_state);
+		if (KeyTyped || vpeekc() == NUL)
+		    may_do_incsearch_highlighting(firstc, count, &is_state);
+	    }
+#endif
 	    wild_type = 0;
 	    goto cmdline_not_changed;
 	}
@@ -2527,6 +2574,8 @@ cmdline_changed:
 	// If the window changed incremental search state is not valid.
 	if (is_state.winid != curwin->w_id)
 	    init_incsearch_state(&is_state);
+	if (xpc.xp_context == EXPAND_NOTHING && (KeyTyped || vpeekc() == NUL))
+	    may_do_incsearch_highlighting(firstc, count, &is_state);
 #endif
 	// Trigger CmdlineChanged autocommands.
 	if (trigger_cmdlinechanged)
@@ -2538,11 +2587,6 @@ cmdline_changed:
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CURSORMOVEDC);
 	    prev_cmdpos = ccline.cmdpos;
 	}
-
-#ifdef FEAT_SEARCH_EXTRA
-	if (xpc.xp_context == EXPAND_NOTHING && (KeyTyped || vpeekc() == NUL))
-	    may_do_incsearch_highlighting(firstc, count, &is_state);
-#endif
 
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl

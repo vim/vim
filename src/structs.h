@@ -655,6 +655,8 @@ typedef struct expand
     char_u	*xp_line;		// text being completed
 #define EXPAND_BUF_LEN 256
     char_u	xp_buf[EXPAND_BUF_LEN];	// buffer for returned match
+    int		xp_search_dir;		// Direction of search
+    pos_T	xp_pre_incsearch_pos;	// Cursor position before incsearch
 } expand_T;
 
 /*
