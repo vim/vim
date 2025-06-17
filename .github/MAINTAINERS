@@ -134,6 +134,8 @@ runtime/ftplugin/asy.vim		@avidseeker
 runtime/ftplugin/autohotkey.vim		@telemachus
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
+runtime/ftplugin/brighterscript.vim	@ribru17
+runtime/ftplugin/brightscript.vim	@ribru17
 runtime/ftplugin/bst.vim		@tpope
 runtime/ftplugin/c3.vim		@ttytm
 runtime/ftplugin/cabal.vim		@ribru17

@@ -309,6 +309,12 @@ au BufNewFile,BufRead *.bb,*.bbappend,*.bbclass,*/build/conf/*.conf,*/meta{-*,}/
 " Blkid cache file
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 
+" Brighterscript
+au BufNewFile,BufRead *.bs			setf brighterscript
+
+" Brightscript
+au BufNewFile,BufRead *.brs			setf brightscript
+
 " BSDL
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
