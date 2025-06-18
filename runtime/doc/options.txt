@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 15
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4565,7 +4565,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-Directory|	 d  directories in CTRL-D listing and other special
 			    things in listings
 	|hl-ErrorMsg|	 e  error messages
-			 h  (obsolete, ignored)
 	|hl-IncSearch|	 i  'incsearch' highlighting
 	|hl-CurSearch|	 y  current instance of last search pattern
 	|hl-Search|	 l  last search pattern highlighting (see 'hlsearch')
