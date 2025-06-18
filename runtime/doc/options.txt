@@ -9742,7 +9742,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 		/foo<C-Z>
 <	You can find "spare" command-line keys suitable for this option by
 	looking at |ex-edit-index|.
-	See also |wildmenu|, |wildmode|.
 
 						*'wildignore'* *'wig'*
 'wildignore' 'wig'	string	(default "")

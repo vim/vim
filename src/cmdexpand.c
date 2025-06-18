@@ -1614,7 +1614,9 @@ set_expand_context(expand_T *xp)
 	xp->xp_search_dir = (ccline->cmdfirstc == '/') ? FORWARD : BACKWARD;
 	xp->xp_pattern = ccline->cmdbuff;
 	xp->xp_pattern_len = ccline->cmdpos;
+#ifdef FEAT_SEARCH_EXTRA
 	search_first_line = 0; // Search entire buffer
+#endif
 	return;
     }
 
@@ -4611,12 +4613,15 @@ expand_pattern_in_buf(
     int		found_new_match;
     int		looped_around = FALSE;
     int		pat_len;
-    int		has_range = search_first_line != 0;
+    int		has_range = FALSE;
     int		compl_started = FALSE;
     int		search_flags, i;
     char_u	*match;
 #ifdef FEAT_RELTIME
     searchit_arg_T  sia;
+#endif
+#ifdef FEAT_SEARCH_EXTRA
+    has_range = search_first_line != 0;
 #endif
 
     *matches = NULL;
@@ -4628,9 +4633,11 @@ expand_pattern_in_buf(
     pat_len = (int)STRLEN(pat);
     CLEAR_FIELD(cur_match_pos);
     CLEAR_FIELD(prev_match_pos);
+#ifdef FEAT_SEARCH_EXTRA
     if (has_range)
 	cur_match_pos.lnum = search_first_line;
     else
+#endif
 	cur_match_pos = pre_incsearch_pos;
 #ifdef FEAT_RELTIME
     CLEAR_FIELD(sia);
@@ -4660,10 +4667,12 @@ expand_pattern_in_buf(
 	if (found_new_match == FAIL)
 	    break;
 
+#ifdef FEAT_SEARCH_EXTRA
 	// If in range mode, check if match is within the range
 	if (has_range && (cur_match_pos.lnum < search_first_line
 		    || cur_match_pos.lnum > search_last_line))
 		break;
+#endif
 
 	if (compl_started)
 	{
