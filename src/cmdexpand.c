@@ -4606,8 +4606,7 @@ expand_pattern_in_buf(
     char_u	***matches,	    // return: array with matched strings
     int		*numMatches)	    // return: number of matches
 {
-    pos_T	cur_match_pos, start_pos, prev_match_pos, end_match_pos,
-		word_end_pos;
+    pos_T	cur_match_pos, prev_match_pos, end_match_pos, word_end_pos;
     garray_T	ga;
     int		found_new_match;
     int		looped_around = FALSE;
@@ -4633,7 +4632,6 @@ expand_pattern_in_buf(
 	cur_match_pos.lnum = search_first_line;
     else
 	cur_match_pos = pre_incsearch_pos;
-    start_pos = cur_match_pos;
 #ifdef FEAT_RELTIME
     CLEAR_FIELD(sia);
     sia.sa_tm = 500;  // 500ms max search time
@@ -4667,33 +4665,23 @@ expand_pattern_in_buf(
 		    || cur_match_pos.lnum > search_last_line))
 		break;
 
-#define POS_BEFORE(p1, p2) \
-    ((p1).lnum < (p2).lnum || \
-    ((p1).lnum == (p2).lnum && (p1).col < (p2).col))
-#define POS_AFTER(p1, p2) \
-    ((p1).lnum > (p2).lnum || \
-    ((p1).lnum == (p2).lnum && (p1).col > (p2).col))
-#define POS_EQUAL(p1, p2) ((p1).lnum == (p2).lnum && (p1).col == (p2).col)
-
 	if (compl_started)
 	{
 	    // If we've looped back to an earlier match, stop
-	    if (POS_EQUAL(cur_match_pos, prev_match_pos)
-		    || (dir == FORWARD
-			&& POS_BEFORE(cur_match_pos, prev_match_pos))
+	    if ((dir == FORWARD
+			&& (cur_match_pos.lnum < prev_match_pos.lnum
+			    || (cur_match_pos.lnum == prev_match_pos.lnum
+				&& cur_match_pos.col <= prev_match_pos.col)))
 		    || (dir == BACKWARD
-			&& POS_AFTER(cur_match_pos, prev_match_pos)))
+			&& (cur_match_pos.lnum > prev_match_pos.lnum
+			    || (cur_match_pos.lnum == prev_match_pos.lnum
+				&& cur_match_pos.col >= prev_match_pos.col))))
 	    {
 		if (looped_around)
 		    break;
 		else
 		    looped_around = TRUE;
 	    }
-	    else if (looped_around
-		    && ((dir == FORWARD && POS_AFTER(cur_match_pos, start_pos))
-			|| (dir == BACKWARD && POS_BEFORE(cur_match_pos,
-				start_pos))))
-		break;
 	}
 
 	compl_started = TRUE;
