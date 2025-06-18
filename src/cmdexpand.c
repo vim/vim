@@ -27,7 +27,6 @@ static int	ExpandUserDefined(char_u *pat, expand_T *xp, regmatch_T *regmatch, ch
 static int	ExpandUserList(expand_T *xp, char_u ***matches, int *numMatches);
 #endif
 static int	expand_pattern_in_buf(char_u *pat, int dir, char_u ***matches, int *numMatches);
-int		parse_pattern_and_range(pos_T *incsearch_start, int *search_delim, int *skiplen, int *patlen);
 
 // "compl_match_array" points the currently displayed list of entries in the
 // popup menu.  It is NULL when there is no popup menu.
@@ -2232,11 +2231,10 @@ set_context_in_filetype_cmd(expand_T *xp, char_u *arg)
     static void
 set_context_with_pattern(expand_T *xp)
 {
-    int		    skiplen;
-    int		    patlen;
-    int		    dummy;
-    int		    retval;
+    int		    skiplen = 0;
     cmdline_info_T  *ccline = get_cmdline_info();
+#ifdef FEAT_SEARCH_EXTRA
+    int		    dummy, patlen, retval;
 
     ++emsg_off;
     retval = parse_pattern_and_range(&pre_incsearch_pos, &dummy, &skiplen,
@@ -2247,6 +2245,7 @@ set_context_with_pattern(expand_T *xp)
     if (!retval || ccline->cmdpos <= skiplen
 	    || ccline->cmdpos > skiplen + patlen)
 	return;
+#endif
 
     xp->xp_pattern = ccline->cmdbuff + skiplen;
     xp->xp_pattern_len = ccline->cmdpos - skiplen;
