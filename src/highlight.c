@@ -3689,6 +3689,8 @@ syn_id2attr(int hl_id)
     hl_group_T	*sgp;
 
     hl_id = syn_get_final_id(hl_id);
+    // shouldn't happen
+    assert(hl_id > 0);
     sgp = &HL_TABLE()[hl_id - 1];	    // index is ID minus one
 
 #ifdef FEAT_GUI
@@ -3716,6 +3718,8 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
     hl_group_T	*sgp;
 
     hl_id = syn_get_final_id(hl_id);
+    // shouldn't happen
+    assert(hl_id > 0);
     sgp = &HL_TABLE()[hl_id - 1];	    // index is ID minus one
 
     *fgp = sgp->sg_gui_fg;
@@ -3734,6 +3738,8 @@ syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
     hl_group_T	*sgp;
 
     hl_id = syn_get_final_id(hl_id);
+    // shouldn't happen
+    assert(hl_id > 0);
     sgp = &HL_TABLE()[hl_id - 1];	    // index is ID minus one
     *fgp = sgp->sg_cterm_fg - 1;
     *bgp = sgp->sg_cterm_bg - 1;
