@@ -3394,8 +3394,11 @@ func Test_complete_opt_fuzzy()
     endif
     if g:change == 0
       return [#{word: "foo"}, #{word: "foobar"}, #{word: "fooBaz"}, #{word: "foobala"}, #{word: "你好吗"}, #{word: "我好"}]
+    elseif g:change == 1
+      return [#{word: "cp_match_array"}, #{word: "cp_str"}, #{word: "cp_score"}]
+    else
+      return [#{word: "for i = .."}, #{word: "bar"}, #{word: "foo"}, #{word: "for .. ipairs"}, #{word: "for .. pairs"}]
     endif
-    return [#{word: "for i = .."}, #{word: "bar"}, #{word: "foo"}, #{word: "for .. ipairs"}, #{word: "for .. pairs"}]
   endfunc
 
   new
@@ -3466,7 +3469,7 @@ func Test_complete_opt_fuzzy()
   set cot+=noinsert
   call feedkeys("i\<C-R>=CompAnother()\<CR>f", 'tx')
   call assert_equal("for", g:abbr)
-  call assert_equal(2, g:selected)
+  call assert_equal(0, g:selected)
 
   set cot=menu,menuone,noselect,fuzzy
   call feedkeys("i\<C-R>=CompAnother()\<CR>\<C-N>\<C-N>\<C-N>\<C-N>", 'tx')
@@ -3493,13 +3496,17 @@ func Test_complete_opt_fuzzy()
   call assert_equal('alpha bravio charlie', getline('.'))
 
   set cot=fuzzy,menu,noinsert
-  call feedkeys(":let g:change=1\<CR>")
+  call feedkeys(":let g:change=2\<CR>")
   call feedkeys("S\<C-X>\<C-O>for\<C-N>\<C-N>\<C-N>", 'tx')
   call assert_equal('for', getline('.'))
   call feedkeys("S\<C-X>\<C-O>for\<C-P>", 'tx')
   call assert_equal('for', getline('.'))
   call feedkeys("S\<C-X>\<C-O>for\<C-P>\<C-P>", 'tx')
   call assert_equal('for .. ipairs', getline('.'))
+
+  call feedkeys(":let g:change=1\<CR>")
+  call feedkeys("S\<C-X>\<C-O>c\<C-Y>", 'tx')
+  call assert_equal('cp_str', getline('.'))
 
   " clean up
   set omnifunc=
@@ -3703,7 +3710,7 @@ func Test_cfc_with_longest()
   call assert_equal('hello', getline('.'))
 
   " continue search for new leader after insert common prefix
-  exe "normal ohellokate\<CR>h\<C-X>\<C-N>k\<C-y>\<esc>"
+  exe "normal ohellokate\<CR>h\<C-X>\<C-N>k\<C-N>\<C-y>\<esc>"
   call assert_equal('hellokate', getline('.'))
 
   bw!
@@ -4110,6 +4117,12 @@ func Test_complete_match_count()
   set cpt=.^1,w
   exe "normal! Gof\<c-n>\<c-r>=PrintMenuWords()\<cr>"
   call assert_equal('f{''matches'': [''fo''], ''selected'': -1}', getline(5))
+  " With non-matching items
+  %d
+  call setline(1, ["free", "freebar", "foo", "fobarbaz"])
+  set cpt=.^2,w
+  exe "normal! Gofo\<c-n>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('fo{''matches'': [''foo'', ''fobarbaz''], ''selected'': -1}', getline(5))
   set cot&
 
   func ComplFunc(findstart, base)
@@ -4199,16 +4212,21 @@ func Test_complete_match_count()
   bw!
 
   " Test 'fuzzy' with max_items
-  " XXX: Cannot use complete_info() since it is broken for 'fuzzy'
   new
   set completeopt=menu,noselect,fuzzy
   set complete=.
   call setline(1, ["abcd", "abac", "abdc"])
-  execute "normal Goa\<c-n>c\<c-n>"
+  exe "normal! Goa\<c-n>c\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('ac{''matches'': [''abac'', ''abcd'', ''abdc''], ''selected'': -1}', getline(4))
+  exe "normal! Sa\<c-n>c\<c-n>\<c-n>\<c-p>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('abac{''matches'': [''abac'', ''abcd'', ''abdc''], ''selected'': 0}', getline(4))
+  execute "normal Sa\<c-n>c\<c-n>"
   call assert_equal('abac', getline(4))
   execute "normal Sa\<c-n>c\<c-n>\<c-n>\<c-n>\<c-n>\<c-n>"
   call assert_equal('abac', getline(4))
   set complete=.^1
+  exe "normal! Sa\<c-n>c\<c-n>\<c-n>\<c-p>\<c-r>=PrintMenuWords()\<cr>"
+  call assert_equal('abac{''matches'': [''abac''], ''selected'': 0}', getline(4))
   execute "normal Sa\<c-n>c\<c-n>\<c-n>\<c-n>"
   call assert_equal('abac', getline(4))
   set complete=.^2
@@ -4734,6 +4752,30 @@ func Test_complete_unloaded_buf_refresh_always()
   set complete&
   set completefunc&
   delfunc TestComplete
+endfunc
+
+func Test_complete_fuzzy_omnifunc_backspace()
+  let g:do_complete = v:false
+  func Omni_test(findstart, base)
+    if a:findstart
+      let g:do_complete = !g:do_complete
+    endif
+    if g:do_complete
+      return a:findstart ? 0 : [#{word: a:base .. 'def'}, #{word: a:base .. 'ghi'}]
+    endif
+    return a:findstart ? -3 : {}
+  endfunc
+
+  new
+  setlocal omnifunc=Omni_test
+  setlocal completeopt=menuone,fuzzy,noinsert
+  call setline(1, 'abc')
+  call feedkeys("A\<C-X>\<C-O>\<BS>\<Esc>0", 'tx!')
+  call assert_equal('ab', getline(1))
+
+  bwipe!
+  delfunc Omni_test
+  unlet g:do_complete
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

@@ -526,7 +526,7 @@ func Test_geometry()
       " Depending on the GUI library and the windowing system the final size
       " might be a bit different, allow for some tolerance.  Tuned based on
       " actual failures.
-      call assert_inrange(31, 35, str2nr(lines[0]))
+      call assert_inrange(30, 35, str2nr(lines[0]))
       " for some reason, the window may contain fewer lines than requested
       " for GTK, so allow some tolerance
       call assert_inrange(8, 13,  str2nr(lines[1]))

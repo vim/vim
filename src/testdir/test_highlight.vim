@@ -1144,6 +1144,17 @@ endfunc
 
 " Test for the hlset() function
 func Test_hlset()
+  " FIXME: With GVim, _current_ test cases that are run before this one may
+  "	influence the result of calling "hlset(hlget())", depending on what
+  "	"&guifont" is set to.  For example, introduce SetUp() as follows:
+  "
+  " if CanRunVimInTerminal() && has('gui_running') && has('gui_gtk')
+  "   def SetUp()
+  "     set guifont=Monospace\ 10
+  "   enddef
+  " endif
+  "
+  "	and see "E416: Missing equal sign: ... line 4" for this test case.
   let lines =<< trim END
     call assert_equal(0, hlset(test_null_list()))
     call assert_equal(0, hlset([]))

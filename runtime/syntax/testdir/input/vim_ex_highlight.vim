@@ -9,6 +9,7 @@ highlight clear
 
 " disable
 highlight clear Comment
+highlight clear ErrorMsg
 highlight Comment NONE
 
 " add/modify
@@ -20,12 +21,16 @@ highlight link Foo Comment
 highlight! link Foo Comment
 highlight link Foo NONE
 highlight! link Foo NONE
+highlight link Foo ErrorMsg
+highlight! link Foo ErrorMsg
 
 " default link
 highlight default link Foo Comment
 highlight! default link Foo Comment
 highlight default link Foo NONE
 highlight! default link Foo NONE
+highlight default link Foo ErrorMsg
+highlight! default link Foo ErrorMsg
 
 
 " line continuation and command separator

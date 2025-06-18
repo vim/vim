@@ -3202,3 +3202,127 @@ cmp_keyvalue_value_ni(const void *a, const void *b)
 		    kv2->value.length));
 }
 
+/*
+ * Iterative merge sort for doubly linked list.
+ * O(NlogN) worst case, and stable.
+ *  - The list is divided into blocks of increasing size (1, 2, 4, 8, ...).
+ *  - Each pair of blocks is merged in sorted order.
+ *  - Merged blocks are reconnected to build the sorted list.
+ */
+    void *
+mergesort_list(
+    void	*head,
+    void	*(*get_next)(void *),
+    void	(*set_next)(void *, void *),
+    void	*(*get_prev)(void *),
+    void	(*set_prev)(void *, void *),
+    int		(*compare)(const void *, const void *))
+{
+    if (!head || !get_next(head))
+	return head;
+
+    // Count length
+    int	    n = 0;
+    void*   curr = head;
+    while (curr)
+    {
+	n++;
+	curr = get_next(curr);
+    }
+
+    int	size;
+    for (size = 1; size < n; size *= 2)
+    {
+	void*	new_head = NULL;
+	void*	tail = NULL;
+	curr = head;
+
+	while (curr)
+	{
+	    // Split two runs
+	    void    *left = curr;
+	    void    *right = left;
+	    int	    i;
+	    for (i = 0; i < size && right; ++i)
+		right = get_next(right);
+
+	    void    *next = right;
+	    for (i = 0; i < size && next; ++i)
+		next = get_next(next);
+
+	    // Break links
+	    void    *l_end = right ? get_prev(right) : NULL;
+	    if (l_end)
+		set_next(l_end, NULL);
+	    if (right)
+		set_prev(right, NULL);
+
+	    void    *r_end = next ? get_prev(next) : NULL;
+	    if (r_end)
+		set_next(r_end, NULL);
+	    if (next)
+		set_prev(next, NULL);
+
+	    // Merge
+	    void    *merged = NULL;
+	    void    *merged_tail = NULL;
+
+	    while (left || right)
+	    {
+		void	*chosen = NULL;
+		if (!left)
+		{
+		    chosen = right;
+		    right = get_next(right);
+		}
+		else if (!right)
+		{
+		    chosen = left;
+		    left = get_next(left);
+		}
+		else if (compare(left, right) <= 0)
+		{
+		    chosen = left;
+		    left = get_next(left);
+		}
+		else
+		{
+		    chosen = right;
+		    right = get_next(right);
+		}
+
+		if (merged_tail)
+		{
+		    set_next(merged_tail, chosen);
+		    set_prev(chosen, merged_tail);
+		    merged_tail = chosen;
+		}
+		else
+		{
+		    merged = merged_tail = chosen;
+		    set_prev(chosen, NULL);
+		}
+	    }
+
+	    // Connect to full list
+	    if (!new_head)
+		new_head = merged;
+	    else
+	    {
+		set_next(tail, merged);
+		set_prev(merged, tail);
+	    }
+
+	    // Move tail to end
+	    while (get_next(merged_tail))
+		merged_tail = get_next(merged_tail);
+	    tail = merged_tail;
+
+	    curr = next;
+	}
+
+	head = new_head;
+    }
+
+    return head;
+}

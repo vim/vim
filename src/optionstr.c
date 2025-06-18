@@ -3565,7 +3565,7 @@ did_set_rulerformat(optset_T *args)
  * Process the new 'tabpanelopt' option value.
  */
     char *
-did_set_tabpanelopt(optset_T *args)
+did_set_tabpanelopt(optset_T *args UNUSED)
 {
     if (tabpanelopt_changed() == FAIL)
 	return e_invalid_argument;

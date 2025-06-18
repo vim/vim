@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 9.1.  Last change: 2025 May 30
+*tabpage.txt*   For Vim version 9.1.  Last change: 2025 Jun 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -441,7 +441,8 @@ To configure the tabpanel, use the following options: 'tabpanel',
 The 'tabpanel' and 'showtabpanel' options function similar to
 'statusline' or 'tabline'.
 
-The "columns:" of 'tabpanelopt' option specifies the width of the tabpanel:
+The "columns:" item of 'tabpanelopt' option specifies the width of the
+tabpanel:
 >
               +------ This width
               |
@@ -451,26 +452,17 @@ The "columns:" of 'tabpanelopt' option specifies the width of the tabpanel:
 	|  ~/aaa.txt|text text text text text text text
 	|(2)        |text text text text text text text
 <
-The "align:" of 'tabpanelopt' option determines whether the tabpanel is
-displayed on the right side of the window:
+The "align:" item of the 'tabpanelopt' option determines whether the tabpanel
+will be displayed on the left or right side of the window:
 >
 	+----------------------------------+-----------
 	|text text text text text text text|(1)
 	|text text text text text text text|  ~/aaa.txt
 	|text text text text text text text|(2)
 <
-The "wrap" of 'tabpanelopt' option controls whether lines in tabpanel are
-wraped:
->
-	+-----------+----------------------------------
-	|(1)        |text text text text text text text
-	|  ~/long_lo|text text text text text text text
-	|ng_file_nam|text text text text text text text
-	|e.txt      |text text text text text text text
-	|(2)        |text text text text text text text
-
-The "vert" of 'tabpanelopt' option defines whether a vertical separator is
-displayed between the tabpanel and the main window:
+The "vert" item of the 'tabpanelopt' option specifies whether a vertical
+separator should be displayed between the tabpanel and the display part of the
+window:
 >
                     +------ This is
                     |
@@ -480,7 +472,7 @@ displayed between the tabpanel and the main window:
 	|  ~/aaa.txt|text text text text text text text
 	|(2)        |text text text text text text text
 <
-The vertical separator used is "tpl_vert" of 'fillchars'.
+The vertical separator character is taken from "tpl_vert" in 'fillchars'.
 
 You can customize the appearance of the tab page labels using the highlight
 groups: |hl-TabPanel| |hl-TabPanelSel| |hl-TabPanelFill|

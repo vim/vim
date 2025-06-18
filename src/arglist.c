@@ -561,7 +561,7 @@ check_arg_idx(win_T *win)
 }
 
 /*
- * ":args", ":argslocal" and ":argsglobal".
+ * ":args", ":arglocal" and ":argglobal".
  */
     void
 ex_args(exarg_T *eap)

@@ -13,6 +13,60 @@ line1
 line2
 END
 
+let [foo, bar] =<< EOS
+line1
+line2
+EOS
+
+  let [foo, bar] =<< EOS
+line1
+line2
+EOS
+
+let [foo,
+      \ bar] =<< EOS
+line1
+line2
+EOS
+
+  let [foo,
+	\ bar] =<< EOS
+line1
+line2
+EOS
+
+let g:foo =<< END
+line1
+line2
+END
+
+  let g:foo =<< END
+line1
+line2
+END
+
+let [g:foo, g:bar] =<< EOS
+line1
+line2
+EOS
+
+  let [g:foo, g:bar] =<< EOS
+line1
+line2
+EOS
+
+let [g:foo,
+      \ g:bar] =<< EOS
+line1
+line2
+EOS
+
+  let [g:foo,
+	\ g:bar] =<< EOS
+line1
+line2
+EOS
+
 
 " trim
 

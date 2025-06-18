@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Jun 01
+" Last Change: 2025 Jun 11
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -265,6 +265,7 @@ function s:get_vim_command_type(cmd_name)
 		debuggreedy
 		def
 		delcommand
+		delfunction
 		doautoall
 		doautocmd
 		echo

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2025 May 30
+*todo.txt*      For Vim version 9.1.  Last change: 2025 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2201,8 +2201,6 @@ getbufvar() to get a window-local option value for a buffer that's not
 displayed in a window should return the value that's stored for that buffer.
 
 ":he ctrl_u" can be auto-corrected to ":he ctrl-u".
-
-Diff mode out of sync. (Gary Johnson, 2010 Aug 4)
 
 Win32: completion of file name ":e c:\!test" results in ":e c:\\!test", which
 does not work. (Nieko Maatjes, 2009 Jan 8, Ingo Karkat, 2009 Jan 22)

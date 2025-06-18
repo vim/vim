@@ -59,6 +59,30 @@ func Test_basic_uncomment()
   call assert_equal(["# vim9script", "", "def Hello()", '  echo "Hello"', "enddef"], result)
 endfunc
 
+func Test_backward_slash_uncomment()
+  " Note this test depends on 'commentstring' setting in nroff ftplugin
+  CheckScreendump
+  let lines =<< trim END
+    .\" .TL Test backward slash uncomment
+  END
+
+  let input_file = "Test_backward_slash_uncomment_input.mom"
+  call writefile(lines, input_file, "D")
+
+  let buf = RunVimInTerminal('-c "packadd comment" ' .. input_file, {})
+
+  call term_sendkeys(buf, "gcc")
+  let output_file = "backward_slash_uncomment_test.mom"
+  call term_sendkeys(buf, $":w {output_file}\<CR>")
+  defer delete(output_file)
+
+  call StopVimInTerminal(buf)
+
+  let result = readfile(output_file)
+
+  call assert_equal([".TL Test backward slash uncomment"], result)
+endfunc
+
 func Test_caseinsensitive_uncomment()
   CheckScreendump
   let lines =<< trim END

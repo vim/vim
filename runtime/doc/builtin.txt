@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jun 02
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jun 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2047,8 +2047,8 @@ complete_match([{lnum}, {col}])			*complete_match()*
 		  or empty string if no match was found or when using the
 		  default 'iskeyword' pattern.
 
-		When 'isexpand' is empty, uses the 'iskeyword' pattern
-		"\k\+$" to find the start of the current keyword.
+		When 'isexpand' is empty, uses the 'iskeyword' pattern "\k\+$"
+		to find the start of the current keyword.
 
 		Examples: >
 	set isexpand=.,->,/,/*,abc

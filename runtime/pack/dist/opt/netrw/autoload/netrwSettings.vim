@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_netrwSettings")
     finish
 endif
 
-let g:loaded_netrwSettings = "v180"
+let g:loaded_netrwSettings = "v181"
 
 " NetrwSettings: {{{
 
@@ -124,7 +124,6 @@ function! netrwSettings#NetrwSettings()
         put = '\" let g:netrw_dynamic_maxfilenamelen= (not defined)'
     endif
     put = 'let g:netrw_dirhistmax = '.g:netrw_dirhistmax
-    put = 'let g:netrw_errorlvl = '.g:netrw_errorlvl
     put = 'let g:netrw_fastbrowse = '.g:netrw_fastbrowse
     let fnameescline= line("$")
     put = 'let g:netrw_fname_escape = '.string(g:netrw_fname_escape)

@@ -1,7 +1,7 @@
 vim9script
 
 # Maintainer: Maxim Kim <habamax@gmail.com>
-# Last Update: 2025-04-22
+# Last Update: 2025-06-13
 #
 # Toggle comments
 # Usage:
@@ -19,7 +19,7 @@ export def Toggle(...args: list<string>): string
     if empty(&cms) || !&ma | return '' | endif
     var cms = substitute(substitute(&cms, '\S\zs%s\s*', ' %s', ''), '%s\ze\S', '%s ', '')
     var [lnum1, lnum2] = [line("'["), line("']")]
-    var cms_l = split(escape(cms, '*.'), '\s*%s\s*')
+    var cms_l = split(escape(cms, '*.\^$['), '\s*%s\s*')
 
     var first_col = indent(lnum1)
     var start_col = getpos("'[")[2] - 1

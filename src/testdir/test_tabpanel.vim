@@ -10,6 +10,33 @@ function s:reset()
   set showtabpanel&
 endfunc
 
+function Test_tabpanel_showtabpanel_eq_0()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    call setbufline(bufnr(), 1, ['aaa','bbb','ccc','ddd'])
+    tabnew 0000
+  END
+  call writefile(lines, 'XTest_tabpanel_stpl_eq_0', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_stpl_eq_0', {'rows': 10, 'cols': 78})
+  call term_sendkeys(buf, ":set showtabpanel=0\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_0', {})
+  call term_sendkeys(buf, ":tabnext\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_1', {})
+  call term_sendkeys(buf, ":set showtabpanel=2\<CR>")
+  call term_sendkeys(buf, ":vsp aaa\<CR>:vsp bbb\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_2', {})
+  call term_sendkeys(buf, ":set showtabpanel=0\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_3', {})
+  call term_sendkeys(buf, ":wincmd |\<CR>")
+  call term_sendkeys(buf, ":set showtabpanel=2\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_stpl_eq_0_2', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 function Test_tabpanel_showtabpanel_eq_1()
   CheckScreendump
 
@@ -652,5 +679,53 @@ function Test_tabpanel_error()
 
   set tabpanel&vim
   set showtabpanel&vim
+endfunc
+
+function Test_tabpanel_with_msg_scrolled()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    tabnew
+    set modified
+    tabfirst
+  END
+  call writefile(lines, 'XTest_tabpanel_with_msg_scrolled', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_msg_scrolled', {'rows': 10, 'cols': 45})
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_msg_scrolled_0', {})
+  call term_sendkeys(buf, ":qa\<CR>")
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_msg_scrolled_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+function Test_tabpanel_with_cmdline_pum()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    tabnew aaa
+    set wildoptions+=pum
+    func TimerCb(timer)
+      tabnew bbb
+    endfunc
+    call timer_start(100, 'TimerCb')
+  END
+  call writefile(lines, 'XTest_tabpanel_with_cmdline_pum', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_cmdline_pum', {'rows': 10, 'cols': 45})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_0', {})
+  call term_sendkeys(buf, ":set\<Tab>")
+  call term_wait(buf, 120)
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_1', {})
+  call term_sendkeys(buf, "\<Esc>:tabclose\<CR>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_pum_0', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 " vim: shiftwidth=2 sts=2 expandtab

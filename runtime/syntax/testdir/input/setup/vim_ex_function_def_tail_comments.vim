@@ -1,2 +1,2 @@
 highlight link vimVar Identifier
-highlight link vimFuncScope Special
+highlight link vimFunctionScope Special

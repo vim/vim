@@ -12,7 +12,7 @@ SetLocal
 :: When that also fails, it uses the English version.
 
 :: Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
-for %%G in (. %TMP% %TEMP%) do (
+for %%G in (%TMP% %TEMP% .) do (
   call :TestDirWritable "%~f0" %%G
   if not ERRORLEVEL 1 goto DirOk
 )
@@ -23,7 +23,7 @@ goto End
 
 :TestDirWritable
 set TUTORCOPY=%2\$tutor$
-copy %1 %TUTORCOPY% 2>&1> nul
+copy %1 %TUTORCOPY% >nul 2>&1
 goto DelTmpCopy
 
 :DirOk

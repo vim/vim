@@ -3656,6 +3656,7 @@ struct tabpage_S
     long	    tp_old_Rows;    // Rows when Tab page was left
     long	    tp_old_Columns; // Columns when Tab page was left, -1 when
 				    // calling shell_new_columns() postponed
+    int		    tp_old_coloff;  // Column offset when Tab page was left
     long	    tp_ch_used;	    // value of 'cmdheight' when frame size
 				    // was set
 #ifdef FEAT_GUI
@@ -4566,8 +4567,6 @@ typedef struct
     char_u	*pum_kind;		// extra kind text (may be truncated)
     char_u	*pum_extra;		// extra menu text (may be truncated)
     char_u	*pum_info;		// extra info
-    int		pum_score;		// fuzzy match score
-    int		pum_idx;		// index of item before sorting by score
     int		pum_cpt_source_idx;	// index of completion source in 'cpt'
     int		pum_user_abbr_hlattr;	// highlight attribute for abbr
     int		pum_user_kind_hlattr;	// highlight attribute for kind
