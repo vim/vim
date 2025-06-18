@@ -27,6 +27,7 @@ static int	ExpandUserDefined(char_u *pat, expand_T *xp, regmatch_T *regmatch, ch
 static int	ExpandUserList(expand_T *xp, char_u ***matches, int *numMatches);
 #endif
 static int	expand_pattern_in_buf(char_u *pat, int dir, char_u ***matches, int *numMatches);
+int		parse_pattern_and_range(pos_T *incsearch_start, int *search_delim, int *skiplen, int *patlen);
 
 // "compl_match_array" points the currently displayed list of entries in the
 // popup menu.  It is NULL when there is no popup menu.
@@ -4302,8 +4303,10 @@ wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 	RedrawingDisabled = 0;
 #endif
 
+#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
     // Clear highlighting applied during wildmenu activity
     set_no_hlsearch(TRUE);
+#endif
 
     if (wild_menu_showing == WM_SCROLLED)
     {
