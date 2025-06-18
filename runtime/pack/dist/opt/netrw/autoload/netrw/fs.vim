@@ -25,7 +25,7 @@ endfunction
 
 function! netrw#fs#ComposePath(base, subdir)
     if has('amiga')
-        let ec = a:base[s:Strlen(a:base)-1]
+        let ec = a:base[strdisplaywidth(a:base)-1]
         if ec != '/' && ec != ':'
             let ret = a:base . '/' . a:subdir
         else
@@ -180,7 +180,7 @@ function! netrw#fs#Remove(path)
     endif
 
     if result < 0
-        call netrw#ErrorMsg(netrw#LogLevel('WARNING'), printf('delete("%s") failed!', path), 71)
+        call netrw#msg#Notify('WARNING', printf('delete("%s") failed!', path))
     endif
 
     return result

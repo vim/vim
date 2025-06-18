@@ -106,7 +106,6 @@ tabpanelopt_changed(void)
     tpl_is_vert = new_is_vert;
 
     shell_new_columns();
-    redraw_tabpanel = TRUE;
 
     if (do_equal)
 	win_equal(curwin, FALSE, 0);
@@ -120,9 +119,6 @@ tabpanelopt_changed(void)
     int
 tabpanel_width(void)
 {
-    if (msg_scrolled != 0)
-	return 0;
-
     switch (p_stpl)
     {
 	case 0:
@@ -141,12 +137,9 @@ tabpanel_width(void)
  * Return the offset of a window considering the width of tabpanel.
  */
     int
-tabpanel_leftcol(win_T *wp)
+tabpanel_leftcol(void)
 {
-    if (cmdline_pum_active() || (wp != NULL && WIN_IS_POPUP(wp)))
-	return 0;
-    else
-	return tpl_align == ALIGN_RIGHT ? 0 : tabpanel_width();
+    return tpl_align == ALIGN_RIGHT ? 0 : tabpanel_width();
 }
 
 /*

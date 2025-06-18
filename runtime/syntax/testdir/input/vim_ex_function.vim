@@ -64,7 +64,45 @@ function <SID>Foo()
   return 42
 endfunction
 
+function b:dict.Foo()
+  return 42
+endfunction
+
+function w:dict.Foo()
+  return 42
+endfunction
+
+function t:dict.Foo()
+  return 42
+endfunction
+
+function g:dict.Foo()
+  return 42
+endfunction
+
+function s:dict.Foo()
+  return 42
+endfunction
+
+function v:dict.Foo()
+  return 42
+endfunction
+
+function Foo(arg)
+  let l:dict = {}
+  function l:dict.BAR()
+    return 42
+  endfunction
+  function a:arg.BAR()
+    return 42
+  endfunction
+endfunction
+
 function foo#bar#Foo()
+  return 42
+endfunction
+
+function g:foo#bar#Foo()
   return 42
 endfunction
 
@@ -152,6 +190,14 @@ function Foo(
   return 42
 endfunction
 
+function Foo(
+        x,
+        y,
+        z,
+        ...)
+  return 42
+endfunction
+
 function Foo(x, y = 42, z = "zed")
   return 42
 endfunction
@@ -160,6 +206,13 @@ function Foo(
       \ x,
       \ y = 42,
       \ z = "zed")
+  return 42
+endfunction
+
+function Foo(
+        x,
+        y = 42,
+        z = "zed")
   return 42
 endfunction
 
@@ -204,25 +257,9 @@ echo "Foo" | function Foo()
 endfunction
 
 
-" delete function
-
-delfunction Foo
-delfunction foo.bar
-delfunction! Foo
-delfunction foo.bar
-
-
-" Issue https://github.com/vim/vim/pull/17420#issuecomment-2927798687
-" (arg named /fu%\[nction]/)
-
-" FIXME
-silent! delfunc! func
-
-
 " Issue https://github.com/vim/vim/pull/17420#issuecomment-2927798687
 " (function named /s:fu%\[nction]/)
-
-" FIXME
+￼
 func! s:func(_, func)
     return a:func
 endfunc

@@ -72,7 +72,7 @@ void shell_new_rows(void);
 void shell_new_columns(void);
 void win_size_save(garray_T *gap);
 void win_size_restore(garray_T *gap);
-int win_comp_pos(void);
+void win_comp_pos(void);
 void win_ensure_size(void);
 void win_setheight(int height);
 void win_setheight_win(int height, win_T *win);

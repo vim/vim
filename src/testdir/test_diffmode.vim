@@ -50,6 +50,34 @@ func Test_vert_split()
   set diffopt&
 endfunc
 
+" Test for diff folding redraw after last diff is resolved
+func Test_diff_fold_redraw()
+  " Set up two files with a minimal case.
+  call writefile(['Paragraph 1', '', 'Paragraph 2', '', 'Paragraph 3'], 'Xfile1')
+  call writefile(['Paragraph 1', '', 'Paragraph 3'], 'Xfile2')
+
+  " Open in diff mode.
+  edit Xfile1
+  vert diffsplit Xfile2
+
+  " Go to the diff and apply :diffput to copy Paragraph 2 to Xfile2.
+  wincmd l
+  3
+  diffput
+
+  " Check that the folds in both windows are closed and extend from the first
+  " line of the buffer to the last line of the buffer.
+  call assert_equal(1, foldclosed(line("$")))
+  wincmd h
+  call assert_equal(1, foldclosed(line("$")))
+
+  " Clean up.
+  bwipe!
+  bwipe!
+  call delete('Xfile1')
+  call delete('Xfile2')
+endfunc
+
 func Test_vert_split_internal()
   set diffopt=internal,filler
   call Common_vert_split()

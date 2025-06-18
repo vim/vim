@@ -8847,7 +8847,7 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
  * Process the new 'showtabpanel' option value.
  */
     char *
-did_set_showtabpanel(optset_T *args)
+did_set_showtabpanel(optset_T *args UNUSED)
 {
     shell_new_columns();
     return NULL;
