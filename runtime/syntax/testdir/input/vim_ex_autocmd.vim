@@ -8,22 +8,22 @@
 autocmd foogroup BufRead            *.txt echo "Foo" | echo "Bar"
 autocmd          BufRead            *.txt echo "Foo" | echo "Bar"
 autocmd          BufRead,BufNewFile *.txt echo "Foo" | echo "Bar"
-autocmd          User FooEvent      *.txt echo "Foo" | echo "Bar"
+autocmd          User FooEvent            echo "Foo" | echo "Bar"
 
 autocmd foogroup BufRead            *.txt ++once echo "Foo" | echo "Bar"
 autocmd          BufRead            *.txt ++once echo "Foo" | echo "Bar"
 autocmd          BufRead,BufNewFile *.txt ++once echo "Foo" | echo "Bar"
-autocmd          User FooEvent      *.txt ++once echo "Foo" | echo "Bar"
+autocmd          User FooEvent            ++once echo "Foo" | echo "Bar"
 
 autocmd foogroup BufRead            *.txt ++nested echo "Foo" | echo "Bar"
 autocmd          BufRead            *.txt ++nested echo "Foo" | echo "Bar"
 autocmd          BufRead,BufNewFile *.txt ++nested echo "Foo" | echo "Bar"
-autocmd          User FooEvent      *.txt ++nested echo "Foo" | echo "Bar"
+autocmd          User FooEvent            ++nested echo "Foo" | echo "Bar"
 
 autocmd foogroup BufRead            *.txt ++once ++nested echo "Foo" | echo "Bar"
 autocmd          BufRead            *.txt ++once ++nested echo "Foo" | echo "Bar"
 autocmd          BufRead,BufNewFile *.txt ++once ++nested echo "Foo" | echo "Bar"
-autocmd          User FooEvent      *.txt ++once ++nested echo "Foo" | echo "Bar"
+autocmd          User FooEvent            ++once ++nested echo "Foo" | echo "Bar"
 
 autocmd foogroup BufRead            <buffer>      ++once ++nested echo "Foo" | echo "Bar"
 autocmd foogroup BufRead            <buffer=42>   ++once ++nested echo "Foo" | echo "Bar"
@@ -34,9 +34,7 @@ autocmd          BufRead            <buffer=abuf> ++once ++nested echo "Foo" | e
 autocmd          BufRead,BufNewFile <buffer>      ++once ++nested echo "Foo" | echo "Bar"
 autocmd          BufRead,BufNewFile <buffer=42>   ++once ++nested echo "Foo" | echo "Bar"
 autocmd          BufRead,BufNewFile <buffer=abuf> ++once ++nested echo "Foo" | echo "Bar"
-autocmd          User FooEvent      <buffer>      ++once ++nested echo "Foo" | echo "Bar"
-autocmd          User FooEvent      <buffer=42>   ++once ++nested echo "Foo" | echo "Bar"
-autocmd          User FooEvent      <buffer=abuf> ++once ++nested echo "Foo" | echo "Bar"
+autocmd          User FooEvent,BarEvent           ++once ++nested echo "Foo" | echo "Bar"
 
 autocmd foogroup BufRead            f<buffer>oo   ++once ++nested echo "Foo" | echo "Bar"
 
@@ -48,7 +46,7 @@ autocmd BufRead,BufNewFile *.txt {
   echo "Foo"
   echo "Bar"
 }
-autocmd User FooEvent *.txt {
+autocmd User FooEvent {
   echo "Foo"
   echo "Bar"
 }
@@ -83,7 +81,7 @@ autocmd BufRead,BufNewFile *.txt
       \ echo "Bar"
       "\ comment
       \| echo "Baz"
-autocmd User FooEvent *.txt
+autocmd User FooEvent
       "\ comment
       \ echo "Foo" |
       "\ comment
@@ -119,13 +117,13 @@ autocmd *       BufRead *.txt ++once ++nested echo "Foo"
 
 autocmd! foogroup BufRead       *.txt ++once ++nested echo "Foo" | echo "Bar"
 autocmd!          BufRead       *.txt ++once ++nested echo "Foo" | echo "Bar"
-autocmd! foogroup User FooEvent *.txt ++once ++nested echo "Foo" | echo "Bar"
-autocmd!          User FooEvent *.txt ++once ++nested echo "Foo" | echo "Bar"
+autocmd! foogroup User FooEvent       ++once ++nested echo "Foo" | echo "Bar"
+autocmd!          User FooEvent       ++once ++nested echo "Foo" | echo "Bar"
 
 autocmd! foogroup BufRead       *.txt
 autocmd!          BufRead       *.txt
-autocmd! foogroup User FooEvent *.txt
-autocmd!          User FooEvent *.txt
+autocmd! foogroup User FooEvent
+autocmd!          User FooEvent
 
 autocmd! foogroup * *.txt
 autocmd!          * *.txt
@@ -159,8 +157,6 @@ autocmd!BufRead BufRead *.txt
 
 autocmd foogroup BufRead       *.txt
 autocmd          BufRead       *.txt
-autocmd foogroup User FooEvent *.txt
-autocmd          User FooEvent *.txt
 
 autocmd foogroup * *.txt
 autocmd          * *.txt
@@ -185,12 +181,10 @@ doautoall <nomodeline> BufRead
 doautoall <nomodeline> foogroup BufRead *.txt
 
 doautoall User FooEvent
-
-doautoall User FooEvent *.txt
 doautoall foogroup User FooEvent
 doautoall <nomodeline> User FooEvent
 
-doautoall <nomodeline> foogroup User FooEvent *.txt
+doautoall <nomodeline> foogroup User FooEvent
 
 doautoall <nomodeline> foogroup BufRead *.txt | echo "Foo"
 doautoall <nomodeline> foogroup BufRead *.txt " comment
@@ -207,12 +201,11 @@ doautocmd <nomodeline> BufRead
 doautocmd <nomodeline> foogroup BufRead *.txt
 
 doautocmd User FooEvent
-
-doautocmd User FooEvent *.txt
+doautocmd User FooEvent,BarEvent
 doautocmd foogroup User FooEvent
 doautocmd <nomodeline> User FooEvent
 
-doautocmd <nomodeline> foogroup User FooEvent *.txt
+doautocmd <nomodeline> foogroup User FooEvent
 
 doautocmd <nomodeline> foogroup BufRead *.txt | echo "Foo"
 doautocmd <nomodeline> foogroup BufRead *.txt | " comment

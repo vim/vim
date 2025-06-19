@@ -99,6 +99,8 @@ viminfo_filename(char_u *file)
 {
     if (file == NULL || *file == NUL)
     {
+	size_t  len;
+
 	if (*p_viminfofile != NUL)
 	    file = p_viminfofile;
 	else if ((file = find_viminfo_parameter('n')) == NULL || *file == NUL)
@@ -127,9 +129,12 @@ viminfo_filename(char_u *file)
 #endif
 		file = (char_u *)VIMINFO_FILE;
 	}
-	expand_env(file, NameBuff, MAXPATHL);
+	len = expand_env(file, NameBuff, MAXPATHL);
 	file = NameBuff;
+
+	return vim_strnsave(file, len);
     }
+
     return vim_strsave(file);
 }
 

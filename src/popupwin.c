@@ -2421,11 +2421,17 @@ back_to_prevwin(win_T *wp)
 
 /*
  * Close popup "wp" and invoke any close callback for it.
+ * Careful: callback function might have freed the popup window already
  */
     static void
 popup_close_and_callback(win_T *wp, typval_T *arg)
 {
-    int id = wp->w_id;
+    int id;
+
+    if (!win_valid(wp))
+       return;
+
+    id = wp->w_id;
 
 #ifdef FEAT_TERMINAL
     if (wp == curwin && curbuf->b_term != NULL)

@@ -540,10 +540,9 @@ fname2fnum(xfmark_T *fm)
 #endif
 		))
     {
-	int len;
+	size_t len;
 
-	expand_env((char_u *)"~/", NameBuff, MAXPATHL);
-	len = (int)STRLEN(NameBuff);
+	len = expand_env((char_u *)"~/", NameBuff, MAXPATHL);
 	vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
     }
     else
