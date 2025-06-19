@@ -6,7 +6,7 @@
 
      Hic sunt dracones : si cʼest la première fois que vous utilisez Vim
      et que vous souhaitez accéder au tutoriel dʼintroduction, tapez
-     les trois touches :q! suivi de la touche <ENTRÉE> et recommencez.
+     les trois touches  :q!  puis la touche <ENTRÉE> et recommencez.
 
      Il vous faudra entre 8 et 10 minutes pour terminer ce chapitre, selon
      que vous passiez plus ou moins de temps à expérimenter.
@@ -21,31 +21,31 @@
 
   2. Placez-vous nʼimporte où dans le mot 'Édouard' et tapez   "ayiw
 
-MNEMONIC : into register(") named (a) (y)ank (i)nner (w)ord,
-  soit en français : copie le mot sous-jacent dans le registre (a)
+ASTUCE MNÉMOTECHNIQUE :	dans le registre(") nommé (a) (y)ank la portion
+	(i)nterne du (w)ord sous-jacent
 
   3. Avancez jusquʼau mot 'chouquettes' (fq ou 2fc ou $ ou /ch<ENTRÉE>)
      et tapez   "byiw
 
   4. Rendez-vous sur le mot 'Vincent' et tapez   ciw<CTRL-R>a<ÉCHAP>
 
-MNEMONIC: (c)hange (i)nner (w)ord with <contents of (r)egister> named (a)
-  soit en français : change le mot sous-jacent avec le contenu du registre (a)
+AIDE MNÉMOTECHNIQUE :	é(c)hange la partie (i)nterne du (w)ord sous-jacent
+	avec le <contenu du (r)egistre> nommé (a)
 
   5. Rendez-vous sur le mot 'croissant' et tapez   ciw<CTRL-R>b<ÉCHAP>
 
 --->  a) Édouard aura toute autorité sur le contingentement des chouquettes
       b) À ce titre, Vincent exercera seul le pouvoir discrétionnaire sur
-      lʼattribution des croissants.
+         lʼattribution des croissants.
 
 NOTE : On peut aussi utiliser les registres avec la commande de suppression.
        Taper  "sdiw supprimera le mot sous-jacent et en conservera une copie
        dans le registre (s).
 
-RÉFÉRENCES: 	Registers 	:h registers
-		Named Registers :h quotea
-		Motion 		:h motion.txt<ENTRÉE> /inner<ENTRÉE>
-		CTRL-R		:h insert<ENTRÉE> /CTRL-R<ENTRÉE>
+RÉFÉRENCES: 	Registres 		:h registers
+		Registres nommés	:h quotea
+		Mouvements 		:h motion.txt<ENTRÉE> /inner<ENTRÉE>
+		CTRL-R			:h insert<ENTRÉE> /CTRL-R<ENTRÉE>
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -61,7 +61,7 @@ RÉFÉRENCES: 	Registers 	:h registers
   3. Tapez  ciw<Ctr-r> suivi de  =60*60*24<ENTRÉE>
 
   4. Sur la ligne suivante, en mode Insertion, ajoutez la date du jour avec
-     <Ctrl-r> suivi de  =system('date')<ENTRÉE>
+     <CRTL-R> suivi de  =system('date')<ENTRÉE>
 
 NOTE : Tous les appels système dépendent de votre système dʼexploitation. Par
       exemple sur MS-Windows, utilisez plutôt
@@ -73,7 +73,7 @@ NOTE : Tous les appels système dépendent de votre système dʼexploitation. 
 NOTE: on arrive au même résultat avec  :pu=system('date')
       ou, plus court  :r!date
 
-RÉFÉRENCE : 	Expression Register 	:h quote=
+RÉFÉRENCE : 	Registre dʼexpressions 	:h quote=
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -114,12 +114,12 @@ NOTE : Les lignes entièrement supprimées (via dd) restent beaucoup plus
        longtemps dans les registres numérotés que les lignes copiées (via yy)
        ou les suppressions impliquant des mouvements plus courts.
 
-RÉFÉRENCE : 	Numbered Registers 	:h quote0
+RÉFÉRENCE : 	Registres numérotés 	:h quote0
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		      Leçon 2.1.4 : LA BEAUTÉ DES MARQUES
+		      Leçon 2.1.4 : LʼÉLÉGANCE DES MARQUES
 
 
 		** Lʼart dʼéviter les calculs pour le codeur décérébré **
@@ -143,15 +143,13 @@ NOTE : peu importe la position exacte sur la ligne.
 
   4. Supprimez le bloc et conservez-le dans le registre (a) avec  "ad'a
 
-MNEMONIC : into register(") named (a) put the (d)eletion from the cursor
-           to the LINE containing mark(') (a)
-  en français : supprime tout ce qui se trouve entre le curseur et la ligne
-                qui contient la marque (a) et conserve le tout dans le
-                registre (a)
+AIDE MNÉMOTECHNIQUE :	demande au registre(") nommé (a) de conserver la
+	(d)élétion effectuée depuis le curseur jusquʼà la LIGNE contenant la
+	marque(') (a)
 
   5. Collez le bloc entre BBB et CCC avec  "ap
 
-NOTE : Exercez-vous plusieurs fois pour que ça devienne naturel   ma$%"ad'a
+NOTE : exercez-vous plusieurs fois pour que ça devienne naturel   ma$%"ad'a
 
 ---> AAA
      function itGotRealBigRealFast() {
@@ -173,8 +171,8 @@ NOTE : les marques et les registres ne partagent pas leur espace de noms,
        le registre (a) est complètement indépendant de la marque (a).
        On ne peut pas en dire autant des registres et des macros.
 
-RÉFÉRENCE: 	Marks 		:h marks
-		Mark Motions 	:h mark-motions  (difference between ' and `)
+RÉFÉRENCES :	Marques		:h marks
+				:h mark-motions  (différence entre ' et ` )
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -202,7 +200,7 @@ RÉFÉRENCE: 	Marks 		:h marks
      numérotés et à quel point elles sont éphémères
 
  10. Placer des marques depuis le mode Normal   m[a-zA-Z0-9]
- 11. Se déplacer ligne par ligne jusquʼà une marque avec   '
+ 11. Se déplacer ligne par ligne jusquʼà une marque avec  '
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
