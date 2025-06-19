@@ -587,7 +587,7 @@ CClink = $(CC)
 # When using -g with some older versions of Linux you might get a
 # statically linked executable.
 # When not defined, configure will try to use -O2 for gcc and -O for others.
-#CFLAGS = -g
+CFLAGS = -g
 #CFLAGS = -O
 
 # Optimization limits - depends on the compiler.  Automatic check in configure
