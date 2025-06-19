@@ -7604,7 +7604,7 @@ nv_binsearch(cmdarg_T *cap)
 	    old_motion_type = cap->oap->motion_type;
 	}
 
-	cap->oap->op_type = OP_NOP;	//we will unset the op_type so we only process the pending operator after we're done with the binsearch
+	cap->oap->op_type = OP_NOP;	//we unset the op_type so we only process the pending operator after we're done with the binsearch
     }
 
     while(TRUE)				//binsearch loop
@@ -7616,8 +7616,9 @@ nv_binsearch(cmdarg_T *cap)
     {
 	binsearch_mode = FALSE;
 	vungetc(c);
-	finish_op = TRUE;			      //make vim remember there is an operator pending;  necessary
-	return;					      //for motion type support
+	finish_op = TRUE;			      //make vim remember there is an operator pending and
+	return;					      //avoid flushing oap in normal_cmd. necessary for 
+						      //motion force support
     }
     if(c==Ctrl_J)
     {
@@ -7654,5 +7655,6 @@ nv_binsearch(cmdarg_T *cap)
     if(old_op_type != OP_NOP)
 	finish_op = TRUE;
     returned = TRUE;
+
 
 }
