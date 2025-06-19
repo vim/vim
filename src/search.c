@@ -42,17 +42,19 @@ static void find_mps_values(int *initc, int *findc, int *backwards, int switchit
 static int is_zero_width(char_u *pattern, size_t patternlen, int move, pos_T *cur, int direction);
 static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, size_t msgbuflen, int recompute, int maxcount, long timeout);
 static void update_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, searchstat_T *stat, int recompute, int maxcount, long timeout);
-static int fuzzy_match_compute_score(char_u *fuzpat, char_u *str, int strSz, int_u *matches, int numMatches, int camelcase);
-static int fuzzy_match_recursive(char_u *fuzpat, char_u *str, int_u strIdx, int *outScore, char_u *strBegin, int strLen, int_u *srcMatches, int_u *matches, int maxMatches, int nextMatch, int *recursionCount, int camelcase);
 #if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 static int fuzzy_match_item_compare(const void *s1, const void *s2);
-static void fuzzy_match_in_list(list_T *l, char_u *str, int matchseq, char_u *key, callback_T *item_cb, int retmatchpos, list_T *fmatchlist, long max_matches, int camelcase);
+static void fuzzy_match_in_list(list_T *l, char_u *str, int matchseq, char_u *key, callback_T *item_cb, int retmatchpos, list_T *fmatchlist, long max_matches);
 static void do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos);
 #endif
 static int fuzzy_match_str_compare(const void *s1, const void *s2);
 static void fuzzy_match_str_sort(fuzmatch_str_T *fm, int sz);
 static int fuzzy_match_func_compare(const void *s1, const void *s2);
 static void fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz);
+
+#if defined(PLATFORM_X86) || defined(PLATFORM_ARM_NEON)
+static int simd_fuzzy_match_str(char_u *str, char_u *pat);
+#endif
 
 #define SEARCH_STAT_DEF_TIMEOUT 40L
 #define SEARCH_STAT_DEF_MAX_COUNT 99
@@ -4293,51 +4295,6 @@ the_end:
 /*
  * Fuzzy string matching
  *
- * Ported from the lib_fts library authored by Forrest Smith.
- * https://github.com/forrestthewoods/lib_fts/tree/master/code
- *
- * The following blog describes the fuzzy matching algorithm:
- * https://www.forrestthewoods.com/blog/reverse_engineering_sublime_texts_fuzzy_match/
- *
- * Each matching string is assigned a score. The following factors are checked:
- *   - Matched letter
- *   - Unmatched letter
- *   - Consecutively matched letters
- *   - Proximity to start
- *   - Letter following a separator (space, underscore)
- *   - Uppercase letter following lowercase (aka CamelCase)
- *
- * Matched letters are good. Unmatched letters are bad. Matching near the start
- * is good. Matching the first letter in the middle of a phrase is good.
- * Matching the uppercase letters in camel case entries is good.
- *
- * The score assigned for each factor is explained below.
- * File paths are different from file names. File extensions may be ignorable.
- * Single words care about consecutive matches but not separators or camel
- * case.
- *   Score starts at 100
- *   Matched letter: +0 points
- *   Unmatched letter: -1 point
- *   Consecutive match bonus: +15 points
- *   First letter bonus: +15 points
- *   Separator bonus: +30 points
- *   Camel case bonus: +30 points
- *   Unmatched leading letter: -5 points (max: -15)
- *
- * There is some nuance to this. Scores don’t have an intrinsic meaning. The
- * score range isn’t 0 to 100. It’s roughly [50, 150]. Longer words have a
- * lower minimum score due to unmatched letter penalty. Longer search patterns
- * have a higher maximum score due to match bonuses.
- *
- * Separator and camel case bonus is worth a LOT. Consecutive matches are worth
- * quite a bit.
- *
- * There is a penalty if you DON’T match the first three letters. Which
- * effectively rewards matching near the start. However there’s no difference
- * in matching between the middle and end.
- *
- * There is not an explicit bonus for an exact match. Unmatched letters receive
- * a penalty. So shorter strings and closer matches are worth more.
  */
 typedef struct
 {
@@ -4374,371 +4331,6 @@ typedef struct
 #define SCORE_NONE	(-9999)
 
 #define FUZZY_MATCH_RECURSION_LIMIT	10
-
-/*
- * Compute a score for a fuzzy matched string. The matching character locations
- * are in 'matches'.
- */
-    static int
-fuzzy_match_compute_score(
-	char_u		*fuzpat,
-	char_u		*str,
-	int		strSz,
-	int_u		*matches,
-	int		numMatches,
-	int		camelcase)
-{
-    int		score;
-    int		penalty;
-    int		unmatched;
-    int		i;
-    char_u	*p = str;
-    int_u	sidx = 0;
-    int		is_exact_match = TRUE;
-    char_u	*orig_fuzpat = fuzpat - numMatches;
-    char_u	*curpat = orig_fuzpat;
-    int		pat_idx = 0;
-    // Track consecutive camel case matches
-    int		consecutive_camel = 0;
-
-    // Initialize score
-    score = 100;
-
-    // Apply leading letter penalty
-    penalty = LEADING_LETTER_PENALTY * matches[0];
-    if (penalty < MAX_LEADING_LETTER_PENALTY)
-	penalty = MAX_LEADING_LETTER_PENALTY;
-    score += penalty;
-
-    // Apply unmatched penalty
-    unmatched = strSz - numMatches;
-    score += UNMATCHED_LETTER_PENALTY * unmatched;
-    // In a long string, not all matches may be found due to the recursion limit.
-    // If at least one match is found, reset the score to a non-negative value.
-    if (score < 0 && numMatches > 0)
-	score = 0;
-
-    // Apply ordering bonuses
-    for (i = 0; i < numMatches; ++i)
-    {
-	int_u	currIdx = matches[i];
-	int	curr;
-	int	is_camel = FALSE;
-
-	if (i > 0)
-	{
-	    int_u	prevIdx = matches[i - 1];
-
-	    // Sequential
-	    if (currIdx == (prevIdx + 1))
-		score += SEQUENTIAL_BONUS;
-	    else
-	    {
-		score += GAP_PENALTY * (currIdx - prevIdx);
-		// Reset consecutive camel count on gap
-		consecutive_camel = 0;
-	    }
-	}
-
-	// Check for bonuses based on neighbor character value
-	if (currIdx > 0)
-	{
-	    // Camel case
-	    int neighbor = ' ';
-
-	    if (has_mbyte)
-	    {
-		while (sidx < currIdx)
-		{
-		    neighbor = (*mb_ptr2char)(p);
-		    MB_PTR_ADV(p);
-		    sidx++;
-		}
-		curr = (*mb_ptr2char)(p);
-	    }
-	    else
-	    {
-		neighbor = str[currIdx - 1];
-		curr = str[currIdx];
-	    }
-
-	    // Enhanced camel case scoring
-	    if (camelcase && vim_islower(neighbor) && vim_isupper(curr))
-	    {
-		score += CAMEL_BONUS * 2;  // Double the camel case bonus
-		is_camel = TRUE;
-		consecutive_camel++;
-		// Additional bonus for consecutive camel
-		if (consecutive_camel > 1)
-		    score += CAMEL_BONUS;
-	    }
-	    else
-		consecutive_camel = 0;
-
-	    // Bonus if the match follows a separator character
-	    if (neighbor == '/' || neighbor == '\\')
-		score += PATH_SEPARATOR_BONUS;
-	    else if (neighbor == ' ' || neighbor == '_')
-		score += WORD_SEPARATOR_BONUS;
-	}
-	else
-	{
-	    // First letter
-	    score += FIRST_LETTER_BONUS;
-	    curr = has_mbyte ? (*mb_ptr2char)(p) : str[currIdx];
-	}
-
-	// Case matching bonus
-	if (vim_isalpha(curr))
-	{
-	    while (pat_idx < i && *curpat)
-	    {
-		if (has_mbyte)
-		    MB_PTR_ADV(curpat);
-		else
-		    curpat++;
-		pat_idx++;
-	    }
-
-	    if (has_mbyte)
-	    {
-		if (curr == (*mb_ptr2char)(curpat))
-		{
-		    score += CASE_MATCH_BONUS;
-		    // Extra bonus for exact case match in camel
-		    if (is_camel)
-			score += CASE_MATCH_BONUS / 2;
-		}
-	    }
-	    else if (curr == *curpat)
-	    {
-		score += CASE_MATCH_BONUS;
-		if (is_camel)
-		    score += CASE_MATCH_BONUS / 2;
-	    }
-	}
-
-	// Check exact match condition
-	if (currIdx != (int_u)i)
-	    is_exact_match = FALSE;
-    }
-
-    // Boost score for exact matches
-    if (is_exact_match && numMatches == strSz)
-	score += EXACT_MATCH_BONUS;
-
-    return score;
-}
-
-/*
- * Perform a recursive search for fuzzy matching 'fuzpat' in 'str'.
- * Return the number of matching characters.
- */
-    static int
-fuzzy_match_recursive(
-	char_u		*fuzpat,
-	char_u		*str,
-	int_u		strIdx,
-	int		*outScore,
-	char_u		*strBegin,
-	int		strLen,
-	int_u		*srcMatches,
-	int_u		*matches,
-	int		maxMatches,
-	int		nextMatch,
-	int		*recursionCount,
-	int		camelcase)
-{
-    // Recursion params
-    int		recursiveMatch = FALSE;
-    int_u	bestRecursiveMatches[MAX_FUZZY_MATCHES];
-    int		bestRecursiveScore = 0;
-    int		first_match;
-    int		matched;
-
-    // Count recursions
-    ++*recursionCount;
-    if (*recursionCount >= FUZZY_MATCH_RECURSION_LIMIT)
-	return 0;
-
-    // Detect end of strings
-    if (*fuzpat == NUL || *str == NUL)
-	return 0;
-
-    // Loop through fuzpat and str looking for a match
-    first_match = TRUE;
-    while (*fuzpat != NUL && *str != NUL)
-    {
-	int	c1;
-	int	c2;
-
-	c1 = PTR2CHAR(fuzpat);
-	c2 = PTR2CHAR(str);
-
-	// Found match
-	if (vim_tolower(c1) == vim_tolower(c2))
-	{
-	    // Supplied matches buffer was too short
-	    if (nextMatch >= maxMatches)
-		return 0;
-
-	    int		recursiveScore = 0;
-	    int_u	recursiveMatches[MAX_FUZZY_MATCHES];
-	    CLEAR_FIELD(recursiveMatches);
-
-	    // "Copy-on-Write" srcMatches into matches
-	    if (first_match && srcMatches)
-	    {
-		memcpy(matches, srcMatches, nextMatch * sizeof(srcMatches[0]));
-		first_match = FALSE;
-	    }
-
-	    // Recursive call that "skips" this match
-	    char_u *next_char = str + (has_mbyte ? (*mb_ptr2len)(str) : 1);
-	    if (fuzzy_match_recursive(fuzpat, next_char, strIdx + 1,
-			&recursiveScore, strBegin, strLen, matches,
-			recursiveMatches,
-			ARRAY_LENGTH(recursiveMatches),
-			nextMatch, recursionCount, camelcase))
-	    {
-		// Pick best recursive score
-		if (!recursiveMatch || recursiveScore > bestRecursiveScore)
-		{
-		    memcpy(bestRecursiveMatches, recursiveMatches,
-			    MAX_FUZZY_MATCHES * sizeof(recursiveMatches[0]));
-		    bestRecursiveScore = recursiveScore;
-		}
-		recursiveMatch = TRUE;
-	    }
-
-	    // Advance
-	    matches[nextMatch++] = strIdx;
-	    if (has_mbyte)
-		MB_PTR_ADV(fuzpat);
-	    else
-		++fuzpat;
-	}
-	if (has_mbyte)
-	    MB_PTR_ADV(str);
-	else
-	    ++str;
-	strIdx++;
-    }
-
-    // Determine if full fuzpat was matched
-    matched = *fuzpat == NUL ? TRUE : FALSE;
-
-    // Calculate score
-    if (matched)
-	*outScore = fuzzy_match_compute_score(fuzpat, strBegin, strLen, matches,
-		nextMatch, camelcase);
-
-    // Return best result
-    if (recursiveMatch && (!matched || bestRecursiveScore > *outScore))
-    {
-	// Recursive score is better than "this"
-	memcpy(matches, bestRecursiveMatches, maxMatches * sizeof(matches[0]));
-	*outScore = bestRecursiveScore;
-	return nextMatch;
-    }
-    else if (matched)
-	return nextMatch;	// "this" score is better than recursive
-
-    return 0;		// no match
-}
-
-/*
- * fuzzy_match()
- *
- * Performs exhaustive search via recursion to find all possible matches and
- * match with highest score.
- * Scores values have no intrinsic meaning.  Possible score range is not
- * normalized and varies with pattern.
- * Recursion is limited internally (default=10) to prevent degenerate cases
- * (pat_arg="aaaaaa" str="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").
- * Uses char_u for match indices. Therefore patterns are limited to
- * MAX_FUZZY_MATCHES characters.
- *
- * Returns TRUE if "pat_arg" matches "str". Also returns the match score in
- * "outScore" and the matching character positions in "matches".
- */
-    int
-fuzzy_match(
-	char_u		*str,
-	char_u		*pat_arg,
-	int		matchseq,
-	int		*outScore,
-	int_u		*matches,
-	int		maxMatches,
-	int		camelcase)
-{
-    int		recursionCount = 0;
-    int		len = MB_CHARLEN(str);
-    char_u	*save_pat;
-    char_u	*pat;
-    char_u	*p;
-    int		complete = FALSE;
-    int		score = 0;
-    int		numMatches = 0;
-    int		matchCount;
-
-    *outScore = 0;
-
-    save_pat = vim_strsave(pat_arg);
-    if (save_pat == NULL)
-	return FALSE;
-    pat = save_pat;
-    p = pat;
-
-    // Try matching each word in 'pat_arg' in 'str'
-    while (TRUE)
-    {
-	if (matchseq)
-	    complete = TRUE;
-	else
-	{
-	    // Extract one word from the pattern (separated by space)
-	    p = skipwhite(p);
-	    if (*p == NUL)
-		break;
-	    pat = p;
-	    while (*p != NUL && !VIM_ISWHITE(PTR2CHAR(p)))
-	    {
-		if (has_mbyte)
-		    MB_PTR_ADV(p);
-		else
-		    ++p;
-	    }
-	    if (*p == NUL)		// processed all the words
-		complete = TRUE;
-	    *p = NUL;
-	}
-
-	score = 0;
-	recursionCount = 0;
-	matchCount = fuzzy_match_recursive(pat, str, 0, &score, str, len, NULL,
-				matches + numMatches, maxMatches - numMatches,
-				0, &recursionCount, camelcase);
-	if (matchCount == 0)
-	{
-	    numMatches = 0;
-	    break;
-	}
-
-	// Accumulate the match score and the number of matches
-	*outScore += score;
-	numMatches += matchCount;
-
-	if (complete)
-	    break;
-
-	// try matching the next word
-	++p;
-    }
-
-    vim_free(save_pat);
-    return numMatches != 0;
-}
 
 #if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 /*
@@ -4779,8 +4371,7 @@ fuzzy_match_in_list(
 	callback_T	*item_cb,
 	int		retmatchpos,
 	list_T		*fmatchlist,
-	long		max_matches,
-	int		camelcase)
+	long		max_matches)
 {
     long	len;
     fuzzyItem_T	*items;
@@ -4840,8 +4431,7 @@ fuzzy_match_in_list(
 	}
 
 	if (itemstr != NULL
-		&& fuzzy_match(itemstr, str, matchseq, &score, matches,
-						MAX_FUZZY_MATCHES, camelcase))
+		&& fuzzy_match(itemstr, str, matchseq, &score, matches, MAX_FUZZY_MATCHES))
 	{
 	    items[match_count].idx = match_count;
 	    items[match_count].item = li;
@@ -5027,16 +4617,6 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	    max_matches = (long)tv_get_number_chk(&di->di_tv, NULL);
 	}
 
-	if ((di = dict_find(d, (char_u *)"camelcase", -1)) != NULL)
-	{
-	    if (di->di_tv.v_type != VAR_BOOL)
-	    {
-		semsg(_(e_invalid_value_for_argument_str), "camelcase");
-		return;
-	    }
-	    camelcase = tv_get_bool_chk(&di->di_tv, NULL);
-	}
-
 	if (dict_has_key(d, "matchseq"))
 	    matchseq = TRUE;
     }
@@ -5080,8 +4660,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     }
 
     fuzzy_match_in_list(argvars[0].vval.v_list, tv_get_string(&argvars[1]),
-	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, max_matches,
-	    camelcase);
+	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, max_matches);
 
 done:
     free_callback(&cb);
@@ -5171,25 +4750,6 @@ fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz)
 }
 
 /*
- * Fuzzy match 'pat' in 'str'. Returns 0 if there is no match. Otherwise,
- * returns the match score.
- */
-    int
-fuzzy_match_str(char_u *str, char_u *pat)
-{
-    int		score = 0;
-    int_u	matchpos[MAX_FUZZY_MATCHES];
-
-    if (str == NULL || pat == NULL)
-	return 0;
-
-    fuzzy_match(str, pat, TRUE, &score, matchpos,
-				sizeof(matchpos) / sizeof(matchpos[0]), TRUE);
-
-    return score;
-}
-
-/*
  * Fuzzy match the position of string 'pat' in string 'str'.
  * Returns a dynamic array of matching positions. If there is no match,
  * returns NULL.
@@ -5211,7 +4771,7 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
 	return NULL;
     ga_init2(match_positions, sizeof(int_u), 10);
 
-    if (!fuzzy_match(str, pat, FALSE, &score, matches, MAX_FUZZY_MATCHES, TRUE)
+    if (!fuzzy_match(str, pat, FALSE, &score, matches, MAX_FUZZY_MATCHES)
 	    || score == 0)
     {
 	ga_clear(match_positions);
@@ -5475,4 +5035,628 @@ fuzzymatches_to_strmatches(
     vim_free(fuzmatch);
 
     return OK;
+}
+
+#define FUZZY_MATCH_SCORE         16
+#define FUZZY_MISMATCH_PENALTY    1     // Positive value used in subtraction
+#define FUZZY_GAP_OPEN_PENALTY    3     // Positive value used in subtraction
+#define FUZZY_GAP_EXTEND_PENALTY  1
+
+// Position-based scoring bonuses
+#define FUZZY_PREFIX_BONUS        15    // First character of haystack
+#define FUZZY_DELIMITER_BONUS     30    // After delimiter character
+#define FUZZY_CAPITALIZATION_BONUS 30   // Capital after lowercase
+#define FUZZY_MATCHING_CASE_BONUS 10    // Case match bonus
+#define FUZZY_EXACT_MATCH_BONUS   50    // Exact needle match
+
+// Algorithm limits
+#define FUZZY_MAX_MATCHES         256
+#define FUZZY_SCORE_MIN           0     // Minimum score (non-negative)
+#define FUZZY_SCORE_MIN_INT       -32768 // Minimum integer score
+
+// Configuration flags
+#define FUZZY_REQUIRE_ALL_CHARS   1     // Set to 1 to require all needle chars to match
+
+/*
+ * Fuzzy match result structure
+ */
+typedef struct {
+    int         score;
+    int         start_idx;
+    int         end_idx;
+    int         match_count;
+    unsigned int matches[FUZZY_MAX_MATCHES];
+} fuzzy_result_T;
+
+/*
+ * Fuzzy matching context
+ */
+typedef struct {
+    char_u      *needle;
+    char_u      *haystack;
+    int         needle_len;
+    int         haystack_len;
+    int         case_sensitive;
+    int16_t     *score_matrix_M;  // Match matrix
+    int16_t     *score_matrix_X;  // Gap in X matrix
+    int16_t     *score_matrix_Y;  // Gap in Y matrix
+    fuzzy_result_T result;
+} fuzzy_T;
+
+// Matrix states for traceback
+typedef enum {
+    STATE_M,  // Match state
+    STATE_X,  // Gap in X state
+    STATE_Y   // Gap in Y state
+} matrix_state_t;
+
+// Function declarations
+static int fuzzy_smith_waterman(fuzzy_T *sf);
+static int fuzzy_bonus_for_position(fuzzy_T *sf, int haystack_idx, int needle_idx);
+static void fuzzy_backtrack_alignment(fuzzy_T *sf, int end_i, int end_j, matrix_state_t state);
+static int max3(int a, int b, int c);
+
+/*
+ * Calculate bonus points for character match at specific position
+ */
+    static int
+fuzzy_bonus_for_position(fuzzy_T *sf, int haystack_idx, int needle_idx)
+{
+    int     bonus = 0;
+    char_u  curr_char = sf->haystack[haystack_idx];
+    char_u  needle_char = sf->needle[needle_idx];
+
+    // PREFIX_BONUS: First character of haystack
+    if (haystack_idx == 0)
+	bonus += FUZZY_PREFIX_BONUS;
+
+    // DELIMITER_BONUS: Character after delimiter
+    if (haystack_idx > 0)
+    {
+	char_u prev_char = sf->haystack[haystack_idx - 1];
+
+	// Check for delimiter characters
+	if (prev_char == '_' || prev_char == '-' || prev_char == '.' || prev_char == ' ' || prev_char == '\t' || prev_char == '/' || prev_char == '\\' || prev_char == ':' || prev_char == ',')
+	{
+	    bonus += FUZZY_DELIMITER_BONUS;
+	}
+	// CAPITALIZATION_BONUS: Capital letter after lowercase
+	else if (vim_islower(prev_char) && vim_isupper(curr_char))
+	{
+	    bonus += FUZZY_CAPITALIZATION_BONUS;
+	}
+    }
+
+    // MATCHING_CASE_BONUS: Exact case match when not case sensitive
+    if (!sf->case_sensitive && curr_char == needle_char)
+	bonus += FUZZY_MATCHING_CASE_BONUS;
+
+    return bonus;
+}
+
+/*
+ * Return maximum of three values
+ */
+    static int
+max3(int a, int b, int c)
+{
+    int max_val = a;
+    if (b > max_val)
+	max_val = b;
+    if (c > max_val)
+	max_val = c;
+    return max_val;
+}
+
+    static void
+fuzzy_backtrack_alignment(
+    fuzzy_T         *sf,
+    int             end_i,
+    int             end_j,
+    matrix_state_t  start_state)
+{
+    int i = end_i;
+    int j = end_j;
+    matrix_state_t state = start_state;
+    int match_count = 0;
+    unsigned int temp_matches[FUZZY_MAX_MATCHES];
+    int cols = sf->haystack_len + 1;
+
+    while (i > 0 && j > 0)
+    {
+	char_u n_char = sf->needle[i-1];
+	char_u h_char = sf->haystack[j-1];
+
+	// Convert to lowercase for case-insensitive matching
+	if (!sf->case_sensitive)
+	{
+	    if (vim_isalpha(n_char))
+		n_char = vim_tolower(n_char);
+	    if (vim_isalpha(h_char))
+		h_char = vim_tolower(h_char);
+	}
+
+	switch (state)
+	{
+	    case STATE_M:
+		// Record match position
+		if (n_char == h_char)
+		{
+		    if (match_count < FUZZY_MAX_MATCHES)
+			temp_matches[match_count++] = j - 1;
+		}
+
+		// Move to upper-left diagonal
+		i--;
+		j--;
+		if (i <= 0 || j <= 0)
+		    break;
+
+		// Determine previous state
+		int idx_prev = i * cols + j;
+		int prev_m = sf->score_matrix_M[idx_prev];
+		int prev_x = sf->score_matrix_X[idx_prev];
+		int prev_y = sf->score_matrix_Y[idx_prev];
+
+		if (prev_m >= prev_x && prev_m >= prev_y)
+		    state = STATE_M;
+		else if (prev_x >= prev_y)
+		    state = STATE_X;
+		else
+		    state = STATE_Y;
+
+		break;
+
+	case STATE_X:
+		// Move left
+		j--;
+		if (j <= 0)
+		    break;
+
+		// Determine previous state
+		int idx_left = i * cols + j;
+		int left_m = sf->score_matrix_M[idx_left];
+		int left_x = sf->score_matrix_X[idx_left];
+		int left_y = sf->score_matrix_Y[idx_left];
+
+		// Check which transition led to current score
+		int current_score = sf->score_matrix_X[i * cols + (j + 1)];
+		int gap_cost = (current_score == left_x - FUZZY_GAP_EXTEND_PENALTY)
+		    ? FUZZY_GAP_EXTEND_PENALTY
+		    : FUZZY_GAP_OPEN_PENALTY + FUZZY_GAP_EXTEND_PENALTY;
+
+		if (left_m - gap_cost == current_score)
+		    state = STATE_M;
+		else if (left_x - FUZZY_GAP_EXTEND_PENALTY == current_score)
+		    state = STATE_X;
+		else if (left_y - gap_cost == current_score)
+		    state = STATE_Y;
+
+		break;
+
+	    case STATE_Y:
+		// Move up
+		i--;
+		if (i <= 0)
+		    break;
+
+		// Determine previous state
+		int idx_up = i * cols + j;
+		int up_m = sf->score_matrix_M[idx_up];
+		int up_x = sf->score_matrix_X[idx_up];
+		int up_y = sf->score_matrix_Y[idx_up];
+
+		// Calculate gap cost
+		int current_y_score = sf->score_matrix_Y[(i + 1) * cols + j];
+		int y_gap_cost = (current_y_score == up_y - FUZZY_GAP_EXTEND_PENALTY)
+		    ? FUZZY_GAP_EXTEND_PENALTY
+		    : FUZZY_GAP_OPEN_PENALTY + FUZZY_GAP_EXTEND_PENALTY;
+
+		if (up_m - y_gap_cost == current_y_score)
+		    state = STATE_M;
+		else if (up_x - y_gap_cost == current_y_score)
+		    state = STATE_X;
+		else if (up_y - FUZZY_GAP_EXTEND_PENALTY == current_y_score)
+		    state = STATE_Y;
+		break;
+	}
+    }
+
+    // Store match positions in correct order
+    sf->result.match_count = match_count;
+    for (int k = 0; k < match_count; k++)
+	sf->result.matches[k] = temp_matches[match_count - 1 - k];
+}
+
+    static void
+affine_gap_calculate(
+    fuzzy_T         *sf,
+    int             i,
+    int             j,
+    int             *max_score,
+    int             *max_i,
+    int             *max_j,
+    matrix_state_t  *max_state)
+{
+    int     cols = sf->haystack_len + 1;
+    char_u  n_char = sf->needle[i - 1];
+    char_u  h_char = sf->haystack[j - 1];
+
+    // Safe character conversion
+    char_u orig_n_char = n_char;
+    char_u orig_h_char = h_char;
+    if (!sf->case_sensitive)
+    {
+	if (vim_isalpha(n_char))
+	    n_char = vim_tolower(n_char);
+	if (vim_isalpha(h_char))
+	    h_char = vim_tolower(h_char);
+    }
+
+    // 1. Calculate match/mismatch scores
+    int match_score = (n_char == h_char) ? FUZZY_MATCH_SCORE : -FUZZY_MISMATCH_PENALTY;
+
+    // Add position bonus
+    int bonus = fuzzy_bonus_for_position(sf, j-1, i-1);
+    match_score += bonus;
+
+    // Add case match bonus
+    if (!sf->case_sensitive && orig_n_char == orig_h_char)
+	match_score += FUZZY_MATCHING_CASE_BONUS;
+
+    // 2. Calculate M matrix (match state)
+    int idx = i * cols + j;
+    int idx_prev = (i-1) * cols + (j-1);
+    int idx_up = (i-1) * cols + j;
+    int idx_left = i * cols + (j-1);
+
+    int m_prev = max3( sf->score_matrix_M[idx_prev], sf->score_matrix_X[idx_prev], sf->score_matrix_Y[idx_prev]);
+    sf->score_matrix_M[idx] = match_score + m_prev;
+
+    // 3. Calculate X matrix (gaps in X sequence)
+    int x_from_m = sf->score_matrix_M[idx_left] - (FUZZY_GAP_OPEN_PENALTY + FUZZY_GAP_EXTEND_PENALTY);
+    int x_from_x = sf->score_matrix_X[idx_left] - FUZZY_GAP_EXTEND_PENALTY;
+    int x_from_y = sf->score_matrix_Y[idx_left] - (FUZZY_GAP_OPEN_PENALTY + FUZZY_GAP_EXTEND_PENALTY);
+
+    sf->score_matrix_X[idx] = max3(x_from_m, x_from_x, x_from_y);
+
+    // 4. Calculate Y matrix (gaps in Y sequence)
+    int y_from_m = sf->score_matrix_M[idx_up] - (FUZZY_GAP_OPEN_PENALTY + FUZZY_GAP_EXTEND_PENALTY);
+    int y_from_x = sf->score_matrix_X[idx_up] - (FUZZY_GAP_OPEN_PENALTY + FUZZY_GAP_EXTEND_PENALTY);
+    int y_from_y = sf->score_matrix_Y[idx_up] - FUZZY_GAP_EXTEND_PENALTY;
+
+    sf->score_matrix_Y[idx] = max3(y_from_m, y_from_x, y_from_y);
+
+    // Local alignment: scores can't be negative
+    if (sf->score_matrix_M[idx] < 0)
+	sf->score_matrix_M[idx] = 0;
+
+    if (sf->score_matrix_X[idx] < 0)
+	sf->score_matrix_X[idx] = 0;
+
+    if (sf->score_matrix_Y[idx] < 0)
+	sf->score_matrix_Y[idx] = 0;
+
+    // Track highest score
+    if (sf->score_matrix_M[idx] > *max_score)
+    {
+	*max_score = sf->score_matrix_M[idx];
+	*max_i = i;
+	*max_j = j;
+	*max_state = STATE_M;
+    }
+    if (sf->score_matrix_X[idx] > *max_score)
+    {
+	*max_score = sf->score_matrix_X[idx];
+	*max_i = i;
+	*max_j = j;
+	*max_state = STATE_X;
+    }
+    if (sf->score_matrix_Y[idx] > *max_score)
+    {
+	*max_score = sf->score_matrix_Y[idx];
+	*max_i = i;
+	*max_j = j;
+	*max_state = STATE_Y;
+    }
+}
+
+/*
+ * Core affine gap Smith-Waterman implementation
+ */
+    static int
+fuzzy_smith_waterman(fuzzy_T *sf)
+{
+    int needle_len = sf->needle_len;
+    int haystack_len = sf->haystack_len;
+    int cols = haystack_len + 1;
+    int matrix_size = (needle_len + 1) * cols;
+
+    // Allocate matrices
+    sf->score_matrix_M = (int16_t *)alloc_clear(matrix_size * sizeof(int16_t));
+    sf->score_matrix_X = (int16_t *)alloc_clear(matrix_size * sizeof(int16_t));
+    sf->score_matrix_Y = (int16_t *)alloc_clear(matrix_size * sizeof(int16_t));
+
+    if (sf->score_matrix_M == NULL || sf->score_matrix_X == NULL || sf->score_matrix_Y == NULL)
+    {
+	vim_free(sf->score_matrix_M);
+	vim_free(sf->score_matrix_X);
+	vim_free(sf->score_matrix_Y);
+	return FUZZY_SCORE_MIN;
+    }
+
+    // Initialize boundary conditions - all zero for local alignment
+    // (alloc_clear already initialized to 0)
+    int max_score = 0;
+    int max_i = 0, max_j = 0;
+    matrix_state_t max_state = STATE_M;
+
+    // Fill the matrices
+    for (int i = 1; i <= needle_len; i++)
+    {
+	for (int j = 1; j <= haystack_len; j++)
+	    affine_gap_calculate(sf, i, j, &max_score, &max_i, &max_j, &max_state);
+    }
+
+    // Apply exact match bonus
+    if (needle_len == haystack_len && STRNCMP(sf->needle, sf->haystack, needle_len) == 0)
+	max_score += FUZZY_EXACT_MATCH_BONUS;
+
+    // Backtrack to find match positions
+    if (max_score > 0)
+    {
+	fuzzy_backtrack_alignment(sf, max_i, max_j, max_state);
+	sf->result.score = max_score;
+
+	// Verify that all needle characters are matched
+	if (sf->result.match_count < needle_len)
+	{
+	    max_score = 0;
+	    sf->result.match_count = 0;
+	}
+    }
+    else
+    {
+	sf->result.match_count = 0;
+    }
+
+    // Check if all characters are matched (REQUIRE_ALL_CHARS logic)
+#if FUZZY_REQUIRE_ALL_CHARS
+    if (sf->result.match_count < needle_len)
+    {
+	max_score = 0;
+	sf->result.match_count = 0;
+    }
+#endif
+
+    // Clean up resources
+    vim_free(sf->score_matrix_M);
+    vim_free(sf->score_matrix_X);
+    vim_free(sf->score_matrix_Y);
+
+    return max_score;
+}
+
+    int
+fuzzy_match(
+    char_u      *str,           // haystack string to search in
+    char_u      *pat_arg,       // needle pattern to search for
+    int         matchseq,       // if TRUE, match sequence of words
+    int         *outScore,      // output: total match score
+    unsigned int *matches,      // output: array of match positions
+    int         maxMatches)     // maximum number of matches to return
+{
+    if (str == NULL || pat_arg == NULL || *pat_arg == NUL)
+    {
+	*outScore = FUZZY_SCORE_MIN;
+	return 0;
+    }
+
+    fuzzy_T sf;
+    char_u *pat_copy = NULL;
+    int result = FALSE;
+    int total_score = 0;
+    int total_matches = 0;
+
+    // Initialize fuzzy context
+    CLEAR_FIELD(sf);
+    sf.haystack = str;
+    sf.haystack_len = (int)STRLEN(str);
+    sf.case_sensitive = FALSE;  // Follow vim's default behavior
+
+    // Process pattern (supports multi-word patterns separated by whitespace)
+    pat_copy = vim_strsave(pat_arg);
+    if (pat_copy == NULL)
+    {
+	*outScore = FUZZY_SCORE_MIN;
+	return 0;
+    }
+
+    char_u *pat = pat_copy;
+    char_u *p = pat;
+    unsigned int all_matches[FUZZY_MAX_MATCHES];
+    int word_count = 0;
+
+    // Process each word in the pattern
+    while (TRUE)
+    {
+	// Skip leading whitespace
+	p = skipwhite(p);
+	if (*p == NUL)
+	    break;
+
+	// Extract current word
+	pat = p;
+	while (*p != NUL && !VIM_ISWHITE(PTR2CHAR(p)))
+	{
+	    if (has_mbyte)
+		MB_PTR_ADV(p);
+	    else
+		++p;
+	}
+
+	int is_last = (*p == NUL);
+	if (!is_last)
+	    *p = NUL; // Temporarily terminate
+
+	// Set up fuzzy context for this word
+	sf.needle = pat;
+	sf.needle_len = (int)STRLEN(pat);
+	CLEAR_FIELD(sf.result);
+
+	// Run Smith-Waterman algorithm
+	int score = fuzzy_smith_waterman(&sf);
+
+	if (score <= 0)
+	{
+	    // This word had no valid matches - fail entire pattern
+	    result = FALSE;
+	    if (!is_last)
+		*p = ' '; // Restore space
+	    break;
+	}
+
+	// Accumulate results from this word
+	total_score += score;
+	for (int i = 0; i < sf.result.match_count && total_matches < maxMatches; i++)
+	{
+	    all_matches[total_matches++] = sf.result.matches[i];
+	}
+
+	word_count++;
+	result = TRUE;
+
+	if (is_last)
+	    break;
+
+	// Restore space and move to next word
+	*p = ' ';
+	p++;
+    }
+
+    // For matchseq, use a simpler and more reliable approach
+    if (result && matchseq && word_count > 1)
+    {
+	// Simple approach: verify that pattern words appear as complete words
+	// in the correct sequence in the haystack string
+	char_u *haystack_copy = vim_strsave(sf.haystack);
+	char_u *pattern_copy = vim_strsave(pat_arg);
+
+	if (haystack_copy != NULL && pattern_copy != NULL)
+	{
+	    result = FALSE; // Reset and revalidate
+
+	    // Convert to lowercase for case-insensitive matching
+	    if (!sf.case_sensitive)
+	    {
+		for (char_u *p = haystack_copy; *p; p++)
+		    *p = vim_tolower(*p);
+		for (char_u *p = pattern_copy; *p; p++)
+		    *p = vim_tolower(*p);
+	    }
+
+	    // Extract pattern words
+	    char_u *pattern_words[20];
+	    int pattern_word_count = 0;
+	    char_u *p = pattern_copy;
+
+	    while (*p && pattern_word_count < 20)
+	    {
+		p = skipwhite(p);
+		if (*p == NUL) break;
+
+		pattern_words[pattern_word_count] = p;
+		while (*p && !VIM_ISWHITE(PTR2CHAR(p)))
+		{
+		    if (has_mbyte)
+			MB_PTR_ADV(p);
+		    else
+			++p;
+		}
+		if (*p) *p++ = NUL;
+		pattern_word_count++;
+	    }
+
+	    // Find each pattern word in sequence
+	    char_u *search_pos = haystack_copy;
+	    int words_found = 0;
+
+	    for (int i = 0; i < pattern_word_count; i++)
+	    {
+		char_u *word = pattern_words[i];
+		int word_len = (int)STRLEN(word);
+		char_u *found_pos = NULL;
+
+		// Search for word starting from current position
+		while (*search_pos)
+		{
+		    // Check if we have a word boundary at current position
+		    if (search_pos == haystack_copy || !vim_iswordc(search_pos[-1]))
+		    {
+			// Check if pattern word matches at this position
+			if (STRNCMP(search_pos, word, word_len) == 0)
+			{
+			    // Check word boundary after the match
+			    if (!search_pos[word_len] || !vim_iswordc(search_pos[word_len]))
+			    {
+				found_pos = search_pos;
+				break;
+			    }
+			}
+		    }
+
+		    // Move to next character
+		    if (has_mbyte)
+			MB_PTR_ADV(search_pos);
+		    else
+			++search_pos;
+		}
+
+		if (found_pos == NULL)
+		{
+		    // Word not found in sequence
+		    break;
+		}
+
+		words_found++;
+		// Move search position past the found word
+		search_pos = found_pos + word_len;
+	    }
+
+	    // All words must be found in sequence
+	    result = (words_found == pattern_word_count);
+	}
+
+	vim_free(haystack_copy);
+	vim_free(pattern_copy);
+    }
+
+    vim_free(pat_copy);
+
+    if (result)
+    {
+	*outScore = total_score;
+	// Copy matches to output
+	for (int i = 0; i < total_matches && i < maxMatches; i++)
+	    matches[i] = all_matches[i];
+
+	return total_matches;
+    }
+
+    *outScore = FUZZY_SCORE_MIN;
+    return 0;
+}
+
+/*
+ * Fuzzy match 'pat' in 'str'. Returns 0 if there is no match. Otherwise,
+ * returns the match score.
+ */
+    int
+fuzzy_match_str(char_u *str, char_u *pat)
+{
+    int score = 0;
+    unsigned int matches[FUZZY_MAX_MATCHES];
+    int match_count = fuzzy_match(str, pat, TRUE, &score, matches, FUZZY_MAX_MATCHES);
+    // Return score only if matches were found
+    return match_count > 0 ? score : 0;
 }
