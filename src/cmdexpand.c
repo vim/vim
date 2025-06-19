@@ -496,12 +496,14 @@ cmdline_compl_is_fuzzy(void)
 
 /*
  * Return the number of characters that should be skipped in a status match.
- * These are backslashes used for escaping.  Do show backslashes in help tags.
+ * These are backslashes used for escaping.  Do show backslashes in help tags
+ * and in search pattern completion matches.
  */
     static int
 skip_status_match_char(expand_T *xp, char_u *s)
 {
-    if ((rem_backslash(s) && xp->xp_context != EXPAND_HELP)
+    if ((rem_backslash(s) && xp->xp_context != EXPAND_HELP
+		&& xp->xp_context != EXPAND_PATTERN_IN_BUF)
 #ifdef FEAT_MENU
 	    || ((xp->xp_context == EXPAND_MENUS
 		    || xp->xp_context == EXPAND_MENUNAMES)
