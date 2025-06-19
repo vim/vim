@@ -491,15 +491,12 @@ SRC_UNIX =	\
 		src/gui_xmebwp.h \
 		src/gui_x11.c \
 		src/gui_x11_pm.h \
-		src/auto/wayland/wlr-data-control-unstable-v1.c \
-		src/auto/wayland/wlr-data-control-unstable-v1.h \
-		src/auto/wayland/ext-data-control-v1.c \
-		src/auto/wayland/ext-data-control-v1.h \
-		src/auto/wayland/xdg-shell.c \
-		src/auto/wayland/xdg-shell.h \
-		src/auto/wayland/primary-selection-unstable-v1.c \
-		src/auto/wayland/primary-selection-unstable-v1.h \
-		src/auto/wayland/README.md \
+		src/auto/wayland/README.txt \
+		src/auto/wayland/Makefile \
+		src/auto/wayland/protocols/ext-data-control-v1.xml \
+		src/auto/wayland/protocols/wlr-data-control-unstable-v1.xml \
+		src/auto/wayland/protocols/xdg-shell.xml \
+		src/auto/wayland/protocols/primary-selection-unstable-v1.xml \
 		src/if_xcmdsrv.c \
 		src/link.sh \
 		src/installman.sh \
@@ -526,10 +523,6 @@ SRC_UNIX =	\
 		src/testdir/Makefile \
 		src/testdir/unix.vim \
 		src/toolcheck \
-		src/protocols/ext-data-control-v1.xml \
-		src/protocols/wlr-data-control-unstable-v1.xml \
-		src/protocols/xdg-shell.xml \
-		src/protocols/primary-selection-unstable-v1.xml \
 		src/vim_icon.xbm \
 		src/vim_mask.xbm \
 		src/vimtutor \

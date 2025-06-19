@@ -1623,6 +1623,9 @@ EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    gui_beval.c netbeans.c job.c channel.c \
 	    $(GRESOURCE_SRC)
 
+$(WAYLAND_SRC) $(WAYLAND_SRC:.c=.h):
+	cd auto/wayland; $(MAKE)
+
 # Unittest files
 JSON_TEST_SRC = json_test.c
 JSON_TEST_TARGET = json_test$(EXEEXT)
@@ -2958,6 +2961,7 @@ clean celan: testclean
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
 	cd xxd; $(MAKE) clean
+	cd auto/wayland; $(MAKE) clean
 
 # Make a shadow directory for compilation on another system or with different
 # features:
