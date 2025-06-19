@@ -1596,6 +1596,7 @@ may_clear_cmdline(void)
 static char_u	old_showcmd_buf[SHOWCMD_BUFLEN];  // For push_showcmd()
 static int	showcmd_is_clear = TRUE;
 static int	showcmd_visual = FALSE;
+static int	showcmd_binsearch = TRUE;
 
 static void display_showcmd(void);
 
@@ -1603,6 +1604,9 @@ static void display_showcmd(void);
 clear_showcmd(void)
 {
     if (!p_sc)
+	return;
+
+    if(!showcmd_binsearch)
 	return;
 
     if (VIsual_active && !char_avail())
@@ -1738,6 +1742,9 @@ add_to_showcmd(int c)
 	showcmd_buf[0] = NUL;
 	showcmd_visual = FALSE;
     }
+
+    if (!showcmd_binsearch)
+	return FALSE;
 
     // Ignore keys that are scrollbar updates and mouse clicks
     if (IS_SPECIAL(c))
@@ -7578,9 +7585,12 @@ nv_cursorhold(cmdarg_T *cap)
     static void
 nv_binsearch(cmdarg_T *cap)
 {
-    static linenr_T upper_bound=0,
-		    lower_bound=0,
-		    center_bound=0;	//upper bound and lower bound refer to the line number, i.e. the lower bound
+    static linenr_T upper_bound = 0,
+		    lower_bound = 0,
+		    center_bound = 0;	//upper bound and lower bound refer to the line number, i.e. the lower bound
+
+    static pos_T old_pos = {0, 0, 0};
+
     static int binsearch_mode = FALSE,	//appears at the top of the window (since line number grows downward).
 	       old_op_type = OP_NOP,
 	       returned = TRUE,
@@ -7590,6 +7600,7 @@ nv_binsearch(cmdarg_T *cap)
     
     if(!binsearch_mode)			//initialize upper and lower bounds and center_bound
     {
+	showcmd_binsearch = FALSE;
 	binsearch_mode = TRUE;
         center_bound = curwin->w_cursor.lnum;
 	
@@ -7602,6 +7613,7 @@ nv_binsearch(cmdarg_T *cap)
 	    returned = FALSE;
 	    old_op_type = cap->oap->op_type;
 	    old_motion_type = cap->oap->motion_type;
+	    old_pos = curwin->w_cursor;
 	}
 
 	cap->oap->op_type = OP_NOP;	//we unset the op_type so we only process the pending operator after we're done with the binsearch
@@ -7609,7 +7621,7 @@ nv_binsearch(cmdarg_T *cap)
 
     while(TRUE)				//binsearch loop
     {
-    c = vgetc();
+    c = safe_vgetc();
 
     //if the user typed Ctrl_Q again, they want to re-start the binary search.
     if(c == Ctrl_Q)
@@ -7648,8 +7660,24 @@ nv_binsearch(cmdarg_T *cap)
     break;
 
     }
-    vungetc(c);			    //unget c to resume the command that interrupted the binary search
+
+    if(c == ESC)		    //escape binsearch
+    {
+	returned = TRUE;
+	binsearch_mode = FALSE;
+	clearopbeep(cap->oap);
+	finish_op = FALSE;
+	showcmd_binsearch = TRUE;
+
+	curwin->w_cursor = old_pos;
+	return;
+    }
+
+    if(c != Ctrl_R)
+	vungetc(c);			    //unget c to resume the command that interrupted the binary search
+
     binsearch_mode = FALSE;
+    showcmd_binsearch = TRUE;
     cap->oap->op_type = old_op_type;//resume pending operator
     cap->oap->motion_type = old_motion_type;//old_motion_type;//conserve motion type
     if(old_op_type != OP_NOP)
