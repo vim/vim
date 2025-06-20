@@ -29,5 +29,8 @@ bware@mines.colorado.edu bware@slate.mines.colorado.edu bware@mines.bitnet
 Переводы
 -----------
 
-Файлы tutor1.xx для первой главы и tutor2.xx для второй главы учебника являются переводами (где xx — код языка).
-Кодировка файлов tutor1.xx и tutor2.xx должна быть UTF-8.
+Файлы tutor1.xx для первой главы и tutor2.xx для второй главы учебника являются
+переводами (где xx — код языка).  Кодировка файлов tutor1.xx и tutor2.xx должна
+быть UTF-8.
+
+[Брам Моленар (Bram Moolenaar) и др. изменили этот файл для редактора Vim]
