@@ -1,295 +1,295 @@
 ===============================================================================
-== Ü d v ö z ö l j ü k   a   V I M - o k t a t ó b a n  -    1.5-ös  verzió  ==
+== Ãœ d v Ã¶ z Ã¶ l j Ã¼ k   a   V I M - o k t a t Ã³ b a n  -    1.5-Ã¶s  verziÃ³  ==
 ===============================================================================
 
-     A Vim egy nagyon hatékony szerkesztõ, amelynek rengeteg utasítása
-     van, túl sok, hogy egy ilyen oktatóban (tutorban), mint az itteni
-     mindet elmagyarázzuk. Ez az oktató arra törekszik, hogy annyit
-     elmagyarázzon, amennyi elég, hogy könnyedén használjuk a Vim-et, az
-     általános célú szövegszerkesztõt.
+     A Vim egy nagyon hatÃ©kony szerkesztÅ‘, amelynek rengeteg utasÃ­tÃ¡sa
+     van, tÃºl sok, hogy egy ilyen oktatÃ³ban (tutorban), mint az itteni
+     mindet elmagyarÃ¡zzuk. Ez az oktatÃ³ arra tÃ¶rekszik, hogy annyit
+     elmagyarÃ¡zzon, amennyi elÃ©g, hogy kÃ¶nnyedÃ©n hasznÃ¡ljuk a Vim-et, az
+     Ã¡ltalÃ¡nos cÃ©lÃº szÃ¶vegszerkesztÅ‘t.
 
-     A feladatok megoldásához 25-30 perc szükséges attól függõen,
-     mennyit töltünk a kísérletezéssel.
+     A feladatok megoldÃ¡sÃ¡hoz 25-30 perc szÃ¼ksÃ©ges attÃ³l fÃ¼ggÅ‘en,
+     mennyit tÃ¶ltÃ¼nk a kÃ­sÃ©rletezÃ©ssel.
 
-     A leckében szereplõ utasítások módosítani fogják a szöveget.
-     Készítsen másolatot errõl a fájlról, ha gyakorolni akar.
-     (Ha "vimtutor"-ral indította, akkor ez már egy másolat.)
+     A leckÃ©ben szereplÅ‘ utasÃ­tÃ¡sok mÃ³dosÃ­tani fogjÃ¡k a szÃ¶veget.
+     KÃ©szÃ­tsen mÃ¡solatot errÅ‘l a fÃ¡jlrÃ³l, ha gyakorolni akar.
+     (Ha "vimtutor"-ral indÃ­totta, akkor ez mÃ¡r egy mÃ¡solat.)
 
-     Fontos megérteni, hogy ez az oktató cselekedve taníttat.
-     Ez azt jelenti, hogy Önnek ajánlott végrehajtania az utasításokat,
-     hogy megfelelõen megtanulja azokat. Ha csak olvassa, elfelejti!
+     Fontos megÃ©rteni, hogy ez az oktatÃ³ cselekedve tanÃ­ttat.
+     Ez azt jelenti, hogy Ã–nnek ajÃ¡nlott vÃ©grehajtania az utasÃ­tÃ¡sokat,
+     hogy megfelelÅ‘en megtanulja azokat. Ha csak olvassa, elfelejti!
 
-     Most bizonyosodjon, meg, hogy a Caps-Lock gombja NINCS lenyomva, és
-     Nyomja meg megfelelõ számúszor a   j   gombot, hogy az 1.1.1-es
-     lecke teljesen a képernyõn legyen!
+     Most bizonyosodjon, meg, hogy a Caps-Lock gombja NINCS lenyomva, Ã©s
+     Nyomja meg megfelelÅ‘ szÃ¡mÃºszor a   j   gombot, hogy az 1.1.1-es
+     lecke teljesen a kÃ©pernyÅ‘n legyen!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 1.1.1.  lecke:  A KURZOR MOZGATÁSA
+		 1.1.1.  lecke:  A KURZOR MOZGATÃSA
 
 
-   ** A kurzor mozgatásához nyomja meg a h,j,k,l gombokat az alábbi szerint. **
+   ** A kurzor mozgatÃ¡sÃ¡hoz nyomja meg a h,j,k,l gombokat az alÃ¡bbi szerint. **
 	     ^
-	     k		    Tipp:  A h billentyû van balra, és balra mozgat
-       < h	 l >		   A l billentyû van jobbra, és jobbra mozgat
-	     j			   A j billentyû olyan, mint egy lefele nyíl
+	     k		    Tipp:  A h billentyÅ± van balra, Ã©s balra mozgat
+       < h	 l >		   A l billentyÅ± van jobbra, Ã©s jobbra mozgat
+	     j			   A j billentyÅ± olyan, mint egy lefele nyÃ­l
 	     v
-  1. Mozgassa a kurzort körbe az ablakban, amíg hozzá nem szokik!
+  1. Mozgassa a kurzort kÃ¶rbe az ablakban, amÃ­g hozzÃ¡ nem szokik!
 
-  2. Tartsa lenyomva a lefelét (j), akkor ismétlõdik!
----> Most tudja, hogyan mehet a következõ leckére.
+  2. Tartsa lenyomva a lefelÃ©t (j), akkor ismÃ©tlÅ‘dik!
+---> Most tudja, hogyan mehet a kÃ¶vetkezÅ‘ leckÃ©re.
 
-  3. A lefelé gomb használatával menjen a 1.1.2. leckére!
+  3. A lefelÃ© gomb hasznÃ¡latÃ¡val menjen a 1.1.2. leckÃ©re!
 
 Megj: Ha nem biztos benne, mit nyomott meg, nyomja meg az <ESC>-et, hogy
-      normál módba kerüljön, és ismételje meg a parancsot!
+      normÃ¡l mÃ³dba kerÃ¼ljÃ¶n, Ã©s ismÃ©telje meg a parancsot!
 
-Megj: A kurzor gomboknak is mûködniük kell, de a hjkl használatával
-      sokkal gyorsabban tud, mozogni, ha hozzászokik.
+Megj: A kurzor gomboknak is mÅ±kÃ¶dniÃ¼k kell, de a hjkl hasznÃ¡latÃ¡val
+      sokkal gyorsabban tud, mozogni, ha hozzÃ¡szokik.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     1.1.2.  lecke: BE ÉS KILÉPÉS A VIMBÕL
+		     1.1.2.  lecke: BE Ã‰S KILÃ‰PÃ‰S A VIMBÅL
 
 
-  !! MEGJ: Mielõtt végrehajtja az alábbi lépéseket, olvassa végig a leckét !!
+  !! MEGJ: MielÅ‘tt vÃ©grehajtja az alÃ¡bbi lÃ©pÃ©seket, olvassa vÃ©gig a leckÃ©t !!
 
-  1. Nyomja meg az  <ESC> gombot (hogy biztosan normál módban legyen).
+  1. Nyomja meg az  <ESC> gombot (hogy biztosan normÃ¡l mÃ³dban legyen).
 
-  2. Írja:			:q! <ENTER>.
+  2. Ãrja:			:q! <ENTER>.
 
----> Ezzel kilép a szerkesztõbõl a változások MENTÉSE NÉLKÜL.
-     Ha menteni szeretné a változásokat és kilépni, írja:
+---> Ezzel kilÃ©p a szerkesztÅ‘bÅ‘l a vÃ¡ltozÃ¡sok MENTÃ‰SE NÃ‰LKÃœL.
+     Ha menteni szeretnÃ© a vÃ¡ltozÃ¡sokat Ã©s kilÃ©pni, Ã­rja:
 				:wq  <ENTER>
 
-  3. Amikor a shell promptot látja, írja be a parancsot, amely ebbe az
-     oktatóba hozza:
-     Ez valószínûleg:	vimtutor <ENTER>
-     Normális esetben ezt írná:	vim tutor.hu <ENTER>
+  3. Amikor a shell promptot lÃ¡tja, Ã­rja be a parancsot, amely ebbe az
+     oktatÃ³ba hozza:
+     Ez valÃ³szÃ­nÅ±leg:	vimtutor <ENTER>
+     NormÃ¡lis esetben ezt Ã­rnÃ¡:	vim tutor.hu <ENTER>
 
----> 'vim' jelenti a vimbe belépést, 'tutor.hu' a fájl, amit szerkeszteni kíván.
+---> 'vim' jelenti a vimbe belÃ©pÃ©st, 'tutor.hu' a fÃ¡jl, amit szerkeszteni kÃ­vÃ¡n.
 
-  4. Ha megjegyezte a lépéseket és biztos magában, hajtsa végre a lépéseket
-     1-tõl 3-ig, hogy kilépjen és visszatérjen a szerkesztõbe. Azután
-     menjen az 1.1.3.  leckére.
+  4. Ha megjegyezte a lÃ©pÃ©seket Ã©s biztos magÃ¡ban, hajtsa vÃ©gre a lÃ©pÃ©seket
+     1-tÅ‘l 3-ig, hogy kilÃ©pjen Ã©s visszatÃ©rjen a szerkesztÅ‘be. AzutÃ¡n
+     menjen az 1.1.3.  leckÃ©re.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     1.1.3.  lecke: SZÖVEG SZERKESZTÉSE - TÖRLÉS
+		     1.1.3.  lecke: SZÃ–VEG SZERKESZTÃ‰SE - TÃ–RLÃ‰S
 
 
-** Normál módban nyomjon  x-et, hogy a kurzor alatti karaktert törölje. **
+** NormÃ¡l mÃ³dban nyomjon  x-et, hogy a kurzor alatti karaktert tÃ¶rÃ¶lje. **
 
-  1. Mozgassa a kurzort a ---> kezdetû sorra!
+  1. Mozgassa a kurzort a ---> kezdetÅ± sorra!
 
-  2. A hibák kijavításához mozgassa a kurzort amíg a törlendõ karakter
-     fölé nem ér.
+  2. A hibÃ¡k kijavÃ­tÃ¡sÃ¡hoz mozgassa a kurzort amÃ­g a tÃ¶rlendÅ‘ karakter
+     fÃ¶lÃ© nem Ã©r.
 
-  3. Nyomja meg az  x  gombot, hogy törölje a nem kívánt karaktert.
+  3. Nyomja meg az  x  gombot, hogy tÃ¶rÃ¶lje a nem kÃ­vÃ¡nt karaktert.
 
-  4. Ismételje a 2, 3, 4-es lépéseket, hogy kijavítsa a mondatot.
+  4. IsmÃ©telje a 2, 3, 4-es lÃ©pÃ©seket, hogy kijavÃ­tsa a mondatot.
 
----> ÕÕszi éjjjell izziik aa galaggonya rruuhája.
+---> ÅÅszi Ã©jjjell izziik aa galaggonya rruuhÃ¡ja.
 
-  5. Ha a sor helyes, ugorjon a 1.1.4. leckére.
+  5. Ha a sor helyes, ugorjon a 1.1.4. leckÃ©re.
 
-MEGJ: A tanulás során ne memorizálni próbáljon, hanem használat során tanuljon.
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     1.1.4.  lecke: SZÖVEG SZERKESZTÉSE - BESZÚRÁS
-
-
-	 ** Normál módban  i  megnyomásával lehet beilleszteni. **
-
-  1. Az alábbi elsõ ---> kezdetû sorra menjen.
-
-  2. Ahhoz, hogy az elsõt azonossá tegye a másodikkal, mozgassa a kurzort
-     az elsõ karakterre, amely UTÁN szöveget kell beszúrni.
-
-  3. Nyomjon  i-t és írja be a megfelelõ szöveget.
-
-  4. Amikor mindent beírt, nyomjon <ESC>-et, hogy Normál módba visszatérjen.
-     Ismételje a 2 és 4 közötti lépéseket, hogy kijavítsa a mondatot.
-
----> Az átható soól hizik pár ész.
----> Az itt látható sorból hiányzik pár rész.
-
-  5. Ha már begyakorolta a beszúrást, menjen az alábbi összefoglalóra.
-
+MEGJ: A tanulÃ¡s sorÃ¡n ne memorizÃ¡lni prÃ³bÃ¡ljon, hanem hasznÃ¡lat sorÃ¡n tanuljon.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       1.1. LECKE ÖSSZEFOGLALÓJA
+		     1.1.4.  lecke: SZÃ–VEG SZERKESZTÃ‰SE - BESZÃšRÃS
+
+
+	 ** NormÃ¡l mÃ³dban  i  megnyomÃ¡sÃ¡val lehet beilleszteni. **
+
+  1. Az alÃ¡bbi elsÅ‘ ---> kezdetÅ± sorra menjen.
+
+  2. Ahhoz, hogy az elsÅ‘t azonossÃ¡ tegye a mÃ¡sodikkal, mozgassa a kurzort
+     az elsÅ‘ karakterre, amely UTÃN szÃ¶veget kell beszÃºrni.
+
+  3. Nyomjon  i-t Ã©s Ã­rja be a megfelelÅ‘ szÃ¶veget.
+
+  4. Amikor mindent beÃ­rt, nyomjon <ESC>-et, hogy NormÃ¡l mÃ³dba visszatÃ©rjen.
+     IsmÃ©telje a 2 Ã©s 4 kÃ¶zÃ¶tti lÃ©pÃ©seket, hogy kijavÃ­tsa a mondatot.
+
+---> Az Ã¡thatÃ³ soÃ³l hizik pÃ¡r Ã©sz.
+---> Az itt lÃ¡thatÃ³ sorbÃ³l hiÃ¡nyzik pÃ¡r rÃ©sz.
+
+  5. Ha mÃ¡r begyakorolta a beszÃºrÃ¡st, menjen az alÃ¡bbi Ã¶sszefoglalÃ³ra.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       1.1. LECKE Ã–SSZEFOGLALÃ“JA
 
 
   1. A kurzort vagy a nyilakkal vagy a hjkl gombokkal mozgathatja.
 	 h (balra)	j (le)       k (fel)	    l (jobbra)
 
-  2. A Vimbe (a $ prompttól) így léphet be:  vim FILENAME <ENTER>
+  2. A Vimbe (a $ prompttÃ³l) Ã­gy lÃ©phet be:  vim FILENAME <ENTER>
 
-  3. A Vimbõl így léphet ki:  <ESC>   :q!  <ENTER>  a változtatások eldobásával.
-	     vagy így:	      <ESC>   :wq  <ENTER>  a változások mentésével.
+  3. A VimbÅ‘l Ã­gy lÃ©phet ki:  <ESC>   :q!  <ENTER>  a vÃ¡ltoztatÃ¡sok eldobÃ¡sÃ¡val.
+	     vagy Ã­gy:	      <ESC>   :wq  <ENTER>  a vÃ¡ltozÃ¡sok mentÃ©sÃ©vel.
 
-  4. A kurzor alatti karakter törlése normál módban:  x
+  4. A kurzor alatti karakter tÃ¶rlÃ©se normÃ¡l mÃ³dban:  x
 
-  5. Szöveg beszúrása a kurzor után normál módban:
-	 i     gépelje be a szöveget	<ESC>
+  5. SzÃ¶veg beszÃºrÃ¡sa a kurzor utÃ¡n normÃ¡l mÃ³dban:
+	 i     gÃ©pelje be a szÃ¶veget	<ESC>
 
-MEGJ: Az <ESC> megnyomása normál módba viszi, vagy megszakít egy nem befejezett
-      részben befejezett parancsot.
+MEGJ: Az <ESC> megnyomÃ¡sa normÃ¡l mÃ³dba viszi, vagy megszakÃ­t egy nem befejezett
+      rÃ©szben befejezett parancsot.
 
-Most folytassuk a 1.2. leckével!
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 1.2.1.  lecke: TÖRLÕ UTASÍTÁSOK
-
-
-	    ** dw  töröl a szó végéig. **
-
-  1. Nyomjon <ESC>-et, hogy megbizonyosodjon, hogy normál módban van!
-
-  2. Mozgassa a kurzort a ---> kezdetû sorra!
-
-  3. Mozgassa a kurzort arra annak a szónak az elejére, amit törölni szeretne.
-     Törölje az állatokat a mondatból.
-
-  4. A szó törléséhez írja:   dw
-
-  MEGJ: Ha rosszul kezdte az utasítást csak nyomjon <ESC> gombot
-        a megszakításához.
-
----> Pár szó kutya nem uhu illik pingvin a mondatba tehén.
-
-  5. Ismételje a 3 és 4 közötti utasításokat amíg kell és ugorjon a 1.2.2 leckére!
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      1.2.2.  lecke: MÉG TÖBB TÖRLÕ UTASÍTÁS
-
-
-	   ** d$ beírásával a sor végéig törölhet. **
-
-  1. Nyomjon <ESC>-et, hogy megbizonyosodjon, hogy normál módban van!
-
-  2. Mozgassa a kurzort a ---> kezdetû sorra!
-
-  3. Mozgassa a kurzort a helyes sor végére (az elsõ . UTÁN)!
-
-  4. d$  begépelésével törölje a sor végét!
-
----> Valaki a sor végét kétszer gépelte be. kétszer gépelte be.
-
-
-  5. Menjen a 1.2.3. leckére, hogy megértse mi történt!
-
-
-
+Most folytassuk a 1.2. leckÃ©vel!
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     1.2.3.  lecke: UTASÍTÁSOKRÓL ÉS MOZGÁSOKRÓL
+		 1.2.1.  lecke: TÃ–RLÅ UTASÃTÃSOK
 
 
-  A  d  (delete=törlés) utasítás formája a következõ:
+	    ** dw  tÃ¶rÃ¶l a szÃ³ vÃ©gÃ©ig. **
 
-	 [szám]   d	mozgás	   VAGY	     d	 [szám] mozgás
+  1. Nyomjon <ESC>-et, hogy megbizonyosodjon, hogy normÃ¡l mÃ³dban van!
+
+  2. Mozgassa a kurzort a ---> kezdetÅ± sorra!
+
+  3. Mozgassa a kurzort arra annak a szÃ³nak az elejÃ©re, amit tÃ¶rÃ¶lni szeretne.
+     TÃ¶rÃ¶lje az Ã¡llatokat a mondatbÃ³l.
+
+  4. A szÃ³ tÃ¶rlÃ©sÃ©hez Ã­rja:   dw
+
+  MEGJ: Ha rosszul kezdte az utasÃ­tÃ¡st csak nyomjon <ESC> gombot
+        a megszakÃ­tÃ¡sÃ¡hoz.
+
+---> PÃ¡r szÃ³ kutya nem uhu illik pingvin a mondatba tehÃ©n.
+
+  5. IsmÃ©telje a 3 Ã©s 4 kÃ¶zÃ¶tti utasÃ­tÃ¡sokat amÃ­g kell Ã©s ugorjon a 1.2.2 leckÃ©re!
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      1.2.2.  lecke: MÃ‰G TÃ–BB TÃ–RLÅ UTASÃTÃS
+
+
+	   ** d$ beÃ­rÃ¡sÃ¡val a sor vÃ©gÃ©ig tÃ¶rÃ¶lhet. **
+
+  1. Nyomjon <ESC>-et, hogy megbizonyosodjon, hogy normÃ¡l mÃ³dban van!
+
+  2. Mozgassa a kurzort a ---> kezdetÅ± sorra!
+
+  3. Mozgassa a kurzort a helyes sor vÃ©gÃ©re (az elsÅ‘ . UTÃN)!
+
+  4. d$  begÃ©pelÃ©sÃ©vel tÃ¶rÃ¶lje a sor vÃ©gÃ©t!
+
+---> Valaki a sor vÃ©gÃ©t kÃ©tszer gÃ©pelte be. kÃ©tszer gÃ©pelte be.
+
+
+  5. Menjen a 1.2.3. leckÃ©re, hogy megÃ©rtse mi tÃ¶rtÃ©nt!
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     1.2.3.  lecke: UTASÃTÃSOKRÃ“L Ã‰S MOZGÃSOKRÃ“L
+
+
+  A  d  (delete=tÃ¶rlÃ©s) utasÃ­tÃ¡s formÃ¡ja a kÃ¶vetkezÅ‘:
+
+	 [szÃ¡m]   d	mozgÃ¡s	   VAGY	     d	 [szÃ¡m] mozgÃ¡s
   Ahol:
-    szám - hányszor hajtódjon végre a parancs (elhagyható, alapérték=1).
-    d - a törlés (delete) utasítás.
-    mozgás - amin a parancsnak teljesülnie kell (alább listázva).
+    szÃ¡m - hÃ¡nyszor hajtÃ³djon vÃ©gre a parancs (elhagyhatÃ³, alapÃ©rtÃ©k=1).
+    d - a tÃ¶rlÃ©s (delete) utasÃ­tÃ¡s.
+    mozgÃ¡s - amin a parancsnak teljesÃ¼lnie kell (alÃ¡bb listÃ¡zva).
 
-  Mozgások rövid listája:
-    w - a kurzortól a szó végéig, beleértve a szóközt.
-    e - a kurzortól a szó végéig, NEM beleértve a szóközt.
-    $ - a kurzortól a sor végéig.
+  MozgÃ¡sok rÃ¶vid listÃ¡ja:
+    w - a kurzortÃ³l a szÃ³ vÃ©gÃ©ig, beleÃ©rtve a szÃ³kÃ¶zt.
+    e - a kurzortÃ³l a szÃ³ vÃ©gÃ©ig, NEM beleÃ©rtve a szÃ³kÃ¶zt.
+    $ - a kurzortÃ³l a sor vÃ©gÃ©ig.
 
-MEGJ:  Csupán a mozgás begépelésével (parancs nélkül)
-       a kurzor mozgás által megadott helyre kerül.
+MEGJ:  CsupÃ¡n a mozgÃ¡s begÃ©pelÃ©sÃ©vel (parancs nÃ©lkÃ¼l)
+       a kurzor mozgÃ¡s Ã¡ltal megadott helyre kerÃ¼l.
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 1.2.4.  lecke: EGÉSZ SOROK FELDOLGOZÁSA
+	 1.2.4.  lecke: EGÃ‰SZ SOROK FELDOLGOZÃSA
 
 
-	       ** dd beírásával törölheti az egész sort. **
+	       ** dd beÃ­rÃ¡sÃ¡val tÃ¶rÃ¶lheti az egÃ©sz sort. **
 
-  A teljes sor törlésének gyakorisága miatt a Vi tervezõi elhatározták,
-  hogy könnyebb lenne csupán a d-t kétszer megnyomni, hogy egy sort töröljünk.
+  A teljes sor tÃ¶rlÃ©sÃ©nek gyakorisÃ¡ga miatt a Vi tervezÅ‘i elhatÃ¡roztÃ¡k,
+  hogy kÃ¶nnyebb lenne csupÃ¡n a d-t kÃ©tszer megnyomni, hogy egy sort tÃ¶rÃ¶ljÃ¼nk.
 
-  1. Mozgassa a kurzort az alábbi kifejezések második sorára!
-  2. dd begépelésével törölje a sort!
+  1. Mozgassa a kurzort az alÃ¡bbi kifejezÃ©sek mÃ¡sodik sorÃ¡ra!
+  2. dd begÃ©pelÃ©sÃ©vel tÃ¶rÃ¶lje a sort!
   3. Menjen a 3. (eredetileg 4.) sorra!
-  4. 2dd   (ugyebár szám-utasítás-mozgás) begépelésével töröljön két sort!
+  4. 2dd   (ugyebÃ¡r szÃ¡m-utasÃ­tÃ¡s-mozgÃ¡s) begÃ©pelÃ©sÃ©vel tÃ¶rÃ¶ljÃ¶n kÃ©t sort!
 
-      1)  Alvó szegek a jéghideg homokban,
-      2)  - kezdi a költõ -
-      3)  Plakátmagányban ázó éjjelek.
-      4)  Pingvinek ne féljetek,
-      5)  Távolról egy vaku villant,
-      6)  Égve hagytad a folyosón a villanyt.
-      7)  Ma ontják véremet.
+      1)  AlvÃ³ szegek a jÃ©ghideg homokban,
+      2)  - kezdi a kÃ¶ltÅ‘ -
+      3)  PlakÃ¡tmagÃ¡nyban Ã¡zÃ³ Ã©jjelek.
+      4)  Pingvinek ne fÃ©ljetek,
+      5)  TÃ¡volrÃ³l egy vaku villant,
+      6)  Ã‰gve hagytad a folyosÃ³n a villanyt.
+      7)  Ma ontjÃ¡k vÃ©remet.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   1.2.5.  lecke: A VISSZAVONÁS (UNDO) PARANCS
+		   1.2.5.  lecke: A VISSZAVONÃS (UNDO) PARANCS
 
 
-** u gépelésével visszavonható az utolsó parancs, U az egész sort helyreállítja. **
+** u gÃ©pelÃ©sÃ©vel visszavonhatÃ³ az utolsÃ³ parancs, U az egÃ©sz sort helyreÃ¡llÃ­tja. **
 
-  1. Menjünk az alábbi ---> kezdetû sor elsõ hibájára!
-  2. x  lenyomásával törölje az elsõ felesleges karaktert!
-  3. u megnyomásával vonja vissza az utolsónak végrehajtott utasítást!
-  4. Másodjára javítson ki minden hibát a sorban az x utasítással!
-  5. Most nagy  U  -val állítsa vissza a sor eredeti állapotát!
-  6. Nyomja meg az u gombot párszor, hogy az U és az azt megelõzõ utasításokat
-     visszaállítsa!
-  7. CTRL-R (CTRL gomb lenyomása mellett üssön R-t) párszor csinálja újra a
+  1. MenjÃ¼nk az alÃ¡bbi ---> kezdetÅ± sor elsÅ‘ hibÃ¡jÃ¡ra!
+  2. x  lenyomÃ¡sÃ¡val tÃ¶rÃ¶lje az elsÅ‘ felesleges karaktert!
+  3. u megnyomÃ¡sÃ¡val vonja vissza az utolsÃ³nak vÃ©grehajtott utasÃ­tÃ¡st!
+  4. MÃ¡sodjÃ¡ra javÃ­tson ki minden hibÃ¡t a sorban az x utasÃ­tÃ¡ssal!
+  5. Most nagy  U  -val Ã¡llÃ­tsa vissza a sor eredeti Ã¡llapotÃ¡t!
+  6. Nyomja meg az u gombot pÃ¡rszor, hogy az U Ã©s az azt megelÅ‘zÅ‘ utasÃ­tÃ¡sokat
+     visszaÃ¡llÃ­tsa!
+  7. CTRL-R (CTRL gomb lenyomÃ¡sa mellett Ã¼ssÃ¶n R-t) pÃ¡rszor csinÃ¡lja Ãºjra a
      visszavont parancsokat (redo)!
 
----> Javíítsa a hhibákaat ebbben a sooorban majd állítsa visszaaa az eredetit.
+---> JavÃ­Ã­tsa a hhibÃ¡kaat ebbben a sooorban majd Ã¡llÃ­tsa visszaaa az eredetit.
 
-  8. Ezek nagyon hasznos parancsok. Most ugorjon a 1.2. lecke összefoglalójára.
+  8. Ezek nagyon hasznos parancsok. Most ugorjon a 1.2. lecke Ã¶sszefoglalÃ³jÃ¡ra.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       1.2. LECKE ÖSSZEFOGLALÓJA
+			       1.2. LECKE Ã–SSZEFOGLALÃ“JA
 
 
-  1. Törlés a kurzortól a szó végéig:    dw
+  1. TÃ¶rlÃ©s a kurzortÃ³l a szÃ³ vÃ©gÃ©ig:    dw
 
-  2. Törlés a kurzortól a sor végéig:    d$
+  2. TÃ¶rlÃ©s a kurzortÃ³l a sor vÃ©gÃ©ig:    d$
 
-  3. Egész sor törlése:    dd
+  3. EgÃ©sz sor tÃ¶rlÃ©se:    dd
 
-  4. Egy utasítás alakja normál módban:
+  4. Egy utasÃ­tÃ¡s alakja normÃ¡l mÃ³dban:
 
-       [szám]   utasítás   mozgás   VAGY   utasítás	[szám] mozgás
+       [szÃ¡m]   utasÃ­tÃ¡s   mozgÃ¡s   VAGY   utasÃ­tÃ¡s	[szÃ¡m] mozgÃ¡s
      ahol:
-       szám - hányszor ismételjük a parancsot
-       utasítás - mit tegyünk, pl. d  a törléskor
-       mozgás - mire hasson az utasítás, például w (szó=word),
-		$ (a sor végéig), stb.
+       szÃ¡m - hÃ¡nyszor ismÃ©teljÃ¼k a parancsot
+       utasÃ­tÃ¡s - mit tegyÃ¼nk, pl. d  a tÃ¶rlÃ©skor
+       mozgÃ¡s - mire hasson az utasÃ­tÃ¡s, pÃ©ldÃ¡ul w (szÃ³=word),
+		$ (a sor vÃ©gÃ©ig), stb.
 
-  5. Az elõzõ tett visszavonása (undo):	     u	 (kis u)
-     A sor összes változásának visszavonása: U	 (nagy U)
-     Visszavonások visszavonása:	     CTRL-R
+  5. Az elÅ‘zÅ‘ tett visszavonÃ¡sa (undo):	     u	 (kis u)
+     A sor Ã¶sszes vÃ¡ltozÃ¡sÃ¡nak visszavonÃ¡sa: U	 (nagy U)
+     VisszavonÃ¡sok visszavonÃ¡sa:	     CTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 1.3.1.  lecke: A BEILLESZTÉS (PUT) PARANCS
+	 1.3.1.  lecke: A BEILLESZTÃ‰S (PUT) PARANCS
 
 
-  ** p  leütésével az utolsónak töröltet a kurzor után illeszthetjük. **
+  ** p  leÃ¼tÃ©sÃ©vel az utolsÃ³nak tÃ¶rÃ¶ltet a kurzor utÃ¡n illeszthetjÃ¼k. **
 
-  1. Mozgassuk a kurzort az alábbi sorok elsõ sorára.
+  1. Mozgassuk a kurzort az alÃ¡bbi sorok elsÅ‘ sorÃ¡ra.
 
-  2. dd leütésével töröljük a sort és eltárolódik a Vim pufferében.
+  2. dd leÃ¼tÃ©sÃ©vel tÃ¶rÃ¶ljÃ¼k a sort Ã©s eltÃ¡rolÃ³dik a Vim pufferÃ©ben.
 
-  3. Mozgassuk a kurzort azelõtt a  sor ELÕTTI sorba, ahová mozgatni
-     szeretnénk a törölt sort.
+  3. Mozgassuk a kurzort azelÅ‘tt a  sor ELÅTTI sorba, ahovÃ¡ mozgatni
+     szeretnÃ©nk a tÃ¶rÃ¶lt sort.
 
-  4. Normál módban írjunk  p   betût a törölt sor beillesztéséhez.
+  4. NormÃ¡l mÃ³dban Ã­rjunk  p   betÅ±t a tÃ¶rÃ¶lt sor beillesztÃ©sÃ©hez.
 
-  5. Folytassuk a 2-4. utasításokkal hogy a helyes sorrendet kapjuk.
+  5. Folytassuk a 2-4. utasÃ­tÃ¡sokkal hogy a helyes sorrendet kapjuk.
 
      d) Can you learn too?
      b) Violets are blue,
@@ -299,352 +299,352 @@ MEGJ:  Csupán a mozgás begépelésével (parancs nélkül)
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       1.3.2.  lecke: AZ ÁTÍRÁS (REPLACE) PARANCS
+		       1.3.2.  lecke: AZ ÃTÃRÃS (REPLACE) PARANCS
 
 
-** r  és  a karakterek leütésével a kurzor alatti karaktert megváltoztatjuk. **
+** r  Ã©s  a karakterek leÃ¼tÃ©sÃ©vel a kurzor alatti karaktert megvÃ¡ltoztatjuk. **
 
-  1. Mozgassuk a kurzort az elsõ ---> kezdetû sorra!
+  1. Mozgassuk a kurzort az elsÅ‘ ---> kezdetÅ± sorra!
 
-  2. Mozgassuk a kurzort az elsõ hiba fölé!
+  2. Mozgassuk a kurzort az elsÅ‘ hiba fÃ¶lÃ©!
 
-  3. r	majd a kívánt karakter leütésével változtassuk meg a hibásat!
+  3. r	majd a kÃ­vÃ¡nt karakter leÃ¼tÃ©sÃ©vel vÃ¡ltoztassuk meg a hibÃ¡sat!
 
-  4. A 2. és 3. lépésekkel javítsuk az összes hibát!
+  4. A 2. Ã©s 3. lÃ©pÃ©sekkel javÃ­tsuk az Ã¶sszes hibÃ¡t!
 
 --->  Whan this lime was tuoed in, someone presswd some wrojg keys!
 --->  When this line was typed in, someone pressed some wrong keys!
 
-  5. Menjünk a 1.3.2. leckére!
+  5. MenjÃ¼nk a 1.3.2. leckÃ©re!
 
-MEGJ: Emlékezzen, hogy nem memorizálással, hanem gyakorlással tanuljon.
+MEGJ: EmlÃ©kezzen, hogy nem memorizÃ¡lÃ¡ssal, hanem gyakorlÃ¡ssal tanuljon.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		 1.3.3.  lecke: A CSERE (CHANGE) PARANCS
 
 
-	   ** A szó egy részének megváltoztatásához írjuk:  cw . **
+	   ** A szÃ³ egy rÃ©szÃ©nek megvÃ¡ltoztatÃ¡sÃ¡hoz Ã­rjuk:  cw . **
 
-  1. Mozgassuk a kurzort az elsõ ---> kezdetû sorra!
+  1. Mozgassuk a kurzort az elsÅ‘ ---> kezdetÅ± sorra!
 
-  2. Vigye a kurzort a Ezen szó z betûje fölé!
+  2. Vigye a kurzort a Ezen szÃ³ z betÅ±je fÃ¶lÃ©!
 
-  3. cw és a helyes szórész (itt 'bben') beírásával javítsa a szót!
+  3. cw Ã©s a helyes szÃ³rÃ©sz (itt 'bben') beÃ­rÃ¡sÃ¡val javÃ­tsa a szÃ³t!
 
-  4. <ESC> lenyomása után a következõ hibára ugorjon (az elsõ cserélendõ
+  4. <ESC> lenyomÃ¡sa utÃ¡n a kÃ¶vetkezÅ‘ hibÃ¡ra ugorjon (az elsÅ‘ cserÃ©lendÅ‘
      karakterre)!
 
-  5. A 3. és 4. lépések ismétlésével az elsõ mondatot tegye a másodikkal
-     azonossá!
+  5. A 3. Ã©s 4. lÃ©pÃ©sek ismÃ©tlÃ©sÃ©vel az elsÅ‘ mondatot tegye a mÃ¡sodikkal
+     azonossÃ¡!
 
----> Ezen a sorrrrr pár szóra meg kell változzanak a change utaskírésõ.
----> Ebben a sorban pár szót meg kell változtatni a change utasítással.
+---> Ezen a sorrrrr pÃ¡r szÃ³ra meg kell vÃ¡ltozzanak a change utaskÃ­rÃ©sÅ‘.
+---> Ebben a sorban pÃ¡r szÃ³t meg kell vÃ¡ltoztatni a change utasÃ­tÃ¡ssal.
 
-Vegyük észre, hogy a  cw  nem csak a szót írja át, hanem beszúró
-(insert) módba vált.
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       1.3.4.  lecke: TÖBBFÉLE VÁLTOZTATÁS c-VEL
-
-
- ** A c utasítás használható ugyanazokkal az mozgásokkal mint a törlés **
-
-  1. A change utasítás a törléssel azonosan viselkedik.  A forma:
-
-       [szám]   c   mozgás	   OR	    c	[szám]   mozgás
-
-  2. A mozgások is azonosak, pl.   w (szó), $ (sorvég), stb.
-
-  3. Mozgassuk a kurzort az elsõ ---> kezdetû sorra!
-
-  4. Menjünk az elsõ hibára!
-
-  5. c$ begépelésével a sorvégeket tegyük azonossá és nyomjunk <ESC>-et!
-
----> Ennek a sornak a vége kiigazításra szorul, hogy megegyezzen a másodikkal.
----> Ennek a sornak a vége a c$ paranccsal változtatható meg.
+VegyÃ¼k Ã©szre, hogy a  cw  nem csak a szÃ³t Ã­rja Ã¡t, hanem beszÃºrÃ³
+(insert) mÃ³dba vÃ¡lt.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       1.3. LECKE ÖSSZEFOGLALÓJA
+		       1.3.4.  lecke: TÃ–BBFÃ‰LE VÃLTOZTATÃS c-VEL
 
 
-  1. A már törölt sort beillesztéséhez nyomjunk p-t. Ez a törölt szöveget
-     a kurzor UTÁN helyezi (ha sor került törlésre, a kurzor alatti sorba).
+ ** A c utasÃ­tÃ¡s hasznÃ¡lhatÃ³ ugyanazokkal az mozgÃ¡sokkal mint a tÃ¶rlÃ©s **
 
-  2. A kurzor alatti karakter átírásához az r-et és azt a karaktert
-     nyomjuk, amellyel az eredetit felül szeretnénk írni.
+  1. A change utasÃ­tÃ¡s a tÃ¶rlÃ©ssel azonosan viselkedik.  A forma:
 
-  3. A változtatás (c) utasítás a karaktertõl az mozgás végéig
-     változtatja meg az mozgást. Például a cw a kurzortól a szó végéig,
-     a c$ a sor végéig.
+       [szÃ¡m]   c   mozgÃ¡s	   OR	    c	[szÃ¡m]   mozgÃ¡s
 
-  4. A változtatás formátuma:
+  2. A mozgÃ¡sok is azonosak, pl.   w (szÃ³), $ (sorvÃ©g), stb.
 
-	 [szám]   c	mozgás	VAGY	c   [szám]   mozgás
+  3. Mozgassuk a kurzort az elsÅ‘ ---> kezdetÅ± sorra!
 
-Ugorjunk a következõ leckére!
+  4. MenjÃ¼nk az elsÅ‘ hibÃ¡ra!
+
+  5. c$ begÃ©pelÃ©sÃ©vel a sorvÃ©geket tegyÃ¼k azonossÃ¡ Ã©s nyomjunk <ESC>-et!
+
+---> Ennek a sornak a vÃ©ge kiigazÃ­tÃ¡sra szorul, hogy megegyezzen a mÃ¡sodikkal.
+---> Ennek a sornak a vÃ©ge a c$ paranccsal vÃ¡ltoztathatÃ³ meg.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     1.4.1.  lecke: HELY ÉS FÁJLÁLLAPOT
+			       1.3. LECKE Ã–SSZEFOGLALÃ“JA
 
 
- ** CTRL-g megnyomásával megnézhetjük a helyünket a fájlban és a fájl állapotát.
-     SHIFT-G leütésével a fájl adott sorára ugorhatunk. **
+  1. A mÃ¡r tÃ¶rÃ¶lt sort beillesztÃ©sÃ©hez nyomjunk p-t. Ez a tÃ¶rÃ¶lt szÃ¶veget
+     a kurzor UTÃN helyezi (ha sor kerÃ¼lt tÃ¶rlÃ©sre, a kurzor alatti sorba).
 
-  Megj: Olvassuk el az egész leckét a lépések végrehajtása elõtt!!
+  2. A kurzor alatti karakter Ã¡tÃ­rÃ¡sÃ¡hoz az r-et Ã©s azt a karaktert
+     nyomjuk, amellyel az eredetit felÃ¼l szeretnÃ©nk Ã­rni.
 
-  1. Tartsuk nyomva a Ctrl gombot és nyomjunk  g-t.  Az állapotsor
-     megjelenik a lap alján a fájlnévvel és az aktuális sor sorszámával.
-     Jegyezzük meg a sorszámot a 3. lépéshez!
+  3. A vÃ¡ltoztatÃ¡s (c) utasÃ­tÃ¡s a karaktertÅ‘l az mozgÃ¡s vÃ©gÃ©ig
+     vÃ¡ltoztatja meg az mozgÃ¡st. PÃ©ldÃ¡ul a cw a kurzortÃ³l a szÃ³ vÃ©gÃ©ig,
+     a c$ a sor vÃ©gÃ©ig.
 
-  2. Nyomjunk Shift-G-t a lap aljára ugráshoz!
+  4. A vÃ¡ltoztatÃ¡s formÃ¡tuma:
 
-  3. Üssük be az eredeti sor számát, majd üssünk shift-G-t! Ezzel
+	 [szÃ¡m]   c	mozgÃ¡s	VAGY	c   [szÃ¡m]   mozgÃ¡s
+
+Ugorjunk a kÃ¶vetkezÅ‘ leckÃ©re!
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     1.4.1.  lecke: HELY Ã‰S FÃJLÃLLAPOT
+
+
+ ** CTRL-g megnyomÃ¡sÃ¡val megnÃ©zhetjÃ¼k a helyÃ¼nket a fÃ¡jlban Ã©s a fÃ¡jl Ã¡llapotÃ¡t.
+     SHIFT-G leÃ¼tÃ©sÃ©vel a fÃ¡jl adott sorÃ¡ra ugorhatunk. **
+
+  Megj: Olvassuk el az egÃ©sz leckÃ©t a lÃ©pÃ©sek vÃ©grehajtÃ¡sa elÅ‘tt!!
+
+  1. Tartsuk nyomva a Ctrl gombot Ã©s nyomjunk  g-t.  Az Ã¡llapotsor
+     megjelenik a lap aljÃ¡n a fÃ¡jlnÃ©vvel Ã©s az aktuÃ¡lis sor sorszÃ¡mÃ¡val.
+     JegyezzÃ¼k meg a sorszÃ¡mot a 3. lÃ©pÃ©shez!
+
+  2. Nyomjunk Shift-G-t a lap aljÃ¡ra ugrÃ¡shoz!
+
+  3. ÃœssÃ¼k be az eredeti sor szÃ¡mÃ¡t, majd Ã¼ssÃ¼nk shift-G-t! Ezzel
      visszajutunk az eredeti sorra ahol Ctrl-g-t nyomtunk.
-     (A beírt szám NEM fog megjelenni a képernyõn.)
+     (A beÃ­rt szÃ¡m NEM fog megjelenni a kÃ©pernyÅ‘n.)
 
-  4. Ha megjegyezte a feladatot, hajtsa végre az 1-3. lépéseket!
+  4. Ha megjegyezte a feladatot, hajtsa vÃ©gre az 1-3. lÃ©pÃ©seket!
 
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 1.4.2.  lecke: A KERESÉS (SEARCH) PARANCS
-
-
-  ** / majd a kívánt kifejezés beírásával kereshetjük meg a kifejezést. **
-
-  1. Normál módban üssünk  /  karaktert!  Ez és a kurzor megjelenik
-     a képernyõ alján, ahogy a : utasítás is.
-
-  2. Írjuk be: 'hiibaa' <ENTER>!  Ez az a szó amit keresünk.
-
-  3. A kifejezés újabb kereséséhez üssük le egyszerûen:  n .
-     A kifejezés ellenkezõ irányban történõ kereséséhez ezt üssük be: Shift-N .
-
-  4. Ha visszafelé szeretne keresni, akkor ? kell a / helyett.
-
----> "hiibaa" nem a helyes módja a hiba leírásának; a hiibaa egy hiba.
-
-Megj: Ha a keresés eléri a fájl végét, akkor az elején kezdi.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   1.4.3.  lecke: ZÁRÓJELEK PÁRJÁNAK KERESÉSE
+		 1.4.2.  lecke: A KERESÃ‰S (SEARCH) PARANCS
 
 
-	   ** % leütésével megtaláljuk a ),], vagy }  párját. **
+  ** / majd a kÃ­vÃ¡nt kifejezÃ©s beÃ­rÃ¡sÃ¡val kereshetjÃ¼k meg a kifejezÃ©st. **
 
-  1. Helyezze a kurzort valamelyik (, [, vagy { zárójelre a ---> kezdetû
+  1. NormÃ¡l mÃ³dban Ã¼ssÃ¼nk  /  karaktert!  Ez Ã©s a kurzor megjelenik
+     a kÃ©pernyÅ‘ aljÃ¡n, ahogy a : utasÃ­tÃ¡s is.
+
+  2. Ãrjuk be: 'hiibaa' <ENTER>!  Ez az a szÃ³ amit keresÃ¼nk.
+
+  3. A kifejezÃ©s Ãºjabb keresÃ©sÃ©hez Ã¼ssÃ¼k le egyszerÅ±en:  n .
+     A kifejezÃ©s ellenkezÅ‘ irÃ¡nyban tÃ¶rtÃ©nÅ‘ keresÃ©sÃ©hez ezt Ã¼ssÃ¼k be: Shift-N .
+
+  4. Ha visszafelÃ© szeretne keresni, akkor ? kell a / helyett.
+
+---> "hiibaa" nem a helyes mÃ³dja a hiba leÃ­rÃ¡sÃ¡nak; a hiibaa egy hiba.
+
+Megj: Ha a keresÃ©s elÃ©ri a fÃ¡jl vÃ©gÃ©t, akkor az elejÃ©n kezdi.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   1.4.3.  lecke: ZÃRÃ“JELEK PÃRJÃNAK KERESÃ‰SE
+
+
+	   ** % leÃ¼tÃ©sÃ©vel megtalÃ¡ljuk a ),], vagy }  pÃ¡rjÃ¡t. **
+
+  1. Helyezze a kurzort valamelyik (, [, vagy { zÃ¡rÃ³jelre a ---> kezdetÅ±
      sorban!
 
-  2. Üssön  %  karaktert!
+  2. ÃœssÃ¶n  %  karaktert!
 
-  3. A kurzor a zárójel párjára fog ugrani.
+  3. A kurzor a zÃ¡rÃ³jel pÃ¡rjÃ¡ra fog ugrani.
 
-  4. % leütésével visszaugrik az eredeti zárójelre.
+  4. % leÃ¼tÃ©sÃ©vel visszaugrik az eredeti zÃ¡rÃ³jelre.
 
----> Ez ( egy tesztsor (-ekkel, [-ekkel ] és {-ekkel } a sorban. ))
+---> Ez ( egy tesztsor (-ekkel, [-ekkel ] Ã©s {-ekkel } a sorban. ))
 
 Megj: Ez nagyon hasznos, ha olyan programot debugolunk, amelyben a
-      zárójelek nem párosak!
+      zÃ¡rÃ³jelek nem pÃ¡rosak!
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		  1.4.4.  lecke: A HIBÁK KIJAVÍTÁSÁNAK EGY MÓDJA
+		  1.4.4.  lecke: A HIBÃK KIJAVÃTÃSÃNAK EGY MÃ“DJA
 
 
-    ** :s/régi/új/g begépelésével az 'új'-ra cseréljük a 'régi'-t. **
+    ** :s/rÃ©gi/Ãºj/g begÃ©pelÃ©sÃ©vel az 'Ãºj'-ra cserÃ©ljÃ¼k a 'rÃ©gi'-t. **
 
-  1. Menjünk a ---> kezdetû sorra!
+  1. MenjÃ¼nk a ---> kezdetÅ± sorra!
 
-  2. Írjuk be:  :s/eggy/egy <ENTER> .  Ekkor csak az elsõ változik meg a
+  2. Ãrjuk be:  :s/eggy/egy <ENTER> .  Ekkor csak az elsÅ‘ vÃ¡ltozik meg a
      sorban.
 
-  3. Most ezt írjuk:	 :s/eggy/egg/g	   amely globálisan helyettesít
-     a sorban, azaz minden elõfordulást.
-     Ez a sorban minden elõfordulást helyettesít.
+  3. Most ezt Ã­rjuk:	 :s/eggy/egg/g	   amely globÃ¡lisan helyettesÃ­t
+     a sorban, azaz minden elÅ‘fordulÃ¡st.
+     Ez a sorban minden elÅ‘fordulÃ¡st helyettesÃ­t.
 
----> eggy heggy meggy, szembe jön eggy másik heggy.
+---> eggy heggy meggy, szembe jÃ¶n eggy mÃ¡sik heggy.
 
-  4. Két sor között a karaktersor minden elõfordulásának helyettesítése:
-     :#,#s/régi/új/g    ahol #,# a két sor sorszáma.
-     :%s/régi/új/g      a fájlbeli összes elõfordulás helyettesítése.
-
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       1.4. LECKE ÖSSZEFOGLALÓJA
-
-
-  1. Ctrl-g  kiírja az kurzor helyét a fájlban és a fájl állapotát.
-     Shift-G a fájl végére megy, gg az elejére. Egy szám után
-     Shift-G  az adott számú sorra ugrik.
-
-  2. /	után egy kifejezés ELÕREFELE keresi a kifejezést.
-  2. ?	után egy kifejezés VISSZAFELE keresi a kifejezést.
-     Egy keresés után az  n  a következõ elõfordulást keresi azonos irányban
-     Shift-N  az ellenkezõ irányban keres.
-
-  3. %	begépelésével, ha  (,),[,],{, vagy } karakteren vagyunk a zárójel
-     párjára ugrik.
-
-  4. az elsõ régi helyettesítése újjal a sorban    :s/régi/új
-     az összes régi helyettesítése újjal a sorban  :s/régi/új/g
-     két sor közötti kifejezésekre		   :#,#s/régi/új/g
-     # helyén az aktuális sor (.) és az utolsó ($) is állhat :.,$/régi/új/g
-     A fájlbeli összes elõfordulás helyettesítése  :%s/régi/új/g
-     Mindenkori megerõsítésre vár 'c' hatására	   :%s/régi/új/gc
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 1.5.1.  lecke: KÜLSÕ PARANCS VÉGREHAJTÁSA
-
-
-   ** :!  után külsõ parancsot írva végrehajtódik a parancs. **
-
-  1. Írjuk be az ismerõs : parancsot, hogy a kurzort a  képernyõ aljára
-     helyezzük. Ez lehetõvé teszi egy parancs beírását.
-
-  2. ! (felkiáltójel) beírásával tegyük lehetõvé külsõ héj (shell)-parancs
-     végrehajtását.
-
-  3. Írjunk például ls parancsot a ! után majd üssünk <ENTER>-t.  Ez ki
-     fogja listázni a könyvtárunkat ugyanúgy, mintha a shell promptnál
-     lennénk.  Vagy írja ezt  :!dir  ha az ls nem mûködik.
-
-Megj:  Ilymódon bármely külsõ utasítás végrehajtható.
-
-Megj:  Minden  :  parancs után <ENTER>-t kell ütni.
+  4. KÃ©t sor kÃ¶zÃ¶tt a karaktersor minden elÅ‘fordulÃ¡sÃ¡nak helyettesÃ­tÃ©se:
+     :#,#s/rÃ©gi/Ãºj/g    ahol #,# a kÃ©t sor sorszÃ¡ma.
+     :%s/rÃ©gi/Ãºj/g      a fÃ¡jlbeli Ã¶sszes elÅ‘fordulÃ¡s helyettesÃ­tÃ©se.
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 1.5.2.  lecke: BÕVEBBEN A FÁJLOK ÍRÁSÁRÓL
+			       1.4. LECKE Ã–SSZEFOGLALÃ“JA
 
 
-     ** A fájlok változásait így írhatjuk ki  :w FÁJLNÉV. **
+  1. Ctrl-g  kiÃ­rja az kurzor helyÃ©t a fÃ¡jlban Ã©s a fÃ¡jl Ã¡llapotÃ¡t.
+     Shift-G a fÃ¡jl vÃ©gÃ©re megy, gg az elejÃ©re. Egy szÃ¡m utÃ¡n
+     Shift-G  az adott szÃ¡mÃº sorra ugrik.
 
-  1. :!dir  vagy  :!ls  beírásával listázzuk a könyvtárunkat!
-     Ön már tudja, hogy <ENTER>-t kell ütnie utána.
+  2. /	utÃ¡n egy kifejezÃ©s ELÅREFELE keresi a kifejezÃ©st.
+  2. ?	utÃ¡n egy kifejezÃ©s VISSZAFELE keresi a kifejezÃ©st.
+     Egy keresÃ©s utÃ¡n az  n  a kÃ¶vetkezÅ‘ elÅ‘fordulÃ¡st keresi azonos irÃ¡nyban
+     Shift-N  az ellenkezÅ‘ irÃ¡nyban keres.
 
-  2. Válasszon egy fájlnevet, amely még nem létezik pl. TESZT!
+  3. %	begÃ©pelÃ©sÃ©vel, ha  (,),[,],{, vagy } karakteren vagyunk a zÃ¡rÃ³jel
+     pÃ¡rjÃ¡ra ugrik.
 
-  3. Írja:	:w TESZT   (ahol TESZT a választott fájlnév)!
+  4. az elsÅ‘ rÃ©gi helyettesÃ­tÃ©se Ãºjjal a sorban    :s/rÃ©gi/Ãºj
+     az Ã¶sszes rÃ©gi helyettesÃ­tÃ©se Ãºjjal a sorban  :s/rÃ©gi/Ãºj/g
+     kÃ©t sor kÃ¶zÃ¶tti kifejezÃ©sekre		   :#,#s/rÃ©gi/Ãºj/g
+     # helyÃ©n az aktuÃ¡lis sor (.) Ã©s az utolsÃ³ ($) is Ã¡llhat :.,$/rÃ©gi/Ãºj/g
+     A fÃ¡jlbeli Ã¶sszes elÅ‘fordulÃ¡s helyettesÃ­tÃ©se  :%s/rÃ©gi/Ãºj/g
+     Mindenkori megerÅ‘sÃ­tÃ©sre vÃ¡r 'c' hatÃ¡sÃ¡ra	   :%s/rÃ©gi/Ãºj/gc
 
-  4. Ez elmenti a teljes fájlt (a Vim oktatóját) TESZT néven.
-     Ellenõrzésképp írjuk ismét    :!dir   hogy lássuk a könyvtárat!
-     (Felfelé gombbal : után az elõzõ utasítások visszahozhatóak.)
 
-Megj: Ha Ön kilépne a Vimbõl és és visszatérne a TESZT fájlnévvel, akkor a
-      fájl az oktató mentéskori pontos másolata lenne.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 1.5.1.  lecke: KÃœLSÅ PARANCS VÃ‰GREHAJTÃSA
 
-  5. Távolítsa el a fájlt  (MS-DOS):	:!del TESZT
+
+   ** :!  utÃ¡n kÃ¼lsÅ‘ parancsot Ã­rva vÃ©grehajtÃ³dik a parancs. **
+
+  1. Ãrjuk be az ismerÅ‘s : parancsot, hogy a kurzort a  kÃ©pernyÅ‘ aljÃ¡ra
+     helyezzÃ¼k. Ez lehetÅ‘vÃ© teszi egy parancs beÃ­rÃ¡sÃ¡t.
+
+  2. ! (felkiÃ¡ltÃ³jel) beÃ­rÃ¡sÃ¡val tegyÃ¼k lehetÅ‘vÃ© kÃ¼lsÅ‘ hÃ©j (shell)-parancs
+     vÃ©grehajtÃ¡sÃ¡t.
+
+  3. Ãrjunk pÃ©ldÃ¡ul ls parancsot a ! utÃ¡n majd Ã¼ssÃ¼nk <ENTER>-t.  Ez ki
+     fogja listÃ¡zni a kÃ¶nyvtÃ¡runkat ugyanÃºgy, mintha a shell promptnÃ¡l
+     lennÃ©nk.  Vagy Ã­rja ezt  :!dir  ha az ls nem mÅ±kÃ¶dik.
+
+Megj:  IlymÃ³don bÃ¡rmely kÃ¼lsÅ‘ utasÃ­tÃ¡s vÃ©grehajthatÃ³.
+
+Megj:  Minden  :  parancs utÃ¡n <ENTER>-t kell Ã¼tni.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		 1.5.2.  lecke: BÅVEBBEN A FÃJLOK ÃRÃSÃRÃ“L
+
+
+     ** A fÃ¡jlok vÃ¡ltozÃ¡sait Ã­gy Ã­rhatjuk ki  :w FÃJLNÃ‰V. **
+
+  1. :!dir  vagy  :!ls  beÃ­rÃ¡sÃ¡val listÃ¡zzuk a kÃ¶nyvtÃ¡runkat!
+     Ã–n mÃ¡r tudja, hogy <ENTER>-t kell Ã¼tnie utÃ¡na.
+
+  2. VÃ¡lasszon egy fÃ¡jlnevet, amely mÃ©g nem lÃ©tezik pl. TESZT!
+
+  3. Ãrja:	:w TESZT   (ahol TESZT a vÃ¡lasztott fÃ¡jlnÃ©v)!
+
+  4. Ez elmenti a teljes fÃ¡jlt (a Vim oktatÃ³jÃ¡t) TESZT nÃ©ven.
+     EllenÅ‘rzÃ©skÃ©pp Ã­rjuk ismÃ©t    :!dir   hogy lÃ¡ssuk a kÃ¶nyvtÃ¡rat!
+     (FelfelÃ© gombbal : utÃ¡n az elÅ‘zÅ‘ utasÃ­tÃ¡sok visszahozhatÃ³ak.)
+
+Megj: Ha Ã–n kilÃ©pne a VimbÅ‘l Ã©s Ã©s visszatÃ©rne a TESZT fÃ¡jlnÃ©vvel, akkor a
+      fÃ¡jl az oktatÃ³ mentÃ©skori pontos mÃ¡solata lenne.
+
+  5. TÃ¡volÃ­tsa el a fÃ¡jlt  (MS-DOS):	:!del TESZT
 			vagy (Unix):	:!rm TESZT
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    1.5.3.  lecke: EGY KIVÁLASZTOTT RÉSZ KIÍRÁSA
+		    1.5.3.  lecke: EGY KIVÃLASZTOTT RÃ‰SZ KIÃRÃSA
 
 
-	** A fájl egy részének kiírásához írja :#,# w FÁJLNÉV **
+	** A fÃ¡jl egy rÃ©szÃ©nek kiÃ­rÃ¡sÃ¡hoz Ã­rja :#,# w FÃJLNÃ‰V **
 
-  1. :!dir  vagy :!ls  beírásával listázza a könyvtárat, és válasszon egy
-     megfelelõ fájlnevet, pl. TESZT.
+  1. :!dir  vagy :!ls  beÃ­rÃ¡sÃ¡val listÃ¡zza a kÃ¶nyvtÃ¡rat, Ã©s vÃ¡lasszon egy
+     megfelelÅ‘ fÃ¡jlnevet, pl. TESZT.
 
-  2. Mozgassa a kurzort ennek az oldalnak a tetejére, és nyomjon
-     Ctrl-g-t, hogy megtudja a sorszámot.  JEGYEZZE MEG A SZÁMOT!
+  2. Mozgassa a kurzort ennek az oldalnak a tetejÃ©re, Ã©s nyomjon
+     Ctrl-g-t, hogy megtudja a sorszÃ¡mot.  JEGYEZZE MEG A SZÃMOT!
 
-  3. Most menjen a lap aljára, és üsse be ismét: Ctrl-g.  EZT A SZÁMOT
+  3. Most menjen a lap aljÃ¡ra, Ã©s Ã¼sse be ismÃ©t: Ctrl-g.  EZT A SZÃMOT
      IS JEGYEZZE MEG!
 
-  4. Ha csak ezt a részét szeretné menteni a fájlnak, írja   :#,# w TESZT
-     ahol #,# a két sorszám, amit megjegyzett, TESZT az Ön fájlneve.
+  4. Ha csak ezt a rÃ©szÃ©t szeretnÃ© menteni a fÃ¡jlnak, Ã­rja   :#,# w TESZT
+     ahol #,# a kÃ©t sorszÃ¡m, amit megjegyzett, TESZT az Ã–n fÃ¡jlneve.
 
-  5. Ismét nézze meg, hogy a fájl ott van (:!dir) de NE törölje.
+  5. IsmÃ©t nÃ©zze meg, hogy a fÃ¡jl ott van (:!dir) de NE tÃ¶rÃ¶lje.
 
-  6. Vimben létezik egy másik lehetõség: nyomja meg a Shift-V gombpárt
-     az elsõ menteni kívánt soron, majd menjen le az utolsóra, ezután
-     írja :w TESZT2   Ekkor a TESZT2 fájlba kerül a kijelölt rész.
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   1.5.4.  lecke: FÁJLOK VISSZAÁLLÍTÁSA ÉS ÖSSZEFÛZÉSE
-
-
-       ** Egy fájl tartalmának beillesztéséhez írja   :r FÁJLNÉV **
-
-  1. :!dir beírásával nézze meg, hogy az Ön TESZT fájlja létezik még.
-
-  2. Helyezze a kurzort ennek az oldalnak a tetejére.
-
-MEGJ:  A 3. lépés után az 1.5.3. leckét fogja látni. Azután LEFELÉ indulva
-       keresse meg ismét ezt a leckét.
-
-  3. Most szúrja be a TESZT nevû fájlt a   :r TESZT   paranccsal, ahol
-     TESZT az Ön fájljának a neve.
-
-MEGJ:  A fájl, amit beillesztett a kurzora alatt helyezkedik el.
-
-  4. Hogy ellenõrizzük, hogy a fájlt tényleg beillesztettük, menjen
-     vissza, és nézze meg, hogy kétszer szerepel az 1.5.3. lecke! Az eredeti
-     mellett a fájlból bemásolt is ott van.
-
+  6. Vimben lÃ©tezik egy mÃ¡sik lehetÅ‘sÃ©g: nyomja meg a Shift-V gombpÃ¡rt
+     az elsÅ‘ menteni kÃ­vÃ¡nt soron, majd menjen le az utolsÃ³ra, ezutÃ¡n
+     Ã­rja :w TESZT2   Ekkor a TESZT2 fÃ¡jlba kerÃ¼l a kijelÃ¶lt rÃ©sz.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       1.5. LECKE ÖSSZEFOGLALÓJA
+		   1.5.4.  lecke: FÃJLOK VISSZAÃLLÃTÃSA Ã‰S Ã–SSZEFÅ°ZÃ‰SE
 
 
-  1.  :!parancs végrehajt egy külsõ utasítást.
+       ** Egy fÃ¡jl tartalmÃ¡nak beillesztÃ©sÃ©hez Ã­rja   :r FÃJLNÃ‰V **
 
-      Pár hasznos példa:
+  1. :!dir beÃ­rÃ¡sÃ¡val nÃ©zze meg, hogy az Ã–n TESZT fÃ¡jlja lÃ©tezik mÃ©g.
+
+  2. Helyezze a kurzort ennek az oldalnak a tetejÃ©re.
+
+MEGJ:  A 3. lÃ©pÃ©s utÃ¡n az 1.5.3. leckÃ©t fogja lÃ¡tni. AzutÃ¡n LEFELÃ‰ indulva
+       keresse meg ismÃ©t ezt a leckÃ©t.
+
+  3. Most szÃºrja be a TESZT nevÅ± fÃ¡jlt a   :r TESZT   paranccsal, ahol
+     TESZT az Ã–n fÃ¡jljÃ¡nak a neve.
+
+MEGJ:  A fÃ¡jl, amit beillesztett a kurzora alatt helyezkedik el.
+
+  4. Hogy ellenÅ‘rizzÃ¼k, hogy a fÃ¡jlt tÃ©nyleg beillesztettÃ¼k, menjen
+     vissza, Ã©s nÃ©zze meg, hogy kÃ©tszer szerepel az 1.5.3. lecke! Az eredeti
+     mellett a fÃ¡jlbÃ³l bemÃ¡solt is ott van.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       1.5. LECKE Ã–SSZEFOGLALÃ“JA
+
+
+  1.  :!parancs vÃ©grehajt egy kÃ¼lsÅ‘ utasÃ­tÃ¡st.
+
+      PÃ¡r hasznos pÃ©lda:
 	 (MS-DOS)	  (Unix)
-	  :!dir		   :!ls		   -  könyvtárlista kiírása.
-	  :!del FÁJLNÉV    :!rm FÁJLNÉV    -  FÁJLNÉV nevû fájl törlése.
+	  :!dir		   :!ls		   -  kÃ¶nyvtÃ¡rlista kiÃ­rÃ¡sa.
+	  :!del FÃJLNÃ‰V    :!rm FÃJLNÃ‰V    -  FÃJLNÃ‰V nevÅ± fÃ¡jl tÃ¶rlÃ©se.
 
-  2.  :w FÁJLNÉV  kiírja a jelenlegi Vim-fájlt a lemezre FÁJNÉV néven.
+  2.  :w FÃJLNÃ‰V  kiÃ­rja a jelenlegi Vim-fÃ¡jlt a lemezre FÃJNÃ‰V nÃ©ven.
 
-  3.  :#,#w FÁJLNÉV  kiírja a két sorszám (#) közötti sorokat FÁJLNÉV-be
-      Másik lehetõség, hogy a kezdõsornál Shift-v-t nyom lemegy az utolsó
-      sorra, majd ezt üti be  :w FÁJLNÉV
+  3.  :#,#w FÃJLNÃ‰V  kiÃ­rja a kÃ©t sorszÃ¡m (#) kÃ¶zÃ¶tti sorokat FÃJLNÃ‰V-be
+      MÃ¡sik lehetÅ‘sÃ©g, hogy a kezdÅ‘sornÃ¡l Shift-v-t nyom lemegy az utolsÃ³
+      sorra, majd ezt Ã¼ti be  :w FÃJLNÃ‰V
 
-  4.  :r FÁJLNÉV  beolvassa a FÁJLNÉV fájlt és behelyezi a jelenlegi fájlba
-      a kurzorpozíció utáni sorba.
+  4.  :r FÃJLNÃ‰V  beolvassa a FÃJLNÃ‰V fÃ¡jlt Ã©s behelyezi a jelenlegi fÃ¡jlba
+      a kurzorpozÃ­ciÃ³ utÃ¡ni sorba.
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   1.6.1.  lecke: A MEGNYITÁS (OPEN) PARANCS
+		   1.6.1.  lecke: A MEGNYITÃS (OPEN) PARANCS
 
 
-** o  beírásával nyit egy új sort a kurzor alatt és beszúró módba vált **
+** o  beÃ­rÃ¡sÃ¡val nyit egy Ãºj sort a kurzor alatt Ã©s beszÃºrÃ³ mÃ³dba vÃ¡lt **
 
-  1. Mozgassuk a kurzort a ---> kezdetû sorra.
+  1. Mozgassuk a kurzort a ---> kezdetÅ± sorra.
 
-  2. o (kicsi)  beírásával nyisson egy sort a kurzor ALATT! Ekkor
-     automatikusan beszúró (insert) módba kerül.
+  2. o (kicsi)  beÃ­rÃ¡sÃ¡val nyisson egy sort a kurzor ALATT! Ekkor
+     automatikusan beszÃºrÃ³ (insert) mÃ³dba kerÃ¼l.
 
-  3. Másolja le a  ---> jelû sort és <ESC> megnyomásával lépjen ki
-     a beszúró módból.
+  3. MÃ¡solja le a  ---> jelÅ± sort Ã©s <ESC> megnyomÃ¡sÃ¡val lÃ©pjen ki
+     a beszÃºrÃ³ mÃ³dbÃ³l.
 
----> Az o lenyomása után a kurzor a következõ sor elején áll beszúró módban.
+---> Az o lenyomÃ¡sa utÃ¡n a kurzor a kÃ¶vetkezÅ‘ sor elejÃ©n Ã¡ll beszÃºrÃ³ mÃ³dban.
 
-  4. A kurzor FELETTI sor megnyitásához egyszerûen nagy O betût írjon
-kicsi helyett. Próbálja ki a következõ soron!
-Nyisson egy új sort efelett Shift-O megnyomásával, mialatt a kurzor
-ezen a soron áll.
+  4. A kurzor FELETTI sor megnyitÃ¡sÃ¡hoz egyszerÅ±en nagy O betÅ±t Ã­rjon
+kicsi helyett. PrÃ³bÃ¡lja ki a kÃ¶vetkezÅ‘ soron!
+Nyisson egy Ãºj sort efelett Shift-O megnyomÃ¡sÃ¡val, mialatt a kurzor
+ezen a soron Ã¡ll.
 
 
 
@@ -654,89 +654,89 @@ ezen a soron áll.
 		 1.6.2.  lecke: AZ APPEND PARANCS
 
 
-	 ** a  lenyomásával a kurzor UTÁN szúrhatunk szöveget. **
+	 ** a  lenyomÃ¡sÃ¡val a kurzor UTÃN szÃºrhatunk szÃ¶veget. **
 
-  1. Mozgassuk a kurzort a következõ ---> kezdetû sor végére úgy,
-     hogy  normál  módban  $-t  ír be.
+  1. Mozgassuk a kurzort a kÃ¶vetkezÅ‘ ---> kezdetÅ± sor vÃ©gÃ©re Ãºgy,
+     hogy  normÃ¡l  mÃ³dban  $-t  Ã­r be.
 
-  2. Kis "a" leütésével szöveget szúrhat be AMÖGÉ a karakter mögé,
-     amelyen a kurzor áll.
-     (A nagy "A" az egész sor végére írja a szöveget.)
+  2. Kis "a" leÃ¼tÃ©sÃ©vel szÃ¶veget szÃºrhat be AMÃ–GÃ‰ a karakter mÃ¶gÃ©,
+     amelyen a kurzor Ã¡ll.
+     (A nagy "A" az egÃ©sz sor vÃ©gÃ©re Ã­rja a szÃ¶veget.)
 
-Megj: A Vimben a sor legvégére is lehet állni, azonban ez elõdjében
-      a Vi-ban nem lehetséges, ezért abban az a nélkül elég körülményes
-      a sor végéhez szöveget írni.
+Megj: A Vimben a sor legvÃ©gÃ©re is lehet Ã¡llni, azonban ez elÅ‘djÃ©ben
+      a Vi-ban nem lehetsÃ©ges, ezÃ©rt abban az a nÃ©lkÃ¼l elÃ©g kÃ¶rÃ¼lmÃ©nyes
+      a sor vÃ©gÃ©hez szÃ¶veget Ã­rni.
 
-  3. Egészítse ki az elsõ sort. Vegye észre, hogy az a utasítás (append)
-     teljesen egyezik az i-vel (insert) csupán a beszúrt szöveg helye
-     különbözik.
+  3. EgÃ©szÃ­tse ki az elsÅ‘ sort. Vegye Ã©szre, hogy az a utasÃ­tÃ¡s (append)
+     teljesen egyezik az i-vel (insert) csupÃ¡n a beszÃºrt szÃ¶veg helye
+     kÃ¼lÃ¶nbÃ¶zik.
 
----> Ez a sor lehetõvé teszi Önnek, hogy gyakorolja
----> Ez a sor lehetõvé teszi Önnek, hogy gyakorolja a sor végére beillesztést.
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    1.6.3.  lecke: AZ ÁTÍRÁS MÁSIK VÁLTOZATA
-
-
-      ** Nagy R  beírásával írhat felül több mint egy karaktert. **
-
-  1. Mozgassuk a kurzort az elsõ ---> kezdetû sorra!
-
-  2. Helyezze a kurzort az elsõ szó elejére amely eltér a második
-     ---> kezdetû sor tartalmától (a 'az utolsóval' résztõl).
-
-  3. Nyomjon R karaktert és írja át a szöveg maradékát az elsõ sorban
-     úgy, hogy a  két sor egyezõ legyen.
-
----> Az elsõ sort tegye azonossá az utolsóval: használja a gombokat.
----> Az elsõ sort tegye azonossá a másodikkal: írjon R-t és az új szöveget.
-
-  4. Jegyezzük meg, ha <ESC>-et nyomok, akkor a változatlanul hagyott
-     szövegek változatlanok maradnak.
-
-
+---> Ez a sor lehetÅ‘vÃ© teszi Ã–nnek, hogy gyakorolja
+---> Ez a sor lehetÅ‘vÃ© teszi Ã–nnek, hogy gyakorolja a sor vÃ©gÃ©re beillesztÃ©st.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			    1.6.4.  lecke: BEÁLLÍTÁSOK
+		    1.6.3.  lecke: AZ ÃTÃRÃS MÃSIK VÃLTOZATA
 
-** Állítsuk be, hogy a keresés és a helyettesítés ne függjön kis/NAGYbetûktõl **
 
-  1. Keressük meg az 'ignore'-t az beírva:
+      ** Nagy R  beÃ­rÃ¡sÃ¡val Ã­rhat felÃ¼l tÃ¶bb mint egy karaktert. **
+
+  1. Mozgassuk a kurzort az elsÅ‘ ---> kezdetÅ± sorra!
+
+  2. Helyezze a kurzort az elsÅ‘ szÃ³ elejÃ©re amely eltÃ©r a mÃ¡sodik
+     ---> kezdetÅ± sor tartalmÃ¡tÃ³l (a 'az utolsÃ³val' rÃ©sztÅ‘l).
+
+  3. Nyomjon R karaktert Ã©s Ã­rja Ã¡t a szÃ¶veg maradÃ©kÃ¡t az elsÅ‘ sorban
+     Ãºgy, hogy a  kÃ©t sor egyezÅ‘ legyen.
+
+---> Az elsÅ‘ sort tegye azonossÃ¡ az utolsÃ³val: hasznÃ¡lja a gombokat.
+---> Az elsÅ‘ sort tegye azonossÃ¡ a mÃ¡sodikkal: Ã­rjon R-t Ã©s az Ãºj szÃ¶veget.
+
+  4. JegyezzÃ¼k meg, ha <ESC>-et nyomok, akkor a vÃ¡ltozatlanul hagyott
+     szÃ¶vegek vÃ¡ltozatlanok maradnak.
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			    1.6.4.  lecke: BEÃLLÃTÃSOK
+
+** ÃllÃ­tsuk be, hogy a keresÃ©s Ã©s a helyettesÃ­tÃ©s ne fÃ¼ggjÃ¶n kis/NAGYbetÅ±ktÅ‘l **
+
+  1. KeressÃ¼k meg az 'ignore'-t az beÃ­rva:
      /ignore
-     Ezt ismételjük többször az n billentyûvel
+     Ezt ismÃ©teljÃ¼k tÃ¶bbszÃ¶r az n billentyÅ±vel
 
-  2. Állítsuk be az 'ic' (Ignore case) lehetõséget így:
+  2. ÃllÃ­tsuk be az 'ic' (Ignore case) lehetÅ‘sÃ©get Ã­gy:
      :set ic
 
-  3. Most keressünk ismét az 'ignore'-ra n-nel
-     Ismételjük meg többször a keresést: n
+  3. Most keressÃ¼nk ismÃ©t az 'ignore'-ra n-nel
+     IsmÃ©teljÃ¼k meg tÃ¶bbszÃ¶r a keresÃ©st: n
 
-  4. Állítsuk be a 'hlsearch' és 'incsearch' lehetõségeket:
+  4. ÃllÃ­tsuk be a 'hlsearch' Ã©s 'incsearch' lehetÅ‘sÃ©geket:
      :set hls is
 
-  5. Most ismét írjuk be a keresõparancsot, és lássuk mi történik:
+  5. Most ismÃ©t Ã­rjuk be a keresÅ‘parancsot, Ã©s lÃ¡ssuk mi tÃ¶rtÃ©nik:
      /ignore
 
-  6. A kiemelést szüntessük meg alábbi utasítások egyikével:
+  6. A kiemelÃ©st szÃ¼ntessÃ¼k meg alÃ¡bbi utasÃ­tÃ¡sok egyikÃ©vel:
      :set nohls     vagy	 :nohlsearch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       1.6. LECKE ÖSSZEFOGLALÓJA
+			       1.6. LECKE Ã–SSZEFOGLALÃ“JA
 
 
-  1. o	beírásával új sort nyitunk meg a sor ALATT és a kurzor az új
-     sorban lesz beszúrás-módban.
-     Nagy  O  a sor FELETT nyit új sort, és oda kerül a kurzor.
+  1. o	beÃ­rÃ¡sÃ¡val Ãºj sort nyitunk meg a sor ALATT Ã©s a kurzor az Ãºj
+     sorban lesz beszÃºrÃ¡s-mÃ³dban.
+     Nagy  O  a sor FELETT nyit Ãºj sort, Ã©s oda kerÃ¼l a kurzor.
 
-  2. a  beírásával az aktuális karaktertõl UTÁN (jobbra) szúrhatunk be szöveget.
-     Nagy A  automatikusan a sor legvégéhez adja hozzá a szöveget.
+  2. a  beÃ­rÃ¡sÃ¡val az aktuÃ¡lis karaktertÅ‘l UTÃN (jobbra) szÃºrhatunk be szÃ¶veget.
+     Nagy A  automatikusan a sor legvÃ©gÃ©hez adja hozzÃ¡ a szÃ¶veget.
 
-  3. A nagy  R  beütésével átíró (replace) módba kerülünk  <ESC> lenyomásáig.
+  3. A nagy  R  beÃ¼tÃ©sÃ©vel Ã¡tÃ­rÃ³ (replace) mÃ³dba kerÃ¼lÃ¼nk  <ESC> lenyomÃ¡sÃ¡ig.
 
-  4. ":set xxx" beírásával az "xxx" opció állítható be.
+  4. ":set xxx" beÃ­rÃ¡sÃ¡val az "xxx" opciÃ³ Ã¡llÃ­thatÃ³ be.
 
 
 
@@ -747,21 +747,21 @@ Megj: A Vimben a sor legvégére is lehet állni, azonban ez elõdjében
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     1.7. lecke: AZ ON-LINE SÚGÓ PARANCSAI
+		     1.7. lecke: AZ ON-LINE SÃšGÃ“ PARANCSAI
 
 
-		    ** Az online súgórendszer használata **
+		    ** Az online sÃºgÃ³rendszer hasznÃ¡lata **
 
-  A Vim részletes súgóval rendelkezik.  Induláshoz a következõk egyikét
+  A Vim rÃ©szletes sÃºgÃ³val rendelkezik.  IndulÃ¡shoz a kÃ¶vetkezÅ‘k egyikÃ©t
   tegye:
 	- nyomja meg a <HELP> gombot (ha van ilyen)
 	- nyomja meg az <F1> gombot (ha van ilyen)
-	- írja be:   :help <ENTER>
+	- Ã­rja be:   :help <ENTER>
 
-  :q <ENTER>   beírásával zárhatja be a súgóablakot.
+  :q <ENTER>   beÃ­rÃ¡sÃ¡val zÃ¡rhatja be a sÃºgÃ³ablakot.
 
-  Majdnem minden témakörrõl találhat súgót, argumentum megadásával
-  ":help" utasítás .  Próbálja az alábbiakat ki (<ENTER>-t ne felejtsük):
+  Majdnem minden tÃ©makÃ¶rrÅ‘l talÃ¡lhat sÃºgÃ³t, argumentum megadÃ¡sÃ¡val
+  ":help" utasÃ­tÃ¡s .  PrÃ³bÃ¡lja az alÃ¡bbiakat ki (<ENTER>-t ne felejtsÃ¼k):
 
 	:help w
 	:help c_<T
@@ -770,41 +770,41 @@ Megj: A Vimben a sor legvégére is lehet állni, azonban ez elõdjében
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       1.8. lecke: INDÍTÓSZKRIPT ÍRÁSA
+		       1.8. lecke: INDÃTÃ“SZKRIPT ÃRÃSA
 
-		     ** A Vim lehetõségeinek beállítása **
+		     ** A Vim lehetÅ‘sÃ©geinek beÃ¡llÃ­tÃ¡sa **
 
-  A Vim rengeteg lehetõséggel rendelkezik a Vi-hoz képest, de a legtöbb
-  alapból elérhetetlen. Ahhoz, hogy alapból több lehetõségünk legyen készítenünk
-  kell egy "vimrc" fájlt.
+  A Vim rengeteg lehetÅ‘sÃ©ggel rendelkezik a Vi-hoz kÃ©pest, de a legtÃ¶bb
+  alapbÃ³l elÃ©rhetetlen. Ahhoz, hogy alapbÃ³l tÃ¶bb lehetÅ‘sÃ©gÃ¼nk legyen kÃ©szÃ­tenÃ¼nk
+  kell egy "vimrc" fÃ¡jlt.
 
-  1. Kezdjük el szerkeszteni a "vimrc" fájlt, ennek módja:
+  1. KezdjÃ¼k el szerkeszteni a "vimrc" fÃ¡jlt, ennek mÃ³dja:
 	:edit ~/.vimrc		Unixon, Linuxon
 	:edit ~/_vimrc		MS-Windowson
 
-  2. Most szúrjuk be a példa "vimrc" fájl szövegét:
+  2. Most szÃºrjuk be a pÃ©lda "vimrc" fÃ¡jl szÃ¶vegÃ©t:
 
 	:read $VIMRUNTIME/vimrc_example.vim
 
-  3. Írjuk ki a fájlt:
+  3. Ãrjuk ki a fÃ¡jlt:
 
 	:write
 
-  Legközelebb a Vim szintaxiskiemeléssel indul.
-  Hozzáadhatja kedvenc beállításait ehhez a "vimrc" fájlhoz.
+  LegkÃ¶zelebb a Vim szintaxiskiemelÃ©ssel indul.
+  HozzÃ¡adhatja kedvenc beÃ¡llÃ­tÃ¡sait ehhez a "vimrc" fÃ¡jlhoz.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Itt végzõdik a Vim oktató, melynek a szándéka egy rövid áttekintés a
-  Vimrõl, amely elég ahhoz, hogy elég könnyedén kezeljük a szerkesztõt.
-  Távol van a teljességtõl, mivel a Vimnek számtalan további utasítása
-  van. Ezután a felhasználói kézikönyvet érdemes elolvasni az angolul
-  tudóknak: ":help user-manual". (egyelõre nem tud magyarul)
+  Itt vÃ©gzÅ‘dik a Vim oktatÃ³, melynek a szÃ¡ndÃ©ka egy rÃ¶vid Ã¡ttekintÃ©s a
+  VimrÅ‘l, amely elÃ©g ahhoz, hogy elÃ©g kÃ¶nnyedÃ©n kezeljÃ¼k a szerkesztÅ‘t.
+  TÃ¡vol van a teljessÃ©gtÅ‘l, mivel a Vimnek szÃ¡mtalan tovÃ¡bbi utasÃ­tÃ¡sa
+  van. EzutÃ¡n a felhasznÃ¡lÃ³i kÃ©zikÃ¶nyvet Ã©rdemes elolvasni az angolul
+  tudÃ³knak: ":help user-manual". (egyelÅ‘re nem tud magyarul)
 
-  További magyar olvasnivalók érhetõek el az alábbi oldalról.
+  TovÃ¡bbi magyar olvasnivalÃ³k Ã©rhetÅ‘ek el az alÃ¡bbi oldalrÃ³l.
   http://wiki.hup.hu/index.php/Vim
 
-  Angol olvasmányok:
+  Angol olvasmÃ¡nyok:
   For further reading and studying, this book is recommended:
 	Vim - Vi Improved - by Steve Oualline
 	Publisher: New Riders
@@ -818,13 +818,13 @@ Megj: A Vimben a sor legvégére is lehet állni, azonban ez elõdjében
   It is a good book to get to know almost anything you want to do with Vi.
   The sixth edition also includes information on Vim.
 
-  Ezt az oktatót Michael C. Pierce és Robert K. Ware írta, a Colorado
-  School of Mines dolgozói Charles Smith (Colorado State University)
-  támogatásával.
+  Ezt az oktatÃ³t Michael C. Pierce Ã©s Robert K. Ware Ã­rta, a Colorado
+  School of Mines dolgozÃ³i Charles Smith (Colorado State University)
+  tÃ¡mogatÃ¡sÃ¡val.
 
   E-mail: bware@mines.colorado.edu.
 
-  A Vimhez idomította Bram Moolenaar.
+  A Vimhez idomÃ­totta Bram Moolenaar.
 
-  Magyarította: Horváth Árpád <horvath.arpad@arek.uni-opbuda.hu>, 2006-2012
+  MagyarÃ­totta: HorvÃ¡th ÃrpÃ¡d <horvath.arpad@arek.uni-opbuda.hu>, 2006-2012
 

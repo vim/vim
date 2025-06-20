@@ -282,7 +282,7 @@
   2. Met  d2w  worden twee woorden (in dit voorbeeld in hoofdletters) gewist.
 
   3. Herhaal de stappen 1 en 2 met verschillende tellers om de verschillende
-     woorden in hoofdletters met één commando te wissen.
+     woorden in hoofdletters met Ã©Ã©n commando te wissen.
 
   ---> deze ABC DE regel FGHI JK LMN OP is QZ RS ontdaan van rommel.
 
@@ -494,7 +494,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 1.4.2: HET COMMANDO ZOEKEN
 
-  ** Met  /ZOEK  wordt naar de zoekterm (één of meer woorden) gezocht. **
+  ** Met  /ZOEK  wordt naar de zoekterm (Ã©Ã©n of meer woorden) gezocht. **
 
   1. Tik in de opdrachtmodus het teken  / . Je ziet dat het met de cursor
      aan de onderkant van het scherm verschijnt, zoals bij het :-commando.
@@ -606,7 +606,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 1.5.2: MEER OVER HET OPSLAAN VAN BESTANDEN
 
-     ** Tik :w BESTANDSNAAM om de tekst mèt veranderingen op te slaan. **
+     ** Tik :w BESTANDSNAAM om de tekst mÃ¨t veranderingen op te slaan. **
 
   1. Tik  :!dir  of  :!ls  om de inhoud van je map te tonen. Je weet
      inmiddels dat je daarna een <ENTER> moet tikken.
@@ -736,7 +736,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 1.6.3: VERVANGEN OP EEN ANDERE MANIER
 
-      ** Tik een hoofdletter  R  om meer dan één teken te vervangen. **
+      ** Tik een hoofdletter  R  om meer dan Ã©Ã©n teken te vervangen. **
 
   1. Ga naar de eerste regel beneden met --->. Ga met de cursor naar het
      begin van de eerste  "xxx" .
@@ -756,15 +756,15 @@
              vervangt een bestaand teken.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   Les 1.6.4: TEKST KOPIËREN EN PLAKKEN
+                   Les 1.6.4: TEKST KOPIÃ‹REN EN PLAKKEN
 
-        ** Gebruik  y  om tekst te kopiëren en  p  om te plakken. **
+        ** Gebruik  y  om tekst te kopiÃ«ren en  p  om te plakken. **
 
   1. Ga naar de regel beneden met ---> en zet de cursor achter "a)".
 
   2. Zet zichtbare modus aan met  v  en zet de cursor juist voor "eerste".
 
-  3. Tik  y  ('yank') om de opgelichte tekst ("dit is het") te kopiëren.
+  3. Tik  y  ('yank') om de opgelichte tekst ("dit is het") te kopiÃ«ren.
 
   4. Ga met  j$  met de cursor naar het einde van de volgende regel.
 
@@ -837,7 +837,7 @@
            ** Het gebruik van ingebouwde hulp. **
 
   Vim heeft een uitgebreid ingebouwd hulpsysteem. Probeer, om te beginnen,
-  één van deze drie:
+  Ã©Ã©n van deze drie:
     - druk de <HELP> toets (als je die hebt)
     - druk de <F1> toets (als je die hebt)
     - tik  :help <ENTER>
@@ -939,7 +939,7 @@
   & Linda Lamb) bevat ook informatie over Vim.
 
   Deze lessen zijn geschreven door Michael C. Pierce en Robert K. Ware,
-  Colorado School of Mines met gebruikmaking van ideeën van Charles Smith
+  Colorado School of Mines met gebruikmaking van ideeÃ«n van Charles Smith
   van de Colorado State University. E-mail: bware@mines.colorado.edu.
 
   Aangepast voor Vim door Bram Moolenaar.

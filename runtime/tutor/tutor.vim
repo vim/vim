@@ -1,7 +1,7 @@
 " Vim tutor support file
 " Author:	Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
 " Maintainer:	The·Vim·Project·<https://github.com/vim/vim>
-" Last Change:	2024 Nov 17
+" Last Change:	2025 Jun 20
 
 " This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -65,121 +65,6 @@ if s:ext =~? '\.en'
   let s:ext = ""
 endif
 
-" The Japanese tutor is available in three encodings, guess which one to use
-" The "sjis" one is actually "cp932", it doesn't matter for this text.
-if s:ext =~? '\.ja'
-  if &enc =~ "euc"
-    let s:ext = ".ja.euc"
-  elseif &enc != "utf-8"
-    let s:ext = ".ja.sjis"
-  endif
-endif
-
-" The Korean tutor is available in two encodings, guess which one to use
-if s:ext =~? '\.ko'
-  if &enc != "utf-8"
-    let s:ext = ".ko.euc"
-  endif
-endif
-
-" The Chinese tutor is available in three encodings, guess which one to use
-" This segment is from the above lines and modified by
-" Mendel L Chan <beos@turbolinux.com.cn> for Chinese vim tutorial
-" When 'encoding' is utf-8, choose between China (simplified) and Taiwan
-" (traditional) based on the language, suggested by Alick Zhao.
-if s:ext =~? '\.zh'
-  if &enc =~ 'big5\|cp950'
-    let s:ext = ".zh.big5"
-  elseif &enc != 'utf-8'
-    let s:ext = ".zh.euc"
-  elseif s:ext =~? 'zh_tw' || (exists("s:lang") && s:lang =~? 'zh_tw')
-    let s:ext = ".zh_tw"
-  else
-    let s:ext = ".zh_cn"
-  endif
-endif
-
-" The Polish tutor is available in two encodings, guess which one to use.
-if s:ext =~? '\.pl'
-  if &enc =~ 1250
-    let s:ext = ".pl.cp1250"
-  endif
-endif
-
-" The Turkish tutor is available in two encodings, guess which one to use
-if s:ext =~? '\.tr'
-  if &enc == "iso-8859-9" || &enc == "cp1254"
-    let s:ext = ".tr.iso9"
-  endif
-endif
-
-" The Greek tutor is available in three encodings, guess what to use.
-" We used ".gr" (Greece) instead of ".el" (Greek); accept both.
-if s:ext =~? '\.gr\|\.el'
-  if &enc == "iso-8859-7"
-    let s:ext = ".el"
-  elseif &enc == "utf-8"
-    let s:ext = ".el.utf-8"
-  elseif &enc =~ 737
-    let s:ext = ".el.cp737"
-  endif
-endif
-
-" The Slovak tutor is available in three encodings, guess which one to use
-if s:ext =~? '\.sk'
-  if &enc =~ 1250
-    let s:ext = ".sk.cp1250"
-  endif
-endif
-
-" The Serbian tutor is available in two encodings, guess which one to use
-" Note that the utf-8 version is the original, the cp1250 version is created
-" from it.
-if s:ext =~? '\.sr'
-  if &enc =~ 1250
-    let s:ext = ".sr.cp1250"
-  endif
-endif
-
-" The Czech tutor is available in three encodings, guess which one to use
-if s:ext =~? '\.cs'
-  if &enc =~ 1250
-    let s:ext = ".cs.cp1250"
-  endif
-endif
-
-" The Russian tutor is available in three encodings, guess which one to use.
-if s:ext =~? '\.ru'
-  if &enc =~ '1251'
-    let s:ext = '.ru.cp1251'
-  elseif &enc =~ 'koi8'
-    let s:ext = '.ru'
-  endif
-endif
-
-" The Hungarian tutor is available in three encodings, guess which one to use.
-if s:ext =~? '\.hu'
-  if &enc =~ 1250
-    let s:ext = ".hu.cp1250"
-  elseif &enc =~ 'iso-8859-2'
-    let s:ext = '.hu'
-  endif
-endif
-
-" The Croatian tutor is available in three encodings, guess which one to use.
-if s:ext =~? '\.hr'
-  if &enc =~ 1250
-    let s:ext = ".hr.cp1250"
-  elseif &enc =~ 'iso-8859-2'
-    let s:ext = '.hr'
-  endif
-endif
-
-" If 'encoding' is utf-8 s:ext must end in utf-8.
-if &enc == 'utf-8' && s:ext !~ '\.utf-8'
-  let s:ext ..= '.utf-8'
-endif
-
 " 2. Build the name of the file and chapter
 let s:chapter = exists("$CHAPTER") ? $CHAPTER : 1
 
@@ -189,9 +74,6 @@ let s:tutorxx = $VIMRUNTIME .. s:tutorfile .. s:ext
 " 3. Finding the file:
 if filereadable(s:tutorxx)
   let $TUTOR = s:tutorxx
-elseif s:ext !~ '\.utf-8' && filereadable(s:tutorxx .. ".utf-8")
-  " Fallback to utf-8 if available.
-  let $TUTOR = s:tutorxx .. ".utf-8"
 else
   let $TUTOR = $VIMRUNTIME .. s:tutorfile
   echo "The file " .. s:tutorxx .. " does not exist.\n"

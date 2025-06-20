@@ -1,94 +1,94 @@
 ===============================================================================
-= V ä l k o m m e n  t i l l  h a n d l e d n i n g e n  i  V i m  - Ver. 1.5 =
+= V Ã¤ l k o m m e n  t i l l  h a n d l e d n i n g e n  i  V i m  - Ver. 1.5 =
 ===============================================================================
 
-     Vim är en väldigt kraftfull redigerare som har många kommandon, alltför
-     många att förklara i en handledning som denna. Den här handledningen är
-     gjord för att förklara tillräckligt många kommandon så att du enkelt ska
-     kunna använda Vim som en redigerare för alla ändamål.
+     Vim Ã¤r en vÃ¤ldigt kraftfull redigerare som har mÃ¥nga kommandon, alltfÃ¶r
+     mÃ¥nga att fÃ¶rklara i en handledning som denna. Den hÃ¤r handledningen Ã¤r
+     gjord fÃ¶r att fÃ¶rklara tillrÃ¤ckligt mÃ¥nga kommandon sÃ¥ att du enkelt ska
+     kunna anvÃ¤nda Vim som en redigerare fÃ¶r alla Ã¤ndamÃ¥l.
 
-     Den beräknade tiden för att slutföra denna handledning är 25-30 minuter,
-     beroende på hur mycket tid som läggs ned på experimentering.
+     Den berÃ¤knade tiden fÃ¶r att slutfÃ¶ra denna handledning Ã¤r 25-30 minuter,
+     beroende pÃ¥ hur mycket tid som lÃ¤ggs ned pÃ¥ experimentering.
 
-     Kommandona i lektionerna kommer att modifiera texten. Gör en kopia av den
-     här filen att öva på (om du startade "vimtutor är det här redan en kopia).
+     Kommandona i lektionerna kommer att modifiera texten. GÃ¶r en kopia av den
+     hÃ¤r filen att Ã¶va pÃ¥ (om du startade "vimtutor Ã¤r det hÃ¤r redan en kopia).
 
-     Det är viktigt att komma ihåg att den här handledningen är konstruerad
-     att lära vid användning. Det betyder att du måste köra kommandona för att
-     lära dig dem ordentligt. Om du bara läser texten så kommer du att glömma
+     Det Ã¤r viktigt att komma ihÃ¥g att den hÃ¤r handledningen Ã¤r konstruerad
+     att lÃ¤ra vid anvÃ¤ndning. Det betyder att du mÃ¥ste kÃ¶ra kommandona fÃ¶r att
+     lÃ¤ra dig dem ordentligt. Om du bara lÃ¤ser texten sÃ¥ kommer du att glÃ¶mma
      kommandona!
 
-     Försäkra dig nu om att din Caps-Lock tangent INTE är aktiv och tryck på
-     j-tangenten tillräckligt många gånger för att förflytta markören så att
-     Lektion 1.1.1 fyller skärmen helt.
+     FÃ¶rsÃ¤kra dig nu om att din Caps-Lock tangent INTE Ã¤r aktiv och tryck pÃ¥
+     j-tangenten tillrÃ¤ckligt mÃ¥nga gÃ¥nger fÃ¶r att fÃ¶rflytta markÃ¶ren sÃ¥ att
+     Lektion 1.1.1 fyller skÃ¤rmen helt.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lektion 1.1.1: FLYTTA MARKÖREN
+			Lektion 1.1.1: FLYTTA MARKÃ–REN
 
 
-   ** För att flytta markören, tryck på tangenterna h,j,k,l som indikerat. **
+   ** FÃ¶r att flytta markÃ¶ren, tryck pÃ¥ tangenterna h,j,k,l som indikerat. **
 	     ^
 	     k		Tips:
-       < h	 l >	h-tangenten är till vänster och flyttar till vänster.
-	     j		l-tangenten är till höger och flyttar till höger.
+       < h	 l >	h-tangenten Ã¤r till vÃ¤nster och flyttar till vÃ¤nster.
+	     j		l-tangenten Ã¤r till hÃ¶ger och flyttar till hÃ¶ger.
 	     v		j-tangenten ser ut som en pil ned.
-  1. Flytta runt markören på skärmen tills du känner dig bekväm.
+  1. Flytta runt markÃ¶ren pÃ¥ skÃ¤rmen tills du kÃ¤nner dig bekvÃ¤m.
 
-  2. Håll ned tangenten pil ned (j) tills att den repeterar.
----> Nu vet du hur du tar dig till nästa lektion.
+  2. HÃ¥ll ned tangenten pil ned (j) tills att den repeterar.
+---> Nu vet du hur du tar dig till nÃ¤sta lektion.
 
-  3. Flytta till Lektion 1.1.2, med hjälp av ned tangenten.
+  3. Flytta till Lektion 1.1.2, med hjÃ¤lp av ned tangenten.
 
-Notera: Om du är osäker på någonting du skrev, tryck <ESC> för att placera dig
-	dig i Normal-läge. Skriv sedan om kommandot.
+Notera: Om du Ã¤r osÃ¤ker pÃ¥ nÃ¥gonting du skrev, tryck <ESC> fÃ¶r att placera dig
+	dig i Normal-lÃ¤ge. Skriv sedan om kommandot.
 
-Notera: Piltangenterna borde också fungera.  Men om du använder hjkl så kommer
-	du att kunna flytta omkring mycket snabbare, när du väl vant dig vid
+Notera: Piltangenterna borde ocksÃ¥ fungera.  Men om du anvÃ¤nder hjkl sÃ¥ kommer
+	du att kunna flytta omkring mycket snabbare, nÃ¤r du vÃ¤l vant dig vid
 	det.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		     Lektion 1.1.2: STARTA OCH AVSLUTA VIM
 
 
-  !! NOTERA: Innan du utför någon av punkterna nedan, läs hela lektionen!!
+  !! NOTERA: Innan du utfÃ¶r nÃ¥gon av punkterna nedan, lÃ¤s hela lektionen!!
 
-  1. Tryck <ESC>-tangenten (för att se till att du är i Normal-läge).
+  1. Tryck <ESC>-tangenten (fÃ¶r att se till att du Ã¤r i Normal-lÃ¤ge).
 
   2. Skriv:			:q! <ENTER>.
 
----> Detta avslutar redigeraren UTAN att spara några ändringar du gjort.
-     Om du vill spara ändringarna och avsluta skriv:
+---> Detta avslutar redigeraren UTAN att spara nÃ¥gra Ã¤ndringar du gjort.
+     Om du vill spara Ã¤ndringarna och avsluta skriv:
 				:wq  <ENTER>
 
-  3. När du ser skal-prompten, skriv kommandot som tog dig in i den här
+  3. NÃ¤r du ser skal-prompten, skriv kommandot som tog dig in i den hÃ¤r
      handledningen.  Det kan vara:	vimtutor <ENTER>
-     Normalt vill du använda:		vim tutor <ENTER>
+     Normalt vill du anvÃ¤nda:		vim tutor <ENTER>
 
----> 'vim' betyder öppna redigeraren vim, 'tutor' är filen du vill redigera.
+---> 'vim' betyder Ã¶ppna redigeraren vim, 'tutor' Ã¤r filen du vill redigera.
 
-  4. Om du har memorerat dessa steg och känner dig självsäker, kör då stegen
-     1 till 3 för att avsluta och starta om redigeraren. Flytta sedan ned
-     markören till Lektion 1.1.3.
+  4. Om du har memorerat dessa steg och kÃ¤nner dig sjÃ¤lvsÃ¤ker, kÃ¶r dÃ¥ stegen
+     1 till 3 fÃ¶r att avsluta och starta om redigeraren. Flytta sedan ned
+     markÃ¶ren till Lektion 1.1.3.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		     Lektion 1.1.3: TEXT REDIGERING - BORTTAGNING
 
 
-** När du är i Normal-läge tryck  x  för att ta bort tecknet under markören. **
+** NÃ¤r du Ã¤r i Normal-lÃ¤ge tryck  x  fÃ¶r att ta bort tecknet under markÃ¶ren. **
 
-  1. Flytta markören till raden nedan med markeringen --->.
+  1. Flytta markÃ¶ren till raden nedan med markeringen --->.
 
-  2. För att rätta felen, flytta markören tills den står på tecknet som ska
+  2. FÃ¶r att rÃ¤tta felen, flytta markÃ¶ren tills den stÃ¥r pÃ¥ tecknet som ska
      tas bort. fix the errors, move the cursor until it is on top of the
 
-  3. Tryck på	x-tangenten för att ta bort det felaktiga tecknet.
+  3. Tryck pÃ¥	x-tangenten fÃ¶r att ta bort det felaktiga tecknet.
 
-  4. Upprepa steg 2 till 4 tills meningen är korrekt.
+  4. Upprepa steg 2 till 4 tills meningen Ã¤r korrekt.
 
----> Kkon hoppadee övverr måånen.
+---> Kkon hoppadee Ã¶vverr mÃ¥Ã¥nen.
 
-  5. Nu när raden är korrekt, gå till Lektion 1.1.4.
+  5. Nu nÃ¤r raden Ã¤r korrekt, gÃ¥ till Lektion 1.1.4.
 
-NOTERA: När du går igenom den här handledningen, försök inte att memorera, lär
-	genom användning.
+NOTERA: NÃ¤r du gÃ¥r igenom den hÃ¤r handledningen, fÃ¶rsÃ¶k inte att memorera, lÃ¤r
+	genom anvÃ¤ndning.
 
 
 
@@ -96,22 +96,22 @@ NOTERA: När du går igenom den här handledningen, försök inte att memorera, lär
 		     Lektion 1.1.4: TEXT REDIGERING - INFOGNING
 
 
-	 ** När du är i Normal-läge tryck  i  för att infoga text. **
+	 ** NÃ¤r du Ã¤r i Normal-lÃ¤ge tryck  i  fÃ¶r att infoga text. **
 
-  1. Flytta markören till den första raden nedan med markeringen --->.
+  1. Flytta markÃ¶ren till den fÃ¶rsta raden nedan med markeringen --->.
 
-  2. För att göra den första raden likadan som den andra, flytta markören till
-     det första tecknet EFTER där text ska infogas.
+  2. FÃ¶r att gÃ¶ra den fÃ¶rsta raden likadan som den andra, flytta markÃ¶ren till
+     det fÃ¶rsta tecknet EFTER dÃ¤r text ska infogas.
 
   3. Tryck  i  och skriv in det som saknas.
 
-  4. När du rättat ett fel tryck <ESC> för att återgå till Normal-läge.
-     Upprepa steg 2 till 4 för att rätta meningen.
+  4. NÃ¤r du rÃ¤ttat ett fel tryck <ESC> fÃ¶r att Ã¥tergÃ¥ till Normal-lÃ¤ge.
+     Upprepa steg 2 till 4 fÃ¶r att rÃ¤tta meningen.
 
----> Det sakns här .
----> Det saknas lite text från den här raden.
+---> Det sakns hÃ¤r .
+---> Det saknas lite text frÃ¥n den hÃ¤r raden.
 
-  5. När du känner dig bekväm med att infoga text, gå till sammanfattningen
+  5. NÃ¤r du kÃ¤nner dig bekvÃ¤m med att infoga text, gÃ¥ till sammanfattningen
      nedan.
 
 
@@ -120,45 +120,45 @@ NOTERA: När du går igenom den här handledningen, försök inte att memorera, lär
 			       LEKTION 1.1 SAMMANFATTNING
 
 
-  1. Markören flyttas genom att använda piltangenterna eller hjkl-tangenterna.
-	 h (vänster)	j (ned)       k (upp)	    l (höger)
+  1. MarkÃ¶ren flyttas genom att anvÃ¤nda piltangenterna eller hjkl-tangenterna.
+	 h (vÃ¤nster)	j (ned)       k (upp)	    l (hÃ¶ger)
 
-  2. För att starta Vim (från %-prompten) skriv:  vim FILNAMN <ENTER>
+  2. FÃ¶r att starta Vim (frÃ¥n %-prompten) skriv:  vim FILNAMN <ENTER>
 
-  3. För att avsluta Vim skriv:  <ESC>  :q!  <ENTER>  för att kasta ändringar.
-		   ELLER skriv:  <ESC>	:wq  <ENTER>  för att spara ändringar.
+  3. FÃ¶r att avsluta Vim skriv:  <ESC>  :q!  <ENTER>  fÃ¶r att kasta Ã¤ndringar.
+		   ELLER skriv:  <ESC>	:wq  <ENTER>  fÃ¶r att spara Ã¤ndringar.
 
-  4. För att ta bort tecknet under markören i Normal-läge skriv:  x
+  4. FÃ¶r att ta bort tecknet under markÃ¶ren i Normal-lÃ¤ge skriv:  x
 
-  5. För att infoga text vid markören i Normal-läge skriv:
+  5. FÃ¶r att infoga text vid markÃ¶ren i Normal-lÃ¤ge skriv:
 	 i     skriv in text	<ESC>
 
-NOTERA: Genom att trycka <ESC> kommer du att placeras i Normal-läge eller
-	avbryta ett delvis färdigskrivet kommando.
+NOTERA: Genom att trycka <ESC> kommer du att placeras i Normal-lÃ¤ge eller
+	avbryta ett delvis fÃ¤rdigskrivet kommando.
 
-Fortsätt nu med Lektion 1.2.
+FortsÃ¤tt nu med Lektion 1.2.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lektion 1.2.1: BORTTAGNINGSKOMMANDON
 
 
-	    ** Skriv  dw  för att radera till slutet av ett ord. **
+	    ** Skriv  dw  fÃ¶r att radera till slutet av ett ord. **
 
-  1. Tryck  <ESC>  för att försäkra dig om att du är i Normal-läge.
+  1. Tryck  <ESC>  fÃ¶r att fÃ¶rsÃ¤kra dig om att du Ã¤r i Normal-lÃ¤ge.
 
-  2. Flytta markören till raden nedan markerad --->.
+  2. Flytta markÃ¶ren till raden nedan markerad --->.
 
-  3. Flytta markören till början av ett ord som måste raderas.
+  3. Flytta markÃ¶ren till bÃ¶rjan av ett ord som mÃ¥ste raderas.
 
-  4. Skriv   dw	 för att radera ordet.
+  4. Skriv   dw	 fÃ¶r att radera ordet.
 
-  NOTERA: Bokstäverna dw kommer att synas på den sista raden på skärmen när
-	du skriver dem. Om du skrev något fel, tryck  <ESC>  och börja om.
+  NOTERA: BokstÃ¤verna dw kommer att synas pÃ¥ den sista raden pÃ¥ skÃ¤rmen nÃ¤r
+	du skriver dem. Om du skrev nÃ¥got fel, tryck  <ESC>  och bÃ¶rja om.
 
----> Det är ett några ord roliga att som inte hör hemma i den här meningen.
+---> Det Ã¤r ett nÃ¥gra ord roliga att som inte hÃ¶r hemma i den hÃ¤r meningen.
 
-  5. Upprepa stegen 3 och 4 tills meningen är korrekt och gå till Lektion 1.2.2.
+  5. Upprepa stegen 3 och 4 tills meningen Ã¤r korrekt och gÃ¥ till Lektion 1.2.2.
 
 
 
@@ -166,20 +166,20 @@ Fortsätt nu med Lektion 1.2.
 		      Lektion 1.2.2: FLER BORTTAGNINGSKOMMANDON
 
 
-	   ** Skriv  d$	för att radera till slutet på raden. **
+	   ** Skriv  d$	fÃ¶r att radera till slutet pÃ¥ raden. **
 
-  1. Tryck  <ESC>  för att försäkra dig om att du är i Normal-läge.
+  1. Tryck  <ESC>  fÃ¶r att fÃ¶rsÃ¤kra dig om att du Ã¤r i Normal-lÃ¤ge.
 
-  2. Flytta markören till raden nedan markerad --->.
+  2. Flytta markÃ¶ren till raden nedan markerad --->.
 
-  3. Flytta markören till slutet på den rätta raden (EFTER den första . ).
+  3. Flytta markÃ¶ren till slutet pÃ¥ den rÃ¤tta raden (EFTER den fÃ¶rsta . ).
 
-  4. Skriv    d$    för att radera till slutet på raden.
+  4. Skriv    d$    fÃ¶r att radera till slutet pÃ¥ raden.
 
----> Någon skrev slutet på den här raden två gånger. den här raden två gånger.
+---> NÃ¥gon skrev slutet pÃ¥ den hÃ¤r raden tvÃ¥ gÃ¥nger. den hÃ¤r raden tvÃ¥ gÃ¥nger.
 
 
-  5. Gå vidare till Lektion 1.2.3 för att förstå vad det är som händer.
+  5. GÃ¥ vidare till Lektion 1.2.3 fÃ¶r att fÃ¶rstÃ¥ vad det Ã¤r som hÃ¤nder.
 
 
 
@@ -189,21 +189,21 @@ Fortsätt nu med Lektion 1.2.
 		     Lesson 1.2.3: KOMMANDON OCH OBJEKT
 
 
-  Syntaxen för  d  raderingskommandot är följande:
+  Syntaxen fÃ¶r  d  raderingskommandot Ã¤r fÃ¶ljande:
 
 	 [nummer]   d	objekt	    ELLER	     d	 [nummer]   objekt
   Var:
-    nummer - är antalet upprepningar av kommandot (valfritt, standard=1).
-    d - är kommandot för att radera.
-    objekt - är vad kommandot kommer att operera på (listade nedan).
+    nummer - Ã¤r antalet upprepningar av kommandot (valfritt, standard=1).
+    d - Ã¤r kommandot fÃ¶r att radera.
+    objekt - Ã¤r vad kommandot kommer att operera pÃ¥ (listade nedan).
 
-  En kort lista över objekt:
-    w - från markören till slutet av ordet, inklusive blanksteget.
-    e - från markören till slutet av ordet, EJ inklusive blanksteget.
-    $ - från markören till slutet på raden.
+  En kort lista Ã¶ver objekt:
+    w - frÃ¥n markÃ¶ren till slutet av ordet, inklusive blanksteget.
+    e - frÃ¥n markÃ¶ren till slutet av ordet, EJ inklusive blanksteget.
+    $ - frÃ¥n markÃ¶ren till slutet pÃ¥ raden.
 
-NOTERA:  För den äventyrslystne, genom att bara trycka på objektet i
-	 Normal-läge (utan kommando) så kommer markören att flyttas som
+NOTERA:  FÃ¶r den Ã¤ventyrslystne, genom att bara trycka pÃ¥ objektet i
+	 Normal-lÃ¤ge (utan kommando) sÃ¥ kommer markÃ¶ren att flyttas som
 	 angivet i objektlistan.
 
 
@@ -213,16 +213,16 @@ NOTERA:  För den äventyrslystne, genom att bara trycka på objektet i
 		Lektion 1.2.4: ETT UNDANTAG TILL 'KOMMANDO-OBJEKT'
 
 
-	       ** Skriv	 dd   för att radera hela raden. **
+	       ** Skriv	 dd   fÃ¶r att radera hela raden. **
 
-  På grund av hur vanligt det är att ta bort hela rader, valde upphovsmannen
-  till Vi att det skulle vara enklare att bara trycka d två gånger i rad för
+  PÃ¥ grund av hur vanligt det Ã¤r att ta bort hela rader, valde upphovsmannen
+  till Vi att det skulle vara enklare att bara trycka d tvÃ¥ gÃ¥nger i rad fÃ¶r
   att ta bort en rad.
 
-  1. Flytta markören till den andra raden i frasen nedan.
-  2. Skriv  dd  för att radera raden.
-  3. Flytta nu till den fjärde raden.
-  4. Skriv   2dd   (kom ihåg:  nummer-kommando-objekt) för att radera de två
+  1. Flytta markÃ¶ren till den andra raden i frasen nedan.
+  2. Skriv  dd  fÃ¶r att radera raden.
+  3. Flytta nu till den fjÃ¤rde raden.
+  4. Skriv   2dd   (kom ihÃ¥g:  nummer-kommando-objekt) fÃ¶r att radera de tvÃ¥
      raderna.
 
       1)  Roses are red,
@@ -235,24 +235,24 @@ NOTERA:  För den äventyrslystne, genom att bara trycka på objektet i
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 Lektion 1.2.5: ÅNGRA-KOMMANDOT
+			 Lektion 1.2.5: Ã…NGRA-KOMMANDOT
 
 
-** Skriv  u för att ångra det senaste kommandona,  U för att fixa en hel rad. **
+** Skriv  u fÃ¶r att Ã¥ngra det senaste kommandona,  U fÃ¶r att fixa en hel rad. **
 
-  1. Flytta markören till slutet av raden nedan markerad ---> och placera den
-     på det första felet.
-  2. Skriv  x  för att radera den första felaktiga tecknet.
-  3. Skriv nu  u  för att ångra det senaste körda kommandot.
-  4. Rätta den här gången alla felen på raden med  x-kommandot.
-  5. Skriv nu  U  för att återställa raden till dess ursprungliga utseende.
-  6. Skriv nu  u  några gånger för att ångra  U  och tidigare kommandon.
-  7. Tryck nu CTRL-R (håll inne CTRL samtidigt som du trycker R) några gånger
-     för att upprepa kommandona (ångra ångringarna).
+  1. Flytta markÃ¶ren till slutet av raden nedan markerad ---> och placera den
+     pÃ¥ det fÃ¶rsta felet.
+  2. Skriv  x  fÃ¶r att radera den fÃ¶rsta felaktiga tecknet.
+  3. Skriv nu  u  fÃ¶r att Ã¥ngra det senaste kÃ¶rda kommandot.
+  4. RÃ¤tta den hÃ¤r gÃ¥ngen alla felen pÃ¥ raden med  x-kommandot.
+  5. Skriv nu  U  fÃ¶r att Ã¥terstÃ¤lla raden till dess ursprungliga utseende.
+  6. Skriv nu  u  nÃ¥gra gÃ¥nger fÃ¶r att Ã¥ngra  U  och tidigare kommandon.
+  7. Tryck nu CTRL-R (hÃ¥ll inne CTRL samtidigt som du trycker R) nÃ¥gra gÃ¥nger
+     fÃ¶r att upprepa kommandona (Ã¥ngra Ã¥ngringarna).
 
----> Fiixa felen ppå deen häär meningen och återskapa dem med ångra.
+---> Fiixa felen ppÃ¥ deen hÃ¤Ã¤r meningen och Ã¥terskapa dem med Ã¥ngra.
 
-  8. Det här är väldigt användbara kommandon.  Gå nu vidare till
+  8. Det hÃ¤r Ã¤r vÃ¤ldigt anvÃ¤ndbara kommandon.  GÃ¥ nu vidare till
      Lektion 1.2 Sammanfattning.
 
 
@@ -262,116 +262,116 @@ NOTERA:  För den äventyrslystne, genom att bara trycka på objektet i
 			       LEKTION 1.2 SAMMANFATTNING
 
 
-  1. För att radera från markören till slutet av ett ord skriv:    dw
+  1. FÃ¶r att radera frÃ¥n markÃ¶ren till slutet av ett ord skriv:    dw
 
-  2. För att radera från markören till slutet av en rad skriv:    d$
+  2. FÃ¶r att radera frÃ¥n markÃ¶ren till slutet av en rad skriv:    d$
 
-  3. För att radera en hel rad skriv:    dd
+  3. FÃ¶r att radera en hel rad skriv:    dd
 
-  4. Syntaxen för ett kommando i Normal-läge är:
+  4. Syntaxen fÃ¶r ett kommando i Normal-lÃ¤ge Ã¤r:
 
        [nummer]   kommando   objekt   ELLER   kommando   [nummer]   objekt
-     där:
-       nummer - är hur många gånger kommandot kommandot ska repeteras
-       kommando - är vad som ska göras, t.ex.  d  för att radera
-       objekt - är vad kommandot ska operera på, som t.ex.  w (ord),
+     dÃ¤r:
+       nummer - Ã¤r hur mÃ¥nga gÃ¥nger kommandot kommandot ska repeteras
+       kommando - Ã¤r vad som ska gÃ¶ras, t.ex.  d  fÃ¶r att radera
+       objekt - Ã¤r vad kommandot ska operera pÃ¥, som t.ex.  w (ord),
 		$ (till slutet av raden), etc.
 
-  5. För att ångra tidigare kommandon, skriv:  u (litet u)
-     För att ångra alla tidigare ändringar på en rad skriv:  U (stort U)
-     För att ångra ångringar tryck:  CTRL-R
+  5. FÃ¶r att Ã¥ngra tidigare kommandon, skriv:  u (litet u)
+     FÃ¶r att Ã¥ngra alla tidigare Ã¤ndringar pÃ¥ en rad skriv:  U (stort U)
+     FÃ¶r att Ã¥ngra Ã¥ngringar tryck:  CTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lektion 1.3.1: KLISTRA IN-KOMMANDOT
 
 
-   ** Skriv  p  för att klistra in den senaste raderingen efter markören. **
+   ** Skriv  p  fÃ¶r att klistra in den senaste raderingen efter markÃ¶ren. **
 
-  1. Flytta markören till den första raden i listan nedan.
+  1. Flytta markÃ¶ren till den fÃ¶rsta raden i listan nedan.
 
-  2. Skriv  dd  för att radera raden och lagra den i Vims buffert.
+  2. Skriv  dd  fÃ¶r att radera raden och lagra den i Vims buffert.
 
-  3. Flytta markören till raden OVANFÖR där den raderade raden borde vara.
+  3. Flytta markÃ¶ren till raden OVANFÃ–R dÃ¤r den raderade raden borde vara.
 
-  4. När du är i Normal-läge, skriv    p	 för att byta ut raden.
+  4. NÃ¤r du Ã¤r i Normal-lÃ¤ge, skriv    p	 fÃ¶r att byta ut raden.
 
-  5. Repetera stegen 2 till 4 för att klistra in alla rader i rätt ordning.
+  5. Repetera stegen 2 till 4 fÃ¶r att klistra in alla rader i rÃ¤tt ordning.
 
-     d) Kan du lära dig också?
-     b) Violetter är blå,
-     c) Intelligens fås genom lärdom,
-     a) Rosor är röda,
-
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       Lesson 1.3.2: ERSÄTT-KOMMANDOT
-
-
-  ** Skriv  r  och ett tecken för att ersätta tecknet under markören. **
-
-  1. Flytta markören till den första raden nedan markerad --->.
-
-  2. Flytta markören så att den står på det första felet.
-
-  3. Skriv   r	och sedan det tecken som borde ersätta felet.
-
-  4. Repetera steg 2 och 3 tills den första raden är korrekt.
-
---->  När drn här ruden skrevs, trickte någon på fil knappar!
---->  När den här raden skrevs, tryckte någon på fel knappar!
-
-  5. Gå nu vidare till Lektion 1.3.2.
-
-NOTERA: Kom ihåg att du skall lära dig genom användning, inte genom memorering.
+     d) Kan du lÃ¤ra dig ocksÃ¥?
+     b) Violetter Ã¤r blÃ¥,
+     c) Intelligens fÃ¥s genom lÃ¤rdom,
+     a) Rosor Ã¤r rÃ¶da,
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lektion 1.3.3: ÄNDRA-KOMMANDOT
+		       Lesson 1.3.2: ERSÃ„TT-KOMMANDOT
 
 
-	   ** För att ändra en del eller ett helt ord, skriv  cw . **
+  ** Skriv  r  och ett tecken fÃ¶r att ersÃ¤tta tecknet under markÃ¶ren. **
 
-  1. Flytta markören till den första redan nedan markerad --->.
+  1. Flytta markÃ¶ren till den fÃ¶rsta raden nedan markerad --->.
 
-  2. Placera markören på d i rdrtn.
+  2. Flytta markÃ¶ren sÃ¥ att den stÃ¥r pÃ¥ det fÃ¶rsta felet.
 
-  3. Skriv  cw  och det rätta ordet (i det här fallet, skriv "aden".)
+  3. Skriv   r	och sedan det tecken som borde ersÃ¤tta felet.
 
-  4. Tryck <ESC> och flytta markören till nästa fel (det första tecknet som
-     ska ändras.)
+  4. Repetera steg 2 och 3 tills den fÃ¶rsta raden Ã¤r korrekt.
 
-  5. Repetera steg 3 och 4 tills den första raden är likadan som den andra.
+--->  NÃ¤r drn hÃ¤r ruden skrevs, trickte nÃ¥gon pÃ¥ fil knappar!
+--->  NÃ¤r den hÃ¤r raden skrevs, tryckte nÃ¥gon pÃ¥ fel knappar!
 
----> Den här rdrtn har några otf som brhotrt ändras mrf ändra-komjendit.
----> Den här raden har några ord som behöver ändras med ändra-kommandot.
+  5. GÃ¥ nu vidare till Lektion 1.3.2.
 
-Notera att  cw  inte bara ändrar ordet, utan även placerar dig i infogningsläge.
+NOTERA: Kom ihÃ¥g att du skall lÃ¤ra dig genom anvÃ¤ndning, inte genom memorering.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       Lektion 1.3.4: FLER ÄNDRINGAR MED c
+			Lektion 1.3.3: Ã„NDRA-KOMMANDOT
 
 
-     ** Ändra-kommandot används på samma objekt som radera. **
+	   ** FÃ¶r att Ã¤ndra en del eller ett helt ord, skriv  cw . **
 
-  1. Ändra-kommandot fungerar på samma sätt som radera. Syntaxen är:
+  1. Flytta markÃ¶ren till den fÃ¶rsta redan nedan markerad --->.
+
+  2. Placera markÃ¶ren pÃ¥ d i rdrtn.
+
+  3. Skriv  cw  och det rÃ¤tta ordet (i det hÃ¤r fallet, skriv "aden".)
+
+  4. Tryck <ESC> och flytta markÃ¶ren till nÃ¤sta fel (det fÃ¶rsta tecknet som
+     ska Ã¤ndras.)
+
+  5. Repetera steg 3 och 4 tills den fÃ¶rsta raden Ã¤r likadan som den andra.
+
+---> Den hÃ¤r rdrtn har nÃ¥gra otf som brhotrt Ã¤ndras mrf Ã¤ndra-komjendit.
+---> Den hÃ¤r raden har nÃ¥gra ord som behÃ¶ver Ã¤ndras med Ã¤ndra-kommandot.
+
+Notera att  cw  inte bara Ã¤ndrar ordet, utan Ã¤ven placerar dig i infogningslÃ¤ge.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       Lektion 1.3.4: FLER Ã„NDRINGAR MED c
+
+
+     ** Ã„ndra-kommandot anvÃ¤nds pÃ¥ samma objekt som radera. **
+
+  1. Ã„ndra-kommandot fungerar pÃ¥ samma sÃ¤tt som radera. Syntaxen Ã¤r:
 
        [nummer]   c   objekt	   ELLER	    c	[nummer]   objekt
 
-  2. Objekten är också de samma, som t.ex.   w (ord), $ (slutet av raden), etc.
+  2. Objekten Ã¤r ocksÃ¥ de samma, som t.ex.   w (ord), $ (slutet av raden), etc.
 
-  3. Flytta till den första raden nedan markerad -->.
+  3. Flytta till den fÃ¶rsta raden nedan markerad -->.
 
-  4. Flytta markören till det första felet.
+  4. Flytta markÃ¶ren till det fÃ¶rsta felet.
 
-  5. Skriv  c$  för att göra resten av raden likadan som den andra och tryck
+  5. Skriv  c$  fÃ¶r att gÃ¶ra resten av raden likadan som den andra och tryck
      <ESC>.
 
----> Slutet på den här raden behöver hjälp med att få den att likna den andra.
----> Slutet på den här raden behöver rättas till med  c$-kommandot.
+---> Slutet pÃ¥ den hÃ¤r raden behÃ¶ver hjÃ¤lp med att fÃ¥ den att likna den andra.
+---> Slutet pÃ¥ den hÃ¤r raden behÃ¶ver rÃ¤ttas till med  c$-kommandot.
 
 
 
@@ -379,22 +379,22 @@ Notera att  cw  inte bara ändrar ordet, utan även placerar dig i infogningsläge.
 			       LEKTION 1.3 SAMMANFATTNING
 
 
-  1. För att ersätta text som redan har blivit raderad, skriv   p .
-     Detta klistrar in den raderade texten EFTER markören (om en rad raderades
-     kommer den att hamna på raden under markören.
+  1. FÃ¶r att ersÃ¤tta text som redan har blivit raderad, skriv   p .
+     Detta klistrar in den raderade texten EFTER markÃ¶ren (om en rad raderades
+     kommer den att hamna pÃ¥ raden under markÃ¶ren.
 
-  2. För att ersätta tecknet under markören, skriv   r   och sedan tecknet som
-     kommer att ersätta orginalet.
+  2. FÃ¶r att ersÃ¤tta tecknet under markÃ¶ren, skriv   r   och sedan tecknet som
+     kommer att ersÃ¤tta orginalet.
 
-  3. Ändra-kommandot låter dig ändra det angivna objektet från markören till
-     slutet på objektet. eg. Skriv  cw  för att ändra från markören till slutet
-     på ordet, c$	för att ändra till slutet på en rad.
+  3. Ã„ndra-kommandot lÃ¥ter dig Ã¤ndra det angivna objektet frÃ¥n markÃ¶ren till
+     slutet pÃ¥ objektet. eg. Skriv  cw  fÃ¶r att Ã¤ndra frÃ¥n markÃ¶ren till slutet
+     pÃ¥ ordet, c$	fÃ¶r att Ã¤ndra till slutet pÃ¥ en rad.
 
-  4. Syntaxen för ändra-kommandot är:
+  4. Syntaxen fÃ¶r Ã¤ndra-kommandot Ã¤r:
 
 	 [nummer]   c	objekt	      ELLER	c   [nummer]   objekt
 
-Gå nu till nästa lektion.
+GÃ¥ nu till nÃ¤sta lektion.
 
 
 
@@ -402,64 +402,64 @@ Gå nu till nästa lektion.
 		     Lektion 1.4.1: POSITION OCH FILSTATUS
 
 
-  ** Tryck CTRL-g för att visa din position i filen och filstatusen.
-     Tryck SHIFT-G för att flytta till en rad i filen. **
+  ** Tryck CTRL-g fÃ¶r att visa din position i filen och filstatusen.
+     Tryck SHIFT-G fÃ¶r att flytta till en rad i filen. **
 
-  Notera: Läsa hela den lektion innan du utför något av stegen!!
+  Notera: LÃ¤sa hela den lektion innan du utfÃ¶r nÃ¥got av stegen!!
 
-  1. Håll ned Ctrl-tangenten och tryck  g . En statusrad med filnamn och raden
-     du befinner dig på kommer att synas. Kom ihåg radnummret till Steg 3.
+  1. HÃ¥ll ned Ctrl-tangenten och tryck  g . En statusrad med filnamn och raden
+     du befinner dig pÃ¥ kommer att synas. Kom ihÃ¥g radnummret till Steg 3.
 
-  2. Tryck shift-G för att flytta markören till slutet på filen.
+  2. Tryck shift-G fÃ¶r att flytta markÃ¶ren till slutet pÃ¥ filen.
 
-  3. Skriv in nummret på raden du var på och tryck sedan shift-G. Detta kommer
-     att ta dig tillbaka till raden du var på när du först tryckte Ctrl-g.
-     (När du skriver in nummren, kommer de INTE att visas på skärmen.)
+  3. Skriv in nummret pÃ¥ raden du var pÃ¥ och tryck sedan shift-G. Detta kommer
+     att ta dig tillbaka till raden du var pÃ¥ nÃ¤r du fÃ¶rst tryckte Ctrl-g.
+     (NÃ¤r du skriver in nummren, kommer de INTE att visas pÃ¥ skÃ¤rmen.)
 
-  4. Om du känner dig säker på det här, utför steg 1 till 3.
+  4. Om du kÃ¤nner dig sÃ¤ker pÃ¥ det hÃ¤r, utfÃ¶r steg 1 till 3.
 
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lektion 1.4.2: SÖK-KOMMANDOT
-
-
-     ** Skriv  /  följt av en fras för att söka efter frasen. **
-
-  1. I Normal-läge skriv /-tecknet. Notera att det och markören blir synlig
-     längst ned på skärmen precis som med :-kommandot.
-
-  2. Skriv nu "feeel" <ENTER>. Det här är ordet du vill söka efter.
-
-  3. För att söka efter samma fras igen, tryck helt enkelt  n .
-     För att söka efter samma fras igen i motsatt riktning, tryck  Shift-N .
-
-  4. Om du vill söka efter en fras bakåt i filen, använd kommandot  ?  istället
-     för /.
-
----> "feeel" är inte rätt sätt att stava fel: feeel är ett fel.
-
-Notera: När sökningen når slutet på filen kommer den att fortsätta vid början.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Lektion 1.4.3: SÖKNING EFTER MATCHANDE PARENTESER
+			Lektion 1.4.2: SÃ–K-KOMMANDOT
 
 
-	      ** Skriv  %  för att hitta en matchande ),], or } . **
+     ** Skriv  /  fÃ¶ljt av en fras fÃ¶r att sÃ¶ka efter frasen. **
 
-  1. Placera markören på någon av (, [, or { på raden nedan markerad --->.
+  1. I Normal-lÃ¤ge skriv /-tecknet. Notera att det och markÃ¶ren blir synlig
+     lÃ¤ngst ned pÃ¥ skÃ¤rmen precis som med :-kommandot.
+
+  2. Skriv nu "feeel" <ENTER>. Det hÃ¤r Ã¤r ordet du vill sÃ¶ka efter.
+
+  3. FÃ¶r att sÃ¶ka efter samma fras igen, tryck helt enkelt  n .
+     FÃ¶r att sÃ¶ka efter samma fras igen i motsatt riktning, tryck  Shift-N .
+
+  4. Om du vill sÃ¶ka efter en fras bakÃ¥t i filen, anvÃ¤nd kommandot  ?  istÃ¤llet
+     fÃ¶r /.
+
+---> "feeel" Ã¤r inte rÃ¤tt sÃ¤tt att stava fel: feeel Ã¤r ett fel.
+
+Notera: NÃ¤r sÃ¶kningen nÃ¥r slutet pÃ¥ filen kommer den att fortsÃ¤tta vid bÃ¶rjan.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   Lektion 1.4.3: SÃ–KNING EFTER MATCHANDE PARENTESER
+
+
+	      ** Skriv  %  fÃ¶r att hitta en matchande ),], or } . **
+
+  1. Placera markÃ¶ren pÃ¥ nÃ¥gon av (, [, or { pÃ¥ raden nedan markerad --->.
 
   2. Skriv nu %-tecknet.
 
-  3. Markören borde vara på den matchande parentesen eller hakparentesen.
+  3. MarkÃ¶ren borde vara pÃ¥ den matchande parentesen eller hakparentesen.
 
-  4. Skriv  %  för att flytta markören tillbaka till den första hakparentesen
+  4. Skriv  %  fÃ¶r att flytta markÃ¶ren tillbaka till den fÃ¶rsta hakparentesen
      (med matchning).
 
----> Det ( här är en testrad med (, [ ] och { } i den. ))
+---> Det ( hÃ¤r Ã¤r en testrad med (, [ ] och { } i den. ))
 
-Notera: Det här är väldigt användbart vid avlusning av ett program med icke
+Notera: Det hÃ¤r Ã¤r vÃ¤ldigt anvÃ¤ndbart vid avlusning av ett program med icke
 	matchande parenteser!
 
 
@@ -468,24 +468,24 @@ Notera: Det här är väldigt användbart vid avlusning av ett program med icke
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Lektion 1.4.4: ETT SÄTT ATT ÄNDRA FEL
+		      Lektion 1.4.4: ETT SÃ„TT ATT Ã„NDRA FEL
 
 
-	** Skriv  :s/gammalt/nytt/g  för att ersätta "gammalt" med "nytt". **
+	** Skriv  :s/gammalt/nytt/g  fÃ¶r att ersÃ¤tta "gammalt" med "nytt". **
 
-  1. Flytta markören till raden nedan markerad --->.
+  1. Flytta markÃ¶ren till raden nedan markerad --->.
 
-  2. Skriv  :s/denn/den <ENTER> . Notera att det här kommandot bara ändrar den
-     första förekomsten på raden.
+  2. Skriv  :s/denn/den <ENTER> . Notera att det hÃ¤r kommandot bara Ã¤ndrar den
+     fÃ¶rsta fÃ¶rekomsten pÃ¥ raden.
 
-  3. Skriv nu	 :s/denn/den/g	   vilket betyder ersätt globalt på raden.
-     Det ändrar alla förekomster på raden.
+  3. Skriv nu	 :s/denn/den/g	   vilket betyder ersÃ¤tt globalt pÃ¥ raden.
+     Det Ã¤ndrar alla fÃ¶rekomster pÃ¥ raden.
 
----> denn bästa tiden att se blommor blomma är denn på våren.
+---> denn bÃ¤sta tiden att se blommor blomma Ã¤r denn pÃ¥ vÃ¥ren.
 
-  4. För att ändra alla förekomster av en teckensträng mellan två rader,
-     skriv  :#,#s/gammalt/nytt/g    där #,# är de två radernas radnummer.
-     Skriv  :%s/gammtl/nytt/g    för att ändra varje förekomst i hela filen.
+  4. FÃ¶r att Ã¤ndra alla fÃ¶rekomster av en teckenstrÃ¤ng mellan tvÃ¥ rader,
+     skriv  :#,#s/gammalt/nytt/g    dÃ¤r #,# Ã¤r de tvÃ¥ radernas radnummer.
+     Skriv  :%s/gammtl/nytt/g    fÃ¶r att Ã¤ndra varje fÃ¶rekomst i hela filen.
 
 
 
@@ -495,44 +495,44 @@ Notera: Det här är väldigt användbart vid avlusning av ett program med icke
 
 
   1. Ctrl-g  visar din position i filen och filstatusen.
-     Shift-G  flyttar till slutet av filen. Ett radnummer följt  Shift-G
+     Shift-G  flyttar till slutet av filen. Ett radnummer fÃ¶ljt  Shift-G
      flyttar till det radnummret.
 
-  2. Skriver man  /	följt av en fras söks det FRAMMÅT efter frasen.
-     Skriver man  ?	följt av en fras söks det BAKÅT efter frasen.
-     Efter en sökning skriv  n  för att hitta nästa förekomst i samma riktning
-     eller  Shift-N  för att söka i den motsatta riktningen.
+  2. Skriver man  /	fÃ¶ljt av en fras sÃ¶ks det FRAMMÃ…T efter frasen.
+     Skriver man  ?	fÃ¶ljt av en fras sÃ¶ks det BAKÃ…T efter frasen.
+     Efter en sÃ¶kning skriv  n  fÃ¶r att hitta nÃ¤sta fÃ¶rekomst i samma riktning
+     eller  Shift-N  fÃ¶r att sÃ¶ka i den motsatta riktningen.
 
-  3. Skriver man  %	när markören är på ett  (,),[,],{, eller }  hittas dess
+  3. Skriver man  %	nÃ¤r markÃ¶ren Ã¤r pÃ¥ ett  (,),[,],{, eller }  hittas dess
      matchande par.
 
-  4. För att ersätta den första gammalt med nytt på en rad skriv  :s/gammlt/nytt
-     För att ersätta alla gammlt med nytt på en rad skriv  :s/gammlt/nytt/g
-     För att ersätta fraser mellan rad # och rad # skriv  :#,#s/gammlt/nytt/g
-     För att ersätta alla förekomster i filen skriv  :%s/gammlt/nytt/g
-     För att bekräfta varje gång lägg till "c"  :%s/gammlt/nytt/gc
+  4. FÃ¶r att ersÃ¤tta den fÃ¶rsta gammalt med nytt pÃ¥ en rad skriv  :s/gammlt/nytt
+     FÃ¶r att ersÃ¤tta alla gammlt med nytt pÃ¥ en rad skriv  :s/gammlt/nytt/g
+     FÃ¶r att ersÃ¤tta fraser mellan rad # och rad # skriv  :#,#s/gammlt/nytt/g
+     FÃ¶r att ersÃ¤tta alla fÃ¶rekomster i filen skriv  :%s/gammlt/nytt/g
+     FÃ¶r att bekrÃ¤fta varje gÃ¥ng lÃ¤gg till "c"  :%s/gammlt/nytt/gc
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Lektion 1.5.1: HUR MAN KÖR ETT EXTERNT KOMMANDO
+		Lektion 1.5.1: HUR MAN KÃ–R ETT EXTERNT KOMMANDO
 
 
-   ** Skriv  :!	följt av ett externt kommando för att köra det kommandot. **
+   ** Skriv  :!	fÃ¶ljt av ett externt kommando fÃ¶r att kÃ¶ra det kommandot. **
 
-  1. Skriv det välbekanta kommandot	:  för att placera markören längst ned
-     på skärmen på skärmen. Detta låter dig skriva in ett kommando.
+  1. Skriv det vÃ¤lbekanta kommandot	:  fÃ¶r att placera markÃ¶ren lÃ¤ngst ned
+     pÃ¥ skÃ¤rmen pÃ¥ skÃ¤rmen. Detta lÃ¥ter dig skriva in ett kommando.
 
-  2. Skriv nu  !  (utropstecken).  Detta låter dig köra ett godtyckligt externt
+  2. Skriv nu  !  (utropstecken).  Detta lÃ¥ter dig kÃ¶ra ett godtyckligt externt
      skalkommando.
 
   3. Som ett exempel skriv   ls   efter ! och tryck sedan <ENTER>. Detta kommer
-     att visa dig en listning av din katalog, precis som om du kört det vid
-     skalprompten. Använd  :!dir  om ls inte fungerar.
+     att visa dig en listning av din katalog, precis som om du kÃ¶rt det vid
+     skalprompten. AnvÃ¤nd  :!dir  om ls inte fungerar.
 
-Notera:  Det är möjligt att köra vilket externt kommando som helst på det här
-	 sättet.
+Notera:  Det Ã¤r mÃ¶jligt att kÃ¶ra vilket externt kommando som helst pÃ¥ det hÃ¤r
+	 sÃ¤ttet.
 
-Notera:  Alla  :-kommandon måste avslutas med att trycka på <ENTER>
+Notera:  Alla  :-kommandon mÃ¥ste avslutas med att trycka pÃ¥ <ENTER>
 
 
 
@@ -541,20 +541,20 @@ Notera:  Alla  :-kommandon måste avslutas med att trycka på <ENTER>
 		      Lektion 1.5.2: MER OM ATT SPARA FILER
 
 
-     ** För att spara ändringar gjorda i en fil, skriv  :w FILNAMN. **
+     ** FÃ¶r att spara Ã¤ndringar gjorda i en fil, skriv  :w FILNAMN. **
 
-  1. Skriv  :!dir  eller  :!ls  för att få en listning av din katalog.
-     Du vet redan att du måste trycka <ENTER> efter det här.
+  1. Skriv  :!dir  eller  :!ls  fÃ¶r att fÃ¥ en listning av din katalog.
+     Du vet redan att du mÃ¥ste trycka <ENTER> efter det hÃ¤r.
 
-  2. Välj ett filnamn som inte redan existerar, som t.ex. TEST.
+  2. VÃ¤lj ett filnamn som inte redan existerar, som t.ex. TEST.
 
-  3. Skriv nu:	 :w TEST   (där TEST är filnamnet du valt.)
+  3. Skriv nu:	 :w TEST   (dÃ¤r TEST Ã¤r filnamnet du valt.)
 
-  4. Det här sparar hela filen	(Vim handledningen)  under namnet TEST.
-     För att verifiera detta, skriv    :!dir   igen för att se din katalog
+  4. Det hÃ¤r sparar hela filen	(Vim handledningen)  under namnet TEST.
+     FÃ¶r att verifiera detta, skriv    :!dir   igen fÃ¶r att se din katalog
 
-Notera: Om du skulle avsluta Vim och sedan öppna igen med filnamnet TEST så
-	skulle filen vara en exakt kopia av handledningen när du sparade den.
+Notera: Om du skulle avsluta Vim och sedan Ã¶ppna igen med filnamnet TEST sÃ¥
+	skulle filen vara en exakt kopia av handledningen nÃ¤r du sparade den.
 
   5. Ta nu bort filen genom att skriva (MS-DOS):  :!del TEST
 				   eller (Unix):  :!rm TEST
@@ -564,47 +564,47 @@ Notera: Om du skulle avsluta Vim och sedan öppna igen med filnamnet TEST så
 		    Lektion 1.5.3: ETT SELEKTIVT SPARA-KOMMANDO
 
 
-	** För att spara en del av en fil, skriv   :#,# w FILNAMN **
+	** FÃ¶r att spara en del av en fil, skriv   :#,# w FILNAMN **
 
-  1. Ännu en gång, skriv  :!dir  eller  :!ls  för att få en listning av din
-     katalog och välj ett passande filnamn som t.ex. TEST.
+  1. Ã„nnu en gÃ¥ng, skriv  :!dir  eller  :!ls  fÃ¶r att fÃ¥ en listning av din
+     katalog och vÃ¤lj ett passande filnamn som t.ex. TEST.
 
-  2. Flytta markören högst upp på den här sidan och tryck  Ctrl-g  för att få
-     reda på radnumret på den raden. KOM IHÅG DET NUMMRET!
+  2. Flytta markÃ¶ren hÃ¶gst upp pÃ¥ den hÃ¤r sidan och tryck  Ctrl-g  fÃ¶r att fÃ¥
+     reda pÃ¥ radnumret pÃ¥ den raden. KOM IHÃ…G DET NUMMRET!
 
-  3. Flytta nu längst ned på sidan och skriv  Ctrl-g igen.
-     KOM IHÅG DET RADNUMMRET OCKSÅ!
+  3. Flytta nu lÃ¤ngst ned pÃ¥ sidan och skriv  Ctrl-g igen.
+     KOM IHÃ…G DET RADNUMMRET OCKSÃ…!
 
-  4. För att BARA spara en sektion till en fil, skriv   :#,# w TEST
-     där #,# är de två nummren du kom ihåg (toppen, botten) och TEST är
+  4. FÃ¶r att BARA spara en sektion till en fil, skriv   :#,# w TEST
+     dÃ¤r #,# Ã¤r de tvÃ¥ nummren du kom ihÃ¥g (toppen, botten) och TEST Ã¤r
      ditt filnamn.
 
-  5. Ännu en gång, kolla så att filen är där med  :!dir  men radera den INTE.
+  5. Ã„nnu en gÃ¥ng, kolla sÃ¥ att filen Ã¤r dÃ¤r med  :!dir  men radera den INTE.
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Lektion 1.5.4: TA EMOT OCH FÖRENA FILER
+		   Lektion 1.5.4: TA EMOT OCH FÃ–RENA FILER
 
 
-       ** För att infoga innehållet av en fil, skriv   :r FILNAMN **
+       ** FÃ¶r att infoga innehÃ¥llet av en fil, skriv   :r FILNAMN **
 
-  1. Skriv   :!dir   för att försäkra dig om att TEST-filen från tidigare
-     fortfarande är kvar.
+  1. Skriv   :!dir   fÃ¶r att fÃ¶rsÃ¤kra dig om att TEST-filen frÃ¥n tidigare
+     fortfarande Ã¤r kvar.
 
-  2. Placera markören högst upp på den här sidan.
+  2. Placera markÃ¶ren hÃ¶gst upp pÃ¥ den hÃ¤r sidan.
 
-NOTERA:  Efter att du kört Steg 3 kommer du att se Lektion 1.5.3.
-	 Flytta då NED till den här lektionen igen.
+NOTERA:  Efter att du kÃ¶rt Steg 3 kommer du att se Lektion 1.5.3.
+	 Flytta dÃ¥ NED till den hÃ¤r lektionen igen.
 
-  3. Ta nu emot din TEST-fil med kommandot   :r TEST   där TEST är namnet på
+  3. Ta nu emot din TEST-fil med kommandot   :r TEST   dÃ¤r TEST Ã¤r namnet pÃ¥
      filen.
 
-NOTERA:  Filen du tar emot placeras där markören är placerad.
+NOTERA:  Filen du tar emot placeras dÃ¤r markÃ¶ren Ã¤r placerad.
 
-  4. För att verifiera att filen togs emot, gå tillbaka och notera att det nu
-     finns två kopior av Lektion 1.5.3, orginalet och filversionen.
+  4. FÃ¶r att verifiera att filen togs emot, gÃ¥ tillbaka och notera att det nu
+     finns tvÃ¥ kopior av Lektion 1.5.3, orginalet och filversionen.
 
 
 
@@ -612,9 +612,9 @@ NOTERA:  Filen du tar emot placeras där markören är placerad.
 			       LEKTION 1.5 SAMMANFATTNING
 
 
-  1.  :!kommando  kör ett externt kommando.
+  1.  :!kommando  kÃ¶r ett externt kommando.
 
-      Några användbara exempel är:
+      NÃ¥gra anvÃ¤ndbara exempel Ã¤r:
 	 (MS-DOS)	  (Unix)
 	  :!dir		   :!ls		  -  visar en kataloglistning.
 	  :!del FILNAMN    :!rm FILNAMN   -  tar bort filen FILNAMN.
@@ -624,7 +624,7 @@ NOTERA:  Filen du tar emot placeras där markören är placerad.
   3.  :#,#w FILNAMN  sparar raderna # till #  i filen FILNAMN.
 
   4.  :r FILNAMN  tar emot filen FILNAMN och infogar den i den aktuella filen
-      efter markören.
+      efter markÃ¶ren.
 
 
 
@@ -632,119 +632,119 @@ NOTERA:  Filen du tar emot placeras där markören är placerad.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 Lektion 1.6.1: ÖPPNA-KOMMANDOT
+			 Lektion 1.6.1: Ã–PPNA-KOMMANDOT
 
 
- ** Skriv  o  för att öppna en rad under markören och placera dig i
-    Infoga-läge. **
+ ** Skriv  o  fÃ¶r att Ã¶ppna en rad under markÃ¶ren och placera dig i
+    Infoga-lÃ¤ge. **
 
-  1. Flytta markören till raden nedan markerad --->.
+  1. Flytta markÃ¶ren till raden nedan markerad --->.
 
-  2. Skriv  o (litet o) för att öppna upp en rad NEDANFÖR markören och placera
+  2. Skriv  o (litet o) fÃ¶r att Ã¶ppna upp en rad NEDANFÃ–R markÃ¶ren och placera
      dig i Infoga-mode.
 
-  3. Kopiera nu raden markerad ---> och tryck <ESC> för att avsluta
-     Infoga-läget.
+  3. Kopiera nu raden markerad ---> och tryck <ESC> fÃ¶r att avsluta
+     Infoga-lÃ¤get.
 
----> Efter du skrivit  o  placerad markören på en öppen rad i Infoga-läge.
+---> Efter du skrivit  o  placerad markÃ¶ren pÃ¥ en Ã¶ppen rad i Infoga-lÃ¤ge.
 
-  4. För att öppna upp en rad OVANFÖR markören, skriv ett stort  O , istället
-     för ett litet  o. Pröva detta på raden nedan.
-Öppna upp en rad ovanför denna genom att trycka Shift-O när markören står här.
-
-
+  4. FÃ¶r att Ã¶ppna upp en rad OVANFÃ–R markÃ¶ren, skriv ett stort  O , istÃ¤llet
+     fÃ¶r ett litet  o. PrÃ¶va detta pÃ¥ raden nedan.
+Ã–ppna upp en rad ovanfÃ¶r denna genom att trycka Shift-O nÃ¤r markÃ¶ren stÃ¥r hÃ¤r.
 
 
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lektion 1.6.2: LÄGG TILL-KOMMANDOT
-
-
-	     ** Skriv  a  för att infoga text EFTER markören. **
-
-  1. Flytta markören till slutet av den första raden nedan markerad ---> genom
-     att skriv  $	i Normal-läge.
-
-  2. Skriv ett  a  (litet a) för att lägga till text EFTER tecknet under
-     markören.  (Stort  A  lägger till i slutet av raden.)
-
-Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
-	infoga, <ESC>, högerpil, och slutligen, x, bara för att lägga till i
-	slutet på en rad!
-
-  3. Gör nu färdigt den första raden. Notera också att lägga till är likadant
-      som Infoga-läge, enda skillnaden är positionen där texten blir infogad.
-
----> Här kan du träna
----> Här kan du träna på att lägga till text i slutet på en rad.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lektion 1.6.3: EN ANNAN VERSION AV ERSÄTT
+			Lektion 1.6.2: LÃ„GG TILL-KOMMANDOT
 
 
-      ** Skriv ett stort  R  för att ersätta fler än ett tecken. **
+	     ** Skriv  a  fÃ¶r att infoga text EFTER markÃ¶ren. **
 
-  1. Flytta markören till den första raden nedan markerad --->.
+  1. Flytta markÃ¶ren till slutet av den fÃ¶rsta raden nedan markerad ---> genom
+     att skriv  $	i Normal-lÃ¤ge.
 
-  2. Placera markören vid början av det första ordet som är annorlunda jämfört
+  2. Skriv ett  a  (litet a) fÃ¶r att lÃ¤gga till text EFTER tecknet under
+     markÃ¶ren.  (Stort  A  lÃ¤gger till i slutet av raden.)
+
+Notera: Detta undviker att behÃ¶va skriva  i , det sista tecknet, texten att
+	infoga, <ESC>, hÃ¶gerpil, och slutligen, x, bara fÃ¶r att lÃ¤gga till i
+	slutet pÃ¥ en rad!
+
+  3. GÃ¶r nu fÃ¤rdigt den fÃ¶rsta raden. Notera ocksÃ¥ att lÃ¤gga till Ã¤r likadant
+      som Infoga-lÃ¤ge, enda skillnaden Ã¤r positionen dÃ¤r texten blir infogad.
+
+---> HÃ¤r kan du trÃ¤na
+---> HÃ¤r kan du trÃ¤na pÃ¥ att lÃ¤gga till text i slutet pÃ¥ en rad.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    Lektion 1.6.3: EN ANNAN VERSION AV ERSÃ„TT
+
+
+      ** Skriv ett stort  R  fÃ¶r att ersÃ¤tta fler Ã¤n ett tecken. **
+
+  1. Flytta markÃ¶ren till den fÃ¶rsta raden nedan markerad --->.
+
+  2. Placera markÃ¶ren vid bÃ¶rjan av det fÃ¶rsta ordet som Ã¤r annorlunda jÃ¤mfÃ¶rt
      med den andra raden markerad ---> (ordet "sista").
 
-  3. Skriv nu  R  och ersätt resten av texten på den första raden genom att
-     skriva över den gamla texten så att den första raden blir likadan som
+  3. Skriv nu  R  och ersÃ¤tt resten av texten pÃ¥ den fÃ¶rsta raden genom att
+     skriva Ã¶ver den gamla texten sÃ¥ att den fÃ¶rsta raden blir likadan som
      den andra.
 
----> För att få den första raden lika som den sista, använd tangenterna.
----> För att få den första raden lika som den andra, skriv R och den nya texten.
+---> FÃ¶r att fÃ¥ den fÃ¶rsta raden lika som den sista, anvÃ¤nd tangenterna.
+---> FÃ¶r att fÃ¥ den fÃ¶rsta raden lika som den andra, skriv R och den nya texten.
 
-  4. Notera att när du trycker <ESC> för att avsluta, så blir eventuell
-     oförändrad text kvar.
+  4. Notera att nÃ¤r du trycker <ESC> fÃ¶r att avsluta, sÃ¥ blir eventuell
+     ofÃ¶rÃ¤ndrad text kvar.
 
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			    Lektion 1.6.4: SÄTT FLAGGOR
+			    Lektion 1.6.4: SÃ„TT FLAGGOR
 
-  ** Sätt en flagga så att en sökning eller ersättning ignorerar storlek **
+  ** SÃ¤tt en flagga sÃ¥ att en sÃ¶kning eller ersÃ¤ttning ignorerar storlek **
 
-  1. Sök efter "ignore" genom att skriva:
+  1. SÃ¶k efter "ignore" genom att skriva:
      /ignore
-     Repetera flera gånger genom att trycka på n-tangenten
+     Repetera flera gÃ¥nger genom att trycka pÃ¥ n-tangenten
 
-  2. Sätt 'ic' (Ignore Case) flaggan genom att skriva:
+  2. SÃ¤tt 'ic' (Ignore Case) flaggan genom att skriva:
      :set ic
 
-  3. Sök nu efter "ignore" igen genom att trycka: n
+  3. SÃ¶k nu efter "ignore" igen genom att trycka: n
      Repeat search several more times by hitting the n key
 
-  4. Sätt 'hlsearch' and 'incsearch' flaggorna:
+  4. SÃ¤tt 'hlsearch' and 'incsearch' flaggorna:
      :set hls is
 
-  5. Skriv nu in sök-kommandot igen, och se vad som händer:
+  5. Skriv nu in sÃ¶k-kommandot igen, och se vad som hÃ¤nder:
      /ignore
 
-  6. För att ta bort framhävningen av träffar, skriv
+  6. FÃ¶r att ta bort framhÃ¤vningen av trÃ¤ffar, skriv
      :nohlsearch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			       LEKTION 1.6 SAMMANFATTNING
 
 
-  1. Genom att skriva  o  öpnnas en rad NEDANFÖR markören och markören placeras
-     på den öppna raden i Infoga-läge.
-     Genom att skriva ett stort  O  öppnas raden OVANFÖR raden som markören är
-     på.
+  1. Genom att skriva  o  Ã¶pnnas en rad NEDANFÃ–R markÃ¶ren och markÃ¶ren placeras
+     pÃ¥ den Ã¶ppna raden i Infoga-lÃ¤ge.
+     Genom att skriva ett stort  O  Ã¶ppnas raden OVANFÃ–R raden som markÃ¶ren Ã¤r
+     pÃ¥.
 
-  2. Skriv ett  a  för att infoga text EFTER tecknet som markören står på.
-     Genom att skriva ett stort  A  läggs text automatiskt till i slutet på
+  2. Skriv ett  a  fÃ¶r att infoga text EFTER tecknet som markÃ¶ren stÃ¥r pÃ¥.
+     Genom att skriva ett stort  A  lÃ¤ggs text automatiskt till i slutet pÃ¥
      raden.
 
-  3. Genom att skriva ett stort  R  hamnar du i Ersätt-läge till  <ESC>  trycks
-     för att avsluta.
+  3. Genom att skriva ett stort  R  hamnar du i ErsÃ¤tt-lÃ¤ge till  <ESC>  trycks
+     fÃ¶r att avsluta.
 
-  4. Genom att skriva ":set xxx" sätts flaggan "xxx"
+  4. Genom att skriva ":set xxx" sÃ¤tts flaggan "xxx"
 
 
 
@@ -755,21 +755,21 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       LEKTION 1.7: ON-LINE HJÄLP-KOMMANDON
+		       LEKTION 1.7: ON-LINE HJÃ„LP-KOMMANDON
 
 
-		      ** Använd on-line hjälpsystemet **
+		      ** AnvÃ¤nd on-line hjÃ¤lpsystemet **
 
-  Vim har ett omfattande on-line hjälpsystem. För att komma igång pröva ett av
+  Vim har ett omfattande on-line hjÃ¤lpsystem. FÃ¶r att komma igÃ¥ng prÃ¶va ett av
   dessa tre:
-	- tryck <HELP> tangenten (om du har någon)
-	- tryck <F1> tangenten (om du har någon)
+	- tryck <HELP> tangenten (om du har nÃ¥gon)
+	- tryck <F1> tangenten (om du har nÃ¥gon)
 	- skriv   :help <ENTER>
 
-  Skriv   :q <ENTER>   för att stränga hjälpfönstret.
+  Skriv   :q <ENTER>   fÃ¶r att strÃ¤nga hjÃ¤lpfÃ¶nstret.
 
-  Du kan hitta hjälp om nästan allting, genom att ge ett argument till
-  ":help" kommandot. Pröva dessa (glöm inte att trycka <ENTER>):
+  Du kan hitta hjÃ¤lp om nÃ¤stan allting, genom att ge ett argument till
+  ":help" kommandot. PrÃ¶va dessa (glÃ¶m inte att trycka <ENTER>):
 
 	:help w
 	:help c_<T
@@ -782,14 +782,14 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 
 			  ** Aktivera Vim- funktioner **
 
-  Vim har många fler funktioner än Vi, men de flesta av dem är inaktiverade som
-  standard. För att börja använda fler funktioner måste du skapa en "vimrc"-fil.
+  Vim har mÃ¥nga fler funktioner Ã¤n Vi, men de flesta av dem Ã¤r inaktiverade som
+  standard. FÃ¶r att bÃ¶rja anvÃ¤nda fler funktioner mÃ¥ste du skapa en "vimrc"-fil.
 
-  1. Börja redigera "vimrc"-filen, detta beror på ditt system:
-	:edit ~/.vimrc		för Unix
-	:edit ~/_vimrc		för MS-Windows
+  1. BÃ¶rja redigera "vimrc"-filen, detta beror pÃ¥ ditt system:
+	:edit ~/.vimrc		fÃ¶r Unix
+	:edit ~/_vimrc		fÃ¶r MS-Windows
 
-  2. Läs nu texten i exempel "vimrc"-filen:
+  2. LÃ¤s nu texten i exempel "vimrc"-filen:
 
 	:read $VIMRUNTIME/vimrc_example.vim
 
@@ -797,34 +797,34 @@ Notera: Detta undviker att behöva skriva  i , det sista tecknet, texten att
 
 	:write
 
-  Nästa gång du startar Vim kommer den att använda syntaxframhävning.
-  Du kan lägga till alla inställningar du föredrar till den här "vimrc"-filen.
+  NÃ¤sta gÃ¥ng du startar Vim kommer den att anvÃ¤nda syntaxframhÃ¤vning.
+  Du kan lÃ¤gga till alla instÃ¤llningar du fÃ¶redrar till den hÃ¤r "vimrc"-filen.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Detta avslutar handledningen i Vim. Den var avsedd att ge en kort översikt av
-  redigeraren Vim, bara tillräckligt för att du ska kunna använda redigeraren
-  relativt enkelt. Den är långt ifrån komplett eftersom Vim har många många fler
-  kommandon. Läs användarmanualen härnäst: ":help user-manual".
+  Detta avslutar handledningen i Vim. Den var avsedd att ge en kort Ã¶versikt av
+  redigeraren Vim, bara tillrÃ¤ckligt fÃ¶r att du ska kunna anvÃ¤nda redigeraren
+  relativt enkelt. Den Ã¤r lÃ¥ngt ifrÃ¥n komplett eftersom Vim har mÃ¥nga mÃ¥nga fler
+  kommandon. LÃ¤s anvÃ¤ndarmanualen hÃ¤rnÃ¤st: ":help user-manual".
 
-  För vidare läsning rekommenderas den här boken:
+  FÃ¶r vidare lÃ¤sning rekommenderas den hÃ¤r boken:
 	Vim - Vi Improved - av Steve Oualline
-	Förlag: New Riders
-  Den första boken som är endast behandlar Vim. Speciellt användbar för
-  nybörjare. Det finns många exempel och bilder.
+	FÃ¶rlag: New Riders
+  Den fÃ¶rsta boken som Ã¤r endast behandlar Vim. Speciellt anvÃ¤ndbar fÃ¶r
+  nybÃ¶rjare. Det finns mÃ¥nga exempel och bilder.
   Se https://iccf-holland.org/click5.html
 
-  Den här boken är äldre och behandlar mer Vi än Vim, men rekommenderas också:
+  Den hÃ¤r boken Ã¤r Ã¤ldre och behandlar mer Vi Ã¤n Vim, men rekommenderas ocksÃ¥:
 	Learning the Vi Editor - av Linda Lamb
-	Förlag: O'Reilly & Associates Inc.
-  Det är en bra bok för att lära sig nästan allt som du vill kunna göra med Vi.
-  Den sjätte upplagan inkluderar också information om Vim.
+	FÃ¶rlag: O'Reilly & Associates Inc.
+  Det Ã¤r en bra bok fÃ¶r att lÃ¤ra sig nÃ¤stan allt som du vill kunna gÃ¶ra med Vi.
+  Den sjÃ¤tte upplagan inkluderar ocksÃ¥ information om Vim.
 
-  Den här handledningen är skriven av Michael C. Pierce och Robert K. Ware,
-  Colorado School of Mines med idéer från Charles Smith,
+  Den hÃ¤r handledningen Ã¤r skriven av Michael C. Pierce och Robert K. Ware,
+  Colorado School of Mines med idÃ©er frÃ¥n Charles Smith,
   Colorado State University.  E-post: bware@mines.colorado.edu.
 
-  Modifierad för Vim av Bram Moolenaar.
-  Översatt av Johan Svedberg <johan@svedberg.com>
+  Modifierad fÃ¶r Vim av Bram Moolenaar.
+  Ã–versatt av Johan Svedberg <johan@svedberg.com>
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

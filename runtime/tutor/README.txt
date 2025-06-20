@@ -27,18 +27,8 @@ The chapter two of the tutorial was written by Paul D. Parker.
 
 Translation
 -----------
-The files tutor1.xx and tutor1.xx.utf-8 for chapter one and tutor2.xx and
-tutor2.xx.utf-8 for chapter two of the tutorial are translated files (where xx
-is the language code).
-The encoding of tutor1.xx or tutor2.xx might be latin1 or other traditional
-encoding.  If you don't need a translation with such traditional encoding,
-you just need to prepare the tutor1.xx.utf-8 or tutor2.xx.utf-8 file.
-If you need another encoding, you can also prepare a file named tutor1.xx.enc or
-tutor2.xx.enc (replace enc with the actual encoding name).  You might also need
-to adjust the tutor.vim file.
-The "make" command can be used for creating tutor1.xx or tutor2.xx from
-tutor.xx.utf-8 or tutor2.xx.utf-8, respectively.
-See the Makefile for detail.  (For some languages, tutor1.xx.utf-8 is created
-from tutor1.xx for historical reasons.)
+The files tutor1.xx for chapter one and tutor2.xx chapter two of the tutorial
+are translated files (where xx is the language code).
+The encoding of tutor1.xx and tutor2.xx must be utf-8.
 
 [This file was modified for Vim by Bram Moolenaar et al.]
