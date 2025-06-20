@@ -19,16 +19,17 @@ gc{motion}	to toggle comments for the selected motion
 
 Since gc operates on a motion, it can be used with any motion, for example _
 to comment the current line, or ip to comment the current paragraph.
-A default mapping `gcc` to `gc_` is defined:
+Default mappings are defined for `gc_` and `gc$`:
 							*gcc*
-gcc		to comment/uncomment current line
+gcc		to comment/uncomment current line (same as `gc_`)
 
-To comment the rest of the line by  `gC`  whenever the filetype plugin
-supports it (that is, whenever the comment marker precedes the code) and fall
-back to `gcc` otherwise, add the following mapping to your vimrc: >
+							*gC*
+gC              to comment/uncomment to end of current line (same as `gc$`)
 
-	nnoremap <silent> <expr> gC comment#Toggle() .. '$'
-<
+Commenting to the end of a line using `gC` works whenever the filetype plugin
+supports it (that is, whenever the comment marker precedes the code) and falls
+back to `gcc` otherwise.
+
 Note: using `gC` may not always result in valid comment markers depending on
 the language used.
 
@@ -105,7 +106,7 @@ keyboard mappings.
     Normal mode only, mapped to gcc by default
 
 *<Plug>(comment-toggle-end)*
-    Normal mode only, not mapped by default
+    Normal mode only, mapped to gC by default
 
 *<Plug>(comment-text-object-inner)*
     Operator pending and visual modes, mapped to ic by default
@@ -119,16 +120,12 @@ to customise them in your vimrc:
     nmap gc <Plug>(comment-toggle)
     xmap gc <Plug>(comment-toggle)
     nmap gcc <Plug>(comment-toggle-line)
+    nmap gC <Plug>(comment-toggle-end)
 
     omap ic <Plug>(comment-text-object-inner)
     omap ac <Plug>(comment-text-object-outer)
     xmap ic <Plug>(comment-text-object-inner)
     xmap ac <Plug>(comment-text-object-outer)
-<
-As there is no default mapping for <Plug>(comment-toggle-end), to enable this
-you must add a mapping to your vimrc, e.g.
->
-     nmap gC <Plug>(comment-toggle-end)
 <
 ==============================================================================
 vim:tw=78:ts=8:fo=tcq2:ft=help:

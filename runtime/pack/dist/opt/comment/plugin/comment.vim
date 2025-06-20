@@ -19,6 +19,7 @@ if get(g:, 'comment_mappings', true)
   nmap gc <Plug>(comment-toggle)
   xmap gc <Plug>(comment-toggle)
   nmap gcc <Plug>(comment-toggle-line)
+  nmap gC <Plug>(comment-toggle-end)
 
   omap ic <Plug>(comment-text-object-inner)
   omap ac <Plug>(comment-text-object-outer)
