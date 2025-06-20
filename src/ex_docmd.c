@@ -4850,7 +4850,8 @@ invalid_range(exarg_T *eap)
 	    case ADDR_LINES:
 		if (eap->line2 > curbuf->b_ml.ml_line_count
 #ifdef FEAT_DIFF
-			    + (eap->cmdidx == CMD_diffget)
+			    + (eap->cmdidx == CMD_diffget ||
+				eap->cmdidx == CMD_diffput)
 #endif
 		   )
 		    return _(e_invalid_range);
