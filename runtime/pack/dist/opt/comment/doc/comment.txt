@@ -85,6 +85,13 @@ Options:
     Use g:comment_first_col to change it globally or b:comment_first_col to
     target specific filetype(s).
 
+*g:comment_mappings*
+    Set to false to disable the default keyboard mappings, e.g. in your vimrc
+>
+        let g:comment_mappings = v:false
+<
+    This option must be set before the package is activated using |packadd|.
+
 ==============================================================================
 Mappings:
 

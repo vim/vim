@@ -10,16 +10,18 @@ xnoremap <silent> <expr> <Plug>(comment-toggle) comment.Toggle()
 nnoremap <silent> <expr> <Plug>(comment-toggle-line) comment.Toggle() .. '_'
 nnoremap <silent> <expr> <Plug>(comment-toggle-end) comment.Toggle() .. '$'
 
-nmap gc <Plug>(comment-toggle)
-xmap gc <Plug>(comment-toggle)
-nmap gcc <Plug>(comment-toggle-line)
-
 onoremap <silent> <Plug>(comment-text-object-inner) <scriptcmd>comment.ObjComment(v:true)<CR>
 onoremap <silent> <Plug>(comment-text-object-outer) <scriptcmd>comment.ObjComment(v:false)<CR>
 xnoremap <silent> <Plug>(comment-text-object-inner) <esc><scriptcmd>comment.ObjComment(v:true)<CR>
 xnoremap <silent> <Plug>(comment-text-object-outer) <esc><scriptcmd>comment.ObjComment(v:false)<CR>
 
-omap ic <Plug>(comment-text-object-inner)
-omap ac <Plug>(comment-text-object-outer)
-xmap ic <Plug>(comment-text-object-inner)
-xmap ac <Plug>(comment-text-object-outer)
+if get(g:, 'comment_mappings', true)
+  nmap gc <Plug>(comment-toggle)
+  xmap gc <Plug>(comment-toggle)
+  nmap gcc <Plug>(comment-toggle-line)
+
+  omap ic <Plug>(comment-text-object-inner)
+  omap ac <Plug>(comment-text-object-outer)
+  xmap ic <Plug>(comment-text-object-inner)
+  xmap ac <Plug>(comment-text-object-outer)
+endif
