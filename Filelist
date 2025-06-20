@@ -1096,6 +1096,7 @@ LANG_GEN = \
 		runtime/tutor/sr/vim-02-beginner.tutor \
 		runtime/tutor/sr/vim-02-beginner.tutor.json \
 		runtime/tutor/tutor1.?? \
+		runtime/tutor/tutor1.??_?? \
 		runtime/tutor/tutor1.bar \
 		runtime/tutor/tutor2.?? \
 		runtime/spell/README.txt \
