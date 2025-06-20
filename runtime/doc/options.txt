@@ -9726,14 +9726,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wildcharm'* *'wcm'*
 'wildcharm' 'wcm'	number	(default: none (0))
 			global
-	'wildcharm' works exactly like 'wildchar', except that it is
-	recognized when used inside a macro.  You can find "spare" command-line
-	keys suitable for this option by looking at |ex-edit-index|.  Normally
-	you'll never actually type 'wildcharm', just use it in mappings that
-	automatically invoke completion mode, e.g.: >
+	'wildcharm' works exactly like 'wildchar' |'wildchar'|, but with two
+	key differences:
+	1. It is recognized when used inside a macro.  Use it in mappings that
+	   automatically invoke completion mode.  For example: >
 		:set wcm=<C-Z>
-		:cnoremap ss so $vim/sessions/*.vim<C-Z>
-<	Then after typing :ss you can use CTRL-P & CTRL-N.
+		:cnoremap ss so $VIM/sessions/*.vim<C-Z>
+<	   Then after typing :ss you can use CTRL-P & CTRL-N.
+	2. Unlike 'wildchar', 'wildcharm' enables completion in search pattern
+	   contexts such as |/|, |?|, |:s|, |:g|, |:v|, and |:vim|.
+	   To trigger wildmenu completion in these cases, simply type the key
+	   assigned to 'wildcharm' after typing the initial part of your
+	   search pattern.  For example, if `wcm=<C-Z>`: >
+		/foo<C-Z>
+<	You can find "spare" command-line keys suitable for this option by
+	looking at |ex-edit-index|.
 
 						*'wildignore'* *'wig'*
 'wildignore' 'wig'	string	(default "")
