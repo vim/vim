@@ -783,6 +783,11 @@ show_one_mark(
 	if (name == NULL && current)
 	{
 	    name = mark_line(p, 15);
+	    if (name == NULL)
+	    {
+		emsg(_(e_out_of_memory));
+		return;
+	    }
 	    mustfree = TRUE;
 	}
 	if (!message_filtered(name))
