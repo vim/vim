@@ -422,6 +422,7 @@ EXTERN char_u	*p_ofu;		// 'omnifunc'
 EXTERN char_u	*p_tsrfu;	// 'thesaurusfunc'
 #endif
 EXTERN int	p_ci;		// 'copyindent'
+EXTERN int	p_cptgst;	// 'copytagstack'
 #if defined(FEAT_GUI) && defined(MACOS_X)
 EXTERN int	*p_antialias;	// 'antialias'
 #endif

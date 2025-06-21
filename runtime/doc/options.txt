@@ -2356,6 +2356,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 	Also see 'preserveindent'.
 
+				*'copytagstack'* *'cptgst'* *'nocopytagstack'* *'nocptgst'*
+'copytagstack' 'cptgst'		boolean	(default: on)
+				global
+	Copy tag stack when splitting window.
+
 						*'cpoptions'* *'cpo'* *cpo*
 'cpoptions' 'cpo'	string	(Vim default: "aABceFsz",
 				 Vi default:  all flags, except "#{|&/\."
