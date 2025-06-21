@@ -7,13 +7,12 @@ GEN_SRC = $(addsuffix .c,$(GEN_NAMES))
 GEN_INCLUDE = $(addsuffix .h,$(GEN_NAMES))
 GEN_XML = $(addprefix protocols/,$(addsuffix .xml,$(GEN_NAMES)))
 
-SCANNER := $(shell command -v wayland-scanner 2> /dev/null)
-
 # Default target
 all: $(GEN_SRC) $(GEN_INCLUDE)
-ifndef SCANNER
-	$(error "wayland-scanner not available, cannot generate protocol files")
-endif
+	@if ! command -v wayland-scanner 2>&1 > /dev/null ; then \
+		echo "wayland-scanner not available, cannot generate protocol files"; \
+		false; \
+	fi
 
 %.c:
 	wayland-scanner private-code $(addprefix protocols/,$(patsubst %.c,%.xml,$@)) $@
