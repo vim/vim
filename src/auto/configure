@@ -676,6 +676,9 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+WAYLAND_OBJ
+WAYLAND_SRC
+WAYLAND_LIBS
 TERM_TEST
 TERM_OBJ
 TERM_SRC
@@ -854,6 +857,7 @@ enable_arabic
 enable_farsi
 enable_xim
 enable_fontset
+with_wayland
 with_x
 enable_gui
 enable_gtk2_check
@@ -1575,6 +1579,7 @@ Optional Packages:
   --with-python3-config-dir=PATH  Python's config directory (deprecated)
   --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)
   --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
+  --with-wayland	  Include support for the Wayland protocol.
   --with-x                use the X Window System
   --with-gnome-includes=DIR Specify location of GNOME headers
   --with-gnome-libs=DIR   Specify location of GNOME libs
@@ -9057,6 +9062,158 @@ fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_fontset" >&5
 printf "%s\n" "$enable_fontset" >&6; }
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if shm_open is available" >&5
+printf %s "checking if shm_open is available... " >&6; }
+cppflags_save=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mman.h>
+		    #include <sys/stat.h>
+		    #include <fcntl.h>
+int
+main (void)
+{
+shm_open("/test", O_CREAT, 0600);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }; printf "%s\n" "#define HAVE_SHM_OPEN 1" >>confdefs.h
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+CPPFLAGS=$cppflags_save
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-wayland argument" >&5
+printf %s "checking --with-wayland argument... " >&6; }
+
+# Check whether --with-wayland was given.
+if test ${with_wayland+y}
+then :
+  withval=$with_wayland;
+fi
+
+
+test -z "$with_wayland" && with_wayland=yes
+if test "$with_wayland" = yes; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if wayland client header files can be found" >&5
+printf %s "checking if wayland client header files can be found... " >&6; }
+  cppflags_save=$CPPFLAGS
+  CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <wayland-client.h>
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }; no_wl=yes ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+  CPPFLAGS=$cppflags_save
+
+  if test "$no_wl" = yes; then
+    with_wayland=no
+  else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for wl_display_connect in -lwayland-client" >&5
+printf %s "checking for wl_display_connect in -lwayland-client... " >&6; }
+if test ${ac_cv_lib_wayland_client_wl_display_connect+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwayland-client  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char wl_display_connect (void);
+int
+main (void)
+{
+return wl_display_connect ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_wayland_client_wl_display_connect=yes
+else case e in #(
+  e) ac_cv_lib_wayland_client_wl_display_connect=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_wayland_client_wl_display_connect" >&5
+printf "%s\n" "$ac_cv_lib_wayland_client_wl_display_connect" >&6; }
+if test "x$ac_cv_lib_wayland_client_wl_display_connect" = xyes
+then :
+  no_wl=no
+fi
+
+
+    if test "$no_wl" = no; then
+      printf "%s\n" "#define HAVE_WAYLAND 1" >>confdefs.h
+
+      WAYLAND_LIBS="-lwayland-client";
+
+      WAYLAND_SRC=" \
+	      auto/wayland/wlr-data-control-unstable-v1.c \
+	      auto/wayland/ext-data-control-v1.c \
+	      auto/wayland/xdg-shell.c \
+	      auto/wayland/primary-selection-unstable-v1.c \
+	      wayland.c"
+
+      WAYLAND_OBJ=" \
+	      objects/wlr-data-control-unstable-v1.o \
+	      objects/ext-data-control-v1.o \
+	      objects/xdg-shell.o \
+	      objects/primary-selection-unstable-v1.o \
+	      objects/wayland.o"
+
+
+    else
+      with_wayland=no
+    fi
+  fi
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
 
 test -z "$with_x" && with_x=yes
 test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes

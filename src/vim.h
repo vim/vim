@@ -194,6 +194,10 @@
 # define FEAT_X11
 #endif
 
+#if defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
+#define FEAT_WAYLAND
+#endif
+
 #ifdef NO_X11_INCLUDES
     // In os_mac_conv.c and os_macosx.m NO_X11_INCLUDES is defined to avoid
     // X11 headers.  Disable all X11 related things to avoid conflicts.
@@ -2224,7 +2228,9 @@ typedef int sock_T;
 #define VV_TYPE_ENUMVALUE 109
 #define VV_STACKTRACE	110
 #define VV_TYPE_TUPLE	111
-#define VV_LEN		112	// number of v: vars
+#define VV_WAYLAND_DISPLAY 112
+#define VV_CLIPMETHOD 113
+#define VV_LEN		114	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2278,6 +2284,13 @@ typedef int sock_T;
 #   define WM_OLE (WM_APP+0)
 #  endif
 # endif
+
+typedef enum {
+    CLIPMETHOD_FAIL,
+    CLIPMETHOD_NONE,
+    CLIPMETHOD_WAYLAND,
+    CLIPMETHOD_X11,
+} clipmethod_T;
 
 // Info about selected text
 typedef struct
