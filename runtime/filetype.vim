@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2025 Jun 03
+" Last Change:		2025 Jun 18
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -308,6 +308,12 @@ au BufNewFile,BufRead *.bb,*.bbappend,*.bbclass,*/build/conf/*.conf,*/meta{-*,}/
 
 " Blkid cache file
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
+
+" Brighterscript
+au BufNewFile,BufRead *.bs			setf brighterscript
+
+" Brightscript
+au BufNewFile,BufRead *.brs			setf brightscript
 
 " BSDL
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
@@ -1420,7 +1426,7 @@ au BufNewFile,BufRead */etc/sensors.conf,*/etc/sensors3.conf	setf sensors
 " LFTP
 au BufNewFile,BufRead lftp.conf,.lftprc,*lftp/rc	setf lftp
 
-" Lifelines (or Lex for C++!)
+" Lifelines, LLVM, or Lex for C++
 au BufNewFile,BufRead *.ll			call dist#ft#FTll()
 
 " Lilo: Linux loader

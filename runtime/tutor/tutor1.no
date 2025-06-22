@@ -1,115 +1,115 @@
 ===============================================================================
-= V e l k o m m e n   t i l   i n n f ø r i n g e n   i   V i m  --  Ver. 1.7 =
+= V e l k o m m e n   t i l   i n n f Ã¸ r i n g e n   i   V i m  --  Ver. 1.7 =
 ===============================================================================
 
-     Vim er en meget kraftig editor med mange kommandoer, alt for mange til å
-     kunne gå gjennom alle i en innføring som denne. Den er beregnet på å
-     sette deg inn i bruken av nok kommandoer så du vil være i stand til lett
-     å kunne bruke Vim som en editor til alle formål.
+     Vim er en meget kraftig editor med mange kommandoer, alt for mange til Ã¥
+     kunne gÃ¥ gjennom alle i en innfÃ¸ring som denne. Den er beregnet pÃ¥ Ã¥
+     sette deg inn i bruken av nok kommandoer sÃ¥ du vil vÃ¦re i stand til lett
+     Ã¥ kunne bruke Vim som en editor til alle formÃ¥l.
 
-     Tiden som kreves for å gå gjennom denne innføringen tar ca. 25-30
+     Tiden som kreves for Ã¥ gÃ¥ gjennom denne innfÃ¸ringen tar ca. 25-30
      minutter, avhengig av hvor mye tid du bruker til eksperimentering.
 
      MERK:
      Kommandoene i leksjonene vil modifisere teksten. Lag en kopi av denne
-     filen som du kan øve deg på (hvis du kjørte «vimtutor»-kommandoen, er
+     filen som du kan Ã¸ve deg pÃ¥ (hvis du kjÃ¸rte Â«vimtutorÂ»-kommandoen, er
      dette allerede en kopi).
 
-     Det er viktig å huske at denne innføringen er beregnet på læring gjennom
-     bruk. Det betyr at du må utføre kommandoene for å lære dem skikkelig.
+     Det er viktig Ã¥ huske at denne innfÃ¸ringen er beregnet pÃ¥ lÃ¦ring gjennom
+     bruk. Det betyr at du mÃ¥ utfÃ¸re kommandoene for Ã¥ lÃ¦re dem skikkelig.
      Hvis du bare leser teksten, vil du glemme kommandoene!
 
-     Først av alt, sjekk at «Caps Lock» IKKE er aktiv og trykk «j»-tasten for
-     å flytte markøren helt til leksjon 1.1.1 fyller skjermen.
+     FÃ¸rst av alt, sjekk at Â«Caps LockÂ» IKKE er aktiv og trykk Â«jÂ»-tasten for
+     Ã¥ flytte markÃ¸ren helt til leksjon 1.1.1 fyller skjermen.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Leksjon 1.1.1:  FLYTTING AV MARKØREN
+		      Leksjon 1.1.1:  FLYTTING AV MARKÃ˜REN
 
 
-       ** For å flytte markøren, trykk tastene h, j, k, l som vist. **
+       ** For Ã¥ flytte markÃ¸ren, trykk tastene h, j, k, l som vist. **
 	     ^
 	     k		Tips: h-tasten er til venstre og flytter til venstre.
-       < h	 l >	      l-tasten er til høyre og flytter til høyre.
+       < h	 l >	      l-tasten er til hÃ¸yre og flytter til hÃ¸yre.
 	     j		      j-tasten ser ut som en pil som peker nedover.
 	     v
-  1. Flytt markøren rundt på skjermen til du har fått det inn i fingrene.
+  1. Flytt markÃ¸ren rundt pÃ¥ skjermen til du har fÃ¥tt det inn i fingrene.
 
   2. Hold inne nedovertasten (j) til den repeterer.
-     Nå vet du hvordan du beveger deg til neste leksjon.
+     NÃ¥ vet du hvordan du beveger deg til neste leksjon.
 
-  3. Gå til leksjon 1.1.2 ved hjelp av nedovertasten.
+  3. GÃ¥ til leksjon 1.1.2 ved hjelp av nedovertasten.
 
-Merk: Hvis du blir usikker på noe du har skrevet, trykk <ESC> for å gå til
-      normalmodus. Skriv deretter kommandoen du ønsket på nytt.
+Merk: Hvis du blir usikker pÃ¥ noe du har skrevet, trykk <ESC> for Ã¥ gÃ¥ til
+      normalmodus. Skriv deretter kommandoen du Ã¸nsket pÃ¥ nytt.
 
-Merk: Piltastene skal også virke. Men ved å bruke hjkl vil du være i stand til
-      å bevege markøren mye raskere når du er blitt vant til det. Helt sant!
+Merk: Piltastene skal ogsÃ¥ virke. Men ved Ã¥ bruke hjkl vil du vÃ¦re i stand til
+      Ã¥ bevege markÃ¸ren mye raskere nÃ¥r du er blitt vant til det. Helt sant!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  Leksjon 1.1.2: AVSLUTTE VIM
 
 
-  !! MERK: Før du utfører noen av punktene nedenfor, les hele leksjonen!!
+  !! MERK: FÃ¸r du utfÃ¸rer noen av punktene nedenfor, les hele leksjonen!!
 
-  1. Trykk <ESC>-tasten (for å forsikre deg om at du er i normalmodus).
+  1. Trykk <ESC>-tasten (for Ã¥ forsikre deg om at du er i normalmodus).
 
   2. Skriv:	:q! <ENTER>.
      Dette avslutter editoren og FORKASTER alle forandringer som du har gjort.
 
-  3. Når du ser kommandolinjen i skallet, skriv kommandoen som startet denne
-     innføringen. Den er:   vimtutor <ENTER>
+  3. NÃ¥r du ser kommandolinjen i skallet, skriv kommandoen som startet denne
+     innfÃ¸ringen. Den er:   vimtutor <ENTER>
 
-  4. Hvis du er sikker på at du husker dette, utfør punktene 1 til 3 for å
-     avslutte og starte editoren på nytt.
+  4. Hvis du er sikker pÃ¥ at du husker dette, utfÃ¸r punktene 1 til 3 for Ã¥
+     avslutte og starte editoren pÃ¥ nytt.
 
-MERK:  :q! <ENTER>  forkaster alle forandringer som du gjorde. I løpet av noen
-       få leksjoner vil du lære hvordan du lagrer forandringene til en fil.
+MERK:  :q! <ENTER>  forkaster alle forandringer som du gjorde. I lÃ¸pet av noen
+       fÃ¥ leksjoner vil du lÃ¦re hvordan du lagrer forandringene til en fil.
 
-  5. Flytt markøren ned til leksjon 1.1.3.
+  5. Flytt markÃ¸ren ned til leksjon 1.1.3.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		 Leksjon 1.1.3: REDIGERING AV TEKST -- SLETTING
 
 
-	     ** Trykk  x  for å slette tegnet under markøren. **
+	     ** Trykk  x  for Ã¥ slette tegnet under markÃ¸ren. **
 
-  1. Flytt markøren til den første linjen merket med  --->.
+  1. Flytt markÃ¸ren til den fÃ¸rste linjen merket med  --->.
 
-  2. For å ordne feilene på linjen, flytt markøren til den er oppå tegnet som
+  2. For Ã¥ ordne feilene pÃ¥ linjen, flytt markÃ¸ren til den er oppÃ¥ tegnet som
      skal slettes.
 
-  3. Trykk tasten  x  for å slette det uønskede tegnet.
+  3. Trykk tasten  x  for Ã¥ slette det uÃ¸nskede tegnet.
 
   4. Repeter punkt 2 til 4 til setningen er lik den som er under.
 
----> Hessstennnn brrråsnudddde ii gaaata.
----> Hesten bråsnudde i gata.
+---> Hessstennnn brrrÃ¥snudddde ii gaaata.
+---> Hesten brÃ¥snudde i gata.
 
-  5. Nå som linjen er korrekt, gå til leksjon 1.1.4.
+  5. NÃ¥ som linjen er korrekt, gÃ¥ til leksjon 1.1.4.
 
-MERK: Når du går gjennom innføringen, ikke bare prøv å huske kommandoene, men
+MERK: NÃ¥r du gÃ¥r gjennom innfÃ¸ringen, ikke bare prÃ¸v Ã¥ huske kommandoene, men
       bruk dem helt til de sitter.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		Leksjon 1.1.4: REDIGERING AV TEKST -- INNSETTING
 
 
-		    ** Trykk  i  for å sette inn tekst. **
+		    ** Trykk  i  for Ã¥ sette inn tekst. **
 
-  1. Flytt markøren til den første linjen som er merket med --->.
+  1. Flytt markÃ¸ren til den fÃ¸rste linjen som er merket med --->.
 
-  2. For å gjøre den første linjen lik den andre, flytt markøren til den står
-     på tegnet ETTER posisjonen der teksten skal settes inn.
+  2. For Ã¥ gjÃ¸re den fÃ¸rste linjen lik den andre, flytt markÃ¸ren til den stÃ¥r
+     pÃ¥ tegnet ETTER posisjonen der teksten skal settes inn.
 
   3. Trykk  i  og skriv inn teksten som mangler.
 
-  4. Etterhvert som hver feil er fikset, trykk <ESC> for å returnere til
+  4. Etterhvert som hver feil er fikset, trykk <ESC> for Ã¥ returnere til
      normalmodus. Repeter punkt 2 til 4 til setningen er korrekt.
 
 ---> Det er tkst som mnglr .
 ---> Det er ganske mye tekst som mangler her.
 
-  5. Når du føler deg komfortabel med å sette inn tekst, gå til oppsummeringen
+  5. NÃ¥r du fÃ¸ler deg komfortabel med Ã¥ sette inn tekst, gÃ¥ til oppsummeringen
      nedenfor.
 
 
@@ -117,111 +117,111 @@ MERK: Når du går gjennom innføringen, ikke bare prøv å huske kommandoene, men
 		Leksjon 1.1.5: REDIGERING AV TEKST -- LEGGE TIL
 
 
-		    ** Trykk  A  for å legge til tekst. **
+		    ** Trykk  A  for Ã¥ legge til tekst. **
 
-  1. Flytt markøren til den første linjen nedenfor merket --->.
-     Det har ikke noe å si hvor markøren er plassert på den linjen.
+  1. Flytt markÃ¸ren til den fÃ¸rste linjen nedenfor merket --->.
+     Det har ikke noe Ã¥ si hvor markÃ¸ren er plassert pÃ¥ den linjen.
 
   2. Trykk  A  og skriv inn det som skal legges til.
 
-  3. Når teksten er lagt til, trykk <ESC> for å returnere til normalmodusen.
+  3. NÃ¥r teksten er lagt til, trykk <ESC> for Ã¥ returnere til normalmodusen.
 
-  4. Flytt markøren til den andre linjen markert med ---> og repeter steg 2 og
-     3 for å reparere denne setningen.
+  4. Flytt markÃ¸ren til den andre linjen markert med ---> og repeter steg 2 og
+     3 for Ã¥ reparere denne setningen.
 
 ---> Det mangler noe tekst p
-     Det mangler noe tekst på denne linjen.
----> Det mangler også litt tek
-     Det mangler også litt tekst på denne linjen.
+     Det mangler noe tekst pÃ¥ denne linjen.
+---> Det mangler ogsÃ¥ litt tek
+     Det mangler ogsÃ¥ litt tekst pÃ¥ denne linjen.
 
-  5. Når du føler at du behersker å legge til tekst, gå til leksjon 1.1.6.
+  5. NÃ¥r du fÃ¸ler at du behersker Ã¥ legge til tekst, gÃ¥ til leksjon 1.1.6.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Leksjon 1.1.6: REDIGERE EN FIL
 
 
-	       ** Bruk	:wq  for å lagre en fil og avslutte. **
+	       ** Bruk	:wq  for Ã¥ lagre en fil og avslutte. **
 
-  !! MERK: Før du utfører noen av stegene nedenfor, les hele denne leksjonen!!
+  !! MERK: FÃ¸r du utfÃ¸rer noen av stegene nedenfor, les hele denne leksjonen!!
 
-  1. Avslutt denne innføringen som du gjorde i leksjon 1.1.2:  :q!
+  1. Avslutt denne innfÃ¸ringen som du gjorde i leksjon 1.1.2:  :q!
 
-  2. Skriv denne kommandoen på kommandolinja:  vim tutor <ENTER>
-     «vim» er kommandoen for å starte Vim-editoren, «tutor» er navnet på fila
+  2. Skriv denne kommandoen pÃ¥ kommandolinja:  vim tutor <ENTER>
+     Â«vimÂ» er kommandoen for Ã¥ starte Vim-editoren, Â«tutorÂ» er navnet pÃ¥ fila
      som du vil redigere. Bruk en fil som kan forandres.
 
-  3. Sett inn og slett tekst som du lærte i de foregående leksjonene.
+  3. Sett inn og slett tekst som du lÃ¦rte i de foregÃ¥ende leksjonene.
 
   4. Lagre filen med forandringene og avslutt Vim med:	:wq <ENTER>
 
-  5. Start innføringen på nytt og flytt ned til oppsummeringen som følger.
+  5. Start innfÃ¸ringen pÃ¥ nytt og flytt ned til oppsummeringen som fÃ¸lger.
 
-  6. Etter å ha lest og forstått stegene ovenfor: Sett i gang.
+  6. Etter Ã¥ ha lest og forstÃ¥tt stegene ovenfor: Sett i gang.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  OPPSUMMERING AV LEKSJON 1.1
 
 
-  1. Markøren beveges ved hjelp av piltastene eller hjkl-tastene.
-	 h (venstre)	 j (ned)     k (opp)	 l (høyre)
+  1. MarkÃ¸ren beveges ved hjelp av piltastene eller hjkl-tastene.
+	 h (venstre)	 j (ned)     k (opp)	 l (hÃ¸yre)
 
-  2. For å starte Vim fra skall-kommandolinjen, skriv:	vim FILNAVN <ENTER>
+  2. For Ã¥ starte Vim fra skall-kommandolinjen, skriv:	vim FILNAVN <ENTER>
 
-  3. For å avslutte Vim, skriv:  <ESC> :q! <ENTER>  for å forkaste endringer.
-		   ELLER skriv:  <ESC> :wq <ENTER>  for å lagre forandringene.
+  3. For Ã¥ avslutte Vim, skriv:  <ESC> :q! <ENTER>  for Ã¥ forkaste endringer.
+		   ELLER skriv:  <ESC> :wq <ENTER>  for Ã¥ lagre forandringene.
 
-  4. For å slette tegnet under markøren, trykk:  x
+  4. For Ã¥ slette tegnet under markÃ¸ren, trykk:  x
 
-  5. For å sette inn eller legge til tekst, trykk:
-	 i    skriv innsatt tekst  <ESC>	sett inn før markøren
-	 A    skriv tillagt tekst  <ESC>	legg til på slutten av linjen
+  5. For Ã¥ sette inn eller legge til tekst, trykk:
+	 i    skriv innsatt tekst  <ESC>	sett inn fÃ¸r markÃ¸ren
+	 A    skriv tillagt tekst  <ESC>	legg til pÃ¥ slutten av linjen
 
-MERK: Når du trykker <ESC> går du til normalmodus eller du avbryter en uønsket
-      og delvis fullført kommando.
+MERK: NÃ¥r du trykker <ESC> gÃ¥r du til normalmodus eller du avbryter en uÃ¸nsket
+      og delvis fullfÃ¸rt kommando.
 
-  Nå kan du gå videre til leksjon 1.2.
+  NÃ¥ kan du gÃ¥ videre til leksjon 1.2.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Leksjon 1.2.1: SLETTEKOMMANDOER
 
 
-		    ** Trykk  dw  for å slette et ord. **
+		    ** Trykk  dw  for Ã¥ slette et ord. **
 
-  1. Trykk <ESC> for å være sikker på at du er i normalmodus.
+  1. Trykk <ESC> for Ã¥ vÃ¦re sikker pÃ¥ at du er i normalmodus.
 
-  2. Flytt markøren til den første linjen nedenfor merket --->.
+  2. Flytt markÃ¸ren til den fÃ¸rste linjen nedenfor merket --->.
 
-  3. Flytt markøren til begynnelsen av ordet som skal slettes.
+  3. Flytt markÃ¸ren til begynnelsen av ordet som skal slettes.
 
   4. Trykk  dw	og ordet vil forsvinne.
 
-MERK: Bokstaven  d  vil komme til syne på den nederste linjen på skjermen når
-      du skriver den. Vim venter på at du skal skrive w . Hvis du ser et annet
-      tegn enn	d  har du skrevet noe feil; trykk <ESC> og start på nytt.
+MERK: Bokstaven  d  vil komme til syne pÃ¥ den nederste linjen pÃ¥ skjermen nÃ¥r
+      du skriver den. Vim venter pÃ¥ at du skal skrive w . Hvis du ser et annet
+      tegn enn	d  har du skrevet noe feil; trykk <ESC> og start pÃ¥ nytt.
 
----> Det er agurk tre ord eple som ikke hører pære hjemme i denne setningen.
----> Det er tre ord som ikke hører hjemme i denne setningen.
+---> Det er agurk tre ord eple som ikke hÃ¸rer pÃ¦re hjemme i denne setningen.
+---> Det er tre ord som ikke hÃ¸rer hjemme i denne setningen.
 
-  5. Repeter punkt 3 og 4 til den første setningen er lik den andre. Gå
+  5. Repeter punkt 3 og 4 til den fÃ¸rste setningen er lik den andre. GÃ¥
      deretter til leksjon 1.2.2.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		     Leksjon 1.2.2: FLERE SLETTEKOMMANDOER
 
 
-	     ** Trykk  d$  for å slette til slutten av linjen. **
+	     ** Trykk  d$  for Ã¥ slette til slutten av linjen. **
 
-  1. Trykk <ESC> for å være sikker på at du er i normalmodus.
+  1. Trykk <ESC> for Ã¥ vÃ¦re sikker pÃ¥ at du er i normalmodus.
 
-  2. Flytt markøren til linjen nedenfor merket --->.
+  2. Flytt markÃ¸ren til linjen nedenfor merket --->.
 
-  3. Flytt markøren til punktet der linjen skal kuttes (ETTER første punktum).
+  3. Flytt markÃ¸ren til punktet der linjen skal kuttes (ETTER fÃ¸rste punktum).
 
-  4. Trykk  d$	for å slette alt til slutten av linjen.
+  4. Trykk  d$	for Ã¥ slette alt til slutten av linjen.
 
----> Noen skrev slutten på linjen en gang for mye. linjen en gang for mye.
+---> Noen skrev slutten pÃ¥ linjen en gang for mye. linjen en gang for mye.
 
-  5. Gå til leksjon 1.2.3 for å forstå hva som skjer.
+  5. GÃ¥ til leksjon 1.2.3 for Ã¥ forstÃ¥ hva som skjer.
 
 
 
@@ -239,107 +239,107 @@ MERK: Bokstaven  d  vil komme til syne på den nederste linjen på skjermen når
 
   Der:
     d	      - er sletteoperatoren.
-    bevegelse - er hva operatoren vil opere på (listet nedenfor).
+    bevegelse - er hva operatoren vil opere pÃ¥ (listet nedenfor).
 
   En kort liste med bevegelser:
-    w - til starten av det neste ordet, UNNTATT det første tegnet.
-    e - til slutten av det nåværende ordet, INKLUDERT det siste tegnet.
+    w - til starten av det neste ordet, UNNTATT det fÃ¸rste tegnet.
+    e - til slutten av det nÃ¥vÃ¦rende ordet, INKLUDERT det siste tegnet.
     $ - til slutten av linjen, INKLUDERT det siste tegnet.
 
-  Ved å skrive	de  vil altså alt fra markøren til slutten av ordet bli
+  Ved Ã¥ skrive	de  vil altsÃ¥ alt fra markÃ¸ren til slutten av ordet bli
   slettet.
 
-MERK:  Ved å skrive kun bevegelsen i normalmodusen uten en operator vil
-       markøren flyttes som spesifisert.
+MERK:  Ved Ã¥ skrive kun bevegelsen i normalmodusen uten en operator vil
+       markÃ¸ren flyttes som spesifisert.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		 LEKSJON 1.2.4: BRUK AV TELLER FOR EN BEVEGELSE
 
 
- ** Ved å skrive et tall foran en bevegelse repeterer den så mange ganger. **
+ ** Ved Ã¥ skrive et tall foran en bevegelse repeterer den sÃ¥ mange ganger. **
 
-  1. Flytt markøren til starten av linjen markert ---> nedenfor.
+  1. Flytt markÃ¸ren til starten av linjen markert ---> nedenfor.
 
-  2. Skriv  2w	for å flytte markøren to ord framover.
+  2. Skriv  2w	for Ã¥ flytte markÃ¸ren to ord framover.
 
-  3. Skriv  3e	for å flytte markøren framover til slutten av det tredje
+  3. Skriv  3e	for Ã¥ flytte markÃ¸ren framover til slutten av det tredje
      ordet.
 
-  4. Skriv  0  (null) for å flytte til starten av linjen.
+  4. Skriv  0  (null) for Ã¥ flytte til starten av linjen.
 
   5. Repeter steg 2 og 3 med forskjellige tall.
 
----> Dette er en linje med noen ord som du kan bevege deg rundt på.
+---> Dette er en linje med noen ord som du kan bevege deg rundt pÃ¥.
 
-  6. Gå videre til leksjon 1.2.5.
+  6. GÃ¥ videre til leksjon 1.2.5.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 Leksjon 1.2.5: BRUK AV ANTALL FOR Å SLETTE MER
+		 Leksjon 1.2.5: BRUK AV ANTALL FOR Ã… SLETTE MER
 
 
-     ** Et tall sammen med en operator repeterer den så mange ganger. **
+     ** Et tall sammen med en operator repeterer den sÃ¥ mange ganger. **
 
   I kombinasjonen med sletteoperatoren og en bevegelse nevnt ovenfor setter du
-  inn antall før bevegelsen for å slette mer:
+  inn antall fÃ¸r bevegelsen for Ã¥ slette mer:
 	 d  nummer  bevegelse
 
-  1. Flytt markøren til det første ordet med STORE BOKSTAVER på linjen markert
+  1. Flytt markÃ¸ren til det fÃ¸rste ordet med STORE BOKSTAVER pÃ¥ linjen markert
      med --->.
 
-  2. Skriv  2dw  for å slette de to ordene med store bokstaver.
+  2. Skriv  2dw  for Ã¥ slette de to ordene med store bokstaver.
 
-  3. Repeter steg 1 og 2 med forskjelling antall for å slette de etterfølgende
+  3. Repeter steg 1 og 2 med forskjelling antall for Ã¥ slette de etterfÃ¸lgende
      ordene som har store bokstaver.
 
----> Denne ABC DE linjen FGHI JK LMN OP er nå Q RS TUV litt mer lesbar.
+---> Denne ABC DE linjen FGHI JK LMN OP er nÃ¥ Q RS TUV litt mer lesbar.
 
-MERK: Et antall mellom operatoren  d  og bevegelsen virker på samme måte som å
+MERK: Et antall mellom operatoren  d  og bevegelsen virker pÃ¥ samme mÃ¥te som Ã¥
       bruke bevegelsen uten en operator.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Leksjon 1.2.6: OPERERE PÅ LINJER
+			Leksjon 1.2.6: OPERERE PÃ… LINJER
 
 
-		 ** Trykk  dd  for å slette en hel linje. **
+		 ** Trykk  dd  for Ã¥ slette en hel linje. **
 
-  På grunn av at sletting av linjer er mye brukt, fant utviklerne av Vi ut at
-  det vil være lettere å rett og slett trykke to d-er for å slette en linje.
+  PÃ¥ grunn av at sletting av linjer er mye brukt, fant utviklerne av Vi ut at
+  det vil vÃ¦re lettere Ã¥ rett og slett trykke to d-er for Ã¥ slette en linje.
 
-  1. Flytt markøren til den andre linjen i verset nedenfor.
-  2. Trykk  dd	 å slette linjen.
+  1. Flytt markÃ¸ren til den andre linjen i verset nedenfor.
+  2. Trykk  dd	 Ã¥ slette linjen.
   3. Flytt deretter til den fjerde linjen.
-  4. Trykk  2dd  for å slette to linjer.
+  4. Trykk  2dd  for Ã¥ slette to linjer.
 
---->  1) Roser er røde,
---->  2) Gjørme er gøy,
---->  3) Fioler er blå,
+--->  1) Roser er rÃ¸de,
+--->  2) GjÃ¸rme er gÃ¸y,
+--->  3) Fioler er blÃ¥,
 --->  4) Jeg har en bil,
 --->  5) Klokker viser tiden,
---->  6) Druer er søte
---->  7) Og du er likeså.
+--->  6) Druer er sÃ¸te
+--->  7) Og du er likesÃ¥.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Leksjon 1.2.7: ANGRE-KOMMANDOEN
 
 
-  ** Trykk  u  for å angre siste kommando,  U  for å fikse en hel linje. **
+  ** Trykk  u  for Ã¥ angre siste kommando,  U  for Ã¥ fikse en hel linje. **
 
-  1. Flytt markøren til linjen nedenfor merket ---> og plasser den på den
-     første feilen.
-  2. Trykk  x  for å slette det første uønskede tegnet.
-  3. Trykk så  u  for å angre den siste utførte kommandoen.
-  4. Deretter ordner du alle feilene på linjene ved å bruke kommandoen	x  .
-  5. Trykk nå en stor  U  for å sette linjen tilbake til det den var
+  1. Flytt markÃ¸ren til linjen nedenfor merket ---> og plasser den pÃ¥ den
+     fÃ¸rste feilen.
+  2. Trykk  x  for Ã¥ slette det fÃ¸rste uÃ¸nskede tegnet.
+  3. Trykk sÃ¥  u  for Ã¥ angre den siste utfÃ¸rte kommandoen.
+  4. Deretter ordner du alle feilene pÃ¥ linjene ved Ã¥ bruke kommandoen	x  .
+  5. Trykk nÃ¥ en stor  U  for Ã¥ sette linjen tilbake til det den var
      originalt.
-  6. Trykk  u  noen ganger for å angre	U  og foregående kommandoer.
+  6. Trykk  u  noen ganger for Ã¥ angre	U  og foregÃ¥ende kommandoer.
   7. Deretter trykker du  CTRL-R  (hold CTRL nede mens du trykker R) noen
-     ganger for å gjenopprette kommandoene (omgjøre angrekommandoene).
+     ganger for Ã¥ gjenopprette kommandoene (omgjÃ¸re angrekommandoene).
 
----> RReparer feiilene påå denne linnnjen oog erssstatt dem meed angre.
+---> RReparer feiilene pÃ¥Ã¥ denne linnnjen oog erssstatt dem meed angre.
 
-  8. Dette er meget nyttige kommandoer. Nå kan du gå til oppsummeringen av
+  8. Dette er meget nyttige kommandoer. NÃ¥ kan du gÃ¥ til oppsummeringen av
      leksjon 1.2.
 
 
@@ -347,91 +347,91 @@ MERK: Et antall mellom operatoren  d  og bevegelsen virker på samme måte som å
 			  OPPSUMMERING AV LEKSJON 1.2
 
 
-  1. For å slette fra markøren fram til det neste ordet, trykk:  dw
-  2. For å slette fra markøren til slutten av en linje, trykk:	d$
-  3. For å slette en hel linje, trykk:	dd
+  1. For Ã¥ slette fra markÃ¸ren fram til det neste ordet, trykk:  dw
+  2. For Ã¥ slette fra markÃ¸ren til slutten av en linje, trykk:	d$
+  3. For Ã¥ slette en hel linje, trykk:	dd
 
-  4. For å repetere en bevegelse, sett et nummer foran:  2w
+  4. For Ã¥ repetere en bevegelse, sett et nummer foran:  2w
   5. Formatet for en forandringskommando er:
 	       operator  [nummer]  bevegelse
      der:
-       operator  - hva som skal gjøres, f.eks.	d  for å slette
-       [nummer]  - et valgfritt antall for å repetere bevegelsen
-       bevegelse - hva kommandoen skal operere på, eksempelvis	w  (ord),
-		   $  (til slutten av linjen) og så videre.
+       operator  - hva som skal gjÃ¸res, f.eks.	d  for Ã¥ slette
+       [nummer]  - et valgfritt antall for Ã¥ repetere bevegelsen
+       bevegelse - hva kommandoen skal operere pÃ¥, eksempelvis	w  (ord),
+		   $  (til slutten av linjen) og sÃ¥ videre.
 
-  6. For å gå til starten av en linje, bruk en null:  0
+  6. For Ã¥ gÃ¥ til starten av en linje, bruk en null:  0
 
-  7. For å angre tidligere endringer, skriv:		u  (liten u)
-     For å angre alle forandringer på en linje, skriv:	U  (stor U)
-     For å omgjøre angringen, trykk:			CTRL-R
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Leksjon 1.3.1: «LIM INN»-KOMMANDOEN
-
-
-    ** Trykk  p  for å lime inn tidligere slettet tekst etter markøren **
-
-  1. Flytt markøren til den første linjen med ---> nedenfor.
-
-  2. Trykk  dd	for å slette linjen og lagre den i et Vim-register.
-
-  3. Flytt markøren til c)-linjen, OVER posisjonen linjen skal settes inn.
-
-  4. Trykk  p  for å legge linjen under markøren.
-
-  5. Repeter punkt 2 til 4 helt til linjene er i riktig rekkefølge.
-
----> d) Kan du også lære?
----> b) Fioler er blå,
----> c) Intelligens må læres,
----> a) Roser er røde,
-
-
+  7. For Ã¥ angre tidligere endringer, skriv:		u  (liten u)
+     For Ã¥ angre alle forandringer pÃ¥ en linje, skriv:	U  (stor U)
+     For Ã¥ omgjÃ¸re angringen, trykk:			CTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Leksjon 1.3.2: «ERSTATT»-KOMMANDOEN
+		      Leksjon 1.3.1: Â«LIM INNÂ»-KOMMANDOEN
 
 
-	 ** Trykk  rx  for å erstatte tegnet under markøren med x. **
+    ** Trykk  p  for Ã¥ lime inn tidligere slettet tekst etter markÃ¸ren **
 
-  1. Flytt markøren til den første linjen nedenfor merket --->.
+  1. Flytt markÃ¸ren til den fÃ¸rste linjen med ---> nedenfor.
 
-  2. Flytt markøren så den står oppå den første feilen.
+  2. Trykk  dd	for Ã¥ slette linjen og lagre den i et Vim-register.
 
-  3. Trykk  r  og deretter tegnet som skal være der.
+  3. Flytt markÃ¸ren til c)-linjen, OVER posisjonen linjen skal settes inn.
 
-  4. Repeter punkt 2 og 3 til den første linjen er lik den andre.
+  4. Trykk  p  for Ã¥ legge linjen under markÃ¸ren.
 
----> Da dfnne lynjxn ble zkrevet, var det nøen som tjykket feite taster!
+  5. Repeter punkt 2 til 4 helt til linjene er i riktig rekkefÃ¸lge.
+
+---> d) Kan du ogsÃ¥ lÃ¦re?
+---> b) Fioler er blÃ¥,
+---> c) Intelligens mÃ¥ lÃ¦res,
+---> a) Roser er rÃ¸de,
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Leksjon 1.3.2: Â«ERSTATTÂ»-KOMMANDOEN
+
+
+	 ** Trykk  rx  for Ã¥ erstatte tegnet under markÃ¸ren med x. **
+
+  1. Flytt markÃ¸ren til den fÃ¸rste linjen nedenfor merket --->.
+
+  2. Flytt markÃ¸ren sÃ¥ den stÃ¥r oppÃ¥ den fÃ¸rste feilen.
+
+  3. Trykk  r  og deretter tegnet som skal vÃ¦re der.
+
+  4. Repeter punkt 2 og 3 til den fÃ¸rste linjen er lik den andre.
+
+---> Da dfnne lynjxn ble zkrevet, var det nÃ¸en som tjykket feite taster!
 ---> Da denne linjen ble skrevet, var det noen som trykket feile taster!
 
-  5. Gå videre til leksjon 1.3.2.
+  5. GÃ¥ videre til leksjon 1.3.2.
 
-MERK: Husk at du bør lære ved å BRUKE, ikke pugge.
+MERK: Husk at du bÃ¸r lÃ¦re ved Ã¥ BRUKE, ikke pugge.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Leksjon 1.3.3: «FORANDRE»-OPERATOREN
+		      Leksjon 1.3.3: Â«FORANDREÂ»-OPERATOREN
 
 
-	   ** For å forandre til slutten av et ord, trykk  ce . **
+	   ** For Ã¥ forandre til slutten av et ord, trykk  ce . **
 
-  1. Flytt markøren til den første linjen nedenfor som er merket --->.
+  1. Flytt markÃ¸ren til den fÃ¸rste linjen nedenfor som er merket --->.
 
-  2. Plasser markøren på  u  i «lubjwr».
+  2. Plasser markÃ¸ren pÃ¥  u  i Â«lubjwrÂ».
 
-  3. Trykk  ce	og det korrekte ordet (i dette tilfellet, skriv «injen»).
+  3. Trykk  ce	og det korrekte ordet (i dette tilfellet, skriv Â«injenÂ»).
 
-  4. Trykk <ESC> og gå til det neste tegnet som skal forandres.
+  4. Trykk <ESC> og gÃ¥ til det neste tegnet som skal forandres.
 
-  5. Repeter punkt 3 og 4 helt til den første setningen er lik den andre.
+  5. Repeter punkt 3 og 4 helt til den fÃ¸rste setningen er lik den andre.
 
----> Denne lubjwr har noen wgh som må forkwåp med «forækzryas»-kommandoen.
----> Denne linjen har noen ord som må forandres med «forandre»-kommandoen.
+---> Denne lubjwr har noen wgh som mÃ¥ forkwÃ¥p med Â«forÃ¦kzryasÂ»-kommandoen.
+---> Denne linjen har noen ord som mÃ¥ forandres med Â«forandreÂ»-kommandoen.
 
-Vær oppmerksom på at  ce  sletter ordet og går inn i innsettingsmodus.
+VÃ¦r oppmerksom pÃ¥ at  ce  sletter ordet og gÃ¥r inn i innsettingsmodus.
 
 
 
@@ -439,113 +439,113 @@ Vær oppmerksom på at  ce  sletter ordet og går inn i innsettingsmodus.
 		Leksjon 1.3.4: FLERE FORANDRINGER VED BRUK AV c
 
 
- ** Forandringskommandoen blir brukt med de samme bevegelser som «slett». **
+ ** Forandringskommandoen blir brukt med de samme bevegelser som Â«slettÂ». **
 
-  1. Forandringsoperatoren fungerer på samme måte som «slett». Formatet er:
+  1. Forandringsoperatoren fungerer pÃ¥ samme mÃ¥te som Â«slettÂ». Formatet er:
 
 	 c    [nummer]	 bevegelse
 
   2. Bevegelsene er de samme, som for eksempel	w  (ord) og  $	(slutten av en
      linje).
 
-  3. Gå til den første linjen nedenfor som er merket --->.
+  3. GÃ¥ til den fÃ¸rste linjen nedenfor som er merket --->.
 
-  4. Flytt markøren til den første feilen.
+  4. Flytt markÃ¸ren til den fÃ¸rste feilen.
 
   5. Skriv  c$	og skriv resten av linjen lik den andre og trykk <ESC>.
 
----> Slutten på denne linjen trenger litt hjelp for å gjøre den lik den neste.
----> Slutten på denne linjen trenger å bli rettet ved bruk av c$-kommandoen.
+---> Slutten pÃ¥ denne linjen trenger litt hjelp for Ã¥ gjÃ¸re den lik den neste.
+---> Slutten pÃ¥ denne linjen trenger Ã¥ bli rettet ved bruk av c$-kommandoen.
 
-MERK: Du kan bruke slettetasten for å rette feil mens du skriver.
+MERK: Du kan bruke slettetasten for Ã¥ rette feil mens du skriver.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  OPPSUMMERING AV LEKSJON 1.3
 
 
-  1. For å legge tilbake tekst som nettopp er blitt slettet, trykk  p  . Dette
-     limer inn den slettede teksten ETTER markøren (hvis en linje ble slettet
-     vil den bli limt inn på linjen under markøren).
+  1. For Ã¥ legge tilbake tekst som nettopp er blitt slettet, trykk  p  . Dette
+     limer inn den slettede teksten ETTER markÃ¸ren (hvis en linje ble slettet
+     vil den bli limt inn pÃ¥ linjen under markÃ¸ren).
 
-  2. For å erstatte et tegn under markøren, trykk  r  og deretter tegnet som
+  2. For Ã¥ erstatte et tegn under markÃ¸ren, trykk  r  og deretter tegnet som
      du vil ha der.
 
-  3. Forandringsoperatoren lar deg forandre fra markøren til dit bevegelsen
-     tar deg. Det vil si, skriv  ce  for å forandre fra markøren til slutten
-     av ordet,	c$  for å forandre til slutten av linjen.
+  3. Forandringsoperatoren lar deg forandre fra markÃ¸ren til dit bevegelsen
+     tar deg. Det vil si, skriv  ce  for Ã¥ forandre fra markÃ¸ren til slutten
+     av ordet,	c$  for Ã¥ forandre til slutten av linjen.
 
-  4. Formatet for «forandre» er:
+  4. Formatet for Â«forandreÂ» er:
 
 	 c   [nummer]	bevegelse
 
-Nå kan du gå til neste leksjon.
+NÃ¥ kan du gÃ¥ til neste leksjon.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	     Leksjon 1.4.1: POSISJONERING AV MARKØREN OG FILSTATUS
+	     Leksjon 1.4.1: POSISJONERING AV MARKÃ˜REN OG FILSTATUS
 
-	** Trykk CTRL-G for å vise posisjonen i filen og filstatusen.
-	   Trykk  G  for å gå til en spesifikk linje i filen. **
+	** Trykk CTRL-G for Ã¥ vise posisjonen i filen og filstatusen.
+	   Trykk  G  for Ã¥ gÃ¥ til en spesifikk linje i filen. **
 
-  Merk: Les hele leksjonen før du utfører noen av punktene!
+  Merk: Les hele leksjonen fÃ¸r du utfÃ¸rer noen av punktene!
 
   1. Hold nede Ctrl-tasten og trykk  g	. Vi kaller dette CTRL-G. En melding
-     vil komme til syne på bunnen av skjermen med filnavnet og posisjonen i
+     vil komme til syne pÃ¥ bunnen av skjermen med filnavnet og posisjonen i
      filen. Husk linjenummeret for bruk i steg 3.
 
-Merk: Du kan se markørposisjonen i nederste høyre hjørne av skjermen. Dette
-      skjer når «ruler»-valget er satt (forklart i leksjon 6).
+Merk: Du kan se markÃ¸rposisjonen i nederste hÃ¸yre hjÃ¸rne av skjermen. Dette
+      skjer nÃ¥r Â«rulerÂ»-valget er satt (forklart i leksjon 6).
 
-  2. Trykk  G  for å gå til bunnen av filen.
-     Skriv  gg	for å gå til begynnelsen av filen.
+  2. Trykk  G  for Ã¥ gÃ¥ til bunnen av filen.
+     Skriv  gg	for Ã¥ gÃ¥ til begynnelsen av filen.
 
-  3. Skriv inn linjenummeret du var på og deretter  G . Dette vil føre deg
-     tilbake til linjen du var på da du først trykket CTRL-G.
+  3. Skriv inn linjenummeret du var pÃ¥ og deretter  G . Dette vil fÃ¸re deg
+     tilbake til linjen du var pÃ¥ da du fÃ¸rst trykket CTRL-G.
 
-  4. Utfør steg 1 til 3 hvis du føler deg sikker på prosedyren.
+  4. UtfÃ¸r steg 1 til 3 hvis du fÃ¸ler deg sikker pÃ¥ prosedyren.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 Leksjon 1.4.2: SØKEKOMMANDOEN
+			 Leksjon 1.4.2: SÃ˜KEKOMMANDOEN
 
-      ** Skriv	/  etterfulgt av en søkestreng som du vil lete etter. **
+      ** Skriv	/  etterfulgt av en sÃ¸kestreng som du vil lete etter. **
 
-  1. Trykk  /  når du er i normalmodusen. Legg merke til at skråstreken og
-     markøren kommer til syne på bunnen av skjermen i likhet med
-     «:»-kommandoene.
+  1. Trykk  /  nÃ¥r du er i normalmodusen. Legg merke til at skrÃ¥streken og
+     markÃ¸ren kommer til syne pÃ¥ bunnen av skjermen i likhet med
+     Â«:Â»-kommandoene.
 
-  2. Skriv «feeeiil» og trykk <ENTER>. Dette er teksten du vil lete etter.
+  2. Skriv Â«feeeiilÂ» og trykk <ENTER>. Dette er teksten du vil lete etter.
 
-  3. For å finne neste forekomst av søkestrengen, trykk  n .
-     For å lete etter samme søketeksten i motsatt retning, trykk  N .
+  3. For Ã¥ finne neste forekomst av sÃ¸kestrengen, trykk  n .
+     For Ã¥ lete etter samme sÃ¸keteksten i motsatt retning, trykk  N .
 
-  4. For å lete etter en tekst bakover i filen, bruk  ?  istedenfor  /	.
+  4. For Ã¥ lete etter en tekst bakover i filen, bruk  ?  istedenfor  /	.
 
-  5. For å gå tilbake til der du kom fra, trykk  CTRL-O  (Hold Ctrl nede mens
-     du trykker bokstaven  o ). Repeter for å gå enda lengre tilbake. CTRL-I
-     går framover.
+  5. For Ã¥ gÃ¥ tilbake til der du kom fra, trykk  CTRL-O  (Hold Ctrl nede mens
+     du trykker bokstaven  o ). Repeter for Ã¥ gÃ¥ enda lengre tilbake. CTRL-I
+     gÃ¥r framover.
 
----> «feeeiil» er ikke måten å skrive «feil» på, feeeiil er helt feil.
-Merk: Når søkingen når slutten av filen, vil den fortsette fra starten unntatt
-      hvis «wrapscan»-valget er resatt.
+---> Â«feeeiilÂ» er ikke mÃ¥ten Ã¥ skrive Â«feilÂ» pÃ¥, feeeiil er helt feil.
+Merk: NÃ¥r sÃ¸kingen nÃ¥r slutten av filen, vil den fortsette fra starten unntatt
+      hvis Â«wrapscanÂ»-valget er resatt.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   Leksjon 1.4.3: FINN SAMSVARENDE PARENTESER
 
 
-	  ** Trykk  %  for å finne en samsvarende ), ] eller } . **
+	  ** Trykk  %  for Ã¥ finne en samsvarende ), ] eller } . **
 
-  1. Plasser markøren på en (, [ eller { på linjen nedenfor merket --->.
+  1. Plasser markÃ¸ren pÃ¥ en (, [ eller { pÃ¥ linjen nedenfor merket --->.
 
   2. Trykk  %  .
 
-  3. Markøren vil gå til den samsvarende parentesen eller hakeparentesen.
+  3. MarkÃ¸ren vil gÃ¥ til den samsvarende parentesen eller hakeparentesen.
 
-  4. Trykk  %  for å flytte markøren til den andre samsvarende parentesen.
+  4. Trykk  %  for Ã¥ flytte markÃ¸ren til den andre samsvarende parentesen.
 
-  5. Flytt markøren til en annen (, ), [, ], { eller } og se hva  %  gjør.
+  5. Flytt markÃ¸ren til en annen (, ), [, ], { eller } og se hva  %  gjÃ¸r.
 
 ---> Dette ( er en testlinje med (, [ ] og { } i den )).
 
-Merk: Dette er veldig nyttig til feilsøking i programmer som har ubalansert
+Merk: Dette er veldig nyttig til feilsÃ¸king i programmer som har ubalansert
       antall parenteser!
 
 
@@ -554,136 +554,136 @@ Merk: Dette er veldig nyttig til feilsøking i programmer som har ubalansert
 		       Leksjon 1.4.4: ERSTATT-KOMMANDOEN
 
 
-	** Skriv  :s/gammel/ny/g  for å erstatte «gammel» med «ny». **
+	** Skriv  :s/gammel/ny/g  for Ã¥ erstatte Â«gammelÂ» med Â«nyÂ». **
 
-  1. Flytt markøren til linjen nedenfor som er merket med --->.
+  1. Flytt markÃ¸ren til linjen nedenfor som er merket med --->.
 
   2. Skriv  :s/deen/den/ <ENTER>  . Legg merke til at denne kommandoen bare
-     forandrer den første forekomsten av «deen» på linjen.
+     forandrer den fÃ¸rste forekomsten av Â«deenÂ» pÃ¥ linjen.
 
-  3. Skriv  :s/deen/den/g . Når g-flagget legges til, betyr dette global
-     erstatning på linjen og erstatter alle forekomster av «deen» på linjen.
+  3. Skriv  :s/deen/den/g . NÃ¥r g-flagget legges til, betyr dette global
+     erstatning pÃ¥ linjen og erstatter alle forekomster av Â«deenÂ» pÃ¥ linjen.
 
 ---> deen som kan kaste deen tyngste steinen lengst er deen beste
 
-  4. For å erstatte alle forekomster av en tekststreng mellom to linjer,
-     skriv  :#,#s/gammel/ny/g  der #,# er linjenumrene på de to linjene for
-			       linjeområdet erstatningen skal gjøres.
-     Skriv  :%s/gammel/ny/g    for å erstatte tekst i hele filen.
-     Skriv  :%s/gammel/ny/gc   for å finne alle forekomster i hele filen, og
-			       deretter spørre om teksten skal erstattes eller
+  4. For Ã¥ erstatte alle forekomster av en tekststreng mellom to linjer,
+     skriv  :#,#s/gammel/ny/g  der #,# er linjenumrene pÃ¥ de to linjene for
+			       linjeomrÃ¥det erstatningen skal gjÃ¸res.
+     Skriv  :%s/gammel/ny/g    for Ã¥ erstatte tekst i hele filen.
+     Skriv  :%s/gammel/ny/gc   for Ã¥ finne alle forekomster i hele filen, og
+			       deretter spÃ¸rre om teksten skal erstattes eller
 			       ikke.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  OPPSUMMERING AV LEKSJON 1.4
 
 
-  1. Ctrl-G viser nåværende posisjon i filen og filstatusen.
-	     G	går til slutten av filen.
-     nummer  G	går til det linjenummeret.
-	    gg	går til den første linjen.
+  1. Ctrl-G viser nÃ¥vÃ¦rende posisjon i filen og filstatusen.
+	     G	gÃ¥r til slutten av filen.
+     nummer  G	gÃ¥r til det linjenummeret.
+	    gg	gÃ¥r til den fÃ¸rste linjen.
 
-  2. Skriv  /  etterfulgt av en søketekst for å lete FRAMOVER etter teksten.
-     Skriv  ?  etterfulgt av en søketekst for å lete BAKOVER etter teksten.
-     Etter et søk kan du trykke  n  for å finne neste forekomst i den samme
-     retningen eller  N  for å lete i motsatt retning.
+  2. Skriv  /  etterfulgt av en sÃ¸ketekst for Ã¥ lete FRAMOVER etter teksten.
+     Skriv  ?  etterfulgt av en sÃ¸ketekst for Ã¥ lete BAKOVER etter teksten.
+     Etter et sÃ¸k kan du trykke  n  for Ã¥ finne neste forekomst i den samme
+     retningen eller  N  for Ã¥ lete i motsatt retning.
      CTRL-O tar deg tilbake til gamle posisjoner, CTRL-I til nyere posisjoner.
 
-  3. Skriv  %  når markøren står på en (, ), [, ], { eller } for å finne den
+  3. Skriv  %  nÃ¥r markÃ¸ren stÃ¥r pÃ¥ en (, ), [, ], { eller } for Ã¥ finne den
      som samsvarer.
 
-  4. Erstatte «gammel» med første «ny» på en linje:  :s/gammel/ny
-     Erstatte alle «gammel» med «ny» på en linje:    :s/gammel/ny/g
+  4. Erstatte Â«gammelÂ» med fÃ¸rste Â«nyÂ» pÃ¥ en linje:  :s/gammel/ny
+     Erstatte alle Â«gammelÂ» med Â«nyÂ» pÃ¥ en linje:    :s/gammel/ny/g
      Erstatte tekst mellom to linjenumre:	     :#,#s/gammel/ny/g
      Erstatte alle forekomster i en fil:	     :%s/gammel/ny/g
-     For å godkjenne hver erstatning, legg til «c»:  :%s/gammel/ny/gc
+     For Ã¥ godkjenne hver erstatning, legg til Â«cÂ»:  :%s/gammel/ny/gc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	       Leksjon 1.5.1: HVORDAN UTFØRE EN EKSTERN KOMMANDO
+	       Leksjon 1.5.1: HVORDAN UTFÃ˜RE EN EKSTERN KOMMANDO
 
 
-    ** Skriv  :!  etterfulgt av en ekstern kommando for å utføre denne. **
+    ** Skriv  :!  etterfulgt av en ekstern kommando for Ã¥ utfÃ¸re denne. **
 
-  1. Skriv den velkjente kommandoen  :	 for å plassere markøren på bunnen av
+  1. Skriv den velkjente kommandoen  :	 for Ã¥ plassere markÃ¸ren pÃ¥ bunnen av
      skjermen. Dette lar deg skrive en kommandolinjekommando.
 
-  2. Nå kan du skrive tegnet  !  . Dette lar deg utføre en hvilken som helst
+  2. NÃ¥ kan du skrive tegnet  !  . Dette lar deg utfÃ¸re en hvilken som helst
      ekstern kommando.
 
   3. Som et eksempel, skriv  ls  etter utropstegnet og trykk <ENTER>. Du vil
-     nå få en liste over filene i katalogen, akkurat som om du hadde kjørt
+     nÃ¥ fÃ¥ en liste over filene i katalogen, akkurat som om du hadde kjÃ¸rt
      kommandoen direkte fra kommandolinjen i skallet. Eller bruk  :!dir  hvis
-     «ls» ikke virker.
+     Â«lsÂ» ikke virker.
 
-MERK: Det er mulig å kjøre alle eksterne kommandoer på denne måten, også med
+MERK: Det er mulig Ã¥ kjÃ¸re alle eksterne kommandoer pÃ¥ denne mÃ¥ten, ogsÃ¥ med
       parametere.
 
-MERK: Alle «:»-kommandoer må avsluttes med <ENTER>. Fra dette punktet er det
+MERK: Alle Â«:Â»-kommandoer mÃ¥ avsluttes med <ENTER>. Fra dette punktet er det
       ikke alltid vi nevner det.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		     Leksjon 1.5.2: MER OM LAGRING AV FILER
 
 
-      ** For å lagre endringene gjort i en tekst, skriv  :w FILNAVN. **
+      ** For Ã¥ lagre endringene gjort i en tekst, skriv  :w FILNAVN. **
 
-  1. Skriv  :!dir  eller  :!ls	for å få en liste over filene i katalogen. Du
-     vet allerede at du må trykke <ENTER> etter dette.
+  1. Skriv  :!dir  eller  :!ls	for Ã¥ fÃ¥ en liste over filene i katalogen. Du
+     vet allerede at du mÃ¥ trykke <ENTER> etter dette.
 
-  2. Velg et filnavn på en fil som ikke finnes, som for eksempel  TEST .
+  2. Velg et filnavn pÃ¥ en fil som ikke finnes, som for eksempel  TEST .
 
   3. Skriv  :w TEST  (der TEST er filnavnet du velger).
 
-  4. Dette lagrer hele filen (denne innføringen) under navnet TEST . For å
-     sjekke dette, skriv  :!dir  eller	:!ls  igjen for å se innholdet av
+  4. Dette lagrer hele filen (denne innfÃ¸ringen) under navnet TEST . For Ã¥
+     sjekke dette, skriv  :!dir  eller	:!ls  igjen for Ã¥ se innholdet av
      katalogen.
 
-Merk: Hvis du nå hadde avsluttet Vim og startet på nytt igjen med «vim TEST»,
-      ville filen vært en eksakt kopi av innføringen da du lagret den.
+Merk: Hvis du nÃ¥ hadde avsluttet Vim og startet pÃ¥ nytt igjen med Â«vim TESTÂ»,
+      ville filen vÃ¦rt en eksakt kopi av innfÃ¸ringen da du lagret den.
 
-  5. Fjern filen ved å skrive  :!rm TEST  hvis du er på et Unix-lignende
+  5. Fjern filen ved Ã¥ skrive  :!rm TEST  hvis du er pÃ¥ et Unix-lignende
      operativsystem, eller  :!del TEST	hvis du bruker MS-DOS.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   Leksjon 1.5.3: VELGE TEKST SOM SKAL LAGRES
 
 
-     ** For å lagre en del av en fil, skriv  v	bevegelse  :w FILNAVN **
+     ** For Ã¥ lagre en del av en fil, skriv  v	bevegelse  :w FILNAVN **
 
-  1. Flytt markøren til denne linjen.
+  1. Flytt markÃ¸ren til denne linjen.
 
-  2. Trykk  v  og flytt markøren til det femte elementet nedenfor. Legg merke
+  2. Trykk  v  og flytt markÃ¸ren til det femte elementet nedenfor. Legg merke
      til at teksten blir markert.
 
-  3. Trykk  :  (kolon). På bunnen av skjermen vil  :'<,'>  komme til syne.
+  3. Trykk  :  (kolon). PÃ¥ bunnen av skjermen vil  :'<,'>  komme til syne.
 
   4. Trykk  w TEST  , der TEST er et filnavn som ikke finnes enda. Kontroller
-     at du ser	:'<,'>w TEST  før du trykker Enter.
+     at du ser	:'<,'>w TEST  fÃ¸r du trykker Enter.
 
   5. Vim vil skrive de valgte linjene til filen TEST. Bruk  :!dir  eller  :!ls
-     for å se den. Ikke slett den enda! Vi vil bruke den i neste leksjon.
+     for Ã¥ se den. Ikke slett den enda! Vi vil bruke den i neste leksjon.
 
-MERK: Ved å trykke  v  startes visuelt valg. Du kan flytte markøren rundt for
-      å gjøre det valgte området større eller mindre. Deretter kan du bruke en
-      operator for å gjøre noe med teksten. For eksempel sletter  d  teksten.
+MERK: Ved Ã¥ trykke  v  startes visuelt valg. Du kan flytte markÃ¸ren rundt for
+      Ã¥ gjÃ¸re det valgte omrÃ¥det stÃ¸rre eller mindre. Deretter kan du bruke en
+      operator for Ã¥ gjÃ¸re noe med teksten. For eksempel sletter  d  teksten.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Leksjon 1.5.4: HENTING OG SAMMENSLÅING AV FILER
+		Leksjon 1.5.4: HENTING OG SAMMENSLÃ…ING AV FILER
 
 
- ** For å lese inn en annen fil inn i nåværende buffer, skriv  :r FILNAVN  **
+ ** For Ã¥ lese inn en annen fil inn i nÃ¥vÃ¦rende buffer, skriv  :r FILNAVN  **
 
-  1. Plasser markøren like over denne linjen.
+  1. Plasser markÃ¸ren like over denne linjen.
 
-MERK: Etter å ha utført steg 2 vil du se teksten fra leksjon 1.5.3. Gå deretter
-      NED for å se denne leksjonen igjen.
+MERK: Etter Ã¥ ha utfÃ¸rt steg 2 vil du se teksten fra leksjon 1.5.3. GÃ¥ deretter
+      NED for Ã¥ se denne leksjonen igjen.
 
-  2. Hent TEST-filen ved å bruke kommandoen  :r TEST  der TEST er navnet på
-     filen du brukte. Filen du henter blir plassert nedenfor markørlinjen.
+  2. Hent TEST-filen ved Ã¥ bruke kommandoen  :r TEST  der TEST er navnet pÃ¥
+     filen du brukte. Filen du henter blir plassert nedenfor markÃ¸rlinjen.
 
-  3. For å sjekke at filen ble hentet, gå tilbake og se at det er to kopier av
+  3. For Ã¥ sjekke at filen ble hentet, gÃ¥ tilbake og se at det er to kopier av
      leksjon 1.5.3, originalen og denne versjonen.
 
-MERK: Du kan også lese utdataene av en ekstern kommando. For eksempel,	:r !ls
-      leser utdataene av ls-kommandoen og legger dem nedenfor markøren.
+MERK: Du kan ogsÃ¥ lese utdataene av en ekstern kommando. For eksempel,	:r !ls
+      leser utdataene av ls-kommandoen og legger dem nedenfor markÃ¸ren.
 
 
 
@@ -692,90 +692,90 @@ MERK: Du kan også lese utdataene av en ekstern kommando. For eksempel,	:r !ls
 			  OPPSUMMERING AV LEKSJON 1.5
 
 
-  1.  :!kommando  utfører en ekstern kommandio.
+  1.  :!kommando  utfÃ¸rer en ekstern kommandio.
 
       Noen nyttige eksempler er:
 	 (MS-DOS)	  (Unix)
 	  :!dir		   :!ls		  - List filene i katalogen.
 	  :!del FILNAVN    :!rm FILNAVN   - Slett filen FILNAVN.
 
-  2.  :w FILNAVN  skriver den nåværende Vim-filen disken med navnet FILNAVN .
+  2.  :w FILNAVN  skriver den nÃ¥vÃ¦rende Vim-filen disken med navnet FILNAVN .
 
   3.  v  bevegelse  :w FILNAVN	lagrer de visuelt valgte linjene til filen
      FILNAVN.
 
-  4.  :r FILNAVN  henter filen FILNAVN og legger den inn nedenfor markøren.
+  4.  :r FILNAVN  henter filen FILNAVN og legger den inn nedenfor markÃ¸ren.
 
-  5.  :r !dir  leser utdataene fra «dir»-kommandoen og legger dem nedenfor
-     markørposisjonen.
+  5.  :r !dir  leser utdataene fra Â«dirÂ»-kommandoen og legger dem nedenfor
+     markÃ¸rposisjonen.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Leksjon 1.6.1: «ÅPNE LINJE»-KOMMANDOEN
+		     Leksjon 1.6.1: Â«Ã…PNE LINJEÂ»-KOMMANDOEN
 
 
-    ** Skriv  o  for å «åpne opp» for en ny linje etter markøren og gå til
+    ** Skriv  o  for Ã¥ Â«Ã¥pne oppÂ» for en ny linje etter markÃ¸ren og gÃ¥ til
        innsettingsmodus **
 
-  1. Flytt markøren til linjen nedenfor merket --->.
+  1. Flytt markÃ¸ren til linjen nedenfor merket --->.
 
-  2. Skriv  o  (liten o) for å åpne opp en linje NEDENFOR markøren og gå inn i
+  2. Skriv  o  (liten o) for Ã¥ Ã¥pne opp en linje NEDENFOR markÃ¸ren og gÃ¥ inn i
      innsettingsmodus.
 
-  3. Skriv litt tekst og trykk <ESC> for å gå ut av innsettingsmodusen.
+  3. Skriv litt tekst og trykk <ESC> for Ã¥ gÃ¥ ut av innsettingsmodusen.
 
----> Etter at  o  er skrevet blir markøren plassert på den tomme linjen.
+---> Etter at  o  er skrevet blir markÃ¸ren plassert pÃ¥ den tomme linjen.
 
-  4. For å åpne en ny linje OVER markøren, trykk rett og slett en stor	O
-     istedenfor en liten  o . Prøv dette på linjen nedenfor.
+  4. For Ã¥ Ã¥pne en ny linje OVER markÃ¸ren, trykk rett og slett en stor	O
+     istedenfor en liten  o . PrÃ¸v dette pÃ¥ linjen nedenfor.
 
----> Lag ny linje over denne ved å trykke O mens markøren er på denne linjen.
+---> Lag ny linje over denne ved Ã¥ trykke O mens markÃ¸ren er pÃ¥ denne linjen.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Leksjon 1.6.2: «LEGG TIL»-KOMMANDOEN
+		      Leksjon 1.6.2: Â«LEGG TILÂ»-KOMMANDOEN
 
 
-	    ** Skriv  a  for å legge til tekst ETTER markøren. **
+	    ** Skriv  a  for Ã¥ legge til tekst ETTER markÃ¸ren. **
 
-  1. Flytt markøren til starten av linjen merket ---> nedenfor.
+  1. Flytt markÃ¸ren til starten av linjen merket ---> nedenfor.
 
-  2. Trykk  e  til markøren er på slutten av «li».
+  2. Trykk  e  til markÃ¸ren er pÃ¥ slutten av Â«liÂ».
 
-  3. Trykk  a  (liten a) for å legge til tekst ETTER markøren.
+  3. Trykk  a  (liten a) for Ã¥ legge til tekst ETTER markÃ¸ren.
 
-  4. Fullfør ordet sånn som på linjen nedenfor. Trykk <ESC> for å gå ut av
+  4. FullfÃ¸r ordet sÃ¥nn som pÃ¥ linjen nedenfor. Trykk <ESC> for Ã¥ gÃ¥ ut av
      innsettingsmodusen.
 
-  5. Bruk  e  for å gå til det neste ufullstendige ordet og repeter steg 3 og
+  5. Bruk  e  for Ã¥ gÃ¥ til det neste ufullstendige ordet og repeter steg 3 og
      4.
 
----> Denne li lar deg øve på å leg til tek på en linje.
----> Denne linjen lar deg øve på å legge til tekst på en linje.
+---> Denne li lar deg Ã¸ve pÃ¥ Ã¥ leg til tek pÃ¥ en linje.
+---> Denne linjen lar deg Ã¸ve pÃ¥ Ã¥ legge til tekst pÃ¥ en linje.
 
-Merk: a, i og A går alle til den samme innsettingsmodusen, den eneste
+Merk: a, i og A gÃ¥r alle til den samme innsettingsmodusen, den eneste
       forskjellen er hvor tegnene blir satt inn.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Leksjon 1.6.3: EN ANNEN MÅTE Å ERSTATTE PÅ
+		   Leksjon 1.6.3: EN ANNEN MÃ…TE Ã… ERSTATTE PÃ…
 
 
-	   ** Skriv en stor  R	for å erstatte mer enn ett tegn. **
+	   ** Skriv en stor  R	for Ã¥ erstatte mer enn ett tegn. **
 
-  1. Flytt markøren til den første linjen nedenfor merket --->. Flytt markøren
-     til begynnelsen av den første «xxx»-en.
+  1. Flytt markÃ¸ren til den fÃ¸rste linjen nedenfor merket --->. Flytt markÃ¸ren
+     til begynnelsen av den fÃ¸rste Â«xxxÂ»-en.
 
-  2. Trykk  R  og skriv inn tallet som står nedenfor på den andre linjen så
+  2. Trykk  R  og skriv inn tallet som stÃ¥r nedenfor pÃ¥ den andre linjen sÃ¥
      det erstatter xxx.
 
-  3. Trykk <ESC> for å gå ut av erstatningsmodusen. Legg merke til at resten
+  3. Trykk <ESC> for Ã¥ gÃ¥ ut av erstatningsmodusen. Legg merke til at resten
      av linjen forblir uforandret.
 
-  4. Repeter stegene for å erstatte den gjenværende xxx.
+  4. Repeter stegene for Ã¥ erstatte den gjenvÃ¦rende xxx.
 
----> Ved å legge 123 til xxx får vi xxx.
----> Ved å legge 123 til 456 får vi 579.
+---> Ved Ã¥ legge 123 til xxx fÃ¥r vi xxx.
+---> Ved Ã¥ legge 123 til 456 fÃ¥r vi 579.
 
 MERK: Erstatningsmodus er lik insettingsmodus, men hvert tegn som skrives
       erstatter et eksisterende tegn.
@@ -784,89 +784,89 @@ MERK: Erstatningsmodus er lik insettingsmodus, men hvert tegn som skrives
 		    Leksjon 1.6.4: KOPIERE OG LIME INN TEKST
 
 
-    ** Bruk y-operatoren for å kopiere tekst og  p  for å lime den inn **
+    ** Bruk y-operatoren for Ã¥ kopiere tekst og  p  for Ã¥ lime den inn **
 
-  1. Gå til linjen merket ---> nedenfor og plasser markøren etter «a)».
+  1. GÃ¥ til linjen merket ---> nedenfor og plasser markÃ¸ren etter Â«a)Â».
 
-  2. Gå inn i visuell modus med  v  og flytt markøren til like før «første».
+  2. GÃ¥ inn i visuell modus med  v  og flytt markÃ¸ren til like fÃ¸r Â«fÃ¸rsteÂ».
 
-  3. Trykk  y  for å kopiere (engelsk: «yank») den uthevede teksten.
+  3. Trykk  y  for Ã¥ kopiere (engelsk: Â«yankÂ») den uthevede teksten.
 
-  4. Flytt markøren til slutten av den neste linjen:  j$
+  4. Flytt markÃ¸ren til slutten av den neste linjen:  j$
 
-  5. Trykk  p  for å lime inn teksten. Trykk deretter:	a andre <ESC> .
+  5. Trykk  p  for Ã¥ lime inn teksten. Trykk deretter:	a andre <ESC> .
 
-  6. Bruk visuell modus for å velge « valget.», kopier det med	y , gå til
+  6. Bruk visuell modus for Ã¥ velge Â« valget.Â», kopier det med	y , gÃ¥ til
      slutten av den neste linjen med  j$  og legg inn teksten der med  p .
 
----> a) Dette er det første valget.
+---> a) Dette er det fÃ¸rste valget.
      b)
 
-Merk: Du kan også bruke  y  som en operator;  yw  kopierer ett ord.
+Merk: Du kan ogsÃ¥ bruke  y  som en operator;  yw  kopierer ett ord.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Leksjon 1.6.5: SETT VALG
 
 
-  ** Sett et valg så søk eller erstatning ignorerer store/små bokstaver. **
+  ** Sett et valg sÃ¥ sÃ¸k eller erstatning ignorerer store/smÃ¥ bokstaver. **
 
-  1. Let etter «ignore» ved å skrive:  /ignore <ENTER>
-     Repeter flere ganger ved å trykke	n .
+  1. Let etter Â«ignoreÂ» ved Ã¥ skrive:  /ignore <ENTER>
+     Repeter flere ganger ved Ã¥ trykke	n .
 
-  2. Sett «ic»-valget (Ignore Case) ved å skrive:  :set ic
+  2. Sett Â«icÂ»-valget (Ignore Case) ved Ã¥ skrive:  :set ic
 
-  3. Søk etter «ignore» igjen ved å trykke  n .
-     Legg merke til at både «Ignore» og «IGNORE» blir funnet.
+  3. SÃ¸k etter Â«ignoreÂ» igjen ved Ã¥ trykke  n .
+     Legg merke til at bÃ¥de Â«IgnoreÂ» og Â«IGNOREÂ» blir funnet.
 
-  4. Sett «hlsearch»- og «incsearch»-valgene:  :set hls is
+  4. Sett Â«hlsearchÂ»- og Â«incsearchÂ»-valgene:  :set hls is
 
-  5. Skriv søkekommandoen igjen og se hva som skjer:  /ignore <ENTER>
+  5. Skriv sÃ¸kekommandoen igjen og se hva som skjer:  /ignore <ENTER>
 
-  6. For å slå av ignorering av store/små bokstaver, skriv:  :set noic
+  6. For Ã¥ slÃ¥ av ignorering av store/smÃ¥ bokstaver, skriv:  :set noic
 
-Merk: For å fjerne uthevingen av treff, skriv:	:nohlsearch
-Merk: Hvis du vil ignorere store/små bokstaver for kun en søkekommando, bruk
+Merk: For Ã¥ fjerne uthevingen av treff, skriv:	:nohlsearch
+Merk: Hvis du vil ignorere store/smÃ¥ bokstaver for kun en sÃ¸kekommando, bruk
       \c  i uttrykket:	/ignore\c <ENTER>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  OPPSUMMERING AV LEKSJON 1.6
 
-  1. Trykk  o  for å legge til en linje NEDENFOR markøren og gå inn i
+  1. Trykk  o  for Ã¥ legge til en linje NEDENFOR markÃ¸ren og gÃ¥ inn i
      innsettingsmodus.
-     Trykk  O  for å åpne en linje OVER markøren.
+     Trykk  O  for Ã¥ Ã¥pne en linje OVER markÃ¸ren.
 
-  2. Skriv  a  for å sette inn tekst ETTER markøren.
-     Skriv  A  for å sette inn tekst etter slutten av linjen.
+  2. Skriv  a  for Ã¥ sette inn tekst ETTER markÃ¸ren.
+     Skriv  A  for Ã¥ sette inn tekst etter slutten av linjen.
 
-  3. Kommandoen  e  går til slutten av et ord.
+  3. Kommandoen  e  gÃ¥r til slutten av et ord.
 
-  4. Operatoren  y  («yank») kopierer tekst,  p  («paste») limer den inn.
+  4. Operatoren  y  (Â«yankÂ») kopierer tekst,  p  (Â«pasteÂ») limer den inn.
 
-  5. Ved å trykke  R  går du inn i erstatningsmodus helt til  <ESC>  trykkes.
+  5. Ved Ã¥ trykke  R  gÃ¥r du inn i erstatningsmodus helt til  <ESC>  trykkes.
 
-  6. Skriv «:set xxx» for å sette valget «xxx». Noen valg er:
-	«ic» «ignorecase»	ignorer store/små bokstaver under søk
-	«is» «incsearch»	vis delvise treff for en søketekst
-	«hls» «hlsearch»	uthev alle søketreff
+  6. Skriv Â«:set xxxÂ» for Ã¥ sette valget Â«xxxÂ». Noen valg er:
+	Â«icÂ» Â«ignorecaseÂ»	ignorer store/smÃ¥ bokstaver under sÃ¸k
+	Â«isÂ» Â«incsearchÂ»	vis delvise treff for en sÃ¸ketekst
+	Â«hlsÂ» Â«hlsearchÂ»	uthev alle sÃ¸ketreff
 
-  7. Legg til «no» foran valget for å slå det av:  :set noic
+  7. Legg til Â«noÂ» foran valget for Ã¥ slÃ¥ det av:  :set noic
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			    Leksjon 1.7.1: FÅ HJELP
+			    Leksjon 1.7.1: FÃ… HJELP
 
 
 		   ** Bruk det innebygde hjelpesystemet. **
 
-  Vim har et omfattende innebygget hjelpesystem. For å starte det, prøv en av
-  disse måtene:
+  Vim har et omfattende innebygget hjelpesystem. For Ã¥ starte det, prÃ¸v en av
+  disse mÃ¥tene:
     - Trykk Hjelp-tasten (hvis du har en)
     - Trykk F1-tasten (hvis du har en)
     - Skriv  :help <ENTER>
 
-  Les teksten i hjelpevinduet for å finne ut hvordan hjelpen virker.
-  Skriv  CTRL-W CTRL-W	for å hoppe fra et vindu til et annet
-  Skriv  :q <ENTER>	for å lukke hjelpevinduet.
+  Les teksten i hjelpevinduet for Ã¥ finne ut hvordan hjelpen virker.
+  Skriv  CTRL-W CTRL-W	for Ã¥ hoppe fra et vindu til et annet
+  Skriv  :q <ENTER>	for Ã¥ lukke hjelpevinduet.
 
-  Du kan få hjelp for omtrent alle temaer om Vim ved å skrive et parameter til
-  «:help»-kommandoen. Prøv disse (ikke glem å trykke <ENTER>):
+  Du kan fÃ¥ hjelp for omtrent alle temaer om Vim ved Ã¥ skrive et parameter til
+  Â«:helpÂ»-kommandoen. PrÃ¸v disse (ikke glem Ã¥ trykke <ENTER>):
 
     :help w
     :help c_CTRL-D
@@ -876,64 +876,64 @@ Merk: Hvis du vil ignorere store/små bokstaver for kun en søkekommando, bruk
 		     Leksjon 1.7.2: LAG ET OPPSTARTSSKRIPT
 
 
-			** Slå på funksjoner i Vim **
+			** SlÃ¥ pÃ¥ funksjoner i Vim **
 
-  Vim har mange flere funksjoner enn Vi, men flesteparten av dem er slått av
-  som standard. For å begynne å bruke flere funksjoner må du lage en
-  «vimrc»-fil.
+  Vim har mange flere funksjoner enn Vi, men flesteparten av dem er slÃ¥tt av
+  som standard. For Ã¥ begynne Ã¥ bruke flere funksjoner mÃ¥ du lage en
+  Â«vimrcÂ»-fil.
 
-  1. Start redigeringen av «vimrc»-filen. Dette avhenger av systemet ditt:
+  1. Start redigeringen av Â«vimrcÂ»-filen. Dette avhenger av systemet ditt:
 	:e ~/.vimrc	  for Unix
 	:e ~/_vimrc	  for MS Windows
 
-  2. Les inn eksempelfilen for «vimrc»:
+  2. Les inn eksempelfilen for Â«vimrcÂ»:
 	:r $VIMRUNTIME/vimrc_example.vim
 
   3. Lagre filen med:
 	:w
 
   Neste gang du starter Vim vil den bruke syntaks-utheving. Du kan legge til
-  alle dine foretrukne oppsett i denne «vimrc»-filen.
+  alle dine foretrukne oppsett i denne Â«vimrcÂ»-filen.
   For mer informasjon, skriv  :help vimrc-intro
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			   Leksjon 1.7.3: FULLFØRING
+			   Leksjon 1.7.3: FULLFÃ˜RING
 
 
-	      ** Kommandolinjefullføring med CTRL-D og <TAB> **
+	      ** KommandolinjefullfÃ¸ring med CTRL-D og <TAB> **
 
-  1. Vær sikker på at Vim ikke er i Vi-kompatibel modus:  :set nocp
+  1. VÃ¦r sikker pÃ¥ at Vim ikke er i Vi-kompatibel modus:  :set nocp
 
   2. Se hvilke filer som er i katalogen:  :!ls	eller  :!dir
 
-  3. Skriv starten på en kommando:  :e
+  3. Skriv starten pÃ¥ en kommando:  :e
 
   4. Trykk  CTRL-D  og Vim vil vise en liste over kommandoer som starter med
-     «e».
+     Â«eÂ».
 
-  5. Trykk  <TAB>  og Vim vil fullføre kommandonavnet til «:edit».
+  5. Trykk  <TAB>  og Vim vil fullfÃ¸re kommandonavnet til Â«:editÂ».
 
-  6. Legg til et mellomrom og starten på et eksisterende filnavn:  :edit FIL
+  6. Legg til et mellomrom og starten pÃ¥ et eksisterende filnavn:  :edit FIL
 
-  7. Trykk <TAB>. Vim vil fullføre navnet (hvis det er unikt).
+  7. Trykk <TAB>. Vim vil fullfÃ¸re navnet (hvis det er unikt).
 
-MERK: Fullføring fungerer for mange kommandoer. Prøv ved å trykke CTRL-D og
+MERK: FullfÃ¸ring fungerer for mange kommandoer. PrÃ¸v ved Ã¥ trykke CTRL-D og
       <TAB>. Det er spesielt nyttig for bruk sammen med  :help .
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  OPPSUMMERING AV LEKSJON 1.7
 
 
-  1. Skriv  :help  eller trykk <F1> eller <Help> for å åpne et hjelpevindu.
+  1. Skriv  :help  eller trykk <F1> eller <Help> for Ã¥ Ã¥pne et hjelpevindu.
 
-  2. Skriv  :help kommando  for å få hjelp om  kommando .
+  2. Skriv  :help kommando  for Ã¥ fÃ¥ hjelp om  kommando .
 
-  3. Trykk  CTRL-W CTRL-W  for å hoppe til et annet vindu.
+  3. Trykk  CTRL-W CTRL-W  for Ã¥ hoppe til et annet vindu.
 
-  4. Trykk  :q	for å lukke hjelpevinduet.
+  4. Trykk  :q	for Ã¥ lukke hjelpevinduet.
 
-  5. Opprett et vimrc-oppstartsskript for å lagre favorittvalgene dine.
+  5. Opprett et vimrc-oppstartsskript for Ã¥ lagre favorittvalgene dine.
 
-  6. Når du skriver en «:»-kommando, trykk CTRL-D for å se mulige
-     fullføringer. Trykk <TAB> for å bruke en fullføring.
+  6. NÃ¥r du skriver en Â«:Â»-kommando, trykk CTRL-D for Ã¥ se mulige
+     fullfÃ¸ringer. Trykk <TAB> for Ã¥ bruke en fullfÃ¸ring.
 
 
 
@@ -943,30 +943,30 @@ MERK: Fullføring fungerer for mange kommandoer. Prøv ved å trykke CTRL-D og
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Her slutter innføringen i Vim. Den var ment som en rask oversikt over
-  editoren, akkurat nok til å la deg sette i gang med enkel bruk. Den er på
-  langt nær komplett, da Vim har mange flere kommandoer. Les bruksanvisningen
-  ved å skrive	:help user-manual  .
+  Her slutter innfÃ¸ringen i Vim. Den var ment som en rask oversikt over
+  editoren, akkurat nok til Ã¥ la deg sette i gang med enkel bruk. Den er pÃ¥
+  langt nÃ¦r komplett, da Vim har mange flere kommandoer. Les bruksanvisningen
+  ved Ã¥ skrive	:help user-manual  .
 
   For videre lesing og studier, kan denne boken anbefales:
-      «Vim - Vi Improved» av Steve Oualline
+      Â«Vim - Vi ImprovedÂ» av Steve Oualline
       Utgiver: New Riders
-  Den første boken som er fullt og helt dedisert til Vim. Spesielt nyttig for
+  Den fÃ¸rste boken som er fullt og helt dedisert til Vim. Spesielt nyttig for
   nybegynnere. Inneholder mange eksempler og illustrasjoner.
   Se https://iccf-holland.org/click5.html
 
-  Denne boken er eldre og handler mer om Vi enn Vim, men anbefales også:
-      «Learning the Vi Editor» av Linda Lamb
+  Denne boken er eldre og handler mer om Vi enn Vim, men anbefales ogsÃ¥:
+      Â«Learning the Vi EditorÂ» av Linda Lamb
       Utgiver: O'Reilly & Associates Inc.
-  Det er en god bok for å få vite omtrent hva som helst om Vi.
-  Den sjette utgaven inneholder også informasjon om Vim.
+  Det er en god bok for Ã¥ fÃ¥ vite omtrent hva som helst om Vi.
+  Den sjette utgaven inneholder ogsÃ¥ informasjon om Vim.
 
-  Denne innføringen er skrevet av Michael C. Pierce og Robert K. Ware,
-  Colorado School of Mines med idéer av Charles Smith, Colorado State
+  Denne innfÃ¸ringen er skrevet av Michael C. Pierce og Robert K. Ware,
+  Colorado School of Mines med idÃ©er av Charles Smith, Colorado State
   University. E-mail: bware@mines.colorado.edu .
 
   Modifisert for Vim av Bram Moolenaar.
-  Oversatt av Øyvind A. Holm. E-mail: vimtutor _AT_ sunbase.org
+  Oversatt av Ã˜yvind A. Holm. E-mail: vimtutor _AT_ sunbase.org
   Id: tutor.no 406 2007-03-18 22:48:36Z sunny
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

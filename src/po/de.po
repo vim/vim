@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-29 00:02+0100\n"
+"POT-Creation-Date: 2025-06-16 13:53+0200\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -158,8 +158,8 @@ msgid "Top"
 msgstr "Anfang"
 
 #, c-format
-msgid "%d%%"
-msgstr "%d%%"
+msgid "%2d%%"
+msgstr "%2d%%"
 
 #, c-format
 msgid " (%d of %d)"
@@ -176,6 +176,9 @@ msgstr " (Datei %d von %d)"
 #, c-format
 msgid " (file (%d) of %d)"
 msgstr " (Datei (%d) von %d)"
+
+msgid "[Command Line]"
+msgstr "[Befehlszeile]"
 
 msgid "[Prompt]"
 msgstr "[Prompt]"
@@ -455,11 +458,6 @@ msgstr "Katakana"
 msgid "Bopomofo"
 msgstr "Bopomofo"
 
-msgid "Not enough memory to set references, garbage collection aborted!"
-msgstr ""
-"Nicht genügend Speicher um Referenzen zu setzen, Garbagecollection "
-"abgebrochen!"
-
 msgid ""
 "\n"
 "\tLast set from "
@@ -715,9 +713,6 @@ msgstr "Fehler"
 msgid "Interrupt"
 msgstr "Unterbrechung"
 
-msgid "[Command Line]"
-msgstr "[Befehlszeile]"
-
 msgid "is a directory"
 msgstr "ist ein Verzeichnis"
 
@@ -799,8 +794,8 @@ msgid "[unix format]"
 msgstr "[unix Format]"
 
 #, c-format
-msgid "%ld line, "
-msgid_plural "%ld lines, "
+msgid "%s%ld line, "
+msgid_plural "%s%ld lines, "
 msgstr[0] "%ld Zeile, "
 msgstr[1] "%ld Zeilen, "
 
@@ -892,6 +887,11 @@ msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
 msgstr[0] "+-%s%3ld Zeile: "
 msgstr[1] "+-%s%3ld Zeilen: "
+
+msgid "Not enough memory to set references, garbage collection aborted!"
+msgstr ""
+"Nicht genügend Speicher um Referenzen zu setzen, Garbagecollection "
+"abgebrochen!"
 
 msgid "No match at cursor, finding next"
 msgstr "Kein Treffer beim Cursor, finde den nächsten"
@@ -1343,8 +1343,8 @@ msgstr[1] "%ld Zeilen eingerückt... "
 msgid " Keyword completion (^N^P)"
 msgstr " Stichwort Vervollständigung (^N^P)"
 
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-msgstr " ^X Modus (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
+msgstr " ^X Modus (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " Zeilen-Vervollständigung (^L^N^P)"
@@ -1381,6 +1381,9 @@ msgstr " Vorschlag der Rechtschreibprüfung (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Lokale Stichwort-Vervollständigung(^N^P)"
+
+msgid " Register completion (^N^P)"
+msgstr " Register Vervollständigung (^N^P)"
 
 msgid "'dictionary' option is empty"
 msgstr "Die Option 'dictionary' ist leer"
@@ -1454,6 +1457,9 @@ msgstr "mapnew() Argument"
 
 msgid "filter() argument"
 msgstr "filter() Argument"
+
+msgid "foreach() argument"
+msgstr "foreach() Argument"
 
 msgid "extendnew() argument"
 msgstr "extendnew() Argument"
@@ -1835,13 +1841,13 @@ msgstr "-italicfont <Schriftart>\tBenutze <Schriftart> für geneigten Text"
 
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
 msgstr ""
-"-geometry <geom>\tBenutze <geom> für die Anfangs Abmessungen (auch mit: -"
-"geom)"
+"-geometry <geom>\tBenutze <geom> für die Anfangs Abmessungen (auch mit: "
+"-geom)"
 
 msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
 msgstr ""
-"-borderwidth <Breite>\tBenutze einen Rahmen der Breite <Breite> (auch mit: -"
-"bw)"
+"-borderwidth <Breite>\tBenutze einen Rahmen der Breite <Breite> (auch mit: "
+"-bw)"
 
 msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
 msgstr ""
@@ -2330,6 +2336,12 @@ msgstr ""
 " LEERZEICHEN/d/j: Seite/halbe Seite/Zeile vorwärts, b/u/k: rückwärts, q: "
 "Ende "
 
+msgid "W23: Clipboard register not available, using register 0"
+msgstr "W23: Zwischenablage-Register nicht verfügbar, nutze Register 0"
+
+msgid "W24: Clipboard register not available. See :h W24"
+msgstr "W24: Zwischenablage-Register nicht verfügbar. Siehe :h W24"
+
 msgid "Question"
 msgstr "Frage"
 
@@ -2541,6 +2553,9 @@ msgstr "nach %s auf %s"
 #, c-format
 msgid "Printing '%s'"
 msgstr "Drucke '%s'"
+
+msgid "DefaultFontNameForWindows"
+msgstr "Standard Windows Font"
 
 #, c-format
 msgid "Opening the X display took %ld msec"
@@ -3492,8 +3507,8 @@ msgid "%s returning %s"
 msgstr "%s lieferte \"%s\" zurück"
 
 #, c-format
-msgid "Function %s does not need compiling"
-msgstr "Funktion %s muss nicht kompiliert werden"
+msgid "Function %s%s%s does not need compiling"
+msgstr "Funktion %s%s%s muss nicht kompiliert werden"
 
 #, c-format
 msgid "%s (%s, compiled %s)"
@@ -3651,6 +3666,9 @@ msgstr " zweite Benutzer-vimrc-Datei: \""
 
 msgid " 3rd user vimrc file: \""
 msgstr " dritte Benutzer-vimrc-Datei: \""
+
+msgid " 4th user vimrc file: \""
+msgstr " vierte Benutzer-vimrc-Datei: \""
 
 msgid "      user exrc file: \""
 msgstr "         Benutzer-exrc-Datei: \""
@@ -4267,6 +4285,9 @@ msgstr "E104: <Escape> ist in einem Digraphen nicht erlaubt"
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: :loadkeymap außerhalb einer eingelesenen Datei"
 
+msgid "E106: Unsupported diff output format: %s"
+msgstr "E106: Nicht unterstütztes Diff-Ausgabeformat: %s"
+
 #, c-format
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Fehlende Klammern: %s"
@@ -4608,8 +4629,8 @@ msgstr "E196: Keine Digraphen in dieser Version"
 msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: Sprache kann nicht auf \"%s\" gesetzt werden"
 
-msgid "E199: Active window or buffer deleted"
-msgstr "E199: Aktives Fenster oder Buffer gelöscht"
+msgid "E199: Active window or buffer changed or deleted"
+msgstr "E199: Aktives Fenster oder Buffer geändert oder gelöscht"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr "E200: *ReadPre Autokommandos haben die Datei unlesbar gemacht"
@@ -6067,9 +6088,6 @@ msgstr "E612: Zu viele Zeichen definiert"
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Unbekannte Druckerschriftart: %s"
 
-msgid "E614: Class required"
-msgstr "E614: Klasse benötigt"
-
 #, c-format
 msgid "E616: Object required for argument %d"
 msgstr "E616: Objekt erforderlich für Argument %d"
@@ -6244,8 +6262,8 @@ msgstr "E667: Fsync fehlgeschlagen"
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
 msgstr ""
-"E668: Falscher Zugriffsmodus auf die NetBeans Zugriff-Informationsdatei: \"%s"
-"\""
+"E668: Falscher Zugriffsmodus auf die NetBeans Zugriff-Informationsdatei: "
+"\"%s\""
 
 msgid "E669: Unprintable character in group name"
 msgstr "E669: Nicht druckbare Zeichen im Namen der Gruppe"
@@ -7004,9 +7022,13 @@ msgstr ""
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr "E876: (NFA Regexp) Nicht genug Speicher zum Speichern der NFA"
 
+#, c-format
+msgid "E877: (NFA regexp) Invalid character class: %d"
+msgstr "E877: (NFA Regexp) Ungültige Zeichenklasse %d"
+
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr ""
-"E878: (NFA Regexp) Konnte nicht Speicher allokieren um Äste zu durchlaufen!"
+"E878: (NFA Regexp) Konnte keinen Speicher für Verzweigungsdurchlauf reservieren!"
 
 msgid "E879: (NFA regexp) Too many \\z("
 msgstr "E879: (NFA Regexp) Zu viele \\z("
@@ -7944,8 +7966,8 @@ msgstr "E1138: Bool als Zahl verwendet"
 msgid "E1139: Missing matching bracket after dict key"
 msgstr "E1139: Fehlende zugehörige eckige Klammer nach Dict Schlüssel"
 
-msgid "E1140: :for argument must be a sequence of lists"
-msgstr "E1140: :for Argument muss eine Folge von Listen sein"
+msgid "E1140: :for argument must be a sequence of lists or tuples"
+msgstr "E1140: :for Argument muss eine Folge von Listen oder Tuples sein"
 
 msgid "E1141: Indexable type required"
 msgstr "E1141: indexierbarer Typ erforderlich"
@@ -8265,9 +8287,9 @@ msgid "E1224: String, Number or List required for argument %d"
 msgstr "E1224: Zeichenkette, Zahl oder Liste erforderlich für Argument %d"
 
 #, c-format
-msgid "E1225: String, List or Dictionary required for argument %d"
+msgid "E1225: String, List, Tuple or Dictionary required for argument %d"
 msgstr ""
-"E1225: Zeichenkette, Liste oder Dictionary erforderlich für Argument %d"
+"E1225: Zeichenkette, Liste, Tuple oder Dictionary erforderlich für Argument %d"
 
 #, c-format
 msgid "E1226: List or Blob required for argument %d"
@@ -8304,6 +8326,10 @@ msgstr ""
 
 msgid "E1234: legacy must be followed by a command"
 msgstr "E1234: legacy muss von einem Befehl gefolgt werden"
+
+#, c-format
+msgid "E1235: Bool or Number required for argument %d"
+msgstr "E1235: Bool oder Zahl erforderlich für Argument %d"
 
 #, c-format
 msgid "E1236: Cannot use %s itself, it is imported"
@@ -8362,13 +8388,17 @@ msgstr ""
 "sein"
 
 #, c-format
-msgid "E1251: List, Dictionary, Blob or String required for argument %d"
+msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
 msgstr ""
-"E1251: Liste, Dictionary, Blob oder Zeichenkette erforderlich für Argument %d"
+"E1251: Liste, Tuple, Dictionary, Blob oder Zeichenkette erforderlich für Argument %d"
 
 #, c-format
 msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: Zeichenkette, Liste oder Blob erforderlich für Argument %d"
+
+#, c-format
+msgid "E1253: String, List, Tuple or Blob required for argument %d"
+msgstr "E1253: Zeichenkette, Liste, Tuple oder Blob erforderlich für Argument %d"
 
 msgid "E1254: Cannot use script variable in for loop"
 msgstr "E1254: Kann Skriptvariable nicht in einer for Schleife verwenden"
@@ -8546,9 +8576,9 @@ msgid "E1300: Cannot use a partial with dictionary for :defer"
 msgstr "E1300: Kann kein Partial mit Dictionary für :defer verwenden"
 
 #, c-format
-msgid "E1301: String, Number, List or Blob required for argument %d"
+msgid "E1301: String, Number, List, Tuple or Blob required for argument %d"
 msgstr ""
-"E1301: Zeichenkette, Zahl, Liste oder Blob erforderlich für Argument %d"
+"E1301: Zeichenkette, Zahl, Liste, Tuple oder Blob erforderlich für Argument %d"
 
 msgid "E1302: Script variable was deleted"
 msgstr "E1302: Scriptvariable wurde gelöscht"
@@ -8614,20 +8644,11 @@ msgstr "E1317: Ungültige Objekt-Variablen-Deklaration: %s"
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: Ungültiger Befehl in Klasse: %s"
 
-msgid "E1319: Using a Class as a Number"
-msgstr "E1319: Klasse als Zahl verwendet"
-
 msgid "E1320: Using an Object as a Number"
 msgstr "E1320: Objekt als Zahl verwendet"
 
-msgid "E1321: Using a Class as a Float"
-msgstr "E1321: Klasse als Float verwendet"
-
 msgid "E1322: Using an Object as a Float"
 msgstr "E1322: Objekt als Float verwendet"
-
-msgid "E1323: Using a Class as a String"
-msgstr "E1323: Klasse als Zeichenkette verwendet"
 
 msgid "E1324: Using an Object as a String"
 msgstr "E1324: Objekt als Zeichenkette verwendet"
@@ -8658,15 +8679,14 @@ msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Ungültiger Typ für Objekt-Variable: %s"
 
 msgid ""
-"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"E1331: public must be followed by \"var\" or \"static\" or \"final\" or "
 "\"const\""
 msgstr ""
-"E1331: Public muss von \"var\" oder \"static\" oder \"final\" oder \"const\""
-"gefolgt werden"
+"E1331: Auf public muss \"var\", \"static\", \"final\" oder \"const\" folgen"
 
 #, c-format
-msgid "E1332: Public variable name cannot start with underscore: %s"
-msgstr "E1332: Public Variable darf nicht mit einem Unterstrich beginnen: %s"
+msgid "E1332: public variable name cannot start with underscore: %s"
+msgstr "E1332: public Variable darf nicht mit einem Unterstrich beginnen: %s"
 
 #, c-format
 msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
@@ -8791,11 +8811,11 @@ msgstr ""
 "unterschiedlich"
 
 msgid ""
-"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or \"const"
-"\""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
+"\"const\""
 msgstr ""
-"E1368: Static muss von \"var\" oder \"def\" oder \"final\" oder \"const\""
-"gefolgt werden"
+"E1368: Static muss von \"var\" oder \"def\" oder \"final\" oder "
+"\"const\"gefolgt werden"
 
 #, c-format
 msgid "E1369: Duplicate variable: %s"
@@ -8868,11 +8888,11 @@ msgstr "E1385: Klassenmethode \"%s\" nur durch Klasse \"%s\" zugänglich"
 msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
 msgstr "E1386: Objektmethode \"%s\" nur durch Klassenobjekt \"%s\" zugänglich"
 
-msgid "E1387: Public variable not supported in an interface"
-msgstr "E1387: Public variable in einem Interface nicht unterstützt"
+msgid "E1387: public variable not supported in an interface"
+msgstr "E1387: public Variable in einem Interface nicht unterstützt"
 
-msgid "E1388: Public keyword not supported for a method"
-msgstr "E1388: Public Schlüsselwort für eine Methode nicht unterstützt"
+msgid "E1388: public keyword not supported for a method"
+msgstr "E1388: public Schlüsselwort für eine Methode nicht unterstützt"
 
 msgid "E1389: Missing name after implements"
 msgstr "E1389: Fehlender Name nach implements"
@@ -8903,9 +8923,8 @@ msgstr "E1393: Type kann nur in Vim9 Script verwendet werden"
 msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: Typname muss mit einen Großbuchstaben anfangen: %s"
 
-#, c-format
-msgid "E1395: Type alias \"%s\" cannot be modified"
-msgstr "E1395: Typ Alias \"%s\" kann nicht verändert werden"
+msgid "E1395: Using a null class"
+msgstr "E1395: Verwenden einer Null-Klasse"
 
 #, c-format
 msgid "E1396: Type alias \"%s\" already exists"
@@ -8921,18 +8940,6 @@ msgid "E1399: Type can only be used in a script"
 msgstr "E1399: Typ kann nur in einem Script verwendet werden"
 
 #, c-format
-msgid "E1400: Using type alias \"%s\" as a Number"
-msgstr "E1400: Typ Alias \"%s\" als Zahl verwendet"
-
-#, c-format
-msgid "E1401: Using type alias \"%s\" as a Float"
-msgstr "E1401: Typ Alias \"%s\" als Float verwendet"
-
-#, c-format
-msgid "E1402: Using type alias \"%s\" as a String"
-msgstr "E1402: Typ Alias \"%s\" als Zeichenkette verwendet"
-
-#, c-format
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr "E1403: Typ Alias \"%s\" kann nicht als Wert verwendet werden"
 
@@ -8943,9 +8950,6 @@ msgstr "E1404: Abstract kann nicht in einem Interface verwendet werden"
 msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405:  Klasse \"%s\" kann nicht als Wert verwendet werden"
 
-msgid "E1406: Cannot use a Class as a variable or value"
-msgstr "E1406: Kann Klasse nicht als Variable oder Wert verwenden"
-
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: Kann Typenalias nicht as Variable oder Wert verwenden"
 
@@ -8954,7 +8958,8 @@ msgstr "E1408: Final variable in einem Interface nicht unterstützt"
 
 #, c-format
 msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
-msgstr "E1409: Kann eine read-only Variable \"%s\" in Klasse \"%s\" nicht verändern"
+msgstr ""
+"E1409: Kann eine read-only Variable \"%s\" in Klasse \"%s\" nicht verändern"
 
 msgid "E1410: Const variable not supported in an interface"
 msgstr "E1410: Const Variable in einem Interface nicht unterstützt"
@@ -8964,10 +8969,86 @@ msgid "E1411: Missing dot after object \"%s\""
 msgstr "E1411: Fehlender Punkt nach Object \"%s\""
 
 #, c-format
+msgid "E1412: Builtin object method \"%s\" not supported"
+msgstr "E1412: Builtin Objektmethode \"%s\" nicht unterstützt"
+
+msgid "E1413: Builtin class method not supported"
+msgstr "E1413: Builtin Klassenmethode nicht unterstützt"
+
+msgid "E1414: Enum can only be defined in Vim9 script"
+msgstr "E1414: Enum kann nur in Vim9-Script definiert werden"
+
+#, c-format
+msgid "E1415: Enum name must start with an uppercase letter: %s"
+msgstr "E1415: Enum muss mit einen Großbuchstaben anfangen: %s"
+
+msgid "E1416: Enum cannot extend a class or enum"
+msgstr "E1416: Enum kann Klasse oder Enum nicht erweitern"
+
+msgid "E1417: Abstract cannot be used in an Enum"
+msgstr "E1417: Abstract kann nicht in einem Enum verwendet werden"
+
+#, c-format
+msgid "E1418: Invalid enum value declaration: %s"
+msgstr "E1418: Ungültige Enum-Variablen-Deklaration: %s"
+
+#, c-format
+msgid "E1419: Not a valid command in an Enum: %s"
+msgstr "E1419: Ungültiger Befehl in Enum: %s"
+
+msgid "E1420: Missing :endenum"
+msgstr "E1420: Fehlendes :endenum"
+
+#, c-format
+msgid "E1421: Enum \"%s\" cannot be used as a value"
+msgstr "E1421:  Enum \"%s\" kann nicht als Wert verwendet werden"
+
+#, c-format
+msgid "E1422: Enum value \"%s\" not found in enum \"%s\""
+msgstr "E1422: Enum-Wert \"%s\" nicht in Enum gefunden \"%s\""
+
+#, c-format
+msgid "E1423: Enum value \"%s.%s\" cannot be modified"
+msgstr "E1423: Enum-Wert \"%s.%s\" kann nicht verändert werden"
+
+#, c-format
+msgid "E1424: Using an Enum \"%s\" as a Number"
+msgstr "E1424: Enum  \"%s\" als Zahl verwendet"
+
+#, c-format
+msgid "E1425: Using an Enum \"%s\" as a String"
+msgstr "E1425: Enum \"%s\" als Zeichenkette verwendet"
+
+#, c-format
+msgid "E1426: Enum \"%s\" ordinal value cannot be modified"
+msgstr "E1426: Enum \"%s\" Wert kann nicht verändert werden"
+
+#, c-format
+msgid "E1427: Enum \"%s\" name cannot be modified"
+msgstr "E1427: Enum \"%s\" kann nicht verändert werden"
+
+#, c-format
+msgid "E1428: Duplicate enum value: %s"
+msgstr "E1428: Doppelter Enum-Wert: %s"
+
+msgid "E1429: Class can only be used in a script"
+msgstr "E1429: Klasse kann nur in einem Script verwendet werden"
+
+#, c-format
+msgid "E1430: Uninitialized object variable '%s' referenced"
+msgstr "E1430: Nicht initialisierte Objekt-Variable '%s' referenziert"
+
+#, c-format
+msgid ""
+"E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"
+msgstr ""
+"E1431: Abstrakte Methode \"%s\" in Klasse \"%s\" kann nicht direkt aufgerufen werden"
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
 "E1500: positionsbezogene und nicht-positionsbezogene Argumente können "
-"nichtgemischt werden: %s"
+"nicht gemischt werden: %s"
 
 #, c-format
 msgid "E1501: format argument %d unused in $-style format: %s"
@@ -9012,6 +9093,137 @@ msgstr ""
 #, c-format
 msgid "E1510: Value too large: %s"
 msgstr "E1510: Wert zu groß: %s"
+
+#, c-format
+msgid "E1511: Wrong number of characters for field \"%s\""
+msgstr "E1511: Unzulässige Zeichenanzahl für Feld \"%s\""
+
+#, c-format
+msgid "E1512: Wrong character width for field \"%s\""
+msgstr "E1512: Ungültige Zeichenbreite für Feld \"%s\""
+
+msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
+msgstr "E1513: Kann Buffer nicht wechseln, 'winfixbuf' ist aktiviert"
+
+msgid "E1514: 'findfunc' did not return a List type"
+msgstr "E1514: 'findfunc' hat keinen Listentyp zurückgegeben"
+
+#, c-format
+msgid "E1515: Unable to convert from '%s' encoding"
+msgstr "E1515: Konvertierung von '%s'-Kodierung nicht möglich"
+
+#, c-format
+msgid "E1516: Unable to convert to '%s' encoding"
+msgstr "E1516: Konvertierung nach '%s'-Kodierung nicht möglich"
+
+msgid "E1517: Can only compare Tuple with Tuple"
+msgstr "E1517: Kann nur Tuple mit Tuple vergleichen"
+
+msgid "E1518: Invalid operation for Tuple"
+msgstr "E1518: Ungültige Operation für Tuple"
+
+#, c-format
+msgid "E1519: Tuple index out of range: %ld"
+msgstr "E1519: Tuple-Index außerhalb des Bereichs: %ld"
+
+msgid "E1520: Using a Tuple as a Number"
+msgstr "E1520: Tuple als Zahl verwendet"
+
+msgid "E1521: Using a Tuple as a Float"
+msgstr "E1521: Tuple als Float verwendet"
+
+msgid "E1522: Using a Tuple as a String"
+msgstr "E1522: Tuple als Zeichenkette verwendet"
+
+msgid "E1523: String, List, Tuple or Blob required"
+msgstr "E1523: Zeichenkette, Liste, Tuple oder Blob erforderlich"
+
+#, c-format
+msgid "E1524: Cannot use a tuple with function %s"
+msgstr "E1524: Kann Tuple nicht mit Funktion %s verwenden"
+
+#, c-format
+msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
+msgstr ""
+"E1525: Argument von %s muss eine Liste, Tuple, Zeichenkette, Dictionary oder Blob "
+"sein"
+
+#, c-format
+msgid "E1526: Missing end of Tuple ')': %s"
+msgstr "E1526: Fehlendes Ende des Tuples ')': %s"
+
+#, c-format
+msgid "E1527: Missing comma in Tuple: %s"
+msgstr "E1527: Fehlendes Komma in Tuple: %s"
+
+#, c-format
+msgid "E1528: List or Tuple or Blob required for argument %d"
+msgstr "E1528: Liste, Tuple oder Blob erforderlich als Argument %d"
+
+#, c-format
+msgid "E1529: List or Tuple required for argument %d"
+msgstr "E1529: Liste oder Tuple erforderlich als Argument %d"
+
+#, c-format
+msgid "E1530: List or Tuple or Dictionary required for argument %d"
+msgstr "E1530: Liste, Tuple oder Dictionary erforderlich als Argument %d"
+
+#, c-format
+msgid "E1531: Argument of %s must be a List, Tuple, Dictionary or Blob"
+msgstr ""
+"E1531: Argument von %s muss eine Liste, Tuple, Dictionary oder Blob sein"
+
+msgid "E1532: Cannot modify a tuple"
+msgstr "E1532: Kann Tuple nicht ändern"
+
+msgid "E1533: Cannot slice a tuple"
+msgstr "E1533: Auf ein Tuple kann kein Slice angewendet werden"
+
+#, c-format
+msgid "E1534: Tuple required for argument %d"
+msgstr "E1534: Tuple erforderlich als Argument %d"
+
+msgid "E1535: List or Tuple required"
+msgstr "E1535: Liste oder Tuple erforderlich"
+
+# TODO: Capitalise first word of message?
+msgid "E1536: Tuple required"
+msgstr "E1536: Tuple benötigt"
+
+msgid "E1537: Less targets than Tuple items"
+msgstr "E1537: Weniger Ziele als Einträge im Tuple"
+
+msgid "E1538: More targets than Tuple items"
+msgstr "E1538: Mehr Ziele als Einträge im Tuple"
+
+#, c-format
+msgid "E1539: Variadic tuple must end with a list type: %s"
+msgstr "E1539: Ein variadisches Tuple muss mit einem Listentyp enden: %s"
+
+msgid "E1540: Cannot use a variadic tuple in concatenation"
+msgstr "E1540: Kann variadisches Tuple nicht für Verkettung verwenden"
+
+msgid "E1541: Value too large, max Unicode codepoint is U+10FFFF"
+msgstr "E1541: Wert zu groß, maximale Unicode-Codepunkt ist U+10FFFF"
+
+msgid "E1542: Cannot have a negative or zero number of quickfix/location lists"
+msgstr "E1542: Die Anzahl der Quickfix-/Positionslisten darf nicht negativ oder null sein"
+
+msgid "E1543: Cannot have more than a hundred quickfix/location lists"
+msgstr "E1543: Die Anzahl der Quickfix-/Positionslisten darf nicht größer als 100 sein"
+
+msgid "E1544: Failed resizing the quickfix/location list stack"
+msgstr "E1544: Vergößern/Verkleinern der Quickfix-/Positionslisten fehlgeschlagen"
+
+msgid "E1545: Quickfix list stack unavailable"
+msgstr "E1545: Quickfixlisten Stack nicht verfügbar"
+
+msgid "E1546: Cannot switch to a closing buffer"
+msgstr ""
+"E1546: Kann nicht zu einem zu schließenden Buffer wechseln"
+
+msgid "E1547: This version of Vim does support :redrawtabpanel"
+msgstr "E1547: Diese Version von Vim unterstützt nicht :redrawtabpanel"
 
 msgid "--No lines in buffer--"
 msgstr "--Keine Zeilen im Buffer--"
@@ -9194,6 +9406,18 @@ msgstr "kann vim.List Attribute nicht löschen"
 
 msgid "cannot modify fixed list"
 msgstr "kann feste Liste nicht modifizieren"
+
+msgid "tuple constructor does not accept keyword arguments"
+msgstr "Tuple Konstruktor akzeptiert keine Keyword Argumente"
+
+msgid "tuple index out of range"
+msgstr "Tuple-Index außerhalb des gültigen Bereichs"
+
+msgid "cannot delete vim.Tuple attributes"
+msgstr "kann vim.Tuple Attribute nicht löschen"
+
+msgid "cannot modify fixed tuple"
+msgstr "festes Tuple kann nicht verändert werden"
 
 #, c-format
 msgid "unnamed function %s does not exist"
@@ -9605,8 +9829,11 @@ msgstr ""
 "passt\n"
 "füge \"uhex\" hinzu um nicht druckbare Zeichen als Hex-Wert anzuzeigen"
 
-msgid "characters to use for the status line, folds and filler lines"
-msgstr "zu verwendende Zeichen für die Statuszeile, Folds und Füllzeilen"
+msgid ""
+"characters to use for the status line, folds, diffs, buffer text, filler "
+"lines and truncation in the completion menu"
+msgstr "zu verwendende Zeichen für die Statuszeile, Folds, Diffs Buffertext, Füllzeilen"
+"und Truncation-Zeichen im Completion Menü"
 
 msgid "number of lines used for the command-line"
 msgstr "Anzahl zu verwendender Zeilen für die Kommandozeile"
@@ -9647,6 +9874,12 @@ msgstr "relative Zeilennummerierung anzeigen"
 
 msgid "number of columns to use for the line number"
 msgstr "zu verwendede Spaltenanzahl für die Zeilennummerierung"
+
+msgid "maximum number of quickfix lists that can be stored in history"
+msgstr "maximale Anzahl an Quickfixlisten, die vorgehalten werden können"
+
+msgid "maximum number of location lists that can be stored in history"
+msgstr "maximale Anzahl an Positionslisten, die vorgehalten werden können"
 
 msgid "controls whether concealable text is hidden"
 msgstr "ob verdeckter Text anzuzeigen ist"
@@ -9741,6 +9974,9 @@ msgstr "minimal zu verwendende Zeilenanzahl für aktuelles Fenster"
 msgid "minimal number of lines used for any window"
 msgstr "minmal zu verwendende Zeilenanzahl für alle Fenster"
 
+msgid "keep window focused on a single buffer"
+msgstr "Fenster auf einen einzelnen Buffer fokussiert halten"
+
 msgid "keep the height of the window"
 msgstr "aktuelle Größe des Fenster beibehalten"
 
@@ -9818,6 +10054,9 @@ msgstr "mehrere Tab Seiten"
 
 msgid "0, 1 or 2; when to use a tab pages line"
 msgstr "0, 1, oder 2; wann eine Tabseitenzeile verwendet wird"
+
+msgid "behaviour when closing tab pages: left, uselast or empty"
+msgstr "Verhalten wenn Tabpage geschlossen wird: left, uselast oder empty"
 
 msgid "maximum number of tab pages to open for -p and \"tab all\""
 msgstr "maximale Anzahl an zu öffnenden Tabseiten (für -p und \"tab all\")"
@@ -10029,6 +10268,9 @@ msgstr "füge 's' Flag in 'shortmess' hinzu (keine Suchmeldung anzeigen)"
 msgid "list of flags to make messages shorter"
 msgstr "Liste an Flags um Meldungen kürzer auszugeben"
 
+msgid "options for outputting messages"
+msgstr "Optionen für die Ausgabe von Benachrichtigungen"
+
 msgid "show (partial) command keys in location given by 'showcmdloc'"
 msgstr ""
 "zeige (teilweise) Befehlstasten an dem mit 'showcmdloc' angegebenen Ort"
@@ -10148,9 +10390,15 @@ msgstr ""
 "legt fest, wie Vervollständigen im Einfüge-Modus mit CTRL-N und CTRL-P "
 "funktioniert"
 
+msgid "use fuzzy collection for specific completion modes"
+msgstr "Fuzzy-Sammlung für spezifische Vervollständigungsmodi verwenden"
+
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr ""
 "ob ein Popup-Menü bei der Verfollständigen im Einfüge-Modus genutzt wird"
+
+msgid "popup menu item align order"
+msgstr "Ausrichtungsreihenfolge im Popup-Menü"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "Optionen für das Popup bei der Einfüge-Modus Vervollständigung"
@@ -10160,6 +10408,9 @@ msgstr "maximale Höhe des Popup-Menüs"
 
 msgid "minimum width of the popup menu"
 msgstr "minimale Breite des Popup-Menüs"
+
+msgid "maximum width of the popup menu"
+msgstr "maximale Breite des Popup-Menüs"
 
 msgid "user defined function for Insert mode completion"
 msgstr "benutzerdefinierte Funktion für Vervollständigung im Einfüge-Modus"
@@ -10609,6 +10860,9 @@ msgstr "spezifiziert Zeichen in einem Dateinamen"
 msgid "specifies the characters in an identifier"
 msgstr "spezifiziert Zeichen in einer Kennung (identifier)"
 
+msgid "defines trigger strings for complete_match()"
+msgstr "definiert Trigger Zeichenketten für complete_match()"
+
 msgid "specifies the characters in a keyword"
 msgstr "spezifiziert Zeichen in einem Keyword"
 
@@ -10728,6 +10982,9 @@ msgstr ""
 msgid "list of autocommand events which are to be ignored"
 msgstr "Liste von zu ignorierenden Autokommando Ereignisse"
 
+msgid "list of autocommand events which are to be ignored in a window"
+msgstr "Liste von zu ignorierenden Autokommando Ereignisse innerhalb eines Fensters"
+
 msgid "load plugin scripts when starting up"
 msgstr "Lade Plugins beim Start"
 
@@ -10819,6 +11076,15 @@ msgstr "Name der dynamischen MzScheme Bibliothek"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "Name der dynamischen MzScheme GC Bibliothek"
+
+msgid "0, 1 or 2; when to use a tab pages in tabpanel"
+msgstr "0, 1, oder 2; wann das Tabpanel angezeigt wird"
+
+msgid "custom tab pages in tabpanel"
+msgstr "benutzerdefinierte Tabpages im Tabpanel"
+
+msgid "options for using tabpanel"
+msgstr "Optionen für das Tabpanel"
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""

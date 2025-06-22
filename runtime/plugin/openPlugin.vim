@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2025 Jun 11
+# Last Change:  2025 Jun 22
 
 if exists("g:loaded_openPlugin") || &cp
   finish
@@ -34,10 +34,12 @@ if !no_gx
   enddef
 
   if maparg('gx', 'n') == ""
-    nnoremap <unique> gx <scriptcmd>vim9.Open(GetWordUnderCursor())<CR>
+    nnoremap <Plug>(open-word-under-cursor) <scriptcmd>vim9.Open(GetWordUnderCursor())<CR>
+    nmap gx <Plug>(open-word-under-cursor)
   endif
   if maparg('gx', 'x') == ""
-    xnoremap <unique> gx <scriptcmd>vim9.Open(getregion(getpos('v'), getpos('.'), { type: mode() })->join())<CR>
+    xnoremap <Plug>(open-word-under-cursor) <scriptcmd>vim9.Open(getregion(getpos('v'), getpos('.'), { type: mode() })->join())<CR>
+    xmap gx <Plug>(open-word-under-cursor)
   endif
 endif
 

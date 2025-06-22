@@ -2,92 +2,92 @@
 =    W i t a j   w   t u t o r i a l u   V I M - a      -    Wersja  1.7.     =
 ===============================================================================
 
-     Vim to potê¿ny edytor, który posiada wiele poleceñ, zbyt du¿o, by
-     wyja¶niæ je wszystkie w tym tutorialu. Ten przewodnik ma nauczyæ
-     Ciê pos³ugiwaæ siê wystarczaj±co wieloma komendami, by¶ móg³ ³atwo
-     u¿ywaæ Vima jako edytora ogólnego przeznaczenia.
+     Vim to potÄ™Å¼ny edytor, ktÃ³ry posiada wiele poleceÅ„, zbyt duÅ¼o, by
+     wyjaÅ›niÄ‡ je wszystkie w tym tutorialu. Ten przewodnik ma nauczyÄ‡
+     CiÄ™ posÅ‚ugiwaÄ‡ siÄ™ wystarczajÄ…co wieloma komendami, byÅ› mÃ³gÅ‚ Å‚atwo
+     uÅ¼ywaÄ‡ Vima jako edytora ogÃ³lnego przeznaczenia.
 
-     Czas potrzebny na ukoñczenie tutoriala to 25 do 30 minut i zale¿y
-     od tego jak wiele czasu spêdzisz na eksperymentowaniu.
+     Czas potrzebny na ukoÅ„czenie tutoriala to 25 do 30 minut i zaleÅ¼y
+     od tego jak wiele czasu spÄ™dzisz na eksperymentowaniu.
 
 	 UWAGA:
-	 Polecenia wykonywane w czasie lekcji zmodyfikuj± tekst. Zrób
-	 wcze¶niej kopiê tego pliku do æwiczeñ (je¶li zacz±³e¶ komend±
-	 "vimtutor", to ju¿ pracujesz na kopii).
+	 Polecenia wykonywane w czasie lekcji zmodyfikujÄ… tekst. ZrÃ³b
+	 wczeÅ›niej kopiÄ™ tego pliku do Ä‡wiczeÅ„ (jeÅ›li zaczÄ…Å‚eÅ› komendÄ…
+	 "vimtutor", to juÅ¼ pracujesz na kopii).
 
-	 Pamiêtaj, ¿e przewodnik ten zosta³ zaprojektowany do nauki poprzez
-	 æwiczenia. Oznacza to, ¿e musisz wykonywaæ polecenia, by nauczyæ siê ich
-	 prawid³owo. Je¶li bêdziesz jedynie czyta³ tekst, szybko zapomnisz wiele
-	 poleceñ!
+	 PamiÄ™taj, Å¼e przewodnik ten zostaÅ‚ zaprojektowany do nauki poprzez
+	 Ä‡wiczenia. Oznacza to, Å¼e musisz wykonywaÄ‡ polecenia, by nauczyÄ‡ siÄ™ ich
+	 prawidÅ‚owo. JeÅ›li bÄ™dziesz jedynie czytaÅ‚ tekst, szybko zapomnisz wiele
+	 poleceÅ„!
 
-     Teraz upewnij siê, ¿e nie masz wci¶niêtego Caps Locka i wciskaj  j
-     tak d³ugo dopóki Lekcja 1.1.1. nie wype³ni ca³kowicie ekranu.
+     Teraz upewnij siÄ™, Å¼e nie masz wciÅ›niÄ™tego Caps Locka i wciskaj  j
+     tak dÅ‚ugo dopÃ³ki Lekcja 1.1.1. nie wypeÅ‚ni caÅ‚kowicie ekranu.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		  Lekcja 1.1.1.: PORUSZANIE SIÊ KURSOREM
+		  Lekcja 1.1.1.: PORUSZANIE SIÄ˜ KURSOREM
 
-       ** By wykonaæ ruch kursorem, wci¶nij h, j, k, l jak pokazano. **
+       ** By wykonaÄ‡ ruch kursorem, wciÅ›nij h, j, k, l jak pokazano. **
 
 	       ^
-	       k		      Wskazówka:  h jest po lewej
+	       k		      WskazÃ³wka:  h jest po lewej
 	  < h	  l >				  l jest po prawej
-	       j				  j wygl±da jak strza³ka w dó³
+	       j				  j wyglÄ…da jak strzaÅ‚ka w dÃ³Å‚
 	       v
-  1. Poruszaj kursorem dopóki nie bêdziesz pewien, ¿e pamiêtasz polecenia.
+  1. Poruszaj kursorem dopÃ³ki nie bÄ™dziesz pewien, Å¼e pamiÄ™tasz polecenia.
 
-  2. Trzymaj  j  tak d³ugo a¿ bêdzie siê powtarza³.
-     Teraz wiesz jak doj¶æ do nastêpnej lekcji.
+  2. Trzymaj  j  tak dÅ‚ugo aÅ¼ bÄ™dzie siÄ™ powtarzaÅ‚.
+     Teraz wiesz jak dojÅ›Ä‡ do nastÄ™pnej lekcji.
 
-  3. U¿ywaj±c strza³ki w dó³ przejd¼ do nastêpnej lekcji.
+  3. UÅ¼ywajÄ…c strzaÅ‚ki w dÃ³Å‚ przejdÅº do nastÄ™pnej lekcji.
 
-Uwaga: Je¶li nie jeste¶ pewien czego¶ co wpisa³e¶, wci¶nij <ESC>, by wróciæ do
-       trybu Normal. Wtedy powtórz polecenie.
+Uwaga: JeÅ›li nie jesteÅ› pewien czegoÅ› co wpisaÅ‚eÅ›, wciÅ›nij <ESC>, by wrÃ³ciÄ‡ do
+       trybu Normal. Wtedy powtÃ³rz polecenie.
 
-Uwaga: Klawisze kursora tak¿e powinny dzia³aæ, ale u¿ywaj±c  hjkl  bêdziesz
-       w stanie poruszaæ siê o wiele szybciej, jak siê tylko przyzwyczaisz.
-       Naprawdê!
+Uwaga: Klawisze kursora takÅ¼e powinny dziaÅ‚aÄ‡, ale uÅ¼ywajÄ…c  hjkl  bÄ™dziesz
+       w stanie poruszaÄ‡ siÄ™ o wiele szybciej, jak siÄ™ tylko przyzwyczaisz.
+       NaprawdÄ™!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		    Lekcja 1.1.2.: WYCHODZENIE Z VIM-a
 
- !! UWAGA: Przed wykonaniem jakiegokolwiek polecenia przeczytaj ca³± lekcjê !!
+ !! UWAGA: Przed wykonaniem jakiegokolwiek polecenia przeczytaj caÅ‚Ä… lekcjÄ™ !!
 
-  1. Wci¶nij <ESC> (aby upewniæ siê, ¿e jeste¶ w trybie Normal).
+  1. WciÅ›nij <ESC> (aby upewniÄ‡ siÄ™, Å¼e jesteÅ› w trybie Normal).
   2. Wpisz:			:q!<ENTER>.
-     To spowoduje wyj¶cie z edytora PORZUCAJ¡C wszelkie zmiany, jakie
-     zd±¿y³e¶ zrobiæ. Je¶li chcesz zapamiêtaæ zmiany i wyj¶æ,
+     To spowoduje wyjÅ›cie z edytora PORZUCAJÄ„C wszelkie zmiany, jakie
+     zdÄ…Å¼yÅ‚eÅ› zrobiÄ‡. JeÅ›li chcesz zapamiÄ™taÄ‡ zmiany i wyjÅ›Ä‡,
      wpisz:			:wq<ENTER>
 
-  3. Kiedy widzisz znak zachêty pow³oki wpisz komendê, ¿eby wróciæ
+  3. Kiedy widzisz znak zachÄ™ty powÅ‚oki wpisz komendÄ™, Å¼eby wrÃ³ciÄ‡
      do tutoriala. Czyli:	vimtutor<ENTER>
 
-  4. Je¶li chcesz zapamiêtaæ polecenia, wykonaj kroki 1. do 3., aby
-     wyj¶æ i wróciæ do edytora.
+  4. JeÅ›li chcesz zapamiÄ™taÄ‡ polecenia, wykonaj kroki 1. do 3., aby
+     wyjÅ›Ä‡ i wrÃ³ciÄ‡ do edytora.
 
-UWAGA: :q!<ENTER> porzuca wszelkie zmiany jakie zrobi³e¶. W nastêpnych
-       lekcjach dowiesz siê jak je zapamiêtywaæ.
+UWAGA: :q!<ENTER> porzuca wszelkie zmiany jakie zrobiÅ‚eÅ›. W nastÄ™pnych
+       lekcjach dowiesz siÄ™ jak je zapamiÄ™tywaÄ‡.
 
-  5. Przenie¶ kursor do lekcji 1.1.3.
+  5. PrzenieÅ› kursor do lekcji 1.1.3.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		 Lekcja 1.1.3.: EDYCJA TEKSTU - KASOWANIE
 
-	    ** Wci¶nij  x  aby usun±æ znak pod kursorem. **
+	    ** WciÅ›nij  x  aby usunÄ…Ä‡ znak pod kursorem. **
 
-  1. Przenie¶ kursor do linii poni¿ej oznaczonej --->.
+  1. PrzenieÅ› kursor do linii poniÅ¼ej oznaczonej --->.
 
-  2. By poprawiæ b³êdy, naprowad¼ kursor na znak do usuniêcia.
+  2. By poprawiÄ‡ bÅ‚Ä™dy, naprowadÅº kursor na znak do usuniÄ™cia.
 
-  3. Wci¶nij  x  aby usun±æ niechciany znak.
+  3. WciÅ›nij  x  aby usunÄ…Ä‡ niechciany znak.
 
-  4. Powtarzaj kroki 2. do 4. dopóki zdanie nie jest poprawne.
+  4. Powtarzaj kroki 2. do 4. dopÃ³ki zdanie nie jest poprawne.
 
----> Kkrowa prrzeskoczy³a prrzez ksiiê¿ycc.
+---> Kkrowa prrzeskoczyÅ‚a prrzez ksiiÄ™Å¼ycc.
 
-  5. Teraz, kiedy zdanie jest poprawione, przejd¼ do Lekcji 1.1.4.
+  5. Teraz, kiedy zdanie jest poprawione, przejdÅº do Lekcji 1.1.4.
 
-UWAGA: Ucz siê przez æwiczenie, nie wkuwanie.
+UWAGA: Ucz siÄ™ przez Ä‡wiczenie, nie wkuwanie.
 
 
 
@@ -97,135 +97,135 @@ UWAGA: Ucz siê przez æwiczenie, nie wkuwanie.
 	   Lekcja 1.1.4.: EDYCJA TEKSTU - INSERT (wprowadzanie)
 
 
-		  ** Wci¶nij  i  aby wstawiæ tekst. **
+		  ** WciÅ›nij  i  aby wstawiÄ‡ tekst. **
 
-  1. Przenie¶ kursor do pierwszej linii poni¿ej oznaczonej --->.
+  1. PrzenieÅ› kursor do pierwszej linii poniÅ¼ej oznaczonej --->.
 
-  2. Aby poprawiæ pierwszy wiersz, ustaw kursor na pierwszym znaku PO tym,
-     gdzie tekst ma byæ wstawiony.
+  2. Aby poprawiÄ‡ pierwszy wiersz, ustaw kursor na pierwszym znaku PO tym,
+     gdzie tekst ma byÄ‡ wstawiony.
 
-  3. Wci¶nij  i  a nastêpnie wpisz konieczne poprawki.
+  3. WciÅ›nij  i  a nastÄ™pnie wpisz konieczne poprawki.
 
-  4. Po poprawieniu b³êdu wci¶nij <ESC>, by wróciæ do trybu Normal.
-     Powtarzaj kroki 2. do 4., aby poprawiæ ca³e zdanie.
+  4. Po poprawieniu bÅ‚Ä™du wciÅ›nij <ESC>, by wrÃ³ciÄ‡ do trybu Normal.
+     Powtarzaj kroki 2. do 4., aby poprawiÄ‡ caÅ‚e zdanie.
 
----> W tej brkje trochê .
----> W tej linii brakuje trochê tekstu.
+---> W tej brkje trochÄ™ .
+---> W tej linii brakuje trochÄ™ tekstu.
 
-  5. Kiedy czujesz siê swobodnie wstawiaj±c tekst, przejd¼ do
-     podsumowania poni¿ej.
+  5. Kiedy czujesz siÄ™ swobodnie wstawiajÄ…c tekst, przejdÅº do
+     podsumowania poniÅ¼ej.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	   Lekcja 1.1.5.: EDYCJA TEKSTU - APPENDING (dodawanie)
 
 
-		   ** Wci¶nij  A  by dodaæ tekst. **
+		   ** WciÅ›nij  A  by dodaÄ‡ tekst. **
 
-  1. Przenie¶ kursor do pierwszej linii poni¿ej oznaczonej --->.
-     Nie ma znaczenia, który to bêdzie znak.
+  1. PrzenieÅ› kursor do pierwszej linii poniÅ¼ej oznaczonej --->.
+     Nie ma znaczenia, ktÃ³ry to bÄ™dzie znak.
 
-  2. Wci¶nij  A  i wpisz odpowiednie dodatki.
+  2. WciÅ›nij  A  i wpisz odpowiednie dodatki.
 
-  3. Kiedy tekst zosta³ dodany, wci¶nij <ESC> i wróæ do trybu Normalnego.
+  3. Kiedy tekst zostaÅ‚ dodany, wciÅ›nij <ESC> i wrÃ³Ä‡ do trybu Normalnego.
 
-  4. Przenie¶ kursor do drugiej linii oznaczonej ---> i powtórz kroki 2. i 3.,
-     aby poprawiæ zdanie.
+  4. PrzenieÅ› kursor do drugiej linii oznaczonej ---> i powtÃ³rz kroki 2. i 3.,
+     aby poprawiÄ‡ zdanie.
 
 ---> Brakuje tu tro
-     Brakuje tu trochê tekstu.
----> Tu te¿ trochê bra
-     Tu te¿ trochê brakuje.
+     Brakuje tu trochÄ™ tekstu.
+---> Tu teÅ¼ trochÄ™ bra
+     Tu teÅ¼ trochÄ™ brakuje.
 
-  5. Kiedy ju¿ utrwali³e¶ æwiczenie, przejd¼ do lekcji 1.1.6.
+  5. Kiedy juÅ¼ utrwaliÅ‚eÅ› Ä‡wiczenie, przejdÅº do lekcji 1.1.6.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  Lekcja 1.1.6.: EDYCJA PLIKU
 
-		  ** U¿yj  :wq  aby zapisaæ plik i wyj¶æ. **
+		  ** UÅ¼yj  :wq  aby zapisaÄ‡ plik i wyjÅ›Ä‡. **
 
-   !! UWAGA: zanim wykonasz jakiekolwiek polecenia przeczytaj ca³± lekcjê !!
+   !! UWAGA: zanim wykonasz jakiekolwiek polecenia przeczytaj caÅ‚Ä… lekcjÄ™ !!
 
-  1. Zakoñcz tutorial tak jak w lekcji 1.1.2.:  :q!
-     lub, je¶li masz dostêp do innego terminala, wykonaj kolejne kroki tam.
+  1. ZakoÅ„cz tutorial tak jak w lekcji 1.1.2.:  :q!
+     lub, jeÅ›li masz dostÄ™p do innego terminala, wykonaj kolejne kroki tam.
 
-  2. W pow³oce wydaj polecenie:  vim tutor<ENTER>
-     "vim" jest poleceniem uruchamiaj±cym edytor Vim. 'tutor' to nazwa pliku,
-     jaki chcesz edytowaæ. U¿yj pliku, który mo¿e zostaæ zmieniony.
+  2. W powÅ‚oce wydaj polecenie:  vim tutor<ENTER>
+     "vim" jest poleceniem uruchamiajÄ…cym edytor Vim. 'tutor' to nazwa pliku,
+     jaki chcesz edytowaÄ‡. UÅ¼yj pliku, ktÃ³ry moÅ¼e zostaÄ‡ zmieniony.
 
-  3. Dodaj i usuñ tekst tak, jak siê nauczy³e¶ w poprzednich lekcjach.
+  3. Dodaj i usuÅ„ tekst tak, jak siÄ™ nauczyÅ‚eÅ› w poprzednich lekcjach.
 
-  4. Zapisz plik ze zmianami i opu¶æ Vima:  :wq<ENTER>
+  4. Zapisz plik ze zmianami i opuÅ›Ä‡ Vima:  :wq<ENTER>
 
-  5. Je¶li zakoñczy³e¶ vimtutor w kroku 1., uruchom go ponownie i przejd¼
-     do podsumowania poni¿ej.
+  5. JeÅ›li zakoÅ„czyÅ‚eÅ› vimtutor w kroku 1., uruchom go ponownie i przejdÅº
+     do podsumowania poniÅ¼ej.
 
-  6. Po przeczytaniu wszystkich kroków i ich zrozumieniu: wykonaj je.
+  6. Po przeczytaniu wszystkich krokÃ³w i ich zrozumieniu: wykonaj je.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			     LEKCJA 1.1. PODSUMOWANIE
 
-  1. Poruszasz kursorem u¿ywaj±c "strza³ek" i klawiszy  hjkl .
-       h (w lewo)	 j (w dó³)	 k (do góry)		l (w prawo)
+  1. Poruszasz kursorem uÅ¼ywajÄ…c "strzaÅ‚ek" i klawiszy  hjkl .
+       h (w lewo)	 j (w dÃ³Å‚)	 k (do gÃ³ry)		l (w prawo)
 
-  2. By wej¶æ do Vima, (z pow³oki) wpisz:
+  2. By wejÅ›Ä‡ do Vima, (z powÅ‚oki) wpisz:
 			    vim NAZWA_PLIKU<ENTER>
 
-  3. By wyj¶æ z Vima, wpisz:
-			    <ESC> :q!<ENTER>  by usun±æ wszystkie zmiany.
-	     LUB:	    <ESC> :wq<ENTER>  by zmiany zachowaæ.
+  3. By wyjÅ›Ä‡ z Vima, wpisz:
+			    <ESC> :q!<ENTER>  by usunÄ…Ä‡ wszystkie zmiany.
+	     LUB:	    <ESC> :wq<ENTER>  by zmiany zachowaÄ‡.
 
-  4. By usun±æ znak pod kursorem, wci¶nij:  x
+  4. By usunÄ…Ä‡ znak pod kursorem, wciÅ›nij:  x
 
-  5. By wstawiæ tekst przed kursorem lub dodaæ:
+  5. By wstawiÄ‡ tekst przed kursorem lub dodaÄ‡:
 	i   wpisz tekst   <ESC>         wstawi przed kursorem
-	A   wpisz tekst   <ESC>         doda na koñcu linii
+	A   wpisz tekst   <ESC>         doda na koÅ„cu linii
 
-UWAGA: Wci¶niêcie <ESC> przeniesie Ciê z powrotem do trybu Normal
-       lub odwo³a niechciane lub czê¶ciowo wprowadzone polecenia.
+UWAGA: WciÅ›niÄ™cie <ESC> przeniesie CiÄ™ z powrotem do trybu Normal
+       lub odwoÅ‚a niechciane lub czÄ™Å›ciowo wprowadzone polecenia.
 
-Teraz mo¿emy kontynuowaæ i przej¶æ do Lekcji 1.2.
+Teraz moÅ¼emy kontynuowaÄ‡ i przejÅ›Ä‡ do Lekcji 1.2.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		  Lekcja 1.2.1.: POLECENIE DELETE (usuwanie)
 
 
-		      ** Wpisz  dw  by usun±æ wyraz. **
+		      ** Wpisz  dw  by usunÄ…Ä‡ wyraz. **
 
-  1. Wci¶nij  <ESC>, by upewniæ siê, ¿e jeste¶ w trybie Normal.
+  1. WciÅ›nij  <ESC>, by upewniÄ‡ siÄ™, Å¼e jesteÅ› w trybie Normal.
 
-  2. Przenie¶ kursor do linii poni¿ej oznaczonej --->.
+  2. PrzenieÅ› kursor do linii poniÅ¼ej oznaczonej --->.
 
-  3. Przesuñ kursor na pocz±tek wyrazu, który chcesz usun±æ.
+  3. PrzesuÅ„ kursor na poczÄ…tek wyrazu, ktÃ³ry chcesz usunÄ…Ä‡.
 
-  4. Wpisz   dw   by usun±æ wyraz.
+  4. Wpisz   dw   by usunÄ…Ä‡ wyraz.
 
-  UWAGA: Litera  d  pojawi siê na dole ekranu. Vim czeka na wpisanie  w .
-	 Je¶li zobaczysz inny znak, oznacza to, ¿e wpisa³e¶ co¶ ¼le; wci¶nij
-	 <ESC> i zacznij od pocz±tku.
+  UWAGA: Litera  d  pojawi siÄ™ na dole ekranu. Vim czeka na wpisanie  w .
+	 JeÅ›li zobaczysz inny znak, oznacza to, Å¼e wpisaÅ‚eÅ› coÅ› Åºle; wciÅ›nij
+	 <ESC> i zacznij od poczÄ…tku.
 
----> Jest tu parê papier wyrazów, które kamieñ nie nale¿± do no¿yce tego zdania.
+---> Jest tu parÄ™ papier wyrazÃ³w, ktÃ³re kamieÅ„ nie naleÅ¼Ä… do noÅ¼yce tego zdania.
 
-  5. Powtarzaj kroki 3. i 4. dopóki zdanie nie bêdzie poprawne, potem
-  przejd¼ do Lekcji 1.2.2.
+  5. Powtarzaj kroki 3. i 4. dopÃ³ki zdanie nie bÄ™dzie poprawne, potem
+  przejdÅº do Lekcji 1.2.2.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lekcja 1.2.2.: WIÊCEJ POLECEÑ USUWAJ¡CYCH
+		    Lekcja 1.2.2.: WIÄ˜CEJ POLECEÅƒ USUWAJÄ„CYCH
 
 
-	      ** Wpisz	d$  aby usun±æ tekst do koñca linii. **
+	      ** Wpisz	d$  aby usunÄ…Ä‡ tekst do koÅ„ca linii. **
 
-  1. Wci¶nij  <ESC>  aby siê upewniæ, ¿e jeste¶ w trybie Normal.
+  1. WciÅ›nij  <ESC>  aby siÄ™ upewniÄ‡, Å¼e jesteÅ› w trybie Normal.
 
-  2. Przenie¶ kursor do linii poni¿ej oznaczonej --->.
+  2. PrzenieÅ› kursor do linii poniÅ¼ej oznaczonej --->.
 
-  3. Przenie¶ kursor do koñca poprawnego zdania (PO pierwszej  . ).
+  3. PrzenieÅ› kursor do koÅ„ca poprawnego zdania (PO pierwszej  . ).
 
-  4. Wpisz  d$  aby usun±æ resztê linii.
+  4. Wpisz  d$  aby usunÄ…Ä‡ resztÄ™ linii.
 
----> Kto¶ wpisa³ koniec tego zdania dwukrotnie. zdania dwukrotnie.
+---> KtoÅ› wpisaÅ‚ koniec tego zdania dwukrotnie. zdania dwukrotnie.
 
 
-  5. Przejd¼ do Lekcji 1.2.3., by zrozumieæ co siê sta³o.
+  5. PrzejdÅº do Lekcji 1.2.3., by zrozumieÄ‡ co siÄ™ staÅ‚o.
 
 
 
@@ -235,68 +235,68 @@ Teraz mo¿emy kontynuowaæ i przej¶æ do Lekcji 1.2.
 		     Lekcja 1.2.3.: O OPERATORACH I RUCHACH
 
 
-  Wiele poleceñ zmieniaj±cych tekst jest z³o¿onych z operatora i ruchu.
-  Format dla polecenia usuwaj±cego z operatorem  d  jest nastêpuj±cy:
+  Wiele poleceÅ„ zmieniajÄ…cych tekst jest zÅ‚oÅ¼onych z operatora i ruchu.
+  Format dla polecenia usuwajÄ…cego z operatorem  d  jest nastÄ™pujÄ…cy:
 
 	    d  ruch
 
   gdzie:
    d      - operator usuwania.
-   ruch   - na czym polecenie bêdzie wykonywane (lista poni¿ej).
+   ruch   - na czym polecenie bÄ™dzie wykonywane (lista poniÅ¼ej).
 
-  Krótka lista ruchów:
-    w - do pocz±tku nastêpnego wyrazu WY£¡CZAJ¡C pierwszy znak.
-    e - do koñca bie¿±cego wyrazu, W£¡CZAJ¡C ostatni znak.
-    $ - do koñca linii, W£¡CZAJ¡C ostatni znak.
+  KrÃ³tka lista ruchÃ³w:
+    w - do poczÄ…tku nastÄ™pnego wyrazu WYÅÄ„CZAJÄ„C pierwszy znak.
+    e - do koÅ„ca bieÅ¼Ä…cego wyrazu, WÅÄ„CZAJÄ„C ostatni znak.
+    $ - do koÅ„ca linii, WÅÄ„CZAJÄ„C ostatni znak.
 
-W ten sposób wpisanie  de  usunie znaki od kursora do koñca wyrazu.
+W ten sposÃ³b wpisanie  de  usunie znaki od kursora do koÅ„ca wyrazu.
 
 UWAGA: Wpisanie tylko ruchu w trybie Normal bez operatora przeniesie kursor
-       tak, jak to okre¶lono.
+       tak, jak to okreÅ›lono.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lekcja 1.2.4.: U¯YCIE MNO¯NIKA DLA RUCHU
+		    Lekcja 1.2.4.: UÅ»YCIE MNOÅ»NIKA DLA RUCHU
 
 
-   ** Wpisanie liczby przed ruchem powtarza ruch odpowiedni± ilo¶æ razy. **
+   ** Wpisanie liczby przed ruchem powtarza ruch odpowiedniÄ… iloÅ›Ä‡ razy. **
 
-  1. Przenie¶ kursor na pocz±tek linii poni¿ej zaznaczonej --->.
+  1. PrzenieÅ› kursor na poczÄ…tek linii poniÅ¼ej zaznaczonej --->.
 
-  2. Wpisz  2w  aby przenie¶æ kursor o dwa wyrazy do przodu.
+  2. Wpisz  2w  aby przenieÅ›Ä‡ kursor o dwa wyrazy do przodu.
 
-  3. Wpisz  3e  aby przenie¶æ kursor do koñca trzeciego wyrazu w przód.
+  3. Wpisz  3e  aby przenieÅ›Ä‡ kursor do koÅ„ca trzeciego wyrazu w przÃ³d.
 
-  4. Wpisz  0  (zero), aby przenie¶æ kursor na pocz±tek linii.
+  4. Wpisz  0  (zero), aby przenieÅ›Ä‡ kursor na poczÄ…tek linii.
 
-  5. Powtórz kroki 2. i 3. z innymi liczbami.
+  5. PowtÃ³rz kroki 2. i 3. z innymi liczbami.
 
 
- ---> To jest zwyk³y wiersz z wyrazami, po których mo¿esz siê poruszaæ.
+ ---> To jest zwykÅ‚y wiersz z wyrazami, po ktÃ³rych moÅ¼esz siÄ™ poruszaÄ‡.
 
-  6. Przejd¼ do lekcji 1.2.5.
+  6. PrzejdÅº do lekcji 1.2.5.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Lekcja 1.2.5.: U¯YCIE MNO¯NIKA, BY WIÊCEJ USUN¡Æ
+		Lekcja 1.2.5.: UÅ»YCIE MNOÅ»NIKA, BY WIÄ˜CEJ USUNÄ„Ä†
 
 
-    ** Wpisanie liczby z operatorem powtarza go odpowiedni± ilo¶æ razy. **
+    ** Wpisanie liczby z operatorem powtarza go odpowiedniÄ… iloÅ›Ä‡ razy. **
 
-  W wy¿ej wspomnianej kombinacji operatora usuwania i ruchu podaj mno¿nik
-  przed ruchem, by wiêcej usun±æ:
+  W wyÅ¼ej wspomnianej kombinacji operatora usuwania i ruchu podaj mnoÅ¼nik
+  przed ruchem, by wiÄ™cej usunÄ…Ä‡:
 	d  liczba  ruch
 
-  1. Przenie¶ kursor do pierwszego wyrazu KAPITALIKAMI w linii zaznaczonej --->.
+  1. PrzenieÅ› kursor do pierwszego wyrazu KAPITALIKAMI w linii zaznaczonej --->.
 
-  2. Wpisz  2dw  aby usun±æ dwa wyrazy KAPITALIKAMI.
+  2. Wpisz  2dw  aby usunÄ…Ä‡ dwa wyrazy KAPITALIKAMI.
 
-  3. Powtarzaj kroki 1. i 2. z innymi mno¿nikami, aby usun±æ kolejne wyrazy
+  3. Powtarzaj kroki 1. i 2. z innymi mnoÅ¼nikami, aby usunÄ…Ä‡ kolejne wyrazy
      KAPITALIKAMI jednym poleceniem
 
----> ta ASD WE linia QWE ASDF ZXCV FG wyrazów zosta³a ERT FGH CF oczyszczona.
+---> ta ASD WE linia QWE ASDF ZXCV FG wyrazÃ³w zostaÅ‚a ERT FGH CF oczyszczona.
 
-UWAGA:  Mno¿nik pomiêdzy operatorem  d  i ruchem dzia³a podobnie do ruchu bez
+UWAGA:  MnoÅ¼nik pomiÄ™dzy operatorem  d  i ruchem dziaÅ‚a podobnie do ruchu bez
         operatora.
 
 
@@ -304,68 +304,68 @@ UWAGA:  Mno¿nik pomiêdzy operatorem  d  i ruchem dzia³a podobnie do ruchu bez
 		      Lekcja 1.2.6.: OPEROWANIE NA LINIACH
 
 
-		   ** Wpisz  dd  aby usun±æ ca³± liniê. **
+		   ** Wpisz  dd  aby usunÄ…Ä‡ caÅ‚Ä… liniÄ™. **
 
-  Z powodu czêsto¶ci usuwania ca³ych linii, projektanci Vi zdecydowali, ¿e
-  bêdzie ³atwiej wpisaæ dwa razy  d  aby usun±æ liniê.
+  Z powodu czÄ™stoÅ›ci usuwania caÅ‚ych linii, projektanci Vi zdecydowali, Å¼e
+  bÄ™dzie Å‚atwiej wpisaÄ‡ dwa razy  d  aby usunÄ…Ä‡ liniÄ™.
 
-  1. Przenie¶ kursor do drugiego zdania z wierszyka poni¿ej.
-  2. Wpisz  dd  aby usun±æ wiersz.
-  3. Teraz przenie¶ siê do czwartego wiersza.
-  4. Wpisz  2dd  aby usun±æ dwa wiersze.
+  1. PrzenieÅ› kursor do drugiego zdania z wierszyka poniÅ¼ej.
+  2. Wpisz  dd  aby usunÄ…Ä‡ wiersz.
+  3. Teraz przenieÅ› siÄ™ do czwartego wiersza.
+  4. Wpisz  2dd  aby usunÄ…Ä‡ dwa wiersze.
 
---->  1)  Ró¿e s± czerwone,
---->  2)  B³oto jest fajne,
---->  3)  Fio³ki s± niebieskie,
---->  4)  Mam samochód,
+--->  1)  RÃ³Å¼e sÄ… czerwone,
+--->  2)  BÅ‚oto jest fajne,
+--->  3)  FioÅ‚ki sÄ… niebieskie,
+--->  4)  Mam samochÃ³d,
 --->  5)  Zegar podaje czas,
---->  6)  Cukier jest s³odki,
---->  7)  I ty te¿.
+--->  6)  Cukier jest sÅ‚odki,
+--->  7)  I ty teÅ¼.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		      Lekcja 1.2.7.: POLECENIE UNDO (cofnij)
 
 
-	  ** Wci¶nij  u  aby cofn±æ skutki ostatniego polecenia.
-		 U za¶, by cofn±æ skutki dla ca³ej linii. **
+	  ** WciÅ›nij  u  aby cofnÄ…Ä‡ skutki ostatniego polecenia.
+		 U zaÅ›, by cofnÄ…Ä‡ skutki dla caÅ‚ej linii. **
 
-  1. Przenie¶ kursor do zdania poni¿ej oznaczonego ---> i umie¶æ go na
-     pierwszym b³êdzie.
-  2. Wpisz  x  aby usun±æ pierwszy niechciany znak.
-  3. Teraz wci¶nij  u  aby cofn±æ skutki ostatniego polecenia.
-  4. Tym razem popraw wszystkie b³êdy w linii u¿ywaj±c polecenia  x .
-  5. Teraz wci¶nij wielkie  U  aby przywróciæ liniê do oryginalnego stanu.
-  6. Teraz wci¶nij  u  kilka razy, by cofn±æ  U  i poprzednie polecenia.
-  7. Teraz wpisz CTRL-R (trzymaj równocze¶nie wci¶niête klawisze CTRL i R)
-     kilka razy, by cofn±æ cofniêcia.
+  1. PrzenieÅ› kursor do zdania poniÅ¼ej oznaczonego ---> i umieÅ›Ä‡ go na
+     pierwszym bÅ‚Ä™dzie.
+  2. Wpisz  x  aby usunÄ…Ä‡ pierwszy niechciany znak.
+  3. Teraz wciÅ›nij  u  aby cofnÄ…Ä‡ skutki ostatniego polecenia.
+  4. Tym razem popraw wszystkie bÅ‚Ä™dy w linii uÅ¼ywajÄ…c polecenia  x .
+  5. Teraz wciÅ›nij wielkie  U  aby przywrÃ³ciÄ‡ liniÄ™ do oryginalnego stanu.
+  6. Teraz wciÅ›nij  u  kilka razy, by cofnÄ…Ä‡  U  i poprzednie polecenia.
+  7. Teraz wpisz CTRL-R (trzymaj rÃ³wnoczeÅ›nie wciÅ›niÄ™te klawisze CTRL i R)
+     kilka razy, by cofnÄ…Ä‡ cofniÄ™cia.
 
----> Poopraw b³êdyyy w teej liniii i zaamiieñ je prrzez coofnij.
+---> Poopraw bÅ‚Ä™dyyy w teej liniii i zaamiieÅ„ je prrzez coofnij.
 
-  8. To s± bardzo po¿yteczne polecenia.
+  8. To sÄ… bardzo poÅ¼yteczne polecenia.
 
-     Przejd¼ teraz do podsumowania Lekcji 1.2.
+     PrzejdÅº teraz do podsumowania Lekcji 1.2.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			     LEKCJA 1.2. PODSUMOWANIE
 
 
-  1. By usun±æ znaki od kursora do nastêpnego wyrazu, wpisz:   dw
-  2. By usun±æ znaki od kursora do koñca linii, wpisz:    d$
-  3. By usun±æ ca³± liniê:    dd
-  4. By powtórzyæ ruch, poprzed¼ go liczb±:    2w
+  1. By usunÄ…Ä‡ znaki od kursora do nastÄ™pnego wyrazu, wpisz:   dw
+  2. By usunÄ…Ä‡ znaki od kursora do koÅ„ca linii, wpisz:    d$
+  3. By usunÄ…Ä‡ caÅ‚Ä… liniÄ™:    dd
+  4. By powtÃ³rzyÄ‡ ruch, poprzedÅº go liczbÄ…:    2w
   5. Format polecenia zmiany to:
                 operator  [liczba]  ruch
   gdzie:
-   operator  - to, co trzeba zrobiæ (np.  d  dla usuwania)
-   [liczba]  - opcjonalne, ile razy powtórzyæ ruch
+   operator  - to, co trzeba zrobiÄ‡ (np.  d  dla usuwania)
+   [liczba]  - opcjonalne, ile razy powtÃ³rzyÄ‡ ruch
    ruch      - przenosi nad tekstem do operowania, takim jak  w (wyraz),
-	       $  (do koñca linii) etc.
+	       $  (do koÅ„ca linii) etc.
 
-  6. By przej¶æ do pocz±tku linii, u¿yj zera:  0
-  7. By cofn±æ poprzednie polecenie, wpisz:	  u  (ma³e u)
-     By cofn±æ wszystkie zmiany w linii, wpisz:	  U  (wielkie U)
-     By cofn±æ cofniêcie, wpisz:			  CTRL-R
+  6. By przejÅ›Ä‡ do poczÄ…tku linii, uÅ¼yj zera:  0
+  7. By cofnÄ…Ä‡ poprzednie polecenie, wpisz:	  u  (maÅ‚e u)
+     By cofnÄ…Ä‡ wszystkie zmiany w linii, wpisz:	  U  (wielkie U)
+     By cofnÄ…Ä‡ cofniÄ™cie, wpisz:			  CTRL-R
 
 
 
@@ -373,182 +373,182 @@ UWAGA:  Mno¿nik pomiêdzy operatorem  d  i ruchem dzia³a podobnie do ruchu bez
 			 Lekcja 1.3.1.: POLECENIE PUT (wstaw)
 
 
-	  ** Wpisz  p  by wstawiæ ostatnie usuniêcia za kursorem. **
+	  ** Wpisz  p  by wstawiÄ‡ ostatnie usuniÄ™cia za kursorem. **
 
-  1. Przenie¶ kursor do pierwszej linii ---> poni¿ej.
+  1. PrzenieÅ› kursor do pierwszej linii ---> poniÅ¼ej.
 
-  2. Wpisz  dd  aby usun±æ liniê i przechowaæ j± w rejestrze Vima.
+  2. Wpisz  dd  aby usunÄ…Ä‡ liniÄ™ i przechowaÄ‡ jÄ… w rejestrze Vima.
 
-  3. Przenie¶ kursor do linii c), POWY¯EJ tej, gdzie usuniêta linia powinna
-     siê znajdowaæ.
+  3. PrzenieÅ› kursor do linii c), POWYÅ»EJ tej, gdzie usuniÄ™ta linia powinna
+     siÄ™ znajdowaÄ‡.
 
-  4. Wci¶nij  p  by wstawiæ liniê poni¿ej kursora.
+  4. WciÅ›nij  p  by wstawiÄ‡ liniÄ™ poniÅ¼ej kursora.
 
-  5. Powtarzaj kroki 2. do 4. a¿ znajd± siê w odpowiednim porz±dku.
+  5. Powtarzaj kroki 2. do 4. aÅ¼ znajdÄ… siÄ™ w odpowiednim porzÄ…dku.
 
----> d) Jak dwa anio³ki.
----> b) Na dole fio³ki,
----> c) A my siê kochamy,
----> a) Na górze ró¿e,
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lekcja 1.3.2.: POLECENIE REPLACE (zast±p)
-
-
-	   ** Wpisz  rx  aby zast±piæ znak pod kursorem na  x . **
-
-  1. Przenie¶ kursor do pierwszej linii poni¿ej oznaczonej --->
-
-  2. Ustaw kursor na pierwszym b³êdzie.
-
-  3. Wpisz  r  a potem znak jaki powinien go zast±piæ.
-
-  4. Powtarzaj kroki 2. i 3. dopóki pierwsza linia nie bêdzie taka, jak druga.
-
---->  Kjedy ten wiersz bi³ wstókiwany, kto¶ wcizn±³ perê z³ych klawirzy!
---->  Kiedy ten wiersz by³ wstukiwany, kto¶ wcisn±³ parê z³ych klawiszy!
-
-  5. Teraz czas na Lekcjê 1.3.3.
-
-
-UWAGA: Pamiêtaj, by uczyæ siê æwicz±c, a nie pamiêciowo.
+---> d) Jak dwa anioÅ‚ki.
+---> b) Na dole fioÅ‚ki,
+---> c) A my siÄ™ kochamy,
+---> a) Na gÃ³rze rÃ³Å¼e,
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     Lekcja 1.3.3.: OPERATOR CHANGE (zmieñ)
+		    Lekcja 1.3.2.: POLECENIE REPLACE (zastÄ…p)
 
-		 ** By zmieniæ do koñca wyrazu, wpisz  ce . **
 
-  1. Przenie¶ kursor do pierwszej linii poni¿ej oznaczonej --->.
+	   ** Wpisz  rx  aby zastÄ…piÄ‡ znak pod kursorem na  x . **
 
-  2. Umie¶æ kursor na  u  w lunos.
+  1. PrzenieÅ› kursor do pierwszej linii poniÅ¼ej oznaczonej --->
+
+  2. Ustaw kursor na pierwszym bÅ‚Ä™dzie.
+
+  3. Wpisz  r  a potem znak jaki powinien go zastÄ…piÄ‡.
+
+  4. Powtarzaj kroki 2. i 3. dopÃ³ki pierwsza linia nie bÄ™dzie taka, jak druga.
+
+--->  Kjedy ten wiersz biÅ‚ wstÃ³kiwany, ktoÅ› wciznÄ…Å‚ perÄ™ zÅ‚ych klawirzy!
+--->  Kiedy ten wiersz byÅ‚ wstukiwany, ktoÅ› wcisnÄ…Å‚ parÄ™ zÅ‚ych klawiszy!
+
+  5. Teraz czas na LekcjÄ™ 1.3.3.
+
+
+UWAGA: PamiÄ™taj, by uczyÄ‡ siÄ™ Ä‡wiczÄ…c, a nie pamiÄ™ciowo.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Lekcja 1.3.3.: OPERATOR CHANGE (zmieÅ„)
+
+		 ** By zmieniÄ‡ do koÅ„ca wyrazu, wpisz  ce . **
+
+  1. PrzenieÅ› kursor do pierwszej linii poniÅ¼ej oznaczonej --->.
+
+  2. UmieÅ›Ä‡ kursor na  u  w lunos.
 
   3. Wpisz  ce  i popraw wyraz (w tym wypadku wstaw  inia ).
 
-  4. Wci¶nij <ESC> i przejd¼ do nastêpnej planowanej zmiany.
+  4. WciÅ›nij <ESC> i przejdÅº do nastÄ™pnej planowanej zmiany.
 
-  5. Powtarzaj kroki 3. i 4. dopóki pierwsze zdanie nie bêdzie takie same,
+  5. Powtarzaj kroki 3. i 4. dopÃ³ki pierwsze zdanie nie bÄ™dzie takie same,
      jak drugie.
 
----> Ta lunos ma pire s³ów, które t¿ina zbnic u¿ifajonc pcmazu zmieñ.
----> Ta linia ma parê s³ów, które trzeba zmieniæ u¿ywaj±c polecenia zmieñ.
+---> Ta lunos ma pire sÅ‚Ã³w, ktÃ³re tÅ¼ina zbnic uÅ¼ifajonc pcmazu zmieÅ„.
+---> Ta linia ma parÄ™ sÅ‚Ã³w, ktÃ³re trzeba zmieniÄ‡ uÅ¼ywajÄ…c polecenia zmieÅ„.
 
-  Zauwa¿, ¿e  ce  nie tylko zamienia wyraz, ale tak¿e zmienia tryb na
+  ZauwaÅ¼, Å¼e  ce  nie tylko zamienia wyraz, ale takÅ¼e zmienia tryb na
   Insert (wprowadzanie).
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Lekcja 1.3.4.: WIÊCEJ ZMIAN U¯YWAJ¡C c
+		      Lekcja 1.3.4.: WIÄ˜CEJ ZMIAN UÅ»YWAJÄ„C c
 
 
-	** Polecenie change u¿ywa takich samych ruchów, jak delete. **
+	** Polecenie change uÅ¼ywa takich samych ruchÃ³w, jak delete. **
 
-  1. Operator change dzia³a tak samo, jak delete. Format wygl±da tak:
+  1. Operator change dziaÅ‚a tak samo, jak delete. Format wyglÄ…da tak:
 
 	    c   [liczba]   ruch
 
-  2. Ruchy s± tak¿e takie same, np.:  w  (wyraz),  $  (koniec linii) etc.
+  2. Ruchy sÄ… takÅ¼e takie same, np.:  w  (wyraz),  $  (koniec linii) etc.
 
-  3. Przenie¶ siê do pierwszej linii poni¿ej oznaczonej --->
+  3. PrzenieÅ› siÄ™ do pierwszej linii poniÅ¼ej oznaczonej --->
 
-  4. Ustaw kursor na pierwszym b³êdzie.
+  4. Ustaw kursor na pierwszym bÅ‚Ä™dzie.
 
-  5. Wpisz  c$ , popraw koniec wiersza i wci¶nij <ESC>.
+  5. Wpisz  c$ , popraw koniec wiersza i wciÅ›nij <ESC>.
 
----> Koniec tego wiersza musi byæ poprawiony, aby wygl±da³ tak, jak drugi.
----> Koniec tego wiersza musi byæ poprawiony u¿ywaj±c polecenia  c$ .
+---> Koniec tego wiersza musi byÄ‡ poprawiony, aby wyglÄ…daÅ‚ tak, jak drugi.
+---> Koniec tego wiersza musi byÄ‡ poprawiony uÅ¼ywajÄ…c polecenia  c$ .
 
-UWAGA:  Mo¿esz u¿ywaæ <BS> aby poprawiaæ b³êdy w czasie pisania.
+UWAGA:  MoÅ¼esz uÅ¼ywaÄ‡ <BS> aby poprawiaÄ‡ bÅ‚Ä™dy w czasie pisania.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			     LEKCJA 1.3. PODSUMOWANIE
 
 
-  1. Aby wstawiæ tekst, który zosta³ wcze¶niej usuniêty wci¶nij  p . To
-     polecenie wstawia skasowany tekst PO kursorze (je¶li ca³a linia
-     zosta³a usuniêta, zostanie ona umieszczona w linii poni¿ej kursora).
+  1. Aby wstawiÄ‡ tekst, ktÃ³ry zostaÅ‚ wczeÅ›niej usuniÄ™ty wciÅ›nij  p . To
+     polecenie wstawia skasowany tekst PO kursorze (jeÅ›li caÅ‚a linia
+     zostaÅ‚a usuniÄ™ta, zostanie ona umieszczona w linii poniÅ¼ej kursora).
 
-  2. By zamieniæ znak pod kursorem, wci¶nij  r  a potem znak, który ma zast±piæ
+  2. By zamieniÄ‡ znak pod kursorem, wciÅ›nij  r  a potem znak, ktÃ³ry ma zastÄ…piÄ‡
      oryginalny.
 
-  3. Operator change pozwala Ci na zast±pienie od kursora do miejsca, gdzie
-     zabra³by Ciê ruch. Np. wpisz  ce  aby zamieniæ tekst od kursora do koñca
-     wyrazu,  c$  aby zmieniæ tekst do koñca linii.
+  3. Operator change pozwala Ci na zastÄ…pienie od kursora do miejsca, gdzie
+     zabraÅ‚by CiÄ™ ruch. Np. wpisz  ce  aby zamieniÄ‡ tekst od kursora do koÅ„ca
+     wyrazu,  c$  aby zmieniÄ‡ tekst do koÅ„ca linii.
 
-  4. Format do polecenia change (zmieñ):
+  4. Format do polecenia change (zmieÅ„):
 
 	c   [liczba]   obiekt
 
-     Teraz przejd¼ do nastêpnej lekcji.
+     Teraz przejdÅº do nastÄ™pnej lekcji.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	       Lekcja 1.4.1.: PO£O¯ENIE KURSORA ORAZ STATUS PLIKU
+	       Lekcja 1.4.1.: POÅOÅ»ENIE KURSORA ORAZ STATUS PLIKU
 
-       ** Naci¶nij CTRL-G aby zobaczyæ swoje po³o¿enie w pliku i status
-	  pliku. Naci¶nij  G  aby przej¶æ do linii w pliku. **
+       ** NaciÅ›nij CTRL-G aby zobaczyÄ‡ swoje poÅ‚oÅ¼enie w pliku i status
+	  pliku. NaciÅ›nij  G  aby przejÅ›Ä‡ do linii w pliku. **
 
-  UWAGA: Przeczytaj ca³± lekcjê zanim wykonasz jakie¶ polecenia!!!
+  UWAGA: Przeczytaj caÅ‚Ä… lekcjÄ™ zanim wykonasz jakieÅ› polecenia!!!
 
-  1. Przytrzymaj klawisz CTRL i wci¶nij  g . U¿ywamy notacji CTRL-G.
-     Na dole strony pojawi siê pasek statusu z nazw± pliku i pozycj± w pliku.
-     Zapamiêtaj numer linii dla potrzeb kroku 3.
+  1. Przytrzymaj klawisz CTRL i wciÅ›nij  g . UÅ¼ywamy notacji CTRL-G.
+     Na dole strony pojawi siÄ™ pasek statusu z nazwÄ… pliku i pozycjÄ… w pliku.
+     ZapamiÄ™taj numer linii dla potrzeb kroku 3.
 
-UWAGA: Mo¿esz te¿ zobaczyæ pozycjê kursora w prawym, dolnym rogu ekranu.
-       Dzieje siê tak kiedy ustawiona jest opcja 'ruler' (wiêcej w lekcji 6.).
+UWAGA: MoÅ¼esz teÅ¼ zobaczyÄ‡ pozycjÄ™ kursora w prawym, dolnym rogu ekranu.
+       Dzieje siÄ™ tak kiedy ustawiona jest opcja 'ruler' (wiÄ™cej w lekcji 6.).
 
-  2. Wci¶nij G aby przej¶æ na koniec pliku.
-     Wci¶nij  gg  aby przej¶æ do pocz±tku pliku.
+  2. WciÅ›nij G aby przejÅ›Ä‡ na koniec pliku.
+     WciÅ›nij  gg  aby przejÅ›Ä‡ do poczÄ…tku pliku.
 
-  3. Wpisz numer linii, w której by³e¶ a potem  G . To przeniesie Ciê
-     z powrotem do linii, w której by³e¶ kiedy wcisn±³e¶ CTRL-G.
+  3. Wpisz numer linii, w ktÃ³rej byÅ‚eÅ› a potem  G . To przeniesie CiÄ™
+     z powrotem do linii, w ktÃ³rej byÅ‚eÅ› kiedy wcisnÄ…Å‚eÅ› CTRL-G.
 
-  4. Je¶li czujesz siê wystarczaj±co pewnie, wykonaj kroki 1-3.
+  4. JeÅ›li czujesz siÄ™ wystarczajÄ…co pewnie, wykonaj kroki 1-3.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lekcja 1.4.2.: POLECENIE SZUKAJ
 
 
-	     ** Wpisz  /  a nastêpnie wyra¿enie, aby je znale¼æ. **
+	     ** Wpisz  /  a nastÄ™pnie wyraÅ¼enie, aby je znaleÅºÄ‡. **
 
-  1. W trybie Normal wpisz  / . Zauwa¿, ¿e znak ten oraz kursor pojawi±
-     siê na dole ekranu tak samo, jak polecenie  : .
+  1. W trybie Normal wpisz  / . ZauwaÅ¼, Å¼e znak ten oraz kursor pojawiÄ…
+     siÄ™ na dole ekranu tak samo, jak polecenie  : .
 
-  2. Teraz wpisz  b³ond<ENTER> .  To jest s³owo, którego chcesz szukaæ.
+  2. Teraz wpisz  bÅ‚ond<ENTER> .  To jest sÅ‚owo, ktÃ³rego chcesz szukaÄ‡.
 
-  3. By szukaæ tej samej frazy ponownie, po prostu wci¶nij  n .
-     Aby szukaæ tej frazy w przeciwnym, kierunku wci¶nij  N .
+  3. By szukaÄ‡ tej samej frazy ponownie, po prostu wciÅ›nij  n .
+     Aby szukaÄ‡ tej frazy w przeciwnym, kierunku wciÅ›nij  N .
 
-  4. Je¶li chcesz szukaæ frazy do ty³u, u¿yj polecenia  ?  zamiast  / .
+  4. JeÅ›li chcesz szukaÄ‡ frazy do tyÅ‚u, uÅ¼yj polecenia  ?  zamiast  / .
 
-  5. Aby wróciæ gdzie by³e¶, wci¶nij  CTRL-O. Powtarzaj, by wróciæ dalej. CTRL-I
+  5. Aby wrÃ³ciÄ‡ gdzie byÅ‚eÅ›, wciÅ›nij  CTRL-O. Powtarzaj, by wrÃ³ciÄ‡ dalej. CTRL-I
      idzie do przodu.
 
-Uwaga:  'b³ond' to nie jest metoda, by przeliterowaæ b³±d; 'b³ond' to b³±d.
-Uwaga:  Kiedy szukanie osi±gnie koniec pliku, bêdzie kontynuowane od pocz±tku
-        o ile opcja 'wrapscan' nie zosta³a przestawiona.
+Uwaga:  'bÅ‚ond' to nie jest metoda, by przeliterowaÄ‡ bÅ‚Ä…d; 'bÅ‚ond' to bÅ‚Ä…d.
+Uwaga:  Kiedy szukanie osiÄ…gnie koniec pliku, bÄ™dzie kontynuowane od poczÄ…tku
+        o ile opcja 'wrapscan' nie zostaÅ‚a przestawiona.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		Lekcja 1.4.3.: W POSZUKIWANIU PARUJ¡CYCH NAWIASÓW
+		Lekcja 1.4.3.: W POSZUKIWANIU PARUJÄ„CYCH NAWIASÃ“W
 
 
-	       ** Wpisz  %  by znale¼æ paruj±cy ), ], lub } . **
+	       ** Wpisz  %  by znaleÅºÄ‡ parujÄ…cy ), ], lub } . **
 
-  1. Umie¶æ kursor na którym¶ z (, [, lub { w linii poni¿ej oznaczonej --->.
+  1. UmieÅ›Ä‡ kursor na ktÃ³rymÅ› z (, [, lub { w linii poniÅ¼ej oznaczonej --->.
 
   2. Teraz wpisz znak  % .
 
-  3. Kursor powinien siê znale¼æ na paruj±cym nawiasie.
+  3. Kursor powinien siÄ™ znaleÅºÄ‡ na parujÄ…cym nawiasie.
 
-  4. Wci¶nij  %  aby przenie¶æ kursor z powrotem do paruj±cego nawiasu.
+  4. WciÅ›nij  %  aby przenieÅ›Ä‡ kursor z powrotem do parujÄ…cego nawiasu.
 
-  5. Przenie¶ kursor do innego (,),[,],{ lub } i zobacz co robi  % .
+  5. PrzenieÅ› kursor do innego (,),[,],{ lub } i zobacz co robi  % .
 
 ---> To ( jest linia testowa z (, [, ] i {, } . ))
 
-Uwaga: Ta funkcja jest bardzo u¿yteczna w debuggowaniu programu
+Uwaga: Ta funkcja jest bardzo uÅ¼yteczna w debuggowaniu programu
        z niesparowanymi nawiasami!
 
 
@@ -557,137 +557,137 @@ Uwaga: Ta funkcja jest bardzo u¿yteczna w debuggowaniu programu
 		  Lekcja 1.4.4.: POLECENIE SUBSTITUTE (zamiana)
 
 
-	 ** Wpisz  :s/stary/nowy/g  aby zamieniæ 'stary' na 'nowy'. **
+	 ** Wpisz  :s/stary/nowy/g  aby zamieniÄ‡ 'stary' na 'nowy'. **
 
-  1. Przenie¶ kursor do linii poni¿ej oznaczonej --->.
+  1. PrzenieÅ› kursor do linii poniÅ¼ej oznaczonej --->.
 
-  2. Wpisz  :s/czaas/czas<ENTER> .  Zauwa¿, ¿e to polecenie zmienia
-     tylko pierwsze wyst±pienie 'czaas' w linii.
+  2. Wpisz  :s/czaas/czas<ENTER> .  ZauwaÅ¼, Å¼e to polecenie zmienia
+     tylko pierwsze wystÄ…pienie 'czaas' w linii.
 
-  3. Teraz wpisz  :s/czaas/czas/g  . Dodane  g  oznacza zamianê (substytucjê)
-     globalnie w ca³ej linii.  Zmienia wszystkie wyst±pienia 'czaas' w linii.
+  3. Teraz wpisz  :s/czaas/czas/g  . Dodane  g  oznacza zamianÄ™ (substytucjÄ™)
+     globalnie w caÅ‚ej linii.  Zmienia wszystkie wystÄ…pienia 'czaas' w linii.
 
----> Najlepszy czaas na zobaczenie naj³adniejszych kwiatów to czaas wiosny.
+---> Najlepszy czaas na zobaczenie najÅ‚adniejszych kwiatÃ³w to czaas wiosny.
 
-  4. Aby zmieniæ wszystkie wyst±pienia ³añcucha znaków pomiêdzy dwoma liniami,
-     wpisz: :#,#s/stare/nowe/g gdzie #,# s± numerami linii ograniczaj±cych
-                               region, gdzie ma nast±piæ zamiana.
-     wpisz  :%s/stare/nowe/g   by zmieniæ wszystkie wyst±pienia w ca³ym pliku.
-     wpisz  :%s/stare/nowe/gc  by zmieniæ wszystkie wyst±pienia w ca³ym
-                               pliku, prosz±c o potwierdzenie za ka¿dym razem.
+  4. Aby zmieniÄ‡ wszystkie wystÄ…pienia Å‚aÅ„cucha znakÃ³w pomiÄ™dzy dwoma liniami,
+     wpisz: :#,#s/stare/nowe/g gdzie #,# sÄ… numerami linii ograniczajÄ…cych
+                               region, gdzie ma nastÄ…piÄ‡ zamiana.
+     wpisz  :%s/stare/nowe/g   by zmieniÄ‡ wszystkie wystÄ…pienia w caÅ‚ym pliku.
+     wpisz  :%s/stare/nowe/gc  by zmieniÄ‡ wszystkie wystÄ…pienia w caÅ‚ym
+                               pliku, proszÄ…c o potwierdzenie za kaÅ¼dym razem.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			     LEKCJA 1.4. PODSUMOWANIE
 
-  1. CTRL-G   poka¿e Twoj± pozycjê w pliku i status pliku.  SHIFT-G przenosi
-	      Ciê do koñca pliku.
-     G        przenosi do koñca pliku.
+  1. CTRL-G   pokaÅ¼e TwojÄ… pozycjÄ™ w pliku i status pliku.  SHIFT-G przenosi
+	      CiÄ™ do koÅ„ca pliku.
+     G        przenosi do koÅ„ca pliku.
      liczba G przenosi do linii [liczba].
      gg       przenosi do pierwszej linii.
 
-  2. Wpisanie  /  a nastêpnie ³añcucha znaków szuka ³añcucha DO PRZODU.
-     Wpisanie  ?  a nastêpnie ³añcucha znaków szuka ³añcucha DO TY£U.
-     Po wyszukiwaniu wci¶nij  n  by znale¼æ nastêpne wyst±pienie szukanej
-     frazy w tym samym kierunku lub  N  by szukaæ w kierunku przeciwnym.
+  2. Wpisanie  /  a nastÄ™pnie Å‚aÅ„cucha znakÃ³w szuka Å‚aÅ„cucha DO PRZODU.
+     Wpisanie  ?  a nastÄ™pnie Å‚aÅ„cucha znakÃ³w szuka Å‚aÅ„cucha DO TYÅU.
+     Po wyszukiwaniu wciÅ›nij  n  by znaleÅºÄ‡ nastÄ™pne wystÄ…pienie szukanej
+     frazy w tym samym kierunku lub  N  by szukaÄ‡ w kierunku przeciwnym.
      CTRL-O przenosi do starszych pozycji, CTRL-I do nowszych.
 
-  3. Wpisanie  %  gdy kursor znajduje siê na (,),[,],{, lub } lokalizuje
-     paruj±cy znak.
+  3. Wpisanie  %  gdy kursor znajduje siÄ™ na (,),[,],{, lub } lokalizuje
+     parujÄ…cy znak.
 
-  4. By zamieniæ pierwszy stary na nowy w linii, wpisz      :s/stary/nowy
-     By zamieniæ wszystkie stary na nowy w linii, wpisz     :s/stary/nowy/g
-     By zamieniæ frazy pomiêdzy dwoma liniami # wpisz      :#,#s/stary/nowy/g
-     By zamieniæ wszystkie wyst±pienia w pliku, wpisz       :%s/stary/nowy/g
-     By Vim prosi³ Ciê o potwierdzenie, dodaj 'c'	   :%s/stary/nowy/gc
+  4. By zamieniÄ‡ pierwszy stary na nowy w linii, wpisz      :s/stary/nowy
+     By zamieniÄ‡ wszystkie stary na nowy w linii, wpisz     :s/stary/nowy/g
+     By zamieniÄ‡ frazy pomiÄ™dzy dwoma liniami # wpisz      :#,#s/stary/nowy/g
+     By zamieniÄ‡ wszystkie wystÄ…pienia w pliku, wpisz       :%s/stary/nowy/g
+     By Vim prosiÅ‚ CiÄ™ o potwierdzenie, dodaj 'c'	   :%s/stary/nowy/gc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		 Lekcja 1.5.1.: JAK WYKONAÆ POLECENIA ZEWNÊTRZNE?
+		 Lekcja 1.5.1.: JAK WYKONAÄ† POLECENIA ZEWNÄ˜TRZNE?
 
 
-	** Wpisz  :!  a nastêpnie zewnêtrzne polecenie, by je wykonaæ. **
+	** Wpisz  :!  a nastÄ™pnie zewnÄ™trzne polecenie, by je wykonaÄ‡. **
 
-  1. Wpisz znajome polecenie  :  by ustawiæ kursor na dole ekranu. To pozwala
-     na wprowadzenie komendy linii poleceñ.
+  1. Wpisz znajome polecenie  :  by ustawiÄ‡ kursor na dole ekranu. To pozwala
+     na wprowadzenie komendy linii poleceÅ„.
 
-  2. Teraz wstaw  !  (wykrzyknik). To umo¿liwi Ci wykonanie dowolnego
-     zewnêtrznego polecenia pow³oki.
+  2. Teraz wstaw  !  (wykrzyknik). To umoÅ¼liwi Ci wykonanie dowolnego
+     zewnÄ™trznego polecenia powÅ‚oki.
 
-  3. Jako przyk³ad wpisz  ls  za  !  a nastêpnie wci¶nij <ENTER>. To polecenie
-     poka¿e spis plików w Twoim katalogu, tak jakby¶ by³ przy znaku zachêty
-     pow³oki. Mo¿esz te¿ u¿yæ  :!dir  je¶li  ls  nie dzia³a.
+  3. Jako przykÅ‚ad wpisz  ls  za  !  a nastÄ™pnie wciÅ›nij <ENTER>. To polecenie
+     pokaÅ¼e spis plikÃ³w w Twoim katalogu, tak jakbyÅ› byÅ‚ przy znaku zachÄ™ty
+     powÅ‚oki. MoÅ¼esz teÅ¼ uÅ¼yÄ‡  :!dir  jeÅ›li  ls  nie dziaÅ‚a.
 
-Uwaga:  W ten sposób mo¿na wykonaæ wszystkie polecenia pow³oki.
-Uwaga:  Wszystkie polecenia  :  musz± byæ zakoñczone <ENTER>.
-        Od tego momentu nie zawsze bêdziemy o tym wspominaæ.
+Uwaga:  W ten sposÃ³b moÅ¼na wykonaÄ‡ wszystkie polecenia powÅ‚oki.
+Uwaga:  Wszystkie polecenia  :  muszÄ… byÄ‡ zakoÅ„czone <ENTER>.
+        Od tego momentu nie zawsze bÄ™dziemy o tym wspominaÄ‡.
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		    Lekcja 1.5.2.: WIÊCEJ O ZAPISYWANIU PLIKÓW
+		    Lekcja 1.5.2.: WIÄ˜CEJ O ZAPISYWANIU PLIKÃ“W
 
 
-	   ** By zachowaæ zmiany w tek¶cie, wpisz :w NAZWA_PLIKU . **
+	   ** By zachowaÄ‡ zmiany w tekÅ›cie, wpisz :w NAZWA_PLIKU . **
 
-  1. Wpisz  :!dir  lub  :!ls  by zobaczyæ spis plików w katalogu.
-     Ju¿ wiesz, ¿e musisz po tym wcisn±æ <ENTER>.
+  1. Wpisz  :!dir  lub  :!ls  by zobaczyÄ‡ spis plikÃ³w w katalogu.
+     JuÅ¼ wiesz, Å¼e musisz po tym wcisnÄ…Ä‡ <ENTER>.
 
-  2. Wybierz nazwê pliku, jaka jeszcze nie istnieje, np. TEST.
+  2. Wybierz nazwÄ™ pliku, jaka jeszcze nie istnieje, np. TEST.
 
-  3. Teraz wpisz:   :w TEST   (gdzie TEST jest nazw± pliku jak± wybra³e¶.)
+  3. Teraz wpisz:   :w TEST   (gdzie TEST jest nazwÄ… pliku jakÄ… wybraÅ‚eÅ›.)
 
-  4. To polecenie zapamiêta ca³y plik (Vim Tutor) pod nazw± TEST.
-     By to sprawdziæ, wpisz  :!dir  lub  :!ls  ¿eby znowu zobaczyæ listê plików.
+  4. To polecenie zapamiÄ™ta caÅ‚y plik (Vim Tutor) pod nazwÄ… TEST.
+     By to sprawdziÄ‡, wpisz  :!dir  lub  :!ls  Å¼eby znowu zobaczyÄ‡ listÄ™ plikÃ³w.
 
-Uwaga: Zauwa¿, ¿e gdyby¶ teraz wyszed³ z Vima, a nastêpnie wszed³ ponownie
-       poleceniem  vim TEST , plik by³by dok³adn± kopi± tutoriala, kiedy go
-       zapisywa³e¶.
+Uwaga: ZauwaÅ¼, Å¼e gdybyÅ› teraz wyszedÅ‚ z Vima, a nastÄ™pnie wszedÅ‚ ponownie
+       poleceniem  vim TEST , plik byÅ‚by dokÅ‚adnÄ… kopiÄ… tutoriala, kiedy go
+       zapisywaÅ‚eÅ›.
 
-  5. Teraz usuñ plik wpisuj±c (MS-DOS):		   :!del TEST
+  5. Teraz usuÅ„ plik wpisujÄ…c (MS-DOS):		   :!del TEST
                           lub (Unix):              :!rm TEST
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		    Lekcja 1.5.3.: WYBRANIE TEKSTU DO ZAPISU
 
 
-	  ** By zachowaæ czê¶æ pliku, wpisz  v ruch :w NAZWA_PLIKU **
+	  ** By zachowaÄ‡ czÄ™Å›Ä‡ pliku, wpisz  v ruch :w NAZWA_PLIKU **
 
-  1. Przenie¶ kursor do tego wiersza.
+  1. PrzenieÅ› kursor do tego wiersza.
 
-  2. Wci¶nij  v  i przenie¶ kursor do punktu 5. Zauwa¿, ¿e tekst zosta³
-     pod¶wietlony.
+  2. WciÅ›nij  v  i przenieÅ› kursor do punktu 5. ZauwaÅ¼, Å¼e tekst zostaÅ‚
+     podÅ›wietlony.
 
-  3. Wci¶nij znak  : . Na dole ekranu pojawi siê  :'<,'> .
+  3. WciÅ›nij znak  : . Na dole ekranu pojawi siÄ™  :'<,'> .
 
-  4. Wpisz  w TEST , gdzie TEST to nazwa pliku, który jeszcze nie istnieje.
-     Upewnij siê, ¿e widzisz  :'<,'>w TEST zanim wci¶niesz Enter.
+  4. Wpisz  w TEST , gdzie TEST to nazwa pliku, ktÃ³ry jeszcze nie istnieje.
+     Upewnij siÄ™, Å¼e widzisz  :'<,'>w TEST zanim wciÅ›niesz Enter.
 
-  5. Vim zapisze wybrane linie do pliku TEST. U¿yj  :!dir  lub  :!ls , ¿eby to
-     zobaczyæ. Jeszcze go nie usuwaj! U¿yjemy go w nastêpnej lekcji.
+  5. Vim zapisze wybrane linie do pliku TEST. UÅ¼yj  :!dir  lub  :!ls , Å¼eby to
+     zobaczyÄ‡. Jeszcze go nie usuwaj! UÅ¼yjemy go w nastÄ™pnej lekcji.
 
-UWAGA: Wci¶niêcie  v  zaczyna tryb Wizualny. Mo¿esz poruszaæ kursorem, by
-       zmieniæ rozmiary zaznaczenia. Mo¿esz te¿ u¿yæ operatora, by zrobiæ co¶
-       z tekstem. Na przyk³ad  d  usuwa tekst.
+UWAGA: WciÅ›niÄ™cie  v  zaczyna tryb Wizualny. MoÅ¼esz poruszaÄ‡ kursorem, by
+       zmieniÄ‡ rozmiary zaznaczenia. MoÅ¼esz teÅ¼ uÅ¼yÄ‡ operatora, by zrobiÄ‡ coÅ›
+       z tekstem. Na przykÅ‚ad  d  usuwa tekst.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Lekcja 1.5.4.: WSTAWIANIE I £¡CZENIE PLIKÓW
+		   Lekcja 1.5.4.: WSTAWIANIE I ÅÄ„CZENIE PLIKÃ“W
 
 
-	    ** By wstawiæ zawarto¶æ pliku, wpisz   :r NAZWA_PLIKU **
+	    ** By wstawiÄ‡ zawartoÅ›Ä‡ pliku, wpisz   :r NAZWA_PLIKU **
 
-  1. Umie¶æ kursor tu¿ powy¿ej tej linii.
+  1. UmieÅ›Ä‡ kursor tuÅ¼ powyÅ¼ej tej linii.
 
-UWAGA: Po wykonaniu kroku 2. zobaczysz tekst z Lekcji 1.5.3. Potem przejd¼
-       do DO£U, by zobaczyæ ponownie tê lekcjê.
+UWAGA: Po wykonaniu kroku 2. zobaczysz tekst z Lekcji 1.5.3. Potem przejdÅº
+       do DOÅU, by zobaczyÄ‡ ponownie tÄ™ lekcjÄ™.
 
-  2. Teraz wczytaj plik TEST u¿ywaj±c polecenia  :r TEST , gdzie TEST
-     jest nazw± pliku.
-     Wczytany plik jest umieszczony poni¿ej linii z kursorem.
+  2. Teraz wczytaj plik TEST uÅ¼ywajÄ…c polecenia  :r TEST , gdzie TEST
+     jest nazwÄ… pliku.
+     Wczytany plik jest umieszczony poniÅ¼ej linii z kursorem.
 
-  3. By sprawdziæ czy plik zosta³ wczytany, cofnij kursor i zobacz, ¿e
-     teraz s± dwie kopie Lekcji 1.5.3., orygina³ i kopia z pliku.
+  3. By sprawdziÄ‡ czy plik zostaÅ‚ wczytany, cofnij kursor i zobacz, Å¼e
+     teraz sÄ… dwie kopie Lekcji 1.5.3., oryginaÅ‚ i kopia z pliku.
 
-UWAGA: Mo¿esz te¿ wczytaæ wyj¶cie zewnêtrznego polecenia. Na przyk³ad
-       :r !ls  wczytuje wyj¶cie polecenia ls i umieszcza je pod poni¿ej
+UWAGA: MoÅ¼esz teÅ¼ wczytaÄ‡ wyjÅ›cie zewnÄ™trznego polecenia. Na przykÅ‚ad
+       :r !ls  wczytuje wyjÅ›cie polecenia ls i umieszcza je pod poniÅ¼ej
        kursora.
 
 
@@ -695,45 +695,45 @@ UWAGA: Mo¿esz te¿ wczytaæ wyj¶cie zewnêtrznego polecenia. Na przyk³ad
 			     LEKCJA 1.5. PODSUMOWANIE
 
 
-  1.  :!polecenie wykonuje polecenie zewnêtrzne.
+  1.  :!polecenie wykonuje polecenie zewnÄ™trzne.
 
-      U¿ytecznymi przyk³adami s±:
+      UÅ¼ytecznymi przykÅ‚adami sÄ…:
 
-	  :!dir  -  pokazuje spis plików w katalogu.
+	  :!dir  -  pokazuje spis plikÃ³w w katalogu.
 
 	  :!rm NAZWA_PLIKU  -  usuwa plik NAZWA_PLIKU.
 
-  2.  :w NAZWA_PLIKU  zapisuje obecny plik Vima na dysk z nazw± NAZWA_PLIKU.
+  2.  :w NAZWA_PLIKU  zapisuje obecny plik Vima na dysk z nazwÄ… NAZWA_PLIKU.
 
   3.  v ruch :w NAZWA_PLIKU  zapisuje Wizualnie wybrane linie do NAZWA_PLIKU.
 
   4.  :r NAZWA_PLIKU  wczytuje z dysku plik NAZWA_PLIKU i wstawia go do
-      bie¿±cego pliku poni¿ej kursora.
+      bieÅ¼Ä…cego pliku poniÅ¼ej kursora.
 
-  5.  :r !dir  wczytuje wyj¶cie polecenia dir i umieszcza je poni¿ej kursora.
+  5.  :r !dir  wczytuje wyjÅ›cie polecenia dir i umieszcza je poniÅ¼ej kursora.
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      Lekcja 1.6.1.: POLECENIE OPEN (otwórz)
+		      Lekcja 1.6.1.: POLECENIE OPEN (otwÃ³rz)
 
 
-      ** Wpisz  o  by otworzyæ liniê poni¿ej kursora i przenie¶æ siê do
+      ** Wpisz  o  by otworzyÄ‡ liniÄ™ poniÅ¼ej kursora i przenieÅ›Ä‡ siÄ™ do
 	 trybu Insert (wprowadzanie). **
 
-  1. Przenie¶ kursor do linii poni¿ej oznaczonej --->.
+  1. PrzenieÅ› kursor do linii poniÅ¼ej oznaczonej --->.
 
-  2. Wpisz  o  (ma³e), by otworzyæ liniê PONI¯EJ kursora i przenie¶æ siê
+  2. Wpisz  o  (maÅ‚e), by otworzyÄ‡ liniÄ™ PONIÅ»EJ kursora i przenieÅ›Ä‡ siÄ™
      do trybu Insert (wprowadzanie).
 
-  3. Wpisz trochê tekstu i wci¶nij <ESC> by wyj¶æ z trybu Insert (wprowadzanie).
+  3. Wpisz trochÄ™ tekstu i wciÅ›nij <ESC> by wyjÅ›Ä‡ z trybu Insert (wprowadzanie).
 
----> Po wci¶niêciu  o  kursor znajdzie siê w otwartej linii w trybie Insert.
+---> Po wciÅ›niÄ™ciu  o  kursor znajdzie siÄ™ w otwartej linii w trybie Insert.
 
-  4. By otworzyæ liniê POWY¯EJ kursora, wci¶nij wielkie  O  zamiast ma³ego
-     o . Wypróbuj to na linii poni¿ej.
+  4. By otworzyÄ‡ liniÄ™ POWYÅ»EJ kursora, wciÅ›nij wielkie  O  zamiast maÅ‚ego
+     o . WyprÃ³buj to na linii poniÅ¼ej.
 
----> Otwórz liniê powy¿ej wciskaj±c SHIFT-O gdy kursor bêdzie na tej linii.
+---> OtwÃ³rz liniÄ™ powyÅ¼ej wciskajÄ…c SHIFT-O gdy kursor bÄ™dzie na tej linii.
 
 
 
@@ -741,137 +741,137 @@ UWAGA: Mo¿esz te¿ wczytaæ wyj¶cie zewnêtrznego polecenia. Na przyk³ad
 		     Lekcja 1.6.2.: POLECENIE APPEND (dodaj)
 
 
-		  ** Wpisz  a  by dodaæ tekst ZA kursorem. **
+		  ** Wpisz  a  by dodaÄ‡ tekst ZA kursorem. **
 
-  1. Przenie¶ kursor do pocz±tku pierwszej linii poni¿ej oznaczonej --->
+  1. PrzenieÅ› kursor do poczÄ…tku pierwszej linii poniÅ¼ej oznaczonej --->
 
-  2. Wciskaj  e  dopóki kursor nie bêdzie na koñcu li .
+  2. Wciskaj  e  dopÃ³ki kursor nie bÄ™dzie na koÅ„cu li .
 
-  3. Wpisz  a  (ma³e), aby dodaæ tekst ZA znakiem pod kursorem.
+  3. Wpisz  a  (maÅ‚e), aby dodaÄ‡ tekst ZA znakiem pod kursorem.
 
-  4. Dokoñcz wyraz tak, jak w linii poni¿ej. Wci¶nij <ESC> aby opu¶ciæ tryb
+  4. DokoÅ„cz wyraz tak, jak w linii poniÅ¼ej. WciÅ›nij <ESC> aby opuÅ›ciÄ‡ tryb
      Insert.
 
-  5. U¿yj  e  by przej¶æ do kolejnego niedokoñczonego wyrazu i powtarzaj kroki
+  5. UÅ¼yj  e  by przejÅ›Ä‡ do kolejnego niedokoÅ„czonego wyrazu i powtarzaj kroki
      3. i 4.
 
----> Ta li poz Ci æwi dodaw teks do koñ lin
----> Ta linia pozwoli Ci æwiczyæ dodawanie tekstu do koñca linii.
+---> Ta li poz Ci Ä‡wi dodaw teks do koÅ„ lin
+---> Ta linia pozwoli Ci Ä‡wiczyÄ‡ dodawanie tekstu do koÅ„ca linii.
 
-Uwaga:  a ,  i  oraz  A  prowadz± do trybu Insert, jedyn± ró¿nic± jest miejsce,
-       gdzie nowe znaki bêd± dodawane.
+Uwaga:  a ,  i  oraz  A  prowadzÄ… do trybu Insert, jedynÄ… rÃ³Å¼nicÄ… jest miejsce,
+       gdzie nowe znaki bÄ™dÄ… dodawane.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   Lekcja 1.6.3.: INNA WERSJA REPLACE (zamiana)
 
 
-	   ** Wpisz wielkie  R  by zamieniæ wiêcej ni¿ jeden znak. **
+	   ** Wpisz wielkie  R  by zamieniÄ‡ wiÄ™cej niÅ¼ jeden znak. **
 
-  1. Przenie¶ kursor do pierwszej linii poni¿ej oznaczonej --->. Przenie¶
+  1. PrzenieÅ› kursor do pierwszej linii poniÅ¼ej oznaczonej --->. PrzenieÅ›
      kursor do pierwszego  xxx .
 
-  2. Wci¶nij  R  i wpisz numer poni¿ej w drugiej linii, tak, ¿e zast±pi on
+  2. WciÅ›nij  R  i wpisz numer poniÅ¼ej w drugiej linii, tak, Å¼e zastÄ…pi on
      xxx.
 
-  3. Wci¶nij <ESC> by opu¶ciæ tryb Replace. Zauwa¿, ¿e reszta linii pozostaje
+  3. WciÅ›nij <ESC> by opuÅ›ciÄ‡ tryb Replace. ZauwaÅ¼, Å¼e reszta linii pozostaje
      niezmieniona.
 
-  5. Powtarzaj kroki by wymieniæ wszystkie xxx.
+  5. Powtarzaj kroki by wymieniÄ‡ wszystkie xxx.
 
 ---> Dodanie 123 do xxx daje xxx.
 ---> Dodanie 123 do 456 daje 579.
 
-UWAGA: Tryb Replace jest jak tryb Insert, ale ka¿dy znak usuwa istniej±cy
+UWAGA: Tryb Replace jest jak tryb Insert, ale kaÅ¼dy znak usuwa istniejÄ…cy
        znak.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		  Lekcja 1.6.4.: KOPIOWANIE I WKLEJANIE TEKSTU
 
 
-       ** u¿yj operatora  y  aby skopiowaæ tekst i  p  aby go wkleiæ **
+       ** uÅ¼yj operatora  y  aby skopiowaÄ‡ tekst i  p  aby go wkleiÄ‡ **
 
-  1. Przejd¼ do linii oznaczonej ---> i umie¶æ kursor za "a)".
+  1. PrzejdÅº do linii oznaczonej ---> i umieÅ›Ä‡ kursor za "a)".
 
-  2. Wejd¼ w tryb Wizualny  v  i przenie¶ kursor na pocz±tek "pierwszy".
+  2. WejdÅº w tryb Wizualny  v  i przenieÅ› kursor na poczÄ…tek "pierwszy".
 
-  3. Wci¶nij  y  aby kopiowaæ (yankowaæ) pod¶wietlony tekst.
+  3. WciÅ›nij  y  aby kopiowaÄ‡ (yankowaÄ‡) podÅ›wietlony tekst.
 
-  4. Przenie¶ kursor do koñca nastêpnej linii:  j$
+  4. PrzenieÅ› kursor do koÅ„ca nastÄ™pnej linii:  j$
 
-  5. Wci¶nij  p  aby wkleiæ (wpakowaæ) tekst.  Dodaj:  a drugi<ESC> .
+  5. WciÅ›nij  p  aby wkleiÄ‡ (wpakowaÄ‡) tekst.  Dodaj:  a drugi<ESC> .
 
-  6. U¿yj trybu Wizualnego, aby wybraæ " element.", yankuj go  y , przejd¼ do
-     koñca nastêpnej linii  j$  i upakuj tam tekst z  p .
+  6. UÅ¼yj trybu Wizualnego, aby wybraÄ‡ " element.", yankuj go  y , przejdÅº do
+     koÅ„ca nastÄ™pnej linii  j$  i upakuj tam tekst z  p .
 
 --->  a) to jest pierwszy element.
       b)
-Uwaga: mo¿esz u¿yæ  y  jako operatora;  yw  kopiuje jeden wyraz.
+Uwaga: moÅ¼esz uÅ¼yÄ‡  y  jako operatora;  yw  kopiuje jeden wyraz.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lekcja 1.6.5.: USTAWIANIE OPCJI
 
 
-** Ustawianie opcji tak, by szukaj lub substytucja ignorowa³y wielko¶æ liter **
+** Ustawianie opcji tak, by szukaj lub substytucja ignorowaÅ‚y wielkoÅ›Ä‡ liter **
 
-  1. Szukaj 'ignore' wpisuj±c:    /ignore<ENTER>
-     Powtórz szukanie kilka razy naciskaj±c klawisz  n .
+  1. Szukaj 'ignore' wpisujÄ…c:    /ignore<ENTER>
+     PowtÃ³rz szukanie kilka razy naciskajÄ…c klawisz  n .
 
-  2. Ustaw opcjê 'ic' (Ignore case -- ignoruj wielko¶æ liter) poprzez
+  2. Ustaw opcjÄ™ 'ic' (Ignore case -- ignoruj wielkoÅ›Ä‡ liter) poprzez
      wpisanie:		:set ic
 
-  3. Teraz szukaj 'ignore' ponownie wciskaj±c:  n
-     Zauwa¿, ¿e Ignore i IGNORE tak¿e s± teraz znalezione.
+  3. Teraz szukaj 'ignore' ponownie wciskajÄ…c:  n
+     ZauwaÅ¼, Å¼e Ignore i IGNORE takÅ¼e sÄ… teraz znalezione.
 
   4. Ustaw opcje 'hlsearch' i 'incsearch':    :set hls is
 
-  5. Teraz wprowad¼ polecenie szukaj ponownie i zobacz co siê zdarzy:
+  5. Teraz wprowadÅº polecenie szukaj ponownie i zobacz co siÄ™ zdarzy:
      /ignore<ENTER>
 
-  6. Aby wy³±czyæ ignorowanie wielko¶ci liter:  :set noic
+  6. Aby wyÅ‚Ä…czyÄ‡ ignorowanie wielkoÅ›ci liter:  :set noic
 
-Uwaga: Aby usun±æ pod¶wietlanie dopasowañ, wpisz:   :nohlsearch
-Uwaga: Aby ignorowaæ wielko¶æ liter dla jednego wyszukiwania: /ignore\c<ENTER>
+Uwaga: Aby usunÄ…Ä‡ podÅ›wietlanie dopasowaÅ„, wpisz:   :nohlsearch
+Uwaga: Aby ignorowaÄ‡ wielkoÅ›Ä‡ liter dla jednego wyszukiwania: /ignore\c<ENTER>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			     LEKCJA 1.6. PODSUMOWANIE
 
 
-  1. Wpisanie  o  otwiera liniê PONI¯EJ kursora.
-     Wpisanie  O  otwiera liniê POWY¯EJ kursora.
+  1. Wpisanie  o  otwiera liniÄ™ PONIÅ»EJ kursora.
+     Wpisanie  O  otwiera liniÄ™ POWYÅ»EJ kursora.
 
-  2. Wpisanie  a  wstawia tekst ZA znakiem, na którym jest kursor.
-     Wpisanie  A  dodaje tekst na koñcu linii.
+  2. Wpisanie  a  wstawia tekst ZA znakiem, na ktÃ³rym jest kursor.
+     Wpisanie  A  dodaje tekst na koÅ„cu linii.
 
-  3. Polecenie  e  przenosi do koñca wyrazu.
+  3. Polecenie  e  przenosi do koÅ„ca wyrazu.
   4. Operator  y  yankuje (kopiuje) tekst,  p  pakuje (wkleja) go.
-  5. Wpisanie wielkiego  R  wprowadza w tryb Replace (zamiana) dopóki
-     nie zostanie wci¶niêty <ESC>.
-  6. Wpisanie ":set xxx" ustawia opcjê "xxx". Niektóre opcje:
-	'ic'  'ignorecase'	ignoruj wielko¶æ znaków
-	'is'  'incsearch'	poka¿ czê¶ciowe dopasowania
-	'hls' 'hlsearch'	pod¶wietl wszystkie dopasowania
-     Mo¿esz u¿yæ zarówno d³ugiej, jak i krótkiej formy.
-  7. Dodaj "no", aby wy³±czyæ opcjê:   :set noic
+  5. Wpisanie wielkiego  R  wprowadza w tryb Replace (zamiana) dopÃ³ki
+     nie zostanie wciÅ›niÄ™ty <ESC>.
+  6. Wpisanie ":set xxx" ustawia opcjÄ™ "xxx". NiektÃ³re opcje:
+	'ic'  'ignorecase'	ignoruj wielkoÅ›Ä‡ znakÃ³w
+	'is'  'incsearch'	pokaÅ¼ czÄ™Å›ciowe dopasowania
+	'hls' 'hlsearch'	podÅ›wietl wszystkie dopasowania
+     MoÅ¼esz uÅ¼yÄ‡ zarÃ³wno dÅ‚ugiej, jak i krÃ³tkiej formy.
+  7. Dodaj "no", aby wyÅ‚Ä…czyÄ‡ opcjÄ™:   :set noic
 
 
 
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 LEKCJA 1.7.1.: JAK UZYSKAÆ POMOC?
+			 LEKCJA 1.7.1.: JAK UZYSKAÄ† POMOC?
 
-		      ** U¿ycie systemu pomocy on-line **
+		      ** UÅ¼ycie systemu pomocy on-line **
 
-  Vim posiada bardzo dobry system pomocy on-line. By zacz±æ, spróbuj jednej
-  z trzech mo¿liwo¶ci:
-	- wci¶nij klawisz <HELP> (je¶li taki masz)
-	- wci¶nij klawisz <F1> (je¶li taki masz)
+  Vim posiada bardzo dobry system pomocy on-line. By zaczÄ…Ä‡, sprÃ³buj jednej
+  z trzech moÅ¼liwoÅ›ci:
+	- wciÅ›nij klawisz <HELP> (jeÅ›li taki masz)
+	- wciÅ›nij klawisz <F1> (jeÅ›li taki masz)
 	- wpisz   :help<ENTER>
 
-  Przeczytaj tekst w oknie pomocy, aby dowiedzieæ siê jak dzia³a pomoc.
-  wpisz CTRL-W CTRL-W    aby przeskoczyæ z jednego okna do innego
-  wpisz :q<ENTER>        aby zamkn±æ okno pomocy.
+  Przeczytaj tekst w oknie pomocy, aby dowiedzieÄ‡ siÄ™ jak dziaÅ‚a pomoc.
+  wpisz CTRL-W CTRL-W    aby przeskoczyÄ‡ z jednego okna do innego
+  wpisz :q<ENTER>        aby zamknÄ…Ä‡ okno pomocy.
 
-  Mo¿esz te¿ znale¼æ pomoc na ka¿dy temat podaj±c argument polecenia ":help".
-  Spróbuj tych (nie zapomnij wcisn±æ <ENTER>):
+  MoÅ¼esz teÅ¼ znaleÅºÄ‡ pomoc na kaÅ¼dy temat podajÄ…c argument polecenia ":help".
+  SprÃ³buj tych (nie zapomnij wcisnÄ…Ä‡ <ENTER>):
 
   :help w
   :help c_CTRL-D
@@ -880,63 +880,63 @@ Uwaga: Aby ignorowaæ wielko¶æ liter dla jednego wyszukiwania: /ignore\c<ENTER>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   LEKCJA 1.7.2.: TWORZENIE SKRYPTU STARTOWEGO
 
-			  ** W³±cz mo¿liwo¶ci Vima **
+			  ** WÅ‚Ä…cz moÅ¼liwoÅ›ci Vima **
 
-  Vim ma o wiele wiêcej mo¿liwo¶ci ni¿ Vi, ale wiêkszo¶æ z nich jest domy¶lnie
-  wy³±czona. Je¶li chcesz w³±czyæ te mo¿liwo¶ci na starcie musisz utworzyæ
+  Vim ma o wiele wiÄ™cej moÅ¼liwoÅ›ci niÅ¼ Vi, ale wiÄ™kszoÅ›Ä‡ z nich jest domyÅ›lnie
+  wyÅ‚Ä…czona. JeÅ›li chcesz wÅ‚Ä…czyÄ‡ te moÅ¼liwoÅ›ci na starcie musisz utworzyÄ‡
   plik "vimrc".
 
-  1. Pocz±tek edycji pliku "vimrc" zale¿y od Twojego systemu:
+  1. PoczÄ…tek edycji pliku "vimrc" zaleÅ¼y od Twojego systemu:
      :edit ~/.vimrc	     dla Uniksa
      :edit ~/_vimrc          dla MS-Windows
-  2. Teraz wczytaj przyk³adowy plik "vimrc":
+  2. Teraz wczytaj przykÅ‚adowy plik "vimrc":
      :read $VIMRUNTIME/vimrc_example.vim
   3. Zapisz plik:
      :w
 
-  Nastêpnym razem, gdy zaczniesz pracê w Vimie bêdzie on u¿ywaæ pod¶wietlania
-  sk³adni. Mo¿esz dodaæ wszystkie swoje ulubione ustawienia do tego pliku
+  NastÄ™pnym razem, gdy zaczniesz pracÄ™ w Vimie bÄ™dzie on uÅ¼ywaÄ‡ podÅ›wietlania
+  skÅ‚adni. MoÅ¼esz dodaÄ‡ wszystkie swoje ulubione ustawienia do tego pliku
   "vimrc".
-  Aby uzyskaæ wiêcej informacji, wpisz     :help vimrc-intro
+  Aby uzyskaÄ‡ wiÄ™cej informacji, wpisz     :help vimrc-intro
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			  Lekcja 1.7.3.: UZUPE£NIANIE
+			  Lekcja 1.7.3.: UZUPEÅNIANIE
 
 
-	      ** Uzupe³nianie linii poleceñ z CTRL-D i <TAB> **
+	      ** UzupeÅ‚nianie linii poleceÅ„ z CTRL-D i <TAB> **
 
-  1. Upewnij siê, ¿e Vim nie jest w trybie kompatybilno¶ci:   :set nocp
+  1. Upewnij siÄ™, Å¼e Vim nie jest w trybie kompatybilnoÅ›ci:   :set nocp
 
-  2. Zerknij, jakie pliki s± w bie¿±cym katalogu:   :!ls   lub   :!dir
+  2. Zerknij, jakie pliki sÄ… w bieÅ¼Ä…cym katalogu:   :!ls   lub   :!dir
 
-  3. Wpisz pocz±tek polecenia:   :e
+  3. Wpisz poczÄ…tek polecenia:   :e
 
-  4. Wci¶nij  CTRL-D  i Vim poka¿e listê poleceñ, jakie zaczynaj± siê na "e".
+  4. WciÅ›nij  CTRL-D  i Vim pokaÅ¼e listÄ™ poleceÅ„, jakie zaczynajÄ… siÄ™ na "e".
 
-  5. Wci¶nij  <TAB>  i Vim uzupe³ni polecenie do ":edit".
+  5. WciÅ›nij  <TAB>  i Vim uzupeÅ‚ni polecenie do ":edit".
 
-  6. Dodaj spacjê i zacznij wpisywaæ nazwê istniej±cego pliku:   :edit FIL
+  6. Dodaj spacjÄ™ i zacznij wpisywaÄ‡ nazwÄ™ istniejÄ…cego pliku:   :edit FIL
 
-  7. Wci¶nij <TAB>. Vim uzupe³ni nazwê (je¶li jest niepowtarzalna).
+  7. WciÅ›nij <TAB>. Vim uzupeÅ‚ni nazwÄ™ (jeÅ›li jest niepowtarzalna).
 
-UWAGA: Uzupe³nianie dzia³a dla wielu poleceñ. Spróbuj wcisn±æ CTRL-D i <TAB>.
-       U¿yteczne zw³aszcza przy  :help .
+UWAGA: UzupeÅ‚nianie dziaÅ‚a dla wielu poleceÅ„. SprÃ³buj wcisnÄ…Ä‡ CTRL-D i <TAB>.
+       UÅ¼yteczne zwÅ‚aszcza przy  :help .
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Lekcja 1.7. PODSUMOWANIE
 
 
-  1. Wpisz  :help  albo wci¶nij <F1> lub <Help> aby otworzyæ okno pomocy.
+  1. Wpisz  :help  albo wciÅ›nij <F1> lub <Help> aby otworzyÄ‡ okno pomocy.
 
-  2. Wpisz  :help cmd  aby uzyskaæ pomoc o  cmd .
+  2. Wpisz  :help cmd  aby uzyskaÄ‡ pomoc o  cmd .
 
-  3. Wpisz  CTRL-W CTRL-W  aby przeskoczyæ do innego okna.
+  3. Wpisz  CTRL-W CTRL-W  aby przeskoczyÄ‡ do innego okna.
 
-  4. Wpisz  :q  aby zamkn±æ okno pomocy.
+  4. Wpisz  :q  aby zamknÄ…Ä‡ okno pomocy.
 
-  5. Utwórz plik startowy vimrc aby zachowaæ wybrane ustawienia.
+  5. UtwÃ³rz plik startowy vimrc aby zachowaÄ‡ wybrane ustawienia.
 
-  6. Po poleceniu  : , wci¶nij CTRL-D aby zobaczyæ mo¿liwe uzupe³nienia.
-     Wci¶nij <TAB> aby u¿yæ jednego z nich.
+  6. Po poleceniu  : , wciÅ›nij CTRL-D aby zobaczyÄ‡ moÅ¼liwe uzupeÅ‚nienia.
+     WciÅ›nij <TAB> aby uÅ¼yÄ‡ jednego z nich.
 
 
 
@@ -945,40 +945,40 @@ UWAGA: Uzupe³nianie dzia³a dla wielu poleceñ. Spróbuj wcisn±æ CTRL-D i <TAB>.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Tutaj siê koñczy tutorial Vima. Zosta³ on pomy¶lany tak, aby daæ krótki
-  przegl±d jego mo¿liwo¶ci, wystarczaj±cy by¶ móg³ go u¿ywaæ. Jest on
-  daleki od kompletno¶ci, poniewa¿ Vim ma o wiele, wiele wiêcej poleceñ.
+  Tutaj siÄ™ koÅ„czy tutorial Vima. ZostaÅ‚ on pomyÅ›lany tak, aby daÄ‡ krÃ³tki
+  przeglÄ…d jego moÅ¼liwoÅ›ci, wystarczajÄ…cy byÅ› mÃ³gÅ‚ go uÅ¼ywaÄ‡. Jest on
+  daleki od kompletnoÅ›ci, poniewaÅ¼ Vim ma o wiele, wiele wiÄ™cej poleceÅ„.
 
-  Dla dalszej nauki rekomendujemy ksi±¿kê:
+  Dla dalszej nauki rekomendujemy ksiÄ…Å¼kÄ™:
 	Vim - Vi Improved - autor Steve Oualline
 	Wydawca: New Riders
-  Pierwsza ksi±¿ka ca³kowicie po¶wiêcona Vimowi. U¿yteczna zw³aszcza dla
-  pocz±tkuj±cych. Zawiera wiele przyk³adów i ilustracji.
+  Pierwsza ksiÄ…Å¼ka caÅ‚kowicie poÅ›wiÄ™cona Vimowi. UÅ¼yteczna zwÅ‚aszcza dla
+  poczÄ…tkujÄ…cych. Zawiera wiele przykÅ‚adÃ³w i ilustracji.
   Zobacz https://iccf-holland.org./click5.html
 
-  Starsza pozycja i bardziej o Vi ni¿ o Vimie, ale tak¿e warta
+  Starsza pozycja i bardziej o Vi niÅ¼ o Vimie, ale takÅ¼e warta
   polecenia:
 	Learning the Vi Editor - autor Linda Lamb
 	Wydawca: O'Reilly & Associates Inc.
-  To dobra ksi±¿ka, by dowiedzieæ siê niemal wszystkiego, co chcia³by¶ zrobiæ
-  z Vi. Szósta edycja zawiera te¿ informacje o Vimie.
+  To dobra ksiÄ…Å¼ka, by dowiedzieÄ‡ siÄ™ niemal wszystkiego, co chciaÅ‚byÅ› zrobiÄ‡
+  z Vi. SzÃ³sta edycja zawiera teÅ¼ informacje o Vimie.
 
   Po polsku wydano:
 	Edytor vi. Leksykon kieszonkowy - autor Arnold Robbins
 	Wydawca: Helion 2001 (O'Reilly).
 	ISBN: 83-7197-472-8
 	http://helion.pl/ksiazki/vilek.htm
-  Jest to ksi±¿eczka zawieraj±ca spis poleceñ vi i jego najwa¿niejszych
-  klonów (miêdzy innymi Vima).
+  Jest to ksiÄ…Å¼eczka zawierajÄ…ca spis poleceÅ„ vi i jego najwaÅ¼niejszych
+  klonÃ³w (miÄ™dzy innymi Vima).
 
 	Edytor vi - autorzy Linda Lamb i Arnold Robbins
 	Wydawca: Helion 2001 (O'Reilly) - wg 6. ang. wydania
 	ISBN: 83-7197-539-2
 	http://helion.pl/ksiazki/viedyt.htm
-  Rozszerzona wersja Learning the Vi Editor w polskim t³umaczeniu.
+  Rozszerzona wersja Learning the Vi Editor w polskim tÅ‚umaczeniu.
 
-  Ten tutorial zosta³ napisany przez Michaela C. Pierce'a i Roberta K. Ware'a,
-  Colorado School of Mines korzystaj±c z pomocy Charlesa Smitha,
+  Ten tutorial zostaÅ‚ napisany przez Michaela C. Pierce'a i Roberta K. Ware'a,
+  Colorado School of Mines korzystajÄ…c z pomocy Charlesa Smitha,
   Colorado State University.
   E-mail: bware@mines.colorado.edu.
 
@@ -986,10 +986,10 @@ UWAGA: Uzupe³nianie dzia³a dla wielu poleceñ. Spróbuj wcisn±æ CTRL-D i <TAB>.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Przet³umaczone przez Miko³aja Machowskiego,
-  Sierpieñ 2001,
+  PrzetÅ‚umaczone przez MikoÅ‚aja Machowskiego,
+  SierpieÅ„ 2001,
   rev. Marzec 2002
-  2nd rev. Wrzesieñ 2004
+  2nd rev. WrzesieÅ„ 2004
   3rd rev. Marzec 2006
-  4th rev. Grudzieñ 2008
-  Wszelkie uwagi proszê kierowaæ na: mikmach@wp.pl
+  4th rev. GrudzieÅ„ 2008
+  Wszelkie uwagi proszÄ™ kierowaÄ‡ na: mikmach@wp.pl

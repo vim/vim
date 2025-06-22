@@ -63,7 +63,7 @@ void f_complete_add(typval_T *argvars, typval_T *rettv);
 void f_complete_check(typval_T *argvars, typval_T *rettv);
 void f_complete_info(typval_T *argvars, typval_T *rettv);
 void ins_compl_delete(void);
-void ins_compl_insert(int in_compl_func, int move_cursor);
+void ins_compl_insert(int move_cursor);
 void ins_compl_check_keys(int frequency, int in_compl_func);
 int ins_complete(int c, int enable_pum);
 void free_insexpand_stuff(void);

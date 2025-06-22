@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Jun 11
+" Last Change:	   2025 Jun 20
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -121,7 +121,7 @@ syn keyword vimAutoEvent contained FilterWritePost FilterWritePre FocusGained Fo
 syn keyword vimAutoEvent contained WinScrolled skipwhite nextgroup=vimAutoEventSep,@vimAutocmdPattern
 
 syn keyword	vimAutoEvent	contained	User	skipwhite nextgroup=vimUserAutoEvent
-syn match	vimUserAutoEvent	contained	"\<\h\w*\>"	skipwhite nextgroup=vimAutoEventSep,@vimAutocmdPattern
+syn match	vimUserAutoEvent	contained	"\<\h\w*\>"	skipwhite nextgroup=vimUserAutoEventSep,vimAutocmdMod,vimAutocmdBlock
 
 " Highlight commonly used Groupnames {{{2
 syn keyword vimGroup contained	Comment Constant String Character Number Boolean Float Identifier Function Statement Conditional Repeat Label Operator Keyword Exception PreProc Include Define Macro PreCondit Type StorageClass Structure Typedef Special SpecialChar Tag Delimiter SpecialComment Debug Underlined Ignore Error Todo
@@ -391,7 +391,7 @@ if s:vim9script
             \\|
           \\%(^\s*#.*\)\@<=$
             \\|
-          \\n\s*\\\|\n\s*#\\
+          \\n\s*\%(\\\|#\\ \)
         \+
         \ matchgroup=vimCommand
         \ end="\s\+\zsas\ze\s\+\h"
@@ -403,7 +403,7 @@ if s:vim9script
 else
   syn region	vimImportFilename contained
         \ start="\S"
-        \ skip=+\n\s*\\\|\n\s*"\\ +
+        \ skip=+\n\s*\%(\\\|"\\ \)+
         \ matchgroup=vimCommand
         \ end="\s\+\zsas\ze\s\+\h"
         \ matchgroup=NONE
@@ -1004,18 +1004,17 @@ syn match	vimMarkArgError	contained	"["^.(){}0-9]"
 syn cluster	vimMarkArg	contains=vimMarkArg,vimMarkArgError
 
 " Marks, Registers, Addresses, Filters: {{{2
+syn match	vimMark	"'[a-zA-Z0-9]\ze\s*$"
+syn match	vimMark	"'[[\]{}()<>'`"^.]\ze\s*$"
 syn match	vimMark	"'[a-zA-Z0-9]\ze[-+,!]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
-syn match	vimMark	"'[[\]{}()<>]\ze[-+,!]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
-syn match	vimMark	",\zs'[[\]{}()<>]\ze"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
+syn match	vimMark	"'[[\]{}()<>'`"^.]\ze[-+,!]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
+syn match	vimMark	",\zs'[[\]{}()<>'`"^.]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
 syn match	vimMark	"[!,:]\zs'[a-zA-Z0-9]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
-syn match	vimMark	"\<norm\%[al]\s\zs'[a-zA-Z0-9]"	nextgroup=vimFilter,vimMarkNumber,vimSubst1
 syn match	vimMarkNumber	"[-+]\d\+"		contained contains=vimOper nextgroup=vimSubst1
 syn match	vimPlainMark contained	"'[a-zA-Z0-9]"
 syn match	vimRange	"[`'][a-zA-Z0-9],[`'][a-zA-Z0-9]"	contains=vimMark	skipwhite nextgroup=vimFilter
 
 syn match	vimRegister	'[^,;[{: \t]\zs"[a-zA-Z0-9.%#:_\-/]\ze[^a-zA-Z_":0-9]'
-syn match	vimRegister	'\<norm\s\+\zs"[a-zA-Z0-9]'
-syn match	vimRegister	'\<normal\s\+\zs"[a-zA-Z0-9]'
 syn match	vimRegister	'@"'
 syn match	vimPlainRegister contained	'"[a-zA-Z0-9\-:.%#*+=]'
 syn match	vimLetRegister	contained	'@["0-9\-a-zA-Z:.%#=*+~_/]'
@@ -1260,6 +1259,7 @@ syn match	vimAutocmdMod	contained	"++once\>"	skipwhite nextgroup=vimAutocmdMod,v
 " higher priority than vimAutocmdGroup, assume no group is so named
 syn match	vimAutoEventGlob	contained	"*"	skipwhite nextgroup=@vimAutocmdPattern
 syn match	vimAutoEventSep	contained	"\a\@1<=,"	nextgroup=vimAutoEvent
+syn match	vimUserAutoEventSep contained	"\a\@1<=,"	nextgroup=vimUserAutoEvent
 
 syn match	vimAutocmd		"\<au\%[tocmd]\>"	skipwhite nextgroup=vimAutocmdBang,vimAutocmdGroup,vimAutoEvent,vimAutoEventGlob
 
