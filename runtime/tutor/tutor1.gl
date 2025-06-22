@@ -1,673 +1,674 @@
+
 ===============================================================================
-=     B e n v i d o   a o   t u t o r   d o   V I M      -    VersiÛn 1.7     =
+=     B e n v i d o   a o   t u t o r   d o   V I M      -    Versi√≥n 1.7     =
 ===============================================================================
 
 
-     Vim È un editor moi potente que dispÛn de moitos comandos, demasiados
-     para ser explicados nun tutor coma este. Este tutor est· deseÒado
+     Vim √© un editor moi potente que disp√≥n de moitos comandos, demasiados
+     para ser explicados nun tutor coma este. Este tutor est√° dese√±ado
      para describir comandos dabondo para que vostede sexa capaz de
-     aprender f·cilmente a usa-lo Vim como un editor de propÛsito xeral.
+     aprender f√°cilmente a usa-lo Vim como un editor de prop√≥sito xeral.
 
-     O tempo necesario para completa-lo tutor È aproximadamente de 30
-     minutos, dependendo de canto tempo se adique · experimentaciÛn.      
+     O tempo necesario para completa-lo tutor √© aproximadamente de 30
+     minutos, dependendo de canto tempo se adique √° experimentaci√≥n.      
 
-     Os comandos destas lecciÛns modificar·n o texto. Faga unha copia deste
-     ficheiro para practicar (con ´vimtutorª, isto xa È unha copia).
+     Os comandos destas lecci√≥ns modificar√°n o texto. Faga unha copia deste
+     ficheiro para practicar (con ¬´vimtutor¬ª, isto xa √© unha copia).
 
-     … importante lembrar que este tutor est· pensado para ensinar coa 
-     pr·ctica. Isto significa que cÛmpre executa-los comandos para 
-     aprendelos axeitadamente. Se ˙nicamente le o texto, esquecer·nselle
+     √â importante lembrar que este tutor est√° pensado para ensinar coa 
+     pr√°ctica. Isto significa que c√≥mpre executa-los comandos para 
+     aprendelos axeitadamente. Se √∫nicamente le o texto, esquecer√°nselle
      os comandos!
 
-     Agora, aseg˙rese de que a tecla de bloqueo de mai˙sculas NON est·
+     Agora, aseg√∫rese de que a tecla de bloqueo de mai√∫sculas NON est√°
      activada e prema a tecla  j  para move-lo cursor, de xeito que o texto
-     da LecciÛn 1.1.1 abranga completamente a pantalla.
+     da Lecci√≥n 1.1.1 abranga completamente a pantalla.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                          LECCI”N 1.1.1: MOVE-LO CURSOR
+                          LECCI√ìN 1.1.1: MOVE-LO CURSOR
 
 
  ** Para move-lo cursor, prema as teclas h,j,k,l do xeito indicado. **
       ^
-      k       IndicaciÛn: A tecla h est· · esquerda, e mÛveo · esquerda.
- < h	 l >		  A tecla l est· · dereita, e mÛveo · dereita.
+      k       Indicaci√≥n: A tecla h est√° √° esquerda, e m√≥veo √° esquerda.
+ < h	 l >		  A tecla l est√° √° dereita, e m√≥veo √° dereita.
       j			  A tecla j semella unha frecha e apunta 
       v                    cara a embaixo. 
 
-  1. Mova o cursor pola pantalla ata que sinta comodidade facendo a acciÛn.
+  1. Mova o cursor pola pantalla ata que sinta comodidade facendo a acci√≥n.
 
-  2. ManteÒa premida a tecla  j  ata que se repita autom·ticamente.
-     Agora xa sabe como chegar · lecciÛn seguinte.
+  2. Mante√±a premida a tecla  j  ata que se repita autom√°ticamente.
+     Agora xa sabe como chegar √° lecci√≥n seguinte.
 
-  3. Utilizando a tecla abaixo, vaia · lecciÛn 1.1.2.
+  3. Utilizando a tecla abaixo, vaia √° lecci√≥n 1.1.2.
 
-NOTA: Se alguna vez non est· seguro sobre algo que tecleara, prema <ESC>
+NOTA: Se alguna vez non est√° seguro sobre algo que tecleara, prema <ESC>
       para situarse no modo Normal. Logo, volva a teclear a orde que desexaba.
 
-NOTA: As teclas de movemento do cursor tamÈn funcionan. Pero usando hjkl
-      poder· moverse moito m·is r·pido unha vez que se acostume.
+NOTA: As teclas de movemento do cursor tam√©n funcionan. Pero usando hjkl
+      poder√° moverse moito m√°is r√°pido unha vez que se acostume.
       De verdade!
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                          LECCI”N 1.1.2: SAÕR DO VIM
+                          LECCI√ìN 1.1.2: SA√çR DO VIM
 
 
-NOTA: Antes de executar alg˙n dos seguintes pasos, lea primeiro a lecciÛn
+NOTA: Antes de executar alg√∫n dos seguintes pasos, lea primeiro a lecci√≥n
       enteira!!
 
-  1. Prema a tecla <ESC> (para asegurarse de que est· no modo Normal).
+  1. Prema a tecla <ESC> (para asegurarse de que est√° no modo Normal).
 
   2. Escriba:  :q! <INTRO>
-     Isto provoca a saÌda do editor REXEITANDO calquer cambio que fora feito.
+     Isto provoca a sa√≠da do editor REXEITANDO calquer cambio que fora feito.
 
-  3. Regrese eiquÌ executando o comando que o trouxo a este tutor.
+  3. Regrese eiqu√≠ executando o comando que o trouxo a este tutor.
      Este puido ser:   vimtutor <INTRO>
 
   4. Se memorizou estes pasos, e se sinte con confianza, execute os
-     pasos do 1 ao 3 para saÌr e volver a entrar ao editor. 
+     pasos do 1 ao 3 para sa√≠r e volver a entrar ao editor. 
 
 NOTA: :q! <INTRO> descarta cualquer cambio que realizara.
-      En prÛximas lecciÛns, aprender· como garda-los cambios nun arquivo.
+      En pr√≥ximas lecci√≥ns, aprender√° como garda-los cambios nun arquivo.
 
-  5. Mova o cursor ata a LecciÛn 1.1.3.
+  5. Mova o cursor ata a Lecci√≥n 1.1.3.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                     LECCI”N 1.1.3: EDITAR TEXTO - BORRAR
+                     LECCI√ìN 1.1.3: EDITAR TEXTO - BORRAR
 
 
-  ** Prema  x  para elimina-lo car·cter baixo o cursor. **
+  ** Prema  x  para elimina-lo car√°cter baixo o cursor. **
 
-  1. Mova o cursor · liÒa de embaixo sinalada con --->.
+  1. Mova o cursor √° li√±a de embaixo sinalada con --->.
 
   2. Para corrixi-los erros, mova o cursor ata que estea sobre o
-     car·cter que vai ser borrado.
+     car√°cter que vai ser borrado.
 
-  3. Prema a tecla  x  para elimina-lo car·cter non desexado.
+  3. Prema a tecla  x  para elimina-lo car√°cter non desexado.
 
   4. Repita os pasos 2 a 4 ata que a frase sexa a correcta.
 
----> A vvaca saltooooou soobree aa l˙˙˙˙˙˙˙a.
+---> A vvaca saltooooou soobree aa l√∫√∫√∫√∫√∫√∫√∫a.
 
-  5. Agora que a liÒa est· correcta, contin˙e coa LecciÛn 1.1.4.
+  5. Agora que a li√±a est√° correcta, contin√∫e coa Lecci√≥n 1.1.4.
 
 NOTA: A medida que vaia avanzando neste tutor, non tente memorizar,
       aprenda practicando.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                  LECCI”N 1.1.4: EDITAR TEXTO - INSERIR
+                  LECCI√ìN 1.1.4: EDITAR TEXTO - INSERIR
 
 
   ** Prema  i  para inserir texto. **
 
-  1. Mova o cursor · primeira liÒa de embaixo sinalada con --->.
+  1. Mova o cursor √° primeira li√±a de embaixo sinalada con --->.
 
-  2. Para facer que a primeira liÒa sexa igual ca segunda, mova o cursor 
-     ata que estea sobre o car·cter ANTES do texto que vai ser inserido.
+  2. Para facer que a primeira li√±a sexa igual ca segunda, mova o cursor 
+     ata que estea sobre o car√°cter ANTES do texto que vai ser inserido.
 
-  3. Prema  i  e escriba os car·cteres a engadir.
+  3. Prema  i  e escriba os car√°cteres a engadir.
 
   4. A medida que sexa corrixido cada erro, prema <ESC> para volver ao modo
      Normal. Repita os pasos 2 a 4 para corrixi-la frase.
 
 ---> Flta texto nesta .
----> Falta algo de texto nesta liÒa.
+---> Falta algo de texto nesta li√±a.
 
-  5. Cuando se sinta con comodidade inserindo texto, pase · lecciÛn 1.1.5.
+  5. Cuando se sinta con comodidade inserindo texto, pase √° lecci√≥n 1.1.5.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                      LECCI”N 1.1.5: EDITAR TEXTO - ENGADIR
+                      LECCI√ìN 1.1.5: EDITAR TEXTO - ENGADIR
 
 
   ** Prema  A  para engadir texto. **
 
-  1. Mova o cursor · primeira liÒa inferior marcada con --->.
-     Non importa sobre quÈ car·cter estea o cursor nesta liÒa.
+  1. Mova o cursor √° primeira li√±a inferior marcada con --->.
+     Non importa sobre qu√© car√°cter estea o cursor nesta li√±a.
 
   2. Prema  A  e escriba o texto necesario.
 
   3. Cuando o texto estea engadido, prema <ESC> para volver ao modo Normal.
 
-  4. Mova o cursor · segunda liÒa marcada con ---> e repita os pasos 2 e 3
+  4. Mova o cursor √° segunda li√±a marcada con ---> e repita os pasos 2 e 3
      para corrixir esta frase.
 
----> Falta alg˙n texto nes
-     Falta alg˙n texto nesta liÒa.
----> TamÈn falta alg
-     TamÈn falta alg˙n texto eiquÌ.
+---> Falta alg√∫n texto nes
+     Falta alg√∫n texto nesta li√±a.
+---> Tam√©n falta alg
+     Tam√©n falta alg√∫n texto eiqu√≠.
 
-  5. Cuando se sinta con comodidade engadindo texto, pase · lecciÛn 1.1.6.
+  5. Cuando se sinta con comodidade engadindo texto, pase √° lecci√≥n 1.1.6.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                      LECCI”N 1.1.6: EDITAR UN ARQUIVO
+                      LECCI√ìN 1.1.6: EDITAR UN ARQUIVO
 
 
-  ** Use  :wq  para gardar un arquivo e saÌr **
+  ** Use  :wq  para gardar un arquivo e sa√≠r **
 
-NOTA: Antes de executar os seguintes pasos, lea a lecciÛn enteira!!
+NOTA: Antes de executar os seguintes pasos, lea a lecci√≥n enteira!!
 
   1.  Se ten acceso a outra terminal, faga os seguintes puntos nela.
-      Se non È asÌ, saia deste tutor como fixo na lecciÛn 1.1.2:  :q!
+      Se non √© as√≠, saia deste tutor como fixo na lecci√≥n 1.1.2:  :q!
 
-  2. No sÌmbolo do sistema escriba este comando:  vim arquivo.txt <INTRO>
-     'vim' È o comando para arrincar o editor Vim,
-     'arquivo.txt' È o nome do arquivo que quere editar.
+  2. No s√≠mbolo do sistema escriba este comando:  vim arquivo.txt <INTRO>
+     'vim' √© o comando para arrincar o editor Vim,
+     'arquivo.txt' √© o nome do arquivo que quere editar.
      Utilice o nome dun arquivo que poida cambiar.
 
-  3. Insira e elimine texto como xa aprendeu nas lecciÛns anteriores.
+  3. Insira e elimine texto como xa aprendeu nas lecci√≥ns anteriores.
 
   4. Garde o arquivo cos cambios e saia do Vim con:  :wq <INTRO>
 
   5. Se xa saiu do vimtutor no paso 1, reinicie vimtutor e baixe ata
      o seguinte resumo.
 
-  6. Despois de le-los pasos anteriores e telos entendido: f·gaos.
+  6. Despois de le-los pasos anteriores e telos entendido: f√°gaos.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			    RESUMO DA LECCI”N 1.1
+			    RESUMO DA LECCI√ìN 1.1
 
 
-  1. O cursor mÛvese utilizando as teclas das frechas ou as teclas hjkl.
+  1. O cursor m√≥vese utilizando as teclas das frechas ou as teclas hjkl.
 	 h (esquerda)	   j (abaixo)	  k (arriba)	  l (dereita)
 
-  2. Para acceder ao Vim dende o sÌmbolo do sistema escriba:
+  2. Para acceder ao Vim dende o s√≠mbolo do sistema escriba:
      vim nome_arquivo <INTRO>
 
-  3. Para saÌr do Vim escriba: <ESC> :q! <INTRO> para eliminar tÛdolos
+  3. Para sa√≠r do Vim escriba: <ESC> :q! <INTRO> para eliminar t√≥dolos
      cambios.
      Ou escriba:  <ESC>  :wq  <INTRO> para garda-los cambios.
 
-  4. Para borrar un car·cter baixo o cursor en modo Normal prema:  x  .
+  4. Para borrar un car√°cter baixo o cursor en modo Normal prema:  x  .
 
   5. Para inserir ou engadir texto escriba:
      i  escriba o texto a inserir <ESC> insire o texto antes do cursor
-     A  escriba o texto a engadir <ESC> engade o texto ao final da liÒa
+     A  escriba o texto a engadir <ESC> engade o texto ao final da li√±a
 
-NOTA: Premendo <ESC> tÛrnase ao modo Normal ou cancÈlase unha orde non
+NOTA: Premendo <ESC> t√≥rnase ao modo Normal ou canc√©lase unha orde non
       desexada ou incompleta.
 
-  Agora contin˙e coa LecciÛn 1.2.
+  Agora contin√∫e coa Lecci√≥n 1.2.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    LECCI”N 1.2.1:  COMANDOS PARA BORRAR
+                    LECCI√ìN 1.2.1:  COMANDOS PARA BORRAR
 
 
   ** Escriba  dw  para borrar unha palabra **
 
-  1. Prema <ESC> para asegurarse de que est· no modo Normal.
+  1. Prema <ESC> para asegurarse de que est√° no modo Normal.
 
-  2. Mova o cursor · liÒa inferior sinalada con --->.
+  2. Mova o cursor √° li√±a inferior sinalada con --->.
 
   3. Mova o cursor ao comezo dunha palabra que desexe borrar.
 
   4. Prema  dw  para facer que a palabra desapareza.
 
-NOTA: A letra  d  aparecer· na ˙ltima liÒa inferior dereita da pantalla
-      namentres a escribe. O Vim est· esperando que escriba  w .
-      Se ve outro car·cter que non sexa  d  , È que escribiu algo mal. Prema 
+NOTA: A letra  d  aparecer√° na √∫ltima li√±a inferior dereita da pantalla
+      namentres a escribe. O Vim est√° esperando que escriba  w .
+      Se ve outro car√°cter que non sexa  d  , √© que escribiu algo mal. Prema 
       <ESC> e comece de novo.
 
----> Hai algunhas palabras p·sao ben que non pertencen papel a esta frase.
+---> Hai algunhas palabras p√°sao ben que non pertencen papel a esta frase.
 
-  5. Repita os pasos 3 e 4 ata que a frase sexa correcta e pase ·
-     lecciÛn 1.2.2.
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    LECCI”N 1.2.2: M¡IS COMANDOS PARA BORRAR
-
-
-  ** Escriba  d$  para borrar ata o final da liÒa. **
-
-  1. Prema  <ESC>  para asegurarse de que est· no modo Normal.
-
-  2. Mova o cursor · liÒa inferior sinalada con --->.
-
-  3. Mova o cursor ao final da liÒa correcta (DESPOIS do primeiro . ).
-
-  4. Escriba  d$  para borrar ata o final da liÒa.
-
----> AlguÈn escribiu o final desta liÒa d˙as veces. esta liÒa d˙as veces.
-
-  Pase · lecciÛn 1.2.3 para entender quÈ est· pasando.
+  5. Repita os pasos 3 e 4 ata que a frase sexa correcta e pase √°
+     lecci√≥n 1.2.2.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                  LECCI”N 1.2.3: SOBRE OPERADORES E MOVEMENTOS
+                    LECCI√ìN 1.2.2: M√ÅIS COMANDOS PARA BORRAR
 
 
-  Moitos comandos que cambian texto est·n compostos por un operador e m·is
+  ** Escriba  d$  para borrar ata o final da li√±a. **
+
+  1. Prema  <ESC>  para asegurarse de que est√° no modo Normal.
+
+  2. Mova o cursor √° li√±a inferior sinalada con --->.
+
+  3. Mova o cursor ao final da li√±a correcta (DESPOIS do primeiro . ).
+
+  4. Escriba  d$  para borrar ata o final da li√±a.
+
+---> Algu√©n escribiu o final desta li√±a d√∫as veces. esta li√±a d√∫as veces.
+
+  Pase √° lecci√≥n 1.2.3 para entender qu√© est√° pasando.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  LECCI√ìN 1.2.3: SOBRE OPERADORES E MOVEMENTOS
+
+
+  Moitos comandos que cambian texto est√°n compostos por un operador e m√°is
   un movemento.
-  O formato para o comando 'eliminar' co operador de borrado  d  È o
+  O formato para o comando 'eliminar' co operador de borrado  d  √© o
   seguinte:
 
     d   movemento
 
   Onde:
-    d         - È o operador para borrar.
-    movemento - È o texto sobre o que o comando vai operar (lista inferior).
+    d         - √© o operador para borrar.
+    movemento - √© o texto sobre o que o comando vai operar (lista inferior).
 
-  EiquÌ, unha lista resumida de movementos:
-   w - ata o comezo da seguinte palabra, EXCLUÕNDO o seu primero car·cter.
-   e - ata o final da palabra actual, INCLUÕNDO o ˙ltimo car·cter.
-   $ - ata o final da liÒa, INCLUÕNDO o ˙ltimo car·cter.
+  Eiqu√≠, unha lista resumida de movementos:
+   w - ata o comezo da seguinte palabra, EXCLU√çNDO o seu primero car√°cter.
+   e - ata o final da palabra actual, INCLU√çNDO o √∫ltimo car√°cter.
+   $ - ata o final da li√±a, INCLU√çNDO o √∫ltimo car√°cter.
 
-  Polo tanto, ao escribir  de  borrar·se dende a posiciÛn do cursor ata o
+  Polo tanto, ao escribir  de  borrar√°se dende a posici√≥n do cursor ata o
   final da palabra.
 
-NOTA: Premendo ˙nicamente o movemento, estando no modo Normal sen un
-      operador, mover·se o cursor como se especifica na lista anterior.
+NOTA: Premendo √∫nicamente o movemento, estando no modo Normal sen un
+      operador, mover√°se o cursor como se especifica na lista anterior.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-             LECCI”N 1.2.4: UTILIZAR UN CONTADOR PARA UN MOVEMENTO
+             LECCI√ìN 1.2.4: UTILIZAR UN CONTADOR PARA UN MOVEMENTO
 
 
-  ** Ao escribir un n˙mero denantes dun movemento, repÌtise o movemento
-  o n˙mero de veces. **
+  ** Ao escribir un n√∫mero denantes dun movemento, rep√≠tise o movemento
+  o n√∫mero de veces. **
 
-  1. Mova o cursor ao comezo da liÒa marcada con --->.
+  1. Mova o cursor ao comezo da li√±a marcada con --->.
 
-  2. Escriba  2w  para mover o cursor d˙as palabras cara a adiante.
+  2. Escriba  2w  para mover o cursor d√∫as palabras cara a adiante.
 
   3. Escriba  3e  para mover o cursor ao final da terceira palabra cara a
      adiante.
 
-  4. Escriba  0  (cero) para coloca-lo cursor ao inicio da liÒa.
+  4. Escriba  0  (cero) para coloca-lo cursor ao inicio da li√±a.
 
-  5. Repita os pasos 2 e 3 con diferentes n˙meros.
+  5. Repita os pasos 2 e 3 con diferentes n√∫meros.
 
----> Isto È sÛ unha liÒa con palabras onde poder moverse.
+---> Isto √© s√≥ unha li√±a con palabras onde poder moverse.
 
-  Pase · lecciÛn 1.2.5.
+  Pase √° lecci√≥n 1.2.5.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-              LECCI”N 1.2.5: UTILIZAR UN CONTADOR PARA BORRAR M¡IS
+              LECCI√ìN 1.2.5: UTILIZAR UN CONTADOR PARA BORRAR M√ÅIS
 
 
-  ** Ao escribir un n˙mero cun operador, repÌtese ese n˙mero de veces. **
+  ** Ao escribir un n√∫mero cun operador, rep√≠tese ese n√∫mero de veces. **
 
-  En combinaciÛn co operador de borrado e o movemento mencionado
-  anteriormente, engada un contador antes do movemento para eliminar m·is:
-	 d   n˙mero   movemento
+  En combinaci√≥n co operador de borrado e o movemento mencionado
+  anteriormente, engada un contador antes do movemento para eliminar m√°is:
+	 d   n√∫mero   movemento
 
-  1. Mova o cursor ao inicio da primeira palabra en MAI⁄SCULAS na liÒa 
+  1. Mova o cursor ao inicio da primeira palabra en MAI√öSCULAS na li√±a 
      marcada con --->.
 
-  2. Escriba  d2w  para elimina-las d˙as palabras en MAI⁄SCULAS.
+  2. Escriba  d2w  para elimina-las d√∫as palabras en MAI√öSCULAS.
 
   3. Repita os pasos 1 e 2 con diferentes contadores para elimina-las
-     seguintes palabras en MAI⁄SCULAS cun comando.
+     seguintes palabras en MAI√öSCULAS cun comando.
 
 --->  Esta ABC DE cadea FGHI JK LMN OP de palabras foi Q RS TUV limpada.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                       LECCI”N 1.2.6: OPERACI”N EN LI—AS
+                       LECCI√ìN 1.2.6: OPERACI√ìN EN LI√ëAS
 
 
-  ** Escriba  dd   para eliminar unha liÒa completa. **
+  ** Escriba  dd   para eliminar unha li√±a completa. **
 
-  Debido · frecuencia coa que se elimina unha liÒa completa, os deseÒadores
-  do Vim decidiron que serÌa m·is sinxelo simplemente escribir d˙as letras 
-  d  para eliminar unha liÒa.
+  Debido √° frecuencia coa que se elimina unha li√±a completa, os dese√±adores
+  do Vim decidiron que ser√≠a m√°is sinxelo simplemente escribir d√∫as letras 
+  d  para eliminar unha li√±a.
 
-  1. Mova o cursor · segunda liÒa do p·rrafo inferior.
+  1. Mova o cursor √° segunda li√±a do p√°rrafo inferior.
 
-  2. Escriba  dd  para elimina-la liÒa.
+  2. Escriba  dd  para elimina-la li√±a.
 
-  3. Agora, mÛvase · cuarta liÒa.
+  3. Agora, m√≥vase √° cuarta li√±a.
 
-  4. Escriba   2dd   para eliminar d˙as liÒas · vez.
+  4. Escriba   2dd   para eliminar d√∫as li√±as √° vez.
 
 --->  1)  As rosas son vermellas,
---->  2)  o barro È divertido,
---->  3)  a violeta È azul,
---->  4)  teÒo un coche,
+--->  2)  o barro √© divertido,
+--->  3)  a violeta √© azul,
+--->  4)  te√±o un coche,
 --->  5)  os reloxos dan a hora,
---->  6)  o azucere È dÛce
---->  7)  e ti tamÈn o es.
+--->  6)  o azucere √© d√≥ce
+--->  7)  e ti tam√©n o es.
 
-  A duplicaciÛn para borrar liÒas tamÈn funcionan cos operadores
+  A duplicaci√≥n para borrar li√±as tam√©n funcionan cos operadores
   mencionados anteriormente.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                       LECCI”N 1.2.7: O COMANDO DESFACER 
+                       LECCI√ìN 1.2.7: O COMANDO DESFACER 
 
 
-  ** Prema  u  para desfacer os ˙ltimos comandos,
-            U  para desfacer unha liÒa enteira.       **
+  ** Prema  u  para desfacer os √∫ltimos comandos,
+            U  para desfacer unha li√±a enteira.       **
 
-  1. Mova o cursor · liÒa inferior sinalada con ---> e sit˙eo baixo o
+  1. Mova o cursor √° li√±a inferior sinalada con ---> e sit√∫eo baixo o
      primeiro erro.
 
-  2. Prema  x  para borra-lo primeiro car·cter non desexado.
+  2. Prema  x  para borra-lo primeiro car√°cter non desexado.
 
-  3. Prema agora  u  para desface-lo ˙ltimo comando executado.
+  3. Prema agora  u  para desface-lo √∫ltimo comando executado.
 
-  4. Agora, corrixa tÛdolos erros da liÒa usando o comando  x.
+  4. Agora, corrixa t√≥dolos erros da li√±a usando o comando  x.
 
-  5. Prema agora  U  mai˙sculo para devolver a liÒa ao seu estado orixinal.
+  5. Prema agora  U  mai√∫sculo para devolver a li√±a ao seu estado orixinal.
 
-  6. Prema agora  u  unhas poucas veces m·is para desface-lo feito por  U  e
+  6. Prema agora  u  unhas poucas veces m√°is para desface-lo feito por  U  e
      mailos comandos previos.
 
-  7. Agora, prema CTRL-R (manteÒa pulsada a tecla CTRL e prema R) unhas
+  7. Agora, prema CTRL-R (mante√±a pulsada a tecla CTRL e prema R) unhas
      cantas veces para volver a executar os comandos (desface-lo desfeito).
 
----> Corrrixa os erros dee esttta liÒa e vooolva ponelos coon desfacer.
+---> Corrrixa os erros dee esttta li√±a e vooolva ponelos coon desfacer.
 
-  Estes son uns comandos moi ˙tiles. Agora, vaiamos ao resumo da lecciÛn 1.2.
+  Estes son uns comandos moi √∫tiles. Agora, vaiamos ao resumo da lecci√≥n 1.2.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			    RESUMO DA LECCI”N 1.2
+			    RESUMO DA LECCI√ìN 1.2
 
 
   1. Para borrar dende o cursor ata a seguinte palabra prema:	     dw
   2. Para borrar dende o cursor ata o final da palabra prema:        de
-  3. Para borrar dende o cursor ata o final dunha liÒa prema:	     d$
-  4. Para borrar unha liÒa enteira prema:                            dd
-  5. Para repetir un movemento, antepoÒa un n˙mero:                  2w
-  6. O formato para un comando de cambio È:
-               operador  [n˙mero]  movemento
+  3. Para borrar dende o cursor ata o final dunha li√±a prema:	     d$
+  4. Para borrar unha li√±a enteira prema:                            dd
+  5. Para repetir un movemento, antepo√±a un n√∫mero:                  2w
+  6. O formato para un comando de cambio √©:
+               operador  [n√∫mero]  movemento
      onde:
-       comando    - È o que hai que facer, por exemplo,  d  para borrar
-       [n˙mero]   - È un n˙mero opcional para repetir o movemento
-       movemento  - mÛvese sobre o texto no que operar, como w (palabra),
-                    $ (ata o final da liÒa), etc.
+       comando    - √© o que hai que facer, por exemplo,  d  para borrar
+       [n√∫mero]   - √© un n√∫mero opcional para repetir o movemento
+       movemento  - m√≥vese sobre o texto no que operar, como w (palabra),
+                    $ (ata o final da li√±a), etc.
 
-  7. Para moverse ao inicio da liÒa utilice un cero:    0
-  8. Para desfacer acciones previas prema:              u (u min˙sculo)
-     Para desfacer tÛdolos cambios dunha liÒa prema:    U (U mAI⁄SCULO)
+  7. Para moverse ao inicio da li√±a utilice un cero:    0
+  8. Para desfacer acciones previas prema:              u (u min√∫sculo)
+     Para desfacer t√≥dolos cambios dunha li√±a prema:    U (U mAI√öSCULO)
      Para desface-lo desfeito prema:                    CTRL-R
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                      LECCI”N 1.3.1: O COMANDO ´PUTª (P”R)
+                      LECCI√ìN 1.3.1: O COMANDO ¬´PUT¬ª (P√ìR)
 
 
-  ** Prema  p  para pÛr (pegar) despois do cursor o ˙ltimo que borrou. **
+  ** Prema  p  para p√≥r (pegar) despois do cursor o √∫ltimo que borrou. **
 
-  1. Mova o cursor · primeira liÒa inferior marcada con --->.
+  1. Mova o cursor √° primeira li√±a inferior marcada con --->.
 
-  2. Escriba  dd  para borra-la liÒa e almacenala nun rexistro do Vim.
+  2. Escriba  dd  para borra-la li√±a e almacenala nun rexistro do Vim.
 
-  3. Mova o cursor · liÒa c) por RIBA de onde deberÌa esta-la liÒa 
+  3. Mova o cursor √° li√±a c) por RIBA de onde deber√≠a esta-la li√±a 
      eliminada.
 
-  4. Prema   p   para pega-la liÒa borrada por BAIXO do cursor.
+  4. Prema   p   para pega-la li√±a borrada por BAIXO do cursor.
 
-  5. Repita os pasos 2 a 4 para por tÛdalas liÒas na orde correcta.
+  5. Repita os pasos 2 a 4 para por t√≥dalas li√±as na orde correcta.
 
 ---> d) Podes aprendela ti?
----> b) A violeta È azul,
----> c) a intelixencia aprÈndese,
+---> b) A violeta √© azul,
+---> c) a intelixencia apr√©ndese,
 ---> a) as rosas son vermellas.
      
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   LECCI”N 1.3.2: O COMANDO ´REPLACEª (TROCAR)
+                   LECCI√ìN 1.3.2: O COMANDO ¬´REPLACE¬ª (TROCAR)
 
 
-  ** Prema  rx  para troca-lo car·cter baixo o cursor con  x . **
+  ** Prema  rx  para troca-lo car√°cter baixo o cursor con  x . **
 
-  1. Mova o cursor · primeira liÒa inferior marcada con --->.
+  1. Mova o cursor √° primeira li√±a inferior marcada con --->.
 
   2. Mova o cursor para situalo sobre o primeiro erro.
 
-  3. Prema   r	 e despois o car·cter que deberÌa ir aÌ.
+  3. Prema   r	 e despois o car√°cter que deber√≠a ir a√≠.
 
-  4. Repita os pasos 2 e 3 ata que a primeira liÒa sexa igual · segunda.
+  4. Repita os pasos 2 e 3 ata que a primeira li√±a sexa igual √° segunda.
 
----> Cande esti lita fui escrita alguÈr premeu alginhas teclas equibocadas!
----> Cando esta liÒa foi escrita alguÈn premeu algunhas teclas equivocadas!
+---> Cande esti lita fui escrita algu√©r premeu alginhas teclas equibocadas!
+---> Cando esta li√±a foi escrita algu√©n premeu algunhas teclas equivocadas!
 
-  5. Agora pase · lecciÛn 1.3.3.
+  5. Agora pase √° lecci√≥n 1.3.3.
 
-NOTA: Lembre que deberÌa aprender practicando.
+NOTA: Lembre que deber√≠a aprender practicando.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                         LECCI”N 1.3.3: O COMANDO CAMBIAR
+                         LECCI√ìN 1.3.3: O COMANDO CAMBIAR
 
 
   ** Para cambiar ata o final dunha palabra, escriba  ce . **
 
-  1. Mova o cursor · primeria liÒa inferior marcada con --->.
+  1. Mova o cursor √° primeria li√±a inferior marcada con --->.
 
-  2. Sit˙e o cursor no u de lubrs.
+  2. Sit√∫e o cursor no u de lubrs.
 
-  3. Escriba  ce  e corrixa a palabra (neste caso, escriba 'iÒa').
+  3. Escriba  ce  e corrixa a palabra (neste caso, escriba 'i√±a').
 
   4. Prema <ESC> e mova o cursor ao seguinte erro a cambiar.
 
-  5. Repita os pasos 3 e 4 ata que a primeira frase sexa igual · segunda.
+  5. Repita os pasos 3 e 4 ata que a primeira frase sexa igual √° segunda.
 
 ---> Esta lubrs ten unhas poucas pskavtad que corrixir co comando change.
----> Esta liÒa ten unhas poucas palabras que corrixir co comando cambiar.
+---> Esta li√±a ten unhas poucas palabras que corrixir co comando cambiar.
 
-  TeÒa en conta que  ce  elimina a palabra e entra no modo Inserir.
-    cc  fai o mesmo para toda a liÒa.
+  Te√±a en conta que  ce  elimina a palabra e entra no modo Inserir.
+    cc  fai o mesmo para toda a li√±a.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   LECCI”N 1.3.4: M¡IS CAMBIOS USANDO  c
+                   LECCI√ìN 1.3.4: M√ÅIS CAMBIOS USANDO  c
 
 
-  ** O operador cambio utilÌzase cos mesmos movementos que borrar. **
+  ** O operador cambio util√≠zase cos mesmos movementos que borrar. **
 
-  1. O operador cambio funciona do mesmo xeito que borrar. O formato È:
+  1. O operador cambio funciona do mesmo xeito que borrar. O formato √©:
 
-       c   [n˙mero]   movemento
+       c   [n√∫mero]   movemento
 
-  2. Os movementos son tamÈn os mesmos, como  w (palabra) ou 
-  $ (fin da liÒa).
+  2. Os movementos son tam√©n os mesmos, como  w (palabra) ou 
+  $ (fin da li√±a).
 
-  3. Mova o cursor · primeira liÒa inferior sinalada con --->.
+  3. Mova o cursor √° primeira li√±a inferior sinalada con --->.
 
   4. Mova o cursor ao primeiro erro.
 
-  5. Prema  c$  e escriba o resto da liÒa para que sexa como a segunda,
+  5. Prema  c$  e escriba o resto da li√±a para que sexa como a segunda,
      e prema <ESC>.
 
----> O final desta liÒa necesita algunha axuda para que sexa como a segunda.
----> O final desta liÒa necesita ser corrixido usando o comando  c$.
+---> O final desta li√±a necesita algunha axuda para que sexa como a segunda.
+---> O final desta li√±a necesita ser corrixido usando o comando  c$.
 
 NOTA: Pode utiliza-lo retorno de carro para corrixir erros mentres escribe.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			    RESUMO DA LECCI”N 1.3
+			    RESUMO DA LECCI√ìN 1.3
 
 
-  1. Para volver a pÛr ou pega-lo texto que acaba de borrarse,
+  1. Para volver a p√≥r ou pega-lo texto que acaba de borrarse,
      escriba  p . Isto pega o texto despois do cursor (se borrou unha
-     liÒa, ao pegala, esta situar·se na liÒa baixo do cursor).
+     li√±a, ao pegala, esta situar√°se na li√±a baixo do cursor).
 
-  2. Para troca-lo car·cter baixo do cursor, prema  r  e logo o
-     car·cter que quere que estea no seu lugar.
+  2. Para troca-lo car√°cter baixo do cursor, prema  r  e logo o
+     car√°cter que quere que estea no seu lugar.
 
-  3. O operador cambio permÌtelle cambiar dende a posiciÛn do cursor
+  3. O operador cambio perm√≠telle cambiar dende a posici√≥n do cursor
      ata onde leve o movemento indicado. Por exemplo, prema  ce
      para cambiar dende o cursor ata o final da palabra, ou  c$
-     para cambiar ata o final da liÒa.
+     para cambiar ata o final da li√±a.
 
-  4. O formato para cambio È:
+  4. O formato para cambio √©:
 
-	 c   [n˙mero]   movemento
+	 c   [n√∫mero]   movemento
 
-  Pase agora · lecciÛn seguinte.
+  Pase agora √° lecci√≥n seguinte.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            LECCI”N 1.4.1: UBICACI”N DO CURSOR E ESTADO DO ARQUIVO
+            LECCI√ìN 1.4.1: UBICACI√ìN DO CURSOR E ESTADO DO ARQUIVO
 
 
-  ** Prema CTRL-G para mostra-la s˙a situaciÛn no ficheiro e mailo estado.
-     Prema G para moverse a unha determinada liÒa do fichero. **
+  ** Prema CTRL-G para mostra-la s√∫a situaci√≥n no ficheiro e mailo estado.
+     Prema G para moverse a unha determinada li√±a do fichero. **
 
-NOTA: Lea esta lecciÛn enteira antes de executar calquera dos pasos!!
+NOTA: Lea esta lecci√≥n enteira antes de executar calquera dos pasos!!
 
-  1. ManteÒa premida a tecla Ctrl e prema  g . Chamamos a isto CTRL-G.
-     Aparecer· unha mensaxe na parte inferior da p·xina co nome do arquivo
-     e a posiciÛn do cursor no arquivo. 
-     Lembre o n˙mero de liÒa para o paso 3.
+  1. Mante√±a premida a tecla Ctrl e prema  g . Chamamos a isto CTRL-G.
+     Aparecer√° unha mensaxe na parte inferior da p√°xina co nome do arquivo
+     e a posici√≥n do cursor no arquivo. 
+     Lembre o n√∫mero de li√±a para o paso 3.
 
-NOTA: Seica poida ve-la posiciÛn do cursor no recanto inferior da dereita
-      da pantalla. Isto acontece cando a opciÛn 'ruler' (regra) est·
+NOTA: Seica poida ve-la posici√≥n do cursor no recanto inferior da dereita
+      da pantalla. Isto acontece cando a opci√≥n 'ruler' (regra) est√°
       habilitada (consulte  :help 'ruler' )
 
   2. Prema  G  para move-lo cursor ata a parte inferior do arquivo.
      Prema  gg  para move-lo cursor ao inicio do arquivo.
 
-  3. Escriba o n˙mero da liÒa na que estaba e despois  G . Isto
-     tornar·o · liÒa na que estaba cuando pulsou CTRL-G.
+  3. Escriba o n√∫mero da li√±a na que estaba e despois  G . Isto
+     tornar√°o √° li√±a na que estaba cuando pulsou CTRL-G.
 
   4. Se se atopa con seguridade para poder facer isto, 
      execute os pasos 1 a 3.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                     LECCI”N 1.4.2: O COMANDO ´SEARCHª (BUSCAR)
+                     LECCI√ìN 1.4.2: O COMANDO ¬´SEARCH¬ª (BUSCAR)
 
 
   ** Escriba  /  seguido dun texto para busca-lo texto. **
 
-  1. En modo Normal, prema o car·cter  / . FÌxese que tanto o car·cter  /
-     como o cursor aparecen na derradeira liÒa da pantalla, o mesmo que
+  1. En modo Normal, prema o car√°cter  / . F√≠xese que tanto o car√°cter  /
+     como o cursor aparecen na derradeira li√±a da pantalla, o mesmo que
      o comando  : .
 
-  2. Escriba agora   errroor   <INTRO>. Esta È a palabra que quere buscar.
+  2. Escriba agora   errroor   <INTRO>. Esta √© a palabra que quere buscar.
 
   3. Para repeti-la busca do mesmo texto outra vez, simplemente prema  n .
-     Para busca-lo mesmo texto na direcciÛn oposta, prema  N .
+     Para busca-lo mesmo texto na direcci√≥n oposta, prema  N .
 
-  4. Se quere buscar un texto na direcciÛn oposta (cara a enriba),
+  4. Se quere buscar un texto na direcci√≥n oposta (cara a enriba),
      utilice o comando  ?  en troques de  / .
   
-  5. Para regresar ao lugar de onde procedÌa, prema  CTRL-O  (manteÒa pulsado
-     Ctrl mentres pulsa a tecla  o). Repita o proceso para voltar m·is atr·s.
+  5. Para regresar ao lugar de onde proced√≠a, prema  CTRL-O  (mante√±a pulsado
+     Ctrl mentres pulsa a tecla  o). Repita o proceso para voltar m√°is atr√°s.
      CTRL-I vai cara a adiante.
 
----> "errroor" non È o xeito correcto de escribir erro; errroor È un erro.
+---> "errroor" non √© o xeito correcto de escribir erro; errroor √© un erro.
 
-NOTA: Cando a busca chega ao final do arquivo, continuar· dende o comezo,
-      ag·s que a opciÛn 'wrapscan' estea desactivada.
+NOTA: Cando a busca chega ao final do arquivo, continuar√° dende o comezo,
+      ag√°s que a opci√≥n 'wrapscan' estea desactivada.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                  LECCI”N 1.4.3: BUSCA PARA COMPROBAR PAR…NTESES
+                  LECCI√ìN 1.4.3: BUSCA PARA COMPROBAR PAR√âNTESES
 
 
-  ** Prema  %  para atopa-la parÈntese correspondente a ),] ou } . **
+  ** Prema  %  para atopa-la par√©ntese correspondente a ),] ou } . **
 
-  1. Sit˙e o cursor en cualquera dos car·cteres (, [ o { na liÒa inferior
+  1. Sit√∫e o cursor en cualquera dos car√°cteres (, [ o { na li√±a inferior
      sinalada con --->.
 
-  2. Prema agora o car·cter  %  .
+  2. Prema agora o car√°cter  %  .
 
-  3. O cursor mover·se · parella de peche da parÈntese, corchete
+  3. O cursor mover√°se √° parella de peche da par√©ntese, corchete
      ou chave correspondente.
 
-  4. Prema  %  para move-lo cursor ata a outra parella do car·cter.
+  4. Prema  %  para move-lo cursor ata a outra parella do car√°cter.
 
   5. Mova o cursor a outra (,),[,],{ o } e vexa o que fai % .
 
----> Isto ( È unha liÒa de proba con (, [, ], {, e } nela. ))
+---> Isto ( √© unha li√±a de proba con (, [, ], {, e } nela. ))
 
-NOTA: Isto È moi ˙til na detecciÛn de erros nun programa con parÈnteses,
+NOTA: Isto √© moi √∫til na detecci√≥n de erros nun programa con par√©nteses,
      corchetes ou chaves sen parella.
       
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                        LECCI”N 1.4.4: O COMANDO SUBSTITUÕR
+                        LECCI√ìN 1.4.4: O COMANDO SUBSTITU√çR
 
 
-  ** Escriba  :s/vello/novo/g  para substituÌr 'vello' por 'novo'. **
+  ** Escriba  :s/vello/novo/g  para substitu√≠r 'vello' por 'novo'. **
 
-  1. Mova o cursor · liÒa inferior sinalada con --->.
+  1. Mova o cursor √° li√±a inferior sinalada con --->.
 
-  2. Escriba  :s/aas/as/  <INTRO> . TeÒa en conta que este comando cambia
-     sÛ o primeiro achado -na liÒa- da expresiÛn que quere cambiar.
+  2. Escriba  :s/aas/as/  <INTRO> . Te√±a en conta que este comando cambia
+     s√≥ o primeiro achado -na li√±a- da expresi√≥n que quere cambiar.
   
-  3. Agora escriba  :s/aas/a/g . Ao engadir a opciÛn  g  , o Vim far·
-     a substituciÛn global na liÒa, cambiando tÛdo-los achados
-     do termo "aas" na liÒa.
+  3. Agora escriba  :s/aas/a/g . Ao engadir a opci√≥n  g  , o Vim far√°
+     a substituci√≥n global na li√±a, cambiando t√≥do-los achados
+     do termo "aas" na li√±a.
 
----> Coido que aas mellores Èpocas para aas frores son aas primaveras.
+---> Coido que aas mellores √©pocas para aas frores son aas primaveras.
 
-  4. Para cambiar cada achado da cadea de car·cteres entre d˙as liÒas:
-  Escriba  :#,#s/vello/novo/g   onde #,# son os n˙meros de liÒa do rango
-                                de liÒas onde se realizar· a substituciÛn.
+  4. Para cambiar cada achado da cadea de car√°cteres entre d√∫as li√±as:
+  Escriba  :#,#s/vello/novo/g   onde #,# son os n√∫meros de li√±a do rango
+                                de li√±as onde se realizar√° a substituci√≥n.
   Escriba  :%s/vello/novo/g     para cambiar cada achado en todo o arquivo.
   Escriba  :%s/vello/novo/gc    para atopar cada achado en todo o arquivo,
-                                pedindo confirmaciÛn para face-la
-                                substituciÛn ou non.
+                                pedindo confirmaci√≥n para face-la
+                                substituci√≥n ou non.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                             RESUMO DA LECCI”N 1.4
+                             RESUMO DA LECCI√ìN 1.4
 
 
-  1. CTRL-G  mostra a posiciÛn do cursor no ficheiro e mailo seu estado.
+  1. CTRL-G  mostra a posici√≥n do cursor no ficheiro e mailo seu estado.
              G  move o cursor ao final do arquivo.
-     n˙mero  G  move o cursor a ese n˙mero de liÒa.
-            gg  move o cursor · primeira liÒa do arquivo.
+     n√∫mero  G  move o cursor a ese n√∫mero de li√±a.
+            gg  move o cursor √° primeira li√±a do arquivo.
 
   2. Escribindo  /  seguido dun texto busca o texto cara a ADIANTE.
-     Escribindo  ?  seguido dun texto busca o texto cara a ATR¡S.
+     Escribindo  ?  seguido dun texto busca o texto cara a ATR√ÅS.
      Despois dunha busca, prema  n  para atopar o achado.
 
-  3. Premendo  %  cando o cursor est· sobre (,), [,], { o } localiza
+  3. Premendo  %  cando o cursor est√° sobre (,), [,], { o } localiza
      a parella correspondente.
 
-  4. Para cambiar vello por novo no primeiro achado dunha liÒa escriba
+  4. Para cambiar vello por novo no primeiro achado dunha li√±a escriba
                                                           :s/vello/novo
-   Para cambiar tÛdo-los vello por novo nunha liÒa escriba 
+   Para cambiar t√≥do-los vello por novo nunha li√±a escriba 
                                                           :s/vello/novo/g
-   Para cambiar texto entre dous n˙meros de liÒa escriba
+   Para cambiar texto entre dous n√∫meros de li√±a escriba
                                                           :#,#s/vello/novo/g
    Para cambiar vello por novo en todo o fichero escriba
                                                           :%s/vello/novo/g
-   Para pedir confirmaciÛn en cada caso engada  'c'
+   Para pedir confirmaci√≥n en cada caso engada  'c'
                                                           :%s/vello/novo/gc
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                LECCI”N 1.5.1: C”MO EXECUTAR UN COMANDO EXTERNO
+                LECCI√ìN 1.5.1: C√ìMO EXECUTAR UN COMANDO EXTERNO
 
 
   ** Escriba  :!  seguido dun comando externo para executar ese comando. **
 
   1. Escriba o conocido comando  :  para situar o cursor ao final da
-     pantalla. Isto permitir·lle introducir un comando.
+     pantalla. Isto permitir√°lle introducir un comando.
 
-  2. Agora escriba o car·cter  !  (signo de admiraciÛn). Isto permitir·lle
+  2. Agora escriba o car√°cter  !  (signo de admiraci√≥n). Isto permitir√°lle
      executar calquer mandato do sistema.
 
   3. Como exemplo escriba  ls  despois do ! e logo prema <INTRO>. Isto
-     mostrar·lle unha lista do seu directorio, igual que se estiviese no 
-     sÌmbolo do sistema. Se  ls  non funciona, utilice	:!dir .
+     mostrar√°lle unha lista do seu directorio, igual que se estiviese no 
+     s√≠mbolo do sistema. Se  ls  non funciona, utilice	:!dir .
 
-NOTA: Deste xeito È posible executar cualquer comando externo,
-      tamÈn incluÌndo argumentos.
+NOTA: Deste xeito √© posible executar cualquer comando externo,
+      tam√©n inclu√≠ndo argumentos.
 
-NOTA: TÛdolos comandos  :  deben finalizarse premendo <INTRO>.
-      De agora en diante, non sempre se mencionar·.
+NOTA: T√≥dolos comandos  :  deben finalizarse premendo <INTRO>.
+      De agora en diante, non sempre se mencionar√°.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                  LECCI”N 1.5.2: M¡IS SOBRE GARDAR FICHEIROS
+                  LECCI√ìN 1.5.2: M√ÅIS SOBRE GARDAR FICHEIROS
 
 
   ** Para garda-los cambios feitos nun ficheiro,
@@ -677,269 +678,269 @@ NOTA: TÛdolos comandos  :  deben finalizarse premendo <INTRO>.
      do seu directorio.
      Xa sabe que debe pulsar <INTRO> despois.
 
-  2. Elixa un nome de ficheiro que todavÌa non exista, como TEST.
+  2. Elixa un nome de ficheiro que todav√≠a non exista, como TEST.
 
-  3. Agora escriba  :w TEST  (onde TEST È o nome de ficheiro elixido).
+  3. Agora escriba  :w TEST  (onde TEST √© o nome de ficheiro elixido).
 
-  4. Esta acciÛn garda todo o ficheiro  (Vim Tutor)  baixo o nome TEST.
+  4. Esta acci√≥n garda todo o ficheiro  (Vim Tutor)  baixo o nome TEST.
      Para comprobalo, escriba  :!dir  ou  :!ls  de novo e vexa
      o seu directorio.
 
-NOTA: Se saÌra do Vim e volvera a entrar de novo con  vim TEST , o
-      arquivo serÌa unha copia exacta do tutorial cuando o guardou.
+NOTA: Se sa√≠ra do Vim e volvera a entrar de novo con  vim TEST , o
+      arquivo ser√≠a unha copia exacta do tutorial cuando o guardou.
 
   5. Agora, elimine o arquivo escribindo (Windows):  :!del TEST
                                          ou (Unix):  :!rm TEST
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   LECCI”N 1.5.3: SELECCIONAR TEXTO PARA GARDAR
+                   LECCI√ìN 1.5.3: SELECCIONAR TEXTO PARA GARDAR
 
 
   ** Para gardar parte do arquivo, escriba  v  movemento  :w arquivo **
 
-  1. Mova o cursor a esta liÒa.
+  1. Mova o cursor a esta li√±a.
 
   2. Prema  v  e mova o cursor ata o quinto elemento inferior. Vexa que
-     o texto È salientado.
+     o texto √© salientado.
 
-  3. Prema o car·cter  :  Na parte inferior da pantalla aparecer·
+  3. Prema o car√°cter  :  Na parte inferior da pantalla aparecer√°
      :'<,'>
 
-  4. Prema  w TEST  , onde TEST È un nome de arquivo que aÌnda non existe.
+  4. Prema  w TEST  , onde TEST √© un nome de arquivo que a√≠nda non existe.
      Verifique que ve  :'<,'>w TEST  antes de premer <INTRO>.
 
-  5. Vim escribir· as liÒas seleccionadas no arquivo TEST. Utilice
-     :!dir  o  :!ls  para velo. Non o elimine todavÌa! UtilizarÈmolo
-     na seguinte lecciÛn.
+  5. Vim escribir√° as li√±as seleccionadas no arquivo TEST. Utilice
+     :!dir  o  :!ls  para velo. Non o elimine todav√≠a! Utilizar√©molo
+     na seguinte lecci√≥n.
 
-NOTA: Ao pulsar  v  inici· a selecciÛn visual. Pode move-lo cursor para
-      face-la selecciÛn m·is grande ou pequena. Despois, pode utilizar un
-      operador para facer algo co texto. Por exemplo,  d  eliminar·
+NOTA: Ao pulsar  v  inici√° a selecci√≥n visual. Pode move-lo cursor para
+      face-la selecci√≥n m√°is grande ou pequena. Despois, pode utilizar un
+      operador para facer algo co texto. Por exemplo,  d  eliminar√°
       o texto seleccionado.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                 LECCI”N 1.5.4: RECUPERANDO E MESTURANDO FICHEIROS
+                 LECCI√ìN 1.5.4: RECUPERANDO E MESTURANDO FICHEIROS
 
 
   ** Para inseri-lo contido dun ficheiro escriba  :r NOME_DO_FICHEIRO **
 
-  1. Sit˙e o cursor xusto por riba desta liÒa.
+  1. Sit√∫e o cursor xusto por riba desta li√±a.
 
-NOTA: Despois de executar o paso 2 ver· o texto da lecciÛn 1.5.3. Despois
-      DESCENDA ata ver de novo esta lecciÛn.
+NOTA: Despois de executar o paso 2 ver√° o texto da lecci√≥n 1.5.3. Despois
+      DESCENDA ata ver de novo esta lecci√≥n.
 
   2. Agora recupere o arquivo TEST utilizando o comando  :r TEST  , onde
-     TEST È o nome que ven de utilizar.
-     O arquivo que recuperou colocar·se embaixo da liÒa onde se atope
+     TEST √© o nome que ven de utilizar.
+     O arquivo que recuperou colocar√°se embaixo da li√±a onde se atope
      o cursor.
 
   3. Para verificar que se recuperou o arquivo, suba o cursor e 
-     comprobe que agora hai d˙as copias da lecciÛn 1.5.3, a orixinal e
-     maila versiÛn do arquivo.
+     comprobe que agora hai d√∫as copias da lecci√≥n 1.5.3, a orixinal e
+     maila versi√≥n do arquivo.
 
-NOTA: TamÈn pode le-la saÌda dun comando externo. Por exemplo,
-        :r !ls  le a saÌda do comando ls e pÈgao baixo da liÒa
+NOTA: Tam√©n pode le-la sa√≠da dun comando externo. Por exemplo,
+        :r !ls  le a sa√≠da do comando ls e p√©gao baixo da li√±a
       onde se atopa o cursor.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                           RESUMO DA LECCI”N 1.5
+                           RESUMO DA LECCI√ìN 1.5
 
 
   1. :!comando  executa un comando externo.
-     Alguns exemplos ˙tiles son:
+     Alguns exemplos √∫tiles son:
      (Windows)     (Unix)
 	  :!dir          :!ls           -  mostra o contido dun directorio.
 	  :!del arquivo  :!rm arquivo   -  borra o ficheiro arquivo.
 
   2. :w arquivo escribe o arquivo actual no disco co nome de arquivo.
 
-  3. v movemento  :w arquivo  guarda as liÒas seleccionadas visualmente
+  3. v movemento  :w arquivo  guarda as li√±as seleccionadas visualmente
      no arquivo arquivo.
 
-  4. :r arquivo  recupera do disco o arquivo arquivo e pÈgao embaixo
-     da posiciÛn do cursor.
+  4. :r arquivo  recupera do disco o arquivo arquivo e p√©gao embaixo
+     da posici√≥n do cursor.
 
-  5. :r !dir  le a saÌda do comando dir e pÈgao embaixo da
-     posiciÛn do cursor.
+  5. :r !dir  le a sa√≠da do comando dir e p√©gao embaixo da
+     posici√≥n do cursor.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                      LECCI”N 1.6.1: O COMANDO ´OPENª (ABRIR)
+                      LECCI√ìN 1.6.1: O COMANDO ¬´OPEN¬ª (ABRIR)
 
 
-  ** Prema  o  para abrir unha liÒa embaixo do cursor
+  ** Prema  o  para abrir unha li√±a embaixo do cursor
   e situarse no modo inserir **
 
-  1. Mova o cursor · liÒa inferior sinalada con --->.
+  1. Mova o cursor √° li√±a inferior sinalada con --->.
 
-  2. Prema a letra min˙scula  o  para abrir unha liÒa por EMBAIXO do cursor
+  2. Prema a letra min√∫scula  o  para abrir unha li√±a por EMBAIXO do cursor
      e situarse en modo Inserir.
   
-  3. Agora, escriba alg˙n texto, e despois prema <ESC> para saÌr do modo
+  3. Agora, escriba alg√∫n texto, e despois prema <ESC> para sa√≠r do modo
      Inserir.
 
----> Despois de pulsar  o  , o cursor sit˙ase na liÒa aberta en modo Inserir.
+---> Despois de pulsar  o  , o cursor sit√∫ase na li√±a aberta en modo Inserir.
 
-  4. Para abrir unha liÒa por RIBA do cursor, simplemente prema un O
-     MAI⁄SCULO, en troques dun o min˙sculo. Probe isto na liÒa seguinte.
+  4. Para abrir unha li√±a por RIBA do cursor, simplemente prema un O
+     MAI√öSCULO, en troques dun o min√∫sculo. Probe isto na li√±a seguinte.
 
----> Abra unha liÒa sobre esta, pulsando O cuando o cursor estea nesta liÒa.
+---> Abra unha li√±a sobre esta, pulsando O cuando o cursor estea nesta li√±a.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                LECCI”N 1.6.2: O COMANDO ´APPENDª (ENGADIR)
+                LECCI√ìN 1.6.2: O COMANDO ¬´APPEND¬ª (ENGADIR)
 
 
   ** Prema  a  para inserir texto despois do cursor. **
 
-  1. Mova o cursor ao inicio da primeira liÒa inferior sinalada con --->.
+  1. Mova o cursor ao inicio da primeira li√±a inferior sinalada con --->.
 
   2. Escriba  e  ata que o cursor estea ao final de  li .
 
-  3. Escriba un  a  (min˙sculo) para engadir texto despois do cursor.
+  3. Escriba un  a  (min√∫sculo) para engadir texto despois do cursor.
 
-  4. Complete a palabra coma na liÒa inferior. Prema <ESC> para saÌr
+  4. Complete a palabra coma na li√±a inferior. Prema <ESC> para sa√≠r
      do modo Inserir.
   
   5. Utilice  e  para moverse ata a seguinte palabra incompleta e 
      repita os pasos 3 e 4.
 
----> Esta li permit practi cÛmo enga texto a unha
----> Esta liÒa permitir·lle practicar cÛmo engadir texto a unha liÒa.
+---> Esta li permit practi c√≥mo enga texto a unha
+---> Esta li√±a permitir√°lle practicar c√≥mo engadir texto a unha li√±a.
 
-NOTA: a, i e A  entran no modo Inserir; a ˙nica diferencia È
-      onde se colocan os car·cteres inseridos.
+NOTA: a, i e A  entran no modo Inserir; a √∫nica diferencia √©
+      onde se colocan os car√°cteres inseridos.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-              LECCI”N 1.6.3: OUTRA VERSI”N DE ´REPLACEª (SUBSTITUÕR)
+              LECCI√ìN 1.6.3: OUTRA VERSI√ìN DE ¬´REPLACE¬ª (SUBSTITU√çR)
 
 
-  ** Prema un  R  MAI⁄SCULO para substituÌr m·is dun car·cter. **
+  ** Prema un  R  MAI√öSCULO para substitu√≠r m√°is dun car√°cter. **
 
-  1. Mova o cursor · primeira liÒa inferior sinalada con --->.
+  1. Mova o cursor √° primeira li√±a inferior sinalada con --->.
      Mova o cursor ao inicio da primeira  xxx .
 
-  2. Agora prema  R   e escriba o n˙mero que aparece na liÒa inferior.
-     Isto substituir· o texto  xxx .
+  2. Agora prema  R   e escriba o n√∫mero que aparece na li√±a inferior.
+     Isto substituir√° o texto  xxx .
   
-  3. Prema <ESC> para abandoa-lo modo SubstituÌr.
-     Observe que o resto da liÒa fica sen modificacions.
+  3. Prema <ESC> para abandoa-lo modo Substitu√≠r.
+     Observe que o resto da li√±a fica sen modificacions.
 
-  4. Repita os pasos para substituÌ-lo texto  xxx  que queda.
+  4. Repita os pasos para substitu√≠-lo texto  xxx  que queda.
 
 ---> Sumar 123 a xxx da un resultado de xxx.
 ---> Sumar 123 a 456 da un resultado de 579.
 
-NOTA: O modo SubstituÌr È como o modo Inserir, pero cada car·cter escrito
-      elimina un car·cter xa existente.
+NOTA: O modo Substitu√≠r √© como o modo Inserir, pero cada car√°cter escrito
+      elimina un car√°cter xa existente.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                     LECCI”N 1.6.4: COPIAR E PEGAR TEXTO
+                     LECCI√ìN 1.6.4: COPIAR E PEGAR TEXTO
 
 
   ** Utilice o operador  e  para copiar texto e  p  para pegalo. **
 
-  1. Mova o cursor · liÒa inferior marcada con ---> e posicione o 
+  1. Mova o cursor √° li√±a inferior marcada con ---> e posicione o 
      cursor despois de "a)". 
 
   2. Inicie o modo Visual con  v
      e mova o cursor xusto antes de "primeiro".
 
-  3. Prema  e  para copiar (´yankª) o texto salientado.
+  3. Prema  e  para copiar (¬´yank¬ª) o texto salientado.
 
-  4. Mova o cursor ao final da seguinte liÒa mediante:  j$
+  4. Mova o cursor ao final da seguinte li√±a mediante:  j$
 
-  5. Prema  p  para pÛr (pegar) o texto. Despois escriba: o segundo <ESC>.
+  5. Prema  p  para p√≥r (pegar) o texto. Despois escriba: o segundo <ESC>.
 
-  6. Utilice o modo visual para seleccionar " elemento.", e cÛpieo con  y.
-     Mova o cursor ao final da seguinte liÒa con j$  e pegue o texto
+  6. Utilice o modo visual para seleccionar " elemento.", e c√≥pieo con  y.
+     Mova o cursor ao final da seguinte li√±a con j$  e pegue o texto
      xusto acabado de copiar con  p .
 
---->  a) este È o primeiro elemento.
+--->  a) este √© o primeiro elemento.
       b)
 
-NOTA: TamÈn pode utilizar  e  como un operador:  yw  copia unha palabra,
-      yy  copia a liÒa completa onde est· o cursor; despois  p  pegar·
-      esa liÒa.
+NOTA: Tam√©n pode utilizar  e  como un operador:  yw  copia unha palabra,
+      yy  copia a li√±a completa onde est√° o cursor; despois  p  pegar√°
+      esa li√±a.
     
  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   LECCI”N 1.6.5: ACTIVAR (´SETª) UNHA OPCI”N
+                   LECCI√ìN 1.6.5: ACTIVAR (¬´SET¬ª) UNHA OPCI√ìN
 
 
-  ** Active unha opciÛn para buscar ou substituÌr ignorando
-  se o texto est· en MAI⁄SCULAS ou min˙sculas **
+  ** Active unha opci√≥n para buscar ou substitu√≠r ignorando
+  se o texto est√° en MAI√öSCULAS ou min√∫sculas **
 
   1. Busque a cadea de texto 'ignorar' escribindo:  /ignorar <INTRO>
      Repita a busca varias veces pulsando  n .
 
-  2. Active a opciÛn 'ic' ("Ignore case" ou ignorar mai˙sculas e min˙sculas) 
+  2. Active a opci√≥n 'ic' ("Ignore case" ou ignorar mai√∫sculas e min√∫sculas) 
      mediante:  :set ic
 
   3. Agora, busque de novo 'ignorar' pulsando  n .
-     Observe que agora tamÈn se acha Ignorar e IGNORAR.
+     Observe que agora tam√©n se acha Ignorar e IGNORAR.
 
   4. Active as opcions 'hlsearch' e 'incsearch' escribindo:  :set hls is
 
   5. Agora escriba de novo o comando de busca
-     e vexa quÈ acontece:  /ignore <INTRO>
+     e vexa qu√© acontece:  /ignore <INTRO>
 
-  6. Para inhabilitar ou ignorar a distinciÛn entre MAI⁄SCULAS e min˙sculas     
+  6. Para inhabilitar ou ignorar a distinci√≥n entre MAI√öSCULAS e min√∫sculas     
      escriba:  :set noic
 
 NOTA:  Para elimina-lo salientado das coincidencias escriba:  :nohlsearch
-NOTA:  Se quere ignora-las MAI⁄SCULAS e min˙sculas, sÛ para un comando
+NOTA:  Se quere ignora-las MAI√öSCULAS e min√∫sculas, s√≥ para un comando
        de busca, utilice  \c  na frase:  /ignorar\c <INTRO>
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			   RESUMO DA LECCI”N 1.6
+			   RESUMO DA LECCI√ìN 1.6
 
 
-  1. Escriba  o  para abrir unha liÒa por BAIXO da posiciÛn do cursor e 
+  1. Escriba  o  para abrir unha li√±a por BAIXO da posici√≥n do cursor e 
      entrar en modo Inserir.
-     Escriba  O  para abrir unha liÒa por RIBA da posiciÛn do cursor e
+     Escriba  O  para abrir unha li√±a por RIBA da posici√≥n do cursor e
      entrar en modo Inserir
 
   2. Escriba  a  para inserir texto despois do cursor.
-     Escriba  A  para inserir texto ao final da liÒa.
+     Escriba  A  para inserir texto ao final da li√±a.
 
   3. O comando  e  move o cursor ao final dunha palabra.
 
-  4. O operador  e  copia (´yankª) texto;  p  pÈgao (pon).
+  4. O operador  e  copia (¬´yank¬ª) texto;  p  p√©gao (pon).
 
-  5. Ao escribir un  R  MAI⁄SCULO, entra no modo SubstituÌr ata que
+  5. Ao escribir un  R  MAI√öSCULO, entra no modo Substitu√≠r ata que
      se preme  <ESC>  .
 
-  6. Ao escribir  :set xxx , actÌvase a opciÛn 'xxx'.
-     Algunas opciÛns son:
-  	'ic' 'ignorecase'	ignorar mai˙sculas/min˙sculas ao buscar
+  6. Ao escribir  :set xxx , act√≠vase a opci√≥n 'xxx'.
+     Algunas opci√≥ns son:
+  	'ic' 'ignorecase'	ignorar mai√∫sculas/min√∫sculas ao buscar
 	'is' 'incsearch'	amosa-las coincidencias parciais para
                                 a busca dunha frase
-	'hls' 'hlsearch'	salienta tÛdalas coincidencias da frases
+	'hls' 'hlsearch'	salienta t√≥dalas coincidencias da frases
 
      Pode utilizar tanto os nomes longos coma os curtos das opcions.
 
-  7. Engada "no" para inhabilitar unha opciÛn:   :set noic
+  7. Engada "no" para inhabilitar unha opci√≥n:   :set noic
  
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                          LECCI”N 7: OBTER AXUDA
+                          LECCI√ìN 7: OBTER AXUDA
 
 
-  ** Utilice o sistema de axuda en liÒa **
+  ** Utilice o sistema de axuda en li√±a **
 
-  O Vim dispÛn dun sistema de axuda en liÒa. Para comezar, probe unha
+  O Vim disp√≥n dun sistema de axuda en li√±a. Para comezar, probe unha
   destas tres formas:
-	- prema a tecla <AXUDA> (se dispÛn dela)
-	- prema a tecla <F1> (se dispÛn dela)
+	- prema a tecla <AXUDA> (se disp√≥n dela)
+	- prema a tecla <F1> (se disp√≥n dela)
 	- escriba  :help <INTRO>
 
-  Lea o texto na xanela de axuda para descubrir cÛmo funciona a axuda.
+  Lea o texto na xanela de axuda para descubrir c√≥mo funciona a axuda.
   Escriba  CTRL-W CTRL-W  para chimpar dunha xanela a outra.
   Escriba  :q <INTRO>  para pechar a xanela de axuda.
 
@@ -953,14 +954,14 @@ NOTA:  Se quere ignora-las MAI⁄SCULAS e min˙sculas, sÛ para un comando
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                   LECCI”N 1.7.2: CREAR UN SCRIPT DE INICIO
+                   LECCI√ìN 1.7.2: CREAR UN SCRIPT DE INICIO
 
 
   ** Habilitar funcionalidades no Vim **
 
-  O Vim ten moitas m·is funcionalidades que o Vi, pero algunhas est·n
+  O Vim ten moitas m√°is funcionalidades que o Vi, pero algunhas est√°n
   inhabilitadas de xeito predeterminado.
-  Para empezar a utilizar m·is funcionalidades deberÌa crear un arquivo
+  Para empezar a utilizar m√°is funcionalidades deber√≠a crear un arquivo
   chamado "vimrc".
 
   1. Comece a edita-lo arquivo "vimrc". Isto depende do seu sistema:
@@ -973,37 +974,37 @@ NOTA:  Se quere ignora-las MAI⁄SCULAS e min˙sculas, sÛ para un comando
   3. Garde o arquivo mediante:
 	:w
 
-  A prÛxima vez que inicie o Vim, este usar· o salientado de sintaxe.
-  Pode engadir tÛdolos seus axustes preferidos a este arquivo "vimrc".
-  Para m·is informaciÛn escriba  :help vimrc-intro
+  A pr√≥xima vez que inicie o Vim, este usar√° o salientado de sintaxe.
+  Pode engadir t√≥dolos seus axustes preferidos a este arquivo "vimrc".
+  Para m√°is informaci√≥n escriba  :help vimrc-intro
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                          LECCI”N 1.7.3: COMPLETADO
+                          LECCI√ìN 1.7.3: COMPLETADO
 
 
-  ** Completado da liÒa de comandos con CTRL-D ou <TAB> . **
+  ** Completado da li√±a de comandos con CTRL-D ou <TAB> . **
 
-  1. Aseg˙rese de que o Vim non est· no modo compatible:  :set nocp
+  1. Aseg√∫rese de que o Vim non est√° no modo compatible:  :set nocp
 
-  2. Vexa quÈ arquivos existen no directorio con:  :!ls  ou  :!dir
+  2. Vexa qu√© arquivos existen no directorio con:  :!ls  ou  :!dir
 
   3. Escriba o inicio dun comando:  :e
 
-  4. Prema  CTRL-D  e o Vim mostrar· a lista de comandos que empezan con "e".
+  4. Prema  CTRL-D  e o Vim mostrar√° a lista de comandos que empezan con "e".
 
-  5. Engada  d<TAB>  e o Vim completar· o nome do comando a ":edit".
+  5. Engada  d<TAB>  e o Vim completar√° o nome do comando a ":edit".
 
   6. Agora engada un espacio e o inicio do nome dun arquivo:  :edit FIL
 
-  7. Prema <TAB>.  Vim completar· o nome (se sÛ hai un).
+  7. Prema <TAB>.  Vim completar√° o nome (se s√≥ hai un).
 
-NOTA:  O completado funciona con moitos comandos. SÛ prema CTRL-D ou
-       <TAB>.  … especialmente ˙til para  :help .
+NOTA:  O completado funciona con moitos comandos. S√≥ prema CTRL-D ou
+       <TAB>.  √â especialmente √∫til para  :help .
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       RESUMO DA LECCI”N 1.7
+			       RESUMO DA LECCI√ìN 1.7
 
 
   1. Escriba  :help  ou prema <F1> ou <HELP> para abri-la xanela de axuda.
@@ -1016,21 +1017,21 @@ NOTA:  O completado funciona con moitos comandos. SÛ prema CTRL-D ou
 
   5. Cree un ficheiro vimrc de inicio para garda-los sus axustes preferidos.
 
-  6. Cuando escriba un comando  :  prema CTRL-D para ver posibles opciÛns.
-     Prema <TAB> para utilizar unha das opciÛns de completado.
+  6. Cuando escriba un comando  :  prema CTRL-D para ver posibles opci√≥ns.
+     Prema <TAB> para utilizar unha das opci√≥ns de completado.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  AquÌ concl˙e o tutor do Vim. Est· pensado para dar unha visiÛn breve do
+  Aqu√≠ concl√∫e o tutor do Vim. Est√° pensado para dar unha visi√≥n breve do
   editor Vim, suficiente para permitirlle usa-lo editor de forma bastante
-  sinxela. Est· moi lonxe de estar completo pois o Vim ten moitÌsimos m·is
+  sinxela. Est√° moi lonxe de estar completo pois o Vim ten moit√≠simos m√°is
   comandos. Lea o seguinte manual de usuario: ":help user-manual".
 
-  Para lecturas e estudos posteriores, recomÈndase o libro:
+  Para lecturas e estudos posteriores, recom√©ndase o libro:
 	Vim - Vi Improved - de Steve Oualline
 	Editado por: New Riders
-  o primeiro libro adicado completamente ao Vim. Especialmente ˙til para
+  o primeiro libro adicado completamente ao Vim. Especialmente √∫til para
   principiantes.  Ten moitos exemplos e imaxes.
   Vexa https://iccf-holland.org/click5.html
 
@@ -1042,7 +1043,7 @@ NOTA:  O completado funciona con moitos comandos. SÛ prema CTRL-D ou
   Modificado para Vim por Bram Moolenaar.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Traducido do inglÈs ao galego por Fernando VilariÒo.
-  Correo electrÛnico: fernando@cvc.uab.es.
+  Traducido do ingl√©s ao galego por Fernando Vilari√±o.
+  Correo electr√≥nico: fernando@cvc.uab.es.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -2,19 +2,19 @@
 =    Benvenuto  alla   G u i d a    all'Editor   V I M   -    Versione 1.7    =
 ===============================================================================
 
-     Vim Ë un Editor molto potente ed ha parecchi comandi, troppi per
+     Vim √® un Editor molto potente ed ha parecchi comandi, troppi per
      spiegarli tutti in una guida come questa.  Questa guida serve a
      descrivere quei comandi che ti permettono di usare facilmente
      Vim come Editor di uso generale.
 
-     Il tempo necessario per completare la guida Ë circa 25-30 minuti,
+     Il tempo necessario per completare la guida √® circa 25-30 minuti,
      a seconda di quanto tempo dedichi alla sperimentazione.
 
      ATTENZIONE!
      I comandi nelle lezioni modificano questo testo. Fai una copia di questo
-     file per esercitarti (se hai usato "vimtutor", stai gi‡ usando una copia).
+     file per esercitarti (se hai usato "vimtutor", stai gi√† usando una copia).
 
-     » importante non scordare che questa guida vuole insegnare tramite
+     √à importante non scordare che questa guida vuole insegnare tramite
      l'uso. Questo vuol dire che devi eseguire i comandi per impararli
      davvero. Se leggi il testo e basta, dimenticherai presto i comandi!
 
@@ -27,22 +27,22 @@
 
    ** Per muovere il cursore, premi i tasti h,j,k,l come indicato. **
 	     ^
-	     k		    NOTA:  Il tasto h Ë a sinistra e muove a sinistra.
-       < h	 l >		   Il tasto l Ë a destra e muove a destra.
-	     j			   Il tasto j ricorda una freccia in gi˘.
+	     k		    NOTA:  Il tasto h √® a sinistra e muove a sinistra.
+       < h	 l >		   Il tasto l √® a destra e muove a destra.
+	     j			   Il tasto j ricorda una freccia in gi√π.
 	     v
-  1. Muovi il cursore sullo schermo finchÈ non ti senti a tuo agio.
+  1. Muovi il cursore sullo schermo finch√© non ti senti a tuo agio.
 
-  2. Tieni schiacciato il tasto "gi˘" (j) finchÈ non si ripete il movimento.
+  2. Tieni schiacciato il tasto "gi√π" (j) finch√© non si ripete il movimento.
      Adesso sai come arrivare fino alla lezione seguente.
 
-  3. Usando il tasto "gi˘" spostati alla Lezione 1.1.2.
+  3. Usando il tasto "gi√π" spostati alla Lezione 1.1.2.
 
 NOTA: Quando non sei sicuro del tasto che hai premuto, premi <ESC> per andare
-      in Modalit‡ Normale [Normal Mode]. Poi ri-immetti il comando che volevi.
+      in Modalit√† Normale [Normal Mode]. Poi ri-immetti il comando che volevi.
 
 NOTA: I tasti con le frecce fanno lo stesso servizio. Ma usando hjkl riesci
-      a muoverti molto pi˘ rapidamente, dopo che ci si abitua.  Davvero!
+      a muoverti molto pi√π rapidamente, dopo che ci si abitua.  Davvero!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lezione 1.1.2: USCIRE DA VIM
@@ -50,10 +50,10 @@ NOTA: I tasti con le frecce fanno lo stesso servizio. Ma usando hjkl riesci
 
   !! NOTA: Prima di eseguire quanto richiesto, leggi la Lezione per intero!!
 
-  1. Premi il tasto <ESC> (per assicurarti di essere in Modalit‡ Normale).
+  1. Premi il tasto <ESC> (per assicurarti di essere in Modalit√† Normale).
 
   2. Batti:     :q! <INVIO>.
-     CosÏ esci dall'Editor SCARTANDO qualsiasi modifica fatta.
+     Cos√¨ esci dall'Editor SCARTANDO qualsiasi modifica fatta.
 
   3. Quando vedi il PROMPT della Shell, batti il comando con cui sei arrivato
      qui.  Sarebbe:	vimtutor <INVIO>
@@ -64,7 +64,7 @@ NOTA: I tasti con le frecce fanno lo stesso servizio. Ma usando hjkl riesci
 NOTA:  :q! <INVIO> SCARTA qualsiasi modifica fatta.  In una delle prossime
        lezioni imparerai come salvare un file che hai modificato.
 
-  5. Muovi in gi˘ il cursore per passare alla lezione 1.1.3.
+  5. Muovi in gi√π il cursore per passare alla lezione 1.1.3.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,18 +73,18 @@ NOTA:  :q! <INVIO> SCARTA qualsiasi modifica fatta.  In una delle prossime
 
 	** Premere  x  per cancellare il carattere sotto al cursore **
 
-  1. Muovi il cursore alla linea pi˘ sotto, indicata da --->.
+  1. Muovi il cursore alla linea pi√π sotto, indicata da --->.
 
   2. Per correggere errori, muovi il cursore fino a posizionarlo sopra il
      carattere da cancellare.
 
   3. Premi il tasto	x     per cancellare il carattere sbagliato.
 
-  4. Ripeti i passi da 2 a 4 finchÈ la frase Ë corretta.
+  4. Ripeti i passi da 2 a 4 finch√© la frase √® corretta.
 
----> La mmucca saltÚÚ finnoo allaa lunnna.
+---> La mmucca salt√≤√≤ finnoo allaa lunnna.
 
-  5. Ora che la linea Ë corretta, vai alla Lezione 1.1.4
+  5. Ora che la linea √® corretta, vai alla Lezione 1.1.4
 
 NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
       ma impara facendo pratica.
@@ -103,7 +103,7 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
 
   3. Premi  i  e batti le aggiunte opportune.
 
-  4. Quando un errore Ë corretto, premi <ESC> per tornare in Modalit‡ Normale.
+  4. Quando un errore √® corretto, premi <ESC> per tornare in Modalit√† Normale.
      Ripeti i passi da 2 a 4 fino a completare la correzione della frase.
 
 ---> C'era del tsto mncnt questa .
@@ -120,19 +120,19 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
 	   ** Premere  A  per aggiungere testo a fine linea. **
 
   1. Muovi il cursore alla prima linea qui sotto, indicata da --->.
-     Non importa dove Ë posizionato il cursore sulla linea stessa.
+     Non importa dove √® posizionato il cursore sulla linea stessa.
 
   2. Batti  A  e inserisci le necessarie aggiunte.
 
-  3. Alla fine della aggiunta premi <ESC> per tornare in modalit‡ Normale.
+  3. Alla fine della aggiunta premi <ESC> per tornare in modalit√† Normale.
 
   4. Muovi il cursore alla seconda linea indicata ---> e ripeti
      i passi 2 e 3 per correggere questa frase.
 
----> C'Ë del testo che manca da qu
-     C'Ë del testo che manca da questa linea.
----> C'Ë anche del testo che ma
-     C'Ë anche del testo che manca qui.
+---> C'√® del testo che manca da qu
+     C'√® del testo che manca da questa linea.
+---> C'√® anche del testo che ma
+     C'√® anche del testo che manca qui.
 
   5. Quando sei a tuo agio nell'aggiunta di testo vai alla lezione 1.1.6.
 
@@ -147,7 +147,7 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
   1. Esci da Vim come hai fatto nella lezione 1.1.2:  :q!
 
   2. Quando vedi il PROMPT della Shell, batti il comando:  vim tutor <INVIO>
-     'vim' Ë il comando per richiamare Vim, 'tutor' Ë il nome del file che
+     'vim' √® il comando per richiamare Vim, 'tutor' √® il nome del file che
      desideri modificare.  Usa un file che possa essere modificato.
 
   3. Inserisci e cancella testo come hai imparato nelle lezioni precedenti.
@@ -164,7 +164,7 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
 
 
   1. Il cursore si muove usando i tasti con le frecce o i tasti hjkl.
-	 h (sinistra)	j (gi˘)       k (su)	    l (destra)
+	 h (sinistra)	j (gi√π)       k (su)	    l (destra)
 
   2. Per eseguire Vim dal PROMPT della Shell batti:  vim NOMEFILE <INVIO>
 
@@ -177,7 +177,7 @@ NOTA: Mentre segui questa guida, non cercare di imparare a memoria,
 	 i     batti testo inserito	<ESC>	inserisci prima del cursore
 	 A     batti testo aggiunto	<ESC>	aggiungi a fine linea
 
-NOTA: premendo <ESC> ritornerai in Modalit‡ Normale o annullerai
+NOTA: premendo <ESC> ritornerai in Modalit√† Normale o annullerai
       un comando errato che puoi aver inserito in parte.
 
 Ora continua con la Lezione 1.2.
@@ -188,7 +188,7 @@ Ora continua con la Lezione 1.2.
 
 		** Batti  dw  per cancellare una parola. **
 
-  1. Premi  <ESC>  per accertarti di essere in Modalit‡ Normale.
+  1. Premi  <ESC>  per accertarti di essere in Modalit√† Normale.
 
   2. Muovi il cursore fino alla linea qui sotto, indicata da --->.
 
@@ -196,13 +196,13 @@ Ora continua con la Lezione 1.2.
 
   4. Batti   dw   per cancellare la parola.
 
-NOTA: La lettera  d  sar‡ visibile sull'ultima linea dello schermo mentre la
+NOTA: La lettera  d  sar√† visibile sull'ultima linea dello schermo mentre la
       batti. Vim attende che tu batta  w . Se vedi una lettera diversa
       da  d  hai battuto qualcosa di sbagliato; premi  <ESC>  e ricomincia.
 
 ---> Ci sono le alcune parole gioia che non c'entrano carta in questa frase.
 
-  5. Ripeti i passi 3 e 4 finchÈ la frase Ë corretta, poi vai alla Lezione 1.2.2.
+  5. Ripeti i passi 3 e 4 finch√© la frase √® corretta, poi vai alla Lezione 1.2.2.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -211,7 +211,7 @@ NOTA: La lettera  d  sar‡ visibile sull'ultima linea dello schermo mentre la
 
 	   ** Batti  d$	per cancellare fino a fine linea. **
 
-  1. Premi  <ESC>  per accertarti di essere in Modalit‡ Normale.
+  1. Premi  <ESC>  per accertarti di essere in Modalit√† Normale.
 
   2. Muovi il cursore fino alla linea qui sotto, indicata da --->.
 
@@ -233,12 +233,12 @@ NOTA: La lettera  d  sar‡ visibile sull'ultima linea dello schermo mentre la
 
 
   Molti comandi di modifica testi consistono in un operatore e un movimento.
-  Il formato del comando di cancellazione con l'operatore  d  Ë il seguente:
+  Il formato del comando di cancellazione con l'operatore  d  √® il seguente:
 
 	 d	movimento
 
   Dove:
-    d	      - Ë l'operatore di cancellazione
+    d	      - √® l'operatore di cancellazione
     movimento - indica dove l'operatore va applicato (lista qui sotto).
 
   Breve lista di movimenti:
@@ -248,8 +248,8 @@ NOTA: La lettera  d  sar‡ visibile sull'ultima linea dello schermo mentre la
 
   Quindi se batti  de  cancelli dal cursore fino a fine parola.
 
-NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
-       nessun operatore, il cursore si muover‡ come specificato.
+NOTA:  Se batti solo il movimento mentre sei in Modalit√† Normale, senza
+       nessun operatore, il cursore si muover√† come specificato.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 Lezione 1.2.4: USO DI UN CONTATORE PER UN MOVIMENTO
@@ -259,7 +259,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
 
   1. Muovi il cursore fino all'inizio della linea qui sotto, indicata da --->.
 
-  2. Batti  2w  per spostare il cursore due parole pi˘ avanti.
+  2. Batti  2w  per spostare il cursore due parole pi√π avanti.
 
   3. Batti  3e  per spostare il cursore alla fine della terza parola seguente.
 
@@ -267,7 +267,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
 
   5. Ripeti i passi 2 e 3 usando numeri differenti.
 
----> Questa Ë solo una linea con parole all'interno della quale puoi muoverti.
+---> Questa √® solo una linea con parole all'interno della quale puoi muoverti.
 
   6. Vai alla Lezione 1.2.5.
 
@@ -281,7 +281,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
   ** Se batti un numero prima di un movimento, lo ripeti altrettante volte. **
 
   Nella combinazione dell'operatore cancella e di un movimento, descritto prima,
-  inserite un contatore prima del movimento per cancellare di pi˘:
+  inserite un contatore prima del movimento per cancellare di pi√π:
 	 d   numero   movimento
 
   1. Muovi il cursore alla prima parola MAIUSCOLA nella riga indicata da --->.
@@ -291,7 +291,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
   3. Ripeti i passi 1 e 2 con un contatore diverso per cancellare le parole
      MAIUSCOLE consecutive con un solo comando
 
---->  questa ABC DE linea FGHI JK LMN OP di parole Ë Q RS TUV ora ripulita.
+--->  questa ABC DE linea FGHI JK LMN OP di parole √® Q RS TUV ora ripulita.
 
 
 
@@ -303,7 +303,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
 	    ** Batti  dd  per cancellare un'intera linea. **
 
   Per la frequenza con cui capita di cancellare linee intere, chi ha
-  disegnato Vi ha deciso che sarebbe stato pi˘ semplice battere
+  disegnato Vi ha deciso che sarebbe stato pi√π semplice battere
   due d consecutive per cancellare una linea.
 
   1. Muovi il cursore alla linea 2) nella frase qui sotto.
@@ -312,12 +312,12 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
   4. Batti   2dd   per cancellare due linee.
 
 --->  1)  Le rose sono rosse,
---->  2)  Il fango Ë divertente,
+--->  2)  Il fango √® divertente,
 --->  3)  Le viole sono blu,
 --->  4)  Io ho un'automobile,
 --->  5)  Gli orologi segnano il tempo,
---->  6)  Lo zucchero Ë dolce,
---->  7)  E cosÏ sei anche tu.
+--->  6)  Lo zucchero √® dolce,
+--->  7)  E cos√¨ sei anche tu.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -332,8 +332,8 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
   3. Adesso batti  u  per annullare l'ultimo comando eseguito.
   4. Ora invece, correggi tutti gli errori sulla linea usando il comando  x .
   5. Adesso batti una U Maiuscola per riportare la linea al suo stato originale.
-  6. Adesso batti  u  pi˘ volte per annullare la  U  e i comandi precedenti.
-  7. Adesso batti pi˘ volte CTRL-r (tieni il tasto CTRL schiacciato
+  6. Adesso batti  u  pi√π volte per annullare la  U  e i comandi precedenti.
+  7. Adesso batti pi√π volte CTRL-r (tieni il tasto CTRL schiacciato
      mentre batti r) per rieseguire i comandi (annullare l'annullamento).
 
 ---> Correeggi gli errori ssu quuesta linea e riimpiazzali coon "undo".
@@ -350,8 +350,8 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
   1. Per cancellare dal cursore fino alla parola seguente batti:      dw
   2. Per cancellare dal cursore fino alla fine della linea batti:     d$
   3. Per cancellare un'intera linea batti:    dd
-  4. Per eseguire pi˘ volte un movimento, mettici davanti un numero:  2w
-  5. Il formato per un comando di modifica Ë:
+  4. Per eseguire pi√π volte un movimento, mettici davanti un numero:  2w
+  5. Il formato per un comando di modifica √®:
 
        operatore   [numero]   movimento
      dove:
@@ -401,7 +401,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalit‡ Normale, senza
 
   3. Batti   r	e poi il carattere che dovrebbe stare qui.
 
-  4. Ripeti i passi 2 e 3 finchÈ la prima linea Ë uguale alla seconda.
+  4. Ripeti i passi 2 e 3 finch√© la prima linea √® uguale alla seconda.
 
 --->  Ammattendo quetta lince, qualcuno ho predato alcuni tosti sballiati!
 --->  Immettendo questa linea, qualcuno ha premuto alcuni tasti sbagliati!
@@ -426,12 +426,12 @@ NOTA: Ricordati che dovresti imparare con la pratica, non solo leggendo.
 
   4. Premi <ESC> e vai sul prossimo carattere da modificare.
 
-  5. Ripeti i passi 3 e 4 finchÈ la prima frase Ë uguale alla seconda.
+  5. Ripeti i passi 3 e 4 finch√© la prima frase √® uguale alla seconda.
 
 ---> Questa lubw ha alcune pptfd da asdert usgfk l'operatore CHANGE.
 ---> Questa linea ha alcune parole da cambiare usando l'operatore CHANGE.
 
-Nota che  ce  cancella la parola, e ti mette anche in Modalit‡ Inserimento
+Nota che  ce  cancella la parola, e ti mette anche in Modalit√† Inserimento
     [Insert Mode]
 
 
@@ -440,7 +440,7 @@ Nota che  ce  cancella la parola, e ti mette anche in Modalit‡ Inserimento
 
 ** L'operatore c [CHANGE] agisce sugli stessi movimenti di  d  [DELETE] **
 
-  1. L'operatore CHANGE si comporta come DELETE.  Il formato Ë:
+  1. L'operatore CHANGE si comporta come DELETE.  Il formato √®:
 
        c   [numero]   movimento
 
@@ -464,7 +464,7 @@ NOTA:  Puoi usare il tasto Backspace se devi correggere errori di battitura.
 
   1. Per reinserire del testo appena cancellato, batti   p   .  Questo
      inserisce [pone] il testo cancellato DOPO il cursore (se era stata tolta
-     una linea intera, questa verr‡ messa nella linea SOTTO il cursore).
+     una linea intera, questa verr√† messa nella linea SOTTO il cursore).
 
   2. Per rimpiazzare il carattere sotto il cursore, batti   r   e poi il
      carattere che vuoi sostituire.
@@ -473,7 +473,7 @@ NOTA:  Puoi usare il tasto Backspace se devi correggere errori di battitura.
      arriva il movimento.  Ad es. Batti  ce  per cambiare dal cursore
      fino alla fine della parola,  c$  per cambiare fino a fine linea.
 
-  4. Il formato di  change  Ë:
+  4. Il formato di  change  √®:
 
        c   [numero]   movimento
 
@@ -490,17 +490,17 @@ Ora vai alla prossima Lezione.
   NOTA: Leggi l'intera Lezione prima di eseguire un qualsiasi passo!!
 
   1. Tieni premuto il tasto CTRL e batti  g  .  Ossia batti CTRL-G.
-     Un messaggio apparir‡ in fondo alla pagina con il NOME FILE e la
+     Un messaggio apparir√† in fondo alla pagina con il NOME FILE e la
      posizione nel file.  Ricordati il numero della linea per il Passo 3.
 
 NOTA: La posizione del cursore si vede nell'angolo in basso a destra dello
-      schermo, se Ë impostata l'opzione 'ruler' (righello, vedi :help ruler).
+      schermo, se √® impostata l'opzione 'ruler' (righello, vedi :help ruler).
 
   2. Premi  G  [G Maiuscolo] per posizionarti in fondo al file.
      Batti gg  per posizionarti in cima al file.
 
   3. Batti il numero della linea in cui ti trovavi e poi  G  .  Questo ti
-     riporter‡ fino alla linea in cui ti trovavi quando avevi battuto CTRL-g.
+     riporter√† fino alla linea in cui ti trovavi quando avevi battuto CTRL-g.
 
   4. Se ti senti sicuro nel farlo, esegui i passi da 1 a 3.
 
@@ -509,10 +509,10 @@ NOTA: La posizione del cursore si vede nell'angolo in basso a destra dello
 
      ** Batti  /  seguito da una frase per ricercare quella frase. **
 
-  1. in Modalit‡ Normale batti il carattere  /  . Nota che la "/" e il cursore
+  1. in Modalit√† Normale batti il carattere  /  . Nota che la "/" e il cursore
      sono visibili in fondo dello schermo come quando si usa il comando  : .
 
-  2. Adesso batti 'errroore' <INVIO>. Questa Ë la parola che vuoi ricercare.
+  2. Adesso batti 'errroore' <INVIO>. Questa √® la parola che vuoi ricercare.
 
   3. Per ricercare ancora la stessa frase, batti soltanto       n  .
      Per ricercare la stessa frase in direzione opposta, batti  N  .
@@ -523,7 +523,7 @@ NOTA: La posizione del cursore si vede nell'angolo in basso a destra dello
      schiacciato mentre premi la lettera o).  Ripeti  CTRL-O  per andare ancora
      indietro. Puoi usare  CTRL-I  per tornare in avanti.
 
----> "errroore" non Ë il modo giusto di digitare errore; errroore Ë un errore.
+---> "errroore" non √® il modo giusto di digitare errore; errroore √® un errore.
 NOTA: Quando la ricerca arriva a fine file, ricomincia dall'inizio del file,
       a meno che l'opzione 'wrapscan' sia stata disattivata.
 
@@ -537,14 +537,14 @@ NOTA: Quando la ricerca arriva a fine file, ricomincia dall'inizio del file,
 
   2. Adesso batti il carattere   %  .
 
-  3. Il cursore si sposter‡ sulla parentesi corrispondente.
+  3. Il cursore si sposter√† sulla parentesi corrispondente.
 
   4. Batti  %  per muovere il cursore all'altra parentesi corrispondente.
 
----> Questa ( Ë una linea di test con (, [ ] e { } al suo interno. ))
+---> Questa ( √® una linea di test con (, [ ] e { } al suo interno. ))
 
 
-NOTA: Questo Ë molto utile nel "debug" di un programma con parentesi errate!
+NOTA: Questo √® molto utile nel "debug" di un programma con parentesi errate!
 
 
 
@@ -564,7 +564,7 @@ NOTA: Questo Ë molto utile nel "debug" di un programma con parentesi errate!
      sostituire "globalmente" sulla linea, ossia tutte le occorrenze
      di "lla" sulla linea.
 
----> lla stagione migliore per lla fioritura Ë lla primavera.
+---> lla stagione migliore per lla fioritura √® lla primavera.
 
   4. Per cambiare ogni ricorrenza di una stringa di caratteri tra due linee,
      batti :#,#s/vecchio/nuovo/g  dove #,# sono i numeri che delimitano
@@ -586,7 +586,7 @@ NOTA: Questo Ë molto utile nel "debug" di un programma con parentesi errate!
    Battendo  ?  seguito da una frase ricerca ALL'INDIETRO quella frase.
    DOPO una ricerca batti    n   per trovare la prossima occorrenza nella
    stessa direzione, oppure  N   per cercare in direzione opposta.
-   CTRL-O ti porta alla posizione precedente, CTRL-I a quella pi˘ nuova.
+   CTRL-O ti porta alla posizione precedente, CTRL-I a quella pi√π nuova.
 
 3. Battendo  %  mentre il cursore si trova su  (,),[,],{, oppure }
    ti posizioni sulla corrispondente parentesi.
@@ -603,9 +603,9 @@ NOTA: Questo Ë molto utile nel "debug" di un programma con parentesi errate!
   ** Batti  :!  seguito da un comando esterno per eseguire quel comando. **
 
   1. Batti il comando   :   per posizionare il cursore in fondo allo schermo.
-     CiÚ ti permette di immettere un comando dalla linea comandi.
+     Ci√≤ ti permette di immettere un comando dalla linea comandi.
 
-  2. Adesso batti il carattere  !  (punto esclamativo).  CiÚ ti permette di
+  2. Adesso batti il carattere  !  (punto esclamativo).  Ci√≤ ti permette di
      eseguire qualsiasi comando esterno si possa eseguire nella "shell".
 
   3. Ad esempio batti   ls   dopo il ! e poi premi <INVIO>.  Questo
@@ -626,17 +626,17 @@ NOTA:  Tutti i comandi  :  devono essere terminati premendo <INVIO>
    ** Per salvare le modifiche apportate a un testo batti :w NOMEFILE. **
 
   1. Batti  :!dir  or  :!ls  per procurarti una lista della tua directory.
-     Gi‡ sai che devi premere <INVIO> dopo aver scritto il comando.
+     Gi√† sai che devi premere <INVIO> dopo aver scritto il comando.
 
   2. Scegli un NOMEFILE che ancora non esista, ad es. TEST   .
 
-  3. Adesso batti:	 :w TEST   (dove TEST Ë il NOMEFILE che hai scelto).
+  3. Adesso batti:	 :w TEST   (dove TEST √® il NOMEFILE che hai scelto).
 
   4. Questo salva l'intero file ("tutor.it")  con il nome di TEST.
      Per verifica batti ancora  :!dir  o  :!ls  per listare la tua directory.
 
 NOTA: Se esci da Vim e riesegui Vim battendo  vim TEST , il file aperto
-      sar‡ una copia esatta di "tutor.it" al momento del salvataggio.
+      sar√† una copia esatta di "tutor.it" al momento del salvataggio.
 
   5. Ora cancella il file battendo (MS-DOS):   :!del TEST
 				 o (Unix):     :!rm TEST
@@ -652,17 +652,17 @@ NOTA: Se esci da Vim e riesegui Vim battendo  vim TEST , il file aperto
   2. Premi  v  e muovi il cursore fino alla linea numerata 5., qui sotto.
      Nota che il testo viene evidenziato.
 
-  3. Batti il carattere  :  .  In fondo allo schermo apparir‡ :'<,'>  .
+  3. Batti il carattere  :  .  In fondo allo schermo apparir√† :'<,'>  .
 
-  4. Batti  w TEST  , dove TEST Ë il nome di un file non ancora esistente.
+  4. Batti  w TEST  , dove TEST √® il nome di un file non ancora esistente.
      Verifica che si veda  :'<,'>w TEST   prima di dare <INVIO>.
 
-  5. Vim scriver‡ nel file TEST le linee che hai selezionato.  Usa  :!dir
-     o  :!ls  per controllare che esiste.  Non cancellarlo ora!  Ti servir‡
+  5. Vim scriver√† nel file TEST le linee che hai selezionato.  Usa  :!dir
+     o  :!ls  per controllare che esiste.  Non cancellarlo ora!  Ti servir√†
      nella prossima lezione.
 
 NOTA:  Battere  v  inizia una selezione visuale.  Puoi muovere il cursore
-       come vuoi, e rendere la selezione pi˘ piccola o pi˘ grande.  Poi
+       come vuoi, e rendere la selezione pi√π piccola o pi√π grande.  Poi
        puoi usare un operatore per agire sul testo selezionato.
        Ad es.,  d  cancella il testo.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -676,11 +676,11 @@ NOTA:  Battere  v  inizia una selezione visuale.  Puoi muovere il cursore
 NOTA: Dopo aver eseguito il Passo 2 vedrai il testo della Lezione 1.5.3.
       Quindi spostati IN GIU' per tornare ancora a questa Lezione.
 
-  2. Ora inserisci il tuo file TEST con il comando   :r TEST   dove TEST Ë
+  2. Ora inserisci il tuo file TEST con il comando   :r TEST   dove TEST √®
      il nome che hai usato per creare il file.
-     Il file richiesto Ë inserito sotto la linea in cui si trova il cursore.
+     Il file richiesto √® inserito sotto la linea in cui si trova il cursore.
 
-  3. Per verificare che un file Ë stato inserito, torna indietro col cursore
+  3. Per verificare che un file √® stato inserito, torna indietro col cursore
      e nota che ci sono ora 2 copie della Lezione 1.5.3, quella originale e
      quella che viene dal file.
 
@@ -704,10 +704,10 @@ NOTA:  Puoi anche leggere l'output prodotto da un comando esterno. Ad es.
       visuale nel file NOMEFILE.
 
   4.  :r NOMEFILE  legge il file NOMEFILE da disco e lo inserisce nel file
-      che stai modificando, dopo la linea in cui Ë posizionato il cursore.
+      che stai modificando, dopo la linea in cui √® posizionato il cursore.
 
   5.  :r !dir  legge l'output del comando  dir  e lo inserisce dopo la
-      linea in cui Ë posizionato il cursore.
+      linea in cui √® posizionato il cursore.
 
 
 
@@ -716,21 +716,21 @@ NOTA:  Puoi anche leggere l'output prodotto da un comando esterno. Ad es.
 
 
         ** Batti   o   per aprire una linea sotto il cursore **
-        **         e passare in Modalit‡ Inserimento.        **
+        **         e passare in Modalit√† Inserimento.        **
 
   1. Muovi il cursore fino alla linea qui sotto, indicata da --->.
 
   2. Batti la lettera minuscola  o  per aprire una linea sotto il cursore e
-     passare in Modalit‡ Inserimento.
+     passare in Modalit√† Inserimento.
 
   3. Poi inserisci del testo e premi <ESC> per uscire dalla
-     Modalit‡ Inserimento.
+     Modalit√† Inserimento.
 
----> Dopo battuto  o  il cursore Ë sulla linea aperta (in Modalit‡ Inserimento).
+---> Dopo battuto  o  il cursore √® sulla linea aperta (in Modalit√† Inserimento).
 
   4. Per aprire una linea SOPRA il cursore, batti una   O  maiuscola, invece
      che una   o   minuscola. Prova sulla linea qui sotto.
----> Apri una linea SOPRA questa battendo  O  mentre il cursore Ë su questa linea.
+---> Apri una linea SOPRA questa battendo  O  mentre il cursore √® su questa linea.
 
 
 
@@ -741,27 +741,27 @@ NOTA:  Puoi anche leggere l'output prodotto da un comando esterno. Ad es.
 
   1. Muovi il cursore all'inizio della linea qui sotto, indicata da --->.
 
-  2. Batti  e  finchÈ il cursore arriva alla fine di  li .
+  2. Batti  e  finch√© il cursore arriva alla fine di  li .
 
   3. Batti una  a  (minuscola) per aggiungere testo DOPO il cursore.
 
   4. Completa la parola come mostrato nella linea successiva.  Premi <ESC>
-     per uscire dalla Modalit‡ Inserimento.
+     per uscire dalla Modalit√† Inserimento.
 
   5. Usa  e  per passare alla successiva parola incompleta e ripeti i passi
      3 e 4.
 
----> Questa li ti permetter‡ di esercit ad aggiungere testo a una linea.
----> Questa linea ti permetter‡ di esercitarti ad aggiungere testo a una linea.
+---> Questa li ti permetter√† di esercit ad aggiungere testo a una linea.
+---> Questa linea ti permetter√† di esercitarti ad aggiungere testo a una linea.
 
-NOTA: a, i ed A entrano sempre in Modalit‡ Inserimento, la sola differenza
-      Ë dove verranno inseriti i caratteri.
+NOTA: a, i ed A entrano sempre in Modalit√† Inserimento, la sola differenza
+      √® dove verranno inseriti i caratteri.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	   Lezione 1.6.3: UN ALTRO MODO DI RIMPIAZZARE [REPLACE]
 
 
-     ** Batti una  R  maiuscola per rimpiazzare pi˘ di un carattere. **
+     ** Batti una  R  maiuscola per rimpiazzare pi√π di un carattere. **
 
   1. Muovi il cursore alla prima linea qui sotto, indicata da --->.  Muovi il
      cursore all'inizio del primo  xxx .
@@ -769,7 +769,7 @@ NOTA: a, i ed A entrano sempre in Modalit‡ Inserimento, la sola differenza
   2. Ora batti  R  e batti il numero che vedi nella linea seguente, in modo
      che rimpiazzi l'  xxx .
 
-  3. Premi <ESC> per uscire dalla Modalit‡ Replace.  Nota che il resto della
+  3. Premi <ESC> per uscire dalla Modalit√† Replace.  Nota che il resto della
      linea resta invariato.
 
   4. Ripeti i passi in modo da rimpiazzare l'altro xxx .
@@ -777,7 +777,7 @@ NOTA: a, i ed A entrano sempre in Modalit‡ Inserimento, la sola differenza
 ---> Aggiungendo 123 a xxx si ottiene xxx.
 ---> Aggiungendo 123 a 456 si ottiene 579.
 
-NOTA:  La Modalit‡ Replace Ë come la Modalit‡ Inserimento, ma ogni carattere
+NOTA:  La Modalit√† Replace √® come la Modalit√† Inserimento, ma ogni carattere
        che viene battuto ricopre un carattere esistente.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -788,7 +788,7 @@ NOTA:  La Modalit‡ Replace Ë come la Modalit‡ Inserimento, ma ogni carattere
 
   1. Vai alla linea indicata da ---> qui sotto, e metti il cursore dopo "a)".
   
-  2. Entra in Modalit‡ Visuale con  v  e metti il cursore davanti a "primo".
+  2. Entra in Modalit√† Visuale con  v  e metti il cursore davanti a "primo".
   
   3. Batti  y  per copiare [yank] il testo evidenziato.
 
@@ -796,10 +796,10 @@ NOTA:  La Modalit‡ Replace Ë come la Modalit‡ Inserimento, ma ogni carattere
 
   5. Batti  p  per incollare [paste] il testo.  Poi batti:  a secondo <ESC> .
 
-  6. Usa la Modalit‡ Visuale per selezionare " elemento.", copialo con  y ,
+  6. Usa la Modalit√† Visuale per selezionare " elemento.", copialo con  y ,
      Vai alla fine della linea successiva con  j$  e incolla il testo con  p .
 
---->  a) questo Ë il primo elemento.
+--->  a) questo √® il primo elemento.
       b)
 
 NOTA: Puoi usare  y  come operatore;  yw  copia una parola [word].
@@ -810,7 +810,7 @@ NOTA: Puoi usare  y  come operatore;  yw  copia una parola [word].
        **             durante la ricerca/sostituzione         **
 
  1. Ricerca 'nota' battendo:   /nota <ENTER>
-    Ripeti la ricerca pi˘ volte usando il tasto   n
+    Ripeti la ricerca pi√π volte usando il tasto   n
 
  2. Imposta l'opzione 'ic' (Ignore Case, [Ignora maiuscolo/minuscolo])
     battendo:  :set ic
@@ -830,7 +830,7 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
 		       Lezione 1.6 SOMMARIO
 
   1. Batti  o  per aggiungere una linea SOTTO il cursore ed entrare in
-               Modalit‡ Inserimento.
+               Modalit√† Inserimento.
      Batti  O  per aggiungere una linea SOPRA il cursore.
 
   2. Batti  a  per inserire testo DOPO il cursore.
@@ -840,7 +840,7 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
 
   4. L'operatore  y  copia del testo,  p  incolla del testo.
 
-  5. Batti  R  per entrare in Modalit‡ Replace, e ne esci premendo <ESC>.
+  5. Batti  R  per entrare in Modalit√† Replace, e ne esci premendo <ESC>.
 
   6. Batti ":set xxx" per impostare l'opzione "xxx". Alcun opzioni sono:
       'ic' 'ignorecase'	ignorare maiuscole/minuscole nella ricerca
@@ -856,8 +856,8 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
 
   Vim ha un esauriente sistema di aiuto on-line.  Per cominciare, prova una di
   queste alternative:
-	- premi il tasto <AIUTO> (se ce n'Ë uno)
-	- premi il tasto <F1>    (se ce n'Ë uno)
+	- premi il tasto <AIUTO> (se ce n'√® uno)
+	- premi il tasto <F1>    (se ce n'√® uno)
 	- batti   :help  <INVIO>  OPPURE   :h <INVIO>
 
   Leggi il testo nella finestra di aiuto per vedere come funziona l'aiuto.
@@ -877,8 +877,8 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
 
 		        ** Attiva le opzioni Vim **
 
-  Vim ha molte pi˘ opzioni di Vi, ma molte di esse sono predefinite inattive.
-  Per cominciare a usare pi˘ opzioni, devi creare un file "vimrc".
+  Vim ha molte pi√π opzioni di Vi, ma molte di esse sono predefinite inattive.
+  Per cominciare a usare pi√π opzioni, devi creare un file "vimrc".
 
   1. Comincia a editare il file "vimrc".  Questo dipende dal tuo sistema:
 	:e ~/.vimrc		per Unix
@@ -891,7 +891,7 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
   3. Scrivi il file con:
 	:w
 
-  La prossima volta che apri Vim, sar‡ abilitata la colorazione sintattica.
+  La prossima volta che apri Vim, sar√† abilitata la colorazione sintattica.
   Puoi aggiungere a questo file "vimrc" tutte le tue impostazioni preferite.
   Per maggiori informazioni batti:  :help vimrc-intro
 
@@ -901,7 +901,7 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
 
 	      ** Completamento linea comandi con CTRL-D e <TAB> **
 
-  1. Imposta Vim in modalit‡ compatibile:  :set nocp
+  1. Imposta Vim in modalit√† compatibile:  :set nocp
 
   2. Guarda i file esistenti nella directory:  :!ls   o  :!dir
 
@@ -913,9 +913,9 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
 
   6. Ora batti uno spazio e l'inizio del nome di un file esistente:  :edit FIL
 
-  7. Premi <TAB>.  Vim completer‡ il nome del file (se Ë il solo possibile).
+  7. Premi <TAB>.  Vim completer√† il nome del file (se √® il solo possibile).
 
-NOTA:  Il completamento Ë disponibile per molti comandi.  Prova a battere
+NOTA:  Il completamento √® disponibile per molti comandi.  Prova a battere
        CTRL-D e <TAB>.  Particolarmente utile per  :help .
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -942,9 +942,9 @@ NOTA:  Il completamento Ë disponibile per molti comandi.  Prova a battere
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Qui finisce la Guida a Vim.  Il suo intento Ë di fornire una breve panoramica
+  Qui finisce la Guida a Vim.  Il suo intento √® di fornire una breve panoramica
   dell'Editor Vim, che ti consenta di usare l'Editor abbastanza facilmente.
-  Questa guida Ë largamente incompleta poichÈ Vim ha moltissimi altri comandi.
+  Questa guida √® largamente incompleta poich√© Vim ha moltissimi altri comandi.
   Puoi anche leggere il manuale utente (anche in italiano): ":help user-manual".
 
   Per ulteriore lettura e studio, raccomandiamo:
@@ -953,13 +953,13 @@ NOTA:  Il completamento Ë disponibile per molti comandi.  Prova a battere
   Contiene molti esempi e figure.
   Vedi https://iccf-holland.org/click5.html
 
-  Quest'altro libro Ë pi˘ su Vi che su Vim, ma Ë pure consigliato:
+  Quest'altro libro √® pi√π su Vi che su Vim, ma √® pure consigliato:
 	Learning the Vi Editor - di Linda Lamb e Arnold Robbins
 	Editore: O'Reilly & Associates Inc.
-  » un buon libro per imparare quasi tutto ciÚ che puoi voler fare con Vi.
+  √à un buon libro per imparare quasi tutto ci√≤ che puoi voler fare con Vi.
   Ne esiste una traduzione italiana, basata su una vecchia edizione.
 
-  Questa guida Ë stata scritta da Michael C. Pierce e Robert K. Ware,
+  Questa guida √® stata scritta da Michael C. Pierce e Robert K. Ware,
   Colorado School of Mines, usando idee fornite da Charles Smith,
   Colorado State University - E-mail: bware@mines.colorado.edu
   Modificato per Vim da Bram Moolenaar.

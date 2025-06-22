@@ -37,11 +37,11 @@ for /F "usebackq tokens=2 delims=:" %%G in (`chcp`) do (
 
 :GetChptLngs
 for %%G in (tutor1;tutor2) do (
-  if exist "%~dp0tutor\%%G" (set "lngs_%%G=en;") else (
-    if exist "%~dp0tutor\%%G.utf-8" set "lngs_%%G=en;")
-  for /F "tokens=2 delims=._" %%H in (
-    '2^> nul dir /B /A:-D "%~dp0tutor\%%G.???.utf-8"') do (
-      call set "lngs_%%G=%%lngs_%%G%%%%H;")
+   if exist "%~dp0tutor\%%G" (set "lngs_%%G=en;")
+  for /F "tokens=2 delims=." %%H in (
+    '2^> nul dir /B /A:-D "%~dp0tutor\%%G.???" "%~dp0tutor\%%G.??_??"') do (
+	call set "lngs_%%G=%%lngs_%%G%%%%H;"
+  )
 )
 :EndGetChptLngs
 
@@ -88,7 +88,7 @@ goto End
 call "%~dp0vim.exe" -u NONE -c "so $VIMRUNTIME/tutor/tutor.vim"
 if ERRORLEVEL 1 goto NoExecutable
 
-:: Start vim without any .vimrc, set 'nocompatible and 'showcmd''
+:: Start vim without any .vimrc, set 'nocompatible' and 'showcmd'
 call "%~dp0vim.exe" -u NONE -c "set nocp sc" %TUTORCOPY%
 
 goto End
@@ -190,8 +190,8 @@ if defined TMP (set "pscult_fl=%TMP%\pscult.tmp") else (
 
 powershell.exe -NoLogo -NoProfile -Command ^
 [system.globalization.cultureinfo]::GetCultures('AllCultures') ^| ^
-Where Name -NotLike "*-*" ^| Where DisplayName -NotLike "Invariant*" ^| ^
-%%{$_.Name + \"`t\" + $_.DisplayName + \"`t\" + $_.NativeName} ^| ^
+Where DisplayName -NotLike "Invariant*" ^| %%{$_.Name.Replace('-','_') + ^
+\"`t\" + $_.DisplayName + \"`t\" + $_.NativeName} ^| ^
 Sort-Object ^| Out-File -FilePath "%pscult_fl%" -Encoding utf8
 
 if defined lngs_tutor1 (set "lngs=%lngs_tutor1%")
@@ -203,7 +203,7 @@ if defined lngs_tutor2 if defined lngs (
 if defined lngs (
   for %%G in (%lngs%) do (
     for /F "tokens=2,* delims=	" %%H in (
-      '2^> nul findstr /BR "\<%%G\>" "%pscult_fl%"'
+      '2^> nul findstr /IBR "\<%%G\>" "%pscult_fl%"'
     ) do (set "%%G_name=%%H       %%I")
   )
   set "bar_name=Bavarian       Boarisch"
@@ -233,12 +233,12 @@ echo:
 goto End
 
 :DelTmpCopy
-:: remove the copy of the tutor
+:: deleted the copy of the tutor
 if exist %TUTORCOPY% del /F /Q %TUTORCOPY%
 goto :EOF
 
 :End
-:: remove the copy of the tutor and ISO639 file
+:: deleted the copy of the tutor and the pscult.tmp file
 if exist %TUTORCOPY% del /F /Q %TUTORCOPY%
 if exist %pscult_fl% del /F /Q %pscult_fl%
 chcp %_sav_chcp% 1> nul

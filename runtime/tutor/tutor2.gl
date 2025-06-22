@@ -1,27 +1,27 @@
 ===============================================================================
-=     B e n v i d o   a o   t u t o r   d o   V I M      -    VersiÛn 1.7     =
+=     B e n v i d o   a o   t u t o r   d o   V I M      -    Versi√≥n 1.7     =
 ===============================================================================
-=                        C A P Õ T U L O   D O U S                            =
+=                        C A P √ç T U L O   D O U S                            =
 ===============================================================================
 
-     Hic Sunt Dracones: se este È o s˙a primeira exposiciÛn ao vim, e
-     prefire iniciarse no capÌtulo introducturio, pode saÌr premendo
+     Hic Sunt Dracones: se este √© o s√∫a primeira exposici√≥n ao vim, e
+     prefire iniciarse no cap√≠tulo introducturio, pode sa√≠r premendo
      :q <ENTER> .
 
-     O tempo aproximado requerido para completar este capÌtulo È de 
-     8-10 minutos, dependendo de canto tempo use na experimentaciÛn.
+     O tempo aproximado requerido para completar este cap√≠tulo √© de 
+     8-10 minutos, dependendo de canto tempo use na experimentaci√≥n.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			LecciÛn 2.1.1: OS REXISTROS CON NOME 
+			Lecci√≥n 2.1.1: OS REXISTROS CON NOME 
 
 
-  ** Almacene d˙as palabras copiadas de xeito consecutivo, e logo pÈgueas. ** 
+  ** Almacene d√∫as palabras copiadas de xeito consecutivo, e logo p√©gueas. ** 
 
-  1. Mova o cursor ata a liÒa inferior sinalada con --->.
+  1. Mova o cursor ata a li√±a inferior sinalada con --->.
  
-  2. Navegue ata calquera car·cter da palabra 'Xo·n' e escriba  "ayiw .
+  2. Navegue ata calquera car√°cter da palabra 'Xo√°n' e escriba  "ayiw .
 
-NEM”NICO: 
+NEM√ìNICO: 
      dentro do rexistro(")
      chamado (a) 
      pega (y)ank 
@@ -31,10 +31,10 @@ NEM”NICO:
   3. Navegue cara a adiante ata a palabra 'galetas' 
      (  fl  ou  4fe  ou  $b  ou  /gal <ENTER> ) e teclee  "byiw .
 
-  4. Navegue ata calquera car·cter da palabra 'UxÌo' e teclee 
+  4. Navegue ata calquera car√°cter da palabra 'Ux√≠o' e teclee 
      ciw <C-r>a<ESC>
 
-NEM”NICO:
+NEM√ìNICO:
      cambia (c)hange
      o interior (i)nner
      da palabra (w)ord 
@@ -44,11 +44,11 @@ NEM”NICO:
   5. Navegue ata calquera punto da palabra 'tartas' e teclee 
      ciw<C-r>b<ESC>
 
---->  a) De eiquÌ en adiante, Xo·n ficar· encarregado das raciÛns de galetas.
-      b) Xa que logo, UxÌo somentes ter· poderes no que respecta ·s tartas.
+--->  a) De eiqu√≠ en adiante, Xo√°n ficar√° encarregado das raci√≥ns de galetas.
+      b) Xa que logo, Ux√≠o somentes ter√° poderes no que respecta √°s tartas.
 
-NOTA: O borrado tamÈn funciona nos rexistros, È dicir: 
-      "sdiw  borrar· a palabra baixo o cursor e ficar·a no rexistro s. 
+NOTA: O borrado tam√©n funciona nos rexistros, √© dicir: 
+      "sdiw  borrar√° a palabra baixo o cursor e ficar√°a no rexistro s. 
 
 REFERENCIAS:  Rexistros            :h registers
               Rexistros con come:  :h quotea
@@ -57,59 +57,59 @@ REFERENCIAS:  Rexistros            :h registers
  
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		     LecciÛn 2.1.2: O REXISTRO DE EXPRESI”N
+		     Lecci√≥n 2.1.2: O REXISTRO DE EXPRESI√ìN
 
 
- ** Insira o resultado dos c·culos sobre a marcha. ** 
+ ** Insira o resultado dos c√°culos sobre a marcha. ** 
 
-  1. Mova o cursor ata a liÒa sinalada con --->.
+  1. Mova o cursor ata a li√±a sinalada con --->.
 
-  2. Navegue ata calquera car·cter do n˙mero que aparece na liÒa. 
+  2. Navegue ata calquera car√°cter do n√∫mero que aparece na li√±a. 
 
   3. Teclee  ciw<C-r>=60*60*24<ENTER> .
 
-  4. Na seguinte liÒa, entre no modo Inserir e engada a data de hoxe con: 
+  4. Na seguinte li√±a, entre no modo Inserir e engada a data de hoxe con: 
      <C-r>=system('date')<ENTER>
 
-NOTA: TÛdalas chamadas a sistema son dependentes do sistema operativo.
+NOTA: T√≥dalas chamadas a sistema son dependentes do sistema operativo.
       Por exemplo, en Windows pode usar:
       system('date /t')  ou  :r!date /t
 
----> EsquecÌn o n˙mero exacto de segundos que ten un dÌa; son 84600?
----> A data de hoxe È: 
+---> Esquec√≠n o n√∫mero exacto de segundos que ten un d√≠a; son 84600?
+---> A data de hoxe √©: 
 
-NOTA: O mesmo pÛdese obter con  :pu=system('date')
+NOTA: O mesmo p√≥dese obter con  :pu=system('date')
       ou, premendo menos teclas, con  :r!date .
 
-REFERENCIAS:  Rexistro de experesiÛn    :h quote=
+REFERENCIAS:  Rexistro de experesi√≥n    :h quote=
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      LecciÛn 2.1.3: OS REXISTROS NUMERADOS
+		      Lecci√≥n 2.1.3: OS REXISTROS NUMERADOS
 
 
   ** Prema  yy  e mais  dd  para ve-lo seu efecto nos rexistros. **
 
-  1. Mova o cursor ata a liÒa sinalada con --->.
+  1. Mova o cursor ata a li√±a sinalada con --->.
 
-  2. Copie a liÒa 0, e logo inspeccione os rexitros con  :reg<enter> .
+  2. Copie a li√±a 0, e logo inspeccione os rexitros con  :reg<enter> .
 
-  3. Borre a liÒa 0 con "cdd, e logo inspeccione os rexistros.
-     (Onde espera que estea o contido da liÒa 0?)
+  3. Borre a li√±a 0 con "cdd, e logo inspeccione os rexistros.
+     (Onde espera que estea o contido da li√±a 0?)
 
-  4. Contin˙e borrando cada liÒa sucesivamente, inspeccionando os rexistros
+  4. Contin√∫e borrando cada li√±a sucesivamente, inspeccionando os rexistros
      sobre a marcha.
 
-NOTA: DeberÌa decatarse de que as liÒas borradas m·is antigas mÛvense cara a
-      embaixo na lista, consonte se engaden as novas liÒas borradas. 
+NOTA: Deber√≠a decatarse de que as li√±as borradas m√°is antigas m√≥vense cara a
+      embaixo na lista, consonte se engaden as novas li√±as borradas. 
 
-  5. Agora, poÒa (p) os seguintes rexistros en orde: c, 7, 4, 8, 2.
+  5. Agora, po√±a (p) os seguintes rexistros en orde: c, 7, 4, 8, 2.
      Por exemplo, usando  "7p .
 
 ---> 0. Esta
      9. cambalear
      8. mensaxe 
-     7. È
+     7. √©
      6. en
      5. eixo
      4. unha
@@ -117,45 +117,45 @@ NOTA: DeberÌa decatarse de que as liÒas borradas m·is antigas mÛvense cara a
      2. secreta.
      1. tributo
 
-NOTA: O borrado de liÒas enteiras (dd) permanece m·is tempo nos rexistros 
-      numerados cÛ copiado de liÒas enteiras ou de texto m·is pequeno.   
+NOTA: O borrado de li√±as enteiras (dd) permanece m√°is tempo nos rexistros 
+      numerados c√≥ copiado de li√±as enteiras ou de texto m√°is pequeno.   
 
 REFERENCIAS:  Rexistros numerados    :h quote00
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      LecciÛn 2.1.4: A BELEZA DAS MARCAS
+		      Lecci√≥n 2.1.4: A BELEZA DAS MARCAS
 
 
-  ** Evitando conta-las liÒas de cÛdigo **
+  ** Evitando conta-las li√±as de c√≥digo **
 
-NOTA: Un problema frecuente que acontece cando se programa È o desprazamento
-      entre pedazos de cÛdigo. A seguinte tÈcnica axuda a evita-lo c·lculo
-      de n˙meros de liÒa asociados a operacions coma  "a147d  ou
+NOTA: Un problema frecuente que acontece cando se programa √© o desprazamento
+      entre pedazos de c√≥digo. A seguinte t√©cnica axuda a evita-lo c√°lculo
+      de n√∫meros de li√±a asociados a operacions coma  "a147d  ou
       :945,1091d a  ou, incluso peor, usando primeiro
       <C-r>=1091-945<ENTER> .
 
-  1. Mova o cursor ata a liÒa sinalada con --->.
+  1. Mova o cursor ata a li√±a sinalada con --->.
 
-  2. Vaia · primeira liÒa da funciÛn e m·rquea con  ma .
+  2. Vaia √° primeira li√±a da funci√≥n e m√°rquea con  ma .
 
-NOTA: A posiciÛn exacta na liÒa NON È importante!
+NOTA: A posici√≥n exacta na li√±a NON √© importante!
 
-  3. Navegue ata a fin da liÒa, e deseguido ata a fin do bloque de cÛdigo
+  3. Navegue ata a fin da li√±a, e deseguido ata a fin do bloque de c√≥digo
      con  $% .
 
-  4. Borre o bloque e pÛÒao no rexistro 'a' con  "ad'a .
+  4. Borre o bloque e p√≥√±ao no rexistro 'a' con  "ad'a .
 
-NEM”NICO: 
+NEM√ìNICO: 
      Dentro do rexistro(")
      con nome de rexistro (a) 
      pon o borrado (d)eletion
-     dende o cursor ata a liÒa que contÈn a marca(')
+     dende o cursor ata a li√±a que cont√©n a marca(')
      de nome de marca (a)
 
   5. Pegue o bloque entre BBB e CCC con  "ap .
 
-NOTA: Practique esta operaciÛn m˙ltiples veces,
+NOTA: Practique esta operaci√≥n m√∫ltiples veces,
       ata chegar a facelo fluidamente:  ma$%"ad'a
 
 ---> AAA
@@ -174,8 +174,8 @@ NOTA: Practique esta operaciÛn m˙ltiples veces,
      BBB
      CCC
 
-NOTA: As marcas e mailos rexistros non comparten un espazo com˙n de nomes, 
-      de xeito que un rexistro 'a' È completamente independente dunha
+NOTA: As marcas e mailos rexistros non comparten un espazo com√∫n de nomes, 
+      de xeito que un rexistro 'a' √© completamente independente dunha
       marca 'a'. En troques, isto non acontece entre os rexistros
       e mailas macros.
 
@@ -183,33 +183,33 @@ REFERENCIAS:  Marcas                :h marks
               Movemento de marcas   :h mark-motions  (diferencia entre ' e  `)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       LecciÛn 2.1 RESUMO
+			       Lecci√≥n 2.1 RESUMO
 
   1. Gardar texto (por medio de copiar ou borrar), e recuperalo (pegar) dende
      un total de 26 rexistros (a-z).
   2. Pegar unha palbra enteira dende calquer sitio dentro dunha palara:  yiw
   3. Cambiar unha palabra enteira dende calquer punto de palabra:        ciw
   4. Inserir texto directamente dende os rexistros en modo Inserir:   (C-r)a
-  5. Inseri-lo resultado de operaciÛns aritmÈticas simples no modo
+  5. Inseri-lo resultado de operaci√≥ns aritm√©ticas simples no modo
      Inserir:  (C-r)=60*60<ENTER>
   6. Inseri-los resultados de chamadas ao sistema no modo Inserir: 
      (C-r)=system('ls -1')
   7. Inspecciona-los rexistros con  :reg .
-  8. Aprende-lo destino final do borrado de liÒas enteiras (dd) nos
-     rexistros numerados, È dicir, descendendo dende o reistro 1 ao 9. 
-     Decatarse de que o borrado de liÒas enteiras presÈrvase nos rexistros
-     numerados m·is tempo que calquera outra operaciÛn.   
-  9. Aprende-lo destino final de tÛdalas copias feitas nos rexistros 
-     numerados e cÛmo son de efÌmeros. 
+  8. Aprende-lo destino final do borrado de li√±as enteiras (dd) nos
+     rexistros numerados, √© dicir, descendendo dende o reistro 1 ao 9. 
+     Decatarse de que o borrado de li√±as enteiras pres√©rvase nos rexistros
+     numerados m√°is tempo que calquera outra operaci√≥n.   
+  9. Aprende-lo destino final de t√≥dalas copias feitas nos rexistros 
+     numerados e c√≥mo son de ef√≠meros. 
  10. Situar marcas dende o modo de comandos  m[a-zA-Z0-9] .
- 11. Moverse a una liÒa cunha marca con  ' .
+ 11. Moverse a una li√±a cunha marca con  ' .
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Isto concl˙e o capÌtulo dows do Vim Tutor. Este È traballo en progreso.  
-  Este capÌtulo foi escrito por Paul D. Parker.
+  Isto concl√∫e o cap√≠tulo dows do Vim Tutor. Este √© traballo en progreso.  
+  Este cap√≠tulo foi escrito por Paul D. Parker.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Traducido do inglÈs ao galego por Fernando VilariÒo.
-  Correo electrÛnico: fernando@cvc.uab.es.
+  Traducido do ingl√©s ao galego por Fernando Vilari√±o.
+  Correo electr√≥nico: fernando@cvc.uab.es.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
