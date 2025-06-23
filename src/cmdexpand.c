@@ -335,7 +335,6 @@ nextwild(
 	    ccline->cmdpos += difflen;
 	}
     }
-    vim_free(p2);
 
     redrawcmd();
     cursorcmd();
@@ -350,6 +349,8 @@ nextwild(
     else if (xp->xp_numfiles == 1 && !(options & WILD_KEEP_SOLE_ITEM))
 	// free expanded pattern
 	(void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
+
+    vim_free(p2);
 
     return OK;
 }
@@ -370,8 +371,11 @@ cmdline_pum_create(
     int		columns;
 
     // Add all the completion matches
+    compl_match_array = ALLOC_MULT(pumitem_T, numMatches);
+    if (compl_match_array == NULL)
+	return EXPAND_UNSUCCESSFUL;
+
     compl_match_arraysize = numMatches;
-    compl_match_array = ALLOC_MULT(pumitem_T, compl_match_arraysize);
     for (i = 0; i < numMatches; i++)
     {
 	compl_match_array[i].pum_text = SHOW_MATCH(i);
@@ -2884,11 +2888,9 @@ expand_cmdline(
 	// If fuzzy matching, don't modify the search string
 	file_str = vim_strsave(xp->xp_pattern);
     else
-    {
 	file_str = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
-	if (file_str == NULL)
-	    return EXPAND_UNSUCCESSFUL;
-    }
+    if (file_str == NULL)
+	return EXPAND_UNSUCCESSFUL;
 
     if (p_wic)
 	options += WILD_ICASE;
