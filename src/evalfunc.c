@@ -7489,7 +7489,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"unnamedplus",
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+#if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
 		1
 #else
 		0
@@ -7523,6 +7524,20 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{"vreplace", 1},
 	{"vtp",
 #ifdef FEAT_VTP
+		1
+#else
+		0
+#endif
+		},
+	{"wayland",
+#ifdef FEAT_WAYLAND
+		1
+#else
+		0
+#endif
+		},
+	{"wayland_clipboard",
+#ifdef FEAT_WAYLAND_CLIPBOARD
 		1
 #else
 		0

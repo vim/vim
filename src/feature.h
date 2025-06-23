@@ -813,6 +813,14 @@
 #endif
 
 /*
+ * +wayland		Unix only.  Include code for the wayland protocol,
+ *                      only works if HAVE_WAYLAND is defined.
+ */
+#if defined(FEAT_NORMAL) && defined(UNIX)
+# define WANT_WAYLAND
+#endif
+
+/*
  * XSMP - X11 Session Management Protocol
  * It may be preferred to disable this if the GUI supports it (e.g.,
  * GNOME/KDE) and implement save-yourself etc. through that, but it may also
@@ -907,6 +915,14 @@
 	&& (defined(UNIX) || defined(VMS)) \
 	&& defined(WANT_X11) && defined(HAVE_X11)
 # define FEAT_XCLIPBOARD
+# ifndef FEAT_CLIPBOARD
+#  define FEAT_CLIPBOARD
+# endif
+#endif
+
+#if defined(FEAT_NORMAL) && defined(UNIX) \
+    && defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
+# define FEAT_WAYLAND_CLIPBOARD
 # ifndef FEAT_CLIPBOARD
 #  define FEAT_CLIPBOARD
 # endif

@@ -22,6 +22,8 @@ src/auto/osdef.h
 src/auto/link.log
 src/auto/link.sed
 src/auto/pathdef.c
+src/auto/wayland/*.c
+src/auto/wayland/*.h
 
 # Windows
 *.exe
