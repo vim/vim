@@ -276,7 +276,8 @@ do_incsearch_highlighting(
 	else if (*cmd == 's' && cmd[1] == 'n')
 	    magic_overruled = OPTION_MAGIC_OFF;
     }
-    else if (STRNCMP(cmd, "sort", MAX(p - cmd, 3)) == 0)
+    else if (STRNCMP(cmd, "sort", MAX(p - cmd, 3)) == 0
+	    || STRNCMP(cmd, "uniq", MAX(p - cmd, 3)) == 0)
     {
 	// skip over ! and flags
 	if (*p == '!')
