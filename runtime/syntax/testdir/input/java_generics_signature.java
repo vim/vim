@@ -2,10 +2,10 @@
 // VIM_TEST_SETUP let g:java_highlight_signature = 1
 // VIM_TEST_SETUP let g:java_highlight_generics = 1
 // VIM_TEST_SETUP let g:java_highlight_java_lang = 1
+
 // VIM_TEST_SETUP hi link javaGenericsC1 Todo
 // VIM_TEST_SETUP hi link javaGenericsC2 Error
-
-
+// VIM_TEST_SETUP hi link javaWildcardBound Error
 
 
 import java.math.BigInteger;
@@ -123,6 +123,12 @@ class Generics$Tests<T extends Number & Comparable<? super T>, U>
 				? Comparable.class
 				: Iterable.class
 			: java.lang.Class.class;
+	}
+
+	<A, T extends java.util.function.Supplier<A>,
+		B, U extends java.util.function.Supplier<B>> U convert(T o)
+	{
+		throw new UnsupportedOperationException("TODO");
 	}
 
 	@java.lang.annotation.Target(
