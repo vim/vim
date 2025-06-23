@@ -7679,7 +7679,12 @@ nv_binsearch(cmdarg_T *cap)
     binsearch_mode = FALSE;
     showcmd_binsearch = TRUE;
     cap->oap->op_type = old_op_type;//resume pending operator
-    cap->oap->motion_type = old_motion_type;//old_motion_type;//conserve motion type
+
+    cap->oap->motion_type = old_motion_type; //conserve motion type
+
+    if(cap->oap->motion_force == NUL && old_op_type != OP_NOP)	//defaul motion force should be linewise
+	cap->oap->motion_force = 'V';
+
     if(old_op_type != OP_NOP)
 	finish_op = TRUE;
     returned = TRUE;
