@@ -700,33 +700,6 @@ function! s:SetupPandocHighlights()
   hi def link pandocHRule Delimiter
 endfunction
 
-" Whenever the colorscheme changes, all highlights are cleared.
-"
-" The most common circumstance is that the vimrc picks a colorscheme *at
-" startup*, then a file is opened and the syntax is set based on that file. So
-" the most common situation is that the colorscheme runs, then the syntax
-" runs, and that's that. So if the code for the syntax (e.g., this code here
-" in vim-pandoc-syntax) *adds* new highlighting groups that weren't defined in
-" the colorscheme, that's almost always fine because the colorscheme rarely
-" changes after startup.
-"
-" But the colorscheme *can* change after startup. This happens for example any
-" time the user toggles their background (:set bg=light or :set bg=dark), or
-" picks another colorscheme (:colorscheme something_else). In these cases, the
-" new colorscheme calls `:highlight clear`, clearing any custom pandoc
-" highlighting groups.
-"
-" The solution is to register an autocommand that runs whenever the
-" ColorScheme changes, so that we can re-register vim-pandoc-syntax's custom
-" highlighting groups, after the new colorscheme has cleared them.
-"
-" (This also affects popular plugins like goyo.vim, which call `:colorscheme`
-" with your chosen colorscheme to approximate undoing any custom highlighting
-" modifications that they've made.)
-augroup vim-pandoc-syntax
-  autocmd!
-  autocmd ColorScheme * call s:SetupPandocHighlights()
-augroup end
 call s:SetupPandocHighlights()
 
 " }}}1
