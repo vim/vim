@@ -41677,8 +41677,6 @@ Others: ~
 - the putty terminal is detected using an |TermResponse| autocommand in
   |defaults.vim| and Vim switches to a dark background
 - the |help-TOC| package is included to ease navigating the documentation.
-- an interactive tutor plugin has been included |vim-tutor-mode|, can be
-  started via |:Tutor|
 - improve the |vimtutor| and add a second chapter for more advanced tips
 - add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
   and decouple it from |netrw|
