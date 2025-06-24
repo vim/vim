@@ -1,18 +1,23 @@
 scriptencoding utf-8
-"
+
+" Vim syntax file
 " Language:	Pandoc (superset of Markdown)
 " Maintainer:	Felipe Morales <hel.sheep@gmail.com>
 " Maintainer:	Caleb Maclennan <caleb@alerque.com>
-" Upstream:	https://github.com/vim-pandoc/vim-pandoc-syntax
 "
 " Contributor:	David Sanson <dsanson@gmail.com>
-"		Jorge Israel Peña <jorge.israel.p@gmail.com>
+"		        Jorge Israel Peña <jorge.israel.p@gmail.com>
+"               Christian Brabandt @chrisbra
 " Original Author:	Jeremy Schultz <taozhyn@gmail.com>
 " Version: 5.0
 " Last Change:	2024 Apr 08
 
-let s:cpo_save = &cpo
-set cpo&vim
+if exists('b:current_syntax')
+  finish
+endif
+
+let s:cpo_save = &cpoptions
+set cpoptions&vim
 
 " Configuration: {{{1
 "
@@ -155,10 +160,10 @@ endif
 " Functions: {{{1
 " EnableEmbedsforCodeblocksWithLang {{{2
 function! EnableEmbedsforCodeblocksWithLang(entry)
-    " prevent embedded language syntaxes from changing 'foldmethod' 
+    " prevent embedded language syntaxes from changing 'foldmethod'
     if has('folding')
         let s:foldmethod = &l:foldmethod
-        let s:foldtext = &l:foldtext     
+        let s:foldtext = &l:foldtext
     endif
 
     try
@@ -169,7 +174,7 @@ function! EnableEmbedsforCodeblocksWithLang(entry)
         " We might have just turned off spellchecking by including the file,
         " so we turn it back on here.
         exe 'syntax spell toplevel'
-        exe 'syn region pandocDelimitedCodeBlock_' . s:langname . ' start=/\(\_^\( \+\|\t\)\=\(`\{3,}`*\|\~\{3,}\~*\)\s*\%({[^.]*\.\)\=' . s:langname . '\>.*\n\)\@<=\_^/' .
+        exe 'syn region pandocDelimitedCodeBlock_' . s:langname . ' start=/\(\_^\( \+\|\t\)\=\(`\{3,}`*\|\~\{3,}\~*\)\s*\%({[^.]*[.=]\)\=' . s:langname . '\>.*\n\)\@<=\_^/' .
                     \' end=/\_$\n\(\( \+\|\t\)\=\(`\{3,}`*\|\~\{3,}\~*\)\_$\n\_$\)\@=/ contained containedin=pandocDelimitedCodeBlock' .
                     \' contains=@' . toupper(s:langname)
         exe 'syn region pandocDelimitedCodeBlockinBlockQuote_' . s:langname . ' start=/>\s\(`\{3,}`*\|\~\{3,}\~*\)\s*\%({[^.]*\.\)\=' . s:langname . '\>/' .
@@ -222,13 +227,23 @@ command! -buffer -nargs=1 -complete=syntax PandocUnhighlight call DisableEmbedsf
 " BASE:
 syntax clear
 syntax spell toplevel
+
+" apply extra settings: {{{1
+if g:pandoc#syntax#colorcolumn == 1
+    exe 'setlocal colorcolumn='.string(&textwidth+5)
+elseif g:pandoc#syntax#colorcolumn == 2
+    exe 'setlocal colorcolumn='.join(range(&textwidth+5, 2*&columns), ',')
+endif
+if g:pandoc#syntax#conceal#use != 0
+    setlocal conceallevel=2
+endif
 " }}}1
 
 " Syntax Rules: {{{1
 
 " Embeds: {{{2
 
-" prevent embedded language syntaxes from changing 'foldmethod' 
+" prevent embedded language syntaxes from changing 'foldmethod'
 if has('folding')
     let s:foldmethod = &l:foldmethod
 endif
@@ -295,7 +310,7 @@ syn region pandocCodeBlockInsideIndent   start=/\(\(\d\|\a\|*\).*\n\)\@<!\(^\(\s
 " Links: {{{2
 
 " Base: {{{3
-syn region pandocReferenceLabel matchgroup=pandocOperator start=/!\{,1}\\\@<!\^\@<!\[/ skip=/\(\\\@<!\]\]\@=\|`.*\\\@<!].*`\)/ end=/\\\@<!\]/ keepend display
+syn region pandocReferenceLabel matchgroup=pandocOperator start=/!\{,1}\\\@<!\^\@<!\[/ skip=/\(\\\@<!\]\]\@=\|`[^`]*`\)/ end=/\\\@<!\]/ keepend display
 if g:pandoc#syntax#conceal#urls == 1
     syn region pandocReferenceURL matchgroup=pandocOperator start=/\]\@1<=(/ end=/)/ keepend conceal
 else
@@ -334,8 +349,8 @@ syn match pandocCiteLocator /[\[\]]/ contained containedin=pandocPCite,pandocICi
 " Text Styles: {{{2
 
 " Emphasis: {{{3
-call s:WithConceal('block', 'syn region pandocEmphasis matchgroup=pandocOperator start=/\\\@1<!\(\_^\|\s\|[[:punct:]]\)\@<=\*\S\@=/ skip=/\(\*\*\|__\)/ end=/\*\([[:punct:]]\|\s\|\_$\)\@=/ contains=@Spell,pandocNoFormattedInEmphasis,pandocLatexInlineMath,pandocAmpersandEscape', 'concealends')
-call s:WithConceal('block', 'syn region pandocEmphasis matchgroup=pandocOperator start=/\\\@1<!\(\_^\|\s\|[[:punct:]]\)\@<=_\S\@=/ skip=/\(\*\*\|__\)/ end=/\S\@1<=_\([[:punct:]]\|\s\|\_$\)\@=/ contains=@Spell,pandocNoFormattedInEmphasis,pandocLatexInlineMath,pandocAmpersandEscape', 'concealends')
+call s:WithConceal('block', 'syn region pandocEmphasis matchgroup=pandocOperator start=/\\\@1<!\(\_^\|\s\|[[:punct:]]\)\@<=\*\S\@=/ skip=/\(\*\*\|__\)/ end=/\*\([[:punct:]]\|\a\|\s\|\_$\)\@=/ contains=@Spell,pandocNoFormattedInEmphasis,pandocLatexInlineMath,pandocAmpersandEscape', 'concealends')
+call s:WithConceal('block', 'syn region pandocEmphasis matchgroup=pandocOperator start=/\\\@1<!\(\_^\|\s\|[[:punct:]]\)\@<=_\S\@=/ skip=/\(\*\*\|__\)/ end=/\S\@1<=_\([[:punct:]]\|\a\|\s\|\_$\)\@=/ contains=@Spell,pandocNoFormattedInEmphasis,pandocLatexInlineMath,pandocAmpersandEscape', 'concealends')
 " }}}3
 
 " Strong: {{{3
@@ -487,7 +502,7 @@ syn match pandocUListItem /^>\=\s*[*+-]\s\+-\@!.*$/ nextgroup=pandocUListItem,pa
 call s:WithConceal('list', 'syn match pandocUListItemBullet /^>\=\s*\zs[*+-]/ contained containedin=pandocUListItem', 'conceal cchar='.s:cchars['li'])
 
 " Ordered lists
-syn match pandocListItem /^\s*(\?\(\d\+\|\l\|\#\|@\)[.)].*$/ nextgroup=pandocListItem,pandocLaTeXMathBlock,pandocLaTeXInlineMath,pandocEscapedDollar,pandocDelimitedCodeBlock,pandocListItemContinuation contains=@Spell,pandocEmphasis,pandocStrong,pandocNoFormatted,pandocStrikeout,pandocSubscript,pandocSuperscript,pandocStrongEmphasis,pandocStrongEmphasis,pandocPCite,pandocICite,pandocCiteKey,pandocReferenceLabel,pandocLaTeXCommand,pandocLaTeXMathBlock,pandocLaTeXInlineMath,pandocEscapedDollar,pandocAutomaticLink,pandocFootnoteDef,pandocFootnoteBlock,pandocFootnoteID,pandocAmpersandEscape skipempty display
+syn match pandocListItem /^\s*(\?\(\d\+\|\l\|\#\|@\)[.)].*$/ nextgroup=pandocListItem,pandocLaTeXMathBlock,pandocLaTeXInlineMath,pandocEscapedDollar,pandocDelimitedCodeBlock,pandocListItemContinuation contains=@Spell,pandocEmphasis,pandocStrong,pandocReferenceURL,pandocNoFormatted,pandocStrikeout,pandocSubscript,pandocSuperscript,pandocStrongEmphasis,pandocStrongEmphasis,pandocPCite,pandocICite,pandocCiteKey,pandocReferenceLabel,pandocLaTeXCommand,pandocLaTeXMathBlock,pandocLaTeXInlineMath,pandocEscapedDollar,pandocAutomaticLink,pandocFootnoteDef,pandocFootnoteBlock,pandocFootnoteID,pandocAmpersandEscape skipempty display
 
 " support for roman numerals up to 'c'
 if g:pandoc#syntax#roman_lists != 0
@@ -501,8 +516,8 @@ syn match pandocListItemContinuation /^\s\+\([-+*]\s\+\|(\?.\+[).]\)\@<!\([[:upp
 
 " Definitions: {{{2
 if g:pandoc#syntax#use_definition_lists == 1
-    syn region pandocDefinitionBlock start=/^\%(\_^\s*\([`~]\)\1\{2,}\)\@!.*\n\(^\s*\n\)\=\s\{0,2}\([:~]\)\(\3\{2,}\3*\)\@!/ skip=/\n\n\zs\s/ end=/\n\n/ contains=pandocDefinitionBlockMark,pandocDefinitionBlockTerm,pandocCodeBlockInsideIndent,pandocEmphasis,pandocStrong,pandocStrongEmphasis,pandocNoFormatted,pandocStrikeout,pandocSubscript,pandocSuperscript,pandocFootnoteID,pandocReferenceURL,pandocReferenceLabel,pandocLaTeXMathBlock,pandocLaTeXInlineMath,pandocEscapedDollar,pandocAutomaticLink,pandocEmDash,pandocEnDash,pandocFootnoteDef,pandocFootnoteBlock,pandocFootnoteID
-    syn match pandocDefinitionBlockTerm /^.*\n\(^\s*\n\)\=\(\s*[:~]\)\@=/ contained contains=pandocNoFormatted,pandocEmphasis,pandocStrong,pandocLaTeXInlineMath,pandocEscapedDollar,pandocFootnoteDef,pandocFootnoteBlock,pandocFootnoteID nextgroup=pandocDefinitionBlockMark
+    syn region pandocDefinitionBlock start=/^\%(\_^\s*\([`~]\)\1\{2,}\)\@!.*\n\(^\s*\n\)\=\s\{0,2}\([:~]\)\(\3\{2,}\3*\)\@!/ skip=/\n\n\zs\s/ end=/\n\n/ contains=@Spell,pandocDefinitionBlockMark,pandocDefinitionBlockTerm,pandocCodeBlockInsideIndent,pandocEmphasis,pandocStrong,pandocStrongEmphasis,pandocNoFormatted,pandocStrikeout,pandocSubscript,pandocSuperscript,pandocFootnoteID,pandocReferenceURL,pandocReferenceLabel,pandocLaTeXMathBlock,pandocLaTeXInlineMath,pandocEscapedDollar,pandocAutomaticLink,pandocEmDash,pandocEnDash,pandocFootnoteDef,pandocFootnoteBlock,pandocFootnoteID
+    syn match pandocDefinitionBlockTerm /^.*\n\(^\s*\n\)\=\(\s*[:~]\)\@=/ contained contains=@Spell,pandocNoFormatted,pandocEmphasis,pandocStrong,pandocLaTeXInlineMath,pandocEscapedDollar,pandocFootnoteDef,pandocFootnoteBlock,pandocFootnoteID nextgroup=pandocDefinitionBlockMark
     call s:WithConceal('definition', 'syn match pandocDefinitionBlockMark /^\s*[:~]/ contained', 'conceal cchar='.s:cchars['definition'])
 endif
 " }}}2
@@ -551,7 +566,7 @@ endif
 " }}}3
 
 " &-escaped Special Characters: {{{3
-syn match pandocAmpersandEscape /\v\&(#\d+|#x\x+|[[:alnum:]]+)\;/ contains=NoSpell
+syn match pandocAmpersandEscape /\v\&(#\d+|#x\x+|[[:alnum:]]+)\;/ contains=@NoSpell
 " }}}3
 
 " YAML: {{{2
@@ -694,6 +709,33 @@ function! s:SetupPandocHighlights()
   hi def link pandocHRule Delimiter
 endfunction
 
+" Whenever the colorscheme changes, all highlights are cleared.
+"
+" The most common circumstance is that the vimrc picks a colorscheme *at
+" startup*, then a file is opened and the syntax is set based on that file. So
+" the most common situation is that the colorscheme runs, then the syntax
+" runs, and that's that. So if the code for the syntax (e.g., this code here
+" in vim-pandoc-syntax) *adds* new highlighting groups that weren't defined in
+" the colorscheme, that's almost always fine because the colorscheme rarely
+" changes after startup.
+"
+" But the colorscheme *can* change after startup. This happens for example any
+" time the user toggles their background (:set bg=light or :set bg=dark), or
+" picks another colorscheme (:colorscheme something_else). In these cases, the
+" new colorscheme calls `:highlight clear`, clearing any custom pandoc
+" highlighting groups.
+"
+" The solution is to register an autocommand that runs whenever the
+" ColorScheme changes, so that we can re-register vim-pandoc-syntax's custom
+" highlighting groups, after the new colorscheme has cleared them.
+"
+" (This also affects popular plugins like goyo.vim, which call `:colorscheme`
+" with your chosen colorscheme to approximate undoing any custom highlighting
+" modifications that they've made.)
+augroup vim-pandoc-syntax
+  autocmd!
+  autocmd ColorScheme * call s:SetupPandocHighlights()
+augroup end
 call s:SetupPandocHighlights()
 
 " }}}1
@@ -703,7 +745,7 @@ let b:current_syntax = 'pandoc'
 syntax sync clear
 syntax sync minlines=1000
 
-let &cpo = s:cpo_save
+let &cpoptions = s:cpo_save
 unlet s:cpo_save
 
 " vim: set fdm=marker foldlevel=0:
