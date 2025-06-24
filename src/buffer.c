@@ -5411,9 +5411,11 @@ get_rel_pos(
 	return (int)vim_snprintf_safelen((char *)buf, buflen,
 	    "%s", _("Top"));
 
+    int perc = calc_percentage(above, above + below);
+    char tmp[8];
     // localized percentage value
-    return (int)vim_snprintf_safelen((char *)buf, buflen,
-	_("%2d%%"), calc_percentage(above, above + below));
+    vim_snprintf(tmp, sizeof(tmp), _("%d%%"), perc);
+    return (int)vim_snprintf_safelen((char *)buf, buflen, _("%2s"), tmp);
 }
 
 /*
