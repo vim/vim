@@ -107,8 +107,6 @@ For more info see |vimrc| and |compatible-default|.
 ==============================================================================
 *01.3*	Using the Vim tutor				*tutor* *vimtutor*
 
-For the interactive tutor, see |vim-tutor-mode|
-
 Instead of reading the text (boring!) you can use the vimtutor to learn your
 first Vim commands.  This is a 30-minute tutorial provided in 2 chapters, that
 teaches the most basic Vim functionality hands-on.

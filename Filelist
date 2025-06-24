@@ -780,12 +780,6 @@ RT_ALL =	\
 		runtime/tools/[a-z]*[a-z0-9] \
 		runtime/tutor/README.txt \
 		runtime/tutor/tutor1 \
-		runtime/tutor/en/vim-01-beginner.tutor \
-		runtime/tutor/en/vim-01-beginner.tutor.json \
-		runtime/tutor/en/vim-02-beginner.tutor \
-		runtime/tutor/en/vim-02-beginner.tutor.json \
-		runtime/tutor/tutor.tutor \
-		runtime/tutor/tutor.tutor.json \
 		runtime/tutor/tutor.vim \
 		runtime/tutor/tutor2 \
 		runtime/vimrc_example.vim \
@@ -1085,16 +1079,6 @@ LANG_GEN = \
 		runtime/keymap/README.txt \
 		runtime/keymap/*.vim \
 		runtime/tutor/README.*.txt \
-		runtime/tutor/it/vim-01-beginner.tutor \
-		runtime/tutor/it/vim-01-beginner.tutor.json \
-		runtime/tutor/ru/vim-01-beginner.tutor \
-		runtime/tutor/ru/vim-01-beginner.tutor.json \
-		runtime/tutor/ru/vim-02-beginner.tutor \
-		runtime/tutor/ru/vim-02-beginner.tutor.json \
-		runtime/tutor/sr/vim-01-beginner.tutor \
-		runtime/tutor/sr/vim-01-beginner.tutor.json \
-		runtime/tutor/sr/vim-02-beginner.tutor \
-		runtime/tutor/sr/vim-02-beginner.tutor.json \
 		runtime/tutor/tutor1.?? \
 		runtime/tutor/tutor1.??_?? \
 		runtime/tutor/tutor1.bar \
