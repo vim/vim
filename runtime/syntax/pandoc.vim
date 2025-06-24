@@ -228,16 +228,6 @@ command! -buffer -nargs=1 -complete=syntax PandocUnhighlight call DisableEmbedsf
 " BASE:
 syntax clear
 syntax spell toplevel
-
-" apply extra settings: {{{1
-if g:pandoc#syntax#colorcolumn == 1
-    exe 'setlocal colorcolumn='.string(&textwidth+5)
-elseif g:pandoc#syntax#colorcolumn == 2
-    exe 'setlocal colorcolumn='.join(range(&textwidth+5, 2*&columns), ',')
-endif
-if g:pandoc#syntax#conceal#use != 0
-    setlocal conceallevel=2
-endif
 " }}}1
 
 " Syntax Rules: {{{1
