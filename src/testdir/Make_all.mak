@@ -245,7 +245,6 @@ NEW_TESTS = \
 	test_plugin_matchparen \
 	test_plugin_termdebug \
 	test_plugin_tohtml \
-	test_plugin_tutor \
 	test_plugin_zip \
 	test_plus_arg_edit \
 	test_popup \
