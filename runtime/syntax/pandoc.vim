@@ -4,6 +4,7 @@ scriptencoding utf-8
 " Language:	Pandoc (superset of Markdown)
 " Maintainer:	Felipe Morales <hel.sheep@gmail.com>
 " Maintainer:	Caleb Maclennan <caleb@alerque.com>
+" Upstream:	https://github.com/vim-pandoc/vim-pandoc-syntax/tree/ea3fc415784bdcbae7f0093b80070ca4ff9e44c8
 "
 " Contributor:	David Sanson <dsanson@gmail.com>
 "		        Jorge Israel Peña <jorge.israel.p@gmail.com>
