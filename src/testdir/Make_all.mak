@@ -513,7 +513,6 @@ NEW_TESTS_RES = \
 	test_plugin_matchparen.res \
 	test_plugin_termdebug.res \
 	test_plugin_tohtml.res \
-	test_plugin_tutor.res \
 	test_plugin_zip.res \
 	test_plus_arg_edit.res \
 	test_popup.res \
