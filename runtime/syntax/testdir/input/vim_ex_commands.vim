@@ -540,6 +540,7 @@
 :unabbreviate
 :unabbreviate
 :unhide
+:uniq
 :unlet
 :unlockvar
 :unmap
@@ -1126,6 +1127,7 @@ call Foo() | undolist
 call Foo() | unabbreviate
 call Foo() | unabbreviate
 call Foo() | unhide
+call Foo() | uniq
 call Foo() | unlet
 call Foo() | unlockvar
 call Foo() | unmap

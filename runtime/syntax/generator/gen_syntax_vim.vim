@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Jun 11
+" Last Change: 2025 Jun 24
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -351,6 +351,7 @@ function s:get_vim_command_type(cmd_name)
 		this
 		throw
 		type
+		uniq
 		unlet
 		unmap
 		var

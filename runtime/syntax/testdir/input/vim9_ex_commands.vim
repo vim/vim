@@ -540,6 +540,7 @@ vim9script
 :undojoin
 :undolist
 :unhide
+:uniq
 :unlockvar
 :unmap
 :unmenu
@@ -1121,6 +1122,7 @@ Foo() | undo
 Foo() | undojoin
 Foo() | undolist
 Foo() | unhide
+Foo() | uniq
 Foo() | unlockvar
 Foo() | unmap
 Foo() | unmenu
