@@ -1,5 +1,5 @@
 " Vim :sort command
-" VIM_TEST_SETUP highlight link vimCmdSep Operator
+" VIM_TEST_SETUP hi link vimCmdSep Operator
 
 
 sort 
@@ -13,6 +13,12 @@ sort! /pa\%(tt\)ern/ ilu
 
 sort  /pa\%(tt\)ern/ rilu
 sort! /pa\%(tt\)ern/ rilu
+
+sort  ilu /pa\%(tt\)ern/
+sort! ilu /pa\%(tt\)ern/
+
+sort  rilu /pa\%(tt\)ern/
+sort! rilu /pa\%(tt\)ern/
 
 sort  nilu
 sort! nilu
@@ -52,4 +58,7 @@ sort! | echo "Foo"
 
 sort  /pa\%(t|t\)ern/ rilu | echo "Foo"
 sort! /pa\%(t|t\)ern/ rilu | echo "Foo"
+
+sort  rilu /pa\%(t|t\)ern/ | echo "Foo"
+sort! rilu /pa\%(t|t\)ern/ | echo "Foo"
 
