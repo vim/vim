@@ -32,19 +32,11 @@ setl cpo&vim
 "  Netrw Variables: {{{1
 
 " s:NetrwInit: initializes variables if they haven't been defined {{{2
-"            Loosely,  varname = value.
-function s:NetrwInit(varname,value)
-  if !exists(a:varname)
-    if type(a:value) == 0
-      exe "let ".a:varname."=".a:value
-    elseif type(a:value) == 1 && a:value =~ '^[{[]'
-      exe "let ".a:varname."=".a:value
-    elseif type(a:value) == 1
-      exe "let ".a:varname."="."'".a:value."'"
-    else
-      exe "let ".a:varname."=".a:value
+
+function s:NetrwInit(name, default)
+    if !exists(a:name)
+        let {a:name} = a:default
     endif
-  endif
 endfunction
 
 "  Netrw Constants: {{{2
@@ -56,12 +48,6 @@ if !exists("s:LONGLIST")
   call s:NetrwInit("s:TREELIST",3)
   call s:NetrwInit("s:MAXLIST" ,4)
 endif
-
-let s:has_balloon = !has('nvim') &&
-            \ has("balloon_eval") &&
-            \ has("syntax") &&
-            \ exists("g:syntax_on") &&
-            \ !exists("g:netrw_nobeval")
 
 " Default option values: {{{2
 call s:NetrwInit("g:netrw_localcopycmdopt","")
@@ -178,35 +164,35 @@ call s:NetrwInit("g:netrw_dirhistcnt"      , 0)
 let s:xz_opt = has('unix') ? "XZ_OPT=-T0" :
       \ (has("win32") && &shell =~? '\vcmd(\.exe)?$' ?
       \ "setx XZ_OPT=-T0 &&" : "")
-call s:NetrwInit("g:netrw_decompress ", "{"
-      \ .."'.lz4':      'lz4 -d',"
-      \ .."'.lzo':      'lzop -d',"
-      \ .."'.lz':       'lzip -dk',"
-      \ .."'.7z':       '7za x',"
-      \ .."'.001':      '7za x',"
-      \ .."'.zip':      'unzip',"
-      \ .."'.bz':       'bunzip2 -k',"
-      \ .."'.bz2':      'bunzip2 -k',"
-      \ .."'.gz':       'gunzip -k',"
-      \ .."'.lzma':     'unlzma -T0 -k',"
-      \ .."'.xz':       'unxz -T0 -k',"
-      \ .."'.zst':      'zstd -T0 -d',"
-      \ .."'.Z':        'uncompress -k',"
-      \ .."'.tar':      'tar -xvf',"
-      \ .."'.tar.bz':   'tar -xvjf',"
-      \ .."'.tar.bz2':  'tar -xvjf',"
-      \ .."'.tbz':      'tar -xvjf',"
-      \ .."'.tbz2':     'tar -xvjf',"
-      \ .."'.tar.gz':   'tar -xvzf',"
-      \ .."'.tgz':      'tar -xvzf',"
-      \ .."'.tar.lzma': '"..s:xz_opt.." tar -xvf --lzma',"
-      \ .."'.tlz':      '"..s:xz_opt.." tar -xvf --lzma',"
-      \ .."'.tar.xz':   '"..s:xz_opt.." tar -xvfJ',"
-      \ .."'.txz':      '"..s:xz_opt.." tar -xvfJ',"
-      \ .."'.tar.zst':  '"..s:xz_opt.." tar -xvf --use-compress-program=unzstd',"
-      \ .."'.tzst':     '"..s:xz_opt.." tar -xvf --use-compress-program=unzstd',"
-      \ .."'.rar':      '"..(executable("unrar")?"unrar x -ad":"rar x -ad").."'"
-      \ .."}")
+call s:NetrwInit("g:netrw_decompress", {
+            \ '.lz4': 'lz4 -d',
+            \ '.lzo': 'lzop -d',
+            \ '.lz': 'lzip -dk',
+            \ '.7z': '7za x',
+            \ '.001': '7za x',
+            \ '.zip': 'unzip',
+            \ '.bz': 'bunzip2 -k',
+            \ '.bz2': 'bunzip2 -k',
+            \ '.gz': 'gunzip -k',
+            \ '.lzma': 'unlzma -T0 -k',
+            \ '.xz': 'unxz -T0 -k',
+            \ '.zst': 'zstd -T0 -d',
+            \ '.Z': 'uncompress -k',
+            \ '.tar': 'tar -xvf',
+            \ '.tar.bz': 'tar -xvjf',
+            \ '.tar.bz2': 'tar -xvjf',
+            \ '.tbz': 'tar -xvjf',
+            \ '.tbz2': 'tar -xvjf',
+            \ '.tar.gz': 'tar -xvzf',
+            \ '.tgz': 'tar -xvzf',
+            \ '.tar.lzma': s:xz_opt .. ' tar -xvf --lzma',
+            \ '.tlz': s:xz_opt .. ' tar -xvf --lzma',
+            \ '.tar.xz': s:xz_opt .. ' tar -xvfJ',
+            \ '.txz': s:xz_opt .. ' tar -xvfJ',
+            \ '.tar.zst': s:xz_opt .. ' tar -xvf --use-compress-program=unzstd',
+            \ '.tzst': s:xz_opt .. ' tar -xvf --use-compress-program=unzstd',
+            \ '.rar': (executable("unrar")?"unrar x -ad":"rar x -ad"),
+            \ })
 unlet s:xz_opt
 call s:NetrwInit("g:netrw_dirhistmax"       , 10)
 call s:NetrwInit("g:netrw_fastbrowse"       , 1)
@@ -395,19 +381,13 @@ if has("gui_running") && (&enc == 'utf-8' || &enc == 'utf-16' || &enc == 'ucs-4'
 else
   let s:treedepthstring= "| "
 endif
-call s:NetrwInit("s:netrw_posn",'{}')
+call s:NetrwInit("s:netrw_posn", {})
 
 " BufEnter event ignored by decho when following variable is true
 "  Has a side effect that doau BufReadPost doesn't work, so
 "  files read by network transfer aren't appropriately highlighted.
 
 "  Netrw Initialization: {{{1
-if s:has_balloon
-  let &l:bexpr = "netrw#BalloonHelp()"
-  au FileType netrw setl beval
-  au WinLeave * if &ft == "netrw" && exists("s:initbeval") | let &beval = s:initbeval | endif
-  au VimEnter * let s:initbeval = &beval
-endif
 
 au WinEnter * if &ft == "netrw" | call s:NetrwInsureWinVars() | endif
 
@@ -419,48 +399,6 @@ else
 endif
 
 "  Netrw Utility Functions: {{{1
-
-" netrw#BalloonHelp: {{{2
-
-if s:has_balloon
-    function netrw#BalloonHelp()
-        if exists("s:popuperr_id") && popup_getpos(s:popuperr_id) != {}
-            if exists("s:popuperr_text") && s:popuperr_text != "" && v:beval_text != s:popuperr_text
-                " text under mouse hasn't changed; only close window when it changes
-                call popup_close(s:popuperr_id)
-                unlet s:popuperr_text
-            else
-                let s:popuperr_text= v:beval_text
-            endif
-            return ""
-
-        elseif v:beval_text == "Netrw" || v:beval_text == "Directory" || v:beval_text == "Listing"
-            return "i: thin-long-wide-tree  gh: quick hide/unhide of dot-files   qf: quick file info  %:open new file"
-
-        elseif getline(v:beval_lnum) =~ '^"\s*/'
-            return "<cr>: edit/enter   o: edit/enter in horiz window   t: edit/enter in new tab   v:edit/enter in vert window"
-
-        elseif v:beval_text == "Sorted" || v:beval_text == "by"
-            return 's: sort by name, time, file size, extension   r: reverse sorting order   mt: mark target'
-
-        elseif v:beval_text == "Sort"   || v:beval_text == "sequence"
-            return "S: edit sorting sequence"
-
-        elseif v:beval_text == "Hiding" || v:beval_text == "Showing"
-            return "a: hiding-showing-all   ctrl-h: editing hiding list   mh: hide/show by suffix"
-
-        elseif v:beval_text == "Quick" || v:beval_text == "Help"
-            return "Help: press <F1>"
-
-        elseif v:beval_text == "Copy/Move" || v:beval_text == "Tgt"
-            return "mt: mark target   mc: copy marked file to target   mm: move marked file to target"
-
-        endif
-
-        return ""
-    endfunction
-endif
-
 " netrw#Explore: launch the local browser in the directory of the current file {{{2
 "          indx:  == -1: Nexplore
 "                 == -2: Pexplore
@@ -3242,11 +3180,6 @@ function s:NetrwBrowse(islocal,dirname)
         NetrwKeepj call s:SetRexDir(a:islocal,b:netrw_curdir)
     endif
 
-    if s:has_balloon && &beval == 0 && &l:bexpr == ""
-        let &l:bexpr= "netrw#BalloonHelp()"
-        setl beval
-    endif
-
     " repoint t:netrw_lexbufnr if appropriate
     if exists("repointlexbufnr")
         let t:netrw_lexbufnr= bufnr("%")
@@ -3818,7 +3751,7 @@ endfunction
 "    cursor=0: newdir is relative to b:netrw_curdir
 "          =1: newdir is relative to the path to the word under the cursor in
 "              tree view
-function s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
+function s:NetrwBrowseChgDir(islocal, newdir, cursor, ...)
     let ykeep= @@
     if !exists("b:netrw_curdir")
         let @@= ykeep
@@ -3831,29 +3764,22 @@ function s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
     NetrwKeepj call s:NetrwOptionsSafe(a:islocal)
 
     let newdir = a:newdir
-    if a:cursor && exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST && exists("w:netrw_treetop")
+    let dirname = b:netrw_curdir
+
+    if a:cursor && w:netrw_liststyle == s:TREELIST
         " dirname is the path to the word under the cursor
         let dirname = s:NetrwTreePath(w:netrw_treetop)
-        " newdir resolves to a directory and points to a directory in dirname
-        " /tmp/test/folder_symlink/ -> /tmp/test/original_folder/
-        if a:islocal && fnamemodify(dirname, ':t') == newdir && isdirectory(resolve(dirname)) && resolve(dirname) == resolve(newdir)
-            let dirname = fnamemodify(resolve(dirname), ':p:h:h')
-            let newdir = fnamemodify(resolve(newdir), ':t')
-        endif
-        " Remove trailing "/"
-        let dirname = substitute(dirname, "/$", "", "")
-
         " If the word under the cursor is a directory (except for ../), NetrwTreePath
         " returns the full path, including the word under the cursor, remove it
-        if newdir =~ "/$" && newdir != "../"
+        if newdir != "../"
             let dirname = fnamemodify(dirname, ":h")
         endif
-    else
-        let dirname = b:netrw_curdir
     endif
+
     if has("win32")
-        let dirname = substitute(dirname,'\\','/','ge')
+        let dirname = substitute(dirname, '\\', '/', 'ge')
     endif
+
     let dolockout = 0
     let dorestore = 1
 
@@ -3871,19 +3797,9 @@ function s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
     endif
 
     " set up o/s-dependent directory recognition pattern
-    if has("amiga")
-        let dirpat= '[\/:]$'
-    else
-        let dirpat= '[\/]$'
-    endif
+    let dirpat = has("amiga") ? '[\/:]$' : '[\/]$'
 
-    if dirname !~ dirpat
-        " apparently vim is "recognizing" that it is in a directory and
-        " is removing the trailing "/".  Bad idea, so let's put it back.
-        let dirname= dirname.'/'
-    endif
-
-    if newdir !~ dirpat && !(a:islocal && isdirectory(s:NetrwFile(netrw#fs#ComposePath(dirname,newdir))))
+    if newdir !~ dirpat && !(a:islocal && isdirectory(s:NetrwFile(netrw#fs#ComposePath(dirname, newdir))))
         " ------------------------------
         " NetrwBrowseChgDir: edit a file {{{3
         " ------------------------------
@@ -3891,17 +3807,10 @@ function s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
         " save position for benefit of Rexplore
         let s:rexposn_{bufnr("%")}= winsaveview()
 
-        if exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST && exists("w:netrw_treedict") && newdir !~ '^\(/\|\a:\)'
-            if dirname =~ '/$'
-                let dirname= dirname.newdir
-            else
-                let dirname= dirname."/".newdir
-            endif
-        elseif newdir =~ '^\(/\|\a:\)'
-            let dirname= newdir
-        else
-            let dirname= netrw#fs#ComposePath(dirname,newdir)
-        endif
+        let dirname = isabsolutepath(newdir)
+                    \ ? newdir
+                    \ : netrw#fs#ComposePath(dirname, newdir)
+
         " this lets netrw#BrowseX avoid the edit
         if a:0 < 1
             NetrwKeepj call s:NetrwOptionsRestore("s:")
@@ -3974,6 +3883,7 @@ function s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
                 " if e the new file would fail due to &mod, then don't change any of the flags
                 let dolockout= 1
             endif
+
             if a:islocal
                 " some like c-^ to return to the last edited file
                 " others like c-^ to return to the netrw buffer
@@ -3985,7 +3895,6 @@ function s:NetrwBrowseChgDir(islocal,newdir,cursor,...)
                     " file came from vim's hidden storage.  Don't "restore" options with it.
                     let dorestore= 0
                 endif
-            else
             endif
 
             " handle g:Netrw_funcref -- call external-to-netrw functions
@@ -6617,8 +6526,7 @@ function s:NetrwMenu(domenu)
         elseif !a:domenu
             let s:netrwcnt = 0
             let curwin     = winnr()
-            keepjumps windo if getline(2) =~# "Netrw"
-            let s:netrwcnt = s:netrwcnt + 1
+            windo if getline(2) =~# "Netrw" | let s:netrwcnt= s:netrwcnt + 1 | endif
         endif
         exe curwin."wincmd w"
 
@@ -8630,8 +8538,7 @@ function s:NetrwLocalListingList(dirname,setmaxfilenamelen)
     " get the list of files contained in the current directory
     let dirname    = a:dirname
     let dirnamelen = strlen(dirname)
-    let filelist   = netrw#fs#Glob(dirname,"*",0)
-    let filelist   = filelist + netrw#fs#Glob(dirname,".*",0)
+    let filelist   = map(['.', '..'] + readdir(dirname), 'netrw#fs#PathJoin(dirname, v:val)')
 
     if g:netrw_cygwin == 0 && has("win32")
     elseif index(filelist,'..') == -1 && dirname !~ '/'
@@ -8647,19 +8554,20 @@ function s:NetrwLocalListingList(dirname,setmaxfilenamelen)
     let resultfilelist = []
     for filename in filelist
 
-        if getftype(filename) == "link"
+        let ftype = getftype(filename)
+        if ftype ==# "link"
             " indicate a symbolic link
             let pfile= filename."@"
 
-        elseif getftype(filename) == "socket"
+        elseif ftype ==# "socket"
             " indicate a socket
             let pfile= filename."="
 
-        elseif getftype(filename) == "fifo"
+        elseif ftype ==# "fifo"
             " indicate a fifo
             let pfile= filename."|"
 
-        elseif isdirectory(s:NetrwFile(filename))
+        elseif ftype ==# "dir"
             " indicate a directory
             let pfile= filename."/"
 
@@ -9380,11 +9288,6 @@ function s:NetrwEnew(...)
             endif
         endif
     endif
-
-    if s:has_balloon
-        let &l:bexpr = "netrw#BalloonHelp()"
-    endif
-
 endfunction
 
 " s:NetrwInsureWinVars: insure that a netrw buffer has its w: variables in spite of a wincmd v or s {{{2
