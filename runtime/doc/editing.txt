@@ -1346,7 +1346,7 @@ can add the following as the final filter on Windows: >
 
 	All Files\t(*.*)\t*\n
 <
-or the following on other platforms, so that the user can still access any
+Or the following on other platforms, so that the user can still access any
 desired file: >
 
 	All Files\t(*)\t*\n
