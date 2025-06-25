@@ -4378,7 +4378,6 @@ func Test_scroll_longline_winwidth()
 endfunc
 
 func Test_pos_percentage_in_turkish_locale()
-  throw 'Skipped: FIXME: please remove throw when Turkish locale has been updated!'
   CheckRunVimInTerminal
   defer execute(':lang C')
 
