@@ -249,6 +249,8 @@ getcmdtype()			String	return current command-line type
 getcmdwintype()			String	return current command-line window type
 getcompletion({pat}, {type} [, {filtered}])
 				List	list of cmdline completion matches
+getcompltype({pat})		String	return the type of command-line
+					completion
 getcurpos([{winnr}])		List	position of the cursor
 getcursorcharpos([{winnr}])	List	character position of the cursor
 getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
@@ -4367,6 +4369,13 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 			GetPattern()->getcompletion('color')
 <
 		Return type: list<string>
+
+
+getcompltype({pat})					*getcompltype()*
+		Return the type of the {pat} command-line completion.
+		Returns an empty string when completion is not defined.
+
+		Return type: |String|
 
 							*getcurpos()*
 getcurpos([{winid}])
