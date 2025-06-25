@@ -656,7 +656,7 @@ ex_uniq(exarg_T *eap)
     linenr_T	count = eap->line2 - eap->line1 + 1;
     char_u	*p;
     char_u	*s;
-    char_u	save_c;			// temporary character storage
+    char_u	save_c = 0;		// temporary character storage
     int		keep_only_unique = FALSE;
     int		keep_only_not_unique = eap->forceit ? TRUE : FALSE;
     long	deleted = 0;
