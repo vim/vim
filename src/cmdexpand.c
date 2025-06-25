@@ -4526,6 +4526,38 @@ f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv)
 	    list_append_string(li, ccline->xpc->xp_files[idx], -1);
     }
 }
+
+/*
+ * "getcompltype()" function
+ */
+    void
+f_getcompltype(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*pat;
+    char_u	*cmd_compl;
+    expand_T	xpc;
+    int		cmdline_len;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    pat = tv_get_string(&argvars[0]);
+
+    ExpandInit(&xpc);
+
+    cmdline_len = (int)STRLEN(pat);
+    set_cmd_context(&xpc, pat, cmdline_len, cmdline_len, FALSE);
+    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+    xpc.xp_col = cmdline_len;
+
+    rettv->v_type = VAR_STRING;
+
+    cmd_compl = cmdcomplete_type_to_str(xpc.xp_context);
+    if (cmd_compl != NULL)
+	rettv->vval.v_string = vim_strsave(cmd_compl);
+
+    ExpandCleanup(&xpc);
+}
 #endif // FEAT_EVAL
 
 /*
