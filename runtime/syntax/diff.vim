@@ -16,7 +16,7 @@ syn match diffIdentical	"^Files .* and .* are identical$"
 syn match diffDiffer	"^Files .* and .* differ$"
 syn match diffBDiffer	"^Binary files .* and .* differ$"
 syn match diffIsA	"^File .* is a .* while file .* is a .*"
-syn match diffNoEOL	"^\\ No newline at end of file .*"
+syn match diffNoEOL	"^\\ No newline at end of file.*"
 syn match diffCommon	"^Common subdirectories: .*"
 
 " Disable the translations by setting diff_translations to zero.
