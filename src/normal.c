@@ -7616,7 +7616,7 @@ nv_binsearch(cmdarg_T *cap)
 	    old_pos = curwin->w_cursor;
 	}
 
-	cap->oap->op_type = OP_NOP;	//we unset the op_type so we only process the pending operator after we're done with the binsearch
+	//cap->oap->op_type = OP_NOP;	//we unset the op_type so we only process the pending operator after we're done with the binsearch
     }
 
     while(TRUE)				//binsearch loop
@@ -7628,7 +7628,7 @@ nv_binsearch(cmdarg_T *cap)
     {
 	binsearch_mode = FALSE;
 	vungetc(c);
-	finish_op = TRUE;			      //make vim remember there is an operator pending and
+	finish_op = FALSE;			      //make vim remember there is an operator pending and
 	return;					      //avoid flushing oap in normal_cmd. necessary for 
 						      //motion force support
     }
@@ -7639,7 +7639,7 @@ nv_binsearch(cmdarg_T *cap)
     center_bound = (center_bound + upper_bound)/2;
     cursor_down(center_bound - lower_bound, TRUE);	//use cursor_down to move instead of any other method
     vungetc(Ctrl_Q);					//like, say, curwin->w_cursor.lnum =center_line, just in case.
-    finish_op = TRUE;	       				//we return after every cursor movement 
+    finish_op = FALSE;	       				//we return after every cursor movement 
     return;						//to update whatever visual efect may be triggered by
 							//cursor movement, like visual mode.
 							//unget Ctrl_Q to make sure we will come back to
@@ -7653,7 +7653,7 @@ nv_binsearch(cmdarg_T *cap)
     center_bound = (center_bound + lower_bound)/2;
     cursor_up(upper_bound - center_bound, TRUE);
     vungetc(Ctrl_Q);
-    finish_op = TRUE;
+    finish_op = FALSE;
     return;
     
     }
