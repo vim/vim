@@ -4591,6 +4591,7 @@ func Test_range_complete()
 endfunc
 
 func Test_getcompltype()
+  call assert_fails('call getcompltype({})', 'E731:')
   call assert_equal(getcompltype(''), 'command')
   call assert_equal(getcompltype('dummy '), '')
   call assert_equal(getcompltype('cd '), 'dir_in_path')

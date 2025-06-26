@@ -4542,6 +4542,8 @@ f_getcompltype(typval_T *argvars, typval_T *rettv)
 	return;
 
     pat = tv_get_string(&argvars[0]);
+    if (check_for_string_arg(argvars, 0) == FAIL)
+	return;
 
     ExpandInit(&xpc);
 
