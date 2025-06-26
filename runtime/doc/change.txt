@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2025 Jun 25
+*change.txt*    For Vim version 9.1.  Last change: 2025 Jun 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2032,7 +2032,7 @@ Also see |:sort-uniq|.
 
 			For example, to remove adjacent duplicate lines based
 			on the second comma-separated field: >
-				:uniq r /[^,]*,/
+				:uniq /[^,]*,/
 <			Or to keep only unique lines ignoring the first 5
 			characters: >
 				:uniq u /.\{5}/
