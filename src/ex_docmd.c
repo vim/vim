@@ -66,7 +66,6 @@ static int	getargopt(exarg_T *eap);
 #endif
 
 static linenr_T default_address(exarg_T *eap);
-static linenr_T get_address(exarg_T *, char_u **, cmd_addr_T addr_type, int skip, int silent, int to_other_file, int address_count);
 static void address_default_all(exarg_T *eap);
 static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
@@ -4358,7 +4357,7 @@ default_address(exarg_T *eap)
  *
  * Return MAXLNUM when no Ex address was found.
  */
-    static linenr_T
+    linenr_T
 get_address(
     exarg_T	*eap UNUSED,
     char_u	**ptr,
