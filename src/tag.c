@@ -4545,8 +4545,8 @@ get_tagstack(win_T *wp, dict_T *retdict)
 /*
  * Free all the entries in the tag stack of the specified window
  */
-    static void
-tagstack_clear(win_T *wp)
+    int
+clear_tagstack(win_T *wp)
 {
     int i;
 
@@ -4555,6 +4555,8 @@ tagstack_clear(win_T *wp)
 	tagstack_clear_entry(&wp->w_tagstack[i]);
     wp->w_tagstacklen = 0;
     wp->w_tagstackidx = 0;
+
+    return OK;
 }
 
 /*
@@ -4709,7 +4711,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     if (l != NULL)
     {
 	if (action == 'r')		// replace the stack
-	    tagstack_clear(wp);
+	    clear_tagstack(wp);
 
 	tagstack_push_items(wp, l);
 	// set the current index after the last entry

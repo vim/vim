@@ -499,6 +499,23 @@ func Test_getsettagstack()
   set tags&
 endfunc
 
+func Test_cleartagstack()
+  call writefile(["int Foo;"], 'file.c', 'D')
+  call writefile(["Foo\tfile.c\t1"], 'Xtags', 'D')
+  set tags=Xtags
+
+  tag Foo
+
+  let nr0 = winnr()
+  call assert_equal(1, gettagstack(nr0)['length'])
+
+  call cleartagstack(nr0)
+  call assert_equal(0, gettagstack(nr0).length)
+
+  set tags&
+  bwipe
+endfunc
+
 func Test_tag_with_count()
   call writefile([
 	\ 'test	Xtest.h	/^void test();$/;"	p	typeref:typename:void	signature:()',
@@ -1153,6 +1170,7 @@ func Test_multimatch_non_existing_files()
 
   set tags&
   %bwipe
+  call cleartagstack()  " FIXME: why tagstack is not empty here ?
 endfunc
 
 func Test_tselect_listing()

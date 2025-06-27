@@ -183,7 +183,8 @@ commands explained above the tag stack will look like this:
    2  1 FuncB	       59  harddisk2:text/vim/src/main.c
 
 The |gettagstack()| function returns the tag stack of a specified window. The
-|settagstack()| function modifies the tag stack of a window.
+|settagstack()| function modifies the tag stack of a window and the
+cleartagstack() clears it.
 
 In Vim, the tag stack is local to each window. When a new tab or window is
 opened (e.g., via |:split| or |:tabnew|), the tag stack is copied from the
@@ -220,6 +221,9 @@ Push a new item onto the tag stack: >
 	let newtag = [{'tagname' : 'mytag', 'from' : pos}]
 	call settagstack(2, {'items' : newtag}, 'a')
 <
+Finally clear the stack:
+	call cleartagstack(2)
+
 							*E73*
 When you try to use the tag stack while it doesn't contain anything you will
 get an error message.
