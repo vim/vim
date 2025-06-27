@@ -2524,6 +2524,9 @@ free_buf_options(
     free_callback(&buf->b_ffu_cb);
 #endif
     clear_string_option(&buf->b_p_dict);
+#ifdef FEAT_DIFF
+    clear_string_option(&buf->b_p_dia);
+#endif
     clear_string_option(&buf->b_p_tsr);
     clear_string_option(&buf->b_p_qe);
     buf->b_p_ar = -1;
