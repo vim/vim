@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Apr 10
+" Last Change:	2025 Jun 27
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
@@ -11,6 +11,11 @@
 
 " When started as "evim", evim.vim will already have done these settings.
 if v:progname =~? "evim"
+  finish
+endif
+
+" If the user wants "vi", let's make sure they get the VI-experience
+if v:progname ==# 'vi'
   finish
 endif
 
