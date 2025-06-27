@@ -813,7 +813,7 @@
 #endif
 
 /*
- * +wayland		Unix only.  Include code for the wayland protocol,
+ * +wayland		Unix only.  Include code for the Wayland protocol,
  *                      only works if HAVE_WAYLAND is defined.
  */
 #if defined(FEAT_NORMAL) && defined(UNIX)

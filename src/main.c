@@ -684,11 +684,11 @@ vim_main2(void)
     {
 	if (wayland_init_client(wayland_display_name) == OK)
 	{
-	    TIME_MSG("connected to wayland display");
+	    TIME_MSG("connected to Wayland display");
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
 	    if (wayland_cb_init((char*)p_wse) == OK)
-		TIME_MSG("setup wayland clipboard");
+		TIME_MSG("setup Wayland clipboard");
 	}
 # endif
     }
@@ -2482,7 +2482,7 @@ command_line_scan(mparm_T *parmp)
 		x_no_connect = TRUE;
 #endif
 		break;
-	    case 'Y':		// "-Y" don't connect to wayland compositor
+	    case 'Y':		// "-Y" don't connect to Wayland compositor
 #if defined(FEAT_WAYLAND)
 		wayland_no_connect = TRUE;
 #endif
@@ -3693,7 +3693,7 @@ usage(void)
     main_msg(_("-X\t\t\tDo not connect to X server"));
 #endif
 #if defined(FEAT_WAYLAND)
-    main_msg(_("-Y\t\t\tDo not connect to wayland compositor"));
+    main_msg(_("-Y\t\t\tDo not connect to Wayland compositor"));
 #endif
 #ifdef FEAT_CLIENTSERVER
     main_msg(_("--remote <files>\tEdit <files> in a Vim server if possible"));

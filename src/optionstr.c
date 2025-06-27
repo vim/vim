@@ -3650,7 +3650,7 @@ expand_set_scrollopt(optexpand_T *args, int *numMatches, char_u ***matches)
 did_set_wlseat(optset_T *args UNUSED)
 {
 #ifdef FEAT_WAYLAND_CLIPBOARD
-    // If there isn't any seat named 'wlseat', then let the wayland clipboard be
+    // If there isn't any seat named 'wlseat', then let the Wayland clipboard be
     // unavailable. Ignore errors returned.
     wayland_cb_reload();
 #endif

@@ -15,7 +15,7 @@ Wayland Protocol Support				*wayland*
 							*wayland-seat*
 Functionality such as the clipboard for Wayland requires a seat to use.  A
 Wayland seat can consist of a keyboard, pointer, and touch device(s).  The
-seat to use can be set with the 'wlseat' option. Only useful if you use
+seat to use can be set with the 'wlseat' option.  Only useful if you use
 multiple Wayland seats in the same Wayland session.
 
 							*wayland-gui*
@@ -26,24 +26,25 @@ should equal to "none" when running the GUI.
 
 Wayland commands:
 							*:wlrestore* *:wl*
-:wl[estore] [display]	Reinitializes the connection to the wayland compositor.
+:wl[estore] [display]	Reinitializes the connection to the Wayland compositor.
 			Useful when running Vim in a screen/tmux session that
 			continues running after the Wayland compositor
 			restarts.
 
 			[display] should be in the format of the
 			$WAYLAND_DISPLAY environment variable (e.g.
-			"wayland-0"). If [display] is omitted, then it
+			"wayland-0").  If [display] is omitted, then it
 			reinitializes the connection using the same value as
 			was used for the previous execution of this command.
 			If the value was never specified, then it uses the
 			value of $WAYLAND_DISPLAY environment variable.  This
 			will also update |v:clipmethod|.
-			{only available when compiled with the |+wayland| feature}
+			{only available when compiled with the |+wayland|
+			feature}
 
 Wayland errors:
 							*E1548*
-Vim failed communicating with the wayland compositor.  This is likely due to
+Vim failed communicating with the Wayland compositor.  This is likely due to
 the Wayland compositor process being killed.  Try the `:wlrestore` command to
 try connecting again.
 
@@ -61,15 +62,15 @@ should be bunded with libwayland on your system: >
 If you don't get any match, then please see |wayland-focus-steal| for more
 information.
 
-If you come from X11, then the regular wayland selection is equivalent to the
-CLIPBOARD selection in X11, and the primary wayland selection equates to the
+If you come from X11, then the regular Wayland selection is equivalent to the
+CLIPBOARD selection in X11, and the primary Wayland selection equates to the
 X11 primary selection.  Accessing these selections is the same as X11 in Vim,
 in which the + register is the regular selection, and the * register is the
 primary selection, note that your compositor may not support primary
 selections, see |wayland-primary-selection| for more details.
 
 							*wayland-persist*
-If you use X11 cut buffers, no such things exist on Wayland. Instead to
+If you use X11 cut buffers, no such things exist on Wayland.  Instead to
 emulate such functionality, a separate clipboard manager must be used in order
 to persist selection data when a Wayland client exists.
 
@@ -78,7 +79,7 @@ If your version of Vim comes compiled with both X11 and Wayland support, then
 Vim determines which one to use when accessing the clipboard using the
 'clipmethod' option.
 
-							*wayland-primary-selection*
+						*wayland-primary-selection*
 If you find X11 style primary selections useful, Wayland also implements this
 behaviour in its own protocols:
 
@@ -88,10 +89,10 @@ behaviour in its own protocols:
 - Data control protocol available on your system, such as the ext or wlr
   protocols, then primary selection is also supported.  This is unless you are
   using version 1 (not the same as the 'v1' in the protocol name), of the
-  wlr-data-control protocol. Then the primary selection protocol will be used
+  wlr-data-control protocol.  Then the primary selection protocol will be used
   as a fallback.
 
-						*wayland-focus-steal* *wayland-gnome*
+					*wayland-focus-steal* *wayland-gnome*
 If you are using the GNOME desktop environment on Wayland, as of this writing,
 there is no method of accessing/modifying the clipboard for external clients
 such as Vim without being focused.  Focused in this case means the client has
