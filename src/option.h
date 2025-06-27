@@ -422,7 +422,6 @@ EXTERN char_u	*p_ofu;		// 'omnifunc'
 EXTERN char_u	*p_tsrfu;	// 'thesaurusfunc'
 #endif
 EXTERN int	p_ci;		// 'copyindent'
-EXTERN int	p_cptgst;	// 'copytagstack'
 #if defined(FEAT_GUI) && defined(MACOS_X)
 EXTERN int	*p_antialias;	// 'antialias'
 #endif
@@ -1014,6 +1013,7 @@ EXTERN long	p_tl;		// 'taglength'
 EXTERN int	p_tr;		// 'tagrelative'
 EXTERN char_u	*p_tags;	// 'tags'
 EXTERN int	p_tgst;		// 'tagstack'
+EXTERN int	p_tgstcp;	// 'tagstackcopy'
 #if defined(DYNAMIC_TCL)
 EXTERN char_u	*p_tcldll;	// 'tcldll'
 #endif

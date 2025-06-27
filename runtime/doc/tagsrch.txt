@@ -185,6 +185,18 @@ commands explained above the tag stack will look like this:
 The |gettagstack()| function returns the tag stack of a specified window. The
 |settagstack()| function modifies the tag stack of a window.
 
+In Vim, the tag stack is local to each window. When a new tab or window is
+opened (e.g., via |:split| or |:tabnew|), the tag stack is copied from the
+original window.  This allows you to continue tag navigation seamlessly in the
+new window.
+
+If you prefer not to copy the tag stack when splitting windows, set the
+'tagstackcopy' option to off.
+
+Tag navigation commands (such as :tag, :pop, and CTRL-]) affect only the tag
+stack of the current window. Each window maintains its own independent tag
+stack.
+
 							*tagstack-examples*
 Write to the tag stack just like `:tag` but with a user-defined
 jumper#jump_to_tag function: >

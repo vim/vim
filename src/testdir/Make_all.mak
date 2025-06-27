@@ -114,7 +114,6 @@ NEW_TESTS = \
 	test_compiler \
 	test_conceal \
 	test_const \
-	test_copytagstack \
 	test_cpoptions \
 	test_crash \
 	test_crypt \
@@ -399,7 +398,6 @@ NEW_TESTS_RES = \
 	test_comparators.res \
 	test_conceal.res \
 	test_const.res \
-	test_copytagstack.res \
 	test_cpoptions.res \
 	test_crash.res \
 	test_crypt.res \

@@ -1671,4 +1671,44 @@ func Test_tag_excmd_with_number_vim9script()
   bwipe!
 endfunc
 
+func Test_tagstackcopy()
+  call writefile(["int Foo;"], 'file.c', 'D')
+  call writefile(["Foo\tfile.c\t1"], 'Xtags', 'D')
+  set tags=Xtags
+
+  tag Foo
+
+  let nr0 = winnr()
+  call assert_equal(1, gettagstack(nr0)['length'])
+
+  split Xtext
+
+  let nr1 = winnr()
+  call assert_equal(1, gettagstack(nr1)['length'])
+
+  set tags&
+  bwipe
+endfunc
+
+func Test_notagstackcopy()
+  call writefile(["int Foo;"], 'file.c', 'D')
+  call writefile(["Foo\tfile.c\t1"], 'Xtags', 'D')
+  set tags=Xtags
+  set notagstackcopy
+
+  tag Foo
+
+  let nr0 = winnr()
+  call assert_equal(1, gettagstack(nr0)['length'])
+
+  split Xtext
+
+  let nr1 = winnr()
+  call assert_equal(0, gettagstack(nr1)['length'])
+
+  set tags&
+  set tagstackcopy&
+  bwipe
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1559,7 +1559,7 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     }
 
     // copy tagstack and folds
-    if (p_cptgst)
+    if (p_tgstcp)
     {
 	for (i = 0; i < oldp->w_tagstacklen; i++)
 	{

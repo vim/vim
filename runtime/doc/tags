@@ -765,6 +765,7 @@ $quote	eval.txt	/*$quote*
 'notagbsearch'	options.txt	/*'notagbsearch'*
 'notagrelative'	options.txt	/*'notagrelative'*
 'notagstack'	options.txt	/*'notagstack'*
+'notagstackcopy'	options.txt	/*'notagstackcopy'*
 'notbi'	options.txt	/*'notbi'*
 'notbidi'	options.txt	/*'notbidi'*
 'notbs'	options.txt	/*'notbs'*
@@ -776,6 +777,7 @@ $quote	eval.txt	/*$quote*
 'notf'	options.txt	/*'notf'*
 'notgc'	options.txt	/*'notgc'*
 'notgst'	options.txt	/*'notgst'*
+'notgstcp'	options.txt	/*'notgstcp'*
 'notildeop'	options.txt	/*'notildeop'*
 'notimeout'	options.txt	/*'notimeout'*
 'notitle'	options.txt	/*'notitle'*
@@ -1196,6 +1198,7 @@ $quote	eval.txt	/*$quote*
 'tagrelative'	options.txt	/*'tagrelative'*
 'tags'	options.txt	/*'tags'*
 'tagstack'	options.txt	/*'tagstack'*
+'tagstackcopy'	options.txt	/*'tagstackcopy'*
 'tal'	options.txt	/*'tal'*
 'tb'	options.txt	/*'tb'*
 'tbi'	options.txt	/*'tbi'*
@@ -1222,6 +1225,7 @@ $quote	eval.txt	/*$quote*
 'tfu'	options.txt	/*'tfu'*
 'tgc'	options.txt	/*'tgc'*
 'tgst'	options.txt	/*'tgst'*
+'tgstcp'	options.txt	/*'tgstcp'*
 'thesaurus'	options.txt	/*'thesaurus'*
 'thesaurusfunc'	options.txt	/*'thesaurusfunc'*
 'tildeop'	options.txt	/*'tildeop'*
