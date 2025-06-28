@@ -2991,6 +2991,9 @@ expand_files_and_dirs(
     {
 	free_pat = TRUE;
 	pat = vim_strsave(pat);
+	if (pat == NULL)
+	    return ret;
+
 	for (i = 0; pat[i]; ++i)
 	    if (pat[i] == '\\')
 	    {
@@ -3902,16 +3905,24 @@ ExpandUserDefined(
 
 	if (match)
 	{
-	    if (ga_grow(&ga, 1) == FAIL)
+	    char_u  *p = vim_strnsave(s, (size_t)(e - s));
+	    if (p == NULL)
 		break;
+
+	    if (ga_grow(&ga, 1) == FAIL)
+	    {
+		vim_free(p);
+		break;
+	    }
+
 	    if (!fuzzy)
-		((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, e - s);
+		((char_u **)ga.ga_data)[ga.ga_len] = p;
 	    else
 	    {
 		fuzmatch_str_T  *fuzmatch =
 				&((fuzmatch_str_T  *)ga.ga_data)[ga.ga_len];
 		fuzmatch->idx = ga.ga_len;
-		fuzmatch->str = vim_strnsave(s, e - s);
+		fuzmatch->str = p;
 		fuzmatch->score = score;
 	    }
 	    ++ga.ga_len;
@@ -3963,14 +3974,22 @@ ExpandUserList(
     // Loop over the items in the list.
     FOR_ALL_LIST_ITEMS(retlist, li)
     {
+	char_u	*p;
+
 	if (li->li_tv.v_type != VAR_STRING || li->li_tv.vval.v_string == NULL)
 	    continue;  // Skip non-string items and empty strings
 
-	if (ga_grow(&ga, 1) == FAIL)
+	p = vim_strsave(li->li_tv.vval.v_string);
+	if (p == NULL)
 	    break;
 
-	((char_u **)ga.ga_data)[ga.ga_len] =
-					 vim_strsave(li->li_tv.vval.v_string);
+	if (ga_grow(&ga, 1) == FAIL)
+	{
+	    vim_free(p);
+	    break;
+	}
+
+	((char_u **)ga.ga_data)[ga.ga_len] = p;
 	++ga.ga_len;
     }
     list_unref(retlist);
