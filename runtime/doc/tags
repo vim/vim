@@ -7975,7 +7975,6 @@ getcmdscreenpos()	builtin.txt	/*getcmdscreenpos()*
 getcmdtype()	builtin.txt	/*getcmdtype()*
 getcmdwintype()	builtin.txt	/*getcmdwintype()*
 getcompletion()	builtin.txt	/*getcompletion()*
-getcompltype()	builtin.txt	/*getcompltype()*
 getcurpos()	builtin.txt	/*getcurpos()*
 getcursorcharpos()	builtin.txt	/*getcursorcharpos()*
 getcwd()	builtin.txt	/*getcwd()*
