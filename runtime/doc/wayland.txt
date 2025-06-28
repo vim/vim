@@ -115,4 +115,4 @@ Additionally, if you are in fullscreen mode, this focus stealing won't work,
 because the created surface won't ever gain focus.  If this happens, Vim will
 seem to freeze temporarily, see 'wltimeoutlen' for more information.
 
- vim:tw=78:sw=4:ts=8:noet:ft=help:norl:js
+ vim:tw=78:ts=8:noet:ft=help:norl
