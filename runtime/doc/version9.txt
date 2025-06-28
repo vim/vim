@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jun 27
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41632,6 +41632,8 @@ Completion: ~
 - add ":filetype" command completion
 - add "filetypecmd" completion type for |getcompletion()|
 - 'smartcase' applies to completion filtering
+- 'wildchar' enables completion in search contexts using |/|, |?|, |:g|, |:v|
+  and |:vimgrep| commands
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have

@@ -9752,7 +9752,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set wc=X
 		:set wc=^I
 		:set wc=<Tab>
-<	NOTE: This option is set to the Vi default value when 'compatible' is
+<	'wildchar' also enables completion in search pattern contexts such as
+	|/|, |?|, |:s|, |:g|, |:v|, and |:vim|.  To insert a literal <Tab>
+	instead of triggering completion, type <C-V><Tab> or "\t".
+	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
 						*'wildcharm'* *'wcm'*
