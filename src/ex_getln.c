@@ -4358,8 +4358,7 @@ f_getcmdcompltype(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	 char_u	*pat;
-	 char_u	*cmd_compl;
+	 char_u		*pat;
 	 expand_T	xpc;
 	 int		cmdline_len;
 
