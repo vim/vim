@@ -806,6 +806,20 @@ call <SID>OptionG("slm", &slm)
 if has("clipboard")
   call <SID>AddOption("clipboard", gettext("\"unnamed\" to use the * register like unnamed register\n\"autoselect\" to always put selected text on the clipboard"))
   call <SID>OptionG("cb", &cb)
+  call <SID>AddOption("clipmethod", gettext("Ordered list of possible methods for accessing the clipboard"))
+  call <SID>OptionG("cpm", &cpm)
+endif
+if has("wayland_clipboard")
+  call <SID>AddOption("wltimeoutlen", gettext("Timeout to use when polling for data to read or write in wayland"))
+  call <SID>OptionG("wtm", &wtm)
+endif
+if has('wayland')
+  call <SID>AddOption("wlseat", gettext("Wayland seat to use"))
+  call <SID>OptionG("wse", &wse)
+endif
+if has("wayland_clipboard")
+  call <SID>AddOption("wlsteal", gettext("Enable wayland focus stealing functionality in order to access the clipboard"))
+  call <SID>BinOptionG("wst", &wst)
 endif
 call <SID>AddOption("keymodel", gettext("\"startsel\" and/or \"stopsel\"; what special keys can do"))
 call <SID>OptionG("km", &km)

@@ -44,6 +44,8 @@ static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CLIPBOARD
 // Note: Keep this in sync with did_set_clipboard()
 static char *(p_cb_values[]) = {"unnamed", "unnamedplus", "autoselect", "autoselectplus", "autoselectml", "html", "exclude:", NULL};
+// Note: Keep this in sync with get_clipmethod()
+static char *(p_cpm_values[]) = {"wayland", "x11", NULL};
 #endif
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
@@ -1381,6 +1383,23 @@ expand_set_clipboard(optexpand_T *args, int *numMatches, char_u ***matches)
 	    args,
 	    p_cb_values,
 	    ARRAY_LENGTH(p_cb_values) - 1,
+	    numMatches,
+	    matches);
+}
+
+    char *
+did_set_clipmethod(optset_T *args UNUSED)
+{
+    return choose_clipmethod();
+}
+
+    int
+expand_set_clipmethod(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_cpm_values,
+	    ARRAY_LENGTH(p_cpm_values) - 1,
 	    numMatches,
 	    matches);
 }
@@ -3622,6 +3641,21 @@ expand_set_scrollopt(optexpand_T *args, int *numMatches, char_u ***matches)
 	    ARRAY_LENGTH(p_scbopt_values) - 1,
 	    numMatches,
 	    matches);
+}
+
+/*
+ * The 'wlseat' option is changed
+ */
+    char *
+did_set_wlseat(optset_T *args UNUSED)
+{
+#ifdef FEAT_WAYLAND_CLIPBOARD
+    // If there isn't any seat named 'wlseat', then let the wayland clipboard be
+    // unavailable. Ignore errors returned.
+    wayland_cb_reload();
+#endif
+
+    return NULL;
 }
 
 /*

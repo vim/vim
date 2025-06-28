@@ -29,7 +29,6 @@ jobs:
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
-      WAYLAND_DISPLAY: 'wayland-1'
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
@@ -125,6 +124,10 @@ jobs:
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           PKGS=( \
             gettext \
+            x11-utils \
+            labwc \
+            wl-clipboard \
+            wayland-utils \
             libgtk-3-dev:${{ matrix.architecture }} \
             libgtk-3-bin:${{ matrix.architecture }} \
             desktop-file-utils \
@@ -141,7 +144,6 @@ jobs:
             libwayland-cursor0:${{ matrix.architecture }} \
             locales-all \
             software-properties-common \
-            sway \
           )
           if ${{ contains(matrix.extra, 'asan') }} && ${{ contains(matrix.architecture, 'native') }}; then
           PKGS+=( \
@@ -270,8 +272,6 @@ jobs:
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
-          # Sway requires user session
-          bash ci/setup-sway.sh
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')

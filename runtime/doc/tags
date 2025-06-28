@@ -149,6 +149,7 @@ $quote	eval.txt	/*$quote*
 'cinw'	options.txt	/*'cinw'*
 'cinwords'	options.txt	/*'cinwords'*
 'clipboard'	options.txt	/*'clipboard'*
+'clipmethod'	options.txt	/*'clipmethod'*
 'cm'	options.txt	/*'cm'*
 'cmdheight'	options.txt	/*'cmdheight'*
 'cmdwinheight'	options.txt	/*'cmdwinheight'*
@@ -178,6 +179,7 @@ $quote	eval.txt	/*$quote*
 'copyindent'	options.txt	/*'copyindent'*
 'cot'	options.txt	/*'cot'*
 'cp'	options.txt	/*'cp'*
+'cpm'	options.txt	/*'cpm'*
 'cpo'	options.txt	/*'cpo'*
 'cpoptions'	options.txt	/*'cpoptions'*
 'cpp'	options.txt	/*'cpp'*
@@ -803,6 +805,7 @@ $quote	eval.txt	/*$quote*
 'nowinfixheight'	options.txt	/*'nowinfixheight'*
 'nowinfixwidth'	options.txt	/*'nowinfixwidth'*
 'nowiv'	options.txt	/*'nowiv'*
+'nowlsteal'	options.txt	/*'nowlsteal'*
 'nowmnu'	options.txt	/*'nowmnu'*
 'nowrap'	options.txt	/*'nowrap'*
 'nowrapscan'	options.txt	/*'nowrapscan'*
@@ -810,6 +813,7 @@ $quote	eval.txt	/*$quote*
 'nowriteany'	options.txt	/*'nowriteany'*
 'nowritebackup'	options.txt	/*'nowritebackup'*
 'nows'	options.txt	/*'nows'*
+'nowst'	options.txt	/*'nowst'*
 'noxtermcodes'	options.txt	/*'noxtermcodes'*
 'nrformats'	options.txt	/*'nrformats'*
 'nu'	options.txt	/*'nu'*
@@ -1334,6 +1338,9 @@ $quote	eval.txt	/*$quote*
 'winwidth'	options.txt	/*'winwidth'*
 'wiv'	options.txt	/*'wiv'*
 'wiw'	options.txt	/*'wiw'*
+'wlseat'	options.txt	/*'wlseat'*
+'wlsteal'	options.txt	/*'wlsteal'*
+'wltimeoutlen'	options.txt	/*'wltimeoutlen'*
 'wm'	options.txt	/*'wm'*
 'wmh'	options.txt	/*'wmh'*
 'wmnu'	options.txt	/*'wmnu'*
@@ -1347,6 +1354,9 @@ $quote	eval.txt	/*$quote*
 'writebackup'	options.txt	/*'writebackup'*
 'writedelay'	options.txt	/*'writedelay'*
 'ws'	options.txt	/*'ws'*
+'wse'	options.txt	/*'wse'*
+'wst'	options.txt	/*'wst'*
+'wtm'	options.txt	/*'wtm'*
 'ww'	options.txt	/*'ww'*
 'xtermcodes'	options.txt	/*'xtermcodes'*
 '{	motion.txt	/*'{*
@@ -1512,6 +1522,8 @@ $quote	eval.txt	/*$quote*
 +visualextra	various.txt	/*+visualextra*
 +vreplace	various.txt	/*+vreplace*
 +vtp	various.txt	/*+vtp*
++wayland	various.txt	/*+wayland*
++wayland_clipboard	various.txt	/*+wayland_clipboard*
 +wildignore	various.txt	/*+wildignore*
 +wildmenu	various.txt	/*+wildmenu*
 +windows	various.txt	/*+windows*
@@ -1582,6 +1594,7 @@ $quote	eval.txt	/*$quote*
 -V	starting.txt	/*-V*
 -W	starting.txt	/*-W*
 -X	starting.txt	/*-X*
+-Y	starting.txt	/*-Y*
 -Z	starting.txt	/*-Z*
 -b	starting.txt	/*-b*
 -background	gui_x11.txt	/*-background*
@@ -2404,6 +2417,8 @@ $quote	eval.txt	/*$quote*
 :clast	quickfix.txt	/*:clast*
 :cle	motion.txt	/*:cle*
 :clearjumps	motion.txt	/*:clearjumps*
+:clip	various.txt	/*:clip*
+:clipreset	various.txt	/*:clipreset*
 :clist	quickfix.txt	/*:clist*
 :clo	windows.txt	/*:clo*
 :close	windows.txt	/*:close*
@@ -3652,6 +3667,8 @@ $quote	eval.txt	/*$quote*
 :winp	gui.txt	/*:winp*
 :winpos	gui.txt	/*:winpos*
 :winsize	gui.txt	/*:winsize*
+:wl	wayland.txt	/*:wl*
+:wlrestore	wayland.txt	/*:wlrestore*
 :wn	editing.txt	/*:wn*
 :wnext	editing.txt	/*:wnext*
 :wp	editing.txt	/*:wp*
@@ -4646,6 +4663,7 @@ E154	helphelp.txt	/*E154*
 E1540	eval.txt	/*E1540*
 E1541	vi_diff.txt	/*E1541*
 E1547	various.txt	/*E1547*
+E1548	wayland.txt	/*E1548*
 E155	sign.txt	/*E155*
 E156	sign.txt	/*E156*
 E157	sign.txt	/*E157*
@@ -7765,7 +7783,6 @@ g:netrw_maxfilenamelen	pi_netrw.txt	/*g:netrw_maxfilenamelen*
 g:netrw_menu	pi_netrw.txt	/*g:netrw_menu*
 g:netrw_mkdir_cmd	pi_netrw.txt	/*g:netrw_mkdir_cmd*
 g:netrw_mousemaps	pi_netrw.txt	/*g:netrw_mousemaps*
-g:netrw_nobeval	pi_netrw.txt	/*g:netrw_nobeval*
 g:netrw_preview	pi_netrw.txt	/*g:netrw_preview*
 g:netrw_rcp_cmd	pi_netrw.txt	/*g:netrw_rcp_cmd*
 g:netrw_remote_mkdir	pi_netrw.txt	/*g:netrw_remote_mkdir*
@@ -11095,6 +11112,7 @@ v:beval_winnr	eval.txt	/*v:beval_winnr*
 v:char	eval.txt	/*v:char*
 v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
+v:clipmethod	eval.txt	/*v:clipmethod*
 v:cmdarg	eval.txt	/*v:cmdarg*
 v:cmdbang	eval.txt	/*v:cmdbang*
 v:collate	eval.txt	/*v:collate*
@@ -11198,6 +11216,7 @@ v:version	eval.txt	/*v:version*
 v:versionlong	eval.txt	/*v:versionlong*
 v:vim_did_enter	eval.txt	/*v:vim_did_enter*
 v:warningmsg	eval.txt	/*v:warningmsg*
+v:wayland_display	eval.txt	/*v:wayland_display*
 v:windowid	eval.txt	/*v:windowid*
 v_!	change.txt	/*v_!*
 v_$	visual.txt	/*v_$*
@@ -11556,6 +11575,17 @@ w:quickfix_title	quickfix.txt	/*w:quickfix_title*
 w:var	eval.txt	/*w:var*
 waittime	channel.txt	/*waittime*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
+wayland	wayland.txt	/*wayland*
+wayland-and-x11	wayland.txt	/*wayland-and-x11*
+wayland-focus-steal	wayland.txt	/*wayland-focus-steal*
+wayland-gnome	wayland.txt	/*wayland-gnome*
+wayland-gui	wayland.txt	/*wayland-gui*
+wayland-persist	wayland.txt	/*wayland-persist*
+wayland-primary-selection	wayland.txt	/*wayland-primary-selection*
+wayland-seat	wayland.txt	/*wayland-seat*
+wayland-selections	wayland.txt	/*wayland-selections*
+wayland-useful	wayland.txt	/*wayland-useful*
+wayland.txt	wayland.txt	/*wayland.txt*
 wdl-syntax	syntax.txt	/*wdl-syntax*
 wdl.vim	syntax.txt	/*wdl.vim*
 white-space	pattern.txt	/*white-space*
