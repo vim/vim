@@ -1100,8 +1100,7 @@ Buffers, windows and the argument list:
 Command line:					*command-line-functions*
 	getcmdcomplpat()	get completion pattern of the current command
 				line
-	getcmdcompltype()	get the type of the current command line
-				completion
+	getcmdcompltype()	get the type of the command line completion
 	getcmdline()		get the current command line input
 	getcmdprompt()		get the current command line prompt
 	getcmdpos()		get position of the cursor in the command line
@@ -1112,7 +1111,6 @@ Command line:					*command-line-functions*
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
 	getcompletion()		list of command-line completion matches
-	getcompltype()		get the type of command-line completion
 	fullcommand()		get full command name
 	cmdcomplete_info()	get command-line completion information
 

@@ -4355,6 +4355,7 @@ func Test_redrawtabpanel_error()
 endfunc
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 " Test wildcharm completion for '/' and '?' search
 func Test_search_complete()
   CheckOption incsearch
@@ -4590,14 +4591,14 @@ func Test_range_complete()
   set wildcharm=0
 endfunc
 
-func Test_getcompltype()
-  call assert_fails('call getcompltype({})', 'E731:')
-  call assert_equal(getcompltype(''), 'command')
-  call assert_equal(getcompltype('dummy '), '')
-  call assert_equal(getcompltype('cd '), 'dir_in_path')
-  call assert_equal(getcompltype('let v:n'), 'var')
-  call assert_equal(getcompltype('call tag'), 'function')
-  call assert_equal(getcompltype('help '), 'help')
+func Test_getcmdcompltype_with_pat()
+  call assert_fails('call getcmdcompltype({})', 'E731:')
+  call assert_equal(getcmdcompltype(''), 'command')
+  call assert_equal(getcmdcompltype('dummy '), '')
+  call assert_equal(getcmdcompltype('cd '), 'dir_in_path')
+  call assert_equal(getcmdcompltype('let v:n'), 'var')
+  call assert_equal(getcmdcompltype('call tag'), 'function')
+  call assert_equal(getcmdcompltype('help '), 'help')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

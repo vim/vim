@@ -4354,47 +4354,44 @@ f_getcmdcomplpat(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_getcmdcompltype(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    cmdline_info_T *p;
-
     rettv->v_type = VAR_STRING;
 
-    p = get_ccline_ptr();
-    if (cmdline_star > 0 || p == NULL || p->xpc == NULL)
-	 return;
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	 char_u	*pat;
+	 char_u	*cmd_compl;
+	 expand_T	xpc;
+	 int		cmdline_len;
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = get_cmdline_completion(p->xpc);
-}
+	if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	    return;
 
-/*
- * "getcompltype()" function
- */
-    void
-f_getcompltype(typval_T *argvars, typval_T *rettv)
-{
-    char_u	*pat;
-    char_u	*cmd_compl;
-    expand_T	xpc;
-    int		cmdline_len;
+	pat = tv_get_string(&argvars[0]);
+	if (check_for_string_arg(argvars, 0) == FAIL)
+	    return;
 
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
-	return;
+	ExpandInit(&xpc);
 
-    pat = tv_get_string(&argvars[0]);
-    if (check_for_string_arg(argvars, 0) == FAIL)
-	return;
+	cmdline_len = (int)STRLEN(pat);
+	set_cmd_context(&xpc, pat, cmdline_len, cmdline_len, FALSE);
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	xpc.xp_col = cmdline_len;
 
-    ExpandInit(&xpc);
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = get_cmdline_completion(&xpc);
 
-    cmdline_len = (int)STRLEN(pat);
-    set_cmd_context(&xpc, pat, cmdline_len, cmdline_len, FALSE);
-    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    xpc.xp_col = cmdline_len;
+	ExpandCleanup(&xpc);
+    }
+    else
+    {
+	 cmdline_info_T *p;
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = get_cmdline_completion(&xpc);
+	 p = get_ccline_ptr();
+	 if (cmdline_star > 0 || p == NULL || p->xpc == NULL)
+	     return;
 
-    ExpandCleanup(&xpc);
+	 rettv->vval.v_string = get_cmdline_completion(p->xpc);
+    }
 }
 
 /*
