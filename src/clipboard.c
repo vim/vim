@@ -2676,7 +2676,7 @@ clip_wl_lose_selection(Clipboard_T *cbd)
 }
 
 /*
- * Send the current selection to the clipboard. Do nothing for wayland because
+ * Send the current selection to the clipboard. Do nothing for Wayland because
  * we will fill in the selection only when requested by another client.
  */
     void
@@ -2797,14 +2797,14 @@ choose_clipmethod(void)
     if (method == CLIPMETHOD_FAIL)
 	return e_invalid_argument;
 
-// If GUI is running or we are not on a system with wayland or x11, then always
+// If GUI is running or we are not on a system with Wayland or X11, then always
 // return CLIPMETHOD_NONE. System or GUI clipboard handling always overrides.
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 #if defined(FEAT_GUI)
     if (gui.in_use)
     {
 #ifdef FEAT_WAYLAND
-	// We only interact with wayland for the clipboard, we can just deinit
+	// We only interact with Wayland for the clipboard, we can just deinit
 	// everything.
 	wayland_uninit_client();
 #endif

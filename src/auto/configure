@@ -9107,8 +9107,8 @@ test -z "$with_wayland" && with_wayland=yes
 if test "$with_wayland" = yes; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if wayland client header files can be found" >&5
-printf %s "checking if wayland client header files can be found... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if Wayland client header files can be found" >&5
+printf %s "checking if Wayland client header files can be found... " >&6; }
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext

@@ -1319,7 +1319,7 @@ static void *clip_plus_save = NULL;
 	|| defined(FEAT_WAYLAND_CLIPBOARD))
 /*
  * Called when Vim is going to sleep or execute a shell command.
- * We can't respond to requests for the X or wayland selections.
+ * We can't respond to requests for the X or Wayland selections.
  * Lose them, otherwise other applications will hang.  But first
  * copy the text to cut buffer 0 (for X11). Wayland users must have
  * a clipboard manager to replicate such behaviour.
@@ -5608,7 +5608,7 @@ mch_call_shell_fork(
 		    clip_update();
 # endif
 #ifdef FEAT_WAYLAND
-		    // Handle wayland events such as sending data as the source
+		    // Handle Wayland events such as sending data as the source
 		    // client.
 		    wayland_client_update();
 #endif
@@ -5682,7 +5682,7 @@ finished:
 		    clip_update();
 #endif
 #ifdef FEAT_WAYLAND
-		    // Handle wayland events such as sending data as the source
+		    // Handle Wayland events such as sending data as the source
 		    // client.
 		    wayland_client_update();
 #endif

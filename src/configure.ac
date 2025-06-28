@@ -2407,7 +2407,7 @@ AC_ARG_WITH(wayland,
 test -z "$with_wayland" && with_wayland=yes
 if test "$with_wayland" = yes; then
   AC_MSG_RESULT(yes)
-  AC_MSG_CHECKING(if wayland client header files can be found)
+  AC_MSG_CHECKING(if Wayland client header files can be found)
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <wayland-client.h>], )],

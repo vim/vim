@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 9.1.  Last change: 2025 Jun 27
+*quickref.txt*  For Vim version 9.1.  Last change: 2025 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -646,7 +646,7 @@ Short explanation of each option:		*option-list*
 'cinscopedecls'	  'cinsd'   words that are recognized by 'cino-g'
 'cinwords'	  'cinw'    words where 'si' and 'cin' add an indent
 'clipboard'	  'cb'	    use the clipboard as the unnamed register
-'clipmethod'      'cpm'     specify order of what clipboard methods to use
+'clipmethod'	  'cpm'	    specify order of what clipboard methods to use
 'cmdheight'	  'ch'	    number of lines to use for the command-line
 'cmdwinheight'	  'cwh'     height of the command-line window
 'colorcolumn'	  'cc'	    columns to highlight
@@ -1019,9 +1019,9 @@ Short explanation of each option:		*option-list*
 'winminwidth'	  'wmw'     minimal number of columns for any window
 'winptydll'		    name of the winpty dynamic library
 'winwidth'	  'wiw'     minimal number of columns for current window
-'wlseat'	  'wse'     the wayland seat to use
-'wlsteal'	  'wst'     allow focus stealing functionality for wayland
-'wltimeoutlen'    'wtm'     timeout to use when polling in wayland
+'wlseat'	  'wse'	    the Wayland seat to use
+'wlsteal'	  'wst'	    allow focus stealing functionality for Wayland
+'wltimeoutlen'	  'wtm'	    timeout to use when polling in Wayland
 'wrap'			    long lines wrap and continue on the next line
 'wrapmargin'	  'wm'	    chars from the right where wrapping starts
 'wrapscan'	  'ws'	    searches wrap around the end of the file

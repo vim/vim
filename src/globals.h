@@ -2079,7 +2079,7 @@ EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
 
 #ifdef FEAT_WAYLAND
 
-// Don't connect to wayland compositor if TRUE
+// Don't connect to Wayland compositor if TRUE
 EXTERN int wayland_no_connect INIT(= FALSE);
 
 // Wayland display name (ex. wayland-0). Can be NULL

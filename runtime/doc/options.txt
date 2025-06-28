@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 27
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1810,14 +1810,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			register '*' for all yank, delete, change and put
 			operations which would normally go to the unnamed
 			register.  When "unnamed" is also included to the
-			option, yank operations (but not delete, change or
-			put) will additionally copy the text into register
-			'*'. If wayland is being used and the compositor does
-			not support the primary-selection-unstable-v1
-			protocol, then the regular selection is used in its
-			place.  Only available with the |+X11| or
-			|+wayland_clipboard| feature.  Availability can be
-			checked with: >
+			option, yank operations (but not delete, change or put)
+			will additionally copy the text into register '*'.  If
+			wayland is being used and the compositor does not
+			support the primary-selection-unstable-v1 protocol,
+			then the regular selection is used in its place.  Only
+			available with the |+X11| or |+wayland_clipboard|
+			feature.  Availability can be checked with: >
 			if has('unnamedplus')
 <
 						*clipboard-autoselect*
@@ -1859,17 +1858,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 			compositor.  This is useful in this situation:
 			- Running Vim in a console.
 			- $DISPLAY/$WAYLAND_DISPLAY is set to start
-			   applications on another display.
+			  applications on another display.
 			- You do not want to connect to the X server/Wayland
 			  compositor in the console, but do want this in a
 			  terminal emulator.
 			To never connect to the X server/Wayland compositor
 			use: >
 				exclude:.*
-<			This has the same effect as using the |-X| or |-Y| argument.
+<			This has the same effect as using the |-X| or |-Y|
+			argument.
 			Note that when there is no connection to the X server
 			the window title won't be restored and the clipboard
-			cannot be accessed. This is the same for Wayland,
+			cannot be accessed.  This is the same for Wayland,
 			except there is no title restoring.
 			The value of 'magic' is ignored, {pattern} is
 			interpreted as if 'magic' was on.
@@ -1880,10 +1880,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 'clipmethod' 'cpm'	string	(default for Unix: "wayland,x11",
 				 for VMS: "x11",
 				 otherwise: "")
-
 			global
-			{only when the |+xterm_clipboard| or |+wayland_clipboard|
-			features are included}
+			{only when the |+xterm_clipboard| or
+			|+wayland_clipboard| features are included}
 	Specifies which method of accessing the system clipboard is used,
 	depending on which method works first or is available.  Supported
 	methods are:
@@ -1895,10 +1894,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	macOS.  The GUI or system way of accessing the clipboard is always
 	used instead.
 
-	The option value is a list of comma separated items.  The list is parsed
-	left to right in order, and the first method that Vim determines is
-	available or is working is used as the actual method for accessing the
-	clipboard.
+	The option value is a list of comma separated items.  The list is
+	parsed left to right in order, and the first method that Vim
+	determines is available or is working is used as the actual method for
+	accessing the clipboard.
 
 	The current method that is being used can be found in the |v:clipmethod|
 	variable.
@@ -10081,19 +10080,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{only when the |+wayland| feature is included}
 	Specifies the Wayland seat to use for Wayland functionality,
-	specifically the clipboard. If the seat does not exist, then the
+	specifically the clipboard.  If the seat does not exist, then the
 	option will still be set to the new value, with the Wayland clipboard
-	being unavailable as a result. If an empty value is passed then Vim
+	being unavailable as a result.  If an empty value is passed then Vim
 	will attempt to use the value of $XDG_SEAT if it exists, if not then
-	it resorts to using the first seat found available. Updating this
+	it resorts to using the first seat found available.  Updating this
 	option will also update |v:clipmethod|.
 
-					*'wlsteal'* *'wst'* *'nowlsteal'* *'nowst'*
+				*'wlsteal'* *'wst'* *'nowlsteal'* *'nowst'*
 'wlsteal' 'wst'		boolean  (default off)
 			global
 			{only when the |+wayland_clipboard| feature is included}
 	When enabled, then allow Vim to steal focus by creating a temporary
-	surface, in order to access the clipboard. For more information see
+	surface, in order to access the clipboard.  For more information see
 	|wayland-focus-steal|.
 
 						*'wltimeoutlen'* *'wtm'*

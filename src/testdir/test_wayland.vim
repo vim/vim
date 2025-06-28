@@ -115,7 +115,7 @@ func Test_wayland_wlrestore()
 
   call assert_equal(l:wayland_display, v:wayland_display)
 
-  " Check if calling wlrestore without arguments uses the existing wayland
+  " Check if calling wlrestore without arguments uses the existing Wayland
   " display.
   wlrestore!
   call assert_equal(l:wayland_display, v:wayland_display)
@@ -151,7 +151,7 @@ func Test_wayland_wlrestore()
   call EndWaylandCompositor(l:wayland_display)
 endfunc
 
-" Test behaviour when wayland display connection is lost
+" Test behaviour when Wayland display connection is lost
 func Test_wayland_connection_lost()
   call s:PreTest()
 
@@ -356,7 +356,7 @@ func Test_wayland_plus_star_not_same()
   bw!
 endfunc
 
-" Test if autoselect option in 'clipboard' works properly for wayland
+" Test if autoselect option in 'clipboard' works properly for Wayland
 func Test_wayland_autoselect_works()
   call s:PreTest()
   call s:CheckXConnection()
