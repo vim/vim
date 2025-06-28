@@ -42,7 +42,7 @@ endfunc
 
 func s:StartCompositorExit(job, status)
     if s:wayland_display_name == ""
-      throw "Error: Wayland compositor exited when starting up"
+      throw "Skipped: Error: Wayland compositor exited when starting up"
     endif
 endfunc
 
