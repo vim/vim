@@ -3433,7 +3433,6 @@ CPPFLAGS=$cppflags_save
 fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-AC_PROG_GCC_TRADITIONAL
 AC_C_CONST
 AC_C_VOLATILE
 AC_TYPE_MODE_T

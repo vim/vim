@@ -12673,7 +12673,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 CPPFLAGS=$cppflags_save
 fi
 
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for an ANSI C-conforming const" >&5
 printf %s "checking for an ANSI C-conforming const... " >&6; }
 if test ${ac_cv_c_const+y}
