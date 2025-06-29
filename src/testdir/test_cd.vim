@@ -252,4 +252,41 @@ func Test_getcwd_actual_dir()
   call chdir(startdir)
 endfunc
 
+func Test_cd_with_symlink()
+  let savedir = getcwd()
+  call mkdir('Xsource', 'R')
+  call writefile(['abc'], 'Xsource/foo.txt', 'D')
+
+  if has("win32")
+    silent !mklink /D Xdest Xsource
+    if v:shell_error
+      call delete('Xsource', 'rf')
+      throw 'Skipped: cannot create symlinks'
+    endif
+  else
+    silent !ln -s Xsource Xdest
+    if v:shell_error
+      call delete('Xsource', 'rf')
+      throw 'Skipped: cannot create symlinks'
+    endif
+  endif
+
+  edit Xdest/foo.txt
+  call assert_equal(['abc'], getline(1, '$'))
+
+  " Get path before cd - should show symlink path
+  let path_before = expand('%')
+  call assert_match('Xdest[/\\]foo\.txt$', path_before)
+  cd .
+
+  " Path should still show symlink, not resolved path
+  let path_after = expand('%')
+  call assert_equal(path_before, path_after)
+  call assert_match('Xdest[/\\]foo\.txt$', path_after)
+
+  bwipe!
+  call delete('Xdest', 'rf')
+  call chdir(savedir)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
