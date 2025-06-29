@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 28
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10086,8 +10086,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	specifically the clipboard.  If the seat does not exist, then the
 	option will still be set to the new value, with the Wayland clipboard
 	being unavailable as a result.  If an empty value is passed then Vim
-	will attempt to use the value of $XDG_SEAT if it exists, if not then
-	it resorts to using the first seat found available.  Updating this
+	will attempt to use the first seat found available.  Updating this
 	option will also update |v:clipmethod|.
 
 				*'wlsteal'* *'wst'* *'nowlsteal'* *'nowst'*

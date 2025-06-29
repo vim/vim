@@ -907,21 +907,14 @@ vwl_destroy_seat(vwl_seat_T *seat)
 
 /*
  * Return a seat with the give name/label. If none exists then NULL is returned.
- * If NULL or an empty string is passed as the label then $XDG_SEAT is used
- * else the first available seat found is used.
+ * If NULL or an empty string is passed as the label then the first available
+ * seat found is used.
  */
     static vwl_seat_T *
 vwl_get_seat(const char *label)
 {
     if ((STRCMP(label, "") == 0 || label == NULL) && vwl_seats.ga_len > 0)
-    {
-	const char *xdg_seat = (char*)mch_getenv("XDG_SEAT");
-
-	if (xdg_seat == NULL)
 	    return &((vwl_seat_T *)vwl_seats.ga_data)[0];
-	else
-	    label = xdg_seat;
-    }
 
     for (int i = 0; i < vwl_seats.ga_len; i++)
     {
