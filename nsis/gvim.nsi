@@ -498,7 +498,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\tools\*.*
 
 	SetOutPath $0\tutor
-	File /x Makefile /x *.info ${VIMRT}\tutor\*.*
+	File /r /x *.info ${VIMRT}\tutor\*.*
 SectionEnd
 
 ##########################################################
