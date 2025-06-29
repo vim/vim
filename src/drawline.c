@@ -2774,7 +2774,7 @@ win_line(
 		skip_cells = 0;
 #ifdef FEAT_TERMINAL
 		if (term_show_buffer(wp->w_buffer)
-		    && wlv.col == 0
+		    && wlv.vcol == 0
 		    && wlv.win_attr == term_get_attr(wp, lnum, -1))
 		    // reset highlighting attribute
 		    wlv.win_attr = 0;
