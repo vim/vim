@@ -569,6 +569,7 @@ EXTERN char_u	*p_def;		// 'define'
 EXTERN char_u	*p_inc;
 #endif
 #ifdef FEAT_DIFF
+EXTERN char_u	*p_dia;		// 'diffanchors'
 EXTERN char_u	*p_dip;		// 'diffopt'
 # ifdef FEAT_EVAL
 EXTERN char_u	*p_dex;		// 'diffexpr'
@@ -1186,6 +1187,9 @@ enum
     , BV_COT
     , BV_CPT
     , BV_DICT
+#ifdef FEAT_DIFF
+    , BV_DIA
+#endif
     , BV_TSR
 #ifdef BACKSLASH_IN_FILENAME
     , BV_CSL
