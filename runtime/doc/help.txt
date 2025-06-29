@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 9.1.  Last change: 2024 Dec 06
+*help.txt*	For Vim version 9.1.  Last change: 2025 Jun 27
 
 			VIM - main help file
 									 k
@@ -186,6 +186,9 @@ GUI ~
 |gui.txt|	Graphical User Interface (GUI)
 |gui_w32.txt|	Win32 GUI
 |gui_x11.txt|	X11 GUI
+
+System Integration ~
+|wayland.txt|	Wayland protocol support
 
 Interfaces ~
 |if_cscop.txt|	using Cscope with Vim

@@ -258,12 +258,30 @@ echo (42, 87) + foo
 
 " Register
 
-echo @" 
+echo @" @@
 echo @0 @1 @2 @3 @4 @5 @6 @7 @8 @9
-echo @-
 echo @a @b @c @d @e @f @g @h @i @j @k @l @m @n @o @p @q @r @s @t @u @v @w @x @y @z
 echo @A @B @C @D @E @F @G @H @I @J @K @L @M @N @O @P @Q @R @S @T @U @V @W @X @Y @Z
-echo @: @. @% @# @= @* @+ @~ @_ @/
+echo @- @: @. @% @# @= @* @+ @~ @_ @/
+
+" read-only @:, @., @%, @~
+let @" = "foo" 
+let @0 = "foo"
+let @1 = "foo"
+let @9 = "foo"
+let @a = "foo"
+let @k = "foo"
+let @z = "foo"
+let @A = "foo"
+let @K = "foo"
+let @Z = "foo"
+let @- = "foo"
+let @# = "foo"
+let @= = "foo"
+let @* = "foo"
+let @+ = "foo"
+let @_ = "foo"
+let @/ = "foo"
 
 " Operators
 

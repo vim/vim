@@ -102,6 +102,7 @@ NEW_TESTS = \
 	test_cindent \
 	test_cjk_linebreak \
 	test_clientserver \
+	test_clipmethod \
 	test_close_count \
 	test_cmd_lists \
 	test_cmdline \
@@ -331,6 +332,7 @@ NEW_TESTS = \
 	test_trycatch \
 	test_tuple \
 	test_undo \
+	test_uniq \
 	test_unlet \
 	test_user_func \
 	test_usercommands \
@@ -343,6 +345,7 @@ NEW_TESTS = \
 	test_vimscript \
 	test_virtualedit \
 	test_visual \
+	test_wayland \
 	test_winbar \
 	test_winbuf_close \
 	test_window_cmd \
@@ -387,6 +390,7 @@ NEW_TESTS_RES = \
 	test_cindent.res \
 	test_cjk_linebreak.res \
 	test_clientserver.res \
+	test_clipmethod.res \
 	test_close_count.res \
 	test_cmd_lists.res \
 	test_cmdline.res \
@@ -586,6 +590,7 @@ NEW_TESTS_RES = \
 	test_trycatch.res \
 	test_tuple.res \
 	test_undo.res \
+	test_uniq.res \
 	test_user_func.res \
 	test_usercommands.res \
 	test_vartabs.res \
@@ -594,6 +599,7 @@ NEW_TESTS_RES = \
 	test_vimscript.res \
 	test_virtualedit.res \
 	test_visual.res \
+	test_wayland.res \
 	test_winbar.res \
 	test_winbuf_close.res \
 	test_window_cmd.res \

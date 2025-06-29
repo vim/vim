@@ -7489,7 +7489,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"unnamedplus",
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+#if defined(FEAT_CLIPBOARD) && (defined(FEAT_X11) \
+	|| defined(FEAT_WAYLAND_CLIPBOARD))
 		1
 #else
 		0
@@ -7523,6 +7524,20 @@ f_has(typval_T *argvars, typval_T *rettv)
 	{"vreplace", 1},
 	{"vtp",
 #ifdef FEAT_VTP
+		1
+#else
+		0
+#endif
+		},
+	{"wayland",
+#ifdef FEAT_WAYLAND
+		1
+#else
+		0
+#endif
+		},
+	{"wayland_clipboard",
+#ifdef FEAT_WAYLAND_CLIPBOARD
 		1
 #else
 		0
@@ -8833,19 +8848,18 @@ f_line(typval_T *argvars, typval_T *rettv)
 	{
 	    if (switch_win_noblock(&switchwin, wp, tp, TRUE) == OK)
 	    {
+		// With 'splitkeep' != cursor and in diff mode, prevent that the
+		// window scrolls and keep the topline.
+		if (*p_spk != 'c'
 #ifdef FEAT_DIFF
-		// in diff mode, prevent that the window scrolls
-		// and keep the topline
-		if (curwin->w_p_diff && switchwin.sw_curwin->w_p_diff)
-		    skip_update_topline = TRUE;
+		|| (curwin->w_p_diff && switchwin.sw_curwin->w_p_diff)
 #endif
+		)
+		    skip_update_topline = TRUE;
 		check_cursor();
 		fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 	    }
-#ifdef FEAT_DIFF
-	    if (curwin->w_p_diff && switchwin.sw_curwin->w_p_diff)
-		skip_update_topline = FALSE;
-#endif
+	    skip_update_topline = FALSE;
 	    restore_win_noblock(&switchwin, TRUE);
 	}
     }

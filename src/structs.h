@@ -655,6 +655,8 @@ typedef struct expand
     char_u	*xp_line;		// text being completed
 #define EXPAND_BUF_LEN 256
     char_u	xp_buf[EXPAND_BUF_LEN];	// buffer for returned match
+    int		xp_search_dir;		// Direction of search
+    pos_T	xp_pre_incsearch_pos;	// Cursor position before incsearch
 } expand_T;
 
 /*
@@ -4831,7 +4833,7 @@ typedef enum {
 #define DELETION_REGISTER	36
 #ifdef FEAT_CLIPBOARD
 # define STAR_REGISTER		37
-#  ifdef FEAT_X11
+#  if defined(FEAT_X11) || defined(FEAT_WAYLAND)
 #   define PLUS_REGISTER	38
 #  else
 #   define PLUS_REGISTER	STAR_REGISTER	    // there is only one
@@ -5187,3 +5189,23 @@ struct cellsize {
     int cs_ypixel;
 };
 #endif
+
+#ifdef FEAT_WAYLAND
+
+// Wayland selections
+typedef enum {
+    WAYLAND_SELECTION_NONE	    = 0x0,
+    WAYLAND_SELECTION_REGULAR	    = 0x1,
+    WAYLAND_SELECTION_PRIMARY	    = 0x2,
+} wayland_selection_T;
+
+// Callback when another client wants us to send data to them
+typedef void (*wayland_cb_send_data_func_T)(
+	const char *mime_type,
+	int fd,
+	wayland_selection_T type);
+
+// Callback when the selection is lost (data source object overwritten)
+typedef void (*wayland_cb_selection_cancelled_func_T)(wayland_selection_T type);
+
+#endif // FEAT_WAYLAND

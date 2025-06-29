@@ -644,6 +644,16 @@ static char *(features[]) =
 	"-vtp",
 # endif
 #endif
+#ifdef FEAT_WAYLAND
+	"+wayland",
+#else
+	"-wayland",
+#endif
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	"+wayland_clipboard",
+#else
+	"-wayland_clipboard",
+#endif
 	"+wildignore",
 	"+wildmenu",
 	"+windows",
@@ -709,6 +719,40 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1492,
+/**/
+    1491,
+/**/
+    1490,
+/**/
+    1489,
+/**/
+    1488,
+/**/
+    1487,
+/**/
+    1486,
+/**/
+    1485,
+/**/
+    1484,
+/**/
+    1483,
+/**/
+    1482,
+/**/
+    1481,
+/**/
+    1480,
+/**/
+    1479,
+/**/
+    1478,
+/**/
+    1477,
+/**/
+    1476,
 /**/
     1475,
 /**/

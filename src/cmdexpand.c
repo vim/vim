@@ -14,6 +14,8 @@
 #include "vim.h"
 
 static int	cmd_showtail;	// Only show path tail in lists ?
+static int	may_expand_pattern = FALSE;
+static pos_T	pre_incsearch_pos; // Cursor position when incsearch started
 
 static void	set_context_for_wildcard_arg(exarg_T *eap, char_u *arg, int usefilter, expand_T *xp, int *complp);
 static int	ExpandFromContext(expand_T *xp, char_u *, char_u ***, int *, int);
@@ -24,6 +26,7 @@ static int	expand_shellcmd(char_u *filepat, char_u ***matches, int *numMatches, 
 static int	ExpandUserDefined(char_u *pat, expand_T *xp, regmatch_T *regmatch, char_u ***matches, int *numMatches);
 static int	ExpandUserList(expand_T *xp, char_u ***matches, int *numMatches);
 #endif
+static int	expand_pattern_in_buf(char_u *pat, int dir, char_u ***matches, int *numMatches);
 
 // "compl_match_array" points the currently displayed list of entries in the
 // popup menu.  It is NULL when there is no popup menu.
@@ -233,6 +236,8 @@ nextwild(
 
     if (xp->xp_numfiles == -1)
     {
+	may_expand_pattern = options & WILD_MAY_EXPAND_PATTERN;
+	pre_incsearch_pos = xp->xp_pre_incsearch_pos;
 #ifdef FEAT_EVAL
 	if (ccline->input_fn && ccline->xp_context == EXPAND_COMMANDS)
 	{
@@ -277,8 +282,9 @@ nextwild(
     }
     else
     {
-	if (cmdline_fuzzy_completion_supported(xp))
-	    // If fuzzy matching, don't modify the search string
+	if (cmdline_fuzzy_completion_supported(xp)
+		|| xp->xp_context == EXPAND_PATTERN_IN_BUF)
+	    // Don't modify the search string
 	    p1 = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
 	else
 	    p1 = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
@@ -292,12 +298,11 @@ nextwild(
 		    WILD_HOME_REPLACE|WILD_ADD_SLASH|WILD_SILENT;
 	    if (use_options & WILD_KEEP_SOLE_ITEM)
 		use_options &= ~WILD_KEEP_SOLE_ITEM;
-
 	    if (escape)
 		use_options |= WILD_ESCAPE;
-
 	    if (p_wic)
 		use_options += WILD_ICASE;
+
 	    p2 = ExpandOne(xp, p1,
 			 vim_strnsave(&ccline->cmdbuff[i], xp->xp_pattern_len),
 							   use_options, type);
@@ -335,7 +340,6 @@ nextwild(
 	    ccline->cmdpos += difflen;
 	}
     }
-    vim_free(p2);
 
     redrawcmd();
     cursorcmd();
@@ -350,6 +354,8 @@ nextwild(
     else if (xp->xp_numfiles == 1 && !(options & WILD_KEEP_SOLE_ITEM))
 	// free expanded pattern
 	(void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
+
+    vim_free(p2);
 
     return OK;
 }
@@ -370,8 +376,11 @@ cmdline_pum_create(
     int		columns;
 
     // Add all the completion matches
+    compl_match_array = ALLOC_MULT(pumitem_T, numMatches);
+    if (compl_match_array == NULL)
+	return EXPAND_UNSUCCESSFUL;
+
     compl_match_arraysize = numMatches;
-    compl_match_array = ALLOC_MULT(pumitem_T, compl_match_arraysize);
     for (i = 0; i < numMatches; i++)
     {
 	compl_match_array[i].pum_text = SHOW_MATCH(i);
@@ -491,12 +500,14 @@ cmdline_compl_is_fuzzy(void)
 
 /*
  * Return the number of characters that should be skipped in a status match.
- * These are backslashes used for escaping.  Do show backslashes in help tags.
+ * These are backslashes used for escaping.  Do show backslashes in help tags
+ * and in search pattern completion matches.
  */
     static int
 skip_status_match_char(expand_T *xp, char_u *s)
 {
-    if ((rem_backslash(s) && xp->xp_context != EXPAND_HELP)
+    if ((rem_backslash(s) && xp->xp_context != EXPAND_HELP
+		&& xp->xp_context != EXPAND_PATTERN_IN_BUF)
 #ifdef FEAT_MENU
 	    || ((xp->xp_context == EXPAND_MENUS
 		    || xp->xp_context == EXPAND_MENUNAMES)
@@ -1594,23 +1605,40 @@ addstar(
  *			    names in expressions, eg :while s^I
  *  EXPAND_ENV_VARS	    Complete environment variable names
  *  EXPAND_USER		    Complete user names
+ *  EXPAND_PATTERN_IN_BUF   Complete pattern in '/', '?', ':s', ':g', etc.
  */
     void
 set_expand_context(expand_T *xp)
 {
-    cmdline_info_T	*ccline = get_cmdline_info();
+    cmdline_info_T  *ccline = get_cmdline_info();
 
-    // only expansion for ':', '>' and '=' command-lines
+    // Handle search commands: '/' or '?'
+    if ((ccline->cmdfirstc == '/' || ccline->cmdfirstc == '?')
+	    && may_expand_pattern)
+    {
+	xp->xp_context = EXPAND_PATTERN_IN_BUF;
+	xp->xp_search_dir = (ccline->cmdfirstc == '/') ? FORWARD : BACKWARD;
+	xp->xp_pattern = ccline->cmdbuff;
+	xp->xp_pattern_len = ccline->cmdpos;
+#ifdef FEAT_SEARCH_EXTRA
+	search_first_line = 0; // Search entire buffer
+#endif
+	return;
+    }
+
+    // Only handle ':', '>', or '=' command-lines, or expression input
     if (ccline->cmdfirstc != ':'
 #ifdef FEAT_EVAL
 	    && ccline->cmdfirstc != '>' && ccline->cmdfirstc != '='
 	    && !ccline->input_fn
 #endif
-	    )
+       )
     {
 	xp->xp_context = EXPAND_NOTHING;
 	return;
     }
+
+    // Fallback to command-line expansion
     set_cmd_context(xp, ccline->cmdbuff, ccline->cmdlen, ccline->cmdpos, TRUE);
 }
 
@@ -2202,6 +2230,34 @@ set_context_in_filetype_cmd(expand_T *xp, char_u *arg)
     return NULL;
 }
 
+/*
+ * Sets the completion context for commands that involve a search pattern
+ * and a line range (e.g., :s, :g, :v).
+ */
+    static void
+set_context_with_pattern(expand_T *xp)
+{
+    int		    skiplen = 0;
+    cmdline_info_T  *ccline = get_cmdline_info();
+#ifdef FEAT_SEARCH_EXTRA
+    int		    dummy, patlen, retval;
+
+    ++emsg_off;
+    retval = parse_pattern_and_range(&pre_incsearch_pos, &dummy, &skiplen,
+	    &patlen);
+    --emsg_off;
+
+    // Check if cursor is within search pattern
+    if (!retval || ccline->cmdpos <= skiplen
+	    || ccline->cmdpos > skiplen + patlen)
+	return;
+#endif
+
+    xp->xp_pattern = ccline->cmdbuff + skiplen;
+    xp->xp_pattern_len = ccline->cmdpos - skiplen;
+    xp->xp_context = EXPAND_PATTERN_IN_BUF;
+    xp->xp_search_dir = FORWARD;
+}
 
 /*
  * Set the completion context in 'xp' for command 'cmd' with index 'cmdidx'.
@@ -2221,6 +2277,8 @@ set_context_by_cmdname(
 	int		compl,
 	int		forceit)
 {
+    char_u  *nextcmd;
+
     switch (cmdidx)
     {
 	case CMD_find:
@@ -2303,10 +2361,18 @@ set_context_by_cmdname(
 
 	case CMD_global:
 	case CMD_vglobal:
-	    return find_cmd_after_global_cmd(arg);
+	    nextcmd = find_cmd_after_global_cmd(arg);
+	    if (!nextcmd && may_expand_pattern)
+		set_context_with_pattern(xp);
+	    return nextcmd;
+
 	case CMD_and:
 	case CMD_substitute:
-	    return find_cmd_after_substitute_cmd(arg);
+	    nextcmd = find_cmd_after_substitute_cmd(arg);
+	    if (!nextcmd && may_expand_pattern)
+		set_context_with_pattern(xp);
+	    return nextcmd;
+
 	case CMD_isearch:
 	case CMD_dsearch:
 	case CMD_ilist:
@@ -2884,11 +2950,9 @@ expand_cmdline(
 	// If fuzzy matching, don't modify the search string
 	file_str = vim_strsave(xp->xp_pattern);
     else
-    {
 	file_str = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
-	if (file_str == NULL)
-	    return EXPAND_UNSUCCESSFUL;
-    }
+    if (file_str == NULL)
+	return EXPAND_UNSUCCESSFUL;
 
     if (p_wic)
 	options += WILD_ICASE;
@@ -2927,6 +2991,9 @@ expand_files_and_dirs(
     {
 	free_pat = TRUE;
 	pat = vim_strsave(pat);
+	if (pat == NULL)
+	    return ret;
+
 	for (i = 0; pat[i]; ++i)
 	    if (pat[i] == '\\')
 	    {
@@ -3316,6 +3383,9 @@ ExpandFromContext(
 	return ExpandPackAddDir(pat, numMatches, matches);
     if (xp->xp_context == EXPAND_RUNTIME)
 	return expand_runtime_cmd(pat, numMatches, matches);
+    if (xp->xp_context == EXPAND_PATTERN_IN_BUF)
+	return expand_pattern_in_buf(pat, xp->xp_search_dir,
+		matches, numMatches);
 
     // When expanding a function name starting with s:, match the <SNR>nr_
     // prefix.
@@ -3835,16 +3905,24 @@ ExpandUserDefined(
 
 	if (match)
 	{
-	    if (ga_grow(&ga, 1) == FAIL)
+	    char_u  *p = vim_strnsave(s, (size_t)(e - s));
+	    if (p == NULL)
 		break;
+
+	    if (ga_grow(&ga, 1) == FAIL)
+	    {
+		vim_free(p);
+		break;
+	    }
+
 	    if (!fuzzy)
-		((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, e - s);
+		((char_u **)ga.ga_data)[ga.ga_len] = p;
 	    else
 	    {
 		fuzmatch_str_T  *fuzmatch =
 				&((fuzmatch_str_T  *)ga.ga_data)[ga.ga_len];
 		fuzmatch->idx = ga.ga_len;
-		fuzmatch->str = vim_strnsave(s, e - s);
+		fuzmatch->str = p;
 		fuzmatch->score = score;
 	    }
 	    ++ga.ga_len;
@@ -3896,14 +3974,22 @@ ExpandUserList(
     // Loop over the items in the list.
     FOR_ALL_LIST_ITEMS(retlist, li)
     {
+	char_u	*p;
+
 	if (li->li_tv.v_type != VAR_STRING || li->li_tv.vval.v_string == NULL)
 	    continue;  // Skip non-string items and empty strings
 
-	if (ga_grow(&ga, 1) == FAIL)
+	p = vim_strsave(li->li_tv.vval.v_string);
+	if (p == NULL)
 	    break;
 
-	((char_u **)ga.ga_data)[ga.ga_len] =
-					 vim_strsave(li->li_tv.vval.v_string);
+	if (ga_grow(&ga, 1) == FAIL)
+	{
+	    vim_free(p);
+	    break;
+	}
+
+	((char_u **)ga.ga_data)[ga.ga_len] = p;
 	++ga.ga_len;
     }
     list_unref(retlist);
@@ -4239,6 +4325,11 @@ wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 	RedrawingDisabled = 0;
 #endif
 
+#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+    // Clear highlighting applied during wildmenu activity
+    set_no_hlsearch(TRUE);
+#endif
+
     if (wild_menu_showing == WM_SCROLLED)
     {
 	// Entered command line, move it up
@@ -4436,3 +4527,247 @@ f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv)
     }
 }
 #endif // FEAT_EVAL
+
+/*
+ * Copy a substring from the current buffer (curbuf), spanning from the given
+ * 'start' position to the word boundary after 'end' position.
+ * The copied string is stored in '*match', and the actual end position of the
+ * matched text is returned in '*match_end'.
+ */
+    static int
+copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
+	pos_T *match_end)
+{
+    char_u	*word_end;
+    char_u	*line, *start_line, *end_line;
+    int		segment_len;
+    linenr_T	lnum;
+    garray_T	ga;
+
+    if (start->lnum > end->lnum
+	    || (start->lnum == end->lnum && start->col >= end->col))
+	return FAIL; // invalid range
+
+    // Get line pointers
+    start_line = ml_get(start->lnum);
+    end_line = ml_get(end->lnum);
+
+    // Use a growable string (ga)
+    ga_init2(&ga, 1, 128);
+
+    // Append start line from start->col to end
+    char_u  *start_ptr = start_line + start->col;
+    int	    is_single_line = start->lnum == end->lnum;
+
+    segment_len = is_single_line ? (end->col - start->col)
+	: (int)STRLEN(start_ptr);
+    if (ga_grow(&ga, segment_len + 1) != OK)
+	return FAIL;
+    ga_concat_len(&ga, start_ptr, segment_len);
+    if (!is_single_line)
+	ga_append(&ga, '\n');
+
+    // Append full lines between start and end
+    if (!is_single_line)
+	for (lnum = start->lnum + 1; lnum < end->lnum; lnum++)
+	{
+	    line = ml_get(lnum);
+	    if (ga_grow(&ga, ml_get_len(lnum) + 1) != OK)
+		return FAIL;
+	    ga_concat(&ga, line);
+	    ga_append(&ga, '\n');
+	}
+
+    // Append partial end line (up to word end)
+    word_end = find_word_end(end_line + end->col);
+    segment_len = (int)(word_end - end_line);
+    if (ga_grow(&ga, segment_len) != OK)
+	return FAIL;
+    ga_concat_len(&ga, end_line + (is_single_line ? end->col : 0),
+	    segment_len - (is_single_line ? end->col : 0));
+
+    // Null-terminate
+    if (ga_grow(&ga, 1) != OK)
+	return FAIL;
+    ga_append(&ga, NUL);
+
+    *match = (char_u *)ga.ga_data;
+    match_end->lnum = end->lnum;
+    match_end->col = segment_len;
+
+    return OK;
+}
+
+/*
+ * Search for strings matching "pat" in the specified range and return them.
+ * Returns OK on success, FAIL otherwise.
+ */
+    static int
+expand_pattern_in_buf(
+    char_u	*pat,		    // pattern to match
+    int		dir,		    // direction: FORWARD or BACKWARD
+    char_u	***matches,	    // return: array with matched strings
+    int		*numMatches)	    // return: number of matches
+{
+    pos_T	cur_match_pos, prev_match_pos, end_match_pos, word_end_pos;
+    garray_T	ga;
+    int		found_new_match;
+    int		looped_around = FALSE;
+    int		pat_len, match_len;
+    int		has_range = FALSE;
+    int		compl_started = FALSE;
+    int		search_flags, i;
+    char_u	*match, *line, *word_end;
+    regmatch_T	regmatch;
+
+#ifdef FEAT_SEARCH_EXTRA
+    has_range = search_first_line != 0;
+#endif
+
+    *matches = NULL;
+    *numMatches = 0;
+
+    if (pat == NULL || *pat == NUL)
+	return FAIL;
+
+    pat_len = (int)STRLEN(pat);
+    CLEAR_FIELD(cur_match_pos);
+    CLEAR_FIELD(prev_match_pos);
+#ifdef FEAT_SEARCH_EXTRA
+    if (has_range)
+	cur_match_pos.lnum = search_first_line;
+    else
+#endif
+	cur_match_pos = pre_incsearch_pos;
+
+    search_flags = SEARCH_OPT | SEARCH_NOOF | SEARCH_PEEK | SEARCH_NFMSG
+	| (has_range ? SEARCH_START : 0);
+
+    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    if (regmatch.regprog == NULL)
+	return FAIL;
+    regmatch.rm_ic = p_ic;
+
+    ga_init2(&ga, sizeof(char_u *), 10); // Use growable array of char_u*
+
+    for (;;)
+    {
+	++emsg_off;
+	++msg_silent;
+	found_new_match = searchit(NULL, curbuf, &cur_match_pos,
+		&end_match_pos, dir, pat, pat_len, 1L,
+		search_flags, RE_LAST, NULL);
+	--msg_silent;
+	--emsg_off;
+
+	if (found_new_match == FAIL)
+	    break;
+
+#ifdef FEAT_SEARCH_EXTRA
+	// If in range mode, check if match is within the range
+	if (has_range && (cur_match_pos.lnum < search_first_line
+		    || cur_match_pos.lnum > search_last_line))
+		break;
+#endif
+
+	if (compl_started)
+	{
+	    // If we've looped back to an earlier match, stop
+	    if ((dir == FORWARD
+			&& (cur_match_pos.lnum < prev_match_pos.lnum
+			    || (cur_match_pos.lnum == prev_match_pos.lnum
+				&& cur_match_pos.col <= prev_match_pos.col)))
+		    || (dir == BACKWARD
+			&& (cur_match_pos.lnum > prev_match_pos.lnum
+			    || (cur_match_pos.lnum == prev_match_pos.lnum
+				&& cur_match_pos.col >= prev_match_pos.col))))
+	    {
+		if (looped_around)
+		    break;
+		else
+		    looped_around = TRUE;
+	    }
+	}
+
+	compl_started = TRUE;
+	prev_match_pos = cur_match_pos;
+
+	// Abort if user typed a character or interrupted
+	if (char_avail() || got_int)
+	{
+	    if (got_int)
+	    {
+		(void)vpeekc();  // Remove <C-C> from input stream
+		got_int = FALSE; // Don't abandon the command line
+	    }
+	    goto cleanup;
+	}
+
+	// searchit() can return line number +1 past the last line when
+	// searching for "foo\n" if "foo" is at end of buffer.
+	if (end_match_pos.lnum > curbuf->b_ml.ml_line_count)
+	{
+	    cur_match_pos.lnum = 1;
+	    cur_match_pos.col = 0;
+	    cur_match_pos.coladd = 0;
+	    continue;
+	}
+
+	// Extract the matching text prepended to completed word
+	if (!copy_substring_from_pos(&cur_match_pos, &end_match_pos, &match,
+		    &word_end_pos))
+	    break;
+
+	// Verify that the constructed match actually matches the pattern with
+	// correct case sensitivity
+	if (!vim_regexec_nl(&regmatch, match, (colnr_T)0))
+	{
+	    vim_free(match);
+	    continue;
+	}
+	vim_free(match);
+
+	// Construct a new match from completed word appended to pattern itself
+	line = ml_get(end_match_pos.lnum);
+	word_end = find_word_end(line + end_match_pos.col);  // col starts from 0
+	match_len = (int)(word_end - (line + end_match_pos.col));
+	match = alloc(match_len + pat_len + 1);  // +1 for NUL
+	if (match == NULL)
+	    goto cleanup;
+	mch_memmove(match, pat, pat_len);
+	if (match_len > 0)
+	    mch_memmove(match + pat_len, line + end_match_pos.col, match_len);
+	match[pat_len + match_len] = NUL;
+
+	// Include this match if it is not a duplicate
+	for (i = 0; i < ga.ga_len; ++i)
+	{
+	    if (STRCMP(match, ((char_u **)ga.ga_data)[i]) == 0)
+	    {
+		VIM_CLEAR(match);
+		break;
+	    }
+	}
+	if (match != NULL)
+	{
+	    if (ga_grow(&ga, 1) == FAIL)
+		goto cleanup;
+	    ((char_u **)ga.ga_data)[ga.ga_len++] = match;
+	    if (ga.ga_len > TAG_MANY)
+		break;
+	}
+	if (has_range)
+	    cur_match_pos = word_end_pos;
+    }
+
+    vim_regfree(regmatch.regprog);
+
+    *matches = (char_u **)ga.ga_data;
+    *numMatches = ga.ga_len;
+    return OK;
+
+cleanup:
+    vim_regfree(regmatch.regprog);
+    ga_clear_strings(&ga);
+    return FAIL;
+}

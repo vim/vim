@@ -241,6 +241,7 @@ SRC_ALL =	\
 		src/testdir/ru_RU/LC_MESSAGES/Makefile \
 		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.po \
 		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.mo \
+		src/testdir/window_manager.vim \
 		src/proto.h \
 		src/protodef.h \
 		src/proto/alloc.pro \
@@ -490,6 +491,12 @@ SRC_UNIX =	\
 		src/gui_xmebwp.h \
 		src/gui_x11.c \
 		src/gui_x11_pm.h \
+		src/auto/wayland/README.txt \
+		src/auto/wayland/Makefile \
+		src/auto/wayland/protocols/ext-data-control-v1.xml \
+		src/auto/wayland/protocols/wlr-data-control-unstable-v1.xml \
+		src/auto/wayland/protocols/xdg-shell.xml \
+		src/auto/wayland/protocols/primary-selection-unstable-v1.xml \
 		src/if_xcmdsrv.c \
 		src/link.sh \
 		src/installman.sh \
@@ -508,6 +515,7 @@ SRC_UNIX =	\
 		src/proto/gui_motif.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
+		src/proto/wayland.pro \
 		src/proto/if_xcmdsrv.pro \
 		src/proto/os_unix.pro \
 		src/proto/pty.pro \
@@ -519,7 +527,9 @@ SRC_UNIX =	\
 		src/vim_mask.xbm \
 		src/vimtutor \
 		src/gvimtutor \
+		src/wayland.c \
 		src/which.sh \
+		src/gen-wayland-protocols.sh \
 		src/xxd/Makefile \
 
 # Source files for both MS Windows and Unix-like.

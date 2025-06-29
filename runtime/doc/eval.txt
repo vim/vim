@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Jun 04
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Jun 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2240,6 +2240,15 @@ v:charconvert_to
 		The name of the character encoding of a file after conversion.
 		Only valid while evaluating the 'charconvert' option.
 
+					*v:clipmethod*
+v:clipmethod	The current method of accessing the clipboard that is being
+		used.  Can either have the value of:
+			wayland		The Wayland protocol is being used.
+			x11		X11 selections are being used.
+			none		The above methods are unavailable or
+					cannot be used.
+		See 'clipmethod' for more details.
+
 					*v:cmdarg* *cmdarg-variable*
 v:cmdarg	This variable is used for two purposes:
 		1. The extra arguments given to a file read/write command.
@@ -2968,6 +2977,12 @@ v:vim_did_enter	Zero until most of startup is done.  It is set to one just
 
 					*v:warningmsg* *warningmsg-variable*
 v:warningmsg	Last given warning message.  It's allowed to set this variable.
+
+					*v:wayland_display*
+v:wayland_display
+		The name of the Wayland display that Vim is connected to.
+		Equivalent to the $WAYLAND_DISPLAY environment variable.
+		If this is empty, then Vim is not connected to any display.
 
 					*v:windowid* *windowid-variable*
 v:windowid	When any X11/Wayland based GUI is running or when running in a

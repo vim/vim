@@ -1,15 +1,15 @@
 # Turkish translations for Vim
 # Vim Türkçe çevirileri
-# Copyright (C) 2019-2023 Emir SARI <emir_sari@icloud.com>
+# Copyright (C) 2019-2025 Emir SARI <emir_sari@icloud.com>
 # This file is distributed under the same license as the Vim package.
-# Emir SARI <emir_sari@icloud.com>, 2019-2023
+# Emir SARI <emir_sari@icloud.com>, 2019-2025
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-23 23:36+0300\n"
-"PO-Revision-Date: 2025-02-23 23:45+0300\n"
+"POT-Creation-Date: 2025-06-25 19:01+0300\n"
+"PO-Revision-Date: 2025-06-24 05:10+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish <https://github.com/bitigchi/vim>\n"
 "Language: tr\n"
@@ -80,7 +80,7 @@ msgid "[Location List]"
 msgstr "[Konum Listesi]"
 
 msgid "[Quickfix List]"
-msgstr "[Hızlı Düzelt Listesi]"
+msgstr "[Tez Düzelt Listesi]"
 
 #, c-format
 msgid "%d buffer unloaded"
@@ -154,8 +154,12 @@ msgid "Top"
 msgstr "Baş"
 
 #, c-format
-msgid "%s%d%%"
-msgstr "%s%%%d"
+msgid "%d%%"
+msgstr "%%%d"
+
+#, c-format
+msgid "%2s"
+msgstr "%2s"
 
 #, c-format
 msgid " (%d of %d)"
@@ -230,7 +234,7 @@ msgid ""
 "WARNING: Original file may be lost or damaged\n"
 msgstr ""
 "\n"
-"UYARI: Orijinal dosya kaybolmuş veya hasar görmüş olabilir\n"
+"UYARI: Özgün dosya kaybolmuş veya hasar görmüş olabilir\n"
 
 msgid "don't quit the editor until the file is successfully written!"
 msgstr "dosya başarılı bir biçimde yazılana kadar düzenleyiciden çıkmayın!"
@@ -512,7 +516,7 @@ msgstr "Dosyanın bir kısmı yazılsın mı?"
 
 #, c-format
 msgid "Overwrite existing file \"%s\"?"
-msgstr "Mevcut \"%s\" dosyasının üzerine yazılsın mı?"
+msgstr "Var olan \"%s\" dosyasının üzerine yazılsın mı?"
 
 #, c-format
 msgid "Swap file \"%s\" exists, overwrite anyway?"
@@ -839,7 +843,7 @@ msgid "<empty>"
 msgstr "<boş>"
 
 msgid "writefile() first argument must be a List or a Blob"
-msgstr "writefile() ilk argümanı bir liste veya ikili geniş nesne olmalıdır"
+msgstr "writefile() ilk argümanı bir liste veya ikili nesne olmalıdır"
 
 msgid "Select Directory dialog"
 msgstr "Dizin Seç iletişim kutusu"
@@ -868,8 +872,20 @@ msgstr[1] "+-%s%3ld satır: "
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr "Referansları ayarlamak için yetersiz bellek, atık toplama durduruldu"
 
-msgid "No match at cursor, finding next"
-msgstr "İmleç konumunda eşleşme bulunamadı, sonraki bulunuyor"
+msgid "Vim: Received \"die\" request from session manager\n"
+msgstr "Vim: Oturum yöneticisinden işi sonlandırma isteği geldi\n"
+
+msgid "Close tab"
+msgstr "Sekmeyi kapat"
+
+msgid "New tab"
+msgstr "Yeni sekme"
+
+msgid "Open Tab..."
+msgstr "Sekme Aç..."
+
+msgid "Vim: Main window unexpectedly destroyed\n"
+msgstr "Vim: Ana pencere beklenmedik bir biçimde gitti\n"
 
 msgid "_Save"
 msgstr "_Kaydet"
@@ -945,21 +961,6 @@ msgstr "Tümünü Değiştir"
 
 msgid "_Close"
 msgstr "K_apat"
-
-msgid "Vim: Received \"die\" request from session manager\n"
-msgstr "Vim: Oturum yöneticisinden işi sonlandırma isteği geldi\n"
-
-msgid "Close tab"
-msgstr "Sekmeyi kapat"
-
-msgid "New tab"
-msgstr "Yeni sekme"
-
-msgid "Open Tab..."
-msgstr "Sekme Aç..."
-
-msgid "Vim: Main window unexpectedly destroyed\n"
-msgstr "Vim: Ana pencere beklenmedik bir biçimde gitti\n"
 
 msgid "&Filter"
 msgstr "&Süz"
@@ -1064,6 +1065,9 @@ msgstr "Biçem:"
 
 msgid "Size:"
 msgstr "Büyüklük:"
+
+msgid "No match at cursor, finding next"
+msgstr "İmleç konumunda eşleşme bulunamadı, sonraki bulunuyor"
 
 #, c-format
 msgid "Page %d"
@@ -1268,7 +1272,7 @@ msgstr "im ayarlanmamış"
 
 #, c-format
 msgid "row %d column %d"
-msgstr "satır %d sütun %d"
+msgstr "%d. satır %d. sütun"
 
 msgid "cannot insert/append line"
 msgstr "satır eklenemiyor/iliştirilemiyor"
@@ -1315,8 +1319,8 @@ msgstr[1] "%ld satır girintilendi "
 msgid " Keyword completion (^N^P)"
 msgstr " Anahtar sözcük tamamlaması (^N^P)"
 
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-msgstr " ^X kipi (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
+msgstr " ^X kipi (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " Tam satır tamamlaması (^L^N^P)"
@@ -1353,6 +1357,9 @@ msgstr " Yazım önerisi (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Dahili anahtar sözcük tamamlaması (^N^P)"
+
+msgid " Register completion (^N^P)"
+msgstr " Yazmaç tamamlaması (^N^P)"
 
 msgid "'dictionary' option is empty"
 msgstr "'dictionary' seçeneği boş"
@@ -1736,7 +1743,7 @@ msgstr ""
 "sonuçları yazdır"
 
 msgid "--serverlist\t\tList available Vim server names and exit"
-msgstr "--serverlist\t\tMevcut Vim sunucu adlarını liste ve çık"
+msgstr "--serverlist\t\tVar olan Vim sunucu adlarını liste ve çık"
 
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <ad>\t<ad> Vim sunucusuna gönder veya sunucu ol"
@@ -2482,8 +2489,8 @@ msgstr "%s, %s üzerinde"
 msgid "Printing '%s'"
 msgstr "'%s' yazdırılıyor"
 
-#~ msgid "DefaultFontNameForWindows"
-#~ msgstr ""
+msgid "DefaultFontNameForWindows"
+msgstr "DefaultFontNameForWindows"
 
 #, c-format
 msgid "Opening the X display took %ld msec"
@@ -2653,15 +2660,15 @@ msgstr "\"%s\" dosyası açılamıyor"
 msgid "cannot have both a list and a \"what\" argument"
 msgstr "ya birinci ya da son argüman belirtilmelidir"
 
-msgid "Switching to backtracking RE engine for pattern: "
-msgstr "Şu dizgi için düzenli ifade iz sürme motoruna geçiliyor: "
-
 msgid "External submatches:\n"
 msgstr "Dış alteşleşmeler:\n"
 
 msgid "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
 "Geçici günlük dosyası yazma için açılamıyor, stderr'de görüntüleniyor... "
+
+msgid "Switching to backtracking RE engine for pattern: "
+msgstr "Şu dizgi için düzenli ifade iz sürme motoruna geçiliyor: "
 
 #, c-format
 msgid " into \"%c"
@@ -3870,10 +3877,10 @@ msgid "Edit with &Vim"
 msgstr "&Vim ile düzenle"
 
 msgid "Edit with existing Vim"
-msgstr "Mevcut Vim ile düzenle"
+msgstr "Var olan Vim ile düzenle"
 
 msgid "Edit with existing Vim - "
-msgstr "Mevcut Vim ile düzenle - "
+msgstr "Var olan Vim ile düzenle - "
 
 msgid "Edits the selected file(s) with Vim"
 msgstr "Seçili dosyaları Vim ile düzenler"
@@ -5372,7 +5379,7 @@ msgid "E462: Could not prepare for reloading \"%s\""
 msgstr "E462: \"%s\" yeniden yükleme için hazırlanamadı"
 
 msgid "E463: Region is guarded, cannot modify"
-msgstr "E463: Bölge korunuyor, değiştirilemez"
+msgstr "E463: Bölge korunuyor, değişiklik yapılamaz"
 
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Kullanıcı tanımlı komutun belirsiz kullanımı"
@@ -6200,7 +6207,7 @@ msgid "E708: [:] must come last"
 msgstr "E708: [:] en son gelmelidir"
 
 msgid "E709: [:] requires a List or Blob value"
-msgstr "E709: [:] bir liste veya ikili geniş nesne değeri gerektirir"
+msgstr "E709: [:] bir liste veya ikili nesne değeri gerektirir"
 
 msgid "E710: List value has more items than targets"
 msgstr "E710: Liste değeri hedeften daha fazla ögeye sahip"
@@ -6863,17 +6870,17 @@ msgstr ""
 
 #, c-format
 msgid "E896: Argument of %s must be a List, Dictionary or Blob"
-msgstr "E896: %s argümanı bir liste, sözlük veya ikili geniş nesne olmalıdır"
+msgstr "E896: %s argümanı bir liste, sözlük veya ikili nesne olmalıdır"
 
 msgid "E897: List or Blob required"
-msgstr "E897: Liste veya ikili geniş nesne gerekiyor"
+msgstr "E897: Liste veya ikili nesne gerekiyor"
 
 msgid "E898: socket() in channel_connect()"
 msgstr "E898: channel_connect() içinde socket()"
 
 #, c-format
 msgid "E899: Argument of %s must be a List or Blob"
-msgstr "E899: %s argümanı bir liste veya ikili geniş nesne olmalıdır"
+msgstr "E899: %s argümanı bir liste veya ikili nesne olmalıdır"
 
 msgid "E900: maxdepth must be non-negative number"
 msgstr "E900: maxdepth negatif olmayan bir sayı olmalı"
@@ -6960,7 +6967,7 @@ msgid "E924: Current window was closed"
 msgstr "E924: Geçerli pencere kapatıldı"
 
 msgid "E925: Current quickfix list was changed"
-msgstr "E925: Geçerli hızlı düzelt listesi değiştirildi"
+msgstr "E925: Geçerli tez düzelt listesi değiştirildi"
 
 msgid "E926: Current location list was changed"
 msgstr "E926: Geçerli konum listesi değiştirildi"
@@ -7117,21 +7124,19 @@ msgid "E971: Property type %s does not exist"
 msgstr "E971: Özellik türü %s yok"
 
 msgid "E972: Blob value does not have the right number of bytes"
-msgstr "E972: İkili geniş nesne değeri doğru bayt sayısına sahip değil"
+msgstr "E972: İkili nesne değeri doğru bayt sayısına sahip değil"
 
 msgid "E973: Blob literal should have an even number of hex characters"
-msgstr ""
-"E973: İkili geniş nesne hazır bilgisi çift onalt. karakterlere iye olmalıdır"
+msgstr "E973: İkili nesne hazır bilgisi çift onalt. karakterlere iye olmalıdır"
 
 msgid "E974: Using a Blob as a Number"
-msgstr "E974: Bir ikili geniş nesne, sayı olarak kullanılıyor"
+msgstr "E974: Bir ikili nesne, sayı olarak kullanılıyor"
 
 msgid "E975: Using a Blob as a Float"
-msgstr ""
-"E975: Bir ikili geniş nesne, bir kayan noktalı değer olarak kullanılıyor"
+msgstr "E975: Bir ikili nesne, bir kayan noktalı değer olarak kullanılıyor"
 
 msgid "E976: Using a Blob as a String"
-msgstr "E976: Bir ikili geniş nesne, bir dizi olarak kullanılıyor"
+msgstr "E976: Bir ikili nesne, bir dizi olarak kullanılıyor"
 
 msgid "E977: Can only compare Blob with Blob"
 msgstr ""
@@ -7139,11 +7144,11 @@ msgstr ""
 "karşılaştırılabilir"
 
 msgid "E978: Invalid operation for Blob"
-msgstr "E978: İkili geniş nesne için geçersiz işlem"
+msgstr "E978: İkili nesne için geçersiz işlem"
 
 #, c-format
 msgid "E979: Blob index out of range: %ld"
-msgstr "E979: İkili geniş nesne sırası erimin dışında: %ld"
+msgstr "E979: İkili nesne sırası erimin dışında: %ld"
 
 msgid "E980: Lowlevel input not supported"
 msgstr "E980: Alt düzey girdi desteklenmiyor"
@@ -7165,7 +7170,7 @@ msgid "E985: .= is not supported with script version >= 2"
 msgstr "E985: .= betiğin ikinci sürümünden itibaren desteklenmiyor"
 
 msgid "E986: Cannot modify the tag stack within tagfunc"
-msgstr "E986: Etiket yığını tagfunc dahilinde değiştirilemiyor"
+msgstr "E986: Etiket yığınında tagfunc dahilinde değişiklik yapılamaz"
 
 msgid "E987: Invalid return value from tagfunc"
 msgstr "E987: Etiket işlevinden geçersiz dönüş değeri"
@@ -7194,7 +7199,7 @@ msgid "E994: Not allowed in a popup window"
 msgstr "E994: Açılır pencere içinde izin verilmiyor"
 
 msgid "E995: Cannot modify existing variable"
-msgstr "E995: Mevcut değişken değiştirilemiyor"
+msgstr "E995: Var olan değişkende değişiklik yapılamaz"
 
 msgid "E996: Cannot lock a range"
 msgstr "E996: Erim kilitlenemiyor"
@@ -7679,7 +7684,7 @@ msgid "E1130: Cannot add to null list"
 msgstr "E1130: Null listesine bir öge eklenemez"
 
 msgid "E1131: Cannot add to null blob"
-msgstr "E1131: Null ikili geniş nesnesine ekleme yapılamaz"
+msgstr "E1131: Null ikili nesnesine ekleme yapılamaz"
 
 msgid "E1132: Missing function argument"
 msgstr "E1132: İşlev argümanı eksik"
@@ -7703,8 +7708,8 @@ msgstr "E1138: Bir Boole, bir sayı olarak kullanılıyor"
 msgid "E1139: Missing matching bracket after dict key"
 msgstr "E1139: Sözlük anahtarı sonrası eşleşen ayraç eksik"
 
-msgid "E1140: :for argument must be a sequence of lists"
-msgstr "E1140: :for argümanı listelerin bir sıralaması olmalıdır"
+msgid "E1140: :for argument must be a sequence of lists or tuples"
+msgstr "E1140: :for argümanı listelerin/tuplelerin bir sıralaması olmalıdır"
 
 msgid "E1141: Indexable type required"
 msgstr "E1141: İndekslenebilir tür gerekiyor"
@@ -7870,7 +7875,7 @@ msgid "E1183: Cannot use a range with an assignment operator: %s"
 msgstr "E1183: Bir atama işleci ile bir erim kullanılamıyor: %s"
 
 msgid "E1184: Blob not set"
-msgstr "E1184: İkili geniş nesne ayarlanmamış"
+msgstr "E1184: İkili nesne ayarlanmamış"
 
 msgid "E1185: Missing :redir END"
 msgstr "E1185: :redir END eksik"
@@ -8006,7 +8011,7 @@ msgstr "E1220: %d argümanı için dizi veya sayı gerekiyor"
 
 #, c-format
 msgid "E1221: String or Blob required for argument %d"
-msgstr "E1221: %d argümanı için dizi veya ikili geniş nesne gerekiyor"
+msgstr "E1221: %d argümanı için dizi veya ikili nesne gerekiyor"
 
 #, c-format
 msgid "E1222: String or List required for argument %d"
@@ -8021,12 +8026,12 @@ msgid "E1224: String, Number or List required for argument %d"
 msgstr "E1224: %d argümanı için dizi, sayı veya liste gerekiyor"
 
 #, c-format
-msgid "E1225: String, List or Dictionary required for argument %d"
-msgstr "E1225: %d argümanı için dizi, liste veya sözlük gerekiyor"
+msgid "E1225: String, List, Tuple or Dictionary required for argument %d"
+msgstr "E1225: %d argümanı için dizi, liste, tuple veya sözlük gerekiyor"
 
 #, c-format
 msgid "E1226: List or Blob required for argument %d"
-msgstr "E1226: %d argümanı için liste veya ikili geniş nesne gerekiyor"
+msgstr "E1226: %d argümanı için liste veya ikili nesne gerekiyor"
 
 #, c-format
 msgid "E1227: List or Dictionary required for argument %d"
@@ -8034,7 +8039,7 @@ msgstr "E1227: %d argümanı için liste veya sözlük gerekiyor"
 
 #, c-format
 msgid "E1228: List, Dictionary or Blob required for argument %d"
-msgstr "E1228: %d argümanı için liste, sözlük veya ikili geniş nesne gerekiyor"
+msgstr "E1228: %d argümanı için liste, sözlük veya ikili nesne gerekiyor"
 
 #, c-format
 msgid "E1229: Expected dictionary for using key \"%s\", but got %s"
@@ -8071,11 +8076,11 @@ msgstr "E1237: Geçerli arabellekte böyle bir kullanıcı tanımlı komut yok: 
 
 #, c-format
 msgid "E1238: Blob required for argument %d"
-msgstr "E1238: %d argümanı için ikili geniş nesne gerekiyor"
+msgstr "E1238: %d argümanı için ikili nesne gerekiyor"
 
 #, c-format
 msgid "E1239: Invalid value for blob: %d"
-msgstr "E1239: İkili geniş nesne için geçersiz değer: %d"
+msgstr "E1239: İkili nesne için geçersiz değer: %d"
 
 msgid "E1240: Resulting text too long"
 msgstr "E1240: Ortaya çıkan metin pek uzun"
@@ -8113,16 +8118,20 @@ msgstr "E1249: Vurgulama grubu adı pek uzun"
 
 #, c-format
 msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
-msgstr "E1250: %s argümanı bir liste, sözlük veya ikili geniş nesne olmalıdır"
+msgstr "E1250: %s argümanı bir liste, sözlük veya ikili nesne olmalıdır"
 
 #, c-format
-msgid "E1251: List, Dictionary, Blob or String required for argument %d"
+msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
 msgstr ""
-"E1251: %d argümanı için liste, sözlük, ikili geniş nesne veya dizi gerekiyor"
+"E1251: %d argümanı için liste, sözlük, tuple, ikili nesne veya dizi gerekiyor"
 
 #, c-format
 msgid "E1252: String, List or Blob required for argument %d"
-msgstr "E1252: %d argümanı için dizi, liste veya ikili geniş nesne gerekiyor"
+msgstr "E1252: %d argümanı için dizi, liste veya ikili nesne gerekiyor"
+
+#, c-format
+msgid "E1253: String, List, Tuple or Blob required for argument %d"
+msgstr "E1253: %d argümanı için dizi, liste, tuple veya ikili nesne gerekiyor"
 
 msgid "E1254: Cannot use script variable in for loop"
 msgstr "E1254: for döngüsünde betik değişkeni kullanılamaz"
@@ -8297,9 +8306,10 @@ msgid "E1300: Cannot use a partial with dictionary for :defer"
 msgstr "E1300: :defer için bir kısımsal sözlük kullanılamıyor"
 
 #, c-format
-msgid "E1301: String, Number, List or Blob required for argument %d"
+msgid "E1301: String, Number, List, Tuple or Blob required for argument %d"
 msgstr ""
-"E1301: %d argümanı için dizi, sayı, liste veya ikili geniş nesne gerekiyor"
+"E1301: %d argümanı için dizi, sayı, liste, tuple veya ikili geniş nesne "
+"gerekiyor"
 
 msgid "E1302: Script variable was deleted"
 msgstr "E1302: Betik değişkeni silinmiş"
@@ -8322,7 +8332,7 @@ msgstr "E1306: Döngü pek iç içe geçmiş"
 
 #, c-format
 msgid "E1307: Argument %d: Trying to modify a const %s"
-msgstr "E1307: %d argümanı: Bir %s sabiti değiştirilmeye çalışılıyor"
+msgstr "E1307: %d argümanı: Bir %s sabitinde değişiklik yapılmaya çalışılıyor"
 
 msgid "E1308: Cannot resize a window in another tab page"
 msgstr ""
@@ -8826,8 +8836,117 @@ msgid "E1514: 'findfunc' did not return a List type"
 msgstr "E1514: 'findfunc' bir liste türü döndürmedi"
 
 #, c-format
-msgid "E1515: Unable to convert %s '%s' encoding"
-msgstr "E1515: %s '%s' kodlamasına dönüştürülemiyor"
+msgid "E1515: Unable to convert from '%s' encoding"
+msgstr "E1515: '%s' kodlamasından dönüştürülemiyor"
+
+#, c-format
+msgid "E1516: Unable to convert to '%s' encoding"
+msgstr "E1516: '%s' kodlamasına dönüştürülemiyor"
+
+msgid "E1517: Can only compare Tuple with Tuple"
+msgstr ""
+"E1517: Bir tuple yalnızca kendinden bir başkası ile karşılaştırılabilir"
+
+msgid "E1518: Invalid operation for Tuple"
+msgstr "E1518: Tuple için geçersiz işlem"
+
+#, c-format
+msgid "E1519: Tuple index out of range: %ld"
+msgstr "E1519: Tuple sırası erimin dışında: %ld"
+
+msgid "E1520: Using a Tuple as a Number"
+msgstr "E1520: Bir tuple, bir sayı olarak kullanılıyor"
+
+msgid "E1521: Using a Tuple as a Float"
+msgstr "E1521: Bir tuple, bir kayan noktalı değer olarak kullanılıyor"
+
+msgid "E1522: Using a Tuple as a String"
+msgstr "E1522: Bir tuple, bir dizi olarak kullanılıyor"
+
+msgid "E1523: String, List, Tuple or Blob required"
+msgstr "E1523: Dizi, liste, tuple veya ikili nesne gerekiyor"
+
+#, c-format
+msgid "E1524: Cannot use a tuple with function %s"
+msgstr "E1524: %s işlevi ile bir tuple kullanılamaz"
+
+#, c-format
+msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
+msgstr "E1525: %s argümanı bir liste, sözlük, tuple veya ikili nesne olmalıdır"
+
+#, c-format
+msgid "E1526: Missing end of Tuple ')': %s"
+msgstr "E1526: Tuple sonunda ')' eksik: %s"
+
+#, c-format
+msgid "E1527: Missing comma in Tuple: %s"
+msgstr "E1527: Tuplede virgül eksik: %s"
+
+#, c-format
+msgid "E1528: List or Tuple or Blob required for argument %d"
+msgstr "E1528: %d argümanı için liste, tuple veya ikili nesne gerekiyor"
+
+#, c-format
+msgid "E1529: List or Tuple required for argument %d"
+msgstr "E1529: %d argümanı için liste veya tuple gerekiyor"
+
+#, c-format
+msgid "E1530: List or Tuple or Dictionary required for argument %d"
+msgstr "E1530: %d argümanı için liste, tuple veya sözlük gerekiyor"
+
+#, c-format
+msgid "E1531: Argument of %s must be a List, Tuple, Dictionary or Blob"
+msgstr "E1531: %s argümanı bir liste, sözlük, tuple veya ikili nesne olmalıdır"
+
+msgid "E1532: Cannot modify a tuple"
+msgstr "E1532: Bir tuplede değişiklik yapılamaz"
+
+msgid "E1533: Cannot slice a tuple"
+msgstr "E1533: Bir tuple dilimlenemiyor"
+
+#, c-format
+msgid "E1534: Tuple required for argument %d"
+msgstr "E1534: %d argümanı için tuple gerekiyor"
+
+msgid "E1535: List or Tuple required"
+msgstr "E1535: Liste veya tuple gerekiyor"
+
+msgid "E1536: Tuple required"
+msgstr "E1536: Tuple gerekiyor"
+
+msgid "E1537: Less targets than Tuple items"
+msgstr "E1537: Tuple ögelerinden daha az hedef var"
+
+msgid "E1538: More targets than Tuple items"
+msgstr "E1538: Tuple ögelerinden daha fazla hedef var"
+
+#, c-format
+msgid "E1539: Variadic tuple must end with a list type: %s"
+msgstr "E1539: Değişken tuple bir liste türüyle bitmelidir: %s"
+
+msgid "E1540: Cannot use a variadic tuple in concatenation"
+msgstr "E1540: Birbirine katarken bir değişken tuple kullanılamaz"
+
+msgid "E1541: Value too large, max Unicode codepoint is U+10FFFF"
+msgstr "E1541: Değer pek büyük, en büyük Unicode kod noktası U+10FFFF"
+
+msgid "E1542: Cannot have a negative or zero number of quickfix/location lists"
+msgstr "E1542: Tez düzelt/konum listelerinde negatif veya sıfır sayısı olamaz"
+
+msgid "E1543: Cannot have more than a hundred quickfix/location lists"
+msgstr "E1543: Yüz taneden çok tez düzelt/konum listesi olamaz"
+
+msgid "E1544: Failed resizing the quickfix/location list stack"
+msgstr "E1544: Tez düzelt/konum listesi yığını yeniden boyutlandırılamadı"
+
+msgid "E1545: Quickfix list stack unavailable"
+msgstr "E1545: Tez düzelt listesi yığını kullanılamıyor"
+
+msgid "E1546: Cannot switch to a closing buffer"
+msgstr "E1546: Kapatılan bir arabelleğe geçilemez"
+
+msgid "E1547: This version of Vim does support :redrawtabpanel"
+msgstr "E1547: Vim'in bu sürümü :redrawtabpanel'i desteklemiyor"
 
 msgid "--No lines in buffer--"
 msgstr "--Arabellek içinde satır yok--"
@@ -8953,7 +9072,7 @@ msgid "cannot delete vim.Dictionary attributes"
 msgstr "vim.Dictionary öznitelikleri silinemiyor"
 
 msgid "cannot modify fixed dictionary"
-msgstr "sabit sözlük değiştirilemiyor"
+msgstr "sabit sözlükte değişiklik yapılamaz"
 
 #, c-format
 msgid "cannot set attribute %s"
@@ -9004,7 +9123,19 @@ msgid "cannot delete vim.List attributes"
 msgstr "vim.List öznitelikleri silinemiyor"
 
 msgid "cannot modify fixed list"
-msgstr "sabit liste değiştirilemiyor"
+msgstr "sabit listede değişiklik yapılamaz"
+
+msgid "tuple constructor does not accept keyword arguments"
+msgstr "tuple yapıcısı anahtar sözcük argümanları kabul etmez"
+
+msgid "tuple index out of range"
+msgstr "tuple sırası erimin dışında"
+
+msgid "cannot delete vim.Tuple attributes"
+msgstr "vim.Tuple öznitelikleri silinemiyor"
+
+msgid "cannot modify fixed tuple"
+msgstr "sabit tuplede değişiklik yapılamaz"
 
 #, c-format
 msgid "unnamed function %s does not exist"
@@ -9366,7 +9497,7 @@ msgid "how many components of the path to show"
 msgstr "yolun kaç tane bileşeninin gösterileceği"
 
 msgid "when to open a quickfix window for cscope"
-msgstr "cscope için ne zaman bir hızlı düzelt penceresinin açılacağı"
+msgstr "cscope için ne zaman bir tez düzelt penceresinin açılacağı"
 
 msgid "file names in a cscope file are relative to that file"
 msgstr "bir cscope dosyasındaki o dosyaya göreli olan dosya adları"
@@ -9415,8 +9546,12 @@ msgstr ""
 "yazdırılamayan karakterleri onaltılık olarak göstermek için\n"
 "\"uhex\" içer"
 
-msgid "characters to use for the status line, folds and filler lines"
-msgstr "durum satırı, kıvırma ve doldurucular için kullanılan karakterler"
+msgid ""
+"characters to use for the status line, folds, diffs, buffer text, filler "
+"lines and truncation in the completion menu"
+msgstr ""
+"tamamlama menüsünde durum satırı, kıvırmalar, diff'ler, arabellek metni, "
+"doldurucular ve sondan kısaltma için kullanılan karakterler"
 
 msgid "number of lines used for the command-line"
 msgstr "komut satırı için kullanılan satırların sayısı"
@@ -9457,6 +9592,12 @@ msgstr "her satır için göreli satır numarasını göster"
 
 msgid "number of columns to use for the line number"
 msgstr "satır numarası için kullanılacak sütün sayısı"
+
+msgid "maximum number of quickfix lists that can be stored in history"
+msgstr "geçmişte tutulabilecek en çok tez düzelt listesi sayısı"
+
+msgid "maximum number of location lists that can be stored in history"
+msgstr "geçmişte tutulabilecek en çok konum listesi sayısı"
 
 msgid "controls whether concealable text is hidden"
 msgstr "gizlenebilir metnin saklı olup olmadığını denetler"
@@ -9958,6 +10099,9 @@ msgstr ""
 "Ekleme kipi tamamlamasının CTRL-N ve CTRL-P için nice çalıştığını\n"
 "belirler"
 
+msgid "use fuzzy collection for specific completion modes"
+msgstr "belirli tamamlama kipleri için bulanık koleksiyon kullan"
+
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "Ekleme kipi tamamlaması için açılır menü kullanımı"
 
@@ -9971,6 +10115,9 @@ msgid "maximum height of the popup menu"
 msgstr "açılır menünün en çok yüksekliği"
 
 msgid "minimum width of the popup menu"
+msgstr "açılır menünün en çok genişliği"
+
+msgid "maximum width of the popup menu"
 msgstr "açılır menünün en çok genişliği"
 
 msgid "user defined function for Insert mode completion"
@@ -10372,7 +10519,7 @@ msgstr ""
 "varsa uyar"
 
 msgid "running make and jumping to errors (quickfix)"
-msgstr "make çalıştırma ve hatalara atlama (hızlı düzelt)"
+msgstr "make çalıştırma ve hatalara atlama (tez düzelt)"
 
 msgid "name of the file that contains error messages"
 msgstr "hata iletileri içeren dosyanın adı"
@@ -10401,7 +10548,7 @@ msgid "encoding of the \":make\" and \":grep\" output"
 msgstr "\":make\" ve \":grep\" çıktılarının kodlaması"
 
 msgid "function to display text in the quickfix window"
-msgstr "hızlı düzelt içinde metin düzenlemek için işlev"
+msgstr "tez düzelt içinde metin düzenlemek için işlev"
 
 msgid "system specific"
 msgstr "sisteme özel"
@@ -10420,6 +10567,9 @@ msgstr "bir dosya adındaki karakterleri belirtir"
 
 msgid "specifies the characters in an identifier"
 msgstr "bir tanımlayıcıdaki karakterleri belirler"
+
+msgid "defines trigger strings for complete_match()"
+msgstr "complete_match() için tetik dizilerini tanımlar"
 
 msgid "specifies the characters in a keyword"
 msgstr "bir anahtar sözcükteki karakterleri belirler"
@@ -10634,6 +10784,15 @@ msgstr "MzScheme devingen kitaplığının adı"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "MzScheme GC devingen kitaplığının adı"
+
+msgid "0, 1 or 2; when to use the tabpanel"
+msgstr "0, 1 veya 2; sekme panelinin ne zaman kullanılacağı"
+
+msgid "custom tab pages in tabpanel"
+msgstr "sekme panelinde özel sekme sayfaları"
+
+msgid "options for using tabpanel"
+msgstr "sekme paneli için seçenekler"
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr "Komut satırı penceresini keşfettiniz! Kapatmak için \":q\" kullanın."

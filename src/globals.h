@@ -971,9 +971,9 @@ EXTERN int	gui_win_y INIT(= -1);
 #endif
 
 #ifdef FEAT_CLIPBOARD
-EXTERN Clipboard_T clip_star;	// PRIMARY selection in X11
-# ifdef FEAT_X11
-EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11
+EXTERN Clipboard_T clip_star;	// PRIMARY selection in X11/Wayland
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
+EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11/Wayland
 # else
 #  define clip_plus clip_star	// there is only one clipboard
 #  define ONE_CLIPBOARD
@@ -2068,4 +2068,24 @@ EXTERN char_u showcmd_buf[SHOWCMD_BUFLEN];
 
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc_set INIT(= FALSE);
+#endif
+
+// If we've already warned about missing/unavailable clipboard
+EXTERN int did_warn_clipboard INIT(= FALSE);
+
+#ifdef FEAT_CLIPBOARD
+EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
+#endif
+
+#ifdef FEAT_WAYLAND
+
+// Don't connect to Wayland compositor if TRUE
+EXTERN int wayland_no_connect INIT(= FALSE);
+
+// Wayland display name (ex. wayland-0). Can be NULL
+EXTERN char *wayland_display_name INIT(= NULL);
+
+// Wayland display file descriptor; set by wayland_init_client()
+EXTERN int wayland_display_fd;
+
 #endif

@@ -9,6 +9,9 @@
 /* Define unless no X support found */
 #undef HAVE_X11
 
+/* Define unless no Wayland support found */
+#undef HAVE_WAYLAND
+
 /* Define when terminfo support found */
 #undef TERMINFO
 
@@ -504,6 +507,9 @@
 
 /* Define if we have flock() */
 #undef HAVE_FLOCK
+
+/* Define if we have shm_open() */
+#undef HAVE_SHM_OPEN
 
 /* Define to inline symbol or empty */
 #undef inline

@@ -1,0 +1,118 @@
+*wayland.txt*   For Vim version 9.1.  Last change: 2025 Jun 28
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Wayland Protocol Support				*wayland*
+
+1. Useful Wayland information	|wayland-useful|
+2. Wayland selections		|wayland-selections|
+
+==============================================================================
+1. Useful Wayland information				*wayland-useful*
+
+							*wayland-seat*
+Functionality such as the clipboard for Wayland requires a seat to use.  A
+Wayland seat can consist of a keyboard, pointer, and touch device(s).  The
+seat to use can be set with the 'wlseat' option.  Only useful if you use
+multiple Wayland seats in the same Wayland session.
+
+							*wayland-gui*
+See |gui-wayland|.  Please note that when using the GUI, Vim uses the toolkit
+such as GTK for accessing the clipboard, and does not access the clipboard
+though Wayland.  You can check this though the |v:clipmethod| variable, which
+should equal to "none" when running the GUI.
+
+Wayland commands:
+							*:wlrestore* *:wl*
+:wl[restore] [display]	Reinitializes the connection to the Wayland compositor.
+			Useful when running Vim in a screen/tmux session that
+			continues running after the Wayland compositor
+			restarts.
+
+			[display] should be in the format of the
+			$WAYLAND_DISPLAY environment variable (e.g.
+			"wayland-0").  If [display] is omitted, then it
+			reinitializes the connection using the same value as
+			was used for the previous execution of this command.
+			If the value was never specified, then it uses the
+			value of $WAYLAND_DISPLAY environment variable.  This
+			will also update |v:clipmethod|.
+			{only available when compiled with the |+wayland|
+			feature}
+
+Wayland errors:
+							*E1548*
+Vim failed communicating with the Wayland compositor.  This is likely due to
+the Wayland compositor process being killed.  Try the `:wlrestore` command to
+try connecting again.
+
+==============================================================================
+2. Wayland Selections					*wayland-selections*
+
+Vim supports the wlr-data-control-unstable-v1 and ext-data-control-v1
+protocols, for accessing the current Wayland selection.  These are the best
+case scenario protocols, see |wayland-focus-steal|.  Selection in this case
+essentially means the "clipboard."  You can check if your Wayland compositor
+supports either of these protocols by running the wayland-info command, which
+should be bunded with libwayland on your system: >
+	wayland-info | grep -E '(ext_data_control|zwlr_data_control)'
+<If grep finds a match, then you have either or both protocols on your system.
+If you don't get any match, then please see |wayland-focus-steal| for more
+information.
+
+If you come from X11, then the regular Wayland selection is equivalent to the
+CLIPBOARD selection in X11, and the primary Wayland selection equates to the
+X11 primary selection.  Accessing these selections is the same as X11 in Vim,
+in which the + register is the regular selection, and the * register is the
+primary selection, note that your compositor may not support primary
+selections, see |wayland-primary-selection| for more details.
+
+							*wayland-persist*
+If you use X11 cut buffers, no such things exist on Wayland.  Instead to
+emulate such functionality, a separate clipboard manager must be used in order
+to persist selection data when a Wayland client exists.
+
+							*wayland-and-x11*
+If your version of Vim comes compiled with both X11 and Wayland support, then
+Vim determines which one to use when accessing the clipboard using the
+'clipmethod' option.
+
+						*wayland-primary-selection*
+If you find X11 style primary selections useful, Wayland also implements this
+behaviour in its own protocols:
+
+- The primary selection protocol is the most widely supported, but requires
+  focus in order to be used, see |wayland-focus-steal|.
+
+- Data control protocol available on your system, such as the ext or wlr
+  protocols, then primary selection is also supported.  This is unless you are
+  using version 1 (not the same as the 'v1' in the protocol name), of the
+  wlr-data-control protocol.  Then the primary selection protocol will be used
+  as a fallback.
+
+					*wayland-focus-steal* *wayland-gnome*
+If you are using the GNOME desktop environment on Wayland, as of this writing,
+there is no method of accessing/modifying the clipboard for external clients
+such as Vim without being focused.  Focused in this case means the client has
+received some sort of input event, such as a window being focused.  This is
+what the wlr-data-control-unstable-v1 and ext-data-control-v1 protocols solve.
+If your Wayland compositor does not support the above protocols, then the
+above explanation applies.
+
+To solve this problem, Vim implements a way of gaining focus in order to
+access the clipboard, by creating a temporary transparent top-level surface.
+This is by default disabled and can be enabled via the 'wlsteal' option.
+Moreover, a seat that has a keyboard is also required, see 'wlseat', and the
+xdg-shell protocol must be available.
+
+Note that this method can have several side effects from the result of focus
+stealing.  For example, if you have a taskbar that shows currently opened apps
+in your desktop environment, then when Vim attempts to steal focus, it may
+"flicker," as if a window was opened then immediately closed after.
+Additionally, if you are in fullscreen mode, this focus stealing won't work,
+because the created surface won't ever gain focus.  If this happens, Vim will
+seem to freeze temporarily, see 'wltimeoutlen' for more information.
+
+ vim:tw=78:ts=8:noet:ft=help:norl

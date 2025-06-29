@@ -1404,6 +1404,7 @@ ALL_LIBS = \
 	   $(GUI_LIBS2) \
 	   $(X_PRE_LIBS) \
 	   $(X_LIBS) \
+	   $(WAYLAND_LIBS) \
 	   $(X_EXTRA_LIBS) \
 	   $(MZSCHEME_LIBS) \
 	   $(LIBS) \
@@ -1614,12 +1615,22 @@ SRC =	$(BASIC_SRC) \
 	$(PERL_SRC) \
 	$(PYTHON_SRC) $(PYTHON3_SRC) \
 	$(TCL_SRC) \
-	$(RUBY_SRC)
+	$(RUBY_SRC) \
+	$(WAYLAND_SRC)
 
 EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
 	    gui_beval.c netbeans.c job.c channel.c \
 	    $(GRESOURCE_SRC)
+
+$(WAYLAND_SRC):
+	cd auto/wayland; $(MAKE)
+
+# Needed for parallel jobs to work
+auto/wayland/ext-data-control-v1.h: auto/wayland/ext-data-control-v1.c
+auto/wayland/wlr-data-control-unstable-v1.h: auto/wayland/wlr-data-control-unstable-v1.c
+auto/wayland/primary-selection-unstable-v1.h: auto/wayland/primary-selection-unstable-v1.c
+auto/wayland/xdg-shell.h: auto/wayland/xdg-shell.c
 
 # Unittest files
 JSON_TEST_SRC = json_test.c
@@ -1636,7 +1647,8 @@ UNITTEST_TARGETS = $(JSON_TEST_TARGET) $(KWORD_TEST_TARGET) $(MEMFILE_TEST_TARGE
 RUN_UNITTESTS = run_json_test run_kword_test run_memfile_test run_message_test
 
 # All sources, also the ones that are not configured
-ALL_LOCAL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC)
+ALL_LOCAL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC) \
+		$(WAYLAND_SRC)
 ALL_SRC = $(ALL_LOCAL_SRC) $(TERM_SRC) $(XDIFF_SRC)
 
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
@@ -1777,7 +1789,8 @@ OBJ_COMMON = \
 	$(OS_EXTRA_OBJ) \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
-	$(XDIFF_OBJS_USED)
+	$(XDIFF_OBJS_USED) \
+	$(WAYLAND_OBJ)
 
 # The files included by tests are not in OBJ_COMMON.
 OBJ_MAIN = \
@@ -2954,6 +2967,7 @@ clean celan: testclean
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
 	cd xxd; $(MAKE) clean
+	cd auto/wayland; $(MAKE) clean
 
 # Make a shadow directory for compilation on another system or with different
 # features:
@@ -2982,6 +2996,8 @@ shadow:	runtime pixmaps
 	$(MKDIR_P) $(SHADOWDIR)
 	cd $(SHADOWDIR); ln -s $(LINKEDFILES) .
 	mkdir $(SHADOWDIR)/auto
+	mkdir $(SHADOWDIR)/auto/wayland
+	cd $(SHADOWDIR)/auto/wayland; ln -s ../../../auto/wayland/* .
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	$(MKDIR_P) $(SHADOWDIR)/po
 	cd $(SHADOWDIR)/po; ln -s ../../po/*.po ../../po/*.mak ../../po/*.vim ../../po/*.in ../../po/Makefile ../../po/*.c .
@@ -3627,6 +3643,21 @@ objects/viminfo.o: viminfo.c
 
 objects/window.o: window.c
 	$(CCC) -o $@ window.c
+
+objects/wayland.o: wayland.c
+	$(CCC) -o $@ wayland.c
+
+objects/wlr-data-control-unstable-v1.o: auto/wayland/wlr-data-control-unstable-v1.c
+	$(CCC) -o $@ auto/wayland/wlr-data-control-unstable-v1.c
+
+objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
+	$(CCC) -o $@ auto/wayland/ext-data-control-v1.c
+
+objects/xdg-shell.o: auto/wayland/xdg-shell.c
+	$(CCC) -o $@ auto/wayland/xdg-shell.c
+
+objects/primary-selection-unstable-v1.o: auto/wayland/primary-selection-unstable-v1.c
+	$(CCC) -o $@ auto/wayland/primary-selection-unstable-v1.c
 
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
@@ -4500,6 +4531,20 @@ objects/channel.o: channel.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
+objects/wlr-data-control-unstable-v1.o: \
+ auto/wayland/wlr-data-control-unstable-v1.c
+objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
+objects/xdg-shell.o: auto/wayland/xdg-shell.c
+objects/primary-selection-unstable-v1.o: \
+ auto/wayland/primary-selection-unstable-v1.c
+objects/wayland.o: wayland.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h xdiff/xdiff.h xdiff/../vim.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h \
+ auto/wayland/wlr-data-control-unstable-v1.h \
+ auto/wayland/ext-data-control-v1.h auto/wayland/xdg-shell.h \
+ auto/wayland/primary-selection-unstable-v1.h
 objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
 objects/vterm_encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
