@@ -14,5 +14,6 @@ void tagstack_clear_entry(taggy_T *item);
 int expand_tags(int tagnames, char_u *pat, int *num_file, char_u ***file);
 int get_tags(list_T *list, char_u *pat, char_u *buf_fname);
 void get_tagstack(win_T *wp, dict_T *retdict);
+int clear_tagstack(win_T *wp);
 int set_tagstack(win_T *wp, dict_T *d, int action);
 /* vim: set ft=c : */

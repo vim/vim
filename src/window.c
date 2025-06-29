@@ -1559,17 +1559,20 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     }
 
     // copy tagstack and folds
-    for (i = 0; i < oldp->w_tagstacklen; i++)
+    if (p_tgstcp)
     {
-	taggy_T	*tag = &newp->w_tagstack[i];
-	*tag = oldp->w_tagstack[i];
-	if (tag->tagname != NULL)
-	    tag->tagname = vim_strsave(tag->tagname);
-	if (tag->user_data != NULL)
-	    tag->user_data = vim_strsave(tag->user_data);
+	for (i = 0; i < oldp->w_tagstacklen; i++)
+	{
+	    taggy_T	*tag = &newp->w_tagstack[i];
+	    *tag = oldp->w_tagstack[i];
+	    if (tag->tagname != NULL)
+		tag->tagname = vim_strsave(tag->tagname);
+	    if (tag->user_data != NULL)
+		tag->user_data = vim_strsave(tag->user_data);
+	}
+	newp->w_tagstackidx = oldp->w_tagstackidx;
+	newp->w_tagstacklen = oldp->w_tagstacklen;
     }
-    newp->w_tagstackidx = oldp->w_tagstackidx;
-    newp->w_tagstacklen = oldp->w_tagstacklen;
 
     // Keep same changelist position in new window.
     newp->w_changelistidx = oldp->w_changelistidx;

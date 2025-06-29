@@ -2601,6 +2601,9 @@ static struct vimoption options[] =
     {"tagstack",    "tgst", P_BOOL|P_VI_DEF,
 			    (char_u *)&p_tgst, PV_NONE, NULL, NULL,
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
+    {"tagstackcopy", "tgstcp", P_BOOL|P_VIM,
+			    (char_u *)&p_tgstcp, PV_NONE, NULL, NULL,
+			    {(char_u *)TRUE, (char_u *)TRUE} SCTX_INIT},
     {"tcldll",      NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 #if defined(DYNAMIC_TCL)
 			    (char_u *)&p_tcldll, PV_NONE, NULL, NULL,

@@ -129,6 +129,7 @@ charidx({string}, {idx} [, {countcc} [, {utf16}]])
 chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
+cleartagstack([{nr}])		Number	clear tag stack in window {nr}
 cmdcomplete_info()		Dict	get current cmdline completion
 					information
 col({expr} [, {winid}])		Number	column byte index of cursor or mark
@@ -1831,6 +1832,16 @@ clearmatches([{win}])					*clearmatches()*
 		Can also be used as a |method|: >
 			GetWin()->clearmatches()
 <
+		Return type: |Number|
+
+
+cleartagstack([{nr}])					cleartagstack()
+		Clear the tag stack of the window {nr}.
+		{nr} can be the window number or the |window-ID|.
+		When {winnr} is not specified, the current window is used.
+
+		Returns zero for success, -1 for failure.
+
 		Return type: |Number|
 
 

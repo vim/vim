@@ -1382,6 +1382,7 @@ Timers:						*timer-functions*
 Tags:						*tag-functions*
 	taglist()		get list of matching tags
 	tagfiles()		get a list of tags files
+	cleartagstack()		clear the tag stack of a window
 	gettagstack()		get the tag stack of a window
 	settagstack()		modify the tag stack of a window
 
