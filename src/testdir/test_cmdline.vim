@@ -4354,8 +4354,6 @@ func Test_redrawtabpanel_error()
   call assert_fails(':redrawtabpanel', 'E1547:')
 endfunc
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 " Test wildcharm completion for '/' and '?' search
 func Test_search_complete()
   CheckOption incsearch
