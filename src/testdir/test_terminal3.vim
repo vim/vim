@@ -1032,6 +1032,10 @@ func Test_terminal_visual_empty_listchars()
   call term_wait(buf)
   call term_sendkeys(buf, "V2k")
   call VerifyScreenDump(buf, 'Test_terminal_empty_listchars', {})
+  call term_sendkeys(buf, "\<esc>")
+  call term_sendkeys(buf, ":set nu\<cr>")
+  call term_sendkeys(buf, "ggV2j")
+  call VerifyScreenDump(buf, 'Test_terminal_empty_listchars2', {})
 
   call StopVimInTerminal(buf)
 endfunc
