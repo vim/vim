@@ -1,7 +1,7 @@
-*develop.txt*	For Vim version 9.1.  Last change: 2025 June 29
+*develop.txt*   For Vim version 9.1.  Last change: 2025 May 05
 
 
-		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
 Development of Vim.					*development*
@@ -18,7 +18,7 @@ See the file README.txt in the "src" directory for an overview of the source
 code.
 
 Vim is open source software.  Everybody is encouraged to contribute to help
-improving Vim.	For sending patches a unified diff "diff -u" is preferred.
+improving Vim.  For sending patches a unified diff "diff -u" is preferred.
 You can create a pull request on github, but it's not required.
 Also see http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch.
 
@@ -27,7 +27,7 @@ Also see http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch.
 
 Most important things come first (roughly).
 
-Note that quite a few items are contradicting.	This is intentional.  A
+Note that quite a few items are contradicting.  This is intentional.  A
 balance must be found between them.
 
 
@@ -58,7 +58,7 @@ VIM IS... IMPROVED					*design-improved*
 The IMproved bits of Vim should make it a better Vi, without becoming a
 completely different editor.  Extensions are done with a "Vi spirit".
 - Use the keyboard as much as feasible.  The mouse requires a third hand,
-  which we don't have.	Many terminals don't have a mouse.
+  which we don't have.  Many terminals don't have a mouse.
 - When the mouse is used anyway, avoid the need to switch back to the
   keyboard.  Avoid mixing mouse and keyboard handling.
 - Add commands and options in a consistent way.  Otherwise people will have a
@@ -69,7 +69,7 @@ completely different editor.  Extensions are done with a "Vi spirit".
 - Minimize using CTRL and other modifiers, they are more difficult to type.
 - There are many first-time and inexperienced Vim users.  Make it easy for
   them to start using Vim and learn more over time.
-- There is no limit to the features that can be added.	Selecting new features
+- There is no limit to the features that can be added.  Selecting new features
   is one based on (1) what users ask for, (2) how much effort it takes to
   implement and (3) someone actually implementing it.
 
@@ -146,12 +146,12 @@ VIM IS... NOT						*design-not*
 
 - Vim is not a shell or an Operating System.  It does provide a terminal
   window, in which you can run a shell or debugger.  E.g. to be able to do
-  this over an ssh connection.	But if you don't need a text editor with that
+  this over an ssh connection.  But if you don't need a text editor with that
   it is out of scope (use something like screen or tmux instead).
   A satirical way to say this: "Unlike Emacs, Vim does not attempt to include
   everything but the kitchen sink, but some people say that you can clean one
   with it.  ;-)"
-  To use Vim with gdb see |terminal-debugger|.	Other (older) tools can be
+  To use Vim with gdb see |terminal-debugger|.  Other (older) tools can be
   found at http://www.agide.org (link seems dead)  and http://clewn.sf.net.
 - Vim is not a fancy GUI editor that tries to look nice at the cost of
   being less consistent over all platforms.  But functional GUI features are
@@ -161,7 +161,7 @@ VIM IS... NOT						*design-not*
 ==============================================================================
 2. Coding style						*coding-style*
 
-These are the rules to use when making changes to the Vim source code.	Please
+These are the rules to use when making changes to the Vim source code.  Please
 stick to these rules, to keep the sources readable and maintainable.
 
 This list is not complete.  Look in the source code for more examples.
@@ -197,10 +197,6 @@ sound.c and sign.c can be (semi-) automatically formatted using the
 Other source files do not yet correspond to the .clang-format file.  This may
 change in the future and they may be reformatted as well.
 
-							*style-documentation*
-The documentation files are formatted with the following rules:
-1. Lines are 78 characters maximum
-2. Always `retab!` to compress the file
 
 C COMPILER				*style-compiler* *ANSI-C* *C89* *C99*
 
@@ -337,7 +333,7 @@ SPACES AND PUNCTUATION					   *style-spaces*
 No space between a function name and the bracket:
 
 OK:	func(arg);
-Wrong:	func (arg);
+Wrong:  func (arg);
 
 Do use a space after `if`, `while`, `switch`, etc.
 
@@ -347,7 +343,7 @@ Wrong:	if(arg)		for(;;)
 Use a space after a comma or semicolon:
 
 OK:	func(arg1, arg2);	for (i = 0; i < 2; ++i)
-Wrong:	func(arg1,arg2);	for (i = 0;i < 2;++i)
+Wrong:  func(arg1,arg2);	for (i = 0;i < 2;++i)
 
 Use a space before and after '=', '+', '/', etc.
 
@@ -423,7 +419,7 @@ Don't use "delete" or "this" as a variable name, C++ doesn't like it.
 
 Because of the requirement that Vim runs on as many systems as possible, we
 need to avoid using names that are already defined by the system.  This is a
-list of names that are known to cause trouble.	The name is given as a regexp
+list of names that are known to cause trouble.  The name is given as a regexp
 pattern.
 
 is.*()		POSIX, ctype.h
@@ -586,12 +582,12 @@ For making suggestions there are two basic mechanisms:
 2. Perform soundfolding on both the bad word and the good words and then find
    matches, possibly with a few changes like with the first mechanism.
 
-The first is good for finding typing mistakes.	After experimenting with
+The first is good for finding typing mistakes.  After experimenting with
 hashtables and looking at solutions from other spell checkers the conclusion
 was that a trie (a kind of tree structure) is ideal for this.  Both for
 reducing memory use and being able to try sensible changes.  For example, when
 inserting a character only characters that lead to good words need to be
-tried.	Other mechanisms (with hashtables) need to try all possible letters at
+tried.  Other mechanisms (with hashtables) need to try all possible letters at
 every position in the word.  Also, a hashtable has the requirement that word
 boundaries are identified separately, while a trie does not require this.
 That makes the mechanism a lot simpler.
@@ -611,7 +607,7 @@ the best method is.  Alternatives:
    memory use, but takes a long time.  On a fast PC it takes a couple of
    seconds for English, which can be acceptable for interactive use.  But for
    some languages it takes more than ten seconds (e.g., German, Catalan),
-   which is unacceptably slow.	For batch processing (automatic corrections)
+   which is unacceptably slow.  For batch processing (automatic corrections)
    it's too slow for all languages.
 2. Use a trie for the soundfolded words, so that searching can be done just
    like how it works without soundfolding.  This requires remembering a list
