@@ -418,6 +418,9 @@ automatically when editing help files.
 Vim help files should be formatted for a 'textwidth' of 78 characters, so they
 look good in a typical 80 x 24 terminal window.
 
+Use two spaces between the final dot of a sentence of the first letter of the
+next sentence.  Like this.
+
 Use tab characters for aligning content, with a 'tabstop' setting of 8.
 This also helps reduce the file size.
 
