@@ -6972,8 +6972,6 @@ remove_old_matches(void)
 /*
  * Retrieve completion matches using the callback function "cb" and store the
  * 'refresh:always' flag.
- * if "restore_leader" is TRUE, insert the leader string that was removed
- * earlier in ins_compl_next().
  */
 #ifdef FEAT_COMPL_FUNC
     static void
