@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Jun 25
+" Last Change:	   2025 Jun 30
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -203,13 +203,6 @@ if exists("g:vim_maxlines")
 endif
 if exists("g:vimsyntax_noerror")
  let g:vimsyn_noerror= g:vimsyntax_noerror
-endif
-
-" Variable options {{{2
-if exists("g:vim_maxlines")
- let s:vimsyn_maxlines= g:vim_maxlines
-else
- let s:vimsyn_maxlines= 60
 endif
 
 " Nulls {{{2
@@ -2108,10 +2101,10 @@ endif
 
 " Synchronize (speed) {{{2
 "============
-if exists("g:vimsyn_minlines")
- exe "syn sync minlines=".g:vimsyn_minlines
-endif
-exe "syn sync maxlines=".s:vimsyn_maxlines
+
+exe "syn sync minlines=" .. get(g:, "vimsyn_minlines", 100)
+exe "syn sync maxlines=" .. get(g:, "vimsyn_maxlines", 200)
+
 syn sync linecont	"^\s\+\\"
 syn sync linebreaks=2
 syn sync match vimAugroupSyncA	groupthere NONE	"\<aug\%[roup]\>\s\+[eE][nN][dD]"
