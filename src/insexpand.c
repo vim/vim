@@ -250,7 +250,7 @@ static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
 static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
-static void get_cpt_func_completion_matches(callback_T *cb);
+static void get_cpt_func_completion_matches(callback_T *cb, int restore_leader);
 static callback_T *get_callback_if_cpt_func(char_u *p);
 # endif
 static int setup_cpt_sources(void);
@@ -4807,20 +4807,6 @@ get_callback_if_cpt_func(char_u *p)
     }
     return NULL;
 }
-
-/*
- * Retrieve new completion matches by invoking callback "cb".
- */
-    static void
-expand_cpt_function(callback_T *cb)
-{
-    // Re-insert the text removed by ins_compl_delete().
-    ins_compl_insert_bytes(compl_orig_text.string + get_compl_len(), -1);
-    // Get matches
-    get_cpt_func_completion_matches(cb);
-    // Undo insertion
-    ins_compl_delete();
-}
 #endif
 
 /*
@@ -4984,7 +4970,7 @@ get_next_completion_match(int type, ins_compl_next_state_T *st, pos_T *ini)
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
 	    if (ctrl_x_mode_normal())  // Invoked by a func in 'cpt' option
-		expand_cpt_function(st->func_cb);
+		get_cpt_func_completion_matches(st->func_cb, TRUE);
 	    else
 		expand_by_function(type, compl_pattern.string, NULL);
 	    break;
@@ -6989,16 +6975,23 @@ remove_old_matches(void)
  */
 #ifdef FEAT_COMPL_FUNC
     static void
-get_cpt_func_completion_matches(callback_T *cb UNUSED)
+get_cpt_func_completion_matches(callback_T *cb UNUSED, int restore_leader)
 {
     int	startcol = cpt_sources_array[cpt_sources_index].cs_startcol;
+    int	result;
 
     VIM_CLEAR_STRING(cpt_compl_pattern);
 
     if (startcol == -2 || startcol == -3)
 	return;
 
-    if (set_compl_globals(startcol, curwin->w_cursor.col, TRUE) == OK)
+    if (restore_leader) // Re-insert the text removed by ins_compl_delete()
+	ins_compl_insert_bytes(compl_orig_text.string + get_compl_len(), -1);
+    result = set_compl_globals(startcol, curwin->w_cursor.col, TRUE);
+    if (restore_leader)
+	ins_compl_delete(); // Undo insertion
+
+    if (result == OK)
     {
 	expand_by_function(0, cpt_compl_pattern.string, cb);
 	cpt_sources_array[cpt_sources_index].cs_refresh_always =
@@ -7051,7 +7044,7 @@ cpt_compl_refresh(void)
 		}
 		cpt_sources_array[cpt_sources_index].cs_startcol = startcol;
 		if (ret == OK)
-		    get_cpt_func_completion_matches(cb);
+		    get_cpt_func_completion_matches(cb, FALSE);
 	    }
 	}
 
