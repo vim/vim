@@ -1097,6 +1097,9 @@ au BufNewFile,BufRead *.persistentmodels	setf haskellpersistent
 au BufNewFile,BufRead *.ht			setf haste
 au BufNewFile,BufRead *.htpp			setf hastepreproc
 
+" Haxe
+au BufNewFile,BufRead *.hx			setf haxe
+
 " HCL
 au BufRead,BufNewFile *.hcl			setf hcl
 
