@@ -4560,15 +4560,17 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     int	    is_single_line = start->lnum == end->lnum;
 
     segment_len = is_single_line ? (end->col - start->col)
-	: (int)STRLEN(start_ptr);
+				: (int)STRLEN(start_ptr);
     if (ga_grow(&ga, segment_len + 1) != OK)
 	return FAIL;
+
     ga_concat_len(&ga, start_ptr, segment_len);
     if (!is_single_line)
 	ga_append(&ga, '\n');
 
     // Append full lines between start and end
     if (!is_single_line)
+    {
 	for (lnum = start->lnum + 1; lnum < end->lnum; lnum++)
 	{
 	    line = ml_get(lnum);
@@ -4577,6 +4579,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
 	    ga_concat(&ga, line);
 	    ga_append(&ga, '\n');
 	}
+    }
 
     // Append partial end line (up to word end)
     word_end = find_word_end(end_line + end->col);
@@ -4616,7 +4619,7 @@ expand_pattern_in_buf(
     int		pat_len, match_len;
     int		has_range = FALSE;
     int		compl_started = FALSE;
-    int		search_flags, i;
+    int		search_flags;
     char_u	*match, *line, *word_end;
     regmatch_T	regmatch;
 
@@ -4673,14 +4676,8 @@ expand_pattern_in_buf(
 	if (compl_started)
 	{
 	    // If we've looped back to an earlier match, stop
-	    if ((dir == FORWARD
-			&& (cur_match_pos.lnum < prev_match_pos.lnum
-			    || (cur_match_pos.lnum == prev_match_pos.lnum
-				&& cur_match_pos.col <= prev_match_pos.col)))
-		    || (dir == BACKWARD
-			&& (cur_match_pos.lnum > prev_match_pos.lnum
-			    || (cur_match_pos.lnum == prev_match_pos.lnum
-				&& cur_match_pos.col >= prev_match_pos.col))))
+	    if ((dir == FORWARD && LTOREQ_POS(cur_match_pos, prev_match_pos)) ||
+		(dir == BACKWARD && LTOREQ_POS(prev_match_pos, cur_match_pos)))
 	    {
 		if (looped_around)
 		    break;
@@ -4740,7 +4737,7 @@ expand_pattern_in_buf(
 	match[pat_len + match_len] = NUL;
 
 	// Include this match if it is not a duplicate
-	for (i = 0; i < ga.ga_len; ++i)
+	for (int i = 0; i < ga.ga_len; ++i)
 	{
 	    if (STRCMP(match, ((char_u **)ga.ga_data)[i]) == 0)
 	    {

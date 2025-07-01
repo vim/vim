@@ -664,6 +664,7 @@ runtime/syntax/zsh.vim					@chrisbra
 runtime/tutor/tutor1.eo					@dpelle
 runtime/tutor/tutor1.fr					@dpelle
 runtime/tutor/tutor1.ru					@RestorerZ
+runtime/tutor/tutor2.fr					@dlejay
 src/iscygpty.*						@k-takata
 src/libvterm/						@leonerd
 src/po/ca.po						@nfdisco

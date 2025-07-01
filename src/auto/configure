@@ -9080,7 +9080,7 @@ shm_open("/test", O_CREAT, 0600);
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }; printf "%s\n" "#define HAVE_SHM_OPEN 1" >>confdefs.h
@@ -9090,7 +9090,8 @@ else case e in #(
 printf "%s\n" "no" >&6; } ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
 CPPFLAGS=$cppflags_save
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-wayland argument" >&5

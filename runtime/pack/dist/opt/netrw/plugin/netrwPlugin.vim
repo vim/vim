@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_netrwPlugin")
     finish
 endif
 
-let g:loaded_netrwPlugin = "v181"
+let g:loaded_netrwPlugin = "v183"
 
 let s:keepcpo = &cpo
 set cpo&vim
@@ -69,12 +69,6 @@ command! -nargs=* -bar -count=0 -complete=dir Texplore call netrw#Explore(<count
 command! -nargs=* -bar -bang -count=0 -complete=dir Lexplore call netrw#Lexplore(<count>, <bang>0, <q-args>)
 command! -nargs=* -bar -bang Nexplore call netrw#Explore(-1, 0, 0, <q-args>)
 command! -nargs=* -bar -bang Pexplore call netrw#Explore(-2, 0, 0, <q-args>)
-
-" }}}
-" Commands: NetrwSettings {{{
-
-command! -nargs=0 NetrwSettings call netrwSettings#NetrwSettings()
-command! -bang NetrwClean call netrw#Clean(<bang>0)
 
 " }}}
 " Maps: {{{
