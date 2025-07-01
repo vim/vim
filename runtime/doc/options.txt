@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jun 29
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1812,7 +1812,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			register.  When "unnamed" is also included to the
 			option, yank operations (but not delete, change or put)
 			will additionally copy the text into register '*'.  If
-			wayland is being used and the compositor does not
+			Wayland is being used and the compositor does not
 			support the primary-selection-unstable-v1 protocol,
 			then the regular selection is used in its place.  Only
 			available with the |+X11| or |+wayland_clipboard|
@@ -1854,7 +1854,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	exclude:{pattern}
 			Defines a pattern that is matched against the name of
 			the terminal 'term'.  If there is a match, no
-			connection will be made to the X server or wayland
+			connection will be made to the X server or Wayland
 			compositor.  This is useful in this situation:
 			- Running Vim in a console.
 			- $DISPLAY/$WAYLAND_DISPLAY is set to start
@@ -1890,7 +1890,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		x11		X11 selections
 
 	Note: This option is ignored when either the GUI is running or if Vim
-	is run on a system without wayland or X11 support, such as Windows or
+	is run on a system without Wayland or X11 support, such as Windows or
 	macOS.  The GUI or system way of accessing the clipboard is always
 	used instead.
 

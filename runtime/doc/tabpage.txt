@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 9.1.  Last change: 2025 Jun 07
+*tabpage.txt*   For Vim version 9.1.  Last change: 2025 Jul 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18,6 +18,8 @@ when used in combination with more than one tab page.
 6. Setting 'guitablabel'	|setting-guitablabel|
 
 {not able to use multiple tab pages when the |+windows| feature was disabled
+at compile time}
+{not able to use |tabpanel| feature when the |+tabpanel| feature was disabled
 at compile time}
 
 ==============================================================================
@@ -438,15 +440,15 @@ side of the window.  It looks like this:
 <
 To configure the tabpanel, use the following options: 'tabpanel',
 'showtabpanel' and 'tabpanelopt'.
-The 'tabpanel' and 'showtabpanel' options function similar to
-'statusline' or 'tabline'.
+The 'tabpanel' option functions similar to 'statusline' or 'tabline', and the
+'showtabpanel' option functions similar to 'laststatus' or 'showtabline'.
 
 The "columns:" item of 'tabpanelopt' option specifies the width of the
 tabpanel:
 >
-              +------ This width
-              |
-         <----+----->
+	      +------ This width
+	      |
+	 <----+----->
 	+-----------+----------------------------------
 	|(1)        |text text text text text text text
 	|  ~/aaa.txt|text text text text text text text
@@ -464,9 +466,9 @@ The "vert" item of the 'tabpanelopt' option specifies whether a vertical
 separator should be displayed between the tabpanel and the display part of the
 window:
 >
-                    +------ This is
-                    |
-                    v
+		    +------ This is
+		    |
+		    v
 	+-----------+----------------------------------
 	|(1)        |text text text text text text text
 	|  ~/aaa.txt|text text text text text text text
