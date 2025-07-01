@@ -310,11 +310,10 @@ nextwild(
 	    if (p != NULL && type == WILD_LONGEST)
 	    {
 		int	j;
-		char_u	c;
 
 		for (j = 0; j < xp->xp_pattern_len; ++j)
 		{
-		    c = ccline->cmdbuff[i + j];
+		    char_u  c = ccline->cmdbuff[i + j];
 		    if (c == '*' || c == '?')
 			break;
 		}
@@ -3015,6 +3014,8 @@ expand_files_and_dirs(
 	pat_end = pat + pat_len;
 	for (p = pat; *p != NUL; ++p)
 	{
+	    char_u  *tmp;
+
 	    if (*p != '\\')
 		continue;
 
@@ -3023,8 +3024,7 @@ expand_files_and_dirs(
 		&& *(p + 2) == '\\'
 		&& *(p + 3) == ' ')
 	    {
-		char_u  *tmp = p + 3;
-
+		tmp = p + 3;
 		mch_memmove(p, tmp,
 		    (size_t)(pat_end - tmp) + 1);   // +1 for NUL
 		pat_end -= 3;
@@ -3032,8 +3032,7 @@ expand_files_and_dirs(
 	    else if (xp->xp_backslash & XP_BS_ONE
 		&& *(p + 1) == ' ')
 	    {
-		char_u  *tmp = p + 1;
-
+		tmp = p + 1;
 		mch_memmove(p, tmp,
 		    (size_t)(pat_end - tmp) + 1);   // +1 for NUL
 		--pat_end;
@@ -3042,8 +3041,7 @@ expand_files_and_dirs(
 	    {
 		if (*(p + 1) == '\\' && *(p + 2) == ',')
 		{
-		    char_u  *tmp = p + 2;
-
+		    tmp = p + 2;
 		    mch_memmove(p, tmp,
 			(size_t)(pat_end - tmp) + 1);   // +1 for NUL
 		    pat_end -= 2;
@@ -3051,8 +3049,7 @@ expand_files_and_dirs(
 #ifdef BACKSLASH_IN_FILENAME
 		else if (*(p + 1) == ',')
 		{
-		    char_u  *tmp = p + 1;
-
+		    tmp = p + 1;
 		    mch_memmove(p, tmp,
 			(size_t)(pat_end - tmp) + 1);   // +1 for NUL
 		    --pat_end;
