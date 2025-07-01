@@ -740,7 +740,7 @@ cin_skip_comment_and_string(char_u *s)
 cin_is_compound_init(char_u *s)
 {
     char_u *p = s, *r = NULL;
-    int slen = STRLEN(s);
+    int slen = (int)STRLEN(s);
 
     while (*p)
     {
