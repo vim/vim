@@ -324,4 +324,12 @@ func CheckGithubActions()
     throw "Skipped: FIXME: this test doesn't work on Github Actions CI"
   endif
 endfunc
+
+" Check if running in GUI mode and under Github Actions #17595
+command CheckGUIAndGithubActions call CheckGUIAndGithubActions()
+func CheckGUIAndGithubActions()
+  if has("gui_running") && expand('$GITHUB_ACTIONS') ==# 'true'
+    throw "Skipped: FIXME: this test doesn't work in GUI mode while running on Github Actions CI"
+  endif
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

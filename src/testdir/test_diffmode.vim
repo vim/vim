@@ -1000,6 +1000,7 @@ func Test_diff_screen()
   let g:test_is_flaky = 1
   CheckScreendump
   CheckFeature menu
+  CheckGUIAndGithubActions
 
   let lines =<< trim END
       func UnifiedDiffExpr()
@@ -1794,6 +1795,7 @@ endfunc
 
 " This was scrolling too many lines.
 func Test_diff_scroll_wrap_on()
+  CheckGUIAndGithubActions
   20new
   40vsplit
   call setline(1, map(range(1, 9), 'repeat(v:val, 200)'))

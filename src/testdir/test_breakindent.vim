@@ -266,6 +266,7 @@ func Test_breakindent07a_vartabs()
 endfunc
 
 func Test_breakindent08()
+  CheckGUIAndGithubActions
   " breakindent set and shift by 1, Number and list set sbr=# and briopt:sbr
   call s:test_windows('setl briopt=shift:1,sbr,min:0 nu nuw=4 sbr=# list cpo+=n ts=4')
   " make sure, cache is invalidated!
@@ -303,6 +304,7 @@ func Test_breakindent08_vartabs()
 endfunc
 
 func Test_breakindent08a()
+  CheckGUIAndGithubActions
   " breakindent set and shift by 1, Number and list set sbr=# and briopt:sbr
   call s:test_windows('setl briopt=shift:1,sbr,min:0 nu nuw=4 sbr=# list')
   let lines = s:screen_lines(line('.'),10)
@@ -1166,6 +1168,7 @@ func Test_breakindent_change_display_uhex()
 endfunc
 
 func Test_breakindent_list_split()
+  CheckGUIAndGithubActions
   10new
   61vsplit
   setlocal tabstop=8 breakindent list listchars=tab:<->,eol:$

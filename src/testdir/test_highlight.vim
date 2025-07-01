@@ -220,6 +220,7 @@ endfunc
 
 func Test_highlight_eol_with_cursorline_rightleft()
   CheckFeature rightleft
+  CheckGUIAndGithubActions
 
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
@@ -273,6 +274,7 @@ func Test_highlight_eol_with_cursorline_rightleft()
 endfunc
 
 func Test_highlight_eol_with_cursorline_linewrap()
+  CheckGUIAndGithubActions
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
   call NewWindow('topleft 5', 10)

@@ -1,4 +1,5 @@
 " Tests for 'virtualedit'.
+source check.vim
 
 func Test_yank_move_change()
   new
@@ -578,6 +579,7 @@ func Test_virtualedit_setlocal()
 endfunc
 
 func Test_virtualedit_mouse()
+  CheckGUIAndGithubActions
   let save_mouse = &mouse
   set mouse=a
   set virtualedit=all

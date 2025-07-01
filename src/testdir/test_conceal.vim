@@ -390,6 +390,7 @@ func Test_conceal_eol()
 endfunc
 
 func Test_conceal_mouse_click()
+  CheckGUIAndGithubActions
   call NewWindow(10, 40)
   set mouse=a
   setlocal conceallevel=2 concealcursor=nc

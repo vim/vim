@@ -98,6 +98,7 @@ func Test_linebreak_with_list_and_number()
 endfunc
 
 func Test_should_break()
+  CheckGUIAndGithubActions
   call s:test_windows('setl sbr=+ nolist')
   call setline(1, "1\t" . repeat('a', winwidth(0)-2))
   let lines = s:screen_lines([1, 4], winwidth(0))

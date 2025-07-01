@@ -1019,6 +1019,7 @@ func Test_autocmd_buffilepost_with_hidden_term()
 endfunc
 
 func Test_terminal_visual_empty_listchars()
+  CheckGUIAndGithubActions
   CheckScreendump
   CheckRunVimInTerminal
   CheckUnix

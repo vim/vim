@@ -44,4 +44,8 @@ if 1
   if !isdirectory($HOME)
     call mkdir($HOME)
   endif
+  if has("gui_gtk")
+    " Run the tests in GUI mode with the toolbar, to save some screen space
+    set guioptions-=T
+  endif
 endif

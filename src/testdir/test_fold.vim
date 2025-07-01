@@ -1880,6 +1880,7 @@ endfunc
 
 " This was using freed memory
 func Test_foldcolumn_linebreak_control_char()
+  CheckGUIAndGithubActions
   CheckFeature linebreak
 
   5vnew

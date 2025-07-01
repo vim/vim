@@ -282,6 +282,7 @@ func Test_vartabs_breakindent()
 endfunc
 
 func Test_vartabs_linebreak()
+  CheckGUIAndGithubActions
   if winwidth(0) < 40
     return
   endif
@@ -318,6 +319,7 @@ func Test_vartabs_linebreak()
 endfunc
 
 func Test_vartabs_shiftwidth()
+  CheckGUIAndGithubActions
   "return
   if winwidth(0) < 40
     return

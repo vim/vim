@@ -632,6 +632,7 @@ call writefile(data,'Xinput')
 endfunc
 
 func Test_xxd_color2()
+  CheckGUIAndGithubActions
   CheckScreendump
   CheckUnix
   CheckNotMac

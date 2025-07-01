@@ -5026,6 +5026,7 @@ def Test_win_gotoid()
 enddef
 
 func Test_win_gotoid_in_mapping()
+  CheckGUIAndGithubActions
   CheckScreendump
 
   " requires a working clipboard and this doesn't work on MacOS
