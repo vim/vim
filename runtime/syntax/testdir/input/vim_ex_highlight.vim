@@ -1,22 +1,49 @@
 " Vim :highlight command
+" VIM_TEST_SETUP hi link vimHiGroup Todo
+
 
 " list
+
 highlight
 highlight Comment
+highlight Conceal
+highlight ErrorMsg
+highlight Foo
+
 
 " reset
+
 highlight clear
 
+
 " disable
+
 highlight clear Comment
+highlight clear Conceal
 highlight clear ErrorMsg
+highlight clear Foo
+
 highlight Comment NONE
+highlight Conceal NONE
+highlight ErrorMsg NONE
+highlight Foo NONE
+
 
 " add/modify
+
 highlight Comment cterm=underline
+highlight Conceal cterm=underline
+highlight ErrorMsg cterm=underline
+highlight Foo cterm=underline
+
 highlight default Comment term=bold
+highlight default Conceal term=bold
+highlight default ErrorMsg term=bold
+highlight Foo ErrorMsg term=bold
+
 
 " link
+
 highlight link Foo Comment
 highlight! link Foo Comment
 highlight link Foo NONE
@@ -24,7 +51,9 @@ highlight! link Foo NONE
 highlight link Foo ErrorMsg
 highlight! link Foo ErrorMsg
 
+
 " default link
+
 highlight default link Foo Comment
 highlight! default link Foo Comment
 highlight default link Foo NONE
@@ -58,3 +87,22 @@ hi default link
 hi default link
       \ Foo
       \ Comment | echo "Foo"
+
+
+" 'statusline' user groups
+
+highlight User1 ctermfg=black
+highlight User2 ctermfg=darkblue
+highlight User3 ctermfg=darkgreen
+highlight User4 ctermfg=darkcyan
+highlight User5 ctermfg=darkred
+highlight User6 ctermfg=darkmagenta
+highlight User7 ctermfg=darkyellow
+highlight User8 ctermfg=lightgray
+highlight User9 ctermfg=darkgray
+
+
+" :terminal group
+
+hi Terminal ctermbg=red ctermfg=blue
+

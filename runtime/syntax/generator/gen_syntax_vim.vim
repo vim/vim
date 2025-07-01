@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Jun 24
+" Last Change: 2025 Jul 01
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -482,6 +482,33 @@ function s:parse_vim_function(li)
 endfunc
 
 " ------------------------------------------------------------------------------
+function s:parse_vim_group(li)
+	try
+		let file_name = $VIM_SRCDIR . '/../runtime/syntax/syncolor.vim'
+		let item = {}
+
+		new
+		exec 'read ' . file_name
+		g!/^\s*Syn\%(Color\|Link\)/d
+		%s/^\s*Syn\%(Color\|Link\)\s\+\(\w\+\).*/\1/
+
+		for group in getline(1, line('$'))->sort()->uniq()
+			let item.name = group
+			call add(a:li, copy(item))
+		endfor
+
+		quit!
+
+		if empty(a:li)
+			throw 'group is empty'
+		endif
+	catch /.*/
+		call s:err_gen('')
+		throw 'exit'
+	endtry
+endfunc
+
+" ------------------------------------------------------------------------------
 function s:parse_vim_hlgroup(li)
 	try
 		let file_name = $VIM_SRCDIR . '/highlight.c'
@@ -532,15 +559,19 @@ function s:parse_vim_hlgroup(li)
 
 		" The following highlight groups cannot be extracted from highlight.c
 		" (TODO: extract from HIGHLIGHT_INIT ?)
-		let item.name = 'LineNrAbove'
-		let item.type = 'both'
-		call add(a:li, copy(item))
+		for group in ['ComplMatchIns', 'LineNrAbove', 'LineNrBelow', 'MsgArea', 'Terminal']
+			let item.name = group
+			let item.type = 'both'
+			call add(a:li, copy(item))
+		endfor
 
-		let item.name = 'LineNrBelow'
-		let item.type = 'both'
-		call add(a:li, copy(item))
+		for n in range(1, 9)
+			let item.name = 'User' .. n
+			let item.type = 'both'
+			call add(a:li, copy(item))
+		endfor
 
-		" "Conceal" is an option and cannot be used as keyword, so remove it.
+		" "Conceal" is a :syn option and cannot be used as keyword, so remove it.
 		" (Separately specified as 'syn match' in vim.vim.base).
 		call filter(a:li, {idx, val -> val.name !=# 'Conceal'})
 
@@ -763,6 +794,11 @@ function s:update_syntax_vim_file(vim_info)
 		let lnum = s:search_and_check('vimAutoEvent', base_fname, str_info)
 		let lnum = s:append_syn_any(lnum, str_info, li)
 
+		" vimGroup
+		let li = a:vim_info.group
+		let lnum = s:search_and_check('vimGroup', base_fname, str_info)
+		let lnum = s:append_syn_any(lnum, str_info, li)
+
 		" vimHLGroup
 		let li = a:vim_info.hlgroup
 		let lnum = s:search_and_check('vimHLGroup', base_fname, str_info)
@@ -962,6 +998,7 @@ try
 	let s:vim_info.cmd = []
 	let s:vim_info.event = []
 	let s:vim_info.func = []
+	let s:vim_info.group = []
 	let s:vim_info.hlgroup = []
 	let s:vim_info.compl_name = []
 	let s:vim_info.addr_name = []
@@ -974,6 +1011,7 @@ try
 		silent call s:parse_vim_command(s:vim_info.cmd)
 		silent call s:parse_vim_event(s:vim_info.event)
 		silent call s:parse_vim_function(s:vim_info.func)
+		silent call s:parse_vim_group(s:vim_info.group)
 		silent call s:parse_vim_hlgroup(s:vim_info.hlgroup)
 		silent call s:parse_vim_complete_name(s:vim_info.compl_name)
 		silent call s:parse_vim_addr_name(s:vim_info.addr_name)

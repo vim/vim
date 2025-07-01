@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Jun 30
+" Last Change:	   2025 Jul 01
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -124,12 +124,13 @@ syn keyword	vimAutoEvent	contained	User	skipwhite nextgroup=vimUserAutoEvent
 syn match	vimUserAutoEvent	contained	"\<\h\w*\>"	skipwhite nextgroup=vimUserAutoEventSep,vimAutocmdMod,vimAutocmdBlock
 
 " Highlight commonly used Groupnames {{{2
-syn keyword vimGroup contained	Comment Constant String Character Number Boolean Float Identifier Function Statement Conditional Repeat Label Operator Keyword Exception PreProc Include Define Macro PreCondit Type StorageClass Structure Typedef Special SpecialChar Tag Delimiter SpecialComment Debug Underlined Ignore Error Todo
+" GEN_SYN_VIM: vimGroup, START_STR='syn keyword vimGroup contained', END_STR=''
+syn keyword vimGroup contained Added Boolean Changed Character Comment Conditional Constant Debug Define Delimiter Error Exception Float Function Identifier Ignore Include Keyword Label Macro Number Operator PreCondit PreProc Removed Repeat Special SpecialChar SpecialComment Statement StorageClass String Structure Tag Todo Type Typedef Underlined
 
 " Default highlighting groups {{{2
 " GEN_SYN_VIM: vimHLGroup, START_STR='syn keyword vimHLGroup contained', END_STR=''
 syn keyword vimHLGroup contained ErrorMsg IncSearch ModeMsg NonText StatusLine StatusLineNC EndOfBuffer VertSplit VisualNOS DiffText DiffTextAdd PmenuSbar TabLineSel TabLineFill TabPanel TabPanelSel TabPanelFill Cursor lCursor QuickFixLine CursorLineSign CursorLineFold CurSearch PmenuKind PmenuKindSel PmenuMatch PmenuMatchSel PmenuExtra PmenuExtraSel PopupSelected MessageWindow PopupNotification Normal Directory LineNr CursorLineNr MoreMsg Question Search SpellBad SpellCap SpellRare SpellLocal PmenuThumb Pmenu PmenuSel SpecialKey Title WarningMsg WildMenu Folded FoldColumn SignColumn Visual DiffAdd DiffChange DiffDelete TabLine CursorColumn CursorLine ColorColumn MatchParen StatusLineTerm StatusLineTermNC ToolbarLine ToolbarButton Menu Tooltip Scrollbar CursorIM
-syn keyword vimHLGroup contained LineNrAbove LineNrBelow
+syn keyword vimHLGroup contained ComplMatchIns LineNrAbove LineNrBelow MsgArea Terminal User1 User2 User3 User4 User5 User6 User7 User8 User9
 syn match vimHLGroup contained "\<Conceal\>"
 syn case match
 
@@ -279,7 +280,7 @@ syn match	vimNumber	'\<0z\%(\x\x\)\+\%(\.\%(\x\x\)\+\)*'	skipwhite nextgroup=@vi
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,vimDelFunction,@vimEcho,vimElse,vimEnddef,vimEndfunction,vimEndif,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimExMark,vimFor,vimFunction,vimFunctionFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimImport,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimProfdel,vimProfile,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList,vimLua,vimMzScheme,vimPerl,vimPython,vimPython3,vimPythonX,vimRuby,vimTcl
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDelcommand,vimDelFunction,@vimEcho,vimElse,vimEnddef,vimEndfunction,vimEndif,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimExMark,vimFor,vimFunction,vimFunctionFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimImport,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimProfdel,vimProfile,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimSynColor,vimSynLink,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList,vimLua,vimMzScheme,vimPerl,vimPython,vimPython3,vimPythonX,vimRuby,vimTcl
 syn cluster vim9CmdList	contains=vim9Abstract,vim9Class,vim9Const,vim9Enum,vim9Export,vim9Final,vim9For,vim9Interface,vim9Type,vim9Var
 syn match vimCmdSep	"\\\@1<!|"	skipwhite nextgroup=@vimCmdList,vimSubst1,vimFunc
 syn match vimCmdSep	":\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
@@ -1480,7 +1481,13 @@ syn match	vimSynMenuPath	contained	".*\ze:"	nextgroup=vimSynMenuColon contains=v
 syn match	vimSynMenuColon	contained	":"	nextgroup=vimSynMenuName
 syn match	vimSynMenuName	contained	"\w\+"
 
-syn cluster vimExUserCmdList contains=vimCompilerSet,vimSynMenu
+" runtime/syntax/syncolor.vim
+syn match	vimSynColor		"\<SynColor\>"	skipwhite nextgroup=vimSynColorGroup
+syn match	vimSynColorGroup	contained	"\<\h\w*\>"	skipwhite nextgroup=vimHiKeyList	contains=vimGroup
+syn match	vimSynLink		"\<SynLink\>"	skipwhite nextgroup=vimSynLinkGroup
+syn match	vimSynLinkGroup	contained	"\<\h\w*\>"	skipwhite nextgroup=vimGroup	contains=vimGroup
+
+syn cluster vimExUserCmdList contains=vimCompilerSet,vimSynColor,vimSynLink,vimSynMenu
 
 " Errors And Warnings: {{{2
 " ====================
@@ -1728,8 +1735,9 @@ endif
 syn match	vimHighlight	"\<hi\%[ghlight]\>"	skipwhite nextgroup=vimHiBang,@vimHighlightCluster
 syn match	vimHiBang	contained	"\a\@1<=!"	skipwhite nextgroup=@vimHighlightCluster
 
-syn match	vimHiGroup	contained	"\i\+"
 syn case ignore
+" Conceal is a generated low-priority match
+syn match	vimHiGroup	contained	"\%(\<Conceal\>\)\@!\i\+"
 syn keyword	vimHiNone	contained	NONE
 syn keyword	vimHiAttrib	contained	none bold inverse italic nocombine reverse standout strikethrough underline undercurl underdashed underdotted underdouble
 syn keyword	vimFgBgAttrib	contained	none bg background fg foreground
@@ -2554,6 +2562,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vim9Vim9Script	vimCommand
 
  hi def link vimCompilerSet	vimCommand
+ hi def link vimSynColor vimCommand
+ hi def link vimSynLink vimCommand
  hi def link vimSynMenu	vimCommand
  hi def link vimSynMenuPath	vimMenuName
 endif
