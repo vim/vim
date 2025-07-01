@@ -342,7 +342,11 @@ MSVCRT_NAME = vcruntime$(MSVCRT_VER)
 
 ### Set the default $(WINVER) to make it work with Windows 7
 !ifndef WINVER
+! if "$(CPU)" == "ARM64"
+WINVER = 0x0A00
+! else
 WINVER = 0x0601
+! endif
 !endif
 
 # Use multiprocess build
@@ -571,7 +575,8 @@ CPUNR = sse2
 !  error *** ERROR Unknown target architecture "$(CPUNR)". Make aborted.
 ! endif
 !elseif "$(CPU)" == "ARM64"
-# TODO: Validate CPUNR.
+# TODO: Validate CPUNR depending on the VS version.
+CPUNR = armv8.0
 !endif
 
 # Convert processor ID to MVC-compatible number
