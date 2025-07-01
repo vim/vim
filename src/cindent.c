@@ -690,10 +690,9 @@ cin_islabel(void)		// XXX
 /*
  * Return TRUE if string "s" ends with the string "find", possibly followed by
  * white space and comments.  Skip strings and comments.
- * Ignore "ignore" after "find" if it's not NULL.
  */
     static int
-cin_ends_in(char_u *s, char_u *find, char_u *ignore)
+cin_ends_in(char_u *s, char_u *find)
 {
     char_u	*p = s;
     char_u	*r;
@@ -705,8 +704,6 @@ cin_ends_in(char_u *s, char_u *find, char_u *ignore)
 	if (STRNCMP(p, find, len) == 0)
 	{
 	    r = skipwhite(p + len);
-	    if (ignore != NULL && STRNCMP(r, ignore, STRLEN(ignore)) == 0)
-		r = skipwhite(r + STRLEN(ignore));
 	    if (cin_nocode(r))
 		return TRUE;
 	}
@@ -1705,7 +1702,7 @@ get_baseclass_amount(int col)
 	if (find_last_paren(ml_get_curline(), '(', ')')
 		&& (trypos = find_match_paren(curbuf->b_ind_maxparen)) != NULL)
 	    amount = get_indent_lnum(trypos->lnum); // XXX
-	if (!cin_ends_in(ml_get_curline(), (char_u *)",", NULL))
+	if (!cin_ends_in(ml_get_curline(), (char_u *)","))
 	    amount += curbuf->b_ind_cpp_baseclass;
     }
     else
@@ -2576,7 +2573,7 @@ get_c_indent(void)
 		    cur_amount = MAXCOL;
 		    l = ml_get(our_paren_pos.lnum);
 		    if (curbuf->b_ind_unclosed_wrapped
-				       && cin_ends_in(l, (char_u *)"(", NULL))
+				       && cin_ends_in(l, (char_u *)"("))
 		    {
 			// look for opening unmatched paren, indent one level
 			// for each additional level
@@ -3773,8 +3770,8 @@ term_again:
 	    && !cin_nocode(theline)
 	    && vim_strchr(theline, '{') == NULL
 	    && vim_strchr(theline, '}') == NULL
-	    && !cin_ends_in(theline, (char_u *)":", NULL)
-	    && !cin_ends_in(theline, (char_u *)",", NULL)
+	    && !cin_ends_in(theline, (char_u *)":")
+	    && !cin_ends_in(theline, (char_u *)",")
 	    && cin_isfuncdecl(NULL, cur_curpos.lnum + 1,
 			      cur_curpos.lnum + 1)
 	    && !cin_isterminated(theline, FALSE, TRUE))
@@ -3835,7 +3832,7 @@ term_again:
 	// } foo,
 	//   bar;
 	n = 0;
-	if (cin_ends_in(l, (char_u *)",", NULL)
+	if (cin_ends_in(l, (char_u *)",")
 		     || (*l != NUL && (n = l[STRLEN(l) - 1]) == '\\'))
 	{
 	    // take us back to opening paren
@@ -3883,14 +3880,14 @@ term_again:
 	// comments) align at column 0.  For example:
 	// char *string_array[] = { "foo",
 	//     / * x * / "b};ar" }; / * foobar * /
-	if (cin_ends_in(l, (char_u *)"};", NULL))
+	if (cin_ends_in(l, (char_u *)"};"))
 	    break;
 
 	// If the previous line ends on '[' we are probably in an
 	// array constant:
 	// something = [
 	//     234,  <- extra indent
-	if (cin_ends_in(l, (char_u *)"[", NULL))
+	if (cin_ends_in(l, (char_u *)"["))
 	{
 	    amount = get_indent() + ind_continuation;
 	    break;
@@ -3911,7 +3908,7 @@ term_again:
 		    break;
 	    }
 	    if (curwin->w_cursor.lnum > 0
-			    && cin_ends_in(look, (char_u *)"}", NULL))
+			    && cin_ends_in(look, (char_u *)"}"))
 		break;
 
 	    curwin->w_cursor = curpos_save;
@@ -3931,10 +3928,10 @@ term_again:
 	// int foo,
 	//     bar;
 	// indent_to_0 here;
-	if (cin_ends_in(l, (char_u *)";", NULL))
+	if (cin_ends_in(l, (char_u *)";"))
 	{
 	    l = ml_get(curwin->w_cursor.lnum - 1);
-	    if (cin_ends_in(l, (char_u *)",", NULL)
+	    if (cin_ends_in(l, (char_u *)",")
 		    || (*l != NUL && l[STRLEN(l) - 1] == '\\'))
 		break;
 	    l = ml_get_curline();
