@@ -1765,6 +1765,9 @@ au BufNewFile,BufRead *.nt			setf ntriples
 " Nu
 au BufNewFile,BufRead *.nu		setf nu
 
+" Numbat
+au BufNewFile,BufRead *.nbt		setf numbat
+
 " Oblivion Language and Oblivion Script Extender
 au BufNewFile,BufRead *.obl,*.obse,*.oblivion,*.obscript  setf obse
 
