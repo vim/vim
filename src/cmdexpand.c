@@ -1081,25 +1081,24 @@ ExpandOne(
     {
 	size_t	ss_size = 0;
 	char	*prefix = "";
-	char	*suffix;
+	char	*suffix = (options & WILD_USE_NL) ? "\n" : " ";
 	int	n = xp->xp_numfiles - 1;
 	int	i;
 
 	if (xp->xp_prefix == XP_PREFIX_NO)
 	{
 	    prefix = "no";
-	    ss_size = 2 * n;
+	    ss_size = STRLEN_LITERAL("no") * n;
 	}
 	else if (xp->xp_prefix == XP_PREFIX_INV)
 	{
 	    prefix = "inv";
-	    ss_size = 3 * n;
+	    ss_size = STRLEN_LITERAL("inv") * n;
 	}
 
-	suffix = (options & WILD_USE_NL) ? "\n" : " ";
-
 	for (i = 0; i < xp->xp_numfiles; ++i)
-	    ss_size += STRLEN(xp->xp_files[i]) + 1;
+	    ss_size += STRLEN(xp->xp_files[i]) + 1;	// +1 for the suffix
+	++ss_size;					// +1 for the NUL
 
 	ss = alloc(ss_size);
 	if (ss != NULL)
@@ -1113,7 +1112,7 @@ ExpandOne(
 		    ss_size - ss_len,
 		    "%s%s%s",
 		    (i > 0) ? prefix : "",
-		    xp->xp_files[i],
+		    (char *)xp->xp_files[i],
 		    (i < n) ? suffix : "");
 	    }
 	}
@@ -3014,7 +3013,7 @@ expand_files_and_dirs(
 	pat_end = pat + pat_len;
 	for (p = pat; *p != NUL; ++p)
 	{
-	    char_u  *tmp;
+	    char_u  *from;
 
 	    if (*p != '\\')
 		continue;
@@ -3024,34 +3023,34 @@ expand_files_and_dirs(
 		&& *(p + 2) == '\\'
 		&& *(p + 3) == ' ')
 	    {
-		tmp = p + 3;
-		mch_memmove(p, tmp,
-		    (size_t)(pat_end - tmp) + 1);   // +1 for NUL
+		from = p + 3;
+		mch_memmove(p, from,
+		    (size_t)(pat_end - from) + 1);   // +1 for NUL
 		pat_end -= 3;
 	    }
 	    else if (xp->xp_backslash & XP_BS_ONE
 		&& *(p + 1) == ' ')
 	    {
-		tmp = p + 1;
-		mch_memmove(p, tmp,
-		    (size_t)(pat_end - tmp) + 1);   // +1 for NUL
+		from = p + 1;
+		mch_memmove(p, from,
+		    (size_t)(pat_end - from) + 1);   // +1 for NUL
 		--pat_end;
 	    }
 	    else if (xp->xp_backslash & XP_BS_COMMA)
 	    {
 		if (*(p + 1) == '\\' && *(p + 2) == ',')
 		{
-		    tmp = p + 2;
-		    mch_memmove(p, tmp,
-			(size_t)(pat_end - tmp) + 1);   // +1 for NUL
+		    from = p + 2;
+		    mch_memmove(p, from,
+			(size_t)(pat_end - from) + 1);   // +1 for NUL
 		    pat_end -= 2;
 		}
 #ifdef BACKSLASH_IN_FILENAME
 		else if (*(p + 1) == ',')
 		{
-		    tmp = p + 1;
-		    mch_memmove(p, tmp,
-			(size_t)(pat_end - tmp) + 1);   // +1 for NUL
+		    from = p + 1;
+		    mch_memmove(p, from,
+			(size_t)(pat_end - from) + 1);   // +1 for NUL
 		    --pat_end;
 		}
 #endif
@@ -4109,10 +4108,8 @@ globpath(
 
 		if (ga_grow(ga, num_p) == OK)
 		{
-		    int	i;
-
 		    // take over the pointers and put them in "ga"
-		    for (i = 0; i < num_p; ++i)
+		    for (int i = 0; i < num_p; ++i)
 		    {
 			((char_u **)ga->ga_data)[ga->ga_len] = p[i];
 			++ga->ga_len;
