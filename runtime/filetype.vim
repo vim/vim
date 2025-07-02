@@ -2089,6 +2089,9 @@ au BufRead,BufNewFile qmldir			setf qmldir
 " Quarto
 au BufRead,BufNewFile *.qmd			setf quarto
 
+" QuickBms
+au BufRead,BufNewFile *.bms			setf quickbms
+
 " Racket (formerly detected as "scheme")
 au BufNewFile,BufRead *.rkt,*.rktd,*.rktl	setf racket
 
