@@ -893,6 +893,9 @@ au BufNewFile,BufRead *.fish			setf fish
 " Flatpak config
 au BufNewFile,BufRead */flatpak/repo/config	setf dosini
 
+" Flix
+au BufNewFile,BufRead *.flix			setf flix
+
 " Focus Executable
 au BufNewFile,BufRead *.fex,*.focexec		setf focexec
 
