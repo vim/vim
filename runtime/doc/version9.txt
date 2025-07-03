@@ -41643,6 +41643,8 @@ Options: ~
 - 'completeopt' is now a |global-local| option.
 - add 'cpoptions' flag "z" |cpo-z|, to disable some (traditional) vi
   behaviour/inconsistency (see |d-special| and |cw|).
+- add 'cpoptions' flag "~" |cpo-~| to disable resolving symlinks on |:cd|
+  commands
 - new option values for 'fillchars':
 	"trunc"		- configure truncation indicator, 'pummaxwidth'
 	"truncrl"	- like "trunc" but in 'rl' mode, 'pummaxwidth'

@@ -6795,6 +6795,7 @@ cpo-x	options.txt	/*cpo-x*
 cpo-y	options.txt	/*cpo-y*
 cpo-z	options.txt	/*cpo-z*
 cpo-{	options.txt	/*cpo-{*
+cpo-~	options.txt	/*cpo-~*
 cpp.vim	syntax.txt	/*cpp.vim*
 crash-recovery	recover.txt	/*crash-recovery*
 creating-menus	gui.txt	/*creating-menus*

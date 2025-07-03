@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 01
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2390,7 +2390,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'cpoptions'* *'cpo'* *cpo*
 'cpoptions' 'cpo'	string	(Vim default: "aABceFsz",
-				 Vi default:  all flags, except "#{|&/\."
+				 Vi default:  all flags, except "#{|&/\.~"
 				 |$VIM_POSIX|:  all flags)
 			global
 	A sequence of single character flags.  When a character is present
@@ -2680,6 +2680,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			character, the cursor won't move. When not included,
 			the cursor would skip over it and jump to the
 			following occurrence.
+								*cpo-~*
+		~	When included, don't resolve symbolic links when
+			changing directory with |:cd|, |:lcd|, or |:tcd|.
+			This preserves the symbolic link path in buffer names
+			and when displaying the current directory.  When
+			excluded (default), symbolic links are resolved to
+			their target paths.
 
 	POSIX flags.  These are not included in the Vi default value, except
 	when $VIM_POSIX was set on startup. |posix|
