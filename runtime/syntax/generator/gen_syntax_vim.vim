@@ -234,16 +234,51 @@ function s:parse_vim_command(cmd)
 	endtry
 endfunc
 
+function s:get_cmd_modifiers()
+	try
+		let file_name = $VIM_SRCDIR .. '/ex_docmd.c'
+
+		new
+		exec 'read ' .. file_name
+		norm! gg
+		exec ':/^static cmdmod_info_T cmdmod_info_tab\[] = {/+1;/^};/-1yank'
+		%delete _
+
+		put
+		1delete _
+
+		let modifiers = []
+		let list = []
+		for line in getline(1, line('$'))
+			let list = matchlist(line, '^\s*{"\(\w\+\)".*')
+			call add(modifiers, copy(list[1]))
+		endfor
+
+		quit!
+
+		if empty(modifiers)
+			throw 'cmd modifiers list is empty'
+		endif
+
+		return modifiers
+
+	catch /.*/
+		call s:err_gen('')
+		throw 'exit'
+	endtry
+endfunction
+
 function s:get_vim_command_type(cmd_name)
 	" Return value:
 	"   0: normal
 	"   1: (Reserved)
-	"   2: abbrev (without un)
+	"   2: abbrev
 	"   3: menu
 	"   4: map
 	"   5: mapclear
 	"   6: unmap
 	"   7: abclear
+	"   8: modifiers
 	"   99: (Exclude registration of "syn keyword")
 	let ab_prefix   = '^[ci]\?'
 	let menu_prefix = '^\%([acinostvx]\?\|tl\)'
@@ -362,7 +397,6 @@ function s:get_vim_command_type(cmd_name)
 	EOL
 	" Required for original behavior
 	" \	'global', 'vglobal'
-
 	if index(exclude_list, a:cmd_name) != -1
 		let ret = 99
 	elseif a:cmd_name =~# '^\%(\%(un\)\?abbreviate\|noreabbrev\|\l\%(nore\|un\)\?abbrev\)$'
@@ -377,6 +411,8 @@ function s:get_vim_command_type(cmd_name)
 		let ret = 5
 	elseif a:cmd_name =~# map_prefix . 'unmap$'
 		let ret = 6
+	elseif index(s:get_cmd_modifiers(), a:cmd_name) != -1
+		let ret = 8
 	else
 		let ret = 0
 	endif
@@ -805,6 +841,9 @@ function s:update_syntax_vim_file(vim_info)
 		" vimCommand - menu
 		let lnum = s:search_and_check(kword . ' menu', base_fname, str_info)
 		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 3)
+		" vimCommand - modifier
+		let lnum = s:search_and_check(kword . ' modifier', base_fname, str_info)
+		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 8)
 
 		update
 		quit!
