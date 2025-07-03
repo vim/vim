@@ -41607,7 +41607,7 @@ Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
   add the "cd_in_path" completion type for e.g. |:command-complete| and
   |getcompletion()|
-- |getcompletion()| now accepts a pat and returns the completion type for the
+- |getcmdcompltype()| now accepts a pat and returns the completion type for the
   {pat} argument
 - allow to complete shell commands and files using the new shellcmdline
   completion type using |:command-complete| and |getcmdcomplpat()|
