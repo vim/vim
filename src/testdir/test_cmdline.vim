@@ -4590,7 +4590,7 @@ func Test_range_complete()
 endfunc
 
 func Test_getcmdcompltype_with_pat()
-  call assert_fails('call getcmdcompltype({})', 'E731:')
+  call assert_fails('call getcmdcompltype({})', 'E1174:')
   call assert_equal(getcmdcompltype(''), 'command')
   call assert_equal(getcmdcompltype('dummy '), '')
   call assert_equal(getcmdcompltype('cd '), 'dir_in_path')

@@ -4202,9 +4202,9 @@ getcmdcomplpat()					*getcmdcomplpat()*
 
 
 getcmdcompltype([{pat}])				*getcmdcompltype()*
-		Return the type of the {pat} command-line completion.
-		If {pat} is ommited, return the type of the current
-		command-line completion.
+		Return the type of command-line completion using {pat}.
+		If {pat} is omited, only works when the command line is being
+		edited, thus requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
 
 		See |:command-completion| for the return string.
 		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
@@ -4368,7 +4368,6 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 			GetPattern()->getcompletion('color')
 <
 		Return type: list<string>
-
 
 							*getcurpos()*
 getcurpos([{winid}])

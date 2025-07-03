@@ -4354,6 +4354,9 @@ f_getcmdcomplpat(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_getcmdcompltype(typval_T *argvars UNUSED, typval_T *rettv)
 {
+    if (check_for_opt_string_arg(argvars, 0) == FAIL)
+	 return;
+
     rettv->v_type = VAR_STRING;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -4362,13 +4365,7 @@ f_getcmdcompltype(typval_T *argvars UNUSED, typval_T *rettv)
 	 expand_T	xpc;
 	 int		cmdline_len;
 
-	if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
-	    return;
-
 	pat = tv_get_string(&argvars[0]);
-	if (check_for_string_arg(argvars, 0) == FAIL)
-	    return;
-
 	ExpandInit(&xpc);
 
 	cmdline_len = (int)STRLEN(pat);
