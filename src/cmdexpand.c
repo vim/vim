@@ -228,11 +228,8 @@ nextwild(
     int		escape)		// if TRUE, escape the returned matches
 {
     cmdline_info_T	*ccline = get_cmdline_info();
-    int		i, j;
-    char_u	*p1;
-    char_u	*p2;
-    int		difflen;
-    int		v;
+    int		i;
+    char_u	*p;
 
     if (xp->xp_numfiles == -1)
     {
@@ -278,20 +275,22 @@ nextwild(
 	    || type == WILD_PAGEUP || type == WILD_PAGEDOWN)
     {
 	// Get next/previous match for a previous expanded pattern.
-	p2 = ExpandOne(xp, NULL, NULL, 0, type);
+	p = ExpandOne(xp, NULL, NULL, 0, type);
     }
     else
     {
+	char_u	*tmp;
+
 	if (cmdline_fuzzy_completion_supported(xp)
 		|| xp->xp_context == EXPAND_PATTERN_IN_BUF)
 	    // Don't modify the search string
-	    p1 = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
+	    tmp = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
 	else
-	    p1 = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
+	    tmp = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
 
 	// Translate string into pattern and expand it.
-	if (p1 == NULL)
-	    p2 = NULL;
+	if (tmp == NULL)
+	    p = NULL;
 	else
 	{
 	    int use_options = options |
@@ -303,26 +302,34 @@ nextwild(
 	    if (p_wic)
 		use_options += WILD_ICASE;
 
-	    p2 = ExpandOne(xp, p1,
+	    p = ExpandOne(xp, tmp,
 			 vim_strnsave(&ccline->cmdbuff[i], xp->xp_pattern_len),
 							   use_options, type);
-	    vim_free(p1);
+	    vim_free(tmp);
 	    // longest match: make sure it is not shorter, happens with :help
-	    if (p2 != NULL && type == WILD_LONGEST)
+	    if (p != NULL && type == WILD_LONGEST)
 	    {
+		int	j;
+
 		for (j = 0; j < xp->xp_pattern_len; ++j)
-		     if (ccline->cmdbuff[i + j] == '*'
-			     || ccline->cmdbuff[i + j] == '?')
-			 break;
-		if ((int)STRLEN(p2) < j)
-		    VIM_CLEAR(p2);
+		{
+		    char_u  c = ccline->cmdbuff[i + j];
+		    if (c == '*' || c == '?')
+			break;
+		}
+		if ((int)STRLEN(p) < j)
+		    VIM_CLEAR(p);
 	    }
 	}
     }
 
-    if (p2 != NULL && !got_int)
+    if (p != NULL && !got_int)
     {
-	difflen = (int)STRLEN(p2) - xp->xp_pattern_len;
+	size_t	plen = STRLEN(p);
+	int	difflen;
+	int	v;
+
+	difflen = (int)plen - xp->xp_pattern_len;
 	if (ccline->cmdlen + difflen + 4 > ccline->cmdbufflen)
 	{
 	    v = realloc_cmdbuff(ccline->cmdlen + difflen + 4);
@@ -335,7 +342,7 @@ nextwild(
 	    mch_memmove(&ccline->cmdbuff[ccline->cmdpos + difflen],
 		    &ccline->cmdbuff[ccline->cmdpos],
 		    (size_t)(ccline->cmdlen - ccline->cmdpos + 1));
-	    mch_memmove(&ccline->cmdbuff[i], p2, STRLEN(p2));
+	    mch_memmove(&ccline->cmdbuff[i], p, plen);
 	    ccline->cmdlen += difflen;
 	    ccline->cmdpos += difflen;
 	}
@@ -346,16 +353,16 @@ nextwild(
 
     // When expanding a ":map" command and no matches are found, assume that
     // the key is supposed to be inserted literally
-    if (xp->xp_context == EXPAND_MAPPINGS && p2 == NULL)
+    if (xp->xp_context == EXPAND_MAPPINGS && p == NULL)
 	return FAIL;
 
-    if (xp->xp_numfiles <= 0 && p2 == NULL)
+    if (xp->xp_numfiles <= 0 && p == NULL)
 	beep_flush();
     else if (xp->xp_numfiles == 1 && !(options & WILD_KEEP_SOLE_ITEM))
 	// free expanded pattern
 	(void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
 
-    vim_free(p2);
+    vim_free(p);
 
     return OK;
 }
@@ -679,7 +686,7 @@ win_redr_status_matches(
 	}
 	else
 #endif
-	    for ( ; *s != NUL; ++s)
+	for ( ; *s != NUL; ++s)
 	{
 	    s += skip_status_match_char(xp, s);
 	    clen += ptr2cells(s);
@@ -938,14 +945,14 @@ find_longest_match(expand_T *xp, int options)
 	if (has_mbyte)
 	{
 	    mb_len = (*mb_ptr2len)(&xp->xp_files[0][len]);
-	    c0 =(* mb_ptr2char)(&xp->xp_files[0][len]);
+	    c0 = (*mb_ptr2char)(&xp->xp_files[0][len]);
 	}
 	else
 	    c0 = xp->xp_files[0][len];
 	for (i = 1; i < xp->xp_numfiles; ++i)
 	{
 	    if (has_mbyte)
-		ci =(* mb_ptr2char)(&xp->xp_files[i][len]);
+		ci = (*mb_ptr2char)(&xp->xp_files[i][len]);
 	    else
 		ci = xp->xp_files[i][len];
 	    if (p_fic && (xp->xp_context == EXPAND_DIRECTORIES
@@ -1023,8 +1030,6 @@ ExpandOne(
 {
     char_u	*ss = NULL;
     int		orig_saved = FALSE;
-    int		i;
-    long_u	len;
 
     // first handle the case of using an old match
     if (mode == WILD_NEXT || mode == WILD_PREV
@@ -1074,35 +1079,41 @@ ExpandOne(
     // and the result probably won't be used.
     if (mode == WILD_ALL && xp->xp_numfiles > 0 && !got_int)
     {
-	len = 0;
-	for (i = 0; i < xp->xp_numfiles; ++i)
+	size_t	ss_size = 0;
+	char	*prefix = "";
+	char	*suffix = (options & WILD_USE_NL) ? "\n" : " ";
+	int	n = xp->xp_numfiles - 1;
+	int	i;
+
+	if (xp->xp_prefix == XP_PREFIX_NO)
 	{
-	    if (i > 0)
-	    {
-		if (xp->xp_prefix == XP_PREFIX_NO)
-		    len += 2;	// prefix "no"
-		else if (xp->xp_prefix == XP_PREFIX_INV)
-		    len += 3;	// prefix "inv"
-	    }
-	    len += (long_u)STRLEN(xp->xp_files[i]) + 1;
+	    prefix = "no";
+	    ss_size = STRLEN_LITERAL("no") * n;
 	}
-	ss = alloc(len);
+	else if (xp->xp_prefix == XP_PREFIX_INV)
+	{
+	    prefix = "inv";
+	    ss_size = STRLEN_LITERAL("inv") * n;
+	}
+
+	for (i = 0; i < xp->xp_numfiles; ++i)
+	    ss_size += STRLEN(xp->xp_files[i]) + 1;	// +1 for the suffix
+	++ss_size;					// +1 for the NUL
+
+	ss = alloc(ss_size);
 	if (ss != NULL)
 	{
-	    *ss = NUL;
+	    size_t  ss_len = 0;
+
 	    for (i = 0; i < xp->xp_numfiles; ++i)
 	    {
-		if (i > 0)
-		{
-		    if (xp->xp_prefix == XP_PREFIX_NO)
-			STRCAT(ss, "no");
-		    else if (xp->xp_prefix == XP_PREFIX_INV)
-			STRCAT(ss, "inv");
-		}
-		STRCAT(ss, xp->xp_files[i]);
-
-		if (i != xp->xp_numfiles - 1)
-		    STRCAT(ss, (options & WILD_USE_NL) ? "\n" : " ");
+		ss_len += vim_snprintf_safelen(
+		    (char *)ss + ss_len,
+		    ss_size - ss_len,
+		    "%s%s%s",
+		    (i > 0) ? prefix : "",
+		    (char *)xp->xp_files[i],
+		    (i < n) ? suffix : "");
 	    }
 	}
     }
@@ -2982,39 +2993,69 @@ expand_files_and_dirs(
 	int		options)
 {
     int		free_pat = FALSE;
-    int		i;
     int		ret = FAIL;
 
     // for ":set path=" and ":set tags=" halve backslashes for escaped
     // space
     if (xp->xp_backslash != XP_BS_NONE)
     {
+	size_t	pat_len;
+	char_u	*pat_end;
+	char_u	*p;
+
 	free_pat = TRUE;
-	pat = vim_strsave(pat);
+
+	pat_len = STRLEN(pat);
+	pat = vim_strnsave(pat, pat_len);
 	if (pat == NULL)
 	    return ret;
 
-	for (i = 0; pat[i]; ++i)
-	    if (pat[i] == '\\')
+	pat_end = pat + pat_len;
+	for (p = pat; *p != NUL; ++p)
+	{
+	    char_u  *from;
+
+	    if (*p != '\\')
+		continue;
+
+	    if (xp->xp_backslash & XP_BS_THREE
+		&& *(p + 1) == '\\'
+		&& *(p + 2) == '\\'
+		&& *(p + 3) == ' ')
 	    {
-		if (xp->xp_backslash & XP_BS_THREE
-			&& pat[i + 1] == '\\'
-			&& pat[i + 2] == '\\'
-			&& pat[i + 3] == ' ')
-		    STRMOVE(pat + i, pat + i + 3);
-		else if (xp->xp_backslash & XP_BS_ONE
-			&& pat[i + 1] == ' ')
-		    STRMOVE(pat + i, pat + i + 1);
-		else if ((xp->xp_backslash & XP_BS_COMMA)
-			&& pat[i + 1] == '\\'
-			&& pat[i + 2] == ',')
-		    STRMOVE(pat + i, pat + i + 2);
+		from = p + 3;
+		mch_memmove(p, from,
+		    (size_t)(pat_end - from) + 1);   // +1 for NUL
+		pat_end -= 3;
+	    }
+	    else if (xp->xp_backslash & XP_BS_ONE
+		&& *(p + 1) == ' ')
+	    {
+		from = p + 1;
+		mch_memmove(p, from,
+		    (size_t)(pat_end - from) + 1);   // +1 for NUL
+		--pat_end;
+	    }
+	    else if (xp->xp_backslash & XP_BS_COMMA)
+	    {
+		if (*(p + 1) == '\\' && *(p + 2) == ',')
+		{
+		    from = p + 2;
+		    mch_memmove(p, from,
+			(size_t)(pat_end - from) + 1);   // +1 for NUL
+		    pat_end -= 2;
+		}
 #ifdef BACKSLASH_IN_FILENAME
-		else if ((xp->xp_backslash & XP_BS_COMMA)
-			&& pat[i + 1] == ',')
-		    STRMOVE(pat + i, pat + i + 1);
+		else if (*(p + 1) == ',')
+		{
+		    from = p + 1;
+		    mch_memmove(p, from,
+			(size_t)(pat_end - from) + 1);   // +1 for NUL
+		    --pat_end;
+		}
 #endif
 	    }
+	}
     }
 
     if (xp->xp_context == EXPAND_FINDFUNC)
@@ -3044,7 +3085,7 @@ expand_files_and_dirs(
 #ifdef BACKSLASH_IN_FILENAME
     if (p_csl[0] != NUL && (options & WILD_IGNORE_COMPLETESLASH) == 0)
     {
-	int	    j;
+	int j;
 
 	for (j = 0; j < *numMatches; ++j)
 	{
@@ -3085,19 +3126,29 @@ get_behave_arg(expand_T *xp UNUSED, int idx)
     static char_u *
 get_filetypecmd_arg(expand_T *xp UNUSED, int idx)
 {
-    char *opts_all[] = {"indent", "plugin", "on", "off"};
-    char *opts_plugin[] = {"plugin", "on", "off"};
-    char *opts_indent[] = {"indent", "on", "off"};
-    char *opts_onoff[] = {"on", "off"};
+    if (idx < 0)
+	return NULL;
 
     if (filetype_expand_what == EXP_FILETYPECMD_ALL && idx < 4)
+    {
+	char	*opts_all[] = {"indent", "plugin", "on", "off"};
 	return (char_u *)opts_all[idx];
+    }
     if (filetype_expand_what == EXP_FILETYPECMD_PLUGIN && idx < 3)
+    {
+	char	*opts_plugin[] = {"plugin", "on", "off"};
 	return (char_u *)opts_plugin[idx];
+    }
     if (filetype_expand_what == EXP_FILETYPECMD_INDENT && idx < 3)
+    {
+	char	*opts_indent[] = {"indent", "on", "off"};
 	return (char_u *)opts_indent[idx];
+    }
     if (filetype_expand_what == EXP_FILETYPECMD_ONOFF && idx < 2)
+    {
+	char	*opts_onoff[] = {"on", "off"};
 	return (char_u *)opts_onoff[idx];
+    }
     return NULL;
 }
 
@@ -3110,10 +3161,10 @@ get_filetypecmd_arg(expand_T *xp UNUSED, int idx)
     static char_u *
 get_breakadd_arg(expand_T *xp UNUSED, int idx)
 {
-    char *opts[] = {"expr", "file", "func", "here"};
-
     if (idx >= 0 && idx <= 3)
     {
+	char	*opts[] = {"expr", "file", "func", "here"};
+
 	// breakadd {expr, file, func, here}
 	if (breakpt_expand_what == EXP_BREAKPT_ADD)
 	    return (char_u *)opts[idx];
@@ -4015,9 +4066,8 @@ globpath(
 {
     expand_T	xpc;
     char_u	*buf;
-    int		i;
-    int		num_p;
-    char_u	**p;
+    size_t	buflen;
+    size_t	filelen;
 
     buf = alloc(MAXPATHL);
     if (buf == NULL)
@@ -4026,34 +4076,45 @@ globpath(
     ExpandInit(&xpc);
     xpc.xp_context = dirs ? EXPAND_DIRECTORIES : EXPAND_FILES;
 
+    filelen = STRLEN(file);
+
     // Loop over all entries in {path}.
     while (*path != NUL)
     {
 	// Copy one item of the path to buf[] and concatenate the file name.
-	copy_option_part(&path, buf, MAXPATHL, ",");
-	if (STRLEN(buf) + STRLEN(file) + 2 < MAXPATHL)
+	buflen = (size_t)copy_option_part(&path, buf, MAXPATHL, ",");
+	if (buflen + filelen + 2 < MAXPATHL)
 	{
+	    int	    num_p;
+	    char_u  **p;
+
+	    if (*buf != NUL && !after_pathsep(buf, buf + buflen))
+	    {
 #if defined(MSWIN)
-	    // Using the platform's path separator (\) makes vim incorrectly
-	    // treat it as an escape character, use '/' instead.
-	    if (*buf != NUL && !after_pathsep(buf, buf + STRLEN(buf)))
-		STRCAT(buf, "/");
+		// Using the platform's path separator (\) makes vim incorrectly
+		// treat it as an escape character, use '/' instead.
+		STRCPY(buf + buflen, "/");
+		++buflen;
 #else
-	    add_pathsep(buf);
+		STRCPY(buf + buflen, PATHSEPSTR);
+		buflen += STRLEN_LITERAL(PATHSEPSTR);
 #endif
-	    STRCAT(buf, file);
+	    }
+	    STRCPY(buf + buflen, file);
 	    if (ExpandFromContext(&xpc, buf, &p, &num_p,
 			     WILD_SILENT|expand_options) != FAIL && num_p > 0)
 	    {
 		ExpandEscape(&xpc, buf, num_p, p, WILD_SILENT|expand_options);
 
 		if (ga_grow(ga, num_p) == OK)
+		{
 		    // take over the pointers and put them in "ga"
-		    for (i = 0; i < num_p; ++i)
+		    for (int i = 0; i < num_p; ++i)
 		    {
 			((char_u **)ga->ga_data)[ga->ga_len] = p[i];
 			++ga->ga_len;
 		    }
+		}
 		vim_free(p);
 	    }
 	}
