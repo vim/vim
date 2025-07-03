@@ -4306,25 +4306,16 @@ get_cmdline_completion_pattern(void)
  * Get the current command-line completion type.
  */
     static char_u *
-get_cmdline_completion(void)
+get_cmdline_completion(expand_T *xpc)
 {
-    cmdline_info_T *p;
-    char_u	*buffer;
     int		xp_context;
 
-    if (cmdline_star > 0)
-	return NULL;
-
-    p = get_ccline_ptr();
-    if (p == NULL || p->xpc == NULL)
-	return NULL;
-
-    xp_context = p->xpc->xp_context;
+    xp_context = xpc->xp_context;
     if (xp_context == EXPAND_NOTHING)
     {
-	set_expand_context(p->xpc);
-	xp_context = p->xpc->xp_context;
-	p->xpc->xp_context = EXPAND_NOTHING;
+	set_expand_context(xpc);
+	xp_context = xpc->xp_context;
+	xpc->xp_context = EXPAND_NOTHING;
     }
     if (xp_context == EXPAND_UNSUCCESSFUL)
 	return NULL;
@@ -4335,10 +4326,12 @@ get_cmdline_completion(void)
 
     if (xp_context == EXPAND_USER_LIST || xp_context == EXPAND_USER_DEFINED)
     {
-	buffer = alloc(STRLEN(cmd_compl) + STRLEN(p->xpc->xp_arg) + 2);
+	char_u	*buffer;
+
+	buffer = alloc(STRLEN(cmd_compl) + STRLEN(xpc->xp_arg) + 2);
 	if (buffer == NULL)
 	    return NULL;
-	sprintf((char *)buffer, "%s,%s", cmd_compl, p->xpc->xp_arg);
+	sprintf((char *)buffer, "%s,%s", cmd_compl, xpc->xp_arg);
 	return buffer;
     }
 
@@ -4361,8 +4354,40 @@ f_getcmdcomplpat(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_getcmdcompltype(typval_T *argvars UNUSED, typval_T *rettv)
 {
+    if (check_for_opt_string_arg(argvars, 0) == FAIL)
+	 return;
+
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = get_cmdline_completion();
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	 char_u		*pat;
+	 expand_T	xpc;
+	 int		cmdline_len;
+
+	pat = tv_get_string(&argvars[0]);
+	ExpandInit(&xpc);
+
+	cmdline_len = (int)STRLEN(pat);
+	set_cmd_context(&xpc, pat, cmdline_len, cmdline_len, FALSE);
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	xpc.xp_col = cmdline_len;
+
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = get_cmdline_completion(&xpc);
+
+	ExpandCleanup(&xpc);
+    }
+    else
+    {
+	 cmdline_info_T *p;
+
+	 p = get_ccline_ptr();
+	 if (cmdline_star > 0 || p == NULL || p->xpc == NULL)
+	     return;
+
+	 rettv->vval.v_string = get_cmdline_completion(p->xpc);
+    }
 }
 
 /*

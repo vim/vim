@@ -2264,7 +2264,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getcharstr},
     {"getcmdcomplpat",	0, 0, 0,	    NULL,
 			ret_string,	    f_getcmdcomplpat},
-    {"getcmdcompltype",	0, 0, 0,	    NULL,
+    {"getcmdcompltype",	0, 1, FEARG_1,	    NULL,
 			ret_string,	    f_getcmdcompltype},
     {"getcmdline",	0, 0, 0,	    NULL,
 			ret_string,	    f_getcmdline},

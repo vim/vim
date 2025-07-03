@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jun 28
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jul 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -238,8 +238,8 @@ getcharsearch()			Dict	last character search
 getcharstr([{expr} [, {opts}]])	String	get one character from the user
 getcmdcomplpat()		String	return the completion pattern of the
 					current command-line completion
-getcmdcompltype()		String	return the type of the current
-					command-line completion
+getcmdcompltype({pat})		String	return the type of command-line
+					completion
 getcmdline()			String	return the current command-line input
 getcmdpos()			Number	return cursor position in command-line
 getcmdprompt()			String	return the current command-line prompt
@@ -4201,10 +4201,11 @@ getcmdcomplpat()					*getcmdcomplpat()*
 		Return type: |String|
 
 
-getcmdcompltype()					*getcmdcompltype()*
-		Return the type of the current command-line completion.
-		Only works when the command line is being edited, thus
-		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
+getcmdcompltype([{pat}])				*getcmdcompltype()*
+		Return the type of command-line completion using {pat}.
+		If {pat} is omited, only works when the command line is being
+		edited, thus requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
+
 		See |:command-completion| for the return string.
 		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()|,
 		|getcmdprompt()|, |getcmdcomplpat()| and |setcmdline()|.
