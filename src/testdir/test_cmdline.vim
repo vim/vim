@@ -877,6 +877,17 @@ func Test_getcompletion()
   call assert_fails('call getcompletion("abc", [])', 'E1174:')
 endfunc
 
+func Test_getcompletiontype()
+  call assert_fails('call getcompletiontype()', 'E119:')
+  call assert_fails('call getcompletiontype({})', 'E1174:')
+  call assert_equal(getcompletiontype(''), 'command')
+  call assert_equal(getcompletiontype('dummy '), '')
+  call assert_equal(getcompletiontype('cd '), 'dir_in_path')
+  call assert_equal(getcompletiontype('let v:n'), 'var')
+  call assert_equal(getcompletiontype('call tag'), 'function')
+  call assert_equal(getcompletiontype('help '), 'help')
+endfunc
+
 func Test_multibyte_expression()
   " Get a dialog in the GUI
   CheckNotGui
