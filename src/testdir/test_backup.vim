@@ -1,7 +1,5 @@
 " Tests for the backup function
 
-source check.vim
-
 func Test_backup()
   set backup backupdir=. backupskip=
   new

@@ -1,11 +1,6 @@
 " Test signal handling.
 
-source check.vim
-source term_util.vim
-
 CheckUnix
-
-source shared.vim
 
 " Check whether a signal is available on this system.
 func HasSignal(signal)

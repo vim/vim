@@ -1,10 +1,8 @@
 " Tests for ":highlight" and highlighting.
 
-source view_util.vim
-source screendump.vim
-source check.vim
-source script_util.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+source util/script_util.vim
+import './util/vim9.vim' as v9
 
 func ClearDict(d)
   for k in keys(a:d)

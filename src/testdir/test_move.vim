@@ -1,7 +1,6 @@
 " Test the ":move" command.
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_move()
   enew!

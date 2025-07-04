@@ -184,64 +184,64 @@ SRC_ALL =	\
 		src/winclip.c \
 		src/window.c \
 		src/xxd/xxd.c \
-		src/testdir/gen_opt_test.vim \
-		src/testdir/README.txt \
-		src/testdir/Make_all.mak \
 		src/testdir/*.in \
 		src/testdir/*.py \
-		src/testdir/keycode_check.vim \
-		src/testdir/keycode_check.json \
-		src/testdir/lsan-suppress.txt \
-		src/testdir/sautest/autoload/*.vim \
-		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
-		src/testdir/check.vim \
+		src/testdir/Make_all.mak \
+		src/testdir/README.txt \
 		src/testdir/commondumps.vim \
-		src/testdir/gui_init.vim \
-		src/testdir/gui_preinit.vim \
-		src/testdir/mouse.vim \
-		src/testdir/runtest.vim \
-		src/testdir/screendump.vim \
-		src/testdir/setup.vim \
-		src/testdir/setup_gui.vim \
-		src/testdir/shared.vim \
-		src/testdir/vim9.vim \
-		src/testdir/script_util.vim \
-		src/testdir/summarize.vim \
-		src/testdir/term_util.vim \
-		src/testdir/view_util.vim \
-		src/testdir/viewdumps.vim \
-		src/testdir/test[0-9]*.ok \
-		src/testdir/test77a.ok \
-		src/testdir/test77a.com \
-		src/testdir/test_*.vim \
+		src/testdir/crash/* \
+		src/testdir/dumps/*.dump \
+		src/testdir/dumps/*.vim \
+		src/testdir/keycode_check.json \
+		src/testdir/keycode_check.vim \
+		src/testdir/lsan-suppress.txt \
 		src/testdir/python2/*.py \
 		src/testdir/python3/*.py \
+		src/testdir/python_after/*.py \
+		src/testdir/python_before/*.py \
 		src/testdir/pythonx/*.py \
 		src/testdir/pythonx/topmodule/__init__.py \
 		src/testdir/pythonx/topmodule/submodule/__init__.py \
 		src/testdir/pythonx/topmodule/submodule/subsubmodule/__init__.py \
 		src/testdir/pythonx/topmodule/submodule/subsubmodule/subsubsubmodule.py \
-		src/testdir/python_after/*.py \
-		src/testdir/python_before/*.py \
 		src/testdir/pyxfile/*.py \
-		src/testdir/dumps/*.dump \
-		src/testdir/dumps/*.vim \
+		src/testdir/ru_RU/LC_MESSAGES/Makefile \
+		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.mo \
+		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.po \
+		src/testdir/runtest.vim \
 		src/testdir/samples/*.html \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/*.vim \
 		src/testdir/samples/poc.zip \
-		src/testdir/samples/test000 \
 		src/testdir/samples/test.zip \
+		src/testdir/samples/test000 \
 		src/testdir/samples/test_undo.txt.undo \
 		src/testdir/samples/testa.zip \
-		src/testdir/color_ramp.vim \
+		src/testdir/sautest/autoload/*.vim \
 		src/testdir/silent.wav \
-		src/testdir/popupbounce.vim \
-		src/testdir/crash/* \
-		src/testdir/ru_RU/LC_MESSAGES/Makefile \
-		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.po \
-		src/testdir/ru_RU/LC_MESSAGES/__PACKAGE__.mo \
-		src/testdir/window_manager.vim \
+		src/testdir/test77a.com \
+		src/testdir/test77a.ok \
+		src/testdir/test[0-9]*.ok \
+		src/testdir/test_*.vim \
+		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
+		src/testdir/util/check.vim \
+		src/testdir/util/color_ramp.vim \
+		src/testdir/util/gen_opt_test.vim \
+		src/testdir/util/gui_init.vim \
+		src/testdir/util/gui_preinit.vim \
+		src/testdir/util/mouse.vim \
+		src/testdir/util/popupbounce.vim \
+		src/testdir/util/screendump.vim \
+		src/testdir/util/script_util.vim \
+		src/testdir/util/setup.vim \
+		src/testdir/util/setup_gui.vim \
+		src/testdir/util/shared.vim \
+		src/testdir/util/summarize.vim \
+		src/testdir/util/term_util.vim \
+		src/testdir/util/view_util.vim \
+		src/testdir/util/vim9.vim \
+		src/testdir/util/window_manager.vim \
+		src/testdir/viewdumps.vim \
 		src/proto.h \
 		src/protodef.h \
 		src/proto/alloc.pro \
@@ -521,7 +521,7 @@ SRC_UNIX =	\
 		src/proto/pty.pro \
 		src/pty.c \
 		src/testdir/Makefile \
-		src/testdir/unix.vim \
+		src/testdir/util/unix.vim \
 		src/toolcheck \
 		src/vim_icon.xbm \
 		src/vim_mask.xbm \
@@ -615,7 +615,7 @@ SRC_DOS =	\
 		src/testdir/Make_dos.mak \
 		src/testdir/Make_mvc.mak \
 		src/testdir/Make_ming.mak \
-		src/testdir/dos.vim \
+		src/testdir/util/dos.vim \
 		src/uninstall.c \
 		src/vim.rc \
 		src/vim.manifest \
@@ -668,7 +668,7 @@ SRC_AMI =	\
 		src/os_amiga.h \
 		src/proto/os_amiga.pro \
 		src/testdir/Make_amiga.mak \
-		src/testdir/amiga.vim \
+		src/testdir/util/amiga.vim \
 		src/xxd/Make_amiga.mak \
 
 # Source files for Haiku (also in the extra archive).
@@ -699,7 +699,7 @@ SRC_VMS =	\
 		src/os_vms_mms.c \
 		src/proto/os_vms.pro \
 		src/testdir/Make_vms.mms \
-		src/testdir/vms.vim \
+		src/testdir/util/vms.vim \
 		src/xxd/Make_vms.mms \
 		vimtutor.com \
 

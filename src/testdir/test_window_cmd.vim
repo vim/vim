@@ -1,7 +1,6 @@
 " Tests for window cmd (:wincmd, :split, :vsplit, :resize and etc...)
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_window_cmd_ls0_with_split()
   set ls=0

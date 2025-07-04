@@ -1,8 +1,6 @@
 " Test for the termdebug plugin
 
-source shared.vim
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 CheckUnix
 CheckFeature terminal
@@ -200,6 +198,8 @@ func Test_termdebug_decimal_breakpoints()
   Break 9
   call term_wait(gdb_buf)
   redraw!
+  Run
+  call term_wait(gdb_buf, 400)
 
   let i = 2
   while i <= 258

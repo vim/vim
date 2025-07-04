@@ -4,11 +4,9 @@
 " while the test is run, the breakindent caching gets in its way.
 " It helps to change the tabstop setting and force a redraw (e.g. see
 " Test_breakindent08())
-source check.vim
 CheckOption breakindent
 
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 func SetUp()
   let s:input ="\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"

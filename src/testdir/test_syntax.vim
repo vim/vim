@@ -1,10 +1,8 @@
 " Test for syntax and syntax iskeyword option
 
-source check.vim
 CheckFeature syntax
 
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 func GetSyntaxItem(pat)
   let c = ''

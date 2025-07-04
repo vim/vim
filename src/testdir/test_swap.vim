@@ -1,9 +1,5 @@
 " Tests for the swap feature
 
-source check.vim
-source shared.vim
-source term_util.vim
-
 func s:swapname()
   return trim(execute('swapname'))
 endfunc

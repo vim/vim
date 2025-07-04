@@ -1,12 +1,9 @@
 " Test for channel and job functions.
 
 " When +channel is supported then +job is too, so we don't check for that.
-source check.vim
 CheckFeature channel
 
-source shared.vim
-source screendump.vim
-source view_util.vim
+source util/screendump.vim
 
 let s:python = PythonProg()
 if s:python == ''

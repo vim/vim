@@ -50,7 +50,7 @@ let skip_setglobal_reasons = #{
 " Script header.
 " The test values contains multibyte characters.
 let script = [
-      \ '" DO NOT EDIT: Generated with gen_opt_test.vim',
+      \ '" DO NOT EDIT: Generated with util/gen_opt_test.vim',
       \ '" Used by test_options_all.vim.',
       \ '',
       \ 'scriptencoding utf-8',

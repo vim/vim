@@ -1,8 +1,6 @@
 " Tests for maparg(), mapcheck(), mapset(), maplist()
 " Also test utf8 map with a 0x80 byte.
 
-source shared.vim
-
 func s:SID()
   return str2nr(matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$'))
 endfunc

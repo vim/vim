@@ -1,10 +1,6 @@
 " Tests for :messages, :echomsg, :echoerr
 
-source check.vim
-source shared.vim
-source term_util.vim
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_messages()
   let oldmore = &more

@@ -1,8 +1,7 @@
 " Test 'tagfunc'
 
-import './vim9.vim' as v9
-source check.vim
-source screendump.vim
+import './util/vim9.vim' as v9
+source util/screendump.vim
 
 func TagFunc(pat, flag, info)
   let g:tagfunc_args = [a:pat, a:flag, a:info]

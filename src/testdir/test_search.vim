@@ -1,8 +1,6 @@
 " Test for the search command
 
-source shared.vim
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 func Test_search_cmdline()
   CheckOption incsearch

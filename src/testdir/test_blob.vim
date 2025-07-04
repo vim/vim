@@ -1,6 +1,6 @@
 " Tests for the Blob types
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func TearDown()
   " Run garbage collection after every test

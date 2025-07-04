@@ -1,9 +1,5 @@
 " Test for options
 
-source shared.vim
-source check.vim
-source view_util.vim
-
 scriptencoding utf-8
 
 func Test_whichwrap()
@@ -344,12 +340,12 @@ func Test_set_completion()
   " Expand directories.
   call feedkeys(":set cdpath=./\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match(' ./samples/ ', @:)
-  call assert_notmatch(' ./summarize.vim ', @:)
+  call assert_notmatch(' ./util/summarize.vim ', @:)
   set cdpath&
 
   " Expand files and directories.
   call feedkeys(":set tags=./\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match(' ./samples/.* ./summarize.vim', @:)
+  call assert_match(' ./samples/.* ./test10.in', @:)
 
   call feedkeys(":set tags=./\\\\ dif\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set tags=./\\ diff diffexpr diffopt', @:)

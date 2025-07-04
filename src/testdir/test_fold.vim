@@ -1,8 +1,6 @@
 " Test for folding
 
-source check.vim
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 func PrepIndent(arg)
   return [a:arg] + repeat(["\t".a:arg], 5)

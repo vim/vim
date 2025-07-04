@@ -2,15 +2,12 @@
 " This is split in two, because it can take a lot of time.
 " See test_terminal.vim and test_terminal2.vim for further tests.
 
-source check.vim
 CheckFeature terminal
 
-source shared.vim
-source screendump.vim
-source mouse.vim
-source term_util.vim
+source util/screendump.vim
+source util/mouse.vim
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let $PROMPT_COMMAND=''
 
@@ -809,7 +806,7 @@ endfunc
 " Test for sync buffer cwd with shell's pwd
 func Test_terminal_sync_shell_dir()
   CheckUnix
-  " The test always use sh (see src/testdir/unix.vim).
+  " The test always use sh (see src/testdir/util/unix.vim).
   " BSD's sh doesn't seem to play well with the OSC 7 escape sequence.
   CheckNotBSD
 

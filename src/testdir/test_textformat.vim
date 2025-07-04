@@ -1,7 +1,5 @@
 " Tests for the various 'formatoptions' settings
 
-source check.vim
-
 func Test_text_format()
   enew!
 

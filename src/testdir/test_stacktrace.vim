@@ -1,6 +1,6 @@
 " Test for getstacktrace() and v:stacktrace
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let s:thisfile = expand('%:p')
 let s:testdir = s:thisfile->fnamemodify(':h')

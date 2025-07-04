@@ -1,7 +1,5 @@
 " Tests for the ":uniq" command.
 
-source check.vim
-
 " Tests for the ":uniq" command.
 func Test_uniq_cmd()
   let tests = [

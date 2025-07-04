@@ -69,7 +69,8 @@ endif
 " Use the script for source code screendump testing.  It sources other scripts,
 " therefore we must "cd" there.
 cd ../../src/testdir
-source screendump.vim
+source util/screendump.vim
+source util/term_util.vim
 exe 'cd ' .. fnameescape(syntaxDir)
 
 " For these tests we need to be able to run terminal Vim with 256 colors.  On

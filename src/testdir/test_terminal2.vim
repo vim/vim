@@ -2,13 +2,10 @@
 " This is split in two, because it can take a lot of time.
 " See test_terminal.vim and test_terminal3.vim for further tests.
 
-source check.vim
 CheckFeature terminal
 
-source shared.vim
-source screendump.vim
-source mouse.vim
-source term_util.vim
+source util/screendump.vim
+source util/mouse.vim
 
 let $PROMPT_COMMAND=''
 

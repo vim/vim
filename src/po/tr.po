@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-25 19:01+0300\n"
-"PO-Revision-Date: 2025-06-24 05:10+0300\n"
+"POT-Creation-Date: 2025-07-06 18:09+0300\n"
+"PO-Revision-Date: 2025-07-06 05:10+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish <https://github.com/bitigchi/vim>\n"
 "Language: tr\n"
@@ -264,6 +264,13 @@ msgstr ": Gönderme başarısız oldu.\n"
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Boş seçim yerine CUT_BUFFER0 kullanıldı"
 
+msgid "Could not find a way to access the clipboard."
+msgstr "Panoya erişmek için bir yol bulunamadı."
+
+#, c-format
+msgid "Switched to clipboard method '%s'."
+msgstr "'%s' pano yöntemine geçildi."
+
 msgid "tagname"
 msgstr "etiket adı"
 
@@ -450,6 +457,10 @@ msgstr "Katakana"
 
 msgid "Bopomofo"
 msgstr "Bopomofo"
+
+#, c-format
+msgid "%ld,"
+msgstr "%ld, "
 
 msgid ""
 "\n"
@@ -780,6 +791,10 @@ msgstr "[unix]"
 
 msgid "[unix format]"
 msgstr "[unix biçimi]"
+
+#, c-format
+msgid "%s%ldL, %lldB"
+msgstr "%s%ld s, %lld B"
 
 #, c-format
 msgid "%s%ld line, "
@@ -1708,13 +1723,16 @@ msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tŞifrelenmiş dosyaları düzenle"
 
 msgid "-display <display>\tConnect Vim to this particular X-server"
-msgstr "-display <ekran>\tVim'i bu belirtilen X sunucusuna bağla"
+msgstr "-display <görüntü>\tVim'i bu belirtilen X sunucusuna bağla"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tX sunucusuna bağlama"
 
+msgid "-Y\t\t\tDo not connect to Wayland compositor"
+msgstr "-X\t\t\tWayland bileşikleştiricisine bağlama"
+
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
-msgstr "--remote <dosya>\tOlanaklıysa bir Vim sunucusuda <dosya> düzenle"
+msgstr "--remote <dosya>\tOlanaklıysa <dosya>'yı bir Vim sunucusunda düzenle"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-silent <dosya>  Aynısı, yalnızca sunucu yoksa şikayet etme"
@@ -1774,7 +1792,7 @@ msgstr ""
 "gvim tarafından tanınan argümanlar (Motif sürümü):\n"
 
 msgid "-display <display>\tRun Vim on <display>"
-msgstr "-display <ekran>\tVim'i <ekran>'da çalıştır"
+msgstr "-display <görüntü>\tVim'i <görüntü>'de çalıştır"
 
 msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\tVim'i simge durumunda başlat"
@@ -1821,7 +1839,7 @@ msgstr ""
 "gvim tarafından tanınan argümanlar (GTK+ sürümü):\n"
 
 msgid "-display <display>\tRun Vim on <display> (also: --display)"
-msgstr "-display <ekran>\tVim'i <ekran>'da çalıştır (veya: --display)"
+msgstr "-display <görüntü>\tVim'i <görüntü>'de çalıştır (veya: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <rol>\tAna pencereyi tanımlamak için eşsiz bir rol ayarla"
@@ -2494,7 +2512,7 @@ msgstr "DefaultFontNameForWindows"
 
 #, c-format
 msgid "Opening the X display took %ld msec"
-msgstr "X ekranını açma %ld milisaniye sürdü"
+msgstr "X görüntüsünü açma %ld milisaniye sürdü"
 
 msgid ""
 "\n"
@@ -2504,14 +2522,14 @@ msgstr ""
 "Vim: X hatası alındı\n"
 
 #, c-format
-msgid "restoring display %s"
-msgstr "%s ekranı geri getiriliyor"
+msgid "restoring X11 display %s"
+msgstr "X11 görüntüsü %s geri yükleniyor"
 
 msgid "Testing the X display failed"
-msgstr "X ekran testi başarısız oldu"
+msgstr "X görüntüsü testi başarısız oldu"
 
 msgid "Opening the X display timed out"
-msgstr "X ekran açılması zaman aşımına uğradı"
+msgstr "X görüntüsünün açılması zaman aşımına uğradı"
 
 msgid ""
 "\n"
@@ -2589,7 +2607,7 @@ msgid "dlerror = \"%s\""
 msgstr "dlerror = \"%s\""
 
 msgid "Opening the X display failed"
-msgstr "X ekran açılışı başarısız oldu"
+msgstr "X görüntüsü açılışı başarısız oldu"
 
 msgid "XSMP handling save-yourself request"
 msgstr "Kendini kurtarma isteği XSMP tarafından gerçekleştiriliyor"
@@ -3296,7 +3314,7 @@ msgid "Terminal"
 msgstr "Uçbirim"
 
 msgid "Terminal-finished"
-msgstr "Uçbirim-bitti"
+msgstr "Uçbirim bitti"
 
 msgid "active"
 msgstr "etkin"
@@ -3442,48 +3460,69 @@ msgstr "%s (%s, %s tarihinde derlendi)"
 
 msgid ""
 "\n"
+"MS-Windows ARM64 GUI/console version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 grafik arabirim/konsol sürümü"
+
+msgid ""
+"\n"
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 "\n"
-"MS-Windows 64-bit grafik arabirim/konsol sürümü"
+"MS-Windows 64 bit grafik arabirim/konsol sürümü"
 
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI/console version"
 msgstr ""
 "\n"
-"MS-Windows 32-bit grafik arabirim/konsol sürümü"
+"MS-Windows 32 bit grafik arabirim/konsol sürümü"
+
+msgid ""
+"\n"
+"MS-Windows ARM64 GUI version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 grafik arabirim sürümü"
 
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
 msgstr ""
 "\n"
-"MS-Windows 64-bit grafik arabirim sürümü"
+"MS-Windows 64 bit grafik arabirim sürümü"
 
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI version"
 msgstr ""
 "\n"
-"MS-Windows 32-bit grafik arabirim sürümü"
+"MS-Windows 32 bit grafik arabirim sürümü"
 
 msgid " with OLE support"
 msgstr ", OLE desteği ile"
 
 msgid ""
 "\n"
+"MS-Windows ARM64 console version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 konsol sürümü"
+
+msgid ""
+"\n"
 "MS-Windows 64-bit console version"
 msgstr ""
 "\n"
-"MS-Windows 64-bit konsol sürümü"
+"MS-Windows 64 bit konsol sürümü"
 
 msgid ""
 "\n"
 "MS-Windows 32-bit console version"
 msgstr ""
 "\n"
-"MS-Windows 32-bit konsol sürümü"
+"MS-Windows 32 bit konsol sürümü"
 
 msgid ""
 "\n"
@@ -3853,6 +3892,16 @@ msgstr " BAŞARISIZ"
 #, c-format
 msgid "Writing viminfo file \"%s\""
 msgstr "viminfo dosyası \"%s\" yazılıyor"
+
+msgid "wayland protocol error -> "
+msgstr "Wayland protokolü hatası -> "
+
+#, c-format
+msgid "restoring Wayland display %s"
+msgstr "Wayland görüntüsü %s geri yükleniyor"
+
+msgid "failed restoring, lost connection to Wayland display"
+msgstr "geri yükleme başarısız, Wayland görüntüsüne olan bağlantı kesildi"
 
 msgid "Already only one window"
 msgstr "Zaten tek pencere"
@@ -8948,6 +8997,9 @@ msgstr "E1546: Kapatılan bir arabelleğe geçilemez"
 msgid "E1547: This version of Vim does support :redrawtabpanel"
 msgstr "E1547: Vim'in bu sürümü :redrawtabpanel'i desteklemiyor"
 
+msgid "E1548: Wayland connection is unavailable"
+msgstr "E1548: Wayland bağlantısı kullanılabilir değil"
+
 msgid "--No lines in buffer--"
 msgstr "--Arabellek içinde satır yok--"
 
@@ -9557,10 +9609,10 @@ msgid "number of lines used for the command-line"
 msgstr "komut satırı için kullanılan satırların sayısı"
 
 msgid "width of the display"
-msgstr "ekranın genişliği"
+msgstr "görüntünün genişliği"
 
 msgid "number of lines in the display"
-msgstr "ekrandaki satırların sayısı"
+msgstr "görüntüdeki satırların sayısı"
 
 msgid "number of lines to scroll for CTRL-F and CTRL-B"
 msgstr "CTRL-F ve CTRL-B için sarılacak satır sayısı"
@@ -9575,7 +9627,7 @@ msgid ""
 "delay in msec for each char written to the display\n"
 "(for debugging)"
 msgstr ""
-"ekrana yazılan her karakter için gecikme süresi (milisaniye)\n"
+"görüntüye yazılan her karakter için gecikme süresi (milisaniye)\n"
 "(hata ayıklama için)"
 
 msgid "show <Tab> as ^I and end-of-line as $"
@@ -10041,6 +10093,19 @@ msgid ""
 msgstr ""
 "\"unnamed\": * yazmacını adsız yazmaç gibi kullan\n"
 "\"autoselect\": seçili metni her zaman panoya koy"
+
+msgid "Ordered list of possible methods for accessing the clipboard"
+msgstr "Panoya erişmek için kullanılacak olası yöntemlerin sıralı listesi"
+
+msgid "Timeout to use when polling for data to read or write in wayland"
+msgstr "Wayland üzerinde okuma ve yazma isteklerinin zaman aşımı süresi"
+
+msgid "Wayland seat to use"
+msgstr "Kullanılacak Wayland oturum noktası"
+
+msgid ""
+"Enable wayland focus stealing functionality in order to access the clipboard"
+msgstr "Panoya erişmek için Wayland'ın odak çalma özelliğini etkinleştir"
 
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "\"startsel\" ve/veya \"stopsel\"; özel düğmelerin işlevleri"

@@ -4305,37 +4305,30 @@ get_cmdline_completion_pattern(void)
 /*
  * Get the command-line completion type.
  */
-    char_u *
-get_cmdline_completion(expand_T *xpc)
+    static char_u *
+get_cmdline_completion(void)
 {
-    int		xp_context;
+    cmdline_info_T	*p;
+    int			xp_context;
 
-    xp_context = xpc->xp_context;
+    if (cmdline_star > 0)
+	return NULL;
+
+    p = get_ccline_ptr();
+    if (p == NULL || p->xpc == NULL)
+	return NULL;
+
+    xp_context = p->xpc->xp_context;
     if (xp_context == EXPAND_NOTHING)
     {
-	set_expand_context(xpc);
-	xp_context = xpc->xp_context;
-	xpc->xp_context = EXPAND_NOTHING;
+	set_expand_context(p->xpc);
+	xp_context = p->xpc->xp_context;
+	p->xpc->xp_context = EXPAND_NOTHING;
     }
     if (xp_context == EXPAND_UNSUCCESSFUL)
 	return NULL;
 
-    char_u *cmd_compl = cmdcomplete_type_to_str(xp_context);
-    if (cmd_compl == NULL)
-	return NULL;
-
-    if (xp_context == EXPAND_USER_LIST || xp_context == EXPAND_USER_DEFINED)
-    {
-	char_u	*buffer;
-
-	buffer = alloc(STRLEN(cmd_compl) + STRLEN(xpc->xp_arg) + 2);
-	if (buffer == NULL)
-	    return NULL;
-	sprintf((char *)buffer, "%s,%s", cmd_compl, xpc->xp_arg);
-	return buffer;
-    }
-
-    return vim_strsave(cmd_compl);
+    return cmdcomplete_type_to_str(xp_context, p->xpc->xp_arg);
 }
 
 /*
@@ -4354,16 +4347,8 @@ f_getcmdcomplpat(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_getcmdcompltype(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    cmdline_info_T *p;
-
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-
-    p = get_ccline_ptr();
-    if (cmdline_star > 0 || p == NULL || p->xpc == NULL)
-	return;
-
-    rettv->vval.v_string = get_cmdline_completion(p->xpc);
+    rettv->vval.v_string = get_cmdline_completion();
 }
 
 /*

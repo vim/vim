@@ -1,10 +1,7 @@
 " Tests for autocommands
 
-source shared.vim
-source check.vim
-source term_util.vim
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))

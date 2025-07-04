@@ -1,7 +1,5 @@
 " Tests for Perl interface
 
-source check.vim
-source shared.vim
 CheckFeature perl
 
 " FIXME: RunTest don't see any error when Perl abort...

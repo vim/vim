@@ -1,7 +1,5 @@
 " Tests for the getbufinfo(), getwininfo() and gettabinfo() functions
 
-source check.vim
-
 func Test_getbufwintabinfo()
   CheckFeature quickfix
 

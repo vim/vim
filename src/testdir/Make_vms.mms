@@ -56,7 +56,7 @@ GUI_OPTION = -g
 	-@ write sys$output "                "$*" "
 	-@ write sys$output "-----------------------------------------------"
 	-@ !run the test
-	-@ create/term/wait/nodetach mcr $(VIMPROG) $(GUI_OPTION) -u vms.vim --noplugin -s dotest.in $*.in
+	-@ create/term/wait/nodetach mcr $(VIMPROG) $(GUI_OPTION) -u util/vms.vim --noplugin -s dotest.in $*.in
 	-@ !analyse the result
 	-@ directory /size/date test.out
 	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then rename/nolog test.out $*.out 
@@ -89,9 +89,9 @@ nolog :
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "MAKE_VMS.MMS options:"
 	-@ write sys$output "   WANT_GUI   = ""$(WANT_GUI)"" "
-	-@ write sys$output "Default vimrc file is VMS.VIM:"
+	-@ write sys$output "Default vimrc file is util/VMS.VIM:"
 	-@ write sys$output "-----------------------------------------------"
-	-@ type VMS.VIM
+	-@ type util/VMS.VIM
 
 clean :
 	-@ if "''F$SEARCH("*.out")'"        .NES. "" then delete/noconfirm/nolog *.out.*

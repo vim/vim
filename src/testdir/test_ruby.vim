@@ -1,6 +1,5 @@
 " Tests for ruby interface
 
-source check.vim
 CheckFeature ruby
 
 func Test_ruby_change_buffer()

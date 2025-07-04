@@ -1,6 +1,5 @@
 " Tests for the +clientserver feature.
 
-source check.vim
 CheckFeature job
 
 if !has('clientserver')
@@ -9,7 +8,7 @@ endif
 
 CheckFeature clientserver
 
-source shared.vim
+source util/shared.vim
 
 func Check_X11_Connection()
   if has('x11')

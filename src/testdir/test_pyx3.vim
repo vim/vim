@@ -1,7 +1,6 @@
 " Test for pyx* commands and functions with Python 3.
 
 set pyx=3
-source check.vim
 CheckFeature python3
 
 let s:py2pattern = '^2\.[0-7]\.\d\+'

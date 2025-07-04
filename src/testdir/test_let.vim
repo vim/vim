@@ -1,6 +1,6 @@
 " Tests for the :let command.
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Test_let()
   " Test to not autoload when assigning.  It causes internal error.

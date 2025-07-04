@@ -1,7 +1,5 @@
 " Tests for encryption.
 
-source shared.vim
-source check.vim
 CheckFeature cryptv
 
 " Use the xxd command from:

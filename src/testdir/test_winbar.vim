@@ -1,10 +1,8 @@
 " Test WinBar
 
-source check.vim
 CheckFeature menu
 
-source shared.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_add_remove_menu()
   new

@@ -1,10 +1,8 @@
 " Tests for popup windows
 
-source check.vim
 CheckFeature popupwin
 
-source screendump.vim
-source term_util.vim
+source util/screendump.vim
 
 func Test_simple_popup()
   CheckScreendump

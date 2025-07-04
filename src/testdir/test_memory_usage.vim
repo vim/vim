@@ -1,14 +1,11 @@
 " Tests for memory usage.
 
-source check.vim
 CheckFeature terminal
 CheckNotGui
 
 " Skip tests on Travis CI ASAN build because it's difficult to estimate memory
 " usage.
 CheckNotAsan
-
-source shared.vim
 
 func s:pick_nr(str) abort
   return substitute(a:str, '[^0-9]', '', 'g') * 1

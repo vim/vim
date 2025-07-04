@@ -10,4 +10,4 @@ if 1
   let g:tester_HOME = $HOME
 endif
 
-source setup.vim
+source util/setup.vim
