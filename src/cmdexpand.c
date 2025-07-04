@@ -4730,9 +4730,12 @@ concat_pattern_with_buffer_match(
     }
     match[pat_len + match_len] = NUL;
     return match;
+
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 cleanup:
     vim_free(match);
     return NULL;
+#endif
 }
 
 /*
