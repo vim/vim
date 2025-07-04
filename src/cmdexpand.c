@@ -4698,7 +4698,7 @@ concat_pattern_with_buffer_match(
 	char_u *pat,
 	int pat_len,
 	pos_T *end_match_pos,
-	int lowercase)
+	int lowercase UNUSED)
 {
     char_u  *line = ml_get(end_match_pos->lnum);
     char_u  *word_end = find_word_end(line + end_match_pos->col);
@@ -4710,6 +4710,7 @@ concat_pattern_with_buffer_match(
     mch_memmove(match, pat, pat_len);
     if (match_len > 0)
     {
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 	if (lowercase)
 	{
 	    char_u  *mword = vim_strnsave(line + end_match_pos->col,
@@ -4724,6 +4725,7 @@ concat_pattern_with_buffer_match(
 	    vim_free(lower);
 	}
 	else
+#endif
 	    mch_memmove(match + pat_len, line + end_match_pos->col, match_len);
     }
     match[pat_len + match_len] = NUL;
