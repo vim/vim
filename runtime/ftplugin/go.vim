@@ -56,10 +56,10 @@ if !exists("no_plugin_maps") && !exists("no_go_maps")
   noremap <silent> <buffer> [[ <Cmd>call <SID>GoFindSection('prev_start', v:count1)<CR>
   noremap <silent> <buffer> [] <Cmd>call <SID>GoFindSection('prev_end', v:count1)<CR>
   let b:undo_ftplugin .= ''
-                      \ . '| unmap <buffer> ]]'
-                      \ . '| unmap <buffer> ]['
-                      \ . '| unmap <buffer> [['
-                      \ . '| unmap <buffer> []'
+                      \ . "| silent! exe 'unmap <buffer> ]]'"
+                      \ . "| silent! exe 'unmap <buffer> ]['"
+                      \ . "| silent! exe 'unmap <buffer> [['"
+                      \ . "| silent! exe 'unmap <buffer> []'"
 endif
 
 function! <SID>GoFindSection(dir, count)
