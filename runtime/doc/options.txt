@@ -8743,6 +8743,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Resetting this option is useful when using a ":tag" command in a
 	mapping which should not change the tagstack.
 
+				*'tagstackcopy'* *'tgstcp'* *'notagstackcopy'* *'notgstcp'*
+'tagstackcopy' 'tgstcp'		boolean	(default: on)
+				global
+	If on, the tagstack is copied from original windows when creating a
+	new one (e.g. via :split). When off, new windows start afresh.
+
 						*'tcldll'*
 'tcldll'		string	(default depends on the build)
 			global

@@ -1015,6 +1015,7 @@ EXTERN long	p_tl;		// 'taglength'
 EXTERN int	p_tr;		// 'tagrelative'
 EXTERN char_u	*p_tags;	// 'tags'
 EXTERN int	p_tgst;		// 'tagstack'
+EXTERN int	p_tgstcp;	// 'tagstackcopy'
 #if defined(DYNAMIC_TCL)
 EXTERN char_u	*p_tcldll;	// 'tcldll'
 #endif

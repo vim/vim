@@ -36,6 +36,7 @@ static void f_call(typval_T *argvars, typval_T *rettv);
 static void f_changenr(typval_T *argvars, typval_T *rettv);
 static void f_char2nr(typval_T *argvars, typval_T *rettv);
 static void f_charcol(typval_T *argvars, typval_T *rettv);
+static void f_cleartagstack(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
@@ -2092,6 +2093,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_cindent},
     {"clearmatches",	0, 1, FEARG_1,	    arg1_number,
 			ret_void,	    f_clearmatches},
+    {"cleartagstack",	0, 1, FEARG_1,	    arg1_number,
+			ret_number_bool,    f_cleartagstack},
     {"cmdcomplete_info",0, 0, 0,	    NULL,
 			ret_dict_any,	    f_cmdcomplete_info},
     {"col",		1, 2, FEARG_1,	    arg2_string_or_list_number,
@@ -4094,6 +4097,30 @@ get_optional_window(typval_T *argvars, int idx)
 	return NULL;
     }
     return win;
+}
+
+/*
+ * "cleartagstack()" function
+ */
+    static void
+f_cleartagstack(typval_T *argvars, typval_T *rettv)
+{
+    win_T	*wp = curwin;			// default is current window
+
+    rettv->vval.v_number = -1;
+
+    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	wp = find_win_by_nr_or_id(&argvars[0]);
+	if (wp == NULL)
+	    return;
+    }
+
+    if (clear_tagstack(wp) == OK)
+	rettv->vval.v_number = 0;
 }
 
 /*
