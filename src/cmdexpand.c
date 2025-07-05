@@ -411,6 +411,7 @@ cmdline_pum_create(
     // no default selection
     compl_selected = -1;
 
+    pum_clear();
     cmdline_pum_display();
 
     return EXPAND_OK;
