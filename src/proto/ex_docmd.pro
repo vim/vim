@@ -16,6 +16,7 @@ int cmdmod_error(int ignore_silent);
 void apply_cmdmod(cmdmod_T *cmod);
 void undo_cmdmod(cmdmod_T *cmod);
 int parse_cmd_address(exarg_T *eap, char **errormsg, int silent);
+linenr_T get_address(exarg_T *eap, char_u **ptr, cmd_addr_T addr_type, int skip, int silent, int to_other_file, int address_count);
 char_u *skip_option_env_lead(char_u *start);
 int number_method(char_u *cmd);
 char_u *find_ex_command(exarg_T *eap, int *full, int (*lookup)(char_u *, size_t, int cmd, cctx_T *), cctx_T *cctx);
