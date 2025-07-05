@@ -74,6 +74,8 @@ typedef struct dictvar_S	dict_T;
 typedef struct partial_S	partial_T;
 typedef struct blobvar_S	blob_T;
 typedef struct tuplevar_S	tuple_T;
+typedef struct generictype_S	generic_T;
+typedef struct gfargs_tab_S	gfargs_tab_T;
 
 typedef struct window_S		win_T;
 typedef struct wininfo_S	wininfo_T;
@@ -1543,6 +1545,10 @@ typedef struct {
 #define TTFLAG_STATIC	    0x10    // one of the static types, e.g. t_any
 #define TTFLAG_CONST	    0x20    // cannot be changed
 #define TTFLAG_SUPER	    0x40    // object from "super".
+#define TTFLAG_GENERIC	    0x80    // generic type
+
+#define IS_GENERIC_TYPE(type)	\
+    ((type->tt_flags & TTFLAG_GENERIC) == TTFLAG_GENERIC)
 
 typedef enum {
     VIM_ACCESS_PRIVATE,	// read/write only inside the class
@@ -1840,6 +1846,25 @@ struct tuplevar_S
     char	tv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 
+/*
+ * Structure to hold a generic type information
+ */
+struct generictype_S
+{
+    type_T	*gt_type;	// generic or concrete type
+    char_u	*gt_name;	// type name
+};
+
+/*
+ * Generic function args table
+ */
+struct gfargs_tab_S
+{
+    garray_T	gfat_args;
+    garray_T	gfat_param_types;
+    garray_T	gfat_arg_types;
+};
+
 typedef int (*cfunc_T)(int argcount, typval_T *argvars, typval_T *rettv, void *state);
 typedef void (*cfunc_free_T)(void *state);
 
@@ -1926,6 +1951,13 @@ struct ufunc_S
     void	*uf_cb_state;   // state of uf_cb
 # endif
 
+    // for generic functions
+    int		uf_generic_argcount;// type argument count
+    generic_T	*uf_generic_args;   // generic types
+    type_T	*uf_generic_param_types; // list of allocated generic types
+    garray_T	uf_generic_arg_types; // list of allocated type arguments
+    hashtab_T	uf_generic_functab; // generic function table
+
     garray_T	uf_lines;	// function lines
 
     int		uf_debug_tick;	// when last checked for a breakpoint in this
@@ -1987,6 +2019,7 @@ struct ufunc_S
 #define FC_OBJECT   0x4000	// object method
 #define FC_NEW	    0x8000	// constructor
 #define FC_ABSTRACT 0x10000	// abstract method
+#define FC_GENERIC  0x20000	// generic function
 
 // Is "ufunc" an object method?
 #define IS_OBJECT_METHOD(ufunc) ((ufunc->uf_flags & FC_OBJECT) == FC_OBJECT)
@@ -1994,6 +2027,7 @@ struct ufunc_S
 #define IS_CONSTRUCTOR_METHOD(ufunc) ((ufunc->uf_flags & FC_NEW) == FC_NEW)
 // Is "ufunc" an abstract class method?
 #define IS_ABSTRACT_METHOD(ufunc) ((ufunc->uf_flags & FC_ABSTRACT) == FC_ABSTRACT)
+#define IS_GENERIC_FUNC(ufunc) (((ufunc)->uf_flags & FC_GENERIC) == FC_GENERIC)
 
 #define MAX_FUNC_ARGS	20	// maximum number of function arguments
 #define VAR_SHORT_LEN	20	// short variable name length
@@ -2323,6 +2357,7 @@ typedef struct {
     type_T	*fe_check_type;	// type from funcref or NULL
     int		fe_found_var;	// if the function is not found then give an
 				// error that a variable is not callable.
+    cctx_T	*fe_cctx;	// when compiling a :def function
 } funcexe_T;
 
 /*
