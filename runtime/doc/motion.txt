@@ -426,11 +426,17 @@ ge			Backward to the end of word [count] |inclusive|.
 gE			Backward to the end of WORD [count] |inclusive|.
 
 These commands move over words or WORDS.
+
 							*word*
 A word consists of a sequence of letters, digits and underscores, or a
 sequence of other non-blank characters, separated with white space (spaces,
 tabs, <EOL>).  This can be changed with the 'iskeyword' option.  An empty line
 is also considered to be a word.
+  When 'encoding' is set to "utf-8" (or another Unicode encoding) and
+'nocompatible' is enabled, the definition of a word is refined according to a
+subset of the Word Boundary Rules from UAX #29.  For example: "don't",
+"don’t" (U+2019), "7'500.50" and "vim.org" are each treated as a single word.
+
 							*WORD*
 A WORD consists of a sequence of non-blank characters, separated with white
 space.  An empty line is also considered to be a WORD.

@@ -92,4 +92,5 @@ void f_setcellwidths(typval_T *argvars, typval_T *rettv);
 void f_getcellwidths(typval_T *argvars, typval_T *rettv);
 void f_charclass(typval_T *argvars, typval_T *rettv);
 char_u *get_encoding_name(expand_T *xp, int idx);
+int wb_classify_punct(int c_cur, const char_u *line, colnr_T col);
 /* vim: set ft=c : */
