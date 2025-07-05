@@ -75,7 +75,6 @@ DOCS = \
 	pi_paren.txt \
 	pi_spec.txt \
 	pi_tar.txt \
-	pi_tutor.txt \
 	pi_vimball.txt \
 	pi_zip.txt \
 	popup.txt \
