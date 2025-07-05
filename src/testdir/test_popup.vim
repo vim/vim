@@ -671,7 +671,7 @@ func Test_complete_CTRLN_startofbuffer()
         \ 'bureau.prioritize(8, 7);',
         \ 'bannister.realize(4, 4);',
         \ 'railing.moralize(3,9);']
-  call feedkeys("qai\<c-n>\<c-n>.\<esc>3wdW\<cr>q3@a", 'tx')
+  call feedkeys("qai\<c-n>\<c-n>.\<esc>2wdW\<cr>q3@a", 'tx')
   call assert_equal(expected, getline(1,'$'))
   bwipe!
 endfunc
