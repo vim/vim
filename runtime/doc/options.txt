@@ -2590,6 +2590,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 			last used search pattern.
 								*cpo-u*
 		u	Undo is Vi compatible.  See |undo-two-ways|.
+								*cpo-U*
+		U	Disable Unicode-aware word motions based on UAX #29.
+			When this flag is present, word-related motions
+			(e.g., "w", "b") will treat apostrophes, periods and
+			other punctuation as word boundaries, as in
+			traditional Vi.
+
+			When this flag is absent, Vim refines the definition
+			of a word using some of the Word Boundary Rules from
+			Unicode Standard Annex #29. For example: "don't",
+			"vim.org", and "7'500.50" are each treated as single
+			words by motions like "w" and "b".
+
+			See |word| for details on what constitutes a word.
+
 								*cpo-v*
 		v	Backspaced characters remain visible on the screen in
 			Insert mode.  Without this flag the characters are

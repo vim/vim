@@ -345,7 +345,7 @@ cls(void)
 	if (class != 0 && cls_bigword)
 	    return 1;
 	// Use the UAX #29 Word Boundary Rules, in case of punctuation
-	if (p_cp == FALSE && class == 1)
+	if (vim_strchr(p_cpo, CPO_NO_UAX29) == NULL && class == 1)
 	{
 	    line = ml_get(curwin->w_cursor.lnum);
 	    class = wb_classify_punct(c, line, curwin->w_cursor.col);
