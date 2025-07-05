@@ -205,6 +205,7 @@ typedef enum {
 #define CPO_BUFOPTGLOB	'S'
 #define CPO_TAGPAT	't'	// tag pattern is used for "n"
 #define CPO_UNDO	'u'	// "u" undoes itself
+#define CPO_NO_UAX29	'U'	// No UAX 29 Word Boundary Rules
 #define CPO_BACKSPACE	'v'	// "v" keep deleted text
 #define CPO_CW		'w'	// "cw" only changes one blank
 #define CPO_FWRITE	'W'	// "w!" doesn't overwrite readonly files
@@ -234,8 +235,8 @@ typedef enum {
 #define CPO_NOSYMLINKS	'~'	// don't resolve symlinks when changing directory
 // default values for Vim, Vi and POSIX
 #define CPO_VIM		"aABceFsz"
-#define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZz$!%*-+<>;"
-#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZz$!%*-+<>#{|&/\\.;~"
+#define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuUvwWxXyZz$!%*-+<>;"
+#define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuUvwWxXyZz$!%*-+<>#{|&/\\.;~"
 
 // characters for p_ww option:
 #define WW_ALL		"bshl<>[]~"
