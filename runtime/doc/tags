@@ -841,6 +841,7 @@ $quote	eval.txt	/*$quote*
 'patchexpr'	options.txt	/*'patchexpr'*
 'patchmode'	options.txt	/*'patchmode'*
 'path'	options.txt	/*'path'*
+'pbr'	options.txt	/*'pbr'*
 'pdev'	options.txt	/*'pdev'*
 'penc'	options.txt	/*'penc'*
 'perldll'	options.txt	/*'perldll'*
@@ -870,6 +871,7 @@ $quote	eval.txt	/*$quote*
 'printoptions'	options.txt	/*'printoptions'*
 'prompt'	options.txt	/*'prompt'*
 'pt'	options.txt	/*'pt'*
+'pumborder'	options.txt	/*'pumborder'*
 'pumheight'	options.txt	/*'pumheight'*
 'pummaxwidth'	options.txt	/*'pummaxwidth'*
 'pumwidth'	options.txt	/*'pumwidth'*
@@ -8281,6 +8283,7 @@ hl-MsgArea	syntax.txt	/*hl-MsgArea*
 hl-NonText	syntax.txt	/*hl-NonText*
 hl-Normal	syntax.txt	/*hl-Normal*
 hl-Pmenu	syntax.txt	/*hl-Pmenu*
+hl-PmenuBorder	syntax.txt	/*hl-PmenuBorder*
 hl-PmenuExtra	syntax.txt	/*hl-PmenuExtra*
 hl-PmenuExtraSel	syntax.txt	/*hl-PmenuExtraSel*
 hl-PmenuKind	syntax.txt	/*hl-PmenuKind*
