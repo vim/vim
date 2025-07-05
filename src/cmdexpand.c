@@ -4604,7 +4604,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     int		segment_len;
     linenr_T	lnum;
     garray_T	ga;
-    int		literalmenu = vim_strchr(p_wop, WOP_LITERLMENU) != NULL;
+    int		exacttext = vim_strchr(p_wop, WOP_EXACTTEXT) != NULL;
 
     if (start->lnum > end->lnum
 	    || (start->lnum == end->lnum && start->col >= end->col))
@@ -4626,7 +4626,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     ga_concat_len(&ga, start_ptr, segment_len);
     if (!is_single_line)
     {
-	if (literalmenu)
+	if (exacttext)
 	    ga_concat_len(&ga, (char_u *)"\\n", 2);
 	else
 	    ga_append(&ga, '\n');
@@ -4641,7 +4641,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
 	    if (ga_grow(&ga, ml_get_len(lnum) + 2) != OK)
 		return FAIL;
 	    ga_concat(&ga, line);
-	    if (literalmenu)
+	    if (exacttext)
 		ga_concat_len(&ga, (char_u *)"\\n", 2);
 	    else
 		ga_append(&ga, '\n');
@@ -4765,7 +4765,7 @@ expand_pattern_in_buf(
     int		compl_started = FALSE;
     int		search_flags;
     char_u	*match, *full_match;
-    int		literalmenu = vim_strchr(p_wop, WOP_LITERLMENU) != NULL;
+    int		exacttext = vim_strchr(p_wop, WOP_EXACTTEXT) != NULL;
 
 #ifdef FEAT_SEARCH_EXTRA
     has_range = search_first_line != 0;
@@ -4854,7 +4854,7 @@ expand_pattern_in_buf(
 		    &word_end_pos))
 	    break;
 
-	if (literalmenu)
+	if (exacttext)
 	    match = full_match;
 	else
 	{

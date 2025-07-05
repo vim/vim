@@ -377,7 +377,7 @@ typedef enum {
 #define WOP_FUZZY	'z'
 #define WOP_TAGFILE	'g'
 #define WOP_PUM		'p'
-#define WOP_LITERLMENU	':'
+#define WOP_EXACTTEXT	':'
 
 // arguments for can_bs()
 // each defined char should be unique over all values

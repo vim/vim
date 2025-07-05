@@ -4495,7 +4495,7 @@ func Test_search_complete()
   call feedkeys("gg/\\cFo\<tab>\<f9>", 'tx')
   call assert_equal(['\cFoobar', '\cFooBAr', '\cFooBARR'], g:compl_info.matches)
 
-  set wildoptions+=search:literalmenu ignorecase& smartcase&
+  set wildoptions+=search:exacttext ignorecase& smartcase&
   call feedkeys("gg/F\<tab>\<f9>", 'tx')
   call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
   call feedkeys("gg/foob\<tab>\<f9>", 'tx')
