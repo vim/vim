@@ -1,6 +1,5 @@
 " Test for cursorline and cursorlineopt
 
-source check.vim
 source screendump.vim
 
 func s:screen_attr(lnum) abort

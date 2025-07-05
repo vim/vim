@@ -1,8 +1,6 @@
 " Tests for digraphs
 
-source check.vim
 CheckFeature digraphs
-source term_util.vim
 
 func Put_Dig(chars)
   exe "norm! o\<c-k>".a:chars

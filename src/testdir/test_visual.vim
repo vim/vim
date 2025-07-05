@@ -1,7 +1,5 @@
 " Tests for various Visual modes.
 
-source shared.vim
-source check.vim
 source screendump.vim
 import './vim9.vim' as v9
 

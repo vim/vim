@@ -1,9 +1,7 @@
 " Test Vim profiler
 
-source check.vim
 CheckFeature profile
 
-source shared.vim
 source screendump.vim
 
 if has('prof_nsec')

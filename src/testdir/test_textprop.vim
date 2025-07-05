@@ -1,7 +1,6 @@
 " Tests for defining text property types and adding text properties to the
 " buffer.
 
-source check.vim
 CheckFeature textprop
 
 source screendump.vim

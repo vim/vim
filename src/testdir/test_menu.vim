@@ -1,6 +1,5 @@
 " Test that the system menu can be loaded.
 
-source check.vim
 CheckFeature menu
 
 source screendump.vim

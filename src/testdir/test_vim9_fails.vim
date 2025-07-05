@@ -1,8 +1,6 @@
 " Test for Vim9 script with failures, causing memory leaks to be reported.
 " The leaks happen after a fork() and can be ignored.
 
-source check.vim
-
 def Test_assignment()
   if !has('channel')
     CheckFeature channel

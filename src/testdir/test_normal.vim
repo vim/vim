@@ -1,8 +1,5 @@
 " Test for various Normal mode commands
 
-source shared.vim
-source check.vim
-source view_util.vim
 import './vim9.vim' as v9
 source screendump.vim
 

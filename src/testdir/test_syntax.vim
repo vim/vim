@@ -1,9 +1,7 @@
 " Test for syntax and syntax iskeyword option
 
-source check.vim
 CheckFeature syntax
 
-source view_util.vim
 source screendump.vim
 
 func GetSyntaxItem(pat)

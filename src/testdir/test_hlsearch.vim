@@ -1,6 +1,5 @@
 " Test for v:hlsearch
 
-source check.vim
 source screendump.vim
 
 func Test_hlsearch()

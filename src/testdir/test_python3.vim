@@ -1,8 +1,6 @@
 " Test for python 3 commands.
 
-source check.vim
 CheckFeature python3
-source shared.vim
 
 func Create_vim_list()
   return [1]

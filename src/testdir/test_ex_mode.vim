@@ -1,8 +1,5 @@
 " Test editing line in Ex mode (see :help Q and :help gQ).
 
-source check.vim
-source shared.vim
-
 " Helper function to test editing line in Q Ex mode
 func Ex_Q(cmd)
   " Is there a simpler way to test editing Ex line?

@@ -1,7 +1,5 @@
 " Test shifting lines with :> and :<
 
-source check.vim
-
 func Test_ex_shift_right()
   set shiftwidth=2
 

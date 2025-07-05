@@ -2,8 +2,6 @@
 " Most of this was formerly in test49.vim (developed by Servatius Brandt
 " <Servatius.Brandt@fujitsu-siemens.com>)
 
-source check.vim
-source shared.vim
 source script_util.vim
 
 "-------------------------------------------------------------------------------

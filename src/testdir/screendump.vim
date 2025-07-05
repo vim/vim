@@ -5,9 +5,6 @@ if exists('*VerifyScreenDump')
   finish
 endif
 
-source shared.vim
-source term_util.vim
-
 " Skip the rest if there is no terminal feature at all.
 if !has('terminal')
   finish

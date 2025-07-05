@@ -1,6 +1,5 @@
 " Test findfile() and finddir()
 
-source check.vim
 import './vim9.vim' as v9
 
 let s:files = [ 'Xfinddir1/foo',

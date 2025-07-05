@@ -4,8 +4,6 @@ if !has('gui_running') && has('unix')
   set term=ansi
 endif
 
-source view_util.vim
-source check.vim
 source screendump.vim
 
 " Test for scrolling that modifies buffer during visual block

@@ -1,5 +1,4 @@
 
-source check.vim
 import './vim9.vim' as v9
 CheckFeature python3
 

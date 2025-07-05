@@ -1,7 +1,6 @@
 " Test 'tagfunc'
 
 import './vim9.vim' as v9
-source check.vim
 source screendump.vim
 
 func TagFunc(pat, flag, info)

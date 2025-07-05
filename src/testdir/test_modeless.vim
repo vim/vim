@@ -1,11 +1,9 @@
 " Test for modeless selection
 
 " This only works for Unix in a terminal
-source check.vim
 CheckNotGui
 CheckUnix
 
-source shared.vim
 source mouse.vim
 
 " Test for modeless characterwise selection (single click)

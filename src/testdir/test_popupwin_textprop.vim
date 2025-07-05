@@ -1,6 +1,5 @@
 " Tests for popup windows for text properties
 
-source check.vim
 CheckFeature popupwin
 CheckFeature textprop
 

@@ -1,7 +1,5 @@
 " Test for folding
 
-source check.vim
-source view_util.vim
 source screendump.vim
 
 func PrepIndent(arg)

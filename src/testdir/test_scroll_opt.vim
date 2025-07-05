@@ -1,6 +1,5 @@
 " Test for 'scroll', 'scrolloff', 'smoothscroll', etc.
 
-source check.vim
 source screendump.vim
 source mouse.vim
 

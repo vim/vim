@@ -1,6 +1,5 @@
 " Tests for the preview window
 
-source check.vim
 CheckFeature quickfix
 
 func Test_Psearch()

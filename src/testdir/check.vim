@@ -1,6 +1,10 @@
 source shared.vim
 source term_util.vim
 
+" uses line-continuation
+let s:cpo_save = &cpo
+set cpo&vim
+
 command -nargs=1 MissingFeature throw 'Skipped: ' .. <args> .. ' feature missing'
 
 " Command to check for the presence of a feature.
@@ -324,4 +328,7 @@ func CheckGithubActions()
     throw "Skipped: FIXME: this test doesn't work on Github Actions CI"
   endif
 endfunc
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: shiftwidth=2 sts=2 expandtab

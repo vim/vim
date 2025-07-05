@@ -1,9 +1,6 @@
 " Test commands that are not compiled in a :def function
 
-source check.vim
 import './vim9.vim' as v9
-source term_util.vim
-source view_util.vim
 
 def Test_vim9cmd()
   var lines =<< trim END

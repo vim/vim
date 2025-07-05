@@ -1,9 +1,5 @@
 " Test for the various 'cpoptions' (cpo) flags
 
-source check.vim
-source shared.vim
-source view_util.vim
-
 " Test for the 'a' flag in 'cpo'. Reading a file should set the alternate
 " file name.
 func Test_cpo_a()

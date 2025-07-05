@@ -2,7 +2,6 @@
 " matchaddpos(), matcharg(), matchdelete(), and setmatches().
 
 source screendump.vim
-source check.vim
 
 function Test_match()
   highlight MyGroup1 term=bold ctermbg=red guibg=red

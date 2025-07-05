@@ -1,15 +1,10 @@
 " Test for matchadd() and conceal feature
 
-source check.vim
 CheckFeature conceal
 
 if !has('gui_running') && has('unix')
   set term=ansi
 endif
-
-source shared.vim
-source term_util.vim
-source view_util.vim
 
 func Test_simple_matchadd()
   new

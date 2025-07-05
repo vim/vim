@@ -1,14 +1,10 @@
 " Tests for bracketed paste and other forms of pasting.
 
 " Bracketed paste only works with "xterm".  Not in GUI or Windows console.
-source check.vim
-source term_util.vim
 CheckNotMSWindows
 CheckNotGui
 
 set term=xterm
-
-source shared.vim
 
 func Test_paste_normal_mode()
   new

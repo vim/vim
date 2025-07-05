@@ -1,8 +1,5 @@
 " Tests for the XDG feature
 
-source check.vim
-source shared.vim
-
 func s:get_rcs()
   let rcs = {
         \ 'file1': { 'path': '~/.vimrc', 'dir': expand('~/.vim/') },

@@ -1,8 +1,5 @@
 " Tests for srand() and rand()
 
-source check.vim
-source shared.vim
-
 func Test_Rand()
   let r = srand(123456789)
   call assert_equal([1573771921, 319883699, 2742014374, 1324369493], r)

@@ -1,6 +1,5 @@
 " Tests for the +clientserver feature.
 
-source check.vim
 CheckFeature job
 
 if !has('clientserver')

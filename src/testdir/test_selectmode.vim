@@ -1,7 +1,6 @@
 " Test for Select-mode
 
 " This only works for Unix in a terminal
-source check.vim
 CheckNotGui
 CheckUnix
 

@@ -1,9 +1,5 @@
 " Test for options
 
-source shared.vim
-source check.vim
-source view_util.vim
-
 scriptencoding utf-8
 
 func Test_whichwrap()

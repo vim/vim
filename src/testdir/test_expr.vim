@@ -1,6 +1,5 @@
 " Tests for expressions.
 
-source check.vim
 import './vim9.vim' as v9
 
 func Test_equal()

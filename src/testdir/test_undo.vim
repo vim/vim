@@ -3,7 +3,6 @@
 " undo-able pieces.  Do that by setting 'undolevels'.
 " Also tests :earlier and :later.
 
-source check.vim
 source screendump.vim
 
 func Test_undotree()

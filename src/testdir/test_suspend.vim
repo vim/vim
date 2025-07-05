@@ -1,9 +1,5 @@
 " Test :suspend
 
-source check.vim
-source term_util.vim
-source shared.vim
-
 func CheckSuspended(buf, fileExists)
   call WaitForAssert({-> assert_match('[$#] $', term_getline(a:buf, '.'))})
 

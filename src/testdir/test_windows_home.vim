@@ -1,6 +1,5 @@
 " Test for $HOME on Windows.
 
-source check.vim
 CheckMSWindows
 
 let s:env = {}
