@@ -9940,21 +9940,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			instead wildcard expansion is used.
 	  pum		Display the completion matches using the popup menu
 			in the same style as the |ins-completion-menu|.
-	  search:literalmenu
-			When this flag is present, search pattern completion
-			(e.g., in |/|, |?|, |:s|, |:g|, |:v|, and |:vim|)
-			shows exact buffer text as menu items, without
-			preserving regex artifacts like position
-			anchors (e.g., |/\<|).  This provides more intuitive
-			menu items that match the actual buffer text.
-			However, searches may be less accurate since the
-			pattern is not preserved exactly.
-			By default, Vim preserves the typed pattern (with
-			anchors) and appends the matched word.  This preserves
-			search correctness, especially when using regular
-			expressions or with 'smartcase' enabled.  However, the
-			case of the appended matched word may not exactly
-			match the case of the word in the buffer.
 	  tagfile	When using CTRL-D to list matching tags, the kind of
 			tag and the file of the tag is listed.	Only one match
 			is displayed per line.  Often used tag kinds are:
