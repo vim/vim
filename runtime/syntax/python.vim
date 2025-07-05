@@ -122,18 +122,18 @@ syn match   pythonDecoratorName	"@\s*\h\%(\w\|\.\)*" display contains=pythonDeco
 " Single line multiplication.
 syn match   pythonMatrixMultiply
       \ "\%(\w\|[])]\)\s*@"
-      \ contains=ALLBUT,pythonDecoratorName,pythonDecorator,pythonFunction,pythonDoctestValue
+      \ contains=ALLBUT,pythonDecoratorName,pythonDecorator,pythonFunction,pythonDoctestValue,@pythonFStringContained
       \ transparent
 " Multiplication continued on the next line after backslash.
 syn match   pythonMatrixMultiply
       \ "[^\\]\\\s*\n\%(\s*\.\.\.\s\)\=\s\+@"
-      \ contains=ALLBUT,pythonDecoratorName,pythonDecorator,pythonFunction,pythonDoctestValue
+      \ contains=ALLBUT,pythonDecoratorName,pythonDecorator,pythonFunction,pythonDoctestValue,@pythonFStringContained
       \ transparent
 " Multiplication in a parenthesized expression over multiple lines with @ at
 " the start of each continued line; very similar to decorators and complex.
 syn match   pythonMatrixMultiply
       \ "^\s*\%(\%(>>>\|\.\.\.\)\s\+\)\=\zs\%(\h\|\%(\h\|[[(]\).\{-}\%(\w\|[])]\)\)\s*\n\%(\s*\.\.\.\s\)\=\s\+@\%(.\{-}\n\%(\s*\.\.\.\s\)\=\s\+@\)*"
-      \ contains=ALLBUT,pythonDecoratorName,pythonDecorator,pythonFunction,pythonDoctestValue
+      \ contains=ALLBUT,pythonDecoratorName,pythonDecorator,pythonFunction,pythonDoctestValue,@pythonFStringContained
       \ transparent
 
 syn match   pythonFunction	"\h\w*" display contained
@@ -143,17 +143,35 @@ syn keyword pythonTodo		FIXME NOTE NOTES TODO XXX contained
 
 " Triple-quoted strings can contain doctests.
 syn region  pythonString matchgroup=pythonQuotes
-      \ start=+[uU]\=\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
+      \ start=+[uUbB]\=\z(['"]\)+ end="$\|\z1" skip="\\\\\|\\\z1"
       \ contains=pythonEscape,@Spell
 syn region  pythonString matchgroup=pythonTripleQuotes
-      \ start=+[uU]\=\z('''\|"""\)+ end="\z1" keepend
+      \ start=+[uUbB]\=\z('''\|"""\)+ end="\z1" keepend
       \ contains=pythonEscape,pythonSpaceError,pythonDoctest,@Spell
 syn region  pythonRawString matchgroup=pythonQuotes
-      \ start=+[uU]\=[rR]\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
+      \ start=+\%([bB][rR]\=\|[rR][bB]\=\)\z(['"]\)+
+      \ end="$\|\z1" skip="\\\\\|\\\r\=$\|\\\z1"
       \ contains=@Spell
 syn region  pythonRawString matchgroup=pythonTripleQuotes
-      \ start=+[uU]\=[rR]\z('''\|"""\)+ end="\z1" keepend
+      \ start=+\%([bB][rR]\=\|[rR][bB]\=\)\z('''\|"""\)+
+      \ end="\z1" keepend
       \ contains=pythonSpaceError,pythonDoctest,@Spell
+syn region  pythonFString matchgroup=pythonQuotes
+      \ start=+[fF]\z(['"]\)+
+      \ end="$\|\z1" skip="\\\\\|\\\z1"
+      \ contains=pythonEscape,pythonFStringEscapedBrace,pythonFStringReplacement,@Spell
+syn region  pythonFString matchgroup=pythonTripleQuotes
+      \ start=+[fF]\z('''\|"""\)+
+      \ end="\z1" keepend
+      \ contains=pythonEscape,pythonSpaceError,pythonFStringEscapedBrace,pythonFStringReplacement,pythonDoctest,@Spell
+syn region  pythonRawFString matchgroup=pythonQuotes
+      \ start=+\%([fF][rR]\|[rR][fF]\)\z(['"]\)+
+      \ end="$\|\z1" skip="\\\\\|\\\r\=$\|\\\z1"
+      \ contains=pythonFStringEscapedBrace,pythonFStringReplacement,@Spell
+syn region  pythonRawFString matchgroup=pythonTripleQuotes
+      \ start=+\%([fF][rR]\|[rR][fF]\)\z('''\|"""\)+
+      \ end="\z1" keepend
+      \ contains=pythonSpaceError,pythonFStringEscapedBrace,pythonFStringReplacement,pythonDoctest,@Spell
 
 syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
 syn match   pythonEscape	"\\\o\{1,3}" contained
@@ -161,7 +179,62 @@ syn match   pythonEscape	"\\x\x\{2}" contained
 syn match   pythonEscape	"\%(\\u\x\{4}\|\\U\x\{8}\)" contained
 " Python allows case-insensitive Unicode IDs: http://www.unicode.org/charts/
 syn match   pythonEscape	"\\N{\a\+\%(\s\a\+\)*}" contained
-syn match   pythonEscape	"\\$"
+syn match   pythonEscape	"\\\r\=$"
+
+" f-strings
+" See https://docs.python.org/3/reference/lexical_analysis.html#formatted-string-literals
+syn region  pythonFStringReplacement matchgroup=pythonFStringBrace start=+{+ end=+}+ contained contains=pythonFStringExpression
+
+" Skip contained '[:!]'
+" TODO: this should contain @pythonExpression rather than TOP
+syn region  pythonFStringBrackets
+      \ start="{"  end="}"
+      \ contained contains=TOP
+      \ transparent
+syn region  pythonFStringBrackets
+      \ start="("  end=")"
+      \ contained contains=TOP
+      \ transparent
+syn region  pythonFStringBrackets
+      \ start="\[" end="]"
+      \ contained contains=TOP
+      \ transparent
+
+syn region  pythonFStringReplacementWhitespace start="\s" end="\ze\S" contained nextgroup=pythonFStringConversion,pythonFStringFormatSpec
+
+" TODO: contains (yield_expr | star_expressions)
+" True False None yield from if else for lambda await
+syn cluster pythonExpression
+      \ contains=pythonNumber,python.*String,pythonOperator,pythonBuiltin,pythonAttribute,pythonComment,pythonFStringBrackets
+
+syn region  pythonFStringExpression
+      \ start="." end="\ze[=!:}]"
+      \ contained contains=@pythonExpression
+      \ nextgroup=pythonFStringEquals,pythonFStringConversion,pythonFStringFormatSpec
+
+" TODO: it would be better to match pythonOperator with priority but symbolic
+"   operators are not currently matched
+" skip operators
+syn match   pythonFStringEquals "[!<>=]\@1<!==\@!"
+      \ contained
+      \ nextgroup=pythonFStringConversion,pythonFStringFormatSpec,pythonFStringReplacementWhitespace,pythonComment
+      \ skipwhite skipempty
+hi def link pythonFStringEquals Special
+
+syn match   pythonFStringConversion "![ars]"
+      \ contained
+      \ nextgroup=pythonFStringFormatSpec,pythonFStringReplacementWhitespace,pythonComment
+      \ skipwhite skipempty
+hi def link pythonFStringConversion Special
+
+syn region  pythonFStringFormatSpec
+      \ matchgroup=Delimiter start=":" matchgroup=NONE end="\ze}"
+      \ contained contains=pythonFStringReplacement
+hi def link pythonFStringFormatSpec Special
+
+syn match   pythonFStringEscapedBrace	"{{\|}}" contained
+
+syn cluster pythonFStringContained	contains=pythonFString.\+
 
 " It is very important to understand all details before changing the
 " regular expressions below or their order.
@@ -226,7 +299,7 @@ if !exists("python_no_builtin_highlight")
   syn keyword pythonBuiltin	tuple type vars zip __import__
   " avoid highlighting attributes as builtins
   syn match   pythonAttribute	/\.\h\w*/hs=s+1
-	\ contains=ALLBUT,pythonBuiltin,pythonFunction,pythonAsync
+	\ contains=ALLBUT,pythonBuiltin,pythonFunction,pythonAsync,@pythonFStringContained
 	\ transparent
 endif
 
@@ -283,7 +356,7 @@ if !exists("python_no_doctest_highlight")
   if !exists("python_no_doctest_code_highlight")
     syn region pythonDoctest
 	  \ start="^\s*>>>\s" end="^\s*$"
-	  \ contained contains=ALLBUT,pythonDoctest,pythonFunction,@Spell
+	  \ contained contains=ALLBUT,pythonDoctest,pythonFunction,@pythonFStringContained,@Spell
     syn region pythonDoctestValue
 	  \ start=+^\s*\%(>>>\s\|\.\.\.\s\|"""\|'''\)\@!\S\++ end="$"
 	  \ contained
@@ -312,9 +385,13 @@ hi def link pythonComment		Comment
 hi def link pythonTodo			Todo
 hi def link pythonString		String
 hi def link pythonRawString		String
+hi def link pythonFString		String
+hi def link pythonRawFString		String
 hi def link pythonQuotes		String
 hi def link pythonTripleQuotes		pythonQuotes
 hi def link pythonEscape		Special
+hi def link pythonFStringEscapedBrace	Special
+hi def link pythonFStringBrace		Include
 if !exists("python_no_number_highlight")
   hi def link pythonNumber		Number
 endif
