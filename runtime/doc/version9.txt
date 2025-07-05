@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 03
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41607,8 +41607,6 @@ Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
   add the "cd_in_path" completion type for e.g. |:command-complete| and
   |getcompletion()|
-- |getcompletion()| now accepts a pat and returns the completion type for the
-  {pat} argument
 - allow to complete shell commands and files using the new shellcmdline
   completion type using |:command-complete| and |getcmdcomplpat()|
 - allow to specify additional attributes in the completion menu (allows to
@@ -41713,6 +41711,7 @@ Functions: ~
 |getcellpixels()|	get List of terminal cell pixel size
 |getcmdcomplpat()|	Shell command line completion
 |getcmdprompt()|	get prompt for input()/confirm()
+|getcompletiontype()|	get command-line completion type
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
 |getstacktrace()|	get current stack trace of Vim scripts

@@ -321,6 +321,7 @@ function s:get_vim_command_type(cmd_name)
 		enum
 		execute
 		export
+		filetype
 		filter
 		final
 		for

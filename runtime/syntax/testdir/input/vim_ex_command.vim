@@ -142,3 +142,22 @@ com Foo call system('ls')
 
 command! -bang -nargs=* -complete=file Make AsyncRun -program=make @ <args>
 
+
+" Issue #17326 (syntax highlighting breaks with complex :s comamnd)
+
+command -range=% -nargs=? -bang Tb {
+    if "<bang>" == "!"
+        :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ", "•", "g")/ge
+    endif
+    if "<args>" == ""
+        :<line1>,<line2>!column -t
+    else
+        :<line1>,<line2>!column -t -s'<args>'
+    endif
+    if "<bang>" == "!"
+        :<line1>,<line2>s/•/ /ge
+    endif
+}
+
+command -range=% -nargs=? -bang Tb :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ", "•", "g")/ge
+

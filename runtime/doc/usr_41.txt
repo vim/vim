@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Jul 03
+*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Jul 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1100,7 +1100,8 @@ Buffers, windows and the argument list:
 Command line:					*command-line-functions*
 	getcmdcomplpat()	get completion pattern of the current command
 				line
-	getcmdcompltype()	get the type of the command line completion
+	getcmdcompltype()	get the type of the current command line
+				completion
 	getcmdline()		get the current command line input
 	getcmdprompt()		get the current command line prompt
 	getcmdpos()		get position of the cursor in the command line
@@ -1111,6 +1112,8 @@ Command line:					*command-line-functions*
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
 	getcompletion()		list of command-line completion matches
+	getcompletiontype()	get the type of the command-line completion
+				for specified string
 	fullcommand()		get full command name
 	cmdcomplete_info()	get command-line completion information
 

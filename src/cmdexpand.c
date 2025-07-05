@@ -4557,6 +4557,35 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "getcompletiontype()" function
+ */
+    void
+f_getcompletiontype(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*pat;
+    expand_T	xpc;
+    int		cmdline_len;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    pat = tv_get_string(&argvars[0]);
+    ExpandInit(&xpc);
+
+    cmdline_len = (int)STRLEN(pat);
+    set_cmd_context(&xpc, pat, cmdline_len, cmdline_len, FALSE);
+    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+    xpc.xp_col = cmdline_len;
+
+    rettv->vval.v_string = get_cmdline_completion(&xpc);
+
+    ExpandCleanup(&xpc);
+}
+
+/*
  * "cmdcomplete_info()" function
  */
     void
