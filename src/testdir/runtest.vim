@@ -540,7 +540,7 @@ func FinishTesting()
   split messages
   call append(line('$'), '')
   call append(line('$'), 'From ' . g:testname . ':')
-  call append(line('$'), s:messages->map({_, val -> substitute(val, '\%x1b\[\d\?m', '', 'g')}))
+  call append(line('$'), s:messages->map({_, val -> substitute(val, '\%x1b[[|]\(\d\?\|\d\+\)[hm]', '', 'g')}))
   write
 
   qall!
