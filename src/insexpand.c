@@ -226,6 +226,7 @@ typedef struct cpt_source_T
     int	cs_max_matches;	    // Max items to display from this source
 } cpt_source_T;
 
+#define STARTCOL_NONE	-9
 static cpt_source_T *cpt_sources_array; // Pointer to the array of completion sources
 static int	    cpt_sources_count;  // Total number of completion sources specified in the 'cpt' option
 static int	    cpt_sources_index = -1;  // Index of the current completion source being expanded
@@ -250,7 +251,7 @@ static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
 static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
-static void get_cpt_func_completion_matches(callback_T *cb, int restore_leader);
+static void get_cpt_func_completion_matches(callback_T *cb);
 static callback_T *get_callback_if_cpt_func(char_u *p);
 # endif
 static int setup_cpt_sources(void);
@@ -1410,6 +1411,76 @@ cp_compare_nearest(const void* a, const void* b)
 }
 
 /*
+ * Constructs a new string by prepending text from the current line (from
+ * startcol to compl_col) to the given source string. Stores the result in
+ * dest. Returns OK or FAIL.
+ */
+    static int
+prepend_startcol_text(string_T *dest, string_T *src, int startcol)
+{
+    int prepend_len = compl_col - startcol;
+    int new_length = prepend_len + (int)src->length;
+
+    dest->length = (size_t)new_length;
+    dest->string = alloc(new_length + 1);  // +1 for NUL
+    if (dest->string == NULL)
+    {
+	dest->length = 0;
+	return FAIL;
+    }
+
+    char_u	*line = ml_get(curwin->w_cursor.lnum);
+
+    mch_memmove(dest->string, line + startcol, prepend_len);
+    mch_memmove(dest->string + prepend_len, src->string, src->length);
+    dest->string[new_length] = NUL;
+    return OK;
+}
+
+/*
+ * Returns the completion leader string adjusted for a specific source's
+ * startcol. If the source's startcol is before compl_col, prepends text from
+ * the buffer line to the original compl_leader.
+ */
+    static string_T *
+get_leader_for_startcol(compl_T *match, int cached)
+{
+    static string_T adjusted_leader = {NULL, 0};
+
+    if (match == NULL)
+    {
+	VIM_CLEAR_STRING(adjusted_leader);
+	return NULL;
+    }
+
+    if (cpt_sources_array == NULL || compl_leader.string == NULL)
+	goto theend;
+
+    int	cpt_idx = match->cp_cpt_source_idx;
+    if (cpt_idx < 0 || compl_col <= 0)
+	goto theend;
+    int	startcol = cpt_sources_array[cpt_idx].cs_startcol;
+
+    if (startcol >= 0 && startcol < compl_col)
+    {
+	int prepend_len = compl_col - startcol;
+	int new_length = prepend_len + (int)compl_leader.length;
+	if (cached && (size_t)new_length == adjusted_leader.length
+		&& adjusted_leader.string != NULL)
+	    return &adjusted_leader;
+
+	VIM_CLEAR_STRING(adjusted_leader);
+	if (prepend_startcol_text(&adjusted_leader, &compl_leader,
+		    startcol) != OK)
+	    goto theend;
+
+	return &adjusted_leader;
+    }
+theend:
+    return &compl_leader;
+}
+
+/*
  * Set fuzzy score.
  */
     static void
@@ -1421,11 +1492,13 @@ set_fuzzy_score(void)
 	    || compl_leader.string == NULL || compl_leader.length == 0)
 	return;
 
+    (void)get_leader_for_startcol(NULL, TRUE); // Clear the cache
+
     compl = compl_first_match;
     do
     {
 	compl->cp_score = fuzzy_match_str(compl->cp_str.string,
-		compl_leader.string);
+		get_leader_for_startcol(compl, TRUE)->string);
 	compl = compl->cp_next;
     } while (compl != NULL && !is_first_match(compl));
 }
@@ -1487,6 +1560,7 @@ ins_compl_build_pum(void)
     int		*match_count = NULL;
     int		is_forward = compl_shows_dir_forward();
     int		is_cpt_completion = (cpt_sources_array != NULL);
+    string_T	*leader;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
@@ -1509,6 +1583,8 @@ ins_compl_build_pum(void)
 	    return -1;
     }
 
+    (void)get_leader_for_startcol(NULL, TRUE); // Clear the cache
+
     compl = compl_first_match;
     do
     {
@@ -1519,10 +1595,12 @@ ins_compl_build_pum(void)
 		&& !ignorecase(compl_leader.string) && !fuzzy_filter)
 	    compl->cp_flags &= ~CP_ICASE;
 
+	leader = get_leader_for_startcol(compl, TRUE);
+
 	if (!match_at_original_text(compl)
-		&& (compl_leader.string == NULL
-		    || ins_compl_equal(compl, compl_leader.string,
-			(int)compl_leader.length)
+		&& (leader->string == NULL
+		    || ins_compl_equal(compl, leader->string,
+			(int)leader->length)
 		    || (fuzzy_filter && compl->cp_score > 0)))
 	{
 	    // Limit number of items from each source if max_items is set.
@@ -2317,6 +2395,7 @@ ins_compl_need_restart(void)
 ins_compl_new_leader(void)
 {
     int	    cur_cot_flags = get_cot_flags();
+
     ins_compl_del_pum();
     ins_compl_delete();
     ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
@@ -4970,7 +5049,7 @@ get_next_completion_match(int type, ins_compl_next_state_T *st, pos_T *ini)
 #ifdef FEAT_COMPL_FUNC
 	case CTRL_X_FUNCTION:
 	    if (ctrl_x_mode_normal())  // Invoked by a func in 'cpt' option
-		get_cpt_func_completion_matches(st->func_cb, TRUE);
+		get_cpt_func_completion_matches(st->func_cb);
 	    else
 		expand_by_function(type, compl_pattern.string, NULL);
 	    break;
@@ -5059,6 +5138,9 @@ prepare_cpt_compl_funcs(void)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
+	if (*p == NUL)
+	    break;
+
 	cb = get_callback_if_cpt_func(p);
 	if (cb)
 	{
@@ -5072,6 +5154,9 @@ prepare_cpt_compl_funcs(void)
 	    }
 	    cpt_sources_array[idx].cs_startcol = startcol;
 	}
+	else
+	    cpt_sources_array[idx].cs_startcol = STARTCOL_NONE;
+
 	(void)copy_option_part(&p, IObuff, IOSIZE, ","); // Advance p
 	idx++;
     }
@@ -5268,25 +5353,36 @@ ins_compl_get_exp(pos_T *ini)
     static void
 ins_compl_update_shown_match(void)
 {
+    string_T	*leader;
+
+    (void)get_leader_for_startcol(NULL, TRUE); // Clear the cache
+    leader = get_leader_for_startcol(compl_shown_match, TRUE);
+
     while (!ins_compl_equal(compl_shown_match,
-		compl_leader.string, (int)compl_leader.length)
+		leader->string, (int)leader->length)
 	    && compl_shown_match->cp_next != NULL
 	    && !is_first_match(compl_shown_match->cp_next))
+    {
 	compl_shown_match = compl_shown_match->cp_next;
+	leader = get_leader_for_startcol(compl_shown_match, TRUE);
+    }
 
     // If we didn't find it searching forward, and compl_shows_dir is
     // backward, find the last match.
     if (compl_shows_dir_backward()
 	    && !ins_compl_equal(compl_shown_match,
-		compl_leader.string, (int)compl_leader.length)
+		leader->string, (int)leader->length)
 	    && (compl_shown_match->cp_next == NULL
 		|| is_first_match(compl_shown_match->cp_next)))
     {
 	while (!ins_compl_equal(compl_shown_match,
-		    compl_leader.string, (int)compl_leader.length)
+		    leader->string, (int)leader->length)
 		&& compl_shown_match->cp_prev != NULL
 		&& !is_first_match(compl_shown_match->cp_prev))
+	{
 	    compl_shown_match = compl_shown_match->cp_prev;
+	    leader = get_leader_for_startcol(compl_shown_match, TRUE);
+	}
     }
 }
 
@@ -5409,6 +5505,27 @@ ins_compl_insert(int move_cursor)
     size_t	leader_len = ins_compl_leader_len();
     char_u	*has_multiple = vim_strchr(cp_str, '\n');
 
+    // Since completion sources may provide matches with varying start
+    // positions, insert only the portion of the match that corresponds to the
+    // intended replacement range.
+    if (cpt_sources_array != NULL)
+    {
+	int	cpt_idx = compl_shown_match->cp_cpt_source_idx;
+	if (cpt_idx >= 0 && compl_col >= 0)
+	{
+	    int	startcol = cpt_sources_array[cpt_idx].cs_startcol;
+	    if (startcol >= 0 && startcol < (int)compl_col)
+	    {
+		int skip = (int)compl_col - startcol;
+		if ((size_t)skip <= cp_str_len)
+		{
+		    cp_str_len -= skip;
+		    cp_str += skip;
+		}
+	    }
+	}
+    }
+
     // Make sure we don't go over the end of the string, this can happen with
     // illegal bytes.
     if (compl_len < (int)cp_str_len)
@@ -5509,11 +5626,13 @@ find_next_completion_match(
 	int	advance,
 	int	*num_matches)
 {
-    int	    found_end = FALSE;
-    compl_T *found_compl = NULL;
+    int		found_end = FALSE;
+    compl_T	*found_compl = NULL;
     unsigned int cur_cot_flags = get_cot_flags();
-    int	    compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
-    int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
+    int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
+    int		compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
+    string_T	*leader;
+
 
     while (--todo >= 0)
     {
@@ -5581,10 +5700,13 @@ find_next_completion_match(
 	    }
 	    found_end = FALSE;
 	}
+
+	leader = get_leader_for_startcol(compl_shown_match, FALSE);
+
 	if (!match_at_original_text(compl_shown_match)
-		&& compl_leader.string != NULL
+		&& leader->string != NULL
 		&& !ins_compl_equal(compl_shown_match,
-		    compl_leader.string, (int)compl_leader.length)
+		    leader->string, (int)leader->length)
 		&& !(compl_fuzzy_match && compl_shown_match->cp_score > 0))
 	    ++todo;
 	else
@@ -5767,7 +5889,13 @@ ins_compl_check_keys(int frequency, int in_compl_func)
     // Check for a typed key.  Do use mappings, otherwise vim_is_ctrl_x_key()
     // can't do its work correctly.
     c = vpeekc_any();
-    if (c != NUL)
+    if (c != NUL
+#ifdef FEAT_EVAL
+	    // If test_override("char_avail", 1) was called, ignore characters
+	    // waiting in the typeahead buffer.
+	    && !disable_char_avail_for_testing
+#endif
+       )
     {
 	if (vim_is_ctrl_x_key(c) && c != Ctrl_X && c != Ctrl_R)
 	{
@@ -6123,30 +6251,39 @@ set_compl_globals(
     colnr_T	curs_col UNUSED,
     int		is_cpt_compl UNUSED)
 {
-    char_u	*line = NULL;
-    string_T	*pattern = NULL;
-    int		len;
-
-    if (startcol < 0 || startcol > curs_col)
-	startcol = curs_col;
-    len = curs_col - startcol;
-
-    // Re-obtain line in case it has changed
-    line = ml_get(curwin->w_cursor.lnum);
-
-    pattern = is_cpt_compl ? &cpt_compl_pattern : &compl_pattern;
-    pattern->string = vim_strnsave(line + startcol, (size_t)len);
-    if (pattern->string == NULL)
+    if (is_cpt_compl)
     {
-	pattern->length = 0;
-	return FAIL;
+	VIM_CLEAR_STRING(cpt_compl_pattern);
+	if (startcol < compl_col)
+	    return prepend_startcol_text(&cpt_compl_pattern, &compl_orig_text,
+		    startcol);
+	else
+	{
+	    cpt_compl_pattern.string = vim_strnsave(compl_orig_text.string,
+		    compl_orig_text.length);
+	    cpt_compl_pattern.length = compl_orig_text.length;
+	}
     }
-    pattern->length = (size_t)len;
-    if (!is_cpt_compl)
+    else
     {
+	if (startcol < 0 || startcol > curs_col)
+	    startcol = curs_col;
+
+	// Re-obtain line in case it has changed
+	char_u	*line = ml_get(curwin->w_cursor.lnum);
+	int	len = curs_col - startcol;
+
+	compl_pattern.string = vim_strnsave(line + startcol, (size_t)len);
+	if (compl_pattern.string == NULL)
+	{
+	    compl_pattern.length = 0;
+	    return FAIL;
+	}
+	compl_pattern.length = (size_t)len;
 	compl_col = startcol;
 	compl_length = len;
     }
+
     return OK;
 }
 #endif
@@ -6301,7 +6438,9 @@ compl_get_info(char_u *line, int startcol, colnr_T curs_col, int *line_invalid)
 	    || (ctrl_x_mode & CTRL_X_WANT_IDENT
 		&& !thesaurus_func_complete(ctrl_x_mode)))
     {
-	return get_normal_compl_info(line, startcol, curs_col);
+	if (get_normal_compl_info(line, startcol, curs_col) != OK)
+	    return FAIL;
+	*line_invalid = TRUE; // 'cpt' func may have invalidated "line"
     }
     else if (ctrl_x_mode_line_or_eval())
     {
@@ -6975,23 +7114,14 @@ remove_old_matches(void)
  */
 #ifdef FEAT_COMPL_FUNC
     static void
-get_cpt_func_completion_matches(callback_T *cb UNUSED, int restore_leader)
+get_cpt_func_completion_matches(callback_T *cb UNUSED)
 {
     int	startcol = cpt_sources_array[cpt_sources_index].cs_startcol;
-    int	result;
-
-    VIM_CLEAR_STRING(cpt_compl_pattern);
 
     if (startcol == -2 || startcol == -3)
 	return;
 
-    if (restore_leader) // Re-insert the text removed by ins_compl_delete()
-	ins_compl_insert_bytes(compl_orig_text.string + get_compl_len(), -1);
-    result = set_compl_globals(startcol, curwin->w_cursor.col, TRUE);
-    if (restore_leader)
-	ins_compl_delete(); // Undo insertion
-
-    if (result == OK)
+    if (set_compl_globals(startcol, curwin->w_cursor.col, TRUE) == OK)
     {
 	expand_by_function(0, cpt_compl_pattern.string, cb);
 	cpt_sources_array[cpt_sources_index].cs_refresh_always =
@@ -7025,6 +7155,8 @@ cpt_compl_refresh(void)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
+	if (*p == NUL)
+	    break;
 
 	if (cpt_sources_array[cpt_sources_index].cs_refresh_always)
 	{
@@ -7044,8 +7176,11 @@ cpt_compl_refresh(void)
 		}
 		cpt_sources_array[cpt_sources_index].cs_startcol = startcol;
 		if (ret == OK)
-		    get_cpt_func_completion_matches(cb, FALSE);
+		    get_cpt_func_completion_matches(cb);
 	    }
+	    else
+		cpt_sources_array[cpt_sources_index].cs_startcol
+		    = STARTCOL_NONE;
 	}
 
 	(void)copy_option_part(&p, IObuff, IOSIZE, ","); // Advance p

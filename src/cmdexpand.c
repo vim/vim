@@ -4557,6 +4557,35 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "getcompletiontype()" function
+ */
+    void
+f_getcompletiontype(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*pat;
+    expand_T	xpc;
+    int		cmdline_len;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    pat = tv_get_string(&argvars[0]);
+    ExpandInit(&xpc);
+
+    cmdline_len = (int)STRLEN(pat);
+    set_cmd_context(&xpc, pat, cmdline_len, cmdline_len, FALSE);
+    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+    xpc.xp_col = cmdline_len;
+
+    rettv->vval.v_string = get_cmdline_completion(&xpc);
+
+    ExpandCleanup(&xpc);
+}
+
+/*
  * "cmdcomplete_info()" function
  */
     void
@@ -4609,14 +4638,11 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
 	    || (start->lnum == end->lnum && start->col >= end->col))
 	return FAIL; // invalid range
 
-    // Get line pointers
-    start_line = ml_get(start->lnum);
-    end_line = ml_get(end->lnum);
-
     // Use a growable string (ga)
     ga_init2(&ga, 1, 128);
 
     // Append start line from start->col to end
+    start_line = ml_get(start->lnum);
     char_u  *start_ptr = start_line + start->col;
     int	    is_single_line = start->lnum == end->lnum;
 
@@ -4643,6 +4669,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     }
 
     // Append partial end line (up to word end)
+    end_line = ml_get(end->lnum);
     word_end = find_word_end(end_line + end->col);
     segment_len = (int)(word_end - end_line);
     if (ga_grow(&ga, segment_len) != OK)
