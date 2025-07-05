@@ -451,8 +451,7 @@ EXTERN char e_str_exists_add_bang_to_override[]
 	INIT(= N_("E189: \"%s\" exists (add ! to override)"));
 EXTERN char e_cannot_open_str_for_writing_2[]
 	INIT(= N_("E190: Cannot open \"%s\" for writing"));
-EXTERN char e_argument_must_be_letter_or_forward_backward_quote[]
-	INIT(= N_("E191: Argument must be a letter or forward/backward quote"));
+// E191 unused
 EXTERN char e_recursive_use_of_normal_too_deep[]
 	INIT(= N_("E192: Recursive use of :normal too deep"));
 #ifdef FEAT_EVAL
