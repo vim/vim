@@ -15,6 +15,7 @@
 #include "vim.h"
 
 static int	VIsual_mode_orig = NUL;		// saved Visual mode
+static int	binsearch_mode   = FALSE;
 
 #ifdef FEAT_EVAL
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
@@ -350,7 +351,8 @@ normal_cmd_needs_more_chars(cmdarg_T *cap, short_u cmd_flags)
 		    && reg_recording == 0
 		    && reg_executing == 0)
 		|| ((cap->cmdchar == 'a' || cap->cmdchar == 'i')
-		    && (cap->oap->op_type != OP_NOP || VIsual_active))));
+		    && (cap->oap->op_type != OP_NOP || VIsual_active))))
+	    && !binsearch_mode;
 }
 
 /*
@@ -6833,7 +6835,7 @@ nv_goto(cmdarg_T *cap)
     static void
 nv_normal(cmdarg_T *cap)
 {
-    if(cap->nchar == Ctrl_Q)
+    if(cap->nchar == Ctrl_Q || binsearch_mode)
     {
 	nv_binsearch(cap);
 	return;
@@ -7596,7 +7598,7 @@ nv_binsearch(cmdarg_T *cap)
 
     static pos_T old_pos = {0, 0, 0};
 
-    static int binsearch_mode = FALSE,	//appears at the top of the window (since line number grows downward).
+    static int //binsearch_mode = FALSE,	//appears at the top of the window (since line number grows downward).
 	       old_op_type = OP_NOP,
 	       returned = TRUE,
 	       old_motion_type = 0,
@@ -7654,7 +7656,7 @@ start:
     lower_bound=center_bound;
     center_bound = (center_bound + upper_bound)/2;
     cursor_down(center_bound - lower_bound, TRUE);	//use cursor_down to move instead of any other method
-    vungetc(Ctrl_Q);					//like, say, curwin->w_cursor.lnum =center_line, just in case.
+    vungetc(Ctrl_BSL);					//like, say, curwin->w_cursor.lnum =center_line, just in case.
     finish_op = FALSE;	       				//we return after every cursor movement 
     return;						//to update whatever visual efect may be triggered by
 							//cursor movement, like visual mode.
@@ -7668,7 +7670,7 @@ start:
     upper_bound=center_bound;
     center_bound = (center_bound + lower_bound)/2;
     cursor_up(upper_bound - center_bound, TRUE);
-    vungetc(Ctrl_Q);
+    vungetc(Ctrl_BSL);
     finish_op = FALSE;
     return;
     

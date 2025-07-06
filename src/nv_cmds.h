@@ -126,7 +126,7 @@ static const int nv_cmds[] =
     NVCMD(Ctrl_N,	nv_down,	NV_STS,			FALSE),
     NVCMD(Ctrl_O,	nv_ctrlo,	0,			0),
     NVCMD(Ctrl_P,	nv_up,		NV_STS,			FALSE),
-    NVCMD(Ctrl_Q,	nv_binsearch,	0,			0),
+    NVCMD(Ctrl_Q,	nv_visual,	0,			FALSE),
     NVCMD(Ctrl_R,	nv_redo_or_register, 0,			0),
     NVCMD(Ctrl_S,	nv_ignore,	0,			0),
     NVCMD(Ctrl_T,	nv_tagpop,	NV_NCW,			0),
