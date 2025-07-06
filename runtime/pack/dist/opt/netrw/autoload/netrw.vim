@@ -7602,7 +7602,6 @@ function s:PerformListing(islocal)
     if a:islocal
         let filelist = s:NetrwLocalListingList(b:netrw_curdir, 1)
         call append(w:netrw_bannercnt - 1, filelist)
-        " cleanup any blank lines
         sil! NetrwKeepj g/^$/d
         execute printf("setl ts=%d", g:netrw_maxfilenamelen + 1)
     else " remote
