@@ -6833,6 +6833,11 @@ nv_goto(cmdarg_T *cap)
     static void
 nv_normal(cmdarg_T *cap)
 {
+    if(cap->nchar == Ctrl_Q)
+    {
+	nv_binsearch(cap);
+	return;
+    }
     if (cap->nchar == Ctrl_N || cap->nchar == Ctrl_G)
     {
 	clearop(cap->oap);
@@ -7594,10 +7599,11 @@ nv_binsearch(cmdarg_T *cap)
     static int binsearch_mode = FALSE,	//appears at the top of the window (since line number grows downward).
 	       old_op_type = OP_NOP,
 	       returned = TRUE,
-	       old_motion_type = 0;
+	       old_motion_type = 0,
+	       got_bsl = FALSE;
 
     int c = 0;
-    
+start: 
     if(!binsearch_mode)			//initialize upper and lower bounds and center_bound
     {
 	showcmd_binsearch = FALSE;
@@ -7623,14 +7629,24 @@ nv_binsearch(cmdarg_T *cap)
     {
     c = safe_vgetc();
 
-    //if the user typed Ctrl_Q again, they want to re-start the binary search.
-    if(c == Ctrl_Q)
+    if(got_bsl && c == Ctrl_Q)
+    {
+	got_bsl = FALSE;
+	binsearch_mode = FALSE;
+	goto start;
+    }
+    else if(got_bsl && c != Ctrl_Q)
+    {
+	got_bsl = FALSE;
+	c = Ctrl_R;
+	break;
+    }
+
+    if(c == Ctrl_BSL)
     {
 	binsearch_mode = FALSE;
-	vungetc(c);
-	finish_op = FALSE;			      //make vim remember there is an operator pending and
-	return;					      //avoid flushing oap in normal_cmd. necessary for 
-						      //motion force support
+	got_bsl = TRUE;
+	goto start;
     }
     if(c==Ctrl_J)
     {
