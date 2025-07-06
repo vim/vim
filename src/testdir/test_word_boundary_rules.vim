@@ -70,6 +70,31 @@ endfunc
 
 
 " ---------------------------------------------------------------------
+" Tests for Swedish Word Boundaries (WB6/WB7)
+" ---------------------------------------------------------------------
+
+" Tests Swedish abbreviation in nocompatible mode
+func Test_we_colon()
+  set nocompatible
+  set encoding=utf-8
+  call setline(1, ["En stor del av befolkningen, c:a 80%, bor i städerna."])
+  normal! gg07w
+  " The last 'w' should move past ':' and arrive on '8' at column 34.
+  call assert_equal(34, col('.'))
+endfunc
+
+" Tests Swedish abbreviation in compatible mode
+func Test_wb_colon_compat()
+  set compatible
+  set encoding=utf-8
+  call setline(1, ["En stor del av befolkningen, c:a 80%, bor i städerna."])
+  normal! gg07w
+  " The last 'w' stops at ':' at column 31.
+  call assert_equal(31, col('.'))
+endfunc
+
+
+" ---------------------------------------------------------------------
 " Tests for Hebrew-Specific Word Boundaries (WB7a/WB7b/WB7c)
 " ---------------------------------------------------------------------
 
