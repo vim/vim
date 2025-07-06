@@ -4,7 +4,8 @@
 " This only works with "iconv".
 CheckFeature iconv
 
-source screendump.vim
+source util/screendump.vim
+
 if !CanRunVimInTerminal()
   throw 'Skipped: cannot make screendumps'
 endif

@@ -4,7 +4,7 @@
 CheckNotGui
 CheckUnix
 
-source mouse.vim
+source util/mouse.vim
 
 " Test for select mode
 func Test_selectmode_basic()

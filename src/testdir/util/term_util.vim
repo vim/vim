@@ -5,7 +5,7 @@ if exists('*CanRunVimInTerminal')
   finish
 endif
 
-source shared.vim
+source util/shared.vim
 
 " For most tests we need to be able to run terminal Vim with 256 colors.  On
 " MS-Windows the console only has 16 colors and the GUI can't run in a

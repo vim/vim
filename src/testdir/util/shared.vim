@@ -5,7 +5,7 @@ if exists('*PythonProg')
   finish
 endif
 
-source view_util.vim
+source util/view_util.vim
 
 " When 'term' is changed some status requests may be sent.  The responses may
 " interfere with what is being tested.  A short sleep is used to process any of

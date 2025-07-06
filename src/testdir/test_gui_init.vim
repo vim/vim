@@ -3,7 +3,7 @@
 
 CheckCanRunGui
 
-source setup_gui.vim
+source util/setup_gui.vim
 
 func Setup()
   call GUISetUpCommon()

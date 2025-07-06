@@ -2,7 +2,7 @@
 " Most of this works the same in Windows GUI as well as Windows console.
 
 CheckMSWindows
-source mouse.vim
+source util/mouse.vim
 
 " Helper function for sending a grouped sequence of low level key presses
 " The modifier key(s) can be included as VK Key Codes in the sequence

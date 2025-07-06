@@ -6,7 +6,7 @@
 " Test_breakindent08())
 CheckOption breakindent
 
-source screendump.vim
+source util/screendump.vim
 
 func SetUp()
   let s:input ="\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"

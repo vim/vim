@@ -3,7 +3,7 @@
 " Also test that a builtin function cannot be replaced.
 " Also test for regression when calling arbitrary expression.
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Table(title, ...)
   let ret = a:title

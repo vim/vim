@@ -2,7 +2,7 @@
 
 CheckFeature syntax
 
-source screendump.vim
+source util/screendump.vim
 
 func GetSyntaxItem(pat)
   let c = ''

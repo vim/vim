@@ -1,7 +1,7 @@
 " Test various aspects of the Vim9 script language.
 
-import './vim9.vim' as v9
-source screendump.vim
+import './util/vim9.vim' as v9
+source util/screendump.vim
 
 func Test_def_basic()
   def SomeFunc(): string

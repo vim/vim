@@ -1,7 +1,7 @@
 " Test try-catch-finally exception handling
 " Most of this was formerly in test49.
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1

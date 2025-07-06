@@ -1,6 +1,6 @@
 " Test for tabline
 
-source screendump.vim
+source util/screendump.vim
 
 func TablineWithCaughtError()
   let s:func_in_tabline_called = 1

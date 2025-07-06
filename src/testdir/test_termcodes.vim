@@ -4,7 +4,7 @@
 CheckNotGui
 CheckUnix
 
-source mouse.vim
+source util/mouse.vim
 
 func s:TermGuiColorsTest()
   CheckNotMSWindows

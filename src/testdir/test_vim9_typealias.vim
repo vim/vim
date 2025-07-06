@@ -1,6 +1,6 @@
 " Test Vim9 type aliases
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 " Test for :type command to create type aliases
 def Test_typealias()

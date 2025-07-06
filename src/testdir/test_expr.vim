@@ -1,6 +1,6 @@
 " Tests for expressions.
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Test_equal()
   let base = {}

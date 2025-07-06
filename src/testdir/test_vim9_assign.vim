@@ -1,6 +1,6 @@
 " Test Vim9 assignments
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let s:appendToMe = 'xxx'
 let s:addToMe = 111

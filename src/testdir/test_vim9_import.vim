@@ -1,7 +1,7 @@
 " Test import/export of the Vim9 script language.
 " Also the autoload mechanism.
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let s:export_script_lines =<< trim END
   vim9script

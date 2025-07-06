@@ -4,8 +4,8 @@
 
 CheckFeature terminal
 
-source screendump.vim
-source mouse.vim
+source util/screendump.vim
+source util/mouse.vim
 
 let $PROMPT_COMMAND=''
 

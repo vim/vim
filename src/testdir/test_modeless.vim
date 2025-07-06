@@ -4,7 +4,7 @@
 CheckNotGui
 CheckUnix
 
-source mouse.vim
+source util/mouse.vim
 
 " Test for modeless characterwise selection (single click)
 func Test_modeless_characterwise_selection()

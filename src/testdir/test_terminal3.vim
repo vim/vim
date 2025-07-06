@@ -4,10 +4,10 @@
 
 CheckFeature terminal
 
-source screendump.vim
-source mouse.vim
+source util/screendump.vim
+source util/mouse.vim
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let $PROMPT_COMMAND=''
 
@@ -806,7 +806,7 @@ endfunc
 " Test for sync buffer cwd with shell's pwd
 func Test_terminal_sync_shell_dir()
   CheckUnix
-  " The test always use sh (see src/testdir/unix.vim).
+  " The test always use sh (see src/testdir/util/unix.vim).
   " BSD's sh doesn't seem to play well with the OSC 7 escape sequence.
   CheckNotBSD
 

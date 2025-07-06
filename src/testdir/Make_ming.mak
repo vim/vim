@@ -46,7 +46,7 @@ report:
 	@rem without the +eval feature test_result.log is a copy of test.log
 	@if exist test.log ( copy /y test.log test_result.log > nul ) \
 		else ( echo No failures reported > test_result.log )
-	$(VIMPROG) -u NONE $(COMMON_ARGS) -S summarize.vim messages
+	$(VIMPROG) -u NONE $(COMMON_ARGS) -S util\summarize.vim messages
 	-if exist starttime del starttime
 	@echo.
 	@echo Test results:
@@ -105,7 +105,7 @@ tinytests: $(SCRIPTS_TINY_OUT)
 $(DOSTMP)/%.in : %.in
 	if not exist $(DOSTMP)\nul mkdir $(DOSTMP)
 	if exist $(DOSTMP)\$< $(DEL) $(DOSTMP)\$<
-	$(VIMPROG) -u dos.vim $(COMMON_ARGS) "+set ff=dos|f $@|wq" $<
+	$(VIMPROG) -u util\dos.vim $(COMMON_ARGS) "+set ff=dos|f $@|wq" $<
 
 # For each input file dostmp/test99.in run the tests.
 # This moves test99.in to test99.in.bak temporarily.
@@ -115,7 +115,7 @@ $(DOSTMP)/%.in : %.in
 	$(MV) $(notdir $<) $(notdir $<).bak > NUL
 	$(CP) $(DOSTMP)\$(notdir $<) $(notdir $<) > NUL
 	$(CP) $(basename $@).ok test.ok > NUL
-	$(VIMPROG) -u dos.vim $(COMMON_ARGS) -s dotest.in $(notdir $<)
+	$(VIMPROG) -u util\dos.vim $(COMMON_ARGS) -s dotest.in $(notdir $<)
 	-@if exist test.out $(MV) test.out $(DOSTMP)\$@ > NUL
 	-@if exist $(notdir $<).bak $(MV) $(notdir $<).bak $(notdir $<) > NUL
 	-@if exist test.ok $(DEL) test.ok
@@ -124,7 +124,7 @@ $(DOSTMP)/%.in : %.in
 	-@if exist XfakeHOME $(DELDIR) XfakeHOME
 	-@del X*
 	-@if exist viminfo del viminfo
-	$(VIMPROG) -u dos.vim $(COMMON_ARGS) "+set ff=unix|f test.out|wq" \
+	$(VIMPROG) -u util\dos.vim $(COMMON_ARGS) "+set ff=unix|f test.out|wq" \
 		$(DOSTMP)\$@
 	@diff test.out $(basename $@).ok & if errorlevel 1 \
 		( $(MV) test.out $(basename $@).failed > NUL \
@@ -154,10 +154,10 @@ test_gui.res: test_gui.vim
 
 test_gui_init.res: test_gui_init.vim
 	@echo $(VIMPROG) > vimcmd
-	$(VIMPROG) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
+	$(VIMPROG) -u util\gui_preinit.vim -U util\gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@$(DEL) vimcmd
 
-opt_test.vim: gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
+opt_test.vim: util/gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
 	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S $^
 	@if test -f test.log; then \
 		cat test.log; \

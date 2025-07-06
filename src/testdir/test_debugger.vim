@@ -1,6 +1,6 @@
 " Tests for the Vim script debug commands
 
-source screendump.vim
+source util/screendump.vim
 
 CheckRunVimInTerminal
 

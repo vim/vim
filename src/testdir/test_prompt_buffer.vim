@@ -2,7 +2,7 @@
 
 CheckFeature channel
 
-source screendump.vim
+source util/screendump.vim
 
 func CanTestPromptBuffer()
   " We need to use a terminal window to be able to feed keys without leaving

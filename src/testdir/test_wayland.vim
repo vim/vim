@@ -1,4 +1,4 @@
-source window_manager.vim
+source util/window_manager.vim
 
 CheckFeature wayland
 CheckFeature wayland_clipboard

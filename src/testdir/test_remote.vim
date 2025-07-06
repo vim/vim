@@ -3,8 +3,8 @@
 CheckFeature clientserver
 CheckFeature terminal
 
-source screendump.vim
-source mouse.vim
+source util/screendump.vim
+source util/mouse.vim
 
 let s:remote_works = 0
 let s:skip = 'Skipped: --remote feature is not possible'

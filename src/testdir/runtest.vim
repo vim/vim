@@ -101,13 +101,13 @@ endif
 set shellslash
 
 " Common with all tests on all systems.
-source setup.vim
+source util/setup.vim
 
 " Needed for RunningWithValgrind().
-source shared.vim
+source util/shared.vim
 
 " Needed for the various Check commands
-source check.vim
+source util/check.vim
 
 " For consistency run all tests with 'nocompatible' set.
 " This also enables use of line continuation.

@@ -6,7 +6,7 @@ scriptencoding latin1
 CheckOption linebreak
 CheckFeature conceal
 
-source screendump.vim
+source util/screendump.vim
 
 function s:screen_lines(lnum, width) abort
   return ScreenLines(a:lnum, a:width)

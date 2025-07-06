@@ -1,6 +1,6 @@
 " Test findfile() and finddir()
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let s:files = [ 'Xfinddir1/foo',
       \         'Xfinddir1/bar',

@@ -2,7 +2,7 @@
 
 CheckFeature signs
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_sign()
   new

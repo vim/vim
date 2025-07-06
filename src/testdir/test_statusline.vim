@@ -3,7 +3,7 @@
 " Not tested yet:
 "   %N
 
-source screendump.vim
+source util/screendump.vim
 
 func SetUp()
   set laststatus=2
