@@ -3461,9 +3461,9 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	}
 	free_tp = TRUE;
 	redraw_tabline = TRUE;
+	shell_new_columns();
 	if (h != tabline_height())
 	    shell_new_rows();
-	shell_new_columns();
     }
 
     // Free the memory used for the window.
@@ -6160,6 +6160,8 @@ win_free_lsize(win_T *wp)
 /*
  * Called from win_new_shellsize() after Rows changed.
  * This only does the current tab page, others must be done when made active.
+ * Note: When called together with shell_new_columns(), call shell_new_columns()
+ * first to avoid this function updating firstwin->w_wincol first.
  */
     void
 shell_new_rows(void)
@@ -6204,8 +6206,10 @@ shell_new_columns(void)
     if (firstwin == NULL)	// not initialized yet
 	return;
 
+#if defined(FEAT_TABPANEL)
     int save_wincol = firstwin->w_wincol;
     int save_fr_width = topframe->fr_width;
+#endif
     int w = COLUMNS_WITHOUT_TPL();
 
     // First try setting the widths of windows with 'winfixwidth'.  If that
@@ -6216,9 +6220,13 @@ shell_new_columns(void)
 
     win_comp_pos();		// recompute w_winrow and w_wincol
 
-    if (p_ea && (firstwin->w_wincol != save_wincol
-		|| topframe->fr_width != save_fr_width))
+#if defined(FEAT_TABPANEL)
+    if (p_ea && firstwin->w_wincol + topframe->fr_width
+	    == save_wincol + save_fr_width &&
+	    (firstwin->w_wincol != save_wincol ||
+	     topframe->fr_width != save_fr_width))
 	win_equal(curwin, FALSE, 0);
+#endif
     if (!skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
 
