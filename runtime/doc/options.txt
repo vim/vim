@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 05
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5897,6 +5897,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Buffers with 'swapfile' off still count to the total amount of memory
 	used.
 	Also see 'maxmem'.
+
+						*'maxsearchcount'* *'msc'*
+'maxsearchcount' 'msc'	number	(default 99)
+			global
+	Maximum number of matches shown for the search count status |shm-S|
+	When the number of matches exceeds this value, Vim shows ">" instead
+	of the exact count to keep searching fast.
+	Note: larger values may impact performance.
+	The value must be between 1 and 9999.
 
 						*'menuitems'* *'mis'*
 'menuitems' 'mis'	number	(default 25)

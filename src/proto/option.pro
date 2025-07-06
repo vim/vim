@@ -65,6 +65,7 @@ char *did_set_pyxversion(optset_T *args);
 char *did_set_readonly(optset_T *args);
 char *did_set_scrollbind(optset_T *args);
 char *did_set_shellslash(optset_T *args);
+char *did_set_maxsearchcount(optset_T *args);
 char *did_set_shiftwidth_tabstop(optset_T *args);
 char *did_set_showtabline(optset_T *args);
 char *did_set_smoothscroll(optset_T *args);
