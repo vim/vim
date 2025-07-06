@@ -30,12 +30,8 @@ export def Check_inp()
 enddef
 
 # This function checks for the kind of assembly that is wanted by the user, or
-# can be detected from the first five lines of the file.
+# can be detected from the beginning lines of the file.
 export def FTasm()
-  # tiasm uses `* commment`
-  if join(getline(1, 10), "\n") =~ '\%(\%(^\|\n\)\*\|Texas Instruments Incorporated\)'
-    setf tiasm
-  endif
   # make sure b:asmsyntax exists
   if !exists("b:asmsyntax")
     b:asmsyntax = ""
@@ -65,8 +61,15 @@ export def FTasmsyntax()
   var match = matchstr(head, '\sasmsyntax=\zs[a-zA-Z0-9]\+\ze\s')
   if match != ''
     b:asmsyntax = match
-  elseif ((head =~? '\.title') || (head =~? '\.ident') || (head =~? '\.macro') || (head =~? '\.subtitle') || (head =~? '\.library'))
-    b:asmsyntax = "vmasm"
+  else
+    # Use heuristics
+    head = join(getline(1, 10), "\n")
+    # tiasm uses `* commment`
+    if head =~ '\%(\%(^\|\n\)\*\|Texas Instruments Incorporated\)'
+      b:asmsyntax = "tiasm"
+    elseif ((head =~? '\.title') || (head =~? '\.ident') || (head =~? '\.macro') || (head =~? '\.subtitle') || (head =~? '\.library'))
+      b:asmsyntax = "vmasm"
+    endif
   endif
 enddef
 
