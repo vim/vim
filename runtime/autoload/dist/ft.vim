@@ -69,7 +69,7 @@ export def FTasmsyntax()
     elseif head =~ '\%(\%(^\|\n\)\*\|Texas Instruments Incorporated\)' && head !~ '\%(^\|\n\)/\*'
       # tiasm uses `* commment`, but detection is unreliable if '/*' is seen
       b:asmsyntax = "tiasm"
-    elseif ((head =~? '\.title') || (head =~? '\.ident') || (head =~? '\.macro') || (head =~? '\.subtitle') || (head =~? '\.library'))
+    elseif ((head =~? '\.title\>\|\.ident\>\|\.macro\>\|\.subtitle\>\|\.library\>'))
       b:asmsyntax = "vmasm"
     endif
   endif
