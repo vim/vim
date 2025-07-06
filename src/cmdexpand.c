@@ -4577,10 +4577,7 @@ f_getcompletiontype(typval_T *argvars, typval_T *rettv)
 
     cmdline_len = (int)STRLEN(pat);
     set_cmd_context(&xpc, pat, cmdline_len, cmdline_len, FALSE);
-    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    xpc.xp_col = cmdline_len;
-
-    rettv->vval.v_string = get_cmdline_completion(&xpc);
+    rettv->vval.v_string = cmdcomplete_type_to_str(xpc.xp_context, xpc.xp_arg);
 
     ExpandCleanup(&xpc);
 }
