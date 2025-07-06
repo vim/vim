@@ -125,6 +125,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     autohotkey: ['file.ahk'],
     autoit: ['file.au3'],
     automake: ['GNUmakefile.am', 'makefile.am', 'Makefile.am'],
+    autopkgtest: ['/debian/tests/control', 'any/debian/tests/control'],
     ave: ['file.ave'],
     awk: ['file.awk', 'file.gawk'],
     b: ['file.mch', 'file.ref', 'file.imp'],

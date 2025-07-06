@@ -690,11 +690,16 @@ au BufNewFile,BufRead *.dfy			setf dafny
 " Dart
 au BufRead,BufNewfile *.dart,*.drt		setf dart
 
+" Debian autopkgtest
+au BufNewFile,BufRead */debian/tests/control	setf autopkgtest
+
 " Debian Control
 au BufNewFile,BufRead */{debian,DEBIAN}/control		setf debcontrol
 au BufNewFile,BufRead control
 	\  if getline(1) =~ '^Source:\|^Package:'
 	\|   setf debcontrol
+	\| elseif getline(1) =~ '^Tests:\|^Test-Command:'
+	\|   setf autopkgtest
 	\| endif
 
 " Debian Copyright
