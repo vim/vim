@@ -4477,7 +4477,7 @@ func Test_search_complete()
   call feedkeys("gg/Fo\<tab>\<f9>", 'tx')
   call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
   call feedkeys("gg/FO\<tab>\<f9>", 'tx')
-  call assert_equal({},  g:compl_info)
+  call assert_equal({}, g:compl_info)
   set ignorecase
   call feedkeys("gg/f\<tab>\<f9>", 'tx')
   call assert_equal(['foobar', 'fooBAr', 'fooBARR'], g:compl_info.matches)
@@ -4491,7 +4491,11 @@ func Test_search_complete()
   call feedkeys("gg/Fo\<tab>\<f9>", 'tx')
   call assert_equal(['Foobar', 'FooBARR'], g:compl_info.matches)
   call feedkeys("gg/FO\<tab>\<f9>", 'tx')
-  call assert_equal({},  g:compl_info)
+  call assert_equal({}, g:compl_info)
+
+  " Issue #17680 (getcompletion() does not support search completion)
+  let result = getcompletion('%s/', 'cmdline')
+  call assert_equal([], result)
 
   bw!
   call test_override("char_avail", 0)

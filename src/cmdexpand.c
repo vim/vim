@@ -4455,7 +4455,9 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     if (!filtered)
 	options |= WILD_KEEP_ALL;
 
+    may_expand_pattern = FALSE;
     ExpandInit(&xpc);
+
     if (STRCMP(type, "cmdline") == 0)
     {
 	int cmdline_len = (int)STRLEN(pat);
