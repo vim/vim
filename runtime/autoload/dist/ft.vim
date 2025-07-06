@@ -64,8 +64,8 @@ export def FTasmsyntax()
   else
     # Use heuristics
     head = join(getline(1, 10), "\n")
-    # tiasm uses `* commment`
-    if head =~ '\%(\%(^\|\n\)\*\|Texas Instruments Incorporated\)'
+    if head =~ '\%(\%(^\|\n\)\*\|Texas Instruments Incorporated\)' && head !~ '\%(^\|\n\)/\*'
+      # tiasm uses `* commment`, but detection is unreliable if '/*' is seen
       b:asmsyntax = "tiasm"
     elseif ((head =~? '\.title') || (head =~? '\.ident') || (head =~? '\.macro') || (head =~? '\.subtitle') || (head =~? '\.library'))
       b:asmsyntax = "vmasm"
