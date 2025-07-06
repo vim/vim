@@ -353,6 +353,7 @@ NEW_TESTS = \
 	test_windows_home \
 	test_winfixbuf \
 	test_wnext \
+	test_word_boundary_rules \
 	test_wordcount \
 	test_writefile \
 	test_xdg \
