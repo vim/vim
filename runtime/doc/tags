@@ -10057,6 +10057,7 @@ search()	builtin.txt	/*search()*
 search()-sub-match	builtin.txt	/*search()-sub-match*
 search-commands	pattern.txt	/*search-commands*
 search-offset	pattern.txt	/*search-offset*
+search-options	pattern.txt	/*search-options*
 search-pattern	pattern.txt	/*search-pattern*
 search-range	pattern.txt	/*search-range*
 search-replace	change.txt	/*search-replace*

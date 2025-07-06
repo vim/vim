@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 9.1.  Last change: 2025 Mar 28
+*pattern.txt*   For Vim version 9.1.  Last change: 2025 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -182,6 +182,16 @@ In |Vim9| script you get E486 for "pattern not found" or *E538* when the pattern
 matches in every line with `:vglobal`.
 For the |:s| command the "e" flag can be used to avoid the error message
 |:s_flags|.
+
+					*search-options*
+The following options affect how a search is performed in Vim:
+    'hlsearch'		highlight matches
+    'ignorecase'	ignore case when searching
+    'imsearch'		use |IME| when entering the search pattern
+    'incsearch'		show matches incrementally as the pattern is typed
+    'shortmess'		suppress messages |shm-s|; show search count |shm-S|
+    'smartcase'		override 'ignorecase' if pattern contains uppercase
+    'wrapscan'		continue searching from the start of the file
 
 					*search-offset* *{offset}*
 These commands search for the specified pattern.  With "/" and "?" an
