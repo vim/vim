@@ -2,7 +2,7 @@
 
 CheckFeature timers
 
-source screendump.vim
+source util/screendump.vim
 
 func SetUp()
   " The tests here use timers, thus are sensitive to timing.

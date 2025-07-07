@@ -2,7 +2,7 @@
 
 CheckFeature menu
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_add_remove_menu()
   new

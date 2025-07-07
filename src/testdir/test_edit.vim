@@ -4,7 +4,7 @@ if exists("+t_kD")
   let &t_kD="[3;*~"
 endif
 
-source screendump.vim
+source util/screendump.vim
 
 " Needs to come first until the bug in getchar() is
 " fixed: https://groups.google.com/d/msg/vim_dev/fXL9yme4H4c/bOR-U6_bAQAJ

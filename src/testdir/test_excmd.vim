@@ -1,6 +1,6 @@
 " Tests for various Ex commands.
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_ex_delete()
   new

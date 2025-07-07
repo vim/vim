@@ -1,6 +1,6 @@
 " Tests for :help
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Test_help_restore_snapshot()
   help

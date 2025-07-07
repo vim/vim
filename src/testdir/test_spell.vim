@@ -3,7 +3,7 @@
 
 CheckFeature spell
 
-source screendump.vim
+source util/screendump.vim
 
 func TearDown()
   set nospell

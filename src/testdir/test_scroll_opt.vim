@@ -1,7 +1,7 @@
 " Test for 'scroll', 'scrolloff', 'smoothscroll', etc.
 
-source screendump.vim
-source mouse.vim
+source util/screendump.vim
+source util/mouse.vim
 
 func Test_reset_scroll()
   let scr = &l:scroll

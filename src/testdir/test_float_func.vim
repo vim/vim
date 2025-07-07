@@ -1,6 +1,6 @@
 " test float functions
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Test_abs()
   call assert_equal('1.23', string(abs(1.23)))

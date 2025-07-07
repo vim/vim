@@ -1,5 +1,5 @@
 " Some tests, that used to crash Vim
-source screendump.vim
+source util/screendump.vim
 
 CheckScreendump
 

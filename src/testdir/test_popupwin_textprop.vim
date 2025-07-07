@@ -3,7 +3,7 @@
 CheckFeature popupwin
 CheckFeature textprop
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_textprop_popup()
   CheckScreendump

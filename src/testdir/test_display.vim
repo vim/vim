@@ -4,7 +4,7 @@ if !has('gui_running') && has('unix')
   set term=ansi
 endif
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_display_foldcolumn()
   CheckFeature folding

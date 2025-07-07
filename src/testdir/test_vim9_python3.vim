@@ -1,5 +1,5 @@
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 CheckFeature python3
 
 def Test_python3_py3eval_locals()

@@ -1,6 +1,6 @@
 " test execute()
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func NestedEval()
   let nested = execute('echo "nested\nlines"')

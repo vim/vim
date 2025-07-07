@@ -4,7 +4,7 @@ if !has('gui_running') && has('unix')
   set term=ansi
 endif
 
-source screendump.vim
+source util/screendump.vim
 
 " Test for scrolling that modifies buffer during visual block
 func Test_visual_block_scroll()

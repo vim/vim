@@ -1,6 +1,6 @@
 " Test for the termdebug plugin
 
-source screendump.vim
+source util/screendump.vim
 
 CheckUnix
 CheckFeature terminal

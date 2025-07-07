@@ -1,6 +1,6 @@
 " Test Vim9 enums
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 " Test for parsing an enum definition
 def Test_enum_parse()

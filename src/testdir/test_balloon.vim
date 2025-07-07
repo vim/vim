@@ -4,7 +4,7 @@
 CheckNotGui
 CheckFeature balloon_eval_term
 
-source screendump.vim
+source util/screendump.vim
 
 let s:common_script =<< trim [CODE]
   call setline(1, ["one one one", "two tXo two", "three three three"])

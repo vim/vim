@@ -2,7 +2,7 @@
 
 CheckFeature popupwin
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_simple_popup()
   CheckScreendump

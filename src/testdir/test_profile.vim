@@ -2,7 +2,7 @@
 
 CheckFeature profile
 
-source screendump.vim
+source util/screendump.vim
 
 if has('prof_nsec')
   let s:header = 'count     total (s)      self (s)'

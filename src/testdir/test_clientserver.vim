@@ -8,7 +8,7 @@ endif
 
 CheckFeature clientserver
 
-source shared.vim
+source util/shared.vim
 
 func Check_X11_Connection()
   if has('x11')

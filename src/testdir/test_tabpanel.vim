@@ -1,6 +1,6 @@
 " Tests for tabpanel
 
-source screendump.vim
+source util/screendump.vim
 CheckFeature tabpanel
 
 function s:reset()

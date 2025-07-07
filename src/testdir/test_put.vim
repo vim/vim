@@ -1,6 +1,6 @@
 " Tests for put commands, e.g. ":put", "p", "gp", "P", "gP", etc.
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_put_block()
   new

@@ -1,6 +1,6 @@
 " Test for v:hlsearch
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_hlsearch()
   new

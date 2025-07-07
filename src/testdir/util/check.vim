@@ -1,5 +1,5 @@
-source shared.vim
-source term_util.vim
+source util/shared.vim
+source util/term_util.vim
 
 " uses line-continuation
 let s:cpo_save = &cpo
@@ -154,7 +154,7 @@ func SetupWindowSizeToForVisualDumps()
 endfunc
 
 " Command to check that making screendumps is supported.
-" Caller must source screendump.vim
+" Caller must source util/screendump.vim
 command CheckScreendump call CheckScreendump()
 func CheckScreendump()
   let g:check_screendump_called = v:true

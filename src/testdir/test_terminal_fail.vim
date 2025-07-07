@@ -4,8 +4,6 @@
 
 CheckFeature terminal
 
-source shared.vim
-
 func Test_terminal_redir_fails()
   CheckUnix
 

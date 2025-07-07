@@ -1,6 +1,6 @@
 " Tests for tagjump (tags and special searches)
 
-source screendump.vim
+source util/screendump.vim
 
 " SEGV occurs in older versions.  (At least 7.4.1748 or older)
 func Test_ptag_with_notagstack()

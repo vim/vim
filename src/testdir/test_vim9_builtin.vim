@@ -1,7 +1,7 @@
 " Test using builtin functions in the Vim9 script language.
 
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 " Test for passing too many or too few arguments to builtin functions
 func Test_internalfunc_arg_error()

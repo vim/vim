@@ -3,7 +3,7 @@
 " When +channel is supported then +job is too, so we don't check for that.
 CheckFeature channel
 
-source screendump.vim
+source util/screendump.vim
 
 let s:python = PythonProg()
 if s:python == ''

@@ -7,7 +7,7 @@ CheckOption linebreak
 CheckFeature conceal
 CheckFeature signs
 
-source screendump.vim
+source util/screendump.vim
 
 func s:screen_lines(lnum, width) abort
   return ScreenLines(a:lnum, a:width)
