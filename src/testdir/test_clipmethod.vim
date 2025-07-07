@@ -34,7 +34,9 @@ func Test_clipmethod_order()
   :wlrestore 1239
   clipreset
 
-  call assert_equal("x11", v:clipmethod)
+  if exists("$DISPLAY")
+    call assert_equal("x11", v:clipmethod)
+  endif
 
   :xrestore 1239
   clipreset
@@ -49,9 +51,11 @@ func Test_clipmethod_order()
   call assert_equal("wayland", v:clipmethod)
   call assert_equal(1, has('clipboard_working'))
 
-  set cpm=x11
+  if exists("$DISPLAY")
+    set cpm=x11
 
-  call assert_equal("x11", v:clipmethod)
+    call assert_equal("x11", v:clipmethod)
+  endif
 
   set cpm=wayland
 
@@ -101,7 +105,9 @@ func Test_clipreset_switches()
   wlrestore!
 
   call assert_equal("", v:wayland_display)
-  call assert_equal("x11", v:clipmethod)
+  if exists("$DISPLAY")
+    call assert_equal("x11", v:clipmethod)
+  endif
 
   " Do the same but kill a X11 server
 
@@ -150,20 +156,23 @@ func Test_clipreset_switches()
   let l:job = job_start(l:cmd, { 'stoponexit': 'kill', 'out_io': 'null'})
 
   call WaitForAssert({-> assert_equal("run", job_status(l:job))})
-  call WaitForAssert({-> assert_match(l:name, serverlist())})
+  if exists("$DISPLAY")
+    call WaitForAssert({-> assert_match(l:name, serverlist())})
+  endif
 
   " Change x server to the one that will be killed, then block until
   " v:clipmethod is none.
-  call remote_send(l:name, ":xrestore " .. l:xdisplay ..
+  if exists("$DISPLAY")
+    call remote_send(l:name, ":xrestore " .. l:xdisplay ..
         \ ' | call DoIt()' .. "\<CR>")
 
-  call EndXServer(l:xdisplay)
+    call EndXServer(l:xdisplay)
+    call WaitFor({-> filereadable('Xtest')})
 
-  call WaitFor({-> filereadable('Xtest')})
-
-  " For some reason readfile sometimes returns an empty list despite the file
-  " existing, this why WaitForAssert() is used.
-  call WaitForAssert({-> assert_equal(['SUCCESS'], readfile('Xtest'))}, 1000)
+    " For some reason readfile sometimes returns an empty list despite the file
+    " existing, this why WaitForAssert() is used.
+    call WaitForAssert({-> assert_equal(['SUCCESS'], readfile('Xtest'))}, 1000)
+  endif
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
