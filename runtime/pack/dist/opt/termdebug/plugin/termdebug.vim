@@ -1917,14 +1917,21 @@ def CreateBreakpoint(id: number, subid: number, enabled: string)
       hiName = "debugBreakpoint"
     endif
     var label = ''
-    if exists('g:termdebug_config') && has_key(g:termdebug_config, 'sign')
-      label = g:termdebug_config['sign']
-    elseif exists('g:termdebug_config') && has_key(g:termdebug_config, 'sign_decimal')
-      label = printf('%02d', id)
-      if id > 99
-        label = '9+'
+    if exists('g:termdebug_config')
+      if has_key(g:termdebug_config, 'signs')
+        label = get(g:termdebug_config.signs, id - 1, '')
       endif
-    else
+      if label == '' && has_key(g:termdebug_config, 'sign')
+        label = g:termdebug_config['sign']
+      endif
+      if label == '' && has_key(g:termdebug_config, 'sign_decimal')
+        label = printf('%02d', id)
+        if id > 99
+          label = '9+'
+        endif
+      endif
+    endif
+    if label == ''
       label = printf('%02X', id)
       if id > 255
         label = 'F+'
