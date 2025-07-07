@@ -200,6 +200,8 @@ func Test_termdebug_decimal_breakpoints()
   Break 9
   call term_wait(gdb_buf)
   redraw!
+  Run
+  call term_wait(gdb_buf, 400)
 
   let i = 2
   while i <= 258
