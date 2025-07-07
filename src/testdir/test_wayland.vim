@@ -1,5 +1,3 @@
-source check.vim
-source shared.vim
 source window_manager.vim
 
 CheckFeature wayland

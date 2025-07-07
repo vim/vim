@@ -1,8 +1,5 @@
 " Test for the comment package
 
-source check.vim
-source term_util.vim
-
 func Test_basic_comment()
   CheckScreendump
   let lines =<< trim END

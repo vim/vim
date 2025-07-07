@@ -1,6 +1,5 @@
 " Test for signs
 
-source check.vim
 CheckFeature signs
 
 source screendump.vim

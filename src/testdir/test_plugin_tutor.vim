@@ -1,7 +1,6 @@
 " Test for the new-tutor plugin
 
 source screendump.vim
-source check.vim
 source script_util.vim
 
 func SetUp()

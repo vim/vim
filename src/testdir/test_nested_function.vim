@@ -1,7 +1,5 @@
 " Tests for nested functions
 
-source check.vim
-
 func NestedFunc()
   func! Func1()
     let g:text .= 'Func1 '

@@ -1,7 +1,6 @@
 " Tests for 'balloonevalterm'.
 " A few tests only work in the terminal.
 
-source check.vim
 CheckNotGui
 CheckFeature balloon_eval_term
 

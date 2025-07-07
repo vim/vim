@@ -1,8 +1,5 @@
 " Test for tabline
 
-source shared.vim
-source view_util.vim
-source check.vim
 source screendump.vim
 
 func TablineWithCaughtError()

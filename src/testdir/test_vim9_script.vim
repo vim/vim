@@ -1,10 +1,7 @@
 " Test various aspects of the Vim9 script language.
 
-source check.vim
-source term_util.vim
 import './vim9.vim' as v9
 source screendump.vim
-source shared.vim
 
 def Test_vim9script_feature()
   # example from the help, here the feature is always present

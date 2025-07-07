@@ -1,7 +1,5 @@
 " Tests for Vim buffer
 
-source check.vim
-
 " Test for the :bunload command with an offset
 func Test_bunload_with_offset()
   %bwipe!

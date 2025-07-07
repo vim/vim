@@ -1,6 +1,5 @@
 " Tests for various eval things.
 
-source view_util.vim
 source shared.vim
 import './vim9.vim' as v9
 

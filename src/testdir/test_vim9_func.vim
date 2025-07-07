@@ -1,8 +1,5 @@
 " Test various aspects of the Vim9 script language.
 
-source check.vim
-source term_util.vim
-source view_util.vim
 import './vim9.vim' as v9
 source screendump.vim
 

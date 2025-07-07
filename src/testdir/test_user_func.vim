@@ -3,8 +3,6 @@
 " Also test that a builtin function cannot be replaced.
 " Also test for regression when calling arbitrary expression.
 
-source check.vim
-source shared.vim
 import './vim9.vim' as v9
 
 func Table(title, ...)

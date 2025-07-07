@@ -1,8 +1,5 @@
 " Test for commands that operate on the spellfile.
 
-source shared.vim
-source check.vim
-
 CheckFeature spell
 CheckFeature syntax
 

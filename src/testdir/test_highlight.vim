@@ -1,8 +1,6 @@
 " Tests for ":highlight" and highlighting.
 
-source view_util.vim
 source screendump.vim
-source check.vim
 source script_util.vim
 import './vim9.vim' as v9
 

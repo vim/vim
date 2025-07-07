@@ -1,6 +1,5 @@
 " Test the :disassemble command, and compilation as a side effect
 
-source check.vim
 import './vim9.vim' as v9
 
 func s:NotCompiled()

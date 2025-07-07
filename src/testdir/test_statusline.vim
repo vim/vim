@@ -3,8 +3,6 @@
 " Not tested yet:
 "   %N
 
-source view_util.vim
-source check.vim
 source screendump.vim
 
 func SetUp()

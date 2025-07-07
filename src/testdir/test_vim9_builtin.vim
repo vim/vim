@@ -1,6 +1,5 @@
 " Test using builtin functions in the Vim9 script language.
 
-source check.vim
 source screendump.vim
 import './vim9.vim' as v9
 

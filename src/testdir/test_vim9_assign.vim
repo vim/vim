@@ -1,8 +1,6 @@
 " Test Vim9 assignments
 
-source check.vim
 import './vim9.vim' as v9
-source term_util.vim
 
 let s:appendToMe = 'xxx'
 let s:addToMe = 111

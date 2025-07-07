@@ -1,9 +1,6 @@
 " Test the netbeans interface.
 
-source check.vim
 CheckFeature netbeans_intg
-
-source shared.vim
 
 let s:python = PythonProg()
 if s:python == ''

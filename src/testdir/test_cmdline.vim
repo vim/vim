@@ -1,9 +1,6 @@
 " Tests for editing the command line.
 
-source check.vim
 source screendump.vim
-source view_util.vim
-source shared.vim
 import './vim9.vim' as v9
 
 func SetUp()

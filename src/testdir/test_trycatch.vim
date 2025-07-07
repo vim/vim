@@ -1,8 +1,6 @@
 " Test try-catch-finally exception handling
 " Most of this was formerly in test49.
 
-source check.vim
-source shared.vim
 import './vim9.vim' as v9
 
 "-------------------------------------------------------------------------------

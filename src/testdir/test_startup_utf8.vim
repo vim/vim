@@ -1,7 +1,5 @@
 " Tests for startup using utf-8.
 
-source check.vim
-source shared.vim
 source screendump.vim
 
 func Test_read_stdin_utf8()

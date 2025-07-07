@@ -1,8 +1,5 @@
 " Tests for register operations
 
-source check.vim
-source view_util.vim
-
 " This test must be executed first to check for empty and unset registers.
 func Test_aaa_empty_reg_test()
   call assert_fails('normal @@', 'E748:')

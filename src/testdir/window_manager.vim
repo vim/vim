@@ -1,6 +1,3 @@
-source check.vim
-source shared.vim
-
 CheckFeature job
 CheckUnix
 

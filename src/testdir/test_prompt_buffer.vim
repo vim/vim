@@ -1,9 +1,7 @@
 " Tests for setting 'buftype' to "prompt"
 
-source check.vim
 CheckFeature channel
 
-source shared.vim
 source screendump.vim
 
 func CanTestPromptBuffer()

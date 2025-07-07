@@ -1,6 +1,5 @@
 " Test for cscope commands.
 
-source check.vim
 CheckFeature cscope
 CheckFeature quickfix
 CheckExecutable cscope

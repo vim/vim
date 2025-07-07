@@ -1,9 +1,6 @@
 " Test for the shell related options ('shell', 'shellcmdflag', 'shellpipe',
 " 'shellquote', 'shellredir', 'shellxescape', and 'shellxquote')
 
-source check.vim
-source shared.vim
-
 func Test_shell_options()
   if has('win32')
     " FIXME: This test is flaky on MS-Windows.

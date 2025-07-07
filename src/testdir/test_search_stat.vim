@@ -1,6 +1,5 @@
 " Tests for search_stats, when "S" is not in 'shortmess'
 
-source check.vim
 source screendump.vim
 
 func Test_search_stat()

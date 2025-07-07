@@ -2,7 +2,6 @@
 
 import './vim9.vim' as v9
 
-source check.vim
 source screendump.vim
 
 " Test for <mods> in user defined commands

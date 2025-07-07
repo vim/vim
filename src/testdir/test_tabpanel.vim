@@ -1,6 +1,5 @@
 " Tests for tabpanel
 
-source check.vim
 source screendump.vim
 CheckFeature tabpanel
 

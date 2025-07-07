@@ -1,6 +1,5 @@
 " Test for the xxd command
 
-source check.vim
 source screendump.vim
 
 if empty($XXD) && executable('..\xxd\xxd.exe')
