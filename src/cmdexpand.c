@@ -233,7 +233,6 @@ nextwild(
 
     if (xp->xp_numfiles == -1)
     {
-	may_expand_pattern = options & WILD_MAY_EXPAND_PATTERN;
 	pre_incsearch_pos = xp->xp_pre_incsearch_pos;
 #ifdef FEAT_EVAL
 	if (ccline->input_fn && ccline->xp_context == EXPAND_COMMANDS)
@@ -244,7 +243,9 @@ nextwild(
 	else
 #endif
 	{
+	    may_expand_pattern = options & WILD_MAY_EXPAND_PATTERN;
 	    set_expand_context(xp);
+	    may_expand_pattern = FALSE;
 	}
 	cmd_showtail = expand_showtail(xp);
     }
