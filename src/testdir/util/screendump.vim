@@ -43,6 +43,9 @@ def g:ScreenDumpDiscardFFFDChars(
   for lstr: string in keys(state)
     const lnum: number = str2nr(lstr)
     const fst_fffd: number = stridx(testdump[lnum], "\xef\xbf\xbd")
+    writefile([printf('D:  PRE: %s', testdump[lnum])], $VIM_SYNTAX_TEST_LOG, 'a')
+    writefile([printf('D:  PRE: %s', string(str2list(testdump[lnum])))], $VIM_SYNTAX_TEST_LOG, 'a')
+    writefile([printf('D:  PRE: %d', fst_fffd)], $VIM_SYNTAX_TEST_LOG, 'a')
     # Retroactively discard non-equal line suffixes.  It is assumed that no
     # runs of U+EFU+BFU+BD and no U+FFFDs are present in "refdump".
     if fst_fffd >= 0
@@ -66,6 +69,8 @@ def g:ScreenDumpDiscardFFFDChars(
 	refdump[lnum] = strpart(refdump[lnum], 0, prefix)
 	testdump[lnum] = strpart(testdump[lnum], 0, prefix)
       endif
+      writefile([printf('D:  PRE: %s', refdump[lnum])], $VIM_SYNTAX_TEST_LOG, 'a')
+      writefile([printf('D:  PRE: %s', testdump[lnum])], $VIM_SYNTAX_TEST_LOG, 'a')
     endif
   endfor
 enddef
@@ -78,6 +83,8 @@ def g:ScreenDumpLookForFFFDChars(
 	state: dict<number>,
 	testdump: list<string>,
 	lnum: number)
+  writefile([printf('D: POST: %s', testdump[lnum])], $VIM_SYNTAX_TEST_LOG, 'a')
+  writefile([printf('D: POST: %s', str2list(testdump[lnum]))], $VIM_SYNTAX_TEST_LOG, 'a')
   if stridx(testdump[lnum], "\xef\xbf\xbd") >= 0
     state[string(lnum)] = 1
   endif
@@ -126,7 +133,7 @@ func VerifyScreenDump(buf, filename, options, ...)
   if has_key(options_copy, 'wait')
     let max_loops = max([0, remove(options_copy, 'wait')])
   else
-    let max_loops = 1000
+    let max_loops = 10
   endif
   if has_key(options_copy, 'FileComparisonPreAction')
     let FileComparisonPreAction = remove(options_copy, 'FileComparisonPreAction')
@@ -215,6 +222,7 @@ func VerifyScreenDump(buf, filename, options, ...)
     if i > 0
       call remove(v:errors, -1)
     endif
+    call writefile([printf('D: %4d: %s', i, msg)], $VIM_SYNTAX_TEST_LOG, 'a')
     call assert_report(msg)
 
     let i += 1
