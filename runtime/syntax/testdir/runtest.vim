@@ -106,15 +106,15 @@ func HandleSwapExists()
   endif
 endfunc
 
-" Trace ruler liveness on demand.
+" Trace liveness on demand.
 if !empty($VIM_SYNTAX_TEST_LOG) && filewritable($VIM_SYNTAX_TEST_LOG)
-  def s:TraceRulerLiveness(context: string, times: number, tail: string)
+  def s:TraceLiveness(context: string, times: number, tail: string)
     writefile([printf('%s: %4d: %s', context, times, tail)],
 	$VIM_SYNTAX_TEST_LOG,
 	'a')
   enddef
 else
-  def s:TraceRulerLiveness(_: string, _: number, _: string)
+  def s:TraceLiveness(_: string, _: number, _: string)
   enddef
 endif
 
@@ -142,6 +142,39 @@ def s:CannotDumpShellFirstPage(buf: number, _: list<string>, ruler: list<string>
       get(term_getcursor(buf), 0) != 20)
 enddef
 
+def s:CannotUseRealEstate(in_name_and_out_name: string): bool
+  # Expect defaults from "term_util#RunVimInTerminal()".
+  if winwidth(1) != 75 || winheight(1) != 20
+    ch_log(printf('Aborting for %s: (75 x 20) != (%d x %d)',
+	in_name_and_out_name,
+	winwidth(1),
+	winheight(1)))
+    return true
+  endif
+  return false
+enddef
+
+" Anticipate rendering idiosyncrasies (see #16559).
+def s:CanFindRenderedFFFDChars(
+	buf: number,
+	in_name_and_out_name: string,
+	times: number,
+	limit: number): bool
+  if CannotUseRealEstate(in_name_and_out_name)
+    return false
+  endif
+  # Expect a 20-line terminal buffer (see "term_util#RunVimInTerminal()"),
+  # where the bottom, reserved line is of the default "&cmdheight".
+  var lines: list<number> = []
+  for lnum: number in range(1, 19)
+    if stridx(term_getline(buf, lnum), "\xef\xbf\xbd") >= 0
+      add(lines, lnum)
+    endif
+  endfor
+  TraceLiveness('F', (limit - times + 1), string(lines))
+  return !empty(lines)
+enddef
+
 " Poll for updates of the cursor position in the terminal buffer occupying the
 " first window.  (ALWAYS call the function or its equivalent before calling
 " "VerifyScreenDump()" *and* after calling any number of "term_sendkeys()".)
@@ -149,12 +182,7 @@ def s:TermPollRuler(
 	CannotDumpPage: func,	# (TYPE FOR LEGACY CONTEXT CALL SITES.)
 	buf: number,
 	in_name_and_out_name: string): list<string>
-  # Expect defaults from "term_util#RunVimInTerminal()".
-  if winwidth(1) != 75 || winheight(1) != 20
-    ch_log(printf('Aborting for %s: (75 x 20) != (%d x %d)',
-      in_name_and_out_name,
-      winwidth(1),
-      winheight(1)))
+  if CannotUseRealEstate(in_name_and_out_name)
     return ['0,0-1', 'All']
   endif
   # A two-fold role for redrawing:
@@ -177,7 +205,7 @@ def s:TermPollRuler(
       redraw
     endif
   endwhile
-  TraceRulerLiveness('P', (2048 - times), in_name_and_out_name)
+  TraceLiveness('P', (2048 - times), in_name_and_out_name)
   return ruler
 enddef
 
@@ -186,12 +214,7 @@ enddef
 " the terminal buffer.  (Call the function before calling "VerifyScreenDump()"
 " for the first time.)
 def s:TermWaitAndPollRuler(buf: number, in_name_and_out_name: string): list<string>
-  # Expect defaults from "term_util#RunVimInTerminal()".
-  if winwidth(1) != 75 || winheight(1) != 20
-    ch_log(printf('Aborting for %s: (75 x 20) != (%d x %d)',
-      in_name_and_out_name,
-      winwidth(1),
-      winheight(1)))
+  if CannotUseRealEstate(in_name_and_out_name)
     return ['0,0-1', 'All']
   endif
   # The contents of "ruler".
@@ -210,7 +233,7 @@ def s:TermWaitAndPollRuler(buf: number, in_name_and_out_name: string): list<stri
       redraw
     endif
   endwhile
-  TraceRulerLiveness('W', (32768 - times), in_name_and_out_name)
+  TraceLiveness('W', (32768 - times), in_name_and_out_name)
   if strpart(ruler, 0, 8) !=# 'is_nonce'
     # Retain any of "b:is_(bash|dash|kornshell|posix|sh)" entries and let
     # "CannotDumpShellFirstPage()" win the cursor race.
@@ -282,6 +305,34 @@ func RunTest()
       " END [runtime/defaults.vim]
       redraw!
     endfunc
+
+    def CollectFFFDChars()
+      const fffd: string = "\xef\xbf\xbd"
+      const flags: string = 'eW'
+      const pos: list<number> = getpos('.')
+      var fffds: list<list<number>> = []
+      try
+	cursor(1, 1)
+	var prev: list<number> = [0, 0]
+	var next: list<number> = [0, 0]
+	next = searchpos(fffd, 'c' .. flags)
+	while next[0] > 0 && prev != next
+	  add(fffds, next)
+	  prev = next
+	  next = searchpos(fffd, flags)
+	endwhile
+      finally
+	setpos('.', pos)
+      endtry
+      if !empty(fffds)
+	# Use "actions/upload-artifact@v4" of ci.yml for delivery.
+	writefile(
+	  [printf('%s: %s', bufname('%'), string(fffds))],
+	  'failed/10-FFFDS',
+	  'a')
+      endif
+      redraw!
+    enddef
 
     def s:AssertCursorForwardProgress(): bool
       const curnum: number = line('.')
@@ -383,12 +434,18 @@ func RunTest()
       return AssertCursorForwardProgress()
     enddef
   END
+  let MAX_ABORTED_COUNT = 5
   let MAX_FAILED_COUNT = 5
-  let DUMP_OPTS = exists("$VIM_SYNTAX_TEST_WAIT_TIME") &&
+  let DUMP_OPTS = extend(
+	  \ exists("$VIM_SYNTAX_TEST_WAIT_TIME") &&
 	  \ !empty($VIM_SYNTAX_TEST_WAIT_TIME)
-      \ ? {'wait': max([1, str2nr($VIM_SYNTAX_TEST_WAIT_TIME)])}
-      \ : {}
-  lockvar DUMP_OPTS MAX_FAILED_COUNT XTESTSCRIPT
+	      \ ? {'wait': max([1, str2nr($VIM_SYNTAX_TEST_WAIT_TIME)])}
+	      \ : {},
+      \ {'FileComparisonPreAction':
+	  \ function('g:ScreenDumpDiscardFFFDChars'),
+      \ 'NonEqualLineComparisonPostAction':
+	  \ function('g:ScreenDumpLookForFFFDChars')})
+  lockvar DUMP_OPTS MAX_FAILED_COUNT MAX_ABORTED_COUNT XTESTSCRIPT
   let ok_count = 0
   let disused_pages = []
   let failed_tests = []
@@ -456,53 +513,107 @@ func RunTest()
       let args = !empty(path)
 	\ ? prefix .. ' -S ' .. path
 	\ : prefix
-      let buf = RunVimInTerminal(args, {})
-      " edit the file only after catching the SwapExists event
-      call term_sendkeys(buf, ":edit " .. fname .. "\<CR>")
-      " set up the testing environment
-      call term_sendkeys(buf, ":call SetUpVim()\<CR>")
-      " load filetype specific settings
-      call term_sendkeys(buf, ":call LoadFiletype('" .. filetype .. "')\<CR>")
 
-      " Make a synchronisation point between buffers by requesting to echo
-      " a known token in the terminal buffer and asserting its availability
-      " with "s:TermWaitAndPollRuler()".
-      if filetype == 'sh'
-	call term_sendkeys(buf, ":call ShellInfo()\<CR>")
-      else
-	call term_sendkeys(buf, ":echo 'is_nonce'\<CR>")
-      endif
-
-      let root_00 = root .. '_00'
-      let in_name_and_out_name = fname .. ': failed/' .. root_00 .. '.dump'
-      " Queue up all "term_sendkeys()"es and let them finish before returning
-      " from "s:TermWaitAndPollRuler()".
-      let ruler = s:TermWaitAndPollRuler(buf, in_name_and_out_name)
-      call ch_log('First screendump for ' .. in_name_and_out_name)
-      " Make a screendump at the start of the file: failed/root_00.dump
-      let fail = VerifyScreenDump(buf, root_00, DUMP_OPTS)
-      let nr = 0
-
-      " Accommodate the next code block to "buf"'s contingency for self
-      " wipe-out.
       try
-	let keys_a = ":call ScrollToSecondPage((18 * 75 + 1), 19, 5) | redraw!\<CR>"
-	let keys_b = ":call ScrollToNextPage((18 * 75 + 1), 19, 5) | redraw!\<CR>"
-	while s:CannotSeeLastLine(ruler)
-	  call term_sendkeys(buf, keys_a)
-	  let keys_a = keys_b
-	  let nr += 1
-	  let root_next = printf('%s_%02d', root, nr)
-	  let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
-	  let ruler = s:TermPollRuler(
-	      \ function('s:CannotDumpNextPage', [buf, ruler]),
-	      \ buf,
-	      \ in_name_and_out_name)
-	  call ch_log('Next screendump for ' .. in_name_and_out_name)
-	  " Make a screendump of every 18 lines of the file: failed/root_NN.dump
-	  let fail += VerifyScreenDump(buf, root_next, DUMP_OPTS)
+	let times = MAX_ABORTED_COUNT
+	let seen_pages = []
+
+	" See #16559.  For each processed page, repeat pre-verification steps
+	" from scratch (subject to page cacheing) whenever U+FFFD characters
+	" are found in the terminal buffer with "term_getline()", i.e. treat
+	" these pages as if they were distinct test files.  U+FFFD characters
+	" will not be searched at the last attempt (see "MAX_ABORTED_COUNT"),
+	" instead related filtering will be done in "VerifyScreenDump()".
+	while times > 0
+	  let buf = RunVimInTerminal(args, {})
+	  try
+	    " edit the file only after catching the SwapExists event
+	    call term_sendkeys(buf, ":edit " .. fname .. "\<CR>")
+	    " set up the testing environment
+	    call term_sendkeys(buf, ":call SetUpVim()\<CR>")
+	    " load filetype specific settings
+	    call term_sendkeys(buf, ":call LoadFiletype('" .. filetype .. "')\<CR>")
+
+	    " Collect all *non-spurious* U+FFFD characters.
+	    if times == 1
+	      call term_sendkeys(buf, ":call CollectFFFDChars()\<CR>")
+	    endif
+
+	    " Make a synchronisation point between buffers by requesting to
+	    " echo a known token in the terminal buffer and asserting its
+	    " availability with "s:TermWaitAndPollRuler()".
+	    if filetype == 'sh'
+	      call term_sendkeys(buf, ":call ShellInfo()\<CR>")
+	    else
+	      call term_sendkeys(buf, ":echo 'is_nonce'\<CR>")
+	    endif
+
+	    let fail = 0
+	    let nr = 0
+	    let root_00 = root .. '_00'
+	    let in_name_and_out_name = fname .. ': failed/' .. root_00 .. '.dump'
+	    " Queue up all "term_sendkeys()"es and let them finish before
+	    " returning from "s:TermWaitAndPollRuler()".
+	    let ruler = s:TermWaitAndPollRuler(buf, in_name_and_out_name)
+	    if index(seen_pages, nr) < 0
+	      if s:CanFindRenderedFFFDChars(
+		    \ buf,
+		    \ in_name_and_out_name,
+		    \ times,
+		    \ MAX_ABORTED_COUNT)
+		if times > 1
+		  throw 'FFFD'
+		endif
+	      else
+		call add(seen_pages, nr)
+	      endif
+	      let times = MAX_ABORTED_COUNT
+	      call ch_log('First screendump for ' .. in_name_and_out_name)
+	      " Make a screendump at the start of the file: failed/root_00.dump
+	      let fail = VerifyScreenDump(buf, root_00, DUMP_OPTS)
+	    endif
+	    let keys_a = ":call ScrollToSecondPage((18 * 75 + 1), 19, 5) | redraw!\<CR>"
+	    let keys_b = ":call ScrollToNextPage((18 * 75 + 1), 19, 5) | redraw!\<CR>"
+
+	    while s:CannotSeeLastLine(ruler)
+	      call term_sendkeys(buf, keys_a)
+	      let keys_a = keys_b
+	      let nr += 1
+	      let root_next = printf('%s_%02d', root, nr)
+	      let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
+	      let ruler = s:TermPollRuler(
+		  \ function('s:CannotDumpNextPage', [buf, ruler]),
+		  \ buf,
+		  \ in_name_and_out_name)
+	      if index(seen_pages, nr) < 0
+		if s:CanFindRenderedFFFDChars(
+		      \ buf,
+		      \ in_name_and_out_name,
+		      \ times,
+		      \ MAX_ABORTED_COUNT)
+		  if times > 1
+		    throw 'FFFD'
+		  endif
+		else
+		  call add(seen_pages, nr)
+		endif
+		let times = MAX_ABORTED_COUNT
+		call ch_log('Next screendump for ' .. in_name_and_out_name)
+		" Make a screendump of every 18 lines of the file: failed/root_NN.dump
+		let fail += VerifyScreenDump(buf, root_next, DUMP_OPTS)
+	      endif
+	    endwhile
+	    call StopVimInTerminal(buf)
+	    break
+	  catch /^FFFD$/
+	    call StopVimInTerminal(buf)
+	    " Repeat the step made for each test case.
+	    while winnr('$') > 1
+	      close
+	    endwhile
+	    let times -= 1
+	  endtry
 	endwhile
-	call StopVimInTerminal(buf)
       finally
 	call delete('Xtestscript')
       endtry
