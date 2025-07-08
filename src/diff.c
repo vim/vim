@@ -2230,7 +2230,8 @@ calculate_topfill_and_topline(
     find_top_diff_block(&thistopdiff, &next_adjacent_blocks, fromidx, from_topline);
 
     // count the virtual lines (either filler or concrete line) that have been
-    // passed in the source buffer.
+    // passed in the source buffer. There could be multiple diff blocks if
+    // there are adjacent empty blocks (count == 0 at fromidx).
     diff_T *curdif = thistopdiff;
     while (curdif && (curdif->df_lnum[fromidx] + curdif->df_count[fromidx])
 							<= from_topline)
@@ -2243,6 +2244,12 @@ calculate_topfill_and_topline(
     if (curdif != next_adjacent_blocks)
 	virtual_lines_passed += from_topline - curdif->df_lnum[fromidx];
     virtual_lines_passed -= from_topfill;
+
+    // clamp negative values in case from_topfill hasn't been updated yet and
+    // is larger than total virtual lines, which could happen when setting
+    // diffopt multiple times
+    if (virtual_lines_passed < 0)
+	virtual_lines_passed = 0;
 
     // move the same amount of virtual lines in the target buffer to find the
     // cursor's line number
