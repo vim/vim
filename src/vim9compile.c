@@ -1035,7 +1035,8 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 
     if (eap->forceit)
     {
-	emsg(_(e_cannot_use_bang_with_nested_def));
+	semsg(_(e_cannot_use_bang_with_nested_def_str),
+		eap->cmdidx == CMD_def ? ":def" : ":function");
 	return NULL;
     }
 
