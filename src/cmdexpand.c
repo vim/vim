@@ -4631,6 +4631,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     int		segment_len;
     linenr_T	lnum;
     garray_T	ga;
+    int		exacttext = vim_strchr(p_wop, WOP_EXACTTEXT) != NULL;
 
     if (start->lnum > end->lnum
 	    || (start->lnum == end->lnum && start->col >= end->col))
@@ -4646,12 +4647,17 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
 
     segment_len = is_single_line ? (end->col - start->col)
 				: (int)STRLEN(start_ptr);
-    if (ga_grow(&ga, segment_len + 1) != OK)
+    if (ga_grow(&ga, segment_len + 2) != OK)
 	return FAIL;
 
     ga_concat_len(&ga, start_ptr, segment_len);
     if (!is_single_line)
-	ga_append(&ga, '\n');
+    {
+	if (exacttext)
+	    ga_concat_len(&ga, (char_u *)"\\n", 2);
+	else
+	    ga_append(&ga, '\n');
+    }
 
     // Append full lines between start and end
     if (!is_single_line)
@@ -4659,10 +4665,13 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
 	for (lnum = start->lnum + 1; lnum < end->lnum; lnum++)
 	{
 	    line = ml_get(lnum);
-	    if (ga_grow(&ga, ml_get_len(lnum) + 1) != OK)
+	    if (ga_grow(&ga, ml_get_len(lnum) + 2) != OK)
 		return FAIL;
 	    ga_concat(&ga, line);
-	    ga_append(&ga, '\n');
+	    if (exacttext)
+		ga_concat_len(&ga, (char_u *)"\\n", 2);
+	    else
+		ga_append(&ga, '\n');
 	}
     }
 
@@ -4783,6 +4792,7 @@ expand_pattern_in_buf(
     int		compl_started = FALSE;
     int		search_flags;
     char_u	*match, *full_match;
+    int		exacttext = vim_strchr(p_wop, WOP_EXACTTEXT) != NULL;
 
 #ifdef FEAT_SEARCH_EXTRA
     has_range = search_first_line != 0;
@@ -4871,26 +4881,31 @@ expand_pattern_in_buf(
 		    &word_end_pos))
 	    break;
 
-	// Construct a new match from completed word appended to pattern itself
-	match = concat_pattern_with_buffer_match(pat, pat_len, &end_match_pos,
-		FALSE);
-
-	// The regex pattern may include '\C' or '\c'. First, try matching the
-	// buffer word as-is. If it doesn't match, try again with the lowercase
-	// version of the word to handle smartcase behavior.
-	if (match == NULL || !is_regex_match(match, full_match))
+	if (exacttext)
+	    match = full_match;
+	else
 	{
-	    vim_free(match);
-	    match = concat_pattern_with_buffer_match(pat, pat_len,
-		    &end_match_pos, TRUE);
+	    // Construct a new match from completed word appended to pattern itself
+	    match = concat_pattern_with_buffer_match(pat, pat_len, &end_match_pos,
+		    FALSE);
+
+	    // The regex pattern may include '\C' or '\c'. First, try matching the
+	    // buffer word as-is. If it doesn't match, try again with the lowercase
+	    // version of the word to handle smartcase behavior.
 	    if (match == NULL || !is_regex_match(match, full_match))
 	    {
 		vim_free(match);
-		vim_free(full_match);
-		continue;
+		match = concat_pattern_with_buffer_match(pat, pat_len,
+			&end_match_pos, TRUE);
+		if (match == NULL || !is_regex_match(match, full_match))
+		{
+		    vim_free(match);
+		    vim_free(full_match);
+		    continue;
+		}
 	    }
+	    vim_free(full_match);
 	}
-	vim_free(full_match);
 
 	// Include this match if it is not a duplicate
 	for (int i = 0; i < ga.ga_len; ++i)
