@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 9.1.  Last change: 2025 May 25
+*uganda.txt*    For Vim version 9.1.  Last change: 2025 Jul 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -20,6 +20,13 @@ Uganda anyway.
 
 The Open Publication License applies to the Vim documentation, see
 |manual-copyright|.
+
+The icons used for the toolbar in the Win32 GUI are from the "Farm-Fresh Web
+Icons" set.  These icons are licensed under the Creative Commons Attribution
+3.0 License and were created by FatCow Web Hosting.  They were previously
+available at http://www.fatcow.com/free-icons and are still available at:
+https://www.iconarchive.com/show/farm-fresh-icons-by-fatcow.1.html
+
 
 === begin of license ===
 

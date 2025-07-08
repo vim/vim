@@ -41553,7 +41553,11 @@ Enum support for Vim9 script |:enum|
 
 Support for protected _new() method
 
+Support for compiling all the methods in a Vim9 class using |:defcompile|.
+
 Add support for object<{type}> as variable data type |vim9-types|
+
+Support for the |Tuple| data type in Vim script and Vim9 script.
 
 Diff mode ~
 ---------
@@ -41565,29 +41569,70 @@ Improve the diff highlighting for changes within a line.  Configurable using
 the "inline" sub option value for the 'diffopt' setting, with "inline:simple"
 being added to the default "diffopt" value (but this does not change how diff
 mode works).
+
+Completion~
+----------
+- New Insert-mode completion: |i_CTRL-X_CTRL-R| to complete words from
+  registers.
+- Completion in search contexts using |/|, |?|, |:g|, |:v| and |:vimgrep|
+  commands using 'wildchar'
+- ":filetype" command completion and the "filetypecmd" completion type for
+  |getcompletion()| have been included.
+- Support for command-line completion of 'keymap' option values.
+- Support for |fuzzy-matching| during |ins-completion| with the "fuzzy"
+  values of the 'completeopt' setting.
+- allow to complete shell commands and files using the new shellcmdline
+  completion type using |:command-complete| and |getcmdcomplpat()|
+- New option value for 'wildmode':
+	"noselect"	- do not auto select an entry in the wildmenu
+	"exacttext"	- show exact matches in wildmenu with search
+			  completion
+- New flags for 'complete':
+	"F{func}"	- complete using given function
+	"F"		- complete using 'completefunc'
+	"o"		- complete using 'omnifunc'
+- New option value for 'completeopt':
+	"nosort"	- do not sort completion results
+	"preinsert"	- highlight to be inserted values
+	"nearest"	- sort completion results by distance to cursor
+
+Platform specific~
+-----------------
+Support for Wayland UI and support for the Wayland clipboard has been added.
+
+Support for the XDG Desktop Specification |xdg-base-dir| has been added and
+the environment variable |$MYVIMDIR| is set to the users personal runtime
+directory ($HOME/.vim or $HOME/.config/vim on Linux, $HOME/vimfiles on
+Windows).
+
+Python3 support in OpenVMS is now available.
+
+The Win32 GUI comes with better toolbar icons.
 							*new-other-9.2*
 Other new features ~
 ------------------
-The new packages |package-comment|, |package-nohlsearch| and |package-hlyank|
-are included.
+Support for Super key mappings in GTK using <D-Key>.
 
-Support for Wayland UI and support for the Wayland clipboard
+The new packages |package-comment|, |package-nohlsearch|, |package-hlyank| and
+|help-TOC| are included.
 
-Support for the XDG Desktop Specification |xdg-base-dir|
+An interactive tutor plugin has been included |vim-tutor-mode| and can be
+started via |:Tutor|.
 
 Support for translating messages in Vim script plugins using the |gettext()|
-and |bindtextdomain()| functions.
+and |bindtextdomain()| functions was included.
 
 Support highlighting the matched text and the completion kind for insert-mode
 completion and command-line completion in |ins-completion-menu|, see
-|complete-items|
+|complete-items|.
 
-Support for the |Tuple| data type in Vim script and Vim9 script.
+A new vertical |tabpanel| window has been included which is a vertical
+'tabline'.
 
-Support for a vertical |tabpanel| window similar to the 'tabline'.
+The |dist#vim9#Launch()| and |dist#vim9#Open()| functions have been added to
+the |vim-script-library| and decoupled from |netrw|.
 
-New Insert-mode completion: |i_CTRL-X_CTRL-R| to complete words from
-registers.
+The new digraph "APPROACHES THE LIMIT" using ".=" has been added
 
 							*changed-9.2*
 Changed~
@@ -41602,40 +41647,23 @@ Default values: ~
   increased to 12pt to accommodate modern high-dpi monitors
 - the default value of the 'keyprotocol' option has been updated and support
   for the ghostty terminal emulator (using kitty protocol) has been added
+- Improved visual highlighting |hl-Visual|
 
 Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
   add the "cd_in_path" completion type for e.g. |:command-complete| and
   |getcompletion()|
-- allow to complete shell commands and files using the new shellcmdline
-  completion type using |:command-complete| and |getcmdcomplpat()|
 - allow to specify additional attributes in the completion menu (allows to
   mark deprecated attributes from LSP server) |complete-items|
 - the completed word and completion type are provided when handling the
   |CompleteDone| autocommand in the |v:event| dictionary
 - |complete_info()| returns the list of matches shown in the poppu menu via
   the "matches" key
-- New option value for 'completeopt':
-	"nosort"	- do not sort completion results
-	"preinsert"	- highlight to be inserted values
-	"nearest"	- sort completion results by distance to cursor
 - handle multi-line completion items as expected
 - improved commandline completion for the |:hi| command
-- New option value for 'wildmode':
-	"noselect"	- do not auto select an entry in the wildmenu
-	"exacttext"	- show exact matches in wildmenu with search
-			  completion
-- New flags for 'complete':
-	"F{func}"	- complete using given function
-	"F"		- complete using 'completefunc'
-	"o"		- complete using 'omnifunc'
 - allow to limit matches for the 'complete' sources by using the
   "{flag}^<limit>" notation
-- add ":filetype" command completion
-- add "filetypecmd" completion type for |getcompletion()|
 - 'smartcase' applies to completion filtering
-- 'wildchar' enables completion in search contexts using |/|, |?|, |:g|, |:v|
-  and |:vimgrep| commands
 
 Options: ~
 - the default for 'commentstring' contains whitespace padding to have
@@ -41682,13 +41710,7 @@ Others: ~
   (and apply proper case folding)
 - the putty terminal is detected using an |TermResponse| autocommand in
   |defaults.vim| and Vim switches to a dark background
-- the |help-TOC| package is included to ease navigating the documentation.
-- an interactive tutor plugin has been included |vim-tutor-mode|, can be
-  started via |:Tutor|
 - improve the |vimtutor| and add a second chapter for more advanced tips
-- add |dist#vim9#Launch()| and |dist#vim9#Open()| to the |vim-script-library|
-  and decouple it from |netrw|
-- new digraph "APPROACHES THE LIMIT" using ".="
 - |CTRL-C| always closes the active |popup-window|.
 - the configure script will favor using GTK3 over GTK2 when auto-detecting the
   gui toolkit
@@ -41793,26 +41815,6 @@ INCOMPATIBLE CHANGES					*incompatible-9.2*
 
 Improved/Different MS-Windows mapping support
 |w32-experimental-keycode-trans-strategy|
-
-==============================================================================
-IMPROVEMENTS						*improvements-9.2*
-
-Support for command-line completion of 'keymap' option values.
-
-Support for compiling all the methods in a Vim9 class using |:defcompile|.
-
-Support for Super key mappings in GTK using <D-Key>.
-
-Improved visual highlighting.
-
-Python3 support in OpenVMS.
-
-Support for |fuzzy-matching| during |ins-completion| with the "fuzzy"
-values of the 'completeopt' setting
-
-The environment variable |$MYVIMDIR| is set to the users personal runtime
-directory ($HOME/.vim or $HOME/.config/vim on Linux, $HOME/vimfiles
-on Windows)
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-9.2*
