@@ -1001,7 +1001,18 @@ def Test_nested_function()
         enddef
       enddef
   END
-  v9.CheckDefFailure(lines, 'E1117:')
+  v9.CheckDefFailure(lines, 'E1117: Cannot use ! with nested :def')
+
+  lines =<< trim END
+      def Outer()
+        function Inner()
+          " comment
+        endfunc
+        function! Inner()
+        endfunc
+      enddef
+  END
+  v9.CheckDefFailure(lines, 'E1117: Cannot use ! with nested :function')
 
   lines =<< trim END
       vim9script
