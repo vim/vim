@@ -384,10 +384,15 @@ func RunTest()
     enddef
   END
   let MAX_FAILED_COUNT = 5
-  let DUMP_OPTS = exists("$VIM_SYNTAX_TEST_WAIT_TIME") &&
+  let DUMP_OPTS = extend(
+	  \ exists("$VIM_SYNTAX_TEST_WAIT_TIME") &&
 	  \ !empty($VIM_SYNTAX_TEST_WAIT_TIME)
-      \ ? {'wait': max([1, str2nr($VIM_SYNTAX_TEST_WAIT_TIME)])}
-      \ : {}
+	      \ ? {'wait': max([1, str2nr($VIM_SYNTAX_TEST_WAIT_TIME)])}
+	      \ : {},
+      \ {'FileComparisonPreAction':
+	  \ function('g:ScreenDumpDiscardFFFDChars'),
+      \ 'NonEqualLineComparisonPostAction':
+	  \ function('g:ScreenDumpLookForFFFDChars')})
   lockvar DUMP_OPTS MAX_FAILED_COUNT XTESTSCRIPT
   let ok_count = 0
   let disused_pages = []
