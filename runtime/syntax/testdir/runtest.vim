@@ -149,6 +149,7 @@ def s:CannotUseRealEstate(in_name_and_out_name: string): bool
 	in_name_and_out_name,
 	winwidth(1),
 	winheight(1)))
+    TraceLiveness('X', 0, printf('aborting for %s: (%d x %d)', in_name_and_out_name, winwidth(1), winheight(1)))
     return true
   endif
   return false
@@ -525,6 +526,9 @@ func RunTest()
 	" will not be searched at the last attempt (see "MAX_ABORTED_COUNT"),
 	" instead related filtering will be done in "VerifyScreenDump()".
 	while times > 0
+	  if times < MAX_ABORTED_COUNT
+	    call s:TraceLiveness('j', (MAX_ABORTED_COUNT - times + 1), string(seen_pages))
+	  endif
 	  let buf = RunVimInTerminal(args, {})
 	  try
 	    " edit the file only after catching the SwapExists event
@@ -561,11 +565,16 @@ func RunTest()
 		    \ in_name_and_out_name,
 		    \ times,
 		    \ MAX_ABORTED_COUNT)
+		call s:TraceLiveness('g', (MAX_ABORTED_COUNT - times + 1), string(seen_pages))
 		if times > 1
 		  throw 'FFFD'
 		endif
 	      else
 		call add(seen_pages, nr)
+		if times < MAX_ABORTED_COUNT
+		  call s:TraceLiveness('g', (MAX_ABORTED_COUNT - times + 1),
+		      \ printf('(%d, "%s"): %s', buf, term_getstatus(buf), string(seen_pages)))
+		endif
 	      endif
 	      let times = MAX_ABORTED_COUNT
 	      call ch_log('First screendump for ' .. in_name_and_out_name)
@@ -591,11 +600,16 @@ func RunTest()
 		      \ in_name_and_out_name,
 		      \ times,
 		      \ MAX_ABORTED_COUNT)
+		  call s:TraceLiveness('h', (MAX_ABORTED_COUNT - times + 1), string(seen_pages))
 		  if times > 1
 		    throw 'FFFD'
 		  endif
 		else
 		  call add(seen_pages, nr)
+		  if times < MAX_ABORTED_COUNT
+		    call s:TraceLiveness('h', (MAX_ABORTED_COUNT - times + 1),
+			\ printf('(%d, "%s"): %s', buf, term_getstatus(buf), string(seen_pages)))
+		  endif
 		endif
 		let times = MAX_ABORTED_COUNT
 		call ch_log('Next screendump for ' .. in_name_and_out_name)
@@ -612,6 +626,8 @@ func RunTest()
 	      close
 	    endwhile
 	    let times -= 1
+	    call s:TraceLiveness('i', (MAX_ABORTED_COUNT - times + 1),
+		\ printf('(%d, "%s"): %s', buf, term_getstatus(buf), string(seen_pages)))
 	  endtry
 	endwhile
       finally

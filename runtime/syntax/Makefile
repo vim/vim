@@ -14,12 +14,12 @@ VIMRUNTIME = ../..
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=45 --log-file=valgrind.$*
 
 # Trace liveness on demand.
-# VIM_SYNTAX_TEST_LOG = `pwd`/testdir/failed/00-TRACE_LOG
+VIM_SYNTAX_TEST_LOG = `pwd`/testdir/failed/00-TRACE_LOG
 
-# ENVVARS = LC_ALL=C VIM_SYNTAX_TEST_LOG="$(VIM_SYNTAX_TEST_LOG)"
+ENVVARS = LC_ALL=C VIM_SYNTAX_TEST_LOG="$(VIM_SYNTAX_TEST_LOG)" VIM_SYNTAX_TEST_FILTER='\<c_\|\<java_methods_\|\<java_multibyte_\|\<markdown_\|\<vim_ex_set_'
 # ENVVARS = LC_ALL=C LANG=C LANGUAGE=C
 # Run the syntax tests with a C locale
-ENVVARS = LC_ALL=C
+# ENVVARS = LC_ALL=C
 
 RUN_VIMTEST = VIMRUNTIME=$(VIMRUNTIME) $(VALGRIND) $(ENVVARS) ../$(VIMPROG) -f $(GUI_FLAG)
 
@@ -40,12 +40,17 @@ test:
 	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
 	@# Trace liveness on demand.
-	@#mkdir -p testdir/failed
-	@#touch "$(VIM_SYNTAX_TEST_LOG)"
-	VIMRUNTIME=$(VIMRUNTIME) $(ENVVARS) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim > /dev/null
+	@mkdir -p testdir/failed
+	@touch "$(VIM_SYNTAX_TEST_LOG)"
+	@env > "$(VIM_SYNTAX_TEST_LOG)"
+	-command -v pgrep >> "$(VIM_SYNTAX_TEST_LOG)"
+	-command -v timeout >> "$(VIM_SYNTAX_TEST_LOG)"
+	-command -v uptime >> "$(VIM_SYNTAX_TEST_LOG)"
+	-command -v yes >> "$(VIM_SYNTAX_TEST_LOG)"
+	case "$$USER" in cirrus) x=33; y=192;; *) x=5; y=128;; esac; n=1; while test "$$n" -lt "$$x"; do printf "\nATTEMPT: %d\n%s\n%s\n%s\n" "$$n" "`date +%s`" "`uptime`" "`pgrep yes`" >> "$(VIM_SYNTAX_TEST_LOG)"; ( timeout -k 8 "$$y" yes > /dev/null & ); VIMRUNTIME=$(VIMRUNTIME) $(ENVVARS) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim > /dev/null || :; date +%s >> "$(VIM_SYNTAX_TEST_LOG)"; rm -f testdir/done/* tesdir/failed/*; n=$$(($$n + 1)); done
 	@# FIXME: Temporarily show the whole file to find out what goes wrong
 	@#if [ -f testdir/messages ]; then tail -n 6 testdir/messages; fi
-	@if [ -f testdir/messages ]; then cat testdir/messages; fi
+	@#if [ -f testdir/messages ]; then cat testdir/messages; fi
 
 # add dependence on syntax files
 testdir/testdeps.mk:
