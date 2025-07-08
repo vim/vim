@@ -3444,7 +3444,13 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
 
     if (*cac->cac_op == '.')
     {
-	if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
+	expected = lhs->lhs_member_type;
+	stacktype = get_type_on_stack(cctx, 0);
+	if (expected != &t_string
+		&& need_type(stacktype, expected, FALSE, -1, 0, cctx,
+					FALSE, FALSE) == FAIL)
+	    return FAIL;
+	else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 	    return FAIL;
     }
     else

@@ -187,6 +187,7 @@ def Test_assignment()
 
   v9.CheckDefFailure(['&notex += 3'], 'E113:')
   v9.CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
+  v9.CheckDefFailure(['var d = {k: [0]}', 'd.k ..= "x"'], 'E1012: Type mismatch; expected list<number> but got string')
   v9.CheckDefFailure(['&ts = [7]'], 'E1012:')
   v9.CheckDefExecFailure(['&ts = g:alist'], 'E1012: Type mismatch; expected number but got list<number>')
   v9.CheckDefFailure(['&ts = "xx"'], 'E1012:')
