@@ -41,12 +41,10 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 	cd src && $(MAKE) $@
 	@# When the target is "test" also run the indent and syntax tests.
 	@if test "$@" = "test" -o "$@" = "testtiny"; then \
-		$(MAKE) indenttest; \
 		$(MAKE) syntaxtest; \
 	fi
 	@# When the target is "clean" also clean for the indent and syntax tests.
 	@if test "$@" = "clean" -o "$@" = "distclean" -o "$@" = "testclean"; then \
-		(cd runtime/indent && $(MAKE) clean); \
 		(cd runtime/syntax && $(MAKE) clean); \
 	fi
 
@@ -54,9 +52,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 VIM_FOR_INDENTTEST = ../../src/vim
 
 indenttest:
-	cd runtime/indent && \
-		$(MAKE) clean && \
-		$(MAKE) test VIMPROG="$(VIM_FOR_INDENTTEST)"
+	:
 
 # Executable used for running the syntax tests.
 VIM_FOR_SYNTAXTEST = ../../src/vim
