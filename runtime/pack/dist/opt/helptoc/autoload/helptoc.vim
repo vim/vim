@@ -1,4 +1,10 @@
 vim9script noclear
+
+# the Vim HelpTOC plugin, creates a table of contents in a popup
+# Maintainer: Vim project
+# Original Author: @lacygoill
+# Latest Change: 2025 Jul 09
+#
 # Config {{{1
 # g:helptoc {{{2
 # Create the g:helptoc dict (used to specify the shell_prompt and other
@@ -503,6 +509,7 @@ def SetToc() #{{{2
             l[0]->str2nr() - ll[0]->str2nr())
 
     var skip_next: bool = false
+    var skip_fence: bool = false
 
     # Non-help headings processing
     for lnum: number in range(1, line('$'))
@@ -516,6 +523,14 @@ def SetToc() #{{{2
 
         # Special handling for markdown filetype using setext headings
         if g:helptoc.type == 'markdown'
+            if curline =~ '^```.'
+                skip_fence = true
+            elseif curline =~ '^```$'
+                skip_fence = false
+            endif
+            if skip_fence
+                continue
+            endif
             # Check for setext formatted headings (= or - underlined)
             if nextline =~ '^\s\{0,3}=\+$' && curline =~ '\S'
                 # Level 1 heading (one or more =, up to three spaces preceding)
