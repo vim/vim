@@ -3022,6 +3022,7 @@ shadow:	runtime pixmaps
 				 ../../testdir/ru_RU \
 				 ../../testdir/sautest \
 				 ../../testdir/samples \
+				 ../../testdir/util \
 				 ../../testdir/dumps \
 				 ../../testdir/*.ok \
 				 ../../testdir/testluaplugin \

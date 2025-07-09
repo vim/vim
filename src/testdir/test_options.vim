@@ -1,9 +1,5 @@
 " Test for options
 
-source shared.vim
-source check.vim
-source view_util.vim
-
 scriptencoding utf-8
 
 func Test_whichwrap()
@@ -344,12 +340,12 @@ func Test_set_completion()
   " Expand directories.
   call feedkeys(":set cdpath=./\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match(' ./samples/ ', @:)
-  call assert_notmatch(' ./summarize.vim ', @:)
+  call assert_notmatch(' ./util/summarize.vim ', @:)
   set cdpath&
 
   " Expand files and directories.
   call feedkeys(":set tags=./\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match(' ./samples/.* ./summarize.vim', @:)
+  call assert_match(' ./samples/.* ./test10.in', @:)
 
   call feedkeys(":set tags=./\\\\ dif\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set tags=./\\ diff diffexpr diffopt', @:)
@@ -2273,7 +2269,7 @@ func Test_VIM_POSIX()
     qall
   [CODE]
   if RunVim([], after, '')
-    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZz$!%*-+<>#{|&/\.;',
+    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZz$!%*-+<>#{|&/\.;~',
           \            'AS'], readfile('X_VIM_POSIX'))
   endif
 
@@ -2528,7 +2524,7 @@ func Test_string_option_revert_on_failure()
         \ ['completeopt', 'popup', 'a123'],
         \ ['completepopup', 'width:20', 'border'],
         \ ['concealcursor', 'v', 'xyz'],
-        \ ['cpoptions', 'HJ', '~'],
+        \ ['cpoptions', 'HJ', 'Q'],
         \ ['cryptmethod', 'zip', 'a123'],
         \ ['cursorlineopt', 'screenline', 'a123'],
         \ ['debug', 'throw', 'a123'],

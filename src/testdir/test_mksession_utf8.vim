@@ -3,7 +3,6 @@
 set encoding=utf-8
 scriptencoding utf-8
 
-source check.vim
 CheckFeature mksession
 
 func Test_mksession_utf8()

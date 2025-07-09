@@ -1,10 +1,7 @@
 " Tests for mappings and abbreviations
 
-source shared.vim
-source check.vim
-source screendump.vim
-source term_util.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func Test_abbreviation()
   new

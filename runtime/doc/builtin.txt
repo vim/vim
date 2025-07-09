@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jun 28
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jul 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -249,6 +249,8 @@ getcmdtype()			String	return current command-line type
 getcmdwintype()			String	return current command-line window type
 getcompletion({pat}, {type} [, {filtered}])
 				List	list of cmdline completion matches
+getcompletiontype({pat})	String	return the type of the command-line
+					completion using {pat}
 getcurpos([{winnr}])		List	position of the cursor
 getcursorcharpos([{winnr}])	List	character position of the cursor
 getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
@@ -4210,6 +4212,9 @@ getcmdcompltype()					*getcmdcompltype()*
 		|getcmdprompt()|, |getcmdcomplpat()| and |setcmdline()|.
 		Returns an empty string when completion is not defined.
 
+		To get the type of the command-line completion for a specified
+		string, use |getcompletiontype()|.
+
 		Return type: |String|
 
 
@@ -4367,6 +4372,15 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 			GetPattern()->getcompletion('color')
 <
 		Return type: list<string>
+
+getcompletiontype({pat})				*getcompletiontype()*
+		Return the type of the command-line completion using {pat}.
+		When no corresponding completion type is found, an empty
+		string is returned.
+		To get the current command-line completion type, use
+		|getcmdcompltype()|.
+
+		Return type: |String|
 
 							*getcurpos()*
 getcurpos([{winid}])

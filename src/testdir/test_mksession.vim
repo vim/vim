@@ -3,11 +3,7 @@
 set encoding=latin1
 scriptencoding latin1
 
-source check.vim
 CheckFeature mksession
-
-source shared.vim
-source term_util.vim
 
 " Test for storing global and local argument list in a session file
 " This one must be done first.

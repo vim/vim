@@ -1,9 +1,6 @@
 " Test for 'number' and 'relativenumber'
 
-source check.vim
-source view_util.vim
-
-source screendump.vim
+source util/screendump.vim
 
 func s:screen_lines(start, end) abort
   return ScreenLines([a:start, a:end], 8)

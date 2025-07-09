@@ -1,7 +1,5 @@
 " Tests for when a file was changed outside of Vim.
 
-source check.vim
-
 func Test_FileChangedShell_reload()
   CheckUnix
 

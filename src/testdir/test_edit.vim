@@ -4,9 +4,7 @@ if exists("+t_kD")
   let &t_kD="[3;*~"
 endif
 
-source check.vim
-source screendump.vim
-source view_util.vim
+source util/screendump.vim
 
 " Needs to come first until the bug in getchar() is
 " fixed: https://groups.google.com/d/msg/vim_dev/fXL9yme4H4c/bOR-U6_bAQAJ
@@ -709,12 +707,9 @@ func Test_edit_CTRL_K()
   %d
   call setline(1, 'A')
   call cursor(1, 1)
-  let v:testing = 1
   try
     call feedkeys("A\<c-x>\<c-k>\<esc>", 'tnix')
   catch
-    " error sleeps 2 seconds, when v:testing is not set
-    let v:testing = 0
   endtry
 
   call test_override("char_avail", 1)
@@ -962,12 +957,9 @@ func Test_edit_CTRL_T()
   %d
   call setline(1, 'mad')
   call cursor(1, 1)
-  let v:testing = 1
   try
     call feedkeys("A\<c-x>\<c-t>\<esc>", 'tnix')
   catch
-    " error sleeps 2 seconds, when v:testing is not set
-    let v:testing = 0
   endtry
   call assert_equal(['mad'], getline(1, '$'))
   bw!

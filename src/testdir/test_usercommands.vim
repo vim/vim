@@ -1,9 +1,8 @@
 " Tests for user defined commands
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 " Test for <mods> in user defined commands
 function Test_cmdmods()

@@ -1,8 +1,6 @@
 " Test for completion menu
 
-source shared.vim
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 let g:months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 let g:setting = ''

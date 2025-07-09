@@ -1,7 +1,5 @@
 " Test :recover
 
-source check.vim
-
 func Test_recover_root_dir()
   " This used to access invalid memory.
   split Xtest

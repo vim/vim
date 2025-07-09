@@ -1,6 +1,5 @@
 " Test for benchmarking the RE engine
 
-source check.vim
 CheckFeature reltime
 
 func Measure(file, pattern, arg)

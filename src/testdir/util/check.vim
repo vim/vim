@@ -1,5 +1,9 @@
-source shared.vim
-source term_util.vim
+source util/shared.vim
+source util/term_util.vim
+
+" uses line-continuation
+let s:cpo_save = &cpo
+set cpo&vim
 
 command -nargs=1 MissingFeature throw 'Skipped: ' .. <args> .. ' feature missing'
 
@@ -150,7 +154,7 @@ func SetupWindowSizeToForVisualDumps()
 endfunc
 
 " Command to check that making screendumps is supported.
-" Caller must source screendump.vim
+" Caller must source util/screendump.vim
 command CheckScreendump call CheckScreendump()
 func CheckScreendump()
   let g:check_screendump_called = v:true
@@ -324,4 +328,7 @@ func CheckGithubActions()
     throw "Skipped: FIXME: this test doesn't work on Github Actions CI"
   endif
 endfunc
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 " vim: shiftwidth=2 sts=2 expandtab

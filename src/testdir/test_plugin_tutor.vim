@@ -1,8 +1,7 @@
 " Test for the new-tutor plugin
 
-source screendump.vim
-source check.vim
-source script_util.vim
+source util/screendump.vim
+source util/script_util.vim
 
 func SetUp()
   set nocompatible

@@ -1,6 +1,6 @@
 " Tests for the exists() function
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Test_exists()
   augroup myagroup

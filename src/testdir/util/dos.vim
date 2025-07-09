@@ -6,4 +6,4 @@ if executable("cmd.exe")
    set shell=cmd.exe shellcmdflag=/D\ /c
 endif
 
-source setup.vim
+source util/setup.vim

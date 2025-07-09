@@ -1,7 +1,5 @@
 " Tests for Vim :TOhtml
 
-source check.vim
-
 func s:setup_basic(src_name)
   let lines =<< trim END
     #include <stdio.h>

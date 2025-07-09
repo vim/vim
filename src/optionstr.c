@@ -103,7 +103,7 @@ static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm"
 static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", "none", "NONE", NULL};
 // Note: Keep this in sync with check_opt_wim()
 static char *(p_wim_values[]) = {"full", "longest", "list", "lastused", "noselect", NULL};
-static char *(p_wop_values[]) = {"fuzzy", "tagfile", "pum", NULL};
+static char *(p_wop_values[]) = {"fuzzy", "tagfile", "pum", "exacttext", NULL};
 #ifdef FEAT_WAK
 static char *(p_wak_values[]) = {"yes", "menu", "no", NULL};
 #endif

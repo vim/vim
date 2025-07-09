@@ -1,8 +1,5 @@
 " Test filecopy()
 
-source check.vim
-source shared.vim
-
 func Test_copy_file_to_file()
   call writefile(['foo'], 'Xcopy1')
 

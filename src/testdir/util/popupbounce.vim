@@ -3,7 +3,7 @@
 "    cd src
 "    # Edit Makefile to uncomment PROFILE_CFLAGS and PROFILE_LIBS
 "    make reconfig
-"    ./vim --clean -S testdir/popupbounce.vim main.c
+"    ./vim --clean -S testdir/util/popupbounce.vim main.c
 "    gprof vim gmon.out | vim -
 
 " using line continuation

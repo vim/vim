@@ -1,7 +1,6 @@
 " Tests for Vim9 script expressions
 
-source check.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let g:cond = v:false
 def FuncOne(arg: number): string

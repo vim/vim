@@ -8940,13 +8940,24 @@ mch_create_anon_file(void)
 	fd = shm_open(template, O_CREAT | O_RDWR | O_EXCL, 0600);
 
 	if (fd >= 0 || errno != EEXIST)
-	    break; }
+	    break;
+    }
     // Remove object name from namespace
     shm_unlink(template);
 #endif
+    // Last resort
     if (fd == -1)
-	// Last resort
-	fd = fileno(tmpfile());
-
+    {
+	char_u	*tempname;
+	// get a name for the temp file
+	if ((tempname = vim_tempname('w', FALSE)) == NULL)
+	{
+	    emsg(_(e_cant_get_temp_file_name));
+	    return -1;
+	}
+	fd = mch_open((char *)tempname, O_CREAT | O_RDWR | O_EXCL, 0600);
+	mch_remove(tempname);
+	vim_free(tempname);
+    }
     return fd;
 }

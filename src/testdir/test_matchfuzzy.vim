@@ -1,9 +1,5 @@
 " Tests for fuzzy matching
 
-source shared.vim
-source check.vim
-source term_util.vim
-
 " Test for matchfuzzy()
 func Test_matchfuzzy()
   call assert_fails('call matchfuzzy(10, "abc")', 'E686:')

@@ -4303,14 +4303,13 @@ get_cmdline_completion_pattern(void)
 }
 
 /*
- * Get the current command-line completion type.
+ * Get the command-line completion type.
  */
     static char_u *
 get_cmdline_completion(void)
 {
-    cmdline_info_T *p;
-    char_u	*buffer;
-    int		xp_context;
+    cmdline_info_T	*p;
+    int			xp_context;
 
     if (cmdline_star > 0)
 	return NULL;
@@ -4329,20 +4328,7 @@ get_cmdline_completion(void)
     if (xp_context == EXPAND_UNSUCCESSFUL)
 	return NULL;
 
-    char_u *cmd_compl = cmdcomplete_type_to_str(xp_context);
-    if (cmd_compl == NULL)
-	return NULL;
-
-    if (xp_context == EXPAND_USER_LIST || xp_context == EXPAND_USER_DEFINED)
-    {
-	buffer = alloc(STRLEN(cmd_compl) + STRLEN(p->xpc->xp_arg) + 2);
-	if (buffer == NULL)
-	    return NULL;
-	sprintf((char *)buffer, "%s,%s", cmd_compl, p->xpc->xp_arg);
-	return buffer;
-    }
-
-    return vim_strsave(cmd_compl);
+    return cmdcomplete_type_to_str(xp_context, p->xpc->xp_arg);
 }
 
 /*

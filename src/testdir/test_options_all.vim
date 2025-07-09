@@ -1,7 +1,7 @@
 " Test for options
 
 " opt_test.vim is generated from src/optiondefs.h and runtime/doc/options.txt
-" using gen_opt_test.vim
+" using util/gen_opt_test.vim
 if filereadable('opt_test.vim')
   source opt_test.vim
 else

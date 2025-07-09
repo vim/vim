@@ -21,7 +21,7 @@ REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C a
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=45 --log-file=valgrind.$*
 
 # To execute one test, e.g. in gdb, use something like this:
-# run -f -u unix.vim --gui-dialog-file guidialog -U NONE --noplugin --not-a-term -S runtest.vim test_name.vim
+# run -f -u util/unix.vim --gui-dialog-file guidialog -U NONE --noplugin --not-a-term -S runtest.vim test_name.vim
 
 default: nongui
 
@@ -48,7 +48,7 @@ report:
 		then cp test.log test_result.log; \
 		else echo No failures reported > test_result.log; \
 		fi"
-	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages $(REDIR_TEST_TO_NULL)
+	$(VIMPROG) -u NONE $(NO_INITS) -S util/summarize.vim messages $(REDIR_TEST_TO_NULL)
 	@rm -f starttime
 	@echo
 	@echo 'Test results:'
@@ -87,7 +87,7 @@ test_vim9:
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = test.ok benchmark.out
-RUN_VIMPROG = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
+RUN_VIMPROG = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u util/unix.vim $(NO_INITS) -s dotest.in
 
 # Delete files that may interfere with running tests.  This includes some files
 # that may result from working on the tests, not only from running them.
@@ -141,7 +141,7 @@ tinytests: $(SCRIPTS_TINY_OUT)
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
 # Add --gui-dialog-file to avoid getting stuck in a dialog.
-RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim --gui-dialog-file guidialog
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u util/unix.vim --gui-dialog-file guidialog
 
 newtests: newtestssilent
 	@/bin/sh -c "if test -f messages; then cat messages; fi"
@@ -174,13 +174,13 @@ test_gui_init.res: test_gui_init.vim
 	@echo "$(VIMPROG)" > vimcmd
 	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" >> vimcmd
 	if test -n "$${ASAN_OPTIONS}"; then \
-		ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $< ; \
+		ASAN_OPTIONS="$${ASAN_OPTIONS}_$*" UBSAN_OPTIONS="$${UBSAN_OPTIONS}_$*" $(RUN_VIMTEST) -u util/gui_preinit.vim -U util/gui_init.vim $(NO_PLUGINS) -S runtest.vim $< ; \
 	else \
-		$(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $< ; \
+		$(RUN_VIMTEST) -u util/gui_preinit.vim -U util/gui_init.vim $(NO_PLUGINS) -S runtest.vim $< ; \
 	fi
 	@rm vimcmd
 
-GEN_OPT_DEPS = gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
+GEN_OPT_DEPS = util/gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
 
 opt_test.vim: $(GEN_OPT_DEPS)
 	if test -n "$${ASAN_OPTIONS}"; then \

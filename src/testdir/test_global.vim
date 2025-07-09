@@ -1,8 +1,5 @@
 " Test for :global and :vglobal
 
-source check.vim
-source term_util.vim
-
 func Test_yank_put_clipboard()
   new
   call setline(1, ['a', 'b', 'c'])

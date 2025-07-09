@@ -1,10 +1,8 @@
 " Tests specifically for the GUI
 
-source shared.vim
-source check.vim
 CheckCanRunGui
 
-source setup_gui.vim
+source util/setup_gui.vim
 
 func Setup()
   call GUISetUpCommon()

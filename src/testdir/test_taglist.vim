@@ -1,8 +1,5 @@
 " test taglist(), tagfiles() functions and :tags command
 
-source check.vim
-source view_util.vim
-
 func Test_taglist()
   call writefile([
 	\ "FFoo\tXfoo\t1",

@@ -1,7 +1,6 @@
 " Test Vim9 classes
 
-source check.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 def Test_class_basic()
   # Class supported only in "vim9script"
