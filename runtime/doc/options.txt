@@ -2991,16 +2991,22 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global or local to buffer |global-local|
 	List of {address} in each buffer, separated by commas, that are
 	considered anchors when used for diffing.  It's valid to specify "$+1"
-	for 1 past the last line.  "%" cannot be used for this option.
+	for 1 past the last line.  "%" cannot be used for this option.  There
+	can be at most 20 anchors set for each buffer.
 
 	Each anchor line splits the buffer (the split happens above the
 	anchor), with each part being diff'ed separately before the final
 	result is joined.  When more than one {address} are provided, the
 	anchors will be sorted interally by line number.  If using buffer
 	local options, each buffer should have the same number of anchors
-	(extra anchors will be ignored).  There can be at most 20 anchors set
-	for each buffer.  This option is only used when 'diffopt' has "anchor"
-	set.  See |diff-anchors| for more details and examples.
+	(extra anchors will be ignored).  This option is only used when
+	'diffopt' has "anchor" set.  See |diff-anchors| for more details and
+	examples.
+								*E1550*
+	If some of the {address} do not resolve to a line in each buffer (e.g.
+	a pattern search that does not match anything), none of the anchors
+	will be used.
+
 
 						*'dex'* *'diffexpr'*
 'diffexpr' 'dex'	string	(default "")

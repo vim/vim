@@ -992,6 +992,7 @@ diff_try_update(
 			anchors[idx],
 			&buf_num_anchors) != OK)
 	    {
+		emsg(_(e_failed_to_find_all_diff_anchors));
 		num_anchors = 0;
 		CLEAR_FIELD(anchors);
 		break;
