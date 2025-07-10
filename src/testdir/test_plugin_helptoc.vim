@@ -8,15 +8,23 @@ func Test_helptoc_markdown_with_comments()
     packadd helptoc
     e Xmarkdown.md
     call append(0, [
-          \ '# My Document',
-          \ '', 'Some text.',
+          \ '# Heading 1',
+          \ '',
+          \ 'Some text.',
           \ '',
           \ '```vim',
           \ '# This is a Vim9Script comment',
           \ 'def MyFunc()',
           \ '  # Another comment',
           \ 'enddef',
-          \ '```'
+          \ '```',
+          \ '# Another Heading 1',
+          \ '',
+          \ '```',
+          \ '# This is a comment in a codeblock',
+          \ '```',
+          \ '# Last Heading 1',
+          \ 'and more text'
           \])
   END
 
