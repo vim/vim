@@ -6,7 +6,7 @@
 # vassily "vr" ragosin, <vrr@users.sourceforge.net>, 2004
 # Sergey Alyoshin, <alyoshin.s@gmail.com>, 2013-2014, 2016, 2018-2019
 # Matvey Tarasov, <matthewtarasov@yandex.ru>, 2022
-# Restorer, <restorer@mail2k.ru>, 2017, 2020-2023
+# Restorer, <restorer@mail2k.ru>, 2017, 2020-2025
 #
 # Generated from ru.po, DO NOT EDIT.
 #
@@ -22,10 +22,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9011270.030425\n"
-"Report-Msgid-Bugs-To: The Vim Project, <vim-dev@vim.org>\n"
-"POT-Creation-Date: 2025-04-03 17:45+0300\n"
-"PO-Revision-Date: 2025-04-03 19:22+0300\n"
+"Project-Id-Version: RuVim_0.9011532.090725\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-09 20:28+0300\n"
+"PO-Revision-Date: 2025-07-10 22:21+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -200,19 +200,26 @@ msgstr "[справка]"
 msgid "[Preview]"
 msgstr "[просмотр]"
 
+# #Restorer: позиция буфера
 msgid "All"
 msgstr "Весь текст"
 
+# #Restorer: позиция буфера
 msgid "Bot"
 msgstr "Окончание"
 
+# #Restorer: позиция буфера
 msgid "Top"
 msgstr "Начало"
 
 # #Restorer: локализуемое значение процента
 #, c-format
-msgid "%s%d%%"
-msgstr "%s%d %%"
+msgid "%d%%"
+msgstr "%d %%"
+
+#, c-format
+msgid "%2s"
+msgstr "%2s"
 
 # #Restorer: выводится в заголовке окна, строке состояния, комндной строке при
 # #Restorer: редактировании нескольких файлов
@@ -353,6 +360,13 @@ msgstr " Сбой при отправке выражения\n"
 # #Restorer: выводится при 'verbose'>0
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Содержимое буфера обмена получено из буфера CUT_BUFFER0"
+
+msgid "Could not find a way to access the clipboard."
+msgstr "Не удалось получить доступ к буферу обмена"
+
+#, c-format
+msgid "Switched to clipboard method '%s'."
+msgstr "Переключение на метод доступа к буферу обмена '%s'"
 
 # #Restorer: отображается по команде `i_CTRL+X`, если отключен вид «окно меню»
 msgid "tagname"
@@ -606,6 +620,10 @@ msgstr "Катакана"
 # ~!: earlier
 msgid "Bopomofo"
 msgstr "Чжуинь (бопомофо)"
+
+#, c-format
+msgid "%ld,"
+msgstr "%ld, "
 
 # #Restorer: выводится при значении 'verbose'>0
 msgid ""
@@ -890,7 +908,7 @@ msgstr "Завершена обработка исключительной ситуации %s"
 msgid "Exception discarded: %s"
 msgstr "Исключительная ситуация проигнорирована %s"
 
-# #Restorer: %s --- определение «брошенного» исключения 
+# #Restorer: %s --- определение «брошенного» исключения
 # ~!: earlier
 #, c-format
 msgid "%s, line %ld"
@@ -1059,6 +1077,10 @@ msgstr "[unix]"
 # #Restorer: добавляется к сообщению в командной строке при операциях с файлом
 msgid "[unix format]"
 msgstr "[в формате unix]"
+
+#, c-format
+msgid "%s%ldL, %lldB"
+msgstr "%s%ldс, %lldБ"
 
 # #Restorer: добавляется к сообщению в командной строке при операциях с файлом
 #, c-format
@@ -1727,8 +1749,8 @@ msgstr[2] "В %ld строках изменён отступ"
 msgid " Keyword completion (^N^P)"
 msgstr " Подстановка слова под кареткой CTRL+N или CTRL+P"
 
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-msgstr " Режим подстановки CTRL+X и CTRL+ (] D E F I K L N O P S U V Y)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
+msgstr " Режим подстановки CTRL+X и CTRL+ (] D E F I K L N O P R S U V Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " Подстановка целой строки CTRL+L и CTRL+N или CTRL+P"
@@ -1765,6 +1787,9 @@ msgstr " Подстановка вариантов написания CTRL+S и CTRL+N или CTRL+P"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Подстановка слов только из текущего буфера CTRL+N или CTRL+P"
+
+msgid " Register completion (^N^P)"
+msgstr " Подстановка слова из регистра CTRL+N или CTRL+P"
 
 msgid "'dictionary' option is empty"
 msgstr "Не задано значение параметра 'dictionary'"
@@ -2025,8 +2050,7 @@ msgid "-g\t\t\tRun using GUI (like \"gvim\")"
 msgstr "-g\t\t\tЗапуск программы с графическим интерфейсом (как \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
-msgstr ""
-"-f  или --nofork\tНе отключаться от активной задачи при запуске ГИП"
+msgstr "-f  или --nofork\tНе отключаться от активной задачи при запуске ГИП"
 
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tЗапуск программы в режиме Vi (как \"vi\")"
@@ -2179,6 +2203,9 @@ msgstr "-display <display>\tПодключение программы к указанному X-серверу"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tЗапуск программы без подключения к X-серверу"
+
+msgid "-Y\t\t\tDo not connect to Wayland compositor"
+msgstr "-Y\t\t\tЗапуск программы без подключения к Wayland Compositor"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr ""
@@ -2683,7 +2710,7 @@ msgstr "при открытии файла: \""
 msgid "      CANNOT BE FOUND"
 msgstr " НЕ УДАЛОСЬ НАЙТИ"
 
-# #Restorer: 
+# #Restorer:
 msgid "      NEWER than swap file!\n"
 msgstr "Который имеет более позднюю дату, чем обнаруженный файл подкачки\n"
 
@@ -3116,7 +3143,7 @@ msgstr ""
 "Программа Vim. Получена ошибка от X-сервера\n"
 
 #, c-format
-msgid "restoring display %s"
+msgid "restoring X11 display %s"
 msgstr "Восстановление подключения к X-серверу %s"
 
 msgid "Testing the X display failed"
@@ -4320,6 +4347,13 @@ msgstr "Не требуется компиляция функции %s%s%s"
 msgid "%s (%s, compiled %s)"
 msgstr "%s (%s, сборка от %s)"
 
+msgid ""
+"\n"
+"MS-Windows ARM64 GUI/console version"
+msgstr ""
+"\n"
+"Версия для MS Windows ARM64 с графическим и консольным интерфейсом"
+
 # #Restorer: см. VIMDLL в Make_mvc.mak
 msgid ""
 "\n"
@@ -4338,6 +4372,13 @@ msgstr ""
 
 msgid ""
 "\n"
+"MS-Windows ARM64 GUI version"
+msgstr ""
+"\n"
+"Версия для MS Windows ARM64 с графическим интерфейсом"
+
+msgid ""
+"\n"
 "MS-Windows 64-bit GUI version"
 msgstr ""
 "\n"
@@ -4353,6 +4394,13 @@ msgstr ""
 # ~!: earlier
 msgid " with OLE support"
 msgstr " с поддержкой OLE"
+
+msgid ""
+"\n"
+"MS-Windows ARM64 console version"
+msgstr ""
+"\n"
+"Версия для MS Windows ARM64 консольная"
 
 msgid ""
 "\n"
@@ -4479,56 +4527,56 @@ msgstr " В этой версии включены (+) и отключены (-) следующие компоненты:\n"
 
 # ~!: earlier
 msgid "   system vimrc file: \""
-msgstr "           общесистемный файл vimrc: \""
+msgstr "          общесистемный файл vimrc: \""
 
 msgid "     user vimrc file: \""
-msgstr "   1-ый пользовательский файл vimrc: \""
+msgstr "   1-й пользовательский файл vimrc: \""
 
 msgid " 2nd user vimrc file: \""
-msgstr "   2-ой пользовательский файл vimrc: \""
+msgstr "  2-й пользовательский файл vimrc: \""
 
 msgid " 3rd user vimrc file: \""
-msgstr "   3-ий пользовательский файл vimrc: \""
+msgstr "  3-й пользовательский файл vimrc: \""
 
 msgid " 4th user vimrc file: \""
-msgstr "   4-ый пользовательский файл vimrc: \""
+msgstr "  4-й пользовательский файл vimrc: \""
 
 msgid "      user exrc file: \""
-msgstr "    1-ый пользовательский файл exrc: \""
+msgstr "   1-й пользовательский файл exrc: \""
 
 # ~!: earlier
 msgid "  2nd user exrc file: \""
-msgstr "    2-ой пользовательский файл exrc: \""
+msgstr "   2-й пользовательский файл exrc: \""
 
 # ~!: earlier
 msgid "  system gvimrc file: \""
-msgstr "          общесистемный файл gvimrc: \""
+msgstr "        общесистемный файл gvimrc: \""
 
 msgid "    user gvimrc file: \""
-msgstr "  1-ый пользовательский файл gvimrc: \""
+msgstr " 1-й пользовательский файл gvimrc: \""
 
 # ~!: earlier
 msgid "2nd user gvimrc file: \""
-msgstr "  2-ой пользовательский файл gvimrc: \""
+msgstr " 2-й пользовательский файл gvimrc: \""
 
 # ~!: earlier
 msgid "3rd user gvimrc file: \""
-msgstr "  3-ий пользовательский файл gvimrc: \""
+msgstr " 3-й пользовательский файл gvimrc: \""
 
 msgid "       defaults file: \""
-msgstr "    файл предустановленных настроек: \""
+msgstr "  файл предустановленных настроек: \""
 
 # ~!: earlier
 msgid "    system menu file: \""
-msgstr "            общесистемный файл меню: \""
+msgstr "          общесистемный файл меню: \""
 
 # ~!: earlier
 msgid "  fall-back for $VIM: \""
-msgstr "         значение $VIM по умолчанию: \""
+msgstr "       значение $VIM по умолчанию: \""
 
 # ~!: earlier
 msgid " f-b for $VIMRUNTIME: \""
-msgstr "  значение $VIMRUNTIME по умолчанию: \""
+msgstr "значение $VIMRUNTIME по умолчанию: \""
 
 msgid "Compilation: "
 msgstr "Параметры сборки: "
@@ -4540,7 +4588,7 @@ msgid "Linking: "
 msgstr "Связывание: "
 
 msgid "  DEBUG BUILD"
-msgstr "  СБОРКА ДЛЯ ДИАГНОСТИКИ"
+msgstr " СБОРКА ДЛЯ ДИАГНОСТИКИ"
 
 msgid "VIM - Vi IMproved"
 msgstr "VIM — Vi IMproved (улучшенный Vi)"
@@ -4737,7 +4785,7 @@ msgstr ""
 "# Строки, начинающиеся с вертикальной линии, копируются как есть\n"
 
 # #Restorer: первый %s заменяется на E575:, второй %s
-# #Restorer: на «Illegal starting char» 
+# #Restorer: на «Illegal starting char»
 #, c-format
 msgid "%sviminfo: %s in line: "
 msgstr "%s%s в viminfo-файле на строке "
@@ -4851,6 +4899,16 @@ msgstr " НЕ ВЫПОЛНЕНО"
 #, c-format
 msgid "Writing viminfo file \"%s\""
 msgstr "Запись viminfo-файла \"%s\""
+
+msgid "wayland protocol error -> "
+msgstr "Ошибка Wayland протокола ->"
+
+#, c-format
+msgid "restoring Wayland display %s"
+msgstr "восстановление подключения к Wayland серверу %s"
+
+msgid "failed restoring, lost connection to Wayland display"
+msgstr "сбой восстановления, потеряно подключение к Wayland серверу"
 
 # #Restorer: выводится при исполнении команд `CTRL+W SHIFT+T` или `CTRL+W o`
 msgid "Already only one window"
@@ -8970,9 +9028,10 @@ msgstr ""
 "E1116: В функции assert_fails() значением аргумента номер 5 должна быть "
 "строка"
 
-msgid "E1117: Cannot use ! with nested :def"
+#, c-format
+msgid "E1117: Cannot use ! with nested %s"
 msgstr ""
-"E1117: Не допускается указание модификатора ! для вложенных команд :def"
+"E1117: Не допускается указание модификатора ! для вложенных команд %s"
 
 msgid "E1118: Cannot change locked list"
 msgstr "E1118: Изменение списка не выполнено. Установлена блокировка списка"
@@ -10174,7 +10233,7 @@ msgstr ""
 
 #, c-format
 msgid "E1430: Uninitialized object variable '%s' referenced"
-msgstr "E1430: Ссылка на неинициализированную объектную переменную '%s'"
+msgstr "E1430: Ссылка на неинициализированную объектную переменную %s"
 
 #, c-format
 msgid ""
@@ -10249,11 +10308,11 @@ msgstr ""
 
 #, c-format
 msgid "E1515: Unable to convert from '%s' encoding"
-msgstr "E1515: Не удалось выполнить преобразование для кодировки '%s'"
+msgstr "E1515: Не удалось выполнить преобразование для кодировки %s"
 
 #, c-format
 msgid "E1516: Unable to convert to '%s' encoding"
-msgstr "E1516: Не удалось выполнить преобразование из кодировки '%s'"
+msgstr "E1516: Не удалось выполнить преобразование из кодировки %s"
 
 msgid "E1517: Can only compare Tuple with Tuple"
 msgstr ""
@@ -10285,8 +10344,8 @@ msgstr "E1524: Не допускается использовать кортежи в функции %s"
 #, c-format
 msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
 msgstr ""
-"E1525: В функции %s тип аргумента должен быть List, Tuple, String, Dictionary"
-" или BLOB"
+"E1525: В функции %s тип аргумента должен быть List, Tuple, String, "
+"Dictionary или BLOB"
 
 #, c-format
 msgid "E1526: Missing end of Tuple ')': %s"
@@ -10347,9 +10406,28 @@ msgid "E1540: Cannot use a variadic tuple in concatenation"
 msgstr "E1540: Не допускается объединение вариационных кортежей"
 
 msgid "E1541: Value too large, max Unicode codepoint is U+10FFFF"
-msgstr ""
-"E1541: Значение превышает допустимую величину кодовой позиции Юникода "
-"U+10FFFF"
+msgstr "E1541: Значение превышает величину U+10FFFF кодовой позиции Юникода"
+
+msgid "E1542: Cannot have a negative or zero number of quickfix/location lists"
+msgstr "E1542: Не допускается указание нулевого или отрицательного количества"
+
+msgid "E1543: Cannot have more than a hundred quickfix/location lists"
+msgstr "E1543: Не допускается указание количества, превышающего значение 100"
+
+msgid "E1544: Failed resizing the quickfix/location list stack"
+msgstr "E1544: Не удалось изменить размер журнала списка результатов"
+
+msgid "E1545: Quickfix list stack unavailable"
+msgstr "E1545: Недоступен журнал списка результатов"
+
+msgid "E1546: Cannot switch to a closing buffer"
+msgstr "E1546: Не допускается переключение в закрытый буфер"
+
+msgid "E1547: This version of Vim does support :redrawtabpanel"
+msgstr "E1547: Данная версия программы не поддерживает команду :redrawtabpanel"
+
+msgid "E1548: Wayland connection is unavailable"
+msgstr "E1548: Подключение к Wayland серверу отсутствует"
 
 # #Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 msgid "--No lines in buffer--"
@@ -11006,12 +11084,14 @@ msgid ""
 "include \"uhex\" to show unprintable characters as a hex number"
 msgstr ""
 "\"lastline\" — индикация, если строка частично отображена в окне\n"
-"\"uhex\" — показ непечатаемых символов как шестнадцатеричное значение"
+"\"uhex\" — непечатаемые символы как шестнадцатеричное значение"
 
-msgid "characters to use for the status line, folds and filler lines"
+msgid ""
+"characters to use for the status line, folds, diffs, buffer text, filler "
+"lines and truncation in the completion menu"
 msgstr ""
-"заполнители для строки состояния, свёрнутых строк и\n"
-"разделителей окон"
+"заполнители для строки состояния, свёрнутых строк,\n"
+"разделителей окон и усечения в меню подстановки"
 
 msgid "number of lines used for the command-line"
 msgstr "количество строк используемых для отображения командной строки"
@@ -11052,6 +11132,16 @@ msgstr "отображать относительные номера строк"
 
 msgid "number of columns to use for the line number"
 msgstr "количество колонок, используемых под столбец с номерами строк"
+
+msgid "maximum number of quickfix lists that can be stored in history"
+msgstr ""
+"максимальное количество списков результатов,\n"
+"записываемое в журнал"
+
+msgid "maximum number of location lists that can be stored in history"
+msgstr ""
+"максимальное количество локальных списков результатов,\n"
+"записываемое в журнал"
 
 msgid "controls whether concealable text is hidden"
 msgstr "способ скрытия текста, помеченного как скрытый"
@@ -11230,7 +11320,7 @@ msgstr "Вкладки"
 
 msgid "0, 1 or 2; when to use a tab pages line"
 msgstr ""
-"отображение панели вкладок\n"
+"отображение вкладок\n"
 "Возможные значения: 0, 1 или 2"
 
 msgid "behaviour when closing tab pages: left, uselast or empty"
@@ -11244,7 +11334,7 @@ msgstr ""
 "через аргумент командной строки -p или по команде `:tab all`"
 
 msgid "custom tab pages line"
-msgstr "настройка вида панели вкладок"
+msgstr "настройка вида вкладок"
 
 msgid "custom tab page label for the GUI"
 msgstr "настройка подписей вкладок в графическом интерфейсе"
@@ -11332,8 +11422,8 @@ msgstr "активировать окно при перемещении на него указателя «мыши»"
 
 msgid "the window with the mouse pointer scrolls with the mouse wheel"
 msgstr ""
-"прокрутка колёсиком «мыши» содержимого окна, в котором находится\n"
-"указатель «мыши»"
+"прокрутка колёсиком «мыши» содержимого окна, в котором\n"
+"находится указатель «мыши»"
 
 msgid "hide the mouse pointer while typing"
 msgstr "скрывать указатель «мыши» при наборе текста"
@@ -11389,7 +11479,9 @@ msgid "room (in pixels) left above/below the window"
 msgstr "область экрана (в пикселях), остающаяся не занятой окном программы"
 
 msgid "list of ASCII characters that can be combined into complex shapes"
-msgstr "перечень символов кодировки ASCII, используемых в составных символах"
+msgstr ""
+"перечень символов кодировки ASCII, используемых\n"
+"в составных символах"
 
 msgid "options for text rendering"
 msgstr "настройки визуализации текста"
@@ -11427,7 +11519,9 @@ msgid "use balloon evaluation in the GUI"
 msgstr "включение всплывающих выносок в графическом интерфейсе"
 
 msgid "use balloon evaluation in the terminal"
-msgstr "включение всплывающих выносок в окне терминала"
+msgstr ""
+" \n"
+"включение всплывающих выносок в окне терминала"
 
 msgid "expression to show in balloon eval"
 msgstr "функция, используемая для создания всплывающей выноски"
@@ -11475,8 +11569,8 @@ msgstr "настройки, используемые для вывода сообщений"
 
 msgid "show (partial) command keys in location given by 'showcmdloc'"
 msgstr ""
-"отображать набираемые команды в месте которое указанно в параметре\n"
-"'showcmdloc'"
+"отображать набираемые команды в месте которое указанно\n"
+"в параметре 'showcmdloc'"
 
 msgid "location where to show the (partial) command keys for 'showcmd'"
 msgstr ""
@@ -11543,6 +11637,20 @@ msgstr ""
 "\"unnamed\" — регистр * использовать как безымянный регистр\n"
 "\"autoselect\" — выделенный текст всегда помещать в буфер обмена"
 
+msgid "Ordered list of possible methods for accessing the clipboard"
+msgstr "Последовательность возможных методов доступа к буферу обмена"
+
+msgid "Timeout to use when polling for data to read or write in wayland"
+msgstr "Интервал опроса сервера Wayland для чтения или запси данных"
+
+msgid "Wayland seat to use"
+msgstr "Местоположение, используемое Wayland"
+
+msgid ""
+"Enable wayland focus stealing functionality in order to access the clipboard"
+msgstr ""
+"Включит функцианал Wayland по перехвату фокуса для доступа к буферу обмена"
+
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr ""
 "действия, которые могут выполнять специальные клавиши\n"
@@ -11601,13 +11709,15 @@ msgstr "работа команд CTRL+N и CTRL+P при подстановке в режиме вставки"
 msgid "use fuzzy collection for specific completion modes"
 msgstr ""
 " \n"
-"использовать неполные коллекции для указанных режимов подстановки"
+"применять неполные коллекции для указанных режимов подстановки"
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "использовать всплывающее меню при подстановке в режиме вставки"
 
 msgid "popup menu item align order"
-msgstr "порядок отображения элементов во всплывающем меню при подстановке"
+msgstr ""
+" \n"
+"порядок показа элементов во всплывающем меню при подстановке"
 
 msgid "options for the Insert mode completion info popup"
 msgstr "информация во всплывающем меню при подстановке в режиме вставки"
@@ -11640,11 +11750,11 @@ msgstr "функция, используемая для подстановки из тезаурус"
 
 msgid "adjust case of a keyword completion match"
 msgstr ""
-"корректировка регистра символов для соответствующих ключевых слов\n"
+"корректировка регистра символов для совпадающих ключевых слов\n"
 "при подстановке"
 
 msgid "enable entering digraphs with c1 <BS> c2"
-msgstr "ввод диграфов с использованием клавиши BACKSPACE; сим1 <BS> сим2"
+msgstr "ввод диграфов посредством клавиши BACKSPACE; сим1 <BS> сим2"
 
 msgid "the \"~\" command behaves like an operator"
 msgstr "использовать команду `~` как оператор"
@@ -11679,23 +11789,21 @@ msgid "tabs and indenting"
 msgstr "Табуляция и отступы"
 
 msgid "number of spaces a <Tab> in the text stands for"
-msgstr "число пропусков в тексте, обозначающее табуляцию"
+msgstr "количество колонок между двумя позициями табуляции"
 
 msgid "number of spaces used for each step of (auto)indent"
-msgstr "количество пробелов, вставляемых на каждом шаге установки отступа"
+msgstr "количество пробелов, добавляемых на каждом шаге вставки отступа"
 
 msgid "list of number of spaces a tab counts for"
-msgstr "список количества пробелов, на которое отсчитывается табуляция"
+msgstr "список количества колонок межуд позициями табуляции"
 
 msgid "list of number of spaces a soft tabsstop counts for"
-msgstr ""
-"список количества пробелов, на которое отсчитывается расстановка\n"
-"«мягкой» табуляции"
+msgstr "список количества колонок между «мягкими» позциями табуляции"
 
 msgid "a <Tab> in an indent inserts 'shiftwidth' spaces"
 msgstr ""
-"при нажатии клавиши <TAB> , в начале строки будет вставка пробелов\n"
-"как задано в параметре 'shiftwidth'"
+"при нажатии клавиши <TAB>, в начале строки будет вставка\n"
+"пробелов, как задано в параметре 'shiftwidth'"
 
 msgid "if non-zero, number of spaces to insert for a <Tab>"
 msgstr "количество пробелов, вставляемых при нажатии клавиши <TAB>"
@@ -11776,8 +11884,8 @@ msgstr "функция, используемая для показа содержимого свёрнутых строк"
 
 msgid "set to \"all\" to close a fold when the cursor leaves it"
 msgstr ""
-"установите значение \"all\", чтобы свернуть строки блока структуры,\n"
-"когда каретка выйдет за его границы"
+"установите значение \"all\", чтобы свернуть строки блока\n"
+"структуры, когда каретка выйдет за его границы"
 
 msgid "specifies for which commands a fold will be opened"
 msgstr "задаёт команды, для которых будут развёрнуты свёрнутые строки"
@@ -11922,8 +12030,8 @@ msgstr "расширение файла, используемое для резервной копии"
 
 msgid "automatically write a file when leaving a modified buffer"
 msgstr ""
-"автоматически сохранять изменения в буфере при переключении на\n"
-"другой файл"
+"автоматически сохранять изменения в буфере при переключении\n"
+"на другой файл"
 
 msgid "as 'autowrite', but works with more commands"
 msgstr "как параметр 'autowrite', но применяется и для других команд"
@@ -12122,6 +12230,11 @@ msgstr "задаёт символы, допустимые в наименованиях файлов"
 
 msgid "specifies the characters in an identifier"
 msgstr "задаёт символы, допустимые в идентификаторах"
+
+msgid "defines trigger strings for complete_match()"
+msgstr ""
+"задаёт символы, определяющие начальную позицию подстановки;\n"
+"применяется в функции complete_match()"
 
 msgid "specifies the characters in a keyword"
 msgstr "задаёт символы, допустимые в управляющих словах"
@@ -12360,6 +12473,17 @@ msgstr "подключаемый файл динамической библиотеки языка MzScheme"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "подключаемый файл динамической библиотеки MzScheme GC"
+
+msgid "0, 1 or 2; when to use the tabpanel"
+msgstr ""
+"отображение панели вкладок\n"
+"Возможные значения: 0, 1 или 2"
+
+msgid "custom tab pages in tabpanel"
+msgstr "настройка вида панели вкладок"
+
+msgid "options for using tabpanel"
+msgstr "настройки, используемые панелью вкладок"
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""
