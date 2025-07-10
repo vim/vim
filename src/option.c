@@ -4138,6 +4138,29 @@ did_set_scrollbind(optset_T *args UNUSED)
     return NULL;
 }
 
+/*
+ * Process the new 'maxsearchcount' option value.
+ */
+    char *
+did_set_maxsearchcount(optset_T *args UNUSED)
+{
+    char	*errmsg = NULL;
+// if you increase this, also increase SEARCH_STAT_BUF_LEN in search.c
+#define MAX_SEARCH_COUNT 9999
+
+    if (p_msc <= 0)
+	errmsg = e_argument_must_be_positive;
+    else if (p_msc > MAX_SEARCH_COUNT)
+	errmsg = e_invalid_argument;
+
+    if (errmsg != NULL)
+	p_msc = 99;
+
+    return errmsg;
+#undef MAX_SEARCH_COUNT
+}
+
+
 #if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
 /*
  * Process the updated 'shellslash' option value.

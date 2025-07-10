@@ -1733,6 +1733,9 @@ static struct vimoption options[] =
 			    (char_u *)&p_mmt, PV_NONE, NULL, NULL,
 			    {(char_u *)DFLT_MAXMEMTOT, (char_u *)0L}
 			    SCTX_INIT},
+    {"maxsearchcount", "msc", P_NUM|P_VI_DEF,
+			    (char_u *)&p_msc, PV_NONE, did_set_maxsearchcount, NULL,
+			    {(char_u *)99L, (char_u *)0L} SCTX_INIT},
     {"menuitems",   "mis",  P_NUM|P_VI_DEF,
 #ifdef FEAT_MENU
 			    (char_u *)&p_mis, PV_NONE, NULL, NULL,

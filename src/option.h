@@ -792,6 +792,7 @@ EXTERN long	p_mmt;		// 'maxmemtot'
 EXTERN long	p_mis;		// 'menuitems'
 #endif
 EXTERN char_u	*p_mopt;	// 'messagesopt'
+EXTERN long	p_msc;		// 'maxsearchcount'
 #ifdef FEAT_SPELL
 EXTERN char_u	*p_msm;		// 'mkspellmem'
 #endif

@@ -506,6 +506,7 @@ $quote	eval.txt	/*$quote*
 'maxmem'	options.txt	/*'maxmem'*
 'maxmempattern'	options.txt	/*'maxmempattern'*
 'maxmemtot'	options.txt	/*'maxmemtot'*
+'maxsearchcount'	options.txt	/*'maxsearchcount'*
 'mco'	options.txt	/*'mco'*
 'mef'	options.txt	/*'mef'*
 'menc'	options.txt	/*'menc'*
@@ -545,6 +546,7 @@ $quote	eval.txt	/*$quote*
 'mousetime'	options.txt	/*'mousetime'*
 'mp'	options.txt	/*'mp'*
 'mps'	options.txt	/*'mps'*
+'msc'	options.txt	/*'msc'*
 'msm'	options.txt	/*'msm'*
 'mzq'	options.txt	/*'mzq'*
 'mzquantum'	options.txt	/*'mzquantum'*

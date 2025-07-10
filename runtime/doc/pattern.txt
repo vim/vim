@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 9.1.  Last change: 2025 Jul 06
+*pattern.txt*   For Vim version 9.1.  Last change: 2025 Jul 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -189,6 +189,7 @@ The following options affect how a search is performed in Vim:
     'ignorecase'	ignore case when searching
     'imsearch'		use |IME| when entering the search pattern
     'incsearch'		show matches incrementally as the pattern is typed
+    'maxsearchcount'	maximum number for the search count |shm-S|
     'shortmess'		suppress messages |shm-s|; show search count |shm-S|
     'smartcase'		override 'ignorecase' if pattern contains uppercase
     'wrapscan'		continue searching from the start of the file
