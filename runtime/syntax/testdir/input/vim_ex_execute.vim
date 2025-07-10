@@ -54,7 +54,6 @@ execute "Foo" | " comment
 
 " Issue #9987 (parenthesised argument - not a function call)
 
-" FIXME: execute is ex command not builtin function
 let foo = {'arg': "call Foo()"}
 execute (foo.arg)
 

@@ -1,4 +1,5 @@
-" Vim :match, :2match and :3match commands
+" Vim :match command
+
 
 match FooGroup /Foo/
 match
@@ -13,7 +14,7 @@ match none
 3match none
 
 
-" Differentiate map() from :map
+" Differentiate match() from :match
 
 call match(haystack, 'needle')
 call match (haystack, 'needle')
@@ -25,8 +26,11 @@ function Foo()
 endfunction
 
 def Foo()
+  # command
   match FooGroup /Foo/
+  # function
   match(haystack, 'needle')
   # Error: bad :match command - trailing characters
   match (haystack, 'needle')
 enddef
+
