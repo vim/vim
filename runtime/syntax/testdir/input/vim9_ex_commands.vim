@@ -14,8 +14,6 @@ vim9script
 : help
  : help # FIXME
 
-:2match
-:3match
 :abbreviate
 :abclear
 :aboveleft
@@ -598,8 +596,6 @@ Foo() | help
 Foo() |help
 Foo()| help
 
-Foo() | 2match
-Foo() | 3match
 Foo() | abbreviate
 Foo() | abclear
 Foo() | aboveleft
