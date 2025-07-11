@@ -126,6 +126,7 @@ main
     params.use_debug_break_level = -1;
 #endif
     params.window_count = -1;
+    params.load_defaults = -1;
 
     autocmd_init();
 
@@ -1102,6 +1103,24 @@ common_init_2(mparm_T *paramp)
     qf_init_stack();
 #endif
 }
+
+#ifndef NO_VIM_MAIN
+/*
+ * Return TRUE when defaults.vim should be loaded
+ * if explicit is set, check that [no-]load-defaults was not given
+ */
+    static int
+load_defaults(int status)
+{
+    if (status != NOTDONE)
+	return FALSE;
+    if (params.load_defaults < 0
+	    && mch_getenv("VIM_NO_SOURCE_DEFAULTS") != NULL)
+	return FALSE;
+
+    return params.load_defaults;
+}
+#endif
 
 /*
  * Return TRUE when the --not-a-term argument was found.
@@ -2137,6 +2156,8 @@ command_line_scan(mparm_T *parmp)
 				// "--gui-dialog-file fname" write dialog text
 				// "--ttyfail" exit if not a term
 				// "--noplugin[s]" skip plugins
+				// "--no-load-defaults" don't load defaults.vim
+				// "--load-defaults" load defaults.vim early
 				// "--cmd <cmd>" execute cmd before vimrc
 		if (STRICMP(argv[0] + argv_idx, "help") == 0)
 		    usage();
@@ -2178,6 +2199,10 @@ command_line_scan(mparm_T *parmp)
 		    p_lpl = FALSE;
 		else if (STRNICMP(argv[0] + argv_idx, "not-a-term", 10) == 0)
 		    parmp->not_a_term = TRUE;
+		else if (STRNICMP(argv[0] + argv_idx, "load-defaults", 13) == 0)
+		    parmp->load_defaults = TRUE;
+		else if (STRNICMP(argv[0] + argv_idx, "no-load-defaults", 16) == 0)
+		    parmp->load_defaults = FALSE;
 		else if (STRNICMP(argv[0] + argv_idx, "gui-dialog-file", 15)
 									 == 0)
 		{
@@ -3298,8 +3323,10 @@ source_startup_scripts(mparm_T *parmp)
     {
 	if (STRCMP(parmp->use_vimrc, "DEFAULTS") == 0)
 	{
-	    if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL)
-									 != OK)
+	    int	status = NOTDONE;
+	    if (load_defaults(status)
+		&& (status = do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL)) != OK
+		&& status == FAIL)
 		emsg(_(e_failed_to_source_defaults));
 	}
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
@@ -3325,6 +3352,11 @@ source_startup_scripts(mparm_T *parmp)
 	// Avoid a requester here for a volume that doesn't exist.
 	proc->pr_WindowPtr = (APTR)-1L;
 #endif
+	int	source_defaults = NOTDONE;
+
+	if (parmp->load_defaults > 0)
+	    source_defaults = do_source((char_u *)VIM_DEFAULTS_FILE,
+						       FALSE, DOSO_NONE, NULL);
 
 	/*
 	 * Get system wide defaults, if the file name is defined.
@@ -3374,14 +3406,14 @@ source_startup_scripts(mparm_T *parmp)
 		&& do_source((char_u *)USR_EXRC_FILE2, FALSE,
 						       DOSO_NONE, NULL) == FAIL
 #endif
-		&& !has_dash_c_arg)
-	    {
-		// When no .vimrc file was found: source defaults.vim.
-		if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE,
-								 NULL) == FAIL)
-		    emsg(_(e_failed_to_source_defaults));
-	    }
+		&& !has_dash_c_arg
+		&& load_defaults(source_defaults))
+		    source_defaults = do_source((char_u *)VIM_DEFAULTS_FILE,
+						       FALSE, DOSO_NONE, NULL);
 	}
+	// When defaults.vim was not found
+	if (source_defaults == FAIL)
+	    emsg(_(e_failed_to_source_defaults));
 
 	/*
 	 * Read initialization commands from ".vimrc" or ".exrc" in current
@@ -3672,6 +3704,7 @@ usage(void)
     main_msg(_("-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"));
 #endif
     main_msg(_("--noplugin\t\tDon't load plugin scripts"));
+    main_msg(_("--[no-]load-defaults\t(Don't) load defaults.vim"));
     main_msg(_("-p[N]\t\tOpen N tab pages (default: one for each file)"));
     main_msg(_("-o[N]\t\tOpen N windows (default: one for each file)"));
     main_msg(_("-O[N]\t\tLike -o but split vertically"));

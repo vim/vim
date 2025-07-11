@@ -427,6 +427,13 @@ This can be used to edit a filename that starts with a '\-'.
 Do not use any personal configuration (vimrc, plugins, etc.).  Useful to see if
 a problem reproduces with a clean Vim setup.
 .TP
+\-\-no-load-defaults
+Do not source defaults.vim.
+.TP
+\-\-load-defaults
+Do source defaults.vim (as the very first runtime file), even if a personal
+runtime file exists.
+.TP
 \-\-cmd {command}
 Like using "\-c", but the command is executed just before
 processing any vimrc file.

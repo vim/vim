@@ -1455,4 +1455,144 @@ func Test_cq_zero_exmode()
   call delete('Xcq_log.txt')
 endfunc
 
+" test using --load-defaults, --no-load-defaults and $VIM_NO_SOURCE_DEFAULTS
+func Test_defaults_arguments()
+  CheckRunVimInTerminal
+  " Parse the output of :scriptnames and write it back to XScriptnamesResult
+  " Filters XScriptnames out, since this only appears because of the -S arg
+  " and we don't care about this one
+  let content =<< trim END
+    func Scriptnames()
+      let a = split(execute(':scriptnames'), '\n')->filter({ _, val -> val !~# 'XScriptnames'})
+      let result =  map(a, { _, val -> substitute(val, ': \zs.*\ze/runtime/', '', '')})
+      let val = 'let g:val = ' .. string(result)
+      call writefile([val], 'XScriptnamesResult', '')
+    endfunc
+    call Scriptnames()
+  END
+  call writefile(content, 'XScriptnames')
+
+  let none = []
+  let default = [
+    \ '  1: /runtime/defaults.vim',
+    \ '  2: /runtime/filetype.vim',
+    \ '  3: /runtime/ftplugin.vim',
+    \ '  4: /runtime/indent.vim',
+    \ '  5: /runtime/syntax/syntax.vim',
+    \ '  6: /runtime/syntax/synload.vim',
+    \ '  7: /runtime/syntax/syncolor.vim',
+    \ '  8: /runtime/colors/lists/default.vim'
+    \ ]
+
+  " initial test, withouth specifing --no-load-defaults/--load-defaults
+  let buf = RunVimInTerminal('--clean -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(default, g:val)
+  call delete('XScriptnamesResult')
+  " RunVimInTerminal leaves an open split window, close it
+  bw
+
+  let buf = RunVimInTerminal('--no-load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(none, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(default, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--clean --no-load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(none, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--clean --load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(default, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  " Test the bevahiour when $VIM_NO_SOURCE_DEFAULTS is defined
+  call setenv("VIM_NO_SOURCE_DEFAULTS", 1)
+
+  let buf = RunVimInTerminal('--clean -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(none, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--clean --no-load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(none, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--clean --load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(default, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--clean --load-defaults --no-load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(none, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--clean --no-load-defaults --load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(default, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(default, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--no-load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(none, g:val)
+  call delete('XScriptnamesResult')
+  bw
+  call setenv("VIM_NO_SOURCE_DEFAULTS", v:null)
+
+  let buf = RunVimInTerminal('--load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(default, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  let buf = RunVimInTerminal('--no-load-defaults -S XScriptnames', {})
+  call StopVimInTerminal(buf)
+  source XScriptnamesResult
+  call assert_equal(none, g:val)
+  call delete('XScriptnamesResult')
+  bw
+
+  " Clean up
+  unlet g:val
+  for val in ['XScriptnames', 'XScriptnamesResult']
+    call delete(val)
+  endfor
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

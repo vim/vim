@@ -311,6 +311,13 @@ OPTIONS
                    etc.).   Useful to see if a problem reproduces with a clean
                    Vim setup.
 
+       --no-load-defaults
+                   Do not source defaults.vim.
+
+       --load-defaults
+                   Do source defaults.vim (as the very  first  runtime  file),
+                   even if a personal runtime file exists.
+
        --cmd {command}
                    Like using "-c", but the command is  executed  just  before
                    processing  any  vimrc file.  You can use up to 10 of these
@@ -329,13 +336,13 @@ OPTIONS
                    Give a bit of help about the command line arguments and op‐
                    tions.  After this Vim exits.
 
-       --literal   Take file name arguments literally,  do  not  expand  wild‐
-                   cards.   This has no effect on Unix where the shell expands
+       --literal   Take  file  name  arguments  literally, do not expand wild‐
+                   cards.  This has no effect on Unix where the shell  expands
                    wildcards.
 
        --log {filename}
-                   If Vim has been compiled with  eval  and  channel  feature,
-                   start  logging  and write entries to {filename}. This works
+                   If  Vim  has  been  compiled with eval and channel feature,
+                   start logging and write entries to {filename}.  This  works
                    like calling ch_logfile({filename}, 'ao') very early during
                    startup.
 
@@ -345,8 +352,8 @@ OPTIONS
        --noplugin  Skip loading plugins.  Implied by -u NONE.
 
        --not-a-term
-                   Tells Vim that the user knows that the input and/or  output
-                   is  not connected to a terminal.  This will avoid the warn‐
+                   Tells  Vim that the user knows that the input and/or output
+                   is not connected to a terminal.  This will avoid the  warn‐
                    ing and the two second delay that would happen.
 
        --remote    Connect to a Vim server and make it edit the files given in
@@ -354,18 +361,18 @@ OPTIONS
                    is given and the files are edited in the current Vim.
 
        --remote-expr {expr}
-                   Connect to a Vim server, evaluate {expr} in  it  and  print
+                   Connect  to  a  Vim server, evaluate {expr} in it and print
                    the result on stdout.
 
        --remote-send {keys}
                    Connect to a Vim server and send {keys} to it.
 
        --remote-silent
-                   As  --remote,  but  without  the  warning when no server is
+                   As --remote, but without the  warning  when  no  server  is
                    found.
 
        --remote-wait
-                   As --remote, but Vim does not exit  until  the  files  have
+                   As  --remote,  but  Vim  does not exit until the files have
                    been edited.
 
        --remote-wait-silent
@@ -381,26 +388,26 @@ OPTIONS
                    the server to connect to.
 
        --socketid {id}
-                   GTK GUI only: Use the GtkPlug mechanism to run gVim in  an‐
+                   GTK  GUI only: Use the GtkPlug mechanism to run gVim in an‐
                    other window.
 
        --startuptime {file}
                    During startup write timing messages to the file {fname}.
 
-       --ttyfail   When  stdin  or  stdout is not a a terminal (tty) then exit
+       --ttyfail   When stdin or stdout is not a a terminal  (tty)  then  exit
                    right away.
 
        --version   Print version information and exit.
 
        --windowid {id}
-                   Win32 GUI only: Make gVim try to use the window {id}  as  a
+                   Win32  GUI  only: Make gVim try to use the window {id} as a
                    parent, so that it runs inside that window.
 
 ON-LINE HELP
-       Type  ":help"  in Vim to get started.  Type ":help subject" to get help
-       on a specific subject.  For example: ":help ZZ" to  get  help  for  the
-       "ZZ"  command.   Use <Tab> and CTRL-D to complete subjects (":help cmd‐
-       line-completion").  Tags are present to jump from one place to  another
+       Type ":help" in Vim to get started.  Type ":help subject" to  get  help
+       on  a  specific  subject.   For example: ":help ZZ" to get help for the
+       "ZZ" command.  Use <Tab> and CTRL-D to complete subjects  (":help  cmd‐
+       line-completion").   Tags are present to jump from one place to another
        (sort of hypertext links, see ":help").  All documentation files can be
        viewed in this way, for example ":help syntax.txt".
 
@@ -464,17 +471,17 @@ SEE ALSO
 AUTHOR
        Most of Vim was made by Bram Moolenaar, with a lot of help from others.
        See ":help credits" in Vim.
-       Vim is based on Stevie, worked on by: Tim Thompson,  Tony  Andrews  and
+       Vim  is  based  on Stevie, worked on by: Tim Thompson, Tony Andrews and
        G.R. (Fred) Walter.  Although hardly any of the original code remains.
 
 BUGS
        Probably.  See ":help todo" for a list of known problems.
 
-       Note  that a number of things that may be regarded as bugs by some, are
-       in fact caused by a too-faithful reproduction of Vi's  behaviour.   And
-       if  you  think  other things are bugs "because Vi does it differently",
-       you should take a closer look at the vi_diff.txt file  (or  type  :help
-       vi_diff.txt  when  in  Vim).   Also have a look at the 'compatible' and
+       Note that a number of things that may be regarded as bugs by some,  are
+       in  fact  caused by a too-faithful reproduction of Vi's behaviour.  And
+       if you think other things are bugs "because Vi  does  it  differently",
+       you  should  take  a closer look at the vi_diff.txt file (or type :help
+       vi_diff.txt when in Vim).  Also have a look  at  the  'compatible'  and
        'cpoptions' options.
 
                                   2025 Jun 27                           VIM(1)
