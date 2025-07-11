@@ -175,7 +175,7 @@ def Test_check_colors()
 
     # 7) Normal should be defined first, not use reverse, fg or bg
     cursor(1, 1)
-    pat = 'hi\%[light] \+\%(link\|clear\)\@!\w\+\>'
+    pat = 'hi\%[ghlight] \+\%(link\|clear\)\@!\w\+\>'
     search(pat, 'cW') # Look for the first hi def, skipping `hi link` and `hi clear`
     if getline('.') !~# '\m\<Normal\>'
         err['highlight']['Normal'] = 'Should be defined first'
