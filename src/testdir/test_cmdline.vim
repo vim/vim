@@ -764,6 +764,11 @@ func Test_getcompletion()
   let l = getcompletion('not', 'mapclear')
   call assert_equal([], l)
 
+  let l = getcompletion('', 'retab')
+  call assert_true(index(l, '-indentonly') >= 0)
+  let l = getcompletion('not', 'retab')
+  call assert_equal([], l)
+
   let l = getcompletion('.', 'shellcmd')
   call assert_equal(['./', '../'], filter(l, 'v:val =~ "\\./"'))
   call assert_equal(-1, match(l[2:], '^\.\.\?/$'))
@@ -820,6 +825,8 @@ func Test_getcompletion()
   call assert_equal([], l)
   let l = getcompletion('autocmd BufEnter * map <bu', 'cmdline')
   call assert_equal(['<buffer>'], l)
+  let l = getcompletion('retab! ', 'cmdline')
+  call assert_true(index(l, '-indentonly') >= 0)
 
   func T(a, c, p)
     let g:cmdline_compl_params = [a:a, a:c, a:p]

@@ -860,6 +860,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_HIGHLIGHT_GROUP  62
 #define EXPAND_FILETYPECMD	63
 #define EXPAND_PATTERN_IN_BUF	64
+#define EXPAND_RETAB		65
 
 
 // Values for exmode_active (0 is no exmode)

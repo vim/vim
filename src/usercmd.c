@@ -88,6 +88,7 @@ static keyvalue_T command_complete_tab[] =
     KEYVALUE_ENTRY(EXPAND_MESSAGES, "messages"),
     KEYVALUE_ENTRY(EXPAND_SETTINGS, "option"),
     KEYVALUE_ENTRY(EXPAND_PACKADD, "packadd"),
+    KEYVALUE_ENTRY(EXPAND_RETAB, "retab"),
     KEYVALUE_ENTRY(EXPAND_RUNTIME, "runtime"),
 #if defined(FEAT_EVAL)
     KEYVALUE_ENTRY(EXPAND_SCRIPTNAMES, "scriptnames"),
