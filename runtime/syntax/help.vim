@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Dec 25
+" Last Change:	2025 May 29
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
@@ -100,7 +100,7 @@ syn match helpSpecial		"\[+-]N\>"ms=s+4
 syn match helpSpecial		"^\t-\?\zsNs\?\s"me=s+1
 " highlighting N of cinoptions-values in indent.txt
 syn match helpSpecial		"^\t[>enf{}^L:=lbghNEpti+cC/(uUwWkmMjJ)*#P]N\s"ms=s+2,me=e-1
-syn match helpSpecial		"{[-a-zA-Z0-9'"*+/:%#=[\]<>.,]\+}"
+syn match helpSpecial		"{[-a-zA-Z0-9`'"*+/:%#=[\]<>.,]\+}"
 syn match helpSpecial		"\s\[[-a-z^A-Z0-9_]\{2,}]"ms=s+1
 syn match helpSpecial		"<[-a-zA-Z0-9_]\+>"
 syn match helpSpecial		"<[SCM]-.>"

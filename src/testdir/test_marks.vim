@@ -225,9 +225,29 @@ endfunc
 
 func Test_mark_error()
   call assert_fails('mark', 'E471:')
+  call assert_fails('mark "', 'E471:')
+
+  call assert_fails('mark _', 'E475:')
+  call assert_fails('mark 0', 'E475:')
+  call assert_fails('mark 9', 'E475:')
+  call assert_fails('mark .', 'E475:')
+  call assert_fails('mark ^', 'E475:')
+  call assert_fails('mark (', 'E475:')
+  call assert_fails('mark )', 'E475:')
+  call assert_fails('mark {', 'E475:')
+  call assert_fails('mark }', 'E475:')
+
   call assert_fails('mark xx', 'E488:')
-  call assert_fails('mark _', 'E191:')
+
   call assert_beeps('normal! m~')
+  call assert_beeps('normal! m0')
+  call assert_beeps('normal! m9')
+  call assert_beeps('normal! m.')
+  call assert_beeps('normal! m^')
+  call assert_beeps('normal! m(')
+  call assert_beeps('normal! m)')
+  call assert_beeps('normal! m{')
+  call assert_beeps('normal! m}')
 
   call setpos("'k", [0, 100, 1, 0])
   call assert_fails("normal 'k", 'E19:')
