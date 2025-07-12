@@ -5210,7 +5210,7 @@ The |:Launch| user command uses shell completion for its first argument.
 
 NOTE: escaping of <args> is left to the user
 
-Examples: >vim
+Examples: >
 	vim9script
 
 	import autoload 'dist/vim9.vim'

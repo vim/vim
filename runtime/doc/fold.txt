@@ -164,7 +164,7 @@ level is found.
 If this proves difficult, the next best thing could be to cache all fold
 levels in a buffer-local variable (b:foldlevels) that is only updated on
 |b:changedtick|:
->vim
+>
   vim9script
   def MyFoldFunc(): number
     if b:lasttick == b:changedtick
