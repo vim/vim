@@ -3624,8 +3624,14 @@ EXTERN char e_uninitialized_object_var_reference[]
 	INIT(= N_("E1430: Uninitialized object variable '%s' referenced"));
 EXTERN char e_abstract_method_str_direct[]
 	INIT(= N_("E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"));
+EXTERN char e_generic_method_str_override_with_concrete_method_in_class_str[]
+	INIT(= N_("E1432: Overriding generic method \"%s\" in class \"%s\" with a concrete method"));
+EXTERN char e_concrete_method_str_override_with_generic_method_in_class_str[]
+	INIT(= N_("E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic method"));
+EXTERN char e_generic_method_str_type_arguments_mismatch_in_class_str[]
+	INIT(= N_("E1434: Mismatched number of type variables for generic method  \"%s\" in class \"%s\""));
 #endif
-// E1432 - E1499 unused (reserved for Vim9 class support)
+// E1435 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
@@ -3735,4 +3741,26 @@ EXTERN char e_cannot_not_support_redrawtabpanel[]
 #ifdef FEAT_WAYLAND
 EXTERN char e_wayland_connection_unavailable[]
 	INIT(= N_("E1548: Wayland connection is unavailable"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_type_var_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1549: Type variable name must start with an uppercase letter: %s"));
+EXTERN char e_missing_comma_in_generic_function_str[]
+	INIT(= N_("E1550: Missing comma after type in generic function: %s"));
+EXTERN char e_missing_closing_angle_bracket_in_generic_function_str[]
+	INIT(= N_("E1551: Missing '>' in generic function: %s"));
+EXTERN char e_empty_type_list_for_generic_function_str[]
+	INIT(= N_("E1552: Empty type list specified for generic function '%s'"));
+EXTERN char e_too_many_types_for_generic_function_str[]
+	INIT(= N_("E1553: Too many types specified for generic function '%s'"));
+EXTERN char e_not_enough_types_for_generic_function_str[]
+	INIT(= N_("E1554: Not enough types specified for generic function '%s'"));
+EXTERN char e_unknown_generic_function_str[]
+	INIT(= N_("E1555: Unknown generic function: %s"));
+EXTERN char e_generic_func_missing_type_args_str[]
+	INIT(= N_("E1556: Type arguments missing for generic function '%s'"));
+EXTERN char e_not_a_generic_function_str[]
+	INIT(= N_("E1557: Not a generic function: %s"));
+EXTERN char e_duplicate_type_var_name_str[]
+	INIT(= N_("E1558: Duplicate type variable name: %s"));
 #endif
