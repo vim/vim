@@ -544,6 +544,31 @@ typedef long long vimlong_T;
 # include <sodium.h>
 #endif
 
+// Platform detection
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #define PLATFORM_X86 1
+#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
+    #define PLATFORM_ARM_NEON 1
+#endif
+
+#if defined(PLATFORM_X86)
+# include <emmintrin.h>  /* SSE2 */
+#elif defined(PLATFORM_ARM_NEON)
+# include <arm_neon.h>
+#endif
+
+/* Compatibility macro for alignas */
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+# include <stdalign.h>
+# define VIM_ALIGNAS(x) alignas(x)
+#elif defined(__GNUC__) || defined(__clang__)
+# define VIM_ALIGNAS(x) __attribute__((aligned(x)))
+#elif defined(_MSC_VER)
+# define VIM_ALIGNAS(x) __declspec(align(x))
+#else
+# define VIM_ALIGNAS(x)
+#endif
+
 // ================ end of the header file puzzle ===============
 
 /*
