@@ -2622,6 +2622,11 @@ set_context_by_cmdname(
 	    xp->xp_pattern = arg;
 	    break;
 
+	case CMD_retab:
+	    xp->xp_context = EXPAND_RETAB;
+	    xp->xp_pattern = arg;
+	    break;
+
 	case CMD_messages:
 	    xp->xp_context = EXPAND_MESSAGES;
 	    xp->xp_pattern = arg;
@@ -3206,6 +3211,18 @@ get_scriptnames_arg(expand_T *xp UNUSED, int idx)
 
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * ":retab {-indentonly}" option.
+ */
+    static char_u *
+get_retab_arg(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+	return (char_u *)"-indentonly";
+    return NULL;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
  * ":messages {clear}" command.
  */
     static char_u *
@@ -3294,6 +3311,7 @@ ExpandOther(
 	{EXPAND_BREAKPOINT, get_breakadd_arg, TRUE, TRUE},
 	{EXPAND_SCRIPTNAMES, get_scriptnames_arg, TRUE, FALSE},
 #endif
+	{EXPAND_RETAB, get_retab_arg, TRUE, TRUE},
     };
     int	i;
     int ret = FAIL;
