@@ -17,6 +17,7 @@ int diff_check_with_linestatus(win_T *wp, linenr_T lnum, int *linestatus);
 int diff_check(win_T *wp, linenr_T lnum);
 int diff_check_fill(win_T *wp, linenr_T lnum);
 void diff_set_topline(win_T *fromwin, win_T *towin);
+int diffanchors_changed(int local);
 int diffopt_changed(void);
 int diffopt_horizontal(void);
 int diffopt_hiddenoff(void);
