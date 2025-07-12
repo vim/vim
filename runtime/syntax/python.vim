@@ -149,10 +149,10 @@ syn region  pythonString matchgroup=pythonTripleQuotes
       \ start=+[uU]\=\z('''\|"""\)+ end="\z1" keepend
       \ contains=pythonEscape,pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
 syn region  pythonRawString matchgroup=pythonQuotes
-      \ start=+[uU]\=[rR]\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
+      \ start=+[rR]\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
       \ contains=@Spell
 syn region  pythonRawString matchgroup=pythonTripleQuotes
-      \ start=+[uU]\=[rR]\z('''\|"""\)+ end="\z1" keepend
+      \ start=+[rR]\z('''\|"""\)+ end="\z1" keepend
       \ contains=pythonSpaceError,pythonDoctest,@Spell
 
 " Bytes
