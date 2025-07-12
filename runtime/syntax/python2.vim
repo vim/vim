@@ -141,24 +141,53 @@ syn keyword pythonTodo		FIXME NOTE NOTES TODO XXX contained
 
 " Triple-quoted strings can contain doctests.
 syn region  pythonString matchgroup=pythonQuotes
-      \ start=+[uU]\=\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
+      \ start=+\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
       \ contains=pythonEscape,@Spell
 syn region  pythonString matchgroup=pythonTripleQuotes
-      \ start=+[uU]\=\z('''\|"""\)+ end="\z1" keepend
+      \ start=+\z('''\|"""\)+ end="\z1" keepend
       \ contains=pythonEscape,pythonSpaceError,pythonDoctest,@Spell
 syn region  pythonRawString matchgroup=pythonQuotes
-      \ start=+[uU]\=[rR]\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
+      \ start=+[rR]\z(['"]\)+ end="\z1" skip="\\\\\|\\\z1"
       \ contains=@Spell
 syn region  pythonRawString matchgroup=pythonTripleQuotes
-      \ start=+[uU]\=[rR]\z('''\|"""\)+ end="\z1" keepend
+      \ start=+[rR]\z('''\|"""\)+ end="\z1" keepend
       \ contains=pythonSpaceError,pythonDoctest,@Spell
+
+" Unicode strings
+syn region  pythonString
+      \ matchgroup=pythonQuotes
+      \ start=/\cU\z(['"]\)/
+      \ end=/\z1/
+      \ skip=/\\\\\|\\\z1/
+      \ contains=pythonEscape,pythonUnicodeEscape,@Spell
+syn region  pythonString
+      \ matchgroup=pythonTripleQuotes
+      \ start=/\cU\z('''\|"""\)/
+      \ end=/\z1/
+      \ contains=pythonEscape,pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
+      \ keepend
+
+" Raw Unicode strings recognise Unicode escape sequences
+" https://docs.python.org/2.7/reference/lexical_analysis.html#string-literals
+syn region  pythonRawString
+      \ matchgroup=pythonQuotes
+      \ start=/\c\%(UR\)\z(['"]\)/
+      \ end=/\z1/
+      \ skip=/\\\\\|\\\z1/
+      \ contains=pythonUnicodeEscape,@Spell
+syn region  pythonRawString
+      \ matchgroup=pythonTripleQuotes
+      \ start=/\c\%(UR\)\z('''\|"""\)/
+      \ end=/\z1/
+      \ contains=pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
+      \ keepend
 
 syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
 syn match   pythonEscape	"\\\o\{1,3}" contained
 syn match   pythonEscape	"\\x\x\{2}" contained
-syn match   pythonEscape	"\%(\\u\x\{4}\|\\U\x\{8}\)" contained
+syn match   pythonUnicodeEscape	"\%(\\u\x\{4}\|\\U\x\{8}\)" contained
 " Python allows case-insensitive Unicode IDs: http://www.unicode.org/charts/
-syn match   pythonEscape	"\\N{\a\+\%(\s\a\+\)*}" contained
+syn match   pythonUnicodeEscape	"\\N{\a\+\%(\s\a\+\)*}" contained
 syn match   pythonEscape	"\\$"
 
 " It is very important to understand all details before changing the
@@ -320,6 +349,7 @@ hi def link pythonRawString		String
 hi def link pythonQuotes		String
 hi def link pythonTripleQuotes		pythonQuotes
 hi def link pythonEscape		Special
+hi def link pythonUnicodeEscape		pythonEscape
 if !exists("python_no_number_highlight")
   hi def link pythonNumber		Number
 endif
