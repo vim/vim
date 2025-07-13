@@ -4373,7 +4373,7 @@ endfunc
 
 "my tests"
 " Test for changing case using u, U, gu, gU and ~ (tilde) commands
-func Test_my_normal_changecase()
+func Test_binsearch()
   new
   call append(0,[ 
   \ 'All work and no play makes jack a dull boy', 
