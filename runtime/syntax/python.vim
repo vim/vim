@@ -158,25 +158,25 @@ syn region  pythonRawString matchgroup=pythonTripleQuotes
 " Bytes
 syn region  pythonBytes
       \ matchgroup=pythonQuotes
-      \ start=/\cB\z(['"]\)/
-      \ end=/\z1/
-      \ skip=/\\\\\|\\\z1/
+      \ start=+\cB\z(['"]\)+
+      \ end="\z1"
+      \ skip="\\\\\|\\\z1"
       \ contains=pythonEscape
 syn region  pythonBytes
       \ matchgroup=pythonTripleQuotes
-      \ start=/\cB\z('''\|"""\)/
-      \ end=/\z1/
-      \ contains=pythonEscape
+      \ start=+\cB\z('''\|"""\)+
+      \ end="\z1"
       \ keepend
+      \ contains=pythonEscape
 syn region  pythonRawBytes
       \ matchgroup=pythonQuotes
-      \ start=/\c\%(BR\|RB\)\z(['"]\)/
-      \ end=/\z1/
-      \ skip=/\\\\\|\\\z1/
+      \ start=+\c\%(BR\|RB\)\z(['"]\)+
+      \ end="\z1"
+      \ skip="\\\\\|\\\z1"
 syn region  pythonRawBytes
       \ matchgroup=pythonTripleQuotes
-      \ start=/\c\%(BR\|RB\)\z('''\|"""\)/
-      \ end=/\z1/
+      \ start=+\c\%(BR\|RB\)\z('''\|"""\)+
+      \ end="\z1"
       \ keepend
 
 syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
