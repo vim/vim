@@ -382,17 +382,24 @@ gg			Goto line [count], default first line, on the first
 			{not available when compiled without the
 			|+byte_offset| feature}
 			
-							*CTRL-Q* *binsearch*
-CTRL-Q
-			Enter binary search cursor movement. When CTRL-Q is
-			pressed, vim sets an upper and a lower bound that are
-			top line and the bottom line of the screen,
+						*CTRL-\_CTRL-Q* *binsearch*
+CTRL-\ CTRL-Q
+			Enter binary search cursor movement. When CTRL-\CTRL-Q 
+			is pressed, vim sets an upper and a lower bound that
+			are top line and the bottom line of the screen,
 			respectively, and whenever CTRL-K (CTRL-J) is pressed,
-			vim moves the cursor |linewise| until half-way between  			the current line and the top (bottom) line, thus moving
+			vim moves the cursor |linewise| until half-way between
+			the current line and the top (bottom) line, thus moving
 			up (down), and updating the lower (upper) bound to 
-			equal the previous cursor position. If CTRL-Q is 
+			equal the previous cursor position. If CTRL-\CTRL-Q is 
 			pressed again, the upper and lower bounds are
 			restarted.
+			This command supports operator pending mode, and by
+			pressing CTRL-R it exits and executes the pending
+			operator between the initial and last position.
+			when any other character is pressed, it exits,
+			processes any pending operator, and processes the
+			typed character normally.
 
 These commands move to the specified line.  They stop when reaching the first
 or the last line.  The first two commands put the cursor in the same column
