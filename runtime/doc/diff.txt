@@ -448,9 +448,9 @@ to always start search from line 1 for consistency: >
 <
 Selection: Use visual mode to select the entire `foo()` function body in each
 file.  Here, we use two anchors.  This does a better job of making sure only
-the function body are anchored against each other but not the lines after it.
-Note the `'>+1` below.  The "+1" is necessary as we want the split to happen
-below the last line of the function, not above: >
+the function bodies are anchored against each other but not the lines after
+it.  Note the `'>+1` below.  The "+1" is necessary as we want the split to
+happen below the last line of the function, not above: >
 	set diffanchors='<,'>+1
 <
 Manually set two anchors using line numbers via buffer-local options: >
