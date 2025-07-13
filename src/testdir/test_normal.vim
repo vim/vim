@@ -4371,4 +4371,152 @@ func Test_scroll_longline_winwidth()
   bwipe!
 endfunc
 
+"my tests"
+" Test for changing case using u, U, gu, gU and ~ (tilde) commands
+func Test_my_normal_changecase()
+  new
+  call append(0,[ 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy', 
+  \ 'All work and no play makes jack a dull boy'])
+
+  exe "res -1000"
+  exe "res +15"
+
+  normal! gg0
+
+  let winid = win_getid()
+  let wininfo = getwininfo(winid)
+
+  let topline = (wininfo[0])["topline"]
+  let botline = (wininfo[0])["botline"]
+  let pos = line(".")
+  let upper = botline
+  let lower = topline
+  let center = pos
+
+  exe "norm! gg0"
+  exe "norm! \<C-\>\<C-Q>\<C-J>\<C-R>"
+
+  let pos = line(".")
+
+  call assert_equal(1 + (upper + center)/2 , pos)
+  
+  let lower = center
+  let center = pos
+
+  exe "norm! \<C-\>\<C-Q>\<C-K>\<C-R>"
+
+  let pos = line(".")
+
+  call assert_equal((lower + center)/2 , pos)
+" let's compare it with a single binsearch loop
+  let pos1 = pos
+
+  exe "norm! gg0"
+  exe "norm! \<C-\>\<C-Q>\<C-J>\<C-K>\<C-R>"
+
+  let pos = line(".")
+
+  call assert_equal(pos1 , pos)
+
+" test for operating pending mode
+  
+  norm! gg0
+  exe "norm! gu\<C-V>\<C-\>\<C-Q>\<C-J>\<C-K>\<C-R>"
+
+  call assert_equal('all work and no play makes jack a dull boy', getline(1))
+  call assert_equal('all work and no play makes jack a dull boy', getline(2))
+  call assert_equal('all work and no play makes jack a dull boy', getline(3))
+  call assert_equal('all work and no play makes jack a dull boy', getline(4))
+  call assert_equal('all work and no play makes jack a dull boy', getline(5))
+  call assert_equal('All work and no play makes jack a dull boy', getline(6))
+
+  norm! gg0ww
+  exe "norm! d\<C-V>\<C-\>\<C-Q>\<C-J>\<C-K>\<C-R>"
+  
+  call assert_equal('all work nd no play makes jack a dull boy', getline(1))
+  call assert_equal('all work nd no play makes jack a dull boy', getline(2))
+  call assert_equal('all work nd no play makes jack a dull boy', getline(3))
+  call assert_equal('all work nd no play makes jack a dull boy', getline(4))
+  call assert_equal('all work nd no play makes jack a dull boy', getline(5))
+  call assert_equal('All work and no play makes jack a dull boy', getline(6))
+
+" test for the exit from binsearch by typing another command
+
+  norm! gg0
+  exe "norm! \<C-\>\<C-Q>\<C-J>\<C-K>\<C-K>ddrB"
+
+  call assert_equal('all work nd no play makes jack a dull boy', getline(1))
+  call assert_equal('all work nd no play makes jack a dull boy', getline(2))
+  call assert_equal('Bll work nd no play makes jack a dull boy', getline(3))
+  call assert_equal('all work nd no play makes jack a dull boy', getline(4))
+  call assert_equal('All work and no play makes jack a dull boy', getline(5))
+  call assert_equal('All work and no play makes jack a dull boy', getline(6))
+
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
