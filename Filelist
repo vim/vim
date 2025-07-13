@@ -1151,6 +1151,7 @@ LANG_SRC = \
 		src/po/sjiscorr.c \
 		src/po/big5corr.c \
 		src/po/*.po \
+		src/po/vim.pot \
 
 # The language files for the Win32 lang archive.
 LANG_DOS = \

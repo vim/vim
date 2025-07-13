@@ -68,7 +68,6 @@ src/xxd/xxd.dSYM
 *~
 *.pyc
 *.log
-src/po/vim.pot
 src/tags
 /tags
 /GPATH
