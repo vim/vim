@@ -72,3 +72,19 @@ and escapes \t and \040 and \xFF
 and escapes \u00A1 and \U00010605"""
 
 # Raw Unicode literals are not allowed
+test = ur'Invalid string with \' and \" and \t'
+test = uR"Invalid string with \040 and \xFF"
+test = Ur'Invalid string with \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK}'
+test = UR"Invalid string with \\ backslashes and literal \
+newline"
+test = ru'Invalid string with \' and \" and \t'
+test = rU"Invalid string with \040 and \xFF"
+test = Ru'Invalid string with \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK}'
+test = RU"Invalid string with \\ backslashes and literal \
+newline"
+test = ur'''Invalid string with ' and "
+and \t and \040 and \xFF
+and \u00A1 and \U00010605'''
+test = RU"""Invalid string with ' and "
+and \t and \040 and \xFF
+and \u00A1 and \U00010605"""
