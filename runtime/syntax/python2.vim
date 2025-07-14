@@ -156,31 +156,31 @@ syn region  pythonRawString matchgroup=pythonTripleQuotes
 " Unicode strings
 syn region  pythonString
       \ matchgroup=pythonQuotes
-      \ start=/\cU\z(['"]\)/
-      \ end=/\z1/
-      \ skip=/\\\\\|\\\z1/
+      \ start=+[uU]\z(['"]\)+
+      \ end="\z1"
+      \ skip="\\\\\|\\\z1"
       \ contains=pythonEscape,pythonUnicodeEscape,@Spell
 syn region  pythonString
       \ matchgroup=pythonTripleQuotes
-      \ start=/\cU\z('''\|"""\)/
-      \ end=/\z1/
-      \ contains=pythonEscape,pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
+      \ start=+[uU]\z('''\|"""\)+
+      \ end="\z1"
       \ keepend
+      \ contains=pythonEscape,pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
 
-" Raw Unicode strings recognise Unicode escape sequences
+" Raw Unicode strings recognize Unicode escape sequences
 " https://docs.python.org/2.7/reference/lexical_analysis.html#string-literals
 syn region  pythonRawString
       \ matchgroup=pythonQuotes
-      \ start=/\c\%(UR\)\z(['"]\)/
-      \ end=/\z1/
-      \ skip=/\\\\\|\\\z1/
+      \ start=+[uU][rR]\z(['"]\)+
+      \ end="\z1"
+      \ skip="\\\\\|\\\z1"
       \ contains=pythonUnicodeEscape,@Spell
 syn region  pythonRawString
       \ matchgroup=pythonTripleQuotes
-      \ start=/\c\%(UR\)\z('''\|"""\)/
-      \ end=/\z1/
-      \ contains=pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
+      \ start=+[uU][rR]\z('''\|"""\)+
+      \ end="\z1"
       \ keepend
+      \ contains=pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
 
 syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
 syn match   pythonEscape	"\\\o\{1,3}" contained
