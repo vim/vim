@@ -78,7 +78,7 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	break;
     }
 
-    return (vim_strchr(p_wop, WOP_FUZZY) == NULL) ? FALSE : TRUE;
+    return vim_strchr(p_wop, WOP_FUZZY) != NULL;
 }
 
 /*
