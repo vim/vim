@@ -3038,7 +3038,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 		anchor		Anchor specific lines in each buffer to be
 				aligned with each other if 'diffanchors' is
-				set. See |diff-anchors|.
+				set.  See |diff-anchors|.
 
 		closeoff	When a window is closed where 'diff' is set
 				and there is only one window remaining in the

@@ -343,7 +343,7 @@ Diff anchors allow you to control where the diff algorithm aligns and
 synchronize text across files.  Each anchor matches each other in each file,
 allowing you to control the output of a diff.
 
-This is useful when a change involves complicated edits. For example, if a
+This is useful when a change involves complicated edits.  For example, if a
 function was moved to another location and further edited.  By default, the
 algorithm aims to create the smallest diff, which results in that entire
 function being considered to be deleted and added on the other side, making it
@@ -361,7 +361,7 @@ call |:diffupdate| afterwards to get the updated diff results.
 
 Example:
 
-Let's say we have the following files, side-by-side. We are interested in the
+Let's say we have the following files, side-by-side.  We are interested in the
 change that happened to the function `foo()`, which was both edited and moved.
 
 File A: >
