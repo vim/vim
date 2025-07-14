@@ -1,4 +1,4 @@
-*usr_25.txt*	For Vim version 9.1.  Last change: 2025 Jun 10
+*usr_25.txt*	For Vim version 9.1.  Last change: 2025 Jun 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -200,7 +200,7 @@ command: >vim
 
 Or put this line in your |vimrc|: >vim
 
-	packadd! justify
+	:packadd! justify
 
 This Vim script file defines a new visual command "_j".  To justify a block of
 text, highlight the text in Visual mode and then execute "_j".

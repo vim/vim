@@ -1,0 +1,33 @@
+VIM HELP FILE FORMAT
+
+
+Issue #17721 (Strange >vim highlighting in help documentation?)~
+
+				*restore-cursor* *last-position-jump*  >vim
+    augroup RestoreCursor
+      autocmd!
+      autocmd BufReadPost *
+        \ let line = line("'\"")
+        \ | if line >= 1 && line <= line("$") && &filetype !~# 'commit'
+        \      && index(['xxd', 'gitrebase'], &filetype) == -1
+        \      && !&diff
+        \ |   execute "normal! g`\""
+        \ | endif
+    augroup END
+
+
+URLs~
+
+						*g:zig_recommended_style*
+By default the following indentation options are set, in accordance with Zig's
+recommended style (https://ziglang.org/documentation/master/): >
+
+
+NOTE, WARNING and DEPRECATED~
+
+When you 'send a file to Vim', Vim changes to that file's directory.  Note,
+however, that any long directory names will appear in their short (MS-DOS)
+form on some Windows versions.  This is a limitation of the Windows "Send To"
+mechanism.
+
+vim: set ft=help:
