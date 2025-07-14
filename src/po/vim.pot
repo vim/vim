@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-12 22:03+0200\n"
+"POT-Creation-Date: 2025-07-14 22:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1762,66 +1762,63 @@ msgstr ""
 msgid "Scanning dictionary: %s"
 msgstr ""
 
-#: ../insexpand.c:2637
+#: ../insexpand.c:2642
 msgid " (insert) Scroll (^E/^Y)"
 msgstr ""
 
-#: ../insexpand.c:2639
+#: ../insexpand.c:2644
 msgid " (replace) Scroll (^E/^Y)"
 msgstr ""
 
 #. reset in msg_trunc_attr()
-#: ../insexpand.c:4165
+#: ../insexpand.c:4170
 #, c-format
 msgid "Scanning: %s"
 msgstr ""
 
 #. reset in msg_trunc_attr()
-#: ../insexpand.c:4213
+#: ../insexpand.c:4218
 msgid "Scanning tags."
 msgstr ""
 
-#: ../insexpand.c:5562
+#: ../insexpand.c:5567
 msgid "match in file"
 msgstr ""
 
-#: ../insexpand.c:6603
+#: ../insexpand.c:6609
 msgid " Adding"
 msgstr ""
 
-#. showmode might reset the internal line pointers, so it must
-#. be called before line = ml_get(), or when this address is no
-#. longer needed.  -- Acevedo.
-#: ../insexpand.c:6658
+#: ../insexpand.c:6669
 msgid "-- Searching..."
 msgstr ""
 
-#: ../insexpand.c:6677
+#: ../insexpand.c:6689
 msgid "Hit end of paragraph"
 msgstr ""
 
-#: ../insexpand.c:6678
+#: ../insexpand.c:6690
 msgid "Pattern not found"
 msgstr ""
 
-#: ../insexpand.c:6686
+#: ../insexpand.c:6698
 msgid "Back at original"
 msgstr ""
 
-#: ../insexpand.c:6691
+#: ../insexpand.c:6703
 msgid "Word from other line"
 msgstr ""
 
-#: ../insexpand.c:6696
+#: ../insexpand.c:6708
 msgid "The only match"
 msgstr ""
 
-#: ../insexpand.c:6717
+#: ../insexpand.c:6729
 #, c-format
 msgid "match %d of %d"
 msgstr ""
 
-#: ../insexpand.c:6721
+#: ../insexpand.c:6733
 #, c-format
 msgid "match %d"
 msgstr ""
@@ -4215,13 +4212,13 @@ msgstr ""
 msgid "number changes  when               saved"
 msgstr ""
 
-#: ../usercmd.c:592
+#: ../usercmd.c:593
 msgid ""
 "\n"
 "    Name              Args Address Complete    Definition"
 msgstr ""
 
-#: ../usercmd.c:741
+#: ../usercmd.c:742
 msgid "No user-defined commands found"
 msgstr ""
 
@@ -4260,327 +4257,327 @@ msgstr ""
 msgid "%s (%s, compiled %s)"
 msgstr ""
 
-#: ../version.c:4010
+#: ../version.c:4022
 msgid ""
 "\n"
 "MS-Windows ARM64 GUI/console version"
 msgstr ""
 
-#: ../version.c:4012
+#: ../version.c:4024
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 
-#: ../version.c:4015
+#: ../version.c:4027
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI/console version"
 msgstr ""
 
-#: ../version.c:4020
+#: ../version.c:4032
 msgid ""
 "\n"
 "MS-Windows ARM64 GUI version"
 msgstr ""
 
-#: ../version.c:4022
+#: ../version.c:4034
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
 msgstr ""
 
-#: ../version.c:4025
+#: ../version.c:4037
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI version"
 msgstr ""
 
-#: ../version.c:4029
+#: ../version.c:4041
 msgid " with OLE support"
 msgstr ""
 
-#: ../version.c:4034
+#: ../version.c:4046
 msgid ""
 "\n"
 "MS-Windows ARM64 console version"
 msgstr ""
 
-#: ../version.c:4036
+#: ../version.c:4048
 msgid ""
 "\n"
 "MS-Windows 64-bit console version"
 msgstr ""
 
-#: ../version.c:4039
+#: ../version.c:4051
 msgid ""
 "\n"
 "MS-Windows 32-bit console version"
 msgstr ""
 
-#: ../version.c:4045
+#: ../version.c:4057
 msgid ""
 "\n"
 "macOS version"
 msgstr ""
 
-#: ../version.c:4047
+#: ../version.c:4059
 msgid ""
 "\n"
 "macOS version w/o darwin feat."
 msgstr ""
 
-#: ../version.c:4057
+#: ../version.c:4069
 msgid ""
 "\n"
 "OpenVMS version"
 msgstr ""
 
-#: ../version.c:4072
+#: ../version.c:4084
 msgid ""
 "\n"
 "Included patches: "
 msgstr ""
 
-#: ../version.c:4097
+#: ../version.c:4109
 msgid ""
 "\n"
 "Extra patches: "
 msgstr ""
 
-#: ../version.c:4109 ../version.c:4420
+#: ../version.c:4121 ../version.c:4432
 msgid "Modified by "
 msgstr ""
 
-#: ../version.c:4116
+#: ../version.c:4128
 msgid ""
 "\n"
 "Compiled "
 msgstr ""
 
-#: ../version.c:4119
+#: ../version.c:4131
 msgid "by "
 msgstr ""
 
-#: ../version.c:4131
+#: ../version.c:4143
 msgid ""
 "\n"
 "Huge version "
 msgstr ""
 
-#: ../version.c:4133
+#: ../version.c:4145
 msgid ""
 "\n"
 "Normal version "
 msgstr ""
 
-#: ../version.c:4135
+#: ../version.c:4147
 msgid ""
 "\n"
 "Tiny version "
 msgstr ""
 
-#: ../version.c:4138
+#: ../version.c:4150
 msgid "without GUI."
 msgstr ""
 
-#: ../version.c:4141
+#: ../version.c:4153
 msgid "with GTK3 GUI."
 msgstr ""
 
-#: ../version.c:4143
+#: ../version.c:4155
 msgid "with GTK2-GNOME GUI."
 msgstr ""
 
-#: ../version.c:4145
+#: ../version.c:4157
 msgid "with GTK2 GUI."
 msgstr ""
 
-#: ../version.c:4148
+#: ../version.c:4160
 msgid "with X11-Motif GUI."
 msgstr ""
 
-#: ../version.c:4150
+#: ../version.c:4162
 msgid "with Haiku GUI."
 msgstr ""
 
-#: ../version.c:4152
+#: ../version.c:4164
 msgid "with Photon GUI."
 msgstr ""
 
-#: ../version.c:4154
+#: ../version.c:4166
 msgid "with GUI."
 msgstr ""
 
-#: ../version.c:4156
+#: ../version.c:4168
 msgid "  Features included (+) or not (-):\n"
 msgstr ""
 
-#: ../version.c:4163
+#: ../version.c:4175
 msgid "   system vimrc file: \""
 msgstr ""
 
-#: ../version.c:4168
+#: ../version.c:4180
 msgid "     user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4173
+#: ../version.c:4185
 msgid " 2nd user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4178 ../version.c:4185 ../version.c:4189
+#: ../version.c:4190 ../version.c:4197 ../version.c:4201
 msgid " 3rd user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4181
+#: ../version.c:4193
 msgid " 4th user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4194
+#: ../version.c:4206
 msgid "      user exrc file: \""
 msgstr ""
 
-#: ../version.c:4199
+#: ../version.c:4211
 msgid "  2nd user exrc file: \""
 msgstr ""
 
-#: ../version.c:4205
+#: ../version.c:4217
 msgid "  system gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4209
+#: ../version.c:4221
 msgid "    user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4213
+#: ../version.c:4225
 msgid "2nd user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4218
+#: ../version.c:4230
 msgid "3rd user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4223
+#: ../version.c:4235
 msgid "       defaults file: \""
 msgstr ""
 
-#: ../version.c:4228
+#: ../version.c:4240
 msgid "    system menu file: \""
 msgstr ""
 
-#: ../version.c:4236
+#: ../version.c:4248
 msgid "  fall-back for $VIM: \""
 msgstr ""
 
-#: ../version.c:4242
+#: ../version.c:4254
 msgid " f-b for $VIMRUNTIME: \""
 msgstr ""
 
-#: ../version.c:4246
+#: ../version.c:4258
 msgid "Compilation: "
 msgstr ""
 
-#: ../version.c:4252
+#: ../version.c:4264
 msgid "Compiler: "
 msgstr ""
 
-#: ../version.c:4257
+#: ../version.c:4269
 msgid "Linking: "
 msgstr ""
 
-#: ../version.c:4262
+#: ../version.c:4274
 msgid "  DEBUG BUILD"
 msgstr ""
 
-#: ../version.c:4298
+#: ../version.c:4310
 msgid "VIM - Vi IMproved"
 msgstr ""
 
-#: ../version.c:4300
+#: ../version.c:4312
 msgid "version "
 msgstr ""
 
-#: ../version.c:4301
+#: ../version.c:4313
 msgid "by Bram Moolenaar et al."
 msgstr ""
 
-#: ../version.c:4305
+#: ../version.c:4317
 msgid "Vim is open source and freely distributable"
 msgstr ""
 
-#: ../version.c:4307
+#: ../version.c:4319
 msgid "Help poor children in Uganda!"
 msgstr ""
 
-#: ../version.c:4308
+#: ../version.c:4320
 msgid "type  :help iccf<Enter>       for information "
 msgstr ""
 
-#: ../version.c:4310
+#: ../version.c:4322
 msgid "type  :q<Enter>               to exit         "
 msgstr ""
 
-#: ../version.c:4311
+#: ../version.c:4323
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr ""
 
-#: ../version.c:4312
+#: ../version.c:4324
 msgid "type  :help version9<Enter>   for version info"
 msgstr ""
 
-#: ../version.c:4315
+#: ../version.c:4327
 msgid "Running in Vi compatible mode"
 msgstr ""
 
-#: ../version.c:4316
+#: ../version.c:4328
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr ""
 
-#: ../version.c:4317
+#: ../version.c:4329
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr ""
 
-#: ../version.c:4332
+#: ../version.c:4344
 msgid "menu  Help->Orphans           for information    "
 msgstr ""
 
-#: ../version.c:4334
+#: ../version.c:4346
 msgid "Running modeless, typed text is inserted"
 msgstr ""
 
-#: ../version.c:4335
+#: ../version.c:4347
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr ""
 
-#: ../version.c:4336
+#: ../version.c:4348
 msgid "                              for two modes      "
 msgstr ""
 
-#: ../version.c:4340
+#: ../version.c:4352
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
 msgstr ""
 
-#: ../version.c:4341
+#: ../version.c:4353
 msgid "                              for Vim defaults   "
 msgstr ""
 
-#: ../version.c:4382
+#: ../version.c:4394
 msgid "Sponsor Vim development!"
 msgstr ""
 
-#: ../version.c:4383
+#: ../version.c:4395
 msgid "Become a registered Vim user!"
 msgstr ""
 
-#: ../version.c:4386
+#: ../version.c:4398
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
 
-#: ../version.c:4387
+#: ../version.c:4399
 msgid "type  :help register<Enter>   for information "
 msgstr ""
 
-#: ../version.c:4389
+#: ../version.c:4401
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr ""
 
@@ -4744,12 +4741,12 @@ msgstr ""
 msgid "wayland protocol error -> "
 msgstr ""
 
-#: ../wayland.c:2430
+#: ../wayland.c:2461
 #, c-format
 msgid "restoring Wayland display %s"
 msgstr ""
 
-#: ../wayland.c:2437
+#: ../wayland.c:2468
 msgid "failed restoring, lost connection to Wayland display"
 msgstr ""
 
@@ -11611,17 +11608,17 @@ msgid ""
 "You should now append vim.VIM_SPECIAL_PATH to sys.path"
 msgstr ""
 
-#: ../vim.h:2540
+#: ../vim.h:2541
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*.*)\t*.*\n"
 msgstr ""
 
-#: ../vim.h:2541
+#: ../vim.h:2542
 msgid "All Files (*.*)\t*.*\n"
 msgstr ""
 
-#: ../vim.h:2543
+#: ../vim.h:2544
 msgid ""
 "All Files (*.*)\t*.*\n"
 "C source (*.c, *.h)\t*.c;*.h\n"
@@ -11630,17 +11627,17 @@ msgid ""
 "Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 msgstr ""
 
-#: ../vim.h:2546
+#: ../vim.h:2547
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*)\t*\n"
 msgstr ""
 
-#: ../vim.h:2547
+#: ../vim.h:2548
 msgid "All Files (*)\t*\n"
 msgstr ""
 
-#: ../vim.h:2549
+#: ../vim.h:2550
 msgid ""
 "All Files (*)\t*\n"
 "C source (*.c, *.h)\t*.c;*.h\n"

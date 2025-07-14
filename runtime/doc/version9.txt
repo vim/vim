@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 10
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41692,6 +41692,8 @@ Ex commands: ~
   documented and skips help buffers (if not run from a help buffer, else
   moves to the next/previous help buffer).
 - |:keeppatterns| preserves the last substitute pattern when used with |:s|
+- |:retab| accepts the new optional parameter -indentonly to only change
+  whitespace in indented lines.
 
 Functions: ~
 - provide information about function arguments using the get(func, "arity")

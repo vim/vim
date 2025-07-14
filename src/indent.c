@@ -1716,21 +1716,29 @@ ex_retab(exarg_T *eap)
     char_u	*new_ts_str;		// string value of tab argument
 #else
     int		temp;
-    int		new_ts;
+    int		new_ts = 0;
 #endif
     int		save_list;
     linenr_T	first_line = 0;		// first changed line
     linenr_T	last_line = 0;		// last changed line
+    int		is_indent_only = 0;	// Only process leading whitespace
 
     save_list = curwin->w_p_list;
     curwin->w_p_list = 0;	    // don't want list mode here
 
+    ptr = eap->arg;
+    if (STRNCMP(ptr, "-indentonly", 11) == 0 && IS_WHITE_OR_NUL(ptr[11]))
+    {
+	is_indent_only = 1;
+	ptr = skipwhite(ptr + 11);
+    }
+
 #ifdef FEAT_VARTABS
-    new_ts_str = eap->arg;
-    if (tabstop_set(eap->arg, &new_vts_array) == FAIL)
+    new_ts_str = ptr;
+    if (tabstop_set(ptr, &new_vts_array) == FAIL)
 	return;
-    while (vim_isdigit(*(eap->arg)) || *(eap->arg) == ',')
-	++(eap->arg);
+    while (vim_isdigit(*ptr) || *ptr == ',')
+	++ptr;
 
     // This ensures that either new_vts_array and new_ts_str are freshly
     // allocated, or new_vts_array points to an existing array and new_ts_str
@@ -1741,19 +1749,26 @@ ex_retab(exarg_T *eap)
 	new_ts_str = NULL;
     }
     else
-	new_ts_str = vim_strnsave(new_ts_str, eap->arg - new_ts_str);
+	new_ts_str = vim_strnsave(new_ts_str, ptr - new_ts_str);
 #else
-    ptr = eap->arg;
-    new_ts = getdigits(&ptr);
-    if (new_ts < 0 && *eap->arg == '-')
+    if (ptr[0] != NUL && (ptr[0] != '0' || ptr[1] != NUL))
     {
-	emsg(_(e_argument_must_be_positive));
-	return;
-    }
-    if (new_ts < 0 || new_ts > TABSTOP_MAX)
-    {
-	semsg(_(e_invalid_argument_str), eap->arg);
-	return;
+	char_u	*end;
+
+	if (strtol((char *)ptr, (char **)&end, 10) <= 0)
+	{
+	    if (ptr != end)
+		emsg(_(e_argument_must_be_positive));
+	    else
+		semsg(_(e_invalid_argument_str), ptr);
+	    return;
+	}
+	new_ts = getdigits(&ptr);
+	if (new_ts < 0 || new_ts > TABSTOP_MAX)
+	{
+	    semsg(_(e_invalid_argument_str), eap->arg);
+	    return;
+	}
     }
     if (new_ts == 0)
 	new_ts = curbuf->b_p_ts;
@@ -1854,6 +1869,9 @@ ex_retab(exarg_T *eap)
 		}
 		got_tab = FALSE;
 		num_spaces = 0;
+
+		if (is_indent_only)
+		    break;
 	    }
 	    if (ptr[col] == NUL)
 		break;
