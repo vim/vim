@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-28 22:25+0100\n"
-"PO-Revision-Date: 2025-02-28 22:50+0100\n"
+"POT-Creation-Date: 2025-07-12 10:53+0200\n"
+"PO-Revision-Date: 2025-07-12 11:20+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -113,7 +113,7 @@ msgid "[Read errors]"
 msgstr "[Errori in lettura]"
 
 msgid "[RO]"
-msgstr "[Sola-Lettura]"
+msgstr "[n.m.]"
 
 msgid "[readonly]"
 msgstr "[sola-lettura]"
@@ -129,7 +129,6 @@ msgstr "riga %ld di %ld --%d%%-- col "
 msgid "[No Name]"
 msgstr "[Senza nome]"
 
-#. must be a help buffer
 msgid "help"
 msgstr "aiuto"
 
@@ -149,8 +148,11 @@ msgid "Top"
 msgstr "Cim"
 
 #. localized percentage value
-msgid "%s%d%%"
-msgstr "%s%d%%"
+msgid "%d%%"
+msgstr "%d%%"
+
+msgid "%2s"
+msgstr "%2s"
 
 msgid " (%d of %d)"
 msgstr "(%d di %d)"
@@ -254,8 +256,14 @@ msgstr ": Invio di espressione fallito.\n"
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Uso CUT_BUFFER0 invece che una scelta nulla"
 
+msgid "Could not find a way to access the clipboard."
+msgstr "Non ho trovato un modo per accedere agli appunti."
+
+msgid "Switched to clipboard method '%s'."
+msgstr "Passato al metodo per appunti '%s'."
+
 msgid "tagname"
-msgstr "nome_tag"
+msgstr "nome-tag"
 
 msgid " kind file\n"
 msgstr " tipo file\n"
@@ -272,10 +280,10 @@ msgstr ""
 "disabilitato"
 
 msgid "Enter encryption key: "
-msgstr "Immetti chiave di cifratura: "
+msgstr "Immettere chiave di cifratura: "
 
 msgid "Enter same key again: "
-msgstr "Ribatti per conferma la stessa chiave: "
+msgstr "Immettere ancora per conferma la stessa chiave: "
 
 msgid "Keys don't match!"
 msgstr "Le chiavi non corrispondono!"
@@ -420,6 +428,12 @@ msgstr "Katakana"
 
 msgid "Bopomofo"
 msgstr "Bopomofo"
+
+#. row number, column number is appended
+#. l10n: leave as-is unless a space after the comma is preferred
+#. l10n: do not add any row/column label, due to the limited space
+msgid "%ld,"
+msgstr "%ld,"
 
 msgid ""
 "\n"
@@ -726,6 +740,10 @@ msgstr "[Unix]"
 
 msgid "[unix format]"
 msgstr "[in formato Unix]"
+
+#. l10n: L as in line, B as in byte
+msgid "%s%ldL, %lldB"
+msgstr "%s%ldR, %lldB"
 
 msgid "%s%ld line, "
 msgid_plural "%s%ld lines, "
@@ -1251,8 +1269,8 @@ msgid " Keyword completion (^N^P)"
 msgstr " Completamento parola (^N^P)"
 
 #. CTRL_X_NORMAL, ^P/^N compl.
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
+msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 
 #. CTRL_X_SCROLL: depends on state
 msgid " Whole line completion (^L^N^P)"
@@ -1292,6 +1310,9 @@ msgstr " Suggerimento ortografico (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Completamento Parola Locale (^N^P)"
+
+msgid " Register completion (^N^P)"
+msgstr " Completamento registro (^N^P)"
 
 msgid "'dictionary' option is empty"
 msgstr "l'opzione 'dictionary' non è impostata"
@@ -1646,6 +1667,9 @@ msgstr "-display <schermo>\tEsegui Vim a questo particolare server X"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tNon connetterti a server X"
+
+msgid "-Y\t\t\tDo not connect to Wayland compositor"
+msgstr "-Y\t\t\tNon connetterti a compositore Wayland"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <file>\tApri <file> in un server Vim se possibile"
@@ -2430,8 +2454,8 @@ msgstr ""
 "\n"
 "Vim: Ottenuto errore X\n"
 
-msgid "restoring display %s"
-msgstr "ripristino display %s"
+msgid "restoring X11 display %s"
+msgstr "ripristino visualizzazione X11 %s"
 
 msgid "Testing the X display failed"
 msgstr "Prova visualizzazione X fallita"
@@ -2867,10 +2891,10 @@ msgid "Broken condition in %s line %d: %s"
 msgstr "Condizione non rispettata in %s riga %d: %s"
 
 msgid "Expected REP(SAL) count in %s line %d"
-msgstr "Contatore REP(SAL) necessario in %s riga %d"
+msgstr "Contatore REP(SAL) atteso in %s riga %d"
 
 msgid "Expected MAP count in %s line %d"
-msgstr "Contatore MAP necessario in %s riga %d"
+msgstr "Contatore MAP atteso in %s riga %d"
 
 msgid "Duplicate character in MAP in %s line %d"
 msgstr "Carattere duplicato in MAP in %s riga %d"
@@ -3274,6 +3298,13 @@ msgstr "%s (%s, compilata %s)"
 
 msgid ""
 "\n"
+"MS-Windows ARM64 GUI/console version"
+msgstr ""
+"\n"
+"Versione MS-Windows ARM64 GUI/console"
+
+msgid ""
+"\n"
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 "\n"
@@ -3285,6 +3316,13 @@ msgid ""
 msgstr ""
 "\n"
 "Versione MS-Windows 32-bit GUI/console"
+
+msgid ""
+"\n"
+"MS-Windows ARM64 GUI version"
+msgstr ""
+"\n"
+"Versione MS-Windows ARM64 GUI"
 
 msgid ""
 "\n"
@@ -3302,6 +3340,13 @@ msgstr ""
 
 msgid " with OLE support"
 msgstr " con supporto OLE"
+
+msgid ""
+"\n"
+"MS-Windows ARM64 console version"
+msgstr ""
+"\n"
+"Versione MS-Windows ARM64 console"
 
 msgid ""
 "\n"
@@ -3682,6 +3727,15 @@ msgstr " FALLITO"
 
 msgid "Writing viminfo file \"%s\""
 msgstr "Scrivo file viminfo \"%s\""
+
+msgid "wayland protocol error -> "
+msgstr "errore nel protocollo Wayland -> "
+
+msgid "restoring Wayland display %s"
+msgstr "ripristino visualizzazione Wayland %s"
+
+msgid "failed restoring, lost connection to Wayland display"
+msgstr "ripristino fallito, connessione a visualizzazione Wayland persa"
 
 msgid "Already only one window"
 msgstr "C'è già una finestra sola"
@@ -4078,7 +4132,7 @@ msgid "E128: Function name must start with a capital or \"s:\": %s"
 msgstr "E128: Il nome funzione deve iniziare con maiuscola o \"s:\": %s"
 
 msgid "E129: Function name required"
-msgstr "E129: Nome funzione necessario"
+msgstr "E129: Nome funzione richiesto"
 
 msgid "E131: Cannot delete function %s: It is in use"
 msgstr "E131: Non posso eliminare la funzione %s: È in uso"
@@ -4232,7 +4286,7 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: Valore predefinito del contatore non valido"
 
 msgid "E179: Argument required for %s"
-msgstr "E179: Argomento necessario per %s"
+msgstr "E179: Argomento richiesto per %s"
 
 msgid "E180: Invalid complete value: %s"
 msgstr "E180: Valore %s non valido per 'complete'"
@@ -4558,7 +4612,7 @@ msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: Metodo di Input non supporta il mio tipo di preedit"
 
 msgid "E290: List or number required"
-msgstr "E290: È necessaria una Lista o un Numero"
+msgstr "E290: È richiesta una Lista o un Numero"
 
 msgid "E294: Seek error in swap file read"
 msgstr "E294: Errore di posizionamento durante lettura swap file"
@@ -4750,7 +4804,7 @@ msgid "E364: Library call failed for \"%s()\""
 msgstr "E364: Chiamata a libreria fallita per \"%s()\""
 
 msgid "E365: Failed to print PostScript file"
-msgstr "E365: Non riesco ad aprire file PostScript"
+msgstr "E365: Non riesco a stampare file PostScript"
 
 msgid "E366: Not allowed to enter a popup window"
 msgstr "E366: Non si può inserire testo in una finestra dinamica"
@@ -4843,7 +4897,7 @@ msgid "E395: Contains argument not accepted here"
 msgstr "E395: Contiene argomenti non accettati qui"
 
 msgid "E397: Filename required"
-msgstr "E397: Nome file necessario"
+msgstr "E397: Nome file richiesto"
 
 msgid "E398: Missing '=': %s"
 msgstr "E398: Manca '=': %s"
@@ -4967,7 +5021,7 @@ msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: Nessuna descrizione per \"%s\" in 'termcap'"
 
 msgid "E437: Terminal capability \"cm\" required"
-msgstr "E437: Capacità \"cm\" del terminale necessaria"
+msgstr "E437: Capacità \"cm\" del terminale richiesta"
 
 msgid "E441: There is no preview window"
 msgstr "E441: Non c'è una finestra di anteprima"
@@ -4997,7 +5051,7 @@ msgid "E449: Invalid expression received"
 msgstr "E449: Ricevuta un'espressione non valida"
 
 msgid "E450: Buffer number, text or a list required"
-msgstr "E450: Occorre un numero di buffer, del testo, o una Lista"
+msgstr "E450: Numero di buffer, testo, o una Lista richiesto"
 
 msgid "E451: Expected }: %s"
 msgstr "E451: Atteso }: %s"
@@ -5071,7 +5125,7 @@ msgid "E470: Command aborted"
 msgstr "E470: Comando finito male"
 
 msgid "E471: Argument required"
-msgstr "E471: Argomento necessario"
+msgstr "E471: Argomento richiesto"
 
 msgid "E472: Command failed"
 msgstr "E472: Comando fallito"
@@ -5314,7 +5368,7 @@ msgid "E535: Illegal character after <%c>"
 msgstr "E535: Carattere non consentito dopo <%c>"
 
 msgid "E536: Comma required"
-msgstr "E536: Virgola mancante"
+msgstr "E536: Virgola richiesta"
 
 msgid "E537: 'commentstring' must be empty or contain %s"
 msgstr "E537: 'commentstring' dev'essere nulla o contenere %s"
@@ -5830,10 +5884,10 @@ msgid "E713: Cannot use empty key for Dictionary"
 msgstr "E713: Impossibile usare una chiave nulla per Dizionario"
 
 msgid "E714: List required"
-msgstr "E714: È necessaria una Lista"
+msgstr "E714: È richiesta una Lista"
 
 msgid "E715: Dictionary required"
-msgstr "E715: È necessario un Dizionario"
+msgstr "E715: È richiesto un Dizionario"
 
 msgid "E716: Key not present in Dictionary: \"%s\""
 msgstr "E716: Chiave assente dal Dizionario: \"%s\""
@@ -5842,7 +5896,7 @@ msgid "E717: Dictionary entry already exists"
 msgstr "E717: C'è già la voce nel Dizionario"
 
 msgid "E718: Funcref required"
-msgstr "E718: Funcref necessario"
+msgstr "E718: Funcref richiesto"
 
 msgid "E719: Cannot slice a Dictionary"
 msgstr "E719: Non posso suddividere un Dizionario"
@@ -6432,7 +6486,7 @@ msgid "E896: Argument of %s must be a List, Dictionary or Blob"
 msgstr "E896: L'argomento di %s dev'essere una Lista, un Dizionario o un Blob"
 
 msgid "E897: List or Blob required"
-msgstr "E897: È necessaria una Lista o un Blob"
+msgstr "E897: È richiesta una Lista o un Blob"
 
 msgid "E898: socket() in channel_connect()"
 msgstr "E898: socket() in channel_connect()"
@@ -6529,7 +6583,7 @@ msgid "E927: Invalid action: '%s'"
 msgstr "E927: Azione non valida: '%s'"
 
 msgid "E928: String required"
-msgstr "E928: Stringa necessaria"
+msgstr "E928: Stringa richiesta"
 
 msgid "E929: Too many viminfo temp files, like %s!"
 msgstr "E929: Troppi file temporanei viminfo, come %s!"
@@ -6563,7 +6617,7 @@ msgid "E938: Duplicate key in JSON: \"%s\""
 msgstr "E938: Chiave duplicata in JSON: \"%s\""
 
 msgid "E939: Positive count required"
-msgstr "E939: Un contatore positivo è necessario"
+msgstr "E939: È richiesto un contatore maggiore di zero"
 
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: Non riesco a bloccare o sbloccare la variabile %s"
@@ -6769,7 +6823,7 @@ msgid "E1003: Missing return value"
 msgstr "E1003: Manca il valore restituito"
 
 msgid "E1004: White space required before and after '%s' at \"%s\""
-msgstr "E1004: Spazio bianco necessario prima e dopo '%s' in \"%s\""
+msgstr "E1004: Spazio bianco richiesto prima e dopo '%s' in \"%s\""
 
 msgid "E1005: Too many argument types"
 msgstr "E1005: Troppi tipi di argomento"
@@ -6914,7 +6968,7 @@ msgid "E1049: Item not exported in script: %s"
 msgstr "E1049: Elemento non esportato nello script: %s"
 
 msgid "E1050: Colon required before a range: %s"
-msgstr "E1050: Un due punti necessario prima di un intervallo: %s"
+msgstr "E1050: Un due punti richiesto prima di un intervallo: %s"
 
 msgid "E1051: Wrong argument type for +"
 msgstr "E1051: Tipo di argomento errato per +"
@@ -6971,7 +7025,7 @@ msgid "E1068: No white space allowed before '%s': %s"
 msgstr "E1068: Nessuno spazio bianco consentito prima di '%s': %s"
 
 msgid "E1069: White space required after '%s': %s"
-msgstr "E1069: Spazio bianco necessario dopo '%s': %s"
+msgstr "E1069: Spazio bianco richiesto dopo '%s': %s"
 
 msgid "E1071: Invalid string for :import: %s"
 msgstr "E1071: Stringa non valida per :import: %s"
@@ -7052,7 +7106,7 @@ msgid "E1097: Line incomplete"
 msgstr "E1097: Riga incompleta"
 
 msgid "E1098: String, List or Blob required"
-msgstr "E1098: Necessaria Stringa, Lista, o Blob"
+msgstr "E1098: Richiesta Stringa, Lista, o Blob"
 
 msgid "E1099: Unknown error while executing %s"
 msgstr "E1099: Errore sconosciuto mentre era in esecuzione %s"
@@ -7082,7 +7136,7 @@ msgstr[0] "E1106: %d argomento di troppo"
 msgstr[1] "E1106: %d argomenti di troppo"
 
 msgid "E1107: String, List, Dict or Blob required"
-msgstr "E1107: Necessaria Stringa, Lista, Dizionario o Blob"
+msgstr "E1107: Richiesta Stringa, Lista, Dizionario o Blob"
 
 msgid "E1109: List item %d is not a List"
 msgstr "E1109: L'elemento di Lista %d non è una Lista"
@@ -7109,8 +7163,8 @@ msgid "E1116: \"assert_fails()\" fifth argument must be a string"
 msgstr ""
 "E1116: Il quinto argomento di \"assert_fails()\" dev'essere una Stringa"
 
-msgid "E1117: Cannot use ! with nested :def"
-msgstr "E1117: Impossibile usare ! con :def nidificate"
+msgid "E1117: Cannot use ! with nested %s"
+msgstr "E1117: Impossibile usare ! con %s nidificate"
 
 msgid "E1118: Cannot change locked list"
 msgstr "E1118: Non posso cambiare Lista non modificabile"
@@ -7177,11 +7231,11 @@ msgstr "E1138: Uso di un valore Booleano come un Numero"
 msgid "E1139: Missing matching bracket after dict key"
 msgstr "E1139: Manca parentesi di chiusura dopo una chiave di Dizionario"
 
-msgid "E1140: :for argument must be a sequence of lists"
-msgstr "E1140: L'argomento di :for dev'essere una sequenza di Liste"
+msgid "E1140: :for argument must be a sequence of lists or tuples"
+msgstr "E1140: L'argomento di :for dev'essere una sequenza di Liste o Tuple"
 
 msgid "E1141: Indexable type required"
-msgstr "E1141: Il Tipo dev'essere indicizzabile"
+msgstr "E1141: Tipo indicizzabile richiesto"
 
 msgid "E1142: Calling test_garbagecollect_now() while v:testing is not set"
 msgstr "E1142: Chiamato test_garbagecollect_now() con v:testing non impostato"
@@ -7455,8 +7509,8 @@ msgstr "E1223: Stringa o Dizionario richiesto per argomento %d"
 msgid "E1224: String, Number or List required for argument %d"
 msgstr "E1224: Stringa, Numero o Lista richiesto per argomento %d"
 
-msgid "E1225: String, List or Dictionary required for argument %d"
-msgstr "E1225: Stringa, Lista o Dizionario richiesto per argomento %d"
+msgid "E1225: String, List, Tuple or Dictionary required for argument %d"
+msgstr "E1225: Stringa, Lista, Tupla o Dizionario richiesto per argomento %d"
 
 msgid "E1226: List or Blob required for argument %d"
 msgstr "E1226: Lista o Blob richiesto per argomento %d"
@@ -7536,11 +7590,14 @@ msgstr ""
 "E1250: L'argomento di %s dev'essere una Lista, una Stringa, un Dizionario o "
 "un Blob"
 
-msgid "E1251: List, Dictionary, Blob or String required for argument %d"
-msgstr "E1251: Lista, Dizionario, Blob o Stringa richiesto per argomento %d"
+msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
+msgstr "E1251: Lista, Tupla, Dizionario, Blob o Stringa richiesto per argomento %d"
 
 msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: Stringa, Lista o Blob richiesto per argomento %d"
+
+msgid "E1253: String, List, Tuple or Blob required for argument %d"
+msgstr "E1253: Stringa, Lista, Tupla o Blob richiesto per argomento %d"
 
 msgid "E1254: Cannot use script variable in for loop"
 msgstr "E1254: Impossibile usare una variabile di script in un ciclo for"
@@ -7644,16 +7701,16 @@ msgid "E1284: Argument 1, list item %d: Dictionary required"
 msgstr "E1284: Argomento 1, elemento di Lista %d: Dizionario richiesto"
 
 msgid "E1285: Could not clear timeout: %s"
-msgstr "E1285: Non riesco ad azzerare timeout: %s"
+msgstr "E1285: Non riesco ad azzerare tempo-di-attesa: %s"
 
 msgid "E1286: Could not set timeout: %s"
-msgstr "E1286: Non riesco a impostare timeout: %s"
+msgstr "E1286: Non riesco a impostare tempo-di-attesa: %s"
 
 msgid "E1287: Could not set handler for timeout: %s"
-msgstr "E1287: Non riesco a impostare il gestore del timeout: %s"
+msgstr "E1287: Non riesco a impostare il gestore del tempo-di-attesa: %s"
 
 msgid "E1288: Could not reset handler for timeout: %s"
-msgstr "E1288: Non riesco ad annullare il gestore del timeout: %s"
+msgstr "E1288: Non riesco ad annullare il gestore del tempo-di-attesa: %s"
 
 msgid "E1289: Could not check for pending SIGALRM: %s"
 msgstr "E1289: Non riesco a controllare se in attesa di SIGALRM: %s"
@@ -7694,8 +7751,8 @@ msgstr "E1299: Chiusura inattesa di finestra durante ricerca di tag"
 msgid "E1300: Cannot use a partial with dictionary for :defer"
 msgstr "E1300: Impossibile usare un \"partial\" con un Dizionario per :defer"
 
-msgid "E1301: String, Number, List or Blob required for argument %d"
-msgstr "E1301: Stringa, Numero, Lista o Blob richiesto per argomento %d"
+msgid "E1301: String, Number, List, Tuple or Blob required for argument %d"
+msgstr "E1301: Stringa, Numero, Lista, Tupla o Blob richiesto per argomento %d"
 
 msgid "E1302: Script variable was deleted"
 msgstr "E1302: La variabile di script è stata annullata"
@@ -7744,7 +7801,7 @@ msgstr ""
 "E1314: Il nome di una Classe deve iniziare con una lettera maiuscola: %s"
 
 msgid "E1315: White space required after name: %s"
-msgstr "E1315: Spazio bianco necessario dopo il nome: %s"
+msgstr "E1315: Spazio bianco richiesto dopo il nome: %s"
 
 msgid "E1316: Class can only be defined in Vim9 script"
 msgstr "E1316: Class può essere usato solo negli script Vim9"
@@ -7771,7 +7828,7 @@ msgid "E1326: Variable \"%s\" not found in object \"%s\""
 msgstr "E1326: Variable \"%s\" non trovata in Object \"%s\""
 
 msgid "E1327: Object required, found %s"
-msgstr "E1327: Object necessario, trovato %s"
+msgstr "E1327: Oggetto richiesto, trovato %s"
 
 msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: Il valore predefinito del costruttore dev'essere v:none: %s"
@@ -8158,8 +8215,114 @@ msgstr ""
 msgid "E1514: 'findfunc' did not return a List type"
 msgstr "E1514: 'findfunc' non ha restituito un tipo Lista"
 
-msgid "E1515: Unable to convert %s '%s' encoding"
-msgstr "E1515: Impossibile convertire codifica %s '%s'"
+msgid "E1515: Unable to convert from '%s' encoding"
+msgstr "E1515: Impossibile convertire da codifica '%s'"
+
+msgid "E1516: Unable to convert to '%s' encoding"
+msgstr "E1516: Impossibile convertire a codifica '%s'"
+
+msgid "E1517: Can only compare Tuple with Tuple"
+msgstr "E1517: Posso confrontre una Tupla solo con un'altra Tupla"
+
+msgid "E1518: Invalid operation for Tuple"
+msgstr "E1518: Operazione non valida per Tupla"
+
+msgid "E1519: Tuple index out of range: %ld"
+msgstr "E1519: Indice di Tupla fuori intervallo: %ld"
+
+msgid "E1520: Using a Tuple as a Number"
+msgstr "E1520: Uso di una Tupla come un Numero"
+
+msgid "E1521: Using a Tuple as a Float"
+msgstr "E1521: Uso di una Tupla come un Numero-a-virgola-mobile"
+
+msgid "E1522: Using a Tuple as a String"
+msgstr "E1522: Uso di una Tupla come una Stringa"
+
+msgid "E1523: String, List, Tuple or Blob required"
+msgstr "E1523: Stringa, Lista, Tuple o Blob richiesto"
+
+msgid "E1524: Cannot use a tuple with function %s"
+msgstr "E1524: Impossibile usare una Tupla con la funzione %s"
+
+msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
+msgstr ""
+"E1525: L'argomento di %s dev'essere una Lista, Tupla, Stringa, Dizionario o "
+"Blob"
+
+msgid "E1526: Missing end of Tuple ')': %s"
+msgstr "E1526: Manca fine Tupla ')': %s"
+
+msgid "E1527: Missing comma in Tuple: %s"
+msgstr "E1527: Manca virgola nella Tupla: %s"
+
+msgid "E1528: List or Tuple or Blob required for argument %d"
+msgstr "E1528: Lista o Tupla o Blob richiesto per argomento %d"
+
+msgid "E1529: List or Tuple required for argument %d"
+msgstr "E1529: Lista o Tupla richiesto per argomento %d"
+
+msgid "E1530: List or Tuple or Dictionary required for argument %d"
+msgstr "E1530: Lista o Tupla o Dizionario richiesto per argomento %d"
+
+msgid "E1531: Argument of %s must be a List, Tuple, Dictionary or Blob"
+msgstr ""
+"E1531: L'argomento di %s dev'essere una Lista, Tupla, Dizionario o Blob"
+
+msgid "E1532: Cannot modify a tuple"
+msgstr "E1532: Cannot modify una Tupla"
+
+msgid "E1533: Cannot slice a tuple"
+msgstr "E1533: Non posso suddividere una Tupla"
+
+msgid "E1534: Tuple required for argument %d"
+msgstr "E1534: Tupla richiesta per argomento %d"
+
+msgid "E1535: List or Tuple required"
+msgstr "E1535: Lista o Tupla richiesta"
+
+msgid "E1536: Tuple required"
+msgstr "E1536: Tupla richiesta"
+
+msgid "E1537: Less targets than Tuple items"
+msgstr "E1537: Destinazioni meno numerose degli elementi della Tupla"
+
+msgid "E1538: More targets than Tuple items"
+msgstr "E1538: Destinazioni più numerose degli elementi della Tupla"
+
+msgid "E1539: Variadic tuple must end with a list type: %s"
+msgstr "E1539: Una Tupla variadica deve terminare con un tipo Lista: %s"
+
+msgid "E1540: Cannot use a variadic tuple in concatenation"
+msgstr "E1540: Impossibile usare una Tupla variadica in concatenazione"
+
+msgid "E1541: Value too large, max Unicode codepoint is U+10FFFF"
+msgstr ""
+"E1541: Valore troppo grande, il massimo punto di codice Unicode è U+10FFFF"
+
+msgid "E1542: Cannot have a negative or zero number of quickfix/location lists"
+msgstr "E1542: Non può essere negativo o zero il numero di Lista "
+"quickfix o di locazione"
+
+msgid "E1543: Cannot have more than a hundred quickfix/location lists"
+msgstr "E1543: Non possono esserci più di cento Liste quickfix o di "
+"locazione"
+
+msgid "E1544: Failed resizing the quickfix/location list stack"
+msgstr "E1544: Fallito ridimensionamento dello stack quickfix o di "
+"locazione"
+
+msgid "E1545: Quickfix list stack unavailable"
+msgstr "E1545: Stack delle Liste quickfix non disponibile"
+
+msgid "E1546: Cannot switch to a closing buffer"
+msgstr "E1546: Non posso passare a un buffer che si sta chiudendo"
+
+msgid "E1547: This version of Vim does support :redrawtabpanel"
+msgstr "E1547: Questa versione di Vim supporta :redrawtabpanel"
+
+msgid "E1548: Wayland connection is unavailable"
+msgstr "E1548: Connession a Wayland non disponibile"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -8337,6 +8500,18 @@ msgstr "non riesco a cancellare gli attributi vim.List"
 msgid "cannot modify fixed list"
 msgstr "non posso modificare la lista fissa"
 
+msgid "tuple constructor does not accept keyword arguments"
+msgstr "il costruttore di Tuple non accetta parole chiave come argomenti"
+
+msgid "tuple index out of range"
+msgstr "Indice di Tupla fuori intervallo"
+
+msgid "cannot delete vim.Tuple attributes"
+msgstr "non riesco a cancellare gli attributi vim.Tuple"
+
+msgid "cannot modify fixed tuple"
+msgstr "non posso modificare la Tupla"
+
 msgid "unnamed function %s does not exist"
 msgstr "la funzione anonima %s non esiste"
 
@@ -8492,22 +8667,27 @@ msgstr ""
 "File di Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
 #. Translators: This is the Application Name used in the GVim desktop file
+#: gvim.desktop.in:6
 msgid "GVim"
 msgstr "GVim"
 
 #. Translators: This is the Generic Application Name used in the Vim desktop file
+#: gvim.desktop.in:8 vim.desktop.in:8
 msgid "Text Editor"
 msgstr "Editor di testi"
 
 #. Translators: This is the comment used in the Vim desktop file
+#: gvim.desktop.in:10 vim.desktop.in:10
 msgid "Edit text files"
 msgstr "Edita file di testo"
 
 #. Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
+#: gvim.desktop.in:75 vim.desktop.in:75
 msgid "Text;editor;"
 msgstr "Testo;editor;"
 
 #. Translators: This is the Application Name used in the Vim desktop file
+#: vim.desktop.in:6
 msgid "Vim"
 msgstr "Vim"
 
@@ -8642,6 +8822,9 @@ msgstr ""
 "ignora l'opzione 'ignorecase' quando l'espressione di ricerca contiene\n"
 "caratteri maiuscoli"
 
+msgid "maximum number for the search count feature"
+msgstr "numero massimo per la funzionalità di conto della ricerca"
+
 msgid "what method to use for changing case of letters"
 msgstr "metodo da usare per convertire maiuscolo a minuscolo e viceversa"
 
@@ -8771,10 +8954,12 @@ msgstr ""
 "includere \"uhex\" per mostrare come numeri esadecimali i caratteri\n"
 "non visibili"
 
-msgid "characters to use for the status line, folds and filler lines"
+msgid ""
+"characters to use for the status line, folds, diffs, buffer text, filler "
+"lines and truncation in the completion menu"
 msgstr ""
-"caratteri da usare per riga di status, piegature e righe\n"
-"di riempimento"
+"caratteri da usare per riga di status, piegature, differenze, testo "
+"di un buffer, riempitivo di riga e troncamento nel menu di completamento"
 
 msgid "number of lines used for the command-line"
 msgstr "numero di righe disponibili per la riga-di-comando"
@@ -8815,6 +9000,14 @@ msgstr "mostrare numero di riga relativo per ogni riga"
 
 msgid "number of columns to use for the line number"
 msgstr "numero di colonne da usare per visualizzare numero di riga"
+
+msgid "maximum number of quickfix lists that can be stored in history"
+msgstr "numero massimo di Liste quickfix che possono essere conservate "
+"nella storia"
+
+msgid "maximum number of location lists that can be stored in history"
+msgstr "numero massimo di Liste di locazione che possono essere conservate "
+"nella storia"
 
 msgid "controls whether concealable text is hidden"
 msgstr "controllare se il testo nascondibile è nascosto"
@@ -9292,6 +9485,21 @@ msgstr ""
 "\"autoselect\" per mettere sempre il testo selezionato nella\n"
 "clipboard"
 
+msgid "Ordered list of possible methods for accessing the clipboard"
+msgstr "Lista ordinata dei metodi possibili per accedere agli appunti"
+
+msgid "Timeout to use when polling for data to read or write in wayland"
+msgstr "Tempo-di-attesa da usare attendendo dati da leggere o scrivere "
+"in Wayland"
+
+msgid "Wayland seat to use"
+msgstr "Seggio Wayland da usare"
+
+msgid ""
+"Enable wayland focus stealing functionality in order to access the clipboard"
+msgstr ""
+"Abilita funzionalità cattura focus in Wayland per accedere agli appunti"
+
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "\"startsel\" e/o \"stopsel\"; cosa fare usando tasti speciali"
 
@@ -9355,11 +9563,14 @@ msgstr ""
 "specificare come funziona il completamente in modo Insert\n"
 "per CTRL-N e CTRL-P"
 
+msgid "use fuzzy collection for specific completion modes"
+msgstr "usare raccolta approssimativa per modi di completamento specificati"
+
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "se usare un menù dinamico per il completamento in modo Insert"
 
 msgid "popup menu item align order"
-msgstr "ordine di allineamento elemento menù bolla (popup)"
+msgstr "ordine di allineamento elemento menù dinamico (popup)"
 
 msgid "options for the Insert mode completion info popup"
 msgstr ""
@@ -9372,24 +9583,27 @@ msgstr "massima altezza del menù dinamico"
 msgid "minimum width of the popup menu"
 msgstr "larghezza minima del menù dinamico"
 
+msgid "maximum width of the popup menu"
+msgstr "larghezza massima del menù dinamico"
+
 msgid "user defined function for Insert mode completion"
 msgstr ""
-"funzione definita dall'utente per il completamento\n"
+"funzione definita dall'utente per il completamento "
 "in modo Insert"
 
 msgid "function for filetype-specific Insert mode completion"
 msgstr ""
-"funzione per il completamento in modo Insert a seconda del\n"
+"funzione per il completamento in modo Insert a seconda del "
 "tipo di file"
 
 msgid "list of dictionary files for keyword completion"
 msgstr ""
-"lista di file dizionario per il completamento di\n"
+"lista di file dizionario per il completamento di "
 "parole chiave"
 
 msgid "list of thesaurus files for keyword completion"
 msgstr ""
-"lista di file di sinonimi per il completamento di\n"
+"lista di file di sinonimi per il completamento di "
 "parole chiave"
 
 msgid "function used for thesaurus completion"
@@ -9397,12 +9611,12 @@ msgstr "funzione usata per completamento sinonimi"
 
 msgid "adjust case of a keyword completion match"
 msgstr ""
-"aggiustare maiuscolo/minuscolo nelle corrispondenze di\n"
+"aggiustare maiuscolo/minuscolo nelle corrispondenze di "
 "completamento"
 
 msgid "enable entering digraphs with c1 <BS> c2"
 msgstr ""
-"abilitare immissione lettere non in tastiera con\n"
+"abilitare immissione lettere non in tastiera con "
 "c1 <BS> c2"
 
 msgid "the \"~\" command behaves like an operator"
@@ -9413,7 +9627,7 @@ msgstr "funzione da chiamare per l'operatore \"g@\""
 
 msgid "when inserting a bracket, briefly jump to its match"
 msgstr ""
-"se si inserisce una parentesi, saltare per un momento\n"
+"se si inserisce una parentesi, saltare per un momento "
 "alla parentesi corrispondente"
 
 msgid "tenth of a second to show a match for 'showmatch'"
@@ -9594,11 +9808,11 @@ msgid "recognize mappings in mapped keys"
 msgstr "riconoscere le mappature nei tasti mappati"
 
 msgid "allow timing out halfway into a mapping"
-msgstr "consentire timeout durante una mappatura"
+msgstr "consentire tempo-di-attesa durante una mappatura"
 
 msgid "allow timing out halfway into a key code"
 msgstr ""
-"consentire timeout durante una mappatura con uso di tasti\n"
+"consentire tempo-di-attesa durante una mappatura con uso di tasti\n"
 "mappati"
 
 msgid "time in msec for 'timeout'"
@@ -9890,6 +10104,9 @@ msgstr "lista dei caratteri contenuti in un nome di file"
 msgid "specifies the characters in an identifier"
 msgstr "lista dei caratteri contenuti in un identificativo"
 
+msgid "defines trigger strings for complete_match()"
+msgstr "lista stringhe che innescano complete_match()"
+
 msgid "specifies the characters in a keyword"
 msgstr "lista dei caratteri contenuti in una parola"
 
@@ -10124,6 +10341,15 @@ msgstr "nome della libreria dinamica MzScheme"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "nome della libreria dinamica MzScheme GC"
+
+msgid "0, 1 or 2; when to use the tabpanel"
+msgstr "0, 1 o 2; quando usare il pannello-schede"
+
+msgid "custom tab pages in tabpanel"
+msgstr "personalizzazione pagine scheda nel pannello-schede"
+
+msgid "options for using tabpanel"
+msgstr "opzioni per usare il pannello-schede"
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""

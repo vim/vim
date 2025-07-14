@@ -239,7 +239,7 @@ prefixcheck:
 	fi
 
 clean: checkclean
-	rm -f core core.* *.old.po *.mo *.pot sjiscorr
+	rm -f core core.* *.old.po *.mo sjiscorr
 	rm -f LINGUAS vim.desktop gvim.desktop tmp_*desktop
 	rm -f ./allfiles
 #	rm -f big5corr

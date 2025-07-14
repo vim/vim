@@ -2395,6 +2395,8 @@ ins_compl_need_restart(void)
 ins_compl_new_leader(void)
 {
     int	    cur_cot_flags = get_cot_flags();
+    int	    save_w_wrow;
+    int	    save_w_leftcol;
 
     ins_compl_del_pum();
     ins_compl_delete();
@@ -2424,8 +2426,10 @@ ins_compl_new_leader(void)
 	    out_flush_cursor(FALSE, FALSE);
 	}
 #endif
+	save_w_wrow = curwin->w_wrow;
+	save_w_leftcol = curwin->w_leftcol;
 	compl_restarting = TRUE;
-	if (ins_complete(Ctrl_N, TRUE) == FAIL)
+	if (ins_complete(Ctrl_N, FALSE) == FAIL)
 	    compl_cont_status = 0;
 	compl_restarting = FALSE;
     }
@@ -2451,7 +2455,8 @@ ins_compl_new_leader(void)
     compl_enter_selects = !compl_used_match && compl_selected_item != -1;
 
     // Show the popup menu with a different set of matches.
-    ins_compl_show_pum();
+    if (!compl_interrupted)
+	show_pum(save_w_wrow, save_w_leftcol);
 
     // Don't let Enter select the original text when there is no popup menu.
     if (compl_match_array == NULL)
@@ -6600,7 +6605,8 @@ ins_compl_start(void)
 
     if (compl_status_adding())
     {
-	edit_submode_pre = (char_u *)_(" Adding");
+	if (!shortmess(SHM_COMPLETIONMENU))
+	    edit_submode_pre = (char_u *)_(" Adding");
 	if (ctrl_x_mode_line_or_eval())
 	{
 	    // Insert a new line, keep indentation but ignore 'comments'.
@@ -6627,10 +6633,13 @@ ins_compl_start(void)
 	compl_startpos.col = compl_col;
     }
 
-    if (compl_cont_status & CONT_LOCAL)
-	edit_submode = (char_u *)_(ctrl_x_msgs[CTRL_X_LOCAL_MSG]);
-    else
-	edit_submode = (char_u *)_(CTRL_X_MSG(ctrl_x_mode));
+    if (!shortmess(SHM_COMPLETIONMENU))
+    {
+	if (compl_cont_status & CONT_LOCAL)
+	    edit_submode = (char_u *)_(ctrl_x_msgs[CTRL_X_LOCAL_MSG]);
+	else
+	    edit_submode = (char_u *)_(CTRL_X_MSG(ctrl_x_mode));
+    }
 
     // If any of the original typed text has been changed we need to fix
     // the redo buffer.
@@ -6655,11 +6664,14 @@ ins_compl_start(void)
     // showmode might reset the internal line pointers, so it must
     // be called before line = ml_get(), or when this address is no
     // longer needed.  -- Acevedo.
-    edit_submode_extra = (char_u *)_("-- Searching...");
-    edit_submode_highl = HLF_COUNT;
-    showmode();
-    edit_submode_extra = NULL;
-    out_flush();
+    if (!shortmess(SHM_COMPLETIONMENU))
+    {
+	edit_submode_extra = (char_u *)_("-- Searching...");
+	edit_submode_highl = HLF_COUNT;
+	showmode();
+	edit_submode_extra = NULL;
+	out_flush();
+    }
 
     return OK;
 }
@@ -6821,7 +6833,8 @@ ins_complete(int c, int enable_pum)
     else
 	compl_cont_status &= ~CONT_S_IPOS;
 
-    ins_compl_show_statusmsg();
+    if (!shortmess(SHM_COMPLETIONMENU))
+	ins_compl_show_statusmsg();
 
     // Show the popup menu, unless we got interrupted.
     if (enable_pum && !compl_interrupted)
