@@ -346,7 +346,7 @@ SIZE OF VARIABLES				*assumptions-variables*
 
 	char        8-bit signed
 	char_u      8-bit unsigned
-	int         32- or 64-bit signed (16-bit possible on legacy systems)  
+	int         32- or 64-bit signed (16-bit possible on legacy systems)
 	unsigned    32- or 64-bit unsigned
 	long        at least 32-bit signed (large enough to hold a pointer)
 
