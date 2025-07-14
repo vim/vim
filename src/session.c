@@ -301,6 +301,7 @@ put_view_curpos(FILE *fd, win_T *wp, char *spaces)
 put_view(
     FILE	*fd,
     win_T	*wp,
+    tabpage_T	*tp,
     int		add_edit,	     // add ":edit" command to view
     unsigned	*flagp,		     // vop_flags or ssop_flags
     int		current_arg_idx,     // current argument index of the window,
@@ -328,6 +329,7 @@ put_view(
 	if (ses_arglist(fd, "arglocal", &wp->w_alist->al_ga,
 			flagp == &vop_flags
 			|| !(*flagp & SSOP_CURDIR)
+			|| tp->tp_localdir != NULL
 			|| wp->w_localdir != NULL, flagp) == FAIL)
 	    return FAIL;
     }
@@ -680,17 +682,13 @@ makeopens(
     if (put_line(fd, "endif") == FAIL)
 	goto fail;
 
-    // save 'shortmess' if not storing options
+    // Save 'shortmess' if not storing options.
     if ((ssop_flags & SSOP_OPTIONS) == 0
 	    && put_line(fd, "let s:shortmess_save = &shortmess") == FAIL)
 	goto fail;
 
-    // set 'shortmess' for the following.  Add the 'A' flag if it was there
-    if (put_line(fd, "if &shortmess =~ 'A'") == FAIL
-	    || put_line(fd, "  set shortmess=aoOA") == FAIL
-	    || put_line(fd, "else") == FAIL
-	    || put_line(fd, "  set shortmess=aoO") == FAIL
-	    || put_line(fd, "endif") == FAIL)
+    // Set 'shortmess' for the following.
+    if (put_line(fd, "set shortmess+=aoO") == FAIL)
 	goto fail;
 
     // Now save the current files, current buffer first.
@@ -903,7 +901,8 @@ makeopens(
 	{
 	    if (!ses_do_win(wp))
 		continue;
-	    if (put_view(fd, wp, wp != edited_win, &ssop_flags, cur_arg_idx,
+	    if (put_view(fd, wp, tp, wp != edited_win, &ssop_flags,
+							 cur_arg_idx,
 #ifdef FEAT_TERMINAL
 							 &terminal_bufs
 #else
@@ -1339,8 +1338,8 @@ ex_mkrc(exarg_T	*eap)
 	    }
 	    else
 	    {
-		failed |= (put_view(fd, curwin, !using_vdir, flagp, -1, NULL)
-								      == FAIL);
+		failed |= (put_view(fd, curwin, curtab, !using_vdir, flagp, -1,
+								NULL) == FAIL);
 	    }
 	    if (put_line(fd, "let &g:so = s:so_save | let &g:siso = s:siso_save")
 								      == FAIL)

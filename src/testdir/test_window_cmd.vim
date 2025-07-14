@@ -1,7 +1,6 @@
 " Tests for window cmd (:wincmd, :split, :vsplit, :resize and etc...)
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_window_cmd_ls0_with_split()
   set ls=0
@@ -2118,6 +2117,24 @@ func Test_splitkeep_skipcol()
   let buf = RunVimInTerminal('-S XTestSplitkeepSkipcol', #{rows: 12, cols: 40})
 
   call VerifyScreenDump(buf, 'Test_splitkeep_skipcol_1', {})
+endfunc
+
+func Test_splitkeep_line()
+  CheckScreendump
+
+  let lines =<< trim END
+    set splitkeep=screen nosplitbelow
+    autocmd WinResized * call line('w0', 1000)
+    call setline(1, range(1000))
+  END
+
+  call writefile(lines, 'XTestSplitkeepSkipcol', 'D')
+  let buf = RunVimInTerminal('-S XTestSplitkeepSkipcol', #{rows: 6, cols: 40})
+
+  call VerifyScreenDump(buf, 'Test_splitkeep_line_1', {})
+
+  call term_sendkeys(buf, ":wincmd s\<CR>")
+  call VerifyScreenDump(buf, 'Test_splitkeep_line_2', {})
 endfunc
 
 func Test_new_help_window_on_error()

@@ -1,8 +1,6 @@
 " Tests for startup using utf-8.
 
-source check.vim
-source shared.vim
-source screendump.vim
+source util/screendump.vim
 
 func Test_read_stdin_utf8()
   let linesin = ['テスト', '€ÀÈÌÒÙ']

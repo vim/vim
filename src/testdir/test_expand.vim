@@ -1,8 +1,5 @@
 " Test for expanding file names
 
-source shared.vim
-source check.vim
-
 func Test_with_directories()
   call mkdir('Xdir1')
   call mkdir('Xdir2')

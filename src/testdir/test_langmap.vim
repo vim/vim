@@ -1,6 +1,5 @@
 " tests for 'langmap'
 
-source check.vim
 CheckFeature langmap
 
 func Test_langmap()

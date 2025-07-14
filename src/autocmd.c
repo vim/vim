@@ -803,16 +803,26 @@ find_end_event(
     int
 event_ignored(event_T event, char_u *ei)
 {
+    int ignored = FALSE;
     while (*ei != NUL)
     {
-	if (STRNICMP(ei, "all", 3) == 0 && (ei[3] == NUL || ei[3] == ',')
-	    && (ei == p_ei || (event_tab[event].key <= 0)))
-	    return TRUE;
-	if (event_name2nr(ei, &ei) == event)
-	    return TRUE;
+	int unignore = *ei == '-';
+	ei += unignore;
+	if (STRNICMP(ei, "all", 3) == 0 && (ei[3] == NUL || ei[3] == ','))
+	{
+	    ignored = ei == p_ei || (event_tab[event].key <= 0);
+	    ei += 3 + (ei[3] == ',');
+	}
+	else if (event_name2nr(ei, &ei) == event)
+	{
+	    if (unignore)
+		return FALSE;
+	    else
+		ignored = TRUE;
+	}
     }
 
-    return FALSE;
+    return ignored;
 }
 
 /*
@@ -827,13 +837,10 @@ check_ei(char_u *ei)
     while (*ei)
     {
 	if (STRNICMP(ei, "all", 3) == 0 && (ei[3] == NUL || ei[3] == ','))
-	{
-	    ei += 3;
-	    if (*ei == ',')
-		++ei;
-	}
+	    ei += 3 + (ei[3] == ',');
 	else
 	{
+	    ei += (*ei == '-');
 	    event_T event = event_name2nr(ei, &ei);
 	    if (event == NUM_EVENTS || (win && event_tab[event].key > 0))
 		return FAIL;
@@ -1585,9 +1592,10 @@ aucmd_prepbuf(
 #ifdef FEAT_AUTOCHDIR
     int		save_acd;
 #endif
+    int		same_buffer = buf == curbuf;
 
     // Find a window that is for the new buffer
-    if (buf == curbuf)		// be quick when buf is curbuf
+    if (same_buffer)		// be quick when buf is curbuf
 	win = curwin;
     else
 	FOR_ALL_WINDOWS(win)
@@ -1665,7 +1673,7 @@ aucmd_prepbuf(
 #endif
 
 	(void)win_split_ins(0, WSP_TOP | WSP_FORCE_ROOM, auc_win, 0, NULL);
-	(void)win_comp_pos();   // recompute window positions
+	win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
 	p_acd = save_acd;
@@ -1677,9 +1685,10 @@ aucmd_prepbuf(
     aco->new_curwin_id = curwin->w_id;
     set_bufref(&aco->new_curbuf, curbuf);
 
-    // disable the Visual area, the position may be invalid in another buffer
     aco->save_VIsual_active = VIsual_active;
-    VIsual_active = FALSE;
+    if (!same_buffer)
+	// disable the Visual area, position may be invalid in another buffer
+	VIsual_active = FALSE;
 }
 
 /*
@@ -1740,7 +1749,7 @@ win_found:
 	    close_tabpage(curtab);
 
 	restore_snapshot(SNAP_AUCMD_IDX, FALSE);
-	(void)win_comp_pos();   // recompute window positions
+	win_comp_pos();   // recompute window positions
 	unblock_autocmds();
 
 	save_curwin = win_find_by_id(aco->save_curwin_id);

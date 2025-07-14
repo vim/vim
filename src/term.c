@@ -3614,9 +3614,18 @@ win_new_shellsize(void)
 {
     static int	old_Rows = 0;
     static int	old_Columns = 0;
+    static int	old_coloff = 0;
 
-    if (old_Rows != Rows || old_Columns != Columns)
+    if (old_Rows != Rows || old_Columns != COLUMNS_WITHOUT_TPL()
+	    || old_coloff != TPL_LCOL())
 	ui_new_shellsize();
+    if (old_Columns != COLUMNS_WITHOUT_TPL() || old_coloff != TPL_LCOL())
+    {
+	old_Columns = COLUMNS_WITHOUT_TPL();
+	old_coloff = TPL_LCOL();
+
+	shell_new_columns();
+    }
     if (old_Rows != Rows)
     {
 	// If 'window' uses the whole screen, keep it using that.
@@ -3626,11 +3635,6 @@ win_new_shellsize(void)
 	    p_window = Rows - 1;
 	old_Rows = Rows;
 	shell_new_rows();	// update window sizes
-    }
-    if (old_Columns != Columns)
-    {
-	old_Columns = Columns;
-	shell_new_columns();	// update window sizes
     }
 }
 
@@ -4454,16 +4458,9 @@ scroll_region_set(win_T *wp, int off)
 {
     OUT_STR(tgoto((char *)T_CS, W_WINROW(wp) + wp->w_height - 1,
 							 W_WINROW(wp) + off));
-#if defined(FEAT_TABPANEL)
-    if (*T_CSV != NUL)
-	OUT_STR(tgoto((char *)T_CSV,
-		wp->w_wincol + wp->w_width - 1 + TPL_LCOL(NULL),
-		wp->w_wincol + TPL_LCOL(NULL)));
-#else
     if (*T_CSV != NUL && wp->w_width != Columns)
 	OUT_STR(tgoto((char *)T_CSV, wp->w_wincol + wp->w_width - 1,
 							       wp->w_wincol));
-#endif
     screen_start();		    // don't know where cursor is now
 }
 
@@ -4475,7 +4472,7 @@ scroll_region_reset(void)
 {
     OUT_STR(tgoto((char *)T_CS, (int)Rows - 1, 0));
     if (*T_CSV != NUL)
-	OUT_STR(tgoto((char *)T_CSV, COLUMNS_WITHOUT_TPL() - 1, 0));
+	OUT_STR(tgoto((char *)T_CSV, (int)Columns - 1, 0));
     screen_start();		    // don't know where cursor is now
 }
 

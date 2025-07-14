@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2024 Nov 19
+# Last Change: 2025 Jul 08
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -1917,14 +1917,21 @@ def CreateBreakpoint(id: number, subid: number, enabled: string)
       hiName = "debugBreakpoint"
     endif
     var label = ''
-    if exists('g:termdebug_config') && has_key(g:termdebug_config, 'sign')
-      label = g:termdebug_config['sign']
-    elseif exists('g:termdebug_config') && has_key(g:termdebug_config, 'sign_decimal')
-      label = printf('%02d', id)
-      if id > 99
-        label = '9+'
+    if exists('g:termdebug_config')
+      if has_key(g:termdebug_config, 'signs')
+        label = get(g:termdebug_config.signs, id - 1, '')
       endif
-    else
+      if label == '' && has_key(g:termdebug_config, 'sign')
+        label = g:termdebug_config['sign']
+      endif
+      if label == '' && has_key(g:termdebug_config, 'sign_decimal')
+        label = printf('%02d', id)
+        if id > 99
+          label = '9+'
+        endif
+      endif
+    endif
+    if label == ''
       label = printf('%02X', id)
       if id > 255
         label = 'F+'

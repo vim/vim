@@ -1,11 +1,10 @@
 " Tests for defining text property types and adding text properties to the
 " buffer.
 
-source check.vim
 CheckFeature textprop
 
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
@@ -4755,6 +4754,31 @@ func Test_textprop_with_wincolor()
   endif
 
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_textprop_materialize_list()
+	let ids = range(3)
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	let ids = range(3) + []
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	let ids = range(3)
+	let ids[0] = ids[0]
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	let ids = range(3)
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	call assert_equal([], prop_list(1, #{ids: range(3) + [] }))
+
+	let ids = range(3)
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	let ids = range(0, 3)
+	call assert_equal([], prop_list(1, #{ids: ids}))
+
+	call assert_equal([], prop_list(1, #{ids: 3->range()}))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,8 +1,5 @@
 " Tests for exiting Vim.
 
-source shared.vim
-source check.vim
-
 func Test_exiting()
   let after =<< trim [CODE]
     au QuitPre * call writefile(["QuitPre"], "Xtestout")

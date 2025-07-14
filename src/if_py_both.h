@@ -2409,18 +2409,18 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
 
 		Py_DECREF(item);
 
-		if (PySequence_Fast_GET_SIZE(fast) != 2)
+		if (PySequence_Size(fast) != 2)
 		{
 		    Py_DECREF(iterator);
 		    Py_DECREF(fast);
 		    PyErr_FORMAT(PyExc_ValueError,
 			    N_("expected sequence element of size 2, "
 			    "but got sequence of size %d"),
-			    (int) PySequence_Fast_GET_SIZE(fast));
+			    (int) PySequence_Size(fast));
 		    return NULL;
 		}
 
-		keyObject = PySequence_Fast_GET_ITEM(fast, 0);
+		keyObject = PySequence_GetItem(fast, 0);
 
 		if (!(key = StringToChars(keyObject, &todecref)))
 		{
@@ -2442,7 +2442,7 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
 		}
 		di->di_tv.v_type = VAR_UNKNOWN;
 
-		valObject = PySequence_Fast_GET_ITEM(fast, 1);
+		valObject = PySequence_GetItem(fast, 1);
 
 		if (ConvertFromPyObject(valObject, &di->di_tv) == -1)
 		{

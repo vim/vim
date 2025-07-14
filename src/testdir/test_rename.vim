@@ -1,7 +1,5 @@
 " Test rename()
 
-source shared.vim
-
 func Test_rename_file_to_file()
   call writefile(['foo'], 'Xrename1')
 

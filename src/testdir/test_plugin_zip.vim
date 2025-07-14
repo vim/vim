@@ -1,5 +1,3 @@
-so check.vim
-
 CheckExecutable unzip
 
 if 0 " Find uncovered line

@@ -1,8 +1,5 @@
 " Test the :compiler command
 
-source check.vim
-source shared.vim
-
 func Test_compiler()
   CheckExecutable perl
   CheckFeature quickfix

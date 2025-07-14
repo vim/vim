@@ -1,8 +1,5 @@
 " Tests for not changing curswant
 
-source check.vim
-source term_util.vim
-
 func Test_curswant()
   new
   call append(0, ['1234567890', '12345'])

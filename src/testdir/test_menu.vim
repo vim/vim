@@ -1,9 +1,8 @@
 " Test that the system menu can be loaded.
 
-source check.vim
 CheckFeature menu
 
-source screendump.vim
+source util/screendump.vim
 
 func Test_load_menu()
   try

@@ -1,8 +1,7 @@
 " Tests for various eval things.
 
-source view_util.vim
-source shared.vim
-import './vim9.vim' as v9
+source util/shared.vim
+import './util/vim9.vim' as v9
 
 function s:foo() abort
   try

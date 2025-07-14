@@ -693,7 +693,7 @@ edit(
 			&& stop_arrow() == OK)
 		{
 		    ins_compl_delete();
-		    ins_compl_insert(FALSE, FALSE);
+		    ins_compl_insert(FALSE);
 		}
 		// Delete preinserted text when typing special chars
 		else if (IS_WHITE_NL_OR_NUL(c) && ins_compl_preinsert_effect())
@@ -929,6 +929,8 @@ doESCkey:
 	    break;
 
 	case Ctrl_R:	// insert the contents of a register
+	    if (ctrl_x_mode_register() && !ins_compl_active())
+		goto docomplete;
 	    ins_reg();
 	    auto_format(FALSE, TRUE);
 	    inserted_space = FALSE;
@@ -1714,7 +1716,7 @@ edit_putchar(int c, int highlight)
 
 	    if (fix_col != pc_col)
 	    {
-		screen_putchar(' ', pc_row, fix_col + TPL_LCOL(NULL), attr);
+		screen_putchar(' ', pc_row, fix_col, attr);
 		--curwin->w_wcol;
 		pc_status = PC_STATUS_RIGHT;
 	    }
@@ -1734,7 +1736,7 @@ edit_putchar(int c, int highlight)
 	screen_getbytes(pc_row, pc_col, pc_bytes, &pc_attr);
 	pc_status = PC_STATUS_SET;
     }
-    screen_putchar(c, pc_row, pc_col + TPL_LCOL(NULL), attr);
+    screen_putchar(c, pc_row, pc_col, attr);
 }
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
@@ -2195,7 +2197,7 @@ insertchar(
 	    i -= middle_len;
 
 	    // Check some expected things before we go on
-	    if (i >= 0 && lead_end[end_len - 1] == end_comment_pending)
+	    if (i >= 0 && end_len > 0 && lead_end[end_len - 1] == end_comment_pending)
 	    {
 		// Backspace over all the stuff we want to replace
 		backspace_until_column(i);

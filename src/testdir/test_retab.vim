@@ -1,7 +1,5 @@
 " Test :retab
 
-source check.vim
-
 func SetUp()
   new
   call setline(1, "\ta  \t    b        c    ")

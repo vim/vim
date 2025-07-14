@@ -1385,8 +1385,8 @@ win_split_ins(
 	// width and column of new window is same as current window
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
-	    wp->w_wincol = 0;
-	    win_new_width(wp, COLUMNS_WITHOUT_TPL());
+	    wp->w_wincol = firstwin->w_wincol;
+	    win_new_width(wp, topframe->fr_width);
 	    wp->w_vsep_width = 0;
 	}
 	else
@@ -1434,7 +1434,7 @@ win_split_ins(
     }
 
     if (flags & (WSP_TOP | WSP_BOT))
-	(void)win_comp_pos();
+	win_comp_pos();
 
      // Both windows need redrawing.  Update all status lines, in case they
      // show something related to the window count or position.
@@ -1855,7 +1855,7 @@ win_exchange(long Prenum)
     frame_fix_width(curwin);
     frame_fix_width(wp);
 
-    (void)win_comp_pos();		// recompute window positions
+    win_comp_pos();		// recompute window positions
 
     if (wp->w_buffer != curbuf)
 	reset_VIsual_and_resel();
@@ -1943,7 +1943,7 @@ win_rotate(int upwards, int count)
 	frame_fix_width(wp2);
 
 	// recompute w_winrow and w_wincol for all windows
-	(void)win_comp_pos();
+	win_comp_pos();
     }
 
     redraw_all_later(UPD_NOT_VALID);
@@ -1972,7 +1972,7 @@ win_splitmove(win_T *wp, int size, int flags)
     winframe_remove(wp, &dir, NULL, &unflat_altfr);
     win_remove(wp, NULL);
     last_status(FALSE);	    // may need to remove last status line
-    (void)win_comp_pos();   // recompute window positions
+    win_comp_pos();   // recompute window positions
 
     // Split a window on the desired side and put "wp" there.
     if (win_split_ins(size, flags, wp, dir, unflat_altfr) == FAIL)
@@ -2064,7 +2064,7 @@ win_move_after(win_T *win1, win_T *win2)
 	win_append(win2, win1);
 	frame_append(win2->w_frame, win1->w_frame);
 
-	(void)win_comp_pos();	// recompute w_winrow for all windows
+	win_comp_pos();	// recompute w_winrow for all windows
 	redraw_later(UPD_NOT_VALID);
     }
     win_enter(win1, FALSE);
@@ -2085,8 +2085,8 @@ win_equal(
     if (dir == 0)
 	dir = *p_ead;
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
-		      topframe, dir, 0, tabline_height(),
-		      (int)COLUMNS_WITHOUT_TPL(), topframe->fr_height);
+		      topframe, dir, firstwin->w_wincol, tabline_height(),
+		      topframe->fr_width, topframe->fr_height);
     if (!is_aucmd_win(next_curwin))
 	win_fix_scroll(TRUE);
 }
@@ -2144,7 +2144,7 @@ win_equal_rec(
 	    // frame.
 	    n = frame_minwidth(topfr, NOWIN);
 	    // add one for the rightmost window, it doesn't have a separator
-	    if (col + width == COLUMNS_WITHOUT_TPL())
+	    if (col + width >= firstwin->w_wincol + topframe->fr_width)
 		extra_sep = 1;
 	    else
 		extra_sep = 0;
@@ -2619,14 +2619,14 @@ close_last_window_tabpage(
     // Since goto_tabpage_tp above did not trigger *Enter autocommands, do
     // that now.
     apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
-    apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
-    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
-    if (old_curbuf != curbuf)
-	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #if defined(FEAT_TABPANEL)
     if (p_stpl > 0)
 	shell_new_columns();
 #endif
+    apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
+    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+    if (old_curbuf != curbuf)
+	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
     return TRUE;
 }
 
@@ -3461,12 +3461,9 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	}
 	free_tp = TRUE;
 	redraw_tabline = TRUE;
+	shell_new_columns();
 	if (h != tabline_height())
 	    shell_new_rows();
-#if defined(FEAT_TABPANEL)
-	redraw_tabpanel = TRUE;
-#endif
-	shell_new_columns();
     }
 
     // Free the memory used for the window.
@@ -4596,8 +4593,7 @@ win_init_size(void)
     firstwin->w_height = ROWS_AVAIL;
     firstwin->w_prev_height = ROWS_AVAIL;
     topframe->fr_height = ROWS_AVAIL;
-    firstwin->w_width = COLUMNS_WITHOUT_TPL();
-    topframe->fr_width = COLUMNS_WITHOUT_TPL();
+    firstwin->w_width = topframe->fr_width;
 }
 
 /*
@@ -4696,6 +4692,9 @@ win_new_tabpage(int after)
     tabpage_T	*prev_tp = curtab;
     tabpage_T	*newtp;
     int		n;
+#if defined(FEAT_TABPANEL)
+    int prev_columns = COLUMNS_WITHOUT_TPL();
+#endif
 
     if (cmdwin_type != 0)
     {
@@ -4763,7 +4762,10 @@ win_new_tabpage(int after)
 #ifdef FEAT_JOB_CHANNEL
 	entering_window(curwin);
 #endif
-
+#if defined(FEAT_TABPANEL)
+	if (prev_columns != COLUMNS_WITHOUT_TPL())
+	    shell_new_columns();
+#endif
 	redraw_all_later(UPD_NOT_VALID);
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
@@ -4971,7 +4973,10 @@ leave_tabpage(
     tp->tp_lastwin = lastwin;
     tp->tp_old_Rows = Rows;
     if (tp->tp_old_Columns != -1)
-	tp->tp_old_Columns = COLUMNS_WITHOUT_TPL();
+    {
+	tp->tp_old_Columns = topframe->fr_width;
+	tp->tp_old_coloff = firstwin->w_wincol;
+    }
     firstwin = NULL;
     lastwin = NULL;
     return OK;
@@ -5034,12 +5039,14 @@ enter_tabpage(
 #endif
 		))
 	shell_new_rows();
-    if (curtab->tp_old_Columns != COLUMNS_WITHOUT_TPL())
+    if (curtab->tp_old_Columns != COLUMNS_WITHOUT_TPL()
+	    || curtab->tp_old_coloff != TPL_LCOL())
     {
 	if (starting == 0)
 	{
 	    shell_new_columns();	// update window widths
-	    curtab->tp_old_Columns = COLUMNS_WITHOUT_TPL();
+	    curtab->tp_old_Columns = topframe->fr_width;
+	    curtab->tp_old_coloff = firstwin->w_wincol;
 	}
 	else
 	    curtab->tp_old_Columns = -1;  // update window widths later
@@ -5805,7 +5812,7 @@ win_alloc(win_T *after, int hidden)
      */
     if (!hidden)
 	win_append(after, new_wp);
-    new_wp->w_wincol = 0;
+    new_wp->w_wincol = TPL_LCOL();
     new_wp->w_width = COLUMNS_WITHOUT_TPL();
 
     // position the display and the cursor at the top of the file.
@@ -6153,6 +6160,8 @@ win_free_lsize(win_T *wp)
 /*
  * Called from win_new_shellsize() after Rows changed.
  * This only does the current tab page, others must be done when made active.
+ * Note: When called together with shell_new_columns(), call shell_new_columns()
+ * first to avoid this function updating firstwin->w_wincol first.
  */
     void
 shell_new_rows(void)
@@ -6164,19 +6173,23 @@ shell_new_rows(void)
     if (h < frame_minheight(topframe, NULL))
 	h = frame_minheight(topframe, NULL);
 
-    // First try setting the heights of windows with 'winfixheight'.  If
-    // that doesn't result in the right height, forget about that option.
+    // First try setting the heights of windows with 'winfixheight'.  If that
+    // doesn't result in the right height, forget about that option.
     frame_new_height(topframe, h, FALSE, TRUE, FALSE);
     if (!frame_check_height(topframe, h))
 	frame_new_height(topframe, h, FALSE, FALSE, FALSE);
 
-    (void)win_comp_pos();		// recompute w_winrow and w_wincol
+    win_comp_pos();		// recompute w_winrow and w_wincol
     compute_cmdrow();
     curtab->tp_ch_used = p_ch;
 
     if (!skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
 
+    redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
 #if 0
     // Disabled: don't want making the screen smaller make a window larger.
     if (p_ea)
@@ -6193,13 +6206,34 @@ shell_new_columns(void)
     if (firstwin == NULL)	// not initialized yet
 	return;
 
+#if defined(FEAT_TABPANEL)
+    int save_wincol = firstwin->w_wincol;
+    int save_fr_width = topframe->fr_width;
+#endif
+    int w = COLUMNS_WITHOUT_TPL();
+
     // First try setting the widths of windows with 'winfixwidth'.  If that
     // doesn't result in the right width, forget about that option.
-    frame_new_width(topframe, COLUMNS_WITHOUT_TPL(), FALSE, TRUE);
-    if (!frame_check_width(topframe, COLUMNS_WITHOUT_TPL()))
-	frame_new_width(topframe, COLUMNS_WITHOUT_TPL(), FALSE, FALSE);
+    frame_new_width(topframe, w, FALSE, TRUE);
+    if (!frame_check_width(topframe, w))
+	frame_new_width(topframe, w, FALSE, FALSE);
 
-    (void)win_comp_pos();		// recompute w_winrow and w_wincol
+    win_comp_pos();		// recompute w_winrow and w_wincol
+
+#if defined(FEAT_TABPANEL)
+    if (p_ea && firstwin->w_wincol + topframe->fr_width
+	    == save_wincol + save_fr_width &&
+	    (firstwin->w_wincol != save_wincol ||
+	     topframe->fr_width != save_fr_width))
+	win_equal(curwin, FALSE, 0);
+#endif
+    if (!skip_win_fix_scroll)
+	win_fix_scroll(TRUE);
+
+    redraw_tabline = TRUE;
+#if defined(FEAT_TABPANEL)
+    redraw_tabpanel = TRUE;
+#endif
 #if 0
     // Disabled: don't want making the screen smaller make a window larger.
     if (p_ea)
@@ -6256,7 +6290,7 @@ win_size_restore(garray_T *gap)
 	    }
 	}
 	// recompute the window positions
-	(void)win_comp_pos();
+	win_comp_pos();
     }
 }
 
@@ -6265,14 +6299,13 @@ win_size_restore(garray_T *gap)
  * frames.
  * Returns the row just after the last window.
  */
-    int
+    void
 win_comp_pos(void)
 {
     int		row = tabline_height();
-    int		col = 0;
+    int		col = TPL_LCOL();
 
     frame_comp_pos(topframe, &row, &col);
-    return row;
 }
 
 /*
@@ -6439,7 +6472,7 @@ frame_setheight(frame_T *curfrp, int height)
 		if (frp != curfrp)
 		    room -= frame_minheight(frp, NULL);
 	    }
-	    if (curfrp->fr_width != COLUMNS_WITHOUT_TPL())
+	    if (curfrp->fr_width != topframe->fr_width)
 		room_cmdline = 0;
 	    else
 	    {
@@ -6452,7 +6485,7 @@ frame_setheight(frame_T *curfrp, int height)
 
 	    if (height <= room + room_cmdline)
 		break;
-	    if (run == 2 || curfrp->fr_width == COLUMNS_WITHOUT_TPL())
+	    if (run == 2 || curfrp->fr_width == topframe->fr_width)
 	    {
 		height = room + room_cmdline;
 		break;
@@ -6571,7 +6604,7 @@ win_setwidth_win(int width, win_T *wp)
     frame_setwidth(wp->w_frame, width + wp->w_vsep_width);
 
     // recompute the window positions
-    (void)win_comp_pos();
+    win_comp_pos();
 
     redraw_all_later(UPD_NOT_VALID);
 }
@@ -6757,7 +6790,7 @@ win_setminwidth(void)
     // loop until there is a 'winminheight' that is possible
     while (p_wmw > 0)
     {
-	room = Columns;
+	room = topframe->fr_width;
 	needed = frame_minwidth(topframe, NULL);
 	if (room >= needed)
 	    break;
@@ -6995,7 +7028,7 @@ win_drag_vsep_line(win_T *dragwin, int offset)
 	else
 	    fr = fr->fr_next;
     }
-    (void)win_comp_pos();
+    win_comp_pos();
     redraw_all_later(UPD_NOT_VALID);
 }
 
@@ -7347,7 +7380,7 @@ command_height(void)
 
     // Find bottom frame with width of screen.
     frame_T *frp = lastwin->w_frame;
-    while (frp->fr_width != COLUMNS_WITHOUT_TPL() && frp->fr_parent != NULL)
+    while (frp->fr_width != topframe->fr_width && frp->fr_parent != NULL)
 	frp = frp->fr_parent;
 
     // Avoid changing the height of a window with 'winfixheight' set.
@@ -7459,7 +7492,7 @@ last_status_rec(frame_T *fr, int statusline)
 	    {
 		frame_new_height(fp, fp->fr_height - 1, FALSE, FALSE, FALSE);
 		frame_fix_height(wp);
-		(void)win_comp_pos();
+		win_comp_pos();
 	    }
 	    else
 		win_new_height(wp, wp->w_height - 1);
@@ -7667,7 +7700,7 @@ reset_lnums(void)
 	    if (wp->w_save_cursor.w_topline_corr == wp->w_topline
 				  && wp->w_save_cursor.w_topline_save != 0)
 		wp->w_topline = wp->w_save_cursor.w_topline_save;
-	   if (wp->w_save_cursor.w_topline_save > wp->w_buffer->b_ml.ml_line_count)
+	    if (wp->w_save_cursor.w_topline_save > wp->w_buffer->b_ml.ml_line_count)
 		wp->w_valid &= ~VALID_TOPLINE;
 	}
 }

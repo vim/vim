@@ -4,11 +4,11 @@
 =			  C A P I T O L O   DUE				      =
 ===============================================================================
 
-     Hic Sunt Dracones: Se questa è la prima volta che vi accostate a vim
+     Hic Sunt Dracones: Se questa Ã¨ la prima volta che vi accostate a vim
      e preferite iniziare dal capitolo introduttivo, gentilmente immettete
      :q<INVIO> e poi iniziate da quello.
 
-     Il tempo necessario per completare questo capitolo è di circa 8-10
+     Il tempo necessario per completare questo capitolo Ã¨ di circa 8-10
      minuti, a seconda del tempo utilizzato per fare delle prove.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,11 +32,11 @@ MNEMONICO: (c)cambia (i)interna (w)parola con <Contenuto (r)egistro> di nome (a)
 
   5. Andate su una lettera qualsiasi di 'dolci' e battete   ciw<C-r>b<ESC>
 
---->  a) Edward sarà d'ora in poi responsabile della razione di biscotti
-      b) Come compito, Vince sarà il solo a decidere riguardo ai dolci
+--->  a) Edward sarÃ  d'ora in poi responsabile della razione di biscotti
+      b) Come compito, Vince sarÃ  il solo a decidere riguardo ai dolci
 
-NOTA: Anche una parola cancellata può essere inviata ad un registro, p.es.,
-      "sdiw cancellerà (d) la parola sotto il cursore (iw) e la metterà
+NOTA: Anche una parola cancellata puÃ² essere inviata ad un registro, p.es.,
+      "sdiw cancellerÃ  (d) la parola sotto il cursore (iw) e la metterÃ 
       nel registro (s)
 RIFERIMENTI: 	Registri 	  :h registers
 		Registri con nome :h quotea
@@ -62,11 +62,11 @@ RIFERIMENTI: 	Registri 	  :h registers
 NOTA: Tutte le chiamate a sistema dipendono dal S.O., p.es., in ambiente
       Windows si usa    system('date /t')   o  :r!date /t
 
----> Non ricordo il numero esatto di secondi in un giorno, è 84600?
-     La data di oggi è: 
+---> Non ricordo il numero esatto di secondi in un giorno, Ã¨ 84600?
+     La data di oggi Ã¨: 
 
-NOTA: Lo stesso risultato si può ottenere con   :pu=system('date')
-      o, ancora più brevemente, con  :r!date
+NOTA: Lo stesso risultato si puÃ² ottenere con   :pu=system('date')
+      o, ancora piÃ¹ brevemente, con  :r!date
 
 RIFERIMENTI: 	Registro espressioni	:h quote=
 
@@ -94,7 +94,7 @@ NOTA: Dovreste notare che le righe cancellate per prime scendono nella
 ---> 0. Questo
      9. dondolante
      8. messaggio
-     7. è
+     7. Ã¨
      6. in
      5. asse
      4. un
@@ -103,7 +103,7 @@ NOTA: Dovreste notare che le righe cancellate per prime scendono nella
      1. tributo
 
 NOTA: Le cancellazioni di righe intere (dd) sopravvivono nei registri numerati
-      molto più a lungo delle copie di righe intere (yy), o delle
+      molto piÃ¹ a lungo delle copie di righe intere (yy), o delle
       cancellazioni che implicano movimenti minori
 
 RIFERIMENTI: 	Registri numerati 	:h quote0
@@ -115,7 +115,7 @@ RIFERIMENTI: 	Registri numerati 	:h quote0
 
 	         ** Evitare di contare le righe di codice **
 
-NOTA: Un problema frequente quando si scrivono programmi è spostare numerose
+NOTA: Un problema frequente quando si scrivono programmi Ã¨ spostare numerose
       righe di codice. Il metodo seguente evita di dover calcolare numeri di
       riga con operazioni tipo   "a147d  o  :945,1091d a  o, ancor peggio,
       usando prima i<C-r>=1091-945<INVIO>
@@ -124,7 +124,7 @@ NOTA: Un problema frequente quando si scrivono programmi è spostare numerose
 
   2. Andate alla prima riga della funzione e marcatela con   ma
 
-NOTA: La posizione sulla riga NON è importante!
+NOTA: La posizione sulla riga NON Ã¨ importante!
 
   3. Spostatevi a fine riga e da qui alla fine del blocco di codice
      con   $%
@@ -136,14 +136,14 @@ MNEMONICO: nel registro(") di nome (a) mettere la cancellazione (d) dal
 
   5. Incollare il blocco the le righe BBB e CCC   "ap
 
-NOTA: Provare più volte quest'operazione, per impratichirsi    ma$%"ad'a
+NOTA: Provare piÃ¹ volte quest'operazione, per impratichirsi    ma$%"ad'a
 
 ---> AAA
      function cresciutaTroppoinFretta() {
        if ( condizioneVera ) {
          faiQualcosa()
        }
-       // La classificazione della nostra funzione è cambiata
+       // La classificazione della nostra funzione Ã¨ cambiata
        // non ha senso mantenerla nella posizione attuale
 
        // ...immaginate centinaia di righe di codice
@@ -155,7 +155,7 @@ NOTA: Provare più volte quest'operazione, per impratichirsi    ma$%"ad'a
      CCC
 
 NOTA: marcature e registri non hanno niente in comune, quindi il registro
-      a è completamente indipendente dalla marcatura a. Questo non vale
+      a Ã¨ completamente indipendente dalla marcatura a. Questo non vale
       per i nomi dei registri e quelli delle macro di Vim.
 
 RIFERIMENTI: 	Marcature		:h marks
@@ -181,9 +181,9 @@ RIFERIMENTI: 	Marcature		:h marks
   8. Vedere dove vanno a finire le cancellazioni di intere righe: dd
      nei registri numerati, ossia discendendo dal registro 1 al 9.
      Osservare che le righe intere cancellate sono disponibili nei registri
-     numerati più a lungo di qualsiasi altra modifica
+     numerati piÃ¹ a lungo di qualsiasi altra modifica
   9. Vedere la destinazione finale delle operazioni di copia nei registri
-     numerati e controllare quanto si può aspettare che durino
+     numerati e controllare quanto si puÃ² aspettare che durino
 
  10. Inserire marcature in modo Normale   m[a-zA-Z0-9]
  11. Spostarsi a una riga marcata con il comando  '
@@ -192,6 +192,6 @@ RIFERIMENTI: 	Marcature		:h marks
 
   Qui finisce il capitolo due della guida Vim. Ci sono lavori in corso.
 
-  Questo capitolo è stato scritto da Paul D. Parker
+  Questo capitolo Ã¨ stato scritto da Paul D. Parker
   e tradotto da Antonio Colombo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

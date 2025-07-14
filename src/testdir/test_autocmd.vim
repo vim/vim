@@ -1,10 +1,7 @@
 " Tests for autocommands
 
-source shared.vim
-source check.vim
-source term_util.vim
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
@@ -3761,6 +3758,27 @@ func Test_Visual_doautoall_redraw()
   %bwipe!
 endfunc
 
+func Test_get_Visual_selection_in_curbuf_autocmd()
+  call test_override('starting', 1)
+  new
+  autocmd OptionSet list let b:text = getregion(getpos('.'), getpos('v'))
+  call setline(1, 'foo bar baz')
+
+  normal! gg0fbvtb
+  setlocal list
+  call assert_equal(['bar '], b:text)
+  exe "normal! \<Esc>"
+
+  normal! v0
+  call setbufvar('%', '&list', v:false)
+  call assert_equal(['foo bar '], b:text)
+  exe "normal! \<Esc>"
+
+  autocmd! OptionSet list
+  bwipe!
+  call test_override('starting', 0)
+endfunc
+
 " This was using freed memory.
 func Test_BufNew_arglocal()
   arglocal
@@ -5440,6 +5458,47 @@ func Test_reuse_curbuf_switch()
   unlet! s:asdf_win s:triggered
   call CleanUpTestAuGroup()
   %bw!
+endfunc
+
+func Test_eventignore_subtract()
+  set eventignore=all,-WinEnter
+  augroup testing
+    autocmd!
+    autocmd WinEnter * ++once let s:triggered = 1
+  augroup END
+
+  new
+  call assert_equal(1, s:triggered)
+
+  set eventignore&
+  unlet! s:triggered
+  call CleanUpTestAuGroup()
+  %bw!
+endfunc
+
+func Test_VimResized_and_window_width_not_equalized()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    let g:vim_resized = 0
+    autocmd VimResized * let g:vim_resized = 1
+    10vsplit
+  END
+  call writefile(lines, 'XTest_VimResize', 'D')
+  let buf = RunVimInTerminal('-S XTest_VimResize', {'rows': 10, 'cols': 30})
+
+  " redraw now to avoid a redraw after the :echo command
+  call term_sendkeys(buf, ":redraw!\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, ":set columns=40\<CR>")
+  call term_sendkeys(buf, ":echo 'VimResized:' g:vim_resized\<CR>")
+  call WaitForAssert({-> assert_match('^VimResized: 1$', term_getline(buf, 10))}, 1000)
+  call term_sendkeys(buf, ":let window_width = getwininfo(win_getid())[0].width\<CR>")
+  call term_sendkeys(buf, ":echo 'window_width:' window_width\<CR>")
+  call WaitForAssert({-> assert_match('^window_width: 10$', term_getline(buf, 10))}, 1000)
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

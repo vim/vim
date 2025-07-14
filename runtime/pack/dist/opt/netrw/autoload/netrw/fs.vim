@@ -25,7 +25,7 @@ endfunction
 
 function! netrw#fs#ComposePath(base, subdir)
     if has('amiga')
-        let ec = a:base[s:Strlen(a:base)-1]
+        let ec = a:base[strdisplaywidth(a:base)-1]
         if ec != '/' && ec != ':'
             let ret = a:base . '/' . a:subdir
         else
@@ -72,18 +72,22 @@ endfunction
 " }}}
 " netrw#fs#AbsPath: returns the full path to a directory and/or file {{{
 
-function! netrw#fs#AbsPath(filename)
-    let filename = a:filename
+function! netrw#fs#AbsPath(path)
+    let path = a:path->substitute(s:slash . '$', '', 'e')
 
-    if filename !~ '^/'
-        let filename = resolve(getcwd() . '/' . filename)
+    " Nothing to do
+    if isabsolutepath(path)
+        return path
     endif
 
-    if filename != "/" && filename =~ '/$'
-        let filename = substitute(filename, '/$', '', '')
-    endif
+    return path->fnamemodify(':p')->substitute(s:slash . '$', '', 'e')
+endfunction
 
-    return filename
+" }}}
+" netrw#fs#Dirname: {{{
+
+function netrw#fs#Dirname(path)
+    return netrw#fs#AbsPath(a:path)->fnamemodify(':h')
 endfunction
 
 " }}}
@@ -180,7 +184,7 @@ function! netrw#fs#Remove(path)
     endif
 
     if result < 0
-        call netrw#ErrorMsg(netrw#LogLevel('WARNING'), printf('delete("%s") failed!', path), 71)
+        call netrw#msg#Notify('WARNING', printf('delete("%s") failed!', path))
     endif
 
     return result

@@ -67,6 +67,7 @@
  * 19.10.2024  -e did add an extra space #15899
  * 11.11.2024  improve end-of-options argument parser #9285
  * 07.12.2024  fix overflow with xxd --autoskip and large sparse files #16175
+ * 15.06.2025  improve color code logic
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -147,7 +148,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2024-12-07 by Juergen Weigert et al.";
+char version[] = "xxd 2025-06-15 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -221,6 +222,18 @@ char osver[] = "";
     + 12 * COLS    /* ASCII dump with colors */ \
     + 2)           /* "\n\0" */
 
+/*
+ * LLEN_NO_COLOR is the maximum length of a line excluding the colors.
+ */
+#define LLEN_NO_COLOR \
+    (39            /* addr: ⌈log10(ULONG_MAX)⌉ if "-d" flag given. We assume ULONG_MAX = 2**128 */ \
+    + 2            /* ": " */ \
+    + 2 * COLS    /* hex dump */ \
+    + (COLS - 1)   /* whitespace between groups if "-g1" option given and "-c" maxed out */ \
+    + 2            /* whitespace */ \
+    + COLS    /* ASCII dump */ \
+    + 2)           /* "\n\0" */
+
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
 /* the different hextypes known by this program: */
@@ -232,18 +245,20 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
 #define CONDITIONAL_CAPITALIZE(c) (capitalize ? toupper((unsigned char)(c)) : (c))
 
-#define COLOR_PROLOGUE \
-l[c++] = '\033'; \
-l[c++] = '['; \
-l[c++] = '1'; \
-l[c++] = ';'; \
-l[c++] = '3';
+#define COLOR_PROLOGUE(color) \
+l_colored[c++] = '\033'; \
+l_colored[c++] = '['; \
+l_colored[c++] = '1'; \
+l_colored[c++] = ';'; \
+l_colored[c++] = '3'; \
+l_colored[c++] = (color); \
+l_colored[c++] = 'm';
 
 #define COLOR_EPILOGUE \
-l[c++] = '\033'; \
-l[c++] = '['; \
-l[c++] = '0'; \
-l[c++] = 'm';
+l_colored[c++] = '\033'; \
+l_colored[c++] = '['; \
+l_colored[c++] = '0'; \
+l_colored[c++] = 'm';
 #define COLOR_RED '1'
 #define COLOR_GREEN '2'
 #define COLOR_YELLOW '3'
@@ -515,8 +530,54 @@ huntype(
   return 0;
 }
 
+
 /*
- * Print line l. If nz is false, xxdline regards the line as a line of
+ * Print line l with given colors.
+ */
+  static void
+print_colored_line(FILE *fp, char *l, char *colors)
+{
+  static char l_colored[LLEN+1];
+
+  if (colors)
+    {
+      int c = 0;
+      if (colors[0])
+	{
+	  COLOR_PROLOGUE(colors[0])
+	}
+      l_colored[c++] = l[0];
+      int i;
+      for (i = 1; l[i]; i++)
+	{
+	  if (colors[i] != colors[i-1])
+	    {
+	      if (colors[i-1])
+		{
+		  COLOR_EPILOGUE
+		}
+	      if (colors[i])
+		{
+		  COLOR_PROLOGUE(colors[i])
+		}
+	    }
+	  l_colored[c++] = l[i];
+	}
+
+      if (colors[i])
+	{
+	  COLOR_EPILOGUE
+	}
+      l_colored[c++] = '\0';
+
+      fputs_or_die(l_colored, fp);
+    }
+  else
+    fputs_or_die(l, fp);
+}
+
+/*
+ * Print line l with given colors. If nz is false, xxdline regards the line as a line of
  * zeroes. If there are three or more consecutive lines of zeroes,
  * they are replaced by a single '*' character.
  *
@@ -528,13 +589,17 @@ huntype(
  * If nz is always positive, lines are never suppressed.
  */
   static void
-xxdline(FILE *fp, char *l, int nz)
+xxdline(FILE *fp, char *l, char *colors, int nz)
 {
-  static char z[LLEN+1];
+  static char z[LLEN_NO_COLOR+1];
+  static char z_colors[LLEN_NO_COLOR+1];
   static signed char zero_seen = 0;
 
   if (!nz && zero_seen == 1)
-    strcpy(z, l);
+    {
+      strcpy(z, l);
+      memcpy(z_colors, colors, strlen(z));
+    }
 
   if (nz || !zero_seen++)
     {
@@ -543,12 +608,13 @@ xxdline(FILE *fp, char *l, int nz)
 	  if (nz < 0)
 	    zero_seen--;
 	  if (zero_seen == 2)
-	    fputs_or_die(z, fp);
+	    print_colored_line(fp, z, z_colors);
 	  if (zero_seen > 2)
 	    fputs_or_die("*\n", fp);
 	}
       if (nz >= 0 || zero_seen > 0)
-	fputs_or_die(l, fp);
+	print_colored_line(fp, l, colors);
+
       if (nz)
 	zero_seen = 0;
     }
@@ -589,8 +655,8 @@ static unsigned char etoa64[] =
     0070,0071,0372,0373,0374,0375,0376,0377
 };
 
-  static void
-begin_coloring_char (char *l, int *c, int e, int ebcdic)
+  static char
+get_color_char (int e, int ebcdic)
 {
   if (ebcdic)
     {
@@ -601,37 +667,37 @@ begin_coloring_char (char *l, int *c, int e, int ebcdic)
 	  (e >= 208 && e <= 217) || (e >= 226 && e <= 233) ||
 	  (e >= 240 && e <= 249) || (e == 189) || (e == 64) ||
 	  (e == 173) || (e == 224) )
-	l[(*c)++] = COLOR_GREEN;
+	return COLOR_GREEN;
 
       else if (e == 37 || e == 13 || e == 5)
-	l[(*c)++] = COLOR_YELLOW;
+	return COLOR_YELLOW;
       else if (e == 0)
-	l[(*c)++] = COLOR_WHITE;
+	return COLOR_WHITE;
       else if (e == 255)
-	l[(*c)++] = COLOR_BLUE;
+	return COLOR_BLUE;
       else
-	l[(*c)++] = COLOR_RED;
+	return COLOR_RED;
     }
   else  /* ASCII */
     {
       #if defined(__MVS__) && __CHARSET_LIB == 0
       if (e >= 64)
-	l[(*c)++] = COLOR_GREEN;
+	return COLOR_GREEN;
       #else
       if (e > 31 && e < 127)
-	l[(*c)++] = COLOR_GREEN;
+	return COLOR_GREEN;
       #endif
 
       else if (e == 9 || e == 10 || e == 13)
-	l[(*c)++] = COLOR_YELLOW;
+	return COLOR_YELLOW;
       else if (e == 0)
-	l[(*c)++] = COLOR_WHITE;
+	return COLOR_WHITE;
       else if (e == 255)
-	l[(*c)++] = COLOR_BLUE;
+	return COLOR_BLUE;
       else
-	l[(*c)++] = COLOR_RED;
+	return COLOR_RED;
     }
-  l[(*c)++] = 'm';
+    return 0;
 }
 
   static int
@@ -664,15 +730,17 @@ main(int argc, char *argv[])
   int capitalize = 0, decimal_offset = 0;
   int ebcdic = 0;
   int octspergrp = -1;	/* number of octets grouped in output */
-  int grplen;		/* total chars per octet group */
+  int grplen;		/* total chars per octet group excluding colors */
   long length = -1, n = 0, seekoff = 0;
   unsigned long displayoff = 0;
-  static char l[LLEN+1];  /* static because it may be too big for stack */
+  static char l[LLEN_NO_COLOR+1];  /* static because it may be too big for stack */
+  static char colors[LLEN_NO_COLOR+1]; /* color array */
   char *pp;
   char *varname = NULL;
   int addrlen = 9;
   int color = 0;
   char *no_color;
+  char cur_color = 0;
 
   no_color = getenv("NO_COLOR");
   if (no_color == NULL || no_color[0] == '\0')
@@ -1064,8 +1132,6 @@ main(int argc, char *argv[])
   if (hextype != HEX_BITS)
     {
       grplen = octspergrp + octspergrp + 1;	/* chars per octet group */
-      if (color)
-	grplen += 11 * octspergrp;  /* color-code needs 11 extra characters */
     }
   else	/* hextype == HEX_BITS */
     grplen = 8 * octspergrp + 1;
@@ -1076,7 +1142,7 @@ main(int argc, char *argv[])
 	{
 	  addrlen = sprintf(l, decimal_offset ? "%08ld:" : "%08lx:",
 				  ((unsigned long)(n + seekoff + displayoff)));
-	  for (c = addrlen; c < LLEN; l[c++] = ' ')
+	  for (c = addrlen; c < LLEN_NO_COLOR; l[c++] = ' ')
 	    ;
 	}
       x = hextype == HEX_LITTLEENDIAN ? p ^ (octspergrp-1) : p;
@@ -1085,17 +1151,13 @@ main(int argc, char *argv[])
 	{
 	  if (color)
 	    {
-	      COLOR_PROLOGUE
-	      begin_coloring_char(l,&c,e,ebcdic);
-	      l[c++] = hexx[(e >> 4) & 0xf];
-	      l[c++] = hexx[e & 0xf];
-	      COLOR_EPILOGUE
+	      cur_color = get_color_char(e, ebcdic);
+	      colors[c] = cur_color;
+	      colors[c+1] = cur_color;
 	    }
-	  else /*No colors*/
-	    {
-	      l[c]   = hexx[(e >> 4) & 0xf];
-	      l[++c] = hexx[e & 0xf];
-	    }
+
+	  l[c]   = hexx[(e >> 4) & 0xf];
+	  l[++c] = hexx[e & 0xf];
 	}
       else /* hextype == HEX_BITS */
 	{
@@ -1104,60 +1166,43 @@ main(int argc, char *argv[])
 	}
       if (e)
 	nonzero++;
-      /* When changing this update definition of LLEN above. */
+      /* When changing this update definition of LLEN and LLEN_NO_COLOR above. */
       if (hextype == HEX_LITTLEENDIAN)
 	/* last group will be fully used, round up */
 	c = grplen * ((cols + octspergrp - 1) / octspergrp);
       else
 	c = (grplen * cols - 1) / octspergrp;
 
+
+      if (ebcdic)
+	e = (e < 64) ? '.' : etoa64[e-64];
+
+      if (hextype == HEX_LITTLEENDIAN)
+	c -= 1;
+
+      c += addrlen + 3 + p;
       if (color)
 	{
-	  if (hextype == HEX_BITS)
-	    c += addrlen + 3 + p*12;
-	  else
-	    c = addrlen + 3 + (grplen * cols - 1)/octspergrp + p*12;
-
-	  COLOR_PROLOGUE
-	  begin_coloring_char(l,&c,e,ebcdic);
-#if defined(__MVS__) && __CHARSET_LIB == 0
-	  if (e >= 64)
-	    l[c++] = e;
-	  else
-	    l[c++] = '.';
-#else
-	  if (ebcdic)
-	    e = (e < 64) ? '.' : etoa64[e-64];
-	  l[c++] = (e > 31 && e < 127) ? e : '.';
-#endif
-	  COLOR_EPILOGUE
+	  colors[c] = cur_color;
 	}
-      else /*no colors*/
+      l[c++] =
+#if defined(__MVS__) && __CHARSET_LIB == 0
+	  (e >= 64)
+#else
+	  (e > 31 && e < 127)
+#endif
+	  ? e : '.';
+      n++;
+      if (++p == cols)
 	{
-	  if (ebcdic)
-	    e = (e < 64) ? '.' : etoa64[e-64];
+	  l[c++] = '\n';
+	  l[c] = '\0';
 
-	  if (hextype == HEX_LITTLEENDIAN)
-	    c -= 1;
-
-	  c += addrlen + 3 + p;
-	  l[c++] =
-#if defined(__MVS__) && __CHARSET_LIB == 0
-	      (e >= 64)
-#else
-	      (e > 31 && e < 127)
-#endif
-	      ? e : '.';
+	  xxdline(fpo, l, color ? colors : NULL, autoskip ? nonzero : 1);
+	  memset(colors, 0, c);
+	  nonzero = 0;
+	  p = 0;
 	}
-	n++;
-	if (++p == cols)
-	  {
-	    l[c++] = '\n';
-	    l[c] = '\0';
-	    xxdline(fpo, l, autoskip ? nonzero : 1);
-	    nonzero = 0;
-	    p = 0;
-	  }
     }
   if (p)
     {
@@ -1175,11 +1220,8 @@ main(int argc, char *argv[])
 
 	      for (i = 0; i < fill;i++)
 		{
-		  COLOR_PROLOGUE
-		  l[c++] = COLOR_RED;
-		  l[c++] = 'm';
+		  colors[c] = COLOR_RED;
 		  l[c++] = ' '; /* empty space */
-		  COLOR_EPILOGUE
 		  x++;
 		  p++;
 		}
@@ -1193,18 +1235,17 @@ main(int argc, char *argv[])
 
 	      for (i = cols - p; i > 0;i--)
 		{
-		  COLOR_PROLOGUE
-		  l[c++] = COLOR_RED;
-		  l[c++] = 'm';
+		  colors[c] = COLOR_RED;
 		  l[c++] = ' '; /* empty space */
-		  COLOR_EPILOGUE
 		}
 	    }
+	  xxdline(fpo, l, colors, 1);
 	}
-      xxdline(fpo, l, 1);
+      else
+	xxdline(fpo, l, NULL, 1);
     }
   else if (autoskip)
-    xxdline(fpo, l, -1);	/* last chance to flush out suppressed lines */
+    xxdline(fpo, l, color ? colors : NULL, -1);	/* last chance to flush out suppressed lines */
 
   fclose_or_die(fp, fpo);
   return 0;

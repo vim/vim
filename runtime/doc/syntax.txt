@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 May 17
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2067,13 +2067,8 @@ old way, put the following line into your Vim startup file: >
 All (exported) public types declared in `java.lang` are always automatically
 imported and available as simple names.  To highlight them, use: >
 	:let g:java_highlight_java_lang_ids = 1
-
-You can also highlight types of most standard Java packages if you download
-the javaid.vim script at http://www.fleiner.com/vim/download.html.  If you
-prefer to only highlight types of a certain package, say `java.io`, use the
-following: >
-	:let g:java_highlight_java_io = 1
-Check the javaid.vim file for a list of all the packages that are supported.
+You can also generate syntax items for other public and protected types and
+opt in to highlight some of their names; see |java-package-info-url|.
 
 Headers of indented function declarations can be highlighted (along with parts
 of lambda expressions and method reference expressions), but it depends on how
@@ -2226,7 +2221,8 @@ The supported JEP numbers are to be drawn from this table:
 Note that as soon as the particular preview feature will have been integrated
 into the Java platform, its entry will be removed from the table and related
 optionality will be discontinued.
-
+						*java-package-info-url*
+https://github.com/zzzyxwvut/java-vim/blob/master/tools/javaid/src/javaid/package-info.java
 
 JSON			*json.vim* *ft-json-syntax* *g:vim_json_conceal*
 						*g:vim_json_warnings*
@@ -3106,7 +3102,7 @@ PRINTCAP + TERMCAP	*ft-ptcap-syntax* *ft-termcap-syntax*
 This syntax file applies to the printcap and termcap databases.
 
 In order for Vim to recognize printcap/termcap files that do not match
-the patterns *printcap*, or *termcap*, you must put additional patterns
+the patterns "*printcap*", or "*termcap*", you must put additional patterns
 appropriate to your system in your |myfiletypefile| file.  For these
 patterns, you must set the variable "b:ptcap_type" to either "print" or
 "term", and then the 'filetype' option to ptcap.
@@ -3552,6 +3548,10 @@ variables in your <.vimrc>:
 	let g:is_dash	   = 1
 <   sh: Bourne shell >
 	let g:is_sh	   = 1
+
+Specific shell features are automatically enabled based on the shell detected
+from the shebang line ("#! ...").  For KornShell Vim detects different shell
+features for mksh, ksh88, ksh93, ksh93u, ksh93v, and ksh2020.
 
 If there's no "#! ..." line, and the user hasn't availed himself/herself of a
 default sh.vim syntax setting as just shown, then syntax/sh.vim will assume

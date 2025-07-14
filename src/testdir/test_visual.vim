@@ -1,9 +1,7 @@
 " Tests for various Visual modes.
 
-source shared.vim
-source check.vim
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func Test_block_shift_multibyte()
   " Uses double-wide character.

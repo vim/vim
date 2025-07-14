@@ -1,8 +1,6 @@
 " Test for completion menu
 
-source shared.vim
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 let g:months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 let g:setting = ''
@@ -2030,6 +2028,7 @@ func Test_pum_maxwidth_multibyte()
   CheckScreendump
 
   let lines =<< trim END
+    hi StrikeFake ctermfg=9
     let g:change = 0
     func Omni_test(findstart, base)
       if a:findstart
@@ -2054,8 +2053,14 @@ func Test_pum_maxwidth_multibyte()
           \ #{word: "bar", menu: "fooMenu", kind: "一二三四"},
           \ #{word: "一二三四五", kind: "multi"},
           \ ]
-      else
         return [#{word: "bar", menu: "fooMenu", kind: "一二三"}]
+      elseif g:change == 3
+        return [#{word: "bar", menu: "fooMenu", kind: "一二三"}]
+      else
+        return [
+          \ #{word: "一二三四五六七八九十", abbr_hlgroup: "StrikeFake"},
+          \ #{word: "123456789_123456789_123456789_", abbr_hlgroup: "StrikeFake"},
+          \ ]
       endif
     endfunc
     set omnifunc=Omni_test
@@ -2168,6 +2173,12 @@ func Test_pum_maxwidth_multibyte()
     call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
   endif
 
+  call term_sendkeys(buf, ":let g:change=4\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "S\<C-X>\<C-O>")
+  call VerifyScreenDump(buf, 'Test_pum_maxwidth_23', {'rows': 8})
+  call term_sendkeys(buf, "\<ESC>")
+
   call StopVimInTerminal(buf)
 endfunc
 
@@ -2198,6 +2209,71 @@ func Test_pum_clear_when_switch_tab_or_win()
   call term_sendkeys(buf, "\<F4>")
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_switchwin_clear_pum_02', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_pum_position_when_wrap()
+  CheckScreendump
+  let lines =<< trim END
+    func Omni_test(findstart, base)
+      if a:findstart
+        return col(".")
+      endif
+      return ['foo', 'bar', 'foobar']
+    endfunc
+    set omnifunc=Omni_test
+    set wrap
+    set cot+=noinsert
+  END
+  call writefile(lines, 'Xtest', 'D')
+  let buf = RunVimInTerminal('-S Xtest', #{rows: 15, cols: 25})
+
+  let long_text = repeat('abcde ', 20)
+  call term_sendkeys(buf, "i" .. long_text)
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "5|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line1', {})
+  call term_sendkeys(buf, "\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "30|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line2', {})
+  call term_sendkeys(buf, "\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "55|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line3', {})
+  call term_sendkeys(buf, "\<C-E>\<ESC>")
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, "85|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line4', {})
+  call term_sendkeys(buf, "\<C-E>\<ESC>")
+  call TermWait(buf, 100)
+
+  call term_sendkeys(buf, "108|")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "a\<C-X>\<C-O>")
+  call TermWait(buf, 100)
+  call VerifyScreenDump(buf, 'Test_pum_wrap_line5', {})
+  call term_sendkeys(buf, "\<C-E>\<ESC>")
+  call TermWait(buf, 100)
 
   call StopVimInTerminal(buf)
 endfunc

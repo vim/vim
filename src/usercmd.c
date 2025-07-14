@@ -486,16 +486,33 @@ get_commandtype(int expand)
 
 #ifdef FEAT_EVAL
 /*
- * Get the name of completion type "expand" as a string.
+ * Get the name of completion type "expand" as an allocated string.
+ * "compl_arg" is the function name for "custom" and "customlist" types.
+ * Returns NULL if no completion is available or on allocation failure.
  */
     char_u *
-cmdcomplete_type_to_str(int expand)
+cmdcomplete_type_to_str(int expand, char_u *compl_arg)
 {
     keyvalue_T *kv;
+    char_u     *cmd_compl;
 
     kv = get_commandtype(expand);
+    if (kv == NULL || kv->value.string == NULL)
+	return NULL;
 
-    return (kv == NULL) ? NULL : kv->value.string;
+    cmd_compl = kv->value.string;
+    if (expand == EXPAND_USER_LIST || expand == EXPAND_USER_DEFINED)
+    {
+	char_u	*buffer;
+
+	buffer = alloc(STRLEN(cmd_compl) + STRLEN(compl_arg) + 2);
+	if (buffer == NULL)
+	    return NULL;
+	sprintf((char *)buffer, "%s,%s", cmd_compl, compl_arg);
+	return buffer;
+    }
+
+    return vim_strsave(cmd_compl);
 }
 
 /*
@@ -600,17 +617,21 @@ uc_list(char_u *name, size_t name_len)
 		msg_putchar('|');
 		--len;
 	    }
-	    while (len-- > 0)
-		msg_putchar(' ');
+	    if (len != 0)
+		msg_puts(&"    "[4 - len]);
 
 	    msg_outtrans_attr(cmd->uc_name, HL_ATTR(HLF_D));
 	    len = (int)cmd->uc_namelen + 4;
 
-	    do
+	    if (len < 21)
 	    {
-		msg_putchar(' ');
-		++len;
-	    } while (len < 22);
+		// Field padding spaces   12345678901234567
+		static char spaces[18] = "                 ";
+		msg_puts(&spaces[len - 4]);
+		len = 21;
+	    }
+	    msg_putchar(' ');
+	    ++len;
 
 	    // "over" is how much longer the name is than the column width for
 	    // the name, we'll try to align what comes after.

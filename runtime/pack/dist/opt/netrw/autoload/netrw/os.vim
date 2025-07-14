@@ -19,7 +19,7 @@ function! netrw#os#Execute(cmd)
     endif
 
     if v:shell_error
-        call netrw#ErrorMsg(netrw#LogLevel('ERROR'), "shell signalled an error", 106)
+        call netrw#msg#Notify('ERROR', "shell signalled an error")
     endif
 endfunction
 
@@ -37,7 +37,7 @@ endfunction
 
 function! netrw#os#Open(file) abort
     if has('nvim')
-        call luaeval('vim.ui.open(_A[1]) and nil', [a:file])
+        call luaeval('vim.ui.open(_A) and nil', a:file)
     else
         call dist#vim9#Open(a:file)
     endif

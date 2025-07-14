@@ -125,6 +125,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     autohotkey: ['file.ahk'],
     autoit: ['file.au3'],
     automake: ['GNUmakefile.am', 'makefile.am', 'Makefile.am'],
+    autopkgtest: ['/debian/tests/control', 'any/debian/tests/control'],
     ave: ['file.ave'],
     awk: ['file.awk', 'file.gawk'],
     b: ['file.mch', 'file.ref', 'file.imp'],
@@ -142,6 +143,8 @@ def s:GetFilenameChecks(): dict<list<string>>
     blank: ['file.bl'],
     blueprint: ['file.blp'],
     bp: ['Android.bp'],
+    brighterscript: ['file.bs'],
+    brightscript: ['file.brs'],
     bsdl: ['file.bsd', 'file.bsdl'],
     bst: ['file.bst'],
     bzl: ['file.bazel', 'file.bzl', 'WORKSPACE', 'WORKSPACE.bzlmod'],
@@ -285,6 +288,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     fgl: ['file.4gl', 'file.4gh', 'file.m4gl'],
     firrtl: ['file.fir'],
     fish: ['file.fish'],
+    flix: ['file.flix'],
     focexec: ['file.fex', 'file.focexec'],
     form: ['file.frm'],
     forth: ['file.ft', 'file.fth', 'file.4th'],
@@ -298,7 +302,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     func: ['file.fc'],
     fusion: ['file.fusion'],
     fvwm: ['/.fvwm/file', 'any/.fvwm/file'],
-    gdb: ['.gdbinit', 'gdbinit', 'file.gdb', '.config/gdbearlyinit', '.gdbearlyinit'],
+    gdb: ['.gdbinit', 'gdbinit', '.cuda-gdbinit', 'cuda-gdbinit', 'file.gdb', '.config/gdbearlyinit', '.gdbearlyinit'],
     gdmo: ['file.mo', 'file.gdmo'],
     gdresource: ['file.tscn', 'file.tres'],
     gdscript: ['file.gd'],
@@ -345,6 +349,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     haskellpersistent: ['file.persistentmodels'],
     haste: ['file.ht'],
     hastepreproc: ['file.htpp'],
+    haxe: ['file.hx'],
     hb: ['file.hb'],
     hcl: ['file.hcl'],
     heex: ['file.heex'],
@@ -563,6 +568,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     nsis: ['file.nsi', 'file.nsh'],
     ntriples: ['file.nt'],
     nu: ['file.nu'],
+    numbat: ['file.nbt'],
     obj: ['file.obj'],
     objdump: ['file.objdump', 'file.cppobjdump'],
     obse: ['file.obl', 'file.obse', 'file.oblivion', 'file.obscript'],
@@ -639,6 +645,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     qmldir: ['qmldir'],
     quake: ['anybaseq2/file.cfg', 'anyid1/file.cfg', 'quake3/file.cfg', 'baseq2/file.cfg', 'id1/file.cfg', 'quake1/file.cfg', 'some-baseq2/file.cfg', 'some-id1/file.cfg', 'some-quake1/file.cfg'],
     quarto: ['file.qmd'],
+    quickbms: ['file.bms'],
     r: ['file.r', '.Rhistory', '.Rprofile', 'Rprofile', 'Rprofile.site'],
     racket: ['file.rkt', 'file.rktd', 'file.rktl'],
     radiance: ['file.rad', 'file.mat'],
@@ -1075,9 +1082,14 @@ def s:GetScriptEnvChecks(): dict<list<list<string>>>
     perl: [['#!/usr/bin/env VAR=val perl']],
     scala: [['#!/usr/bin/env VAR=val VVAR=vval scala']],
     awk: [['#!/usr/bin/env --split-string=VAR= awk -vFS="," -f']],
+    ruby: [['#!/usr/bin/env --split-string=ruby --debug']],
+    sed: [['#!/usr/bin/env -iS sed -f']],
+    zsh: [['#!/usr/bin/env -iS VAR=val zsh -l']],
     execline: [['#!/usr/bin/env execlineb']],
     scheme: [['#!/usr/bin/env VAR=val --ignore-environment scheme']],
+    sh: [['#!/usr/bin/env -S --ignore-environment VAR= sh -u']],
     python: [['#!/usr/bin/env -S -i VAR=val python -B -u']],
+    csh: [['#!/usr/bin/env -S VAR= csh -f']],
     wml: [['#!/usr/bin/env VAR=val --split-string wml']],
     nix: [['#!/usr/bin/env nix-shell']],
   }
@@ -2627,6 +2639,12 @@ func Test_ll_file()
   call writefile(['target triple = "nvptx64-nvidia-cuda"'], 'Xfile.ll', 'D')
   split Xfile.ll
   call assert_equal('llvm', &filetype)
+  bwipe!
+
+  " lex (C++)
+  call writefile(['%{', '#include <iostream>', '%}'], 'Xfile.ll', 'D')
+  split Xfile.ll
+  call assert_equal('lex', &filetype)
   bwipe!
 
   " lifelines

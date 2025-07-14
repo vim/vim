@@ -1,8 +1,5 @@
 " Test 'winfixbuf'
 
-source check.vim
-source shared.vim
-
 " Find the number of open windows in the current tab
 func s:get_windows_count()
   return tabpagewinnr(tabpagenr(), '$')

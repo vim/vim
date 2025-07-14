@@ -149,6 +149,7 @@ $quote	eval.txt	/*$quote*
 'cinw'	options.txt	/*'cinw'*
 'cinwords'	options.txt	/*'cinwords'*
 'clipboard'	options.txt	/*'clipboard'*
+'clipmethod'	options.txt	/*'clipmethod'*
 'cm'	options.txt	/*'cm'*
 'cmdheight'	options.txt	/*'cmdheight'*
 'cmdwinheight'	options.txt	/*'cmdwinheight'*
@@ -178,6 +179,7 @@ $quote	eval.txt	/*$quote*
 'copyindent'	options.txt	/*'copyindent'*
 'cot'	options.txt	/*'cot'*
 'cp'	options.txt	/*'cp'*
+'cpm'	options.txt	/*'cpm'*
 'cpo'	options.txt	/*'cpo'*
 'cpoptions'	options.txt	/*'cpoptions'*
 'cpp'	options.txt	/*'cpp'*
@@ -504,6 +506,7 @@ $quote	eval.txt	/*$quote*
 'maxmem'	options.txt	/*'maxmem'*
 'maxmempattern'	options.txt	/*'maxmempattern'*
 'maxmemtot'	options.txt	/*'maxmemtot'*
+'maxsearchcount'	options.txt	/*'maxsearchcount'*
 'mco'	options.txt	/*'mco'*
 'mef'	options.txt	/*'mef'*
 'menc'	options.txt	/*'menc'*
@@ -543,6 +546,7 @@ $quote	eval.txt	/*$quote*
 'mousetime'	options.txt	/*'mousetime'*
 'mp'	options.txt	/*'mp'*
 'mps'	options.txt	/*'mps'*
+'msc'	options.txt	/*'msc'*
 'msm'	options.txt	/*'msm'*
 'mzq'	options.txt	/*'mzq'*
 'mzquantum'	options.txt	/*'mzquantum'*
@@ -803,6 +807,7 @@ $quote	eval.txt	/*$quote*
 'nowinfixheight'	options.txt	/*'nowinfixheight'*
 'nowinfixwidth'	options.txt	/*'nowinfixwidth'*
 'nowiv'	options.txt	/*'nowiv'*
+'nowlsteal'	options.txt	/*'nowlsteal'*
 'nowmnu'	options.txt	/*'nowmnu'*
 'nowrap'	options.txt	/*'nowrap'*
 'nowrapscan'	options.txt	/*'nowrapscan'*
@@ -810,6 +815,7 @@ $quote	eval.txt	/*$quote*
 'nowriteany'	options.txt	/*'nowriteany'*
 'nowritebackup'	options.txt	/*'nowritebackup'*
 'nows'	options.txt	/*'nows'*
+'nowst'	options.txt	/*'nowst'*
 'noxtermcodes'	options.txt	/*'noxtermcodes'*
 'nrformats'	options.txt	/*'nrformats'*
 'nu'	options.txt	/*'nu'*
@@ -1305,6 +1311,7 @@ $quote	eval.txt	/*$quote*
 'wcr'	options.txt	/*'wcr'*
 'wd'	options.txt	/*'wd'*
 'weirdinvert'	options.txt	/*'weirdinvert'*
+'wfb'	options.txt	/*'wfb'*
 'wfh'	options.txt	/*'wfh'*
 'wfw'	options.txt	/*'wfw'*
 'wh'	options.txt	/*'wh'*
@@ -1333,6 +1340,9 @@ $quote	eval.txt	/*$quote*
 'winwidth'	options.txt	/*'winwidth'*
 'wiv'	options.txt	/*'wiv'*
 'wiw'	options.txt	/*'wiw'*
+'wlseat'	options.txt	/*'wlseat'*
+'wlsteal'	options.txt	/*'wlsteal'*
+'wltimeoutlen'	options.txt	/*'wltimeoutlen'*
 'wm'	options.txt	/*'wm'*
 'wmh'	options.txt	/*'wmh'*
 'wmnu'	options.txt	/*'wmnu'*
@@ -1346,6 +1356,9 @@ $quote	eval.txt	/*$quote*
 'writebackup'	options.txt	/*'writebackup'*
 'writedelay'	options.txt	/*'writedelay'*
 'ws'	options.txt	/*'ws'*
+'wse'	options.txt	/*'wse'*
+'wst'	options.txt	/*'wst'*
+'wtm'	options.txt	/*'wtm'*
 'ww'	options.txt	/*'ww'*
 'xtermcodes'	options.txt	/*'xtermcodes'*
 '{	motion.txt	/*'{*
@@ -1511,6 +1524,8 @@ $quote	eval.txt	/*$quote*
 +visualextra	various.txt	/*+visualextra*
 +vreplace	various.txt	/*+vreplace*
 +vtp	various.txt	/*+vtp*
++wayland	various.txt	/*+wayland*
++wayland_clipboard	various.txt	/*+wayland_clipboard*
 +wildignore	various.txt	/*+wildignore*
 +wildmenu	various.txt	/*+wildmenu*
 +windows	various.txt	/*+windows*
@@ -1581,6 +1596,7 @@ $quote	eval.txt	/*$quote*
 -V	starting.txt	/*-V*
 -W	starting.txt	/*-W*
 -X	starting.txt	/*-X*
+-Y	starting.txt	/*-Y*
 -Z	starting.txt	/*-Z*
 -b	starting.txt	/*-b*
 -background	gui_x11.txt	/*-background*
@@ -1801,6 +1817,7 @@ $quote	eval.txt	/*$quote*
 /\{-	pattern.txt	/*\/\\{-*
 /\~	pattern.txt	/*\/\\~*
 /^	pattern.txt	/*\/^*
+/_<Tab>	cmdline.txt	/*\/_<Tab>*
 /_CTRL-G	cmdline.txt	/*\/_CTRL-G*
 /_CTRL-L	cmdline.txt	/*\/_CTRL-L*
 /_CTRL-T	cmdline.txt	/*\/_CTRL-T*
@@ -2403,6 +2420,8 @@ $quote	eval.txt	/*$quote*
 :clast	quickfix.txt	/*:clast*
 :cle	motion.txt	/*:cle*
 :clearjumps	motion.txt	/*:clearjumps*
+:clip	various.txt	/*:clip*
+:clipreset	various.txt	/*:clipreset*
 :clist	quickfix.txt	/*:clist*
 :clo	windows.txt	/*:clo*
 :close	windows.txt	/*:close*
@@ -3330,6 +3349,9 @@ $quote	eval.txt	/*$quote*
 :so	repeat.txt	/*:so*
 :sor	change.txt	/*:sor*
 :sort	change.txt	/*:sort*
+:sort-l	change.txt	/*:sort-l*
+:sort-u	change.txt	/*:sort-u*
+:sort-uniq	change.txt	/*:sort-uniq*
 :source	repeat.txt	/*:source*
 :source!	repeat.txt	/*:source!*
 :source-range	repeat.txt	/*:source-range*
@@ -3564,6 +3586,8 @@ $quote	eval.txt	/*$quote*
 :undolist	undo.txt	/*:undolist*
 :unh	windows.txt	/*:unh*
 :unhide	windows.txt	/*:unhide*
+:uni	change.txt	/*:uni*
+:uniq	change.txt	/*:uniq*
 :unl	eval.txt	/*:unl*
 :unlet	eval.txt	/*:unlet*
 :unlet-$	eval.txt	/*:unlet-$*
@@ -3646,6 +3670,8 @@ $quote	eval.txt	/*$quote*
 :winp	gui.txt	/*:winp*
 :winpos	gui.txt	/*:winpos*
 :winsize	gui.txt	/*:winsize*
+:wl	wayland.txt	/*:wl*
+:wlrestore	wayland.txt	/*:wlrestore*
 :wn	editing.txt	/*:wn*
 :wnext	editing.txt	/*:wnext*
 :wp	editing.txt	/*:wp*
@@ -4640,6 +4666,7 @@ E154	helphelp.txt	/*E154*
 E1540	eval.txt	/*E1540*
 E1541	vi_diff.txt	/*E1541*
 E1547	various.txt	/*E1547*
+E1548	wayland.txt	/*E1548*
 E155	sign.txt	/*E155*
 E156	sign.txt	/*E156*
 E157	sign.txt	/*E157*
@@ -6654,6 +6681,7 @@ compl-generic	insert.txt	/*compl-generic*
 compl-keyword	insert.txt	/*compl-keyword*
 compl-omni	insert.txt	/*compl-omni*
 compl-omni-filetypes	insert.txt	/*compl-omni-filetypes*
+compl-register-words	insert.txt	/*compl-register-words*
 compl-spelling	insert.txt	/*compl-spelling*
 compl-states	insert.txt	/*compl-states*
 compl-stop	insert.txt	/*compl-stop*
@@ -6769,6 +6797,7 @@ cpo-x	options.txt	/*cpo-x*
 cpo-y	options.txt	/*cpo-y*
 cpo-z	options.txt	/*cpo-z*
 cpo-{	options.txt	/*cpo-{*
+cpo-~	options.txt	/*cpo-~*
 cpp.vim	syntax.txt	/*cpp.vim*
 crash-recovery	recover.txt	/*crash-recovery*
 creating-menus	gui.txt	/*creating-menus*
@@ -6862,6 +6891,7 @@ debugger-support	debugger.txt	/*debugger-support*
 debugger.txt	debugger.txt	/*debugger.txt*
 dec-mouse	options.txt	/*dec-mouse*
 decada_members	ft_ada.txt	/*decada_members*
+deduplicating	change.txt	/*deduplicating*
 deepcopy()	builtin.txt	/*deepcopy()*
 default-constructor	vim9class.txt	/*default-constructor*
 defaults.vim	starting.txt	/*defaults.vim*
@@ -7718,7 +7748,6 @@ g:netrw_dav_cmd	pi_netrw.txt	/*g:netrw_dav_cmd*
 g:netrw_decompress	pi_netrw.txt	/*g:netrw_decompress*
 g:netrw_dirhistmax	pi_netrw.txt	/*g:netrw_dirhistmax*
 g:netrw_dynamic_maxfilenamelen	pi_netrw.txt	/*g:netrw_dynamic_maxfilenamelen*
-g:netrw_errorlvl	pi_netrw.txt	/*g:netrw_errorlvl*
 g:netrw_fastbrowse	pi_netrw.txt	/*g:netrw_fastbrowse*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
 g:netrw_ffkeep	pi_netrw.txt	/*g:netrw_ffkeep*
@@ -7758,7 +7787,6 @@ g:netrw_maxfilenamelen	pi_netrw.txt	/*g:netrw_maxfilenamelen*
 g:netrw_menu	pi_netrw.txt	/*g:netrw_menu*
 g:netrw_mkdir_cmd	pi_netrw.txt	/*g:netrw_mkdir_cmd*
 g:netrw_mousemaps	pi_netrw.txt	/*g:netrw_mousemaps*
-g:netrw_nobeval	pi_netrw.txt	/*g:netrw_nobeval*
 g:netrw_preview	pi_netrw.txt	/*g:netrw_preview*
 g:netrw_rcp_cmd	pi_netrw.txt	/*g:netrw_rcp_cmd*
 g:netrw_remote_mkdir	pi_netrw.txt	/*g:netrw_remote_mkdir*
@@ -7950,6 +7978,7 @@ getcmdscreenpos()	builtin.txt	/*getcmdscreenpos()*
 getcmdtype()	builtin.txt	/*getcmdtype()*
 getcmdwintype()	builtin.txt	/*getcmdwintype()*
 getcompletion()	builtin.txt	/*getcompletion()*
+getcompletiontype()	builtin.txt	/*getcompletiontype()*
 getcurpos()	builtin.txt	/*getcurpos()*
 getcursorcharpos()	builtin.txt	/*getcursorcharpos()*
 getcwd()	builtin.txt	/*getcwd()*
@@ -8425,6 +8454,7 @@ i_CTRL-X_CTRL-L	insert.txt	/*i_CTRL-X_CTRL-L*
 i_CTRL-X_CTRL-N	insert.txt	/*i_CTRL-X_CTRL-N*
 i_CTRL-X_CTRL-O	insert.txt	/*i_CTRL-X_CTRL-O*
 i_CTRL-X_CTRL-P	insert.txt	/*i_CTRL-X_CTRL-P*
+i_CTRL-X_CTRL-R	insert.txt	/*i_CTRL-X_CTRL-R*
 i_CTRL-X_CTRL-S	insert.txt	/*i_CTRL-X_CTRL-S*
 i_CTRL-X_CTRL-T	insert.txt	/*i_CTRL-X_CTRL-T*
 i_CTRL-X_CTRL-U	insert.txt	/*i_CTRL-X_CTRL-U*
@@ -8487,7 +8517,6 @@ improvements-6	version6.txt	/*improvements-6*
 improvements-7	version7.txt	/*improvements-7*
 improvements-8	version8.txt	/*improvements-8*
 improvements-9	version9.txt	/*improvements-9*
-improvements-9.2	version9.txt	/*improvements-9.2*
 in_bot	channel.txt	/*in_bot*
 in_buf	channel.txt	/*in_buf*
 in_io-buffer	channel.txt	/*in_io-buffer*
@@ -8578,6 +8607,7 @@ i}	motion.txt	/*i}*
 j	motion.txt	/*j*
 java-cinoptions	indent.txt	/*java-cinoptions*
 java-indenting	indent.txt	/*java-indenting*
+java-package-info-url	syntax.txt	/*java-package-info-url*
 java.vim	syntax.txt	/*java.vim*
 javascript-cinoptions	indent.txt	/*javascript-cinoptions*
 javascript-indenting	indent.txt	/*javascript-indenting*
@@ -9209,7 +9239,6 @@ netrw-rightmouse	pi_netrw.txt	/*netrw-rightmouse*
 netrw-s	pi_netrw.txt	/*netrw-s*
 netrw-s-cr	pi_netrw.txt	/*netrw-s-cr*
 netrw-settings	pi_netrw.txt	/*netrw-settings*
-netrw-settings-window	pi_netrw.txt	/*netrw-settings-window*
 netrw-sexplore	pi_netrw.txt	/*netrw-sexplore*
 netrw-sort	pi_netrw.txt	/*netrw-sort*
 netrw-sort-sequence	pi_netrw.txt	/*netrw-sort-sequence*
@@ -10029,6 +10058,7 @@ search()	builtin.txt	/*search()*
 search()-sub-match	builtin.txt	/*search()-sub-match*
 search-commands	pattern.txt	/*search-commands*
 search-offset	pattern.txt	/*search-offset*
+search-options	pattern.txt	/*search-options*
 search-pattern	pattern.txt	/*search-pattern*
 search-range	pattern.txt	/*search-range*
 search-replace	change.txt	/*search-replace*
@@ -11012,6 +11042,7 @@ undofile()	builtin.txt	/*undofile()*
 undotree()	builtin.txt	/*undotree()*
 unicode	mbyte.txt	/*unicode*
 uniq()	builtin.txt	/*uniq()*
+unique	change.txt	/*unique*
 unix	os_unix.txt	/*unix*
 unlisted-buffer	windows.txt	/*unlisted-buffer*
 up-down-motions	motion.txt	/*up-down-motions*
@@ -11085,6 +11116,7 @@ v:beval_winnr	eval.txt	/*v:beval_winnr*
 v:char	eval.txt	/*v:char*
 v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
+v:clipmethod	eval.txt	/*v:clipmethod*
 v:cmdarg	eval.txt	/*v:cmdarg*
 v:cmdbang	eval.txt	/*v:cmdbang*
 v:collate	eval.txt	/*v:collate*
@@ -11188,6 +11220,7 @@ v:version	eval.txt	/*v:version*
 v:versionlong	eval.txt	/*v:versionlong*
 v:vim_did_enter	eval.txt	/*v:vim_did_enter*
 v:warningmsg	eval.txt	/*v:warningmsg*
+v:wayland_display	eval.txt	/*v:wayland_display*
 v:windowid	eval.txt	/*v:windowid*
 v_!	change.txt	/*v_!*
 v_$	visual.txt	/*v_$*
@@ -11546,6 +11579,17 @@ w:quickfix_title	quickfix.txt	/*w:quickfix_title*
 w:var	eval.txt	/*w:var*
 waittime	channel.txt	/*waittime*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
+wayland	wayland.txt	/*wayland*
+wayland-and-x11	wayland.txt	/*wayland-and-x11*
+wayland-focus-steal	wayland.txt	/*wayland-focus-steal*
+wayland-gnome	wayland.txt	/*wayland-gnome*
+wayland-gui	wayland.txt	/*wayland-gui*
+wayland-persist	wayland.txt	/*wayland-persist*
+wayland-primary-selection	wayland.txt	/*wayland-primary-selection*
+wayland-seat	wayland.txt	/*wayland-seat*
+wayland-selections	wayland.txt	/*wayland-selections*
+wayland-useful	wayland.txt	/*wayland-useful*
+wayland.txt	wayland.txt	/*wayland.txt*
 wdl-syntax	syntax.txt	/*wdl-syntax*
 wdl.vim	syntax.txt	/*wdl.vim*
 white-space	pattern.txt	/*white-space*

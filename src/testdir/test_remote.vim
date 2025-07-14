@@ -1,13 +1,10 @@
 " Test for the --remote functionality
 
-source check.vim
 CheckFeature clientserver
 CheckFeature terminal
 
-source shared.vim
-source screendump.vim
-source mouse.vim
-source term_util.vim
+source util/screendump.vim
+source util/mouse.vim
 
 let s:remote_works = 0
 let s:skip = 'Skipped: --remote feature is not possible'

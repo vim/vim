@@ -4138,6 +4138,29 @@ did_set_scrollbind(optset_T *args UNUSED)
     return NULL;
 }
 
+/*
+ * Process the new 'maxsearchcount' option value.
+ */
+    char *
+did_set_maxsearchcount(optset_T *args UNUSED)
+{
+    char	*errmsg = NULL;
+// if you increase this, also increase SEARCH_STAT_BUF_LEN in search.c
+#define MAX_SEARCH_COUNT 9999
+
+    if (p_msc <= 0)
+	errmsg = e_argument_must_be_positive;
+    else if (p_msc > MAX_SEARCH_COUNT)
+	errmsg = e_invalid_argument;
+
+    if (errmsg != NULL)
+	p_msc = 99;
+
+    return errmsg;
+#undef MAX_SEARCH_COUNT
+}
+
+
 #if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
 /*
  * Process the updated 'shellslash' option value.
@@ -4722,6 +4745,36 @@ did_set_winwidth(optset_T *args UNUSED)
 
     return errmsg;
 }
+
+#ifdef FEAT_WAYLAND_CLIPBOARD
+/*
+ * Process the new 'wlsteal' option value.
+ */
+    char *
+did_set_wlsteal(optset_T *args UNUSED)
+{
+    wayland_cb_reload();
+
+    return NULL;
+}
+#endif
+
+#ifdef FEAT_WAYLAND
+/*
+ * Process the new 'wltimeoutlen' option value.
+ */
+    char *
+did_set_wltimeoutlen(optset_T *args)
+{
+    if (p_wtm < 0)
+    {
+	p_wtm = args->os_oldval.number;
+	return e_argument_must_be_positive;
+    }
+
+    return NULL;
+}
+#endif
 
 /*
  * Process the updated 'wrap' option value.
@@ -8847,7 +8900,7 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
  * Process the new 'showtabpanel' option value.
  */
     char *
-did_set_showtabpanel(optset_T *args)
+did_set_showtabpanel(optset_T *args UNUSED)
 {
     shell_new_columns();
     return NULL;

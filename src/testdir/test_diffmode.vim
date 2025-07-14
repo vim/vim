@@ -1,9 +1,6 @@
 " Tests for diff mode
 
-source shared.vim
-source screendump.vim
-source check.vim
-source view_util.vim
+source util/screendump.vim
 
 func Test_diff_fold_sync()
   enew!
@@ -48,6 +45,34 @@ func Test_vert_split()
   set diffopt=filler
   call Common_vert_split()
   set diffopt&
+endfunc
+
+" Test for diff folding redraw after last diff is resolved
+func Test_diff_fold_redraw()
+  " Set up two files with a minimal case.
+  call writefile(['Paragraph 1', '', 'Paragraph 2', '', 'Paragraph 3'], 'Xfile1')
+  call writefile(['Paragraph 1', '', 'Paragraph 3'], 'Xfile2')
+
+  " Open in diff mode.
+  edit Xfile1
+  vert diffsplit Xfile2
+
+  " Go to the diff and apply :diffput to copy Paragraph 2 to Xfile2.
+  wincmd l
+  3
+  diffput
+
+  " Check that the folds in both windows are closed and extend from the first
+  " line of the buffer to the last line of the buffer.
+  call assert_equal(1, foldclosed(line("$")))
+  wincmd h
+  call assert_equal(1, foldclosed(line("$")))
+
+  " Clean up.
+  bwipe!
+  bwipe!
+  call delete('Xfile1')
+  call delete('Xfile2')
 endfunc
 
 func Test_vert_split_internal()
@@ -257,6 +282,63 @@ func Test_diffget_diffput_range()
   4,8diffput
   wincmd p
   call assert_equal(['13', '4', '5', '6', '7', '8', '19'], getline(3, 9))
+  %bw!
+endfunc
+
+" Test :diffget/:diffput handling of added/deleted lines
+func Test_diffget_diffput_deleted_lines()
+  call setline(1, ['2','4','6'])
+  diffthis
+  new
+  call setline(1, range(1,7))
+  diffthis
+  wincmd w
+
+  3,3diffget " get nothing
+  call assert_equal(['2', '4', '6'], getline(1, '$'))
+  3,4diffget " get the last insertion past the end of file
+  call assert_equal(['2', '4', '6', '7'], getline(1, '$'))
+  0,1diffget " get the first insertion above first line
+  call assert_equal(['1', '2', '4', '6', '7'], getline(1, '$'))
+
+  " When using non-range diffget on the last line, it should get the
+  " change above or at the line as usual, but if the only change is below the
+  " last line, diffget should get that instead.
+  1,$delete
+  call setline(1, ['2','4','6'])
+  diffupdate
+  norm Gdo
+  call assert_equal(['2', '4', '5', '6'], getline(1, '$'))
+  norm Gdo
+  call assert_equal(['2', '4', '5', '6', '7'], getline(1, '$'))
+
+  " Test non-range diffput on last line with the same logic
+  1,$delete
+  call setline(1, ['2','4','6'])
+  diffupdate
+  norm Gdp
+  wincmd w
+  call assert_equal(['1', '2', '3', '4', '6', '7'], getline(1, '$'))
+  wincmd w
+  norm Gdp
+  wincmd w
+  call assert_equal(['1', '2', '3', '4', '6'], getline(1, '$'))
+  call setline(1, range(1,7))
+  diffupdate
+  wincmd w
+
+  " Test that 0,$+1 will get/put all changes from/to the other buffer
+  1,$delete
+  call setline(1, ['2','4','6'])
+  diffupdate
+  0,$+1diffget
+  call assert_equal(['1', '2', '3', '4', '5', '6', '7'], getline(1, '$'))
+  1,$delete
+  call setline(1, ['2','4','6'])
+  diffupdate
+  0,$+1diffput
+  wincmd w
+  call assert_equal(['2', '4', '6'], getline(1, '$'))
   %bw!
 endfunc
 

@@ -1,7 +1,5 @@
 " Tests for ->method()
 
-source check.vim
-
 func Test_list_method()
   let l = [1, 2, 3]
   call assert_equal([1, 2, 3, 4], [1, 2, 3]->add(4))

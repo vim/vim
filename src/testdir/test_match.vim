@@ -1,8 +1,7 @@
 " Test for :match, :2match, :3match, clearmatches(), getmatches(), matchadd(),
 " matchaddpos(), matcharg(), matchdelete(), and setmatches().
 
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 function Test_match()
   highlight MyGroup1 term=bold ctermbg=red guibg=red

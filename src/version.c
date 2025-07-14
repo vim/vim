@@ -644,6 +644,16 @@ static char *(features[]) =
 	"-vtp",
 # endif
 #endif
+#ifdef FEAT_WAYLAND
+	"+wayland",
+#else
+	"-wayland",
+#endif
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	"+wayland_clipboard",
+#else
+	"-wayland_clipboard",
+#endif
 	"+wildignore",
 	"+wildmenu",
 	"+windows",
@@ -709,6 +719,292 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1540,
+/**/
+    1539,
+/**/
+    1538,
+/**/
+    1537,
+/**/
+    1536,
+/**/
+    1535,
+/**/
+    1534,
+/**/
+    1533,
+/**/
+    1532,
+/**/
+    1531,
+/**/
+    1530,
+/**/
+    1529,
+/**/
+    1528,
+/**/
+    1527,
+/**/
+    1526,
+/**/
+    1525,
+/**/
+    1524,
+/**/
+    1523,
+/**/
+    1522,
+/**/
+    1521,
+/**/
+    1520,
+/**/
+    1519,
+/**/
+    1518,
+/**/
+    1517,
+/**/
+    1516,
+/**/
+    1515,
+/**/
+    1514,
+/**/
+    1513,
+/**/
+    1512,
+/**/
+    1511,
+/**/
+    1510,
+/**/
+    1509,
+/**/
+    1508,
+/**/
+    1507,
+/**/
+    1506,
+/**/
+    1505,
+/**/
+    1504,
+/**/
+    1503,
+/**/
+    1502,
+/**/
+    1501,
+/**/
+    1500,
+/**/
+    1499,
+/**/
+    1498,
+/**/
+    1497,
+/**/
+    1496,
+/**/
+    1495,
+/**/
+    1494,
+/**/
+    1493,
+/**/
+    1492,
+/**/
+    1491,
+/**/
+    1490,
+/**/
+    1489,
+/**/
+    1488,
+/**/
+    1487,
+/**/
+    1486,
+/**/
+    1485,
+/**/
+    1484,
+/**/
+    1483,
+/**/
+    1482,
+/**/
+    1481,
+/**/
+    1480,
+/**/
+    1479,
+/**/
+    1478,
+/**/
+    1477,
+/**/
+    1476,
+/**/
+    1475,
+/**/
+    1474,
+/**/
+    1473,
+/**/
+    1472,
+/**/
+    1471,
+/**/
+    1470,
+/**/
+    1469,
+/**/
+    1468,
+/**/
+    1467,
+/**/
+    1466,
+/**/
+    1465,
+/**/
+    1464,
+/**/
+    1463,
+/**/
+    1462,
+/**/
+    1461,
+/**/
+    1460,
+/**/
+    1459,
+/**/
+    1458,
+/**/
+    1457,
+/**/
+    1456,
+/**/
+    1455,
+/**/
+    1454,
+/**/
+    1453,
+/**/
+    1452,
+/**/
+    1451,
+/**/
+    1450,
+/**/
+    1449,
+/**/
+    1448,
+/**/
+    1447,
+/**/
+    1446,
+/**/
+    1445,
+/**/
+    1444,
+/**/
+    1443,
+/**/
+    1442,
+/**/
+    1441,
+/**/
+    1440,
+/**/
+    1439,
+/**/
+    1438,
+/**/
+    1437,
+/**/
+    1436,
+/**/
+    1435,
+/**/
+    1434,
+/**/
+    1433,
+/**/
+    1432,
+/**/
+    1431,
+/**/
+    1430,
+/**/
+    1429,
+/**/
+    1428,
+/**/
+    1427,
+/**/
+    1426,
+/**/
+    1425,
+/**/
+    1424,
+/**/
+    1423,
+/**/
+    1422,
+/**/
+    1421,
+/**/
+    1420,
+/**/
+    1419,
+/**/
+    1418,
+/**/
+    1417,
+/**/
+    1416,
+/**/
+    1415,
+/**/
+    1414,
+/**/
+    1413,
+/**/
+    1412,
+/**/
+    1411,
+/**/
+    1410,
+/**/
+    1409,
+/**/
+    1408,
+/**/
+    1407,
+/**/
+    1406,
+/**/
+    1405,
+/**/
+    1404,
+/**/
+    1403,
+/**/
+    1402,
+/**/
+    1401,
+/**/
+    1400,
+/**/
+    1399,
+/**/
+    1398,
 /**/
     1397,
 /**/
@@ -3714,13 +4010,21 @@ list_version(void)
 # ifdef FEAT_GUI_MSWIN
 #  ifdef VIMDLL
 #   ifdef _WIN64
-    msg_puts(_("\nMS-Windows 64-bit GUI/console version"));
+#    if defined(_M_ARM64) || defined(_M_ARM64EC)
+     msg_puts(_("\nMS-Windows ARM64 GUI/console version"));
+#    else
+     msg_puts(_("\nMS-Windows 64-bit GUI/console version"));
+#    endif
 #   else
     msg_puts(_("\nMS-Windows 32-bit GUI/console version"));
 #   endif
 #  else
 #   ifdef _WIN64
-    msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#    if defined(_M_ARM64) || defined(_M_ARM64EC)
+     msg_puts(_("\nMS-Windows ARM64 GUI version"));
+#    else
+     msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#    endif
 #   else
     msg_puts(_("\nMS-Windows 32-bit GUI version"));
 #   endif
@@ -3730,7 +4034,11 @@ list_version(void)
 #  endif
 # else
 #  ifdef _WIN64
+#   if defined(_M_ARM64) || defined(_M_ARM64EC)
+    msg_puts(_("\nMS-Windows ARM64 console version"));
+#   else
     msg_puts(_("\nMS-Windows 64-bit console version"));
+#   endif
 #  else
     msg_puts(_("\nMS-Windows 32-bit console version"));
 #  endif
@@ -4056,7 +4364,7 @@ intro_message(
 
     // start displaying the message lines after half of the blank lines
     row = blanklines / 2;
-    if ((row >= 2 && COLUMNS_WITHOUT_TPL() >= 50) || colon)
+    if ((row >= 2 && topframe->fr_width >= 50) || colon)
     {
 	for (i = 0; i < (int)ARRAY_LENGTH(lines); ++i)
 	{
@@ -4139,7 +4447,7 @@ do_intro_line(
 	}
 	col += (int)STRLEN(vers);
     }
-    col = (COLUMNS_WITHOUT_TPL() - col) / 2;
+    col = (topframe->fr_width - col) / 2;
     if (col < 0)
 	col = 0;
 
@@ -4158,14 +4466,14 @@ do_intro_line(
 	    else
 		clen += byte2cells(p[l]);
 	}
-	screen_puts_len(p, l, row, col + TPL_LCOL(NULL),
+	screen_puts_len(p, l, row, col + firstwin->w_wincol,
 		*p == '<' ? HL_ATTR(HLF_8) : attr);
 	col += clen;
     }
 
     // Add the version number to the version line.
     if (add_version)
-	screen_puts(vers, row, col + TPL_LCOL(NULL), 0);
+	screen_puts(vers, row, col + firstwin->w_wincol, 0);
 }
 
 /*

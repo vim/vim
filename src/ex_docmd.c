@@ -373,6 +373,12 @@ static void	ex_folddo(exarg_T *eap);
 #if !defined(FEAT_X11) || !defined(FEAT_XCLIPBOARD)
 # define ex_xrestore		ex_ni
 #endif
+#if !defined(FEAT_WAYLAND)
+# define ex_wlrestore		ex_ni
+#endif
+#if !defined(FEAT_CLIPBOARD)
+# define ex_clipreset		ex_ni
+#endif
 #if !defined(FEAT_PROP_POPUP)
 # define ex_popupclear		ex_ni
 #endif
@@ -4850,7 +4856,8 @@ invalid_range(exarg_T *eap)
 	    case ADDR_LINES:
 		if (eap->line2 > curbuf->b_ml.ml_line_count
 #ifdef FEAT_DIFF
-			    + (eap->cmdidx == CMD_diffget)
+			    + (eap->cmdidx == CMD_diffget ||
+				eap->cmdidx == CMD_diffput)
 #endif
 		   )
 		    return _(e_invalid_range);
@@ -8022,7 +8029,7 @@ post_chdir(cdscope_T scope)
     }
 
     last_chdir_reason = NULL;
-    shorten_fnames(TRUE);
+    shorten_fnames(vim_strchr(p_cpo, CPO_NOSYMLINKS) == NULL);
 }
 
 /*
@@ -8234,7 +8241,7 @@ ex_sleep(exarg_T *eap)
     {
 	n = W_WINROW(curwin) + curwin->w_wrow - msg_scrolled;
 	if (n >= 0)
-	    windgoto(n, curwin->w_wincol + curwin->w_wcol + TPL_LCOL(curwin));
+	    windgoto(n, curwin->w_wincol + curwin->w_wcol);
     }
 
     len = eap->line2;

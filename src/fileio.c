@@ -3189,7 +3189,8 @@ msg_add_lines(
 
     if (shortmess(SHM_LINES))
 	vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,
-		"%s%ldL, %lldB", insert_space ? " " : "", lnum, (varnumber_T)nchars);
+		// l10n: L as in line, B as in byte
+		_("%s%ldL, %lldB"), insert_space ? " " : "", lnum, (varnumber_T)nchars);
     else
     {
 	len += vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,
@@ -5351,14 +5352,13 @@ vim_tempname(
 	    long	nr;
 	    long	off;
 # endif
+	    size_t	itmplen;
 
 	    // Expand $TMP, leave room for "/v1100000/999999999".
 	    // Skip the directory check if the expansion fails.
-	    expand_env((char_u *)tempdirs[i], itmp, TEMPNAMELEN - 20);
+	    itmplen = expand_env((char_u *)tempdirs[i], itmp, TEMPNAMELEN - 20);
 	    if (itmp[0] != '$' && mch_isdir(itmp))
 	    {
-		size_t	itmplen = STRLEN(itmp);
-
 		// directory exists
 		if (!after_pathsep(itmp, itmp + itmplen))
 		{

@@ -1,8 +1,6 @@
 " Tests for the Vim script debug commands
 
-source shared.vim
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 CheckRunVimInTerminal
 

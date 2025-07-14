@@ -3,12 +3,10 @@
 set encoding=latin1
 scriptencoding latin1
 
-source check.vim
 CheckOption linebreak
 CheckFeature conceal
 
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 function s:screen_lines(lnum, width) abort
   return ScreenLines(a:lnum, a:width)

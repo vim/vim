@@ -1,10 +1,7 @@
 " Tests for various functions.
 
-source shared.vim
-source check.vim
-source term_util.vim
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()

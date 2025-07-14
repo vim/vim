@@ -1,10 +1,7 @@
 " Test various aspects of the Vim9 script language.
 
-source check.vim
-source term_util.vim
-import './vim9.vim' as v9
-source screendump.vim
-source shared.vim
+import './util/vim9.vim' as v9
+source util/screendump.vim
 
 def Test_vim9script_feature()
   # example from the help, here the feature is always present
@@ -3655,12 +3652,12 @@ def Test_vim9_comment()
       ], 'E1144:')
   v9.CheckScriptSuccess([
       'vim9script',
-      'import "./vim9.vim" as v9',
+      'import "./util/vim9.vim" as v9',
       'function v9.CheckScriptSuccess # comment',
       ])
   v9.CheckScriptFailure([
       'vim9script',
-      'import "./vim9.vim" as v9',
+      'import "./util/vim9.vim" as v9',
       'function v9.CheckScriptSuccess# comment',
       ], 'E1048: Item not found in script: CheckScriptSuccess#')
 

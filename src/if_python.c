@@ -958,7 +958,7 @@ Python_Init(void)
 	site = PyImport_ImportModule("site");
 	if (site == NULL)
 	{
-	    emsg(_(e_sorry_this_command_is_disabled_python_side_module_could_not_be_loaded));
+	    emsg(_(e_sorry_this_command_is_disabled_python_site_module_could_not_be_loaded));
 	    goto fail;
 	}
 	Py_DECREF(site);

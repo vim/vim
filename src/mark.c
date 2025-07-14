@@ -540,10 +540,9 @@ fname2fnum(xfmark_T *fm)
 #endif
 		))
     {
-	int len;
+	size_t len;
 
-	expand_env((char_u *)"~/", NameBuff, MAXPATHL);
-	len = (int)STRLEN(NameBuff);
+	len = expand_env((char_u *)"~/", NameBuff, MAXPATHL);
 	vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
     }
     else
@@ -784,6 +783,11 @@ show_one_mark(
 	if (name == NULL && current)
 	{
 	    name = mark_line(p, 15);
+	    if (name == NULL)
+	    {
+		emsg(_(e_out_of_memory));
+		return;
+	    }
 	    mustfree = TRUE;
 	}
 	if (!message_filtered(name))
@@ -1464,7 +1468,7 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
 
     list_append_number(lpos, bufnr);
     list_append_number(lpos, pos->lnum);
-    list_append_number(lpos, pos->col + 1);
+    list_append_number(lpos, pos->col < MAXCOL ? pos->col + 1 : MAXCOL);
     list_append_number(lpos, pos->coladd);
 
     if (dict_add_string(d, "mark", mname) == FAIL

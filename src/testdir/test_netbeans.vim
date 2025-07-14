@@ -1,9 +1,6 @@
 " Test the netbeans interface.
 
-source check.vim
 CheckFeature netbeans_intg
-
-source shared.vim
 
 let s:python = PythonProg()
 if s:python == ''
@@ -879,7 +876,7 @@ func Nb_quit_with_conn(port)
   call delete("Xnetbeans")
   call writefile([], "Xnetbeans", 'D')
   let after =<< trim END
-    source shared.vim
+    source util/shared.vim
     set cpo&vim
 
     func ReadXnetbeans()

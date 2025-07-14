@@ -1,4 +1,4 @@
-.TH VIM 1 "2024 Aug 12"
+.TH VIM 1 "2025 Jun 27"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -404,6 +404,9 @@ Will prompt for a crypt key.
 Don't connect to the X server.  Shortens startup time in a terminal, but the
 window title and clipboard will not be used.
 .TP
+\-Y
+Don't connect to the wayland compositor
+.TP
 \-y
 Start
 .B Vim
@@ -559,7 +562,7 @@ initializations (first one found is used).
 System wide gvim initializations.
 .TP
 ~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
-Your personal 
+Your personal
 .B gVim
 initializations (first one found is used).
 .TP
@@ -567,7 +570,7 @@ initializations (first one found is used).
 Script used for the ":options" command, a nice way to view and set options.
 .TP
 /usr/local/share/vim/vim??/menu.vim
-System wide menu initializations for 
+System wide menu initializations for
 .B gVim.
 .TP
 /usr/local/share/vim/vim??/bugreport.vim
