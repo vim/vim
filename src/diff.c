@@ -418,8 +418,6 @@ diff_mark_adjust_tp(
 	    {
 		// Currently in the middle of updating diff blocks. All we want
 		// is to adjust the line numbers and nothing else.
-		if (amount_after == 0)
-		    break;
 		if (dp->df_lnum[idx] > line2)
 		    dp->df_lnum[idx] += amount_after;
 
