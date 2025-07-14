@@ -163,6 +163,7 @@ runtime/ftplugin/expect.vim				@dkearns
 runtime/ftplugin/exports.vim				@mperry2
 runtime/ftplugin/fennel.vim				@gpanders
 runtime/ftplugin/fetchmail.vim				@dkearns
+runtime/ftplugin/fga.vim				@ribru17
 runtime/ftplugin/forth.vim				@jkotlinski
 runtime/ftplugin/fpcmake.vim				@dkearns
 runtime/ftplugin/freebasic.vim				@dkearns
