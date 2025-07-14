@@ -11032,7 +11032,6 @@ def Test_method_string()
   v9.CheckScriptSuccess(lines)
 enddef
 
-
 " Test for using a class in the class definition
 def Test_Ref_Class_Within_Same_Class()
   var lines =<< trim END
@@ -13151,5 +13150,22 @@ def Test_obj_class_member_type()
   END
   v9.CheckSourceFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string> in extend()', 7)
 enddef
+
+" Test for garbage collecting a class with a member referring to the class
+" (self reference)
+func Test_class_selfref_gc()
+  let lines =<< trim END
+    vim9script
+    class Foo
+      static var MyFoo = Foo.new()
+      static var d = {a: [1, 2]}
+      static var l = [{a: 'a', b: 'b'}]
+    endclass
+    assert_equal(2, test_refcount(Foo))
+    test_garbagecollect_now()
+    assert_equal(2, test_refcount(Foo))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
