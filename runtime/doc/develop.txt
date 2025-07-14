@@ -305,7 +305,7 @@ MAKEFILES					*assumptions-makefiles*
 						*POSIX.1-2001*
 
 Our Makefiles target maximum portability, relying solely on features
-defined in POSIX.1-2001 *make* and ignoring later POSIX standards or
+defined in POSIX.1-2001 `make` and ignoring later POSIX standards or
 GNU/BSD extensions.  In practical terms, avoid:
 
 	– % pattern rules
@@ -321,7 +321,7 @@ built in a separate directory must have an explicit rule.  For example:
 		$(CCC) -o $@ evalbuffer.c
 
 This verbosity ensures that the same Makefile builds Vim unchanged with
-the default *make* on Linux, *BSD, macOS, Solaris, AIX, HP-UX and virtually
+the default `make` on Linux, *BSD, macOS, Solaris, AIX, HP-UX and virtually
 any Unix-like OS.
 
 

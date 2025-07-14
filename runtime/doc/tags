@@ -8824,8 +8824,6 @@ mail-list	intro.txt	/*mail-list*
 mail.vim	syntax.txt	/*mail.vim*
 maillist	intro.txt	/*maillist*
 maillist-archive	intro.txt	/*maillist-archive*
-make	develop.txt	/*make*
-make	develop.txt	/*make*
 make.vim	syntax.txt	/*make.vim*
 man.vim	filetype.txt	/*man.vim*
 manpager.vim	filetype.txt	/*manpager.vim*
