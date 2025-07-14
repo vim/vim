@@ -1855,6 +1855,7 @@ ex_class(exarg_T *eap)
     int		is_class = eap->cmdidx == CMD_class;
     int		is_abstract = eap->cmdidx == CMD_abstract;
     int		is_enum = eap->cmdidx == CMD_enum;
+    int		added_enum_values = FALSE;
     int		is_interface;
     long	start_lnum = SOURCING_LNUM;
     char_u	*arg = eap->arg;
@@ -2174,9 +2175,12 @@ early_ret:
 		break;
 
 	    if (enum_end)
+	    {
 		// Add the enum "values" class variable.
 		enum_add_values_member(cl, &classmembers, num_enum_values,
 							&type_list);
+		added_enum_values = TRUE;
+	    }
 	    continue;
 	}
 
@@ -2496,9 +2500,10 @@ early_ret:
 
     vim_free(theline);
 
-    if (success && is_enum && num_enum_values == 0)
+    if (success && is_enum && (num_enum_values == 0 || !added_enum_values))
 	// Empty enum statement. Add an empty "values" class variable
-	success = enum_add_values_member(cl, &classmembers, 0, &type_list);
+	success = enum_add_values_member(cl, &classmembers, num_enum_values,
+								&type_list);
 
     /*
      * Check a few things
