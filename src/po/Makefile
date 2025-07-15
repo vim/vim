@@ -273,7 +273,7 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIMPROG) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	# Delete the temporary files.
-	rm -f *.js ./vim_to_js
+	rm -f *.js ./vim_to_js allfiles
 
 vim.desktop: vim.desktop.in $(POFILES)
 	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/\./d' | sort > LINGUAS

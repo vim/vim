@@ -1,1 +1,6 @@
 src/testdir/test42.in diff
+
+# ignore vim.pot creation date when diffing
+# set this up using:
+# git config diff.ignore_pot_date.textconv 'grep -v "^.POT-Creation-Date:.*"'
+src/po/vim.pot diff=ignore_pot_date
