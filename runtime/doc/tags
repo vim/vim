@@ -4100,7 +4100,7 @@ CTRL-W_}	windows.txt	/*CTRL-W_}*
 CTRL-X	change.txt	/*CTRL-X*
 CTRL-Y	scroll.txt	/*CTRL-Y*
 CTRL-Z	starting.txt	/*CTRL-Z*
-CTRL-\_CTRL-G	index.txt	/*CTRL-\\_CTRL-G*
+CTRL-\_CTRL-G	intro.txt	/*CTRL-\\_CTRL-G*
 CTRL-\_CTRL-N	intro.txt	/*CTRL-\\_CTRL-N*
 CTRL-\_CTRL-Q	index.txt	/*CTRL-\\_CTRL-Q*
 CTRL-]	tagsrch.txt	/*CTRL-]*
