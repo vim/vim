@@ -7857,7 +7857,6 @@ g:tar_copycmd	pi_tar.txt	/*g:tar_copycmd*
 g:tar_extractcmd	pi_tar.txt	/*g:tar_extractcmd*
 g:tar_nomax	pi_tar.txt	/*g:tar_nomax*
 g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
-g:tar_secure	pi_tar.txt	/*g:tar_secure*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
 g:termdebug_config	terminal.txt	/*g:termdebug_config*
 g:termdebugger	terminal.txt	/*g:termdebugger*

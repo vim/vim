@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-15 21:42+0200\n"
+"POT-Creation-Date: 2025-07-15 21:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4257,327 +4257,327 @@ msgstr ""
 msgid "%s (%s, compiled %s)"
 msgstr ""
 
-#: ../version.c:4036
+#: ../version.c:4038
 msgid ""
 "\n"
 "MS-Windows ARM64 GUI/console version"
 msgstr ""
 
-#: ../version.c:4038
+#: ../version.c:4040
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 
-#: ../version.c:4041
+#: ../version.c:4043
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI/console version"
 msgstr ""
 
-#: ../version.c:4046
+#: ../version.c:4048
 msgid ""
 "\n"
 "MS-Windows ARM64 GUI version"
 msgstr ""
 
-#: ../version.c:4048
+#: ../version.c:4050
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
 msgstr ""
 
-#: ../version.c:4051
+#: ../version.c:4053
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI version"
 msgstr ""
 
-#: ../version.c:4055
+#: ../version.c:4057
 msgid " with OLE support"
-msgstr ""
-
-#: ../version.c:4060
-msgid ""
-"\n"
-"MS-Windows ARM64 console version"
 msgstr ""
 
 #: ../version.c:4062
 msgid ""
 "\n"
+"MS-Windows ARM64 console version"
+msgstr ""
+
+#: ../version.c:4064
+msgid ""
+"\n"
 "MS-Windows 64-bit console version"
 msgstr ""
 
-#: ../version.c:4065
+#: ../version.c:4067
 msgid ""
 "\n"
 "MS-Windows 32-bit console version"
 msgstr ""
 
-#: ../version.c:4071
+#: ../version.c:4073
 msgid ""
 "\n"
 "macOS version"
 msgstr ""
 
-#: ../version.c:4073
+#: ../version.c:4075
 msgid ""
 "\n"
 "macOS version w/o darwin feat."
 msgstr ""
 
-#: ../version.c:4083
+#: ../version.c:4085
 msgid ""
 "\n"
 "OpenVMS version"
 msgstr ""
 
-#: ../version.c:4098
+#: ../version.c:4100
 msgid ""
 "\n"
 "Included patches: "
 msgstr ""
 
-#: ../version.c:4123
+#: ../version.c:4125
 msgid ""
 "\n"
 "Extra patches: "
 msgstr ""
 
-#: ../version.c:4135 ../version.c:4446
+#: ../version.c:4137 ../version.c:4448
 msgid "Modified by "
 msgstr ""
 
-#: ../version.c:4142
+#: ../version.c:4144
 msgid ""
 "\n"
 "Compiled "
 msgstr ""
 
-#: ../version.c:4145
+#: ../version.c:4147
 msgid "by "
-msgstr ""
-
-#: ../version.c:4157
-msgid ""
-"\n"
-"Huge version "
 msgstr ""
 
 #: ../version.c:4159
 msgid ""
 "\n"
-"Normal version "
+"Huge version "
 msgstr ""
 
 #: ../version.c:4161
 msgid ""
 "\n"
+"Normal version "
+msgstr ""
+
+#: ../version.c:4163
+msgid ""
+"\n"
 "Tiny version "
 msgstr ""
 
-#: ../version.c:4164
+#: ../version.c:4166
 msgid "without GUI."
 msgstr ""
 
-#: ../version.c:4167
+#: ../version.c:4169
 msgid "with GTK3 GUI."
 msgstr ""
 
-#: ../version.c:4169
+#: ../version.c:4171
 msgid "with GTK2-GNOME GUI."
 msgstr ""
 
-#: ../version.c:4171
+#: ../version.c:4173
 msgid "with GTK2 GUI."
 msgstr ""
 
-#: ../version.c:4174
+#: ../version.c:4176
 msgid "with X11-Motif GUI."
 msgstr ""
 
-#: ../version.c:4176
+#: ../version.c:4178
 msgid "with Haiku GUI."
 msgstr ""
 
-#: ../version.c:4178
+#: ../version.c:4180
 msgid "with Photon GUI."
 msgstr ""
 
-#: ../version.c:4180
+#: ../version.c:4182
 msgid "with GUI."
 msgstr ""
 
-#: ../version.c:4182
+#: ../version.c:4184
 msgid "  Features included (+) or not (-):\n"
 msgstr ""
 
-#: ../version.c:4189
+#: ../version.c:4191
 msgid "   system vimrc file: \""
 msgstr ""
 
-#: ../version.c:4194
+#: ../version.c:4196
 msgid "     user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4199
+#: ../version.c:4201
 msgid " 2nd user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4204 ../version.c:4211 ../version.c:4215
+#: ../version.c:4206 ../version.c:4213 ../version.c:4217
 msgid " 3rd user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4207
+#: ../version.c:4209
 msgid " 4th user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4220
+#: ../version.c:4222
 msgid "      user exrc file: \""
 msgstr ""
 
-#: ../version.c:4225
+#: ../version.c:4227
 msgid "  2nd user exrc file: \""
 msgstr ""
 
-#: ../version.c:4231
+#: ../version.c:4233
 msgid "  system gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4235
+#: ../version.c:4237
 msgid "    user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4239
+#: ../version.c:4241
 msgid "2nd user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4244
+#: ../version.c:4246
 msgid "3rd user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4249
+#: ../version.c:4251
 msgid "       defaults file: \""
 msgstr ""
 
-#: ../version.c:4254
+#: ../version.c:4256
 msgid "    system menu file: \""
 msgstr ""
 
-#: ../version.c:4262
+#: ../version.c:4264
 msgid "  fall-back for $VIM: \""
 msgstr ""
 
-#: ../version.c:4268
+#: ../version.c:4270
 msgid " f-b for $VIMRUNTIME: \""
 msgstr ""
 
-#: ../version.c:4272
+#: ../version.c:4274
 msgid "Compilation: "
 msgstr ""
 
-#: ../version.c:4278
+#: ../version.c:4280
 msgid "Compiler: "
 msgstr ""
 
-#: ../version.c:4283
+#: ../version.c:4285
 msgid "Linking: "
 msgstr ""
 
-#: ../version.c:4288
+#: ../version.c:4290
 msgid "  DEBUG BUILD"
 msgstr ""
 
-#: ../version.c:4324
+#: ../version.c:4326
 msgid "VIM - Vi IMproved"
 msgstr ""
 
-#: ../version.c:4326
+#: ../version.c:4328
 msgid "version "
 msgstr ""
 
-#: ../version.c:4327
+#: ../version.c:4329
 msgid "by Bram Moolenaar et al."
 msgstr ""
 
-#: ../version.c:4331
+#: ../version.c:4333
 msgid "Vim is open source and freely distributable"
 msgstr ""
 
-#: ../version.c:4333
+#: ../version.c:4335
 msgid "Help poor children in Uganda!"
 msgstr ""
 
-#: ../version.c:4334
+#: ../version.c:4336
 msgid "type  :help iccf<Enter>       for information "
 msgstr ""
 
-#: ../version.c:4336
+#: ../version.c:4338
 msgid "type  :q<Enter>               to exit         "
 msgstr ""
 
-#: ../version.c:4337
+#: ../version.c:4339
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr ""
 
-#: ../version.c:4338
+#: ../version.c:4340
 msgid "type  :help version9<Enter>   for version info"
 msgstr ""
 
-#: ../version.c:4341
+#: ../version.c:4343
 msgid "Running in Vi compatible mode"
 msgstr ""
 
-#: ../version.c:4342
+#: ../version.c:4344
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr ""
 
-#: ../version.c:4343
+#: ../version.c:4345
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr ""
 
-#: ../version.c:4358
+#: ../version.c:4360
 msgid "menu  Help->Orphans           for information    "
 msgstr ""
 
-#: ../version.c:4360
+#: ../version.c:4362
 msgid "Running modeless, typed text is inserted"
 msgstr ""
 
-#: ../version.c:4361
+#: ../version.c:4363
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr ""
 
-#: ../version.c:4362
+#: ../version.c:4364
 msgid "                              for two modes      "
 msgstr ""
 
-#: ../version.c:4366
+#: ../version.c:4368
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
 msgstr ""
 
-#: ../version.c:4367
+#: ../version.c:4369
 msgid "                              for Vim defaults   "
 msgstr ""
 
-#: ../version.c:4408
+#: ../version.c:4410
 msgid "Sponsor Vim development!"
 msgstr ""
 
-#: ../version.c:4409
+#: ../version.c:4411
 msgid "Become a registered Vim user!"
 msgstr ""
 
-#: ../version.c:4412
+#: ../version.c:4414
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
 
-#: ../version.c:4413
+#: ../version.c:4415
 msgid "type  :help register<Enter>   for information "
 msgstr ""
 
-#: ../version.c:4415
+#: ../version.c:4417
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr ""
 
