@@ -308,6 +308,7 @@ runtime/ftplugin/tidy.vim				@dkearns
 runtime/ftplugin/tmux.vim				@ericpruitt
 runtime/ftplugin/toml.vim				@averms
 runtime/ftplugin/tt2html.vim				@petdance
+runtime/ftplugin/twig.vim				@ribru17
 runtime/ftplugin/typescript.vim				@dkearns
 runtime/ftplugin/typescriptreact.vim			@dkearns
 runtime/ftplugin/typst.vim				@saccarosium
