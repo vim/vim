@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2025 Jul 14
+*change.txt*    For Vim version 9.1.  Last change: 2025 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1007,7 +1007,7 @@ This replaces each 'E' character with a euro sign.  Read more in |<Char->|.
 			not make any visible change.
 
 			When [-indentonly] is specified, only the leading
-			white-space will be targeted. Any other consecutive
+			white-space will be targeted.  Any other consecutive
 			white-space will not be changed.
 
 			Warning: This command modifies any <Tab> characters
