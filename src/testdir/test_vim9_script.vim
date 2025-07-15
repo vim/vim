@@ -5265,6 +5265,102 @@ def Test_method_call_with_list_arg()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using more than one has() check in a compound if condition.
+def Test_has_func_shortcircuit()
+  def Has_And1_Cond(): string
+    # true && false
+    if has('jumplist') && has('foobar')
+      return 'present'
+    endif
+    return 'missing'
+  enddef
+  assert_equal('missing', Has_And1_Cond())
+
+  def Has_And2_Cond(): string
+    # false && true
+    if has('foobar') && has('jumplist')
+      return 'present'
+    endif
+    return 'missing'
+  enddef
+  assert_equal('missing', Has_And2_Cond())
+
+  def Has_And3_Cond(): string
+    # false && false
+    if has('foobar') && has('foobaz')
+      return 'present'
+    endif
+    return 'missing'
+  enddef
+  assert_equal('missing', Has_And3_Cond())
+
+  def Has_Or1_Cond(): string
+    # true || false
+    if has('jumplist') || has('foobar')
+      return 'present'
+    endif
+    return 'missing'
+  enddef
+  assert_equal('present', Has_Or1_Cond())
+
+  def Has_Or2_Cond(): string
+    # false || true
+    if has('foobar') || has('jumplist')
+      return 'present'
+    endif
+    return 'missing'
+  enddef
+  assert_equal('present', Has_Or2_Cond())
+
+  def Has_Or3_Cond(): string
+    # false || false
+    if has('foobar') || has('foobaz')
+      return 'present'
+    endif
+    return 'missing'
+  enddef
+  assert_equal('missing', Has_Or3_Cond())
+enddef
+
+" Test for using more than one len() function in a compound if condition.
+def Test_len_func_shortcircuit()
+  def Len_And1_Cond(): string
+    # true && false
+    if len('xxx') == 3 && len('yyy') == 2
+      return 'match'
+    endif
+    return 'nomatch'
+  enddef
+  assert_equal('nomatch', Len_And1_Cond())
+
+  def Len_And2_Cond(): string
+    # false && true
+    if len('xxx') == 2 && len('yyy') == 3
+      return 'match'
+    endif
+    return 'nomatch'
+  enddef
+  assert_equal('nomatch', Len_And2_Cond())
+
+  def Len_Or1_Cond(): string
+    # true || false
+    if len('xxx') == 3 || len('yyy') == 2
+      return 'match'
+    endif
+    return 'nomatch'
+  enddef
+  assert_equal('match', Len_Or1_Cond())
+
+  def Len_Or2_Cond(): string
+    # false || true
+    if len('xxx') == 2 || len('yyy') == 3
+      return 'match'
+    endif
+    return 'nomatch'
+  enddef
+  assert_equal('match', Len_Or2_Cond())
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new

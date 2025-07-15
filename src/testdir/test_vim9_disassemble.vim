@@ -3875,4 +3875,131 @@ def Test_disassemble_assign_tuple_set_type()
   unlet g:instr
 enddef
 
+" Disassemble the code generated for a has() function call
+def Test_disassemble_has_shortcircuit()
+  # true && false condition check
+  var lines =<< trim END
+    vim9script
+    def Fn(): string
+      if has('jumplist') && has('foobar')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'if has(''jumplist'') && has(''foobar'')\_s*' ..
+    'return ''present''\_s*' ..
+    'endif\_s*' ..
+    'return ''missing''\_s*' ..
+    '0 PUSHS "missing"\_s*' ..
+    '1 RETURN', g:instr)
+
+  # false && true condition check
+  lines =<< trim END
+    vim9script
+    def Fn(): string
+      if has('foobar') && has('jumplist')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'if has(''foobar'') && has(''jumplist'')\_s*' ..
+    'return ''present''\_s*' ..
+    'endif\_s*' ..
+    'return ''missing''\_s*' ..
+    '0 PUSHS "missing"\_s*' ..
+    '1 RETURN', g:instr)
+
+  # false && false condition check
+  lines =<< trim END
+    vim9script
+    def Fn(): string
+      if has('foobar') && has('foobaz')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'if has(''foobar'') && has(''foobaz'')\_s*' ..
+    'return ''present''\_s*' ..
+    'endif\_s*' ..
+    'return ''missing''\_s*' ..
+    '0 PUSHS "missing"\_s*' ..
+    '1 RETURN', g:instr)
+
+  # true || false condition check
+  lines =<< trim END
+    vim9script
+    def Fn(): string
+      if has('jumplist') || has('foobar')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'if has(''jumplist'') || has(''foobar'')\_s*' ..
+    'return ''present''\_s*' ..
+    '0 PUSHS "present"\_s*' ..
+    '1 RETURN\_s*' ..
+    'endif\_s*' ..
+    'return ''missing''\_s*' ..
+    '2 PUSHS "missing"\_s*' ..
+    '3 RETURN', g:instr)
+
+  # false || true condition check
+  lines =<< trim END
+    vim9script
+    def Fn(): string
+      if has('foobar') || has('jumplist')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'if has(''foobar'') || has(''jumplist'')\_s*' ..
+    'return ''present''\_s*' ..
+    '0 PUSHS "present"\_s*' ..
+    '1 RETURN\_s*' ..
+    'endif\_s*' ..
+    'return ''missing''\_s*' ..
+    '2 PUSHS "missing"\_s*' ..
+    '3 RETURN', g:instr)
+
+  # false || false condition check
+  lines =<< trim END
+    vim9script
+    def Fn(): string
+      if has('foobar') || has('foobaz')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'if has(''foobar'') || has(''foobaz'')\_s*' ..
+    'return ''present''\_s*' ..
+    'endif\_s*' ..
+    'return ''missing''\_s*' ..
+    '0 PUSHS "missing"\_s*' ..
+    '1 RETURN', g:instr)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
