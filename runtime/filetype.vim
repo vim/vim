@@ -889,6 +889,9 @@ autocmd BufRead,BufNewFile *.fnl,{,.}fennelrc	setf fennel
 " Fetchmail RC file
 au BufNewFile,BufRead .fetchmailrc		setf fetchmail
 
+" FGA
+au BufNewFile,BufRead *.fga			setf fga
+
 " FIRRTL - Flexible Internal Representation for RTL
 au BufNewFile,BufRead *.fir			setf firrtl
 
