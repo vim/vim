@@ -4100,8 +4100,9 @@ CTRL-W_}	windows.txt	/*CTRL-W_}*
 CTRL-X	change.txt	/*CTRL-X*
 CTRL-Y	scroll.txt	/*CTRL-Y*
 CTRL-Z	starting.txt	/*CTRL-Z*
-CTRL-\_CTRL-G	intro.txt	/*CTRL-\\_CTRL-G*
+CTRL-\_CTRL-G	index.txt	/*CTRL-\\_CTRL-G*
 CTRL-\_CTRL-N	intro.txt	/*CTRL-\\_CTRL-N*
+CTRL-\_CTRL-Q	index.txt	/*CTRL-\\_CTRL-Q*
 CTRL-]	tagsrch.txt	/*CTRL-]*
 CTRL-^	editing.txt	/*CTRL-^*
 CTRL-{char}	intro.txt	/*CTRL-{char}*
@@ -6264,6 +6265,7 @@ beval_winid-variable	eval.txt	/*beval_winid-variable*
 beval_winnr-variable	eval.txt	/*beval_winnr-variable*
 binary-number	eval.txt	/*binary-number*
 bindtextdomain()	builtin.txt	/*bindtextdomain()*
+binsearch		motion.txt	/*binsearch*
 bitwise-function	usr_41.txt	/*bitwise-function*
 bitwise-shift	eval.txt	/*bitwise-shift*
 blob	eval.txt	/*blob*
