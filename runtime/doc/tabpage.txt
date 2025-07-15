@@ -363,6 +363,9 @@ A "+" will be shown for a tab page that has a modified window.  The number of
 windows in a tabpage is also shown.  Thus "3+" means three windows and one of
 them has a modified buffer.
 
+An "X" (close button) will appear in the last column when multiple tabs are
+open, but only if the mouse is enabled.
+
 The 'tabline' option allows you to define your preferred way to tab pages
 labels.  This isn't easy, thus an example will be given here.
 

@@ -3726,6 +3726,31 @@ func Test_popupmenu_info_noborder()
   call StopVimInTerminal(buf)
 endfunc
 
+" Info popup should not have close (X) and resize buttons when mouse is
+" disabled.
+func Test_popupmenu_info_border_mouse()
+  CheckScreendump
+  CheckFeature quickfix
+
+  let lines = Get_popupmenu_lines()
+  call writefile(lines, 'XtestInfoPopup', 'D')
+
+  let buf = RunVimInTerminal('-S XtestInfoPopup', #{rows: 14})
+  call TermWait(buf, 25)
+
+  call term_sendkeys(buf, "Go\<CR>\<C-X>\<C-U>")
+  call TermWait(buf, 25)
+  call VerifyScreenDump(buf, 'Test_popupwin_info_border_mouse_1', {})
+
+  call term_sendkeys(buf, "\<ESC>u:set mouse=\<CR>")
+  call term_sendkeys(buf, "o\<C-X>\<C-U>")
+  call TermWait(buf, 25)
+  call VerifyScreenDump(buf, 'Test_popupwin_info_border_mouse_2', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_popupmenu_info_align_menu()
   CheckScreendump
   CheckFeature quickfix

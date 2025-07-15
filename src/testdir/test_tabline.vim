@@ -223,4 +223,17 @@ func Test_tabline_truncated_double_width()
   set tabline=
 endfunc
 
+" Test that 'X' is removed when mouse is disabled.
+func Test_tabline_mouse_enable()
+  tabnew
+  for val in ['n', 'i', 'v', 'a']
+    set mouse=
+    redraw
+    call assert_notmatch('X$', Screenline(1))
+    execute $'set mouse={val}'
+    redraw
+    call assert_match('X$', Screenline(1))
+  endfor
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

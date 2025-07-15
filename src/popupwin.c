@@ -2286,8 +2286,11 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     if (type == TYPE_INFO)
     {
 	wp->w_popup_pos = POPPOS_TOPLEFT;
-	wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
-	wp->w_popup_close = POPCLOSE_BUTTON;
+	if (mouse_has(MOUSE_INSERT))
+	{
+	    wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
+	    wp->w_popup_close = POPCLOSE_BUTTON;
+	}
 	add_border_left_right_padding(wp);
 	parse_completepopup(wp);
     }
