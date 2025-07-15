@@ -1233,20 +1233,25 @@ compile_call(
 	       && ((is_has && !dynamic_feature(argvars[0].vval.v_string))
 		    || !is_has))
 	{
-	    typval_T	*tv = &ppconst->pp_tv[ppconst->pp_used];
 
 	    *arg = s + 1;
-	    argvars[1].v_type = VAR_UNKNOWN;
-	    tv->v_type = VAR_NUMBER;
-	    tv->vval.v_number = 0;
-	    if (is_has)
-		f_has(argvars, tv);
-	    else if (is_len)
-		f_len(argvars, tv);
-	    else
-		f_exists(argvars, tv);
+
+	    if (cctx->ctx_skip != SKIP_YES)
+	    {
+		typval_T	*tv = &ppconst->pp_tv[ppconst->pp_used];
+
+		argvars[1].v_type = VAR_UNKNOWN;
+		tv->v_type = VAR_NUMBER;
+		tv->vval.v_number = 0;
+		if (is_has)
+		    f_has(argvars, tv);
+		else if (is_len)
+		    f_len(argvars, tv);
+		else
+		    f_exists(argvars, tv);
+		++ppconst->pp_used;
+	    }
 	    clear_tv(&argvars[0]);
-	    ++ppconst->pp_used;
 	    return OK;
 	}
 	clear_tv(&argvars[0]);
