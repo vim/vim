@@ -6978,7 +6978,7 @@ setup_cpt_sources(void)
 	}
     }
     if (count == 0)
-	return OK;
+	goto theend;
 
     cpt_sources_clear();
     cpt_sources_count = count;
@@ -6986,6 +6986,7 @@ setup_cpt_sources(void)
     if (cpt_sources_array == NULL)
     {
 	cpt_sources_count = 0;
+	vim_free(cpt);
 	return FAIL;
     }
 
@@ -7005,6 +7006,7 @@ setup_cpt_sources(void)
 	}
     }
 
+theend:
     vim_free(cpt);
     return OK;
 }
