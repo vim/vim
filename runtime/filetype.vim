@@ -1957,6 +1957,9 @@ au BufNewFile,BufRead Pipfile.lock		setf json
 " Pixi lock
 au BufNewFile,BufRead pixi.lock			setf yaml
 
+" Pkl
+au BufNewFile,BufRead *.pkl			setf pkl
+
 " PL/1, PL/I
 au BufNewFile,BufRead *.pli,*.pl1		setf pli
 
