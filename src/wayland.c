@@ -603,7 +603,9 @@ vwl_log_handler(const char *fmt, va_list args)
     // Remove newline that libwayland puts
     buf[STRLEN(buf) - 1] = NUL;
 
+#ifdef FEAT_EVAL
     ch_log(NULL, "%s", buf);
+#endif
     emsg(buf);
 
     vim_free(buf);
