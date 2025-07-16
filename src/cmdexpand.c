@@ -47,30 +47,38 @@ static char_u *cmdline_orig = NULL;
     static int
 cmdline_fuzzy_completion_supported(expand_T *xp)
 {
-    return (vim_strchr(p_wop, WOP_FUZZY) != NULL
-	    && xp->xp_context != EXPAND_BOOL_SETTINGS
-	    && xp->xp_context != EXPAND_COLORS
-	    && xp->xp_context != EXPAND_COMPILER
-	    && xp->xp_context != EXPAND_DIRECTORIES
-	    && xp->xp_context != EXPAND_DIRS_IN_CDPATH
-	    && xp->xp_context != EXPAND_FILES
-	    && xp->xp_context != EXPAND_FILES_IN_PATH
-	    && xp->xp_context != EXPAND_FILETYPE
-	    && xp->xp_context != EXPAND_FILETYPECMD
-	    && xp->xp_context != EXPAND_FINDFUNC
-	    && xp->xp_context != EXPAND_HELP
-	    && xp->xp_context != EXPAND_KEYMAP
-	    && xp->xp_context != EXPAND_OLD_SETTING
-	    && xp->xp_context != EXPAND_STRING_SETTING
-	    && xp->xp_context != EXPAND_SETTING_SUBTRACT
-	    && xp->xp_context != EXPAND_OWNSYNTAX
-	    && xp->xp_context != EXPAND_PACKADD
-	    && xp->xp_context != EXPAND_RUNTIME
-	    && xp->xp_context != EXPAND_SHELLCMD
-	    && xp->xp_context != EXPAND_SHELLCMDLINE
-	    && xp->xp_context != EXPAND_TAGS
-	    && xp->xp_context != EXPAND_TAGS_LISTFILES
-	    && xp->xp_context != EXPAND_USER_LIST);
+    switch (xp->xp_context)
+    {
+    case EXPAND_BOOL_SETTINGS:
+    case EXPAND_COLORS:
+    case EXPAND_COMPILER:
+    case EXPAND_DIRECTORIES:
+    case EXPAND_DIRS_IN_CDPATH:
+    case EXPAND_FILES:
+    case EXPAND_FILES_IN_PATH:
+    case EXPAND_FILETYPE:
+    case EXPAND_FILETYPECMD:
+    case EXPAND_FINDFUNC:
+    case EXPAND_HELP:
+    case EXPAND_KEYMAP:
+    case EXPAND_OLD_SETTING:
+    case EXPAND_STRING_SETTING:
+    case EXPAND_SETTING_SUBTRACT:
+    case EXPAND_OWNSYNTAX:
+    case EXPAND_PACKADD:
+    case EXPAND_RUNTIME:
+    case EXPAND_SHELLCMD:
+    case EXPAND_SHELLCMDLINE:
+    case EXPAND_TAGS:
+    case EXPAND_TAGS_LISTFILES:
+    case EXPAND_USER_LIST:
+	return FALSE;
+
+    default:
+	break;
+    }
+
+    return vim_strchr(p_wop, WOP_FUZZY) != NULL;
 }
 
 /*
@@ -3710,28 +3718,16 @@ ExpandGenericExt(
  */
     static void
 expand_shellcmd_onedir(
-	char_u		*buf,
-	char_u		*s,
-	size_t		l,
 	char_u		*pat,
+	size_t		pathlen,	// length of the path portion of pat.
 	char_u		***matches,
 	int		*numMatches,
 	int		flags,
 	hashtab_T	*ht,
 	garray_T	*gap)
 {
-    int		ret;
-    hash_T	hash;
-    hashitem_T	*hi;
-
-    vim_strncpy(buf, s, l);
-    add_pathsep(buf);
-    l = STRLEN(buf);
-    vim_strncpy(buf + l, pat, MAXPATHL - 1 - l);
-
     // Expand matches in one directory of $PATH.
-    ret = expand_wildcards(1, &buf, numMatches, matches, flags);
-    if (ret != OK)
+    if (expand_wildcards(1, &pat, numMatches, matches, flags) != OK)
 	return;
 
     if (ga_grow(gap, *numMatches) == FAIL)
@@ -3742,17 +3738,22 @@ expand_shellcmd_onedir(
 
     for (int i = 0; i < *numMatches; ++i)
     {
-	char_u *name = (*matches)[i];
+	char_u	*name = (*matches)[i];
+	size_t	namelen = STRLEN(name);
 
-	if (STRLEN(name) > l)
+	if (namelen > pathlen)
 	{
+	    hash_T	hash;
+	    hashitem_T	*hi;
+
 	    // Check if this name was already found.
-	    hash = hash_hash(name + l);
-	    hi = hash_lookup(ht, name + l, hash);
+	    hash = hash_hash(name + pathlen);
+	    hi = hash_lookup(ht, name + pathlen, hash);
 	    if (HASHITEM_EMPTY(hi))
 	    {
 		// Remove the path that was prepended.
-		STRMOVE(name, name + l);
+		mch_memmove(name, name + pathlen,
+		    (size_t)(namelen - pathlen) + 1);   // +1 for NUL
 		((char_u **)gap->ga_data)[gap->ga_len++] = name;
 		hash_add_item(ht, hi, name, hash);
 		name = NULL;
@@ -3775,12 +3776,11 @@ expand_shellcmd(
     int		flagsarg)	// EW_ flags
 {
     char_u	*pat;
-    int		i;
+    size_t	patlen;
     char_u	*path = NULL;
     int		mustfree = FALSE;
     garray_T    ga;
     char_u	*buf;
-    size_t	l;
     char_u	*s, *e;
     int		flags = flagsarg;
     int		did_curdir = FALSE;
@@ -3791,16 +3791,31 @@ expand_shellcmd(
 	return FAIL;
 
     // for ":set path=" and ":set tags=" halve backslashes for escaped space
-    pat = vim_strsave(filepat);
+    patlen = STRLEN(filepat);
+    pat = vim_strnsave(filepat, patlen);
     if (pat == NULL)
     {
 	vim_free(buf);
 	return FAIL;
     }
 
-    for (i = 0; pat[i]; ++i)
-	if (pat[i] == '\\' && pat[i + 1] == ' ')
-	    STRMOVE(pat + i, pat + i + 1);
+    // Replace "\ " with " ".
+    e = pat + patlen;
+    for (s = pat; *s != NUL; ++s)
+    {
+	char_u  *p;
+
+	if (*s != '\\')
+	    continue;
+
+	p = s + 1;
+	if (*p == ' ')
+	{
+	    mch_memmove(s, p, (size_t)(e - p) + 1);     // +1 for NUL
+	    --e;
+	}
+    }
+    patlen = (size_t)(e - pat);
 
     flags |= EW_FILE | EW_EXEC | EW_SHELLCMD;
 
@@ -3823,37 +3838,62 @@ expand_shellcmd(
     hash_init(&found_ht);
     for (s = path; ; s = e)
     {
-#if defined(MSWIN)
-	e = vim_strchr(s, ';');
-#else
-	e = vim_strchr(s, ':');
-#endif
-	if (e == NULL)
-	    e = s + STRLEN(s);
+	size_t	pathlen;	// length of the path portion of buf
+				// (including trailing slash).
+	size_t	seplen;
 
 	if (*s == NUL)
 	{
 	    if (did_curdir)
 		break;
+
 	    // Find directories in the current directory, path is empty.
 	    did_curdir = TRUE;
 	    flags |= EW_DIR;
-	}
-	else if (STRNCMP(s, ".", (int)(e - s)) == 0)
-	{
-	    did_curdir = TRUE;
-	    flags |= EW_DIR;
+
+	    e = s;
+	    pathlen = 0;
+	    seplen = 0;
 	}
 	else
-	    // Do not match directories inside a $PATH item.
-	    flags &= ~EW_DIR;
+	{
+#if defined(MSWIN)
+	    e = vim_strchr(s, ';');
+#else
+	    e = vim_strchr(s, ':');
+#endif
+	    if (e == NULL)
+		e = s + STRLEN(s);
 
-	l = e - s;
-	if (l > MAXPATHL - 5)
-	    break;
+	    pathlen = (size_t)(e - s);
+	    if (STRNCMP(s, ".", pathlen) == 0)
+	    {
+		did_curdir = TRUE;
+		flags |= EW_DIR;
+	    }
+	    else
+		// Do not match directories inside a $PATH item.
+		flags &= ~EW_DIR;
 
-	expand_shellcmd_onedir(buf, s, l, pat, matches, numMatches, flags,
-							&found_ht, &ga);
+	    seplen = !after_pathsep(s, e) ? STRLEN_LITERAL(PATHSEPSTR) : 0;
+	}
+
+	if (pathlen + seplen + patlen + 1 <= MAXPATHL)
+	{
+	    if (pathlen > 0)
+	    {
+		vim_strncpy(buf, s, pathlen);
+		if (seplen > 0)
+		{
+		    STRCPY(buf + pathlen, PATHSEPSTR);
+		    pathlen += seplen;
+		}
+	    }
+	    STRCPY(buf + pathlen, pat);
+
+	    expand_shellcmd_onedir(buf, pathlen, matches, numMatches, flags,
+				    &found_ht, &ga);
+	}
 
 	if (*e != NUL)
 	    ++e;
@@ -4086,7 +4126,9 @@ globpath(
 {
     expand_T	xpc;
     char_u	*buf;
-    size_t	buflen;
+    size_t	pathlen;	    // length of the path portion of buf
+				    // (including trailing slash)
+    size_t	seplen;
     size_t	filelen;
 
     buf = alloc(MAXPATHL);
@@ -4098,29 +4140,35 @@ globpath(
 
     filelen = STRLEN(file);
 
+#if defined(MSWIN)
+    // Using the platform's path separator (\) makes vim incorrectly
+    // treat it as an escape character, use '/' instead.
+    #define TMP_PATHSEPSTR "/"
+#else
+    #define TMP_PATHSEPSTR PATHSEPSTR
+#endif
+
     // Loop over all entries in {path}.
     while (*path != NUL)
     {
 	// Copy one item of the path to buf[] and concatenate the file name.
-	buflen = (size_t)copy_option_part(&path, buf, MAXPATHL, ",");
-	if (buflen + filelen + 2 < MAXPATHL)
+	pathlen = (size_t)copy_option_part(&path, buf, MAXPATHL, ",");
+	seplen = (*buf != NUL && !after_pathsep(buf, buf + pathlen))
+	    ? STRLEN_LITERAL(TMP_PATHSEPSTR)
+	    : 0;
+
+	if (pathlen + seplen + filelen + 1 <= MAXPATHL)
 	{
 	    int	    num_p;
 	    char_u  **p;
 
-	    if (*buf != NUL && !after_pathsep(buf, buf + buflen))
+	    if (seplen > 0)
 	    {
-#if defined(MSWIN)
-		// Using the platform's path separator (\) makes vim incorrectly
-		// treat it as an escape character, use '/' instead.
-		STRCPY(buf + buflen, "/");
-		++buflen;
-#else
-		STRCPY(buf + buflen, PATHSEPSTR);
-		buflen += STRLEN_LITERAL(PATHSEPSTR);
-#endif
+		STRCPY(buf + pathlen, TMP_PATHSEPSTR);
+		pathlen += seplen;
 	    }
-	    STRCPY(buf + buflen, file);
+	    STRCPY(buf + pathlen, file);
+
 	    if (ExpandFromContext(&xpc, buf, &p, &num_p,
 			     WILD_SILENT|expand_options) != FAIL && num_p > 0)
 	    {
@@ -4142,6 +4190,7 @@ globpath(
 
     vim_free(buf);
 }
+#undef TMP_PATHSEPSTR
 
 /*
  * Translate some keys pressed when 'wildmenu' is used.
@@ -4485,19 +4534,20 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	xpc.xp_pattern = pat;
+	char_u	*pattern_start;
+
+	xpc.xp_pattern = pattern_start = pat;
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
 	xpc.xp_line = pat;
 
 	xpc.xp_context = cmdcomplete_str_to_type(type);
-	if (xpc.xp_context == EXPAND_NOTHING)
+	switch (xpc.xp_context)
 	{
+	case EXPAND_NOTHING:
 	    semsg(_(e_invalid_argument_str), type);
 	    return;
-	}
 
-	if (xpc.xp_context == EXPAND_USER_DEFINED)
-	{
+	case EXPAND_USER_DEFINED:
 	    // Must be "custom,funcname" pattern
 	    if (STRNCMP(type, "custom,", 7) != 0)
 	    {
@@ -4506,10 +4556,9 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	    }
 
 	    xpc.xp_arg = type + 7;
-	}
+	    break;
 
-	if (xpc.xp_context == EXPAND_USER_LIST)
-	{
+	case EXPAND_USER_LIST:
 	    // Must be "customlist,funcname" pattern
 	    if (STRNCMP(type, "customlist,", 11) != 0)
 	    {
@@ -4518,48 +4567,55 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	    }
 
 	    xpc.xp_arg = type + 11;
-	}
+	    break;
 
 # if defined(FEAT_MENU)
-	if (xpc.xp_context == EXPAND_MENUS)
-	{
+	case EXPAND_MENUS:
 	    set_context_in_menu_cmd(&xpc, (char_u *)"menu", xpc.xp_pattern, FALSE);
-	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-	}
+	    xpc.xp_pattern_len -= (int)(xpc.xp_pattern - pattern_start);
+	    break;
 # endif
+
 # ifdef FEAT_CSCOPE
-	if (xpc.xp_context == EXPAND_CSCOPE)
-	{
+	case EXPAND_CSCOPE:
 	    set_context_in_cscope_cmd(&xpc, xpc.xp_pattern, CMD_cscope);
-	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-	}
+	    xpc.xp_pattern_len -= (int)(xpc.xp_pattern - pattern_start);
+	    break;
 # endif
+
 # ifdef FEAT_SIGNS
-	if (xpc.xp_context == EXPAND_SIGN)
-	{
+	case EXPAND_SIGN:
 	    set_context_in_sign_cmd(&xpc, xpc.xp_pattern);
-	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-	}
+	    xpc.xp_pattern_len -= (int)(xpc.xp_pattern - pattern_start);
+	    break;
 # endif
-	if (xpc.xp_context == EXPAND_RUNTIME)
-	{
+
+	case EXPAND_RUNTIME:
 	    set_context_in_runtime_cmd(&xpc, xpc.xp_pattern);
-	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-	}
-	if (xpc.xp_context == EXPAND_SHELLCMDLINE)
+	    xpc.xp_pattern_len -= (int)(xpc.xp_pattern - pattern_start);
+	    break;
+
+	case EXPAND_SHELLCMDLINE:
 	{
 	    int context = EXPAND_SHELLCMDLINE;
 	    set_context_for_wildcard_arg(NULL, xpc.xp_pattern, FALSE, &xpc,
-								     &context);
-	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+					 &context);
+	    xpc.xp_pattern_len -= (int)(xpc.xp_pattern - pattern_start);
+	    break;
 	}
-	if (xpc.xp_context == EXPAND_FILETYPECMD)
+
+	case EXPAND_FILETYPECMD:
 	    filetype_expand_what = EXP_FILETYPECMD_ALL;
+	    break;
+
+	default:
+	    break;
+	}
     }
 
     if (cmdline_fuzzy_completion_supported(&xpc))
 	// when fuzzy matching, don't modify the search string
-	pat = vim_strsave(xpc.xp_pattern);
+	pat = vim_strnsave(xpc.xp_pattern, xpc.xp_pattern_len);
     else
 	pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
 
@@ -4665,7 +4721,7 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     int	    is_single_line = start->lnum == end->lnum;
 
     segment_len = is_single_line ? (end->col - start->col)
-				: (int)STRLEN(start_ptr);
+			: (int)(ml_get_len(start->lnum) - start->col);
     if (ga_grow(&ga, segment_len + 2) != OK)
 	return FAIL;
 
