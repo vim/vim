@@ -17,6 +17,7 @@
 "   2025 Apr 16 by Vim Project: decouple from netrw by adding s:WinPath()
 "   2025 May 19 by Vim Project: restore working directory after read/write
 "   2025 Jul 13 by Vim Project: warn with path traversal attacks
+"   2025 Jul 16 by Vim Project: update minimum vim version
 "
 "	Contains many ideas from Michael Toren's <tar.vim>
 "
@@ -35,9 +36,9 @@ if &cp || exists("g:loaded_tar")
  finish
 endif
 let g:loaded_tar= "v32b"
-if v:version < 900
+if v:versionlong < 9011024
  echohl WarningMsg
- echo "***warning*** this version of tar needs vim 9.0"
+ echo "***warning*** this version of tar needs vim 9.1.1024"
  echohl Normal
  finish
 endif
