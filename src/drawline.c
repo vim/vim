@@ -1476,9 +1476,9 @@ win_line(
 
     CLEAR_FIELD(line_changes);
 
-    if (wlv.filler_lines < 0 || linestatus < 0)
+    if (linestatus < 0)
     {
-	if (wlv.filler_lines == -1 || linestatus == -1)
+	if (linestatus == -1)
 	{
 	    if (diff_find_change(wp, lnum, &line_changes))
 	    {
@@ -1508,9 +1508,6 @@ win_line(
 	}
 	else
 	    wlv.diff_hlf = HLF_ADD;
-
-	if (linestatus == 0)
-	    wlv.filler_lines = 0;
 
 	area_highlighting = TRUE;
     }

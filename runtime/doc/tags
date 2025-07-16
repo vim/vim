@@ -216,9 +216,11 @@ $quote	eval.txt	/*$quote*
 'delcombine'	options.txt	/*'delcombine'*
 'dex'	options.txt	/*'dex'*
 'dg'	options.txt	/*'dg'*
+'dia'	options.txt	/*'dia'*
 'dict'	options.txt	/*'dict'*
 'dictionary'	options.txt	/*'dictionary'*
 'diff'	options.txt	/*'diff'*
+'diffanchors'	options.txt	/*'diffanchors'*
 'diffexpr'	options.txt	/*'diffexpr'*
 'diffopt'	options.txt	/*'diffopt'*
 'digraph'	options.txt	/*'digraph'*
@@ -4667,7 +4669,9 @@ E1540	eval.txt	/*E1540*
 E1541	vi_diff.txt	/*E1541*
 E1547	various.txt	/*E1547*
 E1548	wayland.txt	/*E1548*
+E1549	options.txt	/*E1549*
 E155	sign.txt	/*E155*
+E1550	options.txt	/*E1550*
 E156	sign.txt	/*E156*
 E157	sign.txt	/*E157*
 E158	sign.txt	/*E158*
@@ -6935,6 +6939,7 @@ dict-modification	eval.txt	/*dict-modification*
 did_filetype()	builtin.txt	/*did_filetype()*
 diff	diff.txt	/*diff*
 diff()	builtin.txt	/*diff()*
+diff-anchors	diff.txt	/*diff-anchors*
 diff-diffexpr	diff.txt	/*diff-diffexpr*
 diff-func-examples	diff.txt	/*diff-func-examples*
 diff-mode	diff.txt	/*diff-mode*
