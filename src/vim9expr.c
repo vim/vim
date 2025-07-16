@@ -2684,7 +2684,8 @@ compile_subscript(
 		if (generate_instr(cctx, ISN_CLEARDICT) == NULL)
 		    return FAIL;
 	    }
-	    if (compile_member(is_slice, &keeping_dict, cctx) == FAIL)
+	    if (cctx->ctx_skip != SKIP_YES
+		    && compile_member(is_slice, &keeping_dict, cctx) == FAIL)
 		return FAIL;
 	}
 	else if (*p == '.' && p[1] != '.')
