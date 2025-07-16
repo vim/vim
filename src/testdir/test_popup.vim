@@ -2289,6 +2289,7 @@ func Test_popup_complete_cmdwin_preview()
   endfunc
   set omnifunc=CompleteWithPreview
   call feedkeys("q:if\<C-X>\<C-O>\<C-N>\<ESC>\<CR>", 'tx!')
+  set omnifunc&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
