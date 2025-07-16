@@ -1,6 +1,8 @@
 vim9script
 # Vim9 generic functions
 # VIM_TEST_SETUP highlight link vim9DefTypeParam Todo
+# VIM_TEST_SETUP let g:vimsyn_folding = "f"
+# VIM_TEST_SETUP setl fdc=2 fdl=99 fdm=syntax
 
 
 # :help generic-functions
@@ -48,4 +50,22 @@ echo EchoString('abc')
 
 # disassemble MyFunc<string, dict<string>>
 # disassemble MyFunc<number, list<blob>>
+
+
+# Issue: https://github.com/vim/vim/pull/17722#issuecomment-3075531052
+
+export def Id<U>(): func(U): U
+    return (X_: U) => X_
+enddef
+
+export def Const<U, V>(): func(U): func(V): U
+    return (X_: U) => (_: V) => X_
+enddef
+
+export def Flip<U, V, W>(): func(func(U): func(V): W): func(V): func(U): W
+    return (F_: func(U): func(V): W) => (Y_: V) => (X_: U) => F_(X_)(Y_)
+enddef
+
+echo Const<number, any>()(2)(null)
+    == Flip<number, any, number>()(Const<number, any>())(null)(2)
 
