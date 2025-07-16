@@ -156,6 +156,33 @@ syn region  pythonRawString matchgroup=pythonTripleQuotes
       \ start=+[rR]\z('''\|"""\)+ end="\z1" keepend
       \ contains=pythonSpaceError,pythonDoctest,@Spell
 
+" Formatted string literals (f-strings)
+" https://docs.python.org/3/reference/lexical_analysis.html#f-strings
+syn region  pythonFString
+      \ matchgroup=pythonQuotes
+      \ start=+\cF\z(['"]\)+
+      \ end="\z1"
+      \ skip="\\\\\|\\\z1"
+      \ contains=pythonEscape,pythonUnicodeEscape,@Spell
+syn region  pythonFString
+      \ matchgroup=pythonTripleQuotes
+      \ start=+\cF\z('''\|"""\)+
+      \ end="\z1"
+      \ keepend
+      \ contains=pythonEscape,pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
+syn region  pythonRawFString
+      \ matchgroup=pythonQuotes
+      \ start=+\c\%(FR\|RF\)\z(['"]\)+
+      \ end="\z1"
+      \ skip="\\\\\|\\\z1"
+      \ contains=@Spell
+syn region  pythonRawFString
+      \ matchgroup=pythonTripleQuotes
+      \ start=+\c\%(FR\|RF\)\z('''\|"""\)+
+      \ end="\z1"
+      \ keepend
+      \ contains=pythonSpaceError,pythonDoctest,@Spell
+
 " Bytes
 syn region  pythonBytes
       \ matchgroup=pythonQuotes
@@ -338,6 +365,8 @@ hi def link pythonComment		Comment
 hi def link pythonTodo			Todo
 hi def link pythonString		String
 hi def link pythonRawString		String
+hi def link pythonFString		String
+hi def link pythonRawFString		String
 hi def link pythonBytes 		String
 hi def link pythonRawBytes 		String
 hi def link pythonQuotes		String
