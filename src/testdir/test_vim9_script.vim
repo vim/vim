@@ -5361,6 +5361,78 @@ def Test_len_func_shortcircuit()
   assert_equal('match', Len_Or2_Cond())
 enddef
 
+" Test for skipping list/tuple/dict/blob indexing when short circuiting a if
+" condition check.
+def Test_if_cond_shortcircuit_skip_indexing()
+  # indexing a list
+  var lines =<< trim END
+    vim9script
+    def Foo(): string
+      const l = [false]
+      if false && l[0]
+        return 'failed'
+      endif
+      if true || l[0]
+        return 'passed'
+      endif
+      return 'failed'
+    enddef
+    assert_equal('passed', Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # indexing a tuple
+  lines =<< trim END
+    vim9script
+    def Foo(): string
+      const t = (false)
+      if false && t[0]
+        return 'failed'
+      endif
+      if true || t[0]
+        return 'passed'
+      endif
+      return 'failed'
+    enddef
+    assert_equal('passed', Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # indexing a dict
+  lines =<< trim END
+    vim9script
+    def Foo(): string
+      const d = {x: false}
+      if false && d['x']
+        return 'failed'
+      endif
+      if true || d['x']
+        return 'passed'
+      endif
+      return 'failed'
+    enddef
+    assert_equal('passed', Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # indexing a blob
+  lines =<< trim END
+    vim9script
+    def Foo(): string
+      const b = 0z00
+      if false && b[0]
+        return 'failed'
+      endif
+      if true || b[0]
+        return 'passed'
+      endif
+      return 'failed'
+    enddef
+    assert_equal('passed', Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
