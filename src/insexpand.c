@@ -5122,7 +5122,7 @@ strip_caret_numbers_in_place(char_u *str)
  * Call functions specified in the 'cpt' option with findstart=1,
  * and retrieve the startcol.
  */
-    static void
+    static int
 prepare_cpt_compl_funcs(void)
 {
 #ifdef FEAT_COMPL_FUNC
@@ -5134,10 +5134,9 @@ prepare_cpt_compl_funcs(void)
 
     // Make a copy of 'cpt' in case the buffer gets wiped out
     cpt = vim_strsave(curbuf->b_p_cpt);
+    if (cpt == NULL)
+	return FAIL;
     strip_caret_numbers_in_place(cpt);
-
-    // Re-insert the text removed by ins_compl_delete().
-    ins_compl_insert_bytes(compl_orig_text.string + get_compl_len(), -1);
 
     for (p = cpt; *p;)
     {
@@ -5166,11 +5165,10 @@ prepare_cpt_compl_funcs(void)
 	idx++;
     }
 
-    // Undo insertion
-    ins_compl_delete();
-
     vim_free(cpt);
+    return OK;
 #endif
+    return FAIL;
 }
 
 /*
@@ -5179,13 +5177,13 @@ prepare_cpt_compl_funcs(void)
     static int
 advance_cpt_sources_index_safe(void)
 {
-    if (cpt_sources_index < cpt_sources_count - 1)
+    if (cpt_sources_index >= 0 && cpt_sources_index < cpt_sources_count - 1)
     {
 	cpt_sources_index++;
 	return OK;
     }
 #ifdef FEAT_EVAL
-    semsg(_(e_list_index_out_of_range_nr), cpt_sources_index + 1);
+    semsg(_(e_list_index_out_of_range_nr), cpt_sources_index);
 #endif
     return FAIL;
 }
@@ -5237,18 +5235,10 @@ ins_compl_get_exp(pos_T *ini)
     st.cur_match_pos = (compl_dir_forward())
 				    ? &st.last_match_pos : &st.first_match_pos;
 
-    if (ctrl_x_mode_normal() && !ctrl_x_mode_line_or_eval() &&
-	    !(compl_cont_status & CONT_LOCAL))
-    {
-	// ^N completion, not ^X^L or complete() or ^X^N
-	if (!compl_started) // Before showing menu the first time
-	{
-	    if (setup_cpt_sources() == FAIL)
-		return FAIL;
-	}
-	prepare_cpt_compl_funcs();
+    if (cpt_sources_array != NULL && ctrl_x_mode_normal()
+	    && !ctrl_x_mode_line_or_eval()
+	    && !(compl_cont_status & CONT_LOCAL))
 	cpt_sources_index = 0;
-    }
 
     // For ^N/^P loop over all the flags/windows/buffers in 'complete'.
     for (;;)
@@ -6142,6 +6132,14 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 	}
     }
 
+    // Call functions in 'complete' with 'findstart=1'
+    if (ctrl_x_mode_normal() && !(compl_cont_status & CONT_LOCAL))
+    {
+	// ^N completion, not complete() or ^X^N
+	if (setup_cpt_sources() == FAIL || prepare_cpt_compl_funcs() == FAIL)
+	    return FAIL;
+    }
+
     return OK;
 }
 
@@ -6975,9 +6973,14 @@ setup_cpt_sources(void)
     char_u  buf[LSIZE];
     int	    slen;
     int	    count = 0, idx = 0;
-    char_u  *p;
+    char_u  *p, *cpt;
 
-    for (p = curbuf->b_p_cpt; *p;)
+    // Make a copy of 'cpt' in case the buffer gets wiped out
+    cpt = vim_strsave(curbuf->b_p_cpt);
+    if (cpt == NULL)
+	return FAIL;
+
+    for (p = cpt; *p;)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
@@ -6988,7 +6991,7 @@ setup_cpt_sources(void)
 	}
     }
     if (count == 0)
-	return OK;
+	goto theend;
 
     cpt_sources_clear();
     cpt_sources_count = count;
@@ -6996,10 +6999,11 @@ setup_cpt_sources(void)
     if (cpt_sources_array == NULL)
     {
 	cpt_sources_count = 0;
+	vim_free(cpt);
 	return FAIL;
     }
 
-    for (p = curbuf->b_p_cpt; *p;)
+    for (p = cpt; *p;)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
@@ -7014,6 +7018,9 @@ setup_cpt_sources(void)
 	    idx++;
 	}
     }
+
+theend:
+    vim_free(cpt);
     return OK;
 }
 
