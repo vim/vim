@@ -25,6 +25,10 @@ AC_EXEEXT
 
 AC_HEADER_SYS_WAIT
 
+if test -z "$PKG_CONFIG"; then
+  AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
+fi
+
 dnl Check that the C99 features that Vim uses are supported:
 if test x"$ac_cv_prog_cc_c99" != xno; then
   dnl If the compiler doesn't explicitly support C99, then check
@@ -2884,10 +2888,6 @@ AC_DEFUN([GNOME_INIT_HOOK],
 AC_DEFUN([GNOME_INIT],[
 	GNOME_INIT_HOOK([],fail)
 ])
-
-if test -z "$PKG_CONFIG"; then
-  AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl Check for GTK3. If it succeeds, skip the check for GTK2.
