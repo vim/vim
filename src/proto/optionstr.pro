@@ -64,6 +64,7 @@ char *did_set_cursorlineopt(optset_T *args);
 int expand_set_cursorlineopt(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_debug(optset_T *args);
 int expand_set_debug(optexpand_T *args, int *numMatches, char_u ***matches);
+char *did_set_diffanchors(optset_T *args);
 char *did_set_diffopt(optset_T *args);
 int expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_display(optset_T *args);

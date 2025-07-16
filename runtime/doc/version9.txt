@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 15
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41570,6 +41570,12 @@ the "inline" sub option value for the 'diffopt' setting, with "inline:simple"
 being added to the default "diffopt" value (but this does not change how diff
 mode works).
 
+The 'diffanchors' option specifies a comma-separated list of addresses in
+a buffer that act as anchor points for splitting and independently diffing
+buffer sections, improving diff alignment.  It is only used when 'diffopt'
+includes "anchor" and all specified addresses must resolve in every buffer, or
+else the anchors are ignored.
+
 Completion~
 ----------
 - New Insert-mode completion: |i_CTRL-X_CTRL-R| to complete words from
@@ -41799,6 +41805,7 @@ Options: ~
 			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup
+'diffanchors'		list of {address} to force syncing of diffs
 'eventignorewin'	autocommand events that are ignored in a window
 'findfunc'		Vim function to obtain the results for a |:find|
 			command
