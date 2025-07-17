@@ -1,5 +1,5 @@
 " Vim function calls
-" VIM_SETUP highlight link vimUserFunc Todo
+" VIM_TEST_SETUP highlight link vimUserFunc Todo
 
 
 call abs(42)
@@ -262,4 +262,14 @@ call v:substitute.substitute()
 
 call substitute#substitute()
 call g:substitute#substitute()
+
+
+" chained function calls
+
+call module.foo().bar()
+
+
+" Issue #17766 (valid function call highlighted as error)
+￼
+call module[0].foo()
 
