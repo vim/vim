@@ -678,6 +678,7 @@ xmkmfpath
 WAYLAND_OBJ
 WAYLAND_SRC
 WAYLAND_LIBS
+WAYLAND_CFLAGS
 TERM_TEST
 TERM_OBJ
 TERM_SRC
@@ -9213,120 +9214,49 @@ printf %s "checking --with-wayland argument... " >&6; }
 # Check whether --with-wayland was given.
 if test ${with_wayland+y}
 then :
-  withval=$with_wayland;
+  withval=$with_wayland; with_wayland=$withval
+else case e in #(
+  e) with_wayland=yes ;;
+esac
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $with_wayland" >&5
+printf "%s\n" "$with_wayland" >&6; }
 
-test -z "$with_wayland" && with_wayland=yes
 if test "$with_wayland" = yes; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+cflags_save=$CFLAGS
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for wayland" >&5
+printf %s "checking for wayland... " >&6; }
+  if "$PKG_CONFIG" --exists 'wayland-client'; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if Wayland client header files can be found" >&5
-printf %s "checking if Wayland client header files can be found... " >&6; }
-  cppflags_save=$CPPFLAGS
-  CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <wayland-client.h>
-int
-main (void)
-{
+    printf "%s\n" "#define HAVE_WAYLAND 1" >>confdefs.h
 
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }; no_wl=yes ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-  CPPFLAGS=$cppflags_save
+    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client`
+    CFLAGS="$CFLAGS $WAYLAND_CFLAGS"
+    WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client`
+    WAYLAND_SRC=" \
+      auto/wayland/wlr-data-control-unstable-v1.c \
+      auto/wayland/ext-data-control-v1.c \
+      auto/wayland/xdg-shell.c \
+      auto/wayland/primary-selection-unstable-v1.c \
+      wayland.c"
+    WAYLAND_OBJ=" \
+      objects/wlr-data-control-unstable-v1.o \
+      objects/ext-data-control-v1.o \
+      objects/xdg-shell.o \
+      objects/primary-selection-unstable-v1.o \
+      objects/wayland.o"
 
-  if test "$no_wl" = yes; then
-    with_wayland=no
+
+
+
   else
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for wl_display_connect in -lwayland-client" >&5
-printf %s "checking for wl_display_connect in -lwayland-client... " >&6; }
-if test ${ac_cv_lib_wayland_client_wl_display_connect+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-lwayland-client  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.
-   The 'extern "C"' is for builds by C++ compilers;
-   although this is not generally supported in C code supporting it here
-   has little cost and some practical benefit (sr 110532).  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char wl_display_connect (void);
-int
-main (void)
-{
-return wl_display_connect ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_wayland_client_wl_display_connect=yes
-else case e in #(
-  e) ac_cv_lib_wayland_client_wl_display_connect=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_wayland_client_wl_display_connect" >&5
-printf "%s\n" "$ac_cv_lib_wayland_client_wl_display_connect" >&6; }
-if test "x$ac_cv_lib_wayland_client_wl_display_connect" = xyes
-then :
-  no_wl=no
-fi
-
-
-    if test "$no_wl" = no; then
-      printf "%s\n" "#define HAVE_WAYLAND 1" >>confdefs.h
-
-      WAYLAND_LIBS="-lwayland-client";
-
-      WAYLAND_SRC=" \
-	      auto/wayland/wlr-data-control-unstable-v1.c \
-	      auto/wayland/ext-data-control-v1.c \
-	      auto/wayland/xdg-shell.c \
-	      auto/wayland/primary-selection-unstable-v1.c \
-	      wayland.c"
-
-      WAYLAND_OBJ=" \
-	      objects/wlr-data-control-unstable-v1.o \
-	      objects/ext-data-control-v1.o \
-	      objects/xdg-shell.o \
-	      objects/primary-selection-unstable-v1.o \
-	      objects/wayland.o"
-
-
-    else
-      with_wayland=no
-    fi
-  fi
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
+    with_wayland=no
+  fi
+CFLAGS=$cflags_save
 fi
 
 test -z "$with_x" && with_x=yes
