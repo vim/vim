@@ -304,7 +304,7 @@ all Vim code and build tools must adhere to.
 MAKEFILES					*assumptions-makefiles*
 						*POSIX.1-2001*
 
-Our Makefiles target maximum portability, relying solely on features
+The Makefiles target maximum portability, relying solely on features
 defined in POSIX.1-2001 `make` and ignoring later POSIX standards or
 GNU/BSD extensions.  In practical terms, avoid:
 
@@ -328,9 +328,7 @@ any Unix-like OS.
 C COMPILER					*assumptions-C-compiler*
 						*ANSI-C* *C89* *C99*
 
-We require a mostly C99 compliant C compiler.  Because not all maintained
-compilers fully implement C99, we use only a subset and explicitly forbid
-certain features.  This will gradually be adjusted over time.
+Vim requires a mostly C99 compliant C compiler.  Because not all maintained compilers fully implement C99, use of certain features is forbidden.  These restrictions will be adjusted over time.
 
 Features not to be used ~
 
