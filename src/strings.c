@@ -1407,7 +1407,7 @@ f_str2blob(typval_T *argvars, typval_T *rettv)
 	char_u	*str = li->li_tv.vval.v_string;
 
 	if (str == NULL)
-	    continue;
+	    str = (char_u *)"";
 
 	if (to_encoding != NULL)
 	{
