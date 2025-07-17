@@ -234,6 +234,16 @@ func Test_tabline_mouse_enable()
     redraw
     call assert_match('X$', Screenline(1))
   endfor
+
+  " Remove 'X' when cursor enters command-line
+  set mouse=a
+  redraw
+  call assert_match('X$', Screenline(1))
+  call feedkeys(":", 'xt')
+  call assert_notmatch('X$', Screenline(1))
+  call feedkeys("\<ESC>", 'xt')
+  redraw
+  call assert_match('X$', Screenline(1))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

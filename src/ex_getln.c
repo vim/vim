@@ -53,6 +53,9 @@ static int	open_cmdwin(void);
 #ifdef FEAT_SEARCH_EXTRA
 static int	empty_pattern_magic(char_u *pat, size_t len, magic_T magic_val);
 #endif
+#ifdef FEAT_STL_OPT
+static void	may_redraw_tabline(int defer);
+#endif
 
 static int	cedit_key = -1;	// key value of 'cedit' option
 
@@ -1785,6 +1788,9 @@ getcmdline_int(
 	redrawcmd();
 
 #ifdef FEAT_STL_OPT
+    // Redraw tabline to remove the close button ("X")
+    may_redraw_tabline(FALSE);
+
     // Redraw the statusline in case it uses the current mode using the mode()
     // function.
     if (!cmd_silent && msg_scrolled == 0)
@@ -2668,6 +2674,11 @@ returncmd:
     trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVE);
 
     State = save_State;
+
+#ifdef FEAT_STL_OPT
+    // Redraw tabline to re-display the close button
+    may_redraw_tabline(TRUE);
+#endif
 
 #ifdef FEAT_EVAL
     if (!debug_mode)
@@ -5095,5 +5106,31 @@ get_user_input(
 	msg_didout = FALSE;
     }
     cmd_silent = cmd_silent_save;
+}
+#endif
+
+#ifdef FEAT_STL_OPT
+/*
+ * Conditionally redraw the tabline when mouse is enabled and multiple tabs
+ * exist.
+ */
+    static void
+may_redraw_tabline(int defer)
+{
+    if (*p_tal != NUL || p_mouse == NULL)
+	return;
+
+    tabpage_T	*tp;
+    int		tabcount = 0;
+
+    FOR_ALL_TABPAGES(tp)
+	++tabcount;
+    if (tabcount > 1)
+    {
+	if (defer)
+	    redraw_tabline = TRUE;
+	else
+	    draw_tabline();
+    }
 }
 #endif
