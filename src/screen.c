@@ -4051,6 +4051,7 @@ showmode(void)
     int		attr;
     int		nwr_save;
     int		sub_attr;
+    int		show_ruler_with_pum = FALSE;
 
     do_mode = p_smd && msg_silent == 0
 	    && ((State & MODE_INSERT)
@@ -4182,6 +4183,10 @@ showmode(void)
 		    msg_puts_attr(_(p), attr);
 		}
 		msg_puts_attr(" --", attr);
+		// Ensure ruler is shown when a popup is visible and only the mode name
+		// is displayed. Without this, the ruler may disappear during insert-mode
+		// completion when 'shortmess' includes 'c'.
+		show_ruler_with_pum = TRUE;
 	    }
 
 	    need_clear = TRUE;
@@ -4217,7 +4222,7 @@ showmode(void)
     // If the last window has no status line, the ruler is after the mode
     // message and must be redrawn
     if (redrawing() && lastwin->w_status_height == 0)
-	win_redr_ruler(lastwin, TRUE, FALSE);
+	win_redr_ruler(lastwin, TRUE, show_ruler_with_pum);
 
     redraw_cmdline = FALSE;
     redraw_mode = FALSE;
