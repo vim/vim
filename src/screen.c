@@ -4285,6 +4285,16 @@ recording_mode(int attr)
 }
 
 /*
+ * Return TRUE if mouse is enabled.
+ */
+    static int
+mouse_has_any(void)
+{
+    return mouse_has(MOUSE_NORMAL) || mouse_has(MOUSE_INSERT)
+	|| mouse_has(MOUSE_VISUAL);
+}
+
+/*
  * Draw the tab pages line at the top of the Vim window.
  */
     void
@@ -4460,7 +4470,7 @@ draw_tabline(void)
 	}
 
 	// Put an "X" for closing the current tab if there are several.
-	if (tabcount > 1)
+	if (tabcount > 1 && mouse_has_any())
 	{
 	    screen_putchar('X', 0, (int)Columns - 1, attr_nosel);
 	    TabPageIdxs[Columns - 1] = -999;

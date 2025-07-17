@@ -41726,6 +41726,8 @@ Others: ~
 - the configure script will favor using GTK3 over GTK2 when auto-detecting the
   gui toolkit
 - |gv| works in operator pending mode and does not abort
+- The close button shown in the non-GUI 'tabline' will only be visible if the
+  'mouse' option contains either "a" or any of the flags "n", "v", or "i".
 
 							*added-9.2*
 Added ~

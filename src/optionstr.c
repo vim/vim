@@ -3254,9 +3254,20 @@ did_set_mkspellmem(optset_T *args UNUSED)
 did_set_mouse(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
+    char	*retval;
 
-    return did_set_option_listflag(*varp, (char_u *)MOUSE_ALL, args->os_errbuf,
+    retval = did_set_option_listflag(*varp, (char_u *)MOUSE_ALL, args->os_errbuf,
 		    args->os_errbuflen);
+    if (retval == NULL)
+    {
+	redraw_tabline = TRUE;
+	if (tabline_height() > 0)
+	    update_screen(UPD_VALID);
+#if (defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)) || defined(PROTO)
+	popup_close_info(); // Close info popup to apply new properties
+#endif
+    }
+    return retval;
 }
 
     int
