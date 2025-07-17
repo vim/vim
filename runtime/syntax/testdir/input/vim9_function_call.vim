@@ -1,7 +1,7 @@
 vim9script
 # Vim function calls
-# VIM_SETUP highlight link vimUserFunc Todo
-# VIM_SETUP highlight link vim9UserFunc Todo
+# VIM_TEST_SETUP highlight link vimUserFunc Todo
+# VIM_TEST_SETUP highlight link vim9UserFunc Todo
 
 
 call abs(42)
@@ -292,4 +292,24 @@ v:substitute.substitute()
 
 substitute#substitute()
 g:substitute#substitute()
+
+
+# chained function calls
+
+module.foo().bar()
+
+
+# Issue 16721 (Vim script highlight of builtin function after |)
+
+&directory = $'{$MYVIMDIR}/.data/swap/'
+&backupdir = $'{$MYVIMDIR}/.data/backup//'
+&undodir = $'{$MYVIMDIR}/.data/undo//'
+if !isdirectory(&undodir)   | mkdir(&undodir, "p")   | endif
+if !isdirectory(&backupdir) | mkdir(&backupdir, "p") | endif
+if !isdirectory(&directory) | mkdir(&directory, "p") | endif
+
+
+# Issue #17766 (valid function call highlighted as error)
+￼
+module[0].foo()
 
