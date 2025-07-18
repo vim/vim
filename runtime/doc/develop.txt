@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2025 May 05
+*develop.txt*   For Vim version 9.1.  Last change: 2025 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -236,6 +236,10 @@ We use 4 space to indent the code. If you are using Vim to edit the source,
 you don't need to do anything due to the |modeline|.
 
 For other editors an `.editorconfig` is provided at the root of the repo.
+
+For the source files `sign.c` and `sound.c` and any new file use only spaces,
+no tabs. In addition, any new file must include a modeline with `set et` to
+pass the indentation test.
 
 
 DECLARATIONS						*style-declarations*
