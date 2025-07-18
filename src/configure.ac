@@ -2408,8 +2408,11 @@ AC_MSG_CHECKING(--with-wayland argument)
 AC_ARG_WITH(wayland,
 	[  --with-wayland	  Include support for the Wayland protocol.],
 	[with_wayland=$withval],
-	[with_wayland=yes])
-AC_MSG_RESULT([$with_wayland])
+	AS_IF([test "x$features" = xtiny], 
+			[with_wayland=no
+			 AC_MSG_RESULT([cannot use wayland with tiny features])],
+			[with_wayland=yes
+			 AC_MSG_RESULT([yes])]))
 
 if test "$with_wayland" = yes; then
 cflags_save=$CFLAGS
