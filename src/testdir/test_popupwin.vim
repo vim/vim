@@ -4516,4 +4516,21 @@ func Test_popupwin_callback_closes_popupwin()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popupwin_closing_buffer()
+  augroup Test_popupwin_closing_buffer
+    autocmd!
+    autocmd BufWipeout * ++once
+          \ call assert_fails('call popup_create(bufnr(), {})', 'E1551:')
+  augroup END
+
+  new
+  setlocal bufhidden=wipe
+  quit  " Popup window to closed buffer used to remain
+  redraw!  " Would crash
+
+  autocmd! Test_popupwin_closing_buffer
+  augroup! Test_popupwin_closing_buffer
+  %bd!
+endfunc
+
 " vim: shiftwidth=2 sts=2
