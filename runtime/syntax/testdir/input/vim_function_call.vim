@@ -267,9 +267,11 @@ call g:substitute#substitute()
 " chained function calls
 
 call module.foo().bar()
+call module.foo().substitute()
 
 
 " Issue #17766 (valid function call highlighted as error)
 ￼
 call module[0].foo()
+call module[0].substitute()
 
