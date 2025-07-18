@@ -174,9 +174,15 @@ endif
 
 " Set up folding commands for shell {{{1
 " =================================
-sil! delc ShFoldFunctions
-sil! delc ShFoldHereDoc
-sil! delc ShFoldIfDoFor
+if (":ShFoldFunctions") == 2
+  sil! delc ShFoldFunctions
+endif
+if (":ShFoldIfHereDoc") == 2
+  sil! delc ShFoldHereDoc
+endif
+if (":ShFoldIfDoFor") == 2
+  sil! delc ShFoldIfDoFor
+endif
 if s:sh_fold_functions
  com! -nargs=* ShFoldFunctions <args> fold
 else
