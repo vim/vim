@@ -70,8 +70,23 @@ let &l:define =
             \ .. '\|^\s*\(export\s\+\|export\s\+default\s\+\)*\(var\|let\|const\|function\|class\)'
             \ .. '\|\<as\>'
 
+if !empty(get(g:,'javascript_formatprg', ''))
+augroup formatprgsJavaScript
+  autocmd! * <buffer>
+  autocmd ShellFilterPost <buffer> if v:shell_error | execute 'echom "shell filter returned error " . v:shell_error . ", undoing changes"' | undo | endif
+  if g:javascript_formatprg ==# 'prettier'
+    autocmd BufWinEnter <buffer> ++once let &l:formatprg =
+              \ executable('prettier') ? 'prettier' : 'npx prettier' .
+              \ ' --stdin-filepath=%:S --parser=javascript ' .
+              \ (&textwidth > 0 ? '--print-width=' . &textwidth : '') .
+              \ ' --tab-width=' . &l:shiftwidth . (&expandtab ? '' : '--use-tabs') . ' --'
+  endif
+augroup END
+endif
+
 let b:undo_ftplugin =
             \ "setl fo< ofu< com< cms< sua< su< def< pa<"
+            \ .. !empty(g:javascript_formatprg) ? " fp<" : ""
             \ .. "| unlet! b:browsefilter b:match_ignorecase b:match_words"
 
 let &cpo = s:cpo_save
