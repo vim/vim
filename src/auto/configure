@@ -9216,12 +9216,20 @@ if test ${with_wayland+y}
 then :
   withval=$with_wayland; with_wayland=$withval
 else case e in #(
-  e) with_wayland=yes ;;
+  e) if test "x$features" = xtiny
+then :
+  with_wayland=no
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: cannot use wayland with tiny features" >&5
+printf "%s\n" "cannot use wayland with tiny features" >&6; }
+else case e in #(
+  e) with_wayland=yes
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; } ;;
+esac
+fi ;;
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $with_wayland" >&5
-printf "%s\n" "$with_wayland" >&6; }
 
 if test "$with_wayland" = yes; then
 cflags_save=$CFLAGS
