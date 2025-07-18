@@ -237,7 +237,7 @@ you don't need to do anything due to the |modeline|.
 
 For other editors an `.editorconfig` is provided at the root of the repo.
 
-For files `sign.c`,  `sound.c` and any new file use only spaces, no tabs.
+For files `sign.c`, `sound.c` and any new file use only spaces, no tabs.
 In addition, any new file must include a modeline with `set et` to pass the
 indentation test.
 
