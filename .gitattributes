@@ -3,7 +3,15 @@ src/testdir/test42.in diff
 # vim.pot may change just by incrementing a patch number
 # so ignore the following differences:
 # - POT-Creation Date
-# - comments in version.c for line numbers:
+# - comments pointing to the message source location in
+#   *.c/*.h/*.vim/*.cpp/*.in/*.xs files followed by line numbers
 # set this up using:
-# git config diff.ignore_pot_date.textconv 'grep -Ev "^.(POT-Creation-Date:|.*version\.c).*"'
-src/po/vim.pot diff=ignore_pot_date
+# git config diff.ignore_vim_pot.textconv "grep -Ev '^.(POT-Creation-Date:|.*\\.([ch]|vim|in|xs|cpp):).*$'"
+src/po/vim.pot diff=ignore_vim_pot
+
+# GitHub reacts to the `linguist-generated` attribute, by ignoring marked files
+# for the repository's language statistics and hiddning changes in these files
+# by default in diffs.
+#
+# https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
+src/po/vim.pot linguist-generated=true
