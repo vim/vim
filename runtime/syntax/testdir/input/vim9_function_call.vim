@@ -297,6 +297,7 @@ g:substitute#substitute()
 # chained function calls
 
 module.foo().bar()
+module.foo().substitute()
 
 
 # Issue 16721 (Vim script highlight of builtin function after |)
@@ -312,4 +313,5 @@ if !isdirectory(&directory) | mkdir(&directory, "p") | endif
 # Issue #17766 (valid function call highlighted as error)
 ￼
 module[0].foo()
+module[0].substitute()
 
