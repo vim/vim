@@ -3602,6 +3602,10 @@ class_free(class_T *cl)
     for (int i = 0; i < cl->class_class_function_count; ++i)
     {
 	ufunc_T *uf = cl->class_class_functions[i];
+	// For an enum class, the constructor function names are cleared.  Set
+	// the name back, so that clearing the function will work properly.
+	if (IS_ENUM(cl) && IS_CONSTRUCTOR_METHOD(uf) && *uf->uf_name == NUL)
+	    STRCPY(uf->uf_name, "new");
 	func_clear_free(uf, FALSE);
     }
     vim_free(cl->class_class_functions);
@@ -3621,12 +3625,106 @@ class_free(class_T *cl)
 }
 
 /*
+ * Returns the number of references from the class members of class "cl" to cl"
+ * itself.
+ */
+    static int
+class_get_selfrefs(class_T *cl)
+{
+    int		self_refs = 0;
+    typval_T	*tv;
+
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	tv = &cl->class_members_tv[i];
+	if (tv->v_type == VAR_OBJECT && tv->vval.v_object->obj_class == cl
+		&& (tv->vval.v_object->obj_refcount == 1
+		    || (IS_ENUM(cl) && tv->vval.v_object->obj_refcount == 2)))
+	    self_refs++;
+    }
+
+    return self_refs;
+}
+
+/*
+ * Returns TRUE if enum "cl" can be freed.  An enum can be freed, if the enum
+ * values are no longer referenced and the "values" class member is also not
+ * referenced.
+ */
+    static int
+can_free_enum(class_T *cl)
+{
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	typval_T	*tv = &cl->class_members_tv[i];
+	ocmember_T	*ocm = &cl->class_class_members[i];
+
+	if (tv->v_type != VAR_OBJECT && tv->v_type != VAR_LIST)
+	    // In an enum, the first set of class members are the enum values.
+	    // Followed by the "values" member which is a List of enum values.
+	    // If all of those members are no longer referenced, then the enum
+	    // may be freed.
+	    return TRUE;
+
+	if (tv->v_type == VAR_LIST
+		&& tv->vval.v_list->lv_type->tt_member->tt_type == VAR_OBJECT
+		&& tv->vval.v_list->lv_type->tt_member->tt_class == cl
+		&& STRCMP(ocm->ocm_name, "values") == 0)
+	{
+	    // "values" class member is referenced outside
+	    if (tv->vval.v_list->lv_refcount > 1)
+		return FALSE;
+	    break;
+	}
+
+	if (tv->vval.v_object->obj_refcount > 2)
+	    // enum value is referenced outside
+	    return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Returns TRUE if class "cl" has no references outside of the references from
+ * it's own class members and can be freed.  If it is an enum, then checks
+ * whether the enum values and the "values" members are referenced elsewhere.
+ */
+    static int
+can_free_class(class_T *cl)
+{
+    int		can_free = FALSE;
+    int		self_refs = 0;
+
+    if (IS_ENUM(cl) && !can_free_enum(cl))
+	return FALSE;
+
+    if (cl->class_refcount > 0)
+	self_refs = class_get_selfrefs(cl);
+
+    // If the class is no longer referenced or only referenced from it's own
+    // class member, then it can be freed.
+    if (cl->class_refcount <= 0 || cl->class_refcount == self_refs)
+	can_free = TRUE;
+
+    return can_free;
+}
+
+/*
  * Unreference a class.  Free it when the reference count goes down to zero.
  */
     void
 class_unref(class_T *cl)
 {
-    if (cl != NULL && --cl->class_refcount <= 0 && cl->class_name != NULL)
+    if (cl == NULL)
+	return;
+
+    --cl->class_refcount;
+
+    if (cl->class_name == NULL)
+	return;
+
+    if (can_free_class(cl))
 	class_free(cl);
 }
 
