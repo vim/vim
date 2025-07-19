@@ -99,6 +99,28 @@ and fields {1}, {2} and {1
     +
     2}"""
 
+# F-string replacement fields
+test = f"abc{a # This is a comment }"
+    + 3}"
+test = f"He said his name is {name!r}."
+test = f"He said his name is {repr(name)}."
+test = f"result: {value:{width}}"
+test = f"result: {value:{width}.{precision}}"
+test = f"{today:%B %d, %Y}"
+test = f"{today=:%B %d, %Y}"
+test = f"{number:#0x}"
+test = f"{number:+#0x}"
+test = f"{number:<+#0x}"
+test = f"{number: <+#0x}"
+test = f"{number:<#0x}"
+test = f"{number: <#0x}"
+test = f"{ foo = }"
+test = f"{line = }"
+test = f"{line = :20}"
+test = f"{line = !r:20}"
+test = f"abc {a["x"]} def"
+test = f"List a contains:\n{"\n".join(a)}"
+
 # Bytes
 test = b'Bytes with escapes \' and \" and \t'
 test = B"Bytes with escapes \040 and \xFF"
