@@ -803,6 +803,7 @@ OBJ = \
 	$(OUTDIR)\vim9compile.obj \
 	$(OUTDIR)\vim9execute.obj \
 	$(OUTDIR)\vim9expr.obj \
+	$(OUTDIR)\vim9generics.obj \
 	$(OUTDIR)\vim9instr.obj \
 	$(OUTDIR)\vim9script.obj \
 	$(OUTDIR)\vim9type.obj \
@@ -1824,6 +1825,8 @@ $(OUTDIR)/vim9execute.obj:	$(OUTDIR) vim9execute.c  $(INCL) vim9.h
 
 $(OUTDIR)/vim9expr.obj:	$(OUTDIR) vim9expr.c  $(INCL) vim9.h
 
+$(OUTDIR)/vim9generics.obj:	$(OUTDIR) vim9generics.c  $(INCL) vim9.h
+
 $(OUTDIR)/vim9instr.obj:	$(OUTDIR) vim9instr.c  $(INCL) vim9.h
 
 $(OUTDIR)/vim9script.obj:	$(OUTDIR) vim9script.c  $(INCL) vim9.h
@@ -2028,6 +2031,7 @@ proto.h: \
 	proto/vim9compile.pro \
 	proto/vim9execute.pro \
 	proto/vim9expr.pro \
+	proto/vim9generics.pro \
 	proto/vim9instr.pro \
 	proto/vim9script.pro \
 	proto/vim9type.pro \
