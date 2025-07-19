@@ -54,6 +54,9 @@
 #define PV_COT		OPT_BOTH(OPT_BUF(BV_COT))
 #define PV_CPT		OPT_BUF(BV_CPT)
 #define PV_DICT		OPT_BOTH(OPT_BUF(BV_DICT))
+#ifdef FEAT_DIFF
+# define PV_DIA		OPT_BOTH(OPT_BUF(BV_DIA))
+#endif
 #define PV_TSR		OPT_BOTH(OPT_BUF(BV_TSR))
 #define PV_FFU		OPT_BOTH(OPT_BUF(BV_FFU))
 #define PV_CSL		OPT_BUF(BV_CSL)
@@ -859,6 +862,13 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"diffanchors", "dia",  P_STRING|P_VI_DEF|P_ONECOMMA,
+#ifdef FEAT_DIFF
+			    (char_u *)&p_dia, PV_DIA, did_set_diffanchors, NULL,
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+#endif
+			    {(char_u *)"", (char_u *)NULL} SCTX_INIT},
     {"diffexpr",    "dex",  P_STRING|P_VI_DEF|P_SECURE|P_CURSWANT,
 #if defined(FEAT_DIFF) && defined(FEAT_EVAL)
 			    (char_u *)&p_dex, PV_NONE, did_set_optexpr, NULL,
@@ -2365,13 +2375,7 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"showcmd",	    "sc",   P_BOOL|P_VIM,
 			    (char_u *)&p_sc, PV_NONE, NULL, NULL,
-			    {(char_u *)FALSE,
-#ifdef UNIX
-				(char_u *)FALSE
-#else
-				(char_u *)TRUE
-#endif
-				} SCTX_INIT},
+			    {(char_u *)FALSE, (char_u *)TRUE} SCTX_INIT},
     {"showcmdloc",  "sloc", P_STRING|P_RSTAT,
 			    (char_u *)&p_sloc, PV_NONE, did_set_showcmdloc, expand_set_showcmdloc,
 			    {(char_u *)"last", (char_u *)"last"} SCTX_INIT},

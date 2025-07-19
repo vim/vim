@@ -1,21 +1,23 @@
+vim9script
+
 CheckExecutable unzip
 
-if 0 " Find uncovered line
+if 0 # Find uncovered line
   profile start zip_profile
   profile! file */zip*.vim
 endif
 
 runtime plugin/zipPlugin.vim
 
-def Test_zip_basic()
-
-  ### get our zip file
-  if !filecopy("samples/test.zip", "X.zip")
-    assert_report("Can't copy samples/test.zip")
-    return
+def CopyZipFile(source: string)
+  if !filecopy($"samples/{source}", "X.zip")
+    assert_report($"Can't copy samples/{source}.zip")
   endif
-  defer delete("X.zip")
+enddef
 
+def g:Test_zip_basic()
+  CopyZipFile("test.zip")
+  defer delete("X.zip")
   e X.zip
 
   ### Check header
@@ -136,15 +138,11 @@ def Test_zip_basic()
   bw
 enddef
 
-def Test_zip_glob_fname()
+def g:Test_zip_glob_fname()
   CheckNotMSWindows
   # does not work on Windows, why?
 
-  ### copy sample zip file
-  if !filecopy("samples/testa.zip", "X.zip")
-    assert_report("Can't copy samples/testa.zip")
-    return
-  endif
+  CopyZipFile("testa.zip")
   defer delete("X.zip")
   defer delete('zipglob', 'rf')
 
@@ -234,14 +232,11 @@ def Test_zip_glob_fname()
   bw
 enddef
 
-def Test_zip_fname_leading_hyphen()
+def g:Test_zip_fname_leading_hyphen()
   CheckNotMSWindows
 
   ### copy sample zip file
-  if !filecopy("samples/poc.zip", "X.zip")
-    assert_report("Can't copy samples/poc.zip")
-    return
-  endif
+  CopyZipFile("poc.zip")
   defer delete("X.zip")
   defer delete('-d', 'rf')
   defer delete('/tmp/pwned', 'rf')
@@ -254,5 +249,28 @@ def Test_zip_fname_leading_hyphen()
   normal x
   assert_true(filereadable('-d/tmp'))
   assert_false(filereadable('/tmp/pwned'))
+  bw
+enddef
+
+def g:Test_zip_fname_evil_path()
+  CheckNotMSWindows
+  # needed for writing the zip file
+  CheckExecutable zip
+
+  CopyZipFile("evil.zip")
+  defer delete("X.zip")
+  e X.zip
+
+  :1
+  var fname = 'pwn'
+  search('\V' .. fname)
+  normal x
+  assert_false(filereadable('/etc/ax-pwn'))
+  var mess  = execute(':mess')
+  assert_match('Path Traversal Attack', mess)
+
+  exe ":normal \<cr>"
+  :w
+  assert_match('zipfile://.*::etc/ax-pwn', @%)
   bw
 enddef

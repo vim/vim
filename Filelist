@@ -212,7 +212,10 @@ SRC_ALL =	\
 		src/testdir/samples/*.html \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/*.vim \
+		src/testdir/samples/evil.zip \
+		src/testdir/samples/evil.tar \
 		src/testdir/samples/poc.zip \
+		src/testdir/samples/sample.tar \
 		src/testdir/samples/test.zip \
 		src/testdir/samples/test000 \
 		src/testdir/samples/test_undo.txt.undo \

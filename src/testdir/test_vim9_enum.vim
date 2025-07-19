@@ -838,6 +838,25 @@ def Test_enum_values()
   END
   v9.CheckSourceSuccess(lines)
 
+  lines =<< trim END
+    vim9script
+    enum Car
+      Honda,
+      Ford,
+    endenum
+    assert_equal([Car.Honda, Car.Ford], Car.values)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    enum Car
+      Honda, Ford,
+    endenum
+    assert_equal([Car.Honda, Car.Ford], Car.values)
+  END
+  v9.CheckSourceSuccess(lines)
+
   # empty enum
   lines =<< trim END
     vim9script
@@ -863,7 +882,7 @@ def Test_enum_values()
       Red,
       Blue
       static def GetValues(): list<A>
-	return values
+        return values
       enddef
     endenum
     assert_equal([A.Red, A.Blue], A.GetValues())
@@ -1048,6 +1067,34 @@ def Test_enum_refcount()
     assert_equal(3, test_refcount(Star))
     assert_equal(4, test_refcount(s))
     assert_equal(4, test_refcount(Star.Orion))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    enum Star
+      Gemini,
+      Orion,
+    endenum
+
+    assert_equal(3, test_refcount(Star))
+    assert_equal(2, test_refcount(Star.Gemini))
+    assert_equal(2, test_refcount(Star.Orion))
+
+    var x = [Star.Gemini]
+    assert_equal(3, test_refcount(Star))
+    assert_equal(3, test_refcount(Star.Gemini))
+
+    def Fn()
+      var y = [Star.Gemini, Star.Orion]
+      assert_equal(6, test_refcount(Star))
+      assert_equal(4, test_refcount(Star.Gemini))
+    enddef
+    Fn()
+    # The instruction in the compiled function adds an additional reference
+    # to the enum.
+    assert_equal(6, test_refcount(Star))
+    assert_equal(3, test_refcount(Star.Gemini))
   END
   v9.CheckSourceSuccess(lines)
 enddef
@@ -1599,5 +1646,22 @@ def Test_enum_echo()
   END
   v9.CheckScriptSuccess(lines)
 enddef
+
+" Test for garbage collecting an enum with a complex member variables.
+func Test_class_selfref_gc()
+  let lines =<< trim END
+    vim9script
+    enum Foo
+      Red,
+      Blue
+      static var d = {a: [1, 2]}
+      static var l = [{a: 'a', b: 'b'}]
+    endenum
+    assert_equal(3, test_refcount(Foo))
+    test_garbagecollect_now()
+    assert_equal(3, test_refcount(Foo))
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

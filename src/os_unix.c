@@ -6570,7 +6570,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	if (wayland_may_restore_connection())
 	{
 	    wayland_idx = nfd;
-	    fds[nfd].fd = vwl_display_fd;
+	    fds[nfd].fd = wayland_display_fd;
 	    fds[nfd].events = POLLIN;
 	    nfd++;
 	}

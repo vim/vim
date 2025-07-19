@@ -3385,6 +3385,9 @@ struct file_buffer
     char_u	*b_p_tc;	// 'tagcase' local value
     unsigned	b_tc_flags;     // flags for 'tagcase'
     char_u	*b_p_dict;	// 'dictionary' local value
+#ifdef FEAT_DIFF
+    char_u	*b_p_dia;	// 'diffanchors' local value
+#endif
     char_u	*b_p_tsr;	// 'thesaurus' local value
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_tsrfu;	// 'thesaurusfunc' local value
@@ -3577,9 +3580,11 @@ struct file_buffer
  * and how many lines it occupies in that buffer.  When the lines are missing
  * in the buffer the df_count[] is zero.  This is all counted in
  * buffer lines.
- * There is always at least one unchanged line in between the diffs (unless
- * linematch is used).  Otherwise it would have been included in the diff above
- * or below it.
+ * Usually there is always at least one unchanged line in between the diffs as
+ * otherwise it would have been included in the diff above or below it.  When
+ * linematch or diff anchors are used, this is no longer guaranteed, and we may
+ * have adjacent diff blocks.  In all cases they will not overlap, although it
+ * is possible to have multiple 0-count diff blocks at the same line.
  * df_lnum[] + df_count[] is the lnum below the change.  When in one buffer
  * lines have been inserted, in the other buffer df_lnum[] is the line below
  * the insertion and df_count[] is zero.  When appending lines at the end of

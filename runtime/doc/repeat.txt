@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 9.1.  Last change: 2025 Jul 09
+*repeat.txt*    For Vim version 9.1.  Last change: 2025 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -237,7 +237,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 <			Implementation detail: When sourcing a [range] of
 			lines that falls inside a folded region, the range
 			will be adjusted to the start and end of the fold,
-			but only if a two-address range was used.
+			but only if a two line specifiers range was used.
 
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands

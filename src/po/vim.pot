@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-12 22:03+0200\n"
+"POT-Creation-Date: 2025-07-18 20:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -117,116 +117,116 @@ msgstr[1] ""
 msgid "W14: Warning: List of file names overflow"
 msgstr ""
 
-#: ../buffer.c:3501
+#: ../buffer.c:3504
 #, c-format
 msgid "line %ld"
 msgstr ""
 
-#: ../buffer.c:3920
+#: ../buffer.c:3923
 msgid " [Modified]"
 msgstr ""
 
-#: ../buffer.c:3922
+#: ../buffer.c:3925
 msgid "[Not edited]"
 msgstr ""
 
-#: ../buffer.c:3925
+#: ../buffer.c:3928
 msgid "[Read errors]"
 msgstr ""
 
-#: ../buffer.c:3926 ../buffer.c:4983 ../drawscreen.c:503 ../fileio.c:2526
+#: ../buffer.c:3929 ../buffer.c:4986 ../drawscreen.c:503 ../fileio.c:2526
 #: ../netbeans.c:3425
 msgid "[RO]"
 msgstr ""
 
-#: ../buffer.c:3926 ../fileio.c:2526 ../netbeans.c:3425
+#: ../buffer.c:3929 ../fileio.c:2526 ../netbeans.c:3425
 msgid "[readonly]"
 msgstr ""
 
-#: ../buffer.c:3938
+#: ../buffer.c:3941
 #, c-format
 msgid "%ld line --%d%%--"
 msgid_plural "%ld lines --%d%%--"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../buffer.c:3946
+#: ../buffer.c:3949
 #, c-format
 msgid "line %ld of %ld --%d%%-- col "
 msgstr ""
 
-#: ../buffer.c:4067 ../buffer.c:6118 ../memline.c:2274
+#: ../buffer.c:4070 ../buffer.c:6121 ../memline.c:2274
 msgid "[No Name]"
 msgstr ""
 
-#: ../buffer.c:4156
+#: ../buffer.c:4159
 msgid "help"
 msgstr ""
 
-#: ../buffer.c:4991 ../drawscreen.c:495
+#: ../buffer.c:4994 ../drawscreen.c:495
 msgid "[Help]"
 msgstr ""
 
-#: ../buffer.c:5025 ../drawscreen.c:498
+#: ../buffer.c:5028 ../drawscreen.c:498
 msgid "[Preview]"
 msgstr ""
 
-#: ../buffer.c:5408
+#: ../buffer.c:5411
 msgid "All"
 msgstr ""
 
-#: ../buffer.c:5408
+#: ../buffer.c:5411
 msgid "Bot"
 msgstr ""
 
-#: ../buffer.c:5412
+#: ../buffer.c:5415
 msgid "Top"
 msgstr ""
 
 #. localized percentage value
-#: ../buffer.c:5417
+#: ../buffer.c:5420
 #, c-format
 msgid "%d%%"
 msgstr ""
 
-#: ../buffer.c:5418
+#: ../buffer.c:5421
 #, c-format
 msgid "%2s"
 msgstr ""
 
-#: ../buffer.c:5438
+#: ../buffer.c:5441
 #, c-format
 msgid " (%d of %d)"
 msgstr ""
 
-#: ../buffer.c:5439
+#: ../buffer.c:5442
 #, c-format
 msgid " ((%d) of %d)"
 msgstr ""
 
-#: ../buffer.c:5440
+#: ../buffer.c:5443
 #, c-format
 msgid " (file %d of %d)"
 msgstr ""
 
-#: ../buffer.c:5441
+#: ../buffer.c:5444
 #, c-format
 msgid " (file (%d) of %d)"
 msgstr ""
 
-#: ../buffer.c:6094
+#: ../buffer.c:6097
 msgid "[Command Line]"
 msgstr ""
 
-#: ../buffer.c:6097
+#: ../buffer.c:6100
 msgid "[Prompt]"
 msgstr ""
 
-#: ../buffer.c:6101
+#: ../buffer.c:6104
 msgid "[Popup]"
 msgstr ""
 
-#: ../buffer.c:6103
+#: ../buffer.c:6106
 msgid "[Scratch]"
 msgstr ""
 
@@ -340,11 +340,11 @@ msgstr ""
 msgid "Switched to clipboard method '%s'."
 msgstr ""
 
-#: ../cmdexpand.c:1352
+#: ../cmdexpand.c:1360
 msgid "tagname"
 msgstr ""
 
-#: ../cmdexpand.c:1355
+#: ../cmdexpand.c:1363
 msgid " kind file\n"
 msgstr ""
 
@@ -420,7 +420,7 @@ msgstr ""
 msgid "Newval = \"%s\""
 msgstr ""
 
-#: ../debugger.c:112 ../debugger.c:398 ../ex_docmd.c:622
+#: ../debugger.c:112 ../debugger.c:398 ../ex_docmd.c:621
 #, c-format
 msgid "line %ld: %s"
 msgstr ""
@@ -462,12 +462,12 @@ msgstr ""
 msgid "extend() argument"
 msgstr ""
 
-#: ../diff.c:806
+#: ../diff.c:822
 #, c-format
 msgid "Not enough memory to use internal diff for buffer \"%s\""
 msgstr ""
 
-#: ../diff.c:1296
+#: ../diff.c:1418
 msgid "Patch file"
 msgstr ""
 
@@ -757,77 +757,77 @@ msgstr ""
 msgid "W21: Required python version 3.x not supported, ignoring file: %s"
 msgstr ""
 
-#: ../ex_docmd.c:544
+#: ../ex_docmd.c:543
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr ""
 
-#: ../ex_docmd.c:620
+#: ../ex_docmd.c:619
 #, c-format
 msgid "Executing: %s"
 msgstr ""
 
-#: ../ex_docmd.c:1357
+#: ../ex_docmd.c:1356
 msgid "End of sourced file"
 msgstr ""
 
-#: ../ex_docmd.c:1358
+#: ../ex_docmd.c:1357
 msgid "End of function"
 msgstr ""
 
-#: ../ex_docmd.c:2215
+#: ../ex_docmd.c:2214
 msgid "Backwards range given, OK to swap"
 msgstr ""
 
-#: ../ex_docmd.c:5962
+#: ../ex_docmd.c:5961
 #, c-format
 msgid "%d more file to edit.  Quit anyway?"
 msgid_plural "%d more files to edit.  Quit anyway?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../ex_docmd.c:6017 ../globals.h:1724
+#: ../ex_docmd.c:6016 ../globals.h:1724
 msgid "unknown"
 msgstr ""
 
-#: ../ex_docmd.c:6037
+#: ../ex_docmd.c:6036
 msgid "Greetings, Vim user!"
 msgstr ""
 
-#: ../ex_docmd.c:6513
+#: ../ex_docmd.c:6512
 msgid "Already only one tab page"
 msgstr ""
 
-#: ../ex_docmd.c:7250
+#: ../ex_docmd.c:7249
 msgid "Edit File in new tab page"
 msgstr ""
 
-#: ../ex_docmd.c:7251
+#: ../ex_docmd.c:7250
 msgid "Edit File in new window"
 msgstr ""
 
-#: ../ex_docmd.c:7402
+#: ../ex_docmd.c:7401
 #, c-format
 msgid "Tab page %d"
 msgstr ""
 
-#: ../ex_docmd.c:7809
+#: ../ex_docmd.c:7808
 msgid "No swap file"
 msgstr ""
 
-#: ../ex_docmd.c:7913
+#: ../ex_docmd.c:7912
 msgid "Append File"
 msgstr ""
 
-#: ../ex_docmd.c:8422
+#: ../ex_docmd.c:8421
 #, c-format
 msgid "Window position: X %d, Y %d"
 msgstr ""
 
-#: ../ex_docmd.c:8820
+#: ../ex_docmd.c:8819
 msgid "Save Redirection"
 msgstr ""
 
-#: ../ex_docmd.c:10156
+#: ../ex_docmd.c:10155
 msgid "Untitled"
 msgstr ""
 
@@ -1762,66 +1762,63 @@ msgstr ""
 msgid "Scanning dictionary: %s"
 msgstr ""
 
-#: ../insexpand.c:2637
+#: ../insexpand.c:2642
 msgid " (insert) Scroll (^E/^Y)"
 msgstr ""
 
-#: ../insexpand.c:2639
+#: ../insexpand.c:2644
 msgid " (replace) Scroll (^E/^Y)"
 msgstr ""
 
 #. reset in msg_trunc_attr()
-#: ../insexpand.c:4165
+#: ../insexpand.c:4170
 #, c-format
 msgid "Scanning: %s"
 msgstr ""
 
 #. reset in msg_trunc_attr()
-#: ../insexpand.c:4213
+#: ../insexpand.c:4218
 msgid "Scanning tags."
 msgstr ""
 
-#: ../insexpand.c:5562
+#: ../insexpand.c:5557
 msgid "match in file"
 msgstr ""
 
-#: ../insexpand.c:6603
+#: ../insexpand.c:6607
 msgid " Adding"
 msgstr ""
 
-#. showmode might reset the internal line pointers, so it must
-#. be called before line = ml_get(), or when this address is no
-#. longer needed.  -- Acevedo.
-#: ../insexpand.c:6658
+#: ../insexpand.c:6667
 msgid "-- Searching..."
 msgstr ""
 
-#: ../insexpand.c:6677
+#: ../insexpand.c:6687
 msgid "Hit end of paragraph"
 msgstr ""
 
-#: ../insexpand.c:6678
+#: ../insexpand.c:6688
 msgid "Pattern not found"
 msgstr ""
 
-#: ../insexpand.c:6686
+#: ../insexpand.c:6696
 msgid "Back at original"
 msgstr ""
 
-#: ../insexpand.c:6691
+#: ../insexpand.c:6701
 msgid "Word from other line"
 msgstr ""
 
-#: ../insexpand.c:6696
+#: ../insexpand.c:6706
 msgid "The only match"
 msgstr ""
 
-#: ../insexpand.c:6717
+#: ../insexpand.c:6727
 #, c-format
 msgid "match %d of %d"
 msgstr ""
 
-#: ../insexpand.c:6721
+#: ../insexpand.c:6731
 #, c-format
 msgid "match %d"
 msgstr ""
@@ -3318,71 +3315,71 @@ msgid ""
 "Type Name Content"
 msgstr ""
 
-#: ../screen.c:4127
+#: ../screen.c:4128
 msgid " VREPLACE"
 msgstr ""
 
-#: ../screen.c:4129
+#: ../screen.c:4130
 msgid " REPLACE"
 msgstr ""
 
-#: ../screen.c:4134
+#: ../screen.c:4135
 msgid " REVERSE"
 msgstr ""
 
-#: ../screen.c:4136
+#: ../screen.c:4137
 msgid " INSERT"
 msgstr ""
 
-#: ../screen.c:4140
+#: ../screen.c:4141
 msgid " (insert)"
 msgstr ""
 
-#: ../screen.c:4142
+#: ../screen.c:4143
 msgid " (replace)"
 msgstr ""
 
-#: ../screen.c:4144
+#: ../screen.c:4145
 msgid " (vreplace)"
 msgstr ""
 
-#: ../screen.c:4147
+#: ../screen.c:4148
 msgid " Hebrew"
 msgstr ""
 
-#: ../screen.c:4154
+#: ../screen.c:4155
 msgid " Arabic"
 msgstr ""
 
-#: ../screen.c:4163
+#: ../screen.c:4164
 msgid " (paste)"
 msgstr ""
 
-#: ../screen.c:4175
+#: ../screen.c:4176
 msgid " VISUAL"
 msgstr ""
 
-#: ../screen.c:4176
+#: ../screen.c:4177
 msgid " VISUAL LINE"
 msgstr ""
 
-#: ../screen.c:4177
+#: ../screen.c:4178
 msgid " VISUAL BLOCK"
 msgstr ""
 
-#: ../screen.c:4178
+#: ../screen.c:4179
 msgid " SELECT"
 msgstr ""
 
-#: ../screen.c:4179
+#: ../screen.c:4180
 msgid " SELECT LINE"
 msgstr ""
 
-#: ../screen.c:4180
+#: ../screen.c:4181
 msgid " SELECT BLOCK"
 msgstr ""
 
-#: ../screen.c:4277
+#: ../screen.c:4282
 msgid "recording"
 msgstr ""
 
@@ -4215,13 +4212,13 @@ msgstr ""
 msgid "number changes  when               saved"
 msgstr ""
 
-#: ../usercmd.c:592
+#: ../usercmd.c:593
 msgid ""
 "\n"
 "    Name              Args Address Complete    Definition"
 msgstr ""
 
-#: ../usercmd.c:741
+#: ../usercmd.c:742
 msgid "No user-defined commands found"
 msgstr ""
 
@@ -4260,327 +4257,327 @@ msgstr ""
 msgid "%s (%s, compiled %s)"
 msgstr ""
 
-#: ../version.c:4010
+#: ../version.c:4062
 msgid ""
 "\n"
 "MS-Windows ARM64 GUI/console version"
 msgstr ""
 
-#: ../version.c:4012
+#: ../version.c:4064
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 
-#: ../version.c:4015
+#: ../version.c:4067
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI/console version"
 msgstr ""
 
-#: ../version.c:4020
+#: ../version.c:4072
 msgid ""
 "\n"
 "MS-Windows ARM64 GUI version"
 msgstr ""
 
-#: ../version.c:4022
+#: ../version.c:4074
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
 msgstr ""
 
-#: ../version.c:4025
+#: ../version.c:4077
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI version"
 msgstr ""
 
-#: ../version.c:4029
+#: ../version.c:4081
 msgid " with OLE support"
 msgstr ""
 
-#: ../version.c:4034
+#: ../version.c:4086
 msgid ""
 "\n"
 "MS-Windows ARM64 console version"
 msgstr ""
 
-#: ../version.c:4036
+#: ../version.c:4088
 msgid ""
 "\n"
 "MS-Windows 64-bit console version"
 msgstr ""
 
-#: ../version.c:4039
+#: ../version.c:4091
 msgid ""
 "\n"
 "MS-Windows 32-bit console version"
 msgstr ""
 
-#: ../version.c:4045
+#: ../version.c:4097
 msgid ""
 "\n"
 "macOS version"
 msgstr ""
 
-#: ../version.c:4047
+#: ../version.c:4099
 msgid ""
 "\n"
 "macOS version w/o darwin feat."
 msgstr ""
 
-#: ../version.c:4057
+#: ../version.c:4109
 msgid ""
 "\n"
 "OpenVMS version"
 msgstr ""
 
-#: ../version.c:4072
+#: ../version.c:4124
 msgid ""
 "\n"
 "Included patches: "
 msgstr ""
 
-#: ../version.c:4097
+#: ../version.c:4149
 msgid ""
 "\n"
 "Extra patches: "
 msgstr ""
 
-#: ../version.c:4109 ../version.c:4420
+#: ../version.c:4161 ../version.c:4472
 msgid "Modified by "
 msgstr ""
 
-#: ../version.c:4116
+#: ../version.c:4168
 msgid ""
 "\n"
 "Compiled "
 msgstr ""
 
-#: ../version.c:4119
+#: ../version.c:4171
 msgid "by "
 msgstr ""
 
-#: ../version.c:4131
+#: ../version.c:4183
 msgid ""
 "\n"
 "Huge version "
 msgstr ""
 
-#: ../version.c:4133
+#: ../version.c:4185
 msgid ""
 "\n"
 "Normal version "
 msgstr ""
 
-#: ../version.c:4135
+#: ../version.c:4187
 msgid ""
 "\n"
 "Tiny version "
 msgstr ""
 
-#: ../version.c:4138
+#: ../version.c:4190
 msgid "without GUI."
 msgstr ""
 
-#: ../version.c:4141
+#: ../version.c:4193
 msgid "with GTK3 GUI."
 msgstr ""
 
-#: ../version.c:4143
+#: ../version.c:4195
 msgid "with GTK2-GNOME GUI."
 msgstr ""
 
-#: ../version.c:4145
+#: ../version.c:4197
 msgid "with GTK2 GUI."
 msgstr ""
 
-#: ../version.c:4148
+#: ../version.c:4200
 msgid "with X11-Motif GUI."
 msgstr ""
 
-#: ../version.c:4150
+#: ../version.c:4202
 msgid "with Haiku GUI."
 msgstr ""
 
-#: ../version.c:4152
+#: ../version.c:4204
 msgid "with Photon GUI."
 msgstr ""
 
-#: ../version.c:4154
+#: ../version.c:4206
 msgid "with GUI."
 msgstr ""
 
-#: ../version.c:4156
+#: ../version.c:4208
 msgid "  Features included (+) or not (-):\n"
 msgstr ""
 
-#: ../version.c:4163
+#: ../version.c:4215
 msgid "   system vimrc file: \""
 msgstr ""
 
-#: ../version.c:4168
+#: ../version.c:4220
 msgid "     user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4173
+#: ../version.c:4225
 msgid " 2nd user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4178 ../version.c:4185 ../version.c:4189
+#: ../version.c:4230 ../version.c:4237 ../version.c:4241
 msgid " 3rd user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4181
+#: ../version.c:4233
 msgid " 4th user vimrc file: \""
 msgstr ""
 
-#: ../version.c:4194
+#: ../version.c:4246
 msgid "      user exrc file: \""
 msgstr ""
 
-#: ../version.c:4199
+#: ../version.c:4251
 msgid "  2nd user exrc file: \""
 msgstr ""
 
-#: ../version.c:4205
+#: ../version.c:4257
 msgid "  system gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4209
+#: ../version.c:4261
 msgid "    user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4213
+#: ../version.c:4265
 msgid "2nd user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4218
+#: ../version.c:4270
 msgid "3rd user gvimrc file: \""
 msgstr ""
 
-#: ../version.c:4223
+#: ../version.c:4275
 msgid "       defaults file: \""
 msgstr ""
 
-#: ../version.c:4228
+#: ../version.c:4280
 msgid "    system menu file: \""
 msgstr ""
 
-#: ../version.c:4236
+#: ../version.c:4288
 msgid "  fall-back for $VIM: \""
 msgstr ""
 
-#: ../version.c:4242
+#: ../version.c:4294
 msgid " f-b for $VIMRUNTIME: \""
 msgstr ""
 
-#: ../version.c:4246
+#: ../version.c:4298
 msgid "Compilation: "
 msgstr ""
 
-#: ../version.c:4252
+#: ../version.c:4304
 msgid "Compiler: "
 msgstr ""
 
-#: ../version.c:4257
+#: ../version.c:4309
 msgid "Linking: "
 msgstr ""
 
-#: ../version.c:4262
+#: ../version.c:4314
 msgid "  DEBUG BUILD"
 msgstr ""
 
-#: ../version.c:4298
+#: ../version.c:4350
 msgid "VIM - Vi IMproved"
 msgstr ""
 
-#: ../version.c:4300
+#: ../version.c:4352
 msgid "version "
 msgstr ""
 
-#: ../version.c:4301
+#: ../version.c:4353
 msgid "by Bram Moolenaar et al."
 msgstr ""
 
-#: ../version.c:4305
+#: ../version.c:4357
 msgid "Vim is open source and freely distributable"
 msgstr ""
 
-#: ../version.c:4307
+#: ../version.c:4359
 msgid "Help poor children in Uganda!"
 msgstr ""
 
-#: ../version.c:4308
+#: ../version.c:4360
 msgid "type  :help iccf<Enter>       for information "
 msgstr ""
 
-#: ../version.c:4310
+#: ../version.c:4362
 msgid "type  :q<Enter>               to exit         "
 msgstr ""
 
-#: ../version.c:4311
+#: ../version.c:4363
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr ""
 
-#: ../version.c:4312
+#: ../version.c:4364
 msgid "type  :help version9<Enter>   for version info"
 msgstr ""
 
-#: ../version.c:4315
+#: ../version.c:4367
 msgid "Running in Vi compatible mode"
 msgstr ""
 
-#: ../version.c:4316
+#: ../version.c:4368
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr ""
 
-#: ../version.c:4317
+#: ../version.c:4369
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr ""
 
-#: ../version.c:4332
+#: ../version.c:4384
 msgid "menu  Help->Orphans           for information    "
 msgstr ""
 
-#: ../version.c:4334
+#: ../version.c:4386
 msgid "Running modeless, typed text is inserted"
 msgstr ""
 
-#: ../version.c:4335
+#: ../version.c:4387
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
 msgstr ""
 
-#: ../version.c:4336
+#: ../version.c:4388
 msgid "                              for two modes      "
 msgstr ""
 
-#: ../version.c:4340
+#: ../version.c:4392
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
 msgstr ""
 
-#: ../version.c:4341
+#: ../version.c:4393
 msgid "                              for Vim defaults   "
 msgstr ""
 
-#: ../version.c:4382
+#: ../version.c:4434
 msgid "Sponsor Vim development!"
 msgstr ""
 
-#: ../version.c:4383
+#: ../version.c:4435
 msgid "Become a registered Vim user!"
 msgstr ""
 
-#: ../version.c:4386
+#: ../version.c:4438
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
 
-#: ../version.c:4387
+#: ../version.c:4439
 msgid "type  :help register<Enter>   for information "
 msgstr ""
 
-#: ../version.c:4389
+#: ../version.c:4441
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr ""
 
@@ -4600,7 +4597,7 @@ msgstr ""
 msgid "tab"
 msgstr ""
 
-#: ../vim9expr.c:1919
+#: ../vim9expr.c:1924
 msgid "[end of lines]"
 msgstr ""
 
@@ -4744,12 +4741,12 @@ msgstr ""
 msgid "wayland protocol error -> "
 msgstr ""
 
-#: ../wayland.c:2430
+#: ../wayland.c:2463
 #, c-format
 msgid "restoring Wayland display %s"
 msgstr ""
 
-#: ../wayland.c:2437
+#: ../wayland.c:2470
 msgid "failed restoring, lost connection to Wayland display"
 msgstr ""
 
@@ -11216,6 +11213,19 @@ msgstr ""
 msgid "E1548: Wayland connection is unavailable"
 msgstr ""
 
+#: ../errors.h:3741
+#, c-format
+msgid "E1549: Cannot have more than %d diff anchors"
+msgstr ""
+
+#: ../errors.h:3743
+msgid "E1550: Failed to find all diff anchors"
+msgstr ""
+
+#: ../errors.h:3747
+msgid "E1551: Cannot open a popup window to a closing buffer"
+msgstr ""
+
 #. type of cmdline window or 0
 #. result of cmdline window or 0
 #. buffer of cmdline window or NULL
@@ -11611,17 +11621,17 @@ msgid ""
 "You should now append vim.VIM_SPECIAL_PATH to sys.path"
 msgstr ""
 
-#: ../vim.h:2540
+#: ../vim.h:2541
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*.*)\t*.*\n"
 msgstr ""
 
-#: ../vim.h:2541
+#: ../vim.h:2542
 msgid "All Files (*.*)\t*.*\n"
 msgstr ""
 
-#: ../vim.h:2543
+#: ../vim.h:2544
 msgid ""
 "All Files (*.*)\t*.*\n"
 "C source (*.c, *.h)\t*.c;*.h\n"
@@ -11630,17 +11640,17 @@ msgid ""
 "Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 msgstr ""
 
-#: ../vim.h:2546
+#: ../vim.h:2547
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*)\t*\n"
 msgstr ""
 
-#: ../vim.h:2547
+#: ../vim.h:2548
 msgid "All Files (*)\t*\n"
 msgstr ""
 
-#: ../vim.h:2549
+#: ../vim.h:2550
 msgid ""
 "All Files (*)\t*\n"
 "C source (*.c, *.h)\t*.c;*.h\n"
@@ -12934,641 +12944,645 @@ msgid "expression used to obtain a diff file"
 msgstr ""
 
 #: ../../runtime/optwin.vim:1059
+msgid "list of addresses for anchoring a diff"
+msgstr ""
+
+#: ../../runtime/optwin.vim:1062
 msgid "expression used to patch a file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1064
+#: ../../runtime/optwin.vim:1067
 msgid "mapping"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1065
+#: ../../runtime/optwin.vim:1068
 msgid "maximum depth of mapping"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1067
+#: ../../runtime/optwin.vim:1070
 msgid "recognize mappings in mapped keys"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1069
+#: ../../runtime/optwin.vim:1072
 msgid "allow timing out halfway into a mapping"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1071
+#: ../../runtime/optwin.vim:1074
 msgid "allow timing out halfway into a key code"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1073
+#: ../../runtime/optwin.vim:1076
 msgid "time in msec for 'timeout'"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1075
+#: ../../runtime/optwin.vim:1078
 msgid "time in msec for 'ttimeout'"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1079
+#: ../../runtime/optwin.vim:1082
 msgid "reading and writing files"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1080
+#: ../../runtime/optwin.vim:1083
 msgid "enable using settings from modelines when reading a file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1083
+#: ../../runtime/optwin.vim:1086
 msgid "allow setting expression options from a modeline"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1085
+#: ../../runtime/optwin.vim:1088
 msgid "number of lines to check for modelines"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1087
+#: ../../runtime/optwin.vim:1090
 msgid "binary file editing"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1090
+#: ../../runtime/optwin.vim:1093
 msgid "last line in the file has an end-of-line"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1093
+#: ../../runtime/optwin.vim:1096
 msgid "last line in the file followed by CTRL-Z"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1096
+#: ../../runtime/optwin.vim:1099
 msgid "fixes missing end-of-line at end of text file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1099
+#: ../../runtime/optwin.vim:1102
 msgid "prepend a Byte Order Mark to the file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1102
+#: ../../runtime/optwin.vim:1105
 msgid "end-of-line format: \"dos\", \"unix\" or \"mac\""
 msgstr ""
 
-#: ../../runtime/optwin.vim:1105
+#: ../../runtime/optwin.vim:1108
 msgid "list of file formats to look for when editing a file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1107
+#: ../../runtime/optwin.vim:1110
 msgid "obsolete, use 'fileformat'"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1110
+#: ../../runtime/optwin.vim:1113
 msgid "obsolete, use 'fileformats'"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1112
+#: ../../runtime/optwin.vim:1115
 msgid "writing files is allowed"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1114
+#: ../../runtime/optwin.vim:1117
 msgid "write a backup file before overwriting a file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1116
+#: ../../runtime/optwin.vim:1119
 msgid "keep a backup after overwriting a file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1118
+#: ../../runtime/optwin.vim:1121
 msgid "patterns that specify for which files a backup is not made"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1120
+#: ../../runtime/optwin.vim:1123
 msgid "whether to make the backup as a copy or rename the existing file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1123
+#: ../../runtime/optwin.vim:1126
 msgid "list of directories to put backup files in"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1125
+#: ../../runtime/optwin.vim:1128
 msgid "file name extension for the backup file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1127
+#: ../../runtime/optwin.vim:1130
 msgid "automatically write a file when leaving a modified buffer"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1129
+#: ../../runtime/optwin.vim:1132
 msgid "as 'autowrite', but works with more commands"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1131
+#: ../../runtime/optwin.vim:1134
 msgid "always write without asking for confirmation"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1133
+#: ../../runtime/optwin.vim:1136
 msgid "automatically read a file when it was modified outside of Vim"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1136
+#: ../../runtime/optwin.vim:1139
 msgid "keep oldest version of a file; specifies file name extension"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1138
+#: ../../runtime/optwin.vim:1141
 msgid "forcibly sync the file to disk after writing it"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1140
+#: ../../runtime/optwin.vim:1143
 msgid "use 8.3 file names"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1143
+#: ../../runtime/optwin.vim:1146
 msgid "encryption method for file writing: zip, blowfish or blowfish2"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1148
+#: ../../runtime/optwin.vim:1151
 msgid "the swap file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1149
+#: ../../runtime/optwin.vim:1152
 msgid "list of directories for the swap file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1151
+#: ../../runtime/optwin.vim:1154
 msgid "use a swap file for this buffer"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1154
+#: ../../runtime/optwin.vim:1157
 msgid "\"sync\", \"fsync\" or empty; how to flush a swap file to disk"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1156
+#: ../../runtime/optwin.vim:1159
 msgid "number of characters typed to cause a swap file update"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1158
+#: ../../runtime/optwin.vim:1161
 msgid "time in msec after which the swap file will be updated"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1160
+#: ../../runtime/optwin.vim:1163
 msgid "maximum amount of memory in Kbyte used for one buffer"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1162
+#: ../../runtime/optwin.vim:1165
 msgid "maximum amount of memory in Kbyte used for all buffers"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1166
+#: ../../runtime/optwin.vim:1169
 msgid "command line editing"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1167
+#: ../../runtime/optwin.vim:1170
 msgid "how many command lines are remembered"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1169
+#: ../../runtime/optwin.vim:1172
 msgid "key that triggers command-line expansion"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1171
+#: ../../runtime/optwin.vim:1174
 msgid "like 'wildchar' but can also be used in a mapping"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1173
+#: ../../runtime/optwin.vim:1176
 msgid "specifies how command line completion works"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1176
+#: ../../runtime/optwin.vim:1179
 msgid "empty or \"tagfile\" to list file name of matching tags"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1179
+#: ../../runtime/optwin.vim:1182
 msgid "list of file name extensions that have a lower priority"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1182
+#: ../../runtime/optwin.vim:1185
 msgid "list of file name extensions added when searching for a file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1187
+#: ../../runtime/optwin.vim:1190
 msgid "list of patterns to ignore files for file name completion"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1190
+#: ../../runtime/optwin.vim:1193
 msgid "ignore case when using file names"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1192
+#: ../../runtime/optwin.vim:1195
 msgid "ignore case when completing file names"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1195
+#: ../../runtime/optwin.vim:1198
 msgid "command-line completion shows a list of matches"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1198
+#: ../../runtime/optwin.vim:1201
 msgid "key used to open the command-line window"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1200
+#: ../../runtime/optwin.vim:1203
 msgid "height of the command-line window"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1204
+#: ../../runtime/optwin.vim:1207
 msgid "executing external commands"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1205
+#: ../../runtime/optwin.vim:1208
 msgid "name of the shell program used for external commands"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1208
+#: ../../runtime/optwin.vim:1211
 msgid "when to use the shell or directly execute a command"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1211
+#: ../../runtime/optwin.vim:1214
 msgid "character(s) to enclose a shell command in"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1213
+#: ../../runtime/optwin.vim:1216
 msgid "like 'shellquote' but include the redirection"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1215
+#: ../../runtime/optwin.vim:1218
 msgid "characters to escape when 'shellxquote' is ("
 msgstr ""
 
-#: ../../runtime/optwin.vim:1217
+#: ../../runtime/optwin.vim:1220
 msgid "argument for 'shell' to execute a command"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1219
+#: ../../runtime/optwin.vim:1222
 msgid "used to redirect command output to a file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1221
+#: ../../runtime/optwin.vim:1224
 msgid "use a temp file for shell commands instead of using a pipe"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1223
+#: ../../runtime/optwin.vim:1226
 msgid "program used for \"=\" command"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1226
+#: ../../runtime/optwin.vim:1229
 msgid "program used to format lines with \"gq\" command"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1228
+#: ../../runtime/optwin.vim:1231
 msgid "program used for the \"K\" command"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1230
+#: ../../runtime/optwin.vim:1233
 msgid "warn when using a shell command and a buffer has changes"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1235
+#: ../../runtime/optwin.vim:1238
 msgid "running make and jumping to errors (quickfix)"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1236
+#: ../../runtime/optwin.vim:1239
 msgid "name of the file that contains error messages"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1238
+#: ../../runtime/optwin.vim:1241
 msgid "list of formats for error messages"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1241
+#: ../../runtime/optwin.vim:1244
 msgid "program used for the \":make\" command"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1244
+#: ../../runtime/optwin.vim:1247
 msgid "string used to put the output of \":make\" in the error file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1246
+#: ../../runtime/optwin.vim:1249
 msgid "name of the errorfile for the 'makeprg' command"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1248
+#: ../../runtime/optwin.vim:1251
 msgid "program used for the \":grep\" command"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1251
+#: ../../runtime/optwin.vim:1254
 msgid "list of formats for output of 'grepprg'"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1253
+#: ../../runtime/optwin.vim:1256
 msgid "encoding of the \":make\" and \":grep\" output"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1256
+#: ../../runtime/optwin.vim:1259
 msgid "function to display text in the quickfix window"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1262
+#: ../../runtime/optwin.vim:1265
 msgid "system specific"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1263
+#: ../../runtime/optwin.vim:1266
 msgid "use forward slashes in file names; for Unix-like shells"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1265
+#: ../../runtime/optwin.vim:1268
 msgid "specifies slash/backslash used for completion"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1270
+#: ../../runtime/optwin.vim:1273
 msgid "language specific"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1271
+#: ../../runtime/optwin.vim:1274
 msgid "specifies the characters in a file name"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1273
+#: ../../runtime/optwin.vim:1276
 msgid "specifies the characters in an identifier"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1275
+#: ../../runtime/optwin.vim:1278
 msgid "defines trigger strings for complete_match()"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1277
+#: ../../runtime/optwin.vim:1280
 msgid "specifies the characters in a keyword"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1280
+#: ../../runtime/optwin.vim:1283
 msgid "specifies printable characters"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1283
+#: ../../runtime/optwin.vim:1286
 msgid "specifies escape characters in a string"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1288
+#: ../../runtime/optwin.vim:1291
 msgid "display the buffer right-to-left"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1291
+#: ../../runtime/optwin.vim:1294
 msgid "when to edit the command-line right-to-left"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1294
+#: ../../runtime/optwin.vim:1297
 msgid "insert characters backwards"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1296
+#: ../../runtime/optwin.vim:1299
 msgid "allow CTRL-_ in Insert and Command-line mode to toggle 'revins'"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1298
+#: ../../runtime/optwin.vim:1301
 msgid "the ASCII code for the first letter of the Hebrew alphabet"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1300
+#: ../../runtime/optwin.vim:1303
 msgid "use Hebrew keyboard mapping"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1302
+#: ../../runtime/optwin.vim:1305
 msgid "use phonetic Hebrew keyboard mapping"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1306
+#: ../../runtime/optwin.vim:1309
 msgid "prepare for editing Arabic text"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1309
+#: ../../runtime/optwin.vim:1312
 msgid "perform shaping of Arabic characters"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1311
+#: ../../runtime/optwin.vim:1314
 msgid "terminal will perform bidi handling"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1315
+#: ../../runtime/optwin.vim:1318
 msgid "name of a keyboard mapping"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1319
+#: ../../runtime/optwin.vim:1322
 msgid "list of characters that are translated in Normal mode"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1321
+#: ../../runtime/optwin.vim:1324
 msgid "apply 'langmap' to mapped characters"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1325
+#: ../../runtime/optwin.vim:1328
 msgid "when set never use IM; overrules following IM options"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1328
+#: ../../runtime/optwin.vim:1331
 msgid "in Insert mode: 1: use :lmap; 2: use IM; 0: neither"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1331
+#: ../../runtime/optwin.vim:1334
 msgid "input method style, 0: on-the-spot, 1: over-the-spot"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1333
+#: ../../runtime/optwin.vim:1336
 msgid "entering a search pattern: 1: use :lmap; 2: use IM; 0: neither"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1337
+#: ../../runtime/optwin.vim:1340
 msgid "when set always use IM when starting to edit a command line"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1339
+#: ../../runtime/optwin.vim:1342
 msgid "function to obtain IME status"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1341
+#: ../../runtime/optwin.vim:1344
 msgid "function to enable/disable IME"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1346
+#: ../../runtime/optwin.vim:1349
 msgid "multi-byte characters"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1347
+#: ../../runtime/optwin.vim:1350
 msgid ""
 "character encoding used in Vim: \"latin1\", \"utf-8\",\n"
 "\"euc-jp\", \"big5\", etc."
 msgstr ""
 
-#: ../../runtime/optwin.vim:1349
+#: ../../runtime/optwin.vim:1352
 msgid "character encoding for the current file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1352
+#: ../../runtime/optwin.vim:1355
 msgid "automatically detected character encodings"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1354
+#: ../../runtime/optwin.vim:1357
 msgid "character encoding used by the terminal"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1356
+#: ../../runtime/optwin.vim:1359
 msgid "expression used for character encoding conversion"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1358
+#: ../../runtime/optwin.vim:1361
 msgid "delete combining (composing) characters on their own"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1360
+#: ../../runtime/optwin.vim:1363
 msgid "maximum number of combining (composing) characters displayed"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1363
+#: ../../runtime/optwin.vim:1366
 msgid "key that activates the X input method"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1366
+#: ../../runtime/optwin.vim:1369
 msgid "width of ambiguous width characters"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1368
+#: ../../runtime/optwin.vim:1371
 msgid "emoji characters are full width"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1372
+#: ../../runtime/optwin.vim:1375
 msgid "various"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1373
+#: ../../runtime/optwin.vim:1376
 msgid ""
 "when to use virtual editing: \"block\", \"insert\", \"all\"\n"
 "and/or \"onemore\""
 msgstr ""
 
-#: ../../runtime/optwin.vim:1375
+#: ../../runtime/optwin.vim:1378
 msgid "list of autocommand events which are to be ignored"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1377
+#: ../../runtime/optwin.vim:1380
 msgid "list of autocommand events which are to be ignored in a window"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1379
+#: ../../runtime/optwin.vim:1382
 msgid "load plugin scripts when starting up"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1381
+#: ../../runtime/optwin.vim:1384
 msgid "enable reading .vimrc/.exrc/.gvimrc in the current directory"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1383
+#: ../../runtime/optwin.vim:1386
 msgid "safer working with script files in the current directory"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1385
+#: ../../runtime/optwin.vim:1388
 msgid "use the 'g' flag for \":substitute\""
 msgstr ""
 
-#: ../../runtime/optwin.vim:1387
+#: ../../runtime/optwin.vim:1390
 msgid "'g' and 'c' flags of \":substitute\" toggle"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1390
+#: ../../runtime/optwin.vim:1393
 msgid "allow reading/writing devices"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1394
+#: ../../runtime/optwin.vim:1397
 msgid "maximum depth of function calls"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1398
+#: ../../runtime/optwin.vim:1401
 msgid "list of words that specifies what to put in a session file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1400
+#: ../../runtime/optwin.vim:1403
 msgid "list of words that specifies what to save for :mkview"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1402
+#: ../../runtime/optwin.vim:1405
 msgid "directory where to store files with :mkview"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1406
+#: ../../runtime/optwin.vim:1409
 msgid "list that specifies what to write in the viminfo file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1408
+#: ../../runtime/optwin.vim:1411
 msgid "file name used for the viminfo file"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1412
+#: ../../runtime/optwin.vim:1415
 msgid "what happens with a buffer when it's no longer in a window"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1415
+#: ../../runtime/optwin.vim:1418
 msgid "empty, \"nofile\", \"nowrite\", \"quickfix\", etc.: type of buffer"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1419
+#: ../../runtime/optwin.vim:1422
 msgid "whether the buffer shows up in the buffer list"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1422
+#: ../../runtime/optwin.vim:1425
 msgid "set to \"msg\" to see all error messages"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1425
+#: ../../runtime/optwin.vim:1428
 msgid "whether to show the signcolumn"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1430
+#: ../../runtime/optwin.vim:1433
 msgid "interval in milliseconds between polls for MzScheme threads"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1434
+#: ../../runtime/optwin.vim:1437
 msgid "name of the Lua dynamic library"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1438
+#: ../../runtime/optwin.vim:1441
 msgid "name of the Perl dynamic library"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1442
+#: ../../runtime/optwin.vim:1445
 msgid "whether to use Python 2 or 3"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1446
+#: ../../runtime/optwin.vim:1449
 msgid "name of the Python 2 dynamic library"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1450
+#: ../../runtime/optwin.vim:1453
 msgid "name of the Python 2 home directory"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1454
+#: ../../runtime/optwin.vim:1457
 msgid "name of the Python 3 dynamic library"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1458
+#: ../../runtime/optwin.vim:1461
 msgid "name of the Python 3 home directory"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1462
+#: ../../runtime/optwin.vim:1465
 msgid "name of the Ruby dynamic library"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1466
+#: ../../runtime/optwin.vim:1469
 msgid "name of the Tcl dynamic library"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1470
+#: ../../runtime/optwin.vim:1473
 msgid "name of the MzScheme dynamic library"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1472
+#: ../../runtime/optwin.vim:1475
 msgid "name of the MzScheme GC dynamic library"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1476
+#: ../../runtime/optwin.vim:1479
 msgid "0, 1 or 2; when to use the tabpanel"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1478
+#: ../../runtime/optwin.vim:1481
 msgid "custom tab pages in tabpanel"
 msgstr ""
 
-#: ../../runtime/optwin.vim:1480
+#: ../../runtime/optwin.vim:1483
 msgid "options for using tabpanel"
 msgstr ""
 
-#: ../../runtime/defaults.vim:129
+#: ../../runtime/defaults.vim:128
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""

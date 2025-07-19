@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Jul 03
+" Last Change: 2025 Jul 18
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -234,39 +234,48 @@ function s:parse_vim_command(cmd)
 	endtry
 endfunc
 
-function s:get_cmd_modifiers()
-	try
-		let file_name = $VIM_SRCDIR .. '/ex_docmd.c'
-
-		new
-		exec 'read ' .. file_name
-		norm! gg
-		exec ':/^static cmdmod_info_T cmdmod_info_tab\[] = {/+1;/^};/-1yank'
-		%delete _
-
-		put
-		1delete _
-
-		let modifiers = []
-		let list = []
-		for line in getline(1, line('$'))
-			let list = matchlist(line, '^\s*{"\(\w\+\)".*')
-			call add(modifiers, copy(list[1]))
-		endfor
-
-		quit!
-
+function s:memoize_cmd_modifiers()
+	let modifiers = []
+	function _() closure
 		if empty(modifiers)
-			throw 'cmd modifiers list is empty'
+			try
+				let file_name = $VIM_SRCDIR .. '/ex_docmd.c'
+
+				new
+				exec 'read ' .. file_name
+				norm! gg
+				exec ':/^static cmdmod_info_T cmdmod_info_tab\[] = {/+1;/^};/-1yank'
+				%delete _
+
+				put
+				1delete _
+
+				let list = []
+				for line in getline(1, line('$'))
+					let list = matchlist(line, '^\s*{"\(\w\+\)".*')
+					" :browse and :confirm handled separately as lower priority matches
+					" because they have same-named builtin functions
+					if index(['browse', 'confirm'], list[1]) == -1
+						call add(modifiers, copy(list[1]))
+					endif
+				endfor
+
+				quit!
+
+				if empty(modifiers)
+					throw 'cmd modifiers list is empty'
+				endif
+
+			catch /.*/
+				call s:err_gen('')
+				throw 'exit'
+			endtry
 		endif
-
 		return modifiers
-
-	catch /.*/
-		call s:err_gen('')
-		throw 'exit'
-	endtry
+	endfunction
+	return function("_")
 endfunction
+let s:get_cmd_modifiers = s:memoize_cmd_modifiers()
 
 function s:get_vim_command_type(cmd_name)
 	" Return value:
@@ -296,10 +305,13 @@ function s:get_vim_command_type(cmd_name)
 		behave
 		call
 		catch
+		chdir
 		class
+		copy
 		debuggreedy
 		def
 		delcommand
+		delete
 		delfunction
 		doautoall
 		doautocmd
@@ -319,6 +331,7 @@ function s:get_vim_command_type(cmd_name)
 		endif
 		endinterface
 		enum
+		eval
 		execute
 		export
 		filetype
@@ -333,6 +346,7 @@ function s:get_vim_command_type(cmd_name)
 		import
 		interface
 		insert
+		join
 		k
 		let
 		loadkeymap
@@ -378,8 +392,10 @@ function s:get_vim_command_type(cmd_name)
 		smagic
 		snomagic
 		sort
+		split
 		static
 		substitute
+		swapname
 		syntax
 		tcl
 		tcldo

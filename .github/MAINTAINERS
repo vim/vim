@@ -76,6 +76,7 @@ runtime/compiler/pandoc.vim				@Konfekt
 runtime/compiler/perl.vim				@petdance @heptite
 runtime/compiler/perlcritic.vim				@petdance @dkearns
 runtime/compiler/php.vim				@dkearns
+runtime/compiler/phpstan.vim				@dietrichm
 runtime/compiler/podchecker.vim				@petdance @dkearns
 runtime/compiler/powershell.vim				@heaths
 runtime/compiler/raco.vim				@benknoble
@@ -163,6 +164,7 @@ runtime/ftplugin/expect.vim				@dkearns
 runtime/ftplugin/exports.vim				@mperry2
 runtime/ftplugin/fennel.vim				@gpanders
 runtime/ftplugin/fetchmail.vim				@dkearns
+runtime/ftplugin/fga.vim				@ribru17
 runtime/ftplugin/forth.vim				@jkotlinski
 runtime/ftplugin/fpcmake.vim				@dkearns
 runtime/ftplugin/freebasic.vim				@dkearns
@@ -251,6 +253,7 @@ runtime/ftplugin/pbtxt.vim				@lakshayg
 runtime/ftplugin/pdf.vim				@tpope
 runtime/ftplugin/perl.vim				@petdance @dkearns
 runtime/ftplugin/php.vim				@dkearns
+runtime/ftplugin/pkl.vim				@ribru17
 runtime/ftplugin/plsql.vim				@lee-lindley
 runtime/ftplugin/pod.vim				@petdance @dkearns
 runtime/ftplugin/poefilter.vim				@ObserverOfTime
@@ -308,6 +311,7 @@ runtime/ftplugin/tidy.vim				@dkearns
 runtime/ftplugin/tmux.vim				@ericpruitt
 runtime/ftplugin/toml.vim				@averms
 runtime/ftplugin/tt2html.vim				@petdance
+runtime/ftplugin/twig.vim				@ribru17
 runtime/ftplugin/typescript.vim				@dkearns
 runtime/ftplugin/typescriptreact.vim			@dkearns
 runtime/ftplugin/typst.vim				@saccarosium
@@ -510,6 +514,7 @@ runtime/syntax/hare.vim					@selenebun
 runtime/syntax/haredoc.vim				@selenebun
 runtime/syntax/haskell.vim				@coot
 runtime/syntax/hcl.vim					@gpanders
+runtime/syntax/help.vim					@dkearns
 runtime/syntax/help_ru.vim				@RestorerZ
 runtime/syntax/hgcommit.vim				@k-takata
 runtime/syntax/hitest.vim				@lacygoill

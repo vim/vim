@@ -25,6 +25,10 @@ AC_EXEEXT
 
 AC_HEADER_SYS_WAIT
 
+if test -z "$PKG_CONFIG"; then
+  AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
+fi
+
 dnl Check that the C99 features that Vim uses are supported:
 if test x"$ac_cv_prog_cc_c99" != xno; then
   dnl If the compiler doesn't explicitly support C99, then check
@@ -2402,49 +2406,44 @@ CPPFLAGS=$cppflags_save
 
 AC_MSG_CHECKING(--with-wayland argument)
 AC_ARG_WITH(wayland,
-	[  --with-wayland	  Include support for the Wayland protocol.])
+	[  --with-wayland	  Include support for the Wayland protocol.],
+	[with_wayland=$withval],
+	AS_IF([test "x$features" = xtiny], 
+			[with_wayland=no
+			 AC_MSG_RESULT([cannot use wayland with tiny features])],
+			[with_wayland=yes
+			 AC_MSG_RESULT([yes])]))
 
-test -z "$with_wayland" && with_wayland=yes
 if test "$with_wayland" = yes; then
-  AC_MSG_RESULT(yes)
-  AC_MSG_CHECKING(if Wayland client header files can be found)
-  cppflags_save=$CPPFLAGS
-  CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <wayland-client.h>], )],
-	AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no); no_wl=yes)
-  CPPFLAGS=$cppflags_save
-
-  if test "$no_wl" = yes; then
-    with_wayland=no
+cflags_save=$CFLAGS
+  AC_MSG_CHECKING(for wayland)
+  if "$PKG_CONFIG" --exists 'wayland-client'; then
+    AC_MSG_RESULT([yes])
+    AC_DEFINE(HAVE_WAYLAND)
+    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client`
+    CFLAGS="$CFLAGS $WAYLAND_CFLAGS"
+    WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client`
+    WAYLAND_SRC=" \
+      auto/wayland/wlr-data-control-unstable-v1.c \
+      auto/wayland/ext-data-control-v1.c \
+      auto/wayland/xdg-shell.c \
+      auto/wayland/primary-selection-unstable-v1.c \
+      wayland.c"
+    WAYLAND_OBJ=" \
+      objects/wlr-data-control-unstable-v1.o \
+      objects/ext-data-control-v1.o \
+      objects/xdg-shell.o \
+      objects/primary-selection-unstable-v1.o \
+      objects/wayland.o"
+    AC_SUBST(WAYLAND_CFLAGS)
+    AC_SUBST(WAYLAND_LIBS)
+    AC_SUBST(WAYLAND_SRC)
+    AC_SUBST(WAYLAND_OBJ)
   else
-    AC_CHECK_LIB(wayland-client, wl_display_connect,[no_wl=no])
-
-    if test "$no_wl" = no; then
-      AC_DEFINE(HAVE_WAYLAND)
-      WAYLAND_LIBS="-lwayland-client";
-      AC_SUBST(WAYLAND_LIBS)
-      WAYLAND_SRC=" \
-	      auto/wayland/wlr-data-control-unstable-v1.c \
-	      auto/wayland/ext-data-control-v1.c \
-	      auto/wayland/xdg-shell.c \
-	      auto/wayland/primary-selection-unstable-v1.c \
-	      wayland.c"
-      AC_SUBST(WAYLAND_SRC)
-      WAYLAND_OBJ=" \
-	      objects/wlr-data-control-unstable-v1.o \
-	      objects/ext-data-control-v1.o \
-	      objects/xdg-shell.o \
-	      objects/primary-selection-unstable-v1.o \
-	      objects/wayland.o"
-      AC_SUBST(WAYLAND_OBJ)
-
-    else
-      with_wayland=no
-    fi
+    AC_MSG_RESULT(no)
+    with_wayland=no
   fi
-else
-  AC_MSG_RESULT(no)
+CFLAGS=$cflags_save
 fi
 
 test -z "$with_x" && with_x=yes
@@ -2884,10 +2883,6 @@ AC_DEFUN([GNOME_INIT_HOOK],
 AC_DEFUN([GNOME_INIT],[
 	GNOME_INIT_HOOK([],fail)
 ])
-
-if test -z "$PKG_CONFIG"; then
-  AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl Check for GTK3. If it succeeds, skip the check for GTK2.

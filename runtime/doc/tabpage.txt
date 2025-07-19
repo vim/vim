@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 9.1.  Last change: 2025 Jul 01
+*tabpage.txt*   For Vim version 9.1.  Last change: 2025 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -362,6 +362,9 @@ TabLineSel and TabLineFill.  |hl-TabLine| |hl-TabLineSel| |hl-TabLineFill|
 A "+" will be shown for a tab page that has a modified window.  The number of
 windows in a tabpage is also shown.  Thus "3+" means three windows and one of
 them has a modified buffer.
+
+An "X" (close button) will appear in the last column when multiple tabs are
+open, but only if the 'mouse' is enabled.
 
 The 'tabline' option allows you to define your preferred way to tab pages
 labels.  This isn't easy, thus an example will be given here.

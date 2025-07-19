@@ -3736,3 +3736,13 @@ EXTERN char e_cannot_not_support_redrawtabpanel[]
 EXTERN char e_wayland_connection_unavailable[]
 	INIT(= N_("E1548: Wayland connection is unavailable"));
 #endif
+#if defined(FEAT_DIFF)
+EXTERN char e_cannot_have_more_than_nr_diff_anchors[]
+	INIT(= N_("E1549: Cannot have more than %d diff anchors"));
+EXTERN char e_failed_to_find_all_diff_anchors[]
+	INIT(= N_("E1550: Failed to find all diff anchors"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_open_a_popup_window_to_a_closing_buffer[]
+	INIT(= N_("E1551: Cannot open a popup window to a closing buffer"));
+#endif

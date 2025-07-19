@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2025 Jul 05
+*insert.txt*    For Vim version 9.1.  Last change: 2025 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1258,13 +1258,16 @@ of values:
 Example: >
 	:set completepopup=height:10,width:60,highlight:InfoPopup
 
-When the "align" value is "item" then the popup is positioned close to the
-selected item.  Changing the selection will also move the popup.  When "align"
-is "menu" then the popup is aligned with the top of the menu if the menu is
-below the text, and the bottom of the menu otherwise.
+When `"align"` is set to `"item"`, the popup is positioned near the selected
+item, and moves as the selection changes.
+When set to `"menu"`, the popup aligns with the top of the menu (if the menu
+appears below the text), or with the bottom (if the menu appears above).
 
-After the info popup is created it can be found with |popup_findinfo()| and
-properties can be changed with |popup_setoptions()|.
+If the 'mouse' is enabled, a close button and resize handle will appear on the
+popup border.
+
+After creation, the info popup can be located with |popup_findinfo()| and
+modified using |popup_setoptions()|.
 
 						*complete-popuphidden*
 If the information for the popup is obtained asynchronously, use "popuphidden"
