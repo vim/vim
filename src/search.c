@@ -54,6 +54,10 @@ static void fuzzy_match_str_sort(fuzmatch_str_T *fm, int sz);
 static int fuzzy_match_func_compare(const void *s1, const void *s2);
 static void fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz);
 
+#if defined(PLATFORM_X86) || defined(PLATFORM_ARM_NEON)
+static int simd_fuzzy_match_str(char_u *str, char_u *pat);
+#endif
+
 #define SEARCH_STAT_DEF_TIMEOUT 40L
 // 'W ':  2 +
 // '[>9999/>9999]': 13 + 1 (NUL)
@@ -5178,6 +5182,11 @@ fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz)
     int
 fuzzy_match_str(char_u *str, char_u *pat)
 {
+
+#if defined(PLATFORM_X86) || defined(PLATFORM_ARM_NEON)
+    return simd_fuzzy_match_str(str, pat);
+#endif
+
     int		score = 0;
     int_u	matchpos[MAX_FUZZY_MATCHES];
 
@@ -5477,3 +5486,1091 @@ fuzzymatches_to_strmatches(
 
     return OK;
 }
+
+#if defined(PLATFORM_X86) || defined(PLATFORM_ARM_NEON)
+// Just for temporary debugging and will be removed later
+#define FUZZY_DEBUG 1
+static const char *get_current_time_str(void)
+{
+    static char time_buf[64];
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", tm_info);
+    return time_buf;
+}
+
+static void sw_debug_log(const char *format, ...)
+{
+#ifdef FUZZY_DEBUG
+    static FILE *log_file = NULL;
+    static int initialized = 0;
+
+    if (!initialized)
+    {
+	log_file = fopen("fuzzy_debug.log", "w");
+	if (log_file)
+	{
+	    setvbuf(log_file, NULL, _IONBF, 0);
+	    fprintf(log_file, "==== FUZZY MATCHING DEBUG LOG ====\n");
+	    fprintf(log_file, "Log started at: %s\n", get_current_time_str());
+	}
+	initialized = 1;
+    }
+
+    if (!log_file)
+	return;
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(log_file, format, args);
+    va_end(args);
+
+    fflush(log_file);
+#endif
+}
+
+// SIMD Smith-Waterman fuzzy matching constants
+#define SIMD_FUZZY_MATCH_SCORE         16
+#define SIMD_FUZZY_MISMATCH_PENALTY    1     // Positive value used in subtraction
+#define SIMD_FUZZY_GAP_OPEN_PENALTY    3     // Positive value used in subtraction
+#define SIMD_FUZZY_GAP_EXTEND_PENALTY  1
+
+// Position-based scoring bonuses
+#define SIMD_FUZZY_PREFIX_BONUS        15    // First character of haystack
+#define SIMD_FUZZY_DELIMITER_BONUS     30    // After delimiter character
+#define SIMD_FUZZY_CAPITALIZATION_BONUS 30   // Capital after lowercase
+#define SIMD_FUZZY_MATCHING_CASE_BONUS 10    // Case match bonus
+#define SIMD_FUZZY_EXACT_MATCH_BONUS   50    // Exact needle match
+
+// Algorithm limits
+#define SIMD_FUZZY_MAX_MATCHES         256
+#define SIMD_FUZZY_SCORE_MIN           0     // Minimum score (non-negative)
+#define SIMD_FUZZY_SCORE_MIN_INT       -32768 // Minimum integer score
+
+// Configuration flags
+#define SIMD_FUZZY_REQUIRE_ALL_CHARS   1     // Set to 1 to require all needle chars to match
+
+/*
+ * SIMD fuzzy match result structure
+ */
+typedef struct {
+    int         score;
+    int         start_idx;
+    int         end_idx;
+    int         match_count;
+    unsigned int matches[SIMD_FUZZY_MAX_MATCHES];
+} simd_fuzzy_result_T;
+
+/*
+ * SIMD fuzzy matching context
+ */
+typedef struct {
+    char_u      *needle;
+    char_u      *haystack;
+    int         needle_len;
+    int         haystack_len;
+    int         case_sensitive;
+    int16_t     *score_matrix_M;  // Match matrix
+    int16_t     *score_matrix_X;  // Gap in X matrix
+    int16_t     *score_matrix_Y;  // Gap in Y matrix
+    simd_fuzzy_result_T result;
+} simd_fuzzy_T;
+
+// Matrix states for traceback
+typedef enum {
+    STATE_M,  // Match state
+    STATE_X,  // Gap in X state
+    STATE_Y   // Gap in Y state
+} matrix_state_t;
+
+// Function declarations
+static int simd_fuzzy_smith_waterman(simd_fuzzy_T *sf);
+static int simd_fuzzy_bonus_for_position(simd_fuzzy_T *sf, int haystack_idx, int needle_idx);
+static void simd_fuzzy_backtrack_alignment(simd_fuzzy_T *sf, int end_i, int end_j, matrix_state_t state);
+static int max3(int a, int b, int c);
+static void process_diagonal_strip(simd_fuzzy_T *sf, int diag, int *max_score, int *max_i, int *max_j, matrix_state_t *max_state);
+
+#if defined(PLATFORM_X86) && defined(__SSE2__)
+static void simd_process_diagonal_sse2(simd_fuzzy_T *sf, int i, int j, int idx, int idx_prev, int idx_up, int idx_left, int *max_score, int *max_i, int *max_j, matrix_state_t *max_state);
+#elif defined(PLATFORM_ARM_NEON) && (defined(__ARM_NEON) || defined(__ARM_NEON__))
+static void simd_process_diagonal_neon(simd_fuzzy_T *sf, int i, int j, int idx, int idx_prev, int idx_up, int idx_left, int *max_score, int *max_i, int *max_j, matrix_state_t *max_state);
+#endif
+
+/*
+ * Calculate bonus points for character match at specific position
+ */
+    static int
+simd_fuzzy_bonus_for_position(simd_fuzzy_T *sf, int haystack_idx, int needle_idx)
+{
+    int     bonus = 0;
+    char_u  curr_char = sf->haystack[haystack_idx];
+    char_u  needle_char = sf->needle[needle_idx];
+
+    // PREFIX_BONUS: First character of haystack
+    if (haystack_idx == 0)
+    {
+	bonus += SIMD_FUZZY_PREFIX_BONUS;
+	sw_debug_log("  Position %d: PREFIX_BONUS +%d\n", haystack_idx, SIMD_FUZZY_PREFIX_BONUS);
+    }
+
+    // DELIMITER_BONUS: Character after delimiter
+    if (haystack_idx > 0)
+    {
+	char_u prev_char = sf->haystack[haystack_idx - 1];
+
+	// Check for delimiter characters
+	if (prev_char == '_' || prev_char == '-' || prev_char == '.' ||
+	    prev_char == ' ' || prev_char == '\t' || prev_char == '/' ||
+	    prev_char == '\\' || prev_char == ':' || prev_char == ',')
+	{
+	    bonus += SIMD_FUZZY_DELIMITER_BONUS;
+	    sw_debug_log("  Position %d: DELIMITER_BONUS +%d\n", haystack_idx, SIMD_FUZZY_DELIMITER_BONUS);
+	}
+	// CAPITALIZATION_BONUS: Capital letter after lowercase
+	else if (vim_islower(prev_char) && vim_isupper(curr_char))
+	{
+	    bonus += SIMD_FUZZY_CAPITALIZATION_BONUS;
+	    sw_debug_log("  Position %d: CAPITALIZATION_BONUS +%d\n", haystack_idx, SIMD_FUZZY_CAPITALIZATION_BONUS);
+	}
+    }
+
+    // MATCHING_CASE_BONUS: Exact case match when not case sensitive
+    if (!sf->case_sensitive && curr_char == needle_char)
+    {
+	bonus += SIMD_FUZZY_MATCHING_CASE_BONUS;
+	sw_debug_log("  Position %d: MATCHING_CASE_BONUS +%d\n", haystack_idx, SIMD_FUZZY_MATCHING_CASE_BONUS);
+    }
+
+    return bonus;
+}
+
+/*
+ * Return maximum of three values
+ */
+    static int
+max3(int a, int b, int c)
+{
+    int max_val = a;
+    if (b > max_val)
+	max_val = b;
+    if (c > max_val)
+	max_val = c;
+    return max_val;
+}
+
+    static void
+simd_fuzzy_backtrack_alignment(
+    simd_fuzzy_T    *sf,
+    int         end_i,
+    int         end_j,
+    matrix_state_t  start_state)
+{
+    sw_debug_log("BACKTRACK START: (%d,%d) state=%d\n", end_i, end_j, start_state);
+
+    int i = end_i;
+    int j = end_j;
+    matrix_state_t state = start_state;
+    int match_count = 0;
+    unsigned int temp_matches[SIMD_FUZZY_MAX_MATCHES];
+    int cols = sf->haystack_len + 1;
+
+    int current_score = 0;
+    switch (start_state)
+    {
+	case STATE_M:
+	    current_score = sf->score_matrix_M[i * cols + j];
+	    break;
+	case STATE_X:
+	    current_score = sf->score_matrix_X[i * cols + j];
+	    break;
+	case STATE_Y:
+	    current_score = sf->score_matrix_Y[i * cols + j];
+	    break;
+    }
+
+    sw_debug_log("  Start score: %d\n", current_score);
+
+    int idx, idx_prev, idx_left, idx_up;
+    int prev_m, prev_x, prev_y;
+    int left_m, left_x, left_y;
+    int up_m, up_x, up_y;
+    int gap_cost;
+    char_u n_char, h_char;
+
+    while (i > 0 || j > 0)
+    {
+	if (i <= 0 || j <= 0)
+	{
+	    if (state == STATE_X && j > 0)
+	    {
+		// Handle left shift in X state
+		j--;
+		continue;
+	    }
+	    else if (state == STATE_Y && i > 0)
+	    {
+		// Handle upward shift in Y state
+		i--;
+		continue;
+	    }
+	    else
+	    {
+		break;
+	    }
+	}
+
+	idx = i * cols + j;
+	n_char = sf->needle[i-1];
+	h_char = sf->haystack[j-1];
+
+	// Convert to lowercase for case-insensitive matching
+	if (!sf->case_sensitive)
+	{
+	    if (vim_isalpha(n_char))
+		n_char = vim_tolower(n_char);
+	    if (vim_isalpha(h_char))
+		h_char = vim_tolower(h_char);
+	}
+
+	sw_debug_log("  Backtrack step: (%d,%d) state=%d score=%d n_char='%c' h_char='%c'\n", i, j, state, current_score, n_char, h_char);
+
+	switch (state)
+	{
+	    case STATE_M:
+		// Record match position
+		if (n_char == h_char)
+		{
+		    if (match_count < SIMD_FUZZY_MAX_MATCHES)
+		    {
+			temp_matches[match_count++] = j - 1;
+			sw_debug_log("    Record match at %d (char: %c)\n", j-1, sf->haystack[j-1]);
+		    }
+		}
+
+		// Move to upper-left diagonal
+		i--;
+		j--;
+		if (i <= 0 || j <= 0)
+		    break;
+
+		// Determine previous state
+		idx_prev = i * cols + j;
+		prev_m = sf->score_matrix_M[idx_prev];
+		prev_x = sf->score_matrix_X[idx_prev];
+		prev_y = sf->score_matrix_Y[idx_prev];
+
+		if (prev_m >= prev_x && prev_m >= prev_y)
+		{
+		    state = STATE_M;
+		    current_score = prev_m;
+		}
+		else if (prev_x >= prev_y)
+		{
+		    state = STATE_X;
+		    current_score = prev_x;
+		}
+		else
+		{
+		    state = STATE_Y;
+		    current_score = prev_y;
+		}
+		break;
+	    case STATE_X:
+		// Move left
+		j--;
+		if (j <= 0)
+		    break;
+
+		// Determine previous state
+		idx_left = i * cols + j;
+		left_m = sf->score_matrix_M[idx_left];
+		left_x = sf->score_matrix_X[idx_left];
+		left_y = sf->score_matrix_Y[idx_left];
+
+		// Recalculate gap cost
+		gap_cost = (sf->score_matrix_X[idx] == left_x - SIMD_FUZZY_GAP_EXTEND_PENALTY)
+		    ? SIMD_FUZZY_GAP_EXTEND_PENALTY
+		    : SIMD_FUZZY_GAP_OPEN_PENALTY + SIMD_FUZZY_GAP_EXTEND_PENALTY;
+
+		if (left_m - gap_cost == sf->score_matrix_X[idx])
+		{
+		    state = STATE_M;
+		    current_score = left_m;
+		}
+		else if (left_x - SIMD_FUZZY_GAP_EXTEND_PENALTY == sf->score_matrix_X[idx])
+		{
+		    state = STATE_X;
+		    current_score = left_x;
+		}
+		else if (left_y - gap_cost == sf->score_matrix_X[idx])
+		{
+		    state = STATE_Y;
+		    current_score = left_y;
+		}
+		break;
+	    case STATE_Y:
+		// Move up
+		i--;
+		if (i <= 0)
+		    break;
+
+		// Determine previous state
+		idx_up = i * cols + j;
+		up_m = sf->score_matrix_M[idx_up];
+		up_x = sf->score_matrix_X[idx_up];
+		up_y = sf->score_matrix_Y[idx_up];
+
+		// Calculate gap cost
+		gap_cost = (sf->score_matrix_Y[idx] == up_y - SIMD_FUZZY_GAP_EXTEND_PENALTY)
+		    ? SIMD_FUZZY_GAP_EXTEND_PENALTY
+		    : SIMD_FUZZY_GAP_OPEN_PENALTY + SIMD_FUZZY_GAP_EXTEND_PENALTY;
+
+		if (up_m - gap_cost == sf->score_matrix_Y[idx])
+		{
+		    state = STATE_M;
+		    current_score = up_m;
+		}
+		else if (up_x - gap_cost == sf->score_matrix_Y[idx])
+		{
+		    state = STATE_X;
+		    current_score = up_x;
+		}
+		else if (up_y - SIMD_FUZZY_GAP_EXTEND_PENALTY == sf->score_matrix_Y[idx])
+		{
+		    state = STATE_Y;
+		    current_score = up_y;
+		}
+		break;
+	}
+    }
+
+    // Store match positions in correct order
+    sw_debug_log("Backtrack complete. Match count: %d\n", match_count);
+    sf->result.match_count = match_count;
+    for (int k = 0; k < match_count; k++)
+    {
+	sf->result.matches[k] = temp_matches[match_count - 1 - k];
+	sw_debug_log("  Final match[%d] at %u (char: %c)\n", k, sf->result.matches[k], sf->haystack[sf->result.matches[k]]);
+    }
+}
+
+    static void
+affine_gap_calculate(
+    simd_fuzzy_T    *sf,
+    int         i,
+    int         j,
+    int         idx,
+    int         idx_prev,
+    int         idx_up,
+    int         idx_left,
+    int         *max_score,
+    int         *max_i,
+    int         *max_j,
+    matrix_state_t  *max_state)
+{
+    int     cols = sf->haystack_len + 1;
+    char_u  n_char = sf->needle[i-1];
+    char_u  h_char = sf->haystack[j-1];
+
+    sw_debug_log("Calculating cell (%d,%d): n_char='%c' h_char='%c'\n", i, j, n_char, h_char);
+
+    // Safe character conversion
+    char_u orig_n_char = n_char;
+    char_u orig_h_char = h_char;
+    if (!sf->case_sensitive)
+    {
+	if (vim_isalpha(n_char))
+	    n_char = vim_tolower(n_char);
+	if (vim_isalpha(h_char))
+	    h_char = vim_tolower(h_char);
+    }
+
+    // 1. Calculate match/mismatch scores
+    int match_score = (n_char == h_char) ? SIMD_FUZZY_MATCH_SCORE : -SIMD_FUZZY_MISMATCH_PENALTY;
+
+    sw_debug_log("  Base match score: %d (%c vs %c)\n", match_score, n_char, h_char);
+
+    // Add position bonus
+    int bonus = simd_fuzzy_bonus_for_position(sf, j-1, i-1);
+    match_score += bonus;
+
+    // Add case match bonus
+    if (!sf->case_sensitive && orig_n_char == orig_h_char)
+    {
+	match_score += SIMD_FUZZY_MATCHING_CASE_BONUS;
+	sw_debug_log("  Matching case bonus +%d\n", SIMD_FUZZY_MATCHING_CASE_BONUS);
+    }
+
+    // 2. Calculate M matrix (match state)
+    int m_prev = max3(
+	    sf->score_matrix_M[idx_prev],
+	    sf->score_matrix_X[idx_prev],
+	    sf->score_matrix_Y[idx_prev]);
+    sf->score_matrix_M[idx] = match_score + m_prev;
+
+    sw_debug_log("  M_prev: %d, M_current: %d\n", m_prev, sf->score_matrix_M[idx]);
+
+    // 3. Calculate X matrix (gaps in X sequence)
+    int x_from_m = sf->score_matrix_M[idx_left] - (SIMD_FUZZY_GAP_OPEN_PENALTY + SIMD_FUZZY_GAP_EXTEND_PENALTY);
+    int x_from_x = sf->score_matrix_X[idx_left] - SIMD_FUZZY_GAP_EXTEND_PENALTY;
+    int x_from_y = sf->score_matrix_Y[idx_left] - (SIMD_FUZZY_GAP_OPEN_PENALTY + SIMD_FUZZY_GAP_EXTEND_PENALTY);
+
+    sf->score_matrix_X[idx] = max3(x_from_m, x_from_x, x_from_y);
+    sw_debug_log("  X scores: from_M=%d, from_X=%d, from_Y=%d, X_current=%d\n", x_from_m, x_from_x, x_from_y, sf->score_matrix_X[idx]);
+
+    // 4. Calculate Y matrix (gaps in Y sequence)
+    int y_from_m = sf->score_matrix_M[idx_up] - (SIMD_FUZZY_GAP_OPEN_PENALTY + SIMD_FUZZY_GAP_EXTEND_PENALTY);
+    int y_from_x = sf->score_matrix_X[idx_up] - (SIMD_FUZZY_GAP_OPEN_PENALTY + SIMD_FUZZY_GAP_EXTEND_PENALTY);
+    int y_from_y = sf->score_matrix_Y[idx_up] - SIMD_FUZZY_GAP_EXTEND_PENALTY;
+
+    sf->score_matrix_Y[idx] = max3(y_from_m, y_from_x, y_from_y);
+    sw_debug_log("  Y scores: from_M=%d, from_X=%d, from_Y=%d, Y_current=%d\n", y_from_m, y_from_x, y_from_y, sf->score_matrix_Y[idx]);
+
+    // Local alignment: scores can't be negative
+    if (sf->score_matrix_M[idx] < 0)
+	sf->score_matrix_M[idx] = 0;
+    if (sf->score_matrix_X[idx] < 0)
+	sf->score_matrix_X[idx] = 0;
+    if (sf->score_matrix_Y[idx] < 0)
+	sf->score_matrix_Y[idx] = 0;
+
+    sw_debug_log("  After clamp: M=%d, X=%d, Y=%d\n", sf->score_matrix_M[idx], sf->score_matrix_X[idx], sf->score_matrix_Y[idx]);
+
+    // Track highest score
+    if (sf->score_matrix_M[idx] > *max_score)
+    {
+	*max_score = sf->score_matrix_M[idx];
+	*max_i = i;
+	*max_j = j;
+	*max_state = STATE_M;
+	sw_debug_log("  New max score: M[%d][%d] = %d\n", i, j, *max_score);
+    }
+    if (sf->score_matrix_X[idx] > *max_score)
+    {
+	*max_score = sf->score_matrix_X[idx];
+	*max_i = i;
+	*max_j = j;
+	*max_state = STATE_X;
+	sw_debug_log("  New max score: X[%d][%d] = %d\n", i, j, *max_score);
+    }
+    if (sf->score_matrix_Y[idx] > *max_score)
+    {
+	*max_score = sf->score_matrix_Y[idx];
+	*max_i = i;
+	*max_j = j;
+	*max_state = STATE_Y;
+	sw_debug_log("  New max score: Y[%d][%d] = %d\n", i, j, *max_score);
+    }
+}
+
+#if defined(PLATFORM_X86) && defined(__SSE2__)
+    static void
+simd_affine_gap_calculate_sse2(
+    simd_fuzzy_T    *sf,
+    int         i,
+    int         j,
+    int         idx,
+    int         idx_prev,
+    int         idx_up,
+    int         idx_left,
+    int         *max_score,
+    int         *max_i,
+    int         *max_j,
+    matrix_state_t  *max_state)
+{
+    int cols = sf->haystack_len + 1;
+    int simd_width = MIN(8, sf->haystack_len - j + 1);
+
+    // Load constants
+    __m128i gap_open_extend = _mm_set1_epi16(SIMD_FUZZY_GAP_OPEN_PENALTY + SIMD_FUZZY_GAP_EXTEND_PENALTY);
+    __m128i gap_extend = _mm_set1_epi16(SIMD_FUZZY_GAP_EXTEND_PENALTY);
+    __m128i min_score = _mm_set1_epi16(SIMD_FUZZY_SCORE_MIN_INT);
+    __m128i zero = _mm_setzero_si128();
+
+    // Prepare needle character
+    char_u n_char = sf->needle[i-1];
+    if (!sf->case_sensitive && vim_isalpha(n_char))
+	n_char = vim_tolower(n_char);
+
+    __m128i needle_vec = _mm_set1_epi8((char)n_char);
+
+    // Load haystack characters
+    char haystack_chars[16] = {0};
+    for (int k = 0; k < simd_width; k++)
+    {
+	char_u ch = sf->haystack[j+k-1];
+	if (!sf->case_sensitive && vim_isalpha(ch))
+	    ch = vim_tolower(ch);
+
+	haystack_chars[k] = (char)ch;
+    }
+    __m128i haystack_vec = _mm_loadu_si128((__m128i*)haystack_chars);
+
+    // Character comparison
+    __m128i cmp_result = _mm_cmpeq_epi8(needle_vec, haystack_vec);
+    __m128i match_mask = _mm_cvtepi8_epi16(cmp_result);
+    __m128i match_scores = _mm_and_si128(match_mask, _mm_set1_epi16(SIMD_FUZZY_MATCH_SCORE));
+    __m128i mismatch_penalties = _mm_andnot_si128(match_mask, _mm_set1_epi16(SIMD_FUZZY_MISMATCH_PENALTY));
+    __m128i base_scores = _mm_sub_epi16(match_scores, mismatch_penalties);
+
+    // Add position bonuses
+    int16_t bonuses_arr[8] = {0};
+    for (int k = 0; k < simd_width; k++)
+	bonuses_arr[k] = simd_fuzzy_bonus_for_position(sf, j+k-1, i-1);
+
+    __m128i bonuses = _mm_loadu_si128((__m128i*)bonuses_arr);
+    base_scores = _mm_add_epi16(base_scores, bonuses);
+
+    // Add case match bonuses
+    if (!sf->case_sensitive)
+    {
+	int16_t case_bonuses_arr[8] = {0};
+	for (int k = 0; k < simd_width; k++)
+	{
+	    if (sf->needle[i-1] == sf->haystack[j+k-1])
+		case_bonuses_arr[k] = SIMD_FUZZY_MATCHING_CASE_BONUS;
+	}
+	__m128i case_bonus = _mm_loadu_si128((__m128i*)case_bonuses_arr);
+	base_scores = _mm_add_epi16(base_scores, case_bonus);
+    }
+
+    // Load previous state scores
+    __m128i m_prev = _mm_loadu_si128((__m128i*)&sf->score_matrix_M[idx_prev]);
+    __m128i x_prev = _mm_loadu_si128((__m128i*)&sf->score_matrix_X[idx_prev]);
+    __m128i y_prev = _mm_loadu_si128((__m128i*)&sf->score_matrix_Y[idx_prev]);
+
+    // Calculate M matrix: M[i,j] = match_score + max(M[i-1,j-1], X[i-1,j-1], Y[i-1,j-1])
+    __m128i max_prev = _mm_max_epi16( _mm_max_epi16(m_prev, x_prev), y_prev);
+    __m128i m_current = _mm_add_epi16(base_scores, max_prev);
+
+    // Calculate X matrix: X[i,j] = max(
+    //   M[i,j-1] - (gap_open + gap_extend),
+    //   X[i,j-1] - gap_extend,
+    //   Y[i,j-1] - (gap_open + gap_extend)
+    __m128i m_left = _mm_loadu_si128((__m128i*)&sf->score_matrix_M[idx_left]);
+    __m128i x_left = _mm_loadu_si128((__m128i*)&sf->score_matrix_X[idx_left]);
+    __m128i y_left = _mm_loadu_si128((__m128i*)&sf->score_matrix_Y[idx_left]);
+
+    __m128i x_candidate1 = _mm_sub_epi16(m_left, gap_open_extend);
+    __m128i x_candidate2 = _mm_sub_epi16(x_left, gap_extend);
+    __m128i x_candidate3 = _mm_sub_epi16(y_left, gap_open_extend);
+
+    __m128i x_current = _mm_max_epi16( _mm_max_epi16(x_candidate1, x_candidate2), x_candidate3);
+
+    // Calculate Y matrix: Y[i,j] = max(
+    //   M[i-1,j] - (gap_open + gap_extend),
+    //   X[i-1,j] - (gap_open + gap_extend),
+    //   Y[i-1,j] - gap_extend)
+    __m128i m_up = _mm_loadu_si128((__m128i*)&sf->score_matrix_M[idx_up]);
+    __m128i x_up = _mm_loadu_si128((__m128i*)&sf->score_matrix_X[idx_up]);
+    __m128i y_up = _mm_loadu_si128((__m128i*)&sf->score_matrix_Y[idx_up]);
+
+    __m128i y_candidate1 = _mm_sub_epi16(m_up, gap_open_extend);
+    __m128i y_candidate2 = _mm_sub_epi16(x_up, gap_open_extend);
+    __m128i y_candidate3 = _mm_sub_epi16(y_up, gap_extend);
+
+    __m128i y_current = _mm_max_epi16( _mm_max_epi16(y_candidate1, y_candidate2), y_candidate3);
+
+    // Apply non-negative constraint
+    m_current = _mm_max_epi16(m_current, zero);
+    x_current = _mm_max_epi16(x_current, zero);
+    y_current = _mm_max_epi16(y_current, zero);
+
+    // Store results
+    alignas(16) int16_t m_scores[8];
+    alignas(16) int16_t x_scores[8];
+    alignas(16) int16_t y_scores[8];
+
+    _mm_store_si128((__m128i*)m_scores, m_current);
+    _mm_store_si128((__m128i*)x_scores, x_current);
+    _mm_store_si128((__m128i*)y_scores, y_current);
+
+    // Only update valid positions
+    for (int k = 0; k < simd_width; k++)
+    {
+	int pos = idx + k;
+	sf->score_matrix_M[pos] = m_scores[k];
+	sf->score_matrix_X[pos] = x_scores[k];
+	sf->score_matrix_Y[pos] = y_scores[k];
+
+	// Track highest score
+	if (m_scores[k] > *max_score)
+	{
+	    *max_score = m_scores[k];
+	    *max_i = i;
+	    *max_j = j + k;
+	    *max_state = STATE_M;
+	}
+	if (x_scores[k] > *max_score)
+	{
+	    *max_score = x_scores[k];
+	    *max_i = i;
+	    *max_j = j + k;
+	    *max_state = STATE_X;
+	}
+	if (y_scores[k] > *max_score)
+	{
+	    *max_score = y_scores[k];
+	    *max_i = i;
+	    *max_j = j + k;
+	    *max_state = STATE_Y;
+	}
+    }
+}
+#elif defined(PLATFORM_ARM_NEON) && (defined(__ARM_NEON) || defined(__ARM_NEON__))
+    static void
+simd_affine_gap_calculate_neon(
+    simd_fuzzy_T    *sf,
+    int         i,
+    int         j,
+    int         idx,
+    int         idx_prev,
+    int         idx_up,
+    int         idx_left,
+    int         *max_score,
+    int         *max_i,
+    int         *max_j,
+    matrix_state_t  *max_state)
+{
+    int cols = sf->haystack_len + 1;
+    int simd_width = MIN(8, sf->haystack_len - j + 1);
+
+    // Load constants
+    int16x8_t gap_open_extend = vdupq_n_s16(SIMD_FUZZY_GAP_OPEN_PENALTY + SIMD_FUZZY_GAP_EXTEND_PENALTY);
+    int16x8_t gap_extend = vdupq_n_s16(SIMD_FUZZY_GAP_EXTEND_PENALTY);
+    int16x8_t min_score = vdupq_n_s16(SIMD_FUZZY_SCORE_MIN_INT);
+    int16x8_t zero = vdupq_n_s16(0);
+
+    // Prepare needle character
+    char_u n_char = sf->needle[i-1];
+    if (!sf->case_sensitive && vim_isalpha(n_char))
+	n_char = vim_tolower(n_char);
+
+    uint8x16_t needle_vec = vdupq_n_u8((uint8_t)n_char);
+
+    // Load haystack characters
+    uint8_t haystack_chars[16] = {0};
+    for (int k = 0; k < simd_width; k++)
+    {
+	char_u ch = sf->haystack[j+k-1];
+	if (!sf->case_sensitive && vim_isalpha(ch))
+	    ch = vim_tolower(ch);
+
+	haystack_chars[k] = (uint8_t)ch;
+    }
+    uint8x16_t haystack_vec = vld1q_u8(haystack_chars);
+
+    // Character comparison
+    uint8x16_t cmp_result = vceqq_u8(needle_vec, haystack_vec);
+    uint16x8_t match_mask = vmovl_u8(vget_low_u8(cmp_result));
+    int16x8_t match_scores = vandq_s16(vreinterpretq_s16_u16(match_mask),
+				      vdupq_n_s16(SIMD_FUZZY_MATCH_SCORE));
+    int16x8_t mismatch_penalties = vandq_s16(vmvnq_s16(vreinterpretq_s16_u16(match_mask)),
+					   vdupq_n_s16(SIMD_FUZZY_MISMATCH_PENALTY));
+    int16x8_t base_scores = vsubq_s16(match_scores, mismatch_penalties);
+
+    // Add position bonuses
+    int16_t bonuses_arr[8] = {0};
+    for (int k = 0; k < simd_width; k++)
+	bonuses_arr[k] = simd_fuzzy_bonus_for_position(sf, j+k-1, i-1);
+
+    int16x8_t bonuses = vld1q_s16(bonuses_arr);
+    base_scores = vaddq_s16(base_scores, bonuses);
+
+    // Add case match bonuses
+    if (!sf->case_sensitive)
+    {
+	int16_t case_bonuses_arr[8] = {0};
+	for (int k = 0; k < simd_width; k++)
+	{
+	    if (sf->needle[i-1] == sf->haystack[j+k-1])
+		case_bonuses_arr[k] = SIMD_FUZZY_MATCHING_CASE_BONUS;
+	}
+	int16x8_t case_bonus = vld1q_s16(case_bonuses_arr);
+	base_scores = vaddq_s16(base_scores, case_bonus);
+    }
+
+    // Load previous state scores
+    int16x8_t m_prev = vld1q_s16(&sf->score_matrix_M[idx_prev]);
+    int16x8_t x_prev = vld1q_s16(&sf->score_matrix_X[idx_prev]);
+    int16x8_t y_prev = vld1q_s16(&sf->score_matrix_Y[idx_prev]);
+
+    // Calculate M matrix
+    int16x8_t max_prev = vmaxq_s16( vmaxq_s16(m_prev, x_prev), y_prev);
+    int16x8_t m_current = vaddq_s16(base_scores, max_prev);
+
+    // Calculate X matrix
+    int16x8_t m_left = vld1q_s16(&sf->score_matrix_M[idx_left]);
+    int16x8_t x_left = vld1q_s16(&sf->score_matrix_X[idx_left]);
+    int16x8_t y_left = vld1q_s16(&sf->score_matrix_Y[idx_left]);
+
+    int16x8_t x_candidate1 = vsubq_s16(m_left, gap_open_extend);
+    int16x8_t x_candidate2 = vsubq_s16(x_left, gap_extend);
+    int16x8_t x_candidate3 = vsubq_s16(y_left, gap_open_extend);
+
+    int16x8_t x_current = vmaxq_s16( vmaxq_s16(x_candidate1, x_candidate2), x_candidate3);
+
+    // Calculate Y matrix
+    int16x8_t m_up = vld1q_s16(&sf->score_matrix_M[idx_up]);
+    int16x8_t x_up = vld1q_s16(&sf->score_matrix_X[idx_up]);
+    int16x8_t y_up = vld1q_s16(&sf->score_matrix_Y[idx_up]);
+
+    int16x8_t y_candidate1 = vsubq_s16(m_up, gap_open_extend);
+    int16x8_t y_candidate2 = vsubq_s16(x_up, gap_open_extend);
+    int16x8_t y_candidate3 = vsubq_s16(y_up, gap_extend);
+
+    int16x8_t y_current = vmaxq_s16( vmaxq_s16(y_candidate1, y_candidate2), y_candidate3);
+
+    // Apply non-negative constraint
+    m_current = vmaxq_s16(m_current, zero);
+    x_current = vmaxq_s16(x_current, zero);
+    y_current = vmaxq_s16(y_current, zero);
+
+    // Store results
+    int16_t m_scores[8];
+    int16_t x_scores[8];
+    int16_t y_scores[8];
+
+    vst1q_s16(m_scores, m_current);
+    vst1q_s16(x_scores, x_current);
+    vst1q_s16(y_scores, y_current);
+
+    // Only update valid positions
+    for (int k = 0; k < simd_width; k++)
+    {
+	int pos = idx + k;
+	sf->score_matrix_M[pos] = m_scores[k];
+	sf->score_matrix_X[pos] = x_scores[k];
+	sf->score_matrix_Y[pos] = y_scores[k];
+
+	// Track highest score
+	if (m_scores[k] > *max_score)
+	{
+	    *max_score = m_scores[k];
+	    *max_i = i;
+	    *max_j = j + k;
+	    *max_state = STATE_M;
+	}
+	if (x_scores[k] > *max_score)
+	{
+	    *max_score = x_scores[k];
+	    *max_i = i;
+	    *max_j = j + k;
+	    *max_state = STATE_X;
+	}
+	if (y_scores[k] > *max_score)
+	{
+	    *max_score = y_scores[k];
+	    *max_i = i;
+	    *max_j = j + k;
+	    *max_state = STATE_Y;
+	}
+    }
+}
+#endif
+
+/*
+ * Process diagonal band - using SIMD or scalar
+ */
+    static void
+process_diagonal_strip(simd_fuzzy_T *sf, int diag, int *max_score, int *max_i, int *max_j, matrix_state_t *max_state)
+{
+    int needle_len = sf->needle_len;
+    int haystack_len = sf->haystack_len;
+    int cols = haystack_len + 1;
+
+    sw_debug_log("Processing diagonal %d\n", diag);
+
+    int start_i = MAX(1, diag - haystack_len + 1);
+    int end_i = MIN(diag, needle_len);
+
+    sw_debug_log("  Start_i: %d, End_i: %d\n", start_i, end_i);
+
+    for (int i = start_i; i <= end_i; i++)
+    {
+	int j = diag - i + 1;
+	if (j < 1 || j > haystack_len)
+	{
+	    sw_debug_log("  Skipping i=%d, j=%d (out of bounds)\n", i, j);
+	    continue;
+	}
+
+	int idx = i * cols + j;
+	int idx_prev = (i-1) * cols + (j-1);
+	int idx_up = (i-1) * cols + j;
+	int idx_left = i * cols + (j-1);
+
+	sw_debug_log("  Cell (%d,%d): idx=%d, idx_prev=%d, idx_up=%d, idx_left=%d\n", i, j, idx, idx_prev, idx_up, idx_left);
+
+	// Try to process with SIMD
+#if defined(PLATFORM_X86) && defined(__SSE2__)
+	if (haystack_len - j + 1 >= 4)
+	{
+	    sw_debug_log("  Using SSE2 SIMD for i=%d, j=%d\n", i, j);
+	    simd_affine_gap_calculate_sse2(sf, i, j, idx, idx_prev, idx_up, idx_left,
+					  max_score, max_i, max_j, max_state);
+	    int simd_width = MIN(8, haystack_len - j + 1);
+	    sw_debug_log("  SIMD processed %d elements, next i=%d\n", simd_width, i+1);
+	    continue;
+	}
+#elif defined(PLATFORM_ARM_NEON) && (defined(__ARM_NEON) || defined(__ARM_NEON__))
+	if (haystack_len - j + 1 >= 4)
+	{
+	    sw_debug_log("  Using NEON SIMD for i=%d, j=%d\n", i, j);
+	    simd_affine_gap_calculate_neon(sf, i, j, idx, idx_prev, idx_up, idx_left,
+					  max_score, max_i, max_j, max_state);
+	    int simd_width = MIN(8, haystack_len - j + 1);
+	    sw_debug_log("  SIMD processed %d elements, next i=%d\n", simd_width, i+1);
+	    continue;
+	}
+#endif
+
+	// Scalar fallback
+	sw_debug_log("  Using scalar calculation for i=%d, j=%d\n", i, j);
+	affine_gap_calculate(sf, i, j, idx, idx_prev, idx_up, idx_left, max_score, max_i, max_j, max_state);
+    }
+}
+
+/*
+ * Core affine gap Smith-Waterman implementation with SIMD optimization
+ */
+    static int
+simd_fuzzy_smith_waterman(simd_fuzzy_T *sf)
+{
+    sw_debug_log("\n==== STARTING SMITH-WATERMAN ====\n");
+    sw_debug_log("Needle: %.*s (%d)\n", sf->needle_len, sf->needle, sf->needle_len);
+    sw_debug_log("Haystack: %.*s (%d)\n", sf->haystack_len, sf->haystack, sf->haystack_len);
+    sw_debug_log("Case sensitive: %d\n", sf->case_sensitive);
+
+    int i, j;
+    int needle_len = sf->needle_len;
+    int haystack_len = sf->haystack_len;
+    int cols = haystack_len + 1;
+    int matrix_size = (needle_len + 1) * cols;
+
+    // Allocate matrices
+    sf->score_matrix_M = (int16_t *)alloc_clear(matrix_size * sizeof(int16_t));
+    sf->score_matrix_X = (int16_t *)alloc_clear(matrix_size * sizeof(int16_t));
+    sf->score_matrix_Y = (int16_t *)alloc_clear(matrix_size * sizeof(int16_t));
+
+    if (sf->score_matrix_M == NULL || sf->score_matrix_X == NULL || sf->score_matrix_Y == NULL)
+    {
+	vim_free(sf->score_matrix_M);
+	vim_free(sf->score_matrix_X);
+	vim_free(sf->score_matrix_Y);
+	return SIMD_FUZZY_SCORE_MIN;
+    }
+
+    // Initialize boundary conditions
+    for (j = 0; j <= haystack_len; j++)
+	sf->score_matrix_M[j] = 0; // First row
+
+    for (i = 0; i <= needle_len; i++)
+	sf->score_matrix_M[i * cols] = 0; // First column
+
+    int max_score = 0;
+    int max_i = 0, max_j = 0;
+    matrix_state_t max_state = STATE_M;
+
+    // Process diagonals in strip fashion
+    for (int diag = 1; diag <= needle_len + haystack_len - 1; diag++)
+    {
+	sw_debug_log("\nProcessing diagonal %d\n", diag);
+	process_diagonal_strip(sf, diag, &max_score, &max_i, &max_j, &max_state);
+    }
+
+    // Apply exact match bonus
+    if (needle_len == haystack_len && STRNCMP(sf->needle, sf->haystack, needle_len) == 0)
+    {
+	max_score += SIMD_FUZZY_EXACT_MATCH_BONUS;
+	sw_debug_log("Exact match bonus +%d applied\n", SIMD_FUZZY_EXACT_MATCH_BONUS);
+    }
+
+    sw_debug_log("\nMax score found: %d at (%d,%d) state=%d\n", max_score, max_i, max_j, max_state);
+
+    // Backtrack to find match positions
+    if (max_score > 0)
+    {
+	sw_debug_log("Starting backtrack...\n");
+	simd_fuzzy_backtrack_alignment(sf, max_i, max_j, max_state);
+	sf->result.score = max_score;
+
+	sw_debug_log("Backtrack complete. Match count: %d\n", sf->result.match_count);
+
+	// Verify that all needle characters are matched
+	if (sf->result.match_count < needle_len)
+	{
+	    sw_debug_log("WARNING: Not all characters matched! (%d < %d)\n", sf->result.match_count, needle_len);
+	    max_score = 0;
+	    sf->result.match_count = 0;
+	}
+    }
+    else
+    {
+	sw_debug_log("No positive score found. Skipping backtrack.\n");
+    }
+
+    // Check if all characters are matched
+#if SIMD_FUZZY_REQUIRE_ALL_CHARS
+    if (sf->result.match_count < needle_len)
+    {
+	sw_debug_log("Require all chars: match count %d < needle len %d\n",
+		      sf->result.match_count, needle_len);
+	max_score = 0;
+	sf->result.match_count = 0;
+    }
+#endif
+
+    // Clean up resources
+    vim_free(sf->score_matrix_M);
+    vim_free(sf->score_matrix_X);
+    vim_free(sf->score_matrix_Y);
+
+    sw_debug_log("Final score: %d\n\n", max_score);
+    return max_score;
+}
+
+    static int
+simd_fuzzy_match(
+    char_u      *str,           // haystack string to search in
+    char_u      *pat_arg,       // needle pattern to search for
+    int         matchseq,       // if TRUE, match sequence of words
+    int         *outScore,      // output: total match score
+    unsigned int    *matches,      // output: array of match positions
+    int         maxMatches)     // maximum number of matches to return
+{
+    sw_debug_log("\n==== FUZZY MATCH STARTED ====\n");
+    sw_debug_log("Haystack: %s\n", str);
+    sw_debug_log("Pattern: %s\n", pat_arg);
+    sw_debug_log("Matchseq: %d, maxMatches: %d\n", matchseq, maxMatches);
+
+    if (str == NULL || pat_arg == NULL || *pat_arg == NUL)
+    {
+	sw_debug_log("Invalid input parameters\n");
+	*outScore = SIMD_FUZZY_SCORE_MIN;
+	return 0;
+    }
+
+    simd_fuzzy_T sf;
+    char_u *pat_copy = NULL;
+    int result = FALSE;
+    int total_score = 0;
+    int total_matches = 0;
+
+    // Initialize SIMD fuzzy context
+    CLEAR_FIELD(sf);
+    sf.haystack = str;
+    sf.haystack_len = (int)STRLEN(str);
+    sf.case_sensitive = FALSE;  // Follow vim's default behavior
+
+    // Process pattern (supports multi-word patterns separated by whitespace)
+    pat_copy = vim_strsave(pat_arg);
+    if (pat_copy == NULL)
+    {
+	sw_debug_log("Failed to copy pattern\n");
+	*outScore = SIMD_FUZZY_SCORE_MIN;
+	return 0;
+    }
+
+    char_u *pat = pat_copy;
+    char_u *p = pat;
+
+    // Process each word in the pattern
+    int word_count = 0;
+    while (TRUE)
+    {
+	// Skip leading whitespace
+	p = skipwhite(p);
+	if (*p == NUL)
+	    break;
+
+	// Extract current word
+	pat = p;
+	while (*p != NUL && !VIM_ISWHITE(PTR2CHAR(p)))
+	{
+	    if (has_mbyte)
+		MB_PTR_ADV(p);
+	    else
+		++p;
+	}
+
+	int is_last = (*p == NUL);
+	if (!is_last)
+	    *p = NUL; // Temporarily terminate
+
+	word_count++;
+	sw_debug_log("\nProcessing word #%d: '%s'\n", word_count, pat);
+
+	// Set up SIMD fuzzy context for this word
+	sf.needle = pat;
+	sf.needle_len = (int)STRLEN(pat);
+	CLEAR_FIELD(sf.result);
+
+	// Run SIMD-optimized Smith-Waterman algorithm
+	int score = simd_fuzzy_smith_waterman(&sf);
+
+	if (score <= 0)
+	{
+	    // This word had no valid matches - fail entire pattern
+	    sw_debug_log("Word '%s' not found. Aborting.\n", pat);
+	    result = FALSE;
+	    if (!is_last)
+		*p = ' '; // Restore space
+	    break;
+	}
+
+	sw_debug_log("Word '%s' matched with score %d\n", pat, score);
+
+	// Accumulate results from this word
+	total_score += score;
+	for (int i = 0; i < sf.result.match_count && total_matches < maxMatches; i++)
+	{
+	    matches[total_matches++] = sf.result.matches[i];
+	    sw_debug_log("  Match position: %u (char: %c)\n", sf.result.matches[i], str[sf.result.matches[i]]);
+	}
+	result = TRUE;
+	if (is_last)
+	    break;
+
+	// Restore space and move to next word
+	*p = ' ';
+	p++;
+
+	if (matchseq)
+	{
+	    // For sequential matching, continue to next word
+	    continue;
+	}
+	else
+	{
+	    // For non-sequential, we only match the first word
+	    break;
+	}
+    }
+
+    vim_free(pat_copy);
+
+    if (result)
+    {
+	sw_debug_log("Total matches: %d, total score: %d\n", total_matches, total_score);
+	*outScore = total_score;
+	return total_matches;
+    }
+    else
+    {
+	sw_debug_log("No match found\n");
+	*outScore = SIMD_FUZZY_SCORE_MIN;
+	return 0;
+    }
+}
+
+    static int
+simd_fuzzy_match_str(char_u *str, char_u *pat)
+{
+    int score = 0;
+    unsigned int matches[SIMD_FUZZY_MAX_MATCHES];
+    int match_count = simd_fuzzy_match(str, pat, TRUE, &score, matches, SIMD_FUZZY_MAX_MATCHES);
+    // Return score only if matches were found
+    return match_count > 0 ? score : 0;
+}
+#endif
