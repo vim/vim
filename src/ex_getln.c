@@ -1822,6 +1822,8 @@ getcmdline_int(
 	int end_wildmenu;
 	int prev_cmdpos = ccline.cmdpos;
 
+	VIM_CLEAR(prev_cmdbuff);
+
 	redir_off = TRUE;	// Don't redirect the typed command.
 				// Repeated, because a ":redir" inside
 				// completion may switch it on.
@@ -2574,10 +2576,7 @@ cmdline_not_changed:
 
 #ifdef FEAT_SEARCH_EXTRA
 	if (!is_state.incsearch_postponed)
-	{
-	    VIM_CLEAR(prev_cmdbuff);
 	    continue;
-	}
 #endif
 
 cmdline_changed:
@@ -2594,8 +2593,6 @@ cmdline_changed:
 		    || (prev_cmdbuff != NULL && STRNCMP(prev_cmdbuff,
 			    ccline.cmdbuff, prev_cmdpos) != 0)))
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
-
-	VIM_CLEAR(prev_cmdbuff);
 
 	// Trigger CursorMovedC autocommands.
 	if (ccline.cmdpos != prev_cmdpos)
