@@ -1633,7 +1633,6 @@ getcmdline_int(
     int		res;
     int		save_msg_scroll = msg_scroll;
     int		save_State = State;	// remember State when called
-    int		prev_cmdpos = -1;
     int		some_key_typed = FALSE;	// one of the keys was typed
     // mouse drag and release events are ignored, unless they are
     // preceded with a mouse down event
@@ -1649,6 +1648,7 @@ getcmdline_int(
     int		cmdline_type;
     int		wild_type = 0;
     int		event_cmdlineleavepre_triggered = FALSE;
+    char_u	*prev_cmdbuff = NULL;
 
     // one recursion level deeper
     ++depth;
@@ -1820,6 +1820,7 @@ getcmdline_int(
     {
 	int trigger_cmdlinechanged = TRUE;
 	int end_wildmenu;
+	int prev_cmdpos = ccline.cmdpos;
 
 	redir_off = TRUE;	// Don't redirect the typed command.
 				// Repeated, because a ":redir" inside
@@ -1835,6 +1836,13 @@ getcmdline_int(
 
 	// Trigger SafeState if nothing is pending.
 	may_trigger_safestate(xpc.xp_numfiles <= 0);
+
+	if (ccline.cmdbuff != NULL)
+	{
+	    prev_cmdbuff = vim_strnsave(ccline.cmdbuff, ccline.cmdpos);
+	    if (prev_cmdbuff == NULL)
+		goto returncmd;
+	}
 
 	// Get a character.  Ignore K_IGNORE and K_NOP, they should not do
 	// anything, such as stop completion.
@@ -2566,7 +2574,10 @@ cmdline_not_changed:
 
 #ifdef FEAT_SEARCH_EXTRA
 	if (!is_state.incsearch_postponed)
+	{
+	    VIM_CLEAR(prev_cmdbuff);
 	    continue;
+	}
 #endif
 
 cmdline_changed:
@@ -2578,15 +2589,17 @@ cmdline_changed:
 	    may_do_incsearch_highlighting(firstc, count, &is_state);
 #endif
 	// Trigger CmdlineChanged autocommands.
-	if (trigger_cmdlinechanged)
+	if (trigger_cmdlinechanged
+		&& (ccline.cmdpos != prev_cmdpos
+		    || (prev_cmdbuff != NULL && STRNCMP(prev_cmdbuff,
+			    ccline.cmdbuff, prev_cmdpos) != 0)))
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+
+	VIM_CLEAR(prev_cmdbuff);
 
 	// Trigger CursorMovedC autocommands.
 	if (ccline.cmdpos != prev_cmdpos)
-	{
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CURSORMOVEDC);
-	    prev_cmdpos = ccline.cmdpos;
-	}
 
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl
@@ -2695,6 +2708,8 @@ theend:
 	    restore_cmdline(&save_ccline);
 	else
 	    ccline.cmdbuff = NULL;
+
+	vim_free(prev_cmdbuff);
 	return p;
     }
 }
