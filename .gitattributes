@@ -1,11 +1,25 @@
 src/testdir/test42.in diff
 
-# vim.pot may change just by incrementing a patch number
-# so ignore the following differences:
+# `vim.pot` is updated every time any of the *.c files are modified.  And as it
+# contains line numbers for strings from *.c files, inserting a line into a
+# single .c file may cause many lines in the `vim.pot` file to be updated.
+#
+# This generates a lot of "noise" in the diffs.  And especially considering that
+# `vim.pot` is a generated file, looking at changes in this file is not useful.
+#
+# By marking it as binary we tell the git machinery that it should not be
+# presented to the user in patches, use "git diff --text" to override
+src/po/vim.pot -diff
+
+# Although vim.pot has been marked as binary, you may want to check the textual differences
+# using git --text but still want to ignore some noisy output like:
 # - POT-Creation Date
 # - comments pointing to the message source location in
 #   *.c/*.h/*.vim/*.cpp/*.in/*.xs files followed by line numbers
-# set this up using:
+# Note: location comments should be no longer part of vim.pot, since commit 2844765e903214490e1
+# which add the --no-location argument for xgettext to no longer ouput such comments
+#
+# To ignore certain changes, setup a custom textconv filter using:
 # git config diff.ignore_vim_pot.textconv "grep -Ev '^.(POT-Creation-Date:|.*\\.([ch]|vim|in|xs|cpp):).*$'"
 src/po/vim.pot diff=ignore_vim_pot
 
