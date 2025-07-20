@@ -330,18 +330,21 @@ required.
 
 
 C COMPILER					*assumptions-C-compiler*
-						*ANSI-C* *C89* *C99*
+						*ANSI-C* *C89* *C90* *C95* *C99*
 
-Vim requires a mostly C99 compliant C compiler.  Because not all maintained compilers fully implement C99, use of certain features is forbidden.  These restrictions will be adjusted over time.
+Vim strives for maximum portability (see |design-multi-platform|) and must
+still build with Compaq C V6.4-005 on OpenVMS VAX V7.3.
 
-Features not to be used ~
+Therefore, the latest ISO C standard we follow is:
 
-These C99 features are not to be used, because MSVC 2015 (in Vim CI, extended
-support until October 14, 2025) does not support them:
+	`C95` (ISO/IEC 9899:1990/AMD1:1995)
 
-	– Variable Length Arrays;
-	– `_Complex`;
-	– Designated Initializers.
+In addition, the following two `C99` features are explicitly allowed:
+	– `//` comments, as required by |style-comments|;
+	– the `_Bool` type.
+
+Platform-specific code may use any newer compiler features supported on
+that platform.
 
 
 SIZE OF VARIABLES				*assumptions-variables*
