@@ -268,7 +268,8 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	@ cat ./vim_to_js >> ./allfiles
 	# Create vim.pot.
 	$(XGETTEXT) --default-domain=$(PACKAGE) --output=$(PACKAGE).pot \
-		--add-comments $(XGETTEXT_KEYWORDS) --files-from=./allfiles
+		--add-comments $(XGETTEXT_KEYWORDS) --files-from=./allfiles \
+		--no-location
 	# Fix Vim scripts names, so that "gf" works.
 	$(VIMPROG) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
