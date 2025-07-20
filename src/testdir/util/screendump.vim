@@ -46,8 +46,8 @@ enddef
 " Returns non-zero when verification fails.
 func VerifyScreenDump(buf, filename, options, ...)
   if has('gui_running') && exists("g:check_screendump_called") && g:check_screendump_called == v:false
-      echoerr "VerifyScreenDump() called from a test that lacks a CheckScreendump guard."
-      return 1
+    echoerr "VerifyScreenDump() called from a test that lacks a CheckScreendump guard."
+    return 1
   endif
   let reference = 'dumps/' . a:filename . '.dump'
   let filter = 'dumps/' . a:filename . '.vim'
@@ -66,34 +66,30 @@ func VerifyScreenDump(buf, filename, options, ...)
   " text and attributes only from the internal buffer.
   redraw
 
-  if filereadable(reference)
-    let refdump = ReadAndFilter(reference, filter)
-  else
-    " Must be a new screendump, always fail
-    let refdump = []
-  endif
-
   let did_mkdir = 0
   if !isdirectory('failed')
     let did_mkdir = 1
     call mkdir('failed')
   endif
 
+  if !filereadable(reference)
+    " Leave a bit of time for updating the original window while we spin wait.
+    sleep 10m
+    call delete(testfile)
+    call term_dumpwrite(a:buf, testfile, a:options)
+    call assert_report('See new dump file: call term_dumpload("testdir/' .. testfile .. '")')
+    " No point in retrying.
+    let g:run_nr = 10
+    return 1
+  endif
+
+  let refdump = ReadAndFilter(reference, filter)
   let i = 0
   while 1
-    " leave a bit of time for updating the original window while we spin wait.
+    " Leave a bit of time for updating the original window while we spin wait.
     sleep 1m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
-
-    if refdump->empty()
-      let msg = 'See new dump file: call term_dumpload("testdir/' .. testfile .. '")'
-      call assert_report(msg)
-      " no point in retrying
-      let g:run_nr = 10
-      return 1
-    endif
-
     let testdump = ReadAndFilter(testfile, filter)
     if refdump == testdump
       call delete(testfile)
@@ -137,3 +133,5 @@ func VerifyScreenDump(buf, filename, options, ...)
   endwhile
   return 0
 endfunc
+
+" vim:sw=2:ts=8:noet:
