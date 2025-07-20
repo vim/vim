@@ -204,6 +204,27 @@ function Test_tabpanel_drawing()
   call StopVimInTerminal(buf)
 endfunc
 
+function Test_tabpanel_drawing_2()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set tabpanelopt=align:right,vert
+    call setbufline(bufnr(), 1, ['', 'aaa'])
+  END
+  call writefile(lines, 'XTest_tabpanel_drawing_2', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_drawing_2', {'rows': 10, 'cols': 78})
+  call term_sendkeys(buf, "ggo")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_2_0', {})
+
+  call term_sendkeys(buf, "\<Esc>u:set tabpanelopt+=align:left\<CR>")
+  call term_sendkeys(buf, "ggo")
+  call VerifyScreenDump(buf, 'Test_tabpanel_drawing_2_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 function Test_tabpanel_drawing_with_popupwin()
   CheckScreendump
 
