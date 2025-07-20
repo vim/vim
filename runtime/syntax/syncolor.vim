@@ -62,6 +62,9 @@ else
 endif
 SynColor Error		term=reverse cterm=NONE ctermfg=White ctermbg=Red gui=NONE guifg=White guibg=Red
 SynColor Todo		term=standout cterm=NONE ctermfg=Black ctermbg=Yellow gui=NONE guifg=Blue guibg=Yellow
+SynColor Bold		term=bold cterm=bold ctermfg=NONE ctermbg=NONE gui=bold guifg=NONE guibg=NONE
+SynColor Italic		term=italic cterm=italic ctermfg=NONE ctermbg=NONE gui=italic guifg=NONE guibg=NONE
+SynColor BoldItalic	term=bold,italic cterm=bold,italic ctermfg=NONE ctermbg=NONE gui=bold,italic guifg=NONE guibg=NONE
 
 " Common groups that link to default highlighting.
 " You can specify other highlighting easily.

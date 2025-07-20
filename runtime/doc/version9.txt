@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 16
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41639,6 +41639,9 @@ Other new features ~
   the |vim-script-library| and decoupled from |netrw|.
 
 - The new digraph "APPROACHES THE LIMIT" using ".=" has been added.
+
+- Add the new default highlighting groups "Bold", "Italic" and "BoldItalic"
+  for use in syntax scripts.
 
 							*changed-9.2*
 Changed~
