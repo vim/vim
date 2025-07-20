@@ -76,6 +76,9 @@ version with GUI tries to determine if it was started from the Tracker instead
 of the Terminal, and if so, uses the GUI anyway.  However, the current detection
 scheme is fooled if you use the command "vim - </dev/null".
 
+Toggling between normal managed window and fullscreen mode can be done by
+pressing <Alt-Enter>.
+
 Stuff that does not work yet:
 
 - Mouse up events are not generated when outside the window.  You can notice
