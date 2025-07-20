@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 16
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3006,7 +3006,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If some of the {address} do not resolve to a line in each buffer (e.g.
 	a pattern search that does not match anything), none of the anchors
 	will be used.
-
 
 						*'dex'* *'diffexpr'*
 'diffexpr' 'dex'	string	(default "")
