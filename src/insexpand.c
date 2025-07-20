@@ -5947,7 +5947,7 @@ ins_compl_next(
  * collecting (set compl_time_slice_expired), and halve the timeout.
  */
     static void
-check_elapsed_time()
+check_elapsed_time(void)
 {
 #ifdef ELAPSED_FUNC
     if (cpt_sources_array == NULL)
