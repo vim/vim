@@ -9,12 +9,12 @@
 #endif
 #endif
 
-#include <decc$types.h>         /* Required early for large-file support. */
+#include <decc$types.h>             // Required early for large-file support
 
 #define CASE_INSENSITIVE_FILENAME   // Open VMS is case insensitive
-#define SPACE_IN_FILENAME	    // There could be space between user and passwd
+#define SPACE_IN_FILENAME           // There could be space between user and passwd
 #define FNAME_ILLEGAL "|*#?%"       // Illegal characters in a file name
-#define BINARY_FILE_IO		    // Use binary fileio
+#define BINARY_FILE_IO              // Use binary fileio
 #define USE_GETCWD
 #define USE_SYSTEM
 #define XPMATTRIBUTES_TYPE XpmAttributes
@@ -224,7 +224,7 @@
 
 // GUI support defines
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK)
-#define X_INCLUDE_GRP_H		// To use getgrgid
+#define X_INCLUDE_GRP_H  // To use getgrgid
 #define XUSE_MTSAFE_API
 #define HAVE_X11
 #define WANT_X11

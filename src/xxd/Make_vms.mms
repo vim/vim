@@ -1,19 +1,40 @@
 # VMS MM[KS] makefile for XXD
 # tested with MMK and MMS as well.
 #
-# Maintained by Zoltan Arpadffy <arpadffy@polarhome.com>
+# Maintained by Zoltan Arpadffy <zoltan.arpadffy@gmail.com>
 #               2025-05-24  Steven M. Schweda <sms@antinode.info>
 #
 ######################################################################
+#
+# Edit the lines in the Configuration section below to select.
+#
+# To build: use the following command line:
+#
+#	mms/descrip=Make_vms.mms
+#	  or if you use mmk
+#	mmk/descrip=Make_vms.mms
+#
+# To cleanup: mms/descrip=Make_vms.mms clean 
+#
+######################################################################
+# Configuration section.
+######################################################################
+# Uncomment if want a debug version. Resulting executable is DVIM.EXE
+######################################################################
+# DEBUG = YES
+
+######################################################################
+# End of configuration section.
+#
+# Please, do not change anything below without programming experience.
+######################################################################
 
 # Define old MMK architecture macros when using MMS.
 #
 ######################################################################
-
 # Architecture identification and product destination selection.
-
 # Define old MMK architecture macros when using MMS.
-
+#
 .IFDEF MMS$ARCH_NAME            # MMS$ARCH_NAME
 ALPHA_X_ALPHA = 1
 IA64_X_IA64 = 1
@@ -46,9 +67,9 @@ __$(ARCH)__ = 1
 .ENDIF                                  # ARCH
 .ENDIF                              # __MMK__
 .ENDIF                          # MMS$ARCH_NAME
-
+#
 # Combine command-line VAX C compiler macros.
-
+#
 .IFDEF VAXC                     # VAXC
 VAXC_OR_FORCE_VAXC = 1
 .ELSE                           # VAXC
@@ -56,10 +77,10 @@ VAXC_OR_FORCE_VAXC = 1
 VAXC_OR_FORCE_VAXC = 1
 .ENDIF                              # FORCE_VAXC
 .ENDIF                          # VAXC
-
+#
 # Analyze architecture-related and option macros.
 # (Sense x86_64 before IA64 for old MMK and x86_64 cross tools.)
-
+#
 .IFDEF __X86_64__               # __X86_64__
 DECC = 1
 DESTM = X86_64
@@ -97,30 +118,13 @@ DEST = $(DESTM)
 .IFDEF __MMK__                  # __MMK__
 	@ write sys$output ""
 .ENDIF                          # __MMK__
-
+#
 # Create destination directory.
-	@ write sys$output "   Destination: [.$(DEST)]"
+	@ write sys$output "Destination: [.$(DEST)]"
 	@ write sys$output ""
-	if (f$search( "$(DEST).DIR;1") .eqs. "") then -
+	@ if (f$search( "$(DEST).DIR;1") .eqs. "") then -
          create /directory [.$(DEST)]
-
 #
-######################################################################
-#
-# Edit the lines in the Configuration section below to select.
-#
-# To build: use the following command line:
-#
-#	mms/descrip=Make_vms.mms
-#	  or if you use mmk
-#	mmk/descrip=Make_vms.mms
-#
-# To cleanup: mms/descrip=Make_vms.mms clean 
-#
-######################################################################
-# Configuration section.
-######################################################################
-
 # Compiler setup
 
 # Optimization.  The .c.obj rule will override this for specific modules
@@ -175,17 +179,6 @@ LARGE_DEF = , "_LARGEFILE"
 CCVER = YES     # Unreliable with VAX C.
 .ENDIF                          # VAXC_OR_FORCE_VAXC [ELSE]
 
-#####################################################################
-# Uncomment if want a debug version. Resulting executable is DVIM.EXE
-######################################################################
-# DEBUG = YES
-
-######################################################################
-# End of configuration section.
-#
-# Please, do not change anything below without programming experience.
-######################################################################
-
 CDEFS = VMS $(LARGE_DEF)
 DEFS = /define = ($(CDEFS))
 
@@ -218,13 +211,13 @@ OBJ     = [.$(DEST)]$(OBJ_BASE)
 	$(CC) $(DEFS) $< /object = $@
 
 $(TARGET) : $(OBJ)
-        def_dev_dir_orig = f$environment( "default")
-	target_name_type = -
+        -@ def_dev_dir_orig = f$environment( "default")
+	-@ target_name_type = -
          f$parse( "$(TARGET)", , , "NAME", "SYNTAX_ONLY")+ -
          f$parse( "$(TARGET)", , , "TYPE", "SYNTAX_ONLY")
-	set default [.$(DEST)]
+	-@ set default [.$(DEST)]
 	$(LD_DEF) $(LDFLAGS) /exe = 'target_name_type' $(OBJ_BASE)
-	set default 'def_dev_dir_orig'
+	-@ set default 'def_dev_dir_orig'
 
 clean :
 	-@ if (f$search( "[.$(DEST)]*.*") .nes. "") then -

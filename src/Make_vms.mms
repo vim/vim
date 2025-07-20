@@ -13,6 +13,92 @@
 #	dvim.exe:	debug
 #
 ######################################################################
+#
+# Edit the lines in the Configuration section below for fine tuning.
+#
+# To build:    mms/descrip=Make_vms.mms /ignore=warning
+# To clean up: mms/descrip=Make_vms.mms clean
+# To display --help report: mms/descrip=Make_vms.mms help
+# To display --version report: mms/descrip=Make_vms.mms version
+#
+# Hints and detailed description could be found in INSTALLVMS.TXT file.
+#
+######################################################################
+# Configuration section.
+######################################################################
+
+# Build model selection
+# TINY   - No optional features enabled
+# NORMAL - A default selection of features enabled
+# HUGE   - All possible features enabled.
+# Please select one of these alternatives above.
+MODEL = HUGE
+
+# GUI or terminal mode executable.
+# Comment out if you want just the character terminal mode only.
+# GUI with Motif
+GUI = YES
+
+# GUI with GTK
+# If you have GTK installed you might want to enable this option.
+# NOTE: you will need to properly define GTK_DIR below
+# NOTE: since Vim 7.3 GTK 2+ is used that is not ported to VMS,
+#       therefore this option should not be used
+# GTK = YES
+
+# GUI/Motif with XPM
+# If you have XPM installed you might want to build Motif version with toolbar
+# XPM = YES
+
+# Comment out if you want the compiler version with :ver command.
+# NOTE: This part can make some complications if you're using some
+# predefined symbols/flags for your compiler. If does, just leave behind
+# the comment variable CCVER.
+.IFDEF VAXC_OR_FORCE_VAXC       # VAXC_OR_FORCE_VAXC
+.ELSE                           # VAXC_OR_FORCE_VAXC
+CCVER = YES     # Unreliable with VAX C.
+.ENDIF                          # VAXC_OR_FORCE_VAXC [ELSE]
+
+# Uncomment if want a debug version. Resulting executable is DVIM.EXE
+# Development purpose only! Normally, it should not be defined. !!!
+# DEBUG = YES
+
+# Languages support for Perl, Python, TCL etc.
+# If you don't need it really, leave them behind the comment.
+# You will need related libraries, include files etc.
+# VIM_TCL    = YES
+# VIM_PERL   = YES
+# VIM_PYTHON = YES
+# VIM_PYTHON3= YES
+# VIM_RUBY   = YES
+# VIM_LUA    = YES
+
+# X Input Method.  For entering special languages like chinese and
+# Japanese.
+# If you don't need it really, leave it behind the comment.
+# VIM_XIM = YES
+
+# Allow any white space to separate the fields in a tags file
+# When not defined, only a TAB is allowed.
+# VIM_TAG_ANYWHITE = YES
+
+# Allow FEATURE_MZSCHEME
+# VIM_MZSCHEME = YES
+
+# Use ICONV
+# VIM_ICONV = YES
+
+# If you modified the source code and plan to distribute the build
+# please, let the users know that.
+# MODIFIED_BY = "name surname <your@email.com>"
+
+######################################################################
+# Directory, library and include files configuration section.
+# Normally you need not to change anything below. !
+# These may need to be defined if things are not in standard locations
+#
+# You can find some explanation in INSTALLVMS.TXT
+######################################################################
 
 # Architecture identification and product destination selection.
 
@@ -103,99 +189,10 @@ DEST = $(DESTM)
 .ENDIF                          # __MMK__
 
 # Create destination directory.
-	@ write sys$output "   Destination: [.$(DEST)]"
+	@ write sys$output "Destination: [.$(DEST)]"
 	@ write sys$output ""
-	if (f$search( "$(DEST).DIR;1") .eqs. "") then -
+	@ if (f$search( "$(DEST).DIR;1") .eqs. "") then -
          create /directory [.$(DEST)]
-
-#
-######################################################################
-#
-# Edit the lines in the Configuration section below for fine tuning.
-#
-# To build:    mms/descrip=Make_vms.mms /ignore=warning
-# To clean up: mms/descrip=Make_vms.mms clean
-# To display --help report: mms/descrip=Make_vms.mms help
-# To display --version report: mms/descrip=Make_vms.mms version
-#
-# Hints and detailed description could be found in INSTALLVMS.TXT file.
-#
-######################################################################
-# Configuration section.
-######################################################################
-
-# Build model selection
-# TINY   - No optional features enabled
-# NORMAL - A default selection of features enabled
-# HUGE   - All possible features enabled.
-# Please select one of these alternatives above.
-MODEL = HUGE
-
-# GUI or terminal mode executable.
-# Comment out if you want just the character terminal mode only.
-# GUI with Motif
-# GUI = YES
-
-# GUI with GTK
-# If you have GTK installed you might want to enable this option.
-# NOTE: you will need to properly define GTK_DIR below
-# NOTE: since Vim 7.3 GTK 2+ is used that is not ported to VMS,
-#       therefore this option should not be used
-# GTK = YES
-
-# GUI/Motif with XPM
-# If you have XPM installed you might want to build Motif version with toolbar
-# XPM = YES
-
-# Comment out if you want the compiler version with :ver command.
-# NOTE: This part can make some complications if you're using some
-# predefined symbols/flags for your compiler. If does, just leave behind
-# the comment variable CCVER.
-.IFDEF VAXC_OR_FORCE_VAXC       # VAXC_OR_FORCE_VAXC
-.ELSE                           # VAXC_OR_FORCE_VAXC
-CCVER = YES     # Unreliable with VAX C.
-.ENDIF                          # VAXC_OR_FORCE_VAXC [ELSE]
-
-# Uncomment if want a debug version. Resulting executable is DVIM.EXE
-# Development purpose only! Normally, it should not be defined. !!!
-# DEBUG = YES
-
-# Languages support for Perl, Python, TCL etc.
-# If you don't need it really, leave them behind the comment.
-# You will need related libraries, include files etc.
-# VIM_TCL    = YES
-# VIM_PERL   = YES
-# VIM_PYTHON = YES
-# VIM_PYTHON3= YES
-# VIM_RUBY   = YES
-# VIM_LUA    = YES
-
-# X Input Method.  For entering special languages like chinese and
-# Japanese.
-# If you don't need it really, leave it behind the comment.
-# VIM_XIM = YES
-
-# Allow any white space to separate the fields in a tags file
-# When not defined, only a TAB is allowed.
-# VIM_TAG_ANYWHITE = YES
-
-# Allow FEATURE_MZSCHEME
-# VIM_MZSCHEME = YES
-
-# Use ICONV
-# VIM_ICONV = YES
-
-# If you modified the source code and plan to distribute the build
-# please, let the users know that.
-# MODIFIED_BY = "name surname <your@email.com>"
-
-######################################################################
-# Directory, library and include files configuration section.
-# Normally you need not to change anything below. !
-# These may need to be defined if things are not in standard locations
-#
-# You can find some explanation in INSTALLVMS.TXT
-######################################################################
 
 # Compiler setup
 
@@ -624,7 +621,7 @@ $(PERL_SRC) \
 $(PYTHON_SRC) \
 $(PYTHON3_SRC) \
 $(TCL_SRC) \
-	$(RUBY_SRC)
+$(RUBY_SRC)
 
 OBJ = \
 [.$(DEST)]alloc.obj \
@@ -800,14 +797,14 @@ $(TARGET) : $(OBJ)
 	-@ DIRECTORY [.$(DEST)]*.OBJ. /BRIEF/COLUMNS=1 /NOHEADING -
             /NOTRAILING /SELECT=FILE=(NONODE,NODEVICE,NODIRECTORY,NOVERSION) -
             /OUTPUT=[.$(DEST)]ALL_OBJS_LIST.OPT
-	def_dev_dir_orig = f$environment( "default")
-	target_name_type = -
+	-@ def_dev_dir_orig = f$environment( "default")
+	-@ target_name_type = -
          f$parse( "$(TARGET)", , , "NAME", "SYNTAX_ONLY")+ -
          f$parse( "$(TARGET)", , , "TYPE", "SYNTAX_ONLY")
-        set default [.$(DEST)]
+        -@ set default [.$(DEST)]
 	$(LD_DEF) $(LDFLAGS) /exe = 'target_name_type' -
          ALL_OBJS_LIST.OPT/OPT $(ALL_LIBS)
-	set default 'def_dev_dir_orig'
+	-@ set default 'def_dev_dir_orig'
 
 .c.obj :
 # Override /optimize for selected modules on VAX.
@@ -819,7 +816,7 @@ $(TARGET) : $(OBJ)
          f$length( "+$(VAX_NOOPTIM_LIST)+")) then optim_qual = "/nooptim"
 	@ if (f$locate( mod, "+$(VAX_NOOPTIM_LIST)+") .lt. -
          f$length( "+$(VAX_NOOPTIM_LIST)+")) then -
-	 write sys$output -
+	@ write sys$output -
           "                *** NOTE: USING SPECIAL /NOOPTIMIZE RULE. ***"
 	$(CC_DEF) $(ALL_CFLAGS) 'optim_qual' $< /object = $@
 .ELSE                           # __VAX__
