@@ -2118,11 +2118,11 @@ command_line_scan(mparm_T *parmp)
 		c = argv[0][argv_idx++];
 		c = TOUPPER_ASC(c);
 	    }
-            /* Note that although DCL might upcase things, the C RTL
-             * will only downcase them, so there should be no need for
-             * the following (additional?) downcasing (which spoils the
-             * preserve-case results):
-             */
+        /* Note that although DCL might upcase things, the C RTL
+         * will only downcase them, so there should be no need for
+         * the following (additional?) downcasing (which spoils the
+         * preserve-case results):
+         */
 # if 0
 	    else
 		c = TOLOWER_ASC(c);

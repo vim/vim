@@ -9,7 +9,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#include	"vim.h"
+#include "vim.h"
 
 // define _generic_64 for use in time functions
 #if !defined(VAX) && !defined(PROTO)
@@ -779,8 +779,7 @@ vms_remove_version(void * fname)
 		done = 0;
 		while ((done == 0) && (dp >= (char_u *)fname))
 		{
-		    if ((*dp == ']') || (*dp == '>') ||
-		        (*dp == ':') || (*dp == '/'))
+		    if ((*dp == ']') || (*dp == '>') || (*dp == ':') || (*dp == '/'))
 		    {   /* Possible VMS dev:[dir] delimiter (or UNIX "/"). */
 			if ((dp >= (char_u *)fname) && (*(dp- 1) != '^'))
 			{   /* Unescaped dev:[dir] (or /) delimiter. */
@@ -949,17 +948,16 @@ decc_feat_t decc_feat_array[] = {
 
 
 /*
-      LIB$INITIALIZE initialization.
+   LIB$INITIALIZE initialization.
 
    On sufficiently recent non-VAX systems, set a collection of C RTL
    features without using the DECC$* logical name method.
-
 
    Note: Old VAX VMS versions may suffer from a linker complaint like
    this:
 
    %LINK-W-MULPSC, conflicting attributes for psect LIB$INITIALIZE
-        in module LIB$INITIALIZE file SYS$COMMON:[SYSLIB]STARLET.OLB;1
+   in module LIB$INITIALIZE file SYS$COMMON:[SYSLIB]STARLET.OLB;1
 
    Using a LINK options file which includes a line like this one should
    stop this complaint:
@@ -971,63 +969,63 @@ decc_feat_t decc_feat_array[] = {
 
 /* vms_init()
 
-      Uses LIB$INITIALIZE to set a collection of C RTL features without
-      requiring the user to define the corresponding logical names.
+    Uses LIB$INITIALIZE to set a collection of C RTL features without
+    requiring the user to define the corresponding logical names.
 */
 
 /* LIB$INITIALIZE initialization function. */
 
-static void vms_init( void)
+static void
+vms_init(void)
 {
-/* Set the global flag to indicate that LIB$INITIALIZE worked. */
+    /* Set the global flag to indicate that LIB$INITIALIZE worked. */
 
-vms_init_done = 1;
+    vms_init_done = 1;
 
-int feat_index;
-int feat_value;
-int feat_value_max;
-int feat_value_min;
-int i;
-int sts;
+    int feat_index;
+    int feat_value;
+    int feat_value_max;
+    int feat_value_min;
+    int i;
+    int sts;
 
-/* Loop through all items in the decc_feat_array[]. */
+    /* Loop through all items in the decc_feat_array[]. */
 
-for (i = 0; decc_feat_array[ i].name != NULL; i++)
-   {
-   /* Get the feature index. */
-   feat_index = decc$feature_get_index( decc_feat_array[ i].name);
-   if (feat_index >= 0)
-      {
-      /* Valid item.  Collect its properties. */
-      feat_value = decc$feature_get_value( feat_index, 1);
-      feat_value_min = decc$feature_get_value( feat_index, 2);
-      feat_value_max = decc$feature_get_value( feat_index, 3);
+    for (i = 0; decc_feat_array[i].name != NULL; i++)
+    {
+        /* Get the feature index. */
+        feat_index = decc$feature_get_index(decc_feat_array[i].name);
+        if (feat_index >= 0)
+        {
+            /* Valid item.  Collect its properties. */
+            feat_value = decc$feature_get_value(feat_index, 1);
+            feat_value_min = decc$feature_get_value(feat_index, 2);
+            feat_value_max = decc$feature_get_value(feat_index, 3);
 
-      if ((decc_feat_array[ i].value >= feat_value_min) &&
-       (decc_feat_array[ i].value <= feat_value_max))
-         {
-         /* Valid value.  Set it if necessary. */
-         if (feat_value != decc_feat_array[ i].value)
+            if ((decc_feat_array[i].value >= feat_value_min) &&
+                (decc_feat_array[i].value <= feat_value_max))
             {
-            sts = decc$feature_set_value( feat_index,
-             1,
-             decc_feat_array[ i].value);
+                /* Valid value.  Set it if necessary. */
+                if (feat_value != decc_feat_array[i].value)
+                {
+                    sts = decc$feature_set_value(feat_index, 1,
+                                                 decc_feat_array[i].value);
+                }
             }
-         }
-      else
-         {
-         /* Invalid DECC feature value. */
-         printf( " INVALID DECC FEATURE VALUE, %d: %d <= %s <= %d.\n",
-          feat_value,
-          feat_value_min, decc_feat_array[ i].name, feat_value_max);
-         }
-      }
-   else
-      {
-      /* Invalid DECC feature name. */
-      printf( " UNKNOWN DECC FEATURE: %s.\n", decc_feat_array[ i].name);
-      }
-   }
+            else
+            {
+                /* Invalid DECC feature value. */
+                printf(" INVALID DECC FEATURE VALUE, %d: %d <= %s <= %d.\n",
+                       feat_value, feat_value_min, decc_feat_array[i].name,
+                       feat_value_max);
+            }
+        }
+        else
+        {
+            /* Invalid DECC feature name. */
+            printf(" UNKNOWN DECC FEATURE: %s.\n", decc_feat_array[i].name);
+        }
+    }
 }
 
 /* Get "vms_init()" into a valid, loaded LIB$INITIALIZE PSECT. */
