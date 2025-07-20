@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-12 10:53+0200\n"
-"PO-Revision-Date: 2025-07-12 11:20+0100\n"
+"POT-Creation-Date: 2025-07-17 18:08+0200\n"
+"PO-Revision-Date: 2025-07-17 18:40+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -50,7 +50,6 @@ msgstr "auto-rimozione dell'autocomando: %s <buffer=%d>"
 msgid "W19: Deleting augroup that is still in use"
 msgstr "W19: Cancello augroup, ma è ancora in uso"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Autocommands ---"
@@ -147,7 +146,6 @@ msgstr "Fon"
 msgid "Top"
 msgstr "Cim"
 
-#. localized percentage value
 msgid "%d%%"
 msgstr "%d%%"
 
@@ -178,9 +176,6 @@ msgstr "[Dinamico]"
 msgid "[Scratch]"
 msgstr "[Volatile]"
 
-#. don't overwrite messages here
-#. must give this prompt
-#. don't use emsg() here, don't want to flush the buffers
 msgid "WARNING: The file has been changed since reading it!!!"
 msgstr "AVVISO: File modificato dopo essere stato letto!!!"
 
@@ -236,11 +231,9 @@ msgstr "W10: Avviso: Modifica a un file in sola-lettura"
 msgid "No display"
 msgstr "Manca display"
 
-#. Failed to send, abort.
 msgid ": Send failed.\n"
 msgstr ": Invio fallito.\n"
 
-#. Let vim start normally.
 msgid ": Send failed. Trying to execute locally\n"
 msgstr ": Invio fallito. Tento di eseguire localmente\n"
 
@@ -429,9 +422,6 @@ msgstr "Katakana"
 msgid "Bopomofo"
 msgstr "Bopomofo"
 
-#. row number, column number is appended
-#. l10n: leave as-is unless a space after the comma is preferred
-#. l10n: do not add any row/column label, due to the limited space
 msgid "%ld,"
 msgstr "%ld,"
 
@@ -443,9 +433,6 @@ msgstr ""
 "\tImpostata l'ultima volta da "
 
 #.
-#. * Yes this is ugly, I don't particularly like it either.  But doing it
-#. * this way has the compelling advantage that translations need not to
-#. * be touched at all.  See below what 'ok' and 'ync' are used for.
 #.
 msgid "&Ok"
 msgstr "&OK"
@@ -623,7 +610,6 @@ msgstr "Salva Ridirezione"
 msgid "Untitled"
 msgstr "Senza Nome"
 
-#. always scroll up, don't overwrite
 msgid "Exception thrown: %s"
 msgstr "Eccezione lanciata: %s"
 
@@ -636,7 +622,6 @@ msgstr "Eccezione scartata: %s"
 msgid "%s, line %ld"
 msgstr "%s, riga %ld"
 
-#. always scroll up, don't overwrite
 msgid "Exception caught: %s"
 msgstr "Eccezione intercettata: %s"
 
@@ -658,7 +643,6 @@ msgstr "Errore ed interruzione"
 msgid "Error"
 msgstr "Errore"
 
-#. if (pending & CSTP_INTERRUPT)
 msgid "Interrupt"
 msgstr "Interruzione"
 
@@ -686,7 +670,6 @@ msgstr "[Tipo di accesso non consentito]"
 msgid "Vim: Reading from stdin...\n"
 msgstr "Vim: Leggo da stdin...\n"
 
-#. make a copy, gui_write() may try to change it
 msgid "Reading from stdin..."
 msgstr "Leggo da stdin..."
 
@@ -741,7 +724,6 @@ msgstr "[Unix]"
 msgid "[unix format]"
 msgstr "[in formato Unix]"
 
-#. l10n: L as in line, B as in byte
 msgid "%s%ldL, %lldB"
 msgstr "%s%ldR, %lldB"
 
@@ -879,18 +861,15 @@ msgstr "Trovare:"
 msgid "Replace with:"
 msgstr "Sostituire con:"
 
-#. whole word only button
 msgid "Match whole word only"
 msgstr "Cerca solo la parola intera"
 
-#. match case button
 msgid "Match case"
 msgstr "Maiuscole/minuscole"
 
 msgid "Direction"
 msgstr "Direzione"
 
-#. 'Up' and 'Down' buttons
 msgid "Up"
 msgstr "Su"
 
@@ -972,8 +951,6 @@ msgstr "Trova stringa"
 msgid "Find & Replace"
 msgstr "Trova & Sostituisci"
 
-#. We fake this: Use a filter that doesn't select anything and a default
-#. file name that won't be used.
 msgid "Not Used"
 msgstr "Non Utilizzato"
 
@@ -1010,7 +987,6 @@ msgstr "Vim - Selettore Caratteri"
 msgid "Name:"
 msgstr "Nome:"
 
-#. create toggle button
 msgid "Show size in Points"
 msgstr "Mostra dimensione in Punti"
 
@@ -1209,7 +1185,6 @@ msgstr "numero buffer non valido"
 msgid "not implemented yet"
 msgstr "non ancora implementato"
 
-#. ???
 msgid "cannot set line(s)"
 msgstr "non posso impostare riga/he"
 
@@ -1268,11 +1243,9 @@ msgstr[1] "%ld righe rientrate "
 msgid " Keyword completion (^N^P)"
 msgstr " Completamento parola (^N^P)"
 
-#. CTRL_X_NORMAL, ^P/^N compl.
 msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^P^Rs^U^V^Y)"
 
-#. CTRL_X_SCROLL: depends on state
 msgid " Whole line completion (^L^N^P)"
 msgstr " Completamento riga intera (^L^N^P)"
 
@@ -1288,14 +1261,12 @@ msgstr " Completamento Modello percorso (^N^P)"
 msgid " Definition completion (^D^N^P)"
 msgstr " Completamento Definizione (^D^N^P)"
 
-#. CTRL_X_FINISHED
 msgid " Dictionary completion (^K^N^P)"
 msgstr " Completamento Dizionario (^K^N^P)"
 
 msgid " Thesaurus completion (^T^N^P)"
 msgstr " Completamento Thesaurus (^T^N^P)"
 
-#. CTRL_X_EVAL doesn't use msg.
 msgid " Command-line completion (^V^N^P)"
 msgstr " Completamento riga-di-comando (^V^N^P)"
 
@@ -1329,11 +1300,9 @@ msgstr " (inserisci) Scroll (^E/^Y)"
 msgid " (replace) Scroll (^E/^Y)"
 msgstr " (sostituisci) Scroll (^E/^Y)"
 
-#. reset in msg_trunc_attr()
 msgid "Scanning: %s"
 msgstr "Scansione: %s"
 
-#. reset in msg_trunc_attr()
 msgid "Scanning tags."
 msgstr "Scansione tag."
 
@@ -1343,9 +1312,6 @@ msgstr "corrispondenza nel file"
 msgid " Adding"
 msgstr " Aggiungo"
 
-#. showmode might reset the internal line pointers, so it must
-#. be called before line = ml_get(), or when this address is no
-#. longer needed.  -- Acevedo.
 msgid "-- Searching..."
 msgstr "-- Ricerca..."
 
@@ -1455,7 +1421,6 @@ msgstr "Vim: Avviso: Output non diretto a un terminale\n"
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: Avviso: Input non proveniente da un terminale\n"
 
-#. just in case..
 msgid "pre-vimrc command line"
 msgstr "riga comandi prima di vimrc"
 
@@ -1831,7 +1796,6 @@ msgstr "Non trovo la mappatura"
 msgid "No marks set"
 msgstr "Nessuna marcatura impostata"
 
-#. Highlight title
 msgid ""
 "\n"
 "mark line  col file/text"
@@ -1839,7 +1803,6 @@ msgstr ""
 "\n"
 "mark riga  col.file/testo"
 
-#. Highlight title
 msgid ""
 "\n"
 " jump line  col file/text"
@@ -1847,7 +1810,6 @@ msgstr ""
 "\n"
 " salt.riga  col.file/testo"
 
-#. Highlight title
 msgid ""
 "\n"
 "change line  col text"
@@ -1983,8 +1945,6 @@ msgstr ""
 "\n"
 "Adesso si potrebbe cancellare il file di .swp."
 
-#. Warn there could be an active Vim on the same file, the user may
-#. want to kill it.
 msgid ""
 "\n"
 "Note: process STILL RUNNING: "
@@ -1995,7 +1955,6 @@ msgstr ""
 msgid "Using crypt key from swap file for the text file.\n"
 msgstr "Uso la chiave di cifratura del file swap per il file di testo.\n"
 
-#. use msg() to start the scrolling properly
 msgid "Swap files found:"
 msgstr "Swap file trovati:"
 
@@ -2120,8 +2079,6 @@ msgstr "      NON TROVATO"
 msgid "      NEWER than swap file!\n"
 msgstr "      PIÙ RECENTE dello swap file!\n"
 
-#. Some of these messages are long to allow translation to
-#. other languages.
 msgid ""
 "\n"
 "(1) Another program may be editing the same file.  If this is the case,\n"
@@ -2199,7 +2156,6 @@ msgstr ""
 "&Q Esci\n"
 "&A Annulla"
 
-#. list the matching menu mappings
 msgid ""
 "\n"
 "--- Menus ---"
@@ -2220,7 +2176,6 @@ msgid "line %4ld:"
 msgstr "riga %4ld:"
 
 #. Translator: Please replace the name and email address
-#. with the appropriate text for your translation.
 msgid "Messages maintainer: The Vim Project"
 msgstr "Manutentore messaggi: Antonio Colombo <azc100@gmail.com>"
 
@@ -2314,7 +2269,6 @@ msgid_plural "%ld lines %sed %d times"
 msgstr[0] "%ld righe %sa %d volta"
 msgstr[1] "%ld righe %se %d volte"
 
-#. must display the prompt
 msgid "cannot yank; delete anyway"
 msgstr "non riesco a salvare in un registro; cancello comunque"
 
@@ -2438,9 +2392,6 @@ msgstr "a %s su %s"
 msgid "Printing '%s'"
 msgstr "Stampato: '%s'"
 
-#. Default font name for current language on MS-Windows.
-#. If not translated, falls back to "Consolas".
-#. This must be a fixed-pitch font.
 msgid "DefaultFontNameForWindows"
 msgstr "NomeCarattereDefaultPerWindows"
 
@@ -2623,7 +2574,6 @@ msgid_plural "%ld lines yanked%s"
 msgstr[0] "%ld riga messa in registro%s"
 msgstr[1] "%ld righe messe in registro%s"
 
-#. Highlight title
 msgid ""
 "\n"
 "Type Name Content"
@@ -2742,7 +2692,6 @@ msgstr "W15: Avviso: Separatore di riga errato, forse manca ^M"
 msgid " (includes previously listed match)"
 msgstr " (comprese corrispondenze elencate prima)"
 
-#. cursor at status line
 msgid "--- Included files "
 msgstr "--- File inclusi "
 
@@ -2810,8 +2759,6 @@ msgstr "Avviso: Non trovo lista parole \"%s_%s.spl\" o \"%s_ascii.spl\""
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
 msgstr "Avviso: Non trovo lista parole \"%s.%s.spl\" o \"%s.ascii.spl\""
 
-#. This is probably an error.  Give a warning and
-#. accept the words anyway.
 msgid "Warning: region %s not supported"
 msgstr "Avviso: regione %s non supportata"
 
@@ -2987,8 +2934,6 @@ msgid "Reading back spell file..."
 msgstr "Rilettura file ortografico..."
 
 #.
-#. * Go through the trie of good words, soundfold each word and add it to
-#. * the soundfold trie.
 #.
 msgid "Performing soundfolding..."
 msgstr "Eseguo soundfolding..."
@@ -3029,8 +2974,6 @@ msgstr "Spiacente, nessun suggerimento"
 msgid "Sorry, only %ld suggestions"
 msgstr "Spiacente, solo %ld suggerimenti"
 
-#. for when 'cmdheight' > 1
-#. avoid more prompt
 msgid "Change \"%.*s\" to:"
 msgstr "Cambiare \"%.*s\" in:"
 
@@ -3105,7 +3048,6 @@ msgstr ""
 msgid "File \"%s\" does not exist"
 msgstr "Il file \"%s\" non esiste"
 
-#. Give an indication of the number of matching tags
 msgid "tag %d of %d%s"
 msgstr "tag %d di %d%s"
 
@@ -3121,7 +3063,6 @@ msgstr "  # pri tipo tag"
 msgid "file\n"
 msgstr "file\n"
 
-#. Highlight title
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
@@ -3147,7 +3088,6 @@ msgstr "' non noto. Terminali disponibili predisposti sono:"
 msgid "defaulting to '"
 msgstr "predefinito a '"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Terminal keys ---"
@@ -3173,14 +3113,9 @@ msgstr "in esecuzione"
 msgid "finished"
 msgstr "terminato"
 
-#. Quoting "man strftime":
-#. > If the length of the result string (including the terminating
-#. > null byte) would exceed max bytes, then strftime() returns 0,
-#. > and the contents of the array are undefined.
 msgid "(Invalid)"
 msgstr "(Non valido)"
 
-#, no-c-format
 msgid "%a %b %d %H:%M:%S %Y"
 msgstr "%a %b %d %H:%M:%S %Y"
 
@@ -3195,7 +3130,6 @@ msgstr "fatto eseguire nuova shell\n"
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Errore leggendo l'input, esco...\n"
 
-#. must display the prompt
 msgid "No undo possible; continue anyway"
 msgstr "'undo' non più possibile; continuo comunque"
 
@@ -3688,7 +3622,6 @@ msgstr ""
 "\n"
 "# File mark:\n"
 
-#. Write the jumplist with -'
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
@@ -3696,7 +3629,6 @@ msgstr ""
 "\n"
 "# Jumplist (dai più recenti):\n"
 
-#. Write the info:
 msgid "# This viminfo file was generated by Vim %s.\n"
 msgstr "# Questo file viminfo è stato generato da Vim %s.\n"
 
@@ -5229,7 +5161,6 @@ msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr ""
 "E498: Nessun nome di file :source trovato da sostituire per \"<sfile>\""
 
-#, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
 msgstr "E499: Un nome di file nullo per '%' o '#', va bene solo con \":p:h\""
 
@@ -6168,7 +6099,6 @@ msgstr "E802: ID non valido: %d (dev'essere maggiore o uguale a 1)"
 msgid "E803: ID not found: %d"
 msgstr "E803: ID non trovato: %d"
 
-#, no-c-format
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: Impossibile usare '%' con un Numero-a-virgola-mobile"
 
@@ -6356,7 +6286,6 @@ msgstr "E862: Impossibile usare g: qui"
 msgid "E863: Not allowed for a terminal in a popup window"
 msgstr "E863: Non consentito per un terminale in una finestra dinamica"
 
-#, no-c-format
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used"
@@ -6654,7 +6583,6 @@ msgstr "E949: File modificato in fase di riscrittura"
 msgid "E950: Cannot convert between %s and %s"
 msgstr "E950: Non si può convertire da %s a %s"
 
-#, no-c-format
 msgid "E951: \\% value too large"
 msgstr "E951: \\% valore troppo grande"
 
@@ -6926,7 +6854,6 @@ msgstr "E1033: Catch non raggiungibile dopo aver richiesto catch-all"
 msgid "E1034: Cannot use reserved name %s"
 msgstr "E1034: Impossibile usare il nome riservato %s"
 
-#, no-c-format
 msgid "E1035: % requires number arguments"
 msgstr "E1035: % richiede come argomenti dei numeri"
 
@@ -7591,7 +7518,8 @@ msgstr ""
 "un Blob"
 
 msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
-msgstr "E1251: Lista, Tupla, Dizionario, Blob o Stringa richiesto per argomento %d"
+msgstr ""
+"E1251: Lista, Tupla, Dizionario, Blob o Stringa richiesto per argomento %d"
 
 msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: Stringa, Lista o Blob richiesto per argomento %d"
@@ -8301,16 +8229,15 @@ msgstr ""
 "E1541: Valore troppo grande, il massimo punto di codice Unicode è U+10FFFF"
 
 msgid "E1542: Cannot have a negative or zero number of quickfix/location lists"
-msgstr "E1542: Non può essere negativo o zero il numero di Lista "
-"quickfix o di locazione"
+msgstr ""
+"E1542: Non può essere negativo o zero il numero di Lista quickfix o di "
+"locazione"
 
 msgid "E1543: Cannot have more than a hundred quickfix/location lists"
-msgstr "E1543: Non possono esserci più di cento Liste quickfix o di "
-"locazione"
+msgstr "E1543: Non possono esserci più di cento Liste quickfix o di locazione"
 
 msgid "E1544: Failed resizing the quickfix/location list stack"
-msgstr "E1544: Fallito ridimensionamento dello stack quickfix o di "
-"locazione"
+msgstr "E1544: Fallito ridimensionamento dello stack quickfix o di locazione"
 
 msgid "E1545: Quickfix list stack unavailable"
 msgstr "E1545: Stack delle Liste quickfix non disponibile"
@@ -8324,10 +8251,12 @@ msgstr "E1547: Questa versione di Vim supporta :redrawtabpanel"
 msgid "E1548: Wayland connection is unavailable"
 msgstr "E1548: Connession a Wayland non disponibile"
 
-#. type of cmdline window or 0
-#. result of cmdline window or 0
-#. buffer of cmdline window or NULL
-#. window of cmdline window or NULL
+msgid "E1549: Cannot have more than %d diff anchors"
+msgstr "E1549: Non posso avere più di %d punti di ancoraggio diff"
+
+msgid "E1550: Failed to find all diff anchors"
+msgstr "E1550: Non ho trovato tutti i punti di ancoraggio diff"
+
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
 
@@ -8365,7 +8294,6 @@ msgid "float"
 msgstr "numero a virgola mobile"
 
 #.
-#. * Some messages that can be shared are included here.
 #.
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "raggiunta la CIMA nella ricerca, continuo dal FONDO"
@@ -8465,7 +8393,6 @@ msgstr "il costruttore di lista non accetta parole chiave come argomenti"
 msgid "list index out of range"
 msgstr "Indice di Lista fuori intervallo"
 
-#. No more suitable format specifications in python-2.3
 msgid "internal error: failed to get Vim list item %d"
 msgstr ""
 "errore interno: non sono riuscito a ottenere l'elemento di Lista di Vim %d"
@@ -8667,27 +8594,22 @@ msgstr ""
 "File di Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
 #. Translators: This is the Application Name used in the GVim desktop file
-#: gvim.desktop.in:6
 msgid "GVim"
 msgstr "GVim"
 
 #. Translators: This is the Generic Application Name used in the Vim desktop file
-#: gvim.desktop.in:8 vim.desktop.in:8
 msgid "Text Editor"
 msgstr "Editor di testi"
 
 #. Translators: This is the comment used in the Vim desktop file
-#: gvim.desktop.in:10 vim.desktop.in:10
 msgid "Edit text files"
 msgstr "Edita file di testo"
 
 #. Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
-#: gvim.desktop.in:75 vim.desktop.in:75
 msgid "Text;editor;"
 msgstr "Testo;editor;"
 
 #. Translators: This is the Application Name used in the Vim desktop file
-#: vim.desktop.in:6
 msgid "Vim"
 msgstr "Vim"
 
@@ -8958,8 +8880,8 @@ msgid ""
 "characters to use for the status line, folds, diffs, buffer text, filler "
 "lines and truncation in the completion menu"
 msgstr ""
-"caratteri da usare per riga di status, piegature, differenze, testo "
-"di un buffer, riempitivo di riga e troncamento nel menu di completamento"
+"caratteri da usare per riga di status, piegature, differenze, testo di un "
+"buffer, riempitivo di riga e troncamento nel menu di completamento"
 
 msgid "number of lines used for the command-line"
 msgstr "numero di righe disponibili per la riga-di-comando"
@@ -9002,12 +8924,13 @@ msgid "number of columns to use for the line number"
 msgstr "numero di colonne da usare per visualizzare numero di riga"
 
 msgid "maximum number of quickfix lists that can be stored in history"
-msgstr "numero massimo di Liste quickfix che possono essere conservate "
-"nella storia"
+msgstr ""
+"numero massimo di Liste quickfix che possono essere conservate nella storia"
 
 msgid "maximum number of location lists that can be stored in history"
-msgstr "numero massimo di Liste di locazione che possono essere conservate "
-"nella storia"
+msgstr ""
+"numero massimo di Liste di locazione che possono essere conservate nella "
+"storia"
 
 msgid "controls whether concealable text is hidden"
 msgstr "controllare se il testo nascondibile è nascosto"
@@ -9489,8 +9412,8 @@ msgid "Ordered list of possible methods for accessing the clipboard"
 msgstr "Lista ordinata dei metodi possibili per accedere agli appunti"
 
 msgid "Timeout to use when polling for data to read or write in wayland"
-msgstr "Tempo-di-attesa da usare attendendo dati da leggere o scrivere "
-"in Wayland"
+msgstr ""
+"Tempo-di-attesa da usare attendendo dati da leggere o scrivere in Wayland"
 
 msgid "Wayland seat to use"
 msgstr "Seggio Wayland da usare"
@@ -9587,37 +9510,26 @@ msgid "maximum width of the popup menu"
 msgstr "larghezza massima del menù dinamico"
 
 msgid "user defined function for Insert mode completion"
-msgstr ""
-"funzione definita dall'utente per il completamento "
-"in modo Insert"
+msgstr "funzione definita dall'utente per il completamento in modo Insert"
 
 msgid "function for filetype-specific Insert mode completion"
 msgstr ""
-"funzione per il completamento in modo Insert a seconda del "
-"tipo di file"
+"funzione per il completamento in modo Insert a seconda del tipo di file"
 
 msgid "list of dictionary files for keyword completion"
-msgstr ""
-"lista di file dizionario per il completamento di "
-"parole chiave"
+msgstr "lista di file dizionario per il completamento di parole chiave"
 
 msgid "list of thesaurus files for keyword completion"
-msgstr ""
-"lista di file di sinonimi per il completamento di "
-"parole chiave"
+msgstr "lista di file di sinonimi per il completamento di parole chiave"
 
 msgid "function used for thesaurus completion"
 msgstr "funzione usata per completamento sinonimi"
 
 msgid "adjust case of a keyword completion match"
-msgstr ""
-"aggiustare maiuscolo/minuscolo nelle corrispondenze di "
-"completamento"
+msgstr "aggiustare maiuscolo/minuscolo nelle corrispondenze di completamento"
 
 msgid "enable entering digraphs with c1 <BS> c2"
-msgstr ""
-"abilitare immissione lettere non in tastiera con "
-"c1 <BS> c2"
+msgstr "abilitare immissione lettere non in tastiera con c1 <BS> c2"
 
 msgid "the \"~\" command behaves like an operator"
 msgstr "il comando \"~\" si comporta come un operatore"
@@ -9627,8 +9539,8 @@ msgstr "funzione da chiamare per l'operatore \"g@\""
 
 msgid "when inserting a bracket, briefly jump to its match"
 msgstr ""
-"se si inserisce una parentesi, saltare per un momento "
-"alla parentesi corrispondente"
+"se si inserisce una parentesi, saltare per un momento alla parentesi "
+"corrispondente"
 
 msgid "tenth of a second to show a match for 'showmatch'"
 msgstr ""
@@ -9794,6 +9706,9 @@ msgstr "opzioni per usare modo Diff"
 
 msgid "expression used to obtain a diff file"
 msgstr "espressioni da usare per ottenere un file diff"
+
+msgid "list of addresses for anchoring a diff"
+msgstr "lista di punti di ancoraggio per diff"
 
 msgid "expression used to patch a file"
 msgstr "espressione da usare per applicare patch a un file"
