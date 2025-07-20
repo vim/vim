@@ -6614,6 +6614,7 @@ cmdarg-variable	eval.txt	/*cmdarg-variable*
 cmdbang-variable	eval.txt	/*cmdbang-variable*
 cmdcomplete_info()	builtin.txt	/*cmdcomplete_info()*
 cmdline-arguments	vi_diff.txt	/*cmdline-arguments*
+cmdline-autocompletion	builtin.txt	/*cmdline-autocompletion*
 cmdline-changed	version5.txt	/*cmdline-changed*
 cmdline-completion	cmdline.txt	/*cmdline-completion*
 cmdline-editing	cmdline.txt	/*cmdline-editing*
@@ -11603,6 +11604,7 @@ whitespace	pattern.txt	/*whitespace*
 wildcard	editing.txt	/*wildcard*
 wildcards	editing.txt	/*wildcards*
 wildmenumode()	builtin.txt	/*wildmenumode()*
+wildtrigger()	builtin.txt	/*wildtrigger()*
 win-scrolled-resized	windows.txt	/*win-scrolled-resized*
 win16	os_win32.txt	/*win16*
 win32	os_win32.txt	/*win32*

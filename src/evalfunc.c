@@ -3126,6 +3126,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_visualmode},
     {"wildmenumode",	0, 0, 0,	    NULL,
 			ret_number,	    f_wildmenumode},
+    {"wildtrigger",	0, 0, 0,	    NULL,
+			ret_void,	    f_wildtrigger},
     {"win_execute",	2, 3, FEARG_2,	    arg23_win_execute,
 			ret_string,	    f_win_execute},
     {"win_findbuf",	1, 1, FEARG_1,	    arg1_number,

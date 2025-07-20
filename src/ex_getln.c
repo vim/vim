@@ -957,9 +957,11 @@ cmdline_wildchar_complete(
     }
     else		    // typed p_wc first time
     {
-	if (c == p_wc || c == p_wcm)
+	if (c == p_wc || c == p_wcm || c == K_WILD)
 	{
 	    options |= WILD_MAY_EXPAND_PATTERN;
+	    if (c == K_WILD)
+		options |= WILD_FUNC_TRIGGER;
 	    if (pre_incsearch_pos)
 		xp->xp_pre_incsearch_pos = *pre_incsearch_pos;
 	    else
@@ -1395,7 +1397,7 @@ cmdline_browse_history(
     for (;;)
     {
 	// one step backwards
-	if (c == K_UP|| c == K_S_UP || c == Ctrl_P
+	if (c == K_UP || c == K_S_UP || c == Ctrl_P
 		|| c == K_PAGEUP || c == K_KPAGEUP)
 	{
 	    if (hiscnt == get_hislen())	// first time
@@ -1818,9 +1820,9 @@ getcmdline_int(
      */
     for (;;)
     {
-	int trigger_cmdlinechanged = TRUE;
-	int end_wildmenu;
-	int prev_cmdpos = ccline.cmdpos;
+	int	trigger_cmdlinechanged = TRUE;
+	int	end_wildmenu;
+	int	prev_cmdpos = ccline.cmdpos;
 
 	VIM_CLEAR(prev_cmdbuff);
 
@@ -2058,9 +2060,11 @@ getcmdline_int(
 	    }
 	}
 
-	// Completion for 'wildchar' or 'wildcharm' key.
-	if ((c == p_wc && !gotesc && KeyTyped) || c == p_wcm)
+	// Completion for 'wildchar', 'wildcharm', and wildtrigger()
+	if ((c == p_wc && !gotesc && KeyTyped) || c == p_wcm || c == K_WILD)
 	{
+	    if (c == K_WILD)
+		++emsg_silent;  // Silence the bell
 	    res = cmdline_wildchar_complete(c, firstc != '@', &did_wild_list,
 		    &wim_index, &xpc, &gotesc,
 #ifdef FEAT_SEARCH_EXTRA
@@ -2069,8 +2073,12 @@ getcmdline_int(
 		    NULL
 #endif
 		    );
+	    if (c == K_WILD)
+		--emsg_silent;
 	    if (res == CMDLINE_CHANGED)
 		goto cmdline_changed;
+	    if (c == K_WILD)
+		goto cmdline_not_changed;
 	}
 
 	gotesc = FALSE;
@@ -5109,3 +5117,30 @@ get_user_input(
     cmd_silent = cmd_silent_save;
 }
 #endif
+
+/*
+ * "wildtrigger()" function
+ */
+    void
+f_wildtrigger(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    if (!(State & MODE_CMDLINE) || char_avail() || wild_menu_showing
+	    || cmdline_pum_active())
+	return;
+
+    int cmd_type = get_cmdline_type();
+
+    if (cmd_type == ':' || cmd_type == '/' || cmd_type == '?')
+    {
+	// Add K_WILD as a single special key
+	char_u	key_string[4];
+
+	key_string[0] = K_SPECIAL;
+	key_string[1] = KS_EXTRA;
+	key_string[2] = KE_WILD;
+	key_string[3] = NUL;
+
+	// Insert it into the typeahead buffer
+	ins_typebuf(key_string, REMAP_NONE, 0, TRUE, FALSE);
+    }
+}
