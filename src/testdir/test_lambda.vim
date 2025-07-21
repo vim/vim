@@ -1,7 +1,6 @@
 " Test for lambda and closure
 
-source check.vim
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 func Test_lambda_feature()
   call assert_equal(1, has('lambda'))

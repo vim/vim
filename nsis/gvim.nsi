@@ -53,6 +53,18 @@ Unicode true
   !define WIN64 0
 !endif
 
+# if you want to create the installer for ARM64, use the /DARM64=1 on
+# the command line makensis.exe. This property will be set to 1.
+!ifndef ARM64
+  !define ARM64 0
+!else
+  !if ${ARM64} > 0
+    !if ${WIN64} < 1
+      !define /redef WIN64 1
+    !endif
+  !endif
+!endif
+
 # if you don't want to include libgcc_s_sjlj-1.dll in the package, use the
 # switch /DINCLUDE_LIBGCC=0 on the command line makensis.exe.
 !ifndef INCLUDE_LIBGCC
@@ -113,9 +125,13 @@ ${StrRep}
 !define UNINST_REG_KEY_VIM  "${UNINST_REG_KEY}\${PRODUCT}"
 
 !if ${WIN64}
-Name "${PRODUCT} (x64)"
+  !if ${ARM64}
+    Name "${PRODUCT} (ARM64)"
+  !else
+    Name "${PRODUCT} (x64)"
+  !endif
 !else
-Name "${PRODUCT}"
+  Name "${PRODUCT}"
 !endif
 OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
 CRCCheck force
@@ -498,7 +514,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\tools\*.*
 
 	SetOutPath $0\tutor
-	File /x Makefile /x *.info ${VIMRT}\tutor\*.*
+	File /r /x *.info ${VIMRT}\tutor\*.*
 SectionEnd
 
 ##########################################################

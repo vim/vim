@@ -1,8 +1,6 @@
 " Tests for 'listchars' display with 'list' and :list
 
-source check.vim
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 func Check_listchars(expected, end_lnum, end_scol = -1, leftcol = 0)
   if a:leftcol > 0

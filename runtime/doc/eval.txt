@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Jun 04
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Jul 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2240,6 +2240,15 @@ v:charconvert_to
 		The name of the character encoding of a file after conversion.
 		Only valid while evaluating the 'charconvert' option.
 
+					*v:clipmethod*
+v:clipmethod	The current method of accessing the clipboard that is being
+		used.  Can either have the value of:
+			wayland		The Wayland protocol is being used.
+			x11		X11 selections are being used.
+			none		The above methods are unavailable or
+					cannot be used.
+		See 'clipmethod' for more details.
+
 					*v:cmdarg* *cmdarg-variable*
 v:cmdarg	This variable is used for two purposes:
 		1. The extra arguments given to a file read/write command.
@@ -2968,6 +2977,12 @@ v:vim_did_enter	Zero until most of startup is done.  It is set to one just
 
 					*v:warningmsg* *warningmsg-variable*
 v:warningmsg	Last given warning message.  It's allowed to set this variable.
+
+					*v:wayland_display*
+v:wayland_display
+		The name of the Wayland display that Vim is connected to.
+		Equivalent to the $WAYLAND_DISPLAY environment variable.
+		If this is empty, then Vim is not connected to any display.
 
 					*v:windowid* *windowid-variable*
 v:windowid	When any X11/Wayland based GUI is running or when running in a
@@ -3707,7 +3722,7 @@ text...
 			improve script readability.
 
 							*:ec* *:echo*
-:ec[ho] {expr1} ..	Echoes each {expr1}, with a space in between.  The
+:ec[ho] {expr1} ...	Echoes each {expr1}, with a space in between.  The
 			first {expr1} starts on a new line.
 			Also see |:comment|.
 			Use "\n" to start a new line.  Use "\r" to move the
@@ -3727,7 +3742,7 @@ text...
 		:new | redraw | echo "there is a new window"
 <
 							*:echon*
-:echon {expr1} ..	Echoes each {expr1}, without anything added.  Also see
+:echon {expr1} ...	Echoes each {expr1}, without anything added.  Also see
 			|:comment|.
 			Uses the highlighting set by the `:echohl` command.
 			Cannot be followed by a comment.
@@ -3758,7 +3773,7 @@ text...
 			otherwise all following echo's will be highlighted.
 
 							*:echom* *:echomsg*
-:echom[sg] {expr1} ..	Echo the expression(s) as a true message, saving the
+:echom[sg] {expr1} ...	Echo the expression(s) as a true message, saving the
 			message in the |message-history|.
 			Spaces are placed between the arguments as with the
 			`:echo` command.  But unprintable characters are
@@ -3790,7 +3805,7 @@ text...
 			with the +timer and the +popupwin features.
 
 							*:echoe* *:echoerr*
-:echoe[rr] {expr1} ..	Echo the expression(s) as an error message, saving the
+:echoe[rr] {expr1} ...	Echo the expression(s) as an error message, saving the
 			message in the |message-history|.  When used in a
 			script or function the line number will be added.
 			Spaces are placed between the arguments as with the
@@ -3803,7 +3818,7 @@ text...
 			And to get a beep: >
 		:exe "normal \<Esc>"
 
-:echoc[onsole] {expr1} ..				*:echoc* *:echoconsole*
+:echoc[onsole] {expr1} ...				*:echoc* *:echoconsole*
 			Intended for testing: works like `:echomsg` but when
 			running in the GUI and started from a terminal write
 			the text to stdout.
@@ -3830,7 +3845,7 @@ text...
 
 
 							*:exe* *:execute*
-:exe[cute] {expr1} ..	Executes the string that results from the evaluation
+:exe[cute] {expr1} ...	Executes the string that results from the evaluation
 			of {expr1} as an Ex command.
 			Multiple arguments are concatenated, with a space in
 			between.  To avoid the extra space use the ".."
@@ -5195,7 +5210,7 @@ The |:Launch| user command uses shell completion for its first argument.
 
 NOTE: escaping of <args> is left to the user
 
-Examples: >vim
+Examples: >
 	vim9script
 
 	import autoload 'dist/vim9.vim'

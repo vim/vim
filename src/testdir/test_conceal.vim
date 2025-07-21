@@ -1,10 +1,8 @@
 " Tests for 'conceal'.
 
-source check.vim
 CheckFeature conceal
 
-source screendump.vim
-source view_util.vim
+source util/screendump.vim
 
 func Test_conceal_two_windows()
   CheckScreendump

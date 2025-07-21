@@ -1,8 +1,7 @@
-source check.vim
+" Test for gettext()
 
 CheckFeature gettext
 
-" Test for gettext()
 func Test_gettext()
   call assert_fails('call bindtextdomain("test")', 'E119:')
   call assert_fails('call bindtextdomain("vim", "test")', 'E475:')

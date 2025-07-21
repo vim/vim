@@ -1,5 +1,8 @@
-This directory contains tests for various Vim features.
+This directory contains test cases for various Vim features.
+The auxiliary functions to perform the tests are in the util/ folder.
+
 For testing an indent script see runtime/indent/testdir/README.txt.
+For testing a syntax script see runtime/syntax/testdir/README.txt.
 
 If it makes sense, add a new test method to an already existing file.  You may
 want to separate it from other tests with comment lines.

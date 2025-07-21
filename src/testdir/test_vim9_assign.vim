@@ -1,8 +1,6 @@
 " Test Vim9 assignments
 
-source check.vim
-import './vim9.vim' as v9
-source term_util.vim
+import './util/vim9.vim' as v9
 
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
@@ -189,6 +187,7 @@ def Test_assignment()
 
   v9.CheckDefFailure(['&notex += 3'], 'E113:')
   v9.CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
+  v9.CheckDefFailure(['var d = {k: [0]}', 'd.k ..= "x"'], 'E1012: Type mismatch; expected list<number> but got string')
   v9.CheckDefFailure(['&ts = [7]'], 'E1012:')
   v9.CheckDefExecFailure(['&ts = g:alist'], 'E1012: Type mismatch; expected number but got list<number>')
   v9.CheckDefFailure(['&ts = "xx"'], 'E1012:')

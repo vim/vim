@@ -1,9 +1,6 @@
 " Test for variable tabstops
 
-source check.vim
 CheckFeature vartabs
-
-source view_util.vim
 
 func s:compare_lines(expect, actual)
   call assert_equal(join(a:expect, "\n"), join(a:actual, "\n"))

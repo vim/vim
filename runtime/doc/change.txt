@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2025 Jun 23
+*change.txt*    For Vim version 9.1.  Last change: 2025 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -991,22 +991,26 @@ This replaces each 'E' character with a euro sign.  Read more in |<Char->|.
 
 4.4 Changing tabs					*change-tabs*
 							*:ret* *:retab* *:retab!*
-:[range]ret[ab][!] [new_tabstop]
+:[range]ret[ab][!] [-indentonly] [{new-tabstop}]
 			Replace all sequences of white-space containing a
-			<Tab> with new strings of white-space using the new
-			tabstop value given.  If you do not specify a new
-			tabstop size or it is zero, Vim uses the current value
-			of 'tabstop'.
+			<Tab> with new strings of white-space using
+			{new-tabstop}.  If you do not specify {new-tabstop} or
+			it is zero, Vim uses the current value of 'tabstop'.
 			The current value of 'tabstop' is always used to
 			compute the width of existing tabs.
 			With !, Vim also replaces strings of only normal
 			spaces with tabs where appropriate.
 			With 'expandtab' on, Vim replaces all tabs with the
 			appropriate number of spaces.
-			This command sets 'tabstop' to the new value given,
-			and if performed on the whole file, which is default,
-			should not make any visible change.
-			Careful: This command modifies any <Tab> characters
+			This command sets 'tabstop' to {new-tabstop} and if
+			performed on the whole file, which is default, should
+			not make any visible change.
+
+			When [-indentonly] is specified, only the leading
+			white-space will be targeted.  Any other consecutive
+			white-space will not be changed.
+
+			Warning: This command modifies any <Tab> characters
 			inside of strings in a C program.  Use "\t" to avoid
 			this (that's a good habit anyway).
 			`:retab!` may also change a sequence of spaces by
@@ -2014,23 +2018,6 @@ Also see |:sort-uniq|.
 			With [r] comparison is done on the text that matches
 			/{pattern}/ instead of the full line.
 
-			When /{pattern}/ is specified and [r] is not used, the
-			text matched with {pattern} is skipped and comparison
-			is done on what comes after the match.
-			'ignorecase' applies to the pattern, but 'smartcase'
-			is not used.
-
-			Instead of the slash any non-letter can be used.
-
-			For example, to remove adjacent duplicate lines based
-			on the second comma-separated field: >
-				:uniq r /[^,]*,/
-<			Or to keep only unique lines ignoring the first 5
-			characters: >
-				:uniq u /.\{5}/
-<			If {pattern} is empty (e.g. // is used), the last
-			search pattern is used.
-
 			With [u] only keep lines that do not repeat (i.e., are
 			not immediately followed by the same line).
 
@@ -2040,8 +2027,24 @@ Also see |:sort-uniq|.
 			If both [!] and [u] are given, [u] is ignored and [!]
 			takes effect.
 
-			Note that leading and trailing white space, and lines
-			that are not adjacent, are not considered duplicates.
+			When /{pattern}/ is specified and [r] is not used, the
+			text matched with {pattern} is skipped and comparison
+			is done on what comes after the match.
+			'ignorecase' applies to the pattern, but 'smartcase'
+			is not used.
+			Instead of the slash any non-letter can be used.
+
+			For example, to remove adjacent duplicate lines based
+			on the second comma-separated field: >
+				:uniq /[^,]*,/
+<			Or to keep only unique lines ignoring the first 5
+			characters: >
+				:uniq u /.\{5}/
+<			If {pattern} is empty (e.g. // is used), the last
+			search pattern is used.
+
+			Note that leading and trailing white space may cause
+			lines to be considered different.
 			To remove all duplicates regardless of position, use
 			|:sort-u| or external tools.
 

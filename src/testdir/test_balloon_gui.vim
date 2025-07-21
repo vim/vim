@@ -1,6 +1,5 @@
 " Tests for 'ballooneval' in the GUI.
 
-source check.vim
 CheckGui
 CheckFeature balloon_eval
 

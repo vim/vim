@@ -101,6 +101,8 @@ Variables and their values available for building the installer (not mandatory):
     "HAVE_NLS=0"	— do not add native language support.
     "HAVE_MULTI_LANG=0" — to create an English-only the installer.
     "WIN64=1"		— to create a 64-bit the installer.
+    "ARM64=1"		— to create the installer for ARM64. The WIN64 variable
+			    must be set to 1.
     "X=<scriptcmd>"	— executes scriptcmd in script.  If multiple scriptcmd
 			    are specified, they are separated by a semicolon.
 			    Example "X=OutFile MyVim.exe;XPMode on"

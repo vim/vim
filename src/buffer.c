@@ -2524,6 +2524,9 @@ free_buf_options(
     free_callback(&buf->b_ffu_cb);
 #endif
     clear_string_option(&buf->b_p_dict);
+#ifdef FEAT_DIFF
+    clear_string_option(&buf->b_p_dia);
+#endif
     clear_string_option(&buf->b_p_tsr);
     clear_string_option(&buf->b_p_qe);
     buf->b_p_ar = -1;
@@ -5411,9 +5414,11 @@ get_rel_pos(
 	return (int)vim_snprintf_safelen((char *)buf, buflen,
 	    "%s", _("Top"));
 
+    int perc = calc_percentage(above, above + below);
+    char tmp[8];
     // localized percentage value
-    return (int)vim_snprintf_safelen((char *)buf, buflen,
-	_("%2d%%"), calc_percentage(above, above + below));
+    vim_snprintf(tmp, sizeof(tmp), _("%d%%"), perc);
+    return (int)vim_snprintf_safelen((char *)buf, buflen, _("%2s"), tmp);
 }
 
 /*

@@ -32,6 +32,10 @@ All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 mapped to commands by the user, and the mouse can be used.
 
+Vim also aims to provide a (mostly) POSIX-compatible vi implementation, when
+compiled with a minimal feature set (typically called vim.tiny), which is used
+by many Linux distributions as the default vi editor.
+
 Vim runs under MS-Windows (7, 8, 10, 11), macOS, Haiku, VMS and almost all
 flavours of UNIX.  Porting to other systems should not be very difficult.
 Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000/XP/Vista,

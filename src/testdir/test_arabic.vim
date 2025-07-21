@@ -2,10 +2,7 @@
 " NOTE: This just checks if the code works. If you know Arabic please add
 " functional tests that check the shaping works with real text.
 
-source check.vim
 CheckFeature arabic
-
-source view_util.vim
 
 " Return list of Unicode characters at line lnum.
 " Combining characters are treated as a single item.

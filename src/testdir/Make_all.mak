@@ -102,6 +102,7 @@ NEW_TESTS = \
 	test_cindent \
 	test_cjk_linebreak \
 	test_clientserver \
+	test_clipmethod \
 	test_close_count \
 	test_cmd_lists \
 	test_cmdline \
@@ -241,8 +242,10 @@ NEW_TESTS = \
 	test_perl \
 	test_plugin_comment \
 	test_plugin_glvs \
+	test_plugin_helptoc \
 	test_plugin_man \
 	test_plugin_matchparen \
+	test_plugin_tar \
 	test_plugin_termdebug \
 	test_plugin_tohtml \
 	test_plugin_zip \
@@ -343,6 +346,7 @@ NEW_TESTS = \
 	test_vimscript \
 	test_virtualedit \
 	test_visual \
+	test_wayland \
 	test_winbar \
 	test_winbuf_close \
 	test_window_cmd \
@@ -387,6 +391,7 @@ NEW_TESTS_RES = \
 	test_cindent.res \
 	test_cjk_linebreak.res \
 	test_clientserver.res \
+	test_clipmethod.res \
 	test_close_count.res \
 	test_cmd_lists.res \
 	test_cmdline.res \
@@ -509,8 +514,10 @@ NEW_TESTS_RES = \
 	test_perl.res \
 	test_plugin_comment.res \
 	test_plugin_glvs.res \
+	test_plugin_helptoc.res \
 	test_plugin_man.res \
 	test_plugin_matchparen.res \
+	test_plugin_tar.res \
 	test_plugin_termdebug.res \
 	test_plugin_tohtml.res \
 	test_plugin_zip.res \
@@ -594,6 +601,7 @@ NEW_TESTS_RES = \
 	test_vimscript.res \
 	test_virtualedit.res \
 	test_visual.res \
+	test_wayland.res \
 	test_winbar.res \
 	test_winbuf_close.res \
 	test_window_cmd.res \

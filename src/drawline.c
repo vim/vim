@@ -1476,9 +1476,9 @@ win_line(
 
     CLEAR_FIELD(line_changes);
 
-    if (wlv.filler_lines < 0 || linestatus < 0)
+    if (linestatus < 0)
     {
-	if (wlv.filler_lines == -1 || linestatus == -1)
+	if (linestatus == -1)
 	{
 	    if (diff_find_change(wp, lnum, &line_changes))
 	    {
@@ -1508,9 +1508,6 @@ win_line(
 	}
 	else
 	    wlv.diff_hlf = HLF_ADD;
-
-	if (linestatus == 0)
-	    wlv.filler_lines = 0;
 
 	area_highlighting = TRUE;
     }
@@ -2772,6 +2769,13 @@ win_line(
 #endif
 		// no more cells to skip
 		skip_cells = 0;
+#ifdef FEAT_TERMINAL
+		if (term_show_buffer(wp->w_buffer)
+		    && wlv.vcol == 0
+		    && wlv.win_attr == term_get_attr(wp, lnum, -1))
+		    // reset highlighting attribute
+		    wlv.win_attr = 0;
+#endif
 	    }
 
 	    if (has_mbyte)

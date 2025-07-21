@@ -25,6 +25,10 @@ AC_EXEEXT
 
 AC_HEADER_SYS_WAIT
 
+if test -z "$PKG_CONFIG"; then
+  AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
+fi
+
 dnl Check that the C99 features that Vim uses are supported:
 if test x"$ac_cv_prog_cc_c99" != xno; then
   dnl If the compiler doesn't explicitly support C99, then check
@@ -2389,6 +2393,59 @@ AC_ARG_ENABLE(fontset,
 AC_MSG_RESULT($enable_fontset)
 dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
 
+AC_MSG_CHECKING(if shm_open is available)
+cppflags_save=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		   [#include <sys/mman.h>
+		    #include <sys/stat.h>
+		    #include <fcntl.h>], [shm_open("/test", O_CREAT, 0600);])],
+		   AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SHM_OPEN),
+		   AC_MSG_RESULT(no))
+CPPFLAGS=$cppflags_save
+
+AC_MSG_CHECKING(--with-wayland argument)
+AC_ARG_WITH(wayland,
+	[  --with-wayland	  Include support for the Wayland protocol.],
+	[with_wayland=$withval],
+	AS_IF([test "x$features" = xtiny], 
+			[with_wayland=no
+			 AC_MSG_RESULT([cannot use wayland with tiny features])],
+			[with_wayland=yes
+			 AC_MSG_RESULT([yes])]))
+
+if test "$with_wayland" = yes; then
+cflags_save=$CFLAGS
+  AC_MSG_CHECKING(for wayland)
+  if "$PKG_CONFIG" --exists 'wayland-client'; then
+    AC_MSG_RESULT([yes])
+    AC_DEFINE(HAVE_WAYLAND)
+    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client`
+    CFLAGS="$CFLAGS $WAYLAND_CFLAGS"
+    WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client`
+    WAYLAND_SRC=" \
+      auto/wayland/wlr-data-control-unstable-v1.c \
+      auto/wayland/ext-data-control-v1.c \
+      auto/wayland/xdg-shell.c \
+      auto/wayland/primary-selection-unstable-v1.c \
+      wayland.c"
+    WAYLAND_OBJ=" \
+      objects/wlr-data-control-unstable-v1.o \
+      objects/ext-data-control-v1.o \
+      objects/xdg-shell.o \
+      objects/primary-selection-unstable-v1.o \
+      objects/wayland.o"
+    AC_SUBST(WAYLAND_CFLAGS)
+    AC_SUBST(WAYLAND_LIBS)
+    AC_SUBST(WAYLAND_SRC)
+    AC_SUBST(WAYLAND_OBJ)
+  else
+    AC_MSG_RESULT(no)
+    with_wayland=no
+  fi
+CFLAGS=$cflags_save
+fi
+
 test -z "$with_x" && with_x=yes
 test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
 if test "$with_x" = no; then
@@ -2826,10 +2883,6 @@ AC_DEFUN([GNOME_INIT_HOOK],
 AC_DEFUN([GNOME_INIT],[
 	GNOME_INIT_HOOK([],fail)
 ])
-
-if test -z "$PKG_CONFIG"; then
-  AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl Check for GTK3. If it succeeds, skip the check for GTK2.
@@ -3375,7 +3428,6 @@ CPPFLAGS=$cppflags_save
 fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-AC_PROG_GCC_TRADITIONAL
 AC_C_CONST
 AC_C_VOLATILE
 AC_TYPE_MODE_T

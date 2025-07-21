@@ -1,14 +1,10 @@
 " Tests for decoding escape sequences sent by the terminal.
 
 " This only works for Unix in a terminal
-source check.vim
 CheckNotGui
 CheckUnix
 
-source shared.vim
-source mouse.vim
-source view_util.vim
-source term_util.vim
+source util/mouse.vim
 
 func s:TermGuiColorsTest()
   CheckNotMSWindows

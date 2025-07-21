@@ -2,15 +2,12 @@
 " This is split in two, because it can take a lot of time.
 " See test_terminal.vim and test_terminal2.vim for further tests.
 
-source check.vim
 CheckFeature terminal
 
-source shared.vim
-source screendump.vim
-source mouse.vim
-source term_util.vim
+source util/screendump.vim
+source util/mouse.vim
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 let $PROMPT_COMMAND=''
 
@@ -809,7 +806,7 @@ endfunc
 " Test for sync buffer cwd with shell's pwd
 func Test_terminal_sync_shell_dir()
   CheckUnix
-  " The test always use sh (see src/testdir/unix.vim).
+  " The test always use sh (see src/testdir/util/unix.vim).
   " BSD's sh doesn't seem to play well with the OSC 7 escape sequence.
   CheckNotBSD
 
@@ -1016,6 +1013,28 @@ func Test_autocmd_buffilepost_with_hidden_term()
   augroup END
   augroup! TestCursor
   bw! XTestFile
+endfunc
+
+func Test_terminal_visual_empty_listchars()
+  CheckScreendump
+  CheckRunVimInTerminal
+  CheckUnix
+
+  let lines = [
+  \ 'set listchars=',
+  \ ':term sh -c "printf ''hello\\n\\nhello''"'
+  \ ]
+  call writefile(lines, 'XtermStart1', 'D')
+  let buf = RunVimInTerminal('-S XtermStart1', #{rows: 15})
+  call term_wait(buf)
+  call term_sendkeys(buf, "V2k")
+  call VerifyScreenDump(buf, 'Test_terminal_empty_listchars', {})
+  call term_sendkeys(buf, "\<esc>")
+  call term_sendkeys(buf, ":set nu\<cr>")
+  call term_sendkeys(buf, "ggV2j")
+  call VerifyScreenDump(buf, 'Test_terminal_empty_listchars2', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

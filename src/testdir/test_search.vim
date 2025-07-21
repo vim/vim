@@ -1,8 +1,6 @@
 " Test for the search command
 
-source shared.vim
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 func Test_search_cmdline()
   CheckOption incsearch
@@ -843,6 +841,7 @@ func Test_search_cmdline_incsearch_highlight()
 
   " clean up
   set noincsearch nohlsearch
+  call test_override("char_avail", 0)
   bw!
 endfunc
 

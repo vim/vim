@@ -1,9 +1,7 @@
 " Test for python 2 commands.
 
-source check.vim
 CheckFeature python
 CheckFeature quickfix
-source shared.vim
 
 " NOTE: This will cause errors when run under valgrind.
 " This would require recompiling Python with:

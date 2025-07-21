@@ -2303,7 +2303,7 @@ EXTERN char e_cant_rename_viminfo_file_to_str[]
 	INIT(= N_("E886: Can't rename viminfo file to %s!"));
 #endif
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
-EXTERN char e_sorry_this_command_is_disabled_python_side_module_could_not_be_loaded[]
+EXTERN char e_sorry_this_command_is_disabled_python_site_module_could_not_be_loaded[]
 	INIT(= N_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
 #endif
 EXTERN char e_nfa_regexp_cannot_repeat_str[]
@@ -2885,8 +2885,8 @@ EXTERN char e_assert_fails_fourth_argument[]
 	INIT(= N_("E1115: \"assert_fails()\" fourth argument must be a number"));
 EXTERN char e_assert_fails_fifth_argument[]
 	INIT(= N_("E1116: \"assert_fails()\" fifth argument must be a string"));
-EXTERN char e_cannot_use_bang_with_nested_def[]
-	INIT(= N_("E1117: Cannot use ! with nested :def"));
+EXTERN char e_cannot_use_bang_with_nested_def_str[]
+	INIT(= N_("E1117: Cannot use ! with nested %s"));
 EXTERN char e_cannot_change_locked_list[]
 	INIT(= N_("E1118: Cannot change locked list"));
 EXTERN char e_cannot_change_locked_list_item[]
@@ -3732,3 +3732,17 @@ EXTERN char e_cannot_switch_to_a_closing_buffer[]
 	INIT(= N_("E1546: Cannot switch to a closing buffer"));
 EXTERN char e_cannot_not_support_redrawtabpanel[]
 	INIT(= N_("E1547: This version of Vim does support :redrawtabpanel"));
+#ifdef FEAT_WAYLAND
+EXTERN char e_wayland_connection_unavailable[]
+	INIT(= N_("E1548: Wayland connection is unavailable"));
+#endif
+#if defined(FEAT_DIFF)
+EXTERN char e_cannot_have_more_than_nr_diff_anchors[]
+	INIT(= N_("E1549: Cannot have more than %d diff anchors"));
+EXTERN char e_failed_to_find_all_diff_anchors[]
+	INIT(= N_("E1550: Failed to find all diff anchors"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_open_a_popup_window_to_a_closing_buffer[]
+	INIT(= N_("E1551: Cannot open a popup window to a closing buffer"));
+#endif

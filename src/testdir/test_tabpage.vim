@@ -1,7 +1,6 @@
 " Tests for tabpage
 
-source screendump.vim
-source check.vim
+source util/screendump.vim
 
 function Test_tabpage()
   CheckFeature quickfix

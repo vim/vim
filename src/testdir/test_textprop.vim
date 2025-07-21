@@ -1,11 +1,10 @@
 " Tests for defining text property types and adding text properties to the
 " buffer.
 
-source check.vim
 CheckFeature textprop
 
-source screendump.vim
-import './vim9.vim' as v9
+source util/screendump.vim
+import './util/vim9.vim' as v9
 
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})

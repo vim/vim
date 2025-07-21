@@ -55,8 +55,9 @@ static int fuzzy_match_func_compare(const void *s1, const void *s2);
 static void fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz);
 
 #define SEARCH_STAT_DEF_TIMEOUT 40L
-#define SEARCH_STAT_DEF_MAX_COUNT 99
-#define SEARCH_STAT_BUF_LEN 12
+// 'W ':  2 +
+// '[>9999/>9999]': 13 + 1 (NUL)
+#define SEARCH_STAT_BUF_LEN 16
 
 /*
  * This file contains various searching-related routines. These fall into
@@ -1696,7 +1697,7 @@ do_search(
 								   NULL, NULL))
 #endif
 				),
-				SEARCH_STAT_DEF_MAX_COUNT,
+				p_msc,
 				SEARCH_STAT_DEF_TIMEOUT);
 
 	/*
@@ -3265,7 +3266,7 @@ update_search_stat(
     static int	    cnt = 0;
     static int	    exact_match = FALSE;
     static int	    incomplete = 0;
-    static int	    last_maxcount = SEARCH_STAT_DEF_MAX_COUNT;
+    static int	    last_maxcount = 0;
     static int	    chgtick = 0;
     static char_u   *lastpat = NULL;
     static size_t   lastpatlen = 0;
@@ -3282,7 +3283,7 @@ update_search_stat(
 	stat->cnt = cnt;
 	stat->exact_match = exact_match;
 	stat->incomplete = incomplete;
-	stat->last_maxcount = last_maxcount;
+	stat->last_maxcount = p_msc;
 	return;
     }
     last_maxcount = maxcount;
@@ -4174,7 +4175,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 {
     pos_T		pos = curwin->w_cursor;
     char_u		*pattern = NULL;
-    int			maxcount = SEARCH_STAT_DEF_MAX_COUNT;
+    int			maxcount = p_msc;
     long		timeout = SEARCH_STAT_DEF_TIMEOUT;
     int			recompute = TRUE;
     searchstat_T	stat;

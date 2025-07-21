@@ -1,7 +1,5 @@
 " Tests for the "sort()" function and for the ":sort" command.
 
-source check.vim
-
 func Compare1(a, b) abort
   call sort(range(3), 'Compare2')
   return a:a - a:b

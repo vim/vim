@@ -66,7 +66,6 @@ static int	getargopt(exarg_T *eap);
 #endif
 
 static linenr_T default_address(exarg_T *eap);
-static linenr_T get_address(exarg_T *, char_u **, cmd_addr_T addr_type, int skip, int silent, int to_other_file, int address_count);
 static void address_default_all(exarg_T *eap);
 static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
@@ -372,6 +371,12 @@ static void	ex_folddo(exarg_T *eap);
 #endif
 #if !defined(FEAT_X11) || !defined(FEAT_XCLIPBOARD)
 # define ex_xrestore		ex_ni
+#endif
+#if !defined(FEAT_WAYLAND)
+# define ex_wlrestore		ex_ni
+#endif
+#if !defined(FEAT_CLIPBOARD)
+# define ex_clipreset		ex_ni
 #endif
 #if !defined(FEAT_PROP_POPUP)
 # define ex_popupclear		ex_ni
@@ -4352,7 +4357,7 @@ default_address(exarg_T *eap)
  *
  * Return MAXLNUM when no Ex address was found.
  */
-    static linenr_T
+    linenr_T
 get_address(
     exarg_T	*eap UNUSED,
     char_u	**ptr,
@@ -4546,7 +4551,7 @@ get_address(
 		    else
 			curwin->w_cursor.col = 0;
 		    searchcmdlen = 0;
-		    flags = silent ? 0 : SEARCH_HIS | SEARCH_MSG;
+		    flags = silent ? SEARCH_KEEP : SEARCH_HIS | SEARCH_MSG;
 		    if (!do_search(NULL, c, c, cmd, STRLEN(cmd), 1L, flags, NULL))
 		    {
 			curwin->w_cursor = pos;
@@ -8023,7 +8028,7 @@ post_chdir(cdscope_T scope)
     }
 
     last_chdir_reason = NULL;
-    shorten_fnames(TRUE);
+    shorten_fnames(vim_strchr(p_cpo, CPO_NOSYMLINKS) == NULL);
 }
 
 /*

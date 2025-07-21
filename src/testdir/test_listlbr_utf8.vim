@@ -3,13 +3,11 @@
 set encoding=utf-8
 scriptencoding utf-8
 
-source check.vim
 CheckOption linebreak
 CheckFeature conceal
 CheckFeature signs
 
-source view_util.vim
-source screendump.vim
+source util/screendump.vim
 
 func s:screen_lines(lnum, width) abort
   return ScreenLines(a:lnum, a:width)

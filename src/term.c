@@ -3619,6 +3619,13 @@ win_new_shellsize(void)
     if (old_Rows != Rows || old_Columns != COLUMNS_WITHOUT_TPL()
 	    || old_coloff != TPL_LCOL())
 	ui_new_shellsize();
+    if (old_Columns != COLUMNS_WITHOUT_TPL() || old_coloff != TPL_LCOL())
+    {
+	old_Columns = COLUMNS_WITHOUT_TPL();
+	old_coloff = TPL_LCOL();
+
+	shell_new_columns();
+    }
     if (old_Rows != Rows)
     {
 	// If 'window' uses the whole screen, keep it using that.
@@ -3628,13 +3635,6 @@ win_new_shellsize(void)
 	    p_window = Rows - 1;
 	old_Rows = Rows;
 	shell_new_rows();	// update window sizes
-    }
-    if (old_Columns != COLUMNS_WITHOUT_TPL() || old_coloff != TPL_LCOL())
-    {
-	old_Columns = COLUMNS_WITHOUT_TPL();
-	old_coloff = TPL_LCOL();
-
-	shell_new_columns();
     }
 }
 

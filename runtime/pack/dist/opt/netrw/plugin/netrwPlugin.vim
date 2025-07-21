@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_netrwPlugin")
     finish
 endif
 
-let g:loaded_netrwPlugin = "v181"
+let g:loaded_netrwPlugin = "v183"
 
 let s:keepcpo = &cpo
 set cpo&vim
@@ -54,7 +54,7 @@ augroup END
 
 command! -count=1 -nargs=* Nread let s:svpos= winsaveview()<bar>call netrw#NetRead(<count>,<f-args>)<bar>call winrestview(s:svpos)
 command! -range=% -nargs=* Nwrite let s:svpos= winsaveview()<bar><line1>,<line2>call netrw#NetWrite(<f-args>)<bar>call winrestview(s:svpos)
-command! -nargs=* NetUserPass call NetUserPass(<f-args>)
+command! -nargs=* NetUserPass call netrw#NetUserPass(<f-args>)
 command! -nargs=* Nsource let s:svpos= winsaveview()<bar>call netrw#NetSource(<f-args>)<bar>call winrestview(s:svpos)
 command! -nargs=? Ntree call netrw#SetTreetop(1,<q-args>)
 
@@ -69,12 +69,6 @@ command! -nargs=* -bar -count=0 -complete=dir Texplore call netrw#Explore(<count
 command! -nargs=* -bar -bang -count=0 -complete=dir Lexplore call netrw#Lexplore(<count>, <bang>0, <q-args>)
 command! -nargs=* -bar -bang Nexplore call netrw#Explore(-1, 0, 0, <q-args>)
 command! -nargs=* -bar -bang Pexplore call netrw#Explore(-2, 0, 0, <q-args>)
-
-" }}}
-" Commands: NetrwSettings {{{
-
-command! -nargs=0 NetrwSettings call netrwSettings#NetrwSettings()
-command! -bang NetrwClean call netrw#Clean(<bang>0)
 
 " }}}
 " Maps: {{{
@@ -149,39 +143,17 @@ function! s:VimEnter(dirname)
 endfunction
 
 " }}}
-" NetrwStatusLine: {{{
+" Deprecated: {{{
 
-function! NetrwStatusLine()
-    if !exists("w:netrw_explore_bufnr") || w:netrw_explore_bufnr != bufnr("%") || !exists("w:netrw_explore_line") || w:netrw_explore_line != line(".") || !exists("w:netrw_explore_list")
-        let &stl= s:netrw_explore_stl
-        unlet! w:netrw_explore_bufnr w:netrw_explore_line
-        return ""
+function NetUserPass(...)
+    call netrw#msg#Deprecate('NetUserPass', 'v185', {
+                \ 'vim': 'netrw#NetUserPass()',
+                \ 'nvim': 'netrw#NetUserPass()'
+                \})
+    if a:0
+        call netrw#NetUserPass(a:000)
     else
-        return "Match ".w:netrw_explore_mtchcnt." of ".w:netrw_explore_listlen
-    endif
-endfunction
-
-" }}}
-" NetUserPass: set username and password for subsequent ftp transfer {{{
-"   Usage:  :call NetUserPass()                 -- will prompt for userid and password
-"           :call NetUserPass("uid")            -- will prompt for password
-"           :call NetUserPass("uid","password") -- sets global userid and password
-function! NetUserPass(...)
-    " get/set userid
-    if a:0 == 0
-        if !exists("g:netrw_uid") || g:netrw_uid == ""
-            " via prompt
-            let g:netrw_uid= input('Enter username: ')
-        endif
-    else  " from command line
-        let g:netrw_uid= a:1
-    endif
-
-    " get password
-    if a:0 <= 1 " via prompt
-        let g:netrw_passwd= inputsecret("Enter Password: ")
-    else " from command line
-        let g:netrw_passwd=a:2
+        call netrw#NetUserPass()
     endif
 endfunction
 

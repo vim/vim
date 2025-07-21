@@ -1,8 +1,5 @@
 " Test for various indent options
 
-source shared.vim
-source check.vim
-
 func Test_preserveindent()
   new
   " Test for autoindent copying indent from the previous line

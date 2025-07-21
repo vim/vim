@@ -1159,12 +1159,14 @@ pum_set_selected(int n, int repeat UNUSED)
 	 * 'completeopt' contains "preview" or "popup" or "popuphidden".
 	 * Skip this when tried twice already.
 	 * Skip this also when there is not much room.
+	 * Skip this for command-window when 'completeopt' contains "preview".
 	 * NOTE: Be very careful not to sync undo!
 	 */
 	if (pum_array[pum_selected].pum_info != NULL
 		&& Rows > 10
 		&& repeat <= 1
-		&& (cur_cot_flags & COT_ANY_PREVIEW))
+		&& (cur_cot_flags & COT_ANY_PREVIEW)
+		&& !((cur_cot_flags & COT_PREVIEW) && cmdwin_type != 0))
 	{
 	    win_T	*curwin_save = curwin;
 	    tabpage_T   *curtab_save = curtab;

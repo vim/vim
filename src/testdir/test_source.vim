@@ -1,8 +1,5 @@
 " Tests for the :source command.
 
-source check.vim
-source view_util.vim
-
 func Test_source_autocmd()
   call writefile([
 	\ 'let did_source = 1',

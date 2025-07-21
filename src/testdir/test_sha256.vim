@@ -1,6 +1,5 @@
 " Tests for the sha256() function.
 
-source check.vim
 CheckFeature cryptv
 CheckFunction sha256
 

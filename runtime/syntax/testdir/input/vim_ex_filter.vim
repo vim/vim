@@ -8,6 +8,9 @@ filter! pa\%(tt\)ern  oldfiles
 filter  /pa\%(tt\)ern/ oldfiles
 filter! /pa\%(tt\)ern/ oldfiles
 
+filter  !pa\%(tt\)ern! oldfiles
+filter! !pa\%(tt\)ern! oldfiles
+
 filter  /pa\%(t|t\)ern/ oldfiles | echo "Foo"
 filter! /pa\%(t|t\)ern/ oldfiles | echo "Foo"
 

@@ -1,8 +1,5 @@
 " Tests for the XDG feature
 
-source check.vim
-source shared.vim
-
 func s:get_rcs()
   let rcs = {
         \ 'file1': { 'path': '~/.vimrc', 'dir': expand('~/.vim/') },
@@ -209,7 +206,7 @@ func Test_zzz_xdg_runtime_files()
 
   " Is setup in Github Runner
   unlet $XDG_CONFIG_HOME
-  source setup_gui.vim
+  source util/setup_gui.vim
   call GUISetUpCommon()
 
   " This tests, that the GUI initialization file from

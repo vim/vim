@@ -1,6 +1,6 @@
 " Test filter() and map()
 
-import './vim9.vim' as v9
+import './util/vim9.vim' as v9
 
 " list with expression string
 func Test_filter_map_list_expr_string()

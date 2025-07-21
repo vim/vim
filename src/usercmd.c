@@ -88,6 +88,7 @@ static keyvalue_T command_complete_tab[] =
     KEYVALUE_ENTRY(EXPAND_MESSAGES, "messages"),
     KEYVALUE_ENTRY(EXPAND_SETTINGS, "option"),
     KEYVALUE_ENTRY(EXPAND_PACKADD, "packadd"),
+    KEYVALUE_ENTRY(EXPAND_RETAB, "retab"),
     KEYVALUE_ENTRY(EXPAND_RUNTIME, "runtime"),
 #if defined(FEAT_EVAL)
     KEYVALUE_ENTRY(EXPAND_SCRIPTNAMES, "scriptnames"),
@@ -486,16 +487,33 @@ get_commandtype(int expand)
 
 #ifdef FEAT_EVAL
 /*
- * Get the name of completion type "expand" as a string.
+ * Get the name of completion type "expand" as an allocated string.
+ * "compl_arg" is the function name for "custom" and "customlist" types.
+ * Returns NULL if no completion is available or on allocation failure.
  */
     char_u *
-cmdcomplete_type_to_str(int expand)
+cmdcomplete_type_to_str(int expand, char_u *compl_arg)
 {
     keyvalue_T *kv;
+    char_u     *cmd_compl;
 
     kv = get_commandtype(expand);
+    if (kv == NULL || kv->value.string == NULL)
+	return NULL;
 
-    return (kv == NULL) ? NULL : kv->value.string;
+    cmd_compl = kv->value.string;
+    if (expand == EXPAND_USER_LIST || expand == EXPAND_USER_DEFINED)
+    {
+	char_u	*buffer;
+
+	buffer = alloc(STRLEN(cmd_compl) + STRLEN(compl_arg) + 2);
+	if (buffer == NULL)
+	    return NULL;
+	sprintf((char *)buffer, "%s,%s", cmd_compl, compl_arg);
+	return buffer;
+    }
+
+    return vim_strsave(cmd_compl);
 }
 
 /*

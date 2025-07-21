@@ -3189,7 +3189,8 @@ msg_add_lines(
 
     if (shortmess(SHM_LINES))
 	vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,
-		"%s%ldL, %lldB", insert_space ? " " : "", lnum, (varnumber_T)nchars);
+		// l10n: L as in line, B as in byte
+		_("%s%ldL, %lldB"), insert_space ? " " : "", lnum, (varnumber_T)nchars);
     else
     {
 	len += vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,

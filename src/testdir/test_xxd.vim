@@ -1,7 +1,6 @@
 " Test for the xxd command
 
-source check.vim
-source screendump.vim
+source util/screendump.vim
 
 if empty($XXD) && executable('..\xxd\xxd.exe')
   let s:xxd_cmd = '..\xxd\xxd.exe'

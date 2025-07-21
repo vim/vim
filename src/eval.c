@@ -6025,7 +6025,8 @@ partial_free(partial_T *pt)
     }
     else
 	func_ptr_unref(pt->pt_func);
-    object_unref(pt->pt_obj);
+    if (pt->pt_obj != NULL)
+	object_unref(pt->pt_obj);
 
     // "out_up" is no longer used, decrement refcount on partial that owns it.
     partial_unref(pt->pt_outer.out_up_partial);

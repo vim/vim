@@ -1,7 +1,5 @@
 " Test :hardcopy
 
-source check.vim
-
 func Test_printoptions()
   edit test_hardcopy.vim
   syn on

@@ -1,4 +1,3 @@
-source check.vim
 " This fail on CI MacOS 14 because bindtextdomain() is not available there
 " (missing library?)
 CheckNotMac

@@ -644,6 +644,16 @@ static char *(features[]) =
 	"-vtp",
 # endif
 #endif
+#ifdef FEAT_WAYLAND
+	"+wayland",
+#else
+	"-wayland",
+#endif
+#ifdef FEAT_WAYLAND_CLIPBOARD
+	"+wayland_clipboard",
+#else
+	"-wayland_clipboard",
+#endif
 	"+wildignore",
 	"+wildmenu",
 	"+windows",
@@ -709,6 +719,200 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1573,
+/**/
+    1572,
+/**/
+    1571,
+/**/
+    1570,
+/**/
+    1569,
+/**/
+    1568,
+/**/
+    1567,
+/**/
+    1566,
+/**/
+    1565,
+/**/
+    1564,
+/**/
+    1563,
+/**/
+    1562,
+/**/
+    1561,
+/**/
+    1560,
+/**/
+    1559,
+/**/
+    1558,
+/**/
+    1557,
+/**/
+    1556,
+/**/
+    1555,
+/**/
+    1554,
+/**/
+    1553,
+/**/
+    1552,
+/**/
+    1551,
+/**/
+    1550,
+/**/
+    1549,
+/**/
+    1548,
+/**/
+    1547,
+/**/
+    1546,
+/**/
+    1545,
+/**/
+    1544,
+/**/
+    1543,
+/**/
+    1542,
+/**/
+    1541,
+/**/
+    1540,
+/**/
+    1539,
+/**/
+    1538,
+/**/
+    1537,
+/**/
+    1536,
+/**/
+    1535,
+/**/
+    1534,
+/**/
+    1533,
+/**/
+    1532,
+/**/
+    1531,
+/**/
+    1530,
+/**/
+    1529,
+/**/
+    1528,
+/**/
+    1527,
+/**/
+    1526,
+/**/
+    1525,
+/**/
+    1524,
+/**/
+    1523,
+/**/
+    1522,
+/**/
+    1521,
+/**/
+    1520,
+/**/
+    1519,
+/**/
+    1518,
+/**/
+    1517,
+/**/
+    1516,
+/**/
+    1515,
+/**/
+    1514,
+/**/
+    1513,
+/**/
+    1512,
+/**/
+    1511,
+/**/
+    1510,
+/**/
+    1509,
+/**/
+    1508,
+/**/
+    1507,
+/**/
+    1506,
+/**/
+    1505,
+/**/
+    1504,
+/**/
+    1503,
+/**/
+    1502,
+/**/
+    1501,
+/**/
+    1500,
+/**/
+    1499,
+/**/
+    1498,
+/**/
+    1497,
+/**/
+    1496,
+/**/
+    1495,
+/**/
+    1494,
+/**/
+    1493,
+/**/
+    1492,
+/**/
+    1491,
+/**/
+    1490,
+/**/
+    1489,
+/**/
+    1488,
+/**/
+    1487,
+/**/
+    1486,
+/**/
+    1485,
+/**/
+    1484,
+/**/
+    1483,
+/**/
+    1482,
+/**/
+    1481,
+/**/
+    1480,
+/**/
+    1479,
+/**/
+    1478,
+/**/
+    1477,
 /**/
     1476,
 /**/
@@ -3872,13 +4076,21 @@ list_version(void)
 # ifdef FEAT_GUI_MSWIN
 #  ifdef VIMDLL
 #   ifdef _WIN64
-    msg_puts(_("\nMS-Windows 64-bit GUI/console version"));
+#    if defined(_M_ARM64) || defined(_M_ARM64EC)
+     msg_puts(_("\nMS-Windows ARM64 GUI/console version"));
+#    else
+     msg_puts(_("\nMS-Windows 64-bit GUI/console version"));
+#    endif
 #   else
     msg_puts(_("\nMS-Windows 32-bit GUI/console version"));
 #   endif
 #  else
 #   ifdef _WIN64
-    msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#    if defined(_M_ARM64) || defined(_M_ARM64EC)
+     msg_puts(_("\nMS-Windows ARM64 GUI version"));
+#    else
+     msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#    endif
 #   else
     msg_puts(_("\nMS-Windows 32-bit GUI version"));
 #   endif
@@ -3888,7 +4100,11 @@ list_version(void)
 #  endif
 # else
 #  ifdef _WIN64
+#   if defined(_M_ARM64) || defined(_M_ARM64EC)
+    msg_puts(_("\nMS-Windows ARM64 console version"));
+#   else
     msg_puts(_("\nMS-Windows 64-bit console version"));
+#   endif
 #  else
     msg_puts(_("\nMS-Windows 32-bit console version"));
 #  endif

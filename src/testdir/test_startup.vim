@@ -1,9 +1,6 @@
 " Tests for startup.
 
-source shared.vim
-source screendump.vim
-source term_util.vim
-source check.vim
+source util/screendump.vim
 
 " Check that loading startup.vim works.
 func Test_startup_script()
@@ -559,7 +556,7 @@ func Test_invalid_args()
   CheckUnix
   CheckNotGui
 
-  for opt in ['-Y', '--does-not-exist']
+  for opt in ['-K', '--does-not-exist']
     let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
     call assert_equal(1, v:shell_error)
     call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
