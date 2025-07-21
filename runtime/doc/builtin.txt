@@ -12338,7 +12338,7 @@ wildtrigger()						*wildtrigger()*
 		See |cmdline-completion|.
 
 		This function also enables completion in search patterns such
-		as |/|, |?|, |:s|, |:g|, |:v|, and |:vim|.
+		as |/|, |?|, |:s|, |:g|, |:v|, and |:vimgrep|.
 
 		Unlike pressing 'wildchar' manually, this function does not
 		produce a beep when no matches are found and generally
