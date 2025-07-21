@@ -5156,17 +5156,26 @@ func Test_autocomplete_trigger()
   call assert_equal(2, g:CallCount)
 
   " Test 4d: When autocomplete menu is active, ^X^L completes lines
-  let g:CallCount = 0
   %d
+  let g:CallCount = 0
   call setline(1, ["afoo bar", "barbar foo", "foo bar", "and"])
   call feedkeys("Goa\<C-X>\<C-L>\<F2>\<Esc>0", 'tx!')
   call assert_equal(['afoo bar', 'and'], b:matches->mapnew('v:val.word'))
   call assert_equal(1, g:CallCount)
 
+  " Test 5: When invalid prefix stops completion, backspace should restart it
+  %d
+  set complete&
+  call setline(1, ["afoo bar", "barbar foo", "foo bar", "and"])
+  call feedkeys("Goabc\<F2>\<Esc>0", 'tx!')
+  call assert_equal([], b:matches->mapnew('v:val.word'))
+  call feedkeys("Sabc\<BS>\<BS>\<F2>\<Esc>0", 'tx!')
+  call assert_equal(['and', 'afoo'], b:matches->mapnew('v:val.word'))
+
   bw!
   call test_override("char_avail", 0)
   delfunc NonKeywordComplete
-  set autocomplete& complete&
+  set autocomplete&
   unlet g:CallCount
 endfunc
 
