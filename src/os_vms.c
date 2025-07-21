@@ -1012,7 +1012,7 @@ vms_init(void)
 	    else
 	    {
 		/* Invalid DECC feature value. */
-		printf("INVALID DECC FEATURE VALUE, %d: %d <= %s <= %d.\n", 
+		printf("INVALID DECC FEATURE VALUE, %d: %d <= %s <= %d.\n",
 			feat_value, feat_value_min, decc_feat_array[i].name, feat_value_max);
 	    }
 	}
