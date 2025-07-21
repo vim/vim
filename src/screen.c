@@ -366,9 +366,6 @@ char_needs_redraw(int off_from, int off_to, int cols)
 			    && ScreenLines[off_from + 1]
 						!= ScreenLines[off_to + 1])))))
 	return TRUE;
-    // TODO: This is a temporary solution until the root cause is fixed.
-    if (firstwin->w_wincol > 0)
-	return TRUE;
     return FALSE;
 }
 
@@ -3691,9 +3688,9 @@ screen_ins_lines(
 	    LineOffset[j + line_count] = temp;
 	    LineWraps[j + line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp, topframe->fr_width, clear_attr);
+		lineclear(temp, (int)Columns, clear_attr);
 	    else
-		lineinvalid(temp, topframe->fr_width);
+		lineinvalid(temp, (int)Columns);
 	}
     }
 
