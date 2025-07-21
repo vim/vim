@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 20
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9797,7 +9797,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	'wildchar' also enables completion in search pattern contexts such as
 	|/|, |?|, |:s|, |:g|, |:v|, and |:vim|.  To insert a literal <Tab>
 	instead of triggering completion, type <C-V><Tab> or "\t".
-	See also |'wildoptions'|.
+	See also 'wildoptions' and |wildtrigger()|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
