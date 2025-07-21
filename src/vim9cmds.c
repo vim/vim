@@ -292,7 +292,7 @@ compile_lock_unlock(
 #ifdef LOG_LOCKVAR
 	    ch_log(NULL, "LKVAR:    ... INS_LOCKUNLOCK %s", name);
 #endif
-	    if (compile_load(&name, name + len, cctx, FALSE, FALSE) == FAIL)
+	    if (compile_load(&name, len, name + len, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	    isn = ISN_LOCKUNLOCK;
 	}
@@ -1130,7 +1130,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		    goto failed;
 		}
 		p = skipwhite(p + 1);
-		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
+		lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc,
+								cctx, TRUE);
 		if (lhs_type == NULL)
 		    goto failed;
 	    }

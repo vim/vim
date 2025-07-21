@@ -41551,6 +41551,8 @@ Add support for internal builtin functions with vim9 objects, see
 
 Enum support for Vim9 script |:enum|
 
+Generic function support for Vim9 script |generic-functions|
+
 Support for protected _new() method
 
 Support for compiling all the methods in a Vim9 class using |:defcompile|.
