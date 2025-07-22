@@ -198,12 +198,12 @@ static expand_T	  compl_xp;
 static win_T	  *compl_curr_win = NULL;  // win where completion is active
 static buf_T	  *compl_curr_buf = NULL;  // buf where completion is active
 
+#define COMPL_INITIAL_TIMEOUT_MS    80
 // Autocomplete uses a decaying timeout: starting from COMPL_INITIAL_TIMEOUT_MS,
 // if the current source exceeds its timeout, it is interrupted and the next
 // begins with half the time. A small minimum timeout ensures every source
 // gets at least a brief chance.
 static int	  compl_autocomplete = FALSE;	    // whether autocompletion is active
-#define COMPL_INITIAL_TIMEOUT_MS    80
 static int	  compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
 static int	  compl_time_slice_expired = FALSE; // time budget exceeded for current source
 static int	  compl_from_nonkeyword = FALSE;    // completion started from non-keyword
@@ -243,7 +243,7 @@ typedef struct cpt_source_T
     int	cs_startcol;	    // Start column returned by func
     int	cs_max_matches;	    // Max items to display from this source
 #ifdef ELAPSED_FUNC
-    elapsed_T	compl_start_tv;	    // start of match gathering
+    elapsed_T	compl_start_tv;	    // Timestamp when match collection starts
 #endif
 } cpt_source_T;
 
@@ -2047,7 +2047,8 @@ ins_compl_files(
 	    && !compl_time_slice_expired; i++)
     {
 	fp = mch_fopen((char *)files[i], "r");  // open dictionary file
-	if (flags != DICT_EXACT && !shortmess(SHM_COMPLETIONSCAN))
+	if (flags != DICT_EXACT && !shortmess(SHM_COMPLETIONSCAN)
+		&& !compl_autocomplete)
 	{
 	    msg_hist_off = TRUE;	// reset in msg_trunc_attr()
 	    vim_snprintf((char *)IObuff, IOSIZE,
@@ -4210,7 +4211,7 @@ process_next_cpt_value(
 	    st->dict = st->ins_buf->b_fname;
 	    st->dict_f = DICT_EXACT;
 	}
-	if (!shortmess(SHM_COMPLETIONSCAN))
+	if (!shortmess(SHM_COMPLETIONSCAN) && !compl_autocomplete)
 	{
 	    msg_hist_off = TRUE;	// reset in msg_trunc_attr()
 	    vim_snprintf((char *)IObuff, IOSIZE, _("Scanning: %s"),
@@ -5253,6 +5254,8 @@ advance_cpt_sources_index_safe(void)
     return FAIL;
 }
 
+#define COMPL_FUNC_TIMEOUT_MS		300
+#define COMPL_FUNC_TIMEOUT_NON_KW_MS	1000
 /*
  * Get the next expansion(s), using "compl_pattern".
  * The search starts at position "ini" in curbuf and in the direction
@@ -5313,8 +5316,9 @@ ins_compl_get_exp(pos_T *ini)
 	    && !ctrl_x_mode_line_or_eval()
 	    && !(compl_cont_status & CONT_LOCAL))
     {
-	compl_source_start_timer(0);
 	cpt_sources_index = 0;
+	compl_source_start_timer(0);
+	compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
     }
 
     // For ^N/^P loop over all the flags/windows/buffers in 'complete'.
@@ -5351,6 +5355,15 @@ ins_compl_get_exp(pos_T *ini)
 	if (compl_pattern.string == NULL)
 	    break;
 
+	if (compl_autocomplete && type == CTRL_X_FUNCTION)
+	    // LSP servers may sporadically take >1s to respond (e.g., while
+	    // loading modules), but other sources might already have matches.
+	    // To show results quickly use a short timeout for keyword
+	    // completion. Allow longer timeout for non-keyword completion
+	    // where only function based sources (e.g. LSP) are active.
+	    compl_timeout_ms = compl_from_nonkeyword
+		? COMPL_FUNC_TIMEOUT_NON_KW_MS : COMPL_FUNC_TIMEOUT_MS;
+
 	// get the next set of completion matches
 	found_new_match = get_next_completion_match(type, &st, &start_pos);
 
@@ -5386,6 +5399,10 @@ ins_compl_get_exp(pos_T *ini)
 
 	    compl_started = FALSE;
 	}
+
+	// Reset the timeout after getting matches from function
+	if (compl_autocomplete && type == CTRL_X_FUNCTION)
+	    compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
 
 	// For `^P` completion, reset `compl_curr_match` to the head to avoid
 	// mixing matches from different sources.
@@ -5944,7 +5961,7 @@ ins_compl_next(
 
 /*
  * Check if the current completion source exceeded its timeout. If so, stop
- * collecting (set compl_time_slice_expired), and halve the timeout.
+ * collecting, and halve the timeout.
  */
     static void
 check_elapsed_time(void)
@@ -6747,7 +6764,7 @@ ins_compl_start(void)
 	compl_startpos.col = compl_col;
     }
 
-    if (!shortmess(SHM_COMPLETIONMENU))
+    if (!shortmess(SHM_COMPLETIONMENU) && !compl_autocomplete)
     {
 	if (compl_cont_status & CONT_LOCAL)
 	    edit_submode = (char_u *)_(ctrl_x_msgs[CTRL_X_LOCAL_MSG]);
@@ -6778,7 +6795,7 @@ ins_compl_start(void)
     // showmode might reset the internal line pointers, so it must
     // be called before line = ml_get(), or when this address is no
     // longer needed.  -- Acevedo.
-    if (!shortmess(SHM_COMPLETIONMENU))
+    if (!shortmess(SHM_COMPLETIONMENU) && !compl_autocomplete)
     {
 	edit_submode_extra = (char_u *)_("-- Searching...");
 	edit_submode_highl = HLF_COUNT;
@@ -6947,7 +6964,7 @@ ins_complete(int c, int enable_pum)
     else
 	compl_cont_status &= ~CONT_S_IPOS;
 
-    if (!shortmess(SHM_COMPLETIONMENU))
+    if (!shortmess(SHM_COMPLETIONMENU) && !compl_autocomplete)
 	ins_compl_show_statusmsg();
 
     // Show the popup menu, unless we got interrupted.
@@ -7277,6 +7294,7 @@ get_cpt_func_completion_matches(callback_T *cb UNUSED)
     if (set_compl_globals(startcol, curwin->w_cursor.col, TRUE) == OK)
     {
 	expand_by_function(0, cpt_compl_pattern.string, cb);
+
 	cpt_sources_array[cpt_sources_index].cs_refresh_always =
 	    compl_opt_refresh_always;
 	compl_opt_refresh_always = FALSE;

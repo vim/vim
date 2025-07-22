@@ -1147,8 +1147,6 @@ any of them at any time by typing |CTRL-X|, which temporarily suspends
 autocompletion.  To use |i_CTRL-N| specifically, press |CTRL-E| first to
 dismiss the popup menu.
 
-To suppress messages during completion, set "c" and "C" in |'shortmess'|.
-
 
 FUNCTIONS FOR FINDING COMPLETIONS			*complete-functions*
 

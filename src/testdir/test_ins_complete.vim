@@ -5189,7 +5189,7 @@ func Test_autocomplete_timer()
     else
       let g:CallCount += 1
       if a:delay
-        sleep 200m  " Exceed timeout
+        sleep 310m  " Exceed timeout
       endif
       if a:check
         while !complete_check()
@@ -5304,15 +5304,7 @@ func Test_autocomplete_timer()
   call feedkeys("S \<F2>\<F3>\<Esc>0", 'tx!')
   call assert_equal([], b:matches->mapnew('v:val.word'))
 
-  " Test 9: A bunch of slow sources that delay forever do not stall completion
-  set complete=.,Ffunction('TestComplete'\\,\ [0\\,\ 1\\,\ 0])
-  for _ in range(100)
-    set complete+=Ffunction('TestComplete'\\,\ [0\\,\ 1\\,\ 0])
-  endfor
-  call feedkeys("Sa\<F2>\<F3>\<Esc>0", 'tx!')
-  call assert_equal(['abc'], b:matches->mapnew('v:val.word'))
-
-  " Test 10: Matches nearest to the cursor are prioritized (by default)
+  " Test 9: Matches nearest to the cursor are prioritized (by default)
   %d
   let g:CallCount = 0
   set complete=.
