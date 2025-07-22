@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-20 16:31+0200\n"
+"POT-Creation-Date: 2025-07-21 21:33+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8554,6 +8554,24 @@ msgid ""
 msgstr ""
 
 #, c-format
+msgid ""
+"E1432: Overriding generic method \"%s\" in class \"%s\" with a concrete "
+"method"
+msgstr ""
+
+#, c-format
+msgid ""
+"E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic "
+"method"
+msgstr ""
+
+#, c-format
+msgid ""
+"E1434: Mismatched number of type variables for generic method  \"%s\" in "
+"class \"%s\""
+msgstr ""
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
 
@@ -8731,6 +8749,46 @@ msgid "E1550: Failed to find all diff anchors"
 msgstr ""
 
 msgid "E1551: Cannot open a popup window to a closing buffer"
+msgstr ""
+
+#, c-format
+msgid "E1552: Type variable name must start with an uppercase letter: %s"
+msgstr ""
+
+#, c-format
+msgid "E1553: Missing comma after type in generic function: %s"
+msgstr ""
+
+#, c-format
+msgid "E1554: Missing '>' in generic function: %s"
+msgstr ""
+
+#, c-format
+msgid "E1555: Empty type list specified for generic function '%s'"
+msgstr ""
+
+#, c-format
+msgid "E1556: Too many types specified for generic function '%s'"
+msgstr ""
+
+#, c-format
+msgid "E1557: Not enough types specified for generic function '%s'"
+msgstr ""
+
+#, c-format
+msgid "E1558: Unknown generic function: %s"
+msgstr ""
+
+#, c-format
+msgid "E1559: Type arguments missing for generic function '%s'"
+msgstr ""
+
+#, c-format
+msgid "E1560: Not a generic function: %s"
+msgstr ""
+
+#, c-format
+msgid "E1561: Duplicate type variable name: %s"
 msgstr ""
 
 #. type of cmdline window or 0

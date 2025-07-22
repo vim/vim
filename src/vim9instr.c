@@ -204,6 +204,7 @@ may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
 
     RETURN_OK_IF_SKIP(cctx);
     type = get_type_on_stack(cctx, -1 - offset);
+
     switch (type->tt_type)
     {
 	// nothing to be done
@@ -2125,6 +2126,7 @@ check_func_args_from_type(
 
     return OK;
 }
+
 /*
  * Generate an ISN_PCALL instruction.
  * "type" is the type of the FuncRef.

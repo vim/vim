@@ -3126,6 +3126,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_visualmode},
     {"wildmenumode",	0, 0, 0,	    NULL,
 			ret_number,	    f_wildmenumode},
+    {"wildtrigger",	0, 0, 0,	    NULL,
+			ret_void,	    f_wildtrigger},
     {"win_execute",	2, 3, FEARG_2,	    arg23_win_execute,
 			ret_string,	    f_win_execute},
     {"win_findbuf",	1, 1, FEARG_1,	    arg1_number,
@@ -3946,6 +3948,17 @@ f_call(typval_T *argvars, typval_T *rettv)
 	{
 	    emsg_funcname(e_unknown_function_str, func);
 	    return;
+	}
+	if (*p == '<')
+	{
+	    // generic function
+	    char_u *s = append_generic_func_type_args(tofree, STRLEN(tofree),
+									&p);
+	    if (s != NULL)
+	    {
+		vim_free(tofree);
+		tofree = s;
+	    }
 	}
 	func = tofree;
     }
@@ -5164,6 +5177,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     partial_T   *arg_pt = NULL;
     char_u	*trans_name = NULL;
     int		is_global = FALSE;
+    char_u	*start_bracket = NULL;
 
     if (in_vim9script()
 	    && (check_for_string_or_func_arg(argvars, 0) == FAIL
@@ -5201,6 +5215,12 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	name = s;
 	trans_name = save_function_name(&name, &is_global, FALSE,
 		   TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL);
+	if (*name == '<')
+	{
+	    // generic function
+	    start_bracket = name;
+	    skip_generic_func_type_args(&name);
+	}
 	if (*name != NUL)
 	    s = NULL;
     }
@@ -5343,6 +5363,9 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		else if (is_funcref)
 		{
 		    pt->pt_func = find_func(trans_name, is_global);
+		    if (IS_GENERIC_FUNC(pt->pt_func) && start_bracket != NULL)
+			pt->pt_func = eval_generic_func(pt->pt_func, s,
+							&start_bracket);
 		    func_ptr_ref(pt->pt_func);
 		    vim_free(name);
 		}
@@ -5365,8 +5388,19 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	{
 	    // result is a VAR_FUNC
 	    rettv->v_type = VAR_FUNC;
-	    rettv->vval.v_string = name;
-	    func_ref(name);
+	    if (start_bracket == NULL)
+	    {
+		rettv->vval.v_string = name;
+		func_ref(name);
+	    }
+	    else
+	    {
+		// generic function
+		STRCPY(IObuff, name);
+		STRCAT(IObuff, start_bracket);
+		rettv->vval.v_string = vim_strsave(IObuff);
+		vim_free(name);
+	    }
 	}
     }
 theend:
