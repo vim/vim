@@ -5219,7 +5219,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	{
 	    // generic function
 	    start_bracket = name;
-	    skip_generic_func_type_args(&name);
+	    if (skip_generic_func_type_args(&name) == FAIL)
+		goto theend;
 	}
 	if (*name != NUL)
 	    s = NULL;
