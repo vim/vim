@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jul 21
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12344,7 +12344,7 @@ wildtrigger()						*wildtrigger()*
 		produce a beep when no matches are found and generally
 		operates more quietly.  This makes it suitable for triggering
 		completion automatically, such as from an |:autocmd|.
-							*cmdline-autocompletion*
+						*cmdline-autocompletion*
 		Example: To make the completion menu pop up automatically as
 		you type on the command line, use: >
 			autocmd CmdlineChanged [:/?] call wildtrigger()
