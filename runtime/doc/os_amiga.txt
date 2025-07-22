@@ -1,4 +1,4 @@
-*os_amiga.txt*  For Vim version 9.1.  Last change: 2010 Aug 14
+*os_amiga.txt*  For Vim version 9.1.  Last change: 2025 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -111,12 +111,12 @@ would be better to enter:
 	vim --noplugins <of course you can add a file>
 
 
-Installation ~
+Installation of a binary archive ~
 
 1) Please copy the binary 'VIM' file to c:
-2) Get the Vim runtime package from:
+2) Get the Vim runtime package from (Note: that server is no longer updated):
 
-	ftp://ftp.vim.org/pub/vim/amiga/vim62rt.tgz
+	https://ftp.nluug.nl/pub/vim/amiga/vim90src.tgz
 
    and unpack it in your 'Apps' directory of the MorphOS installation.  For me
    this would create following directory hierarchy:
@@ -143,5 +143,13 @@ Installation ~
 	Cls
 	;End VIM
 
+Compiling~
+
+You can download the Vim source code from the official Vim site:
+	https://github.com/vim/vim/archive/refs/heads/master.zip
+Or using git: >
+	git clone https://github.com/vim/vim.git
+
+For compiling see "src/INSTALLami.txt"
 
  vim:tw=78:ts=8:noet:ft=help:norl:
