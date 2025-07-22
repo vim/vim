@@ -305,8 +305,10 @@ parse_generic_func_type_args(
 	char	*ret_name = type_name(type_arg, &ret_free);
 
 	// create space for the name and the new type
-	if (ga_grow(&gfatab->gfat_args, 1) == FAIL)
+	if (ga_grow(&gfatab->gfat_args, 1) == FAIL) {
+	    vim_free(ret_free);
 	    return NULL;
+	}
 	generic_arg = (generic_T *)gfatab->gfat_args.ga_data +
 						gfatab->gfat_args.ga_len;
 	gfatab->gfat_args.ga_len++;
