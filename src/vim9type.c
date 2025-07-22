@@ -1886,7 +1886,8 @@ parse_type_tuple(
     ret_type = alloc_tuple_type(typecount, type_gap);
     ret_type->tt_flags = flags;
     ret_type->tt_argcount = typecount;
-    if (tuple_type_add_types(ret_type, typecount, type_gap) == FAIL) {
+    if (tuple_type_add_types(ret_type, typecount, type_gap) == FAIL)
+    {
 	ret_type = NULL;
 	goto on_err;
     }
