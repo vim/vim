@@ -2123,10 +2123,6 @@ command_line_scan(mparm_T *parmp)
 	     * the following (additional?) downcasing (which spoils the
 	     * preserve-case results):
 	     */
-# if 0
-	    else
-		c = TOLOWER_ASC(c);
-# endif /* 0 */
 #endif /* defined( VMS) */
 	    switch (c)
 	    {

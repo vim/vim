@@ -743,13 +743,13 @@ vms_fixfilename(void *instring)
     void
 vms_remove_version(void * fname)
 {
-    char_u	*dp;	        /* Dot pointer. */
-    char_u	*rp;            /* Right pointer. */
+    char_u	*dp;	        // Dot pointer
+    char_u	*rp;            // Right pointer
     int		done = 0;
     int		vdigits = 0;
 
-    rp = (char_u *)fname+ strlen( (char *)fname)- 1;    /* Rightmost char. */
-    while ((done == 0) && (rp > (char_u *)fname))       /* Count digits. */
+    rp = (char_u *)fname+ strlen( (char *)fname)- 1;    // Rightmost char
+    while ((done == 0) && (rp > (char_u *)fname))       // Count digits
     {
 	if (isdigit( *rp))
 	{
@@ -758,48 +758,48 @@ vms_remove_version(void * fname)
 	}
 	else
 	{
-	    done = 1;                                  /* Quit at non-digit. */
+	    done = 1;                                   // Quit at non-digit
 	}
-    } /* while (Count digits) */
+    } // while (Count digits)
 
-    if (vdigits  <= 5)  /* If likely version digits, check delimiter. */
-    {   /* (Could check for <= 32767, not just five digits or fewer.) */
+    if (vdigits  <= 5)  // If likely version digits, check delimiter
+    {   // (Could check for <= 32767, not just five digits or fewer.)
 	if (*rp == (char_u)';')
 	{
 	    if ((rp >= (char_u *)fname) && (*(rp- 1) != (char_u)'^'))
-	    {                           /* Unescaped ";". */
-		*rp = '\0';             /* Trim off ";nnn". */
+	    {                           // Unescaped ";"
+		*rp = '\0';             // Trim off ";nnn"
 	    }
 	}
-	else if (*rp == (char_u)'.')    /* Last of multiple dots? */
+	else if (*rp == (char_u)'.')    // Last of multiple dots?
 	{
 	    if ((rp >= (char_u *)fname) && (*(rp- 1) != '^'))
-	    {   /* Unescaped dot.  Version requires previous one. */
-		dp = rp- 1;              /* Scan chars before ".". */
+	    {   // Unescaped dot.  Version requires previous one
+		dp = rp- 1;              // Scan chars before "."
 		done = 0;
 		while ((done == 0) && (dp >= (char_u *)fname))
 		{
 		    if ((*dp == ']') || (*dp == '>') || (*dp == ':') || (*dp == '/'))
-		    {   /* Possible VMS dev:[dir] delimiter (or UNIX "/"). */
+		    {   // Possible VMS dev:[dir] delimiter (or UNIX "/")
 			if ((dp >= (char_u *)fname) && (*(dp- 1) != '^'))
-			{   /* Unescaped dev:[dir] (or /) delimiter. */
-			    done = 1;   /* No previous dot found in name. */
+			{   // Unescaped dev:[dir] (or /) delimiter
+			    done = 1;   // No previous dot found in name
 			}
 		    }
 		    else if (*dp == '.')
-		    {   /* Possible dot delimiter. */
+		    {   // Possible dot delimiter
 			if ((dp >= (char_u *)fname) && (*(dp- 1) != '^'))
-			{   /* Unescaped dot delimiter. */
-			    done = 1;   /* Previous dot found in name. */
-			    *rp = '\0'; /* Trim off ".nnn". */
+			{   // Unescaped dot delimiter
+			    done = 1;   // Previous dot found in name
+			    *rp = '\0'; // Trim off ".nnn"
 			}
 		    }
-		    dp--;               /* Next char to right. */
-		} /* while */
+		    dp--;               // Next char to right
+		} // while
 	    }
 	}
-	/* Else no version found to remove. */
-    } /* if (vdigits  <= 5) */
+	// Else no version found to remove
+    } // if (vdigits  <= 5)
 
     return ;
 }
@@ -1005,9 +1005,7 @@ vms_init(void)
 	    {
 		/* Valid value.  Set it if necessary. */
 		if (feat_value != decc_feat_array[i].value)
-		{
 		    sts = decc$feature_set_value(feat_index, 1, decc_feat_array[i].value);
-		}
 	    }
 	    else
 	    {

@@ -2,8 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <zoltan.arpadffy@gmail.com>
-# Last change:  2024 Jan 03
-#               2025-07-04  Steven M. Schweda <sms@antinode.info>
+# Last change:  2025-07-04  Steven M. Schweda <sms@antinode.info>
 #
 # This script has been tested on VMS 6.2 to 9.2 on VAX, ALPHA, IA64 and X86_64
 # with MMS and MMK
@@ -37,7 +36,7 @@ MODEL = HUGE
 # GUI or terminal mode executable.
 # Comment out if you want just the character terminal mode only.
 # GUI with Motif
-GUI = YES
+# GUI = YES
 
 # GUI with GTK
 # If you have GTK installed you might want to enable this option.
@@ -56,7 +55,7 @@ GUI = YES
 # the comment variable CCVER.
 .IFDEF VAXC_OR_FORCE_VAXC       # VAXC_OR_FORCE_VAXC
 .ELSE                           # VAXC_OR_FORCE_VAXC
-CCVER = YES     # Unreliable with VAX C.
+CCVER = YES                     # Unreliable with VAX C.
 .ENDIF                          # VAXC_OR_FORCE_VAXC [ELSE]
 
 # Uncomment if want a debug version. Resulting executable is DVIM.EXE
