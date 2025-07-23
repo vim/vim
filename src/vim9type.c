@@ -1887,7 +1887,10 @@ parse_type_tuple(
     ret_type->tt_flags = flags;
     ret_type->tt_argcount = typecount;
     if (tuple_type_add_types(ret_type, typecount, type_gap) == FAIL)
-	return NULL;
+    {
+	ret_type = NULL;
+	goto on_err;
+    }
     mch_memmove(ret_type->tt_args, tuple_types_ga.ga_data,
 						sizeof(type_T *) * typecount);
 

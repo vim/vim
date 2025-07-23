@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 9.1.  Last change: 2025 Mar 03
+*usr_90.txt*	For Vim version 9.1.  Last change: 2025 Jul 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -189,69 +189,49 @@ source code yourself!
 ==============================================================================
 *90.2*	MS-Windows
 
-There are two ways to install the Vim program for Microsoft Windows.  You can
-uncompress several archives, or use a self-installing big archive.  Most users
-with fairly recent computers will prefer the second method.  For the first
-one, you will need:
+There are several ways to install the Vim program for Microsoft Windows:
 
-	- An archive with binaries for Vim.
-	- The Vim runtime archive.
-	- A program to unpack the zip files.
+    1. Official Website Download (Stable)~
 
-To get the Vim archives, look in this file for a mirror near you, this should
-provide the fastest download:
+Visit the official Vim website at https://www.vim.org to download the latest
+stable version. The site links to the Windows installer that works out of the
+box for most users.
 
-	ftp://ftp.vim.org/pub/vim/MIRRORS
+    2. Using winget (Windows Package Manager) ~
 
-Or use the home site ftp.vim.org, if you think it's fast enough.  Go to the
-"pc" directory and you'll find a list of files there.  The version number is
-embedded in the file name.  You will want to get the most recent version.
-We will use "82" here, which is version 8.2.
+If you prefer using the command line, you can quickly install Vim using
+Windows' built-in package manager for the stable version: >
 
-	gvim82.exe		The self-installing archive.
+	winget install vim.vim
 
-This is all you need for the second method.  Just launch the executable, and
-follow the prompts.
+Or to download the latest nightly version, use: >
 
-For the first method you must choose one of the binary archives.  These are
-available:
+	winget install vim.vim.nightly
 
-	gvim82.zip		The normal MS-Windows GUI version.
-	gvim82ole.zip		The MS-Windows GUI version with OLE support.
-				Uses more memory, supports interfacing with
-				other OLE applications.
-	vim82w32.zip		32 bit MS-Windows console version.
+This method ensures you get an up-to-date version with minimal hassle.
 
-You only need one of them.  Although you could install both a GUI and a
-console version.  You always need to get the archive with runtime files.
+    3. GitHub Installer (All Architectures) >
 
-	vim82rt.zip		The runtime files.
+For more control over the installation (or if you're using a specific CPU
+architecture like ARM), visit the official GitHub repository:
 
-Use your un-zip program to unpack the files.  For example, using the "unzip"
-program: >
+	https://github.com/vim/vim-win32-installer/
 
-	cd c:\
-	unzip path\gvim82.zip
-	unzip path\vim82rt.zip
+This repo provides daily installer and portable zip archives for:
 
-This will unpack the files in the directory "c:\vim\vim82".  If you already
-have a "vim" directory somewhere, you will want to move to the directory just
-above it.
-   Now change to the "vim\vim82" directory and run the install program: >
+    - x86 (32-bit)
+    - x64 (64-bit)
+    - ARM64
 
-	install
-
-Carefully look through the messages and select the options you want to use.
-If you finally select "do it" the install program will carry out the actions
-you selected.
-   The install program doesn't move the runtime files.  They remain where you
-unpacked them.
+It’s a great option if you want nightly builds or specific configuration
 
 In case you are not satisfied with the features included in the supplied
 binaries, you could try compiling Vim yourself.  Get the source archive from
 the same location as where the binaries are.  You need a compiler for which a
 makefile exists.  Microsoft Visual C, MinGW and Cygwin compilers can be used.
-Check the file src/INSTALLpc.txt for hints.
+Check the file src/INSTALLpc.txt for hints.  You can get the source from:
+
+	https://github.com/vim/vim
 
 ==============================================================================
 *90.3*	Upgrading

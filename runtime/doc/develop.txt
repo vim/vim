@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2025 Jul 21
+*develop.txt*   For Vim version 9.1.  Last change: 2025 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -297,16 +297,16 @@ count.
 ==============================================================================
 3. Assumptions						*design-assumptions*
 
-The following sections define the portability and compatibility constraints that
-all Vim code and build tools must adhere to.
+The following sections define the portability and compatibility constraints
+that all Vim code and build tools must adhere to.
 
 
 MAKEFILES					*assumptions-makefiles*
 						*POSIX.1-2001*
 
-Vim’s main Makefiles target maximum portability, relying solely on features
-defined in POSIX.1-2001 `make` and ignoring later POSIX standards or
-GNU/BSD extensions.  In practical terms, avoid:
+Vim's main Makefiles target maximum portability, relying solely on features
+defined in POSIX.1-2001 `make` and ignoring later POSIX standards or GNU/BSD
+extensions.  In practical terms, avoid:
 
 	– % pattern rules
 	– modern assignment (`:=`, `::=`) outside POSIX.1-2001
@@ -314,19 +314,18 @@ GNU/BSD extensions.  In practical terms, avoid:
 	– order-only prerequisites (`|`) or automatic directory creation
 	– GNU/BSD conditionals (`ifdef`, `ifndef`, `.for`/`.endfor`, …)
 
-Since POSIX.1-2001 supports only traditional suffix rules, every object
-built in a separate directory must have an explicit rule.  For example:
+Since POSIX.1-2001 supports only traditional suffix rules, every object built
+in a separate directory must have an explicit rule.  For example:
 
 	objects/evalbuffer.o: evalbuffer.c
 		$(CCC) -o $@ evalbuffer.c
 
-This verbosity ensures that the same Makefile builds Vim unchanged with
-the default `make` on Linux, *BSD, macOS, Solaris, AIX, HP-UX and virtually
-any Unix-like OS.
+This verbosity ensures that the same Makefile builds Vim unchanged with the
+default `make` on Linux, *BSD, macOS, Solaris, AIX, HP-UX and virtually any
+Unix-like OS.
 
-Some platform-specific Makefiles (e.g., for Windows, NSIS, or Cygwin) may
-use more advanced features when compatibility with basic make is not
-required.
+Some platform-specific Makefiles (e.g., for Windows, NSIS, or Cygwin) may use
+more advanced features when compatibility with basic make is not required.
 
 
 C COMPILER					*assumptions-C-compiler*
@@ -343,8 +342,8 @@ In addition, the following two `C99` features are explicitly allowed:
 	– `//` comments, as required by |style-comments|;
 	– the `_Bool` type.
 
-Platform-specific code may use any newer compiler features supported on
-that platform.
+Platform-specific code may use any newer compiler features supported on that
+platform.
 
 
 SIZE OF VARIABLES				*assumptions-variables*
