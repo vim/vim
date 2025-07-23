@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 10
+*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2986,6 +2986,27 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Join the current window in the group of windows that shows differences
 	between files.  See |vimdiff|.
 
+					    *'dia'* *'diffanchors'* *E1549*
+'diffanchors' 'dia'	string	(default "")
+			global or local to buffer |global-local|
+	List of {address} in each buffer, separated by commas, that are
+	considered anchors when used for diffing.  It's valid to specify "$+1"
+	for 1 past the last line.  "%" cannot be used for this option.  There
+	can be at most 20 anchors set for each buffer.
+
+	Each anchor line splits the buffer (the split happens above the
+	anchor), with each part being diff'ed separately before the final
+	result is joined.  When more than one {address} are provided, the
+	anchors will be sorted interally by line number.  If using buffer
+	local options, each buffer should have the same number of anchors
+	(extra anchors will be ignored).  This option is only used when
+	'diffopt' has "anchor" set.  See |diff-anchors| for more details and
+	examples.
+								*E1550*
+	If some of the {address} do not resolve to a line in each buffer (e.g.
+	a pattern search that does not match anything), none of the anchors
+	will be used.
+
 						*'dex'* *'diffexpr'*
 'diffexpr' 'dex'	string	(default "")
 			global
@@ -3013,6 +3034,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 					   smallest possible diff
 				patience   patience diff algorithm
 				histogram  histogram diff algorithm
+
+		anchor		Anchor specific lines in each buffer to be
+				aligned with each other if 'diffanchors' is
+				set.  See |diff-anchors|.
 
 		closeoff	When a window is closed where 'diff' is set
 				and there is only one window remaining in the
@@ -3116,6 +3141,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				"linematch:60", as this will enable alignment
 				for a 2 buffer diff hunk of 30 lines each,
 				or a 3 buffer diff hunk of 20 lines each.
+				Implicitly sets "filler" when this is set.
 
 		vertical	Start diff mode with vertical splits (unless
 				explicitly specified otherwise).
@@ -7477,6 +7503,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Don't forget to precede the space with a backslash: ":set sp=\ ".
 	In the future pipes may be used for filtering and this option will
 	become obsolete (at least for Unix).
+	Note: When using a pipe like "| tee", you'll lose the exit code of the
+	shell command.  This might be configurable by your shell, look for
+	the pipefail option (for bash and zsh, use ":set -o pipefail").
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -7727,8 +7756,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:setlocal showbreak=NONE
 <
 				     *'showcmd'* *'sc'* *'noshowcmd'* *'nosc'*
-'showcmd' 'sc'		boolean	(Vim default: on, off for Unix,
-				       Vi default: off, set in |defaults.vim|)
+'showcmd' 'sc'		boolean	(Vim default: on, Vi default: off)
 			global
 	Show (partial) command in the last line of the screen.  Set this
 	option off if your terminal is slow.
@@ -9769,7 +9797,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	'wildchar' also enables completion in search pattern contexts such as
 	|/|, |?|, |:s|, |:g|, |:v|, and |:vim|.  To insert a literal <Tab>
 	instead of triggering completion, type <C-V><Tab> or "\t".
-	See also |'wildoptions'|.
+	See also 'wildoptions' and |wildtrigger()|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 

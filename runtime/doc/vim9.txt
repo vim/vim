@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Apr 27
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -15,10 +15,11 @@ features in Vim9 script.
 2.  Differences				|vim9-differences|
 3.  New style functions			|fast-functions|
 4.  Types				|vim9-types|
-5.  Namespace, Import and Export	|vim9script|
-6.  Classes and interfaces		|vim9-classes|
+5.  Generic functions			|generic-functions|
+6.  Namespace, Import and Export	|vim9script|
+7.  Classes and interfaces		|vim9-classes|
 
-9.  Rationale				|vim9-rationale|
+8.  Rationale				|vim9-rationale|
 
 ==============================================================================
 
@@ -1895,7 +1896,146 @@ corresponding empty value.
 
 ==============================================================================
 
-5. Namespace, Import and Export
+						*generic-functions*
+5. Generic functions
+
+A generic function allows using the same function with different type
+arguments, while retaining type checking for arguments and the return value.
+This provides type safety and code reusability.
+
+Declaration~
+						*generic-function-declaration*
+						*E1553* *E1554* *E1559*
+The type parameters for a generic function are declared in angle brackets "<"
+and ">" directly after the function name.  Multiple type names are separated
+by commas: >
+
+    def[!] {funcname}<{type} [, {types}]>([arguments])[: {return-type}]
+	{function body}
+    enddef
+<
+These type parameters can then be used like any other type within the function
+signature and body.  Example: >
+
+    def MyFunc<T, A, B>(param1: T): T
+	var f: A
+	var x = param1
+	return x
+    enddef
+<
+						*type-variable-naming* *E1552*
+The convention is to use a single uppercase letter for a type variable (e.g.,
+T, A, X), although longer names are allowed.  The name must start with an
+uppercase letter.
+
+						*E1558* *E1560*
+A function must be declared and used either as generic or as a regular
+function - but not both.
+
+						*E1561*
+A type variable name must not conflict with other defined names, such as class
+names, type aliases, enum names, function names or other type variable names.
+
+Calling a generic function~
+						*generic-function-call*
+To call a generic function, specify the concrete types in "<" and ">"
+between the function name and the argument list: >
+
+    MyFunc<number, string, list<number>>()
+<
+						*E1555* *E1556* *E1557*
+The number of concrete types provided when calling a generic function must
+match the number of type variables in the function.  An empty type list is not
+allowed.  Any Vim9 type (|vim9-types|) can be used as a concrete type in a
+generic function.
+
+Spaces are not allowed between the function name and "<", or between ">" and
+the opening "(".
+
+A generic function can be exported and imported like a regular function.
+See |:export| and |:import|.
+
+A generic function can be defined inside another regular or generic function.
+
+Referencing type variables in generic types~
+
+Instead of concrete types, type variables can be used with generic types.
+This is useful for complex data structures like lists of dictionaries or
+dictionaries of lists.  Example: >
+
+    vim9script
+
+    def Flatten<T>(x: list<list<T>>): list<T>
+	var result: list<T> = []
+	for inner in x
+	    result += inner
+	endfor
+	return result
+    enddef
+
+    echo Flatten<number>([[1, 2], [3]])
+<
+
+Generic class method~
+
+A Vim9 class method can be a generic function: >
+
+    class A
+	def Foo<X, Y>()
+	enddef
+    endclass
+    var a = A.new()
+    a.Foo<number, string>()
+<
+						*E1432* *E1433* *E1434*
+A generic class method in a base class can be overridden by a generic method
+in a child class. The number of type variables must match between both
+methods.  A concrete class method cannot be overridden by a generic method,
+and vice versa.
+
+Generic function reference~
+
+A function reference (|Funcref|) can be a generic function.  This allows for
+creating factories of functions that operate on specific types: >
+
+    vim9script
+
+    def MakeEcho<T>(): func(T): T
+	return (x: T): T => x
+    enddef
+
+    var EchoNumber = MakeEcho<number>()
+    echo EchoNumber(123)
+
+    var EchoString = MakeEcho<string>()
+    echo EchoString('abc')
+<
+Compiling and Disassembling Generic functions~
+
+The |:defcompile| command can be used to compile a generic function with a
+specific list of concrete types: >
+
+    defcompile MyFunc<number, list<number>, dict<string>>
+<
+The |:disassemble| command can be used to list the instructions generated for
+a generic function: >
+
+    disassemble MyFunc<string, dict<string>>
+    disassemble MyFunc<number, list<blob>>
+<
+Limitations and Future Work~
+
+Currently, Vim does not support:
+   - Type inference for type variables: All types must be explicitly specified
+     when calling a generic function.
+   - Type constraints: It's not possible to restrict a type variable to a
+     specific class or interface (e.g., `T extends SomeInterface`).
+   - Default type arguments: Providing a default type for a type parameter
+     when not explicitly specified.
+
+==============================================================================
+
+6. Namespace, Import and Export
 					*vim9script* *vim9-export* *vim9-import*
 
 A Vim9 script can be written to be imported.  This means that some items are
@@ -2174,7 +2314,7 @@ Or: >
 
 ==============================================================================
 
-6. Classes and interfaces				*vim9-classes*
+7. Classes and interfaces				*vim9-classes*
 
 In legacy script a Dictionary could be used as a kind-of object, by adding
 members that are functions.  However, this is quite inefficient and requires
@@ -2188,7 +2328,7 @@ functionality it is located in a separate help file: |vim9class.txt|.
 
 ==============================================================================
 
-9. Rationale						*vim9-rationale*
+8. Rationale						*vim9-rationale*
 
 The :def command ~
 

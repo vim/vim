@@ -35,3 +35,12 @@ trim_trailing_whitespace = false
 [src/testdir/test*.vim]
 # Some tests need trailing whitespaces, for example `set showbreak=>>\ `
 trim_trailing_whitespace = false
+
+#
+# Some custom files do not use tabs
+#
+[src/sign.c]
+indent_style = space
+
+[src/sound.c]
+indent_style = space

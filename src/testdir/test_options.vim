@@ -290,13 +290,13 @@ endfun
 
 func Test_set_completion()
   call feedkeys(":set di\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set dictionary diff diffexpr diffopt digraph directory display', @:)
+  call assert_equal('"set dictionary diff diffanchors diffexpr diffopt digraph directory display', @:)
 
   call feedkeys(":setlocal di\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"setlocal dictionary diff diffexpr diffopt digraph directory display', @:)
+  call assert_equal('"setlocal dictionary diff diffanchors diffexpr diffopt digraph directory display', @:)
 
   call feedkeys(":setglobal di\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"setglobal dictionary diff diffexpr diffopt digraph directory display', @:)
+  call assert_equal('"setglobal dictionary diff diffanchors diffexpr diffopt digraph directory display', @:)
 
   " Expand boolean options. When doing :set no<Tab> Vim prefixes the option
   " names with "no".
@@ -348,7 +348,7 @@ func Test_set_completion()
   call assert_match(' ./samples/.* ./test10.in', @:)
 
   call feedkeys(":set tags=./\\\\ dif\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set tags=./\\ diff diffexpr diffopt', @:)
+  call assert_equal('"set tags=./\\ diff diffanchors diffexpr diffopt', @:)
 
   " Expand files with spaces/commas in them. Make sure we delimit correctly.
   "
@@ -733,7 +733,7 @@ func Test_set_completion_string_values()
   set diffopt=
   call assert_equal([], getcompletion('set diffopt-=', 'cmdline'))
   " Test all possible values
-  call assert_equal(['filler', 'context:', 'iblank', 'icase', 'iwhite', 'iwhiteall', 'iwhiteeol', 'horizontal',
+  call assert_equal(['filler', 'anchor', 'context:', 'iblank', 'icase', 'iwhite', 'iwhiteall', 'iwhiteeol', 'horizontal',
         \ 'vertical', 'closeoff', 'hiddenoff', 'foldcolumn:', 'followwrap', 'internal', 'indent-heuristic', 'algorithm:', 'inline:', 'linematch:'],
         \ getcompletion('set diffopt=', 'cmdline'))
   set diffopt&
@@ -2905,6 +2905,17 @@ endfunc
 func Test_default_keyprotocol()
   " default value of keyprotocol
   call assert_equal('kitty:kitty,foot:kitty,ghostty:kitty,wezterm:kitty,xterm:mok2', &keyprotocol)
+endfunc
+
+func Test_showcmd()
+  " in no-cp mode, 'showcmd' is enabled
+  let _cp=&cp
+  call assert_equal(1, &showcmd)
+  set cp
+  call assert_equal(0, &showcmd)
+  set nocp
+  call assert_equal(1, &showcmd)
+  let &cp = _cp
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

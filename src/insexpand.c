@@ -2395,6 +2395,8 @@ ins_compl_need_restart(void)
 ins_compl_new_leader(void)
 {
     int	    cur_cot_flags = get_cot_flags();
+    int	    save_w_wrow = curwin->w_wrow;
+    int	    save_w_leftcol = curwin->w_leftcol;
 
     ins_compl_del_pum();
     ins_compl_delete();
@@ -2424,8 +2426,10 @@ ins_compl_new_leader(void)
 	    out_flush_cursor(FALSE, FALSE);
 	}
 #endif
+	save_w_wrow = curwin->w_wrow;
+	save_w_leftcol = curwin->w_leftcol;
 	compl_restarting = TRUE;
-	if (ins_complete(Ctrl_N, TRUE) == FAIL)
+	if (ins_complete(Ctrl_N, FALSE) == FAIL)
 	    compl_cont_status = 0;
 	compl_restarting = FALSE;
     }
@@ -2451,7 +2455,8 @@ ins_compl_new_leader(void)
     compl_enter_selects = !compl_used_match && compl_selected_item != -1;
 
     // Show the popup menu with a different set of matches.
-    ins_compl_show_pum();
+    if (!compl_interrupted)
+	show_pum(save_w_wrow, save_w_leftcol);
 
     // Don't let Enter select the original text when there is no popup menu.
     if (compl_match_array == NULL)
@@ -5117,7 +5122,7 @@ strip_caret_numbers_in_place(char_u *str)
  * Call functions specified in the 'cpt' option with findstart=1,
  * and retrieve the startcol.
  */
-    static void
+    static int
 prepare_cpt_compl_funcs(void)
 {
 #ifdef FEAT_COMPL_FUNC
@@ -5129,10 +5134,9 @@ prepare_cpt_compl_funcs(void)
 
     // Make a copy of 'cpt' in case the buffer gets wiped out
     cpt = vim_strsave(curbuf->b_p_cpt);
+    if (cpt == NULL)
+	return FAIL;
     strip_caret_numbers_in_place(cpt);
-
-    // Re-insert the text removed by ins_compl_delete().
-    ins_compl_insert_bytes(compl_orig_text.string + get_compl_len(), -1);
 
     for (p = cpt; *p;)
     {
@@ -5161,11 +5165,10 @@ prepare_cpt_compl_funcs(void)
 	idx++;
     }
 
-    // Undo insertion
-    ins_compl_delete();
-
     vim_free(cpt);
+    return OK;
 #endif
+    return FAIL;
 }
 
 /*
@@ -5174,13 +5177,13 @@ prepare_cpt_compl_funcs(void)
     static int
 advance_cpt_sources_index_safe(void)
 {
-    if (cpt_sources_index < cpt_sources_count - 1)
+    if (cpt_sources_index >= 0 && cpt_sources_index < cpt_sources_count - 1)
     {
 	cpt_sources_index++;
 	return OK;
     }
 #ifdef FEAT_EVAL
-    semsg(_(e_list_index_out_of_range_nr), cpt_sources_index + 1);
+    semsg(_(e_list_index_out_of_range_nr), cpt_sources_index);
 #endif
     return FAIL;
 }
@@ -5232,18 +5235,10 @@ ins_compl_get_exp(pos_T *ini)
     st.cur_match_pos = (compl_dir_forward())
 				    ? &st.last_match_pos : &st.first_match_pos;
 
-    if (ctrl_x_mode_normal() && !ctrl_x_mode_line_or_eval() &&
-	    !(compl_cont_status & CONT_LOCAL))
-    {
-	// ^N completion, not ^X^L or complete() or ^X^N
-	if (!compl_started) // Before showing menu the first time
-	{
-	    if (setup_cpt_sources() == FAIL)
-		return FAIL;
-	}
-	prepare_cpt_compl_funcs();
+    if (cpt_sources_array != NULL && ctrl_x_mode_normal()
+	    && !ctrl_x_mode_line_or_eval()
+	    && !(compl_cont_status & CONT_LOCAL))
 	cpt_sources_index = 0;
-    }
 
     // For ^N/^P loop over all the flags/windows/buffers in 'complete'.
     for (;;)
@@ -6137,6 +6132,14 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 	}
     }
 
+    // Call functions in 'complete' with 'findstart=1'
+    if (ctrl_x_mode_normal() && !(compl_cont_status & CONT_LOCAL))
+    {
+	// ^N completion, not complete() or ^X^N
+	if (setup_cpt_sources() == FAIL || prepare_cpt_compl_funcs() == FAIL)
+	    return FAIL;
+    }
+
     return OK;
 }
 
@@ -6600,7 +6603,8 @@ ins_compl_start(void)
 
     if (compl_status_adding())
     {
-	edit_submode_pre = (char_u *)_(" Adding");
+	if (!shortmess(SHM_COMPLETIONMENU))
+	    edit_submode_pre = (char_u *)_(" Adding");
 	if (ctrl_x_mode_line_or_eval())
 	{
 	    // Insert a new line, keep indentation but ignore 'comments'.
@@ -6627,10 +6631,13 @@ ins_compl_start(void)
 	compl_startpos.col = compl_col;
     }
 
-    if (compl_cont_status & CONT_LOCAL)
-	edit_submode = (char_u *)_(ctrl_x_msgs[CTRL_X_LOCAL_MSG]);
-    else
-	edit_submode = (char_u *)_(CTRL_X_MSG(ctrl_x_mode));
+    if (!shortmess(SHM_COMPLETIONMENU))
+    {
+	if (compl_cont_status & CONT_LOCAL)
+	    edit_submode = (char_u *)_(ctrl_x_msgs[CTRL_X_LOCAL_MSG]);
+	else
+	    edit_submode = (char_u *)_(CTRL_X_MSG(ctrl_x_mode));
+    }
 
     // If any of the original typed text has been changed we need to fix
     // the redo buffer.
@@ -6655,11 +6662,14 @@ ins_compl_start(void)
     // showmode might reset the internal line pointers, so it must
     // be called before line = ml_get(), or when this address is no
     // longer needed.  -- Acevedo.
-    edit_submode_extra = (char_u *)_("-- Searching...");
-    edit_submode_highl = HLF_COUNT;
-    showmode();
-    edit_submode_extra = NULL;
-    out_flush();
+    if (!shortmess(SHM_COMPLETIONMENU))
+    {
+	edit_submode_extra = (char_u *)_("-- Searching...");
+	edit_submode_highl = HLF_COUNT;
+	showmode();
+	edit_submode_extra = NULL;
+	out_flush();
+    }
 
     return OK;
 }
@@ -6821,7 +6831,8 @@ ins_complete(int c, int enable_pum)
     else
 	compl_cont_status &= ~CONT_S_IPOS;
 
-    ins_compl_show_statusmsg();
+    if (!shortmess(SHM_COMPLETIONMENU))
+	ins_compl_show_statusmsg();
 
     // Show the popup menu, unless we got interrupted.
     if (enable_pum && !compl_interrupted)
@@ -6962,9 +6973,14 @@ setup_cpt_sources(void)
     char_u  buf[LSIZE];
     int	    slen;
     int	    count = 0, idx = 0;
-    char_u  *p;
+    char_u  *p, *cpt;
 
-    for (p = curbuf->b_p_cpt; *p;)
+    // Make a copy of 'cpt' in case the buffer gets wiped out
+    cpt = vim_strsave(curbuf->b_p_cpt);
+    if (cpt == NULL)
+	return FAIL;
+
+    for (p = cpt; *p;)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
@@ -6975,7 +6991,7 @@ setup_cpt_sources(void)
 	}
     }
     if (count == 0)
-	return OK;
+	goto theend;
 
     cpt_sources_clear();
     cpt_sources_count = count;
@@ -6983,10 +6999,11 @@ setup_cpt_sources(void)
     if (cpt_sources_array == NULL)
     {
 	cpt_sources_count = 0;
+	vim_free(cpt);
 	return FAIL;
     }
 
-    for (p = curbuf->b_p_cpt; *p;)
+    for (p = cpt; *p;)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
@@ -7001,6 +7018,9 @@ setup_cpt_sources(void)
 	    idx++;
 	}
     }
+
+theend:
+    vim_free(cpt);
     return OK;
 }
 

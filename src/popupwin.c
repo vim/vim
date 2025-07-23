@@ -2092,6 +2092,14 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     else if (popup_is_notification(type))
 	tabnr = -1;  // show on all tabs
 
+    if (buf != NULL && buf->b_locked_split)
+    {
+	// disallow opening a popup to a closing buffer, which like splitting,
+	// can result in more windows displaying it
+	emsg(_(e_cannot_open_a_popup_window_to_a_closing_buffer));
+	return NULL;
+    }
+
     // Create the window and buffer.
     wp = win_alloc_popup_win();
     if (wp == NULL)
@@ -2286,8 +2294,11 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     if (type == TYPE_INFO)
     {
 	wp->w_popup_pos = POPPOS_TOPLEFT;
-	wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
-	wp->w_popup_close = POPCLOSE_BUTTON;
+	if (mouse_has(MOUSE_INSERT))
+	{
+	    wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
+	    wp->w_popup_close = POPCLOSE_BUTTON;
+	}
 	add_border_left_right_padding(wp);
 	parse_completepopup(wp);
     }

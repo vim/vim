@@ -177,6 +177,7 @@ SRC_ALL =	\
 		src/vim9compile.c \
 		src/vim9execute.c \
 		src/vim9expr.c \
+		src/vim9generics.c \
 		src/vim9instr.c \
 		src/vim9script.c \
 		src/vim9type.c \
@@ -212,7 +213,10 @@ SRC_ALL =	\
 		src/testdir/samples/*.html \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/*.vim \
+		src/testdir/samples/evil.zip \
+		src/testdir/samples/evil.tar \
 		src/testdir/samples/poc.zip \
+		src/testdir/samples/sample.tar \
 		src/testdir/samples/test.zip \
 		src/testdir/samples/test000 \
 		src/testdir/samples/test_undo.txt.undo \
@@ -359,6 +363,7 @@ SRC_ALL =	\
 		src/proto/vim9compile.pro \
 		src/proto/vim9execute.pro \
 		src/proto/vim9expr.pro \
+		src/proto/vim9generics.pro \
 		src/proto/vim9instr.pro \
 		src/proto/vim9script.pro \
 		src/proto/vim9type.pro \
@@ -1151,6 +1156,7 @@ LANG_SRC = \
 		src/po/sjiscorr.c \
 		src/po/big5corr.c \
 		src/po/*.po \
+		src/po/vim.pot \
 
 # The language files for the Win32 lang archive.
 LANG_DOS = \

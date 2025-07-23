@@ -764,6 +764,11 @@ func Test_getcompletion()
   let l = getcompletion('not', 'mapclear')
   call assert_equal([], l)
 
+  let l = getcompletion('', 'retab')
+  call assert_true(index(l, '-indentonly') >= 0)
+  let l = getcompletion('not', 'retab')
+  call assert_equal([], l)
+
   let l = getcompletion('.', 'shellcmd')
   call assert_equal(['./', '../'], filter(l, 'v:val =~ "\\./"'))
   call assert_equal(-1, match(l[2:], '^\.\.\?/$'))
@@ -820,6 +825,8 @@ func Test_getcompletion()
   call assert_equal([], l)
   let l = getcompletion('autocmd BufEnter * map <bu', 'cmdline')
   call assert_equal(['<buffer>'], l)
+  let l = getcompletion('retab! ', 'cmdline')
+  call assert_true(index(l, '-indentonly') >= 0)
 
   func T(a, c, p)
     let g:cmdline_compl_params = [a:a, a:c, a:p]
@@ -4322,42 +4329,63 @@ func Test_cmdcomplete_info()
     autocmd CmdlineLeavePre * call expand('test_cmdline.*')
     autocmd CmdlineLeavePre * let g:cmdcomplete_info = string(cmdcomplete_info())
   augroup END
-  new
-  call assert_equal({}, cmdcomplete_info())
-  call feedkeys(":h echom\<cr>", "tx") " No expansion
-  call assert_equal('{}', g:cmdcomplete_info)
-  call feedkeys(":h echoms\<tab>\<cr>", "tx")
-  call assert_equal('{''cmdline_orig'': '''', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
-        \ g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
-        \ g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<tab>\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
-        \ g:cmdcomplete_info)
 
-  set wildoptions=pum
-  call feedkeys(":h echoms\<tab>\<cr>", "tx")
-  call assert_equal('{''cmdline_orig'': '''', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
-        \ g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
-        \ g:cmdcomplete_info)
-  call feedkeys(":h echom\<tab>\<tab>\<tab>\<cr>", "tx")
-  call assert_equal(
-        \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
-        \ g:cmdcomplete_info)
-  bw!
-  set wildoptions&
+  " Disable char_avail so that wildtrigger() does not bail out
+  call test_override("char_avail", 1)
+
+  cnoremap <F8> <C-R>=wildtrigger()[-1]<CR>
+
+  call assert_equal({}, cmdcomplete_info())
+
+  for trig in ["\<Tab>", "\<F8>"]
+    new
+    call assert_equal({}, cmdcomplete_info())
+    call feedkeys(":h echom\<cr>", "tx") " No expansion
+    call assert_equal('{}', g:cmdcomplete_info)
+    call feedkeys($":h echoms{trig}\<cr>", "tx")
+    call assert_equal('{''cmdline_orig'': '''', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 0, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
+          \ g:cmdcomplete_info)
+
+    set wildoptions=pum
+    call feedkeys($":h echoms{trig}\<cr>", "tx")
+    call assert_equal('{''cmdline_orig'': '''', ''pum_visible'': 0, ''matches'': [], ''selected'': 0}', g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 0}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': 1}',
+          \ g:cmdcomplete_info)
+    call feedkeys($":h echom{trig}\<tab>\<tab>\<cr>", "tx")
+    call assert_equal(
+          \ '{''cmdline_orig'': ''h echom'', ''pum_visible'': 1, ''matches'': ['':echom'', '':echomsg''], ''selected'': -1}',
+          \ g:cmdcomplete_info)
+    bw!
+    set wildoptions&
+  endfor
+
+  " wildtrigger() should not show matches when prefix is invalid
+  for pat in ["", " ", "22"]
+    call feedkeys($":{pat}\<F8>\<cr>", "tx") " No expansion
+    call assert_equal('{}', g:cmdcomplete_info)
+  endfor
+
+  augroup test_CmdlineLeavePre | autocmd! | augroup END
+  call test_override("char_avail", 0)
+  unlet g:cmdcomplete_info
+  cunmap <F8>
 endfunc
 
 func Test_redrawtabpanel_error()
@@ -4380,6 +4408,7 @@ func Test_search_complete()
 
   new
   cnoremap <buffer><expr> <F9> GetComplInfo()
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
 
   " Pressing <Tab> inserts tab character
   set wildchar=0
@@ -4390,7 +4419,7 @@ func Test_search_complete()
 
   call setline(1, ['the', 'these', 'thethe', 'thethere', 'foobar'])
 
-  for trig in ["\<tab>", "\<c-z>"]
+  for trig in ["\<tab>", "\<c-z>", "\<F8>"]
     " Test menu first item and order
     call feedkeys($"gg2j/t{trig}\<f9>", 'tx')
     call assert_equal(['the', 'thethere', 'there', 'these', 'thethe'], g:compl_info.matches)
@@ -4603,10 +4632,11 @@ func Test_range_complete()
   endfunc
   new
   cnoremap <buffer><expr> <F9> GetComplInfo()
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
 
   call setline(1, ['ab', 'ba', 'ca', 'af'])
 
-  for trig in ["\<tab>", "\<c-z>"]
+  for trig in ["\<tab>", "\<c-z>", "\<F8>"]
     call feedkeys($":%s/a{trig}\<f9>", 'xt')
     call assert_equal(['ab', 'a', 'af'], g:compl_info.matches)
     call feedkeys($":vim9cmd :%s/a{trig}\<f9>", 'xt')
@@ -4682,6 +4712,68 @@ func Test_pum_scroll_noselect()
 
   call term_sendkeys(buf, "\<esc>")
   call StopVimInTerminal(buf)
+endfunc
+
+" CmdlineChanged shouldn't trigger if command-line text is unchanged
+func Test_cmdline_changed()
+  let g:cmdchg_count = 0
+  let g:cmdprefix = ''
+  augroup test_CmdlineAugrp | autocmd!
+    autocmd CmdlineChanged * if getcmdline() =~ g:cmdprefix | let g:cmdchg_count += 1 | endif
+  augroup END
+
+  " Disable char_avail so that wildtrigger() does not bail out
+  call test_override("char_avail", 1)
+
+  new
+  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
+  set wildmenu
+  set wildmode=full
+
+  let g:cmdprefix = 'echomsg'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":echomsg{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " once only for 'g', not again for <Tab>
+  endfor
+
+  let g:cmdprefix = 'echo'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":ech{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " (once for 'h' and) once for 'o'
+  endfor
+
+  set wildmode=noselect,full
+  let g:cmdprefix = 'ech'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":ech{trig}", "tx")
+    call assert_equal(1, g:cmdchg_count) " once for 'h', not again for <tab>
+  endfor
+
+  command! -nargs=+ -complete=custom,TestComplete Test echo
+
+  func TestComplete(arglead, cmdline, cursorpos)
+    return "AbC"
+  endfunc
+
+  set wildoptions=fuzzy wildmode=full
+  let g:cmdprefix = 'Test \(AbC\|abc\)'
+  for trig in ["\<Tab>", "\<F8>"]
+    let g:cmdchg_count = 0
+    call feedkeys($":Test abc{trig}", "tx")
+    call assert_equal(2, g:cmdchg_count) " once for 'c', again for 'AbC'
+  endfor
+
+  bw!
+  set wildmode& wildmenu& wildoptions&
+  augroup test_CmdlineAugrp | autocmd! | augroup END
+  unlet g:cmdchg_count
+  unlet g:cmdprefix
+  delfunc TestComplete
+  delcommand Test
+  call test_override("char_avail", 0)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

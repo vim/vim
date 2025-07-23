@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.1.  Last change: 2025 Jun 25
+*editing.txt*   For Vim version 9.1.  Last change: 2025 Jul 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -656,7 +656,7 @@ list of the current window.
 			buffer.
 			Also see |++opt| and |+cmd|.
 
-:[count]arge[dit][!] [++opt] [+cmd] {name} ..		*:arge* *:argedit*
+:[count]arge[dit][!] [++opt] [+cmd] {name} ...		*:arge* *:argedit*
 			Add {name}s to the argument list and edit it.
 			There is no check for duplicates, it is possible to
 			add a file to the argument list twice |:argded|.
@@ -671,7 +671,7 @@ list of the current window.
 			edited. No check for duplicates is done.
 			Also see |++opt| and |+cmd|.
 
-:[count]arga[dd] {name} ..			*:arga* *:argadd* *E479*
+:[count]arga[dd] {name} ...			*:arga* *:argadd* *E479*
 :[count]arga[dd]						*E1156*
 			Add the {name}s to the argument list.  When {name} is
 			omitted add the current buffer name to the argument
@@ -702,7 +702,7 @@ list of the current window.
 			If your current file is a duplicate, your current file
 			will change to the original file index.
 
-:argd[elete] {pattern} ..		*:argd* *:argdelete* *E480* *E610*
+:argd[elete] {pattern} ...		*:argd* *:argdelete* *E480* *E610*
 			Delete files from the argument list that match the
 			{pattern}s.  {pattern} is used like a file pattern,
 			see |file-pattern|.  "%" can be used to delete the

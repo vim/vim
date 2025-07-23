@@ -2927,14 +2927,16 @@ option_expand(int opt_idx, char_u *val)
 
     /*
      * Expanding this with NameBuff, expand_env() must not be passed IObuff.
-     * Escape spaces when expanding 'tags', they are used to separate file
-     * names.
+     * Escape spaces when expanding 'tags' or 'path', they are used to separate
+     * file names.
      * For 'spellsuggest' expand after "file:".
      */
-    expand_env_esc(val, NameBuff, MAXPATHL,
-	    (char_u **)options[opt_idx].var == &p_tags, FALSE,
+    char_u ** var = (char_u **)options[opt_idx].var;
+    int esc = var == &p_tags || var == &p_path;
+
+    expand_env_esc(val, NameBuff, MAXPATHL, esc, FALSE,
 #ifdef FEAT_SPELL
-	    (char_u **)options[opt_idx].var == &p_sps ? (char_u *)"file:" :
+	    var == &p_sps ? (char_u *)"file:" :
 #endif
 				  NULL);
     if (STRCMP(NameBuff, val) == 0)   // they are the same
@@ -6462,6 +6464,11 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_DICT:
 	    clear_string_option(&buf->b_p_dict);
 	    break;
+# ifdef FEAT_DIFF
+	case PV_DIA:
+	    clear_string_option(&buf->b_p_dia);
+	    break;
+# endif
 	case PV_TSR:
 	    clear_string_option(&buf->b_p_tsr);
 	    break;
@@ -6583,6 +6590,9 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_COT:  return (char_u *)&(curbuf->b_p_cot);
 	    case PV_ISE:  return (char_u *)&(curbuf->b_p_ise);
 	    case PV_DICT: return (char_u *)&(curbuf->b_p_dict);
+#ifdef FEAT_DIFF
+	    case PV_DIA:  return (char_u *)&(curbuf->b_p_dia);
+#endif
 	    case PV_TSR:  return (char_u *)&(curbuf->b_p_tsr);
 #ifdef FEAT_COMPL_FUNC
 	    case PV_TSRFU: return (char_u *)&(curbuf->b_p_tsrfu);
@@ -6668,6 +6678,10 @@ get_varp(struct vimoption *p)
 				    ? (char_u *)&(curbuf->b_p_ise) : p->var;
 	case PV_DICT:	return *curbuf->b_p_dict != NUL
 				    ? (char_u *)&(curbuf->b_p_dict) : p->var;
+#ifdef FEAT_DIFF
+	case PV_DIA:	return *curbuf->b_p_dia != NUL
+				    ? (char_u *)&(curbuf->b_p_dia) : p->var;
+#endif
 	case PV_TSR:	return *curbuf->b_p_tsr != NUL
 				    ? (char_u *)&(curbuf->b_p_tsr) : p->var;
 #ifdef FEAT_COMPL_FUNC
@@ -7499,6 +7513,9 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_cot = empty_option;
 	    buf->b_cot_flags = 0;
 	    buf->b_p_dict = empty_option;
+#ifdef FEAT_DIFF
+	    buf->b_p_dia = empty_option;
+#endif
 	    buf->b_p_tsr = empty_option;
 	    buf->b_p_ise = empty_option;
 #ifdef FEAT_COMPL_FUNC

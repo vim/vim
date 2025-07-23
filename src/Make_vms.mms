@@ -488,275 +488,277 @@ ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) $(XPM_LIB)\
 	   $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(TCL_LIB) $(RUBY_LIB) $(LUA_LIB)
 
 SRC = \
-alloc.c \
-arabic.c \
-arglist.c \
-autocmd.c \
-beval.c \
-blob.c \
-blowfish.c \
-buffer.c \
-bufwrite.c \
-change.c \
-channel.c \
-charset.c \
-cindent.c \
-clientserver.c \
-clipboard.c \
-cmdexpand.c \
-cmdhist.c \
-crypt.c \
-crypt_zip.c \
-debugger.c \
-dict.c \
-diff.c \
-digraph.c \
-drawline.c \
-drawscreen.c \
-edit.c \
-eval.c \
-evalbuffer.c \
-evalfunc.c \
-evalvars.c \
-evalwindow.c \
-ex_cmds.c \
-ex_cmds2.c \
-ex_docmd.c \
-ex_eval.c \
-ex_getln.c \
-fileio.c \
-filepath.c, \
-findfile.c \
-float.c \
-fold.c \
-getchar.c \
-gc.c \
-gui_xim.c \
-hardcopy.c \
-hashtab.c \
-help.c \
-highlight.c \
-if_cscope.c \
-if_xcmdsrv.c \
-indent.c \
-insexpand.c \
-job.c \
-json.c \
-linematch.c \
-list.c \
-locale.c \
-logfile.c \
-main.c \
-map.c \
-mark.c \
-match.c \
-mbyte.c \
-memfile.c \
-memline.c \
-menu.c \
-message.c \
-misc1.c \
-misc2.c \
-mouse.c \
-move.c \
-normal.c \
-ops.c \
-option.c \
-optionstr.c \
-os_unix.c \
-os_vms.c \
-[.$(DEST)]pathdef.c \
-popupmenu.c \
-popupwin.c \
-profiler.c \
-pty.c \
-quickfix.c \
-regexp.c \
-register.c \
-screen.c \
-scriptfile.c \
-search.c \
-session.c \
-sha256.c \
-sign.c \
-sound.c \
-spell.c \
-spellfile.c \
-spellsuggest.c \
-strings.c \
-syntax.c \
-tabpanel.c \
-tag.c \
-term.c \
-terminal.c \
-termlib.c \
-testing.c \
-textformat.c \
-textobject.c \
-textprop.c \
-time.c \
-tuple.c \
-typval.c \
-ui.c \
-undo.c \
-usercmd.c \
-userfunc.c \
-version.c \
-vim9class.c \
-vim9cmds.c \
-vim9compile.c \
-vim9execute.c \
-vim9expr.c \
-vim9instr.c \
-vim9script.c \
-vim9type.c \
-viminfo.c \
-window.c \
-$(GUI_SRC) \
-$(XDIFF_SRC) \
-$(LUA_SRC) \
-$(MZSCHEME_SRC) \
-$(PERL_SRC) \
-$(PYTHON_SRC) \
-$(PYTHON3_SRC) \
-$(TCL_SRC) \
-$(RUBY_SRC)
+ alloc.c \
+ arabic.c \
+ arglist.c \
+ autocmd.c \
+ beval.c \
+ blob.c \
+ blowfish.c \
+ buffer.c \
+ bufwrite.c \
+ change.c \
+ channel.c \
+ charset.c \
+ cindent.c \
+ clientserver.c \
+ clipboard.c \
+ cmdexpand.c \
+ cmdhist.c \
+ crypt.c \
+ crypt_zip.c \
+ debugger.c \
+ dict.c \
+ diff.c \
+ digraph.c \
+ drawline.c \
+ drawscreen.c \
+ edit.c \
+ eval.c \
+ evalbuffer.c \
+ evalfunc.c \
+ evalvars.c \
+ evalwindow.c \
+ ex_cmds.c \
+ ex_cmds2.c \
+ ex_docmd.c \
+ ex_eval.c \
+ ex_getln.c \
+ fileio.c \
+ filepath.c, \
+ findfile.c \
+ float.c \
+ fold.c \
+ getchar.c \
+ gc.c \
+ gui_xim.c \
+ hardcopy.c \
+ hashtab.c \
+ help.c \
+ highlight.c \
+ if_cscope.c \
+ if_xcmdsrv.c \
+ indent.c \
+ insexpand.c \
+ job.c \
+ json.c \
+ linematch.c \
+ list.c \
+ locale.c \
+ logfile.c \
+ main.c \
+ map.c \
+ mark.c \
+ match.c \
+ mbyte.c \
+ memfile.c \
+ memline.c \
+ menu.c \
+ message.c \
+ misc1.c \
+ misc2.c \
+ mouse.c \
+ move.c \
+ normal.c \
+ ops.c \
+ option.c \
+ optionstr.c \
+ os_unix.c \
+ os_vms.c \
+ [.$(DEST)]pathdef.c \
+ popupmenu.c \
+ popupwin.c \
+ profiler.c \
+ pty.c \
+ quickfix.c \
+ regexp.c \
+ register.c \
+ screen.c \
+ scriptfile.c \
+ search.c \
+ session.c \
+ sha256.c \
+ sign.c \
+ sound.c \
+ spell.c \
+ spellfile.c \
+ spellsuggest.c \
+ strings.c \
+ syntax.c \
+ tabpanel.c \
+ tag.c \
+ term.c \
+ terminal.c \
+ termlib.c \
+ testing.c \
+ textformat.c \
+ textobject.c \
+ textprop.c \
+ time.c \
+ tuple.c \
+ typval.c \
+ ui.c \
+ undo.c \
+ usercmd.c \
+ userfunc.c \
+ version.c \
+ vim9class.c \
+ vim9cmds.c \
+ vim9compile.c \
+ vim9execute.c \
+ vim9expr.c \
+ vim9instr.c \
+ vim9generics.c \
+ vim9script.c \
+ vim9type.c \
+ viminfo.c \
+ window.c \
+ $(GUI_SRC) \
+ $(XDIFF_SRC) \
+ $(LUA_SRC) \
+ $(MZSCHEME_SRC) \
+ $(PERL_SRC) \
+ $(PYTHON_SRC) \
+ $(PYTHON3_SRC) \
+ $(TCL_SRC) \
+ $(RUBY_SRC)
 
 OBJ = \
-[.$(DEST)]alloc.obj \
-[.$(DEST)]arabic.obj \
-[.$(DEST)]arglist.obj \
-[.$(DEST)]autocmd.obj \
-[.$(DEST)]beval.obj \
-[.$(DEST)]blob.obj \
-[.$(DEST)]blowfish.obj \
-[.$(DEST)]buffer.obj \
-[.$(DEST)]bufwrite.obj \
-[.$(DEST)]change.obj \
-[.$(DEST)]channel.obj \
-[.$(DEST)]charset.obj \
-[.$(DEST)]cindent.obj \
-[.$(DEST)]clientserver.obj \
-[.$(DEST)]clipboard.obj \
-[.$(DEST)]cmdexpand.obj \
-[.$(DEST)]cmdhist.obj \
-[.$(DEST)]crypt.obj \
-[.$(DEST)]crypt_zip.obj \
-[.$(DEST)]debugger.obj \
-[.$(DEST)]dict.obj \
-[.$(DEST)]diff.obj \
-[.$(DEST)]digraph.obj \
-[.$(DEST)]drawline.obj \
-[.$(DEST)]drawscreen.obj \
-[.$(DEST)]edit.obj \
-[.$(DEST)]eval.obj \
-[.$(DEST)]evalbuffer.obj \
-[.$(DEST)]evalfunc.obj \
-[.$(DEST)]evalvars.obj \
-[.$(DEST)]evalwindow.obj \
-[.$(DEST)]ex_cmds.obj \
-[.$(DEST)]ex_cmds2.obj \
-[.$(DEST)]ex_docmd.obj \
-[.$(DEST)]ex_eval.obj \
-[.$(DEST)]ex_getln.obj \
-[.$(DEST)]fileio.obj \
-[.$(DEST)]filepath.obj \
-[.$(DEST)]findfile.obj \
-[.$(DEST)]float.obj \
-[.$(DEST)]fold.obj \
-[.$(DEST)]getchar.obj \
-[.$(DEST)]gc.obj \
-[.$(DEST)]gui_xim.obj \
-[.$(DEST)]hardcopy.obj \
-[.$(DEST)]hashtab.obj \
-[.$(DEST)]help.obj \
-[.$(DEST)]highlight.obj \
-[.$(DEST)]if_cscope.obj \
-[.$(DEST)]if_mzsch.obj \
-[.$(DEST)]if_xcmdsrv.obj \
-[.$(DEST)]indent.obj \
-[.$(DEST)]insexpand.obj \
-[.$(DEST)]job.obj \
-[.$(DEST)]json.obj \
-[.$(DEST)]linematch.obj \
-[.$(DEST)]list.obj \
-[.$(DEST)]locale.obj \
-[.$(DEST)]logfile.obj \
-[.$(DEST)]main.obj \
-[.$(DEST)]map.obj \
-[.$(DEST)]mark.obj \
-[.$(DEST)]match.obj \
-[.$(DEST)]mbyte.obj \
-[.$(DEST)]memfile.obj \
-[.$(DEST)]memline.obj \
-[.$(DEST)]menu.obj \
-[.$(DEST)]message.obj \
-[.$(DEST)]misc1.obj \
-[.$(DEST)]misc2.obj \
-[.$(DEST)]mouse.obj \
-[.$(DEST)]move.obj \
-[.$(DEST)]normal.obj \
-[.$(DEST)]ops.obj \
-[.$(DEST)]option.obj \
-[.$(DEST)]optionstr.obj \
-[.$(DEST)]os_unix.obj \
-[.$(DEST)]os_vms.obj \
-[.$(DEST)]pathdef.obj \
-[.$(DEST)]popupmenu.obj \
-[.$(DEST)]popupwin.obj \
-[.$(DEST)]profiler.obj \
-[.$(DEST)]pty.obj \
-[.$(DEST)]quickfix.obj \
-[.$(DEST)]regexp.obj \
-[.$(DEST)]register.obj \
-[.$(DEST)]screen.obj \
-[.$(DEST)]scriptfile.obj \
-[.$(DEST)]search.obj \
-[.$(DEST)]session.obj \
-[.$(DEST)]sha256.obj \
-[.$(DEST)]sign.obj \
-[.$(DEST)]sound.obj \
-[.$(DEST)]spell.obj \
-[.$(DEST)]spellfile.obj \
-[.$(DEST)]spellsuggest.obj \
-[.$(DEST)]strings.obj \
-[.$(DEST)]syntax.obj \
-[.$(DEST)]tabpanel.obj \
-[.$(DEST)]tag.obj \
-[.$(DEST)]term.obj \
-[.$(DEST)]terminal.obj \
-[.$(DEST)]termlib.obj \
-[.$(DEST)]testing.obj \
-[.$(DEST)]textformat.obj \
-[.$(DEST)]textobject.obj \
-[.$(DEST)]textprop.obj \
-[.$(DEST)]time.obj \
-[.$(DEST)]tuple.obj \
-[.$(DEST)]typval.obj \
-[.$(DEST)]ui.obj \
-[.$(DEST)]undo.obj \
-[.$(DEST)]usercmd.obj \
-[.$(DEST)]userfunc.obj \
-[.$(DEST)]version.obj \
-[.$(DEST)]vim9class.obj \
-[.$(DEST)]vim9cmds.obj \
-[.$(DEST)]vim9compile.obj \
-[.$(DEST)]vim9execute.obj \
-[.$(DEST)]vim9expr.obj \
-[.$(DEST)]vim9instr.obj \
-[.$(DEST)]vim9script.obj \
-[.$(DEST)]vim9type.obj \
-[.$(DEST)]viminfo.obj \
-[.$(DEST)]window.obj \
-$(GUI_OBJ) \
-$(XDIFF_OBJ) \
-$(LUA_OBJ) \
-$(MZSCHEME_OBJ) \
-$(PERL_OBJ) \
-$(PYTHON_OBJ) \
-$(PYTHON3_OBJ) \
-$(TCL_OBJ) \
-$(RUBY_OBJ)
+ [.$(DEST)]alloc.obj \
+ [.$(DEST)]arabic.obj \
+ [.$(DEST)]arglist.obj \
+ [.$(DEST)]autocmd.obj \
+ [.$(DEST)]beval.obj \
+ [.$(DEST)]blob.obj \
+ [.$(DEST)]blowfish.obj \
+ [.$(DEST)]buffer.obj \
+ [.$(DEST)]bufwrite.obj \
+ [.$(DEST)]change.obj \
+ [.$(DEST)]channel.obj \
+ [.$(DEST)]charset.obj \
+ [.$(DEST)]cindent.obj \
+ [.$(DEST)]clientserver.obj \
+ [.$(DEST)]clipboard.obj \
+ [.$(DEST)]cmdexpand.obj \
+ [.$(DEST)]cmdhist.obj \
+ [.$(DEST)]crypt.obj \
+ [.$(DEST)]crypt_zip.obj \
+ [.$(DEST)]debugger.obj \
+ [.$(DEST)]dict.obj \
+ [.$(DEST)]diff.obj \
+ [.$(DEST)]digraph.obj \
+ [.$(DEST)]drawline.obj \
+ [.$(DEST)]drawscreen.obj \
+ [.$(DEST)]edit.obj \
+ [.$(DEST)]eval.obj \
+ [.$(DEST)]evalbuffer.obj \
+ [.$(DEST)]evalfunc.obj \
+ [.$(DEST)]evalvars.obj \
+ [.$(DEST)]evalwindow.obj \
+ [.$(DEST)]ex_cmds.obj \
+ [.$(DEST)]ex_cmds2.obj \
+ [.$(DEST)]ex_docmd.obj \
+ [.$(DEST)]ex_eval.obj \
+ [.$(DEST)]ex_getln.obj \
+ [.$(DEST)]fileio.obj \
+ [.$(DEST)]filepath.obj \
+ [.$(DEST)]findfile.obj \
+ [.$(DEST)]float.obj \
+ [.$(DEST)]fold.obj \
+ [.$(DEST)]getchar.obj \
+ [.$(DEST)]gc.obj \
+ [.$(DEST)]gui_xim.obj \
+ [.$(DEST)]hardcopy.obj \
+ [.$(DEST)]hashtab.obj \
+ [.$(DEST)]help.obj \
+ [.$(DEST)]highlight.obj \
+ [.$(DEST)]if_cscope.obj \
+ [.$(DEST)]if_mzsch.obj \
+ [.$(DEST)]if_xcmdsrv.obj \
+ [.$(DEST)]indent.obj \
+ [.$(DEST)]insexpand.obj \
+ [.$(DEST)]job.obj \
+ [.$(DEST)]json.obj \
+ [.$(DEST)]linematch.obj \
+ [.$(DEST)]list.obj \
+ [.$(DEST)]locale.obj \
+ [.$(DEST)]logfile.obj \
+ [.$(DEST)]main.obj \
+ [.$(DEST)]map.obj \
+ [.$(DEST)]mark.obj \
+ [.$(DEST)]match.obj \
+ [.$(DEST)]mbyte.obj \
+ [.$(DEST)]memfile.obj \
+ [.$(DEST)]memline.obj \
+ [.$(DEST)]menu.obj \
+ [.$(DEST)]message.obj \
+ [.$(DEST)]misc1.obj \
+ [.$(DEST)]misc2.obj \
+ [.$(DEST)]mouse.obj \
+ [.$(DEST)]move.obj \
+ [.$(DEST)]normal.obj \
+ [.$(DEST)]ops.obj \
+ [.$(DEST)]option.obj \
+ [.$(DEST)]optionstr.obj \
+ [.$(DEST)]os_unix.obj \
+ [.$(DEST)]os_vms.obj \
+ [.$(DEST)]pathdef.obj \
+ [.$(DEST)]popupmenu.obj \
+ [.$(DEST)]popupwin.obj \
+ [.$(DEST)]profiler.obj \
+ [.$(DEST)]pty.obj \
+ [.$(DEST)]quickfix.obj \
+ [.$(DEST)]regexp.obj \
+ [.$(DEST)]register.obj \
+ [.$(DEST)]screen.obj \
+ [.$(DEST)]scriptfile.obj \
+ [.$(DEST)]search.obj \
+ [.$(DEST)]session.obj \
+ [.$(DEST)]sha256.obj \
+ [.$(DEST)]sign.obj \
+ [.$(DEST)]sound.obj \
+ [.$(DEST)]spell.obj \
+ [.$(DEST)]spellfile.obj \
+ [.$(DEST)]spellsuggest.obj \
+ [.$(DEST)]strings.obj \
+ [.$(DEST)]syntax.obj \
+ [.$(DEST)]tabpanel.obj \
+ [.$(DEST)]tag.obj \
+ [.$(DEST)]term.obj \
+ [.$(DEST)]terminal.obj \
+ [.$(DEST)]termlib.obj \
+ [.$(DEST)]testing.obj \
+ [.$(DEST)]textformat.obj \
+ [.$(DEST)]textobject.obj \
+ [.$(DEST)]textprop.obj \
+ [.$(DEST)]time.obj \
+ [.$(DEST)]tuple.obj \
+ [.$(DEST)]typval.obj \
+ [.$(DEST)]ui.obj \
+ [.$(DEST)]undo.obj \
+ [.$(DEST)]usercmd.obj \
+ [.$(DEST)]userfunc.obj \
+ [.$(DEST)]version.obj \
+ [.$(DEST)]vim9class.obj \
+ [.$(DEST)]vim9cmds.obj \
+ [.$(DEST)]vim9compile.obj \
+ [.$(DEST)]vim9execute.obj \
+ [.$(DEST)]vim9expr.obj \
+ [.$(DEST)]vim9instr.obj \
+ [.$(DEST)]vim9generics.obj \
+ [.$(DEST)]vim9script.obj \
+ [.$(DEST)]vim9type.obj \
+ [.$(DEST)]viminfo.obj \
+ [.$(DEST)]window.obj \
+ $(GUI_OBJ) \
+ $(XDIFF_OBJ) \
+ $(LUA_OBJ) \
+ $(MZSCHEME_OBJ) \
+ $(PERL_OBJ) \
+ $(PYTHON_OBJ) \
+ $(PYTHON3_OBJ) \
+ $(TCL_OBJ) \
+ $(RUBY_OBJ)
 
 # Default target is making the executable
 all : [.$(DEST)]config.h mmk_compat motif_env gtk_env perl_env \
@@ -1418,7 +1420,11 @@ lua_env :
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
-[.$(DEST)]vim9instr.obj : vim9instr.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
+[.$(DEST)]vim9instr.obj : vim9instr.c vim.h [.$(DEST)]config.h feature.h os_unix.h 
+[.$(DEST)]vim9generics.obj : vim9generics.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ errors.h globals.h version.h
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h

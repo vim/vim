@@ -315,7 +315,7 @@ jobs:
           fi
 
       - name: Test
-        timeout-minutes: 25
+        timeout-minutes: 30
         run: |
           make ${SHADOWOPT} ${TEST}
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2025 Jun 12
+*todo.txt*      For Vim version 9.1.  Last change: 2025 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -115,7 +115,6 @@ Further Vim9 improvements:
   - For chaining, allow using the class name as type for function return
     value.
   - Implement "specifies" interface
-  - Implement generics
   - Add "assignable" (class or child)?
   - More efficient way for interface member index than iterating over list?
   - a variant of type() that returns a different type for each class?

@@ -526,6 +526,7 @@ typedef long long vimlong_T;
 
 // for offsetof()
 #include <stddef.h>
+#include <stdbool.h>
 
 #if defined(HAVE_SYS_SELECT_H) && \
 	(!defined(HAVE_SYS_TIME_H) || defined(SYS_SELECT_WITH_SYS_TIME))
@@ -864,6 +865,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_HIGHLIGHT_GROUP  62
 #define EXPAND_FILETYPECMD	63
 #define EXPAND_PATTERN_IN_BUF	64
+#define EXPAND_RETAB		65
 
 
 // Values for exmode_active (0 is no exmode)
@@ -900,6 +902,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define BUF_DIFF_FILTER		    0x2000
 #define WILD_KEEP_SOLE_ITEM	    0x4000
 #define WILD_MAY_EXPAND_PATTERN	    0x8000
+#define WILD_FUNC_TRIGGER	    0x10000 // called from wildtrigger()
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names

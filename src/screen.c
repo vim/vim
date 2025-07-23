@@ -366,9 +366,6 @@ char_needs_redraw(int off_from, int off_to, int cols)
 			    && ScreenLines[off_from + 1]
 						!= ScreenLines[off_to + 1])))))
 	return TRUE;
-    // TODO: This is a temporary solution until the root cause is fixed.
-    if (firstwin->w_wincol > 0)
-	return TRUE;
     return FALSE;
 }
 
@@ -3691,9 +3688,9 @@ screen_ins_lines(
 	    LineOffset[j + line_count] = temp;
 	    LineWraps[j + line_count] = FALSE;
 	    if (can_clear((char_u *)" "))
-		lineclear(temp, topframe->fr_width, clear_attr);
+		lineclear(temp, (int)Columns, clear_attr);
 	    else
-		lineinvalid(temp, topframe->fr_width);
+		lineinvalid(temp, (int)Columns);
 	}
     }
 
@@ -4051,6 +4048,7 @@ showmode(void)
     int		attr;
     int		nwr_save;
     int		sub_attr;
+    int		show_ruler_with_pum = FALSE;
 
     do_mode = p_smd && msg_silent == 0
 	    && ((State & MODE_INSERT)
@@ -4182,6 +4180,10 @@ showmode(void)
 		    msg_puts_attr(_(p), attr);
 		}
 		msg_puts_attr(" --", attr);
+		// Ensure ruler is shown when a popup is visible and only the mode name
+		// is displayed. Without this, the ruler may disappear during insert-mode
+		// completion when 'shortmess' includes 'c'.
+		show_ruler_with_pum = TRUE;
 	    }
 
 	    need_clear = TRUE;
@@ -4217,7 +4219,7 @@ showmode(void)
     // If the last window has no status line, the ruler is after the mode
     // message and must be redrawn
     if (redrawing() && lastwin->w_status_height == 0)
-	win_redr_ruler(lastwin, TRUE, FALSE);
+	win_redr_ruler(lastwin, TRUE, show_ruler_with_pum);
 
     redraw_cmdline = FALSE;
     redraw_mode = FALSE;
@@ -4282,6 +4284,16 @@ recording_mode(int attr)
 
     sprintf(s, " @%c", reg_recording);
     msg_puts_attr(s, attr);
+}
+
+/*
+ * Return TRUE if mouse is enabled.
+ */
+    static int
+mouse_has_any(void)
+{
+    return mouse_has(MOUSE_NORMAL) || mouse_has(MOUSE_INSERT)
+	|| mouse_has(MOUSE_VISUAL);
 }
 
 /*
@@ -4460,7 +4472,7 @@ draw_tabline(void)
 	}
 
 	// Put an "X" for closing the current tab if there are several.
-	if (tabcount > 1)
+	if (tabcount > 1 && mouse_has_any())
 	{
 	    screen_putchar('X', 0, (int)Columns - 1, attr_nosel);
 	    TabPageIdxs[Columns - 1] = -999;

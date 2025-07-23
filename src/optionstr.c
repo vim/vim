@@ -35,7 +35,7 @@ static char *(p_tplo_align_values[]) = {"left", "right", NULL};
 #endif
 #if defined(FEAT_DIFF)
 // Note: Keep this in sync with diffopt_changed()
-static char *(p_dip_values[]) = {"filler", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", "inline:", "linematch:", NULL};
+static char *(p_dip_values[]) = {"filler", "anchor", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", "inline:", "linematch:", NULL};
 static char *(p_dip_algorithm_values[]) = {"myers", "minimal", "patience", "histogram", NULL};
 static char *(p_dip_inline_values[]) = {"none", "simple", "char", "word", NULL};
 #endif
@@ -341,6 +341,9 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_tags);
     check_string_option(&buf->b_p_tc);
     check_string_option(&buf->b_p_dict);
+#ifdef FEAT_DIFF
+    check_string_option(&buf->b_p_dia);
+#endif
     check_string_option(&buf->b_p_tsr);
     check_string_option(&buf->b_p_lw);
     check_string_option(&buf->b_p_bkc);
@@ -2048,6 +2051,18 @@ expand_set_debug(optexpand_T *args, int *numMatches, char_u ***matches)
 
 #if defined(FEAT_DIFF) || defined(PROTO)
 /*
+ * The 'diffanchors' option is changed.
+ */
+    char *
+did_set_diffanchors(optset_T *args)
+{
+    if (diffanchors_changed(args->os_flags & OPT_LOCAL) == FAIL)
+	return e_invalid_argument;
+
+    return NULL;
+}
+
+/*
  * The 'diffopt' option is changed.
  */
     char *
@@ -3239,9 +3254,20 @@ did_set_mkspellmem(optset_T *args UNUSED)
 did_set_mouse(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
+    char	*retval;
 
-    return did_set_option_listflag(*varp, (char_u *)MOUSE_ALL, args->os_errbuf,
+    retval = did_set_option_listflag(*varp, (char_u *)MOUSE_ALL, args->os_errbuf,
 		    args->os_errbuflen);
+    if (retval == NULL)
+    {
+	redraw_tabline = TRUE;
+	if (tabline_height() > 0)
+	    update_screen(UPD_VALID);
+#if (defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)) || defined(PROTO)
+	popup_close_info(); // Close info popup to apply new properties
+#endif
+    }
+    return retval;
 }
 
     int

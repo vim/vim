@@ -120,14 +120,6 @@
 # include <wchar.h>
 #endif
 
-#if 0
-// This has been disabled, because several people reported problems with the
-// wcwidth() and iswprint() library functions, esp. for Hebrew.
-# ifdef __STDC_ISO_10646__
-#  define USE_WCHAR_FUNCTIONS
-# endif
-#endif
-
 static int dbcs_char2len(int c);
 static int dbcs_char2bytes(int c, char_u *buf);
 static int dbcs_ptr2len(char_u *p);
@@ -1593,11 +1585,7 @@ utf_char2cells(int c)
 #ifdef FEAT_EVAL
     // Use the value from setcellwidths() at 0x80 and higher, unless the
     // character is not printable.
-    if (c >= 0x80 &&
-# ifdef USE_WCHAR_FUNCTIONS
-	    wcwidth(c) >= 1 &&
-# endif
-	    vim_isprintc(c))
+    if (c >= 0x80 && vim_isprintc(c))
     {
 	int n = cw_value(c);
 	if (n != 0)
@@ -1607,25 +1595,10 @@ utf_char2cells(int c)
 
     if (c >= 0x100)
     {
-#ifdef USE_WCHAR_FUNCTIONS
-	int	n;
-
-	/*
-	 * Assume the library function wcwidth() works better than our own
-	 * stuff.  It should return 1 for ambiguous width chars!
-	 */
-	n = wcwidth(c);
-
-	if (n < 0)
-	    return 6;		// unprintable, displays <xxxx>
-	if (n > 1)
-	    return n;
-#else
 	if (!utf_printable(c))
 	    return 6;		// unprintable, displays <xxxx>
 	if (intable(doublewidth, sizeof(doublewidth), c))
 	    return 2;
-#endif
 	if (p_emoji && intable(emoji_wide, sizeof(emoji_wide), c))
 	    return 2;
     }
@@ -2712,12 +2685,6 @@ utf_iscomposing(int c)
     int
 utf_printable(int c)
 {
-#ifdef USE_WCHAR_FUNCTIONS
-    /*
-     * Assume the iswprint() library function works better than our own stuff.
-     */
-    return iswprint(c);
-#else
     // Sorted list of non-overlapping intervals.
     // 0xd800-0xdfff is reserved for UTF-16, actually illegal.
     static struct interval nonprint[] =
@@ -2728,7 +2695,6 @@ utf_printable(int c)
     };
 
     return !intable(nonprint, sizeof(nonprint), c);
-#endif
 }
 
 // Sorted list of non-overlapping intervals of all Emoji characters,
