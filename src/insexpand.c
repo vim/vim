@@ -5317,8 +5317,11 @@ ins_compl_get_exp(pos_T *ini)
 	    && !(compl_cont_status & CONT_LOCAL))
     {
 	cpt_sources_index = 0;
-	compl_source_start_timer(0);
-	compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
+	if (compl_autocomplete)
+	{
+	    compl_source_start_timer(0);
+	    compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
+	}
     }
 
     // For ^N/^P loop over all the flags/windows/buffers in 'complete'.
@@ -5400,7 +5403,7 @@ ins_compl_get_exp(pos_T *ini)
 	    compl_started = FALSE;
 	}
 
-	// Reset the timeout after getting matches from function
+	// Reset the timeout after collecting matches from function source
 	if (compl_autocomplete && type == CTRL_X_FUNCTION)
 	    compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
 
