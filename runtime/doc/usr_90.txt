@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 9.1.  Last change: 2025 Jul 22
+*usr_90.txt*	For Vim version 9.1.  Last change: 2025 Jul 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -200,7 +200,7 @@ box for most users.
     2. Using winget (Windows Package Manager) ~
 
 If you prefer using the command line, you can quickly install Vim using
-Windows' built-in package manager for the stable version: >
+Windows built-in package manager for the stable version: >
 
 	winget install vim.vim
 
@@ -210,7 +210,7 @@ Or to download the latest nightly version, use: >
 
 This method ensures you get an up-to-date version with minimal hassle.
 
-    3. GitHub Installer (All Architectures) >
+    3. GitHub Installer (All Architectures) ~
 
 For more control over the installation (or if you're using a specific CPU
 architecture like ARM), visit the official GitHub repository:
@@ -223,7 +223,7 @@ This repo provides daily installer and portable zip archives for:
     - x64 (64-bit)
     - ARM64
 
-It’s a great option if you want nightly builds or specific configuration
+It's a great option if you want nightly builds or specific configuration
 
 In case you are not satisfied with the features included in the supplied
 binaries, you could try compiling Vim yourself.  Get the source archive from
