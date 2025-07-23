@@ -5171,6 +5171,10 @@ func Test_autocomplete_trigger()
   call assert_equal([], b:matches->mapnew('v:val.word'))
   call feedkeys("Sabc\<BS>\<BS>\<F2>\<Esc>0", 'tx!')
   call assert_equal(['and', 'afoo'], b:matches->mapnew('v:val.word'))
+  call feedkeys("Szx\<BS>\<F2>\<Esc>0", 'tx!')
+  call assert_equal([], b:matches->mapnew('v:val.word'))
+  call feedkeys("Sazx\<Left>\<BS>\<F2>\<Esc>0", 'tx!')
+  call assert_equal(['and', 'afoo'], b:matches->mapnew('v:val.word'))
 
   bw!
   call test_override("char_avail", 0)
