@@ -5973,8 +5973,9 @@ check_elapsed_time(void)
     if (cpt_sources_array == NULL)
 	return;
 
-    elapsed_T *start_tv = &cpt_sources_array[cpt_sources_index].compl_start_tv;
-    long elapsed_ms = ELAPSED_FUNC(*start_tv);
+    elapsed_T	*start_tv
+	= &cpt_sources_array[cpt_sources_index].compl_start_tv;
+    long	elapsed_ms = ELAPSED_FUNC(*start_tv);
 
     if (elapsed_ms > compl_timeout_ms)
     {

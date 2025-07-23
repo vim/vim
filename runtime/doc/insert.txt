@@ -1126,6 +1126,7 @@ CTRL-P			Same as CTRL-N, but find the previous match.
 			copy the words following the previous expansion in
 			other contexts unless a double CTRL-X is used.
 
+
 Stop completion						*compl-stop*
 
 							*i_CTRL-X_CTRL-Z*
