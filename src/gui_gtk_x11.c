@@ -1732,15 +1732,6 @@ gui_mch_init_check(void)
     }
 #endif
 
-#if GTK_CHECK_VERSION(3,10,0)
-    // Vim currently assumes that Gtk means X11, so it cannot use native Gtk
-    // support for other backends such as Wayland.
-    //
-    // Use an environment variable to enable unfinished Wayland support.
-    if (getenv("GVIM_ENABLE_WAYLAND") == NULL)
-	gdk_set_allowed_backends ("x11");
-#endif
-
 #ifdef FEAT_GUI_GNOME
     if (gtk_socket_id == 0)
 	using_gnome = 1;

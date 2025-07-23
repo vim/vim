@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Nov 17
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Jul 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -649,9 +649,8 @@ X11R5 with a library for X11R6 probably doesn't work (although the linking
 won't give an error message, Vim will crash later).
 
 							*gui-wayland*
-Initial support for the Wayland display server protocol has landed in patch
-9.1.0064. To enable it, you need to set the environment variable
-"$GVIM_ENABLE_WAYLAND" in your shell.
+Support for the Wayland display server protocol has landed in patch
+9.1.0064.
 
 Note: The Wayland protocol is subject to some restrictions, so the following
 functions won't work: |getwinpos()|, |getwinposx()|, |getwinposy()| and the
