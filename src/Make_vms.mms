@@ -1420,11 +1420,11 @@ lua_env :
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
-[.$(DEST)]vim9instr.obj : vim9instr.c vim.h [.$(DEST)]config.h feature.h os_unix.h 
-[.$(DEST)]vim9generics.obj : vim9generics.c vim.h [.auto]config.h feature.h os_unix.h \
+[.$(DEST)]vim9instr.obj : vim9instr.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
+[.$(DEST)]vim9generics.obj : vim9generics.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
