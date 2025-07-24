@@ -3630,8 +3630,12 @@ EXTERN char e_concrete_method_str_override_with_generic_method_in_class_str[]
 	INIT(= N_("E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic method"));
 EXTERN char e_generic_method_str_type_arguments_mismatch_in_class_str[]
 	INIT(= N_("E1434: Mismatched number of type variables for generic method  \"%s\" in class \"%s\""));
+EXTERN char e_enum_can_only_be_used_in_script[]
+	INIT(= N_("E1435: Enum can only be used in a script"));
+EXTERN char e_interface_can_only_be_used_in_script[]
+	INIT(= N_("E1436: Interface can only be used in a script"));
 #endif
-// E1435 - E1499 unused (reserved for Vim9 class support)
+// E1437 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
