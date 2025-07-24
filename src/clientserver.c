@@ -254,9 +254,19 @@ prepare_server(mparm_T *parmp)
 #  endif
 		parmp->serverName_arg != NULL))
     {
+#ifdef FEAT_SOCKETSERVER
+	char_u *path = socket_server_get_path_from_name(
+		parmp->servername, FALSE);
+
+	if (path != NULL)
+	    socket_server_init(path, TRUE);
+
+	vim_free(path);
+#elif defined(FEAT_X11)
 	(void)serverRegisterName(X_DISPLAY, parmp->servername);
-	vim_free(parmp->servername);
 	TIME_MSG("register server name");
+#endif
+	vim_free(parmp->servername);
     }
     else
 	serverDelayedStartName = parmp->servername;
