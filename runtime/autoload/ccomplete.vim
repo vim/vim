@@ -3,7 +3,7 @@ vim9script noclear
 # Vim completion script
 # Language:	C
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Jul 23
+# Last Change:	2025 Jul 24
 #		Rewritten in Vim9 script by github user lacygoill
 # Former Maintainer:   Bram Moolenaar <Bram@vim.org>
 
