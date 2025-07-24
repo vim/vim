@@ -231,7 +231,7 @@ exec_on_server(mparm_T *parmp)
     void
 prepare_server(mparm_T *parmp)
 {
-# if defined(FEAT_X11)
+# if defined(FEAT_X11) || defined(FEAT_SOCKETSERVER)
     /*
      * Register for remote command execution with :serversend and --remote
      * unless there was a -X or a --servername '' on the command line.
@@ -384,7 +384,11 @@ cmdsrv_main(
 		}
 		Argc = i;
 	    }
-# ifdef FEAT_X11
+
+#ifdef FEAT_SOCKETSERVER
+	    ret = socket_server_send(
+		    serverName_arg, *serverStr, NULL, 0, 0, silent);
+# elif defined(FEAT_X11)
 	    if (xterm_dpy == NULL)
 	    {
 		mch_errmsg(_("No display"));
@@ -393,7 +397,7 @@ cmdsrv_main(
 	    else
 		ret = serverSendToVim(xterm_dpy, sname, *serverStr,
 						  NULL, &srv, 0, 0, 0, silent);
-# else
+# elif defined(MSWIN)
 	    // Win32 always works?
 	    ret = serverSendToVim(sname, *serverStr, NULL, &srv, 0, 0, silent);
 # endif
