@@ -1664,4 +1664,19 @@ func Test_class_selfref_gc()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
+" Test for defining an enum in a function
+def Test_enum_defined_in_function()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      var x = 1
+      enum Foo
+        Red,
+      endenum
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1435: Enum can only be used in a script', 2)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
