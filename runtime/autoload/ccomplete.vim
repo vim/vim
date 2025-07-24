@@ -226,7 +226,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
     res = []
     for i: number in len(diclist)->range()
       if complete_check()
-          return []
+          return res
       endif
       # New ctags has the "typeref" field.  Patched version has "typename".
       if diclist[i]->has_key('typename')
@@ -654,7 +654,7 @@ def StructMembers( # {{{1
     ++idx
     while 1
       if complete_check()
-        return []
+        return matches
       endif
       if idx >= len(items)
         return matches  # No further items, return the result.
