@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Jul 23
+" Last Change:	   2025 Jul 24
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -752,12 +752,19 @@ if s:vim9script
   syn cluster	vim9EnumNameContinue	contains=vim9EnumNameContinue,vim9EnumNameContinueComment
 
   " enforce enum value list location
-  syn match	vim9EnumValue		contained	"\<\a\w*\>"		  nextgroup=vim9EnumValueArgList,vim9EnumValueListComma,vim9Comment
+  syn match	vim9EnumValue		contained	"\<\a\w*\>"		  nextgroup=vim9EnumValueTypeArgs,vim9EnumValueArgList,vim9EnumValueListComma,vim9Comment
   syn match	vim9EnumValueListComma	contained	","	skipwhite skipempty nextgroup=vim9EnumValue,vim9EnumValueListCommaComment
   syn region	vim9EnumValueListCommaComment	contained
         \ start="#" skip="\n\s*\%(\\\|#\\ \)" end="$"
         \ skipwhite skipempty nextgroup=vim9EnumValueListCommaComment,vim9EnumValue
         \ contains=@vimCommentGroup,vimCommentString
+  syn region	vim9EnumValueTypeArgs	contained
+        \ matchgroup=Delimiter
+        \ start="<\ze\a"
+        \ end=">"
+        \ nextgroup=vim9EnumValueArgList
+        \ contains=@vimType
+        \ oneline
   syn region	vim9EnumValueArgList	contained
         \ matchgroup=vimParenSep start="(" end=")"
         \ nextgroup=vim9EnumValueListComma
