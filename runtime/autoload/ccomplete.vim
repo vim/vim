@@ -82,9 +82,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
   var s: number = 0
   var arrays: number = 0
   while 1
-    if complete_check()
-        return v:none
-    endif
     var e: number = base->charidx(match(base, '\.\|->\|\[', s))
     if e < 0
       if s == 0 || base[s - 1] != ']'
@@ -107,9 +104,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
       s = e
       ++e
       while e < strcharlen(base)
-        if complete_check()
-            return v:none
-        endif
         if base[e] == ']'
           if n == 0
             break
@@ -200,10 +194,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
     endif
   endif
 
-  if complete_check()
-      return res
-  endif
-
   if len(items) == 1 || len(items) == arrays + 1
     # Only one part, no "." or "->": complete from tags file.
     var tags: list<dict<any>>
@@ -224,10 +214,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
               || bufnr('%') == bufnr(v['filename']))
 
     res = res->extend(tags->map((_, v: dict<any>) => Tag2item(v)))
-  endif
-
-  if complete_check()
-      return res
   endif
 
   if len(res) == 0
@@ -259,10 +245,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
         endif
       endif
     endfor
-  endif
-
-  if complete_check()
-      return res
   endif
 
   if len(res) == 0 && items[0]->searchdecl(true) == 0
