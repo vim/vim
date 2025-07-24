@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-12 10:53+0200\n"
-"PO-Revision-Date: 2025-07-12 11:20+0100\n"
+"POT-Creation-Date: 2025-07-22 22:21+0200\n"
+"PO-Revision-Date: 2025-07-22 23:00+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -1343,9 +1343,6 @@ msgstr "corrispondenza nel file"
 msgid " Adding"
 msgstr " Aggiungo"
 
-#. showmode might reset the internal line pointers, so it must
-#. be called before line = ml_get(), or when this address is no
-#. longer needed.  -- Acevedo.
 msgid "-- Searching..."
 msgstr "-- Ricerca..."
 
@@ -3180,7 +3177,6 @@ msgstr "terminato"
 msgid "(Invalid)"
 msgstr "(Non valido)"
 
-#, no-c-format
 msgid "%a %b %d %H:%M:%S %Y"
 msgstr "%a %b %d %H:%M:%S %Y"
 
@@ -5229,7 +5225,6 @@ msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr ""
 "E498: Nessun nome di file :source trovato da sostituire per \"<sfile>\""
 
-#, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
 msgstr "E499: Un nome di file nullo per '%' o '#', va bene solo con \":p:h\""
 
@@ -5944,7 +5939,7 @@ msgid "E733: Using :endwhile with :for"
 msgstr "E733: Uso di :endwhile con :for"
 
 msgid "E734: Wrong variable type for %s="
-msgstr "E734: Tipo di variabile errato per %s="
+msgstr "E734: Tipo della variabile errato per %s="
 
 msgid "E735: Can only compare Dictionary with Dictionary"
 msgstr "E735: Posso confrontare un Dizionario solo con un altro Dizionario"
@@ -6168,7 +6163,6 @@ msgstr "E802: ID non valido: %d (dev'essere maggiore o uguale a 1)"
 msgid "E803: ID not found: %d"
 msgstr "E803: ID non trovato: %d"
 
-#, no-c-format
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: Impossibile usare '%' con un Numero-a-virgola-mobile"
 
@@ -6356,7 +6350,6 @@ msgstr "E862: Impossibile usare g: qui"
 msgid "E863: Not allowed for a terminal in a popup window"
 msgstr "E863: Non consentito per un terminale in una finestra dinamica"
 
-#, no-c-format
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used"
@@ -6654,7 +6647,6 @@ msgstr "E949: File modificato in fase di riscrittura"
 msgid "E950: Cannot convert between %s and %s"
 msgstr "E950: Non si può convertire da %s a %s"
 
-#, no-c-format
 msgid "E951: \\% value too large"
 msgstr "E951: \\% valore troppo grande"
 
@@ -6926,7 +6918,6 @@ msgstr "E1033: Catch non raggiungibile dopo aver richiesto catch-all"
 msgid "E1034: Cannot use reserved name %s"
 msgstr "E1034: Impossibile usare il nome riservato %s"
 
-#, no-c-format
 msgid "E1035: % requires number arguments"
 msgstr "E1035: % richiede come argomenti dei numeri"
 
@@ -7264,7 +7255,7 @@ msgstr ""
 "funzione %s"
 
 msgid "E1150: Script variable type changed"
-msgstr "E1150: Modificato Tipo della variabile di script"
+msgstr "E1150: Modificato tipo della variabile di script"
 
 msgid "E1151: Mismatched endfunction"
 msgstr "E1151: :endfunction senza corrispondenza"
@@ -7591,7 +7582,8 @@ msgstr ""
 "un Blob"
 
 msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
-msgstr "E1251: Lista, Tupla, Dizionario, Blob o Stringa richiesto per argomento %d"
+msgstr ""
+"E1251: Lista, Tupla, Dizionario, Blob o Stringa richiesto per argomento %d"
 
 msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: Stringa, Lista o Blob richiesto per argomento %d"
@@ -7763,7 +7755,7 @@ msgstr ""
 "restituisce una Lista ma un %s"
 
 msgid "E1304: Cannot use type with this variable: %s"
-msgstr "E1304: Impossibile usare il Tipo con questa variabile: %s"
+msgstr "E1304: Impossibile usare il tipo con questa variabile: %s"
 
 msgid ""
 "E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""
@@ -8083,7 +8075,7 @@ msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: Impossibile usare Classe \"%s\" come valore"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
-msgstr "E1407: Impossibile usare un Tipo alias come variabile o valore"
+msgstr "E1407: Impossibile usare Typealias come variabile o valore"
 
 msgid "E1408: Final variable not supported in an interface"
 msgstr "E1408: Variabile Finale non supportata in un'Interfaccia"
@@ -8158,8 +8150,29 @@ msgstr "E1430: Riferimento alla variabile oggetto '%s' non inizializzata"
 msgid ""
 "E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"
 msgstr ""
-"E1431: Il Metodo Astratto \"%s\" nella Classe \"%s\" non può essere acceduto "
-"direttamente"
+"E1431: Il Metodo astratto \"%s\" nella Classe \"%s\" non può essere "
+"acceduto direttamente"
+
+msgid ""
+"E1432: Overriding generic method \"%s\" in class \"%s\" with a concrete "
+"method"
+msgstr ""
+"E1432: Il Metodo generico \"%s\" nella Classe \"%s\" è sostituito da un "
+"metodo concreto"
+
+msgid ""
+"E1433: Overriding concrete method \"%s\" in class \"%s\" with a generic "
+"method"
+msgstr ""
+"E1433: Il metodo concreto \"%s\" nella Classe \"%s\" è sostituito con un "
+"metodo generico"
+
+msgid ""
+"E1434: Mismatched number of type variables for generic method  \"%s\" in "
+"class \"%s\""
+msgstr ""
+"E1434: Numero dei tipi di variabili non corrispondente per il metodo "
+"generico \"%s\" nella Classe \"%s\""
 
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
@@ -8301,16 +8314,15 @@ msgstr ""
 "E1541: Valore troppo grande, il massimo punto di codice Unicode è U+10FFFF"
 
 msgid "E1542: Cannot have a negative or zero number of quickfix/location lists"
-msgstr "E1542: Non può essere negativo o zero il numero di Lista "
-"quickfix o di locazione"
+msgstr ""
+"E1542: Non può essere negativo o zero il numero di Lista quickfix o di "
+"locazione"
 
 msgid "E1543: Cannot have more than a hundred quickfix/location lists"
-msgstr "E1543: Non possono esserci più di cento Liste quickfix o di "
-"locazione"
+msgstr "E1543: Non possono esserci più di cento Liste quickfix o di locazione"
 
 msgid "E1544: Failed resizing the quickfix/location list stack"
-msgstr "E1544: Fallito ridimensionamento dello stack quickfix o di "
-"locazione"
+msgstr "E1544: Fallito ridimensionamento dello stack quickfix o di locazione"
 
 msgid "E1545: Quickfix list stack unavailable"
 msgstr "E1545: Stack delle Liste quickfix non disponibile"
@@ -8323,6 +8335,48 @@ msgstr "E1547: Questa versione di Vim supporta :redrawtabpanel"
 
 msgid "E1548: Wayland connection is unavailable"
 msgstr "E1548: Connession a Wayland non disponibile"
+
+msgid "E1549: Cannot have more than %d diff anchors"
+msgstr "E1549: Non posso avere più di %d punti di ancoraggio diff"
+
+msgid "E1550: Failed to find all diff anchors"
+msgstr "E1550: Non ho trovato tutti i punti di ancoraggio diff"
+
+msgid "E1551: Cannot open a popup window to a closing buffer"
+msgstr "E1551: Non posso aprire una finestra dinamica per un buffer che "
+"è in fase di chiusura"
+
+msgid "E1552: Type variable name must start with an uppercase letter: %s"
+msgstr "E1552: Il nome del tipo di variabile deve iniziare con una lettera "
+"maiuscola: %s"
+
+msgid "E1553: Missing comma after type in generic function: %s"
+msgstr "E1553: Manca virgola dopo il tipo nella funzione generica: %s"
+
+msgid "E1554: Missing '>' in generic function: %s"
+msgstr "E1554: Manca '>' nella funzione generica: %s"
+
+msgid "E1555: Empty type list specified for generic function '%s'"
+msgstr "E1555: Lista di tipo vuoto specificata per la funzione generica '%s'"
+
+msgid "E1556: Too many types specified for generic function '%s'"
+msgstr "E1556: Troppi tipi specificati per la funzione generica '%s'"
+
+msgid "E1557: Not enough types specified for generic function '%s'"
+msgstr "E1557: Numero insufficiente di tipi specificato per la funzione "
+"generica '%s'"
+
+msgid "E1558: Unknown generic function: %s"
+msgstr "E1558: Funzione generica sconosciuta: %s"
+
+msgid "E1559: Type arguments missing for generic function '%s'"
+msgstr "E1559: Tipo degli argomenti mancante per la funzione generica '%s'"
+
+msgid "E1560: Not a generic function: %s"
+msgstr "E1560: Not è una funzione generica: %s"
+
+msgid "E1561: Duplicate type variable name: %s"
+msgstr "E1561: Nome del tipo della variabile duplicato: %s"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -8667,27 +8721,22 @@ msgstr ""
 "File di Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
 #. Translators: This is the Application Name used in the GVim desktop file
-#: gvim.desktop.in:6
 msgid "GVim"
 msgstr "GVim"
 
 #. Translators: This is the Generic Application Name used in the Vim desktop file
-#: gvim.desktop.in:8 vim.desktop.in:8
 msgid "Text Editor"
 msgstr "Editor di testi"
 
 #. Translators: This is the comment used in the Vim desktop file
-#: gvim.desktop.in:10 vim.desktop.in:10
 msgid "Edit text files"
 msgstr "Edita file di testo"
 
 #. Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
-#: gvim.desktop.in:75 vim.desktop.in:75
 msgid "Text;editor;"
 msgstr "Testo;editor;"
 
 #. Translators: This is the Application Name used in the Vim desktop file
-#: vim.desktop.in:6
 msgid "Vim"
 msgstr "Vim"
 
@@ -8958,8 +9007,8 @@ msgid ""
 "characters to use for the status line, folds, diffs, buffer text, filler "
 "lines and truncation in the completion menu"
 msgstr ""
-"caratteri da usare per riga di status, piegature, differenze, testo "
-"di un buffer, riempitivo di riga e troncamento nel menu di completamento"
+"caratteri da usare per riga di status, piegature, differenze, testo di un "
+"buffer, riempitivo di riga e troncamento nel menu di completamento"
 
 msgid "number of lines used for the command-line"
 msgstr "numero di righe disponibili per la riga-di-comando"
@@ -9002,12 +9051,13 @@ msgid "number of columns to use for the line number"
 msgstr "numero di colonne da usare per visualizzare numero di riga"
 
 msgid "maximum number of quickfix lists that can be stored in history"
-msgstr "numero massimo di Liste quickfix che possono essere conservate "
-"nella storia"
+msgstr ""
+"numero massimo di Liste quickfix che possono essere conservate nella storia"
 
 msgid "maximum number of location lists that can be stored in history"
-msgstr "numero massimo di Liste di locazione che possono essere conservate "
-"nella storia"
+msgstr ""
+"numero massimo di Liste di locazione che possono essere conservate nella "
+"storia"
 
 msgid "controls whether concealable text is hidden"
 msgstr "controllare se il testo nascondibile è nascosto"
@@ -9489,8 +9539,8 @@ msgid "Ordered list of possible methods for accessing the clipboard"
 msgstr "Lista ordinata dei metodi possibili per accedere agli appunti"
 
 msgid "Timeout to use when polling for data to read or write in wayland"
-msgstr "Tempo-di-attesa da usare attendendo dati da leggere o scrivere "
-"in Wayland"
+msgstr ""
+"Tempo-di-attesa da usare attendendo dati da leggere o scrivere in Wayland"
 
 msgid "Wayland seat to use"
 msgstr "Seggio Wayland da usare"
@@ -9587,37 +9637,26 @@ msgid "maximum width of the popup menu"
 msgstr "larghezza massima del menù dinamico"
 
 msgid "user defined function for Insert mode completion"
-msgstr ""
-"funzione definita dall'utente per il completamento "
-"in modo Insert"
+msgstr "funzione definita dall'utente per il completamento in modo Insert"
 
 msgid "function for filetype-specific Insert mode completion"
 msgstr ""
-"funzione per il completamento in modo Insert a seconda del "
-"tipo di file"
+"funzione per il completamento in modo Insert a seconda del tipo di file"
 
 msgid "list of dictionary files for keyword completion"
-msgstr ""
-"lista di file dizionario per il completamento di "
-"parole chiave"
+msgstr "lista di file dizionario per il completamento di parole chiave"
 
 msgid "list of thesaurus files for keyword completion"
-msgstr ""
-"lista di file di sinonimi per il completamento di "
-"parole chiave"
+msgstr "lista di file di sinonimi per il completamento di parole chiave"
 
 msgid "function used for thesaurus completion"
 msgstr "funzione usata per completamento sinonimi"
 
 msgid "adjust case of a keyword completion match"
-msgstr ""
-"aggiustare maiuscolo/minuscolo nelle corrispondenze di "
-"completamento"
+msgstr "aggiustare maiuscolo/minuscolo nelle corrispondenze di completamento"
 
 msgid "enable entering digraphs with c1 <BS> c2"
-msgstr ""
-"abilitare immissione lettere non in tastiera con "
-"c1 <BS> c2"
+msgstr "abilitare immissione lettere non in tastiera con c1 <BS> c2"
 
 msgid "the \"~\" command behaves like an operator"
 msgstr "il comando \"~\" si comporta come un operatore"
@@ -9627,8 +9666,8 @@ msgstr "funzione da chiamare per l'operatore \"g@\""
 
 msgid "when inserting a bracket, briefly jump to its match"
 msgstr ""
-"se si inserisce una parentesi, saltare per un momento "
-"alla parentesi corrispondente"
+"se si inserisce una parentesi, saltare per un momento alla parentesi "
+"corrispondente"
 
 msgid "tenth of a second to show a match for 'showmatch'"
 msgstr ""
@@ -9794,6 +9833,9 @@ msgstr "opzioni per usare modo Diff"
 
 msgid "expression used to obtain a diff file"
 msgstr "espressioni da usare per ottenere un file diff"
+
+msgid "list of addresses for anchoring a diff"
+msgstr "lista di punti di ancoraggio per diff"
 
 msgid "expression used to patch a file"
 msgstr "espressione da usare per applicare patch a un file"

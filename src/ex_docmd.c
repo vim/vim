@@ -3715,6 +3715,16 @@ find_ex_command(
 		// "&option" can be followed by "->" or "=", check below
 	    }
 
+	    if (*p == '<' && vim9)
+	    {
+		// generic function
+		if (skip_generic_func_type_args(&p) == FAIL)
+		{
+		    eap->cmdidx = CMD_SIZE;
+		    return p;
+		}
+	    }
+
 	    swp = skipwhite(p);
 
 	    if (

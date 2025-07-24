@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Jul 05
+*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Jul 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1233,6 +1233,7 @@ Mappings and Menus:			    *mapping-functions*
 	mapset()		restore a mapping
 	menu_info()		get information about a menu item
 	wildmenumode()		check if the wildmode is active
+	wildtrigger()		start wildcard expansion
 
 Testing:				    *test-functions*
 	assert_equal()		assert that two expressions values are equal

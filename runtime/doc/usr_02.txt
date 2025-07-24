@@ -1,4 +1,4 @@
-*usr_02.txt*	For Vim version 9.1.  Last change: 2025 Jun 03
+*usr_02.txt*	For Vim version 9.1.  Last change: 2025 Jul 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -614,7 +614,7 @@ Summary:					*help-summary*  >
 <    for how the '|' is handled in mappings.
 
 15) Command definitions are talked about :h command-topic, so use >
-	:help command-bar
+	:help command-bang
 <    to find out about the '!' argument for custom commands.
 
 16) Window management commands always start with CTRL-W, so you find the

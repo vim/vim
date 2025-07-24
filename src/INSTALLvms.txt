@@ -31,14 +31,7 @@ Contents:
 ----------------------------------------------------------------------------
 1. Download files
 
-1.1. Visit the Vim ftp site (see ftp://ftp.vim.org/pub/vim/MIRRORS)
-     and obtain the following three files:
-
-     unix/vim-X.X-src.tar.gz
-     unix/vim-X.X-rt.tar.gz
-     extra/vim-X.X-extra.tar.gz
-
-     where X.X is the version number.
+1.1. Visit the Vim Repository Home
 
 You may want to clone the latest source code from https://github/vim/vim
 Or the last tested on OpenVMS from http://polarhome.com/vim/files/source/vms/

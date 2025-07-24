@@ -238,6 +238,7 @@ nextwild(
     cmdline_info_T	*ccline = get_cmdline_info();
     int		i;
     char_u	*p;
+    int		from_wildtrigger_func = options & WILD_FUNC_TRIGGER;
 
     if (xp->xp_numfiles == -1)
     {
@@ -269,16 +270,21 @@ nextwild(
 	return FAIL;
     }
 
+    i = (int)(xp->xp_pattern - ccline->cmdbuff);
+    xp->xp_pattern_len = ccline->cmdpos - i;
+
+    // Skip showing matches if prefix is invalid during wildtrigger()
+    if (from_wildtrigger_func && xp->xp_context == EXPAND_COMMANDS
+	    && xp->xp_pattern_len == 0)
+	return FAIL;
+
     // If cmd_silent is set then don't show the dots, because redrawcmd() below
     // won't remove them.
-    if (!cmd_silent)
+    if (!cmd_silent && !from_wildtrigger_func)
     {
 	msg_puts("...");	    // show that we are busy
 	out_flush();
     }
-
-    i = (int)(xp->xp_pattern - ccline->cmdbuff);
-    xp->xp_pattern_len = ccline->cmdpos - i;
 
     if (type == WILD_NEXT || type == WILD_PREV
 	    || type == WILD_PAGEUP || type == WILD_PAGEDOWN)
@@ -3718,8 +3724,9 @@ ExpandGenericExt(
  */
     static void
 expand_shellcmd_onedir(
-	char_u		*pat,
-	size_t		pathlen,	// length of the path portion of pat.
+	char_u		*pathed_pattern,    // fully pathed pattern
+	size_t		pathlen,	    // length of the path portion of pathed_pattern
+					    // (0 if no path).
 	char_u		***matches,
 	int		*numMatches,
 	int		flags,
@@ -3727,7 +3734,7 @@ expand_shellcmd_onedir(
 	garray_T	*gap)
 {
     // Expand matches in one directory of $PATH.
-    if (expand_wildcards(1, &pat, numMatches, matches, flags) != OK)
+    if (expand_wildcards(1, &pathed_pattern, numMatches, matches, flags) != OK)
 	return;
 
     if (ga_grow(gap, *numMatches) == FAIL)
@@ -3878,6 +3885,9 @@ expand_shellcmd(
 	    seplen = !after_pathsep(s, e) ? STRLEN_LITERAL(PATHSEPSTR) : 0;
 	}
 
+	// Make sure that the pathed pattern (ie the path and pattern concatenated
+	// together) will fit inside the buffer. If not skip it and move on to the
+	// next path.
 	if (pathlen + seplen + patlen + 1 <= MAXPATHL)
 	{
 	    if (pathlen > 0)

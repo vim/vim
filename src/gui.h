@@ -234,7 +234,7 @@ typedef struct Gui
     int		in_focus;	    // Vim has input focus
     int		in_use;		    // Is the GUI being used?
     int		starting;	    // GUI will start in a little while
-    int		shell_created;	    // Has the shell been created yet?
+    bool	shell_created;	    // Has the shell been created yet?
     int		dying;		    // Is vim dying? Then output to terminal
     int		dofork;		    // Use fork() when GUI is starting
 #ifdef GUI_MAY_SPAWN

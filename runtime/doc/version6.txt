@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 9.1.  Last change: 2022 Apr 06
+*version6.txt*  For Vim version 9.1.  Last change: 2025 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -12624,7 +12624,7 @@ Solution:   Use ":compiler!" to set a compiler globally, otherwise it's local
 	    to the buffer and "b:current_compiler" is used.  Give an error
 	    when no compiler script could be found.
 	    Note: updated compiler plugins can be found at
-	    ftp://ftp.vim.org/pub/vim/runtime/compiler/
+	    https://github.com/vim/vim/tree/master/runtime/compiler
 Files:	    runtime/compiler/msvc.vim, runtime/doc/quickfix.txt, src/eval.c,
 	    src/ex_cmds2.c
 

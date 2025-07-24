@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-16 13:53+0200\n"
+"POT-Creation-Date: 2025-07-18 20:09+0200\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -158,8 +158,12 @@ msgid "Top"
 msgstr "Anfang"
 
 #, c-format
-msgid "%2d%%"
-msgstr "%2d%%"
+msgid "%d%%"
+msgstr "%d%%"
+
+#, c-format
+msgid "%2s"
+msgstr "%2s"
 
 #, c-format
 msgid " (%d of %d)"
@@ -264,6 +268,13 @@ msgstr ": Versenden des Ausdrucks fehlgeschlagen.\n"
 
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "CUT_BUFFER0 anstatt der leeren Auswahl benutzt"
+
+msgid "Could not find a way to access the clipboard."
+msgstr "Konnte nicht auf die Zwischenablage zugreifen."
+
+#, c-format
+msgid "Switched to clipboard method '%s'."
+msgstr "Zum Zwischenablage-Verfahren '%s' gewechselt."
 
 msgid "tagname"
 msgstr "Tag-Name"
@@ -457,6 +468,10 @@ msgstr "Katakana"
 
 msgid "Bopomofo"
 msgstr "Bopomofo"
+
+#, c-format
+msgid "%ld,"
+msgstr "%ld,"
 
 msgid ""
 "\n"
@@ -792,6 +807,10 @@ msgstr "[unix]"
 
 msgid "[unix format]"
 msgstr "[unix Format]"
+
+#, c-format
+msgid "%s%ldL, %lldB"
+msgstr "%s%ldL, %lldB"
 
 #, c-format
 msgid "%s%ld line, "
@@ -1748,6 +1767,9 @@ msgstr "-display <display>\tStarte Vim <display>"
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tStelle keine Verbindung zum X-server her"
 
+msgid "-Y\t\t\tDo not connect to Wayland compositor"
+msgstr "-Y\t\t\tStelle keine Verbindung zum Wayland Compositor her"
+
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr ""
 "--remote <Dateien>\tEditiere <Dateien> in einem Vim-Server falls möglich"
@@ -2568,9 +2590,8 @@ msgstr ""
 "\n"
 "Vim: ein X11 Fehler trat auf\n"
 
-#, c-format
-msgid "restoring display %s"
-msgstr "Wiederherstellen des Displays %s"
+msgid "restoring X11 display %s"
+msgstr "Wiederherstellen des X11-Displays %s"
 
 msgid "Testing the X display failed"
 msgstr "Test des X-Displays schlug fehl"
@@ -3516,6 +3537,13 @@ msgstr "%s (%s kompiliert am %s)"
 
 msgid ""
 "\n"
+"MS-Windows ARM64 GUI/console version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 GUI/Konsolen-Version"
+
+msgid ""
+"\n"
 "MS-Windows 64-bit GUI/console version"
 msgstr ""
 "\n"
@@ -3527,6 +3555,13 @@ msgid ""
 msgstr ""
 "\n"
 "MS-Windows 32 Bit GUI/Konsolen-Version"
+
+msgid ""
+"\n"
+"MS-Windows ARM64 GUI version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 GUI Version"
 
 msgid ""
 "\n"
@@ -3544,6 +3579,13 @@ msgstr ""
 
 msgid " with OLE support"
 msgstr " mit OLE-Unterstützung"
+
+msgid ""
+"\n"
+"MS-Windows ARM64 console version"
+msgstr ""
+"\n"
+"MS-Windows ARM64 Konsolen-Version"
 
 msgid ""
 "\n"
@@ -3930,6 +3972,15 @@ msgstr " FEHLGESCHLAGEN"
 msgid "Writing viminfo file \"%s\""
 msgstr "Schreiben der viminfo-Datei \"%s\""
 
+msgid "wayland protocol error -> "
+msgstr "Wayland Protokoll Fehler -> "
+
+msgid "restoring Wayland display %s"
+msgstr "Wiederherstellen des Wayland Displays %s"
+
+msgid "failed restoring, lost connection to Wayland display"
+msgstr "Wiederherstellung fehlgeschlagen, Verbindung zur Wayland-Anzeige verloren"
+
 msgid "Already only one window"
 msgstr "Bereits nur ein Fenster"
 
@@ -4285,6 +4336,7 @@ msgstr "E104: <Escape> ist in einem Digraphen nicht erlaubt"
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: :loadkeymap außerhalb einer eingelesenen Datei"
 
+#, c-format
 msgid "E106: Unsupported diff output format: %s"
 msgstr "E106: Nicht unterstütztes Diff-Ausgabeformat: %s"
 
@@ -7028,7 +7080,8 @@ msgstr "E877: (NFA Regexp) Ungültige Zeichenklasse %d"
 
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr ""
-"E878: (NFA Regexp) Konnte keinen Speicher für Verzweigungsdurchlauf reservieren!"
+"E878: (NFA Regexp) Konnte keinen Speicher für Verzweigungsdurchlauf "
+"reservieren!"
 
 msgid "E879: (NFA regexp) Too many \\z("
 msgstr "E879: (NFA Regexp) Zu viele \\z("
@@ -7895,8 +7948,8 @@ msgstr "E1115: \"assert_fails()\" viertes Argument muss eine Zahl sein"
 msgid "E1116: \"assert_fails()\" fifth argument must be a string"
 msgstr "E1116: \"assert_fails()\" fünftes Argument muss eine Zahl sein"
 
-msgid "E1117: Cannot use ! with nested :def"
-msgstr "E1117: Kann nicht ! innerhalb verschachtelter :def verwenden"
+msgid "E1117: Cannot use ! with nested %s"
+msgstr "E1117: Kann nicht ! innerhalb verschachtelter %s verwenden"
 
 msgid "E1118: Cannot change locked list"
 msgstr "E1118: Kann gesperrte Liste nicht ändern"
@@ -8289,7 +8342,8 @@ msgstr "E1224: Zeichenkette, Zahl oder Liste erforderlich für Argument %d"
 #, c-format
 msgid "E1225: String, List, Tuple or Dictionary required for argument %d"
 msgstr ""
-"E1225: Zeichenkette, Liste, Tuple oder Dictionary erforderlich für Argument %d"
+"E1225: Zeichenkette, Liste, Tuple oder Dictionary erforderlich für Argument "
+"%d"
 
 #, c-format
 msgid "E1226: List or Blob required for argument %d"
@@ -8390,7 +8444,8 @@ msgstr ""
 #, c-format
 msgid "E1251: List, Tuple, Dictionary, Blob or String required for argument %d"
 msgstr ""
-"E1251: Liste, Tuple, Dictionary, Blob oder Zeichenkette erforderlich für Argument %d"
+"E1251: Liste, Tuple, Dictionary, Blob oder Zeichenkette erforderlich für "
+"Argument %d"
 
 #, c-format
 msgid "E1252: String, List or Blob required for argument %d"
@@ -8398,7 +8453,8 @@ msgstr "E1252: Zeichenkette, Liste oder Blob erforderlich für Argument %d"
 
 #, c-format
 msgid "E1253: String, List, Tuple or Blob required for argument %d"
-msgstr "E1253: Zeichenkette, Liste, Tuple oder Blob erforderlich für Argument %d"
+msgstr ""
+"E1253: Zeichenkette, Liste, Tuple oder Blob erforderlich für Argument %d"
 
 msgid "E1254: Cannot use script variable in for loop"
 msgstr "E1254: Kann Skriptvariable nicht in einer for Schleife verwenden"
@@ -8578,7 +8634,8 @@ msgstr "E1300: Kann kein Partial mit Dictionary für :defer verwenden"
 #, c-format
 msgid "E1301: String, Number, List, Tuple or Blob required for argument %d"
 msgstr ""
-"E1301: Zeichenkette, Zahl, Liste, Tuple oder Blob erforderlich für Argument %d"
+"E1301: Zeichenkette, Zahl, Liste, Tuple oder Blob erforderlich für Argument "
+"%d"
 
 msgid "E1302: Script variable was deleted"
 msgstr "E1302: Scriptvariable wurde gelöscht"
@@ -9042,13 +9099,14 @@ msgstr "E1430: Nicht initialisierte Objekt-Variable '%s' referenziert"
 msgid ""
 "E1431: Abstract method \"%s\" in class \"%s\" cannot be accessed directly"
 msgstr ""
-"E1431: Abstrakte Methode \"%s\" in Klasse \"%s\" kann nicht direkt aufgerufen werden"
+"E1431: Abstrakte Methode \"%s\" in Klasse \"%s\" kann nicht direkt "
+"aufgerufen werden"
 
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
-"E1500: positionsbezogene und nicht-positionsbezogene Argumente können "
-"nicht gemischt werden: %s"
+"E1500: positionsbezogene und nicht-positionsbezogene Argumente können nicht "
+"gemischt werden: %s"
 
 #, c-format
 msgid "E1501: format argument %d unused in $-style format: %s"
@@ -9145,8 +9203,8 @@ msgstr "E1524: Kann Tuple nicht mit Funktion %s verwenden"
 #, c-format
 msgid "E1525: Argument of %s must be a List, Tuple, String, Dictionary or Blob"
 msgstr ""
-"E1525: Argument von %s muss eine Liste, Tuple, Zeichenkette, Dictionary oder Blob "
-"sein"
+"E1525: Argument von %s muss eine Liste, Tuple, Zeichenkette, Dictionary oder "
+"Blob sein"
 
 #, c-format
 msgid "E1526: Missing end of Tuple ')': %s"
@@ -9207,23 +9265,39 @@ msgid "E1541: Value too large, max Unicode codepoint is U+10FFFF"
 msgstr "E1541: Wert zu groß, maximale Unicode-Codepunkt ist U+10FFFF"
 
 msgid "E1542: Cannot have a negative or zero number of quickfix/location lists"
-msgstr "E1542: Die Anzahl der Quickfix-/Positionslisten darf nicht negativ oder null sein"
+msgstr ""
+"E1542: Die Anzahl der Quickfix-/Positionslisten darf nicht negativ oder null "
+"sein"
 
 msgid "E1543: Cannot have more than a hundred quickfix/location lists"
-msgstr "E1543: Die Anzahl der Quickfix-/Positionslisten darf nicht größer als 100 sein"
+msgstr ""
+"E1543: Die Anzahl der Quickfix-/Positionslisten darf nicht größer als 100 "
+"sein"
 
 msgid "E1544: Failed resizing the quickfix/location list stack"
-msgstr "E1544: Vergößern/Verkleinern der Quickfix-/Positionslisten fehlgeschlagen"
+msgstr ""
+"E1544: Vergößern/Verkleinern der Quickfix-/Positionslisten fehlgeschlagen"
 
 msgid "E1545: Quickfix list stack unavailable"
 msgstr "E1545: Quickfixlisten Stack nicht verfügbar"
 
 msgid "E1546: Cannot switch to a closing buffer"
-msgstr ""
-"E1546: Kann nicht zu einem zu schließenden Buffer wechseln"
+msgstr "E1546: Kann nicht zu einem zu schließenden Buffer wechseln"
 
 msgid "E1547: This version of Vim does support :redrawtabpanel"
 msgstr "E1547: Diese Version von Vim unterstützt nicht :redrawtabpanel"
+
+msgid "E1548: Wayland connection is unavailable"
+msgstr "E1548: Wayland Verbindung nicht verfügbar"
+
+msgid "E1549: Cannot have more than %d diff anchors"
+msgstr "E1549: Mehr als %d Diff-Anker sind nicht zulässig"
+
+msgid "E1550: Failed to find all diff anchors"
+msgstr "E1550: Nicht alle Diff-Anker konnten gefunden werden"
+
+msgid "E1551: Cannot open a popup window to a closing buffer"
+msgstr "E1551: Kann kein Popup Fenster für einen zu schließenden Buffer öffnen"
 
 msgid "--No lines in buffer--"
 msgstr "--Keine Zeilen im Buffer--"
@@ -9717,6 +9791,9 @@ msgstr "Groß-/Kleinbuchstaben ignorieren bei der Suche"
 msgid "override 'ignorecase' when pattern has upper case characters"
 msgstr "'ignorecase' Option aufheben, wenn Muster mit Großbuchstaben beginnt"
 
+msgid "maximum number for the search count feature"
+msgstr "Maximalwert der Suchanzahl"
+
 msgid "what method to use for changing case of letters"
 msgstr ""
 "Welche Methode verwendet werden soll zum Ändern von Groß-/Kleinbuchstaben"
@@ -9832,8 +9909,9 @@ msgstr ""
 msgid ""
 "characters to use for the status line, folds, diffs, buffer text, filler "
 "lines and truncation in the completion menu"
-msgstr "zu verwendende Zeichen für die Statuszeile, Folds, Diffs Buffertext, Füllzeilen"
-"und Truncation-Zeichen im Completion Menü"
+msgstr ""
+"zu verwendende Zeichen für die Statuszeile, Folds, Diffs Buffertext, "
+"Füllzeilen und Truncation-Zeichen im Completion Menü"
 
 msgid "number of lines used for the command-line"
 msgstr "Anzahl zu verwendender Zeilen für die Kommandozeile"
@@ -10337,6 +10415,20 @@ msgstr ""
 "\"unnamed\" nutzt das * Register wie das unbenannte Register\n"
 "\"autoselect\" ausgewählten Text automatisch in der Zwischenablage speichern"
 
+msgid "Ordered list of possible methods for accessing the clipboard"
+msgstr "Sortierte Liste möglicher Methoden zum Zugriff auf die Zwischenablage"
+
+msgid "Timeout to use when polling for data to read or write in wayland"
+msgstr "Timeout beim Zugriff auf Wayland"
+
+msgid "Wayland seat to use"
+msgstr "zu verwendender Wayland-Seat (Sitz)"
+
+msgid ""
+"Enable wayland focus stealing functionality in order to access the clipboard"
+msgstr ""
+"Aktiviere die Wayland-Fokus-Steal-Funktionalität, um auf die Zwischenablage zuzugreifen"
+
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "\"startsel\" und/oder \"stopsel\"; was bestimmte Tasten machen"
 
@@ -10592,6 +10684,9 @@ msgstr "Optionen für den Diff Modus"
 
 msgid "expression used to obtain a diff file"
 msgstr "Ausdrücke um einen Diff zu erhalten"
+
+msgid "list of addresses for anchoring a diff"
+msgstr "Liste an Adressen zum Verankern des Diffs"
 
 msgid "expression used to patch a file"
 msgstr "verwendeter Ausdruck um einen Datei zu patchen"
@@ -10983,7 +11078,8 @@ msgid "list of autocommand events which are to be ignored"
 msgstr "Liste von zu ignorierenden Autokommando Ereignisse"
 
 msgid "list of autocommand events which are to be ignored in a window"
-msgstr "Liste von zu ignorierenden Autokommando Ereignisse innerhalb eines Fensters"
+msgstr ""
+"Liste von zu ignorierenden Autokommando Ereignisse innerhalb eines Fensters"
 
 msgid "load plugin scripts when starting up"
 msgstr "Lade Plugins beim Start"
@@ -11077,7 +11173,7 @@ msgstr "Name der dynamischen MzScheme Bibliothek"
 msgid "name of the MzScheme GC dynamic library"
 msgstr "Name der dynamischen MzScheme GC Bibliothek"
 
-msgid "0, 1 or 2; when to use a tab pages in tabpanel"
+msgid "0, 1 or 2; when to use the tabpanel"
 msgstr "0, 1, oder 2; wann das Tabpanel angezeigt wird"
 
 msgid "custom tab pages in tabpanel"

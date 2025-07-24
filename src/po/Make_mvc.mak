@@ -526,11 +526,11 @@ $(PLUGPACKAGE).mo : $(PO_PLUGPACKAGE)
 
 
 clean: checkclean
-	$(RM) *.mo
-	$(RM) *.pot
-	$(RM) *.orig
-	$(RM) files allfiles
-	$(RM) sjiscorr.obj sjiscorr.exe
-#	$(RM) big5corr.obj big5corr.exe
+	- $(RM) *.mo
+	- $(RM) *.orig
+	- $(RM) files allfiles
+	- $(RM) sjiscorr.obj sjiscorr.exe
+#	- $(RM) *.pot
+#	- $(RM) big5corr.obj big5corr.exe
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0 ft=make:

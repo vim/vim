@@ -1,5 +1,5 @@
 # Aap recipe for Portuguese Vim spell files.
-# See ftp://ftp.vim.org/pub/vim/runtime/spell/README.txt
+# See https://github.com/vim/vim/blob/master/runtime/spell/README.txt
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):

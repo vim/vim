@@ -239,10 +239,10 @@ prefixcheck:
 	fi
 
 clean: checkclean
-	rm -f core core.* *.old.po *.mo sjiscorr
-	rm -f LINGUAS vim.desktop gvim.desktop tmp_*desktop
-	rm -f ./allfiles
-#	rm -f big5corr
+	- rm -f core core.* *.old.po *.mo sjiscorr
+	- rm -f LINGUAS vim.desktop gvim.desktop tmp_*desktop
+	- rm -f ./allfiles
+#	- rm -f big5corr
 
 distclean: clean
 
@@ -268,7 +268,8 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	@ cat ./vim_to_js >> ./allfiles
 	# Create vim.pot.
 	$(XGETTEXT) --default-domain=$(PACKAGE) --output=$(PACKAGE).pot \
-		--add-comments $(XGETTEXT_KEYWORDS) --files-from=./allfiles
+		--add-comments $(XGETTEXT_KEYWORDS) --files-from=./allfiles \
+		--no-location
 	# Fix Vim scripts names, so that "gf" works.
 	$(VIMPROG) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)

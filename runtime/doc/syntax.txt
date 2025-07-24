@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Jul 14
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Jul 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -262,6 +262,9 @@ you can see the actual color, except for "Ignore"):
 	 Debug		debugging statements
 
 	*Underlined	text that stands out, HTML links
+	*Bold		bold text
+	*Italic		italic text
+	*BoldItalic	bold and italic text
 
 	*Ignore		left blank, hidden  |hl-Ignore|
 
@@ -4350,13 +4353,13 @@ SYNTAX ISKEYWORD SETTING				*:syn-iskeyword*
 
 DEFINING KEYWORDS					*:syn-keyword*
 
-:sy[ntax] keyword {group-name} [{options}] {keyword} .. [{options}]
+:sy[ntax] keyword {group-name} [{options}] {keyword} ... [{options}]
 
 	This defines a number of keywords.
 
 	{group-name}	Is a syntax group name such as "Comment".
 	[{options}]	See |:syn-arguments| below.
-	{keyword} ..	Is a list of keywords which are part of this group.
+	{keyword} ...	Is a list of keywords which are part of this group.
 
 	Example: >
   :syntax keyword   Type   int long char

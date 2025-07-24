@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 9.1.  Last change: 2024 May 11
+*os_vms.txt*    For Vim version 9.1.  Last change: 2025 Jul 22
 
 
 		  VIM REFERENCE MANUAL
@@ -33,10 +33,18 @@ Vim on other operating systems.
 
 2. Download files					*vms-download*
 
-You can download the Vim source code by ftp from the official Vim site:
-	ftp://ftp.vim.org/pub/vim/
+You can download the Vim source code from the official Vim site:
+	https://github.com/vim/vim/archive/refs/heads/master.zip
+Or using git: >
+	git clone https://github.com/vim/vim.git
+
+Older release archives are also available at:
+	https://ftp.nluug.nl/pub/vim/
+	ftp://ftp.nluug.nl/pub/vim/
 Or use one of the mirrors:
-	ftp://ftp.vim.org/pub/vim/MIRRORS
+	https://ftp.nluug.nl/pub/vim/MIRRORS
+
+Note: the ftp server has been retired and is no longer updated.
 
 You can download precompiled executables from:
 	http://www.polarhome.com/vim/

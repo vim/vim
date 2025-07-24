@@ -1,4 +1,4 @@
-*usr_23.txt*	For Vim version 9.1.  Last change: 2020 Dec 19
+*usr_23.txt*	For Vim version 9.1.  Last change: 2025 Jul 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -118,7 +118,7 @@ Someone sends you an e-mail message, which refers to a file by its URL.  For
 example:
 
 	You can find the information here: ~
-		ftp://ftp.vim.org/pub/vim/README ~
+		https://ftp.nluug.nl/pub/vim/README
 
 You could start a program to download the file, save it on your local disk and
 then start Vim to edit it.

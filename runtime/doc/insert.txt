@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2025 Jul 17
+*insert.txt*    For Vim version 9.1.  Last change: 2025 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1475,7 +1475,7 @@ Universal Ctags is preferred, Exuberant Ctags is no longer being developed.
 
 For Exuberant ctags, version 5.6 or later is recommended.  For version 5.5.4
 you should add a patch that adds the "typename:" field:
-	ftp://ftp.vim.org/pub/vim/unstable/patches/ctags-5.5.4.patch
+	https://ftp.nluug.nl/pub/vim/unstable/patches/ctags-5.5.4.patch
 A compiled .exe for MS-Windows can be found at:
 	http://ctags.sourceforge.net/
 	https://github.com/universal-ctags/ctags-win32

@@ -1522,6 +1522,14 @@ call_by_name(
 	return call_bfunc(func_idx, argcount, ectx);
     }
 
+    char_u	cc = NUL;
+    char_u	*start_bracket = generic_func_find_open_bracket(name);
+    if (start_bracket != NULL)
+    {
+	cc = *start_bracket;
+	*start_bracket = NUL;
+    }
+
     ufunc = find_func(name, FALSE);
 
     if (ufunc == NULL)
@@ -1533,11 +1541,36 @@ call_by_name(
 	    ufunc = find_func(name, FALSE);
 
 	if (vim9_aborting(prev_uncaught_emsg))
+	{
+	    if (start_bracket != NULL)
+		*start_bracket = cc;
 	    return FAIL;  // bail out if loading the script caused an error
+	}
     }
+
+    if (start_bracket != NULL)
+	*start_bracket = cc;
 
     if (ufunc != NULL)
     {
+	if (IS_GENERIC_FUNC(ufunc))
+	{
+	    if (start_bracket != NULL)
+		ufunc = find_generic_func(ufunc, name, &start_bracket);
+	    else
+	    {
+		emsg_funcname(e_generic_func_missing_type_args_str, name);
+		ufunc = NULL;
+	    }
+	    if (ufunc == NULL)
+		return FAIL;
+	}
+	else if (start_bracket != NULL)
+	{
+	    emsg_funcname(e_not_a_generic_function_str, name);
+	    return FAIL;
+	}
+
 	if (check_ufunc_arg_types(ufunc, argcount, 0, ectx) == FAIL)
 	    return FAIL;
 
@@ -5068,7 +5101,7 @@ exec_instructions(ectx_T *ectx)
 		    ea.cmd = ea.arg = iptr->isn_arg.string;
 		    ga_init2(&lines_to_free, sizeof(char_u *), 50);
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    define_function(&ea, NULL, &lines_to_free, 0, NULL, 0);
+		    define_function(&ea, NULL, &lines_to_free, 0, NULL, 0, NULL);
 		    ga_clear_strings(&lines_to_free);
 		}
 		break;

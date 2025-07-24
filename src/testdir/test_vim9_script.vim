@@ -5267,59 +5267,83 @@ enddef
 
 " Test for using more than one has() check in a compound if condition.
 def Test_has_func_shortcircuit()
-  def Has_And1_Cond(): string
-    # true && false
-    if has('jumplist') && has('foobar')
-      return 'present'
-    endif
-    return 'missing'
-  enddef
-  assert_equal('missing', Has_And1_Cond())
+  var lines =<< trim END
+    vim9script
+    def Has_And1_Cond(): string
+      # true && false
+      if has('jumplist') && has('foobar')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('missing', Has_And1_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
 
-  def Has_And2_Cond(): string
-    # false && true
-    if has('foobar') && has('jumplist')
-      return 'present'
-    endif
-    return 'missing'
-  enddef
-  assert_equal('missing', Has_And2_Cond())
+  lines =<< trim END
+    vim9script
+    def Has_And2_Cond(): string
+      # false && true
+      if has('foobar') && has('jumplist')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('missing', Has_And2_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
 
-  def Has_And3_Cond(): string
-    # false && false
-    if has('foobar') && has('foobaz')
-      return 'present'
-    endif
-    return 'missing'
-  enddef
-  assert_equal('missing', Has_And3_Cond())
+  lines =<< trim END
+    vim9script
+    def Has_And3_Cond(): string
+      # false && false
+      if has('foobar') && has('foobaz')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('missing', Has_And3_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
 
-  def Has_Or1_Cond(): string
-    # true || false
-    if has('jumplist') || has('foobar')
-      return 'present'
-    endif
-    return 'missing'
-  enddef
-  assert_equal('present', Has_Or1_Cond())
+  lines =<< trim END
+    vim9script
+    def Has_Or1_Cond(): string
+      # true || false
+      if has('jumplist') || has('foobar')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('present', Has_Or1_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
 
-  def Has_Or2_Cond(): string
-    # false || true
-    if has('foobar') || has('jumplist')
-      return 'present'
-    endif
-    return 'missing'
-  enddef
-  assert_equal('present', Has_Or2_Cond())
+  lines =<< trim END
+    vim9script
+    def Has_Or2_Cond(): string
+      # false || true
+      if has('foobar') || has('jumplist')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('present', Has_Or2_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
 
-  def Has_Or3_Cond(): string
-    # false || false
-    if has('foobar') || has('foobaz')
-      return 'present'
-    endif
-    return 'missing'
-  enddef
-  assert_equal('missing', Has_Or3_Cond())
+  lines =<< trim END
+    vim9script
+    def Has_Or3_Cond(): string
+      # false || false
+      if has('foobar') || has('foobaz')
+        return 'present'
+      endif
+      return 'missing'
+    enddef
+    assert_equal('missing', Has_Or3_Cond())
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for using more than one len() function in a compound if condition.
