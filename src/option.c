@@ -4282,6 +4282,21 @@ did_set_smoothscroll(optset_T *args UNUSED)
     return NULL;
 }
 
+/*
+ * Process the updated 'socktimeoutlen' option value.
+ */
+    char *
+did_set_socktimeoutlen(optset_T *args UNUSED)
+{
+    if (p_stm < 0)
+    {
+	p_stm = args->os_oldval.number;
+	return e_argument_must_be_positive;
+    }
+
+    return NULL;
+}
+
 #if defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Process the updated 'spell' option value.

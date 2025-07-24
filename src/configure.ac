@@ -2340,6 +2340,15 @@ if test "$enable_autoservername" = "yes"; then
   AC_DEFINE(FEAT_AUTOSERVERNAME)
 fi
 
+AC_MSG_CHECKING(--enable-socketserver argument)
+AC_ARG_ENABLE(socketserver,
+	[  --enable-socketserver Use sockets for clientserver communication.], ,
+	[enable_socketserver="no"])
+AC_MSG_RESULT($enable_socketserver)
+if test "$enable_socketserver" = "yes"; then
+  AC_DEFINE(FEAT_SOCKETSERVER)
+fi
+
 AC_MSG_CHECKING(--enable-multibyte argument)
 AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,

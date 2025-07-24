@@ -406,6 +406,9 @@
 /* Define if you want to always define a server name at vim startup. */
 #undef FEAT_AUTOSERVERNAME
 
+/* Define if you want to use sockets for clientserver communication. */
+#undef FEAT_SOCKETSERVER
+
 /* Define if you want to include fontset support. */
 #undef FEAT_XFONTSET
 

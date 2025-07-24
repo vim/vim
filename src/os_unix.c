@@ -147,6 +147,72 @@ Window	    x11_window = 0;
 Display	    *x11_display = NULL;
 #endif
 
+#ifdef FEAT_SOCKETSERVER
+# include <sys/socket.h>
+# include <sys/un.h>
+
+# define SOCKET_SERVER_MAX_BACKLOG 5
+# define SOCKET_SERVER_MAX_CMD_SIZE 16384
+# define SOCKET_SERVER_MAX_MSG 5
+
+static int socket_server_fd = -1;
+static char_u *socket_server_path = NULL;
+
+typedef enum {
+    SS_MSG_TYPE_ENCODING    = 'e', // Encoding of message.
+    SS_MSG_TYPE_STRING	    = 'c', // Script to execute or reply string.
+    SS_MSG_TYPE_SERIAL	    = 's', // If cmd type is a reply, represents the
+				   // serial of the command that the reply is
+				   // for.
+    SS_MSG_TYPE_SENDER	    = 'S', // Location of socket of the client that sent
+				   // the cmd and msg.
+} ss_msg_type_T;
+
+typedef enum {
+    SS_CMD_TYPE_EXPR	    = 'E', // Expression
+    SS_CMD_TYPE_KEYSTROKES  = 'K', // Series of keystrokes
+    SS_CMD_TYPE_REPLY	    = 'R', // Reply from an expression
+} ss_cmd_type_T;
+
+// Represents a message sent over the socket. Each message starts with a 32 bit
+// unsigned integer representing the total length of the message (including
+// type). Then is a single byte representing what the contents of the message
+// are for, if Vim doesn't recognize the type, then the entire message is
+// ignored. After is the actual contents of the message. A message is wrapped in
+// a "command" along with multiple other messages. Everything is in native byte
+// order.
+//
+// <len><type><contents>
+typedef struct {
+    uint32_t	msg_len;	    // Total length of message including type
+    char_u	msg_type;	    // Type of message
+    char_u	*msg_contents;	    // Actual contents of message
+} ss_msg_T;
+
+// Represents an actual command sent over the socket. Each command starts with a
+// 32 bit unsigned integer representing how many messages there are in the
+// command. Then is the type of command which is a byte that can either be:
+// "e" for an expression
+// "k" for keystrokes
+// "r" for a reply
+//
+// <len><type><msg><msg>...
+typedef struct {
+    uint32_t	cmd_num;			    // Number of messages
+    char_u	cmd_type;   			    // Type of command
+    ss_msg_T	cmd_msgs[SOCKET_SERVER_MAX_MSG];    // Array of messages
+} ss_cmd_T;
+
+static void socket_server_accept_client(void);
+static int socket_server_connect(char_u *name, int silent);
+static void socket_server_append_msg(ss_cmd_T *cmd, char_u type,
+	char_u *contents, int len);
+static char_u *socket_server_parse_cmd(ss_cmd_T *cmd, size_t *sz);
+static int socket_server_write(int sock_fd, char_u *data, size_t sz,
+	int timeout);
+
+#endif // FEAT_SOCKETSERVER
+
 static int ignore_sigtstp = FALSE;
 
 static int get_x11_title(int);
@@ -3653,6 +3719,10 @@ mch_exit(int r)
     x11_export_final_selection();
 #endif
 
+#ifdef FEAT_SOCKETSERVER
+    socket_server_uninit();
+#endif
+
 #ifdef FEAT_GUI
     if (!gui.in_use)
 #endif
@@ -6540,6 +6610,9 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 			// each channel may use in, out and err
 	struct pollfd   fds[7 + 3 * MAX_OPEN_CHANNELS];
 	int		nfd;
+# ifdef FEAT_SOCKETSERVER
+	int		socket_server_idx = -1;
+# endif
 # ifdef FEAT_WAYLAND_CLIPBOARD
 	int             wayland_idx = -1;
 # endif
@@ -6565,6 +6638,16 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	fds[0].fd = fd;
 	fds[0].events = POLLIN;
 	nfd = 1;
+
+# ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1)
+	{
+	    socket_server_idx = nfd;
+	    fds[nfd].fd = socket_server_fd;
+	    fds[nfd].events = POLLIN;
+	    nfd++;
+	}
+# endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
 	if (wayland_may_restore_connection())
@@ -6619,6 +6702,17 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	if (ret == 0 && mzquantum_used)
 	    // MzThreads scheduling is required and timeout occurred
 	    finished = FALSE;
+# endif
+
+# ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1)
+	{
+	    if(fds[socket_server_idx].revents & POLLIN)
+		socket_server_accept_client();
+	    else if (fds[socket_server_idx].revents & (POLLHUP | POLLERR))
+		socket_server_uninit();
+	}
+
 # endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
@@ -6709,6 +6803,16 @@ select_eintr:
 	FD_SET(fd, &efds);
 # endif
 	maxfd = fd;
+
+# ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1)
+	{
+	    FD_SET(socket_server_fd, &rfds);
+
+	    if (maxfd < socket_server_fd)
+		maxfd = socket_server_fd;
+	}
+# endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
 
@@ -6808,6 +6912,16 @@ select_eintr:
 	if (ret == 0 && mzquantum_used)
 	    // loop if MzThreads must be scheduled and timeout occurred
 	    finished = FALSE;
+# endif
+
+# ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1 && ret > 0)
+	{
+	    if (FD_ISSET(socket_server_fd, &rfds))
+		socket_server_accept_client();
+	    else if (FD_ISSET(socket_server_fd, &efds))
+		socket_server_uninit();
+	}
 # endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
@@ -8961,3 +9075,378 @@ mch_create_anon_file(void)
     }
     return fd;
 }
+
+#ifdef FEAT_SOCKETSERVER
+
+/*
+ * Initialize socket server at "sock_path". If "auto_name" is TRUE then if the
+ * socket path is already taken, append an incrementing number to the path until
+ * we find a socket name that can be used.
+ */
+    int
+socket_server_init(const char_u *sock_path, int auto_name)
+{
+    struct sockaddr_un addr;
+    char *actual_path = alloc(STRLEN(sock_path) + NUMBUFLEN);
+    int i = 1;
+
+    if (actual_path == NULL)
+	return FAIL;
+
+    socket_server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (socket_server_fd == -1)
+	goto fail;
+
+    addr.sun_family = AF_UNIX;
+    sprintf(actual_path, "%s", sock_path);
+
+    // Bind to a suitable path/address if required & needed
+    while (i < 1000)
+    {
+	// Check if path is too large
+	if (STRLEN(actual_path) > sizeof(addr.sun_path))
+	    goto fail;
+
+	sprintf(addr.sun_path, "%s", actual_path);
+
+	if (bind(socket_server_fd, (struct sockaddr *)&addr, sizeof(addr))
+		== -1)
+	{
+	    if (errno != EADDRINUSE)
+		goto fail;
+	}
+	else
+	    break;
+
+	sprintf(actual_path, "%s%d", sock_path, i);
+	i++;
+    }
+
+    // Start listening for connections
+    if (listen(socket_server_fd, SOCKET_SERVER_MAX_BACKLOG) == -1)
+	goto fail;
+
+    if ((socket_server_path = vim_strsave((char_u *)actual_path)) == NULL)
+	goto fail;
+
+    vim_free(actual_path);
+    return OK;
+fail:
+    vim_free(actual_path);
+    socket_server_uninit();
+    return FAIL;
+}
+
+    void
+socket_server_uninit(void)
+{
+    if (socket_server_fd != -1)
+    {
+	close(socket_server_fd);
+	socket_server_fd = -1;
+    }
+
+    if (socket_server_path != NULL)
+    {
+	mch_remove(socket_server_path);
+	vim_free(socket_server_path);
+	socket_server_path = NULL;
+    }
+}
+
+    static void
+socket_server_accept_client(void)
+{
+    int client_fd = accept(socket_server_fd, NULL, NULL);
+
+    if (client_fd == -1)
+	return;
+
+#ifdef FEAT_EVAL
+    ch_log(NULL, "accepted new client on socket %s", socket_server_path);
+#endif
+
+
+    close(client_fd);
+}
+
+/*
+ * Check if socket server is able to be used
+ */
+    int
+socket_server_valid(void)
+{
+    return socket_server_fd != -1;
+}
+
+/*
+ * Return an allocated string containing the path to a socket, for a generic
+ * name. If NULL is passed as the name, then the default path is used. Returns
+ * NULL if no socket exists or on error. If "exists" is FALSE, then don't check
+ * if the socket exists, only if the parent directory is, and return the path to
+ * the directory instead.
+ */
+    char_u *
+socket_server_get_path_from_name(const char_u *name, int exists)
+{
+    const char_u *xdg_runtime_dir = mch_getenv("XDG_RUNTIME_DIR");
+    char *dir;
+    char *path;
+    stat_T s;
+    int i = 0;
+    
+    // Ignore if name is a path
+    if (name[0] == PATHSEP)
+	return vim_strsave((char_u *)name);
+
+    if ((dir = alloc(MAXPATHL)) == NULL)
+	return NULL;
+
+    // First try $XDG_RUNTIME_DIR/vim, then fallback to /tmp/vim/<uid>
+    if (xdg_runtime_dir == NULL)
+	vim_snprintf(dir, MAXPATHL, "/run/user/%d/vim", getuid());
+    else
+	vim_snprintf(dir, MAXPATHL, "%s/vim", xdg_runtime_dir);
+
+    // Check if they exist
+    if (vim_mkdir(dir, 0755) == -1 && errno != EEXIST)
+    {
+	// Try /tmp directory
+	vim_snprintf(dir, MAXPATHL, "/tmp/vim");
+
+	if (vim_mkdir(dir, 0755) == -1)
+	{
+	    vim_free(dir);
+	    return NULL;
+	}
+    }
+
+    if (!exists)
+	return (char_u *)dir;
+
+    path = alloc(STRLEN(dir) + STRLEN(name) + 5);
+
+    vim_snprintf(path, MAXPATHL, "%s/%s", dir, name);
+
+    // first try the socket "VIM", if that doesn't exist, inrcrement a number
+    // suffix until it exists (only if valid socket).
+    while ((mch_stat(dir,&s) == -1 || S_ISSOCK(s.st_mode)) && i < 1000)
+	vim_snprintf(path, STRLEN(dir) + 5, "%s/%s%d", dir, name, i);
+
+    if (i >= 1000)
+    {
+	vim_free(path);
+	path = NULL;
+    }
+
+    vim_free(dir);
+
+    return (char_u *)path;
+}
+
+/*
+ * Send command to socket at "sock_path". Returns 0 for OK, -1 on error.
+ */
+    int
+socket_server_send(
+	char_u *name,	    // Socket path or a general name
+	char_u *str,	    // What to send
+	char_u **result,    // Set to result of expr
+	int is_expr,	    // Is it an expresison or keystrokes?
+	int timeout,	    // In milliseconds
+	int silent)	    // Don't complain if socket doesn't exist
+{
+    ss_cmd_T cmd;
+    int socket_fd;
+
+    // Execute locally if target is ourselves
+    if (serverName != NULL && STRICMP(name, serverName) == 0)
+	return sendToLocalVim(str, is_expr, result);
+
+    socket_fd = socket_server_connect(name, silent);
+
+    if (socket_fd == -1)
+	return -1;
+
+    cmd.cmd_num = 0;
+    cmd.cmd_type = is_expr ? SS_CMD_TYPE_EXPR : SS_CMD_TYPE_KEYSTROKES;
+
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc, STRLEN(p_enc));
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_STRING, str, STRLEN(str));
+
+    if (is_expr)
+	socket_server_append_msg(&cmd, SS_MSG_TYPE_SENDER,
+		socket_server_path, STRLEN(socket_server_path));
+
+    size_t sz;
+    char_u *final = socket_server_parse_cmd(&cmd, &sz);
+
+    if (final == NULL)
+	return -1;
+
+    if (socket_server_write(socket_fd, final, sz, 1000) == FAIL)
+    {
+	emsg(_(e_failed_to_send_command_to_destination_program));
+
+	vim_free(final);
+	return -1;
+    }
+    vim_free(final);
+
+    if (!is_expr)
+	return 0;
+
+    return -1;
+}
+
+/*
+ * Connect to a socket using "name". Returns fd on success and -1 on failure.
+ */
+static int
+socket_server_connect(char_u *name, int silent)
+{
+    int socket_fd;
+    int res;
+    struct sockaddr_un addr;
+
+    char_u *socket_path = socket_server_get_path_from_name(name, TRUE);
+
+    if (socket_path == NULL)
+    {
+	if (!silent)
+	    semsg(_(e_no_registered_server_named_str), name);
+	return -1;
+    }
+    if (STRLEN(socket_path) >= sizeof(addr.sun_path))
+    {
+	// Path too big
+	vim_free(socket_path);
+	return -1;
+    }
+
+    socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (socket_fd == -1)
+	goto fail;
+
+    addr.sun_family = AF_UNIX;
+    sprintf(addr.sun_path, "%s", socket_path);
+
+    res = connect(socket_fd, (struct sockaddr *)&addr, sizeof(addr));
+
+    if (res == -1)
+	goto fail;
+
+    vim_free(socket_path);
+    return socket_fd;
+fail:
+    close(socket_fd);
+    vim_free(socket_path);
+    return -1;
+
+}
+
+/*
+ * Append a message to a command. Note that "len" is the length of contents
+ */
+static void
+socket_server_append_msg(ss_cmd_T *cmd, char_u type, char_u *contents, int len)
+{
+    ss_msg_T *msg = cmd->cmd_msgs + cmd->cmd_num++;
+
+    msg->msg_type = type;
+    msg->msg_len = 1 + len;
+    msg->msg_contents = contents;
+}
+
+/*
+ * Parse command struct and return the final message to send. Returns NULL on
+ * failure.
+ */
+static char_u *
+socket_server_parse_cmd(ss_cmd_T *cmd, size_t *sz)
+{
+    garray_T buf;
+
+    ga_init2(&buf, 1, 128);
+
+    if (ga_grow(&buf, sizeof(uint32_t) + 1) == FAIL)
+	return NULL;
+
+    memcpy(buf.ga_data, cmd, sizeof(uint32_t) + 1);
+    buf.ga_len += sizeof(uint32_t) + 1;
+
+    for (int i = 0; i < cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	if (ga_grow(&buf, msg->msg_len + sizeof(uint32_t)) == FAIL)
+	    goto fail;
+
+	memcpy(buf.ga_data + buf.ga_len, msg, sizeof(uint32_t) + 1);
+	memcpy(buf.ga_data + buf.ga_len + sizeof(uint32_t) + 1,
+		    msg->msg_contents, msg->msg_len - 1);
+
+	buf.ga_len += msg->msg_len + sizeof(uint32_t);
+
+	if (buf.ga_len > SOCKET_SERVER_MAX_CMD_SIZE)
+	    goto fail;
+    }
+
+    *sz = buf.ga_len;
+    return buf.ga_data;
+fail:
+    ga_clear(&buf);
+    return NULL;
+}
+
+/*
+ * Low level function that writes to a socket with a timeout in milliseconds.
+ * Returns OK on success and FAIL on failure.
+ */
+static int
+socket_server_write(int sock_fd, char_u *data, size_t sz, int timeout)
+{
+    char_u *start = data;
+    size_t total_written = 0;
+#ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = sock_fd;
+    pfd.events = POLLOUT;
+#else
+    fd_set	    wfds;
+    struct timeval  tv;
+
+    FD_ZERO(&wfds);
+    FD_SET(sock_fd, &wfds);
+#endif
+
+    while (total_written < sz)
+    {
+	int ret;
+	ssize_t written;
+
+#ifndef HAVE_SELECT
+	ret = poll(&pfd, 1, timeout);
+#else
+	tv.tv_sec = 0;
+	tv.tv_usec = timeout * 1000;
+	ret = select(sock_fd + 1, NULL, &wfds, NULL, &tv);
+#endif
+	if (ret <= 0)
+	    return FAIL;
+
+	written = write(sock_fd, start, sz - total_written);
+
+	if (written == -1)
+	    return FAIL;
+
+	total_written += written;
+    }
+
+    return OK;
+}
+
+#endif // FEAT_SOCKETSERVER
