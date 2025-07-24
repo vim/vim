@@ -492,9 +492,11 @@ def Nextitem( # {{{1
     # Use the tags file to find out if this is a typedef.
     var diclist: list<dict<any>> = taglist('^' .. tokens[tidx] .. '$')
     for tagidx: number in len(diclist)->range()
-    if complete_check()
+
+      if complete_check()
         return res
-    endif
+      endif
+
       var item: dict<any> = diclist[tagidx]
 
       # New ctags has the "typeref" field.  Patched version has "typename".
