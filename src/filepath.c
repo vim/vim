@@ -3115,6 +3115,12 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
     int		cy = NUL;
 
 #ifdef MSWIN
+    /*
+     * To allow proper comparisson of absolute paths:
+     *	 - one with explicit drive letter C:\xxx
+     *	 - another with implicit drive letter \xxx
+     * advance the pointer, of the explicit one, to skip the drive
+     */
     for (int swap = 0, drive = NUL; swap < 2; ++swap)
     {
 	// Handle absolute paths with implicit drive letter
