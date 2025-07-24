@@ -146,7 +146,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
       var col2: number = col - 1
       while line[col2] != ';'
         if complete_check()
-            return v:none
+            return res
         endif
         --col2
       endwhile
@@ -159,7 +159,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
       var col2: number = col - 1
       while line[col2] != ','
         if complete_check()
-            return v:none
+            return res
         endif
         --col2
       endwhile
@@ -201,7 +201,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
   endif
 
   if complete_check()
-      return v:none
+      return res
   endif
 
   if len(items) == 1 || len(items) == arrays + 1
@@ -227,7 +227,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
   endif
 
   if complete_check()
-      return v:none
+      return res
   endif
 
   if len(res) == 0
@@ -262,7 +262,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
   endif
 
   if complete_check()
-      return v:none
+      return res
   endif
 
   if len(res) == 0 && items[0]->searchdecl(true) == 0
@@ -278,7 +278,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
   var brackets: string = ''
   while last >= 0
     if complete_check()
-        return v:none
+        return res
     endif
     if items[last][0] != '['
       break
@@ -346,7 +346,7 @@ def Dict2info(dict: dict<any>): string # {{{1
   var info: string = ''
   for k: string in dict->keys()->sort()
     if complete_check()
-        return ""
+        return info
     endif
     info  ..= k .. repeat(' ', 10 - strlen(k))
     if k == 'cmd'
@@ -384,7 +384,7 @@ def ParseTagline(line: string): dict<any> # {{{1
     endif
     for i: number in range(n + 1, len(l) - 1)
       if complete_check()
-        return {}
+        return d
       endif
       if l[i] == 'file:'
         d['static'] = 1
@@ -482,7 +482,7 @@ def Nextitem( # {{{1
   var res: list<dict<string>>
   for tidx: number in len(tokens)->range()
     if complete_check()
-        return []
+        return res
     endif
 
     # Skip tokens starting with a non-ID character.
@@ -511,7 +511,7 @@ def Nextitem( # {{{1
     var diclist: list<dict<any>> = taglist('^' .. tokens[tidx] .. '$')
     for tagidx: number in len(diclist)->range()
     if complete_check()
-        return []
+        return res
     endif
       var item: dict<any> = diclist[tagidx]
 
@@ -702,7 +702,7 @@ def SearchMembers( # {{{1
   var res: list<dict<string>>
   for i: number in len(matches)->range()
     if complete_check()
-        return []
+        return res
     endif
     var typename: string = ''
     var line: string
