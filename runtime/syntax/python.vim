@@ -228,7 +228,7 @@ syn region  pythonFStringField
 syn match   pythonFStringSkip		/{{\|\\N{/ transparent contained contains=NONE
 " Format specifications may include nested replacement fields
 syn match   pythonFStringFormatSpec	/{[^}]\+}/ transparent contained contains=NONE
-" Format specifiers may include the `#` option
+" Format specifications may include the `#` option
 "
 " XXX: This does not match all of https://docs.python.org/3/library/string.html#formatspec,
 "      only enough to disambiguate from comments
