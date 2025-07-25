@@ -965,7 +965,7 @@ decc_feat_t decc_feat_array[] = {
  * Uses LIB$INITIALIZE to set a collection of C RTL features without
  * requiring the user to define the corresponding logical names.
  *
- * LIB$INITIALIZE initialization function. 
+ * LIB$INITIALIZE initialization function
  */
 
 static void
