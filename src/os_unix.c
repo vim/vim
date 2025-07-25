@@ -153,26 +153,27 @@ Display	    *x11_display = NULL;
 
 # define SOCKET_SERVER_MAX_BACKLOG 5
 # define SOCKET_SERVER_MAX_CMD_SIZE 16384
-# define SOCKET_SERVER_MAX_MSG 5
+# define SOCKET_SERVER_MAX_MSG 6
 
 static int socket_server_fd = -1;
 static char_u *socket_server_path = NULL;
 
 typedef enum {
-    SS_MSG_TYPE_ENCODING    = 'e', // Encoding of message.
-    SS_MSG_TYPE_STRING	    = 'c', // Script to execute or reply string.
-    SS_MSG_TYPE_SERIAL	    = 's', // If cmd type is a reply, represents the
-				   // serial of the command that the reply is
-				   // for.
-    SS_MSG_TYPE_SENDER	    = 'S', // Location of socket of the client that sent
-				   // the cmd and msg.
+    SS_MSG_TYPE_ENCODING    = 'e',  // Encoding of message.
+    SS_MSG_TYPE_STRING	    = 'c',  // Script to execute or reply string.
+    SS_MSG_TYPE_SERIAL	    = 's',  // If cmd type is a reply, represents the
+				    // serial of the command that the reply is
+				    // for.
+    SS_MSG_TYPE_CODE	    = 'r',  // Result code for an expression sent
+    SS_MSG_TYPE_SENDER	    = 'S'   // Location of socket of the client that
+				    // sent the cmd and msg.
 } ss_msg_type_T;
 
 typedef enum {
-    SS_CMD_TYPE_EXPR	    = 'E', // An expression
-    SS_CMD_TYPE_KEYSTROKES  = 'K', // Series of keystrokes
-    SS_CMD_TYPE_REPLY	    = 'R', // Reply from an expression
-    SS_CMD_TYPE_NOTIFY	    = 'N', // A notification
+    SS_CMD_TYPE_EXPR	    = 'E',  // An expression
+    SS_CMD_TYPE_KEYSTROKES  = 'K',  // Series of keystrokes
+    SS_CMD_TYPE_REPLY	    = 'R',  // Reply from an expression
+    SS_CMD_TYPE_NOTIFY	    = 'N',  // A notification
 } ss_cmd_type_T;
 
 // Represents a message in a command. A command can contain multiple messages.
@@ -215,23 +216,22 @@ typedef struct {
 //
 // This takes ideas from the existing X server functionality
 typedef struct ss_pending_cmd_S {
-    int fd;			    // FD of server socket
-    int serial;			    // Serial number expected in result
-    int result;			    // Result code, can be OK or FAIL.
-    char_u *str;		    // Result of command
+    uint32_t	serial;		    // Serial number expected in result
+    char_u	code;		    // Result code, can be 0 or -1.
+    char_u	*result;	    // Result of command
 
     struct ss_pending_cmd_S *next;  // Next in list
 } ss_pending_cmd_T;
 
-static int ss_serial = 0;
+// Serial is always greater than zero
+static uint32_t ss_serial = 0;
 
 // List of pending commands
 ss_pending_cmd_T *ss_pending_cmds;
 
 static void socket_server_accept_client(void);
 static int socket_server_connect(char_u *name, int silent);
-static void socket_server_init_pending_cmd(ss_pending_cmd_T *pending,
-	int server_fd);
+static void socket_server_init_pending_cmd(ss_pending_cmd_T *pending);
 static void socket_server_pop_pending_cmd(ss_pending_cmd_T *pending);
 static int socket_server_append_msg(ss_cmd_T *cmd, char_u type,
 	char_u *contents, int len);
@@ -240,7 +240,8 @@ static char_u *socket_server_encode_cmd(ss_cmd_T *cmd, size_t *sz);
 static int socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout);
 static int socket_server_write(int sock_fd, char_u *data, size_t sz,
 	int timeout);
-static void socket_server_exec_cmd(int fd, ss_cmd_T *cmd);
+static void socket_server_exec_cmd(ss_cmd_T *cmd);
+static int socket_server_dispatch(int timeout);
 
 #endif // FEAT_SOCKETSERVER
 
@@ -9258,13 +9259,11 @@ socket_server_accept_client(void)
 #ifdef FEAT_EVAL
     ch_log(NULL, "accepted new client on socket %s", socket_server_path);
 #endif
-
     ss_cmd_T cmd;
 
     socket_server_decode_cmd(&cmd, client_fd, 1000);
 
-    socket_server_exec_cmd(client_fd, &cmd);
-
+    socket_server_exec_cmd(&cmd);
     socket_server_free_cmd(&cmd);
 
     close(client_fd);
@@ -9343,6 +9342,8 @@ socket_server_send(
 {
     ss_cmd_T	cmd;
     int		socket_fd;
+    size_t	sz;
+    char_u	*final;
 
     // Execute locally if target is ourselves
     if (serverName != NULL && STRICMP(name, serverName) == 0)
@@ -9353,7 +9354,11 @@ socket_server_send(
     if (socket_fd == -1)
 	return -1;
 
+    if (timeout == 0)
+	timeout = 500;
+
     cmd.cmd_len = 0;
+    cmd.cmd_num = 0;
     cmd.cmd_type = is_expr ? SS_CMD_TYPE_EXPR : SS_CMD_TYPE_KEYSTROKES;
 
     if (socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc,
@@ -9361,20 +9366,28 @@ socket_server_send(
     {
     msg_fail:
         socket_server_free_cmd(&cmd);
+	close(socket_fd);
         return -1;
     }
     if (socket_server_append_msg(&cmd, SS_MSG_TYPE_STRING, str, STRLEN(str)) ==
         FAIL)
         goto msg_fail;
 
-    // Create new serial
-    ss_serial++;
-    if (socket_server_append_msg(&cmd, SS_MSG_TYPE_SERIAL, (char_u *)&ss_serial,
-		sizeof(ss_serial)) == FAIL)
-        goto msg_fail;
+    if (is_expr)
+    {
+        // Create new serial
+        ss_serial++;
+        if (socket_server_append_msg(&cmd, SS_MSG_TYPE_SERIAL,
+		    (char_u *)&ss_serial, sizeof(ss_serial)) == FAIL)
+            goto msg_fail;
 
-    size_t sz;
-    char_u *final = socket_server_encode_cmd(&cmd, &sz);
+	// Let the server know which socket we are, so it can send back a reply.
+        if (socket_server_append_msg(&cmd, SS_MSG_TYPE_SENDER,
+		    socket_server_path, STRLEN(socket_server_path)) == FAIL)
+            goto msg_fail;
+    }
+
+    final = socket_server_encode_cmd(&cmd, &sz);
 
     if (final == NULL)
 	return -1;
@@ -9384,29 +9397,45 @@ socket_server_send(
 	emsg(_(e_failed_to_send_command_to_destination_program));
 
 	socket_server_free_cmd(&cmd);
+	close(socket_fd);
 	vim_free(final);
 	return -1;
     }
     socket_server_free_cmd(&cmd);
     vim_free(final);
+    close(socket_fd);
 
     if (!is_expr)
-    {
 	// Exit, we aren't waiting for a reponse
-	close(socket_fd);
 	return 0;
-    }
 
     ss_pending_cmd_T pending;
 
-    socket_server_init_pending_cmd(&pending, socket_fd);
+    socket_server_init_pending_cmd(&pending);
 
     // Wait for reply
+    while (socket_server_dispatch(timeout) == OK)
+	if (pending.result != NULL)
+	    break;
 
+    if (result != NULL)
+	*result = pending.result;
 
     socket_server_pop_pending_cmd(&pending);
 
-    return -1;
+    return pending.code == 0 ? 0 : -1;
+}
+    
+
+/*
+ * Wait for any reply from the server and place the result in "str". Returns OK
+ * on success and FAIL on failure.
+ */
+    static int
+socket_server_wait_for_reply(char_u **str, int timeout)
+{
+
+    return OK;
 }
 
 /*
@@ -9461,12 +9490,11 @@ fail:
  * success and FAIL on failure
  */
 static void
-socket_server_init_pending_cmd(ss_pending_cmd_T *pending, int server_fd)
+socket_server_init_pending_cmd(ss_pending_cmd_T *pending)
 {
-    pending->result = 0;
-    pending->str = NULL;
+    pending->code = 0;
+    pending->result = NULL;
     pending->serial = ss_serial;
-    pending->fd = server_fd;
     pending->next = ss_pending_cmds;
     ss_pending_cmds = pending;
 }
@@ -9477,13 +9505,18 @@ socket_server_init_pending_cmd(ss_pending_cmd_T *pending, int server_fd)
 static void
 socket_server_pop_pending_cmd(ss_pending_cmd_T *pending)
 {
+    if (ss_pending_cmds == pending)
+    {
+	ss_pending_cmds = pending->next;
+	return;
+    }
+
     for (ss_pending_cmd_T *cmd = ss_pending_cmds; cmd != NULL; cmd = cmd->next)
     {
 	if (cmd->next == pending)
 	{
 	    cmd->next = pending->next;
-	    close(cmd->fd);
-	    vim_free(cmd->str);
+	    vim_free(cmd->result);
 	    return;
 	}
     }
@@ -9598,11 +9631,11 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
     pfd.fd = socket_fd;
     pfd.events = POLLIN;
 #else
-    fd_set	    wfds;
+    fd_set	    rfds;
     struct timeval  tv;
 
-    FD_ZERO(&wfds);
-    FD_SET(socket_fd, &wfds);
+    FD_ZERO(&rfds);
+    FD_SET(socket_fd, &rfds);
 #endif
 
     buf = alloc(SS_CMD_INFO_SIZE);
@@ -9624,7 +9657,7 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 #else
 	tv.tv_sec = 0;
 	tv.tv_usec = timeout * 1000;
-	ret = select(socket_fd + 1, NULL, &wfds, NULL, &tv);
+	ret = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
 #endif
 	if (ret <= 0)
 	    goto fail;
@@ -9759,21 +9792,21 @@ socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
 }
 
 /*
- * Execute the actions given by command. "fd" is the file descriptor of the
- * socket opened for the client that sent the command.
+ * Execute the actions given by command.
  */
 static void
-socket_server_exec_cmd(int fd, ss_cmd_T *cmd)
+socket_server_exec_cmd(ss_cmd_T *cmd)
 {
     if (cmd->cmd_type == SS_CMD_TYPE_EXPR ||
 	    cmd->cmd_type == SS_CMD_TYPE_KEYSTROKES)
     {
-	char_u	*str	= NULL;
-	char_u	*enc	= NULL;
-	int	serial	= 0;
-	char_u	*to_free;
+	char_u	    *str = NULL;
+	char_u	    *enc = NULL;
+	char_u	    *sender = NULL;
+	uint32_t    serial = 0;
+	char_u	    *to_free;
 
-	for (int i = 0 ; i < cmd->cmd_num; i++)
+	for (int i = 0; i < cmd->cmd_num; i++)
 	{
 	    ss_msg_T *msg = cmd->cmd_msgs + i;
 
@@ -9782,7 +9815,9 @@ socket_server_exec_cmd(int fd, ss_cmd_T *cmd)
 	    else if (msg->msg_type == SS_MSG_TYPE_STRING)
 		str = msg->msg_contents;
 	    else if (msg->msg_type == SS_MSG_TYPE_SERIAL)
-		serial = *msg->msg_contents;
+		memcpy(&serial, msg->msg_contents, sizeof(serial));
+	    else if (msg->msg_type == SS_MSG_TYPE_SENDER)
+		sender = msg->msg_contents;
 	}
 
 	if (str == NULL) 
@@ -9794,14 +9829,17 @@ socket_server_exec_cmd(int fd, ss_cmd_T *cmd)
 
 	    if (cmd->cmd_type == SS_CMD_TYPE_KEYSTROKES)
 		server_to_input_buf(str);
-	    else
+	    else if (sender != NULL)
 	    {
 		// Evaluate expression and send reply containing result
-		char_u *result;
-		size_t sz;
-		char_u *buf;
+		char_u	    *result;
+		size_t	    sz;
+		char_u	    *buf;
+		char_u	    code;
 
 		result = eval_client_expr_to_string(str);;
+
+		code = result == NULL ? -1 : 0;
 
 		// Send reply
 		ss_cmd_T rcmd;
@@ -9811,8 +9849,18 @@ socket_server_exec_cmd(int fd, ss_cmd_T *cmd)
 
 		// Don't care about errors, server will just ignore command if
 		// its missing something.
-                socket_server_append_msg(&rcmd, SS_MSG_TYPE_STRING, result,
-			STRLEN(result));
+		if (result != NULL)
+		    socket_server_append_msg(&rcmd, SS_MSG_TYPE_STRING, result,
+			    STRLEN(result));
+		else
+		    // An error occured, return an error msg instead
+		    socket_server_append_msg(&rcmd, SS_MSG_TYPE_STRING,
+			    (char_u *)_(e_invalid_expression_received),
+			    STRLEN(e_invalid_expression_received));
+
+                socket_server_append_msg(&rcmd, SS_MSG_TYPE_CODE,
+			&code, sizeof(code));
+
                 socket_server_append_msg(&rcmd, SS_MSG_TYPE_ENCODING, p_enc,
 			STRLEN(p_enc));
                 socket_server_append_msg(&rcmd, SS_MSG_TYPE_SERIAL,
@@ -9822,15 +9870,67 @@ socket_server_exec_cmd(int fd, ss_cmd_T *cmd)
 
 		if (buf != NULL)
 		{
-		    socket_server_write(fd, buf, sz, p_stm);
+		    int socket_fd = socket_server_connect(sender, TRUE);
+
+		    if (socket_fd != -1)
+			socket_server_write(socket_fd, buf, sz, p_stm);
+
+		    close(socket_fd);
 		    vim_free(buf);
 		}
+
+		socket_server_free_cmd(&rcmd);
+		vim_free(result);
             }
 	    vim_free(to_free);
 	}
+	return;
     }
     else if (cmd->cmd_type == SS_CMD_TYPE_REPLY)
     {
+	// A reply from a previous command we sent. Get the serial and set the
+	// matching pending command with the result.
+	uint32_t    serial = 0;
+	char_u	    code = 1;
+	char_u	    *str = NULL;
+	char_u	    *enc = NULL;
+	char_u	    *to_free;
+
+	for (int i = 0; i < cmd->cmd_num; i++)
+	{
+	    ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	    if (msg->msg_type == SS_MSG_TYPE_SERIAL)
+		memcpy(&serial, msg->msg_contents, sizeof(serial));
+	    else if (msg->msg_type == SS_MSG_TYPE_ENCODING)
+		enc = msg->msg_contents;
+	    else if (msg->msg_type == SS_MSG_TYPE_STRING)
+		str = msg->msg_contents;
+	    else if (msg->msg_type == SS_MSG_TYPE_CODE)
+		memcpy(&code, msg->msg_contents, sizeof(code));
+	}
+
+	if (serial > 0)
+	{
+	    // Find pending command in list and set result
+            for (ss_pending_cmd_T *pending = ss_pending_cmds; pending != NULL;
+		    pending = pending->next)
+	    {
+		if (pending->serial == serial && pending->result == NULL)
+		{
+		    pending->code = code;
+
+		    str = serverConvert(enc, str, &to_free);
+
+		    if (to_free == NULL)
+			str = vim_strsave(str);
+
+		    pending->result = str;
+		    break;
+		}
+	    }
+        }
+	return;
     }
     else if (cmd->cmd_type == SS_CMD_TYPE_NOTIFY)
     {
@@ -9838,6 +9938,61 @@ socket_server_exec_cmd(int fd, ss_cmd_T *cmd)
 
     // Command type is invalid, do nothing
     return;
+}
+
+/*
+ * Poll the socket server fd until a new connection is accepted. Returns OK on
+ * success and FAIL on failure.
+ */
+static int
+socket_server_dispatch(int timeout)
+{
+    int ret;
+#ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = socket_server_fd;
+    pfd.events = POLLIN;
+#else
+    fd_set	    rfds;
+    fd_set	    efds;
+    struct timeval  tv;
+
+    FD_ZERO(&rfds);
+    FD_SET(socket_server_fd, &rfds);
+#endif
+
+#ifndef HAVE_SELECT
+    ret = poll(&pfd, 1, timeout);
+#else
+    tv.tv_sec = 0;
+    tv.tv_usec = timeout * 1000;
+    ret = select(socket_server_fd + 1, &rfds, NULL, &efds, &tv);
+#endif
+
+    if (ret <= 0)
+	return FAIL;
+
+#ifndef HAVE_SELECT
+    if (pfd.revents & POLLIN
+#else
+    if (FD_ISSET(socket_server_fd, &rfds))
+#endif
+    {
+	socket_server_accept_client();
+	return OK;
+    }
+#ifndef HAVE_SELECT
+    else if (pfd.revents & POLLHUP | POLLERR)
+#else
+    else if (FD_ISSET(socket_server_fd, &efds))
+#endif
+    {
+	// Connection was closed
+	return FAIL;
+    }
+
+    return FAIL;
 }
 
 #endif // FEAT_SOCKETSERVER

@@ -392,7 +392,7 @@ cmdsrv_main(
 
 #ifdef FEAT_SOCKETSERVER
 	    ret = socket_server_send(
-		    serverName_arg, *serverStr, NULL, 0, 0, silent);
+		    serverName_arg, *serverStr, NULL, 0, -1, silent);
 # elif defined(FEAT_X11)
 	    if (xterm_dpy == NULL)
 	    {
@@ -467,7 +467,8 @@ cmdsrv_main(
 		    p = serverGetReply(srv, NULL, TRUE, TRUE, 0);
 		    if (p == NULL)
 			break;
-# else
+# elif defined(FEAT_SOCKETSERVER)
+# elif defined(FEAT_X11)
 		    if (serverReadReply(xterm_dpy, srv, &p, TRUE, -1) < 0)
 			break;
 # endif
@@ -777,8 +778,9 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # ifdef MSWIN
     if (serverSendToVim(server_name, keys, &r, &w, expr, timeout, TRUE) < 0)
 # else
-    if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout,
-								  0, TRUE) < 0)
+    if (socket_server_send(server_name, keys, &r, expr, timeout, TRUE) < 0)
+    /* if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout, */
+								  /* 0, TRUE) < 0) */
 # endif
     {
 	if (r != NULL)
