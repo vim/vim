@@ -174,34 +174,30 @@ typedef enum {
     SS_CMD_TYPE_REPLY	    = 'R', // Reply from an expression
 } ss_cmd_type_T;
 
-// Represents a message sent over the socket. Each message starts with a 32 bit
-// unsigned integer representing the total length of the message (including
-// type). Then is a single byte representing what the contents of the message
-// are for, if Vim doesn't recognize the type, then the entire message is
-// ignored. After is the actual contents of the message. A message is wrapped in
-// a "command" along with multiple other messages. Everything is in native byte
-// order.
-//
-// <len><type><contents>
+// Represents a message in a command. A command can contain multiple messages.
+// Each message starts with a single byte representing the type, then a uint32
+// representing the length of the contents, and then the actual contents.
+// Everything is in native byte order.
 typedef struct {
-    uint32_t	msg_len;	    // Total length of message including type
     char_u	msg_type;	    // Type of message
+    uint32_t	msg_len;	    // Total length of contents
     char_u	*msg_contents;	    // Actual contents of message
 } ss_msg_T;
 
-// Represents an actual command sent over the socket. Each command starts with a
-// 32 bit unsigned integer representing how many messages there are in the
-// command. Then is the type of command which is a byte that can either be:
-// "e" for an expression
-// "k" for keystrokes
-// "r" for a reply
-//
-// <len><type><msg><msg>...
+// Represents a command sent over a socket. Each socket starts with a byte
+// representing the type, then a uint32 representing the number of messages,
+// then a uint32 representing the total size of the messages in bytes, and then
+// the actual messages. Everything is in native byte order.
 typedef struct {
-    uint32_t	cmd_num;			    // Number of messages
     char_u	cmd_type;   			    // Type of command
+    uint32_t    cmd_num;			    // Number of messages
+    uint32_t	cmd_len;			    // Combined size of all
+						    // messages
     ss_msg_T	cmd_msgs[SOCKET_SERVER_MAX_MSG];    // Array of messages
 } ss_cmd_T;
+
+#define SS_CMD_INFO_SIZE (sizeof(char_u) + (sizeof(uint32_t) * 2))
+#define SS_MSG_INFO_SIZE (sizeof(char_u) + sizeof(uint32_t))
 
 static void socket_server_accept_client(void);
 static int socket_server_connect(char_u *name, int silent);
@@ -9276,7 +9272,7 @@ socket_server_send(
     if (socket_fd == -1)
 	return -1;
 
-    cmd.cmd_num = 0;
+    cmd.cmd_len = 0;
     cmd.cmd_type = is_expr ? SS_CMD_TYPE_EXPR : SS_CMD_TYPE_KEYSTROKES;
 
     if (socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc,
@@ -9376,16 +9372,20 @@ fail:
 static int
 socket_server_append_msg(ss_cmd_T *cmd, char_u type, char_u *contents, int len)
 {
-    ss_msg_T *msg = cmd->cmd_msgs + cmd->cmd_num++;
+    ss_msg_T *msg = cmd->cmd_msgs + cmd->cmd_num;
 
-    msg->msg_type = type;
-    msg->msg_len = 1 + len;
     msg->msg_contents = alloc(len);
 
     if (msg->msg_contents == NULL)
 	return FAIL;
 
+    msg->msg_type = type;
+    msg->msg_len = len;
     memcpy(msg->msg_contents, contents, len);
+
+    cmd->cmd_len += SS_MSG_INFO_SIZE + len;
+    cmd->cmd_num++;
+
     return OK;
 }
 
@@ -9407,54 +9407,55 @@ socket_server_free_cmd(ss_cmd_T *cmd)
 static char_u *
 socket_server_encode_cmd(ss_cmd_T *cmd, size_t *sz)
 {
-    garray_T buf;
+    size_t size;
+    char_u *buf;
+    char_u *start;
 
-    ga_init2(&buf, 1, 128);
+    size = SS_CMD_INFO_SIZE + cmd->cmd_len;
+    buf = alloc(size);
 
-    if (ga_grow(&buf, sizeof(uint32_t) + 1) == FAIL)
+    if (buf == NULL)
 	return NULL;
 
-    memcpy(buf.ga_data, cmd, sizeof(uint32_t) + 1);
-    buf.ga_len += sizeof(uint32_t) + 1;
+    start = buf;
+    memcpy(start, &cmd->cmd_type, sizeof(cmd->cmd_type));
+    start += sizeof(cmd->cmd_type);
+    memcpy(start, &cmd->cmd_num, sizeof(cmd->cmd_num));
+    start += sizeof(cmd->cmd_num);
+    memcpy(start, &cmd->cmd_len, sizeof(cmd->cmd_len));
+    start += sizeof(cmd->cmd_len);
 
+    // Append messages to buffer
     for (int i = 0; i < cmd->cmd_num; i++)
     {
 	ss_msg_T *msg = cmd->cmd_msgs + i;
 
-	if (ga_grow(&buf, msg->msg_len + sizeof(uint32_t)) == FAIL)
-	    goto fail;
+	memcpy(start, &msg->msg_type, sizeof(msg->msg_type));
+	start += sizeof(msg->msg_type);
+	memcpy(start, &msg->msg_len, sizeof(msg->msg_len));
+	start += sizeof(msg->msg_len);
 
-	memcpy(buf.ga_data + buf.ga_len, msg, sizeof(uint32_t) + 1);
-	memcpy(buf.ga_data + buf.ga_len + sizeof(uint32_t) + 1,
-		    msg->msg_contents, msg->msg_len - 1);
-
-	buf.ga_len += msg->msg_len + sizeof(uint32_t);
-
-	if (buf.ga_len > SOCKET_SERVER_MAX_CMD_SIZE)
-	    goto fail;
+	memcpy(start, msg->msg_contents, msg->msg_len);
+	start += msg->msg_len;
     }
 
-    *sz = buf.ga_len;
-    return buf.ga_data;
-fail:
-    ga_clear(&buf);
-    return NULL;
+    *sz = size;
+
+    return buf;
 }
 
 /*
  * Read from "socket_fd" an entire command and return the result in "cmd". The
- * socket fd should be at the start of the command, Returns OK on success and
- * FAIL on failure.
+ * socket fd should be at the start of the command and should be *NON-BLOCKING*,
+ * Returns OK on success and FAIL on failure.
  */
 static int
 socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 {
-    int		got_cmd_num_and_type = FALSE;
-    int		got_msg_len_and_type = FALSE;
-    int		i = 0;
-    size_t	total_read = 0;
-    ss_msg_T	*cur_msg = cmd->cmd_msgs;
+    int		got_cmd_info	= FALSE; // Consists of type, num, and len
+    size_t	total_r		= 0;
     char_u	*buf;
+    char_u	*start;
 
 #ifndef HAVE_SELECT
     struct pollfd pfd;
@@ -9469,13 +9470,13 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
     FD_SET(socket_fd, &wfds);
 #endif
 
-    buf = alloc(512);
+    buf = alloc(SS_CMD_INFO_SIZE);
 
     if (buf == NULL)
 	return FAIL;
 
     // We may exit in the middle of the loop and free the messages, we don't
-    // want to free uninitialized memory.
+    // want to free an uninitialized pointer.
     memset(cmd, 0, sizeof(*cmd));
 
     while (TRUE)
@@ -9491,73 +9492,80 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 	ret = select(socket_fd + 1, NULL, &wfds, NULL, &tv);
 #endif
 	if (ret <= 0)
-	{
-	    vim_free(buf);
-	    return FAIL;
-	}
+	    goto fail;
 
-	if (!got_cmd_num_and_type || !got_msg_len_and_type)
+	// Get cmd info first so we know the total size of all messages, and can
+	// read it all in one go.
+	if (!got_cmd_info)
 	{
-            r = read(socket_fd, buf + total_read,
-		    sizeof(uint32_t) + 1 - total_read);
+	    r = read(socket_fd, buf + total_r, SS_CMD_INFO_SIZE - total_r);
 
-            if (r >= sizeof(uint32_t) + 1)
+	    if (r >= SS_CMD_INFO_SIZE - total_r)
 	    {
-		if (!got_cmd_num_and_type)
-		{
-		    cmd->cmd_num = *buf;
-		    cmd->cmd_type = buf[sizeof(uint32_t)];
+		char_u *tmp;
 
-		    got_cmd_num_and_type = TRUE;
-		}
-		else
-		{
-		    cur_msg->msg_len = *buf;
-		    cur_msg->msg_type = buf[sizeof(uint32_t)];
+		got_cmd_info = TRUE;
 
-		    got_msg_len_and_type = TRUE;
-		}
-		total_read = 0;
+		cmd->cmd_type = *buf;
+		cmd->cmd_num = buf[sizeof(cmd->cmd_type)];
+		cmd->cmd_len =
+		    buf[sizeof(cmd->cmd_type) + sizeof(cmd->cmd_num)];
+
+		// Now that we now the total size of messages, we can realloc
+		// the buffer to contain all data
+		tmp = realloc(buf, SS_CMD_INFO_SIZE + cmd->cmd_len);
+
+		if (tmp == NULL)
+		    goto fail;
+
+		buf = tmp;
+		start = buf + SS_CMD_INFO_SIZE;
+
 		continue;
 	    }
-	}
-	else if (got_msg_len_and_type)
+        }
+	else
 	{
-	    // Read message contents
-            r = read(socket_fd, buf + total_read,
-		    cur_msg->msg_len - 1 - total_read);
+	    // Read message data
+	    r = read(socket_fd, start + total_r, cmd->cmd_len - total_r);
 
-            if (r >= cur_msg->msg_len - 1)
-	    {
-		cur_msg->msg_contents = alloc(cur_msg->msg_len - 1);
-
-		if (cur_msg->msg_contents == NULL)
-		{
-		    vim_free(buf);
-		    socket_server_free_cmd(cmd);
-		    return FAIL;
-		}
-
-		memcpy(cur_msg->msg_contents, buf, cur_msg->msg_len - 1);
-
-		cur_msg += 1;
-		got_msg_len_and_type = FALSE;
-		total_read = 0;
-		i++;
-
-		// Check if we have read all messages
-		if (i >= cmd->cmd_num)
-		    break;
-		else
-		continue;
-	    }
+	    if (r >= cmd->cmd_len - total_r)
+		break;
 	}
 
-	total_read += r;
+	if (r == -1)
+	    goto fail;
+
+	total_r += r;
+    }
+
+    // Parse message data
+    for (int i = 0; i <  cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	msg->msg_type = *start;
+	start += sizeof(msg->msg_type);
+	msg->msg_len = *start;
+	start += sizeof(msg->msg_len);
+
+	msg->msg_contents = alloc(msg->msg_len);
+
+	if (msg->msg_contents == NULL)
+	    goto fail;
+
+	memcpy(msg->msg_contents, start, msg->msg_len);
+
+	// Move pointer to start of next message
+	start += msg->msg_len;
     }
 
     vim_free(buf);
     return OK;
+fail:
+    socket_server_free_cmd(cmd);
+    vim_free(buf);
+    return FAIL;
 }
 
 /*
@@ -9568,7 +9576,7 @@ static int
 socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
 {
     char_u *start = data;
-    size_t total_written = 0;
+    size_t total_w = 0;
 #ifndef HAVE_SELECT
     struct pollfd pfd;
 
@@ -9582,7 +9590,7 @@ socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
     FD_SET(socket_fd, &wfds);
 #endif
 
-    while (total_written < sz)
+    while (total_w < sz)
     {
 	int ret;
 	ssize_t written;
@@ -9597,12 +9605,12 @@ socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
 	if (ret <= 0)
 	    return FAIL;
 
-	written = write(socket_fd, start, sz - total_written);
+	written = write(socket_fd, start, sz - total_w);
 
 	if (written == -1)
 	    return FAIL;
 
-	total_written += written;
+	total_w += written;
     }
 
     return OK;
