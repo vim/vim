@@ -422,6 +422,10 @@ vwl_display_flush(vwl_display_T *display)
 	    if (select(display->fd + 1, NULL, &wfds, NULL, &tv) <= 0)
 #endif
 		return FAIL;
+#ifdef HAVE_SELECT
+	tv.tv_sec	= 0;
+	tv.tv_usec	= p_wtm * 1000;
+#endif
     }
     // Return FAIL on error or timeout
     if ((errno != 0 && errno != EAGAIN) || ret == -1)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-21 21:33+0200\n"
+"POT-Creation-Date: 2025-07-24 19:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8569,6 +8569,12 @@ msgstr ""
 msgid ""
 "E1434: Mismatched number of type variables for generic method  \"%s\" in "
 "class \"%s\""
+msgstr ""
+
+msgid "E1435: Enum can only be used in a script"
+msgstr ""
+
+msgid "E1436: Interface can only be used in a script"
 msgstr ""
 
 #, c-format

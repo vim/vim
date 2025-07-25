@@ -4750,6 +4750,14 @@ compile_def_function_body(
 		    emsg(_(e_class_can_only_be_used_in_script));
 		    return FAIL;
 
+	    case CMD_enum:
+		    emsg(_(e_enum_can_only_be_used_in_script));
+		    return FAIL;
+
+	    case CMD_interface:
+		    emsg(_(e_interface_can_only_be_used_in_script));
+		    return FAIL;
+
 	    case CMD_type:
 		    emsg(_(e_type_can_only_be_used_in_script));
 		    return FAIL;

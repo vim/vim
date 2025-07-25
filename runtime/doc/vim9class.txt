@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Apr 21
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -584,6 +584,8 @@ protected object methods, class variables and class methods.
 An interface can extend another interface using "extends".  The sub-interface
 inherits all the instance variables and methods from the super interface.
 
+An interface cannot be defined inside a function.	*E1436*
+
 ==============================================================================
 
 6.  More class details				*Vim9-class* *Class* *class*
@@ -971,7 +973,7 @@ of that class.  Unlike typical object instantiation with the |new()| method,
 enum instances cannot be created this way.
 
 An enum can only be defined in a |Vim9| script file.	*E1414*
-An enum cannot be defined inside a function.
+An enum cannot be defined inside a function.		*E1435*
 
 							*E1415*
 An enum name must start with an uppercase letter.  The name of an enum value

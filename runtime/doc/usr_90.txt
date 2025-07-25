@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 9.1.  Last change: 2025 Jul 23
+*usr_90.txt*	For Vim version 9.1.  Last change: 2025 Jul 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -200,7 +200,7 @@ box for most users.
     2. Using winget (Windows Package Manager) ~
 
 If you prefer using the command line, you can quickly install Vim using
-Windows built-in package manager for the stable version: >
+Windows' built-in package manager for the stable version: >
 
 	winget install vim.vim
 
