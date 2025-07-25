@@ -23,7 +23,7 @@ freebsd_task:
     - sudo -u cirrus make test
   on_failure:
     test_artifacts:
-      name: "Cirrus-CI-freebsd-failed-tests"
+      name: "Cirrus-${CIRRUS_BUILD_ID}-freebsd-failed-tests"
       path: |
         runtime/indent/testdir/*.fail
         runtime/syntax/testdir/failed/*
