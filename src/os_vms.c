@@ -9,7 +9,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#include	"vim.h"
+#include "vim.h"
 
 // define _generic_64 for use in time functions
 #if !defined(VAX) && !defined(PROTO)
@@ -18,11 +18,11 @@
 // based on Alpha's gen64def.h; the file is absent on VAX
 typedef struct _generic_64 {
 #   pragma __nomember_alignment
-    __union  {				// You can treat me as...
+    __union  {				     // You can treat me as...
 	// long long is not available on VAXen
 	// unsigned __int64 gen64$q_quadword; ...a single 64-bit value, or
 
-	unsigned int gen64$l_longword [2]; // ...two 32-bit values, or
+	unsigned int gen64$l_longword [2];   // ...two 32-bit values, or
 	unsigned short int gen64$w_word [4]; // ...four 16-bit values
     } gen64$r_quad_overlay;
 } GENERIC_64;
@@ -583,7 +583,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	ch = '[';
 	SKIP_FOLLOWING_SLASHES(in);
     }
-    else if (EQN(in, "../", 3)) // Unix parent directory?
+    else if (EQN(in, "../", 3))      // Unix parent directory?
     {
 	*out++ = '[';
 	*out++ = '-';
@@ -593,20 +593,20 @@ vms_unix_mixed_filespec(char *in, char *out)
 	SKIP_FOLLOWING_SLASHES(in);
     }
     else
-    {		    // not a special character
-	while (EQN(in, "./", 2))	// Ignore Unix "current dir"
+    {                                // not a special character
+	while (EQN(in, "./", 2))     // Ignore Unix "current dir"
 	{
 	    in += 2;
 	    SKIP_FOLLOWING_SLASHES(in);
     }
-    if (strchr(in, '/') == NULL)  // any more Unix directories ?
+    if (strchr(in, '/') == NULL)     // any more Unix directories ?
     {
-	strcpy(out, in);	// No - get rest of the spec
+	strcpy(out, in);             // No - get rest of the spec
 	return;
     }
     else
     {
-	*out++ = '[';	    // Yes, denote a Vms subdirectory
+	*out++ = '[';                // Yes, denote a Vms subdirectory
 	ch = '.';
 	--in;
 	}
@@ -627,7 +627,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	    ch = '.';
 	    SKIP_FOLLOWING_SLASHES(in);
 	    }
-	else if (EQN(in, "../", 3))	// Unix parent directory?
+	else if (EQN(in, "../", 3))     // Unix parent directory?
 	{
 	    *out++ = '-';
 	    end_of_dir = out;
@@ -637,7 +637,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	    }
 	else
 	{
-	    while (EQN(in, "./", 2))  // Ignore Unix "current dir"
+	    while (EQN(in, "./", 2))    // Ignore Unix "current dir"
 	    {
 		end_of_dir = out;
 		in += 2;
@@ -651,7 +651,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	++in;
     }
 
-    *out = '\0';    // Terminate output file spec
+    *out = '\0';            // Terminate output file spec
 
     if (end_of_dir != NULL) // Terminate directory portion
 	*end_of_dir = ']';
@@ -726,27 +726,81 @@ vms_fixfilename(void *instring)
  * we need it in some special cases as:
  * creating swap file name and writing new file
  */
+
+/*
+ * 2025-05-13 SMS.
+ * Using $PARSE would be simpler and more accurate, if all-VMS (not
+ * mixed UNIX+VMS) path were ensured.  Meanwhile, to improve (imperfect)
+ * handling of extended name syntax:
+ *     o All characters (up to five (32767)) after semi-colon (or last
+ *       of multiple dots) must be numeric.
+ *     o Caret-escaped semi-colon (^;) or dot (^.) does not delimit
+ *       version.
+ * Whether it makes sense to detect syntax errors here is not entirely
+ * clear.  Currently, many invalid version strings are not treated as
+ * version strings.  (More could be.)
+ */
     void
 vms_remove_version(void * fname)
 {
-    char_u	*cp;
-    char_u	*fp;
+    char_u	*dp;	        // Dot pointer
+    char_u	*rp;            // Right pointer
+    int		done = 0;
+    int		vdigits = 0;
 
-    if ((cp = vim_strchr( fname, ';')) != NULL) // remove version
-	*cp = '\0';
-    else if ((cp = vim_strrchr( fname, '.')) != NULL )
+    rp = (char_u *)fname+ strlen( (char *)fname)- 1;    // Rightmost char
+    while ((done == 0) && (rp > (char_u *)fname))       // Count digits
     {
-	if      ((fp = vim_strrchr( fname, ']')) != NULL )
-	    {;}
-	else if ((fp = vim_strrchr( fname, '>')) != NULL )
-	    {;}
+	if (isdigit( *rp))
+	{
+	    vdigits++;
+	    *rp--;
+	}
 	else
-	    fp = fname;
+	{
+	    done = 1;                                   // Quit at non-digit
+	}
+    } // while (Count digits)
 
-	while ( *fp != '\0' && fp < cp )
-	    if ( *fp++ == '.' )
-		*cp = '\0';
-    }
+    if (vdigits  <= 5)                  // If likely version digits, check delimiter
+    {                                   // (Could check for <= 32767, not just five digits or fewer.)
+	if (*rp == (char_u)';')
+	{
+	    if ((rp >= (char_u *)fname) && (*(rp- 1) != (char_u)'^'))
+	    {                           // Unescaped ";"
+		*rp = '\0';             // Trim off ";nnn"
+	    }
+	}
+	else if (*rp == (char_u)'.')    // Last of multiple dots?
+	{
+	    if ((rp >= (char_u *)fname) && (*(rp- 1) != '^'))
+	    {                           // Unescaped dot.  Version requires previous one
+		dp = rp- 1;             // Scan chars before "."
+		done = 0;
+		while ((done == 0) && (dp >= (char_u *)fname))
+		{
+		    if ((*dp == ']') || (*dp == '>') || (*dp == ':') || (*dp == '/'))
+		    {                   // Possible VMS dev:[dir] delimiter (or UNIX "/")
+			if ((dp >= (char_u *)fname) && (*(dp- 1) != '^'))
+			{               // Unescaped dev:[dir] (or /) delimiter
+			    done = 1;   // No previous dot found in name
+			}
+		    }
+		    else if (*dp == '.')
+		    {                   // Possible dot delimiter
+			if ((dp >= (char_u *)fname) && (*(dp- 1) != '^'))
+			{               // Unescaped dot delimiter
+			    done = 1;   // Previous dot found in name
+			    *rp = '\0'; // Trim off ".nnn"
+			}
+		    }
+		    dp--;               // Next char to right
+		} // while
+	    }
+	}
+	// Else no version found to remove
+    } // if (vdigits  <= 5)
+
     return ;
 }
 
@@ -783,23 +837,29 @@ RealWaitForChar(
     if (sec > 0)
     {
 	// time-out specified; convert it to absolute time
-	// sec>0 requirement of lib$cvtf_to_internal_time()
+	// sec>0 requirement of lib$cvt[fs]_to_internal_time()
 
 	// get current time (number of 100ns ticks since the VMS Epoch)
 	status = sys$gettim(&time_curr);
 	if (status != SS$_NORMAL)
 	    return 0; // error
 	// construct the delta time
-#if __G_FLOAT==0
-# ifndef VAX
-	// IEEE is default on IA64, but can be used on Alpha too - but not on VAX
-	status = lib$cvts_to_internal_time(
+
+/* On all non-VAX hardware architectures, the "CC /FLOAT=option"
+ * determines the floating-point format.  The default format on Alpha
+ * is VAX; on IA64 and x86_64 it's IEEE.  But, except on VAX, the user
+ * can specify either.   What matters here is the actual floating-point
+ * format being used, not the hardware architecture.  Choose the
+ * appropriate time conversion function accordingly.
+ */
+#if __IEEE_FLOAT
+# define LIB_CVTX_TO_INTERNAL_TIME lib$cvts_to_internal_time // IEEE
+#else
+# define LIB_CVTX_TO_INTERNAL_TIME lib$cvtf_to_internal_time // VAX
+#endif // __IEEE_FLOAT CVTS
+
+	status = LIB_CVTX_TO_INTERNAL_TIME(
 		&convert_operation, &sec, &time_diff);
-# endif
-#else   // default on Alpha and VAX
-	status = lib$cvtf_to_internal_time(
-		&convert_operation, &sec, &time_diff);
-#endif
 	if (status != LIB$_NORMAL)
 	    return 0; // error
 	// add them up
@@ -851,3 +911,130 @@ RealWaitForChar(
 	}
     }
 }
+
+#if !defined( __VAX) && (__CRTL_VER >= 70301000)
+
+#include <stdio.h>
+#include <unixlib.h>
+
+// Structure to hold a DECC$* feature name and its desired value
+
+typedef struct
+   {
+   char *name;
+   int value;
+   } decc_feat_t;
+
+int vms_init_done = -1;
+
+decc_feat_t decc_feat_array[] = {
+
+   // Preserve command-line case with SET PROCESS/PARSE_STYLE=EXTENDED
+ { "DECC$ARGV_PARSE_STYLE", 1 },
+
+   // Preserve case for file names on ODS5 disks
+ { "DECC$EFS_CASE_PRESERVE", 1 },
+
+   // Enable multiple dots (and most characters) in ODS5 file names,
+   // while preserving VMS-ness of ";version"
+ { "DECC$EFS_CHARSET", 1 },
+
+   // List terminator
+ { (char *)NULL, 0 } };
+
+
+/* LIB$INITIALIZE initialization.
+ *
+ * On sufficiently recent non-VAX systems, set a collection of C RTL
+ * features without using the DECC$* logical name method.
+ *
+ * Note: Old VAX VMS versions may suffer from a linker complaint like
+ * this:
+ *
+ * %LINK-W-MULPSC, conflicting attributes for psect LIB$INITIALIZE
+ * in module LIB$INITIALIZE file SYS$COMMON:[SYSLIB]STARLET.OLB;1
+ *
+ * Using a LINK options file which includes a line like this one should
+ * stop this complaint:
+ *
+ * PSECT_ATTR=LIB$INITIALIZE,NOPIC
+ */
+
+/* vms_init()
+ *
+ * Uses LIB$INITIALIZE to set a collection of C RTL features without
+ * requiring the user to define the corresponding logical names.
+ *
+ * LIB$INITIALIZE initialization function
+ */
+
+static void
+vms_init(void)
+{
+    // Set the global flag to indicate that LIB$INITIALIZE worked
+
+    vms_init_done = 1;
+
+    int feat_index;
+    int feat_value;
+    int feat_value_max;
+    int feat_value_min;
+    int i;
+    int sts;
+
+    // Loop through all items in the decc_feat_array[]
+    for (i = 0; decc_feat_array[i].name != NULL; i++)
+    {
+	// Get the feature index
+	feat_index = decc$feature_get_index(decc_feat_array[i].name);
+	if (feat_index >= 0)
+	{
+	    // Valid item.  Collect its properties
+	    feat_value = decc$feature_get_value(feat_index, 1);
+	    feat_value_min = decc$feature_get_value(feat_index, 2);
+	    feat_value_max = decc$feature_get_value(feat_index, 3);
+
+	    if ((decc_feat_array[i].value >= feat_value_min) && (decc_feat_array[i].value <= feat_value_max))
+		// Valid value.  Set it if necessary
+		if (feat_value != decc_feat_array[i].value)
+		    sts = decc$feature_set_value(feat_index, 1, decc_feat_array[i].value);
+	    else
+		// Invalid DECC feature value
+		printf("INVALID DECC FEATURE VALUE, %d: %d <= %s <= %d.\n",
+			feat_value, feat_value_min, decc_feat_array[i].name, feat_value_max);
+	}
+	else
+	    // Invalid DECC feature name
+	    printf("UNKNOWN DECC FEATURE: %s.\n", decc_feat_array[i].name);
+    }
+}
+
+
+/* Get "vms_init()" into a valid, loaded LIB$INITIALIZE PSECT. */
+
+#pragma nostandard
+
+/* Establish the LIB$INITIALIZE PSECTs, with proper alignment and
+ * other attributes.  Note that "nopic" is significant only on VAX.
+ */
+#pragma extern_model save
+
+#pragma extern_model strict_refdef "LIB$INITIALIZE" 2, nopic, nowrt
+void (*const x_vms_init)() = vms_init;
+
+#pragma extern_model strict_refdef "LIB$INITIALIZ" 2, nopic, nowrt
+const int spare[ 8] = { 0 };
+
+#pragma extern_model restore
+
+// Fake reference to ensure loading the LIB$INITIALIZE PSECT
+
+#pragma extern_model save
+int LIB$INITIALIZE(void);
+#pragma extern_model strict_refdef
+int dmy_lib$initialize = (int) LIB$INITIALIZE;
+#pragma extern_model restore
+
+#pragma standard
+
+#endif // !defined( __VAX) && (__CRTL_VER >= 70301000)

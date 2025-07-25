@@ -24,7 +24,11 @@
 // ============ the header file puzzle: order matters =========
 
 #ifdef HAVE_CONFIG_H	// GNU autoconf (or something else) was here
-# include "auto/config.h"
+# ifdef VMS
+#  include "config.h"   /* Rely on /INCLUDE to find it. */
+# else
+#  include "auto/config.h"
+# endif /* def VMS [else] */
 # define HAVE_PATHDEF
 
 /*
