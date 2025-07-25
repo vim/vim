@@ -956,6 +956,9 @@ EXTERN long	p_siso;		// 'sidescrolloff'
 EXTERN int	p_scs;		// 'smartcase'
 EXTERN int	p_si;		// 'smartindent'
 EXTERN int	p_sta;		// 'smarttab'
+#ifdef FEAT_SOCKETSERVER
+EXTERN long	p_stm;		// 'socktimeoutlen'
+#endif
 EXTERN long	p_sts;		// 'softtabstop'
 EXTERN int	p_sb;		// 'splitbelow'
 EXTERN char_u	*p_sua;		// 'suffixesadd'

@@ -147,6 +147,104 @@ Window	    x11_window = 0;
 Display	    *x11_display = NULL;
 #endif
 
+#ifdef FEAT_SOCKETSERVER
+# include <sys/socket.h>
+# include <sys/un.h>
+
+# define SOCKET_SERVER_MAX_BACKLOG 5
+# define SOCKET_SERVER_MAX_CMD_SIZE 16384
+# define SOCKET_SERVER_MAX_MSG 6
+
+static int socket_server_fd = -1;
+static char_u *socket_server_path = NULL;
+
+typedef enum {
+    SS_MSG_TYPE_ENCODING    = 'e',  // Encoding of message.
+    SS_MSG_TYPE_STRING	    = 'c',  // Script to execute or reply string.
+    SS_MSG_TYPE_SERIAL	    = 's',  // If cmd type is a reply, represents the
+				    // serial of the command that the reply is
+				    // for.
+    SS_MSG_TYPE_CODE	    = 'r',  // Result code for an expression sent
+    SS_MSG_TYPE_SENDER	    = 'S'   // Location of socket of the client that
+				    // sent the cmd and msg.
+} ss_msg_type_T;
+
+typedef enum {
+    SS_CMD_TYPE_EXPR	    = 'E',  // An expression
+    SS_CMD_TYPE_KEYSTROKES  = 'K',  // Series of keystrokes
+    SS_CMD_TYPE_REPLY	    = 'R',  // Reply from an expression
+    SS_CMD_TYPE_NOTIFY	    = 'N',  // A notification
+} ss_cmd_type_T;
+
+// Represents a message in a command. A command can contain multiple messages.
+// Each message starts with a single byte representing the type, then a uint32
+// representing the length of the contents, and then the actual contents.
+// Everything is in native byte order.
+//
+// While contents may contain NULL characters, such as when it is a number, it
+// is always NULL terminated. Note that the NULL terminator does not count in
+// the length.
+typedef struct {
+    char_u	msg_type;	    // Type of message
+    uint32_t	msg_len;	    // Total length of contents
+    char_u	*msg_contents;	    // Actual contents of message
+} ss_msg_T;
+
+// Represents a command sent over a socket. Each socket starts with a byte
+// representing the type, then a uint32 representing the number of messages,
+// then a uint32 representing the total size of the messages in bytes, and then
+// the actual messages. Everything is in native byte order.
+typedef struct {
+    char_u	cmd_type;   			    // Type of command
+    uint32_t    cmd_num;			    // Number of messages
+    uint32_t	cmd_len;			    // Combined size of all
+						    // messages
+    ss_msg_T	cmd_msgs[SOCKET_SERVER_MAX_MSG];    // Array of messages
+} ss_cmd_T;
+
+#define SS_CMD_INFO_SIZE (sizeof(char_u) + (sizeof(uint32_t) * 2))
+#define SS_MSG_INFO_SIZE (sizeof(char_u) + sizeof(uint32_t))
+
+// Represents a pending reply from a command sent to a Vim server. When a
+// command is sent to the Vim server and a reply is requested, the socket fd
+// will be open until the reply is received. This allows us to know if the
+// server has exited before it can reply. 
+//
+// When the command is sent out, we generate unique serial number with it. When
+// we receive any reply we check which pending command has a matching serial
+// number, and is therefore the reply for that pending command.
+//
+// This takes ideas from the existing X server functionality
+typedef struct ss_pending_cmd_S {
+    uint32_t	serial;		    // Serial number expected in result
+    char_u	code;		    // Result code, can be 0 or -1.
+    char_u	*result;	    // Result of command
+
+    struct ss_pending_cmd_S *next;  // Next in list
+} ss_pending_cmd_T;
+
+// Serial is always greater than zero
+static uint32_t ss_serial = 0;
+
+// List of pending commands
+ss_pending_cmd_T *ss_pending_cmds;
+
+static void socket_server_accept_client(void);
+static int socket_server_connect(char_u *name, int silent);
+static void socket_server_init_pending_cmd(ss_pending_cmd_T *pending);
+static void socket_server_pop_pending_cmd(ss_pending_cmd_T *pending);
+static int socket_server_append_msg(ss_cmd_T *cmd, char_u type,
+	char_u *contents, int len);
+static void socket_server_free_cmd(ss_cmd_T *cmd);
+static char_u *socket_server_encode_cmd(ss_cmd_T *cmd, size_t *sz);
+static int socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout);
+static int socket_server_write(int sock_fd, char_u *data, size_t sz,
+	int timeout);
+static void socket_server_exec_cmd(ss_cmd_T *cmd);
+static int socket_server_dispatch(int timeout);
+
+#endif // FEAT_SOCKETSERVER
+
 static int ignore_sigtstp = FALSE;
 
 static int get_x11_title(int);
@@ -3653,6 +3751,10 @@ mch_exit(int r)
     x11_export_final_selection();
 #endif
 
+#ifdef FEAT_SOCKETSERVER
+    socket_server_uninit();
+#endif
+
 #ifdef FEAT_GUI
     if (!gui.in_use)
 #endif
@@ -6540,6 +6642,9 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 			// each channel may use in, out and err
 	struct pollfd   fds[7 + 3 * MAX_OPEN_CHANNELS];
 	int		nfd;
+# ifdef FEAT_SOCKETSERVER
+	int		socket_server_idx = -1;
+# endif
 # ifdef FEAT_WAYLAND_CLIPBOARD
 	int             wayland_idx = -1;
 # endif
@@ -6565,6 +6670,16 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	fds[0].fd = fd;
 	fds[0].events = POLLIN;
 	nfd = 1;
+
+# ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1)
+	{
+	    socket_server_idx = nfd;
+	    fds[nfd].fd = socket_server_fd;
+	    fds[nfd].events = POLLIN;
+	    nfd++;
+	}
+# endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
 	if (wayland_may_restore_connection())
@@ -6619,6 +6734,17 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	if (ret == 0 && mzquantum_used)
 	    // MzThreads scheduling is required and timeout occurred
 	    finished = FALSE;
+# endif
+
+# ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1)
+	{
+	    if(fds[socket_server_idx].revents & POLLIN)
+		socket_server_accept_client();
+	    else if (fds[socket_server_idx].revents & (POLLHUP | POLLERR))
+		socket_server_uninit();
+	}
+
 # endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
@@ -6709,6 +6835,16 @@ select_eintr:
 	FD_SET(fd, &efds);
 # endif
 	maxfd = fd;
+
+# ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1)
+	{
+	    FD_SET(socket_server_fd, &rfds);
+
+	    if (maxfd < socket_server_fd)
+		maxfd = socket_server_fd;
+	}
+# endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
 
@@ -6808,6 +6944,16 @@ select_eintr:
 	if (ret == 0 && mzquantum_used)
 	    // loop if MzThreads must be scheduled and timeout occurred
 	    finished = FALSE;
+# endif
+
+# ifdef FEAT_SOCKETSERVER
+	if (socket_server_fd != -1 && ret > 0)
+	{
+	    if (FD_ISSET(socket_server_fd, &rfds))
+		socket_server_accept_client();
+	    else if (FD_ISSET(socket_server_fd, &efds))
+		socket_server_uninit();
+	}
 # endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
@@ -8961,3 +9107,892 @@ mch_create_anon_file(void)
     }
     return fd;
 }
+
+#ifdef FEAT_SOCKETSERVER
+
+/*
+ * Initialize socket server called "name" (the socket filename). If "name" is an
+ * absolute path (starts with a '/'), it is assumed to be the path to the
+ * desirect socket. If "auto_name" is TRUE then if the socket path is already
+ * taken, append an incrementing number to the path until we find a socket
+ * filename that can be used. Returns OK on success and FAIL on failure.
+ */
+    int
+socket_server_init(const char_u *name, int auto_name)
+{
+    struct sockaddr_un	addr;
+    char_u		*path;
+    int			num_printed;
+    int			i = 1;
+
+    path = alloc(sizeof(addr.sun_path));
+
+    if (path == NULL)
+	return FAIL;
+
+    socket_server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (socket_server_fd == -1)
+    {
+	vim_free(path);
+	return FAIL;
+    }
+
+    addr.sun_family = AF_UNIX;
+
+    // If name is not an absolute path, find a common directory to place the
+    // socket.
+    if (name[0] == '/')
+        num_printed =
+            vim_snprintf((char *)path, sizeof(addr.sun_path), "%s", name);
+    else
+    {
+	const char_u *dir = mch_getenv("XDG_RUNTIME_DIR");
+	char_u *buf;
+
+	if (dir == NULL)
+	{
+	    // Use /tmp if $XDG_RUNTIME_DIR is not set.
+	    dir = (char_u *)"/tmp/vim-%d";
+	    buf = alloc(STRLEN(dir) + 25);
+
+	    if (buf == NULL)
+		goto fail;
+
+	    sprintf((char *)buf, (char *)dir, getuid());
+	}
+	else
+	{
+	    buf = alloc(STRLEN(dir) + STRLEN("vim") + 2);
+
+	    if (buf == NULL)
+		goto fail;
+
+	    sprintf((char *)buf, "%s/vim", dir);
+	}
+
+	if (vim_mkdir(buf, 0755) == -1 && errno != EEXIST)
+	{
+	    vim_free(buf);
+	    goto fail;
+	}
+
+        num_printed = vim_snprintf((char *)path, sizeof(addr.sun_path),
+		"%s/%s", buf, name);
+
+
+        vim_free(buf);
+    }
+
+    // Check if path was too big
+    if (num_printed >= sizeof(addr.sun_path))
+	goto fail;
+
+    sprintf(addr.sun_path, "%s", path);
+
+    // Bind to a suitable path/address
+    while (i < 1000)
+    {
+	if (bind(socket_server_fd, (struct sockaddr *)&addr, sizeof(addr))
+		== -1)
+	{
+	    if (errno != EADDRINUSE)
+		goto fail;
+	}
+	else
+	    break;
+
+	num_printed =
+	    snprintf(addr.sun_path, sizeof(addr.sun_path), "%s%d", path, i);
+
+	if (num_printed >= sizeof(addr.sun_path))
+	    // Address too big
+	    goto fail;
+
+	i++;
+    }
+
+    // Start listening for connections
+    if (listen(socket_server_fd, SOCKET_SERVER_MAX_BACKLOG) == -1)
+	goto fail;
+
+    if ((socket_server_path = vim_strsave((char_u *)addr.sun_path)) == NULL)
+	goto fail;
+
+    vim_free(path);
+    return OK;
+fail:
+    vim_free(path);
+    socket_server_uninit();
+    return FAIL;
+}
+
+    void
+socket_server_uninit(void)
+{
+    if (socket_server_fd != -1)
+    {
+	close(socket_server_fd);
+	socket_server_fd = -1;
+    }
+
+    if (socket_server_path != NULL)
+    {
+	mch_remove(socket_server_path);
+	vim_free(socket_server_path);
+	socket_server_path = NULL;
+    }
+}
+
+/*
+ * Called when the server has received a new command. If so, parse it and do the
+ * stuff it says, and possibly send back a reply.
+ */
+    static void
+socket_server_accept_client(void)
+{
+    int client_fd = accept(socket_server_fd, NULL, NULL);
+
+    if (client_fd == -1)
+	return;
+
+#ifdef FEAT_EVAL
+    ch_log(NULL, "accepted new client on socket %s", socket_server_path);
+#endif
+    ss_cmd_T cmd;
+
+    socket_server_decode_cmd(&cmd, client_fd, 1000);
+
+    socket_server_exec_cmd(&cmd);
+    socket_server_free_cmd(&cmd);
+
+    close(client_fd);
+}
+
+/*
+ * Check if socket server is able to be used
+ */
+    int
+socket_server_valid(void)
+{
+    return socket_server_fd != -1 && socket_server_path != NULL;
+}
+
+/*
+ * If "name" is a pathless name such as "VIM", search known directories for the
+ * socket named "name", and return the alloc'ed path to it. If "name" starts
+ * with a '/', then a copy of "name" is returned. Returns NULL on failure or if
+ * no socket was found.
+ */
+    char_u *
+socket_server_get_path_from_name(const char_u *name)
+{
+    const char_u *known_dirs[] = {
+	(char_u *)".",
+	mch_getenv("XDG_RUNTIME_DIR"),
+        (char_u *)"/tmp"
+    };
+    char_u *buf;
+    stat_T s;
+
+    // Ignore if name is a path
+    if (name[0] == PATHSEP)
+	return vim_strsave((char_u *)name);
+
+    buf = alloc(MAXPATHL);
+
+    if (buf == NULL)
+	    return NULL;
+
+    for (int i = 0; i < ARRAY_LENGTH(known_dirs); i++)
+    {
+	const char_u *dir = known_dirs[i];
+
+
+	if (dir == NULL)
+	    continue;
+	else if (STRCMP(dir, ".") == 0)
+	    // Check current directory
+	    vim_snprintf((char *)buf, MAXPATHL, "./%s", name);
+	else if (STRCMP(dir, "/tmp") == 0)
+            vim_snprintf((char *)buf, MAXPATHL, "/tmp/vim-%d/%s",
+		    getuid(), name);
+	else
+            vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
+
+        if (mch_stat((char *)buf,&s) == 0 && S_ISSOCK(s.st_mode))
+	    return buf;
+    }
+
+    vim_free(buf);
+    return buf;
+}
+
+/*
+ * Send command to socket at "sock_path". Returns 0 for OK, -1 on error.
+ */
+    int
+socket_server_send(
+	char_u *name,	    // Socket path or a general name
+	char_u *str,	    // What to send
+	char_u **result,    // Set to result of expr
+	int is_expr,	    // Is it an expresison or keystrokes?
+	int timeout,	    // In milliseconds
+	int silent)	    // Don't complain if socket doesn't exist
+{
+    ss_cmd_T	cmd;
+    int		socket_fd;
+    size_t	sz;
+    char_u	*final;
+
+    // Execute locally if target is ourselves
+    if (serverName != NULL && STRICMP(name, serverName) == 0)
+	return sendToLocalVim(str, is_expr, result);
+
+    socket_fd = socket_server_connect(name, silent);
+
+    if (socket_fd == -1)
+	return -1;
+
+    if (timeout == 0)
+	timeout = 500;
+
+    cmd.cmd_len = 0;
+    cmd.cmd_num = 0;
+    cmd.cmd_type = is_expr ? SS_CMD_TYPE_EXPR : SS_CMD_TYPE_KEYSTROKES;
+
+    if (socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc,
+		STRLEN(p_enc)) == FAIL)
+    {
+    msg_fail:
+        socket_server_free_cmd(&cmd);
+	close(socket_fd);
+        return -1;
+    }
+    if (socket_server_append_msg(&cmd, SS_MSG_TYPE_STRING, str, STRLEN(str)) ==
+        FAIL)
+        goto msg_fail;
+
+    if (is_expr)
+    {
+        // Create new serial
+        ss_serial++;
+        if (socket_server_append_msg(&cmd, SS_MSG_TYPE_SERIAL,
+		    (char_u *)&ss_serial, sizeof(ss_serial)) == FAIL)
+            goto msg_fail;
+
+	// Let the server know which socket we are, so it can send back a reply.
+        if (socket_server_append_msg(&cmd, SS_MSG_TYPE_SENDER,
+		    socket_server_path, STRLEN(socket_server_path)) == FAIL)
+            goto msg_fail;
+    }
+
+    final = socket_server_encode_cmd(&cmd, &sz);
+
+    if (final == NULL)
+	return -1;
+
+    if (socket_server_write(socket_fd, final, sz, timeout) == FAIL)
+    {
+	emsg(_(e_failed_to_send_command_to_destination_program));
+
+	socket_server_free_cmd(&cmd);
+	close(socket_fd);
+	vim_free(final);
+	return -1;
+    }
+    socket_server_free_cmd(&cmd);
+    vim_free(final);
+    close(socket_fd);
+
+    if (!is_expr)
+	// Exit, we aren't waiting for a reponse
+	return 0;
+
+    ss_pending_cmd_T pending;
+
+    socket_server_init_pending_cmd(&pending);
+
+    // Wait for reply
+    while (socket_server_dispatch(timeout) == OK)
+	if (pending.result != NULL)
+	    break;
+
+    if (result != NULL)
+	*result = pending.result;
+
+    socket_server_pop_pending_cmd(&pending);
+
+    return pending.code == 0 ? 0 : -1;
+}
+    
+
+/*
+ * Wait for any reply from the server and place the result in "str". Returns OK
+ * on success and FAIL on failure.
+ */
+    static int
+socket_server_wait_for_reply(char_u **str, int timeout)
+{
+
+    return OK;
+}
+
+/*
+ * Connect to a socket using "name". Returns fd on success and -1 on failure.
+ */
+static int
+socket_server_connect(char_u *name, int silent)
+{
+    int			socket_fd;
+    int			res;
+    struct sockaddr_un	addr;
+
+    char_u *socket_path = socket_server_get_path_from_name(name);
+
+    if (socket_path == NULL)
+    {
+	if (!silent)
+	    semsg(_(e_no_registered_server_named_str), name);
+	return -1;
+    }
+    if (STRLEN(socket_path) >= sizeof(addr.sun_path))
+    {
+	// Path too big
+	vim_free(socket_path);
+	return -1;
+    }
+
+    socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (socket_fd == -1)
+	goto fail;
+
+    addr.sun_family = AF_UNIX;
+    sprintf(addr.sun_path, "%s", socket_path);
+
+    res = connect(socket_fd, (struct sockaddr *)&addr, sizeof(addr));
+
+    if (res == -1)
+	goto fail;
+
+    vim_free(socket_path);
+    return socket_fd;
+fail:
+    close(socket_fd);
+    vim_free(socket_path);
+    return -1;
+
+}
+
+/*
+ * Add a new pending command to the list of pending commands. Returns OK on
+ * success and FAIL on failure
+ */
+static void
+socket_server_init_pending_cmd(ss_pending_cmd_T *pending)
+{
+    pending->code = 0;
+    pending->result = NULL;
+    pending->serial = ss_serial;
+    pending->next = ss_pending_cmds;
+    ss_pending_cmds = pending;
+}
+
+/*
+ * Remove pending command from the list and free resources associated with it
+ */
+static void
+socket_server_pop_pending_cmd(ss_pending_cmd_T *pending)
+{
+    if (ss_pending_cmds == pending)
+    {
+	ss_pending_cmds = pending->next;
+	return;
+    }
+
+    for (ss_pending_cmd_T *cmd = ss_pending_cmds; cmd != NULL; cmd = cmd->next)
+    {
+	if (cmd->next == pending)
+	{
+	    cmd->next = pending->next;
+	    vim_free(cmd->result);
+	    return;
+	}
+    }
+}
+
+/*
+ * Append a message to a command. Note that "len" is the length of contents.
+ * Returns OK on sucess and FAIL on failure
+ */
+static int
+socket_server_append_msg(ss_cmd_T *cmd, char_u type, char_u *contents, int len)
+{
+    ss_msg_T *msg = cmd->cmd_msgs + cmd->cmd_num;
+
+    if (cmd->cmd_num >= SOCKET_SERVER_MAX_MSG)
+	return FAIL;
+
+    // Check if command will be too big.
+    if (SS_CMD_INFO_SIZE + cmd->cmd_len + SS_MSG_INFO_SIZE + len
+	    > SOCKET_SERVER_MAX_CMD_SIZE)
+	return FAIL;
+
+    msg->msg_contents = alloc(len);
+
+    if (msg->msg_contents == NULL)
+	return FAIL;
+
+    msg->msg_type = type;
+    msg->msg_len = len;
+    memcpy(msg->msg_contents, contents, len);
+
+    cmd->cmd_len += SS_MSG_INFO_SIZE + len;
+    cmd->cmd_num++;
+
+    return OK;
+}
+
+/*
+ * Free all resources associated with a command object.
+ */
+static void
+socket_server_free_cmd(ss_cmd_T *cmd)
+{
+    for (int i =0; i < cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	vim_free(msg->msg_contents);
+    }
+}
+
+/*
+ * Encode command struct and return the final message to send. Returns NULL on
+ * failure.
+ */
+static char_u *
+socket_server_encode_cmd(ss_cmd_T *cmd, size_t *sz)
+{
+    size_t size;
+    char_u *buf;
+    char_u *start;
+
+    size = SS_CMD_INFO_SIZE + cmd->cmd_len;
+    buf = alloc(size);
+
+    if (buf == NULL)
+	return NULL;
+
+    start = buf;
+    memcpy(start, &cmd->cmd_type, sizeof(cmd->cmd_type));
+    start += sizeof(cmd->cmd_type);
+    memcpy(start, &cmd->cmd_num, sizeof(cmd->cmd_num));
+    start += sizeof(cmd->cmd_num);
+    memcpy(start, &cmd->cmd_len, sizeof(cmd->cmd_len));
+    start += sizeof(cmd->cmd_len);
+
+    // Append messages to buffer
+    for (int i = 0; i < cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	memcpy(start, &msg->msg_type, sizeof(msg->msg_type));
+	start += sizeof(msg->msg_type);
+	memcpy(start, &msg->msg_len, sizeof(msg->msg_len));
+	start += sizeof(msg->msg_len);
+
+	memcpy(start, msg->msg_contents, msg->msg_len);
+	start += msg->msg_len;
+    }
+
+    *sz = size;
+
+    return buf;
+}
+
+/*
+ * Read from "socket_fd" an entire command and return the result in "cmd". The
+ * socket fd should be at the start of the command and should be *NON-BLOCKING*,
+ * Returns OK on success and FAIL on failure.
+ */
+static int
+socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
+{
+    int		got_cmd_info	= FALSE; // Consists of type, num, and len
+    size_t	total_r		= 0;
+    char_u	*buf;
+    char_u	*start;
+
+#ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = socket_fd;
+    pfd.events = POLLIN;
+#else
+    fd_set	    rfds;
+    struct timeval  tv;
+
+    FD_ZERO(&rfds);
+    FD_SET(socket_fd, &rfds);
+#endif
+
+    buf = alloc(SS_CMD_INFO_SIZE);
+
+    if (buf == NULL)
+	return FAIL;
+
+    // We may exit in the middle of the loop and free the messages, we don't
+    // want to free an uninitialized pointer.
+    memset(cmd, 0, sizeof(*cmd));
+
+    while (TRUE)
+    {
+	int ret;
+	ssize_t r = 0;
+
+#ifndef HAVE_SELECT
+	ret = poll(&pfd, 1, timeout);
+#else
+	tv.tv_sec = 0;
+	tv.tv_usec = timeout * 1000;
+	ret = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
+#endif
+	if (ret <= 0)
+	    goto fail;
+
+	// Get cmd info first so we know the total size of all messages, and can
+	// read it all in one go.
+	if (!got_cmd_info)
+	{
+	    r = read(socket_fd, buf + total_r, SS_CMD_INFO_SIZE - total_r);
+
+	    if (r >= SS_CMD_INFO_SIZE - total_r)
+	    {
+		char_u *tmp;
+
+		got_cmd_info = TRUE;
+
+                memcpy(&cmd->cmd_type, buf, sizeof(cmd->cmd_type));
+                memcpy(&cmd->cmd_num, buf + sizeof(cmd->cmd_type),
+			sizeof(cmd->cmd_num));
+                memcpy(&cmd->cmd_len,
+			buf + sizeof(cmd->cmd_type) + sizeof(cmd->cmd_num),
+			sizeof(cmd->cmd_len));
+
+                if (cmd->cmd_num > SOCKET_SERVER_MAX_MSG || cmd->cmd_num <= 0)
+		    // Too many messages to handle or invalid number
+		    goto fail;
+
+		// Now that we now the total size of messages, we can realloc
+		// the buffer to contain all data
+		tmp = realloc(buf, SS_CMD_INFO_SIZE + cmd->cmd_len);
+
+		if (tmp == NULL)
+		    goto fail;
+
+		buf = tmp;
+		start = buf + SS_CMD_INFO_SIZE;
+
+		continue;
+	    }
+        }
+	else
+	{
+	    // Read message data
+	    r = read(socket_fd, start + total_r, cmd->cmd_len - total_r);
+
+	    if (r >= cmd->cmd_len - total_r)
+		break;
+	}
+
+	if (r == -1)
+	    goto fail;
+
+	total_r += r;
+    }
+
+    // Parse message data
+    for (int i = 0; i <  cmd->cmd_num; i++)
+    {
+	ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	memcpy(&msg->msg_type, start, sizeof(msg->msg_type));
+	start += sizeof(msg->msg_type);
+	memcpy(&msg->msg_len, start, sizeof(msg->msg_len));
+	start += sizeof(msg->msg_len);
+
+	msg->msg_contents = alloc(msg->msg_len + 1);
+
+	if (msg->msg_contents == NULL)
+	    goto fail;
+
+	memcpy(msg->msg_contents, start, msg->msg_len);
+	msg->msg_contents[msg->msg_len] = 0; // NUL terminate it
+
+	// Move pointer to start of next message
+	start += msg->msg_len;
+    }
+
+    vim_free(buf);
+    return OK;
+fail:
+    socket_server_free_cmd(cmd);
+    vim_free(buf);
+    return FAIL;
+}
+
+/*
+ * Low level function that writes to a socket with a timeout in milliseconds.
+ * Returns OK on success and FAIL on failure.
+ */
+static int
+socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
+{
+    char_u *start = data;
+    size_t total_w = 0;
+#ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = socket_fd;
+    pfd.events = POLLOUT;
+#else
+    fd_set	    wfds;
+    struct timeval  tv;
+
+    FD_ZERO(&wfds);
+    FD_SET(socket_fd, &wfds);
+#endif
+
+    while (total_w < sz)
+    {
+	int ret;
+	ssize_t written;
+
+#ifndef HAVE_SELECT
+	ret = poll(&pfd, 1, timeout);
+#else
+	tv.tv_sec = 0;
+	tv.tv_usec = timeout * 1000;
+	ret = select(socket_fd + 1, NULL, &wfds, NULL, &tv);
+#endif
+	if (ret <= 0)
+	    return FAIL;
+
+	written = write(socket_fd, start, sz - total_w);
+
+	if (written == -1)
+	    return FAIL;
+
+	total_w += written;
+    }
+
+    return OK;
+}
+
+/*
+ * Execute the actions given by command.
+ */
+static void
+socket_server_exec_cmd(ss_cmd_T *cmd)
+{
+    if (cmd->cmd_type == SS_CMD_TYPE_EXPR ||
+	    cmd->cmd_type == SS_CMD_TYPE_KEYSTROKES)
+    {
+	char_u	    *str = NULL;
+	char_u	    *enc = NULL;
+	char_u	    *sender = NULL;
+	uint32_t    serial = 0;
+	char_u	    *to_free;
+
+	for (int i = 0; i < cmd->cmd_num; i++)
+	{
+	    ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	    if (msg->msg_type == SS_MSG_TYPE_ENCODING)
+		enc = msg->msg_contents;
+	    else if (msg->msg_type == SS_MSG_TYPE_STRING)
+		str = msg->msg_contents;
+	    else if (msg->msg_type == SS_MSG_TYPE_SERIAL)
+		memcpy(&serial, msg->msg_contents, sizeof(serial));
+	    else if (msg->msg_type == SS_MSG_TYPE_SENDER)
+		sender = msg->msg_contents;
+	}
+
+	if (str == NULL) 
+	    return;
+
+	if (socket_server_valid())
+	{
+	    str = serverConvert(enc, str, &to_free);
+
+	    if (cmd->cmd_type == SS_CMD_TYPE_KEYSTROKES)
+		server_to_input_buf(str);
+	    else if (sender != NULL)
+	    {
+		// Evaluate expression and send reply containing result
+		char_u	    *result;
+		size_t	    sz;
+		char_u	    *buf;
+		char_u	    code;
+
+		result = eval_client_expr_to_string(str);;
+
+		code = result == NULL ? -1 : 0;
+
+		// Send reply
+		ss_cmd_T rcmd;
+
+		rcmd.cmd_len = 0;
+		rcmd.cmd_type = SS_CMD_TYPE_REPLY;
+
+		// Don't care about errors, server will just ignore command if
+		// its missing something.
+		if (result != NULL)
+		    socket_server_append_msg(&rcmd, SS_MSG_TYPE_STRING, result,
+			    STRLEN(result));
+		else
+		    // An error occured, return an error msg instead
+		    socket_server_append_msg(&rcmd, SS_MSG_TYPE_STRING,
+			    (char_u *)_(e_invalid_expression_received),
+			    STRLEN(e_invalid_expression_received));
+
+                socket_server_append_msg(&rcmd, SS_MSG_TYPE_CODE,
+			&code, sizeof(code));
+
+                socket_server_append_msg(&rcmd, SS_MSG_TYPE_ENCODING, p_enc,
+			STRLEN(p_enc));
+                socket_server_append_msg(&rcmd, SS_MSG_TYPE_SERIAL,
+			(char_u *)&serial, sizeof(serial));
+
+		buf = socket_server_encode_cmd(&rcmd, &sz);
+
+		if (buf != NULL)
+		{
+		    int socket_fd = socket_server_connect(sender, TRUE);
+
+		    if (socket_fd != -1)
+			socket_server_write(socket_fd, buf, sz, p_stm);
+
+		    close(socket_fd);
+		    vim_free(buf);
+		}
+
+		socket_server_free_cmd(&rcmd);
+		vim_free(result);
+            }
+	    vim_free(to_free);
+	}
+	return;
+    }
+    else if (cmd->cmd_type == SS_CMD_TYPE_REPLY)
+    {
+	// A reply from a previous command we sent. Get the serial and set the
+	// matching pending command with the result.
+	uint32_t    serial = 0;
+	char_u	    code = 1;
+	char_u	    *str = NULL;
+	char_u	    *enc = NULL;
+	char_u	    *to_free;
+
+	for (int i = 0; i < cmd->cmd_num; i++)
+	{
+	    ss_msg_T *msg = cmd->cmd_msgs + i;
+
+	    if (msg->msg_type == SS_MSG_TYPE_SERIAL)
+		memcpy(&serial, msg->msg_contents, sizeof(serial));
+	    else if (msg->msg_type == SS_MSG_TYPE_ENCODING)
+		enc = msg->msg_contents;
+	    else if (msg->msg_type == SS_MSG_TYPE_STRING)
+		str = msg->msg_contents;
+	    else if (msg->msg_type == SS_MSG_TYPE_CODE)
+		memcpy(&code, msg->msg_contents, sizeof(code));
+	}
+
+	if (serial > 0)
+	{
+	    // Find pending command in list and set result
+            for (ss_pending_cmd_T *pending = ss_pending_cmds; pending != NULL;
+		    pending = pending->next)
+	    {
+		if (pending->serial == serial && pending->result == NULL)
+		{
+		    pending->code = code;
+
+		    str = serverConvert(enc, str, &to_free);
+
+		    if (to_free == NULL)
+			str = vim_strsave(str);
+
+		    pending->result = str;
+		    break;
+		}
+	    }
+        }
+	return;
+    }
+    else if (cmd->cmd_type == SS_CMD_TYPE_NOTIFY)
+    {
+    }
+
+    // Command type is invalid, do nothing
+    return;
+}
+
+/*
+ * Poll the socket server fd until a new connection is accepted. Returns OK on
+ * success and FAIL on failure.
+ */
+static int
+socket_server_dispatch(int timeout)
+{
+    int ret;
+#ifndef HAVE_SELECT
+    struct pollfd pfd;
+
+    pfd.fd = socket_server_fd;
+    pfd.events = POLLIN;
+#else
+    fd_set	    rfds;
+    fd_set	    efds;
+    struct timeval  tv;
+
+    FD_ZERO(&rfds);
+    FD_SET(socket_server_fd, &rfds);
+#endif
+
+#ifndef HAVE_SELECT
+    ret = poll(&pfd, 1, timeout);
+#else
+    tv.tv_sec = 0;
+    tv.tv_usec = timeout * 1000;
+    ret = select(socket_server_fd + 1, &rfds, NULL, &efds, &tv);
+#endif
+
+    if (ret <= 0)
+	return FAIL;
+
+#ifndef HAVE_SELECT
+    if (pfd.revents & POLLIN
+#else
+    if (FD_ISSET(socket_server_fd, &rfds))
+#endif
+    {
+	socket_server_accept_client();
+	return OK;
+    }
+#ifndef HAVE_SELECT
+    else if (pfd.revents & POLLHUP | POLLERR)
+#else
+    else if (FD_ISSET(socket_server_fd, &efds))
+#endif
+    {
+	// Connection was closed
+	return FAIL;
+    }
+
+    return FAIL;
+}
+
+#endif // FEAT_SOCKETSERVER

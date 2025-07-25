@@ -231,7 +231,7 @@ exec_on_server(mparm_T *parmp)
     void
 prepare_server(mparm_T *parmp)
 {
-# if defined(FEAT_X11)
+# if defined(FEAT_X11) || defined(FEAT_SOCKETSERVER)
     /*
      * Register for remote command execution with :serversend and --remote
      * unless there was a -X or a --servername '' on the command line.
@@ -254,9 +254,14 @@ prepare_server(mparm_T *parmp)
 #  endif
 		parmp->serverName_arg != NULL))
     {
+#ifdef FEAT_SOCKETSERVER
+	socket_server_init(parmp->servername, TRUE);
+	TIME_MSG("Initialized socket server");
+#elif defined(FEAT_X11)
 	(void)serverRegisterName(X_DISPLAY, parmp->servername);
-	vim_free(parmp->servername);
 	TIME_MSG("register server name");
+#endif
+	vim_free(parmp->servername);
     }
     else
 	serverDelayedStartName = parmp->servername;
@@ -384,7 +389,11 @@ cmdsrv_main(
 		}
 		Argc = i;
 	    }
-# ifdef FEAT_X11
+
+#ifdef FEAT_SOCKETSERVER
+	    ret = socket_server_send(
+		    serverName_arg, *serverStr, NULL, 0, -1, silent);
+# elif defined(FEAT_X11)
 	    if (xterm_dpy == NULL)
 	    {
 		mch_errmsg(_("No display"));
@@ -393,7 +402,7 @@ cmdsrv_main(
 	    else
 		ret = serverSendToVim(xterm_dpy, sname, *serverStr,
 						  NULL, &srv, 0, 0, 0, silent);
-# else
+# elif defined(MSWIN)
 	    // Win32 always works?
 	    ret = serverSendToVim(sname, *serverStr, NULL, &srv, 0, 0, silent);
 # endif
@@ -458,7 +467,8 @@ cmdsrv_main(
 		    p = serverGetReply(srv, NULL, TRUE, TRUE, 0);
 		    if (p == NULL)
 			break;
-# else
+# elif defined(FEAT_SOCKETSERVER)
+# elif defined(FEAT_X11)
 		    if (serverReadReply(xterm_dpy, srv, &p, TRUE, -1) < 0)
 			break;
 # endif
@@ -768,8 +778,9 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # ifdef MSWIN
     if (serverSendToVim(server_name, keys, &r, &w, expr, timeout, TRUE) < 0)
 # else
-    if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout,
-								  0, TRUE) < 0)
+    if (socket_server_send(server_name, keys, &r, expr, timeout, TRUE) < 0)
+    /* if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout, */
+								  /* 0, TRUE) < 0) */
 # endif
     {
 	if (r != NULL)
