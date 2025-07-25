@@ -1,7 +1,7 @@
 " Vim syntax file
+" Former Maintainer:  Luca Saccarola <github.e41mv@aleeas.com>
+" Maintainer:  This runtime file is looking for a new maintainer.
 " Language:    Typst
-" Maintainer:  Luca Saccarola <github.e41mv@aleeas.com>
-" Previous Maintainer:  Gregory Anders
 " Based On:    https://github.com/kaarmu/typst.vim
 " Last Change: 2024 Dec 09
 " 2025 Apr 16 by Vim Project (set 'cpoptions' for line continuation, #17121)
