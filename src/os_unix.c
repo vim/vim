@@ -169,9 +169,10 @@ typedef enum {
 } ss_msg_type_T;
 
 typedef enum {
-    SS_CMD_TYPE_EXPR	    = 'E', // Expression
+    SS_CMD_TYPE_EXPR	    = 'E', // An expression
     SS_CMD_TYPE_KEYSTROKES  = 'K', // Series of keystrokes
     SS_CMD_TYPE_REPLY	    = 'R', // Reply from an expression
+    SS_CMD_TYPE_NOTIFY	    = 'N', // A notification
 } ss_cmd_type_T;
 
 // Represents a message in a command. A command can contain multiple messages.
@@ -198,6 +199,27 @@ typedef struct {
 
 #define SS_CMD_INFO_SIZE (sizeof(char_u) + (sizeof(uint32_t) * 2))
 #define SS_MSG_INFO_SIZE (sizeof(char_u) + sizeof(uint32_t))
+
+// Represents a pending reply from a command sent to a Vim server. When a
+// command is sent to the Vim server and a reply is requested, the socket fd
+// will be open until the reply is received. This allows us to know if the
+// server has exited before it can reply. 
+//
+// When the command is sent out, we generate unique serial number with it. When
+// we receive any reply we check which pending command has a matching serial
+// number, and is therefore the reply for that pending command.
+//
+// This takes ideas from the existing X server functionality
+typedef struct ss_pending_cmd_S {
+    int p_fd;
+    int serial;
+    char_u *str;
+
+    struct ss_pending_cmd_S *next;
+} ss_pending_cmd_T;
+
+// List of pending commands
+ss_pending_cmd_T *pending_cmds;
 
 static void socket_server_accept_client(void);
 static int socket_server_connect(char_u *name, int silent);
@@ -9077,37 +9099,88 @@ mch_create_anon_file(void)
 #ifdef FEAT_SOCKETSERVER
 
 /*
- * Initialize socket server at "sock_dir". If "auto_name" is TRUE then if the
- * socket path is already taken, append an incrementing number to the path
- * until we find a socket name that can be used.
+ * Initialize socket server called "name" (the socket filename). If "name" is an
+ * absolute path (starts with a '/'), it is assumed to be the path to the
+ * desirect socket. If "auto_name" is TRUE then if the socket path is already
+ * taken, append an incrementing number to the path until we find a socket
+ * filename that can be used. Returns OK on success and FAIL on failure.
  */
     int
-socket_server_init(const char_u *sock_dir, int auto_name)
+socket_server_init(const char_u *name, int auto_name)
 {
     struct sockaddr_un	addr;
-    char		*actual_path = alloc(STRLEN(sock_dir) + NUMBUFLEN);
+    char_u		*path;
+    int			num_printed;
     int			i = 1;
 
-    if (actual_path == NULL)
+    path = alloc(sizeof(addr.sun_path));
+
+    if (path == NULL)
 	return FAIL;
 
     socket_server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (socket_server_fd == -1)
-	goto fail;
+    {
+	vim_free(path);
+	return FAIL;
+    }
 
     addr.sun_family = AF_UNIX;
-    sprintf(actual_path, "%s/VIM", sock_dir);
 
-    // Bind to a suitable path/address if required & needed
+    // If name is not an absolute path, find a common directory to place the
+    // socket.
+    if (name[0] == '/')
+        num_printed =
+            vim_snprintf((char *)path, sizeof(addr.sun_path), "%s", name);
+    else
+    {
+	const char_u *dir = mch_getenv("XDG_RUNTIME_DIR");
+	char_u *buf;
+
+	if (dir == NULL)
+	{
+	    // Use /tmp if $XDG_RUNTIME_DIR is not set.
+	    dir = (char_u *)"/tmp/vim-%d";
+	    buf = alloc(STRLEN(dir) + 25);
+
+	    if (buf == NULL)
+		goto fail;
+
+	    sprintf((char *)buf, (char *)dir, getuid());
+	}
+	else
+	{
+	    buf = alloc(STRLEN(dir) + STRLEN("vim") + 2);
+
+	    if (buf == NULL)
+		goto fail;
+
+	    sprintf((char *)buf, "%s/vim", dir);
+	}
+
+	if (vim_mkdir(buf, 0755) == -1 && errno != EEXIST)
+	{
+	    vim_free(buf);
+	    goto fail;
+	}
+
+        num_printed = vim_snprintf((char *)path, sizeof(addr.sun_path),
+		"%s/%s", buf, name);
+
+
+        vim_free(buf);
+    }
+
+    // Check if path was too big
+    if (num_printed >= sizeof(addr.sun_path))
+	goto fail;
+
+    sprintf(addr.sun_path, "%s", path);
+
+    // Bind to a suitable path/address
     while (i < 1000)
     {
-	// Check if path is too large
-	if (STRLEN(actual_path) > sizeof(addr.sun_path))
-	    goto fail;
-
-	sprintf(addr.sun_path, "%s", actual_path);
-
 	if (bind(socket_server_fd, (struct sockaddr *)&addr, sizeof(addr))
 		== -1)
 	{
@@ -9117,7 +9190,13 @@ socket_server_init(const char_u *sock_dir, int auto_name)
 	else
 	    break;
 
-	sprintf(actual_path, "%s/VIM%d", sock_dir, i);
+	num_printed =
+	    snprintf(addr.sun_path, sizeof(addr.sun_path), "%s%d", path, i);
+
+	if (num_printed >= sizeof(addr.sun_path))
+	    // Address too big
+	    goto fail;
+
 	i++;
     }
 
@@ -9125,13 +9204,13 @@ socket_server_init(const char_u *sock_dir, int auto_name)
     if (listen(socket_server_fd, SOCKET_SERVER_MAX_BACKLOG) == -1)
 	goto fail;
 
-    if ((socket_server_path = vim_strsave((char_u *)actual_path)) == NULL)
+    if ((socket_server_path = vim_strsave((char_u *)addr.sun_path)) == NULL)
 	goto fail;
 
-    vim_free(actual_path);
+    vim_free(path);
     return OK;
 fail:
-    vim_free(actual_path);
+    vim_free(path);
     socket_server_uninit();
     return FAIL;
 }
@@ -9153,6 +9232,10 @@ socket_server_uninit(void)
     }
 }
 
+/*
+ * Called when the server has received a new command. If so, parse it and do the
+ * stuff it says, and possibly send back a reply.
+ */
     static void
 socket_server_accept_client(void)
 {
@@ -9184,68 +9267,53 @@ socket_server_valid(void)
 }
 
 /*
- * Return an allocated string containing the path to a socket, for a generic
- * name. If NULL is passed as the name, then the default path is used. Returns
- * NULL if no socket exists or on error. If "exists" is FALSE, then don't check
- * if the socket exists, only if the parent directory is, and return the path to
- * the directory instead.
+ * If "name" is a pathless name such as "VIM", search known directories for the
+ * socket named "name", and return the alloc'ed path to it. If "name" starts
+ * with a '/', then a copy of "name" is returned. Returns NULL on failure or if
+ * no socket was found.
  */
     char_u *
-socket_server_get_path_from_name(const char_u *name, int exists)
+socket_server_get_path_from_name(const char_u *name)
 {
-    const char_u    *xdg_runtime_dir = mch_getenv("XDG_RUNTIME_DIR");
-    char	    *dir;
-    char	    *path;
-    stat_T	    s;
-    int		    i = 0;
-    
+    const char_u *known_dirs[] = {
+	(char_u *)".",
+	mch_getenv("XDG_RUNTIME_DIR"),
+        (char_u *)"/tmp"
+    };
+    char_u *buf;
+    stat_T s;
+
     // Ignore if name is a path
     if (name[0] == PATHSEP)
 	return vim_strsave((char_u *)name);
 
-    if ((dir = alloc(MAXPATHL)) == NULL)
-	return NULL;
+    buf = alloc(MAXPATHL);
 
-    // First try $XDG_RUNTIME_DIR/vim, then fallback to /tmp/vim/<uid>
-    if (xdg_runtime_dir == NULL)
-	vim_snprintf(dir, MAXPATHL, "/run/user/%d/vim", getuid());
-    else
-	vim_snprintf(dir, MAXPATHL, "%s/vim", xdg_runtime_dir);
-
-    // Check if they exist
-    if (vim_mkdir(dir, 0755) == -1 && errno != EEXIST)
-    {
-	// Try /tmp directory
-	vim_snprintf(dir, MAXPATHL, "/tmp/vim");
-
-	if (vim_mkdir(dir, 0755) == -1)
-	{
-	    vim_free(dir);
+    if (buf == NULL)
 	    return NULL;
-	}
-    }
 
-    if (!exists)
-	return (char_u *)dir;
-
-    path = alloc(STRLEN(dir) + STRLEN(name) + 5);
-
-    vim_snprintf(path, MAXPATHL, "%s/%s", dir, name);
-
-    // first try the socket "VIM", if that doesn't exist, inrcrement a number
-    // suffix until it exists (only if valid socket).
-    while ((mch_stat(dir,&s) == -1 || S_ISSOCK(s.st_mode)) && i < 1000)
-	vim_snprintf(path, STRLEN(dir) + 5, "%s/%s%d", dir, name, i);
-
-    if (i >= 1000)
+    for (int i = 0; i < ARRAY_LENGTH(known_dirs); i++)
     {
-	vim_free(path);
-	path = NULL;
+	const char_u *dir = known_dirs[i];
+
+
+	if (dir == NULL)
+	    continue;
+	else if (STRCMP(dir, ".") == 0)
+	    // Check current directory
+	    vim_snprintf((char *)buf, MAXPATHL, "./%s", name);
+	else if (STRCMP(dir, "/tmp") == 0)
+            vim_snprintf((char *)buf, MAXPATHL, "/tmp/vim-%d/%s",
+		    getuid(), name);
+	else
+            vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
+
+        if (mch_stat((char *)buf,&s) == 0 && S_ISSOCK(s.st_mode))
+	    return buf;
     }
 
-    vim_free(dir);
-
-    return (char_u *)path;
+    vim_free(buf);
+    return buf;
 }
 
 /*
@@ -9328,7 +9396,7 @@ socket_server_connect(char_u *name, int silent)
     int			res;
     struct sockaddr_un	addr;
 
-    char_u *socket_path = socket_server_get_path_from_name(name, TRUE);
+    char_u *socket_path = socket_server_get_path_from_name(name);
 
     if (socket_path == NULL)
     {
@@ -9365,6 +9433,9 @@ fail:
 
 }
 
+static int
+socket_server_add_pending_cmd
+
 /*
  * Append a message to a command. Note that "len" is the length of contents.
  * Returns OK on sucess and FAIL on failure
@@ -9373,6 +9444,9 @@ static int
 socket_server_append_msg(ss_cmd_T *cmd, char_u type, char_u *contents, int len)
 {
     ss_msg_T *msg = cmd->cmd_msgs + cmd->cmd_num;
+
+    if (cmd->cmd_num >= SOCKET_SERVER_MAX_MSG)
+	return FAIL;
 
     msg->msg_contents = alloc(len);
 
@@ -9389,6 +9463,9 @@ socket_server_append_msg(ss_cmd_T *cmd, char_u type, char_u *contents, int len)
     return OK;
 }
 
+/*
+ * Free all resources associated with a command object.
+ */
 static void
 socket_server_free_cmd(ss_cmd_T *cmd)
 {
@@ -9510,6 +9587,10 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 		cmd->cmd_num = buf[sizeof(cmd->cmd_type)];
 		cmd->cmd_len =
 		    buf[sizeof(cmd->cmd_type) + sizeof(cmd->cmd_num)];
+
+		if (cmd->cmd_num > SOCKET_SERVER_MAX_MSG || cmd->cmd_num <= 0)
+		    // Too many messages to handle or invalid number
+		    goto fail;
 
 		// Now that we now the total size of messages, we can realloc
 		// the buffer to contain all data
