@@ -207,15 +207,6 @@ syn region  pythonRawBytes
       \ end="\z1"
       \ keepend
 
-syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
-syn match   pythonEscape	"\\\o\{1,3}" contained
-syn match   pythonEscape	"\\x\x\{2}" contained
-syn match   pythonUnicodeEscape	"\%(\\u\x\{4}\|\\U\x\{8}\)" contained
-" Python allows case-insensitive Unicode IDs: http://www.unicode.org/charts/
-" The specification: https://www.unicode.org/versions/Unicode16.0.0/core-spec/chapter-4/#G135165
-syn match   pythonUnicodeEscape	"\\N{\a\+\%(\%(\s\a\+[[:alnum:]]*\)\|\%(-[[:alnum:]]\+\)\)*}" contained
-syn match   pythonEscape	"\\$"
-
 " F-string replacement fields
 syn region  pythonFStringField
     \ matchgroup=pythonFStringDelimiter
@@ -238,6 +229,15 @@ syn match   pythonFStringFormatSpec	/{[^}]\+}/ transparent contained contains=NO
 "					/:.\{,3}#[^}]*/
 "
 syn match   pythonFStringFormatSpec	/:\%(.\=[<>=^]\)\=[ +-]\=#[^}]*/ transparent contained contains=NONE
+
+syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
+syn match   pythonEscape	"\\\o\{1,3}" contained
+syn match   pythonEscape	"\\x\x\{2}" contained
+syn match   pythonUnicodeEscape	"\%(\\u\x\{4}\|\\U\x\{8}\)" contained
+" Python allows case-insensitive Unicode IDs: http://www.unicode.org/charts/
+" The specification: https://www.unicode.org/versions/Unicode16.0.0/core-spec/chapter-4/#G135165
+syn match   pythonUnicodeEscape	"\\N{\a\+\%(\%(\s\a\+[[:alnum:]]*\)\|\%(-[[:alnum:]]\+\)\)*}" contained
+syn match   pythonEscape	"\\$"
 
 " It is very important to understand all details before changing the
 " regular expressions below or their order.
