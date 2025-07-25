@@ -1,7 +1,6 @@
 " Vim filetype plugin file
 " Original Author: Maxim Kim <habamax@gmail.com>
 " Language:        asciidoc
-" Maintainer:      Luca Saccarola <github.e41mv@aleeas.com>
 " Last Change:     2024 Jan 16
 
 if exists("b:did_ftplugin")

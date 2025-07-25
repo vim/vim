@@ -1,6 +1,5 @@
 " Vim syntax file
 " Language:     hyprlang
-" Maintainer:   Luca Saccarola <github.e41mv@aleeas.com>
 " Last Change:  2025 Mar 26
 
 if exists("b:current_syntax")

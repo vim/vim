@@ -1,6 +1,4 @@
-" Maintainer: Luca Saccarola <github.e41mv@aleeas.com>
 " Former Maintainer: Charles E Campbell
-" Upstream: <https://github.com/saccarosium/netrw.vim>
 " Language: Netrw Listing Syntax
 
 if exists("b:current_syntax")
