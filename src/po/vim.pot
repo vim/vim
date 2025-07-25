@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-24 19:13+0200\n"
+"POT-Creation-Date: 2025-07-25 18:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9914,13 +9914,16 @@ msgstr ""
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
 msgstr ""
 
-msgid "use fuzzy collection for specific completion modes"
+msgid "automatic completion in insert mode"
 msgstr ""
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr ""
 
 msgid "popup menu item align order"
+msgstr ""
+
+msgid "use fuzzy collection for specific completion modes"
 msgstr ""
 
 msgid "options for the Insert mode completion info popup"

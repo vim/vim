@@ -41,6 +41,7 @@ $quote	eval.txt	/*$quote*
 ']	motion.txt	/*']*
 '^	motion.txt	/*'^*
 'a	motion.txt	/*'a*
+'ac'	options.txt	/*'ac'*
 'acd'	options.txt	/*'acd'*
 'ai'	options.txt	/*'ai'*
 'akm'	options.txt	/*'akm'*
@@ -62,6 +63,7 @@ $quote	eval.txt	/*$quote*
 'as'	todo.txt	/*'as'*
 'asd'	options.txt	/*'asd'*
 'autochdir'	options.txt	/*'autochdir'*
+'autocomplete'	options.txt	/*'autocomplete'*
 'autoindent'	options.txt	/*'autoindent'*
 'autoprint'	vi_diff.txt	/*'autoprint'*
 'autoread'	options.txt	/*'autoread'*
@@ -555,6 +557,7 @@ $quote	eval.txt	/*$quote*
 'mzschemedll'	options.txt	/*'mzschemedll'*
 'mzschemegcdll'	options.txt	/*'mzschemegcdll'*
 'nf'	options.txt	/*'nf'*
+'noac'	options.txt	/*'noac'*
 'noacd'	options.txt	/*'noacd'*
 'noai'	options.txt	/*'noai'*
 'noakm'	options.txt	/*'noakm'*
@@ -571,6 +574,7 @@ $quote	eval.txt	/*$quote*
 'noas'	todo.txt	/*'noas'*
 'noasd'	options.txt	/*'noasd'*
 'noautochdir'	options.txt	/*'noautochdir'*
+'noautocomplete'	options.txt	/*'noautocomplete'*
 'noautoindent'	options.txt	/*'noautoindent'*
 'noautoread'	options.txt	/*'noautoread'*
 'noautosave'	todo.txt	/*'noautosave'*
@@ -8585,6 +8589,7 @@ inputlist()	builtin.txt	/*inputlist()*
 inputrestore()	builtin.txt	/*inputrestore()*
 inputsave()	builtin.txt	/*inputsave()*
 inputsecret()	builtin.txt	/*inputsecret()*
+ins-autocompletion	insert.txt	/*ins-autocompletion*
 ins-completion	insert.txt	/*ins-completion*
 ins-completion-menu	insert.txt	/*ins-completion-menu*
 ins-expandtab	insert.txt	/*ins-expandtab*

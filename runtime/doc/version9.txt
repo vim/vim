@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 21
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41604,6 +41604,7 @@ Completion~
 	"preinsert"	- highlight to be inserted values
 	"nearest"	- sort completion results by distance to cursor
 - new function |wildtrigger()| to trigger wildcard expansion
+- Support for Autocompletion has been added |ins-autocompletion|
 
 Platform specific~
 -----------------
@@ -41809,6 +41810,7 @@ Ex-Commands: ~
 
 Options: ~
 
+'autocompletion'	Enable auto completion |ins-autocompletion|
 'chistory'		Size of the quickfix stack |quickfix-stack|.
 'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
 			|ins-completion| modes

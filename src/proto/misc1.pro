@@ -10,6 +10,7 @@ int plines_win_col(win_T *wp, linenr_T lnum, long column);
 int plines_m_win(win_T *wp, linenr_T first, linenr_T last, int max);
 int gchar_pos(pos_T *pos);
 int gchar_cursor(void);
+int char_before_cursor(void);
 void pchar_cursor(int c);
 char_u *skip_to_option_part(char_u *p);
 void check_status(buf_T *buf);
