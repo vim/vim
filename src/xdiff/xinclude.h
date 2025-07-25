@@ -25,7 +25,7 @@
 // defines HAVE_ATTRIBUTE_UNUSED
 #ifdef HAVE_CONFIG_H
 # ifdef VMS
-#  include "[.auto]config.h"
+#  include "config.h"
 # else
 #  include "../auto/config.h"
 # endif

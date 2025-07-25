@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-24 19:13+0200\n"
+"POT-Creation-Date: 2025-07-25 19:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1540,7 +1540,13 @@ msgstr ""
 
 msgid ""
 "\n"
-"Where case is ignored prepend / to make flag upper case"
+"Where command is down-cased, prepend / (like: -/R) to treat flag as upper-"
+"case."
+msgstr ""
+
+msgid ""
+"\n"
+"Or, where supported, SET PROC/PARSE=EXT, or else quote upper-case material."
 msgstr ""
 
 msgid ""
@@ -3386,7 +3392,7 @@ msgstr ""
 
 msgid ""
 "\n"
-"OpenVMS version"
+"OpenVMS (build) arch, version"
 msgstr ""
 
 msgid ""
@@ -9914,13 +9920,16 @@ msgstr ""
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
 msgstr ""
 
-msgid "use fuzzy collection for specific completion modes"
+msgid "automatic completion in insert mode"
 msgstr ""
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr ""
 
 msgid "popup menu item align order"
+msgstr ""
+
+msgid "use fuzzy collection for specific completion modes"
 msgstr ""
 
 msgid "options for the Insert mode completion info popup"

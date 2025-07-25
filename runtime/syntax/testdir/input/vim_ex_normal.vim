@@ -1,20 +1,30 @@
 " Vim :normal command
 
+
 normal j
 normal! j
 normal!j
 
-" no trailing bar
+
+" No trailing bar
+
 normal j 42|echo "not echo command"
 
-" no trailing comment
+
+" No trailing comment
+
 normal j "0p
 
-" multiline arg
+
+" Multiline arg
+
 normal j
       \k
       "\ comment
       \j
 
-" word-boundary required after name (old bug)
+
+" Issue: word-boundary required after name (old bug)
+
 normalj
+

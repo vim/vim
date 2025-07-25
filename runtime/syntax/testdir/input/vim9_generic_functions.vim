@@ -1,8 +1,8 @@
 vim9script
 # Vim9 generic functions
-# VIM_TEST_SETUP highlight link vim9DefTypeParam Todo
-# VIM_TEST_SETUP let g:vimsyn_folding = "f"
+# VIM_TEST_SETUP let g:vimsyn_folding = "cf"
 # VIM_TEST_SETUP setl fdc=2 fdl=99 fdm=syntax
+# VIM_TEST_SETUP hi link vim9DefTypeParam Todo
 
 
 # :help generic-functions

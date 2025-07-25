@@ -1,6 +1,6 @@
 " Vim :*make commands
-" VIM_TEST_SETUP highlight link vimCmdSep Operator
-" VIM_TEST_SETUP highlight link vimMakeBarEscape Special
+" VIM_TEST_SETUP hi link vimCmdSep Operator
+" VIM_TEST_SETUP hi link vimMakeBarEscape Special
 
 
 make
@@ -16,13 +16,13 @@ make!  -options target
 lmake! -options target
 
 
-" special filename characters
+" Special filename characters
 
 make  %
 lmake %
 
 
-" trailing bar, no tail comment
+" Trailing bar, no tail comment
 
 make  tar\|get | echo "Foo"
 lmake tar\|get | echo "Foo"

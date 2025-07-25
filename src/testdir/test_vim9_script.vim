@@ -5457,6 +5457,22 @@ def Test_if_cond_shortcircuit_skip_indexing()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for defining a dict with multiple keys in a command-block
+def Test_multikey_dict_in_block()
+  var lines =<< trim END
+    vim9script
+    command NewCommand {
+         g:TestDict = {
+           'key': 'v1',
+           'other_key': 'v2' }
+       }
+    NewCommand
+  END
+  v9.CheckSourceSuccess(lines)
+  assert_equal({key: 'v1', other_key: 'v2'}, g:TestDict)
+  unlet g:TestDict
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new

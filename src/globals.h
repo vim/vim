@@ -1694,6 +1694,7 @@ extern char_u *all_lflags;
 # ifdef VMS
 extern char_u *compiler_version;
 extern char_u *compiled_arch;
+extern char_u *compiled_vers;
 # endif
 extern char_u *compiled_user;
 extern char_u *compiled_sys;

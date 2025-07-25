@@ -1,5 +1,5 @@
 " Vim :filter command
-" VIM_TEST_SETUP highlight link vimCmdSep Operator
+" VIM_TEST_SETUP hi link vimCmdSep Operator
 
 
 filter  pa\%(tt\)ern  oldfiles
