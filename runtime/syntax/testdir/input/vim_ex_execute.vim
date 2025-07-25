@@ -17,7 +17,7 @@ endif
 execute 'while i < 5 | echo i | let i = i + 1 | endwhile'
 
 
-" trailing bar vs OR operator
+" Trailing bar vs OR operator
 
 " OR operator
 execute foo || bar ? "Foo" : "NotFoo"
@@ -31,7 +31,7 @@ execute "Foo" | |
 execute "Foo" ||
 
 
-" line continuations
+" Line continuations
 
 execute "call"
       "\ comment
@@ -43,7 +43,7 @@ execute
       \ "Foo()"
 
 
-" trailing bar and comments
+" Trailing bar and comments
 
 " :execute without {expr}
 execute| echo "Foo"

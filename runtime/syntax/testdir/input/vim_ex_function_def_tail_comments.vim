@@ -1,6 +1,7 @@
 " Vim :function and :def tail comments
 " VIM_TEST_SETUP unlet! g:vimsyn_folding
 
+
 fun s:Test1() abort		" fun
   return 1
 endfun				" endfun
@@ -41,3 +42,4 @@ for d in range(1, 6)->reverse()
   exec $'echo s:Test{d}()'
   exec $'delfunction s:Test{d}'
 endfor
+

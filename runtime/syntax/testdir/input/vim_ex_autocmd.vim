@@ -1,6 +1,6 @@
 " Vim :autocmd command
-" VIM_TEST_SETUP highlight vimAutoCmdGroup Todo
-" VIM_TEST_SETUP highlight vimUserAutoEvent Title
+" VIM_TEST_SETUP hi link vimAutoCmdGroup Todo
+" VIM_TEST_SETUP hi link vimUserAutoEvent Title
 
 
 " Define
@@ -211,7 +211,7 @@ doautocmd <nomodeline> foogroup BufRead *.txt | echo "Foo"
 doautocmd <nomodeline> foogroup BufRead *.txt | " comment
 
 
-" patterns
+" Patterns
 
 au BufRead */*.txt
 

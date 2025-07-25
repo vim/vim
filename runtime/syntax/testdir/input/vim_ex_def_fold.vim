@@ -3,7 +3,7 @@
 " VIM_TEST_SETUP setl fdc=2 fdl=999 fdm=syntax
 
 
-" list
+" List
 
 def
 def Foo
@@ -15,7 +15,7 @@ def Foo | echo "Foo"
 def Foo " comment
 
 
-" definition
+" Definition
 
 " empty definition
 def Foo()
@@ -62,7 +62,7 @@ def s:ls()
 enddef
 
 
-" return types
+" Return types
 
 def Foo(): void
 enddef
@@ -90,7 +90,7 @@ def Foo()
 enddef # comment
 
 
-" parameters
+" Parameters
 
 def Foo(x: bool, y = 42, z: string = "zed")
 enddef
@@ -102,7 +102,7 @@ def Foo(
 enddef
 
 
-" comments
+" Comments
 
 def Foo()
   # Vim9-script comment
@@ -110,19 +110,19 @@ def Foo()
 enddef
 
 
-" command modifiers
+" Command modifiers
 
 silent! def Foo()
 enddef
 
 
-" leading command separator
+" Leading command separator
 
 echo "Foo" | def Foo()
 enddef
 
 
-" fold-region ending
+" Fold-region ending
 
 def Foo()
   # enddef

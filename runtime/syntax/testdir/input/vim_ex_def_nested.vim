@@ -2,6 +2,7 @@ vim9script
 # Vim9 :def command (nested)
 # VIM_TEST_SETUP hi link vim9This Todo
 
+
 class Test
     const name: string
 
@@ -19,3 +20,4 @@ class Test
 endclass
 
 echo Test.new()
+

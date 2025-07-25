@@ -68,7 +68,7 @@ line2
 EOS
 
 
-" trim
+" Trim
 
 let foo =<< trim END
   line1
@@ -81,7 +81,7 @@ END
   END
 
 
-" interpolation
+" Interpolation
 
 let foo =<< eval END
 line{1 + 0}
@@ -103,7 +103,7 @@ END
     line{1 + 1}
   END
 
-" no interpolation (escaped { and })
+" No interpolation (escaped { and })
 
 let foo =<< eval END
 line{{1 + 0}}
@@ -126,7 +126,7 @@ END
   END
 
 
-" no interpolation
+" No interpolation
 
 let foo =<< END
 line{1 + 0}
@@ -149,7 +149,7 @@ END
   END
 
 
-" end marker must not be followed by whitespace
+" End marker must not be followed by whitespace
 
 " assert_equal(foo, ["END "])
 let foo =<< END
@@ -225,7 +225,7 @@ END
 END
 
 
-" end markers
+" End markers
 
 let foo =<< !@#$%^&*()_+
 line1
