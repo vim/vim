@@ -1,5 +1,6 @@
 " Vim line continuations with interspersed comments
 
+
 function Foo(
       "\ param a
       \ a,
@@ -47,3 +48,4 @@ let array = [
       "\ element 3
       \ 3
       \]
+

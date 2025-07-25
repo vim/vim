@@ -1,8 +1,8 @@
 vim9script
-
 # Vim9 this and super keywords
 # VIM_TEST_SETUP hi link vim9This Todo
 # VIM_TEST_SETUP hi link vim9Super Todo
+
 
 def Echo(...args: list<any>)
   echo args
