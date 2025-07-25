@@ -3,7 +3,7 @@ vim9script noclear
 # Vim completion script
 # Language:	C
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 Jul 23
+# Last Change:	2025 Jul 24
 #		Rewritten in Vim9 script by github user lacygoill
 # Former Maintainer:   Bram Moolenaar <Bram@vim.org>
 
@@ -82,9 +82,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
   var s: number = 0
   var arrays: number = 0
   while 1
-    if complete_check()
-        return v:none
-    endif
     var e: number = base->charidx(match(base, '\.\|->\|\[', s))
     if e < 0
       if s == 0 || base[s - 1] != ']'
@@ -107,9 +104,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
       s = e
       ++e
       while e < strcharlen(base)
-        if complete_check()
-            return v:none
-        endif
         if base[e] == ']'
           if n == 0
             break
@@ -146,7 +140,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
       var col2: number = col - 1
       while line[col2] != ';'
         if complete_check()
-            return v:none
+            return res
         endif
         --col2
       endwhile
@@ -159,7 +153,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
       var col2: number = col - 1
       while line[col2] != ','
         if complete_check()
-            return v:none
+            return res
         endif
         --col2
       endwhile
@@ -200,10 +194,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
     endif
   endif
 
-  if complete_check()
-      return v:none
-  endif
-
   if len(items) == 1 || len(items) == arrays + 1
     # Only one part, no "." or "->": complete from tags file.
     var tags: list<dict<any>>
@@ -226,10 +216,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
     res = res->extend(tags->map((_, v: dict<any>) => Tag2item(v)))
   endif
 
-  if complete_check()
-      return v:none
-  endif
-
   if len(res) == 0
     # Find the variable in the tags file(s)
     var diclist: list<dict<any>> = taglist('^' .. items[0] .. '$')
@@ -240,7 +226,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
     res = []
     for i: number in len(diclist)->range()
       if complete_check()
-          return []
+          return res
       endif
       # New ctags has the "typeref" field.  Patched version has "typename".
       if diclist[i]->has_key('typename')
@@ -261,10 +247,6 @@ export def Complete(findstart: bool, abase: string): any # {{{1
     endfor
   endif
 
-  if complete_check()
-      return v:none
-  endif
-
   if len(res) == 0 && items[0]->searchdecl(true) == 0
     # Found, now figure out the type.
     # TODO: join previous line if it makes sense
@@ -278,7 +260,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
   var brackets: string = ''
   while last >= 0
     if complete_check()
-        return v:none
+        return res
     endif
     if items[last][0] != '['
       break
@@ -346,7 +328,7 @@ def Dict2info(dict: dict<any>): string # {{{1
   var info: string = ''
   for k: string in dict->keys()->sort()
     if complete_check()
-        return ""
+        return info
     endif
     info  ..= k .. repeat(' ', 10 - strlen(k))
     if k == 'cmd'
@@ -384,7 +366,7 @@ def ParseTagline(line: string): dict<any> # {{{1
     endif
     for i: number in range(n + 1, len(l) - 1)
       if complete_check()
-        return {}
+        return d
       endif
       if l[i] == 'file:'
         d['static'] = 1
@@ -482,7 +464,7 @@ def Nextitem( # {{{1
   var res: list<dict<string>>
   for tidx: number in len(tokens)->range()
     if complete_check()
-        return []
+        return res
     endif
 
     # Skip tokens starting with a non-ID character.
@@ -510,9 +492,11 @@ def Nextitem( # {{{1
     # Use the tags file to find out if this is a typedef.
     var diclist: list<dict<any>> = taglist('^' .. tokens[tidx] .. '$')
     for tagidx: number in len(diclist)->range()
-    if complete_check()
-        return []
-    endif
+
+      if complete_check()
+        return res
+      endif
+
       var item: dict<any> = diclist[tagidx]
 
       # New ctags has the "typeref" field.  Patched version has "typename".
@@ -672,7 +656,7 @@ def StructMembers( # {{{1
     ++idx
     while 1
       if complete_check()
-        return []
+        return matches
       endif
       if idx >= len(items)
         return matches  # No further items, return the result.
@@ -702,7 +686,7 @@ def SearchMembers( # {{{1
   var res: list<dict<string>>
   for i: number in len(matches)->range()
     if complete_check()
-        return []
+        return res
     endif
     var typename: string = ''
     var line: string
