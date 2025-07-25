@@ -1,6 +1,5 @@
 " Vim syntax file
 " Language:    Typst
-" Maintainer:  Luca Saccarola <github.e41mv@aleeas.com>
 " Previous Maintainer:  Gregory Anders
 " Based On:    https://github.com/kaarmu/typst.vim
 " Last Change: 2024 Dec 09

@@ -1,7 +1,6 @@
 " Vim compiler file
 " Language:    Typst
 " Previous Maintainer:  Gregory Anders
-" Maintainer:  Luca Saccarola <github.e41mv@aleeas.com>
 " Based On:    https://github.com/kaarmu/typst.vim
 " Last Change: 2024 Dec 09
 " 2025 Mar 11 by the Vim Project (add comment for Dispatch)

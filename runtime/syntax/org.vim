@@ -1,6 +1,5 @@
 " Vim syntax file
 " Language:	Org
-" Maintainer:	Luca Saccarola <github.e41mv@aleeas.com>
 " Last Change:	2024 Nov 14
 "
 " Reference Specification: Org mode manual
