@@ -18,11 +18,11 @@
 // based on Alpha's gen64def.h; the file is absent on VAX
 typedef struct _generic_64 {
 #   pragma __nomember_alignment
-    __union  {				// You can treat me as...
+    __union  {				     // You can treat me as...
 	// long long is not available on VAXen
 	// unsigned __int64 gen64$q_quadword; ...a single 64-bit value, or
 
-	unsigned int gen64$l_longword [2]; // ...two 32-bit values, or
+	unsigned int gen64$l_longword [2];   // ...two 32-bit values, or
 	unsigned short int gen64$w_word [4]; // ...four 16-bit values
     } gen64$r_quad_overlay;
 } GENERIC_64;
@@ -583,7 +583,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	ch = '[';
 	SKIP_FOLLOWING_SLASHES(in);
     }
-    else if (EQN(in, "../", 3)) // Unix parent directory?
+    else if (EQN(in, "../", 3))      // Unix parent directory?
     {
 	*out++ = '[';
 	*out++ = '-';
@@ -593,20 +593,20 @@ vms_unix_mixed_filespec(char *in, char *out)
 	SKIP_FOLLOWING_SLASHES(in);
     }
     else
-    {		    // not a special character
-	while (EQN(in, "./", 2))	// Ignore Unix "current dir"
+    {                                // not a special character
+	while (EQN(in, "./", 2))     // Ignore Unix "current dir"
 	{
 	    in += 2;
 	    SKIP_FOLLOWING_SLASHES(in);
     }
-    if (strchr(in, '/') == NULL)  // any more Unix directories ?
+    if (strchr(in, '/') == NULL)     // any more Unix directories ?
     {
-	strcpy(out, in);	// No - get rest of the spec
+	strcpy(out, in);             // No - get rest of the spec
 	return;
     }
     else
     {
-	*out++ = '[';	    // Yes, denote a Vms subdirectory
+	*out++ = '[';                // Yes, denote a Vms subdirectory
 	ch = '.';
 	--in;
 	}
@@ -627,7 +627,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	    ch = '.';
 	    SKIP_FOLLOWING_SLASHES(in);
 	    }
-	else if (EQN(in, "../", 3))	// Unix parent directory?
+	else if (EQN(in, "../", 3))     // Unix parent directory?
 	{
 	    *out++ = '-';
 	    end_of_dir = out;
@@ -637,7 +637,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	    }
 	else
 	{
-	    while (EQN(in, "./", 2))  // Ignore Unix "current dir"
+	    while (EQN(in, "./", 2))    // Ignore Unix "current dir"
 	    {
 		end_of_dir = out;
 		in += 2;
@@ -651,7 +651,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	++in;
     }
 
-    *out = '\0';    // Terminate output file spec
+    *out = '\0';            // Terminate output file spec
 
     if (end_of_dir != NULL) // Terminate directory portion
 	*end_of_dir = ']';
@@ -762,8 +762,8 @@ vms_remove_version(void * fname)
 	}
     } // while (Count digits)
 
-    if (vdigits  <= 5)  // If likely version digits, check delimiter
-    {   // (Could check for <= 32767, not just five digits or fewer.)
+    if (vdigits  <= 5)                  // If likely version digits, check delimiter
+    {                                   // (Could check for <= 32767, not just five digits or fewer.)
 	if (*rp == (char_u)';')
 	{
 	    if ((rp >= (char_u *)fname) && (*(rp- 1) != (char_u)'^'))
@@ -774,22 +774,22 @@ vms_remove_version(void * fname)
 	else if (*rp == (char_u)'.')    // Last of multiple dots?
 	{
 	    if ((rp >= (char_u *)fname) && (*(rp- 1) != '^'))
-	    {   // Unescaped dot.  Version requires previous one
-		dp = rp- 1;              // Scan chars before "."
+	    {                           // Unescaped dot.  Version requires previous one
+		dp = rp- 1;             // Scan chars before "."
 		done = 0;
 		while ((done == 0) && (dp >= (char_u *)fname))
 		{
 		    if ((*dp == ']') || (*dp == '>') || (*dp == ':') || (*dp == '/'))
-		    {   // Possible VMS dev:[dir] delimiter (or UNIX "/")
+		    {                   // Possible VMS dev:[dir] delimiter (or UNIX "/")
 			if ((dp >= (char_u *)fname) && (*(dp- 1) != '^'))
-			{   // Unescaped dev:[dir] (or /) delimiter
+			{               // Unescaped dev:[dir] (or /) delimiter
 			    done = 1;   // No previous dot found in name
 			}
 		    }
 		    else if (*dp == '.')
-		    {   // Possible dot delimiter
+		    {                   // Possible dot delimiter
 			if ((dp >= (char_u *)fname) && (*(dp- 1) != '^'))
-			{   // Unescaped dot delimiter
+			{               // Unescaped dot delimiter
 			    done = 1;   // Previous dot found in name
 			    *rp = '\0'; // Trim off ".nnn"
 			}
@@ -853,10 +853,10 @@ RealWaitForChar(
  * appropriate time conversion function accordingly.
  */
 #if __IEEE_FLOAT
-# define LIB_CVTX_TO_INTERNAL_TIME lib$cvts_to_internal_time /* IEEE */
+# define LIB_CVTX_TO_INTERNAL_TIME lib$cvts_to_internal_time // IEEE
 #else
-# define LIB_CVTX_TO_INTERNAL_TIME lib$cvtf_to_internal_time /* VAX */
-#endif /* __IEEE_FLOAT CVTS */
+# define LIB_CVTX_TO_INTERNAL_TIME lib$cvtf_to_internal_time // VAX
+#endif // __IEEE_FLOAT CVTS
 
 	status = LIB_CVTX_TO_INTERNAL_TIME(
 		&convert_operation, &sec, &time_diff);
@@ -912,16 +912,12 @@ RealWaitForChar(
     }
 }
 
-/*
-   2005-04-29 SMS.  New.
-*/
-
 #if !defined( __VAX) && (__CRTL_VER >= 70301000)
 
 #include <stdio.h>
 #include <unixlib.h>
 
-/* Structure to hold a DECC$* feature name and its desired value. */
+// Structure to hold a DECC$* feature name and its desired value
 
 typedef struct
    {
@@ -933,52 +929,49 @@ int vms_init_done = -1;
 
 decc_feat_t decc_feat_array[] = {
 
-   /* Preserve command-line case with SET PROCESS/PARSE_STYLE=EXTENDED. */
+   // Preserve command-line case with SET PROCESS/PARSE_STYLE=EXTENDED
  { "DECC$ARGV_PARSE_STYLE", 1 },
 
-   /* Preserve case for file names on ODS5 disks. */
+   // Preserve case for file names on ODS5 disks
  { "DECC$EFS_CASE_PRESERVE", 1 },
 
-   /* Enable multiple dots (and most characters) in ODS5 file names,
-      while preserving VMS-ness of ";version". */
+   // Enable multiple dots (and most characters) in ODS5 file names,
+   // while preserving VMS-ness of ";version"
  { "DECC$EFS_CHARSET", 1 },
 
-   /* List terminator. */
+   // List terminator
  { (char *)NULL, 0 } };
 
 
-/*
-   LIB$INITIALIZE initialization.
-
-   On sufficiently recent non-VAX systems, set a collection of C RTL
-   features without using the DECC$* logical name method.
-
-   Note: Old VAX VMS versions may suffer from a linker complaint like
-   this:
-
-   %LINK-W-MULPSC, conflicting attributes for psect LIB$INITIALIZE
-   in module LIB$INITIALIZE file SYS$COMMON:[SYSLIB]STARLET.OLB;1
-
-   Using a LINK options file which includes a line like this one should
-   stop this complaint:
-
-   PSECT_ATTR=LIB$INITIALIZE,NOPIC
-*/
-
-/*--------------------------------------------------------------------*/
+/* LIB$INITIALIZE initialization.
+ *
+ * On sufficiently recent non-VAX systems, set a collection of C RTL
+ * features without using the DECC$* logical name method.
+ *
+ * Note: Old VAX VMS versions may suffer from a linker complaint like
+ * this:
+ *
+ * %LINK-W-MULPSC, conflicting attributes for psect LIB$INITIALIZE
+ * in module LIB$INITIALIZE file SYS$COMMON:[SYSLIB]STARLET.OLB;1
+ *
+ * Using a LINK options file which includes a line like this one should
+ * stop this complaint:
+ *
+ * PSECT_ATTR=LIB$INITIALIZE,NOPIC
+ */
 
 /* vms_init()
-
-    Uses LIB$INITIALIZE to set a collection of C RTL features without
-    requiring the user to define the corresponding logical names.
-*/
-
-/* LIB$INITIALIZE initialization function. */
+ *
+ * Uses LIB$INITIALIZE to set a collection of C RTL features without
+ * requiring the user to define the corresponding logical names.
+ *
+ * LIB$INITIALIZE initialization function. 
+ */
 
 static void
 vms_init(void)
 {
-    /* Set the global flag to indicate that LIB$INITIALIZE worked. */
+    // Set the global flag to indicate that LIB$INITIALIZE worked
 
     vms_init_done = 1;
 
@@ -989,36 +982,30 @@ vms_init(void)
     int i;
     int sts;
 
-    /* Loop through all items in the decc_feat_array[]. */
+    // Loop through all items in the decc_feat_array[]
     for (i = 0; decc_feat_array[i].name != NULL; i++)
     {
-	/* Get the feature index. */
+	// Get the feature index
 	feat_index = decc$feature_get_index(decc_feat_array[i].name);
 	if (feat_index >= 0)
 	{
-	    /* Valid item.  Collect its properties. */
+	    // Valid item.  Collect its properties
 	    feat_value = decc$feature_get_value(feat_index, 1);
 	    feat_value_min = decc$feature_get_value(feat_index, 2);
 	    feat_value_max = decc$feature_get_value(feat_index, 3);
 
 	    if ((decc_feat_array[i].value >= feat_value_min) && (decc_feat_array[i].value <= feat_value_max))
-	    {
-		/* Valid value.  Set it if necessary. */
+		// Valid value.  Set it if necessary
 		if (feat_value != decc_feat_array[i].value)
 		    sts = decc$feature_set_value(feat_index, 1, decc_feat_array[i].value);
-	    }
 	    else
-	    {
-		/* Invalid DECC feature value. */
+		// Invalid DECC feature value
 		printf("INVALID DECC FEATURE VALUE, %d: %d <= %s <= %d.\n",
 			feat_value, feat_value_min, decc_feat_array[i].name, feat_value_max);
-	    }
 	}
 	else
-	{
-	    /* Invalid DECC feature name. */
+	    // Invalid DECC feature name
 	    printf("UNKNOWN DECC FEATURE: %s.\n", decc_feat_array[i].name);
-	}
     }
 }
 
@@ -1028,8 +1015,8 @@ vms_init(void)
 #pragma nostandard
 
 /* Establish the LIB$INITIALIZE PSECTs, with proper alignment and
-   other attributes.  Note that "nopic" is significant only on VAX.
-*/
+ * other attributes.  Note that "nopic" is significant only on VAX.
+ */
 #pragma extern_model save
 
 #pragma extern_model strict_refdef "LIB$INITIALIZE" 2, nopic, nowrt
@@ -1040,7 +1027,7 @@ const int spare[ 8] = { 0 };
 
 #pragma extern_model restore
 
-/* Fake reference to ensure loading the LIB$INITIALIZE PSECT. */
+// Fake reference to ensure loading the LIB$INITIALIZE PSECT
 
 #pragma extern_model save
 int LIB$INITIALIZE(void);
@@ -1050,4 +1037,4 @@ int dmy_lib$initialize = (int) LIB$INITIALIZE;
 
 #pragma standard
 
-#endif /* !defined( __VAX) && (__CRTL_VER >= 70301000) */
+#endif // !defined( __VAX) && (__CRTL_VER >= 70301000)
