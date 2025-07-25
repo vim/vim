@@ -4282,6 +4282,7 @@ did_set_smoothscroll(optset_T *args UNUSED)
     return NULL;
 }
 
+#ifdef FEAT_SOCKETSERVER
 /*
  * Process the updated 'socktimeoutlen' option value.
  */
@@ -4296,6 +4297,7 @@ did_set_socktimeoutlen(optset_T *args UNUSED)
 
     return NULL;
 }
+#endif
 
 #if defined(FEAT_SPELL) || defined(PROTO)
 /*
