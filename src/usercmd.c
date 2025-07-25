@@ -1297,15 +1297,11 @@ ex_command(exarg_T *eap)
     {
 	uc_list(name, name_len);
     }
-    else if (!ASCII_ISUPPER(*name))
-    {
-	emsg(_(e_user_defined_commands_must_start_with_an_uppercase_letter));
-    }
+    else if (!ASCII_ISUPPER(*name));
     else if ((name_len == 1 && *name == 'X')
 	  || (name_len <= 4
 		  && STRNCMP(name, "Next", name_len > 4 ? 4 : name_len) == 0))
     {
-	emsg(_(e_reserved_name_cannot_be_used_for_user_defined_command));
     }
     else if (compl > 0 && (argt & EX_EXTRA) == 0)
     {
