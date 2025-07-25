@@ -41626,9 +41626,6 @@ Other new features ~
 - The new packages |package-comment|, |package-nohlsearch|, |package-hlyank| and
   |help-TOC| are included.
 
-- An interactive tutor plugin has been included |vim-tutor-mode| and can be
-  started via |:Tutor|.
-
 - Support for translating messages in Vim script plugins using the |gettext()|
   and |bindtextdomain()| functions was included.
 
