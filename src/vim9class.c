@@ -3714,7 +3714,8 @@ class_get_selfrefs(class_T *cl)
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
 	tv = &cl->class_members_tv[i];
-	if (tv->v_type == VAR_OBJECT && tv->vval.v_object->obj_class == cl
+	if (tv->v_type == VAR_OBJECT && tv->vval.v_object != NULL
+		&& tv->vval.v_object->obj_class == cl
 		&& (tv->vval.v_object->obj_refcount == 1
 		    || (IS_ENUM(cl) && tv->vval.v_object->obj_refcount == 2)))
 	    self_refs++;
