@@ -199,6 +199,19 @@ exec_on_server(mparm_T *parmp)
     serverInitMessaging();
 # endif
 
+    // Get the name to register ourselves. On Win32 can register right now, for
+    // X11 need to setup the clipboard first, it's further down. Why not do this
+    // after we call cmdsrv_main? Because if the socket server is used, it needs
+    // the name so it can create a socket to receive replies from.
+    parmp->servername = serverMakeName(parmp->serverName_arg,
+	    parmp->argv[0]);
+
+#ifdef FEAT_SOCKETSERVER
+    // Initialize socket server, we may need the server to reply back to us.
+    socket_server_init(parmp->servername, TRUE);
+    TIME_MSG("Initialized socket server");
+#endif
+
     /*
      * When a command server argument was found, execute it.  This may
      * exit Vim when it was successful.  Otherwise it's executed further
@@ -210,13 +223,7 @@ exec_on_server(mparm_T *parmp)
 		parmp->serverName_arg, &parmp->serverStr);
 	parmp->serverStrEnc = vim_strsave(p_enc);
     }
-
-    // If we're still running, get the name to register ourselves.
-    // On Win32 can register right now, for X11 need to setup the
-    // clipboard first, it's further down.
-    parmp->servername = serverMakeName(parmp->serverName_arg,
-	    parmp->argv[0]);
-# ifdef MSWIN
+# if defined(MSWIN) || (defined(FEAT_SOCKETSERVER) && !defined(FEAT_X11))
     if (parmp->servername != NULL)
     {
 	serverSetName(parmp->servername);
@@ -231,7 +238,7 @@ exec_on_server(mparm_T *parmp)
     void
 prepare_server(mparm_T *parmp)
 {
-# if defined(FEAT_X11) || defined(FEAT_SOCKETSERVER)
+# if defined(FEAT_X11)
     /*
      * Register for remote command execution with :serversend and --remote
      * unless there was a -X or a --servername '' on the command line.
@@ -254,14 +261,9 @@ prepare_server(mparm_T *parmp)
 #  endif
 		parmp->serverName_arg != NULL))
     {
-#ifdef FEAT_SOCKETSERVER
-	socket_server_init(parmp->servername, TRUE);
-	TIME_MSG("Initialized socket server");
-#elif defined(FEAT_X11)
 	(void)serverRegisterName(X_DISPLAY, parmp->servername);
-	TIME_MSG("register server name");
-#endif
 	vim_free(parmp->servername);
+	TIME_MSG("register x11 server name");
     }
     else
 	serverDelayedStartName = parmp->servername;
@@ -304,6 +306,9 @@ cmdsrv_main(
 #define ARGTYPE_SEND		3
     int		silent = FALSE;
     int		tabs = FALSE;
+#ifdef FEAT_SOCKETSERVER
+    char_u	*receiver;
+#endif
 # ifndef FEAT_X11
     HWND	srv;
 # else
@@ -391,18 +396,25 @@ cmdsrv_main(
 	    }
 
 #ifdef FEAT_SOCKETSERVER
-	    ret = socket_server_send(
-		    serverName_arg, *serverStr, NULL, 0, -1, silent);
-# elif defined(FEAT_X11)
-	    if (xterm_dpy == NULL)
+	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+		ret = socket_server_send(
+			sname, *serverStr, NULL, &receiver,
+			0, -1, silent);
+#endif
+#ifdef FEAT_X11
+	    if (clientserver_method == CLIENTSERVER_METHOD_X11)
 	    {
-		mch_errmsg(_("No display"));
-		ret = -1;
+		if (xterm_dpy == NULL)
+		{
+		    mch_errmsg(_("No display"));
+		    ret = -1;
+		}
+		else
+		    ret = serverSendToVim(xterm_dpy, sname, *serverStr,
+			    NULL, &srv, 0, 0, 0, silent);
 	    }
-	    else
-		ret = serverSendToVim(xterm_dpy, sname, *serverStr,
-						  NULL, &srv, 0, 0, 0, silent);
-# elif defined(MSWIN)
+#endif
+#ifdef MSWIN
 	    // Win32 always works?
 	    ret = serverSendToVim(sname, *serverStr, NULL, &srv, 0, 0, silent);
 # endif
@@ -461,15 +473,24 @@ cmdsrv_main(
 		vim_memset(done, 0, numFiles);
 		while (memchr(done, 0, numFiles) != NULL)
 		{
-		    char_u  *p;
+		    char_u  *p = NULL;
 		    int	    j;
 # ifdef MSWIN
 		    p = serverGetReply(srv, NULL, TRUE, TRUE, 0);
 		    if (p == NULL)
 			break;
-# elif defined(FEAT_SOCKETSERVER)
-# elif defined(FEAT_X11)
-		    if (serverReadReply(xterm_dpy, srv, &p, TRUE, -1) < 0)
+# else
+#  ifdef FEAT_SOCKETSERVER
+		    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+			if (socket_server_read_reply(receiver, &p, -1) == FAIL)
+			    break;
+#  endif
+#  ifdef FEAT_X11
+		    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+			if (serverReadReply(xterm_dpy, srv, &p, TRUE, -1) < 0)
+			    break;
+#   endif
+		    if (p == NULL)
 			break;
 # endif
 		    j = atoi((char *)p);
@@ -757,7 +778,12 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # ifdef MSWIN
     HWND	w;
 # else
+#ifdef FEAT_X11
     Window	w;
+#endif
+#ifdef FEAT_SOCKETSERVER
+    char_u	*receiver = NULL;
+#endif
 # endif
 
     if (check_restricted() || check_secure())
@@ -778,15 +804,33 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # ifdef MSWIN
     if (serverSendToVim(server_name, keys, &r, &w, expr, timeout, TRUE) < 0)
 # else
-    if (socket_server_send(server_name, keys, &r, expr, timeout, TRUE) < 0)
-    /* if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout, */
-								  /* 0, TRUE) < 0) */
+#ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	if (socket_server_send(server_name, keys, &r, &receiver, expr, timeout, TRUE)
+		< 0)
+	    goto stuff;
+#endif
+#ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout,
+		    0, TRUE) < 0)
+	    goto stuff;
+#endif
 # endif
+#if !defined(MSWIN)
+    if (FALSE)
+#endif
     {
+#if !defined(MSWIN)
+stuff:
+#endif
 	if (r != NULL)
 	{
 	    emsg((char *)r);	// sending worked but evaluation failed
 	    vim_free(r);
+#ifdef FEAT_SOCKETSERVER
+	    vim_free(receiver);
+#endif
 	}
 	else
 	    semsg(_(e_unable_to_send_to_str), server_name);
@@ -804,13 +848,25 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 	idvar = tv_get_string_chk(&argvars[2]);
 	if (idvar != NULL && *idvar != NUL)
 	{
+#ifdef MSWIN
 	    sprintf((char *)str, PRINTF_HEX_LONG_U, (long_u)w);
+#else
+#ifdef FEAT_X11
+	    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+		sprintf((char *)str, PRINTF_HEX_LONG_U, (long_u)w);
+#endif
+#ifdef FEAT_SOCKETSERVER
+	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+		sprintf((char *)str, "%s", receiver);
+#endif
+#endif
 	    v.di_tv.v_type = VAR_STRING;
 	    v.di_tv.vval.v_string = vim_strsave(str);
 	    set_var(idvar, &v.di_tv, FALSE);
 	    vim_free(v.di_tv.vval.v_string);
 	}
     }
+    vim_free(receiver);
 }
 #endif
 

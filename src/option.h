@@ -508,6 +508,9 @@ EXTERN long	p_cwh;		// 'cmdwinheight'
 EXTERN char_u	*p_cb;		// 'clipboard'
 EXTERN char_u	*p_cpm;		// 'clipmethod'
 #endif
+#ifdef FEAT_CLIENTSERVER
+EXTERN char_u	*p_csr;		// 'clientserver'
+#endif
 EXTERN long	p_ch;		// 'cmdheight'
 #ifdef FEAT_FOLDING
 EXTERN char_u	*p_cms;		// 'commentstring'
@@ -956,9 +959,6 @@ EXTERN long	p_siso;		// 'sidescrolloff'
 EXTERN int	p_scs;		// 'smartcase'
 EXTERN int	p_si;		// 'smartindent'
 EXTERN int	p_sta;		// 'smarttab'
-#ifdef FEAT_SOCKETSERVER
-EXTERN long	p_stm;		// 'socktimeoutlen'
-#endif
 EXTERN long	p_sts;		// 'softtabstop'
 EXTERN int	p_sb;		// 'splitbelow'
 EXTERN char_u	*p_sua;		// 'suffixesadd'

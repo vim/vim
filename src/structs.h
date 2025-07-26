@@ -4730,6 +4730,7 @@ typedef struct
     char_u	*serverStr;		// remote server command
     char_u	*serverStrEnc;		// encoding of serverStr
     char_u	*servername;		// allocated name for our server
+
 #endif
 #if !defined(UNIX)
 # define EXPAND_FILENAMES

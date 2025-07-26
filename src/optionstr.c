@@ -47,6 +47,9 @@ static char *(p_cb_values[]) = {"unnamed", "unnamedplus", "autoselect", "autosel
 // Note: Keep this in sync with get_clipmethod()
 static char *(p_cpm_values[]) = {"wayland", "x11", NULL};
 #endif
+#ifdef FEAT_CLIENTSERVER
+static char *(p_csr_values[]) = {"windows", "x11", "socket", NULL};
+#endif
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
  # ifdef FEAT_SODIUM
@@ -1406,6 +1409,44 @@ expand_set_clipmethod(optexpand_T *args, int *numMatches, char_u ***matches)
 	    numMatches,
 	    matches);
 }
+#endif
+
+#ifdef FEAT_CLIENTSERVER
+
+    char *
+did_set_clientserver(optset_T *args)
+{
+    if (STRCMP(p_csr, "x11") == 0)
+#ifdef FEAT_X11
+	clientserver_method = CLIENTSERVER_METHOD_X11;
+#else
+	return e_option_not_supported;
+#endif
+    else if (STRCMP(p_csr, "socket") == 0)
+#ifdef FEAT_SOCKETSERVER
+	clientserver_method = CLIENTSERVER_METHOD_SOCKET;
+#else
+	return e_option_not_supported;
+#endif
+    else if (STRLEN(p_csr) == 0)
+	clientserver_method = CLIENTSERVER_METHOD_NONE;
+    else
+	return e_invalid_argument;
+
+    return NULL;
+}
+
+    int
+expand_set_clientserver(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_csr_values,
+	    ARRAY_LENGTH(p_csr_values) - 1,
+	    numMatches,
+	    matches);
+}
+
 #endif
 
 /*
