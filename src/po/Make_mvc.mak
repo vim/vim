@@ -456,11 +456,14 @@ first_time: files
 	@ copy /b .\files+.\vim_to_js .\allfiles
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) \
-		--files-from=.\allfiles
+	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments \
+		$(XGETTEXT_KEYWORDS) --files-from=.\allfiles \
+		--copyright-holder="2025, The Vim Project" --package-name=Vim \
+		--msgid-bugs-address="vim-dev@vim.org"
 	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js .\vim_to_js
+	@$(MAKE) -lf Make_mvc.mak clean
 
 $(PACKAGE).pot: files
 	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
@@ -469,10 +472,13 @@ $(PACKAGE).pot: files
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(PACKAGE) --output=$(PACKAGE).pot \
-		--add-comments $(XGETTEXT_KEYWORDS) --files-from=.\allfiles
+		--add-comments $(XGETTEXT_KEYWORDS) --files-from=.\allfiles \
+		--no-location --copyright-holder="2025, The Vim Project" \
+		--package-name=Vim --msgid-bugs-address="vim-dev@vim.org"
 	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js .\vim_to_js
+	@$(MAKE) -lf Make_mvc.mak clean
 
 # Only original translations with default encoding should be updated.
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
