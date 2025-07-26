@@ -163,25 +163,25 @@ syn region  pythonFString
       \ start=+\cF\z(['"]\)+
       \ end="\z1"
       \ skip="\\\\\|\\\z1"
-      \ contains=pythonEscape,pythonUnicodeEscape,@Spell
+      \ contains=pythonFStringField,pythonFStringSkip,pythonEscape,pythonUnicodeEscape,@Spell
 syn region  pythonFString
       \ matchgroup=pythonTripleQuotes
       \ start=+\cF\z('''\|"""\)+
       \ end="\z1"
       \ keepend
-      \ contains=pythonEscape,pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
+      \ contains=pythonFStringField,pythonFStringSkip,pythonEscape,pythonUnicodeEscape,pythonSpaceError,pythonDoctest,@Spell
 syn region  pythonRawFString
       \ matchgroup=pythonQuotes
       \ start=+\c\%(FR\|RF\)\z(['"]\)+
       \ end="\z1"
       \ skip="\\\\\|\\\z1"
-      \ contains=@Spell
+      \ contains=pythonFStringField,pythonFStringSkip,@Spell
 syn region  pythonRawFString
       \ matchgroup=pythonTripleQuotes
       \ start=+\c\%(FR\|RF\)\z('''\|"""\)+
       \ end="\z1"
       \ keepend
-      \ contains=pythonSpaceError,pythonDoctest,@Spell
+      \ contains=pythonFStringField,pythonFStringSkip,pythonSpaceError,pythonDoctest,@Spell
 
 " Bytes
 syn region  pythonBytes
@@ -206,6 +206,29 @@ syn region  pythonRawBytes
       \ start=+\c\%(BR\|RB\)\z('''\|"""\)+
       \ end="\z1"
       \ keepend
+
+" F-string replacement fields
+syn region  pythonFStringField
+    \ matchgroup=pythonFStringDelimiter
+    \ start=/{/
+    \ end=/}/
+    \ skip=/#.*$/
+    \ contained
+    \ contains=pythonFStringFormatSpec
+" Doubled braces and Unicode escapes are not replacement fields
+syn match   pythonFStringSkip		/{{\|\\N{/ transparent contained contains=NONE
+" Format specifications may include nested replacement fields
+syn match   pythonFStringFormatSpec	/{[^}]\+}/ transparent contained contains=NONE
+" Format specifications may include the `#` option
+"
+" XXX: This does not match all of https://docs.python.org/3/library/string.html#formatspec,
+"      only enough to disambiguate from comments
+"
+" XXX: A simpler (but less robust) version of this match would be
+"
+"					/:.\{,3}#[^}]*/
+"
+syn match   pythonFStringFormatSpec	/:\%(.\=[<>=^]\)\=[ +-]\=#[^}]*/ transparent contained contains=NONE
 
 syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
 syn match   pythonEscape	"\\\o\{1,3}" contained
@@ -373,6 +396,8 @@ hi def link pythonQuotes		String
 hi def link pythonTripleQuotes		pythonQuotes
 hi def link pythonEscape		Special
 hi def link pythonUnicodeEscape		pythonEscape
+hi def link pythonFStringField		Todo
+hi def link pythonFStringDelimiter	Error
 if !exists("python_no_number_highlight")
   hi def link pythonNumber		Number
 endif
