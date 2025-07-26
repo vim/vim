@@ -394,7 +394,7 @@ printer installed this should also work: >
 	:w >>prn
 
 Vim supports a number of standard MS-Windows features.  Some of these are
-detailed elsewhere: see |'mouse'|, |win32-hidden-menus|.
+detailed elsewhere: see 'mouse', |win32-hidden-menus|.
 
 							*drag-n-drop-win32*
 You can drag and drop one or more files into the Vim window, where they will
