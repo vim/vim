@@ -96,6 +96,7 @@ void delete_timer(void);
 int mch_create_anon_file(void);
 int socket_server_init(char_u *sock_path, int auto_name);
 void socket_server_uninit(void);
+char_u *socket_server_list_sockets(void);
 int socket_server_valid(void);
 char_u *socket_server_get_path_from_name(char_u *name);
 int socket_server_send(char_u *sock_path, char_u *cmd, char_u **result, char_u **receiver, int is_expr, int timeout, int silent);

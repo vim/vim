@@ -1159,9 +1159,18 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
 # ifdef MSWIN
     r = serverGetVimNames();
 # else
+#  ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	r = socket_server_list_sockets();
+#  endif
+#  ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+    {
     make_connection();
     if (X_DISPLAY != NULL)
 	r = serverGetVimNames(X_DISPLAY);
+    }
+#  endif
 # endif
 #endif
     rettv->v_type = VAR_STRING;

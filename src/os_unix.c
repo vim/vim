@@ -9099,11 +9099,11 @@ mch_create_anon_file(void)
 #ifdef FEAT_SOCKETSERVER
 
 /*
- * Initialize socket server called "name" (the socket filename). If "name" is an
- * absolute path (starts with a '/'), it is assumed to be the path to the
- * desirect socket. If "auto_name" is TRUE then if the socket path is already
- * taken, append an incrementing number to the path until we find a socket
- * filename that can be used. Returns OK on success and FAIL on failure.
+ * Initialize socket server called "name" (the socket filename). If "name" is a
+ * path (starts with a '/', './', or '../'), it is assumed to be the path to
+ * the desirect socket. If "auto_name" is TRUE then if the socket path is
+ * already taken, append an incrementing number to the path until we find a
+ * socket filename that can be used. Returns OK on success and FAIL on failure.
  */
     int
 socket_server_init(char_u *name, int auto_name)
@@ -9131,15 +9131,25 @@ socket_server_init(char_u *name, int auto_name)
 
     addr.sun_family = AF_UNIX;
 
-    // If name is not an absolute path, find a common directory to place the
+    // If name is not a path, find a common directory to place the
     // socket.
-    if (name[0] == '/')
-	num_printed =
+    if (name[0] == '/' || STRNCMP(name, "./", 2) == 0 ||
+        STRNCMP(name, "../", 3) == 0)
+        num_printed =
 	    vim_snprintf((char *)path, sizeof(addr.sun_path), "%s", name);
     else
     {
-	const char_u *dir = mch_getenv("XDG_RUNTIME_DIR");
-	char_u *buf;
+	const char_u	*dir;
+	char_u		*buf;
+
+	// Check if there are slashes in the name
+	if (vim_strchr(name, '/') != NULL)
+	{
+	    emsg(_(e_socket_name_no_slashes));
+	    goto fail;
+        }
+
+	dir = mch_getenv("XDG_RUNTIME_DIR");
 
 	if (dir == NULL)
 	{
@@ -9162,8 +9172,11 @@ socket_server_init(char_u *name, int auto_name)
 	    sprintf((char *)buf, "%s/vim", dir);
 	}
 
-	if (vim_mkdir(buf, 0755) == -1 && errno != EEXIST)
+	// Always set directory permissions to 0700 for security
+	if ((vim_mkdir(buf, 0755) == -1 && errno != EEXIST) ||
+		mch_setperm(buf, 0700) == FAIL)
 	{
+	    semsg(_("Failed creating socket directory: %s"), strerror(errno));
 	    vim_free(buf);
 	    goto fail;
 	}
@@ -9171,13 +9184,15 @@ socket_server_init(char_u *name, int auto_name)
 	num_printed = vim_snprintf((char *)path, sizeof(addr.sun_path),
 		"%s/%s", buf, name);
 
-
 	vim_free(buf);
     }
 
     // Check if path was too big
     if (num_printed >= sizeof(addr.sun_path))
+    {
+	emsg(_(e_socket_path_too_big));
 	goto fail;
+    }
 
     sprintf(addr.sun_path, "%s", path);
 
@@ -9197,8 +9212,11 @@ socket_server_init(char_u *name, int auto_name)
 		"%s%d", path, i);
 
 	if (num_printed >= sizeof(addr.sun_path))
+	{
 	    // Address too big
+	    emsg(_(e_socket_path_too_big));
 	    goto fail;
+	}
 
 	i++;
     }
@@ -9233,6 +9251,87 @@ socket_server_uninit(void)
 	vim_free(socket_server_path);
 	socket_server_path = NULL;
     }
+}
+
+/*
+ * List available sockets that can be connected to, only in common directories
+ * that Vim knows about. Vim instances with custom socket paths will not be
+ * detected. Returns a newline separated string on success and NULL on failure.
+ */
+    char_u *
+socket_server_list_sockets(void)
+{
+    garray_T		str;
+    char_u		*buf;
+    char_u	    	*path;
+    DIR		    	*dirp;
+    struct dirent   	*dp;
+    struct sockaddr_un	addr;
+    char_u	    	*known_dirs[] = {
+		    	    mch_getenv("XDG_RUNTIME_DIR"),
+		    	    (char_u *)"/tmp"
+		    	};
+
+    if ((buf = alloc(sizeof(addr.sun_path))) == NULL)
+	return NULL;
+    if ((path = alloc(sizeof(addr.sun_path))) == NULL)
+    {
+	vim_free(buf);
+	return NULL;
+    }
+
+    ga_init2(&str, 1, 100);
+
+    for (int i = 0 ; i < ARRAY_LENGTH(known_dirs); i++)
+    {
+	char_u *dir = known_dirs[i];
+
+	if (dir == NULL)
+	    continue;
+
+	if (STRCMP(dir, "/tmp") == 0)
+            vim_snprintf((char *)path, sizeof(addr.sun_path), "%s/vim-%d",
+		    dir, getuid());
+	else
+	    vim_snprintf((char *)path, sizeof(addr.sun_path), "%s/vim", dir);
+
+	dir = path;
+
+	dirp = opendir((char *)dir);
+
+	if (dirp == NULL)
+	    continue;
+
+	// Loop through directory
+	while ((dp = readdir(dirp)) != NULL)
+	{
+	    int fd;
+	    vim_snprintf((char *)buf, sizeof(addr.sun_path), "%s/%s",
+		    dir, dp->d_name);
+
+	    // Try connecting to see if it is valid
+	    fd = socket_server_connect(buf, NULL, TRUE);
+
+	    if (fd == -1)
+		continue;
+
+	    close(fd);
+
+	    ga_concat(&str, (char_u *)dp->d_name);
+	    ga_append(&str, '\n');
+	}
+
+	closedir(dirp);
+	
+	break;
+    }
+
+    vim_free(path);
+    vim_free(buf);
+
+    ga_append(&str, NUL);
+
+    return str.ga_data;
 }
 
 /*
