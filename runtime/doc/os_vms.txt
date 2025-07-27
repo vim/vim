@@ -40,7 +40,6 @@ Or using git: >
 
 Older release archives are also available at:
 	https://ftp.nluug.nl/pub/vim/
-	ftp://ftp.nluug.nl/pub/vim/
 Or use one of the mirrors:
 	https://ftp.nluug.nl/pub/vim/MIRRORS
 
