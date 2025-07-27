@@ -261,7 +261,7 @@ endfunction
 
 " Issue https://github.com/vim/vim/pull/17420#issuecomment-2927798687
 " (function named /s:fu%\[nction]/)
-￼
+
 func! s:func(_, func)
     return a:func
 endfunc
