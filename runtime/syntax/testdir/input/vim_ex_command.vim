@@ -147,7 +147,7 @@ command! -bang -nargs=* -complete=file Make AsyncRun -program=make @ <args>
 
 command -range=% -nargs=? -bang Tb {
     if "<bang>" == "!"
-        :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ", "•", "g")/ge
+        :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ",         "•", "g")/ge
     endif
     if "<args>" == ""
         :<line1>,<line2>!column -t

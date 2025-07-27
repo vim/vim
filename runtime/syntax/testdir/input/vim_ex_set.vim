@@ -126,5 +126,6 @@ set langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
 set langmap+=ФЫВАПРОЛДЖЭЁ;ASDFGHJKL\\:\\"\\|
       \ langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
 
-set langmap+=ФЫВАПРОЛДЖЭЁ;ASDFGHJKL\\:\\"\\| langmap+=ЯЧСМИТЬБЮ;ZXCVBNM<>
+set langmap+=ФЫВАПР;ASDFGH langmap+=ОЛДЖЭЁ;JKL\\:\\"\\|
+      \ langmap+=ЯЧСМИ;ZXCVB langmap+=ТЬБЮ;NM<>
 
