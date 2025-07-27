@@ -2103,3 +2103,8 @@ typedef enum {
 EXTERN clientserver_method_T clientserver_method INIT(= 0);
 
 #endif
+
+#ifdef FEAT_SOCKETSERVER
+// Path to socket of last client that communicated with us
+EXTERN char_u *client_socket INIT(= NULL);
+#endif

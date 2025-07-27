@@ -217,6 +217,7 @@ static garray_T ss_replies;
 
 static void socket_server_accept_client(void);
 static int socket_server_connect(char_u *name, char_u **path, int silent);
+static void socket_server_init_cmd(ss_cmd_T *cmd, ss_cmd_type_T type);
 static int socket_server_append_msg(ss_cmd_T *cmd, char_u type,
 	char_u *contents, int len);
 static void socket_server_free_cmd(ss_cmd_T *cmd);
@@ -9192,8 +9193,8 @@ socket_server_init(char_u *name, int auto_name)
 	else
 	    break;
 
-	num_printed =
-	    snprintf(addr.sun_path, sizeof(addr.sun_path), "%s%d", path, i);
+	num_printed = vim_snprintf(addr.sun_path, sizeof(addr.sun_path),
+		"%s%d", path, i);
 
 	if (num_printed >= sizeof(addr.sun_path))
 	    // Address too big
@@ -9372,27 +9373,16 @@ socket_server_send(
     if (socket_fd == -1)
 	return -1;
 
-    cmd.cmd_len = 0;
-    cmd.cmd_num = 0;
-    cmd.cmd_type = is_expr ? SS_CMD_TYPE_EXPR : SS_CMD_TYPE_KEYSTROKES;
+    socket_server_init_cmd(&cmd,
+	    is_expr ? SS_CMD_TYPE_EXPR : SS_CMD_TYPE_KEYSTROKES);
 
-    if (socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc,
-		STRLEN(p_enc)) == FAIL)
-    {
-msg_fail:
-	vim_free(path);
-	socket_server_free_cmd(&cmd);
-	close(socket_fd);
-	return -1;
-    }
-    if (socket_server_append_msg(&cmd, SS_MSG_TYPE_STRING, str, STRLEN(str)) ==
-	    FAIL)
-	goto msg_fail;
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc, STRLEN(p_enc));
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_STRING, str, STRLEN(str));
 
-    if (is_expr)
-	if (socket_server_append_msg(&cmd, SS_MSG_TYPE_SENDER, socket_server_path,
-		    STRLEN(socket_server_path)) == FAIL)
-	    goto msg_fail;
+    // Tell server who we are so it can save our socket path internally for
+    // later use with server2client
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_SENDER, socket_server_path,
+	    STRLEN(socket_server_path));
 
     final = socket_server_encode_cmd(&cmd, &sz);
 
@@ -9426,7 +9416,7 @@ msg_fail:
 	close(socket_fd);
 	vim_free(path);
 	*receiver = NULL;
-        return -1;
+	return -1;
     }
     close(socket_fd);
 
@@ -9474,27 +9464,38 @@ msg_fail:
 
 
 /*
- * Wait for replies from "sender" and place result in "str". Returns OK on
- * success and FAIL on failure.
+ * Wait for replies from "client" and place result in "str". Returns OK on
+ * success and FAIL on failure. Timeout is in milliseconds
  */
     int
-socket_server_read_reply(char_u *sender, char_u **str, int timeout)
+socket_server_read_reply(char_u *client, char_u **str, int timeout)
 {
     ss_reply_T *reply = NULL;
+    struct timeval start, now;
 
-    // Initialize server if we haven't right now
+    gettimeofday(&start, NULL);
+
+    // Try seeing if there already is a reply in the queue
+    goto get_reply;
 
     while (socket_server_dispatch(timeout > 0 ? timeout : 500) >= 0)
     {
 	int fd;
 
-	reply = socket_server_get_reply(sender, NULL);
+	gettimeofday(&now, NULL);
+
+	if ((now.tv_sec * 1000000 + now.tv_usec) -
+		(start.tv_sec * 1000000 + start.tv_usec) >= timeout * 1000)
+	    break;
+
+get_reply:
+	reply = socket_server_get_reply(client, NULL);
 
 	if (reply != NULL)
 	    break;
 
 	// Check if sender is down by connecting to it as a test.
-	fd = socket_server_connect(sender, NULL, TRUE);
+	fd = socket_server_connect(client, NULL, TRUE);
 
 	if (fd == -1)
 	    return FAIL;
@@ -9502,7 +9503,8 @@ socket_server_read_reply(char_u *sender, char_u **str, int timeout)
 	    close(fd);
     }
 
-    if (reply == NULL || reply->strings.ga_data == NULL)
+    if (reply == NULL || reply->strings.ga_data == NULL ||
+	    reply->strings.ga_len <= 0)
 	return FAIL;
 
     // Consume the string
@@ -9513,10 +9515,53 @@ socket_server_read_reply(char_u *sender, char_u **str, int timeout)
 	((char_u **)reply->strings.ga_data)[i - 1] =
 	    ((char_u **)reply->strings.ga_data)[i];
     }
+    reply->strings.ga_len--;
 
-    if (reply->strings.ga_len <= 1)
+    if (reply->strings.ga_len < 1)
 	// Last string removed, remove the reply
-	socket_server_remove_reply(sender);
+	socket_server_remove_reply(client);
+
+
+    return OK;
+}
+
+/*
+ * Send a string to "client" as a reply (notification). Returns OK on success
+ * and FAIL on failure.
+ */
+    int
+socket_server_send_reply(char_u *client, char_u *str)
+{
+    int socket_fd;
+    ss_cmd_T	cmd;
+    size_t	sz;
+    char_u	*final;
+
+    socket_fd = socket_server_connect(client, NULL, TRUE);
+
+    if (socket_fd == -1)
+	return FAIL;
+
+    socket_server_init_cmd(&cmd, SS_CMD_TYPE_NOTIFY);
+
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_ENCODING, p_enc, STRLEN(p_enc));
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_STRING, str, STRLEN(str));
+    socket_server_append_msg(&cmd, SS_MSG_TYPE_SENDER,
+	    socket_server_path, STRLEN(socket_server_path));
+
+    final = socket_server_encode_cmd(&cmd, &sz);
+
+    if (final == NULL ||
+	    socket_server_write(socket_fd, final, sz, 1000) == FAIL)
+    {
+	socket_server_free_cmd(&cmd);
+	close(socket_fd);
+	return FAIL;
+    }
+
+    socket_server_free_cmd(&cmd);
+    vim_free(final);
+    close(socket_fd);
 
     return OK;
 }
@@ -9572,6 +9617,17 @@ fail:
     vim_free(socket_path);
     return -1;
 
+}
+
+/*
+ * Initialize command structure to empty state
+ */
+static void
+socket_server_init_cmd(ss_cmd_T *cmd, ss_cmd_type_T type)
+{
+    cmd->cmd_len = 0;
+    cmd->cmd_num = 0;
+    cmd->cmd_type = type;
 }
 
 /*
@@ -9851,7 +9907,7 @@ socket_server_get_reply(char_u *sender, int *index)
     {
 	ss_reply_T *reply = ((ss_reply_T *)ss_replies.ga_data) + i;
 
-	if (STRCMP(reply->sender, sender))
+	if (STRCMP(reply->sender, sender) == 0)
 	{
 	    if (index != NULL)
 		*index = i;
@@ -9877,7 +9933,7 @@ socket_server_add_reply(char_u *sender)
 
     if (reply == NULL && ga_grow(&ss_replies, 1) == OK)
     {
-	reply = ((ss_reply_T *)ss_replies.ga_data) + ss_replies.ga_len;
+	reply = ((ss_reply_T *)ss_replies.ga_data) + ss_replies.ga_len++;
 
 	reply->sender = vim_strsave(sender);
 
@@ -9905,8 +9961,9 @@ socket_server_remove_reply(char_u *sender)
 	ga_clear_strings(&reply->strings);
 
 	// Move all elements after the removed reply forward by one
-	for (int i = index; i < ss_replies.ga_len; i++)
+	for (int i = index + 1; i < ss_replies.ga_len; i++)
 	    arr[i - 1] = arr[i];
+	ss_replies.ga_len--;
     }
 }
 
@@ -9935,7 +9992,13 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
 	if (msg->msg_type == SS_MSG_TYPE_ENCODING)
 	    enc = msg->msg_contents;
 	else if (msg->msg_type == SS_MSG_TYPE_SENDER)
+	{
 	    sender = msg->msg_contents;
+
+	    // Save in global
+	    vim_free(client_socket);
+	    client_socket = vim_strsave(sender);
+	}
 	else if (msg->msg_type == SS_MSG_TYPE_CODE)
 	    memcpy(&rcode, msg->msg_contents, sizeof(rcode));
     }
@@ -9965,8 +10028,7 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
 		// Send reply
 		ss_cmd_T rcmd;
 
-		rcmd.cmd_len = 0;
-		rcmd.cmd_type = SS_CMD_TYPE_REPLY;
+		socket_server_init_cmd(&rcmd, SS_CMD_TYPE_REPLY);
 
 		// Don't care about errors, server will just ignore command if
 		// its missing something.

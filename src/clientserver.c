@@ -15,6 +15,11 @@
 
 #if defined(FEAT_CLIENTSERVER) || defined(PROTO)
 
+#ifdef FEAT_SOCKETSERVER
+# include <sys/socket.h>
+# include "sys/un.h"
+#endif
+
 static void cmdsrv_main(int *argc, char **argv, char_u *serverName_arg, char_u **serverStr);
 static char_u *serverMakeName(char_u *arg, char *cmd);
 
@@ -24,15 +29,15 @@ static char_u *serverMakeName(char_u *arg, char *cmd);
     void
 server_to_input_buf(char_u *str)
 {
-    char_u      *ptr = NULL;
-    char_u      *cpo_save = p_cpo;
+    char_u	*ptr = NULL;
+    char_u	*cpo_save = p_cpo;
 
     // Set 'cpoptions' the way we want it.
-    //    B set - backslashes are *not* treated specially
-    //    k set - keycodes are *not* reverse-engineered
-    //    < unset - <Key> sequences *are* interpreted
-    //  The last but one parameter of replace_termcodes() is TRUE so that the
-    //  <lt> sequence is recognised - needed for a real backslash.
+    //	  B set - backslashes are *not* treated specially
+    //	  k set - keycodes are *not* reverse-engineered
+    //	  < unset - <Key> sequences *are* interpreted
+    //	The last but one parameter of replace_termcodes() is TRUE so that the
+    //	<lt> sequence is recognised - needed for a real backslash.
     p_cpo = (char_u *)"Bk";
     str = replace_termcodes(str, &ptr, 0, REPTERM_DO_LT, NULL);
     p_cpo = cpo_save;
@@ -145,7 +150,7 @@ sendToLocalVim(char_u *cmd, int asExpr, char_u **result)
 
 /*
  * If conversion is needed, convert "data" from "client_enc" to 'encoding' and
- * return an allocated string.  Otherwise return "data".
+ * return an allocated string.	Otherwise return "data".
  * "*tofree" is set to the result when it needs to be freed later.
  */
     char_u *
@@ -448,7 +453,7 @@ cmdsrv_main(
 	    if (argtype == ARGTYPE_EDIT_WAIT)
 	    {
 		int	numFiles = *argc - i - 1;
-		char_u  *done = alloc(numFiles);
+		char_u	*done = alloc(numFiles);
 # ifdef FEAT_GUI_MSWIN
 		NOTIFYICONDATA ni;
 		int	count = 0;
@@ -674,14 +679,14 @@ build_drop_cmd(
     // Switch back to the correct current directory (prior to temporary path
     // switch) unless 'autochdir' is set, in which case it will already be
     // correct after the :drop command. With line breaks and spaces:
-    //  if !exists('+acd') || !&acd
-    //    if haslocaldir()
+    //	if !exists('+acd') || !&acd
+    //	  if haslocaldir()
     //	    cd -
-    //      lcd -
-    //    elseif getcwd() ==# 'current path'
-    //      cd -
-    //    endif
-    //  endif
+    //	    lcd -
+    //	  elseif getcwd() ==# 'current path'
+    //	    cd -
+    //	  endif
+    //	endif
     ga_concat(&ga, (char_u *)":if !exists('+acd')||!&acd|if haslocaldir()|");
 #ifdef MSWIN
     // in case :set shellslash is set, need to normalize the directory separators
@@ -782,7 +787,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
     Window	w;
 #endif
 #ifdef FEAT_SOCKETSERVER
-    char_u	*receiver = NULL;
+    char_u	*client = NULL;
 #endif
 # endif
 
@@ -806,7 +811,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # else
 #ifdef FEAT_SOCKETSERVER
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	if (socket_server_send(server_name, keys, &r, &receiver, expr, timeout, TRUE)
+	if (socket_server_send(server_name, keys, &r, &client, expr, timeout, TRUE)
 		< 0)
 	    goto stuff;
 #endif
@@ -829,7 +834,7 @@ stuff:
 	    emsg((char *)r);	// sending worked but evaluation failed
 	    vim_free(r);
 #ifdef FEAT_SOCKETSERVER
-	    vim_free(receiver);
+	    vim_free(client);
 #endif
 	}
 	else
@@ -842,7 +847,12 @@ stuff:
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	dictitem_T	v;
+#if defined(FEAT_SOCKETSERVER)
+	struct sockaddr_un addr;
+	char_u		str[sizeof(addr.sun_path)];
+#else
 	char_u		str[30];
+#endif
 	char_u		*idvar;
 
 	idvar = tv_get_string_chk(&argvars[2]);
@@ -857,7 +867,8 @@ stuff:
 #endif
 #ifdef FEAT_SOCKETSERVER
 	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-		sprintf((char *)str, "%s", receiver);
+		vim_snprintf((char *)str, sizeof(addr.sun_path),
+			"%s", client);
 #endif
 #endif
 	    v.di_tv.v_type = VAR_STRING;
@@ -866,7 +877,9 @@ stuff:
 	    vim_free(v.di_tv.vval.v_string);
 	}
     }
-    vim_free(receiver);
+#ifdef FEAT_SOCKETSERVER
+    vim_free(client);
+#endif
 }
 #endif
 
@@ -1010,12 +1023,23 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 	if (n != 0)
 	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE, timeout);
 	if (r == NULL)
-# else
-	if (check_connection() == FAIL
-		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
-						       &r, FALSE, timeout) < 0)
-# endif
 	    emsg(_(e_unable_to_read_server_reply));
+# else
+# ifdef FEAT_SOCKETSERVER
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+		(socket_server_valid() &&
+		 socket_server_read_reply(serverid, &r, timeout * 1000)
+		 == FAIL))
+	    emsg(_(e_unable_to_read_server_reply));
+# endif
+# ifdef FEAT_X11
+	if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+		(check_connection() == FAIL
+		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
+						       &r, FALSE, timeout) < 0))
+	    emsg(_(e_unable_to_read_server_reply));
+# endif
+# endif
     }
 #endif
     rettv->v_type = VAR_STRING;
@@ -1093,13 +1117,30 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
     if (server == NULL || reply == NULL)
 	return;
 
-# ifdef FEAT_X11
-    if (check_connection() == FAIL)
+#ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+	    !socket_server_valid())
 	return;
-# endif
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+	    socket_server_send_reply(server, reply) == FAIL)
+	goto fail;
+#endif
 
+#ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+	    check_connection() == FAIL)
+	return;
+
+    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+	    serverSendReply(server, reply) < 0)
+#endif
+#ifdef MSWIN
     if (serverSendReply(server, reply) < 0)
+#endif
     {
+#ifdef FEAT_SOCKETSERVER
+fail:
+#endif
 	emsg(_(e_unable_to_send_to_client));
 	return;
     }

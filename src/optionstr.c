@@ -1411,7 +1411,7 @@ expand_set_clipmethod(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#ifdef FEAT_CLIENTSERVER
+#if defined(FEAT_CLIENTSERVER) && !defined(MSWIN)
 
     char *
 did_set_clientserver(optset_T *args)
