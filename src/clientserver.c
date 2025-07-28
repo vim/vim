@@ -197,7 +197,7 @@ static char_u *build_drop_cmd(int filec, char **filev, int tabs, int sendReply);
   exec_on_server(mparm_T *parmp)
   {
       if (parmp->serverName_arg != NULL && *parmp->serverName_arg == NUL)
-          return;
+	  return;
 
   # ifdef MSWIN
       // Initialise the client/server messaging infrastructure.
@@ -223,9 +223,9 @@ static char_u *build_drop_cmd(int filec, char **filev, int tabs, int sendReply);
 	  }
 #endif
 
-          cmdsrv_main(&parmp->argc, parmp->argv,
-                  parmp->serverName_arg, &parmp->serverStr);
-          parmp->serverStrEnc = vim_strsave(p_enc);
+	  cmdsrv_main(&parmp->argc, parmp->argv,
+		  parmp->serverName_arg, &parmp->serverStr);
+	  parmp->serverStrEnc = vim_strsave(p_enc);
       }
 
       // If we're still running, get the name to register ourselves.
@@ -237,8 +237,8 @@ static char_u *build_drop_cmd(int filec, char **filev, int tabs, int sendReply);
   # ifdef MSWIN
       if (parmp->servername != NULL)
       {
-          serverSetName(parmp->servername);
-          vim_free(parmp->servername);
+	  serverSetName(parmp->servername);
+	  vim_free(parmp->servername);
       }
   # endif
   }
@@ -466,7 +466,7 @@ cmdsrv_main(
 	    /*
 	     * For --remote-wait: Wait until the server did edit each
 	     * file.  Also detect that the server no longer runs.
-	     */
+	     * */
 	    if (argtype == ARGTYPE_EDIT_WAIT)
 	    {
 		int	numFiles = *argc - i - 1;
@@ -754,7 +754,24 @@ serverMakeName(char_u *arg, char *cmd)
     char_u *p;
 
     if (arg != NULL && *arg != NUL)
+    {
+#ifdef FEAT_SOCKETSERVER
+	// If we are using a socket server, we want to preserve the original
+	// name if it is a path, else uppercase it if its just a generic name.
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	{
+	    if (arg[0] == '/' || STRNCMP(arg, "./", 2) == 0 ||
+		    STRNCMP(arg, "../", 3) == 0)
+		p = vim_strsave(arg);
+	    else
+		p = vim_strsave_up(arg);
+	}
+	else
+	    p = vim_strsave_up(arg);
+#else
 	p = vim_strsave_up(arg);
+#endif
+    }
     else
     {
 	p = vim_strsave_up(gettail((char_u *)cmd));
@@ -1107,11 +1124,18 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     }
 
     char_u *server = tv_get_string_chk(&argvars[0]);
-# ifdef FEAT_X11
-    if (check_connection() == OK)
-	serverRegisterName(X_DISPLAY, server);
-# else
+# ifdef MSWIN
     serverSetName(server);
+# else
+# ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	socket_server_init(server, TRUE);
+# endif
+# ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+	    check_connection() == OK)
+	serverRegisterName(X_DISPLAY, server);
+# endif
 # endif
 
 #else

@@ -9134,8 +9134,8 @@ socket_server_init(char_u *name, int auto_name)
     // If name is not a path, find a common directory to place the
     // socket.
     if (name[0] == '/' || STRNCMP(name, "./", 2) == 0 ||
-        STRNCMP(name, "../", 3) == 0)
-        num_printed =
+	STRNCMP(name, "../", 3) == 0)
+	num_printed =
 	    vim_snprintf((char *)path, sizeof(addr.sun_path), "%s", name);
     else
     {
@@ -9147,7 +9147,7 @@ socket_server_init(char_u *name, int auto_name)
 	{
 	    emsg(_(e_socket_name_no_slashes));
 	    goto fail;
-        }
+	}
 
 	dir = mch_getenv("XDG_RUNTIME_DIR");
 
@@ -9225,12 +9225,21 @@ socket_server_init(char_u *name, int auto_name)
     if (listen(socket_server_fd, SOCKET_SERVER_MAX_BACKLOG) == -1)
 	goto fail;
 
-    if ((socket_server_path = vim_strsave((char_u *)addr.sun_path)) == NULL)
+    // Set global path and vvar to the absolute path
+    if ((socket_server_path = alloc(MAXPATHL)) == NULL)
 	goto fail;
 
-    vim_free(serverName);
+    if (mch_FullName((char_u *)addr.sun_path, socket_server_path,
+		MAXPATHL, FALSE) == FAIL)
+    {
+	vim_free(socket_server_path);
+	goto fail;
+    }
 
     serverName = vim_strsave(socket_server_path);
+#ifdef FEAT_EVAL
+    set_vim_var_string(VV_SEND_SERVER, serverName, -1);
+#endif
 
     vim_free(path);
     return OK;
@@ -9267,14 +9276,14 @@ socket_server_list_sockets(void)
 {
     garray_T		str;
     char_u		*buf;
-    char_u	    	*path;
-    DIR		    	*dirp;
-    struct dirent   	*dp;
+    char_u		*path;
+    DIR			*dirp;
+    struct dirent	*dp;
     struct sockaddr_un	addr;
-    char_u	    	*known_dirs[] = {
-		    	    mch_getenv("XDG_RUNTIME_DIR"),
-		    	    (char_u *)"/tmp"
-		    	};
+    char_u		*known_dirs[] = {
+			    mch_getenv("XDG_RUNTIME_DIR"),
+			    (char_u *)"/tmp"
+			};
 
     if ((buf = alloc(sizeof(addr.sun_path))) == NULL)
 	return NULL;
@@ -9294,7 +9303,7 @@ socket_server_list_sockets(void)
 	    continue;
 
 	if (STRCMP(dir, "/tmp") == 0)
-            vim_snprintf((char *)path, sizeof(addr.sun_path), "%s/vim-%d",
+	    vim_snprintf((char *)path, sizeof(addr.sun_path), "%s/vim-%d",
 		    dir, getuid());
 	else
 	    vim_snprintf((char *)path, sizeof(addr.sun_path), "%s/vim", dir);
@@ -9326,7 +9335,7 @@ socket_server_list_sockets(void)
 	}
 
 	closedir(dirp);
-	
+
 	break;
     }
 

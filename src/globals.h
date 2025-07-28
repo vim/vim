@@ -2101,11 +2101,19 @@ typedef enum {
 } clientserver_method_T;
 
 // Default to X11 if compiled with support for it, else use socket server.
+# if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
 EXTERN clientserver_method_T clientserver_method
+# else
+// Since we aren't going to be changing clientserver_method, make it constant to
+// allow compiler optimizations.
+EXTERN const clientserver_method_T clientserver_method
+# endif
 # ifdef FEAT_X11
 INIT(= CLIENTSERVER_METHOD_X11);
-# else
+# elif FEAT_SOCKETSERVER
 INIT(= CLIENTSERVER_METHOD_SOCKET);
+# else
+INIT(= CLIENTSERVER_METHOD_NONE);
 # endif
 
 #endif
