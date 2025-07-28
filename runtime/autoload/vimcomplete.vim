@@ -17,7 +17,7 @@ def GetTrigger(line: string): list<any>
     var result_len = 0
     if line =~ '->\k*$' || line =~ '\vcall\s+\k*$'
         result = 'func'
-    elseif line =~ '\v%(^|\s+)\&\k*$' || line =~ '\vset%(\s+\k*)*$'
+    elseif line =~ '\v%(^|\s+)\&\k*$' || line =~ '\vset%(\s+\k+%([-+^]?\=\S+(\\\s)|\S+)*)*$'
         result = 'option'
     elseif line =~ '\vecho%[msg]\s+\k*$' || line =~ '[\[(]\s*$'
         result = 'expr'
