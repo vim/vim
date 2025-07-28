@@ -1868,7 +1868,7 @@ EXTERN Window	commWindow INIT(= None);
 EXTERN Window	clientWindow INIT(= None);
 EXTERN Atom	commProperty INIT(= None);
 EXTERN char_u	*serverDelayedStartName INIT(= NULL);
-# else
+# elif defined(MSWIN)
 #  ifdef PROTO
 typedef int HWND;
 #  endif

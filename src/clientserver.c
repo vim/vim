@@ -190,58 +190,58 @@ serverConvert(
 
 static char_u *build_drop_cmd(int filec, char **filev, int tabs, int sendReply);
 
-  /*
-   * Do the client-server stuff, unless "--servername ''" was used.
-   */
-      void
-  exec_on_server(mparm_T *parmp)
-  {
-      if (parmp->serverName_arg != NULL && *parmp->serverName_arg == NUL)
-	  return;
+/*
+ * Do the client-server stuff, unless "--servername ''" was used.
+ */
+    void
+exec_on_server(mparm_T *parmp)
+{
+    if (parmp->serverName_arg != NULL && *parmp->serverName_arg == NUL)
+	return;
 
-  # ifdef MSWIN
-      // Initialise the client/server messaging infrastructure.
-      serverInitMessaging();
-  # endif
+# ifdef MSWIN
+    // Initialise the client/server messaging infrastructure.
+    serverInitMessaging();
+# endif
 
-      /*
-       * When a command server argument was found, execute it.  This may
-       * exit Vim when it was successful.  Otherwise it's executed further
-       * on.  Remember the encoding used here in "serverStrEnc".
-       */
-      if (parmp->serverArg)
-      {
+    /*
+     * When a command server argument was found, execute it.  This may
+     * exit Vim when it was successful.  Otherwise it's executed further
+     * on.  Remember the encoding used here in "serverStrEnc".
+     */
+    if (parmp->serverArg)
+    {
 #ifdef FEAT_SOCKETSERVER
-	  // Initialize socket server now, we may need to receive replies back
-	  // to us.
-	  if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	  {
-	      parmp->servername = serverMakeName(parmp->serverName_arg,
-		      parmp->argv[0]);
-	      if (socket_server_init(parmp->servername, TRUE) == OK)
-		  TIME_MSG("initialize socket server");
-	  }
+	// Initialize socket server now, we may need to receive replies back
+	// to us.
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	{
+	    parmp->servername = serverMakeName(parmp->serverName_arg,
+		    parmp->argv[0]);
+	    if (socket_server_init(parmp->servername, TRUE) == OK)
+		TIME_MSG("initialize socket server");
+	}
 #endif
 
-	  cmdsrv_main(&parmp->argc, parmp->argv,
-		  parmp->serverName_arg, &parmp->serverStr);
-	  parmp->serverStrEnc = vim_strsave(p_enc);
-      }
+	cmdsrv_main(&parmp->argc, parmp->argv,
+		parmp->serverName_arg, &parmp->serverStr);
+	parmp->serverStrEnc = vim_strsave(p_enc);
+    }
 
-      // If we're still running, get the name to register ourselves.
-      // On Win32 can register right now, for X11 need to setup the
-      // clipboard first, it's further down.
-      if (parmp->servername == NULL)
-	  parmp->servername = serverMakeName(parmp->serverName_arg,
-		  parmp->argv[0]);
-  # ifdef MSWIN
-      if (parmp->servername != NULL)
-      {
-	  serverSetName(parmp->servername);
-	  vim_free(parmp->servername);
-      }
-  # endif
-  }
+    // If we're still running, get the name to register ourselves.
+    // On Win32 can register right now, for X11 need to setup the
+    // clipboard first, it's further down.
+    if (parmp->servername == NULL)
+	parmp->servername = serverMakeName(parmp->serverName_arg,
+		parmp->argv[0]);
+# ifdef MSWIN
+    if (parmp->servername != NULL)
+    {
+	serverSetName(parmp->servername);
+	vim_free(parmp->servername);
+    }
+# endif
+}
 /*
  * Prepare for running as a Vim server.
  */
@@ -256,7 +256,13 @@ prepare_server(mparm_T *parmp)
      * or when compiling with autoservername.
      * When running as root --servername is also required.
      */
-    if (X_DISPLAY != NULL && parmp->servername != NULL && (
+
+    if (
+#  ifdef FEAT_X11
+	    X_DISPLAY != NULL &&
+#  endif
+
+	    parmp->servername != NULL && (
 #  if defined(FEAT_AUTOSERVERNAME) || defined(FEAT_GUI)
 		(
 #   if defined(FEAT_AUTOSERVERNAME)

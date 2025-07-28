@@ -3729,6 +3729,9 @@ usage(void)
 #if defined(FEAT_WAYLAND)
     main_msg(_("-Y\t\t\tDo not connect to Wayland compositor"));
 #endif
+#if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
+    main_msg(_("--clientserver <socket|x11> Backend for clientserver communication"));
+#endif
 #ifdef FEAT_CLIENTSERVER
     main_msg(_("--remote <files>\tEdit <files> in a Vim server if possible"));
     main_msg(_("--remote-silent <files>  Same, don't complain if there is no server"));

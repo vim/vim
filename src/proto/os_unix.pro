@@ -97,10 +97,12 @@ int mch_create_anon_file(void);
 int socket_server_init(char_u *sock_path, int auto_name);
 void socket_server_uninit(void);
 char_u *socket_server_list_sockets(void);
+void socket_server_accept_client(void);
 int socket_server_valid(void);
 char_u *socket_server_get_path_from_name(char_u *name);
 int socket_server_send(char_u *sock_path, char_u *cmd, char_u **result, char_u **receiver, int is_expr, int timeout, int silent);
 int socket_server_read_reply(char_u *sender, char_u **str, int timeout);
 int socket_server_peek_reply(char_u *sender, char_u **str);
 int socket_server_send_reply(char_u *client, char_u *str);
+int socket_server_get_fd(void);
 /* vim: set ft=c : */

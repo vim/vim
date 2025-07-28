@@ -10048,7 +10048,7 @@ eval_vars(
 		if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
 		{
 		    if (client_socket == NULL)
-			result = "";
+			result = (char_u *)"";
 		    else
 			result = client_socket;
 		}

@@ -215,7 +215,6 @@ typedef struct {
 
 static garray_T ss_replies;
 
-static void socket_server_accept_client(void);
 static int socket_server_connect(char_u *name, char_u **path, int silent);
 static void socket_server_init_cmd(ss_cmd_T *cmd, ss_cmd_type_T type);
 static int socket_server_append_msg(ss_cmd_T *cmd, char_u type,
@@ -9111,9 +9110,10 @@ socket_server_init(char_u *name, int auto_name)
     struct sockaddr_un	addr;
     char_u		*path;
     int			num_printed;
+    int			fd;
     int			i = 1;
 
-    if (socket_server_valid())
+    if (socket_server_valid() || name == NULL)
 	return FAIL;
 
     path = alloc(sizeof(addr.sun_path));
@@ -9121,9 +9121,9 @@ socket_server_init(char_u *name, int auto_name)
     if (path == NULL)
 	return FAIL;
 
-    socket_server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
-    if (socket_server_fd == -1)
+    if (fd == -1)
     {
 	vim_free(path);
 	return FAIL;
@@ -9199,7 +9199,7 @@ socket_server_init(char_u *name, int auto_name)
     // Bind to a suitable path/address
     while (i < 1000)
     {
-	if (bind(socket_server_fd, (struct sockaddr *)&addr, sizeof(addr))
+	if (bind(fd, (struct sockaddr *)&addr, sizeof(addr))
 		== -1)
 	{
 	    if (errno != EADDRINUSE)
@@ -9222,7 +9222,7 @@ socket_server_init(char_u *name, int auto_name)
     }
 
     // Start listening for connections
-    if (listen(socket_server_fd, SOCKET_SERVER_MAX_BACKLOG) == -1)
+    if (listen(fd, SOCKET_SERVER_MAX_BACKLOG) == -1)
 	goto fail;
 
     // Set global path and vvar to the absolute path
@@ -9241,6 +9241,14 @@ socket_server_init(char_u *name, int auto_name)
     serverName = vim_strsave(socket_server_path);
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_SEND_SERVER, serverName, -1);
+#endif
+
+    socket_server_fd = fd;
+
+#ifdef FEAT_GUI_GTK
+    if (gui.in_use)
+	// Initialize source for GUI if we are using it
+	gui_gtk_init_socket_server();
 #endif
 
     vim_free(path);
@@ -9266,6 +9274,10 @@ socket_server_uninit(void)
 	vim_free(socket_server_path);
 	socket_server_path = NULL;
     }
+#ifdef FEAT_GUI_GTK
+    if (gui.in_use)
+	gui_gtk_uninit_socket_server();
+#endif
 }
 
 /*
@@ -9353,7 +9365,7 @@ socket_server_list_sockets(void)
  * Called when the server has received a new command. If so, parse it and do the
  * stuff it says, and possibly send back a reply.
  */
-    static void
+    void
 socket_server_accept_client(void)
 {
     int	fd = accept(socket_server_fd, NULL, NULL);
@@ -9778,7 +9790,7 @@ fail:
 /*
  * Initialize command structure to empty state
  */
-static void
+    static void
 socket_server_init_cmd(ss_cmd_T *cmd, ss_cmd_type_T type)
 {
     cmd->cmd_len = 0;
@@ -10299,6 +10311,15 @@ socket_server_dispatch(int timeout)
     }
 
     return FAIL;
+}
+
+/*
+ * Get file descriptor of listening socket
+ */
+    int
+socket_server_get_fd(void)
+{
+    return socket_server_fd;
 }
 
 #endif // FEAT_SOCKETSERVER
