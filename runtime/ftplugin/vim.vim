@@ -116,7 +116,7 @@ setlocal include=\\v^\\s*import\\s*(autoload)?
 " set 'define' to recognize export commands
 setlocal define=\\v^\\s*export\\s*(def\|const\|var\|final)
 
-" set omnifunc completeion
+" set omnifunc completion
 setlocal omnifunc=vimcomplete#Complete
 
 " Format comments to be up to 78 characters long
