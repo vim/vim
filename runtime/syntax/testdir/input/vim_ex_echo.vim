@@ -9,7 +9,7 @@ echoerr     "Answer = " 42
 echoconsole "Answer = " 42
 
 
-" trailing bar vs OR operator
+" Trailing bar vs OR operator
 
 " OR operator
 echo foo || bar
@@ -25,7 +25,7 @@ echo "Foo" ||
 echohl WarningMsg | echo "Don't panic!" | echohl None
 
 
-" line continuations
+" Line continuations
 
 echo "Answer = "
      "\ comment
@@ -37,7 +37,7 @@ echo
       \ 42
 
 
-" trailing bar and comments
+" Trailing bar and comments
 
 " :echo without {expr}
 echo| echo "Foo"

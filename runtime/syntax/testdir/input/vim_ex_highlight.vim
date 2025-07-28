@@ -2,7 +2,7 @@
 " VIM_TEST_SETUP hi link vimHiGroup Todo
 
 
-" list
+" List
 
 highlight
 highlight Comment
@@ -11,12 +11,12 @@ highlight ErrorMsg
 highlight Foo
 
 
-" reset
+" Reset
 
 highlight clear
 
 
-" disable
+" Disable
 
 highlight clear Comment
 highlight clear Conceal
@@ -29,7 +29,7 @@ highlight ErrorMsg NONE
 highlight Foo NONE
 
 
-" add/modify
+" Add/modify
 
 highlight Comment cterm=underline
 highlight Conceal cterm=underline
@@ -42,7 +42,7 @@ highlight default ErrorMsg term=bold
 highlight Foo ErrorMsg term=bold
 
 
-" link
+" Link
 
 highlight link Foo Comment
 highlight! link Foo Comment
@@ -52,7 +52,7 @@ highlight link Foo ErrorMsg
 highlight! link Foo ErrorMsg
 
 
-" default link
+" Default link
 
 highlight default link Foo Comment
 highlight! default link Foo Comment
@@ -62,7 +62,7 @@ highlight default link Foo ErrorMsg
 highlight! default link Foo ErrorMsg
 
 
-" line continuation and command separator
+" Line continuation and command separator
 
 hi Comment
       "\ comment

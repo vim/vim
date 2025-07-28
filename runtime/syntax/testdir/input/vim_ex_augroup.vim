@@ -1,7 +1,7 @@
 " Vim :augroup command
 " VIM_TEST_SETUP let g:vimsyn_folding = "a"
 " VIM_TEST_SETUP setl fdc=2 fdl=999 fdm=syntax
-" VIM_TEST_SETUP highlight link vimAugroupName Todo
+" VIM_TEST_SETUP hi link vimAugroupName Todo
 
 
 augroup foo

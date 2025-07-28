@@ -1,7 +1,7 @@
 " Vim :call command
 
 
-" functions for which there are same-named Ex commands
+" Functions with same-named Ex commands
 
 call browse(save, title, initdir, default)
 call call(func, arglist, dict)
@@ -49,3 +49,4 @@ call Foo(arg1, arg2)
 
 let res = call(func, arglist, dict)
 let res = call (func, arglist, dict)
+

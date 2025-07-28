@@ -1,8 +1,9 @@
 vim9script
+# Vim9 function variables
 
-# Vim9 function variable highlighting
 
 def Foo()
+
   # Declarations
 
   var foo = expr

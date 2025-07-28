@@ -1,7 +1,8 @@
 vim9script
 # Vim9 :class command
-# VIM_TEST_SETUP let g:vimsyn_folding = 'cf'
+# VIM_TEST_SETUP let g:vimsyn_folding = 'cfi'
 # VIM_TEST_SETUP setl fdc=2 fdl=99 fdm=syntax
+
 
 interface Interface1
 endinterface

@@ -1,9 +1,8 @@
 vim9script
-# Vim :enum command
+# Vim9 :enum command
 # VIM_TEST_SETUP hi link vim9EnumValue Todo
-
-
 # See: https://github.com/vim/vim/pull/16365#issuecomment-2571420551
+
 
 enum Letter
     #

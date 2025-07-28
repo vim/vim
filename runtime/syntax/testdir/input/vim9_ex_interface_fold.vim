@@ -1,7 +1,8 @@
 vim9script
-# Vim :interface command
+# Vim9 :interface command
 # VIM_TEST_SETUP let g:vimsyn_folding = 'i'
 # VIM_TEST_SETUP setl fdc=2 fdl=99 fdm=syntax
+
 
 interface Interface1
 endinterface
@@ -34,3 +35,4 @@ interface Interface5
   def Meth1(): number
   def Meth2(): number
 endinterface
+

@@ -1,5 +1,5 @@
 vim9script
-
+# Vim9 this and super keywords
 # VIM_TEST_SETUP hi link vim9Super Todo
 # VIM_TEST_SETUP hi link vim9This Todo
 # See: https://github.com/vim/vim/pull/16476#issuecomment-2635119478

@@ -236,7 +236,7 @@
 /*
  * +cscope		Unix only: Cscope support.
  */
-#if defined(UNIX) && defined(FEAT_HUGE) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)
+#if defined(UNIX) && defined(FEAT_HUGE) && defined(ENABLE_CSCOPE) && !defined(MACOS_X)
 # define FEAT_CSCOPE
 #endif
 

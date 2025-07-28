@@ -69,4 +69,6 @@ int ins_complete(int c, int enable_pum);
 void free_insexpand_stuff(void);
 int ins_compl_cancel(void);
 void f_complete_match(typval_T *argvars, typval_T *rettv);
+int ins_compl_setup_autocompl(int c);
+// void ins_compl_disable_autocompl(void);
 /* vim: set ft=c : */

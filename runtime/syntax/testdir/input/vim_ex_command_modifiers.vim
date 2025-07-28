@@ -1,4 +1,4 @@
-" Vim ex command modifiers
+" Vim Ex command modifiers
 
 
  aboveleft        echo "Foo"

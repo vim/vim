@@ -1,5 +1,6 @@
 " Vim :catch command
 
+
 " :help :catch
 
 catch /^Vim:Interrupt$/		" catch interrupts (CTRL-C)
@@ -15,3 +16,4 @@ catch				" same as /.*/
 
 try | sleep 100 | catch /^Vim:Interrupt$/ | endtry
 try | edit | catch /^Vim(edit):E\d\+/ | echo "error" | endtry
+

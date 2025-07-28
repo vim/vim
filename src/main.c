@@ -2096,7 +2096,19 @@ command_line_scan(mparm_T *parmp)
 	{
 	    want_argument = FALSE;
 	    c = argv[0][argv_idx++];
-#ifdef VMS
+#if defined( VMS)
+	    /* 2025-05-13  SMS
+	     * On sufficiently recent non-VAX systems, case preservation
+	     * of the command line is possible/routine.  And quotation
+	     * always works, and is the expected method in such cases.
+	     * However, leaving this slash-prefix scheme available is
+	     * nearly harmless.  But note that it doesn't help with the
+	     * case of other command-line arguments, such as file names.
+	     * For details, see os_vms.c:vms_init().
+	     * On VAX and old non-VAX systems, or with SET PROC/PARSE=TRAD,
+	     * DCL upcases the command line, and the C RTL downcases it.
+	     * I would not say "only uses upper case command lines".
+	     */
 	    /*
 	     * VMS only uses upper case command lines.  Interpret "-X" as "-x"
 	     * and "-/X" as "-X".
@@ -2106,9 +2118,12 @@ command_line_scan(mparm_T *parmp)
 		c = argv[0][argv_idx++];
 		c = TOUPPER_ASC(c);
 	    }
-	    else
-		c = TOLOWER_ASC(c);
-#endif
+	    /* Note that although DCL might upcase things, the C RTL
+	     * will only downcase them, so there should be no need for
+	     * the following (additional?) downcasing (which spoils the
+	     * preserve-case results):
+	     */
+#endif /* defined( VMS) */
 	    switch (c)
 	    {
 	    case NUL:		// "vim -"  read from stdin
@@ -3610,9 +3625,10 @@ usage(void)
 	    break;
 	mch_msg(_("\n   or:"));
     }
-#ifdef VMS
-    mch_msg(_("\nWhere case is ignored prepend / to make flag upper case"));
-#endif
+#if defined( VMS)
+    mch_msg(_("\nWhere command is down-cased, prepend / (like: -/R) to treat flag as upper-case."));
+    mch_msg(_("\nOr, where supported, SET PROC/PARSE=EXT, or else quote upper-case material."));
+#endif /* defined( VMS) */
 
     mch_msg(_("\n\nArguments:\n"));
     main_msg(_("--\t\t\tOnly file names after this"));

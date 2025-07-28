@@ -196,3 +196,25 @@ silent! function Bar()
 return 42
 endfunction
 " END_INDENT
+
+" START_INDENT
+if true
+nmap xxx,
+else
+endif
+" END_INDENT
+
+" START_INDENT
+if true
+    var heredoc =<< END
+        foo
+        bar
+        baz
+    END
+endif
+" END_INDENT
+
+" START_INDENT
+set path=.,,
+set clipboard=unnamed,unnamedplus
+" END_INDENT

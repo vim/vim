@@ -1,7 +1,7 @@
 " Vim :function command
 
 
-" list
+" List
 
 function
 function Foo
@@ -13,7 +13,7 @@ function Foo | echo "Foo"
 function Foo " comment
 
 
-" definition
+" Definition
 
 " empty definition
 function Foo()
@@ -111,7 +111,7 @@ function s:ls()
 endfunction
 
 
-" modifiers
+" Modifiers
 
 function Foo() range
 endfunction
@@ -176,7 +176,7 @@ function Foo()
 endfunction " comment
 
 
-" parameters
+" Parameters
 
 function Foo(x, y, z, ...)
   return 42
@@ -217,7 +217,7 @@ function Foo(
 endfunction
 
 
-" arguments
+" Arguments
 
 function Foo(a, b, c)
   echo a:a a:b a:c
@@ -236,7 +236,7 @@ function Test(lines = [line('.'), line('.')])
 endfunction
 
 
-" comments
+" Comments
 
 function Foo()
   " Legacy-script comment
@@ -245,13 +245,13 @@ function Foo()
 endfunction
 
 
-" command modifiers
+" Command modifiers
 
 silent! function Foo()
 endfunction
 
 
-" leading command separator
+" Leading command separator
 
 echo "Foo" | function Foo()
 endfunction

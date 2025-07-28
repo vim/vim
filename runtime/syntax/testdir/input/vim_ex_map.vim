@@ -1,5 +1,6 @@
 " Vim :map commands
 
+
 map!
 map! lhs rhs
 map 
@@ -44,7 +45,7 @@ map _l :!ls | more^M:echo "rhs"<CR>
 map lhs :search('foo\\|bar')<CR>:echo "rhs"<CR>
 
 
-" multiline RHS
+" Multiline RHS
 
 map <Leader>baz 
   \ :echo (<Bar>
@@ -117,3 +118,4 @@ nnoremap <Leader>bar :echo (
 "   /autoload/netrw.vim
 
 if !hasmapto('<Plug>NetrwOpenFile')          |nmap <buffer> <silent> <nowait> %	<Plug>NetrwOpenFile|endif
+

@@ -1,6 +1,6 @@
 vim9script
-# Vim :enum command
-# VIM_TEST_SETUP let g:vimsyn_folding = 'ef'
+# Vim9 :enum command
+# VIM_TEST_SETUP let g:vimsyn_folding = 'efi'
 # VIM_TEST_SETUP setl fdc=2 fdl=99 fdm=syntax
 # VIM_TEST_SETUP hi link vim9EnumValue Todo
 

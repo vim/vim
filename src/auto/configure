@@ -8653,14 +8653,14 @@ if test ${enable_cscope+y}
 then :
   enableval=$enable_cscope;
 else case e in #(
-  e) enable_cscope="no" ;;
+  e) enable_cscope="yes" ;;
 esac
 fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_cscope" >&5
 printf "%s\n" "$enable_cscope" >&6; }
 if test "$enable_cscope" = "yes"; then
-  printf "%s\n" "#define FEAT_CSCOPE 1" >>confdefs.h
+  printf "%s\n" "#define ENABLE_CSCOPE 1" >>confdefs.h
 
 fi
 

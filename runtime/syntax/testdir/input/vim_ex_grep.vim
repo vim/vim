@@ -16,7 +16,7 @@ grepadd!  'pat\|tern' foo.txt
 lgrepadd! 'pat\|tern' foo.txt
 
 
-" special filename characters
+" Special filename characters
 
 grep  'pat\|tern' %
 lgrep 'pat\|tern' %
@@ -31,7 +31,7 @@ grepadd!  'pat\|tern' %
 lgrepadd! 'pat\|tern' %
 
 
-" trailing bar, no tail comment
+" Trailing bar, no tail comment
 
 grep  'pat\|tern' foo.txt | echo "Foo"
 lgrep 'pat\|tern' foo.txt | echo "Foo"

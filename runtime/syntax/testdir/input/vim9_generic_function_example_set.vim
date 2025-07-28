@@ -1,7 +1,7 @@
 vim9script
-# VIM_TEST_SETUP highlight link vim9DefTypeParam Todo
-# VIM_TEST_SETUP let g:vimsyn_folding = "f"
+# VIM_TEST_SETUP let g:vimsyn_folding = "cf"
 # VIM_TEST_SETUP setl fdc=2 fdl=99 fdm=syntax
+# VIM_TEST_SETUP hi link vim9DefTypeParam Todo
 # See: https://github.com/vim/vim/pull/17313#issuecomment-3046696820 (Aliaksei Budavei)
 
 # See https://github.com/vim/vim/issues/14330#issuecomment-2028938515 .

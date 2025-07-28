@@ -13,7 +13,7 @@ VIMRUNTIME = ../..
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=45 --log-file=valgrind.$*
 
-# Trace ruler liveness on demand.
+# Trace liveness on demand.
 # VIM_SYNTAX_TEST_LOG = `pwd`/testdir/failed/00-TRACE_LOG
 
 # ENVVARS = LC_ALL=C VIM_SYNTAX_TEST_LOG="$(VIM_SYNTAX_TEST_LOG)"
@@ -39,7 +39,7 @@ test:
 	@# the "vimcmd" file is used by the screendump utils
 	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
-	@# Trace ruler liveness on demand.
+	@# Trace liveness on demand.
 	@#mkdir -p testdir/failed
 	@#touch "$(VIM_SYNTAX_TEST_LOG)"
 	VIMRUNTIME=$(VIMRUNTIME) $(ENVVARS) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim > /dev/null

@@ -1,4 +1,5 @@
 vim9script
+# Vim9 heredoc
 # VIM_TEST_SETUP let g:vimsyn_folding = "h"
 # VIM_TEST_SETUP setl fdc=2 fdl=99 fdm=syntax
 

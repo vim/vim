@@ -1,6 +1,6 @@
 vim9script
-
 # Vim9 variable highlighting
+
 
 # Declarations
 

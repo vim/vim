@@ -15,7 +15,7 @@ profdel  file MyScript.vim
 profdel  here
 
 
-" tail comment
+" Tail comment
 
 profile  start /tmp/myprofile " comment
 profile  stop                 " comment
@@ -31,7 +31,7 @@ profdel  file MyScript.vim    " comment
 profdel  here                 " comment
 
 
-" trailing command
+" Trailing command
 
 profile  start /tmp/myprofile | echo "Foo"
 profile  stop                 | echo "Foo"

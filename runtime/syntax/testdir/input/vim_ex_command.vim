@@ -1,15 +1,15 @@
 " Vim :command, :delcommand and :comclear commands
-" VIM_TEST_SETUP highlight link vimUserCmdName Todo
-" VIM_TEST_SETUP highlight link vimDelcommandName Todo
+" VIM_TEST_SETUP hi link vimUserCmdName Todo
+" VIM_TEST_SETUP hi link vimDelcommandName Todo
 
 
-" list
+" List
 
 command
 command F
 
 
-" define
+" Define
 
 command  Foo echo "Foo"
 command! Foo echo "Foo"
@@ -53,7 +53,7 @@ def Foo2()
 enddef
 
 
-" multiline define
+" Multiline define
 
 command! -addr=lines
       \ -bang
@@ -112,12 +112,12 @@ command!
       \ echo "Bar"
 
 
-" errors
+" Errors
 
 command! -badattr=arguments -bang -badattr -nargs=* Foo echo "Foo"
 
 
-" delete
+" Delete
 
 delcommand Foo
 delcommand -buffer Foo

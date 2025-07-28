@@ -1,5 +1,6 @@
 " Vim :menu commands
 
+
 " :help disable menus
 menu disable &File.&Open\.\.\.
 amenu enable *

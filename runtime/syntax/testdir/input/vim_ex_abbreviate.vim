@@ -1,5 +1,6 @@
 " Vim :abbreviate commands
 
+
 abbrev <buffer> foo foobar
 cabbrev <buffer> cfoo cfoobar
 iabbrev <buffer> ifoo cfoobar
@@ -23,3 +24,4 @@ iunabbrev <buffer> ifoo
 abclear <buffer>
 cabclear <buffer>
 iabclear <buffer>
+

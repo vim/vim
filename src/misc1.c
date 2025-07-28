@@ -566,6 +566,26 @@ gchar_cursor(void)
 }
 
 /*
+ * Return the character immediately before the cursor.
+ */
+    int
+char_before_cursor(void)
+{
+    if (curwin->w_cursor.col == 0)
+	return -1;
+
+    char_u *line = ml_get_curline();
+
+    if (has_mbyte)
+    {
+	char_u *p = line + curwin->w_cursor.col;
+	int prev_len = (*mb_head_off)(line, p - 1) + 1;
+	return mb_ptr2char(p - prev_len);
+    }
+    return line[curwin->w_cursor.col - 1];
+}
+
+/*
  * Write a character at the current cursor position.
  * It is directly written into the block.
  */
