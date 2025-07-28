@@ -11,6 +11,7 @@ CheckFeature clientserver
 source util/shared.vim
 
 func Check_X11_Connection()
+  CheckFeature x11
   if has('x11')
     CheckX11
     try
@@ -24,7 +25,7 @@ func Check_X11_Connection()
   endif
 endfunc
 
-func Test_client_server()
+func Test_client_server_x11()
   let g:test_is_flaky = 1
   let cmd = GetVimCommand()
   if cmd == ''
@@ -190,7 +191,7 @@ func Test_client_server()
         \ has('unix') ? ['E573:.*abc'] : 'E258:')
 endfunc
 
-func Test_client_server_stopinsert()
+func Test_client_server_stopinsert_x11()
   " test does not work on MS-Windows
   CheckNotMSWindows
   let g:test_is_flaky = 1

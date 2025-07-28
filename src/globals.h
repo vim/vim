@@ -2110,7 +2110,7 @@ EXTERN const clientserver_method_T clientserver_method
 # endif
 # ifdef FEAT_X11
 INIT(= CLIENTSERVER_METHOD_X11);
-# elif FEAT_SOCKETSERVER
+# elif defined(FEAT_SOCKETSERVER)
 INIT(= CLIENTSERVER_METHOD_SOCKET);
 # else
 INIT(= CLIENTSERVER_METHOD_NONE);

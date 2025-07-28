@@ -293,8 +293,10 @@ prepare_server(mparm_T *parmp)
 #  endif
 	vim_free(parmp->servername);
     }
+#ifdef FEAT_X11
     else
 	serverDelayedStartName = parmp->servername;
+#endif
 # endif
 
     /*
@@ -337,9 +339,9 @@ cmdsrv_main(
 #ifdef FEAT_SOCKETSERVER
     char_u	*receiver;
 #endif
-# ifndef FEAT_X11
+# ifdef MSWIN
     HWND	srv;
-# else
+# elif defined(FEAT_X11)
     Window	srv;
 
     setup_term_clip();

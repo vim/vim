@@ -6767,6 +6767,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"socketserver",
+#ifdef FEAT_SOCKETSERVER
+		1
+#else
+		0
+#endif
+		},
 	{"balloon_eval",
 #ifdef FEAT_BEVAL_GUI
 		1
