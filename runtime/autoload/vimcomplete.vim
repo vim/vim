@@ -64,6 +64,12 @@ export def Complete(findstart: number, base: string): any
     elseif trigger == 'expression'
         items = getcompletion(base, 'expression')
             ->mapnew((_, v) => ({word: v, kind: 'v', menu: 'Expression', dup: 0}))
+    elseif trigger == 'command'
+        var commands = getcompletion(base, 'command')
+            ->mapnew((_, v) => ({word: v, kind: 'v', menu: 'Command', dup: 0}))
+        var functions = getcompletion(base, 'function')
+            ->mapnew((_, v) => ({word: v, kind: 'v', menu: 'Function', dup: 0}))
+        items = commands + functions
     else
         items = getcompletion(prefix, 'cmdline')
             ->mapnew((_, v) => ({word: v->matchstr('\k\+'), kind: 'v', dup: 0}))
