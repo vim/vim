@@ -20,7 +20,7 @@ set cpo&vim
 
 if !exists('*VimFtpluginUndo')
   func VimFtpluginUndo()
-    setl fo< isk< com< tw< commentstring< include< define< keywordprg<
+    setl fo< isk< com< tw< commentstring< include< define< keywordprg< omnifunc<
     sil! delc -buffer VimKeywordPrg
     if exists('b:did_add_maps')
       silent! nunmap <buffer> [[
@@ -115,6 +115,9 @@ setlocal include=\\v^\\s*import\\s*(autoload)?
 
 " set 'define' to recognize export commands
 setlocal define=\\v^\\s*export\\s*(def\|const\|var\|final)
+
+" set omnifunc completeion
+setlocal omnifunc=vimcomplete#Complete
 
 " Format comments to be up to 78 characters long
 if &tw == 0
