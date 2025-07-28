@@ -9524,6 +9524,8 @@ socket_server_send(
 
     if (receiver != NULL)
 	*receiver = path;
+    else
+	VIM_CLEAR(path);
 
     if (!is_expr)
 	// Exit, we aren't waiting for a reponse
@@ -9531,7 +9533,7 @@ socket_server_send(
 
     // Wait for server to send back result
     if (socket_server_decode_cmd(&rcmd, socket_fd,
-		timeout > 0 ? timeout : 100000) == FAIL)
+		timeout > 0 ? timeout : 500) == FAIL)
     {
 	close(socket_fd);
 	vim_free(path);

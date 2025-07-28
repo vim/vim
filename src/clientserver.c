@@ -543,12 +543,34 @@ cmdsrv_main(
 	    if (serverSendToVim(sname, (char_u *)argv[i + 1],
 						  &res, NULL, 1, 0, FALSE) < 0)
 # else
-	    if (xterm_dpy == NULL)
-		mch_errmsg(_("No display: Send expression failed.\n"));
-	    else if (serverSendToVim(xterm_dpy, sname, (char_u *)argv[i + 1],
-					       &res, NULL, 1, 0, 1, FALSE) < 0)
+#  ifdef FEAT_SOCKETSERVER
+	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	    {
+		if (!socket_server_valid())
+		    mch_errmsg(_("Socket server not online:"
+				"Send expression failed"));
+		else if (socket_server_send(sname, (char_u *)argv[i + 1],
+			    &res, NULL, 1, 0, FALSE) < 0)
+		    goto expr_fail;
+	    }
+#  endif
+#  ifdef FEAT_X11
+	    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	    {
+		if (xterm_dpy == NULL)
+		    mch_errmsg(_("No display: Send expression failed.\n"));
+		else if (serverSendToVim(xterm_dpy, sname,
+			    (char_u *)argv[i + 1], &res,
+			    NULL, 1, 0, 1, FALSE) < 0)
+		    goto expr_fail;
+	    }
+#  endif
+	    if (FALSE)
 # endif
 	    {
+# if !defined(MSWIN)
+expr_fail:
+# endif
 		if (res != NULL && *res != NUL)
 		{
 		    // Output error from remote
