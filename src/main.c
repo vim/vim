@@ -1905,11 +1905,6 @@ early_arg_scan(mparm_T *parmp UNUSED)
 #if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
 	else if (STRNICMP(argv[i], "--clientserver", 14) == 0)
 	{
-	    // Although clientserver_method will be set back to what the user
-	    // has configured or the default, that will be after we parse the
-	    // server arguments and execute them such as --remote. This is
-	    // before we execute them meaning the user can change what method
-	    // they want to use since +'cmd' is too late.
 	    char_u *arg;
 	    if (i == argc - 1)
 		mainerr_arg_missing((char_u *)argv[i]);

@@ -190,60 +190,65 @@ serverConvert(
 
 static char_u *build_drop_cmd(int filec, char **filev, int tabs, int sendReply);
 
-/*
- * Do the client-server stuff, unless "--servername ''" was used.
- */
-    void
-exec_on_server(mparm_T *parmp)
-{
-    if (parmp->serverName_arg != NULL && *parmp->serverName_arg == NUL)
-	return;
+  /*
+   * Do the client-server stuff, unless "--servername ''" was used.
+   */
+      void
+  exec_on_server(mparm_T *parmp)
+  {
+      if (parmp->serverName_arg != NULL && *parmp->serverName_arg == NUL)
+          return;
 
-# ifdef MSWIN
-    // Initialise the client/server messaging infrastructure.
-    serverInitMessaging();
-# endif
+  # ifdef MSWIN
+      // Initialise the client/server messaging infrastructure.
+      serverInitMessaging();
+  # endif
 
-    // Get the name to register ourselves. On Win32 can register right now, for
-    // X11 need to setup the clipboard first, it's further down. Why not do this
-    // after we call cmdsrv_main? Because if the socket server is used, it needs
-    // the name so it can create a socket to receive replies from.
-    parmp->servername = serverMakeName(parmp->serverName_arg,
-	    parmp->argv[0]);
-
+      /*
+       * When a command server argument was found, execute it.  This may
+       * exit Vim when it was successful.  Otherwise it's executed further
+       * on.  Remember the encoding used here in "serverStrEnc".
+       */
+      if (parmp->serverArg)
+      {
 #ifdef FEAT_SOCKETSERVER
-    // Initialize socket server, we may need the server to reply back to us.
-    socket_server_init(parmp->servername, TRUE);
-    TIME_MSG("Initialized socket server");
+	  // Initialize socket server now, we may need to receive replies back
+	  // to us.
+	  if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	  {
+	      parmp->servername = serverMakeName(parmp->serverName_arg,
+		      parmp->argv[0]);
+	      if (socket_server_init(parmp->servername, TRUE) == OK)
+		  TIME_MSG("initialize socket server");
+	  }
 #endif
 
-    /*
-     * When a command server argument was found, execute it.  This may
-     * exit Vim when it was successful.  Otherwise it's executed further
-     * on.  Remember the encoding used here in "serverStrEnc".
-     */
-    if (parmp->serverArg)
-    {
-	cmdsrv_main(&parmp->argc, parmp->argv,
-		parmp->serverName_arg, &parmp->serverStr);
-	parmp->serverStrEnc = vim_strsave(p_enc);
-    }
-# if defined(MSWIN) || (defined(FEAT_SOCKETSERVER) && !defined(FEAT_X11))
-    if (parmp->servername != NULL)
-    {
-	serverSetName(parmp->servername);
-	vim_free(parmp->servername);
-    }
-# endif
-}
+          cmdsrv_main(&parmp->argc, parmp->argv,
+                  parmp->serverName_arg, &parmp->serverStr);
+          parmp->serverStrEnc = vim_strsave(p_enc);
+      }
 
+      // If we're still running, get the name to register ourselves.
+      // On Win32 can register right now, for X11 need to setup the
+      // clipboard first, it's further down.
+      if (parmp->servername == NULL)
+	  parmp->servername = serverMakeName(parmp->serverName_arg,
+		  parmp->argv[0]);
+  # ifdef MSWIN
+      if (parmp->servername != NULL)
+      {
+          serverSetName(parmp->servername);
+          vim_free(parmp->servername);
+      }
+  # endif
+  }
 /*
  * Prepare for running as a Vim server.
  */
     void
 prepare_server(mparm_T *parmp)
 {
-# if defined(FEAT_X11)
+# if defined(FEAT_X11) || defined(FEAT_SOCKETSERVER)
     /*
      * Register for remote command execution with :serversend and --remote
      * unless there was a -X or a --servername '' on the command line.
@@ -266,9 +271,21 @@ prepare_server(mparm_T *parmp)
 #  endif
 		parmp->serverName_arg != NULL))
     {
-	(void)serverRegisterName(X_DISPLAY, parmp->servername);
+#  ifdef FEAT_SOCKETSERVER
+	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	{
+	    if (socket_server_init(parmp->servername, TRUE) == OK)
+		TIME_MSG("initialize socket server");
+	}
+#  endif
+#  ifdef FEAT_X11
+	if (clientserver_method == CLIENTSERVER_METHOD_X11)
+	{
+	    (void)serverRegisterName(X_DISPLAY, parmp->servername);
+	    TIME_MSG("register x11 server name");
+	}
+#  endif
 	vim_free(parmp->servername);
-	TIME_MSG("register x11 server name");
     }
     else
 	serverDelayedStartName = parmp->servername;
@@ -547,8 +564,15 @@ cmdsrv_main(
 	    // Win32 always works?
 	    res = serverGetVimNames();
 # else
-	    if (xterm_dpy != NULL)
+#  ifdef FEAT_SOCKETSERVER
+	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+		res = socket_server_list_sockets();
+#  endif
+#  ifdef FEAT_X11
+	    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+		    xterm_dpy != NULL)
 		res = serverGetVimNames(xterm_dpy);
+#  endif
 # endif
 	    if (did_emsg)
 		mch_errmsg("\n");

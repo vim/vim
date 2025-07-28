@@ -9114,7 +9114,7 @@ socket_server_init(char_u *name, int auto_name)
     int			i = 1;
 
     if (socket_server_valid())
-	return OK;
+	return FAIL;
 
     path = alloc(sizeof(addr.sun_path));
 
@@ -9227,6 +9227,10 @@ socket_server_init(char_u *name, int auto_name)
 
     if ((socket_server_path = vim_strsave((char_u *)addr.sun_path)) == NULL)
 	goto fail;
+
+    vim_free(serverName);
+
+    serverName = vim_strsave(socket_server_path);
 
     vim_free(path);
     return OK;

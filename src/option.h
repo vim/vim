@@ -508,9 +508,6 @@ EXTERN long	p_cwh;		// 'cmdwinheight'
 EXTERN char_u	*p_cb;		// 'clipboard'
 EXTERN char_u	*p_cpm;		// 'clipmethod'
 #endif
-#ifdef FEAT_CLIENTSERVER
-EXTERN char_u	*p_csr;		// 'clientserver'
-#endif
 EXTERN long	p_ch;		// 'cmdheight'
 #ifdef FEAT_FOLDING
 EXTERN char_u	*p_cms;		// 'commentstring'

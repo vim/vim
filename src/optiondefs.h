@@ -642,21 +642,6 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
-    {"clientserver", "csr", P_STRING|P_VI_DEF,
-#if defined(FEAT_CLIENTSERVER) && !defined(MSWIN)
-			    (char_u *)&p_csr, PV_NONE, did_set_clientserver, expand_set_clientserver,
-# if defined(FEAT_X11)
-			    {(char_u *)"x11", (char_u *)0L}
-# elif defined(FEAT_SOCKETSERVER)
-			    {(char_u *)"socket", (char_u *)0L}
-# else
-			    {(char_u *)"", (char_u *)0L}
-# endif
-#else
-			    (char_u *)NULL, PV_NONE, NULL, NULL,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCTX_INIT},
     {"cmdheight",   "ch",   P_NUM|P_VI_DEF|P_RALL,
 			    (char_u *)&p_ch, PV_NONE, did_set_cmdheight, NULL,
 			    {(char_u *)1L, (char_u *)0L} SCTX_INIT},

@@ -2100,7 +2100,13 @@ typedef enum {
     CLIENTSERVER_METHOD_SOCKET
 } clientserver_method_T;
 
-EXTERN clientserver_method_T clientserver_method INIT(= 0);
+// Default to X11 if compiled with support for it, else use socket server.
+EXTERN clientserver_method_T clientserver_method
+# ifdef FEAT_X11
+INIT(= CLIENTSERVER_METHOD_X11);
+# else
+INIT(= CLIENTSERVER_METHOD_SOCKET);
+# endif
 
 #endif
 
