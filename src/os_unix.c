@@ -9100,12 +9100,12 @@ mch_create_anon_file(void)
 /*
  * Initialize socket server called "name" (the socket filename). If "name" is a
  * path (starts with a '/', './', or '../'), it is assumed to be the path to
- * the desirect socket. If "auto_name" is TRUE then if the socket path is
- * already taken, append an incrementing number to the path until we find a
- * socket filename that can be used. Returns OK on success and FAIL on failure.
+ * the desired socket. If the socket path is already taken, append an
+ * incrementing number to the path until we find a socket filename that can be
+ * used. Returns OK on success and FAIL on failure.
  */
     int
-socket_server_init(char_u *name, int auto_name)
+socket_server_init(char_u *name)
 {
     struct sockaddr_un	addr;
     char_u		*path;
@@ -9188,7 +9188,7 @@ socket_server_init(char_u *name, int auto_name)
     }
 
     // Check if path was too big
-    if (num_printed >= sizeof(addr.sun_path))
+    if ((size_t)num_printed >= sizeof(addr.sun_path))
     {
 	emsg(_(e_socket_path_too_big));
 	goto fail;
@@ -9211,7 +9211,7 @@ socket_server_init(char_u *name, int auto_name)
 	num_printed = vim_snprintf(addr.sun_path, sizeof(addr.sun_path),
 		"%s%d", path, i);
 
-	if (num_printed >= sizeof(addr.sun_path))
+	if ((size_t)num_printed >= sizeof(addr.sun_path))
 	{
 	    // Address too big
 	    emsg(_(e_socket_path_too_big));
@@ -9309,7 +9309,7 @@ socket_server_list_sockets(void)
 
     ga_init2(&str, 1, 100);
 
-    for (int i = 0 ; i < ARRAY_LENGTH(known_dirs); i++)
+    for (size_t i = 0 ; i < ARRAY_LENGTH(known_dirs); i++)
     {
 	char_u *dir = known_dirs[i];
 
@@ -9443,7 +9443,7 @@ socket_server_get_path_from_name(char_u *name)
     if (buf == NULL)
 	return NULL;
 
-    for (int i = 0; i < ARRAY_LENGTH(known_dirs); i++)
+    for (size_t i = 0; i < ARRAY_LENGTH(known_dirs); i++)
     {
 	const char_u *dir = known_dirs[i];
 
@@ -9563,7 +9563,7 @@ socket_server_send(
 	return -1;
     }
 
-    for (int i = 0; i < rcmd.cmd_num; i++)
+    for (uint32_t i = 0; i < rcmd.cmd_num; i++)
     {
 	ss_msg_T *msg = rcmd.cmd_msgs + i;
 
@@ -9836,7 +9836,7 @@ socket_server_append_msg(ss_cmd_T *cmd, char_u type, char_u *contents, int len)
     static void
 socket_server_free_cmd(ss_cmd_T *cmd)
 {
-    for (int i =0; i < cmd->cmd_num; i++)
+    for (uint32_t i = 0; i < cmd->cmd_num; i++)
     {
 	ss_msg_T *msg = cmd->cmd_msgs + i;
 
@@ -9870,7 +9870,7 @@ socket_server_encode_cmd(ss_cmd_T *cmd, size_t *sz)
     start += sizeof(cmd->cmd_len);
 
     // Append messages to buffer
-    for (int i = 0; i < cmd->cmd_num; i++)
+    for (uint32_t i = 0; i < cmd->cmd_num; i++)
     {
 	ss_msg_T *msg = cmd->cmd_msgs + i;
 
@@ -9944,7 +9944,7 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 	{
 	    r = read(socket_fd, buf + total_r, SS_CMD_INFO_SIZE - total_r);
 
-	    if (r >= SS_CMD_INFO_SIZE - total_r)
+	    if ((size_t)r >= SS_CMD_INFO_SIZE - total_r)
 	    {
 		char_u *tmp;
 
@@ -9979,7 +9979,7 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 	    // Read message data
 	    r = read(socket_fd, start + total_r, cmd->cmd_len - total_r);
 
-	    if (r >= cmd->cmd_len - total_r)
+	    if ((size_t)r >= cmd->cmd_len - total_r)
 		break;
 	}
 
@@ -9990,7 +9990,7 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
     }
 
     // Parse message data
-    for (int i = 0; i <  cmd->cmd_num; i++)
+    for (uint32_t i = 0; i <  cmd->cmd_num; i++)
     {
 	ss_msg_T *msg = cmd->cmd_msgs + i;
 
@@ -10151,7 +10151,7 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
     char_u	    *to_free2;
 
 
-    for (int i = 0; i < cmd->cmd_num; i++)
+    for (uint32_t i = 0; i < cmd->cmd_num; i++)
     {
 	ss_msg_T *msg = cmd->cmd_msgs + i;
 

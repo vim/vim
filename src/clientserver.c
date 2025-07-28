@@ -218,7 +218,7 @@ exec_on_server(mparm_T *parmp)
 	{
 	    parmp->servername = serverMakeName(parmp->serverName_arg,
 		    parmp->argv[0]);
-	    if (socket_server_init(parmp->servername, TRUE) == OK)
+	    if (socket_server_init(parmp->servername) == OK)
 		TIME_MSG("initialize socket server");
 	}
 #endif
@@ -280,7 +280,7 @@ prepare_server(mparm_T *parmp)
 #  ifdef FEAT_SOCKETSERVER
 	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
 	{
-	    if (socket_server_init(parmp->servername, TRUE) == OK)
+	    if (socket_server_init(parmp->servername) == OK)
 		TIME_MSG("initialize socket server");
 	}
 #  endif
@@ -1168,7 +1168,7 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 # else
 # ifdef FEAT_SOCKETSERVER
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	socket_server_init(server, TRUE);
+	socket_server_init(server);
 # endif
 # ifdef FEAT_X11
     if (clientserver_method == CLIENTSERVER_METHOD_X11 &&

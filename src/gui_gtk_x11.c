@@ -2708,10 +2708,10 @@ socket_server_poll_in(int fd, GIOCondition cond, void *user_data UNUSED)
     else if (cond & (G_IO_ERR | G_IO_HUP))
     {
 	socket_server_uninit();
-	return G_SOURCE_REMOVE;
+        return FALSE;
     }
 
-    return G_SOURCE_CONTINUE;
+    return TRUE;
 }
 
 /*

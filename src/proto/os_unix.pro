@@ -94,7 +94,7 @@ void stop_timeout(void);
 volatile sig_atomic_t *start_timeout(long msec);
 void delete_timer(void);
 int mch_create_anon_file(void);
-int socket_server_init(char_u *sock_path, int auto_name);
+int socket_server_init(char_u *sock_path);
 void socket_server_uninit(void);
 char_u *socket_server_list_sockets(void);
 void socket_server_accept_client(void);
