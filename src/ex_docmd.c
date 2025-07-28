@@ -10046,7 +10046,12 @@ eval_vars(
 #else
 # ifdef FEAT_SOCKETSERVER
 		if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-		    result = client_socket;
+		{
+		    if (client_socket == NULL)
+			result = "";
+		    else
+			result = client_socket;
+		}
 # endif
 # ifdef FEAT_X11
 		if (clientserver_method == CLIENTSERVER_METHOD_X11)

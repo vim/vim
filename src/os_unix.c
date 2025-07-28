@@ -9229,6 +9229,8 @@ socket_server_init(char_u *name, int auto_name)
     if ((socket_server_path = alloc(MAXPATHL)) == NULL)
 	goto fail;
 
+    socket_server_path[0] = NUL;
+
     if (mch_FullName((char_u *)addr.sun_path, socket_server_path,
 		MAXPATHL, FALSE) == FAIL)
     {
@@ -9480,6 +9482,12 @@ socket_server_send(
     if (serverName != NULL && STRICMP(name, serverName) == 0)
 	return sendToLocalVim(str, is_expr, result);
 
+    if (!socket_server_valid())
+    {
+	emsg(_(e_socket_server_not_online));
+	return -1;
+    }
+
     socket_fd = socket_server_connect(name, &path, silent);
 
     if (socket_fd == -1)
@@ -9585,7 +9593,8 @@ socket_server_read_reply(char_u *client, char_u **str, int timeout)
     ss_reply_T *reply = NULL;
     struct timeval start, now;
 
-    gettimeofday(&start, NULL);
+    if (timeout > 0)
+	gettimeofday(&start, NULL);
 
     // Try seeing if there already is a reply in the queue
     goto get_reply;
@@ -9594,11 +9603,13 @@ socket_server_read_reply(char_u *client, char_u **str, int timeout)
     {
 	int fd;
 
-	gettimeofday(&now, NULL);
+	if (timeout > 0)
+	    gettimeofday(&now, NULL);
 
-	if ((now.tv_sec * 1000000 + now.tv_usec) -
-		(start.tv_sec * 1000000 + start.tv_usec) >= timeout * 1000)
-	    break;
+	if (timeout > 0)
+	    if ((now.tv_sec * 1000000 + now.tv_usec) -
+		    (start.tv_sec * 1000000 + start.tv_usec) >= timeout * 1000)
+		break;
 
 get_reply:
 	reply = socket_server_get_reply(client, NULL);
@@ -9638,6 +9649,31 @@ get_reply:
 }
 
 /*
+ * Check for any replies for "sender". Returns 1 if there is and places the
+ * reply in "str" without consuming it. Returns 0 if otherwise and -1 on
+ * error.
+ */
+int
+socket_server_peek_reply(char_u *sender, char_u **str)
+{
+    ss_reply_T *reply;
+
+    if (!socket_server_valid())
+	return -1;
+
+    reply = socket_server_get_reply(sender, NULL);
+
+    if (reply != NULL && reply->strings.ga_len > 0)
+    {
+	if (str != NULL)
+	    *str = ((char_u **)reply->strings.ga_data)[0];
+	return 1;
+    }
+
+    return 0;
+}
+
+/*
  * Send a string to "client" as a reply (notification). Returns OK on success
  * and FAIL on failure.
  */
@@ -9648,6 +9684,12 @@ socket_server_send_reply(char_u *client, char_u *str)
     ss_cmd_T	cmd;
     size_t	sz;
     char_u	*final;
+
+    if (!socket_server_valid())
+    {
+	emsg(_(e_socket_server_not_online));
+	return FAIL;
+    }
 
     socket_fd = socket_server_connect(client, NULL, TRUE);
 

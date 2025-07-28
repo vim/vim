@@ -101,5 +101,6 @@ int socket_server_valid(void);
 char_u *socket_server_get_path_from_name(char_u *name);
 int socket_server_send(char_u *sock_path, char_u *cmd, char_u **result, char_u **receiver, int is_expr, int timeout, int silent);
 int socket_server_read_reply(char_u *sender, char_u **str, int timeout);
+int socket_server_peek_reply(char_u *sender, char_u **str);
 int socket_server_send_reply(char_u *client, char_u *str);
 /* vim: set ft=c : */

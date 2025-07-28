@@ -852,8 +852,8 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # else
 #ifdef FEAT_SOCKETSERVER
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
-	if (socket_server_send(server_name, keys, &r, &client, expr, timeout, TRUE)
-		< 0)
+	if (socket_server_send(server_name, keys, &r, &client, expr,
+		    timeout, TRUE) < 0)
 	    goto stuff;
 #endif
 #ifdef FEAT_X11
@@ -1011,11 +1011,20 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
 	rettv->vval.v_number = (s != NULL);
     }
 # else
-    if (check_connection() == FAIL)
-	return;
+#  ifdef FEAT_SOCKETSERVER
+    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	rettv->vval.v_number = socket_server_peek_reply(serverid, &s);
+#  endif
+#  ifdef FEAT_X11
+    if (clientserver_method == CLIENTSERVER_METHOD_X11)
+    {
+	if (check_connection() == FAIL)
+	    return;
 
-    rettv->vval.v_number = serverPeekReply(X_DISPLAY,
-						serverStrToWin(serverid), &s);
+	rettv->vval.v_number = serverPeekReply(X_DISPLAY,
+		serverStrToWin(serverid), &s);
+    }
+#  endif
 # endif
 
     if (argvars[1].v_type != VAR_UNKNOWN && rettv->vval.v_number > 0)
@@ -1066,20 +1075,20 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 	if (r == NULL)
 	    emsg(_(e_unable_to_read_server_reply));
 # else
-# ifdef FEAT_SOCKETSERVER
+#  ifdef FEAT_SOCKETSERVER
 	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
 		(socket_server_valid() &&
 		 socket_server_read_reply(serverid, &r, timeout * 1000)
 		 == FAIL))
 	    emsg(_(e_unable_to_read_server_reply));
-# endif
-# ifdef FEAT_X11
+#  endif
+#  ifdef FEAT_X11
 	if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
 		(check_connection() == FAIL
 		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
 						       &r, FALSE, timeout) < 0))
 	    emsg(_(e_unable_to_read_server_reply));
-# endif
+#  endif
 # endif
     }
 #endif
@@ -1166,9 +1175,6 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
 #ifdef FEAT_SOCKETSERVER
-    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
-	    !socket_server_valid())
-	return;
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
 	    socket_server_send_reply(server, reply) == FAIL)
 	goto fail;
