@@ -396,8 +396,8 @@ hi def link pythonQuotes		String
 hi def link pythonTripleQuotes		pythonQuotes
 hi def link pythonEscape		Special
 hi def link pythonUnicodeEscape		pythonEscape
-hi def link pythonFStringField		Todo
-hi def link pythonFStringDelimiter	Error
+hi def link pythonFStringField		Identifier
+hi def link pythonFStringDelimiter	Special
 if !exists("python_no_number_highlight")
   hi def link pythonNumber		Number
 endif
