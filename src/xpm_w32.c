@@ -6,7 +6,7 @@
  * Vim ones :(
  *
  * Written by Sergey Khorev.
- * http://iamphet.nm.ru/vim/index.html
+ * http://iamphet.nm.ru/vim/index.html (dead link)
  */
 
 #ifndef WIN32_LEAN_AND_MEAN
