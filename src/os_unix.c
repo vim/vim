@@ -9426,13 +9426,16 @@ socket_server_valid(void)
     char_u *
 socket_server_get_path_from_name(char_u *name)
 {
-    const char_u *known_dirs[] = {
-	(char_u *)".",
-	mch_getenv("XDG_RUNTIME_DIR"),
-	(char_u *)"/tmp"
-    };
-    char_u *buf;
-    stat_T s;
+    char_u	    *buf;
+    stat_T	    s;
+    const char_u    *known_dirs[] = {
+			(char_u *)".",
+			mch_getenv("XDG_RUNTIME_DIR"),
+			(char_u *)"/tmp"
+		    };
+
+    if (name == NULL)
+	return NULL;
 
     // Ignore if name is a path
     if (name[0] == PATHSEP)
@@ -9459,7 +9462,12 @@ socket_server_get_path_from_name(char_u *name)
 	    vim_snprintf((char *)buf, MAXPATHL, "%s/vim/%s", dir, name);
 
 	if (mch_stat((char *)buf,&s) == 0 && S_ISSOCK(s.st_mode))
+	{
+	    if (STRCMP(buf, socket_server_path) == 0)
+		// Can't connect to itself
+		break;
 	    return buf;
+	}
     }
 
     vim_free(buf);
@@ -9490,9 +9498,6 @@ socket_server_send(
     char_u	*to_free;
     char_u	code = 0;
 
-    // Execute locally if target is ourselves
-    if (serverName != NULL && STRICMP(name, serverName) == 0)
-	return sendToLocalVim(str, is_expr, result);
 
     if (!socket_server_valid())
     {
@@ -9504,6 +9509,18 @@ socket_server_send(
 
     if (socket_fd == -1)
 	return -1;
+
+#ifdef FEAT_EVAL
+    ch_log(NULL, "socket_server_send(%s, %s", path, str);
+#endif
+
+    // Execute locally if target is ourselves
+    if (serverName != NULL && STRICMP(path, serverName) == 0)
+    {
+	vim_free(path);
+	close(socket_fd);
+	return sendToLocalVim(str, is_expr, result);
+    }
 
     socket_server_init_cmd(&cmd,
 	    is_expr ? SS_CMD_TYPE_EXPR : SS_CMD_TYPE_KEYSTROKES);
@@ -9540,8 +9557,11 @@ socket_server_send(
 	VIM_CLEAR(path);
 
     if (!is_expr)
+    {
 	// Exit, we aren't waiting for a reponse
+	close(socket_fd);
 	return 0;
+    }
 
     // Wait for server to send back result
     if (socket_server_decode_cmd(&rcmd, socket_fd,
@@ -9562,6 +9582,11 @@ socket_server_send(
 	*receiver = NULL;
 	return -1;
     }
+
+#ifdef FEAT_EVAL
+    ch_log(NULL, "socket_server_send() result: cmd_num = %d, cmd_size = %d",
+	    rcmd.cmd_num, rcmd.cmd_len);
+#endif
 
     for (uint32_t i = 0; i < rcmd.cmd_num; i++)
     {
@@ -9772,7 +9797,12 @@ socket_server_connect(char_u *name, char_u **path, int silent)
     res = connect(socket_fd, (struct sockaddr *)&addr, sizeof(addr));
 
     if (res == -1)
+    {
+	if (!silent)
+	    semsg(_(e_socket_server_failed_connecting), socket_path,
+		    strerror(errno));
 	goto fail;
+    }
 
     if (path != NULL)
 	*path = socket_path;
@@ -10150,6 +10180,10 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
     char_u	    *to_free;
     char_u	    *to_free2;
 
+#ifdef FEAT_EVAL
+    ch_log(NULL, "socket_server_exec_cmd: cmd_num = %d, cmd_size = %d",
+	    cmd->cmd_num, cmd->cmd_len);
+#endif
 
     for (uint32_t i = 0; i < cmd->cmd_num; i++)
     {

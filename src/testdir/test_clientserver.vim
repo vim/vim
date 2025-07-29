@@ -11,7 +11,6 @@ CheckFeature clientserver
 source util/shared.vim
 
 func Check_X11_Connection()
-  CheckFeature x11
   if has('x11')
     CheckX11
     try
@@ -25,7 +24,7 @@ func Check_X11_Connection()
   endif
 endfunc
 
-func Test_client_server_x11()
+func Test_client_server()
   let g:test_is_flaky = 1
   let cmd = GetVimCommand()
   if cmd == ''
@@ -48,6 +47,10 @@ func Test_client_server_x11()
       call assert_true(index(lines, 'XVIMTEST') >= 0)
     endif
     call delete('Xtest_serverlist')
+  endif
+
+  if v:servername == ""
+    call remote_startserver('TEST')
   endif
 
   eval name->remote_foreground()
@@ -191,7 +194,7 @@ func Test_client_server_x11()
         \ has('unix') ? ['E573:.*abc'] : 'E258:')
 endfunc
 
-func Test_client_server_stopinsert_x11()
+func Test_client_server_stopinsert()
   " test does not work on MS-Windows
   CheckNotMSWindows
   let g:test_is_flaky = 1

@@ -3785,4 +3785,6 @@ EXTERN char e_socket_name_no_slashes[]
 	INIT(= N_("E1563: Socket name cannot have slashes in it without being a path"));
 EXTERN char e_socket_server_not_online[]
 	INIT(= N_("E1564: Socket server is not online, call remote_startserver() first"));
+EXTERN char e_socket_server_failed_connecting[]
+	INIT(= N_("E1565: Failed connecting to socket %s: %s"));
 #endif

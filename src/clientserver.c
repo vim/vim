@@ -631,6 +631,9 @@ expr_fail:
 
     if (didone)
     {
+#ifdef FEAT_SOCKETSERVER
+	socket_server_uninit();
+#endif
 	display_errors();	// display any collected messages
 	exit(exiterr);	// Mission accomplished - get out
     }
@@ -1220,6 +1223,9 @@ f_server2client(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 #ifdef MSWIN
     if (serverSendReply(server, reply) < 0)
+#endif
+#if defined(FEAT_SOCKETSERVER) && !defined(FEAT_X11) && !defined(MSWIN)
+    if (FALSE)
 #endif
     {
 #ifdef FEAT_SOCKETSERVER
