@@ -1095,7 +1095,7 @@ focus_out_event(GtkWidget *widget UNUSED,
  * plus the NUL terminator.  Returns the length in bytes.
  *
  * event->string is evil; see here why:
- * http://developer.gnome.org/doc/API/2.0/gdk/gdk-Event-Structures.html#GdkEventKey
+ * https://www.manpagez.com/html/gdk2/gdk2-2.24.24/gdk2-Event-Structures.php#GdkEventKey
  */
     static int
 keyval_to_string(unsigned int keyval, char_u *string)
