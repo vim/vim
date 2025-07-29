@@ -10,6 +10,7 @@ exclude = [
   '^https?://(www\.)?img\.shields\.io/.*$',
   '^https?://(www\.)?fossies\.org/.*$',
   'https://www.fleiner.com/vim/download.html',
+  'https://www.adobe.com',
 ]
 
 exclude_path = [
