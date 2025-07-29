@@ -143,25 +143,25 @@ if !exists("no_plugin_maps") && !exists("no_vim_maps")
   nnoremap <silent><buffer> [" :call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
   xnoremap <silent><buffer> [" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
 
-    " Purpose: Handle `:import` and `:packadd` lines in a smarter way. {{{
-    "
-    " `:import` is followed by a filename or filepath.  Find it.
-    "
-    " `:packadd`  is  followed  by the  name  of  a  package,  which we  might  have
-    " configured in scripts under `~/.vim/plugin`.  Find it.
-    "
-    " ---
-    "
-    " We can't handle the `:import` lines simply by setting `'includeexpr'`, because
-    " the option would be ignored if:
-    "
-    "    - the name of the imported script is the same as the current one
-    "    - `'path'` includes the `.` item
-    "
-    " Indeed,  in that  case, Vim  finds the  current file,  and simply  reloads the
-    " buffer.
-    " }}}
-    " We use the `F` variants, instead of the `f` ones, because they're smarter.
+  " Purpose: Handle `:import` and `:packadd` lines in a smarter way. {{{
+  "
+  " `:import` is followed by a filename or filepath.  Find it.
+  "
+  " `:packadd`  is  followed  by the  name  of  a  package,  which we  might  have
+  " configured in scripts under `~/.vim/plugin`.  Find it.
+  "
+  " ---
+  "
+  " We can't handle the `:import` lines simply by setting `'includeexpr'`, because
+  " the option would be ignored if:
+  "
+  "    - the name of the imported script is the same as the current one
+  "    - `'path'` includes the `.` item
+  "
+  " Indeed,  in that  case, Vim  finds the  current file,  and simply  reloads the
+  " buffer.
+  " }}}
+  " We use the `F` variants, instead of the `f` ones, because they're smarter.
   nnoremap <silent><buffer> gf :<C-U>call gf#Find('gF')<CR>
   nnoremap <silent><buffer> <C-W>f :<C-U>call gf#Find('<C-W>F')<CR>
   nnoremap <silent><buffer> <C-W>gf :<C-U>call gf#Find('<C-W>gF')<CR>
