@@ -24,7 +24,7 @@ The Open Publication License applies to the Vim documentation, see
 The icons used for the toolbar in the Win32 GUI are from the "Farm-Fresh Web
 Icons" set.  These icons are licensed under the Creative Commons Attribution
 3.0 License and were created by FatCow Web Hosting.  They were previously
-available at http://www.fatcow.com/free-icons and are still available at:
+available at (dead link) fatcow.com/free-icons and are still available at:
 https://www.iconarchive.com/show/farm-fresh-icons-by-fatcow.1.html
 
 

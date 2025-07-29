@@ -12,6 +12,7 @@ SRC_ALL =	\
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
 		.github/workflows/coverity.yml \
+		.github/workflows/link-check.yml \
 		.github/actions/test_artifacts/action.yml \
 		.github/dependabot.yml \
 		.gitignore \
@@ -29,6 +30,7 @@ SRC_ALL =	\
 		ci/remove_snap.sh \
 		ci/ddebs.list \
 		ci/pinned-pkgs \
+		lychee.toml \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.c \
