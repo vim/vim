@@ -12,6 +12,7 @@ exclude = [
   'https://www.fleiner.com/vim/download.html',
   'https://www.adobe.com',
   'https://github.com/you/foobar.git',
+  'http://vim\.sourceforge\.net/scripts/script\.php\?script_id=40$',
 ]
 
 exclude_path = [
