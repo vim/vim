@@ -9369,6 +9369,7 @@ socket_server_list_sockets(void)
 socket_server_accept_client(void)
 {
     int	fd = accept(socket_server_fd, NULL, NULL);
+    ss_cmd_T cmd;
 #ifndef HAVE_SELECT
     struct pollfd pfd;
 
@@ -9385,12 +9386,13 @@ socket_server_accept_client(void)
     if (fd == -1)
 	return;
 
+    if (socket_server_decode_cmd(&cmd, fd, 1000) == FAIL)
+	// Client is likely testing if we are still alive
+	goto exit;
+
 #ifdef FEAT_EVAL
     ch_log(NULL, "accepted new client on socket %s", socket_server_path);
 #endif
-    ss_cmd_T cmd;
-
-    socket_server_decode_cmd(&cmd, fd, 1000);
 
     socket_server_exec_cmd(&cmd, fd);
     socket_server_free_cmd(&cmd);
@@ -9405,6 +9407,7 @@ socket_server_accept_client(void)
     select(fd + 1, &rfds, NULL, NULL, &tv);
 #endif
 
+exit:
     close(fd);
 }
 
@@ -9511,7 +9514,7 @@ socket_server_send(
 	return -1;
 
 #ifdef FEAT_EVAL
-    ch_log(NULL, "socket_server_send(%s, %s", path, str);
+    ch_log(NULL, "socket_server_send(%s, %s)", path, str);
 #endif
 
     // Execute locally if target is ourselves
