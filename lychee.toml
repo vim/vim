@@ -3,5 +3,6 @@
 exclude = [
   '^https?://www\.openvms\.compaq\.com/.*',
   '^https?://www\.openvms\.digital\.com/.*',
-  "http://sys/file"
+  "http://sys/file",
+  '(?i).*file://hostname/CURRENT/DIR.*',
 ]
