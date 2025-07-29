@@ -11,6 +11,7 @@ exclude = [
   '^https?://(www\.)?fossies\.org/.*$',
   'https://www.fleiner.com/vim/download.html',
   'https://www.adobe.com',
+  'https://github.com/you/foobar.git',
 ]
 
 exclude_path = [
