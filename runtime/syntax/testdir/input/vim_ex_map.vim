@@ -1,4 +1,7 @@
 " Vim :map commands
+" VIM_TEST_SETUP hi link vimMapLhs Identifier
+" VIM_TEST_SETUP hi link vimMapRhs Todo
+" VIM_TEST_SETUP hi link vimMapRhsContinue Todo
 
 
 map!
