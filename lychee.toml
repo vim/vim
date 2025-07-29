@@ -13,6 +13,8 @@ exclude = [
   'https://www.adobe.com',
   'https://github.com/you/foobar.git',
   'http://vim\.sourceforge\.net/scripts/script\.php\?script_id=40$',
+  'https://is.gd/',
+  'https://wiki.contextgarden.net/Vim',
 ]
 
 exclude_path = [
