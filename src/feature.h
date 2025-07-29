@@ -948,8 +948,8 @@
 /*
  * +socketserver	 Use UNIX domain sockets for clientserver communication
  */
-#if defined(FEAT_NORMAL) && defined(UNIX) && !defined(FEAT_X11) && \
-    !defined(FEAT_SOCKETSERVER)
+#if defined(FEAT_NORMAL) && defined(UNIX) && (!defined(WANT_X11) || \
+	!defined(HAVE_X11)) && !defined(FEAT_SOCKETSERVER)
 #define FEAT_SOCKETSERVER
 #endif
 

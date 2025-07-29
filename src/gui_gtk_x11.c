@@ -2708,7 +2708,7 @@ socket_server_poll_in(int fd, GIOCondition cond, void *user_data UNUSED)
     else if (cond & (G_IO_ERR | G_IO_HUP))
     {
 	socket_server_uninit();
-        return FALSE;
+	return FALSE;
     }
 
     return TRUE;
