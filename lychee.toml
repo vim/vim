@@ -3,6 +3,8 @@
 # Maximum number of concurrent link checks.
 max_concurrency = 14
 
+extensions = ["c","h","md","html","txt"]
+
 #############################  Requests  ############################
 
 # Comma-separated list of accepted status codes for valid links.
@@ -26,7 +28,8 @@ exclude = [
   '^https?://(www\.)?img\.shields\.io/.*$',
   '^https?://(www\.)?fossies\.org/.*$',
   'https://www.fleiner.com/vim/download.html',
-  'https://www.adobe.com',
+  'https?://www\.adobe\.com',
+  'https?://google\.com',
   'https://github.com/you/foobar.git',
   'http://vim\.sourceforge\.net/scripts/script\.php\?script_id=40$',
   'https://is.gd/',

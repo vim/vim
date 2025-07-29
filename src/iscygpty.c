@@ -42,7 +42,7 @@
 #  define __in_opt
 # endif
 // Win32 FileID API Library:
-// http://www.microsoft.com/en-us/download/details.aspx?id=22599
+// defunct link: microsoft.com/en-us/download/details.aspx?id=22599
 // Needed for WinXP.
 # include <fileextd.h>
 #else // USE_FILEEXTD
