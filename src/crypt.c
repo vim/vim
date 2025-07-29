@@ -23,8 +23,8 @@
  * most countries.  There are a few exceptions, but that still should not be a
  * problem since this code was originally created in Europe and India.
  *
- * Blowfish addition originally made by Mohsin Ahmed,
- * http://www.cs.albany.edu/~mosh 2010-03-14
+ * Blowfish addition originally made by Mohsin Ahmed (2010‑03‑14).
+ * Original link (www.cs.albany.edu/~mosh) is no longer available.
  * Based on blowfish by Bruce Schneier (http://www.schneier.com/blowfish.html)
  * and sha256 by Christophe Devine.
  */
