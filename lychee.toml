@@ -1,8 +1,16 @@
-# lychee.toml — exclude two legacy domains
-# (patterns are regular expressions)
 exclude = [
-  '^https?://www\.openvms\.compaq\.com/.*',
-  '^https?://www\.openvms\.digital\.com/.*',
-  "http://sys/file",
-  '(?i).*file://hostname/CURRENT/DIR.*',
+  '^https?://www\.openvms\.compaq\.com/.*$',
+  '^https?://www\.openvms\.digital\.com/.*$',
+  '^https?://sys/file$',
+  '^file://.*',
+  '^https?://(www\.)?badges\.debian\.net/.*$',
+  '^https?://(www\.)?repology\.org/.*$',
+  '^https?://scan\.coverity\.com/.*$',
+  '^https?://(www\.)?img\.shields\.io/.*$',
+  '^https?://(www\.)?fossies\.org/.*$',
+]
+
+exclude_path = [
+  "src/po",
+  "src/testdir",
 ]
