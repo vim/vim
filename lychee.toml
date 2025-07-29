@@ -1,7 +1,5 @@
 accept = ["100..=103", "200..=299","400", "429"]
 exclude = [
-  '^https?://www\.openvms\.compaq\.com/.*$',
-  '^https?://www\.openvms\.digital\.com/.*$',
   '^https?://sys/file$',
   '^file://.*',
   '^https?://(www\.)?badges\.debian\.net/.*$',
