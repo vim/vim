@@ -50,7 +50,6 @@ export def Complete(findstart: number, base: string): any
         return line->len() - keyword->len() - trigger_len
     endif
 
-
     var items = []
     if trigger == 'function'
         items = getcompletion(base, 'function')
@@ -73,6 +72,11 @@ export def Complete(findstart: number, base: string): any
     else
         items = getcompletion(prefix, 'cmdline')
             ->mapnew((_, v) => ({word: v->matchstr('\k\+'), kind: 'v', dup: 0}))
+
+        if empty(items) && !empty(base)
+            items = getcompletion(base, 'expression')
+                ->mapnew((_, v) => ({word: v, kind: 'v', menu: 'Expression', dup: 0}))
+        endif
     endif
 
     return items->empty() ? v:none : items
