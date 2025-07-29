@@ -40,7 +40,7 @@ Contents:
 
      where X.X is the version number.
 
-You may want to clone the latest source code from https://github/vim/vim
+You may want to clone the latest source code from https://github.com/vim/vim
 Or the last tested on OpenVMS from http://polarhome.com/vim/files/source/vms/
 
 1.2. Expand the three archives.
@@ -176,7 +176,7 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 	Description	: Add Lua support
 	Options:	: YES - Build with support
 			  Uncommented - build without support.
-	Default		: Uncommented     
+	Default		: Uncommented
 
 	Parameter name	: VIM_MZSCHEME
 	Description	: Add support for FEATURE_MZSCHEM
@@ -185,10 +185,10 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 	Default		: Uncommented
 
 	Parameter name	: VIM_ICONV
-	Description	: Build with using the ICONV library 
+	Description	: Build with using the ICONV library
 	Options:	: YES - Build with support
 			  Uncommented - build without support.
-	Default		: Uncommented     
+	Default		: Uncommented
 
 	Parameter name	: MODIFIED_BY
 	Description	: Add note if you modified the code
@@ -331,43 +331,36 @@ perl_env :
 
 7.2  GTK
 
-     To build VIM with GTK you have to install GTK on your OpenVMS.
-     So far it works just on Alpha and IA64. More information at:
-     http://www.openvms.compaq.com/openvms/products/ips/gtk.html
+     To build Vim with GTK on OpenVMS you must install the GTK libraries.
+     Historically only Alpha and IA64 were supported.
 
-     You also need the OpenVMS Porting Library:
-     http://www.openvms.compaq.com/openvms/products/ips/porting.html
+     Original Compaq references (offline):
+       http://www.openvms.compaq.com/openvms/products/ips/gtk.html
+       http://www.openvms.compaq.com/openvms/products/ips/porting.html
 
-     Source code for GTK and porting library that is used to build
-     VMS executables at polarhome.com are at
-     http://www.polarhome.com/vim/files/source/vms/
+     Modern equivalents:
+       • GNV (GNU on VMS) and Porting Tools (includes porting library):
+           https://sourceforge.net/projects/gnv/
+       • HP Porting Guidelines (covers porting library and environment):
+           https://h41379.www4.hpe.com/portability/portingguidelines.pdf
 
-     Enable GTK in make_vms.mms file with GTK = YES
-     Define GTK_ROOT that points to your GTK root directory.
+     Source-for-VMS archives on Polarhome:
+       http://www.polarhome.com/vim/files/source/vms/
 
-     You will need to edit GTKDIR variable in order to point
-     to GTK header files and libraries.
+     In MAKE_VMS.MMS:
+       GTK = YES
+       GTK_ROOT (point to your GTK install)
+       GTK_DIR  = ALPHA$DKA0:[GTK128.]    ; “.]" at end is required
 
-     GTK_DIR  = ALPHA$DKA0:[GTK128.]
+     Shareable images needed at runtime (copy to SYS$LIBRARY:):
+       glib/libglib.exe /share,-
+       glib.gmodule/libgmodule.exe /share,-
+       gtk.gdk/libgdk.exe /share,-
+       gtk.gtk/libgtk.exe /share,-
+       VMS_JACKETS.EXE   (from the GNV porting library)
 
-     ".]" at the end is very important.
-
-     Build it as normally.
-
-     Used shareable images are:
-	gtk_root:[glib]libglib.exe /share,-
-	gtk_root:[glib.gmodule]libgmodule.exe /share,-
-	gtk_root:[gtk.gdk]libgdk.exe /share,-
-	gtk_root:[gtk.gtk]libgtk.exe /share
-
-     During runtime it is suggested to have all these files installed and
-     copied to SYS$LIBRARY: to be able to use it without problems.
-     Also VMS_JACKETS.EXE from OpenVMS Porting Library.
-
-     Please note, that GTK uses /name=(as_is,short)/float=ieee/ieee=denorm
-     compiler directives that is not compatible with "standard" VMS usage,
-     therefore other external features might fail as PERL, PYTHON and TCL
-     support.
+     Note: GTK uses `/name=(as_is,short)/float=ieee/ieee=denorm` which may
+     conflict with other external features (Perl, Python, Tcl).
 
 7.3  PERL
 

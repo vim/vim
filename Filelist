@@ -16,6 +16,7 @@ SRC_ALL =	\
 		.github/dependabot.yml \
 		.gitignore \
 		.hgignore \
+		.lycheeignore \
 		.appveyor.yml \
 		.clang-format \
 		.codecov.yml \
