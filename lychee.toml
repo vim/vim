@@ -1,24 +1,26 @@
 #############################  Runtime  #############################
 
-# Maximum number of concurrent link checks.
+# Reasonable concurrency to avoid rate-limiting small hosts.
 max_concurrency = 14
 
-extensions = ["c","h","md","html","txt"]
+# File extensions to scan
+extensions = ["c", "h", "md", "html", "txt"]
 
 #############################  Requests  ############################
 
-# Comma-separated list of accepted status codes for valid links.
-# Supported values are:
-#
-# accept = ["200..=204", "429"]
-# accept = "200..=204, 429"
-# accept = ["200", "429"]
-# accept = "200, 429"
-accept = ["100..=103", "200..=299","400", "429"]
+# Accepted status codes
+# - Include 429 (Too Many Requests) to avoid marking throttled links as dead.
+accept = ["100..=103", "200..=299", "429"]
+
+# Retry each request a few times on transient network errors
+retries = 2
+retry_wait_time = 2
+
+# Timeout per request in seconds
+timeout = 20
 
 #############################  Exclusions  ##########################
 
-# Exclude URLs and mail addresses from checking. The values are treated as regular expressions
 exclude = [
   '^https?://sys/file$',
   '^file://.*',
@@ -27,18 +29,19 @@ exclude = [
   '^https?://scan\.coverity\.com/.*$',
   '^https?://(www\.)?img\.shields\.io/.*$',
   '^https?://(www\.)?fossies\.org/.*$',
-  'https://www.fleiner.com/vim/download.html',
-  'https?://www\.adobe\.com',
-  'https?://google\.com',
-  'https://github.com/you/foobar.git',
-  'http://vim\.sourceforge\.net/scripts/script\.php\?script_id=40$',
-  'https://is.gd/',
-  'https://wiki.contextgarden.net/Vim',
-  'https?://(www\.)?forum\.vmssoftware\.com/.*$',
+  '^https?://(www\.)?adobe\.com.*$',
+  '^https?://(www\.)?google\.com.*$',
+  '^https?://(www\.)?forum\.vmssoftware\.com/.*$',
+  '^http://vim\.sourceforge\.net/scripts/script\.php\?script_id=40$',
+  '^https://is\.gd/.*$',
+  '^https://wiki\.contextgarden\.net/Vim$',
+  '^https://github\.com/you/foobar\.git$',
+  '^https?://flatassembler\.net',
+  '^https?://www\.fleiner\.com/vim/download.html',
 ]
 
-# Exclude paths from getting checked. The values are treated as regular expressions
+# Lychee only reads UTF-8 files
 exclude_path = [
-  "src/po",
-  "src/testdir",
+  'src/po',
+  'src/testdir',
 ]
