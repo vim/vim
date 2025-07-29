@@ -7959,7 +7959,7 @@ mch_fopen(const char *name, const char *mode)
  * Incomplete explanation:
  *	http://msdn.microsoft.com/library/en-us/dnw2k/html/ntfs5.asp
  * More useful info and an example:
- *	http://www.sysinternals.com/ntw2k/source/misc.shtml#streams
+ *	https://learn.microsoft.com/en-us/sysinternals/downloads/streams
  */
 
 /*
