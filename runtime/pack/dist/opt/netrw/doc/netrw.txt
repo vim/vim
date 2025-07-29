@@ -1911,7 +1911,7 @@ passwords:
 	    http://thomer.com/howtos/netrw_ssh.html
 
 	Alex Young has several hints on speeding ssh up:
-	    http://usevim.com/2012/03/16/editing-remote-files/
+	    (dead link) usevim.com/2012/03/16/editing-remote-files/
 
 
 LISTING BOOKMARKS AND HISTORY		*netrw-qb* *netrw-listbookmark* {{{2
