@@ -162,9 +162,9 @@ if !exists("no_plugin_maps") && !exists("no_vim_maps")
   " buffer.
   " }}}
   " We use the `F` variants, instead of the `f` ones, because they're smarter.
-  nnoremap <silent><buffer> gf :<C-U>call gf#Find('gF')<CR>
-  nnoremap <silent><buffer> <C-W>f :<C-U>call gf#Find('<C-W>F')<CR>
-  nnoremap <silent><buffer> <C-W>gf :<C-U>call gf#Find('<C-W>gF')<CR>
+  nnoremap <silent><buffer> gf :<C-U>call vim#Find('gF')<CR>
+  nnoremap <silent><buffer> <C-W>f :<C-U>call vim#Find('<C-W>F')<CR>
+  nnoremap <silent><buffer> <C-W>gf :<C-U>call vim#Find('<C-W>gF')<CR>
 endif
 
 " Let the matchit plugin know what items can be matched.
