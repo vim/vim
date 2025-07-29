@@ -2,6 +2,5 @@
 # (patterns are regular expressions)
 exclude = [
   '^https?://www\.openvms\.compaq\.com/.*',
-  '^https?://www\.openvms\.digital\.com/.*',
-  '^https?://iamphet\.nm\.ru/.*'
+  '^https?://www\.openvms\.digital\.com/.*'
 ]
