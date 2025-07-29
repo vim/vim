@@ -438,27 +438,30 @@ repeat:
 
 	if (p != NULL)
 	{
+	    size_t  dirnamelen;
+
 	    if (c == '.')
 	    {
-		size_t	namelen;
-
 		mch_dirname(dirname, MAXPATHL);
 		if (has_homerelative)
 		{
 		    s = vim_strsave(dirname);
 		    if (s != NULL)
 		    {
-			home_replace(NULL, s, dirname, MAXPATHL, TRUE);
+			dirnamelen = home_replace(NULL, s, dirname, MAXPATHL, TRUE);
 			vim_free(s);
 		    }
+		    else
+			dirnamelen = STRLEN(dirname);
 		}
-		namelen = STRLEN(dirname);
+		else
+		    dirnamelen = STRLEN(dirname);
 
 		// Do not call shorten_fname() here since it removes the prefix
 		// even though the path does not have a prefix.
-		if (fnamencmp(p, dirname, namelen) == 0)
+		if (fnamencmp(p, dirname, dirnamelen) == 0)
 		{
-		    p += namelen;
+		    p += dirnamelen;
 		    if (vim_ispathsep(*p))
 		    {
 			while (*p && vim_ispathsep(*p))
@@ -476,11 +479,11 @@ repeat:
 	    }
 	    else
 	    {
-		home_replace(NULL, p, dirname, MAXPATHL, TRUE);
+		dirnamelen = home_replace(NULL, p, dirname, MAXPATHL, TRUE);
 		// Only replace it when it starts with '~'
 		if (*dirname == '~')
 		{
-		    s = vim_strsave(dirname);
+		    s = vim_strnsave(dirname, dirnamelen);
 		    if (s != NULL)
 		    {
 			*fnamep = s;
@@ -2691,13 +2694,14 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
  * Replace home directory by "~" in each space or comma separated file name in
  * 'src'.
  * If anything fails (except when out of space) dst equals src.
+ * Return the length of the string stored in dst (excluding the NUL).
  */
-    void
+    size_t
 home_replace(
     buf_T	*buf,	// when not NULL, check for help files
     char_u	*src,	// input file name
     char_u	*dst,	// where to put the result
-    int		dstlen,	// maximum length of the result
+    size_t	dstsize,// maximum size of the result
     int		one)	// if TRUE, only replace one file name, include
 			// spaces and commas in the file name.
 {
@@ -2705,21 +2709,19 @@ home_replace(
     size_t	len;
     char_u	*homedir_env, *homedir_env_orig;
     char_u	*p;
+    char_u	*dst_start = dst;	// remember the start of dst.
 
     if (src == NULL)
     {
 	*dst = NUL;
-	return;
+	return 0;
     }
 
     /*
      * If the file is a help file, remove the path completely.
      */
     if (buf != NULL && buf->b_help)
-    {
-	vim_snprintf((char *)dst, dstlen, "%s", gettail(src));
-	return;
-    }
+	return vim_snprintf_safelen((char *)dst, dstsize, "%s", gettail(src));
 
     /*
      * We check both the value of the $HOME environment variable and the
@@ -2761,7 +2763,7 @@ home_replace(
 
     if (!one)
 	src = skipwhite(src);
-    while (*src && dstlen > 0)
+    while (*src && dstsize > 0)
     {
 	/*
 	 * Here we are at the beginning of a file name.
@@ -2783,7 +2785,7 @@ home_replace(
 		    || src[len] == NUL))
 	    {
 		src += len;
-		if (--dstlen > 0)
+		if (--dstsize > 0)
 		    *dst++ = '~';
 
 		// Do not add directory separator into dst, because dst is
@@ -2798,18 +2800,20 @@ home_replace(
 	}
 
 	// if (!one) skip to separator: space or comma
-	while (*src && (one || (*src != ',' && *src != ' ')) && --dstlen > 0)
+	while (*src && (one || (*src != ',' && *src != ' ')) && --dstsize > 0)
 	    *dst++ = *src++;
 	// skip separator
-	while ((*src == ' ' || *src == ',') && --dstlen > 0)
+	while ((*src == ' ' || *src == ',') && --dstsize > 0)
 	    *dst++ = *src++;
     }
-    // if (dstlen == 0) out of space, what to do???
+    // if (dstsize == 0) out of space, what to do???
 
     *dst = NUL;
 
     if (homedir_env != homedir_env_orig)
 	vim_free(homedir_env);
+
+    return (size_t)(dst - dst_start);
 }
 
 /*

@@ -2384,58 +2384,61 @@ restore_backup:
 #endif
     if (!filtering)
     {
-	msg_add_fname(buf, fname);	// put fname in IObuff with quotes
-	c = FALSE;
+	size_t	IObufflen_orig;
+	size_t	IObufflen;
+
+	// put fname in IObuff with quotes
+	IObufflen_orig = IObufflen = msg_add_fname(IObuff, IOSIZE, buf, fname);
+
 	if (write_info.bw_conv_error)
 	{
-	    STRCAT(IObuff, _(" CONVERSION ERROR"));
-	    c = TRUE;
+	    IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		IOSIZE - IObufflen, (char *)_(" CONVERSION ERROR"));
+
 	    if (write_info.bw_conv_error_lnum != 0)
-		vim_snprintf_add((char *)IObuff, IOSIZE, _(" in line %ld;"),
-			(long)write_info.bw_conv_error_lnum);
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, _(" in line %ld;"),
+		    (long)write_info.bw_conv_error_lnum);
 	}
 	else if (notconverted)
-	{
-	    STRCAT(IObuff, _("[NOT converted]"));
-	    c = TRUE;
-	}
+	    IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		IOSIZE - IObufflen, (char *)_("[NOT converted]"));
 	else if (converted)
-	{
-	    STRCAT(IObuff, _("[converted]"));
-	    c = TRUE;
-	}
+	    IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		IOSIZE - IObufflen, (char *)_("[converted]"));
+
 	if (device)
-	{
-	    STRCAT(IObuff, _("[Device]"));
-	    c = TRUE;
-	}
+	    IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		IOSIZE - IObufflen, (char *)_("[Device]"));
 	else if (newfile)
-	{
-	    STRCAT(IObuff, new_file_message());
-	    c = TRUE;
-	}
+	    IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		IOSIZE - IObufflen, (char *)new_file_message());
+
 	if (no_eol)
-	{
-	    msg_add_eol();
-	    c = TRUE;
-	}
+	    IObufflen += msg_add_eol(IObuff + IObufflen, IOSIZE - IObufflen);
+
 	// may add [unix/dos/mac]
-	if (msg_add_fileformat(fileformat))
-	    c = TRUE;
+	IObufflen += msg_add_fileformat(IObuff + IObufflen, IOSIZE - IObufflen, fileformat);
+
 #ifdef FEAT_CRYPT
 	if (wb_flags & FIO_ENCRYPTED)
-	{
-	    crypt_append_msg(buf);
-	    c = TRUE;
-	}
+	    IObufflen += crypt_append_msg(IObuff + IObufflen, IOSIZE - IObufflen, buf);
 #endif
-	msg_add_lines(c, (long)lnum, nchars);	// add line/char count
+
+	// add line/char count
+	IObufflen += msg_add_lines(IObuff + IObufflen, IOSIZE - IObufflen,
+	    (IObufflen > IObufflen_orig) ? TRUE : FALSE, (long)lnum, nchars);
+
 	if (!shortmess(SHM_WRITE))
 	{
 	    if (append)
-		STRCAT(IObuff, shortmess(SHM_WRI) ? _(" [a]") : _(" appended"));
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen,
+		    shortmess(SHM_WRI) ? (char *)_(" [a]") : (char *)_(" appended"));
 	    else
-		STRCAT(IObuff, shortmess(SHM_WRI) ? _(" [w]") : _(" written"));
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen,
+		    shortmess(SHM_WRI) ? (char *)_(" [w]") : (char *)_(" written"));
 	}
 
 	set_keep_msg((char_u *)msg_trunc_attr((char *)IObuff, FALSE, 0), 0);
@@ -2546,27 +2549,75 @@ nofail:
 
     if (errmsg != NULL)
     {
-	int numlen = errnum != NULL ? (int)STRLEN(errnum) : 0;
+	size_t	errnumlen = 0;
+	size_t	namelen = 0;
+	size_t	errmsglen = STRLEN(errmsg);
 
 	attr = HL_ATTR(HLF_E);	// set highlight for error messages
-	msg_add_fname(buf,
-#ifndef UNIX
-		sfname
-#else
-		fname
-#endif
-		     );		// put file name in IObuff with quotes
-	if (STRLEN(IObuff) + STRLEN(errmsg) + numlen >= IOSIZE)
-	    IObuff[IOSIZE - STRLEN(errmsg) - numlen - 1] = NUL;
+
 	// If the error message has the form "is ...", put the error number in
 	// front of the file name.
 	if (errnum != NULL)
+	    errnumlen = vim_snprintf_safelen((char *)IObuff, IOSIZE, "%s", errnum);
+
+	// Put file name in IObuff with quotes.
+	namelen = msg_add_fname(IObuff + errnumlen, IOSIZE - errnumlen, buf,
+#ifndef UNIX
+	    sfname
+#else
+	    fname
+#endif
+	);
+
+	// Make sure we have enough space for the error number, file name
+	// and the error message concatenated together.
+	//
+	// If they don't fit we first shrink the file name, then the
+	// error message.
+	if (errnumlen + namelen + errmsglen >= IOSIZE)
 	{
-	    STRMOVE(IObuff + numlen, IObuff);
-	    mch_memmove(IObuff, errnum, (size_t)numlen);
+	    size_t  maxlen = IOSIZE - 1;
+	    size_t  n = errnumlen + errmsglen;
+
+	    if (n < maxlen)
+	    {
+		// The error number and the error message will fit into
+		// IObuff in their entirety, but we can't fit the
+		// entire file name so truncate it to fit.
+		size_t	namelen_orig = namelen;
+
+		namelen = maxlen - n;
+
+		// If the amended length of the file name is short, assume
+		// it's zero. Otherwise if there is space put '" ' after
+		// the file name to separate it from the error message.
+		if (namelen < 2)
+		    namelen = 0;
+		else if ((namelen_orig - namelen) >= 2 && namelen > 2)
+		{
+		    IObuff[errnumlen + namelen - 2] = '"';
+		    IObuff[errnumlen + namelen - 1] = ' ';
+		}
+	    }
+	    else
+	    {
+		// We can't fit any of the file name.
+		namelen = 0;
+
+		if (n > maxlen)
+		{
+		    // We can't fit the entire error message so truncate it
+		    // to fit.
+		    errmsglen = maxlen - errnumlen;
+		    errmsg[errmsglen] = NUL;
+		}
+	    }
 	}
-	STRCAT(IObuff, errmsg);
+
+	// Add the error message.
+	vim_strncpy(IObuff + errnumlen + namelen, errmsg, errmsglen);
 	emsg((char *)IObuff);
+
 	if (errmsg_allocated)
 	    vim_free(errmsg);
 

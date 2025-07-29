@@ -59,10 +59,9 @@ filemess(
 
     if (msg_silent != 0)
 	return;
-    msg_add_fname(buf, name);	    // put file name in IObuff with quotes
+    len = msg_add_fname(IObuff, IOSIZE, buf, name);	    // put file name in IObuff with quotes
 
     // If it's extremely long, truncate it.
-    len = STRLEN(IObuff);
     if (len > IOSIZE - 100)
     {
 	len = IOSIZE - 100;
@@ -2492,103 +2491,79 @@ failed:
 
 	if (!filtering && !(flags & READ_DUMMY))
 	{
-	    int	buflen;
+	    size_t  IObufflen_orig;
+	    size_t  IObufflen;
 
-	    msg_add_fname(curbuf, sfname);   // fname in IObuff with quotes
-	    c = FALSE;
+	    // put fname in IObuff with quotes
+	    IObufflen_orig = IObufflen = msg_add_fname(IObuff, IOSIZE, curbuf, sfname);
 
-	    buflen = (int)STRLEN(IObuff);
 #ifdef UNIX
-	    if (S_ISFIFO(perm))			    // fifo
-	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[fifo]"));
-		c = TRUE;
-	    }
-	    if (S_ISSOCK(perm))			    // or socket
-	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[socket]"));
-		c = TRUE;
-	    }
+	    if (S_ISFIFO(perm))
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, "%s", _("[fifo]"));
+
+	    if (S_ISSOCK(perm))
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, "%s", _("[socket]"));
+
 # ifdef OPEN_CHR_FILES
-	    if (S_ISCHR(perm))			    // or character special
-	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[character special]"));
-		c = TRUE;
-	    }
+	    if (S_ISCHR(perm))
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, "%s", _("[character special]"));
 # endif
 #endif
+
 	    if (curbuf->b_p_ro)
-	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			"%s", shortmess(SHM_RO) ? _("[RO]") : _("[readonly]"));
-		c = TRUE;
-	    }
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, "%s",
+		    shortmess(SHM_RO) ? _("[RO]") : _("[readonly]"));
+
 	    if (read_no_eol_lnum)
-	    {
-		msg_add_eol();
-		c = TRUE;
-	    }
+		IObufflen += msg_add_eol(IObuff + IObufflen, IOSIZE - IObufflen);
+
 	    if (ff_error == EOL_DOS)
-	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[CR missing]"));
-		c = TRUE;
-	    }
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, "%s", _("[CR missing]"));
+
 	    if (split)
-	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[long lines split]"));
-		c = TRUE;
-	    }
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, "%s", _("[long lines split]"));
+
 	    if (notconverted)
-	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[NOT converted]"));
-		c = TRUE;
-	    }
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, "%s", _("[NOT converted]"));
 	    else if (converted)
-	    {
-		buflen += vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[converted]"));
-		c = TRUE;
-	    }
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
+		    IOSIZE - IObufflen, "%s", _("[converted]"));
+
 #ifdef FEAT_CRYPT
 	    if (cryptkey != NULL)
-	    {
-		crypt_append_msg(curbuf);
-		c = TRUE;
-	    }
+		IObufflen += crypt_append_msg(IObuff + IObufflen, IOSIZE - IObufflen, curbuf);
 #endif
+
 	    if (conv_error != 0)
-	    {
-		vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[CONVERSION ERROR in line %ld]"), (long)conv_error);
-		c = TRUE;
-	    }
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen, IOSIZE - IObufflen,
+		    _("[CONVERSION ERROR in line %ld]"), (long)conv_error);
 	    else if (illegal_byte > 0)
-	    {
-		vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[ILLEGAL BYTE in line %ld]"), (long)illegal_byte);
-		c = TRUE;
-	    }
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen, IOSIZE - IObufflen,
+		    _("[ILLEGAL BYTE in line %ld]"), (long)illegal_byte);
 	    else if (error)
-	    {
-		vim_snprintf((char *)IObuff + buflen, IOSIZE - buflen,
-			_("[READ ERRORS]"));
-		c = TRUE;
-	    }
-	    if (msg_add_fileformat(fileformat))
-		c = TRUE;
+		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen, IOSIZE - IObufflen,
+		    _("[READ ERRORS]"));
+
+	    // may add [unix/dos/max]
+	    IObufflen += msg_add_fileformat(IObuff + IObufflen, IOSIZE - IObufflen, fileformat);
+
+	    // add line/char count
 #ifdef FEAT_CRYPT
 	    if (cryptkey != NULL)
-		msg_add_lines(c, (long)linecnt, filesize
-			 - crypt_get_header_len(crypt_get_method_nr(curbuf)));
+		msg_add_lines(IObuff + IObufflen, IOSIZE - IObufflen,
+		    (IObufflen > IObufflen_orig) ? TRUE : FALSE, (long)linecnt,
+		    filesize - crypt_get_header_len(crypt_get_method_nr(curbuf)));
 	    else
 #endif
-		msg_add_lines(c, (long)linecnt, filesize);
+		msg_add_lines(IObuff + IObufflen, IOSIZE - IObufflen,
+		    (IObufflen > IObufflen_orig) ? TRUE : FALSE, (long)linecnt, filesize);
 
 	    VIM_CLEAR(keep_msg);
 	    msg_scrolled_ign = TRUE;
@@ -3135,78 +3110,99 @@ set_rw_fname(char_u *fname, char_u *sfname)
 }
 
 /*
- * Put file name into IObuff with quotes.
+ * Put file name into dst with quotes.
+ * Return the length of the string added.
  */
-    void
-msg_add_fname(buf_T *buf, char_u *fname)
+    size_t
+msg_add_fname(char_u *dst, size_t dstsize, buf_T *buf, char_u *fname)
 {
-    if (fname == NULL)
-	fname = (char_u *)"-stdin-";
-    home_replace(buf, fname, IObuff + 1, IOSIZE - 4, TRUE);
-    IObuff[0] = '"';
-    STRCAT(IObuff, "\" ");
+    size_t  dstlen = 0;
+
+    if (dstsize <= 3)		// minimum size of '""'.
+    {
+	// not much space in dst.
+	if (dstsize < 3)
+	{
+	    if (dstsize > 0)
+		*dst = NUL;
+	    return 0;
+	}
+
+	// set dst to '""'.
+	dst[0] = '"';
+	dst[1] = '"';
+	dst[2] = NUL;
+
+	return 2;
+    }
+
+    dst[dstlen++] = '"';
+    dstlen += home_replace(buf, (fname == NULL) ? (char_u *)"-stdin-" : fname,
+	dst + dstlen, dstsize - dstlen - 2, TRUE);	    // reserve space for trailing '" '
+    dstlen += vim_snprintf_safelen((char *)dst + dstlen, dstsize - dstlen, "\" ");
+
+    return dstlen;
 }
 
 /*
- * Append message for text mode to IObuff.
- * Return TRUE if something appended.
+ * Add message for text mode to dst.
+ * Return the length of the string added.
  */
-    int
-msg_add_fileformat(int eol_type)
+    size_t
+msg_add_fileformat(char_u *dst, size_t dstsize, int eol_type)
 {
 #ifndef USE_CRNL
     if (eol_type == EOL_DOS)
-    {
-	STRCAT(IObuff, shortmess(SHM_TEXT) ? _("[dos]") : _("[dos format]"));
-	return TRUE;
-    }
+	return vim_snprintf_safelen((char *)dst, dstsize,
+	    shortmess(SHM_TEXT) ? (char *)_("[dos]") : (char *)_("[dos format]"));
 #endif
     if (eol_type == EOL_MAC)
-    {
-	STRCAT(IObuff, shortmess(SHM_TEXT) ? _("[mac]") : _("[mac format]"));
-	return TRUE;
-    }
+	return vim_snprintf_safelen((char *)dst, dstsize,
+	    shortmess(SHM_TEXT) ? (char *)_("[mac]") : (char *)_("[mac format]"));
 #ifdef USE_CRNL
     if (eol_type == EOL_UNIX)
-    {
-	STRCAT(IObuff, shortmess(SHM_TEXT) ? _("[unix]") : _("[unix format]"));
-	return TRUE;
-    }
+	return vim_snprintf_safelen((char *)dst, dstsize,
+	    shortmess(SHM_TEXT) ? (char *)_("[unix]") : (char *)_("[unix format]"));
 #endif
-    return FALSE;
+    return 0;
 }
 
 /*
- * Append line and character count to IObuff.
+ * Add line and character count to dst.
+ * Return the length of the string added.
  */
-    void
+    size_t
 msg_add_lines(
+    char_u  *dst,
+    size_t  dstsize,
     int	    insert_space,
     long    lnum,
     off_T   nchars)
 {
-    int  len = (int)STRLEN(IObuff);
+    size_t  dstlen;
 
     if (shortmess(SHM_LINES))
-	vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,
-		// l10n: L as in line, B as in byte
-		_("%s%ldL, %lldB"), insert_space ? " " : "", lnum, (varnumber_T)nchars);
-    else
-    {
-	len += vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,
-		NGETTEXT("%s%ld line, ", "%s%ld lines, ", lnum), insert_space ? " " : "", lnum);
-	vim_snprintf((char *)IObuff + len, IOSIZE - (size_t)len,
-		NGETTEXT("%lld byte", "%lld bytes", nchars), (varnumber_T)nchars);
-    }
+	return vim_snprintf_safelen((char *)dst, dstsize,
+	    // l10n: L as in line, B as in byte
+	    _("%s%ldL, %lldB"), insert_space ? " " : "", lnum, (varnumber_T)nchars);
+
+    dstlen = vim_snprintf_safelen((char *)dst, dstsize,
+	NGETTEXT("%s%ld line, ", "%s%ld lines, ", lnum), insert_space ? " " : "", lnum);
+    dstlen += vim_snprintf_safelen((char *)dst + dstlen, dstsize - dstlen,
+	NGETTEXT("%lld byte", "%lld bytes", nchars), (varnumber_T)nchars);
+
+    return dstlen;
 }
 
 /*
- * Append message for missing line separator to IObuff.
+ * Append message for missing line separator to dst.
+ * Return the length of the string added.
  */
-    void
-msg_add_eol(void)
+    size_t
+msg_add_eol(char_u *dst, size_t dstsize)
 {
-    STRCAT(IObuff, shortmess(SHM_LAST) ? _("[noeol]") : _("[Incomplete last line]"));
+    return vim_snprintf_safelen((char *)dst, dstsize,
+	shortmess(SHM_LAST) ? (char *)_("[noeol]") : (char *)_("[Incomplete last line]"));
 }
 
     int

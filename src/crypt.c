@@ -897,20 +897,19 @@ crypt_get_key(
 
 
 /*
- * Append a message to IObuff for the encryption/decryption method being used.
+ * Append a message to dst for the encryption/decryption method being used.
  */
-    void
+    size_t
 crypt_append_msg(
+    char_u *dst,
+    size_t  dstsize,
     buf_T *buf)
 {
     if (crypt_get_method_nr(buf) == 0)
-	STRCAT(IObuff, _("[crypted]"));
-    else
-    {
-	STRCAT(IObuff, "[");
-	STRCAT(IObuff, *buf->b_p_cm == NUL ? p_cm : buf->b_p_cm);
-	STRCAT(IObuff, "]");
-    }
+	return vim_snprintf_safelen((char *)dst, dstsize, _("[crypted]"));
+
+    return vim_snprintf_safelen((char *)dst, dstsize, "[%s]",
+	(*buf->b_p_cm == NUL) ? p_cm : buf->b_p_cm);
 }
 
     static int

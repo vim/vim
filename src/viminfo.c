@@ -417,6 +417,7 @@ write_viminfo_bufferlist(FILE *fp)
     tabpage_T	*tp;
     char_u	*line;
     int		max_buffers;
+    size_t	linelen;
 
     if (find_viminfo_parameter('%') == NULL)
 	return;
@@ -446,10 +447,9 @@ write_viminfo_bufferlist(FILE *fp)
 	if (max_buffers-- == 0)
 	    break;
 	putc('%', fp);
-	home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
-	vim_snprintf_add((char *)line, LINE_BUF_LEN, "\t%ld\t%d",
-			(long)buf->b_last_cursor.lnum,
-			buf->b_last_cursor.col);
+	linelen = home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
+	vim_snprintf((char *)line + linelen, LINE_BUF_LEN - linelen,
+	    "\t%ld\t%d", (long)buf->b_last_cursor.lnum, buf->b_last_cursor.col);
 	viminfo_writestring(fp, line);
     }
     vim_free(line);
