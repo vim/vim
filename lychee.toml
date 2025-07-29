@@ -1,3 +1,4 @@
+accept = ["100..=103", "200..=299","400", "429"]
 exclude = [
   '^https?://www\.openvms\.compaq\.com/.*$',
   '^https?://www\.openvms\.digital\.com/.*$',
@@ -8,6 +9,7 @@ exclude = [
   '^https?://scan\.coverity\.com/.*$',
   '^https?://(www\.)?img\.shields\.io/.*$',
   '^https?://(www\.)?fossies\.org/.*$',
+  'https://www.fleiner.com/vim/download.html',
 ]
 
 exclude_path = [
