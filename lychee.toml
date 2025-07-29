@@ -1,4 +1,22 @@
+#############################  Runtime  #############################
+
+# Maximum number of concurrent link checks.
+max_concurrency = 14
+
+#############################  Requests  ############################
+
+# Comma-separated list of accepted status codes for valid links.
+# Supported values are:
+#
+# accept = ["200..=204", "429"]
+# accept = "200..=204, 429"
+# accept = ["200", "429"]
+# accept = "200, 429"
 accept = ["100..=103", "200..=299","400", "429"]
+
+#############################  Exclusions  ##########################
+
+# Exclude URLs and mail addresses from checking. The values are treated as regular expressions
 exclude = [
   '^https?://sys/file$',
   '^file://.*',
@@ -16,6 +34,7 @@ exclude = [
   'https?://(www\.)?forum\.vmssoftware\.com/.*$',
 ]
 
+# Exclude paths from getting checked. The values are treated as regular expressions
 exclude_path = [
   "src/po",
   "src/testdir",
