@@ -2498,15 +2498,18 @@ failed:
 	    IObufflen_orig = IObufflen = msg_add_fname(IObuff, IOSIZE, curbuf, sfname);
 
 #ifdef UNIX
+	    // fifo
 	    if (S_ISFIFO(perm))
 		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
 		    IOSIZE - IObufflen, "%s", _("[fifo]"));
 
+	    // or socket
 	    if (S_ISSOCK(perm))
 		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
 		    IOSIZE - IObufflen, "%s", _("[socket]"));
 
 # ifdef OPEN_CHR_FILES
+	    // or character special
 	    if (S_ISCHR(perm))
 		IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
 		    IOSIZE - IObufflen, "%s", _("[character special]"));
