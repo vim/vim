@@ -1,0 +1,6 @@
+# lychee.toml — exclude two legacy domains
+# (patterns are regular expressions)
+exclude = [
+  '^https?://www\.openvms\.compaq\.com/.*',
+  '^https?://www\.openvms\.digital\.com/.*'
+]

@@ -16,7 +16,6 @@ SRC_ALL =	\
 		.github/dependabot.yml \
 		.gitignore \
 		.hgignore \
-		.lycheeignore \
 		.appveyor.yml \
 		.clang-format \
 		.codecov.yml \
@@ -30,6 +29,7 @@ SRC_ALL =	\
 		ci/remove_snap.sh \
 		ci/ddebs.list \
 		ci/pinned-pkgs \
+		lychee.toml \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.c \
