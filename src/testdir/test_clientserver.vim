@@ -49,8 +49,10 @@ func Test_client_server()
     call delete('Xtest_serverlist')
   endif
 
+  " Unlike X11, we need the socket server running if we want to send commands to
+  " a server via sockets.
   if v:servername == ""
-    call remote_startserver('TEST')
+    call remote_startserver('VIMSOCKETSERVERTEST')
   endif
 
   eval name->remote_foreground()
@@ -188,10 +190,15 @@ func Test_client_server()
   call assert_fails('call remote_startserver("")', 'E1175:')
   call assert_fails('call remote_startserver([])', 'E1174:')
   call assert_fails("let x = remote_peek([])", 'E730:')
-  call assert_fails("let x = remote_read('vim10')",
-        \ has('unix') ? ['E573:.*vim10'] : 'E277:')
-  call assert_fails("call server2client('abc', 'xyz')",
-        \ has('unix') ? ['E573:.*abc'] : 'E258:')
+
+  " When using socket server, server id is not a number, but the path to the
+  " socket.
+  if !has('socketserver')
+    call assert_fails("let x = remote_read('vim10')",
+          \ has('unix') ? ['E573:.*vim10'] : 'E277:')
+    call assert_fails("call server2client('abc', 'xyz')",
+          \ has('unix') ? ['E573:.*abc'] : 'E258:')
+  endif
 endfunc
 
 func Test_client_server_stopinsert()
@@ -206,6 +213,10 @@ func Test_client_server_stopinsert()
   let fname = 'Xclientserver_stop.txt'
   let name = 'XVIMTEST2'
   call writefile(['one two three'], fname, 'D')
+
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVERTEST')
+  endif
 
   let cmd .= ' -c "set virtualedit=onemore"'
   let cmd .= ' -c "call cursor(1, 14)"'
@@ -224,7 +235,9 @@ func Test_client_server_stopinsert()
   call assert_equal('n', name->remote_expr("mode(1)"))
   call assert_equal('13', name->remote_expr("col('.')"))
 
-  eval name->remote_send(":qa!\<CR>")
+  " For some reason even though its asserted to be normal mode, <Esc> is
+  " still required? Maybe a bug or just flakiness, don't know...
+  eval name->remote_send("\<Esc>:qa!\<CR>")
   try
     call WaitForAssert({-> assert_equal("dead", job_status(job))})
   finally
