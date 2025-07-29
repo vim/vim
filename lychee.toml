@@ -15,6 +15,7 @@ exclude = [
   'http://vim\.sourceforge\.net/scripts/script\.php\?script_id=40$',
   'https://is.gd/',
   'https://wiki.contextgarden.net/Vim',
+  'https?://(www\.)?forum\.vmssoftware\.com/.*$',
 ]
 
 exclude_path = [
