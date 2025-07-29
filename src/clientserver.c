@@ -898,10 +898,10 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # endif
 #if !defined(MSWIN)
     if (FALSE)
-#endif
     {
-#if !defined(MSWIN)
 stuff:
+#else
+    {
 #endif
 	if (r != NULL)
 	{

@@ -2744,8 +2744,7 @@ gui_gtk_uninit_socket_server(void)
 #endif
 
 /*
- * Setup the window icon & xcmdsrv comm or socket server after the main window
- * has been realized.
+ * Setup the window icon & xcmdsrv comm after the main window has been realized.
  */
     static void
 mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
