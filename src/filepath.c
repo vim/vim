@@ -827,6 +827,9 @@ f_chdir(typval_T *argvars, typval_T *rettv)
 	    (void) check_for_string_arg(argvars, 0);
 	return;
     }
+    if (in_vim9script()
+	    && (check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
 
     // Return the current directory
     cwd = alloc(MAXPATHL);
@@ -842,7 +845,22 @@ f_chdir(typval_T *argvars, typval_T *rettv)
 	vim_free(cwd);
     }
 
-    if (curwin->w_localdir != NULL)
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	char_u *s = tv_get_string(&argvars[1]);
+	if (STRCMP(s, "cd") == 0)
+	    scope = CDSCOPE_GLOBAL;
+	else if (STRCMP(s, "lcd") == 0)
+	    scope = CDSCOPE_WINDOW;
+	else if (STRCMP(s, "tcd") == 0)
+	    scope = CDSCOPE_TABPAGE;
+	else
+	{
+	    semsg(_(e_invalid_expression_str), s);
+	    return;
+	}
+    }
+    else if (curwin->w_localdir != NULL)
 	scope = CDSCOPE_WINDOW;
     else if (curtab->tp_localdir != NULL)
 	scope = CDSCOPE_TABPAGE;

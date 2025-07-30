@@ -1783,17 +1783,26 @@ charidx({string}, {idx} [, {countcc} [, {utf16}]])
 		Return type: |Number|
 
 
-chdir({dir})						*chdir()*
+chdir({dir} [, {scope}])				*chdir()*
 		Change the current working directory to {dir}.  The scope of
 		the directory change depends on the directory of the current
 		window:
-			- If the current window has a window-local directory
-			  (|:lcd|), then changes the window local directory.
+			- If the {scope} is present and it is "cd", then
+			  changes the global directory.
+			- Otherwise, if the {scope} is present and it is "lcd",
+			  then changes the window local directory.
+			- Otherwise, if the {scope} is present and it is "tcd",
+			  then changes the tabpage local directory.
+			- Otherwise, if the current window has a window-local
+			  directory (|:lcd|), then changes the window local
+			  directory.
 			- Otherwise, if the current tabpage has a local
 			  directory (|:tcd|) then changes the tabpage local
 			  directory.
 			- Otherwise, changes the global directory.
 		{dir} must be a String.
+		If {scope} is present it must be a String and must be one of
+		"cd", "lcd", or "tcd".
 		If successful, returns the previous working directory.  Pass
 		this to another chdir() to restore the directory.
 		On failure, returns an empty string.

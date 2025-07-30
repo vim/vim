@@ -2086,7 +2086,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_charcol},
     {"charidx",		2, 4, FEARG_1,	    arg4_string_number_bool_bool,
 			ret_number,	    f_charidx},
-    {"chdir",		1, 1, FEARG_1,	    arg1_string,
+    {"chdir",		1, 2, FEARG_1,	    arg2_string,
 			ret_string,	    f_chdir},
     {"cindent",		1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_cindent},
