@@ -80,6 +80,10 @@ func Test_wayland_startup()
   call s:PreTest()
   call s:CheckXConnection()
 
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
+
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
   let l:job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
@@ -373,6 +377,10 @@ func Test_wayland_autoselect_works()
 
   call writefile(l:lines, 'Wltester', 'D')
 
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
+
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' -S Wltester --servername ' .. l:name
   let l:job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
@@ -416,6 +424,10 @@ func Test_no_wayland_connect_cmd_flag()
   call s:PreTest()
   call s:CheckXConnection()
 
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
+
   let l:name = 'WLFLAGVIMTEST'
   let l:cmd = GetVimCommand() .. ' -Y --servername ' .. l:name
   let l:job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
@@ -453,6 +465,10 @@ endfunc
 func Test_wayland_become_inactive()
   call s:PreTest()
   call s:CheckXConnection()
+
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
 
   let l:name = 'WLLOSEVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
@@ -544,6 +560,10 @@ func Test_wayland_bad_environment()
 
   let l:old = $XDG_RUNTIME_DIR
   unlet $XDG_RUNTIME_DIR
+
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
 
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
