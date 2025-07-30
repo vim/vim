@@ -9411,18 +9411,6 @@ socket_server_accept_client(void)
 {
     int	fd = accept(socket_server_fd, NULL, NULL);
     ss_cmd_T cmd;
-#ifndef HAVE_SELECT
-    struct pollfd pfd;
-
-    pfd.fd = fd;
-    pfd.events = POLLIN;
-#else
-    fd_set	    rfds;
-    struct timeval  tv;
-
-    FD_ZERO(&rfds);
-    FD_SET(fd, &rfds);
-#endif
 
     if (fd == -1)
 	return;
@@ -9437,16 +9425,6 @@ socket_server_accept_client(void)
 
     socket_server_exec_cmd(&cmd);
     socket_server_free_cmd(&cmd);
-
-    // Poll until client closes their end
-
-#ifndef HAVE_SELECT
-    poll(&pfd, 1, 1000);
-#else
-    tv.tv_sec = 0;
-    tv.tv_usec = 1000 * 1000;
-    select(fd + 1, &rfds, NULL, NULL, &tv);
-#endif
 
 exit:
     close(fd);
