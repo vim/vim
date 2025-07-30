@@ -3787,4 +3787,6 @@ EXTERN char e_socket_server_not_online[]
 	INIT(= N_("E1564: Socket server is not online, call remote_startserver() first"));
 EXTERN char e_socket_server_failed_connecting[]
 	INIT(= N_("E1565: Failed connecting to socket %s: %s"));
+EXTERN char e_socket_server_unavailable[]
+	INIT(= N_("E1566: Cannot start socket server, socket path is unavailable"));
 #endif

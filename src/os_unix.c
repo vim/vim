@@ -9238,7 +9238,10 @@ socket_server_init(char_u *name)
 	    int fd2;
 
 	    if (errno != EADDRINUSE)
+	    {
+		emsg(_(e_socket_server_unavailable));
 		goto fail;
+	    }
 
 	    // If the socket is dead, remove it and try again
 	    fd2 = socket_server_connect((char_u *)addr.sun_path, NULL, TRUE);
@@ -9265,6 +9268,12 @@ socket_server_init(char_u *name)
 	}
 
 	i++;
+    }
+
+    if (i >= 1000)
+    {
+	emsg(_(e_socket_server_unavailable));
+	goto fail;
     }
 
     // Start listening for connections
@@ -10017,8 +10026,8 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 #ifndef HAVE_SELECT
 	ret = poll(&pfd, 1, timeout);
 #else
-	tv.tv_sec = 0;
-	tv.tv_usec = timeout * 1000;
+	tv.tv_sec = 1000;
+	tv.tv_usec = (timeout % 1000) * 1000;
 	ret = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
 #endif
 	if (ret <= 0)
@@ -10141,8 +10150,8 @@ socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
 #ifndef HAVE_SELECT
 	ret = poll(&pfd, 1, timeout);
 #else
-	tv.tv_sec = 0;
-	tv.tv_usec = timeout * 1000;
+	tv.tv_sec = timeout / 1000;
+	tv.tv_usec = (timeout % 1000) * 1000;
 	ret = select(socket_fd + 1, NULL, &wfds, NULL, &tv);
 #endif
 	if (ret <= 0)
@@ -10444,8 +10453,8 @@ socket_server_dispatch(int timeout)
 #ifndef HAVE_SELECT
     ret = poll(&pfd, 1, timeout);
 #else
-    tv.tv_sec = 0;
-    tv.tv_usec = timeout * 1000;
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = (timeout % 1000) * 1000;
     ret = select(socket_server_fd + 1, &rfds, NULL, &efds, &tv);
 #endif
 
