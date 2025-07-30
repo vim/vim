@@ -3,21 +3,19 @@ vim9script
 # Interface {{{1
 export def Find(editcmd: string) #{{{2
     var curline: string = getline('.')
-    var cmd: string = editcmd
-        ->substitute('<C-W>', "\<C-W>", 'g')
 
     if curline =~ '^\s*\%(:\s*\)\=packadd!\=\s'
-        HandlePackaddLine(cmd, curline)
+        HandlePackaddLine(editcmd, curline)
         return
     endif
 
     if curline =~ '^\s*\%(:\s*\)\=import\s'
-        HandleImportLine(cmd, curline)
+        HandleImportLine(editcmd, curline)
         return
     endif
 
     try
-        execute 'normal! ' .. cmd
+        execute 'normal! ' .. editcmd
     catch
         Error(v:exception)
     endtry
