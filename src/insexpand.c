@@ -273,7 +273,7 @@ static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 static int get_userdefined_compl_info(colnr_T curs_col, callback_T *cb, int *startcol);
 static void get_cpt_func_completion_matches(callback_T *cb);
-static callback_T *get_callback_if_cpt_func(char_u *p);
+static callback_T *get_callback_if_cpt_func(char_u *p, int idx);
 # endif
 static int setup_cpt_sources(void);
 static int is_cpt_func_refresh_always(void);
@@ -3191,12 +3191,40 @@ ins_compl_next_buf(buf_T *buf, int flag)
     return buf;
 }
 
+/*
+ * Count the number of entries in the 'complete' option (curbuf->b_p_cpt).
+ * Each non-empty, comma-separated segment is counted as one entry.
+ */
+    static int
+get_cpt_sources_count(void)
+{
+    char_u  dummy[LSIZE];
+    int	    count = 0;
+    char_u  *p;
+
+    for (p = curbuf->b_p_cpt; *p != NUL; )
+    {
+	while (*p == ',' || *p == ' ')
+	    p++;  // Skip delimiters
+
+	if (*p != NUL)
+	{
+	    (void)copy_option_part(&p, dummy, LSIZE, ",");  // Advance p
+	    count++;
+	}
+    }
+
+    return count;
+}
+
 #ifdef FEAT_COMPL_FUNC
 
 # ifdef FEAT_EVAL
 static callback_T cfu_cb;	    // 'completefunc' callback function
 static callback_T ofu_cb;	    // 'omnifunc' callback function
 static callback_T tsrfu_cb;	    // 'thesaurusfunc' callback function
+static callback_T *cpt_cb;	    // Callback functions associated with F{func}
+static int	  cpt_cb_count;	    // Number of cpt callbacks
 # endif
 
 /*
@@ -3268,6 +3296,127 @@ set_buflocal_ofu_callback(buf_T *buf UNUSED)
 }
 
 /*
+ * Free an array of 'complete' F{func} callbacks and set the pointer to NULL.
+ */
+    void
+clear_cpt_callbacks(callback_T **callbacks, int count)
+{
+    if (callbacks == NULL || *callbacks == NULL)
+	return;
+
+    int	i;
+    for (i = 0; i < count; i++)
+	free_callback(&(*callbacks)[i]);
+
+    VIM_CLEAR(*callbacks);
+}
+
+/*
+ * Copies a list of callback_T structs from src to *dest, clearing any existing
+ * entries and allocating memory for the destination.
+ */
+    static int
+copy_cpt_callbacks(callback_T **dest, int *dest_cnt, callback_T *src, int cnt)
+{
+    int i;
+
+    if (cnt == 0)
+	return OK;
+
+    clear_cpt_callbacks(dest, *dest_cnt);
+    *dest_cnt = 0;
+
+    *dest = ALLOC_CLEAR_MULT(callback_T, cnt);
+    if (*dest == NULL)
+	return FAIL;
+
+    *dest_cnt = cnt;
+
+    for (i = 0; i < cnt; i++)
+	if (src[i].cb_name != NULL && *(src[i].cb_name) != NUL)
+	    copy_callback(&(*dest)[i], &src[i]);
+
+    return OK;
+}
+
+/*
+ * Copy global 'complete' F{func} callbacks into the given buffer's local
+ * callback array. Clears any existing buffer-local callbacks first.
+ */
+    void
+set_buflocal_cpt_callbacks(buf_T *buf UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (buf == NULL || cpt_cb_count == 0)
+	return;
+    (void)copy_cpt_callbacks(&buf->b_p_cpt_cb, &buf->b_p_cpt_count, cpt_cb,
+	    cpt_cb_count);
+#endif
+}
+
+/*
+ * Parse 'complete' option and initialize F{func} callbacks.
+ * Frees any existing callbacks and allocates new ones.
+ * Only F{func} entries are processed; others are ignored.
+ */
+    int
+set_cpt_callbacks(optset_T *args)
+{
+    char_u  buf[LSIZE];
+    char_u  *p;
+    int	    idx = 0;
+    int	    slen;
+    int	    count;
+    int	    local = (args->os_flags & OPT_LOCAL) != 0;
+
+    if (curbuf == NULL)
+	return FAIL;
+
+    clear_cpt_callbacks(&curbuf->b_p_cpt_cb, curbuf->b_p_cpt_count);
+    curbuf->b_p_cpt_count = 0;
+
+    count = get_cpt_sources_count();
+    if (count == 0)
+	return OK;
+
+    curbuf->b_p_cpt_cb = ALLOC_CLEAR_MULT(callback_T, count);
+    if (curbuf->b_p_cpt_cb == NULL)
+	return FAIL;
+    curbuf->b_p_cpt_count = count;
+
+    for (p = curbuf->b_p_cpt; *p != NUL; )
+    {
+	while (*p == ',' || *p == ' ')
+	    p++; // Skip delimiters
+
+	if (*p != NUL)
+	{
+	    slen = copy_option_part(&p, buf, LSIZE, ","); // Advance p
+	    if (slen > 0 && buf[0] == 'F' && buf[1] != NUL)
+	    {
+		char_u	*caret;
+		caret = vim_strchr(buf, '^');
+		if (caret != NULL)
+		    *caret = NUL;
+
+		if (option_set_callback_func(buf + 1, &curbuf->b_p_cpt_cb[idx])
+			!= OK)
+		    curbuf->b_p_cpt_cb[idx].cb_name = NULL;
+	    }
+	    idx++;
+	}
+    }
+
+    if (!local) // ':set' used insted of ':setlocal'
+	// Cache the callback array
+	if (copy_cpt_callbacks(&cpt_cb, &cpt_cb_count, curbuf->b_p_cpt_cb,
+		    curbuf->b_p_cpt_count) != OK)
+	    return FAIL;
+
+    return OK;
+}
+
+/*
  * Parse the 'thesaurusfunc' option value and set the callback function.
  * Invoked when the 'thesaurusfunc' option is set. The option value can be a
  * name of a function (string), or function(<name>) or funcref(<name>) or a
@@ -3295,6 +3444,23 @@ did_set_thesaurusfunc(optset_T *args UNUSED)
 }
 
 /*
+ * Mark "copyID" references in an array of F{func} callbacks so that they are
+ * not garbage collected.
+ */
+    int
+set_ref_in_cpt_callbacks(callback_T *callbacks, int count, int copyID)
+{
+    int	i, abort = FALSE;
+
+    if (callbacks == NULL)
+	return FALSE;
+
+    for (i = 0; i < count; i++)
+	abort = abort || set_ref_in_callback(&callbacks[i], copyID);
+    return abort;
+}
+
+/*
  * Mark the global 'completefunc' 'omnifunc' and 'thesaurusfunc' callbacks with
  * "copyID" so that they are not garbage collected.
  */
@@ -3304,6 +3470,7 @@ set_ref_in_insexpand_funcs(int copyID)
     int abort = set_ref_in_callback(&cfu_cb, copyID);
     abort = abort || set_ref_in_callback(&ofu_cb, copyID);
     abort = abort || set_ref_in_callback(&tsrfu_cb, copyID);
+    abort = abort || set_ref_in_cpt_callbacks(cpt_cb, cpt_cb_count, copyID);
 
     return abort;
 }
@@ -4233,7 +4400,7 @@ process_next_cpt_value(
 	else if (*st->e_cpt == 'F' || *st->e_cpt == 'o')
 	{
 	    compl_type = CTRL_X_FUNCTION;
-	    st->func_cb = get_callback_if_cpt_func(st->e_cpt);
+	    st->func_cb = get_callback_if_cpt_func(st->e_cpt, cpt_sources_index);
 	    if (!st->func_cb)
 		compl_type = -1;
 	}
@@ -4915,31 +5082,28 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 
 #ifdef FEAT_COMPL_FUNC
 /*
- * Return the callback function associated with "p" if it points to a
- * userfunc.
+ * Return the callback function associated with "p" if it refers to a
+ * user-defined function in the 'complete' option.
+ * The "idx" parameter is used for indexing callback entries.
  */
     static callback_T *
-get_callback_if_cpt_func(char_u *p)
+get_callback_if_cpt_func(char_u *p, int idx)
 {
-    static callback_T	cb;
-    char_u		buf[LSIZE];
-    int			slen;
-
     if (*p == 'o')
 	return &curbuf->b_ofu_cb;
+
     if (*p == 'F')
     {
 	if (*++p != ',' && *p != NUL)
 	{
-	    free_callback(&cb);
-	    slen = copy_option_part(&p, buf, LSIZE, ",");
-	    if (slen > 0  && option_set_callback_func(buf, &cb))
-		return &cb;
-	    return NULL;
+	    // 'F{func}' case
+	    return curbuf->b_p_cpt_cb[idx].cb_name != NULL
+		? &curbuf->b_p_cpt_cb[idx] : NULL;
 	}
 	else
-	    return &curbuf->b_cfu_cb;
+	    return &curbuf->b_cfu_cb; // 'cfu'
     }
+
     return NULL;
 }
 #endif
@@ -5196,7 +5360,7 @@ prepare_cpt_compl_funcs(void)
 	if (*p == NUL)
 	    break;
 
-	cb = get_callback_if_cpt_func(p);
+	cb = get_callback_if_cpt_func(p, idx);
 	if (cb)
 	{
 	    if (get_userdefined_compl_info(curwin->w_cursor.col, cb, &startcol)
@@ -7087,6 +7251,7 @@ free_insexpand_stuff(void)
     free_callback(&cfu_cb);
     free_callback(&ofu_cb);
     free_callback(&tsrfu_cb);
+    clear_cpt_callbacks(&cpt_cb, cpt_cb_count);
 # endif
 }
 #endif
@@ -7126,55 +7291,39 @@ setup_cpt_sources(void)
 {
     char_u  buf[LSIZE];
     int	    slen;
-    int	    count = 0, idx = 0;
-    char_u  *p, *cpt;
-
-    // Make a copy of 'cpt' in case the buffer gets wiped out
-    cpt = vim_strsave(curbuf->b_p_cpt);
-    if (cpt == NULL)
-	return FAIL;
-
-    for (p = cpt; *p;)
-    {
-	while (*p == ',' || *p == ' ') // Skip delimiters
-	    p++;
-	if (*p) // If not end of string, count this segment
-	{
-	    (void)copy_option_part(&p, buf, LSIZE, ","); // Advance p
-	    count++;
-	}
-    }
-    if (count == 0)
-	goto theend;
+    int	    idx = 0;
+    int	    count;
+    char_u  *p;
 
     cpt_sources_clear();
-    cpt_sources_count = count;
+
+    count = get_cpt_sources_count();
+    if (count == 0)
+	return OK;
+
     cpt_sources_array = ALLOC_CLEAR_MULT(cpt_source_T, count);
     if (cpt_sources_array == NULL)
-    {
-	cpt_sources_count = 0;
-	vim_free(cpt);
 	return FAIL;
-    }
 
-    for (p = cpt; *p;)
+    for (p = curbuf->b_p_cpt; *p;)
     {
 	while (*p == ',' || *p == ' ') // Skip delimiters
 	    p++;
 	if (*p) // If not end of string, count this segment
 	{
-	    char_u *t;
-
-	    vim_memset(buf, 0, LSIZE);
 	    slen = copy_option_part(&p, buf, LSIZE, ","); // Advance p
-	    if (slen > 0 && (t = vim_strchr(buf, '^')) != NULL)
-		cpt_sources_array[idx].cs_max_matches = atoi((char *)t + 1);
+	    if (slen > 0)
+	    {
+		char_u	*caret = vim_strchr(buf, '^');
+		if (caret != NULL)
+		    cpt_sources_array[idx].cs_max_matches
+			= atoi((char *)caret + 1);
+	    }
 	    idx++;
 	}
     }
 
-theend:
-    vim_free(cpt);
+    cpt_sources_count = count;
     return OK;
 }
 
@@ -7335,7 +7484,7 @@ cpt_compl_refresh(void)
 
 	if (cpt_sources_array[cpt_sources_index].cs_refresh_always)
 	{
-	    cb = get_callback_if_cpt_func(p);
+	    cb = get_callback_if_cpt_func(p, cpt_sources_index);
 	    if (cb)
 	    {
 		compl_curr_match = remove_old_matches();
