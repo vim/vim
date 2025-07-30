@@ -3,19 +3,21 @@ vim9script
 # Interface {{{1
 export def Find(editcmd: string) #{{{2
     var curline: string = getline('.')
+    var cmd: string = editcmd
+        ->substitute('<C-W>', "\<C-W>", 'g')
 
     if curline =~ '^\s*\%(:\s*\)\=packadd!\=\s'
-        HandlePackaddLine(editcmd, curline)
+        HandlePackaddLine(cmd, curline)
         return
     endif
 
     if curline =~ '^\s*\%(:\s*\)\=import\s'
-        HandleImportLine(editcmd, curline)
+        HandleImportLine(cmd, curline)
         return
     endif
 
     try
-        execute 'normal! ' .. editcmd
+        execute 'normal! ' .. cmd
     catch
         Error(v:exception)
     endtry
@@ -93,8 +95,8 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
 
     var how_to_split: string = {
         gF: 'edit',
-        '<C-W>F': 'split',
-        '<C-W>gF': 'tab split',
+        "\<C-W>F": 'split',
+        "\<C-W>gF": 'tab split',
     }[editcmd]
     execute how_to_split .. ' ' .. filepath
 enddef
