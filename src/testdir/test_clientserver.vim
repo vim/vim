@@ -172,8 +172,7 @@ func Test_client_server()
       let l = split(system(cmd .. ' --remote +pwd'), "\n")
       call assert_equal("Argument missing after: \"+pwd\"", l[1])
     endif
-    let l = system(cmd .. ' --remote-expr "abcd"')
-    call assert_match('^E449: ', l)
+    call WaitForAssert({-> assert_match('^E449: ', system(cmd .. ' --remote-expr "abcd"'))})
   endif
 
   eval name->remote_send(":%bw!\<CR>")

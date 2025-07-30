@@ -9645,7 +9645,6 @@ socket_server_send(
     return pending.code == 0 ? 0 : -1;
 }
 
-
 /*
  * Wait for replies from "client" and place result in "str". Returns OK on
  * success and FAIL on failure. Timeout is in milliseconds

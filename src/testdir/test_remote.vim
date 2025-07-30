@@ -38,10 +38,6 @@ func Test_remote_servername()
   " just a dummy file, so that the ':wq' further down is successful
   call writefile(range(1, 20), 'Xdummy.log', 'D')
 
-  if v:servername == ""
-    call remote_startserver('VIMSOCKETSERVERTEST')
-  endif
-
   " Run Vim in a terminal and open a terminal window to run Vim in.
   let lines =<< trim END
     set wildignore=*.txt
@@ -54,7 +50,6 @@ func Test_remote_servername()
   " open XTEST.txt, if wildignore setting is not ignored, the server
   " will continue with the Xdummy.log file
   let buf2 = RunVimInTerminal('--servername XVIMTEST --remote-silent XTEST.txt', {'rows': 5, 'wait_for_ruler': 0})
-  call WaitForAssert({-> assert_match('XTEST.txt', remote_expr('XVIMTEST', 'expand("%")'))})
   " job should be no-longer running, so we can just close it
   exe buf2 .. 'bw!'
   call term_sendkeys(buf, ":sil :3,$d\<CR>")

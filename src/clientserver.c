@@ -894,7 +894,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 #ifdef FEAT_SOCKETSERVER
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
 	if (socket_server_send(server_name, keys, &r, &client, expr,
-		    timeout, TRUE) < 0)
+		    timeout * 1000, TRUE) < 0)
 	    goto stuff;
 #endif
 #ifdef FEAT_X11
