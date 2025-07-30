@@ -42,6 +42,7 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
         # paths relative to inconsistent root directories.
         var files: list<string> = getcompletion($'edit **/plugin/{plugin}.vim', 'cmdline')
             ->filter((_, path: string): bool => filereadable(path))
+            ->map((_, fname: string) => fname->fnamemodify(':p'))
         if empty(files)
             echo 'Could not find any plugin file for ' .. string(plugin)
             return
