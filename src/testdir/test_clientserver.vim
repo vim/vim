@@ -235,9 +235,7 @@ func Test_client_server_stopinsert()
   call assert_equal('n', name->remote_expr("mode(1)"))
   call assert_equal('13', name->remote_expr("col('.')"))
 
-  " For some reason even though its asserted to be normal mode, <Esc> is
-  " still required? Maybe a bug or just flakiness, don't know...
-  eval name->remote_send("\<Esc>:qa!\<CR>")
+  eval name->remote_send(":qa!\<CR>")
   try
     call WaitForAssert({-> assert_equal("dead", job_status(job))})
   finally

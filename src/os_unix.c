@@ -172,6 +172,7 @@ typedef enum {
     SS_CMD_TYPE_KEYSTROKES  = 'K',  // Series of keystrokes
     SS_CMD_TYPE_REPLY	    = 'R',  // Reply from an expression
     SS_CMD_TYPE_NOTIFY	    = 'N',  // A notification
+    SS_CMD_TYPE_ALIVE	    = 'A',  // Check if server is still responsive
 } ss_cmd_type_T;
 
 // Represents a message in a command. A command can contain multiple messages.
@@ -255,8 +256,9 @@ static int socket_server_write(int sock_fd, char_u *data, size_t sz,
 static ss_reply_T *socket_server_get_reply(char_u *sender, int *index);
 static ss_reply_T *socket_server_add_reply(char_u *sender);
 static void socket_server_remove_reply(char_u *sender);
-static void socket_server_exec_cmd(ss_cmd_T *cmd);
+static void socket_server_exec_cmd(ss_cmd_T *cmd, int fd);
 static int socket_server_dispatch(int timeout);
+static int socket_server_check_alive(char_u *name);
 
 #endif // FEAT_SOCKETSERVER
 
@@ -9376,21 +9378,16 @@ socket_server_list_sockets(void)
 	// Loop through directory
 	while ((dp = readdir(dirp)) != NULL)
 	{
-	    int fd;
-
 	    if (STRCMP(dp->d_name, ".") == 0 || STRCMP(dp->d_name, "..") == 0)
 		continue;
 
 	    vim_snprintf((char *)buf, sizeof(addr.sun_path), "%s/%s",
 		    dir, dp->d_name);
 
-	    // Try connecting to see if it is not dead
-	    fd = socket_server_connect(buf, NULL, TRUE);
-
-	    if (fd == -1)
+	    // Try sending an ALIVE command. This is more assuring than a
+	    // simple connect, and *also seems to make tests less flaky*.
+	    if (!socket_server_check_alive(buf))
 		continue;
-
-	    close(fd);
 
 	    ga_concat(&str, (char_u *)dp->d_name);
 	    ga_append(&str, '\n');
@@ -9423,14 +9420,13 @@ socket_server_accept_client(void)
 	return;
 
     if (socket_server_decode_cmd(&cmd, fd, 1000) == FAIL)
-	// Client is likely testing if we are still alive
 	goto exit;
 
 #ifdef FEAT_EVAL
     ch_log(NULL, "accepted new client on socket %s", socket_server_path);
 #endif
 
-    socket_server_exec_cmd(&cmd);
+    socket_server_exec_cmd(&cmd, fd);
     socket_server_free_cmd(&cmd);
 
 exit:
@@ -9675,7 +9671,8 @@ get_reply:
 	if (reply != NULL)
 	    break;
 
-	// Check if sender is down by connecting to it as a test.
+	// Check if sender is down by connecting to it as a test. A simple
+	// connect will do.
 	fd = socket_server_connect(client, NULL, TRUE);
 
 	if (fd == -1)
@@ -10046,9 +10043,13 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 			buf + sizeof(cmd->cmd_type) + sizeof(cmd->cmd_num),
 			sizeof(cmd->cmd_len));
 
-		if (cmd->cmd_num > SOCKET_SERVER_MAX_MSG || cmd->cmd_num <= 0)
+		if (cmd->cmd_num > SOCKET_SERVER_MAX_MSG || cmd->cmd_num < 0)
 		    // Too many messages to handle or invalid number
 		    goto fail;
+
+		if (cmd->cmd_num == 0)
+		    // No messages to read
+		    goto exit;
 
 		// Now that we now the total size of messages, we can realloc
 		// the buffer to contain all data
@@ -10100,6 +10101,7 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 	start += msg->msg_len;
     }
 
+exit:
     vim_free(buf);
     return OK;
 fail:
@@ -10226,10 +10228,10 @@ socket_server_remove_reply(char_u *sender)
 
 /*
  * Execute the actions given by command. "fd" is the socket of the client that
- * sent the command. We need it so we can send a reply back to it if required.
+ * sent the command.
  */
     static void
-socket_server_exec_cmd(ss_cmd_T *cmd)
+socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
 {
     char_u	    *str = NULL;
     char_u	    *enc = NULL;
@@ -10318,12 +10320,12 @@ socket_server_exec_cmd(ss_cmd_T *cmd)
 
 		if (buf != NULL)
 		{
-		    int fd = socket_server_connect(sender, NULL, TRUE);
+		    int fd2 = socket_server_connect(sender, NULL, TRUE);
 
-		    if (fd >= 0)
-			socket_server_write(fd, buf, sz, 1000);
+		    if (fd2 >= 0)
+			socket_server_write(fd2, buf, sz, 1000);
 		    vim_free(buf);
-		    close(fd);
+		    close(fd2);
 		}
 
 		socket_server_free_cmd(&rcmd);
@@ -10378,6 +10380,37 @@ socket_server_exec_cmd(ss_cmd_T *cmd)
 	    vim_free(to_free);
 	    vim_free(to_free2);
 	}
+	return;
+    }
+    else if (cmd->cmd_type == SS_CMD_TYPE_ALIVE)
+    {
+	// Client wants to check if we are still responsive, send back a single
+	// byte as a YES.
+	char_u buf[1] = {1};
+#ifndef HAVE_SELECT
+	struct pollfd pfd;
+
+	pfd.fd = fd;
+	pfd.events = POLLIN;
+#else
+	fd_set		rfds;
+	struct timeval  tv;
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+#endif
+
+	write(fd, buf, 1);
+
+	// Poll until client closes their end
+
+#ifndef HAVE_SELECT
+	poll(&pfd, 1, 500);
+#else
+	tv.tv_sec = 0;
+	tv.tv_usec = 500 * 1000;
+	select(fd + 1, &rfds, NULL, NULL, &tv);
+#endif
 	return;
     }
 
@@ -10441,6 +10474,69 @@ socket_server_dispatch(int timeout)
 	}
 
     return -1;
+}
+
+/*
+ * Check if socket "name" is reponsive by sending an ALIVE command. This does
+ * not require the socket server to be active.
+ */
+    static int
+socket_server_check_alive(char_u *name)
+{
+    int	    socket_fd;
+    int	    ret;
+    size_t  sz;
+    char_u  *final;
+    char_u  buf[1] = {0};
+#ifndef HAVE_SELECT
+    struct pollfd pfd;
+#else
+    fd_set	    rfds;
+    struct timeval  tv;
+#endif
+
+    socket_fd = socket_server_connect(name, NULL, TRUE);
+
+    if (socket_fd == -1)
+	return FALSE;
+
+#ifndef HAVE_SELECT
+    pfd.fd = socket_fd;
+    pfd.events = POLLIN;
+#else
+    FD_ZERO(&rfds);
+    FD_SET(socket_fd, &rfds);
+#endif
+
+    ss_cmd_T cmd;
+
+    socket_server_init_cmd(&cmd, SS_CMD_TYPE_ALIVE);
+
+    final = socket_server_encode_cmd(&cmd, &sz);
+
+    if (final == NULL ||
+	    socket_server_write(socket_fd, final, sz, 500) == FAIL)
+    {
+	vim_free(final);
+	close(socket_fd);
+	return FALSE;
+    }
+    vim_free(final);
+
+    // Poll for response
+#ifndef HAVE_SELECT
+    ret = poll(&pfd, 1, 500);
+#else
+    tv.tv_sec = 0;
+    tv.tv_usec = 500 * 1000;
+    ret = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
+#endif
+
+    if (ret > 0)
+	read(socket_fd, buf, 1);
+
+    close(socket_fd);
+    return buf[0] == 1;
 }
 
 /*
