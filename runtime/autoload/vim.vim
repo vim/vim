@@ -4,12 +4,12 @@ vim9script
 export def Find(editcmd: string) #{{{2
     var curline: string = getline('.')
 
-    if curline =~ '^\s*packadd!\=\s'
+    if curline =~ '^\s*\%(:\s*\)\=packadd!\=\s'
         HandlePackaddLine(editcmd, curline)
         return
     endif
 
-    if curline =~ '^\s*import\s'
+    if curline =~ '^\s*\%(:\s*\)\=import\s'
         HandleImportLine(editcmd, curline)
         return
     endif
@@ -63,7 +63,7 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
     # the script is referred to by an expression
     elseif curline =~ import_expr
         try
-            fname = curline
+            sandbox fname = curline
                 ->matchstr(import_expr)
                 ->eval()
         catch
@@ -93,13 +93,13 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
 
     var how_to_split: string = {
         gF: 'edit',
-        "\<C-W>F": 'split',
-        "\<C-W>gF": 'tab split',
+        '<C-W>F': 'split',
+        '<C-W>gF': 'tab split',
     }[editcmd]
     execute how_to_split .. ' ' .. filepath
 enddef
 
-export def OpenOrFocus(what: any, how: string) #{{{1
+def OpenOrFocus(what: any, how: string) #{{{2
     var fname: string
     if what->typename() == 'list<string>'
         if what->empty()
