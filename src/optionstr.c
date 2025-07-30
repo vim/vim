@@ -252,6 +252,16 @@ illegal_char(char *errbuf, size_t errbuflen, int c)
     return errbuf;
 }
 
+    static char *
+illegal_char_after_chr(char *errbuf, size_t errbuflen, int c)
+{
+    if (errbuf == NULL)
+	return "";
+    vim_snprintf(errbuf, errbuflen, _(e_illegal_character_after_chr),
+		    (char *)transchar(c));
+    return errbuf;
+}
+
 /*
  * Check string options in a buffer for NULL value.
  */
@@ -1644,19 +1654,18 @@ did_set_complete(optset_T *args)
 	    }
 	}
 	if (char_before != NUL)
-	{
-	    if (args->os_errbuf)
-	    {
-		vim_snprintf((char *)args->os_errbuf, args->os_errbuflen,
-			_(e_illegal_character_after_chr), char_before);
-		return args->os_errbuf;
-	    }
-	    return NULL;
-	}
+	    return illegal_char_after_chr(args->os_errbuf, args->os_errbuflen,
+		    char_before);
 	// Skip comma and spaces
 	while (*p == ',' || *p == ' ')
 	    p++;
     }
+
+#ifdef FEAT_COMPL_FUNC
+    if (set_cpt_callbacks(args) != OK)
+	return illegal_char_after_chr(args->os_errbuf, args->os_errbuflen,
+		'F');
+#endif
     return NULL;
 }
 
