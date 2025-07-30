@@ -104,7 +104,7 @@ const HELP_TEXT: list<string> =<< trim END
 
     <C-D>       scroll down half a page
     <C-U>       scroll up half a page
-    <C-S>       split window, and jump to selected entry
+    <C-T>       split window, and jump to selected entry
     <PageUp>    scroll down a whole page
     <PageDown>  scroll up a whole page
     <Home>      select first entry
@@ -1015,7 +1015,7 @@ def Filter(winid: number, key: string): bool #{{{2
     endif
 
     # split main window
-    if key == "\<C-S>"
+    if key == "\<C-T>"
         split
         return popup_filter_menu(winid, "\<CR>")
     endif
