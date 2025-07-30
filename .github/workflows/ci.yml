@@ -85,7 +85,7 @@ jobs:
           - features: normal
             compiler: gcc
             extra: [vimtags]
-          - features: normal
+          - features: huge
             compiler: gcc
             extra: [no_x11]
 

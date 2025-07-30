@@ -10052,7 +10052,7 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 			buf + sizeof(cmd->cmd_type) + sizeof(cmd->cmd_num),
 			sizeof(cmd->cmd_len));
 
-		if (cmd->cmd_num > SOCKET_SERVER_MAX_MSG || cmd->cmd_num < 0)
+		if (cmd->cmd_num > SOCKET_SERVER_MAX_MSG)
 		    // Too many messages to handle or invalid number
 		    goto fail;
 
@@ -10274,7 +10274,8 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
 
 #ifdef FEAT_EVAL
     ch_log(NULL, "socket_server_exec_cmd(): encoding: %s, result: %s",
-	    enc, str);
+	    enc == NULL ? (char_u *)"(null)" : enc,
+	    str == NULL ? (char_u *)"(null)" : str);
 #endif
 
     if (cmd->cmd_type == SS_CMD_TYPE_EXPR ||
@@ -10409,7 +10410,8 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
 	FD_SET(fd, &rfds);
 #endif
 
-	write(fd, buf, 1);
+	if (write(fd, buf, 1) == -1)
+	    return;
 
 	// Poll until client closes their end
 
@@ -10542,7 +10544,11 @@ socket_server_check_alive(char_u *name)
 #endif
 
     if (ret > 0)
-	read(socket_fd, buf, 1);
+	if (read(socket_fd, buf, 1) == -1)
+	{
+	    close(socket_fd);
+	    return FALSE;
+	}
 
     close(socket_fd);
     return buf[0] == 1;
