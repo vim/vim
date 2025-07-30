@@ -848,11 +848,11 @@ f_chdir(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	char_u *s = tv_get_string(&argvars[1]);
-	if (STRCMP(s, "cd") == 0)
+	if (STRCMP(s, "global") == 0)
 	    scope = CDSCOPE_GLOBAL;
-	else if (STRCMP(s, "lcd") == 0)
+	else if (STRCMP(s, "window") == 0)
 	    scope = CDSCOPE_WINDOW;
-	else if (STRCMP(s, "tcd") == 0)
+	else if (STRCMP(s, "tabpage") == 0)
 	    scope = CDSCOPE_TABPAGE;
 	else
 	{
