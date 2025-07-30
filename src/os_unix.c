@@ -163,7 +163,7 @@ typedef enum {
     SS_MSG_TYPE_STRING	    = 'c',  // Script to execute or reply string.
     SS_MSG_TYPE_SERIAL	    = 's',  // Serial of pending command
     SS_MSG_TYPE_CODE	    = 'r',  // Result code for an expression sent
-    SS_MSG_TYPE_SENDER	    = 'S'   // Location of socket for the client that
+    SS_MSG_TYPE_SENDER	    = 'd'   // Location of socket for the client that
 				    // sent the command.
 } ss_msg_type_T;
 
@@ -9130,7 +9130,8 @@ mch_create_anon_file(void)
  * path (starts with a '/', './', or '../'), it is assumed to be the path to
  * the desired socket. If the socket path is already taken, append an
  * incrementing number to the path until we find a socket filename that can be
- * used. Returns OK on success and FAIL on failure.
+ * used. If NULL is passed as the name, the previous socket path is used (only
+ * if not NULL). Returns OK on success and FAIL on failure.
  */
     int
 socket_server_init(char_u *name)
@@ -9141,8 +9142,10 @@ socket_server_init(char_u *name)
     int			fd;
     int			i = 1;
 
-    if (socket_server_valid() || name == NULL)
+    if (socket_server_valid() || (name == NULL && socket_server_path == NULL))
 	return FAIL;
+    if (name == NULL)
+	name = socket_server_path;
 
     path = alloc(sizeof(addr.sun_path));
 
@@ -9374,10 +9377,14 @@ socket_server_list_sockets(void)
 	while ((dp = readdir(dirp)) != NULL)
 	{
 	    int fd;
+
+	    if (STRCMP(dp->d_name, ".") == 0 || STRCMP(dp->d_name, "..") == 0)
+		continue;
+
 	    vim_snprintf((char *)buf, sizeof(addr.sun_path), "%s/%s",
 		    dir, dp->d_name);
 
-	    // Try connecting to see if it is valid
+	    // Try connecting to see if it is not dead
 	    fd = socket_server_connect(buf, NULL, TRUE);
 
 	    if (fd == -1)
@@ -10417,16 +10424,16 @@ socket_server_dispatch(int timeout)
 #ifndef HAVE_SELECT
     if (pfd.revents & POLLIN)
 #else
-	if (FD_ISSET(socket_server_fd, &rfds))
+    if (FD_ISSET(socket_server_fd, &rfds))
 #endif
 	{
 	    socket_server_accept_client();
 	    return 0;
 	}
 #ifndef HAVE_SELECT
-	else if (pfd.revents & POLLHUP | POLLERR)
+    else if (pfd.revents & POLLHUP | POLLERR)
 #else
-	else if (FD_ISSET(socket_server_fd, &efds))
+    else if (FD_ISSET(socket_server_fd, &efds))
 #endif
 	{
 	    // Connection was closed

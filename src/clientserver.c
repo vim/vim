@@ -213,7 +213,9 @@ exec_on_server(mparm_T *parmp)
     {
 #ifdef FEAT_SOCKETSERVER
 	// Initialize socket server now, we may need to receive replies back
-	// to us.
+	// to us. If --serverlist is passed, the socket server will be
+	// uninitialized before listing sockets then initialized after. This is
+	// so we don't add our own socket in the list.
 	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
 	{
 	    parmp->servername = serverMakeName(parmp->serverName_arg,
@@ -596,7 +598,13 @@ expr_fail:
 # else
 #  ifdef FEAT_SOCKETSERVER
 	    if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+	    {
+		// Don't want to add ourselves to the list. So shutdown the
+		// server before listing then startup back again.
+		socket_server_uninit();
 		res = socket_server_list_sockets();
+		socket_server_init(NULL);
+	    }
 #  endif
 #  ifdef FEAT_X11
 	    if (clientserver_method == CLIENTSERVER_METHOD_X11 &&
