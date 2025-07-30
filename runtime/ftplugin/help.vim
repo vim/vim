@@ -12,7 +12,9 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo&vim
 
-let b:undo_ftplugin = "setl isk< fo< tw< cole< cocu< keywordprg< omnifunc<"
+let b:undo_ftplugin = "setl isk< fo< tw< cole< cocu< keywordprg< omnifunc< comments< cms<"
+
+setl comments= cms=
 
 setlocal formatoptions+=tcroql textwidth=78 keywordprg=:help omnifunc=s:HelpComplete
 let &l:iskeyword='!-~,^*,^|,^",192-255'
