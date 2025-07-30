@@ -319,7 +319,7 @@ au BufNewFile,BufRead *.brs			setf brightscript
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
 " Bazel (https://bazel.build) and Buck2 (https://buck2.build/)
-autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE,WORKSPACE.bzlmod	setf bzl
+autocmd BufRead,BufNewFile *.bzl,*.bxl,*.bazel,WORKSPACE,WORKSPACE.bzlmod	setf bzl
 if has("fname_case")
   " There is another check for BUILD and BUCK further below.
   autocmd BufRead,BufNewFile *.BUILD,BUILD,BUCK		setf bzl
