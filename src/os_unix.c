@@ -9576,7 +9576,7 @@ socket_server_send(
 
     if (final == NULL ||
 	    socket_server_write(socket_fd, final, sz,
-		timeout > 0 ? timeout : 500) == FAIL)
+		timeout > 0 ? timeout : 1000) == FAIL)
     {
 	if (final != NULL)
 	    emsg(_(e_failed_to_send_command_to_destination_program));
@@ -9989,7 +9989,8 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
     int		got_cmd_info	= FALSE; // Consists of type, num, and len
     size_t	total_r		= 0;
     char_u	*buf;
-    char_u	*start;
+    char_u	*cur;
+    struct timeval start, now;
 
     // We also poll the socket server listening file descriptor to handle
     // recursive remote calls between Vim instances, such as when one Vim
@@ -10016,6 +10017,8 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
     // We may exit in the middle of the loop and free the messages, we don't
     // want to free an uninitialized pointer.
     memset(cmd, 0, sizeof(*cmd));
+
+    gettimeofday(&start, NULL);
 
     while (TRUE)
     {
@@ -10067,7 +10070,7 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 		    goto fail;
 
 		buf = tmp;
-		start = buf + SS_CMD_INFO_SIZE;
+		cur = buf + SS_CMD_INFO_SIZE;
 
 		continue;
 	    }
@@ -10075,13 +10078,19 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 	else
 	{
 	    // Read message data
-	    r = read(socket_fd, start + total_r, cmd->cmd_len - total_r);
+	    r = read(socket_fd, cur + total_r, cmd->cmd_len - total_r);
 
 	    if ((size_t)r >= cmd->cmd_len - total_r)
 		break;
 	}
 
 	if (r == -1 || r == 0)
+	    goto fail;
+
+	gettimeofday(&now, NULL);
+
+	if ((now.tv_sec * 1000000 + now.tv_usec) -
+		(start.tv_sec * 1000000 + start.tv_usec) >= timeout * 1000)
 	    goto fail;
 
 	total_r += r;
@@ -10092,21 +10101,21 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
     {
 	ss_msg_T *msg = cmd->cmd_msgs + i;
 
-	memcpy(&msg->msg_type, start, sizeof(msg->msg_type));
-	start += sizeof(msg->msg_type);
-	memcpy(&msg->msg_len, start, sizeof(msg->msg_len));
-	start += sizeof(msg->msg_len);
+	memcpy(&msg->msg_type, cur, sizeof(msg->msg_type));
+	cur += sizeof(msg->msg_type);
+	memcpy(&msg->msg_len, cur, sizeof(msg->msg_len));
+	cur += sizeof(msg->msg_len);
 
 	msg->msg_contents = alloc(msg->msg_len + 1);
 
 	if (msg->msg_contents == NULL)
 	    goto fail;
 
-	memcpy(msg->msg_contents, start, msg->msg_len);
+	memcpy(msg->msg_contents, cur, msg->msg_len);
 	msg->msg_contents[msg->msg_len] = 0; // NULL terminate it
 
 	// Move pointer to start of next message
-	start += msg->msg_len;
+	cur += msg->msg_len;
     }
 
 exit:
@@ -10125,8 +10134,9 @@ fail:
     static int
 socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
 {
-    char_u *start = data;
+    char_u *cur = data;
     size_t total_w = 0;
+    struct timeval start, now;
 #ifndef HAVE_SELECT
     struct pollfd pfd;
 
@@ -10139,6 +10149,8 @@ socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
     FD_ZERO(&wfds);
     FD_SET(socket_fd, &wfds);
 #endif
+
+    gettimeofday(&start, NULL);
 
     while (total_w < sz)
     {
@@ -10156,9 +10168,15 @@ socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
 	if (ret <= 0)
 	    return FAIL;
 
-	written = write(socket_fd, start, sz - total_w);
+	written = write(socket_fd, cur, sz - total_w);
 
 	if (written == -1)
+	    return FAIL;
+
+	gettimeofday(&now, NULL);
+
+	if ((now.tv_sec * 1000000 + now.tv_usec) -
+		(start.tv_sec * 1000000 + start.tv_usec) >= timeout * 1000)
 	    return FAIL;
 
 	total_w += written;
@@ -10525,7 +10543,7 @@ socket_server_check_alive(char_u *name)
     final = socket_server_encode_cmd(&cmd, &sz);
 
     if (final == NULL ||
-	    socket_server_write(socket_fd, final, sz, 500) == FAIL)
+	    socket_server_write(socket_fd, final, sz, 1000) == FAIL)
     {
 	vim_free(final);
 	close(socket_fd);
