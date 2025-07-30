@@ -856,7 +856,7 @@ f_chdir(typval_T *argvars, typval_T *rettv)
 	    scope = CDSCOPE_TABPAGE;
 	else
 	{
-	    semsg(_(e_invalid_expression_str), s);
+	    semsg(_(e_invalid_value_for_argument_str_str), "scope", s);
 	    return;
 	}
     }
