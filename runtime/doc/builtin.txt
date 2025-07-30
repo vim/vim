@@ -1790,9 +1790,9 @@ chdir({dir} [, {scope}])				*chdir()*
 			- If the {scope} is present and it is "global", then
 			  changes the global directory.
 			- Otherwise, if the {scope} is present and it is
-			  "window", then changes the window local directory.
-			- Otherwise, if the {scope} is present and it is
 			  "tabpage", then changes the tabpage local directory.
+			- Otherwise, if the {scope} is present and it is
+			  "window", then changes the window local directory.
 			- Otherwise, if the current window has a window-local
 			  directory (|:lcd|), then changes the window local
 			  directory.
@@ -1802,7 +1802,7 @@ chdir({dir} [, {scope}])				*chdir()*
 			- Otherwise, changes the global directory.
 		{dir} must be a String.
 		If {scope} is present it must be a String and must be one of
-		"cd", "lcd", or "tcd".
+		"global", "tabpage", or "window".
 		If successful, returns the previous working directory.  Pass
 		this to another chdir() to restore the directory.
 		On failure, returns an empty string.

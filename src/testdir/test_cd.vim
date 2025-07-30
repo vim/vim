@@ -99,10 +99,10 @@ func Test_chdir_func()
   " Forcing scope
   call chdir('.', 'global')
   call assert_match('^\[global\]', trim(execute('verbose pwd')))
-  call chdir('.', 'window')
-  call assert_match('^\[window\]', trim(execute('verbose pwd')))
   call chdir('.', 'tabpage')
   call assert_match('^\[tabpage\]', trim(execute('verbose pwd')))
+  call chdir('.', 'window')
+  call assert_match('^\[window\]', trim(execute('verbose pwd')))
 
   " Error case
   call assert_fails("call chdir('dir-abcd')", 'E344:')

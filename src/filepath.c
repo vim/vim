@@ -850,10 +850,10 @@ f_chdir(typval_T *argvars, typval_T *rettv)
 	char_u *s = tv_get_string(&argvars[1]);
 	if (STRCMP(s, "global") == 0)
 	    scope = CDSCOPE_GLOBAL;
-	else if (STRCMP(s, "window") == 0)
-	    scope = CDSCOPE_WINDOW;
 	else if (STRCMP(s, "tabpage") == 0)
 	    scope = CDSCOPE_TABPAGE;
+	else if (STRCMP(s, "window") == 0)
+	    scope = CDSCOPE_WINDOW;
 	else
 	{
 	    semsg(_(e_invalid_value_for_argument_str_str), "scope", s);
