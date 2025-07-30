@@ -47,7 +47,7 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
             echo 'Could not find any plugin file for ' .. string(plugin)
             return
         endif
-        files->OpenOrFocus(split)
+        files->Open(split)
     endif
 enddef
 
@@ -99,7 +99,7 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
     execute how_to_split .. ' ' .. filepath
 enddef
 
-def OpenOrFocus(what: any, how: string) #{{{2
+def Open(what: any, how: string) #{{{2
     var fname: string
     if what->typename() == 'list<string>'
         if what->empty()
@@ -113,16 +113,6 @@ def OpenOrFocus(what: any, how: string) #{{{2
         fname = what
     endif
 
-    # Open given filename in given way, but only if it's not already displayed
-    # in a window.  If it is, just focus the latter instead.
-    var winid: number = ($'^{fname}$')
-        ->bufnr()
-        ->win_findbuf()
-        ->get(0, -1)
-    if winid != -1
-        win_gotoid(winid)
-        return
-    endif
     execute $'{how} {fname}'
     cursor(1, 1)
 
