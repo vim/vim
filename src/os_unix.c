@@ -9230,8 +9230,21 @@ socket_server_init(char_u *name)
 	if (bind(fd, (struct sockaddr *)&addr, sizeof(addr))
 		== -1)
 	{
+	    int fd2;
+
 	    if (errno != EADDRINUSE)
 		goto fail;
+
+	    // If the socket is dead, remove it and try again
+	    fd2 = socket_server_connect((char_u *)addr.sun_path, NULL, TRUE);
+
+	    if (fd2 == -1)
+	    {
+		mch_remove(addr.sun_path);
+		continue;
+	    }
+	    else
+		close(fd2);
 	}
 	else
 	    break;
