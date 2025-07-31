@@ -1118,9 +1118,7 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 # else
 #  ifdef FEAT_SOCKETSERVER
 	if (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
-		(socket_server_valid() &&
-		 socket_server_read_reply(serverid, &r, timeout * 1000)
-		 == FAIL))
+		socket_server_read_reply(serverid, &r, timeout * 1000) == FAIL)
 	    emsg(_(e_unable_to_read_server_reply));
 #  endif
 #  ifdef FEAT_X11

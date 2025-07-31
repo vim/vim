@@ -10,6 +10,12 @@ CheckFeature clientserver
 
 source util/shared.vim
 
+" Unlike X11, we need the socket server running if we want to send commands to
+" a server via sockets.
+if v:servername == ""
+  call remote_startserver('VIMSOCKETSERVERTEST')
+endif
+
 func Check_X11_Connection()
   if has('x11')
     CheckX11
@@ -47,12 +53,6 @@ func Test_client_server()
       call assert_true(index(lines, 'XVIMTEST') >= 0)
     endif
     call delete('Xtest_serverlist')
-  endif
-
-  " Unlike X11, we need the socket server running if we want to send commands to
-  " a server via sockets.
-  if v:servername == ""
-    call remote_startserver('VIMSOCKETSERVERTEST')
   endif
 
   eval name->remote_foreground()
@@ -212,10 +212,6 @@ func Test_client_server_stopinsert()
   let fname = 'Xclientserver_stop.txt'
   let name = 'XVIMTEST2'
   call writefile(['one two three'], fname, 'D')
-
-  if v:servername == ""
-    call remote_startserver('VIMSOCKETSERVERTEST')
-  endif
 
   let cmd .= ' -c "set virtualedit=onemore"'
   let cmd .= ' -c "call cursor(1, 14)"'

@@ -259,6 +259,7 @@ static void socket_server_remove_reply(char_u *sender);
 static void socket_server_exec_cmd(ss_cmd_T *cmd, int fd);
 static int socket_server_dispatch(int timeout);
 static int socket_server_check_alive(char_u *name);
+static int socket_server_name_is_valid(char_u *name);
 
 #endif // FEAT_SOCKETSERVER
 
@@ -9575,8 +9576,7 @@ socket_server_send(
     final = socket_server_encode_cmd(&cmd, &sz);
 
     if (final == NULL ||
-	    socket_server_write(socket_fd, final, sz,
-		timeout > 0 ? timeout : 1000) == FAIL)
+	    socket_server_write(socket_fd, final, sz, 1000) == FAIL)
     {
 	if (final != NULL)
 	    emsg(_(e_failed_to_send_command_to_destination_program));
@@ -9655,13 +9655,19 @@ socket_server_read_reply(char_u *client, char_u **str, int timeout)
     ss_reply_T *reply = NULL;
     struct timeval start, now;
 
+    if (!socket_server_name_is_valid(client))
+	return -1;
+
+    if (!socket_server_valid())
+	return -1;
+
     if (timeout > 0)
 	gettimeofday(&start, NULL);
 
     // Try seeing if there already is a reply in the queue
     goto get_reply;
 
-    while (socket_server_dispatch(timeout > 0 ? timeout : 500) >= 0)
+    while (socket_server_dispatch(500) >= 0)
     {
 	int fd;
 
@@ -9691,7 +9697,9 @@ get_reply:
 
     if (reply == NULL || reply->strings.ga_data == NULL ||
 	    reply->strings.ga_len <= 0)
+    {
 	return FAIL;
+    }
 
     // Consume the string
     *str = ((char_u **)reply->strings.ga_data)[0];
@@ -9721,8 +9729,11 @@ socket_server_peek_reply(char_u *sender, char_u **str)
 {
     ss_reply_T *reply;
 
-    if (!socket_server_valid())
+    if (!socket_server_name_is_valid(sender))
 	return -1;
+
+    if (!socket_server_valid())
+	return 0;
 
     reply = socket_server_get_reply(sender, NULL);
 
@@ -9747,6 +9758,9 @@ socket_server_send_reply(char_u *client, char_u *str)
     ss_cmd_T	cmd;
     size_t	sz;
     char_u	*final;
+
+    if (!socket_server_name_is_valid(client))
+	return FAIL;
 
     if (!socket_server_valid())
     {
@@ -10028,12 +10042,14 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 #ifndef HAVE_SELECT
 	ret = poll(&pfd, 1, timeout);
 #else
-	tv.tv_sec = 1000;
-	tv.tv_usec = (timeout % 1000) * 1000;
+	tv.tv_sec = 0;
+	tv.tv_usec = 500 * 1000;
 	ret = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
 #endif
-	if (ret <= 0)
+	if (ret < 0)
 	    goto fail;
+	if (ret == 0)
+	    goto continue_loop;
 
 	// Get cmd info first so we know the total size of all messages, and
 	// can read it all in one go.
@@ -10087,13 +10103,14 @@ socket_server_decode_cmd(ss_cmd_T *cmd, int socket_fd, int timeout)
 	if (r == -1 || r == 0)
 	    goto fail;
 
+	total_r += r;
+
+continue_loop:
 	gettimeofday(&now, NULL);
 
 	if ((now.tv_sec * 1000000 + now.tv_usec) -
 		(start.tv_sec * 1000000 + start.tv_usec) >= timeout * 1000)
 	    goto fail;
-
-	total_r += r;
     }
 
     // Parse message data
@@ -10161,25 +10178,28 @@ socket_server_write(int socket_fd, char_u *data, size_t sz, int timeout)
 #ifndef HAVE_SELECT
 	ret = poll(&pfd, 1, timeout);
 #else
-	tv.tv_sec = timeout / 1000;
-	tv.tv_usec = (timeout % 1000) * 1000;
+	tv.tv_sec = 0;
+	tv.tv_usec = 500 * 1000;
 	ret = select(socket_fd + 1, NULL, &wfds, NULL, &tv);
 #endif
-	if (ret <= 0)
+	if (ret < 0)
 	    return FAIL;
+	else if (ret == 0)
+	    goto continue_loop;
 
 	written = write(socket_fd, cur, sz - total_w);
 
 	if (written == -1)
 	    return FAIL;
 
+	total_w += written;
+
 	gettimeofday(&now, NULL);
 
+continue_loop:
 	if ((now.tv_sec * 1000000 + now.tv_usec) -
 		(start.tv_sec * 1000000 + start.tv_usec) >= timeout * 1000)
 	    return FAIL;
-
-	total_w += written;
     }
 
     return OK;
@@ -10433,10 +10453,10 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
 	// Poll until client closes their end
 
 #ifndef HAVE_SELECT
-	poll(&pfd, 1, 500);
+	poll(&pfd, 1, 1000);
 #else
-	tv.tv_sec = 0;
-	tv.tv_usec = 500 * 1000;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
 	select(fd + 1, &rfds, NULL, NULL, &tv);
 #endif
 	return;
@@ -10496,10 +10516,8 @@ socket_server_dispatch(int timeout)
 #else
     else if (FD_ISSET(socket_server_fd, &efds))
 #endif
-	{
-	    // Connection was closed
-	    return -1;
-	}
+	// Connection was closed
+	return -1;
 
     return -1;
 }
@@ -10553,10 +10571,10 @@ socket_server_check_alive(char_u *name)
 
     // Poll for response
 #ifndef HAVE_SELECT
-    ret = poll(&pfd, 1, 500);
+    ret = poll(&pfd, 1, 1000);
 #else
-    tv.tv_sec = 0;
-    tv.tv_usec = 500 * 1000;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
     ret = select(socket_fd + 1, &rfds, NULL, NULL, &tv);
 #endif
 
@@ -10578,6 +10596,21 @@ socket_server_check_alive(char_u *name)
 socket_server_get_fd(void)
 {
     return socket_server_fd;
+}
+
+
+/*
+ * Check if socket name is a valid name
+ */
+    static int
+socket_server_name_is_valid(char_u *name)
+{
+    if (STRLEN(name) == 0 || (name[0] != '/' && vim_strchr(name, '/') != NULL))
+    {
+	semsg(_(e_invalid_server_id_used_str), name);
+	return FALSE;
+    }
+    return TRUE;
 }
 
 #endif // FEAT_SOCKETSERVER
