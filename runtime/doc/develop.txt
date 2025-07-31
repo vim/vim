@@ -291,14 +291,14 @@ initialized from words listed in COMMON items in the affix file, so that it
 also works when starting a new file.
 
 This isn't ideal, because the longer Vim is running the higher the counts
-become.  But in practice it is a noticeable improvement over not using the word
-count.
+become.  But in practice it is a noticeable improvement over not using the
+word count.
 
 ==============================================================================
 3. Assumptions						*design-assumptions*
 
-The following sections define the portability and compatibility constraints that
-all Vim code and build tools must adhere to.
+The following sections define the portability and compatibility constraints
+that all Vim code and build tools must adhere to.
 
 
 MAKEFILES					*assumptions-makefiles*
@@ -339,7 +339,8 @@ Therefore, the latest ISO C standard we follow is:
 
 	`C95` (ISO/IEC 9899:1990/AMD1:1995)
 
-In addition, the following two `C99` features are explicitly allowed:
+In addition, the following `C99` features are explicitly allowed:
+	– logical lines may contain up to 4095 characters;
 	– `//` comments, as required by |style-comments|;
 	– the `_Bool` type.
 
@@ -349,11 +350,11 @@ that platform.
 
 SIZE OF VARIABLES				*assumptions-variables*
 
-	char        8-bit signed
+We follow POSIX.1‑2001 (SUSv3) for type sizes, which in practice means:
+
 	char_u      8-bit unsigned
-	int         32- or 64-bit signed (16-bit possible on legacy systems)
-	unsigned    32- or 64-bit unsigned
-	long        at least 32-bit signed (large enough to hold a pointer)
+	int         ≥ 32-bit signed
+	unsigned    ≥ 32-bit unsigned
 
 
 ==============================================================================
