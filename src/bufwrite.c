@@ -2412,7 +2412,7 @@ restore_backup:
 		IOSIZE - IObufflen, (char *)_("[Device]"));
 	else if (newfile)
 	    IObufflen += vim_snprintf_safelen((char *)IObuff + IObufflen,
-		IOSIZE - IObufflen, (char *)new_file_message());
+		IOSIZE - IObufflen, "%s", new_file_message());
 
 	if (no_eol)
 	    IObufflen += msg_add_eol(IObuff + IObufflen, IOSIZE - IObufflen);
