@@ -371,7 +371,11 @@ vim_findfile_init(
 	if (*++path != NUL)
 	    ++path;
     }
-    else if (*path == NUL || !vim_isAbsName(path))
+    else if (*path == NUL || !vim_isAbsName(path)
+#ifdef MSWIN	// enforce drive letter on windows paths
+		|| (*path == '/' || *path == '\\') && path[1] != path[0]
+#endif
+    )
     {
 #ifdef BACKSLASH_IN_FILENAME
 	// "c:dir" needs "c:" to be expanded, otherwise use current dir
