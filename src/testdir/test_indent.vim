@@ -123,23 +123,23 @@ endfunc
 func Test_struct_indent()
   new
   call setline(1, ['struct a a = {', '1,', '1,'])
-  normal ggVG=
+  normal gg=G
   call assert_equal(getline(2), getline(3))
 
   call setline(1, 'a = (struct a) {')
-  normal ggVG=
+  normal gg=G
   call assert_equal(getline(2), getline(3))
 
   call setline(1, 'void *ptr = &(static struct a) {{')
-  normal ggVG=
+  normal gg=G
   call assert_equal(getline(2), getline(3))
 
   call setline(1, 'a = (macro(arg1, "str)))")) {')
-  normal ggVG=
+  normal gg=G
   call assert_equal(getline(2), getline(3))
 
   call setline(1, 'return (struct a) {')
-  normal ggVG=
+  normal gg=G
   call assert_equal(getline(2), getline(3))
   close!
 endfunc

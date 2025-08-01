@@ -717,7 +717,7 @@ cin_ends_in(char_u *s, char_u *find)
  * Strings can be concatenated with comments between:
  * "string0" |*comment*| "string1"
  */
-    static char_u*
+    static char_u *
 cin_skip_comment_and_string(char_u *s)
 {
     char_u *r = NULL, *p = s;
@@ -740,20 +740,14 @@ cin_skip_comment_and_string(char_u *s)
 cin_is_compound_init(char_u *s)
 {
     char_u *p = s, *r = NULL;
-    int slen = (int)STRLEN(s);
 
     while (*p)
     {
-	int len = slen - (p - s);
 	if (*p == '=')
 	    p = r = cin_skipcomment(p + 1);
-	else if (
-	    (p == s || (p > s && !vim_isIDc(p[-1])))
-	    && len >= 6 && !vim_isIDc(p[6])
-	    && !STRNCMP(p, "return", 6))
-	{
+	else if (!STRNCMP(p, "return", 6) && !vim_isIDc(p[6])
+		&& (p == s || (p > s && !vim_isIDc(p[-1]))))
 	    p = r = cin_skipcomment(p + 6);
-	}
 	else
 	    p = cin_skip_comment_and_string(p + 1);
     }
@@ -774,7 +768,7 @@ cin_is_compound_init(char_u *s)
 	{
 	    p = cin_skip_comment_and_string(p + 1);
 	    if (cin_nocode(p))
-		return FALSE;
+		return TRUE;
 	    open_count += (*p == '(') - (*p == ')');
 	} while (open_count);
 	p = cin_skipcomment(p + 1);
