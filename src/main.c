@@ -1855,7 +1855,8 @@ getout(int exitval)
  * Get the name of the display, before gui_prepare() removes it from
  * argv[].  Used for the xterm-clipboard display.
  *
- * Also find the --server... arguments and --socketid and --windowid
+ * Also find the --server, --clientserver... arguments and --socketid and
+ * --windowid
  */
     static void
 early_arg_scan(mparm_T *parmp UNUSED)
@@ -1901,6 +1902,22 @@ early_arg_scan(mparm_T *parmp UNUSED)
 #  endif
 	}
 # endif
+#if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
+	else if (STRNICMP(argv[i], "--clientserver", 14) == 0)
+	{
+	    char_u *arg;
+	    if (i == argc - 1)
+		mainerr_arg_missing((char_u *)argv[i]);
+	    arg = (char_u *)argv[++i];
+
+	    if (STRICMP(arg, "socket") == 0)
+		clientserver_method = CLIENTSERVER_METHOD_SOCKET;
+	    else if (STRICMP(arg, "x11") == 0)
+		clientserver_method = CLIENTSERVER_METHOD_X11;
+	    else
+		mainerr(ME_UNKNOWN_OPTION, arg);
+	}
+#endif
 
 # if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 #  ifdef FEAT_GUI_MSWIN
@@ -2220,7 +2237,8 @@ command_line_scan(mparm_T *parmp)
 		else if (STRNICMP(argv[0] + argv_idx, "serverlist", 10) == 0)
 		    ; // already processed -- no arg
 		else if (STRNICMP(argv[0] + argv_idx, "servername", 10) == 0
-		       || STRNICMP(argv[0] + argv_idx, "serversend", 10) == 0)
+		       || STRNICMP(argv[0] + argv_idx, "serversend", 10) == 0
+		       || STRNICMP(argv[0] + argv_idx, "clientserver", 12) == 0)
 		{
 		    // already processed -- snatch the following arg
 		    if (argc > 1)
@@ -3710,6 +3728,9 @@ usage(void)
 #endif
 #if defined(FEAT_WAYLAND)
     main_msg(_("-Y\t\t\tDo not connect to Wayland compositor"));
+#endif
+#if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
+    main_msg(_("--clientserver <socket|x11> Backend for clientserver communication"));
 #endif
 #ifdef FEAT_CLIENTSERVER
     main_msg(_("--remote <files>\tEdit <files> in a Vim server if possible"));

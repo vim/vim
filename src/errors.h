@@ -3778,3 +3778,15 @@ EXTERN char e_not_a_generic_function_str[]
 EXTERN char e_duplicate_type_var_name_str[]
 	INIT(= N_("E1561: Duplicate type variable name: %s"));
 #endif
+#ifdef FEAT_SOCKETSERVER
+EXTERN char e_socket_path_too_big[]
+	INIT(= N_("E1562: Socket path is too big"));
+EXTERN char e_socket_name_no_slashes[]
+	INIT(= N_("E1563: Socket name cannot have slashes in it without being a path"));
+EXTERN char e_socket_server_not_online[]
+	INIT(= N_("E1564: Socket server is not online, call remote_startserver() first"));
+EXTERN char e_socket_server_failed_connecting[]
+	INIT(= N_("E1565: Failed connecting to socket %s: %s"));
+EXTERN char e_socket_server_unavailable[]
+	INIT(= N_("E1566: Cannot start socket server, socket path is unavailable"));
+#endif

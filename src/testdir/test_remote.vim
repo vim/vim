@@ -15,19 +15,11 @@ func Verify_remote_feature_works()
   enew
   let buf = RunVimInTerminal('--servername XVIMTEST', {'rows': 8})
   call TermWait(buf)
-  let cmd = GetVimCommandCleanTerm() .. '--serverlist'
-  call term_sendkeys(buf, ":r! " .. cmd .. "\<CR>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":w! XVimRemoteTest.txt\<CR>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":q\<CR>")
-  call StopVimInTerminal(buf)
-  bw!
-  let result = readfile('XVimRemoteTest.txt')
-  call delete('XVimRemoteTest.txt')
-  if empty(result)
+  if match(serverlist(), "XVIMTEST") == -1
+    call StopVimInTerminal(buf)
     throw s:skip
   endif
+  call StopVimInTerminal(buf)
   let s:remote = 1
 endfunc
 

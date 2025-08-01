@@ -10,6 +10,12 @@ CheckFeature clientserver
 
 source util/shared.vim
 
+" Unlike X11, we need the socket server running if we want to send commands to
+" a server via sockets.
+if v:servername == ""
+  call remote_startserver('VIMSOCKETSERVERTEST')
+endif
+
 func Check_X11_Connection()
   if has('x11')
     CheckX11
@@ -166,8 +172,7 @@ func Test_client_server()
       let l = split(system(cmd .. ' --remote +pwd'), "\n")
       call assert_equal("Argument missing after: \"+pwd\"", l[1])
     endif
-    let l = system(cmd .. ' --remote-expr "abcd"')
-    call assert_match('^E449: ', l)
+    call WaitForAssert({-> assert_match('^E449: ', system(cmd .. ' --remote-expr "abcd"'))})
   endif
 
   eval name->remote_send(":%bw!\<CR>")
@@ -184,10 +189,15 @@ func Test_client_server()
   call assert_fails('call remote_startserver("")', 'E1175:')
   call assert_fails('call remote_startserver([])', 'E1174:')
   call assert_fails("let x = remote_peek([])", 'E730:')
-  call assert_fails("let x = remote_read('vim10')",
-        \ has('unix') ? ['E573:.*vim10'] : 'E277:')
-  call assert_fails("call server2client('abc', 'xyz')",
-        \ has('unix') ? ['E573:.*abc'] : 'E258:')
+
+  " When using socket server, server id is not a number, but the path to the
+  " socket.
+  if !has('socketserver')
+    call assert_fails("let x = remote_read('vim10')",
+          \ has('unix') ? ['E573:.*vim10'] : 'E277:')
+    call assert_fails("call server2client('abc', 'xyz')",
+          \ has('unix') ? ['E573:.*abc'] : 'E258:')
+  endif
 endfunc
 
 func Test_client_server_stopinsert()
