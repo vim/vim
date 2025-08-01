@@ -1945,6 +1945,7 @@ au BufNewFile,BufRead .pinerc,pinerc,.pinercex,pinercex		setf pine
 au BufNewFile,BufRead *.pip			setf requirements
 au BufNewFile,BufRead requirements.txt		setf requirements
 au BufNewFile,BufRead *-requirements.txt	setf requirements
+au BufNewFile,BufRead requirements-*.txt	setf requirements
 au BufNewFile,BufRead constraints.txt		setf requirements
 au BufNewFile,BufRead requirements.in		setf requirements
 au BufNewFile,BufRead requirements/*.txt	setf requirements
