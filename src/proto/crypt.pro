@@ -25,7 +25,7 @@ void crypt_check_method(int method);
 void crypt_check_swapfile_curbuf(void);
 void crypt_check_current_method(void);
 char_u *crypt_get_key(int store, int twice);
-void crypt_append_msg(buf_T *buf);
+size_t crypt_append_msg(char_u *dst, size_t dstsize, buf_T *buf);
 void crypt_sodium_lock_key(char_u *key);
 int crypt_sodium_munlock(void *const addr, const size_t len);
 void crypt_sodium_randombytes_buf(void *const buf, const size_t size);

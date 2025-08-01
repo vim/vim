@@ -3415,23 +3415,26 @@ print_read_msg(nbbuf_T *buf)
 {
     int	    lnum = buf->bufp->b_ml.ml_line_count;
     off_T   nchars = buf->bufp->b_orig_size;
-    char_u  c;
+    size_t  IObufflen_orig;
+    size_t  IObufflen;
 
-    msg_add_fname(buf->bufp, buf->bufp->b_ffname);
-    c = FALSE;
+    IObufflen_orig = IObufflen = msg_add_fname(IObuff, IOSIZE,
+	buf->bufp, buf->bufp->b_ffname);
 
     if (buf->bufp->b_p_ro)
     {
-	STRCAT(IObuff, shortmess(SHM_RO) ? _("[RO]") : _("[readonly]"));
-	c = TRUE;
+	IObufflen += vim_snprintf_safelen(
+	    (char *)IObuff + IObufflen,
+	    IOSIZE - IObufflen,
+	    "%s",
+	    shortmess(SHM_RO) ? _("[RO]") : _("[readonly]"));
     }
     if (!buf->bufp->b_start_eol)
     {
-	STRCAT(IObuff, shortmess(SHM_LAST) ? _("[noeol]")
-					       : _("[Incomplete last line]"));
-	c = TRUE;
+	IObufflen += msg_add_eol(IObuff + IObufflen, IOSIZE - IObufflen);
     }
-    msg_add_lines(c, (long)lnum, nchars);
+    msg_add_lines(IObuff + IObufflen, IOSIZE - IObufflen,
+	(IObufflen > IObufflen_orig) ? TRUE : FALSE, (long)lnum, nchars);
 
     // Now display it
     VIM_CLEAR(keep_msg);
@@ -3454,12 +3457,14 @@ print_save_msg(nbbuf_T *buf, off_T nchars)
 
     if (nchars >= 0)
     {
+	size_t	IObufflen;
+
 	// put fname in IObuff with quotes
-	msg_add_fname(buf->bufp, buf->bufp->b_ffname);
+	IObufflen = msg_add_fname(IObuff, IOSIZE, buf->bufp, buf->bufp->b_ffname);
 	c = FALSE;
 
-	msg_add_lines(c, buf->bufp->b_ml.ml_line_count,
-						buf->bufp->b_orig_size);
+	msg_add_lines(IObuff + IObufflen, IOSIZE - IObufflen,
+	    c, buf->bufp->b_ml.ml_line_count, buf->bufp->b_orig_size);
 
 	VIM_CLEAR(keep_msg);
 	msg_scrolled_ign = TRUE;

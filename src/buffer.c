@@ -3910,9 +3910,8 @@ fileinfo(
 	    name = curbuf->b_fname;
 	else
 	    name = curbuf->b_ffname;
-	home_replace(shorthelp ? curbuf : NULL, name, (char_u *)buffer + bufferlen,
-					  IOSIZE - (int)bufferlen, TRUE);
-	bufferlen += STRLEN(buffer + bufferlen);
+	bufferlen += home_replace(shorthelp ? curbuf : NULL, name,
+	    (char_u *)buffer + bufferlen, IOSIZE - (int)bufferlen, TRUE);
     }
 
     bufferlen += vim_snprintf_safelen(
