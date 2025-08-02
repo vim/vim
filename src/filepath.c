@@ -827,9 +827,6 @@ f_chdir(typval_T *argvars, typval_T *rettv)
 	    (void) check_for_string_arg(argvars, 0);
 	return;
     }
-    if (in_vim9script()
-	    && (check_for_opt_string_arg(argvars, 1) == FAIL))
-	return;
 
     // Return the current directory
     cwd = alloc(MAXPATHL);
