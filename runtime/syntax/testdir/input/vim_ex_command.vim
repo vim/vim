@@ -161,3 +161,10 @@ command -range=% -nargs=? -bang Tb {
 
 command -range=% -nargs=? -bang Tb :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ", "•", "g")/ge
 
+
+" Unreported issue (:map with trailing bar in replacement text)
+command! Foo
+      \ map lhs rhs |
+      \ abbreviate foo bar |
+      \ echo "Foo"
+
