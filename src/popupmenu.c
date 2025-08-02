@@ -109,7 +109,7 @@ pum_display(
 #endif
 
 #ifdef FEAT_RIGHTLEFT
-    pum_rl = State != MODE_CMDLINE && curwin->w_p_rl;
+    pum_rl = (State & MODE_CMDLINE) == 0 && curwin->w_p_rl;
 #endif
 
     do
@@ -129,7 +129,7 @@ pum_display(
 	// Remember the essential parts of the window position and size, so we
 	// can decide when to reposition the popup menu.
 	pum_window = curwin;
-	if (State == MODE_CMDLINE)
+	if (State & MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    pum_win_row = cmdline_row;
 	else
@@ -165,7 +165,7 @@ pum_display(
 		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
 	    // pum above "pum_win_row"
-	    if (State == MODE_CMDLINE)
+	    if (State & MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
 	    else
@@ -191,7 +191,7 @@ pum_display(
 	else
 	{
 	    // pum below "pum_win_row"
-	    if (State == MODE_CMDLINE)
+	    if (State & MODE_CMDLINE)
 		// for cmdline pum, no need for context lines
 		context_lines = 0;
 	    else
@@ -230,7 +230,7 @@ pum_display(
 	    max_width = p_pmw;
 
 	// Calculate column
-	if (State == MODE_CMDLINE)
+	if (State & MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    cursor_col = cmdline_compl_startcol();
 	else
@@ -440,7 +440,7 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
 	return NULL;
 
     is_select = hlf == HLF_PSI;
-    leader = State == MODE_CMDLINE ? cmdline_compl_pattern()
+    leader = (State & MODE_CMDLINE) ? cmdline_compl_pattern()
 							  : ins_compl_leader();
     if (leader == NULL || *leader == NUL)
 	return NULL;
@@ -449,7 +449,7 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
     if (attrs == NULL)
 	return NULL;
 
-    in_fuzzy = State == MODE_CMDLINE ? cmdline_compl_is_fuzzy()
+    in_fuzzy = (State & MODE_CMDLINE) ? cmdline_compl_is_fuzzy()
 					  : (get_cot_flags() & COT_FUZZY) != 0;
     leader_len = STRLEN(leader);
 
