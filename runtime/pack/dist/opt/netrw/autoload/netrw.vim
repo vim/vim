@@ -9225,7 +9225,7 @@ endfunction
 "                       1000 -> 1K, 1000000 -> 1M, 1000000000 -> 1G
 function s:NetrwHumanReadable(sz)
 
-    if g:netrw_sizestyle == 'h'
+    if g:netrw_sizestyle ==# 'h'
         if a:sz >= 1000000000
             let sz = printf("%.1f",a:sz/1000000000.0)."g"
         elseif a:sz >= 10000000
@@ -9240,7 +9240,7 @@ function s:NetrwHumanReadable(sz)
             let sz= a:sz
         endif
 
-    elseif g:netrw_sizestyle == 'H'
+    elseif g:netrw_sizestyle ==# 'H'
         if a:sz >= 1073741824
             let sz = printf("%.1f",a:sz/1073741824.0)."G"
         elseif a:sz >= 10485760
