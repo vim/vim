@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2025 Jul 25
+*insert.txt*    For Vim version 9.1.  Last change: 2025 Aug 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1318,7 +1318,8 @@ Currently these types can be used:
 When searching for matches takes some time call |complete_add()| to add each
 match to the total list.  These matches should then not appear in the returned
 list!  Call |complete_check()| now and then to allow the user to press a key
-while still searching for matches.  Stop searching when it returns non-zero.
+to navigate through matches while still searching for more.  Stop searching
+when it returns non-zero.
 
 							*E840*
 The function is allowed to move the cursor, it is restored afterwards.

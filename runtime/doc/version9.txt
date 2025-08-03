@@ -41810,7 +41810,7 @@ Ex-Commands: ~
 
 Options: ~
 
-'autocompletion'	Enable auto completion |ins-autocompletion|
+'autocomplete'		Enable auto completion |ins-autocompletion|
 'chistory'		Size of the quickfix stack |quickfix-stack|.
 'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
 			|ins-completion| modes
