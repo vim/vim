@@ -209,7 +209,7 @@ syn region  pythonRawBytes
 
 " F-string replacement fields
 "
-" - Matched parentheses and brackets are ignored
+" - Matched parentheses, brackets and braces are ignored
 " - A bare # is ignored to end of line
 " - A bare = (surrounded by optional whitespace) enables debugging
 " - A bare ! prefixes a conversion field
@@ -219,7 +219,7 @@ syn region  pythonRawBytes
 syn region  pythonFStringField
     \ matchgroup=pythonFStringDelimiter
     \ start=/{/
-    \ skip=/([^)]*)\|\[[^]]*]\|#.*$/
+    \ skip=/([^)]*)\|\[[^]]*]\|{[^}]*}\|#.*$/
     \ end=/\%(\s*=\s*\)\=\%(!\a\)\=\%(:\%({[^}]*}\|[^}]*\)\+\)\=}/
     \ contained
 " Doubled braces and Unicode escapes are not replacement fields
