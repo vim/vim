@@ -100,11 +100,19 @@ and fields {1}, {2} and {1
     2}"""
 
 # F-string replacement fields
+test = f"String is {
+    "one plus "
+    "two plus "
+    "three"}"
+test = f"Number is {
+    1 +
+    2 +
+    3}"
 test = f"abc{a # This is a comment }
     + 1}"
-test = f"abc{a # So is this :
+test = f"def{a # So is this :
     + 2}"
-test = f"abc{a # And this "
+test = f"ghi{a # And this "
     + 3}"
 test = f"He said his name is {name!r}."
 test = f"He said his name is {repr(name)}."
