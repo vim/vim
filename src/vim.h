@@ -3036,8 +3036,9 @@ long elapsed(DWORD start_tick);
 #define EVAL_VAR_IMPORT		4   // may return special variable for import
 #define EVAL_VAR_NO_FUNC	8   // do not look for a function
 
-// Maximum number of characters that can be fuzzy matched
-#define MAX_FUZZY_MATCHES	256
+// Fuzzy matching
+#define FUZZY_MATCH_MAX_LEN	1024    // max characters that can be matched
+#define FUZZY_SCORE_NONE	INT_MIN // invalid fuzzy score
 
 // flags for equal_type()
 #define ETYPE_ARG_UNKNOWN 1

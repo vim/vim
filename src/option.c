@@ -7953,7 +7953,7 @@ match_str(
 	int score;
 
 	score = fuzzy_match_str(str, fuzzystr);
-	if (score != 0)
+	if (score != FUZZY_SCORE_NONE)
 	{
 	    if (!test_only)
 	    {
