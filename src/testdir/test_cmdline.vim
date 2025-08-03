@@ -3224,7 +3224,7 @@ func Test_fuzzy_completion_bufname_fullpath()
   call assert_equal('"b CmdStateFile', @:)
   set wildoptions=fuzzy
   call feedkeys(":b CmdStateFile\<Tab>\<C-B>\"\<CR>", 'tx')
-  call assert_match('Xcmd/Xstate/Xfile.js$', @:)
+  call assert_equal('"b CmdStateFile', @:)
   cd -
   set wildoptions&
 endfunc
@@ -3502,7 +3502,7 @@ func Test_fuzzy_completion_mapname()
   nmap <Plug>state :
   nmap <Plug>FendingOff :
   call feedkeys(":nmap <Plug>fo\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal("\"nmap <Plug>format <Plug>TestFOrmat <Plug>FendingOff <Plug>goformat <Plug>fendoff", @:)
+  call assert_equal("\"nmap <Plug>format <Plug>TestFOrmat <Plug>FendingOff <Plug>fendoff <Plug>goformat", @:)
   nunmap <Plug>format
   nunmap <Plug>goformat
   nunmap <Plug>TestFOrmat
@@ -3674,7 +3674,7 @@ func Test_fuzzy_completion_cmd_sort_results()
   command T123FendingOff :
   set wildoptions=fuzzy
   call feedkeys(":T123fo\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"T123format T123TestFOrmat T123FendingOff T123goformat T123fendoff', @:)
+  call assert_equal('"T123format T123TestFOrmat T123FendingOff T123fendoff T123goformat', @:)
   delcommand T123format
   delcommand T123goformat
   delcommand T123TestFOrmat
