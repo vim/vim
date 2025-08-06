@@ -271,7 +271,7 @@ call module.foo().substitute()
 
 
 " Issue #17766 (valid function call highlighted as error)
-￼
+
 call module[0].foo()
 call module[0].substitute()
 

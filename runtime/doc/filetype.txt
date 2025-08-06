@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2025 May 10
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -42,7 +42,7 @@ Detail: The ":filetype on" command will load one of these files:
 	name, the file $VIMRUNTIME/scripts.vim is used to detect it from the
 	contents of the file.
 	When the GUI is running or will start soon, the |menu.vim| script is
-	also sourced.  See |'go-M'| about avoiding that.
+	also sourced.  See 'go-M' about avoiding that.
 
 To add your own file types, see |new-filetype| below.  To search for help on a
 filetype prepend "ft-" and optionally append "-syntax", "-indent" or

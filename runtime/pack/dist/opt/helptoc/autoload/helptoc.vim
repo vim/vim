@@ -104,6 +104,7 @@ const HELP_TEXT: list<string> =<< trim END
 
     <C-D>       scroll down half a page
     <C-U>       scroll up half a page
+    s           split window, and jump to selected entry
     <PageUp>    scroll down a whole page
     <PageDown>  scroll up a whole page
     <Home>      select first entry
@@ -133,6 +134,23 @@ const UPTOINC_H: string = '\v\c^%(%([<][^h][^>]*[>])|\s)*[<]h'
 const MATCH_ENTRY: dict<dict<func: bool>> = {
 
     help: {},
+
+    # This lets the user get a TOC when piping `info(1)` to Vim:{{{
+    #
+    #     $ info coreutils | vim -
+    #}}}
+    # But it assumes that they have some heuristics to set the `info` filetype.{{{
+    #
+    # Possibly by inspecting the first line from `scripts.vim`:
+    #
+    #     if getline(1) =~ '^File: .*\.info,  Node: .*,  \%(Next\|Prev\): .*,  Up: \|This is the top of the INFO tree.'
+    #         setfiletype info
+    #     endif
+    #}}}
+    info: {
+        1: (l: string, nextline): bool => l =~ '^\d\+\%(\.\d\+\)\+ ' && nextline =~ '^=\+$',
+        2: (l: string, nextline): bool => l =~ '^\d\+\%(\.\d\+\)\+ ' && nextline =~ '^-\+$',
+    },
 
     # For asciidoc, these patterns should match:
     # https://docs.asciidoctor.org/asciidoc/latest/sections/titles-and-levels/
@@ -281,8 +299,8 @@ export def Open() #{{{2
     # invalidate the cache if the buffer's contents has changed
     if exists('b:toc') && &filetype != 'man'
         if b:toc.changedtick != b:changedtick
-        # in a terminal buffer, `b:changedtick` does not change
-        || g:helptoc.type == 'terminal' && line('$') > b:toc.linecount
+                # in a terminal buffer, `b:changedtick` does not change
+                || g:helptoc.type == 'terminal' && line('$') > b:toc.linecount
             unlet! b:toc
         endif
     endif
@@ -616,25 +634,25 @@ def SetTocHelp() #{{{2
         # Do not assume that a list ends on an empty line.
         # See the list at `:help gdb` for a counter-example.
         if in_list
-        && curline !~ '^\d\+.\s'
-        && curline !~ '^\s*$'
-        && curline !~ '^[< \t]'
+                && curline !~ '^\d\+.\s'
+                && curline !~ '^\s*$'
+                && curline !~ '^[<[:blank:]]'
             in_list = false
         endif
 
         if prevline =~ '^\d\+\.\s'
-        && curline !~ '^\s*$'
-        && curline !~ $'^\s*{HELP_TAG}'
+                && curline !~ '^\s*$'
+                && curline !~ $'^\s*{HELP_TAG}'
             in_list = true
         endif
 
         # 1.
         if prevline =~ '^\d\+\.\s'
-        # Let's assume that the start of a main entry is always followed by an
-        # empty line, or a line starting with a tag
-        && (curline =~ '^>\=\s*$' || curline =~ $'^\s*{HELP_TAG}')
-        # ignore a numbered line in a list
-        && !in_list
+                # Let's assume that the start of a main entry is always followed by an
+                # empty line, or a line starting with a tag
+                && (curline =~ '^>\=\s*$' || curline =~ $'^\s*{HELP_TAG}')
+                # ignore a numbered line in a list
+                && !in_list
             var current_numbered_entry: number = prevline
                 ->matchstr('^\d\+\ze\.\s')
                 ->str2nr()
@@ -649,9 +667,9 @@ def SetTocHelp() #{{{2
         # 1.2
         if curline =~ '^\d\+\.\d\+\s'
             if curline =~ $'\%({HELP_TAG}\s*\|\~\)$'
-            || (prevline =~ $'^\s*{HELP_TAG}' || nextline =~ $'^\s*{HELP_TAG}')
-            || (prevline =~ HELP_RULER || nextline =~ HELP_RULER)
-            || (prevline =~ '^\s*$' && nextline =~ '^\s*$')
+                    || (prevline =~ $'^\s*{HELP_TAG}' || nextline =~ $'^\s*{HELP_TAG}')
+                    || (prevline =~ HELP_RULER || nextline =~ HELP_RULER)
+                    || (prevline =~ '^\s*$' && nextline =~ '^\s*$')
                 AddEntryInTocHelp('1.2', lnum, curline)
             endif
         # 1.2.3
@@ -661,21 +679,21 @@ def SetTocHelp() #{{{2
 
         # HEADLINE
         if curline =~ HELP_HEADLINE
-        && curline !~ '^CTRL-'
-        &&  prevline->IsSpecialHelpLine()
-        && (nextline ->IsSpecialHelpLine()
-            || nextline =~ '^\s*(\|^\t\|^N[oO][tT][eE]:')
+                && curline !~ '^CTRL-'
+                &&  prevline->IsSpecialHelpLine()
+                && (nextline ->IsSpecialHelpLine()
+                || nextline =~ '^\s*(\|^\t\|^N[oO][tT][eE]:')
             AddEntryInTocHelp('HEADLINE', lnum, curline)
         endif
 
         # header ~
         if curline =~ '\~$'
-        && curline =~ '\w'
-        && curline !~ '^[ \t<]\|\t\|---+---\|^NOTE:'
-        && curline !~ '^\d\+\.\%(\d\+\%(\.\d\+\)\=\)\=\s'
-        && prevline !~ $'^\s*{HELP_TAG}'
-        && prevline !~ '\~$'
-        && nextline !~ '\~$'
+                && curline =~ '\w'
+                && curline !~ '^[[:blank:]<]\|\t\|---+---\|^NOTE:'
+                && curline !~ '^\d\+\.\%(\d\+\%(\.\d\+\)\=\)\=\s'
+                && prevline !~ $'^\s*{HELP_TAG}'
+                && prevline !~ '\~$'
+                && nextline !~ '\~$'
             AddEntryInTocHelp('header ~', lnum, curline)
         endif
 
@@ -728,8 +746,8 @@ def SetTocHelp() #{{{2
     endif
     b:toc.entries
         ->map((_, entry: dict<any>) => entry.lvl == 0
-            ? entry->extend({lvl: b:toc.maxlvl})
-            : entry)
+        ? entry->extend({lvl: b:toc.maxlvl})
+        : entry)
 
     # fix indentation
     var min_lvl: number = b:toc.entries
@@ -763,7 +781,7 @@ def AddEntryInTocHelp(type: string, lnum: number, line: string) #{{{2
         text = tags
             # we ignore errors and warnings because those are meaningless in
             # a TOC where no context is available
-            ->filter((_, tag: string) => tag !~ '\*[EW]\d\+\*')
+            ->filter((_, tag: string): bool => tag !~ '\*[EW]\d\+\*')
             ->join()
         if text !~ HELP_TAG
             return
@@ -871,12 +889,25 @@ enddef
 
 def SelectNearestEntryFromCursor(winid: number) #{{{2
     var lnum: number = line('.')
-    var firstline: number = b:toc.entries
-        ->copy()
-        ->filter((_, line: dict<any>): bool =>
-            line.lvl <= b:toc.curlvl && line.lnum <= lnum)
-        ->len()
-    if firstline == 0
+    if lnum == 1
+        Win_execute(winid, 'normal! 1G')
+        return
+    endif
+
+    if lnum == line('$')
+        Win_execute(winid, 'normal! G')
+        return
+    endif
+
+    var collapsed_entries: list<dict<any>> = b:toc.entries
+        ->deepcopy()
+        ->filter((_, entry: dict<any>): bool => entry.lvl <= b:toc.curlvl)
+    var firstline: number = collapsed_entries
+        ->reverse()
+        ->indexof((_, entry: dict<any>): bool => entry.lnum <= lnum)
+    firstline = len(collapsed_entries) - firstline
+
+    if firstline <= 0
         return
     endif
     Win_execute(winid, $'normal! {firstline}Gzz')
@@ -885,12 +916,12 @@ enddef
 def Filter(winid: number, key: string): bool #{{{2
     # support various normal commands for moving/scrolling
     if [
-        'j', 'J', 'k', 'K', "\<Down>", "\<Up>", "\<C-N>", "\<C-P>",
-        "\<C-D>", "\<C-U>",
-        "\<PageUp>", "\<PageDown>",
-        'g', 'G', "\<Home>", "\<End>",
-        'z'
-       ]->index(key) >= 0
+            'j', 'J', 'k', 'K', "\<Down>", "\<Up>", "\<C-N>", "\<C-P>",
+            "\<C-D>", "\<C-U>",
+            "\<PageUp>", "\<PageDown>",
+            'g', 'G', "\<Home>", "\<End>",
+            'z'
+            ]->index(key) >= 0
         var scroll_cmd: string = {
             J: 'j',
             K: 'k',
@@ -937,18 +968,21 @@ def Filter(winid: number, key: string): bool #{{{2
         SetTitle(winid)
 
         return true
+    endif
 
-    elseif key == 'c'
+    if key == 'c'
         SelectNearestEntryFromCursor(winid)
         return true
+    endif
 
     # when we press `p`, print the selected line (useful when it's truncated)
-    elseif key == 'p'
+    if key == 'p'
         PrintEntry(winid)
         return true
+    endif
 
     # same thing, but automatically
-    elseif key == 'P'
+    if key == 'P'
         print_entry = !print_entry
         if print_entry
             PrintEntry(winid)
@@ -956,17 +990,20 @@ def Filter(winid: number, key: string): bool #{{{2
             echo ''
         endif
         return true
+    endif
 
-    elseif key == 'q'
+    if key == 'q'
         popup_close(winid, -1)
         return true
+    endif
 
-    elseif key == '?'
+    if key == '?'
         ToggleHelp(winid)
         return true
+    endif
 
     # scroll help window
-    elseif key == "\<C-J>" || key == "\<C-K>"
+    if key == "\<C-J>" || key == "\<C-K>"
         var scroll_cmd: string = {"\<C-J>": 'j', "\<C-K>": 'k'}->get(key, key)
         if scroll_cmd == 'j' && line('.', help_winid) == line('$', help_winid)
             scroll_cmd = '1G'
@@ -975,12 +1012,19 @@ def Filter(winid: number, key: string): bool #{{{2
         endif
         Win_execute(help_winid, $'normal! {scroll_cmd}')
         return true
+    endif
+
+    # split main window
+    if key == 's'
+        split
+        return popup_filter_menu(winid, "\<CR>")
+    endif
 
     # increase/decrease the popup's width
-    elseif key == '+' || key == '-'
+    if key == '+' || key == '-'
         var width: number = winid->popup_getoptions().minwidth
         if key == '-' && width == 1
-        || key == '+' && winid->popup_getpos().col == 1
+                || key == '+' && winid->popup_getpos().col == 1
             return true
         endif
         width = width + (key == '+' ? 1 : -1)
@@ -988,13 +1032,15 @@ def Filter(winid: number, key: string): bool #{{{2
         b:toc.width = width
         popup_setoptions(winid, {minwidth: width, maxwidth: width})
         return true
+    endif
 
-    elseif key == 'H' && b:toc.curlvl > 1
-        || key == 'L' && b:toc.curlvl < b:toc.maxlvl
+    if key == 'H' && b:toc.curlvl > 1
+            || key == 'L' && b:toc.curlvl < b:toc.maxlvl
         CollapseOrExpand(winid, key)
         return true
+    endif
 
-    elseif key == '/'
+    if key == '/'
         # This is probably what the user expects if they've started a first
         # fuzzy search, press Escape, then start a new one.
         DisplayNonFuzzyToc(winid)
@@ -1005,7 +1051,8 @@ def Filter(winid: number, key: string): bool #{{{2
             pattern: '@',
             cmd: $'FuzzySearch({winid})',
             replace: true,
-        }, {
+        },
+        {
             group: 'HelpToc',
             event: 'CmdlineLeave',
             pattern: '@',
@@ -1081,7 +1128,7 @@ def FuzzySearch(winid: number) #{{{2
                     col: col + 1,
                     length: 1,
                     type: 'help-fuzzy-toc',
-            }))}))
+                }))}))
     endif
     Win_execute(winid, 'normal! 1Gzt')
     Popup_settext(winid, text)
@@ -1167,7 +1214,8 @@ def Callback(winid: number, choice: number) #{{{2
     if choice == -1
         fuzzy_entries = null_list
         return
-    elseif choice == -2  # Button X is clicked (when close: 'button')
+    endif
+    if choice == -2  # Button X is clicked (when close: 'button')
         return
     endif
 
@@ -1181,8 +1229,10 @@ def Callback(winid: number, choice: number) #{{{2
         return
     endif
 
-    cursor(lnum, 1)
-    normal! zvzt
+    # Moving the cursor with `normal! 123G` instead of `cursor()` adds an
+    # entry in the jumplist (which is useful if you want to come back where
+    # you were).
+    execute $'normal! {lnum}Gzvzt'
 enddef
 
 def ToggleHelp(menu_winid: number) #{{{2
@@ -1235,8 +1285,8 @@ def ToggleHelp(menu_winid: number) #{{{2
 enddef
 
 def Win_execute(winid: number, cmd: any) #{{{2
-# wrapper around `win_execute()` to enforce a redraw, which might be necessary
-# whenever we change the cursor position
+    # wrapper around `win_execute()` to enforce a redraw, which might be necessary
+    # whenever we change the cursor position
     win_execute(winid, cmd)
     redraw
 enddef

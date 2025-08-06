@@ -5656,6 +5656,7 @@ GetLatestVimScripts_dat	pi_getscript.txt	/*GetLatestVimScripts_dat*
 Gnome	gui_x11.txt	/*Gnome*
 H	motion.txt	/*H*
 Haiku	os_haiku.txt	/*Haiku*
+HelpToc-mappings	helphelp.txt	/*HelpToc-mappings*
 I	insert.txt	/*I*
 ICCF	uganda.txt	/*ICCF*
 IM-server	mbyte.txt	/*IM-server*

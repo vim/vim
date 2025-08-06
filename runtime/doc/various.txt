@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2025 Jun 28
+*various.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -20,7 +20,7 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 :redr[aw][!]		Redraw the screen right now.  When ! is included it is
 			cleared first.
 			It can be used to redraw the screen in a script
-			or function (or a mapping if |'lazyredraw'| is set).
+			or function (or a mapping if 'lazyredraw' is set).
 
 						*:redraws* *:redrawstatus*
 :redraws[tatus][!]	Redraw the status line of the current window.  When !
@@ -375,20 +375,20 @@ T  *++builtin_terms*	maximal terminals builtin |builtin-terms| Always
 N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 			and ":goto" commands.
 m  *+channel*		inter process communication |channel|
-T  *+cindent*		|'cindent'|, C indenting; Always enabled
+T  *+cindent*		'cindent', C indenting; Always enabled
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 T  *+cmdline_hist*	command line history |cmdline-history|
-T  *+cmdline_info*	|'showcmd'| and |'ruler'|; Always enabled since
+T  *+cmdline_info*	'showcmd' and 'ruler'; Always enabled since
 			9.0.0747
 T  *+cmdwin*		|cmdline-window| support; Always enabled since 9.0.0657
-T  *+comments*		|'comments'| support
+T  *+comments*		'comments' support
 N  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
 H  *+cscope*		|cscope| support
-T  *+cursorbind*	|'cursorbind'| support
+T  *+cursorbind*	'cursorbind' support
 m  *+cursorshape*	|termcap-cursor-shape| support
 m  *+debug*		Compiled for debugging.
 N  *+dialog_gui*	Support for |:confirm| with GUI dialog.
@@ -396,12 +396,12 @@ N  *+dialog_con*	Support for |:confirm| with console dialog.
 N  *+dialog_con_gui*	Support for |:confirm| with GUI and console dialog.
 N  *+diff*		|vimdiff| and 'diff'
 N  *+digraphs*		|digraphs| *E196*
-   *+directx*		Win32 GUI only: DirectX and |'renderoptions'|
+   *+directx*		Win32 GUI only: DirectX and 'renderoptions'
    *+dnd*		Support for DnD into the "~ register |quote_~|.
 H  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
 T  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
-N  *+extra_search*	|'hlsearch'| and |'incsearch'| options.
+N  *+extra_search*	'hlsearch' and 'incsearch' options.
 -  *+farsi*		Removed: |farsi| language
 T  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|  Always enabled since
 			9.0.265
@@ -424,12 +424,12 @@ T  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+ipv6*		Support for IPv6 networking |channel|
 m  *+job*		starting and stopping jobs |job|
 T  *+jumplist*		|jumplist|; Always enabled since 8.2.3795
-H  *+keymap*		|'keymap'|
+H  *+keymap*		'keymap'
 N  *+lambda*		|lambda| and |closure|
-H  *+langmap*		|'langmap'|
+H  *+langmap*		'langmap'
 N  *+libcall*		|libcall()|
-N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
-T  *+lispindent*	|'lisp'|
+N  *+linebreak*		'linebreak', 'breakat' and 'showbreak'
+T  *+lispindent*	'lisp'
 T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
 T  *+localmap*		Support for mappings local to a buffer |:map-local|
@@ -439,7 +439,7 @@ N  *+menu*		|:menu|
 N  *+mksession*		|:mksession|
 T  *+modify_fname*	|filename-modifiers|
 T  *+mouse*		Mouse handling |mouse-using|
-N  *+mouseshape*	|'mouseshape'|
+N  *+mouseshape*	'mouseshape'
 N  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
 m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency
@@ -481,12 +481,12 @@ m  *+python3/dyn-stable*
 N  *+quickfix*		|:make| and |quickfix| commands
 N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 			'redrawtime' option
-H  *+rightleft*		Right to left typing |'rightleft'|
+H  *+rightleft*		Right to left typing 'rightleft'
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
-T  *+scrollbind*	|'scrollbind'|
+T  *+scrollbind*	'scrollbind'
 N  *+signs*		|:sign|
-T  *+smartindent*	|'smartindent'|
+T  *+smartindent*	'smartindent'
 H  *+sodium*		compiled with libsodium for better encryption support
 H  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
 N  *+spell*		spell checking support, see |spell|
@@ -514,22 +514,22 @@ T  *+title*		Setting the window 'title' and 'icon'; Always enabled
 N  *+toolbar*		|gui-toolbar|
 T  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
-H  *+vartabs*		Variable-width tab stops. |'vartabstop'|
+H  *+vartabs*		Variable-width tab stops. 'vartabstop'
 T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
 T  *+vim9script*	|Vim9| script
-N  *+viminfo*		|'viminfo'|
-T  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
+N  *+viminfo*		'viminfo'
+T  *+virtualedit*	'virtualedit' Always enabled since 8.1.826.
 T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|
 T  *+vreplace*		|gR| and |gr|
    *+vtp*		on MS-Windows console: support for 'termguicolors'
 N  *+wayland*		Unix only: support for the Wayland protocol.
 N  *+wayland_clipboard*	Unix only: support for Wayland selections/clipboard.
-T  *+wildignore*	|'wildignore'|  Always enabled since 9.0.0278
-T  *+wildmenu*		|'wildmenu'|  Always enabled since 9.0.0279
+T  *+wildignore*	'wildignore'  Always enabled since 9.0.0278
+T  *+wildmenu*		'wildmenu'  Always enabled since 9.0.0279
 T  *+windows*		more than one window; Always enabled since 8.0.1118.
-m  *+writebackup*	|'writebackup'| is default on
+m  *+writebackup*	'writebackup' is default on
 m  *+xim*		X input method |xim|
    *+xfontset*		X fontset support |xfontset|
 N  *+xattr*		compiled with extended attribute support (Linux only)
@@ -624,7 +624,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			to lines that do NOT match {pattern}.
 
 			{pattern} is a Vim search pattern.  Instead of enclosing
-			it in / any non-ID character (see |'isident'|) can be
+			it in / any non-ID character (see 'isident') can be
 			used, so long as it does not appear in {pattern}.
 			Without the enclosing character the pattern cannot
 			include the bar character. 'ignorecase' is not used.

@@ -4800,15 +4800,32 @@ compile_dfunc_scope_end_missing(cctx_T *cctx)
     if (cctx->ctx_scope == NULL)
 	return FALSE;
 
-    if (cctx->ctx_scope->se_type == IF_SCOPE)
-	emsg(_(e_missing_endif));
-    else if (cctx->ctx_scope->se_type == WHILE_SCOPE)
-	emsg(_(e_missing_endwhile));
-    else if (cctx->ctx_scope->se_type == FOR_SCOPE)
-	emsg(_(e_missing_endfor));
-    else
-	emsg(_(e_missing_rcurly));
-
+    switch (cctx->ctx_scope->se_type)
+    {
+	case IF_SCOPE:
+	    emsg(_(e_missing_endif));
+	    break;
+	case WHILE_SCOPE:
+	    emsg(_(e_missing_endwhile));
+	    break;
+	case FOR_SCOPE:
+	    emsg(_(e_missing_endfor));
+	    break;
+	case TRY_SCOPE:
+	    emsg(_(e_missing_endtry));
+	    break;
+	case BLOCK_SCOPE:
+	    // end block scope from :try (maybe)
+	    compile_endblock(cctx);
+	    if (cctx->ctx_scope != NULL
+		    && cctx->ctx_scope->se_type == TRY_SCOPE)
+		emsg(_(e_missing_endtry));
+	    else
+		emsg(_(e_missing_rcurly));
+	    break;
+	default:
+	    emsg(_(e_missing_rcurly));
+    }
     return TRUE;
 }
 
