@@ -3455,7 +3455,7 @@ set_ref_in_cpt_callbacks(callback_T *callbacks, int count, int copyID)
     if (callbacks == NULL)
 	return FALSE;
 
-    for (i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
 	abort = abort || set_ref_in_callback(&callbacks[i], copyID);
     return abort;
 }
