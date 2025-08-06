@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 9.1.  Last change: 2025 Jul 26
+*diff.txt*      For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -461,7 +461,7 @@ Manually set two anchors using line numbers via buffer-local options: >
 ==============================================================================
 6. Diff options						*diff-options*
 
-Also see |'diffopt'| and the "diff" item of |'fillchars'|.
+Also see 'diffopt' and the "diff" item of 'fillchars'.
 
 					    *diff-slow* *diff_translations*
 For very long lines, the diff syntax highlighting might be slow, especially

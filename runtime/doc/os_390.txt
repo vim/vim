@@ -1,4 +1,4 @@
-*os_390.txt*    For Vim version 9.1.  Last change: 2019 Dec 07
+*os_390.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Ralf Schandl
@@ -105,9 +105,9 @@ Never tested:
     - Perl interface		(|perl|)
     - Hangul input		(|hangul|)
     - Encryption support	(|encryption|)
-    - Langmap			(|'langmap'|)
+    - Langmap			('langmap')
     - Python support		(|Python|)
-    - Right-to-left mode	(|'rightleft'|)
+    - Right-to-left mode	('rightleft')
     - TCL interface		(|tcl|)
     ...
 

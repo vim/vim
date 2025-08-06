@@ -1,4 +1,4 @@
-*pi_tar.txt*	For Vim version 9.1.  Last change: 2025 Jul 15
+*pi_tar.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 		       +====================+
 		       | Tar File Interface |
@@ -38,9 +38,9 @@ Copyright 2005-2017:					*tar-copyright*
    :Vimuntar [vimhome]
 
 	This command copies, if necessary, the tarball to the .vim or vimfiles
-	directory using the first writable directory in the |'runtimepath'|
-	when no [vimhome] is specified.  Otherwise, the [vimhome] argument
-	allows the user to specify that directory, instead.
+	directory using the first writable directory in the 'runtimepath' when
+	no [vimhome] is specified.  Otherwise, the [vimhome] argument allows
+	the user to specify that directory, instead.
 
 	The copy is done using the command in *g:tar_copycmd* , which is >
 		cp   for cygwin, unix, macunix

@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 9.1.  Last change: 2024 Oct 05
+*intro.txt*     For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -821,7 +821,7 @@ current mode			'showmode'	on	    on
 command characters		'showcmd'	on	    off
 cursor position			'ruler'		off	    off
 
-The current mode is "-- INSERT --" or "-- REPLACE --", see |'showmode'|.  The
+The current mode is "-- INSERT --" or "-- REPLACE --", see 'showmode'.  The
 command characters are those that you typed but were not used yet.
 
 If you have a slow terminal you can switch off the status messages to speed
