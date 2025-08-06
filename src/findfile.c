@@ -371,11 +371,7 @@ vim_findfile_init(
 	if (*++path != NUL)
 	    ++path;
     }
-    else if (*path == NUL || !vim_isAbsName(path)
-#ifdef MSWIN	// enforce drive letter on windows paths
-		|| (*path == '/' || *path == '\\') && path[1] != path[0]
-#endif
-    )
+    else if (*path == NUL || !vim_isAbsName(path))
     {
 #ifdef BACKSLASH_IN_FILENAME
 	// "c:dir" needs "c:" to be expanded, otherwise use current dir
@@ -402,18 +398,6 @@ vim_findfile_init(
 	    search_ctx->ffsc_start_dir.length);
 	if (search_ctx->ffsc_start_dir.string == NULL)
 	    goto error_return;
-
-#ifdef BACKSLASH_IN_FILENAME
-	// A path that starts with "/dir" is relative to the drive, not to the
-	// directory (but not for "//machine/dir").  Only use the drive name.
-	if ((*path == '/' || *path == '\\')
-		&& path[1] != path[0]
-		&& search_ctx->ffsc_start_dir.string[1] == ':')
-	{
-	    search_ctx->ffsc_start_dir.string[2] = NUL;
-	    search_ctx->ffsc_start_dir.length = 2;
-	}
-#endif
     }
 
     /*
