@@ -1371,8 +1371,11 @@ do_buffer_ext(
     }
     else
     {
+	int help_only = (flags & DOBUF_SKIPHELP) != 0 && buf->b_help;
+
 	bp = NULL;
-	while (count > 0 || (!unload && !buf->b_p_bl && bp != buf))
+	while (count > 0 || (bp != buf && !unload
+				&& !(help_only ? buf->b_help : buf->b_p_bl)))
 	{
 	    // remember the buffer where we start, we come back there when all
 	    // buffers are unlisted.
@@ -1390,14 +1393,17 @@ do_buffer_ext(
 		if (buf == NULL)
 		    buf = lastbuf;
 	    }
+	    // Avoid non-help buffers if the starting point was a help buffer
+	    // and vice-versa.
 	    // Don't count unlisted buffers.
-	    // Avoid non-help buffers if the starting point was a non-help buffer and
-	    // vice-versa.
-	    if (unload || (buf->b_p_bl
-			&& ((flags & DOBUF_SKIPHELP) == 0 || buf->b_help == bp->b_help)))
+	    if (unload
+		    || (help_only
+			? buf->b_help
+			: (buf->b_p_bl && ((flags & DOBUF_SKIPHELP) == 0
+							    || !buf->b_help))))
 	    {
-		 --count;
-		 bp = NULL;	// use this buffer as new starting point
+		--count;
+		bp = NULL;	// use this buffer as new starting point
 	    }
 	    if (bp == buf)
 	    {
