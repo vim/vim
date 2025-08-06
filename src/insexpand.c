@@ -3305,7 +3305,7 @@ clear_cpt_callbacks(callback_T **callbacks, int count)
 	return;
 
     int	i;
-    for (i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
 	free_callback(&(*callbacks)[i]);
 
     VIM_CLEAR(*callbacks);
