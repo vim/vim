@@ -3332,7 +3332,7 @@ copy_cpt_callbacks(callback_T **dest, int *dest_cnt, callback_T *src, int cnt)
 
     *dest_cnt = cnt;
 
-    for (i = 0; i < cnt; i++)
+    for (int i = 0; i < cnt; i++)
 	if (src[i].cb_name != NULL && *(src[i].cb_name) != NUL)
 	    copy_callback(&(*dest)[i], &src[i]);
 
