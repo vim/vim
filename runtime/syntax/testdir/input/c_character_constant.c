@@ -13,7 +13,8 @@ int main (void)
 
     // integer character constants,
     int c1='a'; printf("'a':\t %#010x\n", c1);
-    int c2='🍌'; printf("'🍌':\t %#010x\n\n", c2); // implementation-defined
+    // implementation-defined
+    int c2='🍌'; printf("'🍌':\t %#010x\n\n", c2);
 
     // multicharacter constant
     int c3='ab'; printf("'ab':\t %#010x\n\n", c3); // implementation-defined

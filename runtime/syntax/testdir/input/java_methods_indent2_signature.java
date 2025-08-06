@@ -67,8 +67,8 @@ abstract class Indent2$MethodsTests
   protected static final synchronized strictfp void ascii$99_()
   { ascii$98_(); }
 
-  @SuppressWarnings("strictfp")
-  protected static final synchronized strictfp <α, β> Τʬ<α>[] μʭʭ$99_(
+  @SuppressWarnings("strictfp") protected
+  static final synchronized strictfp <α, β> Τʬ<α>[] μʭʭ$99_(
                         java.util.function.Function<β, Τʬ<α>[][]> ƒ)
   {
     return
