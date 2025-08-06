@@ -2882,6 +2882,9 @@ au BufNewFile,BufRead *.vroom			setf vroom
 " Vue.js Single File Component
 au BufNewFile,BufRead *.vue			setf vue
 
+" Waybar config
+au BufNewFile,BufRead */waybar/config		setf jsonc
+
 " WebAssembly
 au BufNewFile,BufRead *.wat,*.wast		setf wat
 
