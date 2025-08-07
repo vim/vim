@@ -3304,7 +3304,6 @@ clear_cpt_callbacks(callback_T **callbacks, int count)
     if (callbacks == NULL || *callbacks == NULL)
 	return;
 
-    int	i;
     for (int i = 0; i < count; i++)
 	free_callback(&(*callbacks)[i]);
 
@@ -3318,8 +3317,6 @@ clear_cpt_callbacks(callback_T **callbacks, int count)
     static int
 copy_cpt_callbacks(callback_T **dest, int *dest_cnt, callback_T *src, int cnt)
 {
-    int i;
-
     if (cnt == 0)
 	return OK;
 
@@ -3450,7 +3447,7 @@ did_set_thesaurusfunc(optset_T *args UNUSED)
     int
 set_ref_in_cpt_callbacks(callback_T *callbacks, int count, int copyID)
 {
-    int	i, abort = FALSE;
+    int	abort = FALSE;
 
     if (callbacks == NULL)
 	return FALSE;
