@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.1.  Last change: 2023 May 23
+*userfunc.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -378,7 +378,7 @@ the script is a |Vim9| script, this may also be caused by the function not
 being exported.
 
 								*E132*
-The recursiveness of user functions is restricted with the |'maxfuncdepth'|
+The recursiveness of user functions is restricted with the 'maxfuncdepth'
 option.
 
 It is also possible to use `:eval`.  It does not support a range, but does

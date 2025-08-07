@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 9.1.  Last change: 2024 Jan 23
+*gui_w32.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -394,7 +394,7 @@ printer installed this should also work: >
 	:w >>prn
 
 Vim supports a number of standard MS-Windows features.  Some of these are
-detailed elsewhere: see |'mouse'|, |win32-hidden-menus|.
+detailed elsewhere: see 'mouse', |win32-hidden-menus|.
 
 							*drag-n-drop-win32*
 You can drag and drop one or more files into the Vim window, where they will

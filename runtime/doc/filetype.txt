@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2025 May 10
+*filetype.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1063,8 +1063,18 @@ To disable: >
 <
 VIM							*ft-vim-plugin*
 
-The Vim filetype plugin defines mappings to move to the start and end of
-functions with [[ and ]].  Move around comments with ]" and [".
+The Vim filetype plugin defines the following mappings:
+
+    [[		move to the start of the previous function
+    ]]		move to the start of the next function
+    ][		move to the end of the previous function
+    []		move to the end of the next function
+    ]"		move to the next (legacy) comment
+    ["		move to the previous (legacy) comment
+    gf		edit the file under the cursor
+    CTRL-W gf	edit the file under the cursor in a new tab
+    CTRL-W f	edit the file under the cursor in a new window
+
 
 The mappings can be disabled with: >
 	let g:no_vim_maps = 1

@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.1.  Last change: 2024 Dec 31
+*term.txt*      For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -472,13 +472,13 @@ Added by Vim (there are no standard codes for these):
 	t_RV	request terminal version string (works for	*t_RV* *'t_RV'*
 		xterm and other terminal emulators)  The
 		response is stored in |v:termresponse| |xterm-8bit|
-		|'ttymouse'| |xterm-codes|
+		'ttymouse' |xterm-codes|
 	t_XM	enable/disable mouse reporting,			*t_XM* *'t_XM'*
 		see |mouse-reporting| below
 	t_RK	request terminal keyboard protocol state;	*t_RK* *'t_RK'*
 		sent after |t_TI|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
-		see |'ambiwidth'|
+		see 'ambiwidth'
 		The response is stored in |v:termu7resp|
 	t_RF	request terminal foreground color		*t_RF* *'t_RF'*
 		The response is stored in |v:termrfgresp|
@@ -991,7 +991,7 @@ When the X-server clipboard is available, the command server described in
 							*xterm-copy-paste*
 NOTE: In some (older) xterms, it's not possible to move the cursor past column
 95 or 223.  This is an xterm problem, not Vim's.  Get a newer xterm
-|color-xterm|.  Also see |'ttymouse'|.
+|color-xterm|.  Also see 'ttymouse'.
 
 Copy/paste in xterm with (current mode NOT included in 'mouse'):
 1. Press left mouse button on first letter of text, move mouse pointer to last

@@ -146,7 +146,7 @@ plugin-netrw:
     - changed-files:
       - any-glob-to-any-file:
         - 'runtime/plugin/netrwPlugin.vim'
-        - 'runtime/autoload/netrw*'
+        - 'runtime/pack/dist/opt/netrw/**'
 
 xxd:
   - all:

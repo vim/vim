@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Jul 07
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -253,20 +253,21 @@ If you want to access an interactive table of contents, from any position in
 the file, you can use the helptoc plugin.  Load the plugin with: >vim
 
     packadd helptoc
-
+<
+					*HelpToc-mappings*
 Then you can use the `:HelpToc` command to open a popup menu.
 The latter supports the following normal commands: >
 
 	key | effect
 	----+---------------------------------------------------------
-	j   | select next entry
-	k   | select previous entry
-	J   | same as j, and jump to corresponding line in main buffer
-	K   | same as k, and jump to corresponding line in main buffer
 	c   | select nearest entry from cursor position in main buffer
 	g   | select first entry
 	G   | select last entry
 	H   | collapse one level
+	j   | select next entry
+	J   | same as j, and jump to corresponding line in main buffer
+	k   | select previous entry
+	K   | same as k, and jump to corresponding line in main buffer
 	L   | expand one level
 	p   | print current entry on command-line
 
@@ -274,6 +275,7 @@ The latter supports the following normal commands: >
 	    | press multiple times to toggle feature on/off
 
 	q   | quit menu
+	s   | split window, and jump to selected entry
 	z   | redraw menu with current entry at center
 	+   | increase width of popup menu
 	-   | decrease width of popup menu

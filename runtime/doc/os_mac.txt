@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 9.1.  Last change: 2024 Nov 14
+*os_mac.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -70,7 +70,7 @@ default command-key mappings.
 On older systems files starting with a dot "." are discouraged, thus the rc
 files are named "vimrc" or "_vimrc" and "gvimrc" or "_gvimrc".  These files
 can be in any format (mac, dos or unix).  Vim can handle any file format when
-the |'nocompatible'| option is set, otherwise it will only handle mac format
+the 'nocompatible' option is set, otherwise it will only handle mac format
 files.
 
 ==============================================================================

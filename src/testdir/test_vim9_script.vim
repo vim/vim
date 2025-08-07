@@ -1426,6 +1426,31 @@ def Test_try_catch_fails()
   v9.CheckDefFailure(['for i in range(5)', 'endtry'], 'E170:')
   v9.CheckDefFailure(['if 1', 'endtry'], 'E171:')
   v9.CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
+  v9.CheckDefFailure(['try'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1', 'finally'], 'E600:')
+  v9.CheckDefFailure(['try', 'echo 0', 'catch', 'echo 1', 'finally', 'echo 2'], 'E600:')
+
+  # Missing :endtry inside a nested :try
+  var outer1 =<< trim END
+      try
+        echo 0
+      catch
+        echo 1
+  END
+  var outer2 =<< trim END
+      finally
+        echo 2
+      endtry
+  END
+  v9.CheckDefFailure(outer1 + ['try'] + outer2, 'E600:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10'] + outer2, 'E600:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch'] + outer2, 'E600:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11'] + outer2, 'E600:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11', 'finally'] + outer2, 'E607:')
+  v9.CheckDefFailure(outer1 + ['try', 'echo 10', 'catch', 'echo 11', 'finally', 'echo 12'] + outer2, 'E607:')
 
   v9.CheckDefFailure(['throw'], 'E1143:')
   v9.CheckDefFailure(['throw xxx'], 'E1001:')

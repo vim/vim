@@ -403,8 +403,8 @@ vwl_display_flush(vwl_display_T *display)
     FD_ZERO(&wfds);
     FD_SET(display->fd, &wfds);
 
-    tv.tv_sec	= 0;
-    tv.tv_usec	= p_wtm * 1000;
+    tv.tv_sec	= p_wtm / 1000;
+    tv.tv_usec	= (p_wtm % 1000) * 1000;
 #endif
 
     if (display->proxy == NULL)
@@ -518,8 +518,8 @@ vwl_display_dispatch(vwl_display_T *display)
     FD_ZERO(&rfds);
     FD_SET(display->fd, &rfds);
 
-    tv.tv_sec	    = 0;
-    tv.tv_usec	    = p_wtm * 1000;
+    tv.tv_sec	    = p_wtm / 1000;
+    tv.tv_usec	    = (p_wtm % 1000) * 1000;
 #endif
 
     if (display->proxy == NULL)

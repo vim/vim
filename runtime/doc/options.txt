@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Jul 25
+*options.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1035,7 +1035,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Vim will guess the value.  In the GUI this should work correctly,
 	in other cases Vim might not be able to guess the right value.
 	If the GUI supports a dark theme, you can use the "d" flag in
-	'guioptions', see 'go-d'.
+	'guioptions', see |'go-d'|.
 
 	When the |t_RB| option is set, Vim will use it to request the background
 	color from the terminal.  If the returned RGB value is dark/light and
@@ -1589,7 +1589,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"nofile" and "nowrite" buffers are similar:
 	both:		The buffer is not to be written to disk, ":w" doesn't
 			work (":w filename" does work though).
-	both:		The buffer is never considered to be |'modified'|.
+	both:		The buffer is never considered to be 'modified'.
 			There is no warning when the changes will be lost, for
 			example when you quit Vim.
 	both:		A swap file is only created when using too much memory
@@ -1642,7 +1642,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	searched for has a relative path, not an absolute part starting with
 	"/", "./" or "../", the 'cdpath' option is not used then.
 	The 'cdpath' option's value has the same form and semantics as
-	|'path'|.  Also see |file-searching|.
+	'path'.  Also see |file-searching|.
 	The default value is taken from $CDPATH, with a "," prepended to look
 	in the current directory first.
 	If the default value taken from $CDPATH is not what you want, include
@@ -2228,7 +2228,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    controls how completion candidates are reduced from the
 		    list of alternatives.  If you want to use |fuzzy-matching|
 		    to gather more alternatives for your candidate list,
-		    see |'completefuzzycollect'|.
+		    see 'completefuzzycollect'.
 
 	   longest  Only insert the longest common text of the matches.  If
 		    the menu is displayed you can use CTRL-L to add more
@@ -2265,7 +2265,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   popup    Show extra information about the currently selected
 		    completion in a popup window.  Only works in combination
 		    with "menu" or "menuone".  Overrides "preview".
-		    See |'completepopup'| for specifying properties.
+		    See 'completepopup' for specifying properties.
 		    {only works when compiled with the |+textprop| feature}
 
 	   popuphidden
@@ -2386,7 +2386,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 	Copy the structure of the existing lines indent when autoindenting a
 	new line.  Normally the new indent is reconstructed by a series of
-	tabs followed by spaces as required (unless |'expandtab'| is enabled,
+	tabs followed by spaces as required (unless 'expandtab' is enabled,
 	in which case only spaces are used).  Enabling this option makes the
 	new line copy whatever characters were used for indenting on the
 	existing line.  'expandtab' has no effect on these characters, a Tab
@@ -2537,7 +2537,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*cpo-m*
 		m	When included, a showmatch will always wait half a
 			second.  When not included, a showmatch will wait half
-			a second or until a character is typed.  |'showmatch'|
+			a second or until a character is typed.  'showmatch'
 								*cpo-M*
 		M	When excluded, "%" matching will take backslashes into
 			account.  Thus in "( \( )" and "\( ( \)" the outer
@@ -5609,8 +5609,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'lispoptions' 'lop'	string	(default "")
 			local to buffer
 	Comma-separated list of items that influence the Lisp indenting when
-	enabled with the |'lisp'| option.  Currently only one item is
-	supported:
+	enabled with the 'lisp' option.  Currently only one item is supported:
 		expr:1	use 'indentexpr' for Lisp indenting when it is set
 		expr:0	do not use 'indentexpr' for Lisp indenting (default)
 	Note that when using 'indentexpr' the `=` operator indents all the
@@ -5620,7 +5619,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'lispwords' 'lw'	string	(default is very long)
 			global or local to buffer |global-local|
 	Comma-separated list of words that influence the Lisp indenting when
-	enabled with the |'lisp'| option.
+	enabled with the 'lisp' option.
 
 						*'list'* *'nolist'*
 'list'			boolean	(default off)
@@ -6112,7 +6111,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When the mouse is not enabled, the GUI will still use the mouse for
 	modeless selection.  This doesn't move the text cursor.
 
-	See |mouse-using|.  Also see |'clipboard'|.
+	See |mouse-using|.  Also see 'clipboard'.
 
 	Note: When enabling the mouse in a terminal, copy/paste will use the
 	"* register if there is access to an X-server.  The xterm handling of
@@ -6603,7 +6602,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 	When changing the indent of the current line, preserve as much of the
 	indent structure as possible.  Normally the indent is replaced by a
-	series of tabs followed by spaces as required (unless |'expandtab'| is
+	series of tabs followed by spaces as required (unless 'expandtab' is
 	enabled, in which case only spaces are used).  Enabling this option
 	means the indent will preserve as many existing characters as possible
 	for indenting, and only add additional tabs or spaces as required.
@@ -7238,7 +7237,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	current window also scrolls other scrollbind windows (windows that
 	also have this option set).  This option is useful for viewing the
 	differences between two versions of a file, see 'diff'.
-	See |'scrollopt'| for options that determine how this option should be
+	See 'scrollopt' for options that determine how this option should be
 	interpreted.
 	This option is mostly reset when splitting a window to edit another
 	file.  This means that ":split | edit file" results in two windows
@@ -7658,7 +7657,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'shiftwidth' 'sw'	number	(default 8)
 			local to buffer
 	Number of columns that make up one level of (auto)indentation.  Used
-	by |'cindent'|, |<<|, |>>|, etc.
+	by 'cindent', |<<|, |>>|, etc.
 	If set to 0, Vim uses the current 'tabstop' value.  Use |shiftwidth()|
 	to obtain the effective value in scripts.
 
@@ -7881,7 +7880,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global or local to window |global-local|
 	The minimal number of screen columns to keep to the left and to the
 	right of the cursor if 'nowrap' is set.  Setting this option to a
-	value greater than 0 while having |'sidescroll'| also at a non-zero
+	value greater than 0 while having 'sidescroll' also at a non-zero
 	value makes some context visible in the line you are scrolling in
 	horizontally (except at beginning of the line).  Setting this option
 	to a large value (like 999) has the effect of keeping the cursor
@@ -7893,9 +7892,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		setlocal sidescrolloff=-1
 <	NOTE: This option is set to 0 when 'compatible' is set.
 
-	Example: Try this together with 'sidescroll' and 'listchars' as
-		 in the following example to never allow the cursor to move
-		 onto the "extends" character: >
+	Example: Try this together with 'sidescroll' and 'listchars' as in the
+		 following example to never allow the cursor to move onto the
+		 "extends" character: >
 
 		 :set nowrap sidescroll=1 listchars=extends:>,precedes:<
 		 :set sidescrolloff=1
@@ -7999,8 +7998,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	in-depth explanations.
 
 	If Vim is compiled with the |+vartabs| feature then the value of
-	'softtabstop' will be ignored if |'varsofttabstop'| is set to
-	anything other than an empty string.
+	'softtabstop' will be ignored if 'varsofttabstop' is set to anything
+	other than an empty string.
 
 						*'spell'* *'nospell'*
 'spell'			boolean	(default off)
@@ -8443,12 +8442,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Careful: All text will be in memory:
 		- Don't use this for big files.
 		- Recovery will be impossible!
-	A swapfile will only be present when |'updatecount'| is non-zero and
+	A swapfile will only be present when 'updatecount' is non-zero and
 	'swapfile' is set.
 	When 'swapfile' is reset, the swap file for the current buffer is
 	immediately deleted.  When 'swapfile' is set, and 'updatecount' is
 	non-zero, a swap file is immediately created.
-	Also see |swap-file| and |'swapsync'|.
+	Also see |swap-file| and 'swapsync'.
 	If you want to open a new buffer without creating a swap file for it,
 	use the |:noswapfile| modifier.
 	See 'directory' for where the swap file is created.
@@ -8653,7 +8652,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	character (ASCII 9); a Horizontal Tab always advances to the next tab
 	stop.
 	The value must be at least 1 and at most 9999.
-	If Vim was compiled with |+vartabs| and |'vartabstop'| is set, this
+	If Vim was compiled with |+vartabs| and 'vartabstop' is set, this
 	option is ignored.
 	Leave it at 8 unless you have a strong reason (see usr |30.5|).
 
@@ -9115,7 +9114,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When Vim was compiled with HAVE_X11 defined, the original title will
 	be restored if possible.  The output of ":version" will include "+X11"
 	when HAVE_X11 was defined, otherwise it will be "-X11".  This also
-	works for the icon name |'icon'|.
+	works for the icon name 'icon'.
 	But: When Vim was started with the |-X| argument, restoring the title
 	will not work (except in the GUI).
 	If the title cannot be restored, it is set to the value of 'titleold'.
@@ -9348,7 +9347,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{only when compiled with the |+persistent_undo| feature}
 	List of directory names for undo files, separated with commas.
-	See |'backupdir'| for details of the format.
+	See 'backupdir' for details of the format.
 	"." means using the directory of the file.  The undo file name for
 	"file.txt" is ".file.txt.un~".
 	For other directories the file name is the full path of the edited
@@ -9420,13 +9419,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	recovery |crash-recovery|).  'updatecount' is set to zero by starting
 	Vim with the "-n" option, see |startup|.  When editing in readonly
 	mode this option will be initialized to 10000.
-	The swapfile can be disabled per buffer with |'swapfile'|.
+	The swapfile can be disabled per buffer with 'swapfile'.
 	When 'updatecount' is set from zero to non-zero, swap files are
 	created for all buffers that have 'swapfile' set.  When 'updatecount'
 	is set to zero, existing swap files are not deleted.
-	Also see |'swapsync'|.
-	This option has no meaning in buffers where |'buftype'| is "nofile"
-	or "nowrite".
+	Also see 'swapsync'.
+	This option has no meaning in buffers where 'buftype' is "nofile" or
+	"nowrite".
 
 						*'updatetime'* *'ut'*
 'updatetime' 'ut'	number	(default 4000)

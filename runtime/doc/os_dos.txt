@@ -1,4 +1,4 @@
-*os_dos.txt*    For Vim version 9.1.  Last change: 2024 Dec 25
+*os_dos.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -139,7 +139,7 @@ A DOS console does not support attributes like bold and underlining.  You can
 set the color used in five modes with nine terminal options.  Note that this
 is not necessary since you can set the color directly with the ":highlight"
 command; these options are for backward compatibility with older Vim versions.
-The |'highlight'| option specifies which of the five modes is used for which
+The 'highlight' option specifies which of the five modes is used for which
 action. >
 
 	:set t_mr=^V^[\|xxm		start of invert mode
@@ -231,7 +231,6 @@ writing in Unix mode (":se ff=unix").
 
 Vim sets 'fileformat' automatically when 'fileformats' is not empty (which is
 the default), so you don't really have to worry about what you are doing.
-					|'fileformat'| |'fileformats'|
 
 If you want to edit a script file or a binary file, you should set the
 'binary' option before loading the file.  Script files and binary files may
@@ -279,10 +278,10 @@ The default for the 'sh' ('shell') option is "command.com" on Windows 95 and
 "cmd.exe" on Windows NT.  If SHELL is defined, Vim uses SHELL instead, and if
 SHELL is not defined but COMSPEC is, Vim uses COMSPEC.  Vim starts external
 commands with "<shell> /c <command_name>".  Typing CTRL-Z starts a new command
-subshell.  Return to Vim with "exit".	|'shell'| |CTRL-Z|
+subshell.  Return to Vim with "exit".	'shell' |CTRL-Z|
 
 If you are running a third-party shell, you may need to set the
-|'shellcmdflag'| ('shcf') and |'shellquote'| ('shq') or |'shellxquote'|
+'shellcmdflag' ('shcf') and 'shellquote' ('shq') or 'shellxquote'
 ('sxq') options.  Unfortunately, this also depends on the version of Vim used.
 For example, with the MKS Korn shell or with bash, the values of the options
 should be:

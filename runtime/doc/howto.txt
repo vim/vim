@@ -1,4 +1,4 @@
-*howto.txt*	For Vim version 9.1.  Last change: 2006 Apr 02
+*howto.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,8 +35,8 @@ How to ...				*howdoi* *how-do-i* *howto* *how-to*
 |object-motions|	text-object motions
 |various-motions|	various motions
 |object-select|		text-object selection
-|'whichwrap'|		move over line breaks
-|'virtualedit'|		move to where there is no text
+'whichwrap'		move over line breaks
+'virtualedit'		move to where there is no text
 |usr_27.txt|		specify pattern for searches
 |tags-and-searches|	do tags and special searches
 |29.4|			search in include'd files used to find
@@ -44,12 +44,12 @@ How to ...				*howdoi* *how-do-i* *howto* *how-to*
 |K|			look up manual for the keyword under cursor
 
 |03.7|			scroll
-|'sidescroll'|		scroll horizontally/sideways
-|'scrolloff'|		set visible context lines
+'sidescroll'		scroll horizontally/sideways
+'scrolloff'		set visible context lines
 
 |mode-switching|	change modes
 |04.4|			use Visual mode
-|'insertmode'|		start Vim in Insert mode
+'insertmode'		start Vim in Insert mode
 
 |40.1|			map keys
 |24.7|			create abbreviations
@@ -61,13 +61,13 @@ How to ...				*howdoi* *how-do-i* *howto* *how-to*
 
 |20.1|			do command-line editing
 |20.3|			do command-line completion
-|'cmdheight'|		increase the height of command-line
+'cmdheight'		increase the height of command-line
 |10.3|			specify command-line ranges
 |40.3|			specify commands to be executed automatically
 			before/after reading/writing entering/leaving a
 			buffer/window
 
-|'autowrite'|		write automatically
+'autowrite'		write automatically
 |30.1|			speedup edit-compile-edit cycle or compile and fix
 			errors within Vim
 
@@ -76,12 +76,12 @@ How to ...				*howdoi* *how-do-i* *howto* *how-to*
 |term-dependent-settings| set options depending on terminal name
 |save-settings|		save settings
 |:quote|		comment my .vim files
-|'helpheight'|		change the default help height
-|'highlight'|		set various highlighting modes
-|'title'|		set the window title
-|'icon'|		set window icon title
-|'report'|		avoid seeing the change messages on every line
-|'shortmess'|		avoid |hit-enter| prompts
+'helpheight'		change the default help height
+'highlight'		set various highlighting modes
+'title'			set the window title
+'icon'			set window icon title
+'report'		avoid seeing the change messages on every line
+'shortmess'		avoid |hit-enter| prompts
 
 |mouse-using|		use mouse with Vim
 |usr_08.txt|		manage multiple windows and buffers
