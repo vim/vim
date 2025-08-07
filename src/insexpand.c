@@ -5353,11 +5353,6 @@ ins_compl_get_exp(pos_T *ini)
 	    }
 	}
 
-	// If complete() was called then compl_pattern has been reset.  The
-	// following won't work then, bail out.
-	if (compl_pattern.string == NULL)
-	    break;
-
 	if (compl_autocomplete && type == CTRL_X_FUNCTION)
 	    // LSP servers may sporadically take >1s to respond (e.g., while
 	    // loading modules), but other sources might already have matches.
@@ -5369,6 +5364,11 @@ ins_compl_get_exp(pos_T *ini)
 
 	// get the next set of completion matches
 	found_new_match = get_next_completion_match(type, &st, &start_pos);
+
+	// If complete() was called then compl_pattern has been reset.  The
+	// following won't work then, bail out.
+	if (compl_pattern.string == NULL)
+	    break;
 
 	if (may_advance_cpt_idx)
 	{
