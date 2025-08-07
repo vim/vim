@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2025 Jul 21
+*todo.txt*      For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4684,7 +4684,7 @@ Autocommands:
 				  *'autosave'* *'as'* *'noautosave'* *'noas'*
     'autosave' 'as' number  (default 0)
 	    Automatically write the current buffer to file N seconds after the
-	    last change has been made and when |'modified'| is still set.
+	    last change has been made and when 'modified' is still set.
 	    Default: 0 = do not autosave the buffer.
     Alternative: have 'autosave' use 'updatetime' and 'updatecount' but make
     them save the file itself besides the swapfile.

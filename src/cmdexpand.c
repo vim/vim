@@ -4789,17 +4789,29 @@ copy_substring_from_pos(pos_T *start, pos_T *end, char_u **match,
     static int
 is_regex_match(char_u *pat, char_u *str)
 {
+    if (STRCMP(pat, str) == 0)
+	return TRUE;
+
     regmatch_T	regmatch;
     int		result;
 
+    ++emsg_off;
+    ++msg_silent;
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    --emsg_off;
+    --msg_silent;
+
     if (regmatch.regprog == NULL)
 	return FALSE;
     regmatch.rm_ic = p_ic;
     if (p_ic && p_scs)
 	regmatch.rm_ic = !pat_has_uppercase(pat);
 
+    ++emsg_off;
+    ++msg_silent;
     result = vim_regexec_nl(&regmatch, str, (colnr_T)0);
+    --emsg_off;
+    --msg_silent;
 
     vim_regfree(regmatch.regprog);
     return result;

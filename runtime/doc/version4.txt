@@ -1,4 +1,4 @@
-*version4.txt*  For Vim version 9.1.  Last change: 2006 Apr 24
+*version4.txt*  For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -38,7 +38,7 @@ Now the default for 'backup' is off.  As soon as the writing of the file has
 successfully finished, the backup file is deleted.  If you want to keep the
 backup file, set 'backup' on in your vimrc.  The reason for this change is
 that many people complained that leaving a backup file behind is not
-Vi-compatible.						|'backup'|
+Vi-compatible.						'backup'
 
 
 Extension for backup file changed			*backup-extension*
@@ -139,7 +139,7 @@ documentation.
 The key names in <> can be used in mappings directly.  This makes it possible
 to copy/paste examples or type them literally.  The <> notation has been
 introduced for this |<>|.  The 'B' and '<' flags must not be present in
-'cpoptions' to enable this to work |'cpoptions'|.
+'cpoptions' to enable this to work 'cpoptions'.
 
 old name	new name	  old code	old MS-DOS code	~
 				hex	dec	hex	dec	~
@@ -289,7 +289,7 @@ The 'graphic' option was used to make the characters between <~> and 0xa0
 display directly on the screen.  Now the 'isprint' option takes care of this
 with many more possibilities.  The default setting is the same; you only need
 to look into this if you previously set the 'graphic' option in your vimrc.
-							|'isprint'|
+							'isprint'
 
 
 'yankendofline' option gone				*ye-option-gone*
@@ -304,11 +304,11 @@ The 'yankendofline' option has been removed.  Instead you can just use
 
 The 'title' option is now only set by default if the original title can be
 restored.  Avoids "Thanks for flying Vim" titles.  If you want them anyway,
-put ":set title" in your vimrc.				|'title'|
+put ":set title" in your vimrc.				'title'
 
 The default for 'icon' now depends on the possibility of restoring the
 original value, just like 'title'.  If you don't like your icon titles to be
-changed, add this line to your vimrc:			|'icon'|
+changed, add this line to your vimrc:			'icon'
 	:set noicon
 
 
@@ -318,7 +318,7 @@ changed, add this line to your vimrc:			|'icon'|
 The 'i' flag now means italic highlighting, instead of invert.  The 'r' flag
 is used for reverse highlighting, which is what 'i' used to be.  Normally you
 won't see the difference, because italic mode is not supported on most
-terminals and reverse mode is used as a fallback.	|'highlight'|
+terminals and reverse mode is used as a fallback.	'highlight'
 
 When an occasion is not present in 'highlight', use the mode from the default
 value for 'highlight', instead of reverse mode.
@@ -327,8 +327,8 @@ value for 'highlight', instead of reverse mode.
 'tildeop' and 'weirdinvert' short names changed		*short-name-changed*
 -----------------------------------------------
 
-Renamed 'to' (abbreviation for 'tildeop') to 'top'.	|'tildeop'|
-Renamed 'wi' (abbreviation for 'weirdinvert') to 'wiv'.	|'weirdinvert'|
+Renamed 'to' (abbreviation for 'tildeop') to 'top'.	'tildeop'
+Renamed 'wi' (abbreviation for 'weirdinvert') to 'wiv'.	'weirdinvert'
 
 This was done because Vi uses 'wi' as the short name for 'window' and 'to' as
 the short name for 'timeout'.  This means that if you try setting these
@@ -350,6 +350,6 @@ CTRL-B in Insert mode removed				*toggle-revins*
 CTRL-B in Insert mode used to toggle the 'revins' option.  If you don't know
 this and accidentally hit CTRL-B, it is very difficult to find out how to undo
 it.  Since hardly anybody uses this feature, it is disabled by default.  If
-you want to use it, define RIGHTLEFT in feature.h before compiling. |'revins'|
+you want to use it, define RIGHTLEFT in feature.h before compiling. 'revins'
 
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -29,6 +29,6 @@ delfunction Foo " comment
 
 " Issue https://github.com/vim/vim/pull/17420#issuecomment-2927798687
 " (arg named /fu%\[nction]/)
-￼
+
 silent! delfunc! func
 

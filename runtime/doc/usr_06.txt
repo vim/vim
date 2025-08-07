@@ -1,4 +1,4 @@
-*usr_06.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
+*usr_06.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -205,7 +205,7 @@ file: >
 
 As a color scheme author, you should be able to rely on some color names for
 GUI colors.  These are defined in `colors/lists/default.vim`.  All such files
-found on the |'runtimepath'| are loaded each time the colorscheme command is
+found on the 'runtimepath' are loaded each time the colorscheme command is
 run. A canonical list is provided by the vim distribution, which should
 include all X11 colors (previously defined in rgb.txt).
 

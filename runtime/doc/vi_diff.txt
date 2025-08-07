@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Jun 10
+*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -118,7 +118,7 @@ argument when starting Vim.
 ==============================================================================
 4. The most interesting additions			*vim-additions*
 
-Vi compatibility.					|'compatible'|
+Vi compatibility.					'compatible'
 	Although Vim is 99% Vi compatible, some things in Vi can be
 	considered to be a bug, or at least need improvement.  But still, Vim
 	starts in a mode which behaves like the "real" Vi as much as possible.
@@ -192,8 +192,8 @@ Syntax highlighting.					|:syntax|
 	this is using a |:colorscheme| command.
 	The highlighted text can be exported as HTML. |convert-to-HTML|
 	Other items that can be highlighted are matches with the search string
-	|'hlsearch'|, matching parens |matchparen| and the cursor line and
-	column |'cursorline'| |'cursorcolumn'|.
+	'hlsearch', matching parens |matchparen| and the cursor line and
+	column 'cursorline' 'cursorcolumn'.
 
 Text properties						|textprop.txt|
 	Vim supports highlighting text by a plugin.  Property types can be
@@ -341,7 +341,7 @@ Insert-mode completion.					|ins-completion|
 	|i_CTRL-X_CTRL-R|	contents from registers
 	etc.
 
-Long line support.					|'wrap'| |'linebreak'|
+Long line support.					'wrap' 'linebreak'
 	If the 'wrap' option is off, long lines will not wrap and only part
 	of them will be shown.  When the cursor is moved to a part that is not
 	shown, the screen will scroll horizontally.  The minimum number of
@@ -394,7 +394,7 @@ Finding matches in files.				|:vimgrep|
 	advanced Vim regexp pattern, works on all systems and also works to
 	search in compressed files.
 
-Improved indenting for programs.			|'cindent'|
+Improved indenting for programs.			'cindent'
 	When the 'cindent' option is on the indent of each line is
 	automatically adjusted.  C syntax is mostly recognized.  The indent
 	for various styles can be set with 'cinoptions'.  The keys to trigger
@@ -468,7 +468,7 @@ Editing binary files.					|edit-binary|
 	executable file, without corrupting it.  Vim doesn't remove NUL
 	characters (they are represented as <NL> internally).
 	|-b|		command-line argument to start editing a binary file
-	|'binary'|	Option set by |-b|.  Prevents adding an <EOL> for the
+	'binary'	Option set by |-b|.  Prevents adding an <EOL> for the
 			last line in the file.
 
 Multi-language support.					|multi-lang|
@@ -793,7 +793,7 @@ somewhere else.
 
 Vim is able to work correctly on filesystems with 8.3 file names, also when
 using messydos or crossdos filesystems on the Amiga, or any 8.3 mounted
-filesystem under Unix.  See |'shortname'|.
+filesystem under Unix.  See 'shortname'.
 
 Error messages are shown at least one second (Vi overwrites error messages).
 

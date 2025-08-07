@@ -311,7 +311,7 @@ if !isdirectory(&directory) | mkdir(&directory, "p") | endif
 
 
 # Issue #17766 (valid function call highlighted as error)
-￼
+
 module[0].foo()
 module[0].substitute()
 
