@@ -4633,12 +4633,12 @@ func Test_search_wildmenu_iminsert()
 
   let lines =<< trim [SCRIPT]
     set wop=pum imi=1
-    h wildoptions
+    call setline(1, ['foo', 'foobar', 'bar', 'foobaz'])
   [SCRIPT]
   call writefile(lines, 'XTest_search_wildmenu', 'D')
-  let buf = RunVimInTerminal('-S XTest_search_wildmenu', {'rows': 20})
+  let buf = RunVimInTerminal('-S XTest_search_wildmenu', {'rows': 10})
 
-  call term_sendkeys(buf, "/gl\<Tab>")
+  call term_sendkeys(buf, "/fo\<Tab>")
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_search_wildmenu_iminsert', {})
 
