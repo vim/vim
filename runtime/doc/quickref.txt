@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 9.1.  Last change: 2025 Jul 25
+*quickref.txt*  For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -607,7 +607,7 @@ Short explanation of each option:		*option-list*
 'arabic'	  'arab'    for Arabic as a default second language
 'arabicshape'	  'arshape' do shaping for Arabic characters
 'autochdir'	  'acd'     change directory to the file in the current window
-'autocomplete'	  'ac'      automatic completion in insert mode
+'autocomplete'	  'ac'      enable automatic completion in insert mode
 'autoindent'	  'ai'	    take indent for new line from previous line
 'autoread'	  'ar'	    autom. read file when changed outside of Vim
 'autoshelldir'	  'asd'     change directory to the shell's current directory
@@ -1460,7 +1460,7 @@ Context-sensitive completion on the command-line:
 ------------------------------------------------------------------------------
 *Q_fo*		Folding
 
-|'foldmethod'|	set foldmethod=manual	manual folding
+'foldmethod'	set foldmethod=manual	manual folding
 		set foldmethod=indent	folding by indent
 		set foldmethod=expr	folding by 'foldexpr'
 		set foldmethod=syntax	folding by syntax regions

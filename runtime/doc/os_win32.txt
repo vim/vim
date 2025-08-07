@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 9.1.  Last change: 2024 May 11
+*os_win32.txt*  For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -156,7 +156,7 @@ Examples, with [] around an argument:
 
 When 'restorescreen' is set (which is the default), Vim will restore the
 original contents of the console when exiting or when executing external
-commands.  If you don't want this, use ":set nors".	|'restorescreen'|
+commands.  If you don't want this, use ":set nors".	'restorescreen'
 
 ==============================================================================
 4. Using the mouse					*win32-mouse*
@@ -232,7 +232,7 @@ A. On Unix, Vim is prepared for links (symbolic or hard).  A backup copy of
    protection bits are set like the original file.  However, this doesn't work
    properly when working on an NFS-mounted file system where links and other
    things exist.  The only way to fix this in the current version is not
-   making a backup file, by ":set nobackup nowritebackup"     |'writebackup'|
+   making a backup file, by ":set nobackup nowritebackup"     'writebackup'
 
 Q. I'm using Vim to edit a file on a Unix file server through Samba.  When I
    write the file, the owner of the file is changed.  Why?

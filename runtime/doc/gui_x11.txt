@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Jul 23
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -280,7 +280,7 @@ For "mwm" (Motif window manager) the line would be: >
 
 Mouse Pointers Available in X11 ~
 						*X11_mouse_shapes*
-By using the |'mouseshape'| option, the mouse pointer can be automatically
+By using the 'mouseshape' option, the mouse pointer can be automatically
 changed whenever Vim enters one of its various modes (e.g., Insert or
 Command).  Currently, the available pointers are:
 
@@ -321,8 +321,8 @@ stuff like -bg, -fg, etc).  The ones that are supported are:
     -fg -foreground {color}			foreground color
     -bg -background {color}			background color
 
-To set the font, see |'guifont'|.  For GTK, there's also a menu option that
-does this.
+To set the font, see 'guifont'.  For GTK, there's also a menu option that does
+this.
 
 Additionally, there are these command line arguments, which are handled by GTK
 internally.  Look in the GTK documentation for how they are used:
@@ -649,8 +649,7 @@ X11R5 with a library for X11R6 probably doesn't work (although the linking
 won't give an error message, Vim will crash later).
 
 							*gui-wayland*
-Support for the Wayland display server protocol has landed in patch
-9.1.0064.
+Support for the Wayland display server protocol has landed in patch 9.1.0064.
 
 Note: The Wayland protocol is subject to some restrictions, so the following
 functions won't work: |getwinpos()|, |getwinposx()|, |getwinposy()| and the
@@ -685,7 +684,7 @@ cut, copy and paste operations).
 
 Of these three, Vim uses PRIMARY when reading and writing the "* register
 (hence when the X11 selections are available, Vim sets a default value for
-|'clipboard'| of "autoselect"), and CLIPBOARD when reading and writing the "+
+'clipboard' of "autoselect"), and CLIPBOARD when reading and writing the "+
 register.  Vim does not access the SECONDARY selection.
 
 This applies both to the GUI and the terminal version.  For non-X11 systems

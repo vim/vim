@@ -1,4 +1,4 @@
-*os_qnx.txt*    For Vim version 9.1.  Last change: 2005 Mar 29
+*os_qnx.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Julian Kinraid
@@ -34,11 +34,10 @@ features you can enable/disable.
 Vim has support for the mouse and clipboard in a pterm, if those options
 are compiled in, which they are normally.
 
-The options that affect mouse support are |'mouse'| and |'ttymouse'|.  When
-using the mouse, only simple left and right mouse clicking/dragging is
-supported.  If you hold down shift, ctrl, or alt while using the mouse, pterm
-will handle the mouse itself.  It will make a selection, separate from what
-vim's doing.
+The options that affect mouse support are 'mouse' and 'ttymouse'.  When using
+the mouse, only simple left and right mouse clicking/dragging is supported.
+If you hold down shift, ctrl, or alt while using the mouse, pterm will handle
+the mouse itself.  It will make a selection, separate from what vim's doing.
 
 When the mouse is in use, you can press Alt-RightMouse to open the pterm menu.
 To turn the mouse off in vim, set the mouse option to nothing, set mouse=
@@ -52,16 +51,16 @@ the terminal version will run.  For more info - |gui-x11-start|
 Supported features:
 	:browse command					|:browse|
 	:confirm command				|:confirm|
-	Cursor blinking					|'guicursor'|
+	Cursor blinking					'guicursor'
 	Menus, popup menus and menu priorities		|:menu|
 							|popup-menu|
 							|menu-priority|
 	Toolbar						|gui-toolbar|
-							|'toolbar'|
+							'toolbar'
 	Font selector (:set guifont=*)			|photon-fonts|
-	Mouse focus					|'mousefocus'|
-	Mouse hide					|'mousehide'|
-	Mouse cursor shapes				|'mouseshape'|
+	Mouse focus					'mousefocus'
+	Mouse hide					'mousehide'
+	Mouse cursor shapes				'mouseshape'
 	Clipboard					|gui-clipboard|
 
 Unfinished features:

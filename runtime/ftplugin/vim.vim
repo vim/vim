@@ -1,11 +1,13 @@
 " Vim filetype plugin
 " Language:          Vim
 " Maintainer:        Doug Kearns <dougkearns@gmail.com>
-" Last Change:       2025 Mar 05
 " Former Maintainer: Bram Moolenaar <Bram@vim.org>
 " Contributors:      Riley Bruins <ribru17@gmail.com> ('commentstring'),
 "                    @Konfekt
 "                    @tpope (s:Help())
+"                    @lacygoill
+" Last Change:       2025 Mar 05
+" 2025 Aug 06 by Vim Project (add gf maps #17881)
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -35,6 +37,9 @@ if !exists('*VimFtpluginUndo')
       silent! xunmap <buffer> ]"
       silent! nunmap <buffer> ["
       silent! xunmap <buffer> ["
+      silent! nunmap <buffer> gf
+      silent! nunmap <buffer> <C-W>f
+      silent! nunmap <buffer> <C-W>gf
     endif
     unlet! b:match_ignorecase b:match_words b:match_skip b:did_add_maps
   endfunc
@@ -139,6 +144,29 @@ if !exists("no_plugin_maps") && !exists("no_vim_maps")
   xnoremap <silent><buffer> ]" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\@<!\%(^\s*"\)', "W")<CR>
   nnoremap <silent><buffer> [" :call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
   xnoremap <silent><buffer> [" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
+
+  " Purpose: Handle `:import` and `:packadd` lines in a smarter way. {{{
+  "
+  " `:import` is followed by a filename or filepath.  Find it.
+  "
+  " `:packadd`  is  followed  by the  name  of  a  package,  which we  might  have
+  " configured in scripts under `~/.vim/plugin`.  Find it.
+  "
+  " ---
+  "
+  " We can't handle the `:import` lines simply by setting `'includeexpr'`, because
+  " the option would be ignored if:
+  "
+  "    - the name of the imported script is the same as the current one
+  "    - `'path'` includes the `.` item
+  "
+  " Indeed,  in that  case, Vim  finds the  current file,  and simply  reloads the
+  " buffer.
+  " }}}
+  " We use the `F` variants, instead of the `f` ones, because they're smarter.
+  nnoremap <silent><buffer> gf :<C-U>call vim#Find('gF')<CR>
+  nnoremap <silent><buffer> <C-W>f :<C-U>call vim#Find("\<lt>C-W>F")<CR>
+  nnoremap <silent><buffer> <C-W>gf :<C-U>call vim#Find("\<lt>C-W>gF")<CR>
 endif
 
 " Let the matchit plugin know what items can be matched.

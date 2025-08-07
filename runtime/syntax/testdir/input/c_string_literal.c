@@ -41,11 +41,13 @@ int main(void)
        printf("0x%02X ", +(unsigned char)s2[n]);
 #endif
     puts("}");
-    printf(" u\"a猫🍌\" is a char16_t[%zu] holding { ", sizeof s3 / sizeof *s3);
+    printf(" u\"a猫🍌\" is a char16_t[%zu] holding { ",
+		    sizeof s3 / sizeof *s3);
     for(size_t n = 0; n < sizeof s3 / sizeof *s3; ++n)
        printf("0x%04" PRIXLEAST16" ", s3[n]);
     puts("}");
-    printf(" U\"a猫🍌\" is a char32_t[%zu] holding { ", sizeof s4 / sizeof *s4);
+    printf(" U\"a猫🍌\" is a char32_t[%zu] holding { ",
+		    sizeof s4 / sizeof *s4);
     for(size_t n = 0; n < sizeof s4 / sizeof *s4; ++n)
        printf("0x%08" PRIXLEAST32" ", s4[n]);
     puts("}");

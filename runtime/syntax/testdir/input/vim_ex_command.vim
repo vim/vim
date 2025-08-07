@@ -147,7 +147,7 @@ command! -bang -nargs=* -complete=file Make AsyncRun -program=make @ <args>
 
 command -range=% -nargs=? -bang Tb {
     if "<bang>" == "!"
-        :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ", "•", "g")/ge
+        :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ",         "•", "g")/ge
     endif
     if "<args>" == ""
         :<line1>,<line2>!column -t
@@ -160,4 +160,11 @@ command -range=% -nargs=? -bang Tb {
 }
 
 command -range=% -nargs=? -bang Tb :<line1>,<line2>s/\v"[^"]*"/\=substitute(submatch(0), " ", "•", "g")/ge
+
+
+" Unreported issue (:map with trailing bar in replacement text)
+command! Foo
+      \ map lhs rhs |
+      \ abbreviate foo bar |
+      \ echo "Foo"
 

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.1.  Last change: 2025 Jul 15
+*change.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -34,13 +34,13 @@ For inserting text see |insert.txt|.
 			The <Del> key does not take a [count].  Instead, it
 			deletes the last character of the count.
 			See |:fixdel| if the <Del> key does not do what you
-			want.  See |'whichwrap'| for deleting a line break
+			want.  See 'whichwrap' for deleting a line break
 			(join lines).
 
 							*X* *dh*
 ["x]X			Delete [count] characters before the cursor [into
 			register x] (not |linewise|).  Does the same as "dh".
-			Also see |'whichwrap'|.
+			Also see 'whichwrap'.
 
 							*d*
 ["x]d{motion}		Delete text that {motion} moves over [into register
@@ -609,11 +609,11 @@ comment (starting with '"') after the `:!` command.
 ={motion}		Filter {motion} lines through the external program
 			given with the 'equalprg' option.  When the 'equalprg'
 			option is empty (this is the default), use the
-			internal formatting function |C-indenting| and
-			|'lisp'|.  But when 'indentexpr' is not empty, it will
-			be used instead |indent-expression|.  When Vim was
-			compiled without internal formatting then the "indent"
-			program is used as a last resort.
+			internal formatting function |C-indenting| and 'lisp'.
+			But when 'indentexpr' is not empty, it will be used
+			instead |indent-expression|.  When Vim was compiled
+			without internal formatting then the "indent" program
+			is used as a last resort.
 
 							*==*
 ==			Filter [count] lines like with ={motion}.
