@@ -90,7 +90,7 @@ Vim for MorphOS							*MorphOS*
 [this section mostly by Ali Akcaagac]
 
 For the latest info about the MorphOS version:
-	http://www.akcaagac.com/index_vim.html
+	(dead link) akcaagac.com/index_vim.html
 
 
 Problems ~

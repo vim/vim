@@ -73,7 +73,7 @@ are not really considered swear words in today's society.
 
 COPYRIGHT, SOURCES, and CREDITS:
 
-The English dictionaries come directly from SCOWL 
+The English dictionaries come directly from SCOWL
 and is thus under the same copyright of SCOWL.  The affix file is
 a heavily modified version of the original english.aff file which was
 released as part of Geoff Kuenning's Ispell and as such is covered by
@@ -272,7 +272,7 @@ found anywhere else.
 Accent information was taken from UKACD.
 
 My VARCON package was used to create the American, British, and
-Canadian word list. 
+Canadian word list.
 
 Since the original word lists used in the VARCON package came
 from the Ispell distribution they are under the Ispell copyright:
@@ -315,11 +315,11 @@ Build Date: Mon Aug 24 16:41:56 EDT 2015
 Wordlist Command: mk-list --accents=strip en_US 60
 ===================================================
 en_AU:
-This dictionary was based on the en_GB Myspell dictionary 
-which in turn was initially based on a subset of the 
-original English wordlist created by Kevin Atkinson for 
-Pspell and  Aspell and thus is covered by his original 
-LGPL licence. 
+This dictionary was based on the en_GB Myspell dictionary
+which in turn was initially based on a subset of the
+original English wordlist created by Kevin Atkinson for
+Pspell and  Aspell and thus is covered by his original
+LGPL licence.
 
 The credit for this en_AU dictionary goes to:
 
@@ -331,24 +331,24 @@ David Wilson
 - a list from the previously removed words with corrected spelling was added
 - a list of major rivers was added
 - a list of place names was added
-- a list of Australian mammals was added 
+- a list of Australian mammals was added
 - a list of Aboriginal/Koori words commonly used was added
 
-A total of 119,267 words are now recognized 
+A total of 119,267 words are now recognized
 by the dictionary.
 
-Of course, special thanks go to the editors of the 
-en_GB dictionary (David Bartlett, Brian Kelk and 
+Of course, special thanks go to the editors of the
+en_GB dictionary (David Bartlett, Brian Kelk and
 Andrew Brown) which provided the starting point
 for this dictionary.
 
 The affix file is currently a duplicate of the en_AU.aff
-created completely from scratch by David Bartlett and 
-Andrew Brown, based on the published 
+created completely from scratch by David Bartlett and
+Andrew Brown, based on the published
 rules for MySpell and is also provided under the LGPL.
 
-If you find omissions or bugs or have new words to 
-add to the dictionary, please contact the en_AU 
+If you find omissions or bugs or have new words to
+add to the dictionary, please contact the en_AU
 maintainer at:
 
  "Kelvin" <audictionary@onlineconnections.com.au>
@@ -431,7 +431,7 @@ are not really considered swear words in today's society.
 
 COPYRIGHT, SOURCES, and CREDITS:
 
-The English dictionaries come directly from SCOWL 
+The English dictionaries come directly from SCOWL
 and is thus under the same copyright of SCOWL.  The affix file is
 a heavily modified version of the original english.aff file which was
 released as part of Geoff Kuenning's Ispell and as such is covered by
@@ -630,7 +630,7 @@ found anywhere else.
 Accent information was taken from UKACD.
 
 My VARCON package was used to create the American, British, and
-Canadian word list. 
+Canadian word list.
 
 Since the original word lists used in the VARCON package came
 from the Ispell distribution they are under the Ispell copyright:
@@ -676,7 +676,7 @@ en_GB:
 This dictionary was initially based on a subset of the
 original English wordlist created by Kevin Atkinson for
 Pspell and  Aspell and thus is covered by his original
-LGPL licence. 
+LGPL licence.
 
 It has been extensively updated by David Bartlett, Brian Kelk
 and Andrew Brown:
@@ -756,7 +756,7 @@ Main difficulties developing this dictionary:
 
 Please let Marco A.G.Pinto know of any errors that you find:
 E-mail: marcoagpinto@mail.telepac.pt
-  Site: http://marcoagpinto.cidadevirtual.pt/proofingtoolgui.html
+  Site (now dead): marcoagpinto.cidadevirtual.pt/proofingtoolgui.html
 
 
 V2.00 - 25-AUG-2013
@@ -1851,7 +1851,7 @@ V2.09 - 1-FEB-2014
 1047) vermiculture
 1048) nitrochalk
 1049) unreactive (merged into reactive)
-1050) bronzy 
+1050) bronzy
 1051) bronzer (merged into bronze)
 1052) reliefs (plural)
 1053) superalloy
@@ -2028,7 +2028,7 @@ V2.10 - 1-MAR-2014
 1220) predate (+ed)
 1221) Boole (name + 's)
 1222) phenotypic (merged into phenotype)
-1223) phenotypical 
+1223) phenotypical
 1224) phenotypically (merged into phenotypical)
 1225) triploid (+plural)
 1226) tetraploid (+plural)
@@ -3361,7 +3361,7 @@ V2.14 - 1-JUL-2014
 2534) circumnavigator
 2535) subalpine
 2536) treeline
-2537) boreal + Boreal 
+2537) boreal + Boreal
 2538) geotechnic (+s)
 2539) geotechnical
 2540) geothermally (merged into geothermal)
@@ -4325,7 +4325,7 @@ V2.16 - 1-SEP-2014
 3390) counterparty (+plural)
 3391) counterplot (+s +ing +ed)
 3392) swansongs (added plural - Kevin Atkinson wordlist 60)
-3393) syndicalists (added plural - Kevin Atkinson wordlist 60) 
+3393) syndicalists (added plural - Kevin Atkinson wordlist 60)
 3394) Trotskyism
 3395) Trotskyist (+plural)
 3396) Trotskyite (+plural)
@@ -5448,7 +5448,7 @@ V2.18 - 1-NOV-2014
 4505) cellmates (added plural - Kevin Atkinson wordlist 60)
 4506) chatlines (added plural - Kevin Atkinson wordlist 60)
 4507) chirpily + chirpiness (merged into chirpy - Kevin Atkinson wordlist 60)
-4508) computerate (Oxford: informal - Kevin Atkinson wordlist 60) 
+4508) computerate (Oxford: informal - Kevin Atkinson wordlist 60)
 4509) comfortless (merged into comfort - Kevin Atkinson wordlist 60)
 4510) conchie (+plural - Oxford: informal - Kevin Atkinson wordlist 60)
 4511) cookhouse (+plural - Kevin Atkinson wordlist 60)
@@ -6004,7 +6004,7 @@ V2.19 - 1-DEC-2014
 4154) androecia (plural of previous word)
 4155) androecial
 4156) gynoecium
-4157) gynoecia (plural of previous word) 
+4157) gynoecia (plural of previous word)
 4158) gynocentric
 4159) unallowable
 4160) unallied
@@ -7142,7 +7142,7 @@ V2.21 - 1-FEB-2015
 4384) microbiologically (Collins)
 4385) microbiologic (Collins)
 4386) Cmd. (abbreviation - UK - Command Paper - 4th series)
-4387) Cmnd. (abbreviation - UK - Command Paper - 5th series) 
+4387) Cmnd. (abbreviation - UK - Command Paper - 5th series)
 4388) handgrip (+plural)
 4389) cyanoacrylate (+plural)
 4390) photostimulation (+plural - Wiktionary)
@@ -7180,7 +7180,7 @@ V2.21 - 1-FEB-2015
 4422) ferromagnetism
 4423) Zeeman (Zeeman effect)
 4424) atomicities (added plural)
-4425) multiagent (+plural - Wiktionary) 
+4425) multiagent (+plural - Wiktionary)
 4426) non-typical
 4427) non-transparency
 4428) non-U (Oxford: informal)
@@ -7462,7 +7462,7 @@ V2.21 - 1-FEB-2015
 4704) winemaking
 4705) streamflow (+plural)
 4706) snowpack (+plural)
-4707) snowmobiling + snowmobiled + er + ers (merged into snowmobile) 
+4707) snowmobiling + snowmobiled + er + ers (merged into snowmobile)
 4708) groomer (+plural - merged into groom)
 4709) snowcat (+plural)
 4710) heli-ski (+ing +er +ers)
@@ -12424,15 +12424,14 @@ NZ English Dictionary v0.9 beta - Build 06SEP03
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 NB This is an initial version, please check:
 http://lingucomponent.openoffice.org/download_dictionary.html
-or
-http://www.girlza.com/dictionary/download.html
+or (the dead link) girlza.com/dictionary/download.html
 for a final version, after a little while (no hurry).
 
-This dictionary is based on the en_GB Myspell dictionary 
-which in turn was initially based on a subset of the 
-original English wordlist created by Kevin Atkinson for 
-Pspell and  Aspell and thus is covered by his original 
-LGPL licence. 
+This dictionary is based on the en_GB Myspell dictionary
+which in turn was initially based on a subset of the
+original English wordlist created by Kevin Atkinson for
+Pspell and  Aspell and thus is covered by his original
+LGPL licence.
 
 
 Introduction
@@ -12460,7 +12459,7 @@ And thank you to all who've contributed to OpenOffice.org.
 License
 ~~~~~~~
 This dictionary is covered by the GNU Lesser General Public
-License, viewable at http://www.gnu.org/copyleft/lesser.html
+License, viewable at https://www.gnu.org/licenses/lgpl.html
 
 
 Issues
@@ -12627,7 +12626,7 @@ such a program is covered only if its contents constitute a work based
 on the Library (independent of the use of the Library in a tool for
 writing it).  Whether that is true depends on what the Library does
 and what the program that uses the Library does.
-  
+
   1. You may copy and distribute verbatim copies of the Library's
 complete source code as you receive it, in any medium, provided that
 you conspicuously and appropriately publish on each copy an

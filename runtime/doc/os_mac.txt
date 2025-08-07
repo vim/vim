@@ -87,7 +87,7 @@ Backspace		"*d			cut Visual text
 ==============================================================================
 4. Mac FAQ						*mac-faq*
 
-On the internet:  http://macvim.org/OSX/index.php#FAQ
+On the internet:  https://github.com/macvim-dev/macvim/wiki/FAQ
 
 Q: I can't enter non-ASCII character in Apple Terminal.
 A: Under Window Settings, Emulation, make sure that "Escape non-ASCII

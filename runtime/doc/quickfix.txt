@@ -1675,8 +1675,6 @@ Useful values for the 'makeprg' options therefore are:
  setlocal makeprg=./alltests.py " Run a testsuite
  setlocal makeprg=python\ %:S   " Run a single testcase
 
-Also see http://vim.sourceforge.net/tip_view.php?tip_id=280.
-
 PYTEST COMPILER						*compiler-pytest*
 
 Commonly used compiler options can be added to 'makeprg' by setting the
