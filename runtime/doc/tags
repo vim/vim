@@ -1495,6 +1495,7 @@ $quote	eval.txt	/*$quote*
 +scrollbind	various.txt	/*+scrollbind*
 +signs	various.txt	/*+signs*
 +smartindent	various.txt	/*+smartindent*
++socketserver	various.txt	/*+socketserver*
 +sodium	various.txt	/*+sodium*
 +sound	various.txt	/*+sound*
 +spell	various.txt	/*+spell*
@@ -1555,6 +1556,7 @@ $quote	eval.txt	/*$quote*
 --	starting.txt	/*--*
 ---	starting.txt	/*---*
 --clean	starting.txt	/*--clean*
+--clientserver	remote.txt	/*--clientserver*
 --cmd	starting.txt	/*--cmd*
 --echo-wid	starting.txt	/*--echo-wid*
 --gui-dialog-file	starting.txt	/*--gui-dialog-file*
@@ -4695,6 +4697,11 @@ E156	sign.txt	/*E156*
 E1560	vim9.txt	/*E1560*
 E1561	vim9.txt	/*E1561*
 E1562	options.txt	/*E1562*
+E1563	remote.txt	/*E1563*
+E1564	remote.txt	/*E1564*
+E1565	remote.txt	/*E1565*
+E1566	remote.txt	/*E1566*
+E1567	remote.txt	/*E1567*
 E157	sign.txt	/*E157*
 E158	sign.txt	/*E158*
 E159	sign.txt	/*E159*
@@ -10221,6 +10228,10 @@ slow-fast-terminal	term.txt	/*slow-fast-terminal*
 slow-start	starting.txt	/*slow-start*
 slow-terminal	term.txt	/*slow-terminal*
 socket-interface	channel.txt	/*socket-interface*
+socketserver-clientserver	remote.txt	/*socketserver-clientserver*
+socketserver-differences	remote.txt	/*socketserver-differences*
+socketserver-name	remote.txt	/*socketserver-name*
+socketserver-x11	remote.txt	/*socketserver-x11*
 sort()	builtin.txt	/*sort()*
 sorting	change.txt	/*sorting*
 sound-functions	usr_41.txt	/*sound-functions*

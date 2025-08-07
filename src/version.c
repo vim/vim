@@ -516,6 +516,11 @@ static char *(features[]) =
 	"-signs",
 #endif
 	"+smartindent",
+#ifdef FEAT_SOCKETSERVER
+	"+socketserver",
+#else
+	"-socketserver",
+#endif
 #ifdef FEAT_SODIUM
 # ifdef DYNAMIC_SODIUM
 	"+sodium/dyn",
