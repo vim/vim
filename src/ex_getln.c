@@ -620,6 +620,7 @@ may_adjust_incsearch_highlighting(
     int	    search_flags = SEARCH_NOOF;
     int	    i;
     int	    save;
+    int	    bslsh = FALSE;
     int	    search_delim;
 
     // Parsing range may already set the last search pattern.
@@ -652,6 +653,18 @@ may_adjust_incsearch_highlighting(
     else
 	pat = ccline.cmdbuff + skiplen;
 
+    // do not search for the search end delimiter,
+    // unless it is part of the pattern
+    if (patlen > 2 && firstc == pat[patlen - 1])
+    {
+	patlen--;
+	if (pat[patlen - 1] == '\\')
+	{
+	    pat[patlen - 1] = firstc;
+	    bslsh = TRUE;
+	}
+    }
+
     cursor_off();
     out_flush();
     if (c == Ctrl_G)
@@ -675,6 +688,8 @@ may_adjust_incsearch_highlighting(
 		 pat, patlen, count, search_flags, RE_SEARCH, NULL);
     --emsg_off;
     pat[patlen] = save;
+    if (bslsh)
+	pat[patlen - 1] = '\\';
     if (i)
     {
 	is_state->search_start = is_state->match_start;
