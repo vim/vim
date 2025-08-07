@@ -3782,3 +3782,15 @@ EXTERN char e_duplicate_type_var_name_str[]
 EXTERN char e_diff_anchors_with_hidden_windows[]
 	INIT(= N_("E1562: Diff anchors cannot be used with hidden diff windows"));
 #endif
+#ifdef FEAT_SOCKETSERVER
+EXTERN char e_socket_path_too_big[]
+	INIT(= N_("E1563: Socket path is too big"));
+EXTERN char e_socket_name_no_slashes[]
+	INIT(= N_("E1564: Socket name cannot have slashes in it without being a path"));
+EXTERN char e_socket_server_not_online[]
+	INIT(= N_("E1565: Socket server is not online, call remote_startserver() first"));
+EXTERN char e_socket_server_failed_connecting[]
+	INIT(= N_("E1566: Failed connecting to socket %s: %s"));
+EXTERN char e_socket_server_unavailable[]
+	INIT(= N_("E1567: Cannot start socket server, socket path is unavailable"));
+#endif

@@ -150,6 +150,12 @@ gui_start(char_u *arg UNUSED)
 	// Reset clipmethod to CLIPMETHOD_NONE
 	choose_clipmethod();
 
+#ifdef FEAT_SOCKETSERVER
+    // Install socket server listening socket if we are running it
+    if (socket_server_valid())
+	gui_gtk_init_socket_server();
+#endif
+
     vim_free(old_term);
 
     // If the GUI started successfully, trigger the GUIEnter event, otherwise

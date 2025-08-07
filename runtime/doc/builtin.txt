@@ -13042,6 +13042,7 @@ scrollbind		Compiled with 'scrollbind' support. (always true)
 showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
 smartindent		Compiled with 'smartindent' support. (always true)
+socketserver		Compiled with socket server functionality. (Unix only)
 sodium			Compiled with libsodium for better crypt support
 sound			Compiled with sound support, e.g. `sound_playevent()`
 spell			Compiled with spell checking support |spell|.

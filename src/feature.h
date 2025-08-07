@@ -946,10 +946,19 @@
 #endif
 
 /*
+ * +socketserver	 Use UNIX domain sockets for clientserver communication
+ */
+#if defined(UNIX) && (defined(WANT_SOCKETSERVER) || \
+	(defined(MAYBE_SOCKETSERVER) && !defined(HAVE_X11)))
+#define FEAT_SOCKETSERVER
+#endif
+
+/*
  * +clientserver	Remote control via the remote_send() function
  *			and the --remote argument
  */
-#if (defined(MSWIN) || defined(FEAT_XCLIPBOARD)) && defined(FEAT_EVAL)
+#if (defined(MSWIN) || defined(FEAT_XCLIPBOARD) || defined(FEAT_SOCKETSERVER)) \
+    && defined(FEAT_EVAL)
 # define FEAT_CLIENTSERVER
 #endif
 
