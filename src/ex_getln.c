@@ -2113,13 +2113,10 @@ getcmdline_int(
 	{
 #ifdef FEAT_SEARCH_EXTRA
 	    // Apply search highlighting
-	    if (wild_type == WILD_APPLY)
-	    {
-		if (is_state.winid != curwin->w_id)
-		    init_incsearch_state(&is_state);
-		if (KeyTyped || vpeekc() == NUL)
-		    may_do_incsearch_highlighting(firstc, count, &is_state);
-	    }
+	    if (is_state.winid != curwin->w_id)
+		init_incsearch_state(&is_state);
+	    if (KeyTyped || vpeekc() == NUL)
+		may_do_incsearch_highlighting(firstc, count, &is_state);
 #endif
 	    wild_type = 0;
 	    goto cmdline_not_changed;
