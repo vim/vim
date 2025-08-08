@@ -455,9 +455,8 @@ cmdline_pum_active(void)
  * items and refresh the screen.
  */
     void
-cmdline_pum_remove(cmdline_info_T *cclp UNUSED)
+cmdline_pum_remove(cmdline_info_T *cclp UNUSED, int defer_redraw)
 {
-    int save_p_lz = p_lz;
     int	save_KeyTyped = KeyTyped;
 #ifdef FEAT_EVAL
     int	save_RedrawingDisabled = RedrawingDisabled;
@@ -468,9 +467,15 @@ cmdline_pum_remove(cmdline_info_T *cclp UNUSED)
     pum_undisplay();
     VIM_CLEAR(compl_match_array);
     compl_match_arraysize = 0;
-    p_lz = FALSE;  // avoid the popup menu hanging around
-    update_screen(0);
-    p_lz = save_p_lz;
+    if (!defer_redraw)
+    {
+	int save_p_lz = p_lz;
+	p_lz = FALSE;  // avoid the popup menu hanging around
+	update_screen(0);
+	p_lz = save_p_lz;
+    }
+    else
+	pum_call_update_screen();
     redrawcmd();
 
     // When a function is called (e.g. for 'foldtext') KeyTyped might be reset
@@ -485,7 +490,7 @@ cmdline_pum_remove(cmdline_info_T *cclp UNUSED)
     void
 cmdline_pum_cleanup(cmdline_info_T *cclp)
 {
-    cmdline_pum_remove(cclp);
+    cmdline_pum_remove(cclp, FALSE);
     wildmenu_cleanup(cclp);
 }
 
@@ -1068,7 +1073,7 @@ ExpandOne(
 
 	// The entries from xp_files may be used in the PUM, remove it.
 	if (compl_match_array != NULL)
-	    cmdline_pum_remove(get_cmdline_info());
+	    cmdline_pum_remove(get_cmdline_info(), FALSE);
     }
     xp->xp_selected = 0;
 
