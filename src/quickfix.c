@@ -6429,8 +6429,8 @@ vgr_match_buflines(
     long	lnum;
     colnr_T	col;
     int		pat_len = (int)STRLEN(spat);
-    if (pat_len > MAX_FUZZY_MATCHES)
-	pat_len = MAX_FUZZY_MATCHES;
+    if (pat_len > FUZZY_MATCH_MAX_LEN)
+	pat_len = FUZZY_MATCH_MAX_LEN;
 
     for (lnum = 1; lnum <= buf->b_ml.ml_line_count && *tomatch > 0; ++lnum)
     {
@@ -6483,13 +6483,13 @@ vgr_match_buflines(
 	    char_u  *str = ml_get_buf(buf, lnum, FALSE);
 	    colnr_T linelen = ml_get_buf_len(buf, lnum);
 	    int	    score;
-	    int_u   matches[MAX_FUZZY_MATCHES];
+	    int_u   matches[FUZZY_MATCH_MAX_LEN];
 	    int_u   sz = ARRAY_LENGTH(matches);
 
 	    // Fuzzy string match
 	    CLEAR_FIELD(matches);
 	    while (fuzzy_match(str + col, spat, FALSE, &score,
-			matches, sz, TRUE) > 0)
+			matches, sz) > 0)
 	    {
 		// Pass the buffer number so that it gets used even for a
 		// dummy buffer, unless duplicate_name is set, then the

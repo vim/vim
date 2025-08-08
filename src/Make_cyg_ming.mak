@@ -823,6 +823,7 @@ OBJ = \
 	$(OUTDIR)/findfile.o \
 	$(OUTDIR)/float.o \
 	$(OUTDIR)/fold.o \
+	$(OUTDIR)/fuzzy.o \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/gc.o \
 	$(OUTDIR)/gui_xim.o \

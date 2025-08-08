@@ -2945,12 +2945,14 @@ ExpandBufnames(
 	    {
 		p = NULL;
 		// first try matching with the short file name
-		if ((score = fuzzy_match_str(buf->b_sfname, pat)) != 0)
+		if ((score = fuzzy_match_str(buf->b_sfname, pat))
+			!= FUZZY_SCORE_NONE)
 		    p = buf->b_sfname;
 		if (p == NULL)
 		{
 		    // next try matching with the full path file name
-		    if ((score = fuzzy_match_str(buf->b_ffname, pat)) != 0)
+		    if ((score = fuzzy_match_str(buf->b_ffname, pat))
+			    != FUZZY_SCORE_NONE)
 			p = buf->b_ffname;
 		}
 	    }

@@ -48,6 +48,7 @@ fileio.c	| reading and writing files
 filepath.c	| dealing with file names and paths
 findfile.c	| search for files in 'path'
 fold.c		| folding
+fuzzy.c	    | fuzzy matching
 getchar.c	| getting characters and key mapping
 gc.c	    | garbage collection
 help.c		| vim help related functions

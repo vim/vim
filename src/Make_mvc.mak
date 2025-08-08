@@ -732,6 +732,7 @@ OBJ = \
 	$(OUTDIR)\findfile.obj \
 	$(OUTDIR)\float.obj \
 	$(OUTDIR)\fold.obj \
+	$(OUTDIR)\fuzzy.obj \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\gc.obj \
 	$(OUTDIR)\gui_xim.obj \
@@ -1616,6 +1617,8 @@ $(OUTDIR)/float.obj:	$(OUTDIR) float.c  $(INCL)
 
 $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
 
+$(OUTDIR)/fuzzy.obj:	$(OUTDIR) fuzzy.c  $(INCL)
+
 $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 
 $(OUTDIR)/gc.obj:	$(OUTDIR) gc.c  $(INCL)
@@ -1961,6 +1964,7 @@ proto.h: \
 	proto/filepath.pro \
 	proto/findfile.pro \
 	proto/float.pro \
+	proto/fuzzy.pro \
 	proto/getchar.pro \
 	proto/gc.pro \
 	proto/gui_xim.pro \
