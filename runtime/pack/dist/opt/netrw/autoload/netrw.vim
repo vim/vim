@@ -1,6 +1,9 @@
 " Creator:    Charles E Campbell
 " Previous Maintainer: Luca Saccarola <github.e41mv@aleeas.com>
 " Maintainer: This runtime file is looking for a new maintainer.
+" Last Change:
+" 2025 Aug 07 by Vim Project (use correct "=~#" for netrw_stylesize option #17901)
+" 2025 Aug 07 by Vim Project (netrw#BrowseX() distinguishes remote files #17794)
 " Copyright:  Copyright (C) 2016 Charles E. Campbell {{{1
 "             Permission is hereby granted to use and distribute this code,
 "             with or without modifications, provided that this copyright
@@ -4123,7 +4126,7 @@ function s:NetrwBrowseUpDir(islocal)
 endfunction
 
 " netrw#BrowseX:  (implements "x") executes a special "viewer" script or program for the {{{2
-"              given filename; typically this means given their extension.
+"                 given filename; typically this means given their extension.
 function netrw#BrowseX(fname)
     " special core dump handler
     if a:fname =~ '/core\(\.\d\+\)\=$' && exists("g:Netrw_corehandler")
@@ -4147,7 +4150,12 @@ function netrw#BrowseX(fname)
         let fname = substitute(fname, '^\~', expand("$HOME"), '')
     endif
 
-    call netrw#os#Open(s:NetrwFile(fname))
+    if fname =~ '^[a-z]\+://'
+        " open a remote file
+        call netrw#os#Open(fname)
+    else
+        call netrw#os#Open(s:NetrwFile(fname))
+    endif
 endfunction
 
 " s:NetrwBufRename: renames a buffer without the side effect of retaining an unlisted buffer having the old name {{{2
@@ -9225,7 +9233,7 @@ endfunction
 "                       1000 -> 1K, 1000000 -> 1M, 1000000000 -> 1G
 function s:NetrwHumanReadable(sz)
 
-    if g:netrw_sizestyle == 'h'
+    if g:netrw_sizestyle ==# 'h'
         if a:sz >= 1000000000
             let sz = printf("%.1f",a:sz/1000000000.0)."g"
         elseif a:sz >= 10000000
@@ -9240,7 +9248,7 @@ function s:NetrwHumanReadable(sz)
             let sz= a:sz
         endif
 
-    elseif g:netrw_sizestyle == 'H'
+    elseif g:netrw_sizestyle ==# 'H'
         if a:sz >= 1073741824
             let sz = printf("%.1f",a:sz/1073741824.0)."G"
         elseif a:sz >= 10485760

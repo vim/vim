@@ -3778,3 +3778,7 @@ EXTERN char e_not_a_generic_function_str[]
 EXTERN char e_duplicate_type_var_name_str[]
 	INIT(= N_("E1561: Duplicate type variable name: %s"));
 #endif
+#if defined(FEAT_DIFF)
+EXTERN char e_diff_anchors_with_hidden_windows[]
+	INIT(= N_("E1562: Diff anchors cannot be used with hidden diff windows"));
+#endif

@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) YEAR 2025, The Vim Project
+# This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 19:14+0200\n"
+"Project-Id-Version: Vim\n"
+"Report-Msgid-Bugs-To: vim-dev@vim.org\n"
+"POT-Creation-Date: 2025-08-07 16:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8801,6 +8801,9 @@ msgstr ""
 
 #, c-format
 msgid "E1561: Duplicate type variable name: %s"
+msgstr ""
+
+msgid "E1562: Diff anchors cannot be used with hidden diff windows"
 msgstr ""
 
 #. type of cmdline window or 0
