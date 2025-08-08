@@ -8,6 +8,7 @@
 "                    @lacygoill
 " Last Change:       2025 Mar 05
 " 2025 Aug 06 by Vim Project (add gf maps #17881)
+" 2025 Aug 08 by Vim Project (add vimscript complete function #17871)
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -22,7 +23,7 @@ set cpo&vim
 
 if !exists('*VimFtpluginUndo')
   func VimFtpluginUndo()
-    setl fo< isk< com< tw< commentstring< include< define< keywordprg<
+    setl fo< isk< com< tw< commentstring< include< define< keywordprg< omnifunc<
     sil! delc -buffer VimKeywordPrg
     if exists('b:did_add_maps')
       silent! nunmap <buffer> [[
@@ -120,6 +121,11 @@ setlocal include=\\v^\\s*import\\s*(autoload)?
 
 " set 'define' to recognize export commands
 setlocal define=\\v^\\s*export\\s*(def\|const\|var\|final)
+
+if has("vim9script")
+  " set omnifunc completion
+  setlocal omnifunc=vimcomplete#Complete
+endif
 
 " Format comments to be up to 78 characters long
 if &tw == 0
