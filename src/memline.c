@@ -1023,8 +1023,7 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	forward_slash(b0p->b0_fname);
 # endif
 #else
-	size_t	flen, ulen;
-	char_u	uname[B0_UNAME_SIZE];
+	size_t	flen;
 
 	/*
 	 * For a file under the home directory of the current user, we try to
@@ -1033,11 +1032,13 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	 * First replace home dir path with "~/" with home_replace().
 	 * Then insert the user name to get "~user/".
 	 */
-	home_replace(NULL, buf->b_ffname, b0p->b0_fname,
+	flen = home_replace(NULL, buf->b_ffname, b0p->b0_fname,
 						   B0_FNAME_SIZE_CRYPT, TRUE);
 	if (b0p->b0_fname[0] == '~')
 	{
-	    flen = STRLEN(b0p->b0_fname);
+	    size_t  ulen;
+	    char_u  uname[B0_UNAME_SIZE];
+
 	    // If there is no user name or it is too long, don't use "~/"
 	    if (get_user_name(uname, B0_UNAME_SIZE) == FAIL
 		   || (ulen = STRLEN(uname)) + flen > B0_FNAME_SIZE_CRYPT - 1)
@@ -5242,18 +5243,21 @@ findswapname(
 		    if (swap_exists_action != SEA_NONE
 						  && choice == SEA_CHOICE_NONE)
 		    {
+			size_t	IObufflen;
 			char_u	*name;
+			char_u	*prefix = (char_u *)_("Swap file \"");
+			size_t	prefixlen = STRLEN(prefix);
+			char_u	*suffix = (char_u *)_("\" already exists!");
+			size_t	suffixlen = STRLEN(suffix);
 			int	dialog_result;
-			size_t  len = STRLEN(_("Swap file \""));
 
-			name = alloc(STRLEN(fname)
-				+ len
-				+ STRLEN(_("\" already exists!")) + 5);
+			IObufflen = home_replace(NULL, fname, IObuff, IOSIZE, TRUE);
+			name = alloc(prefixlen + IObufflen + suffixlen + 1);
 			if (name != NULL)
 			{
-			    STRCPY(name, _("Swap file \""));
-			    home_replace(NULL, fname, name + len, 1000, TRUE);
-			    STRCAT(name, _("\" already exists!"));
+			    STRCPY(name, prefix);
+			    STRCPY(name + prefixlen, IObuff);
+			    STRCPY(name + prefixlen + IObufflen, suffix);
 			}
 			dialog_result = do_dialog(VIM_WARNING,
 				    (char_u *)_("VIM - ATTENTION"),
