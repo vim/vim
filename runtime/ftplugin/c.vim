@@ -1,8 +1,7 @@
 " Vim filetype plugin file
 " Language:	C
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Aug 22
-"		2024 Jun 02 by Riley Bruins <ribru17@gmail.com> ('commentstring')
+" Last Change:	2025 Aug 08
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Only do this when not done yet for this buffer
@@ -28,7 +27,7 @@ setlocal fo-=t fo+=croql
 setlocal commentstring=/*\ %s\ */ define& include&
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
-if exists('&ofu')
+if exists('&ofu') && has("vim9script")
   setlocal ofu=ccomplete#Complete
 endif
 
