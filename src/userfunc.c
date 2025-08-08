@@ -1282,21 +1282,15 @@ get_function_body(
 	    }
 
 	    // Check for ":append", ":change", ":insert".  Not for :def.
-	    p = skip_range(p, FALSE, NULL);
+	    char_u *tp = p = skip_range(p, FALSE, NULL);
 	    if (!vim9_function
-		&& ((p[0] == 'a' && (!ASCII_ISALPHA(p[1]) || p[1] == 'p'))
-		    || (p[0] == 'c'
-			&& (!ASCII_ISALPHA(p[1]) || (p[1] == 'h'
-				&& (!ASCII_ISALPHA(p[2]) || (p[2] == 'a'
-					&& (STRNCMP(&p[3], "nge", 3) != 0
-					    || !ASCII_ISALPHA(p[6])))))))
-		    || (p[0] == 'i'
-			&& (!ASCII_ISALPHA(p[1]) || (p[1] == 'n'
-				&& (!ASCII_ISALPHA(p[2])
-				    || (p[2] == 's'
-					&& (!ASCII_ISALPHA(p[3])
-						|| p[3] == 'e'))))))))
+		&& (checkforcmd(&p, "append", 1)
+		    || checkforcmd(&p, "change", 1)
+		    || checkforcmd(&p, "insert", 1))
+		    && (*p == '!' || *p == '|' || IS_WHITE_NL_OR_NUL(*p)))
 		skip_until = vim_strnsave((char_u *)".", 1);
+	    else
+		p = tp;
 
 	    // Check for ":python <<EOF", ":tcl <<EOF", etc.
 	    arg = skipwhite(skiptowhite(p));
