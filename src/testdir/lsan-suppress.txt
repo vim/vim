@@ -14,3 +14,5 @@ leak:libxcb*.so.*
 # The renderer leaks 128 bytes of metadata when run under CI. Seems to only
 # happen with software rendering.
 leak:gdk_x11_screen_init_gl
+# leak reported on CI for test_clipmethod
+leak:libgtk-3*.so.*

@@ -1945,6 +1945,7 @@ au BufNewFile,BufRead .pinerc,pinerc,.pinercex,pinercex		setf pine
 au BufNewFile,BufRead *.pip			setf requirements
 au BufNewFile,BufRead requirements.txt		setf requirements
 au BufNewFile,BufRead *-requirements.txt	setf requirements
+au BufNewFile,BufRead requirements-*.txt	setf requirements
 au BufNewFile,BufRead constraints.txt		setf requirements
 au BufNewFile,BufRead requirements.in		setf requirements
 au BufNewFile,BufRead requirements/*.txt	setf requirements
@@ -2881,6 +2882,9 @@ au BufNewFile,BufRead *.vroom			setf vroom
 
 " Vue.js Single File Component
 au BufNewFile,BufRead *.vue			setf vue
+
+" Waybar config
+au BufNewFile,BufRead */waybar/config		setf jsonc
 
 " WebAssembly
 au BufNewFile,BufRead *.wat,*.wast		setf wat
