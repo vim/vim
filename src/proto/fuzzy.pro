@@ -1,4 +1,4 @@
-/* foo.c */
+/* fuzzy.c */
 int fuzzy_match(char_u *str, char_u *pat_arg, int matchseq, int *outScore, int_u *matches, int maxMatches);
 void f_matchfuzzy(typval_T *argvars, typval_T *rettv);
 void f_matchfuzzypos(typval_T *argvars, typval_T *rettv);
