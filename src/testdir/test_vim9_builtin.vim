@@ -770,6 +770,8 @@ enddef
 
 def Test_chdir()
   assert_fails('chdir(true)', 'E1174:')
+  assert_fails('chdir(".", test_null_string())', 'E475:')
+  assert_fails('chdir(".", [])', 'E730:')
 enddef
 
 def Test_cindent()
