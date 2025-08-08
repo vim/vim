@@ -979,7 +979,10 @@ cmdline_wildchar_complete(
 
 	// Remove popup window if no completion items are available
 	if (redraw_if_menu_empty && xp->xp_numfiles <= 0)
+	{
 	    update_screen(0);
+	    return (res == OK) ? CMDLINE_CHANGED : CMDLINE_NOT_CHANGED;
+	}
 
 	// if interrupted while completing, behave like it failed
 	if (got_int)

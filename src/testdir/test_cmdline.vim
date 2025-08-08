@@ -4636,7 +4636,7 @@ func Test_search_wildmenu_screendump()
 endfunc
 
 " Issue #17858
-func XTest_search_wildmenu_iminsert()
+func Test_search_wildmenu_iminsert()
   CheckScreendump
 
   let lines =<< trim [SCRIPT]
