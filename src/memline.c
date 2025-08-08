@@ -883,7 +883,10 @@ ml_close(buf_T *buf, int del_file)
     mf_close(buf->b_ml.ml_mfp, del_file);	// close the .swp file
     if (buf->b_ml.ml_line_lnum != 0
 		      && (buf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED)))
+    {
 	vim_free(buf->b_ml.ml_line_ptr);
+	invalidate_vcol_cache();
+    }
     vim_free(buf->b_ml.ml_stack);
 #ifdef FEAT_BYTEOFF
     VIM_CLEAR(buf->b_ml.ml_chunksize);
@@ -3671,6 +3674,7 @@ ml_replace_len(
     curbuf->b_ml.ml_line_textlen = !has_props ? len_arg + 1 : 0;
     curbuf->b_ml.ml_line_lnum = lnum;
     curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
+    invalidate_vcol_cache();
 
     return OK;
 }
@@ -4236,11 +4240,15 @@ ml_flush_line(buf_T *buf)
 	    }
 	}
 	vim_free(new_line);
+	invalidate_vcol_cache();
 
 	entered = FALSE;
     }
     else if (buf->b_ml.ml_flags & ML_ALLOCATED)
+    {
 	vim_free(buf->b_ml.ml_line_ptr);
+	invalidate_vcol_cache();
+    }
 
     buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     buf->b_ml.ml_line_lnum = 0;
