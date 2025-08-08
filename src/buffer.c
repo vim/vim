@@ -2509,6 +2509,8 @@ free_buf_options(
     free_callback(&buf->b_ofu_cb);
     clear_string_option(&buf->b_p_tsrfu);
     free_callback(&buf->b_tsrfu_cb);
+    clear_cpt_callbacks(&buf->b_p_cpt_cb, buf->b_p_cpt_count);
+    buf->b_p_cpt_count = 0;
 #endif
 #ifdef FEAT_QUICKFIX
     clear_string_option(&buf->b_p_gefm);

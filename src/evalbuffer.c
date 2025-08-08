@@ -42,6 +42,9 @@ set_ref_in_buffers(int copyID)
 	    abort = abort || set_ref_in_callback(&bp->b_ofu_cb, copyID);
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_tsrfu_cb, copyID);
+	if (!abort && bp->b_p_cpt_cb != NULL)
+	    abort = abort || set_ref_in_cpt_callbacks(bp->b_p_cpt_cb,
+		    bp->b_p_cpt_count, copyID);
 #endif
 	if (!abort)
 	    abort = abort || set_ref_in_callback(&bp->b_tfu_cb, copyID);
