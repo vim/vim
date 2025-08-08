@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12353,6 +12353,11 @@ wildtrigger()						*wildtrigger()*
 		To retain normal history navigation (up/down keys): >
 			cnoremap <Up>   <C-U><Up>
 			cnoremap <Down> <C-U><Down>
+<
+		To set an option specifically when performing a search, e.g.
+		to set 'pumheight': >
+			autocmd CmdlineEnter [/\?] set pumheight=8
+			autocmd CmdlineLeave [/\?] set pumheight&
 <
 		Return value is always 0.
 
