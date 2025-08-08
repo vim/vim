@@ -48,7 +48,7 @@ approvers are happy with that particular change.
 
 # Reporting issues
 
-We use GitHub issues, but that is not a requirement. Writing to the Vim
+We use GitHub [issues][17], but that is not a requirement. Writing to the Vim
 mailing list is also fine.
 
 Please use the GitHub issues only for actual issues. If you are not 100% sure
@@ -72,7 +72,8 @@ Or open [the todo file][todo list] on GitHub to see the latest version.
 
 The latest version of these files can be obtained from the repository.
 They are usually not updated with numbered patches. However, they may
-or may not work with older Vim releases (since they may contain new features).
+or may not work with older Vim releases (since they may depend on new
+features).
 
 If you find a problem with one of these files or have a suggestion for
 improvement, please first try to contact the maintainer directly.
@@ -82,7 +83,18 @@ upstream repository. You may also check the [MAINTAINERS][11] file.
 The maintainer will take care of issues and send updates to the Vim project for
 distribution with Vim.
 
-If the maintainer does not respond, contact the [vim-dev][0] mailing list.
+If the maintainer does not respond, contact the [vim-dev][0] mailing list or
+open an [issue][17] here.
+
+Note: Whether or not to use Vim9 script is up to the maintainer. For runtime
+files maintained here, we aim to preserve compatibility with Neovim if
+possible. Please wrap Vim9 script with a guard like this:
+```vim
+if has('vim9script')
+   " use Vim9 script implementation
+   [...]
+endif
+```
 
 ## Contributing new runtime files
 
@@ -95,6 +107,9 @@ PR with your changes against this repository here. For new filetypes, do not for
 - add yourself as Maintainer to the top of file (again, keep the header similar to
   other runtime files)
 - add yourself to the [MAINTAINERS][11] file.
+- add a guard `if has('vim9script')` if you like to maintain Neovim
+  compatibility but want to use Vim9 script (or restrict yourself to legacy Vim
+  script)
 
 # Translations
 
@@ -144,3 +159,4 @@ mailing list. For other questions please use the [Vi Stack Exchange][8] website,
 [14]: https://github.com/vim/vim/blob/master/runtime/doc/syntax.txt
 [15]: https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin
 [16]: https://github.com/vim/vim/blob/master/runtime/doc/helphelp.txt
+[17]: https://github.com/vim/vim/issues
