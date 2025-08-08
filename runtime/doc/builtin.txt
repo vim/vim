@@ -12354,6 +12354,11 @@ wildtrigger()						*wildtrigger()*
 			cnoremap <Up>   <C-U><Up>
 			cnoremap <Down> <C-U><Down>
 <
+		To set an option specifically for search, for example to
+		reduce the popup menu height: >
+			autocmd CmdlineEnter [/\?] set pumheight=8
+			autocmd CmdlineLeave [/\?] set pumheight&
+<
 		Return value is always 0.
 
 		Return type: |Number|
