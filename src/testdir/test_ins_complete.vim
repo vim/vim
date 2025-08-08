@@ -5323,4 +5323,26 @@ func Test_autocomplete_timer()
   unlet g:CallCount
 endfunc
 
+" Issue #17907
+func Test_omni_start_invalid_col()
+  func Omni(findstart, base)
+    if a:findstart
+      return (rand() % 2) ? -1 : 1000
+    else
+      return ['foo', 'foobar']
+    endif
+  endfunc
+
+  call test_override('alloc_lines', 1)
+  set omnifunc=Omni complete=o
+  new
+  call setline(1, ['baz '])
+  call feedkeys("A\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('baz foo', getline(1))
+  bw!
+  delfunc Omni
+  set omnifunc& complete&
+  call test_override('alloc_lines', 0)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

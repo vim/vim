@@ -247,7 +247,6 @@ typedef struct cpt_source_T
 #endif
 } cpt_source_T;
 
-#define STARTCOL_NONE	-9
 static cpt_source_T *cpt_sources_array; // Pointer to the array of completion sources
 static int	    cpt_sources_count;  // Total number of completion sources specified in the 'cpt' option
 static int	    cpt_sources_index = -1;  // Index of the current completion source being expanded
@@ -5207,10 +5206,12 @@ prepare_cpt_compl_funcs(void)
 		else
 		    startcol = -2;
 	    }
+	    else if (startcol < 0 || startcol > curwin->w_cursor.col)
+		startcol = curwin->w_cursor.col;
 	    cpt_sources_array[idx].cs_startcol = startcol;
 	}
 	else
-	    cpt_sources_array[idx].cs_startcol = STARTCOL_NONE;
+	    cpt_sources_array[idx].cs_startcol = -3;
 
 	(void)copy_option_part(&p, IObuff, IOSIZE, ","); // Advance p
 	idx++;
@@ -7349,6 +7350,8 @@ cpt_compl_refresh(void)
 		    else
 			startcol = -2;
 		}
+		else if (startcol < 0 || startcol > curwin->w_cursor.col)
+		    startcol = curwin->w_cursor.col;
 		cpt_sources_array[cpt_sources_index].cs_startcol = startcol;
 		if (ret == OK)
 		{
@@ -7356,9 +7359,6 @@ cpt_compl_refresh(void)
 		    get_cpt_func_completion_matches(cb);
 		}
 	    }
-	    else
-		cpt_sources_array[cpt_sources_index].cs_startcol
-		    = STARTCOL_NONE;
 	}
 
 	(void)copy_option_part(&p, IObuff, IOSIZE, ","); // Advance p
