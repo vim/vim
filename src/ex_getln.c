@@ -1855,7 +1855,7 @@ getcmdline_int(
 	}
 
 	// Defer screen update to avoid pum flicker during wildtrigger()
-	if (c == K_WILD && !ccline.input_fn && firstc != '@')
+	if (c == K_WILD && firstc != '@')
 	    skip_pum_redraw = TRUE;
 
 	// Get a character.  Ignore K_IGNORE and K_NOP, they should not do
