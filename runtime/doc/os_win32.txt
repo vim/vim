@@ -312,7 +312,7 @@ A. You have three possible solutions depending on what you want:
       should use this flag only if the application you run doesn't require any
       input.  Otherwise it will get an EOF error because its input stream
       (stdin) would be redirected to \\.\NUL (stdout and stderr too).
-   3) Set the '!' flag in the 'guioptions' option 'go-!'. This will make Vim
+   3) Set the '!' flag in the 'guioptions' option |'go-!'|. This will make Vim
       run the "start" command inside Vims terminal window and not open a
       console window.
 

@@ -231,7 +231,6 @@ writing in Unix mode (":se ff=unix").
 
 Vim sets 'fileformat' automatically when 'fileformats' is not empty (which is
 the default), so you don't really have to worry about what you are doing.
-					'fileformat' 'fileformats'
 
 If you want to edit a script file or a binary file, you should set the
 'binary' option before loading the file.  Script files and binary files may

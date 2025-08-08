@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
+*options.txt*	For Vim version 9.1.  Last change: 2025 Aug 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1035,7 +1035,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Vim will guess the value.  In the GUI this should work correctly,
 	in other cases Vim might not be able to guess the right value.
 	If the GUI supports a dark theme, you can use the "d" flag in
-	'guioptions', see 'go-d'.
+	'guioptions', see |'go-d'|.
 
 	When the |t_RB| option is set, Vim will use it to request the background
 	color from the terminal.  If the returned RGB value is dark/light and
@@ -1798,7 +1798,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	after that.  Therefore do not append an item with += but use ^= to
 	prepend, e.g.: >
 		set clipboard^=unnamed
-<	When using the GUI see 'go-A'.
+<	When using the GUI see |'go-A'|.
 	These names are recognized:
 
 						*clipboard-unnamed*
@@ -1832,7 +1832,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			area extended, Vim tries to become the owner of the
 			windowing system's global selection or put the
 			selected text on the clipboard used by the selection
-			register "*.  See 'go-a' and |quotestar| for details.
+			register "*.  See |'go-a'| and |quotestar| for details.
 			When the GUI is active, the 'a' flag in 'guioptions'
 			is used, when the GUI is not active, this "autoselect"
 			flag is used.
@@ -3016,6 +3016,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If some of the {address} do not resolve to a line in each buffer (e.g.
 	a pattern search that does not match anything), none of the anchors
 	will be used.
+								*E1562*
+	Diff anchors can only be used when there are no hidden diff buffers.
 
 						*'dex'* *'diffexpr'*
 'diffexpr' 'dex'	string	(default "")

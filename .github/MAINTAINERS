@@ -243,6 +243,7 @@ runtime/ftplugin/nu.vim					@mrcjkb
 runtime/ftplugin/octave.vim				@dkearns
 runtime/ftplugin/ondir.vim				@jparise
 runtime/ftplugin/opencl.vim				@Freed-Wu
+runtime/ftplugin/openscad.vim                           @squibid
 runtime/ftplugin/openvpn.vim				@ObserverOfTime
 runtime/ftplugin/pascal.vim				@dkearns
 runtime/ftplugin/pbtxt.vim				@lakshayg
