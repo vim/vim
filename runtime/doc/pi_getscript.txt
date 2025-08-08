@@ -349,13 +349,9 @@ after/syntax/c.vim contained in it to overwrite a user's c.vim.
 >
 	g:GetLatestVimScripts_scriptaddr
 <	default='https://www.vim.org/scripts/script.php?script_id='
-		Override this if your system needs
-	  ...  ='http://vim.sourceforge.net/script.php?script_id='
 >
 	g:GetLatestVimScripts_downloadaddr
 <	default='https://www.vim.org/scripts/download_script.php?src_id='
-		Override this if your system needs
-	  ...  ='http://vim.sourceforge.net/scripts/download_script.php?src_id='
 >
 	g:GetLatestVimScripts_bunzip2
 <	default= bunzip2
