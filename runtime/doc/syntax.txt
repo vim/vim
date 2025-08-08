@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Aug 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4048,12 +4048,12 @@ The g:vimsyn_embed option allows users to select what, if any, types of
 embedded script highlighting they wish to have. >
 
    g:vimsyn_embed == 0   : don't support any embedded scripts
-   g:vimsyn_embed =~ 'l' : support embedded Lua
-   g:vimsyn_embed =~ 'm' : support embedded MzScheme
-   g:vimsyn_embed =~ 'p' : support embedded Perl
-   g:vimsyn_embed =~ 'P' : support embedded Python
-   g:vimsyn_embed =~ 'r' : support embedded Ruby
-   g:vimsyn_embed =~ 't' : support embedded Tcl
+   g:vimsyn_embed =~# 'l' : support embedded Lua
+   g:vimsyn_embed =~# 'm' : support embedded MzScheme
+   g:vimsyn_embed =~# 'p' : support embedded Perl
+   g:vimsyn_embed =~# 'P' : support embedded Python
+   g:vimsyn_embed =~# 'r' : support embedded Ruby
+   g:vimsyn_embed =~# 't' : support embedded Tcl
 <
 By default, g:vimsyn_embed is unset, and the Lua and Python script interfaces
 are supported.
@@ -4062,19 +4062,19 @@ are supported.
 Some folding is now supported with when 'foldmethod' is set to "syntax": >
 
    g:vimsyn_folding == 0 or doesn't exist: no syntax-based folding
-   g:vimsyn_folding =~ 'a' : fold augroups
-   g:vimsyn_folding =~ 'c' : fold Vim9 classes
-   g:vimsyn_folding =~ 'e' : fold Vim9 enums
-   g:vimsyn_folding =~ 'f' : fold functions
-   g:vimsyn_folding =~ 'h' : fold let heredocs
-   g:vimsyn_folding =~ 'i' : fold Vim9 interfaces
-   g:vimsyn_folding =~ 'H' : fold Vim9 legacy headers
-   g:vimsyn_folding =~ 'l' : fold Lua      heredocs
-   g:vimsyn_folding =~ 'm' : fold MzScheme heredocs
-   g:vimsyn_folding =~ 'p' : fold Perl     heredocs
-   g:vimsyn_folding =~ 'P' : fold Python   heredocs
-   g:vimsyn_folding =~ 'r' : fold Ruby     heredocs
-   g:vimsyn_folding =~ 't' : fold Tcl      heredocs
+   g:vimsyn_folding =~# 'a' : fold augroups
+   g:vimsyn_folding =~# 'c' : fold Vim9 classes
+   g:vimsyn_folding =~# 'e' : fold Vim9 enums
+   g:vimsyn_folding =~# 'f' : fold functions
+   g:vimsyn_folding =~# 'h' : fold let heredocs
+   g:vimsyn_folding =~# 'i' : fold Vim9 interfaces
+   g:vimsyn_folding =~# 'H' : fold Vim9 legacy headers
+   g:vimsyn_folding =~# 'l' : fold Lua      heredocs
+   g:vimsyn_folding =~# 'm' : fold MzScheme heredocs
+   g:vimsyn_folding =~# 'p' : fold Perl     heredocs
+   g:vimsyn_folding =~# 'P' : fold Python   heredocs
+   g:vimsyn_folding =~# 'r' : fold Ruby     heredocs
+   g:vimsyn_folding =~# 't' : fold Tcl      heredocs
 <
 
 By default, g:vimsyn_folding is unset.  Concatenate the indicated characters
