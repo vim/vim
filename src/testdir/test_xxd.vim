@@ -680,4 +680,25 @@ func Test_xxd_color2()
   call delete('XXDfile_colors')
   unlet! $PS1
 endfunc
+
+" this caused a buffer overflow
+func Test_xxd_overflow()
+  CheckUnix
+  CheckExecutable /bin/true
+  new
+  " we are only checking, that there are addresses in the first 5 lines
+  let expected = [
+        \ '00000000: ',
+        \ '00000080: ',
+        \ '00000100: ',
+        \ '00000180: ',
+        \ '00000200: ']
+  exe "0r! " s:xxd_cmd "-b -E -c 128 -g 256 /bin/true 2>&1"
+  " there should not be an ASAN error message
+  call getline(1, '$')->join('\n')->assert_notmatch('runtime error')
+  6,$d
+  %s/^\x\+: \zs.*//g
+  call assert_equal(expected, getline(1, 5))
+  bw!
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

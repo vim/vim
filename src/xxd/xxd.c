@@ -148,7 +148,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2025-06-15 by Juergen Weigert et al.";
+char version[] = "xxd 2025-08-08 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -228,10 +228,9 @@ char osver[] = "";
 #define LLEN_NO_COLOR \
     (39            /* addr: ⌈log10(ULONG_MAX)⌉ if "-d" flag given. We assume ULONG_MAX = 2**128 */ \
     + 2            /* ": " */ \
-    + 2 * COLS    /* hex dump */ \
-    + (COLS - 1)   /* whitespace between groups if "-g1" option given and "-c" maxed out */ \
+    + 9 * COLS     /* hex dump, worst case: bitwise output using -b */ \
     + 2            /* whitespace */ \
-    + COLS    /* ASCII dump */ \
+    + COLS         /* ASCII dump */ \
     + 2)           /* "\n\0" */
 
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
@@ -1182,9 +1181,7 @@ main(int argc, char *argv[])
 
       c += addrlen + 3 + p;
       if (color)
-	{
 	  colors[c] = cur_color;
-	}
       l[c++] =
 #if defined(__MVS__) && __CHARSET_LIB == 0
 	  (e >= 64)
