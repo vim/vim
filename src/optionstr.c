@@ -257,8 +257,7 @@ illegal_char_after_chr(char *errbuf, size_t errbuflen, int c)
 {
     if (errbuf == NULL)
 	return "";
-    vim_snprintf(errbuf, errbuflen, _(e_illegal_character_after_chr),
-		    (char *)transchar(c));
+    vim_snprintf(errbuf, errbuflen, _(e_illegal_character_after_chr), c);
     return errbuf;
 }
 
