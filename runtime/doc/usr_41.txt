@@ -925,7 +925,7 @@ Other computation:					*bitwise-function*
 	invert()		bitwise invert
 	or()			bitwise OR
 	xor()			bitwise XOR
-	sha256()		SHA-256 hash (|+cryptv|)
+	sha256()		SHA-256 hash
 	rand()			get a pseudo-random number
 	srand()			initialize seed used by rand()
 
@@ -963,7 +963,6 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	setpos()		set position of cursor, mark, etc.
 	getmarklist()		list of global/local marks
 	byte2line()		get line number at a specific byte count
-				(|+byte_offset|)
 	line2byte()		byte count at a specific line
 	diff_filler()		get the number of filler lines above a line
 	screenattr()		get attribute at a screen line/row
@@ -1050,11 +1049,8 @@ Date and Time:				*date-functions* *time-functions*
 	strftime()		convert time to a string
 	strptime()		convert a date/time string to time
 	reltime()		get the current or elapsed time accurately
-				(|+reltime|)
 	reltimestr()		convert reltime() result to a string
-				(|+reltime|)
 	reltimefloat()		convert reltime() result to a Float
-				(|+reltime|)
 
 Autocmds:					*autocmd-functions*
 	autocmd_add()		add a list of autocmds and groups
@@ -1143,9 +1139,7 @@ Folding:					*folding-functions*
 	foldclosedend()		like foldclosed() but return the last line
 	foldlevel()		check for the fold level at a specific line
 	foldtext()		generate the line displayed for a closed fold
-				(|+folding|)
 	foldtextresult()	get the text displayed for a closed fold
-				(|+folding|)
 
 Syntax and highlighting:	  *syntax-functions* *highlighting-functions*
 	clearmatches()		clear all matches defined by |matchadd()| and
@@ -1184,8 +1178,7 @@ History:					*history-functions*
 Interactive:					*interactive-functions*
 	browse()		put up a file requester
 	browsedir()		put up a directory requester
-	confirm()		let the user make a choice (|+dialog_con|,
-				|+dialog_con_gui| or |+dialog_gui|)
+	confirm()		let the user make a choice
  
 	getchar()		get a character from the user
 	getcharstr()		get a character from the user as a string
@@ -1206,25 +1199,18 @@ GUI:						*gui-functions*
 	getwinpos()		position of the Vim window
 	getwinposx()		X position of the Vim window
 	getwinposy()		Y position of the Vim window
-	balloon_show()		set the balloon content (|+balloon_eval| or
-				|+balloon_eval_term|)
+	balloon_show()		set the balloon content
 	balloon_split()		split a message for a balloon
-				(|+balloon_eval_term|)
 	balloon_gettext()	get the text in the balloon
 
 Vim server:					*server-functions*
 	serverlist()		return the list of server names
-				(|+clientserver|)
-	remote_startserver()	run a server (|+clientserver|)
+	remote_startserver()	run a server
 	remote_send()		send command characters to a Vim server
-				(|+clientserver|) 
 	remote_expr()		evaluate an expression in a Vim server
-				(|+clientserver|)
 	server2client()		send a reply to a client of a Vim server
-				(|+clientserver|)
 	remote_peek()		check if there is a reply from a Vim server
-				(|+clientserver|)
-	remote_read()		read a reply from a Vim server (|+clientserver|)
+	remote_read()		read a reply from a Vim server
 	foreground()		move the Vim window to the foreground
 	remote_foreground()	move the Vim server window to the foreground
 
@@ -1238,10 +1224,10 @@ Window size and position:			*window-size-functions*
 	winrestview()		restore saved view of current window
 
 Mappings and Menus:			    *mapping-functions*
-	digraph_get()		get |digraph| (|+digraph|) 
-	digraph_getlist()	get all |digraph|s (|+digraph|)
-	digraph_set()		register |digraph| (|+digraph|)
-	digraph_setlist()	register multiple |digraph|s (|+digraph|)
+	digraph_get()		get |digraph|
+	digraph_getlist()	get all |digraph|s
+	digraph_set()		register |digraph|
+	digraph_setlist()	register multiple |digraph|s
 	hasmapto()		check if a mapping exists
 	mapcheck()		check if a matching mapping exists
 	maparg()		get rhs of a mapping
@@ -1392,11 +1378,11 @@ Popup window:					*popup-window-functions*
 	popup_locate()		get popup window ID from its screen position
 
 Timers:						*timer-functions*
-	timer_start()		create a timer (|+timers|)
-	timer_pause()		pause or unpause a timer (|+timers|)
-	timer_stop()		stop a timer (|+timers|)
-	timer_stopall()		stop all timers (|+timers|)
-	timer_info()		get information about timers (|+timers|)
+	timer_start()		create a timer
+	timer_pause()		pause or unpause a timer
+	timer_stop()		stop a timer
+	timer_stopall()		stop all timers
+	timer_info()		get information about timers
 
 Tags:						*tag-functions*
 	taglist()		get list of matching tags
@@ -1406,11 +1392,9 @@ Tags:						*tag-functions*
 
 Prompt Buffer:					*promptbuffer-functions*
 	prompt_getprompt()	get the effective prompt text for a buffer
-				(|+channel|)
-	prompt_setcallback()	set prompt callback for a buffer (|+channel|)
+	prompt_setcallback()	set prompt callback for a buffer
 	prompt_setinterrupt()	set interrupt callback for a buffer
-				(|+channel|)
-	prompt_setprompt()	set the prompt text for a buffer (|+channel|)
+	prompt_setprompt()	set the prompt text for a buffer
 
 Registers:					*register-functions*
 	getreg()		get contents of a register
@@ -1434,10 +1418,10 @@ Text Properties:				*text-property-functions*
 	prop_type_list()	return a list of all property types
 
 Sound:							*sound-functions*
-	sound_clear()		stop playing all sounds (|+sound|)
-	sound_playevent()	play an event's sound (|+sound|)
-	sound_playfile()	play a sound file (|+sound|)
-	sound_stop()		stop playing a sound (|+sound|)
+	sound_clear()		stop playing all sounds
+	sound_playevent()	play an event's sound
+	sound_playfile()	play a sound file
+	sound_stop()		stop playing a sound
 
 Various:					*various-functions*
 	mode()			get current editing mode
@@ -1461,8 +1445,7 @@ Various:					*various-functions*
 	terminalprops()		properties of the terminal
 
 	libcall()		call a function in an external library
-				(|+libcall|)
-	libcallnr()		idem, returning a number (|+libcall|)
+	libcallnr()		idem, returning a number
 
 	undofile()		get the name of the undo file
 	undotree()		return the state of the undo tree for a buffer
@@ -1473,14 +1456,13 @@ Various:					*various-functions*
 
 	id()			get unique string for item to use as a key
 
-	luaeval()		evaluate |Lua| expression (|+lua|)
-	mzeval()		evaluate |MzScheme| expression (|+mzscheme|)
-	perleval()		evaluate Perl expression (|+perl|)
-	py3eval()		evaluate Python expression (|+python3|)
-	pyeval()		evaluate Python expression (|+python|)
-	pyxeval()		evaluate |python_x| expression (|+python| or
-				|+python3|)
-	rubyeval()		evaluate |Ruby| expression (|+ruby|)
+	luaeval()		evaluate |Lua| expression
+	mzeval()		evaluate |MzScheme| expression
+	perleval()		evaluate Perl expression
+	py3eval()		evaluate Python expression
+	pyeval()		evaluate Python expression
+	pyxeval()		evaluate |python_x| expression
+	rubyeval()		evaluate |Ruby| expression
 
 	debugbreak()		interrupt a program being debugged
 
