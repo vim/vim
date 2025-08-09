@@ -392,6 +392,9 @@ static struct vimoption options[] =
     {"autocomplete",  "ac", P_BOOL|P_VI_DEF,
 			    (char_u *)&p_ac, PV_NONE, NULL,
 			    NULL, {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"autocompletedelay", "acl", P_NUM|P_VI_DEF,
+			    (char_u *)&p_acl, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
 #endif
     {"autoindent",  "ai",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_ai, PV_AI, NULL, NULL,
