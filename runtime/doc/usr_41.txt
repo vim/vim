@@ -833,7 +833,7 @@ List manipulation:					*list-functions*
 	string()		String representation of a List
 	call()			call a function with List as arguments
 	index()			index of a value in a List
-	indexof()		index in a List where an expression evaluates to true
+	indexof()		index in a List where an expression is true
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
@@ -918,7 +918,7 @@ Blob manipulation:					*blob-functions*
 	list2blob()		get a blob from a list of numbers
 	reverse()		reverse the order of numbers in a blob
 	index()			index of a value in a Blob
-	indexof()		index in a Blob where an expression evaluates to true
+	indexof()		index in a Blob where an expression is true
 
 Other computation:					*bitwise-function*
 	and()			bitwise AND
@@ -962,7 +962,8 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	getpos()		get position of cursor, mark, etc.
 	setpos()		set position of cursor, mark, etc.
 	getmarklist()		list of global/local marks
-	byte2line()		get line number at a specific byte count (|+byte_offset|)
+	byte2line()		get line number at a specific byte count
+				(|+byte_offset|)
 	line2byte()		byte count at a specific line
 	diff_filler()		get the number of filler lines above a line
 	screenattr()		get attribute at a screen line/row
@@ -1048,9 +1049,12 @@ Date and Time:				*date-functions* *time-functions*
 	localtime()		get current time in seconds
 	strftime()		convert time to a string
 	strptime()		convert a date/time string to time
-	reltime()		get the current or elapsed time accurately (|+reltime|)
-	reltimestr()		convert reltime() result to a string (|+reltime|)
-	reltimefloat()		convert reltime() result to a Float (|+reltime|)
+	reltime()		get the current or elapsed time accurately
+				(|+reltime|)
+	reltimestr()		convert reltime() result to a string
+				(|+reltime|)
+	reltimefloat()		convert reltime() result to a Float
+				(|+reltime|)
 
 Autocmds:					*autocmd-functions*
 	autocmd_add()		add a list of autocmds and groups
@@ -1138,8 +1142,10 @@ Folding:					*folding-functions*
 	foldclosed()		check for a closed fold at a specific line
 	foldclosedend()		like foldclosed() but return the last line
 	foldlevel()		check for the fold level at a specific line
-	foldtext()		generate the line displayed for a closed fold (|+folding|)
-	foldtextresult()	get the text displayed for a closed fold (|+folding|)
+	foldtext()		generate the line displayed for a closed fold
+				(|+folding|)
+	foldtextresult()	get the text displayed for a closed fold
+				(|+folding|)
 
 Syntax and highlighting:	  *syntax-functions* *highlighting-functions*
 	clearmatches()		clear all matches defined by |matchadd()| and
@@ -1200,17 +1206,24 @@ GUI:						*gui-functions*
 	getwinpos()		position of the Vim window
 	getwinposx()		X position of the Vim window
 	getwinposy()		Y position of the Vim window
-	balloon_show()		set the balloon content (|+balloon_eval| or |+balloon_eval_term|)
-	balloon_split()		split a message for a balloon (|+balloon_eval_term|)
+	balloon_show()		set the balloon content (|+balloon_eval| or
+				|+balloon_eval_term|)
+	balloon_split()		split a message for a balloon
+				(|+balloon_eval_term|)
 	balloon_gettext()	get the text in the balloon
 
 Vim server:					*server-functions*
-	serverlist()		return the list of server names (|+clientserver|)
+	serverlist()		return the list of server names
+				(|+clientserver|)
 	remote_startserver()	run a server (|+clientserver|)
-	remote_send()		send command characters to a Vim server (|+clientserver|) 
-	remote_expr()		evaluate an expression in a Vim server (|+clientserver|)
-	server2client()		send a reply to a client of a Vim server (|+clientserver|)
-	remote_peek()		check if there is a reply from a Vim server (|+clientserver|)
+	remote_send()		send command characters to a Vim server
+				(|+clientserver|) 
+	remote_expr()		evaluate an expression in a Vim server
+				(|+clientserver|)
+	server2client()		send a reply to a client of a Vim server
+				(|+clientserver|)
+	remote_peek()		check if there is a reply from a Vim server
+				(|+clientserver|)
 	remote_read()		read a reply from a Vim server (|+clientserver|)
 	foreground()		move the Vim window to the foreground
 	remote_foreground()	move the Vim server window to the foreground
@@ -1392,9 +1405,11 @@ Tags:						*tag-functions*
 	settagstack()		modify the tag stack of a window
 
 Prompt Buffer:					*promptbuffer-functions*
-	prompt_getprompt()	get the effective prompt text for a buffer (|+channel|)
+	prompt_getprompt()	get the effective prompt text for a buffer
+				(|+channel|)
 	prompt_setcallback()	set prompt callback for a buffer (|+channel|)
-	prompt_setinterrupt()	set interrupt callback for a buffer (|+channel|)
+	prompt_setinterrupt()	set interrupt callback for a buffer
+				(|+channel|)
 	prompt_setprompt()	set the prompt text for a buffer (|+channel|)
 
 Registers:					*register-functions*
@@ -1462,7 +1477,8 @@ Various:					*various-functions*
 	perleval()		evaluate Perl expression (|+perl|)
 	py3eval()		evaluate Python expression (|+python3|)
 	pyeval()		evaluate Python expression (|+python|)
-	pyxeval()		evaluate |python_x| expression (|+python| or |+python3|)
+	pyxeval()		evaluate |python_x| expression (|+python| or
+				|+python3|)
 	rubyeval()		evaluate |Ruby| expression (|+ruby|)
 
 	debugbreak()		interrupt a program being debugged
