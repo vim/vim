@@ -1242,7 +1242,7 @@ Mappings and Menus:			    *mapping-functions*
 	digraph_getlist()	get all |digraph|s (|+digraph|)
 	digraph_set()		register |digraph| (|+digraph|)
 	digraph_setlist()	register multiple |digraph|s (|+digraph|)
-	hasmapto()		check if a mapping exists 
+	hasmapto()		check if a mapping exists
 	mapcheck()		check if a matching mapping exists
 	maparg()		get rhs of a mapping
 	maplist()		get list of all mappings
