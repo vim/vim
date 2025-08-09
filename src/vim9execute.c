@@ -4510,7 +4510,7 @@ exec_instructions(ectx_T *ectx)
 		tv->vval.v_number = iptr->isn_arg.storenr.stnr_val;
 		break;
 
-	    // Store a value in a list, dict, blob or object variable.
+	    // Store a value in a list, tuple, dict, blob or object variable.
 	    case ISN_STOREINDEX:
 		{
 		    int res = execute_storeindex(iptr, ectx);

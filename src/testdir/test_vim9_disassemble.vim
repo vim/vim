@@ -4002,4 +4002,71 @@ def Test_disassemble_has_shortcircuit()
     '1 RETURN', g:instr)
 enddef
 
+" Disassemble the code generated for a loop with closure following another loop
+def Test_disassemble_loop_with_closure_after_loop()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      for i in "a"
+        var v1 = 0
+      endfor
+      var idx = 1
+      while idx > 0
+        idx -= 1
+      endwhile
+      var s = "abc"
+      for j in range(2)
+        var k = 0
+        g:Ref = () => j
+      endfor
+    enddef
+    g:instr = execute('disassemble Fn')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<SNR>\d\+_Fn\_s*' ..
+    'for i in "a"\_s*' ..
+    '0 STORE -1 in $0\_s*' ..
+    '1 PUSHS "a"\_s*' ..
+    '2 FOR $0 -> 6\_s*' ..
+    '3 STORE $2\_s*' ..
+    'var v1 = 0\_s*' ..
+    '4 STORE 0 in $3\_s*' ..
+    'endfor\_s*' ..
+    '5 JUMP -> 2\_s*' ..
+    '6 DROP\_s*' ..
+    'var idx = 1\_s*' ..
+    '7 STORE 1 in $4\_s*' ..
+    'while idx > 0\_s*' ..
+    '8 LOAD $4\_s*' ..
+    '9 PUSHNR 0\_s*' ..
+    '10 COMPARENR >\_s*' ..
+    '11 WHILE $5 -> 17\_s*' ..
+    'idx -= 1\_s*' ..
+    '12 LOAD $4\_s*' ..
+    '13 PUSHNR 1\_s*' ..
+    '14 OPNR -\_s*' ..
+    '15 STORE $4\_s*' ..
+    'endwhile\_s*' ..
+    '16 JUMP -> 8\_s*' ..
+    'var s = "abc"\_s*' ..
+    '17 PUSHS "abc"\_s*' ..
+    '18 STORE $6\_s*' ..
+    'for j in range(2)\_s*' ..
+    '19 STORE -1 in $7\_s*' ..
+    '20 PUSHNR 2\_s*' ..
+    '21 BCALL range(argc 1)\_s*' ..
+    '22 FOR $7 -> 29\_s*' ..
+    '23 STORE $9\_s*' ..
+    'var k = 0\_s*' ..
+    '24 STORE 0 in $10\_s*' ..
+    'g:Ref = () => j\_s*' ..
+    '25 FUNCREF <lambda>\d\+ vars  $10-$10\_s*' ..
+    '26 STOREG g:Ref\_s*' ..
+    'endfor\_s*' ..
+    '27 ENDLOOP ref $8 save $10-$10 depth 0\_s*' ..
+    '28 JUMP -> 22\_s*' ..
+    '29 DROP\_s*' ..
+    '30 RETURN void', g:instr)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

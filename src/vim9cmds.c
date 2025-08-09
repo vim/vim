@@ -1252,7 +1252,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 	if (compile_loop_end(&forscope->fs_loop_info, cctx) == FAIL)
 	    return NULL;
 
-	unwind_locals(cctx, scope->se_local_count, FALSE);
+	unwind_locals(cctx, scope->se_local_count, TRUE);
 
 	// At end of ":for" scope jump back to the FOR instruction.
 	generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
@@ -1379,7 +1379,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	if (compile_loop_end(&whilescope->ws_loop_info, cctx) == FAIL)
 	    return NULL;
 
-	unwind_locals(cctx, scope->se_local_count, FALSE);
+	unwind_locals(cctx, scope->se_local_count, TRUE);
 
 #ifdef FEAT_PROFILE
 	// count the endwhile before jumping
