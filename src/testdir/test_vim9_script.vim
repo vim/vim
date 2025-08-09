@@ -2832,6 +2832,35 @@ def Test_define_global_closure_in_loops()
   delfunc g:Global_2c
 enddef
 
+" Test for using a closure in a for loop after another for/while loop
+def Test_for_loop_with_closure_after_another_loop()
+  var lines =<< trim END
+    vim9script
+    def Fn()
+      # first loop with a local variable
+      for i in 'a'
+        var v1 = 0
+      endfor
+      var idx = 1
+      while idx > 0
+        idx -= 1
+      endwhile
+      var results = []
+      var s = 'abc'
+      # second loop with a local variable and a funcref
+      for j in range(2)
+        var k = 0
+        results->add(s)
+        g:FuncRefs = () => j
+      endfor
+      assert_equal(['abc', 'abc'], results)
+    enddef
+    Fn()
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:FuncRefs
+enddef
+
 def Test_for_loop_fails()
   v9.CheckDefAndScriptFailure(['for '], ['E1097:', 'E690:'])
   v9.CheckDefAndScriptFailure(['for x'], ['E1097:', 'E690:'])
