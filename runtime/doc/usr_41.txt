@@ -1460,7 +1460,8 @@ Various:					*various-functions*
 	windowsversion()	get MS-Windows version
 	terminalprops()		properties of the terminal
 
-	libcall()		call a function in an external library (|+libcall|)
+	libcall()		call a function in an external library
+				(|+libcall|)
 	libcallnr()		idem, returning a number (|+libcall|)
 
 	undofile()		get the name of the undo file
