@@ -749,7 +749,7 @@ String manipulation:					*string-functions*
 	str2list()		get list of numbers from a string
 	str2nr()		convert a string to a Number
 	str2float()		convert a string to a Float
-	printf()		format a string according to % items
+	printf()		format a string according to "%" items
 	escape()		escape characters in a string with a '\'
 	shellescape()		escape a string for use with a shell command
 	fnameescape()		escape a file name for use with a Vim command
