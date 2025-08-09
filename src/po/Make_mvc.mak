@@ -12,21 +12,18 @@
 !ENDIF
 
 !IFNDEF LANGUAGE
-! IF [powershell.exe -nologo -noprofile \
-	$$lng=(Get-UICulture).TwoLetterISOLanguageName; \
-	$$Env:LANGUAGE=$$lng;Set-Content -Path .\lng.tmp -Value "LANGUAGE=$$lng"]
+! IF ![powershell.exe -NoLogo -NoProfile -Command \
+	Set-Content -Path .\_lng.tmp \
+	-Value "LANGUAGE=$$((Get-UICulture).TwoLetterISOLanguageName)"]
+!  INCLUDE _lng.tmp
+!  IF [del /q .\_lng.tmp]
+!  ENDIF
+!  MESSAGE
+!  MESSAGE The %LANGUAGE% environment variable is not set.
+!  MESSAGE This variable will be temporarily set to "$(LANGUAGE)" while "nmake.exe" is running.
+!  MESSAGE See README_mvc.txt for more information on the %LANGUAGE% environment variable.
+!  MESSAGE
 ! ENDIF
-# In order for the "install" and "cleanup-po" rule to work.
-# The others work with just setting the environment variable.
-# And to show in the message.
-! INCLUDE lng.tmp
-! IF [del /q .\lng.tmp]
-! ENDIF
-! MESSAGE
-! MESSAGE The %LANGUAGE% environment variable is not set.
-! MESSAGE This variable will be temporarily set to "$(LANGUAGE)" while "nmake.exe" is running.
-! MESSAGE See README_mvc.txt for more information on the %LANGUAGE% environment variable.
-! MESSAGE
 !ELSE
 ! MESSAGE LANGUAGE is already set "$(LANGUAGE)"
 !ENDIF
@@ -95,12 +92,11 @@ PSFLAGS = -NoLogo -NoProfile -Command
 
 INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 
-!IF [%comspec% /C \
-	"for /F %G in ('wmic Path Win32_LocalTime Get Year /format:list ^| \
-	findstr /R [0-9^]') do @(echo:%G> .\_date.tmp)"]
-!ENDIF
-!INCLUDE .\_date.tmp
-!IF [$(RM) .\_date.tmp]
+!IF ![$(PS) $(PSFLAGS) Set-Content -Path .\_year.tmp \
+	-Value Year=$$((Get-Date).Year)]
+! INCLUDE .\_year.tmp
+! IF [$(RM) .\_year.tmp]
+! ENDIF
 !ENDIF
 
 .SUFFIXES:
