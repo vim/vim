@@ -387,6 +387,14 @@ def Test_generic_func_invoke_whitespace_error()
     Fn<number,string>()
   END
   v9.CheckSourceFailure(lines, "E1069: White space required after ',': <number,string>()", 4)
+
+  lines =<< trim END
+    vim9script
+    def Fn<A>()
+    enddef
+    Fn<number> ()
+  END
+  v9.CheckSourceFailure(lines, "E1202: No white space allowed after '>': <number> ()", 4)
 enddef
 
 def Test_generic_func_typename()
@@ -2211,7 +2219,7 @@ def Test_generic_disassemble_generic_obj_method()
     endclass
     disassemble Foo.Fn<number, dict<number>
   END
-  v9.CheckScriptFailure(lines, 'E1553: Missing comma after type in generic function: <number, dict<number>', 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<number, dict<number>", 6)
 
   lines =<< trim END
     vim9script
@@ -2229,7 +2237,7 @@ def Test_generic_disassemble_generic_obj_method()
     endclass
     disassemble Foo.Fn<number,
   END
-  v9.CheckScriptFailure(lines, "E1069: White space required after ','", 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<number,", 6)
 
   lines =<< trim END
     vim9script
@@ -2239,7 +2247,7 @@ def Test_generic_disassemble_generic_obj_method()
     endclass
     disassemble Foo.Fn<
   END
-  v9.CheckScriptFailure(lines, 'E475: Invalid argument: Foo.Fn<', 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<", 6)
 
   lines =<< trim END
     vim9script
@@ -2339,7 +2347,7 @@ def Test_generic_disassemble_generic_class_method()
     endclass
     disassemble Foo.Fn<number, dict<number>
   END
-  v9.CheckScriptFailure(lines, 'E1553: Missing comma after type in generic function: <number, dict<number>', 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<number, dict<number>", 6)
 
   lines =<< trim END
     vim9script
@@ -2349,7 +2357,7 @@ def Test_generic_disassemble_generic_class_method()
     endclass
     disassemble Foo.Fn<number,
   END
-  v9.CheckScriptFailure(lines, "E1069: White space required after ','", 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<number,", 6)
 
   lines =<< trim END
     vim9script
@@ -2359,7 +2367,7 @@ def Test_generic_disassemble_generic_class_method()
     endclass
     disassemble Foo.Fn<
   END
-  v9.CheckScriptFailure(lines, 'E475: Invalid argument: Foo.Fn<', 6)
+  v9.CheckScriptFailure(lines, "E1554: Missing '>' in generic function: Fn<", 6)
 
   lines =<< trim END
     vim9script
