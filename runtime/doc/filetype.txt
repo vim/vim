@@ -1072,7 +1072,7 @@ The Vim filetype plugin defines the following mappings:
     ]"		move to the next (legacy) comment
     ["		move to the previous (legacy) comment
     gf		edit the file under the cursor
-    CTRL-W gf	edit the file under the cursor in a new tab
+    CTRL-W gf	edit the file under the cursor in a new tab page
     CTRL-W f	edit the file under the cursor in a new window
 
 
