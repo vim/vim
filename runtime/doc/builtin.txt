@@ -6556,7 +6556,7 @@ libcall({libname}, {funcname}, {argument})
 libcallnr({libname}, {funcname}, {argument})
 		Just like |libcall()|, but used for a function that returns an
 		int instead of a string.
-		{only in Win32 on some Unix versions, when the |+libcall|
+		{only in Win32 and some Unix versions, when the |+libcall|
 		feature is present}
 		Examples: >
 			:echo libcallnr("/usr/lib/libc.so", "getpid", "")
