@@ -14,7 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#if defined(FEAT_CLIENTSERVER) || defined(PROTO)
+#if (defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)) || defined(PROTO)
 
 # ifdef FEAT_X11
 #  include <X11/Intrinsic.h>
