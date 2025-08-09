@@ -1605,7 +1605,7 @@ once for every line in the range, with the cursor in that line.  Example: >
 
 If you call this function with: >
 
-	:10,15Number()
+	:10,15 call Number()
 
 The function will be called six times, starting on line 10 and ending on line
 15.
