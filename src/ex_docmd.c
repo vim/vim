@@ -3715,9 +3715,9 @@ find_ex_command(
 		// "&option" can be followed by "->" or "=", check below
 	    }
 
-	    if (*p == '<' && vim9)
+	    if (vim9 && *p == '<')
 	    {
-		// generic function
+		// generic function type args
 		if (skip_generic_func_type_args(&p) == FAIL)
 		{
 		    eap->cmdidx = CMD_SIZE;
