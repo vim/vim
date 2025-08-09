@@ -125,7 +125,7 @@ make such a loop, it can be written much more compact: >
 	  echo $"count is {i}"
 	endfor
 
-We won't explain how `for`, `range()`and `$"string"` work until later.  Follow
+We won't explain how `for`, `range()` and `$"string"` work until later.  Follow
 the links if you are impatient.
 
 
