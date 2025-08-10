@@ -12,6 +12,7 @@ SRC_ALL =	\
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
 		.github/workflows/coverity.yml \
+		.github/workflows/link-check.yml \
 		.github/actions/test_artifacts/action.yml \
 		.github/dependabot.yml \
 		.gitignore \
@@ -24,6 +25,7 @@ SRC_ALL =	\
 		ci/config.mk*.sed \
 		ci/if_ver*.vim \
 		ci/if_feat_check.vim \
+		ci/lychee.toml \
 		ci/setup-xvfb.sh \
 		ci/setup-sway.sh \
 		ci/remove_snap.sh \
