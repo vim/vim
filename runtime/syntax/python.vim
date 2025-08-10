@@ -231,6 +231,8 @@ syn region  pythonFStringField
     \ skip=/([^)]*)\|\[[^]]*]\|{[^}]*}\|#.*$/
     \ end=/\%(\s*=\s*\)\=\%(!\a\)\=\%(:\%({[^}]*}\|[^}]*\)\+\)\=}/
     \ contained
+    \ contains=ALLBUT,pythonFStringField,pythonClass,pythonFunction,pythonDoctest,pythonDoctestValue,@Spell
+
 " Doubled braces and Unicode escapes are not replacement fields
 syn match   pythonFStringSkip	/{{\|\\N{/ transparent contained contains=NONE
 
