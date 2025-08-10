@@ -4184,8 +4184,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		    if (compl_curr_match != NULL
 			    && compl_curr_match->cp_number == match->cp_number)
 			selected_idx = list_idx;
-		    if (match->cp_in_match_array)
-			list_idx += 1;
+		    if (!has_matches || match->cp_in_match_array)
+			list_idx++;
 		}
 		match = match->cp_next;
 	    }
