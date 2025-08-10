@@ -3945,7 +3945,7 @@ func Test_completeopt_preinsert()
   call assert_equal("fobar", g:line)
   call assert_equal(2, g:col)
 
-  call feedkeys("S\<C-X>\<C-O>foo\<F5><ESC>", 'tx')
+  call feedkeys("S\<C-X>\<C-O>foo\<F5>\<ESC>", 'tx')
   call assert_equal("foobar", g:line)
 
   call feedkeys("S\<C-X>\<C-O>foo\<BS>\<BS>\<BS>", 'tx')
