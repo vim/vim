@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2025 Aug 06
+*todo.txt*      For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -289,7 +289,8 @@ Terminal emulator window:
   then when the window is resized redraw those lines.
 - Redrawing is slow with Motif. (Ramel Eshed)
 - For the GUI fill termios with default values, perhaps like pangoterm:
-  http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
+  (dead link)
+  bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
@@ -1426,12 +1427,6 @@ Possibly include the needed code so that it can be built everywhere.
 Add a way to restart a timer.  It's similar to timer_stop() and timer_start(),
 but the reference remains valid.
 
-Need to try out instructions in INSTALLpc.txt about how to install all
-interfaces and how to build Vim with them.
-Appveyor build with self-installing executable, includes getting most
-interfaces: https://github.com/k-takata/vim/tree/chrisbra-appveyor-build
-result: https://ci.appveyor.com/project/k-takata/vim/history
-
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Patch to make tests pass with EBCDIC. (Owen Leibman, 2016 Apr 10)
@@ -1654,7 +1649,7 @@ Or minpac: https://github.com/k-takata/minpac, since it leverages the builtin
 package feature.
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
 Also see (link seems dead):
-http://vim-wiki.mawercer.de/wiki/topic/vim%20plugin%20managment.html
+vim-wiki.mawercer.de/wiki/topic/vim%20plugin%20managment.html
 User view:
 - Support multiple sources, basically any http:// URL. Or a central place that
   will work for everybody (github?  redirects from vim.org?).
@@ -2376,7 +2371,7 @@ Problem with 'ts' set to 9 and 'showbreak' to ">>>". (Matthew Winn, 2007 Oct
 Would be more consistent when an existing tab is re-used. (Tony Mechelynck)
 
 Using Aap to build Vim: add remarks about how to set personal preferences.
-Example on http://www.calmar.ws/tmp/aap.html (link seems dead)
+Example on www.calmar.ws/tmp/aap.html (link seems dead)
 
 When 'diffopt' has "context:0" a single deleted line causes two folds to merge
 and mess up syncing. (Austin Jennings, 2008 Jan 31)
@@ -2407,7 +2402,7 @@ Asked about latest version: 0.77.1 is on www.vim.org.
 More AmigaOS4 patches. (Peter Bengtsson, Nov 9)
 
 Amiga patches with vbcc. (Adrien Destugues, 2010 Aug 30)
-(link seems dead): http://pulkomandy.ath.cx/drop/vim73_vbcc_amiga.diff
+(link seems dead): pulkomandy.ath.cx/drop/vim73_vbcc_amiga.diff
 
 Problem with compound words?  (Bert, 2008 May 6)
 No warning for when flags are defined after they are used in an affix.
@@ -2478,7 +2473,7 @@ Win32: Patch for cscope external command. (Mike Williams, 2007 Aug 7)
 Win32: XPM support only works with path without spaces.  Patch by Mathias
 Michaelis, 2006 Jun 9.  Another patch for more path names, 2006 May 31.
 New version (link seems dead):
-http://members.tcnet.ch/michaelis/vim/patches.zip
+members.tcnet.ch/michaelis/vim/patches.zip
 (also for other patches by Mathias, see mail Feb 22)
 
 Win32: compiling with normal features and OLE fails.  Patch by Mathias
@@ -3018,7 +3013,7 @@ Win32 GUI known bugs:
     the screen.
 8   The -P argument doesn't work very well with many MDI applications.
     The last argument of CreateWindowEx() should be used, see MSDN docs.
-    Tutorial (link seems dead): http://win32assembly.online.fr/tut32.html
+    Tutorial (link seems dead): win32assembly.online.fr/tut32.html
 6   Win32 GUI: With "-u NONE -U NONE" and doing "CTRL-W v" "CTRL-W o", the ":"
     of ":only" is highlighted like the cursor.  (Lipelis)
 8   When 'encoding' is "utf-8", should use 'guifont' for both normal and wide
@@ -3248,7 +3243,7 @@ Macintosh:
 7   Loading the Perl library only works on OS/X 10.2 or 10.3, never on both.
     Load the Perl library dynamically see Python sources file dynload_mac
     (Jack)
-    dynamic linking: http://developer.apple.com/technotes/tn2002/tn2064.html
+    dynamic linking: https://developer.apple.com/library/archive/technotes/tn2064/_index.html
 8   inputdialog() doesn't resize when giving more text lines. (David Fishburn,
     2006 Sept 28)
 8   Define vim_mkdir() for Macintosh.
@@ -3597,7 +3592,7 @@ Most interesting new features to be added when all bugs have been fixed:
     198 standard http://www.jcp.org/en/jsr/detail?id=198.
     Eclim does it: http://eclim.sourceforge.net/  (Eric Van Dewoestine)
     Plugin that uses a terminal emulator: http://vimplugin.sf.net
-    And another one: http://www.satokar.com/viplugin/index.php
+    And another one: (dead link) satokar.com/viplugin/index.php
 -   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
     Especially when using the scrollbar.  Typing a cursor-movement command
     scrolls back to where the cursor is.
@@ -3710,7 +3705,7 @@ Spell checking:
     Is COMPLEXPREFIXES necessary when we have flags for affixes?
 -   There is no Finnish spell checking file.  For openoffice Voikko is now
     used, which is based on Malaga (link seems dead):
-    http://home.arcor.de/bjoern-beutel/malaga/ (Teemu Likonen)
+    home.arcor.de/bjoern-beutel/malaga/ (Teemu Likonen)
 8   ":mkspell" still takes much too long in Hungarian dictionary from
     hunspell.  Only solution appears to be to postpone secondary suffixes.
 8   Handle postponed prefix with COMPOUNDPERMITFLAG or COMPOUNDFORBIDFLAG.
@@ -3761,14 +3756,14 @@ Spell checking:
     word/flags and affix.
 -   Implement multiple flags for compound words and CMP item?
     Await comments from other spell checking authors.
--   Also see tklspell: http://tkltrans.sourceforge.net/
+-   Also see tklspell: (dead link) tkltrans.sourceforge.net/
 8   Charles Campbell asks for method to add "contained" groups to existing
     syntax items (to add @Spell).
     Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
     cluster" but change the contains list directly for matching syntax items.
 -   References: MySpell library (in OpenOffice.org), (links seem dead):
-	http://spellchecker.mozdev.org/source.html
-	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
+	spellchecker.mozdev.org/source.html
+	(dead link) whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
       author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
 8   It is currently not possible to mark "can not" as rare, because "can" and
     "not" are good words.  Find a way to let "rare" overrule "good"?
@@ -4514,7 +4509,7 @@ Win32 GUI:
 8   Could keep console open to run multiple commands, to avoid the need to hit
     return in every console.
     Also: Look at how Emacs does run external commands:
-	http://www.cs.washington.edu/homes/voelker/ntemacs.html.
+	(deak link) www.cs.washington.edu/homes/voelker/ntemacs.html.
 8   Need a separate PopUp menu for modeless selection.  Need two new commands:
     Copy selection to clipboard, Paste selection (as typed text).
 8   Support copy/paste for other file formats.  At least HTML, perhaps RTF.
@@ -4721,7 +4716,7 @@ Omni completion:
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
 	Ivan Villanueva has something for Java.
 	Emacs (link seems dead):
-	http://www.xref-tech.com/xrefactory/more_c_completion.html
+	www.xref-tech.com/xrefactory/more_c_completion.html
 	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
 -   Pre-expand abbreviations, show which abbrevs would match?
 
@@ -5246,7 +5241,7 @@ Searching:
     to find out how much time has passed.  Or use SIGALRM.  Where to show the
     number?
 7   Support for approximate-regexps to find similar words (agrep
-    http://www.tgries.de/agrep/ tre: http://laurikari.net/tre/index.html).
+    http://www.tgries.de/agrep/ tre: (dead link) laurikari.net/tre/index.html).
 8   Add an item for a big character range, so that one can search for a
     chinese character: \z[234-1234]  or \z[XX-YY] or \z[0x23-0x234].
 7   Add an item stack to allow matching ().  One side is "push X on

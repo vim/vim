@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 9.1.  Last change: 2024 Aug 14
+*sponsor.txt*   For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -140,7 +140,7 @@ Are the donations tax deductible?
 
 That depends on your country.  The donations to help the children in |Uganda|
 are tax deductible in Holland, Germany, Canada and in the USA.  See the ICCF
-website http://iccf-holland.org/donate.html.
+website (dead link) iccf-holland.org/donate.html.
 
 
 Can you send me a bill?

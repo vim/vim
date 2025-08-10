@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 9.1.  Last change: 2024 May 11
+*if_cscop.txt*  For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -360,7 +360,7 @@ limited to Unix systems.
 Additionally Cscope support works for Win32.  For more information and a
 cscope version for Win32 see (link seems dead):
 
-	http://iamphet.nm.ru/cscope/index.html
+	iamphet.nm.ru/cscope/index.html
 
 The DJGPP-built version from http://cscope.sourceforge.net is known to not
 work with Vim.

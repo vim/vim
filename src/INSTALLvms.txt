@@ -1,7 +1,7 @@
 INSTALLvms.txt - Installation of Vim on OpenVMS
 
 Maintainer:   Zoltan Arpadffy <zoltan.arpadffy@gmail.com>
-Last change:  2023 Nov 29
+Last change:  2025 Aug 10
 
 This file contains instructions for compiling Vim on Openvms.
 If you already have an executable version of Vim, you don't need this.
@@ -33,7 +33,7 @@ Contents:
 
 1.1. Visit the Vim Repository Home
 
-You may want to clone the latest source code from https://github/vim/vim
+You may want to clone the latest source code from https://www.github.com/vim/vim
 Or the last tested on OpenVMS from http://polarhome.com/vim/files/source/vms/
 
 1.2. Expand the three archives.
@@ -43,7 +43,7 @@ Or the last tested on OpenVMS from http://polarhome.com/vim/files/source/vms/
 
 1.4. You will need either the DECSET mms utility or the freely available clone
      of it called mmk (VMS has no make utility in the standard distribution).
-     You can download mmk from http://www.openvms.digital.com/freeware/MMK/
+     You can download mmk from (defunct link) openvms.digital.com/freeware/MMK/
 
 1.5. If you want to have Perl, Python or Tcl support in Vim you will need VMS
      distributions for them as well.
@@ -169,7 +169,7 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 	Description	: Add Lua support
 	Options:	: YES - Build with support
 			  Uncommented - build without support.
-	Default		: Uncommented     
+	Default		: Uncommented
 
 	Parameter name	: VIM_MZSCHEME
 	Description	: Add support for FEATURE_MZSCHEM
@@ -178,10 +178,10 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 	Default		: Uncommented
 
 	Parameter name	: VIM_ICONV
-	Description	: Build with using the ICONV library 
+	Description	: Build with using the ICONV library
 	Options:	: YES - Build with support
 			  Uncommented - build without support.
-	Default		: Uncommented     
+	Default		: Uncommented
 
 	Parameter name	: MODIFIED_BY
 	Description	: Add note if you modified the code
@@ -326,10 +326,10 @@ perl_env :
 
      To build VIM with GTK you have to install GTK on your OpenVMS.
      So far it works just on Alpha and IA64. More information at:
-     http://www.openvms.compaq.com/openvms/products/ips/gtk.html
+     defunct link: openvms.compaq.com/openvms/products/ips/gtk.html
 
      You also need the OpenVMS Porting Library:
-     http://www.openvms.compaq.com/openvms/products/ips/porting.html
+     defunct link: openvms.compaq.com/openvms/products/ips/porting.html
 
      Source code for GTK and porting library that is used to build
      VMS executables at polarhome.com are at
@@ -365,7 +365,7 @@ perl_env :
 7.3  PERL
 
      You have to install OpenVMS perl package from:
-     http://www.openvms.compaq.com/openvms/products/ips/apache/csws_perl_relnotes.html or build on your own from sources downloaded from http://www.perl.org
+     defunct link: openvms.compaq.com/openvms/products/ips/apache/csws_perl_relnotes.html or build on your own from sources downloaded from http://www.perl.org
 
      You need defined PERLSHR logical that points to PERL shareable image
      (or you can just copy over to SYS$LIBRARY:)

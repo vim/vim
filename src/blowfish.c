@@ -7,7 +7,8 @@
  * See README.txt for an overview of the Vim source code.
  *
  * Blowfish encryption for Vim; in Blowfish cipher feedback mode.
- * Contributed by Mohsin Ahmed, http://www.cs.albany.edu/~mosh
+ * Contributed by Mohsin Ahmed
+ * Original link (www.cs.albany.edu/~mosh) is no longer available.
  * Based on http://www.schneier.com/blowfish.html by Bruce Schneier.
  *
  * There are two variants:

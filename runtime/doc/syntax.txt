@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Aug 08
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1637,7 +1637,7 @@ Elixir.
 FLEXWIKI				*flexwiki.vim* *ft-flexwiki-syntax*
 
 FlexWiki is an ASP.NET-based wiki package which used to be available at
-http://www.flexwiki.com
+www.flexwiki.com
 NOTE: This site currently doesn't work, on Wikipedia is mentioned that
 development stopped in 2009.
 
@@ -1962,7 +1962,7 @@ are read during initialization) >
 	:let html_my_rendering=1
 
 If you'd like to see an example download mysyntax.vim at
-http://www.fleiner.com/vim/download.html
+https://www.fleiner.com/vim/download.html
 
 You can also disable this rendering by adding the following line to your
 vimrc file: >

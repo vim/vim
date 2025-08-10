@@ -1,4 +1,4 @@
-INSTALLpc.txt - Installation of Vim on PC - Last Update: 2025 May 14
+INSTALLpc.txt - Installation of Vim on PC - Last Update: 2025 Aug 10
 
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
@@ -42,7 +42,7 @@ Contents:
 
 
 The currently recommended way (that means it has been verified to work) is
-using the "Visual Studio 2022 Community Edition" installation.  This doesn't 
+using the "Visual Studio 2022 Community Edition" installation.  This doesn't
 include the SDK for older Windows versions (95 - XP), see "OLDER VERSIONS"
 below for that.
 
@@ -52,7 +52,7 @@ below for that.
 
 We do not provide download links, since Microsoft keeps changing them.  You
 can search for "Visual Studio 2022 Community Edition", for example.  You will
-need to create a Microsoft account (it's free).  You need to download the 
+need to create a Microsoft account (it's free).  You need to download the
 "DVD", and execute the installer from it.
 
 When installing "Visual Studio 2022 Community Edition" or "Build Tools for
@@ -456,7 +456,7 @@ found at
 As of 2011, UPX still does not support compressing 64-bit EXE's; if you have
 built a 64-bit vim then an alternative to UPX is 'MPRESS'. MPRESS can be found
 at:
-    http://www.matcode.com/mpress.htm
+    matcode.com/mpress.htm (now a dead link)
 
 
 ADDITION: NLS support with MinGW
@@ -471,7 +471,7 @@ You need to uncomment lines in Make_ming.mak to have NLS defined.
 =========
 
 Use Make_cyg.mak with Cygwin's GCC. See
-    http://users.skynet.be/antoine.mechelynck/vim/compile.htm
+    (now dead) users.skynet.be/antoine.mechelynck/vim/compile.htm
 
 With Cygnus gcc you should use the Unix Makefile instead (you need to get the
 Unix archive then).  Then you get a Cygwin application (feels like Vim is

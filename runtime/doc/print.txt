@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 9.1.  Last change: 2024 May 11
+*print.txt*     For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -444,8 +444,8 @@ you need to define your own PostScript font encoding vector.  Details on how
 to define a font encoding vector is beyond the scope of this help file, but
 you can find details in the PostScript Language Reference Manual, 3rd Edition,
 published by Addison-Wesley and available in PDF form at
-http://www.adobe.com/.  The following describes what you need to do for Vim to
-locate and use your print character encoding.
+https://www.adobe.com/.  The following describes what you need to do for Vim
+to locate and use your print character encoding.
 
 i.   Decide on a unique name for your encoding vector, one that does not clash
      with any of the recognized or standard encoding names that Vim uses (see
@@ -523,7 +523,7 @@ It is possible to define your own multibyte character set although this
 should not be attempted lightly.  A discussion on the process if beyond the
 scope of these help files.  You can find details on CMap (character map) files
 in the document 'Adobe CMap and CIDFont Files Specification, Version 1.0',
-available from http://www.adobe.com as a PDF file.
+available from https://www.adobe.com as a PDF file.
 
 ==============================================================================
 6. PostScript Printing Troubleshooting		*postscript-print-trouble*
@@ -628,7 +628,7 @@ OpenVMS
 - Is apparently supported in the main code now (untested).
   See (link seems dead):
 
-    http://wwwthep.physik.uni-mainz.de/~plass/gv/
+    wwwthep.physik.uni-mainz.de/~plass/gv/
 
 MS-Windows
 

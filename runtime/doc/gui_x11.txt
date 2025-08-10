@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -350,7 +350,7 @@ If you want to set the colors of remaining gui components (e.g., the
 menubar, scrollbar, whatever), those are GTK specific settings and you
 need to set those up in some sort of gtkrc file.  You'll have to refer
 to the GTK documentation, however little there is, on how to do this.
-See http://developer.gnome.org/doc/API/2.0/gtk/gtk-Resource-Files.html
+See https://www.manpagez.com/html/gtk2/gtk2-2.24.24/gtk2-Resource-Files.php
 for more information.
 							*gtk3-slow*
 If you are using GTK3 and Vim appears to be slow, try setting the environment
@@ -519,7 +519,7 @@ of the normal GtkWindow.  This enables Vim to act as a GTK+ plugin.
 
 This really is a programmer's interface, and is of no use without a supporting
 application to spawn the Vim correctly.  For more details on GTK+ sockets, see
-http://www.gtk.org/api/
+https://www.gtk.org/docs/apis/index
 
 Note that this feature requires the latest GTK version.  GTK 1.2.10 still has
 a small problem.  The socket feature has not yet been tested with GTK+ 2 --

@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 9.1.  Last change: 2024 May 11
+*netbeans.txt*  For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -41,10 +41,10 @@ protocol. There are existing implementations in C, C++, Python and Java. The
 name NetBeans is kept today for historical reasons.
 
 Active project using the NetBeans protocol of Vim:
-- Eclim, http://eclim.org/
+- Eclim, (dead link) eclim.org/
 
 VimIntegration, description of various projects doing Vim Integration:
-	http://www.freehackers.org/VimIntegration
+	(dead link) www.freehackers.org/VimIntegration
 
 Projects using the NetBeans protocol of Vim are or were:
 - Agide, an IDE for the AAP project, written in Python (now replaced by
@@ -54,7 +54,7 @@ Projects using the NetBeans protocol of Vim are or were:
 - Pyclewn, a gdb integration into Vim, written in Python:
 	http://pyclewn.sourceforge.net/
 - VimWrapper, library to easy Vim integration into IDE:
-	http://www.freehackers.org/VimWrapper
+	(dead link) freehackers.org/VimWrapper
 Outdated projects (links don't work):
 - VimPlugin, integration of Vim inside Eclipse:
 	http://vimplugin.sourceforge.net/wiki/pmwiki.php
@@ -78,7 +78,7 @@ in recent releases.
 
 For more information visit the main NetBeans web site http://www.netbeans.org.
 The External Editor is now, unfortunately, declared obsolete.  See (link seems
-dead): http://externaleditor.netbeans.org.
+dead): externaleditor.netbeans.org.
 
 Sun Microsystems, Inc. also ships NetBeans under the name Sun ONE Studio.
 Visit http://www.sun.com for more information regarding the Sun ONE Studio
@@ -148,7 +148,7 @@ The Win32 support is now in beta stage.
 
 To use XPM signs on Win32 (e.g. when using with NetBeans) you can compile
 XPM by yourself or use precompiled libraries from (link seems dead):
-http://iamphet.nm.ru/misc/ (for MS Visual C++) or
+iamphet.nm.ru/misc/ (for MS Visual C++) or
 http://gnuwin32.sourceforge.net (for MinGW).
 
 Enable debugging:
@@ -942,12 +942,13 @@ netbeans.org on building NetBeans.
 
 Depending on the version of NetBeans you download, you may need to do further
 work to get the required External Editor module.  This is the module which lets
-NetBeans work with gvim (or xemacs :-).  See http://externaleditor.netbeans.org
+NetBeans work with gvim (or xemacs :-).  See (dead link)
+externaleditor.netbeans.org
 for details on downloading this module if your NetBeans release does not have
 it.
 
 For C, C++, and Fortran support you will also need the cpp module.  See
-http://cpp.netbeans.org (link seems dead) for information regarding this
+cpp.netbeans.org (link seems dead) for information regarding this
 module.
 
 You can also download Sun ONE Studio from Sun Microsystems, Inc for a 30 day
@@ -994,10 +995,11 @@ Unfortunately, some versions do not have this module in their update
 center.  If you cannot download via the update center you will need to
 download sources and build the module.  I will try and get the module
 available from the NetBeans Update Center so building will be unnecessary.
-Also check http://externaleditor.netbeans.org for other availability options.
+Also check (dead link) externaleditor.netbeans.org
+for other availability options.
 
 To download the External Editor sources via CVS and build your own module,
-see http://externaleditor.netbeans.org and http://www.netbeans.org.
+see (dead link) externaleditor.netbeans.org and http://www.netbeans.org.
 Unfortunately, this is not a trivial procedure.
 
 

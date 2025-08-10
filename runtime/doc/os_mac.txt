@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 9.1.  Last change: 2025 Aug 06
+*os_mac.txt*    For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -87,7 +87,7 @@ Backspace		"*d			cut Visual text
 ==============================================================================
 4. Mac FAQ						*mac-faq*
 
-On the internet:  http://macvim.org/OSX/index.php#FAQ
+On the internet:  https://github.com/macvim-dev/macvim/wiki/FAQ
 
 Q: I can't enter non-ASCII character in Apple Terminal.
 A: Under Window Settings, Emulation, make sure that "Escape non-ASCII

@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
+*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1346,7 +1346,7 @@ This is where Vim does not behave as POSIX specifies and why:
 These are remarks about running the POSIX test suite:
 - vi test 33 sometimes fails for unknown reasons
 - vi test 250 fails; behavior will be changed in a new revision
-    http://www.opengroup.org/austin/mailarchives/ag-review/msg01710.html
+    (dead link) opengroup.org/austin/mailarchives/ag-review/msg01710.html
     (link no longer works, perhaps it's now:
     https://www.opengroup.org/sophocles/show_mail.tpl?CALLER=show_archive.tpl&source=L&listname=austin-review-l&id=1711)
 - vi test 310 fails; exit code non-zero when any error occurred?

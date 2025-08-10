@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Aug 06
+*quickfix.txt*  For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1674,8 +1674,6 @@ The alltests.py script seems to be used quite often, that's all.
 Useful values for the 'makeprg' options therefore are:
  setlocal makeprg=./alltests.py " Run a testsuite
  setlocal makeprg=python\ %:S   " Run a single testcase
-
-Also see http://vim.sourceforge.net/tip_view.php?tip_id=280.
 
 PYTEST COMPILER						*compiler-pytest*
 

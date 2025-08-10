@@ -1,4 +1,4 @@
-*ft_sql.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
+*ft_sql.txt*	For Vim version 9.1.  Last change: 2025 Aug 10
 
 by David Fishburn
 
@@ -407,7 +407,7 @@ Here are some examples of the entries which are pulled from the syntax files: >
 ----------------
 Dynamic mode populates the popups with data directly from a database.  In
 order for the dynamic feature to be enabled you must have the dbext.vim
-plugin installed, (http://vim.sourceforge.net/script.php?script_id=356).
+plugin installed, (https://www.vim.org/scripts/script.php?script_id=356).
 
 Dynamic mode is used by several features of the SQL completion plugin.
 After installing the dbext plugin see the dbext-tutorial for additional
@@ -491,7 +491,7 @@ depending on the syntax file you are using.  The SQL Anywhere syntax file
 Dynamic features
 ----------------
 To take advantage of the dynamic features you must first install the
-dbext.vim plugin (http://vim.sourceforge.net/script.php?script_id=356).  It
+dbext.vim plugin (https://www.vim.org/scripts/script.php?script_id=356).  It
 also comes with a tutorial.  From the SQL completion plugin's perspective,
 the main feature dbext provides is a connection to a database.  dbext
 connection profiles are the most efficient mechanism to define connection

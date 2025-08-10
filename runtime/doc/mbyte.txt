@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 9.1.  Last change: 2024 Jul 17
+*mbyte.txt*     For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -464,7 +464,7 @@ Useful utilities for converting the charset:
 	|charset| converter.  Supported |charset|: ISO-2022-CN, ISO-2022-JP,
 	ISO-2022-KR, EUC-CN, EUC-JP, EUC-KR, EUC-TW, UTF-7, UTF-8, ISO-8859
 	series, Shift_JIS, Big5 and HZ.  Lv can be found at (link seems dead):
-	http://www.ff.iij4u.or.jp/~nrt/lv/index.html
+	ff.iij4u.or.jp/~nrt/lv/index.html
 
 
 							*mbyte-conversion*
@@ -802,7 +802,7 @@ is suitable for complex input, such as CJK.
   pronounced in Hira-gana, second, we convert Hira-gana to Kanji or Kata-Kana,
   if needed.  There are some Kana-Kanji conversion server: jserver
   (distributed with Wnn, see below) and canna.  Canna can be found at:
-  https://osdn.net/projects/canna/
+  (dead link) osdn.net/projects/canna/
 
 There is a good input system: Wnn4.2.  Wnn 4.2 contains,
     xwnmo (|IM-server|)

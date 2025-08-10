@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 9.1.  Last change: 2024 May 11
+*debug.txt*     For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -164,7 +164,7 @@ The Debugging Tools for Windows (including WinDbg) can be downloaded from
 This includes the WinDbg debugger.
 
 Visual C++ 2005 Express Edition can be downloaded for free from:
-    http://msdn.microsoft.com/vstudio/express/visualC/default.aspx
+    https://visualstudio.microsoft.com/
 
 =========================================================================
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,4 +1,4 @@
-*os_amiga.txt*  For Vim version 9.1.  Last change: 2025 Jul 22
+*os_amiga.txt*  For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -90,7 +90,7 @@ Vim for MorphOS							*MorphOS*
 [this section mostly by Ali Akcaagac]
 
 For the latest info about the MorphOS version:
-	http://www.akcaagac.com/index_vim.html
+	(dead link) akcaagac.com/index_vim.html
 
 
 Problems ~
