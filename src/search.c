@@ -3406,7 +3406,8 @@ find_pattern_in_path(
     int		action,		// What to do when we find it
     linenr_T	start_lnum,	// first line to start searching
     linenr_T	end_lnum,	// last line for searching
-    int		forceit)	// If true, always switch to the found path
+    int		forceit,	// If true, always switch to the found path
+    int		silent)		// Do not print messages when ACTION_EXPAND
 {
     SearchedFile *files;		// Stack of included files
     SearchedFile *bigger;		// When we need more space
@@ -3680,7 +3681,8 @@ find_pattern_in_path(
 		    files[depth].name = curr_fname = new_fname;
 		    files[depth].lnum = 0;
 		    files[depth].matched = FALSE;
-		    if (action == ACTION_EXPAND)
+		    if (action == ACTION_EXPAND
+			    && !shortmess(SHM_COMPLETIONSCAN) && !silent)
 		    {
 			msg_hist_off = TRUE;	// reset in msg_trunc_attr()
 			vim_snprintf((char*)IObuff, IOSIZE,
@@ -3909,8 +3911,8 @@ search_line:
 		else if (action == ACTION_SHOW)
 		{
 		    show_pat_in_path(line, type, did_show, action,
-			(depth == -1) ? NULL : files[depth].fp,
-			(depth == -1) ? &lnum : &files[depth].lnum, 1L);
+			    (depth == -1) ? NULL : files[depth].fp,
+			    (depth == -1) ? &lnum : &files[depth].lnum, 1L);
 		    did_show = TRUE;
 		}
 		else
@@ -4060,7 +4062,7 @@ exit_matched:
 		msg(_("No included files"));
 	}
     }
-    else if (!found && action != ACTION_EXPAND)
+    else if (!found && action != ACTION_EXPAND && !silent)
     {
 	if (got_int || ins_compl_interrupted())
 	    emsg(_(e_interrupted));

@@ -9432,8 +9432,8 @@ exec_normal(int was_typed, int use_vpeekc, int may_use_terminal_loop UNUSED)
 ex_checkpath(exarg_T *eap)
 {
     find_pattern_in_path(NULL, 0, 0, FALSE, FALSE, CHECK_PATH, 1L,
-				   eap->forceit ? ACTION_SHOW_ALL : ACTION_SHOW,
-					      (linenr_T)1, (linenr_T)MAXLNUM, eap->forceit);
+	    eap->forceit ? ACTION_SHOW_ALL : ACTION_SHOW,
+	    (linenr_T)1, (linenr_T)MAXLNUM, eap->forceit, FALSE);
 }
 
 #if defined(FEAT_QUICKFIX)
@@ -9501,9 +9501,9 @@ ex_findpat(exarg_T *eap)
     }
     if (!eap->skip)
 	find_pattern_in_path(eap->arg, 0, (int)STRLEN(eap->arg),
-			    whole, !eap->forceit,
-			    *eap->cmd == 'd' ?	FIND_DEFINE : FIND_ANY,
-			    n, action, eap->line1, eap->line2, eap->forceit);
+		whole, !eap->forceit,
+		*eap->cmd == 'd' ? FIND_DEFINE : FIND_ANY, n, action,
+		eap->line1, eap->line2, eap->forceit, FALSE);
 }
 #endif
 
