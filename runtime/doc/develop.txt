@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2025 Aug 08
+*develop.txt*   For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -308,11 +308,11 @@ Vim's main Makefiles target maximum portability, relying solely on features
 defined in POSIX.1-2001 `make` and ignoring later POSIX standards or GNU/BSD
 extensions.  In practical terms, avoid:
 
-	– % pattern rules
-	– modern assignment (`:=`, `::=`) outside POSIX.1-2001
-	– special targets (`.ONESHELL`, `.NOTPARALLEL`, `.SILENT`, …)
-	– order-only prerequisites (`|`) or automatic directory creation
-	– GNU/BSD conditionals (`ifdef`, `ifndef`, `.for`/`.endfor`, …)
+	- % pattern rules
+	- modern assignment (`:=`, `::=`) outside POSIX.1-2001
+	- special targets (`.ONESHELL`, `.NOTPARALLEL`, `.SILENT`, ...)
+	- order-only prerequisites (`|`) or automatic directory creation
+	- GNU/BSD conditionals (`ifdef`, `ifndef`, `.for`/`.endfor`, ...)
 
 Since POSIX.1-2001 supports only traditional suffix rules, every object built
 in a separate directory must have an explicit rule.  For example:
@@ -339,9 +339,9 @@ Therefore, the latest ISO C standard we follow is:
 	`C95` (ISO/IEC 9899:1990/AMD1:1995)
 
 In addition, the following `C99` features are explicitly allowed:
-	– logical lines may contain up to 4095 characters;
-	– `//` comments, as required by |style-comments|;
-	– the `_Bool` type.
+	- `//` comments, as required by |style-comments|;
+	- the `_Bool` type.
+	- logical lines may contain up to 4095 characters;
 
 Platform-specific code may use any newer compiler features supported on that
 platform.
@@ -349,11 +349,11 @@ platform.
 
 SIZE OF VARIABLES				*assumptions-variables*
 
-We follow POSIX.1‑2001 (SUSv3) for type sizes, which in practice means:
+We follow POSIX.1-2001 (SUSv3) for type sizes, which in practice means:
 
-	char_u      8-bit unsigned
-	int         ≥ 32-bit signed
-	unsigned    ≥ 32-bit unsigned
+	char_u	    8-bit unsigned
+	int	    32-bit or larger signed
+	unsigned    32-bit or larger unsigned
 
 
 ==============================================================================

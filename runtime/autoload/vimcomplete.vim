@@ -1,14 +1,14 @@
 vim9script
 
 # Vim completion script
-# Language:    Vimscript
+# Language:    Vim script
 # Maintainer:  Maxim Kim <habamax@gmail.com>
-# Last Change: 2025-07-28
+# Last Change: 2025-08-10
 #
 # Usage:
 # setlocal omnifunc=vimcomplete#Complete
 #
-# Simple complete function for the Vimscript
+# Simple complete function for Vim script
 
 var trigger: string = ""
 var prefix: string = ""

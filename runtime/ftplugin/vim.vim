@@ -1,15 +1,14 @@
 " Vim filetype plugin
 " Language:          Vim
 " Maintainer:        Doug Kearns <dougkearns@gmail.com>
-" Last Change:       2025 Aug 07
 " Former Maintainer: Bram Moolenaar <Bram@vim.org>
 " Contributors:      Riley Bruins <ribru17@gmail.com> ('commentstring')
 "                    @Konfekt
 "                    @tpope (s:Help())
 "                    @lacygoill
-" Last Change:       2025 Mar 05
+" Last Change:       2025 Aug 07
 " 2025 Aug 06 by Vim Project (add gf maps #17881)
-" 2025 Aug 08 by Vim Project (add vimscript complete function #17871)
+" 2025 Aug 08 by Vim Project (add Vim script complete function #17871)
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
