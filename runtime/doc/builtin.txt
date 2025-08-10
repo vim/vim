@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 08
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6556,7 +6556,7 @@ libcall({libname}, {funcname}, {argument})
 libcallnr({libname}, {funcname}, {argument})
 		Just like |libcall()|, but used for a function that returns an
 		int instead of a string.
-		{only in Win32 on some Unix versions, when the |+libcall|
+		{only in Win32 and some Unix versions, when the |+libcall|
 		feature is present}
 		Examples: >
 			:echo libcallnr("/usr/lib/libc.so", "getpid", "")
@@ -7350,14 +7350,16 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
 		    [{'lnum': 3, 'byteidx': 0, 'text': 'a'}]
 		    " Assuming line 4 in buffer 10 contains "tik tok"
 		    :echo matchbufline(10, '\<\k\+\>', 1, 4)
-		    [{'lnum': 4, 'byteidx': 0, 'text': 'tik'}, {'lnum': 4, 'byteidx': 4, 'text': 'tok'}]
+		    [{'lnum': 4, 'byteidx': 0, 'text': 'tik'},
+		     {'lnum': 4, 'byteidx': 4, 'text': 'tok'}]
 <
 		If {submatch} is present and is v:true, then submatches like
 		"\1", "\2", etc. are also returned.  Example: >
 		    " Assuming line 2 in buffer 2 contains "acd"
 		    :echo matchbufline(2, '\(a\)\?\(b\)\?\(c\)\?\(.*\)', 2, 2
 						\ {'submatches': v:true})
-		    [{'lnum': 2, 'byteidx': 0, 'text': 'acd', 'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
+		    [{'lnum': 2, 'byteidx': 0, 'text': 'acd', 'submatches':
+		    ['a', '', 'c', 'd', '', '', '', '', '']}]
 <		The "submatches" List always contains 9 items.  If a submatch
 		is not found, then an empty string is returned for that
 		submatch.
@@ -7494,7 +7496,8 @@ matchfuzzypos({list}, {str} [, {dict}])			*matchfuzzypos()*
 <		results in [['testing'], [[0, 2, 6]], [99]] >
 			:echo matchfuzzypos(['clay', 'lacy'], 'la')
 <		results in [['lacy', 'clay'], [[0, 1], [1, 2]], [153, 133]] >
-			:echo [{'text': 'hello', 'id' : 10}]->matchfuzzypos('ll', {'key' : 'text'})
+			:echo [{'text': 'hello', 'id' : 10}]
+			  \ ->matchfuzzypos('ll', {'key' : 'text'})
 <		results in [[{'id': 10, 'text': 'hello'}], [[2, 3]], [127]]
 
 		Return type: list<list<any>>
@@ -7538,15 +7541,18 @@ matchstrlist({list}, {pat} [, {dict}])
 
 		Example: >
 		    :echo matchstrlist(['tik tok'], '\<\k\+\>')
-		    [{'idx': 0, 'byteidx': 0, 'text': 'tik'}, {'idx': 0, 'byteidx': 4, 'text': 'tok'}]
+		    [{'idx': 0, 'byteidx': 0, 'text': 'tik'},
+		     {'idx': 0, 'byteidx': 4, 'text': 'tok'}]
 		    :echo matchstrlist(['a', 'b'], '\<\k\+\>')
-		    [{'idx': 0, 'byteidx': 0, 'text': 'a'}, {'idx': 1, 'byteidx': 0, 'text': 'b'}]
+		    [{'idx': 0, 'byteidx': 0, 'text': 'a'},
+		     {'idx': 1, 'byteidx': 0, 'text': 'b'}]
 <
 		If "submatches" is present and is v:true, then submatches like
 		"\1", "\2", etc. are also returned.  Example: >
 		    :echo matchstrlist(['acd'], '\(a\)\?\(b\)\?\(c\)\?\(.*\)',
 						\ #{submatches: v:true})
-		    [{'idx': 0, 'byteidx': 0, 'text': 'acd', 'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
+		    [{'idx': 0, 'byteidx': 0, 'text': 'acd',
+		      'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
 <		The "submatches" List always contains 9 items.  If a submatch
 		is not found, then an empty string is returned for that
 		submatch.
@@ -8956,8 +8962,8 @@ remote_send({server}, {string} [, {idvar}])		*remote_send()* *E241*
 		Note: Any errors will be reported in the server and may mess
 		up the display.
 		Examples: >
-		:echo remote_send("gvim", ":DropAndReply " .. file, "serverid") ..
-		 \ remote_read(serverid)
+		:echo remote_send("gvim", ":DropAndReply " .. file,
+		 \ "serverid") .. remote_read(serverid)
 
 		:autocmd NONE RemoteReply *
 		 \ echo remote_read(expand("<amatch>"))
@@ -13027,7 +13033,8 @@ python_dynamic		Python 2.x interface is dynamically loaded. |has-python|
 python3			Python 3.x interface available. |has-python|
 python3_compiled	Compiled with Python 3.x interface. |has-python|
 python3_dynamic		Python 3.x interface is dynamically loaded. |has-python|
-python3_stable		Python 3.x interface is using Python Stable ABI. |has-python|
+python3_stable		Python 3.x interface is using Python Stable ABI.
+			|has-python|
 pythonx			Python 2.x and/or 3.x interface available. |python_x|
 qnx			QNX version of Vim.
 quickfix		Compiled with |quickfix| support.

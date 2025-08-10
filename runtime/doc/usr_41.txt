@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Jul 21
+*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Aug 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -30,10 +30,10 @@ Table of contents: |usr_toc.txt|
 *41.1*	Introduction				*vim-script-intro* *script*
 
 Let's start with some nomenclature. A Vim script is any file that Vim can
-interpret and execute.  This includes files written in Vim's scripting language
-like for example .vim files or configuration files like .vimrc and .gvimrc.
-These scripts may define functions, commands and settings that Vim uses to
-customize and extend its behavior.
+interpret and execute.  This includes files written in Vim's scripting
+language like for example .vim files or configuration files like .vimrc and
+.gvimrc.  These scripts may define functions, commands and settings that Vim
+uses to customize and extend its behavior.
 
 						*vim-script-notation*
 The correct notation is "Vim script" (or "Vim9 script" when refering to the
@@ -125,8 +125,8 @@ make such a loop, it can be written much more compact: >
 	  echo $"count is {i}"
 	endfor
 
-We won't explain how `for`, `range()`and `$"string"` work until later.  Follow
-the links if you are impatient.
+We won't explain how `for`, `range()` and `$"string"` work until later.
+Follow the links if you are impatient.
 
 
 TRYING OUT EXAMPLES
@@ -749,7 +749,7 @@ String manipulation:					*string-functions*
 	str2list()		get list of numbers from a string
 	str2nr()		convert a string to a Number
 	str2float()		convert a string to a Float
-	printf()		format a string according to % items
+	printf()		format a string according to "%" items
 	escape()		escape characters in a string with a '\'
 	shellescape()		escape a string for use with a shell command
 	fnameescape()		escape a file name for use with a Vim command
@@ -832,9 +832,8 @@ List manipulation:					*list-functions*
 	range()			return a List with a sequence of numbers
 	string()		String representation of a List
 	call()			call a function with List as arguments
-	index()			index of a value in a List or Blob
-	indexof()		index in a List or Blob where an expression
-				evaluates to true
+	index()			index of a value in a List
+	indexof()		index in a List where an expression is true
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
@@ -918,6 +917,8 @@ Blob manipulation:					*blob-functions*
 	blob2list()		get a list of numbers from a blob
 	list2blob()		get a blob from a list of numbers
 	reverse()		reverse the order of numbers in a blob
+	index()			index of a value in a Blob
+	indexof()		index in a Blob where an expression is true
 
 Other computation:					*bitwise-function*
 	and()			bitwise AND
@@ -1456,9 +1457,9 @@ Various:					*various-functions*
 
 	luaeval()		evaluate |Lua| expression
 	mzeval()		evaluate |MzScheme| expression
-	perleval()		evaluate Perl expression (|+perl|)
-	py3eval()		evaluate Python expression (|+python3|)
-	pyeval()		evaluate Python expression (|+python|)
+	perleval()		evaluate Perl expression
+	py3eval()		evaluate Python expression
+	pyeval()		evaluate Python expression
 	pyxeval()		evaluate |python_x| expression
 	rubyeval()		evaluate |Ruby| expression
 
@@ -1586,7 +1587,7 @@ once for every line in the range, with the cursor in that line.  Example: >
 
 If you call this function with: >
 
-	:10,15Number()
+	:10,15 call Number()
 
 The function will be called six times, starting on line 10 and ending on line
 15.
