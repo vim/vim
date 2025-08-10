@@ -89,7 +89,9 @@ Stuff that does not work yet:
   in when the window is activated or deactivated (so it works best with focus-
   follows-mouse turned on).
 - The cursor does not flash.
-
+- Switching windows using <C-Tab-Up> and <C-Tab-Down> in Twitcher does not
+  work. This is due to each gvim window being managed by a separate instance
+  completely unaware of other vim processes.
 
 4. The $VIM directory					*haiku-vimdir*
 
