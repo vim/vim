@@ -3912,13 +3912,13 @@ func Test_complete_info_selected()
   exe "normal! Gow\<c-n>u\<c-n>\<c-r>=complete_info().selected\<cr>"
   call assert_equal('wurd2', getline(5))
 
-  exe "normal! \<esc>Sw\<c-n>u\<c-n>\<c-r>=complete_info(['selected']).selected\<cr>"
+  exe "normal! Sw\<c-n>u\<c-n>\<c-r>=complete_info(['selected']).selected\<cr>"
   call assert_equal('wurd2', getline(5))
 
-  exe "normal! \<esc>Sw\<c-n>u\<c-n>\<c-r>=complete_info(['items', 'selected']).selected\<cr>"
+  exe "normal! Sw\<c-n>u\<c-n>\<c-r>=complete_info(['items', 'selected']).selected\<cr>"
   call assert_equal('wurd2', getline(5))
 
-  exe "normal! \<esc>Sw\<c-n>u\<c-n>\<c-r>=complete_info(['matches', 'selected']).selected\<cr>"
+  exe "normal! Sw\<c-n>u\<c-n>\<c-r>=complete_info(['matches', 'selected']).selected\<cr>"
   call assert_equal('wurd0', getline(5))
 
   bw!
