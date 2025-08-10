@@ -9,7 +9,7 @@
 "                    @lacygoill
 " Last Change:       2025 Mar 05
 " 2025 Aug 06 by Vim Project (add gf maps #17881)
-" 2025 Aug 08 by Vim Project (add vimscript complete function #17871)
+" 2025 Aug 08 by Vim Project (add Vim script complete function #17871)
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
