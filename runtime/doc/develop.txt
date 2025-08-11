@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2025 Aug 10
+*develop.txt*   For Vim version 9.1.  Last change: 2025 Aug 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -340,8 +340,14 @@ Therefore, the latest ISO C standard we follow is:
 
 In addition, the following `C99` features are explicitly allowed:
 	- `//` comments, as required by |style-comments|;
-	- the `_Bool` type.
-	- logical lines may contain up to 4095 characters;
+	- Mixed declarations and statements in a block;
+	- Variadic macros `(..., __VA_ARGS__)`;
+	- Trailing comma in `enum` lists;
+	- `_Bool` type (for `bool`, `true` and `false`);
+	- `__func__` predefined identifier;
+	- `inline` functions (use `static inline` for portability);
+	- Compound literals `(type){ initializer-list }`;
+	- Logical source lines up to 4095 characters.
 
 Platform-specific code may use any newer compiler features supported on that
 platform.
