@@ -9,6 +9,11 @@ export def Find(editcmd: string) #{{{2
         return
     endif
 
+    if curline =~ '^\s*\%(:\s*\)\=colo\%[rscheme]\s'
+        HandleColoLine(editcmd, curline)
+        return
+    endif
+
     if curline =~ '^\s*\%(:\s*\)\=import\s'
         HandleImportLine(editcmd, curline)
         return
@@ -45,6 +50,30 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
             ->map((_, fname: string) => fname->fnamemodify(':p'))
         if empty(files)
             echo 'Could not find any plugin file for ' .. string(plugin)
+            return
+        endif
+        files->Open(split)
+    endif
+enddef
+
+def HandleColoLine(editcmd: string, curline: string) #{{{2
+    var pat: string = '^\s*colo\%[rscheme]\s\+\zs\S\+$'
+    var colo: string = curline->matchstr(pat)
+
+    if colo == ''
+        try
+            execute 'normal! ' .. editcmd .. 'zv'
+        catch
+            Error(v:exception)
+            return
+        endtry
+    else
+        var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
+        var files: list<string> = getcompletion($'colors/{colo}', 'runtime')
+            ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
+            ->filter((_, path: string): bool => filereadable(path))
+        if empty(files)
+            echo 'Could not find any colorscheme file for ' .. string(colo)
             return
         endif
         files->Open(split)
@@ -132,3 +161,5 @@ def Error(msg: string) #{{{2
     echomsg msg
     echohl NONE
 enddef
+
+# vim: sw=4 et
