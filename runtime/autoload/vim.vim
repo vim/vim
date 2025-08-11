@@ -37,12 +37,9 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
         endtry
     else
         var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
-        # In the  past, we passed  `runtime` to `getcompletion()`,  instead of
-        # `cmdline`.  But the  output was tricky to use,  because it contained
-        # paths relative to inconsistent root directories.
-        var files: list<string> = getcompletion($'edit **/plugin/{plugin}.vim', 'cmdline')
+        var files: list<string> = getcompletion($'plugin/{plugin}', 'runtime')
+            ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
             ->filter((_, path: string): bool => filereadable(path))
-            ->map((_, fname: string) => fname->fnamemodify(':p'))
         if empty(files)
             echo 'Could not find any plugin file for ' .. string(plugin)
             return
@@ -132,3 +129,5 @@ def Error(msg: string) #{{{2
     echomsg msg
     echohl NONE
 enddef
+
+# vim: sw=4 et
