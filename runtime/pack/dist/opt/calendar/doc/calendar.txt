@@ -1,0 +1,257 @@
+*calendar.txt* Calendar utility for vim
+
+Author:  Yasuhiro Matsumoto <mattn.jp@gmail.com>
+
+INTRODUCTION                                    *calendar*
+
+This script creates a calendar window in vim.  It does not rely on any
+external program, such as cal, etc.
+
+COMMANDS                                        *calendar-commands*
+
+calendar.vim makes the following commands available:
+
+                                                *calendar-:Calendar*
+:Calendar [[year], month] Show calendar at this year and this month in a
+                          vertical split.  When [year] is omitted, the
+                          calendar will show the given month in the current
+                          year.  When both [year] and [month] are omitted, the
+                          calendar will show the current month.
+
+                                                *calendar-:CalendarH*
+:CalendarH [[year], month] Show calendar at this year and this month in a
+                          horizontal split.  When [year] is omitted, the
+                          calendar will show the given month in the current
+                          year.  When both [year] and [month] are omitted, the
+                          calendar will show the current month.
+
+                                                *calendar-:CalendarT*
+:CalendarT [[year], month] Show calendar at this year and this month in a
+                          full-screen window.  When [year] is omitted, the
+                          calendar will show the given month in the current
+                          year.  When both [year] and [month] are omitted, the
+                          calendar will show the current month.
+
+                                                *calendar-:CalendarVR*
+:CalendarVR [[year], month] Show calendar at this year and this month in a
+                          vertical split at the right site.  When [year] is
+                          omitted, the calendar will show the given month in
+                          the current year.  When both [year] and [month] are
+                          omitted, the calendar will show the current month.
+
+                                            *calendar-:CalendarSearch*
+:CalendarSearch [keyword]  Search keyword in current calendar diary book.
+
+
+MAPPINGS                                        *calendar-mappings*
+
+calendar.vim makes the following normal mode mappings available:
+
+                                                *calendar-cal*
+<LocalLeader>cal          Brings up the calendar in a vertical split.
+                          Equivalent to calling |:Calendar|.
+
+                                                *calendar-caL*
+<LocalLeader>caL          Brings up the calendar in a horizontal split.
+                          Equivalent to calling |:CalendarH|.
+
+SETTINGS                                        *calendar-settings*
+
+calendar.vim can be configured using the following settings:
+
+                                                *g:calendar_no_mappings*
+Disable default mappings:
+  g:calendar_no_mappings=0
+
+                                                *g:calendar_focus_today*
+Keeps focus when moving to next or previous calendar: >
+  g:calendar_focus_today = true
+<
+
+                                                *g:calendar_keys*
+To change the key bindings in the calendar window, add entries to this
+dictionary.   Possible keys, the action bound to the keycode given in the
+respective value for this key and the default binding are listed below.
+close                     Closes calendar window.             'q'
+do_action                 Executes |calendar_action|.           '<CR>'
+goto_today                Executes |calendar_today|.            't'
+show_help                 Displays a short help message.      '?'
+redisplay                 Redraws calendar window.            'r'
+goto_next_month           Jumps to the next month.            '<Right>'
+goto_prev_month           Jumps to the previous month.        '<Left>'
+goto_next_year            Jumps to the next year.             '<Up>'
+goto_prev_year            Jumps to the previous year.         '<Down>'
+An example in your .vimrc might look like this: >
+  g:calendar_keys = {goto_next_month: '<C-Right>', goto_prev_month: '<C-Left>'}
+<
+
+                                                *g:calendar_mark*
+Place a '*' or '+' mark after the day.  Acceptable values are 'left',
+'left-fit', and 'right': >
+  g:calendar_mark = 'right'
+<
+
+                                                *g:calendar_diary*
+Specify the directory for the diary files.  The default value is $HOME/diary. >
+  g:calendar_diary=$HOME.'/.vim/diary'
+<
+
+                                           *g:calendar_diary_list*
+Specify multiple diary configurations. >
+  g:calendar_diary_list = [
+       {'name': 'Note', 'path': $HOME.'/note', 'ext': '.md'},
+       {'name': 'Diary', 'path': $HOME.'/diary', 'ext': '.diary.md'},
+     ]
+<
+
+                                  *g:calendar_diary_list_curr_idx*
+Specify multiple diary default configuration. The default value is 0. >
+  g:calendar_diary_list_curr_idx = 1
+<
+
+                                                *g:calendar_navi*
+To control the calendar navigator, set this variable.  Acceptable values are
+'top', 'bottom', or 'both'. >
+  g:calendar_navi = ''
+<
+
+                                                *g:calendar_navi_label*
+To set the labels for the calendar navigator, for example to change the
+language, use this variable.  Entries should be comma separated. >
+  g:calendar_navi_label = 'Prev, Today, Next'
+<
+
+                                                *g:calendar_erafmt*
+To change the dating system, set the following variable.  Include the name of
+the dating system and its offset from the Georgian calendar (A.D.).  For
+example, to use the current Japanese era (Heisei), you would set: >
+  g:calendar_erafmt = 'Heisei,-1988'
+<
+
+                                                *g:calendar_mruler*
+To change the month names for the calendar headings, set this variable.  The
+value is expected to be a comma-separated list of twelve values, starting with
+January: >
+  g:calendar_mruler = 'Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec'
+<
+
+                                                *g:calendar_wruler*
+To change the week names for the calendar headings, set this variable.  The
+value is expected to be a space-separated list of seven values, starting with
+Sunday: >
+  g:calendar_wruler = 'Su Mo Tu We Th Fr Sa'
+<
+
+                                                *g:calendar_monday*
+To make the week start on Monday rather than Sunday, set this variable.  Note
+that the value of |g:calendar_wruler| is not affected by this; it should
+always begin with Sunday: >
+  g:calendar_monday = true
+<
+
+                                                *g:calendar_weeknm*
+To show the week number, set this variable.  There are four valid settings: >
+  g:calendar_weeknm = 1 # WK01
+  g:calendar_weeknm = 2 # WK 1
+  g:calendar_weeknm = 3 # KW01
+  g:calendar_weeknm = 4 # KW 1
+  g:calendar_weeknm = 5 # 1
+<
+
+                                                *g:calendar_datetime*
+To control display of the current date and time, set this variable.
+Acceptable values are 'title', 'statusline', and '': >
+  g:calendar_datetime = 'title'
+<
+                                                *g:calendar_filetype*
+To control the filetype of calendar entries, set this variable. It defaults to
+'markdown'. Acceptable values are values that are acceptable for |filetype|
+like e.g. 'markdown' or 'pandoc':
+  let g:calendar_filetype = 'pandoc'
+
+                                                *g:calendar_number_of_months*
+To control the number of months per view, set this variable. The default value
+is 3. >
+  g:calendar_number_of_months = 5
+<
+
+                                                *g:calendar_search_grepprg*
+To set the command |:CalendarSearch| grepprg config. default value is 'grep',
+using system default grep program. If you want use Vim internal grep command
+|:vimgrep|, set value to 'internal'. >
+  g:calendar_search_grepprg = 'internal'
+<
+
+HOOKS                                           *calendar-hooks*
+
+calendar.vim provides a number of hooks which allow you to run custom code on
+certain events.  These are documented below.
+
+                                                *g:calendar_action*
+The function declared in the |g:calendar_action| variable is run when the user
+presses enter on a date.  Implement and set your function as follows: >
+  def g:MyCalAction(day,month,year,week,dir)
+    # day   : day you actioned
+    # month : month you actioned
+    # year  : year you actioned
+    # week  : day of week (Mo=1 ... Su=7)
+    # dir   : direction of calendar
+  enddef
+  g:calendar_action = 'g:MyCalAction'
+<
+
+                                                *g:calendar_begin*
+The function declared in the |g:calendar_begin| variable is run just before the
+calendar is displayed.  Implement and set your function as follows: >
+  def g:MyCalBegin()
+    echo "Calendar open"
+  enddef
+  g:calendar_begin = 'g:MyCalBegin'
+<
+
+                                                *g:calendar_end*
+The function declared in the calendar_end variable is run just after the
+calendar is displayed.  Implement and set your function as follows: >
+  def g:MyCalEnd()
+    echo "Calendar close"
+  enddef
+  g:calendar_end = 'g:MyCalEnd'
+<
+
+                                                *g:calendar_sign*
+The function declared in the |g:calendar_sign| variable can be used to set a mark
+next to certain dates.  Implement and set your function as follows: >
+  def g:MyCalSign(day: number, month: number, year:number)
+    # day   : day you actioned
+    # month : month you actioned
+    # year  : year you actioned
+    if day == 1 && month == 1
+      return 1 " happy new year
+    else
+      return 0 " or not
+    endif
+  enddef
+  g:calendar_sign = 'g:MyCalSign'
+<
+
+                                                *g:calendar_today*
+The function declared in the calendar_today variable is run when the user
+presses Today on the navigation panel.  
+Implement and set your function as follows: >
+  def g:MyCalToday()
+    echo "Today!"
+  enddef
+  g:calendar_today = 'g:MyCalToday'
+<
+
+ABOUT                                           *calendar-about*
+
+The original calendar.vim in Vim legacy language is available on GitHub:
+
+  http://github.com/mattn/calendar-vim
+
+and also on VimScripts:
+
+  http://www.vim.org/scripts/script.php?script_id=52
+
+vim:tw=78:et:ft=help:norl:
