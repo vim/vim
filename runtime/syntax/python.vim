@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Zvezdan Petkovic <zpetkovic@acm.org>
-" Last Change:	2025 Aug 10
+" Last Change:	2025 Aug 11
 " Credits:	Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
 "		Rob B
@@ -105,6 +105,7 @@ syn keyword pythonOperator	and in is not or
 syn keyword pythonException	except finally raise try
 syn keyword pythonInclude	from import
 syn keyword pythonAsync		async await
+syn keyword pythonClassVar	self cls
 
 " Soft keywords
 " These keywords do not mean anything unless used in the right context.
@@ -378,6 +379,7 @@ hi def link pythonOperator		Operator
 hi def link pythonException		Exception
 hi def link pythonInclude		Include
 hi def link pythonAsync			Statement
+hi def link pythonClassVar		Identifier
 hi def link pythonDecorator		Define
 hi def link pythonDecoratorName		Function
 hi def link pythonClass			Structure
