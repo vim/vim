@@ -52,16 +52,15 @@ endfunc
 
 " Need X connection for tests that use client server communication
 func s:CheckXConnection()
-  if has('x11')
-    try
-      call remote_send('xxx', '')
-    catch
-      if v:exception =~ 'E240:'
-        throw 'Skipped: no connection to the X server'
-      endif
-      " ignore other errors
-    endtry
-  endif
+  CheckFeature x11
+  try
+    call remote_send('xxx', '')
+  catch
+    if v:exception =~ 'E240:'
+      thrclientserverow 'Skipped: no connection to the X server'
+    endif
+    " ignore other errors
+  endtry
 endfunc
 
 func s:EndRemoteVim(name, job)
@@ -379,7 +378,7 @@ func Test_wayland_autoselect_works()
 
   call WaitForAssert({-> assert_equal("run", job_status(l:job))})
   call WaitForAssert({-> assert_match(name, serverlist())})
-  1
+
   call remote_send(l:name, "ve")
   call WaitForAssert({-> assert_equal('LINE', system('wl-paste -p -n'))})
 
@@ -648,7 +647,6 @@ func Test_wayland_handle_large_data()
   call system('cmp --silent data_file data_file_cmp')
   call assert_equal(0, v:shell_error)
 
-  " copy the text
   call feedkeys('gg0v$G"+yy', 'x')
   call system('wl-paste -n -t TEXT > data_file')
 

@@ -1453,11 +1453,10 @@ do_search(
 		    off_buf[off_len++] = 'e';
 		else if (!spats[0].off.line)
 		    off_buf[off_len++] = 's';
-		if (spats[0].off.off > 0 || spats[0].off.line)
-		    off_buf[off_len++] = '+';
 		off_buf[off_len] = NUL;
 		if (spats[0].off.off != 0 || spats[0].off.line)
-		    off_len += vim_snprintf((char *)off_buf + off_len, sizeof(off_buf) - off_len, "%ld", spats[0].off.off);
+		    off_len += vim_snprintf((char *)off_buf + off_len,
+			   sizeof(off_buf) - off_len, "%+ld", spats[0].off.off);
 	    }
 
 	    if (*searchstr == NUL)

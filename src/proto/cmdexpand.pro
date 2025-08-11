@@ -3,7 +3,7 @@ int cmdline_fuzzy_complete(char_u *fuzzystr);
 int nextwild(expand_T *xp, int type, int options, int escape);
 void cmdline_pum_display(void);
 int cmdline_pum_active(void);
-void cmdline_pum_remove(cmdline_info_T *cclp, int defer);
+void cmdline_pum_remove(cmdline_info_T *cclp, int defer_redraw);
 void cmdline_pum_cleanup(cmdline_info_T *cclp);
 int cmdline_compl_startcol(void);
 char_u *cmdline_compl_pattern(void);
@@ -25,5 +25,5 @@ int wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp);
 void wildmenu_cleanup(cmdline_info_T *cclp);
 void f_getcompletion(typval_T *argvars, typval_T *rettv);
 void f_getcompletiontype(typval_T *argvars, typval_T *rettv);
-void f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv);
+void f_cmdcomplete_info(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

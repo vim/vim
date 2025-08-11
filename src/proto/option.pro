@@ -1,5 +1,4 @@
 /* option.c */
-char *did_set_showtabpanel(optset_T *args);
 void set_init_1(int clean_arg);
 void set_fencs_unicode(void);
 void set_string_default(char *name, char_u *val);
@@ -64,8 +63,8 @@ char *did_set_previewwindow(optset_T *args);
 char *did_set_pyxversion(optset_T *args);
 char *did_set_readonly(optset_T *args);
 char *did_set_scrollbind(optset_T *args);
-char *did_set_shellslash(optset_T *args);
 char *did_set_maxsearchcount(optset_T *args);
+char *did_set_shellslash(optset_T *args);
 char *did_set_shiftwidth_tabstop(optset_T *args);
 char *did_set_showtabline(optset_T *args);
 char *did_set_smoothscroll(optset_T *args);
@@ -154,4 +153,5 @@ dict_T *get_winbuf_options(int bufopt);
 int fill_culopt_flags(char_u *val, win_T *wp);
 int magic_isset(void);
 int option_set_callback_func(char_u *optval, callback_T *optcb);
+char *did_set_showtabpanel(optset_T *args);
 /* vim: set ft=c : */
