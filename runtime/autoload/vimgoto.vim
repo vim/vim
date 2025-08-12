@@ -1,11 +1,27 @@
 vim9script
 
+# Language:     Vim9 script
+# Contributers: @lacygoill
+#               Shane-XB-Qian
+# Last Change:  2025 Aug 12
+#
+# Vim Script to handle
+# :import, :packadd and :colorscheme
+# lines and allows to easily jump to it using gf
+#
+# see runtime/ftplugin/vim.vim
+
 # Interface {{{1
 export def Find(editcmd: string) #{{{2
     var curline: string = getline('.')
 
     if curline =~ '^\s*\%(:\s*\)\=packadd!\=\s'
         HandlePackaddLine(editcmd, curline)
+        return
+    endif
+
+    if curline =~ '^\s*\%(:\s*\)\=colo\%[rscheme]\s'
+        HandleColoLine(editcmd, curline)
         return
     endif
 
@@ -23,7 +39,7 @@ enddef
 #}}}1
 # Core {{{1
 def HandlePackaddLine(editcmd: string, curline: string) #{{{2
-    var pat: string = '^\s*packadd!\=\s\+\zs\S\+$'
+    var pat: string = '^\s*\%(:\s*\)\=packadd!\=\s\+\zs\S\+$'
     var plugin: string = curline
         ->matchstr(pat)
         ->substitute('^vim-\|\.vim$', '', 'g')
@@ -37,12 +53,9 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
         endtry
     else
         var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
-        # In the  past, we passed  `runtime` to `getcompletion()`,  instead of
-        # `cmdline`.  But the  output was tricky to use,  because it contained
-        # paths relative to inconsistent root directories.
-        var files: list<string> = getcompletion($'edit **/plugin/{plugin}.vim', 'cmdline')
+        var files: list<string> = getcompletion($'plugin/{plugin}', 'runtime')
+            ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
             ->filter((_, path: string): bool => filereadable(path))
-            ->map((_, fname: string) => fname->fnamemodify(':p'))
         if empty(files)
             echo 'Could not find any plugin file for ' .. string(plugin)
             return
@@ -51,9 +64,33 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
     endif
 enddef
 
+def HandleColoLine(editcmd: string, curline: string) #{{{2
+    var pat: string = '^\s*\%(:\s*\)\=colo\%[rscheme]\s\+\zs\S\+$'
+    var colo: string = curline->matchstr(pat)
+
+    if colo == ''
+        try
+            execute 'normal! ' .. editcmd .. 'zv'
+        catch
+            Error(v:exception)
+            return
+        endtry
+    else
+        var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
+        var files: list<string> = getcompletion($'colors/{colo}', 'runtime')
+            ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
+            ->filter((_, path: string): bool => filereadable(path))
+        if empty(files)
+            echo 'Could not find any colorscheme file for ' .. string(colo)
+            return
+        endif
+        files->Open(split)
+    endif
+enddef
+
 def HandleImportLine(editcmd: string, curline: string) #{{{2
     var fname: string
-    var import_cmd: string = '^\s*import\s\+\%(autoload\s\+\)\='
+    var import_cmd: string = '^\s*\%(:\s*\)\=import\s\+\%(autoload\s\+\)\='
     var import_alias: string = '\%(\s\+as\s\+\w\+\)\=$'
     var import_string: string = import_cmd .. '\([''"]\)\zs.*\ze\1' .. import_alias
     var import_expr: string = import_cmd .. '\zs.*\ze' .. import_alias
@@ -132,3 +169,5 @@ def Error(msg: string) #{{{2
     echomsg msg
     echohl NONE
 enddef
+
+# vim: sw=4 et

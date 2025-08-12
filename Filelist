@@ -82,6 +82,7 @@ SRC_ALL =	\
 		src/findfile.c \
 		src/float.c \
 		src/fold.c \
+		src/fuzzy.c \
 		src/getchar.c \
 		src/gc.c \
 		src/globals.h \
@@ -291,6 +292,7 @@ SRC_ALL =	\
 		src/proto/findfile.pro \
 		src/proto/float.pro \
 		src/proto/fold.pro \
+		src/proto/fuzzy.pro \
 		src/proto/getchar.pro \
 		src/proto/gc.pro \
 		src/proto/gui.pro \

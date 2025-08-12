@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
+*pattern.txt*   For Vim version 9.1.  Last change: 2025 Aug 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1508,6 +1508,9 @@ matched string, other characters can be present between two consecutive
 characters in the search string.  If the search string has multiple words, then
 each word is matched separately.  So the words in the search string can be
 present in any order in a string.
+
+Vim uses the same improved algorithm as the fzy project:
+https://github.com/jhawthorn/fzy
 
 Fuzzy matching assigns a score for each matched string based on the following
 criteria:
