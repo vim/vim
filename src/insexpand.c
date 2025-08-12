@@ -2042,8 +2042,7 @@ ins_compl_files(
 	leader_len = (int)ins_compl_leader_len();
     }
 
-    for (i = 0; i < count && !got_int && !compl_interrupted
-	    && !compl_time_slice_expired; i++)
+    for (i = 0; i < count && !got_int && !ins_compl_interrupted(); i++)
     {
 	fp = mch_fopen((char *)files[i], "r");  // open dictionary file
 	if (flags != DICT_EXACT && !shortmess(SHM_COMPLETIONSCAN)
@@ -2060,7 +2059,7 @@ ins_compl_files(
 
 	// Read dictionary file line by line.
 	// Check each line for a match.
-	while (!got_int && !compl_interrupted && !compl_time_slice_expired
+	while (!got_int && !ins_compl_interrupted()
 	       && !vim_fgets(buf, LSIZE, fp))
 	{
 	    ptr = buf;
@@ -2297,7 +2296,7 @@ ins_compl_init_get_longest(void)
     int
 ins_compl_interrupted(void)
 {
-    return compl_interrupted;
+    return compl_interrupted || compl_time_slice_expired;
 }
 
 /*
@@ -3841,10 +3840,7 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
     RedrawingDisabled = 0;
 
     ins_compl_check_keys(0, TRUE);
-    if (compl_autocomplete && compl_time_slice_expired)
-	rettv->vval.v_number = TRUE;
-    else
-	rettv->vval.v_number = ins_compl_interrupted();
+    rettv->vval.v_number = ins_compl_interrupted();
 
     RedrawingDisabled = save_RedrawingDisabled;
 }
@@ -4462,7 +4458,7 @@ get_next_include_file_completion(int compl_type)
 	    (compl_type == CTRL_X_PATH_DEFINES
 	     && !(compl_cont_status & CONT_SOL))
 	    ? FIND_DEFINE : FIND_ANY, 1L, ACTION_EXPAND,
-	    (linenr_T)1, (linenr_T)MAXLNUM, FALSE);
+	    (linenr_T)1, (linenr_T)MAXLNUM, FALSE, compl_autocomplete);
 }
 #endif
 
