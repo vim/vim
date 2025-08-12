@@ -77,8 +77,8 @@ typedef enum {
 
 static int	    cs_add(exarg_T *eap);
 static int	    cs_add_common(char *, char *, char *);
-static int	    cs_check_for_connections(void);
-static int	    cs_check_for_tags(void);
+static bool	    cs_check_for_connections(void);
+static bool	    cs_check_for_tags(void);
 static int	    cs_cnt_connections(void);
 static int	    cs_create_connection(int i);
 #ifdef FEAT_QUICKFIX
@@ -87,7 +87,7 @@ static void	    cs_file_results(FILE *, int *);
 static void	    cs_fill_results(char *, int , int *, char ***,
 			char ***, int *);
 static int	    cs_find(exarg_T *eap);
-static int	    cs_find_common(char *opt, char *pat, int, int, int, char_u *cmdline);
+static bool	    cs_find_common(char *opt, char *pat, int, bool, bool, char_u *cmdline);
 static int	    cs_help(exarg_T *eap);
 static int	    cs_insert_filelist(char *, char *, char *,
 			stat_T *);
@@ -250,7 +250,7 @@ set_context_in_cscope_cmd(
     static void
 do_cscope_general(
     exarg_T	*eap,
-    int		make_split UNUSED) // whether to split window
+    bool	make_split UNUSED) // whether to split window
 {
     cscmd_T *cmdp;
 
@@ -284,7 +284,7 @@ do_cscope_general(
     void
 ex_cscope(exarg_T *eap)
 {
-    do_cscope_general(eap, FALSE);
+    do_cscope_general(eap, false);
 }
 
 /*
@@ -293,7 +293,7 @@ ex_cscope(exarg_T *eap)
     void
 ex_scscope(exarg_T *eap)
 {
-    do_cscope_general(eap, TRUE);
+    do_cscope_general(eap, true);
 }
 
 /*
@@ -302,7 +302,7 @@ ex_scscope(exarg_T *eap)
     void
 ex_cstag(exarg_T *eap)
 {
-    int ret = FALSE;
+    bool ret = false;
 
     if (*eap->arg == NUL)
     {
@@ -315,28 +315,28 @@ ex_cstag(exarg_T *eap)
     case 0 :
 	if (cs_check_for_connections())
 	{
-	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, FALSE,
-						       FALSE, *eap->cmdlinep);
-	    if (ret == FALSE)
+	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, false,
+						       false, *eap->cmdlinep);
+	    if (ret == false)
 	    {
 		cs_free_tags();
 		if (msg_col)
 		    msg_putchar('\n');
 
 		if (cs_check_for_tags())
-		    ret = do_tag(eap->arg, DT_JUMP, 0, eap->forceit, FALSE);
+		    ret = do_tag(eap->arg, DT_JUMP, 0, eap->forceit, false);
 	    }
 	}
 	else if (cs_check_for_tags())
 	{
-	    ret = do_tag(eap->arg, DT_JUMP, 0, eap->forceit, FALSE);
+	    ret = do_tag(eap->arg, DT_JUMP, 0, eap->forceit, false);
 	}
 	break;
     case 1 :
 	if (cs_check_for_tags())
 	{
-	    ret = do_tag(eap->arg, DT_JUMP, 0, eap->forceit, FALSE);
-	    if (ret == FALSE)
+	    ret = do_tag(eap->arg, DT_JUMP, 0, eap->forceit, false);
+	    if (ret == false)
 	    {
 		if (msg_col)
 		    msg_putchar('\n');
@@ -344,17 +344,17 @@ ex_cstag(exarg_T *eap)
 		if (cs_check_for_connections())
 		{
 		    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit,
-						FALSE, FALSE, *eap->cmdlinep);
-		    if (ret == FALSE)
+						false, false, *eap->cmdlinep);
+		    if (ret == false)
 			cs_free_tags();
 		}
 	    }
 	}
 	else if (cs_check_for_connections())
 	{
-	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, FALSE,
-						       FALSE, *eap->cmdlinep);
-	    if (ret == FALSE)
+	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, false,
+						       false, *eap->cmdlinep);
+	    if (ret == false)
 		cs_free_tags();
 	}
 	break;
@@ -377,18 +377,18 @@ ex_cstag(exarg_T *eap)
  * This simulates a vim_fgets(), but for cscope, returns the next line
  * from the cscope output.  should only be called from find_tags()
  *
- * returns TRUE if eof, FALSE otherwise
+ * returns true if eof, false otherwise
  */
-    int
+    bool
 cs_fgets(char_u *buf, int size)
 {
     char *p;
 
     if ((p = cs_manage_matches(NULL, NULL, -1, Get)) == NULL)
-	return TRUE;
+	return true;
     vim_strncpy(buf, (char_u *)p, size - 1);
 
-    return FALSE;
+    return false;
 }
 
 
@@ -440,13 +440,13 @@ cs_print_tags(void)
  *		Note: All string comparisons are case sensitive!
  */
 #if defined(FEAT_EVAL) || defined(PROTO)
-    static int
+    static bool
 cs_connection(int num, char_u *dbpath, char_u *ppath)
 {
     int i;
 
     if (num < 0 || num > 4 || (num > 0 && !dbpath))
-	return FALSE;
+	return false;
 
     for (i = 0; i < csinfo_size; i++)
     {
@@ -454,17 +454,17 @@ cs_connection(int num, char_u *dbpath, char_u *ppath)
 	    continue;
 
 	if (num == 0)
-	    return TRUE;
+	    return true;
 
 	switch (num)
 	{
 	case 1:
 	    if (strstr(csinfo[i].fname, (char *)dbpath))
-		return TRUE;
+		return true;
 	    break;
 	case 2:
 	    if (strcmp(csinfo[i].fname, (char *)dbpath) == 0)
-		return TRUE;
+		return true;
 	    break;
 	case 3:
 	    if (strstr(csinfo[i].fname, (char *)dbpath)
@@ -472,7 +472,7 @@ cs_connection(int num, char_u *dbpath, char_u *ppath)
 			|| (ppath
 			    && csinfo[i].ppath
 			    && strstr(csinfo[i].ppath, (char *)ppath))))
-		return TRUE;
+		return true;
 	    break;
 	case 4:
 	    if ((strcmp(csinfo[i].fname, (char *)dbpath) == 0)
@@ -480,12 +480,12 @@ cs_connection(int num, char_u *dbpath, char_u *ppath)
 			|| (ppath
 			    && csinfo[i].ppath
 			    && (strcmp(csinfo[i].ppath, (char *)ppath) == 0))))
-		return TRUE;
+		return true;
 	    break;
 	}
     }
 
-    return FALSE;
+    return false;
 }
 
 #endif
@@ -550,7 +550,7 @@ cs_add_common(
 
     len = expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
     fbuf = (char_u *)fname;
-    (void)modify_fname((char_u *)":p", FALSE, &usedlen,
+    (void)modify_fname((char_u *)":p", false, &usedlen,
 					      (char_u **)&fname, &fbuf, &len);
     if (fname == NULL)
 	goto add_err;
@@ -629,7 +629,7 @@ staterr:
 	if (cs_create_connection(i) == CSCOPE_FAILURE
 		|| cs_read_prompt(i) == CSCOPE_FAILURE)
 	{
-	    cs_release_csp(i, TRUE);
+	    cs_release_csp(i, true);
 	    goto add_err;
 	}
 
@@ -655,14 +655,14 @@ add_err:
 }
 
 
-    static int
+    static bool
 cs_check_for_connections(void)
 {
     return (cs_cnt_connections() > 0);
 }
 
 
-    static int
+    static bool
 cs_check_for_tags(void)
 {
     return (p_tags[0] != NUL && curbuf->b_p_tags != NULL);
@@ -834,7 +834,7 @@ cs_create_connection(int i)
     SECURITY_ATTRIBUTES sa;
     PROCESS_INFORMATION pi;
     STARTUPINFO si;
-    BOOL	pipe_stdin = FALSE, pipe_stdout = FALSE;
+    BOOL	pipe_stdin = false, pipe_stdout = false;
     HANDLE	stdin_rd, stdout_rd;
     HANDLE	stdout_wr, stdin_wr;
     BOOL	created;
@@ -885,7 +885,7 @@ err_closing:
 	// MSWIN
 	// Create pipes to communicate with cscope
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-	sa.bInheritHandle = TRUE;
+	sa.bInheritHandle = true;
 	sa.lpSecurityDescriptor = NULL;
 
 	if (!(pipe_stdin = CreatePipe(&stdin_rd, &stdin_wr, &sa, 0))
@@ -1020,7 +1020,7 @@ err_closing:
     si.hStdOutput = stdout_wr;
     si.hStdError  = stdout_wr;
     si.hStdInput  = stdin_rd;
-    created = CreateProcess(NULL, cmd, NULL, NULL, TRUE, CREATE_NEW_CONSOLE,
+    created = CreateProcess(NULL, cmd, NULL, NULL, true, CREATE_NEW_CONSOLE,
 							NULL, NULL, &si, &pi);
     vim_free(prog);
     vim_free(cmd);
@@ -1060,7 +1060,7 @@ err_closing:
  * Query cscope using command line interface.  Parse the output and use tselect
  * to allow choices.  Like Nvi, creates a pipe to send to/from query/cscope.
  *
- * returns TRUE if we jump to a tag or abort, FALSE if not.
+ * returns true if we jump to a tag or abort, false if not.
  */
     static int
 cs_find(exarg_T *eap)
@@ -1068,23 +1068,23 @@ cs_find(exarg_T *eap)
     char *opt, *pat;
     int i;
 
-    if (cs_check_for_connections() == FALSE)
+    if (cs_check_for_connections() == false)
     {
 	(void)emsg(_(e_no_cscope_connections));
-	return FALSE;
+	return false;
     }
 
     if ((opt = strtok((char *)NULL, (const char *)" ")) == NULL)
     {
 	cs_usage_msg(Find);
-	return FALSE;
+	return false;
     }
 
     pat = opt + strlen(opt) + 1;
     if (pat >= (char *)eap->arg + eap_arg_len)
     {
 	cs_usage_msg(Find);
-	return FALSE;
+	return false;
     }
 
     /*
@@ -1095,7 +1095,7 @@ cs_find(exarg_T *eap)
 	if (NUL == eap->arg[i])
 	    eap->arg[i] = ' ';
 
-    return cs_find_common(opt, pat, eap->forceit, TRUE,
+    return cs_find_common(opt, pat, eap->forceit, true,
 				  eap->cmdidx == CMD_lcscope, *eap->cmdlinep);
 }
 
@@ -1103,14 +1103,14 @@ cs_find(exarg_T *eap)
 /*
  * Common code for cscope find, shared by cs_find() and ex_cstag().
  */
-    static int
+    static bool
 cs_find_common(
-    char *opt,
-    char *pat,
-    int forceit,
-    int verbose,
-    int	use_ll UNUSED,
-    char_u *cmdline UNUSED)
+    char    *opt,
+    char    *pat,
+    int	    forceit,
+    bool    verbose,
+    bool    use_ll UNUSED,
+    char_u  *cmdline UNUSED)
 {
     int i;
     char *cmd;
@@ -1163,16 +1163,16 @@ cs_find_common(
 	{
 	    (void)semsg(_(e_invalid_cscopequickfix_flag_chr_for_chr),
 							 *qfpos, *(qfpos - 1));
-	    return FALSE;
+	    return false;
 	}
 
 	if (*qfpos != '0'
 		&& apply_autocmds(EVENT_QUICKFIXCMDPRE, (char_u *)"cscope",
-					       curbuf->b_fname, TRUE, curbuf))
+					       curbuf->b_fname, true, curbuf))
 	{
 # ifdef FEAT_EVAL
 	    if (aborting())
-		return FALSE;
+		return false;
 # endif
 	}
     }
@@ -1181,13 +1181,13 @@ cs_find_common(
     // create the actual command to send to cscope
     cmd = cs_create_cmd(opt, pat);
     if (cmd == NULL)
-	return FALSE;
+	return false;
 
     nummatches = ALLOC_MULT(int, csinfo_size);
     if (nummatches == NULL)
     {
 	vim_free(cmd);
-	return FALSE;
+	return false;
     }
 
     // Send query to all open connections, then count the total number
@@ -1220,7 +1220,7 @@ cs_find_common(
 	    (void)semsg(_(e_no_matches_found_for_cscope_query_str_of_str),
 								     opt, pat);
 	vim_free(nummatches);
-	return FALSE;
+	return false;
     }
 
 #ifdef FEAT_QUICKFIX
@@ -1228,7 +1228,7 @@ cs_find_common(
     {
 	// fill error list
 	FILE	    *f;
-	char_u	    *tmp = vim_tempname('c', TRUE);
+	char_u	    *tmp = vim_tempname('c', true);
 	qf_info_T   *qi = NULL;
 	win_T	    *wp = NULL;
 
@@ -1254,7 +1254,7 @@ cs_find_common(
 		}
 
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, (char_u *)"cscope",
-					       curbuf->b_fname, TRUE, curbuf);
+					       curbuf->b_fname, true, curbuf);
 		if (use_ll)
 		    /*
 		     * In the location list window, use the displayed location
@@ -1268,7 +1268,7 @@ cs_find_common(
 	mch_remove(tmp);
 	vim_free(tmp);
 	vim_free(nummatches);
-	return TRUE;
+	return true;
     }
     else
 #endif // FEAT_QUICKFIX
@@ -1281,7 +1281,7 @@ cs_find_common(
 							 &contexts, &matched);
 	vim_free(nummatches);
 	if (matches == NULL)
-	    return FALSE;
+	    return false;
 
 	(void)cs_manage_matches(matches, contexts, matched, Store);
 
@@ -1326,7 +1326,7 @@ cs_help(exarg_T *eap UNUSED)
 	cmdp++;
     }
 
-    wait_return(TRUE);
+    wait_return(true);
     return 0;
 }
 
@@ -1401,7 +1401,7 @@ cs_insert_filelist(
 #else
 	    // compare pathnames first
 	    && ((fullpathcmp((char_u *)csinfo[j].fname,
-			(char_u *)fname, FALSE, TRUE) & FPC_SAME)
+			(char_u *)fname, false, true) & FPC_SAME)
 		// test index file attributes too
 		|| (csinfo[j].nVolume == bhfi.dwVolumeSerialNumber
 		    && csinfo[j].nIndexHigh == bhfi.nFileIndexHigh
@@ -1588,7 +1588,7 @@ cs_kill_execute(
 	(void)smsg_attr(HL_ATTR(HLF_R) | MSG_HIST,
 			_("cscope connection %s closed"), cname);
     }
-    cs_release_csp(i, TRUE);
+    cs_release_csp(i, true);
 }
 
 
@@ -2092,7 +2092,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 	ui_breakcheck();
 	if (got_int)
 	{
-	    got_int = FALSE;	// don't print any more matches
+	    got_int = false;	// don't print any more matches
 	    break;
 	}
 
@@ -2164,7 +2164,7 @@ cs_read_prompt(int i)
 		    (void)semsg(cs_emsg, buf);
 		else if (p_csverbose)
 		    cs_reading_emsg(i); // don't have additional information
-		cs_release_csp(i, TRUE);
+		cs_release_csp(i, true);
 		vim_free(buf);
 		return CSCOPE_FAILURE;
 	    }
@@ -2261,7 +2261,7 @@ cs_release_csp(int i, int freefnpp)
 	if (pid < 0 && csinfo[i].pid > 1)
 	{
 # ifdef ECHILD
-	    int alive = TRUE;
+	    int alive = true;
 
 	    if (waitpid_errno == ECHILD)
 	    {
@@ -2282,7 +2282,7 @@ cs_release_csp(int i, int freefnpp)
 		    // Check whether cscope process is still alive
 		    if (kill(csinfo[i].pid, 0) != 0)
 		    {
-			alive = FALSE; // cscope process no longer exists
+			alive = false; // cscope process no longer exists
 			break;
 		    }
 		    mch_delay(50L, 0); // sleep 50 ms
@@ -2353,7 +2353,7 @@ cs_reset(exarg_T *eap UNUSED)
 	pplist[i] = csinfo[i].ppath;
 	fllist[i] = csinfo[i].flags;
 	if (csinfo[i].fname != NULL)
-	    cs_release_csp(i, FALSE);
+	    cs_release_csp(i, false);
     }
 
     // rebuild the cscope connection list
@@ -2441,7 +2441,7 @@ cs_resolve_file(int i, char *name)
     {
 	// Check for csdir to be non empty to avoid empty path concatenated to
 	// cscope output.
-	fullname = (char *)concat_fnames(csdir, (char_u *)name, TRUE);
+	fullname = (char *)concat_fnames(csdir, (char_u *)name, true);
     }
     else
     {
@@ -2482,7 +2482,7 @@ cs_show(exarg_T *eap UNUSED)
 	}
     }
 
-    wait_return(FALSE);
+    wait_return(false);
     return CSCOPE_SUCCESS;
 }
 
@@ -2496,7 +2496,7 @@ cs_end(void)
     int i;
 
     for (i = 0; i < csinfo_size; i++)
-	cs_release_csp(i, TRUE);
+	cs_release_csp(i, true);
     vim_free(csinfo);
     csinfo_size = 0;
 }
