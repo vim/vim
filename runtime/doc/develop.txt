@@ -390,9 +390,8 @@ The direct consequence of this manual system is that contributors currently
 edit the relevant `.pro` files by hand when adding, removing, or modifying a
 function’s signature.
 
-This system likely originates from the historical transition from K&R C to
-ANSI C, where automating prototype generation was beneficial.  While the
-automation is now effectively deprecated, the file structure remains.
+This system has been in place since at least v1.24, when Vim’s functions were
+still written in K&R style.
 
 ==============================================================================
 4. Coding style						*coding-style*
