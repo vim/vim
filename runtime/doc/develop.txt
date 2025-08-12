@@ -365,7 +365,7 @@ We follow POSIX.1-2001 (SUSv3) for type sizes, which in practice means:
 FUNCTION PROTOTYPES				*assumptions-prototypes*
 
 Vim currently does not use conventional header files (`.h`) for most internal
-function prototypes. Instead, the current architecture uses individual `.pro`
+function prototypes.  Instead, the current architecture uses individual `.pro`
 files in the `src/proto/` directory, with one `.pro` file per `.c` file.
 
 Unlike traditional header files, these `.pro` files do not contain API
