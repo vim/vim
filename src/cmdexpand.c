@@ -3612,7 +3612,7 @@ ExpandGenericExt(
 	    else
 	    {
 		score = fuzzy_match_str(str, pat);
-		match = (score != 0);
+		match = (score != FUZZY_SCORE_NONE);
 	    }
 	}
 	else
@@ -4022,7 +4022,7 @@ ExpandUserDefined(
 	    else
 	    {
 		score = fuzzy_match_str(s, pat);
-		match = (score != 0);
+		match = (score != FUZZY_SCORE_NONE);
 	    }
 	}
 	else

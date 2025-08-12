@@ -529,6 +529,7 @@ SRC = \
  findfile.c \
  float.c \
  fold.c \
+ fuzzy.c \
  getchar.c \
  gc.c \
  gui_xim.c \
@@ -665,6 +666,7 @@ OBJ = \
  [.$(DEST)]findfile.obj \
  [.$(DEST)]float.obj \
  [.$(DEST)]fold.obj \
+ [.$(DEST)]fuzzy.obj \
  [.$(DEST)]getchar.obj \
  [.$(DEST)]gc.obj \
  [.$(DEST)]gui_xim.obj \
@@ -1141,6 +1143,10 @@ lua_env :
 [.$(DEST)]fold.obj : fold.c vim.h [.$(DEST)]config.h feature.h os_unix.h   \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h errors.h globals.h
+[.$(DEST)]fuzzy.obj : fuzzy.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ errors.h globals.h
 [.$(DEST)]getchar.obj : getchar.c vim.h [.$(DEST)]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \

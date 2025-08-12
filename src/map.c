@@ -1433,7 +1433,7 @@ ExpandMappings(
 	else
 	{
 	    score = fuzzy_match_str(p, pat);
-	    match = (score != 0);
+	    match = (score != FUZZY_SCORE_NONE);
 	}
 
 	if (!match)
@@ -1480,7 +1480,7 @@ ExpandMappings(
 	    else
 	    {
 		score = fuzzy_match_str(p, pat);
-		match = (score != 0);
+		match = (score != FUZZY_SCORE_NONE);
 	    }
 
 	    if (!match)

@@ -41723,6 +41723,8 @@ Functions: ~
 - Add the optional {opts} |Dict| argument to |getchar()| to control: cursor
   behaviour, return type and whether or not to simplify the returned key
 - |chdir()| allows to optionally specify a scope argument
+- |matchfuzzy()| and |matchfuzzypos()| use an improved fuzzy matching
+  algorithm (same as fzy).
 
 Others: ~
 - the regex engines match correctly case-insensitive multi-byte characters

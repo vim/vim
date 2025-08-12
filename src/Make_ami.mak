@@ -113,6 +113,7 @@ SRC += \
 	findfile.c \
 	float.c \
 	fold.c \
+	fuzzy.c \
 	getchar.c \
 	gc.c \
 	hardcopy.c \
