@@ -105,7 +105,6 @@ syn keyword pythonOperator	and in is not or
 syn keyword pythonException	except finally raise try
 syn keyword pythonInclude	from import
 syn keyword pythonAsync		async await
-syn keyword pythonClassVar	self cls
 
 " Soft keywords
 " These keywords do not mean anything unless used in the right context.
@@ -113,6 +112,10 @@ syn keyword pythonClassVar	self cls
 " for more on this.
 syn match   pythonConditional   "^\s*\zscase\%(\s\+.*:.*$\)\@="
 syn match   pythonConditional   "^\s*\zsmatch\%(\s\+.*:\s*\%(#.*\)\=$\)\@="
+
+" These names are special by convention. While they aren't real keywords,
+" giving them distinct highlighting provides a nice visual cue.
+syn keyword pythonClassVar	self cls
 
 " Decorators
 " A dot must be allowed because of @MyClass.myfunc decorators.
