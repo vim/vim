@@ -526,16 +526,6 @@ parse_generic_func_type_params(
 	if (name_exists)
 	    return NULL;
 
-	if (ga_grow(&gfatab->gfat_param_types, 1) == FAIL)
-	    return NULL;
-	type_T *gt =
-	    &((type_T *)gfatab->gfat_param_types.ga_data)[gfatab->gfat_param_types.ga_len];
-	gfatab->gfat_param_types.ga_len++;
-
-	CLEAR_POINTER(gt);
-	gt->tt_type = VAR_ANY;
-	gt->tt_flags = TTFLAG_GENERIC;
-
 	if (ga_grow(&gfatab->gfat_args, 1) == FAIL)
 	    return NULL;
 	generic_T *generic =
@@ -546,7 +536,7 @@ parse_generic_func_type_params(
 	if (generic->gt_name == NULL)
 	    return NULL;
 	vim_strncpy(generic->gt_name, name_start, name_len);
-	generic->gt_type = gt;
+	generic->gt_type = NULL;
 
 	if (VIM_ISWHITE(*p))
 	{
@@ -572,13 +562,32 @@ parse_generic_func_type_params(
     }
     if (*p != '>')
 	return NULL;
+    p++;
 
-    if (generic_func_args_table_size(gfatab) == 0)
+    int gfat_sz = generic_func_args_table_size(gfatab);
+
+    if (gfat_sz == 0)
     {
 	emsg_funcname(e_empty_type_list_for_generic_function_str, func_name);
 	return NULL;
     }
-    p++;
+
+    // set the generic parms to VAR_ANY type
+    if (ga_grow(&gfatab->gfat_param_types, gfat_sz) == FAIL)
+	return NULL;
+
+    gfatab->gfat_param_types.ga_len = gfat_sz;
+    for (int i = 0; i < generic_func_args_table_size(gfatab); i++)
+    {
+	type_T *gt = &((type_T *)gfatab->gfat_param_types.ga_data)[i];
+
+	CLEAR_POINTER(gt);
+	gt->tt_type = VAR_ANY;
+	gt->tt_flags = TTFLAG_GENERIC;
+
+	generic_T *generic = &((generic_T *)gfatab->gfat_args.ga_data)[i];
+	generic->gt_type = gt;
+    }
 
     return p;
 }
