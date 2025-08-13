@@ -218,9 +218,8 @@ syn region  pythonRawBytes
 
 " F-string replacement fields
 "
-" - Matched parentheses, brackets and braces are ignored
-" - A bare # is ignored to end of line
-" - A bare = (surrounded by optional whitespace) enables debugging
+" - Matched parentheses, brackets and braces are skipped
+" - A bare = (followed by optional whitespace) enables debugging
 " - A bare ! prefixes a conversion field
 " - A bare : begins a format specification
 "     - Matched braces inside a format specification are ignored
@@ -228,8 +227,10 @@ syn region  pythonRawBytes
 syn region  pythonFStringField
     \ matchgroup=pythonFStringDelimiter
     \ start=/{/
-    \ skip=/([^)]*)\|\[[^]]*]\|{[^}]*}\|#.*$/
-    \ end=/\%(\s*=\s*\)\=\%(!\a\)\=\%(:\%({[^}]*}\|[^}]*\)\+\)\=}/
+    \ end=/\%(=\s*\)\=\%(!\a\)\=\%(:\%({[^}]*}\|[^}]*\)\+\)\=}/
+    \ contained
+    \ contains=ALLBUT,pythonFStringField,pythonClass,pythonFunction,pythonDoctest,pythonDoctestValue,@Spell
+syn match   pythonFStringFieldSkip  /([^)]*)\|\[[^]]*]\|{[^}]*}/
     \ contained
     \ contains=ALLBUT,pythonFStringField,pythonClass,pythonFunction,pythonDoctest,pythonDoctestValue,@Spell
 
