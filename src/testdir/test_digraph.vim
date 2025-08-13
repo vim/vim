@@ -620,8 +620,8 @@ func Test_digraph_angle_bracket_patch()
   call assert_equal('〈', digraph_get('</'))
   call assert_equal('〉', digraph_get('/>'))
   " Ensure that the mathematical angle brackets 27E8/27E9 ('<[',']>') are defined
-  call assert_equal('⟨', '<[')
-  call assert_equal('⟩', ']>')
+  call assert_equal('⟨', digraph_get('<['))
+  call assert_equal('⟩', digraph_get(']>'))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
