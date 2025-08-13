@@ -49,7 +49,7 @@ static score_t match_positions(char_u *needle, char_u *haystack, int_u *position
 static int has_match(char_u *needle, char_u *haystack);
 
 #define SCORE_MAX INFINITY
-#define SCORE_MIN -INFINITY
+#define SCORE_MIN (-INFINITY)
 #define SCORE_SCALE 1000
 
 typedef struct
@@ -291,7 +291,9 @@ fuzzy_match_in_list(
 		items[match_count].itemstr = itemstr;
 	    items[match_count].itemstr_allocated = itemstr_allocate;
 
-	    // Copy the list of matching positions in itemstr to a list
+	    // Copy the list of matching positions in itemstr to a list, if
+	    // "retmatchpos" is set.
+	    if (retmatchpos)
 	    {
 		int	j = 0;
 		char_u	*p;
