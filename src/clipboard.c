@@ -47,8 +47,12 @@ static const char *supported_mimes[] = {
 
 static void clip_wl_receive_data(Clipboard_T *cbd,
 	const char *mime_type, int fd);
+static void clip_wl_request_selection(Clipboard_T *cbd);
 static void clip_wl_send_data(const char *mime_type, int fd,
 	wayland_selection_T);
+static int clip_wl_own_selection(Clipboard_T *cbd);
+static void clip_wl_lose_selection(Clipboard_T *cbd);
+static void clip_wl_set_selection(Clipboard_T *cbd);
 static void clip_wl_selection_cancelled(wayland_selection_T selection);
 
 #if defined(USE_SYSTEM) && defined(PROTO)
@@ -2336,11 +2340,10 @@ adjust_clip_reg(int *rp)
     static void
 clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 {
-    char_u	    *start, *buf, *tmp, *final, *enc;
-    int		    motion_type = MAUTO;
-    ssize_t	    r = 0;
-    size_t	    total = 0, max_total = 4096; // Initial buffer size, 4096
-						 // bytes seems reasonable.
+    char_u	*start, *final, *enc;
+    garray_T	buf;
+    int		motion_type = MAUTO;
+    ssize_t	r = 0;
 #ifndef HAVE_SELECT
     struct pollfd   pfd
 
@@ -2358,9 +2361,13 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
     if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) == -1)
 	return;
 
-    if ((buf = alloc_clear(max_total)) == NULL)
+    ga_init2(&buf, 1, 4096);
+
+    // 4096 bytes seems reasonable for initial buffer size
+    if (ga_grow(&buf, 4096) == FAIL)
 	return;
-    start = buf;
+
+    start = buf.ga_data;
 
     // Only poll before reading when we first start, then we do non-blocking
     // reads and check for EAGAIN or EINTR to signal to poll again.
@@ -2368,7 +2375,7 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 
     while (errno = 0, TRUE)
     {
-	r = read(fd, start, max_total - 1 - total);
+	r = read(fd, start, buf.ga_maxlen - 1 - buf.ga_len);
 
 	if (r == 0)
 	    break;
@@ -2391,44 +2398,39 @@ poll_data:
 	}
 
 	start += r;
-	total += (size_t)r;
+	buf.ga_len += r;
 
 	// Realloc if we are at the end of the buffer
-	if (total >= max_total - 1)
+	if (buf.ga_len >= buf.ga_maxlen - 1)
 	{
-	    tmp = vim_realloc(buf, max_total * 2);
-	    if (tmp == NULL)
+	    if (ga_grow(&buf, 8192) == FAIL)
 		break;
-	    max_total *= 2; // Double buffer size each time
-	    buf = tmp;
-	    start = buf + total;
-	    // Zero out the newly allocated memory part
-	    vim_memset(buf + total, 0, max_total - total);
+	    start = buf.ga_data + buf.ga_len;
 	}
     }
 
-    if (total == 0)
+    if (buf.ga_len == 0)
     {
 	clip_free_selection(cbd); // Nothing received, clear register
-	vim_free(buf);
+	ga_clear(&buf);
 	return;
     }
 
-    final = buf;
+    final = buf.ga_data;
 
-    if (STRCMP(mime_type, VIM_ATOM_NAME) == 0 && total >= 2)
+    if (STRCMP(mime_type, VIM_ATOM_NAME) == 0 && buf.ga_len >= 2)
     {
 	motion_type = *final++;;
-	total--;
+	buf.ga_len--;
     }
-    else if (STRCMP(mime_type, VIMENC_ATOM_NAME) == 0 && total >= 3)
+    else if (STRCMP(mime_type, VIMENC_ATOM_NAME) == 0 && buf.ga_len >= 3)
     {
-	vimconv_T conv;
-	int convlen;
+	vimconv_T   conv;
+	int	    convlen;
 
 	// first byte is motion type
 	motion_type = *final++;
-	total--;
+	buf.ga_len--;
 
 	// Get encoding of selection
 	enc = final;
@@ -2437,30 +2439,32 @@ poll_data:
 	final += STRLEN(final) + 1;
 
 	// Subtract pointers to get length of encoding;
-	total -= final - enc;
+	buf.ga_len -= final - enc;
 
 	conv.vc_type = CONV_NONE;
 	convert_setup(&conv, enc, p_enc);
 	if (conv.vc_type != CONV_NONE)
 	{
-	   convlen = total;
+	   char_u *tmp;
+
+	   convlen = buf.ga_len;
 	   tmp = string_convert(&conv, final, &convlen);
-	   total = convlen;
+	   buf.ga_len = convlen;
 	   if (tmp != NULL)
 		final = tmp;
 	   convert_setup(&conv, NULL, NULL);
 	}
     }
 
-    clip_yank_selection(motion_type, final, (long)total, cbd);
-    vim_free(buf);
+    clip_yank_selection(motion_type, final, (long)buf.ga_len, cbd);
+    ga_clear(&buf);
 }
 
 /*
  * Get the current selection and fill the respective register for cbd with the
  * data.
  */
-    void
+    static void
 clip_wl_request_selection(Clipboard_T *cbd)
 {
     wayland_selection_T	    selection;
@@ -2646,7 +2650,7 @@ clip_wl_selection_cancelled(wayland_selection_T selection)
  * other Wayland clients so they can receive data from us. Returns OK on success
  * and FAIL on failure.
  */
-    int
+    static int
 clip_wl_own_selection(Clipboard_T *cbd)
 {
     wayland_selection_T selection;
@@ -2670,7 +2674,7 @@ clip_wl_own_selection(Clipboard_T *cbd)
  * Disown the selection that cbd corresponds to. Note that the the cancelled
  * event is not sent when the data source is destroyed.
  */
-    void
+    static void
 clip_wl_lose_selection(Clipboard_T *cbd)
 {
     if (cbd == &clip_plus)
@@ -2685,7 +2689,7 @@ clip_wl_lose_selection(Clipboard_T *cbd)
  * Send the current selection to the clipboard. Do nothing for Wayland because
  * we will fill in the selection only when requested by another client.
  */
-    void
+    static void
 clip_wl_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
