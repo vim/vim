@@ -116,19 +116,6 @@ static termrequest_T u7_status = TERMREQUEST_INIT;
 static termrequest_T xcc_status = TERMREQUEST_INIT;
 
 #ifdef FEAT_TERMRESPONSE
-# ifdef FEAT_TERMINAL
-// Request foreground color report:
-static termrequest_T rfg_status = TERMREQUEST_INIT;
-static int fg_r = 0;
-static int fg_g = 0;
-static int fg_b = 0;
-static int bg_r = 255;
-static int bg_g = 255;
-static int bg_b = 255;
-# endif
-
-// Request background color report:
-static termrequest_T rbg_status = TERMREQUEST_INIT;
 
 // Request cursor blinking mode report:
 static termrequest_T rbm_status = TERMREQUEST_INIT;
@@ -143,10 +130,6 @@ static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
     &xcc_status,
-# ifdef FEAT_TERMINAL
-    &rfg_status,
-# endif
-    &rbg_status,
     &rbm_status,
     &rcs_status,
     &winpos_status,
@@ -4192,49 +4175,6 @@ check_terminal_behavior(void)
     }
 }
 
-/*
- * Similar to requesting the version string: Request the terminal background
- * color when it is the right moment.
- */
-    void
-may_req_bg_color(void)
-{
-    if (can_get_termresponse() && starting == 0)
-    {
-	int didit = FALSE;
-
-# ifdef FEAT_TERMINAL
-	// Only request foreground if t_RF is set.
-	if (rfg_status.tr_progress == STATUS_GET && *T_RFG != NUL)
-	{
-	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR1("Sending FG request");
-	    out_str(T_RFG);
-	    termrequest_sent(&rfg_status);
-	    didit = TRUE;
-	}
-# endif
-
-	// Only request background if t_RB is set.
-	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL)
-	{
-	    MAY_WANT_TO_LOG_THIS;
-	    LOG_TR1("Sending BG request");
-	    out_str(T_RBG);
-	    termrequest_sent(&rbg_status);
-	    didit = TRUE;
-	}
-
-	if (didit)
-	{
-	    // check for the characters now, otherwise they might be eaten by
-	    // get_keystroke()
-	    out_flush();
-	    (void)vpeekc_nomap();
-	}
-    }
-}
-
 #endif
 
 /*
@@ -5740,105 +5680,89 @@ handle_csi(
     return 0;
 }
 
+static oscstate_T osc_state;
+
 /*
- * Handle an OSC sequence, fore/background color response from the terminal:
- *
- *       {lead}{code};rgb:{rrrr}/{gggg}/{bbbb}{tail}
- * or    {lead}{code};rgb:{rr}/{gg}/{bb}{tail}
- *
- * {code} is 10 for foreground, 11 for background
- * {lead} can be <Esc>] or OSC
- * {tail} can be '\007', <Esc>\ or STERM.
- *
- * Consume any code that starts with "{lead}11;", it's also
- * possible that "rgba" is following.
+ * Handles any OSC sequence and places the result in "v:termosc". Note that the
+ * OSC identifier and terminator character(s) will not be placed in the final
+ * result. Returns OK on success and FAIL on failure.
  */
     static int
-handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
+handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 {
-    int		i, j;
+    struct timeval  now;
+    char_u	    last_char;
 
-    j = 1 + (tp[0] == ESC);
-    if (len >= j + 3 && (argp[0] != '1'
-			     || (argp[1] != '1' && argp[1] != '0')
-			     || argp[2] != ';'))
-	i = 0; // no match
-    else
-	for (i = j; i < len; ++i)
-	    if (tp[i] == '\007' || (tp[0] == OSC ? tp[i] == STERM
-			: (tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')))
-	    {
-		int is_bg = argp[1] == '1';
-		int is_4digit = i - j >= 21 && tp[j + 11] == '/'
-						  && tp[j + 16] == '/';
-
-		if (i - j >= 15 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
-			    && (is_4digit
-				   || (tp[j + 9] == '/' && tp[j + 12] == '/')))
-		{
-		    char_u *tp_r = tp + j + 7;
-		    char_u *tp_g = tp + j + (is_4digit ? 12 : 10);
-		    char_u *tp_b = tp + j + (is_4digit ? 17 : 13);
-#if defined(FEAT_TERMRESPONSE) && defined(FEAT_TERMINAL)
-		    int rval, gval, bval;
-
-		    rval = hexhex2nr(tp_r);
-		    gval = hexhex2nr(tp_g);
-		    bval = hexhex2nr(tp_b);
-#endif
-		    if (is_bg)
-		    {
-			char *new_bg_val = (3 * '6' < *tp_r + *tp_g +
-					     *tp_b) ? "light" : "dark";
-
-			LOG_TRN("Received RBG response: %s", tp);
-#ifdef FEAT_TERMRESPONSE
-			rbg_status.tr_progress = STATUS_GOT;
-# ifdef FEAT_TERMINAL
-			bg_r = rval;
-			bg_g = gval;
-			bg_b = bval;
-# endif
-#endif
-			if (!option_was_set((char_u *)"bg")
-				      && STRCMP(p_bg, new_bg_val) != 0)
-			{
-			    // value differs, apply it
-			    set_option_value_give_err((char_u *)"bg",
-						  0L, (char_u *)new_bg_val, 0);
-			    reset_option_was_set((char_u *)"bg");
-			    redraw_asap(UPD_CLEAR);
-			}
-		    }
-#if defined(FEAT_TERMRESPONSE) && defined(FEAT_TERMINAL)
-		    else
-		    {
-			LOG_TRN("Received RFG response: %s", tp);
-			rfg_status.tr_progress = STATUS_GOT;
-			fg_r = rval;
-			fg_g = gval;
-			fg_b = bval;
-		    }
-#endif
-		}
-
-		// got finished code: consume it
-		key_name[0] = (int)KS_EXTRA;
-		key_name[1] = (int)KE_IGNORE;
-		*slen = i + 1 + (tp[i] == ESC);
-#ifdef FEAT_EVAL
-		set_vim_var_string(is_bg ? VV_TERMRBGRESP
-						  : VV_TERMRFGRESP, tp, *slen);
-#endif
-		apply_autocmds(EVENT_TERMRESPONSEALL,
-			    is_bg ? (char_u *)"background" : (char_u *)"foreground", NULL, FALSE, curbuf);
-		break;
-	    }
-    if (i == len)
+    if (!osc_state.processing)
     {
-	LOG_TR1("not enough characters for RB");
+	int cur;
+
+	LOG_TRN("Received OSC response: %s", (char*)tp);
+	// Check if it is a valid OSC sequence, and consume it. OSC format
+	// consists of:
+	// <idenfitifer><data><terminator>
+	// <identifier> is either <Esc>] or an OSC character
+	// <terminator> can be '\007', <Esc>\ or STERM.
+	cur = 1 + (tp[0] == ESC);
+
+	if (len < cur + 1 + (tp[0] != OSC)) // Include terminator as well
+	    return FAIL;
+
+	// The whole OSC response may be larger than the typeahead buffer.
+	// To handle this, keep reading data in and out of the typeahead
+	// buffer until we read an OSC terminator or timeout.
+	ga_init2(&osc_state.buf, 1, 1024);
+	gettimeofday(&osc_state.start, NULL);
+
+	osc_state.processing = TRUE;
+	osc_state.start_char = tp[0];
+	last_char = 0;
+    }
+    else
+	last_char = ((char_u *)osc_state.buf.ga_data)[osc_state.buf.ga_len - 1];
+
+    key_name[0] = (int)KS_EXTRA;
+    key_name[1] = (int)KE_IGNORE;
+
+    // Read data and append to buffer. If we reach a terminator, then
+    // finally set the vim var.
+    for (int i = 0; i < len; i++)
+	if (tp[i] == '\007' || (osc_state.start_char == OSC ? tp[i] == STERM
+		    : ((tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')
+			|| (i == 0 && tp[i] == '\\' && last_char == ESC)
+			)))
+	{
+	    osc_state.processing = FALSE;
+
+	    ga_concat_len(&osc_state.buf, tp, i + 1 + (tp[i] == ESC));
+	    ga_append(&osc_state.buf, NUL);
+	    *slen = i + 1 + (tp[i] == ESC);
+#ifdef FEAT_EVAL
+	    set_vim_var_string_direct(VV_TERMOSC, osc_state.buf.ga_data);
+#endif
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"osc",
+		    NULL, FALSE, curbuf);
+	    return OK;
+	}
+
+    // Check if timeout has been reached
+    gettimeofday(&now, NULL);
+
+    if ((now.tv_sec * 1000000 + now.tv_usec) -
+	    (osc_state.start.tv_sec * 1000000 + osc_state.start.tv_usec)
+	    >= p_ost * 1000)
+    {
+	semsg(_(e_osc_response_timed_out), osc_state.buf.ga_len,
+		osc_state.buf.ga_data);
+
+	ga_clear(&osc_state.buf);
+	osc_state.processing = FALSE;
 	return FAIL;
     }
+
+    ga_concat(&osc_state.buf, tp);
+    *slen = len; // Consume everything
+
     return OK;
 }
 
@@ -6027,6 +5951,11 @@ check_termcode(
 	    offset += 2;	// there are always 2 extra characters
 	    continue;
 	}
+
+	if (osc_state.processing)
+	    // Still processing OSC response data, go straight to handler
+	    // function.
+	    goto handle_osc;
 
 	/*
 	 * Skip this position if the character does not appear as the first
@@ -6300,13 +6229,11 @@ check_termcode(
 		}
 	    }
 
-	    // Check for fore/background color response from the terminal,
-	    // starting} with <Esc>] or OSC
-	    else if ((*T_RBG != NUL || *T_RFG != NUL)
-			&& ((tp[0] == ESC && len >= 2 && tp[1] == ']')
-			    || tp[0] == OSC))
+	    // Check for OSC responses from terminal
+	    else if ((tp[0] == ESC && len >= 2 && tp[1] == ']') || tp[0] == OSC)
 	    {
-		if (handle_osc(tp, argp, len, key_name, &slen) == FAIL)
+handle_osc:
+		if (handle_osc(tp, len, key_name, &slen) == FAIL)
 		    return -1;
 	    }
 
@@ -6549,10 +6476,12 @@ check_termcode(
 	 */
 	key = handle_x_keys(TERMCAP2KEY(key_name[0], key_name[1]));
 
-	/*
-	 * Add any modifier codes to our string.
-	 */
-	new_slen = modifiers2keycode(modifiers, &key, string);
+	if (osc_state.processing)
+	    // We don't want to add anything to the typeahead buffer.
+	    new_slen = 0;
+	else
+	    // Add any modifier codes to our string.
+	    new_slen = modifiers2keycode(modifiers, &key, string);
 
 	// Finally, add the special key code to our string
 	key_name[0] = KEY2TERMCAP0(key);
@@ -6592,18 +6521,28 @@ check_termcode(
 }
 
 #if (defined(FEAT_TERMINAL) && defined(FEAT_TERMRESPONSE)) || defined(PROTO)
+
+    static void
+term_get_color(char_u *str, char_u *r, char_u *g, char_u *b)
+{
+    char_u rn[3], gn[3], bn[3];
+
+    if (sscanf((char *)str, "%*[^:]:%2s%*[^/]/%2s%*[^/]/%2s",
+		(char *)&rn, (char *)&gn, (char *)&bn) != 3)
+	return;
+
+    *r = hexhex2nr(rn);
+    *g = hexhex2nr(gn);
+    *b = hexhex2nr(bn);
+}
+
 /*
  * Get the text foreground color, if known.
  */
     void
 term_get_fg_color(char_u *r, char_u *g, char_u *b)
 {
-    if (rfg_status.tr_progress != STATUS_GOT)
-	return;
-
-    *r = fg_r;
-    *g = fg_g;
-    *b = fg_b;
+    term_get_color(get_vim_var_str(VV_TERMRFGRESP), r, g, b);
 }
 
 /*
@@ -6612,12 +6551,7 @@ term_get_fg_color(char_u *r, char_u *g, char_u *b)
     void
 term_get_bg_color(char_u *r, char_u *g, char_u *b)
 {
-    if (rbg_status.tr_progress != STATUS_GOT)
-	return;
-
-    *r = bg_r;
-    *g = bg_g;
-    *b = bg_b;
+    term_get_color(get_vim_var_str(VV_TERMRBGRESP), r, g, b);
 }
 #endif
 
