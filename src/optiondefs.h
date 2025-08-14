@@ -627,15 +627,6 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)0L}
 #endif
 			    SCTX_INIT},
-    {"clipfunc", "cbf",	    P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_FUNC,
-#ifdef FEAT_CLIPBOARD
-			    (char_u *)&p_cbf, PV_NONE, did_set_clipfunc, NULL,
-			    {(char_u *)"", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE, NULL, NULL,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCTX_INIT},
     {"clipmethod", "cpm",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_CLIPBOARD
 			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,

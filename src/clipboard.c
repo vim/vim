@@ -61,11 +61,6 @@ static int clip_wl_owner_exists(Clipboard_T *cbd);
 
 #endif
 
-static void clip_provider_set_selection(Clipboard_T *cbd);
-static void clip_provider_request_selection(Clipboard_T *cbd);
-static int clip_provider_own_selection(Clipboard_T *cbd UNUSED);
-static void clip_provider_lose_selection(Clipboard_T *cbd UNUSED);
-
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
  * windows.
@@ -149,11 +144,9 @@ clip_update_selection(Clipboard_T *clip)
     static int
 clip_gen_own_selection(Clipboard_T *cbd)
 {
-    if (clipmethod == CLIPMETHOD_PROVIDER)
-	return clip_provider_own_selection(cbd);
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 # ifdef FEAT_GUI
-    else if (gui.in_use)
+    if (gui.in_use)
 	return clip_mch_own_selection(cbd);
     else
 # endif
@@ -173,8 +166,7 @@ clip_gen_own_selection(Clipboard_T *cbd)
     }
     return FAIL;
 #else
-    else
-	return clip_mch_own_selection(cbd);
+    return clip_mch_own_selection(cbd);
 #endif
 }
 
@@ -217,11 +209,9 @@ clip_own_selection(Clipboard_T *cbd)
     static void
 clip_gen_lose_selection(Clipboard_T *cbd)
 {
-    if (clipmethod == CLIPMETHOD_PROVIDER)
-	clip_provider_lose_selection(cbd);
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 # ifdef FEAT_GUI
-    else if (gui.in_use)
+    if (gui.in_use)
 	clip_mch_lose_selection(cbd);
     else
 # endif
@@ -240,8 +230,7 @@ clip_gen_lose_selection(Clipboard_T *cbd)
 	}
     }
 #else
-    else
-	clip_mch_lose_selection(cbd);
+    clip_mch_lose_selection(cbd);
 #endif
 }
 
@@ -1268,11 +1257,9 @@ clip_gen_set_selection(Clipboard_T *cbd)
 	    return;
 	}
     }
-    if (clipmethod == CLIPMETHOD_PROVIDER)
-	clip_provider_set_selection(cbd);
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 # ifdef FEAT_GUI
-    else if (gui.in_use)
+    if (gui.in_use)
 	clip_mch_set_selection(cbd);
     else
 # endif
@@ -1291,19 +1278,16 @@ clip_gen_set_selection(Clipboard_T *cbd)
 	}
     }
 #else
-    else
-	clip_mch_set_selection(cbd);
+    clip_mch_set_selection(cbd);
 #endif
 }
 
     static void
 clip_gen_request_selection(Clipboard_T *cbd)
 {
-    if (clipmethod == CLIPMETHOD_PROVIDER)
-	clip_provider_request_selection(cbd);
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_WAYLAND_CLIPBOARD)
 # ifdef FEAT_GUI
-    else if (gui.in_use)
+    if (gui.in_use)
 	clip_mch_request_selection(cbd);
     else
 # endif
@@ -1322,8 +1306,7 @@ clip_gen_request_selection(Clipboard_T *cbd)
 	}
     }
 #else
-    else
-	clip_mch_request_selection(cbd);
+    clip_mch_request_selection(cbd);
 #endif
 }
 
@@ -2773,9 +2756,6 @@ get_clipmethod(char_u *str)
 	    }
 #endif
 	}
-	else if (STRCMP(buf, "provider") == 0)
-	    // TODO: add function to check if clipfunc is actually set.
-	    method = CLIPMETHOD_PROVIDER;
 	else
 	{
 	    ret = CLIPMETHOD_FAIL;
@@ -2903,111 +2883,5 @@ ex_clipreset(exarg_T *eap UNUSED)
 	smsg(_("Switched to clipboard method '%s'."),
 		clipmethod_to_str(clipmethod));
 }
-
-static callback_T cbf_cb; // 'clipfunc' callback function
-
-/*
- * Parse the 'clipfunc' option value and set the callback function. Invoked when
- * the 'clipfunc' option is set. The option value can be a name of a function
- * (string), or function(<name>) or funcref(<name>) or a lambda expression.
- */
-    char *
-did_set_clipfunc(optset_T *args UNUSED)
-{
-    if (option_set_callback_func(p_cbf, &cbf_cb) == FAIL)
-	return e_invalid_argument;
-
-    return NULL;
-}
-
-    static void
-clip_provider_set_selection(Clipboard_T *cbd)
-{
-}
-    
-    static void
-clip_provider_request_selection(Clipboard_T *cbd)
-{
-    dict_T	*data;
-    typval_T	args[3];
-    typval_T	rettv;
-    typval_T	*val_motion_type;
-    typval_T	*val_contents;
-    int		motion_type;
-
-    if ((data = dict_alloc_lock(VAR_FIXED)) == FAIL)
-	return;
-
-    args[0].v_type = VAR_STRING;
-    args[0].vval.v_string = (char_u *)"p";
-    args[1].v_type = VAR_DICT;
-    args[1].vval.v_dict = data;
-    args[2].v_type = VAR_UNKNOWN;
-
-    if (call_callback(&cbf_cb, 0, &rettv, 2, args) == FAIL)
-	goto exit;
-
-    if (rettv.v_type != VAR_TUPLE || rettv.vval.v_tuple->tv_items.ga_len != 2)
-	goto exit;
-
-    val_motion_type = (typval_T *)rettv.vval.v_tuple->tv_items.ga_data;
-    val_contents = ((typval_T *)rettv.vval.v_tuple->tv_items.ga_data) + 1;
-
-    if (val_motion_type->v_type != VAR_STRING ||
-	    val_contents->v_type != VAR_STRING)
-	goto exit;
-
-    switch (val_motion_type->vval.v_string[0])
-    {
-	case 'c':
-	case 'v':
-	    motion_type = MCHAR;
-	    break;
-	case 'l':
-	case 'V':
-	    motion_type = MLINE;
-	    break;
-	case 'b':
-	case '\x16':
-	    motion_type = MBLOCK;
-	    break;
-	case 'a':
-	    motion_type = MAUTO;
-	    break;
-	case 0: // Empty
-	    clip_free_selection(cbd);
-	default: // Unknown
-	    goto exit;
-    }
-
-    clip_yank_selection(motion_type, val_contents->vval.v_string,
-	    STRLEN(val_contents->vval.v_string), cbd);
-
-exit:
-    clear_tv(&rettv);
-}
-
-/*
- * Make vim the owner of the current selection. Return OK upon success.
- */
-    static int
-clip_provider_own_selection(Clipboard_T *cbd UNUSED)
-{
-    /*
-     * Never actually own the clipboard, because we don't know if the clipboard
-     * has changed or not.
-     */
-    return FAIL;
-}
-
-/*
- * Make vim NOT the owner of the current selection.
- */
-    static void
-clip_provider_lose_selection(Clipboard_T *cbd UNUSED)
-{
-    // Nothing needs to be done here
-}
-
 
 #endif // FEAT_CLIPBOARD
