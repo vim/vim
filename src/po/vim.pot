@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-08-07 16:17+0200\n"
+"POT-Creation-Date: 2025-08-14 16:09-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -475,6 +475,24 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr ""
 
+msgid "Save As"
+msgstr ""
+
+#, c-format
+msgid "Save changes to \"%s\"?"
+msgstr ""
+
+msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
+msgstr ""
+
+#, c-format
+msgid "W20: Required python version 2.x not supported, ignoring file: %s"
+msgstr ""
+
+#, c-format
+msgid "W21: Required python version 3.x not supported, ignoring file: %s"
+msgstr ""
+
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Oct %03o, Digr %s"
 msgstr ""
@@ -510,9 +528,6 @@ msgid "%ld lines filtered"
 msgstr ""
 
 msgid "[No write since last change]\n"
-msgstr ""
-
-msgid "Save As"
 msgstr ""
 
 msgid "Write partial file?"
@@ -582,21 +597,6 @@ msgid "Pattern not found: %s"
 msgstr ""
 
 msgid "No old files"
-msgstr ""
-
-#, c-format
-msgid "Save changes to \"%s\"?"
-msgstr ""
-
-msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
-msgstr ""
-
-#, c-format
-msgid "W20: Required python version 2.x not supported, ignoring file: %s"
-msgstr ""
-
-#, c-format
-msgid "W21: Required python version 3.x not supported, ignoring file: %s"
 msgstr ""
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
@@ -2560,10 +2560,10 @@ msgstr ""
 msgid "cannot have both a list and a \"what\" argument"
 msgstr ""
 
-msgid "Switching to backtracking RE engine for pattern: "
+msgid "External submatches:\n"
 msgstr ""
 
-msgid "External submatches:\n"
+msgid "Switching to backtracking RE engine for pattern: "
 msgstr ""
 
 msgid "Could not open temporary log file for writing, displaying on stderr... "
@@ -8804,6 +8804,10 @@ msgid "E1561: Duplicate type variable name: %s"
 msgstr ""
 
 msgid "E1562: Diff anchors cannot be used with hidden diff windows"
+msgstr ""
+
+#, c-format
+msgid "E1563: OSC command response timed out: %.*s"
 msgstr ""
 
 #. type of cmdline window or 0

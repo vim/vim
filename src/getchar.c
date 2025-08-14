@@ -82,7 +82,13 @@ static int	KeyNoremap = 0;	    // remapping flags
 // typebuf.tb_buf has three parts: room in front (for result of mappings), the
 // middle for typeahead and room for new characters (which needs to be 3 *
 // MAXMAPLEN for the Amiga).
+#ifdef FEAT_NORMAL
+// Add extra space to handle large OSC responses in bigger chunks (improve
+// performance)
+#define TYPELEN_INIT	(5 * (MAXMAPLEN + 3) + 2048)
+#else // Tiny version
 #define TYPELEN_INIT	(5 * (MAXMAPLEN + 3))
+#endif
 static char_u	typebuf_init[TYPELEN_INIT];	// initial typebuf.tb_buf
 static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 

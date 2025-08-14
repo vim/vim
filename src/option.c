@@ -3906,6 +3906,21 @@ did_set_numberwidth(optset_T *args UNUSED)
 #endif
 
 /*
+ * Process the updated 'osctimeoutlen' option value.
+ */
+    char *
+did_set_osctimeoutlen(optset_T *args)
+{
+    if (p_ost < 0)
+    {
+	p_ost = args->os_oldval.number;
+	return e_argument_must_be_positive;
+    }
+
+    return NULL;
+}
+
+/*
  * Process the updated 'paste' option value.  Called after p_paste was set or
  * reset.  When 'paste' is set or reset also change other options.
  */

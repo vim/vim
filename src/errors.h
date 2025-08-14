@@ -3782,3 +3782,5 @@ EXTERN char e_duplicate_type_var_name_str[]
 EXTERN char e_diff_anchors_with_hidden_windows[]
 	INIT(= N_("E1562: Diff anchors cannot be used with hidden diff windows"));
 #endif
+EXTERN char e_osc_response_timed_out[]
+	INIT(= N_("E1563: OSC command response timed out: %.*s"));
