@@ -949,7 +949,9 @@ theend:
 load_pack_plugin(char_u *fname)
 {
     static char *plugpat = "%s/plugin/**/*.vim";
+    static char *plugpat9 = "%s/plugin/**/*.vim9";
     static char *ftpat = "%s/ftdetect/*.vim";
+    static char *ftpat9 = "%s/ftdetect/*.vim9";
     int		len;
     char_u	*ffname = fix_fname(fname);
     char_u	*pat = NULL;
@@ -957,11 +959,17 @@ load_pack_plugin(char_u *fname)
 
     if (ffname == NULL)
 	return FAIL;
-    len = (int)STRLEN(ffname) + (int)STRLEN(ftpat);
+    len = (int)STRLEN(ffname) + (int)STRLEN(plugpat9);
     pat = alloc(len);
     if (pat == NULL)
 	goto theend;
+
+    // Load .vim files
     vim_snprintf((char *)pat, len, plugpat, ffname);
+    source_all_matches(pat);
+
+    // Load .vim9 files
+    vim_snprintf((char *)pat, len, plugpat9, ffname);
     source_all_matches(pat);
 
     {
@@ -972,8 +980,15 @@ load_pack_plugin(char_u *fname)
 	if (cmd != NULL && eval_to_number(cmd, FALSE) > 0)
 	{
 	    do_cmdline_cmd((char_u *)"augroup filetypedetect");
+
+	    // Load .vim ftdetect files
 	    vim_snprintf((char *)pat, len, ftpat, ffname);
 	    source_all_matches(pat);
+
+	    // Load .vim9 ftdetect files
+	    vim_snprintf((char *)pat, len, ftpat9, ffname);
+	    source_all_matches(pat);
+
 	    do_cmdline_cmd((char_u *)"augroup END");
 	}
 	vim_free(cmd);
@@ -1137,6 +1152,7 @@ ExpandRTDir_int(
 	}
 	int		glob_flags = 0;
 	int		expand_dirs = FALSE;
+	int		tried_vim9 = FALSE;  // Flag to prevent infinite loop
 
 	// Build base pattern
 	vim_snprintf(buf, buf_len, "%s%s%s%s",
@@ -1149,32 +1165,43 @@ expand:
 
 	if (flags & DIP_START)
 	{
-	    // Build complete search path: pack/*/start/*/dirnames[i]/pat*.vim
+	    // Build complete search path: pack/*/start/*/dirnames[i]/pat*.vim(9)
 	    vim_snprintf(buf, buf_len, "pack/*/start/*/%s%s%s%s",
 			 *dirnames[i] ? dirnames[i] : "",
 			 *dirnames[i] ? "/" : "",
 			 pat,
-			 expand_dirs ? "*" : "*.vim");
+			 expand_dirs ? "*" : (tried_vim9 ? "*.vim9" : "*.vim"));
 	    globpath(p_pp, (char_u *)buf, gap, glob_flags, expand_dirs);
 	}
 
 	if (flags & DIP_OPT)
 	{
-	    // Build complete search path: pack/*/opt/*/dirnames[i]/pat*.vim
+	    // Build complete search path: pack/*/opt/*/dirnames[i]/pat*.vim(9)
 	    vim_snprintf(buf, buf_len, "pack/*/opt/*/%s%s%s%s",
 			 *dirnames[i] ? dirnames[i] : "",
 			 *dirnames[i] ? "/" : "", pat,
-			 expand_dirs ? "*" : "*.vim");
+			 expand_dirs ? "*" : (tried_vim9 ? "*.vim9" : "*.vim"));
 	    globpath(p_pp, (char_u *)buf, gap, glob_flags, expand_dirs);
+	}
+
+	// Search for .vim9 files after .vim files (only once)
+	if (!expand_dirs && !tried_vim9)
+	{
+	    // Rebuild pattern with .vim9 extension
+	    vim_snprintf(buf, buf_len, "%s%s%s%s",
+			 *dirnames[i] ? dirnames[i] : "", *dirnames[i] ? "/" : "",
+			 pat, "*.vim9");
+	    tried_vim9 = TRUE;
+	    goto expand;
 	}
 
 	// Second round for directories
 	if (*dirnames[i] == NUL && !expand_dirs)
 	{
-	    // expand dir names in another round
 	    vim_snprintf(buf, buf_len, "%s*", pat);
 	    glob_flags = WILD_ADD_SLASH;
 	    expand_dirs = TRUE;
+	    tried_vim9 = FALSE;  // Reset for directory expansion
 	    goto expand;
 	}
 
@@ -1193,7 +1220,13 @@ expand:
 	char_u *match = ((char_u **)gap->ga_data)[i];
 	char_u *s = match;
 	char_u *e = s + STRLEN(s);
-	if (e - 4 > s && !keep_ext && STRNICMP(e - 4, ".vim", 4) == 0)
+
+	if (e - 5 > s && !keep_ext && STRNICMP(e - 5, ".vim9", 5) == 0)
+	{
+	    e -= 5;
+	    *e = NUL;
+	}
+	else if (e - 4 > s && !keep_ext && STRNICMP(e - 4, ".vim", 4) == 0)
 	{
 	    e -= 4;
 	    *e = NUL;
@@ -1564,6 +1597,26 @@ errret:
 }
 
 /*
+ * Check if filename has .vim9 extension
+ */
+    static int
+is_vim9_extension(char_u *fname)
+{
+    char_u	*ext = NULL;
+    size_t	fname_len = 0;
+
+    if (fname == NULL)
+	return FALSE;
+
+    fname_len = STRLEN(fname);
+    if (fname_len < 5)  // minimum: "a.vim9"
+	return FALSE;
+
+    ext = fname + fname_len - 5;
+    return STRCMP(ext, ".vim9") == 0;
+}
+
+/*
  * Read the file "fname" and execute its lines as EX commands.
  * When "ret_sid" is not NULL and we loaded the script before, don't load it
  * again.
@@ -1759,7 +1812,7 @@ do_source_ext(
     sticky_cmdmod_flags = 0;
 
     save_current_sctx = current_sctx;
-    if (cmdmod.cmod_flags & CMOD_VIM9CMD)
+    if ((cmdmod.cmod_flags & CMOD_VIM9CMD) || is_vim9_extension(fname_exp))
 	// When the ":vim9cmd" command modifier is used, source the script as a
 	// Vim9 script.
 	current_sctx.sc_version = SCRIPT_VERSION_VIM9;
@@ -1828,6 +1881,11 @@ do_source_ext(
 	    // reset version, "vim9script" may have been added or removed.
 	    si->sn_version = 1;
 	}
+
+	// Auto-set vim9 version for .vim9 files
+	if (is_vim9_extension(fname_exp))
+	    si->sn_version = SCRIPT_VERSION_VIM9;
+
 	if (ret_sid != NULL)
 	    *ret_sid = sid;
     }
@@ -1842,6 +1900,10 @@ do_source_ext(
 	    goto almosttheend;
 	si = SCRIPT_ITEM(sid);
 	si->sn_name = fname_exp;
+	// Auto-set vim9 version for .vim9 files
+	if (is_vim9_extension(fname_exp))
+	    si->sn_version = SCRIPT_VERSION_VIM9;
+
 	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 	if (ret_sid != NULL)
 	    *ret_sid = sid;
@@ -2775,12 +2837,12 @@ get_autoload_prefix(scriptitem_T *si)
     if (prefix == NULL)
 	return NULL;
 
-    // replace all '/' with '#' and locate ".vim" at the end
+    // replace all '/' with '#' and locate ".vim" or ".vim9" at the end
     for (p = prefix; *p != NUL; p += mb_ptr2len(p))
     {
 	if (vim_ispathsep(*p))
 	    *p = '#';
-	else if (STRCMP(p, ".vim") == 0)
+	else if (STRCMP(p, ".vim9") == 0 || STRCMP(p, ".vim") == 0)
 	{
 	    p[0] = '#';
 	    p[1] = NUL;
@@ -2788,7 +2850,7 @@ get_autoload_prefix(scriptitem_T *si)
 	}
     }
 
-    // did not find ".vim" at the end
+    // did not find ".vim" or ".vim9" at the end
     vim_free(prefix);
     return NULL;
 }
@@ -2842,8 +2904,8 @@ autoload_name(char_u *name)
     char_u	*p, *q = NULL;
     char_u	*scriptname;
 
-    // Get the script file name: replace '#' with '/', append ".vim".
-    scriptname = alloc(STRLEN(name) + 14);
+    // Get the script file name: replace '#' with '/', append ".vim9" first, then ".vim".
+    scriptname = alloc(STRLEN(name) + 15);
     if (scriptname == NULL)
 	return NULL;
     STRCPY(scriptname, "autoload/");
@@ -2851,7 +2913,14 @@ autoload_name(char_u *name)
     for (p = scriptname + 9; (p = vim_strchr(p, AUTOLOAD_CHAR)) != NULL;
 								    q = p, ++p)
 	*p = '/';
-    STRCPY(q, ".vim");
+
+    // Check if it's coming from vim9 extension file
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid)
+	    && is_vim9_extension(SCRIPT_ITEM(current_sctx.sc_sid)->sn_name))
+	STRCPY(q, ".vim9");
+    else
+	STRCPY(q, ".vim");
+
     return scriptname;
 }
 

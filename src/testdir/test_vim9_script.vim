@@ -5548,4 +5548,57 @@ def Test_substitute_cmd()
   source Xvim9lines
 enddef
 
+" Test that .vim9 files are automatically treated as vim9script
+def Test_vim9_file_extension_autodetect()
+  var lines =<< trim END
+    # This .vim9 file should automatically use vim9script
+    var auto_message: string = "Auto-detected vim9!"
+    def AutoFunc(): string
+      return "vim9 extension works"
+    enddef
+    g:vim9_extension_test = AutoFunc()
+    g:vim9_extension_message = auto_message
+  END
+  writefile(lines, 'Xvim9_auto_test.vim9', 'D')
+  source Xvim9_auto_test.vim9
+
+  assert_equal('vim9 extension works', g:vim9_extension_test)
+  assert_equal('Auto-detected vim9!', g:vim9_extension_message)
+
+  unlet! g:vim9_extension_test
+  unlet! g:vim9_extension_message
+enddef
+
+" Test error handling for wrong syntax in .vim9 files
+def Test_vim9_extension_error_handling()
+  var lines =<< trim END
+    # This should fail because 'let' is not allowed in vim9
+    let wrong_syntax = "this should cause error"
+  END
+  writefile(lines, 'Xvim9_error_test.vim9', 'D')
+
+  # This should fail when sourcing
+  v9.CheckScriptFailure(['source Xvim9_error_test.vim9'], 'E1126:')
+enddef
+
+def Test_vim9_extension_import()
+  var lines =<< trim END
+    export def Foo(): string
+      return "From foo"
+    enddef
+  END
+  writefile(lines, 'Xvim9_foo.vim9', 'D')
+
+  lines =<< trim END
+    import "./Xvim9_foo.vim9" as F
+    g:foo_str = F.Foo()
+  END
+  writefile(lines, 'Xvim9_bar.vim9', 'D')
+  source Xvim9_foo.vim9
+  source Xvim9_bar.vim9
+
+  assert_equal('From foo', g:foo_str)
+  unlet g:foo_str
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -504,6 +504,14 @@ vim_main2(void)
 # endif
 		;
 
+	char_u *plugin_pattern9 = (char_u *)
+# if defined(VMS) || defined(AMIGA)
+		"plugin/*.vim9"
+# else
+		"plugin/**/*.vim9"
+# endif
+		;
+
 	// First add all package directories to 'runtimepath', so that their
 	// autoload directories can be found.  Only if not done already with a
 	// :packloadall command.
@@ -515,6 +523,8 @@ vim_main2(void)
 	    add_pack_start_dirs();
 	}
 
+	source_in_path(rtp_copy == NULL ? p_rtp : rtp_copy, plugin_pattern9,
+		DIP_ALL | DIP_NOAFTER, NULL);
 	source_in_path(rtp_copy == NULL ? p_rtp : rtp_copy, plugin_pattern,
 		DIP_ALL | DIP_NOAFTER, NULL);
 	TIME_MSG("loading plugins");
@@ -526,6 +536,7 @@ vim_main2(void)
 	    load_start_packages();
 	TIME_MSG("loading packages");
 
+	source_runtime(plugin_pattern9, DIP_ALL | DIP_AFTER);
 	source_runtime(plugin_pattern, DIP_ALL | DIP_AFTER);
 	TIME_MSG("loading after plugins");
     }

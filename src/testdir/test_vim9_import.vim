@@ -588,7 +588,7 @@ def Test_import_fails()
       vim9script
       import './Ximport/.vim'
   END
-  v9.CheckScriptFailure(lines, 'E1261: Cannot import .vim without using "as"')
+  v9.CheckScriptFailure(lines, 'E1261: Cannot import .vim or .vim9 without using "as"')
   lines =<< trim END
       vim9script
       import './Ximport/.vim' as vim
@@ -600,7 +600,7 @@ def Test_import_fails()
       vim9script
       import './Ximport/.vimrc'
   END
-  v9.CheckScriptFailure(lines, 'E1257: Imported script must use "as" or end in .vim')
+  v9.CheckScriptFailure(lines, 'E1257: Imported script must use "as" or end in .vim or .vim9')
   lines =<< trim END
       vim9script
       import './Ximport/.vimrc' as vimrc
@@ -619,7 +619,7 @@ def Test_import_fails()
   assert_fails('source Xbar.vim', 'E488: Trailing characters: ask expo')
   writefile([], 'Xtemp')
   call writefile(['vim9script', "import './Xtemp'"], 'Xbar.vim')
-  assert_fails('source Xbar.vim', 'E1257: Imported script must use "as" or end in .vim: Xtemp')
+  assert_fails('source Xbar.vim', 'E1257: Imported script must use "as" or end in .vim or .vim9: Xtemp')
   delete('Xtemp')
   call writefile(['vim9script', "import './Xfoo.vim' as abc | foobar"], 'Xbar.vim')
   assert_fails('source Xbar.vim', 'E492: Not an editor command:  foobar')

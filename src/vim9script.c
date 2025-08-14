@@ -592,18 +592,35 @@ handle_import(
     else
     {
 	char_u *p = gettail(tv.vval.v_string);
-	char_u *end = (char_u *)strstr((char *)p, ".vim");
+	char_u *end = NULL;
+	int     found_extension = FALSE;
 
 	if (!ends_excmd2(arg_start, expr_end))
 	{
 	    semsg(_(e_trailing_characters_str), expr_end);
 	    goto erret;
 	}
-	if (end == NULL || end[4] != NUL)
+
+	// Check for .vim9 extension first
+	size_t p_len = STRLEN(p);
+	if (p_len >= 5 && STRCMP(p + p_len - 5, ".vim9") == 0)
+	{
+	    end = p + p_len - 5;
+	    found_extension = TRUE;
+	}
+	// Check for .vim extension
+	else if (p_len >= 4 && STRCMP(p + p_len - 4, ".vim") == 0)
+	{
+	    end = p + p_len - 4;
+	    found_extension = TRUE;
+	}
+
+	if (!found_extension)
 	{
 	    semsg(_(e_imported_script_must_use_as_or_end_in_dot_vim_str), p);
 	    goto erret;
 	}
+
 	if (end == p)
 	{
 	    semsg(_(e_cannot_import_dot_vim_without_using_as), p);
