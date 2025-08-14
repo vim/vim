@@ -2893,16 +2893,15 @@ v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
 						*v:termrbgresp*
 v:termrbgresp	The escape sequence returned by the terminal for the |t_RB|
 		termcap entry.  This is used to find out what the terminal
-		background color is; see 'background'.  When this option is
-		set, the TermResponseAll autocommand event is fired, with
-		<amatch> set to "background".
+		background color is; see 'background'.  This is set by the
+		$VIMRUNTIME/plugin/colorresp.vim plugin normally included with
+		Vim, but can be set manually if you know what you are doing.
+		Note that changing this will not do anything.
 
 						*v:termrfgresp*
 v:termrfgresp	The escape sequence returned by the terminal for the |t_RF|
 		termcap entry.  This is used to find out what the terminal
-		foreground color is.  When this option is set, the
-		TermResponseAll autocommand event is fired, with <amatch> set
-		to "foreground".
+		foreground color is. Behaves the same as |v:termrbgresp|
 
 						*v:termu7resp*
 v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
@@ -2916,6 +2915,14 @@ v:termda1	The escape sequence returned by a primary device attributes
 		(DA1) query from the terminal.  When this option is set, the
 		TermResponseAll autocommand event is fired, with <amatch> set
 		to "da1".  Can be used to detect OSC 52 support in a terminal.
+
+						*v:termosc*
+v:termosc	The escape sequence of the most recent OSC response received
+		from the terminal.  When this option is set, the
+		|TermResponseAll| autocommand event is fired, with <amatch>
+		set to "osc".  Also used to set the |v:termrbgresp| and
+		|v:termrfgresp| via the $VIMRUNTIME/plugin/colorresp.vim
+		plugin
 
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.

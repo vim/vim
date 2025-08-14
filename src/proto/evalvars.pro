@@ -51,6 +51,7 @@ void set_vcount(long count, long count1, int set_prevcount);
 void save_vimvars(vimvars_save_T *vvsave);
 void restore_vimvars(vimvars_save_T *vvsave);
 void set_vim_var_string(int idx, char_u *val, int len);
+void set_vim_var_string_direct(int idx, char_u *val);
 void set_vim_var_list(int idx, list_T *val);
 void set_vim_var_dict(int idx, dict_T *val);
 void set_argv_var(char **argv, int argc);

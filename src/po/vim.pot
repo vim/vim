@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-08-23 16:16+0200\n"
+"POT-Creation-Date: 2025-08-23 14:43-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -478,6 +478,24 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr ""
 
+msgid "Save As"
+msgstr ""
+
+#, c-format
+msgid "Save changes to \"%s\"?"
+msgstr ""
+
+msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
+msgstr ""
+
+#, c-format
+msgid "W20: Required python version 2.x not supported, ignoring file: %s"
+msgstr ""
+
+#, c-format
+msgid "W21: Required python version 3.x not supported, ignoring file: %s"
+msgstr ""
+
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Oct %03o, Digr %s"
 msgstr ""
@@ -513,9 +531,6 @@ msgid "%ld lines filtered"
 msgstr ""
 
 msgid "[No write since last change]\n"
-msgstr ""
-
-msgid "Save As"
 msgstr ""
 
 msgid "Write partial file?"
@@ -585,21 +600,6 @@ msgid "Pattern not found: %s"
 msgstr ""
 
 msgid "No old files"
-msgstr ""
-
-#, c-format
-msgid "Save changes to \"%s\"?"
-msgstr ""
-
-msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
-msgstr ""
-
-#, c-format
-msgid "W20: Required python version 2.x not supported, ignoring file: %s"
-msgstr ""
-
-#, c-format
-msgid "W21: Required python version 3.x not supported, ignoring file: %s"
 msgstr ""
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
@@ -2570,10 +2570,10 @@ msgstr ""
 msgid "cannot have both a list and a \"what\" argument"
 msgstr ""
 
-msgid "Switching to backtracking RE engine for pattern: "
+msgid "External submatches:\n"
 msgstr ""
 
-msgid "External submatches:\n"
+msgid "Switching to backtracking RE engine for pattern: "
 msgstr ""
 
 msgid "Could not open temporary log file for writing, displaying on stderr... "
@@ -8832,6 +8832,10 @@ msgstr ""
 msgid "E1567: Cannot start socket server, socket path is unavailable"
 msgstr ""
 
+#, c-format
+msgid "E1568: OSC command response timed out: %.*s"
+msgstr ""
+
 #. type of cmdline window or 0
 #. result of cmdline window or 0
 #. buffer of cmdline window or NULL
@@ -9689,6 +9693,9 @@ msgid "when not empty, text for the icon of this window"
 msgstr ""
 
 msgid "restore the screen contents when exiting Vim"
+msgstr ""
+
+msgid "timeout used for terminal OSC responses"
 msgstr ""
 
 msgid "using the mouse"
