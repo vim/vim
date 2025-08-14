@@ -2971,7 +2971,11 @@ ExpandBufnames(
 	    else
 		p = vim_strsave(p);
 	    if (p == NULL)
+	    {
+		if (fuzzy && round == 2)
+		    fuzmatch_str_free(fuzmatch, count);
 		return FAIL;
+	    }
 
 	    if (!fuzzy)
 	    {
