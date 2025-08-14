@@ -37,4 +37,5 @@ void may_set_selection(void);
 void adjust_clip_reg(int *rp);
 char *choose_clipmethod(void);
 void ex_clipreset(exarg_T *eap);
+char *did_set_clipfunc(optset_T *args);
 /* vim: set ft=c : */
