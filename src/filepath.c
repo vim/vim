@@ -3129,7 +3129,7 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
 
 	if ((cx == '/' || cx == '\\') && ASCII_ISALPHA(cy))
 	{
-	    drive = MB_TOUPPER(cy) - 64;
+	    drive = MB_TOUPPER(cy) - 'A' + 1;
 
 	    // Check for the colon
 	    py += mb_ptr2len(py);
