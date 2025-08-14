@@ -868,11 +868,10 @@ search_for_fuzzy_match(
     void
 fuzmatch_str_free(fuzmatch_str_T *fuzmatch, int count)
 {
-    int i;
-
     if (fuzmatch == NULL)
 	return;
-    for (i = 0; i < count; ++i)
+
+    for (int i = 0; i < count; ++i)
 	vim_free(fuzmatch[i].str);
     vim_free(fuzmatch);
 }
@@ -892,7 +891,7 @@ fuzzymatches_to_strmatches(
     int		i;
 
     if (count <= 0)
-	return OK;
+	goto theend;
 
     *matches = ALLOC_MULT(char_u *, count);
     if (*matches == NULL)
@@ -909,8 +908,9 @@ fuzzymatches_to_strmatches(
 
     for (i = 0; i < count; i++)
 	(*matches)[i] = fuzmatch[i].str;
-    vim_free(fuzmatch);
 
+theend:
+    vim_free(fuzmatch);
     return OK;
 }
 
