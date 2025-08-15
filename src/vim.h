@@ -9,10 +9,6 @@
 #ifndef VIM__H
 # define VIM__H
 
-#ifdef PROTO
-typedef struct _FILE FILE; /* opaque FILE */
-#endif
-
 #include "protodef.h"
 
 // _WIN32 is defined as 1 when the compilation target is 32-bit or 64-bit.
