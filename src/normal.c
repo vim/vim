@@ -15,6 +15,7 @@
 #include "vim.h"
 
 static int	VIsual_mode_orig = NUL;		// saved Visual mode
+static int	binsearch_mode   = FALSE;
 
 #ifdef FEAT_EVAL
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
@@ -122,6 +123,7 @@ static void	nv_nbcmd(cmdarg_T *cap);
 static void	nv_drop(cmdarg_T *cap);
 #endif
 static void	nv_cursorhold(cmdarg_T *cap);
+static void	nv_binsearch(cmdarg_T *cap);
 
 // Declare nv_cmds[].
 #define DO_DECLARE_NVCMD
@@ -349,7 +351,8 @@ normal_cmd_needs_more_chars(cmdarg_T *cap, short_u cmd_flags)
 		    && reg_recording == 0
 		    && reg_executing == 0)
 		|| ((cap->cmdchar == 'a' || cap->cmdchar == 'i')
-		    && (cap->oap->op_type != OP_NOP || VIsual_active))));
+		    && (cap->oap->op_type != OP_NOP || VIsual_active))))
+	    && !binsearch_mode;
 }
 
 /*
@@ -1595,6 +1598,7 @@ may_clear_cmdline(void)
 static char_u	old_showcmd_buf[SHOWCMD_BUFLEN];  // For push_showcmd()
 static int	showcmd_is_clear = TRUE;
 static int	showcmd_visual = FALSE;
+static int	showcmd_binsearch = TRUE;
 
 static void display_showcmd(void);
 
@@ -1602,6 +1606,9 @@ static void display_showcmd(void);
 clear_showcmd(void)
 {
     if (!p_sc)
+	return;
+
+    if(!showcmd_binsearch)
 	return;
 
     if (VIsual_active && !char_avail())
@@ -1737,6 +1744,9 @@ add_to_showcmd(int c)
 	showcmd_buf[0] = NUL;
 	showcmd_visual = FALSE;
     }
+
+    if (!showcmd_binsearch)
+	return FALSE;
 
     // Ignore keys that are scrollbar updates and mouse clicks
     if (IS_SPECIAL(c))
@@ -6822,6 +6832,11 @@ nv_goto(cmdarg_T *cap)
     static void
 nv_normal(cmdarg_T *cap)
 {
+    if(cap->nchar == Ctrl_Q || binsearch_mode)
+    {
+	nv_binsearch(cap);
+	return;
+    }
     if (cap->nchar == Ctrl_N || cap->nchar == Ctrl_G)
     {
 	clearop(cap->oap);
@@ -7567,4 +7582,127 @@ nv_cursorhold(cmdarg_T *cap)
     apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
     did_cursorhold = TRUE;
     cap->retval |= CA_COMMAND_BUSY;	// don't call edit() now
+}
+/*
+ * Move cursor by Binary Search. Ctrl_J to move down and Ctrl_K to move up.
+ */
+    static void
+nv_binsearch(cmdarg_T *cap)
+{
+    static linenr_T upper_bound = 0,
+		    lower_bound = 0,
+		    center_bound = 0;	//upper bound and lower bound refer to the line number, i.e. the lower bound
+
+    static pos_T old_pos = {0, 0, 0};
+
+    static int //binsearch_mode = FALSE,	//appears at the top of the window (since line number grows downward).
+	       old_op_type = OP_NOP,
+	       returned = TRUE,
+	       old_motion_type = 0,
+	       got_bsl = FALSE;
+
+    int c = 0;
+start: 
+    if(!binsearch_mode)			//initialize upper and lower bounds and center_bound
+    {
+	showcmd_binsearch = FALSE;
+	binsearch_mode = TRUE;
+        center_bound = curwin->w_cursor.lnum;
+	
+	validate_botline();	    // make sure curwin->w_botline is valid
+	upper_bound = curwin->w_botline;
+	lower_bound = curwin->w_topline;
+	
+	if(returned)			    //necessary to not forget the operator pending if we do two binary searches in a row
+	{
+	    returned = FALSE;
+	    old_op_type = cap->oap->op_type;
+	    old_motion_type = cap->oap->motion_type;
+	    old_pos = curwin->w_cursor;
+	}
+
+	//cap->oap->op_type = OP_NOP;	//we unset the op_type so we only process the pending operator after we're done with the binsearch
+    }
+
+    while(TRUE)				//binsearch loop
+    {
+    c = safe_vgetc();
+
+    if(got_bsl && c == Ctrl_Q)
+    {
+	got_bsl = FALSE;
+	binsearch_mode = FALSE;
+	goto start;
+    }
+    else if(got_bsl && c != Ctrl_Q)
+    {
+	got_bsl = FALSE;
+	c = Ctrl_R;
+	break;
+    }
+
+    if(c == Ctrl_BSL)
+    {
+	binsearch_mode = FALSE;
+	got_bsl = TRUE;
+	goto start;
+    }
+    if(c==Ctrl_J)
+    {
+
+    lower_bound=center_bound;
+    center_bound = (center_bound + upper_bound)/2;
+    cursor_down(center_bound - lower_bound, TRUE);	//use cursor_down to move instead of any other method
+    vungetc(Ctrl_BSL);					//like, say, curwin->w_cursor.lnum =center_line, just in case.
+    finish_op = FALSE;	       				//we return after every cursor movement 
+    return;						//to update whatever visual efect may be triggered by
+							//cursor movement, like visual mode.
+							//unget Ctrl_Q to make sure we will come back to
+							//this function after we go back to main and update visual effects.
+    }
+
+    if(c==Ctrl_K)
+    {
+
+    upper_bound=center_bound;
+    center_bound = (center_bound + lower_bound)/2;
+    cursor_up(upper_bound - center_bound, TRUE);
+    vungetc(Ctrl_BSL);
+    finish_op = FALSE;
+    return;
+    
+    }
+    break;
+
+    }
+
+    if(c == ESC)		    //escape binsearch
+    {
+	returned = TRUE;
+	binsearch_mode = FALSE;
+	clearopbeep(cap->oap);
+	finish_op = FALSE;
+	showcmd_binsearch = TRUE;
+
+	curwin->w_cursor = old_pos;
+	return;
+    }
+
+    if(c != Ctrl_R)
+	vungetc(c);			    //unget c to resume the command that interrupted the binary search
+
+    binsearch_mode = FALSE;
+    showcmd_binsearch = TRUE;
+    cap->oap->op_type = old_op_type;//resume pending operator
+
+    cap->oap->motion_type = old_motion_type; //conserve motion type
+
+    if(cap->oap->motion_force == NUL && old_op_type != OP_NOP)	//defaul motion force should be linewise
+	cap->oap->motion_force = 'V';
+
+    if(old_op_type != OP_NOP)
+	finish_op = TRUE;
+    returned = TRUE;
+
+
 }
