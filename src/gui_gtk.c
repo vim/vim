@@ -33,6 +33,10 @@
 
 #include "vim.h"
 
+#ifdef FEAT_GUI_GTK
+# include "gui_gtk_f.h"
+#endif
+
 // Silence cproto on macOS
 #if defined(PROTO)
 typedef char gchar;
@@ -111,9 +115,9 @@ typedef struct _GList  GList;
 typedef struct _GSList GSList;
 typedef unsigned long  guicolor_T;
 typedef unsigned char  char_u;
-#ifdef UNUSED
-# undef UNUSED
-#endif
+# ifdef UNUSED
+#  undef UNUSED
+# endif
 #define UNUSED
 #endif
 
