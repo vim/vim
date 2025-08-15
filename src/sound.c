@@ -11,6 +11,7 @@
  * sound.c: functions related making noise
  */
 
+#include "sound.h"
 #include "vim.h"
 
 #ifdef PROTO
