@@ -22,10 +22,8 @@ int diffopt_horizontal(void);
 int diffopt_hiddenoff(void);
 int diffopt_closeoff(void);
 void diff_update_line(linenr_T lnum);
-#ifdef FEAT_DIFF
 int diff_change_parse(diffline_T *diffline, diffline_change_T *change, int *change_start, int *change_end);
 int diff_find_change(win_T *wp, linenr_T lnum, diffline_T *diffline);
-#endif
 int diff_infold(win_T *wp, linenr_T lnum);
 void nv_diffgetput(int put, long count);
 void ex_diffgetput(exarg_T *eap);

@@ -3606,7 +3606,7 @@ struct file_buffer
 }; // file_buffer
 
 
-#ifdef FEAT_DIFF
+#if defined(FEAT_DIFF) || defined(PROTO)
 /*
  * Stuff for diff mode.
  */

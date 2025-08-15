@@ -73,7 +73,9 @@ extern int _stricoll(char *a, char *b);
 # include "if_cscope.pro"
 # include "debugger.pro"
 # include "dict.pro"
+# ifdef FEAT_DIFF
 # include "diff.pro"
+# endif
 # include "linematch.pro"
 # include "digraph.pro"
 # include "drawline.pro"
