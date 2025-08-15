@@ -26,17 +26,12 @@ typedef unsigned long Atom;
 typedef unsigned long Window;
 typedef unsigned long Time;
 typedef struct wayland_selection_S wayland_selection_T;
-
-/* Vim aliases that normally come via vim.h */
 typedef unsigned char  char_u;
 typedef unsigned short short_u;
-/* if needed: typedef unsigned int int_u; typedef unsigned long long_u; */
-
-/* neutralize UNUSED */
-#ifdef UNUSED
-# undef UNUSED
-#endif
-#define UNUSED
+# ifdef UNUSED
+#  undef UNUSED
+# endif
+# define UNUSED
 #endif
 
 #ifdef FEAT_CYGWIN_WIN32_CLIPBOARD

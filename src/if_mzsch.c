@@ -26,12 +26,9 @@
 // Silence cproto on macOS
 #ifdef PROTO
 typedef unsigned int guint;
-/* Pick one header form so the body compiles under PROTO. */
 # if !defined(FEAT_GUI_MSWIN) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF)
 #  define FEAT_GUI_GTK 1
 # endif
-
-/* --- Neutralize UNUSED and booleans --- */
 # ifdef UNUSED
 #  undef UNUSED
 # endif
@@ -39,9 +36,7 @@ typedef unsigned int guint;
 # ifndef TRUE
 #  define TRUE 1
 #  define FALSE 0
-#endif
-
-/* --- Win32 (if the MSWIN branch is picked) --- */
+# endif
 typedef void *HWND;
 typedef unsigned int  UINT;
 typedef unsigned long UINT_PTR;
@@ -49,15 +44,10 @@ typedef unsigned long DWORD;
 #ifndef CALLBACK
 # define CALLBACK
 #endif
-
-/* --- GTK branch --- */
 typedef int   gboolean;
 typedef void *gpointer;
-
-/* --- Motif/Xt branch --- */
 typedef void	    *XtPointer;
 typedef unsigned long XtIntervalId;
-/* If the Motif branch is used, these externs keep cproto happy: */
 typedef void *XtAppContext;
 extern XtAppContext app_context;
 extern int	    mz_threads_allow;

@@ -14,8 +14,8 @@
 #include "vim.h"
 
 #ifdef PROTO
-typedef void (*soundcb_T)(void *cb_data);  /* callback type for sound events */
-typedef struct _ca_context ca_context; /* opaque libcanberra context */
+typedef void (*soundcb_T)(void *cb_data);
+typedef struct _ca_context ca_context;
 #endif
 
 #if defined(FEAT_SOUND) || defined(PROTO)

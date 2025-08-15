@@ -14,27 +14,19 @@
  * Also used by Cygwin, using os_unix.c.
  */
 
-#if !defined(PROTO)
-#include "vim.h"
+// Silence cproto on macOS
+#ifndef PROTO
+# include "vim.h"
 #endif
 
 #ifdef PROTO
-/* tame vim types that normally come via vim.h */
 typedef unsigned char char_u;
 typedef unsigned short short_u;
 typedef struct { int dummy; } Clipboard_T;
-
-/* neutralize UNUSED */
-#ifdef UNUSED
-# undef UNUSED
-#endif
+# ifdef UNUSED
+#  undef UNUSED
+# endif
 #define UNUSED
-
-/* Win32 placeholders already in your file:
-   #define WINAPI
-   #define WINBASEAPI
-   typedef int DWORD, LPBOOL, LPCSTR, LPCWSTR, LPSTR, LPWSTR, UINT;
-*/
 #endif
 /*
  * Compile only the clipboard handling features when compiling for cygwin
@@ -51,8 +43,8 @@ typedef struct { int dummy; } Clipboard_T;
  * errors disappear.  They do not need to be correct.
  */
 #ifdef PROTO
-#define WINAPI
-#define WINBASEAPI
+# define WINAPI
+# define WINBASEAPI
 typedef int DWORD;
 typedef int LPBOOL;
 typedef int LPCSTR;

@@ -20,47 +20,47 @@
 
 // Silence cproto on macOS
 #ifndef PROTO
-#include <Xm/Form.h>
-#include <Xm/PushBG.h>
-#include <Xm/Text.h>
-#include <Xm/TextF.h>
-#include <Xm/Label.h>
-#include <Xm/Frame.h>
-#include <Xm/LabelG.h>
-#include <Xm/ToggleBG.h>
-#include <Xm/SeparatoG.h>
-#include <Xm/DialogS.h>
-#include <Xm/List.h>
-#include <Xm/RowColumn.h>
-#include <Xm/AtomMgr.h>
-#include <Xm/Protocols.h>
+# include <Xm/Form.h>
+# include <Xm/PushBG.h>
+# include <Xm/Text.h>
+# include <Xm/TextF.h>
+# include <Xm/Label.h>
+# include <Xm/Frame.h>
+# include <Xm/LabelG.h>
+# include <Xm/ToggleBG.h>
+# include <Xm/SeparatoG.h>
+# include <Xm/DialogS.h>
+# include <Xm/List.h>
+# include <Xm/RowColumn.h>
+# include <Xm/AtomMgr.h>
+# include <Xm/Protocols.h>
 
-#include <X11/keysym.h>
-#include <X11/Xatom.h>
-#include <X11/StringDefs.h>
-#include <X11/Intrinsic.h>
+# include <X11/keysym.h>
+# include <X11/Xatom.h>
+# include <X11/StringDefs.h>
+# include <X11/Intrinsic.h>
 #endif
 
 #ifdef PROTO
 typedef struct _WidgetRec *Widget;
 typedef void (*XtCallbackProc)(void);
-typedef int Boolean;  /* X11 Boolean type is usually int */
+typedef int Boolean;
 struct SharedFontSelData;
 typedef struct SharedFontSelData SharedFontSelData;
 
-enum ListSpecifier { LIST_SPEC_DUMMY }; /* minimal enum stub */
-typedef void *XtPointer;               /* Xt generic pointer */
+enum ListSpecifier { LIST_SPEC_DUMMY };
+typedef void *XtPointer;
 typedef struct {
-    int set;        /* whether the toggle button is set */
-    void *event;    /* pointer to XEvent or NULL */
+    int set;
+    void *event;
 } XmToggleButtonCallbackStruct;
 typedef struct {
-    int item_position;  /* position of selected item */
-    void *item;         /* XmString in real Motif */
-    void *event;        /* pointer to XEvent or NULL */
+    int item_position;
+    void *item;
+    void *event;
 } XmListCallbackStruct;
 typedef struct {
-    void *event;  /* pointer to XEvent or NULL */
+    void *event;
 } XmPushButtonCallbackStruct;
 #endif
 

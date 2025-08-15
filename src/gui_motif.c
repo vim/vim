@@ -40,47 +40,47 @@ typedef void (*XtExposeProc)(Widget, void *, Region);
 typedef String XmStringCharSet;
 #endif
 
-#if !defined(PROTO)
-#include <Xm/Form.h>
-#include <Xm/RowColumn.h>
-#include <Xm/PushB.h>
-#include <Xm/Text.h>
-#include <Xm/TextF.h>
-#include <Xm/Separator.h>
-#include <Xm/Label.h>
-#include <Xm/CascadeB.h>
-#include <Xm/ScrollBar.h>
-#include <Xm/MenuShell.h>
-#include <Xm/DrawingA.h>
-#if (XmVersion >= 1002)
-# include <Xm/RepType.h>
-#endif
-#include <Xm/Frame.h>
-#include <Xm/LabelG.h>
-#include <Xm/ToggleBG.h>
-#include <Xm/SeparatoG.h>
-#include <Xm/XmP.h>
+#ifndef PROTO
+# include <Xm/Form.h>
+# include <Xm/RowColumn.h>
+# include <Xm/PushB.h>
+# include <Xm/Text.h>
+# include <Xm/TextF.h>
+# include <Xm/Separator.h>
+# include <Xm/Label.h>
+# include <Xm/CascadeB.h>
+# include <Xm/ScrollBar.h>
+# include <Xm/MenuShell.h>
+# include <Xm/DrawingA.h>
+# if (XmVersion >= 1002)
+#  include <Xm/RepType.h>
+# endif
+# include <Xm/Frame.h>
+# include <Xm/LabelG.h>
+# include <Xm/ToggleBG.h>
+# include <Xm/SeparatoG.h>
+# include <Xm/XmP.h>
 
-#include <X11/keysym.h>
-#include <X11/Xatom.h>
-#include <X11/StringDefs.h>
-#include <X11/Intrinsic.h>
-#ifdef HAVE_X11_XPM_H
-# if defined(VMS)
-#  include <xpm.h>
+# include <X11/keysym.h>
+# include <X11/Xatom.h>
+# include <X11/StringDefs.h>
+# include <X11/Intrinsic.h>
+# ifdef HAVE_X11_XPM_H
+#  if defined(VMS)
+#   include <xpm.h>
+#  else
+#   include <X11/xpm.h>
+#  endif
 # else
-#  include <X11/xpm.h>
+#  ifdef HAVE_XM_XPMP_H
+#   include <Xm/XpmP.h>
+#  endif
 # endif
-#else
-# ifdef HAVE_XM_XPMP_H
-#  include <Xm/XpmP.h>
+# ifdef HAVE_XM_NOTEBOOK_H
+#  include <Xm/Notebook.h>
 # endif
-#endif
-#ifdef HAVE_XM_NOTEBOOK_H
-# include <Xm/Notebook.h>
-#endif
 
-#include "gui_xmebw.h"	// for our Enhanced Button Widget
+# include "gui_xmebw.h"	// for our Enhanced Button Widget
 #endif
 
 #if defined(FEAT_GUI_DIALOG) && defined(HAVE_XPM)
@@ -92,10 +92,7 @@ typedef String XmStringCharSet;
 #endif
 
 #ifdef PROTO
-/* ---- Vim & common scalars ---- */
 typedef unsigned char  char_u;
-
-/* ---- Xlib core handles ---- */
 typedef struct _Display Display;
 typedef unsigned long	Window;
 typedef unsigned long	Atom;
@@ -104,35 +101,25 @@ typedef unsigned long	Pixel;
 typedef unsigned long	KeySym;
 typedef unsigned long	Colormap;
 typedef unsigned long	Cursor;
-
-/* ---- Xt / Motif basics ---- */
 typedef struct _WidgetRec *Widget;
 typedef void		*XtPointer;
 typedef char		*String;
 typedef unsigned int	 Cardinal;
 typedef unsigned short	 Dimension;
 typedef short		 Position;
-
-/* ---- Xlib booleans / status ---- */
 typedef int		 Bool;
 #ifndef True
 # define True  1
 # define False 0
 #endif
 typedef int		 Status;
-
-/* ---- Xlib/Motif structs we only need as types ---- */
 typedef struct { int type; } XEvent;
 typedef struct { int type; } XKeyEvent;
-typedef void		*Region;	/* opaque */
+typedef void		*Region;
 typedef struct _XFontStruct XFontStruct;
 typedef void		*XFontSet;
 typedef void		*XmFontList;
-
-/* ---- Common Xt callback type ---- */
 typedef void (*XtCallbackProc)(Widget, XtPointer, XtPointer);
-
-/* (add more opaque typedefs here if cproto flags new names) */
 #endif
 
 #define MOTIF_POPUP
