@@ -16,8 +16,28 @@
 # include "auto/config.h"
 #endif
 
-#include <stdio.h>
-#include <string.h>
+// Silence cproto on macOS
+#ifndef PROTO
+# include <stdio.h>
+# include <string.h>
+#endif
+
+#ifdef PROTO
+typedef long   VALUE;
+typedef unsigned long ID;
+typedef struct rb_encoding rb_encoding;
+# ifdef ANYARGS
+#  undef ANYARGS
+# endif
+#define ANYARGS void
+# ifdef UNUSED
+#  undef UNUSED
+# endif
+#define UNUSED
+typedef struct win_S win_T;
+extern win_T *curwin;
+extern VALUE window_new(win_T *w);
+#endif
 
 #ifdef _WIN32
 # ifndef DYNAMIC_RUBY
@@ -109,9 +129,11 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#if !defined(PROTO)
 #include <ruby.h>
 #pragma GCC diagnostic pop
 #include <ruby/encoding.h>
+#endif
 
 // See above.
 #ifdef SIZEOF_TIME_T

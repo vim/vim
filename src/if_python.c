@@ -19,6 +19,15 @@
 
 #include "vim.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct _object PyObject;
+typedef struct {
+  PyObject ob_base;
+  PyObject *start, *stop, *step;
+} PySliceObject;
+#endif
+
 #include <limits.h>
 
 // uncomment this if used with the debug version of python.
@@ -63,7 +72,10 @@
 
 #define PY_SSIZE_T_CLEAN
 
-#include <Python.h>
+// Silence cproto on macOS
+#ifndef PROTO
+# include <Python.h>
+#endif
 
 #if !defined(PY_VERSION_HEX) || PY_VERSION_HEX < 0x02050000
 # undef PY_SSIZE_T_CLEAN
@@ -138,6 +150,9 @@ struct PyMethodDef { Py_ssize_t a; };
 # else
 #  include <dlfcn.h>
 #  define FARPROC void*
+#  ifdef HINSTANCE
+#   undef HINSTANCE
+#  endif
 #  define HINSTANCE void*
 #  if defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)
 #   define load_dll(n) dlopen((n), RTLD_LAZY)
@@ -313,6 +328,44 @@ struct PyMethodDef { Py_ssize_t a; };
 # if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
 #  define Py_NoSiteFlag (*dll_Py_NoSiteFlag)
 # endif
+
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct _object PyObject;
+typedef long Py_ssize_t;
+typedef struct dict_S dict_T;
+typedef void (*rangeinitializer)(void);
+typedef void (*runner)(void *arg);
+typedef int                PyGILState_STATE;
+typedef struct _typeobject PyTypeObject;
+typedef struct _ts         PyThreadState;
+typedef PyObject *(*iternextfunc)(PyObject *);
+typedef void (*PyCapsule_Destructor)(PyObject *);
+typedef Py_ssize_t (*lenfunc)(PyObject *);
+typedef PyObject * (*binaryfunc)(PyObject *, PyObject *);
+typedef PyObject * (*ssizeargfunc)(PyObject *, Py_ssize_t);
+typedef int        (*ssizeobjargproc)(PyObject *, Py_ssize_t, PyObject *);
+typedef struct {
+  lenfunc       mp_length;
+  binaryfunc    mp_subscript;
+  ssizeobjargproc mp_ass_subscript;
+} PyMappingMethods;
+typedef struct {
+  lenfunc          sq_length;
+  binaryfunc       sq_concat;
+  ssizeargfunc     sq_repeat;
+  ssizeargfunc     sq_item;
+  void            *sq_slice;
+  ssizeobjargproc  sq_ass_item;
+  void            *sq_ass_slice;
+  void            *sq_contains;
+  void            *sq_inplace_concat;
+  void            *sq_inplace_repeat;
+} PySequenceMethods;
+# ifdef PyList_New
+#  undef PyList_New
+# endif
+#endif /* PROTO */
 
 /*
  * Pointers for dynamic link
@@ -826,7 +879,9 @@ typedef PySliceObject PySliceObject_T;
 /*
  * Include the code shared with if_python3.c
  */
-#include "if_py_both.h"
+#ifndef PROTO
+# include "if_py_both.h"
+#endif
 
 
 ///////////////////////////////////////////////////////

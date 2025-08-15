@@ -9,6 +9,10 @@
 #ifndef VIM__H
 # define VIM__H
 
+#ifdef PROTO
+typedef struct _FILE FILE; /* opaque FILE */
+#endif
+
 #include "protodef.h"
 
 // _WIN32 is defined as 1 when the compilation target is 32-bit or 64-bit.
@@ -461,7 +465,7 @@ typedef long      vimlong_T;
 typedef long long vimlong_T;
 #endif
 
-#ifndef UNIX		    // For Unix this is included in os_unix.h
+#if !defined(UNIX)	|| !defined(PROTO)	    // For Unix this is included in os_unix.h
 # include <stdio.h>
 # include <ctype.h>
 #endif
@@ -502,7 +506,7 @@ typedef long long vimlong_T;
 # ifdef HAVE_STAT_H
 #  include <stat.h>
 # endif
-# ifdef HAVE_STDLIB_H
+# if defined(HAVE_STDLIB_H) && !defined(PROTO)
 #  include <stdlib.h>
 # endif
 #endif // NON-UNIX
@@ -515,7 +519,7 @@ typedef long long vimlong_T;
 #ifdef HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
-#ifdef HAVE_WCTYPE_H
+#if defined(HAVE_WCTYPE_H) && !defined(PROTO)
 # include <wctype.h>
 #endif
 #include <stdarg.h>
@@ -528,7 +532,7 @@ typedef long long vimlong_T;
 #include <stddef.h>
 #include <stdbool.h>
 
-#if defined(HAVE_SYS_SELECT_H) && \
+#if !defined(PROTO) && defined(HAVE_SYS_SELECT_H) && \
 	(!defined(HAVE_SYS_TIME_H) || defined(SYS_SELECT_WITH_SYS_TIME))
 # include <sys/select.h>
 #endif
@@ -545,7 +549,7 @@ typedef long long vimlong_T;
 # endif
 #endif
 
-#ifdef HAVE_SODIUM
+#if defined(HAVE_SODIUM) && !defined(PROTO)
 # include <sodium.h>
 #endif
 
@@ -1717,7 +1721,7 @@ typedef UINT32_TYPEDEF UINT32_T;
 // Size in bytes of the hash used in the undo file.
 #define UNDO_HASH_SIZE 32
 
-#ifdef HAVE_FCNTL_H
+#if defined(HAVE_FCNTL_H) && !defined(PROTO)
 # include <fcntl.h>
 #endif
 

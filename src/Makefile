@@ -2117,9 +2117,6 @@ update-po:
 
 # Generate function prototypes.  This is not needed to compile vim, but if
 # you want to use it, cproto is out there on the net somewhere -- Webb
-#
-# When generating os_amiga.pro and os_win32.pro there will be a
-# few include files that can not be found, that's OK.
 
 proto: $(PRO_AUTO) $(PRO_MANUAL)
 
@@ -2140,38 +2137,46 @@ CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
 # Always define FEAT_GUI.  This may generate a few warnings if it's also
 # defined in auto/config.h, you can ignore that.
 .c.pro:
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+	@$(CPROTO) -DFEAT_GUI $< > proto/$@
+	@echo "/* vim: set ft=c : */" >> proto/$@
+	@echo "proto/$@"
 
 os_amiga.pro: os_amiga.c
-	$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+	@$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
+	@echo "/* vim: set ft=c : */" >> proto/$@
+	@echo "proto/$@"
 
 os_win32.pro: os_win32.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+	@$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+	@echo "/* vim: set ft=c : */" >> proto/$@
+	@echo "proto/$@"
 
 os_mswin.pro: os_mswin.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+	@$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+	@echo "/* vim: set ft=c : */" >> proto/$@
+	@echo "proto/$@"
 
 winclip.pro: winclip.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+	@$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+	@echo "/* vim: set ft=c : */" >> proto/$@
+	@echo "proto/$@"
 
 os_vms.pro: os_vms.c
 # must use os_vms_conf.h for auto/config.h
-	mv auto/config.h auto/config.h.save
-	cp os_vms_conf.h auto/config.h
-	$(CPROTO) -DVMS -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-	rm auto/config.h
-	mv auto/config.h.save auto/config.h
+	@mv auto/config.h auto/config.h.save
+	@cp os_vms_conf.h auto/config.h
+	@$(CPROTO) -DVMS -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
+	@echo "/* vim: set ft=c : */" >> proto/$@
+	@rm auto/config.h
+	@mv auto/config.h.save auto/config.h
+	@echo "proto/$@"
 
 # if_perl.pro is special: Use the generated if_perl.c for input and remove
 # prototypes for local functions.
 if_perl.pro: auto/if_perl.c
-	$(CPROTO) -DFEAT_GUI auto/if_perl.c | sed "/_VI/d" > proto/$@
+	@cproto -DPROTO -DFEAT_GUI auto/if_perl.c > proto/$@
+	@echo "/* vim: set ft=c : */" >> proto/$@
+	@echo "proto/$@"
 
 gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
 	$(CPROTO) -DFEAT_GUI $< > proto/$@

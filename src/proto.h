@@ -193,6 +193,7 @@ void mbyte_im_set_active(int active_arg);
 # ifdef FEAT_SIGNS
 #  include "sign.pro"
 # endif
+# include "sound.h"
 # include "sound.pro"
 # include "spell.pro"
 # include "spellfile.pro"

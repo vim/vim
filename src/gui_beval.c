@@ -10,11 +10,21 @@
 
 #include "vim.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct _WidgetRec *Widget;
+typedef void *XtPointer;
+typedef struct { int dummy; } XEvent;
+typedef int Boolean;
+typedef unsigned long XtIntervalId;
+#endif
+
 #if defined(FEAT_BEVAL_GUI) || defined(PROTO)
 
 // on Win32 only get_beval_info() is required
 #if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 
+#if !defined(PROTO)
 #ifdef FEAT_GUI_GTK
 # if GTK_CHECK_VERSION(3,0,0)
 #  include <gdk/gdkkeysyms-compat.h>
@@ -30,6 +40,7 @@
 # include <Xm/Label.h>
 # include <Xm/AtomMgr.h>
 # include <Xm/Protocols.h>
+#endif
 #endif
 
 #ifndef FEAT_GUI_GTK

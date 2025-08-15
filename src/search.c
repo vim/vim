@@ -91,7 +91,9 @@ static char_u	lastc_bytes[MB_MAXBYTES + 1];
 static int	lastc_bytelen = 1;	// >1 for multi-byte char
 
 // copy of spats[], for keeping the search patterns while executing autocmds
+#ifndef PROTO
 static spat_T	    saved_spats[ARRAY_LENGTH(spats)];
+#endif
 static char_u	    *saved_mr_pattern = NULL;
 static size_t	    saved_mr_patternlen = 0;
 # ifdef FEAT_SEARCH_EXTRA

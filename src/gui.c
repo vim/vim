@@ -208,7 +208,7 @@ gui_attempt_start(void)
 #ifdef GUI_MAY_FORK
 
 // for waitpid()
-# if defined(HAVE_SYS_WAIT_H) || defined(HAVE_UNION_WAIT)
+# if !defined(PROTO) && (defined(HAVE_SYS_WAIT_H) || defined(HAVE_UNION_WAIT))
 #  include <sys/wait.h>
 # endif
 

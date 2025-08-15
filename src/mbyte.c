@@ -116,7 +116,7 @@
 # endif
 #endif
 
-#ifdef HAVE_WCHAR_H
+#if defined(HAVE_WCHAR_H) && !defined(PROTO)
 # include <wchar.h>
 #endif
 

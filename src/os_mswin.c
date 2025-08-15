@@ -13,10 +13,48 @@
  * Routines for Win32.
  */
 
-#include "vim.h"
+// Silence cproto on macOS
+#ifndef PROTO
+# include "vim.h"
+#endif
 
+#ifdef PROTO
+typedef unsigned char  char_u;
+typedef unsigned long  guicolor_T;
+typedef struct stat    stat_T;
+typedef int            tmode_T;
+typedef long           long_i;
+typedef unsigned long long_u;
+typedef struct list_S  list_T;
+typedef struct {
+    int ga_len;
+    int ga_maxlen;
+    int ga_itemsize;
+    void *ga_data;
+} garray_T;
+typedef struct {
+    int dummy;
+} optexpand_T;
+# ifndef CALLBACK
+#  define CALLBACK
+# endif
+typedef unsigned int UINT;
+typedef unsigned long UINT_PTR;
+typedef void *HWND;
+typedef unsigned int WPARAM;
+typedef long LPARAM;
+typedef struct prt_settings_S prt_settings_T;
+typedef unsigned long guicolor_T;
+# ifdef UNUSED
+#  undef UNUSED
+# endif
+#define UNUSED
+#endif /* PROTO */
+
+#if !defined(PROTO)
 #include <sys/types.h>
 #include <signal.h>
+#endif
 #include <limits.h>
 
 // cproto fails on missing include files

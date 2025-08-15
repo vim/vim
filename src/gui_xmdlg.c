@@ -18,6 +18,8 @@
 
 #include "vim.h"
 
+// Silence cproto on macOS
+#ifndef PROTO
 #include <Xm/Form.h>
 #include <Xm/PushBG.h>
 #include <Xm/Text.h>
@@ -37,6 +39,30 @@
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
+#endif
+
+#ifdef PROTO
+typedef struct _WidgetRec *Widget;
+typedef void (*XtCallbackProc)(void);
+typedef int Boolean;  /* X11 Boolean type is usually int */
+struct SharedFontSelData;
+typedef struct SharedFontSelData SharedFontSelData;
+
+enum ListSpecifier { LIST_SPEC_DUMMY }; /* minimal enum stub */
+typedef void *XtPointer;               /* Xt generic pointer */
+typedef struct {
+    int set;        /* whether the toggle button is set */
+    void *event;    /* pointer to XEvent or NULL */
+} XmToggleButtonCallbackStruct;
+typedef struct {
+    int item_position;  /* position of selected item */
+    void *item;         /* XmString in real Motif */
+    void *event;        /* pointer to XEvent or NULL */
+} XmListCallbackStruct;
+typedef struct {
+    void *event;  /* pointer to XEvent or NULL */
+} XmPushButtonCallbackStruct;
+#endif
 
 extern Widget vimShell;
 

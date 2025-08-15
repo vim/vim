@@ -12,6 +12,11 @@
 
 #include "vim.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct { int __dummy; } fd_set;
+#endif
+
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 
 // TRUE when netbeans is running with a GUI.
@@ -44,10 +49,12 @@ typedef struct sockaddr_un {
     char sun_path[UNIX_PATH_MAX];
 } SOCKADDR_UN, *PSOCKADDR_UN;
 #else
+# if !defined(PROTO)
 # include <netdb.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <sys/socket.h>
+# endif
 # include <sys/un.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>

@@ -31,6 +31,15 @@
 
 #include "vim.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct _object PyObject;
+typedef struct {
+  PyObject ob_base;
+  PyObject *start, *stop, *step;
+} PySliceObject;
+#endif
+
 #include <limits.h>
 
 #if defined(MSWIN) && defined(HAVE_FCNTL_H)
@@ -73,7 +82,10 @@
 # define USE_LIMITED_API // Using Python 3 limited ABI
 #endif
 
-#include <Python.h>
+// Silence cproto on macOS
+#ifndef PROTO
+# include <Python.h>
+#endif
 
 #undef main // Defined in python.h - aargh
 #undef HAVE_FCNTL_H // Clash with os_win32.h
@@ -358,6 +370,44 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 #  define PyObject_NEW(type, typeobj) \
 	((type *)py3__PyObject_New(typeobj))
 # endif
+
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct _object PyObject;
+typedef long Py_ssize_t;
+typedef struct dict_S dict_T;
+typedef void (*rangeinitializer)(void);
+typedef void (*runner)(void *arg);
+typedef int                PyGILState_STATE;
+typedef struct _typeobject PyTypeObject;
+typedef struct _ts         PyThreadState;
+typedef PyObject *(*iternextfunc)(PyObject *);
+typedef void (*PyCapsule_Destructor)(PyObject *);
+typedef Py_ssize_t (*lenfunc)(PyObject *);
+typedef PyObject * (*binaryfunc)(PyObject *, PyObject *);
+typedef PyObject * (*ssizeargfunc)(PyObject *, Py_ssize_t);
+typedef int        (*ssizeobjargproc)(PyObject *, Py_ssize_t, PyObject *);
+typedef struct {
+  lenfunc       mp_length;
+  binaryfunc    mp_subscript;
+  ssizeobjargproc mp_ass_subscript;
+} PyMappingMethods;
+typedef struct {
+  lenfunc          sq_length;
+  binaryfunc       sq_concat;
+  ssizeargfunc     sq_repeat;
+  ssizeargfunc     sq_item;
+  void            *sq_slice;
+  ssizeobjargproc  sq_ass_item;
+  void            *sq_ass_slice;
+  void            *sq_contains;
+  void            *sq_inplace_concat;
+  void            *sq_inplace_repeat;
+} PySequenceMethods;
+# ifdef PyList_New
+#  undef PyList_New
+# endif
+#endif /* PROTO */
 
 /*
  * Pointers for dynamic link
@@ -1130,7 +1180,9 @@ static struct PyModuleDef vimmodule;
 /*
  * Include the code shared with if_python.c
  */
+#ifndef PROTO
 #include "if_py_both.h"
+#endif
 
 #ifdef USE_LIMITED_API
 # if Py_LIMITED_API >= 0x030A0000

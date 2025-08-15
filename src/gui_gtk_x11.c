@@ -56,44 +56,85 @@
 extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockItemBehavior beh);
 #endif
 
-#if !defined(FEAT_GUI_GTK) && defined(PROTO)
-// When generating prototypes we don't want syntax errors.
-# define GdkAtom int
-# define GdkEventExpose int
-# define GdkEventFocus int
-# define GdkEventVisibility int
-# define GdkEventProperty int
-# define GtkContainer int
-# define GtkTargetEntry int
-# define GtkType int
-# define GtkWidget int
-# define gint int
-# define gpointer int
-# define guint int
-# define GdkEventKey int
-# define GdkEventSelection int
-# define GtkSelectionData int
-# define GdkEventMotion int
-# define GdkEventButton int
-# define GdkDragContext int
-# define GdkEventConfigure int
-# define GdkEventClient int
-#else
-# if GTK_CHECK_VERSION(3,0,0)
-#  include <gdk/gdkkeysyms-compat.h>
-#  include <gtk/gtkx.h>
-# else
-#  include <gdk/gdkkeysyms.h>
+// Silence cproto on macOS
+#if defined(PROTO)
+# define GTK_CHECK_VERSION(...) 1
+# define GLIB_CHECK_VERSION(...) 1
+# define PANGO_VERSION_CHECK(...) 1
+# define CAIRO_VERSION_ENCODE(a,b,c) ((a)*10000 + (b)*100 + (c))
+# define CAIRO_VERSION CAIRO_VERSION_ENCODE(1,16,0)
+typedef struct _GObject    GObject;
+typedef struct _GParamSpec GParamSpec;
+typedef int            gint;
+typedef unsigned int   guint;
+typedef int            gboolean;
+typedef void          *gpointer;
+typedef unsigned long  Window;
+typedef struct _Display Display;
+typedef unsigned long  Atom;
+typedef unsigned long  Time;
+typedef struct _GdkDisplay     GdkDisplay;
+typedef struct _GdkScreen      GdkScreen;
+typedef struct _GdkWindow      GdkWindow;
+typedef struct _GdkCursor      GdkCursor;
+typedef struct _GdkDevice      GdkDevice;
+typedef struct _GdkDeviceManager GdkDeviceManager;
+typedef struct _GdkSeat        GdkSeat;
+typedef struct _GdkKeymap      GdkKeymap;
+typedef struct { int type; }   GdkEventAny;
+typedef GdkEventAny            GdkEvent;
+typedef GdkEventAny            GdkEventFocus;
+typedef GdkEventAny            GdkEventExpose;
+typedef GdkEventAny            GdkEventVisibility;
+typedef GdkEventAny            GdkEventProperty;
+typedef GdkEventAny            GdkEventConfigure;
+typedef GdkEventAny            GdkEventClient;
+typedef GdkEventAny            GdkEventKey;
+typedef GdkEventAny            GdkEventMotion;
+typedef GdkEventAny            GdkEventButton;
+typedef GdkEventAny            GdkEventSelection;
+typedef GdkEventAny            GdkEventCrossing;
+typedef GdkEventAny            GdkEventScroll;
+typedef void                   GdkXEvent;
+typedef unsigned long          GdkAtom;
+typedef unsigned int           GdkModifierType;
+typedef int                    GdkFilterReturn;
+typedef struct { double red, green, blue, alpha; } GdkRGBA;
+typedef struct _GtkWidget      GtkWidget;
+typedef struct _GtkWindow      GtkWindow;
+typedef struct _GtkContainer   GtkContainer;
+typedef struct _GtkClipboard   GtkClipboard;
+typedef struct _GtkCssProvider GtkCssProvider;
+typedef struct _GtkSettings    GtkSettings;
+typedef struct _GtkMenuItem    GtkMenuItem;
+typedef struct _GtkNotebook    GtkNotebook;
+typedef enum { GTK_ORIENTATION_HORIZONTAL, GTK_ORIENTATION_VERTICAL } GtkOrientation;
+typedef int GtkTargetEntry, GtkType, GtkSelectionData;
+typedef struct _PangoAttrList        PangoAttrList;
+typedef struct _PangoItem            PangoItem;
+typedef struct _PangoFont            PangoFont;
+typedef struct _PangoFontFamily      PangoFontFamily;
+typedef struct _PangoFontFace        PangoFontFace;
+typedef struct _PangoFontDescription PangoFontDescription;
+typedef struct _PangoLayout          PangoLayout;
+typedef struct _PangoLayoutLine      PangoLayoutLine;
+typedef struct _PangoGlyphString     PangoGlyphString;
+typedef struct _PangoGlyphInfo       PangoGlyphInfo;
+typedef struct _PangoGlyphItem       PangoGlyphItem;
+typedef struct _PangoContext         PangoContext;
+typedef struct _PangoEngineShape     PangoEngineShape;
+typedef struct { int x, y, width, height; } PangoRectangle;
+typedef struct _cairo cairo_t;
+typedef struct _GList  GList;
+typedef struct _GSList GSList;
+typedef unsigned long  guicolor_T;
+typedef unsigned char  char_u;
+# ifdef UNUSED
+#  undef UNUSED
 # endif
-# include <gdk/gdk.h>
-# ifdef MSWIN
-#  include <gdk/gdkwin32.h>
-# else
-#  include <gdk/gdkx.h>
-# endif
-# include <gtk/gtk.h>
-# include "gui_gtk_f.h"
-#endif
+# define UNUSED
+#endif /* PROTO */
+
 
 #ifdef HAVE_X11_SUNKEYSYM_H
 # include <X11/Sunkeysym.h>

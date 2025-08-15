@@ -20,13 +20,36 @@
 
 #include "vim.h"
 
+// Silence cproto on macOS by not pulling system headers an using mock types
+#ifdef PROTO
+# define rename mch_rename
+typedef int sigset_t;
+typedef struct { void *ss_sp; size_t ss_size; int ss_flags; } stack_t;
+struct sigstack { void *ss_sp; int ss_onstack; };
+typedef int pid_t;
+typedef int waitstatus;
+typedef int   Bool;
+typedef void* SmcConn;
+typedef void* SmPointer;
+typedef void* IceConn;
+typedef void* IcePointer;
+typedef struct exarg_S exarg_T;
+typedef int Bool;
+typedef void* Widget;
+typedef void* Display;
+typedef void *timer_t;
+typedef struct { int dummy; } XErrorEvent;
+#endif
+
 #ifdef FEAT_MZSCHEME
 # include "if_mzsch.h"
 #endif
 
-#include "os_unixx.h"	    // unix includes for os_unix.c only
+#ifndef PROTO
+# include "os_unixx.h"	    // unix includes for os_unix.c only
+#endif
 
-#ifdef HAVE_SHM_OPEN
+#if defined(HAVE_SHM_OPEN) && !defined(PROTO)
 # include <sys/mman.h>
 # include <sys/stat.h>
 # include <fcntl.h>
@@ -509,16 +532,16 @@ mch_check_messages(void)
 #endif
 
 #if defined(HAVE_TOTAL_MEM) || defined(PROTO)
-# ifdef HAVE_SYS_RESOURCE_H
+# if defined(HAVE_SYS_RESOURCE_H) && !defined(PROTO)
 #  include <sys/resource.h>
 # endif
-# if defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_SYSCTL)
+# if defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_SYSCTL) && !defined(PROTO)
 #  include <sys/sysctl.h>
 # endif
 # if defined(HAVE_SYS_SYSINFO_H) && defined(HAVE_SYSINFO)
 #  include <sys/sysinfo.h>
 # endif
-# ifdef MACOS_X
+# if defined(MACOS_X) && !defined(PROTO)
 #  include <mach/mach_host.h>
 #  include <mach/mach_port.h>
 # endif
@@ -1712,7 +1735,7 @@ xopen_message(long elapsed_msec)
 # endif
 #endif
 
-#if defined(FEAT_X11)
+#if defined(FEAT_X11) || defined(PROTO)
 /*
  * A few functions shared by X11 title and clipboard code.
  */
@@ -1733,9 +1756,9 @@ x_error_handler(Display *dpy, XErrorEvent *error_event)
     // like the best alternative.  Do preserve files, in case we crash.
     ml_sync_all(FALSE, FALSE);
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     if (!gui.in_use)
-#endif
+# endif
 	msg((char *)IObuff);
 
     return 0;		// NOTREACHED
@@ -1761,10 +1784,10 @@ x_connect_to_server(void)
     if (exiting || v_dying)
 	return FALSE;
 
-#if defined(FEAT_CLIENTSERVER)
+# if defined(FEAT_CLIENTSERVER)
     if (x_force_connect)
 	return TRUE;
-#endif
+# endif
     if (x_no_connect)
 	return FALSE;
 
@@ -1783,8 +1806,8 @@ x_connect_to_server(void)
     return TRUE;
 }
 
-#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
-# if defined(USING_SETJMP)
+# if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) || defined(PROTO)
+#  if defined(USING_SETJMP)
 /*
  * An X IO Error handler, used to catch error while opening the display.
  */
@@ -1793,11 +1816,11 @@ x_IOerror_check(Display *dpy UNUSED)
 {
     // This function should not return, it causes exit().  Longjump instead.
     LONGJMP(lc_jump_env, 1);
-#  if defined(VMS) || defined(__CYGWIN__)
+#   if defined(VMS) || defined(__CYGWIN__)
     return 0;  // avoid the compiler complains about missing return value
-#  endif
+#   endif
 }
-# endif
+#  endif
 
 /*
  * An X IO Error handler, used to catch terminal errors.
@@ -1815,9 +1838,9 @@ x_IOerror_handler(Display *dpy UNUSED)
 
     // This function should not return, it causes exit().  Longjump instead.
     LONGJMP(x_jump_env, 1);
-# if defined(VMS) || defined(__CYGWIN__)
+#  if defined(VMS) || defined(__CYGWIN__)
     return 0;  // avoid the compiler complains about missing return value
-# endif
+#  endif
 }
 
 /*
@@ -1833,7 +1856,7 @@ may_restore_x11_clipboard(void)
     {
 	--xterm_dpy_retry_count;
 
-# ifndef LESSTIF_VERSION
+#  ifndef LESSTIF_VERSION
 	// This has been reported to avoid Vim getting stuck.
 	if (app_context != (XtAppContext)NULL)
 	{
@@ -1841,7 +1864,7 @@ may_restore_x11_clipboard(void)
 	    app_context = (XtAppContext)NULL;
 	    x11_display = NULL; // freed by XtDestroyApplicationContext()
 	}
-# endif
+#  endif
 
 	setup_term_clip();
 	get_x11_title(FALSE);
@@ -1869,7 +1892,7 @@ ex_xrestore(exarg_T *eap)
     may_restore_x11_clipboard();
     choose_clipmethod();
 }
-#endif
+# endif
 
 /*
  * Test if "dpy" and x11_window are valid by getting the window title.
@@ -1896,7 +1919,7 @@ test_x11_window(Display *dpy)
 
     return (got_x_error ? FAIL : OK);
 }
-#endif
+#endif // FEAT_X11
 
 
 #ifdef FEAT_X11
@@ -2999,7 +3022,7 @@ typedef struct vim_acl_solaris_T {
 } vim_acl_solaris_T;
 # endif
 
-#if defined(HAVE_SELINUX) || defined(PROTO)
+#if defined(HAVE_SELINUX)
 /*
  * Copy security info from "from_file" to "to_file".
  */
@@ -3055,7 +3078,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 }
 #endif // HAVE_SELINUX
 
-#if defined(HAVE_SMACK) && !defined(PROTO)
+#if defined(HAVE_SMACK) || defined(PROTO)
 /*
  * Copy security info from "from_file" to "to_file".
  */
@@ -3135,7 +3158,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 }
 #endif // HAVE_SMACK
 
-#ifdef FEAT_XATTR
+#if defined(FEAT_XATTR) || defined(PROTO)
 /*
  * Copy extended attributes from_file to to_file
  */

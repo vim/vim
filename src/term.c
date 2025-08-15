@@ -26,10 +26,10 @@
 #include "vim.h"
 
 #ifdef HAVE_TGETENT
-# ifdef HAVE_TERMIOS_H
+# if defined(HAVE_TERMIOS_H) && !defined(PROTO)
 #  include <termios.h>	    // seems to be required for some Linux
 # endif
-# ifdef HAVE_TERMCAP_H
+# if defined(HAVE_TERMCAP_H) && !defined(PROTO)
 #  include <termcap.h>
 # endif
 
@@ -2376,7 +2376,7 @@ set_termname(char_u *term)
 
 #if defined(EXITFREE) || defined(PROTO)
 
-# ifdef HAVE_DEL_CURTERM
+# if defined(HAVE_DEL_CURTERM) && !defined(PROTO)
 #  include <term.h>	    // declares cur_term
 # endif
 

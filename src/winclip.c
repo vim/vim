@@ -14,8 +14,28 @@
  * Also used by Cygwin, using os_unix.c.
  */
 
+#if !defined(PROTO)
 #include "vim.h"
+#endif
 
+#ifdef PROTO
+/* tame vim types that normally come via vim.h */
+typedef unsigned char char_u;
+typedef unsigned short short_u;
+typedef struct { int dummy; } Clipboard_T;
+
+/* neutralize UNUSED */
+#ifdef UNUSED
+# undef UNUSED
+#endif
+#define UNUSED
+
+/* Win32 placeholders already in your file:
+   #define WINAPI
+   #define WINBASEAPI
+   typedef int DWORD, LPBOOL, LPCSTR, LPCWSTR, LPSTR, LPWSTR, UINT;
+*/
+#endif
 /*
  * Compile only the clipboard handling features when compiling for cygwin
  * posix environment.
@@ -176,7 +196,7 @@ WideCharToMultiByte_alloc(UINT cp, DWORD flags,
 }
 
 
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
 /*
  * Clipboard stuff, for cutting and pasting text to other windows.
  */

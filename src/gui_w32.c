@@ -25,6 +25,19 @@
 
 #include "vim.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef void *HWND;
+typedef unsigned int UINT;
+typedef int BOOL;
+typedef struct tagMSG MSG;
+# ifdef UNUSED
+#  undef UNUSED
+# endif
+#define UNUSED
+static void _OnChar_experimental(HWND hwnd, UINT cch, int cRepeat);
+#endif
+
 #if defined(FEAT_DIRECTX)
 # include "gui_dwrite.h"
 #endif
@@ -4429,7 +4442,9 @@ static void update_toolbar_size(void);
 static LRESULT CALLBACK toolbar_wndproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static int get_toolbar_bitmap(vimmenu_T *menu);
 #else
-# define update_toolbar_size()
+# if !defined(PROTO)
+#  define update_toolbar_size()
+# endif
 #endif
 
 #ifdef FEAT_GUI_TABLINE

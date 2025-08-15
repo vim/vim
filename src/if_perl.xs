@@ -24,7 +24,10 @@
 # define _USE_32BIT_TIME_T
 #endif
 
-#include "vim.h"
+// Silence cproto on macOS
+#ifndef PROTO
+# include "vim.h"
+#endif
 
 #ifdef _MSC_VER
 // Work around for using MSVC and ActivePerl 5.18.
@@ -45,9 +48,13 @@
 # pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
-#include <EXTERN.h>
-#include <perl.h>
-#include <XSUB.h>
+// Silence cproto on macOS
+#ifndef PROTO
+# include <EXTERN.h>
+# include <perl.h>
+# include <XSUB.h>
+#endif
+
 #if defined(PERLIO_LAYERS) && !defined(USE_SFIO)
 # include <perliol.h>
 #endif
@@ -86,7 +93,7 @@ const char PL_memory_wrap[] = "panic: memory wrap";
 
 // Perl compatibility stuff. This should ensure compatibility with older
 // versions of Perl.
-#ifndef PERL_VERSION
+#if !defined(PERL_VERSION) && !defined(PROTO)
 # include <patchlevel.h>
 # define PERL_REVISION   5
 # define PERL_VERSION    PATCHLEVEL
@@ -140,6 +147,12 @@ const char PL_memory_wrap[] = "panic: memory wrap";
 // Suppress Infinite warnings when compiling XS modules under macOS 12 Monterey.
 #if defined(__clang__) && defined(__clang_major__) && __clang_major__ > 11
 # pragma clang diagnostic ignored "-Wcompound-token-split-by-macro"
+#endif
+
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct PerlInterpreter PerlInterpreter;
+typedef struct CV CV;
 #endif
 
 /* Compatibility hacks over */
@@ -332,6 +345,47 @@ typedef int perl_key;
 #  define Perl_savetmps dll_Perl_savetmps
 # endif
 
+// Silence cproto on macOS
+#ifdef PROTO
+# ifndef __attribute__
+#  define __attribute__(x)
+# endif
+# ifndef __attribute__noreturn__
+#  define __attribute__noreturn__
+# endif
+typedef int I32;
+typedef struct HV HV;
+typedef struct SV SV;
+typedef struct HE HE;
+typedef struct MAGIC MAGIC;
+typedef unsigned long STRLEN;
+typedef long IV;
+typedef unsigned long U32;
+typedef struct AV AV;
+typedef double NV;
+typedef struct XPV XPV;
+typedef struct OP  OP;
+typedef struct GV GV;
+typedef char *perl_key;
+static void (*boot_DynaLoader)(pTHX_ CV *);
+static perl_key* (*Perl_Gthr_key_ptr)(void *);
+typedef struct exarg_S exarg_T;
+typedef long linenr_T;
+typedef struct window_S win_T;
+typedef unsigned char char_u;
+typedef struct buffer_S buf_T;
+typedef long SSize_t;
+typedef struct typval_S typval_T;
+static void boot_VIM(pTHX_ CV *cv);
+# ifndef XS
+#  define XS(name) static void name(pTHX_ CV *cv)
+# endif
+# ifndef STATIC
+# define STATIC static
+# endif
+#  undef UNUSED
+#  define UNUSED
+#endif
 /*
  * Declare HANDLE for perl.dll and function pointers.
  */
@@ -484,12 +538,16 @@ static perl_key* dll_PL_thr_key;
 static GV** (*Perl_Idefgv_ptr)(register PerlInterpreter*);
 static GV** (*Perl_Ierrgv_ptr)(register PerlInterpreter*);
 static SV* (*Perl_Isv_yes_ptr)(register PerlInterpreter*);
+#ifndef PROTO
 static perl_key* (*Perl_Gthr_key_ptr)_((pTHX));
+#endif
 # endif
 # ifdef PERL_USE_THREAD_LOCAL
 static void** dll_PL_current_context;
 # endif
+#ifndef PROTO
 static void (*boot_DynaLoader)_((pTHX_ CV*));
+#endif
 static HE * (*Perl_hv_iternext_flags)(pTHX_ HV *, I32);
 static I32 (*Perl_hv_iterinit)(pTHX_ HV *);
 static char * (*Perl_hv_iterkey)(pTHX_ HE *, I32 *);
@@ -1539,7 +1597,9 @@ IV Perl_sv_2iv_flags(pTHX_ SV *const sv, const I32 flags)
 
 #endif // DYNAMIC_PERL
 
+#ifndef PROTO
 XS(boot_VIM);
+#endif
 
     static void
 xs_init(pTHX)

@@ -18,18 +18,20 @@
 # endif
 #endif
 
-#include <stdio.h>
-#include <ctype.h>
-
-#ifdef VAXC
-# include <types.h>
-# include <stat.h>
-#else
-# include <sys/types.h>
-# include <sys/stat.h>
+// Silence cproto on macOS
+#ifndef PROTO
+# include <stdio.h>
+# include <ctype.h>
+# ifdef VAXC
+#  include <types.h>
+#  include <stat.h>
+# else
+#  include <sys/types.h>
+#  include <sys/stat.h>
+# endif
 #endif
 
-#ifdef HAVE_STDLIB_H
+#if defined(HAVE_STDLIB_H) && !defined(PROTO)
 # include <stdlib.h>
 #endif
 
@@ -48,15 +50,15 @@
 # define _NO_PROTO
 #endif
 
-#ifdef HAVE_UNISTD_H
+#if defined(HAVE_UNISTD_H) && !defined(PROTO)
 # include <unistd.h>
 #endif
 
-#ifdef HAVE_LIBC_H
+#if defined(HAVE_LIBC_H) && !defined(PROTO)
 # include <libc.h>		    // for NeXT
 #endif
 
-#ifdef HAVE_SYS_PARAM_H
+#if defined(HAVE_SYS_PARAM_H) && !defined(PROTO)
 # include <sys/param.h>	    // defines BSD, if it's a BSD system
 #endif
 
@@ -100,7 +102,7 @@
 
 typedef void (*sighandler_T) SIGPROTOARG;
 
-#ifdef HAVE_DIRENT_H
+#if defined(HAVE_DIRENT_H) && !defined(PROTO)
 # include <dirent.h>
 # ifndef NAMLEN
 #  define NAMLEN(dirent) strlen((dirent)->d_name)
@@ -119,12 +121,17 @@ typedef void (*sighandler_T) SIGPROTOARG;
 # endif
 #endif
 
+#if !defined(PROTO)
 #include <time.h>
-#ifdef HAVE_SYS_TIME_H
+#endif
+
+#if defined(HAVE_SYS_TIME_H) && !defined(PROTO)
 # include <sys/time.h>
 #endif
 
+#if !defined(PROTO)
 #include <signal.h>
+#endif
 
 #if defined(DIRSIZ) && !defined(MAXNAMLEN)
 # define MAXNAMLEN DIRSIZ
@@ -461,10 +468,10 @@ int mch_rename(const char *src, const char *dest);
 
 // Note: Some systems need both string.h and strings.h (Savage).  However,
 // some systems can't handle both, only use string.h in that case.
-#ifdef HAVE_STRING_H
+#if defined(HAVE_STRING_H) && !defined(PROTO)
 # include <string.h>
 #endif
-#if defined(HAVE_STRINGS_H) && !defined(NO_STRINGS_WITH_STRING_H)
+#if defined(HAVE_STRINGS_H) && !defined(NO_STRINGS_WITH_STRING_H) && !defined(PROTO)
 # include <strings.h>
 #endif
 

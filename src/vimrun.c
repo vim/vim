@@ -15,9 +15,11 @@
  *	      console kills Vim.  Now it only kills vimrun.
  */
 
+#if !defined(PROTO)
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
+#endif
 #ifndef WIN32_LEAN_AND_MEAN
 # define WIN32_LEAN_AND_MEAN
 #endif

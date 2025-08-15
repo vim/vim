@@ -33,8 +33,88 @@
 
 #include "vim.h"
 
-#ifdef FEAT_GUI_GTK
-# include "gui_gtk_f.h"
+// Silence cproto on macOS
+#if defined(PROTO)
+typedef char gchar;
+typedef unsigned int GLogLevelFlags;
+typedef struct _GtkDialog GtkDialog;
+typedef struct _GtkMenu GtkMenu;
+typedef struct _GtkEntry GtkEntry;
+# define GTK_CHECK_VERSION(...) 1
+# define GLIB_CHECK_VERSION(...) 1
+# define PANGO_VERSION_CHECK(...) 1
+# define CAIRO_VERSION_ENCODE(a,b,c) ((a)*10000 + (b)*100 + (c))
+# define CAIRO_VERSION CAIRO_VERSION_ENCODE(1,16,0)
+typedef struct _GObject    GObject;    /* opaque */
+typedef struct _GParamSpec GParamSpec; /* opaque */
+typedef int            gint;
+typedef unsigned int   guint;
+typedef int            gboolean;
+typedef void          *gpointer;
+typedef unsigned long  Window;
+typedef struct _Display Display;
+typedef unsigned long  Atom;
+typedef unsigned long  Time;
+typedef struct _GdkDisplay     GdkDisplay;
+typedef struct _GdkScreen      GdkScreen;
+typedef struct _GdkWindow      GdkWindow;
+typedef struct _GdkCursor      GdkCursor;
+typedef struct _GdkDevice      GdkDevice;
+typedef struct _GdkDeviceManager GdkDeviceManager;
+typedef struct _GdkSeat        GdkSeat;
+typedef struct _GdkKeymap      GdkKeymap;
+typedef struct { int type; }   GdkEventAny;
+typedef GdkEventAny            GdkEvent;
+typedef GdkEventAny            GdkEventFocus;
+typedef GdkEventAny            GdkEventExpose;
+typedef GdkEventAny            GdkEventVisibility;
+typedef GdkEventAny            GdkEventProperty;
+typedef GdkEventAny            GdkEventConfigure;
+typedef GdkEventAny            GdkEventClient;
+typedef GdkEventAny            GdkEventKey;
+typedef GdkEventAny            GdkEventMotion;
+typedef GdkEventAny            GdkEventButton;
+typedef GdkEventAny            GdkEventSelection;
+typedef GdkEventAny            GdkEventCrossing;
+typedef GdkEventAny            GdkEventScroll;
+typedef void                   GdkXEvent;
+typedef unsigned long          GdkAtom;
+typedef unsigned int           GdkModifierType;
+typedef int                    GdkFilterReturn;
+typedef struct { double red, green, blue, alpha; } GdkRGBA;
+typedef struct _GtkWidget      GtkWidget;
+typedef struct _GtkWindow      GtkWindow;
+typedef struct _GtkContainer   GtkContainer;
+typedef struct _GtkClipboard   GtkClipboard;
+typedef struct _GtkCssProvider GtkCssProvider;
+typedef struct _GtkSettings    GtkSettings;
+typedef struct _GtkMenuItem    GtkMenuItem;
+typedef struct _GtkNotebook    GtkNotebook;
+typedef enum { GTK_ORIENTATION_HORIZONTAL, GTK_ORIENTATION_VERTICAL } GtkOrientation;
+typedef int GtkTargetEntry, GtkType, GtkSelectionData;
+typedef struct _PangoAttrList        PangoAttrList;
+typedef struct _PangoItem            PangoItem;
+typedef struct _PangoFont            PangoFont;
+typedef struct _PangoFontFamily      PangoFontFamily;
+typedef struct _PangoFontFace        PangoFontFace;
+typedef struct _PangoFontDescription PangoFontDescription;
+typedef struct _PangoLayout          PangoLayout;
+typedef struct _PangoLayoutLine      PangoLayoutLine;
+typedef struct _PangoGlyphString     PangoGlyphString;
+typedef struct _PangoGlyphInfo       PangoGlyphInfo;
+typedef struct _PangoGlyphItem       PangoGlyphItem;
+typedef struct _PangoContext         PangoContext;
+typedef struct _PangoEngineShape     PangoEngineShape;
+typedef struct { int x, y, width, height; } PangoRectangle;
+typedef struct _cairo cairo_t;
+typedef struct _GList  GList;
+typedef struct _GSList GSList;
+typedef unsigned long  guicolor_T;
+typedef unsigned char  char_u;
+#ifdef UNUSED
+# undef UNUSED
+#endif
+#define UNUSED
 #endif
 
 // GTK defines MAX and MIN, but some system header files as well.  Undefine

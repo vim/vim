@@ -12,9 +12,27 @@
 #include "vim.h"
 #include "version.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct lua_State lua_State; /* opaque Lua state */
+typedef struct luaL_Reg {
+    const char *name;
+    int (*func)(struct lua_State *L);
+} luaL_Reg;
+typedef struct luaL_Buffer {
+    char *b;       /* buffer address */
+    size_t size;   /* buffer size */
+    size_t n;      /* number of characters in buffer */
+    struct lua_State *L; /* associated Lua state */
+    char initb[BUFSIZ];  /* initial buffer storage */
+} luaL_Buffer;
+#endif
+
+#ifndef PROTO
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#endif
 
 #if __STDC_VERSION__ >= 199901L
 #  define LUAV_INLINE inline

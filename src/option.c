@@ -39,6 +39,15 @@
 #include "vim.h"
 #include "optiondefs.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct optset_S optset_T;
+# ifdef UNUSED
+#  undef UNUSED
+#endif
+#define UNUSED
+#endif
+
 static void set_options_default(int opt_flags);
 static void set_string_default_esc(char *name, char_u *val, int escape);
 static char_u *find_dup_item(char_u *origval, char_u *newval, size_t newvallen, long_u flags);
@@ -4748,7 +4757,7 @@ did_set_winwidth(optset_T *args UNUSED)
     return errmsg;
 }
 
-#ifdef FEAT_WAYLAND_CLIPBOARD
+#if defined(FEAT_WAYLAND_CLIPBOARD) || defined(PROTO)
 /*
  * Process the new 'wlsteal' option value.
  */
@@ -4761,7 +4770,7 @@ did_set_wlsteal(optset_T *args UNUSED)
 }
 #endif
 
-#ifdef FEAT_WAYLAND
+#if defined(FEAT_WAYLAND) || defined(PROTO)
 /*
  * Process the new 'wltimeoutlen' option value.
  */

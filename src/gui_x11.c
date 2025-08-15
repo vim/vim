@@ -14,12 +14,80 @@
 
 #include "vim.h"
 
+#if !defined(PROTO)
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include <X11/cursorfont.h>
+#endif
+
+// Silence cproto on macOS
+#ifdef PROTO
+typedef unsigned char  char_u;
+typedef struct _Display Display;
+typedef unsigned long   Window;
+typedef unsigned long   Atom;
+typedef unsigned long   Time;
+typedef unsigned long   Pixel;
+typedef unsigned long   Cursor;
+typedef unsigned long   Colormap;
+typedef unsigned long   Drawable;
+typedef struct _XGC     *GC;
+typedef unsigned long   Pixmap;
+typedef unsigned long   KeySym;
+typedef struct _Visual  Visual;
+typedef struct _Screen  Screen;
+typedef struct { int type; } XEvent;
+typedef struct { int type; } XKeyEvent;
+typedef struct _XFontStruct XFontStruct;
+typedef void            *XFontSet;
+typedef struct _WidgetRec *Widget;
+typedef void            *XtPointer;
+typedef char            *String;
+typedef unsigned int     Cardinal;
+typedef unsigned short   Dimension;
+typedef short            Position;
+typedef unsigned long    XtIntervalId;
+typedef void            *XtAppContext;
+typedef int              Bool;
+# ifndef True
+#  define True  1
+#  define False 0
+# endif
+typedef int              Status;
+typedef void (*XtCallbackProc)(Widget, XtPointer, XtPointer);
+typedef void (*XtTimerCallbackProc)(XtPointer, XtIntervalId *);
+typedef void (*XtActionProc)(Widget, XEvent *, String *, Cardinal *);
+typedef struct { int dummy; } XtResource;
+typedef struct { int dummy; } XrmOptionDescRec;
+typedef void *XrmDatabase;
+typedef void *XtTranslations;
+typedef unsigned char Boolean;
+typedef struct {
+  short x, y;
+  unsigned short width, height;
+} XRectangle;
+typedef struct { int dummy; } XComposeStatus;
+typedef void *XIM;
+typedef void *XIC;
+typedef struct {
+  int     type;
+  unsigned long serial;
+  Bool    send_event;
+  Display *display;
+  Window  window;
+  Window  root;
+  Window  subwindow;
+  Time    time;
+  int     x, y;
+  int     x_root, y_root;
+  unsigned int state;
+  unsigned int button;
+  Bool    same_screen;
+} XButtonPressedEvent;
+#endif
 
 /*
  * XpmP.h is preferred, because it makes the signs drawn with a transparent

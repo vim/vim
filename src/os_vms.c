@@ -9,7 +9,28 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#include "vim.h"
+// Silence cproto on macOS
+#ifdef PROTO
+typedef unsigned char char_u;
+typedef struct growarray garray_T;
+typedef int tmode_T;
+# define dsc$b_dtype    dsc_b_dtype
+# define dsc$b_class    dsc_b_class
+# define dsc$a_pointer  dsc_a_pointer
+# define dsc$w_length   dsc_w_length
+typedef struct {
+  unsigned char  dsc_b_dtype;
+  unsigned char  dsc_b_class;
+  char          *dsc_a_pointer;
+  unsigned short dsc_w_length;
+} DESC;
+# ifdef UNUSED
+#  undef UNUSED
+# endif
+# define UNUSED
+#else
+# include "vim.h"
+#endif
 
 // define _generic_64 for use in time functions
 #if !defined(VAX) && !defined(PROTO)

@@ -286,7 +286,7 @@
 #endif
 
 #include <float.h>
-#if defined(HAVE_MATH_H)
+#if defined(HAVE_MATH_H) && !defined(PROTO)
   // for isnan() and isinf()
 # include <math.h>
 #endif

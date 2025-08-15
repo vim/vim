@@ -23,6 +23,51 @@
 
 #include "vim.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef unsigned int guint;
+/* Pick one header form so the body compiles under PROTO. */
+# if !defined(FEAT_GUI_MSWIN) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF)
+#  define FEAT_GUI_GTK 1
+# endif
+
+/* --- Neutralize UNUSED and booleans --- */
+# ifdef UNUSED
+#  undef UNUSED
+# endif
+#define UNUSED
+# ifndef TRUE
+#  define TRUE 1
+#  define FALSE 0
+#endif
+
+/* --- Win32 (if the MSWIN branch is picked) --- */
+typedef void *HWND;
+typedef unsigned int  UINT;
+typedef unsigned long UINT_PTR;
+typedef unsigned long DWORD;
+#ifndef CALLBACK
+# define CALLBACK
+#endif
+
+/* --- GTK branch --- */
+typedef int   gboolean;
+typedef void *gpointer;
+
+/* --- Motif/Xt branch --- */
+typedef void	    *XtPointer;
+typedef unsigned long XtIntervalId;
+/* If the Motif branch is used, these externs keep cproto happy: */
+typedef void *XtAppContext;
+extern XtAppContext app_context;
+extern int	    mz_threads_allow;
+extern int	    p_mzq;
+extern XtIntervalId timer_id;
+extern XtIntervalId XtAppAddTimeOut(XtAppContext, unsigned long,
+				    void (*)(XtPointer, XtIntervalId *),
+				    XtPointer);
+#endif /* PROTO */
+
 #include "if_mzsch.h"
 
 // Only do the following when the feature is enabled.  Needed for "make
@@ -44,7 +89,7 @@ typedef int HINSTANCE;
 
 /*
  * scheme_register_tls_space is only available on 32-bit Windows until
- * racket-6.3.  See
+ * racket-6.3.	See
  * http://docs.racket-lang.org/inside/im_memoryalloc.html?q=scheme_register_tls_space
  */
 #if MZSCHEME_VERSION_MAJOR >= 500 && defined(MSWIN) \
@@ -64,8 +109,8 @@ typedef int HINSTANCE;
 #endif
 
 // Base data structures
-#define SCHEME_VIMBUFFERP(obj)  SAME_TYPE(SCHEME_TYPE(obj), mz_buffer_type)
-#define SCHEME_VIMWINDOWP(obj)  SAME_TYPE(SCHEME_TYPE(obj), mz_window_type)
+#define SCHEME_VIMBUFFERP(obj)	SAME_TYPE(SCHEME_TYPE(obj), mz_buffer_type)
+#define SCHEME_VIMWINDOWP(obj)	SAME_TYPE(SCHEME_TYPE(obj), mz_window_type)
 
 typedef struct
 {
@@ -1298,7 +1343,7 @@ mzscheme_init(void)
 
 /*
  *========================================================================
- *  2.  External Interface
+ *  2.	External Interface
  *========================================================================
  */
 
@@ -1343,7 +1388,7 @@ eval_with_exn_handling(void *data, Scheme_Closed_Prim *what, Scheme_Object **ret
     // Print any result, as long as it's not a void
     else if (!SCHEME_VOIDP(value))
     {
-	scheme_display(value, curout);  // Send to stdout-vim
+	scheme_display(value, curout);	// Send to stdout-vim
 	MZ_GC_CHECK();
     }
 
@@ -1565,7 +1610,7 @@ do_eval(void *s, int noargc UNUSED, Scheme_Object **noargv UNUSED)
 
 /*
  *========================================================================
- *  3.  MzScheme I/O Handlers
+ *  3.	MzScheme I/O Handlers
  *========================================================================
  */
     static void
@@ -2817,8 +2862,8 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 		2, argc, argv);
     else
     {
-	Scheme_Object   *line = NULL;
-	Scheme_Object   *rest = NULL;
+	Scheme_Object	*line = NULL;
+	Scheme_Object	*rest = NULL;
 	char		**array;
 	buf_T		*savebuf = curbuf;
 
@@ -3254,7 +3299,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
     else if (SCHEME_VECTORP(obj) || SCHEME_NULLP(obj)
 	    || SCHEME_PAIRP(obj) || SCHEME_MUTABLE_PAIRP(obj))
     {
-	list_T  *list = list_alloc();
+	list_T	*list = list_alloc();
 	if (list == NULL)
 	    status = FAIL;
 	else
@@ -3336,8 +3381,8 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
     {
 	int		i;
 	dict_T		*dict;
-	Scheme_Object   *key = NULL;
-	Scheme_Object   *val = NULL;
+	Scheme_Object	*key = NULL;
+	Scheme_Object	*val = NULL;
 
 	MZ_GC_DECL_REG(2);
 	MZ_GC_VAR_IN_REG(0, key);
@@ -3349,7 +3394,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 	    status = FAIL;
 	else
 	{
-	    typval_T    *visited_tv = ALLOC_ONE(typval_T);
+	    typval_T	*visited_tv = ALLOC_ONE(typval_T);
 
 	    tv->v_type = VAR_DICT;
 	    tv->vval.v_dict = dict;
@@ -3363,7 +3408,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 		if (((Scheme_Hash_Table *) obj)->vals[i] != NULL)
 		{
 		    // generate item for `display'ed Scheme key
-		    dictitem_T  *item = dictitem_alloc((char_u *)string_to_line(
+		    dictitem_T	*item = dictitem_alloc((char_u *)string_to_line(
 				((Scheme_Hash_Table *) obj)->keys[i]));
 		    // convert Scheme val to Vim and add it to the dict
 		    if (mzscheme_to_vim_impl(((Scheme_Hash_Table *) obj)->vals[i],
@@ -3515,9 +3560,9 @@ register_vim_exn(void)
 
 
     {
-	Scheme_Object   **tmp = NULL;
-	Scheme_Object   *exn_names[5] = {NULL, NULL, NULL, NULL, NULL};
-	Scheme_Object   *exn_values[5] = {NULL, NULL, NULL, NULL, NULL};
+	Scheme_Object	**tmp = NULL;
+	Scheme_Object	*exn_names[5] = {NULL, NULL, NULL, NULL, NULL};
+	Scheme_Object	*exn_values[5] = {NULL, NULL, NULL, NULL, NULL};
 	MZ_GC_DECL_REG(6);
 	MZ_GC_ARRAY_VAR_IN_REG(0, exn_names, 5);
 	MZ_GC_ARRAY_VAR_IN_REG(3, exn_values, 5);
@@ -3562,7 +3607,7 @@ raise_vim_exn(const char *add_info)
     if (add_info != NULL)
     {
 	char		*c_string = NULL;
-	Scheme_Object   *info = NULL;
+	Scheme_Object	*info = NULL;
 
 	MZ_GC_DECL_REG(3);
 	MZ_GC_VAR_IN_REG(0, c_string);

@@ -8,7 +8,9 @@
 extern "C" {
 #endif
 
-#include <stdlib.h>
+#ifndef PROTO
+# include <stdlib.h>
+#endif
 
 #include "vterm_keycodes.h"
 

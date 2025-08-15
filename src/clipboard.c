@@ -13,6 +13,32 @@
 
 #include "vim.h"
 
+#ifdef PROTO
+# ifndef BOOLEAN_T
+#  define BOOLEAN_T
+   typedef int Boolean;
+# endif
+typedef struct _Display Display;
+typedef struct _WidgetRec *Widget;
+typedef void *XtPointer;
+typedef struct { int type; } XEvent;
+typedef unsigned long Atom;
+typedef unsigned long Window;
+typedef unsigned long Time;
+typedef struct wayland_selection_S wayland_selection_T;
+
+/* Vim aliases that normally come via vim.h */
+typedef unsigned char  char_u;
+typedef unsigned short short_u;
+/* if needed: typedef unsigned int int_u; typedef unsigned long long_u; */
+
+/* neutralize UNUSED */
+#ifdef UNUSED
+# undef UNUSED
+#endif
+#define UNUSED
+#endif
+
 #ifdef FEAT_CYGWIN_WIN32_CLIPBOARD
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
@@ -1455,8 +1481,10 @@ did_set_clipboard(optset_T *args UNUSED)
  */
 
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) || defined(PROTO)
-# include <X11/Xatom.h>
-# include <X11/Intrinsic.h>
+# if !defined(PROTO)
+#  include <X11/Xatom.h>
+#  include <X11/Intrinsic.h>
+# endif
 
 /*
  * Open the application context (if it hasn't been opened yet).

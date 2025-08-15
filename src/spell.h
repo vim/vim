@@ -249,7 +249,7 @@ typedef struct spelltab_S
  * differ from what the .spl file uses.
  * These must not be called with negative number!
  */
-#if defined(HAVE_WCHAR_H)
+#if defined(HAVE_WCHAR_H) && !defined(PROTO)
 # include <wchar.h>	    // for towupper() and towlower()
 #endif
 // Multi-byte implementation.  For Unicode we can call utf_*(), but don't do
