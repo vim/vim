@@ -597,7 +597,10 @@ xxdline(FILE *fp, char *l, char *colors, int nz)
   if (!nz && zero_seen == 1)
     {
       strcpy(z, l);
-      memcpy(z_colors, colors, strlen(z));
+      if (colors)
+	{
+	  memcpy(z_colors, colors, strlen(z));
+	}
     }
 
   if (nz || !zero_seen++)
