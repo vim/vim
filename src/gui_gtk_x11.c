@@ -135,6 +135,22 @@ typedef unsigned char  char_u;
 # define UNUSED
 #endif /* PROTO */
 
+#if defined(FEAT_GUI_GTK) || !defined(PROTO)
+# if GTK_CHECK_VERSION(3,0,0)
+#  include <gdk/gdkkeysyms-compat.h>
+#  include <gtk/gtkx.h>
+# else
+#  include <gdk/gdkkeysyms.h>
+# endif
+# include <gdk/gdk.h>
+# ifdef MSWIN
+#  include <gdk/gdkwin32.h>
+# else
+#  include <gdk/gdkx.h>
+# endif
+# include <gtk/gtk.h>
+# include "gui_gtk_f.h"
+#endif  /* FEAT_GUI_GTK || !PROTO */
 
 #ifdef HAVE_X11_SUNKEYSYM_H
 # include <X11/Sunkeysym.h>
