@@ -1202,3 +1202,10 @@
 #if defined(FEAT_NORMAL) && defined(HAVE_XATTR) && !defined(MACOS_X)
 # define FEAT_XATTR
 #endif
+
+/*
+ * +clipboard_provider	Allow Vim to use clipboard providers
+ */
+#if defined(FEAT_CLIPBOARD_PROVIDER) && !defined(FEAT_EVAL)
+# undef FEAT_CLIPBOARD_PROVIDER
+#endif

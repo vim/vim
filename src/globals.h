@@ -2076,6 +2076,7 @@ EXTERN int did_warn_clipboard INIT(= FALSE);
 
 #ifdef FEAT_CLIPBOARD
 EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
+EXTERN char_u *clipprovider_name INIT(= NULL);
 #endif
 
 #ifdef FEAT_WAYLAND
