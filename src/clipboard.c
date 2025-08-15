@@ -61,6 +61,10 @@ static int clip_wl_owner_exists(Clipboard_T *cbd);
 
 #endif
 
+#ifdef FEAT_CLIPBOARD_PROVIDER
+static bool clip_provider_is_available(char_u *name);
+#endif
+
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
  * windows.
@@ -2758,8 +2762,20 @@ get_clipmethod(char_u *str)
 	}
 	else
 	{
-	    ret = CLIPMETHOD_FAIL;
-	    goto exit;
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	    // Check if it is the name of a provider
+	    if (clip_provider_is_available(buf))
+	    {
+		method = CLIPMETHOD_PROVIDER;
+		vim_free(clipprovider_name);
+		clipprovider_name = vim_strsave(buf);
+	    }
+	    else
+#endif
+	    {
+		ret = CLIPMETHOD_FAIL;
+		goto exit;
+	    }
 	}
 
 	// Keep on going in order to catch errors
@@ -2779,17 +2795,19 @@ exit:
 /*
  * Returns name of clipmethod in a statically allocated string.
  */
-    static char *
+    static char_u *
 clipmethod_to_str(clipmethod_T method)
 {
     switch(method)
     {
 	case CLIPMETHOD_WAYLAND:
-	    return "wayland";
+	    return (char_u *)"wayland";
 	case CLIPMETHOD_X11:
-	    return "x11";
+	    return (char_u *)"x11";
+	case CLIPMETHOD_PROVIDER:
+	    return clipprovider_name;
 	default:
-	    return "none";
+	    return (char_u *)"none";
     }
 }
 
@@ -2883,5 +2901,53 @@ ex_clipreset(exarg_T *eap UNUSED)
 	smsg(_("Switched to clipboard method '%s'."),
 		clipmethod_to_str(clipmethod));
 }
+
+#ifdef FEAT_CLIPBOARD_PROVIDER
+
+/*
+ * Check if a clipboard provider with given name exists and is available.
+ */
+    static bool
+clip_provider_is_available(char_u *name)
+{
+    dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
+    typval_T	provider_tv;
+    typval_T	func_tv;
+    typval_T	rettv;
+    bool	res;
+    callback_T	callback;
+
+    if (dict_get_tv(providers, (char *)name, &provider_tv) == FAIL)
+	return FALSE;
+
+    if (provider_tv.v_type != VAR_DICT)
+	return FALSE;
+
+    if (dict_get_tv(provider_tv.vval.v_dict, "available", &func_tv) == FAIL)
+	// If user didn't speciy an 'available' function, assume its always
+	// TRUE.
+	return FALSE;
+
+    callback = get_callback(&func_tv);
+
+    if (callback.cb_name == NULL)
+	return FALSE;
+
+    if (call_callback(&callback, -1, &rettv, 0, NULL) == FAIL ||
+	    rettv.v_type != VAR_BOOL)
+    {
+	free_callback(&callback);
+	return FALSE;
+    }
+
+    res = rettv.vval.v_number;
+
+    free_callback(&callback);
+
+    return res;
+}
+
+
+#endif
 
 #endif // FEAT_CLIPBOARD
