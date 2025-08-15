@@ -203,6 +203,9 @@ static buf_T	  *compl_curr_buf = NULL;  // buf where completion is active
 // if the current source exceeds its timeout, it is interrupted and the next
 // begins with half the time. A small minimum timeout ensures every source
 // gets at least a brief chance.
+// Special case: when 'complete' contains "F" or "o" (function sources), a
+// longer fixed timeout is used (COMPL_FUNC_TIMEOUT_MS or
+// COMPL_FUNC_TIMEOUT_NON_KW_MS). - girish
 static int	  compl_autocomplete = FALSE;	    // whether autocompletion is active
 static int	  compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
 static int	  compl_time_slice_expired = FALSE; // time budget exceeded for current source
@@ -215,6 +218,10 @@ static int	  compl_from_nonkeyword = FALSE;    // completion started from non-ke
 	if (compl_timeout_ms > COMPL_MIN_TIMEOUT_MS) \
 	    compl_timeout_ms /= 2; \
     } while (0)
+
+// Timeout values for F{func}, F and o values in 'complete'
+#define COMPL_FUNC_TIMEOUT_MS		300
+#define COMPL_FUNC_TIMEOUT_NON_KW_MS	1000
 
 // List of flags for method of completion.
 static int	  compl_cont_status = 0;
@@ -5387,7 +5394,7 @@ prepare_cpt_compl_funcs(void)
 compl_source_start_timer(int source_idx UNUSED)
 {
 #ifdef ELAPSED_FUNC
-    if (compl_autocomplete && cpt_sources_array != NULL)
+    if (compl_autocomplete || p_cto > 0)
     {
 	ELAPSED_INIT(cpt_sources_array[source_idx].compl_start_tv);
 	compl_time_slice_expired = FALSE;
@@ -5412,8 +5419,6 @@ advance_cpt_sources_index_safe(void)
     return FAIL;
 }
 
-#define COMPL_FUNC_TIMEOUT_MS		300
-#define COMPL_FUNC_TIMEOUT_NON_KW_MS	1000
 /*
  * Get the next expansion(s), using "compl_pattern".
  * The search starts at position "ini" in curbuf and in the direction
@@ -5433,6 +5438,8 @@ ins_compl_get_exp(pos_T *ini)
     int		type = ctrl_x_mode;
     int		may_advance_cpt_idx = FALSE;
     pos_T	start_pos = *ini;
+    int		normal_mode_strict = FALSE;
+    long	compl_timeout_save = 0;
 
     if (!compl_started)
     {
@@ -5470,15 +5477,18 @@ ins_compl_get_exp(pos_T *ini)
     st.cur_match_pos = (compl_dir_forward())
 				    ? &st.last_match_pos : &st.first_match_pos;
 
-    if (cpt_sources_array != NULL && ctrl_x_mode_normal()
-	    && !ctrl_x_mode_line_or_eval()
-	    && !(compl_cont_status & CONT_LOCAL))
+    normal_mode_strict = ctrl_x_mode_normal() && !ctrl_x_mode_line_or_eval()
+	&& !(compl_cont_status & CONT_LOCAL) && cpt_sources_array != NULL;
+    if (normal_mode_strict)
     {
 	cpt_sources_index = 0;
-	if (compl_autocomplete)
+	if (compl_autocomplete || p_cto > 0)
 	{
 	    compl_source_start_timer(0);
-	    compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
+	    compl_time_slice_expired = FALSE;
+	    compl_timeout_ms = compl_autocomplete
+		? MAX(COMPL_INITIAL_TIMEOUT_MS, p_act)
+		: p_cto;
 	}
     }
 
@@ -5511,14 +5521,18 @@ ins_compl_get_exp(pos_T *ini)
 	    }
 	}
 
-	if (compl_autocomplete && type == CTRL_X_FUNCTION)
+	if (normal_mode_strict && type == CTRL_X_FUNCTION
+		&& (compl_autocomplete || p_cto > 0))
+	{
 	    // LSP servers may sporadically take >1s to respond (e.g., while
 	    // loading modules), but other sources might already have matches.
 	    // To show results quickly use a short timeout for keyword
 	    // completion. Allow longer timeout for non-keyword completion
 	    // where only function based sources (e.g. LSP) are active.
+	    compl_timeout_save = compl_timeout_ms;
 	    compl_timeout_ms = compl_from_nonkeyword
 		? COMPL_FUNC_TIMEOUT_NON_KW_MS : COMPL_FUNC_TIMEOUT_MS;
+	}
 
 	// get the next set of completion matches
 	found_new_match = get_next_completion_match(type, &st, &start_pos);
@@ -5561,9 +5575,10 @@ ins_compl_get_exp(pos_T *ini)
 	    compl_started = FALSE;
 	}
 
-	// Reset the timeout after collecting matches from function source
-	if (compl_autocomplete && type == CTRL_X_FUNCTION)
-	    compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
+	// Restore the timeout after collecting matches from function source
+	if (normal_mode_strict && type == CTRL_X_FUNCTION
+		&& (compl_autocomplete || p_cto > 0))
+	    compl_timeout_ms = compl_timeout_save;
 
 	// For `^P` completion, reset `compl_curr_match` to the head to avoid
 	// mixing matches from different sources.
@@ -6130,9 +6145,6 @@ ins_compl_next(
 check_elapsed_time(void)
 {
 #ifdef ELAPSED_FUNC
-    if (cpt_sources_array == NULL)
-	return;
-
     elapsed_T	*start_tv
 	= &cpt_sources_array[cpt_sources_index].compl_start_tv;
     long	elapsed_ms = ELAPSED_FUNC(*start_tv);
@@ -6205,8 +6217,14 @@ ins_compl_check_keys(int frequency, int in_compl_func)
 	    }
 	}
     }
-    else if (compl_autocomplete)
-	check_elapsed_time();
+    else
+    {
+	int normal_mode_strict = ctrl_x_mode_normal()
+	    && !ctrl_x_mode_line_or_eval() && !(compl_cont_status & CONT_LOCAL)
+	    && cpt_sources_array != NULL && cpt_sources_index >= 0;
+	if (normal_mode_strict && (compl_autocomplete || p_cto > 0))
+	    check_elapsed_time();
+    }
 
     if (compl_pending != 0 && !got_int && !(cot_flags & COT_NOINSERT)
 	    && !compl_autocomplete)
