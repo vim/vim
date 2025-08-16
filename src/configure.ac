@@ -2408,19 +2408,22 @@ AC_MSG_CHECKING(--with-wayland argument)
 AC_ARG_WITH(wayland,
 	[  --with-wayland	  Include support for the Wayland protocol.],
 	[with_wayland=$withval],
-	AS_IF([test "x$features" = xtiny], 
+	AS_IF([test "x$features" = xtiny],
 			[with_wayland=no
 			 AC_MSG_RESULT([cannot use wayland with tiny features])],
 			[with_wayland=yes
 			 AC_MSG_RESULT([yes])]))
 
 if test "$with_wayland" = yes; then
+cppflags_save=$CPPFLAGS
 cflags_save=$CFLAGS
   AC_MSG_CHECKING(for wayland)
   if "$PKG_CONFIG" --exists 'wayland-client'; then
     AC_MSG_RESULT([yes])
     AC_DEFINE(HAVE_WAYLAND)
-    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client`
+    WAYLAND_CPPFLAGS=`$PKG_CONFIG --cflags-only-I wayland-client`
+    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags-only-other wayland-client`
+    CPPFLAGS="$CPPFLAGS $WAYLAND_CPPFLAGS"
     CFLAGS="$CFLAGS $WAYLAND_CFLAGS"
     WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client`
     WAYLAND_SRC=" \
@@ -2435,6 +2438,7 @@ cflags_save=$CFLAGS
       objects/xdg-shell.o \
       objects/primary-selection-unstable-v1.o \
       objects/wayland.o"
+    AC_SUBST(WAYLAND_CPPFLAGS)
     AC_SUBST(WAYLAND_CFLAGS)
     AC_SUBST(WAYLAND_LIBS)
     AC_SUBST(WAYLAND_SRC)
@@ -2443,6 +2447,7 @@ cflags_save=$CFLAGS
     AC_MSG_RESULT(no)
     with_wayland=no
   fi
+CPPFLAGS=$cppflags_save
 CFLAGS=$cflags_save
 fi
 
@@ -2714,7 +2719,8 @@ AC_DEFUN(AM_PATH_GTK,
 	     dnl We should be using PKG_CHECK_MODULES() instead of this hack.
 	     dnl But I guess the dependency on pkgconfig.m4 is not wanted or
 	     dnl something like that.
-	     GTK_CFLAGS=`$PKG_CONFIG --cflags $gtk_pkg_name`
+	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
 	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
 	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
@@ -2726,6 +2732,7 @@ AC_DEFUN(AM_PATH_GTK,
 	     AC_MSG_RESULT([yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version])
 	   ],
 	   [
+	      GTK_CPPFLAGS=""
 	      GTK_CFLAGS=""
 	      GTK_LIBDIR=""
 	      GTK_LIBS=""
@@ -2745,8 +2752,10 @@ AC_DEFUN(AM_PATH_GTK,
   gtktest_success="yes"
   if test "$enable_gtktest" = "yes"; then
   {
+    ac_save_CPPFLAGS="$CPPFLAGS"
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
     CFLAGS="$CFLAGS $GTK_CFLAGS"
     LIBS="$LIBS $GTK_LIBS"
 
@@ -2793,6 +2802,7 @@ main ()
     [gtktest_success="yes"; AC_MSG_RESULT(yes)],
     [gtktest_success="no"; AC_MSG_RESULT(no)],
     [echo $ac_n "cross compiling; assumed OK... $ac_c"])
+    CPPFLAGS="$ac_save_CPPFLAGS"
     CFLAGS="$ac_save_CFLAGS"
     LIBS="$ac_save_LIBS"
   }
@@ -2802,6 +2812,7 @@ main ()
     ifelse([$2], , :, [$2])
   else
     dnl Reset flags sourced from pkg-config if the compilation test failed.
+    GTK_CPPFLAGS=""
     GTK_CFLAGS=""
     GTK_LIBDIR=""
     GTK_LIBS=""
@@ -2810,6 +2821,7 @@ main ()
     fi
   fi
 
+  AC_SUBST(GTK_CPPFLAGS)
   AC_SUBST(GTK_CFLAGS)
   AC_SUBST(GTK_LIBS)
 ])
@@ -2857,7 +2869,7 @@ AC_DEFUN([GNOME_INIT_HOOK],
       AC_MSG_RESULT(yes)
       GNOME_LIBS=`$PKG_CONFIG --libs-only-l libgnomeui-2.0`
       GNOME_LIBDIR=`$PKG_CONFIG --libs-only-L libgnomeui-2.0`
-      GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags libgnomeui-2.0`
+      GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags-only-I libgnomeui-2.0`
 
       dnl On FreeBSD we need -pthread but pkg-config doesn't include it.
       dnl This might not be the right way but it works for me...
@@ -3833,15 +3845,21 @@ fi
 if test "$enable_canberra" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
     canberra_lib=`$PKG_CONFIG --libs libcanberra 2>/dev/null`
-    canberra_cflags=`$PKG_CONFIG --cflags libcanberra 2>/dev/null`
+    canberra_cppflags=`$PKG_CONFIG --cflags-only-I libcanberra 2>/dev/null`
+    canberra_cflags=`$PKG_CONFIG --cflags-only-other libcanberra 2>/dev/null`
   fi
   if test "x$canberra_lib" = "x"; then
     canberra_lib=-lcanberra
+    canberra_cppflags=-D_REENTRANT
     canberra_cflags=-D_REENTRANT
   fi
   AC_MSG_CHECKING(for libcanberra)
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  if `echo "$CPPFLAGS" | grep -v "$canberra_cppflags" 2>/dev/null`; then
+    CPPFLAGS="$CPPFLAGS $canberra_cflags"
+  fi
   if `echo "$CFLAGS" | grep -v "$canberra_cflags" 2>/dev/null`; then
     CFLAGS="$CFLAGS $canberra_cflags"
   fi
@@ -3852,7 +3870,7 @@ if test "$enable_canberra" = "yes"; then
      ca_context *hello;
      ca_context_create(&hello);])],
        AC_MSG_RESULT(yes); AC_DEFINE(HAVE_CANBERRA),
-       AC_MSG_RESULT(no; try installing libcanberra-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
+       AC_MSG_RESULT(no; try installing libcanberra-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS", CPPFLAGS="ac_save_CPPFLAGS")
 fi
 
 AC_MSG_CHECKING(--enable-libsodium argument)
@@ -3874,15 +3892,19 @@ fi
 if test "$enable_libsodium" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
     libsodium_lib=`$PKG_CONFIG --libs libsodium 2>/dev/null`
-    libsodium_cflags=`$PKG_CONFIG --cflags libsodium 2>/dev/null`
+    libsodium_cppflags=`$PKG_CONFIG --cflags-only-I libsodium 2>/dev/null`
+    libsodium_cflags=`$PKG_CONFIG --cflags-only-other libsodium 2>/dev/null`
   fi
   if test "x$libsodium_lib" = "x"; then
     libsodium_lib=-lsodium
+    libsodium_cppflags=
     libsodium_cflags=
   fi
   AC_MSG_CHECKING(for libsodium)
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $libsodium_cppflags"
   CFLAGS="$CFLAGS $libsodium_cflags"
   LIBS="$LIBS $libsodium_lib"
   AC_LINK_IFELSE([AC_LANG_PROGRAM([
@@ -3890,7 +3912,7 @@ if test "$enable_libsodium" = "yes"; then
       ], [
      printf("%d", sodium_init()); ])],
        AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SODIUM),
-       AC_MSG_RESULT(no; try installing libsodium-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
+       AC_MSG_RESULT(no; try installing libsodium-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS"; CPPFLAGS="$ac_save_CPPFLAGS")
 fi
 
 dnl fstatfs() can take 2 to 4 arguments, try to use st_blksize if possible
