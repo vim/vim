@@ -2750,7 +2750,11 @@ diff_set_topline(win_T *fromwin, win_T *towin)
  * syntax is correct.
  */
     static int
-parse_diffanchors(int check_only, buf_T *buf, linenr_T *anchors, int *num_anchors)
+parse_diffanchors(
+    int		check_only,
+    buf_T	*buf,
+    linenr_T	*anchors,
+    int		*num_anchors)
 {
     int i;
     char_u *dia = (*buf->b_p_dia == NUL) ? p_dia : buf->b_p_dia;

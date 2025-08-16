@@ -1016,7 +1016,12 @@ fail:
  * External interface
  */
     static void
-DoPyCommand(const char *cmd, dict_T* locals, rangeinitializer init_range, runner run, void *arg)
+DoPyCommand(
+    const char		*cmd,
+    dict_T*		locals,
+    rangeinitializer	init_range,
+    runner		run,
+    void		*arg)
 {
 #ifndef PY_CAN_RECURSE
     static int		recursive = 0;

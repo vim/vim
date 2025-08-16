@@ -2922,7 +2922,12 @@ showmatch(
  * Returns TRUE, FALSE or -1 for failure.
  */
     static int
-is_zero_width(char_u *pattern, size_t patternlen, int move, pos_T *cur, int direction)
+is_zero_width(
+    char_u	*pattern,
+    size_t	patternlen,
+    int		move,
+    pos_T	*cur,
+    int		direction)
 {
     regmmatch_T	regmatch;
     int		nmatched = 0;

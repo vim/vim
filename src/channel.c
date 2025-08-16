@@ -2714,7 +2714,11 @@ invoke_one_time_callback(
 }
 
     static void
-append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
+append_to_buffer(
+    buf_T	*buffer,
+    char_u	*msg,
+    channel_T	*channel,
+    ch_part_T	part)
 {
     aco_save_T	aco;
     linenr_T    lnum = buffer->b_ml.ml_line_count;
