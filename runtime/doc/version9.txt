@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Aug 12
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41739,6 +41739,12 @@ Others: ~
 - The close button shown in the non-GUI 'tabline' will only be visible if the
   'mouse' option contains either "a" or any of the flags "n", "v", or "i".
 - |C-indenting| handles compound literals.
+- The digraphs "</" (LEFT-POINTING ANGLE BRACKET) and ">/" (RIGHT-POINTING
+  ANGLE BRACKET) have been changed to represent LEFT ANGLE BRACKET and RIGHT
+  ANGLE BRACKET to match the Unicode Miscellaneous Technical code chart from
+  Unicode 16.
+- Two additional digraphs have been added: LEFT ANGLE BRACKET "<[" and RIGHT
+  ANGLE BRACKET "]>".
 
 							*added-9.2*
 Added ~
