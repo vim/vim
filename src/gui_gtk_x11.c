@@ -99,6 +99,13 @@ extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockI
 # include <X11/Sunkeysym.h>
 #endif
 
+#ifdef FEAT_SOCKETSERVER
+# include <glib-unix.h>
+
+// Used to track the source for the listening socket
+static uint socket_server_source_id = 0;
+#endif
+
 /*
  * Easy-to-use macro for multihead support.
  */
@@ -2688,6 +2695,53 @@ global_event_filter(GdkXEvent *xev,
 }
 #endif // !USE_GNOME_SESSION
 
+#ifdef FEAT_SOCKETSERVER
+
+/*
+ * Callback for new events from the socket server listening socket
+ */
+    static int
+socket_server_poll_in(int fd UNUSED, GIOCondition cond, void *user_data UNUSED)
+{
+    if (cond & G_IO_IN)
+	socket_server_accept_client();
+    else if (cond & (G_IO_ERR | G_IO_HUP))
+    {
+	socket_server_uninit();
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Initialize socket server for use in the GUI (does not actually initialize the
+ * socket server, only attaches a source).
+ */
+    void
+gui_gtk_init_socket_server(void)
+{
+    if (socket_server_source_id > 0)
+	return;
+    // Register source for file descriptor to global default context
+    socket_server_source_id = g_unix_fd_add(socket_server_get_fd(),
+	    G_IO_IN | G_IO_ERR | G_IO_HUP, socket_server_poll_in, NULL);
+}
+
+/*
+ * Remove the source for the socket server listening socket.
+ */
+    void
+gui_gtk_uninit_socket_server(void)
+{
+    if (socket_server_source_id > 0)
+    {
+	g_source_remove(socket_server_source_id);
+	socket_server_source_id = 0;
+    }
+}
+
+#endif
 
 /*
  * Setup the window icon & xcmdsrv comm after the main window has been realized.
@@ -2754,7 +2808,7 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	setup_save_yourself();
 
 #ifdef FEAT_CLIENTSERVER
-    if (gui_mch_get_display())
+    if (clientserver_method == CLIENTSERVER_METHOD_X11 && gui_mch_get_display())
     {
 	if (serverName == NULL && serverDelayedStartName != NULL)
 	{

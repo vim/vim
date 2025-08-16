@@ -407,7 +407,19 @@ inchar_loop(
 
 	if ((resize_func != NULL && resize_func(TRUE))
 #if defined(FEAT_CLIENTSERVER) && defined(UNIX)
-		|| server_waiting()
+		|| (
+# ifdef FEAT_X11
+		    (clientserver_method == CLIENTSERVER_METHOD_X11 &&
+		    server_waiting())
+# endif
+# if defined(FEAT_X11) && defined(FEAT_SOCKETSERVER)
+		    ||
+# endif
+# ifdef FEAT_SOCKETSERVER
+		    (clientserver_method == CLIENTSERVER_METHOD_SOCKET &&
+		     socket_server_waiting_accept())
+# endif
+		)
 #endif
 #ifdef MESSAGE_QUEUE
 		|| interrupted
