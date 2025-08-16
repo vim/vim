@@ -15,6 +15,7 @@ tarPlugin.vim	     edit (compressed) tar files
 tohtml.vim	     convert a file with syntax highlighting to HTML
 vimballPlugin.vim    create and unpack .vba files
 zipPlugin.vim	     edit zip archives
+colorresp.vim	     used to detect terminal background and foreground colours
 
 Note: the explorer.vim plugin is no longer here, the netrw.vim plugin has
 taken over browsing directories (also for remote directories).
