@@ -524,6 +524,7 @@ EXTERN unsigned cia_flags;	// order flags of 'completeitemalign'
 EXTERN char_u	*p_cot;		// 'completeopt'
 EXTERN unsigned	cot_flags;	// flags from 'completeopt'
 EXTERN int	p_ac;		// 'autocomplete'
+EXTERN long	p_acl;		// 'autocompletedelay'
 // Keep in sync with p_cot_values in optionstr.c
 #define COT_MENU	0x001
 #define COT_MENUONE	0x002

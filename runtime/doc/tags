@@ -43,6 +43,7 @@ $quote	eval.txt	/*$quote*
 'a	motion.txt	/*'a*
 'ac'	options.txt	/*'ac'*
 'acd'	options.txt	/*'acd'*
+'acl'	options.txt	/*'acl'*
 'ai'	options.txt	/*'ai'*
 'akm'	options.txt	/*'akm'*
 'al'	options.txt	/*'al'*
@@ -64,6 +65,7 @@ $quote	eval.txt	/*$quote*
 'asd'	options.txt	/*'asd'*
 'autochdir'	options.txt	/*'autochdir'*
 'autocomplete'	options.txt	/*'autocomplete'*
+'autocompletedelay'	options.txt	/*'autocompletedelay'*
 'autoindent'	options.txt	/*'autoindent'*
 'autoprint'	vi_diff.txt	/*'autoprint'*
 'autoread'	options.txt	/*'autoread'*

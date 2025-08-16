@@ -2435,6 +2435,12 @@ ins_compl_new_leader(void)
     ins_compl_insert_bytes(compl_leader.string + get_compl_len(), -1);
     compl_used_match = FALSE;
 
+    if (p_acl > 0)
+    {
+	update_screen(UPD_VALID); // Show char (deletion) immediately
+	out_flush();
+    }
+
     if (compl_started)
     {
 	ins_compl_set_original_text(compl_leader.string, compl_leader.length);
@@ -5428,7 +5434,7 @@ ins_compl_get_exp(pos_T *ini)
 {
     static ins_compl_next_state_T   st;
     static int			    st_cleared = FALSE;
-    int		i;
+    int		match_count;
     int		found_new_match;
     int		type = ctrl_x_mode;
     int		may_advance_cpt_idx = FALSE;
@@ -5579,10 +5585,10 @@ ins_compl_get_exp(pos_T *ini)
 	    && *st.e_cpt == NUL)		// Got to end of 'complete'
 	found_new_match = FAIL;
 
-    i = -1;		// total of matches, unknown
+    match_count = -1;		// total of matches, unknown
     if (found_new_match == FAIL || (ctrl_x_mode_not_default()
 		&& !ctrl_x_mode_line_or_eval()))
-	i = ins_compl_make_cyclic();
+	match_count = ins_compl_make_cyclic();
 
     if (cfc_has_mode() && compl_get_longest && compl_num_bests > 0)
 	fuzzy_longest_match();
@@ -5602,7 +5608,7 @@ ins_compl_get_exp(pos_T *ini)
     if (is_nearest_active())
 	sort_compl_match_list(cp_compare_nearest);
 
-    return i;
+    return match_count;
 }
 
 /*
@@ -6130,7 +6136,7 @@ ins_compl_next(
 check_elapsed_time(void)
 {
 #ifdef ELAPSED_FUNC
-    if (cpt_sources_array == NULL)
+    if (cpt_sources_array == NULL || cpt_sources_index < 0)
 	return;
 
     elapsed_T	*start_tv
@@ -7070,6 +7076,10 @@ ins_complete(int c, int enable_pum)
     int		save_w_wrow;
     int		save_w_leftcol;
     int		insert_match;
+    int		no_matches_found;
+#ifdef ELAPSED_FUNC
+    elapsed_T	compl_start_tv; // Timestamp when match collection starts
+#endif
 
     compl_direction = ins_compl_key2dir(c);
     insert_match = ins_compl_use_match(c);
@@ -7082,6 +7092,10 @@ ins_complete(int c, int enable_pum)
     else if (insert_match && stop_arrow() == FAIL)
 	return FAIL;
 
+#ifdef ELAPSED_FUNC
+    if (compl_autocomplete && p_acl > 0)
+	ELAPSED_INIT(compl_start_tv);
+#endif
     compl_curr_win = curwin;
     compl_curr_buf = curwin->w_buffer;
     compl_shown_match = compl_curr_match;
@@ -7109,7 +7123,8 @@ ins_complete(int c, int enable_pum)
     }
 
     // we found no match if the list has only the "compl_orig_text"-entry
-    if (is_first_match(compl_first_match->cp_next))
+    no_matches_found = is_first_match(compl_first_match->cp_next);
+    if (no_matches_found)
     {
 	// remove N_ADDS flag, so next ^X<> won't try to go to ADDING mode,
 	// because we couldn't expand anything at first place, but if we used
@@ -7130,6 +7145,28 @@ ins_complete(int c, int enable_pum)
 
     if (!shortmess(SHM_COMPLETIONMENU) && !compl_autocomplete)
 	ins_compl_show_statusmsg();
+
+    // Wait for the autocompletion delay to expire
+#ifdef ELAPSED_FUNC
+    if (compl_autocomplete && p_acl > 0 && !no_matches_found
+	    && ELAPSED_FUNC(compl_start_tv) < p_acl)
+    {
+	cursor_on();
+	setcursor();
+	out_flush_cursor(FALSE, FALSE);
+	do
+	{
+	    if (char_avail())
+	    {
+		ins_compl_restart();
+		compl_interrupted = TRUE;
+		break;
+	    }
+	    else
+		ui_delay(2L, TRUE);
+	} while (ELAPSED_FUNC(compl_start_tv) < p_acl);
+    }
+#endif
 
     // Show the popup menu, unless we got interrupted.
     if (enable_pum && !compl_interrupted)

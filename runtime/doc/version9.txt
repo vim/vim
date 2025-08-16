@@ -41815,6 +41815,7 @@ Ex-Commands: ~
 Options: ~
 
 'autocompletion'	Enable auto completion |ins-autocompletion|
+'autocompletedelay'	Delay in msec before menu appears after typing
 'chistory'		Size of the quickfix stack |quickfix-stack|.
 'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
 			|ins-completion| modes
