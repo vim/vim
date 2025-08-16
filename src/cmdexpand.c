@@ -342,7 +342,7 @@ nextwild(
     {
 	size_t	plen = STRLEN(p);
 	int	difflen;
-	int	v;
+	int	v = OK;
 
 	difflen = (int)plen - xp->xp_pattern_len;
 	if (ccline->cmdlen + difflen + 4 > ccline->cmdbufflen)
@@ -350,8 +350,7 @@ nextwild(
 	    v = realloc_cmdbuff(ccline->cmdlen + difflen + 4);
 	    xp->xp_pattern = ccline->cmdbuff + i;
 	}
-	else
-	    v = OK;
+
 	if (v == OK)
 	{
 	    mch_memmove(&ccline->cmdbuff[ccline->cmdpos + difflen],
@@ -395,7 +394,7 @@ cmdline_pum_create(
 	int		showtail)
 {
     int		i;
-    int		columns;
+    int		prefix_len;
 
     // Add all the completion matches
     compl_match_array = ALLOC_MULT(pumitem_T, numMatches);
@@ -415,13 +414,11 @@ cmdline_pum_create(
 
     // Compute the popup menu starting column
     compl_startcol = ccline == NULL ? 0 : vim_strsize(ccline->cmdbuff) + 1;
-    columns = vim_strsize(xp->xp_pattern);
+    prefix_len = vim_strsize(xp->xp_pattern);
     if (showtail)
-    {
-	columns += vim_strsize(showmatches_gettail(matches[0]));
-	columns -= vim_strsize(matches[0]);
-    }
-    compl_startcol = MAX(0, compl_startcol - columns);
+	prefix_len += vim_strsize(showmatches_gettail(matches[0]))
+	    - vim_strsize(matches[0]);
+    compl_startcol = MAX(0, compl_startcol - prefix_len);
 
     // no default selection
     compl_selected = -1;
@@ -1279,12 +1276,12 @@ showmatches_oneline(
  * be inserted like a normal character.
  */
     int
-showmatches(expand_T *xp, int wildmenu UNUSED)
+showmatches(expand_T *xp, int wildmenu, int noselect)
 {
     cmdline_info_T	*ccline = get_cmdline_info();
     int		numMatches;
     char_u	**matches;
-    int		i, j;
+    int		i;
     int		maxlen;
     int		lines;
     int		columns;
@@ -1300,12 +1297,13 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 
     if (xp->xp_numfiles == -1)
     {
+	int retval;
 	set_expand_context(xp);
-	i = expand_cmdline(xp, ccline->cmdbuff, ccline->cmdpos,
-						    &numMatches, &matches);
+	retval = expand_cmdline(xp, ccline->cmdbuff, ccline->cmdpos,
+		&numMatches, &matches);
+	if (retval != EXPAND_OK)
+	    return retval;
 	showtail = expand_showtail(xp);
-	if (i != EXPAND_OK)
-	    return i;
     }
     else
     {
@@ -1316,7 +1314,8 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 
     if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
 	// cmdline completion popup menu (with wildoptions=pum)
-	return cmdline_pum_create(ccline, xp, matches, numMatches, showtail);
+	return cmdline_pum_create(ccline, xp, matches, numMatches,
+		showtail && !noselect);
 
     if (!wildmenu)
     {
@@ -1339,17 +1338,18 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 	maxlen = 0;
 	for (i = 0; i < numMatches; ++i)
 	{
+	    int	len;
 	    if (!showtail && (xp->xp_context == EXPAND_FILES
 			  || xp->xp_context == EXPAND_SHELLCMD
 			  || xp->xp_context == EXPAND_BUFFERS))
 	    {
 		home_replace(NULL, matches[i], NameBuff, MAXPATHL, TRUE);
-		j = vim_strsize(NameBuff);
+		len = vim_strsize(NameBuff);
 	    }
 	    else
-		j = vim_strsize(SHOW_MATCH(i));
-	    if (j > maxlen)
-		maxlen = j;
+		len = vim_strsize(SHOW_MATCH(i));
+	    if (len > maxlen)
+		maxlen = len;
 	}
 
 	if (xp->xp_context == EXPAND_TAGS_LISTFILES)

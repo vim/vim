@@ -822,7 +822,11 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
  * Adjust a placed sign for inserted/deleted lines.
  */
 void
-sign_mark_adjust(linenr_T line1, linenr_T line2, long amount, long amount_after)
+sign_mark_adjust(
+    linenr_T    line1,
+    linenr_T    line2,
+    long        amount,
+    long        amount_after)
 {
     sign_entry_T *sign = NULL; // a sign in a b_signlist
     FOR_ALL_SIGNS_IN_BUF(curbuf, sign)

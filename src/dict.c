@@ -387,7 +387,11 @@ dict_add(dict_T *d, dictitem_T *item)
  * Returns FAIL when out of memory and when key already exists.
  */
     static int
-dict_add_number_special(dict_T *d, char *key, varnumber_T nr, vartype_T vartype)
+dict_add_number_special(
+    dict_T	*d,
+    char	*key,
+    varnumber_T	nr,
+    vartype_T	vartype)
 {
     dictitem_T	*item;
 
