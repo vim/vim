@@ -462,7 +462,7 @@ sound_free(void)
 }
 #  endif
 
-# elif defined(MACOS_X_DARWIN)
+# elif defined(MACOS_X)
 
 // Sound implementation for macOS.
 static void
@@ -520,6 +520,6 @@ sound_free(void)
 }
 #  endif
 
-# endif // MACOS_X_DARWIN
+# endif // MACOS_X
 
 #endif // FEAT_SOUND

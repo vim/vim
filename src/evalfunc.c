@@ -6668,14 +6668,14 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"macunix",	// Mac OS X, with the darwin feature
-#if defined(MACOS_X) && defined(MACOS_X_DARWIN)
+#if defined(MACOS_X)
 		1
 #else
 		0
 #endif
 		},
 	{"osxdarwin",	// synonym for macunix
-#if defined(MACOS_X) && defined(MACOS_X_DARWIN)
+#if defined(MACOS_X)
 		1
 #else
 		0
