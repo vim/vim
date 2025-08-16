@@ -516,7 +516,7 @@ do_mouse(
 		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
 		{
 		    // double click opens new page
-		    end_visual_mode();
+		    end_visual_mode_keep_button();
 		    tabpage_new();
 		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
 		}
@@ -528,7 +528,7 @@ do_mouse(
 
 		    // It's like clicking on the status line of a window.
 		    if (curwin != old_curwin)
-			end_visual_mode();
+			end_visual_mode_keep_button();
 		}
 	    }
 	    else
