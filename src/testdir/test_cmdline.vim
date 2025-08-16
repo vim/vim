@@ -4859,4 +4859,34 @@ func Test_wildtrigger_update_screen()
   cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
 endfunc
 
+" Issue #17969: With 'noselect', the popup menu should appear next to the
+" environment variable being expanded. Disable 'showtail' when completing
+" file paths when 'noselect' is present.
+func Test_noselect_expand_env_var()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wildmenu wildoptions=pum wildmode=noselect,full
+    let $TESTDIR = 'a/b'
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildmenu', 'D')
+  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': 8})
+
+  call mkdir('a/b/c', 'pR')
+  call writefile(['asdf'], 'a/b/fileXname1')
+  call writefile(['foo'], 'a/b/fileXname2')
+
+  call term_sendkeys(buf, ":e $TESTDIR/\<Tab>")
+  call VerifyScreenDump(buf, 'Test_expand_env_var_1', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_expand_env_var_2', {})
+
+  call term_sendkeys(buf, "\<C-P>")
+  call VerifyScreenDump(buf, 'Test_expand_env_var_1', {})
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
