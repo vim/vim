@@ -27,7 +27,7 @@
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 
-#ifndef MSWIN
+#if !defined(MSWIN) && !defined(PROTO)
 # include <netdb.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>

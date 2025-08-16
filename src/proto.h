@@ -73,7 +73,9 @@ extern int _stricoll(char *a, char *b);
 # include "if_cscope.pro"
 # include "debugger.pro"
 # include "dict.pro"
-# include "diff.pro"
+# ifdef FEAT_DIFF
+#  include "diff.pro"
+# endif
 # include "linematch.pro"
 # include "digraph.pro"
 # include "drawline.pro"
@@ -193,6 +195,7 @@ void mbyte_im_set_active(int active_arg);
 # ifdef FEAT_SIGNS
 #  include "sign.pro"
 # endif
+# include "sound.h"
 # include "sound.pro"
 # include "spell.pro"
 # include "spellfile.pro"

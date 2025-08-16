@@ -173,7 +173,7 @@ profile_zero(proftime_T *tm)
 # endif  // FEAT_PROFILE || FEAT_RELTIME
 
 #if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_PROFILE)
-# if defined(HAVE_MATH_H)
+# if defined(HAVE_MATH_H) && !defined(PROTO)
 #  include <math.h>
 # endif
 

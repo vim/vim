@@ -10,46 +10,78 @@
 
 #include "vim.h"
 
-#include <Xm/Form.h>
-#include <Xm/RowColumn.h>
-#include <Xm/PushB.h>
-#include <Xm/Text.h>
-#include <Xm/TextF.h>
-#include <Xm/Separator.h>
-#include <Xm/Label.h>
-#include <Xm/CascadeB.h>
-#include <Xm/ScrollBar.h>
-#include <Xm/MenuShell.h>
-#include <Xm/DrawingA.h>
-#if (XmVersion >= 1002)
-# include <Xm/RepType.h>
+// Silence cproto on macOS
+#ifdef PROTO
+typedef struct _Display Display;
+typedef unsigned long	Window;
+typedef struct {
+  int type;
+} XEvent;
+typedef unsigned char char_u;
+typedef struct _Display Display;
+typedef unsigned long	Atom;
+typedef unsigned long  Window;
+typedef struct {
+  int type;
+  unsigned long serial;
+  unsigned char error_code;
+  unsigned char request_code;
+  unsigned char minor_code;
+  Window	resourceid;
+} XErrorEvent;
+typedef unsigned char Boolean;
+typedef char	     *String;
+typedef void	     *Region;
+typedef struct _WidgetRec *Widget;
+typedef struct _Display Display;
+typedef unsigned long Window;
+typedef unsigned char char_u;
+typedef void (*XtExposeProc)(Widget, void *, Region);
+typedef String XmStringCharSet;
 #endif
-#include <Xm/Frame.h>
-#include <Xm/LabelG.h>
-#include <Xm/ToggleBG.h>
-#include <Xm/SeparatoG.h>
-#include <Xm/XmP.h>
 
-#include <X11/keysym.h>
-#include <X11/Xatom.h>
-#include <X11/StringDefs.h>
-#include <X11/Intrinsic.h>
-#ifdef HAVE_X11_XPM_H
-# if defined(VMS)
-#  include <xpm.h>
+#ifndef PROTO
+# include <Xm/Form.h>
+# include <Xm/RowColumn.h>
+# include <Xm/PushB.h>
+# include <Xm/Text.h>
+# include <Xm/TextF.h>
+# include <Xm/Separator.h>
+# include <Xm/Label.h>
+# include <Xm/CascadeB.h>
+# include <Xm/ScrollBar.h>
+# include <Xm/MenuShell.h>
+# include <Xm/DrawingA.h>
+# if (XmVersion >= 1002)
+#  include <Xm/RepType.h>
+# endif
+# include <Xm/Frame.h>
+# include <Xm/LabelG.h>
+# include <Xm/ToggleBG.h>
+# include <Xm/SeparatoG.h>
+# include <Xm/XmP.h>
+
+# include <X11/keysym.h>
+# include <X11/Xatom.h>
+# include <X11/StringDefs.h>
+# include <X11/Intrinsic.h>
+# ifdef HAVE_X11_XPM_H
+#  if defined(VMS)
+#   include <xpm.h>
+#  else
+#   include <X11/xpm.h>
+#  endif
 # else
-#  include <X11/xpm.h>
+#  ifdef HAVE_XM_XPMP_H
+#   include <Xm/XpmP.h>
+#  endif
 # endif
-#else
-# ifdef HAVE_XM_XPMP_H
-#  include <Xm/XpmP.h>
+# ifdef HAVE_XM_NOTEBOOK_H
+#  include <Xm/Notebook.h>
 # endif
-#endif
-#ifdef HAVE_XM_NOTEBOOK_H
-# include <Xm/Notebook.h>
-#endif
 
-#include "gui_xmebw.h"	// for our Enhanced Button Widget
+# include "gui_xmebw.h"	// for our Enhanced Button Widget
+#endif
 
 #if defined(FEAT_GUI_DIALOG) && defined(HAVE_XPM)
 # include "../pixmaps/alert.xpm"
@@ -57,6 +89,37 @@
 # include "../pixmaps/generic.xpm"
 # include "../pixmaps/info.xpm"
 # include "../pixmaps/quest.xpm"
+#endif
+
+#ifdef PROTO
+typedef unsigned char  char_u;
+typedef struct _Display Display;
+typedef unsigned long	Window;
+typedef unsigned long	Atom;
+typedef unsigned long	Time;
+typedef unsigned long	Pixel;
+typedef unsigned long	KeySym;
+typedef unsigned long	Colormap;
+typedef unsigned long	Cursor;
+typedef struct _WidgetRec *Widget;
+typedef void		*XtPointer;
+typedef char		*String;
+typedef unsigned int	 Cardinal;
+typedef unsigned short	 Dimension;
+typedef short		 Position;
+typedef int		 Bool;
+#ifndef True
+# define True  1
+# define False 0
+#endif
+typedef int		 Status;
+typedef struct { int type; } XEvent;
+typedef struct { int type; } XKeyEvent;
+typedef void		*Region;
+typedef struct _XFontStruct XFontStruct;
+typedef void		*XFontSet;
+typedef void		*XmFontList;
+typedef void (*XtCallbackProc)(Widget, XtPointer, XtPointer);
 #endif
 
 #define MOTIF_POPUP
@@ -289,8 +352,10 @@ tabline_balloon_cb(BalloonEval *beval, int state UNUSED)
  * By Marcin Dalecki.
  */
 
+#if !defined(PROTO)
 #include <Xm/XmP.h>
 #include <Xm/LabelP.h>
+#endif
 
 static XtExposeProc old_label_expose = NULL;
 
@@ -1114,7 +1179,7 @@ gui_mch_compute_menu_height(
     gui.menu_height = maxy + height - 2 * shadow + 2 * margin + 4;
 
     // Somehow the menu bar doesn't resize automatically.  Set it here,
-    // even though this is a catch 22.  Don't do this when starting up,
+    // even though this is a catch 22.	Don't do this when starting up,
     // somehow the menu gets very high then.
     if (gui.shell_created)
 	XtVaSetValues(menuBar, XmNheight, gui.menu_height, NULL);
@@ -1455,7 +1520,7 @@ gui_mch_new_menu_font(void)
 gui_mch_new_tooltip_font(void)
 {
 # ifdef FEAT_TOOLBAR
-    vimmenu_T   *menu;
+    vimmenu_T	*menu;
 
     if (toolBar == (Widget)0)
 	return;
@@ -1470,7 +1535,7 @@ gui_mch_new_tooltip_font(void)
 gui_mch_new_tooltip_colors(void)
 {
 # ifdef FEAT_TOOLBAR
-    vimmenu_T   *toolbar;
+    vimmenu_T	*toolbar;
 
     if (toolBar == (Widget)0)
 	return;
@@ -2103,8 +2168,10 @@ set_fontlist(Widget id)
  * file selector related stuff
  */
 
+#if !defined(PROTO)
 #include <Xm/FileSB.h>
 #include <Xm/XmStrDefs.h>
+#endif
 
 typedef struct dialog_callback_arg
 {
@@ -3042,11 +3109,11 @@ gui_mch_compute_toolbar_height(void)
 
     void
 motif_get_toolbar_colors(
-    Pixel       *bgp,
-    Pixel       *fgp,
-    Pixel       *bsp,
-    Pixel       *tsp,
-    Pixel       *hsp)
+    Pixel	*bgp,
+    Pixel	*fgp,
+    Pixel	*bsp,
+    Pixel	*tsp,
+    Pixel	*hsp)
 {
     XtVaGetValues(toolBar,
 	    XmNbackground, bgp,

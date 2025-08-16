@@ -13,8 +13,26 @@
  * Amiga system-dependent routines.
  */
 
-#include "vim.h"
-#include "version.h"
+// Silence cproto on macOS
+#ifndef PROTO
+# include "vim.h"
+# include "version.h"
+#endif
+
+#ifdef PROTO
+typedef unsigned char char_u;
+typedef unsigned long long_u;
+typedef int            tmode_T;
+typedef struct {
+    int ga_len;
+    int ga_maxlen;
+    void *ga_data;
+} garray_T;
+
+# ifndef UNUSED
+#  define UNUSED
+# endif
+#endif
 
 #ifdef Window
 # undef Window	// Amiga has its own Window definition

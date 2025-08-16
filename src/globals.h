@@ -1087,7 +1087,7 @@ EXTERN int	ru_wid;		// 'rulerfmt' width of ruler when non-zero
 #endif
 EXTERN int	sc_col;		// column for shown command
 
-#ifdef TEMPDIRNAMES
+#if defined(TEMPDIRNAMES) && !defined(PROTO)
 # if defined(UNIX) && defined(HAVE_FLOCK) \
 	&& (defined(HAVE_DIRFD) || defined(__hpux))
 EXTERN DIR	*vim_tempdir_dp INIT(= NULL); // File descriptor of temp dir
@@ -1561,10 +1561,12 @@ EXTERN int	redrawtime_limit_set INIT(= FALSE);
 EXTERN int	need_highlight_changed INIT(= TRUE);
 
 #define NSCRIPT 15
+#ifndef PROTO	 // Silence cproto on macOS
 EXTERN FILE	*scriptin[NSCRIPT];	    // streams to read script from
 EXTERN int	curscript INIT(= 0);	    // index in scriptin[]
 EXTERN FILE	*scriptout  INIT(= NULL);   // stream to write script to
 EXTERN int	read_cmd_fd INIT(= 0);	    // fd to read commands from
+#endif
 
 // Set to TRUE when an interrupt signal occurred.
 // Volatile because it is used in signal handler catch_sigint().
@@ -1646,12 +1648,14 @@ EXTERN int	keep_help_flag INIT(= FALSE); // doing :ta from help file
  */
 EXTERN char_u	*empty_option INIT(= (char_u *)"");
 
+#if !defined(PROTO)
 EXTERN int  redir_off INIT(= FALSE);	// no redirection for a moment
 EXTERN FILE *redir_fd INIT(= NULL);	// message redirection file
 #ifdef FEAT_EVAL
 EXTERN int  redir_reg INIT(= 0);	// message redirection register
 EXTERN int  redir_vname INIT(= 0);	// message redirection variable
 EXTERN int  redir_execute INIT(= 0);	// execute() redirection
+#endif
 #endif
 
 #ifdef FEAT_LANGMAP
@@ -1943,7 +1947,7 @@ EXTERN char need_key_msg[]  INIT(= N_("Need encryption key for \"%s\""));
 EXTERN int xsmp_icefd INIT(= -1);   // The actual connection
 #endif
 
-#ifdef STARTUPTIME
+#if defined(STARTUPTIME) && !defined(PROTO)
 EXTERN FILE *time_fd INIT(= NULL);  // where to write startup timing
 #endif
 

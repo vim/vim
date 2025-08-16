@@ -44,9 +44,11 @@
 
 #if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
 
+#if !defined(PROTO)
 #include <signal.h>
+#endif
 
-#ifdef HAVE_SYS_IOCTL_H
+#if defined(HAVE_SYS_IOCTL_H) && !defined(PROTO)
 # include <sys/ioctl.h>
 #endif
 
@@ -67,16 +69,18 @@
 # endif
 #endif
 
-#ifdef HAVE_UNISTD_H
+#if defined(HAVE_UNISTD_H) && !defined(PROTO)
 # include <unistd.h>
 #endif
 
+#if !defined(PROTO)
 #if HAVE_TERMIO_H
 # include <termio.h>
 #else
 # ifdef HAVE_TERMIOS_H
 #  include <termios.h>
 # endif
+#endif
 #endif
 
 #if HAVE_SYS_STREAM_H
@@ -87,7 +91,7 @@
 # include <sys/ptem.h>
 #endif
 
-#if !defined(SUN_SYSTEM) && !defined(VMS)
+#if !defined(SUN_SYSTEM) && !defined(VMS) && !defined(PROTO)
 # include <sys/ioctl.h>
 #endif
 

@@ -20,15 +20,31 @@
  * Roger Knobbe <rogerk@wonderware.com> did the initial port of Vim 3.0.
  */
 
-#include "vim.h"
+// Silence cproto on macOS
+#ifndef PROTO
+# include "vim.h"
+#endif
+
+#ifdef PROTO
+typedef struct _FILE FILE;
+typedef void *vim_acl_T;
+typedef unsigned long guicolor_T;
+typedef struct job_S job_T;
+typedef struct jobopt_S jobopt_T;
+typedef struct garray_S garray_T;
+typedef unsigned char char_u;
+typedef long long_u;
+typedef struct dict_S dict_T;
+typedef enum { TMODE_UNKNOWN, TMODE_RAW, TMODE_COOK } tmode_T;
+# ifdef UNUSED
+#  undef UNUSED
+# endif
+# define UNUSED
+#endif
 
 #ifdef FEAT_MZSCHEME
 # include "if_mzsch.h"
 #endif
-
-#include <sys/types.h>
-#include <signal.h>
-#include <limits.h>
 
 // cproto fails on missing include files
 #ifndef PROTO
@@ -2031,7 +2047,7 @@ read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
 }
 #endif // !FEAT_GUI_MSWIN || VIMDLL
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * The 'test_mswin_event' function is for testing Vim's low-level handling of
  * user input events.  ie, this manages the encoding of INPUT_RECORD events
@@ -2118,7 +2134,7 @@ test_mswin_event(char_u *event, dict_T *args)
 }
 #endif // FEAT_EVAL
 
-#ifdef MCH_CURSOR_SHAPE
+#if defined(MCH_CURSOR_SHAPE) || defined(PROTO)
 /*
  * Set the shape of the cursor.
  * 'thickness' can be from 1 (thin) to 99 (block)

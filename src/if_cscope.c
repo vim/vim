@@ -13,10 +13,12 @@
 
 #if defined(FEAT_CSCOPE) || defined(PROTO)
 
+#if !defined(PROTO)
 #include <sys/types.h>
 #include <sys/stat.h>
 #if defined(UNIX)
 # include <sys/wait.h>
+#endif
 #endif
 
 #if defined (MSWIN)
@@ -81,6 +83,9 @@ static int	    cs_check_for_connections(void);
 static int	    cs_check_for_tags(void);
 static int	    cs_cnt_connections(void);
 static int	    cs_create_connection(int i);
+#if defined(PROTO)
+typedef int FILE;
+#endif
 #ifdef FEAT_QUICKFIX
 static void	    cs_file_results(FILE *, int *);
 #endif

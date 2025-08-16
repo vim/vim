@@ -13,10 +13,13 @@
 #include "vim.h"
 #include "termlib.pro"
 
-#if !defined(AMIGA) && !defined(VMS)
+#if !defined(AMIGA) && !defined(VMS) && !defined(PROTO)
 # include <sgtty.h>
 #endif
 
+#if defined(PROTO)
+typedef int FILE;
+#endif
 static int  getent(char *, char *, FILE *, int);
 static int  nextent(char *, FILE *, int);
 static int  _match(char *, char *);

@@ -11,7 +11,13 @@
  * sound.c: functions related making noise
  */
 
+#include "sound.h"
 #include "vim.h"
+
+#ifdef PROTO
+typedef void (*soundcb_T)(void *cb_data);
+typedef struct _ca_context ca_context;
+#endif
 
 #if defined(FEAT_SOUND) || defined(PROTO)
 
@@ -114,7 +120,9 @@ delete_sound_callback(soundcb_T *soundcb)
 /*
  * Sound implementation for Linux/Unix using libcanberra.
  */
+#ifndef PROTO
 #  include <canberra.h>
+#endif
 
 static ca_context *context = NULL;
 

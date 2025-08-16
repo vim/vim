@@ -129,7 +129,7 @@ get_ctime(time_t thetime, int add_newline)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-#if defined(MACOS_X)
+#if defined(MACOS_X) && !defined(PROTO)
 # include <time.h>	// for time_t
 #endif
 

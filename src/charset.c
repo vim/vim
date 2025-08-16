@@ -9,7 +9,7 @@
 
 #include "vim.h"
 
-#if defined(HAVE_WCHAR_H)
+#if defined(HAVE_WCHAR_H) && !defined(PROTO)
 # include <wchar.h>	    // for towupper() and towlower()
 #endif
 

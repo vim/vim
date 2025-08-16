@@ -1243,7 +1243,7 @@ typedef struct attr_entry
     } ae_u;
 } attrentry_T;
 
-#ifdef USE_ICONV
+#if defined(USE_ICONV) && !defined(PROTO)
 # ifdef HAVE_ICONV_H
 #  include <iconv.h>
 # else

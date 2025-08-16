@@ -14,9 +14,33 @@
 #include "vim.h"
 #include "version.h"
 
+// Silence cproto on macOS
+#ifdef PROTO
+typedef unsigned char  char_u;
+typedef struct _Display Display;
+typedef unsigned long   Window;
+typedef unsigned long   Atom;
+typedef unsigned long   Time;
+typedef int             Bool;
+# ifndef True
+#  define True  1
+#  define False 0
+# endif
+typedef int             Status;
+typedef struct { int type; } XEvent;
+typedef struct {
+  int            type;
+  unsigned long  serial;
+  unsigned char  error_code;
+  unsigned char  request_code;
+  unsigned char  minor_code;
+  Window         resourceid;
+} XErrorEvent;
+#endif
+
 #if defined(FEAT_CLIENTSERVER) || defined(PROTO)
 
-# ifdef FEAT_X11
+# if defined(FEAT_X11) && !defined(PROTO)
 #  include <X11/Intrinsic.h>
 #  include <X11/Xatom.h>
 # endif

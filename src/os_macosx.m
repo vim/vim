@@ -23,10 +23,13 @@
  * X11 header files. */
 #define NO_X11_INCLUDES
 
-#include <stdbool.h>
-#include <mach/boolean.h>
-#include <sys/errno.h>
-#include <stdlib.h>
+// Silence cproto on macOS
+#ifndef PROTO
+# include <stdbool.h>
+# include <mach/boolean.h>
+# include <sys/errno.h>
+# include <stdlib.h>
+#endif
 
 #ifdef FEAT_RELTIME
 #include <dispatch/dispatch.h>

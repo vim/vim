@@ -26,7 +26,7 @@
 /*
  * Unix interface
  */
-#if defined(__APPLE_CC__) // for Project Builder and ...
+#if defined(__APPLE_CC__) && !defined(PROTO) // for Project Builder and ...
 # include <unistd.h>
 // Get stat.h or something similar. Comment: How come some OS get in vim.h
 # include <sys/stat.h>
@@ -39,12 +39,14 @@
 // OK defined to 0 in MacOS X 10.2 curses!  Remove it, we define it to be 1.
 # undef OK
 #endif
+#if !defined(PROTO)
 #include <signal.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <dirent.h>
+#endif
 
 /*
  * MacOS specific #define
@@ -251,7 +253,9 @@
 
 #ifdef FEAT_RELTIME
 
+#if !defined(PROTO)
 # include <dispatch/dispatch.h>
+#endif
 
 # if !defined(MAC_OS_X_VERSION_10_12) \
 	|| (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12)
@@ -282,10 +286,12 @@ struct macos_timer
 
 typedef struct macos_timer *timer_t;
 
+#if !defined(PROTO)
 extern int timer_create(
     clockid_t clockid,
     struct sigevent *sevp,
     timer_t *timerid);
+#endif
 
 extern int timer_delete(timer_t timerid);
 

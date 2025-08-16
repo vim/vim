@@ -47,9 +47,11 @@
 #define XINCLUDE_H
 
 // This effectively re-verts b46054b3746271d23feab0 from git
+#if !defined(PROTO)
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#endif
 #if !defined(_WIN32)
 #include <unistd.h>
 #endif

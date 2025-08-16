@@ -14,8 +14,20 @@
  * Also used by Cygwin, using os_unix.c.
  */
 
-#include "vim.h"
+// Silence cproto on macOS
+#ifndef PROTO
+# include "vim.h"
+#endif
 
+#ifdef PROTO
+typedef unsigned char char_u;
+typedef unsigned short short_u;
+typedef struct { int dummy; } Clipboard_T;
+# ifdef UNUSED
+#  undef UNUSED
+# endif
+#define UNUSED
+#endif
 /*
  * Compile only the clipboard handling features when compiling for cygwin
  * posix environment.
@@ -31,8 +43,8 @@
  * errors disappear.  They do not need to be correct.
  */
 #ifdef PROTO
-#define WINAPI
-#define WINBASEAPI
+# define WINAPI
+# define WINBASEAPI
 typedef int DWORD;
 typedef int LPBOOL;
 typedef int LPCSTR;
@@ -176,7 +188,7 @@ WideCharToMultiByte_alloc(UINT cp, DWORD flags,
 }
 
 
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
 /*
  * Clipboard stuff, for cutting and pasting text to other windows.
  */

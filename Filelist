@@ -147,6 +147,7 @@ SRC_ALL =	\
 		src/sha256.c \
 		src/sign.c \
 		src/sound.c \
+		src/sound.h \
 		src/spell.c \
 		src/spell.h \
 		src/spellfile.c \
