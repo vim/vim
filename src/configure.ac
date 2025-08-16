@@ -206,31 +206,14 @@ case $vim_cv_uname_output in
     *)		QNX=no; AC_MSG_RESULT(no);;
 esac
 
-dnl Check for Darwin and MacOS X
-dnl We do a check for MacOS X in the very beginning because there
+dnl Check macOS
+dnl We do a check for macOS in the very beginning because there
 dnl are a lot of other things we need to change besides GUI stuff
-AC_MSG_CHECKING([for Darwin (Mac OS X)])
+AC_MSG_CHECKING([for macOS])
 if test "$vim_cv_uname_output" = Darwin; then
   AC_MSG_RESULT(yes)
   MACOS_X=yes
   CPPFLAGS="$CPPFLAGS -DMACOS_X"
-
-  AC_MSG_CHECKING(--disable-darwin argument)
-  AC_ARG_ENABLE(darwin,
-	  [  --disable-darwin        Disable Darwin (Mac OS X) support.],
-	  , [enable_darwin="yes"])
-  if test "$enable_darwin" = "yes"; then
-    AC_MSG_RESULT(no)
-    AC_MSG_CHECKING(if Darwin files are there)
-    if test -f os_macosx.m; then
-      AC_MSG_RESULT(yes)
-    else
-      AC_MSG_RESULT([no, Darwin support disabled])
-      enable_darwin=no
-    fi
-  else
-    AC_MSG_RESULT([yes, Darwin support excluded])
-  fi
 
   AC_MSG_CHECKING(--with-mac-arch argument)
   AC_ARG_WITH(mac-arch, [  --with-mac-arch=ARCH    current, intel, ppc or both],
@@ -287,19 +270,17 @@ if test "$vim_cv_uname_output" = Darwin; then
     LDFLAGS="$LDFLAGS -arch ppc"
   fi
 
-  if test "$enable_darwin" = "yes"; then
-    OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
-    OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
-    dnl os_macosx.m implements timer_create() and friends
-    AC_DEFINE(HAVE_TIMER_CREATE)
-    dnl TODO: use -arch i386 on Intel machines
-    dnl Removed -no-cpp-precomp, only for very old compilers.
+  OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
+  OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
+  dnl os_macosx.m implements timer_create() and friends
+  AC_DEFINE(HAVE_TIMER_CREATE)
+  dnl TODO: use -arch i386 on Intel machines
+  dnl Removed -no-cpp-precomp, only for very old compilers.
 
-     dnl Assume we don't want X11 unless it was specifically asked for
-     dnl (--with-x) or Motif or GTK GUI is used.
-     if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
-      with_x=no
-     fi
+  dnl Assume we don't want X11 unless it was specifically asked for
+  dnl (--with-x) or Motif or GTK GUI is used.
+  if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
+   with_x=no
   fi
 else
   AC_MSG_RESULT(no)
@@ -2406,7 +2387,7 @@ AC_MSG_CHECKING(--with-wayland argument)
 AC_ARG_WITH(wayland,
 	[  --with-wayland	  Include support for the Wayland protocol.],
 	[with_wayland=$withval],
-	AS_IF([test "x$features" = xtiny], 
+	AS_IF([test "x$features" = xtiny],
 			[with_wayland=no
 			 AC_MSG_RESULT([cannot use wayland with tiny features])],
 			[with_wayland=yes

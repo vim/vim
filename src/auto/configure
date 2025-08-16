@@ -813,7 +813,6 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_fail_if_missing
-enable_darwin
 with_mac_arch
 with_developer_dir
 with_local_dir
@@ -1514,7 +1513,6 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-fail-if-missing    Fail if dependencies on additional features
      specified on the command line are missing.
-  --disable-darwin        Disable Darwin (Mac OS X) support.
   --disable-smack	  Do not check for Smack support.
   --disable-selinux	  Do not check for SELinux support.
   --disable-xattr	  Do not check for XATTR support.
@@ -4990,42 +4988,13 @@ printf "%s\n" "yes" >&6; };;
 printf "%s\n" "no" >&6; };;
 esac
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Darwin (Mac OS X)" >&5
-printf %s "checking for Darwin (Mac OS X)... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for macOS" >&5
+printf %s "checking for macOS... " >&6; }
 if test "$vim_cv_uname_output" = Darwin; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
   MACOS_X=yes
   CPPFLAGS="$CPPFLAGS -DMACOS_X"
-
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --disable-darwin argument" >&5
-printf %s "checking --disable-darwin argument... " >&6; }
-  # Check whether --enable-darwin was given.
-if test ${enable_darwin+y}
-then :
-  enableval=$enable_darwin;
-else case e in #(
-  e) enable_darwin="yes" ;;
-esac
-fi
-
-  if test "$enable_darwin" = "yes"; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if Darwin files are there" >&5
-printf %s "checking if Darwin files are there... " >&6; }
-    if test -f os_macosx.m; then
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-    else
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, Darwin support disabled" >&5
-printf "%s\n" "no, Darwin support disabled" >&6; }
-      enable_darwin=no
-    fi
-  else
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, Darwin support excluded" >&5
-printf "%s\n" "yes, Darwin support excluded" >&6; }
-  fi
 
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-mac-arch argument" >&5
 printf %s "checking --with-mac-arch argument... " >&6; }
@@ -5182,15 +5151,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
     LDFLAGS="$LDFLAGS -arch ppc"
   fi
 
-  if test "$enable_darwin" = "yes"; then
-    OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
-    OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
-        printf "%s\n" "#define HAVE_TIMER_CREATE 1" >>confdefs.h
+  OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
+  OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
+    printf "%s\n" "#define HAVE_TIMER_CREATE 1" >>confdefs.h
 
 
-               if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
-      with_x=no
-     fi
+      if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
+   with_x=no
   fi
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
