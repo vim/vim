@@ -344,7 +344,7 @@ isinf({expr})			Number	determine if {expr} is infinity value
 					(positive or negative)
 islocked({expr})		Number	|TRUE| if {expr} is locked
 isnan({expr})			Number	|TRUE| if {expr} is NaN
-items({dict})			List	key-value pairs in {dict}
+items({expr})			List	key-value pairs in {expr}
 job_getchannel({job})		Channel	get the channel handle for {job}
 job_info([{job}])		Dict	get information about {job}
 job_setoptions({job}, {options}) none	set options for {job}
@@ -6310,20 +6310,26 @@ isnan({expr})						*isnan()*
 		Return type: |Number|
 
 
-items({dict})						*items()*
-		Return a |List| with all the key-value pairs of {dict}.  Each
-		|List| item is a list with two items: the key of a {dict}
-		entry and the value of this entry.  The |List| is in arbitrary
-		order.  Also see |keys()| and |values()|.
-		Example: >
-			for [key, value] in items(mydict)
-			   echo key .. ': ' .. value
-			endfor
-<
-		A |List|, a |Tuple| or a |String| argument is also supported.
-		In these cases, items() returns a List with the index and the
-		value at the index.
+items({expr})						*items()*
+		Return a |List| with all the key or index and value pairs of
+		{expr}.  Each |List| item is a list with two items: the key or
+		index of a {expr} entry and the value of this entry.  The
+		|List| is in arbitrary order.
 
+		For a |Dict|, returns a List with the key and value pairs.
+		For a |List|, a |Tuple| or a |String| returns a List with the
+		index and the value at the index.
+
+		Also see |keys()| and |values()|.
+		Examples: >
+			let mydict = #{a: 'red', b: 'blue'}
+			for [key, value] in items(mydict)
+			   echo $"{key} = {value}"
+			endfor
+			echo items([1, 2, 3])
+			echo items(('a', 'b', 'c'))
+			echo items("foobar")
+<
 		Can also be used as a |method|: >
 			mydict->items()
 <
