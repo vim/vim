@@ -3001,7 +3001,10 @@ expand_font_enumproc(
  * platform code.
  */
     void
-gui_mch_expand_font(optexpand_T *args, void *param UNUSED, int (*add_match)(char_u *val))
+gui_mch_expand_font(
+    optexpand_T	*args,
+    void	*param UNUSED,
+    int		(*add_match)(char_u *val))
 {
     expand_T	    *xp = args->oe_xp;
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')

@@ -5419,7 +5419,10 @@ gui_mch_free_font(GuiFont font)
  * monospace fonts as it's unlikely other fonts would be useful.
  */
     void
-gui_mch_expand_font(optexpand_T *args, void *param, int (*add_match)(char_u *val))
+gui_mch_expand_font(
+    optexpand_T	*args,
+    void	*param,
+    int		(*add_match)(char_u *val))
 {
     PangoFontFamily	**font_families = NULL;
     int			n_families = 0;

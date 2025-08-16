@@ -2810,7 +2810,12 @@ executable_file(char *name, char_u **path)
  * the allocated memory.
  */
     static int
-executable_exists(char *name, size_t namelen, char_u **path, int use_path, int use_pathext)
+executable_exists(
+    char	*name,
+    size_t	namelen,
+    char_u	**path,
+    int		use_path,
+    int		use_pathext)
 {
     // WinNT and later can use _MAX_PATH wide characters for a pathname, which
     // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is

@@ -1543,7 +1543,12 @@ uc_split_args(char_u *arg, size_t *lenp)
 }
 
     static size_t
-add_cmd_modifier(char_u *buf, size_t buflen, char *mod_str, size_t mod_strlen, int *multi_mods)
+add_cmd_modifier(
+    char_u	*buf,
+    size_t	buflen,
+    char	*mod_str,
+    size_t	mod_strlen,
+    int		*multi_mods)
 {
     if (buf != NULL)
     {

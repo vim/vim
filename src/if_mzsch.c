@@ -841,7 +841,11 @@ static void remove_timer(void);
 // timers are presented in GUI only
 # if defined(FEAT_GUI_MSWIN)
     static void CALLBACK
-timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dwTime UNUSED)
+timer_proc(
+    HWND	hwnd UNUSED,
+    UINT	uMsg UNUSED,
+    UINT_PTR	idEvent UNUSED,
+    DWORD	dwTime UNUSED)
 # elif defined(FEAT_GUI_GTK)
     static gboolean
 timer_proc(gpointer data UNUSED)
@@ -1306,7 +1310,10 @@ mzscheme_init(void)
  * Evaluate command with exception handling
  */
     static int
-eval_with_exn_handling(void *data, Scheme_Closed_Prim *what, Scheme_Object **ret)
+eval_with_exn_handling(
+    void		*data,
+    Scheme_Closed_Prim	*what,
+    Scheme_Object	**ret)
 {
     Scheme_Object   *value = NULL;
     Scheme_Object   *exn = NULL;
@@ -1698,7 +1705,10 @@ vim_eval(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
  * (range-start)
  */
     static Scheme_Object *
-get_range_start(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
+get_range_start(
+    void		*data UNUSED,
+    int			argc UNUSED,
+    Scheme_Object	**argv UNUSED)
 {
     return scheme_make_integer(range_start);
 }
@@ -1883,7 +1893,10 @@ get_curr_win(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
  * (win-count)
  */
     static Scheme_Object *
-get_window_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
+get_window_count(
+    void		*data UNUSED,
+    int			argc UNUSED,
+    Scheme_Object	**argv UNUSED)
 {
     int	    n = 0;
     win_T   *w;
@@ -2275,7 +2288,10 @@ get_buffer_num(void *data, int argc, Scheme_Object **argv)
  * (buff-count)
  */
     static Scheme_Object *
-get_buffer_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
+get_buffer_count(
+    void		*data UNUSED,
+    int			argc UNUSED,
+    Scheme_Object	**argv UNUSED)
 {
     buf_T   *b;
     int	    n = 0;
@@ -2300,7 +2316,10 @@ get_buffer_name(void *data, int argc, Scheme_Object **argv)
  * (curr-buff)
  */
     static Scheme_Object *
-get_curr_buffer(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
+get_curr_buffer(
+    void		*data UNUSED,
+    int			argc UNUSED,
+    Scheme_Object	**argv UNUSED)
 {
     return (Scheme_Object *)get_vim_curr_buffer();
 }
@@ -2997,7 +3016,10 @@ vim_to_mzscheme(typval_T *vim_value)
 }
 
     static Scheme_Object *
-vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
+vim_to_mzscheme_impl(
+    typval_T		*vim_value,
+    int			depth,
+    Scheme_Hash_Table	*visited)
 {
     Scheme_Object   *result = NULL;
     int		    new_value = TRUE;
