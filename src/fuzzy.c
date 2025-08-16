@@ -216,7 +216,7 @@ fuzzy_match_in_list(
     long	max_matches)
 {
     long	    len;
-    fuzzyItem_T	    *items;
+    fuzzyItem_T	    *items = NULL;
     listitem_T	    *li;
     long	    match_count = 0;
     int_u	    matches[FUZZY_MATCH_MAX_LEN];
@@ -235,14 +235,15 @@ fuzzy_match_in_list(
     FOR_ALL_LIST_ITEMS(l, li)
     {
 	int		score;
-	char_u		*itemstr;
+	char_u		*itemstr = NULL;
+	char_u		*itemstr_copy = NULL;
 	typval_T	rettv;
 	int		itemstr_allocate = FALSE;
+	list_T		*match_positions = NULL;
 
 	if (max_matches > 0 && match_count >= max_matches)
 	    break;
 
-	itemstr = NULL;
 	rettv.v_type = VAR_UNKNOWN;
 	if (li->li_tv.v_type == VAR_STRING)	// list of strings
 	    itemstr = li->li_tv.vval.v_string;
@@ -279,34 +280,45 @@ fuzzy_match_in_list(
 		&& fuzzy_match(itemstr, str, matchseq, &score, matches,
 						FUZZY_MATCH_MAX_LEN))
 	{
-	    items[match_count].idx = match_count;
-	    items[match_count].item = li;
-	    items[match_count].score = score;
-	    items[match_count].pat = str;
-	    items[match_count].startpos = matches[0];
-	    items[match_count].itemstr = itemstr_allocate
-					    ? vim_strsave(itemstr) : itemstr;
-	    items[match_count].itemstr_allocated = itemstr_allocate;
+	    if (itemstr_allocate)
+	    {
+		itemstr_copy = vim_strsave(itemstr);
+		if (itemstr_copy == NULL)
+		{
+		    clear_tv(&rettv);
+		    continue;
+		}
+	    }
+	    else
+		itemstr_copy = itemstr;
 
 	    // Copy the list of matching positions in itemstr to a list, if
 	    // "retmatchpos" is set.
 	    if (retmatchpos)
 	    {
+		match_positions = list_alloc();
+		if (match_positions == NULL)
+		{
+		    if (itemstr_allocate && itemstr_copy)
+			vim_free(itemstr_copy);
+		    clear_tv(&rettv);
+		    continue;
+		}
+
+		// Fill position information
 		int	j = 0;
-		char_u	*p;
+		char_u	*p = str;
+		int	success = TRUE;
 
-		items[match_count].lmatchpos = list_alloc();
-		if (items[match_count].lmatchpos == NULL)
-		    goto done;
-
-		p = str;
-		while (*p != NUL && j < FUZZY_MATCH_MAX_LEN)
+		while (*p != NUL && j < FUZZY_MATCH_MAX_LEN && success)
 		{
 		    if (!VIM_ISWHITE(PTR2CHAR(p)) || matchseq)
 		    {
-			if (list_append_number(items[match_count].lmatchpos,
-				    matches[j]) == FAIL)
-			    goto done;
+			if (list_append_number(match_positions, matches[j]) == FAIL)
+			{
+			    success = FALSE;
+			    break;
+			}
 			j++;
 		    }
 		    if (has_mbyte)
@@ -314,7 +326,25 @@ fuzzy_match_in_list(
 		    else
 			++p;
 		}
+
+		if (!success)
+		{
+		    list_free(match_positions);
+		    if (itemstr_allocate && itemstr_copy)
+			vim_free(itemstr_copy);
+		    clear_tv(&rettv);
+		    continue;
+		}
 	    }
+	    items[match_count].idx = match_count;
+	    items[match_count].item = li;
+	    items[match_count].score = score;
+	    items[match_count].pat = str;
+	    items[match_count].startpos = matches[0];
+	    items[match_count].itemstr = itemstr_copy;
+	    items[match_count].itemstr_allocated = itemstr_allocate;
+	    items[match_count].lmatchpos = match_positions;
+
 	    ++match_count;
 	}
 	clear_tv(&rettv);
@@ -888,8 +918,6 @@ fuzzymatches_to_strmatches(
 	int		count,
 	int		funcsort)
 {
-    int		i;
-
     if (count <= 0)
 	goto theend;
 
@@ -906,7 +934,7 @@ fuzzymatches_to_strmatches(
     else
 	fuzzy_match_str_sort((void *)fuzmatch, (size_t)count);
 
-    for (i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
 	(*matches)[i] = fuzmatch[i].str;
 
 theend:
@@ -933,33 +961,36 @@ theend:
     static int
 has_match(char_u *needle, char_u *haystack)
 {
-    while (*needle != NUL)
+    if (!needle || !haystack || !*needle)
+	return FAIL;
+
+    char_u *n_ptr = needle;
+    char_u *h_ptr = haystack;
+
+    while (*n_ptr)
     {
-	int n_char = mb_ptr2char(needle);
-	char_u *p = haystack;
-	int h_char;
-	int matched = FALSE;
+	int n_char = mb_ptr2char(n_ptr);
+	int found = FALSE;
 
-	while (*p != NUL)
+	while (*h_ptr)
 	{
-	    h_char = mb_ptr2char(p);
-
-	    if (n_char == h_char
-		    || MB_TOUPPER(n_char) == h_char)
+	    int h_char = mb_ptr2char(h_ptr);
+	    if (h_char == n_char || h_char == MB_TOUPPER(n_char))
 	    {
-		matched = TRUE;
+		found = TRUE;
+		h_ptr += mb_ptr2len(h_ptr);
 		break;
 	    }
-	    p += mb_ptr2len(p);
+	    h_ptr += mb_ptr2len(h_ptr);
 	}
 
-	if (!matched)
-	    return 0;
+	if (!found)
+	    return FAIL;
 
-	needle += mb_ptr2len(needle);
-	haystack = p + mb_ptr2len(p);
+	n_ptr += mb_ptr2len(n_ptr);
     }
-    return 1;
+
+    return OK;
 }
 
 typedef struct match_struct
@@ -993,8 +1024,7 @@ compute_bonus_codepoint(int last_c, int c)
 }
 
     static void
-setup_match_struct(match_struct *match, char_u *needle,
-	char_u *haystack)
+setup_match_struct(match_struct *match, char_u *needle, char_u *haystack)
 {
     int i = 0;
     char_u *p = needle;
@@ -1073,7 +1103,7 @@ match_row(const match_struct *match, int row, score_t *curr_D,
     static score_t
 match_positions(char_u *needle, char_u *haystack, int_u *positions)
 {
-    if (!*needle)
+    if (!needle || !haystack || !*needle)
 	return SCORE_MIN;
 
     match_struct match;
@@ -1095,20 +1125,27 @@ match_positions(char_u *needle, char_u *haystack, int_u *positions)
 	// matches needle. If the lengths of the strings are equal the
 	// strings themselves must also be equal (ignoring case).
 	if (positions)
+	{
 	    for (int i = 0; i < n; i++)
 		positions[i] = i;
+	}
 	return SCORE_MAX;
     }
 
+    // ensure n * MATCH_MAX_LEN * 2 won't overflow
+    if ((size_t)n > (SIZE_MAX / sizeof(score_t)) / MATCH_MAX_LEN / 2)
+	return SCORE_MIN;
+
+    // Allocate for both D and M matrices in one contiguous block
+    score_t *block = (score_t*)alloc(sizeof(score_t) * MATCH_MAX_LEN * n * 2);
+    if (!block)
+	return SCORE_MIN;
+
     // D[][] Stores the best score for this position ending with a match.
     // M[][] Stores the best possible score at this position.
-    score_t (*D)[MATCH_MAX_LEN], (*M)[MATCH_MAX_LEN];
-    M = alloc(sizeof(score_t) * MATCH_MAX_LEN * n);
-    if (!M)
-	return SCORE_MIN;
-    D = alloc(sizeof(score_t) * MATCH_MAX_LEN * n);
-    if (!D)
-	return SCORE_MIN;
+    score_t (*D)[MATCH_MAX_LEN] = (score_t(*)[MATCH_MAX_LEN])block;
+    score_t (*M)[MATCH_MAX_LEN] = (score_t(*)[MATCH_MAX_LEN])(block
+							+ MATCH_MAX_LEN * n);
 
     match_row(&match, 0, D[0], M[0], D[0], M[0]);
     for (int i = 1; i < n; i++)
@@ -1144,9 +1181,6 @@ match_positions(char_u *needle, char_u *haystack, int_u *positions)
     }
 
     score_t result = M[n - 1][m - 1];
-
-    vim_free(M);
-    vim_free(D);
-
+    vim_free(block);
     return result;
 }
