@@ -288,14 +288,12 @@ if test "$vim_cv_uname_output" = Darwin; then
   fi
 
   if test "$enable_darwin" = "yes"; then
-    MACOS_X_DARWIN=yes
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
     dnl os_macosx.m implements timer_create() and friends
     AC_DEFINE(HAVE_TIMER_CREATE)
     dnl TODO: use -arch i386 on Intel machines
     dnl Removed -no-cpp-precomp, only for very old compilers.
-    CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
 
      dnl Assume we don't want X11 unless it was specifically asked for
      dnl (--with-x) or Motif or GTK GUI is used.
@@ -4677,19 +4675,15 @@ fi
 
 if test "$MACOS_X" = "yes"; then
   AC_MSG_CHECKING([whether we need macOS frameworks])
-  if test "$MACOS_X_DARWIN" = "yes"; then
-    if test "$features" = "tiny"; then
-      dnl Since no FEAT_CLIPBOARD or FEAT_SOUND, no need for os_macosx.m.
-      OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
-      OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
-      AC_MSG_RESULT([yes, we need CoreServices])
-      LIBS="$LIBS -framework CoreServices"
-    else
-      AC_MSG_RESULT([yes, we need AppKit])
-      LIBS="$LIBS -framework AppKit"
-    fi
+  if test "$features" = "tiny"; then
+    dnl Since no FEAT_CLIPBOARD or FEAT_SOUND, no need for os_macosx.m.
+    OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
+    OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
+    AC_MSG_RESULT([yes, we need CoreServices])
+    LIBS="$LIBS -framework CoreServices"
   else
-    AC_MSG_RESULT([no])
+    AC_MSG_RESULT([yes, we need AppKit])
+    LIBS="$LIBS -framework AppKit"
   fi
 fi
 

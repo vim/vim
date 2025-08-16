@@ -4233,11 +4233,7 @@ list_version(void)
 # endif
 #endif
 #if defined(MACOS_X)
-# if defined(MACOS_X_DARWIN)
     msg_puts(_("\nmacOS version"));
-# else
-    msg_puts(_("\nmacOS version w/o darwin feat."));
-# endif
 # if defined(__arm64__)
     msg_puts(" - arm64");
 # elif defined(__x86_64__)

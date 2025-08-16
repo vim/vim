@@ -118,13 +118,6 @@
 # include <AvailabilityMacros.h>
 #endif
 
-/*
- * MACOS_X	    compiling for Mac OS X
- * MACOS_X_DARWIN   integrating the darwin feature into MACOS_X
- */
-#if defined(MACOS_X_DARWIN) && !defined(MACOS_X)
-# define MACOS_X
-#endif
 // Unless made through the Makefile enforce GUI on Mac
 #if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
 # define UNIX
@@ -179,7 +172,7 @@
  */
 #include "feature.h"
 
-#if defined(MACOS_X_DARWIN)
+#if defined(MACOS_X)
 # if defined(FEAT_NORMAL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
@@ -232,7 +225,7 @@
 #endif
 
 // The Mac conversion stuff doesn't work under X11.
-#if defined(MACOS_X_DARWIN)
+#ifdef MACOS_X
 # define MACOS_CONVERT
 #endif
 
