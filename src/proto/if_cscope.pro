@@ -4,7 +4,7 @@ void set_context_in_cscope_cmd(expand_T *xp, char_u *arg, cmdidx_T cmdidx);
 void ex_cscope(exarg_T *eap);
 void ex_scscope(exarg_T *eap);
 void ex_cstag(exarg_T *eap);
-int cs_fgets(char_u *buf, int size);
+bool cs_fgets(char_u *buf, int size);
 void cs_free_tags(void);
 void cs_print_tags(void);
 void cs_end(void);
