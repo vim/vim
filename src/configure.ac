@@ -2913,8 +2913,8 @@ if test -z "$SKIP_GTK3"; then
     AM_PATH_GTK(3.0.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"])
-    if test -n "$GTK_CFLAGS"; then
+		 GUI_INC_LOC="$GTK_CPPFLAGS"])
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_GTK2=YES
       SKIP_GNOME=YES
       SKIP_MOTIF=YES
@@ -2944,8 +2944,8 @@ if test -z "$SKIP_GTK2"; then
     AM_PATH_GTK(2.2.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"])
-    if test -n "$GTK_CFLAGS"; then
+		 GUI_INC_LOC="$GTK_CPPFLAGS"])
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_MOTIF=YES
       GUITYPE=GTK
       AC_SUBST(GTK_LIBNAME)
@@ -4172,11 +4172,13 @@ else
   AC_MSG_RESULT(yes)
 fi
 
-if test "x$GTK_CFLAGS" != "x"; then
+if test "x$GTK_CPPFLAGS" != "x"; then
   dnl pango_shape_full() is new, fall back to pango_shape().
   AC_MSG_CHECKING(for pango_shape_full)
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
   CFLAGS="$CFLAGS $GTK_CFLAGS"
   LIBS="$LIBS $GTK_LIBS"
   AC_LINK_IFELSE([AC_LANG_PROGRAM(
@@ -4184,6 +4186,7 @@ if test "x$GTK_CFLAGS" != "x"; then
   [ pango_shape_full(NULL, 0, NULL, 0, NULL, NULL); ])],
 	  AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PANGO_SHAPE_FULL),
 	  AC_MSG_RESULT(no))
+  CPPFLAGS="$ac_save_CPPFLAGS"
   CFLAGS="$ac_save_CFLAGS"
   LIBS="$ac_save_LIBS"
 fi
@@ -4758,7 +4761,7 @@ dnl (e.g. ino_t and off_t), all of Vim's modules must be compiled with a
 dnl consistent value.  It's therefore safest to force the use of the define
 dnl if it's present in any of the *_CFLAGS variables.
 AC_MSG_CHECKING(whether we need to force -D_FILE_OFFSET_BITS=64)
-if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
+if echo "$CPPFLAGS $CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CPPFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
   AC_MSG_RESULT(yes)
   AC_DEFINE(_FILE_OFFSET_BITS, 64)
 else

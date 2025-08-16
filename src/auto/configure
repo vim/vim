@@ -10784,7 +10784,7 @@ fi
   if test "$gtktest_success" = "yes"; then
     GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"
+		 GUI_INC_LOC="$GTK_CPPFLAGS"
   else
         GTK_CPPFLAGS=""
     GTK_CFLAGS=""
@@ -10799,7 +10799,7 @@ fi
 
 
 
-    if test -n "$GTK_CFLAGS"; then
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_GTK2=YES
       SKIP_GNOME=YES
       SKIP_MOTIF=YES
@@ -10964,7 +10964,7 @@ fi
   if test "$gtktest_success" = "yes"; then
     GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"
+		 GUI_INC_LOC="$GTK_CPPFLAGS"
   else
         GTK_CPPFLAGS=""
     GTK_CFLAGS=""
@@ -10979,7 +10979,7 @@ fi
 
 
 
-    if test -n "$GTK_CFLAGS"; then
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_MOTIF=YES
       GUITYPE=GTK
 
@@ -15615,11 +15615,13 @@ else
 printf "%s\n" "yes" >&6; }
 fi
 
-if test "x$GTK_CFLAGS" != "x"; then
+if test "x$GTK_CPPFLAGS" != "x"; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pango_shape_full" >&5
 printf %s "checking for pango_shape_full... " >&6; }
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
   CFLAGS="$CFLAGS $GTK_CFLAGS"
   LIBS="$LIBS $GTK_LIBS"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -15645,6 +15647,7 @@ esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+  CPPFLAGS="$ac_save_CPPFLAGS"
   CFLAGS="$ac_save_CFLAGS"
   LIBS="$ac_save_LIBS"
 fi
@@ -17116,7 +17119,7 @@ fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we need to force -D_FILE_OFFSET_BITS=64" >&5
 printf %s "checking whether we need to force -D_FILE_OFFSET_BITS=64... " >&6; }
-if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
+if echo "$CPPFLAGS $CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CPPFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
   printf "%s\n" "#define _FILE_OFFSET_BITS 64" >>confdefs.h
