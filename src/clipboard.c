@@ -2405,7 +2405,7 @@ poll_data:
 	{
 	    if (ga_grow(&buf, 8192) == FAIL)
 		break;
-	    start = buf.ga_data + buf.ga_len;
+	    start = (char_u *)buf.ga_data + buf.ga_len;
 	}
     }
 

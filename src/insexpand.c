@@ -7078,7 +7078,8 @@ ins_complete(int c, int enable_pum)
     int		insert_match;
     int		no_matches_found;
 #ifdef ELAPSED_FUNC
-    elapsed_T	compl_start_tv; // Timestamp when match collection starts
+    // Timestamp when match collection starts
+    elapsed_T	compl_start_tv = {0};
 #endif
 
     compl_direction = ins_compl_key2dir(c);
