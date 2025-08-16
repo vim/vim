@@ -10,6 +10,7 @@
 " 2025 Aug 06 by Vim Project (add gf maps #17881)
 " 2025 Aug 08 by Vim Project (add Vim script complete function #17871)
 " 2025 Aug 12 by Vim Project (improve vimgoto script #17970))
+" 2025 Aug 16 by Vim Project set com depending on Vim9 or legacy script
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -110,13 +111,13 @@ setlocal keywordprg=:VimKeywordPrg
 " Comments starts with # in Vim9 script.  We have to guess which one to use.
 if "\n" .. getline(1, 32)->join("\n") =~# '\n\s*vim9\%[script]\>'
   setlocal commentstring=#\ %s
+  " Set 'comments' to format dashed lists in comments, for Vim9 script.
+  setlocal com=sO:#\ -,mO:#\ \ ,eO:##,:#\\\ ,:#
 else
   setlocal commentstring=\"%s
+  " Set 'comments' to format dashed lists in comments, for legacy Vim script.
+  setlocal com=sO:\"\ -,mO:\"\ \ ,eO:\"\",:\"\\\ ,:\"
 endif
-
-" Set 'comments' to format dashed lists in comments, both in Vim9 and legacy
-" script.
-setlocal com=sO:#\ -,mO:#\ \ ,eO:##,:#\\\ ,:#,sO:\"\ -,mO:\"\ \ ,eO:\"\",:\"\\\ ,:\"
 
 " set 'include' to recognize import commands
 setlocal include=\\v^\\s*import\\s*(autoload)?
