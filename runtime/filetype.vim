@@ -2434,7 +2434,7 @@ au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
 au BufNewFile,BufRead *.cdc			setf cdc
 
 " Cangjie
-au BufNewFile,BufRead *.cangjie     setf cangjie
+au BufNewFile,BufRead *.cj			setf cangjie
 
 " SLRN
 au BufNewFile,BufRead .slrnrc			setf slrnrc
