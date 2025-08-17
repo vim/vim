@@ -1848,7 +1848,7 @@ ALL_OBJ = $(OBJ_COMMON) \
 	  $(OBJ_MESSAGE_TEST)
 
 
-PRO_AUTO = \
+PROTO_FILES = \
 	alloc.pro \
 	arabic.pro \
 	arglist.pro \
@@ -1870,7 +1870,6 @@ PRO_AUTO = \
 	debugger.pro \
 	dict.pro \
 	diff.pro \
-	linematch.pro \
 	digraph.pro \
 	drawline.pro \
 	drawscreen.pro \
@@ -1891,10 +1890,10 @@ PRO_AUTO = \
 	float.pro \
 	fold.pro \
 	fuzzy.pro \
-	getchar.pro \
 	gc.pro \
-	gui_xim.pro \
+	getchar.pro \
 	gui_beval.pro \
+	gui_xim.pro \
 	hardcopy.pro \
 	hashtab.pro \
 	help.pro \
@@ -1910,6 +1909,7 @@ PRO_AUTO = \
 	insexpand.pro \
 	job.pro \
 	json.pro \
+	linematch.pro \
 	list.pro \
 	locale.pro \
 	logfile.pro \
@@ -1931,8 +1931,12 @@ PRO_AUTO = \
 	ops.pro \
 	option.pro \
 	optionstr.pro \
+	os_amiga.pro \
 	os_mac_conv.pro \
+	os_mswin.pro \
 	os_unix.pro \
+	os_vms.pro \
+	os_win32.pro \
 	popupmenu.pro \
 	popupwin.pro \
 	profiler.pro \
@@ -1979,12 +1983,11 @@ PRO_AUTO = \
 	vim9script.pro \
 	vim9type.pro \
 	viminfo.pro \
+	winclip.pro \
 	window.pro \
 	$(ALL_GUI_PRO) \
+	$(PERL_PRO) \
 	$(TCL_PRO)
-
-PRO_MANUAL = os_amiga.pro os_win32.pro \
-	os_mswin.pro winclip.pro os_vms.pro $(PERL_PRO)
 
 # Default target is making the executable and tools
 all: $(VIMTARGET) $(TOOLS) languages $(GUI_BUNDLE)
@@ -2117,67 +2120,61 @@ languages:
 update-po:
 	cd $(PODIR); CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix) update-po
 
-# Generate function prototypes.  This is not needed to compile vim, but if
-# you want to use it, cproto is out there on the net somewhere -- Webb
+# Generate function prototypes. Previously, cproto was used, but since there
+# was a lot of fiddling to do to generate them correctly, so we switched to a
+# Python script using libclang.  It has the following features:
+# - Only the bare minimum of macro definitions is required.
+# - Generates the same .pro file even across different operating systems.
+#   (maybe)
 #
-# When generating os_amiga.pro and os_win32.pro there will be a
-# few include files that can not be found, that's OK.
+# How to set up environment to run `make proto`
+# On Ubuntu 24.04:
+# - Install libclang
+#   Use the package provided by Ubuntu.
+#     $ sudo apt install python3-clang
+#   Or, Create venv (if you want to use it freely with pip)
+#     $ python3 -m venv ~/venv
+#     $ source ~/venv/bin/activate
+#     $ pip install --upgrade pip
+#     $ pip install libclang
+# On Windows 11 (using Git Bash):
+# - Install GNU Make 3.81 or later.
+# - Download and install Python from the Python official website.
+# - Install libclang
+#   $ python -m pip install libclang
+# - Change the following lines in this file:
+#   s/^PYTHON=python3/PYTHON=python/
+#   s/^tags TAGS: notags/tags: notags/
+PYTHON=python3
 
-proto: $(PRO_AUTO) $(PRO_MANUAL)
+# The preprocessor directive parsing algorithm is explained below:
+# - `#include` does not result in an error even if the file is unreadable.
+#    (The include directory path specifies only `.`)
+# - Standalone `#if 0`, `#ifdef _DEBUG`, `#ifndef PROTO` and
+#   `#if !defined(PROTO)` are treated as false.
+#   (Parse something like `#else`, if present)
+# - If the condition of `#if <expr>` contains `defined(PROTO)`, evaluate it
+#   and parse it if it is true.
+#   (If false, parse something like `#else`, if present)
+# - Parse any other `#if <expr>` as true.
+#PROTO_FILES = os_unix.pro
+proto: $(PROTO_FILES)
+$(PROTO_FILES): check-python
 
-# Filter out arguments that cproto doesn't support.
-# Don't pass "-pthread", "-fwrapv" and similar arguments to cproto, it sees
-# them as a list of individual flags.
-# The -E"gcc -E" argument must be separate to avoid problems with shell
-# quoting.
-# Strip -O2, it may cause cproto to write stderr to the file "2".
-CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
-	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g' -e 's/ -O[^ ]\+//g'`
+GEN_PROTO_CMD = proto/gen_prototypes.py
+GEN_PROTO_ARG = -DPROTO -DEINTR -DFEAT_GUI -I.
 
-### Would be nice if this would work for "normal" make.
-### Currently it only works for (Free)BSD make.
-#$(PRO_AUTO): $$(*F).c
-#	$(CPROTO) -DFEAT_GUI $(*F).c > $@
+check-python:
+	@command -v $(PYTHON) >/dev/null 2>&1 || { echo "Error: no python found" >&2; exit 1; } ; \
+	ver=`$(PYTHON) -c "import sys; print(sys.version_info[0])" 2>/dev/null`; \
+	if [ -z "$$ver" ] || [ "$$ver" = "2" ]; then \
+		echo "Error: need Python 3, but $$($(PYTHON) --version)"; exit 1; \
+	fi;
 
-# Always define FEAT_GUI.  This may generate a few warnings if it's also
-# defined in auto/config.h, you can ignore that.
+# Add `GENPROTO_DEBUG=1` before $(PYTHON) to get debug output.
 .c.pro:
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_amiga.pro: os_amiga.c
-	$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_win32.pro: os_win32.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_mswin.pro: os_mswin.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-winclip.pro: winclip.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_vms.pro: os_vms.c
-# must use os_vms_conf.h for auto/config.h
-	mv auto/config.h auto/config.h.save
-	cp os_vms_conf.h auto/config.h
-	$(CPROTO) -DVMS -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-	rm auto/config.h
-	mv auto/config.h.save auto/config.h
-
-# if_perl.pro is special: Use the generated if_perl.c for input and remove
-# prototypes for local functions.
-if_perl.pro: auto/if_perl.c
-	$(CPROTO) -DFEAT_GUI auto/if_perl.c | sed "/_VI/d" > proto/$@
-
-gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+	@$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG) || \
+		(echo "Warning: failed to generate $@"; exit 1;)
 
 notags:
 	-rm -f tags

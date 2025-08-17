@@ -1452,12 +1452,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 /*
  * For the GUI the mouse handling is in gui_w32.c.
  */
-#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
-    void
-mch_setmouse(int on UNUSED)
-{
-}
-#else  // !FEAT_GUI_MSWIN || VIMDLL
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int g_fMouseAvail = FALSE;   // mouse present
 static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
@@ -2029,7 +2024,12 @@ read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
     }
     return nCount;
 }
-#endif // !FEAT_GUI_MSWIN || VIMDLL
+#else  // FEAT_GUI_MSWIN && !VIMDLL
+    void
+mch_setmouse(int on UNUSED)
+{
+}
+#endif // FEAT_GUI_MSWIN && !VIMDLL
 
 #ifdef FEAT_EVAL
 /*
@@ -2763,9 +2763,9 @@ theend:
 # endif
     return len;
 
-#else // FEAT_GUI_MSWIN
+#else // FEAT_GUI_MSWIN && !VIMDLL
     return 0;
-#endif // FEAT_GUI_MSWIN
+#endif // FEAT_GUI_MSWIN && !VIMDLL
 }
 
 /*
@@ -3715,7 +3715,7 @@ mch_exit_c(int r)
 
     exit(r);
 }
-#endif // !FEAT_GUI_MSWIN
+#endif // !FEAT_GUI_MSWIN || VIMDLL
 
     void
 mch_init(void)
@@ -4803,7 +4803,7 @@ mch_set_winsize_now(void)
     }
     suppress_winsize = 0;
 }
-#endif // FEAT_GUI_MSWIN
+#endif
 
     static BOOL
 vim_create_process(
@@ -6493,19 +6493,10 @@ termcap_mode_end(void)
     SetConsoleCursorInfo(g_hConOut, &g_cci);
     g_fTermcapMode = FALSE;
 }
-#endif // !FEAT_GUI_MSWIN || VIMDLL
+#endif
 
 
-#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
-    void
-mch_write(
-    char_u  *s UNUSED,
-    int	    len UNUSED)
-{
-    // never used
-}
-
-#else
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
 /*
  * clear `n' chars, starting from `coord'
@@ -7574,7 +7565,16 @@ notsgr:
 # endif
 }
 
-#endif // FEAT_GUI_MSWIN
+#else // FEAT_GUI_MSWIN && !VIMDLL
+    void
+mch_write(
+    char_u  *s UNUSED,
+    int	    len UNUSED)
+{
+    // never used
+}
+
+#endif
 
 
 /*
