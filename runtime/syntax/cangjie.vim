@@ -32,117 +32,116 @@ endfunction
 syn case match
 
 " 1. comments
-syn keyword cjTodo	TODO FIXME XXX NOTE BUG contained
-syn match   cjComment /\v\/\/.*/				contains=cjTodo
-syn region  cjComment start=/\/\*/ end=/\*\//	contains=cjTodo,@Spell
-syn cluster cjCommentCluster contains=cjComment,cjTodo
-if s:enabled('comment')
-	hi def link cjTodo		Todo
-	hi def link cjComment	Comment
-endif
+syn keyword cangjieTodo	TODO FIXME XXX NOTE BUG contained
+syn match   cangjieComment /\v\/\/.*/				contains=cangjieTodo
+syn region  cangjieComment start=/\/\*/ end=/\*\//	contains=cangjieTodo,@Spell
 
 " 2. keywords
-syn keyword cjDeclaration	abstract extend macro foreign
-syn keyword cjDeclaration	interface open operator override private prop protected
-syn keyword cjDeclaration	public redef static type
-syn keyword cjStatement		as break case catch continue do else finally for in
-syn keyword cjStatement		if in is match quote return spawn super synchronized
-syn keyword cjStatement		throw try unsafe where while
-syn keyword cjIdentlike		false init main this true
-syn keyword cjVariable		const let var
-syn keyword cjOption		Option Some None
-syn keyword cjDeclaration   func struct class enum import package nextgroup=cjTypeName skipwhite
-syn cluster cjKeywordCluster	contains=cjDeclaration,cjStatement,cjIdentlike,cjVariable,cjOption
-if s:enabled('keyword')
-	hi def link cjDeclaration	Keyword
-	hi def link cjStatement		Statement
-	hi def link cjIdentlike		Keyword
-	hi def link cjVariable		Keyword
-	hi def link cjOption		Keyword
-endif
+syn keyword cangjieDeclaration	abstract extend macro foreign
+syn keyword cangjieDeclaration	interface open operator override private prop protected
+syn keyword cangjieDeclaration	public redef static type
+syn keyword cangjieStatement	as break case catch continue do else finally for in
+syn keyword cangjieStatement	if in is match quote return spawn super synchronized
+syn keyword cangjieStatement	throw try unsafe where while
+syn keyword cangjieIdentlike	false init main this true
+syn keyword cangjieVariable		const let var
+syn keyword cangjieOption		Option Some None
+syn keyword cangjieDeclaration	func struct class enum import package nextgroup=cangjieTypeName skipwhite
+syn cluster cangjieKeywordCluster	contains=cangjieDeclaration,cangjieStatement,cangjieIdentlike,cangjieVariable,cangjieOption
 
 " 3. macro (e.g., @override)
-syn match cjAttribute /@\h\w*/
-if s:enabled('macro')
-	hi def link cjAttribute PreProc
-endif
+syn match cangjieMacro /@\h\w*/
 
 " 4. Type and Function Names
-syn match cjTypeName /\h\w*/ contained
-if s:enabled('type')
-	hi def link cjTypeName Type
-endif
+syn match cangjieTypeName /\h\w*/ contained
 
 " 5. specail identifiers
-syn region cjSP_Identifier start=/`/ end=/`/ oneline
-if s:enabled('identifier')
-	hi def link cjSP_Identifier Identifier
-endif
+syn region cangjieSpIdentifier start=/`/ end=/`/ oneline
 
 " 6. types
-syn keyword cjSpType		Any Nothing Range Unit Iterable
-syn keyword cjArrayType		Array ArrayList VArray
-syn keyword cjHashType		HashMap HashSet
-syn keyword cjCommonType	Bool Byte Rune String
-syn keyword cjFloatType		Float16 Float32 Float64
-syn keyword cjIntType		Int8 Int16 Int32 Int64 IntNative
-syn keyword cjUIntType		UInt8 UInt16 UInt32 UInt64 UIntNative
-syn cluster cjTypeCluster contains=cjSpType,cjArrayType,cjHashType,cjCommonType,cjFloatType,cjIntType,cjUIntType
-if s:enabled('type')
-	hi def link cjSpType		Type
-	hi def link cjArrayType		Type
-	hi def link cjHashType		Type
-	hi def link cjCommonType	Type
-	hi def link cjFloatType		Type
-	hi def link cjIntType		Type
-	hi def link cjUIntType		Type
-endif
+syn keyword cangjieSpType		Any Nothing Range Unit Iterable
+syn keyword cangjieArrayType	Array ArrayList VArray
+syn keyword cangjieHashType		HashMap HashSet
+syn keyword cangjieCommonType	Bool Byte Rune String
+syn keyword cangjieFloatType	Float16 Float32 Float64
+syn keyword cangjieIntType		Int8 Int16 Int32 Int64 IntNative
+syn keyword cangjieUIntType		UInt8 UInt16 UInt32 UInt64 UIntNative
+syn cluster cangjieTypeCluster contains=cangjieSpType,cangjieArrayType,cangjieHashType,cangjieCommonType,cangjieFloatType,cangjieIntType,cangjieUIntType
 
 " 7. character and strings
-syn cluster cjInterpolatedPart contains=@cjKeywordCluster,cjSP_Identifier,@cjTypeCluster,@cjNumberCluster,cjOperator,cjComment
-syn region  cjInterpolation contained keepend start=/\${/ end=/}/ contains=@cjInterpolatedPart matchgroup=cjInterpolationDelimiter
-syn match cjRune /\vr'.'/
-syn region cjString start=/"/ skip=/\\\\\|\\"/ end=/"/ oneline contains=cjInterpolation
-syn region cjString start=/'/ skip=/\\\\\|\\'/ end=/'/ oneline contains=cjInterpolation
-syn region cjString start=/"""/ skip=/\\\\\|\\"/ end=/"""/ contains=cjInterpolation keepend
-syn region cjString start=/'''/ skip=/\\\\\|\\'/ end=/'''/ contains=cjInterpolation keepend
-syn region cjRawString start='\z(#*\)#"'  end='"#\z1'
-syn region cjRawString start='\z(#*\)#\'' end='\'#\z1'
-if s:enabled('string')
-	hi def link cjRune		Character
-	hi def link cjString	String
-	hi def link cjRawString	String
-endif
+syn cluster cangjieInterpolatedPart contains=@cangjieKeywordCluster,cangjieSpIdentifier,@cangjieTypeCluster,@cangjieNumberCluster,cangjieOperator
+syn region  cangjieInterpolation contained keepend start=/\${/ end=/}/ contains=@cangjieInterpolatedPart matchgroup=cangjieInterpolationDelimiter
+syn match cangjieRune /\vr'.'/
+syn region cangjieString start=/"/ skip=/\\\\\|\\"/ end=/"/ oneline contains=cangjieInterpolation
+syn region cangjieString start=/'/ skip=/\\\\\|\\'/ end=/'/ oneline contains=cangjieInterpolation
+syn region cangjieString start=/"""/ skip=/\\\\\|\\"/ end=/"""/ contains=cangjieInterpolation keepend
+syn region cangjieString start=/'''/ skip=/\\\\\|\\'/ end=/'''/ contains=cangjieInterpolation keepend
+syn region cangjieRawString start='\z(#*\)#"'  end='"#\z1'
+syn region cangjieRawString start='\z(#*\)#\'' end='\'#\z1'
 
 " 8. number
-syn match cjFloatNumber		/\v\c<\d[0-9_]*\.\d[0-9_]*([eE][-+]?\d[0-9_]*)?>/
-syn match cjFloatNumber		/\v\c<\d[0-9_]*\.([eE][-+]?\d[0-9_]*)?>/
-syn match cjFloatNumber		/\v\c\.\d[0-9_]*([eE][-+]?\d[0-9_]*)?>/
-syn match cjScienceNumber	/\v\c<\d[0-9_]*[eE][-+]?\d[0-9_]*>/
-syn match cjHexNumber		/\v\c<0x[0-9a-fA-F_]+>/
-syn match cjOctalNumber		/\v\c<0o[0-7_]+>/
-syn match cjBinaryNumber	/\v\c<0b[01_]+>/
-syn match cjDecimalNumber	/\v\c<\d[0-9_]*>/
-syn cluster cjNumberCluster contains=cjFloatNumber,cjScienceNumber,cjHexNumber,cjOctalNumber,cjBinaryNumber,cjDecimalNumber
-if s:enabled('number')
-	hi def link cjFloatNumber	Float
-	hi def link cjScienceNumber	Float
-	hi def link cjHexNumber		Number
-	hi def link cjOctalNumber	Number
-	hi def link cjBinaryNumber	Number
-	hi def link cjDecimalNumber	Number
-endif
+syn match cangjieFloatNumber	/\v\c<\d[0-9_]*\.\d[0-9_]*([eE][-+]?\d[0-9_]*)?>/
+syn match cangjieFloatNumber	/\v\c<\d[0-9_]*\.([eE][-+]?\d[0-9_]*)?>/
+syn match cangjieFloatNumber	/\v\c\.\d[0-9_]*([eE][-+]?\d[0-9_]*)?>/
+syn match cangjieScienceNumber	/\v\c<\d[0-9_]*[eE][-+]?\d[0-9_]*>/
+syn match cangjieHexNumber		/\v\c<0x[0-9a-fA-F_]+>/
+syn match cangjieOctalNumber	/\v\c<0o[0-7_]+>/
+syn match cangjieBinaryNumber	/\v\c<0b[01_]+>/
+syn match cangjieDecimalNumber	/\v\c<\d[0-9_]*>/
+syn cluster cangjieNumberCluster contains=cangjieFloatNumber,cangjieScienceNumber,cangjieHexNumber,cangjieOctalNumber,cangjieBinaryNumber,cangjieDecimalNumber
 
 " 9. operators
-syn match cjOperator /[-+%<>!&|^*=]=\?/
-syn match cjOperator /\/\%(=\|\ze[^/*]\)/
-syn match cjOperator /\%(<<\|>>\|&^\)=\?/
-syn match cjOperator /:=\|||\|<-\|++\|--/
-syn match cjOperator /[~]/
-syn match cjOperator /[:]/
-syn match cjOperator /\.\.\./
+syn match cangjieOperator /[-+%<>!&|^*=]=\?/
+syn match cangjieOperator /\/\%(=\|\ze[^/*]\)/
+syn match cangjieOperator /\%(<<\|>>\|&^\)=\?/
+syn match cangjieOperator /:=\|||\|<-\|++\|--/
+syn match cangjieOperator /[~]/
+syn match cangjieOperator /[:]/
+syn match cangjieOperator /\.\.\./
+
+" finally, link the syntax groups to the highlight groups
+if s:enabled('comment')
+	hi def link cangjieTodo				Todo
+	hi def link cangjieComment			Comment
+endif
+if s:enabled('identifier')
+	hi def link cangjieSpIdentifier		Identifier
+endif
+if s:enabled('keyword')
+	hi def link cangjieDeclaration		Keyword
+	hi def link cangjieStatement		Statement
+	hi def link cangjieIdentlike		Keyword
+	hi def link cangjieVariable			Keyword
+	hi def link cangjieOption			Keyword
+endif
+if s:enabled('macro')
+	hi def link cangjieMacro			PreProc
+endif
+if s:enabled('number')
+	hi def link cangjieFloatNumber		Float
+	hi def link cangjieScienceNumber	Float
+	hi def link cangjieHexNumber		Number
+	hi def link cangjieOctalNumber		Number
+	hi def link cangjieBinaryNumber		Number
+	hi def link cangjieDecimalNumber	Number
+endif
 if s:enabled('operator')
-	hi def link cjOperator	Operator
+	hi def link cangjieOperator			Operator
+endif
+if s:enabled('string')
+	hi def link cangjieRune				Character
+	hi def link cangjieString			String
+	hi def link cangjieRawString		String
+endif
+if s:enabled('type')
+	hi def link cangjieTypeName			Type
+	hi def link cangjieSpType			Type
+	hi def link cangjieArrayType		Type
+	hi def link cangjieHashType			Type
+	hi def link cangjieCommonType		Type
+	hi def link cangjieFloatType		Type
+	hi def link cangjieIntType			Type
+	hi def link cangjieUIntType			Type
 endif
 
 let b:current_syntax = "cangjie"
