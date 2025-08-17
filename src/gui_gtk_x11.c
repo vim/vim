@@ -3230,11 +3230,11 @@ gui_mch_set_dark_theme(void)
     }
 # endif
 
-    switch (sys_prefer_dark_theme)
+    switch (gui.prefer_dark_theme)
     {
 	case DM_PREFER_LIGHT:
 	case DM_PREFER_DARK:
-	    dark = (sys_prefer_dark_theme == DM_PREFER_DARK);
+	    dark = (gui.prefer_dark_theme == DM_PREFER_DARK);
 	    break;
 	case DM_DEFAULT:
 	case DM_AUTOMATIC:
