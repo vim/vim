@@ -1,4 +1,5 @@
 /* if_mzsch.c */
+Thread_Local_Variables *scheme_external_get_thread_local_variables(void);
 int mzscheme_enabled(int verbose);
 void mzvim_check_threads(void);
 char *did_set_mzquantum(optset_T *args);
