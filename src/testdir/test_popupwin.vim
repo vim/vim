@@ -4533,4 +4533,41 @@ func Test_popupwin_closing_buffer()
   %bd!
 endfunc
 
+func Test_popupwin_firstline_after_scroll()
+  CheckScreendump
+
+  let lines =<< trim END
+    vim9script
+
+    def Popup(): number
+      return popup_create([], {
+        border: [1, 1, 1, 1],
+        close: 'click',
+        minheight: 1,
+        maxheight: 10,
+        scrollbar: true,
+        minwidth: &columns - 5,
+        maxwidth: &columns - 5,
+      })
+    enddef
+
+    var id = Popup()
+    g:popup_id = id
+    popup_settext(id, repeat(['abcd'], 20))
+  END
+  call writefile(lines, 'XtestPopupScroll_win', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupScroll_win', {})
+  call TermWait(buf, 50)
+
+  call term_sendkeys(buf, ":call popup_setoptions(g:popup_id, {'firstline': 6})\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":call popup_settext(g:popup_id, [])\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, ":call popup_settext(1001, ['a', 'b', 'c'])\<CR>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_popupwin_first_after_scroll', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2
