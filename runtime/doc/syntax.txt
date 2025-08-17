@@ -1117,6 +1117,7 @@ in the "after" directory in 'runtimepath'.  For Unix this would be
     set foldmethod=syntax
 
 CANGJIE					*cangjie.vim* *ft-cangjie-syntax*
+
 The Cangjie programming language is a new-generation programming language
 oriented to full-scenario intelligence.  See |cangjie.vim| for all the settings
 that are available for Cangjie.
