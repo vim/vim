@@ -359,7 +359,11 @@ repeat:
 	}
 
 	// FullName_save() is slow, don't use it when not needed.
-	if (*p != NUL || !vim_isAbsName(*fnamep))
+	if (*p != NUL || !vim_isAbsName(*fnamep)
+#ifdef MSWIN	// enforce drive letter on windows paths
+		|| **fnamep == '/' || **fnamep == '\\'
+#endif
+	)
 	{
 	    *fnamep = FullName_save(*fnamep, *p != NUL);
 	    vim_free(*bufp);	// free any allocated file name
@@ -3109,6 +3113,42 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
     char_u	*py = y;
     int		cx = NUL;
     int		cy = NUL;
+
+#ifdef MSWIN
+    /*
+     * To allow proper comparisson of absolute paths:
+     *	 - one with explicit drive letter C:\xxx
+     *	 - another with implicit drive letter \xxx
+     * advance the pointer, of the explicit one, to skip the drive
+     */
+    for (int swap = 0, drive = NUL; swap < 2; ++swap)
+    {
+	// Handle absolute paths with implicit drive letter
+	cx = PTR2CHAR(px);
+	cy = PTR2CHAR(py);
+
+	if ((cx == '/' || cx == '\\') && ASCII_ISALPHA(cy))
+	{
+	    drive = MB_TOUPPER(cy) - 'A' + 1;
+
+	    // Check for the colon
+	    py += mb_ptr2len(py);
+	    cy = PTR2CHAR(py);
+	    if (cy == ':' && drive == _getdrive())
+	    { // skip the drive for comparisson
+		py += mb_ptr2len(py);
+		break;
+	    }
+	    else // ignore
+		py -= mb_ptr2len(py);
+	}
+
+	// swap pointers
+	char_u *tmp = px;
+	px = py;
+	py = tmp;
+    }
+#endif
 
     while (len > 0)
     {
