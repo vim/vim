@@ -322,6 +322,18 @@ gui_mch_set_rendering_options(char_u *s)
 # define DWMWA_USE_IMMERSIVE_DARK_MODE	20
 #endif
 
+#ifndef DWMWA_CAPTION_COLOR
+# define DWMWA_CAPTION_COLOR		35
+#endif
+
+#ifndef DWMWA_TEXT_COLOR
+# define DWMWA_TEXT_COLOR		36
+#endif
+
+#ifndef DWMWA_COLOR_DEFAULT
+# define DWMWA_COLOR_DEFAULT		0xFFFFFFFF
+#endif
+
 # define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1	19
 
 #ifdef PROTO
@@ -3152,6 +3164,17 @@ is_w10_newer_than(unsigned short build_no)
 }
 
     static int
+is_w11_newer_than(unsigned short build_no)
+{
+    static DWORD win_ver = 0;
+
+    if (win_ver == 0)
+	win_ver = get_win_version();
+
+    return win_ver >= MAKE_VER(11U, 0U, build_no);
+}
+
+    static int
 is_high_contrast_theme(int *high_contrast)
 {
 	HIGHCONTRASTW hc;
@@ -3184,10 +3207,19 @@ system_prefers_dark_theme(void)
 set_dark_theme(HWND hwnd, int dark)
 {
     BOOL	value = dark != 0;
-    DWORD	ver = get_win_version();
 
     if (pDwmSetWindowAttribute != NULL)
     {
+	if (is_w10_newer_than(22000))
+	{
+	    COLORREF captionColor = DWMWA_COLOR_DEFAULT;
+	    pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR, &captionColor,
+		    sizeof(captionColor));
+	    COLORREF textColor = DWMWA_COLOR_DEFAULT;
+	    pDwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR, &textColor,
+		    sizeof(textColor));
+	}
+
 	if (is_w10_newer_than(18985))
 	    pDwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
 		    sizeof(value));
@@ -3213,6 +3245,30 @@ set_dark_theme_impl(const int dark)
 	set_dark_theme(s_hwnd, dark);
 }
 
+    static void
+set_titlebar_color_from_theme(void)
+{
+    if (is_w10_newer_than(22000) && pDwmSetWindowAttribute != NULL)
+    {
+	COLORREF captionColor = gui.back_pixel;
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
+		&captionColor, sizeof(captionColor));
+	COLORREF textColor = gui.norm_pixel;
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR,
+		&textColor, sizeof(textColor));
+    }
+
+    if (is_w10_newer_than(18362))
+    {
+	if (pSetPreferredAppMode != NULL && pFlushMenuThemes != NULL)
+	{
+	    // Default to light menus.
+	    pSetPreferredAppMode(ForceLight);
+	    pFlushMenuThemes();
+	}
+    }
+}
+
     void
 gui_mch_set_dark_theme(void)
 {
@@ -3229,6 +3285,9 @@ gui_mch_set_dark_theme(void)
 	    break;
 	case DM_USE_BACKGROUND:
 	    set_dark_theme_impl(*p_bg == 'd');
+	    break;
+	case DM_USE_THEME:
+	    set_titlebar_color_from_theme();
 	    break;
     }
 }

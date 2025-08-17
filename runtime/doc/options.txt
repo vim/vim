@@ -4344,6 +4344,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  prefer_dark	Apply the dark mode to the GUI elements.
 	  prefer_light	Apply the light mode to the GUI elements.
 	  use_bg	Follow the value of Vim's |background| option.
+	  use_theme	Use the theme foreground and background colors to style the
+			titlebar.
 
 					*'guifontset'* *'gfs'*
 					*E250* *E252* *E234* *E597* *E598*

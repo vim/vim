@@ -3247,6 +3247,8 @@ gui_mch_set_dark_theme(void)
 	    dark = sys_prefer_dark_theme;
 # endif
 	    break;
+	case DM_USE_THEME:
+	    // Not supported for GTK.
 	case DM_USE_BACKGROUND:
 	    dark = (*p_bg == 'd');
 	    break;

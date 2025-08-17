@@ -3940,6 +3940,10 @@ highlight_changed(void)
     term_update_colors_all();
     term_update_wincolor_all();
 #endif
+#ifdef FEAT_GUI_DARKTHEME
+    if (gui.in_use)
+	gui_mch_set_dark_theme();
+#endif
 
     // Clear all attributes.
     for (hlf = 0; hlf < (int)HLF_COUNT; ++hlf)

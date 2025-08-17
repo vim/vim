@@ -2645,6 +2645,8 @@ did_set_guidarkmode(optset_T *args UNUSED)
 	gui.prefer_dark_theme = DM_PREFER_LIGHT;
     else if (!STRCMP(p_guidarkmode, "use_bg"))
 	gui.prefer_dark_theme = DM_USE_BACKGROUND;
+    else if (!STRCMP(p_guidarkmode, "use_theme"))
+	gui.prefer_dark_theme = DM_USE_THEME;
     else
 	return e_invalid_argument;
 

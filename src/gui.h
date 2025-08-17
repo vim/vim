@@ -153,6 +153,7 @@ typedef enum
     DM_PREFER_LIGHT,
     DM_PREFER_DARK,
     DM_USE_BACKGROUND,
+    DM_USE_THEME,
 } dm_pref_T;
 
 typedef struct GuiScrollbar
