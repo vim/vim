@@ -225,6 +225,7 @@ let test_values = {
       \		'v', 'b', 'l', 'm', 'M', 'B', '1', ']', 'j', 'p', 'vt', 'v,t'],
       \		['xxx']],
       \ 'guicursor': [['', 'n:block-Cursor'], ['xxx']],
+      \ 'guidarkmode': [['', 'automatic', 'prefer_light'], ['xxx', '1', 'automatic,prefer_light']],
       \ 'guifont': [['', fontname], []],
       \ 'guifontset': [['', fontname], []],
       \ 'guifontwide': [['', fontname], []],
