@@ -668,6 +668,7 @@ GNOME_LIBS
 GTK_LIBNAME
 GTK_LIBS
 GTK_CFLAGS
+GTK_CPPFLAGS
 X_LIB
 X_EXTRA_LIBS
 X_LIBS
@@ -679,6 +680,7 @@ WAYLAND_OBJ
 WAYLAND_SRC
 WAYLAND_LIBS
 WAYLAND_CFLAGS
+WAYLAND_CPPFLAGS
 TERM_TEST
 TERM_OBJ
 TERM_SRC
@@ -9232,6 +9234,7 @@ fi
 
 
 if test "$with_wayland" = yes; then
+cppflags_save=$CPPFLAGS
 cflags_save=$CFLAGS
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for wayland" >&5
 printf %s "checking for wayland... " >&6; }
@@ -9240,7 +9243,9 @@ printf %s "checking for wayland... " >&6; }
 printf "%s\n" "yes" >&6; }
     printf "%s\n" "#define HAVE_WAYLAND 1" >>confdefs.h
 
-    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client`
+    WAYLAND_CPPFLAGS=`$PKG_CONFIG --cflags-only-I wayland-client`
+    WAYLAND_CFLAGS=`$PKG_CONFIG --cflags-only-other wayland-client`
+    CPPFLAGS="$CPPFLAGS $WAYLAND_CPPFLAGS"
     CFLAGS="$CFLAGS $WAYLAND_CFLAGS"
     WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client`
     WAYLAND_SRC=" \
@@ -9259,11 +9264,13 @@ printf "%s\n" "yes" >&6; }
 
 
 
+
   else
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
     with_wayland=no
   fi
+CPPFLAGS=$cppflags_save
 CFLAGS=$cflags_save
 fi
 
@@ -10670,7 +10677,8 @@ then :
 printf "%s\n" "found" >&6; }
 	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
 printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
-	     	     	     	     GTK_CFLAGS=`$PKG_CONFIG --cflags $gtk_pkg_name`
+	     	     	     	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
 	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
 	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
@@ -10684,6 +10692,7 @@ printf "%s\n" "yes; found version $gtk_major_version.$gtk_minor_version.$gtk_mic
 
 else case e in #(
   e)
+	      GTK_CPPFLAGS=""
 	      GTK_CFLAGS=""
 	      GTK_LIBDIR=""
 	      GTK_LIBS=""
@@ -10700,8 +10709,10 @@ fi
               gtktest_success="yes"
   if test "$enable_gtktest" = "yes"; then
   {
+    ac_save_CPPFLAGS="$CPPFLAGS"
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
     CFLAGS="$CFLAGS $GTK_CFLAGS"
     LIBS="$LIBS $GTK_LIBS"
 
@@ -10764,6 +10775,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
 esac
 fi
 
+    CPPFLAGS="$ac_save_CPPFLAGS"
     CFLAGS="$ac_save_CFLAGS"
     LIBS="$ac_save_LIBS"
   }
@@ -10772,9 +10784,10 @@ fi
   if test "$gtktest_success" = "yes"; then
     GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"
+		 GUI_INC_LOC="$GTK_CPPFLAGS"
   else
-        GTK_CFLAGS=""
+        GTK_CPPFLAGS=""
+    GTK_CFLAGS=""
     GTK_LIBDIR=""
     GTK_LIBS=""
     if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
@@ -10785,7 +10798,8 @@ fi
 
 
 
-    if test -n "$GTK_CFLAGS"; then
+
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_GTK2=YES
       SKIP_GNOME=YES
       SKIP_MOTIF=YES
@@ -10843,7 +10857,8 @@ then :
 printf "%s\n" "found" >&6; }
 	     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
 printf %s "checking for GTK - version >= $min_gtk_version... " >&6; }
-	     	     	     	     GTK_CFLAGS=`$PKG_CONFIG --cflags $gtk_pkg_name`
+	     	     	     	     GTK_CPPFLAGS=`$PKG_CONFIG --cflags-only-I $gtk_pkg_name`
+	     GTK_CFLAGS=`$PKG_CONFIG --cflags-only-other $gtk_pkg_name`
 	     GTK_LIBDIR=`$PKG_CONFIG --libs-only-L $gtk_pkg_name`
 	     GTK_LIBS=`$PKG_CONFIG --libs $gtk_pkg_name`
 	     gtk_major_version=`$PKG_CONFIG --modversion $gtk_pkg_name | \
@@ -10857,6 +10872,7 @@ printf "%s\n" "yes; found version $gtk_major_version.$gtk_minor_version.$gtk_mic
 
 else case e in #(
   e)
+	      GTK_CPPFLAGS=""
 	      GTK_CFLAGS=""
 	      GTK_LIBDIR=""
 	      GTK_LIBS=""
@@ -10873,8 +10889,10 @@ fi
               gtktest_success="yes"
   if test "$enable_gtktest" = "yes"; then
   {
+    ac_save_CPPFLAGS="$CPPFLAGS"
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
     CFLAGS="$CFLAGS $GTK_CFLAGS"
     LIBS="$LIBS $GTK_LIBS"
 
@@ -10937,6 +10955,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
 esac
 fi
 
+    CPPFLAGS="$ac_save_CPPFLAGS"
     CFLAGS="$ac_save_CFLAGS"
     LIBS="$ac_save_LIBS"
   }
@@ -10945,9 +10964,10 @@ fi
   if test "$gtktest_success" = "yes"; then
     GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
-		 GUI_INC_LOC="$GTK_CFLAGS"
+		 GUI_INC_LOC="$GTK_CPPFLAGS"
   else
-        GTK_CFLAGS=""
+        GTK_CPPFLAGS=""
+    GTK_CFLAGS=""
     GTK_LIBDIR=""
     GTK_LIBS=""
     if test "$fail_if_missing" = "yes" -a "$gui_auto" != "yes"; then
@@ -10958,7 +10978,8 @@ fi
 
 
 
-    if test -n "$GTK_CFLAGS"; then
+
+    if test -n "$GTK_CPPFLAGS"; then
       SKIP_MOTIF=YES
       GUITYPE=GTK
 
@@ -11022,7 +11043,7 @@ printf %s "checking for libgnomeui-2.0... " >&6; }
 printf "%s\n" "yes" >&6; }
       GNOME_LIBS=`$PKG_CONFIG --libs-only-l libgnomeui-2.0`
       GNOME_LIBDIR=`$PKG_CONFIG --libs-only-L libgnomeui-2.0`
-      GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags libgnomeui-2.0`
+      GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags-only-I libgnomeui-2.0`
 
                   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FreeBSD" >&5
 printf %s "checking for FreeBSD... " >&6; }
@@ -14654,16 +14675,22 @@ fi
 if test "$enable_canberra" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
     canberra_lib=`$PKG_CONFIG --libs libcanberra 2>/dev/null`
-    canberra_cflags=`$PKG_CONFIG --cflags libcanberra 2>/dev/null`
+    canberra_cppflags=`$PKG_CONFIG --cflags-only-I libcanberra 2>/dev/null`
+    canberra_cflags=`$PKG_CONFIG --cflags-only-other libcanberra 2>/dev/null`
   fi
   if test "x$canberra_lib" = "x"; then
     canberra_lib=-lcanberra
+    canberra_cppflags=-D_REENTRANT
     canberra_cflags=-D_REENTRANT
   fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcanberra" >&5
 printf %s "checking for libcanberra... " >&6; }
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  if `echo "$CPPFLAGS" | grep -v "$canberra_cppflags" 2>/dev/null`; then
+    CPPFLAGS="$CPPFLAGS $canberra_cflags"
+  fi
   if `echo "$CFLAGS" | grep -v "$canberra_cflags" 2>/dev/null`; then
     CFLAGS="$CFLAGS $canberra_cflags"
   fi
@@ -14726,16 +14753,20 @@ fi
 if test "$enable_libsodium" = "yes"; then
   if test "x$PKG_CONFIG" != "xno"; then
     libsodium_lib=`$PKG_CONFIG --libs libsodium 2>/dev/null`
-    libsodium_cflags=`$PKG_CONFIG --cflags libsodium 2>/dev/null`
+    libsodium_cppflags=`$PKG_CONFIG --cflags-only-I libsodium 2>/dev/null`
+    libsodium_cflags=`$PKG_CONFIG --cflags-only-other libsodium 2>/dev/null`
   fi
   if test "x$libsodium_lib" = "x"; then
     libsodium_lib=-lsodium
+    libsodium_cppflags=
     libsodium_cflags=
   fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libsodium" >&5
 printf %s "checking for libsodium... " >&6; }
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $libsodium_cppflags"
   CFLAGS="$CFLAGS $libsodium_cflags"
   LIBS="$LIBS $libsodium_lib"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14759,7 +14790,7 @@ printf "%s\n" "yes" >&6; }; printf "%s\n" "#define HAVE_SODIUM 1" >>confdefs.h
 
 else case e in #(
   e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no; try installing libsodium-dev" >&5
-printf "%s\n" "no; try installing libsodium-dev" >&6; }; CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS" ;;
+printf "%s\n" "no; try installing libsodium-dev" >&6; }; CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS"; CPPFLAGS="$ac_save_CPPFLAGS" ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -15584,11 +15615,13 @@ else
 printf "%s\n" "yes" >&6; }
 fi
 
-if test "x$GTK_CFLAGS" != "x"; then
+if test "x$GTK_CPPFLAGS" != "x"; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pango_shape_full" >&5
 printf %s "checking for pango_shape_full... " >&6; }
+  ac_save_CPPFLAGS="$CPPFLAGS"
   ac_save_CFLAGS="$CFLAGS"
   ac_save_LIBS="$LIBS"
+  CPPFLAGS="$CPPFLAGS $GTK_CPPFLAGS"
   CFLAGS="$CFLAGS $GTK_CFLAGS"
   LIBS="$LIBS $GTK_LIBS"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -15614,6 +15647,7 @@ esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+  CPPFLAGS="$ac_save_CPPFLAGS"
   CFLAGS="$ac_save_CFLAGS"
   LIBS="$ac_save_LIBS"
 fi
@@ -17085,7 +17119,7 @@ fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we need to force -D_FILE_OFFSET_BITS=64" >&5
 printf %s "checking whether we need to force -D_FILE_OFFSET_BITS=64... " >&6; }
-if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
+if echo "$CPPFLAGS $CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CPPFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
   printf "%s\n" "#define _FILE_OFFSET_BITS 64" >>confdefs.h
