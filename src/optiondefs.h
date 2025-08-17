@@ -1235,7 +1235,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_guidarkmode, PV_NONE, did_set_guidarkmode, NULL,
 			    {(char_u *)"automatic", (char_u *)0L}
 #else
-			    (char_u *)NULL, PV_NONE, NULL,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},

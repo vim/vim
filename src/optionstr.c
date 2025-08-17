@@ -2599,7 +2599,6 @@ did_set_guifont(optset_T *args UNUSED)
     return errmsg;
 }
 
-#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
 /*
  * Expand the 'guifont' option. Only when GUI is being used. Each platform has
  * specific behaviors.
@@ -2621,6 +2620,7 @@ expand_set_guifont(optexpand_T *args, int *numMatches, char_u ***matches)
 # endif
 }
 
+#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
 /*
  * The 'guidarkmode' option is changed.
  */
