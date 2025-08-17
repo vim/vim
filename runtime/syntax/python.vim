@@ -220,14 +220,14 @@ syn region  pythonRawBytes
 "
 " - Matched parentheses, brackets and braces are skipped
 " - A bare = (followed by optional whitespace) enables debugging
-" - A bare ! prefixes a conversion field
+" - A bare ! prefixes a conversion field (followed by optional whitespace)
 " - A bare : begins a format specification
 "     - Matched braces inside a format specification are skipped
 "
 syn region  pythonFStringField
     \ matchgroup=pythonFStringDelimiter
     \ start=/{/
-    \ end=/\%(=\s*\)\=\%(!\a\)\=\%(:\%({[^}]*}\|[^}]*\)\+\)\=}/
+    \ end=/\%(=\s*\)\=\%(!\a\s*\)\=\%(:\%({[^}]*}\|[^}]*\)\+\)\=}/
     \ contained
     \ contains=ALLBUT,pythonFStringField,pythonClass,pythonFunction,pythonDoctest,pythonDoctestValue,@Spell
 syn match   pythonFStringFieldSkip  /([^)]*)\|\[[^]]*]\|{[^}]*}/
