@@ -4640,7 +4640,7 @@ fi
 
 fi
 
-if test x"$ac_cv_prog_cc_c99" != xno; then
+if test x"$ac_cv_prog_cc_c99" = xno; then
 
 
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for unsigned long long int" >&5

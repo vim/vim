@@ -30,7 +30,7 @@ if test -z "$PKG_CONFIG"; then
 fi
 
 dnl Check that the C99 features that Vim uses are supported:
-if test x"$ac_cv_prog_cc_c99" != xno; then
+if test x"$ac_cv_prog_cc_c99" = xno; then
   dnl If the compiler doesn't explicitly support C99, then check
   dnl for the specific features Vim uses
 
@@ -2408,7 +2408,7 @@ AC_MSG_CHECKING(--with-wayland argument)
 AC_ARG_WITH(wayland,
 	[  --with-wayland	  Include support for the Wayland protocol.],
 	[with_wayland=$withval],
-	AS_IF([test "x$features" = xtiny], 
+	AS_IF([test "x$features" = xtiny],
 			[with_wayland=no
 			 AC_MSG_RESULT([cannot use wayland with tiny features])],
 			[with_wayland=yes
