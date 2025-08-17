@@ -61,15 +61,15 @@ if s:enabled('keyword')
 	hi def link cjOption		Keyword
 endif
 
-" 3. Attributes (e.g., @override)
+" 3. macro (e.g., @override)
 syn match cjAttribute /@\h\w*/
-if s:enabled('attribute')
+if s:enabled('macro')
 	hi def link cjAttribute PreProc
 endif
 
 " 4. Type and Function Names
 syn match cjTypeName /\h\w*/ contained
-if s:enabled('type_name')
+if s:enabled('type')
 	hi def link cjTypeName Type
 endif
 
