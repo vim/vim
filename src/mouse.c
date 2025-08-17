@@ -232,9 +232,7 @@ do_mouse(
     int		moved;		// Has cursor moved?
     int		in_status_line;	// mouse in status line
     static int	in_tab_line = FALSE; // mouse clicked in tab line
-#if defined(FEAT_TABPANEL)
     static int	in_tabpanel = FALSE; // mouse clicked in tabpanel
-#endif
     int		in_sep_line;	// mouse in vertical separator line
     int		c1, c2;
 #if defined(FEAT_FOLDING)
@@ -340,9 +338,7 @@ do_mouse(
     {
 	got_click = TRUE;
 	in_tab_line = FALSE;
-#if defined(FEAT_TABPANEL)
 	in_tabpanel = FALSE;
-#endif
     }
     else
     {
@@ -351,16 +347,11 @@ do_mouse(
 	if (!is_drag)			// release, reset got_click
 	{
 	    got_click = FALSE;
-	    if (in_tab_line
-#if defined(FEAT_TABPANEL)
-		|| in_tabpanel
-#endif
+	    if (in_tab_line || in_tabpanel
 		    )
 	    {
 		in_tab_line = FALSE;
-#if defined(FEAT_TABPANEL)
 		in_tabpanel = FALSE;
-#endif
 		return FALSE;
 	    }
 	}
@@ -485,32 +476,61 @@ do_mouse(
 
     start_visual.lnum = 0;
 
+    struct tabpage_label_info {
+	bool is_panel;	    // label type. true: tabpanel, false: tab line
+	bool just_in;	    // just in tabpage label area
+	bool just_click;    // just click tabpage label area
+	int nr;		    // tabpage number
+    } tp_label = { false, false, false, 0 };
+
     // Check for clicking in the tab page panel.
 #if defined(FEAT_TABPANEL)
     if (mouse_row < firstwin->w_winrow + topframe->fr_height
 	&& (mouse_col < firstwin->w_wincol
 		|| mouse_col >= firstwin->w_wincol + topframe->fr_width))
     {
+	tp_label.is_panel = true;
+	tp_label.just_in = true;
+	tp_label.nr = get_tabpagenr_on_tabpanel();
+
+	// click in a tab selects that tab page
+	if (is_click && cmdwin_type == 0)
+	    tp_label.just_click = true;
+    }
+    else
+#endif
+    // Check for clicking in the tab page line.
+    if (TabPageIdxs != NULL && mouse_row == 0 && firstwin->w_winrow > 0)
+    {
+	tp_label.just_in = true;
+	tp_label.nr = TabPageIdxs[mouse_col];
+
+	// click in a tab selects that tab page
+	if (is_click && cmdwin_type == 0
+		&& mouse_col < firstwin->w_wincol + topframe->fr_width)
+	    tp_label.just_click = true;
+    }
+
+    if (tp_label.just_in)
+    {
 	if (is_drag)
 	{
-	    if (in_tabpanel)
+	    if (in_tabpanel || in_tab_line)
 	    {
-		c1 = get_tabpagenr_on_tabpanel();
+		c1 = tp_label.nr;
 		tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
-								? c1 - 1 : c1);
+							    ? c1 - 1 : c1);
 	    }
 	    return FALSE;
 	}
 
-	// click in a tab selects that tab page
-	if (is_click
-# ifdef FEAT_CMDWIN
-		&& cmdwin_type == 0
-# endif
-		)
+	if (tp_label.just_click)
 	{
-	    in_tabpanel = TRUE;
-	    c1 = get_tabpagenr_on_tabpanel();
+	    if (tp_label.is_panel)
+		in_tabpanel = TRUE;
+	    else
+		in_tab_line = TRUE;
+	    c1 = tp_label.nr;
 	    if (c1 >= 0)
 	    {
 		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
@@ -551,82 +571,16 @@ do_mouse(
 	}
 	return TRUE;
     }
-    else if (is_drag && in_tabpanel)
+    else if (is_drag && (in_tabpanel || in_tab_line))
     {
-	c1 = get_tabpagenr_on_tabpanel();
+#if defined(FEAT_TABPANEL)
+	if (in_tabpanel)
+	    c1 = get_tabpagenr_on_tabpanel();
+	else
+#endif
+	    c1 = TabPageIdxs[mouse_col];
 	tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
 	return FALSE;
-    }
-#endif
-
-    if (TabPageIdxs != NULL)  // only when initialized
-    {
-	// Check for clicking in the tab page line.
-	if (mouse_row == 0 && firstwin->w_winrow > 0)
-	{
-	    if (is_drag)
-	    {
-		if (in_tab_line)
-		{
-		    c1 = TabPageIdxs[mouse_col];
-		    tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
-								? c1 - 1 : c1);
-		}
-		return FALSE;
-	    }
-
-	    // click in a tab selects that tab page
-	    if (is_click && cmdwin_type == 0
-		    && mouse_col < firstwin->w_wincol + topframe->fr_width)
-	    {
-		in_tab_line = TRUE;
-		c1 = TabPageIdxs[mouse_col];
-		if (c1 >= 0)
-		{
-		    if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
-		    {
-			// double click opens new page
-			end_visual_mode_keep_button();
-			tabpage_new();
-			tabpage_move(c1 == 0 ? 9999 : c1 - 1);
-		    }
-		    else
-		    {
-			// Go to specified tab page, or next one if not clicking
-			// on a label.
-			goto_tabpage(c1);
-
-			// It's like clicking on the status line of a window.
-			if (curwin != old_curwin)
-			    end_visual_mode_keep_button();
-		    }
-		}
-		else
-		{
-		    tabpage_T	*tp;
-
-		    // Close the current or specified tab page.
-		    if (c1 == -999)
-			tp = curtab;
-		    else
-			tp = find_tabpage(-c1);
-		    if (tp == curtab)
-		    {
-			if (first_tabpage->tp_next != NULL)
-			    tabpage_close(FALSE);
-		    }
-		    else if (tp != NULL)
-			tabpage_close_other(tp, FALSE);
-		}
-	    }
-	    return TRUE;
-	}
-	else if (is_drag && in_tab_line)
-	{
-	    c1 = TabPageIdxs[mouse_col];
-	    tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
-	    return FALSE;
-	}
     }
 
     // When 'mousemodel' is "popup" or "popup_setpos", translate mouse events:
