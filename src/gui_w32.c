@@ -1591,6 +1591,8 @@ _TextAreaWndProc(
     }
 }
 
+#include <dwmapi.h>
+
 /*
  * Called when the foreground or background color has been changed.
  */
@@ -1604,6 +1606,26 @@ gui_mch_new_colors(void)
 				s_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)s_brush);
     InvalidateRect(s_hwnd, NULL, TRUE);
     DeleteObject(prevBrush);
+
+    // Windows 11 (build 22000+)
+    OSVERSIONINFO ovi;
+
+    ovi.dwOSVersionInfoSize = sizeof(ovi);
+    if (!GetVersionEx(&ovi))
+	return;
+
+    // change titlebar's colour, requires Windows 11.
+    if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 22000)
+	    || ovi.dwMajorVersion > 10)
+    {
+        COLORREF captionColor = gui.back_pixel;
+        DwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR, &captionColor,
+                              sizeof(captionColor));
+
+        COLORREF textColor = gui.norm_pixel;
+        DwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR, &textColor,
+                              sizeof(textColor));
+    }
 }
 
 /*

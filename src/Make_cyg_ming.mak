@@ -200,15 +200,15 @@ CROSS_COMPILE =
 # If the makefile is executed with mingw32-make and sh.exe is not found in
 # $PATH, then $SHELL is set to "sh.exe" (without any path). In this case,
 # unix-like commands might not work and a dos-style path is needed.
-# 
+#
 # If the makefile is executed with mingw32-make and sh.exe IS found in $PATH,
 # then $SHELL is set with the actual path of sh.exe (e.g.
 # "C:/msys64/usr/bin/sh.exe").  In this case, unix-like commands can be used.
-# 
+#
 # If it is executed by the "make" command from cmd.exe, $SHELL is set to
 # "/bin/sh". If the "make" command is in the $PATH, other unix-like commands
 # might also work.
-# 
+#
 # If it is executed by the "make" command from a unix-like shell,
 # $SHELL is set with the unix-style path (e.g. "/bin/bash").
 # In this case, unix-like commands can be used.
@@ -779,7 +779,7 @@ ifeq ($(ASAN),yes)
 CFLAGS += -g -O0  -fsanitize-recover=all -fsanitize=address -fno-omit-frame-pointer
 endif
 
-LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
+LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion -ldwmapi
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
