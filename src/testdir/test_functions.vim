@@ -4503,4 +4503,61 @@ func Test_blob2str()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+" Test for uri_encode() and uri_decode() functions
+func Test_uriencoding()
+  let lines =<< trim END
+    #" uri encoding
+    call assert_equal('a1%20b2', uri_encode('a1 b2'))
+    call assert_equal('-%3F%26%2F%23%2B%3D%3A%5B%5D%40-', uri_encode('-?&/#+=:[]@-'))
+    call assert_equal('%22%3C%3E%5E%60%7B%7C%7D', uri_encode('"<>^`{|}'))
+    call assert_equal('%CE%B1%CE%B2%CE%B3%CE%B4%CE%B5', 'αβγδε'->uri_encode())
+    call assert_equal('r%C3%A9sum%C3%A9', uri_encode('résumé'))
+    call assert_equal('%E4%BD%A0%E5%A5%BD', uri_encode('你好'))
+    call assert_equal('%F0%9F%98%8A%F0%9F%98%8A', uri_encode('😊😊'))
+    call assert_equal('-_.~', uri_encode('-_.~'))
+    call assert_equal('', uri_encode(''))
+    call assert_equal('%2520%2523', uri_encode('%20%23'))
+    call assert_equal('', uri_encode(test_null_string()))
+    call assert_equal('a', uri_encode('a'))
+    call assert_equal('%20', uri_encode(' '))
+    call assert_equal('%CE%B1', uri_encode('α'))
+    call assert_equal('c%3A%5Cmy%5Cdir%5Ca%20b%20c', uri_encode('c:\my\dir\a b c'))
+    call assert_fails('call uri_encode([])', 'E1174: String required for argument 1')
+
+    #" uri decoding
+    call assert_equal('a1 b2', uri_decode('a1%20b2'))
+    call assert_equal('-?&/#+=:[]@-', uri_decode('-%3F%26%2F%23%2B%3D%3A%5B%5D%40-'))
+    call assert_equal('"<>^`{|}', uri_decode('%22%3C%3E%5E%60%7B%7C%7D'))
+    call assert_equal('αβγδε', '%CE%B1%CE%B2%CE%B3%CE%B4%CE%B5'->uri_decode())
+    call assert_equal('résumé', uri_decode('r%C3%A9sum%C3%A9'))
+    call assert_equal('你好', uri_decode('%E4%BD%A0%E5%A5%BD'))
+    call assert_equal('😊😊', uri_decode('%F0%9F%98%8A%F0%9F%98%8A'))
+    call assert_equal('a+b', uri_decode('a+b'))
+    call assert_equal('-_.~', uri_decode('-_.~'))
+    call assert_equal('', uri_decode(''))
+    call assert_equal('%20%23', uri_decode('%2520%2523'))
+    call assert_equal('', uri_decode(test_null_string()))
+    call assert_equal('a', uri_decode('a'))
+    call assert_equal(' ', uri_decode('%20'))
+    call assert_equal('α', uri_decode('%CE%B1'))
+    call assert_equal('c:\my\dir\a b c', uri_decode('c%3A%5Cmy%5Cdir%5Ca%20b%20c'))
+    call assert_equal('%', uri_decode('%'))
+    call assert_equal('%3', uri_decode('%3'))
+    call assert_equal(';', uri_decode('%3b'))
+    call assert_equal('a%xyb', uri_decode('a%xyb'))
+    call assert_fails('call uri_decode([])', 'E1174: String required for argument 1')
+
+    #" control characters
+    VAR cstr = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10"
+    LET cstr ..= "\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"
+    VAR expected = ''
+    for i in range(1, 31)
+      LET expected ..= printf("%%%02X", i)
+    endfor
+    call assert_equal(expected, uri_encode(cstr))
+    call assert_equal(cstr, uri_decode(expected))
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

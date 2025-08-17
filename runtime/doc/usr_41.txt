@@ -807,6 +807,8 @@ String manipulation:					*string-functions*
 	str2blob()		convert a list of strings into a blob
 	blob2str()		convert a blob into a list of strings
 	items()			get List of String index-character pairs
+	uri_encode()		URI-encode a string
+	uri_decode()		URI-decode a string
 
 List manipulation:					*list-functions*
 	get()			get an item without error for wrong index

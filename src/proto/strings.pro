@@ -52,4 +52,6 @@ void f_tolower(typval_T *argvars, typval_T *rettv);
 void f_toupper(typval_T *argvars, typval_T *rettv);
 void f_tr(typval_T *argvars, typval_T *rettv);
 void f_trim(typval_T *argvars, typval_T *rettv);
+void f_uridecode(typval_T *argvars, typval_T *rettv);
+void f_uriencode(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */
