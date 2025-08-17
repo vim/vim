@@ -234,8 +234,8 @@ syn match   pythonFStringFieldSkip  /([^)]*)\|\[[^]]*]\|{[^}]*}/
     \ contained
     \ contains=ALLBUT,pythonFStringField,pythonClass,pythonFunction,pythonDoctest,pythonDoctestValue,@Spell
 
-" Doubled braces and Unicode escapes are not replacement fields
-syn match   pythonFStringSkip	/{{\|\\N{/ transparent contained contains=NONE
+" Doubled braces are not replacement fields
+syn match   pythonFStringSkip	/{{/ transparent contained contains=NONE
 
 syn match   pythonEscape	+\\[abfnrtv'"\\]+ contained
 syn match   pythonEscape	"\\\o\{1,3}" contained

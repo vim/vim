@@ -80,11 +80,11 @@ and fields {1}, {2} and {1
 # Raw formatted string literals
 test = fr'Raw f-string with literal \' and \" and \t and fields {foo} and {bar}'
 test = fR"Raw f-string with literal \040 and \xFF and fields {foo} and {bar}"
-test = Fr'Raw f-string with literal \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK} and fields {foo} and {bar}'
+test = Fr'Raw f-string with literal \u00A1 and \U00010605 and fields \N{FIELD, NOT, ESCAPE} and {foo} and {bar}'
 test = FR"Raw f-string with literal {{field}} and fields {foo} and {bar}"
 test = rf'Raw f-string with literal \' and \" and \t and fields {foo} and {bar}'
 test = rF"Raw f-string with literal \040 and \xFF and fields {foo} and {bar}"
-test = Rf'Raw f-string with literal \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK} and fields {foo} and {bar}'
+test = Rf'Raw f-string with literal \u00A1 and \U00010605 and fields \N{FIELD, NOT, ESCAPE} and {foo} and {bar}'
 test = RF"Raw f-string with literal {{field}} and fields {foo} and {bar}"
 test = fr'''Raw f-string with quotes ' and "
 and literal \t and \040 and \xFF
@@ -165,15 +165,15 @@ test = f"Padded dict comprehension returns { {x: x**2 for x in range(10)} :99}"
 # Bytes
 test = b'Bytes with escapes \' and \" and \t'
 test = B"Bytes with escapes \040 and \xFF"
-test = b'Bytes with literal \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK}'
+test = b'Bytes with SyntaxWarning \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK}'
 test = B"Bytes with escaped \\ backslash and ignored \
 newline"
 test = b'''Bytes with quotes ' and "
 and escapes \t and \040 and \xFF
-and literal \u00A1 and \U00010605'''
+and SyntaxWarning \u00A1 and \U00010605'''
 test = B"""Bytes with quotes ' and "
 and escapes \t and \040 and \xFF
-and literal \u00A1 and \U00010605"""
+and SyntaxWarning \u00A1 and \U00010605"""
 
 # Raw bytes
 test = br'Raw bytes with literal \' and \" and \t'
