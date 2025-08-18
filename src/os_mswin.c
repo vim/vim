@@ -319,7 +319,7 @@ mch_FullName(
 mch_isFullName(char_u *fname)
 {
     // A name like "d:/foo" and "//server/share" is absolute.  "d:foo" is not.
-    // /foo and \foo are absolute too because windows keeps a current drive.
+    // /foo and \foo are absolute too because Windows keeps a current drive.
     // Another way to check is to use mch_FullName() and see if the result is
     // the same as the name or mch_FullName() fails.  However, this has quite a
     // bit of overhead, so let's not do that.
