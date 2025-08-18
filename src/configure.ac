@@ -1,6 +1,6 @@
 dnl configure.ac: autoconf script for Vim
 
-dnl Process this file with autoconf 2.72 to produce "configure".
+AC_PREREQ([2.72])
 
 AC_INIT
 AC_CONFIG_SRCDIR([vim.h])
