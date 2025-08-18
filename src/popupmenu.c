@@ -51,14 +51,13 @@ static int pum_set_selected(int n, int repeat);
     static void
 pum_compute_size(void)
 {
-    int	i;
     int	w;
 
     // Compute the width of the widest match and the widest extra.
     pum_base_width = 0;
     pum_kind_width = 0;
     pum_extra_width = 0;
-    for (i = 0; i < pum_size; ++i)
+    for (int i = 0; i < pum_size; ++i)
     {
 	if (pum_array[i].pum_text != NULL)
 	{
@@ -454,7 +453,14 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
     leader_len = STRLEN(leader);
 
     if (in_fuzzy)
+    {
 	ga = fuzzy_match_str_with_pos(text, leader);
+	if (!ga)
+	{
+	    vim_free(attrs);
+	    return NULL;
+	}
+    }
 
     while (*ptr != NUL)
     {
