@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 17
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6311,7 +6311,7 @@ isnan({expr})						*isnan()*
 
 
 items({expr})						*items()*
-		Return a |List| with all the key/index and value pairs of {expr}.
+		Return a |List| with all key/index and value pairs of {expr}.
 		Each |List| item is a list with two items:
 		- for a |Dict|: the key and the value
 		- for a |List|, |Tuple| or |String|: the index and the value

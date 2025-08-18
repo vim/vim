@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Aug 17
+*usr_41.txt*	For Vim version 9.1.  Last change: 2025 Aug 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -806,7 +806,7 @@ String manipulation:					*string-functions*
 	ngettext()		lookup single/plural message translation
 	str2blob()		convert a list of strings into a blob
 	blob2str()		convert a blob into a list of strings
-	items()			get List of List index-value pairs
+	items()			get List of String index-character pairs
 
 List manipulation:					*list-functions*
 	get()			get an item without error for wrong index
