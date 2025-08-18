@@ -71,7 +71,8 @@ syn cluster cangjieTypeCluster contains=cangjieSpType,cangjieArrayType,cangjieHa
 " 7. character and strings
 syn cluster cangjieInterpolatedPart contains=@cangjieKeywordCluster,cangjieSpIdentifier,@cangjieTypeCluster,@cangjieNumberCluster,cangjieOperator
 syn region  cangjieInterpolation contained keepend start=/\${/ end=/}/ contains=@cangjieInterpolatedPart matchgroup=cangjieInterpolationDelimiter
-syn match cangjieRune /\vr'.'/
+syn region cangjieRune   start=/r'/ skip=/\\\\\|\\'/ end=/'/ oneline
+syn region cangjieRune   start=/b'/ skip=/\\\\\|\\'/ end=/'/ oneline
 syn region cangjieString start=/"/ skip=/\\\\\|\\"/ end=/"/ oneline contains=cangjieInterpolation
 syn region cangjieString start=/'/ skip=/\\\\\|\\'/ end=/'/ oneline contains=cangjieInterpolation
 syn region cangjieString start=/"""/ skip=/\\\\\|\\"/ end=/"""/ contains=cangjieInterpolation keepend
@@ -80,14 +81,14 @@ syn region cangjieRawString start='\z(#*\)#"'  end='"#\z1'
 syn region cangjieRawString start='\z(#*\)#\'' end='\'#\z1'
 
 " 8. number
-syn match cangjieFloatNumber	/\v\c<\d[0-9_]*\.\d[0-9_]*([eE][-+]?\d[0-9_]*)?>/
-syn match cangjieFloatNumber	/\v\c<\d[0-9_]*\.([eE][-+]?\d[0-9_]*)?>/
-syn match cangjieFloatNumber	/\v\c\.\d[0-9_]*([eE][-+]?\d[0-9_]*)?>/
-syn match cangjieScienceNumber	/\v\c<\d[0-9_]*[eE][-+]?\d[0-9_]*>/
-syn match cangjieHexNumber		/\v\c<0x[0-9a-fA-F_]+>/
-syn match cangjieOctalNumber	/\v\c<0o[0-7_]+>/
-syn match cangjieBinaryNumber	/\v\c<0b[01_]+>/
-syn match cangjieDecimalNumber	/\v\c<\d[0-9_]*>/
+syn match cangjieFloatNumber	/\v\c<\d[0-9_]*\.\d[0-9_]*([ep][-+]?\d[0-9_]*)?(f(16|32|64))?>/
+syn match cangjieFloatNumber	/\v\c<\d[0-9_]*\.([ep][-+]?\d[0-9_]*)?(f(16|32|64))?>/
+syn match cangjieFloatNumber	/\v\c\.\d[0-9_]*([ep][-+]?\d[0-9_]*)?(f(16|32|64))?>/
+syn match cangjieScienceNumber	/\v\c<\d[0-9_]*[e][-+]?\d[0-9_]*>/
+syn match cangjieHexNumber		/\v\c<0x[0-9a-f_]+([iu](8|16|32|64))?>/
+syn match cangjieOctalNumber	/\v\c<0o[0-7_]+([iu](8|16|32|64))?>/
+syn match cangjieBinaryNumber	/\v\c<0b[01_]+([iu](8|16|32|64))?>/
+syn match cangjieDecimalNumber	/\v\c<\d[0-9_]*([iu](8|16|32|64))?>/
 syn cluster cangjieNumberCluster contains=cangjieFloatNumber,cangjieScienceNumber,cangjieHexNumber,cangjieOctalNumber,cangjieBinaryNumber,cangjieDecimalNumber
 
 " 9. operators
@@ -97,7 +98,8 @@ syn match cangjieOperator /\%(<<\|>>\|&^\)=\?/
 syn match cangjieOperator /:=\|||\|<-\|++\|--/
 syn match cangjieOperator /[~]/
 syn match cangjieOperator /[:]/
-syn match cangjieOperator /\.\.\./
+syn match cangjieOperator /\.\./
+syn match cangjieVarArgs  /\.\.\./
 
 " finally, link the syntax groups to the highlight groups
 if s:enabled('comment')
@@ -127,6 +129,7 @@ if s:enabled('number')
 endif
 if s:enabled('operator')
 	hi def link cangjieOperator			Operator
+	hi def link cangjieVarArgs			Operator
 endif
 if s:enabled('string')
 	hi def link cangjieRune				Character
