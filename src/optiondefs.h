@@ -1233,7 +1233,7 @@ static struct vimoption options[] =
     {"guidarkmode",  NULL,  P_STRING|P_VI_DEF|P_RCLR,
 #if defined(FEAT_GUI_DARKTHEME)
 			    (char_u *)&p_guidarkmode, PV_NONE, did_set_guidarkmode, NULL,
-			    {(char_u *)"automatic", (char_u *)0L}
+			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)NULL, (char_u *)0L}
