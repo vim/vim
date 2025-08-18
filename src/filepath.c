@@ -360,7 +360,7 @@ repeat:
 
 	// FullName_save() is slow, don't use it when not needed.
 	if (*p != NUL || !vim_isAbsName(*fnamep)
-#ifdef MSWIN	// enforce drive letter on windows paths
+#ifdef MSWIN	// enforce drive letter on Windows paths
 		|| **fnamep == '/' || **fnamep == '\\'
 #endif
 	)
@@ -3114,9 +3114,9 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
     int		cx = NUL;
     int		cy = NUL;
 
-#ifdef MSWIN
+# ifdef MSWIN
     /*
-     * To allow proper comparisson of absolute paths:
+     * To allow proper comparison of absolute paths:
      *	 - one with explicit drive letter C:\xxx
      *	 - another with implicit drive letter \xxx
      * advance the pointer, of the explicit one, to skip the drive
@@ -3135,7 +3135,7 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
 	    py += mb_ptr2len(py);
 	    cy = PTR2CHAR(py);
 	    if (cy == ':' && drive == _getdrive())
-	    { // skip the drive for comparisson
+	    { // skip the drive for comparison
 		py += mb_ptr2len(py);
 		break;
 	    }
@@ -3148,7 +3148,7 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
 	px = py;
 	py = tmp;
     }
-#endif
+# endif
 
     while (len > 0)
     {
