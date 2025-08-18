@@ -508,7 +508,7 @@
 /*
  * GUI dark theme variant
  */
-#if defined(FEAT_GUI_GTK) && defined(USE_GTK3)
+#if (defined(FEAT_GUI_GTK) && defined(USE_GTK3)) || defined(FEAT_GUI_MSWIN)
 # define FEAT_GUI_DARKTHEME
 #endif
 

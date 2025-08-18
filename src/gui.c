@@ -749,6 +749,7 @@ gui_init(void)
 	resettitle();
 
 	init_gui_options();
+
 #ifdef FEAT_ARABIC
 	// Our GUI can't do bidi.
 	p_tbidi = FALSE;
@@ -3472,7 +3473,6 @@ static int	prev_which_scrollbars[3];
 gui_init_which_components(char_u *oldval UNUSED)
 {
 #ifdef FEAT_GUI_DARKTHEME
-    static int	prev_dark_theme = -1;
     int		using_dark_theme = FALSE;
 #endif
 #ifdef FEAT_MENU
@@ -3576,10 +3576,10 @@ gui_init_which_components(char_u *oldval UNUSED)
     fix_size = FALSE;
 
 #ifdef FEAT_GUI_DARKTHEME
-    if (using_dark_theme != prev_dark_theme)
+    if (*p_guidarkmode == NUL)
     {
-	gui_mch_set_dark_theme(using_dark_theme);
-	prev_dark_theme = using_dark_theme;
+	gui.prefer_dark_theme = using_dark_theme ? DM_PREFER_DARK : DM_PREFER_LIGHT;
+	gui_mch_set_dark_theme();
     }
 #endif
 
@@ -4710,6 +4710,11 @@ init_gui_options(void)
 	set_option_value_give_err((char_u *)"bg", 0L, gui_bg_default(), 0);
 	highlight_changed();
     }
+
+#ifdef FEAT_GUI_DARKTHEME
+    // Apply the user preference now that the GUI window is open.
+    gui_mch_set_dark_theme();
+#endif
 }
 
 #if defined(FEAT_GUI_X11) || defined(PROTO)

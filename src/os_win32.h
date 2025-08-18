@@ -229,3 +229,6 @@ Trace(char *pszFormat, ...);
 #endif
 #define mch_getenv(x) (char_u *)getenv((char *)(x))
 #define vim_mkdir(x, y) mch_mkdir(x)
+
+#define MAKE_VER(major, minor, build) \
+    (((major) << 24) | ((minor) << 16) | (build))
