@@ -2911,6 +2911,12 @@ v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
 		this option is set, the TermResponseAll autocommand event is
 		fired, with <amatch> set to "ambiguouswidth".
 
+						*v:termda1*
+v:termda1	The escape sequence returned by a primary device attributes
+		(DA1) query from the terminal.  When this option is set, the
+		TermResponseAll autocommand event is fired, with <amatch> set
+		to "da1".
+
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.
 		Also, when set certain error messages won't be shown for 2

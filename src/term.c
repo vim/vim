@@ -1719,7 +1719,7 @@ static char *(key_names[]) =
     "k7", "k8", "k9", "k;", "F1", "F2",
     "%1", "&8", "kb", "kI", "kD", "kh",
     "@7", "kP", "kN", "K1", "K3", "K4", "K5", "kB",
-    "PS", "PE",
+    "PS", "PE", "Ms",
     NULL
 };
 #endif
@@ -5495,6 +5495,8 @@ handle_csi_function_key(
  *	{lead}[ABCDEFHPQRS]
  *	{lead}1;{modifier}[ABCDEFHPQRS]
  *
+ * - DA1 query response: {lead}?...;c
+ *
  * Return 0 for no match, -1 for partial match, > 0 for full match.
  */
     static int
@@ -5605,6 +5607,22 @@ handle_csi(
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
 	*slen = csi_len;
+    }
+
+    // Primary device attributes (DA1) response
+    else if (first == '?' && trail == 'c')
+    {
+	LOG_TRN("Received DA1 response: %s", tp);
+
+	*slen = csi_len;
+#ifdef FEAT_EVAL
+	set_vim_var_string(VV_TERMDA1, tp, *slen);
+#endif
+	apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"da1", NULL, FALSE, curbuf);
+
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
     }
 
     // Version string: Eat it when there is at least one digit and
