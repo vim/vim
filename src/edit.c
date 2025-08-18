@@ -664,6 +664,9 @@ edit(
 		    continue;
 		}
 
+		if (p_ac)
+		    ins_compl_set_autocomplete(TRUE);
+
 		// A non-white character that fits in with the current
 		// completion: Add to "compl_leader".
 		if (ins_compl_accept_char(c))
@@ -684,6 +687,9 @@ edit(
 			ins_compl_addleader(c);
 		    continue;
 		}
+
+		if (p_ac)
+		    ins_compl_set_autocomplete(FALSE);
 
 		// Pressing CTRL-Y selects the current match.  When
 		// ins_compl_enter_selects() is set the Enter key does the
@@ -987,10 +993,11 @@ doESCkey:
 		    && curwin->w_cursor.col > 0)
 	    {
 		c = char_before_cursor();
-		if (ins_compl_setup_autocompl(c))
+		if (vim_isprintc(c))
 		{
 		    update_screen(UPD_VALID); // Show char deletion immediately
 		    out_flush();
+		    ins_compl_set_autocomplete(TRUE);
 		    goto docomplete; // Trigger autocompletion
 		}
 	    }
@@ -1413,10 +1420,11 @@ normalchar:
 	    foldOpenCursor();
 #endif
 	    // Trigger autocompletion
-	    if (p_ac && !char_avail() && ins_compl_setup_autocompl(c))
+	    if (p_ac && !char_avail() && vim_isprintc(c))
 	    {
 		update_screen(UPD_VALID); // Show character immediately
 		out_flush();
+		ins_compl_set_autocomplete(TRUE);
 		goto docomplete;
 	    }
 
