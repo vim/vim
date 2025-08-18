@@ -1,5 +1,20 @@
-dnl configure.ac: autoconf script for Vim
-
+dnl +--------------------------------------------------------------------------+
+dnl   configure.ac: autoconf script for Vim
+dnl +--------------------------------------------------------------------------+
+dnl
+dnl   This file is processed by autoconf to generate the 'configure' script.
+dnl
+dnl   ==> IMPORTANT NOTE FOR DEVELOPERS <==
+dnl
+dnl   Do NOT run 'autoconf' directly on this file.  You must use the provided
+dnl   make target, like this:
+dnl
+dnl     make autoconf
+dnl
+dnl   This is required because the Makefile handles placing the generated script
+dnl   into its final location: 'auto/configure'.
+dnl
+dnl +--------------------------------------------------------------------------+
 AC_PREREQ([2.72])
 
 AC_INIT
@@ -2344,7 +2359,7 @@ AC_MSG_CHECKING(--enable-socketserver argument)
 AC_ARG_ENABLE(socketserver,
 	[  --enable-socketserver Use sockets for clientserver communication.],
 	[enable_socketserver=$enableval],
-	AS_IF([test "x$features" = xtiny], 
+	AS_IF([test "x$features" = xtiny],
 			[enable_socketserver=no_auto
 			 AC_MSG_RESULT([cannot use socketserver with tiny features])],
 			[enable_socketserver=auto]))
