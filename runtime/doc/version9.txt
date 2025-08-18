@@ -41745,6 +41745,10 @@ Others: ~
   Unicode 16.
 - Two additional digraphs have been added: LEFT ANGLE BRACKET "<[" and RIGHT
   ANGLE BRACKET "]>".
+- Support for Unix domain sockets have been added for the clientserver
+  feature, see |socketserver-clientserver|.
+
+Platform specific ~
 - MS-Winodws: Paths like "\Windows" and "/Windows" are now considered to be
   absolute paths (to the current drive) and no longer relative.
 
@@ -41849,6 +41853,7 @@ Options: ~
 
 Vim Arguments: ~
 |-Y|			Do not connect to the Wayland compositor.
+|--clientserver|	Specify backend  for clientserver functionality.
 
 
 ==============================================================================

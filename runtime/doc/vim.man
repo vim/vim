@@ -378,7 +378,16 @@ OPTIONS
        --servername {name}
                    Use  {name}  as the server name.  Used for the current Vim,
                    unless used with a --remote argument, then it's the name of
-                   the server to connect to.
+                   the server to connect to.  If the socketserver  backend  is
+                   being used, if the name starts with "/", "./", or "../", it
+                   is  taken  as either an absolute, relative or relative path
+                   to the socket.
+
+       --clientserver {backend}
+                   Use {backend} as the backend for  clientserver  functional‐
+                   ity, either "socket" or "x11" respectively.  Only available
+                   when  compiled  with  both  socketserver  and  X11 features
+                   present
 
        --socketid {id}
                    GTK GUI only: Use the GtkPlug mechanism to run gVim in  an‐

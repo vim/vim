@@ -516,6 +516,11 @@ static char *(features[]) =
 	"-signs",
 #endif
 	"+smartindent",
+#ifdef FEAT_SOCKETSERVER
+	"+socketserver",
+#else
+	"-socketserver",
+#endif
 #ifdef FEAT_SODIUM
 # ifdef DYNAMIC_SODIUM
 	"+sodium/dyn",
@@ -719,6 +724,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1651,
 /**/
     1650,
 /**/
