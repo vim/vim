@@ -7626,7 +7626,7 @@ max({expr})							*max()*
 		Can also be used as a |method|: >
 			mylist->max()
 <
-		Return type: |Number|
+		Return type: any, depending on {expr}
 
 
 menu_info({name} [, {mode}])				*menu_info()*
@@ -7718,7 +7718,7 @@ min({expr})							*min()*
 		Can also be used as a |method|: >
 			mylist->min()
 <
-		Return type: |Number|
+		Return type: any, depending on {expr}
 
 
 mkdir({name} [, {flags} [, {prot}]])			*mkdir()* *E739*
