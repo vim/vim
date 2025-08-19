@@ -1536,11 +1536,7 @@ popup_adjust_position(win_T *wp)
 	if (wp->w_has_scrollbar && wp->w_minwidth > 0)
 	{
 	    int off = wp->w_width - maxwidth;
-
-	    if (off > right_extra)
-		extra_width -= right_extra;
-	    else
-		extra_width -= off;
+	    extra_width -= MIN(off, right_extra);
 	    wp->w_width = maxwidth_no_scrollbar;
 	}
 	else
@@ -1637,8 +1633,11 @@ popup_adjust_position(win_T *wp)
     else if (wp->w_popup_pos == POPPOS_TOPRIGHT
 		|| wp->w_popup_pos == POPPOS_TOPLEFT)
     {
+
+	int check_height = (wp->w_popup_flags & POPF_INFO) ? wp->w_height
+						    : w_height_before_limit;
 	if (wp != popup_dragwin
-		&& wantline + (wp->w_height + extra_height) - 1 > Rows
+		&& wantline + (check_height + extra_height) - 1 > Rows
 		&& wantline * 2 > Rows
 		&& (wp->w_popup_flags & POPF_POSINVERT))
 	{
