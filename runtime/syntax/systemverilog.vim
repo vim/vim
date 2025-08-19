@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:    SystemVerilog
 " Maintainer:  kocha <kocha.lsifrontend@gmail.com>
-" Last Change: 12-Aug-2013. 
+" Last Change: 18-Aug-2025.
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -68,6 +68,9 @@ syn keyword systemverilogConditional unique0
 syn keyword systemverilogStatement   implements
 syn keyword systemverilogStatement   interconnect soft nettype
 
+" IEEE1800-2023 add
+syn region systemverilogBlockString start=+"""+ end=+"""+ contains=verilogEscape,@Spell
+
 " Define the default highlighting.
 
 " The default highlighting.
@@ -78,6 +81,7 @@ hi def link systemverilogRepeat          Repeat
 hi def link systemverilogLabel           Label
 hi def link systemverilogGlobal          Define
 hi def link systemverilogNumber          Number
+hi def link systemverilogBlockString     String
 
 
 let b:current_syntax = "systemverilog"
