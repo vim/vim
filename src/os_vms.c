@@ -443,7 +443,12 @@ vms_wproc(char *name, int val)
  *
  */
     int
-mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, int flags)
+mch_expand_wildcards(
+    int		num_pat,
+    char_u	**pat,
+    int		*num_file,
+    char_u	***file,
+    int		flags)
 {
     int		i, cnt = 0;
     char_u	buf[MAXPATHL];

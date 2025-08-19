@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Aug 10
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1115,6 +1115,23 @@ in the "after" directory in 'runtimepath'.  For Unix this would be
 ~/.vim/after/syntax/c.vim. >
     syn sync fromstart
     set foldmethod=syntax
+
+CANGJIE					*cangjie.vim* *ft-cangjie-syntax*
+
+This file provides syntax highlighting for the Cangjie programming language, a
+new-generation language oriented to full-scenario intelligence.
+
+All highlighting is enabled by default.  To disable highlighting for a
+specific group, set the corresponding variable to 0 in your |vimrc|.
+All options to disable highlighting are: >
+	:let g:cangjie_comment_color = 0
+	:let g:cangjie_identifier_color = 0
+	:let g:cangjie_keyword_color = 0
+	:let g:cangjie_macro_color = 0
+	:let g:cangjie_number_color = 0
+	:let g:cangjie_operator_color = 0
+	:let g:cangjie_string_color = 0
+	:let g:cangjie_type_color = 0
 
 CH						*ch.vim* *ft-ch-syntax*
 

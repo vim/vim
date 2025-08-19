@@ -395,6 +395,9 @@ static struct vimoption options[] =
     {"autocompletetimeout", "act", P_NUM|P_VI_DEF,
 			    (char_u *)&p_act, PV_NONE, NULL, NULL,
 			    {(char_u *)80L, (char_u *)0L} SCTX_INIT},
+    {"autocompletedelay", "acl", P_NUM|P_VI_DEF,
+			    (char_u *)&p_acl, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
 #endif
     {"autoindent",  "ai",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_ai, PV_AI, NULL, NULL,
@@ -634,11 +637,11 @@ static struct vimoption options[] =
 #ifdef FEAT_CLIPBOARD
 			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,
 # ifdef UNIX
-			    {(char_u *)"wayland,x11", (char_u *)0L}
+			    {(char_u *)"wayland,x11,gui", (char_u *)0L}
 # elif defined(VMS)
-			    {(char_u *)"x11", (char_u *)0L}
+			    {(char_u *)"x11,gui", (char_u *)0L}
 # else
-			    {(char_u *)"", (char_u *)0L}
+			    {(char_u *)"gui", (char_u *)0L}
 # endif
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,

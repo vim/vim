@@ -45,7 +45,7 @@ static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 // Note: Keep this in sync with did_set_clipboard()
 static char *(p_cb_values[]) = {"unnamed", "unnamedplus", "autoselect", "autoselectplus", "autoselectml", "html", "exclude:", NULL};
 // Note: Keep this in sync with get_clipmethod()
-static char *(p_cpm_values[]) = {"wayland", "x11", NULL};
+static char *(p_cpm_values[]) = {"wayland", "x11", "gui", NULL};
 #endif
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
@@ -1279,7 +1279,10 @@ did_set_breakindentopt(optset_T *args)
 }
 
     int
-expand_set_breakindentopt(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_breakindentopt(
+    optexpand_T		*args,
+    int			*numMatches,
+    char_u		***matches)
 {
     return expand_set_opt_string(
 	    args,
@@ -3756,7 +3759,10 @@ did_set_sessionoptions(optset_T *args)
 }
 
     int
-expand_set_sessionoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_sessionoptions(
+    optexpand_T		*args,
+    int			*numMatches,
+    char_u		***matches)
 {
     return expand_set_opt_string(
 	    args,
@@ -4308,7 +4314,10 @@ did_set_toolbariconsize(optset_T *args UNUSED)
 }
 
     int
-expand_set_toolbariconsize(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_toolbariconsize(
+    optexpand_T	*args,
+    int		*numMatches,
+    char_u	***matches)
 {
     return expand_set_opt_string(
 	    args,
