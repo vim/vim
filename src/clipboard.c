@@ -134,6 +134,20 @@ static bool clip_wl_owner_exists(Clipboard_T *cbd);
 
 #endif // FEAT_WAYLAND_CLIPBOARD
 
+#ifdef FEAT_CLIPBOARD_PROVIDER
+static int provider_get_func(char_u *provider, char_u *cb_name,
+	typval_T *func, typval_T *p_tv);
+static char_u *provider_get_reg(Clipboard_T *cbd);
+static int clip_provider_is_available(char_u *provider);
+static void clip_provider_call_callback( char_u *provider,
+	char_u *cb_name, Clipboard_T *cbd);
+
+// If we are inside one of the provider function 'paste' or 'copy', this is
+// set to the clipboard being processed, else NULL
+static Clipboard_T *provider_cbd = NULL;
+static Clipboard_T *prev_provider_cbd = NULL;
+#endif
+
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
  * windows.
@@ -254,7 +268,7 @@ clip_gen_own_selection(Clipboard_T *cbd UNUSED)
     }
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
-#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
+#ifndef UNIX
 	return clip_mch_own_selection(cbd);
 #endif
     }
@@ -321,7 +335,7 @@ clip_gen_lose_selection(Clipboard_T *cbd UNUSED)
     }
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
-#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
+#ifndef UNIX
 	clip_mch_lose_selection(cbd);
 #endif
     }
@@ -1371,8 +1385,15 @@ clip_gen_set_selection(Clipboard_T *cbd)
     }
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
-#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
+#ifndef UNIX
 	clip_mch_set_selection(cbd);
+#endif
+    }
+    else if (clipmethod == CLIPMETHOD_PROVIDER)
+    {
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	clip_provider_call_callback(clipprovider_name,
+		(char_u *)"copy", cbd);
 #endif
     }
 }
@@ -1401,8 +1422,15 @@ clip_gen_request_selection(Clipboard_T *cbd UNUSED)
     }
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
-#if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
+#ifndef UNIX
 	clip_mch_request_selection(cbd);
+#endif
+    }
+    else if (clipmethod == CLIPMETHOD_PROVIDER)
+    {
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	clip_provider_call_callback(clipprovider_name,
+		(char_u *)"paste", cbd);
 #endif
     }
 }
@@ -2266,10 +2294,17 @@ clip_get_selection(Clipboard_T *cbd)
     }
     else if (!is_clipboard_needs_update())
     {
-	clip_free_selection(cbd);
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	// Don't want to recusively call the clipboard provider callbacks nor
+	// free the register.
+	if (provider_cbd != cbd)
+#endif
+	{
+	    clip_free_selection(cbd);
 
-	// Try to get selected text from another window
-	clip_gen_request_selection(cbd);
+	    // Try to get selected text from another window
+	    clip_gen_request_selection(cbd);
+	}
     }
 }
 
@@ -3514,8 +3549,22 @@ get_clipmethod(char_u *str, bool *regular, bool *primary)
 	}
 	else
 	{
-	    ret = CLIPMETHOD_FAIL;
-	    goto exit;
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	    // Check if it is the name of a provider
+	    int r = clip_provider_is_available(buf);
+
+	    if (r == 1)
+	    {
+		method = CLIPMETHOD_PROVIDER;
+		vim_free(clipprovider_name);
+		clipprovider_name = vim_strsave(buf);
+	    }
+	    else if (r == -1)
+#endif
+	    {
+		ret = CLIPMETHOD_FAIL;
+		goto exit;
+	    }
 	}
 
 	// Keep on going in order to catch errors
@@ -3548,6 +3597,15 @@ clipmethod_to_str(clipmethod_T method)
 	    return (char_u *)"gui";
 	case CLIPMETHOD_OTHER:
 	    return (char_u *)"other";
+	case CLIPMETHOD_PROVIDER:
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	    if (clipprovider_name == NULL)
+		return (char_u *)"none";
+	    else
+		return clipprovider_name;
+#else
+	    return (char_u *)"none";
+#endif
 	default:
 	    return (char_u *)"none";
     }
@@ -3620,5 +3678,134 @@ ex_clipreset(exarg_T *eap UNUSED)
 	smsg(_("Switched to clipboard method '%s'."),
 		clipmethod_to_str(clipmethod));
 }
+
+#ifdef FEAT_CLIPBOARD_PROVIDER
+
+/*
+ * Get callback and typval of provider for provider with given name. Arguments
+ * can be NULL. Returns 1 if successful, 0 if dictionary didn't specify
+ * callback, and -1 on failure.
+ */
+    static int
+provider_get_func(
+	char_u *provider,
+	char_u *cb_name,
+	typval_T *func,
+	typval_T *p_tv)
+{
+    dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
+    typval_T	provider_tv;
+
+    if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL)
+	return -1;
+
+    if (provider_tv.v_type != VAR_DICT)
+	return -1;
+
+    if (dict_get_tv(provider_tv.vval.v_dict, (char *)cb_name, func) == FAIL)
+	return 0;
+
+    if (p_tv != NULL)
+	*p_tv = provider_tv;
+
+    return 1;
+}
+
+    static char_u *
+provider_get_reg(Clipboard_T *cbd)
+{
+    // If there is no + register, it will point to clip_star
+    if (cbd == &clip_star)
+	return (char_u *)"*";
+    else if (cbd == &clip_plus)
+	return (char_u *)"+";
+    return (char_u *)"";
+}
+
+/*
+ * Check if a clipboard provider with given name exists and is available.
+ * Returns 1 if the provider exists and the 'available' function returned true,
+ * 0 if the provider exists but the function returned false, and -1 on error.
+ */
+    static int
+clip_provider_is_available(char_u *provider)
+{
+    int		ret;
+    callback_T	callback;
+    typval_T	rettv;
+    typval_T	func_tv;
+    int		res;
+
+    ret = provider_get_func(provider, (char_u *)"available", &func_tv, NULL);
+
+    if (ret == -1)
+	return -1;
+    if (ret == 0)
+	// If user didn't speciy an 'available' function, assume its always
+	// TRUE.
+	return 1;
+    if (callback = get_callback(&func_tv), callback.cb_name == NULL)
+	return -1;
+
+    if (call_callback(&callback, -1, &rettv, 0, NULL) == FAIL ||
+	    rettv.v_type != VAR_BOOL)
+    {
+	free_callback(&callback);
+	clear_tv(&func_tv);
+	return -1;
+    }
+
+    res = rettv.vval.v_number;
+
+    free_callback(&callback);
+    clear_tv(&func_tv);
+
+    return res;
+}
+
+/*
+ * Function to handle both 'paste', and 'copy' callbacks in the clipboard
+ * provider dict.
+ */
+    static void
+clip_provider_call_callback(
+	char_u *provider,
+	char_u *cb_name,
+	Clipboard_T *cbd)
+{
+    int		ret;
+    char_u	*reg = provider_get_reg(cbd);
+    callback_T	callback;
+    typval_T	rettv;
+    typval_T	func_tv;
+    typval_T	args[2];
+
+    if (provider_cbd == cbd)
+	// We are already inside a 'paste' or 'copy' function, ignore
+	return;
+
+    ret = provider_get_func(provider, cb_name, &func_tv, NULL);
+
+    if (ret <= 0)
+	return;
+    if (callback = get_callback(&func_tv), callback.cb_name == NULL)
+	return;
+
+    args[0].v_type = VAR_STRING;
+    args[0].vval.v_string = reg;
+
+    prev_provider_cbd = provider_cbd;
+    provider_cbd = cbd;
+    textlock++;
+    call_callback(&callback, -1, &rettv, 1, args);
+    clear_tv(&rettv);
+    textlock--;
+    provider_cbd = prev_provider_cbd;
+
+    free_callback(&callback);
+    clear_tv(&func_tv);
+}
+
+#endif // FEAT_CLIPBOARD_PROVIDER
 
 #endif // FEAT_CLIPBOARD

@@ -2434,6 +2434,21 @@ AC_ARG_ENABLE(fontset,
 AC_MSG_RESULT($enable_fontset)
 dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
 
+AC_MSG_CHECKING(--enable-clipboard-provider)
+AC_ARG_ENABLE(clipboard-provider,
+	[  --enable-clipboard-provider  Include clipboard provider support.],
+	[enable_clipboard_provider=$enableval
+	 AC_MSG_RESULT($enableval)],
+	AS_IF([test "x$features" = xtiny], 
+			[enable_clipboard_provider="no"
+			 AC_MSG_RESULT([cannot use clipboard provider with tiny features])],
+			[enable_clipboard_provider="yes"
+			 AC_MSG_RESULT([yes])]))
+if test "$enable_clipboard_provider" = "yes"; then
+  AC_DEFINE(FEAT_CLIPBOARD_PROVIDER)
+fi
+
+
 AC_MSG_CHECKING(if shm_open is available)
 cppflags_save=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $X_CFLAGS"

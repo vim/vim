@@ -972,8 +972,9 @@ EXTERN int	gui_win_y INIT(= -1);
 
 #ifdef FEAT_CLIPBOARD
 EXTERN Clipboard_T clip_star;	// PRIMARY selection in X11/Wayland
-# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
-EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11/Wayland
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD) || \
+    ((defined(UNIX) || defined(VMS)) && defined(FEAT_CLIPBOARD_PROVIDER))
+EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11/Wayland/provider
 # else
 #  define clip_plus clip_star	// there is only one clipboard
 #  define ONE_CLIPBOARD
@@ -2067,6 +2068,9 @@ EXTERN int	p_tgc_set INIT(= FALSE);
 
 #ifdef FEAT_CLIPBOARD
 EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
+# ifdef FEAT_CLIPBOARD_PROVIDER
+EXTERN char_u *clipprovider_name INIT(= NULL);
+# endif
 #endif
 
 #ifdef FEAT_WAYLAND
