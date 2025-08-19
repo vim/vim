@@ -68,6 +68,7 @@
  * 11.11.2024  improve end-of-options argument parser #9285
  * 07.12.2024  fix overflow with xxd --autoskip and large sparse files #16175
  * 15.06.2025  improve color code logic
+ * 08.19.2025  remove external library call for autoconversion on z/OS (MVS)
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -1008,10 +1009,6 @@ main(int argc, char *argv[])
 	}
       rewind(fpo);
     }
-#ifdef __MVS__
-  // Disable auto-conversion on input file descriptors
-  __disableautocvt(fileno(fp));
-#endif
 
   if (revert)
     switch (hextype)
