@@ -2,6 +2,15 @@ dnl configure.ac: autoconf script for Vim
 
 dnl Process this file with autoconf 2.72 to produce "configure".
 
+dnl Normally, AC_INIT([package],[version],[bug-report],[tarname],[url])
+dnl provides PACKAGE_* macros, used by Autoconf on UNIX to inject version
+dnl info into config.h, --version output, and "make dist".
+dnl
+dnl Vim does not rely on that: versioning is centralized in version.h/version.c,
+dnl which ensures a single cross-platform source of truth for both UNIX and
+dnl non-UNIX platforms.
+dnl
+dnl Therefore we call AC_INIT without arguments.
 AC_INIT
 AC_CONFIG_SRCDIR([vim.h])
 AC_CONFIG_HEADERS(auto/config.h:config.h.in)
@@ -2344,7 +2353,7 @@ AC_MSG_CHECKING(--enable-socketserver argument)
 AC_ARG_ENABLE(socketserver,
 	[  --enable-socketserver Use sockets for clientserver communication.],
 	[enable_socketserver=$enableval],
-	AS_IF([test "x$features" = xtiny], 
+	AS_IF([test "x$features" = xtiny],
 			[enable_socketserver=no_auto
 			 AC_MSG_RESULT([cannot use socketserver with tiny features])],
 			[enable_socketserver=auto]))
