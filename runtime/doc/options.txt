@@ -1918,9 +1918,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 		x11		X11 selections
 		gui		GUI specific method
 		other		Some other method
+		*		Clipboard provider method
 
 	Note: "other" is used on systems without X11/Wayland, such as
 	MS-Windows or MacOS, when running Vim without the GUI.
+
+	Note that the name of the clipboard provider should be used when you
+	want to use a clipboard provider.  See |clipboard-providers| for more
+	information.
 
 	The option value is a list of comma separated items.  The list is
 	parsed left to right in order, and the first method that Vim
