@@ -147,7 +147,7 @@ Window	    x11_window = 0;
 Display	    *x11_display = NULL;
 #endif
 
-#ifdef FEAT_SOCKETSERVER
+#if defined(FEAT_SOCKETSERVER) || defined(PROTO)
 # include <sys/socket.h>
 # include <sys/un.h>
 
@@ -1829,7 +1829,7 @@ xopen_message(long elapsed_msec)
 # endif
 #endif
 
-#if defined(FEAT_X11)
+#if defined(FEAT_X11) || defined(PROTO)
 /*
  * A few functions shared by X11 title and clipboard code.
  */
@@ -1900,7 +1900,7 @@ x_connect_to_server(void)
     return TRUE;
 }
 
-#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) || defined(PROTO)
 # if defined(USING_SETJMP)
 /*
  * An X IO Error handler, used to catch error while opening the display.
@@ -3252,7 +3252,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 }
 #endif // HAVE_SMACK
 
-#ifdef FEAT_XATTR
+#if defined(FEAT_XATTR) || defined(PROTO)
 /*
  * Copy extended attributes from_file to to_file
  */
@@ -9134,7 +9134,7 @@ mch_create_anon_file(void)
     return fd;
 }
 
-#ifdef FEAT_SOCKETSERVER
+#if defined(FEAT_SOCKETSERVER) || defined(PROTO)
 
 /*
  * Initialize socket server called "name" (the socket filename). If "name" is a

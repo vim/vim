@@ -2449,7 +2449,7 @@ vim_tgetstr(char *s, char_u **pp)
 }
 #endif // HAVE_TGETENT
 
-#if defined(HAVE_TGETENT) && (defined(UNIX) || defined(VMS) || defined(MACOS_X))
+#if defined(HAVE_TGETENT) && (defined(UNIX) || defined(VMS) || defined(MACOS_X)) || defined(PROTO)
 /*
  * Get Columns and Rows from the termcap. Used after a window signal if the
  * ioctl() fails. It doesn't make sense to call tgetent each time if the "co"

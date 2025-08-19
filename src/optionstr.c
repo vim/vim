@@ -3616,7 +3616,7 @@ did_set_rulerformat(optset_T *args)
 }
 #endif
 
-#if defined(FEAT_TABPANEL)
+#if defined(FEAT_TABPANEL) || defined(PROTO)
 /*
  * Process the new 'tabpanelopt' option value.
  */
