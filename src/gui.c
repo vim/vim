@@ -147,8 +147,14 @@ gui_start(char_u *arg UNUSED)
 #endif
     }
     else
-	// Reset clipmethod to CLIPMETHOD_NONE
+	// Reset clipmethod to CLIPMETHOD_GUI
 	choose_clipmethod();
+
+#ifdef FEAT_SOCKETSERVER
+    // Install socket server listening socket if we are running it
+    if (socket_server_valid())
+	gui_gtk_init_socket_server();
+#endif
 
     vim_free(old_term);
 

@@ -854,6 +854,7 @@ enable_netbeans
 enable_channel
 enable_terminal
 enable_autoservername
+enable_socketserver
 enable_multibyte
 enable_rightleft
 enable_arabic
@@ -1534,6 +1535,7 @@ Optional Features:
   --disable-channel       Disable process communication support.
   --enable-terminal       Enable terminal emulation support.
   --enable-autoservername Automatically define servername at vim startup.
+  --enable-socketserver Use sockets for clientserver communication.
   --enable-multibyte      Include multibyte editing support.
   --disable-rightleft     Do not include Right-to-Left language support.
   --disable-arabic        Do not include Arabic language support.
@@ -9082,6 +9084,40 @@ printf "%s\n" "$enable_autoservername" >&6; }
 if test "$enable_autoservername" = "yes"; then
   printf "%s\n" "#define FEAT_AUTOSERVERNAME 1" >>confdefs.h
 
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-socketserver argument" >&5
+printf %s "checking --enable-socketserver argument... " >&6; }
+# Check whether --enable-socketserver was given.
+if test ${enable_socketserver+y}
+then :
+  enableval=$enable_socketserver; enable_socketserver=$enableval
+else case e in #(
+  e) if test "x$features" = xtiny
+then :
+  enable_socketserver=no_auto
+			 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: cannot use socketserver with tiny features" >&5
+printf "%s\n" "cannot use socketserver with tiny features" >&6; }
+else case e in #(
+  e) enable_socketserver=auto ;;
+esac
+fi ;;
+esac
+fi
+
+if test "$enable_socketserver" = "yes"; then
+  printf "%s\n" "#define WANT_SOCKETSERVER 1" >>confdefs.h
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+elif test "$enable_socketserver" = "auto"; then
+  printf "%s\n" "#define MAYBE_SOCKETSERVER 1" >>confdefs.h
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: auto" >&5
+printf "%s\n" "auto" >&6; }
+elif test "$enable_socketserver" = "no"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-multibyte argument" >&5

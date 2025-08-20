@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 9.1.  Last change: 2022 Feb 17
+*remote.txt*    For Vim version 9.1.  Last change: 2025 Aug 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -61,7 +61,10 @@ The following command line arguments are available:
    --servername {name}		Become the server {name}.  When used together
 				with one of the --remote commands: connect to
 				server {name} instead of the default (see
-				below).  The name used will be uppercase.
+				below).  The name used will be uppercase.  If
+				using the socketserver, you can specify a
+				path, see |socketserver-name| for more
+				details.
 								*--remote-send*
    --remote-send {keys}		Send {keys} to server and exit.  The {keys}
 				are not mapped.  Special key names are
@@ -72,6 +75,12 @@ The following command line arguments are available:
 				on stdout.
 								*--serverlist*
    --serverlist			Output a list of server names.
+								*--clientserver*
+   --clientserver {method}	Use the specified method {method} as the
+				backend for clientserver functionality. Can
+				either be "socket" or "x11".
+				{only available when Vim is compiled with both
+				|+X11| and |+socketserver| features}
 
 
 Examples ~
@@ -105,7 +114,8 @@ specified name is not available, a postfix is applied until a free name is
 encountered, i.e. "gvim1" for the second invocation of gvim on a particular
 X-server.  The resulting name is available in the servername builtin variable
 |v:servername|.  The case of the server name is ignored, thus "gvim" and
-"GVIM" are considered equal.
+"GVIM" are considered equal.  Note if a socket server is being used, there are
+some differences, see |socketserver-differences|.
 
 When Vim is invoked with --remote, --remote-wait or --remote-send it will try
 to locate the server name determined by the invocation name and --servername
@@ -119,7 +129,8 @@ itself.  This way it is not necessary to know whether gvim is already started
 when sending command to it.
 
 The --serverlist argument will cause Vim to print a list of registered command
-servers on the standard output (stdout) and exit.
+servers on the standard output (stdout) and exit.  If a socket server is being
+used, there are caveats, see |socketserver-differences|.
 							*{server}*
 The {server} argument is used by several functions.  When this is an empty
 string then on Unix the default server name is used, which is "GVIM".  On
@@ -206,4 +217,64 @@ When using gvim, the --remote-wait only works properly this way: >
 
 	start /w gvim --remote-wait file.txt
 <
+==============================================================================
+3. Socket server specific items			    *socketserver-clientserver*
+				    *E1563* *E1564* *E1565* *E1566* *E1567*
+
+The communication between client and server is done using Unix domain sockets.
+These sockets are either placed in these directories in the following order of
+availability:
+    1. "$XDG_RUTIME_DIR/vim" if $XDG_RUNTIME_DIR is set in the environment.
+    2. "$TMPDIR/vim-[uid]", where "[uid]" is the uid of the user. This
+       directory will have the access permissions set to 700 so only the user
+       can read or write from/to it. If $TMPDIR is not set, "/tmp" is used.
+
+						    *socketserver-name*
+When specifying the server id/name, it can be taken as a generic name or an
+absolute or relative path.  If the server id starts with either a "/"
+(absolute) or "./" | "../" (relative), then it is taken as path to the socket.
+Otherwise the server id will be the filename of the socket which will be
+placed in the above common directories.  Note that a server id/name can only
+contain slashes "/" if it is taken as a path, so names such as "abc/dir" will
+be invalid.
+
+Socket server functionality is available in both GTK GUI and terminal versions of
+Vim.  Unless Vim is compiled with |+autoservername| feature, the socket server
+will have to started explicitly, just like X11, even in the GUI.
+
+If Vim crashes or does not exit cleanly, the socket server will not remove the
+socket file and it will be left around.  This is generally not a problem,
+because if a socket name is taken, Vim checks if the socket in its place is
+dead (not attached to any process), and can replace it instead of finding a
+new name.
+
+To send commands to a Vim socket server from another application, read the
+source file src/os_unix.c, there is detailed description of the protocol used.
+
+						    *socketserver-differences*
+Most of the functionality is the same as X11, however unlike X11, where the
+client does not need to be a server in order to communicate with another
+server, the socket server requires the server to be running even as a client.
+The exception is |serverlist()| or the |--serverlist| argument, which does not
+require the server to be running.
+
+Additionally, the server id or client id will not be a number like X11 or
+MS-Windows (shown in hex representation), instead it is the absolute path to
+the socket.  This can be seen via the |v:servername| variable.
+
+The |--serverlist| argument will act just like X11, however it only checks the
+given common directories above.  If a custom path is used for a socket, it
+will not be detected, such as a path either not in $XDG_RUNTIME_DIR or
+<$TMPDIR or /tmp>/vim of the |--serverlist| Vim process.
+
+If you have both |+socketserver| and |+X11| compiled, you will need to add
+|--clientserver| set to "socket" in combination with |--serverlist| to list
+the available servers.  You cannot list both types of backends in one command.
+
+						    *socketserver-x11*
+If Vim is compiled with both |+X11| and |+socketserver|, then deciding which
+backend to use is done at startup time, via the |--clientserver| argument.  By
+default if it is not specified, then X11 will be used.  A Vim instance using a
+socket server cannot communicate with one using X11.
+
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

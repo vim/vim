@@ -10,6 +10,12 @@ CheckFeature clientserver
 
 source util/shared.vim
 
+" Unlike X11, we need the socket server running if we want to send commands to
+" a server via sockets.
+if v:servername == ""
+  call remote_startserver('VIMSOCKETSERVERTEST')
+endif
+
 func Check_X11_Connection()
   if has('x11')
     CheckX11
@@ -184,10 +190,18 @@ func Test_client_server()
   call assert_fails('call remote_startserver("")', 'E1175:')
   call assert_fails('call remote_startserver([])', 'E1174:')
   call assert_fails("let x = remote_peek([])", 'E730:')
-  call assert_fails("let x = remote_read('vim10')",
-        \ has('unix') ? ['E573:.*vim10'] : 'E277:')
-  call assert_fails("call server2client('abc', 'xyz')",
-        \ has('unix') ? ['E573:.*abc'] : 'E258:')
+
+  " When using socket server, server id is not a number, but the path to the
+  " socket.
+  if has('socketserver') && !has('X11')
+    call assert_fails("let x = remote_read('vim/10')", ['E573:.*vim/10'])
+    call assert_fails("call server2client('a/b/c', 'xyz')", ['E573:.*a/b/c'])
+  else
+    call assert_fails("let x = remote_read('vim10')",
+          \ has('unix') ? ['E573:.*vim10'] : 'E277:')
+    call assert_fails("call server2client('abc', 'xyz')",
+          \ has('unix') ? ['E573:.*abc'] : 'E258:')
+  endif
 endfunc
 
 func Test_client_server_stopinsert()
@@ -229,6 +243,121 @@ func Test_client_server_stopinsert()
       call job_stop(job, 'kill')
     endif
   endtry
+endfunc
+
+" Test if socket server and X11 backends can be chosen and work properly.
+func Test_client_server_x11_and_socket_server()
+  CheckNotMSWindows
+  CheckFeature socketserver
+  CheckFeature x11
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+  call Check_X11_Connection()
+
+  let types = ['socket', 'x11']
+
+  for type in types
+    let name = 'VIMTEST_' .. toupper(type)
+    let actual_cmd = cmd .. ' --clientserver ' .. type
+    let actual_cmd .= ' --servername ' .. name
+    let job = job_start(actual_cmd, {'stoponexit': 'kill', 'out_io': 'null'})
+
+    call WaitForAssert({-> assert_equal("run", job_status(job))})
+    call WaitForAssert({-> assert_match(name, system(cmd .. ' --clientserver ' .. type .. ' --serverlist'))})
+
+    call assert_match(name, system(actual_cmd .. ' --remote-expr "v:servername"'))
+
+    call system(actual_cmd .. " --remote-expr 'execute(\"qa!\")'")
+    try
+      call WaitForAssert({-> assert_equal("dead", job_status(job))})
+    finally
+      if job_status(job) != 'dead'
+        call assert_report('Server did not exit')
+        call job_stop(job, 'kill')
+      endif
+    endtry
+  endfor
+endfunc
+
+" Test if socket server works in the GUI
+func Test_client_socket_server_server_gui()
+  CheckNotMSWindows
+  CheckFeature socketserver
+  CheckFeature gui_gtk
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+  call Check_X11_Connection()
+
+  let name = 'VIMTESTSOCKET'
+  let cmd .= ' --clientserver socket'
+  let cmd .= ' --servername ' .. name
+
+  let job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
+
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+  call WaitForAssert({-> assert_match(name, system(cmd .. ' --serverlist'))})
+
+  call system(cmd .. " --remote-expr 'execute(\"gui\")'")
+
+  call assert_match('1', system(cmd .. " --remote-expr 'has(\"gui_running\")'"))
+  call assert_match(name, system(cmd .. ' --remote-expr "v:servername"'))
+
+  call system(cmd .. " --remote-expr 'execute(\"qa!\")'")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
+endfunc
+
+" Test if custom paths work for socketserver
+func Test_client_socket_server_custom_path()
+  CheckNotMSWindows
+  CheckFeature socketserver
+  CheckNotFeature x11
+
+  let g:test_is_flaky = 1
+  let cmd = GetVimCommand()
+
+  if cmd == ''
+    throw 'GetVimCommand() failed'
+  endif
+
+  let name = 'VIMTESTSOCKET2'
+
+  let paths = ['./' .. name, '../testdir/' .. name, getcwd(-1) .. '/' .. name]
+
+  for path in paths
+    let actual = cmd .. ' --servername ' .. path
+
+    let job = job_start(actual, {'stoponexit': 'kill', 'out_io': 'null'})
+
+    call WaitForAssert({-> assert_equal("run", job_status(job))})
+    call WaitForAssert({-> assert_equal(path, glob(path))})
+
+    call system(actual .. " --remote-expr 'execute(\"qa!\")'")
+    try
+      call WaitForAssert({-> assert_equal("dead", job_status(job))})
+    finally
+      if job_status(job) != 'dead'
+        call assert_report('Server did not exit')
+        call job_stop(job, 'kill')
+      endif
+    endtry
+  endfor
 endfunc
 
 " Uncomment this line to get a debugging log

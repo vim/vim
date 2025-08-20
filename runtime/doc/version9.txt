@@ -41608,7 +41608,8 @@ Completion~
 
 Platform specific~
 -----------------
-- Support for Wayland UI and support for the Wayland clipboard has been added.
+- Support for Wayland UI and support for the Wayland clipboard has been added
+  |wayland|.
 
 - Support for the XDG Desktop Specification |xdg-base-dir| has been added and
   the environment variable |$MYVIMDIR| is set to the users personal runtime
@@ -41745,6 +41746,10 @@ Others: ~
   Unicode 16.
 - Two additional digraphs have been added: LEFT ANGLE BRACKET "<[" and RIGHT
   ANGLE BRACKET "]>".
+- Support for Unix domain sockets have been added for the clientserver
+  feature, see |socketserver-clientserver|.
+
+Platform specific ~
 - MS-Winodws: Paths like "\Windows" and "/Windows" are now considered to be
   absolute paths (to the current drive) and no longer relative.
 
@@ -41825,6 +41830,7 @@ Options: ~
 'autocompletion'	Enable auto completion |ins-autocompletion|
 'autocompletedelay'	Delay in msec before menu appears after typing
 'chistory'		Size of the quickfix stack |quickfix-stack|.
+'clipmethod'		How to access the clipboard.
 'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
 			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
@@ -41846,9 +41852,14 @@ Options: ~
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
 'winfixbuf'		Keep buffer focused in a window
+'wlseat'		Specify Wayland seat to use for the |wayland| feature
+'wlsteal'		Steal focus to access the |wayland| clipboard
+'wltimeout'		Specify the connection timeout for the |wayland|
+			compositor
 
 Vim Arguments: ~
-|-Y|			Do not connect to the Wayland compositor.
+|-Y|			Do not connect to the |wayland| compositor.
+|--clientserver|	Specify backend for clientserver functionality.
 
 
 ==============================================================================

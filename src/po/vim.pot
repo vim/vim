@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-08-16 17:57+0200\n"
+"POT-Creation-Date: 2025-08-18 21:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -252,6 +252,9 @@ msgstr ""
 
 #, c-format
 msgid "%d of %d edited"
+msgstr ""
+
+msgid "Socket server not online:Send expression failed"
 msgstr ""
 
 msgid "No display: Send expression failed.\n"
@@ -1711,6 +1714,9 @@ msgstr ""
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr ""
 
+msgid "--clientserver <socket|x11> Backend for clientserver communication"
+msgstr ""
+
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr ""
 
@@ -2505,6 +2511,10 @@ msgstr ""
 
 #, c-format
 msgid "XSMP SmcOpenConnection failed: %s"
+msgstr ""
+
+#, c-format
+msgid "Failed creating socket directory: %s"
 msgstr ""
 
 msgid "At line"
@@ -8804,6 +8814,22 @@ msgid "E1561: Duplicate type variable name: %s"
 msgstr ""
 
 msgid "E1562: Diff anchors cannot be used with hidden diff windows"
+msgstr ""
+
+msgid "E1563: Socket path is too big"
+msgstr ""
+
+msgid "E1564: Socket name cannot have slashes in it without being a path"
+msgstr ""
+
+msgid "E1565: Socket server is not online, call remote_startserver() first"
+msgstr ""
+
+#, c-format
+msgid "E1566: Failed connecting to socket %s: %s"
+msgstr ""
+
+msgid "E1567: Cannot start socket server, socket path is unavailable"
 msgstr ""
 
 #. type of cmdline window or 0
