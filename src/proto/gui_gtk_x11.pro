@@ -15,7 +15,7 @@ void gui_mch_show_tabline(int showit);
 int gui_mch_showing_tabline(void);
 void gui_mch_update_tabline(void);
 void gui_mch_set_curtab(int nr);
-void gui_gtk_set_selection_targets(GdkAtom);
+void gui_gtk_set_selection_targets(GdkAtom selection);
 void gui_gtk_set_dnd_targets(void);
 int gui_mch_init(void);
 void gui_mch_forked(void);

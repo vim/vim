@@ -3616,7 +3616,7 @@ did_set_rulerformat(optset_T *args)
 }
 #endif
 
-#if defined(FEAT_TABPANEL)
+#if defined(FEAT_TABPANEL) || defined(PROTO)
 /*
  * Process the new 'tabpanelopt' option value.
  */
@@ -5068,7 +5068,7 @@ restore_shm_value(void)
  * Export the environment variable $MYVIMDIR to the first item in runtimepath
  */
     void
-export_myvimdir()
+export_myvimdir(void)
 {
     int		dofree = FALSE;
     char_u	*p;
