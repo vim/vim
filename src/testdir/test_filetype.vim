@@ -1,5 +1,10 @@
 " Test :setfiletype
 
+" Make VIMRUNTIME and &rtp absolute.
+" Otherwise, a :lcd inside a test would break the relative ../../runtime path.
+let $VIMRUNTIME = fnamemodify($VIMRUNTIME, ':p')
+let &rtp = join(map(split(&rtp, ','), 'fnamemodify(v:val, ":p")'), ',')
+
 func Test_backup_strip()
   filetype on
   let fname = 'Xdetect.js~~~~~~~~~~~'
@@ -1187,7 +1192,6 @@ endfunc
 " accidentally influences detection.
 func Test_autoconf_file()
   filetype on
-  silent! runtime! autoload/dist/ft.vim
   " Make a fresh sandbox far away from any configure.ac
   let save_cwd = getcwd()
   call mkdir('Xproj_autoconf/a/b', 'p')
