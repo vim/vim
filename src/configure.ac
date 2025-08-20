@@ -15,7 +15,10 @@ dnl   This is required because the Makefile handles placing the generated script
 dnl   into its final location: 'auto/configure'.
 dnl
 dnl +--------------------------------------------------------------------------+
-AC_PREREQ([2.72])
+
+dnl You should use Autoconf 2.72 but to simplify CI on Ubuntu 24.04 we only
+dnl use AC_PREEQ([2.71])
+AC_PREREQ([2.71])
 
 dnl Normally, AC_INIT([package],[version],[bug-report],[tarname],[url])
 dnl provides PACKAGE_* macros, used by Autoconf on UNIX to inject version
