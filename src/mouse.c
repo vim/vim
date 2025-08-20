@@ -570,7 +570,7 @@ do_mouse(
 	}
 	return TRUE;
     }
-    else if (is_drag && (in_tabpanel || (in_tab_line && TabPageIdxs != NULL))
+    else if (is_drag && (in_tabpanel || (in_tab_line && TabPageIdxs != NULL)))
     {
 #if defined(FEAT_TABPANEL)
 	if (in_tabpanel)
