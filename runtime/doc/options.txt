@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Aug 18
+*options.txt*	For Vim version 9.1.  Last change: 2025 Aug 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1891,9 +1891,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{pattern}, this must be the last entry.
 
 						*'clipmethod'* *'cpm'*
-'clipmethod' 'cpm'	string	(default for Unix: "wayland,x11,gui",
-				 for VMS: "x11,gui",
-				 otherwise: "gui")
+'clipmethod' 'cpm'	string	(default for Unix: "wayland,x11",
+				 for VMS: "x11",
+				 otherwise: "")
 			global
 			{only when the |+xterm_clipboard| or
 			|+wayland_clipboard| features are included}
@@ -1902,16 +1902,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	methods are:
 		wayland		Wayland selections
 		x11		X11 selections
-		gui		GUI specific method
+
+	Note: This option is ignored when either the GUI is running or if Vim
+	is run on a system without Wayland or X11 support, such as Windows or
+	macOS.  The GUI or system way of accessing the clipboard is always
+	used instead.
 
 	The option value is a list of comma separated items.  The list is
 	parsed left to right in order, and the first method that Vim
 	determines is available or is working is used as the actual method for
-	accessing the clipboard.  Setting this option to an empty value
-	disables the clipboard functionality on all systems.
+	accessing the clipboard.
 
-	The current method that is being used can be found in the
-	|v:clipmethod| variable.
+	The current method that is being used can be found in the |v:clipmethod|
+	variable.
 
 						*'cmdheight'* *'ch'*
 'cmdheight' 'ch'	number	(default 1)

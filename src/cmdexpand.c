@@ -3541,7 +3541,7 @@ ExpandGeneric(
     regmatch_T	*regmatch,
     char_u	***matches,
     int		*numMatches,
-    char_u	*((*func)(expand_T *, int)),
+    char_u	*(*func)(expand_T *, int),
 					  // returns a string from the list
     int		escaped)
 {
@@ -3572,7 +3572,7 @@ ExpandGenericExt(
     regmatch_T	*regmatch,
     char_u	***matches,
     int		*numMatches,
-    char_u	*((*func)(expand_T *, int)),
+    char_u	*(*func)(expand_T *, int),
 					  // returns a string from the list
     int		escaped,
     int		sortStartIdx)

@@ -199,7 +199,7 @@
 #endif
 
 #if defined(HAVE_WAYLAND) && defined(WANT_WAYLAND)
-#define FEAT_WAYLAND
+# define FEAT_WAYLAND
 #endif
 
 #ifdef NO_X11_INCLUDES
@@ -264,7 +264,7 @@
 #if (defined(UNIX) || defined(VMS)) \
 	&& (!defined(MACOS_X) || defined(HAVE_CONFIG_H))
 # include "os_unix.h"	    // bring lots of system header files
-#else
+#elif !defined(PROTO)
   // For all non-Unix systems: use old-fashioned signal().
 # define mch_signal(signum, sighandler) signal(signum, sighandler)
 #endif
@@ -1917,7 +1917,7 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 # define USE_INPUT_BUF
 #endif
 
-#ifndef EINTR
+#if !defined(EINTR) && !defined(PROTO)
 # define read_eintr(fd, buf, count) vim_read((fd), (buf), (count))
 # define write_eintr(fd, buf, count) vim_write((fd), (buf), (count))
 #endif
@@ -2299,7 +2299,6 @@ typedef enum {
     CLIPMETHOD_NONE,
     CLIPMETHOD_WAYLAND,
     CLIPMETHOD_X11,
-    CLIPMETHOD_GUI
 } clipmethod_T;
 
 // Info about selected text
@@ -2355,6 +2354,8 @@ typedef struct _stat64 stat_T;
 #else
 typedef struct stat stat_T;
 #endif
+
+typedef struct soundcb_S soundcb_T;
 
 #if (defined(__GNUC__) || defined(__clang__)) && !defined(__MINGW32__)
 # define ATTRIBUTE_FORMAT_PRINTF(fmt_idx, arg_idx) \
@@ -2520,7 +2521,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 
 // This must come after including proto.h.
 // For VMS this is defined in macros.h.
-#if !defined(MSWIN) && !defined(VMS)
+#if !defined(MSWIN) && !defined(VMS) && !defined(PROTO)
 # define mch_open(n, m, p)	open((n), (m), (p))
 # define mch_fopen(n, p)	fopen((n), (p))
 #endif
@@ -2777,7 +2778,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 // values for vim_handle_signal() that are not a signal
 #define SIGNAL_BLOCK	(-1)
 #define SIGNAL_UNBLOCK  (-2)
-#if !defined(UNIX) && !defined(VMS)
+#if !defined(UNIX) && !defined(VMS) && !defined(PROTO)
 # define vim_handle_signal(x) 0
 #endif
 

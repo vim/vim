@@ -1201,7 +1201,7 @@ f_test_null_blob(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_blob = NULL;
 }
 
-#ifdef FEAT_JOB_CHANNEL
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     void
 f_test_null_channel(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -1216,7 +1216,7 @@ f_test_null_dict(typval_T *argvars UNUSED, typval_T *rettv)
     rettv_dict_set(rettv, NULL);
 }
 
-#ifdef FEAT_JOB_CHANNEL
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     void
 f_test_null_job(typval_T *argvars UNUSED, typval_T *rettv)
 {

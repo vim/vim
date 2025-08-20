@@ -347,8 +347,7 @@ do_mouse(
 	if (!is_drag)			// release, reset got_click
 	{
 	    got_click = FALSE;
-	    if (in_tab_line || in_tabpanel
-		    )
+	    if (in_tab_line || in_tabpanel)
 	    {
 		in_tab_line = FALSE;
 		in_tabpanel = FALSE;
@@ -571,7 +570,7 @@ do_mouse(
 	}
 	return TRUE;
     }
-    else if (is_drag && (in_tabpanel || in_tab_line))
+    else if (is_drag && (in_tabpanel || (in_tab_line && TabPageIdxs != NULL)))
     {
 #if defined(FEAT_TABPANEL)
 	if (in_tabpanel)
