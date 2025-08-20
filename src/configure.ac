@@ -17,7 +17,7 @@ dnl
 dnl +--------------------------------------------------------------------------+
 
 dnl You should use Autoconf 2.72 but to simplify CI on Ubuntu 24.04 we only
-dnl use AC_PREEQ([2.71])
+dnl use AC_PREREQ([2.71])
 AC_PREREQ([2.71])
 
 dnl Normally, AC_INIT([package],[version],[bug-report],[tarname],[url])
