@@ -4889,9 +4889,9 @@ func Test_noselect_expand_env_var()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_CmdlineLeave_vevent_keys()
+func Test_CmdlineLeave_vchar_keys()
   func OnLeave()
-    let g:leave_key = get(v:event, 'cmdline_leave_key', -1)
+    let g:leave_key = v:char
   endfunction
 
   new
@@ -4899,7 +4899,7 @@ func Test_CmdlineLeave_vevent_keys()
     exec "autocmd" event "* :call OnLeave()"
     for key in ["\<C-C>", "\<Esc>", "\<CR>"]
       call feedkeys($":echo{key}", 'tx')
-      call assert_equal(key, nr2char(g:leave_key))
+      call assert_equal(key, g:leave_key)
     endfor
     exec "autocmd!" event
   endfor

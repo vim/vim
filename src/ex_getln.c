@@ -66,23 +66,6 @@ trigger_cmd_autocmd(int typechar, int evt)
     apply_autocmds(evt, typestr, typestr, FALSE, curbuf);
 }
 
-    static void
-trigger_cmd_autocmd_vevent(int typechar, int evt, int cmdline_leave_key UNUSED)
-{
-#ifdef FEAT_EVAL
-    dict_T	    *v_event;
-    save_v_event_T  save_v_event;
-
-    v_event = get_v_event(&save_v_event);
-    (void)dict_add_number(v_event, "cmdline_leave_key", cmdline_leave_key);
-    dict_set_items_ro(v_event);
-#endif
-    trigger_cmd_autocmd(typechar, evt);
-#ifdef FEAT_EVAL
-    restore_v_event(v_event, &save_v_event);
-#endif
-}
-
 /*
  * Abandon the command line.
  */
@@ -2008,7 +1991,8 @@ getcmdline_int(
 #endif
 		    || c == Ctrl_C))
 	{
-	    trigger_cmd_autocmd_vevent(cmdline_type, EVENT_CMDLINELEAVEPRE, c);
+	    set_vim_var_char(c);  // Set v:char
+	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 	    event_cmdlineleavepre_triggered = TRUE;
 #if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
 	    if ((c == ESC || c == Ctrl_C) && (wim_flags[0] & WIM_LIST))
@@ -2674,7 +2658,10 @@ cmdline_changed:
 returncmd:
     // Trigger CmdlineLeavePre autocommands if not already triggered.
     if (!event_cmdlineleavepre_triggered)
-	trigger_cmd_autocmd_vevent(cmdline_type, EVENT_CMDLINELEAVEPRE, c);
+    {
+	set_vim_var_char(c);  // Set v:char
+	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
+    }
 
 #ifdef FEAT_RIGHTLEFT
     cmdmsg_rl = FALSE;
@@ -2732,7 +2719,8 @@ returncmd:
 	need_wait_return = FALSE;
 
     // Trigger CmdlineLeave autocommands.
-    trigger_cmd_autocmd_vevent(cmdline_type, EVENT_CMDLINELEAVE, c);
+    set_vim_var_char(c);  // Set v:char
+    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVE);
 
     State = save_State;
 
