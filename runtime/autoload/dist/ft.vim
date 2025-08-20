@@ -599,6 +599,50 @@ export def FTm()
   endif
 enddef
 
+# For files ending in *.m4, distinguish:
+#  – *.html.m4 files
+#  – files in the Autoconf M4 dialect
+#  – files in POSIX M4
+export def FTm4()
+  var fname = expand('%:t')
+  var path  = expand('%:p:h')
+
+  # Case 0: canonical Autoconf file
+  if fname ==# 'aclocal.m4'
+    setf autoconf
+    return
+  endif
+
+  # Case 1: html.m4
+  if fname =~# 'html\.m4$'
+    setf htmlm4
+    return
+  endif
+
+  # Case 2: repo heuristic (nearby configure.ac)
+  if filereadable(path .. '/../configure.ac') || filereadable(path .. '/configure.ac')
+    setf autoconf
+    return
+  endif
+
+  # Case 3: content heuristic (scan first ~200 lines)
+  # Signals:
+  #   - Autoconf macro prefixes: AC_/AM_/AS_/AU_/AT_
+  var n = 1
+  var max = min([200, line('$')])
+  while n <= max
+    var line = getline(n)
+    if line =~# '^\s*A[CMSUT]_'
+      setf autoconf
+      return
+    endif
+    n += 1
+  endwhile
+
+  # Case 4: default to plain m4
+  setf m4
+enddef
+
 export def FTmake()
   # Check if it is a BSD, GNU, or Microsoft Makefile
   unlet! b:make_flavor
