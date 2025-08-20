@@ -5068,7 +5068,7 @@ restore_shm_value(void)
  * Export the environment variable $MYVIMDIR to the first item in runtimepath
  */
     void
-export_myvimdir()
+export_myvimdir(void)
 {
     int		dofree = FALSE;
     char_u	*p;
