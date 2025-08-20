@@ -430,9 +430,12 @@ function netrw#Explore(indx,dosplit,style,...)
 
   " record current directory
   let curdir     = simplify(b:netrw_curdir)
-  let curfiledir = substitute(expand("%:p"),'^\(.*[/\\]\)[^/\\]*$','\1','e')
   if !exists("g:netrw_cygwin") && has("win32")
     let curdir= substitute(curdir,'\','/','g')
+  endif
+  let curfiledir = substitute(expand("%:p"),'^\(.*[/\\]\)[^/\\]*$','\1','e')
+  if &buftype == "terminal"
+      let curfiledir = curdir
   endif
 
   " using completion, directories with spaces in their names (thanks, Bill Gates, for a truly dumb idea)
@@ -456,9 +459,9 @@ function netrw#Explore(indx,dosplit,style,...)
   sil! let keepregslash= @/
 
   " if   dosplit
-  " -or- file has been modified AND file not hidden when abandoned
+  " -or- buffer is not a terminal AND file has been modified AND file not hidden when abandoned
   " -or- Texplore used
-  if a:dosplit || (&modified && &hidden == 0 && &bufhidden != "hide") || a:style == 6
+  if a:dosplit || (&buftype != "terminal" && &modified && &hidden == 0 && &bufhidden != "hide") || a:style == 6
     call s:SaveWinVars()
     let winsz= g:netrw_winsize
     if a:indx > 0
