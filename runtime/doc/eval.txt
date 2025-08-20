@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Aug 18
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Aug 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2245,9 +2245,8 @@ v:clipmethod	The current method of accessing the clipboard that is being
 		used.  Can either have the value of:
 			wayland		The Wayland protocol is being used.
 			x11		X11 selections are being used.
-			gui		GUI specific method is being used.
-			none		Clipboard functionality is disabled or
-					unavailable.
+			none		The above methods are unavailable or
+					cannot be used.
 		See 'clipmethod' for more details.
 
 					*v:cmdarg* *cmdarg-variable*
