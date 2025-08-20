@@ -330,7 +330,7 @@ cmdsrv_main(
     char_u	*res;
     int		i;
     char_u	*sname;
-    int		ret;
+    int		ret = -1;
     int		didone = FALSE;
     int		exiterr = 0;
     char	**newArgV = argv + 1;
@@ -904,19 +904,19 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
     if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
 	if (socket_server_send(server_name, keys, &r, &client, expr,
 		    timeout * 1000, TRUE) < 0)
-	    goto stuff;
+	    goto fail;
 #endif
 #ifdef FEAT_X11
     if (clientserver_method == CLIENTSERVER_METHOD_X11)
 	if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout,
 		    0, TRUE) < 0)
-	    goto stuff;
+	    goto fail;
 #endif
 # endif
 #if !defined(MSWIN)
     if (FALSE)
     {
-stuff:
+fail:
 #else
     {
 #endif
@@ -949,6 +949,7 @@ stuff:
 	idvar = tv_get_string_chk(&argvars[2]);
 	if (idvar != NULL && *idvar != NUL)
 	{
+	    str[0] = NUL;
 #ifdef MSWIN
 	    sprintf((char *)str, PRINTF_HEX_LONG_U, (long_u)w);
 #else
