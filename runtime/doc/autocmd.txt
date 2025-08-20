@@ -644,6 +644,10 @@ CmdlineLeave			Before leaving the command line; including
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
+				Sets the |v:event| dictionary entry
+				"cmdline_leave_key" to the numeric value of
+				the key that exited the command-line (e.g. 13
+				for <CR>).  Use |nr2char()| to get the string.
 							*CmdlineLeavePre*
 CmdlineLeavePre			Just before leaving the command line, and
 				before |CmdlineLeave|.  Useful for capturing
@@ -656,6 +660,7 @@ CmdlineLeavePre			Just before leaving the command line, and
 				or <Esc>.  <afile> is set to a single
 				character indicating the command-line type.
 				See |cmdwin-char| for details.
+				Sets |v:event| as with |CmdlineLeave|.
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for

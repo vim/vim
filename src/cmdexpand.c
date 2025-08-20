@@ -4678,7 +4678,7 @@ f_getcompletiontype(typval_T *argvars, typval_T *rettv)
  * "cmdcomplete_info()" function
  */
     void
-f_cmdcomplete_info(typval_T *argvars UNUSED, typval_T *rettv)
+f_cmdcomplete_info(typval_T *argvars, typval_T *rettv)
 {
     cmdline_info_T  *ccline = get_cmdline_info();
     dict_T	    *retdict;
