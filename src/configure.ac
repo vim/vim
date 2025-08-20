@@ -17,6 +17,15 @@ dnl
 dnl +--------------------------------------------------------------------------+
 AC_PREREQ([2.72])
 
+dnl Normally, AC_INIT([package],[version],[bug-report],[tarname],[url])
+dnl provides PACKAGE_* macros, used by Autoconf on UNIX to inject version
+dnl info into config.h, --version output, and "make dist".
+dnl
+dnl Vim does not rely on that: versioning is centralized in version.h/version.c,
+dnl which ensures a single cross-platform source of truth for both UNIX and
+dnl non-UNIX platforms.
+dnl
+dnl Therefore we call AC_INIT without arguments.
 AC_INIT
 AC_CONFIG_SRCDIR([vim.h])
 AC_CONFIG_HEADERS(auto/config.h:config.h.in)
