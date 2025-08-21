@@ -12278,35 +12278,20 @@ fi
 fi
 
 
-if test $ac_cv_header_sys_wait_h = no; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sys/wait.h that defines union wait" >&5
-printf %s "checking for sys/wait.h that defines union wait... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/wait.h>
-int
-main (void)
-{
-union wait xx, yy; xx = yy
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
+ac_fn_c_check_header_compile "$LINENO" "sys/wait.h" "ac_cv_header_sys_wait_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_wait_h" = xyes
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-			printf "%s\n" "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
+  printf "%s\n" "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 
-			printf "%s\n" "#define HAVE_UNION_WAIT 1" >>confdefs.h
+fi
 
-else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; } ;;
-esac
+ac_fn_c_check_func "$LINENO" "waitpid" "ac_cv_func_waitpid"
+if test "x$ac_cv_func_waitpid" = xyes
+then :
+  printf "%s\n" "#define HAVE_WAITPID 1" >>confdefs.h
+
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
+
 
 ac_fn_c_check_header_compile "$LINENO" "stdint.h" "ac_cv_header_stdint_h" "$ac_includes_default"
 if test "x$ac_cv_header_stdint_h" = xyes
