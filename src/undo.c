@@ -687,15 +687,6 @@ u_savecommon(
 	u_getbot();
     }
 
-#if !defined(UNIX) && !defined(MSWIN)
-	/*
-	 * With Amiga we can't handle big undo's, because
-	 * then u_alloc_line would have to allocate a block larger than 32K
-	 */
-    if (size >= 8000)
-	goto nomem;
-#endif
-
     /*
      * add lines in front of entry list
      */
