@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Aug 20
+*options.txt*	For Vim version 9.1.  Last change: 2025 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -922,8 +922,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'autocompletedelay' 'acl'	number	(default 0)
 				global
 	Delay in milliseconds before the autocomplete menu appears after
-	typing. If you prefer it not to open too quickly, set this value
-	slightly above your typing speed. See |ins-autocompletion|.
+	typing.  If you prefer it not to open too quickly, set this value
+	slightly above your typing speed.  See |ins-autocompletion|.
 
 			*'autoindent'* *'ai'* *'noautoindent'* *'noai'*
 'autoindent' 'ai'	boolean	(default off)
