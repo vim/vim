@@ -2,7 +2,7 @@ name: GitHub CI
 
 on:
   push:
-    branches: ['**']
+    branches: ["**"]
   pull_request:
 
 # Cancels all previous workflow runs for pull requests that have not completed.
@@ -28,7 +28,7 @@ jobs:
       LEAK_CFLAGS: -DEXITFREE
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
-      DISPLAY: ':99'
+      DISPLAY: ":99"
       DEBIAN_FRONTEND: noninteractive
 
     strategy:
@@ -71,7 +71,7 @@ jobs:
             compiler: clang
             # Lua5.1 is the most widely used version (since it's what LuaJIT is
             # compatible with), so ensure it works
-            lua_ver: '5.1'
+            lua_ver: "5.1"
             extra: [asan]
           - features: huge
             compiler: gcc
@@ -185,7 +185,7 @@ jobs:
           sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
-        if:  matrix.compiler == 'gcc'
+        if: matrix.compiler == 'gcc'
         run: |
           # ubuntu-toolchain-r/test PPA for gcc-13 compiler
           # disabled because the installation failed, causing test failures
@@ -286,10 +286,10 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      - name: Check autoconf
+      - name: Check bootstrap
         if: contains(matrix.extra, 'unittests')
         run: |
-          make -C src autoconf
+          make -C src bootstrap
 
       - name: Set up shadow dir
         if: matrix.shadow
@@ -477,7 +477,7 @@ jobs:
       # Interfaces
       # Lua
       LUA_VER: 54
-      LUA_VER_DOT: '5.4'
+      LUA_VER_DOT: "5.4"
       LUA_RELEASE: 5.4.2
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
       LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
@@ -486,16 +486,16 @@ jobs:
       LUA_DIR_SLASH: D:/Lua
       # Python 2
       PYTHON_VER: 27
-      PYTHON_VER_DOT: '2.7'
+      PYTHON_VER_DOT: "2.7"
       PYTHON_DIR: 'C:\Python27'
       # Python 3
       PYTHON3_VER: 313
-      PYTHON3_VER_DOT: '3.13'
+      PYTHON3_VER_DOT: "3.13"
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       # libsodium
-      SODIUM_VER: '1.0.20'
+      SODIUM_VER: "1.0.20"
       # SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
       SODIUM_MSVC_URL: https://github.com/jedisct1/libsodium/releases/download/%SODIUM_VER%-RELEASE/libsodium-%SODIUM_VER%-msvc.zip
       SODIUM_MSVC_VER: v143
@@ -515,14 +515,54 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
-          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
-          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
-          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
-          - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
-          - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
-          - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
-          - { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x86 }
+          - {
+              features: HUGE,
+              toolchain: msvc,
+              VIMDLL: no,
+              GUI: no,
+              arch: x64,
+              python3: stable,
+            }
+          - {
+              features: HUGE,
+              toolchain: mingw,
+              VIMDLL: yes,
+              GUI: yes,
+              arch: x86,
+              python3: stable,
+              coverage: yes,
+            }
+          - { features: HUGE, toolchain: msvc, VIMDLL: no, GUI: yes, arch: x86 }
+          - {
+              features: HUGE,
+              toolchain: mingw,
+              VIMDLL: yes,
+              GUI: no,
+              arch: x64,
+              coverage: yes,
+            }
+          - {
+              features: NORMAL,
+              toolchain: msvc,
+              VIMDLL: yes,
+              GUI: no,
+              arch: x86,
+            }
+          - {
+              features: NORMAL,
+              toolchain: mingw,
+              VIMDLL: no,
+              GUI: yes,
+              arch: x64,
+            }
+          - {
+              features: TINY,
+              toolchain: msvc,
+              VIMDLL: yes,
+              GUI: yes,
+              arch: x64,
+            }
+          - { features: TINY, toolchain: mingw, VIMDLL: no, GUI: no, arch: x86 }
 
     steps:
       - name: Initialize

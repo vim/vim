@@ -69,41 +69,37 @@
 #	- you want 'langmap' support (Greek)
 #	- you want to remove features to make Vim smaller
 #
-# 3. "make"  {{{1
-#	Will first run ./configure with the options in this file. Then it will
-#	start make again on this Makefile to do the compiling. You can also do
-#	this in two steps with:
-#		make config
-#		make
-#	The configuration phase creates/overwrites auto/config.h and
-#	auto/config.mk.
-#	The configure script is created with "make autoconf".  It can detect
-#	different features of your system and act accordingly.  However, it is
-#	not correct for all systems.  Check this:
-#	- If you have X windows, but configure could not find it or reported
-#	  another include/library directory then you wanted to use, you have
-#	  to set CONF_OPT_X below.  You might also check the installation of
-#	  xmkmf.
-#	- If you have --enable-gui=motif and have Motif on your system, but
-#	  configure reports "checking for location of gui... <not found>", you
-#	  have to set GUI_INC_LOC and GUI_LIB_LOC below.
-#	If you changed something, do this to run configure again:
-#		make reconfig
+## 3. "make"  {{{1
+#	Running `make` will:
+#	  1) run ./configure with the options defined in this file; then
+#	  2) invoke make again to build.
+#	You can also do it in two steps:
+#	    make config
+#	    make
 #
-#	- If you do not trust the automatic configuration code, then inspect
-#	  auto/config.h and auto/config.mk, before starting the actual build
-#	  phase. If possible edit this Makefile, rather than auto/config.mk --
-#	  especially look at the definition of VIMLOC below. Note that the
-#	  configure phase overwrites auto/config.mk and auto/config.h again.
-#	- If you get error messages, find out what is wrong and try to correct
-#	  it in this Makefile. You may need to do "make reconfig" when you
-#	  change anything that configure uses (e.g. switching from an old C
-#	  compiler to an ANSI C compiler). Only when auto/configure does
-#	  something wrong you may need to change one of the other files. If
-#	  you find a clean way to fix the problem, consider sending a note to
-#	  the author of autoconf (bug-gnu-utils@prep.ai.mit.edu) or Vim
-#	  (vim-dev@vim.org). Don't bother to do that when you made a hack
-#	  solution for a non-standard system.
+#	The configuration step (config/./configure):
+#	  - (Re)creates auto/config.h and auto/config.mk.
+#	  - Uses a pre-generated configure script located under ./auto/.
+#	    Maintainers regenerate it with `make bootstrap` (see comments above).
+#
+#	If detection is wrong (e.g. X11/GUI paths), do NOT edit auto/* directly.
+#	Prefer to adjust variables/flags in this Makefile (e.g. CONF_OPT += …),
+#	or set the specific INC/LIB locations documented below, then:
+#	    make reconfig
+#
+#	Before building, you may review auto/config.h and auto/config.mk for sanity.
+#	Note: any subsequent configuration will overwrite these files.
+#
+#	If you change anything relevant to configuration (compiler, headers, libs),
+#	re-run configuration:
+#	    make reconfig
+#
+#	Reporting issues:
+#	  - If configure’s feature tests seem wrong, first capture config.log
+#	    (in ./auto/) and your environment, then report:
+#	      • Project issues: see the project’s tracker or mailing list.
+#	      • Autoconf issues: bug-autoconf@gnu.org (or the GNU Savannah tracker).
+#	Please avoid one-off local hacks; propose clean, portable fixes instead.
 #
 # 4. "make test"  {{{1
 #	This is optional.  This will run Vim scripts on a number of test
@@ -625,9 +621,6 @@ CClink = $(CC)
 # On FreeBSD you might need to enlarge the number of mmaps allowed.  Do this
 # as root: sysctl -w vm.max_proc_mmap=30000
 #EXTRA_LIBS = /usr/local/lib/libefence.a
-
-# Autoconf binary.
-AUTOCONF ?= autoconf
 
 # PURIFY - remove the # to use the "purify" program (hoi Nia++!)
 #PURIFY = purify
@@ -1989,41 +1982,45 @@ all: $(VIMTARGET) $(TOOLS) languages $(GUI_BUNDLE)
 
 tools: $(TOOLS)
 
-# Run configure with all the setting from above.
+# Run configure (or reuse config.status) to (re)generate auto/config.mk (and config.h).
 #
-# Note: auto/config.h doesn't depend on configure, because running configure
-# doesn't always update auto/config.h.  The timestamp isn't changed if the
-# file contents didn't change (to avoid recompiling everything).  Including a
-# dependency on auto/config.h would cause running configure each time when
-# auto/config.h isn't updated.  The dependency on auto/config.mk should make
-# sure configure is run when it's needed.
-#
-# Remove the config.cache every time, once in a while it causes problems that
-# are very hard to figure out.
+# Note: we skip this when the goal is clean/distclean/autoconf/autoheader/bootstrap/reconfig,
+# so maintainer targets don't accidentally run ./configure.
 #
 config auto/config.mk: auto/configure config.mk.in auto/config.h.in
 	-rm -f auto/config.cache
-	if test "X$(MAKECMDGOALS)" != "Xclean" \
-		-a "X$(MAKECMDGOALS)" != "Xdistclean" \
-		-a "X$(MAKECMDGOALS)" != "Xautoconf" \
-		-a "X$(MAKECMDGOALS)" != "Xreconfig"; then \
+	if test "X$(MAKECMDGOALS)" = "Xclean"      \
+	 || test "X$(MAKECMDGOALS)" = "Xdistclean" \
+	 || test "X$(MAKECMDGOALS)" = "Xautoconf"  \
+	 || test "X$(MAKECMDGOALS)" = "Xautoheader" \
+	 || test "X$(MAKECMDGOALS)" = "Xbootstrap" \
+	 || test "X$(MAKECMDGOALS)" = "Xreconfig"; then :; \
+	else \
+	  if test -x auto/config.status; then \
+	    if test auto/configure -nt auto/config.status; then \
+	      $(CONF_SHELL) ./auto/config.status --recheck; \
+	    else \
+	      ./auto/config.status; \
+	    fi; \
+	  else \
 	    GUI_INC_LOC="$(GUI_INC_LOC)" GUI_LIB_LOC="$(GUI_LIB_LOC)" \
-		CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
-		LDFLAGS="$(LDFLAGS)" $(CONF_SHELL) srcdir="$(srcdir)" \
-		./configure $(CONF_OPT_GUI) $(CONF_OPT_X) $(CONF_OPT_XSMP) \
-		$(CONF_OPT_AUTOSERVE) $(CONF_OPT_DARWIN) $(CONF_OPT_FAIL) \
-		$(CONF_OPT_PERL) $(CONF_OPT_PYTHON) $(CONF_OPT_PYTHON3) \
-		$(CONF_OPT_TCL) $(CONF_OPT_RUBY) $(CONF_OPT_NLS) \
-		$(CONF_OPT_CSCOPE) $(CONF_OPT_MULTIBYTE) $(CONF_OPT_INPUT) \
-		$(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) \
-		$(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
-		$(CONF_OPT_COMPBY) $(CONF_OPT_ACL) $(CONF_OPT_NETBEANS) \
-		$(CONF_OPT_CHANNEL) $(CONF_OPT_TERMINAL) \
-		$(CONF_ARGS) $(CONF_ARGS1) $(CONF_ARGS2) $(CONF_ARGS3) \
-		$(CONF_ARGS4) $(CONF_ARGS5) $(CONF_ARGS6) \
-		$(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
-		$(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
-		$(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA) $(CONF_OPT_SODIUM); \
+	    CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
+	    LDFLAGS="$(LDFLAGS)" $(CONF_SHELL) srcdir="$(srcdir)" \
+	    ./auto/configure $(CONF_OPT_GUI) $(CONF_OPT_X) $(CONF_OPT_XSMP) \
+	    $(CONF_OPT_AUTOSERVE) $(CONF_OPT_DARWIN) $(CONF_OPT_FAIL) \
+	    $(CONF_OPT_PERL) $(CONF_OPT_PYTHON) $(CONF_OPT_PYTHON3) \
+	    $(CONF_OPT_TCL) $(CONF_OPT_RUBY) $(CONF_OPT_NLS) \
+	    $(CONF_OPT_CSCOPE) $(CONF_OPT_MULTIBYTE) $(CONF_OPT_INPUT) \
+	    $(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) \
+	    $(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
+	    $(CONF_OPT_COMPBY) $(CONF_OPT_ACL) $(CONF_OPT_NETBEANS) \
+	    $(CONF_OPT_CHANNEL) $(CONF_OPT_TERMINAL) \
+	    $(CONF_ARGS) $(CONF_ARGS1) $(CONF_ARGS2) $(CONF_ARGS3) \
+	    $(CONF_ARGS4) $(CONF_ARGS5) $(CONF_ARGS6) \
+	    $(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
+	    $(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
+	    $(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA) $(CONF_OPT_SODIUM); \
+	  fi; \
 	fi
 
 # Use "make reconfig" to rerun configure without cached values.
@@ -2034,30 +2031,43 @@ reconfig: scratch clean
 	$(MAKE) -f Makefile config
 	$(MAKE) -f Makefile all
 
-# Run autoconf to produce auto/configure.
-# Note:
-# - DO NOT RUN autoconf MANUALLY!  It will overwrite ./configure instead of
-#   producing auto/configure.
-# - autoconf is not run automatically, because a patch usually changes both
-#   configure.ac and auto/configure but can't update the timestamps.  People
-#   who do not have (the correct version of) autoconf would run into trouble.
-#
-# Two tricks are required to make autoconf put its output in the "auto" dir:
-# - Temporarily move the ./configure script to ./configure.save.  Don't
-#   overwrite it, it's probably the result of an aborted autoconf.
-# - Use sed to change ./config.log to auto/config.log in the configure script.
-# Autoconf 2.5x (2.59 at least) produces a few more files that we need to take
-# care of:
-# - autom4te.cache directory is created and not cleaned up.  Delete it.
-# - Uses ">config.log" instead of "./config.log".
+# Maintainer-only: regenerate Autotools outputs under ./auto
+# Users build with: ./configure && make
+# Policy: keep auto/configure and auto/config.h.in in VCS; do not regenerate in normal CI.
+# Requires: AC_CONFIG_HEADERS([auto/config.h]) in configure.ac.
+
+AUTOCONF   = autoconf
+AUTOHEADER = autoheader
+
+OUTDIR       = auto
+CONFIGURE    = $(OUTDIR)/configure
+CONFIG_H_IN  = $(OUTDIR)/config.h.in
+
+# Convenience: refresh both (header first, then configure)
+bootstrap: autoheader autoconf
+
+# Generate auto/config.h.in from AC_CONFIG_HEADERS
+autoheader:
+	$(MKDIR_P) "$(OUTDIR)"
+	@printf '%s\n' '==> autoheader -> $(CONFIG_H_IN)'
+	$(AUTOHEADER)
+	@test -f "$(CONFIG_H_IN)" || { \
+	  printf '%s\n' 'error: $(CONFIG_H_IN) not created; ensure AC_CONFIG_HEADERS([$(OUTDIR)/config.h]) in configure.ac.' ; \
+	  exit 1 ; }
+	rm -rf autom4te.cache
+
+# Generate auto/configure with Autoconf and keep config.log under ./auto
 autoconf:
-	if test ! -f configure.save; then mv configure configure.save; fi
-	$(AUTOCONF)
-	sed -e 's+>config.log+>auto/config.log+' -e 's+\./config.log+auto/config.log+' configure > auto/configure
-	chmod 755 auto/configure
-	mv -f configure.save configure
-	-rm -rf autom4te.cache
-	-rm -f auto/config.status auto/config.cache
+	$(MKDIR_P) "$(OUTDIR)"
+	@printf '%s\n' '==> autoconf  -> $(CONFIGURE)'
+	$(AUTOCONF) -o "$(CONFIGURE).tmp"
+	sed -e 's/>config\.log/>$(OUTDIR)\/config.log/' \
+	    -e 's/\.\/*config\.log/$(OUTDIR)\/config.log/' \
+	    "$(CONFIGURE).tmp" > "$(CONFIGURE)"
+	chmod 755 "$(CONFIGURE)"
+	rm -f "$(CONFIGURE).tmp"
+	rm -rf autom4te.cache
+	rm -f "$(OUTDIR)/config.status" "$(OUTDIR)/config.cache"
 
 # Run Vim script to generate the Ex command lookup table.
 # This only needs to be run when a command name has been added or changed.

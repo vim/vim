@@ -1,8 +1,9 @@
 dnl +----------------------------------------------------------------------+
-dnl   configure.ac: autoconf script for Vim
+dnl   configure.ac: Autoconf script for Vim
 dnl +----------------------------------------------------------------------+
 dnl
 dnl   This file is processed by autoconf to generate the 'configure' script.
+dnl   It is also used by autoheader to produce 'auto/config.h.in'.
 dnl
 dnl   ==> IMPORTANT NOTE FOR DEVELOPERS <==
 dnl
@@ -13,6 +14,14 @@ dnl     make autoconf
 dnl
 dnl   This is required because the Makefile handles placing the generated
 dnl   script into its final location: 'auto/configure'.
+dnl
+dnl   For 'autoheader', running it directly is acceptable. The target:
+dnl
+dnl     make autoheader
+dnl
+dnl   is provided as a convenience. Alternatively:
+dnl
+dnl     make bootstrap  ==>  runs autoheader then autoconf
 dnl
 dnl +----------------------------------------------------------------------+
 
