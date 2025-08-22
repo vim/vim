@@ -230,7 +230,7 @@ func Test_list_items()
   endfor
   call assert_equal([[0, 'a'], [1, 'b'], [2, 'c']], r)
 
-  call assert_fails('call items(3)', 'E1225:')
+  call assert_fails('call items(3)', 'E1251:')
 endfunc
 
 func Test_string_items()

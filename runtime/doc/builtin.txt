@@ -344,7 +344,7 @@ isinf({expr})			Number	determine if {expr} is infinity value
 					(positive or negative)
 islocked({expr})		Number	|TRUE| if {expr} is locked
 isnan({expr})			Number	|TRUE| if {expr} is NaN
-items({expr})			List	key-value pairs in {expr}
+items({expr})			List	key/index-value pairs in {expr}
 job_getchannel({job})		Channel	get the channel handle for {job}
 job_info([{job}])		Dict	get information about {job}
 job_setoptions({job}, {options}) none	set options for {job}
@@ -6314,7 +6314,8 @@ items({expr})						*items()*
 		Return a |List| with all key/index and value pairs of {expr}.
 		Each |List| item is a list with two items:
 		- for a |Dict|: the key and the value
-		- for a |List|, |Tuple| or |String|: the index and the value
+		- for a |List|, |Tuple|, |Blob| or |String|: the index and the
+		  value
 		The returned |List| is in arbitrary order for a |Dict|,
 		otherwise it's in ascending order of the index.
 
@@ -6328,6 +6329,7 @@ items({expr})						*items()*
 			echo items([1, 2, 3])
 			echo items(('a', 'b', 'c'))
 			echo items("foobar")
+			echo items(0z0102)
 <
 		Can also be used as a |method|: >
 			mydict->items()
