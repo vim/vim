@@ -70,34 +70,40 @@
 #	- you want to remove features to make Vim smaller
 #
 # 3. "make"  {{{1
-#	Running "make" first invokes ./configure with the options defined
-#	in this file, then restarts make on this Makefile to compile everything.
-#	
-#	You can also do it in two steps:
-#	    make config
-#	    make
-#	
-#	The configuration phase creates/overwrites auto/config.h
-#	and auto/config.mk. The wrapper ./configure delegates to auto/configure,
-#	keeping all generated files (config.h.in, config.h, config.mk,
-#	config.cache, config.log, etc.) under auto/.
-#	
-#	If automatic detection fails for your system:
-#	– For X11: adjust CONF_OPT_X (and possibly GUI_INC_LOC / GUI_LIB_LOC).
-#	– For Motif GUI: set GUI_INC_LOC and GUI_LIB_LOC explicitly.
-#	
-#	To rerun configure after changes, use:
-#	    make reconfig
-#	
-#	Tips:
-#	– Inspect auto/config.h and auto/config.mk if needed, but prefer editing
-#	  this Makefile rather than patching auto/config.mk directly.
-#	– The configure phase always overwrites auto/config.* files.
-#	- If you change something configure relies on (e.g. switch compilers),
-#	  rerun "make reconfig".
-#	– If you encounter a reproducible bug in auto/configure, report it with
-#	  a proper fix to vim-dev@vim.org. For quick local hacks, edit here
-#	  instead.
+#	Will first run ./configure with the options in this file. Then it will
+#	start make again on this Makefile to do the compiling. You can also do
+#	this in two steps with:
+#		make config
+#		make
+#	The configuration phase creates/overwrites auto/config.h and
+#	auto/config.mk.
+#	The configure script is created with "make autoconf".  It can detect
+#	different features of your system and act accordingly.  However, it is
+#	not correct for all systems.  Check this:
+#	- If you have X windows, but configure could not find it or reported
+#	  another include/library directory then you wanted to use, you have
+#	  to set CONF_OPT_X below.  You might also check the installation of
+#	  xmkmf.
+#	- If you have --enable-gui=motif and have Motif on your system, but
+#	  configure reports "checking for location of gui... <not found>", you
+#	  have to set GUI_INC_LOC and GUI_LIB_LOC below.
+#	If you changed something, do this to run configure again:
+#		make reconfig
+#
+#	- If you do not trust the automatic configuration code, then inspect
+#	  auto/config.h and auto/config.mk, before starting the actual build
+#	  phase. If possible edit this Makefile, rather than auto/config.mk --
+#	  especially look at the definition of VIMLOC below. Note that the
+#	  configure phase overwrites auto/config.mk and auto/config.h again.
+#	- If you get error messages, find out what is wrong and try to correct
+#	  it in this Makefile. You may need to do "make reconfig" when you
+#	  change anything that configure uses (e.g. switching from an old C
+#	  compiler to an ANSI C compiler). Only when auto/configure does
+#	  something wrong you may need to change one of the other files. If
+#	  you find a clean way to fix the problem, consider sending a note to
+#	  the author of autoconf (bug-gnu-utils@prep.ai.mit.edu) or Vim
+#	  (vim-dev@vim.org). Don't bother to do that when you made a hack
+#	  solution for a non-standard system.
 #
 # 4. "make test"  {{{1
 #	This is optional.  This will run Vim scripts on a number of test
@@ -619,6 +625,9 @@ CClink = $(CC)
 # On FreeBSD you might need to enlarge the number of mmaps allowed.  Do this
 # as root: sysctl -w vm.max_proc_mmap=30000
 #EXTRA_LIBS = /usr/local/lib/libefence.a
+
+# Autoconf binary.
+AUTOCONF ?= autoconf
 
 # PURIFY - remove the # to use the "purify" program (hoi Nia++!)
 #PURIFY = purify
@@ -1992,18 +2001,11 @@ tools: $(TOOLS)
 # Remove the config.cache every time, once in a while it causes problems that
 # are very hard to figure out.
 #
-.PHONY: config reconfig autoreconf autoconf
-
-config: auto/config.mk
-
-# Note: we call the wrapper ./configure, which forwards to auto/configure
-# and pins CONFIG_STATUS and cache under auto/.
-auto/config.mk: auto/configure config.mk.in auto/config.h.in
+config auto/config.mk: auto/configure config.mk.in auto/config.h.in
 	-rm -f auto/config.cache
 	if test "X$(MAKECMDGOALS)" != "Xclean" \
 		-a "X$(MAKECMDGOALS)" != "Xdistclean" \
 		-a "X$(MAKECMDGOALS)" != "Xautoconf" \
-		-a "X$(MAKECMDGOALS)" != "Xautoreconf" \
 		-a "X$(MAKECMDGOALS)" != "Xreconfig"; then \
 	    GUI_INC_LOC="$(GUI_INC_LOC)" GUI_LIB_LOC="$(GUI_LIB_LOC)" \
 		CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
@@ -2032,40 +2034,30 @@ reconfig: scratch clean
 	$(MAKE) -f Makefile config
 	$(MAKE) -f Makefile all
 
-# Run autoreconf to regenerate auto/configure and auto/config.h.in.
+# Run autoconf to produce auto/configure.
 # Note:
-# - DO NOT RUN autoconf MANUALLY! It overwrites ./configure
-#   instead of producing auto/configure.
-# - All Autotools-generated files (configure, config.h.in, config.h, caches)
-#   live under auto/.
-# - Use "make autoreconf" (or "make autoconf" for back-compat) after editing
-#   configure.ac or m4/*.m4.
-AUTOCONF = autoconf
-AUTOHEADER = autoheader
-AUTOM4TE = autom4te
-AUTO_DIR = auto
-
-auto/config.h.in: configure.ac
-	mkdir -p $(AUTO_DIR)
-	$(AUTOHEADER)
-
-auto/configure: configure.ac auto/config.h.in
-	mkdir -p $(AUTO_DIR)
-	$(AUTOM4TE) --language=Autoconf --cache="$(AUTO_DIR)/autom4te.cache" \
-	  -o "$(AUTO_DIR)/configure" configure.ac
-	sed -e 's+>config\.log+>$(AUTO_DIR)/config.log+g' \
-	    -e 's+\./config\.log+$(AUTO_DIR)/config.log+g' \
-	    "$(AUTO_DIR)/configure" > "$(AUTO_DIR)/configure.tmp"
-	chmod 755 "$(AUTO_DIR)/configure.tmp"
-	mv -f "$(AUTO_DIR)/configure.tmp" "$(AUTO_DIR)/configure"
-	rm -f $(AUTO_DIR)/config.status $(AUTO_DIR)/config.cache
-
-# One entry point to (re)generate everything
-autoreconf: auto/configure
-
-# Back-compat alias
-autoconf: autoreconf
-	@:
+# - DO NOT RUN autoconf MANUALLY!  It will overwrite ./configure instead of
+#   producing auto/configure.
+# - autoconf is not run automatically, because a patch usually changes both
+#   configure.ac and auto/configure but can't update the timestamps.  People
+#   who do not have (the correct version of) autoconf would run into trouble.
+#
+# Two tricks are required to make autoconf put its output in the "auto" dir:
+# - Temporarily move the ./configure script to ./configure.save.  Don't
+#   overwrite it, it's probably the result of an aborted autoconf.
+# - Use sed to change ./config.log to auto/config.log in the configure script.
+# Autoconf 2.5x (2.59 at least) produces a few more files that we need to take
+# care of:
+# - autom4te.cache directory is created and not cleaned up.  Delete it.
+# - Uses ">config.log" instead of "./config.log".
+autoconf:
+	if test ! -f configure.save; then mv configure configure.save; fi
+	$(AUTOCONF)
+	sed -e 's+>config.log+>auto/config.log+' -e 's+\./config.log+auto/config.log+' configure > auto/configure
+	chmod 755 auto/configure
+	mv -f configure.save configure
+	-rm -rf autom4te.cache
+	-rm -f auto/config.status auto/config.cache
 
 # Run Vim script to generate the Ex command lookup table.
 # This only needs to be run when a command name has been added or changed.
