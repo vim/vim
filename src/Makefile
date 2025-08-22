@@ -69,7 +69,7 @@
 #	- you want 'langmap' support (Greek)
 #	- you want to remove features to make Vim smaller
 #
-## 3. "make"  {{{1
+# 3. "make"  {{{1
 #	Running `make` will:
 #	  1) run ./configure with the options defined in this file; then
 #	  2) invoke make again to build.
