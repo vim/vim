@@ -2118,7 +2118,7 @@ test_mswin_event(char_u *event, dict_T *args)
 }
 #endif // FEAT_EVAL
 
-#ifdef MCH_CURSOR_SHAPE
+#if defined(MCH_CURSOR_SHAPE) || defined(PROTO)
 /*
  * Set the shape of the cursor.
  * 'thickness' can be from 1 (thin) to 99 (block)

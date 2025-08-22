@@ -7106,7 +7106,10 @@ ins_complete(int c, int enable_pum)
     if (!compl_started)
     {
 	if (ins_compl_start() == FAIL)
+	{
+	    compl_autocomplete = FALSE;
 	    return FAIL;
+	}
     }
     else if (insert_match && stop_arrow() == FAIL)
 	return FAIL;
@@ -7193,25 +7196,20 @@ ins_complete(int c, int enable_pum)
 
     compl_was_interrupted = compl_interrupted;
     compl_interrupted = FALSE;
+    compl_autocomplete = FALSE;
 
     return OK;
 }
 
 /*
- * Returns TRUE if the given character 'c' can be used to trigger
- * autocompletion.
+ * Enable/disable autocompletion
  */
-    int
-ins_compl_setup_autocompl(int c)
+    void
+ins_compl_set_autocomplete(int value)
 {
 #ifdef ELAPSED_FUNC
-    if (vim_isprintc(c))
-    {
-	compl_autocomplete = TRUE;
-	return TRUE;
-    }
+    compl_autocomplete = value;
 #endif
-    return FALSE;
 }
 
 /*

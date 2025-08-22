@@ -72,6 +72,6 @@ void ins_compl_delete(void);
 void ins_compl_insert(int move_cursor);
 void ins_compl_check_keys(int frequency, int in_compl_func);
 int ins_complete(int c, int enable_pum);
-int ins_compl_setup_autocompl(int c);
+void ins_compl_set_autocomplete(int val);
 void free_insexpand_stuff(void);
 /* vim: set ft=c : */

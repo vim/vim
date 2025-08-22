@@ -2695,7 +2695,7 @@ global_event_filter(GdkXEvent *xev,
 }
 #endif // !USE_GNOME_SESSION
 
-#ifdef FEAT_SOCKETSERVER
+#if defined(FEAT_SOCKETSERVER) || defined(PROTO)
 
 /*
  * Callback for new events from the socket server listening socket

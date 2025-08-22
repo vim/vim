@@ -3658,19 +3658,19 @@ objects/window.o: window.c
 	$(CCC) -o $@ window.c
 
 objects/wayland.o: wayland.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ wayland.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ wayland.c
 
 objects/wlr-data-control-unstable-v1.o: auto/wayland/wlr-data-control-unstable-v1.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ auto/wayland/wlr-data-control-unstable-v1.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/wlr-data-control-unstable-v1.c
 
 objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ auto/wayland/ext-data-control-v1.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/ext-data-control-v1.c
 
 objects/xdg-shell.o: auto/wayland/xdg-shell.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ auto/wayland/xdg-shell.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/xdg-shell.c
 
 objects/primary-selection-unstable-v1.o: auto/wayland/primary-selection-unstable-v1.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ auto/wayland/primary-selection-unstable-v1.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/primary-selection-unstable-v1.c
 
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c

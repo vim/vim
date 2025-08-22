@@ -108,7 +108,6 @@ int WSInitialized = FALSE; // WinSock is initialized
 #endif
 
 
-#ifndef PROTO
 /*
  * Save the instance handle of the exe/dll.
  */
@@ -117,7 +116,6 @@ SaveInst(HINSTANCE hInst)
 {
     g_hinst = hInst;
 }
-#endif
 
 #if defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*

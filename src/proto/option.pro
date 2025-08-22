@@ -68,7 +68,6 @@ char *did_set_shellslash(optset_T *args);
 char *did_set_shiftwidth_tabstop(optset_T *args);
 char *did_set_showtabline(optset_T *args);
 char *did_set_smoothscroll(optset_T *args);
-char *did_set_socktimeoutlen(optset_T *args);
 char *did_set_spell(optset_T *args);
 char *did_set_swapfile(optset_T *args);
 char *did_set_termguicolors(optset_T *args);

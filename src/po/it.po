@@ -13,9 +13,9 @@
 #
 msgid ""
 msgstr ""
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-28 16:54+0200\n"
-"PO-Revision-Date: 2025-07-28 19:00+0100\n"
+"Report-Msgid-Bugs-To: vim-dev@vim.org\n"
+"POT-Creation-Date: 2025-08-19 09:37+0200\n"
+"PO-Revision-Date: 2025-08-19 14:49+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -267,6 +267,9 @@ msgstr ": Invio fallito. Tento di eseguire localmente\n"
 #, c-format
 msgid "%d of %d edited"
 msgstr "%d di %d elaborato"
+
+msgid "Socket server not online:Send expression failed"
+msgstr "Server di socket non online: Invio di espressione fallito."
 
 msgid "No display: Send expression failed.\n"
 msgstr "Nessun display: Invio di espressione fallito.\n"
@@ -1534,7 +1537,7 @@ msgid "'-nb' cannot be used: not enabled at compile time\n"
 msgstr "Impossibile usare '-nb': non abilitato in compilazione\n"
 
 msgid "This Vim was not compiled with the diff feature."
-msgstr "Vim non compilato con funzionalità 'diff'."
+msgstr "Vim non compilato con funzionalità Diff."
 
 msgid "Attempt to open script file again: \""
 msgstr "Tento di riaprire lo script file: \""
@@ -1783,6 +1786,9 @@ msgstr "-X\t\t\tNon connetterti a server X"
 
 msgid "-Y\t\t\tDo not connect to Wayland compositor"
 msgstr "-Y\t\t\tNon connetterti a compositore Wayland"
+
+msgid "--clientserver <socket|x11> Backend for clientserver communication"
+msgstr "--clientserver <socket|x11> Server per comunicazione client/server"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <file>\tApri <file> in un server Vim se possibile"
@@ -2694,6 +2700,9 @@ msgstr "XSMP osservazione connessione ICE fallita"
 #, c-format
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection fallita: %s"
+
+msgid "Failed creating socket directory: %s"
+msgstr "Creazione di directory di socket fallita: %s"
 
 msgid "At line"
 msgstr "Alla riga"
@@ -4312,7 +4321,7 @@ msgstr "E95: C'è già un buffer con questo nome"
 
 #, c-format
 msgid "E96: Cannot diff more than %d buffers"
-msgstr "E96: Non supporto differenze fra più di %d buffer"
+msgstr "E96: Modo diff non supportato fra più di %d buffer"
 
 msgid "E97: Cannot create diffs"
 msgstr "E97: Non riesco a creare differenze"
@@ -4321,13 +4330,13 @@ msgid "E98: Cannot read diff output"
 msgstr "E98: Non riesco a leggere output del comando 'diff'"
 
 msgid "E99: Current buffer is not in diff mode"
-msgstr "E99: Buffer corrente non in modalità 'diff'"
+msgstr "E99: Buffer corrente non in modo Diff"
 
 msgid "E100: No other buffer in diff mode"
-msgstr "E100: Non c'è nessun altro buffer in modalità 'diff'"
+msgstr "E100: Non c'è nessun altro buffer in modo Diff"
 
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
-msgstr "E101: Più di due buffer in modalità 'diff', non so quale usare"
+msgstr "E101: Più di due buffer in modo Diff, non so quale usare"
 
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
@@ -4335,7 +4344,7 @@ msgstr "E102: Non riesco a trovare il buffer: \"%s\""
 
 #, c-format
 msgid "E103: Buffer \"%s\" is not in diff mode"
-msgstr "E103: Il buffer \"%s\" non è in modalità 'diff'"
+msgstr "E103: Il buffer \"%s\" non è in modo Diff"
 
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: Escape non consentito nei digrammi"
@@ -4345,7 +4354,7 @@ msgstr "E105: Uso di :loadkeymap fuori da un file di comandi"
 
 #, c-format
 msgid "E106: Unsupported diff output format: %s"
-msgstr "E106: Formato output di diff non supportato: %s"
+msgstr "E106: Formato output di 'diffi non supportato: %s"
 
 #, c-format
 msgid "E107: Missing parentheses: %s"
@@ -6668,7 +6677,7 @@ msgid "E792: Empty menu name"
 msgstr "E792: Nome Menù vuoto"
 
 msgid "E793: No other buffer in diff mode is modifiable"
-msgstr "E793: Nessun altro buffer è modificabile in modalità 'diff'"
+msgstr "E793: Nessun altro buffer è modificabile in modo Diff"
 
 msgid "E794: Cannot set variable in the sandbox"
 msgstr "E794: Non posso impostare la variabile in ambiente protetto"
@@ -7268,10 +7277,10 @@ msgid "E958: Job already finished"
 msgstr "E958: Job già terminato"
 
 msgid "E959: Invalid diff format."
-msgstr "E959: Formato diff non valido."
+msgstr "E959: Formato 'diff' non valido."
 
 msgid "E960: Problem creating the internal diff"
-msgstr "E960: Problemi nella preparazione della diff interna"
+msgstr "E960: Problemi nella preparazione della 'diff' interna"
 
 msgid "E961: No line number to use for \"<sflnum>\""
 msgstr "E961: Nessun numero di riga da usare per \"<sflnum>\""
@@ -9211,10 +9220,10 @@ msgstr "E1548: Connession a Wayland non disponibile"
 
 #, c-format
 msgid "E1549: Cannot have more than %d diff anchors"
-msgstr "E1549: Non posso avere più di %d punti di ancoraggio diff"
+msgstr "E1549: Non posso avere più di %d punti di ancoraggio Diff"
 
 msgid "E1550: Failed to find all diff anchors"
-msgstr "E1550: Non ho trovato tutti i punti di ancoraggio diff"
+msgstr "E1550: Non ho trovato tutti i punti di ancoraggio Diff"
 
 msgid "E1551: Cannot open a popup window to a closing buffer"
 msgstr ""
@@ -9263,6 +9272,29 @@ msgstr "E1560: Not è una funzione generica: %s"
 #, c-format
 msgid "E1561: Duplicate type variable name: %s"
 msgstr "E1561: Nome del tipo della variabile duplicato: %s"
+
+msgid "E1562: Diff anchors cannot be used with hidden diff windows"
+msgstr "E1562: Punti di ancoraggio Diff non disponibili per finestre "
+"Diff nascoste"
+
+msgid "E1563: Socket path is too big"
+msgstr "E1563: Il percorso al socket è troppo lungo"
+
+msgid "E1564: Socket name cannot have slashes in it without being a path"
+msgstr ""
+"E1564: Il nome del socket non può contenere barre se non è un percorso"
+
+msgid "E1565: Socket server is not online, call remote_startserver() first"
+msgstr "E1565: Il server di socket non è online, chiamare prima "
+"remote_startserver()"
+
+#, c-format
+msgid "E1566: Failed connecting to socket %s: %s"
+msgstr "E1566: Connessione al socket %s: %s fallita"
+
+msgid "E1567: Cannot start socket server, socket path is unavailable"
+msgstr "E1567: Non posso far partire il server di socket, percorso di "
+"socket non disponibile"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -10529,6 +10561,10 @@ msgstr ""
 
 msgid "automatic completion in insert mode"
 msgstr "completamente automatico in modo Insert"
+
+msgid "delay in msec before menu appears after typing"
+msgstr "attesa in millisecondi prima di visualizzare il menù "
+"dopo aver immesso caratteri"
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "se usare un menù dinamico per il completamento in modo Insert"
