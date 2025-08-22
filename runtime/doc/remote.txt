@@ -9,6 +9,7 @@ Vim client-server communication				*client-server*
 1. Common functionality		|clientserver|
 2. X11 specific items		|x11-clientserver|
 3. MS-Windows specific items	|w32-clientserver|
+4. Socket server specific items	|socketserver-clientserver|
 
 ==============================================================================
 1. Common functionality					*clientserver*
@@ -218,7 +219,7 @@ When using gvim, the --remote-wait only works properly this way: >
 	start /w gvim --remote-wait file.txt
 <
 ==============================================================================
-3. Socket server specific items			    *socketserver-clientserver*
+4. Socket server specific items			    *socketserver-clientserver*
 				    *E1563* *E1564* *E1565* *E1566* *E1567*
 
 The communication between client and server is done using Unix domain sockets.
