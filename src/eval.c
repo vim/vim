@@ -3550,8 +3550,6 @@ eval0_retarg(
  * "arg" must point to the first non-white of the expression.
  * "arg" is advanced to just after the recognized expression.
  *
- * Note: "rettv.v_lock" is not set.
- *
  * Return OK or FAIL.
  */
     int

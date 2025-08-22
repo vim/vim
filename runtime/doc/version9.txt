@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Aug 17
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Aug 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41827,7 +41827,7 @@ Ex-Commands: ~
 
 Options: ~
 
-'autocompletion'	Enable auto completion |ins-autocompletion|
+'autocomplete'		Enable auto completion |ins-autocompletion|
 'autocompletedelay'	Delay in msec before menu appears after typing
 'chistory'		Size of the quickfix stack |quickfix-stack|.
 'clipmethod'		How to access the clipboard.
