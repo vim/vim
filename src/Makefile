@@ -2006,7 +2006,7 @@ config auto/config.mk: auto/configure config.mk.in auto/config.h.in
 	    GUI_INC_LOC="$(GUI_INC_LOC)" GUI_LIB_LOC="$(GUI_LIB_LOC)" \
 	    CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
 	    LDFLAGS="$(LDFLAGS)" $(CONF_SHELL) srcdir="$(srcdir)" \
-	    ./auto/configure $(CONF_OPT_GUI) $(CONF_OPT_X) $(CONF_OPT_XSMP) \
+	    ./configure $(CONF_OPT_GUI) $(CONF_OPT_X) $(CONF_OPT_XSMP) \
 	    $(CONF_OPT_AUTOSERVE) $(CONF_OPT_DARWIN) $(CONF_OPT_FAIL) \
 	    $(CONF_OPT_PERL) $(CONF_OPT_PYTHON) $(CONF_OPT_PYTHON3) \
 	    $(CONF_OPT_TCL) $(CONF_OPT_RUBY) $(CONF_OPT_NLS) \
