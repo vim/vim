@@ -3398,7 +3398,6 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
  * Handle zero level expression.
  * This calls eval1() and handles error message and nextcmd.
  * Put the result in "rettv" when returning OK and "evaluate" is TRUE.
- * Note: "rettv.v_lock" is not set.
  * "evalarg" can be NULL, EVALARG_EVALUATE or a pointer.
  * Return OK or FAIL.
  */

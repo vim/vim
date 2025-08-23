@@ -39,6 +39,10 @@ dnl truth for both UNIX and non-UNIX platforms.
 dnl
 dnl Therefore we call AC_INIT without arguments.
 AC_INIT
+
+dnl Use vim.h as the source-tree anchor: AC_CONFIG_SRCDIR verifies that
+dnl configure is run in (or pointed to) the correct source directory.
+dnl vim.h is always present at the top level.
 AC_CONFIG_SRCDIR([vim.h])
 
 dnl Generate config.h under auto/.
