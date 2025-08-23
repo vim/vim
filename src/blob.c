@@ -290,6 +290,38 @@ blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
 }
 
 /*
+ * "items(blob)" function
+ * Converts a Blob into a List of [index, byte] pairs.
+ * Caller must have already checked that argvars[0] is a Blob.
+ * A null blob behaves like an empty blob.
+ */
+    void
+blob2items(typval_T *argvars, typval_T *rettv)
+{
+    blob_T	*blob = argvars[0].vval.v_blob;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    for (int i = 0; i < blob_len(blob); i++)
+    {
+	list_T	*l2 = list_alloc();
+	if (l2 == NULL)
+	    return;
+
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    return;
+	}
+
+	if (list_append_number(l2, i) == FAIL
+		|| list_append_number(l2, blob_get(blob, i)) == FAIL)
+	    return;
+    }
+}
+
+/*
  * Convert a string variable, in the format of blob2string(), to a blob.
  * Return NULL when conversion failed.
  */

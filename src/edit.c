@@ -664,9 +664,6 @@ edit(
 		    continue;
 		}
 
-		if (p_ac)
-		    ins_compl_set_autocomplete(TRUE);
-
 		// A non-white character that fits in with the current
 		// completion: Add to "compl_leader".
 		if (ins_compl_accept_char(c))
@@ -687,9 +684,6 @@ edit(
 			ins_compl_addleader(c);
 		    continue;
 		}
-
-		if (p_ac)
-		    ins_compl_set_autocomplete(FALSE);
 
 		// Pressing CTRL-Y selects the current match.  When
 		// ins_compl_enter_selects() is set the Enter key does the
@@ -997,7 +991,7 @@ doESCkey:
 		{
 		    update_screen(UPD_VALID); // Show char deletion immediately
 		    out_flush();
-		    ins_compl_set_autocomplete(TRUE);
+		    ins_compl_enable_autocomplete();
 		    goto docomplete; // Trigger autocompletion
 		}
 	    }
@@ -1424,7 +1418,7 @@ normalchar:
 	    {
 		update_screen(UPD_VALID); // Show character immediately
 		out_flush();
-		ins_compl_set_autocomplete(TRUE);
+		ins_compl_enable_autocomplete();
 		goto docomplete;
 	    }
 
