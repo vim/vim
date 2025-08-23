@@ -1719,7 +1719,7 @@ static char *(key_names[]) =
     "k7", "k8", "k9", "k;", "F1", "F2",
     "%1", "&8", "kb", "kI", "kD", "kh",
     "@7", "kP", "kN", "K1", "K3", "K4", "K5", "kB",
-    "PS", "PE", "Ms",
+    "PS", "PE",
     NULL
 };
 #endif
