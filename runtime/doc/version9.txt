@@ -41788,6 +41788,8 @@ Functions: ~
 |str2blob()|		convert a List of strings into a blob
 |test_null_tuple()|	return a null tuple
 |tuple2list()|		turn a Tuple of items into a List
+|uri_decode()|		URI-decode a string
+|uri_encode()|		URI-encode a string
 |wildtrigger()|		trigger wildcard expansion
 
 

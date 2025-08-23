@@ -11101,6 +11101,8 @@ unix	os_unix.txt	/*unix*
 unlisted-buffer	windows.txt	/*unlisted-buffer*
 up-down-motions	motion.txt	/*up-down-motions*
 uppercase	change.txt	/*uppercase*
+uri_decode()	builtin.txt	/*uri_decode()*
+uri_encode()	builtin.txt	/*uri_encode()*
 urxvt-mouse	options.txt	/*urxvt-mouse*
 use-visual-cmds	version4.txt	/*use-visual-cmds*
 useful-mappings	tips.txt	/*useful-mappings*

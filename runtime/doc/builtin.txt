@@ -747,6 +747,8 @@ undofile({name})		String	undo file name for {name}
 undotree([{buf}])		List	undo file tree for buffer {buf}
 uniq({list} [, {func} [, {dict}]])
 				List	remove adjacent duplicates from a list
+uri_decode({string})		String	URI-decode a string
+uri_encode({string})		String	URI-encode a string
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
 				Number	UTF-16 index of byte {idx} in {string}
 values({dict})			List	values in {dict}
@@ -12186,6 +12188,59 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 <
 		Return type: list<{type}>
 
+
+uri_decode({string})					*uri_decode()*
+		Returns the URI-decoded form of {string}, reversing
+		percent-encoding (converting sequences like "%3D" back to
+		the corresponding character).
+
+		The decoding follows standard percent-decoding rules:
+		    - "%HH" is replaced with the character for the hex value
+		      HH.
+		    - If the decoded bytes form valid UTF-8, they are combined
+		      into the corresponding character(s).  Otherwise, the
+		      bytes are kept as-is.
+		    - Invalid or incomplete encodings (e.g. "%GZ", "%3", or a
+		      trailing "%") are left unchanged.
+
+		Returns an empty String if {string} is empty.
+
+		Example: >
+			:echo uri_decode('c%3A%5Cmy%5Cdir%5Cfoo%20bar')
+			c:\my\dir\foo bar
+			:echo uri_decode('%CE%B1%CE%B2%CE%B3')
+			αβγ
+<
+		Can also be used as a |method|: >
+			mystr->uri_decode()
+<
+		Return type: |String|
+
+uri_encode({string})					*uri_encode()*
+		Returns the URI-encoded form of {string}.  URI encoding
+		replaces unsafe or reserved characters with percent-encoded
+		sequences.
+
+		The encoding follows standard percent-encoding rules:
+                    - Alphanumeric characters [0-9A-Za-z] remain unchanged.
+                    - The characters "-", "_", ".", and "~" also remain
+                      unchanged.
+                    - All other characters are replaced with "%HH", where HH
+                      is the two-digit uppercase hexadecimal value.
+                    - Existing percent-encoded sequences are not modified.
+
+		Returns an empty String if {string} is empty.
+
+		Example: >
+			:echo uri_encode('c:\my\dir\foo bar')
+			c%3A%5Cmy%5Cdir%5Cfoo%20bar
+			:echo uri_encode('key=value&name=αβγ')
+			key%3Dvalue%26name%3D%CE%B1%CE%B2%CE%B3
+<
+		Can also be used as a |method|: >
+			mystr->uri_encode()
+<
+		Return type: |String|
 
 							*utf16idx()*
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
