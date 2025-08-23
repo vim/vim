@@ -5,45 +5,48 @@
 #   			automatically from CPUNR
 #
 
+# included common tools
+!INCLUDE ..\auto\nmake\tools.mak
+
 TARGETOS = WINNT
 
-!ifndef APPVER
+!IFNDEF APPVER
 APPVER = 6.01
-!endif
+!ENDIF
 # Set the default $(WINVER) to make it work with Windows 7.
-!ifndef WINVER
+!IFNDEF WINVER
 WINVER = 0x0601
-!endif
+!ENDIF
 
-!if "$(DEBUG)" != "yes"
+!IF "$(DEBUG)" != "yes"
 NODEBUG = 1
-!endif
+!ENDIF
 
-!ifndef CPU
+!IFNDEF CPU
 CPU = i386
-! ifndef PLATFORM
-!  ifdef TARGET_CPU
+! IFNDEF PLATFORM
+!  IFDEF TARGET_CPU
 PLATFORM = $(TARGET_CPU)
-!  elseif defined(VSCMD_ARG_TGT_ARCH)
+!  ELSEIF defined(VSCMD_ARG_TGT_ARCH)
 PLATFORM = $(VSCMD_ARG_TGT_ARCH)
-!  endif
-! endif
-! ifdef PLATFORM
-!  if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
+!  ENDIF
+! ENDIF
+! IFDEF PLATFORM
+!  IF ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
 CPU = AMD64
-!  elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
+!  ELSEIF ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
 CPU = ARM64
-!  elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
-!   error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
-!  endif
-! endif
-!endif
+!  ELSEIF ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
+!   ERROR *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
+!  ENDIF
+! ENDIF
+!ENDIF
 
-!ifdef SDK_INCLUDE_DIR
-! include $(SDK_INCLUDE_DIR)\Win32.mak
-!elseif "$(USE_WIN32MAK)"=="yes"
-! include <Win32.mak>
-!else
+!IFDEF SDK_INCLUDE_DIR
+! INCLUDE $(SDK_INCLUDE_DIR)\Win32.mak
+!ELSEIF "$(USE_WIN32MAK)"=="yes"
+! INCLUDE <Win32.mak>
+!ELSE
 cc = cl
 link = link
 rc = rc
@@ -51,7 +54,7 @@ cflags = -nologo -c
 lflags = -incremental:no -nologo
 rcflags = /r
 olelibsdll = ole32.lib uuid.lib oleaut32.lib user32.lib gdi32.lib advapi32.lib
-!endif
+!ENDIF
 
 # include CPUARG
 cflags = $(cflags) $(CPUARG)
@@ -59,26 +62,27 @@ cflags = $(cflags) $(CPUARG)
 # set WINVER and _WIN32_WINNT
 cflags = $(cflags) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
 
-!if "$(CL)" == "/D_USING_V110_SDK71_"
+!IF "$(CL)" == "/D_USING_V110_SDK71_"
 rcflags = $(rcflags) /D_USING_V110_SDK71_
-!endif
+!ENDIF
 
 SUBSYSTEM = console
-!if "$(SUBSYSTEM_VER)" != ""
+!IF "$(SUBSYSTEM_VER)" != ""
 SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
-!endif
+!ENDIF
 
-!if "$(CPU)" == "AMD64" || "$(CPU)" == "ARM64"
+!IF "$(CPU)" == "AMD64" || "$(CPU)" == "ARM64"
 OFFSET = 0x11C000000
-!else
+!ELSE
 OFFSET = 0x1C000000
-!endif
+!ENDIF
 
 all: gvimext.dll
 
-gvimext.dll:    gvimext.obj	\
-		gvimext.res
-	$(link) $(lflags) -dll -def:gvimext.def -base:$(OFFSET) -out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib -subsystem:$(SUBSYSTEM)
+gvimext.dll: gvimext.obj gvimext.res
+	$(link) $(lflags) -dll -def:gvimext.def -base:$(OFFSET) \
+		-out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib \
+		-subsystem:$(SUBSYSTEM)
 
 gvimext.obj: gvimext.h
 
@@ -86,11 +90,13 @@ gvimext.obj: gvimext.h
 	$(cc) $(cflags) -DFEAT_GETTEXT $(cvarsmt) $*.cpp
 
 gvimext.res: gvimext.rc
-	$(rc) /nologo $(rcflags) $(rcvars)  gvimext.rc
+	$(rc) /nologo $(rcflags) $(rcvars) gvimext.rc
 
 clean:
-	- if exist gvimext.dll del gvimext.dll
-	- if exist gvimext.lib del gvimext.lib
-	- if exist gvimext.exp del gvimext.exp
-	- if exist gvimext.obj del gvimext.obj
-	- if exist gvimext.res del gvimext.res
+	- if exist gvimext.dll $(RM) gvimext.dll
+	- if exist gvimext.lib $(RM) gvimext.lib
+	- if exist gvimext.exp $(RM) gvimext.exp
+	- if exist gvimext.obj $(RM) gvimext.obj
+	- if exist gvimext.res $(RM) gvimext.res
+
+# vim: set noet sw=8 ts=8 sts=0 wm=0 tw=79 ft=make:

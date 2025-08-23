@@ -1,10 +1,59 @@
 #
 # Makefile for MS Windows for create self-installing exe of Vim.
-# 05/04/2024, Restorer restorer@mail2k.ru
+# 2024‐04-05, Restorer, restorer@mail2k.ru
 #
 
 
-#!INCLUDE .\Make_all.mak
+# included common tools
+!INCLUDE ..\src\auto\nmake\tools.mak
+
+# Read MAJOR and MINOR from version.h.
+!IFNDEF MAJOR
+! IF ![for /F "tokens=3" %G in \
+	('findstr /RC:"VIM_VERSION_MAJOR[	^]*[0-9^]" ..\src\version.h') \
+	do @(echo:MAJOR=%G>> .\_major.tmp)]
+!  INCLUDE .\_major.tmp
+!  IF [$(RM) .\_major.tmp]
+!  ENDIF
+! ELSE
+MAJOR = 9
+! ENDIF
+!ENDIF
+
+!IFNDEF MINOR
+! IF ![for /F "tokens=3" %G in \
+	('findstr /RC:"VIM_VERSION_MINOR[	^]*[0-9^]" ..\src\version.h') \
+	do @(echo:MINOR=%G>> .\_minor.tmp)]
+!  INCLUDE .\_minor.tmp
+!  IF [$(RM) .\_minor.tmp]
+!  ENDIF
+! ELSE
+MINOR = 1
+! ENDIF
+!ENDIF
+
+# Read PATCHLEVEL from version.c
+!IFNDEF PATCHLEVEL
+! IF ![for /F %G in \
+	('findstr /NBLC:"static int included_patches" ..\src\version.c \
+	^| (set /p "_t=" ^& set /a _t+=2 ^)') do \
+	@$(CMD) $(CMDFLAGS) "for /F "skip=%G delims=, " %H in \
+	(..\src\version.c) do (echo:PATCHLEVEL=%H> .\_patchlvl.tmp & exit /b)"]
+!  INCLUDE .\_patchlvl.tmp
+!  IF [$(RM) .\_patchlvl.tmp]
+!  ENDIF
+! ELSE
+PATCHLEVEL = 0
+! ENDIF
+!ENDIF
+
+!IF $(PATCHLEVEL) < 10
+PATCHLEVEL = 000$(PATCHLEVEL)
+!ELSEIF $(PATCHLEVEL) < 100
+PATCHLEVEL = 00$(PATCHLEVEL)
+!ELSEIF $(PATCHLEVEL) < 1000
+PATCHLEVEL = 0$(PATCHLEVEL)
+!ENDIF
 
 .SUFFIXES :
 
@@ -60,49 +109,15 @@ XX = /X"$(X:;=" /X")"
 
 # If necessary, correct the full path of the NSIS compiler in the next line.
 # Please do not enclose the path in quotation marks.
-MKNSIS = $(ProgFiles)\NSIS
-
-PS = powershell.exe
-RM = del /f /q
-RD = rmdir /s /q
+MKNSIS = $(ProgFiles)\NSIS\makensis.exe
 
 MKNSISFLAGS = /INPUTCHARSET UTF8 $(MKNSISFLAGS)
-PSFLAGS = -NoLogo -NoProfile -Command
-
-# Read MAJOR and MINOR from version.h.
-!IF ![for /F "tokens=2,3" %G in ( \
-	'findstr /rc:"VIM_VERSION_MINOR[	^]*[0-9^]" \
-	/rc:"VIM_VERSION_MAJOR[	^]*[0-9^]" ..\src\version.h') do \
-	@if "VIM_VERSION_MAJOR"=="%G" (echo MAJOR=%H>>_ver.tmp) \
-	else echo MINOR=%H>>_ver.tmp]
-! INCLUDE .\_ver.tmp
-! IF [$(RM) .\_ver.tmp]
-! ENDIF
-!ENDIF
-
-# Read PATCHLEVEL from version.c
-!IF ![for /F %G in ( \
-	'findstr /nblc:"static int included_patches[^]" ..\src\version.c \
-	^| (set /p "_t=" ^& set /a _t+=2 ^)') do \
-	@cmd /q /c "for /F "skip=%G delims=, " %H in (..\src\version.c) do \
-			(echo PATCH=%H>_patchlvl.tmp & exit /b)"]
-! INCLUDE .\_patchlvl.tmp
-! IF [$(RM) .\_patchlvl.tmp]
-! ENDIF
-!ENDIF
-!IF $(PATCH) < 10
-PATCH = 000$(PATCH)
-!ELSEIF $(PATCH) < 100
-PATCH = 00$(PATCH)
-!ELSEIF $(PATCH) < 1000
-PATCH = 0$(PATCH)
-!ENDIF
 
 
 all : makeinst
 
 makeinst : prepare
-	^"$(MKNSIS)\makensis.exe" $(MKNSISFLAGS) gvim.nsi $(XX)
+	^"$(MKNSIS)" $(MKNSISFLAGS) gvim.nsi $(XX)
 
 prepare : unzipicons gvim_version.nsh license rename
 
@@ -110,7 +125,8 @@ unzipicons : icons.zip
 	@ if exist %|fF\nul $(RD) %|fF
 	@ $(PS) $(PSFLAGS) \
 		Add-Type -AssemblyName 'System.IO.Compression.FileSystem'; \
-		[System.IO.Compression.ZipFile]::ExtractToDirectory(\"$**\", \".\")
+		[System.IO.Compression.ZipFile]::ExtractToDirectory(\"$**\", \
+		\".\")
 
 gvim_version.nsh : Make_mvc.mak
 	@ 1> $@ echo:^# Generated from Makefile: define the version numbers
@@ -118,7 +134,7 @@ gvim_version.nsh : Make_mvc.mak
 	@ 1>> $@ echo:^!define __GVIM_VER__NSH__
 	@ 1>> $@ echo:^!define VER_MAJOR $(MAJOR)
 	@ 1>> $@ echo:^!define VER_MINOR $(MINOR)
-	@ 1>> $@ echo:^!define PATCHLEVEL $(PATCH)
+	@ 1>> $@ echo:^!define PATCHLEVEL $(PATCHLEVEL)
 	@ 1>> $@ echo:^!endif
 
 license : ..\lang\LICENSE.*.txt ..\LICENSE
@@ -135,4 +151,4 @@ clean :
 	@ if exist .\icons\nul $(RD) .\icons
 	@ if exist .\gvim??.exe $(RM) .\gvim??.exe
 
-# vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0 ft=make:
+# vim: set noet sw=8 ts=8 sts=0 wm=0 tw=79 ft=make:
