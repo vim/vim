@@ -2239,7 +2239,8 @@ typedef int sock_T;
 #define VV_TYPE_TUPLE	111
 #define VV_WAYLAND_DISPLAY 112
 #define VV_CLIPMETHOD 113
-#define VV_LEN		114	// number of v: vars
+#define VV_TERMDA1 114
+#define VV_LEN		115	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL

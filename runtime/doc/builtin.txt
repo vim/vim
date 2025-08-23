@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 20
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -344,7 +344,7 @@ isinf({expr})			Number	determine if {expr} is infinity value
 					(positive or negative)
 islocked({expr})		Number	|TRUE| if {expr} is locked
 isnan({expr})			Number	|TRUE| if {expr} is NaN
-items({expr})			List	key-value pairs in {expr}
+items({expr})			List	key/index-value pairs in {expr}
 job_getchannel({job})		Channel	get the channel handle for {job}
 job_info([{job}])		Dict	get information about {job}
 job_setoptions({job}, {options}) none	set options for {job}
@@ -747,6 +747,8 @@ undofile({name})		String	undo file name for {name}
 undotree([{buf}])		List	undo file tree for buffer {buf}
 uniq({list} [, {func} [, {dict}]])
 				List	remove adjacent duplicates from a list
+uri_decode({string})		String	URI-decode a string
+uri_encode({string})		String	URI-encode a string
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
 				Number	UTF-16 index of byte {idx} in {string}
 values({dict})			List	values in {dict}
@@ -6314,7 +6316,8 @@ items({expr})						*items()*
 		Return a |List| with all key/index and value pairs of {expr}.
 		Each |List| item is a list with two items:
 		- for a |Dict|: the key and the value
-		- for a |List|, |Tuple| or |String|: the index and the value
+		- for a |List|, |Tuple|, |Blob| or |String|: the index and the
+		  value
 		The returned |List| is in arbitrary order for a |Dict|,
 		otherwise it's in ascending order of the index.
 
@@ -6328,6 +6331,7 @@ items({expr})						*items()*
 			echo items([1, 2, 3])
 			echo items(('a', 'b', 'c'))
 			echo items("foobar")
+			echo items(0z0102)
 <
 		Can also be used as a |method|: >
 			mydict->items()
@@ -12184,6 +12188,59 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 <
 		Return type: list<{type}>
 
+
+uri_decode({string})					*uri_decode()*
+		Returns the URI-decoded form of {string}, reversing
+		percent-encoding (converting sequences like "%3D" back to
+		the corresponding character).
+
+		The decoding follows standard percent-decoding rules:
+		    - "%HH" is replaced with the character for the hex value
+		      HH.
+		    - If the decoded bytes form valid UTF-8, they are combined
+		      into the corresponding character(s).  Otherwise, the
+		      bytes are kept as-is.
+		    - Invalid or incomplete encodings (e.g. "%GZ", "%3", or a
+		      trailing "%") are left unchanged.
+
+		Returns an empty String if {string} is empty.
+
+		Example: >
+			:echo uri_decode('c%3A%5Cmy%5Cdir%5Cfoo%20bar')
+			c:\my\dir\foo bar
+			:echo uri_decode('%CE%B1%CE%B2%CE%B3')
+			αβγ
+<
+		Can also be used as a |method|: >
+			mystr->uri_decode()
+<
+		Return type: |String|
+
+uri_encode({string})					*uri_encode()*
+		Returns the URI-encoded form of {string}.  URI encoding
+		replaces unsafe or reserved characters with percent-encoded
+		sequences.
+
+		The encoding follows standard percent-encoding rules:
+                    - Alphanumeric characters [0-9A-Za-z] remain unchanged.
+                    - The characters "-", "_", ".", and "~" also remain
+                      unchanged.
+                    - All other characters are replaced with "%HH", where HH
+                      is the two-digit uppercase hexadecimal value.
+                    - Existing percent-encoded sequences are not modified.
+
+		Returns an empty String if {string} is empty.
+
+		Example: >
+			:echo uri_encode('c:\my\dir\foo bar')
+			c%3A%5Cmy%5Cdir%5Cfoo%20bar
+			:echo uri_encode('key=value&name=αβγ')
+			key%3Dvalue%26name%3D%CE%B1%CE%B2%CE%B3
+<
+		Can also be used as a |method|: >
+			mystr->uri_encode()
+<
+		Return type: |String|
 
 							*utf16idx()*
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
