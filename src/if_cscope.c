@@ -1940,12 +1940,18 @@ cs_pathcomponents(char *path)
 
     s = path + strlen(path) - 1;
     for (i = 0; i < p_cspc; ++i)
-	while (s > path && *--s != '/'
+    {
+	while (s > path)
+	{
+	   s--;
+	   if (*s == '/'
 #ifdef MSWIN
-		&& *--s != '\\'
+		|| *s == '\\'
 #endif
 		)
-	    ;
+	      break;
+	}
+    }
     if ((s > path && *s == '/')
 #ifdef MSWIN
 	|| (s > path && *s == '\\')
