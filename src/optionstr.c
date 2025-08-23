@@ -45,7 +45,7 @@ static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 // Note: Keep this in sync with did_set_clipboard()
 static char *(p_cb_values[]) = {"unnamed", "unnamedplus", "autoselect", "autoselectplus", "autoselectml", "html", "exclude:", NULL};
 // Note: Keep this in sync with get_clipmethod()
-static char *(p_cpm_values[]) = {"wayland", "x11", "gui", NULL};
+static char *(p_cpm_values[]) = {"wayland", "x11", NULL};
 #endif
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
@@ -3616,7 +3616,7 @@ did_set_rulerformat(optset_T *args)
 }
 #endif
 
-#if defined(FEAT_TABPANEL)
+#if defined(FEAT_TABPANEL) || defined(PROTO)
 /*
  * Process the new 'tabpanelopt' option value.
  */
@@ -5068,7 +5068,7 @@ restore_shm_value(void)
  * Export the environment variable $MYVIMDIR to the first item in runtimepath
  */
     void
-export_myvimdir()
+export_myvimdir(void)
 {
     int		dofree = FALSE;
     char_u	*p;

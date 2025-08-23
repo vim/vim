@@ -212,7 +212,7 @@ set_lang_var(void)
 }
 #endif
 
-#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE) || defined(PROTO)
 /*
  * Setup to use the current locale (for ctype() and many other things).
  */

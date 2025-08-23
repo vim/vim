@@ -97,6 +97,7 @@ static void f_inputsecret(typval_T *argvars, typval_T *rettv);
 static void f_interrupt(typval_T *argvars, typval_T *rettv);
 static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
+static void f_items(typval_T *argvars, typval_T *rettv);
 static void f_keytrans(typval_T *argvars, typval_T *rettv);
 static void f_last_buffer_nr(typval_T *argvars, typval_T *rettv);
 static void f_libcall(typval_T *argvars, typval_T *rettv);
@@ -726,10 +727,11 @@ arg_list_tuple_dict_blob_or_string(
 	    || type->tt_type == VAR_STRING
 	    || type_any_or_unknown(type))
 	return OK;
-    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+
+    semsg(_(e_list_tuple_dict_blob_or_string_required_for_argument_nr),
+						 context->arg_idx + 1);
     return FAIL;
 }
-
 
 /*
  * Check second argument of map(), filter(), foreach().
@@ -1248,7 +1250,7 @@ static argcheck_T arg1_list_number[] = {arg_list_number};
 static argcheck_T arg1_reverse[] = {arg_reverse};
 static argcheck_T arg1_list_or_tuple_or_dict[] = {arg_list_or_tuple_or_dict};
 static argcheck_T arg1_list_string[] = {arg_list_string};
-static argcheck_T arg1_string_list_tuple_or_dict[] = {arg_string_list_tuple_or_dict};
+static argcheck_T arg1_list_tuple_dict_blob_or_string[] = {arg_list_tuple_dict_blob_or_string};
 static argcheck_T arg1_lnum[] = {arg_lnum};
 static argcheck_T arg1_number[] = {arg_number};
 static argcheck_T arg1_string[] = {arg_string};
@@ -2432,7 +2434,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_islocked},
     {"isnan",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number_bool,    MATH_FUNC(f_isnan)},
-    {"items",		1, 1, FEARG_1,	    arg1_string_list_tuple_or_dict,
+    {"items",		1, 1, FEARG_1,	    arg1_list_tuple_dict_blob_or_string,
 			ret_list_items,	    f_items},
     {"job_getchannel",	1, 1, FEARG_1,	    arg1_job,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},
@@ -3114,6 +3116,10 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_undotree},
     {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_uniq},
+    {"uri_decode",	1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_uridecode},
+    {"uri_encode",	1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_uriencode},
     {"utf16idx",	2, 4, FEARG_1,	    arg4_string_number_bool_bool,
 			ret_number,	    f_utf16idx},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
@@ -8714,6 +8720,26 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     if (root != NULL)
 	free_lval_root(root);
     clear_lval(&lv);
+}
+
+/*
+ * "items(dict)" function
+ */
+    static void
+f_items(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type == VAR_STRING)
+	string2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_LIST)
+	list2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_TUPLE)
+	tuple2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_BLOB)
+	blob2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_DICT)
+	dict2items(argvars, rettv);
+    else
+	semsg(_(e_list_tuple_dict_blob_or_string_required_for_argument_nr), 1);
 }
 
 /*

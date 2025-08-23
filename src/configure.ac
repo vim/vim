@@ -1,8 +1,39 @@
-dnl configure.ac: autoconf script for Vim
+dnl +----------------------------------------------------------------------+
+dnl   configure.ac: autoconf script for Vim
+dnl +----------------------------------------------------------------------+
+dnl
+dnl   This file is processed by autoconf to generate the 'configure' script.
+dnl
+dnl   ==> IMPORTANT NOTE FOR DEVELOPERS <==
+dnl
+dnl   Do NOT run 'autoconf' directly on this file.  You must use the provided
+dnl   make target, like this:
+dnl
+dnl     make autoconf
+dnl
+dnl   This is required because the Makefile handles placing the generated
+dnl   script into its final location: 'auto/configure'.
+dnl
+dnl +----------------------------------------------------------------------+
 
-dnl Process this file with autoconf 2.72 to produce "configure".
+dnl You should use Autoconf 2.72 but to simplify CI on Ubuntu 24.04 we only
+dnl use AC_PREREQ([2.71])
+AC_PREREQ([2.71])
 
+dnl Normally, AC_INIT([package],[version],[bug-report],[tarname],[url])
+dnl provides PACKAGE_* macros, used by Autoconf on UNIX to inject version
+dnl info into config.h, --version output, and "make dist".
+dnl
+dnl Vim does not rely on that: versioning is centralized in
+dnl version.h/version.c, dnl which ensures a single cross-platform source of
+dnl truth for both UNIX and non-UNIX platforms.
+dnl
+dnl Therefore we call AC_INIT without arguments.
 AC_INIT
+
+dnl Use vim.h as the source-tree anchor: AC_CONFIG_SRCDIR verifies that
+dnl configure is run in (or pointed to) the correct source directory.
+dnl vim.h is always present at the top level.
 AC_CONFIG_SRCDIR([vim.h])
 AC_CONFIG_HEADERS(auto/config.h:config.h.in)
 
@@ -2344,7 +2375,7 @@ AC_MSG_CHECKING(--enable-socketserver argument)
 AC_ARG_ENABLE(socketserver,
 	[  --enable-socketserver Use sockets for clientserver communication.],
 	[enable_socketserver=$enableval],
-	AS_IF([test "x$features" = xtiny], 
+	AS_IF([test "x$features" = xtiny],
 			[enable_socketserver=no_auto
 			 AC_MSG_RESULT([cannot use socketserver with tiny features])],
 			[enable_socketserver=auto]))

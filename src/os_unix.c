@@ -147,7 +147,7 @@ Window	    x11_window = 0;
 Display	    *x11_display = NULL;
 #endif
 
-#ifdef FEAT_SOCKETSERVER
+#if defined(FEAT_SOCKETSERVER) || defined(PROTO)
 # include <sys/socket.h>
 # include <sys/un.h>
 
@@ -1829,7 +1829,7 @@ xopen_message(long elapsed_msec)
 # endif
 #endif
 
-#if defined(FEAT_X11)
+#if defined(FEAT_X11) || defined(PROTO)
 /*
  * A few functions shared by X11 title and clipboard code.
  */
@@ -1900,7 +1900,7 @@ x_connect_to_server(void)
     return TRUE;
 }
 
-#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) || defined(PROTO)
 # if defined(USING_SETJMP)
 /*
  * An X IO Error handler, used to catch error while opening the display.
@@ -3252,7 +3252,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 }
 #endif // HAVE_SMACK
 
-#ifdef FEAT_XATTR
+#if defined(FEAT_XATTR) || defined(PROTO)
 /*
  * Copy extended attributes from_file to to_file
  */
@@ -9134,7 +9134,7 @@ mch_create_anon_file(void)
     return fd;
 }
 
-#ifdef FEAT_SOCKETSERVER
+#if defined(FEAT_SOCKETSERVER) || defined(PROTO)
 
 /*
  * Initialize socket server called "name" (the socket filename). If "name" is a
@@ -9326,6 +9326,7 @@ socket_server_init(char_u *name)
     vim_free(path);
     return OK;
 fail:
+    close(fd);
     vim_free(path);
     socket_server_uninit();
     return FAIL;
@@ -9844,7 +9845,10 @@ socket_server_connect(char_u *name, char_u **path, int silent)
     socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (socket_fd == -1)
-	goto fail;
+    {
+	vim_free(socket_path);
+	return -1;
+    }
 
     addr.sun_family = AF_UNIX;
     vim_snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", socket_path);
@@ -9856,7 +9860,9 @@ socket_server_connect(char_u *name, char_u **path, int silent)
 	if (!silent)
 	    semsg(_(e_socket_server_failed_connecting), socket_path,
 		    strerror(errno));
-	goto fail;
+	close(socket_fd);
+	vim_free(socket_path);
+	return -1;
     }
 
     if (path != NULL)
@@ -9865,10 +9871,6 @@ socket_server_connect(char_u *name, char_u **path, int silent)
 	vim_free(socket_path);
 
     return socket_fd;
-fail:
-    close(socket_fd);
-    vim_free(socket_path);
-    return -1;
 
 }
 
@@ -10337,7 +10339,7 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
 	    cmd->cmd_type == SS_CMD_TYPE_KEYSTROKES)
     {
 	// Either an expression or keystrokes.
-	if (socket_server_valid() && enc != NULL)
+	if (socket_server_valid() && enc != NULL && str != NULL)
 	{
 	    str = serverConvert(enc, str, &to_free);
 

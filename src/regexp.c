@@ -50,7 +50,7 @@ toggle_Magic(int x)
     return Magic(x);
 }
 
-#ifdef FEAT_RELTIME
+#if defined(FEAT_RELTIME) || defined(PROTO)
 static int timeout_nesting = 0;
 
 /*

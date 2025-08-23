@@ -1,12 +1,14 @@
 " Tests for clipmethod
 
-if has('unix')
-  source util/window_manager.vim
-endif
+source util/window_manager.vim
+
+CheckFeature clipboard_working
+CheckFeature xterm_clipboard
+CheckFeature wayland_clipboard
+CheckUnix
 
 " Test if no available clipmethod sets v:clipmethod to none and deinits clipboard
 func Test_no_clipmethod_sets_v_clipmethod_none()
-  CheckFeature clipboard_working
   CheckNotGui
 
   set clipmethod=
@@ -17,9 +19,6 @@ endfunc
 " Test if method chosen is in line with clipmethod order
 func Test_clipmethod_order()
   CheckNotGui
-  CheckFeature clipboard_working
-  CheckFeature xterm_clipboard
-  CheckFeature wayland_clipboard
 
   set cpm=wayland,x11
 
@@ -63,12 +62,12 @@ func Test_clipmethod_order()
   call EndWaylandCompositor(l:wayland_display)
 endfunc
 
-" Test if clipmethod is set to 'gui' when gui is started
-func Test_clipmethod_is_gui_when_gui_started()
+" Test if clipmethod is set to 'none' when gui is started
+func Test_clipmethod_is_none_when_gui()
   CheckCanRunGui
-  CheckFeature clipboard_working
 
   let lines =<< trim END
+    set cpm=wayland,x11
     call writefile([v:clipmethod != ""], 'Cbdscript')
     gui -f
     call writefile([v:clipmethod], 'Cbdscript', 'a')
@@ -79,15 +78,12 @@ func Test_clipmethod_is_gui_when_gui_started()
 
   call writefile(lines, 'Cbdscript', 'D')
   call system($'{GetVimCommand()} -S Cbdscript')
-  call assert_equal(['1', 'gui', 'gui'], readfile('Cbdscript'))
+  call assert_equal(['1', 'none', 'none'], readfile('Cbdscript'))
 endfunc
 
 " Test if :clipreset switches methods when current one doesn't work
 func Test_clipreset_switches()
   CheckNotGui
-  CheckFeature clipboard_working
-  CheckFeature xterm_clipboard
-  CheckFeature wayland_clipboard
   CheckFeature clientserver
   CheckXServer
   CheckWaylandCompositor

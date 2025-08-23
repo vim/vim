@@ -2968,6 +2968,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
 ac_config_headers="$ac_config_headers auto/config.h:config.h.in"
 
 
@@ -14507,18 +14508,18 @@ then :
 fi
 if test "$enable_largefile,$enable_year2038" != no,no
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CC option to enable large file support" >&5
-printf %s "checking for $CC option to enable large file support... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CPPFLAGS option for large files" >&5
+printf %s "checking for $CPPFLAGS option for large files... " >&6; }
 if test ${ac_cv_sys_largefile_opts+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) ac_save_CC="$CC"
+  e) ac_save_CPPFLAGS=$CPPFLAGS
   ac_opt_found=no
-  for ac_opt in "none needed" "-D_FILE_OFFSET_BITS=64" "-D_LARGE_FILES=1" "-n32"; do
+  for ac_opt in "none needed" "-D_FILE_OFFSET_BITS=64" "-D_LARGE_FILES=1"; do
     if test x"$ac_opt" != x"none needed"
 then :
-  CC="$ac_save_CC $ac_opt"
+  CPPFLAGS="$ac_save_CPPFLAGS $ac_opt"
 fi
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14547,12 +14548,12 @@ then :
   if test x"$ac_opt" = x"none needed"
 then :
   # GNU/Linux s390x and alpha need _FILE_OFFSET_BITS=64 for wide ino_t.
-	 CC="$CC -DFTYPE=ino_t"
+	 CPPFLAGS="$CPPFLAGS -DFTYPE=ino_t"
 	 if ac_fn_c_try_compile "$LINENO"
 then :
 
 else case e in #(
-  e) CC="$CC -D_FILE_OFFSET_BITS=64"
+  e) CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64"
 	    if ac_fn_c_try_compile "$LINENO"
 then :
   ac_opt='-D_FILE_OFFSET_BITS=64'
@@ -14568,7 +14569,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
     test $ac_opt_found = no || break
   done
-  CC="$ac_save_CC"
+  CPPFLAGS=$ac_save_CPPFLAGS
 
   test $ac_opt_found = yes || ac_cv_sys_largefile_opts="support not detected" ;;
 esac
@@ -14592,16 +14593,14 @@ printf "%s\n" "#define _FILE_OFFSET_BITS 64" >>confdefs.h
 
 printf "%s\n" "#define _LARGE_FILES 1" >>confdefs.h
  ;; #(
-  "-n32") :
-    CC="$CC -n32" ;; #(
   *) :
     as_fn_error $? "internal error: bad value for \$ac_cv_sys_largefile_opts" "$LINENO" 5 ;;
 esac
 
 if test "$enable_year2038" != no
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CC option for timestamps after 2038" >&5
-printf %s "checking for $CC option for timestamps after 2038... " >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CPPFLAGS option for timestamps after 2038" >&5
+printf %s "checking for $CPPFLAGS option for timestamps after 2038... " >&6; }
 if test ${ac_cv_sys_year2038_opts+y}
 then :
   printf %s "(cached) " >&6

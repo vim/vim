@@ -771,7 +771,7 @@ copy_option_part(
     return len;
 }
 
-#ifndef HAVE_MEMSET
+#if !defined(HAVE_MEMSET) && !defined(PROTO)
     void *
 vim_memset(void *ptr, int c, size_t size)
 {
@@ -2609,7 +2609,7 @@ free_username(void)
 }
 #endif
 
-#ifndef HAVE_QSORT
+#if !defined(HAVE_QSORT) && !defined(PROTO)
 /*
  * Our own qsort(), for systems that don't have it.
  * It's simple and slow.  From the K&R C book.
@@ -2676,7 +2676,7 @@ qsort(
  *  (history removed, not very interesting.  See the "screen" sources.)
  */
 
-#if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
+#if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(PROTO)
 
 #define EXTRASIZE 5		// increment to add to env. size
 

@@ -2415,7 +2415,7 @@ win_equal_rec(
     }
 }
 
-#ifdef FEAT_JOB_CHANNEL
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     void
 leaving_window(win_T *win)
 {

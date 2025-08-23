@@ -474,7 +474,7 @@ get_indent_str(
     return count;
 }
 
-#ifdef FEAT_VARTABS
+#if defined(FEAT_VARTABS) || defined(PROTO)
 /*
  * Count the size (in window cells) of the indent in line "ptr", using
  * variable tabstops.
