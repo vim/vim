@@ -1980,6 +1980,9 @@ getcmdline_int(
 #endif
 		    || c == Ctrl_C))
 	{
+#ifdef FEAT_EVAL
+	    set_vim_var_char(c);  // Set v:char
+#endif
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 	    event_cmdlineleavepre_triggered = TRUE;
 #if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
@@ -2646,7 +2649,12 @@ cmdline_changed:
 returncmd:
     // Trigger CmdlineLeavePre autocommands if not already triggered.
     if (!event_cmdlineleavepre_triggered)
+    {
+#ifdef FEAT_EVAL
+	set_vim_var_char(c);  // Set v:char
+#endif
 	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
+    }
 
 #ifdef FEAT_RIGHTLEFT
     cmdmsg_rl = FALSE;
@@ -2704,6 +2712,9 @@ returncmd:
 	need_wait_return = FALSE;
 
     // Trigger CmdlineLeave autocommands.
+#ifdef FEAT_EVAL
+    set_vim_var_char(c);  // Set v:char
+#endif
     trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVE);
 
     State = save_State;

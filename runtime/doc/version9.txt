@@ -41750,6 +41750,8 @@ Others: ~
   ANGLE BRACKET "]>".
 - Support for Unix domain sockets have been added for the clientserver
   feature, see |socketserver-clientserver|.
+- |CmdlineLeave| sets |v:char| to the character that caused exiting the
+  Command-line.
 
 Platform specific ~
 - MS-Winodws: Paths like "\Windows" and "/Windows" are now considered to be
