@@ -946,12 +946,10 @@ cmdline_wildchar_complete(
     int		res;
     int		j;
     int		options = WILD_NO_BEEP;
-    int		noselect = (wim_flags[0] & WIM_NOSELECT) != 0;
+    int		noselect = p_wmnu && (wim_flags[0] & WIM_NOSELECT);
 
     if (wim_flags[wim_index] & WIM_BUFLASTUSED)
 	options |= WILD_BUFLASTUSED;
-    if (noselect)
-	options |= WILD_KEEP_SOLE_ITEM;
     if (xp->xp_numfiles > 0)   // typed p_wc at least twice
     {
 	// if 'wildmode' contains "list" may still need to list
@@ -992,7 +990,11 @@ cmdline_wildchar_complete(
 	if (wim_flags[0] & WIM_LONGEST)
 	    res = nextwild(xp, WILD_LONGEST, options, escape);
 	else
+	{
+	    if (noselect || (wim_flags[wim_index] & WIM_LIST))
+		options |= WILD_NOSELECT;
 	    res = nextwild(xp, WILD_EXPAND_KEEP, options, escape);
+	}
 
 	// Remove popup window if no completion items are available
 	if (redraw_if_menu_empty && xp->xp_numfiles <= 0)
@@ -1022,25 +1024,12 @@ cmdline_wildchar_complete(
 	    if ((wim_flags[wim_index] & WIM_LIST)
 		    || (p_wmnu && (wim_flags[wim_index] & (WIM_FULL | WIM_NOSELECT))))
 	    {
-		if (!(wim_flags[0] & WIM_LONGEST))
-		{
-		    int p_wmnu_save = p_wmnu;
-
-		    p_wmnu = 0;
-
-		    // remove match
-		    nextwild(xp, WILD_PREV, options, escape);
-		    p_wmnu = p_wmnu_save;
-		}
 		(void)showmatches(xp, p_wmnu
 			&& ((wim_flags[wim_index] & WIM_LIST) == 0), noselect);
 		redrawcmd();
 		*did_wild_list = TRUE;
 		if (wim_flags[wim_index] & WIM_LONGEST)
 		    nextwild(xp, WILD_LONGEST, options, escape);
-		else if ((wim_flags[wim_index] & WIM_FULL)
-			&& !(wim_flags[wim_index] & WIM_NOSELECT))
-		    nextwild(xp, WILD_NEXT, options, escape);
 	    }
 	    else
 		vim_beep(BO_WILD);

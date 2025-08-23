@@ -239,6 +239,8 @@ nextwild(
     int		i;
     char_u	*p;
     int		from_wildtrigger_func = options & WILD_FUNC_TRIGGER;
+    int		wild_navigate = (type == WILD_NEXT || type == WILD_PREV
+	    || type == WILD_PAGEUP || type == WILD_PAGEDOWN);
 
     if (xp->xp_numfiles == -1)
     {
@@ -280,14 +282,13 @@ nextwild(
 
     // If cmd_silent is set then don't show the dots, because redrawcmd() below
     // won't remove them.
-    if (!cmd_silent && !from_wildtrigger_func)
+    if (!cmd_silent && !from_wildtrigger_func && !wild_navigate)
     {
 	msg_puts("...");	    // show that we are busy
 	out_flush();
     }
 
-    if (type == WILD_NEXT || type == WILD_PREV
-	    || type == WILD_PAGEUP || type == WILD_PAGEDOWN)
+    if (wild_navigate)
     {
 	// Get next/previous match for a previous expanded pattern.
 	p = ExpandOne(xp, NULL, NULL, 0, type);
@@ -310,8 +311,6 @@ nextwild(
 	{
 	    int use_options = options |
 		    WILD_HOME_REPLACE|WILD_ADD_SLASH|WILD_SILENT;
-	    if (use_options & WILD_KEEP_SOLE_ITEM)
-		use_options &= ~WILD_KEEP_SOLE_ITEM;
 	    if (escape)
 		use_options |= WILD_ESCAPE;
 	    if (p_wic)
@@ -338,7 +337,14 @@ nextwild(
 	}
     }
 
-    if (p != NULL && !got_int)
+    // Save cmdline before inserting selected item
+    if (!wild_navigate && ccline->cmdbuff != NULL)
+    {
+	vim_free(cmdline_orig);
+	cmdline_orig = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
+    }
+
+    if (p != NULL && !got_int && !(options & WILD_NOSELECT))
     {
 	size_t	plen = STRLEN(p);
 	int	difflen;
@@ -372,7 +378,8 @@ nextwild(
 
     if (xp->xp_numfiles <= 0 && p == NULL)
 	beep_flush();
-    else if (xp->xp_numfiles == 1 && !(options & WILD_KEEP_SOLE_ITEM))
+    else if (xp->xp_numfiles == 1 && !(options & WILD_NOSELECT)
+	    && !wild_navigate)
 	// free expanded pattern
 	(void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
 
@@ -391,7 +398,8 @@ cmdline_pum_create(
 	expand_T	*xp,
 	char_u		**matches,
 	int		numMatches,
-	int		showtail)
+	int		showtail,
+	int		noselect)
 {
     int		i;
     int		prefix_len;
@@ -421,7 +429,7 @@ cmdline_pum_create(
     compl_startcol = MAX(0, compl_startcol - prefix_len);
 
     // no default selection
-    compl_selected = -1;
+    compl_selected = noselect ? -1 : 0;
 
     pum_clear();
     cmdline_pum_display();
@@ -1072,7 +1080,7 @@ ExpandOne(
 	if (compl_match_array != NULL)
 	    cmdline_pum_remove(get_cmdline_info(), FALSE);
     }
-    xp->xp_selected = 0;
+    xp->xp_selected = (options & WILD_NOSELECT) ? -1 : 0;
 
     if (mode == WILD_FREE)	// only release file name
 	return NULL;
@@ -1288,13 +1296,6 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
     int		attr;
     int		showtail;
 
-    // Save cmdline before expansion
-    if (ccline->cmdbuff != NULL)
-    {
-	vim_free(cmdline_orig);
-	cmdline_orig = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
-    }
-
     if (xp->xp_numfiles == -1)
     {
 	int retval;
@@ -1315,7 +1316,7 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
     if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
 	// cmdline completion popup menu (with wildoptions=pum)
 	return cmdline_pum_create(ccline, xp, matches, numMatches,
-		showtail && !noselect);
+		showtail && !noselect, noselect);
 
     if (!wildmenu)
     {
@@ -1331,7 +1332,7 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
     if (got_int)
 	got_int = FALSE;	// only int. the completion, not the cmd line
     else if (wildmenu)
-	win_redr_status_matches(xp, numMatches, matches, -1, showtail);
+	win_redr_status_matches(xp, numMatches, matches, noselect ? -1 : 0, showtail);
     else
     {
 	// find the length of the longest file name

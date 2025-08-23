@@ -900,7 +900,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_NOERROR		    0x800  // sets EW_NOERROR
 #define WILD_BUFLASTUSED	    0x1000
 #define BUF_DIFF_FILTER		    0x2000
-#define WILD_KEEP_SOLE_ITEM	    0x4000
+#define WILD_NOSELECT		    0x4000
 #define WILD_MAY_EXPAND_PATTERN	    0x8000
 #define WILD_FUNC_TRIGGER	    0x10000 // called from wildtrigger()
 
