@@ -41648,6 +41648,8 @@ Other new features ~
 - Add the new default highlighting groups "Bold", "Italic" and "BoldItalic"
   for use in syntax scripts.
 
+- |items()| function now supports Blob.
+
 							*changed-9.2*
 Changed~
 -------
