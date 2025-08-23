@@ -8887,8 +8887,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	You need to do this when your system has no locale support for UTF-8.
 
 		*'termguicolors'* *'tgc'* *'notermguicolors'* *'notgc'* *E954*
-'termguicolors' 'tgc'	boolean (default off unless Vim detects that it runs
-				in a capable terminal)
+'termguicolors' 'tgc'	boolean (default off)
 			global
 			{not available when compiled without the
 			|+termguicolors| feature}
