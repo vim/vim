@@ -108,7 +108,6 @@ int WSInitialized = FALSE; // WinSock is initialized
 #endif
 
 
-#ifndef PROTO
 /*
  * Save the instance handle of the exe/dll.
  */
@@ -117,7 +116,6 @@ SaveInst(HINSTANCE hInst)
 {
     g_hinst = hInst;
 }
-#endif
 
 #if defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*
@@ -319,6 +317,7 @@ mch_FullName(
 mch_isFullName(char_u *fname)
 {
     // A name like "d:/foo" and "//server/share" is absolute.  "d:foo" is not.
+    // /foo and \foo are absolute too because Windows keeps a current drive.
     // Another way to check is to use mch_FullName() and see if the result is
     // the same as the name or mch_FullName() fails.  However, this has quite a
     // bit of overhead, so let's not do that.
@@ -326,7 +325,7 @@ mch_isFullName(char_u *fname)
 	return FALSE;
     return ((ASCII_ISALPHA(fname[0]) && fname[1] == ':'
 				      && (fname[2] == '/' || fname[2] == '\\'))
-	    || (fname[0] == fname[1] && (fname[0] == '/' || fname[0] == '\\')));
+	    || (fname[0] == '/' || fname[0] == '\\'));
 }
 
 /*
@@ -3001,7 +3000,10 @@ expand_font_enumproc(
  * platform code.
  */
     void
-gui_mch_expand_font(optexpand_T *args, void *param UNUSED, int (*add_match)(char_u *val))
+gui_mch_expand_font(
+    optexpand_T	*args,
+    void	*param UNUSED,
+    int		(*add_match)(char_u *val))
 {
     expand_T	    *xp = args->oe_xp;
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')

@@ -3553,4 +3553,21 @@ def Test_generic_enum_constructor_error()
   v9.CheckSourceFailure(lines, "E1010: Type not recognized: A", 4)
 enddef
 
+" Test for using more than 10 type arguments
+def Test_generic_max_type_args()
+  var lines =<< trim END
+    vim9script
+
+    def Fn<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>(a1: A1): A1
+      var x: A1 = a1
+      return x
+    enddef
+
+    assert_equal(10, Fn<number, string, string, string, string, string, string, string, string, string, string, string>(10))
+
+    assert_equal('abc', Fn<string, number, number, number, number, number, number, number, number, number, number, number>('abc'))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

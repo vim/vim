@@ -3,7 +3,7 @@ vim9script
 # Vim runtime support library
 #
 # Maintainer:   The Vim Project <https://github.com/vim/vim>
-# Last Change:  2025 Jan 29
+# Last Change:  2025 Aug 15
 
 export def IsSafeExecutable(filetype: string, executable: string): bool
   if empty(exepath(executable))
@@ -121,6 +121,11 @@ def Viewer(): string
 enddef
 
 export def Open(file: string)
+  # disable shellslash for shellescape, required on Windows #17995
+  if exists('+shellslash') && &shellslash
+    &shellslash = false
+    defer setbufvar('%', '&shellslash', true)
+  endif
   Launch($"{Viewer()} {shellescape(file, 1)}")
 enddef
 

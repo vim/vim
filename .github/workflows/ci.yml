@@ -85,10 +85,16 @@ jobs:
           - features: normal
             compiler: gcc
             extra: [vimtags]
+          - features: huge
+            compiler: gcc
+            extra: [no_x11]
+          - features: huge
+            compiler: gcc
+            extra: [socketserver]
 
     steps:
       - name: Checkout repository from github
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check Filelist (for packaging)
         run: |
@@ -220,7 +226,7 @@ jobs:
           tiny)
             echo "TEST=testtiny"
             if ${{ contains(matrix.extra, 'nogui') }}; then
-              echo "CONFOPT=--disable-gui"
+              CONFOPT="--disable-gui"
             fi
             ;;
           normal)
@@ -232,10 +238,16 @@ jobs:
               PYTHON3_CONFOPT="--with-python3-stable-abi=3.8"
             fi
             # The ubuntu-24.04 CI runner does not provide a python2 package.
-            echo "CONFOPT=--enable-perlinterp=${INTERFACE} --enable-pythoninterp=no --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
+            CONFOPT="--enable-perlinterp=${INTERFACE} --enable-pythoninterp=no --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
             ;;
           esac
 
+          if ${{ contains(matrix.extra, 'no_x11') }}; then
+            CONFOPT="${CONFOPT} --without-x --disable-gui"
+          fi
+          if ${{ contains(matrix.extra, 'socketserver') }}; then
+            CONFOPT="${CONFOPT} --enable-socketserver"
+          fi
           if ${{ matrix.coverage == true }}; then
             CFLAGS="${CFLAGS} --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
@@ -259,6 +271,7 @@ jobs:
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
           fi
           echo "CFLAGS=${CFLAGS}"
+          echo "CONFOPT=${CONFOPT}"
           # Disables GTK attempt to integrate with the accessibility service that does run in CI.
           echo "NO_AT_BRIDGE=1"
           ) >> $GITHUB_ENV
@@ -382,7 +395,7 @@ jobs:
 
     steps:
       - name: Checkout repository from github
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install packages
         if: matrix.features == 'huge'
@@ -572,7 +585,7 @@ jobs:
           release: false
 
       - name: Checkout repository from github
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Create a list of download URLs
         shell: cmd

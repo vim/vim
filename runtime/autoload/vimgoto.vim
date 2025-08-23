@@ -3,7 +3,7 @@ vim9script
 # Language:     Vim9 script
 # Contributers: @lacygoill
 #               Shane-XB-Qian
-# Last Change:  2025 Aug 12
+# Last Change:  2025 Aug 13
 #
 # Vim Script to handle
 # :import, :packadd and :colorscheme
@@ -39,7 +39,7 @@ enddef
 #}}}1
 # Core {{{1
 def HandlePackaddLine(editcmd: string, curline: string) #{{{2
-    var pat: string = '^\s*\%(:\s*\)\=packadd!\=\s\+\zs\S\+$'
+    var pat: string = '\s*\%(:\s*\)\=packadd!\=\s\+\zs\S\+\>\ze'
     var plugin: string = curline
         ->matchstr(pat)
         ->substitute('^vim-\|\.vim$', '', 'g')
@@ -65,7 +65,7 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
 enddef
 
 def HandleColoLine(editcmd: string, curline: string) #{{{2
-    var pat: string = '^\s*\%(:\s*\)\=colo\%[rscheme]\s\+\zs\S\+$'
+    var pat: string = '\s*\%(:\s*\)\=colo\%[rscheme]\s\+\zs\S\+\>\ze'
     var colo: string = curline->matchstr(pat)
 
     if colo == ''

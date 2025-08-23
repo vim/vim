@@ -449,6 +449,7 @@ runtime/syntax/bzr.vim					@hdima
 runtime/syntax/cabal.vim				@coot
 runtime/syntax/cabalconfig.vim				@coot
 runtime/syntax/cabalproject.vim				@coot
+runtime/syntax/cangjie.vim				@WuJunkai2004
 runtime/syntax/cf.vim					@ernstvanderlinden
 runtime/syntax/chatito.vim				@ObserverOfTime
 runtime/syntax/chicken.vim				@evhan

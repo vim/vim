@@ -118,11 +118,33 @@ function Test_tabpanel_mouse()
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal(3, tabpagenr())
 
+  " Drag the active tab page
+  tablast
+  call test_setmouse(3, 1)
+  call feedkeys("\<LeftMouse>\<LeftDrag>", 'xt')
+  call test_setmouse(2, 1)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call assert_equal(3, tabpagenr())
+  call feedkeys("\<LeftRelease>", 'xt')
+  tabmove $
+
+  " Drag the inactive tab page
+  tablast
+  call test_setmouse(2, 1)
+  call feedkeys("\<LeftMouse>\<LeftDrag>", 'xt')
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call assert_equal(2, tabpagenr())
+  call feedkeys("\<LeftRelease>", 'xt')
+  tabmove 2
+
   " Confirm that tabpagenr() does not change when dragging outside the tabpanel
+  tablast
   call test_setmouse(3, 30)
-  call feedkeys("\<LeftMouse>", 'xt')
+  call feedkeys("\<LeftMouse>\<LeftDrag>", 'xt')
   call test_setmouse(1, 30)
   call feedkeys("\<LeftDrag>", 'xt')
+  call feedkeys("\<LeftRelease>", 'xt')
   call assert_equal(3, tabpagenr())
 
   call feedkeys("\<LeftMouse>", 'xt')

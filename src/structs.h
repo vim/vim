@@ -3606,7 +3606,7 @@ struct file_buffer
 }; // file_buffer
 
 
-#ifdef FEAT_DIFF
+#if defined(FEAT_DIFF) || defined(PROTO)
 /*
  * Stuff for diff mode.
  */
@@ -3671,6 +3671,9 @@ struct diffline_S
     int bufidx;
     int lineoff;
 };
+#else  // FEAT_DIFF
+typedef void diffline_T;
+typedef void diffline_change_T;
 #endif
 
 #define SNAP_HELP_IDX	0

@@ -43,6 +43,7 @@ $quote	eval.txt	/*$quote*
 'a	motion.txt	/*'a*
 'ac'	options.txt	/*'ac'*
 'acd'	options.txt	/*'acd'*
+'acl'	options.txt	/*'acl'*
 'ai'	options.txt	/*'ai'*
 'akm'	options.txt	/*'akm'*
 'al'	options.txt	/*'al'*
@@ -64,6 +65,7 @@ $quote	eval.txt	/*$quote*
 'asd'	options.txt	/*'asd'*
 'autochdir'	options.txt	/*'autochdir'*
 'autocomplete'	options.txt	/*'autocomplete'*
+'autocompletedelay'	options.txt	/*'autocompletedelay'*
 'autoindent'	options.txt	/*'autoindent'*
 'autoprint'	vi_diff.txt	/*'autoprint'*
 'autoread'	options.txt	/*'autoread'*
@@ -1100,6 +1102,7 @@ $quote	eval.txt	/*$quote*
 't_KJ'	term.txt	/*'t_KJ'*
 't_KK'	term.txt	/*'t_KK'*
 't_KL'	term.txt	/*'t_KL'*
+'t_Ms'	term.txt	/*'t_Ms'*
 't_PE'	term.txt	/*'t_PE'*
 't_PS'	term.txt	/*'t_PS'*
 't_RB'	term.txt	/*'t_RB'*
@@ -1495,6 +1498,7 @@ $quote	eval.txt	/*$quote*
 +scrollbind	various.txt	/*+scrollbind*
 +signs	various.txt	/*+signs*
 +smartindent	various.txt	/*+smartindent*
++socketserver	various.txt	/*+socketserver*
 +sodium	various.txt	/*+sodium*
 +sound	various.txt	/*+sound*
 +spell	various.txt	/*+spell*
@@ -1555,6 +1559,7 @@ $quote	eval.txt	/*$quote*
 --	starting.txt	/*--*
 ---	starting.txt	/*---*
 --clean	starting.txt	/*--clean*
+--clientserver	remote.txt	/*--clientserver*
 --cmd	starting.txt	/*--cmd*
 --echo-wid	starting.txt	/*--echo-wid*
 --gui-dialog-file	starting.txt	/*--gui-dialog-file*
@@ -4695,6 +4700,11 @@ E156	sign.txt	/*E156*
 E1560	vim9.txt	/*E1560*
 E1561	vim9.txt	/*E1561*
 E1562	options.txt	/*E1562*
+E1563	remote.txt	/*E1563*
+E1564	remote.txt	/*E1564*
+E1565	remote.txt	/*E1565*
+E1566	remote.txt	/*E1566*
+E1567	remote.txt	/*E1567*
 E157	sign.txt	/*E157*
 E158	sign.txt	/*E158*
 E159	sign.txt	/*E159*
@@ -6484,6 +6494,7 @@ c_space_errors	syntax.txt	/*c_space_errors*
 c_syntax_for_h	syntax.txt	/*c_syntax_for_h*
 c_wildchar	cmdline.txt	/*c_wildchar*
 call()	builtin.txt	/*call()*
+cangjie.vim	syntax.txt	/*cangjie.vim*
 carriage-return	intro.txt	/*carriage-return*
 case	change.txt	/*case*
 catch-all	eval.txt	/*catch-all*
@@ -7422,6 +7433,7 @@ ft-bash-syntax	syntax.txt	/*ft-bash-syntax*
 ft-basic-syntax	syntax.txt	/*ft-basic-syntax*
 ft-c-omni	insert.txt	/*ft-c-omni*
 ft-c-syntax	syntax.txt	/*ft-c-syntax*
+ft-cangjie-syntax	syntax.txt	/*ft-cangjie-syntax*
 ft-ch-syntax	syntax.txt	/*ft-ch-syntax*
 ft-changelog-plugin	filetype.txt	/*ft-changelog-plugin*
 ft-changelog-syntax	syntax.txt	/*ft-changelog-syntax*
@@ -10221,6 +10233,10 @@ slow-fast-terminal	term.txt	/*slow-fast-terminal*
 slow-start	starting.txt	/*slow-start*
 slow-terminal	term.txt	/*slow-terminal*
 socket-interface	channel.txt	/*socket-interface*
+socketserver-clientserver	remote.txt	/*socketserver-clientserver*
+socketserver-differences	remote.txt	/*socketserver-differences*
+socketserver-name	remote.txt	/*socketserver-name*
+socketserver-x11	remote.txt	/*socketserver-x11*
 sort()	builtin.txt	/*sort()*
 sorting	change.txt	/*sorting*
 sound-functions	usr_41.txt	/*sound-functions*
@@ -10572,6 +10588,7 @@ t_KI	term.txt	/*t_KI*
 t_KJ	term.txt	/*t_KJ*
 t_KK	term.txt	/*t_KK*
 t_KL	term.txt	/*t_KL*
+t_Ms	term.txt	/*t_Ms*
 t_PE	term.txt	/*t_PE*
 t_PS	term.txt	/*t_PS*
 t_RB	term.txt	/*t_RB*
@@ -11084,6 +11101,8 @@ unix	os_unix.txt	/*unix*
 unlisted-buffer	windows.txt	/*unlisted-buffer*
 up-down-motions	motion.txt	/*up-down-motions*
 uppercase	change.txt	/*uppercase*
+uri_decode()	builtin.txt	/*uri_decode()*
+uri_encode()	builtin.txt	/*uri_encode()*
 urxvt-mouse	options.txt	/*urxvt-mouse*
 use-visual-cmds	version4.txt	/*use-visual-cmds*
 useful-mappings	tips.txt	/*useful-mappings*
@@ -11242,6 +11261,7 @@ v:t_string	eval.txt	/*v:t_string*
 v:t_tuple	eval.txt	/*v:t_tuple*
 v:t_typealias	eval.txt	/*v:t_typealias*
 v:termblinkresp	eval.txt	/*v:termblinkresp*
+v:termda1	eval.txt	/*v:termda1*
 v:termrbgresp	eval.txt	/*v:termrbgresp*
 v:termresponse	eval.txt	/*v:termresponse*
 v:termrfgresp	eval.txt	/*v:termrfgresp*

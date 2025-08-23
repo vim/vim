@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
+*various.txt*   For Vim version 9.1.  Last change: 2025 Aug 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -487,6 +487,8 @@ m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
 T  *+scrollbind*	'scrollbind'
 N  *+signs*		|:sign|
 T  *+smartindent*	'smartindent'
+N  *+socketserver*	Unix only: socket server backend for clientserver
+			functionality
 H  *+sodium*		compiled with libsodium for better encryption support
 H  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
 N  *+spell*		spell checking support, see |spell|

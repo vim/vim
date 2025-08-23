@@ -745,7 +745,10 @@ form_realize_child(GtkForm *form, GtkFormChild *child)
 }
 
     static void
-form_position_child(GtkForm *form, GtkFormChild *child, gboolean force_allocate)
+form_position_child(
+    GtkForm		*form,
+    GtkFormChild	*child,
+    gboolean		force_allocate)
 {
     gint x;
     gint y;
