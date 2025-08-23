@@ -7078,8 +7078,11 @@ ins_complete(int c, int enable_pum)
     int		insert_match;
     int		no_matches_found;
 #ifdef ELAPSED_FUNC
-    // Timestamp when match collection starts
-    elapsed_T	compl_start_tv = {0};
+    elapsed_T	compl_start_tv = {0}; // Time when match collection starts
+    int		disable_ac_delay;
+
+    disable_ac_delay = compl_started && ctrl_x_mode_normal()
+	&& (c == Ctrl_N || c == Ctrl_P || c == Ctrl_R || ins_compl_pum_key(c));
 #endif
 
     compl_direction = ins_compl_key2dir(c);
@@ -7088,16 +7091,13 @@ ins_complete(int c, int enable_pum)
     if (!compl_started)
     {
 	if (ins_compl_start() == FAIL)
-	{
-	    compl_autocomplete = FALSE;
 	    return FAIL;
-	}
     }
     else if (insert_match && stop_arrow() == FAIL)
 	return FAIL;
 
 #ifdef ELAPSED_FUNC
-    if (compl_autocomplete && p_acl > 0)
+    if (compl_autocomplete && p_acl > 0 && !disable_ac_delay)
 	ELAPSED_INIT(compl_start_tv);
 #endif
     compl_curr_win = curwin;
@@ -7152,8 +7152,8 @@ ins_complete(int c, int enable_pum)
 
     // Wait for the autocompletion delay to expire
 #ifdef ELAPSED_FUNC
-    if (compl_autocomplete && p_acl > 0 && !no_matches_found
-	    && ELAPSED_FUNC(compl_start_tv) < p_acl)
+    if (compl_autocomplete && p_acl > 0 && !disable_ac_delay
+	    && !no_matches_found && ELAPSED_FUNC(compl_start_tv) < p_acl)
     {
 	cursor_on();
 	setcursor();
@@ -7178,19 +7178,18 @@ ins_complete(int c, int enable_pum)
 
     compl_was_interrupted = compl_interrupted;
     compl_interrupted = FALSE;
-    compl_autocomplete = FALSE;
 
     return OK;
 }
 
 /*
- * Enable/disable autocompletion
+ * Enable autocompletion
  */
     void
-ins_compl_set_autocomplete(int value)
+ins_compl_enable_autocomplete(void)
 {
 #ifdef ELAPSED_FUNC
-    compl_autocomplete = value;
+    compl_autocomplete = TRUE;
 #endif
 }
 

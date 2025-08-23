@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 9.1.  Last change: 2025 Aug 18
+*remote.txt*    For Vim version 9.1.  Last change: 2025 Aug 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -9,6 +9,7 @@ Vim client-server communication				*client-server*
 1. Common functionality		|clientserver|
 2. X11 specific items		|x11-clientserver|
 3. MS-Windows specific items	|w32-clientserver|
+4. Socket server specific items	|socketserver-clientserver|
 
 ==============================================================================
 1. Common functionality					*clientserver*
@@ -77,10 +78,10 @@ The following command line arguments are available:
    --serverlist			Output a list of server names.
 								*--clientserver*
    --clientserver {method}	Use the specified method {method} as the
-				backend for clientserver functionality. Can
+				backend for clientserver functionality.  Can
 				either be "socket" or "x11".
-				{only available when Vim is compiled with both
-				|+X11| and |+socketserver| features}
+				{only available when compiled with both |+X11|
+				and |+socketserver| features}
 
 
 Examples ~
@@ -218,16 +219,16 @@ When using gvim, the --remote-wait only works properly this way: >
 	start /w gvim --remote-wait file.txt
 <
 ==============================================================================
-3. Socket server specific items			    *socketserver-clientserver*
+4. Socket server specific items			    *socketserver-clientserver*
 				    *E1563* *E1564* *E1565* *E1566* *E1567*
 
 The communication between client and server is done using Unix domain sockets.
 These sockets are either placed in these directories in the following order of
 availability:
     1. "$XDG_RUTIME_DIR/vim" if $XDG_RUNTIME_DIR is set in the environment.
-    2. "$TMPDIR/vim-[uid]", where "[uid]" is the uid of the user. This
+    2. "$TMPDIR/vim-[uid]", where "[uid]" is the uid of the user.  This
        directory will have the access permissions set to 700 so only the user
-       can read or write from/to it. If $TMPDIR is not set, "/tmp" is used.
+       can read or write from/to it.  If $TMPDIR is not set, "/tmp" is used.
 
 						    *socketserver-name*
 When specifying the server id/name, it can be taken as a generic name or an
@@ -238,9 +239,9 @@ placed in the above common directories.  Note that a server id/name can only
 contain slashes "/" if it is taken as a path, so names such as "abc/dir" will
 be invalid.
 
-Socket server functionality is available in both GTK GUI and terminal versions of
-Vim.  Unless Vim is compiled with |+autoservername| feature, the socket server
-will have to started explicitly, just like X11, even in the GUI.
+Socket server functionality is available in both GTK GUI and terminal versions
+of Vim.  Unless Vim is compiled with |+autoservername| feature, the socket
+server will have to started explicitly, just like X11, even in the GUI.
 
 If Vim crashes or does not exit cleanly, the socket server will not remove the
 socket file and it will be left around.  This is generally not a problem,
