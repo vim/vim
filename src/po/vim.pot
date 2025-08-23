@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-08-18 21:30+0200\n"
+"POT-Creation-Date: 2025-08-23 16:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9950,6 +9950,12 @@ msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
 msgstr ""
 
 msgid "automatic completion in insert mode"
+msgstr ""
+
+msgid "initial decay timeout for 'autocomplete' algorithm"
+msgstr ""
+
+msgid "initial decay timeout for CTRL-N and CTRL-P completion"
 msgstr ""
 
 msgid "delay in msec before menu appears after typing"

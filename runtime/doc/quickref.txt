@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 9.1.  Last change: 2025 Aug 16
+*quickref.txt*  For Vim version 9.1.  Last change: 2025 Aug 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -609,6 +609,7 @@ Short explanation of each option:		*option-list*
 'autochdir'	  'acd'     change directory to the file in the current window
 'autocomplete'	  'ac'      enable automatic completion in insert mode
 'autocompletedelay' 'acl'   delay in msec before menu appears after typing
+'autocompletetimeout' 'act' initial decay timeout for autocompletion algorithm
 'autoindent'	  'ai'	    take indent for new line from previous line
 'autoread'	  'ar'	    autom. read file when changed outside of Vim
 'autoshelldir'	  'asd'     change directory to the shell's current directory
@@ -661,6 +662,7 @@ Short explanation of each option:		*option-list*
 'completeopt'	  'cot'     options for Insert mode completion
 'completepopup'	  'cpp'     options for the Insert mode completion info popup
 'completeslash'	  'csl'	    like 'shellslash' for completion
+'completetimeout' 'cto'     initial decay timeout for CTRL-N and CTRL-P
 'concealcursor'	  'cocu'    whether concealable text is hidden in cursor line
 'conceallevel'	  'cole'    whether concealable text is shown or hidden
 'confirm'	  'cf'	    ask what to do about unsaved/read-only files

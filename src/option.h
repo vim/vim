@@ -513,6 +513,7 @@ EXTERN long	p_ch;		// 'cmdheight'
 EXTERN char_u	*p_cms;		// 'commentstring'
 #endif
 EXTERN char_u	*p_cpt;		// 'complete'
+EXTERN long	p_cto;		// 'completetimeout'
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 EXTERN int	p_confirm;	// 'confirm'
 #endif
@@ -524,6 +525,7 @@ EXTERN unsigned cia_flags;	// order flags of 'completeitemalign'
 EXTERN char_u	*p_cot;		// 'completeopt'
 EXTERN unsigned	cot_flags;	// flags from 'completeopt'
 EXTERN int	p_ac;		// 'autocomplete'
+EXTERN long	p_act;		// 'autocompletetimeout'
 EXTERN long	p_acl;		// 'autocompletedelay'
 // Keep in sync with p_cot_values in optionstr.c
 #define COT_MENU	0x001

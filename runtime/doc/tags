@@ -44,6 +44,7 @@ $quote	eval.txt	/*$quote*
 'ac'	options.txt	/*'ac'*
 'acd'	options.txt	/*'acd'*
 'acl'	options.txt	/*'acl'*
+'act'	options.txt	/*'act'*
 'ai'	options.txt	/*'ai'*
 'akm'	options.txt	/*'akm'*
 'al'	options.txt	/*'al'*
@@ -66,6 +67,7 @@ $quote	eval.txt	/*$quote*
 'autochdir'	options.txt	/*'autochdir'*
 'autocomplete'	options.txt	/*'autocomplete'*
 'autocompletedelay'	options.txt	/*'autocompletedelay'*
+'autocompletetimeout'	options.txt	/*'autocompletetimeout'*
 'autoindent'	options.txt	/*'autoindent'*
 'autoprint'	vi_diff.txt	/*'autoprint'*
 'autoread'	options.txt	/*'autoread'*
@@ -175,6 +177,7 @@ $quote	eval.txt	/*$quote*
 'completeopt'	options.txt	/*'completeopt'*
 'completepopup'	options.txt	/*'completepopup'*
 'completeslash'	options.txt	/*'completeslash'*
+'completetimeout'	options.txt	/*'completetimeout'*
 'concealcursor'	options.txt	/*'concealcursor'*
 'conceallevel'	options.txt	/*'conceallevel'*
 'confirm'	options.txt	/*'confirm'*
@@ -205,6 +208,7 @@ $quote	eval.txt	/*$quote*
 'cst'	options.txt	/*'cst'*
 'csto'	options.txt	/*'csto'*
 'csverb'	options.txt	/*'csverb'*
+'cto'	options.txt	/*'cto'*
 'cuc'	options.txt	/*'cuc'*
 'cul'	options.txt	/*'cul'*
 'culopt'	options.txt	/*'culopt'*

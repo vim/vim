@@ -41833,12 +41833,14 @@ Options: ~
 
 'autocomplete'		Enable auto completion |ins-autocompletion|
 'autocompletedelay'	Delay in msec before menu appears after typing
-'chistory'		Size of the quickfix stack |quickfix-stack|.
-'clipmethod'		How to access the clipboard.
+'autocompletetimeout'	initial decay timeout for autocompletion algorithm
+'chistory'		Size of the quickfix stack |quickfix-stack|
+'clipmethod'		How to access the clipboard
 'completefuzzycollect'	Enable fuzzy collection of candidates for (some)
 			|ins-completion| modes
 'completeitemalign'	Order of |complete-items| in Insert mode completion
 			popup
+'completetimeout'	initial decay timeout for CTRL-N and CTRL-P
 'diffanchors'		list of {address} to force syncing of diffs
 'eventignorewin'	autocommand events that are ignored in a window
 'findfunc'		Vim function to obtain the results for a |:find|
