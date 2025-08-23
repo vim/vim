@@ -838,10 +838,6 @@ static int PythonMod_Init(void);
 ///////////////////////////////////////////////////////
 // 1. Python interpreter main program.
 
-#if PYTHON_API_VERSION < 1007 // Python 1.4
-typedef PyObject PyThreadState;
-#endif
-
 #ifndef PY_CAN_RECURSE
 static PyThreadState *saved_python_thread = NULL;
 
@@ -1560,17 +1556,6 @@ do_pyeval(char_u *str, dict_T *locals, typval_T *rettv)
 	rettv->vval.v_number = 0;
     }
 }
-
-// Don't generate a prototype for the next function, it generates an error on
-// newer Python versions.
-#if PYTHON_API_VERSION < 1007 /* Python 1.4 */ && !defined(PROTO)
-
-    char *
-Py_GetProgramName(void)
-{
-    return "vim";
-}
-#endif // Python 1.4
 
     int
 set_ref_in_python(int copyID)
