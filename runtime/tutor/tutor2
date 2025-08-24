@@ -162,6 +162,40 @@ REFERENCE: 	Marks 		:h marks
 		Mark Motions 	:h mark-motions  (difference between ' and `)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Lesson 2.1.5: MASTERING TEXT OBJECTS
+
+   ** Operate on logical text blocks with precision using text objects **
+
+  1. Practice word operations:
+     - Place cursor on any word in the line below
+     - Type  diw  to delete INNER word (word without surrounding space)
+     - Type  daw  to delete A WORD (including trailing whitespace)
+     - Try with other operators:  ciw  (change),  yiw  (yank),  gqiw  (format)
+
+---> Practice on: "Vim's", (text_object), and 'powerful' words here.
+
+  2. Work with bracketed content:
+     - Put cursor inside any () {} [] <> pair below
+     - Type  di(  or  dib  (delete inner bracket)
+     - Type  da(  or  dab  (delete around brackets)
+     - Try same with  i"/a"  for quotes,  it/at  for HTML/XML tags
+
+---> Test cases: {curly}, [square], <angle>, and "quoted" items.
+
+  3. Paragraph and sentence manipulation:
+     - Use  dip  to delete inner paragraph (cursor anywhere in paragraph)
+     - Use  vap  to visually select entire paragraph
+     - Try  das  to delete a sentence (works between .!? punctuation)
+
+  4. Advanced combinations:
+     - ciwnew<ESC>    - Change current word to "new"
+     - yss"<ESC>      - Wrap entire line in quotes (vim-surround plugin style)
+     - gUit           - Uppercase inner HTML tag content
+     - va"p           - Select quoted text and paste over it
+
+---> Final exercise: (Modify "this" text) by [applying {various} operations]<
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 			       Lesson 2.1 SUMMARY
 
@@ -189,6 +223,14 @@ REFERENCE: 	Marks 		:h marks
 
  10. Place marks from command mode   m[a-zA-Z0-9]
  11. Move line-wise to a mark with   '
+
+ 12. Text objects provide precision editing:
+     - iw/aw - inner/around word
+     - i[/a[ - inner/around bracket
+     - i"/a" - inner/around quotes
+     - it/at - inner/around tag
+     - ip/ap - inner/around paragraph
+     - is/as - inner/around sentence
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
