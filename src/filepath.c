@@ -3543,7 +3543,7 @@ dos_expandpath(
     size_t	len;
     int		starstar = FALSE;
     static int	stardepth = 0;	    // depth for "**" expansion
-	static int	wildcarddepth = 0;	    // depth for other wildcard expansions
+    static int	wildcarddepth = 0;	// depth for other wildcard expansions
 
     HANDLE		hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW    wfb;
@@ -3804,7 +3804,7 @@ unix_expandpath(
     size_t	len;
     int		starstar = FALSE;
     static int	stardepth = 0;	    // depth for "**" expansion
-	static int	wildcarddepth = 0;	    // depth for other wildcard expansions
+    static int	wildcarddepth = 0;	// depth for other wildcard expansions
 
     DIR		*dirp;
     struct dirent *dp;
