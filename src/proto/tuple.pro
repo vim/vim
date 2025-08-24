@@ -26,7 +26,7 @@ long tuple_count(tuple_T *tuple, typval_T *needle, long idx, int ic);
 void tuple2items(typval_T *argvars, typval_T *rettv);
 int index_tuple(tuple_T *tuple, typval_T *tv, int start_idx, int ic);
 int indexof_tuple(tuple_T *tuple, long startidx, typval_T *expr);
-varnumber_T tuple_max_min(tuple_T *tuple, int domax, int *error);
+typval_T *tuple_max_min(tuple_T *tuple, int domax);
 void tuple_repeat(tuple_T *tuple, int n, typval_T *rettv);
 void tuple_reverse(tuple_T *tuple, typval_T *rettv);
 void tuple_reduce(typval_T *argvars, typval_T *expr, typval_T *rettv);

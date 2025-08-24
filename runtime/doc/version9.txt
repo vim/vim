@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Aug 23
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Aug 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41752,6 +41752,7 @@ Others: ~
   feature, see |socketserver-clientserver|.
 - |CmdlineLeave| sets |v:char| to the character that caused exiting the
   Command-line.
+- |min()|/|max()| can handle all comparable data types.
 
 Platform specific ~
 - MS-Winodws: Paths like "\Windows" and "/Windows" are now considered to be

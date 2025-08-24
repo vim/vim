@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 23
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Aug 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7626,7 +7626,7 @@ max({expr})							*max()*
 		Can also be used as a |method|: >
 			mylist->max()
 <
-		Return type: |Number|
+		Return type: any, depending on {expr}
 
 
 menu_info({name} [, {mode}])				*menu_info()*
@@ -7718,7 +7718,7 @@ min({expr})							*min()*
 		Can also be used as a |method|: >
 			mylist->min()
 <
-		Return type: |Number|
+		Return type: any, depending on {expr}
 
 
 mkdir({name} [, {flags} [, {prot}]])			*mkdir()* *E739*
