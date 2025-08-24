@@ -127,7 +127,6 @@ def s:GetFilenameChecks(): dict<list<string>>
     asy: ['file.asy'],
     atlas: ['file.atl', 'file.as'],
     authzed: ['schema.zed'],
-    autoconf: ['configure.in', 'configure.ac', 'alocal.m4', 'file.at'],
     autohotkey: ['file.ahk'],
     autoit: ['file.au3'],
     automake: ['GNUmakefile.am', 'makefile.am', 'Makefile.am'],
@@ -192,7 +191,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     coco: ['file.atg'],
     conaryrecipe: ['file.recipe'],
     conf: ['auto.master', 'file.conf', 'texdoc.cnf', '.x11vncrc', '.chktexrc', '.ripgreprc', 'ripgreprc', 'file.ctags'],
-    config: ['/etc/hostname.file', 'any/etc/hostname.file'],
+    config: ['/etc/hostname.file', 'any/etc/hostname.file', 'configure.in', 'configure.ac', 'alocal.m4', 'file.at'],
     confini: ['pacman.conf', 'paru.conf', 'mpv.conf', 'any/.aws/config', 'any/.aws/credentials', 'file.nmconnection',
               'any/.gnuradio/grc.conf', 'any/gnuradio/config.conf', 'any/gnuradio/conf.d/modtool.conf'],
     context: ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
@@ -1200,19 +1199,19 @@ func Test_autoconf_file()
   try
     call writefile(['AC_CHECK_HEADERS([stdio.h])'], 'foo.m4', 'D')
     split foo.m4
-    call assert_equal('autoconf', &filetype)
+    call assert_equal('config', &filetype)
     bwipe!
 
     call writefile(['AS_IF([true], [:])'], 'bar.m4', 'D')
     split bar.m4
-    call assert_equal('autoconf', &filetype)
+    call assert_equal('config', &filetype)
     bwipe!
 
     call writefile(['AC_INIT([foo],[1.0])'], 'configure.ac')
     call mkdir('m4', 'p')
     call writefile([], 'm4/empty.m4', 'D')
     split m4/empty.m4
-    call assert_equal('autoconf', &filetype)
+    call assert_equal('config', &filetype)
     bwipe!
   finally
     call delete('m4', 'rf')

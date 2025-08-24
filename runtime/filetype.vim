@@ -220,7 +220,7 @@ au BufNewFile,BufRead *.au3			setf autoit
 au BufNewFile,BufRead *.ahk			setf autohotkey
 
 " Autotest .at files are actually Autoconf M4
-au BufNewFile,BufRead *.at			setf autoconf
+au BufNewFile,BufRead *.at			setf config
 
 " Avenue
 au BufNewFile,BufRead *.ave			setf ave
@@ -546,7 +546,7 @@ au BufNewFile,BufRead *.atg			setf coco
 au BufNewFile,BufRead *.cfm,*.cfi,*.cfc		setf cf
 
 " Configure scripts
-au BufNewFile,BufRead configure.in,configure.ac setf autoconf
+au BufNewFile,BufRead configure.in,configure.ac setf config
 
 " Cooklang
 au BufNewFile,BufRead *.cook			setf cook

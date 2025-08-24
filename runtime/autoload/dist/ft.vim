@@ -609,7 +609,7 @@ export def FTm4()
 
   # Case 0: canonical Autoconf file
   if fname ==# 'aclocal.m4'
-    setf autoconf
+    setf config
     return
   endif
 
@@ -621,7 +621,7 @@ export def FTm4()
 
   # Case 2: repo heuristic (nearby configure.ac)
   if filereadable(path .. '/../configure.ac') || filereadable(path .. '/configure.ac')
-    setf autoconf
+    setf config
     return
   endif
 
@@ -633,13 +633,13 @@ export def FTm4()
   while n <= max
     var line = getline(n)
     if line =~# '^\s*A[CMSUT]_'
-      setf autoconf
+      setf config
       return
     endif
     n += 1
   endwhile
 
-  # Case 4: default to plain m4
+  # Case 4: default to POSIX M4
   setf m4
 enddef
 
