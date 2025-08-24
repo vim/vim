@@ -2621,10 +2621,6 @@ func Test_cmd_map_cmdlineChanged()
   call feedkeys(":\<F1>\<CR>", 'xt')
   call assert_equal(['a', 'ab'], g:log)
 
-  let g:log = []
-  call feedkeys(":foo\<Left>\<Left>\<Del>\<Del>\<Esc>", 'xt')
-  call assert_equal(['f', 'fo', 'foo', 'fo', 'f'], g:log)
-
   unlet g:log
   cunmap <F1>
   augroup test_CmdlineChanged
@@ -4827,6 +4823,25 @@ func Test_cmdline_changed()
   delfunc TestComplete
   delcommand Test
   call test_override("char_avail", 0)
+endfunc
+
+func Test_cmdline_changed_del()
+  let g:log = []
+  augroup test_CmdlineChanged
+    autocmd!
+    autocmd CmdlineChanged : let g:log += [getcmdline()]
+  augroup END
+
+  " <Del> should be triggered.
+  let g:log = []
+  call feedkeys(":foo\<Left>\<Left>\<Del>\<Del>\<Esc>", 'xt')
+  call assert_equal(['f', 'fo', 'foo', 'fo', 'f'], g:log)
+
+  unlet g:log
+  augroup test_CmdlineChanged
+    autocmd!
+  augroup END
+  augroup! test_CmdlineChanged
 endfunc
 
 func Test_wildtrigger_update_screen()
