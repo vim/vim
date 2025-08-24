@@ -147,7 +147,7 @@ gui_start(char_u *arg UNUSED)
 #endif
     }
     else
-	// Reset clipmethod to CLIPMETHOD_NONE
+	// Reset clipmethod to CLIPMETHOD_GUI
 	choose_clipmethod();
 
 #ifdef FEAT_SOCKETSERVER
