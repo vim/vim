@@ -4827,6 +4827,7 @@ endfunc
 
 func Test_wildtrigger_update_screen()
   CheckScreendump
+
   let lines =<< trim [SCRIPT]
     command! -nargs=* -complete=customlist,TestFn TestCmd echo
     func TestFn(cmdarg, b, c)
@@ -4859,7 +4860,6 @@ func Test_wildtrigger_update_screen()
 
   call term_sendkeys(buf, "\<esc>")
   call StopVimInTerminal(buf)
-  cnoremap <buffer> <F8> <C-R>=wildtrigger()[-1]<CR>
 endfunc
 
 " Issue #17969: With 'noselect', the popup menu should appear next to the
@@ -4867,6 +4867,7 @@ endfunc
 " file paths when 'noselect' is present.
 func Test_noselect_expand_env_var()
   CheckScreendump
+
   let lines =<< trim [SCRIPT]
     set wildmenu wildoptions=pum wildmode=noselect,full
     let $TESTDIR = 'a/b'
@@ -4886,6 +4887,7 @@ func Test_noselect_expand_env_var()
 
   call term_sendkeys(buf, "\<C-P>")
   call VerifyScreenDump(buf, 'Test_expand_env_var_1', {})
+
   " clean up
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
@@ -4895,6 +4897,7 @@ endfunc
 " 'wildmode' contains 'noselect'
 func Test_long_line_noselect()
   CheckScreendump
+
   let lines =<< trim [SCRIPT]
     set wildmenu wildoptions=pum wildmode=noselect,full
     command -nargs=1 -complete=custom,Entries DoubleEntry echo
@@ -4913,6 +4916,7 @@ func Test_long_line_noselect()
 
   call term_sendkeys(buf, "\<Esc>:DoubleEntry \<Tab>\<C-N>\<C-N>")
   call VerifyScreenDump(buf, 'Test_long_line_noselect_3', {})
+
   " clean up
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
