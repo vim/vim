@@ -1,0 +1,886 @@
+/* auto/config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
+/* Define if getcwd() does not work properly */
+#undef BAD_GETCWD
+
+/* Define if toupper() is broken */
+#undef BROKEN_TOUPPER
+
+/* Build timestamp string for :version output */
+#undef BUILD_DATE
+
+/* Disable Arabic shaping support */
+#undef DISABLE_ARABIC
+
+/* Disable right-to-left support */
+#undef DISABLE_RIGHTLEFT
+
+/* Enable dynamic loading of GPM */
+#undef DYNAMIC_GPM
+
+/* Enable dynamic loading of Lua */
+#undef DYNAMIC_LUA
+
+/* Enable dynamic loading of Perl */
+#undef DYNAMIC_PERL
+
+/* Enable dynamic loading of Python */
+#undef DYNAMIC_PYTHON
+
+/* Enable dynamic loading of Python 3 */
+#undef DYNAMIC_PYTHON3
+
+/* Enable Python 3 Stable ABI */
+#undef DYNAMIC_PYTHON3_STABLE_ABI
+
+/* Enable dynamic loading of Ruby */
+#undef DYNAMIC_RUBY
+
+/* Enable dynamic loading of Tcl */
+#undef DYNAMIC_TCL
+
+/* Define if the execution character set is EBCDIC */
+#undef EBCDIC
+
+/* Enable cscope integration */
+#undef ENABLE_CSCOPE
+
+/* Enable autoservername feature */
+#undef FEAT_AUTOSERVERNAME
+
+/* Enable Cygwin Win32 clipboard bridge */
+#undef FEAT_CYGWIN_WIN32_CLIPBOARD
+
+/* Enable diff feature */
+#undef FEAT_DIFF
+
+/* Enable GNOME GUI */
+#undef FEAT_GUI_GNOME
+
+/* Enable huge feature set */
+#undef FEAT_HUGE
+
+/* Enable IPv6 support */
+#undef FEAT_IPV6
+
+/* Enable job/channel feature */
+#undef FEAT_JOB_CHANNEL
+
+/* Enable Lua support */
+#undef FEAT_LUA
+
+/* Enable MzScheme support */
+#undef FEAT_MZSCHEME
+
+/* Enable NetBeans integration */
+#undef FEAT_NETBEANS_INTG
+
+/* Enable normal feature set */
+#undef FEAT_NORMAL
+
+/* Enable Perl support */
+#undef FEAT_PERL
+
+/* Enable Python support */
+#undef FEAT_PYTHON
+
+/* Enable Python 3 support */
+#undef FEAT_PYTHON3
+
+/* Enable Ruby support */
+#undef FEAT_RUBY
+
+/* Enable Tcl support */
+#undef FEAT_TCL
+
+/* Enable terminal feature */
+#undef FEAT_TERMINAL
+
+/* Enable tiny feature set */
+#undef FEAT_TINY
+
+/* Enable X fontset support */
+#undef FEAT_XFONTSET
+
+/* Enable X Input Method support */
+#undef FEAT_XIM
+
+/* Have AIX ACL support */
+#undef HAVE_AIX_ACL
+
+/* Compiler supports __attribute__((unused)) */
+#undef HAVE_ATTRIBUTE_UNUSED
+
+/* Define to 1 if you have the <AvailabilityMacros.h> header file. */
+#undef HAVE_AVAILABILITYMACROS_H
+
+/* Define to 1 if you have the 'bind_textdomain_codeset' function. */
+#undef HAVE_BIND_TEXTDOMAIN_CODESET
+
+/* Have libcanberra (sound events) */
+#undef HAVE_CANBERRA
+
+/* Define to 1 if you have the 'clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
+
+/* Have date/time support needed by the build */
+#undef HAVE_DATE_TIME
+
+/* Have del_curterm() */
+#undef HAVE_DEL_CURTERM
+
+/* Have /dev/ptc */
+#undef HAVE_DEV_PTC
+
+/* Have dgettext() */
+#undef HAVE_DGETTEXT
+
+/* Define to 1 if you have the <dirent.h> header file, and it defines 'DIR'.
+   */
+#undef HAVE_DIRENT_H
+
+/* Have dirfd() */
+#undef HAVE_DIRFD
+
+/* Define to 1 if you have the <dispatch/dispatch.h> header file. */
+#undef HAVE_DISPATCH_DISPATCH_H
+
+/* Define if we have dlfcn.h. */
+#undef HAVE_DLFCN_H
+
+/* Define if we have dlopen() */
+#undef HAVE_DLOPEN
+
+/* Define if we have dlsym() */
+#undef HAVE_DLSYM
+
+/* Define if we have dl.h. */
+#undef HAVE_DL_H
+
+/* Have dngettext() */
+#undef HAVE_DNGETTEXT
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the 'fchdir' function. */
+#undef HAVE_FCHDIR
+
+/* Define to 1 if you have the 'fchmod' function. */
+#undef HAVE_FCHMOD
+
+/* Define to 1 if you have the 'fchown' function. */
+#undef HAVE_FCHOWN
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Have FD_CLOEXEC flag */
+#undef HAVE_FD_CLOEXEC
+
+/* Have flock() */
+#undef HAVE_FLOCK
+
+/* Define to 1 if you have the <frame.h> header file. */
+#undef HAVE_FRAME_H
+
+/* Define to 1 if fseeko (and ftello) are declared in stdio.h. */
+#undef HAVE_FSEEKO
+
+/* Define to 1 if you have the 'fsync' function. */
+#undef HAVE_FSYNC
+
+/* Define to 1 if you have the 'ftruncate' function. */
+#undef HAVE_FTRUNCATE
+
+/* Define to 1 if you have the 'getcwd' function. */
+#undef HAVE_GETCWD
+
+/* Define to 1 if you have the 'getpgid' function. */
+#undef HAVE_GETPGID
+
+/* Define to 1 if you have the 'getpseudotty' function. */
+#undef HAVE_GETPSEUDOTTY
+
+/* Define to 1 if you have the 'getpwent' function. */
+#undef HAVE_GETPWENT
+
+/* Define to 1 if you have the 'getpwnam' function. */
+#undef HAVE_GETPWNAM
+
+/* Define to 1 if you have the 'getpwuid' function. */
+#undef HAVE_GETPWUID
+
+/* Define to 1 if you have the 'getrlimit' function. */
+#undef HAVE_GETRLIMIT
+
+/* Have gettext() */
+#undef HAVE_GETTEXT
+
+/* Define to 1 if you have the 'gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define to 1 if you have the 'getwd' function. */
+#undef HAVE_GETWD
+
+/* Have GPM mouse library */
+#undef HAVE_GPM
+
+/* Have iconv() */
+#undef HAVE_ICONV
+
+/* Define to 1 if you have the <iconv.h> header file. */
+#undef HAVE_ICONV_H
+
+/* Define to 1 if you have the 'inet_ntop' function. */
+#undef HAVE_INET_NTOP
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Have isinf() */
+#undef HAVE_ISINF
+
+/* Have isnan() */
+#undef HAVE_ISNAN
+
+/* Define to 1 if you have the 'iswupper' function. */
+#undef HAVE_ISWUPPER
+
+/* Define to 1 if you have the <langinfo.h> header file. */
+#undef HAVE_LANGINFO_H
+
+/* Define to 1 if you have the <libc.h> header file. */
+#undef HAVE_LIBC_H
+
+/* Define to 1 if you have the <libgen.h> header file. */
+#undef HAVE_LIBGEN_H
+
+/* Define to 1 if you have the <libintl.h> header file. */
+#undef HAVE_LIBINTL_H
+
+/* Define to 1 if you have the 'm' library (-lm). */
+#undef HAVE_LIBM
+
+/* Define to 1 if you have the 'network' library (-lnetwork). */
+#undef HAVE_LIBNETWORK
+
+/* Define to 1 if you have the 'nsl' library (-lnsl). */
+#undef HAVE_LIBNSL
+
+/* Define to 1 if you have the 'socket' library (-lsocket). */
+#undef HAVE_LIBSOCKET
+
+/* Define to 1 if you have the <locale.h> header file. */
+#undef HAVE_LOCALE_H
+
+/* Define to 1 if you have the 'localtime_r' function. */
+#undef HAVE_LOCALTIME_R
+
+/* Define to 1 if the system has the type 'long long int'. */
+#undef HAVE_LONG_LONG_INT
+
+/* Define to 1 if you have the 'lstat' function. */
+#undef HAVE_LSTAT
+
+/* Define to 1 if you have the <math.h> header file. */
+#undef HAVE_MATH_H
+
+/* Define to 1 if you have the 'mblen' function. */
+#undef HAVE_MBLEN
+
+/* Define to 1 if you have the 'memset' function. */
+#undef HAVE_MEMSET
+
+/* Define to 1 if you have the 'mkdtemp' function. */
+#undef HAVE_MKDTEMP
+
+/* Define to 1 if you have the 'nanosleep' function. */
+#undef HAVE_NANOSLEEP
+
+/* Define to 1 if you have the <ndir.h> header file, and it defines 'DIR'. */
+#undef HAVE_NDIR_H
+
+/* Have nl_langinfo(CODESET) */
+#undef HAVE_NL_LANGINFO_CODESET
+
+/* Have _nl_msg_cat_cntr symbol */
+#undef HAVE_NL_MSG_CAT_CNTR
+
+/* Define to 1 if you have the 'opendir' function. */
+#undef HAVE_OPENDIR
+
+/* Have ospeed terminal speed variable */
+#undef HAVE_OSPEED
+
+/* No description */
+#undef HAVE_OUTFUNTYPE
+
+/* Have pango_shape_full() */
+#undef HAVE_PANGO_SHAPE_FULL
+
+/* Define to 1 if you have the <poll.h> header file. */
+#undef HAVE_POLL_H
+
+/* Have POSIX ACL support */
+#undef HAVE_POSIX_ACL
+
+/* Define to 1 if you have the 'posix_openpt' function. */
+#undef HAVE_POSIX_OPENPT
+
+/* Have <pthread_np.h> */
+#undef HAVE_PTHREAD_NP_H
+
+/* Define to 1 if you have the 'putenv' function. */
+#undef HAVE_PUTENV
+
+/* Define to 1 if you have the <pwd.h> header file. */
+#undef HAVE_PWD_H
+
+/* Define to 1 if you have the 'qsort' function. */
+#undef HAVE_QSORT
+
+/* Define to 1 if you have the 'readlink' function. */
+#undef HAVE_READLINK
+
+/* Have reliable rename() */
+#undef HAVE_RENAME
+
+/* Define to 1 if you have the 'select' function. */
+#undef HAVE_SELECT
+
+/* Have SELinux support */
+#undef HAVE_SELINUX
+
+/* Define to 1 if you have the 'setenv' function. */
+#undef HAVE_SETENV
+
+/* Define to 1 if you have the <setjmp.h> header file. */
+#undef HAVE_SETJMP_H
+
+/* Define to 1 if you have the 'setpgid' function. */
+#undef HAVE_SETPGID
+
+/* Define to 1 if you have the 'setsid' function. */
+#undef HAVE_SETSID
+
+/* Define to 1 if you have the <sgtty.h> header file. */
+#undef HAVE_SGTTY_H
+
+/* Define if we have shl_load() */
+#undef HAVE_SHL_LOAD
+
+/* Have shm_open() */
+#undef HAVE_SHM_OPEN
+
+/* Define to 1 if you have the 'sigaction' function. */
+#undef HAVE_SIGACTION
+
+/* Define to 1 if you have the 'sigaltstack' function. */
+#undef HAVE_SIGALTSTACK
+
+/* Have struct sigcontext */
+#undef HAVE_SIGCONTEXT
+
+/* Define to 1 if you have the 'sigprocmask' function. */
+#undef HAVE_SIGPROCMASK
+
+/* Define to 1 if you have the 'sigset' function. */
+#undef HAVE_SIGSET
+
+/* Define to 1 if you have the 'sigsetjmp' function. */
+#undef HAVE_SIGSETJMP
+
+/* Define to 1 if you have the 'sigstack' function. */
+#undef HAVE_SIGSTACK
+
+/* Define to 1 if you have the 'sigvec' function. */
+#undef HAVE_SIGVEC
+
+/* Have SMACK (Simplified Mandatory Access Control) support */
+#undef HAVE_SMACK
+
+/* Have libsodium */
+#undef HAVE_SODIUM
+
+/* Have Solaris ACL support */
+#undef HAVE_SOLARIS_ACL
+
+/* Have Solaris ZFS ACL support */
+#undef HAVE_SOLARIS_ZFS_ACL
+
+/* No description */
+#undef HAVE_SS_BASE
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the 'strcasecmp' function. */
+#undef HAVE_STRCASECMP
+
+/* Define to 1 if you have the 'strcoll' function. */
+#undef HAVE_STRCOLL
+
+/* Define to 1 if you have the 'strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define to 1 if you have the 'strftime' function. */
+#undef HAVE_STRFTIME
+
+/* Define to 1 if you have the 'stricmp' function. */
+#undef HAVE_STRICMP
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the 'strncasecmp' function. */
+#undef HAVE_STRNCASECMP
+
+/* Define to 1 if you have the 'strnicmp' function. */
+#undef HAVE_STRNICMP
+
+/* Define to 1 if you have the <stropts.h> header file. */
+#undef HAVE_STROPTS_H
+
+/* Define to 1 if you have the 'strpbrk' function. */
+#undef HAVE_STRPBRK
+
+/* Define to 1 if you have the 'strptime' function. */
+#undef HAVE_STRPTIME
+
+/* Define to 1 if you have the 'strtol' function. */
+#undef HAVE_STRTOL
+
+/* struct stat has st_blksize */
+#undef HAVE_ST_BLKSIZE
+
+/* Have SVR4-style pseudo-terminals */
+#undef HAVE_SVR4_PTYS
+
+/* Define to 1 if you have the 'sync' function. */
+#undef HAVE_SYNC
+
+/* Have sysconf() */
+#undef HAVE_SYSCONF
+
+/* Have sysconf(_SC_SIGSTKSZ) */
+#undef HAVE_SYSCONF_SIGSTKSZ
+
+/* Have sysctl() */
+#undef HAVE_SYSCTL
+
+/* Have sysinfo() */
+#undef HAVE_SYSINFO
+
+/* struct sysinfo has mem_unit */
+#undef HAVE_SYSINFO_MEM_UNIT
+
+/* sysinfo provides uptime */
+#undef HAVE_SYSINFO_UPTIME
+
+/* Have sysmouse (FreeBSD) support */
+#undef HAVE_SYSMOUSE
+
+/* Define to 1 if you have the <sys/access.h> header file. */
+#undef HAVE_SYS_ACCESS_H
+
+/* Define to 1 if you have the <sys/acl.h> header file. */
+#undef HAVE_SYS_ACL_H
+
+/* Define to 1 if you have the <sys/dir.h> header file, and it defines 'DIR'.
+   */
+#undef HAVE_SYS_DIR_H
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/ndir.h> header file, and it defines 'DIR'.
+   */
+#undef HAVE_SYS_NDIR_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
+/* Define to 1 if you have the <sys/poll.h> header file. */
+#undef HAVE_SYS_POLL_H
+
+/* Define to 1 if you have the <sys/ptem.h> header file. */
+#undef HAVE_SYS_PTEM_H
+
+/* Define to 1 if you have the <sys/ptms.h> header file. */
+#undef HAVE_SYS_PTMS_H
+
+/* Define to 1 if you have the <sys/resource.h> header file. */
+#undef HAVE_SYS_RESOURCE_H
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
+
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#undef HAVE_SYS_SOCKET_H
+
+/* Define to 1 if you have the <sys/statfs.h> header file. */
+#undef HAVE_SYS_STATFS_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/stream.h> header file. */
+#undef HAVE_SYS_STREAM_H
+
+/* Define to 1 if you have the <sys/sysctl.h> header file. */
+#undef HAVE_SYS_SYSCTL_H
+
+/* Define to 1 if you have the <sys/sysinfo.h> header file. */
+#undef HAVE_SYS_SYSINFO_H
+
+/* Define to 1 if you have the <sys/systeminfo.h> header file. */
+#undef HAVE_SYS_SYSTEMINFO_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/utsname.h> header file. */
+#undef HAVE_SYS_UTSNAME_H
+
+/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if you have the <termcap.h> header file. */
+#undef HAVE_TERMCAP_H
+
+/* Define to 1 if you have the <termios.h> header file. */
+#undef HAVE_TERMIOS_H
+
+/* Define to 1 if you have the <termio.h> header file. */
+#undef HAVE_TERMIO_H
+
+/* Define to 1 if you have the 'tgetent' function. */
+#undef HAVE_TGETENT
+
+/* Have timer_create() (or shim) */
+#undef HAVE_TIMER_CREATE
+
+/* Define to 1 if you have the 'towlower' function. */
+#undef HAVE_TOWLOWER
+
+/* Define to 1 if you have the 'towupper' function. */
+#undef HAVE_TOWUPPER
+
+/* Define to 1 if you have the 'tzset' function. */
+#undef HAVE_TZSET
+
+/* Have union wait */
+#undef HAVE_UNION_WAIT
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the 'unsetenv' function. */
+#undef HAVE_UNSETENV
+
+/* Define to 1 if the system has the type 'unsigned long long int'. */
+#undef HAVE_UNSIGNED_LONG_LONG_INT
+
+/* Have UP/BC/PC termcap globals */
+#undef HAVE_UP_BC_PC
+
+/* Define to 1 if you have the 'usleep' function. */
+#undef HAVE_USLEEP
+
+/* Define to 1 if you have the <util/debug.h> header file. */
+#undef HAVE_UTIL_DEBUG_H
+
+/* Define to 1 if you have the <util/msg18n.h> header file. */
+#undef HAVE_UTIL_MSG18N_H
+
+/* Define to 1 if you have the 'utime' function. */
+#undef HAVE_UTIME
+
+/* Define to 1 if you have the 'utimes' function. */
+#undef HAVE_UTIMES
+
+/* Define to 1 if you have the <utime.h> header file. */
+#undef HAVE_UTIME_H
+
+/* Have Wayland support */
+#undef HAVE_WAYLAND
+
+/* Define to 1 if you have the <wchar.h> header file. */
+#undef HAVE_WCHAR_H
+
+/* Define to 1 if you have the <wctype.h> header file. */
+#undef HAVE_WCTYPE_H
+
+/* Have X11 support */
+#undef HAVE_X11
+
+/* Define to 1 if you have the <X11/SM/SMlib.h> header file. */
+#undef HAVE_X11_SM_SMLIB_H
+
+/* Define to 1 if you have the <X11/Sunkeysym.h> header file. */
+#undef HAVE_X11_SUNKEYSYM_H
+
+/* Have <X11/Xmu/Editres.h> */
+#undef HAVE_X11_XMU_EDITRES_H
+
+/* Define to 1 if you have the <X11/xpm.h> header file. */
+#undef HAVE_X11_XPM_H
+
+/* Have extended attribute (xattr) support */
+#undef HAVE_XATTR
+
+/* Define to 1 if you have the <Xm/JoinSideT.h> header file. */
+#undef HAVE_XM_JOINSIDET_H
+
+/* Define to 1 if you have the <Xm/Manager.h> header file. */
+#undef HAVE_XM_MANAGER_H
+
+/* Define to 1 if you have the <Xm/Notebook.h> header file. */
+#undef HAVE_XM_NOTEBOOK_H
+
+/* Define to 1 if you have the <Xm/TraitP.h> header file. */
+#undef HAVE_XM_TRAITP_H
+
+/* Define to 1 if you have the <Xm/UnhighlightT.h> header file. */
+#undef HAVE_XM_UNHIGHLIGHTT_H
+
+/* Define to 1 if you have the <Xm/Xm.h> header file. */
+#undef HAVE_XM_XM_H
+
+/* Define to 1 if you have the <Xm/XpmP.h> header file. */
+#undef HAVE_XM_XPMP_H
+
+/* Have Xutf8SetWMProperties() */
+#undef HAVE_XUTF8SETWMPROPERTIES
+
+/* No description */
+#undef MAYBE_SOCKETSERVER
+
+/* Name of who modified a release version */
+#undef MODIFIED_BY
+
+/* No description */
+#undef NO_STRINGS_WITH_STRING_H
+
+/* ospeed is declared extern */
+#undef OSPEED_EXTERN
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Have /proc/... executable link (e.g., /proc/self/exe) */
+#undef PROC_EXE_LINK
+
+/* No description */
+#undef PTYRANGE0
+
+/* No description */
+#undef PTYRANGE1
+
+/* Use Python 3 without RTLD_GLOBAL */
+#undef PY3_NO_RTLD_GLOBAL
+
+/* Use Python without RTLD_GLOBAL */
+#undef PY_NO_RTLD_GLOBAL
+
+/* Comma-separated list of global runtime dirs */
+#undef RUNTIME_GLOBAL
+
+/* Comma-separated list of global runtime 'after' dirs */
+#undef RUNTIME_GLOBAL_AFTER
+
+/* Define to the type of arg 1 for 'select'. */
+#undef SELECT_TYPE_ARG1
+
+/* Define to the type of args 2, 3 and 4 for 'select'. */
+#undef SELECT_TYPE_ARG234
+
+/* Define to the type of arg 5 for 'select'. */
+#undef SELECT_TYPE_ARG5
+
+/* The size of 'int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of 'long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of 'off_t', as computed by sizeof. */
+#undef SIZEOF_OFF_T
+
+/* The size of 'time_t', as computed by sizeof. */
+#undef SIZEOF_TIME_T
+
+/* The size of 'wchar_t', as computed by sizeof. */
+#undef SIZEOF_WCHAR_T
+
+/* wchar_t is 2 bytes */
+#undef SMALL_WCHAR_T
+
+/* stat() ignores a trailing slash */
+#undef STAT_IGNORES_SLASH
+
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
+#undef STDC_HEADERS
+
+/* Define if struct stat contains a nanoseconds field */
+#undef ST_MTIM_NSEC
+
+/* sys/select.h requires sys/time.h */
+#undef SYS_SELECT_WITH_SYS_TIME
+
+/* Use terminfo */
+#undef TERMINFO
+
+/* tgetent() returns 0 on error */
+#undef TGETENT_ZERO_ERR
+
+/* Being able to run configure means the system is Unix (compatible) */
+#undef UNIX
+
+/* UP/BC/PC are declared extern */
+#undef UP_BC_PC_EXTERN
+
+/* Use bcopy() */
+#undef USEBCOPY
+
+/* No description */
+#undef USEMAN_S
+
+/* Use memcpy() */
+#undef USEMEMCPY
+
+/* Use memmove() */
+#undef USEMEMMOVE
+
+/* Use GResource */
+#undef USE_GRESOURCE
+
+/* Use GTK 3 */
+#undef USE_GTK3
+
+/* Use XSMP interact */
+#undef USE_XSMP_INTERACT
+
+/* Size of int in bytes */
+#undef VIM_SIZEOF_INT
+
+/* Size of long in bytes */
+#undef VIM_SIZEOF_LONG
+
+/* Enable socketserver feature */
+#undef WANT_SOCKETSERVER
+
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+#  undef WORDS_BIGENDIAN
+# endif
+#endif
+
+/* Type for XpmAttributes */
+#undef XPMATTRIBUTES_TYPE
+
+/* Define to 1 if the X Window System is missing or not being used. */
+#undef X_DISPLAY_MISSING
+
+/* Use X_LOCALE extensions */
+#undef X_LOCALE
+
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
+
+/* Define to 1 if necessary to make fseeko visible. */
+#undef _LARGEFILE_SOURCE
+
+/* Define to 1 on platforms where this makes off_t a 64-bit type. */
+#undef _LARGE_FILES
+
+/* Number of bits in time_t, on hosts where this is settable. */
+#undef _TIME_BITS
+
+/* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#undef _UINT32_T
+
+/* Define to 1 on platforms where this makes time_t a 64-bit type. */
+#undef __MINGW_USE_VC2005_COMPAT
+
+/* Define to empty if 'const' does not conform to ANSI C. */
+#undef const
+
+/* Define to 'unsigned' if <sys/types.h> does not define. */
+#undef dev_t
+
+/* Define as 'int' if <sys/types.h> doesn't define. */
+#undef gid_t
+
+/* Define to '__inline__' or '__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
+/* Define to 'long' if <sys/types.h> does not define. */
+#undef ino_t
+
+/* Define to 'int' if <sys/types.h> does not define. */
+#undef mode_t
+
+/* Define to 'long int' if <sys/types.h> does not define. */
+#undef off_t
+
+/* Define as a signed integer type capable of holding a process identifier. */
+#undef pid_t
+
+/* Define as 'unsigned int' if <stddef.h> doesn't define. */
+#undef size_t
+
+/* Define as 'int' if <sys/types.h> doesn't define. */
+#undef uid_t
+
+/* Define to the type of an unsigned integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint32_t
+
+/* Define to empty if the keyword 'volatile' does not work. Warning: valid
+   code using 'volatile' can become incorrect without. Disable with care. */
+#undef volatile
