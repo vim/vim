@@ -1855,7 +1855,7 @@ getcmdline_int(
 
 	if (ccline.cmdbuff != NULL)
 	{
-	    prev_cmdbuff = vim_strnsave(ccline.cmdbuff, ccline.cmdpos);
+	    prev_cmdbuff = vim_strsave(ccline.cmdbuff);
 	    if (prev_cmdbuff == NULL)
 		goto returncmd;
 	}
