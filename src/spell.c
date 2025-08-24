@@ -60,7 +60,7 @@
 
 #if defined(FEAT_SPELL) || defined(PROTO)
 
-include <time.h>
+#include <time.h>
 
 #define REGION_ALL 0xff		// word valid in all regions
 
