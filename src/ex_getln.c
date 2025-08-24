@@ -2622,9 +2622,10 @@ cmdline_changed:
 	// Trigger CmdlineChanged autocommands.
 	if (trigger_cmdlinechanged
 		&& (ccline.cmdpos != prev_cmdpos
-		    || (prev_cmdbuff != NULL && STRNCMP(prev_cmdbuff,
-			    ccline.cmdbuff, prev_cmdpos) != 0)))
+		    || (prev_cmdbuff != NULL &&
+			STRCMP(prev_cmdbuff, ccline.cmdbuff) != 0))) {
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+	}
 
 	// Trigger CursorMovedC autocommands.
 	if (ccline.cmdpos != prev_cmdpos)
