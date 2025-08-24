@@ -368,9 +368,9 @@ Vim currently does not use conventional header files (`.h`) for most internal
 function prototypes.  Instead, the current architecture uses individual `.pro`
 files in the `src/proto/` directory, with one `.pro` file per `.c` file.
 
-Unlike traditional header files, these `.pro` files do not contain API
-documentation, struct and enum definitions, or other declaration; only
-function prototypes.
+Unlike traditional self-contained header files, these `.pro` files do not
+contain API documentation, struct and enum definitions, or other declaration;
+only function prototypes.
 
 The bundling of these files is not automated.  The `src/proto.h` header is
 composed of a list of manual `#include` directives, one for each individual
@@ -383,12 +383,9 @@ directive to `proto.h` and manually adding this file to both `src/Makefile` and
 
 A `make proto` target exists in `src/Makefile` with the original goal of
 automating the process of updating the `.pro` files.  However, this target is
-unreliable, fails on major platforms (e.g., macOS), and is not part of the
-standard development workflow.
-
-The direct consequence of this manual system is that contributors currently
-edit the relevant `.pro` files by hand when adding, removing, or modifying a
-function’s signature.
+unreliable, fails on major platforms (e.g., macOS), and is only part of the
+new release workflow.  In practice, contributors edit the relevant `.pro` files
+by hand when adding, removing, or modifying a function signatures.
 
 This system has been in place since at least v1.24, when Vim’s functions were
 still written in K&R style.
