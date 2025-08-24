@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2025 Jul 08
+# Last Change: 2025 Aug 24
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -52,14 +52,6 @@ def Echowarn(msg: string)
 enddef
 
 # Variables to keep their status among multiple instances of Termdebug
-# Avoid to source the script twice.
-if exists('g:termdebug_loaded')
-  if DEBUG
-    Echoerr('Termdebug already loaded.')
-  endif
-  finish
-endif
-g:termdebug_loaded = true
 g:termdebug_is_running = false
 
 
