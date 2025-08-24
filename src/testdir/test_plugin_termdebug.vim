@@ -597,22 +597,4 @@ function Test_termdebug_config_types()
   unlet g:termdebug_config
 endfunction
 
-function Test_termdebug_config_debug()
-  let s:error_message = '\[termdebug\] Termdebug already loaded'
-
-  " USER mode: No error message shall be displayed
-  packadd termdebug
-  call assert_true(execute('messages') !~ s:error_message)
-
-  " DEBUG mode: Error message shall now be displayed
-  let g:termdebug_config = {}
-  let g:termdebug_config['debug'] = 1
-  packadd termdebug
-  call assert_true(execute('messages') =~ s:error_message)
-
-  unlet g:termdebug_config
-  unlet g:termdebug_loaded
-  " Revert DEBUG mode, by reloading the plugin
-  source $VIMRUNTIME/pack/dist/opt/termdebug/plugin/termdebug.vim
-endfunction
 " vim: shiftwidth=2 sts=2 expandtab

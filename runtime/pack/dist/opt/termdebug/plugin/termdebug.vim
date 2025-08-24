@@ -52,14 +52,6 @@ def Echowarn(msg: string)
 enddef
 
 # Variables to keep their status among multiple instances of Termdebug
-# Avoid to source the script twice.
-if exists('g:termdebug_loaded')
-  if DEBUG
-    Echoerr('Termdebug already loaded.')
-  endif
-  finish
-endif
-g:termdebug_loaded = true
 g:termdebug_is_running = false
 
 
