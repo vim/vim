@@ -189,7 +189,8 @@ static int	  compl_length = 0;
 static linenr_T	  compl_lnum = 0;           // lnum where the completion start
 static colnr_T	  compl_col = 0;	    // column where the text starts
 					    // that is being completed
-static colnr_T	  compl_ins_end_col = 0;
+static pos_T	  compl_ins_end_pos;	    // last postion of cursor after
+					    // insert match
 static string_T	  compl_orig_text = {NULL, 0};  // text as it was before
 					    // completion started
 static int	  compl_cont_mode = 0;
@@ -1052,7 +1053,7 @@ ins_compl_insert_bytes(char_u *p, int len)
     if (len == -1)
 	len = (int)STRLEN(p);
     ins_bytes_len(p, len);
-    compl_ins_end_col = curwin->w_cursor.col;
+    compl_ins_end_pos = curwin->w_cursor;
 }
 
 /*
@@ -1072,12 +1073,12 @@ ins_compl_col_range_attr(linenr_T lnum, int col)
 
     start_col = compl_col + (int)ins_compl_leader_len();
     if (!ins_compl_has_multiple())
-	return (col >= start_col && col < compl_ins_end_col) ? attr : -1;
+	return (col >= start_col && col < compl_ins_end_pos.col) ? attr : -1;
 
     // Multiple lines
     if ((lnum == compl_lnum && col >= start_col && col < MAXCOL) ||
 	(lnum > compl_lnum && lnum < curwin->w_cursor.lnum) ||
-	(lnum == curwin->w_cursor.lnum && col <= compl_ins_end_col))
+	(lnum == curwin->w_cursor.lnum && col <= compl_ins_end_pos.col))
 	return attr;
 
     return -1;
@@ -1756,7 +1757,6 @@ ins_compl_build_pum(void)
     void
 ins_compl_show_pum(void)
 {
-    int		i;
     int		cur = -1;
     colnr_T	col;
 
@@ -1772,7 +1772,7 @@ ins_compl_show_pum(void)
     else
     {
 	// popup menu already exists, only need to find the current item.
-	for (i = 0; i < compl_match_arraysize; ++i)
+	for (int i = 0; i < compl_match_arraysize; ++i)
 	{
 	    if (compl_match_array[i].pum_text == compl_shown_match->cp_str.string
 		    || compl_match_array[i].pum_text
@@ -1804,6 +1804,11 @@ ins_compl_show_pum(void)
     compl_selected_item = cur;
     pum_display(compl_match_array, compl_match_arraysize, cur);
     curwin->w_cursor.col = col;
+    if  (ins_compl_has_multiple() && (get_cot_flags() & COT_PREINSERT))
+    {
+	curwin->w_cursor.lnum = compl_lnum;
+	curwin->w_cursor.col = compl_col;
+    }
 
     // After adding leader, set the current match to shown match.
     if (compl_started && compl_curr_match != compl_shown_match)
@@ -2242,7 +2247,8 @@ ins_compl_clear(void)
     compl_cfc_longest_ins = FALSE;
     compl_matches = 0;
     compl_selected_item = -1;
-    compl_ins_end_col = 0;
+    compl_ins_end_pos.col = 0;
+    compl_ins_end_pos.lnum = 0;
     compl_curr_win = NULL;
     compl_curr_buf = NULL;
     VIM_CLEAR_STRING(compl_pattern);
@@ -2357,7 +2363,7 @@ ins_compl_preinsert_effect(void)
     if (!ins_compl_has_preinsert())
 	return FALSE;
 
-    return curwin->w_cursor.col < compl_ins_end_col;
+    return curwin->w_cursor.col < compl_ins_end_pos.col;
 }
 
 /*
@@ -5674,14 +5680,15 @@ ins_compl_delete(void)
 {
     // In insert mode: Delete the typed part.
     // In replace mode: Put the old characters back, if any.
-    int col = compl_col + (compl_status_adding() ? compl_length : 0);
+    int		col = compl_col + (compl_status_adding() ? compl_length : 0);
     string_T	remaining = {NULL, 0};
-    int	    orig_col;
-    int	has_preinsert = ins_compl_preinsert_effect();
+    int		orig_col;
+    int		has_preinsert = ins_compl_preinsert_effect();
+
     if (has_preinsert)
     {
 	col += (int)ins_compl_leader_len();
-	curwin->w_cursor.col = compl_ins_end_col;
+	curwin->w_cursor = compl_ins_end_pos;
     }
 
     if (curwin->w_cursor.lnum > compl_lnum)
@@ -5718,7 +5725,7 @@ ins_compl_delete(void)
 	    return;
 	}
 	backspace_until_column(col);
-	compl_ins_end_col = curwin->w_cursor.col;
+	compl_ins_end_pos = curwin->w_cursor;
     }
 
     if (remaining.string != NULL)
@@ -5767,7 +5774,7 @@ ins_compl_expand_multiple(char_u *str)
     if (curr > start)
 	ins_char_bytes(start, (int)(curr - start));
 
-    compl_ins_end_col = curwin->w_cursor.col;
+    compl_ins_end_pos = curwin->w_cursor;
 }
 
 /*
