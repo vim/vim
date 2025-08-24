@@ -294,6 +294,8 @@ if !exists("python_no_builtin_highlight")
   " 'False', 'True', and 'None' are also reserved words in Python 3
   syn keyword pythonBuiltin	False True None
   syn keyword pythonBuiltin	NotImplemented Ellipsis __debug__
+  " ellipsis literal: `...`
+  syn match   pythonBuiltin	"\%(^\|[^.]\)\zs\.\.\.\ze\%([^.]\|$\)" display
   " constants added by the `site` module
   syn keyword pythonBuiltin	quit exit copyright credits license
   " built-in functions
