@@ -305,7 +305,7 @@ if !exists("python_no_builtin_highlight")
   syn keyword pythonBuiltin	setattr slice sorted staticmethod str sum super
   syn keyword pythonBuiltin	tuple vars zip __import__
   " only match `type` as a builtin when it's not followed by an identifier
-  syn match   pythonbuiltin	"\<type\ze\(\s\+\h\w*\)\@!"
+  syn match   pythonBuiltin	"\<type\ze\(\s\+\h\w*\)\@!"
   " avoid highlighting attributes as builtins
   syn match   pythonAttribute	/\.\h\w*/hs=s+1
 	\ contains=ALLBUT,pythonBuiltin,pythonClass,pythonFunction,pythonType,pythonAsync
