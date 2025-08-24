@@ -1523,6 +1523,7 @@ BASIC_SRC = \
 	findfile.c \
 	float.c \
 	fold.c \
+	fuzzy.c \
 	getchar.c \
 	gc.c \
 	gui_xim.c \
@@ -1701,6 +1702,7 @@ OBJ_COMMON = \
 	objects/findfile.o \
 	objects/float.o \
 	objects/fold.o \
+	objects/fuzzy.o \
 	objects/getchar.o \
 	objects/gc.o \
 	objects/gui_xim.o \
@@ -1886,6 +1888,7 @@ PRO_AUTO = \
 	findfile.pro \
 	float.pro \
 	fold.pro \
+	fuzzy.pro \
 	getchar.pro \
 	gc.pro \
 	gui_xim.pro \
@@ -3309,6 +3312,9 @@ objects/float.o: float.c
 objects/fold.o: fold.c
 	$(CCC) -o $@ fold.c
 
+objects/fuzzy.o: fuzzy.c
+	$(CCC) -o $@ fuzzy.c
+
 objects/getchar.o: getchar.c
 	$(CCC) -o $@ getchar.c
 
@@ -3652,19 +3658,19 @@ objects/window.o: window.c
 	$(CCC) -o $@ window.c
 
 objects/wayland.o: wayland.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ wayland.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ wayland.c
 
 objects/wlr-data-control-unstable-v1.o: auto/wayland/wlr-data-control-unstable-v1.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ auto/wayland/wlr-data-control-unstable-v1.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/wlr-data-control-unstable-v1.c
 
 objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ auto/wayland/ext-data-control-v1.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/ext-data-control-v1.c
 
 objects/xdg-shell.o: auto/wayland/xdg-shell.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ auto/wayland/xdg-shell.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/xdg-shell.c
 
 objects/primary-selection-unstable-v1.o: auto/wayland/primary-selection-unstable-v1.c
-	$(CCC) $(WAYLAND_CFLAGS) -o $@ auto/wayland/primary-selection-unstable-v1.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/primary-selection-unstable-v1.c
 
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
@@ -3984,6 +3990,11 @@ objects/float.o: float.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
 objects/fold.o: fold.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/fuzzy.o: fuzzy.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \

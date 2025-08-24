@@ -348,7 +348,10 @@ gui_ph_handle_timer_cursor(
 }
 
     static int
-gui_ph_handle_timer_timeout(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
+gui_ph_handle_timer_timeout(
+    PtWidget_t		*widget,
+    void		*data,
+    PtCallbackInfo_t	*info)
 {
     is_timeout = TRUE;
 
@@ -1476,7 +1479,10 @@ gui_ph_dialog_close(int button, void *data)
 }
 
     static int
-gui_ph_dialog_text_enter(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
+gui_ph_dialog_text_enter(
+    PtWidget_t		*widget,
+    void		*data,
+    PtCallbackInfo_t	*info)
 {
     if (info->reason_subtype == Pt_EDIT_ACTIVATE)
 	gui_ph_dialog_close(1, data);

@@ -946,11 +946,10 @@ cmdline_wildchar_complete(
     int		res;
     int		j;
     int		options = WILD_NO_BEEP;
+    int		noselect = p_wmnu && (wim_flags[0] & WIM_NOSELECT);
 
     if (wim_flags[wim_index] & WIM_BUFLASTUSED)
 	options |= WILD_BUFLASTUSED;
-    if (wim_flags[0] & WIM_NOSELECT)
-	options |= WILD_KEEP_SOLE_ITEM;
     if (xp->xp_numfiles > 0)   // typed p_wc at least twice
     {
 	// if 'wildmode' contains "list" may still need to list
@@ -960,7 +959,8 @@ cmdline_wildchar_complete(
 		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)))
 	{
 	    (void)showmatches(xp,
-		    p_wmnu && ((wim_flags[wim_index] & WIM_LIST) == 0));
+		    p_wmnu && ((wim_flags[wim_index] & WIM_LIST) == 0),
+		    noselect);
 	    redrawcmd();
 	    *did_wild_list = TRUE;
 	}
@@ -990,7 +990,11 @@ cmdline_wildchar_complete(
 	if (wim_flags[0] & WIM_LONGEST)
 	    res = nextwild(xp, WILD_LONGEST, options, escape);
 	else
+	{
+	    if (noselect || (wim_flags[wim_index] & WIM_LIST))
+		options |= WILD_NOSELECT;
 	    res = nextwild(xp, WILD_EXPAND_KEEP, options, escape);
+	}
 
 	// Remove popup window if no completion items are available
 	if (redraw_if_menu_empty && xp->xp_numfiles <= 0)
@@ -1011,7 +1015,7 @@ cmdline_wildchar_complete(
 	// "list", or no change and 'wildmode' contains "longest,list",
 	// list all matches
 	if (res == OK
-		&& xp->xp_numfiles > ((wim_flags[wim_index] & WIM_NOSELECT) ? 0 : 1))
+		&& xp->xp_numfiles > (noselect ? 0 : 1))
 	{
 	    // a "longest" that didn't do anything is skipped (but not
 	    // "list:longest")
@@ -1020,25 +1024,12 @@ cmdline_wildchar_complete(
 	    if ((wim_flags[wim_index] & WIM_LIST)
 		    || (p_wmnu && (wim_flags[wim_index] & (WIM_FULL | WIM_NOSELECT))))
 	    {
-		if (!(wim_flags[0] & WIM_LONGEST))
-		{
-		    int p_wmnu_save = p_wmnu;
-
-		    p_wmnu = 0;
-
-		    // remove match
-		    nextwild(xp, WILD_PREV, options, escape);
-		    p_wmnu = p_wmnu_save;
-		}
 		(void)showmatches(xp, p_wmnu
-			&& ((wim_flags[wim_index] & WIM_LIST) == 0));
+			&& ((wim_flags[wim_index] & WIM_LIST) == 0), noselect);
 		redrawcmd();
 		*did_wild_list = TRUE;
 		if (wim_flags[wim_index] & WIM_LONGEST)
 		    nextwild(xp, WILD_LONGEST, options, escape);
-		else if ((wim_flags[wim_index] & WIM_FULL)
-			&& !(wim_flags[wim_index] & WIM_NOSELECT))
-		    nextwild(xp, WILD_NEXT, options, escape);
 	    }
 	    else
 		vim_beep(BO_WILD);
@@ -1989,6 +1980,9 @@ getcmdline_int(
 #endif
 		    || c == Ctrl_C))
 	{
+#ifdef FEAT_EVAL
+	    set_vim_var_char(c);  // Set v:char
+#endif
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 	    event_cmdlineleavepre_triggered = TRUE;
 #if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
@@ -2013,7 +2007,8 @@ getcmdline_int(
 	{
 	    if (cmdline_pum_active())
 	    {
-		skip_pum_redraw = skip_pum_redraw && (vim_isprintc(c)
+		skip_pum_redraw = skip_pum_redraw && !key_is_wc
+		    && (vim_isprintc(c)
 			|| c == K_BS || c == Ctrl_H || c == K_DEL
 			|| c == K_KDEL || c == Ctrl_W || c == Ctrl_U);
 		cmdline_pum_remove(&ccline, skip_pum_redraw);
@@ -2124,7 +2119,8 @@ getcmdline_int(
 		{
 		    // Trigger the popup menu when wildoptions=pum
 		    showmatches(&xpc, p_wmnu
-			    && ((wim_flags[wim_index] & WIM_LIST) == 0));
+			    && ((wim_flags[wim_index] & WIM_LIST) == 0),
+			    wim_flags[0] & WIM_NOSELECT);
 		}
 		if (nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK
 			&& nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
@@ -2239,7 +2235,8 @@ getcmdline_int(
 		goto cmdline_not_changed;
 
 	case Ctrl_D:
-		if (showmatches(&xpc, FALSE) == EXPAND_NOTHING)
+		if (showmatches(&xpc, FALSE, wim_flags[0] & WIM_NOSELECT)
+			== EXPAND_NOTHING)
 		    break;	// Use ^D as normal char instead
 
 		redrawcmd();
@@ -2652,7 +2649,12 @@ cmdline_changed:
 returncmd:
     // Trigger CmdlineLeavePre autocommands if not already triggered.
     if (!event_cmdlineleavepre_triggered)
+    {
+#ifdef FEAT_EVAL
+	set_vim_var_char(c);  // Set v:char
+#endif
 	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
+    }
 
 #ifdef FEAT_RIGHTLEFT
     cmdmsg_rl = FALSE;
@@ -2710,6 +2712,9 @@ returncmd:
 	need_wait_return = FALSE;
 
     // Trigger CmdlineLeave autocommands.
+#ifdef FEAT_EVAL
+    set_vim_var_char(c);  // Set v:char
+#endif
     trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVE);
 
     State = save_State;

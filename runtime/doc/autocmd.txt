@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Jun 19
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Aug 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -644,6 +644,8 @@ CmdlineLeave			Before leaving the command line; including
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
+				Sets the |v:char| to the key that exited the
+				command-line (e.g. <CR>, <CTRL-C>, <Esc>).
 							*CmdlineLeavePre*
 CmdlineLeavePre			Just before leaving the command line, and
 				before |CmdlineLeave|.  Useful for capturing
@@ -656,6 +658,7 @@ CmdlineLeavePre			Just before leaving the command line, and
 				or <Esc>.  <afile> is set to a single
 				character indicating the command-line type.
 				See |cmdwin-char| for details.
+				Sets |v:char| as with |CmdlineLeave|.
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for

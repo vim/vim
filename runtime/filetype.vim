@@ -2433,6 +2433,9 @@ au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
 " Cadence
 au BufNewFile,BufRead *.cdc			setf cdc
 
+" Cangjie
+au BufNewFile,BufRead *.cj			setf cangjie
+
 " SLRN
 au BufNewFile,BufRead .slrnrc			setf slrnrc
 au BufNewFile,BufRead *.score			setf slrnsc

@@ -3,6 +3,11 @@
 source util/screendump.vim
 import './util/vim9.vim' as v9
 
+" Socket backend for remote functions require the socket server to be running
+if v:servername == ""
+  call remote_startserver('VIMSOCKETSERVERTEST')
+endif
+
 " Test for passing too many or too few arguments to builtin functions
 func Test_internalfunc_arg_error()
   let l =<< trim END
@@ -1650,7 +1655,7 @@ enddef
 
 def Test_foreach()
   CheckFeature job
-  v9.CheckSourceDefAndScriptFailure(['foreach(test_null_job(), "")'], ['E1013: Argument 1: type mismatch, expected list<any> but got job', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['foreach(test_null_job(), "")'], 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1')
 enddef
 
 def Test_fullcommand()
@@ -2487,15 +2492,19 @@ def Test_islocked()
 enddef
 
 def Test_items()
-  v9.CheckSourceDefFailure(['123->items()'], 'E1225:')
+  v9.CheckSourceDefFailure(['123->items()'], 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1')
+
+  # Dict
   assert_equal([['a', 10], ['b', 20]], {'a': 10, 'b': 20}->items())
   assert_equal([], {}->items())
   assert_equal(['x', 'x'], {'a': 10, 'b': 20}->items()->map((_, _) => 'x'))
 
+  # List
   assert_equal([[0, 'a'], [1, 'b']], ['a', 'b']->items())
   assert_equal([], []->items())
   assert_equal([], test_null_list()->items())
 
+  # String
   assert_equal([[0, 'a'], [1, '웃'], [2, 'ć']], 'a웃ć'->items())
   assert_equal([], ''->items())
   assert_equal([], test_null_string()->items())
@@ -4901,8 +4910,8 @@ def Test_typename()
   if has('channel')
     assert_equal('channel', test_null_channel()->typename())
   endif
-  var l: list<func(list<number>): number> = [function('min')]
-  assert_equal('list<func(list<number>): number>', typename(l))
+  var l: list<func(list<number>): any> = [function('min')]
+  assert_equal('list<func(list<number>): any>', typename(l))
 enddef
 
 def Test_undofile()

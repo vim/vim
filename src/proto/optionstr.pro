@@ -1,6 +1,4 @@
 /* optionstr.c */
-char *did_set_tabpanelopt(optset_T *args);
-int expand_set_tabpanelopt(optexpand_T *args, int *numMatches, char_u ***matches);
 void didset_string_options(void);
 void trigger_optionset_string(int opt_idx, int opt_flags, char_u *oldval, char_u *oldval_l, char_u *oldval_g, char_u *newval);
 void check_buf_options(buf_T *buf);
@@ -34,7 +32,7 @@ int expand_set_buftype(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_casemap(optset_T *args);
 int expand_set_casemap(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_clipboard(optexpand_T *args, int *numMatches, char_u ***matches);
-char * did_set_clipmethod(optset_T *args);
+char *did_set_clipmethod(optset_T *args);
 int expand_set_clipmethod(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_chars_option(optset_T *args);
 int expand_set_chars_option(optexpand_T *args, int *numMatches, char_u ***matches);
@@ -139,6 +137,8 @@ char *did_set_renderoptions(optset_T *args);
 char *did_set_rightleftcmd(optset_T *args);
 int expand_set_rightleftcmd(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_rulerformat(optset_T *args);
+char *did_set_tabpanelopt(optset_T *args);
+int expand_set_tabpanelopt(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_scrollopt(optset_T *args);
 int expand_set_scrollopt(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_wlseat(optset_T *args);

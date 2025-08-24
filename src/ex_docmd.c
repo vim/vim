@@ -9432,8 +9432,8 @@ exec_normal(int was_typed, int use_vpeekc, int may_use_terminal_loop UNUSED)
 ex_checkpath(exarg_T *eap)
 {
     find_pattern_in_path(NULL, 0, 0, FALSE, FALSE, CHECK_PATH, 1L,
-				   eap->forceit ? ACTION_SHOW_ALL : ACTION_SHOW,
-					      (linenr_T)1, (linenr_T)MAXLNUM, eap->forceit);
+	    eap->forceit ? ACTION_SHOW_ALL : ACTION_SHOW,
+	    (linenr_T)1, (linenr_T)MAXLNUM, eap->forceit, FALSE);
 }
 
 #if defined(FEAT_QUICKFIX)
@@ -9501,9 +9501,9 @@ ex_findpat(exarg_T *eap)
     }
     if (!eap->skip)
 	find_pattern_in_path(eap->arg, 0, (int)STRLEN(eap->arg),
-			    whole, !eap->forceit,
-			    *eap->cmd == 'd' ?	FIND_DEFINE : FIND_ANY,
-			    n, action, eap->line1, eap->line2, eap->forceit);
+		whole, !eap->forceit,
+		*eap->cmd == 'd' ? FIND_DEFINE : FIND_ANY, n, action,
+		eap->line1, eap->line2, eap->forceit, FALSE);
 }
 #endif
 
@@ -10039,9 +10039,29 @@ eval_vars(
 
 #ifdef FEAT_CLIENTSERVER
 	case SPEC_CLIENT:	// Source of last submitted input
+#ifdef MSWIN
 		sprintf((char *)strbuf, PRINTF_HEX_LONG_U,
 							(long_u)clientWindow);
 		result = strbuf;
+#else
+# ifdef FEAT_SOCKETSERVER
+		if (clientserver_method == CLIENTSERVER_METHOD_SOCKET)
+		{
+		    if (client_socket == NULL)
+			result = (char_u *)"";
+		    else
+			result = client_socket;
+		}
+# endif
+# ifdef FEAT_X11
+		if (clientserver_method == CLIENTSERVER_METHOD_X11)
+		{
+		    sprintf((char *)strbuf, PRINTF_HEX_LONG_U,
+							(long_u)clientWindow);
+		    result = strbuf;
+		}
+# endif
+#endif
 		break;
 #endif
 

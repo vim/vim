@@ -4111,7 +4111,7 @@ enddef
 def Test_source_func_script_var()
   var lines =<< trim END
     vim9script noclear
-    var Fn: func(list<any>): number
+    var Fn: func(list<any>): any
     Fn = function('min')
     assert_equal(2, Fn([4, 2]))
   END

@@ -1279,7 +1279,10 @@ did_set_breakindentopt(optset_T *args)
 }
 
     int
-expand_set_breakindentopt(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_breakindentopt(
+    optexpand_T		*args,
+    int			*numMatches,
+    char_u		***matches)
 {
     return expand_set_opt_string(
 	    args,
@@ -3613,7 +3616,7 @@ did_set_rulerformat(optset_T *args)
 }
 #endif
 
-#if defined(FEAT_TABPANEL)
+#if defined(FEAT_TABPANEL) || defined(PROTO)
 /*
  * Process the new 'tabpanelopt' option value.
  */
@@ -3756,7 +3759,10 @@ did_set_sessionoptions(optset_T *args)
 }
 
     int
-expand_set_sessionoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_sessionoptions(
+    optexpand_T		*args,
+    int			*numMatches,
+    char_u		***matches)
 {
     return expand_set_opt_string(
 	    args,
@@ -4308,7 +4314,10 @@ did_set_toolbariconsize(optset_T *args UNUSED)
 }
 
     int
-expand_set_toolbariconsize(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_toolbariconsize(
+    optexpand_T	*args,
+    int		*numMatches,
+    char_u	***matches)
 {
     return expand_set_opt_string(
 	    args,
@@ -5059,7 +5068,7 @@ restore_shm_value(void)
  * Export the environment variable $MYVIMDIR to the first item in runtimepath
  */
     void
-export_myvimdir()
+export_myvimdir(void)
 {
     int		dofree = FALSE;
     char_u	*p;

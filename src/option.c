@@ -4748,7 +4748,7 @@ did_set_winwidth(optset_T *args UNUSED)
     return errmsg;
 }
 
-#ifdef FEAT_WAYLAND_CLIPBOARD
+#if defined(FEAT_WAYLAND_CLIPBOARD) || defined(PROTO)
 /*
  * Process the new 'wlsteal' option value.
  */
@@ -4761,7 +4761,7 @@ did_set_wlsteal(optset_T *args UNUSED)
 }
 #endif
 
-#ifdef FEAT_WAYLAND
+#if defined(FEAT_WAYLAND) || defined(PROTO)
 /*
  * Process the new 'wltimeoutlen' option value.
  */
@@ -7956,7 +7956,7 @@ match_str(
 	int score;
 
 	score = fuzzy_match_str(str, fuzzystr);
-	if (score != 0)
+	if (score != FUZZY_SCORE_NONE)
 	{
 	    if (!test_only)
 	    {
@@ -8915,7 +8915,7 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 #endif
 }
 
-#if defined(FEAT_TABPANEL)
+#if defined(FEAT_TABPANEL) || defined(PROTO)
 /*
  * Process the new 'showtabpanel' option value.
  */

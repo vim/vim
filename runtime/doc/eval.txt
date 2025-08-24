@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Jul 22
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Aug 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2227,8 +2227,8 @@ v:beval_winid	The |window-ID| of the window, over which the mouse pointer
 					*v:char* *char-variable*
 v:char		Argument for evaluating 'formatexpr' and used for the typed
 		character when using <expr> in an abbreviation |:map-<expr>|.
-		It is also used by the |InsertCharPre|, |InsertEnter| and
-		|KeyInputPre| events.
+		It is also used by the |InsertCharPre|, |InsertEnter|,
+		|KeyInputPre|, |CmdlineLeave| and |CmdlineLeavePre| events.
 
 			*v:charconvert_from* *charconvert_from-variable*
 v:charconvert_from
@@ -2910,6 +2910,12 @@ v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
 		does with ambiguous width characters, see 'ambiwidth'.  When
 		this option is set, the TermResponseAll autocommand event is
 		fired, with <amatch> set to "ambiguouswidth".
+
+						*v:termda1*
+v:termda1	The escape sequence returned by a primary device attributes
+		(DA1) query from the terminal.  When this option is set, the
+		TermResponseAll autocommand event is fired, with <amatch> set
+		to "da1".  Can be used to detect OSC 52 support in a terminal.
 
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.

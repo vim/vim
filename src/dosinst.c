@@ -2174,7 +2174,7 @@ init_homedir(void)
 	if (homedrive != NULL
 		   && strlen(homedrive) + strlen(homepath) < sizeof(buf))
 	{
-	    sprintf(buf, "%s%s", homedrive, homepath);
+	    snprintf(buf, sizeof(buf), "%s%s", homedrive, homepath);
 	    if (buf[0] != NUL)
 		var = buf;
 	}
@@ -2202,7 +2202,7 @@ init_homedir(void)
 	    if (exp != NULL && *exp != NUL
 				&& strlen(exp) + strlen(p) < sizeof(buf))
 	    {
-		sprintf(buf, "%s%s", exp, p + 1);
+		snprintf(buf, sizeof(buf), "%s%s", exp, p + 1);
 		var = buf;
 	    }
 	}
