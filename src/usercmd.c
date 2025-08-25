@@ -1085,7 +1085,7 @@ uc_add_command(
     long	argt,
     long	def,
     int		flags,
-    int		compl,
+    int		completion_type,
     char_u	*compl_arg UNUSED,
     cmd_addr_T	addr_type,
     int		force)
@@ -1179,7 +1179,7 @@ uc_add_command(
     cmd->uc_rep = rep_buf;
     cmd->uc_argt = argt;
     cmd->uc_def = def;
-    cmd->uc_compl = compl;
+    cmd->uc_compl = completion_type;
     cmd->uc_script_ctx = current_sctx;
     if (flags & UC_VIM9)
 	cmd->uc_script_ctx.sc_version = SCRIPT_VERSION_VIM9;
@@ -1258,7 +1258,7 @@ ex_command(exarg_T *eap)
     long	argt = 0;
     long	def = -1;
     int		flags = 0;
-    int		compl = EXPAND_NOTHING;
+    int		completion_type = EXPAND_NOTHING;
     char_u	*compl_arg = NULL;
     cmd_addr_T	addr_type_arg = ADDR_NONE;
     int		has_attr = (eap->arg[0] == '-');
@@ -1271,7 +1271,7 @@ ex_command(exarg_T *eap)
     {
 	++p;
 	end = skiptowhite(p);
-	if (uc_scan_attr(p, end - p, &argt, &def, &flags, &compl,
+	if (uc_scan_attr(p, end - p, &argt, &def, &flags, &completion_type,
 					   &compl_arg, &addr_type_arg) == FAIL)
 	    goto theend;
 	p = skipwhite(end);
@@ -1307,7 +1307,7 @@ ex_command(exarg_T *eap)
     {
 	emsg(_(e_reserved_name_cannot_be_used_for_user_defined_command));
     }
-    else if (compl > 0 && (argt & EX_EXTRA) == 0)
+    else if (completion_type > 0 && (argt & EX_EXTRA) == 0)
     {
 	// Some plugins rely on silently ignoring the mistake, only make this
 	// an error in Vim9 script.
@@ -1324,8 +1324,8 @@ ex_command(exarg_T *eap)
 
 	p = may_get_cmd_block(eap, p, &tofree, &flags);
 
-	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
-						  addr_type_arg, eap->forceit);
+	uc_add_command(name, end - name, p, argt, def, flags, completion_type,
+		compl_arg, addr_type_arg, eap->forceit);
 	vim_free(tofree);
 
 	return;  // success

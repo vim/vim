@@ -2307,7 +2307,7 @@ set_context_by_cmdname(
 	expand_T	*xp,
 	char_u		*arg,
 	long		argt,
-	int		compl,
+	int		completion_type,
 	int		forceit)
 {
     char_u  *nextcmd;
@@ -2535,8 +2535,8 @@ set_context_by_cmdname(
 #endif
 	case CMD_USER:
 	case CMD_USER_BUF:
-	    return set_context_in_user_cmdarg(cmd, arg, argt, compl, xp,
-								forceit);
+	    return set_context_in_user_cmdarg(cmd, arg, argt, completion_type,
+		    xp, forceit);
 
 	case CMD_map:	    case CMD_noremap:
 	case CMD_nmap:	    case CMD_nnoremap:
@@ -2705,7 +2705,7 @@ set_one_cmd_context(
     char_u		*cmd, *arg;
     int			len = 0;
     exarg_T		ea;
-    int			compl = EXPAND_NOTHING;
+    int			completion_type = EXPAND_NOTHING;
     int			forceit = FALSE;
     int			usefilter = FALSE;  // filter instead of file name
 
@@ -2743,7 +2743,7 @@ set_one_cmd_context(
 	return cmd + 1;			// There's another command
 
     // Get the command index.
-    p = set_cmd_index(cmd, &ea, xp, &compl);
+    p = set_cmd_index(cmd, &ea, xp, &completion_type);
     if (p == NULL)
 	return NULL;
 
@@ -2887,11 +2887,11 @@ set_one_cmd_context(
     }
 
     if (ea.argt & EX_XFILE)
-	set_context_for_wildcard_arg(&ea, arg, usefilter, xp, &compl);
+	set_context_for_wildcard_arg(&ea, arg, usefilter, xp, &completion_type);
 
     // 6. Switch on command name.
-    return set_context_by_cmdname(cmd, ea.cmdidx, xp, arg, ea.argt, compl,
-								forceit);
+    return set_context_by_cmdname(cmd, ea.cmdidx, xp, arg, ea.argt,
+	    completion_type, forceit);
 }
 
 /*

@@ -639,6 +639,7 @@ wait		don't use as argument to a function, conflicts with types.h
 index		shadows global declaration
 time		shadows global declaration
 new		C++ reserved keyword
+compl		C++ reserved keyword; macro alias in <iso646.h>
 
 clear		Mac curses.h
 echo		Mac curses.h
