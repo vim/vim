@@ -780,13 +780,15 @@ crypt_decode_inplace(
     void
 crypt_free_key(char_u *key)
 {
-    char_u *p;
-
     if (key != NULL)
     {
-	for (p = key; *p != NUL; ++p)
-	    *p = 0;
-	vim_free(key);
+#ifdef FEAT_SODIUM
+    sodium_memzero(key, STRLEN(key));
+    sodium_free(key);
+#else
+	vim_memset(key, 0, STRLEN(key));
+    vim_free(key);
+#endif
     }
 }
 
