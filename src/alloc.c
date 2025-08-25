@@ -770,7 +770,10 @@ ga_concat_strings(garray_T *gap, char *sep)
     char_u	*p;
 
     for (i = 0; i < gap->ga_len; ++i)
-	len += (int)STRLEN(((char_u **)(gap->ga_data))[i]) + sep_len;
+	len += (int)STRLEN(((char_u **)(gap->ga_data))[i]);
+
+    if (gap->ga_len > 1)
+	len += (gap->ga_len - 1) * sep_len;
 
     s = alloc(len + 1);
     if (s == NULL)
