@@ -4619,4 +4619,19 @@ func Test_popupwin_bottom_position_without_decoration()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_getwininfo_tabnr()
+  tab split
+  let winid1 = popup_create('sup', #{tabpage: 1})
+  let winid2 = popup_create('sup', {})
+  let winid3 = popup_create('sup', #{tabpage: -1})
+  call assert_equal(1, getwininfo(winid1)[0].tabnr)
+  call assert_equal(2, getwininfo(winid2)[0].tabnr)
+  call assert_equal(0, getwininfo(winid3)[0].tabnr)
+
+  call popup_close(winid1)
+  call popup_close(winid2)
+  call popup_close(winid3)
+  tabonly
+endfunc
+
 " vim: shiftwidth=2 sts=2
