@@ -118,6 +118,11 @@ test = f"He said his name is {name!r}."
 test = f"He said his name is {repr(name)}."
 test = f"result: {value:{width}}"
 test = f"result: {value:{width}.{precision}}"
+test = f"result: {value:{
+        width
+    }.{
+        precision
+    }}"
 test = f"result: {value:{width:d}.{precision!s}}"
 test = f"result: {value:{options}{width}{grouping}{precision}{type}}"
 test = f"{number:#0x}"
@@ -160,8 +165,14 @@ test = f"Debug expression is {x == 1=}"
 test = f"Debug expression is {x != 1=}"
 test = f"Debug expression is {(x := 1)=}"
 test = f"List comprehension returns { [x**2 for x in range(10)] }"
+test = f"List comprehension returns { [
+        x**2 for x in range(10)
+    ] }"
 test = f"Padded list comprehension returns { [x**2 for x in range(10)] :99}"
 test = f"Dict comprehension returns { {x: x**2 for x in range(10)} }"
+test = f"Dict comprehension returns { {
+        x: x**2 for x in range(10)
+    } }"
 test = f"Padded dict comprehension returns { {x: x**2 for x in range(10)} :99}"
 
 # Bytes
