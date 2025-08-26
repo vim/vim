@@ -3543,7 +3543,6 @@ dos_expandpath(
     size_t	len;
     int		starstar = FALSE;
     static int	stardepth = 0;	    // depth for "**" expansion
-    static int	wildcarddepth = 0;	// depth for other wildcard expansions
 
     HANDLE		hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW    wfb;
@@ -3711,13 +3710,13 @@ dos_expandpath(
 		vim_snprintf((char *)buf + len, buflen - len, "%s", path_end);
 		if (mch_has_exp_wildcard(path_end))
 		{
-			if (wildcarddepth < 100)
+			if (stardepth < 100)
 			{
 				// need to expand another component of the path
 				// remove backslashes for the remaining components only
-				++wildcarddepth;
+				++stardepth;
 				(void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
-				--wildcarddepth;
+				--stardepth;
 			}
 		}
 		else
@@ -3804,7 +3803,6 @@ unix_expandpath(
     size_t	len;
     int		starstar = FALSE;
     static int	stardepth = 0;	    // depth for "**" expansion
-    static int	wildcarddepth = 0;	// depth for other wildcard expansions
 
     DIR		*dirp;
     struct dirent *dp;
@@ -3958,13 +3956,13 @@ unix_expandpath(
 		vim_snprintf((char *)buf + len, buflen - len, "%s", path_end);
 		if (mch_has_exp_wildcard(path_end)) // handle more wildcards
 		{
-			if (wildcarddepth < 100)
+			if (stardepth < 100)
 			{
 				// need to expand another component of the path
 				// remove backslashes for the remaining components only
-				++wildcarddepth;
+				++stardepth;
 				(void)unix_expandpath(gap, buf, len + 1, flags, FALSE);
-				--wildcarddepth;
+				--stardepth;
 			}
 		}
 		else
