@@ -448,7 +448,8 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf, int user_hlattr)
     if (attrs == NULL)
 	return NULL;
 
-    in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
+    in_fuzzy = (State & MODE_CMDLINE) ? cmdline_compl_is_fuzzy()
+					  : (get_cot_flags() & COT_FUZZY) != 0;
     leader_len = STRLEN(leader);
 
     if (in_fuzzy)
