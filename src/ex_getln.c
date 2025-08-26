@@ -1022,11 +1022,10 @@ cmdline_wildchar_complete(
 	    // 'wim' values if available
 	    if (wim_longest && ccline.cmdpos == cmdpos_before)
 	    {
-		if (wim_list || wim_full)
-		{
+		if (wim_full)
 		    nextwild(xp, WILD_NEXT, options, escape);
+		if (wim_list || wim_full)
 		    (void)showmatches(xp, p_wmnu, wim_list, FALSE);
-		}
 	    }
 	    else if (!wim_longest)
 	    {

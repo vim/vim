@@ -2937,12 +2937,22 @@ func Test_wildmenu_pum()
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_54', {})
 
-  " Verify that if "longest" finds a candidate, wildmenu is not shown
-  call term_sendkeys(buf, "\<Esc>:sign u\<Tab>")
+  " Verify that if "longest" finds nothing, "list" is still shown
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest:list,full\<CR>")
+  call term_sendkeys(buf, ":cn\<Tab>")
+  call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_55', {})
+  call term_sendkeys(buf, "\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_56', {})
+
+  " Verify that if "longest" finds a candidate, wildmenu is not shown
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest:full,full wildoptions&\<CR>")
+  call term_sendkeys(buf, ":sign u\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_57', {})
   " Subsequent wildchar shows wildmenu
   call term_sendkeys(buf, "\<Tab>")
-  call VerifyScreenDump(buf, 'Test_wildmenu_pum_56', {})
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_58', {})
 
   call term_sendkeys(buf, "\<C-U>\<CR>")
   call StopVimInTerminal(buf)
