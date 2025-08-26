@@ -3121,7 +3121,7 @@ func Test_wildmenu_pum_hl_match()
 endfunc
 
 " Test highlighting of matched text in cmdline completion popup menu provided
-" with a command completed with customlist.
+" by a command completed with customlist.
 func Test_wildmenu_pum_hl_match_list()
   CheckScreendump
 
@@ -3143,6 +3143,34 @@ func Test_wildmenu_pum_hl_match_list()
   call TermWait(buf)
   call term_sendkeys(buf, ":ListT hewo\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_list_2', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test highlighting of matched text in cmdline completion popup menu provided
+" by a custom 'findfunc'
+func Test_wildmenu_pum_hl_match_findfunc()
+  CheckScreendump
+
+  let lines =<< trim END
+    set wildoptions=pum,fuzzy
+    hi PmenuMatchSel  cterm=reverse
+    hi PmenuMatch     cterm=reverse
+    func FindComplete(cmdarg, cmdcomplete)
+      return ['hello/world', 'hello/wonderful']->matchfuzzy(a:cmdarg)
+    endfunc
+    set findfunc=FindComplete
+  END
+  call writefile(lines, 'Xwildmenu_pum_hl', 'D')
+  let buf = RunVimInTerminal('-S Xwildmenu_pum_hl', #{rows: 10, cols: 50})
+
+  call term_sendkeys(buf, ":find hewo\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_find_1', {})
+  call term_sendkeys(buf, "\<Esc>:set wildoptions-=fuzzy\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":find hewo\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_hl_match_find_2', {})
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
