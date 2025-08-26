@@ -65,6 +65,16 @@ if s:ext =~? '\.en'
   let s:ext = ""
 endif
 
+" Choose between Chinese (Simplified) and Chinese (Traditional)
+" based on the language, suggested by Alick Zhao.
+if s:ext =~? '\.zh'
+  if s:ext =~? 'zh_tw' || (exists("s:lang") && s:lang =~? 'zh_tw')
+    let s:ext = ".zh_tw"
+  else
+    let s:ext = ".zh_cn"
+  endif
+endif
+
 " 2. Build the name of the file and chapter
 let s:chapter = exists("$CHAPTER") ? $CHAPTER : 1
 
