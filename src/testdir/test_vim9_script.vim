@@ -613,6 +613,13 @@ def Test_block_in_a_string()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using too many nested blocks
+def Test_too_many_nested_blocks()
+  var lines = ['vim9script']
+  lines += repeat(['{'], 51) + ['echo "Hello"'] + repeat(['}'], 51)
+  v9.CheckSourceFailure(lines, 'E579: Block nesting too deep: {')
+enddef
+
 func g:NoSuchFunc()
   echo 'none'
 endfunc
