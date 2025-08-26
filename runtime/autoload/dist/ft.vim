@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Jul 09
+# Last Change:		2025 Aug 26
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -597,6 +597,50 @@ export def FTm()
     # Default is Matlab
     setf matlab
   endif
+enddef
+
+# For files ending in *.m4, distinguish:
+#  – *.html.m4 files
+#  – files in the Autoconf M4 dialect
+#  – files in POSIX M4
+export def FTm4()
+  var fname = expand('%:t')
+  var path  = expand('%:p:h')
+
+  # Case 0: canonical Autoconf file
+  if fname ==# 'aclocal.m4'
+    setf config
+    return
+  endif
+
+  # Case 1: html.m4
+  if fname =~# 'html\.m4$'
+    setf htmlm4
+    return
+  endif
+
+  # Case 2: repo heuristic (nearby configure.ac)
+  if filereadable(path .. '/../configure.ac') || filereadable(path .. '/configure.ac')
+    setf config
+    return
+  endif
+
+  # Case 3: content heuristic (scan first ~200 lines)
+  # Signals:
+  #   - Autoconf macro prefixes: AC_/AM_/AS_/AU_/AT_
+  var n = 1
+  var max = min([200, line('$')])
+  while n <= max
+    var line = getline(n)
+    if line =~# '^\s*A[CMSUT]_'
+      setf config
+      return
+    endif
+    n += 1
+  endwhile
+
+  # Case 4: default to POSIX M4
+  setf m4
 enddef
 
 export def FTmake()

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2025 Aug 10
+" Last Change:		2025 Aug 26
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -219,8 +219,8 @@ au BufNewFile,BufRead *.au3			setf autoit
 " Autohotkey
 au BufNewFile,BufRead *.ahk			setf autohotkey
 
-" Autotest .at files are actually m4
-au BufNewFile,BufRead *.at			setf m4
+" Autotest .at files are actually Autoconf M4
+au BufNewFile,BufRead *.at			setf config
 
 " Avenue
 au BufNewFile,BufRead *.ave			setf ave
@@ -1157,9 +1157,6 @@ au BufNewFile,BufRead *.http			setf http
 " HTML with Ruby - eRuby
 au BufNewFile,BufRead *.erb,*.rhtml		setf eruby
 
-" HTML with M4
-au BufNewFile,BufRead *.html.m4			setf htmlm4
-
 " Some template.  Used to be HTML Cheetah.
 au BufNewFile,BufRead *.tmpl			setf template
 
@@ -1519,8 +1516,8 @@ au BufNewFile,BufRead *.lsl			call dist#ft#FTlsl()
 au BufNewFile,BufRead *.lss			setf lss
 
 " M4
-au BufNewFile,BufRead *.m4
-	\ if expand("<afile>") !~? 'html.m4$\|fvwm2rc' | setf m4 | endif
+au BufNewFile,BufRead *.m4                      call dist#ft#FTm4()
+
 au BufNewFile,BufRead .m4_history		setf m4
 
 " MaGic Point
