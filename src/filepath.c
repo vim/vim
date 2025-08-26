@@ -3711,11 +3711,11 @@ dos_expandpath(
 		{
 			if (stardepth < 100)
 			{
-				// need to expand another component of the path
-				// remove backslashes for the remaining components only
-				++stardepth;
-				(void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
-				--stardepth;
+			    // need to expand another component of the path
+			    // remove backslashes for the remaining components only
+			    ++stardepth;
+			    (void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
+			    --stardepth;
 			}
 		}
 		else
@@ -3957,11 +3957,11 @@ unix_expandpath(
 		{
 			if (stardepth < 100)
 			{
-				// need to expand another component of the path
-				// remove backslashes for the remaining components only
-				++stardepth;
-				(void)unix_expandpath(gap, buf, len + 1, flags, FALSE);
-				--stardepth;
+			    // need to expand another component of the path
+			    // remove backslashes for the remaining components only
+			    ++stardepth;
+			    (void)unix_expandpath(gap, buf, len + 1, flags, FALSE);
+			    --stardepth;
 			}
 		}
 		else
