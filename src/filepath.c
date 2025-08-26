@@ -3955,14 +3955,14 @@ unix_expandpath(
 		vim_snprintf((char *)buf + len, buflen - len, "%s", path_end);
 		if (mch_has_exp_wildcard(path_end)) // handle more wildcards
 		{
-			if (stardepth < 100)
-			{
-			    // need to expand another component of the path
-			    // remove backslashes for the remaining components only
-			    ++stardepth;
-			    (void)unix_expandpath(gap, buf, len + 1, flags, FALSE);
-			    --stardepth;
-			}
+		    if (stardepth < 100)
+		    {
+			// need to expand another component of the path
+			// remove backslashes for the remaining components only
+			++stardepth;
+			(void)unix_expandpath(gap, buf, len + 1, flags, FALSE);
+			--stardepth;
+		    }
 		}
 		else
 		{
