@@ -227,10 +227,10 @@ syn region  pythonRawBytes
 syn region  pythonFStringField
     \ matchgroup=pythonFStringDelimiter
     \ start=/{/
-    \ end=/\%(=\s*\)\=\%(!\a\s*\)\=\%(:\%({[^}]*}\|[^{}]*\)\+\)\=}/
+    \ end=/\%(=\s*\)\=\%(!\a\s*\)\=\%(:\%({\_[^}]*}\|[^{}]*\)\+\)\=}/
     \ contained
     \ contains=ALLBUT,pythonFStringField,pythonClass,pythonFunction,pythonDoctest,pythonDoctestValue,@Spell
-syn match   pythonFStringFieldSkip  /([^)]*)\|\[[^]]*]\|{[^}]*}/
+syn match   pythonFStringFieldSkip  /(\_[^()]*)\|\[\_[^][]*]\|{\_[^{}]*}/
     \ contained
     \ contains=ALLBUT,pythonFStringField,pythonClass,pythonFunction,pythonDoctest,pythonDoctestValue,@Spell
 
