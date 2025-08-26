@@ -1208,7 +1208,7 @@ buf_write(
 		// First find a file name that doesn't exist yet (use some
 		// arbitrary numbers).
 		dirlen = (size_t)(gettail(fname) - fname);
-		STRNCPY(tmp_fname, fname, dirlen);
+		vim_strncpy(tmp_fname, fname, dirlen);
 		fd = -1;
 		for (i = 4913; ; i += 123)
 		{
