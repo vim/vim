@@ -783,12 +783,11 @@ crypt_free_key(char_u *key)
     if (key != NULL)
     {
 #ifdef FEAT_SODIUM
-    sodium_memzero(key, STRLEN(key));
-    sodium_free(key);
+	sodium_memzero(key, STRLEN(key));
 #else
-    vim_memset(key, 0, STRLEN(key));
-    vim_free(key);
+	vim_memset(key, 0, STRLEN(key));
 #endif
+	vim_free(key);
     }
 }
 
