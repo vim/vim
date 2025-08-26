@@ -1279,12 +1279,12 @@ showmatches_oneline(
 }
 
 /*
- * Show all matches for completion on the command line.
- * Returns EXPAND_NOTHING when the character that triggered expansion should
- * be inserted like a normal character.
+ * Display completion matches.
+ * Returns EXPAND_NOTHING when the character that triggered expansion should be
+ *   inserted as a normal character.
  */
     int
-showmatches(expand_T *xp, int wildmenu, int noselect)
+showmatches(expand_T *xp, int display_wildmenu, int display_list, int noselect)
 {
     cmdline_info_T	*ccline = get_cmdline_info();
     int		numMatches;
@@ -1313,12 +1313,12 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
 	showtail = cmd_showtail;
     }
 
-    if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
-	// cmdline completion popup menu (with wildoptions=pum)
+    if (display_wildmenu && !display_list
+	    && vim_strchr(p_wop, WOP_PUM) != NULL)
 	return cmdline_pum_create(ccline, xp, matches, numMatches,
 		showtail && !noselect, noselect);
 
-    if (!wildmenu)
+    if (display_list)
     {
 	msg_didany = FALSE;		// lines_left will be set
 	msg_start();			// prepare for paging
@@ -1330,10 +1330,11 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
     }
 
     if (got_int)
-	got_int = FALSE;	// only int. the completion, not the cmd line
-    else if (wildmenu)
-	win_redr_status_matches(xp, numMatches, matches, noselect ? -1 : 0, showtail);
-    else
+	got_int = FALSE;  // only interrupt the completion, not the cmd line
+    else if (display_wildmenu && !display_list)
+	win_redr_status_matches(xp, numMatches, matches, noselect ? -1 : 0,
+		showtail);  // display statusbar menu
+    else if (display_list)
     {
 	// find the length of the longest file name
 	maxlen = 0;
@@ -4238,7 +4239,7 @@ wildmenu_translate_key(
 	}
     }
 
-    if (did_wild_list)
+    if (cmdline_pum_active() || did_wild_list || wild_menu_showing)
     {
 	if (c == K_LEFT)
 	    c = Ctrl_P;

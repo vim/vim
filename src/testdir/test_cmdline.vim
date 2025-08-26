@@ -2825,11 +2825,11 @@ func Test_wildmenu_pum()
   call term_sendkeys(buf, "sign xyz\<Esc>:sign \<Tab>\<C-E>\<Up>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_29', {})
 
-  " Check "list" still works
+  " Check that when "longest" produces no result, "list" works
   call term_sendkeys(buf, "\<C-U>set wildmode=longest,list\<CR>")
   call term_sendkeys(buf, ":cn\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_30', {})
-  call term_sendkeys(buf, "s")
+  call term_sendkeys(buf, "\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_31', {})
 
   " Tests a directory name contained full-width characters.
@@ -2928,6 +2928,21 @@ func Test_wildmenu_pum()
   " pressing <C-Y> should select the current match and end completion
   call term_sendkeys(buf, "\<Esc>:set wildchazz\<Left>\<Left>\<Tab>\<C-Y>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_53', {})
+
+  call term_sendkeys(buf, "\<Esc>:set showtabline& laststatus& lazyredraw&\<CR>")
+
+  " Verify that if "longest" finds nothing, wildmenu is still shown
+  call term_sendkeys(buf, ":set wildmode=longest:full,full wildoptions&\<CR>")
+  call term_sendkeys(buf, ":cn\<Tab>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_54', {})
+
+  " Verify that if "longest" finds a candidate, wildmenu is not shown
+  call term_sendkeys(buf, "\<Esc>:sign u\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_55', {})
+  " Subsequent wildchar shows wildmenu
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_56', {})
 
   call term_sendkeys(buf, "\<C-U>\<CR>")
   call StopVimInTerminal(buf)
