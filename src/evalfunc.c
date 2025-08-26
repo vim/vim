@@ -1934,7 +1934,7 @@ typedef struct
 # define TERM_FUNC(name) NULL
 #endif
 
-static funcentry_T global_functions[] =
+static const funcentry_T global_functions[] =
 {
     {"abs",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_any,	    f_abs},
@@ -3360,7 +3360,7 @@ internal_func_check_arg_types(
 		return FAIL;
     }
 
-    argcheck_T	*argchecks = global_functions[idx].f_argcheck;
+    const argcheck_T	*argchecks = global_functions[idx].f_argcheck;
 
     if (argchecks == NULL)
 	return OK;
