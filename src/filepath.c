@@ -3543,7 +3543,6 @@ dos_expandpath(
     size_t	len;
     int		starstar = FALSE;
     static int	stardepth = 0;	    // depth for "**" expansion
-
     HANDLE		hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW    wfb;
     WCHAR		*wn = NULL;	// UCS-2 name, NULL when not used.
