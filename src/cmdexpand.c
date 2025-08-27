@@ -1070,7 +1070,7 @@ ExpandOne(
 			    : xp->xp_files[xp->xp_selected]);
 
     // free old names
-    if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
+    if (xp->xp_numfiles != -1 && mode != WILD_ALL)
     {
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
