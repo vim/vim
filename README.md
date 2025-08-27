@@ -2,7 +2,7 @@
    <sup>Special thanks for supporting Vim by donating to the <a href="https://iccf-holland.org/">ICCF</a>:</sup>
    <br>
    <br>
-   <a href="https://www.warp.dev/vim">
+   <a href="https://go.warp.dev/vim">
       <img alt="Warp sponsorship" width="400" src="https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Github/Sponsor/Warp-Github-LG-03.png">
    </a>
 
