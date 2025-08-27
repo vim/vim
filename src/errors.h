@@ -3793,3 +3793,5 @@ EXTERN char e_socket_server_failed_connecting[]
 EXTERN char e_socket_server_unavailable[]
 	INIT(= N_("E1567: Cannot start socket server, socket path is unavailable"));
 #endif
+EXTERN char e_osc_response_timed_out[]
+	INIT(= N_("E1568: OSC command response timed out: %.*s"));

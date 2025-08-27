@@ -828,6 +828,7 @@ EXTERN char_u	*p_nf;		// 'nrformats'
 #if defined(MSWIN)
 EXTERN int	p_odev;		// 'opendevice'
 #endif
+EXTERN long	p_ost;		// 'osctimeoutlen'
 EXTERN char_u	*p_opfunc;	// 'operatorfunc'
 EXTERN char_u	*p_para;	// 'paragraphs'
 EXTERN int	p_paste;	// 'paste'

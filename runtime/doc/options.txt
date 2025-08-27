@@ -6448,6 +6448,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+					*'osctimeoutlen'* *'ost'* *E1568*
+'osctimeoutlen' 'ost'	number (default 1000)
+			global
+	This option specifies the timeout in milliseconds Vim should wait
+	until it receives an OSC terminator after receiving the beginning of
+	an OSC command response. See the |TermResponseAll| autocommand event
+	and |v:termosc| for more information.
+
 					*'osfiletype'* *'oft'*
 'osfiletype' 'oft'	string (default: "")
 			local to buffer

@@ -127,6 +127,20 @@ get_ctime(time_t thetime, int add_newline)
     return buf;
 }
 
+#if defined(MSWIN) || defined(__MINGW32__)
+/*
+ * Windows doesn't have gettimeofday(), although it does have struct timeval.
+ */
+    int
+gettimeofday(struct timeval *tv, char *dummy UNUSED)
+{
+    long t = clock();
+    tv->tv_sec = t / CLOCKS_PER_SEC;
+    tv->tv_usec = (t - tv->tv_sec * CLOCKS_PER_SEC) * 1000000 / CLOCKS_PER_SEC;
+    return 0;
+}
+#endif
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 
 #if defined(MACOS_X)
@@ -946,20 +960,6 @@ f_timer_stopall(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
 # if defined(STARTUPTIME) || defined(PROTO)
 static struct timeval	prev_timeval;
-
-#  ifdef MSWIN
-/*
- * Windows doesn't have gettimeofday(), although it does have struct timeval.
- */
-    static int
-gettimeofday(struct timeval *tv, char *dummy UNUSED)
-{
-    long t = clock();
-    tv->tv_sec = t / CLOCKS_PER_SEC;
-    tv->tv_usec = (t - tv->tv_sec * CLOCKS_PER_SEC) * 1000000 / CLOCKS_PER_SEC;
-    return 0;
-}
-#  endif
 
 /*
  * Save the previous time before doing something that could nest.

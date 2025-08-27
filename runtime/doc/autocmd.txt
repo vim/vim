@@ -1306,22 +1306,32 @@ TermResponse			After the response to |t_RV| is received from
 				takes time is involved.
 							*TermResponseAll*
 TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
-				|t_RB|, |t_RF|, or |t_u7| are received from
+				|t_u7| or any OSC command are received from
 				the terminal.  The value of |v:termresponse|,
 				|v:termblinkresp|, |v:termstyleresp|,
-				|v:termrbgresp|, |v:termrfgresp|, and
-				|v:termu7resp|, correspondingly, can be used.
-				<amatch> will be set to any of:
+				|v:termu7resp|, and |v:termosc|
+				correspondingly, can be used.  <amatch> will
+				be set to any of:
 				    "version",
 				    "cursorblink",
 				    "cursorshape",
-				    "background",
-				    "foreground",
 				    "ambiguouswidth"
+				    "osc"
 				Note that this event may be triggered halfway
 				executing another event, especially if file I/O,
 				a shell command or anything else that takes time
 				is involved.
+				Note: Traditionally, TermResponseAll was also
+				used for "foreground" and "background"
+				patterns.  These are now handled as part of
+				the "osc" value.  For backwards compatibility,
+				the $VIMRUNTIME/plugin/colorresp.vim plugin
+				will handle "osc" events and emit
+				TermResponseAll autocommand events when it
+				encounters "foreground" and "background"
+				values.
+
+
 							*TextChanged*
 TextChanged			After a change was made to the text in the
 				current buffer in Normal mode.  That is after
