@@ -127,7 +127,8 @@ get_ctime(time_t thetime, int add_newline)
     return buf;
 }
 
-#if defined(MSWIN) || defined(__MINGW32__)
+// Ruby has its own version of gettimeofday
+#if (defined(MSWIN) || defined(__MINGW32__)) && !defined(FEAT_RUBY)
 /*
  * Windows doesn't have gettimeofday(), although it does have struct timeval.
  */
