@@ -1746,6 +1746,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'chistory'* *'chi'*
+						*E1542* *E1543* *E1544*
 'chistory' 'chi'	number	(default: 10)
 			global
 			{only available when compiled with the |+quickfix|
