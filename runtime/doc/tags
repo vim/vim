@@ -4420,6 +4420,7 @@ E1231	map.txt	/*E1231*
 E1232	builtin.txt	/*E1232*
 E1233	builtin.txt	/*E1233*
 E1234	vim9.txt	/*E1234*
+E1235	vim9.txt	/*E1235*
 E1236	vim9.txt	/*E1236*
 E1237	map.txt	/*E1237*
 E1238	vim9.txt	/*E1238*
@@ -4439,6 +4440,7 @@ E125	userfunc.txt	/*E125*
 E1250	vim9.txt	/*E1250*
 E1251	vim9.txt	/*E1251*
 E1252	vim9.txt	/*E1252*
+E1253	vim9.txt	/*E1253*
 E1254	vim9.txt	/*E1254*
 E1255	map.txt	/*E1255*
 E1256	vim9.txt	/*E1256*
@@ -4521,6 +4523,7 @@ E1325	vim9class.txt	/*E1325*
 E1326	vim9class.txt	/*E1326*
 E1327	vim9class.txt	/*E1327*
 E1328	vim9class.txt	/*E1328*
+E1329	vim9class.txt	/*E1329*
 E133	userfunc.txt	/*E133*
 E1330	vim9class.txt	/*E1330*
 E1331	vim9class.txt	/*E1331*
@@ -4602,6 +4605,7 @@ E1400	vim9class.txt	/*E1400*
 E1401	vim9class.txt	/*E1401*
 E1402	vim9class.txt	/*E1402*
 E1403	vim9class.txt	/*E1403*
+E1404	vim9class.txt	/*E1404*
 E1405	vim9class.txt	/*E1405*
 E1406	vim9class.txt	/*E1406*
 E1407	vim9class.txt	/*E1407*
@@ -4626,8 +4630,12 @@ E1423	vim9class.txt	/*E1423*
 E1424	vim9class.txt	/*E1424*
 E1425	vim9class.txt	/*E1425*
 E1426	vim9class.txt	/*E1426*
+E1427	vim9class.txt	/*E1427*
+E1428	vim9class.txt	/*E1428*
 E1429	vim9class.txt	/*E1429*
 E143	autocmd.txt	/*E143*
+E1430	vim9class.txt	/*E1430*
+E1431	vim9class.txt	/*E1431*
 E1432	vim9.txt	/*E1432*
 E1433	vim9.txt	/*E1433*
 E1434	vim9.txt	/*E1434*
@@ -4687,11 +4695,17 @@ E1539	vim9.txt	/*E1539*
 E154	helphelp.txt	/*E154*
 E1540	eval.txt	/*E1540*
 E1541	vi_diff.txt	/*E1541*
+E1542	options.txt	/*E1542*
+E1543	options.txt	/*E1543*
+E1544	options.txt	/*E1544*
+E1545	quickfix.txt	/*E1545*
+E1546	autocmd.txt	/*E1546*
 E1547	various.txt	/*E1547*
 E1548	wayland.txt	/*E1548*
 E1549	options.txt	/*E1549*
 E155	sign.txt	/*E155*
 E1550	options.txt	/*E1550*
+E1551	popup.txt	/*E1551*
 E1552	vim9.txt	/*E1552*
 E1553	vim9.txt	/*E1553*
 E1554	vim9.txt	/*E1554*

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Aug 23
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Aug 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -546,6 +546,7 @@ BufUnload			Before unloading a buffer.  This is when the
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
 				buffer being unloaded "<afile>".
+								*E1546*
 				Don't change to another buffer or window, it
 				will cause problems!
 				When exiting and v:dying is 2 or more this
