@@ -10,6 +10,7 @@
 [Available for MacOS, Linux, & Windows](https://www.warp.dev/vim)<br>
 </div>
 <hr>
+
 # [![Vim The editor](https://github.com/vim/vim/raw/master/runtime/vimlogo.gif)](https://www.vim.org)
 
 [![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22)
