@@ -44,9 +44,7 @@
 
 #include "vim.h"
 
-#ifndef UNIX		// it's in os_unix.h for Unix
-# include <time.h>
-#endif
+#include <time.h>
 
 #if defined(SASC) || defined(__amigaos4__)
 # include <proto/dos.h>	    // for Open() and Close()
