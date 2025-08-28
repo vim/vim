@@ -870,9 +870,8 @@ get_next_or_prev_match(int mode, expand_T *xp)
 	}
 	else if (vim_strchr(p_wop, WOP_PUM) != NULL)
 	{
-	    int retval = cmdline_pum_create(get_cmdline_info(), xp,
-		    xp->xp_files, xp->xp_numfiles, cmd_showtail);
-	    if (retval == EXPAND_OK)
+	    if (cmdline_pum_create(get_cmdline_info(), xp, xp->xp_files,
+			xp->xp_numfiles, cmd_showtail) == EXPAND_OK)
 	    {
 		compl_selected = findex;
 		pum_clear();
