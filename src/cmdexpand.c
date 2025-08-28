@@ -389,8 +389,7 @@ nextwild(
 }
 
 /*
- * Create and display a cmdline completion popup menu with items from
- * 'matches'.
+ * Create completion popup menu with items from 'matches'.
  */
     static int
 cmdline_pum_create(
@@ -398,11 +397,9 @@ cmdline_pum_create(
 	expand_T	*xp,
 	char_u		**matches,
 	int		numMatches,
-	int		showtail,
-	int		noselect)
+	int		showtail)
 {
-    int		i;
-    int		prefix_len;
+    int	prefix_len;
 
     // Add all the completion matches
     compl_match_array = ALLOC_MULT(pumitem_T, numMatches);
@@ -410,7 +407,7 @@ cmdline_pum_create(
 	return EXPAND_UNSUCCESSFUL;
 
     compl_match_arraysize = numMatches;
-    for (i = 0; i < numMatches; i++)
+    for (int i = 0; i < numMatches; i++)
     {
 	compl_match_array[i].pum_text = SHOW_MATCH(i);
 	compl_match_array[i].pum_info = NULL;
@@ -427,12 +424,6 @@ cmdline_pum_create(
 	prefix_len += vim_strsize(showmatches_gettail(matches[0]))
 	    - vim_strsize(matches[0]);
     compl_startcol = MAX(0, compl_startcol - prefix_len);
-
-    // no default selection
-    compl_selected = noselect ? -1 : 0;
-
-    pum_clear();
-    cmdline_pum_display();
 
     return EXPAND_OK;
 }
@@ -870,14 +861,28 @@ get_next_or_prev_match(int mode, expand_T *xp)
     }
 
     // Display matches on screen
-    if (compl_match_array)
+    if (p_wmnu)
     {
-	compl_selected = findex;
-	cmdline_pum_display();
+	if (compl_match_array)
+	{
+	    compl_selected = findex;
+	    cmdline_pum_display();
+	}
+	else if (vim_strchr(p_wop, WOP_PUM) != NULL)
+	{
+	    int retval = cmdline_pum_create(get_cmdline_info(), xp,
+		    xp->xp_files, xp->xp_numfiles, cmd_showtail);
+	    if (retval == EXPAND_OK)
+	    {
+		compl_selected = findex;
+		pum_clear();
+		cmdline_pum_display();
+	    }
+	}
+	else
+	    win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files, findex,
+		    cmd_showtail);
     }
-    else if (p_wmnu)
-	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files, findex,
-		cmd_showtail);
 
     xp->xp_selected = findex;
     // Return the original text or the selected match
@@ -1315,8 +1320,17 @@ showmatches(expand_T *xp, int display_wildmenu, int display_list, int noselect)
 
     if (display_wildmenu && !display_list
 	    && vim_strchr(p_wop, WOP_PUM) != NULL)
-	return cmdline_pum_create(ccline, xp, matches, numMatches,
-		showtail && !noselect, noselect);
+    {
+	int retval = cmdline_pum_create(ccline, xp, matches, numMatches,
+		showtail && !noselect);
+	if (retval == EXPAND_OK)
+	{
+	    compl_selected = noselect ? -1 : 0;
+	    pum_clear();
+	    cmdline_pum_display();
+	}
+	return retval;
+    }
 
     if (display_list)
     {

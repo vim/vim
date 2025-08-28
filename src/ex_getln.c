@@ -952,14 +952,12 @@ cmdline_wildchar_complete(
 	options |= WILD_BUFLASTUSED;
     if (xp->xp_numfiles > 0)   // typed p_wc at least twice
     {
-	// if 'wildmode' contains "list" may still need to list
+	// If "list" is present, list matches unless already listed
 	if (xp->xp_numfiles > 1
 		&& !*did_wild_list
-		&& ((wim_flags[wim_index] & WIM_LIST)
-		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)))
+		&& (wim_flags[wim_index] & WIM_LIST))
 	{
-	    (void)showmatches(xp, p_wmnu, wim_flags[wim_index] & WIM_LIST,
-		    wim_noselect);
+	    (void)showmatches(xp, FALSE, TRUE, wim_noselect);
 	    redrawcmd();
 	    *did_wild_list = TRUE;
 	}

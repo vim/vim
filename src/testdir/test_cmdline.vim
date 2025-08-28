@@ -2954,7 +2954,7 @@ func Test_wildmenu_pum()
   call term_sendkeys(buf, "\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_58', {})
 
-  call term_sendkeys(buf, "\<C-U>\<CR>")
+  call term_sendkeys(buf, "\<C-U>\<Esc>")
   call StopVimInTerminal(buf)
 endfunc
 
