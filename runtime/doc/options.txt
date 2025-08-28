@@ -10195,7 +10195,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				*'wlsteal'* *'wst'* *'nowlsteal'* *'nowst'*
 'wlsteal' 'wst'		boolean  (default off)
 			global
-			{only when the |+wayland_clipboard| feature is included}
+			{only when the |+wayland_focus_steal| feature is
+			included}
 	When enabled, then allow Vim to steal focus by creating a temporary
 	surface, in order to access the clipboard.  For more information see
 	|wayland-focus-steal|.
