@@ -2364,6 +2364,8 @@ typedef struct
 # ifdef FEAT_GUI_HAIKU
     // No clipboard at the moment. TODO?
 # endif
+    // If we've already warned about missing/unavailable clipboard
+    bool did_warn;
 } Clipboard_T;
 #else
 typedef int Clipboard_T;	// This is required for the prototypes.

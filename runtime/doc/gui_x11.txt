@@ -714,6 +714,8 @@ output a warning:
 
   Warning: Clipboard register not available, using register 0 ~
 
+Note: This also applies to the Wayland clipboard feature as well.
+
 								*W24*
 Vim comes in different flavors, from a tiny build, that just tries to be
 compatible to original Vi, to enhanced builds which include many improvements

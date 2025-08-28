@@ -5740,7 +5740,7 @@ mch_call_shell_fork(
 #ifdef FEAT_WAYLAND
 		    // Handle Wayland events such as sending data as the source
 		    // client.
-		    wayland_client_update();
+		    wayland_update();
 #endif
 		}
 finished:
@@ -5814,7 +5814,7 @@ finished:
 #ifdef FEAT_WAYLAND
 		    // Handle Wayland events such as sending data as the source
 		    // client.
-		    wayland_client_update();
+		    wayland_update();
 #endif
 
 		    // Wait for 1 to 10 msec. 1 is faster but gives the child
@@ -6666,6 +6666,9 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	int		mzquantum_used = FALSE;
 # endif
 #endif
+#ifdef FEAT_WAYLAND
+	int		wayland_fd = -1;
+#endif
 #ifndef HAVE_SELECT
 			// each channel may use in, out and err
 	struct pollfd   fds[7 + 3 * MAX_OPEN_CHANNELS];
@@ -6709,11 +6712,11 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	}
 # endif
 
-# ifdef FEAT_WAYLAND_CLIPBOARD
-	if (wayland_may_restore_connection())
+# ifdef FEAT_WAYLAND
+	if ((wayland_fd = wayland_prepare_read()) >= 0)
 	{
 	    wayland_idx = nfd;
-	    fds[nfd].fd = wayland_display_fd;
+	    fds[nfd].fd = wayland_fd;
 	    fds[nfd].events = POLLIN;
 	    nfd++;
 	}
@@ -6777,13 +6780,9 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	}
 # endif
 
-# ifdef FEAT_WAYLAND_CLIPBOARD
-	// Technically we should first call wl_display_prepare_read() before
-	// polling the fd, then read and dispatch after we poll. However that is
-	// only needed for multi threaded environments to prevent deadlocks so
-	// we are fine.
-	if (fds[wayland_idx].revents & POLLIN)
-	    wayland_client_update();
+# ifdef FEAT_WAYLAND
+	if (wayland_idx >= 0)
+	    wayland_poll_check(fds[wayland_idx].revents);
 # endif
 
 # ifdef FEAT_XCLIPBOARD
@@ -6876,14 +6875,13 @@ select_eintr:
 	}
 # endif
 
-# ifdef FEAT_WAYLAND_CLIPBOARD
-
-	if (wayland_may_restore_connection())
+# ifdef FEAT_WAYLAND
+	if ((wayland_fd = wayland_prepare_read()) >= 0)
 	{
-	    FD_SET(wayland_display_fd, &rfds);
+	    FD_SET(wayland_fd, &rfds);
 
-	    if (maxfd < wayland_display_fd)
-		maxfd = wayland_display_fd;
+	    if (maxfd < wayland_fd)
+		maxfd = wayland_fd;
 	}
 # endif
 
@@ -6983,13 +6981,9 @@ select_eintr:
 	    socket_server_uninit();
 # endif
 
-# ifdef FEAT_WAYLAND_CLIPBOARD
-	// Technically we should first call wl_display_prepare_read() before
-	// polling the fd, then read and dispatch after we poll. However that is
-	// only needed for multi threaded environments to prevent deadlocks so
-	// we are fine.
-	if (ret > 0 && FD_ISSET(wayland_display_fd, &rfds))
-	    wayland_client_update();
+# ifdef FEAT_WAYLAND
+	if (wayland_fd != -1)
+	    wayland_select_check(ret > 0 && FD_ISSET(wayland_fd, &rfds));
 # endif
 
 # ifdef FEAT_XCLIPBOARD

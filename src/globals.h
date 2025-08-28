@@ -2071,23 +2071,23 @@ EXTERN char_u showcmd_buf[SHOWCMD_BUFLEN];
 EXTERN int	p_tgc_set INIT(= FALSE);
 #endif
 
-// If we've already warned about missing/unavailable clipboard
-EXTERN int did_warn_clipboard INIT(= FALSE);
-
 #ifdef FEAT_CLIPBOARD
 EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
 #endif
 
 #ifdef FEAT_WAYLAND
 
-// Don't connect to Wayland compositor if TRUE
-EXTERN int wayland_no_connect INIT(= FALSE);
-
-// Wayland display name (ex. wayland-0). Can be NULL
+// Wayland display name for global connection (ex. wayland-0). Can be NULL
 EXTERN char *wayland_display_name INIT(= NULL);
 
-// Wayland display file descriptor; set by wayland_init_client()
-EXTERN int wayland_display_fd;
+// Special mime type used to identify selection events that came from us setting
+// the selection. Is in format of "application/x-vim-instance-<pid>" where <pid>
+// is the PID of the Vim process. Set in main.c
+EXTERN char wayland_vim_special_mime[
+    sizeof("application/x-vim-instance-") + NUMBUFLEN - 1]; // Includes NUL
+
+// Don't connect to Wayland compositor if TRUE
+EXTERN int wayland_no_connect INIT(= FALSE);
 
 #endif
 
