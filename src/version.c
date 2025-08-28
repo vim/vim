@@ -659,6 +659,11 @@ static char *(features[]) =
 #else
 	"-wayland_clipboard",
 #endif
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+	"+wayland_focus_steal",
+#else
+	"-wayland_focus_steal",
+#endif
 	"+wildignore",
 	"+wildmenu",
 	"+windows",

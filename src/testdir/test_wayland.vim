@@ -51,16 +51,14 @@ func s:UnsetupFocusStealing()
 endfunc
 
 " Need X connection for tests that use client server communication
-func s:CheckXConnection()
-  CheckFeature x11
-  try
-    call remote_send('xxx', '')
-  catch
-    if v:exception =~ 'E240:'
-      thrclientserverow 'Skipped: no connection to the X server'
+func s:CheckClientserver()
+  CheckFeature clientserver
+
+  if has('socketserver') && !has('x11')
+    if v:servername == ""
+      call remote_startserver('VIMSOCKETSERVER')
     endif
-    " ignore other errors
-  endtry
+  endif
 endfunc
 
 func s:EndRemoteVim(name, job)
@@ -77,11 +75,7 @@ endfunc
 
 func Test_wayland_startup()
   call s:PreTest()
-  call s:CheckXConnection()
-
-  if v:servername == ""
-    call remote_startserver('VIMSOCKETSERVER')
-  endif
+  call s:CheckClientserver()
 
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
@@ -265,7 +259,8 @@ func Test_wayland_mime_types_correct()
         \ 'text/plain',
         \ 'UTF8_STRING',
         \ 'STRING',
-        \ 'TEXT'
+        \ 'TEXT',
+        \ 'application/x-vim-instance-' .. getpid()
         \ ]
 
   call setreg('+', 'text', 'c')
@@ -291,6 +286,7 @@ endfunc
 func Test_wayland_paste_vim_format_correct()
   call s:PreTest()
 
+  " TODO: use blobs instead
   " Vim doesn't support null characters in strings, so we use the -v flag of the
   " cat program to show them in a printable way, if it is available.
   call system("cat -v")
@@ -360,7 +356,7 @@ endfunc
 " Test if autoselect option in 'clipboard' works properly for Wayland
 func Test_wayland_autoselect_works()
   call s:PreTest()
-  call s:CheckXConnection()
+  call s:CheckClientserver()
 
   let l:lines =<< trim END
   set cpm=wayland
@@ -375,10 +371,6 @@ func Test_wayland_autoselect_works()
   END
 
   call writefile(l:lines, 'Wltester', 'D')
-
-  if v:servername == ""
-    call remote_startserver('VIMSOCKETSERVER')
-  endif
 
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' -S Wltester --servername ' .. l:name
@@ -408,24 +400,13 @@ func Test_wayland_autoselect_works()
 
   eval remote_send(l:name, "\<Esc>:qa!\<CR>")
 
-  try
-    call WaitForAssert({-> assert_equal("dead", job_status(l:job))})
-  finally
-    if job_status(l:job) != 'dead'
-      call assert_report('Vim instance did not exit')
-      call job_stop(l:job, 'kill')
-    endif
-  endtry
+  call s:EndRemoteVim(l:name, l:job)
 endfunc
 
 " Check if the -Y flag works properly
 func Test_no_wayland_connect_cmd_flag()
   call s:PreTest()
-  call s:CheckXConnection()
-
-  if v:servername == ""
-    call remote_startserver('VIMSOCKETSERVER')
-  endif
+  call s:CheckClientserver()
 
   let l:name = 'WLFLAGVIMTEST'
   let l:cmd = GetVimCommand() .. ' -Y --servername ' .. l:name
@@ -449,25 +430,13 @@ func Test_no_wayland_connect_cmd_flag()
   call WaitForAssert({-> assert_equal('',
         \ remote_expr(l:name, 'v:wayland_display'))})
 
-  eval remote_send(l:name, "\<Esc>:qa!\<CR>")
-  try
-    call WaitForAssert({-> assert_equal("dead", job_status(l:job))})
-  finally
-    if job_status(l:job) != 'dead'
-      call assert_report('Vim instance did not exit')
-      call job_stop(l:job, 'kill')
-    endif
-  endtry
+  call s:EndRemoteVim(l:name, l:job)
 endfunc
 
 " Test behaviour when we do something like suspend Vim
 func Test_wayland_become_inactive()
   call s:PreTest()
-  call s:CheckXConnection()
-
-  if v:servername == ""
-    call remote_startserver('VIMSOCKETSERVER')
-  endif
+  call s:CheckClientserver()
 
   let l:name = 'WLLOSEVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
@@ -489,15 +458,7 @@ func Test_wayland_become_inactive()
   call WaitForAssert({-> assert_equal("Nothing is copied\n",
         \ system('wl-paste -n'))})
 
-  eval remote_send(l:name, "\<Esc>:qa!\<CR>")
-  try
-    call WaitForAssert({-> assert_equal("dead", job_status(l:job))})
-  finally
-    if job_status(l:job) != 'dead'
-      call assert_report('Vim instance did not exit')
-      call job_stop(l:job, 'kill')
-    endif
-  endtry
+  call s:EndRemoteVim(l:name, l:job)
 endfunc
 
 " Test wlseat option
@@ -553,16 +514,12 @@ endfunc
 " Test when environment is not suitable for Wayland
 func Test_wayland_bad_environment()
   call s:PreTest()
-  call s:CheckXConnection()
+  call s:CheckClientserver()
 
   unlet $WAYLAND_DISPLAY
 
   let l:old = $XDG_RUNTIME_DIR
   unlet $XDG_RUNTIME_DIR
-
-  if v:servername == ""
-    call remote_startserver('VIMSOCKETSERVER')
-  endif
 
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
@@ -577,15 +534,7 @@ func Test_wayland_bad_environment()
   call WaitForAssert({-> assert_equal('',
         \ remote_expr(l:name, 'v:wayland_display'))})
 
-  eval remote_send(l:name, "\<Esc>:qa!\<CR>")
-  try
-    call WaitForAssert({-> assert_equal("dead", job_status(l:job))})
-  finally
-    if job_status(l:job) != 'dead'
-      call assert_report('Vim instance did not exit')
-      call job_stop(l:job, 'kill')
-    endif
-  endtry
+  call s:EndRemoteVim(l:name, l:job)
 
   let $XDG_RUNTIME_DIR = l:old
 endfunc
@@ -636,7 +585,7 @@ func Test_wayland_lost_selection()
   call s:UnsetupFocusStealing()
 endfunc
 
-" Test when there are no supported mime types for the selecftion
+" Test when there are no supported mime types for the selection
 func Test_wayland_no_mime_types_supported()
   call s:PreTest()
 

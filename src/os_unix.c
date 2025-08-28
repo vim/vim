@@ -5731,7 +5731,10 @@ mch_call_shell_fork(
 #ifdef FEAT_WAYLAND
 		    // Handle Wayland events such as sending data as the source
 		    // client.
-		    wayland_client_update();
+		    if (wayland_poll_pre() == OK)
+			wayland_poll_post(1);
+		    else
+			wayland_poll_post(-1);
 #endif
 		}
 finished:
@@ -5805,7 +5808,10 @@ finished:
 #ifdef FEAT_WAYLAND
 		    // Handle Wayland events such as sending data as the source
 		    // client.
-		    wayland_client_update();
+		    if (wayland_poll_pre() == OK)
+			wayland_poll_post(1);
+		    else
+			wayland_poll_post(-1);
 #endif
 
 		    // Wait for 1 to 10 msec. 1 is faster but gives the child
@@ -6701,7 +6707,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 # endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
-	if (wayland_may_restore_connection())
+	if (wayland_poll_pre() == OK)
 	{
 	    wayland_idx = nfd;
 	    fds[nfd].fd = wayland_display_fd;
@@ -6771,8 +6777,15 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	// polling the fd, then read and dispatch after we poll. However that is
 	// only needed for multi threaded environments to prevent deadlocks so
 	// we are fine.
-	if (fds[wayland_idx].revents & POLLIN)
-	    wayland_client_update();
+	if (wayland_idx >= 0)
+	{
+	    if (fds[wayland_idx].revents & POLLIN)
+		wayland_poll_post(1);
+	    else if (fds[wayland_idx].revents & (POLLHUP | POLLERR))
+		wayland_poll_post(-1);
+	    else
+		wayland_poll_post(0);
+	}
 # endif
 
 # ifdef FEAT_XCLIPBOARD
@@ -6866,8 +6879,7 @@ select_eintr:
 # endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
-
-	if (wayland_may_restore_connection())
+	if (wayland_poll_pre() == OK)
 	{
 	    FD_SET(wayland_display_fd, &rfds);
 
@@ -6976,12 +6988,10 @@ select_eintr:
 # endif
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
-	// Technically we should first call wl_display_prepare_read() before
-	// polling the fd, then read and dispatch after we poll. However that is
-	// only needed for multi threaded environments to prevent deadlocks so
-	// we are fine.
 	if (ret > 0 && FD_ISSET(wayland_display_fd, &rfds))
-	    wayland_client_update();
+	    wayland_poll_post(1);
+	else
+	    wayland_poll_post(0);
 # endif
 
 # ifdef FEAT_XCLIPBOARD
