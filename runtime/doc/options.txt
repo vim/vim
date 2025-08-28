@@ -3058,7 +3058,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'dip'* *'diffopt'*
 'diffopt' 'dip'		string	(default
-				 "internal,filler,closeoff,inline:simple")
+				 "internal,filler,closeoff,indent-heuristic,inline:char")
 			global
 			{not available when compiled without the |+diff|
 			feature}
