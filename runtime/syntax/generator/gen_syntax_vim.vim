@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Jul 18
+" Last Change: 2025 Aug 27
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -508,7 +508,7 @@ function s:parse_vim_function(li)
 		new
 		exec 'read ' . file_name
 		norm! gg
-		exec '/^static\s\+funcentry_T\s\+global_functions\[\]\s*=\s*$/+1;/^};/-1yank'
+		exec '/^static\s\+const\s\+funcentry_T\s\+global_functions\[\]\s*=\s*$/+1;/^};/-1yank'
 		%delete _
 
 		put
