@@ -2464,11 +2464,25 @@ AC_ARG_WITH(wayland,
 			 AC_MSG_RESULT([yes])]))
 
 if test "$with_wayland" = yes; then
-cppflags_save=$CPPFLAGS
-cflags_save=$CFLAGS
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
   AC_MSG_CHECKING(for wayland)
   if "$PKG_CONFIG" --exists 'wayland-client'; then
     AC_MSG_RESULT([yes])
+
+    AC_MSG_CHECKING(--enable-wayland-focus-steal argument)
+    AC_ARG_ENABLE(wayland-focus-steal,
+		  [AS_HELP_STRING([--enable-wayland-focus-steal],
+                          [Include focus stealing support for Wayland clipboard.])],
+		  [enable_wayland_fs=$enableval],
+		  enable_wayland_fs="yes")
+
+    AS_IF([test "$enable_wayland_fs" = "yes"],
+          [AC_MSG_RESULT([yes])
+          AC_DEFINE(FEAT_WAYLAND_CLIPBOARD_FS)],
+          [AC_MSG_RESULT([no])])
+
     AC_DEFINE(HAVE_WAYLAND)
     WAYLAND_CPPFLAGS=`$PKG_CONFIG --cflags-only-I wayland-client`
     WAYLAND_CFLAGS=`$PKG_CONFIG --cflags-only-other wayland-client`
@@ -2478,15 +2492,20 @@ cflags_save=$CFLAGS
     WAYLAND_SRC=" \
       auto/wayland/wlr-data-control-unstable-v1.c \
       auto/wayland/ext-data-control-v1.c \
-      auto/wayland/xdg-shell.c \
-      auto/wayland/primary-selection-unstable-v1.c \
       wayland.c"
     WAYLAND_OBJ=" \
       objects/wlr-data-control-unstable-v1.o \
       objects/ext-data-control-v1.o \
-      objects/xdg-shell.o \
-      objects/primary-selection-unstable-v1.o \
       objects/wayland.o"
+
+    AS_IF([test "$enable_wayland_fs" = "yes"],
+          [AS_VAR_APPEND([WAYLAND_SRC], " \
+            auto/wayland/xdg-shell.c \
+            auto/wayland/primary-selection-unstable-v1.c")
+           AS_VAR_APPEND([WAYLAND_OBJ], " \
+            objects/xdg-shell.o \
+            objects/primary-selection-unstable-v1.o")])
+
     AC_SUBST(WAYLAND_CPPFLAGS)
     AC_SUBST(WAYLAND_CFLAGS)
     AC_SUBST(WAYLAND_LIBS)

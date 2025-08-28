@@ -4770,7 +4770,7 @@ did_set_winwidth(optset_T *args UNUSED)
     char *
 did_set_wlsteal(optset_T *args UNUSED)
 {
-    wayland_cb_reload();
+    clip_reset_wayland();
 
     return NULL;
 }
