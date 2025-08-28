@@ -5378,7 +5378,6 @@ parse_csi_f_keys(int arg)
     static int
 handle_key_with_modifier(
 	int	*arg,
-	int	trail,
 	int	csi_len,
 	int	offset,
 	char_u	*buf,
@@ -5769,8 +5768,8 @@ handle_csi(
 		|| (argc == 2 && (trail == 'u' || trail == '~')))
     {
 	int iskitty = argc == 2 && (trail == 'u' || trail == '~');
-	return len + handle_key_with_modifier(arg, trail,
-				csi_len, offset, buf, bufsize, buflen, iskitty);
+	return len + handle_key_with_modifier(arg, csi_len, offset, buf,
+		bufsize, buflen, iskitty);
     }
 
     // Key without modifier (Kitty sends this for Esc or F3):
