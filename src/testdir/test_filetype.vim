@@ -309,6 +309,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     func: ['file.fc'],
     fusion: ['file.fusion'],
     fvwm: ['/.fvwm/file', 'any/.fvwm/file'],
+    fvwm2m4: ['fvwm2rc.m4'],
     gdb: ['.gdbinit', 'gdbinit', '.cuda-gdbinit', 'cuda-gdbinit', 'file.gdb', '.config/gdbearlyinit', '.gdbearlyinit'],
     gdmo: ['file.mo', 'file.gdmo'],
     gdresource: ['file.tscn', 'file.tres'],
