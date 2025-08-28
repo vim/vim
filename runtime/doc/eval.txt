@@ -2251,7 +2251,6 @@ v:clipmethod	The current method of accessing the clipboard that is being
 					unavailable.
 		See 'clipmethod' for more details.
 
-
 					*v:cmdarg* *cmdarg-variable*
 v:cmdarg	This variable is used for two purposes:
 		1. The extra arguments given to a file read/write command.
