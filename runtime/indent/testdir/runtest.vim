@@ -125,10 +125,10 @@ for fname in glob('testdir/*.in', 1, 1)
 
     if failed
       let failed_count += 1
-      exe 'write ' .. root .. '.fail'
+      silent exe 'write ' .. root .. '.fail'
       echoerr 'Test ' .. fname .. ' FAILED!'
     else
-      exe 'write ' .. root .. '.out'
+      silent exe 'write ' .. root .. '.out'
       echo "Test " .. fname .. " OK\n"
     endif
 

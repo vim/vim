@@ -241,13 +241,7 @@
 
 #if defined(FEAT_SPELL) || defined(PROTO)
 
-#ifndef UNIX		// it's in os_unix.h for Unix
-# include <time.h>	// for time_t
-#endif
-
-#ifndef UNIX		// it's in os_unix.h for Unix
-# include <time.h>	// for time_t
-#endif
+#include <time.h>	// for time_t
 
 // Special byte values for <byte>.  Some are only used in the tree for
 // postponed prefixes, some only in the other trees.  This is a bit messy...

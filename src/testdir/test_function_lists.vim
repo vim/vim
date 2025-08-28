@@ -17,7 +17,7 @@ func Test_function_lists()
   " Create a file of the functions in evalfunc.c:global_functions[].
   enew!
   read ../evalfunc.c
-  1,/^static funcentry_T global_functions\[\] =$/d
+  1,/^static const funcentry_T global_functions\[\] =$/d
   call search('^};$')
   .,$d
   v/^    {/d
@@ -38,7 +38,7 @@ func Test_function_lists()
   " not obsolete, sorted in ASCII order.
   enew!
   read ../evalfunc.c
-  1,/^static funcentry_T global_functions\[\] =$/d
+  1,/^static const funcentry_T global_functions\[\] =$/d
   call search('^};$')
   .,$d
   v/^    {/d
