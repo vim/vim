@@ -21,7 +21,7 @@ func Test_equal()
   call assert_false(base.method == instance.other)
   call assert_false([base.method] == [instance.other])
 
-  call assert_fails('echo base.method > instance.method')
+  call assert_fails('echo base.method > instance.method', 'E694: Invalid operation for Funcrefs')
   call assert_equal(0, test_null_function() == function('min'))
   call assert_equal(1, test_null_function() == test_null_function())
   call assert_fails('eval 10 == test_unknown()', ['E340:', 'E685:'])
