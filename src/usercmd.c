@@ -1325,7 +1325,7 @@ ex_command(exarg_T *eap)
 	p = may_get_cmd_block(eap, p, &tofree, &flags);
 
 	uc_add_command(name, end - name, p, argt, def, flags, comptype,
-		compl_arg, addr_type_arg, eap->forceit);
+	               compl_arg, addr_type_arg, eap->forceit);
 	vim_free(tofree);
 
 	return;  // success
