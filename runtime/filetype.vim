@@ -1377,6 +1377,9 @@ au BufNewFile,BufRead *.ks			setf kscript
 " Kconfig
 au BufNewFile,BufRead Kconfig,Kconfig.debug,Config.in	setf kconfig
 
+" Kyaml
+au BufNewFile,BufRead *.kyaml,*.kyml		setf yaml
+
 " Lace (ISE)
 au BufNewFile,BufRead *.ace,*.ACE		setf lace
 
