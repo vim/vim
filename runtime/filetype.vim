@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2025 Aug 26
+" Last Change:		2025 Aug 29
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -1519,7 +1519,7 @@ au BufNewFile,BufRead *.lsl			call dist#ft#FTlsl()
 au BufNewFile,BufRead *.lss			setf lss
 
 " M4
-au BufNewFile,BufRead *.m4                      call dist#ft#FTm4()
+au BufNewFile,BufRead *.m4	call dist#ft#FTm4()
 
 au BufNewFile,BufRead .m4_history		setf m4
 
@@ -3190,11 +3190,7 @@ au BufNewFile,BufRead */.fvwm/*			call s:StarSetf('fvwm')
 au BufNewFile,BufRead *fvwmrc*,*fvwm95*.hook
 	\ let b:fvwm_version = 1 | call s:StarSetf('fvwm')
 au BufNewFile,BufRead *fvwm2rc*
-	\ if expand("<afile>:e") == "m4"
-	\|  call s:StarSetf('fvwm2m4')
-	\|else
-	\|  let b:fvwm_version = 2 | call s:StarSetf('fvwm')
-	\|endif
+	\ let b:fvwm_version = 2 | call s:StarSetf('fvwm')
 
 " Gedcom
 au BufNewFile,BufRead */tmp/lltmp*		call s:StarSetf('gedcom')

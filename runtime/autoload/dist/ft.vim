@@ -601,31 +601,36 @@ enddef
 
 # For files ending in *.m4, distinguish:
 #  – *.html.m4 files
+#  - *fvwm2rc*.m4 files
 #  – files in the Autoconf M4 dialect
 #  – files in POSIX M4
 export def FTm4()
   var fname = expand('%:t')
   var path  = expand('%:p:h')
 
-  # Case 0: canonical Autoconf file
-  if fname ==# 'aclocal.m4'
-    setf config
-    return
-  endif
-
-  # Case 1: html.m4
   if fname =~# 'html\.m4$'
     setf htmlm4
     return
   endif
 
-  # Case 2: repo heuristic (nearby configure.ac)
+  if fname =~# 'fvwm2rc'
+    setf fvwm2m4
+    return
+  endif
+
+  # Canonical Autoconf file
+  if fname ==# 'aclocal.m4'
+    setf config
+    return
+  endif
+
+  # Repo heuristic for Autoconf M4 (nearby configure.ac)
   if filereadable(path .. '/../configure.ac') || filereadable(path .. '/configure.ac')
     setf config
     return
   endif
 
-  # Case 3: content heuristic (scan first ~200 lines)
+  # Content heuristic for Autoconf M4 (scan first ~200 lines)
   # Signals:
   #   - Autoconf macro prefixes: AC_/AM_/AS_/AU_/AT_
   var n = 1
@@ -639,7 +644,7 @@ export def FTm4()
     n += 1
   endwhile
 
-  # Case 4: default to POSIX M4
+  # Default to POSIX M4
   setf m4
 enddef
 
