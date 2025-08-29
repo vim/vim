@@ -5740,8 +5740,11 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 #ifdef FEAT_EVAL
 	    set_vim_var_string_direct(VV_TERMOSC, osc_state.buf.ga_data);
 #endif
+	    char_u savebg = *p_bg;
 	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"osc",
 		    NULL, FALSE, curbuf);
+	    if (*p_bg != savebg)
+		redraw_asap(UPD_CLEAR);
 	    return OK;
 	}
 
