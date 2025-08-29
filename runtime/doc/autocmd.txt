@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Aug 27
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1315,7 +1315,7 @@ TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				    "version",
 				    "cursorblink",
 				    "cursorshape",
-				    "ambiguouswidth"
+				    "ambiguouswidth",
 				    "osc"
 				Note that this event may be triggered halfway
 				executing another event, especially if file I/O,
@@ -1330,8 +1330,6 @@ TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				TermResponseAll autocommand events when it
 				encounters "foreground" and "background"
 				values.
-
-
 							*TextChanged*
 TextChanged			After a change was made to the text in the
 				current buffer in Normal mode.  That is after

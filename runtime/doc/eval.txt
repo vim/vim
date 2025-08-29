@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Aug 27
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Aug 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -972,8 +972,8 @@ is not available it returns -1 or the default value you specify: >
 
 Blob iteration ~
 
-The |:for| loop executes commands for each byte of a Blob.  The loop variable is
-set to each byte in the Blob.  Example: >
+The |:for| loop executes commands for each byte of a Blob.  The loop variable
+is set to each byte in the Blob.  Example: >
 	:for byte in 0z112233
 	:   call Doit(byte)
 	:endfor
@@ -1547,9 +1547,9 @@ String.  A negative index always results in an empty string (reason: backward
 compatibility).  Use [-1:] to get the last byte or character.
 In Vim9 script a negative index is used like with a list: count from the end.
 
-If expr10 is a |List| then it results the item at index expr1.  See |list-index|
-for possible index values.  If the index is out of range this results in an
-error.  Example: >
+If expr10 is a |List| then it results the item at index expr1.  See
+|list-index| for possible index values.  If the index is out of range this
+results in an error.  Example: >
 	:let item = mylist[-1]		" get last item
 
 Generally, if a |List| index is equal to or higher than the length of the
@@ -2251,7 +2251,6 @@ v:clipmethod	The current method of accessing the clipboard that is being
 					unavailable.
 		See 'clipmethod' for more details.
 
-
 					*v:cmdarg* *cmdarg-variable*
 v:cmdarg	This variable is used for two purposes:
 		1. The extra arguments given to a file read/write command.
@@ -2318,9 +2317,9 @@ v:colornames    A dictionary that maps color names to hex color strings. These
 		It is possible to remove entries from this dictionary but
 		doing so is NOT recommended, because it is disruptive to
 		other scripts. It is also unlikely to achieve the desired
-		result because the |:colorscheme| and |:highlight| commands will
-		both automatically load all `colors/lists/default.vim` color
-		scripts.
+		result because the |:colorscheme| and |:highlight| commands
+		will both automatically load all `colors/lists/default.vim`
+		color scripts.
 
 		You can make changes to that file, but make sure to add new
 		keys instead of updating existing ones, otherwise Vim will skip
@@ -2721,9 +2720,10 @@ v:python3_version
 		should exactly match the Python library up to the minor
 		version (e.g.  3.10.2 and 3.10.3 are compatible as the minor
 		version is "10", whereas 3.9.4 and 3.10.3 are not compatible).
-		When |python-stable-abi| is used, this will be the minimum Python
-		version that you can use instead. (e.g. if v:python3_version
-		indicates 3.9, you can use 3.9, 3.10, or anything above).
+		When |python-stable-abi| is used, this will be the minimum
+		Python version that you can use instead. (e.g. if
+		v:python3_version indicates 3.9, you can use 3.9, 3.10, or
+		anything above).
 
 		This number is encoded as a hex number following Python ABI
 		versioning conventions.  Do the following to have a
@@ -2861,16 +2861,16 @@ v:t_enumvalue	Value of |enumvalue| type.  Read-only.  See: |type()|
 					*v:t_tuple* *t_tuple-variable*
 v:t_tuple	Value of |Tuple| type.  Read-only.  See: |type()|
 
-				*v:termresponse* *termresponse-variable*
+				    *v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		termcap entry.  It is set when Vim receives an escape sequence
 		that starts with ESC [ or CSI, then '>' or '?' and ends in a
 		'c', with only digits and ';' in between.
-		When this option is set, the TermResponse autocommand event is
-		fired, so that you can react to the response from the
+		When this variable is set, the TermResponse autocommand event
+		is fired, so that you can react to the response from the
 		terminal.  The TermResponseAll event is also fired, with
-		<amatch> set to "version".  You can use |terminalprops()| to see
-		what Vim figured out about the terminal.
+		<amatch> set to "version".  You can use |terminalprops()| to
+		see what Vim figured out about the terminal.
 		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".  Pp
 		is the terminal type: 0 for vt100 and 1 for vt220.  Pv is the
 		patch level (since this was introduced in patch 95, it's
@@ -2879,21 +2879,21 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		codes.  This only works with xterm |xterm-codes|.
 		{only when compiled with |+termresponse| feature}
 
-						*v:termblinkresp*
+				    *v:termblinkresp* *termblinkresp-variable*
 v:termblinkresp	The escape sequence returned by the terminal for the |t_RC|
 		termcap entry.  This is used to find out whether the terminal
 		cursor is blinking. This is used by |term_getcursor()|.  When
-		this option is set, the TermResponseAll autocommand event is
+		this variable is set, the TermResponseAll autocommand event is
 		fired, with <amatch> set to "cursorblink".
 
-						*v:termstyleresp*
+				    *v:termstyleresp* *termstyleresp-variable*
 v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
 		termcap entry.  This is used to find out what the shape of the
 		cursor is.  This is used by |term_getcursor()|.  When this
-		option is set, the TermResponseAll autocommand event is fired,
-		with <amatch> set to "cursorshape".
+		variable is set, the TermResponseAll autocommand event is
+		fired, with <amatch> set to "cursorshape".
 
-						*v:termrbgresp*
+					*v:termrbgresp* *termrbgresp-variable*
 v:termrbgresp	The escape sequence returned by the terminal for the |t_RB|
 		termcap entry.  This is used to find out what the terminal
 		background color is; see 'background'.  This is set by the
@@ -2901,27 +2901,27 @@ v:termrbgresp	The escape sequence returned by the terminal for the |t_RB|
 		Vim, but can be set manually if you know what you are doing.
 		Note that changing this will not do anything.
 
-						*v:termrfgresp*
+					*v:termrfgresp* *termrfgresp-variable*
 v:termrfgresp	The escape sequence returned by the terminal for the |t_RF|
 		termcap entry.  This is used to find out what the terminal
 		foreground color is. Behaves the same as |v:termrbgresp|
 
-						*v:termu7resp*
+					*v:termu7resp* *termu7resp-variable*
 v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
 		termcap entry.  This is used to find out what the terminal
 		does with ambiguous width characters, see 'ambiwidth'.  When
-		this option is set, the TermResponseAll autocommand event is
+		this variable is set, the TermResponseAll autocommand event is
 		fired, with <amatch> set to "ambiguouswidth".
 
-						*v:termda1*
+					*v:termda1* *termda1-variable*
 v:termda1	The escape sequence returned by a primary device attributes
-		(DA1) query from the terminal.  When this option is set, the
+		(DA1) query from the terminal.  When this variable is set, the
 		TermResponseAll autocommand event is fired, with <amatch> set
 		to "da1".  Can be used to detect OSC 52 support in a terminal.
 
-						*v:termosc*
+					*v:termosc* *termosc-variable*
 v:termosc	The escape sequence of the most recent OSC response received
-		from the terminal.  When this option is set, the
+		from the terminal.  When this variable is set, the
 		|TermResponseAll| autocommand event is fired, with <amatch>
 		set to "osc".  Also used to set the |v:termrbgresp| and
 		|v:termrfgresp| via the $VIMRUNTIME/plugin/colorresp.vim
@@ -2994,7 +2994,7 @@ v:vim_did_enter	Zero until most of startup is done.  It is set to one just
 					*v:warningmsg* *warningmsg-variable*
 v:warningmsg	Last given warning message.  It's allowed to set this variable.
 
-					*v:wayland_display*
+				*v:wayland_display* *wayland_display-variable*
 v:wayland_display
 		The name of the Wayland display that Vim is connected to.
 		Equivalent to the $WAYLAND_DISPLAY environment variable.
@@ -3356,7 +3356,8 @@ text...
 			One or more items from a |List| can be removed: >
 				:unlet list[3]	  " remove fourth item
 				:unlet list[3:]   " remove fourth item to last
-<			One item from a |Dictionary| can be removed at a time: >
+<			One item from a |Dictionary| can be removed at a time:
+>
 				:unlet dict['two']
 				:unlet dict.two
 <			This is especially useful to clean up used global
@@ -3487,7 +3488,7 @@ text...
 			- In |Vim9| script an error is given.
 			- In legacy script this is silently ignored.
 
-:if {expr1}			*:if* *:end* *:endif* *:en* *E171* *E579* *E580*
+:if {expr1}		    *:if* *:end* *:endif* *:en* *E171* *E579* *E580*
 :en[dif]		Execute the commands until the next matching `:else`
 			or `:endif` if {expr1} evaluates to non-zero.
 			Although the short forms work, it is recommended to
@@ -3825,8 +3826,9 @@ text...
 			message in the |message-history|.  When used in a
 			script or function the line number will be added.
 			Spaces are placed between the arguments as with the
-			`:echomsg` command.  When used inside a try conditional,
-			the message is raised as an error exception instead
+			`:echomsg` command.  When used inside a try
+			conditional, the message is raised as an error
+			exception instead
 			(see |try-echoerr|).
 			Example: >
 		:echoerr "This script just failed!"
@@ -5172,8 +5174,8 @@ to execute the given executable.  For security reasons users may not want to
 have Vim execute random executables or may have forbidden to do so for
 specific filetypes by setting the "<filetype>_exec" variable (|plugin_exec|).
 
-It returns |true| or |false| to indicate whether the plugin should run the given
-executable.  It takes the following arguments:
+It returns |true| or |false| to indicate whether the plugin should run the
+given executable.  It takes the following arguments:
 
 	argument	type ~
 
