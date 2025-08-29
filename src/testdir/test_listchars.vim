@@ -720,4 +720,21 @@ func Test_listchars_precedes_with_tab()
   bw!
 endfunc
 
+func Test_listchars_with_visual()
+  CheckScreendump
+  CheckRunVimInTerminal
+  let lines =<< trim END
+    set noexpandtab
+    set list
+    set listchars=tab:>-,trail:·,extends:>,precedes:<
+  END
+  call writefile(lines, 'XTest_lcs_visual', 'D')
+  let buf = RunVimInTerminal('-S XTest_lcs_visual', {'rows': 5})
+  call TermWait(buf)
+  call term_sendkeys(buf, "i\<Tab>abc\<ESC>V")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_listchars_with_visual', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
