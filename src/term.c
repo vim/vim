@@ -104,6 +104,21 @@ typedef struct {
     time_t		    tr_start;	// when request was sent, -1 for never
 } termrequest_T;
 
+// Holds state for current OSC response.
+typedef struct
+{
+    int		    processing;	// If we are in the middle of an OSC response
+    char_u	    start_char;	// First char in the OSC response
+    garray_T	    buf;	// Buffer holding the OSC response, to be
+				// placed in the "v:termosc" vim var.
+
+#ifdef ELAPSED_FUNC
+    elapsed_T	    start_tv;	// Set at the beginning of an OSC response.
+				// Used to timeout after a set amount of
+				// time.
+#endif
+} oscstate_T;
+
 #define TERMREQUEST_INIT {STATUS_GET, -1}
 
 // Request Terminal Version status:
@@ -5690,8 +5705,7 @@ static oscstate_T osc_state;
     static int
 handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 {
-    struct timeval  now;
-    char_u	    last_char;
+    char_u last_char;
 
     if (!osc_state.processing)
     {
@@ -5712,8 +5726,9 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	// To handle this, keep reading data in and out of the typeahead
 	// buffer until we read an OSC terminator or timeout.
 	ga_init2(&osc_state.buf, 1, 1024);
-	gettimeofday(&osc_state.start, NULL);
-
+#ifdef ELAPSED_FUNC
+	ELAPSED_INIT(osc_state.start_tv);
+#endif
 	osc_state.processing = TRUE;
 	osc_state.start_char = tp[0];
 	last_char = 0;
@@ -5748,12 +5763,8 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	    return OK;
 	}
 
-    // Check if timeout has been reached
-    gettimeofday(&now, NULL);
-
-    if ((now.tv_sec * 1000000 + now.tv_usec) -
-	    (osc_state.start.tv_sec * 1000000 + osc_state.start.tv_usec)
-	    >= p_ost * 1000)
+#ifdef ELAPSED_FUNC
+    if (ELAPSED_FUNC(osc_state.start_tv) >= p_ost)
     {
 	semsg(_(e_osc_response_timed_out), osc_state.buf.ga_len,
 		osc_state.buf.ga_data);
@@ -5762,6 +5773,7 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	osc_state.processing = FALSE;
 	return FAIL;
     }
+#endif
 
     ga_concat(&osc_state.buf, tp);
     *slen = len; // Consume everything
