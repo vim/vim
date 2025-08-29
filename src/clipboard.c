@@ -233,7 +233,7 @@ clip_gen_lose_selection(Clipboard_T *cbd UNUSED)
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
 #if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
-	return clip_mch_lose_selection(cbd);
+	clip_mch_lose_selection(cbd);
 #endif
     }
 }
@@ -1283,7 +1283,7 @@ clip_gen_set_selection(Clipboard_T *cbd)
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
 #if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
-	return clip_mch_set_selection(cbd);
+	clip_mch_set_selection(cbd);
 #endif
     }
 }
@@ -1313,7 +1313,7 @@ clip_gen_request_selection(Clipboard_T *cbd UNUSED)
     else if (clipmethod == CLIPMETHOD_OTHER)
     {
 #if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
-	return clip_mch_request_selection(cbd);
+	clip_mch_request_selection(cbd);
 #endif
     }
 }
