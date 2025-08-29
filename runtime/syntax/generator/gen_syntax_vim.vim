@@ -310,6 +310,7 @@ function s:get_vim_command_type(cmd_name)
 		copy
 		debuggreedy
 		def
+		defer
 		delcommand
 		delete
 		delfunction
