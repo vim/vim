@@ -568,6 +568,7 @@ runtime/syntax/ninja.vim				@nico
 runtime/syntax/nix.vim					@equill
 runtime/syntax/nroff.vim				@jmarshall
 runtime/syntax/nsis.vim					@k-takata
+runtime/syntax/nu.vim					@Petesta
 runtime/syntax/odin.vim					@habamax
 runtime/syntax/omnimark.vim				@kennypete
 runtime/syntax/ondir.vim				@jparise
