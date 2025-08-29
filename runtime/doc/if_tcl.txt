@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 9.1.  Last change: 2024 Oct 05
+*if_tcl.txt*    For Vim version 9.1.  Last change: 2025 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -26,7 +26,7 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 1. Commands				*tcl-ex-commands* *E571* *E572*
 
 							*:tcl*
-:tcl {cmd}		Execute Tcl command {cmd}.  A simple check if `:tcl`
+:[range]tcl {cmd}	Execute Tcl command {cmd}.  A simple check if `:tcl`
 			is working: >
 				:tcl puts "Hello"
 
@@ -69,7 +69,8 @@ To see what version of Tcl you have: >
 			See |tcl-var-line| and |tcl-var-lnum|.
 
 							*:tclfile* *:tclf*
-:tclf[ile] {file}	Execute the Tcl script in {file}.  This is the same as
+:[range]tclf[ile] {file}
+			Execute the Tcl script in {file}.  This is the same as
 			":tcl source {file}", but allows file name completion.
 
 
