@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Aug 27
+" Last Change:	   2025 Aug 29
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -1224,7 +1224,7 @@ syn region	vimFor
       \ matchgroup=vimCommand
       \ start="\<for\>" end="\<in\>"
       \ skipwhite skipnl nextgroup=@vimForInContinue,vim9ForInComment,@vimExprList
-      \ contains=@vimContinue,vimVar,vimVarList,vim9VariableList
+      \ contains=@vimContinue,vimVar,vimVarList,vim9Variable,vim9VariableList
       \ transparent
 
 syn match	vim9ForInComment		contained	"#.*"	skipwhite skipempty nextgroup=vimForInComment,@vimExprList
