@@ -2449,7 +2449,6 @@ typedef enum {
     CPT_INFO,		// "info"
     CPT_COUNT,		// Number of entries
 } cpitem_T;
-
 /*
  * Type for the callback function that is invoked after an option value is
  * changed to validate and apply the new value.
