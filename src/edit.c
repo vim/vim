@@ -821,7 +821,7 @@ edit(
 	    }
 #endif
 
-#ifdef UNIX
+#ifdef HAVE_TERMIOS_H
 do_intr:
 #endif
 	    // when 'insertmode' set, and not halfway a mapping, don't leave
@@ -1336,7 +1336,7 @@ docomplete:
 	    break;
 
 	default:
-#ifdef UNIX
+#ifdef HAVE_TERMIOS_H
 	    if (c == intr_char)		// special interrupt char
 		goto do_intr;
 #endif
