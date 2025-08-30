@@ -1835,7 +1835,7 @@ au BufNewFile,BufRead pf.conf				setf pf
 
 " ini style config files, using # comments
 au BufNewFile,BufRead pacman.conf,mpv.conf		setf confini
-au BufNewFile,BufRead */.aws/config,*/.aws/credentials	setf confini
+au BufNewFile,BufRead */.aws/config,*/.aws/credentials,*/.aws/cli/alias	setf confini
 au BufNewFile,BufRead *.nmconnection			setf confini
 au BufNewFile,BufRead paru.conf				setf confini
 au BufNewFile,BufRead */{,.}gnuradio/*.conf		setf confini
