@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		C
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2025 Jan 18
+" Last Change:		2025 Jul 19
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
@@ -571,6 +571,8 @@ else
   exec "syn sync ccomment cComment minlines=" . b:c_minlines
 endif
 
+syn match	cSymbols	"[\+\-\=\|\*\/\>\<\%\()[\]\!\^\{\}]"
+
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
 hi def link cFormat		cSpecial
@@ -627,6 +629,7 @@ hi def link cCppOutIf2		cCppOut
 hi def link cCppOut		Comment
 hi def link cFunction		Function
 hi def link cFunctionPointer	Function
+hi def link cSymbols		Special
 
 let b:current_syntax = "c"
 
