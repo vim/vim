@@ -12,7 +12,43 @@
      depending upon how much time is spent with experimentation.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Lesson 2.1.1: THE NAMED REGISTERS
+
+		     Lesson 2.1.1: MASTERING TEXT OBJECTS
+
+   ** Operate on logical text blocks with precision using text objects **
+
+  1. Practice word operations:
+     - Place cursor on any word in the line below
+     - Type  diw  to delete INNER word (word without surrounding space)
+     - Type  daw  to delete A WORD (including trailing whitespace)
+     - Try with other operators:  ciw  (change),  yiw  (yank),  gqiw  (format)
+
+---> Practice on: "Vim's", (text_object), and 'powerful' words here.
+
+  2. Work with bracketed content:
+     - Put cursor inside any () {} [] <> pair below
+     - Type  di(  or  dib  (delete inner bracket)
+     - Type  da(  or  dab  (delete around brackets)
+     - Try same with  i"/a"  for quotes,  it/at  for HTML/XML tags
+
+---> Test cases: {curly}, [square], <angle>, and "quoted" items.
+
+  3. Paragraph and sentence manipulation:
+     - Use  dip  to delete inner paragraph (cursor anywhere in paragraph)
+     - Use  vap  to visually select entire paragraph
+     - Try  das  to delete a sentence (works between .!? punctuation)
+
+  4. Advanced combinations:
+     - ciwnew<ESC>    - Change current word to "new"
+     - yss"<ESC>      - Wrap entire line in quotes (vim-surround plugin style)
+     - gUit           - Uppercase inner HTML tag content
+     - va"p           - Select quoted text and paste over it
+
+---> Final exercise: (Modify "this" text) by [applying {various} operations]<
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+		     Lesson 2.1.2: THE NAMED REGISTERS
 
 
          ** Store two yanked words concurrently and then paste them **
@@ -45,7 +81,7 @@ REFERENCE: 	Registers 	:h registers
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		     Lesson 2.1.2: THE EXPRESSION REGISTER
+		     Lesson 2.1.3: THE EXPRESSION REGISTER
 
 
 	     ** Insert the results of calculations on the fly **
@@ -72,7 +108,7 @@ REFERENCE: 	Expression Register 	:h quote=
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		      Lesson 2.1.3: THE NUMBERED REGISTERS
+		     Lesson 2.1.4: THE NUMBERED REGISTERS
 
 
 	** Press  yy and dd to witness their effect on the registers **
@@ -107,11 +143,55 @@ NOTE: Whole line deletions (dd) are much longer lived in the numbered registers
 
 REFERENCE: 	Numbered Registers 	:h quote0
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+		     Lesson 2.1.5: SPECIAL REGISTERS
+
+ ** Use system clipboard and blackhole registers for advanced editing **
+
+ Note: Clipboard use requires X11/Wayland libraries on Linux systems AND
+       a Vim built with "+clipboard" (usually a Huge build). Check with
+       ":version"  and ":echo has('clipboard_working')"
+
+  1. Clipboard registers  +  and  *  :
+     - "+y  - Yank to system clipboard (e.g. "+yy for current line)
+     - "+p  - Paste from system clipboard
+     - "* is primary selection on X11 (middle-click), "+ is clipboard
+
+---> Try: "+yy then paste into another application with Ctrl-V or Cmd+V
+
+  2. Blackhole register  _  discards text:
+     - "_daw  - Delete word without saving to any register
+     - Useful when you don't want to overwrite your default " register
+     - Note this is using the "a Word" text object, introduced in a previous
+       lession
+     - "_dd   - Delete line without saving
+     - "_dap  - Delete paragraph without saving
+     - Combine with counts: 3"_dw
+
+---> Practice: "_diw on any word to delete it without affecting yank history
+
+  3. Combine with visual selections:
+     - Select text with V then "+y
+     - To paste from clipboard in insert mode: Ctrl-R +
+     - Try opening another application and paste from clipboard
+
+  4. Remember:
+     - Clipboard registers work across different Vim instances
+     - Clipboard register is not always working
+     - Blackhole prevents accidental register overwrites
+     - Default " register is still available for normal yank/paste
+     - Named registers (a-z) remain private to each Vim session
+
+  5. Clipboard troubleshooting:
+     - Check support with :echo has('clipboard_working')
+     - 1 means available, 0 means not compiled in
+     - On Linux, may need vim-gtk or vim-x11 package
+       (check :version output)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		      Lesson 2.1.4: THE BEAUTY OF MARKS
-
+		     Lesson 2.1.6: THE BEAUTY OF MARKS
 
 	           ** Code monkey arithmetic avoidance **
 
@@ -163,32 +243,45 @@ REFERENCE: 	Marks 		:h marks
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-			       Lesson 2.1 SUMMARY
+		     Lesson 2.1 SUMMARY
 
 
-  1. To store (yank, delete) text into, and retrieve (paste) from, a total of
+  1. Text objects provide precision editing:
+     - iw/aw - inner/around word
+     - i[/a[ - inner/around bracket
+     - i"/a" - inner/around quotes
+     - it/at - inner/around tag
+     - ip/ap - inner/around paragraph
+     - is/as - inner/around sentence
+
+  2. To store (yank, delete) text into, and retrieve (paste) from, a total of
      26 registers (a-z) 
-  2. Yank a whole word from anywhere within a word:   yiw
-  3. Change a whole word from anywhere within a word:   ciw
-  4. Insert text directly from registers in insert mode:   (C-r)a
+  3. Yank a whole word from anywhere within a word:   yiw
+  4. Change a whole word from anywhere within a word:   ciw
+  5. Insert text directly from registers in insert mode:   (C-r)a
 
-  5. Insert the results of simple arithmetic operations: <CTRL-R> followed by
+  6. Insert the results of simple arithmetic operations: <CTRL-R> followed by
      =60*60<ENTER>
      in insert mode
-  6. Insert the results of system calls: <CTRL-R> followed by
+  7. Insert the results of system calls: <CTRL-R> followed by
      =system('ls -1')<ENTER>
      in insert mode
 
-  7. Inspect registers with   :reg
-  8. Learn the final destination of whole line deletions: dd in the numbered
+  8. Inspect registers with   :reg
+  9. Learn the final destination of whole line deletions: dd in the numbered
      registers, i.e. descending from register 1 - 9.  Appreciate that whole
      line deletions are preserved in the numbered registers longer than any
      other operation
-  9. Learn the final destination of all yanks in the numbered registers and
+ 10. Learn the final destination of all yanks in the numbered registers and
      how ephemeral they are
 
- 10. Place marks from command mode   m[a-zA-Z0-9]
- 11. Move line-wise to a mark with   '
+ 11. Place marks from command mode   m[a-zA-Z0-9]
+ 12. Move line-wise to a mark with   '
+
+ 13. Special registers:
+     - "+/*  - System clipboard (OS dependent)
+     - "_    - Blackhole (discard deleted/yanked text)
+     - "=    - Expression register
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

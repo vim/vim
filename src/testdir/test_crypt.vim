@@ -398,16 +398,16 @@ func Test_crypt_set_key_changes_buffer()
   call assert_fails(":q", "E37:")
   w
   set key=anotherkey
-  call assert_fails(":bw")
+  call assert_fails(":bw", 'E89: No write since last change for buffer')
   w
   call feedkeys(":X\<CR>foobar\<CR>foobar\<CR>", 'xt')
-  call assert_fails(":bw")
+  call assert_fails(":bw", 'E89: No write since last change for buffer')
   w
   let winnr = winnr()
   wincmd p
   call setwinvar(winnr, '&key', 'yetanotherkey')
   wincmd p
-  call assert_fails(":bw")
+  call assert_fails(":bw", 'E89: No write since last change for buffer')
   w
 
   set cryptmethod&

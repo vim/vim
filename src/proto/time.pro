@@ -20,6 +20,9 @@ void f_timer_pause(typval_T *argvars, typval_T *rettv);
 void f_timer_start(typval_T *argvars, typval_T *rettv);
 void f_timer_stop(typval_T *argvars, typval_T *rettv);
 void f_timer_stopall(typval_T *argvars, typval_T *rettv);
+#if (defined(MSWIN) || defined(__MINGW32__)) && !defined(FEAT_RUBY)
+int gettimeofday(struct timeval *tv, char *dummy);
+#endif
 void time_push(void *tv_rel, void *tv_start);
 void time_pop(void *tp);
 void time_msg(char *mesg, void *tv_start);

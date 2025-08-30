@@ -1290,6 +1290,19 @@ typedef struct
 #endif
 } tasave_T;
 
+// Holds state for current OSC response.
+typedef struct
+{
+    int		    processing;	// If we are in the middle of an OSC response
+    char_u	    start_char;	// First char in the OSC response
+    garray_T	    buf;	// Buffer holding the OSC response, to be
+				// placed in the "v:termosc" vim var.
+
+    struct timeval  start;	// Set at the beginning of an OSC response.
+				// Used to timeout after a set amount of
+				// time.
+} oscstate_T;
+
 /*
  * Used for conversion of terminal I/O and script files.
  */

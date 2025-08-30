@@ -74,7 +74,7 @@ func s:make_buffer_trio()
   edit! third
   let l:third = bufnr()
 
-  execute ":buffer! " . l:second
+  exe $":buffer! {l:second}"
 
   return [l:first, l:second, l:third]
 endfunc
@@ -177,11 +177,11 @@ endfunc
 " Create a quickfix with at least 2 entries that are in the current 'winfixbuf' window.
 func s:make_quickfix_windows()
   let [l:current, _] = s:make_simple_quickfix()
-  execute "buffer! " . l:current
+  exe $"buffer! {l:current}"
 
   split
   let l:first_window = win_getid()
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   let l:winfix_window = win_getid()
 
   " Open the quickfix in a separate split and go to it
@@ -207,7 +207,7 @@ func s:set_quickfix_by_buffer(buffer)
   let l:index = 1  " quickfix indices start at 1
   for l:entry in getqflist()
     if l:entry["bufnr"] == a:buffer
-      execute l:index . "cc"
+      exe $"{l:index} cc"
 
       return
     endif
@@ -215,7 +215,7 @@ func s:set_quickfix_by_buffer(buffer)
     let l:index += 1
   endfor
 
-  echoerr 'No quickfix entry matching "' . a:buffer . '" could be found.'
+  echoerr $'No quickfix entry matching {a:buffer} could be found.'
 endfunc
 
 " Fail to call :Next on a 'winfixbuf' window unless :Next! is used.
@@ -250,7 +250,7 @@ func Test_argdo_choose_available_window()
   split
   let l:nowinfixbuf_window = win_getid()
   " Move to the 'winfixbuf' window now
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   let l:winfixbuf_window = win_getid()
   let l:expected_windows = s:get_windows_count()
 
@@ -271,7 +271,7 @@ func Test_argdo_make_new_window()
   argdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:last, bufnr())
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   call assert_equal(l:first, bufnr())
   call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
@@ -310,7 +310,7 @@ func Test_arglocal()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
   argglobal! other
-  execute "buffer! " . l:current
+  exe $"buffer! {l:current}"
 
   call assert_fails("arglocal other", "E1513:")
   call assert_equal(l:current, bufnr())
@@ -419,9 +419,9 @@ func Test_bmodified()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  execute "buffer! " . l:other
+  exe $"buffer! {l:other}"
   set modified
-  execute "buffer! " . l:current
+  exe $"buffer! {l:current}"
 
   call assert_fails("bmodified", "E1513:")
   call assert_equal(l:current, bufnr())
@@ -532,7 +532,7 @@ func Test_bufdo_choose_available_window()
   split
   let l:nowinfixbuf_window = win_getid()
   " Move to the 'winfixbuf' window now
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   let l:winfixbuf_window = win_getid()
 
   let l:current = bufnr()
@@ -551,14 +551,14 @@ func Test_bufdo_make_new_window()
   call s:reset_all_buffers()
 
   let [l:first, l:last] = s:make_buffers_list()
-  execute "buffer! " . l:first
+  exe $"buffer! {l:first}"
   let l:current = win_getid()
   let l:current_windows = s:get_windows_count()
 
   bufdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:last, bufnr())
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   call assert_equal(l:first, bufnr())
   call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
@@ -570,10 +570,10 @@ func Test_buffer()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  call assert_fails("buffer " . l:other, "E1513:")
+  call assert_fails($"buffer {l:other}", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  execute "buffer! " . l:other
+  exe $"buffer! {l:other}"
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -584,10 +584,10 @@ func Test_buffer_same_buffer()
   call s:make_buffer_pairs()
   let l:current = bufnr()
 
-  execute "buffer " . l:current
+  exe $"buffer {l:current}"
   call assert_equal(l:current, bufnr())
 
-  execute "buffer! " . l:current
+  exe $"buffer! {l:current}"
   call assert_equal(l:current, bufnr())
 endfunc
 
@@ -637,7 +637,7 @@ func Test_caddexpr()
 
   let l:file_path = tempname()
   call writefile(["Error - bad-thing-found"], l:file_path, 'D')
-  execute "edit " . l:file_path
+  exe $"edit {l:file_path}"
   let l:file_buffer = bufnr()
   let l:current = bufnr()
 
@@ -648,9 +648,9 @@ func Test_caddexpr()
 
   set winfixbuf
 
-  execute "buffer! " . l:file_buffer
+  exe $"buffer! {l:file_buffer}"
 
-  execute 'caddexpr expand("%") .. ":" .. line(".") .. ":" .. getline(".")'
+  exe 'caddexpr expand("%") .. ":" .. line(".") .. ":" .. getline(".")'
   call assert_equal(l:current, bufnr())
 endfunc
 
@@ -661,7 +661,7 @@ func Test_cbuffer()
 
   let l:file_path = tempname()
   call writefile(["first.unittest:1:Error - bad-thing-found"], l:file_path, 'D')
-  execute "edit " . l:file_path
+  exe $"edit {l:file_path}"
   let l:file_buffer = bufnr()
   let l:current = bufnr()
 
@@ -672,12 +672,12 @@ func Test_cbuffer()
 
   set winfixbuf
 
-  execute "buffer! " . l:file_buffer
+  exe $"buffer! {file_buffer}"
 
-  call assert_fails("cbuffer " . l:file_buffer)
-  call assert_equal(l:current, bufnr())
+  call assert_fails($"cbuffer {file_buffer}", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
+  call assert_equal(current, bufnr())
 
-  execute "cbuffer! " . l:file_buffer
+  exe $"cbuffer! {file_buffer}"
   call assert_equal("first.unittest", expand("%:t"))
 endfunc
 
@@ -712,7 +712,7 @@ func Test_cdo_choose_available_window()
   call s:reset_all_buffers()
 
   let [l:current, l:last] = s:make_simple_quickfix()
-  execute "buffer! " . l:current
+  exe $"buffer! {l:current}"
 
   " Make a split window that is 'nowinfixbuf' but make it the second-to-last
   " window so that :cdo will first try the 'winfixbuf' window, pass over it,
@@ -726,7 +726,7 @@ func Test_cdo_choose_available_window()
   split
   let l:nowinfixbuf_window = win_getid()
   " Move to the 'winfixbuf' window now
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   let l:winfixbuf_window = win_getid()
   let l:expected_windows = s:get_windows_count()
 
@@ -734,7 +734,7 @@ func Test_cdo_choose_available_window()
 
   call assert_equal(l:nowinfixbuf_window, win_getid())
   call assert_equal(l:last, bufnr())
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   call assert_equal(l:current, bufnr())
   call assert_equal(l:expected_windows, s:get_windows_count())
 endfunc
@@ -745,7 +745,7 @@ func Test_cdo_make_new_window()
   call s:reset_all_buffers()
 
   let [l:current_buffer, l:last] = s:make_simple_quickfix()
-  execute "buffer! " . l:current_buffer
+  exe $"buffer! {l:current_buffer}"
 
   let l:current_window = win_getid()
   let l:current_windows = s:get_windows_count()
@@ -753,7 +753,7 @@ func Test_cdo_make_new_window()
   cdo echo ''
   call assert_notequal(l:current_window, win_getid())
   call assert_equal(l:last, bufnr())
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   call assert_equal(l:current_buffer, bufnr())
   call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
@@ -763,17 +763,17 @@ func Test_cexpr()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let l:file = tempname()
-  let l:entry = '["' . l:file . ':1:bar"]'
-  let l:current = bufnr()
+  let file = tempname()
+  let entry = $'["{file}:1:bar"]'
+  let current = bufnr()
 
   set winfixbuf
 
-  call assert_fails("cexpr " . l:entry)
-  call assert_equal(l:current, bufnr())
+  call assert_fails($"cexpr {entry}", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
+  call assert_equal(current, bufnr())
 
-  execute "cexpr! " . l:entry
-  call assert_equal(fnamemodify(l:file, ":t"), expand("%:t"))
+  exe $"cexpr! {entry}"
+  call assert_equal(fnamemodify(file, ":t"), expand("%:t"))
 endfunc
 
 " Call :cfdo and choose the next available 'nowinfixbuf' window.
@@ -782,7 +782,7 @@ func Test_cfdo_choose_available_window()
   call s:reset_all_buffers()
 
   let [l:current, l:last] = s:make_simple_quickfix()
-  execute "buffer! " . l:current
+  exe $"buffer! {l:current}"
 
   " Make a split window that is 'nowinfixbuf' but make it the second-to-last
   " window so that :cfdo will first try the 'winfixbuf' window, pass over it,
@@ -796,7 +796,7 @@ func Test_cfdo_choose_available_window()
   split
   let l:nowinfixbuf_window = win_getid()
   " Move to the 'winfixbuf' window now
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   let l:winfixbuf_window = win_getid()
   let l:expected_windows = s:get_windows_count()
 
@@ -804,7 +804,7 @@ func Test_cfdo_choose_available_window()
 
   call assert_equal(l:nowinfixbuf_window, win_getid())
   call assert_equal(l:last, bufnr())
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   call assert_equal(l:current, bufnr())
   call assert_equal(l:expected_windows, s:get_windows_count())
 endfunc
@@ -815,7 +815,7 @@ func Test_cfdo_make_new_window()
   call s:reset_all_buffers()
 
   let [l:current_buffer, l:last] = s:make_simple_quickfix()
-  execute "buffer! " . l:current_buffer
+  exe $"buffer! {l:current_buffer}"
 
   let l:current_window = win_getid()
   let l:current_windows = s:get_windows_count()
@@ -823,7 +823,7 @@ func Test_cfdo_make_new_window()
   cfdo echo ''
   call assert_notequal(l:current_window, win_getid())
   call assert_equal(l:last, bufnr())
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   call assert_equal(l:current_buffer, bufnr())
   call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
@@ -836,26 +836,26 @@ func Test_cfile()
   edit first.unittest
   call append(0, ["some-search-term bad-thing-found"])
   write
-  let l:first = bufnr()
+  let first = bufnr()
 
   edit! second.unittest
   call append(0, ["some-search-term"])
   write
 
-  let l:file = tempname()
-  call writefile(["first.unittest:1:Error - bad-thing-found was detected"], l:file)
+  let file = tempname()
+  call writefile(["first.unittest:1:Error - bad-thing-found was detected"], file)
 
-  let l:current = bufnr()
+  let current = bufnr()
 
   set winfixbuf
 
-  call assert_fails(":cfile " . l:file)
-  call assert_equal(l:current, bufnr())
+  call assert_fails($":cfile {file}", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
+  call assert_equal(current, bufnr())
 
-  execute ":cfile! " . l:file
-  call assert_equal(l:first, bufnr())
+  exe $":cfile! {file}"
+  call assert_equal(first, bufnr())
 
-  call delete(l:file)
+  call delete(file)
   call delete("first.unittest")
   call delete("second.unittest")
 endfunc
@@ -929,7 +929,7 @@ func Test_cnext_no_previous_window()
   call s:reset_all_buffers()
 
   let [l:current, _] = s:make_simple_quickfix()
-  execute "buffer! " . l:current
+  exe $"buffer! {l:current}"
 
   let l:expected = s:get_windows_count()
 
@@ -1055,7 +1055,7 @@ func Test_ctrl_w_f()
 
   call setline(1, l:file_name)
   let l:current_windows = s:get_windows_count()
-  execute "normal \<C-w>f"
+  exe "normal \<C-w>f"
 
   call assert_equal(l:current_windows + 1, s:get_windows_count())
 
@@ -1066,9 +1066,9 @@ endfunc
 func Test_djump()
   call s:reset_all_buffers()
 
-  let l:include_file = tempname() . ".h"
+  let l:include_file = tempname() .. ".h"
   call writefile(["min(1, 12);",
-        \ '#include "' . l:include_file . '"'
+        \ $'#include "{l:include_file}"'
         \ ],
         \ "main.c")
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file)
@@ -1132,23 +1132,23 @@ func Test_edit_different_buffer_on_disk_and_relative_path_to_disk()
   let l:file_on_disk = tempname()
   let l:directory_on_disk1 = fnamemodify(l:file_on_disk, ":p:h")
   let l:name = fnamemodify(l:file_on_disk, ":t")
-  execute "edit " . l:file_on_disk
+  exe $"edit {l:file_on_disk}"
   write!
 
-  let l:directory_on_disk2 = l:directory_on_disk1 . "_something_else"
+  let l:directory_on_disk2 = l:directory_on_disk1 .. "_something_else"
 
   if !isdirectory(l:directory_on_disk2)
     call mkdir(l:directory_on_disk2)
   endif
 
-  execute "cd " . l:directory_on_disk2
-  execute "edit " l:name
+  exe $"cd {l:directory_on_disk2}"
+  exe $"edit {l:name}"
 
   let l:current = bufnr()
 
   call assert_equal(l:current, bufnr())
   set winfixbuf
-  call assert_fails("edit " . l:file_on_disk, "E1513:")
+  call assert_fails($"edit {l:file_on_disk}", "E1513:")
   call assert_equal(l:current, bufnr())
 
   call delete(l:directory_on_disk1)
@@ -1171,26 +1171,26 @@ func Test_edit_different_buffer_on_disk_and_relative_path_to_memory()
   let l:file_on_disk = tempname()
   let l:directory_on_disk1 = fnamemodify(l:file_on_disk, ":p:h")
   let l:name = fnamemodify(l:file_on_disk, ":t")
-  execute "edit " . l:file_on_disk
+  exe $"edit {l:file_on_disk}"
   write!
 
-  let l:directory_on_disk2 = l:directory_on_disk1 . "_something_else"
+  let l:directory_on_disk2 = l:directory_on_disk1 .. "_something_else"
 
   if !isdirectory(l:directory_on_disk2)
     call mkdir(l:directory_on_disk2)
   endif
 
-  execute "cd " . l:directory_on_disk2
-  execute "edit " l:name
-  execute "cd " . l:directory_on_disk1
-  execute "edit " l:file_on_disk
-  execute "cd " . l:directory_on_disk2
+  exe $"cd {l:directory_on_disk2}"
+  exe $"edit {l:name}"
+  exe $"cd {l:directory_on_disk1}"
+  exe $"edit {l:file_on_disk}"
+  exe $"cd {l:directory_on_disk2}"
 
   let l:current = bufnr()
 
   call assert_equal(l:current, bufnr())
   set winfixbuf
-  call assert_fails("edit " . l:name, "E1513:")
+  call assert_fails($"edit {l:name}", "E1513:")
   call assert_equal(l:current, bufnr())
 
   call delete(l:directory_on_disk1)
@@ -1249,12 +1249,12 @@ func Test_edit_same_buffer_on_disk_absolute_path()
   call writefile([], file, 'D')
   let file = fnamemodify(file, ':p')
   let current = bufnr()
-  execute "edit " . file
+  exe $"edit {file}"
   write!
 
   call assert_equal(current, bufnr())
   set winfixbuf
-  execute "edit " file
+  exe $"edit {file}"
   call assert_equal(current, bufnr())
 
   set nowinfixbuf
@@ -1301,17 +1301,17 @@ func Test_find()
   let l:name = fnamemodify(l:file, ":p:t")
 
   let l:original_path = &path
-  execute "set path=" . l:directory
+  exe $"set path={l:directory}"
 
   set winfixbuf
 
-  call assert_fails("execute 'find " . l:name . "'", "E1513:")
+  call assert_fails($"exe 'find {l:name}'", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  execute "find! " . l:name
+  exe $"find! {l:name}"
   call assert_equal(l:file, expand("%:p"))
 
-  execute "set path=" . l:original_path
+  exe $"set path={l:original_path}"
 endfunc
 
 " Fail :first but :first! is allowed
@@ -1354,7 +1354,7 @@ func Test_grep()
 
   call assert_fails("silent! grep some-search-term *.unittest", "E1513:")
   call assert_equal(l:current, bufnr())
-  execute "edit! " . l:first
+  exe $"edit! {l:first}"
 
   silent! grep! some-search-term *.unittest
   call assert_notequal(l:first, bufnr())
@@ -1368,9 +1368,9 @@ endfunc
 func Test_ijump()
   call s:reset_all_buffers()
 
-  let l:include_file = tempname() . ".h"
+  let l:include_file = tempname() .. ".h"
   call writefile([
-        \ '#include "' . l:include_file . '"'
+        \ $'#include "{l:include_file}"'
         \ ],
         \ "main.c", 'D')
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file, 'D')
@@ -1460,7 +1460,7 @@ func Test_laddexpr()
 
   let l:file_path = tempname()
   call writefile(["Error - bad-thing-found"], l:file_path, 'D')
-  execute "edit " . l:file_path
+  exe $"edit {l:file_path}"
   let l:file_buffer = bufnr()
   let l:current = bufnr()
 
@@ -1471,9 +1471,9 @@ func Test_laddexpr()
 
   set winfixbuf
 
-  execute "buffer! " . l:file_buffer
+  exe $"buffer! {l:file_buffer}"
 
-  execute 'laddexpr expand("%") .. ":" .. line(".") .. ":" .. getline(".")'
+  exe 'laddexpr expand("%") .. ":" .. line(".") .. ":" .. getline(".")'
   call assert_equal(l:current, bufnr())
 endfunc
 
@@ -1498,7 +1498,7 @@ func Test_lbuffer()
 
   let l:file_path = tempname()
   call writefile(["first.unittest:1:Error - bad-thing-found"], l:file_path, 'D')
-  execute "edit " . l:file_path
+  exe $"edit {l:file_path}"
   let l:file_buffer = bufnr()
   let l:current = bufnr()
 
@@ -1509,12 +1509,12 @@ func Test_lbuffer()
 
   set winfixbuf
 
-  execute "buffer! " . l:file_buffer
+  exe $"buffer! {file_buffer}"
 
-  call assert_fails("lbuffer " . l:file_buffer)
-  call assert_equal(l:current, bufnr())
+  call assert_fails($"lbuffer {file_buffer}", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
+  call assert_equal(current, bufnr())
 
-  execute "lbuffer! " . l:file_buffer
+  exe $"lbuffer! {file_buffer}"
   call assert_equal("first.unittest", expand("%:t"))
 endfunc
 
@@ -1526,9 +1526,9 @@ func Test_ldo()
   let [l:first, l:middle, l:last] = s:make_simple_location_list()
   lnext!
 
-  call assert_fails('execute "ldo buffer ' . l:first . '"', "E1513:")
+  call assert_fails($'exe "ldo buffer {l:first}"', "E1513:")
   call assert_equal(l:middle, bufnr())
-  execute "ldo! buffer " . l:first
+  exe $"ldo! buffer {l:first}"
   call assert_notequal(l:last, bufnr())
 endfunc
 
@@ -1537,17 +1537,17 @@ func Test_lexpr()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let l:file = tempname()
-  let l:entry = '["' . l:file . ':1:bar"]'
-  let l:current = bufnr()
+  let file = tempname()
+  let entry = $'["{file}:1:bar"]'
+  let current = bufnr()
 
   set winfixbuf
 
-  call assert_fails("lexpr " . l:entry)
-  call assert_equal(l:current, bufnr())
+  call assert_fails($"lexpr {entry}", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
+  call assert_equal(current, bufnr())
 
-  execute "lexpr! " . l:entry
-  call assert_equal(fnamemodify(l:file, ":t"), expand("%:t"))
+  exe $"lexpr! {entry}"
+  call assert_equal(fnamemodify(file, ":t"), expand("%:t"))
 endfunc
 
 " Fail :lfdo but :lfdo! is allowed
@@ -1555,13 +1555,13 @@ func Test_lfdo()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first, l:middle, l:last] = s:make_simple_location_list()
+  let [first, middle, last] = s:make_simple_location_list()
   lnext!
 
-  call assert_fails('execute "lfdo buffer ' . l:first . '"', "E1513:")
-  call assert_equal(l:middle, bufnr())
-  execute "lfdo! buffer " . l:first
-  call assert_notequal(l:last, bufnr())
+  call assert_fails('exe "lfdo buffer ' .. first .. '"', "E1513:")
+  call assert_equal(middle, bufnr())
+  exe $"lfdo! buffer {first}"
+  call assert_notequal(last, bufnr())
 endfunc
 
 " Fail :lfile but :lfile! is allowed
@@ -1585,10 +1585,10 @@ func Test_lfile()
 
   set winfixbuf
 
-  call assert_fails(":lfile " . l:file)
+  call assert_fails($":lfile {l:file}", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
   call assert_equal(l:current, bufnr())
 
-  execute ":lfile! " . l:file
+  exe $":lfile! {l:file}"
   call assert_equal(l:first, bufnr())
 
   call delete("first.unittest")
@@ -1603,15 +1603,15 @@ func Test_ll()
   let [l:first, l:middle, l:last] = s:make_simple_location_list()
   lopen
   lfirst!
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   normal j
 
   call assert_fails(".ll", "E1513:")
-  execute "normal \<C-w>k"
+  exe "normal \<C-w>k"
   call assert_equal(l:first, bufnr())
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   .ll!
-  execute "normal \<C-w>k"
+  exe "normal \<C-w>k"
   call assert_equal(l:middle, bufnr())
 endfunc
 
@@ -1734,7 +1734,7 @@ func Test_ltag()
   call writefile(["one", "two", "three"], "Xfile", 'D')
   call writefile(["one"], "Xother", 'D')
   edit Xother
-  execute "normal \<C-]>"
+  exe "normal \<C-]>"
 
   set winfixbuf
 
@@ -1762,10 +1762,10 @@ func Test_lua_command()
 
   set winfixbuf
 
-  call assert_fails('lua vim.command("buffer " .. ' . l:previous . ')')
+  call assert_fails($'lua vim.command("buffer " .. {l:previous})')
   call assert_equal(l:current, bufnr())
 
-  execute 'lua vim.command("buffer! " .. ' . l:previous . ')'
+  exe $'lua vim.command("buffer! " .. {l:previous})'
   call assert_equal(l:previous, bufnr())
 endfunc
 
@@ -1826,7 +1826,7 @@ func Test_lvimgrepadd()
 
   buffer! winfix.unittest
 
-  call assert_fails("lvimgrepadd /some-search-term/ *.unittest")
+  call assert_fails("lvimgrepadd /some-search-term/ *.unittest", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
   call assert_equal(l:current, bufnr())
 
   lvimgrepadd! /some-search-term/ *.unittest
@@ -1843,9 +1843,9 @@ func Test_marks_mappings_fail()
 
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
-  execute "buffer! " . l:other
+  exe $"buffer! {l:other}"
   normal mA
-  execute "buffer! " . l:current
+  exe $"buffer! {l:current}"
   normal mB
 
   call assert_fails("normal `A", "E1513:")
@@ -1979,7 +1979,7 @@ func Test_normal_g_rightmouse()
   call writefile(["one", "two", "three"], "Xfile", 'D')
   call writefile(["one"], "Xother", 'D')
   edit Xother
-  execute "normal \<C-]>"
+  exe "normal \<C-]>"
 
   set winfixbuf
 
@@ -2030,7 +2030,7 @@ func Test_normal_ctrl_rightmouse()
   call writefile(["one", "two", "three"], "Xfile", 'D')
   call writefile(["one"], "Xother", 'D')
   edit Xother
-  execute "normal \<C-]>"
+  exe "normal \<C-]>"
 
   set winfixbuf
 
@@ -2056,7 +2056,7 @@ func Test_normal_ctrl_t()
   call writefile(["one", "two", "three"], "Xfile", 'D')
   call writefile(["one"], "Xother", 'D')
   edit Xother
-  execute "normal \<C-]>"
+  exe "normal \<C-]>"
 
   set winfixbuf
 
@@ -2105,12 +2105,12 @@ func Test_normal_ctrl_i_pass()
   " Go up another line
   normal m`
   normal k
-  execute "normal \<C-o>"
+  exe "normal \<C-o>"
 
   set winfixbuf
 
   let l:line = getcurpos()[1]
-  execute "normal 1\<C-i>"
+  exe "normal 1\<C-i>"
   call assert_notequal(l:line, getcurpos()[1])
 endfunc
 
@@ -2154,7 +2154,7 @@ func Test_normal_ctrl_o_pass()
 
   set winfixbuf
 
-  execute "normal \<C-o>"
+  exe "normal \<C-o>"
   call assert_equal(l:current, bufnr())
 endfunc
 
@@ -2199,7 +2199,7 @@ func Test_normal_ctrl_w_ctrl_square_bracket_right()
   set winfixbuf
 
   let l:current_windows = s:get_windows_count()
-  execute "normal \<C-w>\<C-]>"
+  exe "normal \<C-w>\<C-]>"
   call assert_equal(l:current_windows + 1, s:get_windows_count())
 
   set tags&
@@ -2222,7 +2222,7 @@ func Test_normal_ctrl_w_g_ctrl_square_bracket_right()
   set winfixbuf
 
   let l:current_windows = s:get_windows_count()
-  execute "normal \<C-w>g\<C-]>"
+  exe "normal \<C-w>g\<C-]>"
   call assert_equal(l:current_windows + 1, s:get_windows_count())
 
   set tags&
@@ -2340,9 +2340,9 @@ endfunc
 func Test_normal_square_bracket_left_ctrl_d()
   call s:reset_all_buffers()
 
-  let l:include_file = tempname() . ".h"
+  let l:include_file = tempname() .. ".h"
   call writefile(["min(1, 12);",
-        \ '#include "' . l:include_file . '"'
+        \ $'#include "{l:include_file}"'
         \ ],
         \ "main.c", 'D')
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file, 'D')
@@ -2358,7 +2358,7 @@ func Test_normal_square_bracket_left_ctrl_d()
 
   set nowinfixbuf
 
-  execute "normal [\<C-d>"
+  exe "normal [\<C-d>"
   call assert_notequal(l:current, bufnr())
 endfunc
 
@@ -2366,9 +2366,9 @@ endfunc
 func Test_normal_square_bracket_right_ctrl_d()
   call s:reset_all_buffers()
 
-  let l:include_file = tempname() . ".h"
+  let l:include_file = tempname() .. ".h"
   call writefile(["min(1, 12);",
-        \ '#include "' . l:include_file . '"'
+        \ $'#include "{l:include_file}"'
         \ ],
         \ "main.c", 'D')
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file, 'D')
@@ -2383,7 +2383,7 @@ func Test_normal_square_bracket_right_ctrl_d()
 
   set nowinfixbuf
 
-  execute "normal ]\<C-d>"
+  exe "normal ]\<C-d>"
   call assert_notequal(l:current, bufnr())
 endfunc
 
@@ -2391,8 +2391,8 @@ endfunc
 func Test_normal_square_bracket_left_ctrl_i()
   call s:reset_all_buffers()
 
-  let l:include_file = tempname() . ".h"
-  call writefile(['#include "' . l:include_file . '"',
+  let l:include_file = tempname() .. ".h"
+  call writefile([$'#include "{l:include_file}"',
         \ "min(1, 12);",
         \ ],
         \ "main.c", 'D')
@@ -2413,7 +2413,7 @@ func Test_normal_square_bracket_left_ctrl_i()
 
   set nowinfixbuf
 
-  execute "normal [\<C-i>"
+  exe "normal [\<C-i>"
   call assert_notequal(l:current, bufnr())
 
   set define&
@@ -2425,9 +2425,9 @@ endfunc
 func Test_normal_square_bracket_right_ctrl_i()
   call s:reset_all_buffers()
 
-  let l:include_file = tempname() . ".h"
+  let l:include_file = tempname() .. ".h"
   call writefile(["min(1, 12);",
-        \ '#include "' . l:include_file . '"'
+        \ $'#include "{l:include_file}"'
         \ ],
         \ "main.c", 'D')
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file, 'D')
@@ -2446,7 +2446,7 @@ func Test_normal_square_bracket_right_ctrl_i()
 
   set nowinfixbuf
 
-  execute "normal ]\<C-i>"
+  exe "normal ]\<C-i>"
   call assert_notequal(l:current, bufnr())
 
   set define&
@@ -2538,7 +2538,7 @@ func Test_pedit()
 
   pedit other
 
-  execute "normal \<C-w>w"
+  exe "normal \<C-w>w"
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -2548,9 +2548,9 @@ func Test_pbuffer()
 
   let l:other = s:make_buffer_pairs()
 
-  exe 'pbuffer ' . l:other
+  exe $'pbuffer {l:other}'
 
-  execute "normal \<C-w>w"
+  exe "normal \<C-w>w"
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -2735,7 +2735,7 @@ func Test_remap_key_pass()
   " Disallow <C-^> by default but allow it if the command does something else
   nnoremap <C-^> :echo "hello!"
 
-  execute "normal \<C-^>"
+  exe "normal \<C-^>"
   call assert_equal(l:current, bufnr())
 
   nunmap <C-^>
@@ -2814,7 +2814,7 @@ func Test_split_window()
   call s:reset_all_buffers()
 
   split
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
 
   set winfixbuf
 
@@ -2842,7 +2842,7 @@ func Test_tNext()
   edit Xother
 
   tag thesame
-  execute "normal \<C-^>"
+  exe "normal \<C-^>"
   tnext!
 
   set winfixbuf
@@ -2875,7 +2875,7 @@ func Test_tabdo_choose_available_window()
   split
   let l:nowinfixbuf_window = win_getid()
   " Move to the 'winfixbuf' window now
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   let l:winfixbuf_window = win_getid()
 
   let l:expected_windows = s:get_windows_count()
@@ -2890,7 +2890,7 @@ func Test_tabdo_make_new_window()
   call s:reset_all_buffers()
 
   let [l:first, _] = s:make_buffers_list()
-  execute "buffer! " . l:first
+  exe $"buffer! {l:first}"
 
   let l:current = win_getid()
   let l:current_windows = s:get_windows_count()
@@ -2898,7 +2898,7 @@ func Test_tabdo_make_new_window()
   tabdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:first, bufnr())
-  execute "normal \<C-w>j"
+  exe "normal \<C-w>j"
   call assert_equal(l:first, bufnr())
   call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
@@ -3030,7 +3030,7 @@ func Test_tnext()
   edit Xother
 
   tag thesame
-  execute "normal \<C-^>"
+  exe "normal \<C-^>"
 
   set winfixbuf
 
@@ -3061,7 +3061,7 @@ func Test_tprevious()
   edit Xother
 
   tag thesame
-  execute "normal \<C-^>"
+  exe "normal \<C-^>"
   tnext!
 
   set winfixbuf
@@ -3127,7 +3127,7 @@ func Test_vimgrep()
 
   buffer! winfix.unittest
 
-  call assert_fails("vimgrep /some-search-term/ *.unittest")
+  call assert_fails("vimgrep /some-search-term/ *.unittest", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
   call assert_equal(l:current, bufnr())
 
   " Don't error and also do swap to the first match because ! was included
@@ -3162,7 +3162,7 @@ func Test_vimgrepadd()
 
   buffer! winfix.unittest
 
-  call assert_fails("vimgrepadd /some-search-term/ *.unittest")
+  call assert_fails("vimgrepadd /some-search-term/ *.unittest", "E1513: Cannot switch buffer. 'winfixbuf' is enabled")
   call assert_equal(l:current, bufnr())
 
   vimgrepadd! /some-search-term/ *.unittest
@@ -3207,10 +3207,10 @@ func Test_windo()
   windo echo ''
   call assert_equal(l:current_window, win_getid())
 
-  call assert_fails('execute "windo buffer ' . l:current_buffer . '"', "E1513:")
+  call assert_fails($'exe "windo buffer {l:current_buffer}"', "E1513:")
   call assert_equal(l:current_window, win_getid())
 
-  execute "windo buffer! " . l:current_buffer
+  exe $"windo buffer! {l:current_buffer}"
   call assert_equal(l:current_window, win_getid())
 endfunc
 
@@ -3259,7 +3259,7 @@ func Test_quickfix_switchbuf_invalid_prevwin()
   set switchbuf=uselast
   split
   copen
-  execute winnr('#') 'quit'
+  exe winnr('#') 'quit'
   call assert_equal(2, winnr('$'))
 
   cnext  " Would've triggered a null pointer member access

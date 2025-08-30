@@ -3,7 +3,7 @@ vim9script
 # Vim completion script
 # Language:    Vim script
 # Maintainer:  Maxim Kim <habamax@gmail.com>
-# Last Change: 2025-08-10
+# Last Change: 2025-08-27
 #
 # Usage:
 # setlocal omnifunc=vimcomplete#Complete
@@ -70,8 +70,11 @@ export def Complete(findstart: number, base: string): any
             ->mapnew((_, v) => ({word: v, kind: 'v', menu: 'Function', dup: 0}))
         items = commands + functions
     else
-        items = getcompletion(prefix, 'cmdline')
-            ->mapnew((_, v) => ({word: v->matchstr('\k\+'), kind: 'v', dup: 0}))
+        try
+            items = getcompletion(prefix, 'cmdline')
+                ->mapnew((_, v) => ({word: v->matchstr('\k\+'), kind: 'v', dup: 0}))
+        catch /E220/
+        endtry
 
         if empty(items) && !empty(base)
             items = getcompletion(base, 'expression')
