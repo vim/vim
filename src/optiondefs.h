@@ -637,11 +637,11 @@ static struct vimoption options[] =
 #ifdef FEAT_CLIPBOARD
 			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,
 # ifdef UNIX
-			    {(char_u *)"wayland,x11", (char_u *)0L}
+			    {(char_u *)"wayland,x11,gui,other", (char_u *)0L}
 # elif defined(VMS)
-			    {(char_u *)"x11", (char_u *)0L}
+			    {(char_u *)"x11,gui,other", (char_u *)0L}
 # else
-			    {(char_u *)"", (char_u *)0L}
+			    {(char_u *)"gui,other", (char_u *)0L}
 # endif
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -1926,6 +1926,9 @@ static struct vimoption options[] =
     {"optimize",    "opt",  P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"osctimeoutlen", "ost", P_NUM|P_VI_DEF,
+			    (char_u *)&p_ost, PV_NONE, did_set_osctimeoutlen, NULL,
+			    {(char_u *)1000, (char_u *)0L} SCTX_INIT},
     {"osfiletype",  "oft",  P_STRING|P_ALLOCED|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},

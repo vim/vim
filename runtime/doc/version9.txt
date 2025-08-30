@@ -41753,6 +41753,10 @@ Others: ~
 - |CmdlineLeave| sets |v:char| to the character that caused exiting the
   Command-line.
 - |min()|/|max()| can handle all comparable data types.
+- Vim triggers the |TermResponseAll| autocommand for any terminal OSC value.
+- Vim includes the $VIMRUNTIME/plugins/colorresp.vim which parses the terminal
+  OSC response and can trigger a |TermResponseAll| with the "background" or
+  "foreground" value.
 
 Platform specific ~
 - MS-Winodws: Paths like "\Windows" and "/Windows" are now considered to be

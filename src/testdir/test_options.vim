@@ -171,7 +171,7 @@ func Test_signcolumn()
   call assert_equal("auto", &signcolumn)
   set signcolumn=yes
   set signcolumn=no
-  call assert_fails('set signcolumn=nope')
+  call assert_fails('set signcolumn=nope', 'E474: Invalid argument: signcolumn=nope')
 endfunc
 
 func Test_filetype_valid()
@@ -529,7 +529,7 @@ func Test_set_completion_string_values()
     if has('unix') || has('vms')
       call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[1])
     else
-      call assert_match('wayland', getcompletion('set clipmethod=', 'cmdline')[0])
+      call assert_match('gui', getcompletion('set clipmethod=', 'cmdline')[0])
     endif
   endif
   call assert_equal('.', getcompletion('set complete=', 'cmdline')[1])

@@ -1085,7 +1085,7 @@ func Test_colornames_assignment_and_unassignment()
   let v:colornames['x1'] = '#111111'
   call assert_equal(v:colornames['x1'], '#111111')
   unlet v:colornames['x1']
-  call assert_fails("echo v:colornames['x1']")
+  call assert_fails("echo v:colornames['x1']", 'E716: Key not present in Dictionary: "x1"')
 endfunc
 
 " Test for the hlget() function

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-08-23 16:16+0200\n"
+"POT-Creation-Date: 2025-08-27 19:10+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8832,6 +8832,10 @@ msgstr ""
 msgid "E1567: Cannot start socket server, socket path is unavailable"
 msgstr ""
 
+#, c-format
+msgid "E1568: OSC command response timed out: %.*s"
+msgstr ""
+
 #. type of cmdline window or 0
 #. result of cmdline window or 0
 #. buffer of cmdline window or NULL
@@ -9689,6 +9693,9 @@ msgid "when not empty, text for the icon of this window"
 msgstr ""
 
 msgid "restore the screen contents when exiting Vim"
+msgstr ""
+
+msgid "timeout used for terminal OSC responses"
 msgstr ""
 
 msgid "using the mouse"

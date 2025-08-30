@@ -58,7 +58,6 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
     case EXPAND_FILES_IN_PATH:
     case EXPAND_FILETYPE:
     case EXPAND_FILETYPECMD:
-    case EXPAND_FINDFUNC:
     case EXPAND_HELP:
     case EXPAND_KEYMAP:
     case EXPAND_OLD_SETTING:
@@ -71,7 +70,6 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
     case EXPAND_SHELLCMDLINE:
     case EXPAND_TAGS:
     case EXPAND_TAGS_LISTFILES:
-    case EXPAND_USER_LIST:
 	return FALSE;
 
     default:

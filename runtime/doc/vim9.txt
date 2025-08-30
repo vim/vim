@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2025 Jul 21
+*vim9.txt*	For Vim version 9.1.  Last change: 2025 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1737,9 +1737,9 @@ argument type checking: >
 <
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
-			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1256*
-			 *E1297* *E1298* *E1301* *E1528* *E1529* *E1530*
-			 *E1531* *E1534*
+			 *E1228* *E1235* *E1238* *E1250* *E1251* *E1252*
+			 *E1253* *E1256* *E1297* *E1298* *E1301* *E1528*
+			 *E1529* *E1530* *E1531* *E1534*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 
