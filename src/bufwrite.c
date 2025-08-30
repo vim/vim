@@ -591,11 +591,7 @@ set_file_time(
     tvp[0].tv_usec  = 0;
     tvp[1].tv_sec   = mtime;
     tvp[1].tv_usec  = 0;
-#   ifdef NeXT
-    (void)utimes((char *)fname, tvp);
-#   else
     (void)utimes((char *)fname, (const struct timeval *)&tvp);
-#   endif
 #  endif
 # endif
 }

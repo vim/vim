@@ -308,9 +308,6 @@
 /* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
 #undef HAVE_SYS_WAIT_H
 
-/* Define if you have a <sys/wait.h> that is not POSIX.1 compatible. */
-#undef HAVE_UNION_WAIT
-
 /* This is currently unused in vim: */
 /* Define if you have the ANSI C header files. */
 /* #undef STDC_HEADERS */
