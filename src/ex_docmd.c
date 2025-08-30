@@ -9773,7 +9773,7 @@ eval_vars(
 {
     int		i;
     char_u	*s;
-    char_u	*result;
+    char_u	*result = NULL;
     char_u	*resultbuf = NULL;
     size_t	resultlen;
     buf_T	*buf;
@@ -10070,7 +10070,7 @@ eval_vars(
 		break;
 	}
 
-	resultlen = STRLEN(result);	// length of new string
+	resultlen = result ? STRLEN(result) : 0;	// length of new string
 	if (src[*usedlen] == '<')	// remove the file name extension
 	{
 	    ++*usedlen;
