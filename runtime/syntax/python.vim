@@ -294,8 +294,6 @@ if !exists("python_no_builtin_highlight")
   " 'False', 'True', and 'None' are also reserved words in Python 3
   syn keyword pythonBuiltin	False True None
   syn keyword pythonBuiltin	NotImplemented Ellipsis __debug__
-  " ellipsis literal: `...`
-  syn match   pythonBuiltin	"\%(^\|[^.]\)\zs\.\.\.\ze\%([^.]\|$\)" display
   " constants added by the `site` module
   syn keyword pythonBuiltin	quit exit copyright credits license
   " built-in functions
@@ -315,6 +313,8 @@ if !exists("python_no_builtin_highlight")
   syn match   pythonAttribute	/\.\h\w*/hs=s+1
 	\ contains=ALLBUT,pythonBuiltin,pythonClass,pythonFunction,pythonType,pythonAsync
 	\ transparent
+  " the ellipsis literal `...` can be used in multiple syntactic contexts
+  syn match   pythonEllipsis	"\%(^\|[^.]\)\zs\.\.\.\ze\%([^.]\|$\)" display
 endif
 
 " From the 'Python Library Reference' class hierarchy at the bottom.
@@ -370,10 +370,12 @@ if !exists("python_no_doctest_highlight")
   if !exists("python_no_doctest_code_highlight")
     syn region pythonDoctest
 	  \ start="^\s*>>>\s" end="^\s*$"
-	  \ contained contains=ALLBUT,pythonDoctest,pythonClass,pythonFunction,pythonType,@Spell
+	  \ contained contains=ALLBUT,pythonDoctest,pythonEllipsis,pythonClass,pythonFunction,pythonType,@Spell
     syn region pythonDoctestValue
 	  \ start=+^\s*\%(>>>\s\|\.\.\.\s\|"""\|'''\)\@!\S\++ end="$"
 	  \ contained
+    syn match pythonEllipsis "\%(^\s*\)\@<![^.]\zs\.\.\.\ze\%([^.]\|$\)" display
+	  \ contained containedin=pythonDoctest
   else
     syn region pythonDoctest
 	  \ start="^\s*>>>" end="^\s*$"
@@ -416,6 +418,7 @@ if !exists("python_no_number_highlight")
 endif
 if !exists("python_no_builtin_highlight")
   hi def link pythonBuiltin		Function
+  hi def link pythonEllipsis		pythonBuiltin
 endif
 if !exists("python_no_exception_highlight")
   hi def link pythonExceptions		Structure
