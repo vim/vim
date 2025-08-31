@@ -387,8 +387,7 @@ nextwild(
 }
 
 /*
- * Create and display a cmdline completion popup menu with items from
- * 'matches'.
+ * Create completion popup menu with items from 'matches'.
  */
     static int
 cmdline_pum_create(
@@ -396,11 +395,9 @@ cmdline_pum_create(
 	expand_T	*xp,
 	char_u		**matches,
 	int		numMatches,
-	int		showtail,
-	int		noselect)
+	int		showtail)
 {
-    int		i;
-    int		prefix_len;
+    int	prefix_len;
 
     // Add all the completion matches
     compl_match_array = ALLOC_MULT(pumitem_T, numMatches);
@@ -408,7 +405,7 @@ cmdline_pum_create(
 	return EXPAND_UNSUCCESSFUL;
 
     compl_match_arraysize = numMatches;
-    for (i = 0; i < numMatches; i++)
+    for (int i = 0; i < numMatches; i++)
     {
 	compl_match_array[i].pum_text = SHOW_MATCH(i);
 	compl_match_array[i].pum_info = NULL;
@@ -425,12 +422,6 @@ cmdline_pum_create(
 	prefix_len += vim_strsize(showmatches_gettail(matches[0]))
 	    - vim_strsize(matches[0]);
     compl_startcol = MAX(0, compl_startcol - prefix_len);
-
-    // no default selection
-    compl_selected = noselect ? -1 : 0;
-
-    pum_clear();
-    cmdline_pum_display();
 
     return EXPAND_OK;
 }
@@ -868,14 +859,27 @@ get_next_or_prev_match(int mode, expand_T *xp)
     }
 
     // Display matches on screen
-    if (compl_match_array)
+    if (p_wmnu)
     {
-	compl_selected = findex;
-	cmdline_pum_display();
+	if (compl_match_array)
+	{
+	    compl_selected = findex;
+	    cmdline_pum_display();
+	}
+	else if (vim_strchr(p_wop, WOP_PUM) != NULL)
+	{
+	    if (cmdline_pum_create(get_cmdline_info(), xp, xp->xp_files,
+			xp->xp_numfiles, cmd_showtail) == EXPAND_OK)
+	    {
+		compl_selected = findex;
+		pum_clear();
+		cmdline_pum_display();
+	    }
+	}
+	else
+	    win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files, findex,
+		    cmd_showtail);
     }
-    else if (p_wmnu)
-	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files, findex,
-		cmd_showtail);
 
     xp->xp_selected = findex;
     // Return the original text or the selected match
@@ -1277,12 +1281,12 @@ showmatches_oneline(
 }
 
 /*
- * Show all matches for completion on the command line.
- * Returns EXPAND_NOTHING when the character that triggered expansion should
- * be inserted like a normal character.
+ * Display completion matches.
+ * Returns EXPAND_NOTHING when the character that triggered expansion should be
+ *   inserted as a normal character.
  */
     int
-showmatches(expand_T *xp, int wildmenu, int noselect)
+showmatches(expand_T *xp, int display_wildmenu, int display_list, int noselect)
 {
     cmdline_info_T	*ccline = get_cmdline_info();
     int		numMatches;
@@ -1311,12 +1315,21 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
 	showtail = cmd_showtail;
     }
 
-    if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
-	// cmdline completion popup menu (with wildoptions=pum)
-	return cmdline_pum_create(ccline, xp, matches, numMatches,
-		showtail && !noselect, noselect);
+    if (display_wildmenu && !display_list
+	    && vim_strchr(p_wop, WOP_PUM) != NULL)
+    {
+	int retval = cmdline_pum_create(ccline, xp, matches, numMatches,
+		showtail && !noselect);
+	if (retval == EXPAND_OK)
+	{
+	    compl_selected = noselect ? -1 : 0;
+	    pum_clear();
+	    cmdline_pum_display();
+	}
+	return retval;
+    }
 
-    if (!wildmenu)
+    if (display_list)
     {
 	msg_didany = FALSE;		// lines_left will be set
 	msg_start();			// prepare for paging
@@ -1328,10 +1341,11 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
     }
 
     if (got_int)
-	got_int = FALSE;	// only int. the completion, not the cmd line
-    else if (wildmenu)
-	win_redr_status_matches(xp, numMatches, matches, noselect ? -1 : 0, showtail);
-    else
+	got_int = FALSE;  // only interrupt the completion, not the cmd line
+    else if (display_wildmenu && !display_list)
+	win_redr_status_matches(xp, numMatches, matches, noselect ? -1 : 0,
+		showtail);  // display statusbar menu
+    else if (display_list)
     {
 	// find the length of the longest file name
 	maxlen = 0;
@@ -4236,7 +4250,7 @@ wildmenu_translate_key(
 	}
     }
 
-    if (did_wild_list)
+    if (cmdline_pum_active() || did_wild_list || wild_menu_showing)
     {
 	if (c == K_LEFT)
 	    c = Ctrl_P;
