@@ -3064,7 +3064,7 @@ au BufNewFile,BufRead *.y			call dist#ft#FTy()
 
 " Yaml
 au BufNewFile,BufRead *.yaml,*.yml,*.eyaml		setf yaml
-au BufNewFile,BufRead */.kube/config	setf yaml
+au BufNewFile,BufRead */.kube/config,*/.kube/kuberc	setf yaml
 
 " Raml
 au BufNewFile,BufRead *.raml			setf raml
