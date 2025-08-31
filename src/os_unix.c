@@ -9637,8 +9637,10 @@ socket_server_send(
 	if (pending.result != NULL)
 	    break;
 
+#ifdef ELAPSED_FUNC
 	if (ELAPSED_FUNC(start_tv) >= (timeout > 0 ? timeout : 1000))
 	    break;
+#endif
     }
 
     if (pending.result == NULL)
