@@ -780,12 +780,17 @@ crypt_decode_inplace(
     void
 crypt_free_key(char_u *key)
 {
-    char_u *p;
-
+    // Create a safe memset which cannot be optimized away by compiler
+    static void *(* volatile vim_memset_safe)(void *s, int c, size_t n) =
+	memset;
     if (key != NULL)
     {
-	for (p = key; *p != NUL; ++p)
-	    *p = 0;
+#ifdef FEAT_SODIUM
+	if (sodium_init() >= 0)
+	    sodium_memzero(key, STRLEN(key));
+	else
+#endif
+	    vim_memset_safe(key, 0, STRLEN(key));
 	vim_free(key);
     }
 }
