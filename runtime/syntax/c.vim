@@ -144,7 +144,7 @@ else
 endif
 
 " Catch errors caused by wrong parenthesis and brackets.
-" Also accept <% for {, %> for }, <: for [ and :> for ] (C99)
+" Also accept <% for {, %> for }, <: for [ and :> for ] (C95)
 " But avoid matching <::.
 syn cluster	cParenGroup	contains=cParenError,cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserLabel,cBitField,cOctalZero,@cCppOutInGroup,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom
 if exists("c_no_curly_error")
@@ -287,7 +287,10 @@ syn keyword	cType		signed unsigned float double
 if !exists("c_no_ansi") || exists("c_ansi_typedefs")
   syn keyword   cType		size_t ssize_t off_t wchar_t ptrdiff_t sig_atomic_t fpos_t
   syn keyword   cType		clock_t time_t va_list jmp_buf FILE DIR div_t ldiv_t
-  syn keyword   cType		mbstate_t wctrans_t wint_t wctype_t
+endif
+if !exists("c_no_c95") " Amendment 1 to ISO C90
+  syn keyword cType             wint_t mbstate_t wctype_t wctrans_t
+  syn keyword cOperator		and bitor or xor compl bitand and_eq or_eq xor_eq not not_eq
 endif
 if !exists("c_no_c99") " ISO C99
   syn keyword	cType		_Bool bool _Complex complex _Imaginary imaginary
@@ -365,6 +368,9 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   syn keyword cConstant CHAR_MAX INT_MAX LONG_MAX SHRT_MAX
   syn keyword cConstant SCHAR_MIN SINT_MIN SLONG_MIN SSHRT_MIN
   syn keyword cConstant SCHAR_MAX SINT_MAX SLONG_MAX SSHRT_MAX
+  if !exists("c_no_c95")
+    syn keyword cConstant WEOF WCHAR_MIN WCHAR_MAX WINT_MIN WINT_MAX
+  endif
   if !exists("c_no_c99")
     syn keyword cConstant __STDC_ISO_10646__ __STDC_IEC_559_COMPLEX__
     syn keyword cConstant __STDC_MB_MIGHT_NEQ_WC__
@@ -382,7 +388,7 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
     syn keyword cConstant INTPTR_MIN INTPTR_MAX UINTPTR_MAX
     syn keyword cConstant INTMAX_MIN INTMAX_MAX UINTMAX_MAX
     syn keyword cConstant PTRDIFF_MIN PTRDIFF_MAX SIG_ATOMIC_MIN SIG_ATOMIC_MAX
-    syn keyword cConstant SIZE_MAX WCHAR_MIN WCHAR_MAX WINT_MIN WINT_MAX
+    syn keyword cConstant SIZE_MAX
   endif
   if !exists("c_no_c11")
     syn keyword cConstant __STDC_UTF_16__ __STDC_UTF_32__ __STDC_ANALYZABLE__
@@ -412,7 +418,7 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   " Add POSIX signals as well...
   syn keyword cConstant SIGABRT SIGALRM SIGCHLD SIGCONT SIGFPE SIGHUP SIGILL SIGINT SIGKILL SIGPIPE SIGQUIT SIGSEGV
   syn keyword cConstant SIGSTOP SIGTERM SIGTRAP SIGTSTP SIGTTIN SIGTTOU SIGUSR1 SIGUSR2
-  syn keyword cConstant _IOFBF _IOLBF _IONBF BUFSIZ EOF WEOF FOPEN_MAX FILENAME_MAX L_tmpnam
+  syn keyword cConstant _IOFBF _IOLBF _IONBF BUFSIZ EOF FOPEN_MAX FILENAME_MAX L_tmpnam
   syn keyword cConstant SEEK_CUR SEEK_END SEEK_SET TMP_MAX EXIT_FAILURE EXIT_SUCCESS RAND_MAX
   syn keyword cConstant stdin stdout stderr
   " POSIX 2001, in unistd.h
@@ -450,7 +456,7 @@ if !exists("c_no_c99") " ISO C99
   syn keyword cConstant FP_NORMAL FP_SUBNORMAL FP_ZERO FP_INFINITE FP_NAN
 endif
 
-" Accept %: for # (C99)
+" Accept %: for # (C95)
 syn cluster	cPreProcGroup	contains=cPreCondit,cIncluded,cInclude,cDefine,cErrInParen,cErrInBracket,cUserLabel,cSpecial,cOctalZero,cCppOutWrapper,cCppInWrapper,@cCppOutInGroup,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom,cString,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cParen,cBracket,cMulti,cBadBlock
 if !exists("c_no_c23")
   syn region	cPreCondit	start="^\s*\zs\%(%:\|#\)\s*\%(el\)\=\%(if\|ifdef\|ifndef\)\>" skip="\\$" end="$" keepend contains=cComment,cCommentL,cCppString,cCharacter,cCppParen,cParenError,cNumbers,cCommentError,cSpaceError
