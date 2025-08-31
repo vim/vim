@@ -3523,7 +3523,7 @@ pstrcmp(const void *a, const void *b)
  * Return the number of matches found.
  * NOTE: much of this is identical to unix_expandpath(), keep in sync!
  */
-    static int
+    int
 dos_expandpath(
     garray_T	*gap,
     char_u	*path,
@@ -3750,15 +3750,6 @@ dos_expandpath(
 	qsort(((char_u **)gap->ga_data) + start_len, (size_t)matches,
 						   sizeof(char_u *), pstrcmp);
     return matches;
-}
-
-    int
-mch_expandpath(
-    garray_T	*gap,
-    char_u	*path,
-    int		flags)		// EW_* flags
-{
-    return dos_expandpath(gap, path, 0, flags, FALSE);
 }
 #endif // MSWIN
 
