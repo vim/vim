@@ -1467,7 +1467,8 @@ Inspecting variables ~
  `:Evaluate`	    evaluate the expression under the cursor
  `K`		    same (see |termdebug_map_K| to disable)
  `:Evaluate` {expr}   evaluate {expr}
- `:'<,'>Evaluate`     evaluate the Visually selected text
+ `:'<,'>Evaluate`
+ `{Visual}K`          evaluate the Visually selected text
 
 This is similar to using "print" in the gdb window.
 You can usually shorten `:Evaluate` to `:Ev`.

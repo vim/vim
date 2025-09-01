@@ -1203,6 +1203,7 @@ def InstallCommands()
   if map
     if !empty(saved_K_map) && !saved_K_map.buffer || empty(saved_K_map)
       nnoremap K :Evaluate<CR>
+      xnoremap K :Evaluate<CR>
     endif
   endif
 
@@ -1297,6 +1298,7 @@ def DeleteCommands()
     mapset(saved_K_map)
   elseif empty(saved_K_map)
     silent! nunmap K
+    silent! xunmap K
   endif
 
   if !empty(saved_plus_map) && !saved_plus_map.buffer
