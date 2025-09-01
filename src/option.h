@@ -771,6 +771,7 @@ EXTERN char_u	*p_lispwords;	// 'lispwords'
 EXTERN long	p_ls;		// 'laststatus'
 EXTERN long	p_stal;		// 'showtabline'
 EXTERN char_u	*p_lcs;		// 'listchars'
+EXTERN int	p_lcv;		// 'listcharsvisual'
 
 EXTERN int	p_lz;		// 'lazyredraw'
 EXTERN int	p_lpl;		// 'loadplugins'
@@ -1308,6 +1309,7 @@ enum
 enum
 {
     WV_LIST = 0
+    , WV_VLIST
     , WV_LCS
     , WV_FCS
 #ifdef FEAT_ARABIC

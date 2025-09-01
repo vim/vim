@@ -1114,6 +1114,15 @@ apply_cursorline_highlight(
 }
 #endif
 
+    static int
+get_listchars_attr(win_T *wp, int in_visual)
+{
+    int	    attr = 0;
+    if (wp->w_p_vlist && in_visual)
+	attr = syn_name2attr((char_u *)"VisualSpecialKey");
+    return attr ? attr : HL_ATTR(HLF_8);
+}
+
 /*
  * Display line "lnum" of window "wp" on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -1175,6 +1184,8 @@ win_line(
     int		area_attr = 0;		// attributes desired by highlighting
     int		search_attr = 0;	// attributes desired by 'hlsearch' or
 					// ComplMatchIns
+    int		should_render_list = (wp->w_p_list && !wp->w_p_vlist) || (wp->w_p_vlist && VIsual_active);
+    int		vlist_attr = syn_name2attr((char_u *)"VisualSpecialKey");
 #ifdef FEAT_SYN_HL
     int		vcol_save_attr = 0;	// saved attr for 'cursorcolumn'
     int		syntax_attr = 0;	// attributes desired by syntax
@@ -1419,6 +1430,8 @@ win_line(
 		}
 	    }
 
+	    // Check visual list
+	    should_render_list = wp->w_p_vlist ? wlv.fromcol >= 0 : wp->w_p_list;
 	    // Check if the character under the cursor should not be inverted
 	    if (!highlight_match && in_curline
 #ifdef FEAT_GUI
@@ -1612,7 +1625,7 @@ win_line(
     line = ml_get_buf(wp->w_buffer, lnum, FALSE);
     ptr = line;
 
-    if (wp->w_p_list)
+    if (should_render_list)
     {
 	if (wp->w_lcs_chars.space
 		|| wp->w_lcs_chars.multispace != NULL
@@ -2569,6 +2582,8 @@ win_line(
 
 	    // Decide which of the highlight attributes to use.
 	    attr_pri = TRUE;
+	    if (wp->w_p_vlist)
+		should_render_list = lnum_in_visual_area && area_attr != 0;
 #ifdef LINE_ATTR
 	    if (area_attr != 0)
 	    {
@@ -3118,12 +3133,12 @@ win_line(
 			    // See "Tab alignment" below.
 			    FIX_FOR_BOGUSCOLS;
 # endif
-			if (!wp->w_p_list)
+			if (!should_render_list)
 			    c = ' ';
 		    }
 		}
 #endif
-		if (wp->w_p_list)
+		if (should_render_list)
 		{
 		    in_multispace = c == ' ' && (*ptr == ' '
 				  || (prev_ptr > line && prev_ptr[-1] == ' '));
@@ -3134,7 +3149,7 @@ win_line(
 		// 'list': Change char 160 to 'nbsp' and space to 'space'
 		// setting in 'listchars'.  But not when the character is
 		// followed by a composing character (use mb_l to check that).
-		if (wp->w_p_list
+		if (should_render_list
 			&& ((((c == 160 && mb_l == 1)
 			      || (mb_utf8
 				  && ((mb_c == 160 && mb_l == 2)
@@ -3161,7 +3176,7 @@ win_line(
 		    {
 			n_attr = 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
-							       HL_ATTR(HLF_8));
+				get_listchars_attr(wp, lnum_in_visual_area));
 			saved_attr2 = wlv.char_attr; // save current attr
 		    }
 		    mb_c = c;
@@ -3201,7 +3216,7 @@ win_line(
 		    {
 			n_attr = 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
-							       HL_ATTR(HLF_8));
+				get_listchars_attr(wp, lnum_in_visual_area));
 			saved_attr2 = wlv.char_attr; // save current attr
 		    }
 		    mb_c = c;
@@ -3222,7 +3237,7 @@ win_line(
 		// when getting a character from the file, we may have to
 		// turn it into something else on the way to putting it
 		// into "ScreenLines".
-		if (c == TAB && (!wp->w_p_list || wp->w_lcs_chars.tab1))
+		if (c == TAB && (!should_render_list || wp->w_lcs_chars.tab1))
 		{
 		    int	    tab_len = 0;
 		    long    vcol_adjusted = wlv.vcol; // removed showbreak len
@@ -3245,7 +3260,7 @@ win_line(
 #endif
 
 #ifdef FEAT_LINEBREAK
-		    if (!wp->w_p_lbr || !wp->w_p_list)
+		    if (!wp->w_p_lbr || !should_render_list)
 #endif
 		    {
 			// tab amount depends on current column
@@ -3265,7 +3280,7 @@ win_line(
 			    tab_len += wlv.vcol_off_co;
 
 			// boguscols before FIX_FOR_BOGUSCOLS macro from above
-			if (wp->w_p_list && wp->w_lcs_chars.tab1
+			if (should_render_list && wp->w_lcs_chars.tab1
 						      && old_boguscols > 0
 						      && wlv.n_extra > tab_len)
 			    tab_len += wlv.n_extra - tab_len;
@@ -3338,13 +3353,13 @@ win_line(
 			// Make sure, the highlighting for the tab char will be
 			// correctly set further below (effectively reverts the
 			// FIX_FOR_BOGUSCOLS macro).
-			if (wlv.n_extra == tab_len + vc_saved && wp->w_p_list
+			if (wlv.n_extra == tab_len + vc_saved && should_render_list
 						&& wp->w_lcs_chars.tab1)
 			    tab_len += vc_saved;
 		    }
 #endif
 		    mb_utf8 = FALSE;	// don't draw as UTF-8
-		    if (wp->w_p_list)
+		    if (should_render_list)
 		    {
 			c = (wlv.n_extra == 0 && wp->w_lcs_chars.tab3)
 							? wp->w_lcs_chars.tab3
@@ -3359,7 +3374,7 @@ win_line(
 			wlv.c_final = wp->w_lcs_chars.tab3;
 			n_attr = tab_len + 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
-							       HL_ATTR(HLF_8));
+				get_listchars_attr(wp, lnum_in_visual_area));
 			saved_attr2 = wlv.char_attr; // save current attr
 			mb_c = c;
 			if (enc_utf8 && utf_char2len(c) > 1)
@@ -3378,7 +3393,7 @@ win_line(
 		}
 		else if (c == NUL
 			&& wlv.n_extra == 0
-			&& (wp->w_p_list
+			&& (should_render_list
 			    || ((wlv.fromcol >= 0 || fromcol_prev >= 0)
 				&& wlv.tocol > wlv.vcol
 				&& VIsual_mode != Ctrl_V
@@ -3418,7 +3433,7 @@ win_line(
 			    wlv.p_extra = (char_u *)"";
 			wlv.n_extra = 0;
 		    }
-		    if (wp->w_p_list && wp->w_lcs_chars.eol > 0)
+		    if (should_render_list && wp->w_lcs_chars.eol > 0)
 			c = wp->w_lcs_chars.eol;
 		    else
 			c = ' ';
@@ -3534,7 +3549,7 @@ win_line(
 		    // don't do search HL for the rest of the line
 		    if (wlv.line_attr != 0 && wlv.char_attr == search_attr
 					&& (did_line_attr > 1
-					    || (wp->w_p_list &&
+					    || (should_render_list &&
 						wp->w_lcs_chars.eol > 0)))
 			wlv.char_attr = wlv.line_attr;
 #ifdef FEAT_SIGNS
@@ -3698,13 +3713,16 @@ win_line(
 	// Use "wlv.extra_attr", but don't override visual selection
 	// highlighting, unless text property overrides.
 	// Don't use "wlv.extra_attr" until wlv.n_attr_skip is zero.
-	if (wlv.n_attr_skip == 0 && n_attr > 0 && wlv.draw_state == WL_LINE)
-	{
-	    if (attr_pri
+	if (wlv.n_attr_skip == 0 && n_attr > 0
+	    && wlv.draw_state == WL_LINE
+	    && (!attr_pri
 #ifdef FEAT_PROP_POPUP
-		&& !(text_prop_flags & PT_FLAG_OVERRIDE)
+		|| (text_prop_flags & PT_FLAG_OVERRIDE)
 #endif
-		)
+		|| (wp->w_p_vlist && wlv.extra_attr == vlist_attr)
+	       ))
+	{
+	    if (wp->w_p_vlist && attr_pri && wlv.extra_attr == vlist_attr)
 		wlv.char_attr = hl_combine_attr(wlv.char_attr, wlv.extra_attr);
 	    else
 	    {
@@ -3715,7 +3733,6 @@ win_line(
 #endif
 		    wlv.char_attr = wlv.extra_attr;
 	    }
-
 #ifdef FEAT_PROP_POPUP
 	    if (reset_extra_attr)
 	    {
@@ -3767,7 +3784,7 @@ win_line(
 	// character of the line and the user wants us to show us a
 	// special character (via 'listchars' option "precedes:<char>").
 	if (lcs_prec_todo != NUL
-		&& wp->w_p_list
+		&& should_render_list
 		&& (wp->w_p_wrap ? (wp->w_skipcol > 0 && wlv.row == 0)
 				 : wp->w_leftcol > 0)
 #ifdef FEAT_DIFF
@@ -3937,7 +3954,7 @@ win_line(
 	// 'list' is set.
 	if (wp->w_lcs_chars.ext != NUL
 		&& wlv.draw_state == WL_LINE
-		&& wp->w_p_list
+		&& should_render_list
 		&& !wp->w_p_wrap
 #ifdef FEAT_DIFF
 		&& wlv.filler_todo <= 0
@@ -4256,7 +4273,7 @@ win_line(
 		    || text_prop_above || text_prop_follows
 		    || text_prop_next <= last_textprop_text_idx
 #endif
-		    || (wp->w_p_list && wp->w_lcs_chars.eol != NUL
+		    || (should_render_list && wp->w_lcs_chars.eol != NUL
 						&& lcs_eol_one != -1)
 		    || (wlv.n_extra != 0 && (wlv.c_extra != NUL
 						      || *wlv.p_extra != NUL)))
