@@ -393,7 +393,7 @@ func Test_termdebug_mapping()
 
   %bw!
   nnoremap K :echom "K"<cr>
-  nnoremap K :<C-U>echom "VK"<cr>
+  xnoremap K :<C-U>echom "VK"<cr>
   nnoremap - :echom "-"<cr>
   nnoremap + :echom "+"<cr>
   Termdebug

@@ -139,6 +139,7 @@ var winbar_winids: list<number>
 var saved_mousemodel: string
 
 var saved_K_map: dict<any>
+var saved_visual_K_map: dict<any>
 var saved_plus_map: dict<any>
 var saved_minus_map: dict<any>
 
