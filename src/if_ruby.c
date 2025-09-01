@@ -112,7 +112,7 @@
 # pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
-#ifdef __clang__
+#if defined(__clang__) && (__clang_major__ >= 21)
 # pragma GCC diagnostic ignored "-Wdefault-const-init-field-unsafe"
 #endif
 
