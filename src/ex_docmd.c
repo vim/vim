@@ -9773,7 +9773,7 @@ eval_vars(
 {
     int		i;
     char_u	*s;
-    char_u	*result;
+    char_u	*result = (char_u *)"";
     char_u	*resultbuf = NULL;
     size_t	resultlen;
     buf_T	*buf;
@@ -10064,10 +10064,6 @@ eval_vars(
 #endif
 		break;
 #endif
-
-	default:
-		result = (char_u *)""; // avoid gcc warning
-		break;
 	}
 
 	resultlen = STRLEN(result);	// length of new string
