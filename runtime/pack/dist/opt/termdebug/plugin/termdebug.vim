@@ -218,6 +218,7 @@ def InitScriptVariables()
   saved_K_map = maparg('K', 'n', false, true)
   saved_plus_map = maparg('+', 'n', false, true)
   saved_minus_map = maparg('-', 'n', false, true)
+  saved_visual_K_map = maparg('K', 'x', false, true)
 
   if has('menu')
     saved_mousemodel = &mousemodel
@@ -1203,6 +1204,8 @@ def InstallCommands()
   if map
     if !empty(saved_K_map) && !saved_K_map.buffer || empty(saved_K_map)
       nnoremap K :Evaluate<CR>
+    endif
+    if !empty(saved_visual_K_map) && !saved_visual_K_map.buffer || empty(saved_visual_K_map)
       xnoremap K :Evaluate<CR>
     endif
   endif
@@ -1298,6 +1301,11 @@ def DeleteCommands()
     mapset(saved_K_map)
   elseif empty(saved_K_map)
     silent! nunmap K
+  endif
+
+  if !empty(saved_visual_K_map) && !saved_visual_K_map.buffer
+    mapset(saved_visual_K_map)
+  elseif empty(saved_visual_K_map)
     silent! xunmap K
   endif
 
