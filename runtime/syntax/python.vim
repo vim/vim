@@ -314,7 +314,7 @@ if !exists("python_no_builtin_highlight")
 	\ contains=ALLBUT,pythonBuiltin,pythonClass,pythonFunction,pythonType,pythonAsync
 	\ transparent
   " the ellipsis literal `...` can be used in multiple syntactic contexts
-  syn match   pythonEllipsis	"\%(^\|[^.]\)\zs\.\.\.\ze\%([^.]\|$\)" display
+  syn match   pythonEllipsis	"\.\@1<!.\.\.\ze\.\@!" display
 endif
 
 " From the 'Python Library Reference' class hierarchy at the bottom.
@@ -374,7 +374,7 @@ if !exists("python_no_doctest_highlight")
     syn region pythonDoctestValue
 	  \ start=+^\s*\%(>>>\s\|\.\.\.\s\|"""\|'''\)\@!\S\++ end="$"
 	  \ contained
-    syn match pythonEllipsis "\%(^\s*\)\@<![^.]\zs\.\.\.\ze\%([^.]\|$\)" display
+    syn match pythonEllipsis "\%(^\s*\)\@<!\.\@1<!\zs\.\.\.\ze\.\@!" display
 	  \ contained containedin=pythonDoctest
   else
     syn region pythonDoctest
