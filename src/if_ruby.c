@@ -107,15 +107,21 @@
 # undef SIZEOF_TIME_T
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+
+#ifdef __clang__
+# pragma GCC diagnostic ignored "-Wdefault-const-init-field-unsafe"
+#endif
+
 #include <ruby.h>
-#ifdef __GNUC__
+#include <ruby/encoding.h>
+
+#if defined(__GNUC__) || defined(__clang__)
 # pragma GCC diagnostic pop
 #endif
-#include <ruby/encoding.h>
 
 // See above.
 #ifdef SIZEOF_TIME_T
