@@ -43,7 +43,7 @@ export def Find(editcmd: string) #{{{2
         var resolved_path = globpath(&runtimepath, path)
 
         if resolved_path != ''
-            var function_pattern: string = $'^\s*fun\%[ction]!\=\s\+\zs{curfunc}('
+            var function_pattern: string = $'^\s*\%(:\s*\)\=fun\%[ction]!\=\s\+\zs{curfunc}('
             resolved_path->Open(editcmd, function_pattern)
         endif
         return
