@@ -1676,7 +1676,9 @@ au BufNewFile,BufRead *.msql			setf msql
 au BufNewFile,BufRead *.mysql,.mysql_history	setf mysql
 
 " Tcl Shell RC file
-au BufNewFile,BufRead tclsh.rc			setf tcl
+" Vivado journal file records REPL input in tcl syntax
+" Vivado log file records REPL input in tcl syntax and output
+au BufNewFile,BufRead tclsh.rc,vivado*.{jou,log}	setf tcl
 
 " M$ Resource files
 " /etc/Muttrc.d/file.rc is muttrc
