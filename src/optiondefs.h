@@ -3009,7 +3009,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"wlsteal",	    "wst",  P_BOOL|P_VI_DEF,
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+#ifdef FEAT_WAYLAND_CLIPBOARD
 			    (char_u *)&p_wst, PV_NONE, did_set_wlsteal, NULL,
 			    {(char_u *)FALSE, (char_u *)0L}
 #else

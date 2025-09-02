@@ -682,18 +682,15 @@ vim_main2(void)
     if (!gui.in_use)
 # endif
     {
-	sprintf(wayland_vim_special_mime, "application/x-vim-instance-%ld",
-		mch_get_pid());
-
-	if (wayland_init_connection(wayland_display_name) == OK)
+	if (wayland_init_client(wayland_display_name) == OK)
 	{
 	    TIME_MSG("connected to Wayland display");
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
-	    if (clip_init_wayland() == OK)
+	    if (wayland_cb_init((char*)p_wse) == OK)
 		TIME_MSG("setup Wayland clipboard");
-# endif
 	}
+# endif
     }
 #endif
 

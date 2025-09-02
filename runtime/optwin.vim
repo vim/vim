@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Sep 01
+" Last Change:	2025 Sep 02
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -822,7 +822,7 @@ if has('wayland')
   call <SID>AddOption("wlseat", gettext("Wayland seat to use"))
   call <SID>OptionG("wse", &wse)
 endif
-if has("wayland_focus_steal")
+if has("wayland_clipboard")
   call <SID>AddOption("wlsteal", gettext("Enable wayland focus stealing functionality in order to access the clipboard"))
   call <SID>BinOptionG("wst", &wst)
 endif

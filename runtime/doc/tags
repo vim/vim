@@ -1542,7 +1542,6 @@ $quote	eval.txt	/*$quote*
 +vtp	various.txt	/*+vtp*
 +wayland	various.txt	/*+wayland*
 +wayland_clipboard	various.txt	/*+wayland_clipboard*
-+wayland_focus_steal	various.txt	/*+wayland_focus_steal*
 +wildignore	various.txt	/*+wildignore*
 +wildmenu	various.txt	/*+wildmenu*
 +windows	various.txt	/*+windows*

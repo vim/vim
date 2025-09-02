@@ -7617,13 +7617,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"wayland_focus_steal",
-#ifdef FEAT_WAYLAND_CLIPBOARD_FS
-		1
-#else
-		0
-#endif
-		},
 	{"wildignore", 1},
 	{"wildmenu", 1},
 	{"windows", 1},

@@ -5237,26 +5237,20 @@ struct cellsize {
 
 #ifdef FEAT_WAYLAND
 
-typedef struct vwl_connection_S vwl_connection_T;
-typedef struct vwl_seat_S vwl_seat_T;
-
-# ifdef FEAT_WAYLAND_CLIPBOARD
-
-typedef struct vwl_data_offer_S vwl_data_offer_T;
-typedef struct vwl_data_source_S vwl_data_source_T;
-typedef struct vwl_data_device_S vwl_data_device_T;
-typedef struct vwl_data_device_manager_S vwl_data_device_manager_T;
-
-typedef struct vwl_data_device_listener_S vwl_data_device_listener_T;
-typedef struct vwl_data_source_listener_S vwl_data_source_listener_T;
-typedef struct vwl_data_offer_listener_S vwl_data_offer_listener_T;
-
 // Wayland selections
 typedef enum {
-    WAYLAND_SELECTION_NONE	= 0,
-    WAYLAND_SELECTION_REGULAR	= 1 << 0,
-    WAYLAND_SELECTION_PRIMARY	= 1 << 1,
+    WAYLAND_SELECTION_NONE	    = 0x0,
+    WAYLAND_SELECTION_REGULAR	    = 0x1,
+    WAYLAND_SELECTION_PRIMARY	    = 0x2,
 } wayland_selection_T;
 
-# endif
-#endif
+// Callback when another client wants us to send data to them
+typedef void (*wayland_cb_send_data_func_T)(
+	const char *mime_type,
+	int fd,
+	wayland_selection_T type);
+
+// Callback when the selection is lost (data source object overwritten)
+typedef void (*wayland_cb_selection_cancelled_func_T)(wayland_selection_T type);
+
+#endif // FEAT_WAYLAND

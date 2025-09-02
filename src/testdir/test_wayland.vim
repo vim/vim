@@ -21,17 +21,12 @@ let s:old_wayland_display = $WAYLAND_DISPLAY
 " every test function
 func s:PreTest()
   let $WAYLAND_DISPLAY=s:global_wayland_display
-  " Always reconnect so we have a clean state each time and clear both
-  " selections.
-  call system('wl-copy -c')
-  call system('wl-copy -p -c')
-  exe 'wlrestore! ' .. $WAYLAND_DISPLAY
+  exe 'wlrestore ' .. $WAYLAND_DISPLAY
 
   set cpm=wayland
 endfunc
 
 func s:SetupFocusStealing()
-  CheckFeature wayland_focus_steal
   if !executable('wayland-info')
     throw "Skipped: wayland-info program not available"
   endif
@@ -40,7 +35,7 @@ func s:SetupFocusStealing()
   " seat, so we must use the user's existing Wayland session if they are in one.
   let $WAYLAND_DISPLAY = s:old_wayland_display
 
-  exe 'wlrestore! ' .. $WAYLAND_DISPLAY
+  exe 'wlrestore ' .. $WAYLAND_DISPLAY
 
   " Check if we have keyboard capability for seat
   if system("wayland-info -i wl_seat | grep capabilities") !~? "keyboard"
@@ -55,14 +50,17 @@ func s:UnsetupFocusStealing()
   unlet $VIM_WAYLAND_FORCE_FS
 endfunc
 
-func s:CheckClientserver()
-  CheckFeature clientserver
-
-  if has('socketserver') && !has('x11')
-    if v:servername == ""
-      call remote_startserver('VIMSOCKETSERVER')
+" Need X connection for tests that use client server communication
+func s:CheckXConnection()
+  CheckFeature x11
+  try
+    call remote_send('xxx', '')
+  catch
+    if v:exception =~ 'E240:'
+      thrclientserverow 'Skipped: no connection to the X server'
     endif
-  endif
+    " ignore other errors
+  endtry
 endfunc
 
 func s:EndRemoteVim(name, job)
@@ -79,7 +77,11 @@ endfunc
 
 func Test_wayland_startup()
   call s:PreTest()
-  call s:CheckClientserver()
+  call s:CheckXConnection()
+
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
 
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
@@ -167,11 +169,17 @@ func Test_wayland_connection_lost()
   call EndWaylandCompositor(l:wayland_display)
 
   call assert_equal('', getreg('+'))
+  call assert_fails('put +', 'E353:')
+  call assert_fails('yank +', 'E1548:')
 endfunc
 
 " Basic paste tests
 func Test_wayland_paste()
   call s:PreTest()
+
+  " Prevent 'Register changed while using it' error, guessing this works because
+  " it makes Vim lose the selection?
+  wlrestore!
 
   " Regular selection
   new
@@ -210,6 +218,8 @@ endfunc
 " Basic yank/copy tests
 func Test_wayland_yank()
   call s:PreTest()
+
+  wlrestore!
 
   new
 
@@ -255,8 +265,7 @@ func Test_wayland_mime_types_correct()
         \ 'text/plain',
         \ 'UTF8_STRING',
         \ 'STRING',
-        \ 'TEXT',
-        \ 'application/x-vim-instance-' .. getpid()
+        \ 'TEXT'
         \ ]
 
   call setreg('+', 'text', 'c')
@@ -351,7 +360,7 @@ endfunc
 " Test if autoselect option in 'clipboard' works properly for Wayland
 func Test_wayland_autoselect_works()
   call s:PreTest()
-  call s:CheckClientserver()
+  call s:CheckXConnection()
 
   let l:lines =<< trim END
   set cpm=wayland
@@ -366,6 +375,10 @@ func Test_wayland_autoselect_works()
   END
 
   call writefile(l:lines, 'Wltester', 'D')
+
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
 
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' -S Wltester --servername ' .. l:name
@@ -395,13 +408,24 @@ func Test_wayland_autoselect_works()
 
   eval remote_send(l:name, "\<Esc>:qa!\<CR>")
 
-  call s:EndRemoteVim(l:name, l:job)
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(l:job))})
+  finally
+    if job_status(l:job) != 'dead'
+      call assert_report('Vim instance did not exit')
+      call job_stop(l:job, 'kill')
+    endif
+  endtry
 endfunc
 
 " Check if the -Y flag works properly
 func Test_no_wayland_connect_cmd_flag()
   call s:PreTest()
-  call s:CheckClientserver()
+  call s:CheckXConnection()
+
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
 
   let l:name = 'WLFLAGVIMTEST'
   let l:cmd = GetVimCommand() .. ' -Y --servername ' .. l:name
@@ -425,13 +449,25 @@ func Test_no_wayland_connect_cmd_flag()
   call WaitForAssert({-> assert_equal('',
         \ remote_expr(l:name, 'v:wayland_display'))})
 
-  call s:EndRemoteVim(l:name, l:job)
+  eval remote_send(l:name, "\<Esc>:qa!\<CR>")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(l:job))})
+  finally
+    if job_status(l:job) != 'dead'
+      call assert_report('Vim instance did not exit')
+      call job_stop(l:job, 'kill')
+    endif
+  endtry
 endfunc
 
 " Test behaviour when we do something like suspend Vim
 func Test_wayland_become_inactive()
   call s:PreTest()
-  call s:CheckClientserver()
+  call s:CheckXConnection()
+
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
 
   let l:name = 'WLLOSEVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
@@ -453,7 +489,15 @@ func Test_wayland_become_inactive()
   call WaitForAssert({-> assert_equal("Nothing is copied\n",
         \ system('wl-paste -n'))})
 
-  call s:EndRemoteVim(l:name, l:job)
+  eval remote_send(l:name, "\<Esc>:qa!\<CR>")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(l:job))})
+  finally
+    if job_status(l:job) != 'dead'
+      call assert_report('Vim instance did not exit')
+      call job_stop(l:job, 'kill')
+    endif
+  endtry
 endfunc
 
 " Test wlseat option
@@ -484,7 +528,6 @@ endfunc
 
 " Test focus stealing
 func Test_wayland_focus_steal()
-  CheckFeature wayland_focus_steal
   call s:PreTest()
   call s:SetupFocusStealing()
 
@@ -510,12 +553,16 @@ endfunc
 " Test when environment is not suitable for Wayland
 func Test_wayland_bad_environment()
   call s:PreTest()
-  call s:CheckClientserver()
+  call s:CheckXConnection()
 
   unlet $WAYLAND_DISPLAY
 
   let l:old = $XDG_RUNTIME_DIR
   unlet $XDG_RUNTIME_DIR
+
+  if v:servername == ""
+    call remote_startserver('VIMSOCKETSERVER')
+  endif
 
   let l:name = 'WLVIMTEST'
   let l:cmd = GetVimCommand() .. ' --servername ' .. l:name
@@ -530,7 +577,15 @@ func Test_wayland_bad_environment()
   call WaitForAssert({-> assert_equal('',
         \ remote_expr(l:name, 'v:wayland_display'))})
 
-  call s:EndRemoteVim(l:name, l:job)
+  eval remote_send(l:name, "\<Esc>:qa!\<CR>")
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(l:job))})
+  finally
+    if job_status(l:job) != 'dead'
+      call assert_report('Vim instance did not exit')
+      call job_stop(l:job, 'kill')
+    endif
+  endtry
 
   let $XDG_RUNTIME_DIR = l:old
 endfunc
@@ -557,11 +612,7 @@ func Test_wayland_lost_selection()
   call assert_equal('regular', getreg('+'))
   call assert_equal('primary', getreg('*'))
 
-endfunc
-
-" Same as above but for the focus stealing method
-func Test_wayland_lost_selection_focus_steal()
-  call s:PreTest()
+  " Test focus stealing
   call s:SetupFocusStealing()
 
   call setreg('+', 'regular')
@@ -585,14 +636,14 @@ func Test_wayland_lost_selection_focus_steal()
   call s:UnsetupFocusStealing()
 endfunc
 
-" Test when there are no supported mime types for the selection
+" Test when there are no supported mime types for the selecftion
 func Test_wayland_no_mime_types_supported()
   call s:PreTest()
 
-  call system('wl-copy tester')
-  call assert_equal('tester', getreg('+'))
+  wlrestore!
 
   call system('wl-copy -t image/png testing')
+
   call assert_equal('', getreg('+'))
   call assert_fails('put +', 'E353:')
 endfunc
@@ -601,17 +652,28 @@ endfunc
 func Test_wayland_handle_large_data()
   call s:PreTest()
 
-  let l:file = tempname()
-  let l:contents = repeat('c', 1000000) " ~ 1 MB
+  call writefile([''], 'data_file', 'D')
+  call writefile([''], 'data_file_cmp', 'D')
+  call system('yes c | head -5000000 > data_file') " ~ 10 MB
+  call system('wl-copy -t TEXT < data_file')
 
-  call writefile([l:contents], l:file, 'b')
-  call system('cat ' .. l:file .. ' | wl-copy -t TEXT')
+  edit data_file_cmp
 
-  call assert_equal(l:contents, getreg('+'))
+  put! +
 
-  call setreg('+', l:contents, 'c')
+  write
 
-  call assert_equal(l:contents, system('wl-paste -n -t TEXT'))
+  call system('truncate -s -1 data_file_cmp') " Remove newline at the end
+  call system('cmp --silent data_file data_file_cmp')
+  call assert_equal(0, v:shell_error)
+
+  call feedkeys('gg0v$G"+yy', 'x')
+  call system('wl-paste -n -t TEXT > data_file')
+
+  call system('cmp --silent data_file data_file_cmp')
+  call assert_equal(0, v:shell_error)
+
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

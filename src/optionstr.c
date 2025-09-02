@@ -3689,7 +3689,7 @@ did_set_wlseat(optset_T *args UNUSED)
 #ifdef FEAT_WAYLAND_CLIPBOARD
     // If there isn't any seat named 'wlseat', then let the Wayland clipboard be
     // unavailable. Ignore errors returned.
-    clip_reset_wayland();
+    wayland_cb_reload();
 #endif
 
     return NULL;
