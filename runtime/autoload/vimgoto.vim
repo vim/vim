@@ -78,7 +78,7 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
 enddef
 
 def HandleRuntimeLine(editcmd: string, curline: string) #{{{2
-    var pat: string = '\s*\%(:\s*\)\=runtime!\=\s\+\zs\S\+\>\ze'
+    var pat: string = '\s*\%(:\s*\)\=ru\%[ntime]!\=\s\+\zs\S\+\>\ze'
     var fname: string = curline->matchstr(pat)
 
     if fname == ''
