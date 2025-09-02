@@ -1315,7 +1315,7 @@ TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				    "ambiguouswidth" (|t_u7|),
 				    "cursorblink" (|t_RC|),
 				    "cursorshape" (|t_RS|),
-				    "da1" (|t_Ms|),
+				    "da1",
 				    "osc",
 				    "version" (|t_RV|)
 				Note that this event may be triggered halfway
