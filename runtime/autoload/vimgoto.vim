@@ -20,7 +20,7 @@ export def Find(editcmd: string) #{{{2
         return
     endif
 
-    if curline =~ '^\s*\%(:\s*\)\=ru\%[ntime]!\=\s'
+    if curline =~ '^\s*\%(:\s*\)\=ru\%[ntime]!\='
         HandleRuntimeLine(editcmd, curline, expand('<cfile>'))
         return
     endif
@@ -83,7 +83,7 @@ def HandleRuntimeLine(editcmd: string, curline: string, cfile: string) #{{{2
 
     if cfile == 'runtime' || cfile =~# $'^{where_pat}$'
         # then the cursor was not on one of the filenames, jump to the first file:
-        var fname_pat: string = $'\s*\%(:\s*\)\=ru\%[ntime]!\=\s\+\%({where_pat}\s\+\)\=\zs\S\+\>\ze'
+        var fname_pat: string = $'\s*\%(:\s*\)\=ru\%[ntime]\%(!\s*\|\s\+\)\%({where_pat}\s\+\)\=\zs\S\+\>\ze'
         fname = curline->matchstr(fname_pat)
     else
         fname = cfile
