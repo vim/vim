@@ -367,6 +367,7 @@ endfunc
 func Test_termdebug_mapping()
   %bw!
   call assert_true(maparg('K', 'n', 0, 1)->empty())
+  call assert_true(maparg('K', 'x', 0, 1)->empty())
   call assert_true(maparg('-', 'n', 0, 1)->empty())
   call assert_true(maparg('+', 'n', 0, 1)->empty())
   Termdebug
@@ -374,6 +375,7 @@ func Test_termdebug_mapping()
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd b
   call assert_false(maparg('K', 'n', 0, 1)->empty())
+  call assert_false(maparg('K', 'x', 0, 1)->empty())
   call assert_false(maparg('-', 'n', 0, 1)->empty())
   call assert_false(maparg('+', 'n', 0, 1)->empty())
   call assert_false(maparg('K', 'n', 0, 1).buffer)
@@ -385,11 +387,13 @@ func Test_termdebug_mapping()
   redraw!
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
   call assert_true(maparg('K', 'n', 0, 1)->empty())
+  call assert_true(maparg('K', 'x', 0, 1)->empty())
   call assert_true(maparg('-', 'n', 0, 1)->empty())
   call assert_true(maparg('+', 'n', 0, 1)->empty())
 
   %bw!
   nnoremap K :echom "K"<cr>
+  xnoremap K :<C-U>echom "VK"<cr>
   nnoremap - :echom "-"<cr>
   nnoremap + :echom "+"<cr>
   Termdebug
@@ -397,9 +401,11 @@ func Test_termdebug_mapping()
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd b
   call assert_false(maparg('K', 'n', 0, 1)->empty())
+  call assert_false(maparg('K', 'x', 0, 1)->empty())
   call assert_false(maparg('-', 'n', 0, 1)->empty())
   call assert_false(maparg('+', 'n', 0, 1)->empty())
   call assert_false(maparg('K', 'n', 0, 1).buffer)
+  call assert_false(maparg('K', 'x', 0, 1).buffer)
   call assert_false(maparg('-', 'n', 0, 1).buffer)
   call assert_false(maparg('+', 'n', 0, 1).buffer)
   call assert_equal(':Evaluate<CR>', maparg('K', 'n', 0, 1).rhs)
@@ -408,12 +414,15 @@ func Test_termdebug_mapping()
   redraw!
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
   call assert_false(maparg('K', 'n', 0, 1)->empty())
+  call assert_false(maparg('K', 'x', 0, 1)->empty())
   call assert_false(maparg('-', 'n', 0, 1)->empty())
   call assert_false(maparg('+', 'n', 0, 1)->empty())
   call assert_false(maparg('K', 'n', 0, 1).buffer)
+  call assert_false(maparg('K', 'x', 0, 1).buffer)
   call assert_false(maparg('-', 'n', 0, 1).buffer)
   call assert_false(maparg('+', 'n', 0, 1).buffer)
   call assert_equal(':echom "K"<cr>', maparg('K', 'n', 0, 1).rhs)
+  call assert_equal(':<C-U>echom "VK"<cr>', maparg('K', 'x', 0, 1).rhs)
 
   %bw!
 

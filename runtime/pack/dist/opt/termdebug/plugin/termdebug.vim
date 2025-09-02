@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2025 Aug 24
+# Last Change: 2025 Sep 02
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -139,6 +139,7 @@ var winbar_winids: list<number>
 var saved_mousemodel: string
 
 var saved_K_map: dict<any>
+var saved_visual_K_map: dict<any>
 var saved_plus_map: dict<any>
 var saved_minus_map: dict<any>
 
@@ -218,6 +219,7 @@ def InitScriptVariables()
   saved_K_map = maparg('K', 'n', false, true)
   saved_plus_map = maparg('+', 'n', false, true)
   saved_minus_map = maparg('-', 'n', false, true)
+  saved_visual_K_map = maparg('K', 'x', false, true)
 
   if has('menu')
     saved_mousemodel = &mousemodel
@@ -1204,6 +1206,9 @@ def InstallCommands()
     if !empty(saved_K_map) && !saved_K_map.buffer || empty(saved_K_map)
       nnoremap K :Evaluate<CR>
     endif
+    if !empty(saved_visual_K_map) && !saved_visual_K_map.buffer || empty(saved_visual_K_map)
+      xnoremap K :Evaluate<CR>
+    endif
   endif
 
   map = true
@@ -1297,6 +1302,12 @@ def DeleteCommands()
     mapset(saved_K_map)
   elseif empty(saved_K_map)
     silent! nunmap K
+  endif
+
+  if !empty(saved_visual_K_map) && !saved_visual_K_map.buffer
+    mapset(saved_visual_K_map)
+  elseif empty(saved_visual_K_map)
+    silent! xunmap K
   endif
 
   if !empty(saved_plus_map) && !saved_plus_map.buffer
