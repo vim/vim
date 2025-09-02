@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.1.  Last change: 2025 Aug 23
+*term.txt*      For Vim version 9.1.  Last change: 2025 Sep 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -643,9 +643,6 @@ Note: Use the <> form if possible
 				|xterm-bracketed-paste|
 		<FocusGained>	Vim window got focus (internal only)
 		<FocusLost>	Vim window lost focus (internal only)
-
-	t_Ms			OSC 52 command format (empty	*t_Ms* *'t_Ms'*
-				if terminal doesn't support it)
 
 Note about t_so and t_mr: When the termcap entry "so" is not present the
 entry for "mr" is used.  And vice versa.  The same is done for "se" and "me".

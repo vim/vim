@@ -1108,7 +1108,6 @@ $quote	eval.txt	/*$quote*
 't_KJ'	term.txt	/*'t_KJ'*
 't_KK'	term.txt	/*'t_KK'*
 't_KL'	term.txt	/*'t_KL'*
-'t_Ms'	term.txt	/*'t_Ms'*
 't_PE'	term.txt	/*'t_PE'*
 't_PS'	term.txt	/*'t_PS'*
 't_RB'	term.txt	/*'t_RB'*
@@ -10610,7 +10609,6 @@ t_KI	term.txt	/*t_KI*
 t_KJ	term.txt	/*t_KJ*
 t_KK	term.txt	/*t_KK*
 t_KL	term.txt	/*t_KL*
-t_Ms	term.txt	/*t_Ms*
 t_PE	term.txt	/*t_PE*
 t_PS	term.txt	/*t_PS*
 t_RB	term.txt	/*t_RB*

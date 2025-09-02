@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Aug 24
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41864,7 +41864,6 @@ Options: ~
 'tabpanelopt'		Optional settings for the |tabpanel|
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
-'t_Ms'			OSC 52 command format
 'winfixbuf'		Keep buffer focused in a window
 'wlseat'		Specify Wayland seat to use for the |wayland| feature
 'wlsteal'		Steal focus to access the |wayland| clipboard
