@@ -2499,12 +2499,10 @@ if test "$with_wayland" = yes; then
       objects/wayland.o"
 
     AS_IF([test "$enable_wayland_fs" = "yes"],
-          [WAYLAND_SRC+=" \
-            auto/wayland/xdg-shell.c \
-            auto/wayland/primary-selection-unstable-v1.c"
-           WAYLAND_OBJ+=" \
-            objects/xdg-shell.o \
-            objects/primary-selection-unstable-v1.o"])
+          [AS_VAR_APPEND([WAYLAND_SRC], " auto/wayland/xdg-shell.c")
+          AS_VAR_APPEND([WAYLAND_SRC], " auto/wayland/primary-selection-unstable-v1.c")
+          AS_VAR_APPEND([WAYLAND_OBJ], " objects/xdg-shell.o")
+          AS_VAR_APPEND([WAYLAND_OBJ], " objects/primary-selection-unstable-v1.o")])
 
     AC_SUBST(WAYLAND_CPPFLAGS)
     AC_SUBST(WAYLAND_CFLAGS)

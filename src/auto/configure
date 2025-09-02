@@ -9326,12 +9326,10 @@ fi
 
     if test "$enable_wayland_fs" = "yes"
 then :
-  WAYLAND_SRC+=" \
-            auto/wayland/xdg-shell.c \
-            auto/wayland/primary-selection-unstable-v1.c"
-           WAYLAND_OBJ+=" \
-            objects/xdg-shell.o \
-            objects/primary-selection-unstable-v1.o"
+  as_fn_append WAYLAND_SRC " auto/wayland/xdg-shell.c"
+          as_fn_append WAYLAND_SRC " auto/wayland/primary-selection-unstable-v1.c"
+          as_fn_append WAYLAND_OBJ " objects/xdg-shell.o"
+          as_fn_append WAYLAND_OBJ " objects/primary-selection-unstable-v1.o"
 fi
 
 
