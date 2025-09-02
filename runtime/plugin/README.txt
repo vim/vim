@@ -3,6 +3,7 @@ The plugin directory is for standard Vim plugin scripts.
 All files here ending in .vim will be sourced by Vim when it starts up.
 Look in the file for hints on how it can be disabled without deleting it.
 
+colorresp.vim	     used to detect terminal background and foreground colours
 getscriptPlugin.vim  get latest version of Vim scripts
 gzip.vim	     edit compressed files
 logiPat.vim	     logical operators on patterns
@@ -15,7 +16,3 @@ tarPlugin.vim	     edit (compressed) tar files
 tohtml.vim	     convert a file with syntax highlighting to HTML
 vimballPlugin.vim    create and unpack .vba files
 zipPlugin.vim	     edit zip archives
-
-Note: the explorer.vim plugin is no longer here, the netrw.vim plugin has
-taken over browsing directories (also for remote directories).
-

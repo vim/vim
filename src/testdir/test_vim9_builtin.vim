@@ -4910,8 +4910,8 @@ def Test_typename()
   if has('channel')
     assert_equal('channel', test_null_channel()->typename())
   endif
-  var l: list<func(list<number>): number> = [function('min')]
-  assert_equal('list<func(list<number>): number>', typename(l))
+  var l: list<func(list<number>): any> = [function('min')]
+  assert_equal('list<func(list<number>): any>', typename(l))
 enddef
 
 def Test_undofile()

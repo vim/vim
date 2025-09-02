@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Aug 16
+" Last Change:	2025 Sep 01
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -632,7 +632,8 @@ if has("win32")
   call <SID>AddOption("restorescreen", gettext("restore the screen contents when exiting Vim"))
   call <SID>BinOptionG("rs", &rs)
 endif
-
+call <SID>AddOption("osctimeoutlen", gettext("timeout used for terminal OSC responses"))
+call <SID>OptionG("ost", &ost)
 
 call <SID>Header(gettext("using the mouse"))
 call <SID>AddOption("mouse", gettext("list of flags for using the mouse"))
@@ -821,7 +822,7 @@ if has('wayland')
   call <SID>AddOption("wlseat", gettext("Wayland seat to use"))
   call <SID>OptionG("wse", &wse)
 endif
-if has("wayland_clipboard")
+if has("wayland_focus_steal")
   call <SID>AddOption("wlsteal", gettext("Enable wayland focus stealing functionality in order to access the clipboard"))
   call <SID>BinOptionG("wst", &wst)
 endif
@@ -876,6 +877,10 @@ if has("insert_expand")
   call <SID>OptionL("cpt")
   call <SID>AddOption("autocomplete", gettext("automatic completion in insert mode"))
   call <SID>BinOptionG("ac", &ac)
+  call <SID>AddOption("autocompletetimeout", gettext("initial decay timeout for 'autocomplete' algorithm"))
+  call append("$", " \tset act=" . &act)
+  call <SID>AddOption("completetimeout", gettext("initial decay timeout for CTRL-N and CTRL-P completion"))
+  call append("$", " \tset cto=" . &cto)
   call <SID>AddOption("autocompletedelay", gettext("delay in msec before menu appears after typing"))
   call append("$", " \tset acl=" . &acl)
   call <SID>AddOption("completeopt", gettext("whether to use a popup menu for Insert mode completion"))

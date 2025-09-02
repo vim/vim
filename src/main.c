@@ -682,15 +682,18 @@ vim_main2(void)
     if (!gui.in_use)
 # endif
     {
-	if (wayland_init_client(wayland_display_name) == OK)
+	sprintf(wayland_vim_special_mime, "application/x-vim-instance-%ld",
+		mch_get_pid());
+
+	if (wayland_init_connection(wayland_display_name) == OK)
 	{
 	    TIME_MSG("connected to Wayland display");
 
 # ifdef FEAT_WAYLAND_CLIPBOARD
-	    if (wayland_cb_init((char*)p_wse) == OK)
+	    if (clip_init_wayland() == OK)
 		TIME_MSG("setup Wayland clipboard");
-	}
 # endif
+	}
     }
 #endif
 
@@ -883,8 +886,6 @@ vim_main2(void)
     // Requesting the termresponse is postponed until here, so that a "-c q"
     // argument doesn't make it appear in the shell Vim was started from.
     may_req_termresponse();
-
-    may_req_bg_color();
 #endif
 
     // start in insert mode

@@ -395,6 +395,9 @@ static struct vimoption options[] =
     {"autocompletedelay", "acl", P_NUM|P_VI_DEF,
 			    (char_u *)&p_acl, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
+    {"autocompletetimeout", "act", P_NUM|P_VI_DEF,
+			    (char_u *)&p_act, PV_NONE, NULL, NULL,
+			    {(char_u *)80L, (char_u *)0L} SCTX_INIT},
 #endif
     {"autoindent",  "ai",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_ai, PV_AI, NULL, NULL,
@@ -634,11 +637,11 @@ static struct vimoption options[] =
 #ifdef FEAT_CLIPBOARD
 			    (char_u *)&p_cpm, PV_NONE, did_set_clipmethod, expand_set_clipmethod,
 # ifdef UNIX
-			    {(char_u *)"wayland,x11", (char_u *)0L}
+			    {(char_u *)"wayland,x11,gui,other", (char_u *)0L}
 # elif defined(VMS)
-			    {(char_u *)"x11", (char_u *)0L}
+			    {(char_u *)"x11,gui,other", (char_u *)0L}
 # else
-			    {(char_u *)"", (char_u *)0L}
+			    {(char_u *)"gui,other", (char_u *)0L}
 # endif
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -723,6 +726,9 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"completetimeout", "cto", P_NUM|P_VI_DEF,
+			    (char_u *)&p_cto, PV_NONE, NULL, NULL,
+			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"concealcursor","cocu", P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF|P_FLAGLIST,
 #ifdef FEAT_CONCEAL
 			    (char_u *)VAR_WIN, PV_COCU, did_set_concealcursor, expand_set_concealcursor,
@@ -1920,6 +1926,9 @@ static struct vimoption options[] =
     {"optimize",    "opt",  P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"osctimeoutlen", "ost", P_NUM|P_VI_DEF,
+			    (char_u *)&p_ost, PV_NONE, did_set_osctimeoutlen, NULL,
+			    {(char_u *)1000, (char_u *)0L} SCTX_INIT},
     {"osfiletype",  "oft",  P_STRING|P_ALLOCED|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
@@ -3000,7 +3009,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"wlsteal",	    "wst",  P_BOOL|P_VI_DEF,
-#ifdef FEAT_WAYLAND_CLIPBOARD
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
 			    (char_u *)&p_wst, PV_NONE, did_set_wlsteal, NULL,
 			    {(char_u *)FALSE, (char_u *)0L}
 #else

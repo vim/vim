@@ -951,31 +951,32 @@ indexof_tuple(tuple_T *tuple, long startidx, typval_T *expr)
 
 /*
  * Return the max or min of the items in tuple "tuple".
- * If a tuple item is not a number, then "error" is set to TRUE.
+ * If an error occurs NULL is returned instead.
  */
-    varnumber_T
-tuple_max_min(tuple_T *tuple, int domax, int *error)
+    typval_T *
+tuple_max_min(tuple_T *tuple, int domax)
 {
-    varnumber_T	n = 0;
-    varnumber_T	v;
+    typval_T	*tv = NULL;
+    int		res;
 
     if (tuple == NULL || TUPLE_LEN(tuple) == 0)
-	return 0;
+	return NULL;
 
-    n = tv_get_number_chk(TUPLE_ITEM(tuple, 0), error);
-    if (*error)
-	return n; // type error; errmsg already given
-
-    for (int idx = 1; idx < TUPLE_LEN(tuple); idx++)
+    for (int idx = 0; idx < TUPLE_LEN(tuple); idx++)
     {
-	v = tv_get_number_chk(TUPLE_ITEM(tuple, idx), error);
-	if (*error)
-	    return n; // type error; errmsg already given
-	if (domax ? v > n : v < n)
-	    n = v;
+	if (tv == NULL)
+	    tv = TUPLE_ITEM(tuple, idx);
+	else
+	{
+	    if (typval_compare2(TUPLE_ITEM(tuple, idx), tv,
+		    domax ? EXPR_GREATER : EXPR_SMALLER, FALSE, &res) == FAIL)
+		return NULL;
+	    if (res == OK)
+		tv = TUPLE_ITEM(tuple, idx);
+	}
     }
 
-    return n;
+    return tv;
 }
 
 /*

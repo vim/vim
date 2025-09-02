@@ -60,9 +60,7 @@
 
 #if defined(FEAT_SPELL) || defined(PROTO)
 
-#ifndef UNIX		// it's in os_unix.h for Unix
-# include <time.h>	// for time_t
-#endif
+#include <time.h>
 
 #define REGION_ALL 0xff		// word valid in all regions
 

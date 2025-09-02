@@ -44,6 +44,7 @@ $quote	eval.txt	/*$quote*
 'ac'	options.txt	/*'ac'*
 'acd'	options.txt	/*'acd'*
 'acl'	options.txt	/*'acl'*
+'act'	options.txt	/*'act'*
 'ai'	options.txt	/*'ai'*
 'akm'	options.txt	/*'akm'*
 'al'	options.txt	/*'al'*
@@ -66,6 +67,7 @@ $quote	eval.txt	/*$quote*
 'autochdir'	options.txt	/*'autochdir'*
 'autocomplete'	options.txt	/*'autocomplete'*
 'autocompletedelay'	options.txt	/*'autocompletedelay'*
+'autocompletetimeout'	options.txt	/*'autocompletetimeout'*
 'autoindent'	options.txt	/*'autoindent'*
 'autoprint'	vi_diff.txt	/*'autoprint'*
 'autoread'	options.txt	/*'autoread'*
@@ -175,6 +177,7 @@ $quote	eval.txt	/*$quote*
 'completeopt'	options.txt	/*'completeopt'*
 'completepopup'	options.txt	/*'completepopup'*
 'completeslash'	options.txt	/*'completeslash'*
+'completetimeout'	options.txt	/*'completetimeout'*
 'concealcursor'	options.txt	/*'concealcursor'*
 'conceallevel'	options.txt	/*'conceallevel'*
 'confirm'	options.txt	/*'confirm'*
@@ -205,6 +208,7 @@ $quote	eval.txt	/*$quote*
 'cst'	options.txt	/*'cst'*
 'csto'	options.txt	/*'csto'*
 'csverb'	options.txt	/*'csverb'*
+'cto'	options.txt	/*'cto'*
 'cuc'	options.txt	/*'cuc'*
 'cul'	options.txt	/*'cul'*
 'culopt'	options.txt	/*'culopt'*
@@ -841,7 +845,9 @@ $quote	eval.txt	/*$quote*
 'opfunc'	options.txt	/*'opfunc'*
 'optimize'	vi_diff.txt	/*'optimize'*
 'option'	intro.txt	/*'option'*
+'osctimeoutlen'	options.txt	/*'osctimeoutlen'*
 'osfiletype'	options.txt	/*'osfiletype'*
+'ost'	options.txt	/*'ost'*
 'pa'	options.txt	/*'pa'*
 'packpath'	options.txt	/*'packpath'*
 'para'	options.txt	/*'para'*
@@ -1536,6 +1542,7 @@ $quote	eval.txt	/*$quote*
 +vtp	various.txt	/*+vtp*
 +wayland	various.txt	/*+wayland*
 +wayland_clipboard	various.txt	/*+wayland_clipboard*
++wayland_focus_steal	various.txt	/*+wayland_focus_steal*
 +wildignore	various.txt	/*+wildignore*
 +wildmenu	various.txt	/*+wildmenu*
 +windows	various.txt	/*+windows*
@@ -4416,6 +4423,7 @@ E1231	map.txt	/*E1231*
 E1232	builtin.txt	/*E1232*
 E1233	builtin.txt	/*E1233*
 E1234	vim9.txt	/*E1234*
+E1235	vim9.txt	/*E1235*
 E1236	vim9.txt	/*E1236*
 E1237	map.txt	/*E1237*
 E1238	vim9.txt	/*E1238*
@@ -4435,6 +4443,7 @@ E125	userfunc.txt	/*E125*
 E1250	vim9.txt	/*E1250*
 E1251	vim9.txt	/*E1251*
 E1252	vim9.txt	/*E1252*
+E1253	vim9.txt	/*E1253*
 E1254	vim9.txt	/*E1254*
 E1255	map.txt	/*E1255*
 E1256	vim9.txt	/*E1256*
@@ -4517,6 +4526,7 @@ E1325	vim9class.txt	/*E1325*
 E1326	vim9class.txt	/*E1326*
 E1327	vim9class.txt	/*E1327*
 E1328	vim9class.txt	/*E1328*
+E1329	vim9class.txt	/*E1329*
 E133	userfunc.txt	/*E133*
 E1330	vim9class.txt	/*E1330*
 E1331	vim9class.txt	/*E1331*
@@ -4598,6 +4608,7 @@ E1400	vim9class.txt	/*E1400*
 E1401	vim9class.txt	/*E1401*
 E1402	vim9class.txt	/*E1402*
 E1403	vim9class.txt	/*E1403*
+E1404	vim9class.txt	/*E1404*
 E1405	vim9class.txt	/*E1405*
 E1406	vim9class.txt	/*E1406*
 E1407	vim9class.txt	/*E1407*
@@ -4622,8 +4633,12 @@ E1423	vim9class.txt	/*E1423*
 E1424	vim9class.txt	/*E1424*
 E1425	vim9class.txt	/*E1425*
 E1426	vim9class.txt	/*E1426*
+E1427	vim9class.txt	/*E1427*
+E1428	vim9class.txt	/*E1428*
 E1429	vim9class.txt	/*E1429*
 E143	autocmd.txt	/*E143*
+E1430	vim9class.txt	/*E1430*
+E1431	vim9class.txt	/*E1431*
 E1432	vim9.txt	/*E1432*
 E1433	vim9.txt	/*E1433*
 E1434	vim9.txt	/*E1434*
@@ -4683,11 +4698,17 @@ E1539	vim9.txt	/*E1539*
 E154	helphelp.txt	/*E154*
 E1540	eval.txt	/*E1540*
 E1541	vi_diff.txt	/*E1541*
+E1542	options.txt	/*E1542*
+E1543	options.txt	/*E1543*
+E1544	options.txt	/*E1544*
+E1545	quickfix.txt	/*E1545*
+E1546	autocmd.txt	/*E1546*
 E1547	various.txt	/*E1547*
 E1548	wayland.txt	/*E1548*
 E1549	options.txt	/*E1549*
 E155	sign.txt	/*E155*
 E1550	options.txt	/*E1550*
+E1551	popup.txt	/*E1551*
 E1552	vim9.txt	/*E1552*
 E1553	vim9.txt	/*E1553*
 E1554	vim9.txt	/*E1554*
@@ -4705,6 +4726,7 @@ E1564	remote.txt	/*E1564*
 E1565	remote.txt	/*E1565*
 E1566	remote.txt	/*E1566*
 E1567	remote.txt	/*E1567*
+E1568	options.txt	/*E1568*
 E157	sign.txt	/*E157*
 E158	sign.txt	/*E158*
 E159	sign.txt	/*E159*
@@ -6206,6 +6228,7 @@ assert_report()	testing.txt	/*assert_report()*
 assert_true()	testing.txt	/*assert_true()*
 assumptions-C-compiler	develop.txt	/*assumptions-C-compiler*
 assumptions-makefiles	develop.txt	/*assumptions-makefiles*
+assumptions-prototypes	develop.txt	/*assumptions-prototypes*
 assumptions-variables	develop.txt	/*assumptions-variables*
 astro.vim	syntax.txt	/*astro.vim*
 asy.vim	syntax.txt	/*asy.vim*
@@ -10872,6 +10895,7 @@ term_setrestore()	terminal.txt	/*term_setrestore()*
 term_setsize()	terminal.txt	/*term_setsize()*
 term_start()	terminal.txt	/*term_start()*
 term_wait()	terminal.txt	/*term_wait()*
+termblinkresp-variable	eval.txt	/*termblinkresp-variable*
 termcap	term.txt	/*termcap*
 termcap-changed	version4.txt	/*termcap-changed*
 termcap-colors	term.txt	/*termcap-colors*
@@ -10879,6 +10903,7 @@ termcap-cursor-color	term.txt	/*termcap-cursor-color*
 termcap-cursor-shape	term.txt	/*termcap-cursor-shape*
 termcap-options	term.txt	/*termcap-options*
 termcap-title	term.txt	/*termcap-title*
+termda1-variable	eval.txt	/*termda1-variable*
 termdebug-commands	terminal.txt	/*termdebug-commands*
 termdebug-communication	terminal.txt	/*termdebug-communication*
 termdebug-customizing	terminal.txt	/*termdebug-customizing*
@@ -10942,7 +10967,12 @@ terminal-window	terminal.txt	/*terminal-window*
 terminal.txt	terminal.txt	/*terminal.txt*
 terminalprops()	builtin.txt	/*terminalprops()*
 terminfo	term.txt	/*terminfo*
+termosc-variable	eval.txt	/*termosc-variable*
+termrbgresp-variable	eval.txt	/*termrbgresp-variable*
 termresponse-variable	eval.txt	/*termresponse-variable*
+termrfgresp-variable	eval.txt	/*termrfgresp-variable*
+termstyleresp-variable	eval.txt	/*termstyleresp-variable*
+termu7resp-variable	eval.txt	/*termu7resp-variable*
 ternary	eval.txt	/*ternary*
 test-functions	usr_41.txt	/*test-functions*
 test-functions-details	testing.txt	/*test-functions-details*
@@ -11262,6 +11292,7 @@ v:t_tuple	eval.txt	/*v:t_tuple*
 v:t_typealias	eval.txt	/*v:t_typealias*
 v:termblinkresp	eval.txt	/*v:termblinkresp*
 v:termda1	eval.txt	/*v:termda1*
+v:termosc	eval.txt	/*v:termosc*
 v:termrbgresp	eval.txt	/*v:termrbgresp*
 v:termresponse	eval.txt	/*v:termresponse*
 v:termrfgresp	eval.txt	/*v:termrfgresp*
@@ -11647,6 +11678,7 @@ wayland-seat	wayland.txt	/*wayland-seat*
 wayland-selections	wayland.txt	/*wayland-selections*
 wayland-useful	wayland.txt	/*wayland-useful*
 wayland.txt	wayland.txt	/*wayland.txt*
+wayland_display-variable	eval.txt	/*wayland_display-variable*
 wdl-syntax	syntax.txt	/*wdl-syntax*
 wdl.vim	syntax.txt	/*wdl.vim*
 white-space	pattern.txt	/*white-space*

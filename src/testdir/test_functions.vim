@@ -133,35 +133,57 @@ func Test_max()
   call assert_equal(0, max([]))
   call assert_equal(2, max([2]))
   call assert_equal(2, max([1, 2]))
+  call assert_equal(3, max([1.0, 2, 3]))
+  call assert_equal(3.0, max([1, 2, 3.0]))
   call assert_equal(2, max([1, 2, v:null]))
+
+  call assert_equal(0, max(()))
+  call assert_equal(2, max((2, )))
+  call assert_equal(2, max((1, 2)))
+  call assert_equal(3, max((1.0, 2, 3)))
+  call assert_equal(3.0, max((1, 2, 3.0)))
+  call assert_equal(2, max((1, 2, v:null)))
 
   call assert_equal(0, max({}))
   call assert_equal(2, max({'a':1, 'b':2}))
+
+  call assert_equal('abz', max(['abc', 'aba', 'abz']))
 
   call assert_fails('call max(1)', 'E712:')
   call assert_fails('call max(v:none)', 'E712:')
 
   " check we only get one error
-  call assert_fails('call max([#{}, [1]])', ['E728:', 'E728:'])
-  call assert_fails('call max(#{a: {}, b: [1]})', ['E728:', 'E728:'])
+  call assert_fails('call max([#{}, [1]])', ['E691:', 'E691:'])
+  call assert_fails('call max(#{a: {}, b: [1]})', ['E691:', 'E691:'])
 endfunc
 
 func Test_min()
   call assert_equal(0, min([]))
   call assert_equal(2, min([2]))
   call assert_equal(1, min([1, 2]))
-  call assert_equal(0, min([1, 2, v:null]))
+  call assert_equal(1, min([1, 2, 3.0]))
+  call assert_equal(1.0, min([1.0, 2]))
+  call assert_equal(v:null, min([1, 2, v:null]))
+
+  call assert_equal(0, min(()))
+  call assert_equal(2, min((2, )))
+  call assert_equal(1, min((1, 2)))
+  call assert_equal(1, min((1, 2, 3.0)))
+  call assert_equal(1.0, min((1.0, 2)))
+  call assert_equal(v:null, min((1, 2, v:null)))
 
   call assert_equal(0, min({}))
   call assert_equal(1, min({'a':1, 'b':2}))
 
+  call assert_equal('aba', min(['abc', 'aba', 'abz']))
+
   call assert_fails('call min(1)', 'E712:')
   call assert_fails('call min(v:none)', 'E712:')
-  call assert_fails('call min([1, {}])', 'E728:')
+  call assert_fails('call min([1, {}])', 'E735:')
 
   " check we only get one error
-  call assert_fails('call min([[1], #{}])', ['E745:', 'E745:'])
-  call assert_fails('call min(#{a: [1], b: #{}})', ['E745:', 'E745:'])
+  call assert_fails('call min([[1], #{}])', ['E691:', 'E691:'])
+  call assert_fails('call min(#{a: [1], b: #{}})', ['E691:', 'E691:'])
 endfunc
 
 func Test_strwidth()
