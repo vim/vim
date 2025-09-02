@@ -50,10 +50,8 @@ export def Find(editcmd: string) #{{{2
         var resolved_path = globpath(&runtimepath, path)
 
         if resolved_path != ''
-            var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
-
             var function_pattern: string = $'^\s*fun\%[ction]!\=\s\+\zs{curfunc}('
-            resolved_path->Open(split, function_pattern)
+            resolved_path->Open(editcmd, function_pattern)
         endif
         return
     endif
@@ -80,7 +78,6 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
             return
         endtry
     else
-        var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
         var files: list<string> = getcompletion($'plugin/{plugin}', 'runtime')
             ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
             ->filter((_, path: string): bool => filereadable(path))
@@ -88,7 +85,7 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
             echo 'Could not find any plugin file for ' .. string(plugin)
             return
         endif
-        files->Open(split)
+        files->Open(editcmd)
     endif
 enddef
 
@@ -104,7 +101,6 @@ def HandleRuntimeLine(editcmd: string, curline: string) #{{{2
             return
         endtry
     else
-        var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
         var file: string = fname
             ->findfile(&rtp)
             ->fnamemodify(':p')
@@ -112,7 +108,7 @@ def HandleRuntimeLine(editcmd: string, curline: string) #{{{2
             echo 'Could not be found in the runtimepath: ' .. string(fname)
             return
         endif
-        file->Open(split)
+        file->Open(editcmd)
     endif
 enddef
 
@@ -128,7 +124,6 @@ def HandleColoLine(editcmd: string, curline: string) #{{{2
             return
         endtry
     else
-        var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
         var files: list<string> = getcompletion($'colors/{colo}', 'runtime')
             ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
             ->filter((_, path: string): bool => filereadable(path))
@@ -136,7 +131,7 @@ def HandleColoLine(editcmd: string, curline: string) #{{{2
             echo 'Could not find any colorscheme file for ' .. string(colo)
             return
         endif
-        files->Open(split)
+        files->Open(editcmd)
     endif
 enddef
 
@@ -188,20 +183,21 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
     execute how_to_split .. ' ' .. filepath
 enddef
 
-def Open(what: any, how: string, search_pattern: string = '') #{{{2
+def Open(target: any, editcmd: string, search_pattern: string = '') #{{{2
+    var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
     var fname: string
     var cmd: string
 
-    if what->typename() == 'list<string>'
-        if what->empty()
+    if target->typename() == 'list<string>'
+        if target->empty()
             return
         endif
-        fname = what[0]
+        fname = target[0]
     else
-        if what->typename() != 'string'
+        if target->typename() != 'string'
             return
         endif
-        fname = what
+        fname = target
     endif
 
     if search_pattern != ''
@@ -209,16 +205,16 @@ def Open(what: any, how: string, search_pattern: string = '') #{{{2
         cmd = $'+silent\ call\ search(''{escaped_pattern}'')'
     endif
 
-    execute $'{how} {cmd} {fname}'
+    execute $'{split} {cmd} {fname}'
 
     if search_pattern == ''
         cursor(1, 1)
     endif
 
     # If there are several files to open, put them into an arglist.
-    if what->typename() == 'list<string>'
-            && what->len() > 1
-        var arglist: list<string> = what
+    if target->typename() == 'list<string>'
+            && target->len() > 1
+        var arglist: list<string> = target
             ->copy()
             ->map((_, f: string) => f->fnameescape())
         execute $'arglocal {arglist->join()}'
