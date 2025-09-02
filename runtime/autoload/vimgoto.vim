@@ -35,14 +35,7 @@ export def Find(editcmd: string) #{{{2
         return
     endif
 
-    var curfunc = ''
-    var saved_iskeyword = &iskeyword
-    try
-        set iskeyword+=#
-        curfunc = expand('<cword>')
-    finally
-        &iskeyword = saved_iskeyword
-    endtry
+    var curfunc = FindCurfunc()
 
     if stridx(curfunc, '#') >= 0
         var parts = split(curfunc, '#')
@@ -71,12 +64,7 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
         ->substitute('^vim-\|\.vim$', '', 'g')
 
     if plugin == ''
-        try
-            execute 'normal! ' .. editcmd .. 'zv'
-        catch
-            Error(v:exception)
-            return
-        endtry
+        Fallback(editcmd)
     else
         var files: list<string> = getcompletion($'plugin/{plugin}', 'runtime')
             ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
@@ -94,12 +82,7 @@ def HandleRuntimeLine(editcmd: string, curline: string) #{{{2
     var fname: string = curline->matchstr(pat)
 
     if fname == ''
-        try
-            execute 'normal! ' .. editcmd .. 'zv'
-        catch
-            Error(v:exception)
-            return
-        endtry
+        Fallback(editcmd)
     else
         var file: string = fname
             ->findfile(&rtp)
@@ -117,12 +100,7 @@ def HandleColoLine(editcmd: string, curline: string) #{{{2
     var colo: string = curline->matchstr(pat)
 
     if colo == ''
-        try
-            execute 'normal! ' .. editcmd .. 'zv'
-        catch
-            Error(v:exception)
-            return
-        endtry
+        Fallback(editcmd)
     else
         var files: list<string> = getcompletion($'colors/{colo}', 'runtime')
             ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
@@ -226,6 +204,28 @@ def Error(msg: string) #{{{2
     echohl ErrorMsg
     echomsg msg
     echohl NONE
+enddef
+
+def Fallback(editcmd: string) #{{{2
+    try
+        execute 'normal! ' .. editcmd .. 'zv'
+    catch
+        Error(v:exception)
+    endtry
+enddef
+
+def FindCurfunc(): string #{{{2
+    var curfunc = ''
+    var saved_iskeyword = &iskeyword
+
+    try
+        set iskeyword+=#
+        curfunc = expand('<cword>')
+    finally
+        &iskeyword = saved_iskeyword
+    endtry
+
+    return curfunc
 enddef
 
 # vim: sw=4 et
