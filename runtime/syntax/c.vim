@@ -289,8 +289,8 @@ if !exists("c_no_ansi") || exists("c_ansi_typedefs")
   syn keyword   cType		clock_t time_t va_list jmp_buf FILE DIR div_t ldiv_t
 endif
 if !exists("c_no_c95") " Amendment 1 to ISO C90
-  syn keyword cType             wint_t mbstate_t wctype_t wctrans_t
-  syn keyword cOperator		and bitor or xor compl bitand and_eq or_eq xor_eq not not_eq
+  syn keyword   cType           wint_t mbstate_t wctype_t wctrans_t
+  syn keyword   cOperator	and bitor or xor compl bitand and_eq or_eq xor_eq not not_eq
 endif
 if !exists("c_no_c99") " ISO C99
   syn keyword	cType		_Bool bool _Complex complex _Imaginary imaginary
