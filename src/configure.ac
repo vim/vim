@@ -86,6 +86,7 @@ AH_TEMPLATE([FEAT_TERMINAL], [Enable terminal feature])
 AH_TEMPLATE([FEAT_TINY], [Enable tiny feature set])
 AH_TEMPLATE([FEAT_XFONTSET], [Enable X fontset support])
 AH_TEMPLATE([FEAT_XIM], [Enable X Input Method support])
+AH_TEMPLATE([FEAT_WAYLAND_CLIPBOARD_FS], [Define if you want focus stealing support with Wayland clipboard])
 AH_TEMPLATE([HAVE_AIX_ACL], [Have AIX ACL support])
 AH_TEMPLATE([HAVE_ATTRIBUTE_UNUSED], [Compiler supports \
 	     __attribute__((unused))])

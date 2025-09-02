@@ -102,6 +102,9 @@
 /* Enable tiny feature set */
 #undef FEAT_TINY
 
+/* Define if you want focus stealing support with Wayland clipboard */
+#undef FEAT_WAYLAND_CLIPBOARD_FS
+
 /* Enable X fontset support */
 #undef FEAT_XFONTSET
 
