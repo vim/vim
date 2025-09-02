@@ -30,6 +30,29 @@ export def Find(editcmd: string) #{{{2
         return
     endif
 
+    var curfunc = ''
+    var saved_iskeyword = &iskeyword
+    try
+        set iskeyword+=#
+        curfunc = expand('<cword>')
+    finally
+        &iskeyword = saved_iskeyword
+    endtry
+
+    if stridx(curfunc, '#') >= 0
+        var parts = split(curfunc, '#')
+        var path = $"autoload/{join(parts[0 : -2], '/')}.vim"
+        var resolved_path = globpath(&runtimepath, path)
+
+        if resolved_path != ''
+            var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
+
+            var function_pattern: string = $'^\s*fun\%[ction]!\=\s\+\zs{curfunc}('
+            resolved_path->Open(split, function_pattern)
+        endif
+        return
+    endif
+
     try
         execute 'normal! ' .. editcmd
     catch
@@ -136,8 +159,10 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
     execute how_to_split .. ' ' .. filepath
 enddef
 
-def Open(what: any, how: string) #{{{2
+def Open(what: any, how: string, search_pattern: string = '') #{{{2
     var fname: string
+    var cmd: string
+
     if what->typename() == 'list<string>'
         if what->empty()
             return
@@ -150,8 +175,16 @@ def Open(what: any, how: string) #{{{2
         fname = what
     endif
 
-    execute $'{how} {fname}'
-    cursor(1, 1)
+    if search_pattern != ''
+        var escaped_pattern = escape(search_pattern, '\#'' ')
+        cmd = $'+silent\ call\ search(''{escaped_pattern}'')'
+    endif
+
+    execute $'{how} {cmd} {fname}'
+
+    if search_pattern == ''
+        cursor(1, 1)
+    endif
 
     # If there are several files to open, put them into an arglist.
     if what->typename() == 'list<string>'
