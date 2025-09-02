@@ -20,7 +20,7 @@ export def Find(editcmd: string) #{{{2
         return
     endif
 
-    if curline =~ '^\s*\%(:\s*\)\=runtime!\=\s'
+    if curline =~ '^\s*\%(:\s*\)\=ru\%[ntime]!\=\s'
         HandleRuntimeLine(editcmd, curline)
         return
     endif
