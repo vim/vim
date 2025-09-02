@@ -185,10 +185,6 @@ def Open(target: any, editcmd: string, search_pattern: string = '') #{{{2
 
     execute $'{split} {cmd} {fname}'
 
-    if search_pattern == ''
-        cursor(1, 1)
-    endif
-
     # If there are several files to open, put them into an arglist.
     if target->typename() == 'list<string>'
             && target->len() > 1
