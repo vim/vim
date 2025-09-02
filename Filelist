@@ -479,8 +479,6 @@ SRC_UNIX =	\
 		src/INSTALL \
 		src/INSTALLx.txt \
 		src/Makefile \
-		src/auto/configure \
-		src/config.h.in \
 		src/config.mk.dist \
 		src/config.mk.in \
 		src/configure \
@@ -500,6 +498,8 @@ SRC_UNIX =	\
 		src/gui_xmebwp.h \
 		src/gui_x11.c \
 		src/gui_x11_pm.h \
+		src/auto/configure \
+		src/auto/config.h.in \
 		src/auto/wayland/README.txt \
 		src/auto/wayland/Makefile \
 		src/auto/wayland/protocols/ext-data-control-v1.xml \

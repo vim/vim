@@ -286,10 +286,10 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      - name: Check autoconf
+      - name: Check bootstrap
         if: contains(matrix.extra, 'unittests')
         run: |
-          make -C src autoconf
+          make -C src bootstrap
 
       - name: Set up shadow dir
         if: matrix.shadow
