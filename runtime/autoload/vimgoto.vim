@@ -5,9 +5,9 @@ vim9script
 #               Shane-XB-Qian
 # Last Change:  2025 Aug 13
 #
-# Vim Script to handle
-# :import, :packadd and :colorscheme
-# lines and allows to easily jump to it using gf
+# Vim Script to handle jumping to the targets of several types of Vim commands
+# (:import, :packadd, :runtime, :colorscheme), and to autoloaded functions of
+# the style <path>#<function_name>.
 #
 # see runtime/ftplugin/vim.vim
 
