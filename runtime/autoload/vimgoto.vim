@@ -20,6 +20,11 @@ export def Find(editcmd: string) #{{{2
         return
     endif
 
+    if curline =~ '^\s*\%(:\s*\)\=runtime!\=\s'
+        HandleRuntimeLine(editcmd, curline)
+        return
+    endif
+
     if curline =~ '^\s*\%(:\s*\)\=colo\%[rscheme]\s'
         HandleColoLine(editcmd, curline)
         return
@@ -84,6 +89,30 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
             return
         endif
         files->Open(split)
+    endif
+enddef
+
+def HandleRuntimeLine(editcmd: string, curline: string) #{{{2
+    var pat: string = '\s*\%(:\s*\)\=runtime!\=\s\+\zs\S\+\>\ze'
+    var fname: string = curline->matchstr(pat)
+
+    if fname == ''
+        try
+            execute 'normal! ' .. editcmd .. 'zv'
+        catch
+            Error(v:exception)
+            return
+        endtry
+    else
+        var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
+        var file: string = fname
+            ->findfile(&rtp)
+            ->fnamemodify(':p')
+        if file == '' || !filereadable(file)
+            echo 'Could not be found in the runtimepath: ' .. string(fname)
+            return
+        endif
+        file->Open(split)
     endif
 enddef
 
