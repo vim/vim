@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2025 Sep 02
+*develop.txt*   For Vim version 9.1.  Last change: 2025 Sep 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -740,17 +740,20 @@ development release cycle may last several years and accumulate about 1500 -
 2500 patch numbers.
 
 Before a release is made, a stability period will be announced. During this
-time, only clear bug fixes, security fixes, documentation changes and
-translation updates and security fixes will be accepted, concentrating on
-polishing up the upcoming release.
+time, only clear bug fixes, security fixes, documentation changes, translation
+updates and runtime file updates will be accepted (provided they do not
+introduce backwards-incompatible changes), concentrating on polishing up the
+upcoming release.
 
 New features are accepted only within a development cycle, but not within the
-stability period. During the cycle, new features may be developed and are
+stability period.  During the cycle, new features may be developed and are
 allowed to change, but they must be settled before the cycle closes.
 
 Once a minor release has been made, features included in that release must not
-receive any backwards-incompatible changes. Later patches are expected to
-preserve compatibility.
+receive any backwards-incompatible changes.  Later patches are expected to
+preserve compatibility for the C core of Vim.  Runtime files are handled a bit
+more flexibly to give runtime files maintainers a chance to change old
+behaviour.
 
 Within a development cycle, features may be marked as deprecated. Deprecated
 features can be disabled at compile time through an appropriate switch. After
