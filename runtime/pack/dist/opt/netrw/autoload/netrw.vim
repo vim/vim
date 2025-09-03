@@ -4062,6 +4062,12 @@ function s:NetrwBrowseChgDir(islocal, newdir, cursor, ...)
     call s:RestorePosn(s:netrw_posn)
     let @@= ykeep
 
+    if dirname !~ dirpat
+        " apparently vim is "recognizing" that it is in a directory and
+        " is removing the trailing "/".  Bad idea, so let's put it back.
+        let dirname .= has("win32") ? '\\' : '/'
+    endif
+
     return dirname
 endfunction
 
