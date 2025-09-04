@@ -1,6 +1,6 @@
 /* terminal.c */
 void init_job_options(jobopt_T *opt);
-buf_T *term_start(typval_T *argvar, char **argv, jobopt_T *opt, int flags);
+buf_T *term_start(typval_T *argvar, char **argv, jobopt_T *opt, int flags, char_u *pattern);
 void ex_terminal(exarg_T *eap);
 int expand_terminal_opt(char_u *pat, expand_T *xp, regmatch_T *rmp, char_u ***matches, int *numMatches);
 int term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs);
@@ -67,6 +67,7 @@ void f_term_setapi(typval_T *argvars, typval_T *rettv);
 void f_term_setrestore(typval_T *argvars, typval_T *rettv);
 void f_term_setkill(typval_T *argvars, typval_T *rettv);
 void f_term_start(typval_T *argvars, typval_T *rettv);
+void term_wait(buf_T *buf, long wait);
 void f_term_wait(typval_T *argvars, typval_T *rettv);
 void term_send_eof(channel_T *ch);
 job_T *term_getjob(term_T *term);

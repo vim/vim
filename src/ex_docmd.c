@@ -5019,6 +5019,28 @@ replace_makeprg(exarg_T *eap, char_u *p, char_u **cmdlinep)
 
 	p = skipwhite(p);
 
+	// Check for ++term and ++hidden arguments for :make/:lmake
+	while (p[0] == '+' && p[1] == '+')
+	{
+	    char_u *ep;
+
+	    p += 2;
+	    ep = vim_strchr(p, '=');
+
+	    if (STRNCMP(p, "term", 4) == 0)
+		eap->make_info.use_term = TRUE;
+	    else if (STRNCMP(p, "hidden", 6) == 0)
+		eap->make_info.term_hidden = TRUE;
+	    else if (STRNCMP(p, "rows", 4) == 0 && ep != NULL
+		    && SAFE_isdigit(ep[1]))
+		eap->make_info.rows = atoi((char *)ep + 1);
+	    else if (STRNCMP(p, "cols", 4) == 0 && ep != NULL
+		    && SAFE_isdigit(ep[1]))
+		eap->make_info.cols = atoi((char *)ep + 1);
+
+	    p = skipwhite(skiptowhite(p));
+	}
+
 	if ((pos = (char_u *)strstr((char *)program, "$*")) != NULL)
 	{
 	    // replace $* by given arguments

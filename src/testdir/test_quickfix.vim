@@ -6958,4 +6958,13 @@ func Test_vimgrep_dummy_buffer_keep()
   %bw!
 endfunc
 
+" Test if :make with ++term option works correctly
+func Test_terminal_make()
+  set makeprg=
+
+
+
+  set makeprg&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -162,6 +162,17 @@ typedef struct qf_delq_S
 } qf_delq_T;
 static qf_delq_T *qf_delq_head = NULL;
 
+// Contains info for current make command running in the terminal
+typedef struct {
+    bool	running;
+    bool	jump_to_first;
+    cmdidx_T	cmdidx;
+    char_u	*cmd;
+    win_T	*wp;
+    buf_T	*buf;
+    bufref_T	bufref; // Buffer :make was called in
+} qf_make_info;
+
 // Counter to prevent autocmds from freeing up location lists when they are
 // still being used.
 static int	quickfix_busy = 0;
@@ -5440,6 +5451,112 @@ make_get_fullcmd(char_u *makecmd, char_u *fname)
     return cmd;
 }
 
+#ifdef FEAT_TERMINAL
+
+static qf_make_info make_info;
+
+    static void
+make_command_exit_cb(typval_T *args UNUSED, typval_T *rettv UNUSED)
+{
+    char_u	*au_name;
+    int		res;
+    int_u	save_qfid;
+    qf_info_T	*qi = ql_info;
+    win_T	*wp = NULL;
+
+    if (!make_info.running)
+	return;
+
+    if (make_info.cmdidx == CMD_lmake)
+    {
+	// Check if window is still valid
+	if (!win_valid_any_tab(make_info.wp))
+	    goto exit;
+
+	qi = ll_get_or_alloc_list(make_info.wp);
+	wp = make_info.wp;
+    }
+    if (qi == NULL)
+	goto exit;
+
+    // Wait for terminal to finish
+    term_wait(make_info.buf, -1);
+
+    incr_quickfix_busy();
+
+    // Create quickfix/location list from terminal buffer
+    res = qf_init_ext(qi, qi->qf_curlist, NULL, make_info.buf, NULL, p_efm,
+	    TRUE, 1, make_info.buf->b_ml.ml_line_count, make_info.cmd, NULL);
+
+    if (qf_stack_empty(qi))
+    {
+	decr_quickfix_busy();
+	goto exit;
+    }
+    if (res >= 0)
+	qf_list_changed(qf_get_curlist(qi));
+
+    au_name = make_get_auname(make_info.cmdidx);
+
+    // Remember the current quickfix list identifier, so that we can
+    // check for autocommands changing the current quickfix list.
+    save_qfid = qf_get_curlist(qi)->qf_id;
+
+    if (au_name != NULL && bufref_valid(&make_info.bufref))
+	// Call autocmd in context of buffer that :make was called in
+	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+		make_info.bufref.br_buf->b_fname, TRUE, make_info.bufref.br_buf);
+
+    // Jump to first error if there are any and user didn't specify not to
+    if (res > 0 && make_info.jump_to_first && qflist_valid(wp, save_qfid))
+	qf_jump_first(qi, save_qfid, FALSE);
+
+    decr_quickfix_busy();
+exit:
+    make_info.running = false;
+    vim_free(make_info.cmd);
+}
+
+    static void
+run_make_in_terminal(exarg_T *eap)
+{
+    typval_T	argvar[2];
+    jobopt_T    opt;
+
+    init_job_options(&opt);
+
+    argvar[0].v_type = VAR_STRING;
+    argvar[0].vval.v_string = eap->arg;
+    argvar[1].v_type = VAR_UNKNOWN;
+
+    opt.jo_hidden = eap->make_info.term_hidden;
+    if (eap->make_info.rows > 0)
+    {
+	opt.jo_term_rows = eap->make_info.rows;
+	opt.jo_set2 |= JO2_TERM_ROWS;
+    }
+    if (eap->make_info.cols > 0)
+    {
+	opt.jo_term_cols = eap->make_info.cols;
+	opt.jo_set2 |= JO2_TERM_COLS;
+    }
+
+    opt.jo_exit_cb = create_callback(make_command_exit_cb);
+    opt.jo_set |= JO_EXIT_CB;
+
+    make_info.running = true;
+    make_info.cmdidx = eap->cmdidx;
+    make_info.cmd = vim_strsave(eap->arg);
+    make_info.jump_to_first = !eap->forceit;
+    make_info.wp = curwin;
+
+    set_bufref(&make_info.bufref, curbuf);
+
+    make_info.buf = term_start(argvar, NULL, &opt, 0, make_get_auname(eap->cmdidx));
+}
+
+# endif
+
 /*
  * Used for ":make", ":lmake", ":grep", ":lgrep", ":grepadd", and ":lgrepadd"
  */
@@ -5457,6 +5574,15 @@ ex_make(exarg_T *eap)
     char_u	*errorformat = p_efm;
     int		newlist = TRUE;
 
+#ifdef FEAT_TERMINAL
+    if (eap->cmdidx == CMD_make || eap->cmdidx == CMD_lmake)
+	if (make_info.running)
+	{
+	    emsg(_(e_already_running_make_command));
+	    return;
+	}
+#endif
+
     // Redirect ":grep" to ":vimgrep" if 'grepprg' is "internal".
     if (grep_internal(eap->cmdidx))
     {
@@ -5473,6 +5599,15 @@ ex_make(exarg_T *eap)
 	    return;
 #endif
     }
+
+#ifdef FEAT_TERMINAL
+    if (eap->make_info.use_term)
+    {
+	run_make_in_terminal(eap);
+	return;
+    }
+#endif
+
     enc = (*curbuf->b_p_menc != NUL) ? curbuf->b_p_menc : p_menc;
 
     if (is_loclist_cmd(eap->cmdidx))
