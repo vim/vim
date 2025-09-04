@@ -88,7 +88,7 @@ endfunction
 
 function netrw#fs#Dirname(path)
     " Keep a slash as directory recognition pattern
-    return (a:path !~ s:slash . '$') ? a:path . s:slash : a:path
+    return netrw#fs#AbsPath(a:path) . s:slash
 endfunction
 
 " }}}
