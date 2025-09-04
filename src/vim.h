@@ -3000,6 +3000,7 @@ long elapsed(DWORD start_tick);
 #define TERM_START_NOJOB	1
 #define TERM_START_FORCEIT	2
 #define TERM_START_SYSTEM	4
+#define TERM_MAKE_COMMAND	8
 
 // Used for icon/title save and restore.
 #define SAVE_RESTORE_TITLE	1
