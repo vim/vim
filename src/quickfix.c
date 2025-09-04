@@ -5440,6 +5440,60 @@ make_get_fullcmd(char_u *makecmd, char_u *fname)
     return cmd;
 }
 
+#ifdef FEAT_TERMINAL
+
+// If we are in the middle of running a :make/:lmake command
+static bool running_make = false;
+
+    static void
+make_command_callback(job_T *ch, char_u *msg)
+{
+}
+
+    static void
+make_command_exit_cb(job_T *job, int status)
+{
+}
+
+/*
+ * Returns OK if ++term was passed, else FAIL.
+ */
+static int
+run_make_in_terminal(exarg_T *eap)
+{
+    typval_T argvar[2];
+    jobopt_T opt;
+
+    init_job_options(&opt);
+
+    argvar[0].v_type = VAR_STRING;
+    argvar[0].vval.v_string = eap->arg;
+    argvar[1].v_type = VAR_UNKNOWN;
+
+    opt.jo_hidden = eap->make_info.term_hidden;
+    if (eap->make_info.rows > 0)
+    {
+        opt.jo_term_rows = eap->make_info.rows;
+        opt.jo_set2 |= JO2_TERM_ROWS;
+    }
+    if (eap->make_info.cols > 0)
+    {
+        opt.jo_term_cols = eap->make_info.cols;
+        opt.jo_set2 |= JO2_TERM_COLS;
+    }
+
+    opt.jo_term_callback = make_command_callback;
+    opt.jo_term_exit_cb = make_command_exit_cb;
+
+    term_start(argvar, NULL, &opt, 0);
+
+    running_make = true;
+
+    return OK;
+}
+
+# endif
+
 /*
  * Used for ":make", ":lmake", ":grep", ":lgrep", ":grepadd", and ":lgrepadd"
  */
@@ -5457,6 +5511,15 @@ ex_make(exarg_T *eap)
     char_u	*errorformat = p_efm;
     int		newlist = TRUE;
 
+#ifdef FEAT_TERMINAL
+    if (eap->cmdidx == CMD_make || eap->cmdidx == CMD_lmake)
+	if (running_make)
+	{
+	    emsg(_(e_already_running_make_command));
+	    return;
+	}
+#endif
+    
     // Redirect ":grep" to ":vimgrep" if 'grepprg' is "internal".
     if (grep_internal(eap->cmdidx))
     {
@@ -5473,6 +5536,15 @@ ex_make(exarg_T *eap)
 	    return;
 #endif
     }
+
+#ifdef FEAT_TERMINAL
+    if (eap->make_info.use_term)
+    {
+	run_make_in_terminal(eap);
+	return;
+    }
+#endif
+
     enc = (*curbuf->b_p_menc != NUL) ? curbuf->b_p_menc : p_menc;
 
     if (is_loclist_cmd(eap->cmdidx))
