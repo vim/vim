@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Jul 24
+*vim9class.txt*	For Vim version 9.1.  Last change: 2025 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -282,7 +282,7 @@ name.
 
 3.  Class Variables and Methods			*Vim9-class-member*
 
-					    *:static* *E1337* *E1338* *E1368*
+				    *:static* *E1329* *E1337* *E1338* *E1368*
 Class members are declared with "static".  They are used by the name without a
 prefix in the class where they are defined: >
 
@@ -515,11 +515,17 @@ prefix when defining the method: >
 <
 A static method in an abstract class cannot be an abstract method.
 
+						*E1404*
+An interface method cannot be an abstract method.
+
 						*E1373*
 A non-abstract class extending the abstract class must implement all the
 abstract methods.  The signature (arguments, argument types and return type)
 must be exactly the same.  If the return type of a method is a class, then
 that class or one of its subclasses can be used in the extended method.
+
+						*E1431*
+An abstract method in an abstract super class cannot be invoked.
 
 ==============================================================================
 
@@ -637,6 +643,7 @@ object variable name used in a super class cannot be reused in a child class.
 
 Object Variable Initialization ~
 
+							*E1430*
 If the type of a variable is not explicitly specified in a class, then it is
 set to "any" during class definition.  When an object is instantiated from the
 class, then the type of the variable is set.
@@ -959,10 +966,10 @@ An enum is a type that can have one of a list of values.  Example: >
 	Green, Blue, Black
     endenum
 <
-						*enumvalue* *E1422*
+						*enumvalue* *E1422* *E1428*
 The enum values are separated by commas.  More than one enum value can be
 listed in a single line.  The final enum value should not be followed by a
-comma.
+comma.  Duplicate enum values are not allowed.
 
 An enum value is accessed using the enum name followed by the value name: >
 
@@ -1021,7 +1028,7 @@ The following example shows an enum with object variables and methods: >
 Enums and their values are immutable.  They cannot be utilized as numerical or
 string types.  Enum values can declare mutable instance variables.
 
-						*enum-name*
+						*enum-name* *E1427*
 Each enum value object has a "name" instance variable which contains the name
 of the enum value.  This is a readonly variable.
 

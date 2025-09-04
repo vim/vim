@@ -116,6 +116,7 @@ let test_values = {
       \ 'winminwidth': [[0, 1, 10], [-1]],
       \ 'winwidth': [[1, 10, 999], [-1, 0]],
       \ 'wltimeoutlen': [[1, 10, 999],[-1]],
+      \ 'osctimeoutlen': [[0, 1, 8, 9999], [-1]],
       \
       "\ string options
       \ 'ambiwidth': [['', 'single', 'double'], ['xxx']],

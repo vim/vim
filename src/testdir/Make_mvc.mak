@@ -2,6 +2,10 @@
 # Makefile to run all tests for Vim, on Dos-like machines.
 #
 # Requires a set of Unix tools: echo, diff, etc.
+#
+
+# included common tools
+!INCLUDE ..\auto\nmake\tools.mak
 
 # Testing may be done with a debug build 
 !IF EXIST(..\\vimd.exe) && !EXIST(..\\vim.exe)
@@ -10,10 +14,11 @@ VIMPROG = ..\\vimd.exe
 VIMPROG = ..\\vim.exe
 !ENDIF
 
+DIFF = diff.exe
 
 default: nongui
 
-!include Make_all.mak
+!INCLUDE .\Make_all.mak
 
 # Explicit dependencies.
 test_options_all.res: opt_test.vim
@@ -37,59 +42,59 @@ tiny:	nolog tinytests report
 benchmark: $(SCRIPTS_BENCH)
 
 report:
-	@rem without the +eval feature test_result.log is a copy of test.log
-	@if exist test.log ( copy /y test.log test_result.log > nul ) \
+	@ rem without the +eval feature test_result.log is a copy of test.log
+	@ if exist test.log ( $(CP) test.log test_result.log > nul ) \
 		else ( echo No failures reported > test_result.log )
 	$(VIMPROG) -u NONE $(COMMON_ARGS) -S util\summarize.vim messages
-	-if exist starttime del starttime
-	@echo:
-	@echo Test results:
-	@cmd /c type test_result.log
-	@if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
+	- if exist starttime $(RM) starttime
+	@ echo:
+	@ echo Test results:
+	@ $(CMD) /C type test_result.log
+	@ if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
 		else ( echo ALL DONE )
 
 
 # Execute an individual new style test, e.g.:
 # 	nmake -f Make_mvc.mak test_largefile
 $(NEW_TESTS):
-	-if exist $@.res del $@.res
-	-if exist test.log del test.log
-	-if exist messages del messages
-	-if exist starttime del starttime
-	@$(MAKE) -nologo -f Make_mvc.mak VIMPROG=$(VIMPROG) $@.res
-	@type messages
-	@if exist test.log exit 1
+	- if exist $@.res $(RM) $@.res
+	- if exist test.log $(RM) test.log
+	- if exist messages $(RM) messages
+	- if exist starttime $(RM) starttime
+	@ $(MAKE) -lf Make_mvc.mak VIMPROG=$(VIMPROG) $@.res
+	@ type messages
+	@ if exist test.log exit 1
 
 
 # Delete files that may interfere with running tests.  This includes some files
 # that may result from working on the tests, not only from running them.
 clean:
-	-if exist *.out del *.out
-	-if exist *.failed del *.failed
-	-if exist *.res del *.res
-	-if exist $(DOSTMP) rd /s /q $(DOSTMP)
-	-if exist test.in del test.in
-	-if exist test.ok del test.ok
-	-if exist Xdir1 rd /s /q Xdir1
-	-if exist Xfind rd /s /q Xfind
-	-if exist XfakeHOME rd /s /q XfakeHOME
-	-if exist X* del X*
-	-for /d %i in (X*) do @rd /s/q %i
-	-if exist viminfo del viminfo
-	-if exist test.log del test.log
-	-if exist test_result.log del test_result.log
-	-if exist messages del messages
-	-if exist starttime del starttime
-	-if exist benchmark.out del benchmark.out
-	-if exist opt_test.vim del opt_test.vim
-	-if exist guidialog del guidialog
-	-if exist guidialogfile del guidialogfile
+	- if exist *.out $(RM) *.out
+	- if exist *.failed $(RM) *.failed
+	- if exist *.res $(RM) *.res
+	- if exist $(DOSTMP) $(RD) $(DOSTMP)
+	- if exist test.in $(RM) test.in
+	- if exist test.ok $(RM) test.ok
+	- if exist Xdir1 $(RD) Xdir1
+	- if exist Xfind $(RD) Xfind
+	- if exist XfakeHOME $(RD) XfakeHOME
+	- if exist X* $(RM) X*
+	- for /d %i in (X*) do @$(RD) %i
+	- if exist viminfo $(RM) viminfo
+	- if exist test.log $(RM) test.log
+	- if exist test_result.log $(RM) test_result.log
+	- if exist messages $(RM) messages
+	- if exist starttime $(RM) starttime
+	- if exist benchmark.out $(RM) benchmark.out
+	- if exist opt_test.vim $(RM) opt_test.vim
+	- if exist guidialog $(RM) guidialog
+	- if exist guidialogfile $(RM) guidialogfile
 
 nolog:
-	-if exist test.log del test.log
-	-if exist test_result.log del test_result.log
-	-if exist messages del messages
-	-if exist starttime del starttime
+	- if exist test.log $(RM) test.log
+	- if exist test_result.log $(RM) test_result.log
+	- if exist messages $(RM) messages
+	- if exist starttime $(RM) starttime
 
 
 # Tiny tests.  Works even without the +eval feature.
@@ -97,34 +102,34 @@ tinytests: $(SCRIPTS_TINY_OUT)
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP_INFILES): $(*B).in
-	if not exist $(DOSTMP)\NUL md $(DOSTMP)
-	if exist $@ del $@
+	if not exist $(DOSTMP)\NUL $(MKD) $(DOSTMP)
+	if exist $@ $(RM) $@
 	$(VIMPROG) -u util\dos.vim $(COMMON_ARGS) "+set ff=dos|f $@|wq" $(*B).in
 
 # For each input file dostmp/test99.in run the tests.
 # This moves test99.in to test99.in.bak temporarily.
 $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
-	-@if exist test.out DEL test.out
-	-@if exist $(DOSTMP)\$(*B).out DEL $(DOSTMP)\$(*B).out
-	move $(*B).in $(*B).in.bak > nul
-	copy $(DOSTMP)\$(*B).in $(*B).in > nul
-	copy $(*B).ok test.ok > nul
+	-@ if exist test.out $(RM) test.out
+	-@ if exist $(DOSTMP)\$(*B).out $(RM) $(DOSTMP)\$(*B).out
+	$(MV) $(*B).in $(*B).in.bak > nul
+	$(CP) $(DOSTMP)\$(*B).in $(*B).in > nul
+	$(CP) $(*B).ok test.ok > nul
 	$(VIMPROG) -u util\dos.vim $(COMMON_ARGS) -s dotest.in $(*B).in
-	-@if exist test.out MOVE /y test.out $(DOSTMP)\$(*B).out > nul
-	-@if exist $(*B).in.bak move /y $(*B).in.bak $(*B).in > nul
-	-@if exist test.ok del test.ok
-	-@if exist Xdir1 rd /s /q Xdir1
-	-@if exist Xfind rd /s /q Xfind
-	-@if exist XfakeHOME rd /s /q XfakeHOME
-	-@del X*
-	-@if exist viminfo del viminfo
+	-@ if exist test.out $(MV) test.out $(DOSTMP)\$(*B).out > nul
+	-@ if exist $(*B).in.bak $(MV) $(*B).in.bak $(*B).in > nul
+	-@ if exist test.ok $(RM) test.ok
+	-@ if exist Xdir1 $(RD) Xdir1
+	-@ if exist Xfind $(RD) Xfind
+	-@ if exist XfakeHOME $(RD) XfakeHOME
+	-@ $(RM) X*
+	-@ if exist viminfo $(RM) viminfo
 	$(VIMPROG) -u util\dos.vim $(COMMON_ARGS) "+set ff=unix|f test.out|wq" \
 		$(DOSTMP)\$(*B).out
-	@diff test.out $*.ok & if errorlevel 1 \
-		( move /y test.out $*.failed > nul \
-		 & del $(DOSTMP)\$(*B).out \
+	@ $(DIFF) test.out $*.ok & if errorlevel 1 \
+		( $(MV) test.out $*.failed > nul \
+		 & $(RM) $(DOSTMP)\$(*B).out \
 		 & echo $* FAILED >> test.log ) \
-		else ( move /y test.out $*.out > nul )
+		else ( $(MV) test.out $*.out > nul )
 
 
 # New style of tests uses Vim script with assert calls.  These are easier
@@ -132,32 +137,36 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 # Limitation: Only works with the +eval feature.
 
 newtests: newtestssilent
-	@if exist messages type messages
+	@ if exist messages type messages
 
 newtestssilent: $(NEW_TESTS_RES)
 
 .vim.res:
-	@echo $(VIMPROG) > vimcmd
+	@ echo $(VIMPROG) > vimcmd
 	$(VIMPROG) -u NONE $(COMMON_ARGS) -S runtest.vim $*.vim
-	@del vimcmd
+	@ $(RM) vimcmd
 
 test_gui.res: test_gui.vim
-	@echo $(VIMPROG) > vimcmd
+	@ echo $(VIMPROG) > vimcmd
 	$(VIMPROG) -u NONE $(COMMON_ARGS) -S runtest.vim $*.vim
-	@del vimcmd
+	@ $(RM) vimcmd
 
 test_gui_init.res: test_gui_init.vim
-	@echo $(VIMPROG) > vimcmd
-	$(VIMPROG) -u util\gui_preinit.vim -U util\gui_init.vim $(NO_PLUGINS) -S runtest.vim $*.vim
-	@del vimcmd
+	@ echo $(VIMPROG) > vimcmd
+	$(VIMPROG) -u util\gui_preinit.vim -U util\gui_init.vim $(NO_PLUGINS) \
+		-S runtest.vim $*.vim
+	@ $(RM) vimcmd
 
-opt_test.vim: util/gen_opt_test.vim ../optiondefs.h ../../runtime/doc/options.txt
+opt_test.vim: util/gen_opt_test.vim ../optiondefs.h \
+		../../runtime/doc/options.txt
 	$(VIMPROG) -e -s -u NONE $(COMMON_ARGS) --nofork -S $**
-	@if exist test.log ( type test.log & exit /b 1 )
+	@ if exist test.log ( type test.log & exit /b 1 )
 
 test_bench_regexp.res: test_bench_regexp.vim
-	-if exist benchmark.out del benchmark.out
-	@echo $(VIMPROG) > vimcmd
+	- if exist benchmark.out $(RM) benchmark.out
+	@ echo $(VIMPROG) > vimcmd
 	$(VIMPROG) -u NONE $(COMMON_ARGS) -S runtest.vim $*.vim
-	@del vimcmd
-	@IF EXIST benchmark.out ( type benchmark.out )
+	@ $(RM) vimcmd
+	@ if exist benchmark.out ( type benchmark.out )
+
+# vim: set noet sw=8 ts=8 sts=0 wm=0 tw=79 ft=make:

@@ -17,7 +17,7 @@ retries = 2
 retry_wait_time = 2
 
 # Timeout per request in seconds
-timeout = 20
+timeout = 60
 
 #############################  Exclusions  ##########################
 

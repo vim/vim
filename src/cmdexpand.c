@@ -58,7 +58,6 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
     case EXPAND_FILES_IN_PATH:
     case EXPAND_FILETYPE:
     case EXPAND_FILETYPECMD:
-    case EXPAND_FINDFUNC:
     case EXPAND_HELP:
     case EXPAND_KEYMAP:
     case EXPAND_OLD_SETTING:
@@ -71,7 +70,6 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
     case EXPAND_SHELLCMDLINE:
     case EXPAND_TAGS:
     case EXPAND_TAGS_LISTFILES:
-    case EXPAND_USER_LIST:
 	return FALSE;
 
     default:
@@ -239,6 +237,8 @@ nextwild(
     int		i;
     char_u	*p;
     int		from_wildtrigger_func = options & WILD_FUNC_TRIGGER;
+    int		wild_navigate = (type == WILD_NEXT || type == WILD_PREV
+	    || type == WILD_PAGEUP || type == WILD_PAGEDOWN);
 
     if (xp->xp_numfiles == -1)
     {
@@ -280,14 +280,13 @@ nextwild(
 
     // If cmd_silent is set then don't show the dots, because redrawcmd() below
     // won't remove them.
-    if (!cmd_silent && !from_wildtrigger_func)
+    if (!cmd_silent && !from_wildtrigger_func && !wild_navigate)
     {
 	msg_puts("...");	    // show that we are busy
 	out_flush();
     }
 
-    if (type == WILD_NEXT || type == WILD_PREV
-	    || type == WILD_PAGEUP || type == WILD_PAGEDOWN)
+    if (wild_navigate)
     {
 	// Get next/previous match for a previous expanded pattern.
 	p = ExpandOne(xp, NULL, NULL, 0, type);
@@ -310,8 +309,6 @@ nextwild(
 	{
 	    int use_options = options |
 		    WILD_HOME_REPLACE|WILD_ADD_SLASH|WILD_SILENT;
-	    if (use_options & WILD_KEEP_SOLE_ITEM)
-		use_options &= ~WILD_KEEP_SOLE_ITEM;
 	    if (escape)
 		use_options |= WILD_ESCAPE;
 	    if (p_wic)
@@ -338,7 +335,14 @@ nextwild(
 	}
     }
 
-    if (p != NULL && !got_int)
+    // Save cmdline before inserting selected item
+    if (!wild_navigate && ccline->cmdbuff != NULL)
+    {
+	vim_free(cmdline_orig);
+	cmdline_orig = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
+    }
+
+    if (p != NULL && !got_int && !(options & WILD_NOSELECT))
     {
 	size_t	plen = STRLEN(p);
 	int	difflen;
@@ -372,7 +376,8 @@ nextwild(
 
     if (xp->xp_numfiles <= 0 && p == NULL)
 	beep_flush();
-    else if (xp->xp_numfiles == 1 && !(options & WILD_KEEP_SOLE_ITEM))
+    else if (xp->xp_numfiles == 1 && !(options & WILD_NOSELECT)
+	    && !wild_navigate)
 	// free expanded pattern
 	(void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
 
@@ -382,8 +387,7 @@ nextwild(
 }
 
 /*
- * Create and display a cmdline completion popup menu with items from
- * 'matches'.
+ * Create completion popup menu with items from 'matches'.
  */
     static int
 cmdline_pum_create(
@@ -393,8 +397,7 @@ cmdline_pum_create(
 	int		numMatches,
 	int		showtail)
 {
-    int		i;
-    int		prefix_len;
+    int	prefix_len;
 
     // Add all the completion matches
     compl_match_array = ALLOC_MULT(pumitem_T, numMatches);
@@ -402,7 +405,7 @@ cmdline_pum_create(
 	return EXPAND_UNSUCCESSFUL;
 
     compl_match_arraysize = numMatches;
-    for (i = 0; i < numMatches; i++)
+    for (int i = 0; i < numMatches; i++)
     {
 	compl_match_array[i].pum_text = SHOW_MATCH(i);
 	compl_match_array[i].pum_info = NULL;
@@ -419,12 +422,6 @@ cmdline_pum_create(
 	prefix_len += vim_strsize(showmatches_gettail(matches[0]))
 	    - vim_strsize(matches[0]);
     compl_startcol = MAX(0, compl_startcol - prefix_len);
-
-    // no default selection
-    compl_selected = -1;
-
-    pum_clear();
-    cmdline_pum_display();
 
     return EXPAND_OK;
 }
@@ -862,14 +859,27 @@ get_next_or_prev_match(int mode, expand_T *xp)
     }
 
     // Display matches on screen
-    if (compl_match_array)
+    if (p_wmnu)
     {
-	compl_selected = findex;
-	cmdline_pum_display();
+	if (compl_match_array)
+	{
+	    compl_selected = findex;
+	    cmdline_pum_display();
+	}
+	else if (vim_strchr(p_wop, WOP_PUM) != NULL)
+	{
+	    if (cmdline_pum_create(get_cmdline_info(), xp, xp->xp_files,
+			xp->xp_numfiles, cmd_showtail) == EXPAND_OK)
+	    {
+		compl_selected = findex;
+		pum_clear();
+		cmdline_pum_display();
+	    }
+	}
+	else
+	    win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files, findex,
+		    cmd_showtail);
     }
-    else if (p_wmnu)
-	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files, findex,
-		cmd_showtail);
 
     xp->xp_selected = findex;
     // Return the original text or the selected match
@@ -1072,7 +1082,7 @@ ExpandOne(
 	if (compl_match_array != NULL)
 	    cmdline_pum_remove(get_cmdline_info(), FALSE);
     }
-    xp->xp_selected = 0;
+    xp->xp_selected = (options & WILD_NOSELECT) ? -1 : 0;
 
     if (mode == WILD_FREE)	// only release file name
 	return NULL;
@@ -1271,12 +1281,12 @@ showmatches_oneline(
 }
 
 /*
- * Show all matches for completion on the command line.
- * Returns EXPAND_NOTHING when the character that triggered expansion should
- * be inserted like a normal character.
+ * Display completion matches.
+ * Returns EXPAND_NOTHING when the character that triggered expansion should be
+ *   inserted as a normal character.
  */
     int
-showmatches(expand_T *xp, int wildmenu, int noselect)
+showmatches(expand_T *xp, int display_wildmenu, int display_list, int noselect)
 {
     cmdline_info_T	*ccline = get_cmdline_info();
     int		numMatches;
@@ -1287,13 +1297,6 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
     int		columns;
     int		attr;
     int		showtail;
-
-    // Save cmdline before expansion
-    if (ccline->cmdbuff != NULL)
-    {
-	vim_free(cmdline_orig);
-	cmdline_orig = vim_strnsave(ccline->cmdbuff, ccline->cmdlen);
-    }
 
     if (xp->xp_numfiles == -1)
     {
@@ -1312,12 +1315,21 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
 	showtail = cmd_showtail;
     }
 
-    if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
-	// cmdline completion popup menu (with wildoptions=pum)
-	return cmdline_pum_create(ccline, xp, matches, numMatches,
+    if (display_wildmenu && !display_list
+	    && vim_strchr(p_wop, WOP_PUM) != NULL)
+    {
+	int retval = cmdline_pum_create(ccline, xp, matches, numMatches,
 		showtail && !noselect);
+	if (retval == EXPAND_OK)
+	{
+	    compl_selected = noselect ? -1 : 0;
+	    pum_clear();
+	    cmdline_pum_display();
+	}
+	return retval;
+    }
 
-    if (!wildmenu)
+    if (display_list)
     {
 	msg_didany = FALSE;		// lines_left will be set
 	msg_start();			// prepare for paging
@@ -1329,10 +1341,11 @@ showmatches(expand_T *xp, int wildmenu, int noselect)
     }
 
     if (got_int)
-	got_int = FALSE;	// only int. the completion, not the cmd line
-    else if (wildmenu)
-	win_redr_status_matches(xp, numMatches, matches, -1, showtail);
-    else
+	got_int = FALSE;  // only interrupt the completion, not the cmd line
+    else if (display_wildmenu && !display_list)
+	win_redr_status_matches(xp, numMatches, matches, noselect ? -1 : 0,
+		showtail);  // display statusbar menu
+    else if (display_list)
     {
 	// find the length of the longest file name
 	maxlen = 0;
@@ -4237,7 +4250,7 @@ wildmenu_translate_key(
 	}
     }
 
-    if (did_wild_list)
+    if (cmdline_pum_active() || did_wild_list || wild_menu_showing)
     {
 	if (c == K_LEFT)
 	    c = Ctrl_P;

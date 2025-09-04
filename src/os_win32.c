@@ -7699,6 +7699,21 @@ mch_total_mem(int special UNUSED)
 }
 
 /*
+ * Expand a path into all matching files and/or directories.  Handles "*",
+ * "?", "[a-z]", "**", etc.
+ * "path" has backslashes before chars that are not to be expanded.
+ * Returns the number of matches found.
+ */
+    int
+mch_expandpath(
+    garray_T	*gap,
+    char_u	*path,
+    int		flags)		// EW_* flags
+{
+    return dos_expandpath(gap, path, 0, flags, FALSE);
+}
+
+/*
  * mch_wrename() works around a bug in rename (aka MoveFile) in
  * Windows, the bug can be demonstrated with the following scenario:
  * When renaming "abcdef~1.txt" to "abcdef~1.txt~", the short name can be

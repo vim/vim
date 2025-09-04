@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Aug 21
+*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -925,6 +925,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	typing.  If you prefer it not to open too quickly, set this value
 	slightly above your typing speed.  See |ins-autocompletion|.
 
+					*'autocompletetimeout'* *'act'*
+'autocompletetimeout' 'act'	number	(default 80)
+				global
+	Initial timeout (in milliseconds) for the decaying time-sliced
+	completion algorithm.  Starts at this value, halves for each slower
+	source until a minimum is reached.  All sources run, but slower ones
+	are quickly de-prioritized.  The default is tuned so the popup menu
+	opens within ~200ms even with multiple slow sources on a slow system.
+	Changing this value is rarely needed.  Only 80 or higher is valid.
+	Special case: when 'complete' contains "F" or "o" (function sources),
+	a longer timeout is used, allowing up to ~1s for sources such as LSP
+	servers that may sometimes take longer (e.g., while loading modules).
+	See |ins-autocompletion|.
+
 			*'autoindent'* *'ai'* *'noautoindent'* *'noai'*
 'autoindent' 'ai'	boolean	(default off)
 			local to buffer
@@ -1732,6 +1746,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'chistory'* *'chi'*
+						*E1542* *E1543* *E1544*
 'chistory' 'chi'	number	(default: 10)
 			global
 			{only available when compiled with the |+quickfix|
@@ -1891,30 +1906,30 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{pattern}, this must be the last entry.
 
 						*'clipmethod'* *'cpm'*
-'clipmethod' 'cpm'	string	(default for Unix: "wayland,x11",
-				 for VMS: "x11",
-				 otherwise: "")
+'clipmethod' 'cpm'	string	(default for Unix: "wayland,x11,gui,other",
+				 for VMS: "x11,gui,other",
+				 otherwise: "gui,other")
 			global
-			{only when the |+xterm_clipboard| or
-			|+wayland_clipboard| features are included}
+			{only when the |+clipboard| feature is included}
 	Specifies which method of accessing the system clipboard is used,
 	depending on which method works first or is available.  Supported
 	methods are:
 		wayland		Wayland selections
 		x11		X11 selections
+		gui		GUI specific method
+		other		Some other method
 
-	Note: This option is ignored when either the GUI is running or if Vim
-	is run on a system without Wayland or X11 support, such as Windows or
-	macOS.  The GUI or system way of accessing the clipboard is always
-	used instead.
+	Note: "other" is used on systems without X11/Wayland, such as
+	MS-Windows or MacOS, when running Vim without the GUI.
 
 	The option value is a list of comma separated items.  The list is
 	parsed left to right in order, and the first method that Vim
 	determines is available or is working is used as the actual method for
-	accessing the clipboard.
+	accessing the clipboard.  Setting this option to an empty value
+	disables the clipboard functionality on all systems.
 
-	The current method that is being used can be found in the |v:clipmethod|
-	variable.
+	The current method that is being used can be found in the
+	|v:clipmethod| variable.
 
 						*'cmdheight'* *'ch'*
 'cmdheight' 'ch'	number	(default 1)
@@ -2324,6 +2339,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'shellslash'.
 	For Insert mode completion the buffer-local value is used.  For
 	command line completion the global value is used.
+
+					*'completetimeout'* *'cto'*
+'completetimeout' 'cto'	number	(default 0)
+			global
+	Like 'autocompletetimeout', but applies to |i_CTRL-N| and |i_CTRL-P|
+	completion.  Value of 0 disables the timeout; positive values allowed.
 
 						*'concealcursor'* *'cocu'*
 'concealcursor' 'cocu'	string (default: "")
@@ -6427,6 +6448,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+					*'osctimeoutlen'* *'ost'* *E1568*
+'osctimeoutlen' 'ost'	number (default 1000)
+			global
+	This option specifies the timeout in milliseconds Vim should wait
+	until it receives an OSC terminator after receiving the beginning of
+	an OSC command response. See the |TermResponseAll| autocommand event
+	and |v:termosc| for more information.
+
 					*'osfiletype'* *'oft'*
 'osfiletype' 'oft'	string (default: "")
 			local to buffer
@@ -8867,8 +8896,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	You need to do this when your system has no locale support for UTF-8.
 
 		*'termguicolors'* *'tgc'* *'notermguicolors'* *'notgc'* *E954*
-'termguicolors' 'tgc'	boolean (default off unless Vim detects that it runs
-				in a capable terminal)
+'termguicolors' 'tgc'	boolean (default off)
 			global
 			{not available when compiled without the
 			|+termguicolors| feature}

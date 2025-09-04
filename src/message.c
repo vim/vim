@@ -1457,9 +1457,10 @@ wait_return(int redraw)
     setmouse();
     msg_check();
 
-#if defined(UNIX) || defined(VMS)
+#ifndef MSWIN
     /*
-     * When switching screens, we need to output an extra newline on exit.
+     * On TTY-style terminals (all but Windows), an extra newline is
+     * needed when switching screens on exit.
      */
     if (swapping_screen() && !termcap_active)
 	newline_on_exit = TRUE;

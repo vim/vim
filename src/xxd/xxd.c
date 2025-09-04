@@ -70,6 +70,7 @@
  * 15.06.2025  improve color code logic
  * 08.08.2025  fix overflow with bitwise output
  * 20.08.2025  remove external library call for autoconversion on z/OS (MVS)
+ * 24.08.2025  avoid NULL dereference with autoskip colorless
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -150,7 +151,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2025-08-20 by Juergen Weigert et al.";
+char version[] = "xxd 2025-08-24 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -599,7 +600,10 @@ xxdline(FILE *fp, char *l, char *colors, int nz)
   if (!nz && zero_seen == 1)
     {
       strcpy(z, l);
-      memcpy(z_colors, colors, strlen(z));
+      if (colors)
+	{
+	  memcpy(z_colors, colors, strlen(z));
+	}
     }
 
   if (nz || !zero_seen++)

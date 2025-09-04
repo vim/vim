@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2025 Aug 10
+*todo.txt*      For Vim version 9.1.  Last change: 2025 Sep 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2836,8 +2836,6 @@ Better 'rightleft' or BIDI support:
 Spell checking:
 -   List of common misspellings in English:
     https://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings/For_machines
-    German:
-    https://de.wikipedia.org/wiki/Wikipedia:Liste_von_Tippfehlern/F%C3%BCr_Maschinen
     There are other languages.
 -   [s does not find missing capital at start of the line.  #10838
     Probably because the dot at the end of the previous line isn't seen.

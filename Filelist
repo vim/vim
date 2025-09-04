@@ -569,6 +569,7 @@ SRC_DOS_UNIX =	\
 
 # Source files for MS Windows (also in the extra archive).
 SRC_DOS =	\
+		src/auto/nmake/tools.mak \
 		src/GvimExt/*.mak \
 		src/GvimExt/GvimExt.reg \
 		src/GvimExt/Makefile \

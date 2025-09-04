@@ -3,11 +3,12 @@ vim9script
 # Language:     Vim9 script
 # Contributers: @lacygoill
 #               Shane-XB-Qian
-# Last Change:  2025 Aug 13
+#               Andrew Radev
+# Last Change:  2025 Sep 02
 #
-# Vim Script to handle
-# :import, :packadd and :colorscheme
-# lines and allows to easily jump to it using gf
+# Vim Script to handle jumping to the targets of several types of Vim commands
+# (:import, :packadd, :runtime, :colorscheme), and to autoloaded functions of
+# the style <path>#<function_name>.
 #
 # see runtime/ftplugin/vim.vim
 
@@ -20,6 +21,11 @@ export def Find(editcmd: string) #{{{2
         return
     endif
 
+    if curline =~ '^\s*\%(:\s*\)\=ru\%[ntime]!\='
+        HandleRuntimeLine(editcmd, curline, expand('<cfile>'))
+        return
+    endif
+
     if curline =~ '^\s*\%(:\s*\)\=colo\%[rscheme]\s'
         HandleColoLine(editcmd, curline)
         return
@@ -27,6 +33,20 @@ export def Find(editcmd: string) #{{{2
 
     if curline =~ '^\s*\%(:\s*\)\=import\s'
         HandleImportLine(editcmd, curline)
+        return
+    endif
+
+    var curfunc = FindCurfunc()
+
+    if stridx(curfunc, '#') >= 0
+        var parts = split(curfunc, '#')
+        var path = $"autoload/{join(parts[0 : -2], '/')}.vim"
+        var resolved_path = globpath(&runtimepath, path)
+
+        if resolved_path != ''
+            var function_pattern: string = $'^\s*\%(:\s*\)\=fun\%[ction]!\=\s\+\zs{curfunc}('
+            resolved_path->Open(editcmd, function_pattern)
+        endif
         return
     endif
 
@@ -45,14 +65,8 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
         ->substitute('^vim-\|\.vim$', '', 'g')
 
     if plugin == ''
-        try
-            execute 'normal! ' .. editcmd .. 'zv'
-        catch
-            Error(v:exception)
-            return
-        endtry
+        Fallback(editcmd)
     else
-        var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
         var files: list<string> = getcompletion($'plugin/{plugin}', 'runtime')
             ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
             ->filter((_, path: string): bool => filereadable(path))
@@ -60,7 +74,33 @@ def HandlePackaddLine(editcmd: string, curline: string) #{{{2
             echo 'Could not find any plugin file for ' .. string(plugin)
             return
         endif
-        files->Open(split)
+        files->Open(editcmd)
+    endif
+enddef
+
+def HandleRuntimeLine(editcmd: string, curline: string, cfile: string) #{{{2
+    var fname: string
+    var where_pat: string = '\%(START\|OPT\|PACK\|ALL\)'
+
+    if cfile == 'runtime' || cfile =~# $'^{where_pat}$'
+        # then the cursor was not on one of the filenames, jump to the first file:
+        var fname_pat: string = $'\s*\%(:\s*\)\=ru\%[ntime]\%(!\s*\|\s\+\)\%({where_pat}\s\+\)\=\zs\S\+\>\ze'
+        fname = curline->matchstr(fname_pat)
+    else
+        fname = cfile
+    endif
+
+    if fname == ''
+        Fallback(editcmd)
+    else
+        var file: string = fname
+            ->findfile(&rtp)
+            ->fnamemodify(':p')
+        if file == '' || !filereadable(file)
+            echo 'Could not be found in the runtimepath: ' .. string(fname)
+            return
+        endif
+        file->Open(editcmd)
     endif
 enddef
 
@@ -69,14 +109,8 @@ def HandleColoLine(editcmd: string, curline: string) #{{{2
     var colo: string = curline->matchstr(pat)
 
     if colo == ''
-        try
-            execute 'normal! ' .. editcmd .. 'zv'
-        catch
-            Error(v:exception)
-            return
-        endtry
+        Fallback(editcmd)
     else
-        var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
         var files: list<string> = getcompletion($'colors/{colo}', 'runtime')
             ->map((_, fname: string) => fname->findfile(&rtp)->fnamemodify(':p'))
             ->filter((_, path: string): bool => filereadable(path))
@@ -84,7 +118,7 @@ def HandleColoLine(editcmd: string, curline: string) #{{{2
             echo 'Could not find any colorscheme file for ' .. string(colo)
             return
         endif
-        files->Open(split)
+        files->Open(editcmd)
     endif
 enddef
 
@@ -136,27 +170,34 @@ def HandleImportLine(editcmd: string, curline: string) #{{{2
     execute how_to_split .. ' ' .. filepath
 enddef
 
-def Open(what: any, how: string) #{{{2
+def Open(target: any, editcmd: string, search_pattern: string = '') #{{{2
+    var split: string = editcmd[0] == 'g' ? 'edit' : editcmd[1] == 'g' ? 'tabedit' : 'split'
     var fname: string
-    if what->typename() == 'list<string>'
-        if what->empty()
+    var cmd: string
+
+    if target->typename() == 'list<string>'
+        if target->empty()
             return
         endif
-        fname = what[0]
+        fname = target[0]
     else
-        if what->typename() != 'string'
+        if target->typename() != 'string'
             return
         endif
-        fname = what
+        fname = target
     endif
 
-    execute $'{how} {fname}'
-    cursor(1, 1)
+    if search_pattern != ''
+        var escaped_pattern = escape(search_pattern, '\#'' ')
+        cmd = $'+silent\ call\ search(''{escaped_pattern}'')'
+    endif
+
+    execute $'{split} {cmd} {fname}'
 
     # If there are several files to open, put them into an arglist.
-    if what->typename() == 'list<string>'
-            && what->len() > 1
-        var arglist: list<string> = what
+    if target->typename() == 'list<string>'
+            && target->len() > 1
+        var arglist: list<string> = target
             ->copy()
             ->map((_, f: string) => f->fnameescape())
         execute $'arglocal {arglist->join()}'
@@ -168,6 +209,28 @@ def Error(msg: string) #{{{2
     echohl ErrorMsg
     echomsg msg
     echohl NONE
+enddef
+
+def Fallback(editcmd: string) #{{{2
+    try
+        execute 'normal! ' .. editcmd .. 'zv'
+    catch
+        Error(v:exception)
+    endtry
+enddef
+
+def FindCurfunc(): string #{{{2
+    var curfunc = ''
+    var saved_iskeyword = &iskeyword
+
+    try
+        set iskeyword+=#
+        curfunc = expand('<cword>')
+    finally
+        &iskeyword = saved_iskeyword
+    endtry
+
+    return curfunc
 enddef
 
 # vim: sw=4 et

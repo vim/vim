@@ -1995,21 +1995,12 @@ func Test_tuple_max()
   call v9.CheckSourceFailure(lines, 'E1030: Using a String as a Number: "b"')
 
   let lines =<< trim END
-    vim9script
-    def Fn()
-      var x = max(('a', 'b'))
-    enddef
-    Fn()
-  END
-  call v9.CheckSourceFailure(lines, 'E1030: Using a String as a Number: "a"')
-
-  let lines =<< trim END
     echo max([('a', 'b'), 20])
   END
   call v9.CheckSourceLegacyAndVim9Failure(lines, [
-        \ 'E1520: Using a Tuple as a Number',
-        \ 'E1520: Using a Tuple as a Number',
-        \ 'E1520: Using a Tuple as a Number'])
+        \ 'E1517: Can only compare Tuple with Tuple',
+        \ 'E1517: Can only compare Tuple with Tuple',
+        \ 'E1517: Can only compare Tuple with Tuple'])
 endfunc
 
 " Test for min()
@@ -2035,16 +2026,6 @@ func Test_tuple_min()
     var x = min((1, 'b'))
   END
   call v9.CheckSourceFailure(lines, 'E1030: Using a String as a Number: "b"')
-
-
-  let lines =<< trim END
-    vim9script
-    def Fn()
-      var x = min(('a', 'b'))
-    enddef
-    Fn()
-  END
-  call v9.CheckSourceFailure(lines, 'E1030: Using a String as a Number: "a"')
 endfunc
 
 " Test for reduce()
