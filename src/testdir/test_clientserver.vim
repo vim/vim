@@ -12,9 +12,7 @@ source util/shared.vim
 
 " Unlike X11, we need the socket server running if we want to send commands to
 " a server via sockets.
-if v:servername == ""
-  call remote_startserver('VIMSOCKETSERVERTEST')
-endif
+CheckSocketServer
 
 func Check_X11_Connection()
   if has('x11')

@@ -4,9 +4,7 @@ source util/screendump.vim
 import './util/vim9.vim' as v9
 
 " Socket backend for remote functions require the socket server to be running
-if v:servername == ""
-  call remote_startserver('VIMSOCKETSERVERTEST')
-endif
+CheckSocketServer
 
 " Test for passing too many or too few arguments to builtin functions
 func Test_internalfunc_arg_error()

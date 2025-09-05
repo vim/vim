@@ -4,9 +4,9 @@ vim9script
 # the terminal response.
 #
 # Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2025 August 13
+# Last Change:	2025 Sep 05
 
-if exists("loaded_colorresp")
+if exists("g:loaded_colorresp")
   finish
 endif
 g:loaded_colorresp = 1

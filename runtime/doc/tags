@@ -6969,6 +6969,7 @@ delete-menus	gui.txt	/*delete-menus*
 deletebufline()	builtin.txt	/*deletebufline()*
 deleting	change.txt	/*deleting*
 demoserver.py	channel.txt	/*demoserver.py*
+deprecated-features	develop.txt	/*deprecated-features*
 design-assumptions	develop.txt	/*design-assumptions*
 design-compatible	develop.txt	/*design-compatible*
 design-decisions	develop.txt	/*design-decisions*
@@ -6979,6 +6980,7 @@ design-improved	develop.txt	/*design-improved*
 design-maintain	develop.txt	/*design-maintain*
 design-multi-platform	develop.txt	/*design-multi-platform*
 design-not	develop.txt	/*design-not*
+design-policy	develop.txt	/*design-policy*
 design-speed-size	develop.txt	/*design-speed-size*
 desktop.vim	syntax.txt	/*desktop.vim*
 develop-spell	develop.txt	/*develop-spell*
@@ -9367,6 +9369,7 @@ new-diff-mode	version6.txt	/*new-diff-mode*
 new-encryption	version5.txt	/*new-encryption*
 new-evim	version6.txt	/*new-evim*
 new-ex-commands-5.2	version5.txt	/*new-ex-commands-5.2*
+new-features	develop.txt	/*new-features*
 new-file-browser	version6.txt	/*new-file-browser*
 new-file-writing	version6.txt	/*new-file-writing*
 new-filetype	filetype.txt	/*new-filetype*

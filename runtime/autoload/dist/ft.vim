@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2025 Aug 26
+# Last Change:		2025 Sep 04
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -828,26 +828,32 @@ export def FTinc()
   if exists("g:filetype_inc")
     exe "setf " .. g:filetype_inc
   else
-    var lines = getline(1) .. getline(2) .. getline(3)
-    if lines =~? "perlscript"
-      setf aspperl
-    elseif lines =~ "<%"
-      setf aspvbs
-    elseif lines =~ "<?"
-      setf php
-    # Pascal supports // comments but they're vary rarely used for file
-    # headers so assume POV-Ray
-    elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? ft_pascal_keywords
-      setf pascal
-    elseif lines =~# '\<\%(require\|inherit\)\>' || lines =~# '[A-Z][A-Za-z0-9_:${}]*\s\+\%(??\|[?:+]\)\?= '
-      setf bitbake
-    else
-      FTasmsyntax()
-      if exists("b:asmsyntax")
-        exe "setf " .. fnameescape(b:asmsyntax)
-      else
-        setf pov
+    for lnum in range(1, min([line("$"), 20]))
+      var line = getline(lnum)
+      if line =~? "perlscript"
+        setf aspperl
+        return
+      elseif line =~ "<%"
+        setf aspvbs
+        return
+      elseif line =~ "<?"
+        setf php
+        return
+      # Pascal supports // comments but they're vary rarely used for file
+      # headers so assume POV-Ray
+      elseif line =~ '^\s*\%({\|(\*\)' || line =~? ft_pascal_keywords
+        setf pascal
+        return
+      elseif line =~# '\<\%(require\|inherit\)\>' || line =~# '[A-Z][A-Za-z0-9_:${}/]*\s\+\%(??\|[?:+.]\)\?=.\? '
+        setf bitbake
+        return
       endif
+    endfor
+    FTasmsyntax()
+    if exists("b:asmsyntax")
+      exe "setf " .. fnameescape(b:asmsyntax)
+    else
+      setf pov
     endif
   endif
 enddef
