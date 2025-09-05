@@ -5812,7 +5812,7 @@ find_common_prefix(size_t *prefix_len, int curbuf_only)
     compl_T     *compl;
     int		*match_count;
     char_u	*first = NULL;
-    int		len;
+    int		len = -1;
     int		is_cpt_completion = (cpt_sources_array != NULL);
 
     if (!is_cpt_completion)
@@ -5952,7 +5952,7 @@ ins_compl_insert(int move_cursor, int preinsert_prefix)
 	else
 	{
 	    ins_compl_insert_bytes(cp_str + compl_len,
-		    preinsert_prefix ? cp_str_len - compl_len : -1);
+		    preinsert_prefix ? (int)cp_str_len - compl_len : -1);
 	    if (preinsert && move_cursor)
 		curwin->w_cursor.col -= (colnr_T)(cp_str_len - leader_len);
 	}
