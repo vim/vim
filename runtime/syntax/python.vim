@@ -373,7 +373,7 @@ if !exists("python_no_doctest_highlight")
 	  \ contained contains=ALLBUT,pythonDoctest,pythonEllipsis,pythonClass,pythonFunction,pythonType,@Spell
     syn region pythonDoctestValue
 	  \ start=+^\s*\%(>>>\s\|\.\.\.\s\|"""\|'''\)\@!\S\++ end="$"
-	  \ contained
+	  \ contained contains=pythonEllipsis
     syn match pythonEllipsis "\%(^\s*\)\@<!\.\@1<!\zs\.\.\.\ze\.\@!" display
 	  \ contained containedin=pythonDoctest
   else

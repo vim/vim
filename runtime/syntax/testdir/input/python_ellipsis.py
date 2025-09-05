@@ -9,7 +9,7 @@ y = ... # Comment
 class C: ...
 lambda: ...
 
-# Types
+# Annotations
 numbers: Tuple[int, ...]
 
 # Doctests
@@ -18,8 +18,18 @@ numbers: Tuple[int, ...]
 >>> class A:
 ...     def __init__(self):
 ...		...
-... class B: ...
-... x = ...
+>>> class B: ...
+>>> x = ...
+>>> raise ValueError('multi\n    line\ndetail')
+Traceback (most recent call last):
+    ...
+ValueError: multi
+    line
+detail
+>>> print(list(range(20)))  # doctest: +ELLIPSIS
+[0, 1, ..., 18, 19]
+>>> exec(s)  #doctest: +ELLIPSIS
+-3.21716034272e-0...7
 """
 
 class C:
@@ -28,3 +38,6 @@ class C:
 	...	def __init__(self):
 	...		...
 	"""
+
+# Numpy
+x[..., 0]
