@@ -55,10 +55,9 @@ func s:CheckXConnection()
   CheckFeature x11
   try
     call remote_send('xxx', '')
+  catch /^Vim\%((\a\+)\)\=:E240:/ " not possible to start a remote server
+      throw 'Skipped: No connection to the X server possible'
   catch
-    if v:exception =~ 'E240:'
-      thrclientserverow 'Skipped: no connection to the X server'
-    endif
     " ignore other errors
   endtry
 endfunc
