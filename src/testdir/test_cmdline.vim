@@ -2966,6 +2966,11 @@ func Test_wildmenu_pum()
   call term_sendkeys(buf, "\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_63', {})
 
+  " 'longest' does not find candidate, and displays menu without selecting item
+  call term_sendkeys(buf, "\<Esc>:set wildmode=longest,noselect\<CR>")
+  call term_sendkeys(buf, ":cn\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_64', {})
+
   call term_sendkeys(buf, "\<C-U>\<Esc>")
   call StopVimInTerminal(buf)
 endfunc
