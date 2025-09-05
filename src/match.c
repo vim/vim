@@ -21,7 +21,7 @@
  * Add match to the match list of window "wp".
  * If "pat" is not NULL the pattern will be highlighted with the group "grp"
  * with priority "prio".
- * If "pos_list" is not NULL the list of posisions defines the highlights.
+ * If "pos_list" is not NULL the list of positions defines the highlights.
  * Optionally, a desired ID "id" can be specified (greater than or equal to 1).
  * If no particular ID is desired, -1 must be specified for "id".
  * Return ID of added match, -1 on failure.
