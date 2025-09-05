@@ -38,7 +38,7 @@ match_add(
 {
     matchitem_T	*cur;
     matchitem_T	*prev;
-    matchitem_T	*m;
+    matchitem_T	*m = NULL;
     int		hlg_id;
     regprog_T	*regprog = NULL;
     int		rtype = UPD_SOME_VALID;
@@ -86,15 +86,12 @@ match_add(
     // Build new match.
     m = ALLOC_CLEAR_ONE(matchitem_T);
     if (m == NULL)
-	return -1;
+	goto fail;
     if (pos_list != NULL && pos_list->lv_len > 0)
     {
 	m->mit_pos_array = ALLOC_CLEAR_MULT(llpos_T, pos_list->lv_len);
 	if (m->mit_pos_array == NULL)
-	{
-	    vim_free(m);
-	    return -1;
-	}
+	    goto fail;
 	m->mit_pos_count = pos_list->lv_len;
     }
     m->mit_id = id;
@@ -213,9 +210,14 @@ match_add(
     return id;
 
 fail:
-    vim_free(m->mit_pattern);
-    vim_free(m->mit_pos_array);
-    vim_free(m);
+    if (regprog != NULL)
+	vim_regfree(regprog);
+    if (m != NULL)
+    {
+	vim_free(m->mit_pattern);
+	vim_free(m->mit_pos_array);
+	vim_free(m);
+    }
     return -1;
 }
 
