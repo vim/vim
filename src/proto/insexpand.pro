@@ -69,9 +69,11 @@ void f_complete_check(typval_T *argvars, typval_T *rettv);
 void f_complete_match(typval_T *argvars, typval_T *rettv);
 void f_complete_info(typval_T *argvars, typval_T *rettv);
 void ins_compl_delete(void);
-void ins_compl_insert(int move_cursor);
+int ins_compl_insert(int move_cursor, int insert_longest_prefix);
 void ins_compl_check_keys(int frequency, int in_compl_func);
 int ins_complete(int c, int enable_pum);
 void ins_compl_enable_autocomplete(void);
 void free_insexpand_stuff(void);
+int ins_compl_has_autocomplete(void);
+int ins_compl_has_preinsert(void);
 /* vim: set ft=c : */
