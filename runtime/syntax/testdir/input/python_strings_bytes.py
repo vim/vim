@@ -80,11 +80,11 @@ and fields {1}, {2} and {1
 # Raw formatted string literals
 test = fr'Raw f-string with literal \' and \" and \t and fields {foo} and {bar}'
 test = fR"Raw f-string with literal \040 and \xFF and fields {foo} and {bar}"
-test = Fr'Raw f-string with literal \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK} and fields {foo} and {bar}'
+test = Fr'Raw f-string with literal \u00A1 and \U00010605 and fields \N{FIELD, NOT, ESCAPE} and {foo} and {bar}'
 test = FR"Raw f-string with literal {{field}} and fields {foo} and {bar}"
 test = rf'Raw f-string with literal \' and \" and \t and fields {foo} and {bar}'
 test = rF"Raw f-string with literal \040 and \xFF and fields {foo} and {bar}"
-test = Rf'Raw f-string with literal \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK} and fields {foo} and {bar}'
+test = Rf'Raw f-string with literal \u00A1 and \U00010605 and fields \N{FIELD, NOT, ESCAPE} and {foo} and {bar}'
 test = RF"Raw f-string with literal {{field}} and fields {foo} and {bar}"
 test = fr'''Raw f-string with quotes ' and "
 and literal \t and \040 and \xFF
@@ -118,6 +118,11 @@ test = f"He said his name is {name!r}."
 test = f"He said his name is {repr(name)}."
 test = f"result: {value:{width}}"
 test = f"result: {value:{width}.{precision}}"
+test = f"result: {value:{
+        width
+    }.{
+        precision
+    }}"
 test = f"result: {value:{width:d}.{precision!s}}"
 test = f"result: {value:{options}{width}{grouping}{precision}{type}}"
 test = f"{number:#0x}"
@@ -130,10 +135,12 @@ test = f"{string=}"
 test = f"{string=!r}"
 test = f"{string=:20}"
 test = f"{string=!r:20}"
-test = f"{string = }"
-test = f"{string = !r}"
-test = f"{string = :20}"
-test = f"{string = !r:20}"
+test = f"{ string = }"
+test = f"{ string = !r}"
+test = f"{ string = !r }"
+test = f"{ string = :20}"
+test = f"{ string = !r:20}"
+test = f"{ string = !r :20}"
 test = f"abc {a["x"]} def"
 test = f"List contains:\n{"\n".join(a)}"
 test = f"Today's date is {datetime.now()}"
@@ -158,22 +165,28 @@ test = f"Debug expression is {x == 1=}"
 test = f"Debug expression is {x != 1=}"
 test = f"Debug expression is {(x := 1)=}"
 test = f"List comprehension returns { [x**2 for x in range(10)] }"
+test = f"List comprehension returns { [
+        x**2 for x in range(10)
+    ] }"
 test = f"Padded list comprehension returns { [x**2 for x in range(10)] :99}"
 test = f"Dict comprehension returns { {x: x**2 for x in range(10)} }"
+test = f"Dict comprehension returns { {
+        x: x**2 for x in range(10)
+    } }"
 test = f"Padded dict comprehension returns { {x: x**2 for x in range(10)} :99}"
 
 # Bytes
 test = b'Bytes with escapes \' and \" and \t'
 test = B"Bytes with escapes \040 and \xFF"
-test = b'Bytes with literal \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK}'
+test = b'Bytes with SyntaxWarning \u00A1 and \U00010605 and \N{INVERTED EXCLAMATION MARK}'
 test = B"Bytes with escaped \\ backslash and ignored \
 newline"
 test = b'''Bytes with quotes ' and "
 and escapes \t and \040 and \xFF
-and literal \u00A1 and \U00010605'''
+and SyntaxWarning \u00A1 and \U00010605'''
 test = B"""Bytes with quotes ' and "
 and escapes \t and \040 and \xFF
-and literal \u00A1 and \U00010605"""
+and SyntaxWarning \u00A1 and \U00010605"""
 
 # Raw bytes
 test = br'Raw bytes with literal \' and \" and \t'
