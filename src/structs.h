@@ -2693,6 +2693,8 @@ struct channel_S {
     void	(*ch_nb_close_cb)(void);
 				// callback for Netbeans when channel is
 				// closed
+    void	(*ch_make_callback)(channel_T *ch, char_u *msg);
+    void	(*ch_make_exit_cb)(channel_T *ch, char_u *msg);
 
 #ifdef MSWIN
     int		ch_named_pipe;	// using named pipe instead of pty
@@ -2820,6 +2822,10 @@ typedef struct
     char_u	*jo_cwd;
 
 #ifdef FEAT_TERMINAL
+    // Callbacks to be used by :make ++term.
+    void (*jo_term_callback)(job_T *ch, char_u *msg);
+    void (*jo_term_exit_cb)(job_T *ch, int status);
+
     // when non-zero run the job in a terminal window of this size
     int		jo_term_rows;
     int		jo_term_cols;
