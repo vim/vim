@@ -1000,7 +1000,10 @@ cmdline_wildchar_complete(
 
 	// Remove popup window if no completion items are available
 	if (redraw_if_menu_empty && xp->xp_numfiles <= 0)
+	{
 	    update_screen(0);
+	    redrawcmd();  // Ensure initial pasted text appears on cmdline
+	}
 
 	// if interrupted while completing, behave like it failed
 	if (got_int)
@@ -1016,16 +1019,29 @@ cmdline_wildchar_complete(
 	// Display matches
 	if (res == OK && xp->xp_numfiles > (wim_noselect ? 0 : 1))
 	{
-	    // If "longest" fails to identify the longest item, try other
-	    // 'wim' values if available
-	    if (wim_longest && ccline.cmdpos == cmdpos_before)
+	    if (wim_longest)
 	    {
-		if (wim_full)
-		    nextwild(xp, WILD_NEXT, options, escape);
+		int found_longest_prefix = (ccline.cmdpos != cmdpos_before);
 		if (wim_list || (p_wmnu && wim_full))
-		    (void)showmatches(xp, p_wmnu, wim_list, FALSE);
+		    (void)showmatches(xp, p_wmnu, wim_list, TRUE);
+		else if (!found_longest_prefix)
+		{
+		    int wim_list_next = (wim_flags[1] & WIM_LIST);
+		    int wim_full_next = (wim_flags[1] & WIM_FULL);
+		    int wim_noselect_next = (wim_flags[1] & WIM_NOSELECT);
+		    if (wim_list_next || (p_wmnu && (wim_full_next
+				    || wim_noselect_next)))
+		    {
+			if (wim_noselect_next)
+			    options |= WILD_NOSELECT;
+			if (wim_full_next || wim_noselect_next)
+			    nextwild(xp, WILD_NEXT, options, escape);
+			(void)showmatches(xp, p_wmnu, wim_list_next,
+				wim_noselect_next);
+		    }
+		}
 	    }
-	    else if (!wim_longest)
+	    else
 	    {
 		if (wim_list || (p_wmnu && (wim_full || wim_noselect)))
 		    (void)showmatches(xp, p_wmnu, wim_list, wim_noselect);
