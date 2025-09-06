@@ -1154,7 +1154,7 @@ autocompletion.  To use |i_CTRL-N| or |i_CTRL-X_CTRL-N| specifically, press
 Example setup~
 A typical configuration for automatic completion with a popup menu: >
 	set autocomplete
-	set complete=.,w^5,b^5,u^5
+	set complete=.^5,w^5,b^5,u^5
 	set completeopt=popup
 
 	inoremap <silent><expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
@@ -1164,7 +1164,8 @@ This enables automatic completion with suggestions from the current buffer,
 other windows, and listed buffers, displayed in a popup menu.  Each source is
 limited to 5 candidates.  <Tab> and <S-Tab> move through the items when the
 menu is visible.  Optionally, add "preinsert" to 'completeopt' to insert the
-longest common prefix automatically.
+longest common prefix automatically.  You can also add other completion
+sources to 'complete' as needed.
 
 See also 'autocomplete', 'autocompletedelay' and 'autocompletetimeout'.
 
