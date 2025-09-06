@@ -2943,7 +2943,7 @@ func Test_wildmenu_pum()
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_57', {})
 
-  " "longest:full" showns wildmenu whether it finds a candidate or not; item not selected
+  " "longest:full" shows wildmenu whether it finds a candidate or not; item not selected
   call term_sendkeys(buf, "\<Esc>:set wildmode=longest:full,full\<CR>")
   call term_sendkeys(buf, ":sign u\<Tab>")
   call TermWait(buf, 50)
