@@ -1681,6 +1681,7 @@ getcmdline_int(
     int		wild_type = 0;
     int		event_cmdlineleavepre_triggered = FALSE;
     char_u	*prev_cmdbuff = NULL;
+    int		did_hist_navigate = FALSE;
 
     // one recursion level deeper
     ++depth;
@@ -1890,6 +1891,13 @@ getcmdline_int(
 	    cursorcmd();		// set the cursor on the right spot
 	    c = safe_vgetc();
 	} while (c == K_IGNORE || c == K_NOP);
+
+	// Skip wildmenu during history navigation via Up/Down keys
+	if (c == K_WILD && did_hist_navigate)
+	{
+	    did_hist_navigate = FALSE;
+	    continue;
+	}
 
 	if (c == K_COMMAND || c == K_SCRIPT_COMMAND)
 	{
@@ -2489,7 +2497,10 @@ getcmdline_int(
 		    res = cmdline_browse_history(c, firstc, &lookfor, &lookforlen, histype,
 			    &hiscnt, &xpc);
 		    if (res == CMDLINE_CHANGED)
+		    {
+			did_hist_navigate = TRUE;
 			goto cmdline_changed;
+		    }
 		    else if (res == GOTO_NORMAL_MODE)
 			goto returncmd;
 		}

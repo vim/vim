@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 02
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12416,18 +12416,19 @@ wildtrigger()						*wildtrigger()*
 		produce a beep when no matches are found and generally
 		operates more quietly.  This makes it suitable for triggering
 		completion automatically, such as from an |:autocmd|.
+
 						*cmdline-autocompletion*
-		Example: To make the completion menu pop up automatically as
-		you type on the command line, use: >
+		Example: To make the completion menu pop up automatically
+		while typing on the command line: >
 			autocmd CmdlineChanged [:/\?] call wildtrigger()
 			set wildmode=noselect:lastused,full wildoptions=pum
 <
-		To retain normal history navigation (up/down keys): >
-			cnoremap <Up>   <C-U><Up>
-			cnoremap <Down> <C-U><Down>
+		To retain normal history navigation with the up/down keys: >
+			cnoremap <expr> <Up>   wildmenumode() ? "\<C-E>\<Up>"   : "\<Up>"
+			cnoremap <expr> <Down> wildmenumode() ? "\<C-E>\<Down>" : "\<Down>"
 <
-		To set an option specifically when performing a search, e.g.
-		to set 'pumheight': >
+		To apply an option only during a search, for example to set
+		'pumheight': >
 			autocmd CmdlineEnter [/\?] set pumheight=8
 			autocmd CmdlineLeave [/\?] set pumheight&
 <
