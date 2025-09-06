@@ -276,11 +276,7 @@ static int	did_set_icon = FALSE;
 
 static void may_core_dump(void);
 
-#ifdef HAVE_UNION_WAIT
-typedef union wait waitstatus;
-#else
 typedef int waitstatus;
-#endif
 static int  WaitForChar(long msec, int *interrupted, int ignore_input);
 static int  WaitForCharOrMouse(long msec, int *interrupted, int ignore_input);
 #ifdef VMS
@@ -541,10 +537,8 @@ mch_chdir(char *path)
 #endif
 }
 
-// Why is NeXT excluded here (and not in os_unixx.h)?
 #if defined(ECHOE) && defined(ICANON) \
-    && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H)) \
-    && !defined(__NeXT__)
+    && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H))
 # define NEW_TTY_SYSTEM
 #endif
 
@@ -4650,11 +4644,7 @@ wait4pid(pid_t child, waitstatus *status)
 	// wait() sometimes hangs for no obvious reason.  Use waitpid()
 	// instead and loop (like the GUI). Also needed for other interfaces,
 	// they might call system().
-# ifdef __NeXT__
-	wait_pid = wait4(child, status, WNOHANG, (struct rusage *)0);
-# else
 	wait_pid = waitpid(child, status, WNOHANG);
-# endif
 	if (wait_pid == 0)
 	{
 	    // Wait for 1 to 10 msec before trying again.
@@ -5065,11 +5055,7 @@ mch_call_shell_fork(
     pid_t	pid;
     pid_t	wpid = 0;
     pid_t	wait_pid = 0;
-# ifdef HAVE_UNION_WAIT
-    union wait	status;
-# else
     int		status = -1;
-# endif
     int		retval = -1;
     char	**argv = NULL;
     char_u	*tofree1 = NULL;
@@ -5707,11 +5693,7 @@ mch_call_shell_fork(
 		     * Check if the child still exists, before checking for
 		     * typed characters (otherwise we would lose typeahead).
 		     */
-# ifdef __NeXT__
-		    wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *)0);
-# else
 		    wait_pid = waitpid(pid, &status, WNOHANG);
-# endif
 		    if ((wait_pid == (pid_t)-1 && errno == ECHILD)
 			    || (wait_pid == pid && WIFEXITED(status)))
 		    {
@@ -5786,11 +5768,7 @@ finished:
 #  endif
 			got_int = FALSE;
 		    }
-# ifdef __NeXT__
-		    wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *)0);
-# else
 		    wait_pid = waitpid(pid, &status, WNOHANG);
-# endif
 		    if ((wait_pid == (pid_t)-1 && errno == ECHILD)
 			    || (wait_pid == pid && WIFEXITED(status)))
 		    {
@@ -6285,18 +6263,10 @@ get_signal_name(int sig)
     char *
 mch_job_status(job_T *job)
 {
-# ifdef HAVE_UNION_WAIT
-    union wait	status;
-# else
     int		status = -1;
-# endif
     pid_t	wait_pid = 0;
 
-# ifdef __NeXT__
-    wait_pid = wait4(job->jv_pid, &status, WNOHANG, (struct rusage *)0);
-# else
     wait_pid = waitpid(job->jv_pid, &status, WNOHANG);
-# endif
     if (wait_pid == -1)
     {
 	int waitpid_errno = errno;
@@ -6342,11 +6312,7 @@ return_dead:
     job_T *
 mch_detect_ended_job(job_T *job_list)
 {
-# ifdef HAVE_UNION_WAIT
-    union wait	status;
-# else
     int		status = -1;
-# endif
     pid_t	wait_pid = 0;
     job_T	*job;
 
@@ -6358,11 +6324,7 @@ mch_detect_ended_job(job_T *job_list)
 	return NULL;
 # endif
 
-# ifdef __NeXT__
-    wait_pid = wait4(-1, &status, WNOHANG, (struct rusage *)0);
-# else
     wait_pid = waitpid(-1, &status, WNOHANG);
-# endif
     if (wait_pid <= 0)
 	// no process ended
 	return NULL;
@@ -6435,11 +6397,7 @@ mch_signal_job(job_T *job, char_u *how)
 mch_clear_job(job_T *job)
 {
     // call waitpid because child process may become zombie
-# ifdef __NeXT__
-    (void)wait4(job->jv_pid, NULL, WNOHANG, (struct rusage *)0);
-# else
     (void)waitpid(job->jv_pid, NULL, WNOHANG);
-# endif
 }
 #endif
 
