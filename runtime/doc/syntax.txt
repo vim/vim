@@ -1067,6 +1067,7 @@ Variable		Highlight ~
 			 be adjusted using `g:filetype_h`.)
 *c_no_if0*		don't highlight "#if 0" blocks as comments
 *c_no_cformat*		don't highlight %-formats in strings
+*c_no_c95*		don't highlight C95 standard items
 *c_no_c99*		don't highlight C99 standard items
 *c_no_c11*		don't highlight C11 standard items
 *c_no_c23*		don't highlight C23 standard items
