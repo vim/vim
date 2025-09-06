@@ -665,9 +665,7 @@ endif
 
 ifeq ($(CHANNEL),yes)
 DEFINES += -DFEAT_JOB_CHANNEL -DFEAT_IPV6
- ifeq ($(shell expr "$$(($(WINVER)))" \>= "$$((0x600))"),1)
 DEFINES += -DHAVE_INET_NTOP
- endif
 endif
 
 ifeq ($(TERMINAL),yes)
