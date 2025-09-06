@@ -3937,6 +3937,8 @@ func Test_completeopt_preinsert()
   func GetLine()
     let g:line = getline('.')
     let g:col = col('.')
+    let g:lnum = line('.')
+    let g:second_line = getline(g:lnum + 1)
   endfunc
 
   new
@@ -4065,6 +4067,13 @@ func Test_completeopt_preinsert()
   call assert_equal(4, g:col)
   call assert_equal("wp.", getline('.'))
 
+  inoremap <buffer> <f3> <cmd>call complete(col("."), [ "single line", "multiple line1\nline2"])<CR>
+  call feedkeys("ggdGS\<F3>\<C-N>\<F5>", 'tx')
+  call assert_equal("multiple line1", g:line)
+  call assert_equal("line2", g:second_line)
+  call assert_equal(1, g:col)
+  call assert_equal(1, g:lnum)
+
   %delete _
   let &l:undolevels = &l:undolevels
   normal! ifoo
@@ -4106,6 +4115,10 @@ func Test_completeopt_preinsert()
   %delete _
   delfunc CheckUndo
 
+  unlet g:line
+  unlet g:lnum
+  unlet g:col
+  unlet g:second_line
   bw!
   set cot&
   set omnifunc&
