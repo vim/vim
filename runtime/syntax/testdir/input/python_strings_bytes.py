@@ -108,6 +108,7 @@ test = f"Number is {
     1 +
     2 +
     3}"
+test = f"Float is {1.23}"
 test = f"abc{a # This is a comment }
     + 1}"
 test = f"def{a # So is this :
