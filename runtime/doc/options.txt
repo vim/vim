@@ -9776,6 +9776,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Does not work on the Amiga, you always get a screen flash.
 	Also see 'errorbells'.
 
+						*visuallist* *'novisuallist'*
+'visuallist'		boolean	(default off)
+			local to window
+	When on, 'listchars' are only displayed during Visual mode within
+	the selected area use the |hl-VisualSpecialKey|, which by default
+	links to |hl-Visual|, the 'list' setting is ignored. When off follow
+	the normal 'list' option behavior.
+
 						*'warn'* *'nowarn'*
 'warn'			boolean	(default on)
 			global

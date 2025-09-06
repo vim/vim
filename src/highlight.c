@@ -269,6 +269,7 @@ static char *(highlight_init_both[]) = {
     "default link PopupSelected PmenuSel",
     "default link MessageWindow WarningMsg",
     "default link PopupNotification WarningMsg",
+    "default link VisualSpecialKey Visual",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
     NULL
 };
