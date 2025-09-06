@@ -14,6 +14,8 @@ STUB_PROTO_H = os.environ.get("GENPROTO_STUB_PROTO_H", "1") not in ("", "0", "fa
 
 _DIR_RE = re.compile(r'^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b')
 _IF0_RE = re.compile(r'^\s*#\s*if\s+0\b')
+_IFNDEF_PROTO_RE = re.compile(r'^\s*#\s*ifndef\s+PROTO\b')        # drop whole group
+_IF_NOTDEF_PROTO_RE = re.compile(r'^\s*#\s*!defined\s*\(\s*PROTO\s*\)')
 
 def _ends_with_bs(line: str) -> bool:
     return line.rstrip("\r\n").rstrip().endswith("\\")
@@ -69,8 +71,7 @@ def rewrite_conditionals_first_branch(text: str) -> str:
             out.append(line); i += 1; continue
         kw = m.group(1)
         if kw in ("if", "ifdef", "ifndef"):
-            if _IF0_RE.match(line):
-                # drop entire group
+            if _IF0_RE.match(line) or _IFNDEF_PROTO_RE.match(line) or _IF_NOTDEF_PROTO_RE.match(line):
                 group_end, _ = _collect_group(i)
                 i = group_end
                 continue
