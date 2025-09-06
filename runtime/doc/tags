@@ -8627,6 +8627,7 @@ inputrestore()	builtin.txt	/*inputrestore()*
 inputsave()	builtin.txt	/*inputsave()*
 inputsecret()	builtin.txt	/*inputsecret()*
 ins-autocompletion	insert.txt	/*ins-autocompletion*
+ins-autocompletion-example	insert.txt	/*ins-autocompletion-example*
 ins-completion	insert.txt	/*ins-completion*
 ins-completion-menu	insert.txt	/*ins-completion-menu*
 ins-expandtab	insert.txt	/*ins-expandtab*
