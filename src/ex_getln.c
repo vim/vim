@@ -1000,7 +1000,10 @@ cmdline_wildchar_complete(
 
 	// Remove popup window if no completion items are available
 	if (redraw_if_menu_empty && xp->xp_numfiles <= 0)
+	{
 	    update_screen(0);
+	    redrawcmd();  // Ensure initial pasted text appears on cmdline
+	}
 
 	// if interrupted while completing, behave like it failed
 	if (got_int)
