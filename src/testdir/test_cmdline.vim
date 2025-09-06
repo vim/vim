@@ -2931,7 +2931,7 @@ func Test_wildmenu_pum()
 
   call term_sendkeys(buf, "\<Esc>:set showtabline& laststatus& lazyredraw&\<CR>")
 
-  " "longest:list" showns list whether it finds a candidate or not
+  " "longest:list" shows list whether it finds a candidate or not
   call term_sendkeys(buf, ":set wildmode=longest:list,full wildoptions&\<CR>")
   call term_sendkeys(buf, ":cn\<Tab>")
   call TermWait(buf, 50)
