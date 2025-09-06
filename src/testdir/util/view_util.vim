@@ -108,6 +108,18 @@ func GetEscCodeFunckey(key, modifier)
   return "\<Esc>[1;".. mod .. a:key
 endfunc
 
+" Return the kitty keyboard protocol encoding for a function key:
+" CSI {number}; {modifiier} ~
+func GetEscCodeFunckey2(key, modifier)
+  let key = "\<Esc>[" .. a:key
+  if a:modifier == 0
+    return key .. "~"
+  endif
+
+  let mod = printf("%d", a:modifier)
+  return key .. ';' .. mod .. '~'
+endfunc
+
 " Return the kitty keyboard protocol encoding for "key" without a modifier.
 " Used for the Escape key.
 func GetEscCodeCSIuWithoutModifier(key)

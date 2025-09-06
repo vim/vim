@@ -74,6 +74,7 @@ var key_entries = [
 	['Shift-Space', 'S-Space'],
 	['Ctrl-Space', 'C-Space'],
 	['Alt-Space', 'A-Space'],
+	['F3', 'F3'],
       ]
 
 # Given a terminal name and a item name, return the text to display.
@@ -464,7 +465,7 @@ while true
     ActionReplace()
   elseif action == 4
     ActionClear()
-  elseif action == 5
+  elseif action == 5 || action == 0
     ActionQuit()
   endif
 endwhile
