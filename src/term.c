@@ -5294,6 +5294,37 @@ put_key_modifiers_in_typebuf(
 }
 
 /*
+ * Parse the number from a CSI numbered sequence for an F1-F12 key:
+ *	ESC [ {number} ~
+ * Returns the key
+ */
+    static int
+parse_csi_f_keys(int arg)
+{
+    char_u key_name[2] = "";
+
+    switch (arg)
+    {
+	case 11: key_name[0] = 'k'; key_name[1] = '1'; break;  // K_F1
+	case 12: key_name[0] = 'k'; key_name[1] = '2'; break;  // K_F2
+	case 13: key_name[0] = 'k'; key_name[1] = '3'; break;  // K_F3
+	case 14: key_name[0] = 'k'; key_name[1] = '4'; break;  // K_F4
+	case 15: key_name[0] = 'k'; key_name[1] = '5'; break;  // K_F5
+	case 17: key_name[0] = 'k'; key_name[1] = '6'; break;  // K_F6
+	case 18: key_name[0] = 'k'; key_name[1] = '7'; break;  // K_F7
+	case 19: key_name[0] = 'k'; key_name[1] = '8'; break;  // K_F8
+	case 20: key_name[0] = 'k'; key_name[1] = '9'; break;  // K_F9
+	case 21: key_name[0] = 'F'; key_name[1] = ';'; break;  // K_F10
+	case 23: key_name[0] = 'F'; key_name[1] = '1'; break;  // K_F11
+	case 24: key_name[0] = 'F'; key_name[1] = '2'; break;  // K_F12
+    }
+    if (key_name[0])
+	return TERMCAP2KEY(key_name[0], key_name[1]);
+    // shouldn't happen
+    return arg;
+}
+
+/*
  * Handle a sequence with key and modifier, one of:
  *	{lead}27;{modifier};{key}~
  *	{lead}{key};{modifier}u
@@ -5302,12 +5333,12 @@ put_key_modifiers_in_typebuf(
     static int
 handle_key_with_modifier(
 	int	*arg,
-	int	trail,
 	int	csi_len,
 	int	offset,
 	char_u	*buf,
 	int	bufsize,
-	int	*buflen)
+	int	*buflen,
+	int	iskitty)
 {
     // Only set seenModifyOtherKeys for the "{lead}27;" code to avoid setting
     // it for terminals using the kitty keyboard protocol.  Xterm sends
@@ -5320,7 +5351,7 @@ handle_key_with_modifier(
     //
     // Do not set seenModifyOtherKeys for kitty, it does send some sequences
     // like this but does not have the modifyOtherKeys feature.
-    if (trail != 'u'
+    if (!iskitty
 	    && (kitty_protocol_state == KKPS_INITIAL
 		|| kitty_protocol_state == KKPS_OFF
 		|| kitty_protocol_state == KKPS_AFTER_T_TE)
@@ -5332,7 +5363,7 @@ handle_key_with_modifier(
 	seenModifyOtherKeys = TRUE;
     }
 
-    int key = trail == 'u' ? arg[0] : arg[2];
+    int key = iskitty ? arg[0] : arg[2];
     int modifiers = decode_modifiers(arg[1]);
 
     // Some terminals do not apply the Shift modifier to the key.  To make
@@ -5345,6 +5376,9 @@ handle_key_with_modifier(
     if (key == ESC)
 	key = K_ESC;
 
+    else if (arg[0] >= 11 && arg[0] <= 24)
+	key = parse_csi_f_keys(arg[0]);
+
     return put_key_modifiers_in_typebuf(key, modifiers,
 					csi_len, offset, buf, bufsize, buflen);
 }
@@ -5352,6 +5386,7 @@ handle_key_with_modifier(
 /*
  * Handle a sequence with key without a modifier:
  *	{lead}{key}u
+ *	{lead}{key}~
  * Returns the difference in length.
  */
     static int
@@ -5373,6 +5408,14 @@ handle_key_without_modifier(
 	string[0] = K_SPECIAL;
 	string[1] = KS_EXTRA;
 	string[2] = KE_ESC;
+	new_slen = 3;
+    }
+    else if (arg[0] >= 11 && arg[0] <= 24)
+    {
+	int key = parse_csi_f_keys(arg[0]);
+	string[0] = K_SPECIAL;
+	string[1] = KEY2TERMCAP0(key);
+	string[2] = KEY2TERMCAP1(key);
 	new_slen = 3;
     }
     else
@@ -5672,19 +5715,22 @@ handle_csi(
     // Key with modifier:
     //	{lead}27;{modifier};{key}~
     //	{lead}{key};{modifier}u
+    //	{lead}{key};{modifier}~
     // Even though we only handle four modifiers and the {modifier} value
     // should be 16 or lower, we accept all modifier values to avoid the raw
     // sequence to be passed through.
     else if ((arg[0] == 27 && argc == 3 && trail == '~')
-		|| (argc == 2 && trail == 'u'))
+		|| (argc == 2 && (trail == 'u' || trail == '~')))
     {
-	return len + handle_key_with_modifier(arg, trail,
-					csi_len, offset, buf, bufsize, buflen);
+	int iskitty = argc == 2 && (trail == 'u' || trail == '~');
+	return len + handle_key_with_modifier(arg, csi_len, offset, buf,
+		bufsize, buflen, iskitty);
     }
 
-    // Key without modifier (Kitty sends this for Esc):
+    // Key without modifier (Kitty sends this for Esc or F3):
     //	{lead}{key}u
-    else if (argc == 1 && trail == 'u')
+    //	{lead}{key}~
+    else if (argc == 1 && (trail == 'u' || trail == '~'))
     {
 	return len + handle_key_without_modifier(arg,
 			    csi_len, offset, buf, bufsize, buflen);
