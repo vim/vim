@@ -1038,6 +1038,8 @@ cmdline_wildchar_complete(
 			    nextwild(xp, WILD_NEXT, options, escape);
 			(void)showmatches(xp, p_wmnu, wim_list_next,
 				wim_noselect_next);
+			if (wim_list_next)
+			    *did_wild_list = TRUE;
 		    }
 		}
 	    }
