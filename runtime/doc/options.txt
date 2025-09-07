@@ -2301,18 +2301,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    {only works when compiled with the |+textprop| feature}
 
 	   preinsert
-		    Inserts the part of the first candidate word that extends
-		    beyond the current completion leader, using the
-		    |hl-ComplMatchIns| highlight group.  The cursor remains in
-		    the same position as before the insertion.
-		    For this to work, the "fuzzy" flag in 'completeopt' must
-		    be unset, and either the "menuone" flag in 'completeopt'
-		    must be set or 'autocomplete' must be enabled.
-		    When 'autocomplete' is set, the longest common prefix is
-		    inserted, taken either from the shown matches or from
-		    matches in the current buffer.  This happens only when
-		    no item in the popup menu is selected.  Press CTRL-Y to
-		    accept the inserted text.
+		    When autocompletion is not enabled, inserts the part of the
+		    first candidate word beyond the current completion leader,
+		    highlighted with |hl-ComplMatchIns|.  The cursor does not
+		    move.  Requires 'fuzzy' unset and 'menuone' in 'completeopt'.
+
+		    When 'autocomplete' is enabled, inserts the longest common
+		    prefix of matches (from all shown items or buffer-specific
+		    matches), highlighted with |hl-PreInsert|.  This occurs only
+		    when no menu item is selected.  Press CTRL-Y to accept.
 
 	   preview  Show extra information about the currently selected
 		    completion in the preview window.  Only works in
@@ -4665,7 +4662,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
 				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
 				     z:StatusLineTerm,Z:StatusLineTermNC,
-				     g:MsgArea,h:ComplMatchIns")
+				     g:MsgArea,h:ComplMatchIns,I:PreInsert")
 			global
 	This option can be used to set highlighting mode for various
 	occasions.  It is a comma-separated list of character pairs.  The
@@ -4728,6 +4725,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-PmenuThumb|	 X  popup menu scrollbar thumb
 	|hl-PmenuMatch|	 k  popup menu matched text
 	|hl-PmenuMatchSel| <  popup menu matched text in selected line
+	|hl-PreInsert|	 I  text inserted when "preinsert" and 'autocomplete'
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")

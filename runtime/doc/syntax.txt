@@ -5998,6 +5998,8 @@ PmenuMatchSel	Popup menu: Matched text in selected item. Applied in
 		combination with |hl-PmenuSel|.
 							*hl-ComplMatchIns*
 ComplMatchIns	Matched text of the currently inserted completion.
+							*hl-PreInsert*
+PreInsert	Text inserted during autocompletion when "preinsert".
 							*hl-PopupSelected*
 PopupSelected	Popup window created with |popup_menu()|.  Linked to
 		|hl-PmenuSel| by default.

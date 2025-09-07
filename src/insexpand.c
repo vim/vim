@@ -1070,8 +1070,11 @@ ins_compl_col_range_attr(linenr_T lnum, int col)
     int	    attr;
 
     if ((get_cot_flags() & COT_FUZZY)
-	    || (compl_autocomplete && !compl_autocomplete_preinsert)
-	    || (attr = syn_name2attr((char_u *)"ComplMatchIns")) == 0)
+	    || (!compl_autocomplete
+		&& (attr = syn_name2attr((char_u *)"ComplMatchIns")) == 0)
+	    || (compl_autocomplete
+		&& (!compl_autocomplete_preinsert
+		    || (attr = syn_name2attr((char_u *)"PreInsert")) == 0)))
 	return -1;
 
     start_col = compl_col + (int)ins_compl_leader_len();
