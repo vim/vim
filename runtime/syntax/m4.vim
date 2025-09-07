@@ -75,7 +75,6 @@ hi def link m4Define      Define
 hi def link m4Special     Special
 hi def link m4Statement   Statement
 hi def link m4Preproc     PreProc
-hi def link m4Type        Type
 hi def link m4Variable    Special
 hi def link m4Constants   Constant
 hi def link m4Builtin     Statement
