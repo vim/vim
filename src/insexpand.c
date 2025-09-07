@@ -5890,7 +5890,7 @@ find_common_prefix(size_t *prefix_len, int curbuf_only)
 
     vim_free(match_count);
 
-    if (len > compl_length)
+    if (len > get_compl_len())
     {
 	*prefix_len = (size_t)len;
 	return first;

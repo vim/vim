@@ -695,12 +695,9 @@ edit(
 		    ins_compl_delete();
 		    if (ins_compl_has_preinsert()
 			    && ins_compl_has_autocomplete())
-		    {
-			if (ins_compl_insert(FALSE, TRUE) != OK)
-			    ins_compl_insert(FALSE, FALSE);
-		    }
+			(void)ins_compl_insert(FALSE, TRUE);
 		    else
-			ins_compl_insert(FALSE, FALSE);
+			(void)ins_compl_insert(FALSE, FALSE);
 		}
 		// Delete preinserted text when typing special chars
 		else if (IS_WHITE_NL_OR_NUL(c) && ins_compl_preinsert_effect())
