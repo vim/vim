@@ -5338,7 +5338,8 @@ handle_key_with_modifier(
 	char_u	*buf,
 	int	bufsize,
 	int	*buflen,
-	int	iskitty)
+	int	iskitty,
+	int	trail)
 {
     // Only set seenModifyOtherKeys for the "{lead}27;" code to avoid setting
     // it for terminals using the kitty keyboard protocol.  Xterm sends
@@ -5376,7 +5377,7 @@ handle_key_with_modifier(
     if (key == ESC)
 	key = K_ESC;
 
-    else if (arg[0] >= 11 && arg[0] <= 24)
+    else if (arg[0] >= 11 && arg[0] <= 24 && trail == '~')
 	key = parse_csi_f_keys(arg[0]);
 
     return put_key_modifiers_in_typebuf(key, modifiers,
@@ -5396,7 +5397,8 @@ handle_key_without_modifier(
 	int	offset,
 	char_u	*buf,
 	int	bufsize,
-	int	*buflen)
+	int	*buflen,
+	int	trail)
 {
     char_u  string[MAX_KEY_CODE_LEN + 1];
     int	    new_slen;
@@ -5410,7 +5412,7 @@ handle_key_without_modifier(
 	string[2] = KE_ESC;
 	new_slen = 3;
     }
-    else if (arg[0] >= 11 && arg[0] <= 24)
+    else if (arg[0] >= 11 && arg[0] <= 24 && trail == '~')
     {
 	int key = parse_csi_f_keys(arg[0]);
 	string[0] = K_SPECIAL;
@@ -5724,7 +5726,7 @@ handle_csi(
     {
 	int iskitty = argc == 2 && (trail == 'u' || trail == '~');
 	return len + handle_key_with_modifier(arg, csi_len, offset, buf,
-		bufsize, buflen, iskitty);
+		bufsize, buflen, iskitty, trail);
     }
 
     // Key without modifier (Kitty sends this for Esc or F3):
@@ -5733,7 +5735,7 @@ handle_csi(
     else if (argc == 1 && (trail == 'u' || trail == '~'))
     {
 	return len + handle_key_without_modifier(arg,
-			    csi_len, offset, buf, bufsize, buflen);
+			    csi_len, offset, buf, bufsize, buflen, trail);
     }
 
     // else: Unknown CSI sequence.  We could drop it, but then the
