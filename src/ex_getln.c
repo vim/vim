@@ -1032,12 +1032,11 @@ cmdline_wildchar_complete(
 		    if (wim_list_next || (p_wmnu && (wim_full_next
 				    || wim_noselect_next)))
 		    {
-			if (wim_noselect_next)
-			    options |= WILD_NOSELECT;
-			if (wim_full_next || wim_noselect_next)
+			if (wim_full_next && !wim_noselect_next)
 			    nextwild(xp, WILD_NEXT, options, escape);
-			(void)showmatches(xp, p_wmnu, wim_list_next,
-				wim_noselect_next);
+			else
+			    (void)showmatches(xp, p_wmnu, wim_list_next,
+				    wim_noselect_next);
 			if (wim_list_next)
 			    *did_wild_list = TRUE;
 		    }
