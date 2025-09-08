@@ -1708,6 +1708,7 @@ endfunc
 
 func Test_haredoc_file()
   filetype on
+
   call assert_true(mkdir('foo/bar', 'pR'))
 
   call writefile([], 'README', 'D')
@@ -1715,28 +1716,37 @@ func Test_haredoc_file()
   call assert_notequal('haredoc', &filetype)
   bwipe!
 
+  let g:filetype_haredoc = 3
+  call writefile([], 'foo/bar/bar.ha', 'D')
+  split README
+  call assert_equal('haredoc', &filetype)
+  bwipe!
+
+  let g:filetype_haredoc = 2
+  split README
+  call assert_notequal('haredoc', &filetype)
+  bwipe!
+
+  call writefile([], 'foo/foo.ha', 'D')
+  split README
+  call assert_equal('haredoc', &filetype)
+  bwipe!
+
   let g:filetype_haredoc = 1
   split README
   call assert_notequal('haredoc', &filetype)
   bwipe!
 
-  call writefile([], 'foo/quux.ha')
+  call writefile([], 'main.ha', 'D')
   split README
   call assert_equal('haredoc', &filetype)
   bwipe!
-  call delete('foo/quux.ha')
 
-  call writefile([], 'foo/bar/baz.ha', 'D')
+  let g:filetype_haredoc = 0
   split README
   call assert_notequal('haredoc', &filetype)
   bwipe!
-
-  let g:haredoc_search_depth = 2
-  split README
-  call assert_equal('haredoc', &filetype)
-  bwipe!
   unlet g:filetype_haredoc
-  unlet g:haredoc_search_depth
 
   filetype off
 endfunc
