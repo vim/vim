@@ -2542,6 +2542,18 @@ func Test_mapping_kitty_function_keys2()
   set timeoutlen&
 endfunc
 
+func Test_mapping_kitty_shift_enter()
+  new
+  set timeoutlen=10
+
+  imap <buffer> <S-CR> YYYY
+  call feedkeys(printf("i123 %s\<esc>", GetEscCodeCSIu("\<cr>", 2)),'Lx!')
+  call assert_equal('123 YYYY', getline(1))
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
 func Test_insert_literal()
   set timeoutlen=10
 
