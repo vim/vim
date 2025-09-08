@@ -1,4 +1,4 @@
-*os_haiku.txt*	For Vim version 9.1.  Last change: 2020 May 13
+*os_haiku.txt*	For Vim version 9.1.  Last change: 2025 Sep 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -76,6 +76,9 @@ version with GUI tries to determine if it was started from the Tracker instead
 of the Terminal, and if so, uses the GUI anyway.  However, the current detection
 scheme is fooled if you use the command "vim - </dev/null".
 
+Toggling between normal managed window and fullscreen mode can be done by
+pressing <Alt-Enter>.
+
 Stuff that does not work yet:
 
 - Mouse up events are not generated when outside the window.  You can notice
@@ -86,7 +89,9 @@ Stuff that does not work yet:
   in when the window is activated or deactivated (so it works best with focus-
   follows-mouse turned on).
 - The cursor does not flash.
-
+- Switching windows using <C-Tab-Up> and <C-Tab-Down> in Twitcher does not
+  work. This is due to each gvim window being managed by a separate instance
+  completely unaware of other vim processes.
 
 4. The $VIM directory					*haiku-vimdir*
 

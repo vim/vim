@@ -175,7 +175,7 @@ class VimWindow: public BWindow
     VimWindow();
     ~VimWindow();
 
-    //	  virtual void DispatchMessage(BMessage *m, BHandler *h);
+    virtual void DispatchMessage(BMessage *m, BHandler *h);
     virtual void WindowActivated(bool active);
     virtual bool QuitRequested();
 
@@ -184,6 +184,9 @@ class VimWindow: public BWindow
     private:
     void init();
 
+    bool is_fullscreen = false;
+    BRect saved_frame;
+    window_look saved_look;
 };
 
 class VimFormView: public BView
@@ -971,6 +974,48 @@ VimWindow::QuitRequested()
     write_port(gui.vdcmp, VimMsg::Key, &km, sizeof(km));
     return false;
 }
+    void
+VimWindow::DispatchMessage(BMessage *m, BHandler *h)
+{
+    bool should_propagate = true;
+
+    switch (m->what)
+    {
+	case B_KEY_DOWN:
+	    {
+		int32 scancode = 0;
+		int32 beModifiers = 0;
+		m->FindInt32("raw_char", &scancode);
+		m->FindInt32("modifiers", &beModifiers);
+
+		if (scancode == B_ENTER && (beModifiers & B_LEFT_COMMAND_KEY))
+		    {
+			should_propagate = false;
+			if (this->is_fullscreen)
+			    {
+				this->is_fullscreen = false;
+				ResizeTo(this->saved_frame.Width(), this->saved_frame.Height());
+				MoveTo(this->saved_frame.left, this->saved_frame.top);
+				SetLook(this->saved_look);
+				SetFlags(Flags() & ~(B_NOT_RESIZABLE | B_NOT_MOVABLE));
+			    } else {
+				this->saved_frame = Frame();
+				this->saved_look = Look();
+				this->is_fullscreen = true;
+				BScreen s(this);
+				SetLook(B_NO_BORDER_WINDOW_LOOK);
+				ResizeTo(s.Frame().Width() + 1, s.Frame().Height() + 1);
+				MoveTo(s.Frame().left, s.Frame().top);
+				SetFlags(Flags() | (B_NOT_RESIZABLE | B_NOT_MOVABLE));
+			    }
+		    }
+	    }
+    }
+
+    if (should_propagate)
+	Inherited::DispatchMessage(m, h);
+}
+
 
 // ---------------- VimFormView ----------------
 

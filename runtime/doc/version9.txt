@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 02
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41619,6 +41619,8 @@ Platform specific~
 - Python3 support in OpenVMS is now available.
 
 - The Win32 GUI comes with better toolbar icons.
+
+- Better fullscreen support for Haiku |os_haiku.txt|.
 							*new-other-9.2*
 Other new features ~
 ------------------

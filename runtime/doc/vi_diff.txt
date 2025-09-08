@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Sep 04
+*vi_diff.txt*   For Vim version 9.1.  Last change: 2025 Sep 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1379,13 +1379,13 @@ support is verified as part of the CI test suite.
 System				| Status:~
 --------------------------------+-----------------------------------------
 Amiga (OS4, AROS & MorphOS):	| still supported (?)
-Haiku:				| still supported (?)
+Haiku:				| supported
 Linux:				| fully supported (on maintained versions)
 Mac OS:				| fully supported up until v10.6 (?)
 MS-Windows 7, 8, 10, 11:	| fully supported
-UNIX:				| supported (on maintained versions)
 OpenVMS:			| supported
 QNX:				| still supported (?)
+UNIX:				| supported (on maintained versions)
 zOS/OS390:			| still supported (?)
 
 The following operating systems are no longer supported:
