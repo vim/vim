@@ -6064,6 +6064,10 @@ Terminal	|terminal| window (see |terminal-size-color|).
 Title		Titles for output from ":set all", ":autocmd" etc.
 							*hl-Visual*
 Visual		Visual mode selection.
+
+							*hl-VisualSpecialKey*
+VisualSpecialKey Used for listchars displayed within Visual selection when
+		'visuallist' is enabled.
 							*hl-VisualNOS*
 VisualNOS	Visual mode selection when vim is "Not Owning the Selection".
 		Only X11 Gui's |gui-x11| and |xterm-clipboard| supports this.

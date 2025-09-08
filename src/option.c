@@ -6745,6 +6745,7 @@ get_varp(struct vimoption *p)
 	case PV_ARAB:	return (char_u *)&(curwin->w_p_arab);
 #endif
 	case PV_LIST:	return (char_u *)&(curwin->w_p_list);
+	case PV_VLIST:	return (char_u *)&(curwin->w_p_vlist);
 	case PV_LCS:	return *curwin->w_p_lcs != NUL
 				    ? (char_u *)&(curwin->w_p_lcs) : p->var;
 	case PV_FCS:	return *curwin->w_p_fcs != NUL

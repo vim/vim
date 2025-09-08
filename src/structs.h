@@ -255,6 +255,8 @@ typedef struct
 #define w_p_list w_onebuf_opt.wo_list	// 'list'
     char_u	*wo_lcs;
 #define w_p_lcs w_onebuf_opt.wo_lcs	// 'listchars'
+    int		wo_vlist;
+#define w_p_vlist w_onebuf_opt.wo_vlist	// 'visuallist'
     char_u	*wo_fcs;
 #define w_p_fcs w_onebuf_opt.wo_fcs	// 'fillchars'
     int		wo_nu;
