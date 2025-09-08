@@ -7675,6 +7675,7 @@ function-range-example	userfunc.txt	/*function-range-example*
 function-search-undo	userfunc.txt	/*function-search-undo*
 function_key	intro.txt	/*function_key*
 functions	eval.txt	/*functions*
+fuzzy-file-picker	cmdline.txt	/*fuzzy-file-picker*
 fuzzy-matching	pattern.txt	/*fuzzy-matching*
 fvwm.vim	syntax.txt	/*fvwm.vim*
 fvwm2rc	syntax.txt	/*fvwm2rc*
@@ -8821,6 +8822,7 @@ listener_remove()	builtin.txt	/*listener_remove()*
 lite.vim	syntax.txt	/*lite.vim*
 literal-Dict	eval.txt	/*literal-Dict*
 literal-string	eval.txt	/*literal-string*
+live-grep	cmdline.txt	/*live-grep*
 lnum-variable	eval.txt	/*lnum-variable*
 load-plugins	starting.txt	/*load-plugins*
 load-vim-script	repeat.txt	/*load-vim-script*
