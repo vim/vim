@@ -1232,6 +1232,9 @@ cs_find_common(
 	qf_info_T   *qi = NULL;
 	win_T	    *wp = NULL;
 
+	if (tmp == NULL)
+	    return FALSE;
+
 	f = mch_fopen((char *)tmp, "w");
 	if (f == NULL)
 	    semsg(_(e_cant_open_file_str), tmp);
