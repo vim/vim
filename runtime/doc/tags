@@ -6718,6 +6718,7 @@ compiler-dotnet	quickfix.txt	/*compiler-dotnet*
 compiler-gcc	quickfix.txt	/*compiler-gcc*
 compiler-gnat	ft_ada.txt	/*compiler-gnat*
 compiler-groff	quickfix.txt	/*compiler-groff*
+compiler-hare	ft_hare.txt	/*compiler-hare*
 compiler-hpada	ft_ada.txt	/*compiler-hpada*
 compiler-javac	quickfix.txt	/*compiler-javac*
 compiler-make	quickfix.txt	/*compiler-make*
@@ -7508,6 +7509,10 @@ ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
 ft-hare	filetype.txt	/*ft-hare*
+ft-hare-indent	ft_hare.txt	/*ft-hare-indent*
+ft-hare-intro	ft_hare.txt	/*ft-hare-intro*
+ft-hare-plugin	ft_hare.txt	/*ft-hare-plugin*
+ft-haredoc-plugin	ft_hare.txt	/*ft-haredoc-plugin*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*
 ft-help-omni	helphelp.txt	/*ft-help-omni*
 ft-html-indent	indent.txt	/*ft-html-indent*
@@ -7759,9 +7764,12 @@ g:gnat.Set_Project_File()	ft_ada.txt	/*g:gnat.Set_Project_File()*
 g:gnat.Tags()	ft_ada.txt	/*g:gnat.Tags()*
 g:gnat.Tags_Command	ft_ada.txt	/*g:gnat.Tags_Command*
 g:gzip_exec	pi_gzip.txt	/*g:gzip_exec*
+g:hare_indent_case	ft_hare.txt	/*g:hare_indent_case*
+g:hare_indent_match_switch	ft_hare.txt	/*g:hare_indent_match_switch*
+g:hare_makeprg_params	ft_hare.txt	/*g:hare_makeprg_params*
 g:hare_recommended_style	ft_hare.txt	/*g:hare_recommended_style*
 g:hare_space_error	ft_hare.txt	/*g:hare_space_error*
-g:haredoc_search_depth	ft_hare.txt	/*g:haredoc_search_depth*
+g:hare_symbol_operators	ft_hare.txt	/*g:hare_symbol_operators*
 g:help_example_languages	helphelp.txt	/*g:help_example_languages*
 g:html_charset_override	syntax.txt	/*g:html_charset_override*
 g:html_diff_one_file	syntax.txt	/*g:html_diff_one_file*
@@ -8252,9 +8260,7 @@ haiku-vimdir	os_haiku.txt	/*haiku-vimdir*
 hangul	hangulin.txt	/*hangul*
 hangulin.txt	hangulin.txt	/*hangulin.txt*
 hare	ft_hare.txt	/*hare*
-hare-intro	ft_hare.txt	/*hare-intro*
-hare-plugin	ft_hare.txt	/*hare-plugin*
-hare-settings	ft_hare.txt	/*hare-settings*
+hare.vim	ft_hare.txt	/*hare.vim*
 has()	builtin.txt	/*has()*
 has-patch	builtin.txt	/*has-patch*
 has-python	if_pyth.txt	/*has-python*
