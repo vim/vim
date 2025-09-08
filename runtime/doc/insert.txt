@@ -1169,6 +1169,8 @@ sources to 'complete' as needed.
 
 See also 'autocomplete', 'autocompletedelay' and 'autocompletetimeout'.
 
+For command-line autocompletion, see |cmdline-autocompletion|.
+
 
 FUNCTIONS FOR FINDING COMPLETIONS			*complete-functions*
 
