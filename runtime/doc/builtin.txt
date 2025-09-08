@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 06
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12407,7 +12407,6 @@ wildmenumode()					*wildmenumode()*
 wildtrigger()						*wildtrigger()*
 		Start wildcard expansion in the command-line, using the
 		behavior defined by the 'wildmode' and 'wildoptions' settings.
-		See |cmdline-completion|.
 
 		This function also enables completion in search patterns such
 		as |/|, |?|, |:s|, |:g|, |:v| and |:vimgrep|.
@@ -12415,23 +12414,15 @@ wildtrigger()						*wildtrigger()*
 		Unlike pressing 'wildchar' manually, this function does not
 		produce a beep when no matches are found and generally
 		operates more quietly.  This makes it suitable for triggering
-		completion automatically, such as from an |:autocmd|.
+		completion automatically.
 
-						*cmdline-autocompletion*
-		Example: To make the completion menu pop up automatically
-		while typing on the command line: >
-			autocmd CmdlineChanged [:/\?] call wildtrigger()
-			set wildmode=noselect:lastused,full wildoptions=pum
-<
-		To retain normal history navigation with the up/down keys: >
-			cnoremap <expr> <Up>   wildmenumode() ? "\<C-E>\<Up>"   : "\<Up>"
-			cnoremap <expr> <Down> wildmenumode() ? "\<C-E>\<Down>" : "\<Down>"
-<
-		To apply an option only during a search, for example to set
-		'pumheight': >
-			autocmd CmdlineEnter [/\?] set pumheight=8
-			autocmd CmdlineLeave [/\?] set pumheight&
-<
+		Note: After navigating command-line history, the first call to
+		wildtrigger() is a no-op; a second call is needed to start
+		expansion.  This is to support history navigation in
+		command-line autocompletion.
+
+		See |cmdline-autocompletion|.
+
 		Return value is always 0.
 
 		Return type: |Number|
