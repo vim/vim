@@ -489,6 +489,7 @@ func Test_highlight_completion()
   call assert_equal("\"hi link Aardig NONE", getreg(':'))
 
   " A cleared group does not show up in completions.
+  hi clear Added
   hi Anders ctermfg=green
   call assert_equal(['Aardig', 'Anders'], getcompletion('A', 'highlight'))
   hi clear Aardig
