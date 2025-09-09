@@ -211,6 +211,7 @@ static int	  compl_autocomplete = FALSE;	    // whether autocompletion is active
 static int	  compl_timeout_ms = COMPL_INITIAL_TIMEOUT_MS;
 static int	  compl_time_slice_expired = FALSE; // time budget exceeded for current source
 static int	  compl_from_nonkeyword = FALSE;    // completion started from non-keyword
+static int	  compl_autocomplete_preinsert = FALSE;    // apply preinsert highlight
 
 // Halve the current completion timeout, simulating exponential decay.
 #define COMPL_MIN_TIMEOUT_MS	5
@@ -1067,13 +1068,16 @@ ins_compl_col_range_attr(linenr_T lnum, int col)
 {
     int	    start_col;
     int	    attr;
-    int	    preinsert_active = ins_compl_has_preinsert();
+    int	    has_preinsert = ins_compl_has_preinsert();
 
     if ((get_cot_flags() & COT_FUZZY)
-	    || (!preinsert_active
+	    || (!has_preinsert
 		&& (attr = syn_name2attr((char_u *)"ComplMatchIns")) == 0)
-	    || (preinsert_active
-		&& (attr = syn_name2attr((char_u *)"PreInsert")) == 0))
+	    || (!compl_autocomplete && has_preinsert
+		&& (attr = syn_name2attr((char_u *)"PreInsert")) == 0)
+	    || (compl_autocomplete
+		&& (!compl_autocomplete_preinsert
+		    || (attr = syn_name2attr((char_u *)"PreInsert")) == 0)))
 	return -1;
 
     start_col = compl_col + (int)ins_compl_leader_len();
@@ -2522,6 +2526,7 @@ ins_compl_new_leader(void)
     if (!compl_interrupted)
 	show_pum(save_w_wrow, save_w_leftcol);
 
+    compl_autocomplete_preinsert = FALSE;
     // Don't let Enter select the original text when there is no popup menu.
     if (compl_match_array == NULL)
 	compl_enter_selects = FALSE;
@@ -2530,8 +2535,8 @@ ins_compl_new_leader(void)
 	if (compl_started && compl_autocomplete
 		&& !ins_compl_preinsert_effect())
 	{
-	    if (ins_compl_insert(TRUE, TRUE) != OK)
-		(void)ins_compl_insert(FALSE, FALSE);
+	    if (ins_compl_insert(TRUE, TRUE) == OK)
+		compl_autocomplete_preinsert = TRUE;
 	}
 	else
 	    (void)ins_compl_insert(TRUE, FALSE);
@@ -6222,13 +6227,17 @@ ins_compl_next(
 	return -1;
     }
 
+    compl_autocomplete_preinsert = FALSE;
+
     // Insert the text of the new completion, or the compl_leader.
     if (compl_no_insert && !started)
     {
 	int insert_orig = !compl_preinsert;
 	if (compl_preinsert && compl_autocomplete)
 	{
-	    if (ins_compl_insert(TRUE, TRUE) != OK)
+	    if (ins_compl_insert(TRUE, TRUE) == OK)
+		compl_autocomplete_preinsert = TRUE;
+	    else
 		insert_orig = TRUE;
 	}
 	if (insert_orig)
@@ -6243,7 +6252,9 @@ ins_compl_next(
 	    if (compl_preinsert && compl_autocomplete
 		    && none_selected)
 	    {
-		if (ins_compl_insert(TRUE, TRUE) != OK)
+		if (ins_compl_insert(none_selected, TRUE) == OK)
+		    compl_autocomplete_preinsert = none_selected;
+		else
 		    (void)ins_compl_insert(FALSE, FALSE);
 	    }
 	    else
