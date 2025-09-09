@@ -4501,6 +4501,9 @@ wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 	p_ls = save_p_ls;
 	p_wmh = save_p_wmh;
 	last_status(FALSE);
+#if defined(FEAT_TABPANEL)
+	redraw_tabpanel = TRUE;
+#endif
 	update_screen(UPD_VALID);	// redraw the screen NOW
 	redrawcmd();
 	save_p_ls = -1;

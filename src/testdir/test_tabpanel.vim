@@ -147,6 +147,7 @@ function Test_tabpanel_mouse()
   call feedkeys("\<LeftRelease>", 'xt')
   call assert_equal(3, tabpagenr())
 
+  " Test getmousepos()
   call feedkeys("\<LeftMouse>", 'xt')
   call test_setmouse(2, 3)
   let pos = getmousepos()
@@ -770,4 +771,27 @@ function Test_tabpanel_with_cmdline_pum()
 
   call StopVimInTerminal(buf)
 endfunc
+
+function Test_tabpanel_with_cmdline_no_pum()
+  CheckScreendump
+
+  let lines =<< trim END
+    set showtabpanel=2
+    set noruler
+    tabnew aaa
+    set wildoptions-=pum
+  END
+  call writefile(lines, 'XTest_tabpanel_with_cmdline_pum', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_tabpanel_with_cmdline_pum', {'rows': 10, 'cols': 45})
+  call term_sendkeys(buf, "\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_no_pum_0', {})
+  call term_sendkeys(buf, ":tabne\<Tab>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_no_pum_1', {})
+  call term_sendkeys(buf, "\<Esc>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_tabpanel_with_cmdline_no_pum_0', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
