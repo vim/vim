@@ -297,7 +297,6 @@ may_record_change(
 	if (curbuf->b_recorded_changes == NULL)  // out of memory
 	    return;
 	++curbuf->b_recorded_changes->lv_refcount;
-	curbuf->b_recorded_changes->lv_lock = VAR_FIXED;
     }
 
     dict = dict_alloc();
@@ -489,6 +488,7 @@ invoke_listener_set(
     listener_T	*lnr;
     typval_T	rettv;
     typval_T	argv[6];
+    typval_T    val;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = buf->b_fnum; // a:bufnr
@@ -500,6 +500,13 @@ invoke_listener_set(
     argv[3].vval.v_number = added;
     argv[4].v_type = VAR_LIST;
     argv[4].vval.v_list = recorded_changes;
+
+    // Ensure the list of changes is locked to prevent any modifications by
+    // callback code..
+    val.v_type = VAR_LIST;
+    val.v_lock = 0;
+    val.vval.v_list = recorded_changes;
+    item_lock(&val, -1, TRUE, FALSE);
 
     // Protect against recursive callbacks, lock the buffer against changes and
     // set the updating_screen flag to prevent channel input processing, which
@@ -547,7 +554,6 @@ invoke_sync_listeners(
 	return;
 
     ++recorded_changes->lv_refcount;
-    recorded_changes->lv_lock = VAR_FIXED;
 
     dict = dict_alloc();
     if (dict == NULL)

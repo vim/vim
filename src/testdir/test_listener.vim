@@ -21,8 +21,21 @@ func s:AnotherStoreList(l)
 endfunc
 
 func s:EvilStoreList(l)
+  func! Modify_dict_in_list(the_list, key)
+    let a:the_list[0][a:key] = a:the_list[0][a:key] + 1
+  endfunc
+  func! Modify_list_entry(the_list)
+    let a:the_list[0] = 42
+  endfunc
+
   let s:list3 = a:l
-  call assert_fails("call add(a:l, 'myitem')", "E742:")
+  call assert_fails("call add(a:l, 'myitem')", "E741:")
+  call assert_fails("call remove(a:l, 1)", "E741:")
+  call assert_fails("call Modify_dict_in_list(a:l, 'lnum')", "E741:")
+  call assert_fails("call Modify_dict_in_list(a:l, 'end')", "E741:")
+  call assert_fails("call Modify_dict_in_list(a:l, 'col')", "E741:")
+  call assert_fails("call Modify_dict_in_list(a:l, 'added')", "E741:")
+  call assert_fails("call Modify_list_entry(a:l)", "E741:")
 endfunc
 
 func Test_listening()
