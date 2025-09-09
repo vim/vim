@@ -169,8 +169,8 @@ typedef struct {
     cmdidx_T	cmdidx;
     char_u	*cmd;
     win_T	*wp;
-    buf_T	*buf;
-    bufref_T	bufref; // Buffer :make was called in
+    bufref_T	bufref;    // Terminal buffer
+    bufref_T	curbufref;  // Buffer :make was called in
 } qf_make_info;
 
 // Counter to prevent autocmds from freeing up location lists when they are
@@ -5463,9 +5463,16 @@ make_command_exit_cb(typval_T *args UNUSED, typval_T *rettv UNUSED)
     int_u	save_qfid;
     qf_info_T	*qi = ql_info;
     win_T	*wp = NULL;
+    buf_T	*buf;
 
     if (!make_info.running)
 	return;
+
+    // User may have closed the buffer
+    if (!bufref_valid(&make_info.bufref))
+	goto exit;
+
+    buf = make_info.bufref.br_buf;
 
     if (make_info.cmdidx == CMD_lmake)
     {
@@ -5480,13 +5487,13 @@ make_command_exit_cb(typval_T *args UNUSED, typval_T *rettv UNUSED)
 	goto exit;
 
     // Wait for terminal to finish
-    term_wait(make_info.buf, -1);
+    term_wait(buf, -1);
 
     incr_quickfix_busy();
 
     // Create quickfix/location list from terminal buffer
-    res = qf_init_ext(qi, qi->qf_curlist, NULL, make_info.buf, NULL, p_efm,
-	    TRUE, 1, make_info.buf->b_ml.ml_line_count, make_info.cmd, NULL);
+    res = qf_init_ext(qi, qi->qf_curlist, NULL, buf, NULL, p_efm, TRUE, 1,
+	    buf->b_ml.ml_line_count, make_info.cmd, NULL);
 
     if (qf_stack_empty(qi))
     {
@@ -5502,14 +5509,18 @@ make_command_exit_cb(typval_T *args UNUSED, typval_T *rettv UNUSED)
     // check for autocommands changing the current quickfix list.
     save_qfid = qf_get_curlist(qi)->qf_id;
 
-    if (au_name != NULL && bufref_valid(&make_info.bufref))
+    if (au_name != NULL && bufref_valid(&make_info.curbufref))
 	// Call autocmd in context of buffer that :make was called in
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
-		make_info.bufref.br_buf->b_fname, TRUE, make_info.bufref.br_buf);
+		make_info.curbufref.br_buf->b_fname, TRUE, make_info.curbufref.br_buf);
 
     // Jump to first error if there are any and user didn't specify not to
     if (res > 0 && make_info.jump_to_first && qflist_valid(wp, save_qfid))
+    {
+	// Create a split
+	win_split(0, WSP_VERT);
 	qf_jump_first(qi, save_qfid, FALSE);
+    }
 
     decr_quickfix_busy();
 exit:
@@ -5521,38 +5532,38 @@ exit:
 run_make_in_terminal(exarg_T *eap)
 {
     typval_T	argvar[2];
-    jobopt_T    opt;
-
-    init_job_options(&opt);
+    jobopt_T    *opt;
+    buf_T	*buf;
 
     argvar[0].v_type = VAR_STRING;
     argvar[0].vval.v_string = eap->arg;
     argvar[1].v_type = VAR_UNKNOWN;
 
-    opt.jo_hidden = eap->make_info.term_hidden;
-    if (eap->make_info.rows > 0)
-    {
-	opt.jo_term_rows = eap->make_info.rows;
-	opt.jo_set2 |= JO2_TERM_ROWS;
-    }
-    if (eap->make_info.cols > 0)
-    {
-	opt.jo_term_cols = eap->make_info.cols;
-	opt.jo_set2 |= JO2_TERM_COLS;
-    }
+    opt = &eap->make_info.opt;
+    opt->jo_exit_cb = create_callback(make_command_exit_cb);
+    opt->jo_set |= JO_EXIT_CB;
 
-    opt.jo_exit_cb = create_callback(make_command_exit_cb);
-    opt.jo_set |= JO_EXIT_CB;
+    opt->jo_term_norestore = TRUE;
+    opt->jo_set2 |= JO2_NORESTORE;
 
-    make_info.running = true;
+    // Save current buffer for use in QuickFixCmdPost autocommand
+    set_bufref(&make_info.curbufref, curbuf);
+    buf = term_start(argvar, NULL, opt, 0, make_get_auname(eap->cmdidx));
+
+    // If curbuf is not the buf we created, then the user likely deleted it.
+    if (buf == NULL || buf != curbuf)
+	return;
+
     make_info.cmdidx = eap->cmdidx;
-    make_info.cmd = vim_strsave(eap->arg);
-    make_info.jump_to_first = !eap->forceit;
     make_info.wp = curwin;
+    make_info.cmd = vim_strsave(eap->arg);
 
-    set_bufref(&make_info.bufref, curbuf);
+    // When [!] is not passed, a new split will be created for the window showing
+    // where the error is.
+    make_info.jump_to_first = !eap->forceit;
+    make_info.running = true;
 
-    make_info.buf = term_start(argvar, NULL, &opt, 0, make_get_auname(eap->cmdidx));
+    set_bufref(&make_info.bufref, buf);
 }
 
 # endif
