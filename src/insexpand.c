@@ -154,9 +154,8 @@ static string_T	  compl_leader = {NULL, 0};
 static int	  compl_get_longest = FALSE;	// put longest common string
 						// in compl_leader
 
-// This flag indicates that one of the items in the match list is currently
-// selected.  FALSE when no match is selected or the match was edited or using
-// the longest common string.
+// This flag is FALSE when no match is selected (by ^N/^P) or the match was
+// edited or using the longest common string.
 static int	  compl_used_match;
 
 // didn't finish finding completions.
@@ -5960,7 +5959,8 @@ ins_compl_insert(int move_cursor, int preinsert_prefix)
 		curwin->w_cursor.col -= (colnr_T)(cp_str_len - leader_len);
 	}
     }
-    if (match_at_original_text(compl_shown_match) || preinsert)
+    if (match_at_original_text(compl_shown_match)
+	    || (preinsert && !compl_autocomplete))
 	compl_used_match = FALSE;
     else
 	compl_used_match = TRUE;
