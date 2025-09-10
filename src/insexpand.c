@@ -1067,10 +1067,13 @@ ins_compl_col_range_attr(linenr_T lnum, int col)
 {
     int	    start_col;
     int	    attr;
+    int	    has_preinsert = ins_compl_has_preinsert();
 
     if ((get_cot_flags() & COT_FUZZY)
-	    || (!compl_autocomplete
+	    || (!has_preinsert
 		&& (attr = syn_name2attr((char_u *)"ComplMatchIns")) == 0)
+	    || (!compl_autocomplete && has_preinsert
+		&& (attr = syn_name2attr((char_u *)"PreInsert")) == 0)
 	    || (compl_autocomplete
 		&& (!compl_autocomplete_preinsert
 		    || (attr = syn_name2attr((char_u *)"PreInsert")) == 0)))
@@ -2531,9 +2534,7 @@ ins_compl_new_leader(void)
 	if (compl_started && compl_autocomplete
 		&& !ins_compl_preinsert_effect())
 	{
-	    if (ins_compl_insert(TRUE, TRUE) != OK)
-		(void)ins_compl_insert(FALSE, FALSE);
-	    else
+	    if (ins_compl_insert(TRUE, TRUE) == OK)
 		compl_autocomplete_preinsert = TRUE;
 	}
 	else
