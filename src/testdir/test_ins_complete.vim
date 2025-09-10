@@ -1924,26 +1924,26 @@ func Test_cpt_select_item_refresh_always()
   call setline(1, "foob")
   let g:CallCount = 0
   exe "normal! Gof\<c-n>\<bs>\<c-r>=CompleteMenuWords()\<cr>"
-  call assert_equal('foo{''selected'': 0, ''items'': [''foob'', ''foonext'']}', getline(2))
+  call assert_equal('foo{''selected'': -1, ''items'': [''foob'', ''foonext'']}', getline(2))
   call assert_equal(2, g:CallCount)
   %d
   call setline(1, "foob")
   let g:CallCount = 0
   exe "normal! Gof\<c-n>\<bs>\<bs>\<c-r>=CompleteMenuWords()\<cr>"
-  call assert_equal('fo{''selected'': 0, ''items'': [''foob'', ''foo1'', ''foo2'']}', getline(2))
+  call assert_equal('fo{''selected'': -1, ''items'': [''foob'', ''foo1'', ''foo2'']}', getline(2))
   call assert_equal(3, g:CallCount)
 
   %d
   call setline(1, "foob")
   let g:CallCount = 0
   exe "normal! Gof\<c-p>\<bs>\<c-r>=CompleteMenuWords()\<cr>"
-  call assert_equal('foo{''selected'': 1, ''items'': [''foonext'', ''foob'']}', getline(2))
+  call assert_equal('foo{''selected'': -1, ''items'': [''foonext'', ''foob'']}', getline(2))
   call assert_equal(2, g:CallCount)
   %d
   call setline(1, "foob")
   let g:CallCount = 0
   exe "normal! Gof\<c-p>\<bs>\<bs>\<c-r>=CompleteMenuWords()\<cr>"
-  call assert_equal('fo{''selected'': 2, ''items'': [''foo1'', ''foo2'', ''foob'']}', getline(2))
+  call assert_equal('fo{''selected'': -1, ''items'': [''foo1'', ''foo2'', ''foob'']}', getline(2))
   call assert_equal(3, g:CallCount)
 
   %d
@@ -5246,6 +5246,21 @@ func Test_autocomplete_trigger()
   call assert_equal([], b:matches->mapnew('v:val.word'))
   call feedkeys("Sazx\<Left>\<BS>\<F2>\<Esc>0", 'tx!')
   call assert_equal(['and', 'afoo'], b:matches->mapnew('v:val.word'))
+
+  " Test 6: <BS> should clear the selected item
+  %d
+  call setline(1, ["foobarfoo", "foobar", "foobarbaz"])
+  call feedkeys("Gofo\<C-N>\<C-N>\<F2>\<F3>\<Esc>0", 'tx!')
+  call assert_equal(['foobarbaz', 'foobar', 'foobarfoo'], b:matches->mapnew('v:val.word'))
+  call assert_equal(1, b:selected)
+  call feedkeys("Sfo\<C-N>\<C-N>\<BS>\<F2>\<F3>\<Esc>0", 'tx!')
+  call assert_equal(['foobarbaz', 'foobar', 'foobarfoo'], b:matches->mapnew('v:val.word'))
+  call assert_equal(-1, b:selected)
+  call assert_equal('fooba', getline(4))
+  call feedkeys("Sfo\<C-N>\<C-N>\<BS>\<C-N>\<F2>\<F3>\<Esc>0", 'tx!')
+  call assert_equal(['foobarbaz', 'foobar', 'foobarfoo'], b:matches->mapnew('v:val.word'))
+  call assert_equal(0, b:selected)
+  call assert_equal('foobarbaz', getline(4))
 
   bw!
   call test_override("char_avail", 0)

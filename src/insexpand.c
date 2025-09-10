@@ -2421,6 +2421,10 @@ ins_compl_bs(void)
 	return K_BS;
     }
 
+    // Clear selection if a menu item is currently selected
+    if (compl_first_match)
+	compl_shown_match = compl_first_match;
+
     ins_compl_new_leader();
     if (compl_shown_match != NULL)
 	// Make sure current match is not a hidden item.
@@ -2601,6 +2605,11 @@ ins_compl_addleader(int c)
 	    compl_leader.length = 0;
 	    return;
 	}
+
+	// "preinsert" insertes the first match via compl_shown_match
+	if (ins_compl_has_preinsert() && !compl_autocomplete
+		&& compl_first_match && compl_first_match->cp_next)
+	    compl_shown_match = compl_first_match->cp_next;
 
 	ins_compl_new_leader();
     }
