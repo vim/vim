@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Jul 13
+" Last Change:	2025 Sep 10
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
@@ -32,8 +32,6 @@ endif
 silent! while 0
   set nocompatible
 silent! endwhile
-
-set ruler		" show the cursor position all the time
 
 set ttimeout		" time out for key codes
 set ttimeoutlen=100	" wait up to 100ms after Esc for special key

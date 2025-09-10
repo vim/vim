@@ -41669,6 +41669,8 @@ Default values: ~
 - the default value for 'showcmd' is always enabled when using non-compatible
   mode (previously, it was off on UNIX systems) and consequently removed from
   |defaults.vim|
+- the 'ruler' option value is always enabled when using non-compatible mode
+  and removed from |defaults.vim|
 
 Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
