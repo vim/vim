@@ -1217,6 +1217,7 @@ func Test_diff_with_cursorline()
   CheckScreendump
 
   call writefile([
+	\ 'set diffopt=internal,filler',
 	\ 'hi CursorLine ctermbg=red ctermfg=white',
 	\ 'set cursorline',
 	\ 'call setline(1, ["foo","foo","foo","bar"])',
@@ -1333,6 +1334,7 @@ func Test_diff_with_syntax()
   call writefile(lines, 'Xprogram2.c', 'D')
 
   let lines =<< trim END
+    set diffopt=internal,filler
 	edit Xprogram1.c
 	diffsplit Xprogram2.c
   END
@@ -1475,6 +1477,7 @@ func Test_diff_rnu()
   CheckScreendump
 
   let content =<< trim END
+    set diffopt=internal,filler
     call setline(1, ['a', 'a', 'a', 'y', 'b', 'b', 'b', 'b', 'b'])
     vnew
     call setline(1, ['a', 'a', 'a', 'x', 'x', 'x', 'b', 'b', 'b', 'b', 'b'])
