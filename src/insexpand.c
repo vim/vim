@@ -2531,9 +2531,7 @@ ins_compl_new_leader(void)
 	if (compl_started && compl_autocomplete
 		&& !ins_compl_preinsert_effect())
 	{
-	    if (ins_compl_insert(TRUE, TRUE) != OK)
-		(void)ins_compl_insert(FALSE, FALSE);
-	    else
+	    if (ins_compl_insert(TRUE, TRUE) == OK)
 		compl_autocomplete_preinsert = TRUE;
 	}
 	else
