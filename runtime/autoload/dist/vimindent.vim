@@ -401,6 +401,7 @@ const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
     .. '\|' .. OPERATOR
     .. '\|' .. '->\s*\h'
     .. '\|' .. '\.\h'  # dict member
+    .. '\|' .. '->\s*(' # lambda call: ->((v) => v ? "ON" : "OFF")()
     .. '\|' .. '|'
     # TODO: `}` at the start of a line is not necessarily a line continuation.
     # Could be the end of a block.
