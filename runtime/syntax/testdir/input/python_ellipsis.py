@@ -41,3 +41,6 @@ class C:
 
 # Numpy
 x[..., 0]
+
+# Issue #18263 (Python highlighting ellipsis, false positive)
+a = ".." # comment
