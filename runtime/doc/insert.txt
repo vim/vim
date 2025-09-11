@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 9.1.  Last change: 2025 Sep 10
+*insert.txt*    For Vim version 9.1.  Last change: 2025 Sep 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1164,8 +1164,8 @@ This enables automatic completion with suggestions from the current buffer,
 other windows, and listed buffers, displayed in a popup menu.  Each source is
 limited to 5 candidates.  <Tab> and <S-Tab> move through the items when the
 menu is visible.  Optionally, add "preinsert" to 'completeopt' to insert the
-longest common prefix automatically.  You can also add other completion
-sources to 'complete' as needed.
+longest common prefix automatically.  Additional sources (e.g., LSP clients)
+may be added to 'complete' to improve completion as required.
 
 See also 'autocomplete', 'autocompletedelay' and 'autocompletetimeout'.
 

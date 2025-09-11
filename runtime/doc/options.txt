@@ -2164,8 +2164,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		is especially important for |ins-autocompletion|.
 	F	equivalent to using "F{func}", where the function is taken from
 		the 'completefunc' option.
-	o	equivalent to using "F{func}", where the function is taken from
-		the 'omnifunc' option.
+	o	equivalent to "F{func}", where {func} is taken from the 'omnifunc'
+		option.  If a plugin (such as an LSP client) defines 'omnifunc', it
+		can be used through this flag.
 
 	Unloaded buffers are not loaded, thus their autocmds |:autocmd| are
 	not executed, this may lead to unexpected completions from some files
