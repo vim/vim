@@ -862,6 +862,7 @@ func Test_diff_nomodifiable()
 endfunc
 
 func Test_diff_hlID()
+  set diffopt=internal,filler
   new
   call setline(1, [1, 2, 3, 'Yz', 'a dxxg',])
   diffthis
@@ -904,6 +905,7 @@ func Test_diff_hlID()
   call assert_equal(synIDattr(diff_hlID(3, 1), "name"), "")
 
   %bwipe!
+  set diffopt&
 endfunc
 
 func Test_diff_filler()
@@ -1079,18 +1081,18 @@ func Test_diff_screen()
   call term_sendkeys(buf, ":set diffopt+=algorithm:histogram\<cr>")
   call VerifyScreenDump(buf, 'Test_diff_09', {})
 
-  " Test 10-11: normal/indent-heuristic
+  " Test 10-11: with/without indent-heuristic
   call term_sendkeys(buf, ":set diffopt&vim\<cr>")
   call WriteDiffFiles(buf, ['', '  def finalize(values)', '', '    values.each do |v|', '      v.finalize', '    end'],
       \ ['', '  def finalize(values)', '', '    values.each do |v|', '      v.prepare', '    end', '',
       \ '    values.each do |v|', '      v.finalize', '    end'])
   call term_sendkeys(buf, ":diffupdate!\<cr>")
-  call term_sendkeys(buf, ":set diffopt+=internal\<cr>")
-  call VerifyScreenDump(buf, 'Test_diff_10', {})
+  call term_sendkeys(buf, ":set diffopt+=internal\<cr>:\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_11', {})
 
   " Leave trailing : at commandline!
-  call term_sendkeys(buf, ":set diffopt+=indent-heuristic\<cr>:\<cr>")
-  call VerifyScreenDump(buf, 'Test_diff_11', {}, 'one')
+  call term_sendkeys(buf, ":set diffopt-=indent-heuristic\<cr>:\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_10', {}, 'one')
   " shouldn't matter, if indent-algorithm comes before or after the algorithm
   call term_sendkeys(buf, ":set diffopt&\<cr>")
   call term_sendkeys(buf, ":set diffopt+=indent-heuristic,algorithm:patience\<cr>:\<cr>")
@@ -1331,6 +1333,7 @@ func Test_diff_with_syntax()
   call writefile(lines, 'Xprogram2.c', 'D')
 
   let lines =<< trim END
+    set diffopt=internal,filler
 	edit Xprogram1.c
 	diffsplit Xprogram2.c
   END
@@ -1473,6 +1476,7 @@ func Test_diff_rnu()
   CheckScreendump
 
   let content =<< trim END
+    set diffopt=internal,filler
     call setline(1, ['a', 'a', 'a', 'y', 'b', 'b', 'b', 'b', 'b'])
     vnew
     call setline(1, ['a', 'a', 'a', 'x', 'x', 'x', 'b', 'b', 'b', 'b', 'b'])
@@ -1560,6 +1564,7 @@ endfunc
 " Test for adding/removing lines inside diff chunks, between diff chunks
 " and before diff chunks
 func Test_diff_modify_chunks()
+  set diffopt=internal,filler
   enew!
   let w2_id = win_getid()
   call setline(1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'])
@@ -1639,6 +1644,7 @@ func Test_diff_modify_chunks()
   call assert_equal(['', '', '', '', '', '', '', '', ''], hl)
 
   %bw!
+  set diffopt&
 endfunc
 
 func Test_diff_binary()
@@ -2868,7 +2874,7 @@ func Test_linematch_diff()
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
   " enable linematch
-  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call term_sendkeys(buf, ":set diffopt=internal,filler,linematch:30\<CR>")
   call WriteDiffFiles(buf, ['// abc d?',
       \ '// d?',
       \ '// d?' ],
@@ -2896,7 +2902,7 @@ func Test_linematch_diff_iwhite()
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
   " setup a diff with 2 files and set linematch:30, with ignore white
-  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call term_sendkeys(buf, ":set diffopt=internal,filler,linematch:30\<CR>")
   call WriteDiffFiles(buf, ['void testFunction () {',
       \ '  for (int i = 0; i < 10; i++) {',
       \ '    for (int j = 0; j < 10; j++) {',
@@ -2923,7 +2929,7 @@ func Test_linematch_diff_grouping()
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
   " a diff that would result in multiple groups before grouping optimization
-  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call term_sendkeys(buf, ":set diffopt=internal,filler,linematch:30\<CR>")
   call WriteDiffFiles(buf, ['!A',
       \ '!B',
       \ '!C' ],
@@ -2961,7 +2967,7 @@ func Test_linematch_diff_scroll()
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
   " a diff that would result in multiple groups before grouping optimization
-  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call term_sendkeys(buf, ":set diffopt=internal,filler,linematch:30\<CR>")
   call WriteDiffFiles(buf, ['!A',
       \ '!B',
       \ '!C' ],
@@ -2992,7 +2998,7 @@ func Test_linematch_line_limit_exceeded()
   let buf = RunVimInTerminal('-d Xdifile1 Xdifile2', {})
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
-  call term_sendkeys(buf, ":set diffopt+=linematch:10\<CR>")
+  call term_sendkeys(buf, ":set diffopt=internal,filler,linematch:10\<CR>")
   " a diff block will not be aligned with linematch because it's contents
   " exceed 10 lines
   call WriteDiffFiles(buf,
@@ -3044,7 +3050,7 @@ func Test_linematch_3diffs()
   call term_sendkeys(buf, "1\<c-w>w:set autoread\<CR>")
   call term_sendkeys(buf, "2\<c-w>w:set autoread\<CR>")
   call term_sendkeys(buf, "3\<c-w>w:set autoread\<CR>")
-  call term_sendkeys(buf, ":set diffopt+=linematch:30\<CR>")
+  call term_sendkeys(buf, ":set diffopt=internal,filler,linematch:30\<CR>")
   call WriteDiffFiles3(buf,
         \ ["",
         \ "  common line",
@@ -3079,7 +3085,7 @@ func Test_linematch_3diffs_sanity_check()
   call delete('.Xfile_linematch2.swp')
   call delete('.Xfile_linematch3.swp')
   let lines =<< trim END
-    set diffopt+=linematch:60
+    set diffopt=internal,filler,linematch:60
     call feedkeys("Aq\<esc>")
     call feedkeys("GAklm\<esc>")
     call feedkeys("o")

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 10
+*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3067,7 +3067,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'dip'* *'diffopt'*
 'diffopt' 'dip'		string	(default
-				 "internal,filler,closeoff,inline:simple")
+				 "internal,filler,closeoff,indent-heuristic,inline:char")
 			global
 			{not available when compiled without the |+diff|
 			feature}
