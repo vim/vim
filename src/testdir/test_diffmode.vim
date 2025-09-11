@@ -1081,19 +1081,18 @@ func Test_diff_screen()
   call term_sendkeys(buf, ":set diffopt+=algorithm:histogram\<cr>")
   call VerifyScreenDump(buf, 'Test_diff_09', {})
 
-  " Test 10-11: without/with indent-heuristic
+  " Test 10-11: with/without indent-heuristic
   call term_sendkeys(buf, ":set diffopt&vim\<cr>")
   call WriteDiffFiles(buf, ['', '  def finalize(values)', '', '    values.each do |v|', '      v.finalize', '    end'],
       \ ['', '  def finalize(values)', '', '    values.each do |v|', '      v.prepare', '    end', '',
       \ '    values.each do |v|', '      v.finalize', '    end'])
   call term_sendkeys(buf, ":diffupdate!\<cr>")
-  call term_sendkeys(buf, ":set diffopt-=indent-heuristic\<cr>")
-  call term_sendkeys(buf, ":set diffopt+=internal\<cr>")
-  call VerifyScreenDump(buf, 'Test_diff_10', {})
+  call term_sendkeys(buf, ":set diffopt+=internal\<cr>:\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_11', {})
 
   " Leave trailing : at commandline!
-  call term_sendkeys(buf, ":set diffopt+=indent-heuristic\<cr>:\<cr>")
-  call VerifyScreenDump(buf, 'Test_diff_11', {}, 'one')
+  call term_sendkeys(buf, ":set diffopt-=indent-heuristic\<cr>:\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_10', {}, 'one')
   " shouldn't matter, if indent-algorithm comes before or after the algorithm
   call term_sendkeys(buf, ":set diffopt&\<cr>")
   call term_sendkeys(buf, ":set diffopt+=indent-heuristic,algorithm:patience\<cr>:\<cr>")
@@ -1218,7 +1217,6 @@ func Test_diff_with_cursorline()
   CheckScreendump
 
   call writefile([
-	\ 'set diffopt=internal,filler',
 	\ 'hi CursorLine ctermbg=red ctermfg=white',
 	\ 'set cursorline',
 	\ 'call setline(1, ["foo","foo","foo","bar"])',
