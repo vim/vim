@@ -8,7 +8,8 @@ if exists('b:did_ftplugin')
 endif
 let b:did_ftplugin = 1
 
-setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
+setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,:///,://
 setlocal commentstring=//\ %s
+setlocal foldmethod=syntax
 
-let b:undo_ftplugin = 'setl com< cms<'
+let b:undo_ftplugin = 'setl com< cms< fdm<'
