@@ -3083,7 +3083,7 @@ function s:NetrwBrowse(islocal,dirname)
     " previous buffer
     let prevbufnr = bufnr('%')
     let reusing= s:NetrwGetBuffer(a:islocal,dirname)
-    if exists("s:rexposn_".prevbufnr)
+    if exists("s:rexposn_".prevbufnr) && exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST
         let s:rexposn_{bufnr('%')} = s:rexposn_{prevbufnr}
     endif
 
