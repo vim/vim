@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 10
+*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5088,8 +5088,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	autocmd.  Example: >
 		augroup vimrc-incsearch-highlight
 		  autocmd!
-		  autocmd CmdlineEnter /,\? :set hlsearch
-		  autocmd CmdlineLeave /,\? :set nohlsearch
+		  autocmd CmdlineEnter [\/\?] :set hlsearch
+		  autocmd CmdlineLeave [\/\?] :set nohlsearch
 		augroup END
 <
 	CTRL-L can be used to add one character from after the current match
