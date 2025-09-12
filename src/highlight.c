@@ -2068,6 +2068,7 @@ set_normal_colors(void)
 				 FALSE, TRUE, FALSE))
 	{
 	    gui_mch_new_colors();
+	    gui_mch_set_caption();
 	    set_must_redraw(UPD_CLEAR);
 	}
 #  ifdef FEAT_GUI_X11
