@@ -17,24 +17,16 @@
 
 #ifndef USE_SYSTEM	// use fork/exec to start the shell
 
-# if defined(HAVE_SYS_WAIT_H) || defined(HAVE_UNION_WAIT)
+# if defined(HAVE_SYS_WAIT_H)
 #  include <sys/wait.h>
 # endif
 
 # ifndef WEXITSTATUS
-#  ifdef HAVE_UNION_WAIT
-#   define WEXITSTATUS(stat_val) ((stat_val).w_T.w_Retcode)
-#  else
-#   define WEXITSTATUS(stat_val) (((stat_val) >> 8) & 0377)
-#  endif
+#  define WEXITSTATUS(stat_val) (((stat_val) >> 8) & 0377)
 # endif
 
 # ifndef WIFEXITED
-#  ifdef HAVE_UNION_WAIT
-#   define WIFEXITED(stat_val) ((stat_val).w_T.w_Termsig == 0)
-#  else
-#   define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
-#  endif
+#  define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
 # endif
 
 #endif // !USE_SYSTEM
