@@ -883,6 +883,8 @@ vim_main2(void)
     // Requesting the termresponse is postponed until here, so that a "-c q"
     // argument doesn't make it appear in the shell Vim was started from.
     may_req_termresponse();
+
+    may_req_bg_color();
 #endif
 
     // start in insert mode
