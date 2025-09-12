@@ -488,4 +488,12 @@ VIM_KEYCODE_TRANS_STRATEGY can be set to the desired value ("experimental" or
         set VIM_KEYCODE_TRANS_STRATEGY=experimental
         gvim.exe
 <
+
+Keycode translation strategy			*w32-caption-bar-setting*
+
+The color of caption bar is seem as an extension of the background.
+So before Windows 11 the color will obey the value of 'background',
+and after Windows 11 the color will obey the value of |:hi-normal|,
+which means that as same as your background color.
+
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

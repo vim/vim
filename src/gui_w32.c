@@ -318,6 +318,22 @@ gui_mch_set_rendering_options(char_u *s)
 # define SPI_SETWHEELSCROLLCHARS	0x006D
 #endif
 
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1
+# define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1	19
+#endif
+
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+# define DWMWA_USE_IMMERSIVE_DARK_MODE 	20
+#endif
+
+#ifndef DWMWA_CAPTION_COLOR
+# define DWMWA_CAPTION_COLOR		35
+#endif
+
+#ifndef DWMWA_TEXT_COLOR
+# define DWMWA_TEXT_COLOR		36
+#endif
+
 #ifdef PROTO
 /*
  * Define a few things for generating prototypes.  This is just to avoid
@@ -467,6 +483,9 @@ static int (WINAPI *pGetSystemMetricsForDpi)(int, UINT) = NULL;
 //static INT (WINAPI *pGetWindowDpiAwarenessContext)(HWND hwnd) = NULL;
 static DPI_AWARENESS_CONTEXT (WINAPI *pSetThreadDpiAwarenessContext)(DPI_AWARENESS_CONTEXT dpiContext) = NULL;
 static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT) = NULL;
+
+// Sets the value of Desktop Window Manager (DWM) non-client rendering attributes for a window.
+static HRESULT (WINAPI *pDwmSetWindowAttribute)(HWND, DWORD, LPCVOID, DWORD) = NULL;
 
     static int WINAPI
 stubGetSystemMetricsForDpi(int nIndex, UINT dpi UNUSED)
@@ -1589,6 +1608,56 @@ _TextAreaWndProc(
 	default:
 	    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     }
+}
+
+    static void
+load_dwm_func(void)
+{
+    static HMODULE hDwmLib = NULL;
+
+    if (hDwmLib != NULL)
+	return;
+
+    hDwmLib = LoadLibrary("dwmapi.dll");
+    if (hDwmLib == NULL)
+	return;
+
+    pDwmSetWindowAttribute = (HRESULT (WINAPI *)(HWND, DWORD, LPCVOID, DWORD))
+	GetProcAddress(hDwmLib, "DwmSetWindowAttribute");
+}
+
+extern BOOL win10_20H1_or_later; // these are in os_win32.c
+extern BOOL win11_or_later;
+
+    void
+gui_mch_set_caption(void) // Set Caption Bar
+{
+    if (pDwmSetWindowAttribute == NULL)
+	return;
+
+    const BOOL is_dark = *p_bg == 'd';
+
+    if (win11_or_later)
+    {
+	const COLORREF captionColor = gui.back_pixel;
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
+		&captionColor, sizeof(captionColor));
+	const COLORREF textColor = gui.norm_pixel;
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR,
+		&textColor, sizeof(textColor));
+    }
+    else if (win10_20H1_or_later)
+    {
+	pDwmSetWindowAttribute(
+		s_hwnd,
+		DWMWA_USE_IMMERSIVE_DARK_MODE,
+		&is_dark,
+		sizeof(is_dark)
+		);
+    }
+    else
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1,
+		&is_dark, sizeof(is_dark));
 }
 
 /*
@@ -5635,6 +5704,8 @@ gui_mch_init(void)
 #endif
 
     load_dpi_func();
+
+    load_dwm_func();
 
     s_dpi = pGetDpiForSystem();
     update_scrollbar_size();
