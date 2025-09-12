@@ -1974,6 +1974,13 @@ struct exarg
 #ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
 #endif
+    // Used by :make
+    struct {
+	long rows;
+	long cols;
+	int use_term;
+	int term_hidden;
+    } make_info;
 };
 
 #define FORCE_BIN 1		// ":edit ++bin file"
