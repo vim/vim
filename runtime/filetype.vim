@@ -965,9 +965,6 @@ au BufRead,BufNewFile *.gdshader,*.shader	setf gdshader
 " Gedcom
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
-" Generic log file
-au BufNewFile,BufRead *.log,*_log,*.LOG,*_LOG	setf log
-
 " Gemtext
 au BufNewFile,BufRead *.gmi,*.gemini		setf gemtext
 
@@ -3412,6 +3409,9 @@ au BufNewFile,BufRead *.blp			setf blueprint
 
 " Blueprint build system file
 au BufNewFile,BufRead *.bp			setf bp
+
+" Generic log file
+au BufNewFile,BufRead *.log,*_log,*.LOG,*_LOG	setf log
 
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.
