@@ -655,6 +655,7 @@ func Test_termdebug_toggle_break()
   " Remove one break point
   execute "normal! " .. bp_line .. "G"
   execute "ToggleBreak"
+  call term_wait(gdb_buf)
   redraw!
   call WaitForAssert({-> assert_equal([
         \ {'lnum': bp_line, 'id': 2014, 'name': 'debugBreakpoint2.0',
@@ -668,9 +669,9 @@ func Test_termdebug_toggle_break()
   execute "Break"
   execute "Break"
   execute "Break"
-  call term_wait(gdb_buf, 400)
+  call term_wait(gdb_buf)
   execute "ToggleBreak"
-  call term_wait(gdb_buf, 400)
+  call term_wait(gdb_buf)
   redraw!
   call WaitForAssert({-> assert_equal([
         \ {'lnum': bp_line, 'id': 12, 'name': 'debugPC', 'priority': 110,
