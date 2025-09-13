@@ -57,7 +57,7 @@ syn match logTimeZone '\d\{4} [A-Z]\{2,5}\>' contained
 
 " Entities
 "---------------------------------------------------------------------------
-syn match logUrl        'http[s]\?:\/\/[^\n|,; '"]\+'
+syn match logUrl        'http[s]\?:\/\/\S\+'
 syn match logDomain     /\v(^|\s)(\w|-)+(\.(\w|-)+)+\s/
 syn match logUUID       '\w\{8}-\w\{4}-\w\{4}-\w\{4}-\w\{12}'
 syn match logMD5        '\<[a-z0-9]\{32}\>'
