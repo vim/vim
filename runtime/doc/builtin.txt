@@ -1921,7 +1921,7 @@ complete({startcol}, {matches})			*complete()* *E785*
 		text start.  The text up to the cursor is the original text
 		that will be replaced by the matches.  Use col('.') for an
 		empty string.  "col('.') - 1" will replace one character by a
-		match.
+		match.  Use 1 for entire line.
 		{matches} must be a |List|.  Each |List| item is one match.
 		See |complete-items| for the kind of items that are possible.
 		"longest" in 'completeopt' is ignored.
