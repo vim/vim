@@ -323,7 +323,7 @@ gui_mch_set_rendering_options(char_u *s)
 #endif
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
-# define DWMWA_USE_IMMERSIVE_DARK_MODE 	20
+# define DWMWA_USE_IMMERSIVE_DARK_MODE	20
 #endif
 
 #ifndef DWMWA_CAPTION_COLOR
