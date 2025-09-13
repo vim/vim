@@ -536,6 +536,7 @@ runtime/syntax/just.vim					@pbnj
 runtime/syntax/jq.vim					@vito-c
 runtime/syntax/karel.vim				@kirillmorozov
 runtime/syntax/kconfig.vim				@chrisbra
+runtime/syntax/kitty.vim				@OXY2DEV
 runtime/syntax/kivy.vim					@prophittcorey
 runtime/syntax/kotlin.vim				@udalov
 runtime/syntax/kdl.vim					@imsnif @jiangyinzuo

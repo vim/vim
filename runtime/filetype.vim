@@ -1340,6 +1340,9 @@ au BufNewFile,BufRead *.jl			setf julia
 " Just
 au BufNewFile,BufRead \c{,*.}justfile,\c*.just setf just
 
+" Kitty
+au BufNewFile,BufRead kitty.conf,*/kitty/*.conf setf kitty
+
 " KAREL
 au BufNewFile,BufRead *.kl setf karel
 if has("fname_case")
