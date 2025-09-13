@@ -252,7 +252,6 @@ NEW_TESTS = \
 	test_plugin_tohtml \
 	test_plugin_tutor \
 	test_plugin_zip \
-	test_plugin_colorresp \
 	test_plus_arg_edit \
 	test_popup \
 	test_popupwin \
@@ -526,7 +525,6 @@ NEW_TESTS_RES = \
 	test_plugin_tohtml.res \
 	test_plugin_tutor.res \
 	test_plugin_zip.res \
-	test_plugin_colorresp.res \
 	test_plus_arg_edit.res \
 	test_popup.res \
 	test_popupwin.res \
