@@ -1614,11 +1614,7 @@ _TextAreaWndProc(
 load_dwm_func(void)
 {
     static HMODULE hDwmLib = NULL;
-
-    if (hDwmLib != NULL)
-	return;
-
-    hDwmLib = LoadLibrary("dwmapi.dll");
+    hDwmLib = vimLoadLib("dwmapi.dll");
     if (hDwmLib == NULL)
 	return;
 
@@ -1648,12 +1644,8 @@ gui_mch_set_caption(void) // Set Caption Bar
     }
     else if (win10_20H1_or_later)
     {
-	pDwmSetWindowAttribute(
-		s_hwnd,
-		DWMWA_USE_IMMERSIVE_DARK_MODE,
-		&is_dark,
-		sizeof(is_dark)
-		);
+	pDwmSetWindowAttribute( s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
+		&is_dark, sizeof(is_dark));
     }
     else
 	pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1,
