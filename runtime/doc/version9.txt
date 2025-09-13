@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 11
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41670,7 +41670,7 @@ Default values: ~
 - the default value for 'showcmd' is always enabled when using non-compatible
   mode (previously, it was off on UNIX systems) and consequently removed from
   |defaults.vim|
-- Improve the diff experience by updating the 'diffopt' default value to
+- Improve the diff mode experience by updating the 'diffopt' default value to
   "internal,filler,closeoff,indent-heuristic,inline:char".
 
 Completion: ~
