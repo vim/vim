@@ -2606,11 +2606,6 @@ ins_compl_addleader(int c)
 	    return;
 	}
 
-	// "preinsert" inserts the first match via compl_shown_match
-	if (ins_compl_has_preinsert() && !compl_autocomplete
-		&& compl_first_match && compl_first_match->cp_next)
-	    compl_shown_match = compl_first_match->cp_next;
-
 	ins_compl_new_leader();
     }
 }
