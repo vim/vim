@@ -534,6 +534,7 @@ runtime/syntax/jsonc.vim				@izhakjakov
 runtime/syntax/julia.vim				@carlobaldassi
 runtime/syntax/just.vim					@pbnj
 runtime/syntax/jq.vim					@vito-c
+runtime/syntax/kitty.vim				@OXY2DEV
 runtime/syntax/karel.vim				@kirillmorozov
 runtime/syntax/kconfig.vim				@chrisbra
 runtime/syntax/kivy.vim					@prophittcorey
