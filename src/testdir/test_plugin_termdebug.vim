@@ -669,7 +669,7 @@ func Test_termdebug_toggle_break()
   execute "Break"
   execute "Break"
   execute "Break"
-  call term_wait(gdb_buf)
+  call term_wait(gdb_buf, 400)
   execute "ToggleBreak"
   call term_wait(gdb_buf)
   redraw!
