@@ -2422,7 +2422,7 @@ ins_compl_bs(void)
     }
 
     // Clear selection if a menu item is currently selected
-    if (compl_first_match)
+    if (compl_autocomplete && compl_first_match)
 	compl_shown_match = compl_first_match;
 
     ins_compl_new_leader();

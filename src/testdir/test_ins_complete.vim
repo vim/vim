@@ -1924,26 +1924,26 @@ func Test_cpt_select_item_refresh_always()
   call setline(1, "foob")
   let g:CallCount = 0
   exe "normal! Gof\<c-n>\<bs>\<c-r>=CompleteMenuWords()\<cr>"
-  call assert_equal('foo{''selected'': -1, ''items'': [''foob'', ''foonext'']}', getline(2))
+  call assert_equal('foo{''selected'': 0, ''items'': [''foob'', ''foonext'']}', getline(2))
   call assert_equal(2, g:CallCount)
   %d
   call setline(1, "foob")
   let g:CallCount = 0
   exe "normal! Gof\<c-n>\<bs>\<bs>\<c-r>=CompleteMenuWords()\<cr>"
-  call assert_equal('fo{''selected'': -1, ''items'': [''foob'', ''foo1'', ''foo2'']}', getline(2))
+  call assert_equal('fo{''selected'': 0, ''items'': [''foob'', ''foo1'', ''foo2'']}', getline(2))
   call assert_equal(3, g:CallCount)
 
   %d
   call setline(1, "foob")
   let g:CallCount = 0
   exe "normal! Gof\<c-p>\<bs>\<c-r>=CompleteMenuWords()\<cr>"
-  call assert_equal('foo{''selected'': -1, ''items'': [''foonext'', ''foob'']}', getline(2))
+  call assert_equal('foo{''selected'': 1, ''items'': [''foonext'', ''foob'']}', getline(2))
   call assert_equal(2, g:CallCount)
   %d
   call setline(1, "foob")
   let g:CallCount = 0
   exe "normal! Gof\<c-p>\<bs>\<bs>\<c-r>=CompleteMenuWords()\<cr>"
-  call assert_equal('fo{''selected'': -1, ''items'': [''foo1'', ''foo2'', ''foob'']}', getline(2))
+  call assert_equal('fo{''selected'': 2, ''items'': [''foo1'', ''foo2'', ''foob'']}', getline(2))
   call assert_equal(3, g:CallCount)
 
   %d
