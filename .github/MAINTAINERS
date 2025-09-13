@@ -187,8 +187,8 @@ runtime/ftplugin/gyp.vim				@ObserverOfTime
 runtime/ftplugin/haml.vim				@tpope
 runtime/ftplugin/hare.vim				@selenebun
 runtime/ftplugin/haredoc.vim				@selenebun
-runtime/ftplugin/heex.vim				@cvincent
 runtime/ftplugin/hcl.vim				@gpanders
+runtime/ftplugin/heex.vim				@cvincent
 runtime/ftplugin/hgcommit.vim				@k-takata
 runtime/ftplugin/hlsplaylist.vim			@avidseeker
 runtime/ftplugin/hog.vim				@wtfbbqhax
@@ -205,16 +205,17 @@ runtime/ftplugin/javacc.vim				@ribru17
 runtime/ftplugin/javascript.vim				@dkearns
 runtime/ftplugin/javascriptreact.vim			@dkearns
 runtime/ftplugin/jjdescription.vim			@gpanders
+runtime/ftplugin/jq.vim					@vito-c
 runtime/ftplugin/json.vim				@dbarnett
 runtime/ftplugin/json5.vim				@dkearns
 runtime/ftplugin/jsonc.vim				@izhakjakov
 runtime/ftplugin/julia.vim				@carlobaldassi
 runtime/ftplugin/just.vim				@pbnj
-runtime/ftplugin/jq.vim					@vito-c
 runtime/ftplugin/kconfig.vim				@chrisbra
 runtime/ftplugin/kdl.vim				@imsnif @jiangyinzuo
 runtime/ftplugin/kivy.vim				@ribru17
 runtime/ftplugin/kotlin.vim				@udalov
+runtime/ftplugin/lc.vim					@ribru17
 runtime/ftplugin/ldapconf.vim				@ribru17
 runtime/ftplugin/leo.vim				@ribru17
 runtime/ftplugin/less.vim				@genoma
@@ -222,7 +223,6 @@ runtime/ftplugin/lex.vim				@ribru17
 runtime/ftplugin/lf.vim					@andis-sprinkis
 runtime/ftplugin/liquid.vim				@tpope
 runtime/ftplugin/lua.vim				@dkearns
-runtime/ftplugin/lc.vim					@ribru17
 runtime/ftplugin/lynx.vim				@dkearns
 runtime/ftplugin/m17ndb.vim				@dseomn
 runtime/ftplugin/m3build.vim				@dkearns
@@ -543,9 +543,10 @@ runtime/syntax/krl.vim					@KnoP-01
 runtime/syntax/less.vim					@genoma
 runtime/syntax/lf.vim					@andis-sprinkis
 runtime/syntax/liquid.vim				@tpope
+runtime/syntax/log.vim					@mao-yining
 runtime/syntax/lua.vim					@marcuscf
-runtime/syntax/lyrics.vim				@ObserverOfTime
 runtime/syntax/lynx.vim					@dkearns
+runtime/syntax/lyrics.vim				@ObserverOfTime
 runtime/syntax/m17ndb.vim				@dseomn
 runtime/syntax/m3build.vim				@dkearns
 runtime/syntax/m3quake.vim				@dkearns
