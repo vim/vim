@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Sep 02
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Sep 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1629,7 +1629,8 @@ The pattern is interpreted like mostly used in file names:
 
 Note that for all systems the '/' character is used for path separator (even
 for MS-Windows).  This was done because the backslash is difficult to use in a
-pattern and to make the autocommands portable across different systems.
+pattern and to make the autocommands portable across different systems.  To
+only match a '/' on all platforms (e.g. in a non-file pattern), use "\/".
 
 It is possible to use |pattern| items, but they may not work as expected,
 because of the translation done for the above.

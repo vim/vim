@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 08
+*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2164,8 +2164,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		is especially important for |ins-autocompletion|.
 	F	equivalent to using "F{func}", where the function is taken from
 		the 'completefunc' option.
-	o	equivalent to using "F{func}", where the function is taken from
-		the 'omnifunc' option.
+	o	equivalent to "F{func}", where {func} is taken from the 'omnifunc'
+		option.  If a plugin (such as an LSP client) defines 'omnifunc', it
+		can be used through this flag.
 
 	Unloaded buffers are not loaded, thus their autocmds |:autocmd| are
 	not executed, this may lead to unexpected completions from some files
@@ -2301,15 +2302,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    {only works when compiled with the |+textprop| feature}
 
 	   preinsert
-		    When autocompletion is not enabled, inserts the part of the
+		    When 'autocomplete' is not active, inserts the part of the
 		    first candidate word beyond the current completion leader,
-		    highlighted with |hl-ComplMatchIns|.  The cursor does not
-		    move.  Requires 'fuzzy' unset and 'menuone' in 'completeopt'.
+		    highlighted with |hl-PreInsert|.  The cursor doesn't move.
+		    Requires "fuzzy" unset and "menuone" in 'completeopt'.
 
-		    When 'autocomplete' is enabled, inserts the longest common
-		    prefix of matches (from all shown items or buffer-specific
-		    matches), highlighted with |hl-PreInsert|.  This occurs only
-		    when no menu item is selected.  Press CTRL-Y to accept.
+		    When 'autocomplete' is active, inserts the longest common
+		    prefix of matches (from all shown items or from the
+		    current buffer items).  This occurs only when no menu item
+		    is selected.  Press CTRL-Y to accept.
 
 	   preview  Show extra information about the currently selected
 		    completion in the preview window.  Only works in
@@ -3067,7 +3068,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'dip'* *'diffopt'*
 'diffopt' 'dip'		string	(default
-				 "internal,filler,closeoff,inline:simple")
+				 "internal,filler,closeoff,indent-heuristic,inline:char")
 			global
 			{not available when compiled without the |+diff|
 			feature}
@@ -4725,7 +4726,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-PmenuThumb|	 X  popup menu scrollbar thumb
 	|hl-PmenuMatch|	 k  popup menu matched text
 	|hl-PmenuMatchSel| <  popup menu matched text in selected line
-	|hl-PreInsert|	 I  text inserted when "preinsert" and 'autocomplete'
+	|hl-PreInsert|	 I  text inserted when "preinsert" is in 'completeopt'
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")
@@ -5088,8 +5089,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	autocmd.  Example: >
 		augroup vimrc-incsearch-highlight
 		  autocmd!
-		  autocmd CmdlineEnter /,\? :set hlsearch
-		  autocmd CmdlineLeave /,\? :set nohlsearch
+		  autocmd CmdlineEnter [\/\?] :set hlsearch
+		  autocmd CmdlineLeave [\/\?] :set nohlsearch
 		augroup END
 <
 	CTRL-L can be used to add one character from after the current match

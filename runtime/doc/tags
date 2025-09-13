@@ -2530,6 +2530,7 @@ $quote	eval.txt	/*$quote*
 :def	vim9.txt	/*:def*
 :defc	vim9.txt	/*:defc*
 :defcompile	vim9.txt	/*:defcompile*
+:defe	userfunc.txt	/*:defe*
 :defer	userfunc.txt	/*:defer*
 :del	change.txt	/*:del*
 :delc	map.txt	/*:delc*

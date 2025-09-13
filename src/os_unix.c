@@ -3676,6 +3676,15 @@ mch_early_init(void)
     signal_stack = alloc(get_signal_stack_size());
     init_signal_stack();
 #endif
+
+    /*
+     * Inform the macOS scheduler that Vim renders UI, and so shouldn’t have its
+     * threads’ quality of service classes clamped.
+     */
+#ifdef MACOS_X
+    integer_t policy = TASK_DEFAULT_APPLICATION;
+    task_policy_set(mach_task_self(), TASK_CATEGORY_POLICY, &policy, 1);
+#endif
 }
 
 #if defined(EXITFREE) || defined(PROTO)

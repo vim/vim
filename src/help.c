@@ -965,7 +965,6 @@ helptags_one(
     int		this_utf8;
     int		firstline;
     int		in_example;
-    int		len;
     int		mix = FALSE;	// detected mixed encodings
 
     // Find all *.txt files.
@@ -1117,10 +1116,16 @@ helptags_one(
 		}
 		p1 = p2;
 	    }
-	    len = (int)STRLEN(IObuff);
-	    if ((len == 2 && STRCMP(&IObuff[len - 2], ">\n") == 0)
-		    || (len >= 3 && STRCMP(&IObuff[len - 3], " >\n") == 0))
-		in_example = TRUE;
+	    size_t off = STRLEN(IObuff);
+	    if (off >= 2 && IObuff[off - 1] == '\n')
+	    {
+		off -= 2;
+		while (off > 0 && (ASCII_ISLOWER(IObuff[off])
+						  || VIM_ISDIGIT(IObuff[off])))
+		    off--;
+		if (IObuff[off] == '>' && (off == 0 || IObuff[off - 1] == ' '))
+		    in_example = TRUE;
+	    }
 	    line_breakcheck();
 	}
 
