@@ -782,3 +782,14 @@ enum Digits
     enddef
 endenum
 # END_INDENT
+
+# START_INDENT
+def ToggleBoolOpt(opt: string)
+    exe $"&{opt} = !&{opt}"
+    $"&{opt}"
+	->eval()
+	->( (v) => v ? "ON" : "OFF" )()
+	->printf($"{opt} %s")
+	->popup_notification({})
+enddef
+# END_INDENT

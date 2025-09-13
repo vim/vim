@@ -2,7 +2,7 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2025 Jul 25
+# Last Change:  2025 Sep 11
 #
 # Includes changes from The Vim Project:
 
@@ -400,6 +400,7 @@ const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
     .. '\|' .. '[#"]\\ '
     .. '\|' .. OPERATOR
     .. '\|' .. '->\s*\h'
+    .. '\|' .. '->\s*(' # lambda call: ->((v) => v ? "ON" : "OFF")()
     .. '\|' .. '\.\h'  # dict member
     .. '\|' .. '|'
     # TODO: `}` at the start of a line is not necessarily a line continuation.

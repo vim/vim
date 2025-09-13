@@ -3795,7 +3795,7 @@ search_line:
 		    break;
 		found = TRUE;
 		aux = p = startp;
-		if (compl_status_adding())
+		if (compl_status_adding() && (int)STRLEN(p) >= ins_compl_len())
 		{
 		    p += ins_compl_len();
 		    if (vim_iswordp(p))
