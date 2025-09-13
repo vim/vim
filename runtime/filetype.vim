@@ -965,6 +965,9 @@ au BufRead,BufNewFile *.gdshader,*.shader	setf gdshader
 " Gedcom
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
+" Generic log file
+au BufNewFile,BufRead *.log,*_log,*.LOG,*_LOG	setf log
+
 " Gemtext
 au BufNewFile,BufRead *.gmi,*.gemini		setf gemtext
 
