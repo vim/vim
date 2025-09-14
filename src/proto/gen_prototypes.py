@@ -12,46 +12,132 @@ SHOW_DIAGS = os.environ.get("GENPROTO_SHOW_DIAGS", "") not in ("", "0", "false",
 DEBUG_LOG  = os.environ.get("GENPROTO_DEBUG", "") not in ("", "0", "false", "no")
 STUB_PROTO_H = os.environ.get("GENPROTO_STUB_PROTO_H", "1") not in ("", "0", "false", "no")
 
+# Preprocessor directive detection
 _DIR_RE = re.compile(r'^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b')
-_IF0_RE = re.compile(r'^\s*#\s*if\s+0\b')
-_IFNDEF_PROTO_RE = re.compile(r'^\s*#\s*ifndef\s+PROTO\b')        # drop whole group
-_IF_NOTDEF_PROTO_RE = re.compile(r'^\s*#\s*!defined\s*\(\s*PROTO\s*\)')
+_IF0_RE = re.compile(r'^\s*#\s*if\s+0\s*(//.*)?$')
+
+# Keep legacy behavior: drop whole group for #ifndef PROTO and #if !defined(PROTO)
+_IFNDEF_PROTO_RE   = re.compile(r'^\s*#\s*ifndef\s+PROTO\s*(//.*)?$')
+_IF_NOTDEF_PROTO_RE = re.compile(r'^\s*#\s*if\s*!defined\s*\(\s*PROTO\s*\)\s*(//.*)?$')
+
+# Helpers to detect defined(PROTO) inside an expression line
+_DEFINED_CALL_RE      = re.compile(r'defined\s*\(\s*PROTO\s*\)')
+_NOT_DEFINED_CALL_RE  = re.compile(r'!+\s*defined\s*\(\s*PROTO\s*\)')
 
 def _ends_with_bs(line: str) -> bool:
     return line.rstrip("\r\n").rstrip().endswith("\\")
 
+def _has_proto_defined_from_argv(argv: List[str]) -> bool:
+    """Return True if -DPROTO (or -DPROTO=...) appears in clang args."""
+    for a in argv:
+        if a == "-DPROTO" or a.startswith("-DPROTO="):
+            return True
+    return False
+
+def _eval_condition_with_defined_proto(cond: str, proto_is_defined: bool) -> bool:
+    """
+    Evaluate a simple C preprocessor condition only when it contains defined(PROTO).
+    - Replace defined(PROTO)/!defined(PROTO) based on proto_is_defined
+    - Map C logical operators (&&, ||, !) to Python (and, or, not)
+    - Treat unknown identifiers as 0 (false)
+    - Prevent tokens like 'True(' / 'False(' / '0(' turning into call syntax
+    On any parsing error, return True (fail-open -> keep the branch).
+    """
+    s = cond
+
+    # Normalize spacing
+    s = s.strip()
+
+    # Replace !defined(PROTO) first, then defined(PROTO)
+    if proto_is_defined:
+        s = re.sub(r'!+\s*defined\s*\(\s*PROTO\s*\)', "False", s)
+        s = re.sub(r'defined\s*\(\s*PROTO\s*\)', "True", s)
+    else:
+        s = re.sub(r'!+\s*defined\s*\(\s*PROTO\s*\)', "True", s)
+        s = re.sub(r'defined\s*\(\s*PROTO\s*\)', "False", s)
+
+    # Translate C logical ops to Python
+    # Replace defined(PROTO) and !defined(PROTO) depending on -DPROTO
+    if proto_is_defined:
+        s = re.sub(r'!defined\s*\(\s*PROTO\s*\)', "False", s)
+        s = re.sub(r'defined\s*\(\s*PROTO\s*\)', "True", s)
+    else:
+        s = re.sub(r'!defined\s*\(\s*PROTO\s*\)', "True", s)
+        s = re.sub(r'defined\s*\(\s*PROTO\s*\)', "False", s)
+
+    # Any other defined(MACRO) should be considered unknown
+    s = re.sub(r'!defined\s*\(\s*[A-Za-z_]\w*\s*\)', "True", s)
+    s = re.sub(r'defined\s*\(\s*[A-Za-z_]\w*\s*\)', "False", s)
+
+    # Translate C logical operators to Python
+    s = s.replace("&&", " and ")
+    s = s.replace("||", " or ")
+    # Replace '!' with ' not ' but do not touch '!='
+    s = re.sub(r'(?<![=!])!', " not ", s)
+
+    # Replace remaining identifiers (macros) with 0 (false)
+    # Keep True/False and numbers as-is
+    s = re.sub(r'\b(?!True\b|False\b)[A-Za-z_]\w*', "0", s)
+
+    # Prevent literals followed by '(' from looking like a call: True(  False(  0(
+    s = re.sub(r'\b(True|False|0)\s*\(', r'(\1) and (', s)
+
+    # Safety: collapse excessive whitespace
+    s = re.sub(r'\s+', " ", s).strip()
+
+    try:
+        return bool(eval(s, {}, {}))
+    except Exception:
+        # Fail-open to avoid accidentally dropping code
+        if DEBUG_LOG:
+            print(f"[warn] condition eval failed: {cond!r} -> {s!r}", file=sys.stderr)
+        return True
+
 def rewrite_conditionals_first_branch(text: str) -> str:
-    """Keep only the first branch of #if/#ifdef/#ifndef groups, remove others."""
+    """
+    Keep only the first branch of #if/#ifdef/#ifndef groups, remove others.
+    Extensions:
+      - Drop whole group for #if 0.
+      - Drop whole group for #ifndef PROTO and #if !defined(PROTO).
+      - If an '#if <expr>' contains defined(PROTO) anywhere in the expression,
+        evaluate the condition: if False, drop the whole group; if True, keep only
+        the first branch (same as legacy behavior).
+    """
     lines = text.splitlines(keepends=True)
     out: List[str] = []
     i, n = 0, len(lines)
 
-    def _collect_group(start: int) -> Tuple[int, List[Tuple[str,int,int]]]:
+    def _collect_group(start: int) -> Tuple[int, List[Tuple[str, int, int]]]:
+        """Collect a full #if...#endif group and return (end_index, bodies).
+        bodies is a list of (tag, body_s, body_e) for each if/elif/else branch.
+        """
         h = start
+        # Skip backslash-continued header lines
         while True:
             h += 1
             if h >= n or not _ends_with_bs(lines[h - 1]):
                 break
         depth = 1
         j = h
-        marks: List[Tuple[str,int]] = [("if", start)]
+        marks: List[Tuple[str, int]] = [("if", start)]
         while j < n and depth > 0:
             m = _DIR_RE.match(lines[j])
             if m:
-                kw = m.group(1)
-                if kw in ("if", "ifdef", "ifndef"):
+                kw2 = m.group(1)
+                if kw2 in ("if", "ifdef", "ifndef"):
                     depth += 1
-                elif kw == "endif":
+                elif kw2 == "endif":
                     depth -= 1
                     if depth == 0:
                         break
-                elif depth == 1 and kw in ("elif", "else"):
-                    marks.append((kw, j))
+                elif depth == 1 and kw2 in ("elif", "else"):
+                    marks.append((kw2, j))
             j += 1
         else:
+            # Unterminated: keep as-is from start to EOF
             return n, [("text", start, n)]
 
-        bodies: List[Tuple[str,int,int]] = []
+        bodies: List[Tuple[str, int, int]] = []
         header_positions = [pos for _, pos in marks] + [j]
         tags = [tag for tag, _ in marks]
         for idx, tag in enumerate(tags):
@@ -64,27 +150,54 @@ def rewrite_conditionals_first_branch(text: str) -> str:
             bodies.append((tag, body_s, body_e))
         return j + 1, bodies
 
+    # Detect whether PROTO is defined from argv (clang args passed after src path)
+    proto_is_defined = _has_proto_defined_from_argv(sys.argv[2:])
+
     while i < n:
         line = lines[i]
         m = _DIR_RE.match(line)
         if not m:
-            out.append(line); i += 1; continue
+            out.append(line)
+            i += 1
+            continue
+
         kw = m.group(1)
         if kw in ("if", "ifdef", "ifndef"):
+            # Hard drops first (legacy behavior)
             if _IF0_RE.match(line) or _IFNDEF_PROTO_RE.match(line) or _IF_NOTDEF_PROTO_RE.match(line):
                 group_end, _ = _collect_group(i)
                 i = group_end
                 continue
+
+            # If '#if <expr>' contains defined(PROTO), evaluate; otherwise, legacy behavior
+            evaluate = (kw == "if") and (
+                _DEFINED_CALL_RE.search(line) is not None or _NOT_DEFINED_CALL_RE.search(line) is not None
+            )
+
+            if evaluate:
+                # Extract condition text after 'if'
+                try:
+                    cond_text = line.split("if", 1)[1]
+                except Exception:
+                    cond_text = ""
+                keep_first = _eval_condition_with_defined_proto(cond_text, proto_is_defined)
+                if not keep_first:
+                    group_end, _ = _collect_group(i)
+                    i = group_end
+                    continue
+
+            # Keep only the first branch
             group_end, bodies = _collect_group(i)
-            # always keep first body regardless of actual condition
-            if bodies:
-                keep_s, keep_e = bodies[0][1], bodies[0][2]
-                kept_text = "".join(lines[keep_s:keep_e])
-                kept_rewritten = rewrite_conditionals_first_branch(kept_text)
-                out.append(kept_rewritten)
+            if not bodies:
+                i = group_end
+                continue
+            keep_s, keep_e = bodies[0][1], bodies[0][2]
+            kept_text = "".join(lines[keep_s:keep_e])
+            kept_rewritten = rewrite_conditionals_first_branch(kept_text)
+            out.append(kept_rewritten)
             i = group_end
         else:
-            # skip elif/else/endif
+            # For 'elif/else/endif' lines encountered directly, output a blank line to preserve line count
             out.append("\n" if line.endswith("\n") else "")
             i += 1
 
