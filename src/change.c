@@ -149,7 +149,90 @@ changed_internal(void)
 }
 
 #ifdef FEAT_EVAL
+// Set when listener callbacks are being invoked.
+static int recursive = FALSE;
+
 static long next_listener_id = 0;
+
+// A flag that is set when any buffer listener housekeeping is required.
+// Currently the only condition is when a listener is marked for removal.
+static bool houskeeping_required;
+
+/*
+ * Remove a given listener_T entry from its containing list.
+ */
+    static void
+remove_listener_from_list(
+    listener_T **list,
+    listener_T *lnr,
+    listener_T *prev)
+{
+    if (prev != NULL)
+	prev->lr_next = lnr->lr_next;
+    else
+	*list = lnr->lr_next;
+    free_callback(&lnr->lr_callback);
+    vim_free(lnr);
+}
+
+/*
+ * Clean up a buffer change listener list.
+ *
+ * If "all" is TRUE then all entries are removed. Otherwise only those with an ID
+ * of zero are removed. If "buf" is non-NULL then the buffer's recorded changes
+ * will be discarded in the event that all listeners were removed.
+ *
+ */
+    static void
+clean_listener_list(buf_T *buf, listener_T **list, bool all)
+{
+    listener_T	*prev;
+    listener_T	*lnr;
+    listener_T	*next;
+
+    prev = NULL;
+    for (lnr = *list; lnr != NULL; lnr = next)
+    {
+	next = lnr->lr_next;
+	if (all || lnr->lr_id == 0)
+	{
+	    remove_listener_from_list(list, lnr, prev);
+	}
+	else
+	    prev = lnr;
+    }
+
+    // Drop any recorded changes for a buffer with no listeners.
+    if (buf != NULL)
+    {
+	if (*list == NULL && buf->b_recorded_changes != NULL)
+	{
+	    list_unref(buf->b_recorded_changes);
+	    buf->b_recorded_changes = NULL;
+	}
+    }
+}
+
+/*
+ * Perform houskeeping tasks for buffer change listeners.
+ *
+ * This does nothing unless the "houskeeping_required" flag has been set.
+ */
+    static void
+perform_listener_housekeeping(void)
+{
+    buf_T	*buf;
+
+    if (houskeeping_required)
+    {
+	FOR_ALL_BUFFERS(buf)
+	{
+	    clean_listener_list(buf, &buf->b_listener, FALSE);
+	    clean_listener_list(NULL, &buf->b_sync_listener, FALSE);
+	}
+	houskeeping_required = FALSE;
+    }
+}
 
 /*
  * Check if the change at "lnum" is above or overlaps with an existing
@@ -162,12 +245,14 @@ check_recorded_changes(
 	linenr_T	lnume,
 	long		xtra)
 {
+    if (houskeeping_required)
+	perform_listener_housekeeping();
     if (buf->b_recorded_changes == NULL || xtra == 0)
 	return;
 
     listitem_T *li;
-    linenr_T    prev_lnum;
-    linenr_T    prev_lnume;
+    linenr_T	prev_lnum;
+    linenr_T	prev_lnume;
 
     FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
     {
@@ -188,6 +273,9 @@ check_recorded_changes(
 /*
  * Record a change for listeners added with listener_add().
  * Always for the current buffer.
+ *
+ * This only deals with listeners that are prepared to accept multiple buffered
+ * changes.
  */
     static void
 may_record_change(
@@ -198,6 +286,8 @@ may_record_change(
 {
     dict_T	*dict;
 
+    if (houskeeping_required)
+	perform_listener_housekeeping();
     if (curbuf->b_listener == NULL)
 	return;
 
@@ -234,8 +324,17 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     callback_T	callback;
     listener_T	*lnr;
     buf_T	*buf = curbuf;
+    int		unbuffered = 0;
 
-    if (in_vim9script() && check_for_opt_buffer_arg(argvars, 1) == FAIL)
+    if (recursive)
+    {
+	emsg(_(e_cannot_add_listener_in_listener_callback));
+	return;
+    }
+
+    if (in_vim9script() && (
+	    check_for_opt_buffer_arg(argvars, 1) == FAIL
+	    || check_for_opt_bool_arg(argvars, 2) == FAIL))
 	return;
 
     callback = get_callback(&argvars[0]);
@@ -250,6 +349,10 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 	    free_callback(&callback);
 	    return;
 	}
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    unbuffered = (int)tv_get_bool(&argvars[2]);
+	}
     }
 
     lnr = ALLOC_CLEAR_ONE(listener_T);
@@ -258,8 +361,24 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 	free_callback(&callback);
 	return;
     }
-    lnr->lr_next = buf->b_listener;
-    buf->b_listener = lnr;
+
+    // Perform any pending housekeeping and then make sure any buffered change
+    // reports are flushed so that the new listener does not see out of date
+    // changes.
+    if (houskeeping_required)
+	perform_listener_housekeeping();
+    invoke_listeners(buf);
+
+    if (unbuffered)
+    {
+	lnr->lr_next = buf->b_sync_listener;
+	buf->b_sync_listener = lnr;
+    }
+    else
+    {
+	lnr->lr_next = buf->b_listener;
+	buf->b_listener = lnr;
+    }
 
     set_callback(&lnr->lr_callback, &callback);
     if (callback.cb_free_name)
@@ -277,6 +396,9 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf = curbuf;
 
+    if (recursive)
+	return;
+
     if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
 	return;
 
@@ -286,29 +408,44 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
 	if (buf == NULL)
 	    return;
     }
+    if (houskeeping_required)
+	perform_listener_housekeeping();
     invoke_listeners(buf);
 }
 
-
-    static void
-remove_listener(buf_T *buf, listener_T *lnr, listener_T *prev)
+/*
+ * Find the buffer change listener entry for a given unique ID.
+ */
+    static listener_T *
+find_listener(
+    int        id,
+    listener_T *list_start,
+    listener_T **prev)
 {
-    if (prev != NULL)
-	prev->lr_next = lnr->lr_next;
-    else
-	buf->b_listener = lnr->lr_next;
-    free_callback(&lnr->lr_callback);
-    vim_free(lnr);
+    listener_T *next;
+    listener_T *lnr;
+
+    *prev = NULL;
+    for (lnr = list_start; lnr != NULL; lnr = next)
+    {
+	next = lnr->lr_next;
+	if (lnr->lr_id == id)
+	    return lnr;
+	*prev = lnr;
+    }
+    return NULL;
 }
 
 /*
  * listener_remove() function
+ *
+ * This simply marks the listener_T entry as unused, by setting its ID to zero.
+ * The listener_T entry gets removed later by housekeeping.
  */
     void
 f_listener_remove(typval_T *argvars, typval_T *rettv)
 {
     listener_T	*lnr;
-    listener_T	*next;
     listener_T	*prev;
     int		id;
     buf_T	*buf;
@@ -319,35 +456,82 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
     id = tv_get_number(argvars);
     FOR_ALL_BUFFERS(buf)
     {
-	prev = NULL;
-	for (lnr = buf->b_listener; lnr != NULL; lnr = next)
+	lnr = find_listener(id, buf->b_listener, &prev);
+	if (lnr == NULL)
+	    lnr = find_listener(id, buf->b_sync_listener, &prev);
+	if (lnr != NULL)
 	{
-	    next = lnr->lr_next;
-	    if (lnr->lr_id == id)
-	    {
-		if (textlock > 0)
-		{
-		    // in invoke_listeners(), clear ID and delete later
-		    lnr->lr_id = 0;
-		    return;
-		}
-		remove_listener(buf, lnr, prev);
-		rettv->vval.v_number = 1;
-		return;
-	    }
-	    prev = lnr;
+	    // Clear the ID to indicate that the listener is unused flag
+	    // houskeeping.
+	    lnr->lr_id = 0;
+	    houskeeping_required = TRUE;
+	    rettv->vval.v_number = 1;
+	    return;
 	}
     }
 }
 
 /*
- * Called before inserting a line above "lnum"/"lnum3" or deleting line "lnum"
+ * Called before inserting a line above "lnum"/"lnume" or deleting line "lnum"
  * to "lnume".
  */
     void
 may_invoke_listeners(buf_T *buf, linenr_T lnum, linenr_T lnume, int added)
 {
     check_recorded_changes(buf, lnum, lnume, added);
+}
+
+/*
+ * Called when any sequence of change occurs: listeners added with the
+ * "unbuffered" flag set.
+ */
+    static void
+invoke_sync_listeners(
+    buf_T	*buf,
+    linenr_T	start,
+    colnr_T	col,
+    linenr_T	end,
+    long	added)
+{
+    listener_T	*lnr;
+    typval_T	rettv;
+    typval_T	argv[6];
+    int		save_updating_screen = updating_screen;
+
+    if (curbuf->b_sync_listener == NULL)
+	return;
+
+    argv[0].v_type = VAR_NUMBER;
+    argv[0].vval.v_number = curbuf->b_fnum; // a:bufnr
+    argv[1].v_type = VAR_NUMBER;
+    argv[1].vval.v_number = start;
+    argv[2].v_type = VAR_NUMBER;
+    argv[2].vval.v_number = end;
+    argv[3].v_type = VAR_NUMBER;
+    argv[3].vval.v_number = added;
+    argv[4].v_type = VAR_NUMBER;
+    argv[4].vval.v_number = col + 1;
+
+    recursive = TRUE;
+    ++textlock;
+
+    // Block messages on channels from being handled, so that they don't make
+    // text changes here.
+    ++updating_screen;
+
+    for (lnr = buf->b_sync_listener; lnr != NULL; lnr = lnr->lr_next)
+    {
+	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
+	clear_tv(&rettv);
+    }
+
+    --textlock;
+
+    if (save_updating_screen)
+	updating_screen = TRUE;
+    else
+	after_updating_screen(TRUE);
+    recursive = FALSE;
 }
 
 /*
@@ -365,12 +549,9 @@ invoke_listeners(buf_T *buf)
     linenr_T	end = 0;
     linenr_T	added = 0;
     int		save_updating_screen = updating_screen;
-    static int	recursive = FALSE;
-    listener_T	*next;
-    listener_T	*prev;
 
     if (buf->b_recorded_changes == NULL  // nothing changed
-	    || buf->b_listener == NULL   // no listeners
+	    || buf->b_listener == NULL	 // no listeners
 	    || recursive)		 // already busy
 	return;
     recursive = TRUE;
@@ -411,17 +592,6 @@ invoke_listeners(buf_T *buf)
 	clear_tv(&rettv);
     }
 
-    // If f_listener_remove() was called may have to remove a listener now.
-    prev = NULL;
-    for (lnr = buf->b_listener; lnr != NULL; lnr = next)
-    {
-	next = lnr->lr_next;
-	if (lnr->lr_id == 0)
-	    remove_listener(buf, lnr, prev);
-	else
-	    prev = lnr;
-    }
-
     --textlock;
     list_unref(buf->b_recorded_changes);
     buf->b_recorded_changes = NULL;
@@ -439,17 +609,10 @@ invoke_listeners(buf_T *buf)
     void
 remove_listeners(buf_T *buf)
 {
-    listener_T	*lnr;
-    listener_T	*next;
-
-    for (lnr = buf->b_listener; lnr != NULL; lnr = next)
-    {
-	next = lnr->lr_next;
-	free_callback(&lnr->lr_callback);
-	vim_free(lnr);
-    }
-    buf->b_listener = NULL;
+    clean_listener_list(buf, &buf->b_listener, TRUE);
+    clean_listener_list(NULL, &buf->b_sync_listener, TRUE);
 }
+
 #endif
 
 /*
@@ -475,6 +638,12 @@ changed_common(
     changed();
 
 #ifdef FEAT_EVAL
+    // Immediately send this change to any listeners that require changes no to
+    // be buffered.
+    invoke_sync_listeners(curbuf, lnum, col, lnume, xtra);
+
+    // If there are any listeners accepting buffered changes then add changes
+    // to the current buffer's list, flushing previous changes first if necessary.
     may_record_change(lnum, col, lnume, xtra);
 #endif
 #ifdef FEAT_DIFF
@@ -500,7 +669,7 @@ changed_common(
 	    else
 	    {
 		// Don't create a new entry when the line number is the same
-		// as the last one and the column is not too far away.  Avoids
+		// as the last one and the column is not too far away.	Avoids
 		// creating many entries for typing "xxxxx".
 		p = &curbuf->b_changelist[curbuf->b_changelistlen - 1];
 		if (p->lnum != lnum)
@@ -626,7 +795,7 @@ changed_common(
 
 	    // Check if any w_lines[] entries have become invalid.
 	    // For entries below the change: Correct the lnums for
-	    // inserted/deleted lines.  Makes it possible to stop displaying
+	    // inserted/deleted lines.	Makes it possible to stop displaying
 	    // after the change.
 	    for (i = 0; i < wp->w_lines_valid; ++i)
 		if (wp->w_lines[i].wl_valid)
@@ -1073,7 +1242,7 @@ ins_char_bytes(char_u *buf, int charlen)
     {
 	if (State & VREPLACE_FLAG)
 	{
-	    colnr_T	new_vcol = 0;   // init for GCC
+	    colnr_T	new_vcol = 0;	// init for GCC
 	    colnr_T	vcol;
 	    int		old_list;
 
@@ -1342,7 +1511,7 @@ del_bytes(
     // If the old line has been allocated the deletion can be done in the
     // existing line. Otherwise a new line has to be allocated
     // Can't do this when using Netbeans, because we would need to invoke
-    // netbeans_removed(), which deallocates the line.  Let ml_replace() take
+    // netbeans_removed(), which deallocates the line.	Let ml_replace() take
     // care of notifying Netbeans.
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
@@ -1470,7 +1639,7 @@ open_line(
 
 	// In MODE_VREPLACE state, a NL replaces the rest of the line, and
 	// starts replacing the next line, so push all of the characters left
-	// on the line onto the replace stack.  We'll push any other characters
+	// on the line onto the replace stack.	We'll push any other characters
 	// that might be replaced at the start of the next line (due to
 	// autoindent etc) a bit later.
 	replace_push(NUL);  // Call twice because BS over NL expects it

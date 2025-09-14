@@ -3496,7 +3496,8 @@ struct file_buffer
     dictitem_T	b_bufvar;	// variable for "b:" Dictionary
     dict_T	*b_vars;	// internal variables, local to buffer
 
-    listener_T	*b_listener;
+    listener_T	*b_listener;       // Listeners accepting buffered reports.
+    listener_T	*b_sync_listener;  // Listeners requiring unbuffered reports.
     list_T	*b_recorded_changes;
 #endif
 #ifdef FEAT_PROP_POPUP
