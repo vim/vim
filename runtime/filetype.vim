@@ -398,6 +398,9 @@ au BufNewFile,BufRead *.ck			setf chuck
 " Comshare Dimension Definition Language
 au BufNewFile,BufRead *.cdl			setf cdl
 
+" Codeowners
+au BufNewFile,BufRead CODEOWNERS		setf codeowners
+
 " Conary Recipe
 au BufNewFile,BufRead *.recipe			setf conaryrecipe
 

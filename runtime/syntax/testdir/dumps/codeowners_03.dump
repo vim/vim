@@ -1,0 +1,20 @@
+|#+0#0000e05#ffffff0| |I|n| |t|h|i|s| |e|x|a|m|p|l|e|,| |@|o|c|t|o|c|a|t| |o|w|n|s| |a|n|y| |f|i|l|e| |i|n| |a| |`|/|l|o|g|s|`| |d|i|r|e|c|t|o|r|y| |s|u|c|h| |a|s| +0#0000000&@2
+|#+0#0000e05&| |`|/|b|u|i|l|d|/|l|o|g|s|`|,| |`|/|s|c|r|i|p|t|s|/|l|o|g|s|`|,| |a|n|d| |`|/|d|e@1|p|l|y|/|n|e|s|t|e|d|/|l|o|g|s|`|.| |A|n|y| |c|h|a|n|g|e|s| +0#0000000&@2
+|#+0#0000e05&| |i|n| |a| |`|/|l|o|g|s|`| |d|i|r|e|c|t|o|r|y| |w|i|l@1| |r|e|q|u|i|r|e| |a|p@1|r|o|v|a|l| |f|r|o|m| |@|o|c|t|o|c|a|t|.| +0#0000000&@13
+|*@1|/|l|o|g|s| |@+0#00e0e07&|o|c|t|o|c|a|t| +0#0000000&@58
+@75
+>#+0#0000e05&| |I|n| |t|h|i|s| |e|x|a|m|p|l|e|,| |@|o|c|t|o|c|a|t| |o|w|n|s| |a|n|y| |f|i|l|e| |i|n| |t|h|e| |`|/|a|p@1|s|`| +0#0000000&@18
+|#+0#0000e05&| |d|i|r|e|c|t|o|r|y| |i|n| |t|h|e| |r|o@1|t| |o|f| |y|o|u|r| |r|e|p|o|s|i|t|o|r|y| |e|x|c|e|p|t| |f|o|r| |t|h|e| |`|/|a|p@1|s|/|g|i|t|h|u|b|`| +0#0000000&@2
+|#+0#0000e05&| |s|u|b|d|i|r|e|c|t|o|r|y|,| |a|s| |i|t|s| |o|w|n|e|r|s| |a|r|e| |l|e|f|t| |e|m|p|t|y|.| |W|i|t|h|o|u|t| |a|n| |o|w|n|e|r|,| |c|h|a|n|g|e|s| +0#0000000&@3
+|#+0#0000e05&| |t|o| |`|a|p@1|s|/|g|i|t|h|u|b|`| |c|a|n| |b|e| |m|a|d|e| |w|i|t|h| |t|h|e| |a|p@1|r|o|v|a|l| |o|f| |a|n|y| |u|s|e|r| |w|h|o| |h|a|s| +0#0000000&@6
+|#+0#0000e05&| |w|r|i|t|e| |a|c@1|e|s@1| |t|o| |t|h|e| |r|e|p|o|s|i|t|o|r|y|.| +0#0000000&@41
+|/|a|p@1|s|/| |@+0#00e0e07&|o|c|t|o|c|a|t| +0#0000000&@59
+|/|a|p@1|s|/|g|i|t|h|u|b| @62
+@75
+|#+0#0000e05&| |I|n| |t|h|i|s| |e|x|a|m|p|l|e|,| |@|o|c|t|o|c|a|t| |o|w|n|s| |a|n|y| |f|i|l|e| |i|n| |t|h|e| |`|/|a|p@1|s|`| +0#0000000&@18
+|#+0#0000e05&| |d|i|r|e|c|t|o|r|y| |i|n| |t|h|e| |r|o@1|t| |o|f| |y|o|u|r| |r|e|p|o|s|i|t|o|r|y| |e|x|c|e|p|t| |f|o|r| |t|h|e| |`|/|a|p@1|s|/|g|i|t|h|u|b|`| +0#0000000&@2
+|#+0#0000e05&| |s|u|b|d|i|r|e|c|t|o|r|y|,| |a|s| |t|h|i|s| |s|u|b|d|i|r|e|c|t|o|r|y| |h|a|s| |i|t|s| |o|w|n| |o|w|n|e|r| |@|d|o|c|t|o|c|a|t| +0#0000000&@10
+|/|a|p@1|s|/| |@+0#00e0e07&|o|c|t|o|c|a|t| +0#0000000&@59
+|/|a|p@1|s|/|g|i|t|h|u|b| |@+0#00e0e07&|d|o|c|t|o|c|a|t| +0#0000000&@52
+@75
+@57|5@1|,|1| @9|9|8|%| 
