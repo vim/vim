@@ -137,14 +137,25 @@ def rewrite_conditionals_first_branch(text: str) -> str:
             # Unterminated: keep as-is from start to EOF
             return n, [("text", start, n)]
 
+        def _after_header_line(pos: int) -> int:
+            """
+            Return the first index after a possibly backslash-continued header line
+            starting at `pos`. It consumes all continuation lines that belong to
+            the directive header.
+            """
+            k = pos + 1
+            # Consume lines as long as the previous line ends with a backslash
+            while k < n and _ends_with_bs(lines[k - 1]):
+                k += 1
+            return k
+
         bodies: List[Tuple[str, int, int]] = []
         header_positions = [pos for _, pos in marks] + [j]
         tags = [tag for tag, _ in marks]
         for idx, tag in enumerate(tags):
             header = header_positions[idx]
-            body_s = header + 1
-            while body_s < n and _ends_with_bs(lines[body_s - 1]):
-                body_s += 1
+            # Start body right after the whole (possibly multi-line) header
+            body_s = _after_header_line(header)
             next_header = header_positions[idx + 1]
             body_e = next_header
             bodies.append((tag, body_s, body_e))
