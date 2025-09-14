@@ -3410,6 +3410,9 @@ au BufNewFile,BufRead *.blp			setf blueprint
 " Blueprint build system file
 au BufNewFile,BufRead *.bp			setf bp
 
+" Generic log file
+au BufNewFile,BufRead *.log,*_log,*.LOG,*_LOG	setf log
+
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.
 runtime! ftdetect/*.vim
