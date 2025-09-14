@@ -1869,9 +1869,6 @@ EXTERN Window	clientWindow INIT(= None);
 EXTERN Atom	commProperty INIT(= None);
 EXTERN char_u	*serverDelayedStartName INIT(= NULL);
 # elif defined(MSWIN)
-#  ifdef PROTO
-typedef int HWND;
-#  endif
 EXTERN HWND	clientWindow INIT(= 0);
 # endif
 #endif
@@ -2023,9 +2020,6 @@ EXTERN evalarg_T EVALARG_EVALUATE
 #endif
 
 #ifdef MSWIN
-# ifdef PROTO
-typedef int HINSTANCE;
-# endif
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
 #endif
