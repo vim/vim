@@ -16,11 +16,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
 // flag passed from compile_subscript() to compile_load_scriptvar()
 static int paren_follows_after_expr = 0;
 

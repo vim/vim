@@ -204,12 +204,6 @@
 # endif
 #endif
 
-#if defined(PROTO) && !defined(FEAT_RUBY)
-// Define these to be able to generate the function prototypes.
-# define VALUE int
-# define RUBY_DATA_FUNC int
-#endif
-
 static int ruby_initialized = 0;
 static void *ruby_stack_start;
 static VALUE objtbl;
@@ -231,9 +225,6 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 #endif
 
 #if defined(DYNAMIC_RUBY) || defined(PROTO)
-# if defined(PROTO) && !defined(HINSTANCE)
-#  define HINSTANCE int		// for generating prototypes
-# endif
 
 /*
  * Wrapper defines

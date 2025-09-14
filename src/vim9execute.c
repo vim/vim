@@ -16,12 +16,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
-
 // Structure put on ec_trystack when ISN_TRY is encountered.
 typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY

@@ -29,19 +29,6 @@
 // depend".
 #if defined(FEAT_MZSCHEME) || defined(PROTO)
 
-#ifdef PROTO
-typedef int Scheme_Object;
-typedef int Scheme_Closed_Prim;
-typedef int Scheme_Env;
-typedef int Scheme_Hash_Table;
-typedef int Scheme_Type;
-typedef int Scheme_Thread;
-typedef int Scheme_Closed_Prim;
-typedef int mzshort;
-typedef int Scheme_Prim;
-typedef int HINSTANCE;
-#endif
-
 /*
  * scheme_register_tls_space is only available on 32-bit Windows until
  * racket-6.3.  See

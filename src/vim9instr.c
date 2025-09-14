@@ -16,12 +16,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
-
 /////////////////////////////////////////////////////////////////////
 // Following generate_ functions expect the caller to call ga_grow().
 
