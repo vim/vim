@@ -4868,7 +4868,7 @@ containing item has a "contains=" argument that includes this item.
 
 Only the immediate containing item (the one at the top of the syntax stack) is
 considered.  Vim does not search other ancestors.  If the immediate container
-neither contains this item via |:syn-contains| nor is named in this item’s
+neither contains this item via |:syn-contains| nor is named in this item's
 "containedin=", the match will not start even if some ancestor would allow it.
 Note that a |transparent| region still enforces its own |contains| list.
 
