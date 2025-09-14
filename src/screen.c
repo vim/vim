@@ -227,7 +227,11 @@ win_draw_end(
     if (wp->w_p_rl)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol, W_ENDCOL(wp) - 1 - n, c2, c2, attr);
+		wp->w_wincol, wp->w_wincol + wp->w_width - W_WIDTH_INNER(wp),
+		' ', ' ', draw_margin ? win_attr : attr);
+	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
+		wp->w_wincol + wp->w_width - W_WIDTH_INNER(wp),
+		W_ENDCOL(wp) - 1 - n, c2, c2, attr);
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
 		W_ENDCOL(wp) - 1 - n, W_ENDCOL(wp) - n, c1, c2, attr);
     }
@@ -235,7 +239,11 @@ win_draw_end(
 #endif
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + n, (int)W_ENDCOL(wp), c1, c2, attr);
+		wp->w_wincol + n, (int)wp->w_wincol + W_WIDTH_INNER(wp),
+		c1, c2, attr);
+	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
+		(int)wp->w_wincol + W_WIDTH_INNER(wp), (int)W_ENDCOL(wp),
+		' ', ' ', draw_margin ? win_attr : attr);
     }
 
     set_empty_rows(wp, row);
@@ -663,10 +671,16 @@ screen_line(
     if (drawing_opacity_popup)
 	popup_opacity_init(&po);
 #endif
+    int		    win_attr = get_win_attr(wp);
 
     // Check for illegal row and col, just in case.
     if (row >= Rows)
 	row = Rows - 1;
+#ifdef FEAT_RIGHTLEFT
+    if (!(flags & SLF_RIGHTLEFT))
+#endif
+	if (endcol > W_WIDTH_INNER(wp))
+	    endcol = W_WIDTH_INNER(wp);
     if (endcol > Columns)
 	endcol = Columns;
 
@@ -688,7 +702,7 @@ screen_line(
 	    int clear_start = col;
 
 	    while (col <= endcol && ScreenLines[off_to] == ' '
-		    && ScreenAttrs[off_to] == 0
+		    && ScreenAttrs[off_to] == win_attr
 				  && (!enc_utf8 || ScreenLinesUC[off_to] == 0))
 	    {
 		++off_to;
@@ -696,7 +710,7 @@ screen_line(
 	    }
 	    if (col <= endcol)
 		screen_fill(row, row + 1, col + coloff,
-					    endcol + coloff + 1, ' ', ' ', 0);
+					    endcol + coloff + 1, ' ', ' ', win_attr);
 
 	    for (int i = endcol; i >= clear_start; i--)
 		ScreenCols[off_to + (i - col)] =
@@ -1135,7 +1149,7 @@ skip_opacity:
 
 	// blank out the rest of the line
 	while (col < clear_width && ScreenLines[off_to] == ' '
-						  && ScreenAttrs[off_to] == 0
+						  && ScreenAttrs[off_to] == win_attr
 				  && (!enc_utf8 || ScreenLinesUC[off_to] == 0)
 #ifdef FEAT_PROP_POPUP
 				  && !is_suppressed_cell(row, col + coloff)
@@ -1195,7 +1209,7 @@ skip_opacity:
 	    }
 #endif
 	    screen_fill(row, row + 1, col + coloff, clear_width + coloff,
-								 ' ', ' ', 0);
+								 ' ', ' ', win_attr);
 	    while (col < clear_width)
 	    {
 		ScreenCols[off_to++]

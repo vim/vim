@@ -840,6 +840,7 @@ comp_textwidth(
 #ifdef FEAT_FOLDING
 	textwidth -= curwin->w_p_fdc;
 #endif
+	textwidth -= curwin->w_p_rmar;
 #ifdef FEAT_SIGNS
 	if (signcolumn_on(curwin))
 	    textwidth -= 1;
@@ -854,6 +855,7 @@ comp_textwidth(
 	textwidth = curwin->w_width - 1;
 	if (textwidth > 79)
 	    textwidth = 79;
+	textwidth -= curwin->w_p_rmar;
     }
     return textwidth;
 }

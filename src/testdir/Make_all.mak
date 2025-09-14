@@ -286,6 +286,7 @@ NEW_TESTS = \
 	test_rename \
 	test_restricted \
 	test_retab \
+	test_rightmargin \
 	test_ruby \
 	test_scriptnames \
 	test_scroll_opt \
@@ -564,6 +565,7 @@ NEW_TESTS_RES = \
 	test_rename.res \
 	test_restricted.res \
 	test_retab.res \
+	test_rightmargin.res \
 	test_ruby.res \
 	test_scriptnames.res \
 	test_scroll_opt.res \

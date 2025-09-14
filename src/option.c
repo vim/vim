@@ -4539,6 +4539,28 @@ did_set_readonly(optset_T *args)
 }
 
 /*
+ * Process the new 'rightmargin' option value.
+ */
+    char *
+did_set_rightmargin(optset_T *args UNUSED)
+{
+    char *errmsg = NULL;
+
+    if (curwin->w_p_rmar < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	curwin->w_p_rmar = 0;
+    }
+    if (curwin->w_allbuf_opt.wo_rmar < 0)
+    {
+	errmsg = e_argument_must_be_positive;
+	curwin->w_allbuf_opt.wo_rmar = 0;
+    }
+
+    return errmsg;
+}
+
+/*
  * Process the updated 'scrollbind' option value.
  */
     char *
@@ -7381,6 +7403,7 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_SIGNS
 	case PV_SCL:	return (char_u *)&(curwin->w_p_scl);
 #endif
+	case PV_RMAR:	return (char_u *)&(curwin->w_p_rmar);
 #ifdef FEAT_VARTABS
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
@@ -7524,6 +7547,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_rl  = from->wo_rl;
     to->wo_rlc = copy_option_val(from->wo_rlc);
 #endif
+    to->wo_rmar = from->wo_rmar;
 #ifdef FEAT_LINEBREAK
     to->wo_sbr = copy_option_val(from->wo_sbr);
 #endif

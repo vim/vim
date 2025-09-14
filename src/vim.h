@@ -949,6 +949,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #endif
 
 #define W_ENDCOL(wp)	((wp)->w_wincol + (wp)->w_width)
+#define W_WIDTH_INNER(wp) MAX((wp)->w_width - (wp)->w_p_rmar, 0)
 #ifdef FEAT_MENU
 # define W_WINROW(wp)	((wp)->w_winrow + (wp)->w_winbar_height)
 #else

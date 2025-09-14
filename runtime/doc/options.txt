@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 22
+*options.txt*	For Vim version 9.2.  Last change: 2026 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7400,6 +7400,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This is useful for languages such as Hebrew, Arabic and Farsi.
 	The 'rightleft' option must be set for 'rightleftcmd' to take effect.
 
+						*'rightmargin'* *'rmar'*
+'rightmargin' 'rmar'	number (default 0)
+			local to window
+	When non-zero, create this many empty columns at the right side of the
+	window.  When 'wrap' is enabled, lines wrap at the start of the margin
+	area.  This can be used to keep text at a readable width in a wide
+	window, or to leave per-window space for plugin UI such as popups and
+	images without covering the text.
+
 						*'rubydll'*
 'rubydll'		string	(default: depends on the build)
 			global
@@ -10780,8 +10789,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Number of characters from the right window border where wrapping
 	starts.  When typing text beyond this limit, an <EOL> will be inserted
 	and inserting continues on the next line.
-	Options that add a margin, such as 'number' and 'foldcolumn', cause
-	the text width to be further reduced.  This is Vi compatible.
+	Options that add a margin, such as 'number', 'foldcolumn',
+	'signcolumn' and 'rightmargin', cause the text width to be further
+	reduced.  This is Vi compatible.
 	When 'textwidth' is non-zero, this option is not used.
 	This option is set to 0 when 'paste' is set and restored when 'paste'
 	is reset.
