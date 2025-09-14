@@ -52,65 +52,6 @@
 FILE* fdDump = NULL;
 #endif
 
-/*
- * When generating prototypes for Win32 on Unix, these lines make the syntax
- * errors disappear.  They do not need to be correct.
- */
-#ifdef PROTO
-# define WINAPI
-typedef char * LPCSTR;
-typedef char * LPWSTR;
-typedef int ACCESS_MASK;
-typedef int BOOL;
-typedef int BOOLEAN;
-typedef int CALLBACK;
-typedef int COLORREF;
-typedef int CONSOLE_CURSOR_INFO;
-typedef int COORD;
-typedef int DWORD;
-typedef int HANDLE;
-typedef int LPHANDLE;
-typedef int HDC;
-typedef int HFONT;
-typedef int HICON;
-typedef int HINSTANCE;
-typedef int HWND;
-typedef int INPUT_RECORD;
-typedef int INT;
-typedef int KEY_EVENT_RECORD;
-typedef int LOGFONT;
-typedef int LPBOOL;
-typedef int LPCTSTR;
-typedef int LPDWORD;
-typedef int LPSTR;
-typedef int LPTSTR;
-typedef int LPVOID;
-typedef int MOUSE_EVENT_RECORD;
-typedef int PACL;
-typedef int PDWORD;
-typedef int PHANDLE;
-typedef int PRINTDLG;
-typedef int PSECURITY_DESCRIPTOR;
-typedef int PSID;
-typedef int SECURITY_INFORMATION;
-typedef int SHORT;
-typedef int SMALL_RECT;
-typedef int TEXTMETRIC;
-typedef int TOKEN_INFORMATION_CLASS;
-typedef int TRUSTEE;
-typedef int WORD;
-typedef int WCHAR;
-typedef void VOID;
-typedef int BY_HANDLE_FILE_INFORMATION;
-typedef int SE_OBJECT_TYPE;
-typedef int PSNSECINFO;
-typedef int PSNSECINFOW;
-typedef int STARTUPINFO;
-typedef int PROCESS_INFORMATION;
-typedef int LPSECURITY_ATTRIBUTES;
-# define __stdcall // empty
-#endif
-
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Win32 Console handles for input and output
 static HANDLE g_hConIn  = INVALID_HANDLE_VALUE;

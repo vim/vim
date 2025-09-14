@@ -27,22 +27,6 @@
 #endif
 
 /*
- * When generating prototypes for Win32 on Unix, these lines make the syntax
- * errors disappear.  They do not need to be correct.
- */
-#ifdef PROTO
-#define WINAPI
-#define WINBASEAPI
-typedef int DWORD;
-typedef int LPBOOL;
-typedef int LPCSTR;
-typedef int LPCWSTR;
-typedef int LPSTR;
-typedef int LPWSTR;
-typedef int UINT;
-#endif
-
-/*
  * Convert an UTF-8 string to UTF-16.
  * "instr[inlen]" is the input.  "inlen" is in bytes.
  * When "outstr" is NULL only return the number of UTF-16 words produced.
