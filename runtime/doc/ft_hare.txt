@@ -46,7 +46,7 @@ To disable this behavior, add the following to your |vimrc|: >
 <
 						*g:hare_symbol_operators*
 By default, symbolic operators do not receive any special highlighting (with
-`!`, `?`, and `::` being the only exceptions). To enable syntax highlighting
+`!`, `?`, and `::` being the only exceptions).  To enable syntax highlighting
 for most other operators, add the following to your |vimrc|: >
 
 	let g:hare_symbol_operators = 1
@@ -111,7 +111,7 @@ case: >hare
 		// ...
 
 If you prefer a different amount of indentation, you can adjust it using
-|g:hare_indent_case|. Valid values include `0`, `1`, and `2`.
+|g:hare_indent_case|.  Valid values include `0`, `1`, and `2`.
 
 
 COMPILER SUPPORT					*compiler-hare*
