@@ -35,57 +35,6 @@
 # endif
 #endif // PROTO
 
-/*
- * When generating prototypes for Win32 on Unix, these lines make the syntax
- * errors disappear.  They do not need to be correct.
- */
-#ifdef PROTO
-# define WINAPI
-# define WINBASEAPI
-typedef int BOOL;
-typedef int CALLBACK;
-typedef int COLORREF;
-typedef int CONSOLE_CURSOR_INFO;
-typedef int COORD;
-typedef int DWORD;
-typedef int ENUMLOGFONTW;
-typedef int HANDLE;
-typedef int HDC;
-typedef int HFONT;
-typedef int HICON;
-typedef int HWND;
-typedef int INPUT_RECORD;
-typedef int INT_PTR;
-typedef int KEY_EVENT_RECORD;
-typedef int LOGFONTW;
-typedef int LPARAM;
-typedef int LPBOOL;
-typedef int LPCSTR;
-typedef int LPCWSTR;
-typedef int LPDWORD;
-typedef int LPSTR;
-typedef int LPTSTR;
-typedef int LPVOID;
-typedef int LPWSTR;
-typedef int LRESULT;
-typedef int MOUSE_EVENT_RECORD;
-typedef int NEWTEXTMETRICW;
-typedef int PACL;
-typedef int PRINTDLGW;
-typedef int PSECURITY_DESCRIPTOR;
-typedef int PSID;
-typedef int SECURITY_INFORMATION;
-typedef int SHORT;
-typedef int SMALL_RECT;
-typedef int TEXTMETRIC;
-typedef int UINT;
-typedef int WCHAR;
-typedef int WNDENUMPROC;
-typedef int WORD;
-typedef int WPARAM;
-typedef void VOID;
-#endif
-
 // Record all output and all keyboard & mouse input
 // #define MCH_WRITE_DUMP
 

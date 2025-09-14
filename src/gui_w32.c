@@ -326,66 +326,6 @@ gui_mch_set_rendering_options(char_u *s)
 # define DWMWA_TEXT_COLOR		36
 #endif
 
-#ifdef PROTO
-/*
- * Define a few things for generating prototypes.  This is just to avoid
- * syntax errors, the defines do not need to be correct.
- */
-# define APIENTRY
-# define CALLBACK
-# define CONST
-# define FAR
-# define NEAR
-# define WINAPI
-# undef _cdecl
-# define _cdecl
-typedef int BOOL;
-typedef int BYTE;
-typedef int DWORD;
-typedef int WCHAR;
-typedef int ENUMLOGFONT;
-typedef int FINDREPLACE;
-typedef int HANDLE;
-typedef int HBITMAP;
-typedef int HBRUSH;
-typedef int HDROP;
-typedef int INT;
-typedef int LOGFONTW[];
-typedef int LPARAM;
-typedef int LPCREATESTRUCT;
-typedef int LPCSTR;
-typedef int LPCTSTR;
-typedef int LPRECT;
-typedef int LPSTR;
-typedef int LPWINDOWPOS;
-typedef int LPWORD;
-typedef int LRESULT;
-typedef int HRESULT;
-# undef MSG
-typedef int MSG;
-typedef int NEWTEXTMETRIC;
-typedef int NMHDR;
-typedef int OSVERSIONINFO;
-typedef int PWORD;
-typedef int RECT;
-typedef int SIZE;
-typedef int UINT;
-typedef int WORD;
-typedef int WPARAM;
-typedef int POINT;
-typedef void *HINSTANCE;
-typedef void *HMENU;
-typedef void *HWND;
-typedef void *HDC;
-typedef void VOID;
-typedef int LPNMHDR;
-typedef int LONG;
-typedef int WNDPROC;
-typedef int UINT_PTR;
-typedef int COLORREF;
-typedef int HCURSOR;
-#endif
-
 static void _OnPaint(HWND hwnd);
 static void fill_rect(const RECT *rcp, HBRUSH hbr, COLORREF color);
 static void clear_rect(RECT *rcp);

@@ -16,11 +16,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
 // Functions defined with :def are stored in this growarray.
 // They are never removed, so that they can be found by index.
 // Deleted functions have the df_deleted flag set.

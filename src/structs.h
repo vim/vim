@@ -1439,20 +1439,11 @@ typedef long_u hash_T;		// Type for hi_hash
 
 // Use 64-bit Number.
 #ifdef MSWIN
-# ifdef PROTO
-   // workaround for cproto that doesn't recognize __int64
-   typedef long			varnumber_T;
-   typedef unsigned long	uvarnumber_T;
-#  define VARNUM_MIN		LONG_MIN
-#  define VARNUM_MAX		LONG_MAX
-#  define UVARNUM_MAX		ULONG_MAX
-# else
    typedef __int64		varnumber_T;
    typedef unsigned __int64	uvarnumber_T;
-#  define VARNUM_MIN		_I64_MIN
-#  define VARNUM_MAX		_I64_MAX
-#  define UVARNUM_MAX		_UI64_MAX
-# endif
+# define VARNUM_MIN		_I64_MIN
+# define VARNUM_MAX		_I64_MAX
+# define UVARNUM_MAX		_UI64_MAX
 #elif defined(HAVE_NO_LONG_LONG)
 # if defined(HAVE_STDINT_H)
    typedef int64_t		varnumber_T;
