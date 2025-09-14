@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2025 Sep 02
+*terminal.txt*	For Vim version 9.1.  Last change: 2025 Sep 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1427,12 +1427,16 @@ gdb:
  :Tbreak {position}
 		set a temporary breakpoint at the specified position
  *:Clear*	delete the breakpoint at the cursor position
+ *:ToggleBreak*	set a breakpoint at the cursor position or delete all
+		breakpoints at the cursor positoin
 
  *:Step*	execute the gdb "step" command
  *:Over*	execute the gdb "next" command (`:Next` is a Vim command)
  *:Until*	execute the gdb "until" command
  *:Finish*	execute the gdb "finish" command
  *:Continue*	execute the gdb "continue" command
+ *:RunOrContinue* execute the gdb "continue" command if program is running,
+		otherwise run the program
  *:Stop*	interrupt the program
 
 If 'mouse' is set the plugin adds a window toolbar with these entries:
