@@ -1287,7 +1287,7 @@ do_mousescroll(cmdarg_T *cap)
     {
 	// Horizontal scrolling
 	long step = (mouse_hor_step < 0 || shift_or_ctrl)
-					    ? curwin->w_width : mouse_hor_step;
+					    ? W_WIDTH_INNER(curwin) : mouse_hor_step;
 	long leftcol = curwin->w_leftcol
 				     + (cap->arg == MSCR_RIGHT ? -step : step);
 	if (leftcol < 0)
@@ -3392,7 +3392,7 @@ mouse_comp_pos(
 
 	if (win->w_skipcol > 0 && lnum == win->w_topline)
 	{
-	    int width1 = win->w_width - win_col_off(win);
+	    int width1 = W_WIDTH_INNER(win) - win_col_off(win);
 
 	    if (width1 > 0)
 	    {
@@ -3430,7 +3430,7 @@ mouse_comp_pos(
 	off = win_col_off(win) - win_col_off2(win);
 	if (col < off)
 	    col = off;
-	col += row * (win->w_width - off);
+	col += row * (W_WIDTH_INNER(win) - off);
 
 	// Add skip column for the topline.
 	if (lnum == win->w_topline)

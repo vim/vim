@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jul 19
+*builtin.txt*	For Vim version 9.2.  Last change: 2026 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5439,6 +5439,8 @@ getwininfo([{winid}])					*getwininfo()*
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
 					{only with the +quickfix feature}
+			rightmargin	number of columns reserved by
+					'rightmargin'
 			status_height	status lines height (0 or 1)
 			tabnr		tab page number
 			terminal	1 if a terminal window

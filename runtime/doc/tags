@@ -930,8 +930,10 @@ $quote	eval.txt	/*$quote*
 'ri'	options.txt	/*'ri'*
 'rightleft'	options.txt	/*'rightleft'*
 'rightleftcmd'	options.txt	/*'rightleftcmd'*
+'rightmargin'	options.txt	/*'rightmargin'*
 'rl'	options.txt	/*'rl'*
 'rlc'	options.txt	/*'rlc'*
+'rmar'	options.txt	/*'rmar'*
 'rnu'	options.txt	/*'rnu'*
 'ro'	options.txt	/*'ro'*
 'rop'	options.txt	/*'rop'*

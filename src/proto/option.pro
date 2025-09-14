@@ -64,6 +64,7 @@ char *did_set_paste(optset_T *args);
 char *did_set_previewwindow(optset_T *args);
 char *did_set_pyxversion(optset_T *args);
 char *did_set_readonly(optset_T *args);
+char *did_set_rightmargin(optset_T *args);
 char *did_set_scrollbind(optset_T *args);
 char *did_set_maxsearchcount(optset_T *args);
 char *did_set_shellslash(optset_T *args);

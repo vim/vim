@@ -49,6 +49,7 @@ func Test_getbufwintabinfo()
   only
   let w1_id = win_getid()
   setl foldcolumn=3
+  setlocal rightmargin=5
   new
   let w2_id = win_getid()
   tabnew | let w3_id = win_getid()
@@ -67,6 +68,7 @@ func Test_getbufwintabinfo()
   call assert_equal(winbufnr(2), winlist[1].bufnr)
   call assert_equal(winheight(2), winlist[1].height)
   call assert_equal(1, winlist[1].wincol)
+  call assert_equal(5, winlist[1].rightmargin)
   call assert_equal(3, winlist[1].textoff)  " foldcolumn
   call assert_equal(tablineheight + winheight(1) + 2, winlist[1].winrow)
 

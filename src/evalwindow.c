@@ -419,6 +419,7 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_number(dict, "winid", wp->w_id);
     dict_add_number(dict, "height", wp->w_height);
     dict_add_number(dict, "status_height", wp->w_status_height);
+    dict_add_number(dict, "rightmargin", wp->w_p_rmar);
     dict_add_number(dict, "winrow", wp->w_winrow + 1);
     dict_add_number(dict, "topline", wp->w_topline);
     dict_add_number(dict, "botline", wp->w_botline - 1);

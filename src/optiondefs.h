@@ -245,6 +245,7 @@
 #ifdef FEAT_SIGNS
 # define PV_SCL		OPT_WIN(WV_SCL)
 #endif
+#define PV_RMAR		OPT_WIN(WV_RMAR)
 
 // WV_ and BV_ values get typecasted to this for the "indir" field
 typedef enum
@@ -2224,6 +2225,9 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"rightmargin", "rmar", P_NUM|P_VI_DEF|P_RWIN,
+			    (char_u *)VAR_WIN, PV_RMAR, did_set_rightmargin, NULL,
+			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"rubydll",     NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 #if defined(DYNAMIC_RUBY)
 			    (char_u *)&p_rubydll, PV_NONE, NULL, NULL,
