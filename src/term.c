@@ -5911,7 +5911,7 @@ handle_osc(char_u *tp, int len, char_u *key_name, int *slen)
 	LOG_TRN("Received OSC response: %s", (char*)tp);
 	// Check if it is a valid OSC sequence, and consume it. OSC format
 	// consists of:
-	// <idenfitifer><data><terminator>
+	// <identifier><data><terminator>
 	// <identifier> is either <Esc>] or an OSC character
 	// <terminator> can be '\007', <Esc>\ or STERM.
 	cur = 1 + (tp[0] == ESC);

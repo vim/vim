@@ -30,7 +30,7 @@ typedef struct {
     struct wl_seat  *proxy;
     char	    *label;	    // Name of seat as text (e.g. seat0,
 				    // seat1...).
-    uint32_t	    capabilities;   // Bitmask of the capabilites of the seat
+    uint32_t	    capabilities;   // Bitmask of the capabilities of the seat
 				    // (pointer, keyboard, touch).
 } vwl_seat_T;
 
@@ -618,7 +618,7 @@ vwl_log_handler(const char *fmt, va_list args)
 /*
  * Connect to the display with name; passing NULL will use libwayland's way of
  * getting the display. Additionally get the registry object but will not
- * starting listening. Returns OK on sucess and FAIL on failure.
+ * starting listening. Returns OK on success and FAIL on failure.
  */
     static int
 vwl_connect_display(const char *display)
@@ -2275,7 +2275,7 @@ wayland_cb_own_selection(
 	    // better to do it this way. Additionally other Wayland applications
 	    // seem to set the selection every time.
 	    //
-	    // There should be no noticable performance change since its not
+	    // There should be no noticeable performance change since its not
 	    // like this is running in the background constantly in Vim, only
 	    // runs once when the user yanks text to the system clipboard.
 	    vwl_data_source_destroy(&clip_sel->source, FALSE);

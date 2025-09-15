@@ -9546,7 +9546,7 @@ socket_server_send(
 	char_u *str,	    // What to send
 	char_u **result,    // Set to result of expr
 	char_u **receiver,  // Full path of "name"
-	int is_expr,	    // Is it an expresison or keystrokes?
+	int is_expr,	    // Is it an expression or keystrokes?
 	int timeout,	    // In milliseconds
 	int silent)	    // Don't complain if socket doesn't exist
 {
@@ -9628,7 +9628,7 @@ socket_server_send(
 	else
 	    vim_free(path);
 
-	// Exit, we aren't waiting for a reponse
+	// Exit, we aren't waiting for a response
 	return 0;
     }
 
@@ -9935,7 +9935,7 @@ socket_server_init_cmd(ss_cmd_T *cmd, ss_cmd_type_T type)
 
 /*
  * Append a message to a command. Note that "len" is the length of contents.
- * Returns OK on sucess and FAIL on failure
+ * Returns OK on success and FAIL on failure
  */
     static int
 socket_server_append_msg(ss_cmd_T *cmd, char_u type, char_u *contents, int len)
@@ -10386,7 +10386,7 @@ socket_server_exec_cmd(ss_cmd_T *cmd, int fd)
 			    STRLEN(result) + 1); // We add +1 in case "result"
 						 // is an empty string.
 		else
-		    // An error occured, return an error msg instead
+		    // An error occurred, return an error msg instead
 		    socket_server_append_msg(&rcmd, SS_MSG_TYPE_STRING,
 			    (char_u *)_(e_invalid_expression_received),
 			    STRLEN(e_invalid_expression_received));
@@ -10563,7 +10563,7 @@ socket_server_dispatch(int timeout)
 }
 
 /*
- * Check if socket "name" is reponsive by sending an ALIVE command. This does
+ * Check if socket "name" is responsive by sending an ALIVE command. This does
  * not require the socket server to be active.
  */
     static int
