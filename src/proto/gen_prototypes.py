@@ -149,6 +149,18 @@ def rewrite_conditionals_first_branch(text: str) -> str:
                 k += 1
             return k
 
+        def _after_header_line(pos: int) -> int:
+            """
+            Return the first index after a possibly backslash-continued header line
+            starting at `pos`. It consumes all continuation lines that belong to
+            the directive header.
+            """
+            k = pos + 1
+            # Consume lines as long as the previous line ends with a backslash
+            while k < n and _ends_with_bs(lines[k - 1]):
+                k += 1
+            return k
+
         bodies: List[Tuple[str, int, int]] = []
         header_positions = [pos for _, pos in marks] + [j]
         tags = [tag for tag, _ in marks]
@@ -205,6 +217,15 @@ def rewrite_conditionals_first_branch(text: str) -> str:
             keep_s, keep_e = bodies[0][1], bodies[0][2]
             kept_text = "".join(lines[keep_s:keep_e])
             kept_rewritten = rewrite_conditionals_first_branch(kept_text)
+
+            if DEBUG_LOG:
+                print(f"[group] first body lines {keep_s}:{keep_e}", file=sys.stderr)
+                # Print the first non-empty line of the kept body for quick context
+                for ln in kept_text.splitlines():
+                    if ln.strip():
+                        print(f"[group] kept starts with: {ln.strip()}", file=sys.stderr)
+                        break
+
             out.append(kept_rewritten)
             i = group_end
         else:
@@ -282,8 +303,16 @@ def in_this_file(cur, src_path: Path) -> bool:
         if not f:
             return False
         cur_path = os.path.normcase(os.path.abspath(str(f.name)))
-        src_abs = os.path.normcase(os.path.abspath(src_path.as_posix()))
-        return cur_path == src_abs or os.path.basename(cur_path) == os.path.basename(src_abs)
+        src_abs  = os.path.normcase(os.path.abspath(src_path.as_posix()))
+        # Accept the main source file
+        if cur_path == src_abs or os.path.basename(cur_path) == os.path.basename(src_abs):
+            return True
+        # Additionally accept quoted .c includes located in the same directory
+        # (e.g., #include "regexp_nfa.c" next to the main source).
+        src_dir = os.path.normcase(os.path.abspath(src_path.parent.as_posix()))
+        if cur_path.endswith(".c") and os.path.dirname(cur_path) == src_dir:
+            return True
+        return False
     except Exception:
         return False
 

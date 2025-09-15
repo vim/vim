@@ -2121,8 +2121,8 @@ update-po:
 # When generating os_amiga.pro and os_win32.pro there will be a
 # few include files that can not be found, that's OK.
 
-#PRO_AUTO = gui_xim.pro
-#PRO_MANUAL =
+PRO_AUTO = os_win32.pro
+PRO_MANUAL =
 proto: $(PRO_AUTO) $(PRO_MANUAL)
 
 # Filter out arguments that cproto doesn't support.
@@ -2134,7 +2134,7 @@ proto: $(PRO_AUTO) $(PRO_MANUAL)
 #CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
 #	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g' -e 's/ -O[^ ]\+//g'`
 CPROTO_NEW = proto/gen_prototypes.py
-CPROTO_ARG = -DPROTO -DEINTR -DFEAT_GUI
+CPROTO_ARG = -DPROTO -DEINTR -DFEAT_GUI -I.
 
 ### Would be nice if this would work for "normal" make.
 ### Currently it only works for (Free)BSD make.
