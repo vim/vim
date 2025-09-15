@@ -136,6 +136,7 @@ runtime/ftplugin/chatito.vim				@ObserverOfTime
 runtime/ftplugin/chicken.vim				@evhan
 runtime/ftplugin/clojure.vim				@axvr
 runtime/ftplugin/cmakecache.vim				@ribru17
+runtime/ftplugin/codeowners.vim				@jparise
 runtime/ftplugin/cook.vim				@ribru17
 runtime/ftplugin/cs.vim					@nickspoons
 runtime/ftplugin/csh.vim				@dkearns
@@ -456,6 +457,7 @@ runtime/syntax/chatito.vim				@ObserverOfTime
 runtime/syntax/chicken.vim				@evhan
 runtime/syntax/chuck.vim				@andreacfromtheapp
 runtime/syntax/clojure.vim				@axvr
+runtime/syntax/codeowners.vim				@jparise
 runtime/syntax/cs.vim					@nickspoons
 runtime/syntax/csv.vim					@habamax
 runtime/syntax/cucumber.vim				@tpope
@@ -686,3 +688,5 @@ src/po/sr.po						@eevan78
 src/po/tr.po						@bitigchi
 src/po/uk.po						@sakhnik
 src/xxd/						@jnweiger
+
+# vim:ft=codeowners
