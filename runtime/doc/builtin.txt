@@ -1947,7 +1947,7 @@ complete({startcol}, {matches})			*complete()* *E785*
 
 		vim9script
 		def ListMonths(): string
-		  const months = [ 'January', 'February', 'March', 'April', 
+		  const months = [ 'January', 'February', 'March', 'April',
 			'May', 'June', 'July', 'September', 'October',
 			'November', 'December']
 		  complete(col('.'), months)
