@@ -422,6 +422,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     karel: ['file.kl', 'file.KL'],
     kconfig: ['Kconfig', 'Kconfig.debug', 'Kconfig.file', 'Config.in', 'Config.in.host'],
     kdl: ['file.kdl'],
+    kitty: ['kitty.conf', '~/.config/kitty/colorscheme.conf'],
     kivy: ['file.kv'],
     kix: ['file.kix'],
     kotlin: ['file.kt', 'file.ktm', 'file.kts'],
