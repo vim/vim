@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Sep 14
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2896,14 +2896,14 @@ v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
 					*v:termrbgresp* *termrbgresp-variable*
 v:termrbgresp	The escape sequence returned by the terminal for the |t_RB|
 		termcap entry.  This is used to find out what the terminal
-		background color is; see 'background'.  When this option is
+		background color is; see 'background'.  When this variable is
 		set, the TermResponseAll autocommand event is fired, with
 		<amatch> set to "background".
 
 					*v:termrfgresp* *termrfgresp-variable*
 v:termrfgresp	The escape sequence returned by the terminal for the |t_RF|
 		termcap entry.  This is used to find out what the terminal
-		foreground color is.  When this option is set, the
+		foreground color is.  When this variable is set, the
 		TermResponseAll autocommand event is fired, with <amatch> set
 		to "foreground".
 
