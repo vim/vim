@@ -150,7 +150,7 @@ draw_tabpanel(void)
     if (maxwidth == 0)
 	return;
 
-    // Reset got_int to avoid build_stl_str_hl() isn't evaluted.
+    // Reset got_int to avoid build_stl_str_hl() isn't evaluated.
     got_int = FALSE;
 
     if (tpl_is_vert)
