@@ -6805,7 +6805,7 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		|textlock|.  If you do need to make changes to the buffer, use
 		a timer to do this later |timer_start()|.
 
-		You may not call listener_add() during the {callback}. *E1562*
+		You may not call listener_add() during the {callback}. *E1569*
 
 		The {callback} is not invoked when the buffer is first loaded.
 		Use the |BufReadPost| autocmd event to handle the initial text

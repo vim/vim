@@ -245,8 +245,7 @@ check_recorded_changes(
 	linenr_T	lnume,
 	long		xtra)
 {
-    if (houskeeping_required)
-	perform_listener_housekeeping();
+    perform_listener_housekeeping();
     if (buf->b_recorded_changes == NULL || xtra == 0)
 	return;
 
@@ -286,8 +285,7 @@ may_record_change(
 {
     dict_T	*dict;
 
-    if (houskeeping_required)
-	perform_listener_housekeeping();
+    perform_listener_housekeeping();
     if (curbuf->b_listener == NULL)
 	return;
 
@@ -365,8 +363,7 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     // Perform any pending housekeeping and then make sure any buffered change
     // reports are flushed so that the new listener does not see out of date
     // changes.
-    if (houskeeping_required)
-	perform_listener_housekeeping();
+    perform_listener_housekeeping();
     invoke_listeners(buf);
 
     if (unbuffered)
@@ -408,8 +405,7 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
 	if (buf == NULL)
 	    return;
     }
-    if (houskeeping_required)
-	perform_listener_housekeeping();
+    perform_listener_housekeeping();
     invoke_listeners(buf);
 }
 
@@ -483,7 +479,7 @@ may_invoke_listeners(buf_T *buf, linenr_T lnum, linenr_T lnume, int added)
 
 /*
  * Called when any sequence of change occurs: listeners added with the
- * "unbuffered" flag set.
+ * "unbuffered" parameter set.
  */
     static void
 invoke_sync_listeners(
@@ -498,7 +494,7 @@ invoke_sync_listeners(
     typval_T	argv[6];
     int		save_updating_screen = updating_screen;
 
-    if (curbuf->b_sync_listener == NULL)
+    if (recursive || curbuf->b_sync_listener == NULL)
 	return;
 
     argv[0].v_type = VAR_NUMBER;
@@ -517,7 +513,7 @@ invoke_sync_listeners(
 
     // Block messages on channels from being handled, so that they don't make
     // text changes here.
-    ++updating_screen;
+    updating_screen = TRUE;
 
     for (lnr = buf->b_sync_listener; lnr != NULL; lnr = lnr->lr_next)
     {
@@ -558,7 +554,7 @@ invoke_listeners(buf_T *buf)
 
     // Block messages on channels from being handled, so that they don't make
     // text changes here.
-    ++updating_screen;
+    updating_screen = TRUE;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = buf->b_fnum; // a:bufnr

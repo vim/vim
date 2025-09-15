@@ -175,6 +175,31 @@ func Test_new_listener_does_not_receive_ood_changes()
   bwipe!
 endfunc
 
+func Test_callbacks_do_not_recurse()
+  func DodgyExtendList(b, s, e, a, l)
+    call extend(s:list, a:l)
+    if len(s:list) < 3  " Limit recursion in the face of test failure.
+      call listener_flush()
+      redraw
+    endif
+  endfunc
+
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let s:list = []
+
+  " Add a listener and make a change.
+  let id = listener_add("DodgyExtendList")
+  call setline(1, 'one one')
+
+  " The callback should only be invoked once, i.e. recursion is blocked.
+  redraw
+  call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
 func Test_clean_up_after_last_listener_removed()
   new
   call setline(1, ['one', 'two', 'three'])
@@ -207,7 +232,7 @@ func Test_a_callback_may_not_add_a_listener()
   func ListenerWotAdds_listener(bufnr, start, end, added, changes)
     call s:StoreList(a:start, a:end, a:added, a:changes)
     call assert_fails(
-        \ "call listener_add({b, s, e, a, l -> s:AnotherStoreList(l)})", "E1562:")
+        \ "call listener_add({b, s, e, a, l -> s:AnotherStoreList(l)})", "E1569:")
   endfunc
 
   new

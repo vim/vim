@@ -3776,8 +3776,6 @@ EXTERN char e_not_a_generic_function_str[]
 	INIT(= N_("E1560: Not a generic function: %s"));
 EXTERN char e_duplicate_type_var_name_str[]
 	INIT(= N_("E1561: Duplicate type variable name: %s"));
-EXTERN char e_cannot_add_listener_in_listener_callback[]
-	INIT(= N_("E1562: Cannot use listener_add in a listener callback"));
 #endif
 #if defined(FEAT_DIFF)
 EXTERN char e_diff_anchors_with_hidden_windows[]
@@ -3797,3 +3795,7 @@ EXTERN char e_socket_server_unavailable[]
 #endif
 EXTERN char e_osc_response_timed_out[]
 	INIT(= N_("E1568: OSC command response timed out: %.*s"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_add_listener_in_listener_callback[]
+	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
+#endif
