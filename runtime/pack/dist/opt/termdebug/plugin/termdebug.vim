@@ -1545,7 +1545,6 @@ def GetEvaluationExpression(range: number, arg: string): string
   if arg != ''
     # user supplied evaluation
     expr = CleanupExpr(arg)
-    # DSW: replace "likely copy + paste" assignment
     expr = substitute(expr, '"\([^"]*\)": *', '\1=', 'g')
   elseif range == 2
     # no evaluation but provided but range set
