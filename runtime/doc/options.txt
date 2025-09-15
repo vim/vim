@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 14
+*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2862,7 +2862,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not available when compiled without the |+cscope|
 			feature}
-	In the absence of a prefix (-P) for cscope.  setting this option
+	In the absence of a prefix (-P) for cscope, setting this option
 	enables to use the basename of cscope.out path as the prefix.
 	See |cscoperelative|.
 	NOTE: This option is reset when 'compatible' is set.
