@@ -2424,6 +2424,10 @@ ins_compl_bs(void)
 	return K_BS;
     }
 
+    // Clear selection if a menu item is currently selected in autocompletion
+    if (compl_autocomplete && compl_first_match)
+	compl_shown_match = compl_first_match;
+
     ins_compl_new_leader();
     if (compl_shown_match != NULL)
 	// Make sure current match is not a hidden item.
