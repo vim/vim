@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2025 Sep 14
+# Last Change: 2025 Sep 15
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -1545,7 +1545,6 @@ def GetEvaluationExpression(range: number, arg: string): string
   if arg != ''
     # user supplied evaluation
     expr = CleanupExpr(arg)
-    # DSW: replace "likely copy + paste" assignment
     expr = substitute(expr, '"\([^"]*\)": *', '\1=', 'g')
   elseif range == 2
     # no evaluation but provided but range set
