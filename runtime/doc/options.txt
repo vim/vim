@@ -2092,7 +2092,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'preserveindent'+ off		don't preserve current indent structure
 						when changing it
 	'revins'	+ off		no reverse insert
-	'ruler'		+ off		no ruler
+	'ruler'		& off		no ruler
 	'scrolljump'	+ 1		no jump scroll
 	'scrolloff'	+ 0		no scroll offset
 	'shelltemp'	- {unchanged}	{set vim default only on resetting 'cp'}
@@ -7134,7 +7134,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 					 *'ruler'* *'ru'* *'noruler'* *'noru'*
-'ruler' 'ru'		boolean	(default off, set in |defaults.vim|)
+'ruler' 'ru'		boolean	(Vim default: on, Vi default: off)
 			global
 	Show the line and column number of the cursor position, separated by a
 	comma.  When there is room, the relative position of the displayed

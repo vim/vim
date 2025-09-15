@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 14
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41672,6 +41672,8 @@ Default values: ~
   |defaults.vim|
 - Improve the diff mode experience by updating the 'diffopt' default value to
   "internal,filler,closeoff,indent-heuristic,inline:char".
+- the 'ruler' option value is always enabled when using non-compatible mode
+  and removed from |defaults.vim|
 
 Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
