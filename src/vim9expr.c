@@ -1199,7 +1199,9 @@ compile_arguments(
 	    isn_T *isn = ((isn_T *)cctx->ctx_instr.ga_data) + instr_count;
 
 	    // {skip} argument of searchpair() can be compiled if not empty
-	    if (isn->isn_type == ISN_PUSHS && *isn->isn_arg.string != NUL)
+	    if (isn->isn_type == ISN_PUSHS
+		    && isn->isn_arg.string != NULL
+		    && *isn->isn_arg.string != NUL)
 		compile_string(isn, cctx, 0);
 	}
 	else if (special_fn == CA_SUBSTITUTE && *argcount == 3
@@ -1209,8 +1211,10 @@ compile_arguments(
 
 	    // {sub} argument of substitute() can be compiled if it starts
 	    // with \=
-	    if (isn->isn_type == ISN_PUSHS && isn->isn_arg.string[0] == '\\'
-					      && isn->isn_arg.string[1] == '=')
+	    if (isn->isn_type == ISN_PUSHS
+		    && isn->isn_arg.string != NULL
+		    && isn->isn_arg.string[0] == '\\'
+		    && isn->isn_arg.string[1] == '=')
 		compile_string(isn, cctx, 2);
 	}
 

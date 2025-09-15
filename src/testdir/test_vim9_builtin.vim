@@ -3875,6 +3875,26 @@ def Test_searchpair()
   errors = ['E1013: Argument 7: type mismatch, expected number but got string', 'E1210: Number required for argument 7']
   v9.CheckSourceDefAndScriptFailure(['searchpair("a", "b", "c", "r", "1", 3, "g")'], errors)
   v9.CheckSourceDefAndScriptFailure(['searchpairpos("a", "b", "c", "r", "1", 3, "g")'], errors)
+
+  # calling searchpair() with null_string arguments
+  lines =<< trim END
+    new
+    setline(1, ['{', '', '}'])
+
+    cursor(1, 1)
+    searchpair('{', '', '}', '', null_string)
+    assert_equal(3, line('.'))
+
+    cursor(1, 1)
+    searchpair('{', '', '}', null_string, null_string)
+    assert_equal(3, line('.'))
+
+    cursor(1, 1)
+    searchpair(null_string, null_string, null_string, null_string, null_string)
+    assert_equal(1, line('.'))
+    bw!
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
 enddef
 
 def Test_searchpos()
@@ -4538,6 +4558,27 @@ def Test_substitute()
     assert_equal("4", substitute("3", '\d', '\="text" x', 'g'))
   END
   v9.CheckSourceDefAndScriptFailure(lines, 'E488: Trailing characters: x')
+
+  # check for using null_string as argument to substitute()
+  lines =<< trim END
+    assert_equal('Vim', 'Vimp'->substitute('p', '', null_string))
+    assert_equal('Vim', 'Vimp'->substitute('p', null_string, null_string))
+    assert_equal('Vimp', 'Vimp'->substitute(null_string, null_string, null_string))
+    assert_equal('', substitute(null_string, null_string, null_string, null_string))
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+
+  # lambda function calling substitute() with null_string arguments
+  lines =<< trim END
+    const Subst_Fn: func = (a: string, b: string, c: string, d: string): string => {
+      return a->substitute(b, c, d)
+    }
+    assert_equal('Vim', Subst_Fn('Vimp', 'p', '', null_string))
+    assert_equal('Vim', Subst_Fn('Vimp', 'p', null_string, null_string))
+    assert_equal('Vimp', Subst_Fn('Vimp', null_string, null_string, null_string))
+    assert_equal('', Subst_Fn(null_string, null_string, null_string, null_string))
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
 enddef
 
 def Test_swapinfo()
