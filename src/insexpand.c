@@ -5859,8 +5859,12 @@ find_common_prefix(size_t *prefix_len, int curbuf_only)
 	    {
 		if (first == NULL)
 		{
-		    first = compl->cp_str.string;
-		    len = (int)STRLEN(first);
+		    if (STRNCMP(ins_compl_leader(), compl->cp_str.string,
+				ins_compl_leader_len()) == 0)
+		    {
+			first = compl->cp_str.string;
+			len = (int)STRLEN(first);
+		    }
 		}
 		else
 		{
@@ -5890,7 +5894,7 @@ find_common_prefix(size_t *prefix_len, int curbuf_only)
 
     vim_free(match_count);
 
-    if (len > get_compl_len())
+    if (len > ins_compl_leader_len())
     {
 	*prefix_len = (size_t)len;
 	return first;
