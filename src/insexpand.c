@@ -2424,6 +2424,10 @@ ins_compl_bs(void)
 	return K_BS;
     }
 
+    // Clear selection if a menu item is currently selected in autocompletion
+    if (compl_autocomplete && compl_first_match)
+	compl_shown_match = compl_first_match;
+
     ins_compl_new_leader();
     if (compl_shown_match != NULL)
 	// Make sure current match is not a hidden item.
@@ -3447,7 +3451,7 @@ set_cpt_callbacks(optset_T *args)
 	}
     }
 
-    if (!local) // ':set' used insted of ':setlocal'
+    if (!local) // ':set' used instead of ':setlocal'
 	// Cache the callback array
 	if (copy_cpt_callbacks(&cpt_cb, &cpt_cb_count, curbuf->b_p_cpt_cb,
 		    curbuf->b_p_cpt_count) != OK)

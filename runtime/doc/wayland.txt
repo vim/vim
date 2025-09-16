@@ -1,4 +1,4 @@
-*wayland.txt*   For Vim version 9.1.  Last change: 2025 Sep 02
+*wayland.txt*   For Vim version 9.1.  Last change: 2025 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -56,7 +56,7 @@ protocols, for accessing the current Wayland selection.  These are the best
 case scenario protocols, see |wayland-focus-steal|.  Selection in this case
 essentially means the "clipboard."  You can check if your Wayland compositor
 supports either of these protocols by running the wayland-info command, which
-should be bunded with libwayland on your system: >
+should be bundled with libwayland on your system: >
 	wayland-info | grep -E '(ext_data_control|zwlr_data_control)'
 <If grep finds a match, then you have either or both protocols on your system.
 If you don't get any match, then please see |wayland-focus-steal| for more

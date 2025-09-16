@@ -12518,7 +12518,7 @@ def Test_super_keyword()
   END
   v9.CheckSourceFailure(lines, 'E1326: Variable "foo" not found in object "B"')
 
-  # Using super to access an overriden method in the parent class
+  # Using super to access an overridden method in the parent class
   lines =<< trim END
     vim9script
 

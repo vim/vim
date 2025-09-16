@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 11
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41670,8 +41670,10 @@ Default values: ~
 - the default value for 'showcmd' is always enabled when using non-compatible
   mode (previously, it was off on UNIX systems) and consequently removed from
   |defaults.vim|
-- Improve the diff experience by updating the 'diffopt' default value to
+- Improve the diff mode experience by updating the 'diffopt' default value to
   "internal,filler,closeoff,indent-heuristic,inline:char".
+- the 'ruler' option value is always enabled when using non-compatible mode
+  and removed from |defaults.vim|
 
 Completion: ~
 - allow to complete directories from 'cdpath' for |:cd| and similar commands,
@@ -41759,9 +41761,6 @@ Others: ~
   Command-line.
 - |min()|/|max()| can handle all comparable data types.
 - Vim triggers the |TermResponseAll| autocommand for any terminal OSC value.
-- Vim includes the $VIMRUNTIME/plugins/colorresp.vim which parses the terminal
-  OSC response and can trigger a |TermResponseAll| with the "background" or
-  "foreground" value.
 
 Platform specific ~
 - MS-Winodws: Paths like "\Windows" and "/Windows" are now considered to be

@@ -2094,7 +2094,20 @@ $quote	eval.txt	/*$quote*
 :%	cmdline.txt	/*:%*
 :&	change.txt	/*:&*
 :&&	change.txt	/*:&&*
-:'	cmdline.txt	/*:'*
+:''	cmdline.txt	/*:''*
+:'(	cmdline.txt	/*:'(*
+:')	cmdline.txt	/*:')*
+:'.	cmdline.txt	/*:'.*
+:'<	cmdline.txt	/*:'<*
+:'>	cmdline.txt	/*:'>*
+:'X	cmdline.txt	/*:'X*
+:'[	cmdline.txt	/*:'[*
+:']	cmdline.txt	/*:']*
+:'^	cmdline.txt	/*:'^*
+:'quote	cmdline.txt	/*:'quote*
+:'x	cmdline.txt	/*:'x*
+:'{	cmdline.txt	/*:'{*
+:'}	cmdline.txt	/*:'}*
 :++	vim9.txt	/*:++*
 :,	cmdline.txt	/*:,*
 :--	vim9.txt	/*:--*
@@ -2212,6 +2225,7 @@ $quote	eval.txt	/*$quote*
 :Rexplore	pi_netrw.txt	/*:Rexplore*
 :RmVimball	pi_vimball.txt	/*:RmVimball*
 :Run	terminal.txt	/*:Run*
+:RunOrContinue	terminal.txt	/*:RunOrContinue*
 :RustEmitAsm	ft_rust.txt	/*:RustEmitAsm*
 :RustEmitIr	ft_rust.txt	/*:RustEmitIr*
 :RustExpand	ft_rust.txt	/*:RustExpand*
@@ -2233,6 +2247,7 @@ $quote	eval.txt	/*$quote*
 :Termdebug	terminal.txt	/*:Termdebug*
 :TermdebugCommand	terminal.txt	/*:TermdebugCommand*
 :Texplore	pi_netrw.txt	/*:Texplore*
+:ToggleBreak	terminal.txt	/*:ToggleBreak*
 :Tutor	pi_tutor.txt	/*:Tutor*
 :URLOpen	eval.txt	/*:URLOpen*
 :Until	terminal.txt	/*:Until*

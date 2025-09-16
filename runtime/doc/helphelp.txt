@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Aug 06
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -392,8 +392,8 @@ help file it's best to copy one of the existing files and use it as a
 template.
 
 Vim help files generally use 2 spaces after a sentence (since they are written
-using a fixed-width font and that was the prefered style in the 70s/80s), like
-what is described here: https://english.stackexchange.com/a/2602
+using a fixed-width font and that was the preferred style in the 70s/80s),
+like what is described here: https://english.stackexchange.com/a/2602
 
 The first line in a help file should have the following format:
 
