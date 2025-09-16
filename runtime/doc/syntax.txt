@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
+*syntax.txt*	For Vim version 9.1.  Last change: 2025 Sep 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2385,6 +2385,22 @@ set "lite_minlines" to the value you desire.  Example: >
 
 	:let lite_minlines = 200
 
+LOG							*ft-log-syntax*
+
+Vim comes with a simplistic generic log syntax highlighter.  Because the log
+file format is so generic, highlighting is not enabled by default, since it
+can be distracting.  If you want to enable this, simply set the "log" filetype
+manually: >
+
+	:set ft=log
+
+To enable this automatically for "*.log" files, add the following to your
+personal `filetype.vim` file (usually located in `~/.vim/filetype.vim` on Unix
+or `$HOME/vimfiles/filetype.vim`, see also |new-filetype|): >
+
+	augroup filetypedetect
+	  au! BufNewFile,BufRead *.log	setfiletype log
+	augroup END
 
 LPC						*lpc.vim* *ft-lpc-syntax*
 
