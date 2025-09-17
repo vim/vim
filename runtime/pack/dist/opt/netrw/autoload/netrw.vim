@@ -3048,12 +3048,12 @@ function s:NetrwBrowse(islocal,dirname)
             exe "sil! NetrwKeepj keepalt doau BufReadPre ".fnameescape(s:fname)
             sil call netrw#NetRead(2,url)
             " netrw.vim and tar.vim have already handled decompression of the tarball; avoiding gzip.vim error
-            if s:path =~ '.bz2'
+            if s:path =~ '\.bz2$'
                 exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.bz2$','',''))
-            elseif s:path =~ '.gz'
+            elseif s:path =~ '\.gz$'
                 exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.gz$','',''))
-            elseif s:path =~ '.gz'
-                exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.txz$','',''))
+            elseif s:path =~ '\.xz$'
+                exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.xz$','',''))
             else
                 exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(s:fname)
             endif
