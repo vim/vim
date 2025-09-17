@@ -5857,14 +5857,11 @@ find_common_prefix(size_t *prefix_len, int curbuf_only)
 	    if (!match_limit_exceeded && (!curbuf_only
 			|| cpt_sources_array[cur_source].cs_flag == '.'))
 	    {
-		if (first == NULL)
+		if (first == NULL && STRNCMP(ins_compl_leader(),
+			    compl->cp_str.string, ins_compl_leader_len()) == 0)
 		{
-		    if (STRNCMP(ins_compl_leader(), compl->cp_str.string,
-				ins_compl_leader_len()) == 0)
-		    {
-			first = compl->cp_str.string;
-			len = (int)STRLEN(first);
-		    }
+		    first = compl->cp_str.string;
+		    len = (int)STRLEN(first);
 		}
 		else
 		{
