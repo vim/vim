@@ -881,7 +881,9 @@ f_delete(typval_T *argvars, typval_T *rettv)
     char_u	*name;
     char_u	*flags;
 
+    rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = -1;
+
     if (check_restricted() || check_secure())
 	return;
 
@@ -921,6 +923,8 @@ f_delete(typval_T *argvars, typval_T *rettv)
     void
 f_executable(typval_T *argvars, typval_T *rettv)
 {
+    rettv->v_type = VAR_NUMBER;
+
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
@@ -936,11 +940,12 @@ f_exepath(typval_T *argvars, typval_T *rettv)
 {
     char_u *p = NULL;
 
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = p;
+
     if (in_vim9script() && check_for_nonempty_string_arg(argvars, 0) == FAIL)
 	return;
     (void)mch_can_exe(tv_get_string(&argvars[0]), &p, TRUE);
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = p;
 }
 
 /*
@@ -949,6 +954,8 @@ f_exepath(typval_T *argvars, typval_T *rettv)
     void
 f_filereadable(typval_T *argvars, typval_T *rettv)
 {
+    rettv->v_type = VAR_NUMBER;
+
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
     rettv->vval.v_number = file_is_readable(tv_get_string(&argvars[0]));
@@ -961,6 +968,8 @@ f_filereadable(typval_T *argvars, typval_T *rettv)
     void
 f_filewritable(typval_T *argvars, typval_T *rettv)
 {
+    rettv->v_type = VAR_NUMBER;
+
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
     rettv->vval.v_number = filewritable(tv_get_string(&argvars[0]));
@@ -1215,6 +1224,8 @@ f_getfsize(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
 
+    rettv->v_type = VAR_NUMBER;
+
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
@@ -1244,6 +1255,8 @@ f_getftime(typval_T *argvars, typval_T *rettv)
 {
     char_u	*fname;
     stat_T	st;
+
+    rettv->v_type = VAR_NUMBER;
 
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
@@ -1444,6 +1457,8 @@ f_globpath(typval_T *argvars, typval_T *rettv)
     void
 f_isdirectory(typval_T *argvars, typval_T *rettv)
 {
+    rettv->v_type = VAR_NUMBER;
+
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
@@ -1456,6 +1471,8 @@ f_isdirectory(typval_T *argvars, typval_T *rettv)
     void
 f_isabsolutepath(typval_T *argvars, typval_T *rettv)
 {
+    rettv->v_type = VAR_NUMBER;
+
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
@@ -2332,7 +2349,9 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     list_T	*list = NULL;
     blob_T	*blob = NULL;
 
+    rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = -1;
+
     if (check_secure())
 	return;
 
@@ -2688,6 +2707,7 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
     char_u	*from;
     stat_T	st;
 
+    rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = FALSE;
 
     if (check_restricted() || check_secure()
