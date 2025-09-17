@@ -144,7 +144,7 @@ else
 endif
 
 " Catch errors caused by wrong parenthesis and brackets.
-" Also accept <% for {, %> for }, <: for [ and :> for ] (C95)
+" Also accept <% for {, %> for }, <: for [ and :> for ] (Amendment 1 to ISO C90)
 " But avoid matching <::.
 syn cluster	cParenGroup	contains=cParenError,cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserLabel,cBitField,cOctalZero,@cCppOutInGroup,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom
 if exists("c_no_curly_error")
@@ -288,10 +288,11 @@ if !exists("c_no_ansi") || exists("c_ansi_typedefs")
   syn keyword   cType		size_t ssize_t off_t wchar_t ptrdiff_t sig_atomic_t fpos_t
   syn keyword   cType		clock_t time_t va_list jmp_buf FILE DIR div_t ldiv_t
 endif
-if !exists("c_no_c95") " Amendment 1 to ISO C90
+
+  " Amendment 1 to ISO C90
   syn keyword   cType           wint_t mbstate_t wctype_t wctrans_t
   syn keyword   cOperator	and bitor or xor compl bitand and_eq or_eq xor_eq not not_eq
-endif
+
 if !exists("c_no_c99") " ISO C99
   syn keyword	cType		_Bool bool _Complex complex _Imaginary imaginary
   syn keyword	cType		int8_t int16_t int32_t int64_t
@@ -368,9 +369,10 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   syn keyword cConstant CHAR_MAX INT_MAX LONG_MAX SHRT_MAX
   syn keyword cConstant SCHAR_MIN SINT_MIN SLONG_MIN SSHRT_MIN
   syn keyword cConstant SCHAR_MAX SINT_MAX SLONG_MAX SSHRT_MAX
-  if !exists("c_no_c95")
-    syn keyword cConstant WEOF WCHAR_MIN WCHAR_MAX WINT_MIN WINT_MAX
-  endif
+
+  " Amendment 1 to ISO C90
+  syn keyword cConstant WEOF WCHAR_MIN WCHAR_MAX WINT_MIN WINT_MAX
+
   if !exists("c_no_c99")
     syn keyword cConstant __STDC_ISO_10646__ __STDC_IEC_559_COMPLEX__
     syn keyword cConstant __STDC_MB_MIGHT_NEQ_WC__
@@ -456,7 +458,7 @@ if !exists("c_no_c99") " ISO C99
   syn keyword cConstant FP_NORMAL FP_SUBNORMAL FP_ZERO FP_INFINITE FP_NAN
 endif
 
-" Accept %: for # (C95)
+" Accept %: for # (Amendment 1 to ISO C90)
 syn cluster	cPreProcGroup	contains=cPreCondit,cIncluded,cInclude,cDefine,cErrInParen,cErrInBracket,cUserLabel,cSpecial,cOctalZero,cCppOutWrapper,cCppInWrapper,@cCppOutInGroup,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom,cString,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cParen,cBracket,cMulti,cBadBlock
 if !exists("c_no_c23")
   syn region	cPreCondit	start="^\s*\zs\%(%:\|#\)\s*\%(el\)\=\%(if\|ifdef\|ifndef\)\>" skip="\\$" end="$" keepend contains=cComment,cCommentL,cCppString,cCharacter,cCppParen,cParenError,cNumbers,cCommentError,cSpaceError
