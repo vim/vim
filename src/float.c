@@ -345,6 +345,9 @@ f_fmod(typval_T *argvars, typval_T *rettv)
     void
 f_isinf(typval_T *argvars, typval_T *rettv)
 {
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = 0;
+
     if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
 	return;
 
@@ -358,6 +361,9 @@ f_isinf(typval_T *argvars, typval_T *rettv)
     void
 f_isnan(typval_T *argvars, typval_T *rettv)
 {
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = 0;
+
     if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
 	return;
 

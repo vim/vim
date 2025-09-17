@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Sep 11
+*autocmd.txt*   For Vim version 9.1.  Last change: 2025 Sep 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1313,8 +1313,10 @@ TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				correspondingly, can be used.  <amatch> will
 				be set to any of:
 				    "ambiguouswidth" (|t_u7|),
+				    "background" (|t_RB|),
 				    "cursorblink" (|t_RC|),
 				    "cursorshape" (|t_RS|),
+				    "foreground" (|t_RF|),
 				    "da1",
 				    "osc",
 				    "version" (|t_RV|)
@@ -1322,15 +1324,6 @@ TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				executing another event, especially if file I/O,
 				a shell command or anything else that takes time
 				is involved.
-				Note: Traditionally, TermResponseAll was also
-				used for "foreground" and "background"
-				patterns.  These are now handled as part of
-				the "osc" value.  For backwards compatibility,
-				the $VIMRUNTIME/plugin/colorresp.vim plugin
-				will handle "osc" events and emit
-				TermResponseAll autocommand events when it
-				encounters "foreground" and "background"
-				values.
 							*TextChanged*
 TextChanged			After a change was made to the text in the
 				current buffer in Normal mode.  That is after

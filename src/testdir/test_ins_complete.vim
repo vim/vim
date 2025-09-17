@@ -5023,7 +5023,7 @@ func Test_nonkeyword_trigger()
   call assert_equal('a#', getline('.'))
   set completeopt&
 
-  " Test 2: Filter nonkeyword and keyword matches with differet startpos
+  " Test 2: Filter nonkeyword and keyword matches with different startpos
   set completeopt+=menuone,noselect
   call feedkeys("S#a\<C-N>b\<F2>\<F3>\<Esc>0", 'tx!')
   call assert_equal(['abc', 'abcd', '#abar'], b:matches->mapnew('v:val.word'))
@@ -5144,7 +5144,7 @@ func Test_autocomplete_trigger()
   call assert_equal(2, g:CallCount)
   call assert_equal('a#', getline('.'))
 
-  " Test 2: Filter nonkeyword and keyword matches with differet startpos
+  " Test 2: Filter nonkeyword and keyword matches with different startpos
   for fuzzy in range(2)
     if fuzzy
       set completeopt+=fuzzy
@@ -5246,6 +5246,21 @@ func Test_autocomplete_trigger()
   call assert_equal([], b:matches->mapnew('v:val.word'))
   call feedkeys("Sazx\<Left>\<BS>\<F2>\<Esc>0", 'tx!')
   call assert_equal(['and', 'afoo'], b:matches->mapnew('v:val.word'))
+
+  " Test 6: <BS> should clear the selected item
+  %d
+  call setline(1, ["foobarfoo", "foobar", "foobarbaz"])
+  call feedkeys("Gofo\<C-N>\<C-N>\<F2>\<F3>\<Esc>0", 'tx!')
+  call assert_equal(['foobarbaz', 'foobar', 'foobarfoo'], b:matches->mapnew('v:val.word'))
+  call assert_equal(1, b:selected)
+  call feedkeys("Sfo\<C-N>\<C-N>\<BS>\<F2>\<F3>\<Esc>0", 'tx!')
+  call assert_equal(['foobarbaz', 'foobar', 'foobarfoo'], b:matches->mapnew('v:val.word'))
+  call assert_equal(-1, b:selected)
+  call assert_equal('fooba', getline(4))
+  call feedkeys("Sfo\<C-N>\<C-N>\<BS>\<C-N>\<F2>\<F3>\<Esc>0", 'tx!')
+  call assert_equal(['foobarbaz', 'foobar', 'foobarfoo'], b:matches->mapnew('v:val.word'))
+  call assert_equal(0, b:selected)
+  call assert_equal('foobarbaz', getline(4))
 
   bw!
   call test_override("char_avail", 0)

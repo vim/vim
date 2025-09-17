@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 08
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1913,10 +1913,11 @@ col({expr} [, {winid}])					*col()*
 
 
 complete({startcol}, {matches})			*complete()* *E785*
-		Set the matches for Insert mode completion.
-		Can only be used in Insert mode.  You need to use a mapping
-		with CTRL-R = (see |i_CTRL-R|).  It does not work after CTRL-O
-		or with an expression mapping.
+		Set the matches for Insert mode completion. Can only be
+		used in Insert mode.  Typically invoked from a mapping with
+		CTRL-R = (see |i_CTRL-R|), but may also be called from a
+		|<Cmd>| or |<ScriptCmd>| mapping.  It does not work after
+		CTRL-O or with an expression mapping.
 		{startcol} is the byte offset in the line where the completed
 		text start.  The text up to the cursor is the original text
 		that will be replaced by the matches.  Use col('.') for an
@@ -1930,15 +1931,31 @@ complete({startcol}, {matches})			*complete()* *E785*
 		The match can be selected with CTRL-N and CTRL-P as usual with
 		Insert mode completion.  The popup menu will appear if
 		specified, see |ins-completion-menu|.
-		Example: >
-	inoremap <F5> <C-R>=ListMonths()<CR>
 
-	func ListMonths()
-	  call complete(col('.'), ['January', 'February', 'March',
-		\ 'April', 'May', 'June', 'July', 'August', 'September',
-		\ 'October', 'November', 'December'])
-	  return ''
-	endfunc
+		Example (using legacy Vim script): >
+
+		inoremap <F5> <C-R>=ListMonths()<CR>
+
+		func ListMonths()
+		  call complete(col('.'), ['January', 'February', 'March',
+			\ 'April', 'May', 'June', 'July', 'August',
+			\ 'September', \ 'October', 'November', 'December'])
+		  return ''
+		endfunc
+<
+		Example (using Vim9 script): >
+
+		vim9script
+		def ListMonths(): string
+		  const months = [ 'January', 'February', 'March', 'April',
+			'May', 'June', 'July', 'September', 'October',
+			'November', 'December']
+		  complete(col('.'), months)
+		  return ''
+		enddef
+
+		inoremap <F5> <ScriptCmd>ListMonths()<CR>
+
 <		This isn't very useful, but it shows how it works.  Note that
 		an empty string is returned to avoid a zero being inserted.
 

@@ -702,7 +702,7 @@ func Test_xxd_overflow()
   bw!
 endfunc
 
-" this caused a NULL derefence
+" this caused a NULL dereference
 func Test_xxd_null_dereference()
   CheckUnix
   CheckExecutable /bin/true
