@@ -135,17 +135,9 @@ static bool clip_wl_owner_exists(Clipboard_T *cbd);
 #endif // FEAT_WAYLAND_CLIPBOARD
 
 #ifdef FEAT_CLIPBOARD_PROVIDER
-static int provider_get_func(char_u *provider, char_u *cb_name,
-	typval_T *func, typval_T *p_tv);
-static char_u *provider_get_reg(Clipboard_T *cbd);
 static int clip_provider_is_available(char_u *provider);
-static void clip_provider_call_callback( char_u *provider,
-	char_u *cb_name, Clipboard_T *cbd);
-
-// If we are inside one of the provider function 'paste' or 'copy', this is
-// set to the clipboard being processed, else NULL
-static Clipboard_T *provider_cbd = NULL;
-static Clipboard_T *prev_provider_cbd = NULL;
+static void clip_provider_set_selection(char_u *provider, Clipboard_T *cbd);
+static void clip_provider_request_selection(char_u *provider, Clipboard_T *cbd);
 #endif
 
 /*
@@ -1368,7 +1360,7 @@ clip_gen_set_selection(Clipboard_T *cbd)
     {
 #ifdef FEAT_GUI
 	if (gui.in_use)
-	clip_mch_set_selection(cbd);
+	    clip_mch_set_selection(cbd);
 #endif
     }
     else if (clipmethod == CLIPMETHOD_WAYLAND)
@@ -1392,8 +1384,7 @@ clip_gen_set_selection(Clipboard_T *cbd)
     else if (clipmethod == CLIPMETHOD_PROVIDER)
     {
 #ifdef FEAT_CLIPBOARD_PROVIDER
-	clip_provider_call_callback(clipprovider_name,
-		(char_u *)"copy", cbd);
+	clip_provider_set_selection(clipprovider_name, cbd);
 #endif
     }
 }
@@ -1429,8 +1420,7 @@ clip_gen_request_selection(Clipboard_T *cbd UNUSED)
     else if (clipmethod == CLIPMETHOD_PROVIDER)
     {
 #ifdef FEAT_CLIPBOARD_PROVIDER
-	clip_provider_call_callback(clipprovider_name,
-		(char_u *)"paste", cbd);
+	clip_provider_request_selection(clipprovider_name, cbd);
 #endif
     }
 }
@@ -2294,17 +2284,10 @@ clip_get_selection(Clipboard_T *cbd)
     }
     else if (!is_clipboard_needs_update())
     {
-#ifdef FEAT_CLIPBOARD_PROVIDER
-	// Don't want to recusively call the clipboard provider callbacks nor
-	// free the register.
-	if (provider_cbd != cbd)
-#endif
-	{
-	    clip_free_selection(cbd);
+	clip_free_selection(cbd);
 
-	    // Try to get selected text from another window
-	    clip_gen_request_selection(cbd);
-	}
+	// Try to get selected text from another window
+	clip_gen_request_selection(cbd);
     }
 }
 
@@ -3653,6 +3636,16 @@ choose_clipmethod(void)
 	clip_init_single(&clip_star, primary);
     }
 
+# if defined(FEAT_X11) || defined(FEAT_WAYLAND_CLIPBOARD)
+    if (method == CLIPMETHOD_PROVIDER)
+    {
+	// If we are on a system that has the plus register, use that. Otherwise
+	// use the the star register. But we can never use both for clipboard
+	// provider functionality.
+	clip_star.available = FALSE;
+    }
+#endif
+
     clipmethod = method;
 
 #ifdef FEAT_EVAL
@@ -3682,47 +3675,6 @@ ex_clipreset(exarg_T *eap UNUSED)
 #ifdef FEAT_CLIPBOARD_PROVIDER
 
 /*
- * Get callback and typval of provider for provider with given name. Arguments
- * can be NULL. Returns 1 if successful, 0 if dictionary didn't specify
- * callback, and -1 on failure.
- */
-    static int
-provider_get_func(
-	char_u *provider,
-	char_u *cb_name,
-	typval_T *func,
-	typval_T *p_tv)
-{
-    dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
-    typval_T	provider_tv;
-
-    if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL)
-	return -1;
-
-    if (provider_tv.v_type != VAR_DICT)
-	return -1;
-
-    if (dict_get_tv(provider_tv.vval.v_dict, (char *)cb_name, func) == FAIL)
-	return 0;
-
-    if (p_tv != NULL)
-	*p_tv = provider_tv;
-
-    return 1;
-}
-
-    static char_u *
-provider_get_reg(Clipboard_T *cbd)
-{
-    // If there is no + register, it will point to clip_star
-    if (cbd == &clip_star)
-	return (char_u *)"*";
-    else if (cbd == &clip_plus)
-	return (char_u *)"+";
-    return (char_u *)"";
-}
-
-/*
  * Check if a clipboard provider with given name exists and is available.
  * Returns 1 if the provider exists and the 'available' function returned true,
  * 0 if the provider exists but the function returned false, and -1 on error.
@@ -3730,22 +3682,25 @@ provider_get_reg(Clipboard_T *cbd)
     static int
 clip_provider_is_available(char_u *provider)
 {
-    int		ret;
+    dict_T	*providers = get_vim_var_dict(VV_CLIPPROVIDERS);
+    typval_T	provider_tv;
     callback_T	callback;
     typval_T	rettv;
     typval_T	func_tv;
-    int		res;
+    char_u	*avail;
 
-    ret = provider_get_func(provider, (char_u *)"available", &func_tv, NULL);
-
-    if (ret == -1)
+    if (dict_get_tv(providers, (char *)provider, &provider_tv) == FAIL
+	    || provider_tv.v_type != VAR_DICT)
 	return -1;
-    if (ret == 0)
-	// If user didn't speciy an 'available' function, assume its always
-	// TRUE.
+
+    if (dict_get_tv(provider_tv.vval.v_dict, "available", &func_tv) == FAIL)
 	return 1;
-    if (callback = get_callback(&func_tv), callback.cb_name == NULL)
+
+    if ((callback = get_callback(&func_tv)).cb_name == NULL)
+    {
+	clear_tv(&func_tv);
 	return -1;
+    }
 
     if (call_callback(&callback, -1, &rettv, 0, NULL) == FAIL ||
 	    rettv.v_type != VAR_BOOL)
@@ -3755,56 +3710,93 @@ clip_provider_is_available(char_u *provider)
 	return -1;
     }
 
-    res = rettv.vval.v_number;
+    avail = rettv.vval.v_string;
 
     free_callback(&callback);
     clear_tv(&func_tv);
 
-    return res;
+    return res > 0 ? 1 : 0;
 }
 
-/*
- * Function to handle both 'paste', and 'copy' callbacks in the clipboard
- * provider dict.
- */
-    static void
-clip_provider_call_callback(
-	char_u *provider,
-	char_u *cb_name,
-	Clipboard_T *cbd)
-{
-    int		ret;
-    char_u	*reg = provider_get_reg(cbd);
-    callback_T	callback;
-    typval_T	rettv;
-    typval_T	func_tv;
-    typval_T	args[2];
+    /* static void */
+/* clip_provider_set_selection(char_u *provider, Clipboard_T *cbd) */
+/* { */
+    /* int		ret; */
+    /* callback_T	callback; */
+    /* typval_T	rettv; */
+    /* typval_T	func_tv; */
+    /* typval_T	args[4]; // register, type, lines */
+    /* char_u	type[2 + NUMBUFLEN]; */
+    /* yankreg_T	*y_ptr; */
+    /* list_T	*list; */
 
-    if (provider_cbd == cbd)
-	// We are already inside a 'paste' or 'copy' function, ignore
-	return;
+    /* ret = provider_get_func(provider, (char_u *)"copy", &func_tv, NULL); */
 
-    ret = provider_get_func(provider, cb_name, &func_tv, NULL);
+    /* if (ret <= 0 || (callback = get_callback(&func_tv)).cb_name == NULL) */
+	/* return; */
 
-    if (ret <= 0)
-	return;
-    if (callback = get_callback(&func_tv), callback.cb_name == NULL)
-	return;
+    /* args[0].v_type = VAR_STRING; */
+    /* args[0].vval.v_string = provider_get_reg(cbd); */
 
-    args[0].v_type = VAR_STRING;
-    args[0].vval.v_string = reg;
+    /* // Get register typ */
+    /* if (cbd == &clip_plus) */
+	/* y_ptr = get_y_register(PLUS_REGISTER); */
+    /* else */
+	/* y_ptr = get_y_register(STAR_REGISTER); */
 
-    prev_provider_cbd = provider_cbd;
-    provider_cbd = cbd;
-    textlock++;
-    call_callback(&callback, -1, &rettv, 1, args);
-    clear_tv(&rettv);
-    textlock--;
-    provider_cbd = prev_provider_cbd;
+    /* switch (y_ptr->y_type) */
+    /* { */
+	/* case MCHAR: */
+	    /* type[0] = 'v'; */
+	    /* break; */
+	/* case MLINE: */
+	    /* type[0] = 'V'; */
+	    /* break; */
+	/* case MBLOCK: */
+	    /* sprintf((char *)type, "%c%d", Ctrl_V, y_ptr->y_width + 1); */
+	    /* break; */
+	/* default: */
+	    /* type[0] = 0; */
+	    /* break; */
+    /* } */
 
-    free_callback(&callback);
-    clear_tv(&func_tv);
-}
+    /* args[1].v_type = VAR_STRING; */
+    /* args[1].vval.v_string = type; */
+
+    /* // Get register contents by creating a list of lines */
+    /* list = list_alloc(); */
+
+    /* if (list == NULL) */
+	/* goto exit; */
+
+    /* for (int i = 0; i < y_ptr->y_size; i++) */
+	/* if (list_append_string(list, y_ptr->y_array[i].string, -1) == FAIL) */
+	    /* goto exit; */
+
+    /* list->lv_refcount++; */
+
+    /* args[2].v_type = VAR_LIST; */
+    /* args[2].v_lock = VAR_FIXED; */
+    /* args[2].vval.v_list = list; */
+
+    /* args[3].v_type = VAR_UNKNOWN; */
+
+    /* textlock++; */
+    /* call_callback(&callback, -1, &rettv, 3, args); */
+    /* textlock--; */
+
+    /* clear_tv(&rettv); */
+    /* // TODO: allow provider to configure which register (+ or *) is available */
+/* exit: */
+    /* list_unref(list); */
+    /* free_callback(&callback); */
+    /* clear_tv(&func_tv); */
+/* } */
+
+    /* static void */
+/* clip_provider_request_selection(char_u *provider, Clipboard_T *cbd) */
+/* { */
+/* } */
 
 #endif // FEAT_CLIPBOARD_PROVIDER
 
