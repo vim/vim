@@ -630,6 +630,9 @@ au BufNewFile,BufRead lynx.cfg			setf lynx
 " LyRiCs
 au BufNewFile,BufRead *.lrc			setf lyrics
 
+" Mamba configuration file
+au BufNewFile,BufRead .mambarc,mambarc		setf yaml
+
 " MLIR
 au BufNewFile,BufRead *.mlir			setf mlir
 
