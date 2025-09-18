@@ -5353,6 +5353,7 @@ repl_cmdline(
     void
 separate_nextcmd(exarg_T *eap, int keep_backslash)
 {
+    int		vim9script = in_vim9script();
     char_u	*p;
 
 #ifdef FEAT_QUICKFIX
@@ -5389,14 +5390,14 @@ separate_nextcmd(exarg_T *eap, int keep_backslash)
 	// :@" and :*" do not start a comment!
 	// :redir @" doesn't either.
 	else if ((*p == '"'
-		    && !in_vim9script()
+		    && !vim9script
 		    && !(eap->argt & EX_NOTRLCOM)
 		    && ((eap->cmdidx != CMD_at && eap->cmdidx != CMD_star)
 							      || p != eap->arg)
 		    && (eap->cmdidx != CMD_redir
 					 || p != eap->arg + 1 || p[-1] != '@'))
 		|| (*p == '#'
-		    && in_vim9script()
+		    && vim9script
 		    && !(eap->argt & EX_NOTRLCOM)
 		    && p > eap->cmd && VIM_ISWHITE(p[-1]))
 		|| (*p == '|'
@@ -5420,7 +5421,7 @@ separate_nextcmd(exarg_T *eap, int keep_backslash)
 	    }
 	    else
 	    {
-		eap->nextcmd = check_nextcmd(p);
+		set_nextcmd(eap, p);
 		*p = NUL;
 		break;
 	    }
@@ -5932,7 +5933,16 @@ check_nextcmd(char_u *p)
     void
 set_nextcmd(exarg_T *eap, char_u *arg)
 {
-    char_u *p = check_nextcmd(arg);
+    char_u *p = skipwhite(arg);
+
+    if (in_vim9script() && *p == '#')
+    {
+	char_u *nl = vim_strchr(p, NL);
+	if (nl != NULL)
+	    p = nl;
+    }
+
+    p = check_nextcmd(p);
 
     if (eap->nextcmd == NULL)
 	eap->nextcmd = p;

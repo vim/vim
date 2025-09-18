@@ -613,6 +613,52 @@ def Test_block_in_a_string()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for a block in a command with comments
+def Test_block_command_with_comment()
+  var lines =<< trim END
+    vim9script
+
+    g:Str = ''
+    command Cmd1 {
+      g:Str = 'Hello' # comment1
+      var x: string # comment2
+      g:Str ..= ' World' # comment3
+    }
+    Cmd1
+    assert_equal('Hello World', g:Str)
+
+    g:Str = ''
+    command Cmd2 {
+      # comment1
+      g:Str = 'Hello'
+      # comment2
+      g:Str ..= ' World'
+      # comment3
+    }
+    Cmd2
+    assert_equal('Hello World', g:Str)
+
+    command Cmd3 {
+      new # comment1
+      setline(1, 'hello') # comment2
+    }
+    Cmd3
+    assert_equal(['hello'], getline(1, '$'))
+    :bw!
+
+    command Cmd4 {
+      # comment1
+      new
+      # comment2
+      setline(1, 'hello') # comment2
+    }
+    Cmd4
+    assert_equal(['hello'], getline(1, '$'))
+    :bw!
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using too many nested blocks
 def Test_too_many_nested_blocks()
   var lines = ['vim9script']
