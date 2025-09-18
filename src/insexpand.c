@@ -5867,7 +5867,7 @@ find_common_prefix(size_t *prefix_len, int curbuf_only)
 		    first = compl->cp_str.string;
 		    len = (int)STRLEN(first);
 		}
-		else
+		else if (first != NULL)
 		{
 		    int j = 0;  // count in bytes
 		    char_u *s1 = first;
