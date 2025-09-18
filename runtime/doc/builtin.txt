@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -575,7 +575,7 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})
 settagstack({nr}, {dict} [, {action}])
 				Number	modify tag stack using {dict}
 setwinvar({nr}, {varname}, {val}) none	set {varname} in window {nr} to {val}
-sha256({string})		String	SHA256 checksum of {string}
+sha256({expr})			String	SHA256 checksum of String or Blob
 shellescape({string} [, {special}])
 				String	escape {string} for use as shell
 					command argument
@@ -10336,12 +10336,14 @@ setwinvar({winnr}, {varname}, {val})			*setwinvar()*
 		Return type: |Number|
 
 
-sha256({string})						*sha256()*
+sha256({expr})						*sha256()*
 		Returns a String with 64 hex characters, which is the SHA256
-		checksum of {string}.
+		checksum of {expr}.
+		{expr} is a String or a Blob.
 
 		Can also be used as a |method|: >
 			GetText()->sha256()
+			GetBlob()->sha256()
 <
 		Return type: |String|
 

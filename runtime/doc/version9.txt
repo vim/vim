@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 15
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41735,6 +41735,7 @@ Functions: ~
 - |chdir()| allows to optionally specify a scope argument
 - |matchfuzzy()| and |matchfuzzypos()| use an improved fuzzy matching
   algorithm (same as fzy).
+- |sha256()| also accepts a |Blob| as argument.
 
 Others: ~
 - the regex engines match correctly case-insensitive multi-byte characters

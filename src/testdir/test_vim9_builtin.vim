@@ -4162,10 +4162,14 @@ def Test_setwinvar()
 enddef
 
 def Test_sha256()
-  v9.CheckSourceDefAndScriptFailure(['sha256(100)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  v9.CheckSourceDefAndScriptFailure(['sha256(0zABCD)'], ['E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1'])
+  v9.CheckSourceDefAndScriptFailure(['sha256(100)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1221: String or Blob required for argument 1'])
   assert_equal('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad', sha256('abc'))
   assert_equal('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', sha256(''))
+
+  assert_equal('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad', sha256(0z616263))
+  assert_equal('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', sha256(0z))
+  assert_equal('ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb', sha256(0z61))
+  assert_equal('5f78c33274e43fa9de5659265c1d917e25c03722dcb0b8d27db8d5feaa813953', sha256(0zdeadbeef))
 enddef
 
 def Test_shiftwidth()
