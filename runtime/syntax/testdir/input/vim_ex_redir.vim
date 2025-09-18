@@ -44,3 +44,28 @@ redir =>> var
 
 redir END
 
+
+" Issue #18319 (redir command not highlighted in some cases)
+
+def Vim9Context()
+
+var foo: string
+if true
+    redir => foo
+    smile
+    redir END
+endif
+echo foo
+
+command Foo {
+    redir => foo
+    echo "hello from cmd"
+    redir END
+}
+
+redir => foo
+echom "hello global"
+redir END
+
+enddef
+
