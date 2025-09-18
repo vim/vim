@@ -2037,6 +2037,7 @@ getcmdline_int(
 	    if (cmdline_pum_active())
 	    {
 		skip_pum_redraw = skip_pum_redraw && !key_is_wc
+		    && !VIM_ISWHITE(c)
 		    && (vim_isprintc(c)
 			|| c == K_BS || c == Ctrl_H || c == K_DEL
 			|| c == K_KDEL || c == Ctrl_W || c == Ctrl_U);
