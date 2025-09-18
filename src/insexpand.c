@@ -2514,7 +2514,7 @@ ins_compl_new_leader(void)
 	{
 	    sort_compl_match_list(cp_compare_fuzzy);
 	    if ((cur_cot_flags & (COT_NOINSERT | COT_NOSELECT)) == COT_NOINSERT
-		    && compl_first_match)
+		    && compl_first_match && !compl_autocomplete)
 	    {
 		compl_shown_match = compl_first_match;
 		if (compl_shows_dir_forward())
