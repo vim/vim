@@ -1401,12 +1401,12 @@ export def FTtf()
   for i in range(1, numberOfLines)
     var currentLine = trim(getline(i))
     var firstCharacter = currentLine[0]
-    if firstCharacter !=? ";" && firstCharacter !=? "/" && firstCharacter !=? ""
-      setf terraform
+    if firstCharacter ==? ";" || firstCharacter ==? "/" || firstCharacter ==? ""
+      setf tf
       return
     endif
   endfor
-  setf tf
+  setf terraform
 enddef
 
 var ft_krl_header = '\&\w+'
