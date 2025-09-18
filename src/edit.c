@@ -146,7 +146,6 @@ edit(
 #ifdef FEAT_CONCEAL
     int		cursor_line_was_concealed;
 #endif
-    int		do_autocomplete = curbuf->b_p_ac >= 0 ? curbuf->b_p_ac : p_ac;
 
     // Remember whether editing was restarted after CTRL-O.
     did_restart_edit = restart_edit;
@@ -695,7 +694,7 @@ edit(
 		{
 		    ins_compl_delete();
 		    if (ins_compl_has_preinsert()
-			    && ins_compl_has_autocomplete())
+			    && ins_compl_autocomplete_enabled())
 			(void)ins_compl_insert(FALSE, TRUE);
 		    else
 			(void)ins_compl_insert(FALSE, FALSE);
@@ -988,7 +987,7 @@ doESCkey:
 	case Ctrl_H:
 	    did_backspace = ins_bs(c, BACKSPACE_CHAR, &inserted_space);
 	    auto_format(FALSE, TRUE);
-	    if (did_backspace && do_autocomplete && !char_avail()
+	    if (did_backspace && ins_compl_has_autocomplete() && !char_avail()
 		    && curwin->w_cursor.col > 0)
 	    {
 		c = char_before_cursor();
@@ -1419,7 +1418,8 @@ normalchar:
 	    foldOpenCursor();
 #endif
 	    // Trigger autocompletion
-	    if (do_autocomplete && !char_avail() && vim_isprintc(c))
+	    if (ins_compl_has_autocomplete() && !char_avail()
+		    && vim_isprintc(c))
 	    {
 		update_screen(UPD_VALID); // Show character immediately
 		out_flush();
