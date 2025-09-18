@@ -6441,6 +6441,9 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_PATH:
 	    clear_string_option(&buf->b_p_path);
 	    break;
+	case PV_AC:
+	    buf->b_p_ac = -1;
+	    break;
 	case PV_AR:
 	    buf->b_p_ar = -1;
 	    break;
@@ -6593,6 +6596,7 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_EP:   return (char_u *)&(curbuf->b_p_ep);
 	    case PV_KP:   return (char_u *)&(curbuf->b_p_kp);
 	    case PV_PATH: return (char_u *)&(curbuf->b_p_path);
+	    case PV_AC:   return (char_u *)&(curbuf->b_p_ac);
 	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
 	    case PV_TAGS: return (char_u *)&(curbuf->b_p_tags);
 	    case PV_TC:   return (char_u *)&(curbuf->b_p_tc);
@@ -6669,6 +6673,8 @@ get_varp(struct vimoption *p)
 				    ? (char_u *)&curbuf->b_p_kp : p->var;
 	case PV_PATH:	return *curbuf->b_p_path != NUL
 				    ? (char_u *)&(curbuf->b_p_path) : p->var;
+	case PV_AC:	return curbuf->b_p_ac >= 0
+				    ? (char_u *)&(curbuf->b_p_ac) : p->var;
 	case PV_AR:	return curbuf->b_p_ar >= 0
 				    ? (char_u *)&(curbuf->b_p_ar) : p->var;
 	case PV_TAGS:	return *curbuf->b_p_tags != NUL
@@ -7371,6 +7377,7 @@ buf_copy_options(buf_T *buf, int flags)
 		buf->b_p_swf = p_swf;
 		COPY_OPT_SCTX(buf, BV_SWF);
 	    }
+	    buf->b_p_ac = p_ac;
 	    buf->b_p_cpt = vim_strsave(p_cpt);
 	    COPY_OPT_SCTX(buf, BV_CPT);
 #ifdef FEAT_COMPL_FUNC

@@ -2498,7 +2498,7 @@ ins_compl_new_leader(void)
 	save_w_wrow = curwin->w_wrow;
 	save_w_leftcol = curwin->w_leftcol;
 	compl_restarting = TRUE;
-	if (p_ac)
+	if (curbuf->b_p_ac)
 	    compl_autocomplete = TRUE;
 	if (ins_complete(Ctrl_N, FALSE) == FAIL)
 	    compl_cont_status = 0;

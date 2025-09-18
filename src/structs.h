@@ -3285,6 +3285,7 @@ struct file_buffer
     sctx_T	b_p_script_ctx[BV_COUNT]; // SCTXs for buffer-local options
 #endif
 
+    int		b_p_ac;		// 'autocomplete'
     int		b_p_ai;		// 'autoindent'
     int		b_p_ai_nopaste;	// b_p_ai saved for paste mode
     char_u	*b_p_bkc;	// 'backupcopy'
