@@ -695,6 +695,7 @@ set_init_1(int clean_arg)
 #endif
 
     curbuf->b_p_initialized = TRUE;
+    curbuf->b_p_ac = -1;
     curbuf->b_p_ar = -1;	// no local 'autoread' value
     curbuf->b_p_ul = NO_LOCAL_UNDOLEVEL;
     check_buf_options(curbuf);
@@ -2206,6 +2207,8 @@ do_set_option_bool(
     {
 	// For 'autoread' -1 means to use global value.
 	if ((int *)varp == &curbuf->b_p_ar && opt_flags == OPT_LOCAL)
+	    value = -1;
+	else if ((int *)varp == &curbuf->b_p_ac && opt_flags == OPT_LOCAL)
 	    value = -1;
 	else
 	    value = *(int *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL);
@@ -7377,7 +7380,6 @@ buf_copy_options(buf_T *buf, int flags)
 		buf->b_p_swf = p_swf;
 		COPY_OPT_SCTX(buf, BV_SWF);
 	    }
-	    buf->b_p_ac = p_ac;
 	    buf->b_p_cpt = vim_strsave(p_cpt);
 	    COPY_OPT_SCTX(buf, BV_CPT);
 #ifdef FEAT_COMPL_FUNC
@@ -7508,6 +7510,7 @@ buf_copy_options(buf_T *buf, int flags)
 
 	    // options that are normally global but also have a local value
 	    // are not copied, start using the global value
+	    buf->b_p_ac = -1;
 	    buf->b_p_ar = -1;
 	    buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
 	    buf->b_p_bkc = empty_option;
