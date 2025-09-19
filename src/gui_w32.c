@@ -318,14 +318,6 @@ gui_mch_set_rendering_options(char_u *s)
 # define SPI_SETWHEELSCROLLCHARS	0x006D
 #endif
 
-#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1
-# define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1	19
-#endif
-
-#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
-# define DWMWA_USE_IMMERSIVE_DARK_MODE	20
-#endif
-
 #ifndef DWMWA_CAPTION_COLOR
 # define DWMWA_CAPTION_COLOR		35
 #endif
@@ -1613,44 +1605,16 @@ _TextAreaWndProc(
     static void
 load_dwm_func(void)
 {
-    static HMODULE hDwmLib = NULL;
-    hDwmLib = vimLoadLib("dwmapi.dll");
-    if (hDwmLib == NULL)
+    static HMODULE hLibDwm = NULL;
+    hLibDwm = vimLoadLib("dwmapi.dll");
+    if (hLibDwm == NULL)
 	return;
 
     pDwmSetWindowAttribute = (HRESULT (WINAPI *)(HWND, DWORD, LPCVOID, DWORD))
-	GetProcAddress(hDwmLib, "DwmSetWindowAttribute");
+	GetProcAddress(hLibDwm, "DwmSetWindowAttribute");
 }
 
-extern BOOL win10_20H1_or_later; // these are in os_win32.c
-extern BOOL win11_or_later;
-
-    void
-gui_mch_set_caption(void) // Set Caption Bar
-{
-    if (pDwmSetWindowAttribute == NULL)
-	return;
-
-    const BOOL is_dark = *p_bg == 'd';
-
-    if (win11_or_later)
-    {
-	const COLORREF captionColor = gui.back_pixel;
-	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
-		&captionColor, sizeof(captionColor));
-	const COLORREF textColor = gui.norm_pixel;
-	pDwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR,
-		&textColor, sizeof(textColor));
-    }
-    else if (win10_20H1_or_later)
-    {
-	pDwmSetWindowAttribute( s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
-		&is_dark, sizeof(is_dark));
-    }
-    else
-	pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1,
-		&is_dark, sizeof(is_dark));
-}
+extern BOOL win11_or_later; // this is in os_win32.c
 
 /*
  * Called when the foreground or background color has been changed.
@@ -1665,6 +1629,21 @@ gui_mch_new_colors(void)
 				s_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)s_brush);
     InvalidateRect(s_hwnd, NULL, TRUE);
     DeleteObject(prevBrush);
+
+    // Set The Caption Bar
+
+    if (pDwmSetWindowAttribute == NULL)
+	return;
+
+    if (win11_or_later)
+    {
+	const COLORREF captionColor = gui.back_pixel;
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
+		&captionColor, sizeof(captionColor));
+	const COLORREF textColor = gui.norm_pixel;
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR,
+		&textColor, sizeof(textColor));
+    }
 }
 
 /*

@@ -223,7 +223,6 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static WCHAR *exe_pathw = NULL;
 
 BOOL win8_or_later = FALSE;
-BOOL win10_20H1_or_later = FALSE;
 BOOL win10_22H2_or_later = FALSE;
 BOOL win11_or_later = FALSE;
 
@@ -1008,10 +1007,6 @@ PlatformId(void)
     if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
 	    || ovi.dwMajorVersion > 6)
 	win8_or_later = TRUE;
-
-    if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19041)
-	    || ovi.dwMajorVersion > 10)
-	win10_20H1_or_later = TRUE;
 
     if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19045)
 	    || ovi.dwMajorVersion > 10)

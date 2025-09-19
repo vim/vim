@@ -1113,11 +1113,6 @@ did_set_background(optset_T *args)
     term_update_colors_all();
 #endif
 
-# ifdef FEAT_GUI_MSWIN
-    if (gui.in_use)
-	gui_mch_set_caption();
-#endif
-
     return NULL;
 }
 
