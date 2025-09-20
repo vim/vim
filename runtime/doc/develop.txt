@@ -424,6 +424,11 @@ The basic steps to make changes to the code:
 For any non-trivial change, please always create a pull request on github,
 since this triggers the test suite.
 
+Ideally, one PR (pull request) only included one commit; or if it contained
+many changes, then you maybe better split it to some commits; however, if some
+commits was going to modify same file, then it's recommended to squash them to
+one commit, to reduce conflict and be easy to check.
+
 							*style-clang-format*
 sound.c and sign.c can be (semi-) automatically formatted using the
 `clang-format` formatter according to the distributed .clang-format file.
@@ -759,5 +764,9 @@ Within a development cycle, features may be marked as deprecated.  Deprecated
 features can be disabled at compile time through an appropriate switch.  After
 a new release, deprecated features may be removed completely in a following
 cycle.
+
+Some patch in development cycle maybe found it was wrong or had outage, then
+it should be backout, to reduce some mess happening, it should be reverted in
+maximally one week.
 
  vim:tw=78:ts=8:noet:ft=help:norl:
