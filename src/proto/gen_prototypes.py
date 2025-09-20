@@ -15,6 +15,7 @@ STUB_PROTO_H = os.environ.get("GENPROTO_STUB_PROTO_H", "1") not in ("", "0", "fa
 # Preprocessor directive detection
 _DIR_RE = re.compile(r'^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b')
 _IF0_RE = re.compile(r'^\s*#\s*if\s+0\s*(//.*)?$')
+_IFDEF_DEBUG_RE = re.compile(r'^\s*#\s*ifdef\s+_DEBUG\s*(//.*)?$')
 
 # Keep legacy behavior: drop whole group for #ifndef PROTO and #if !defined(PROTO)
 _IFNDEF_PROTO_RE   = re.compile(r'^\s*#\s*ifndef\s+PROTO\s*(//.*)?$')
@@ -187,7 +188,7 @@ def rewrite_conditionals_first_branch(text: str) -> str:
         kw = m.group(1)
         if kw in ("if", "ifdef", "ifndef"):
             # Hard drops first (legacy behavior)
-            if _IF0_RE.match(line) or _IFNDEF_PROTO_RE.match(line) or _IF_NOTDEF_PROTO_RE.match(line):
+            if _IF0_RE.match(line) or _IFDEF_DEBUG_RE.match(line) or _IFNDEF_PROTO_RE.match(line) or _IF_NOTDEF_PROTO_RE.match(line):
                 group_end, _ = _collect_group(i)
                 i = group_end
                 continue
