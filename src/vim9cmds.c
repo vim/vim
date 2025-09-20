@@ -16,11 +16,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
 /*
  * Get the index of the current instruction.
  * This compensates for a preceding ISN_CMDMOD and ISN_PROF_START.

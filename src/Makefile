@@ -2121,6 +2121,8 @@ update-po:
 # When generating os_amiga.pro and os_win32.pro there will be a
 # few include files that can not be found, that's OK.
 
+#PRO_AUTO = os_mswin.pro
+#PRO_MANUAL =
 proto: $(PRO_AUTO) $(PRO_MANUAL)
 
 # Filter out arguments that cproto doesn't support.
@@ -2129,8 +2131,10 @@ proto: $(PRO_AUTO) $(PRO_MANUAL)
 # The -E"gcc -E" argument must be separate to avoid problems with shell
 # quoting.
 # Strip -O2, it may cause cproto to write stderr to the file "2".
-CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
-	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g' -e 's/ -O[^ ]\+//g'`
+#CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
+#	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g' -e 's/ -O[^ ]\+//g'`
+CPROTO_NEW = proto/gen_prototypes.py
+CPROTO_ARG = -DPROTO -DEINTR -DFEAT_GUI -I.
 
 ### Would be nice if this would work for "normal" make.
 ### Currently it only works for (Free)BSD make.
@@ -2140,42 +2144,46 @@ CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
 # Always define FEAT_GUI.  This may generate a few warnings if it's also
 # defined in auto/config.h, you can ignore that.
 .c.pro:
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_amiga.pro: os_amiga.c
-	$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_win32.pro: os_win32.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_mswin.pro: os_mswin.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-winclip.pro: winclip.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_vms.pro: os_vms.c
-# must use os_vms_conf.h for auto/config.h
-	mv auto/config.h auto/config.h.save
-	cp os_vms_conf.h auto/config.h
-	$(CPROTO) -DVMS -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-	rm auto/config.h
-	mv auto/config.h.save auto/config.h
-
-# if_perl.pro is special: Use the generated if_perl.c for input and remove
-# prototypes for local functions.
-if_perl.pro: auto/if_perl.c
-	$(CPROTO) -DFEAT_GUI auto/if_perl.c | sed "/_VI/d" > proto/$@
-
-gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+	@if command -v python3 >/dev/null 2>&1; then \
+	  python3 $(CPROTO_NEW) $< $(CPROTO_ARG) || \
+	  (echo "Warning: failed to generate $@"; exit 1;) \
+	else \
+	  echo "Warning: python3 not found, skipping $@"; \
+	  exit 1; \
+	fi
+#os_amiga.pro: os_amiga.c
+#	$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
+#	echo "/* vim: set ft=c : */" >> proto/$@
+#
+#os_win32.pro: os_win32.c
+#	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+#	echo "/* vim: set ft=c : */" >> proto/$@
+#
+#os_mswin.pro: os_mswin.c
+#	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+#	echo "/* vim: set ft=c : */" >> proto/$@
+#
+#winclip.pro: winclip.c
+#	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+#	echo "/* vim: set ft=c : */" >> proto/$@
+#
+#os_vms.pro: os_vms.c
+## must use os_vms_conf.h for auto/config.h
+#	mv auto/config.h auto/config.h.save
+#	cp os_vms_conf.h auto/config.h
+#	$(CPROTO) -DVMS -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
+#	echo "/* vim: set ft=c : */" >> proto/$@
+#	rm auto/config.h
+#	mv auto/config.h.save auto/config.h
+#
+## if_perl.pro is special: Use the generated if_perl.c for input and remove
+## prototypes for local functions.
+#if_perl.pro: auto/if_perl.c
+#	$(CPROTO) -DFEAT_GUI auto/if_perl.c | sed "/_VI/d" > proto/$@
+#
+#gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
+#	$(CPROTO) -DFEAT_GUI $< > proto/$@
+#	echo "/* vim: set ft=c : */" >> proto/$@
 
 notags:
 	-rm -f tags

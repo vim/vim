@@ -280,7 +280,7 @@
 #if (defined(UNIX) || defined(VMS)) \
 	&& (!defined(MACOS_X) || defined(HAVE_CONFIG_H))
 # include "os_unix.h"	    // bring lots of system header files
-#elif !defined(PROTO)
+#else
   // For all non-Unix systems: use old-fashioned signal().
 # define mch_signal(signum, sighandler) signal(signum, sighandler)
 #endif
@@ -437,11 +437,7 @@ typedef __int64 off_T;
 #  define vim_ftell _ftelli64
 # endif
 #else
-# ifdef PROTO
-typedef long off_T;
-# else
 typedef off_t off_T;
-# endif
 # ifdef HAVE_FSEEKO
 #  define vim_lseek lseek
 #  define vim_ftell ftello
@@ -2028,15 +2024,11 @@ typedef enum {
  * bits elsewhere.  That causes memory corruption.  Define time_T and use it
  * for global variables to avoid that.
  */
-#ifdef PROTO
-typedef long  time_T;
-#else
 # ifdef MSWIN
 typedef __time64_t  time_T;
 # else
 typedef time_t	    time_T;
 # endif
-#endif
 
 #ifdef _WIN64
 typedef __int64 sock_T;
@@ -3000,9 +2992,6 @@ long elapsed(struct timeval *start_tv);
 # define ELAPSED_TICKCOUNT
 # define ELAPSED_INIT(v) v = GetTickCount()
 # define ELAPSED_FUNC(v) elapsed(v)
-# ifdef PROTO
-typedef int DWORD;
-# endif
 typedef DWORD elapsed_T;
 # ifndef PROTO
 long elapsed(DWORD start_tick);

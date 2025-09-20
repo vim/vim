@@ -13,11 +13,6 @@
 
 #include "vim.h"
 
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
 /*
  * Return TRUE when currently using Vim9 script syntax.
  * Does not go up the stack, a ":function" inside vim9script uses legacy

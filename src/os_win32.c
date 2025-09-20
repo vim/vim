@@ -52,65 +52,6 @@
 FILE* fdDump = NULL;
 #endif
 
-/*
- * When generating prototypes for Win32 on Unix, these lines make the syntax
- * errors disappear.  They do not need to be correct.
- */
-#ifdef PROTO
-# define WINAPI
-typedef char * LPCSTR;
-typedef char * LPWSTR;
-typedef int ACCESS_MASK;
-typedef int BOOL;
-typedef int BOOLEAN;
-typedef int CALLBACK;
-typedef int COLORREF;
-typedef int CONSOLE_CURSOR_INFO;
-typedef int COORD;
-typedef int DWORD;
-typedef int HANDLE;
-typedef int LPHANDLE;
-typedef int HDC;
-typedef int HFONT;
-typedef int HICON;
-typedef int HINSTANCE;
-typedef int HWND;
-typedef int INPUT_RECORD;
-typedef int INT;
-typedef int KEY_EVENT_RECORD;
-typedef int LOGFONT;
-typedef int LPBOOL;
-typedef int LPCTSTR;
-typedef int LPDWORD;
-typedef int LPSTR;
-typedef int LPTSTR;
-typedef int LPVOID;
-typedef int MOUSE_EVENT_RECORD;
-typedef int PACL;
-typedef int PDWORD;
-typedef int PHANDLE;
-typedef int PRINTDLG;
-typedef int PSECURITY_DESCRIPTOR;
-typedef int PSID;
-typedef int SECURITY_INFORMATION;
-typedef int SHORT;
-typedef int SMALL_RECT;
-typedef int TEXTMETRIC;
-typedef int TOKEN_INFORMATION_CLASS;
-typedef int TRUSTEE;
-typedef int WORD;
-typedef int WCHAR;
-typedef void VOID;
-typedef int BY_HANDLE_FILE_INFORMATION;
-typedef int SE_OBJECT_TYPE;
-typedef int PSNSECINFO;
-typedef int PSNSECINFOW;
-typedef int STARTUPINFO;
-typedef int PROCESS_INFORMATION;
-typedef int LPSECURITY_ATTRIBUTES;
-# define __stdcall // empty
-#endif
-
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Win32 Console handles for input and output
 static HANDLE g_hConIn  = INVALID_HANDLE_VALUE;
@@ -1452,12 +1393,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 /*
  * For the GUI the mouse handling is in gui_w32.c.
  */
-#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
-    void
-mch_setmouse(int on UNUSED)
-{
-}
-#else  // !FEAT_GUI_MSWIN || VIMDLL
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int g_fMouseAvail = FALSE;   // mouse present
 static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
@@ -2029,7 +1965,12 @@ read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
     }
     return nCount;
 }
-#endif // !FEAT_GUI_MSWIN || VIMDLL
+#else  // FEAT_GUI_MSWIN && !VIMDLL
+    void
+mch_setmouse(int on UNUSED)
+{
+}
+#endif // FEAT_GUI_MSWIN && !VIMDLL
 
 #ifdef FEAT_EVAL
 /*
@@ -2763,9 +2704,9 @@ theend:
 # endif
     return len;
 
-#else // FEAT_GUI_MSWIN
+#else // FEAT_GUI_MSWIN && !VIMDLL
     return 0;
-#endif // FEAT_GUI_MSWIN
+#endif // FEAT_GUI_MSWIN && !VIMDLL
 }
 
 /*
@@ -3715,7 +3656,7 @@ mch_exit_c(int r)
 
     exit(r);
 }
-#endif // !FEAT_GUI_MSWIN
+#endif // !FEAT_GUI_MSWIN || VIMDLL
 
     void
 mch_init(void)
@@ -4803,7 +4744,7 @@ mch_set_winsize_now(void)
     }
     suppress_winsize = 0;
 }
-#endif // FEAT_GUI_MSWIN
+#endif
 
     static BOOL
 vim_create_process(
@@ -6493,19 +6434,10 @@ termcap_mode_end(void)
     SetConsoleCursorInfo(g_hConOut, &g_cci);
     g_fTermcapMode = FALSE;
 }
-#endif // !FEAT_GUI_MSWIN || VIMDLL
+#endif
 
 
-#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
-    void
-mch_write(
-    char_u  *s UNUSED,
-    int	    len UNUSED)
-{
-    // never used
-}
-
-#else
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
 /*
  * clear `n' chars, starting from `coord'
@@ -7574,7 +7506,16 @@ notsgr:
 # endif
 }
 
-#endif // FEAT_GUI_MSWIN
+#else // FEAT_GUI_MSWIN && !VIMDLL
+    void
+mch_write(
+    char_u  *s UNUSED,
+    int	    len UNUSED)
+{
+    // never used
+}
+
+#endif
 
 
 /*
