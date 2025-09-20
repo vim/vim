@@ -2109,7 +2109,8 @@ retnomove:
 #ifdef FEAT_FOLDING
 	// Remember the character under the mouse, it might be a '-' or '+' in
 	// the fold column.
-	mouse_char = ScreenLines[off];
+	mouse_char = enc_utf8 && ScreenLinesUC[off] != 0
+				       ? ScreenLinesUC[off] : ScreenLines[off];
 #endif
     }
 
