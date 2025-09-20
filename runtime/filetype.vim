@@ -1193,6 +1193,7 @@ au BufNewFile,BufRead */.i3/config		setf i3config
 
 " sway
 au BufNewFile,BufRead */sway/config		setf swayconfig
+au BufNewFile,BufRead */sway/config.d/*		setf swayconfig
 au BufNewFile,BufRead */.sway/config		setf swayconfig
 
 " Icon
