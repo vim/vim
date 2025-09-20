@@ -2375,7 +2375,7 @@ ins_compl_preinsert_effect(void)
  * Returns TRUE if autocompletion is active.
  */
     int
-ins_compl_has_autocomplete(void)
+ins_compl_autocomplete_enabled(void)
 {
     return compl_autocomplete;
 }
@@ -2450,6 +2450,16 @@ ins_compl_need_restart(void)
 }
 
 /*
+ * Return TRUE if 'autocomplete' option is set
+ */
+    int
+ins_compl_has_autocomplete(void)
+{
+    // Use buffer-local setting if defined (>= 0), otherwise use global
+    return curbuf->b_p_ac >= 0 ? curbuf->b_p_ac : p_ac;
+}
+
+/*
  * Called after changing "compl_leader".
  * Show the popup menu with a different set of matches.
  * May also search for matches again if the previous search was interrupted.
@@ -2498,8 +2508,7 @@ ins_compl_new_leader(void)
 	save_w_wrow = curwin->w_wrow;
 	save_w_leftcol = curwin->w_leftcol;
 	compl_restarting = TRUE;
-	if (p_ac)
-	    compl_autocomplete = TRUE;
+	compl_autocomplete = ins_compl_has_autocomplete();
 	if (ins_complete(Ctrl_N, FALSE) == FAIL)
 	    compl_cont_status = 0;
 	compl_restarting = FALSE;

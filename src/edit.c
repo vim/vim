@@ -694,7 +694,7 @@ edit(
 		{
 		    ins_compl_delete();
 		    if (ins_compl_has_preinsert()
-			    && ins_compl_has_autocomplete())
+			    && ins_compl_autocomplete_enabled())
 			(void)ins_compl_insert(FALSE, TRUE);
 		    else
 			(void)ins_compl_insert(FALSE, FALSE);
@@ -987,7 +987,7 @@ doESCkey:
 	case Ctrl_H:
 	    did_backspace = ins_bs(c, BACKSPACE_CHAR, &inserted_space);
 	    auto_format(FALSE, TRUE);
-	    if (did_backspace && p_ac && !char_avail()
+	    if (did_backspace && ins_compl_has_autocomplete() && !char_avail()
 		    && curwin->w_cursor.col > 0)
 	    {
 		c = char_before_cursor();
@@ -1418,7 +1418,8 @@ normalchar:
 	    foldOpenCursor();
 #endif
 	    // Trigger autocompletion
-	    if (p_ac && !char_avail() && vim_isprintc(c))
+	    if (ins_compl_has_autocomplete() && !char_avail()
+		    && vim_isprintc(c))
 	    {
 		update_screen(UPD_VALID); // Show character immediately
 		out_flush();

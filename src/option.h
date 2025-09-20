@@ -1168,6 +1168,7 @@ EXTERN int	p_xtermcodes;	// 'xtermcodes'
 enum
 {
     BV_AI = 0
+    , BV_AC
     , BV_AR
     , BV_BH
     , BV_BKC

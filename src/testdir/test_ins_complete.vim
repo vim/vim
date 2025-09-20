@@ -5454,7 +5454,7 @@ func Test_scriptlocal_autoload_func()
   call test_override("char_avail", 1)
   new
   inoremap <buffer> <F2> <Cmd>let b:matches = complete_info(["matches"]).matches<CR>
-  set autocomplete
+  setlocal autocomplete
 
   setlocal complete=.,Fcompl#Func
   call feedkeys("im\<F2>\<Esc>0", 'xt!')
@@ -5465,7 +5465,6 @@ func Test_scriptlocal_autoload_func()
   call assert_equal(['foo', 'foobar'], b:matches->mapnew('v:val.word'))
 
   setlocal complete&
-  set autocomplete&
   bwipe!
   call test_override("char_avail", 0)
   let &rtp = save_rtp
@@ -5563,7 +5562,7 @@ func Test_autocompletedelay()
 
   let lines =<< trim [SCRIPT]
     call setline(1, ['foo', 'foobar', 'foobarbaz'])
-    set autocomplete
+    setlocal autocomplete
   [SCRIPT]
   call writefile(lines, 'XTest_autocomplete_delay', 'D')
   let buf = RunVimInTerminal('-S XTest_autocomplete_delay', {'rows': 10})
