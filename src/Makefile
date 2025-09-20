@@ -2121,8 +2121,8 @@ update-po:
 # When generating os_amiga.pro and os_win32.pro there will be a
 # few include files that can not be found, that's OK.
 
-PRO_AUTO = os_win32.pro
-PRO_MANUAL =
+#PRO_AUTO = os_mswin.pro
+#PRO_MANUAL =
 proto: $(PRO_AUTO) $(PRO_MANUAL)
 
 # Filter out arguments that cproto doesn't support.
