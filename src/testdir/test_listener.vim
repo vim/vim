@@ -8,8 +8,12 @@ func s:StoreList(s, e, a, l)
   let s:list = a:l
 endfunc
 
-func s:StoreListUnbuffered(s, e, a, c)
-  let s:list2 = [{'lnum': a:s, 'end': a:e, 'col': a:c, 'added': a:a}]
+func s:StoreListUnbuffered(s, e, a, l)
+  let s:start = a:s
+  let s:end = a:e
+  let s:added = a:a
+  let s:text = getline(a:s)
+  let s:list2 = a:l
 endfunc
 
 func s:AnotherStoreList(l)
@@ -153,6 +157,21 @@ func Test_change_list_is_locked()
   bwipe!
 endfunc
 
+func Test_change_list_is_locked_unbuffered()
+  " Trying to change the list passed to the callback fails (unbuffered mode).
+  new
+  call setline(1, ['one', 'two'])
+  let id = listener_add({b, s, e, a, l -> s:EvilStoreList(l)}, bufnr(), v:true)
+
+  let s:list3 = []
+  call setline(1, 'asdfasdf')
+  redraw
+  call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list3)
+
+  eval id->listener_remove()
+  bwipe!
+endfunc
+
 func Test_new_listener_does_not_receive_ood_changes()
   new
   call setline(1, ['one', 'two', 'three'])
@@ -265,17 +284,23 @@ func Test_changes_can_be_unbuffered()
   " Add both a buffered and an unbuffered listener.
   let id_a = listener_add({b, s, e, a, l -> s:StoreList(s, e, a, l)})
   let id_b = listener_add(
-      \ {b, s, e, a, c -> s:StoreListUnbuffered(s, e, a, c)},
+      \ {b, s, e, a, l -> s:StoreListUnbuffered(s, e, a, l)},
       \ bufnr(), v:true)
 
   " Make a change, which only the second listener should see immediately.
   call setline(2, 'two two')
   call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list2)
+  call assert_equal(2, s:start)
+  call assert_equal(3, s:end)
+  call assert_equal(0, s:added)
   call assert_equal([], s:list)
 
   " Make another change, which only the second listener should see immediately.
   call setline(3, 'three three')
   call assert_equal([{'lnum': 3, 'end': 4, 'col': 1, 'added': 0}], s:list2)
+  call assert_equal(3, s:start)
+  call assert_equal(4, s:end)
+  call assert_equal(0, s:added)
   call assert_equal([], s:list)
 
   " Force changes to be flushed. Only the first listener should be invoked,
@@ -524,7 +549,7 @@ endfunc
 func Test_remove_listener_in_callback()
   new
   let s:ID = listener_add('Listener')
-  func! Listener(...)
+  func Listener(...)
     call listener_remove(s:ID)
     let g:listener_called = 'yes'
   endfunc

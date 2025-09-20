@@ -195,9 +195,7 @@ clean_listener_list(buf_T *buf, listener_T **list, bool all)
     {
 	next = lnr->lr_next;
 	if (all || lnr->lr_id == 0)
-	{
 	    remove_listener_from_list(list, lnr, prev);
-	}
 	else
 	    prev = lnr;
     }
@@ -348,9 +346,7 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 	    return;
 	}
 	if (argvars[2].v_type != VAR_UNKNOWN)
-	{
 	    unbuffered = (int)tv_get_bool(&argvars[2]);
-	}
     }
 
     lnr = ALLOC_CLEAR_ONE(listener_T);
@@ -478,8 +474,57 @@ may_invoke_listeners(buf_T *buf, linenr_T lnum, linenr_T lnume, int added)
 }
 
 /*
- * Called when any sequence of change occurs: listeners added with the
- * "unbuffered" parameter set.
+ * Common processing for invoke_listeners and invoke_sync_listeners.
+ */
+    static void
+invoke_listener_set(
+    buf_T       *buf,
+    linenr_T	start,
+    linenr_T	end,
+    long	added,
+    list_T      *recorded_changes,
+    listener_T  *listeners)
+{
+    int		save_updating_screen = updating_screen;
+    listener_T	*lnr;
+    typval_T	rettv;
+    typval_T	argv[6];
+
+    argv[0].v_type = VAR_NUMBER;
+    argv[0].vval.v_number = buf->b_fnum; // a:bufnr
+    argv[1].v_type = VAR_NUMBER;
+    argv[1].vval.v_number = start;
+    argv[2].v_type = VAR_NUMBER;
+    argv[2].vval.v_number = end;
+    argv[3].v_type = VAR_NUMBER;
+    argv[3].vval.v_number = added;
+    argv[4].v_type = VAR_LIST;
+    argv[4].vval.v_list = recorded_changes;
+
+    // Protect against recursive callbacks, lock the buffer against changes and
+    // set the updating_screen flag to prevent channel input processing, which
+    // might also try to update the buffer.
+    recursive = TRUE;
+    ++textlock;
+    updating_screen = TRUE;
+
+    for (lnr = listeners; lnr != NULL; lnr = lnr->lr_next)
+    {
+	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
+	clear_tv(&rettv);
+    }
+
+    --textlock;
+    if (save_updating_screen)
+	updating_screen = TRUE;
+    else
+	after_updating_screen(TRUE);
+    recursive = FALSE;
+}
+
+/*
+ * Called when any change occurs: invoke listeners added with the "unbuffered"
+ * parameter set.
  */
     static void
 invoke_sync_listeners(
@@ -489,45 +534,35 @@ invoke_sync_listeners(
     linenr_T	end,
     long	added)
 {
-    listener_T	*lnr;
-    typval_T	rettv;
-    typval_T	argv[6];
-    int		save_updating_screen = updating_screen;
+    list_T      *recorded_changes;
+    dict_T	*dict;
 
     if (recursive || curbuf->b_sync_listener == NULL)
 	return;
 
-    argv[0].v_type = VAR_NUMBER;
-    argv[0].vval.v_number = curbuf->b_fnum; // a:bufnr
-    argv[1].v_type = VAR_NUMBER;
-    argv[1].vval.v_number = start;
-    argv[2].v_type = VAR_NUMBER;
-    argv[2].vval.v_number = end;
-    argv[3].v_type = VAR_NUMBER;
-    argv[3].vval.v_number = added;
-    argv[4].v_type = VAR_NUMBER;
-    argv[4].vval.v_number = col + 1;
+    // Create a single entry list to store the details of the change (including
+    // the column).
+    recorded_changes = list_alloc();
+    if (recorded_changes == NULL)  // out of memory
+	return;
 
-    recursive = TRUE;
-    ++textlock;
+    ++recorded_changes->lv_refcount;
+    recorded_changes->lv_lock = VAR_FIXED;
 
-    // Block messages on channels from being handled, so that they don't make
-    // text changes here.
-    updating_screen = TRUE;
+    dict = dict_alloc();
+    if (dict == NULL)
+	return;
 
-    for (lnr = buf->b_sync_listener; lnr != NULL; lnr = lnr->lr_next)
-    {
-	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
-	clear_tv(&rettv);
-    }
+    dict_add_number(dict, "lnum", (varnumber_T)start);
+    dict_add_number(dict, "end", (varnumber_T)end);
+    dict_add_number(dict, "added", (varnumber_T)added);
+    dict_add_number(dict, "col", (varnumber_T)col + 1);
+    list_append_dict(recorded_changes, dict);
 
-    --textlock;
+    invoke_listener_set(
+	buf, start, end, added, recorded_changes, buf->b_sync_listener);
 
-    if (save_updating_screen)
-	updating_screen = TRUE;
-    else
-	after_updating_screen(TRUE);
-    recursive = FALSE;
+    list_unref(recorded_changes);
 }
 
 /*
@@ -537,27 +572,15 @@ invoke_sync_listeners(
     void
 invoke_listeners(buf_T *buf)
 {
-    listener_T	*lnr;
-    typval_T	rettv;
-    typval_T	argv[6];
     listitem_T	*li;
     linenr_T	start = MAXLNUM;
     linenr_T	end = 0;
     linenr_T	added = 0;
-    int		save_updating_screen = updating_screen;
 
     if (buf->b_recorded_changes == NULL  // nothing changed
 	    || buf->b_listener == NULL	 // no listeners
 	    || recursive)		 // already busy
 	return;
-    recursive = TRUE;
-
-    // Block messages on channels from being handled, so that they don't make
-    // text changes here.
-    updating_screen = TRUE;
-
-    argv[0].v_type = VAR_NUMBER;
-    argv[0].vval.v_number = buf->b_fnum; // a:bufnr
 
     FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
     {
@@ -571,32 +594,12 @@ invoke_listeners(buf_T *buf)
 	    end = lnum;
 	added += dict_get_number(li->li_tv.vval.v_dict, "added");
     }
-    argv[1].v_type = VAR_NUMBER;
-    argv[1].vval.v_number = start;
-    argv[2].v_type = VAR_NUMBER;
-    argv[2].vval.v_number = end;
-    argv[3].v_type = VAR_NUMBER;
-    argv[3].vval.v_number = added;
 
-    argv[4].v_type = VAR_LIST;
-    argv[4].vval.v_list = buf->b_recorded_changes;
-    ++textlock;
+    invoke_listener_set(
+	buf, start, end, added, buf->b_recorded_changes, buf->b_listener);
 
-    for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
-    {
-	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
-	clear_tv(&rettv);
-    }
-
-    --textlock;
     list_unref(buf->b_recorded_changes);
     buf->b_recorded_changes = NULL;
-
-    if (save_updating_screen)
-	updating_screen = TRUE;
-    else
-	after_updating_screen(TRUE);
-    recursive = FALSE;
 }
 
 /*

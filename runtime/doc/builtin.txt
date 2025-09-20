@@ -6726,10 +6726,9 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		If the {buf} already has registered callbacks then the
 		equivalent of >
 		    listener_flush({buf})
-<               is performed before the new callback is added.
+<		is performed before the new callback is added.
 
-		When {unbuffered} is |FALSE| or omitted, the {callback} is
-		invoked with five arguments:
+		The {callback} is invoked with five arguments:
 		    bufnr	the buffer that was changed
 		    start	first changed line number
 		    end		first line number below the change
@@ -6771,35 +6770,30 @@ listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		    added	0
 		    col		first column with a change or 1
 
+		When {ubuffered} is |FALSE| or not provided the {callback} is
+		invoked:
+
+		1. Just before the screen is updated.
+		2. When |listener_flush()| is called.
+		3. When a change is being made that changes the line count in
+		   a way that causes a line number in the list of changes to
+		   become invalid.
+
 		The entries are in the order the changes were made, thus the
-		most recent change is at the end.  The line numbers are valid
-		when the callback is invoked, but later changes may make them
-		invalid, thus keeping a copy for later might not work.
+		most recent change is at the end.
 
-<		When {unbuffered} is |TRUE|, the {callback} is
-		invoked with:
-		    bufnr	the buffer that was changed
-		    start	first changed line number
-		    end		first line number below the change
-		    added	number of lines added, negative if lines were
-				deleted
-		    col		first column in "start" that was affected by
-				the change; one if unknown or the whole line
-				was affected; this is a byte index, first
-				character has a value of one.
+		Because of the third trigger reason for triggering a callback
+		listed above, the line numbers passed to the callback are not
+		guaranteed to be valid. If this is a problem then make
+		{unbuffered} |TRUE|.
 
-		Example: >
-	    func Listener(bufnr, start, end, added, col)
-	      echo a:start .. '.' .. a:col .. ' until ' .. a:end .. ' changed'
-	    endfunc
-	    call listener_add('Listener', bufnr, v:true)
-
->		When {ubuffered} is |TRUE| the callback is invoked for every
-		single change. Otherwise the {callback} is invoked just before
-		the screen is updated, when |listener_flush()| is called or
-		when a change is being made that changes the line count in a
-		way that causes a line number in the list of changes to become
-		invalid.
+		When {ubuffered} is |TRUE| the {callback} is invoked for every
+		single change. The changes list only holds a single dictionary
+		and the "start", "end" and "added" values in the dictionary are
+		the same as the corresponding callback arguments. The line
+		numbers are valid when the callback is invoked, but later
+		changes may make them invalid, thus keeping a copy for later
+		might not work.
 
 		The {callback} is invoked with the text locked, see
 		|textlock|.  If you do need to make changes to the buffer, use
