@@ -88,7 +88,7 @@ poll --man
 # mkservice and eloop (rarely provided; requires SHOPT_MKSERVICE)
 mkservice --man; eloop --help
 
-# some mksh builtins
+# some mksh builtins, rename should be highlighted as external program
 bind; rename
 
 # ;& and ;;& in case statements

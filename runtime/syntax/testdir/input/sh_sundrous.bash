@@ -54,4 +54,5 @@ uname
 uniq
 wc
 xargs
+# xgrep is neither a builtin for bash nor an external program
 xgrep
