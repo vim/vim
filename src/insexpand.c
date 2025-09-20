@@ -1058,6 +1058,15 @@ ins_compl_insert_bytes(char_u *p, int len)
 }
 
 /*
+ * Get current completion leader length
+ */
+    static size_t
+ins_compl_leader_len(void)
+{
+    return compl_leader.string != NULL ? compl_leader.length : compl_orig_text.length;
+}
+
+/*
  * Checks if the column is within the currently inserted completion text
  * column range. If it is, it returns a special highlight attribute.
  * -1 means normal item.
@@ -1834,15 +1843,6 @@ ins_compl_show_pum(void)
 ins_compl_leader(void)
 {
     return compl_leader.string != NULL ? compl_leader.string : compl_orig_text.string;
-}
-
-/*
- * Get current completion leader length
- */
-    size_t
-ins_compl_leader_len(void)
-{
-    return compl_leader.string != NULL ? compl_leader.length : compl_orig_text.length;
 }
 
 /*

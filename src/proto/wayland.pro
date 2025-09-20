@@ -1,7 +1,6 @@
 /* wayland.c */
 int wayland_init_client(const char *display);
 void wayland_uninit_client(void);
-int wayland_client_is_connected(int quiet);
 int wayland_client_update(void);
 int wayland_cb_init(const char *seat);
 void wayland_cb_uninit(void);
