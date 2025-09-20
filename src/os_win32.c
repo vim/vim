@@ -222,8 +222,10 @@ static int suppress_winsize = 1;	// don't fiddle with console
 
 static WCHAR *exe_pathw = NULL;
 
-static BOOL win8_or_later = FALSE;
-static BOOL win10_22H2_or_later = FALSE;
+BOOL win8_or_later = FALSE;
+BOOL win10_22H2_or_later = FALSE;
+BOOL win11_or_later = FALSE;
+
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static BOOL use_alternate_screen_buffer = FALSE;
 #endif
@@ -1009,6 +1011,10 @@ PlatformId(void)
     if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19045)
 	    || ovi.dwMajorVersion > 10)
 	win10_22H2_or_later = TRUE;
+
+    if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 22000)
+	    || ovi.dwMajorVersion > 10)
+	win11_or_later = TRUE;
 
 #ifdef HAVE_ACL
     // Enable privilege for getting or setting SACLs.
