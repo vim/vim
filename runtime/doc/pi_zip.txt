@@ -50,7 +50,7 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    allow spaces and whatnot in filenames; however, if it is incorrectly
    guessing the quote to use for your setup, you may use >
 	g:zip_shq
-<  which by default is a single quote under Unix (') and a double quote
+<   which by default is a single quote under Unix (') and a double quote
    under Windows (").  If you'd rather have no quotes, simply set
    g:zip_shq to the empty string (let g:zip_shq= "") in your <.vimrc>.
 
@@ -77,6 +77,14 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    "0": >
 	let g:zip_exec=0
 <
+   FALLBACK TO POWERSHELL CORE~
+
+   This plugin will attempt to use the (more capable) GNU zip/unzip commands
+   first. If these commands fail and if the user has set shell =~ 'pwsh', the
+   plugin will fall back to a PowerShell Core cmdlet or script. The PowerShell
+   Core cmdlets/scripts are limited: they cannot write or extract files within
+   subdirectories of a zip archive.
+
    PREVENTING LOADING~
 
    If for some reason you do not wish to use vim to examine zipped files,
@@ -112,6 +120,7 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
 ==============================================================================
 4. History							*zip-history* {{{1
    unreleased:
+       Sep 19, 2025 * support PowerShell Core
        Jul 12, 2025 * drop ../ on write to prevent path traversal attacks
        Mar 11, 2025 * handle filenames with leading '-' correctly
        Aug 21, 2024 * simplify condition to detect MS-Windows
