@@ -12,6 +12,9 @@
 /* Define unless no Wayland support found */
 #undef HAVE_WAYLAND
 
+/* Define if you want focus stealing support with Wayland clipboard  */
+#undef FEAT_WAYLAND_CLIPBOARD_FS
+
 /* Define when terminfo support found */
 #undef TERMINFO
 
