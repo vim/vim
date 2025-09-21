@@ -985,7 +985,7 @@ wayland_uninit_client(void)
 /*
  * Return TRUE if Wayland display connection is valid and ready.
  */
-    int
+    static int
 wayland_client_is_connected(int quiet)
 {
     if (vwl_display.proxy == NULL)

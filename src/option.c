@@ -60,6 +60,7 @@ static int put_setstring(FILE *fd, char *cmd, char *name, char_u **valuep, long_
 static int put_setnum(FILE *fd, char *cmd, char *name, long *valuep);
 static int put_setbool(FILE *fd, char *cmd, char *name, int value);
 static int istermoption(struct vimoption *p);
+static int istermoption_idx(int opt_idx);
 static char_u *get_varp_scope(struct vimoption *p, int scope);
 static char_u *get_varp(struct vimoption *);
 static void check_win_options(win_T *win);
@@ -6410,7 +6411,7 @@ istermoption(struct vimoption *p)
 /*
  * Returns TRUE if the option at 'opt_idx' starts with 't_'
  */
-    int
+    static int
 istermoption_idx(int opt_idx)
 {
     return istermoption(&options[opt_idx]);
