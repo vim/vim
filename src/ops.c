@@ -105,7 +105,7 @@ op_on_lines(int op)
     return opchars[op][2] & OPF_LINES;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Return TRUE if operator "op" changes text.
  */
@@ -3676,7 +3676,7 @@ did_set_operatorfunc(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_operatorfunc_option(void)
 {
@@ -3686,7 +3686,7 @@ free_operatorfunc_option(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Mark the global 'operatorfunc' callback with "copyID" so that it is not
  * garbage collected.

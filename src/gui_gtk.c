@@ -101,7 +101,7 @@ typedef int GtkWidget;
 static void entry_activate_cb(GtkWidget *widget, gpointer data);
 static void entry_changed_cb(GtkWidget *entry, GtkWidget *dialog);
 static void find_replace_cb(GtkWidget *widget, gpointer data);
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 static void recent_func_log_func(
 	const gchar *log_domain,
 	GLogLevelFlags log_level,
@@ -420,7 +420,7 @@ toolbar_button_focus_in_event(GtkWidget *widget UNUSED,
 }
 #endif // FEAT_TOOLBAR
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
 
     void
 gui_gtk_register_stock_icons(void)
@@ -531,7 +531,7 @@ gui_gtk_register_stock_icons(void)
 
 #endif // FEAT_TOOLBAR
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 
 /*
  * Translate Vim's mnemonic tagging to GTK+ style and convert to UTF-8
@@ -846,7 +846,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 }
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Enable or disable accelerators for the toplevel menus.
  */
@@ -920,7 +920,7 @@ get_menu_position(vimmenu_T *menu)
 #endif // FEAT_TOOLBAR
 
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
     void
 gui_mch_menu_set_tip(vimmenu_T *menu)
 {
@@ -944,7 +944,7 @@ gui_mch_menu_set_tip(vimmenu_T *menu)
 #endif // FEAT_TOOLBAR
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Destroy the machine specific menu widget.
  */
@@ -1185,7 +1185,7 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
     gui_mch_update();
 }
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 /*
  * Implementation of the file selector related stuff
  */
@@ -1485,7 +1485,7 @@ gui_mch_browsedir(
 
 #endif	// FEAT_BROWSE
 
-#if defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG)
 
     static GtkWidget *
 create_message_dialog(int type, char_u *title, char_u *message)
@@ -1880,7 +1880,7 @@ gui_mch_dialog(int	type,	    // type of dialog
 #endif // FEAT_GUI_DIALOG
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 
     void
 gui_mch_show_popupmenu(vimmenu_T *menu)
@@ -2681,7 +2681,7 @@ ex_helpfind(exarg_T *eap UNUSED)
     do_cmdline_cmd((char_u *)"emenu ToolBar.FindHelp");
 }
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
     static void
 recent_func_log_func(const gchar *log_domain UNUSED,
 		     GLogLevelFlags log_level UNUSED,

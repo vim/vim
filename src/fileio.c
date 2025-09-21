@@ -2750,7 +2750,7 @@ theend:
     return retval;
 }
 
-#if defined(OPEN_CHR_FILES) || defined(PROTO)
+#if defined(OPEN_CHR_FILES)
 /*
  * Returns TRUE if the file name argument is of the form "/dev/fd/\d\+",
  * which is the name of files used for process substitution output by
@@ -2955,7 +2955,7 @@ readfile_charconvert(
 }
 #endif
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Check for magic number used for encryption.  Applies to the current buffer.
  * If found, the magic number is removed from ptr[*sizep] and *sizep and
@@ -3068,7 +3068,7 @@ check_file_readonly(
 	);
 }
 
-#if defined(HAVE_FSYNC) || defined(PROTO)
+#if defined(HAVE_FSYNC)
 /*
  * Call fsync() with Mac-specific exception.
  * Return fsync() result: zero for success.
@@ -3305,7 +3305,7 @@ get_fio_flags(char_u *ptr)
     return 0;
 }
 
-#if defined(MSWIN) || defined(PROTO)
+#if defined(MSWIN)
 /*
  * Check "ptr" for a MS-Windows codepage name and return the FIO_ flags needed
  * for the conversion MS-Windows can do for us.  Also accept "utf-8".
@@ -3334,7 +3334,7 @@ get_win_fio_flags(char_u *ptr)
 }
 #endif
 
-#if defined(MACOS_CONVERT) || defined(PROTO)
+#if defined(MACOS_CONVERT)
 /*
  * Check "ptr" for a Carbon supported encoding and return the FIO_ flags
  * needed for the internal conversion to/from utf-8 or latin1.
@@ -3545,8 +3545,7 @@ shorten_fnames(int force)
 
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
 	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_HAIKU) \
-	|| defined(PROTO)
+	|| defined(FEAT_GUI_HAIKU)
 /*
  * Shorten all filenames in "fnames[count]" by current directory.
  */
@@ -4949,7 +4948,7 @@ compare_readdir_item(const void *s1, const void *s2)
 }
 #endif
 
-#if defined(TEMPDIRNAMES) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(TEMPDIRNAMES) || defined(FEAT_EVAL)
 /*
  * Core part of "readdir()" and "readdirex()" function.
  * Retrieve the list of files/directories of "path" into "gap".
@@ -5218,7 +5217,7 @@ delete_recursive(char_u *name)
 }
 #endif
 
-#if defined(TEMPDIRNAMES) || defined(PROTO)
+#if defined(TEMPDIRNAMES)
 static long	temp_count = 0;		// Temp filename counter.
 
 # if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
@@ -5529,7 +5528,7 @@ vim_tempname(
 #endif // TEMPDIRNAMES
 }
 
-#if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
+#if defined(BACKSLASH_IN_FILENAME)
 /*
  * Convert all backslashes in fname to forward slashes in-place, unless when
  * it looks like a URL.
@@ -5840,7 +5839,7 @@ file_pat_to_reg_pat(
     return reg_pat;
 }
 
-#if defined(EINTR) || defined(PROTO)
+#if defined(EINTR)
 /*
  * Version of read() that retries when interrupted by EINTR (possibly
  * by a SIGWINCH).

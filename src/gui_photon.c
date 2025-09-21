@@ -13,11 +13,8 @@
 
 #include "vim.h"
 
-// cproto fails on missing include files
-#ifndef PROTO
-# ifdef FEAT_TOOLBAR
-#  include <photon/PxImage.h>
-# endif
+#ifdef FEAT_TOOLBAR
+# include <photon/PxImage.h>
 #endif
 
 #if !defined(__QNX__)
@@ -1377,7 +1374,7 @@ gui_mch_wait_for_chars(int wtime)
     }
 }
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 /*
  * Put up a file requester.
  * Returns the selected name in allocated memory, or NULL for Cancel.
@@ -1457,7 +1454,7 @@ gui_mch_browse(
 }
 #endif
 
-#if defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG)
 static PtWidget_t *gui_ph_dialog_text = NULL;
 
     static int
@@ -1720,7 +1717,7 @@ gui_mch_iconify(void)
     PtForwardWindowEvent(&event);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Bring the Vim window to the foreground.
  */
@@ -1852,7 +1849,7 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 ////////////////////////////////////////////////////////////////////////////
 // Mouse functions
 
-#if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+#if defined(FEAT_MOUSESHAPE)
 // The last set mouse pointer shape is remembered, to be used when it goes
 // from hidden to not hidden.
 static int last_shape = 0;
@@ -2449,7 +2446,7 @@ gui_ph_toolbar_find_icon(vimmenu_T *menu)
 }
 #endif
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
     void
 gui_mch_enable_menu(int flag)
 {
@@ -2740,7 +2737,7 @@ gui_mch_toggle_tearoffs(int enable)
 
 #endif
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
     void
 gui_mch_show_toolbar(int showit)
 {
@@ -2967,7 +2964,7 @@ gui_mch_get_font(char_u *vim_font_name, int report_error)
     return FAIL;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the name of font "font" in allocated memory.
  * Don't know how to get the actual name, thus use the provided name.

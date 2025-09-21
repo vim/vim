@@ -1738,7 +1738,7 @@ find_file_in_path(
 	    file_to_find, search_ctx);
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_findfile(void)
 {
@@ -2984,7 +2984,7 @@ simplify_filename(char_u *filename)
     return (size_t)(p_end - filename);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "simplify()" function
  */

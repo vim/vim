@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 
 // local declarations. {{{1
 // typedef fold_T {{{2
@@ -3532,7 +3532,7 @@ foldlevelSyntax(fline_T *flp)
 
 // functions for storing the fold state in a View {{{1
 // put_folds() {{{2
-#if defined(FEAT_SESSION) || defined(PROTO)
+#if defined(FEAT_SESSION)
 static int put_folds_recurse(FILE *fd, garray_T *gap, linenr_T off);
 static int put_foldopen_recurse(FILE *fd, win_T *wp, garray_T *gap, linenr_T off);
 static int put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off);
@@ -3663,9 +3663,9 @@ put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off)
 #endif // FEAT_SESSION
 
 // }}}1
-#endif // defined(FEAT_FOLDING) || defined(PROTO)
+#endif // defined(FEAT_FOLDING)
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * "foldclosed()" and "foldclosedend()" functions

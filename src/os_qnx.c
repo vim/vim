@@ -31,7 +31,7 @@ void qnx_init(void)
 #endif
 }
 
-#if (defined(FEAT_GUI_PHOTON) && defined(FEAT_CLIPBOARD)) || defined(PROTO)
+#if defined(FEAT_GUI_PHOTON) && defined(FEAT_CLIPBOARD)
 
 #define CLIP_TYPE_VIM "VIMTYPE"
 #define CLIP_TYPE_TEXT "TEXT"
