@@ -67,6 +67,7 @@ void f_term_setapi(typval_T *argvars, typval_T *rettv);
 void f_term_setrestore(typval_T *argvars, typval_T *rettv);
 void f_term_setkill(typval_T *argvars, typval_T *rettv);
 void f_term_start(typval_T *argvars, typval_T *rettv);
+void term_wait(buf_T *buf, long wait);
 void f_term_wait(typval_T *argvars, typval_T *rettv);
 void term_send_eof(channel_T *ch);
 job_T *term_getjob(term_T *term);

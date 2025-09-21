@@ -3795,3 +3795,7 @@ EXTERN char e_socket_server_unavailable[]
 #endif
 EXTERN char e_osc_response_timed_out[]
 	INIT(= N_("E1568: OSC command response timed out: %.*s"));
+#if defined(FEAT_QUICKFIX) && defined(FEAT_TERMINAL)
+EXTERN char e_already_running_make_command[]
+	INIT(= N_("E1569: Already running a make command"));
+#endif
