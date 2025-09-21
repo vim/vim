@@ -182,7 +182,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_tcl, p_tcl_values, &tcl_flags, TRUE);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Trigger the OptionSet autocommand.
  * "opt_idx"	is the index of the option being set.
@@ -494,8 +494,7 @@ set_string_option_direct(
 # endif
 }
 
-#if defined(FEAT_PROP_POPUP) || \
-    (defined(FEAT_DIFF) && defined(FEAT_FOLDING)) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) || (defined(FEAT_DIFF) && defined(FEAT_FOLDING))
 /*
  * Like set_string_option_direct(), but for a window-local option in "wp".
  * Blocks autocommands to avoid the old curwin becoming invalid.
@@ -521,7 +520,7 @@ set_string_option_direct_in_win(
 }
 #endif
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 /*
  * Like set_string_option_direct(), but for a buffer-local option in "buf".
  * Blocks autocommands to avoid the old curbuf becoming invalid.
@@ -1240,7 +1239,7 @@ expand_set_belloff(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * The 'breakat' option is changed.
  */
@@ -1294,7 +1293,7 @@ expand_set_breakindentopt(
 }
 #endif
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 /*
  * The 'browsedir' option is changed.
  */
@@ -1391,7 +1390,7 @@ expand_set_casemap(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_CLIPBOARD) || defined(PROTO)
+#if defined(FEAT_CLIPBOARD)
     int
 expand_set_clipboard(optexpand_T *args, int *numMatches, char_u ***matches)
 {
@@ -1524,7 +1523,7 @@ did_set_cinoptions(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 /*
  * The 'colorcolumn' option is changed.
  */
@@ -1577,7 +1576,7 @@ did_set_comments(optset_T *args)
     return errmsg;
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * The 'commentstring' option is changed.
  */
@@ -1801,7 +1800,7 @@ did_set_completeitemalign(optset_T *args UNUSED)
     return NULL;
 }
 
-#if (defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
 /*
  * The 'completepopup' option is changed.
  */
@@ -1816,7 +1815,7 @@ did_set_completepopup(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
+#if defined(BACKSLASH_IN_FILENAME)
 /*
  * The 'completeslash' option is changed.
  */
@@ -1842,7 +1841,7 @@ expand_set_completeslash(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if defined(FEAT_CONCEAL) || defined(PROTO)
+#if defined(FEAT_CONCEAL)
 /*
  * The 'concealcursor' option is changed.
  */
@@ -1880,7 +1879,7 @@ expand_set_cpoptions(optexpand_T *args, int *numMatches, char_u ***matches)
     return expand_set_opt_listflag(args, (char_u*)CPO_ALL, numMatches, matches);
 }
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * The 'cryptkey' option is changed.
  */
@@ -1983,7 +1982,7 @@ expand_set_cryptmethod(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if (defined(FEAT_CSCOPE) && defined(FEAT_QUICKFIX)) || defined(PROTO)
+#if defined(FEAT_CSCOPE) && defined(FEAT_QUICKFIX)
 /*
  * The 'cscopequickfix' option is changed.
  */
@@ -2013,7 +2012,7 @@ did_set_cscopequickfix(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 /*
  * The 'cursorlineopt' option is changed.
  */
@@ -2061,7 +2060,7 @@ expand_set_debug(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_DIFF) || defined(PROTO)
+#if defined(FEAT_DIFF)
 /*
  * The 'diffanchors' option is changed.
  */
@@ -2410,7 +2409,7 @@ did_set_filetype_or_syntax(optset_T *args)
     return NULL;
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * The 'foldclose' option is changed.
  */
@@ -2432,7 +2431,7 @@ expand_set_foldclose(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if (defined(FEAT_EVAL) && defined(FEAT_FOLDING)) || defined(PROTO)
+#if defined(FEAT_EVAL) && defined(FEAT_FOLDING)
 /*
  * The 'foldexpr' option is changed.
  */
@@ -2446,7 +2445,7 @@ did_set_foldexpr(optset_T *args)
 }
 #endif
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * The 'foldignore' option is changed.
  */
@@ -2545,7 +2544,7 @@ expand_set_formatoptions(optexpand_T *args, int *numMatches, char_u ***matches)
     return expand_set_opt_listflag(args, (char_u*)FO_ALL, numMatches, matches);
 }
 
-#if defined(CURSOR_SHAPE) || defined(PROTO)
+#if defined(CURSOR_SHAPE)
 /*
  * The 'guicursor' option is changed.
  */
@@ -2556,7 +2555,7 @@ did_set_guicursor(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * The 'guifont' option is changed.
  */
@@ -2620,7 +2619,7 @@ expand_set_guifont(optexpand_T *args, int *numMatches, char_u ***matches)
 # endif
 }
 
-# if defined(FEAT_XFONTSET) || defined(PROTO)
+# if defined(FEAT_XFONTSET)
 /*
  * The 'guifontset' option is changed.
  */
@@ -2655,7 +2654,7 @@ did_set_guifontwide(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 /*
  * The 'guiligatures' option is changed.
  */
@@ -2667,7 +2666,7 @@ did_set_guiligatures(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * The 'guioptions' option is changed.
  */
@@ -2693,7 +2692,7 @@ expand_set_guioptions(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 /*
  * The 'guitablabel' option is changed.
  */
@@ -2719,7 +2718,7 @@ did_set_helpfile(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_MULTI_LANG) || defined(PROTO)
+#if defined(FEAT_MULTI_LANG)
 /*
  * The 'helplang' option is changed.
  */
@@ -2911,7 +2910,7 @@ did_set_iconstring(optset_T *args)
     return parse_titleiconstring(args, flagval);
 }
 
-#if (defined(FEAT_XIM) && defined(FEAT_GUI_GTK)) || defined(PROTO)
+#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 /*
  * The 'imactivatekey' option is changed.
  */
@@ -3027,7 +3026,7 @@ expand_set_jumpoptions(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_KEYMAP) || defined(PROTO)
+#if defined(FEAT_KEYMAP)
 /*
  * The 'keymap' option is changed.
  */
@@ -3245,7 +3244,7 @@ expand_set_messagesopt(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 /*
  * The 'mkspellmem' option is changed.
  */
@@ -3275,7 +3274,7 @@ did_set_mouse(optset_T *args)
 	redraw_tabline = TRUE;
 	if (tabline_height() > 0)
 	    update_screen(UPD_VALID);
-#if (defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
 	popup_close_info(); // Close info popup to apply new properties
 #endif
     }
@@ -3317,7 +3316,7 @@ expand_set_mousemodel(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+#if defined(FEAT_MOUSESHAPE)
     char *
 did_set_mouseshape(optset_T *args UNUSED)
 {
@@ -3352,7 +3351,7 @@ expand_set_nrformats(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * One of the '*expr' options is changed: 'balloonexpr', 'diffexpr',
  * 'foldexpr', 'foldtext', 'formatexpr', 'includeexpr', 'indentexpr',
@@ -3399,7 +3398,7 @@ did_set_pastetoggle(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 /*
  * The 'previewpopup' option is changed.
  */
@@ -3465,7 +3464,7 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if defined(FEAT_POSTSCRIPT) || defined(PROTO)
+#if defined(FEAT_POSTSCRIPT)
 /*
  * The 'printencoding' option is changed.
  */
@@ -3497,7 +3496,7 @@ did_set_printencoding(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_PRINTER) || defined(PROTO)
+#if defined(FEAT_PRINTER)
 
     static char_u *
 get_printoptions_names(expand_T *xp UNUSED, int idx)
@@ -3521,7 +3520,7 @@ expand_set_printoptions(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if defined(FEAT_STL_OPT) || defined(PROTO)
+#if defined(FEAT_STL_OPT)
 /*
  * The 'statusline' or the 'tabline' or the 'rulerformat' option is changed.
  * "rulerformat" is TRUE if the 'rulerformat' option is changed.
@@ -3563,7 +3562,7 @@ parse_statustabline_rulerformat(optset_T *args, int rulerformat)
 }
 #endif
 
-#if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
+#if defined(FEAT_RENDER_OPTIONS)
 /*
  * The 'renderoptions' option is changed.
  */
@@ -3577,7 +3576,7 @@ did_set_renderoptions(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_RIGHTLEFT) || defined(PROTO)
+#if defined(FEAT_RIGHTLEFT)
 /*
  * The 'rightleftcmd' option is changed.
  */
@@ -3744,7 +3743,8 @@ expand_set_pumborder(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_STL_OPT) || defined(PROTO)
+#if defined(FEAT_STL_OPT)
+
 /*
  * The 'rulerformat' option is changed.
  */
@@ -3755,7 +3755,7 @@ did_set_rulerformat(optset_T *args)
 }
 #endif
 
-#if defined(FEAT_TABPANEL) || defined(PROTO)
+#if defined(FEAT_TABPANEL)
 /*
  * Process the new 'tabpanelopt' option value.
  */
@@ -3877,7 +3877,7 @@ expand_set_selectmode(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_SESSION) || defined(PROTO)
+#if defined(FEAT_SESSION)
 /*
  * The 'sessionoptions' option is changed.
  */
@@ -3930,7 +3930,7 @@ expand_set_shortmess(optexpand_T *args, int *numMatches, char_u ***matches)
     return expand_set_opt_listflag(args, (char_u*)SHM_ALL, numMatches, matches);
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * The 'showbreak' option is changed.
  */
@@ -3976,7 +3976,7 @@ expand_set_showcmdloc(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+#if defined(FEAT_SIGNS)
 /*
  * The 'signcolumn' option is changed.
  */
@@ -4009,7 +4009,7 @@ expand_set_signcolumn(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 /*
  * The 'spellcapcheck' option is changed.
  */
@@ -4122,7 +4122,7 @@ expand_set_splitkeep(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_STL_OPT) || defined(PROTO)
+#if defined(FEAT_STL_OPT)
 /*
  * The 'statusline' option is changed.
  */
@@ -4193,7 +4193,7 @@ expand_set_tabclose(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_STL_OPT) || defined(PROTO)
+#if defined(FEAT_STL_OPT)
 /*
  * The 'tabline' option is changed.
  */
@@ -4336,7 +4336,7 @@ did_set_term_option(optset_T *args)
     return NULL;
 }
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * The 'termwinkey' option is changed.
  */
@@ -4370,7 +4370,7 @@ did_set_termwinsize(optset_T *args)
     return NULL;
 }
 
-# if defined(MSWIN) || defined(PROTO)
+# if defined(MSWIN)
 /*
  * The 'termwintype' option is changed.
  */
@@ -4407,7 +4407,7 @@ did_set_titlestring(optset_T *args)
     return parse_titleiconstring(args, flagval);
 }
 
-#if (defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)) || defined(PROTO)
+#if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
 /*
  * The 'toolbar' option is changed.
  */
@@ -4436,7 +4436,7 @@ expand_set_toolbar(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if (defined(FEAT_TOOLBAR) && defined(FEAT_GUI_GTK)) || defined(PROTO)
+#if defined(FEAT_TOOLBAR) && defined(FEAT_GUI_GTK)
 /*
  * The 'toolbariconsize' option is changed.  GTK+ 2 only.
  */
@@ -4467,7 +4467,7 @@ expand_set_toolbariconsize(
 }
 #endif
 
-#if defined(UNIX) || defined(VMS) || defined(PROTO)
+#if defined(UNIX) || defined(VMS)
 /*
  * The 'ttymouse' option is changed.
  */
@@ -4501,7 +4501,7 @@ expand_set_ttymouse(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 #endif
 
-#if defined(FEAT_VARTABS) || defined(PROTO)
+#if defined(FEAT_VARTABS)
 /*
  * The 'varsofttabstop' option is changed.
  */
@@ -4590,7 +4590,7 @@ did_set_verbosefile(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_SESSION) || defined(PROTO)
+#if defined(FEAT_SESSION)
 /*
  * The 'viewoptions' option is changed.
  */
@@ -4601,7 +4601,7 @@ did_set_viewoptions(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
 /*
  * The 'viminfo' option is changed.
  */
@@ -4778,7 +4778,7 @@ expand_set_wildoptions(optexpand_T *args, int *numMatches, char_u ***matches)
 	    matches);
 }
 
-#if defined(FEAT_WAK) || defined(PROTO)
+#if defined(FEAT_WAK)
 /*
  * The 'winaltkeys' option is changed.
  */
@@ -5045,7 +5045,7 @@ did_set_string_option(
     if (varp == &p_rtp)
     {
 	export_myvimdir();
-#if defined(FEAT_LUA) || defined(PROTO)
+#if defined(FEAT_LUA)
 	update_package_paths_in_lua();
 #endif
     }

@@ -421,7 +421,7 @@ error:
     return FAIL;
 }
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Swapfile encryption is not supported by XChaCha20.  If this crypt method is
  * used then disable the swapfile, to avoid plain text being written to disk,
@@ -2132,7 +2132,7 @@ recover_names(
     return file_count;
 }
 
-#if defined(UNIX) || defined(MSWIN) || defined(PROTO)
+#if defined(UNIX) || defined(MSWIN)
 /*
  * Need _very_ long file names.
  * Append the full path to name with path separators made into percent
@@ -2172,7 +2172,7 @@ make_percent_swname(char_u *dir, char_u *dir_end, char_u *name)
 static int process_still_running;
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return information found in swapfile "fname" in dictionary "d".
  * This is used by the swapinfo() function.
@@ -3533,8 +3533,8 @@ ml_append_flags(
 }
 
 
-#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(FEAT_PROP_POPUP) \
-	|| defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(FEAT_PROP_POPUP)
+
 /*
  * Like ml_append() but for an arbitrary buffer.  The buffer must already have
  * a memline.
@@ -4567,7 +4567,7 @@ ml_lineadd(buf_T *buf, int count)
     }
 }
 
-#if defined(HAVE_READLINK) || defined(PROTO)
+#if defined(HAVE_READLINK)
 /*
  * Resolve a symlink in the last component of a file name.
  * Note that f_resolve() does it for every part of the path, we don't do that
@@ -5525,7 +5525,7 @@ ml_setflags(buf_T *buf)
     }
 }
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * If "data" points to a data block encrypt the text in it and return a copy
  * in allocated memory.  Return NULL when out of memory.
@@ -5676,7 +5676,7 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 #endif
 
 
-#if defined(FEAT_BYTEOFF) || defined(PROTO)
+#if defined(FEAT_BYTEOFF)
 
 #define MLCS_MAXL 800	// max no of lines in chunk
 #define MLCS_MINL 400   // should be half of MLCS_MAXL

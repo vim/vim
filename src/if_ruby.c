@@ -224,7 +224,7 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 # define ruby_init_stack(addr) ruby_init_stack((addr), rb_ia64_bsp())
 #endif
 
-#if defined(DYNAMIC_RUBY) || defined(PROTO)
+#if defined(DYNAMIC_RUBY)
 
 /*
  * Wrapper defines
@@ -794,7 +794,7 @@ ruby_enabled(int verbose)
 {
     return ruby_runtime_link_init((char *)p_rubydll, verbose) == OK;
 }
-#endif // defined(DYNAMIC_RUBY) || defined(PROTO)
+#endif // defined(DYNAMIC_RUBY)
 
     void
 ruby_end(void)

@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * All user-defined functions are found in this hashtable.
  */
@@ -740,7 +740,7 @@ alloc_ufunc(char_u *name, size_t namelen)
     return fp;
 }
 
-#if defined(FEAT_LUA) || defined(PROTO)
+#if defined(FEAT_LUA)
 /*
  * Registers a native C callback which can be called from Vim script.
  * Returns the name of the Vim script function.
@@ -3592,7 +3592,7 @@ delete_script_functions(int sid)
     }
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_all_functions(void)
 {
@@ -6095,7 +6095,7 @@ function_exists(char_u *name, int no_deref)
     return n;
 }
 
-#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
     char_u *
 get_expanded_name(char_u *name, int check)
 {

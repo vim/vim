@@ -17,12 +17,10 @@
 
 #include "vim.h"
 
-#if !defined(PROTO)
-# include <CoreServices/CoreServices.h>
-#endif
+#include <CoreServices/CoreServices.h>
 
 
-#if defined(MACOS_CONVERT) || defined(PROTO)
+#if defined(MACOS_CONVERT)
 
 static char_u	    *mac_utf16_to_utf8(UniChar *from, size_t fromLen, size_t *actualLen);
 static UniChar	    *mac_utf8_to_utf16(char_u *from, size_t fromLen, size_t *actualLen);

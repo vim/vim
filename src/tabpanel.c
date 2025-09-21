@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_TABPANEL) || defined(PROTO)
+#if defined(FEAT_TABPANEL)
 
 static void do_by_tplmode(int tplmode, int col_start, int col_end,
 	int *pcurtab_row, int *ptabpagenr);

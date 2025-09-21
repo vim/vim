@@ -1416,7 +1416,7 @@ set_last_cursor(win_T *win)
 	win->w_buffer->b_last_cursor = win->w_cursor;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_all_marks(void)
 {
@@ -1428,7 +1428,7 @@ free_all_marks(void)
 }
 #endif
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+#if defined(FEAT_VIMINFO)
 /*
  * Return a pointer to the named file marks.
  */
@@ -1439,7 +1439,7 @@ get_namedfm(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Add information about mark 'mname' to list 'l'
  */

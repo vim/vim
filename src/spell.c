@@ -58,7 +58,7 @@
 #define IN_SPELL_C
 #include "vim.h"
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 
 #include <time.h>
 
@@ -3138,7 +3138,7 @@ make_case_word(char_u *fword, char_u *cword, int flags)
 	STRCPY(cword, fword);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Soundfold a string, for soundfold().
  * Result is in allocated memory, NULL for an error.

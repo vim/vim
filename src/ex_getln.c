@@ -2014,7 +2014,7 @@ getcmdline_int(
 #endif
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINELEAVEPRE);
 	    event_cmdlineleavepre_triggered = TRUE;
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+#if defined(FEAT_SEARCH_EXTRA)
 	    if ((c == ESC || c == Ctrl_C) && (wim_flags[0] & WIM_LIST))
 		set_no_hlsearch(TRUE);
 #endif
@@ -2783,7 +2783,7 @@ theend:
     }
 }
 
-#if (defined(FEAT_CRYPT) || defined(FEAT_EVAL)) || defined(PROTO)
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 /*
  * Get a command line with a prompt.
  * This is prepared to be called recursively from getcmdline() (e.g. by
@@ -3350,8 +3350,7 @@ cmdline_overstrike(void)
     return ccline.overstrike;
 }
 
-# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	 || defined(FEAT_MOUSESHAPE) || defined(PROTO)
+# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) || defined(FEAT_MOUSESHAPE)
 /*
  * Return TRUE if the cursor is at the end of the cmdline.
  */
@@ -3362,7 +3361,7 @@ cmdline_at_end(void)
 }
 #endif
 
-#if (defined(FEAT_XIM) && (defined(FEAT_GUI_GTK))) || defined(PROTO)
+#if defined(FEAT_XIM) && (defined(FEAT_GUI_GTK))
 /*
  * Return the virtual column number at the current cursor position.
  * This is used by the IM code to obtain the start of the preedit string.
@@ -3533,10 +3532,10 @@ realloc_cmdbuff(int len)
     return OK;
 }
 
-#if defined(FEAT_ARABIC) || defined(PROTO)
+#if defined(FEAT_ARABIC)
 static char_u	*arshape_buf = NULL;
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 free_arshape_buf(void)
 {
@@ -4333,7 +4332,7 @@ get_cmdline_type(void)
     return p->cmdfirstc;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Get the current command line in allocated memory.
  * Only works when the command line is being edited.
@@ -5057,7 +5056,7 @@ script_get(exarg_T *eap UNUSED, char_u *cmd UNUSED)
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * This function is used by f_input() and f_inputdialog() functions. The third
  * argument to f_input() specifies the type of completion to use at the

@@ -56,29 +56,7 @@
 extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockItemBehavior beh);
 #endif
 
-#if !defined(FEAT_GUI_GTK) && defined(PROTO)
-// When generating prototypes we don't want syntax errors.
-# define GdkAtom int
-# define GdkEventExpose int
-# define GdkEventFocus int
-# define GdkEventVisibility int
-# define GdkEventProperty int
-# define GtkContainer int
-# define GtkTargetEntry int
-# define GtkType int
-# define GtkWidget int
-# define gint int
-# define gpointer int
-# define guint int
-# define GdkEventKey int
-# define GdkEventSelection int
-# define GtkSelectionData int
-# define GdkEventMotion int
-# define GdkEventButton int
-# define GdkDragContext int
-# define GdkEventConfigure int
-# define GdkEventClient int
-#else
+#if defined(FEAT_GUI_GTK)
 # if GTK_CHECK_VERSION(3,0,0)
 #  include <gdk/gdkkeysyms-compat.h>
 #  include <gtk/gtkx.h>
@@ -723,7 +701,7 @@ gui_mch_prepare(int *argc, char **argv)
     gui_argv[gui_argc] = NULL;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 gui_mch_free_all(void)
 {
@@ -1889,7 +1867,7 @@ gui_gtk_get_pointer(GtkWidget       *widget,
     return gdk_window_get_device_position(win, dev , x, y, state);
 }
 
-# if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+# if defined(FEAT_GUI_TABLINE)
     static GdkWindow *
 gui_gtk_window_at_position(GtkWidget *widget,
 			   gint      *x,
@@ -2695,7 +2673,7 @@ global_event_filter(GdkXEvent *xev,
 }
 #endif // !USE_GNOME_SESSION
 
-#if defined(FEAT_SOCKETSERVER) || defined(PROTO)
+#if defined(FEAT_SOCKETSERVER)
 
 /*
  * Callback for new events from the socket server listening socket
@@ -3261,7 +3239,7 @@ update_window_manager_hints(int force_width, int force_height)
     }
 }
 
-#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
+#if defined(FEAT_GUI_DARKTHEME)
     void
 gui_mch_set_dark_theme(int dark)
 {
@@ -3374,7 +3352,7 @@ set_toolbar_style(GtkToolbar *toolbar)
 
 #endif // FEAT_TOOLBAR
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 static int ignore_tabline_evt = FALSE;
 static GtkWidget *tabline_menu;
 # if !GTK_CHECK_VERSION(3,0,0)
@@ -4193,7 +4171,7 @@ gui_mch_init(void)
     return OK;
 }
 
-#if defined(USE_GNOME_SESSION) || defined(PROTO)
+#if defined(USE_GNOME_SESSION)
 /*
  * This is called from gui_start() after a fork() has been done.
  * We have to tell the session manager our new PID.
@@ -4903,7 +4881,7 @@ gui_mch_settitle(char_u *title, char_u *icon UNUSED)
 	vim_free(title);
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
     void
 gui_mch_enable_menu(int showit)
 {
@@ -4929,7 +4907,7 @@ gui_mch_enable_menu(int showit)
 }
 #endif // FEAT_MENU
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
     void
 gui_mch_show_toolbar(int showit)
 {
@@ -5434,7 +5412,7 @@ gui_mch_get_font(char_u *name, int report_error)
     return font;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the name of font "font" in allocated memory.
  */
@@ -6372,7 +6350,7 @@ gui_mch_haskey(char_u *name)
     return FAIL;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the text window-id and display.  Only required for X-based GUI's
  */
@@ -6524,7 +6502,7 @@ gui_mch_iconify(void)
     gtk_window_iconify(GTK_WINDOW(gui.mainwin));
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Bring the Vim window to the foreground.
  */
@@ -7118,7 +7096,7 @@ clip_mch_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
 
-#if (defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) || defined(PROTO)
+#if defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)
     int
 clip_gtk_owner_exists(Clipboard_T *cbd)
 {
@@ -7127,7 +7105,7 @@ clip_gtk_owner_exists(Clipboard_T *cbd)
 #endif
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Make a menu item appear either active or not active (grey or not grey).
  */
@@ -7277,7 +7255,7 @@ gui_mch_mousehide(int hide)
     }
 }
 
-#if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+#if defined(FEAT_MOUSESHAPE)
 
 # if GTK_CHECK_VERSION(3,0,0)
 static const char * mshape_css_names[] =
@@ -7380,7 +7358,7 @@ mch_set_mouse_shape(int shape)
 #endif // FEAT_MOUSESHAPE
 
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+#if defined(FEAT_SIGN_ICONS)
 /*
  * Signs are currently always 2 chars wide.  With GTK+ 2, the image will be
  * scaled down if the current font is not big enough, or scaled up if the image

@@ -14,7 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#if (defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)) || defined(PROTO)
+#if (defined(FEAT_CLIENTSERVER) && defined(FEAT_X11))
 
 # ifdef FEAT_X11
 #  include <X11/Intrinsic.h>
@@ -321,7 +321,7 @@ DoRegisterName(Display *dpy, char_u *name)
     return -2;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Clean out new ID from registry and set it as comm win.
  * Change any registered window ID.

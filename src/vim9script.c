@@ -28,7 +28,7 @@ in_vim9script(void)
 		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when currently in a script with script version smaller than
  * "max_version" or command modifiers forced it.
@@ -141,7 +141,7 @@ ex_vim9script(exarg_T *eap UNUSED)
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * When in Vim9 script give an error and return FAIL.
  */
@@ -205,7 +205,7 @@ vim9_comment_start(char_u *p)
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * "++nr" and "--nr" commands.

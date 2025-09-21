@@ -959,7 +959,7 @@ typedef struct sign_attrs_S {
     int		sat_priority;
 } sign_attrs_T;
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+#if defined(FEAT_SIGNS)
 // Macros to get the sign group structure from the group name
 #define SGN_KEY_OFF	offsetof(signgroup_T, sg_name)
 #define HI2SG(hi)	((signgroup_T *)((hi)->hi_key - SGN_KEY_OFF))
@@ -1883,7 +1883,7 @@ typedef enum {
 
 typedef struct svar_S svar_T;
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Info used by a ":for" loop.
  */
@@ -3613,7 +3613,7 @@ struct file_buffer
 }; // file_buffer
 
 
-#if defined(FEAT_DIFF) || defined(PROTO)
+#if defined(FEAT_DIFF)
 /*
  * Stuff for diff mode.
  */

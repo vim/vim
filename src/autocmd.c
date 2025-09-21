@@ -630,7 +630,7 @@ autocmd_init(void)
     CLEAR_FIELD(aucmd_win);
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_all_autocmds(void)
 {
@@ -850,7 +850,7 @@ check_ei(char_u *ei)
     return OK;
 }
 
-# if defined(FEAT_SYN_HL) || defined(PROTO)
+# if defined(FEAT_SYN_HL)
 
 /*
  * Add "what" to 'eventignore' to skip loading syntax highlighting for every
@@ -2030,7 +2030,7 @@ has_cmdundefined(void)
     return (first_autopat[(int)EVENT_CMDUNDEFINED] != NULL);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when there is a TextYankPost autocommand defined.
  */
@@ -2041,7 +2041,7 @@ has_textyankpost(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when there is a CompleteChanged autocommand defined.
  */
@@ -2052,7 +2052,7 @@ has_completechanged(void)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when there is a ModeChanged autocommand defined.
  */
@@ -2678,7 +2678,7 @@ auto_next_pat(
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Get the script context where autocommand "acp" is defined.
  */
@@ -2929,7 +2929,7 @@ has_tabclosedpre(void)
     return (first_autopat[(int)EVENT_TABCLOSEDPRE] != NULL);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE if autocmd is supported.
  */

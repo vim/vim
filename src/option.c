@@ -45,7 +45,7 @@ static char_u *find_dup_item(char_u *origval, char_u *newval, size_t newvallen, 
 static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 static long_u *insecure_flag(win_T *wp, int opt_idx, int opt_flags);
 #else
 # define insecure_flag(wp, opt_idx, opt_flags) (&options[opt_idx].flags)
@@ -69,7 +69,7 @@ static void check_winopt(winopt_T *wop);
 static int wc_use_keyname(char_u *varp, long *wcp);
 static void compatible_set(void);
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 static char *(p_bin_dep_opts[])    = {"textwidth", "wrapmargin", "modeline", "expandtab", NULL};
 static char *(p_paste_dep_opts[])  = {"autoindent", "expandtab", "ruler", "showmatch", "smarttab",
     "softtabstop", "textwidth", "wrapmargin",
@@ -961,7 +961,7 @@ set_number_default(char *name, long val)
 	options[opt_idx].def_val[VI_DEFAULT] = (char_u *)(long_i)val;
 }
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP)
 /*
  * Set all window-local and buffer-local options to the Vim default.
  * local-global options will use the global value.
@@ -995,7 +995,7 @@ set_local_options_default(win_T *wp, int do_buffer)
 }
 #endif
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 /*
  * Free all options.
  */
@@ -1310,7 +1310,7 @@ set_init_3(void)
     set_title_defaults();
 }
 
-#if defined(FEAT_MULTI_LANG) || defined(PROTO)
+#if defined(FEAT_MULTI_LANG)
 /*
  * When 'helplang' is still at its default value, set it to "lang".
  * Only the first two characters of "lang" are used.
@@ -2919,7 +2919,7 @@ set_options_bin(
 	    p_et = p_et_nobin;
 	}
     }
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     // Remember where the dependent option were reset
     didset_options_sctx(opt_flags, p_bin_dep_opts);
 #endif
@@ -3065,7 +3065,7 @@ set_term_option_alloced(char_u **p)
     return opt_idx;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return TRUE when option "opt" was set from a modeline or in secure mode.
  * Return FALSE when it wasn't.
@@ -3161,7 +3161,7 @@ valid_name(char_u *val, char *allowed)
     return TRUE;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Set the script_ctx for an option, taking care of setting the buffer- or
  * window-local value.
@@ -3293,7 +3293,7 @@ apply_optionset_autocmd(
 }
 #endif
 
-#if defined(FEAT_ARABIC) || defined(PROTO)
+#if defined(FEAT_ARABIC)
 /*
  * Process the updated 'arabic' option value.
  */
@@ -3374,7 +3374,7 @@ did_set_arabic(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_AUTOCHDIR) || defined(PROTO)
+#if defined(FEAT_AUTOCHDIR)
 /*
  * Process the updated 'autochdir' option value.
  */
@@ -3387,7 +3387,7 @@ did_set_autochdir(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI)
 /*
  * Process the updated 'ballooneval' option value.
  */
@@ -3406,7 +3406,7 @@ did_set_ballooneval(optset_T *args)
 }
 #endif
 
-#if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+#if defined(FEAT_BEVAL_TERM)
 /*
  * Process the updated 'balloonevalterm' option value.
  */
@@ -3486,7 +3486,7 @@ did_set_compatible(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_CONCEAL) || defined(PROTO)
+#if defined(FEAT_CONCEAL)
 /*
  * Process the new 'conceallevel' option value.
  */
@@ -3520,7 +3520,7 @@ did_set_conceallevel(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_DIFF) || defined(PROTO)
+#if defined(FEAT_DIFF)
 /*
  * Process the updated 'diff' option value.
  */
@@ -3561,7 +3561,7 @@ did_set_equalalways(optset_T *args)
     return NULL;
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * Process the new 'foldcolumn' option value.
  */
@@ -3628,7 +3628,7 @@ did_set_foldnestmax(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+#if defined(FEAT_SEARCH_EXTRA)
 /*
  * Process the updated 'hlsearch' option value.
  */
@@ -3653,7 +3653,7 @@ did_set_ignorecase(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(HAVE_INPUT_METHOD) || defined(PROTO)
+#if defined(HAVE_INPUT_METHOD)
 /*
  * Process the updated 'imdisable' option value.
  */
@@ -3713,7 +3713,7 @@ did_set_imsearch(optset_T *args UNUSED)
     return errmsg;
 }
 
-#if (defined(FEAT_XIM) && defined(FEAT_GUI_GTK)) || defined(PROTO)
+#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 /*
  * Process the new 'imstyle' option value.
  */
@@ -3755,7 +3755,7 @@ did_set_insertmode(optset_T *args)
     return NULL;
 }
 
-#if defined(FEAT_LANGMAP) || defined(PROTO)
+#if defined(FEAT_LANGMAP)
 /*
  * Process the updated 'langnoremap' option value.
  */
@@ -3789,7 +3789,7 @@ did_set_laststatus(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Process the new 'linespace' option value.
  */
@@ -3864,7 +3864,7 @@ did_set_modified(optset_T *args)
     return NULL;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
 /*
  * Process the updated 'mousehide' option value.
  */
@@ -3883,7 +3883,7 @@ did_set_mousehide(optset_T *args UNUSED)
     char *
 did_set_number_relativenumber(optset_T *args UNUSED)
 {
-#if (defined(FEAT_SIGNS) && defined(FEAT_GUI)) || defined(PROTO)
+#if defined(FEAT_SIGNS) && defined(FEAT_GUI)
     if (gui.in_use
 	    && (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u')
 	    && curbuf->b_signlist != NULL)
@@ -3901,7 +3901,7 @@ did_set_number_relativenumber(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * Process the new 'numberwidth' option value.
  */
@@ -4103,7 +4103,7 @@ did_set_paste(optset_T *args UNUSED)
 
     old_p_paste = p_paste;
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     // Remember where the dependent options were reset
     didset_options_sctx((OPT_LOCAL | OPT_GLOBAL), p_paste_dep_opts);
 #endif
@@ -4136,7 +4136,7 @@ did_set_previewwindow(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 /*
  * Process the new 'pyxversion' option value.
  */
@@ -4210,7 +4210,7 @@ did_set_maxsearchcount(optset_T *args UNUSED)
 }
 
 
-#if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
+#if defined(BACKSLASH_IN_FILENAME)
 /*
  * Process the updated 'shellslash' option value.
  */
@@ -4329,7 +4329,7 @@ did_set_smoothscroll(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 /*
  * Process the updated 'spell' option value.
  */
@@ -4359,7 +4359,7 @@ did_set_swapfile(optset_T *args UNUSED)
     return NULL;
 }
 
-#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+#if defined(FEAT_TERMGUICOLORS)
     char *
 did_set_termguicolors(optset_T *args UNUSED)
 {
@@ -4402,7 +4402,7 @@ did_set_termguicolors(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if defined(FEAT_TERMINAL)
 /*
  * Process the updated 'termwinscroll' option value.
  */
@@ -4535,7 +4535,7 @@ did_set_titlelen(optset_T *args)
     return errmsg;
 }
 
-#if defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
+#if defined(FEAT_PERSISTENT_UNDO)
 /*
  * Process the updated 'undofile' option value.
  */
@@ -4795,7 +4795,7 @@ did_set_winwidth(optset_T *args UNUSED)
     return errmsg;
 }
 
-#if defined(FEAT_WAYLAND_CLIPBOARD) || defined(PROTO)
+#if defined(FEAT_WAYLAND_CLIPBOARD)
 /*
  * Process the new 'wlsteal' option value.
  */
@@ -4808,7 +4808,7 @@ did_set_wlsteal(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_WAYLAND) || defined(PROTO)
+#if defined(FEAT_WAYLAND)
 /*
  * Process the new 'wltimeoutlen' option value.
  */
@@ -5293,7 +5293,7 @@ findoption(char_u *arg)
 }
 
 #if defined(FEAT_EVAL) || defined(FEAT_TCL) || defined(FEAT_MZSCHEME) \
-	|| defined(FEAT_SPELL) || defined(PROTO)
+	|| defined(FEAT_SPELL)
 /*
  * Get the value for an option.
  *
@@ -5400,7 +5400,7 @@ get_option_value(
 }
 #endif
 
-#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 /*
  * Returns the option attributes and its value. Unlike the above function it
  * will return either global value or local value of the option depending on
@@ -5659,7 +5659,7 @@ is_hidden_option(int opt_idx)
     return options[opt_idx].var == NULL;
 }
 
-#if defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_CRYPT)
 /*
  * Returns TRUE if the option at 'opt_idx' is a crypt key option
  */
@@ -5828,7 +5828,7 @@ get_encoding_default(void)
     return (char_u *)NULL;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_QUICKFIX)
     int
 is_option_allocated(char *name)
 {
@@ -6178,7 +6178,7 @@ makeset(FILE *fd, int opt_flags, int local_only)
     return OK;
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * Generate set commands for the local fold options only.  Used when
  * 'sessionoptions' or 'viewoptions' contains "folds" but not "options".
@@ -6445,7 +6445,7 @@ istermoption_idx(int opt_idx)
     return istermoption(&options[opt_idx]);
 }
 
-#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 /*
  * Unset local option value, similar to ":set opt<".
  */
@@ -6966,7 +6966,7 @@ get_option_var(int opt_idx)
     return options[opt_idx].var;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the full name of the option at 'opt_idx'
  */
@@ -8744,7 +8744,7 @@ get_bkc_flags(buf_T *buf)
     return buf->b_bkc_flags ? buf->b_bkc_flags : bkc_flags;
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * Get the local or global value of 'formatlistpat'.
  */
@@ -8767,7 +8767,7 @@ get_ve_flags(void)
 	    & ~(VE_NONE | VE_NONEU);
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * Get the local or global value of 'showbreak'.
  */
@@ -8782,7 +8782,7 @@ get_showbreak_value(win_T *win)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Get window or buffer local options.
  */
@@ -8821,7 +8821,7 @@ get_winbuf_options(int bufopt)
 }
 #endif
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 /*
  * This is called when 'culopt' is changed
  */
@@ -8978,7 +8978,7 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 #endif
 }
 
-#if defined(FEAT_TABPANEL) || defined(PROTO)
+#if defined(FEAT_TABPANEL)
 /*
  * Process the new 'showtabpanel' option value.
  */
@@ -8990,7 +8990,7 @@ did_set_showtabpanel(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     static void
 didset_options_sctx(int opt_flags, char **buf)
 {

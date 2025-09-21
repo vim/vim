@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL)
 
 /*
  * Use this to adjust the score after finding suggestions, based on the

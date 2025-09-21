@@ -19,7 +19,7 @@
 #include "vim.h"
 #include "xdiff/xdiff.h"
 
-#if defined(FEAT_DIFF) || defined(PROTO)
+#if defined(FEAT_DIFF)
 
 static int diff_busy = FALSE;	    // using diff structs, don't change them
 static int diff_need_update = FALSE; // ex_diffupdate needs to be called
@@ -3822,7 +3822,7 @@ diff_find_change(
     return added;
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * Return TRUE if line "lnum" is not close to a diff block, this line should
  * be in a fold.
@@ -4668,7 +4668,7 @@ xdiff_out_unified(
 
 #endif	// FEAT_DIFF
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 /*
  * "diff_filler()" function

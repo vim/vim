@@ -151,7 +151,7 @@ EXTERN_C void boot_DynaLoader(pTHX_ CV*);
 /*
  * For dynamic linked perl.
  */
-#if defined(DYNAMIC_PERL) || defined(PROTO)
+#if defined(DYNAMIC_PERL)
 
 # ifndef DYNAMIC_PERL /* just generating prototypes */
 #  ifdef MSWIN
