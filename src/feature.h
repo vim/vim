@@ -341,7 +341,7 @@
  * +syntax		syntax highlighting.  When using this, it's a good
  *			idea to have +eval too.
  */
-#if defined(FEAT_NORMAL) || defined(PROTO)
+#if defined(FEAT_NORMAL)
 # define FEAT_SYN_HL
 #endif
 
@@ -356,14 +356,14 @@
 /*
  * +spell		spell checking
  */
-#if (defined(FEAT_NORMAL) || defined(PROTO))
+#if defined(FEAT_NORMAL)
 # define FEAT_SPELL
 #endif
 
 /*
  * +cryptv		Encryption (originally by Mohsin Ahmed <mosh@sasi.com>).
  */
-#if defined(FEAT_NORMAL) && !defined(FEAT_CRYPT) || defined(PROTO)
+#if defined(FEAT_NORMAL) && !defined(FEAT_CRYPT)
 # define FEAT_CRYPT
 #endif
 

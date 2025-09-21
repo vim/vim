@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+#if defined(FEAT_SIGNS)
 
 /*
  * Struct to hold the sign properties.
@@ -675,7 +675,7 @@ buf_findsign_id(buf_T *buf, // buffer whose sign we are searching for
     return 0;
 }
 
-# if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+# if defined(FEAT_NETBEANS_INTG)
 /*
  * See if a given type of sign exists on a specific line.
  */
@@ -699,7 +699,7 @@ buf_findsigntype_id(buf_T *buf, // buffer whose sign we are searching for
     return 0;
 }
 
-#  if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+#  if defined(FEAT_SIGN_ICONS)
 /*
  * Return the number of icons on the given line.
  */
@@ -1919,7 +1919,7 @@ sign_get_placed(buf_T *buf,
     }
 }
 
-# if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+# if defined(FEAT_SIGN_ICONS)
 /*
  * Allocate the icons.  Called when the GUI has started.  Allows defining
  * signs before it starts.
@@ -2040,7 +2040,7 @@ sign_undefine(sign_T *sp, sign_T *sp_prev)
     vim_free(sp);
 }
 
-# if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+# if defined(FEAT_SIGN_ICONS)
 void *
 sign_get_image(int typenr) // the attribute which may have a sign
 {

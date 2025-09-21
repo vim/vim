@@ -17,7 +17,7 @@
 # define MSWIN
 #endif
 
-#if defined(MSWIN) && !defined(PROTO)
+#if defined(MSWIN)
 # include <io.h>
 #endif
 

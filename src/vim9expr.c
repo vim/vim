@@ -14,7 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 // flag passed from compile_subscript() to compile_load_scriptvar()
 static int paren_follows_after_expr = 0;

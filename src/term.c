@@ -1388,7 +1388,7 @@ builtin_tcap_T builtin_terminals[] = {
     {NULL,	    NULL},  // end marker
 };
 
-#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+#if defined(FEAT_TERMGUICOLORS)
     static guicolor_T
 termgui_mch_get_color(char_u *name)
 {
@@ -1518,7 +1518,7 @@ init_term_props(int all)
 	    term_props[i].tpr_status = TPR_UNKNOWN;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     void
 f_terminalprops(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -2389,7 +2389,7 @@ set_termname(char_u *term)
     return OK;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
 
 # ifdef HAVE_DEL_CURTERM
 #  include <term.h>	    // declares cur_term
@@ -2464,7 +2464,7 @@ vim_tgetstr(char *s, char_u **pp)
 }
 #endif // HAVE_TGETENT
 
-#if defined(HAVE_TGETENT) && (defined(UNIX) || defined(VMS) || defined(MACOS_X)) || defined(PROTO)
+#if defined(HAVE_TGETENT) && (defined(UNIX) || defined(VMS) || defined(MACOS_X))
 /*
  * Get Columns and Rows from the termcap. Used after a window signal if the
  * ioctl() fails. It doesn't make sense to call tgetent each time if the "co"
@@ -2641,7 +2641,7 @@ term_7to8bit(char_u *p)
     return 0;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if defined(FEAT_GUI)
     int
 term_is_gui(char_u *name)
 {
@@ -2649,7 +2649,7 @@ term_is_gui(char_u *name)
 }
 #endif
 
-#if !defined(HAVE_TGETENT) || defined(AMIGA) || defined(PROTO)
+#if !defined(HAVE_TGETENT) || defined(AMIGA)
 
     char_u *
 tltoa(unsigned long i)
@@ -3030,7 +3030,7 @@ term_delete_lines(int line_count)
     OUT_STR(tgoto((char *)T_CDL, 0, line_count));
 }
 
-#if defined(UNIX) || defined(VMS) || defined(PROTO)
+#if defined(UNIX) || defined(VMS)
     void
 term_enable_mouse(int enable)
 {
@@ -3039,7 +3039,7 @@ term_enable_mouse(int enable)
 }
 #endif
 
-#if defined(HAVE_TGETENT) || defined(PROTO)
+#if defined(HAVE_TGETENT)
     void
 term_set_winpos(int x, int y)
 {
@@ -3051,7 +3051,7 @@ term_set_winpos(int x, int y)
     OUT_STR(tgoto((char *)T_CWP, y, x));
 }
 
-# if defined(FEAT_TERMRESPONSE) || defined(PROTO)
+# if defined(FEAT_TERMRESPONSE)
 /*
  * Return TRUE if we can request the terminal for a response.
  */
@@ -3105,7 +3105,7 @@ static int winpos_x = -1;
 static int winpos_y = -1;
 static int did_request_winpos = 0;
 
-#  if defined(FEAT_EVAL) || defined(FEAT_TERMINAL) || defined(PROTO)
+#  if defined(FEAT_EVAL) || defined(FEAT_TERMINAL)
 /*
  * Try getting the Vim window position from the terminal.
  * Returns OK or FAIL.
@@ -3276,7 +3276,7 @@ term_bg_default(void)
 #endif
 }
 
-#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+#if defined(FEAT_TERMGUICOLORS)
 
 # define RED(rgb)   (((long_u)(rgb) >> 16) & 0xFF)
 # define GREEN(rgb) (((long_u)(rgb) >>  8) & 0xFF)
@@ -3333,7 +3333,7 @@ term_ul_rgb_color(guicolor_T rgb)
 }
 #endif
 
-#if (defined(UNIX) || defined(VMS) || defined(MACOS_X)) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
 /*
  * Generic function to set window title, using t_ts and t_fs.
  */
@@ -3502,8 +3502,7 @@ ttest(int pairs)
     }
 }
 
-#if (defined(FEAT_GUI) && (defined(FEAT_MENU) || !defined(USE_ON_FLY_SCROLL))) \
-	|| defined(PROTO)
+#if defined(FEAT_GUI) && (defined(FEAT_MENU) || !defined(USE_ON_FLY_SCROLL))
 /*
  * Represent the given long_u as individual bytes, with the most significant
  * byte first, and store them in dst.
@@ -4080,7 +4079,7 @@ stoptermcap(void)
     out_flush();
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
+#if defined(FEAT_TERMRESPONSE)
 /*
  * Request version string (for xterm) when needed.
  * Only do this after switching to raw mode, otherwise the result will be
@@ -4349,7 +4348,7 @@ cursor_unsleep(void)
     cursor_on();
 }
 
-#if defined(CURSOR_SHAPE) || defined(PROTO)
+#if defined(CURSOR_SHAPE)
 /*
  * Set cursor shape to match Insert or Replace mode.
  */
@@ -4401,7 +4400,7 @@ term_cursor_mode(int forced)
     }
 }
 
-# if defined(FEAT_TERMINAL) || defined(PROTO)
+# if defined(FEAT_TERMINAL)
     void
 term_cursor_color(char_u *color)
 {
@@ -4854,7 +4853,7 @@ static linenr_T orig_topline = 0;
 static int orig_topfill = 0;
 # endif
 #endif
-#if defined(CHECK_DOUBLE_CLICK) || defined(PROTO)
+#if defined(CHECK_DOUBLE_CLICK)
 /*
  * Checking for double-clicks ourselves.
  * "orig_topline" is used to avoid detecting a double-click when the window
@@ -6735,7 +6734,7 @@ handle_osc:
     return 0;			    // no match found
 }
 
-#if (defined(FEAT_TERMINAL) && defined(FEAT_TERMRESPONSE)) || defined(PROTO)
+#if defined(FEAT_TERMINAL) && defined(FEAT_TERMRESPONSE)
 /*
  * Get the text foreground color, if known.
  */
@@ -7237,7 +7236,7 @@ show_one_termcode(char_u *name, char_u *code, int printit)
     return len;
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
+#if defined(FEAT_TERMRESPONSE)
 /*
  * For Xterm >= 140 compiled with OPT_TCAP_QUERY: Obtain the actually used
  * termcap codes from the terminal itself.
@@ -7448,7 +7447,7 @@ check_for_codes_from_term(void)
 }
 #endif
 
-#if (defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))) || defined(PROTO)
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 static char ksme_str[20];
 static char ksmr_str[20];
 static char ksmd_str[20];
@@ -7600,8 +7599,7 @@ swap_tcap(void)
 #endif
 
 
-#if (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))) || defined(FEAT_TERMINAL) \
-	|| defined(PROTO)
+#if (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))) || defined(FEAT_TERMINAL)
 static int cube_value[] = {
     0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF
 };

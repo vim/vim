@@ -30,19 +30,16 @@
 #include <signal.h>
 #include <limits.h>
 
-// cproto fails on missing include files
-#ifndef PROTO
-# include <process.h>
-# include <winternl.h>
-# include <direct.h>
+#include <process.h>
+#include <winternl.h>
+#include <direct.h>
 
-# if !defined(FEAT_GUI_MSWIN)
-#  include <shellapi.h>
-# endif
+#if !defined(FEAT_GUI_MSWIN)
+# include <shellapi.h>
+#endif
 
-# ifdef FEAT_JOB_CHANNEL
-#  include <tlhelp32.h>
-# endif
+#ifdef FEAT_JOB_CHANNEL
+# include <tlhelp32.h>
 #endif
 
 // Record all output and all keyboard & mouse input
@@ -517,7 +514,7 @@ vimLoadLib(const char *name)
     return dll;
 }
 
-#if defined(VIMDLL) || defined(PROTO)
+#if defined(VIMDLL)
 /*
  * Check if the current executable file is for the GUI subsystem.
  */
@@ -540,7 +537,7 @@ mch_is_gui_executable(void)
 #endif
 
 #if defined(DYNAMIC_ICONV) || defined(DYNAMIC_GETTEXT) \
-    || defined(FEAT_PYTHON3) || defined(PROTO)
+    || defined(FEAT_PYTHON3)
 /*
  * Get related information about 'funcname' which is imported by 'hInst'.
  * If 'info' is 0, return the function address.
@@ -647,7 +644,7 @@ hook_dll_import_func(HINSTANCE hInst, const char *funcname, const void *hook)
 }
 #endif
 
-#if defined(FEAT_PYTHON3) || defined(PROTO)
+#if defined(FEAT_PYTHON3)
 /*
  * Check if the specified DLL is a function forwarder.
  * If yes, return the instance of the forwarded DLL.
@@ -706,7 +703,7 @@ get_forwarded_dll(HINSTANCE hInst)
 }
 #endif
 
-#if defined(DYNAMIC_GETTEXT) || defined(PROTO)
+#if defined(DYNAMIC_GETTEXT)
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
 #  define GETTEXT_DLL_ALT1 "libintl-8.dll"
@@ -873,9 +870,7 @@ null_libintl_wputenv(const wchar_t *envstring UNUSED)
 #endif
 
 #ifdef HAVE_ACL
-# ifndef PROTO
-#  include <aclapi.h>
-# endif
+# include <aclapi.h>
 # ifndef PROTECTED_DACL_SECURITY_INFORMATION
 #  define PROTECTED_DACL_SECURITY_INFORMATION	0x80000000L
 # endif
@@ -1441,7 +1436,7 @@ mch_setmouse(int on)
 }
 
 
-# if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+# if defined(FEAT_BEVAL_TERM)
 /*
  * Called when 'balloonevalterm' changed.
  */
@@ -2065,7 +2060,7 @@ test_mswin_event(char_u *event, dict_T *args)
 }
 #endif // FEAT_EVAL
 
-#if defined(MCH_CURSOR_SHAPE) || defined(PROTO)
+#if defined(MCH_CURSOR_SHAPE)
 /*
  * Set the shape of the cursor.
  * 'thickness' can be from 1 (thin) to 99 (block)
@@ -2332,7 +2327,7 @@ mch_char_avail(void)
     return WaitForChar(0L, FALSE);
 }
 
-# if defined(FEAT_TERMINAL) || defined(PROTO)
+# if defined(FEAT_TERMINAL)
 /*
  * Check for any pending input or messages.
  */
@@ -4811,7 +4806,7 @@ vim_shell_execute(
 }
 
 
-#if defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_MSWIN)
 
 /*
  * Specialised version of system() for Win32 GUI mode.
@@ -5812,7 +5807,7 @@ mch_call_shell(
     return x;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
     static HANDLE
 job_io_file_open(
 	char_u *fname,
@@ -8601,7 +8596,7 @@ vtp_flag_init(void)
 	conpty_fix_type = 1;
 }
 
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
     static void
 vtp_init(void)
@@ -8868,7 +8863,7 @@ set_console_color_rgb(void)
 # endif
 }
 
-# if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+# if defined(FEAT_TERMGUICOLORS)
     void
 get_default_console_color(
     int *cterm_fg,
@@ -9019,7 +9014,7 @@ get_conpty_fix_type(void)
     return conpty_fix_type;
 }
 
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     void
 resize_console_buf(void)
 {
@@ -9068,7 +9063,7 @@ GetWin32Error(void)
     return msg;
 }
 
-#if defined(FEAT_RELTIME) || defined(PROTO)
+#if defined(FEAT_RELTIME)
 static HANDLE   timer_handle;
 static int      timer_active = FALSE;
 

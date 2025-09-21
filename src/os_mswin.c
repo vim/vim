@@ -19,21 +19,18 @@
 #include <signal.h>
 #include <limits.h>
 
-// cproto fails on missing include files
-#ifndef PROTO
-# include <process.h>
-# include <direct.h>
+#include <process.h>
+#include <direct.h>
 
-# if !defined(FEAT_GUI_MSWIN)
-#  include <shellapi.h>
-# endif
+#if !defined(FEAT_GUI_MSWIN)
+# include <shellapi.h>
+#endif
 
-# if defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)
-#  include <dlgs.h>
-#  include <winspool.h>
-#  include <commdlg.h>
-# endif
-#endif // PROTO
+#if defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)
+# include <dlgs.h>
+# include <winspool.h>
+# include <commdlg.h>
+#endif
 
 // Record all output and all keyboard & mouse input
 // #define MCH_WRITE_DUMP
@@ -66,7 +63,7 @@ SaveInst(HINSTANCE hInst)
     g_hinst = hInst;
 }
 
-#if defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_MSWIN)
 /*
  * GUI version of mch_exit().
  * Shut down and exit with status `r'
@@ -512,7 +509,7 @@ vim_stat(const char *name, stat_T *stp)
     return stat_impl(name, stp, TRUE);
 }
 
-#if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) || defined(PROTO)
+#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
     void
 mch_settmode(tmode_T tmode UNUSED)
 {
@@ -552,7 +549,7 @@ mch_suspend(void)
     suspend_shell();
 }
 
-#if defined(USE_MCH_ERRMSG) || defined(PROTO)
+#if defined(USE_MCH_ERRMSG)
 
 # ifdef display_errors
 #  undef display_errors
@@ -692,7 +689,7 @@ mch_char_avail(void)
     return TRUE;
 }
 
-# if defined(FEAT_TERMINAL) || defined(PROTO)
+# if defined(FEAT_TERMINAL)
 /*
  * Check for any pending input or messages.
  */
@@ -706,7 +703,7 @@ mch_check_messages(void)
 #endif
 
 
-#if defined(FEAT_LIBCALL) || defined(PROTO)
+#if defined(FEAT_LIBCALL)
 /*
  * Call a DLL routine which takes either a string or int param
  * and returns an allocated string.
@@ -969,7 +966,7 @@ Trace(
 
 #endif //_DEBUG
 
-#if !defined(FEAT_GUI) || defined(VIMDLL) || defined(PROTO)
+#if !defined(FEAT_GUI) || defined(VIMDLL)
 extern HWND g_hWnd;	// This is in os_win32.c.
 
 /*
@@ -1021,7 +1018,7 @@ mch_set_winpos(int x, int y)
 }
 #endif
 
-#if (defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)) || defined(PROTO)
+#if defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)
 
 //=================================================================
 // Win32 printer stuff
@@ -1698,10 +1695,8 @@ mch_print_set_fg(long_u fgcol)
 
 
 
-#if defined(FEAT_SHORTCUT) || defined(PROTO)
-# ifndef PROTO
-#  include <shlobj.h>
-# endif
+#if defined(FEAT_SHORTCUT)
+# include <shlobj.h>
 
 # define is_path_sep(c)	    ((c) == L'\\' || (c) == L'/')
 
@@ -1883,7 +1878,7 @@ mch_resolve_path(char_u *fname, int reparse_point)
 }
 #endif
 
-#if (defined(FEAT_EVAL) && (!defined(FEAT_GUI) || defined(VIMDLL))) || defined(PROTO)
+#if defined(FEAT_EVAL) && (!defined(FEAT_GUI) || defined(VIMDLL))
 /*
  * Bring ourselves to the foreground.  Does work if the OS doesn't allow it.
  */
@@ -1896,7 +1891,7 @@ win32_set_foreground(void)
 }
 #endif
 
-#if defined(FEAT_CLIENTSERVER) || defined(PROTO)
+#if defined(FEAT_CLIENTSERVER)
 /*
  * Client-server code for Vim
  *
@@ -2630,8 +2625,7 @@ serverProcessPendingMessages(void)
 
 #endif // FEAT_CLIENTSERVER
 
-#if defined(FEAT_GUI) || (defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)) \
-	|| defined(PROTO)
+#if defined(FEAT_GUI) || (defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT))
 
 struct charset_pair
 {
@@ -3240,7 +3234,7 @@ theend:
 
 #endif // defined(FEAT_GUI) || defined(FEAT_PRINTER)
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Initialize the Winsock dll.
  */

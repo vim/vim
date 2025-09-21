@@ -130,7 +130,7 @@ static void keycode_trans_strategy_init(void)
 
 }
 
-#if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
+#if defined(FEAT_RENDER_OPTIONS)
     int
 gui_mch_set_rendering_options(char_u *s)
 {
@@ -272,12 +272,9 @@ gui_mch_set_rendering_options(char_u *s)
 # include <tchar.h>
 #endif
 
-// cproto fails on missing include files
-#ifndef PROTO
-# include <shellapi.h>
-# include <commctrl.h>
-# include <windowsx.h>
-#endif // PROTO
+#include <shellapi.h>
+#include <commctrl.h>
+#include <windowsx.h>
 
 #ifdef FEAT_MENU
 # define MENUHINTS		// show menu hints in command line
@@ -1887,7 +1884,7 @@ gui_mch_get_font(
     return font;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the name of font "font" in allocated memory.
  * Don't know how to get the actual name, thus use the provided name.
@@ -2719,7 +2716,7 @@ gui_mch_set_menu_pos(
     // It will be in the right place anyway
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Make menu item hidden or not hidden
  */
@@ -2760,7 +2757,7 @@ gui_mch_get_rgb(guicolor_T pixel)
 							   + GetBValue(pixel));
 }
 
-#if defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG)
 /*
  * Convert pixels in X to dialog units
  */
@@ -2878,7 +2875,7 @@ CenterWindow(
 }
 #endif // FEAT_GUI_DIALOG
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
     void
 gui_mch_show_toolbar(int showit)
 {
@@ -2901,7 +2898,7 @@ gui_mch_show_toolbar(int showit)
 
 #endif
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
     static void
 add_tabline_popup_menu_entry(HMENU pmenu, UINT item_id, char_u *item_text)
 {
@@ -3930,7 +3927,7 @@ gui_mch_settitle(
     set_window_title(s_hwnd, (title == NULL ? "VIM" : (char *)title));
 }
 
-#if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+#if defined(FEAT_MOUSESHAPE)
 // Table for shape IDCs.  Keep in sync with the mshape_names[] table in
 // misc2.c!
 static LPCSTR mshape_idcs[] =
@@ -3981,7 +3978,7 @@ mch_set_mouse_shape(int shape)
 }
 #endif
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 /*
  * Wide version of convert_filter().
  */
@@ -5313,7 +5310,7 @@ ole_error(char *arg)
 }
 #endif
 
-#if defined(GUI_MAY_SPAWN) || defined(PROTO)
+#if defined(GUI_MAY_SPAWN)
     static char *
 gvim_error(void)
 {
@@ -6157,7 +6154,7 @@ GetResultStr(HWND hwnd, int GCS, int *lenp)
 #endif
 
 // For global functions we need prototypes.
-#if defined(FEAT_MBYTE_IME) || defined(PROTO)
+#if defined(FEAT_MBYTE_IME)
 
 /*
  * set font to IM.
@@ -6773,7 +6770,7 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 }
 
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Add a sub menu to the menu bar.
  */
@@ -6858,7 +6855,7 @@ gui_make_popup(char_u *path_name, int mouse_pos)
     gui_mch_show_popupmenu_at(menu, (int)p.x, (int)p.y);
 }
 
-# if defined(FEAT_TEAROFF) || defined(PROTO)
+# if defined(FEAT_TEAROFF)
 /*
  * Given a menu descriptor, e.g. "File.New", find it in the menu hierarchy and
  * create it as a pseudo-"tearoff menu".
@@ -7074,7 +7071,7 @@ gui_mch_menu_grey(
 #define add_word(x)		*p++ = (x)
 #define add_long(x)		dwp = (DWORD *)p; *dwp++ = (x); p = (WORD *)dwp
 
-#if defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG)
 /*
  * stuff for dialogs
  */
@@ -8228,7 +8225,7 @@ gui_mch_tearoff(
 }
 #endif
 
-#if defined(FEAT_TOOLBAR) || defined(PROTO)
+#if defined(FEAT_TOOLBAR)
 # include "gui_w32_rc.h"
 
 /*
@@ -8371,7 +8368,7 @@ get_toolbar_bitmap(vimmenu_T *menu)
 }
 #endif
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
     static void
 initialise_tabline(void)
 {
@@ -8509,7 +8506,7 @@ tabline_wndproc(
 }
 #endif
 
-#if defined(FEAT_OLE) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_OLE) || defined(FEAT_EVAL)
 /*
  * Make the GUI window come to the foreground.
  */
@@ -8576,7 +8573,7 @@ dyn_imm_load(void)
 
 #endif
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+#if defined(FEAT_SIGN_ICONS)
 
 # ifdef FEAT_XPM_W32
 #  define IMAGE_XPM   100
@@ -8735,7 +8732,7 @@ gui_mch_destroy_sign(void *sign)
 }
 #endif
 
-#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI)
 
 /*
  * BALLOON-EVAL IMPLEMENTATION FOR WINDOWS.
@@ -8992,7 +8989,7 @@ gui_mch_destroy_beval_area(BalloonEval *beval)
 }
 #endif // FEAT_BEVAL_GUI
 
-#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG)
 /*
  * We have multiple signs to draw at the same location. Draw the
  * multi-sign indicator (down-arrow) instead. This is the Win32 version.
@@ -9028,7 +9025,7 @@ netbeans_draw_multisign_indicator(int row)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 // TODO: at the moment, this is just a copy of test_gui_mouse_event.
 // But, we could instead generate actual Win32 mouse event messages,

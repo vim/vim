@@ -1376,7 +1376,7 @@ pum_enough_matches(void)
     return (i >= 2);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Allocate Dict for the completed item.
  * { word, abbr, menu, kind, info }
@@ -3651,7 +3651,7 @@ theend:
 }
 #endif // FEAT_COMPL_FUNC
 
-#if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
 
     static inline int
 get_user_highlight_attr(char_u *hlname)
@@ -7474,7 +7474,7 @@ quote_meta(char_u *dest, char_u *src, int len)
     return m;
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 free_insexpand_stuff(void)
 {

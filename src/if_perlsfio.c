@@ -15,7 +15,7 @@
 
 #include "vim.h"
 
-#if defined(USE_SFIO) || defined(PROTO)
+#if defined(USE_SFIO)
 
 #ifndef USE_SFIO	// just generating prototypes
 # define Sfio_t int

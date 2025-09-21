@@ -1321,7 +1321,7 @@ nfa_regatom(void)
 
 	case Magic('$'):
 	    EMIT(NFA_EOL);
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 	    had_eol = TRUE;
 #endif
 	    break;
@@ -1347,7 +1347,7 @@ nfa_regatom(void)
 	    if (c == '$')	// "\_$" is end-of-line
 	    {
 		EMIT(NFA_EOL);
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL)
 		had_eol = TRUE;
 #endif
 		break;

@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_DIGRAPHS) || defined(PROTO)
+#if defined(FEAT_DIGRAPHS)
 
 typedef int result_T;
 
@@ -2066,7 +2066,7 @@ digraph_set_common(typval_T *argchars, typval_T *argdigraph)
 
 #endif // FEAT_DIGRAPHS
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "digraph_get()" function
  */
@@ -2215,7 +2215,7 @@ f_digraph_setlist(typval_T * argvars, typval_T *rettv)
 #endif // FEAT_EVAL
 
 
-#if defined(FEAT_KEYMAP) || defined(PROTO)
+#if defined(FEAT_KEYMAP)
 
 // structure used for b_kmap_ga.ga_data
 typedef struct

@@ -622,7 +622,7 @@ gui_x11_expose_cb(
     gui_mch_update();
 }
 
-#if (defined(FEAT_NETBEANS_INTG) && defined(FEAT_GUI_MOTIF)) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG) && defined(FEAT_GUI_MOTIF)
 /*
  * This function fills in the XRectangle object with the current x,y
  * coordinates and height, width so that an XtVaSetValues to the same shell of
@@ -1546,7 +1546,7 @@ gui_mch_open(void)
     return OK;
 }
 
-#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI)
 /*
  * Convert the tooltip fontset name to an XFontSet.
  */
@@ -1567,7 +1567,7 @@ gui_init_tooltip_font(void)
 }
 #endif
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 // Convert the menu font/fontset name to an XFontStruct/XFontset
     void
 gui_init_menu_font(void)
@@ -1865,7 +1865,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
     return (GuiFont)font;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return the name of font "font" in allocated memory.
  */
@@ -1950,7 +1950,7 @@ gui_mch_set_font(GuiFont font)
 #endif
 }
 
-#if defined(FEAT_XFONTSET) || defined(PROTO)
+#if defined(FEAT_XFONTSET)
 /*
  * Set the current text fontset.
  * Adjust the ascent, in case it's different.
@@ -1973,7 +1973,7 @@ gui_mch_free_font(GuiFont font)
 	XFreeFont(gui.dpy, (XFontStruct *)font);
 }
 
-#if defined(FEAT_XFONTSET) || defined(PROTO)
+#if defined(FEAT_XFONTSET)
 /*
  * If a fontset is not going to be used, free its structure.
  */
@@ -2482,7 +2482,7 @@ gui_mch_iconify(void)
     XIconifyWindow(gui.dpy, XtWindow(vimShell), DefaultScreen(gui.dpy));
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Bring the Vim window to the foreground.
  */
@@ -2792,7 +2792,7 @@ clip_mch_set_selection(
     clip_x11_set_selection(cbd);
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Menu stuff.
  */
@@ -3103,7 +3103,7 @@ gui_mch_setmouse(int x, int y)
 	XWarpPointer(gui.dpy, (Window)0, gui.wid, 0, 0, 0, 0, x, y);
 }
 
-#if (defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)) || defined(PROTO)
+#if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     XButtonPressedEvent *
 gui_x11_get_last_mouse_event(void)
 {
@@ -3111,7 +3111,7 @@ gui_x11_get_last_mouse_event(void)
 }
 #endif
 
-#if defined(FEAT_SIGN_ICONS) || defined(PROTO)
+#if defined(FEAT_SIGN_ICONS)
 
 // Signs are currently always 2 chars wide.  Hopefully the font is big enough
 // to provide room for the bitmap!
@@ -3208,7 +3208,7 @@ gui_mch_mousehide(
 #endif
 }
 
-#if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+#if defined(FEAT_MOUSESHAPE)
 
 // Table for shape IDs.  Keep in sync with the mshape_names[] table in
 // misc2.c!
@@ -3263,7 +3263,7 @@ mch_set_mouse_shape(int shape)
 }
 #endif
 
-#if (defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)) || defined(PROTO)
+#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
 /*
  * Set the balloon-eval used for the tooltip of a toolbar menu item.
  * The check for a non-toolbar item was added, because there is a crash when

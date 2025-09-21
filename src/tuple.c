@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 // Tuple heads for garbage collection.
 static tuple_T		*first_tuple = NULL;	// list of all tuples
