@@ -637,8 +637,8 @@ changed_common(
     changed();
 
 #ifdef FEAT_EVAL
-    // Immediately send this change to any listeners that require changes no to
-    // be buffered.
+    // Immediately send this change to any listeners that require changes not
+    // to be buffered.
     invoke_sync_listeners(curbuf, lnum, col, lnume, xtra);
 
     // If there are any listeners accepting buffered changes then add changes
