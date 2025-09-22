@@ -204,7 +204,7 @@ valid_yank_reg(
     else if (regname == '*' || regname == '+')
     {
 	// Warn about missing clipboard support once
-	msg_warn_missing_clipboard();
+	msg_warn_missing_clipboard(true, true);
 	return FALSE;
     }
 #endif
@@ -1189,7 +1189,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	(!clip_plus.available && oap->regname == '+'))
     {
 	oap->regname = 0;
-	msg_warn_missing_clipboard();
+	msg_warn_missing_clipboard(!clip_plus.available, !clip_star.available);
     }
 #endif
 

@@ -32,6 +32,80 @@
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)
 
 #if defined(FEAT_WAYLAND_CLIPBOARD)
+
+# include "wayland.h"
+
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
+
+// Structures used for focus stealing
+typedef struct {
+    struct wl_shm_pool	*pool;
+    int			fd;
+
+    struct wl_buffer	*buffer;
+    bool		available;
+
+    int			width;
+    int			height;
+    int			stride;
+    int			size;
+} clip_wl_buffer_store_T;
+
+typedef struct {
+    void		    *user_data;
+    void		    (*on_focus)(void *data, uint32_t serial);
+
+    struct wl_surface	    *surface;
+    struct wl_keyboard	    *keyboard;
+
+    struct {
+	struct xdg_surface  *surface;
+	struct xdg_toplevel *toplevel;
+    } shell;
+
+    bool got_focus;
+} clip_wl_fs_surface_T; // fs = focus steal
+
+# endif // FEAT_WAYLAND_CLIPBOARD_FS
+
+// Represents either the regular or primary selection
+typedef struct {
+    char_u		*contents;	// Non-null if we own selection,
+					// contains the data to send to other
+					// clients.
+    vwl_data_source_T	*source;	// Non-NULL if we own the selection,
+					// else NULL if we don't.
+    vwl_data_offer_T	*offer;		// Current offer for the selection
+
+# ifdef FEAT_WAYLAND_CLIPBOARD_FS
+    bool		requires_focus;	// If focus needs to be given to us to
+					// work
+# endif
+    bool		own_success;	// Used by clip_wl_own_selection()
+    bool		available;	// If selection is ready to serve/use
+
+    // These may point to the same proxy as the other selection
+    vwl_data_device_manager_T	*manager;
+    vwl_data_device_T		*device;
+} clip_wl_selection_T;
+
+// Represents the clipboard for the global Wayland connection, for the chosen
+// seat (using the 'wl_seat' option)
+typedef struct {
+    vwl_seat_T *seat;
+
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+    clip_wl_buffer_store_T *fs_buffer;
+#endif
+
+    clip_wl_selection_T regular;
+    clip_wl_selection_T primary;
+
+    // Array of file descriptors of clients we are sending data to. These should
+    // be polled for POLLOUT and have the respective callback called for each.
+    garray_T write_fds;
+} clip_wl_T;
+
 // Mime types we support sending and receiving
 // Mimes with a lower index in the array are prioritized first when we are
 // receiving data.
@@ -45,21 +119,20 @@ static const char *supported_mimes[] = {
     "TEXT"
 };
 
-static void clip_wl_receive_data(Clipboard_T *cbd,
-	const char *mime_type, int fd);
+clip_wl_T clip_wl;
+
+static void
+clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd);
 static void clip_wl_request_selection(Clipboard_T *cbd);
-static void clip_wl_send_data(const char *mime_type, int fd,
-	wayland_selection_T);
 static int clip_wl_own_selection(Clipboard_T *cbd);
 static void clip_wl_lose_selection(Clipboard_T *cbd);
 static void clip_wl_set_selection(Clipboard_T *cbd);
-static void clip_wl_selection_cancelled(wayland_selection_T selection);
 
-#if defined(USE_SYSTEM) && defined(PROTO)
-static int clip_wl_owner_exists(Clipboard_T *cbd);
-#endif
+# if defined(USE_SYSTEM) || defined(PROTO)
+static bool clip_wl_owner_exists(Clipboard_T *cbd);
+# endif
 
-#endif
+#endif // FEAT_WAYLAND_CLIPBOARD
 
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
@@ -97,6 +170,22 @@ skip:
 	    break;
 	cb = &clip_plus;
     }
+}
+
+    static void
+clip_init_single(Clipboard_T *cb, int can_use)
+{
+    // No need to init again if cbd is already available
+    if (can_use && cb->available)
+	return;
+
+    cb->available  = can_use;
+    cb->owned      = FALSE;
+    cb->start.lnum = 0;
+    cb->start.col  = 0;
+    cb->end.lnum   = 0;
+    cb->end.col    = 0;
+    cb->state      = SELECT_CLEARED;
 }
 
 /*
@@ -2207,13 +2296,13 @@ clip_yank_selection(
     str_to_reg(y_ptr, type, str, len, -1, FALSE);
 }
 
-/*
- * Convert the '*'/'+' register into a GUI selection string returned in *str
- * with length *len.
- * Returns the motion type, or -1 for failure.
- */
-    int
-clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd)
+    static int
+clip_convert_selection_offset(
+	char_u	    **str,
+	long_u	    *len,
+	int	    offset, // Extra space to add in *str and the offset to
+			    // place the actual string in *str.
+	Clipboard_T *cbd)
 {
     char_u	*p;
     int		lnum;
@@ -2244,11 +2333,13 @@ clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd)
     if (y_ptr->y_type == MCHAR && *len >= eolsize)
 	*len -= eolsize;
 
+    *len += offset;
     p = *str = alloc(*len + 1);	// add one to avoid zero
     if (p == NULL)
 	return -1;
+    p += offset;
     lnum = 0;
-    for (i = 0, j = 0; i < (int)*len; i++, j++)
+    for (i = 0, j = 0; i < (int)*len - offset; i++, j++)
     {
 	if (y_ptr->y_array[lnum].string[j] == '\n')
 	    p[i] = NUL;
@@ -2265,6 +2356,17 @@ clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd)
 	    p[i] = y_ptr->y_array[lnum].string[j];
     }
     return y_ptr->y_type;
+}
+
+/*
+ * Convert the '*'/'+' register into a GUI selection string returned in *str
+ * with length *len.
+ * Returns the motion type, or -1 for failure.
+ */
+    int
+clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd)
+{
+    return clip_convert_selection_offset(str, len, 0, cbd);
 }
 
 /*
@@ -2332,12 +2434,591 @@ adjust_clip_reg(int *rp)
     if ((!clip_star.available && *rp == '*') ||
 	   (!clip_plus.available && *rp == '+'))
     {
-	msg_warn_missing_clipboard();
+	msg_warn_missing_clipboard(!clip_plus.available, !clip_star.available);
 	*rp = 0;
     }
 }
 
-#if defined(FEAT_WAYLAND_CLIPBOARD) || defined(PROTO)
+#if defined(FEAT_WAYLAND_CLIPBOARD)
+
+    static clip_wl_selection_T *
+clip_wl_get_selection(wayland_selection_T sel)
+{
+    switch (sel)
+    {
+	case WAYLAND_SELECTION_REGULAR:
+	    return &clip_wl.regular;
+	case WAYLAND_SELECTION_PRIMARY:
+	    return &clip_wl.primary;
+	default:
+	    return NULL;
+    }
+}
+
+    static clip_wl_selection_T *
+clip_wl_get_selection_from_cbd(Clipboard_T *cbd)
+{
+    if (cbd == &clip_plus)
+	return &clip_wl.regular;
+    else if (cbd == &clip_star)
+	return &clip_wl.primary;
+    else
+	return NULL;
+}
+
+    static Clipboard_T *
+clip_wl_get_cbd_from_selection(clip_wl_selection_T *sel)
+{
+    if (sel == &clip_wl.regular)
+	return &clip_plus;
+    else if (sel == &clip_wl.primary)
+	return &clip_star;
+    else
+	return NULL;
+}
+
+    static wayland_selection_T
+clip_wl_get_selection_type(clip_wl_selection_T *sel)
+{
+    if (sel == &clip_wl.regular)
+	return WAYLAND_SELECTION_REGULAR;
+    else if (sel == &clip_wl.primary)
+	return WAYLAND_SELECTION_PRIMARY;
+    else
+	return WAYLAND_SELECTION_NONE;
+}
+
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+/*
+ * If globals required for focus stealing method are available.
+ */
+    static bool
+clip_wl_focus_stealing_available(void)
+{
+    return wayland_ct->gobjects.wl_compositor != NULL &&
+	wayland_ct->gobjects.wl_shm != NULL &&
+	wayland_ct->gobjects.xdg_wm_base != NULL;
+}
+
+/*
+ * Called when compositor isn't using the buffer anymore, we can reuse it
+ * again.
+ */
+    static void
+wl_buffer_listener_release(
+	void		    *data,
+	struct wl_buffer    *buffer UNUSED)
+{
+    clip_wl_buffer_store_T *store = data;
+
+    store->available = true;
+}
+
+static struct wl_buffer_listener    wl_buffer_listener = {
+    .release	    = wl_buffer_listener_release
+};
+
+/*
+ * Destroy a buffer store structure.
+ */
+    static void
+clip_wl_destroy_buffer_store(clip_wl_buffer_store_T *store)
+{
+    if (store == NULL)
+	return;
+    if (store->buffer != NULL)
+	wl_buffer_destroy(store->buffer);
+    if (store->pool != NULL)
+	wl_shm_pool_destroy(store->pool);
+
+    close(store->fd);
+
+    vim_free(store);
+}
+
+/*
+ * Initialize a buffer and its backing memory pool.
+ */
+    static clip_wl_buffer_store_T *
+clip_wl_init_buffer_store(int width, int height)
+{
+    int			    fd, r;
+    clip_wl_buffer_store_T  *store;
+
+    store = alloc(sizeof(*store));
+
+    if (store == NULL)
+	return NULL;
+
+    store->available = false;
+
+    store->width = width;
+    store->height = height;
+    store->stride = store->width * 4;
+    store->size = store->stride * store->height;
+
+    fd = mch_create_anon_file();
+    r = ftruncate(fd, store->size);
+
+    if (r == -1)
+    {
+	if (fd >= 0)
+	    close(fd);
+	return NULL;
+    }
+
+    store->pool = wl_shm_create_pool(
+	    wayland_ct->gobjects.wl_shm,
+	    fd,
+	    store->size);
+    store->buffer = wl_shm_pool_create_buffer(
+	    store->pool,
+	    0,
+	    store->width,
+	    store->height,
+	    store->stride,
+	    WL_SHM_FORMAT_ARGB8888);
+
+    store->fd = fd;
+
+    wl_buffer_add_listener(store->buffer, &wl_buffer_listener, store);
+
+    if (vwl_connection_roundtrip(wayland_ct) == FAIL)
+    {
+	clip_wl_destroy_buffer_store(store);
+	return NULL;
+    }
+
+    store->available = true;
+
+    return store;
+}
+
+/*
+ * Configure xdg_surface
+ */
+    static void
+xdg_surface_listener_configure(
+	void		    *data UNUSED,
+	struct xdg_surface  *surface,
+	uint32_t	    serial)
+{
+    xdg_surface_ack_configure(surface, serial);
+}
+
+
+static struct xdg_surface_listener  xdg_surface_listener = {
+    .configure = xdg_surface_listener_configure
+};
+
+/*
+ * Destroy a focus stealing structure.
+ */
+    static void
+clip_wl_destroy_fs_surface(clip_wl_fs_surface_T *store)
+{
+    if (store == NULL)
+	return;
+    if (store->shell.toplevel != NULL)
+	xdg_toplevel_destroy(store->shell.toplevel);
+    if (store->shell.surface != NULL)
+	xdg_surface_destroy(store->shell.surface);
+    if (store->surface != NULL)
+	wl_surface_destroy(store->surface);
+    if (store->keyboard != NULL)
+    {
+	if (wl_keyboard_get_version(store->keyboard) >= 3)
+	    wl_keyboard_release(store->keyboard);
+	else
+	    wl_keyboard_destroy(store->keyboard);
+    }
+    vim_free(store);
+}
+
+VWL_FUNCS_DUMMY_KEYBOARD_EVENTS()
+
+/*
+ * Called when the keyboard focus is on our surface
+ */
+    static void
+clip_wl_fs_keyboard_listener_enter(
+    void		*data,
+    struct wl_keyboard	*keyboard UNUSED,
+    uint32_t		serial,
+    struct wl_surface	*surface UNUSED,
+    struct wl_array	*keys UNUSED)
+{
+    clip_wl_fs_surface_T *store = data;
+
+    store->got_focus = true;
+
+    if (store->on_focus != NULL)
+	store->on_focus(store->user_data, serial);
+}
+
+
+static struct wl_keyboard_listener  vwl_fs_keyboard_listener = {
+    .enter	    = clip_wl_fs_keyboard_listener_enter,
+    .key	    = clip_wl_fs_keyboard_listener_key,
+    .keymap	    = clip_wl_fs_keyboard_listener_keymap,
+    .leave	    = clip_wl_fs_keyboard_listener_leave,
+    .modifiers	    = clip_wl_fs_keyboard_listener_modifiers,
+    .repeat_info    = clip_wl_fs_keyboard_listener_repeat_info
+};
+
+/*
+ * Create an invisible surface in order to gain focus and call on_focus() with
+ * serial that was given.
+ */
+    static int
+clip_wl_init_fs_surface(
+	vwl_seat_T		*seat,
+	clip_wl_buffer_store_T	*buffer_store,
+	void			(*on_focus)(void *, uint32_t),
+	void			*user_data)
+{
+    clip_wl_fs_surface_T    *store;
+#ifdef ELAPSED_FUNC
+    elapsed_T		    start_tv;
+#endif
+
+    if (wayland_ct->gobjects.wl_compositor == NULL
+	    || wayland_ct->gobjects.xdg_wm_base == NULL
+	    || buffer_store == NULL
+	    || seat == NULL)
+	return FAIL;
+
+    store = ALLOC_CLEAR_ONE(clip_wl_fs_surface_T);
+
+    if (store == NULL)
+	return FAIL;
+
+    // Get keyboard
+    store->keyboard = vwl_seat_get_keyboard(seat);
+
+    if (store->keyboard == NULL)
+	goto fail;
+
+    wl_keyboard_add_listener(store->keyboard, &vwl_fs_keyboard_listener, store);
+
+    if (vwl_connection_dispatch(wayland_ct) < 0)
+	goto fail;
+
+    store->surface = wl_compositor_create_surface(
+	    wayland_ct->gobjects.wl_compositor);
+    store->shell.surface = xdg_wm_base_get_xdg_surface(
+	    wayland_ct->gobjects.xdg_wm_base, store->surface);
+    store->shell.toplevel = xdg_surface_get_toplevel(store->shell.surface);
+
+    xdg_toplevel_set_title(store->shell.toplevel, "Vim clipboard");
+
+    xdg_surface_add_listener(store->shell.surface,
+	    &xdg_surface_listener, NULL);
+
+    wl_surface_commit(store->surface);
+
+    store->on_focus = on_focus;
+    store->user_data = user_data;
+    store->got_focus = FALSE;
+
+    if (vwl_connection_roundtrip(wayland_ct) == FAIL)
+	goto fail;
+
+    // We may get the enter event early, if we do then we will set `got_focus`
+    // to TRUE.
+    if (store->got_focus)
+	goto early_exit;
+
+    // Buffer hasn't been released yet, abort. This shouldn't happen but still
+    // check for it.
+    if (!buffer_store->available)
+	goto fail;
+
+    buffer_store->available = false;
+
+    wl_surface_attach(store->surface, buffer_store->buffer, 0, 0);
+    wl_surface_damage(store->surface, 0, 0,
+	    buffer_store->width, buffer_store->height);
+    wl_surface_commit(store->surface);
+
+    // Dispatch events until we receive the enter event. Add a max delay of
+    // 'p_wtm' when waiting for it (may be longer depending on how long we poll
+    // when dispatching events)
+#ifdef ELAPSED_FUNC
+    ELAPSED_INIT(start_tv);
+#endif
+
+    while (vwl_connection_dispatch(wayland_ct) >= 0)
+    {
+	if (store->got_focus)
+	    break;
+
+#ifdef ELAPSED_FUNC
+	if (ELAPSED_FUNC(start_tv) >= p_wtm)
+	    goto fail;
+#endif
+    }
+early_exit:
+    clip_wl_destroy_fs_surface(store);
+    vwl_connection_flush(wayland_ct);
+
+    return OK;
+fail:
+    clip_wl_destroy_fs_surface(store);
+    vwl_connection_flush(wayland_ct);
+
+    return FAIL;
+}
+
+#endif // FEAT_WAYLAND_CLIPBOARD_FS
+
+    static bool
+wl_data_offer_listener_event_offer(
+    void *data UNUSED,
+    vwl_data_offer_T *offer UNUSED,
+    const char *mime_type
+)
+{
+    // Only accept mime type if we support it
+    for (int i = 0; i < (int)ARRAY_LENGTH(supported_mimes); i++)
+	if (STRCMP(mime_type, supported_mimes[i]) == 0)
+	    return true;
+    return FALSE;
+}
+
+static const vwl_data_offer_listener_T vwl_data_offer_listener = {
+    .offer = wl_data_offer_listener_event_offer
+};
+
+    static void
+vwl_data_device_listener_event_data_offer(
+	void *data UNUSED,
+	vwl_data_device_T *device UNUSED,
+	vwl_data_offer_T *offer)
+{
+    // Immediately start listening for offer events from the data offer
+    vwl_data_offer_add_listener(offer, &vwl_data_offer_listener, NULL);
+}
+
+    static void
+vwl_data_device_listener_event_selection(
+	void *data UNUSED,
+	vwl_data_device_T *device UNUSED,
+	vwl_data_offer_T *offer,
+	wayland_selection_T selection)
+{
+    clip_wl_selection_T *sel = clip_wl_get_selection(selection);
+
+    // Destroy previous offer if any, it is now invalid
+    vwl_data_offer_destroy(sel->offer);
+
+    // There are two cases when sel->offer is NULL
+    // 1. No one owns the selection
+    // 2. We own the selection (we'll just access the register directly)
+    if (offer == NULL || offer->from_vim)
+    {
+	// Selection event is from us, so we are the source client. Therefore
+	// ignore it. Or the selection is cleared, so set sel->offer to NULL
+	vwl_data_offer_destroy(offer);
+	sel->offer = NULL;
+	return;
+    }
+
+    // Save offer. When we want to request data, then we'll actually call the
+    // receive method.
+    sel->offer = offer;
+
+}
+
+    static void
+vwl_data_device_listener_event_finished(
+	void *data UNUSED,
+	vwl_data_device_T *device)
+{
+    clip_wl_selection_T *sel;
+    // Device finished, guessing this can happen is when the seat becomes
+    // invalid? If so, let the user call :wlrestore! to reset. There wouldn't be
+    // any point in trying to create another data device for the same seat,
+    // since the seat is in an invalid state.
+    if (device == clip_wl.regular.device)
+    {
+	sel = &clip_wl.regular;
+	clip_wl.regular.device = NULL;
+    }
+    else if (device == clip_wl.primary.device)
+    {
+	sel = &clip_wl.primary;
+	clip_wl.primary.device = NULL;
+    }
+    else
+	// Shouldn't happen
+	return;
+
+    vim_free(sel->contents);
+    vwl_data_source_destroy(sel->source);
+    vwl_data_offer_destroy(sel->offer);
+    sel->available = FALSE;
+
+    vwl_data_device_destroy(device);
+}
+
+static const vwl_data_device_listener_T vwl_data_device_listener = {
+    .data_offer = vwl_data_device_listener_event_data_offer,
+    .selection = vwl_data_device_listener_event_selection,
+    .finished = vwl_data_device_listener_event_finished
+};
+
+/*
+ * Initialize the clipboard for Wayland using the global Wayland connection.
+ * Returns OK on success and FAIL on failure.
+ */
+    int
+clip_init_wayland(void)
+{
+    int_u supported = WAYLAND_SELECTION_NONE;
+
+    if (wayland_ct == NULL)
+	return FAIL;
+
+    clip_wl.seat = vwl_connection_get_seat(wayland_ct, (char *)p_wse);
+
+    if (clip_wl.seat == NULL)
+	return FAIL;
+
+    clip_wl.regular.manager = vwl_connection_get_data_device_manager(
+	    wayland_ct, WAYLAND_SELECTION_REGULAR, &supported);
+
+    if (clip_wl.regular.manager != NULL)
+    {
+	clip_wl.regular.device = vwl_data_device_manager_get_data_device(
+		clip_wl.regular.manager, clip_wl.seat);
+
+	if (clip_wl.regular.device != NULL)
+	    clip_wl.regular.available = true;
+	else
+	{
+	    vwl_data_device_manager_discard(clip_wl.regular.manager);
+	    clip_wl.regular.manager = NULL;
+	}
+    }
+
+    // If we still don't support the primary selection, find one for it
+    // specifically.
+    if (!(supported & WAYLAND_SELECTION_PRIMARY))
+    {
+	clip_wl.primary.manager = vwl_connection_get_data_device_manager(
+		wayland_ct, WAYLAND_SELECTION_PRIMARY, &supported);
+
+	if (clip_wl.primary.manager != NULL)
+	{
+	    clip_wl.primary.device = vwl_data_device_manager_get_data_device(
+		    clip_wl.primary.manager, clip_wl.seat);
+
+	    if (clip_wl.primary.device != NULL)
+		clip_wl.primary.available = true;
+	    else
+	    {
+		vwl_data_device_manager_discard(clip_wl.primary.manager);
+		clip_wl.primary.manager = NULL;
+	    }
+	}
+    }
+    else if (clip_wl.regular.available)
+    {
+	// The protocol supports both regular and primary selections, just use
+	// one data device manager and one data device.
+	clip_wl.primary.available = true;
+	clip_wl.primary.manager = clip_wl.regular.manager;
+	clip_wl.primary.device = clip_wl.regular.device;
+    }
+
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+    if (clip_wl.regular.available
+	    && clip_wl.regular.manager->protocol == VWL_DATA_PROTOCOL_CORE
+	    && clip_wl_focus_stealing_available())
+	clip_wl.regular.requires_focus = true;
+    if (clip_wl.primary.available
+	    && clip_wl.primary.manager->protocol == VWL_DATA_PROTOCOL_PRIMARY
+	    && clip_wl_focus_stealing_available())
+	clip_wl.primary.requires_focus = true;
+
+    if (clip_wl.regular.requires_focus || clip_wl.primary.requires_focus)
+    {
+	// Initialize buffer to use for focus stealing
+	clip_wl.fs_buffer = clip_wl_init_buffer_store(1, 1);
+    }
+#endif
+
+    if (!clip_wl.regular.available && !clip_wl.primary.available)
+	return FAIL;
+
+    // Start listening for selection updates
+    if (clip_wl.regular.device != NULL)
+	vwl_data_device_add_listener(clip_wl.regular.device,
+		&vwl_data_device_listener, NULL);
+    // Don't want to listen to the same data device twice
+    if (clip_wl.primary.device != NULL
+	    && clip_wl.primary.device != clip_wl.regular.device)
+	vwl_data_device_add_listener(clip_wl.primary.device,
+		&vwl_data_device_listener, NULL);
+
+    return OK;
+}
+
+    void
+clip_uninit_wayland(void)
+{
+    clip_wl_selection_T *sel;
+
+    if (clipmethod == CLIPMETHOD_WAYLAND)
+    {
+	if (clip_star.owned)
+	    clip_lose_selection(&clip_star);
+	if (clip_plus.owned)
+	    clip_lose_selection(&clip_plus);
+    }
+
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+    clip_wl_destroy_buffer_store(clip_wl.fs_buffer);
+#endif
+
+    // Don't want to double free
+    if (clip_wl.regular.manager != clip_wl.primary.manager)
+	vwl_data_device_manager_discard(clip_wl.primary.manager);
+    vwl_data_device_manager_discard(clip_wl.regular.manager);
+
+    if (clip_wl.regular.device != clip_wl.primary.device)
+	vwl_data_device_destroy(clip_wl.primary.device);
+    vwl_data_device_destroy(clip_wl.regular.device);
+
+    sel = &clip_wl.regular;
+    while (true)
+    {
+	vim_free(sel->contents);
+	vwl_data_source_destroy(sel->source);
+	vwl_data_offer_destroy(sel->offer);
+	sel->available = false;
+
+	if (sel == &clip_wl.primary)
+	    break;
+	sel = &clip_wl.primary;
+    }
+
+    vim_memset(&clip_wl, 0, sizeof(clip_wl));
+}
+
+    int
+clip_reset_wayland(void)
+{
+    wayland_uninit_connection();
+
+    if (wayland_init_connection(wayland_display_name) == FAIL
+	    || clip_init_wayland() == FAIL)
+	return FAIL;
+
+    choose_clipmethod();
+    return OK;
+}
 
 /*
  * Read data from a file descriptor and write it to the given clipboard.
@@ -2350,10 +3031,10 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
     int		motion_type = MAUTO;
     ssize_t	r = 0;
 #ifndef HAVE_SELECT
-    struct pollfd   pfd
+    struct pollfd   pfd;
 
-    pfd.fd = fd,
-    pfd.events = POLLIN
+    pfd.fd = fd;
+    pfd.events = POLLIN;
 #else
     fd_set rfds;
     struct timeval  tv;
@@ -2368,17 +3049,19 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 
     ga_init2(&buf, 1, 4096);
 
-    // 4096 bytes seems reasonable for initial buffer size
+    // 4096 bytes seems reasonable for initial buffer size, memory is cheap
+    // anyways.
     if (ga_grow(&buf, 4096) == FAIL)
 	return;
 
     start = buf.ga_data;
 
-    // Only poll before reading when we first start, then we do non-blocking
-    // reads and check for EAGAIN or EINTR to signal to poll again.
-    goto poll_data;
-
-    while (errno = 0, TRUE)
+#ifndef HAVE_SELECT
+    while (poll(&pfd, 1, p_wtm) > 0)
+#else
+    while (tv.tv_sec = p_wtm / 1000, tv.tv_usec = (p_wtm % 1000) * 1000,
+	    select(fd + 1, &rfds, NULL, NULL, &tv) > 0)
+#endif
     {
 	r = read(fd, start, buf.ga_maxlen - 1 - buf.ga_len);
 
@@ -2387,18 +3070,7 @@ clip_wl_receive_data(Clipboard_T *cbd, const char *mime_type, int fd)
 	else if (r < 0)
 	{
 	    if (errno == EAGAIN || errno == EINTR)
-	    {
-poll_data:
-#ifndef HAVE_SELECT
-		if (poll(&pfd, 1, p_wtm) > 0)
-		    continue;
-#else
-		tv.tv_sec = 0;
-		tv.tv_usec = p_wtm * 1000;
-		if (select(fd + 1, &rfds, NULL, NULL, &tv) > 0)
-		    continue;
-#endif
-	    }
+		continue;
 	    break;
 	}
 
@@ -2472,182 +3144,182 @@ poll_data:
     static void
 clip_wl_request_selection(Clipboard_T *cbd)
 {
-    wayland_selection_T	    selection;
-    garray_T		    *mime_types;
-    int			    len;
-    int			    fd;
-    const char		    *chosen_mime = NULL;
+    clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
+    int			fds[2];
+    int			mime_types_len;
+    const char		**mime_types;
+    const char		*chosen_mime = NULL;
 
-    if (cbd == &clip_star)
-	selection = WAYLAND_SELECTION_PRIMARY;
-    else if (cbd == &clip_plus)
-	selection = WAYLAND_SELECTION_REGULAR;
+    if (!sel->available)
+	goto clear;
+
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+    if (sel->requires_focus)
+    {
+	// We don't care about the on_focus callback since once we gain
+	// focus the data offer events will come immediately.
+	if (clip_wl_init_fs_surface(clip_wl.seat,
+		    clip_wl.fs_buffer, NULL, NULL) == FAIL)
+	    goto clear;
+    }
     else
-	return;
-
-    // Get mime types that the source client offers
-    mime_types = wayland_cb_get_mime_types(selection);
-
-    if (mime_types == NULL || mime_types->ga_len == 0)
+#endif
     {
-	// Selection is empty/cleared
-	clip_free_selection(cbd);
-	return;
+	// Dispatch any events that still queued up before checking for a data
+	// offer.
+	if (vwl_connection_roundtrip(wayland_ct) == FAIL)
+	    goto clear;
     }
 
-    len = ARRAY_LENGTH(supported_mimes);
+    if (sel->offer == NULL)
+	goto clear;
 
-    // Loop through and pick the one we want to receive from
-    for (int i = 0; i < len && chosen_mime == NULL; i++)
+    mime_types_len = sel->offer->mime_types.ga_len;
+    mime_types = sel->offer->mime_types.ga_data;
+
+    // Choose mime type to receive from. Mime types with a lower index in the
+    // "supported_mimes" array are prioritized over ones after it.
+    for (int i = 0; i < (int)ARRAY_LENGTH(supported_mimes)
+	    && chosen_mime == NULL; i++)
     {
-	for (int k = 0; k < mime_types->ga_len && chosen_mime == NULL; k++)
-	{
-	    char *mime_type = ((char**)mime_types->ga_data)[k];
-
-	    if (STRCMP(mime_type, supported_mimes[i]) == 0)
+	for (int k = 0; k < mime_types_len && chosen_mime == NULL; k++)
+	    if (STRCMP(mime_types[k], supported_mimes[i]) == 0)
 		chosen_mime = supported_mimes[i];
-	}
     }
-    if (chosen_mime == NULL)
-	return;
 
-    fd = wayland_cb_receive_data(chosen_mime, selection);
+    if (chosen_mime == NULL || pipe(fds) == -1)
+	goto clear;
 
-    if (fd == -1)
-	return;
+    vwl_data_offer_receive(sel->offer, chosen_mime, fds[1]);
 
-    // Start reading the file descriptor returned
-    clip_wl_receive_data(cbd, chosen_mime, fd);
+    close(fds[1]); // Close before we read data so that when the source client
+		   // closes their end we receive an EOF.
 
-    close(fd);
+    if (vwl_connection_flush(wayland_ct) >= 0)
+	clip_wl_receive_data(cbd, chosen_mime, fds[0]);
+
+    close(fds[0]);
+
+    return;
+clear:
+    clip_free_selection(cbd);
 }
 
-/*
- * Write data from either the clip or plus register, depending on the given
- * selection, to the file descriptor that the receiving client will read from.
- */
     static void
-clip_wl_send_data(
-	const char	    *mime_type,
-	int		    fd,
-	wayland_selection_T selection)
+vwl_data_source_listener_event_send(
+    void *data,
+    vwl_data_source_T *source UNUSED,
+    const char *mime_type,
+    int32_t fd
+)
 {
-    Clipboard_T	    *cbd;
-    long_u	    length;
-    char_u	    *string;
-    ssize_t	    written = 0;
-    size_t	    total = 0;
-    int		    did_vimenc = TRUE;
-    int		    did_motion_type = TRUE;
-    int		    motion_type;
-    int		    skip_len_check = FALSE;
+    clip_wl_selection_T *sel = data;
+    Clipboard_T		*cbd = clip_wl_get_cbd_from_selection(sel);
+    bool		have_mime = false;
+    int			motion_type;
+    long_u		length;
+    char_u		*string; // Will be reallocated to a bigger size if
+				 // needed.
+    int			offset = 0;
+    bool		is_vim, is_vimenc;
+    size_t		total = 0;
 #ifndef HAVE_SELECT
-    struct pollfd   pfd
+    struct pollfd   pfd;
 
-    pfd.fd = fd,
-    pfd.events = POLLOUT
+    pfd.fd = fd;
+    pfd.events = POLLOUT;
 #else
     fd_set	    wfds;
     struct timeval  tv;
 
     FD_ZERO(&wfds);
     FD_SET(fd, &wfds);
-    tv.tv_sec = 0;
-    tv.tv_usec = p_wtm * 1000;
 #endif
-    if (selection == WAYLAND_SELECTION_REGULAR)
-	cbd = &clip_plus;
-    else if (selection == WAYLAND_SELECTION_PRIMARY)
-	cbd = &clip_star;
-    else
-	return;
 
-    // Shouldn't happen unless there is a bug.
-    if (!cbd->owned)
-	return;
+    // Check if we actually have mime type
+    for (int i = 0; i < (int)ARRAY_LENGTH(supported_mimes); i++)
+	if (STRCMP(supported_mimes[i], mime_type) == 0)
+	{
+	    have_mime = true;
+	    break;
+	}
 
-    // Get the current selection
+    if (!have_mime)
+	goto exit;
+
+    // First byte sent is motion type for vim specific formats. For the vimenc
+    // format, after the first byte is the encoding type, which is null
+    // terminated.
+
+    is_vimenc = STRCMP(mime_type, VIMENC_ATOM_NAME) == 0;
+    is_vim = STRCMP(mime_type, VIM_ATOM_NAME) == 0;
+
+    if (is_vimenc)
+	offset += 2 + STRLEN(p_enc);
+    else if (is_vim)
+	offset += 1;
+
     clip_get_selection(cbd);
-    motion_type = clip_convert_selection(&string, &length, cbd);
+    motion_type = clip_convert_selection_offset(&string, &length, offset, cbd);
 
     if (motion_type < 0)
 	goto exit;
 
-    if (STRCMP(mime_type, VIMENC_ATOM_NAME) == 0)
+    if (is_vimenc)
     {
-	did_vimenc = FALSE;
-	did_motion_type = FALSE;
+	string[0] = (char_u)motion_type;
+	// strcpy copies the NUL terminator too
+	strcpy((char *)string + 1, (char *)p_enc);
     }
-    else if (STRCMP(mime_type, VIM_ATOM_NAME) == 0)
-	did_motion_type = FALSE;
+    else if (is_vim)
+	string[0] = (char_u)motion_type;
 
-    while ((total < (size_t)length || skip_len_check) &&
+
+    while (total < (size_t)length &&
 #ifndef HAVE_SELECT
-	   poll(&pfd, 1, p_wtm) > 0)
+	    poll(&pfd, 1, p_wtm) > 0)
 #else
-	   select(fd + 1, NULL, &wfds, NULL, &tv) > 0)
+	    ((tv.tv_sec = p_wtm / 1000, tv.tv_usec = (p_wtm % 1000) * 1000),
+	    select(fd + 1, NULL, &wfds, NULL, &tv) > 0))
 #endif
     {
-	// First byte sent is motion type for vim specific formats
-	if (!did_motion_type)
-	{
-	    if (total == 1)
-	    {
-		total = 0;
-		did_motion_type = TRUE;
-		continue;
-	    }
-	    // We cast to char so that we only send one byte
-	    written = write( fd, (char_u*)&motion_type, 1);
-	   skip_len_check = TRUE;
-	}
-	else if (!did_vimenc)
-	{
-	    // For the vimenc format, after the first byte is the encoding type,
-	    // which is null terminated. Make sure we write that before writing
-	    // the actual selection.
-	   if (total == STRLEN(p_enc) + 1)
-	   {
-		total = 0;
-		did_vimenc = TRUE;
-		continue;
-	   }
-	   // Include null terminator
-	   written = write(fd, p_enc + total, STRLEN(p_enc) + 1 - total);
-	   skip_len_check = TRUE;
-	}
-	else
-	{
-	   // write the actual selection to the fd
-	   written = write(fd, string + total, length - total);
-	   if (skip_len_check)
-	       skip_len_check = FALSE;
-	}
+	ssize_t w = write(fd, string + total, length - total);
 
-	if (written == -1)
-	   break;
-	total += written;
-
-#ifdef HAVE_SELECT
-	tv.tv_sec = 0;
-	tv.tv_usec = p_wtm * 1000;
-#endif
+	if (w == -1)
+	    break;
+	total += w;
     }
-exit:
+
     vim_free(string);
+exit:
+    close(fd);
 }
 
-/*
- * Called if another client gains ownership of the given selection. If so then
- * lose the selection internally.
- */
     static void
-clip_wl_selection_cancelled(wayland_selection_T selection)
+vwl_data_source_listener_event_cancelled(
+	void *data,
+	vwl_data_source_T *source UNUSED)
 {
-    if (selection == WAYLAND_SELECTION_REGULAR)
-	clip_lose_selection(&clip_plus);
-    else if (selection == WAYLAND_SELECTION_PRIMARY)
-	clip_lose_selection(&clip_star);
+    clip_wl_selection_T *sel = data;
+    Clipboard_T		*cbd = clip_wl_get_cbd_from_selection(sel);
+
+    clip_lose_selection(cbd);
+}
+
+static const vwl_data_source_listener_T vwl_data_source_listener = {
+    .send = vwl_data_source_listener_event_send,
+    .cancelled = vwl_data_source_listener_event_cancelled
+};
+
+    static void
+clip_wl_do_set_selection(void *data, uint32_t serial)
+{
+    clip_wl_selection_T *sel = data;
+    wayland_selection_T sel_type = clip_wl_get_selection_type(sel);
+
+    vwl_data_device_set_selection(sel->device, sel->source, serial, sel_type);
+
+    sel->own_success = (vwl_connection_roundtrip(wayland_ct) == OK);
 }
 
 /*
@@ -2658,36 +3330,81 @@ clip_wl_selection_cancelled(wayland_selection_T selection)
     static int
 clip_wl_own_selection(Clipboard_T *cbd)
 {
-    wayland_selection_T selection;
+    clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
+    wayland_selection_T sel_type = clip_wl_get_selection_type(sel);
 
-    if (cbd == &clip_star)
-	selection = WAYLAND_SELECTION_PRIMARY;
-    else if (cbd == &clip_plus)
-	selection = WAYLAND_SELECTION_REGULAR;
-    else
+    if (!sel->available || vwl_connection_roundtrip(wayland_ct) == FAIL)
 	return FAIL;
 
-    return wayland_cb_own_selection(
-	clip_wl_send_data,
-	clip_wl_selection_cancelled,
-	supported_mimes,
-	sizeof(supported_mimes)/sizeof(*supported_mimes),
-	selection);
+    if (sel->source != NULL)
+    {
+	if (sel_type == WAYLAND_SELECTION_PRIMARY)
+	    // We already own the selection, ignore (only do this for primary
+	    // selection). We don't re set the selection because then we would
+	    // be setting the selection every time the user moves the visual
+	    // selection cursor, which is messy and inefficient. Some
+	    // applications like Google Chrome do it this way however.
+	    return OK;
+	else if (sel_type == WAYLAND_SELECTION_REGULAR)
+	{
+	    // Technically we don't need to do this as we already own the
+	    // selection, however if a user yanks text a second time, the
+	    // text yanked won't appear in their clipboard manager if they are
+	    // using one.
+	    //
+	    // This can be unexpected behaviour for the user so its probably
+	    // better to do it this way. Additionally other Wayland applications
+	    // seem to set the selection every time.
+	    vwl_data_source_destroy(sel->source);
+	}
+	else
+	    // Shouldn't happen
+	    return FAIL;
+    }
+
+    sel->source = vwl_data_device_manager_create_data_source(sel->manager);
+    vwl_data_source_add_listener(sel->source, &vwl_data_source_listener, sel);
+
+    // Advertise mime types
+    vwl_data_source_offer(sel->source, wayland_vim_special_mime);
+    for (int i = 0; i < (int)ARRAY_LENGTH(supported_mimes); i++)
+	vwl_data_source_offer(sel->source, supported_mimes[i]);
+
+    sel->own_success = false;
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+    if (sel->requires_focus)
+    {
+	if (clip_wl_init_fs_surface(clip_wl.seat, clip_wl.fs_buffer,
+		    clip_wl_do_set_selection, sel) == FAIL)
+	    goto fail;
+    }
+    else
+#endif
+	clip_wl_do_set_selection(sel, 0);
+
+    if (!sel->own_success)
+	goto fail;
+
+    return OK;
+fail:
+    vwl_data_source_destroy(sel->source);
+    sel->source = NULL;
+    return FAIL;
 }
 
 /*
- * Disown the selection that cbd corresponds to. Note that the the cancelled
- * event is not sent when the data source is destroyed.
+ * Disown the selection that cbd corresponds to.
  */
     static void
 clip_wl_lose_selection(Clipboard_T *cbd)
 {
-    if (cbd == &clip_plus)
-	wayland_cb_lose_selection(WAYLAND_SELECTION_REGULAR);
-    else if (cbd == &clip_star)
-	wayland_cb_lose_selection(WAYLAND_SELECTION_PRIMARY);
+    clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
 
-    /* wayland_cb_lose_selection(selection); */
+    if (!sel->available)
+	return;
+
+    vwl_data_source_destroy(sel->source);
+    sel->source = NULL;
 }
 
 /*
@@ -2699,17 +3416,20 @@ clip_wl_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
 
-#if defined(USE_SYSTEM) && defined(PROTO)
+#if defined(USE_SYSTEM) || defined(PROTO)
 /*
- * Return TRUE if we own the selection corresponding to cbd
+ * Return true if we own the selection corresponding to cbd or another client
+ * does.
  */
-    static int
+    static bool
 clip_wl_owner_exists(Clipboard_T *cbd)
 {
-    if (cbd == &clip_plus)
-	return wayland_cb_selection_is_owned(WAYLAND_SELECTION_REGULAR);
-    else if (cbd == &clip_star)
-	return wayland_cb_selection_is_owned(WAYLAND_SELECTION_PRIMARY);
+    clip_wl_selection_T *sel = clip_wl_get_selection_from_cbd(cbd);
+
+    if (vwl_connection_roundtrip(wayland_ct) == FAIL)
+	return false;
+
+    return sel->available && (sel->source != NULL || sel->offer != NULL);
 }
 #endif
 
@@ -2721,7 +3441,7 @@ clip_wl_owner_exists(Clipboard_T *cbd)
  * depending on the order of values in str.
  */
     static clipmethod_T
-get_clipmethod(char_u *str)
+get_clipmethod(char_u *str, bool *regular, bool *primary)
 {
     int		len	= (int)STRLEN(str) + 1;
     char_u	*buf	= alloc(len);
@@ -2745,8 +3465,12 @@ get_clipmethod(char_u *str)
 #endif
 	    {
 #ifdef FEAT_WAYLAND_CLIPBOARD
-		if (wayland_cb_is_ready())
+		if (clip_wl.regular.available || clip_wl.primary.available)
+		{
 		    method = CLIPMETHOD_WAYLAND;
+		    *regular = clip_wl.regular.available;
+		    *primary = clip_wl.primary.available;
+		}
 #endif
 	    }
 	}
@@ -2767,6 +3491,7 @@ get_clipmethod(char_u *str)
 		    // won't be executed since xterm_dpy will be set to NULL.
 		    xterm_update();
 		    method = CLIPMETHOD_X11;
+		    *regular = *primary = true;
 		}
 #endif
 	    }
@@ -2775,13 +3500,17 @@ get_clipmethod(char_u *str)
 	{
 #ifdef FEAT_GUI
 	    if (gui.in_use)
+	    {
 		method = CLIPMETHOD_GUI;
+		*regular = *primary = true;
+	    }
 #endif
 	}
 	else if (STRCMP(buf, "other") == 0)
 	{
 #if !defined(FEAT_XCLIPBOARD) && !defined(FEAT_WAYLAND_CLIPBOARD)
 		method = CLIPMETHOD_OTHER;
+		*regular = *primary = true;
 #endif
 	}
 	else
@@ -2832,9 +3561,8 @@ clipmethod_to_str(clipmethod_T method)
     char *
 choose_clipmethod(void)
 {
-    // We call get_clipmethod first so that we can catch any errors, even if
-    // clipmethod is useless
-    clipmethod_T method = get_clipmethod(p_cpm);
+    bool regular = false, primary = false;
+    clipmethod_T method = get_clipmethod(p_cpm, &regular, &primary);
 
     if (method == CLIPMETHOD_FAIL)
 	return e_invalid_argument;
@@ -2843,27 +3571,29 @@ choose_clipmethod(void)
     if (method == CLIPMETHOD_GUI)
 	// We only interact with Wayland for the clipboard, we can just deinit
 	// everything.
-	wayland_uninit_client();
+	wayland_uninit_connection();
 #endif
 
     // Deinitialize clipboard if there is no way to access clipboard
     if (method == CLIPMETHOD_NONE)
 	clip_init(FALSE);
     // If we have a clipmethod that works now, then initialize clipboard
-    else if (clipmethod == CLIPMETHOD_NONE
-	    && method != CLIPMETHOD_NONE)
+    else if (clipmethod == CLIPMETHOD_NONE && method != CLIPMETHOD_NONE)
     {
-	clip_init(TRUE);
-	did_warn_clipboard = FALSE;
+	clip_init_single(&clip_plus, regular);
+	clip_init_single(&clip_star, primary);
+	clip_plus.did_warn = false;
+	clip_star.did_warn = false;
     }
-
     // Disown clipboard if we are switching to a new method
-    if (clipmethod != CLIPMETHOD_NONE && method != clipmethod)
+    else if (clipmethod != CLIPMETHOD_NONE && method != clipmethod)
     {
 	if (clip_star.owned)
 	    clip_lose_selection(&clip_star);
 	if (clip_plus.owned)
 	    clip_lose_selection(&clip_plus);
+	clip_init_single(&clip_plus, regular);
+	clip_init_single(&clip_star, primary);
     }
 
     clipmethod = method;

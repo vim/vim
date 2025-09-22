@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Sep 02
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2025 Sep 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -713,6 +713,8 @@ connection to the X11 selection (or clipboard), it will use register 0 and
 output a warning:
 
   Warning: Clipboard register not available, using register 0 ~
+
+Note: This also applies to the Wayland clipboard feature as well.
 
 								*W24*
 Vim comes in different flavors, from a tiny build, that just tries to be
