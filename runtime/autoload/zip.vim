@@ -110,7 +110,7 @@ function! s:TryExecGnuFallBackToPs(executable, gnu_func_call, ...)
   else
     call add(failures, a:executable.' not available on your system')
   endif
-  if a:0 == 1
+  if &shell =~ 'pwsh' && a:0 == 1
     try
       exe a:1
       return
