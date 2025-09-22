@@ -80,7 +80,7 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    FALLBACK TO POWERSHELL CORE~
 
    This plugin will attempt to use the (more capable) GNU zip/unzip commands
-   first. If these commands fail and if the user has set shell =~ 'pwsh', the
+   first. If these commands fail but the user is using PowerShell Core (that is 'shell' option matches "pwsh"), the
    plugin will fall back to a PowerShell Core cmdlet or script. The PowerShell
    Core cmdlets/scripts are limited: they cannot write or extract files within
    subdirectories of a zip archive.
