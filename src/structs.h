@@ -3899,6 +3899,7 @@ typedef struct
     int	foldopen;
     int	foldclosed;
     int	foldsep;
+    int	foldkeep;
     int	diff;
     int	eob;
     int	lastline;
