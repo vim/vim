@@ -9772,6 +9772,7 @@ postscript-print-util	print.txt	/*postscript-print-util*
 postscript-printing	print.txt	/*postscript-printing*
 pow()	builtin.txt	/*pow()*
 ppwiz.vim	syntax.txt	/*ppwiz.vim*
+preinserted()	builtin.txt	/*preinserted()*
 press-enter	message.txt	/*press-enter*
 press-return	message.txt	/*press-return*
 prevcount-variable	eval.txt	/*prevcount-variable*

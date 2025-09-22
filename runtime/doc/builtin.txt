@@ -453,6 +453,7 @@ popup_setoptions({id}, {options})
 popup_settext({id}, {text})	none	set the text of popup window {id}
 popup_show({id})		none	unhide popup window {id}
 pow({x}, {y})			Float	{x} to the power of {y}
+preinserted()			Number	whether text is inserted after cursor
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
 prompt_getprompt({buf})		String	get prompt text
@@ -8004,6 +8005,19 @@ pow({x}, {y})						*pow()*
 
 		Can also be used as a |method|: >
 			Compute()->pow(3)
+<
+		Return type: |Number|
+
+
+preinserted()						*preinserted()*
+		Returns non-zero if text has been inserted after the cursor
+		because "preinsert" is present in 'completeopt', or if
+		"longest" is present in 'completeopt' while 'autocomplete'
+		is enabled.  Otherwise returns zero.
+		Useful in mappings during |ins-autocompletion|.
+		Example: >
+			inoremap <Tab> preinserted() ? "\<C-Y>" :
+				\ pumvisible() ? "\<C-N>" : "\<Tab>"
 <
 		Return type: |Number|
 
