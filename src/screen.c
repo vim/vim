@@ -287,6 +287,8 @@ fill_foldcolumn(
 	    symbol = wp->w_fill_chars.foldopen;
 	else if (first_level == 1)
 	    symbol = wp->w_fill_chars.foldsep;
+	else if (wp->w_fill_chars.foldinner != NUL)
+	    symbol = wp->w_fill_chars.foldinner;
 	else if (first_level + i <= 9)
 	    symbol = '0' + first_level + i;
 	else
@@ -4738,6 +4740,7 @@ static struct charstab filltab[] =
     CHARSTAB_ENTRY(&fill_chars.foldopen,    "foldopen"),
     CHARSTAB_ENTRY(&fill_chars.foldclosed,  "foldclose"),
     CHARSTAB_ENTRY(&fill_chars.foldsep,	    "foldsep"),
+    CHARSTAB_ENTRY(&fill_chars.foldinner,   "foldinner"),
     CHARSTAB_ENTRY(&fill_chars.diff,	    "diff"),
     CHARSTAB_ENTRY(&fill_chars.eob,	    "eob"),
     CHARSTAB_ENTRY(&fill_chars.lastline,    "lastline"),
@@ -4856,6 +4859,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
 		fill_chars.foldopen = '-';
 		fill_chars.foldclosed = '+';
 		fill_chars.foldsep = '|';
+		fill_chars.foldinner = NUL;
 		fill_chars.diff = '-';
 		fill_chars.eob = '~';
 		fill_chars.lastline = '@';

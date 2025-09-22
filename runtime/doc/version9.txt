@@ -322,6 +322,8 @@ Improvements in 'fillchars':
   "eob" in 'fillchars'.
 - Support for using multibyte items with the "stl", "stlnc", "foldopen",
   "foldclose" and "foldsep" items in the 'fillchars' option.
+- Support for configuring the character used inside a fold level region using
+  "foldinner" in 'fillchars'.
 
 Support for the XChaCha20 encryption method. 'cryptmethod'
 
