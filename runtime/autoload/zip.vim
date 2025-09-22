@@ -436,8 +436,6 @@ fun! zip#Write(fname)
   if &shell =~ 'pwsh'
     let ps_cmd = s:ZipUpdatePS(s:Escape(fnamemodify(zipfile, ':p'), 0), s:Escape(fname, 0))
     let ps_cmd = 'call system(''' . substitute(ps_cmd, "'", "''", 'g') . ''')'
-    call LogMessage("PS Command: " . ps_cmd)
-    call LogMessage("GNU Command: " . gnu_cmd)
     " let ps_cmd = $"call system({s:Escape(s:ZipUpdatePS(zipfile, cmd_fname), 1)})"
     call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
     " Vim flashes 'creation in progress ...' from what I believe is the
