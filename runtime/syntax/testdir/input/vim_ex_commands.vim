@@ -1208,3 +1208,6 @@ Foo() | static
 Foo() | type
 Foo() | var
 
+if 1
+  keepalt wincmd =
+endif
