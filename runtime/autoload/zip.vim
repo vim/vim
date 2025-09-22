@@ -16,7 +16,6 @@
 " 2024 Aug 21 by Vim Project: simplify condition to detect MS-Windows
 " 2025 Mar 11 by Vim Project: handle filenames with leading '-' correctly
 " 2025 Jul 12 by Vim Project: drop ../ on write to prevent path traversal attacks
-" 2025 Sep 19 by ShayHill: support PowerShell Core
 " License:	Vim License  (see vim's :help license)
 " Copyright:	Copyright (C) 2005-2019 Charles E. Campbell {{{1
 "		Permission is hereby granted to use and distribute this code,
@@ -431,8 +430,6 @@ fun! zip#Write(fname)
     " https://github.com/PowerShell/PowerShell/issues/21074
     " This necessitates a redraw of the buffer.
     redraw!
-  else
-    call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd)
   endif
 
   if v:shell_error != 0
