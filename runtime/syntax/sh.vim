@@ -315,6 +315,7 @@ syn region shEmbeddedEcho contained matchgroup=shStatement start="\<print\>" ski
 " Alias: {{{1
 " =====
 if exists("b:is_kornshell") || exists("b:is_bash") || exists("b:is_posix")
+    syn match shStatement "\<alias\>"
     syn region shAlias matchgroup=shStatement start="\<alias\>\s\+\(\h[-._[:alnum:]]*\)\@="  skip="\\$" end="\>\|`"
     syn region shAlias matchgroup=shStatement start="\<alias\>\s\+\(\h[-._[:alnum:]]*=\)\@=" skip="\\$" end="="
 
@@ -486,7 +487,7 @@ if exists("b:is_bash")
     syn keyword bashSpecialVariables contained auto_resume BASH BASH_ALIASES BASH_ARGC BASH_ARGV BASH_CMDS BASH_COMMAND BASH_ENV BASH_EXECUTION_STRING BASH_LINENO BASHOPTS BASHPID BASH_REMATCH BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION BASH_XTRACEFD CDPATH COLUMNS COMP_CWORD COMP_KEY COMP_LINE COMP_POINT COMPREPLY COMP_TYPE COMP_WORDBREAKS COMP_WORDS COPROC COPROC_PID DIRSTACK EMACS ENV EUID FCEDIT FIGNORE FUNCNAME FUNCNEST GLOBIGNORE GROUPS histchars HISTCMD HISTCONTROL HISTFILE HISTFILESIZE HISTIGNORE HISTSIZE HISTTIMEFORMAT HOME HOSTFILE HOSTNAME HOSTTYPE IFS IGNOREEOF INPUTRC LANG LC_ALL LC_COLLATE LC_CTYPE LC_MESSAGES LC_NUMERIC LINENO LINES MACHTYPE MAIL MAILCHECK MAILPATH MAPFILE OLDPWD OPTARG OPTERR OPTIND OSTYPE PATH PIPESTATUS POSIXLY_CORRECT PPID PROMPT_COMMAND PS0 PS1 PS2 PS3 PS4 PWD RANDOM READLINE_LINE READLINE_POINT REPLY SECONDS SHELL SHELLOPTS SHLVL TIMEFORMAT TIMEOUT TMPDIR UID
     syn keyword bashStatement bind builtin caller compgen complete compopt declare dirs disown enable fg help history let logout mapfile popd pushd readarray shopt source suspend time
     syn keyword bashStatement typeset nextgroup=shSetOption
-    syn keyword bashAdminStatement daemon reload restart start status stop
+    syn keyword bashAdminStatement reload restart start status stop
 endif
 
 " for all kornshells
@@ -787,7 +788,7 @@ syn region shParen matchgroup=shArithRegion start='\$\@!(\%(\ze[^(]\|$\)' end=')
 " Additional sh Keywords: {{{1
 " ===================
 " builtins:
-syn keyword shStatement alias bg break cd continue command eval exec exit export fc getopts hash jobs local printf read readonly return shift times trap type ulimit umask unalias wait
+syn keyword shStatement bg break cd continue command eval exec exit export fc getopts hash jobs local printf read readonly return shift times trap type ulimit umask unalias wait
 " external programs:
 syn keyword shStatement basename cat chgrp chmod chown cksum clear cmp comm cp cut date dirname du egrep expr false fgrep find fmt fold getconf grep head iconv id join kill killall less ln login logname ls md5sum mkdir mkfifo mknod mktemp mv newgrp nice nohup od paste pathchk printenv pwd readlink realpath rename rev rm rmdir sed sha1sum sha224sum sha256sum sha384sum sha512sum sleep sort strip stty sum sync tail tee test tput tr true tty uname uniq wc which xargs
 syn keyword shConditional contained elif else then
