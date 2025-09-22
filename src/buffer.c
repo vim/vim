@@ -2534,6 +2534,7 @@ free_buf_options(
 #endif
     clear_string_option(&buf->b_p_tsr);
     clear_string_option(&buf->b_p_qe);
+    buf->b_p_ac = -1;
     buf->b_p_ar = -1;
     buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
     clear_string_option(&buf->b_p_lw);

@@ -117,7 +117,6 @@ void clear_termoptions(void);
 void free_termoptions(void);
 void free_one_termoption(char_u *var);
 void set_term_defaults(void);
-int istermoption_idx(int opt_idx);
 void unset_global_local_option(char_u *name, void *from);
 char_u *get_option_varp_scope(int opt_idx, int scope);
 char_u *get_option_var(int opt_idx);

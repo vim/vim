@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 18
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -369,7 +369,7 @@ lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2blob({list})		Blob	turn {list} of numbers into a Blob
 list2str({list} [, {utf8}])	String	turn {list} of numbers into a String
 list2tuple({list})		Tuple	turn {list} of items into a tuple
-listener_add({callback} [, {buf}])
+listener_add({callback} [, {buf} [, {unbuffered}]])
 				Number	add a callback to listen to changes
 listener_flush([{buf}])		none	invoke listener callbacks
 listener_remove({id})		none	remove a listener callback
@@ -6716,13 +6716,18 @@ list2tuple({list})					*list2tuple()*
 		Return type: tuple<{type}> (depending on the given |List|)
 
 
-listener_add({callback} [, {buf}])			*listener_add()*
+listener_add({callback} [, {buf} [, {unbuffered}]])	*listener_add()*
 		Add a callback function that will be invoked when changes have
 		been made to buffer {buf}.
 		{buf} refers to a buffer name or number. For the accepted
 		values, see |bufname()|.  When {buf} is omitted the current
 		buffer is used.
 		Returns a unique ID that can be passed to |listener_remove()|.
+
+		If the {buf} already has registered callbacks then the
+		equivalent of >
+		    listener_flush({buf})
+<		is performed before the new callback is added.
 
 		The {callback} is invoked with five arguments:
 		    bufnr	the buffer that was changed
@@ -6766,19 +6771,36 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		    added	0
 		    col		first column with a change or 1
 
-		The entries are in the order the changes were made, thus the
-		most recent change is at the end.  The line numbers are valid
-		when the callback is invoked, but later changes may make them
-		invalid, thus keeping a copy for later might not work.
+		When {unbuffered} is |FALSE| or not provided the {callback} is
+		invoked:
 
-		The {callback} is invoked just before the screen is updated,
-		when |listener_flush()| is called or when a change is being
-		made that changes the line count in a way it causes a line
-		number in the list of changes to become invalid.
+		1. Just before the screen is updated.
+		2. When |listener_flush()| is called.
+		3. When a change is being made that changes the line count in
+		   a way that causes a line number in the list of changes to
+		   become invalid.
+
+		The entries are in the order the changes were made, thus the
+		most recent change is at the end.
+
+		Because of the third trigger reason for triggering a callback
+		listed above, the line numbers passed to the callback are not
+		guaranteed to be valid. If this is a problem then make
+		{unbuffered} |TRUE|.
+
+		When {unbuffered} is |TRUE| the {callback} is invoked for every
+		single change. The changes list only holds a single dictionary
+		and the "start", "end" and "added" values in the dictionary are
+		the same as the corresponding callback arguments. The line
+		numbers are valid when the callback is invoked, but later
+		changes may make them invalid, thus keeping a copy for later
+		might not work.
 
 		The {callback} is invoked with the text locked, see
 		|textlock|.  If you do need to make changes to the buffer, use
 		a timer to do this later |timer_start()|.
+
+		You may not call listener_add() during the {callback}. *E1569*
 
 		The {callback} is not invoked when the buffer is first loaded.
 		Use the |BufReadPost| autocmd event to handle the initial text
@@ -13186,7 +13208,9 @@ vreplace		Compiled with |gR| and |gr| commands. (always true)
 vtp			Compiled for vcon support |+vtp| (check vcon to find
 			out if it works in the current console).
 wayland			Compiled with Wayland protocol support.
-wayland_clipboard	Compiled with support for Wayland selections/clipboard
+wayland_clipboard	Compiled with support for Wayland clipboard.
+wayland_focus_steal	Compiled with support for Wayland clipboard focus
+			stealing.
 wildignore		Compiled with 'wildignore' option.
 wildmenu		Compiled with 'wildmenu' option.
 win16			old version for MS-Windows 3.1 (always false)

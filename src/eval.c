@@ -22,6 +22,7 @@
 
 #define NAMESPACE_CHAR	(char_u *)"abglstvw"
 
+static int eval0_simple_funccal(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg);
 static int eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
@@ -3438,7 +3439,7 @@ may_call_simple_func(
  * Handle zero level expression with optimization for a simple function call.
  * Same arguments and return value as eval0().
  */
-    int
+    static int
 eval0_simple_funccal(
     char_u	*arg,
     typval_T	*rettv,

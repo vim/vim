@@ -3795,3 +3795,7 @@ EXTERN char e_socket_server_unavailable[]
 #endif
 EXTERN char e_osc_response_timed_out[]
 	INIT(= N_("E1568: OSC command response timed out: %.*s"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_add_listener_in_listener_callback[]
+	INIT(= N_("E1569: Cannot use listener_add in a listener callback"));
+#endif

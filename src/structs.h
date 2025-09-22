@@ -3285,6 +3285,7 @@ struct file_buffer
     sctx_T	b_p_script_ctx[BV_COUNT]; // SCTXs for buffer-local options
 #endif
 
+    int		b_p_ac;		// 'autocomplete'
     int		b_p_ai;		// 'autoindent'
     int		b_p_ai_nopaste;	// b_p_ai saved for paste mode
     char_u	*b_p_bkc;	// 'backupcopy'
@@ -3496,7 +3497,8 @@ struct file_buffer
     dictitem_T	b_bufvar;	// variable for "b:" Dictionary
     dict_T	*b_vars;	// internal variables, local to buffer
 
-    listener_T	*b_listener;
+    listener_T	*b_listener;       // Listeners accepting buffered reports.
+    listener_T	*b_sync_listener;  // Listeners requiring unbuffered reports.
     list_T	*b_recorded_changes;
 #endif
 #ifdef FEAT_PROP_POPUP
@@ -5237,20 +5239,26 @@ struct cellsize {
 
 #ifdef FEAT_WAYLAND
 
+typedef struct vwl_connection_S vwl_connection_T;
+typedef struct vwl_seat_S vwl_seat_T;
+
+# ifdef FEAT_WAYLAND_CLIPBOARD
+
+typedef struct vwl_data_offer_S vwl_data_offer_T;
+typedef struct vwl_data_source_S vwl_data_source_T;
+typedef struct vwl_data_device_S vwl_data_device_T;
+typedef struct vwl_data_device_manager_S vwl_data_device_manager_T;
+
+typedef struct vwl_data_device_listener_S vwl_data_device_listener_T;
+typedef struct vwl_data_source_listener_S vwl_data_source_listener_T;
+typedef struct vwl_data_offer_listener_S vwl_data_offer_listener_T;
+
 // Wayland selections
 typedef enum {
-    WAYLAND_SELECTION_NONE	    = 0x0,
-    WAYLAND_SELECTION_REGULAR	    = 0x1,
-    WAYLAND_SELECTION_PRIMARY	    = 0x2,
+    WAYLAND_SELECTION_NONE	= 0,
+    WAYLAND_SELECTION_REGULAR	= 1 << 0,
+    WAYLAND_SELECTION_PRIMARY	= 1 << 1,
 } wayland_selection_T;
 
-// Callback when another client wants us to send data to them
-typedef void (*wayland_cb_send_data_func_T)(
-	const char *mime_type,
-	int fd,
-	wayland_selection_T type);
-
-// Callback when the selection is lost (data source object overwritten)
-typedef void (*wayland_cb_selection_cancelled_func_T)(wayland_selection_T type);
-
-#endif // FEAT_WAYLAND
+# endif
+#endif

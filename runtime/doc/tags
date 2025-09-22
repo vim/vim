@@ -1541,6 +1541,7 @@ $quote	eval.txt	/*$quote*
 +vtp	various.txt	/*+vtp*
 +wayland	various.txt	/*+wayland*
 +wayland_clipboard	various.txt	/*+wayland_clipboard*
++wayland_focus_steal	various.txt	/*+wayland_focus_steal*
 +wildignore	various.txt	/*+wildignore*
 +wildmenu	various.txt	/*+wildmenu*
 +windows	various.txt	/*+windows*
@@ -4741,6 +4742,7 @@ E1565	remote.txt	/*E1565*
 E1566	remote.txt	/*E1566*
 E1567	remote.txt	/*E1567*
 E1568	options.txt	/*E1568*
+E1569	builtin.txt	/*E1569*
 E157	sign.txt	/*E157*
 E158	sign.txt	/*E158*
 E159	sign.txt	/*E159*

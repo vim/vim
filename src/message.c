@@ -4166,17 +4166,37 @@ msg_advance(int col)
  * Warn about missing Clipboard Support
  */
     void
-msg_warn_missing_clipboard(void)
+msg_warn_missing_clipboard(bool plus UNUSED, bool star UNUSED)
 {
-    if (!global_busy && !did_warn_clipboard)
+#ifndef FEAT_CLIPBOARD
+    static bool did_warn;
+
+    if (!global_busy && !did_warn)
     {
-#ifdef FEAT_CLIPBOARD
-	msg(_("W23: Clipboard register not available, using register 0"));
-#else
 	msg(_("W24: Clipboard register not available. See :h W24"));
-#endif
-	did_warn_clipboard = TRUE;
+	did_warn = true;
     }
+#else
+    if (!global_busy)
+    {
+	if (plus && star && !clip_plus.did_warn && !clip_star.did_warn)
+	{
+	    msg(_("W23: Clipboard register not available, using register 0"));
+	    clip_plus.did_warn = true;
+	    clip_star.did_warn = true;
+	}
+	else if (plus && !clip_plus.did_warn)
+	{
+	    msg(_("W23: Clipboard register + not available, using register 0"));
+	    clip_plus.did_warn = true;
+	}
+	else if (star && !clip_star.did_warn)
+	{
+	    msg(_("W23: Clipboard register * not available, using register 0"));
+	    clip_star.did_warn = true;
+	}
+    }
+#endif
 }
 
 #if defined(FEAT_CON_DIALOG) || defined(PROTO)

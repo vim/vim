@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-08-27 19:10+0200\n"
+"POT-Creation-Date: 2025-09-22 19:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2220,10 +2220,16 @@ msgstr ""
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr ""
 
+msgid "W24: Clipboard register not available. See :h W24"
+msgstr ""
+
 msgid "W23: Clipboard register not available, using register 0"
 msgstr ""
 
-msgid "W24: Clipboard register not available. See :h W24"
+msgid "W23: Clipboard register + not available, using register 0"
+msgstr ""
+
+msgid "W23: Clipboard register * not available, using register 0"
 msgstr ""
 
 msgid "Question"
@@ -8834,6 +8840,9 @@ msgstr ""
 
 #, c-format
 msgid "E1568: OSC command response timed out: %.*s"
+msgstr ""
+
+msgid "E1569: Cannot use listener_add in a listener callback"
 msgstr ""
 
 #. type of cmdline window or 0

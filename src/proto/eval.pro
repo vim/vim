@@ -40,7 +40,6 @@ char_u *eval_next_line(char_u *arg, evalarg_T *evalarg);
 char_u *skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg);
 int eval0(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg);
 int may_call_simple_func(char_u *arg, typval_T *rettv);
-int eval0_simple_funccal(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg);
 int eval0_retarg(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg, char_u **retarg);
 int eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 void eval_addblob(typval_T *tv1, typval_T *tv2);

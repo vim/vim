@@ -862,6 +862,7 @@ enable_farsi
 enable_xim
 enable_fontset
 with_wayland
+enable_wayland_focus_steal
 with_x
 enable_gui
 enable_gtk2_check
@@ -1542,6 +1543,9 @@ Optional Features:
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
+  --enable-wayland-focus-steal
+                          Include focus stealing support for Wayland
+                          clipboard.
   --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/haiku/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
@@ -9271,13 +9275,39 @@ fi
 
 
 if test "$with_wayland" = yes; then
-cppflags_save=$CPPFLAGS
-cflags_save=$CFLAGS
+  cppflags_save=$CPPFLAGS
+  cflags_save=$CFLAGS
+
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for wayland" >&5
 printf %s "checking for wayland... " >&6; }
   if "$PKG_CONFIG" --exists 'wayland-client'; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-wayland-focus-steal argument" >&5
+printf %s "checking --enable-wayland-focus-steal argument... " >&6; }
+    # Check whether --enable-wayland-focus-steal was given.
+if test ${enable_wayland_focus_steal+y}
+then :
+  enableval=$enable_wayland_focus_steal; enable_wayland_fs=$enableval
+else case e in #(
+  e) enable_wayland_fs="yes" ;;
+esac
+fi
+
+
+    if test "$enable_wayland_fs" = "yes"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+          printf "%s\n" "#define FEAT_WAYLAND_CLIPBOARD_FS 1" >>confdefs.h
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+
     printf "%s\n" "#define HAVE_WAYLAND 1" >>confdefs.h
 
     WAYLAND_CPPFLAGS=`$PKG_CONFIG --cflags-only-I wayland-client`
@@ -9288,15 +9318,22 @@ printf "%s\n" "yes" >&6; }
     WAYLAND_SRC=" \
       auto/wayland/wlr-data-control-unstable-v1.c \
       auto/wayland/ext-data-control-v1.c \
-      auto/wayland/xdg-shell.c \
-      auto/wayland/primary-selection-unstable-v1.c \
       wayland.c"
     WAYLAND_OBJ=" \
       objects/wlr-data-control-unstable-v1.o \
       objects/ext-data-control-v1.o \
-      objects/xdg-shell.o \
-      objects/primary-selection-unstable-v1.o \
       objects/wayland.o"
+
+    if test "$enable_wayland_fs" = "yes"
+then :
+  as_fn_append WAYLAND_SRC " \
+            auto/wayland/xdg-shell.c \
+            auto/wayland/primary-selection-unstable-v1.c"
+           as_fn_append WAYLAND_OBJ " \
+            objects/xdg-shell.o \
+            objects/primary-selection-unstable-v1.o"
+fi
+
 
 
 

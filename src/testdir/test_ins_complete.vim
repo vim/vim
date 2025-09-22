@@ -3606,6 +3606,14 @@ func Test_complete_fuzzy_collect()
   call feedkeys("A\<C-X>\<C-N>\<C-N>\<Esc>0", 'tx!')
   call assert_equal('你的 我的 我的', getline('.'))
 
+  " check that "adding" expansion works
+  call setline(1, ['hello world foo bar'])
+  call feedkeys("Ohlo\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('hello world foo bar', getline('.'))
+  call feedkeys("Swld\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('world foo bar', getline('.'))
+  %delete
+
   " fuzzy on file
   call writefile([''], 'fobar', 'D')
   call writefile([''], 'foobar', 'D')
@@ -5584,7 +5592,7 @@ func Test_scriptlocal_autoload_func()
   call test_override("char_avail", 1)
   new
   inoremap <buffer> <F2> <Cmd>let b:matches = complete_info(["matches"]).matches<CR>
-  set autocomplete
+  setlocal autocomplete
 
   setlocal complete=.,Fcompl#Func
   call feedkeys("im\<F2>\<Esc>0", 'xt!')
@@ -5595,7 +5603,6 @@ func Test_scriptlocal_autoload_func()
   call assert_equal(['foo', 'foobar'], b:matches->mapnew('v:val.word'))
 
   setlocal complete&
-  set autocomplete&
   bwipe!
   call test_override("char_avail", 0)
   let &rtp = save_rtp
@@ -5693,7 +5700,7 @@ func Test_autocompletedelay()
 
   let lines =<< trim [SCRIPT]
     call setline(1, ['foo', 'foobar', 'foobarbaz'])
-    set autocomplete
+    setlocal autocomplete
   [SCRIPT]
   call writefile(lines, 'XTest_autocomplete_delay', 'D')
   let buf = RunVimInTerminal('-S XTest_autocomplete_delay', {'rows': 10})

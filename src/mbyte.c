@@ -2913,7 +2913,7 @@ utf_class_buf(int c, buf_T *buf)
 	{0x202f, 0x202f, 0},
 	{0x2030, 0x205e, 1},		// punctuation and symbols
 	{0x205f, 0x205f, 0},
-	{0x2060, 0x27ff, 1},		// punctuation and symbols
+	{0x2060, 0x206f, 1},		// punctuation and symbols
 	{0x2070, 0x207f, 0x2070},	// superscript
 	{0x2080, 0x2094, 0x2080},	// subscript
 	{0x20a0, 0x27ff, 1},		// all kinds of symbols

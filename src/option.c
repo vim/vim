@@ -60,6 +60,7 @@ static int put_setstring(FILE *fd, char *cmd, char *name, char_u **valuep, long_
 static int put_setnum(FILE *fd, char *cmd, char *name, long *valuep);
 static int put_setbool(FILE *fd, char *cmd, char *name, int value);
 static int istermoption(struct vimoption *p);
+static int istermoption_idx(int opt_idx);
 static char_u *get_varp_scope(struct vimoption *p, int scope);
 static char_u *get_varp(struct vimoption *);
 static void check_win_options(win_T *win);
@@ -695,6 +696,7 @@ set_init_1(int clean_arg)
 #endif
 
     curbuf->b_p_initialized = TRUE;
+    curbuf->b_p_ac = -1;
     curbuf->b_p_ar = -1;	// no local 'autoread' value
     curbuf->b_p_ul = NO_LOCAL_UNDOLEVEL;
     check_buf_options(curbuf);
@@ -2206,6 +2208,8 @@ do_set_option_bool(
     {
 	// For 'autoread' -1 means to use global value.
 	if ((int *)varp == &curbuf->b_p_ar && opt_flags == OPT_LOCAL)
+	    value = -1;
+	else if ((int *)varp == &curbuf->b_p_ac && opt_flags == OPT_LOCAL)
 	    value = -1;
 	else
 	    value = *(int *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL);
@@ -4770,7 +4774,7 @@ did_set_winwidth(optset_T *args UNUSED)
     char *
 did_set_wlsteal(optset_T *args UNUSED)
 {
-    wayland_cb_reload();
+    clip_reset_wayland();
 
     return NULL;
 }
@@ -6407,7 +6411,7 @@ istermoption(struct vimoption *p)
 /*
  * Returns TRUE if the option at 'opt_idx' starts with 't_'
  */
-    int
+    static int
 istermoption_idx(int opt_idx)
 {
     return istermoption(&options[opt_idx]);
@@ -6440,6 +6444,9 @@ unset_global_local_option(char_u *name, void *from)
 	    break;
 	case PV_PATH:
 	    clear_string_option(&buf->b_p_path);
+	    break;
+	case PV_AC:
+	    buf->b_p_ac = -1;
 	    break;
 	case PV_AR:
 	    buf->b_p_ar = -1;
@@ -6593,6 +6600,7 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_EP:   return (char_u *)&(curbuf->b_p_ep);
 	    case PV_KP:   return (char_u *)&(curbuf->b_p_kp);
 	    case PV_PATH: return (char_u *)&(curbuf->b_p_path);
+	    case PV_AC:   return (char_u *)&(curbuf->b_p_ac);
 	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
 	    case PV_TAGS: return (char_u *)&(curbuf->b_p_tags);
 	    case PV_TC:   return (char_u *)&(curbuf->b_p_tc);
@@ -6669,6 +6677,8 @@ get_varp(struct vimoption *p)
 				    ? (char_u *)&curbuf->b_p_kp : p->var;
 	case PV_PATH:	return *curbuf->b_p_path != NUL
 				    ? (char_u *)&(curbuf->b_p_path) : p->var;
+	case PV_AC:	return curbuf->b_p_ac >= 0
+				    ? (char_u *)&(curbuf->b_p_ac) : p->var;
 	case PV_AR:	return curbuf->b_p_ar >= 0
 				    ? (char_u *)&(curbuf->b_p_ar) : p->var;
 	case PV_TAGS:	return *curbuf->b_p_tags != NUL
@@ -7501,6 +7511,7 @@ buf_copy_options(buf_T *buf, int flags)
 
 	    // options that are normally global but also have a local value
 	    // are not copied, start using the global value
+	    buf->b_p_ac = -1;
 	    buf->b_p_ar = -1;
 	    buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
 	    buf->b_p_bkc = empty_option;

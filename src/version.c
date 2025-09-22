@@ -659,6 +659,11 @@ static char *(features[]) =
 #else
 	"-wayland_clipboard",
 #endif
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+	"+wayland_focus_steal",
+#else
+	"-wayland_focus_steal",
+#endif
 	"+wildignore",
 	"+wildmenu",
 	"+windows",
@@ -724,6 +729,26 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1785,
+/**/
+    1784,
+/**/
+    1783,
+/**/
+    1782,
+/**/
+    1781,
+/**/
+    1780,
+/**/
+    1779,
+/**/
+    1778,
+/**/
+    1777,
+/**/
+    1776,
 /**/
     1775,
 /**/

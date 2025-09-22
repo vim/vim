@@ -34,7 +34,6 @@ unsigned int get_cot_flags(void);
 int pum_wanted(void);
 void ins_compl_show_pum(void);
 char_u *ins_compl_leader(void);
-size_t ins_compl_leader_len(void);
 char_u *find_word_start(char_u *ptr);
 char_u *find_word_end(char_u *ptr);
 char_u *find_line_end(char_u *ptr);
@@ -49,6 +48,10 @@ colnr_T ins_compl_col(void);
 int ins_compl_len(void);
 int ins_compl_has_preinsert(void);
 int ins_compl_preinsert_effect(void);
+<<<<<<< HEAD
+=======
+int ins_compl_autocomplete_enabled(void);
+>>>>>>> origin/master
 int ins_compl_bs(void);
 void ins_compl_addleader(int c);
 void ins_compl_addfrommatch(void);

@@ -929,6 +929,13 @@
 #endif
 
 /*
+ * +wayland_focus_steal	    Focus stealing support for Wayland clipboard
+ */
+#if !defined(FEAT_WAYLAND_CLIPBOARD) && defined(FEAT_WAYLAND_CLIPBOARD_FS)
+# undef FEAT_WAYLAND_CLIPBOARD_FS
+#endif
+
+/*
  * +dnd		Drag'n'drop support.  Always used for the GTK+ GUI.
  */
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_GUI_GTK)

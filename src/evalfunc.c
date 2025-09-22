@@ -1258,7 +1258,6 @@ static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
 static argcheck_T arg1_string_or_blob[] = {arg_string_or_blob};
-static argcheck_T arg2_any_buffer[] = {arg_any, arg_buffer};
 static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
@@ -1301,6 +1300,7 @@ static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_nu
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
 static argcheck_T arg2_blob_dict[] = {arg_blob, arg_dict_any};
 static argcheck_T arg2_list_or_tuple_string[] = {arg_list_or_tuple, arg_string};
+static argcheck_T arg3_any_buffer_bool[] = {arg_any, arg_buffer, arg_bool};
 static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
@@ -2507,7 +2507,7 @@ static const funcentry_T global_functions[] =
 			ret_string,	    f_list2str},
     {"list2tuple",	1, 1, FEARG_1,	    arg1_list_any,
 			ret_tuple_any,	    f_list2tuple},
-    {"listener_add",	1, 2, FEARG_2,	    arg2_any_buffer,
+    {"listener_add",	1, 3, FEARG_2,	    arg3_any_buffer_bool,
 			ret_number,	    f_listener_add},
     {"listener_flush",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_void,	    f_listener_flush},
@@ -7620,6 +7620,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"wayland_focus_steal",
+#ifdef FEAT_WAYLAND_CLIPBOARD_FS
+		1
+#else
+		0
+#endif
+		},
 	{"wildignore", 1},
 	{"wildmenu", 1},
 	{"windows", 1},
@@ -11762,12 +11769,9 @@ f_sha256(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_BLOB)
     {
 	blob_T *blob = argvars[0].vval.v_blob;
-	if (blob != NULL)
-	{
-	    p = (char_u *)blob->bv_ga.ga_data;
-	    len = blob->bv_ga.ga_len;
-	    rettv->vval.v_string = vim_strsave(sha256_bytes(p, len, NULL, 0));
-	}
+	p = blob != NULL ? (char_u *)blob->bv_ga.ga_data : (char_u *)"";
+	len = blob != NULL ? blob->bv_ga.ga_len : 0;
+	rettv->vval.v_string = vim_strsave(sha256_bytes(p, len, NULL, 0));
     }
     else
     {

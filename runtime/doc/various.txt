@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2025 Sep 02
+*various.txt*   For Vim version 9.1.  Last change: 2025 Sep 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -528,6 +528,9 @@ T  *+vreplace*		|gR| and |gr|
    *+vtp*		on MS-Windows console: support for 'termguicolors'
 N  *+wayland*		Unix only: support for the Wayland protocol.
 N  *+wayland_clipboard*	Unix only: support for Wayland selections/clipboard.
+N  *+wayland_focus_steal*
+			Unix only: support for Wayland clipboard on
+			compositors without a data control protocol
 T  *+wildignore*	'wildignore'  Always enabled since 9.0.0278
 T  *+wildmenu*		'wildmenu'  Always enabled since 9.0.0279
 T  *+windows*		more than one window; Always enabled since 8.0.1118.
