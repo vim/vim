@@ -251,12 +251,8 @@ fun! zip#Browse(zipfile)
   keepj $
 
   let gnu_cmd = "keepj sil r! " . g:zip_unzipcmd . " -Z1 -- " . s:Escape(a:zipfile, 1)
-  if &shell =~ 'pwsh'
-    let ps_cmd = 'keepj sil r! ' . s:ZipBrowsePS(a:zipfile)
-    call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
-  else
-    call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd)
-  endif
+  let ps_cmd = 'keepj sil r! ' . s:ZipBrowsePS(a:zipfile)
+  call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
 
   if v:shell_error != 0
    call s:Mess('WarningMsg', "***warning*** (zip#Browse) ".fnameescape(a:zipfile)." is not a zip file")
@@ -339,12 +335,8 @@ fun! zip#Read(fname,mode)
   let fn   = expand('%:p')
 
   let gnu_cmd = 'sil !' . g:zip_unzipcmd . ' -p -- ' . s:Escape(zipfile, 1) . ' ' . s:Escape(fname, 1) . ' > ' . s:Escape(temp, 1)
-  if &shell =~ 'pwsh'
-    let ps_cmd = 'sil !' . s:ZipReadPS(zipfile, fname, temp)
-    call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
-  else
-    call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd)
-  endif
+  let ps_cmd = 'sil !' . s:ZipReadPS(zipfile, fname, temp)
+  call s:TryExecGnuFallBackToPs(g:zip_unzipcmd, gnu_cmd, ps_cmd)
 
   sil exe 'keepalt file '.temp
   sil keepj e!
@@ -400,12 +392,8 @@ fun! zip#Write(fname)
   if fname =~ '^[.]\{1,2}/'
     let gnu_cmd = g:zip_zipcmd . ' -d ' . s:Escape(fnamemodify(zipfile,":p"),0) . ' ' . s:Escape(fname,0) 
     let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
-    if &shell =~ 'pwsh'
-      let ps_cmd = $"call system({s:Escape(s:ZipDeleteFilePS(zipfile, fname), 1)})"
-      call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
-    else
-      call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd)
-    endif
+    let ps_cmd = $"call system({s:Escape(s:ZipDeleteFilePS(zipfile, fname), 1)})"
+    call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
     let fname = fname->substitute('^\([.]\{1,2}/\)\+', '', 'g')
     let need_rename = 1
   endif
@@ -433,11 +421,10 @@ fun! zip#Write(fname)
 
   let gnu_cmd = g:zip_zipcmd . ' -u '. s:Escape(fnamemodify(zipfile,":p"),0) . ' ' . s:Escape(fname,0) 
   let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
+  let ps_cmd = s:ZipUpdatePS(s:Escape(fnamemodify(zipfile, ':p'), 0), s:Escape(fname, 0))
+  let ps_cmd = 'call system(''' . substitute(ps_cmd, "'", "''", 'g') . ''')'
+  call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
   if &shell =~ 'pwsh'
-    let ps_cmd = s:ZipUpdatePS(s:Escape(fnamemodify(zipfile, ':p'), 0), s:Escape(fname, 0))
-    let ps_cmd = 'call system(''' . substitute(ps_cmd, "'", "''", 'g') . ''')'
-    " let ps_cmd = $"call system({s:Escape(s:ZipUpdatePS(zipfile, cmd_fname), 1)})"
-    call s:TryExecGnuFallBackToPs(g:zip_zipcmd, gnu_cmd, ps_cmd)
     " Vim flashes 'creation in progress ...' from what I believe is the
     " ProgressAction stream of PowerShell. Unfortunately, this cannot be
     " suppressed (as of 250824) due to an open PowerShell issue.
@@ -520,12 +507,8 @@ fun! zip#Extract()
   " extract the file mentioned under the cursor
   let gnu_cmd = g:zip_extractcmd . ' -o '. shellescape(b:zipfile) . ' ' . target
   let gnu_cmd = 'call system(''' . substitute(gnu_cmd, "'", "''", 'g') . ''')'
-  if &shell =~ 'pwsh'
-    let ps_cmd = $"call system({s:Escape(s:ZipExtractFilePS(b:zipfile, target), 1)})"
-    call s:TryExecGnuFallBackToPs(g:zip_extractcmd, gnu_cmd, ps_cmd)
-  else
-    call s:TryExecGnuFallBackToPs(g:zip_extractcmd, gnu_cmd)
-  endif
+  let ps_cmd = $"call system({s:Escape(s:ZipExtractFilePS(b:zipfile, target), 1)})"
+  call s:TryExecGnuFallBackToPs(g:zip_extractcmd, gnu_cmd, ps_cmd)
 
   if v:shell_error != 0
     call s:Mess('Error', "***error*** ".g:zip_extractcmd." ".b:zipfile." ".fname.": failed!")
