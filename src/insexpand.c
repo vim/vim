@@ -1058,6 +1058,15 @@ ins_compl_insert_bytes(char_u *p, int len)
 }
 
 /*
+ * Get current completion leader
+ */
+    char_u *
+ins_compl_leader(void)
+{
+    return compl_leader.string != NULL ? compl_leader.string : compl_orig_text.string;
+}
+
+/*
  * Get current completion leader length
  */
     static size_t
@@ -1835,15 +1844,6 @@ ins_compl_show_pum(void)
 
 #define DICT_FIRST	(1)	// use just first element in "dict"
 #define DICT_EXACT	(2)	// "dict" is the exact name of a file
-
-/*
- * Get current completion leader
- */
-    char_u *
-ins_compl_leader(void)
-{
-    return compl_leader.string != NULL ? compl_leader.string : compl_orig_text.string;
-}
 
 /*
  * Add any identifiers that match the given pattern "pat" in the list of

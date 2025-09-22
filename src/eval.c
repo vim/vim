@@ -3439,7 +3439,7 @@ may_call_simple_func(
  * Handle zero level expression with optimization for a simple function call.
  * Same arguments and return value as eval0().
  */
-    int
+    static int
 eval0_simple_funccal(
     char_u	*arg,
     typval_T	*rettv,
