@@ -401,6 +401,7 @@ function s:get_vim_command_type(cmd_name)
 		tcl
 		tcldo
 		tclfile
+		terminal
 		this
 		throw
 		type
