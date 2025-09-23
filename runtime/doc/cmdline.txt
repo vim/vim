@@ -1423,16 +1423,12 @@ Command-line autocompletion can also be extended for advanced uses.
 For example, you can turn the native |:find| command into a fuzzy, interactive
 file picker: >
 
-	if has('win32')
-	  let g:findcmd =  &shell =~? '\v<%(pwsh|powershell)>' ?
-		\ 'Get-ChildItem -LiteralPath . -Recurse' : 'dir . /s/b/a:-d-h'
-	else
-	  let g:findcmd = 'find . -path "*/.git" -prune -o -type f -print'
-	endif
 	set findfunc=Find
 	func Find(arg, _)
-	  if empty(s:filescache)
-	    let s:filescache = systemlist(g:findcmd)
+          if empty(s:filescache)
+            let s:filescache = globpath('.', '**', 1, 1)
+            call filter(s:filescache, '!isdirectory(v:val)')
+            call map(s:filescache, "fnamemodify(v:val, ':.')")
 	  endif
 	  return a:arg == '' ? s:filescache : matchfuzzy(s:filescache, a:arg)
 	endfunc
