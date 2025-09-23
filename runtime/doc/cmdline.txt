@@ -1423,14 +1423,19 @@ Command-line autocompletion can also be extended for advanced uses.
 For example, you can turn the native |:find| command into a fuzzy, interactive
 file picker: >
 
+	if has('win32')
+	  let g:findcmd = 'dir . /s/b/a:-d-h'
+	else
+	  let g:findcmd = 'find . -path "*/.git" -prune -o -type f -print'
+	endif
 	set findfunc=Find
 	func Find(arg, _)
-	  if get(s:, 'filescache', []) == []
-	    let s:filescache = systemlist(
-		\ 'find . -path "*/.git" -prune -o -type f -print')
+	  if empty(s:filescache)
+	    let s:filescache = systemlist(g:findcmd)
 	  endif
 	  return a:arg == '' ? s:filescache : matchfuzzy(s:filescache, a:arg)
 	endfunc
+	let s:filescache = []
 	autocmd CmdlineEnter : let s:filescache = []
 
 The `:Grep` command searches for lines matching a pattern and updates the
@@ -1441,8 +1446,8 @@ the `CmdlineLeavePre` autocmd from the next section): >
 		\ Grep call <SID>VisitFile()
 
 	func s:Grep(arglead, cmdline, cursorpos)
-	  let cmd = $'grep -REIHns "{a:arglead}" --exclude-dir=.git
-		\ --exclude=".*"'
+	  if match(&grepprg, '\$\*') == -1 | let &grepprg .= ' $*' | endif
+	  let cmd = substitute(&grepprg, '\$\*', shellescape(escape(a:arglead, '\')), '')
 	  return len(a:arglead) > 1 ? systemlist(cmd) : []
 	endfunc
 
