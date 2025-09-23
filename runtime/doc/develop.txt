@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2025 Sep 07
+*develop.txt*   For Vim version 9.1.  Last change: 2025 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -423,6 +423,14 @@ The basic steps to make changes to the code:
 
 For any non-trivial change, please always create a pull request on github,
 since this triggers the test suite.
+
+A PR should ideally contain a single commit for a single logical change.
+However, you can include several commits if you want to group multiple
+logical, atomic changes in one PR.  This can also make longer PRs easier to
+review.  Be sure to describe the reasoning for your changes in each commit
+message, as this greatly helps with the review process.  In cases where each
+commit handles different logical changes, they will also be applied as
+separate patches in Vim’s repository.
 
 							*style-clang-format*
 sound.c and sign.c can be (semi-) automatically formatted using the
