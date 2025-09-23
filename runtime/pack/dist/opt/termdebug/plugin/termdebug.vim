@@ -930,7 +930,7 @@ enddef
 const NullRepl = 'XXXNULLXXX'
 
 # Extract the "name" value from a gdb message with fullname="name".
-def GetFullname(msg: string): string
+def GetLocalFullname(msg: string): string
   if msg !~ 'fullname'
     return ''
   endif
@@ -942,6 +942,50 @@ def GetFullname(msg: string): string
   endif
 
   return name
+enddef
+
+# Turn a remote machine local path into a remote one.
+def Local2RemotePath(path: string): string
+  # If no mappings are provided keep the path.
+  if !exists('g:termdebug_config') || !has_key(g:termdebug_config, 'substitute_path')
+    return path
+  endif
+
+  var mappings: list<any> = items(g:termdebug_config['substitute_path'])
+
+  # Try to match the longest local path first.
+  sort(mappings, (a, b) => len(b[0]) - len(a[0]))
+
+  for [local, remote] in mappings
+    const pattern = '^' .. escape(local, '\.*~()')
+    if path =~ pattern
+      return substitute(path, pattern, escape(remote, '\.*~()'), '')
+    endif
+  endfor
+
+  return path
+enddef
+
+# Turn a remote path into a local one to the remote machine.
+def Remote2LocalPath(path: string): string
+  # If no mappings are provided keep the path.
+  if !exists('g:termdebug_config') || !has_key(g:termdebug_config, 'substitute_path')
+    return path
+  endif
+
+  var mappings: list<any> = items(g:termdebug_config['substitute_path'])
+
+  # Try to match the longest remote path first.
+  sort(mappings, (a, b) => len(b[1]) - len(a[1]))
+
+  for [local, remote] in mappings
+    const pattern = '^' .. escape(remote, '\.*~()')
+    if path =~ pattern
+      return substitute(path, pattern, local, '')
+    endif
+  endfor
+
+  return path
 enddef
 
 # Extract the "addr" value from a gdb message with addr="0x0001234".
@@ -1859,7 +1903,7 @@ def HandleCursor(msg: string)
 
   var fname = ''
   if msg =~ 'fullname='
-    fname = GetFullname(msg)
+    fname = GetLocalFullname(msg)
   endif
 
   if msg =~ 'addr='
@@ -1887,12 +1931,15 @@ def HandleCursor(msg: string)
     SendCommand('-stack-list-variables 2')
   endif
 
-  if msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
+  # Translate to remote file name if needed.
+  const fremote = Local2RemotePath(fname)
+
+  if msg =~ '^\(\*stopped\|=thread-selected\)' && (fremote != fname || filereadable(fname))
     var lnum = substitute(msg, '.*line="\([^"]*\)".*', '\1', '')
     if lnum =~ '^[0-9]*$'
       GotoSourcewinOrCreateIt()
-      if expand('%:p') != fnamemodify(fname, ':p')
-        echomsg $"different fname: '{expand('%:p')}' vs '{fnamemodify(fname, ':p')}'"
+      if expand('%:p') != fnamemodify(fremote, ':p')
+        echomsg $"different fname: '{expand('%:p')}' vs '{fnamemodify(fremote, ':p')}'"
         augroup Termdebug
           # Always open a file read-only instead of showing the ATTENTION
           # prompt, since it is unlikely we want to edit the file.
@@ -1904,11 +1951,11 @@ def HandleCursor(msg: string)
         augroup END
         if &modified
           # TODO: find existing window
-          exe $'split {fnameescape(fname)}'
+          exe $'split {fnameescape(fremote)}'
           sourcewin = win_getid()
           InstallWinbar(false)
         else
-          exe $'edit {fnameescape(fname)}'
+          exe $'edit {fnameescape(fremote)}'
         endif
         augroup Termdebug
           au! SwapExists
@@ -1917,7 +1964,7 @@ def HandleCursor(msg: string)
       exe $":{lnum}"
       normal! zv
       sign_unplace('TermDebug', {id: pc_id})
-      sign_place(pc_id, 'TermDebug', 'debugPC', fname,
+      sign_place(pc_id, 'TermDebug', 'debugPC', fremote,
         {lnum: str2nr(lnum), priority: 110})
       if !exists('b:save_signcolumn')
         b:save_signcolumn = &signcolumn
@@ -1991,7 +2038,7 @@ def HandleNewBreakpoint(msg: string, modifiedFlag: bool)
   endif
 
   for mm in SplitMsg(msg)
-    var fname = GetFullname(mm)
+    var fname = GetLocalFullname(mm)
     if empty(fname)
       continue
     endif
