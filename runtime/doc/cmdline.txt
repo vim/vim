@@ -1424,7 +1424,8 @@ For example, you can turn the native |:find| command into a fuzzy, interactive
 file picker: >
 
 	if has('win32')
-	  let g:findcmd = 'dir . /s/b/a:-d-h'
+	  let g:findcmd =  &shell =~? '\v<%(pwsh|powershell)>' ?
+		\ 'Get-ChildItem -LiteralPath . -Recurse' : 'dir . /s/b/a:-d-h'
 	else
 	  let g:findcmd = 'find . -path "*/.git" -prune -o -type f -print'
 	endif
