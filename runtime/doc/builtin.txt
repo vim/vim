@@ -8036,11 +8036,7 @@ preinserted()						*preinserted()*
 		because "preinsert" is present in 'completeopt', or if
 		"longest" is present in 'completeopt' while 'autocomplete'
 		is enabled.  Otherwise returns zero.
-		Useful in mappings during |ins-autocompletion|.
-		Example: >
-			inoremap <Tab> preinserted() ? "\<C-Y>" :
-				\ pumvisible() ? "\<C-N>" : "\<Tab>"
-<
+
 		Return type: |Number|
 
 

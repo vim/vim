@@ -2264,12 +2264,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    of completion.  For buffer text the 'ignorecase' option
 		    applies.
 
-		    When 'autocomplete' is enabled, the longest common
-		    prefix of the matches is inserted, either from all
-		    displayed items or from the current buffer.  The text
-		    is highlighted with |hl-PreInsert|, and the cursor
-		    does not move.  This happens only when no menu item
-		    is selected.  Press CTRL-Y to accept.
+		    When 'autocomplete' is enabled and no completion item is
+		    selected, the longest common prefix of the matches is
+		    inserted after the cursor.  The prefix is taken either
+		    from all displayed items or only from items in the current
+		    buffer.  The inserted text is highlighted with
+		    |hl-PreInsert|, and the cursor position does not change
+		    (similar to `"preinsert"`). Press CTRL-Y to accept.
 		    See also |preinserted()|.
 
 	   menu	    Use a popup menu to show the possible completions.  The
@@ -2315,16 +2316,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    Inserts the text of the first completion candidate
 		    beyond the current leader, highlighted with |hl-PreInsert|.
 		    The cursor does not move.
-		    Requires "fuzzy" to be unset and "menuone" in 'completeopt',
-		    except with 'autocomplete', where it fails if 'ignorecase'
-		    is set without 'infercase'.  See also |preinserted()|.
+		    Requires "fuzzy" to be unset, and either "menuone" in
+		    'completeopt' or 'autocomplete' enabled.  When
+		    'autocomplete' is enabled, this does not work if
+		    'ignorecase' is set without 'infercase'.
+		    See also |preinserted()|.
 
 	   preview  Show extra information about the currently selected
 		    completion in the preview window.  Only works in
 		    combination with "menu" or "menuone".
 
-	Only "fuzzy", "popup", "popuphidden", "preinsert" and "preview" have
-	an effect when 'autocomplete' is enabled.
+	Only "fuzzy", "longest", "popup", "popuphidden", "preinsert" and
+	"preview" have an effect when 'autocomplete' is enabled.
 
 	This option does not apply to |cmdline-completion|.  See 'wildoptions'
 	for that.
