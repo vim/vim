@@ -2270,7 +2270,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    from all displayed items or only from items in the current
 		    buffer.  The inserted text is highlighted with
 		    |hl-PreInsert|, and the cursor position does not change
-		    (similar to `"preinsert"`). Press CTRL-Y to accept.
+		    (similar to `"preinsert"`).  Press CTRL-Y to accept.
 		    See also |preinserted()|.
 
 	   menu	    Use a popup menu to show the possible completions.  The
