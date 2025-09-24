@@ -979,7 +979,7 @@ def Remote2LocalPath(path: string): string
   sort(mappings, (a, b) => len(b[1]) - len(a[1]))
 
   for [local, remote] in mappings
-    const pattern = '^' .. escape(remote, '\.*~()')
+    const pattern = '^' .. escape(substitute(remote, '[\/]', '[\\/]', 'g'), '.*~()')
     if path =~ pattern
       return substitute(path, pattern, local, '')
     endif
@@ -1418,7 +1418,8 @@ def Until(at: string)
     ch_log('assume that program is running after this command')
 
     # Use the fname:lnum format
-    var AT = empty(at) ? QuoteArg($"{expand('%:p')}:{line('.')}") : at
+    var fname = Remote2LocalPath(expand('%:p'))
+    var AT = empty(at) ? QuoteArg($"{fname}:{line('.')}") : at
     SendCommand($'-exec-until {AT}')
   else
     ch_log('dropping command, program is running: exec-until')
@@ -1437,7 +1438,8 @@ def SetBreakpoint(at: string, tbreak=false)
   endif
 
   # Use the fname:lnum format, older gdb can't handle --source.
-  var AT = empty(at) ? QuoteArg($"{expand('%:p')}:{line('.')}") : at
+  var fname = Remote2LocalPath(expand('%:p'))
+  var AT = empty(at) ? QuoteArg($"{fname}:{line('.')}") : at
   var cmd = ''
   if tbreak
     cmd = $'-break-insert -t {AT}'
@@ -1451,7 +1453,8 @@ def SetBreakpoint(at: string, tbreak=false)
 enddef
 
 def ClearBreakpoint()
-  var fname = fnameescape(expand('%:p'))
+  var fname = Remote2LocalPath(expand('%:p'))
+  fname = fnameescape(fname)
   var lnum = line('.')
   var bploc = printf('%s:%d', fname, lnum)
   var nr = 0
@@ -1488,7 +1491,8 @@ def ClearBreakpoint()
 enddef
 
 def ToggleBreak()
-  var fname = fnameescape(expand('%:p'))
+  var fname = Remote2LocalPath(expand('%:p'))
+  fname = fnameescape(fname)
   var lnum = line('.')
   var bploc = printf('%s:%d', fname, lnum)
   if has_key(breakpoint_locations, bploc)
@@ -2042,6 +2046,7 @@ def HandleNewBreakpoint(msg: string, modifiedFlag: bool)
     if empty(fname)
       continue
     endif
+    var fremote = Local2RemotePath(fname)
     nr = substitute(mm, '.*number="\([0-9.]*\)\".*', '\1', '')
     if empty(nr)
       return
@@ -2081,11 +2086,11 @@ def HandleNewBreakpoint(msg: string, modifiedFlag: bool)
     endif
 
     var posMsg = ''
-    if bufloaded(fname)
+    if bufloaded(fremote)
       PlaceSign(id, subid, entry)
       posMsg = $' at line {lnum}.'
     else
-      posMsg = $' in {fname} at line {lnum}.'
+      posMsg = $' in {fremote} at line {lnum}.'
     endif
     var actionTaken = ''
     if !modifiedFlag
@@ -2102,8 +2107,9 @@ enddef
 
 def PlaceSign(id: number, subid: number, entry: dict<any>)
   var nr = printf('%d.%d', id, subid)
+  var remote = Local2RemotePath(entry['fname'])
   sign_place(Breakpoint2SignNumber(id, subid), 'TermDebug',
-    $'debugBreakpoint{nr}', entry['fname'],
+    $'debugBreakpoint{nr}', remote,
     {lnum: entry['lnum'], priority: 110})
   entry['placed'] = 1
 enddef
