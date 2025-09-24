@@ -8919,14 +8919,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, uses |highlight-guifg| and |highlight-guibg| attributes in
 	the terminal (thus using 24-bit color).
 
-	Requires a ISO-8613-3 compatible terminal.  If setting this option
+	Requires an ISO-8613-3 compatible terminal.  If setting this option
 	does not work (produces a colorless UI) reading |xterm-true-color|
 	might help.
 
 	For Win32 console, Windows 10 version 1703 (Creators Update) or later
 	is required.  Use this check to find out: >
 		if has('vcon')
-<	This requires Vim to be built with the |+vtp| feature.
+<	This requires Vim to be built with the |+vtp| feature.  Enabling
+	'termguicolors' also enable Virtual Terminal Processing (VTP) in the
+	Windows console, which improves rendering of multi-byte characters.
 
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 
