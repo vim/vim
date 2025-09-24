@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 22
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12661,7 +12661,7 @@ winbufnr({nr})	The result is a Number, which is the number of the buffer
 		window is returned.
 		When window {nr} doesn't exist, -1 is returned.
 		Example: >
-  :echo "The file in the current window is " . bufname(winbufnr(0))
+  :echo "The file in the current window is " .. bufname(winbufnr(0))
 <
 		Can also be used as a |method|: >
 			FindWindow()->winbufnr()->bufname()

@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 9.1.  Last change: 2025 Aug 21
+*pattern.txt*   For Vim version 9.1.  Last change: 2025 Sep 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -966,7 +966,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	the cursor moves the display isn't updated for this change.  An update
 	is done when using the |CTRL-L| command (the whole screen is updated).
 	Example, to highlight the line where the cursor currently is: >
-		:exe '/\%' . line(".") . 'l'
+		:exe '/\%' .. line(".") .. 'l'
 <	Alternatively use: >
 		/\%.l
 <	When 'hlsearch' is set and you move the cursor around and make changes
