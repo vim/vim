@@ -573,7 +573,7 @@ parse_argument_types(
 		    else
 			type = parse_type(&p, &fp->uf_type_list, fp, cctx, TRUE);
 		}
-		if (type == NULL)
+		if (type == NULL || !valid_declaration_type(type))
 		    return FAIL;
 		fp->uf_arg_types[i] = type;
 		if (i < fp->uf_args.ga_len

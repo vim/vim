@@ -3415,8 +3415,8 @@ EXTERN char e_constructor_default_value_must_be_vnone_str[]
 	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
 EXTERN char e_invalid_class_variable_declaration_str[]
 	INIT(= N_("E1329: Invalid class variable declaration: %s"));
-EXTERN char e_invalid_type_for_object_variable_str[]
-	INIT(= N_("E1330: Invalid type for object variable: %s"));
+EXTERN char e_invalid_type_in_variable_declaration_str[]
+	INIT(= N_("E1330: Invalid type used in variable declaration: %s"));
 EXTERN char e_public_must_be_followed_by_var_static_final_or_const[]
 	INIT(= N_("E1331: public must be followed by \"var\" or \"static\" or \"final\" or \"const\""));
 EXTERN char e_public_variable_name_cannot_start_with_underscore_str[]

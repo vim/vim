@@ -841,7 +841,9 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     // parse type, check for reserved name
     p = skipwhite(p + 1);
     type = parse_type(&p, &si->sn_type_list, NULL, NULL, TRUE);
-    if (type == NULL || check_reserved_name(name, FALSE) == FAIL)
+    if (type == NULL
+	    || check_reserved_name(name, FALSE) == FAIL
+	    || !valid_declaration_type(type))
     {
 	vim_free(name);
 	return p;
