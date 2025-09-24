@@ -686,24 +686,89 @@ def StartDebug_prompt(dict: dict<any>)
   set modified
   gdb_channel = job_getchannel(gdbjob)
 
-  ptybufnr = 0
-  if has('win32')
-    # MS-Windows: run in a new console window for maximum compatibility
-    SendCommand('set new-console on')
-  elseif has('terminal')
-    # Unix: Run the debugged program in a terminal window.  Open it below the
-    # gdb window.
-    belowright ptybufnr = term_start('NONE', {
-      term_name: 'debugged program',
-      vertical: vvertical
-    })
-    if ptybufnr == 0
-      Echoerr('Failed to open the program terminal window')
-      job_stop(gdbjob)
-      return
+  # Check if the user provided a command to launch the program window
+  var term_cmd = null_list
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'remote_window')
+    term_cmd = g:termdebug_config['remote_window']
+    term_cmd = type(term_cmd) == v:t_list ? copy(term_cmd) : [term_cmd]
+  else
+    # Check if it is a remote gdb, the program terminal should be started
+    # on the remote machine.
+    const remote_pattern = '^\(ssh\|wsl\)'
+    if gdb_cmd[0] =~? remote_pattern
+      var gdb_pos = indexof(gdb_cmd, $'v:val =~? "^{GetCommand()[-1]}"')
+      if gdb_pos > 0
+        term_cmd = gdb_cmd[0 : gdb_pos - 1]
+      endif
     endif
-    ptywin = win_getid()
-    var pty = job_info(term_getjob(ptybufnr))['tty_out']
+  endif
+
+  if has('terminal') && (term_cmd != null || !has('win32'))
+
+    # Try open terminal twice because sync with gdbjob may not succeed
+    # the first time (docker daemon for example)
+    var trials: number = 2
+    var pty = null_string
+
+    while trials > 0
+
+      # Run the debugged program in a window.  Open it below the
+      # gdb window.
+      belowright ptybufnr = term_start(
+        term_cmd != null ? term_cmd : 'NONE', {
+        term_name: 'debugged program',
+        vertical: vvertical
+      })
+
+      if ptybufnr == 0
+        Echoerr('Failed to open the program terminal window')
+        job_stop(gdbjob)
+        return
+      endif
+
+      ptywin = win_getid()
+
+      if term_cmd is null
+        pty = job_info(term_getjob(ptybufnr))['tty_out']
+      else
+        # Retrieve remote pty value iteratively as above with gdb term
+        var line = null_string
+        for j in range(5)
+          term_sendkeys(ptybufnr, "clear\<CR>")
+          if !pty
+            term_sendkeys(ptybufnr, "tty\<CR>")
+          else
+            break
+          endif
+
+          for i in range(0, term_getsize(ptybufnr)[0])
+            line = term_getline(ptybufnr, i)
+            if line =~? "/dev/pts"
+                pty = line
+                break
+            endif
+            term_wait(ptybufnr, 100)
+          endfor # i
+        endfor # j
+      endif
+
+      if pty !~? "/dev/pts"
+        exe $'bwipe! {ptybufnr}'
+        --trials
+        pty = null_string
+      else
+        break
+      endif
+    endwhile
+
+    if pty !~? "/dev/pts"
+      Echoerr('Failed to get the program windows tty')
+      job_stop(gdbjob)
+    elseif pty !~? "^/dev/pts"
+      # remove the prompt
+      pty = pty->matchstr('/dev/pts/\d\+')
+    endif
+
     SendCommand($'tty {pty}')
 
     # Since GDB runs in a prompt window, the environment has not been set to
@@ -714,6 +779,9 @@ def StartDebug_prompt(dict: dict<any>)
     SendCommand($'set env COLUMNS = {winwidth(ptywin)}')
     SendCommand($'set env COLORS = {&t_Co}')
     SendCommand($'set env VIM_TERMINAL = {v:version}')
+  elseif has('win32')
+    # MS-Windows: run in a new console window for maximum compatibility
+    SendCommand('set new-console on')
   else
     # TODO: open a new terminal, get the tty name, pass on to gdb
     SendCommand('show inferior-tty')
@@ -1203,7 +1271,7 @@ def CommOutput(chan: channel, message: string)
 enddef
 
 def GotoProgram()
-  if has('win32')
+  if has('win32') && !ptywin
     if executable('powershell')
       system(printf('powershell -Command "add-type -AssemblyName microsoft.VisualBasic;[Microsoft.VisualBasic.Interaction]::AppActivate(%d);"', pid))
     endif
