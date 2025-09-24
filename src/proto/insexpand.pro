@@ -48,10 +48,6 @@ colnr_T ins_compl_col(void);
 int ins_compl_len(void);
 int ins_compl_has_preinsert(void);
 int ins_compl_preinsert_effect(void);
-<<<<<<< HEAD
-=======
-int ins_compl_autocomplete_enabled(void);
->>>>>>> origin/master
 int ins_compl_bs(void);
 void ins_compl_addleader(int c);
 void ins_compl_addfrommatch(void);
@@ -78,6 +74,7 @@ void ins_compl_check_keys(int frequency, int in_compl_func);
 int ins_complete(int c, int enable_pum);
 void ins_compl_enable_autocomplete(void);
 void free_insexpand_stuff(void);
+int ins_compl_has_autocomplete(void);
 int ins_compl_preinsert_longest(void);
 void f_preinserted(typval_T *argvars UNUSED, typval_T *rettv UNUSED);
 /* vim: set ft=c : */
