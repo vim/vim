@@ -2339,6 +2339,97 @@ def Test_var_declaration_fails()
   endfor
 enddef
 
+" Test for using "void" as the type in a variable declaration
+def Test_var_declaration_void_type()
+  # Using void as the type of a local variable
+  var lines =<< trim END
+    var x: void
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1330: Invalid type used in variable declaration: void')
+
+  # Using void as the type of a function argument
+  lines =<< trim END
+    vim9script
+    def Foo(x: void)
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1330: Invalid type used in variable declaration: void', 2)
+
+  # Using void as the type of a variable with a initializer
+  lines =<< trim END
+    var a: void = 10
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1330: Invalid type used in variable declaration: void')
+
+  # Using void as the list item type
+  lines =<< trim END
+    var l: list<void> = []
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1330: Invalid type used in variable declaration: void')
+
+  # Using void as the tuple item type
+  lines =<< trim END
+    var t: tuple<void> = ()
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1330: Invalid type used in variable declaration: void')
+
+  # Using void as the dict item type
+  lines =<< trim END
+    var l: dict<void> = {}
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1330: Invalid type used in variable declaration: void')
+
+  # Using void as the argument type in a lambda
+  lines =<< trim END
+    var Fn = (x: void) => x
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1330: Invalid type used in variable declaration: void')
+
+  # Using void as the type of an object member variable
+  lines =<< trim END
+    vim9script
+    class A
+      var x: void = 1
+    endclass
+    var a = A.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1330: Invalid type used in variable declaration: void')
+
+  # Using void as the type of a loop index
+  lines =<< trim END
+    for [i: number, j: void] in ((1, 2), (3, 4))
+    endfor
+  END
+  v9.CheckDefFailure(lines, 'E1330: Invalid type used in variable declaration: void')
+
+  # Using void as the type of a generic parameter
+  lines =<< trim END
+    vim9script
+    def Fn<T, U>()
+    enddef
+    Fn<void, void>()
+  END
+  v9.CheckSourceFailure(lines, 'E1330: Invalid type used in variable declaration: void', 4)
+
+  # Using void as the type of a parameter in a function type
+  lines =<< trim END
+    vim9script
+    def Foo()
+    enddef
+    var Fn: func(void): void = Foo
+  END
+  v9.CheckSourceFailure(lines, 'E1330: Invalid type used in variable declaration: void', 4)
+
+  # Using void in a type alias
+  lines =<< trim END
+    vim9script
+    type MyType = void
+    var x: MyType
+  END
+  v9.CheckSourceFailure(lines, 'E1330: Invalid type used in variable declaration: void', 3)
+enddef
+
 def Test_var_declaration_inferred()
   # check that type is set on the list so that extend() fails
   var lines =<< trim END

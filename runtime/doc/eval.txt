@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Sep 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3138,9 +3138,12 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			set and an environment variable that is empty.
 
 :let ${env-name} .= {expr1}
+:let ${env-name} ..= {expr1}
 			Append {expr1} to the environment variable {env-name}.
 			If the environment variable didn't exist yet this
 			works like "=".
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
 
 :let @{reg-name} = {expr1}			*:let-register* *:let-@*
 			Write the result of the expression {expr1} in register
@@ -3157,8 +3160,11 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			that would match everywhere.
 
 :let @{reg-name} .= {expr1}
+:let @{reg-name} ..= {expr1}
 			Append {expr1} to register {reg-name}.  If the
 			register was empty it's like setting it to {expr1}.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
 
 :let &{option-name} = {expr1}			*:let-option* *:let-&*
 			Set option {option-name} to the result of the
@@ -3176,8 +3182,11 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			a terminal key code, there is no error.
 
 :let &{option-name} .= {expr1}
+:let &{option-name} ..= {expr1}
 			For a string option: Append {expr1} to the value.
 			Does not insert a comma like |:set+=|.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
 
 :let &{option-name} += {expr1}
 :let &{option-name} -= {expr1}
@@ -3185,18 +3194,25 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			{expr1}.
 
 :let &l:{option-name} = {expr1}
-:let &l:{option-name} .= {expr1}
 :let &l:{option-name} += {expr1}
 :let &l:{option-name} -= {expr1}
+:let &l:{option-name} .= {expr1}
+:let &l:{option-name} ..= {expr1}
 			Like above, but only set the local value of an option
 			(if there is one).  Works like |:setlocal|.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
 
 :let &g:{option-name} = {expr1}
-:let &g:{option-name} .= {expr1}
 :let &g:{option-name} += {expr1}
 :let &g:{option-name} -= {expr1}
+:let &g:{option-name} .= {expr1}
+:let &g:{option-name} ..= {expr1}
 			Like above, but only set the global value of an option
 			(if there is one).  Works like |:setglobal|.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
+
 						*E1093* *E1537* *E1538* *E1535*
 :let [{name1}, {name2}, ...] = {expr1}		*:let-unpack* *E687* *E688*
 			{expr1} must evaluate to a |List| or a |Tuple|.  The
@@ -3217,15 +3233,18 @@ declarations and assignments do not use a command.  |vim9-declaration|
 				:echo x
 <			The result is [0, 2].
 
-:let [{name1}, {name2}, ...] .= {expr1}
 :let [{name1}, {name2}, ...] += {expr1}
 :let [{name1}, {name2}, ...] -= {expr1}
 :let [{name1}, {name2}, ...] *= {expr1}
 :let [{name1}, {name2}, ...] /= {expr1}
 :let [{name1}, {name2}, ...] %= {expr1}
+:let [{name1}, {name2}, ...] .= {expr1}
+:let [{name1}, {name2}, ...] ..= {expr1}
 			Like above, but append, add, subtract, multiply,
 			divide, or modulo the value for each |List| or |Tuple|
 			item.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
 
 :let [{name}, ..., ; {lastname}] = {expr1}				*E452*
 			Like |:let-unpack| above, but the |List| or |Tuple|
@@ -3237,11 +3256,14 @@ declarations and assignments do not use a command.  |vim9-declaration|
 				:let [a, b; rest] = ["aval", "bval", 3, 4]
 				:let [a, b; rest] = ("aval", "bval", 3, 4)
 <
-:let [{name}, ..., ; {lastname}] .= {expr1}
 :let [{name}, ..., ; {lastname}] += {expr1}
 :let [{name}, ..., ; {lastname}] -= {expr1}
+:let [{name}, ..., ; {lastname}] .= {expr1}
+:let [{name}, ..., ; {lastname}] ..= {expr1}
 			Like above, but append/add/subtract the value for each
 			|List| item.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
 
 						*:let=<<* *:let-heredoc*
 					*E990* *E991* *E172* *E221* *E1145*
@@ -4145,7 +4167,7 @@ exception most recently caught as long it is not finished.
 
 	:function! Caught()
 	:  if v:exception != ""
-	:    echo 'Caught "' . v:exception .. '" in ' .. v:throwpoint
+	:    echo 'Caught "' .. v:exception .. '" in ' .. v:throwpoint
 	:  else
 	:    echo 'Nothing caught'
 	:  endif

@@ -102,7 +102,7 @@ parse_member(
 	}
 	type_arg = skipwhite(colon + 1);
 	type = parse_type(&type_arg, type_list, NULL, NULL, TRUE);
-	if (type == NULL)
+	if (type == NULL || !valid_declaration_type(type))
 	    return FAIL;
 	*has_type = TRUE;
     }

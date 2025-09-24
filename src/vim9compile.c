@@ -2121,7 +2121,8 @@ compile_lhs_set_type(cctx_T *cctx, lhs_T *lhs, char_u *var_end, int is_decl)
 
 	p = skipwhite(var_end + 1);
 	lhs->lhs_type = parse_type(&p, cctx->ctx_type_list, cctx->ctx_ufunc, cctx, TRUE);
-	if (lhs->lhs_type == NULL)
+	if (lhs->lhs_type == NULL
+		|| !valid_declaration_type(lhs->lhs_type))
 	    return FAIL;
 
 	lhs->lhs_has_type = TRUE;

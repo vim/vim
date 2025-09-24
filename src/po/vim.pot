@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: vim-dev@vim.org\n"
-"POT-Creation-Date: 2025-09-22 19:04+0000\n"
+"POT-Creation-Date: 2025-09-24 17:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8228,7 +8228,7 @@ msgid "E1329: Invalid class variable declaration: %s"
 msgstr ""
 
 #, c-format
-msgid "E1330: Invalid type for object variable: %s"
+msgid "E1330: Invalid type used in variable declaration: %s"
 msgstr ""
 
 msgid ""

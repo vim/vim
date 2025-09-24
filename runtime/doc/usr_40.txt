@@ -1,4 +1,4 @@
-*usr_40.txt*	For Vim version 9.1.  Last change: 2022 Jun 23
+*usr_40.txt*	For Vim version 9.1.  Last change: 2025 Sep 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -597,7 +597,7 @@ EXECUTING AUTOCOMMANDS
 It is possible to trigger an autocommand by pretending an event has occurred.
 This is useful to have one autocommand trigger another one.  Example: >
 
-	:autocmd BufReadPost *.new  execute "doautocmd BufReadPost " . expand("<afile>:r")
+	:autocmd BufReadPost *.new  execute "doautocmd BufReadPost " .. expand("<afile>:r")
 
 This defines an autocommand that is triggered when a new file has been edited.
 The file name must end in ".new".  The ":execute" command uses expression

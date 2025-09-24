@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Sep 18
+" Last Change:	   2025 Sep 23
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -37,7 +37,7 @@ syn keyword vimCommand contained al[l] ar[gs] arga[dd] argd[elete] argdo argded[
 syn keyword vimCommand contained cq[uit] cr[ewind] cs[cope] cst[ag] cw[indow] delm[arks] deb[ug] defc[ompile] di[splay] dif[fupdate] diffg[et] diffo[ff] diffp[atch] diffpu[t] diffs[plit] difft[his] dig[raphs] disa[ssemble] dj[ump] dli[st] dr[op] ds[earch] dsp[lit] e[dit] ea[rlier] em[enu] endfo[r] endt[ry] endw[hile] ene[w] ex exi[t] exu[sage] f[ile] files fin[d] fina[lly] fini[sh] fir[st] fix[del] fo[ld] foldc[lose] foldd[oopen] folddoc[losed] foldo[pen] g[lobal] go[to] gu[i] gv[im] h[elp] helpc[lose] helpf[ind] helpt[ags] ha[rdcopy] hi[ghlight] his[tory] ij[ump] il[ist] int[ro] ip[ut] is[earch] isp[lit] ju[mps] l[ist] lN[ext] lNf[ile] la[st] lab[ove] lan[guage] lad[dexpr] laddb[uffer] laddf[ile] laf[ter] lat[er] lb[uffer] lbe[fore] lbel[ow] lbo[ttom] lc[d] lch[dir] nextgroup=vimBang
 syn keyword vimCommand contained lcl[ose] lcs[cope] ld[o] le[ft] lex[pr] lf[ile] lfd[o] lfir[st] lg[etfile] lgetb[uffer] lgete[xpr] lgr[ep] lgrepa[dd] lhi[story] ll lla[st] lli[st] lmak[e] lne[xt] lnew[er] lnf[ile] lo[adview] lockv[ar] lol[der] lop[en] lp[revious] lpf[ile] lr[ewind] lt[ag] lw[indow] ls m[ove] marks menut[ranslate] mes[sages] mk[exrc] mks[ession] mksp[ell] mkv[imrc] mkvie[w] mod[e] n[ext] nb[key] nbc[lose] nbs[tart] noh[lsearch] nu[mber] o[pen] ol[dfiles] on[ly] opt[ions] ow[nsyntax] p[rint] pa[ckadd] packl[oadall] pb[uffer] pc[lose] ped[it] po[p] pp[op] pre[serve] prev[ious] pro[mptfind] promptr[epl] ps[earch] pt[ag] ptN[ext] ptf[irst] ptj[ump] ptl[ast] ptn[ext] ptp[revious] ptr[ewind] pts[elect] pu[t] pw[d] q[uit] quita[ll] qa[ll] r[ead] rec[over] nextgroup=vimBang
 syn keyword vimCommand contained red[o] redr[aw] redraws[tatus] redrawt[abline] redrawtabp[anel] reg[isters] res[ize] ret[ab] rew[ind] ri[ght] ru[ntime] rub[y] rubyd[o] rubyf[ile] rund[o] rv[iminfo] sN[ext] sa[rgument] sal[l] sav[eas] sb[uffer] sbN[ext] sba[ll] sbf[irst] sbl[ast] sbm[odified] sbn[ext] sbp[revious] sbr[ewind] scr[iptnames] scripte[ncoding] scriptv[ersion] scs[cope] setf[iletype] sf[ind] sfir[st] sh[ell] sim[alt] sig[n] sla[st] sn[ext] so[urce] spe[llgood] spelld[ump] spelli[nfo] spellr[epall] spellra[re] spellu[ndo] spellw[rong] spr[evious] sre[wind] st[op] sta[g] star[tinsert] startg[replace] startr[eplace] stopi[nsert] stj[ump] sts[elect] sun[hide] sus[pend] sv[iew] synti[me] sync[bind] smi[le] t tN[ext] ta[g] tags tabc[lose] tabd[o] tabe[dit] nextgroup=vimBang
-syn keyword vimCommand contained tabf[ind] tabfir[st] tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] te[aroff] ter[minal] tf[irst] tj[ump] tl[ast] tn[ext] tp[revious] tr[ewind] try ts[elect] u[ndo] undoj[oin] undol[ist] unh[ide] unlo[ckvar] up[date] v[global] ve[rsion] vi[sual] vie[w] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wi[nsize] winc[md] wind[o] winp[os] wl[restore] wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] z dl dell delel deletl deletel dp dep delp delep deletp deletep a i nextgroup=vimBang
+syn keyword vimCommand contained tabf[ind] tabfir[st] tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] te[aroff] tf[irst] tj[ump] tl[ast] tn[ext] tp[revious] tr[ewind] try ts[elect] u[ndo] undoj[oin] undol[ist] unh[ide] unlo[ckvar] up[date] v[global] ve[rsion] vi[sual] vie[w] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wi[nsize] wind[o] winp[os] wl[restore] wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] z dl dell delel deletl deletel dp dep delp delep deletp deletep a i nextgroup=vimBang
 
 " Lower priority :syn-match to allow for :command/function() distinction
 syn match vimCommand "\<chd\%[ir]\>"    nextgroup=vimBang
@@ -299,7 +299,7 @@ syn match	vimNumber	'\<0z\%(\x\x\)\+\%(\.\%(\x\x\)\+\)*'	skipwhite nextgroup=@vi
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimCommandModifier,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDefer,vimDelcommand,vimDelFunction,@vimEcho,vimElse,vimEnddef,vimEndfunction,vimEndif,vimEval,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimExMark,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimImport,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimProfdel,vimProfile,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimSynColor,vimSynLink,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList,vimLua,vimMzScheme,vimPerl,vimPython,vimPython3,vimPythonX,vimRuby,vimTcl
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutocmd,vimAugroup,vimBehave,vimCall,vimCatch,vimCommandModifier,vimConst,vimDoautocmd,vimDebuggreedy,vimDef,vimDefFold,vimDefer,vimDelcommand,vimDelFunction,@vimEcho,vimElse,vimEnddef,vimEndfunction,vimEndif,vimEval,vimExecute,vimIsCommand,vimExtCmd,vimExFilter,vimExMark,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGrep,vimGrepAdd,vimGlobal,vimHelpgrep,vimHighlight,vimImport,vimLet,vimLoadkeymap,vimLockvar,vimMake,vimMap,vimMark,vimMatch,vimNotFunc,vimNormal,vimProfdel,vimProfile,vimRedir,vimSet,vimSleep,vimSort,vimSyntax,vimSynColor,vimSynLink,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimVimgrep,vimVimgrepadd,vimWincmd,vimMenu,vimMenutranslate,@vim9CmdList,@vimExUserCmdList,vimLua,vimMzScheme,vimPerl,vimPython,vimPython3,vimPythonX,vimRuby,vimTcl
 syn cluster vim9CmdList	contains=vim9Abstract,vim9Class,vim9Const,vim9Enum,vim9Export,vim9Final,vim9For,vim9Interface,vim9Type,vim9Var
 syn match vimCmdSep	"\\\@1<!|"	skipwhite nextgroup=@vimCmdList,vimSubst1,@vimFunc
 syn match vimCmdSep	":\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
@@ -1660,6 +1660,44 @@ syn region	vimSortPattern	  contained
 
 syn cluster vimSortOptions contains=vimSortOptions,vimSortOptionsError
 
+" Terminal: {{{2
+" ========
+syn match	vimTerminal	"\<ter\%[minal]\>"		skipwhite        nextgroup=vimTerminalOptions,vimTerminalCommand
+syn match	vimTerminal	+\<ter\%[minal]\>\ze\s*\n\s*\%(\\\|["#]\\ \)+	skipwhite skipnl nextgroup=vimTerminalOptions,vimTerminalCommand,@vimTerminalContinue
+
+syn match	vimTerminalContinue	contained	"^\s*\\"       	skipwhite skipnl nextgroup=@vimTerminalContinue,vimTerminalOptions,vimTerminalCommand contains=vimWhitespace
+syn match         vimTerminalContinueComment	contained	'^\s*["#]\\ .*'	skipwhite skipnl nextgroup=@vimTerminalContinue,vimTerminalOptions,vimTerminalCommand contains=vimWhitespace
+syn cluster	vimTerminalContinue	contains=vimTerminalContinue,vimTerminalContinueComment
+
+syn region	vimTerminalCommand	contained
+      \ start="\S"
+      \ skip=+\n\s*\%(\\\|["#]\\ \)+
+      \ end="$"
+      \ contains=@vimContinue
+
+syn region	vimTerminalOptions	contained
+      \ start="++"
+      \ skip=/\s\+++\|\%(\n\|^\)\s*\%(\\\|["#]\\ \)/
+      \ end="\s"
+      \ end="$"
+      \ skipwhite nextgroup=vimTerminalCommand
+      \ contains=@vimContinue,vimTerminalOption
+      \ transparent
+
+syn match	vimTerminalOption	contained	"++\%(\%(no\)\=close\|open\|curwin\|hidden\|norestore\|shell\)\>"
+syn match	vimTerminalOption	contained	"++kill="		nextgroup=vimTerminalKillOptionArg
+syn match	vimTerminalOption	contained	"++\%(rows\|cols\)="	nextgroup=vimTerminalSizeOptionArg
+syn match	vimTerminalOption	contained	"++eof="		nextgroup=vimTerminalEofOptionArg
+syn match	vimTerminalOption	contained	"++type="		nextgroup=vimTerminalTypeOptionArg
+syn match	vimTerminalOption	contained	"++api="		nextgroup=vimTerminalApiOptionArg
+
+syn match	vimTerminalApiOptionArg	contained	"\<\S\+\>"
+syn match	vimTerminalEofOptionArg	contained	"\<\S\+\>"
+syn match	vimTerminalSizeOptionArg	contained	"\<\d\+\>"
+syn keyword	vimTerminalKillOptionArg	contained	term hup quit int kill
+syn match	vimTerminalKillOptionArg	contained	"\<\d\+\>"
+syn keyword	vimTerminalTypeOptionArg	contained	conpty winpty
+
 " Uniq: {{{2
 " ====
 syn match	vimUniq		"\<uniq\=\>"	skipwhite nextgroup=vimUniqBang,@vimUniqOptions,vimUniqPattern,vimCmdSep
@@ -1676,6 +1714,17 @@ syn region	vimUniqPattern	  contained
       \ oneline
 
 syn cluster vimUniqOptions contains=vimUniqOptions,vimUniqOptionsError
+
+" Wincmd: {{{2
+" ======
+syn match	vimWincmd	"\<winc\%[md]\>"	skipwhite nextgroup=vimWincmdArg
+" TODO: consider extracting this list from the help file
+syn match	vimWincmdArg	contained
+      \ "\<[sSvnqojkhlwWtbpPrRxKJHLTfFz]\>\|[\^:=\-+_<>|\]}]\|\<g\s\+[\]}]\|\<g[fFtT]\>"
+      \ skipwhite nextgroup=vimCmdSep,vimComment,vim9Comment
+
+" only handles oneline assignments
+Vim9 syn match	vimWincmd	"\s\=\<winc\%[md]\>\ze\s\+=\s*\%([#|]\|$\)"	skipwhite nextgroup=vimWincmdArg
 
 " Syntax: {{{2
 "=======
@@ -2572,6 +2621,13 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSyntax	vimCommand
  hi def link vimSynType	vimSpecial
  hi def link vimTcl	vimCommand
+ hi def link vimTerminal	vimCommand
+ hi def link vimTerminalContinue	vimContinue
+ hi def link vimTerminalContinueComment	vimContinueComment
+ hi def link vimTerminalOption		vimSpecial
+ hi def link vimTerminalKillOptionArg	Constant
+ hi def link vimTerminalSizeOptionArg	Constant
+ hi def link vimTerminalTypeOptionArg	Constant
  hi def link vimThrow	vimCommand
  hi def link vimTodo	Todo
  hi def link vimType	Type
@@ -2621,6 +2677,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimWildcardInterval	vimWildcard
  hi def link vimWildcardQuestion	vimWildcard
  hi def link vimWildcardStar	vimWildcard
+ hi def link vimWinCmd	vimCommand
 
  hi def link vim9Abstract	vimCommand
  hi def link vim9Boolean	Boolean
