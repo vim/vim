@@ -3719,7 +3719,7 @@ logfont2name(LOGFONTW lf)
 	    res_size - res_len,
 	    "%s%s%s%s",
 	    lf.lfItalic ? ":i" : "",
-	    lf.lfWeight ? ":b" : "",
+	    lf.lfWeight == FW_BOLD ? ":b" : "",
 	    lf.lfUnderline ? ":u" : "",
 	    lf.lfStrikeOut ? ":s" : "");
 
