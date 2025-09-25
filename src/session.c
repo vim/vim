@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SESSION) || defined(PROTO)
+#if defined(FEAT_SESSION)
 
 static int did_lcd;	// whether ":lcd" was produced for a session
 
@@ -1076,8 +1076,7 @@ ex_loadview(exarg_T *eap)
 }
 
 # if defined(FEAT_GUI_GNOME) \
-	|| (defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)) \
-	|| defined(PROTO)
+	|| (defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD))
 /*
  * Generate a script that can be used to restore the current editing session.
  * Save the value of v:this_session before running :mksession in order to make
@@ -1395,7 +1394,7 @@ theend:
     apply_autocmds(EVENT_SESSIONWRITEPOST, NULL, NULL, FALSE, curbuf);
 }
 
-#if (defined(FEAT_VIMINFO) || defined(FEAT_SESSION)) || defined(PROTO)
+#if defined(FEAT_VIMINFO) || defined(FEAT_SESSION)
     var_flavour_T
 var_flavour(char_u *varname)
 {

@@ -14,13 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
+#if defined(FEAT_EVAL)
 
 // Structure put on ec_trystack when ISN_TRY is encountered.
 typedef struct {

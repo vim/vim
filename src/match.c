@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+#if defined(FEAT_SEARCH_EXTRA)
 
 # define SEARCH_HL_PRIORITY 0
 
@@ -937,7 +937,7 @@ get_search_match_hl(win_T *wp, match_T *search_hl, long col, int *char_attr)
 
 #endif // FEAT_SEARCH_EXTRA
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 # ifdef FEAT_SEARCH_EXTRA
     static int
 matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
@@ -1357,7 +1357,7 @@ f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 }
 #endif
 
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+#if defined(FEAT_SEARCH_EXTRA)
 /*
  * ":[N]match {group} {pattern}"
  * Sets nextcmd to the start of the next command, if any.  Also called when

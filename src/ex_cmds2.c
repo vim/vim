@@ -126,9 +126,9 @@ check_changed(buf_T *buf, int flags)
     return FALSE;
 }
 
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) || defined(PROTO)
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
+#if defined(FEAT_BROWSE)
 /*
  * When wanting to write a file without a file name, ask the user for a name.
  */
@@ -835,9 +835,9 @@ ex_compiler(exarg_T *eap)
 }
 #endif
 
-#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON) || defined(PROTO)
+#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON)
 
-# if (defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
 /*
  * Detect Python 3 or 2, and initialize 'pyxversion'.
  */

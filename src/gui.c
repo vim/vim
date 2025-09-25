@@ -25,7 +25,7 @@ static int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guico
 static void gui_delete_lines(int row, int count);
 static void gui_insert_lines(int row, int count);
 static int gui_xy2colrow(int x, int y, int *colp);
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 static int gui_has_tabline(void);
 #endif
 static void gui_do_scrollbar(win_T *wp, int which, int enable);
@@ -859,7 +859,7 @@ gui_exit(int rc)
 }
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON) || defined(PROTO)
+	|| defined(FEAT_GUI_PHOTON)
 # define NEED_GUI_UPDATE_SCREEN 1
 /*
  * Called when the GUI shell is closed by the user.  If there are no changed
@@ -1078,7 +1078,7 @@ gui_get_wide_font(void)
     return OK;
 }
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 /*
  * Set list of ascii characters that combined can create ligature.
  * Store them in char map for quick access from gui_gtk2_draw_string.
@@ -1410,7 +1410,7 @@ gui_update_cursor(
     gui.highlight_mask = old_hl_mask;
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
     static void
 gui_position_menu(void)
 {
@@ -3445,7 +3445,7 @@ gui_xy2colrow(int x, int y, int *colp)
     return row;
 }
 
-#if defined(FEAT_MENU) || defined(PROTO)
+#if defined(FEAT_MENU)
 /*
  * Callback function for when a menu entry has been selected.
  */
@@ -3708,7 +3708,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 	shell_new_rows();	// recompute window positions and heights
 }
 
-#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+#if defined(FEAT_GUI_TABLINE)
 /*
  * Return TRUE if the GUI is taking care of the tabline.
  * It may still be hidden if 'showtabline' is zero.
@@ -4718,7 +4718,7 @@ init_gui_options(void)
     }
 }
 
-#if defined(FEAT_GUI_X11) || defined(PROTO)
+#if defined(FEAT_GUI_X11)
     void
 gui_new_scrollbar_colors(void)
 {
@@ -4990,10 +4990,10 @@ ex_gui(exarg_T *eap)
 	ex_next(eap);
 }
 
-#if ((defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+#if (defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
 	    || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_PHOTON) \
 	    || defined(FEAT_GUI_HAIKU)) \
-	    && defined(FEAT_TOOLBAR)) || defined(PROTO)
+	    && defined(FEAT_TOOLBAR)
 /*
  * This is shared between Haiku, Motif, and GTK.
  */
@@ -5028,7 +5028,7 @@ gui_find_bitmap(char_u *name, char_u *buffer, char *ext)
     return OK;
 }
 
-# if !defined(FEAT_GUI_GTK) || defined(PROTO)
+# if !defined(FEAT_GUI_GTK)
 /*
  * Given the name of the "icon=" argument, try finding the bitmap file for the
  * icon.  If it is an absolute path name, use it as it is.  Otherwise append
@@ -5048,8 +5048,7 @@ gui_find_iconfile(char_u *name, char_u *buffer, char *ext)
 # endif
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)|| defined(FEAT_GUI_HAIKU) \
-	|| defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)|| defined(FEAT_GUI_HAIKU)
     void
 display_errors(void)
 {
@@ -5079,7 +5078,7 @@ display_errors(void)
 }
 #endif
 
-#if defined(NO_CONSOLE_INPUT) || defined(PROTO)
+#if defined(NO_CONSOLE_INPUT)
 /*
  * Return TRUE if still starting up and there is no place to enter text.
  * For GTK and X11 we check if stderr is not a tty, which means we were
@@ -5098,8 +5097,7 @@ no_console_input(void)
 #endif
 
 #if defined(FIND_REPLACE_DIALOG) \
-	|| defined(NEED_GUI_UPDATE_SCREEN) \
-	|| defined(PROTO)
+	|| defined(NEED_GUI_UPDATE_SCREEN)
 /*
  * Update the current window and the screen.
  */
@@ -5164,7 +5162,7 @@ gui_update_screen(void)
 }
 #endif
 
-#if defined(FIND_REPLACE_DIALOG) || defined(PROTO)
+#if defined(FIND_REPLACE_DIALOG)
 /*
  * Get the text to use in a find/replace dialog.  Uses the last search pattern
  * if the argument is empty.
@@ -5375,7 +5373,7 @@ gui_do_findrepl(
 
 #endif
 
-#if defined(HAVE_DROP_FILE) || defined(PROTO)
+#if defined(HAVE_DROP_FILE)
 /*
  * Jump to the window at specified point (x, y).
  */

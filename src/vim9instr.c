@@ -14,13 +14,7 @@
 #define USING_FLOAT_STUFF
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-// When not generating protos this is included in proto.h
-#ifdef PROTO
-# include "vim9.h"
-#endif
-
+#if defined(FEAT_EVAL)
 
 /////////////////////////////////////////////////////////////////////
 // Following generate_ functions expect the caller to call ga_grow().
@@ -2638,7 +2632,7 @@ generate_SCRIPTCTX_SET(cctx_T *cctx, sctx_T new_sctx)
     return OK;
 }
 
-#if defined(FEAT_PROFILE) || defined(PROTO)
+#if defined(FEAT_PROFILE)
     void
 may_generate_prof_end(cctx_T *cctx, int prof_lnum)
 {

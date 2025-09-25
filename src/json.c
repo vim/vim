@@ -16,7 +16,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
 
@@ -55,7 +55,7 @@ json_encode(typval_T *val, int options)
     return ga.ga_data;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Encode ["nr", "val"] into a JSON format string in allocated memory.
  * "options" can contain JSON_JS, JSON_NO_NONE and JSON_NL.
@@ -1211,7 +1211,7 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     return OK;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
 /*
  * Decode the JSON from "reader" and store the result in "res".
  * "options" can be JSON_JS or zero;

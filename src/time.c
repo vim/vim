@@ -127,7 +127,7 @@ get_ctime(time_t thetime, int add_newline)
     return buf;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 
 #if defined(MACOS_X)
 # include <time.h>	// for time_t
@@ -281,7 +281,7 @@ f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
 # endif
 }
 
-# if defined(HAVE_STRFTIME) || defined(PROTO)
+# if defined(HAVE_STRFTIME)
 /*
  * "strftime({format}[, {time}])" function
  */
@@ -353,7 +353,7 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 }
 # endif
 
-# if defined(HAVE_STRPTIME) || defined(PROTO)
+# if defined(HAVE_STRPTIME)
 /*
  * "strptime({format}, {timestring})" function
  */
@@ -393,7 +393,7 @@ f_strptime(typval_T *argvars, typval_T *rettv)
 }
 # endif
 
-# if defined(FEAT_TIMERS) || defined(PROTO)
+# if defined(FEAT_TIMERS)
 static timer_T	*first_timer = NULL;
 static long	last_timer_id = 0;
 
@@ -799,7 +799,7 @@ timer_valid(timer_T *timer)
     return FALSE;
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE)
     void
 timer_free_all(void)
 {
@@ -944,7 +944,7 @@ f_timer_stopall(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
 # endif // FEAT_TIMERS
 
-# if defined(STARTUPTIME) || defined(PROTO)
+# if defined(STARTUPTIME)
 static struct timeval	prev_timeval;
 
 #  ifdef MSWIN
@@ -1048,7 +1048,7 @@ time_msg(
 # endif	// STARTUPTIME
 #endif // FEAT_EVAL
 
-#if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO)
 /*
  * Read 8 bytes from "fd" and turn them into a time_T, MSB first.
  * Returns -1 when encountering EOF.

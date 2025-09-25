@@ -1487,7 +1487,7 @@ set_mouse_termcode(
 	has_mouse_termcode |= HMT_NORMAL;
 }
 
-#if defined(UNIX) || defined(VMS) || defined(PROTO)
+#if defined(UNIX) || defined(VMS)
     void
 del_mouse_termcode(
     int		n)	// KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE
@@ -3224,7 +3224,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 }
 
 #if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP) \
-	|| defined(FEAT_EVAL) || defined(PROTO)
+	|| defined(FEAT_EVAL)
 /*
  * Convert a virtual (screen) column to a character column.
  * The first column is zero.
@@ -3254,7 +3254,7 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol, colnr_T *coladdp)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "getmousepos()" function.
  */

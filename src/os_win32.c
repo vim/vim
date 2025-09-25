@@ -30,19 +30,16 @@
 #include <signal.h>
 #include <limits.h>
 
-// cproto fails on missing include files
-#ifndef PROTO
-# include <process.h>
-# include <winternl.h>
-# include <direct.h>
+#include <process.h>
+#include <winternl.h>
+#include <direct.h>
 
-# if !defined(FEAT_GUI_MSWIN)
-#  include <shellapi.h>
-# endif
+#if !defined(FEAT_GUI_MSWIN)
+# include <shellapi.h>
+#endif
 
-# ifdef FEAT_JOB_CHANNEL
-#  include <tlhelp32.h>
-# endif
+#ifdef FEAT_JOB_CHANNEL
+# include <tlhelp32.h>
 #endif
 
 // Record all output and all keyboard & mouse input
@@ -50,65 +47,6 @@
 
 #ifdef MCH_WRITE_DUMP
 FILE* fdDump = NULL;
-#endif
-
-/*
- * When generating prototypes for Win32 on Unix, these lines make the syntax
- * errors disappear.  They do not need to be correct.
- */
-#ifdef PROTO
-# define WINAPI
-typedef char * LPCSTR;
-typedef char * LPWSTR;
-typedef int ACCESS_MASK;
-typedef int BOOL;
-typedef int BOOLEAN;
-typedef int CALLBACK;
-typedef int COLORREF;
-typedef int CONSOLE_CURSOR_INFO;
-typedef int COORD;
-typedef int DWORD;
-typedef int HANDLE;
-typedef int LPHANDLE;
-typedef int HDC;
-typedef int HFONT;
-typedef int HICON;
-typedef int HINSTANCE;
-typedef int HWND;
-typedef int INPUT_RECORD;
-typedef int INT;
-typedef int KEY_EVENT_RECORD;
-typedef int LOGFONT;
-typedef int LPBOOL;
-typedef int LPCTSTR;
-typedef int LPDWORD;
-typedef int LPSTR;
-typedef int LPTSTR;
-typedef int LPVOID;
-typedef int MOUSE_EVENT_RECORD;
-typedef int PACL;
-typedef int PDWORD;
-typedef int PHANDLE;
-typedef int PRINTDLG;
-typedef int PSECURITY_DESCRIPTOR;
-typedef int PSID;
-typedef int SECURITY_INFORMATION;
-typedef int SHORT;
-typedef int SMALL_RECT;
-typedef int TEXTMETRIC;
-typedef int TOKEN_INFORMATION_CLASS;
-typedef int TRUSTEE;
-typedef int WORD;
-typedef int WCHAR;
-typedef void VOID;
-typedef int BY_HANDLE_FILE_INFORMATION;
-typedef int SE_OBJECT_TYPE;
-typedef int PSNSECINFO;
-typedef int PSNSECINFOW;
-typedef int STARTUPINFO;
-typedef int PROCESS_INFORMATION;
-typedef int LPSECURITY_ATTRIBUTES;
-# define __stdcall // empty
 #endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
@@ -574,7 +512,7 @@ vimLoadLib(const char *name)
     return dll;
 }
 
-#if defined(VIMDLL) || defined(PROTO)
+#if defined(VIMDLL)
 /*
  * Check if the current executable file is for the GUI subsystem.
  */
@@ -597,7 +535,7 @@ mch_is_gui_executable(void)
 #endif
 
 #if defined(DYNAMIC_ICONV) || defined(DYNAMIC_GETTEXT) \
-    || defined(FEAT_PYTHON3) || defined(PROTO)
+    || defined(FEAT_PYTHON3)
 /*
  * Get related information about 'funcname' which is imported by 'hInst'.
  * If 'info' is 0, return the function address.
@@ -704,7 +642,7 @@ hook_dll_import_func(HINSTANCE hInst, const char *funcname, const void *hook)
 }
 #endif
 
-#if defined(FEAT_PYTHON3) || defined(PROTO)
+#if defined(FEAT_PYTHON3)
 /*
  * Check if the specified DLL is a function forwarder.
  * If yes, return the instance of the forwarded DLL.
@@ -763,7 +701,7 @@ get_forwarded_dll(HINSTANCE hInst)
 }
 #endif
 
-#if defined(DYNAMIC_GETTEXT) || defined(PROTO)
+#if defined(DYNAMIC_GETTEXT)
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
 #  define GETTEXT_DLL_ALT1 "libintl-8.dll"
@@ -930,9 +868,7 @@ null_libintl_wputenv(const wchar_t *envstring UNUSED)
 #endif
 
 #ifdef HAVE_ACL
-# ifndef PROTO
-#  include <aclapi.h>
-# endif
+# include <aclapi.h>
 # ifndef PROTECTED_DACL_SECURITY_INFORMATION
 #  define PROTECTED_DACL_SECURITY_INFORMATION	0x80000000L
 # endif
@@ -1452,12 +1388,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 /*
  * For the GUI the mouse handling is in gui_w32.c.
  */
-#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
-    void
-mch_setmouse(int on UNUSED)
-{
-}
-#else  // !FEAT_GUI_MSWIN || VIMDLL
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int g_fMouseAvail = FALSE;   // mouse present
 static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
@@ -1499,7 +1430,7 @@ mch_setmouse(int on)
 }
 
 
-# if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+# if defined(FEAT_BEVAL_TERM)
 /*
  * Called when 'balloonevalterm' changed.
  */
@@ -2029,7 +1960,12 @@ read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
     }
     return nCount;
 }
-#endif // !FEAT_GUI_MSWIN || VIMDLL
+#else  // FEAT_GUI_MSWIN && !VIMDLL
+    void
+mch_setmouse(int on UNUSED)
+{
+}
+#endif // FEAT_GUI_MSWIN && !VIMDLL
 
 #ifdef FEAT_EVAL
 /*
@@ -2118,7 +2054,7 @@ test_mswin_event(char_u *event, dict_T *args)
 }
 #endif // FEAT_EVAL
 
-#if defined(MCH_CURSOR_SHAPE) || defined(PROTO)
+#if defined(MCH_CURSOR_SHAPE)
 /*
  * Set the shape of the cursor.
  * 'thickness' can be from 1 (thin) to 99 (block)
@@ -2385,7 +2321,7 @@ mch_char_avail(void)
     return WaitForChar(0L, FALSE);
 }
 
-# if defined(FEAT_TERMINAL) || defined(PROTO)
+# if defined(FEAT_TERMINAL)
 /*
  * Check for any pending input or messages.
  */
@@ -2763,9 +2699,9 @@ theend:
 # endif
     return len;
 
-#else // FEAT_GUI_MSWIN
+#else // FEAT_GUI_MSWIN && !VIMDLL
     return 0;
-#endif // FEAT_GUI_MSWIN
+#endif // FEAT_GUI_MSWIN && !VIMDLL
 }
 
 /*
@@ -3715,7 +3651,7 @@ mch_exit_c(int r)
 
     exit(r);
 }
-#endif // !FEAT_GUI_MSWIN
+#endif // !FEAT_GUI_MSWIN || VIMDLL
 
     void
 mch_init(void)
@@ -4803,7 +4739,7 @@ mch_set_winsize_now(void)
     }
     suppress_winsize = 0;
 }
-#endif // FEAT_GUI_MSWIN
+#endif
 
     static BOOL
 vim_create_process(
@@ -4864,7 +4800,7 @@ vim_shell_execute(
 }
 
 
-#if defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if defined(FEAT_GUI_MSWIN)
 
 /*
  * Specialised version of system() for Win32 GUI mode.
@@ -5865,7 +5801,7 @@ mch_call_shell(
     return x;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL)
     static HANDLE
 job_io_file_open(
 	char_u *fname,
@@ -6493,19 +6429,10 @@ termcap_mode_end(void)
     SetConsoleCursorInfo(g_hConOut, &g_cci);
     g_fTermcapMode = FALSE;
 }
-#endif // !FEAT_GUI_MSWIN || VIMDLL
+#endif
 
 
-#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
-    void
-mch_write(
-    char_u  *s UNUSED,
-    int	    len UNUSED)
-{
-    // never used
-}
-
-#else
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
 /*
  * clear `n' chars, starting from `coord'
@@ -7574,7 +7501,16 @@ notsgr:
 # endif
 }
 
-#endif // FEAT_GUI_MSWIN
+#else // FEAT_GUI_MSWIN && !VIMDLL
+    void
+mch_write(
+    char_u  *s UNUSED,
+    int	    len UNUSED)
+{
+    // never used
+}
+
+#endif
 
 
 /*
@@ -8654,7 +8590,7 @@ vtp_flag_init(void)
 	conpty_fix_type = 1;
 }
 
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
     static void
 vtp_init(void)
@@ -8921,7 +8857,7 @@ set_console_color_rgb(void)
 # endif
 }
 
-# if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+# if defined(FEAT_TERMGUICOLORS)
     void
 get_default_console_color(
     int *cterm_fg,
@@ -9072,7 +9008,7 @@ get_conpty_fix_type(void)
     return conpty_fix_type;
 }
 
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     void
 resize_console_buf(void)
 {
@@ -9121,7 +9057,7 @@ GetWin32Error(void)
     return msg;
 }
 
-#if defined(FEAT_RELTIME) || defined(PROTO)
+#if defined(FEAT_RELTIME)
 static HANDLE   timer_handle;
 static int      timer_active = FALSE;
 

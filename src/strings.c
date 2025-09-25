@@ -346,7 +346,7 @@ vim_strup(
 	*p2++ = (c < 'a' || c > 'z') ? c : (c - 0x20);
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL)
 /*
  * Make string "s" all upper-case and return it in allocated memory.
  * Handles multi-byte characters as well as possible.
@@ -538,7 +538,7 @@ vim_strlen_maxlen(char *s, size_t maxlen)
     return i;
 }
 
-#if (!defined(HAVE_STRCASECMP) && !defined(HAVE_STRICMP)) || defined(PROTO)
+#if !defined(HAVE_STRCASECMP) && !defined(HAVE_STRICMP)
 /*
  * Compare two strings, ignoring case, using current locale.
  * Doesn't work for multi-byte characters.
@@ -563,7 +563,7 @@ vim_stricmp(char *s1, char *s2)
 }
 #endif
 
-#if (!defined(HAVE_STRNCASECMP) && !defined(HAVE_STRNICMP)) || defined(PROTO)
+#if !defined(HAVE_STRNCASECMP) && !defined(HAVE_STRNICMP)
 /*
  * Compare two strings, for length "len", ignoring case, using current locale.
  * Doesn't work for multi-byte characters.
@@ -755,7 +755,7 @@ sort_strings(
     qsort((void *)files, (size_t)count, sizeof(char_u *), sort_compare);
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_SPELL)
 /*
  * Return TRUE if string "s" contains a non-ASCII character (128 or higher).
  * When "s" is NULL FALSE is returned.
@@ -795,7 +795,7 @@ concat_str(char_u *str1, char_u *str2)
     return dest;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_RIGHTLEFT) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_RIGHTLEFT)
 /*
  * Reverse text into allocated memory.
  * Returns the allocated string, NULL when out of memory.
@@ -825,7 +825,7 @@ reverse_text(char_u *s)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Return string "str" in ' quotes, doubling ' characters.
  * If "str" is NULL an empty string is assumed.

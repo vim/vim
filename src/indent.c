@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_VARTABS) || defined(PROTO)
+#if defined(FEAT_VARTABS)
 
 /*
  * Set the integer values corresponding to the string setting of 'vartabstop'.
@@ -299,7 +299,7 @@ tabstop_eq(int *ts1, int *ts2)
     return TRUE;
 }
 
-# if defined(FEAT_BEVAL) || defined(PROTO)
+# if defined(FEAT_BEVAL)
 /*
  * Copy a tabstop array, allocating space for the new array.
  */
@@ -428,7 +428,7 @@ get_indent_lnum(linenr_T lnum)
 #endif
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
+#if defined(FEAT_FOLDING)
 /*
  * Count the size (in window cells) of the indent in line "lnum" of buffer
  * "buf".
@@ -474,7 +474,7 @@ get_indent_str(
     return count;
 }
 
-#if defined(FEAT_VARTABS) || defined(PROTO)
+#if defined(FEAT_VARTABS)
 /*
  * Count the size (in window cells) of the indent in line "ptr", using
  * variable tabstops.
@@ -870,7 +870,7 @@ get_number_indent(linenr_T lnum)
     return (int)col;
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
+#if defined(FEAT_LINEBREAK)
 /*
  * Check "briopt" as 'breakindentopt' and update the members of "wp".
  * This is called when 'breakindentopt' is changed and when a window is
@@ -1945,7 +1945,7 @@ ex_retab(exarg_T *eap)
     u_clearline();
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Get indent level from 'indentexpr'.
  */
@@ -2302,7 +2302,7 @@ fix_indent(void)
 	do_c_expr_indent();
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * "indent()" function
  */
