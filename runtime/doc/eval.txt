@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2025 Sep 24
+*eval.txt*	For Vim version 9.1.  Last change: 2025 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3240,8 +3240,8 @@ declarations and assignments do not use a command.  |vim9-declaration|
 :let [{name1}, {name2}, ...] %= {expr1}
 :let [{name1}, {name2}, ...] .= {expr1}
 :let [{name1}, {name2}, ...] ..= {expr1}
-			Like above, but append, add, subtract, multiply,
-			divide, or modulo the value for each |List| or |Tuple|
+			Like above, but add, subtract, multiply, divide,
+			modulo, or append the value for each |List| or |Tuple|
 			item.
 			`.=` is not supported with Vim script version 2 and
 			later, see |vimscript-version|.
@@ -3260,7 +3260,7 @@ declarations and assignments do not use a command.  |vim9-declaration|
 :let [{name}, ..., ; {lastname}] -= {expr1}
 :let [{name}, ..., ; {lastname}] .= {expr1}
 :let [{name}, ..., ; {lastname}] ..= {expr1}
-			Like above, but append/add/subtract the value for each
+			Like above, but add/subtract/append the value for each
 			|List| item.
 			`.=` is not supported with Vim script version 2 and
 			later, see |vimscript-version|.
