@@ -508,5 +508,5 @@ The GNU Ada Project distribution (http://gnuada.sourceforge.net) of Vim
 contains all of the above.
 
 ==============================================================================
-vim: textwidth=78 nowrap tabstop=8 shiftwidth=4 softtabstop=4 noexpandtab
+vim: textwidth=78 tabstop=8 shiftwidth=4 softtabstop=4 noexpandtab
 vim: filetype=help

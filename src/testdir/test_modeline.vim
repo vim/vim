@@ -345,12 +345,11 @@ endfunc
 
 " Some options cannot be set from the modeline when 'diff' option is set
 func Test_modeline_diff_buffer()
-  call writefile(['vim: diff foldmethod=marker wrap'], 'Xmdifile', 'D')
-  set foldmethod& nowrap
+  call writefile(['vim: diff foldmethod=marker'], 'Xmdifile', 'D')
+  set foldmethod&
   new Xmdifile
   call assert_equal('manual', &foldmethod)
-  call assert_false(&wrap)
-  set wrap&
+  call assert_true(&diff)
   bw
 endfunc
 
@@ -359,6 +358,28 @@ func Test_modeline_disable()
   call writefile(['vim: sw=2', 'vim: nomodeline', 'vim: sw=3'], 'Xmodeline_disable', 'D')
   edit Xmodeline_disable
   call assert_equal(2, &sw)
+endfunc
+
+" Some wrap option is not allowed in a modeline
+func Test_modeline_wrap_option_disabled()
+  new
+  call writefile(['vim: wrap'], 'Xwrapfile', 'D')
+  set nowrap
+  try
+    edit Xwrapfile
+  catch /^Vim\%((\a\+)\)\=:E520:/
+  endtry
+  call assert_false(&wrap)
+  bw!
+
+  call writefile(['vim: nowrap'], 'Xwrapfile', 'D')
+  set wrap
+  try
+    edit Xwrapfile
+  catch /^Vim\%((\a\+)\)\=:E520:/
+  endtry
+  call assert_true(&wrap)
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
