@@ -2257,7 +2257,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    see 'completefuzzycollect'.
 
 	   longest
-		    When 'autocomplete' is not enabled, only the longest
+		    When 'autocomplete' is not active, only the longest
 		    common prefix of the matches is inserted.  If the popup
 		    menu is displayed, you can use CTRL-L to add more
 		    characters.  Whether case is ignored depends on the type
