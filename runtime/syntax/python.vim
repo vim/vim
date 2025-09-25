@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Zvezdan Petkovic <zpetkovic@acm.org>
-" Last Change:	2025 Sep 08
+" Last Change:	2025 Sep 25
 " Credits:	Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
 "		Rob B
@@ -113,7 +113,7 @@ syn keyword pythonAsync		async await
 " for more on this.
 syn match   pythonConditional   "^\s*\zscase\%(\s\+.*:.*$\)\@="
 syn match   pythonConditional   "^\s*\zsmatch\%(\s\+.*:\s*\%(#.*\)\=$\)\@="
-syn match   pythonStatement     "\<type\ze\s\+\h\w*" nextgroup=pythonType skipwhite
+syn match   pythonStatement     "\<type\>\ze\s\+\h\w*" nextgroup=pythonType skipwhite
 
 " These names are special by convention. While they aren't real keywords,
 " giving them distinct highlighting provides a nice visual cue.
@@ -308,7 +308,7 @@ if !exists("python_no_builtin_highlight")
   syn keyword pythonBuiltin	setattr slice sorted staticmethod str sum super
   syn keyword pythonBuiltin	tuple vars zip __import__
   " only match `type` as a builtin when it's not followed by an identifier
-  syn match   pythonBuiltin	"\<type\ze\(\s\+\h\w*\)\@!"
+  syn match   pythonBuiltin	"\<type\>\ze\(\s\+\h\w*\)\@!"
   " avoid highlighting attributes as builtins
   syn match   pythonAttribute	/\.\h\w*/hs=s+1
 	\ contains=ALLBUT,pythonBuiltin,pythonClass,pythonFunction,pythonType,pythonAsync
