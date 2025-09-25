@@ -12625,9 +12625,11 @@ f_type(typval_T *argvars, typval_T *rettv)
 		}
 		break;
 	    }
+	case VAR_VOID:
+	    emsg(_(e_cannot_use_void_value));
+	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
-	case VAR_VOID:
 	    internal_error_no_abort("f_type(UNKNOWN)");
 	    n = -1;
 	    break;

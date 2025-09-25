@@ -6522,7 +6522,7 @@ func Test_type()
     endif
     call assert_equal(v:t_blob, type(test_null_blob()))
 
-    call assert_fails("call type(test_void())", ['E340:', 'E685:'])
+    call assert_fails("call type(test_void())", ['E1031: Cannot use void value', 'E1031: Cannot use void value'])
     call assert_fails("call type(test_unknown())", ['E340:', 'E685:'])
 
     call assert_equal(0, 0 + v:false)
@@ -6598,6 +6598,10 @@ func Test_type()
     call assert_false(empty(v:true))
     call assert_true(empty(v:null))
     call assert_true(empty(v:none))
+
+    def s:GetVoidValue(): void
+    enddef
+    call assert_fails('let x = type(s:GetVoidValue())', 'E1031: Cannot use void value')
 
     func ChangeYourMind()
 	try

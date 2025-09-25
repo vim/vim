@@ -1357,9 +1357,11 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
  * It is OK for "from" and "to" to point to the same item.  This is used to
  * make a copy later.
  */
-    void
+    int
 copy_tv(typval_T *from, typval_T *to)
 {
+    int		ret = OK;
+
     to->v_type = from->v_type;
     to->v_lock = 0;
     switch (from->v_type)
@@ -1465,12 +1467,16 @@ copy_tv(typval_T *from, typval_T *to)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
+	    ret = FAIL;
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	    internal_error_no_abort("copy_tv(UNKNOWN)");
+	    ret = FAIL;
 	    break;
     }
+
+    return ret;
 }
 
 /*

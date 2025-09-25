@@ -8936,9 +8936,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For Win32 console, Windows 10 version 1703 (Creators Update) or later
 	is required.  Use this check to find out: >
 		if has('vcon')
-<	This requires Vim to be built with the |+vtp| feature.  Enabling
-	'termguicolors' also enable Virtual Terminal Processing (VTP) in the
-	Windows console, which improves rendering of multi-byte characters.
+<	This requires Vim to be built with the |+vtp| feature, see also
+	|win32-term-colors|.
 
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 

@@ -5580,6 +5580,17 @@ def Test_multikey_dict_in_block()
   unlet g:TestDict
 enddef
 
+" Test for using the type() function with void
+def Test_type_func_with_void()
+  var lines =<< trim END
+    vim9script
+    def GetVoidValue(): void
+    enddef
+    echo type(GetVoidValue())
+  END
+  v9.CheckSourceFailure(lines, 'E1031: Cannot use void value', 4)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
