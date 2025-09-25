@@ -2264,7 +2264,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    of completion.  For buffer text the 'ignorecase' option
 		    applies.
 
-		    When 'autocomplete' is enabled and no completion item is
+		    When 'autocomplete' is active and no completion item is
 		    selected, the longest common prefix of the matches is
 		    inserted after the cursor.  The prefix is taken either
 		    from all displayed items or only from items in the current
