@@ -113,7 +113,7 @@ syn keyword pythonAsync		async await
 " for more on this.
 syn match   pythonConditional   "^\s*\zscase\%(\s\+.*:.*$\)\@="
 syn match   pythonConditional   "^\s*\zsmatch\%(\s\+.*:\s*\%(#.*\)\=$\)\@="
-syn match   pythonStatement     "\<type\>\ze\s\+\h\w*" nextgroup=pythonType skipwhite
+syn match   pythonStatement     "\<type\ze\s\+\h\w*" nextgroup=pythonType skipwhite
 
 " These names are special by convention. While they aren't real keywords,
 " giving them distinct highlighting provides a nice visual cue.
