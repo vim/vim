@@ -3359,7 +3359,7 @@ eval_variable(
 		    }
 		}
 	    }
-	    copy_tv(tv, rettv);
+	    ret = copy_tv(tv, rettv);
 	}
     }
 
