@@ -492,9 +492,8 @@ VIM_KEYCODE_TRANS_STRATEGY can be set to the desired value ("experimental" or
 Caption Bar's Behaviour			    *gui-w32-caption-bar-behaviour*
 
 The color of the window caption bar is treated as an extension of the
-application's background. Prior to Windows 11, the caption bar color adopted
-the value specified in the 'background' setting. Starting with Windows 11,
-however, it follows the color defined by |:hi-normal|, meaning it will match
-the background color of your current theme.
+application's background. Starting with Windows 11, it follows the color
+defined by |:hi-normal|, meaning it will match the background color of your
+current theme.
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
