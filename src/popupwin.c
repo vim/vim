@@ -2832,6 +2832,9 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     int		id;
     win_T	*wp;
 
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = -1;
+
     if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
@@ -2846,6 +2849,8 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp->w_popup_flags & POPF_INFO)
 	pum_position_info_popup(wp);
 #endif
+
+    rettv->vval.v_number = 0;
 }
 
 /*

@@ -2652,7 +2652,7 @@ static const funcentry_T global_functions[] =
     {"popup_settext",	2, 2, FEARG_1,	    arg2_number_string_or_list,
 			ret_void,	    PROP_FUNC(f_popup_settext)},
     {"popup_show",	1, 1, FEARG_1,	    arg1_number,
-			ret_void,	    PROP_FUNC(f_popup_show)},
+			ret_number,	    PROP_FUNC(f_popup_show)},
     {"pow",		2, 2, FEARG_1,	    arg2_float_or_nr,
 			ret_float,	    f_pow},
     {"prevnonblank",	1, 1, FEARG_1,	    arg1_lnum,
