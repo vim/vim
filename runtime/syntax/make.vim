@@ -34,6 +34,14 @@ if get(b:, 'make_flavor', s:make_flavor) == 'microsoft'
 endif
 
 " identifiers; treat $$X like $X inside makeDefine
+syn match makeIdent	"\$\$\w*"
+syn match makeIdent	"\$\$\$\$\w*" containedin=makeDefine
+syn match makeIdent	"\$[^({]"
+syn match makeIdent	"\$\$[^({]" containedin=makeDefine
+syn match makeIdent	"^ *[^:#= \t]*\s*[:+?!*]="me=e-2
+syn match makeIdent	"^ *[^:#= \t]*\s*::="me=e-3
+syn match makeIdent	"^ *[^:#= \t]*\s*="me=e-1
+syn match makeIdent	"%"
 if get(b:, 'make_flavor', s:make_flavor) == 'microsoft'
   syn region makeIdent	start="\$(" end=")" contains=makeStatement,makeIdent
   syn region makeIdent	start="\${" end="}" contains=makeStatement,makeIdent
@@ -45,14 +53,6 @@ else
   syn region makeIdent	start="\$\$(" skip="\\)\|\\\\" end=")" containedin=makeDefine contains=makeStatement,makeIdent
   syn region makeIdent	start="\$\${" skip="\\}\|\\\\" end="}" containedin=makeDefine contains=makeStatement,makeIdent
 endif
-syn match makeIdent	"\$\$\w*"
-syn match makeIdent	"\$\$\$\$\w*" containedin=makeDefine
-syn match makeIdent	"\$[^({]"
-syn match makeIdent	"\$\$[^({]" containedin=makeDefine
-syn match makeIdent	"^ *[^:#= \t]*\s*[:+?!*]="me=e-2
-syn match makeIdent	"^ *[^:#= \t]*\s*::="me=e-3
-syn match makeIdent	"^ *[^:#= \t]*\s*="me=e-1
-syn match makeIdent	"%"
 
 " Makefile.in variables
 syn match makeConfig "@[A-Za-z0-9_]\+@"
