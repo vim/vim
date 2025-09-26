@@ -4339,6 +4339,70 @@ func Test_text_after_wrap_showbreak()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_text_eol_long_wrap_smoothscroll()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, [repeat('0123456789', 5), 'foo', 'bar'])
+    normal! G$
+    call prop_type_add('Test', #{highlight: 'ErrorMsg'})
+    call prop_add(1, 51, #{type: 'Test', text: repeat('x', 145), text_wrap: 'wrap'})
+
+    set cursorline scrolloff=0 showbreak=>\  smoothscroll
+  END
+  call writefile(lines, 'XTestEolLongWrapSms', 'D')
+  let buf = RunVimInTerminal('-S XTestEolLongWrapSms', #{rows: 8, cols: 50})
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_01', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_02', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_03', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_04', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_05', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_06', {})
+
+  call term_sendkeys(buf, 'gg$xG$')
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_07', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_08', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_09', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_10', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_11', {})
+
+  call term_sendkeys(buf, "zb:set list listchars=eol:$ | echo\<CR>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_12', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_13', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_14', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_15', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_16', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_17', {})
+
+  call term_sendkeys(buf, 'gg$xG$')
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_18', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_19', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_20', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_21', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_text_eol_long_wrap_sms_22', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_text_below_nowrap()
   CheckScreendump
   CheckRunVimInTerminal
