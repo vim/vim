@@ -2,6 +2,10 @@ vim9script
 # Vim9 expressions
 
 
+# Boolean
+
+echo true false
+
 # Number
 
 # ' separated
@@ -17,6 +21,11 @@ echo   0x1000'0000
 echo  -0b1000'0000
 echo  -0o1000'0000
 echo  -0x1000'0000
+
+# Null
+
+echo null null_blob null_channel null_class null_dict null_function null_job
+echo null_list null_object null_partial null_string null_tuple
 
 # Dictionary
 
