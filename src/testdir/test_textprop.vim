@@ -4264,6 +4264,81 @@ func Test_text_after_nowrap_list()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_text_after_wrap_showbreak()
+  CheckScreendump
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set cursorline
+    set shiftwidth=4
+
+    set breakindent
+    set showbreak=>\ 
+    set breakindentopt=shift:2,min:64
+
+    call setline(1, ['        " 1234567890', 'foo', 'bar'])
+
+    call prop_type_add('Test', {
+          \ 'highlight': 'Visual',
+          \ 'priority': 10,
+          \ 'combine': v:true,
+          \ })
+    call prop_add(1, 0, #{
+          \ type: 'Test',
+          \ bufnr: bufnr('%'),
+          \ text: 'aaaa890 123 456 789',
+          \ text_wrap: 'wrap',
+          \ text_align: 'after'
+          \ })
+  END
+  call writefile(lines, 'XTestAfterWrapShowbreak', 'D')
+  let buf = RunVimInTerminal('-S XTestAfterWrapShowbreak', #{rows: 8, cols: 20})
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_01', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_02', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_03', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_02', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_01', {})
+
+  call term_sendkeys(buf, '$x0')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_04', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_05', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_06', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_05', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_04', {})
+
+  call term_sendkeys(buf, ":set list listchars=eol:$\<CR>")
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_07', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_08', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_09', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_08', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_07', {})
+
+  call term_sendkeys(buf, '$x0')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_10', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_11', {})
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_12', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_11', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_text_after_wrap_showbreak_10', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_text_below_nowrap()
   CheckScreendump
   CheckRunVimInTerminal

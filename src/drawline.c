@@ -829,6 +829,23 @@ text_prop_position(
 	return cells;
     return (below && col_with_padding > win_col_off(wp) && !wp->w_p_wrap);
 }
+
+# if defined(FEAT_LINEBREAK) || defined(PROTO)
+/*
+ * no 'showbreak' before "below" text property
+ * or after "above" or "right" text property
+ */
+    int
+text_prop_no_showbreak(textprop_T *tp)
+{
+    int	    right = (tp->tp_flags & TP_FLAG_ALIGN_RIGHT);
+    int	    above = (tp->tp_flags & TP_FLAG_ALIGN_ABOVE);
+    int	    below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
+    int	    wrap = tp->tp_col < MAXCOL || (tp->tp_flags & TP_FLAG_WRAP);
+
+    return (right || above || below || !wrap);
+}
+# endif
 #endif
 
 /*
@@ -2258,10 +2275,8 @@ win_line(
 				// don't combine char attr after EOL
 				text_prop_flags &= ~PT_FLAG_COMBINE;
 # ifdef FEAT_LINEBREAK
-			    if (above || below || right || !wrap)
+			    if (text_prop_no_showbreak(tp))
 			    {
-				// no 'showbreak' before "below" text property
-				// or after "above" or "right" text property
 				wlv.need_showbreak = FALSE;
 				wlv.dont_use_showbreak = TRUE;
 			    }

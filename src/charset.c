@@ -918,8 +918,9 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     // check for a virtual text at the end of a line or on an empty line
     if (len == MAXCOL && cts->cts_has_prop_with_text && *cts->cts_ptr == NUL)
     {
-	(void)win_lbr_chartabsize(cts, NULL);
-	vcol += cts->cts_cur_text_width;
+	int head = 0;
+	(void)win_lbr_chartabsize(cts, &head);
+	vcol += cts->cts_cur_text_width + head;
 	// when properties are above or below the empty line must also be
 	// counted
 	if (cts->cts_ptr == cts->cts_line && cts->cts_prop_lines > 0)
@@ -1325,7 +1326,8 @@ win_lbr_chartabsize(
 			     (vcol + size) % (wp->w_width - col_off) + col_off,
 					      &n_extra, &p, NULL, NULL, FALSE);
 #  ifdef FEAT_LINEBREAK
-			no_sbr = TRUE;  // don't use 'showbreak' now
+			if (text_prop_no_showbreak(tp))
+			    no_sbr = TRUE;  // don't use 'showbreak' now
 #  endif
 		    }
 		    else
