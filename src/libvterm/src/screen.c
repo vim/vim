@@ -49,6 +49,7 @@ struct VTermScreen
 
   const VTermScreenCallbacks *callbacks;
   void *cbdata;
+  int callbacks_has_pushline4;
 
   VTermDamageSize damage_merge;
   /* start_row == -1 => no damage */
@@ -209,27 +210,40 @@ static int putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
   return 1;
 }
 
-static void sb_pushline_from_row(VTermScreen *screen, int row)
+static void sb_pushline_from_row(VTermScreen *screen, int row, int continuation)
 {
   VTermPos pos;
   pos.row = row;
   for(pos.col = 0; pos.col < screen->cols; pos.col++)
     vterm_screen_get_cell(screen, pos, screen->sb_buffer + pos.col);
 
-  (screen->callbacks->sb_pushline)(screen->cols, screen->sb_buffer, screen->cbdata);
+  if(screen->callbacks_has_pushline4 && screen->callbacks->sb_pushline4)
+    (screen->callbacks->sb_pushline4)(screen->cols, screen->sb_buffer, continuation, screen->cbdata);
+  else
+    (screen->callbacks->sb_pushline)(screen->cols, screen->sb_buffer, screen->cbdata);
+}
+
+static int premove(VTermRect rect, void *user)
+{
+  VTermScreen *screen = user;
+
+  if(((screen->callbacks && screen->callbacks->sb_pushline) ||
+        (screen->callbacks_has_pushline4 && screen->callbacks && screen->callbacks->sb_pushline4)) &&
+     rect.start_row == 0 && rect.start_col == 0 &&        // starts top-left corner
+     rect.end_col == screen->cols &&                      // full width
+     screen->buffer == screen->buffers[BUFIDX_PRIMARY]) { // not altscreen
+    for(int row = 0; row < rect.end_row; row++) {
+      const VTermLineInfo *lineinfo = vterm_state_get_lineinfo(screen->state, row);
+      sb_pushline_from_row(screen, row, lineinfo->continuation);
+    }
+  }
+
+  return 1;
 }
 
 static int moverect_internal(VTermRect dest, VTermRect src, void *user)
 {
   VTermScreen *screen = user;
-
-  if(screen->callbacks && screen->callbacks->sb_pushline &&
-     dest.start_row == 0 && dest.start_col == 0 &&        // starts top-left corner
-     dest.end_col == screen->cols &&                      // full width
-     screen->buffer == screen->buffers[BUFIDX_PRIMARY]) { // not altscreen
-    for(int row = 0; row < src.start_row; row++)
-      sb_pushline_from_row(screen, row);
-  }
 
   int cols = src.end_col - src.start_col;
   int downward = src.start_row - dest.start_row;
@@ -685,9 +699,12 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
 
   if(old_row >= 0 && bufidx == BUFIDX_PRIMARY) {
     /* Push spare lines to scrollback buffer */
-    if(screen->callbacks && screen->callbacks->sb_pushline)
-      for(int row = 0; row <= old_row; row++)
-        sb_pushline_from_row(screen, row);
+    if((screen->callbacks && screen->callbacks->sb_pushline) ||
+          (screen->callbacks_has_pushline4 && screen->callbacks && screen->callbacks->sb_pushline4))
+      for(int row = 0; row <= old_row; row++) {
+        const VTermLineInfo *lineinfo = old_lineinfo + row;
+        sb_pushline_from_row(screen, row, lineinfo->continuation);
+      }
     if(active)
       statefields->pos.row -= (old_row + 1);
   }
@@ -880,6 +897,7 @@ static VTermStateCallbacks state_cbs = {
   &resize, // resize
   &setlineinfo, // setlineinfo
   &sb_clear, //sb_clear
+  &premove, // premove
 };
 
 /*
@@ -914,6 +932,7 @@ static VTermScreen *screen_new(VTerm *vt)
 
   screen->callbacks = NULL;
   screen->cbdata    = NULL;
+  screen->callbacks_has_pushline4 = 0;
 
   screen->buffers[BUFIDX_PRIMARY] = alloc_buffer(screen, rows, cols);
 
@@ -927,6 +946,7 @@ static VTermScreen *screen_new(VTerm *vt)
   }
 
   vterm_state_set_callbacks(screen->state, &state_cbs, screen);
+  vterm_state_callbacks_has_premove(screen->state);
 
   return screen;
 }
@@ -1125,6 +1145,11 @@ void vterm_screen_set_callbacks(VTermScreen *screen, const VTermScreenCallbacks 
 void *vterm_screen_get_cbdata(VTermScreen *screen)
 {
   return screen->cbdata;
+}
+
+void vterm_screen_callbacks_has_pushline4(VTermScreen *screen)
+{
+  screen->callbacks_has_pushline4 = 1;
 }
 
 void vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermStateFallbacks *fallbacks, void *user)
