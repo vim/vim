@@ -5338,14 +5338,17 @@ gettext({text} [, {package}])				*gettext()*
 
 
 getwininfo([{winid}])					*getwininfo()*
-		Returns information about windows as a |List| with Dictionaries.
+		Returns information about windows as a |List| with
+		Dictionaries.
 
-		If {winid} is given Information about the window with that ID
-		is returned, as a |List| with one item.  If the window does not
-		exist the result is an empty list.
+		If {winid} is given, information about the window with that ID
+		is returned, as a |List| with one item.  When that window is a
+		|popup| window, information about that popup window is
+		returned.  If the window does not exist the result is an empty
+		list.
 
 		Without {winid} information about all the windows in all the
-		tab pages is returned.
+		tab pages (excluding |popup|s) is returned.
 
 		Each List item is a |Dictionary| with the following entries:
 			botline		last complete displayed buffer line
