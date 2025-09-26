@@ -308,6 +308,7 @@ This switches on three very clever mechanisms:
 
 
 				*restore-cursor* *last-position-jump*  >vim
+
     augroup RestoreCursor
       autocmd!
       autocmd BufReadPost *

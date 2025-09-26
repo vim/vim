@@ -347,7 +347,7 @@ Have a look at the package located at $VIMRUNTIME/pack/dist/opt/comment/
 HIGHLIGHT YANK PLUGIN
 
 Vim comes with the highlight-yank plugin, written in Vim9 script
-|hlyank-install|, here is a simplified implementation: >vim
+|hlyank-install|, here is a simplified implementation: >vim9
 
 	vim9script
 
