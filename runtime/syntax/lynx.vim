@@ -2,6 +2,7 @@
 " Language:	Lynx Web Browser Configuration (lynx.cfg)
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2023 Nov 09
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Lynx 2.8.9
 
@@ -148,4 +149,4 @@ let b:current_syntax = "lynx"
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

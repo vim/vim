@@ -1,6 +1,7 @@
 " Menu Translations:	Traditional Chinese
 " Translated By:	Hung-Te Lin	<piaip@csie.ntu.edu.tw>
 " Last Change:		2012 May 01
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Original translations
 
 " {{{ Quit when menu translations have already been done.
@@ -289,4 +290,4 @@ endif
 let &cpo = s:keepcpo
 unlet s:keepcpo
 
-" vim:foldmethod=marker:nowrap:foldcolumn=2:foldlevel=1
+" vim:foldmethod=marker:foldcolumn=2:foldlevel=1

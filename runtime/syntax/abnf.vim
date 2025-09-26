@@ -3,6 +3,7 @@
 " Maintainer:	A4-Tacks <wdsjxhno1001@163.com>
 " Last Change:	2025 Mar 05
 " Upstream:	https://github.com/A4-Tacks/abnf.vim
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Implementing RFC-5234, RFC-7405
 
@@ -30,4 +31,4 @@ hi def link abnfProse		String
 hi def link abnfNumVal		Number
 hi def link abnfRepeat		Repeat
 
-" vim:noet:ts=8:sts=8:nowrap
+" vim:noet:ts=8:sts=8

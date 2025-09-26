@@ -3,6 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Timo Pedersen <dat97tpe@ludat.lth.se>
 " Last Change:		2022 Oct 31
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if exists("b:current_syntax")
   finish
@@ -142,4 +143,4 @@ hi def link modula3Type		Type		"}}}
 
 let b:current_syntax = "modula3"
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

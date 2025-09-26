@@ -12,6 +12,7 @@
 "      History: 21.07.2006 MK New Dec Ada
 "               15.10.2006 MK Bram's suggestion for runtime integration
 "               08.09.2006 MK Correct double load protection.
+"               26.09.2025 by Vim Project: remove nowrap modeline (#18399)
 "    Help Page: compiler-decada
 "------------------------------------------------------------------------------
 " Last Change:	2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
@@ -48,5 +49,5 @@ finish " 1}}}
 "
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
+" vim: textwidth=78 tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
 " vim: foldmethod=marker

@@ -4,7 +4,8 @@
 " URL:			https://github.com/vim-ruby/vim-ruby
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:		2014 Mar 23
-"			2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
+"			2024 Apr 03 by Vim Project (removed :CompilerSet definition)
+"			2025 Sep 26 by Vim project: remove nowrap modeline (#18399)
 
 if exists("current_compiler")
   finish
@@ -30,4 +31,4 @@ CompilerSet errorformat=\%W\ %\\+%\\d%\\+)\ Failure:,
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8:
+" vim: sw=2 sts=2 ts=8:

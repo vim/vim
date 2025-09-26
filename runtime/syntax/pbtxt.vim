@@ -2,6 +2,7 @@
 " Language:             Protobuf Text Format
 " Maintainer:           Lakshay Garg <lakshayg@outlook.in>
 " Last Change:          2020 Nov 17
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Homepage:             https://github.com/lakshayg/vim-pbtxt
 
 if exists("b:current_syntax")
@@ -41,4 +42,4 @@ let b:current_syntax = "pbtxt"
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8 noet
+" vim: sw=2 sts=2 ts=8 noet

@@ -3,6 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Kevin Dahlhausen <kdahlhaus@yahoo.com>
 " Last Change:		2020 Oct 31
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if exists("b:current_syntax")
   finish
@@ -55,4 +56,4 @@ hi def link asmRegister	Identifier
 
 let b:current_syntax = "asmh8300"
 
-" vim: nowrap sw=2 sts=2 ts=8 noet
+" vim: sw=2 sts=2 ts=8 noet

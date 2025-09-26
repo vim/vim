@@ -4,6 +4,7 @@
 " URL:			https://github.com/vim-ruby/vim-ruby
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:		2022 Mar 18
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if exists("b:current_syntax")
   finish
@@ -76,4 +77,4 @@ if main_syntax == 'eruby'
   unlet main_syntax
 endif
 
-" vim: nowrap sw=2 sts=2 ts=8:
+" vim: sw=2 sts=2 ts=8:

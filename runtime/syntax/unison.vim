@@ -3,6 +3,7 @@
 " Language:        unison
 " Maintainer:      Anton Parkhomenko <anton@chuwy.me>
 " Last Change:     Aug 7, 2023
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Original Author: John Williams, Paul Chiusano and Rúnar Bjarnason
 
 if exists("b:current_syntax")
@@ -100,4 +101,4 @@ hi def link       unisonTypedef                         Typedef
 
 let b:current_syntax = "unison"
 
-" Options for vi: ts=8 sw=2 sts=2 nowrap noexpandtab ft=vim
+" Options for vi: ts=8 sw=2 sts=2 noexpandtab ft=vim

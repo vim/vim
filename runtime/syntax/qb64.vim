@@ -2,6 +2,7 @@
 " Language:	QB64
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2022 Jan 21
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Prelude {{{1
 if exists("b:current_syntax")
@@ -406,4 +407,4 @@ let b:current_syntax = "qb64"
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

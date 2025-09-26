@@ -3,6 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Gautam Iyer <gi1242+vim@NoSpam.com> where NoSpam=gmail (Original Author)
 " Last Change:		2021 Oct 15
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Description: We break up each statement into a "command" and an "end" part.
 " All groups are either a "command" or part of the "end" of a statement (ie
@@ -252,4 +253,4 @@ unlet s:oldcpo
 
 let b:current_syntax = 'tcsh'
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

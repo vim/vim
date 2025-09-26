@@ -4,6 +4,7 @@
 " Previous Maintainers:	Xavier Crégut <xavier.cregut@enseeiht.fr>
 "			Mario Eusebio <bio@dq.fct.unl.pt>
 " Last Change:		2021 May 20
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Contributors: Tim Chase <tchase@csc.com>,
 "		Stas Grabois <stsi@vtrails.com>,
@@ -381,4 +382,4 @@ hi def link pascalShowTab		Error
 
 let b:current_syntax = "pascal"
 
-" vim: nowrap sw=2 sts=2 ts=8 noet:
+" vim: sw=2 sts=2 ts=8 noet:

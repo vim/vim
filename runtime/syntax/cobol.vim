@@ -6,6 +6,7 @@
 "     (formerly Sitaram Chamarty <sitaram@diac.com> and
 "               James Mitchell <james_mitchell@acm.org>)
 " Last Change:    2019 Mar 22
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Ankit Jain      22.03.2019     Changes & fixes:
 "                                1. Include inline comments
 "                                2. Use comment highlight for bad lines
@@ -257,4 +258,4 @@ hi def link cobolStart          Comment
 
 let b:current_syntax = "cobol"
 
-" vim: ts=6 nowrap
+" vim: ts=6

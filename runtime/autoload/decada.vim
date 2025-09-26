@@ -10,10 +10,11 @@
 "    $Revision: 887 $
 "     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/decada.vim $
 "      History: 21.07.2006 MK New Dec Ada
-"               15.10.2006 MK Bram's suggestion for runtime integration
-"               05.11.2006 MK Bram suggested not to use include protection for
-"                             autoload
+"		15.10.2006 MK Bram's suggestion for runtime integration
+"		05.11.2006 MK Bram suggested not to use include protection for
+"			      autoload
 "		05.11.2006 MK Bram suggested to save on spaces
+"		26.09.2025 by Vim Project: remove nowrap modeline (#18399)
 "    Help Page: compiler-decada
 "------------------------------------------------------------------------------
 
@@ -71,5 +72,5 @@ finish " 1}}}
 "
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
+" vim: textwidth=78 tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
 " vim: foldmethod=marker

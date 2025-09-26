@@ -4,6 +4,7 @@
 " Previous Maintainer:	Haakon Riiser <hakonrk@fys.uio.no>
 " Contributor:		Jack Haden-Enneking
 " Last Change:		2022 Oct 15
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -120,4 +121,4 @@ unlet s:highlight_tabs
 
 let b:current_syntax = "sed"
 
-" vim: nowrap sw=2 sts=2 ts=8 noet:
+" vim: sw=2 sts=2 ts=8 noet:

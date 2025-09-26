@@ -6,6 +6,7 @@
 " Last Change:		2023 Nov 28
 " 2024 Jul 30 by Vim Project: increase syn-sync-minlines to 250
 " 2025 May 10 by Vim Project: update comment
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " See :help html.vim for some comments and a description of the options
 
@@ -411,4 +412,4 @@ endif
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

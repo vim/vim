@@ -10,6 +10,7 @@
 "			@konfekt
 " Last Change:		2025 Apr 04
 " 2025 May 06 by Vim Project update 'path' setting #17267
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if exists("b:did_ftplugin")
   finish
@@ -187,4 +188,4 @@ enddef
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8 noet:
+" vim: sw=2 sts=2 ts=8 noet:

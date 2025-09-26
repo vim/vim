@@ -16,7 +16,8 @@
 "		15.10.2006 MK Bram's suggestion for runtime integration
 "		05.11.2006 MK Bram suggested to save on spaces
 "		19.09.2007 NO g: missing before ada#Comment
-"		2022 April: b:undo_indent added by Doug Kearns
+"		08.04.2022 b:undo_indent added by Doug Kearns
+"		26.09.2025 by Vim Project: remove nowrap modeline (#18399)
 "    Help Page: ft-vim-indent
 "------------------------------------------------------------------------------
 " ToDo:
@@ -307,5 +308,5 @@ finish " 1}}}
 "
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
+" vim: textwidth=78 tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
 " vim: foldmethod=marker

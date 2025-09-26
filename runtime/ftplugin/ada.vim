@@ -24,6 +24,7 @@
 "			      set undo_ftplugin
 "			      mark as unmaintained
 "			      use buffer-local abbreviation
+"		26.09.2025    remove nowrap modeline (#18399)
 "    Help Page: ft-ada-plugin
 "------------------------------------------------------------------------------
 " Provides mapping overrides for tag jumping that figure out the current
@@ -217,5 +218,5 @@ finish " 1}}}
 "
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 nowrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
+" vim: textwidth=78 tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
 " vim: foldmethod=marker

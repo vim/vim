@@ -1,6 +1,7 @@
 " Vim syntax file
 " Language:	ChaiScript
 " Maintainer:	Jason Turner <lefticus 'at' gmail com>
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -91,4 +92,4 @@ hi def link chaiscriptEval	        Special
 
 let b:current_syntax = "chaiscript"
 
-" vim: nowrap sw=2 sts=2 ts=8 noet
+" vim: sw=2 sts=2 ts=8 noet

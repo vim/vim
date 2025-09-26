@@ -2,6 +2,7 @@
 " Language:		Idris 2
 " Maintainer:		Idris Hackers (https://github.com/edwinb/idris2-vim), Serhii Khoma <srghma@gmail.com>
 " Last Change:		2024 Nov 05
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Original Author:	raichoo (raichoo@googlemail.com)
 " License:		Vim (see :h license)
 " Repository:		https://github.com/ShinKage/idris2-nvim
@@ -83,4 +84,4 @@ highlight def link idris2Backtick Operator
 
 let b:current_syntax = "idris2"
 
-" vim: nowrap sw=2 sts=2 ts=8 noexpandtab ft=vim
+" vim: sw=2 sts=2 ts=8 noexpandtab ft=vim

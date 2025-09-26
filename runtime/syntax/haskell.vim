@@ -2,6 +2,7 @@
 " Language:		Haskell
 " Maintainer:		Haskell Cafe mailinglist <haskell-cafe@haskell.org>
 " Last Change:		2024 Mar 28 by Enrico Maria De Angelis <enricomaria.dean6elis@gmail.com>
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Original Author:	John Williams <jrw@pobox.com>
 "
 " Thanks to Ryan Crumley for suggestions and John Meacham for
@@ -191,4 +192,4 @@ hi def link cCppOut			  Comment
 
 let b:current_syntax = "haskell"
 
-" Options for vi: ts=8 sw=2 sts=2 nowrap noexpandtab ft=vim
+" Options for vi: ts=8 sw=2 sts=2 noexpandtab ft=vim

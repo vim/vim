@@ -2,6 +2,7 @@
 " Language:	Modula-3 Quake
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2021 April 15
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if exists("b:current_syntax")
   finish
@@ -71,4 +72,4 @@ hi def link m3quakeTodo	       Todo
 
 let b:current_syntax = "m3quake"
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

@@ -4,6 +4,7 @@
 " URL:			https://github.com/vim-ruby/vim-ruby
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:		2023 Mar 16
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " ----------------------------------------------------------------------------
 "
 " Previous Maintainer:	Mirko Nasato
@@ -603,4 +604,4 @@ unlet! s:cpo_sav
 
 delc SynFold
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

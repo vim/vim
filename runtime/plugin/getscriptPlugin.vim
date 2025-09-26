@@ -3,6 +3,7 @@
 "  Maintainer:	This runtime file is looking for a new maintainer.
 "  Original Author:	Charles E. Campbell
 "  Date:	Nov 29, 2013
+"  2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "
@@ -39,4 +40,4 @@ let &cpo= s:keepcpo
 unlet s:keepcpo
 
 " ---------------------------------------------------------------------
-" vim: ts=8 sts=2 fdm=marker nowrap
+" vim: ts=8 sts=2 fdm=marker
