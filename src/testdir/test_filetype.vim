@@ -615,7 +615,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     pilrc: ['file.rcp'],
     pine: ['.pinerc', 'pinerc', '.pinercex', 'pinercex'],
     pinfo: ['/etc/pinforc', '/.pinforc', 'any/.pinforc', 'any/etc/pinforc'],
-    pkl: ['file.pkl'],
+    pkl: ['file.pkl', 'file.pcf'],
     pli: ['file.pli', 'file.pl1'],
     plm: ['file.plm', 'file.p36', 'file.pac'],
     plp: ['file.plp'],

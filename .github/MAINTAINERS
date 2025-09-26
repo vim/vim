@@ -585,6 +585,7 @@ runtime/syntax/pbtxt.vim				@lakshayg
 runtime/syntax/pdf.vim					@tpope
 runtime/syntax/perl.vim					@petdance
 runtime/syntax/php.vim					@TysonAndre
+runtime/syntax/pkl.vim					@jclsn
 runtime/syntax/plsql.vim				@lee-lindley
 runtime/syntax/pod.vim					@petdance
 runtime/syntax/poefilter.vim				@ObserverOfTime
