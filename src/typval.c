@@ -823,7 +823,7 @@ check_for_opt_lnum_arg(typval_T *args, int idx)
 	    || check_for_lnum_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CRYPT) || defined(PROTO)
 /*
  * Give an error and return FAIL unless "args[idx]" is a string or a blob.
  */

@@ -3136,7 +3136,7 @@ EXTERN char e_float_or_number_required_for_argument_nr[]
 	INIT(= N_("E1219: Float or Number required for argument %d"));
 EXTERN char e_string_or_number_required_for_argument_nr[]
 	INIT(= N_("E1220: String or Number required for argument %d"));
-# ifdef FEAT_JOB_CHANNEL
+# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CRYPT)
 EXTERN char e_string_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1221: String or Blob required for argument %d"));
 # endif
