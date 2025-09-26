@@ -3651,8 +3651,13 @@ AC_CACHE_CHECK([whether we talk terminfo], [vim_cv_terminfo],
   [
     AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
-#ifdef HAVE_TERMCAP_H
+#ifdef HAVE_TERM_H
+# include <term.h>
+#elif defined(HAVE_TERMCAP_H)
 # include <termcap.h>
+#else
+  /* forward declare tgoto */
+  extern char *tgoto(const char *, int, int);
 #endif
 #ifdef HAVE_STRING_H
 # include <string.h>
