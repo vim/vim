@@ -1854,6 +1854,7 @@ PRO_AUTO = \
 	arglist.pro \
 	autocmd.pro \
 	beval.pro \
+	blob.pro \
 	blowfish.pro \
 	buffer.pro \
 	bufwrite.pro \
@@ -1979,6 +1980,8 @@ PRO_AUTO = \
 	vim9script.pro \
 	vim9type.pro \
 	viminfo.pro \
+	wayland.pro \
+	winclip.pro \
 	window.pro \
 	$(ALL_GUI_PRO) \
 	$(TCL_PRO)
