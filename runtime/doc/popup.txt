@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 9.1.  Last change: 2025 Aug 27
+*popup.txt*  For Vim version 9.1.  Last change: 2025 Sep 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -639,10 +639,17 @@ popup_settext({id}, {text})				*popup_settext()*
 
 
 popup_show({id})						*popup_show()*
-		If {id} is a hidden popup, show it now.
-		For {id} see `popup_hide()`.
-		If {id} is the info popup it will be positioned next to the
-		current popup menu item.
+		Show a hidden popup window identified by {id}.
+		Use {id} as returned by |popup_create()|.
+
+		If the popup is currently hidden, it will be made visible.
+		See |popup_hide()| to hide a popup.
+
+		If {id} refers to an info popup, it will be positioned next to
+		the currently selected item in the popup menu.
+
+		Returns -1 if a popup window with {id} does not exist.
+		Returns 0 on success.
 
 		Return type: |Number|
 

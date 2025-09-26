@@ -3269,6 +3269,7 @@ enddef
 def Test_popup_show()
   v9.CheckSourceDefAndScriptFailure(['popup_show("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckSourceDefAndScriptFailure(['popup_show(true)'], ['E1013: Argument 1: type mismatch, expected number but got bool', 'E1210: Number required for argument 1'])
+  v9.CheckSourceDefAndScriptSuccess(['assert_equal(-1, popup_show(100))'])
 enddef
 
 def Test_prevnonblank()

@@ -1264,7 +1264,7 @@ func Test_popup_hide()
 
   " no error non-existing window
   eval 1234234->popup_hide()
-  call popup_show(41234234)
+  call assert_equal(-1, popup_show(41234234))
 
   bwipe!
 endfunc
@@ -2623,7 +2623,7 @@ func Test_popup_hidden()
   exe "normal anot used by filter\<Esc>"
   call assert_equal('not used by filter', getline(1))
 
-  call popup_show(winid)
+  call assert_equal(0, popup_show(winid))
   call feedkeys('y', "xt")
   call assert_equal(1, s:cb_res)
 
