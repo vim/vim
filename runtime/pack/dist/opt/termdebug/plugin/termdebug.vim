@@ -34,6 +34,7 @@ vim9script
 # Gdb is run as a job with callbacks for I/O.
 # On Unix another terminal window is opened to run the debugged program
 # On MS-Windows a separate console is opened to run the debugged program
+# but a terminal window is used to run remote debugged programs.
 
 # The communication with gdb uses GDB/MI.  See:
 # https://sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI.html
