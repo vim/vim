@@ -1769,12 +1769,14 @@ win_line(
 
 	init_chartabsize_arg(&cts, wp, lnum, wlv.vcol, line, ptr);
 	cts.cts_max_head_vcol = v;
-	while (cts.cts_vcol < v && *cts.cts_ptr != NUL)
+	while (cts.cts_vcol < v)
 	{
 	    head = 0;
 	    charsize = win_lbr_chartabsize(&cts, &head);
 	    cts.cts_vcol += charsize;
 	    prev_ptr = cts.cts_ptr;
+	    if (*prev_ptr == NUL)
+		break;
 	    MB_PTR_ADV(cts.cts_ptr);
 	    if (wp->w_p_list)
 	    {
