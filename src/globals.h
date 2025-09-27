@@ -2073,6 +2073,9 @@ EXTERN int	p_tgc_set INIT(= FALSE);
 
 #ifdef FEAT_CLIPBOARD
 EXTERN clipmethod_T clipmethod INIT(= CLIPMETHOD_NONE);
+# ifdef FEAT_CLIPBOARD_PROVIDER
+EXTERN char_u *clipprovider_name INIT(= NULL);
+# endif
 #endif
 
 #ifdef FEAT_WAYLAND

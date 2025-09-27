@@ -38,6 +38,7 @@ a remark is given.
 12. The sandbox			|eval-sandbox|
 13. Textlock			|textlock|
 14. Vim script library		|vim-script-library|
+15. Clipboard providers		|clipboard-providers|
 
 Testing support is documented in |testing.txt|.
 Profiling is documented at |profiling|.
@@ -2250,6 +2251,11 @@ v:clipmethod	The current method of accessing the clipboard that is being
 			none		Clipboard functionality is disabled or
 					unavailable.
 		See 'clipmethod' for more details.
+
+					*v:clipproviders*
+v:clipproviders
+		A dictionary containing clipboard providers, see
+		|clipboard-providers| for more information.
 
 					*v:cmdarg* *cmdarg-variable*
 v:cmdarg	This variable is used for two purposes:
@@ -5260,6 +5266,81 @@ Examples: >
 Usage: >vim
 	:call dist#vim9#Launch(<args>)
 	:Launch <app> <args>.
+<
+==============================================================================
+15. Clipboard providers					*clipboard-providers*
+
+When Vim is compiled with the |+clipboard_provider| feature, which requires
+the |+eval| feature, creating custom clipboards is possible.  These providers
+handle the "+" and "*" registers.  Note that on non-Unix or non-VMS systems,
+only the "*" register will be available for use.
+
+To add a provider, add a new entry in the |v:clipproviders| dictionary, in the
+format of: >
+	let v:clipproviders["name"] = {
+            \   "available": 'Available',
+            \   "paste": 'Paste',
+            \   "copy": 'Copy'
+            \ }
+
+The key is the provider name, which should be used in 'clipmethod', for
+example in this example, you would add "name" to 'clipmethod' in order to use
+it. >
+	set clipmethod=name,wayland,x11,gui
+
+Each callback can either be a name of a function in a string, a |Funcref|, or
+a |lambda| expression.
+
+						*clipboard-provider-available*
+The "available" callback should return a boolean, either true if the clipboard
+provider is available to be used, or false if it is not.  If this callback is
+not specified, then it is assumed the provider is always available (always
+returns true).
+
+						*clipboard-provider-paste*
+The "paste" callback returns nothing, and takes one argument which is the
+register being accessed  The callback should use |setreg()| to change the text
+being accessed.  Before the start of the callback, the register will be
+cleared first.  If this callback is not specified, then accessing the
+clipboard registers will return nothing.
+
+						*clipboard-provider-copy*
+The "copy" callback returns nothing, and takes one argument which the register
+being put.  The callback should use |getreg()| to get the contents of the
+given register so it can be used.  If this callback is not specified, then
+nothing is done when the clipboard registers are changed.
+
+In both the "paste" and "copy" callbacks, it is not allowed to change the
+buffer text, see |textlock|.  Additionally, the register in question will act
+like a normal register, meaning that no "paste" or "copy" callbacks will be
+called on it when it is modified/accessed.
+
+The "copy" callback is called whenever the register is modified, and the
+"paste" callback is called whenever the register is accessed, such as when
+calling |:registers|
+
+Here is an example script that uses the clipboard provider feature: >
+	:func! Available()
+	:  return v:true
+	:endfunc
+	:
+	:func! Paste(reg)
+	:  call setreg(a:reg, g:stuff)
+	:endfunc
+	:
+	:func! Copy(reg)
+	:  let g:stuff = getreg(a:reg)
+	:  " This causes a recursive loop if both registers are available!
+	:  " call setreg(a:reg == '*' ? '+' : '*', g:stuff)
+	:endfunc
+	:
+	:let v:clipproviders["test"] = {
+	:	\   "available": "Available",
+	:	\   "paste": function("Paste"),
+	:	\   "copy": function("Copy")
+	:	\ }
+	:
+	:set clipmethod=test
 <
 
  vim:tw=78:ts=8:noet:ft=help:norl:

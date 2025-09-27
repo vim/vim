@@ -156,6 +156,11 @@ static char *(features[]) =
 #else
 	"-clipboard",
 #endif
+#ifdef FEAT_CLIPBOARD_PROVIDER
+	"+clipboard_provider",
+#else
+	"-clipboard_provider",
+#endif
 	"+cmdline_compl",
 	"+cmdline_hist",
 	"+cmdline_info",
