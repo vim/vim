@@ -21,10 +21,11 @@
 "			      autoload
 "		05.11.2006 MK Bram suggested to save on spaces
 "		08.07.2007 TV fix mapleader problems.
-"	        09.05.2007 MK Session just won't work no matter how much
+"		09.05.2007 MK Session just won't work no matter how much
 "			      tweaking is done
 "		19.09.2007 NO still some mapleader problems
 "		31.01.2017 MB fix more mapleader problems
+"		26.09.2025 by Vim Project: remove nowrap modeline (#18399)
 "    Help Page: ft-ada-functions
 "------------------------------------------------------------------------------
 
@@ -633,5 +634,5 @@ finish " 1}}}
 "
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
+" vim: textwidth=78 tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
 " vim: foldmethod=marker

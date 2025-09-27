@@ -2,6 +2,7 @@
 " Language:	Free Pascal Makefile Definition Files
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2021 Apr 23
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if exists("b:current_syntax")
   finish
@@ -55,4 +56,4 @@ hi def link fpcmakeRule			Identifier
 
 let b:current_syntax = "fpcmake"
 
-" vim: nowrap sw=2 sts=2 ts=8 noet:
+" vim: sw=2 sts=2 ts=8 noet:

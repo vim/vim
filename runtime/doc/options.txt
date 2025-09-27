@@ -10257,8 +10257,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set sidescroll=5
 		:set listchars+=precedes:<,extends:>
 <	See 'sidescroll', 'listchars' and |wrap-off|.
-	This option can't be set from a |modeline| when the 'diff' option is
-	on.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'wrapmargin'* *'wm'*
 'wrapmargin' 'wm'	number	(default 0)

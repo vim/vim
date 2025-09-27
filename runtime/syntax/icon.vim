@@ -3,6 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Wendell Turner <wendell@adsi-m4.com> (invalid last known address)
 " Last Change:		2022 Jun 16
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Contributor:		eschen@alumni.princeton.edu 2002.09.18
 
 " Prelude {{{1
@@ -208,4 +209,4 @@ hi def link iconDocumentation	Comment
 " Postscript  {{{1
 let b:current_syntax = "icon"
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

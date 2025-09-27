@@ -4,6 +4,7 @@
 " URL:			https://github.com/vim-ruby/vim-ruby
 " Last Change:		2023 Dec 31
 "			2024 Jan 14 by Vim Project (browsefilter)
+"			2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if (exists("b:did_ftplugin"))
   finish
@@ -458,4 +459,4 @@ endfunction
 " differs on Windows.  Email gsinclair@soyabean.com.au if you need help.
 "
 
-" vim: nowrap sw=2 sts=2 ts=8:
+" vim: sw=2 sts=2 ts=8:

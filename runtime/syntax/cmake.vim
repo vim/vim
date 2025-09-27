@@ -8,6 +8,7 @@
 " Maintainer:   Dimitri Merejkowsky <d.merej@gmail.com>
 " Former Maintainer: Karthik Krishnan <karthik.krishnan@kitware.com>
 " Last Change:  2023 Jul 13
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 "
 " License:      The CMake license applies to this file. See
 "               https://cmake.org/licensing
@@ -4976,5 +4977,3 @@ let b:current_syntax = "cmake"
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
-
-" vim: set nowrap:

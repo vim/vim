@@ -12,8 +12,9 @@
 "     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/compiler/gnat.vim $
 "      History: 24.05.2006 MK Unified Headers
 "		16.07.2006 MK Ada-Mode as vim-ball
-"               15.10.2006 MK Bram's suggestion for runtime integration
+"		15.10.2006 MK Bram's suggestion for runtime integration
 "		19.09.2007 NO use project file only when there is a project
+"		26.09.2025 by Vim Project: remove nowrap modeline (#18399)
 "    Help Page: compiler-gnat
 "------------------------------------------------------------------------------
 
@@ -65,5 +66,5 @@ finish " 1}}}
 "
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=0 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
+" vim: textwidth=0 tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
 " vim: foldmethod=marker

@@ -2,6 +2,7 @@
 " Language:	Modula-2
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2024 Jan 04
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Dialect can be one of pim, iso, r10
 function modula2#GetDialect() abort
@@ -28,4 +29,4 @@ function modula2#SetDialect(dialect, extension = "") abort
   lockvar! b:modula2
 endfunction
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

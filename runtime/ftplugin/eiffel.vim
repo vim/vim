@@ -2,6 +2,7 @@
 " Language:	Eiffel
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2024 Jan 14
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if (exists("b:did_ftplugin"))
   finish
@@ -97,4 +98,4 @@ endif
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8
+" vim: sw=2 sts=2 ts=8

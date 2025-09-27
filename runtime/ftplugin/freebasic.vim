@@ -2,6 +2,7 @@
 " Language:	FreeBASIC
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2023 Aug 22
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Setup {{{1
 if exists("b:did_ftplugin")
@@ -82,4 +83,4 @@ endif
 let &cpo = s:cpo_save
 unlet s:cpo_save s:dialect
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

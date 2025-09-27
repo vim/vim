@@ -5,6 +5,7 @@
 "			Kevin Dahlhausen <kdahlhaus@yahoo.com>
 " Contributors:		Ori Avtalion, Lakshay Garg, Nir Lichtman
 " Last Change:		2025 Jan 26
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -164,4 +165,4 @@ let b:current_syntax = "asm"
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8 noet
+" vim: sw=2 sts=2 ts=8 noet

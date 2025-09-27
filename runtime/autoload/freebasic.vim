@@ -2,6 +2,7 @@
 " Language:	FreeBASIC
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:	2022 June 24
+" 2025 Sep 09 by Vim project: remove nowrap modeline
 
 " Dialects can be one of fb, qb, fblite, or deprecated
 " Precedence is forcelang > #lang > lang
@@ -37,4 +38,4 @@ function! freebasic#GetDialect() abort
   return dialect
 endfunction
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

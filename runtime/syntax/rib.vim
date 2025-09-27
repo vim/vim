@@ -2,7 +2,7 @@
 " Language:	Renderman Interface Bytestream
 " Maintainer:	Andrew Bromage <ajb@spamcop.net>
 " Last Change:	2003 May 11
-"
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -59,4 +59,4 @@ hi def link ribFloat		Float
 
 let b:current_syntax = "rib"
 
-" Options for vi: ts=8 sw=2 sts=2 nowrap noexpandtab ft=vim
+" Options for vi: ts=8 sw=2 sts=2 noexpandtab ft=vim

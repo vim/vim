@@ -14,6 +14,7 @@
 "   2024 Nov 12 by Vim Project: fix problems on Windows (#16036)
 "   2025 Feb 28 by Vim Project: add support for bzip3 (#16755)
 "   2025 May 11 by Vim Project: check network connectivity (#17249)
+"   2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 "  }}}
 "
 " GetLatestVimScripts: 642 1 :AutoInstall: getscript.vim
@@ -644,4 +645,4 @@ unlet s:keepcpo
 
 " ---------------------------------------------------------------------
 "  Modelines: {{{1
-" vim: ts=8 sts=2 fdm=marker nowrap
+" vim: ts=8 sts=2 fdm=marker

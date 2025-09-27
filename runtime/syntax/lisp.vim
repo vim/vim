@@ -4,6 +4,7 @@
 " Former Maintainer:  Charles E. Campbell
 " Last Change: Nov 10, 2021
 "   2024 Feb 19 by Vim Project (announce adoption)
+"   2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Version:     31
 " Former URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_LISP
 "
@@ -621,4 +622,4 @@ endif
 let b:current_syntax = "lisp"
 
 " ---------------------------------------------------------------------
-" vim: ts=8 nowrap fdm=marker
+" vim: ts=8 fdm=marker

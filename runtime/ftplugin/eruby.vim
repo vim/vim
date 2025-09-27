@@ -6,6 +6,7 @@
 " Last Change:		2022 May 15
 "			2024 Jan 14 by Vim Project (browsefilter)
 "			2024 May 23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
+" 			2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -139,4 +140,4 @@ function! ErubyAtCursor() abort
   return !empty(filter(synstack(line('.'), col('.')), 'index(groups, v:val) >= 0'))
 endfunction
 
-" vim: nowrap sw=2 sts=2 ts=8:
+" vim: sw=2 sts=2 ts=8:

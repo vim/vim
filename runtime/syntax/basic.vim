@@ -4,6 +4,7 @@
 " Previous Maintainer:	Allan Kelly <allan@fruitloaf.co.uk>
 " Contributors:		Thilo Six
 " Last Change:		2022 Jun 22
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " First version based on Micro$soft QBASIC circa 1989, as documented in
 " 'Learn BASIC Now' by Halvorson&Rygmyr. Microsoft Press 1989.
@@ -377,4 +378,4 @@ let b:current_syntax = "basic"
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8 noet fdm=marker:
+" vim: sw=2 sts=2 ts=8 noet fdm=marker:

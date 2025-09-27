@@ -3,6 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Antonio Colombo <azc100@gmail.com>
 " Last Change:		2024 Jan 14
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " This plugin was prepared by Mark Sikora
 " This plugin was updated as proposed by Doug Kearns
@@ -60,4 +61,4 @@ endif
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8
+" vim: sw=2 sts=2 ts=8

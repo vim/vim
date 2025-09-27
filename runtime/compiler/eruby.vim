@@ -4,6 +4,7 @@
 " URL:			https://github.com/vim-ruby/vim-ruby
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 " Last Change:		2024 Apr 03
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 if exists("current_compiler")
   finish
@@ -33,4 +34,4 @@ CompilerSet errorformat=
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
-" vim: nowrap sw=2 sts=2 ts=8:
+" vim: sw=2 sts=2 ts=8:

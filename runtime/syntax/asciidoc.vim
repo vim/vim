@@ -8,6 +8,7 @@
 " Licence:         GPL (http://www.gnu.org)
 " Remarks:         Vim 6 or greater
 " Last Update:     2020 May 03 (see Issue 240)
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 " Limitations:
 "
 " - Nested quoted text formatting is highlighted according to the outer
@@ -182,4 +183,4 @@ hi def link asciidocTwoLineTitle Title
 hi def link asciidocURL Macro
 let b:current_syntax = "asciidoc"
 
-" vim: wrap et sw=2 sts=2:
+" vim: et sw=2 sts=2:

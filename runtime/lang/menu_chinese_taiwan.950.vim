@@ -2,6 +2,7 @@
 " Translated By:	Hung-Te Lin	<piaip@csie.ntu.edu.tw>
 " Last Change:		2012 May 01
 " Generated from menu_zh_tw.utf-8.vim, DO NOT EDIT
+" 2025 Sep 26 by Vim Project: remove nowrap modeline (#18399)
 
 " {{{ Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -289,4 +290,4 @@ endif
 let &cpo = s:keepcpo
 unlet s:keepcpo
 
-" vim:foldmethod=marker:nowrap:foldcolumn=2:foldlevel=1
+" vim:foldmethod=marker:foldcolumn=2:foldlevel=1
