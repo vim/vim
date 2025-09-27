@@ -71,6 +71,11 @@ ifdef PATCHLEVEL
 CFLAGS += -DPATCHLEVEL=\"$(PATCHLEVEL)\"
 endif
 
+# Build date used for Amiga style version string
+ifdef BUILDDATE
+CFLAGS += -DBUILDDATE=\"$(BUILDDATE)\"
+endif
+
 # Common sources
 SRC += \
 	alloc.c \
