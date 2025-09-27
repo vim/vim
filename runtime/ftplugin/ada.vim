@@ -1,16 +1,15 @@
 "------------------------------------------------------------------------------
 "  Description: Perform Ada specific completion & tagging.
-"     Language: Ada (2005)
-"	   $Id: ada.vim 887 2008-07-08 14:29:01Z krischik $
-"   Maintainer: This runtime file is looking for a new maintainer.
-"   Previous Maintainer: Martin Krischik <krischik@users.sourceforge.net>
+"     Language: Ada (2022)
+"    Copyright: Copyright (C) 2006 … 2022 Martin Krischik
+"   Maintainer:	Doug Kearns <dougkearns@gmail.com> (Vim)
+"		Martin Krischik <krischik@users.sourceforge.net> (Upstream)
 "		Taylor Venable <taylor@metasyntax.net>
 "		Neil Bird <neil@fnxweb.com>
-"      $Author: krischik $
-"	 $Date: 2008-07-08 16:29:01 +0200 (Di, 08 Jul 2008) $
-"      Version: 4.6 with patch from David Bürgin
-"    $Revision: 887 $
-"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/ftplugin/ada.vim $
+"               Bartek Jasicki <thindil@laeran.pl>
+" Contributors: Doug Kearns <dougkearns@gmail.com>
+"	   URL: https://github.com/krischik/vim-ada
+"      Version: 5.5.0
 "      History: 24.05.2006 MK Unified Headers
 "		26.05.2006 MK ' should not be in iskeyword.
 "		16.07.2006 MK Ada-Mode as vim-ball
@@ -20,10 +19,19 @@
 "                             autoload
 "		05.11.2006 MK Bram suggested to save on spaces
 "		08.07.2007 TV fix default compiler problems.
-"		05.09.2025    do not globally set 'ignorecase'/'smartcase' option
-"			      set undo_ftplugin
-"			      mark as unmaintained
-"			      use buffer-local abbreviation
+"		28.08.2022 MK Merge Ada 2012 changes from thindil
+"		01.09.2022 MK Use GitHub and dein to publish new versions
+"		12.09.2022 MK Rainbow Parenthesis have been updated and
+"			      modernised so they are a viable light weight
+"			      alternative to rainbow-improved.
+"		25.10.2022 MK Add Alire compiler support
+"		25.10.2022 MK Toggle Rainbow Colour was missing parameters.
+"		28.10.2022 MK Issue #13 Fix key and menu mappings.
+"		04.11.2022 DK Improve matchit config
+"		04.11.2022 DK Define iabbrevs as buffer-local
+"		19.11.2022 MK Hotfix for comment setting. Messed up the ':'
+"               21.08.2023 MK Release 5.5.0
+"	 Usage: Use dein to install
 "    Help Page: ft-ada-plugin
 "------------------------------------------------------------------------------
 " Provides mapping overrides for tag jumping that figure out the current
@@ -45,46 +53,46 @@ let b:did_ftplugin = 45
 let s:cpoptions = &cpoptions
 set cpoptions-=C
 
+" Section: Keyword characters {{{1
+"
+" Valid character for keywords and identifiers. '_' is not a keyword character
+" but is included otherwise the syntax highlighter will detect keywords inside
+" identifier.
+"
+setlocal iskeyword=@,48-57,_
+setlocal isident=@,48-57,_
+
 " Section: Comments  {{{1
 "
-setlocal comments=O:--,:--\ \ 
+" GNAT prefers comments with two spaces after the double dash. First space is
+" defined with `\ ` the second with the b: option.
+"
+setlocal comments=b:--\ ,O:--
 setlocal commentstring=--\ \ %s
 setlocal complete=.,w,b,u,t,i
 
+let b:undo_ftplugin = "setlocal comments< commentstring< complete<"
+
 " Section: case	     {{{1
 "
+" Disabled global options (for Vim redistribution)
 " setlocal nosmartcase
 " setlocal ignorecase
+
+" let b:undo_ftplugin .= " | setlocal smartcase< ignorecase<"
 
 " Section: formatoptions {{{1
 "
 setlocal formatoptions+=ron
 
-" Section: Tagging {{{1
-"
-if exists ("g:ada_extended_tagging")
-   " Make local tag mappings for this buffer (if not already set)
-   if g:ada_extended_tagging == 'jump'
-      if mapcheck('<C-]>','n') == ''
-	 nnoremap <unique> <buffer> <C-]>    :call ada#Jump_Tag ('', 'tjump')<cr>
-      endif
-      if mapcheck('g<C-]>','n') == ''
-	 nnoremap <unique> <buffer> g<C-]>   :call ada#Jump_Tag ('','stjump')<cr>
-      endif
-   elseif g:ada_extended_tagging == 'list'
-      if mapcheck('<C-]>','n') == ''
-	 nnoremap <unique> <buffer> <C-]>    :call ada#List_Tag ()<cr>
-      endif
-      if mapcheck('g<C-]>','n') == ''
-	 nnoremap <unique> <buffer> g<C-]>   :call ada#List_Tag ()<cr>
-      endif
-   endif
-endif
+let b:undo_ftplugin .= " | setlocal formatoptions<"
 
 " Section: Completion {{{1
 "
 setlocal completefunc=ada#User_Complete
 setlocal omnifunc=adacomplete#Complete
+
+let b:undo_ftplugin .= " | setlocal completefunc< omnifunc<"
 
 if exists ("g:ada_extended_completion")
    if mapcheck ('<C-N>','i') == ''
@@ -99,6 +107,10 @@ if exists ("g:ada_extended_completion")
    if mapcheck ('<bs>','i') == ''
       inoremap <silent> <unique> <buffer> <bs> <C-R>=ada#Insert_Backspace ()<cr>
    endif
+   let b:undo_ftplugin .= " | silent! execute 'iunmap <buffer> <C-N>'" .
+	    \             " | silent! execute 'iunmap <buffer> <C-P>'" .
+	    \             " | silent! execute 'iunmap <buffer> <C-X><C-]>'" .
+	    \             " | silent! execute 'iunmap <buffer> <bs>'"
 endif
 
 " Section: Matchit {{{1
@@ -113,21 +125,20 @@ if !exists ("b:match_words")  &&
    "
    let s:notend      = '\%(\<end\s\+\)\@<!'
    let b:match_words =
-      \ s:notend . '\<if\>:\<elsif\>:\<else\>:\<end\>\s\+\<if\>,' .
-      \ s:notend . '\<case\>:\<when\>:\<end\>\s\+\<case\>,' .
-      \ '\%(\<while\>.*\|\<for\>.*\|'.s:notend.'\)\<loop\>:\<end\>\s\+\<loop\>,' .
-      \ '\%(\<do\>\|\<begin\>\):\<exception\>:\<end\>\s*\%($\|[;A-Z]\),' .
-      \ s:notend . '\<record\>:\<end\>\s\+\<record\>'
+      \ s:notend . '\<if\>:\<elsif\>:\<\%(or\s\)\@3<!else\>:\<end\s\+if\>,' .
+      \ s:notend . '\<case\>:\<when\>:\<end\s\+case\>,' .
+      \ '\%(\<while\>.*\|\<for\>.*\|'.s:notend.'\)\<loop\>:\<end\s\+loop\>,' .
+      \ '\%(\<do\>\|\<begin\>\):\<exception\>:\<end\%(\s*\%($\|;\)\|\s\+\%(\%(if\|case\|loop\|record\)\>\)\@!\a\)\@=,' .
+      \ s:notend . '\<record\>:\<end\s\+record\>'
+   let b:undo_ftplugin .= " | unlet! b:match_skip b:match_words"
+   let b:match_skip = 's:Comment\|String\|Operator'
 endif
+
 
 " Section: Compiler {{{1
 "
 if ! exists("g:ada_default_compiler")
-   if has("vms")
-      let g:ada_default_compiler = 'decada'
-   else
-      let g:ada_default_compiler = 'gnat'
-   endif
+   let g:ada_default_compiler = 'alire'
 endif
 
 if ! exists("current_compiler")			||
@@ -142,80 +153,87 @@ if exists("g:ada_folding")
       setlocal foldmethod=indent
       setlocal foldignore=--
       setlocal foldnestmax=5
+      let b:undo_ftplugin .= " | setlocal foldmethod< foldignore< foldnestmax<"
    elseif g:ada_folding[0] == 'g'
       setlocal foldmethod=expr
       setlocal foldexpr=ada#Pretty_Print_Folding(v:lnum)
+      let b:undo_ftplugin .= " | setlocal foldmethod< foldexpr<"
    elseif g:ada_folding[0] == 's'
       setlocal foldmethod=syntax
+      let b:undo_ftplugin .= " | setlocal foldmethod<"
    endif
    setlocal tabstop=8
    setlocal softtabstop=3
    setlocal shiftwidth=3
+   let b:undo_ftplugin .= " | setlocal tabstop< softtabstop< shiftwidth<"
 endif
 
 " Section: Abbrev {{{1
 "
 if exists("g:ada_abbrev")
-   iabbrev <buffer> ret	return
+   iabbrev <buffer> ret  return
    iabbrev <buffer> proc procedure
    iabbrev <buffer> pack package
    iabbrev <buffer> func function
+   let b:undo_ftplugin .= " | iunabbrev <buffer> ret" .
+	    \		  " | iunabbrev <buffer> proc" .
+	    \		  " | iunabbrev <buffer> pack" .
+	    \		  " | iunabbrev <buffer> func"
 endif
 
 " Section: Commands, Mapping, Menus {{{1
-if !exists(':AdaTagFile')
-  call ada#Map_Popup (
-     \ 'Tag.List',
-     \  'l',
-     \ 'call ada#List_Tag ()')
-  call ada#Map_Popup (
-     \'Tag.Jump',
-     \'j',
-     \'call ada#Jump_Tag ()')
-  call ada#Map_Menu (
-     \'Tag.Create File',
-     \':AdaTagFile',
-     \'call ada#Create_Tags (''file'')')
-  call ada#Map_Menu (
-     \'Tag.Create Dir',
-     \':AdaTagDir',
-     \'call ada#Create_Tags (''dir'')')
-
-  call ada#Map_Menu (
-     \'Highlight.Toggle Space Errors',
-     \ ':AdaSpaces',
-     \'call ada#Switch_Syntax_Option (''space_errors'')')
-  call ada#Map_Menu (
-     \'Highlight.Toggle Lines Errors',
-     \ ':AdaLines',
-     \'call ada#Switch_Syntax_Option (''line_errors'')')
-  call ada#Map_Menu (
-     \'Highlight.Toggle Rainbow Color',
-     \ ':AdaRainbow',
-     \'call ada#Switch_Syntax_Option (''rainbow_color'')')
-  call ada#Map_Menu (
-     \'Highlight.Toggle Standard Types',
-     \ ':AdaTypes',
-     \'call ada#Switch_Syntax_Option (''standard_types'')')
-endif
 "
-" Section: b:undo_ftplugin {{{1
-let b:undo_ftplugin = "setl fo< comments< tw< commentstring< complete< "
-	\ . "| setl completefunc< omnifunc< ts< sts< sw< fdm< fde< fdi< "
-	\ . "| setl fdm< fde< fdi< fdn< "
-	\ . "| unlet! b:match_words "
+execute "50amenu &Ada.-sep- :"
 
-" 1}}}
+" Map_Menu parameter:
+"  Text:       Menu text to display
+"  Keys:       Key short cut to define (used only when g:mapleader is used)
+"  Command:    Command short cut to define
+"  Function:   Function to call
+"  Args:       Additional parameter.
+
+if !exists ("g:did_adamapping")
+
+let g:did_adamapping = 521
+
+call ada#Map_Menu (
+   \ 'Toggle Space Errors',
+   \ 'as',
+   \ 'AdaSpaces',
+   \ 'call ada#Switch_Syntax_Option',
+   \ '''space_errors''')
+call ada#Map_Menu (
+   \ 'Toggle Lines Errors',
+   \ 'al',
+   \ 'AdaLines',
+   \ 'call ada#Switch_Syntax_Option',
+   \ '''line_errors''')
+call ada#Map_Menu (
+   \ 'Toggle Rainbow Colour',
+   \ 'rp',
+   \ 'AdaRainbow',
+   \ 'call ada#Switch_Syntax_Option',
+   \ '''rainbow_color''')
+call ada#Map_Menu (
+   \'Toggle Standard Types',
+   \ 'at',
+   \ 'AdaTypes',
+   \ 'call ada#Switch_Syntax_Option',
+   \ '''standard_types''')
+
+endif
+
+" }}}1
+
 " Reset cpoptions
 let &cpoptions = s:cpoptions
 unlet s:cpoptions
 
-finish " 1}}}
+finish " }}}1
 
 "------------------------------------------------------------------------------
-"   Copyright (C) 2006	Martin Krischik
-"
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 nowrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
-" vim: foldmethod=marker
+" vim: set textwidth=78 nowrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab :
+" vim: set filetype=vim fileencoding=utf-8 fileformat=unix foldmethod=marker :
+" vim: set spell spelllang=en_gb :

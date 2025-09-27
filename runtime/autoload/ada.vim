@@ -1,19 +1,18 @@
 "------------------------------------------------------------------------------
 "  Description: Perform Ada specific completion & tagging.
-"     Language: Ada (2005)
-"	   $Id: ada.vim 887 2008-07-08 14:29:01Z krischik $
-"   Maintainer: Mathias Brousset <mathiasb17@gmail.com>
-"		Martin Krischik <krischik@users.sourceforge.net>
+"     Language: Ada (2022)
+"    Copyright: Copyright (C) 2006 … 2022 Martin Krischik
+"   Maintainer:	Doug Kearns <dougkearns@gmail.com> (Vim)
+"		Martin Krischik <krischik@users.sourceforge.net> (Upstream)
 "		Taylor Venable <taylor@metasyntax.net>
 "		Neil Bird <neil@fnxweb.com>
 "		Ned Okie <nokie@radford.edu>
-"      $Author: krischik $
-"	 $Date: 2017-01-31 20:20:05 +0200 (Mon, 01 Jan 2017) $
-"      Version: 4.6
-"    $Revision: 887 $
-"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/ada.vim $
-"      History: 24.05.2006 MK Unified Headers
-"		26.05.2006 MK ' should not be in iskeyword.
+"               Bartek Jasicki <thindil@laeran.pl>
+" Contributors: Doug Kearns <dougkearns@gmail.com>
+"	   URL: https://github.com/krischik/vim-ada
+"      Version: 5.5.0
+"      History: 24.05.3.06 MK Unified Headers
+"		26.05.3.06 MK ' should not be in iskeyword.
 "		16.07.2006 MK Ada-Mode as vim-ball
 "		02.10.2006 MK Better folding.
 "		15.10.2006 MK Bram's suggestion for runtime integration
@@ -21,16 +20,30 @@
 "			      autoload
 "		05.11.2006 MK Bram suggested to save on spaces
 "		08.07.2007 TV fix mapleader problems.
-"	        09.05.2007 MK Session just won't work no matter how much
+"		09.05.2007 MK Session just won't work no matter how much
 "			      tweaking is done
 "		19.09.2007 NO still some mapleader problems
 "		31.01.2017 MB fix more mapleader problems
+"		08.10.2020 DK Add some keyword
+"		28.08.2022 MK Merge Ada 2012 changes from thindil
+"		01.09.2022 MK Use GitHub and dein to publish new versions
+"		12.09.2022 MK Rainbow Parenthesis have been updated and
+"			      modernised so they are a viable light weight
+"			      alternative to rainbow-improved.
+"		25.10.2022 MK Add Alire compiler support
+"		28.10.2022 MK Issue #13 Fix key and menu mappings.
+"		02.11.2022 MK Enhancement #19 additional ways to disable key
+"			      mappings.
+"		28.10.2022 MK Bug #43 Duplicated mappings in Gnat compiler
+"			      plug in
+"               21.08.2023 MK Release 5.5.0
+"	 Usage: Use dein to install
 "    Help Page: ft-ada-functions
 "------------------------------------------------------------------------------
 
 if version < 700
    finish
-endif 
+endif
 let s:keepcpo= &cpo
 set cpo&vim
 
@@ -45,7 +58,7 @@ let g:ada#Keywords	   = []
 "
 " Section: add Ada keywords {{{2
 "
-for Item in ['abort', 'else', 'new', 'return', 'abs', 'elsif', 'not', 'reverse', 'abstract', 'end', 'null', 'accept', 'entry', 'select', 'access', 'exception', 'of', 'separate', 'aliased', 'exit', 'or', 'subtype', 'all', 'others', 'synchronized', 'and', 'for', 'out', 'array', 'function', 'overriding', 'tagged', 'at', 'task', 'generic', 'package', 'terminate', 'begin', 'goto', 'pragma', 'then', 'body', 'private', 'type', 'if', 'procedure', 'case', 'in', 'protected', 'until', 'constant', 'interface', 'use', 'is', 'raise', 'declare', 'range', 'when', 'delay', 'limited', 'record', 'while', 'delta', 'loop', 'rem', 'with', 'digits', 'renames', 'do', 'mod', 'requeue', 'xor']
+for Item in ['abort', 'else', 'new', 'return', 'abs', 'elsif', 'not', 'reverse', 'abstract', 'end', 'null', 'accept', 'entry', 'select', 'access', 'exception', 'of', 'separate', 'aliased', 'exit', 'or', 'subtype', 'all', 'others', 'synchronized', 'and', 'for', 'out', 'array', 'function', 'overriding', 'tagged', 'at', 'task', 'generic', 'package', 'terminate', 'begin', 'goto', 'pragma', 'then', 'body', 'private', 'type', 'if', 'procedure', 'case', 'in', 'protected', 'until', 'constant', 'interface', 'use', 'is', 'raise', 'declare', 'range', 'when', 'delay', 'limited', 'record', 'while', 'delta', 'loop', 'rem', 'with', 'digits', 'renames', 'do', 'mod', 'requeue', 'xor', 'some']
     let g:ada#Keywords += [{
 	    \ 'word':  Item,
 	    \ 'menu':  'keyword',
@@ -69,7 +82,7 @@ endif
 
 " Section: add	standard exception {{{2
 "
-for Item in ['Constraint_Error', 'Program_Error', 'Storage_Error', 'Tasking_Error', 'Status_Error', 'Mode_Error', 'Name_Error', 'Use_Error', 'Device_Error', 'End_Error', 'Data_Error', 'Layout_Error', 'Length_Error', 'Pattern_Error', 'Index_Error', 'Translation_Error', 'Time_Error', 'Argument_Error', 'Tag_Error', 'Picture_Error', 'Terminator_Error', 'Conversion_Error', 'Pointer_Error', 'Dereference_Error', 'Update_Error']
+for Item in ['Constraint_Error', 'Program_Error', 'Storage_Error', 'Tasking_Error', 'Status_Error', 'Mode_Error', 'Name_Error', 'Use_Error', 'Device_Error', 'End_Error', 'Data_Error', 'Layout_Error', 'Length_Error', 'Pattern_Error', 'Index_Error', 'Translation_Error', 'Time_Error', 'Argument_Error', 'Tag_Error', 'Picture_Error', 'Terminator_Error', 'Conversion_Error', 'Pointer_Error', 'Dereference_Error', 'Update_Error', 'Assertion_Error', 'Capacity_Error', 'Dispatching_Domain_Error', 'Dispatching_Policy_Error', 'Encoding_Error', 'Group_Budget_Error', 'Unknown_Zone_Error']
     let g:ada#Keywords += [{
 	    \ 'word':  Item,
 	    \ 'menu':  'exception',
@@ -117,7 +130,7 @@ endif
 
 " Section: add Ada Attributes {{{2
 "
-for Item in ['''Access', '''Address', '''Adjacent', '''Aft', '''Alignment', '''Base', '''Bit_Order', '''Body_Version', '''Callable', '''Caller', '''Ceiling', '''Class', '''Component_Size', '''Compose', '''Constrained', '''Copy_Sign', '''Count', '''Definite', '''Delta', '''Denorm', '''Digits', '''Emax', '''Exponent', '''External_Tag', '''Epsilon', '''First', '''First_Bit', '''Floor', '''Fore', '''Fraction', '''Identity', '''Image', '''Input', '''Large', '''Last', '''Last_Bit', '''Leading_Part', '''Length', '''Machine', '''Machine_Emax', '''Machine_Emin', '''Machine_Mantissa', '''Machine_Overflows', '''Machine_Radix', '''Machine_Rounding', '''Machine_Rounds', '''Mantissa', '''Max', '''Max_Size_In_Storage_Elements', '''Min', '''Mod', '''Model', '''Model_Emin', '''Model_Epsilon', '''Model_Mantissa', '''Model_Small', '''Modulus', '''Output', '''Partition_ID', '''Pos', '''Position', '''Pred', '''Priority', '''Range', '''Read', '''Remainder', '''Round', '''Rounding', '''Safe_Emax', '''Safe_First', '''Safe_Large', '''Safe_Last', '''Safe_Small', '''Scale', '''Scaling', '''Signed_Zeros', '''Size', '''Small', '''Storage_Pool', '''Storage_Size', '''Stream_Size', '''Succ', '''Tag', '''Terminated', '''Truncation', '''Unbiased_Rounding', '''Unchecked_Access', '''Val', '''Valid', '''Value', '''Version', '''Wide_Image', '''Wide_Value', '''Wide_Wide_Image', '''Wide_Wide_Value', '''Wide_Wide_Width', '''Wide_Width', '''Width', '''Write']
+for Item in ['''Access', '''Address', '''Adjacent', '''Aft', '''Alignment', '''Base', '''Bit_Order', '''Body_Version', '''Callable', '''Caller', '''Ceiling', '''Class', '''Component_Size', '''Compose', '''Constrained', '''Copy_Sign', '''Count', '''Definite', '''Delta', '''Denorm', '''Digits', '''Emax', '''Exponent', '''External_Tag', '''Epsilon', '''First', '''First_Bit', '''First_Valid', '''Floor', '''Fore', '''Fraction', '''Has_Some_Storage', '''Identity', '''Image', '''Input', '''Large', '''Last', '''Last_Bit', '''Last_Valid', '''Leading_Part', '''Length', '''Machine', '''Machine_Emax', '''Machine_Emin', '''Machine_Mantissa', '''Machine_Overflows', '''Machine_Radix', '''Machine_Rounding', '''Machine_Rounds', '''Mantissa', '''Max', '''Max_Size_Alignment_For_Allocation', '''Max_Size_In_Storage_Elements', '''Min', '''Mod', '''Model', '''Model_Emin', '''Model_Epsilon', '''Model_Mantissa', '''Model_Small', '''Modulus', '''Old', '''Output', '''Overlaps_Storage', '''Partition_ID', '''Pos', '''Position', '''Pred', '''Priority', '''Range', '''Read', '''Remainder', '''Result', '''Round', '''Rounding', '''Safe_Emax', '''Safe_First', '''Safe_Large', '''Safe_Last', '''Safe_Small', '''Scale', '''Scaling', '''Signed_Zeros', '''Size', '''Small', '''Storage_Pool', '''Storage_Size', '''Stream_Size', '''Succ', '''Tag', '''Terminated', '''Truncation', '''Unbiased_Rounding', '''Unchecked_Access', '''Val', '''Valid', '''Value', '''Version', '''Wide_Image', '''Wide_Value', '''Wide_Wide_Image', '''Wide_Wide_Value', '''Wide_Wide_Width', '''Wide_Width', '''Width', '''Write']
     let g:ada#Keywords += [{
 	    \ 'word':  Item,
 	    \ 'menu':  'attribute',
@@ -141,7 +154,7 @@ endif
 
 " Section: add Ada Pragmas {{{2
 "
-for Item in ['All_Calls_Remote', 'Assert', 'Assertion_Policy', 'Asynchronous', 'Atomic', 'Atomic_Components', 'Attach_Handler', 'Controlled', 'Convention', 'Detect_Blocking', 'Discard_Names', 'Elaborate', 'Elaborate_All', 'Elaborate_Body', 'Export', 'Import', 'Inline', 'Inspection_Point', 'Interface (Obsolescent)', 'Interrupt_Handler', 'Interrupt_Priority', 'Linker_Options', 'List', 'Locking_Policy', 'Memory_Size (Obsolescent)', 'No_Return', 'Normalize_Scalars', 'Optimize', 'Pack', 'Page', 'Partition_Elaboration_Policy', 'Preelaborable_Initialization', 'Preelaborate', 'Priority', 'Priority_Specific_Dispatching', 'Profile', 'Pure', 'Queueing_Policy', 'Relative_Deadline', 'Remote_Call_Interface', 'Remote_Types', 'Restrictions', 'Reviewable', 'Shared (Obsolescent)', 'Shared_Passive', 'Storage_Size', 'Storage_Unit (Obsolescent)', 'Suppress', 'System_Name (Obsolescent)', 'Task_Dispatching_Policy', 'Unchecked_Union', 'Unsuppress', 'Volatile', 'Volatile_Components']
+for Item in ['All_Calls_Remote', 'Assert', 'Assertion_Policy', 'Asynchronous', 'Atomic', 'Atomic_Components', 'Attach_Handler', 'Controlled (Obsolescent)', 'Convention', 'CPU', 'Default_Storage_Pool', 'Detect_Blocking', 'Discard_Names', 'Dispatching_Domain', 'Elaborate', 'Elaborate_All', 'Elaborate_Body', 'Export', 'Import', 'Independent', 'Independent_Components', 'Inline', 'Inspection_Point', 'Interface (Obsolescent)', 'Interrupt_Handler', 'Interrupt_Priority', 'Linker_Options', 'List', 'Locking_Policy', 'Memory_Size (Obsolescent)', 'No_Return', 'Normalize_Scalars', 'Optimize', 'Pack', 'Page', 'Partition_Elaboration_Policy', 'Preelaborable_Initialization', 'Preelaborate', 'Priority', 'Priority_Specific_Dispatching', 'Profile', 'Pure', 'Queueing_Policy', 'Relative_Deadline', 'Remote_Call_Interface', 'Remote_Types', 'Restrictions', 'Reviewable', 'Shared (Obsolescent)', 'Shared_Passive', 'Storage_Size', 'Storage_Unit (Obsolescent)', 'Suppress', 'System_Name (Obsolescent)', 'Task_Dispatching_Policy', 'Unchecked_Union', 'Unsuppress', 'Volatile', 'Volatile_Components']
     let g:ada#Keywords += [{
 	    \ 'word':  Item,
 	    \ 'menu':  'pragma',
@@ -153,7 +166,7 @@ endfor
 " Section: add GNAT Pragmas {{{3
 "
 if exists ('g:ada_gnat_extensions')
-    for Item in ['Abort_Defer', 'Ada_83', 'Ada_95', 'Ada_05', 'Annotate', 'Ast_Entry', 'C_Pass_By_Copy', 'Comment', 'Common_Object', 'Compile_Time_Warning', 'Complex_Representation', 'Component_Alignment', 'Convention_Identifier', 'CPP_Class', 'CPP_Constructor', 'CPP_Virtual', 'CPP_Vtable', 'Debug', 'Elaboration_Checks', 'Eliminate', 'Export_Exception', 'Export_Function', 'Export_Object', 'Export_Procedure', 'Export_Value', 'Export_Valued_Procedure', 'Extend_System', 'External', 'External_Name_Casing', 'Finalize_Storage_Only', 'Float_Representation', 'Ident', 'Import_Exception', 'Import_Function', 'Import_Object', 'Import_Procedure', 'Import_Valued_Procedure', 'Initialize_Scalars', 'Inline_Always', 'Inline_Generic', 'Interface_Name', 'Interrupt_State', 'Keep_Names', 'License', 'Link_With', 'Linker_Alias', 'Linker_Section', 'Long_Float', 'Machine_Attribute', 'Main_Storage', 'Obsolescent', 'Passive', 'Polling', 'Profile_Warnings', 'Propagate_Exceptions', 'Psect_Object', 'Pure_Function', 'Restriction_Warnings', 'Source_File_Name', 'Source_File_Name_Project', 'Source_Reference', 'Stream_Convert', 'Style_Checks', 'Subtitle', 'Suppress_All', 'Suppress_Exception_Locations', 'Suppress_Initialization', 'Task_Info', 'Task_Name', 'Task_Storage', 'Thread_Body', 'Time_Slice', 'Title', 'Unimplemented_Unit', 'Universal_Data', 'Unreferenced', 'Unreserve_All_Interrupts', 'Use_VADS_Size', 'Validity_Checks', 'Warnings', 'Weak_External']
+    for Item in ['Abort_Defer', 'Ada_83', 'Ada_95', 'Ada_05', 'Ada_12', 'Ada_2022', 'Annotate', 'Ast_Entry', 'C_Pass_By_Copy', 'Comment', 'Common_Object', 'Compile_Time_Warning', 'Complex_Representation', 'Component_Alignment', 'Convention_Identifier', 'CPP_Class', 'CPP_Constructor', 'CPP_Virtual', 'CPP_Vtable', 'Debug', 'Elaboration_Checks', 'Eliminate', 'Export_Exception', 'Export_Function', 'Export_Object', 'Export_Procedure', 'Export_Value', 'Export_Valued_Procedure', 'Extend_System', 'External', 'External_Name_Casing', 'Finalize_Storage_Only', 'Float_Representation', 'Ident', 'Import_Exception', 'Import_Function', 'Import_Object', 'Import_Procedure', 'Import_Valued_Procedure', 'Initialize_Scalars', 'Inline_Always', 'Inline_Generic', 'Interface_Name', 'Interrupt_State', 'Keep_Names', 'License', 'Link_With', 'Linker_Alias', 'Linker_Section', 'Long_Float', 'Machine_Attribute', 'Main_Storage', 'Obsolescent', 'Passive', 'Polling', 'Profile_Warnings', 'Propagate_Exceptions', 'Psect_Object', 'Pure_Function', 'Restriction_Warnings', 'Source_File_Name', 'Source_File_Name_Project', 'Source_Reference', 'Stream_Convert', 'Style_Checks', 'Subtitle', 'Suppress_All', 'Suppress_Exception_Locations', 'Suppress_Initialization', 'Task_Info', 'Task_Name', 'Task_Storage', 'Thread_Body', 'Time_Slice', 'Title', 'Unimplemented_Unit', 'Universal_Data', 'Unreferenced', 'Unreserve_All_Interrupts', 'Use_VADS_Size', 'Validity_Checks', 'Warnings', 'Weak_External']
 	let g:ada#Keywords += [{
 		\ 'word':  Item,
 		\ 'menu':  'pragma',
@@ -162,7 +175,7 @@ if exists ('g:ada_gnat_extensions')
 		\ 'icase': 1}]
     endfor
 endif
-" 1}}}
+" }}}1
 
 " Section: g:ada#Ctags_Kinds {{{1
 "
@@ -282,72 +295,6 @@ function ada#Word (...)
    return substitute (l:Match_String, '\s\+', '', 'g')
 endfunction ada#Word
 
-" Section: ada#List_Tag (...) {{{1
-"
-"  List tags in quickfix window
-"
-function ada#List_Tag (...)
-   if a:0 > 1
-      let l:Tag_Word = ada#Word (a:1, a:2)
-   elseif a:0 > 0
-      let l:Tag_Word = a:1
-   else
-      let l:Tag_Word = ada#Word ()
-   endif
-
-   echo "Searching for" l:Tag_Word
-
-   let l:Pattern = '^' . l:Tag_Word . '$'
-   let l:Tag_List = taglist (l:Pattern)
-   let l:Error_List = []
-   "
-   " add symbols
-   "
-   for Tag_Item in l:Tag_List
-      if l:Tag_Item['kind'] == ''
-	 let l:Tag_Item['kind'] = 's'
-      endif
-
-      let l:Error_List += [
-	 \ l:Tag_Item['filename'] . '|' .
-	 \ l:Tag_Item['cmd']	  . '|' .
-	 \ l:Tag_Item['kind']	  . "\t" .
-	 \ l:Tag_Item['name'] ]
-   endfor
-   set errorformat=%f\|%l\|%m
-   cexpr l:Error_List
-   cwindow
-endfunction ada#List_Tag
-
-" Section: ada#Jump_Tag (Word, Mode) {{{1
-"
-" Word tag - include '.' and if Ada make uppercase
-"
-function ada#Jump_Tag (Word, Mode)
-   if a:Word == ''
-      " Get current word
-      let l:Word = ada#Word()
-      if l:Word == ''
-	 throw "NOT_FOUND: no identifier found."
-      endif
-   else
-      let l:Word = a:Word
-   endif
-
-   echo "Searching for " . l:Word
-
-   try
-      execute a:Mode l:Word
-   catch /.*:E426:.*/
-      let ignorecase = &ignorecase
-      set ignorecase
-      execute a:Mode l:Word
-      let &ignorecase = ignorecase
-   endtry
-
-   return
-endfunction ada#Jump_Tag
-
 " Section: ada#Insert_Backspace () {{{1
 "
 " Backspace at end of line after auto-inserted commentstring '-- ' wipes it
@@ -419,27 +366,11 @@ function ada#Completion_End ()
    return ''
 endfunction ada#Completion_End
 
-" Section: ada#Create_Tags {{{1
-"
-function ada#Create_Tags (option)
-   if a:option == 'file'
-      let l:Filename = fnamemodify (bufname ('%'), ':p')
-   elseif a:option == 'dir'
-      let l:Filename =
-	 \ fnamemodify (bufname ('%'), ':p:h') . "*.ada " .
-	 \ fnamemodify (bufname ('%'), ':p:h') . "*.adb " .
-	 \ fnamemodify (bufname ('%'), ':p:h') . "*.ads"
-   else
-      let l:Filename = a:option
-   endif
-   execute '!ctags --excmd=number ' . l:Filename
-endfunction ada#Create_Tags
-
 " Section: ada#Switch_Session {{{1
 "
 function ada#Switch_Session (New_Session)
-   " 
-   " you should not save to much date into the seession since they will
+   "
+   " you should not save to much date into the session since they will
    " be sourced
    "
    let l:sessionoptions=&sessionoptions
@@ -458,26 +389,21 @@ function ada#Switch_Session (New_Session)
 
 	 let v:this_session = a:New_Session
 
-	 "if filereadable (v:this_session)
-	    "execute 'source ' . v:this_session
-	 "endif
+	 if filereadable (v:this_session)
+	    execute 'source ' . v:this_session
+	 endif
 
 	 augroup ada_session
 	    autocmd!
 	    autocmd VimLeavePre * execute 'mksession! ' . v:this_session
 	 augroup END
-	 
-	 "if exists ("g:Tlist_Auto_Open") && g:Tlist_Auto_Open
-	    "TlistOpen
-	 "endif
-
       endif
    finally
       let &sessionoptions=l:sessionoptions
    endtry
 
    return
-endfunction ada#Switch_Session	
+endfunction ada#Switch_Session
 
 " Section: GNAT Pretty Printer folding {{{1
 "
@@ -545,75 +471,50 @@ function ada#Switch_Syntax_Option (option)
       echo  a:option . 'now on'
    endif
    syntax on
+   if (exists('g:rainbow_active') && g:rainbow_active)
+      call rainbow_main#load()
+   endif
 endfunction ada#Switch_Syntax_Option
 
 " Section: ada#Map_Menu {{{2
 "
-function ada#Map_Menu (Text, Keys, Command)
-   if a:Keys[0] == ':'
-      execute
-	\ "50amenu " .
-	\ "Ada."     . escape(a:Text, ' ') .
-	\ "<Tab>"    . a:Keys .
-	\ " :"	     . a:Command . "<CR>"
-      execute
-	\ "command -buffer " .
-	\ a:Keys[1:] .
-	\" :" . a:Command . "<CR>"
-   elseif a:Keys[0] == '<'
-      execute
-	\ "50amenu " .
-	\ "Ada."     . escape(a:Text, ' ') .
-	\ "<Tab>"    . a:Keys .
-	\ " :"	     . a:Command . "<CR>"
-      execute
-	\ "nnoremap <buffer> "	 .
-	\ a:Keys		 .
-	\" :" . a:Command . "<CR>"
-      execute
-	\ "inoremap <buffer> "	 .
-	\ a:Keys		 .
-	\" <C-O>:" . a:Command . "<CR>"
-   else
-      if exists("g:mapleader")
-         let l:leader = g:mapleader
-      else
-         let l:leader = '\'
-      endif
-      execute
-	\ "50amenu " .
-	\ "Ada."  . escape(a:Text, ' ') .
-	\ "<Tab>" . escape(l:leader . "a" . a:Keys , '\') .
-	\ " :"	  . a:Command . "<CR>"
-      execute
-	\ "nnoremap <buffer>" .
-	\ " <Leader>a" . a:Keys .
-	\" :" . a:Command
-      execute
-	\ "inoremap <buffer>" .
-	\ " <Leader>a" . a:Keys .
-	\" <C-O>:" . a:Command
-   endif
-   return
-endfunction
-
-" Section: ada#Map_Popup {{{2
+" Text:	    Menu text to display
+" Keys:	    Key short cut to define
+" Command:  Command short cut to define
+" Function: Function to call
+" Args:	    Additional parameter.
 "
-function ada#Map_Popup (Text, Keys, Command)
-   if exists("g:mapleader")
-      let l:leader = g:mapleader
-   else
-      let l:leader = '\'
-   endif
-   execute
-     \ "50amenu " .
-     \ "PopUp."   . escape(a:Text, ' ') .
-     \ "<Tab>"	  . escape(l:leader . "a" . a:Keys , '\') .
-     \ " :"	  . a:Command . "<CR>"
+function ada#Map_Menu (Text, Keys, Command, Function, Args)
+   let l:menutext = escape(a:Text, ' ')
 
-   call ada#Map_Menu (a:Text, a:Keys, a:Command)
-   return
-endfunction ada#Map_Popup
+   if exists('g:mapleader') && !exists("no_plugin_maps") && !exists("no_ada_maps")
+      if g:mapleader->len() == 0
+	 echoerr "if g:mapleader is defined it must not be empty"
+      else
+	 let l:mapping  = escape(g:mapleader . a:Keys , '\')
+
+	 if a:Args == ''
+	    execute "command! -nargs=* " . a:Command  . " :" . a:Function . "(<f-args>)"
+	    execute "nnoremap <unique>"  . l:mapping  .                        " :" . a:Command . "<CR>"
+	    execute "50amenu " . "&Ada." . l:menutext . "<Tab>"  . l:mapping . " :" . a:Command . "<CR>"
+	 else
+	    execute "command! " . a:Command . " :" . a:Function . "(" . a:Args . ")"
+	    execute "nnoremap <unique>"  . l:mapping  .                        " :" . a:Command . "<CR>"
+	    execute "50amenu " . "&Ada." . l:menutext . "<Tab>:" . l:mapping . " :" . a:Command . "<CR>"
+	 endif
+	 " TODO: consider removing buffer-specific commands
+	 let b:undo_ftplugin .= " | silent! execute 'nunmap "  . l:mapping . "'"
+      endif
+   else
+      if a:Args == ''
+	 execute "command! -nargs=* " . a:Command  . " :" . a:Function . "(<f-args>)"
+	 execute "50amenu " . "&Ada." . l:menutext . "<Tab>:" . a:Command . " :" . a:Command . "<CR>"
+      else
+	 execute "command! " . a:Command . " :" . a:Function . "(" . a:Args . ")"
+	 execute "50amenu " . "&Ada." . l:menutext . "<Tab>:" . a:Command . " :" . a:Command . "<CR>"
+      endif
+   endif
+endfunction
 
 " }}}1
 
@@ -626,12 +527,11 @@ lockvar! g:ada#Ctags_Kinds
 let &cpo = s:keepcpo
 unlet s:keepcpo
 
-finish " 1}}}
+finish " }}}1
 
 "------------------------------------------------------------------------------
-"   Copyright (C) 2006	Martin Krischik
-"
 "   Vim is Charityware - see ":help license" or uganda.txt for licence details.
 "------------------------------------------------------------------------------
-" vim: textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
-" vim: foldmethod=marker
+" vim: set textwidth=78 wrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab :
+" vim: set filetype=vim fileencoding=utf-8 fileformat=unix foldmethod=marker :
+" vim: set spell spelllang=en_gb :
