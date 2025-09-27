@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Sep 26
+" Last Change:	   2025 Sep 27
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -1339,7 +1339,7 @@ syn region	vimEcho
       \ end="\ze|"
       \ excludenl end="$"
       \ nextgroup=vimCmdSep
-      \ contains=@vimContinue,@vimExprList
+      \ contains=@vimContinue,@vimExprList,vim9Comment
       \ transparent
 
 syn match	vimEchohl	"\<echohl\=\>"	skipwhite nextgroup=vimGroup,vimHLGroup,vimEchohlNone
@@ -1356,7 +1356,7 @@ syn region	vimExecute
       \ end="\ze|"
       \ excludenl end="$"
       \ nextgroup=vimCmdSep
-      \ contains=@vimContinue,@vimExprList
+      \ contains=@vimContinue,@vimExprList,vim9Comment
       \ transparent
 
 syn region	vimEval
@@ -1366,7 +1366,7 @@ syn region	vimEval
       \ end="\ze|"
       \ excludenl end="$"
       \ nextgroup=vimCmdSep
-      \ contains=@vimContinue,@vimExprList
+      \ contains=@vimContinue,@vimExprList,vimComment,vim9Comment
       \ transparent
 
 " Filter: {{{2

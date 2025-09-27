@@ -51,6 +51,11 @@ execute| echo "Foo"
 " trailing comment needs |
 execute "Foo" | " comment
 
+def Vim9Context()
+  # trailing comment allowed
+  execute "Foo" # comment
+enddef
+
 
 " Issue #9987 (parenthesised argument - not a function call)
 
