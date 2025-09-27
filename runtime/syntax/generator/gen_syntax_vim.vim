@@ -1,7 +1,7 @@
 " Vim syntax file generator
 " Language:		 Vim script
 " Maintainer:  Hirohito Higashi (h_east)
-" Last Change: 2025 Sep 23
+" Last Change: 2025 Sep 27
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -307,6 +307,7 @@ function s:get_vim_command_type(cmd_name)
 		catch
 		chdir
 		class
+		command
 		copy
 		debuggreedy
 		def

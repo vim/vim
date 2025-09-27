@@ -242,7 +242,7 @@ that script and not elsewhere.
 
 If you do want to share variables between scripts, use the "g:" prefix and
 assign the value directly, do not use `var`.  And use a specific name to avoid
-mistakes.  Thus in "script1.vim": >
+mistakes.  Thus in "script1.vim": >vim9
 
 	vim9script
 	g:mash_counter = 5

@@ -163,8 +163,26 @@ command -range=% -nargs=? -bang Tb :<line1>,<line2>s/\v"[^"]*"/\=substitute(subm
 
 
 " Unreported issue (:map with trailing bar in replacement text)
+
 command! Foo
       \ map lhs rhs |
       \ abbreviate foo bar |
       \ echo "Foo"
+
+
+" Issue #18414 (Syntax group vimUserCmdReplacement lacking a keepend?)
+
+def Vim9Context()
+  command! MyFunction MyFunc()
+  # I am a comment
+
+  command! ToggleWrap setlocal wrap!
+  # I am a comment but I didn't get highlighted
+enddef
+
+command! MyFunction call MyFunc()
+" I am a comment
+
+command! ToggleWrap setlocal wrap!
+" I am a comment but I didn't get highlighted
 

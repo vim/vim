@@ -1366,7 +1366,7 @@ start of the line.
 
 Here is an example for Unix.  It starts a shell in the background and prompts
 for the next shell command.  Output from the shell is displayed above the
-prompt. >
+prompt. >vim
 
 	" Create a channel log so we can see what happens.
 	call ch_logfile('logfile', 'w')
@@ -1403,7 +1403,7 @@ prompt. >
 	" start accepting shell commands
 	startinsert
 <
-The same in |Vim9| script: >
+The same in |Vim9| script: >vim9
 
 	vim9script
 

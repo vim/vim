@@ -1933,7 +1933,7 @@ complete({startcol}, {matches})			*complete()* *E785*
 		Insert mode completion.  The popup menu will appear if
 		specified, see |ins-completion-menu|.
 
-		Example (using legacy Vim script): >
+		Example (using legacy Vim script): >vim
 
 		inoremap <F5> <C-R>=ListMonths()<CR>
 
@@ -1944,7 +1944,7 @@ complete({startcol}, {matches})			*complete()* *E785*
 		  return ''
 		endfunc
 <
-		Example (using Vim9 script): >
+		Example (using Vim9 script): >vim9
 
 		vim9script
 		def ListMonths(): string
@@ -1961,7 +1961,8 @@ complete({startcol}, {matches})			*complete()* *E785*
 		an empty string is returned to avoid a zero being inserted.
 
 		Can also be used as a |method|, the base is passed as the
-		second argument: >
+		second argument: >vim
+
 			GetMatches()->complete(col('.'))
 <
 		Return type: |Number|
@@ -7078,9 +7079,9 @@ mapcheck({name} [, {mode} [, {abbr}]])			*mapcheck()*
 		then the global mappings.
 		This function can be used to check if a mapping can be added
 		without being ambiguous.  Example: >
-	:if mapcheck("_vv") == ""
-	:   map _vv :set guifont=7x13<CR>
-	:endif
+			:if mapcheck("_vv") == ""
+			:   map _vv :set guifont=7x13<CR>
+			:endif
 <		This avoids adding the "_vv" mapping when there already is a
 		mapping for "_v" or for "_vvv".
 
@@ -7096,15 +7097,18 @@ maplist([{abbr}])					*maplist()*
 		|mapping-dict|.  When {abbr} is there and it is |TRUE| use
 		abbreviations instead of mappings.
 
-		Example to show all mappings with 'MultiMatch' in rhs: >
+		Example to show all mappings with 'MultiMatch' in rhs: >vim9
+
 			vim9script
 			echo maplist()->filter(
 				(_, m) => match(m.rhs, 'MultiMatch') >= 0)
+
 <		It can be tricky to find mappings for particular |:map-modes|.
 		|mapping-dict|'s "mode_bits" can simplify this. For example,
 		the mode_bits for Normal, Insert or Command-line modes are
 		0x19. To find all the mappings available in those modes you
-		can do: >
+		can do: >vim9
+
 			vim9script
 			var saved_maps = []
 			for m in maplist()
@@ -7113,9 +7117,11 @@ maplist([{abbr}])					*maplist()*
 			    endif
 			endfor
 			echo saved_maps->mapnew((_, m) => m.lhs)
+
 <		The values of the mode_bits are defined in Vim's src/vim.h
 		file and they can be discovered at runtime using
-		|:map-commands| and "maplist()". Example: >
+		|:map-commands| and "maplist()". Example: >vim9
+
 			vim9script
 			omap xyzzy <Nop>
 			var op_bit = maplist()->filter(
@@ -7162,7 +7168,7 @@ mapset({dict})
 
 		In the second form, with {dict} as the only argument, mode
 		and abbr are taken from the dict.
-		Example: >
+		Example: >vim9
 			vim9script
 			var save_maps = maplist()->filter(
 						(_, m) => m.lhs == 'K')
