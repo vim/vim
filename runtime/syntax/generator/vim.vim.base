@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Sep 26
+" Last Change:	   2025 Sep 27
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -862,6 +862,7 @@ syn region	vimUserCmdReplacement contained
       \ skip=+\n\s*\%(\\\|["#]\\ \)+
       \ end="$"
       \ contains=@vimContinue,@vimUserCmdList,vimComFilter
+      \ keepend
 syn region	vimUserCmdBlock	    contained
       \ matchgroup=vimSep
       \ start="{"

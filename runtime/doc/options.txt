@@ -228,7 +228,8 @@ include the '"' in the option value, use '\"' instead.  This example sets the
    :set titlestring=hi\ \"there\"
 
 In |Vim9| script it's simpler, comments start with a '#' character, and only
-when preceded by white space.  A backslash is needed less often: >
+when preceded by white space.  A backslash is needed less often: >vim9
+
    vim9script
    set titlestring=hi\ "there"
    set titlestring=hi#there#
@@ -239,10 +240,12 @@ options that expect a file name (those where environment variables are
 expanded) a backslash before a normal file name character is not removed.  But
 a backslash before a special character (space, backslash, comma, etc.) is used
 like explained above.
-There is one special situation, when the value starts with "\\": >
+There is one special situation, when the value starts with "\\": >vim
+
    :set dir=\\machine\path	    results in "\\machine\path"
    :set dir=\\\\machine\\path	    results in "\\machine\path"
    :set dir=\\path\\file	    results in "\\path\file" (wrong!)
+
 For the first one the start is kept, but for the second one the backslashes
 are halved.  This makes sure it works both when you expect backslashes to be
 halved and when you expect the backslashes to be kept.  The third gives a

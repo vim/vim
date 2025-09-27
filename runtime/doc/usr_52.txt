@@ -32,7 +32,7 @@ inside the script file, and items that are exported, which can be used by
 scripts that import them.  That makes very clear what is defined where.
 
 Let's start with an example, a script that exports one function and has one
-private function: >
+private function: >vim9
 
 	vim9script
 
@@ -70,7 +70,7 @@ for plugins in the "plugin" directory and source "theplugin.vim".  Vim does
 not recognize the "lib" directory, you can put any scripts there.
 
 The above script that exports GetMessage() goes in lib/getmessage.vim.  The
-GetMessage() function is used in plugin/theplugin.vim: >
+GetMessage() function is used in plugin/theplugin.vim: >vim9
 
 	vim9script
 
@@ -90,7 +90,7 @@ How we can try out the command that the plugin provides: >
 Notice that the function GetMessage() is prefixed with the imported script
 name "getmessage".  That way, for every imported function used, you know what
 script it was imported from.  If you import several scripts each of them could
-define a GetMessage() function: >
+define a GetMessage() function: >vim9
 
 	vim9script
 
