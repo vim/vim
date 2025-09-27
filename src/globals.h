@@ -248,7 +248,7 @@ EXTERN int	did_wait_return INIT(= FALSE);	// wait_return() was used and
 EXTERN int	need_maketitle INIT(= TRUE); // call maketitle() soon
 
 EXTERN int	quit_more INIT(= FALSE);    // 'q' hit at "--more--" msg
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
+#if defined(UNIX) || defined(VMS) || defined(MACOS_X) || defined(AMIGA)
 EXTERN int	newline_on_exit INIT(= FALSE);	// did msg in altern. screen
 EXTERN int	intr_char INIT(= 0);	    // extra interrupt character
 #endif
