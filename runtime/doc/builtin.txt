@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 27
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1940,7 +1940,7 @@ complete({startcol}, {matches})			*complete()* *E785*
 		func ListMonths()
 		  call complete(col('.'), ['January', 'February', 'March',
 			\ 'April', 'May', 'June', 'July', 'August',
-			\ 'September', \ 'October', 'November', 'December'])
+			\ 'September', 'October', 'November', 'December'])
 		  return ''
 		endfunc
 <
