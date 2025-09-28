@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Sep 15
+*helphelp.txt*	For Vim version 9.1.  Last change: 2025 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -463,12 +463,14 @@ To quote a block of ex-commands verbatim, place a greater than (>) character
 at the end of the line before the block and a less than (<) character as the
 first non-blank on a line following the block.  Any line starting in column 1
 also implicitly stops the block of ex-commands before it.  E.g. >
+
 	function Example_Func()
 	  echo "Example"
 	endfunction
 <
 To enable syntax highlighting for a block of code, place a language name
 annotation (e.g. "vim") after a greater than (>) character.  E.g. >vim
+
 	function Example_Func()
 	  echo "Example"
 	endfunction
@@ -476,7 +478,8 @@ annotation (e.g. "vim") after a greater than (>) character.  E.g. >vim
 						*g:help_example_languages*
 By default, help files only support Vim script highlighting.  If you need
 syntax highlighting for other languages, add to your |vimrc|: >
-	:let g:help_example_languages = { "vim": "vim", "sh": "bash" }
+	:let g:help_example_languages = {
+	      \	"vim": "vim", "vim9": "vim", "bash": "sh" }
 The key represents the annotation marker name, and the value is the 'syntax'
 name.
 

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
-" Last Change:		2025 Jul 20
+" Last Change:		2025 Sep 27
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
@@ -15,7 +15,7 @@ set cpo&vim
 syn iskeyword @,48-57,_,192-255
 
 if !exists('g:help_example_languages')
-  let g:help_example_languages = #{ vim: 'vim' }
+  let g:help_example_languages = #{ vim: 'vim', vim9: 'vim' }
 endif
 
 syn match helpHeadline		"^[A-Z.][-A-Z0-9 .,()_']*?\=\ze\(\s\+\*\|$\)"
@@ -32,9 +32,18 @@ endif
 
 for [s:lang, s:syntax] in g:help_example_languages->items()
   unlet! b:current_syntax
+
+  if s:lang == "vim9"
+    let b:vimsyn_force_vim9 = v:true
+  endif
+
   " silent! to prevent E403
   execute 'silent! syn include' $'@helpExampleHighlight_{s:lang}'
         \ $'syntax/{s:syntax}.vim'
+
+  if s:lang == "vim9"
+    unlet b:vimsyn_force_vim9
+  endif
 
   execute $'syn region helpExampleHighlight_{s:lang} matchgroup=helpIgnore'
         \ $'start=/\%(^\| \)>{s:lang}$/'
