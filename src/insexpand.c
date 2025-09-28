@@ -3100,7 +3100,8 @@ ins_compl_prep(int c)
     if (ctrl_x_mode_not_defined_yet()
 			   || (ctrl_x_mode_normal() && !compl_started))
     {
-	compl_get_longest = (get_cot_flags() & COT_LONGEST) != 0;
+	compl_get_longest = (get_cot_flags() & COT_LONGEST)
+	    && !ins_compl_has_autocomplete();
 	compl_used_match = TRUE;
     }
 
