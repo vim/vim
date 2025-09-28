@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 26
+*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10259,6 +10259,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	See 'sidescroll', 'listchars' and |wrap-off|.
 	This option can't be set from a |modeline| when the 'diff' option is
 	on.
+	If 'nowrap' was set from a |modeline| or in the |sandbox|, '>' is used
+	as the |lcs-extends| character regardless of the value of the 'list'
+	and 'listchars' options.  This is to prevent malicious code outside
+	the viewport from going unnoticed.  Use `:setlocal nowrap` manually
+	afterwards to disable this behavior.
 
 						*'wrapmargin'* *'wm'*
 'wrapmargin' 'wm'	number	(default 0)

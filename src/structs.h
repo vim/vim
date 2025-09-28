@@ -4214,6 +4214,7 @@ struct window_S
 #define GLOBAL_WO(p)	((char *)(p) + sizeof(winopt_T))
 
     // A few options have local flags for P_INSECURE.
+    long_u	w_p_wrap_flags;	    // flags for 'wrap'
 #ifdef FEAT_STL_OPT
     long_u	w_p_stl_flags;	    // flags for 'statusline'
 #endif
