@@ -15,6 +15,22 @@
 
 #include "vim.h"
 
+/*
+ * Get the 'listchars' "extends" characters to use for "wp", or NUL if it
+ * shouldn't be used.
+ */
+    static int
+get_lcs_ext(win_T *wp)
+{
+    if (wp->w_p_wrap)
+	// Line never continues beyond the right of the screen with 'wrap'.
+	return NUL;
+    if (wp->w_p_wrap_flags & P_INSECURE)
+	// If 'nowrap' was set from a modeline, forcibly use '>'.
+	return '>';
+    return wp->w_p_list ? wp->w_lcs_chars.ext : NUL;
+}
+
 #ifdef FEAT_SYN_HL
 /*
  * Advance **color_cols and return TRUE when there are columns to draw.
@@ -732,10 +748,7 @@ text_prop_position(
 
 	// With 'nowrap' add one to show the "extends" character if needed (it
 	// doesn't show if the text just fits).
-	if (!wp->w_p_wrap
-		&& n_used < *n_extra
-		&& wp->w_lcs_chars.ext != NUL
-		&& wp->w_p_list)
+	if (n_used < *n_extra && get_lcs_ext(wp) != NUL)
 	    ++n_used;
 
 	// add 1 for NUL, 2 for when '…' is used
@@ -3947,12 +3960,10 @@ win_line(
 	    }
 	}
 
-	// Show "extends" character from 'listchars' if beyond the line end and
-	// 'list' is set.
-	if (wp->w_lcs_chars.ext != NUL
+	// Show "extends" character from 'listchars' if beyond the line end.
+	int lcs_ext = get_lcs_ext(wp);
+	if (lcs_ext != NUL
 		&& wlv.draw_state == WL_LINE
-		&& wp->w_p_list
-		&& !wp->w_p_wrap
 #ifdef FEAT_DIFF
 		&& wlv.filler_todo <= 0
 #endif
@@ -3970,7 +3981,7 @@ win_line(
 #endif
 		   ))
 	{
-	    c = wp->w_lcs_chars.ext;
+	    c = lcs_ext;
 	    wlv.char_attr = hl_combine_attr(wlv.win_attr, HL_ATTR(HLF_AT));
 	    mb_c = c;
 	    if (enc_utf8 && utf_char2len(c) > 1)

@@ -3081,6 +3081,7 @@ insecure_flag(int opt_idx, int opt_flags)
     if (opt_flags & OPT_LOCAL)
 	switch ((int)options[opt_idx].indir)
 	{
+	    case PV_WRAP:	return &curwin->w_p_wrap_flags;
 #ifdef FEAT_STL_OPT
 	    case PV_STL:	return &curwin->w_p_stl_flags;
 #endif

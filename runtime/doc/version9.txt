@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 26
+*version9.txt*  For Vim version 9.1.  Last change: 2025 Sep 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41710,6 +41710,9 @@ Options: ~
 - 'rulerformat' now supports the |stl-%!| item
 - use 'smoothscroll' logic for CTRL-F / CTRL-B for pagewise scrolling
   and CTRL-D / CTRL-U for half-pagewise scrolling
+- Setting 'nowrap' in a modeline could cause long lines to be hidden
+  off-screen.  To make this visible, the listchars "extend" suboption is set
+  to ">" by default, indicating text that extends beyond the window width.
 
 Ex commands: ~
 - allow to specify a priority when defining a new sign |:sign-define|
