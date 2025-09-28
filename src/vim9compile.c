@@ -3439,6 +3439,27 @@ compile_assign_rhs(cctx_T *cctx, cac_T *cac)
 }
 
 /*
+ * Returns OK if "type" supports compound operator "op_arg" (e.g. +=, -=, %=,
+ * etc.).  Compound operators are not supported with a tuple and a dict.
+ * Returns FAIL if compound operator is not supported.
+ */
+    static int
+check_type_supports_compound_op(type_T *type, char_u op_arg)
+{
+    if (type->tt_type == VAR_TUPLE || type->tt_type == VAR_DICT)
+    {
+	char_u	op[2];
+
+	op[0] = op_arg;
+	op[1] = NUL;
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+/*
  * Compile a compound op assignment statement (+=, -=, *=, %=, etc.)
  */
     static int
@@ -3448,16 +3469,10 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
     type_T	    *expected;
     type_T	    *stacktype = NULL;
 
-    if (cac->cac_lhs.lhs_type->tt_type == VAR_TUPLE)
-    {
-	// compound operators are not supported with a tuple
-	char_u	op[2];
-
-	op[0] = *cac->cac_op;
-	op[1] = NUL;
-	semsg(_(e_wrong_variable_type_for_str_equal), op);
+    if (cac->cac_lhs.lhs_type->tt_type == VAR_TUPLE
+	    && check_type_supports_compound_op(cac->cac_lhs.lhs_type,
+							*cac->cac_op) == FAIL)
 	return FAIL;
-    }
 
     if (*cac->cac_op == '.')
     {
@@ -3474,6 +3489,10 @@ compile_assign_compound_op(cctx_T *cctx, cac_T *cac)
     {
 	expected = lhs->lhs_member_type;
 	stacktype = get_type_on_stack(cctx, 0);
+
+	if (check_type_supports_compound_op(expected, *cac->cac_op) == FAIL)
+	    return FAIL;
+
 	if (
 		// If variable is float operation with number is OK.
 		!(expected == &t_float && (stacktype == &t_number

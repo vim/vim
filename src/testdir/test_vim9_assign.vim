@@ -3414,6 +3414,19 @@ def Test_type_check()
   v9.CheckScriptFailure(lines, 'E1411: Missing dot after object "o"')
 enddef
 
+" Test for using a compound operator with a dict
+def Test_dict_compoundop_check()
+  for op in ['+=', '-=', '*=', '/=', '%=']
+    v9.CheckSourceDefAndScriptFailure(['var d: dict<number> = {a: 1}', $'d {op} 1'], $'E734: Wrong variable type for {op}')
+  endfor
+  var lines =<< trim END
+    var d: dict<number> = {a: 1}
+    d['a'] += 2
+    assert_equal({a: 3}, d)
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
 " Test for checking the argument type of a def function
 def Test_func_argtype_check()
   var lines =<< trim END
