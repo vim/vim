@@ -7591,40 +7591,52 @@ ins_compl_make_linear(void)
  * cpt_sources_index) from the completion list.
  */
 #ifdef FEAT_COMPL_FUNC
-    static compl_T *
+    static void
 remove_old_matches(void)
 {
-    compl_T *sublist_start = NULL, *sublist_end = NULL, *insert_at = NULL;
-    compl_T *current, *next;
-    int	    compl_shown_removed = FALSE;
+    compl_T *current;
+    int	    shown_match_removed = FALSE;
     int	    forward = (compl_first_match->cp_cpt_source_idx < 0);
+
+    if (cpt_sources_index < 0)
+	return;
 
     compl_direction = forward ? FORWARD : BACKWARD;
     compl_shows_dir = compl_direction;
 
-    // Identify the sublist of old matches that needs removal
-    for (current = compl_first_match; current != NULL; current = current->cp_next)
+    // When 'fuzzy' is enabled, items are not ordered by their original source
+    // order (cpt_sources_index). So, remove items one by one.
+    for (current = compl_first_match; current != NULL; )
     {
-	if (current->cp_cpt_source_idx < cpt_sources_index &&
-		(forward || (!forward && !insert_at)))
-	    insert_at = current;
-
 	if (current->cp_cpt_source_idx == cpt_sources_index)
 	{
-	    if (!sublist_start)
-		sublist_start = current;
-	    sublist_end = current;
-	    if (!compl_shown_removed && compl_shown_match == current)
-		compl_shown_removed = TRUE;
-	}
+	    compl_T *to_delete = current;
 
-	if ((forward && current->cp_cpt_source_idx > cpt_sources_index)
-		|| (!forward && insert_at))
-	    break;
+	    if (!shown_match_removed && compl_shown_match == current)
+		shown_match_removed = TRUE;
+
+	    current = current->cp_next;
+
+	    if (to_delete == compl_first_match)  // node to remove is at head
+	    {
+		compl_first_match = to_delete->cp_next;
+		compl_first_match->cp_prev = NULL;
+	    }
+	    else if (to_delete->cp_next == NULL) // node to remove is at tail
+		to_delete->cp_prev->cp_next = NULL;
+	    else // node is in the moddle
+	    {
+		to_delete->cp_prev->cp_next = to_delete->cp_next;
+		to_delete->cp_next->cp_prev = to_delete->cp_prev;
+	    }
+	    ins_compl_item_free(to_delete);
+	}
+	else
+	    current = current->cp_next;
     }
 
     // Re-assign compl_shown_match if necessary
-    if (compl_shown_removed)
+    if (shown_match_removed)
     {
 	if (forward)
 	    compl_shown_match = compl_first_match;
@@ -7637,27 +7649,19 @@ remove_old_matches(void)
 	}
     }
 
-    if (!sublist_start) // No nodes to remove
-	return insert_at;
-
-    // Update links to remove sublist
-    if (sublist_start->cp_prev)
-	sublist_start->cp_prev->cp_next = sublist_end->cp_next;
-    else
-	compl_first_match = sublist_end->cp_next;
-
-    if (sublist_end->cp_next)
-	sublist_end->cp_next->cp_prev = sublist_start->cp_prev;
-
-    // Free all nodes in the sublist
-    sublist_end->cp_next = NULL;
-    for (current = sublist_start; current != NULL; current = next)
+    // Re-assign compl_curr_match
+    compl_curr_match = compl_first_match;
+    for (current = compl_first_match; current != NULL; )
     {
-	next = current->cp_next;
-	ins_compl_item_free(current);
+	if ((forward ? current->cp_cpt_source_idx < cpt_sources_index
+		    : current->cp_cpt_source_idx > cpt_sources_index))
+	{
+	    compl_curr_match = forward ? current : current->cp_next;
+	    current = current->cp_next;
+	}
+	else
+	    break;
     }
-
-    return insert_at;
 }
 #endif
 
@@ -7717,7 +7721,7 @@ cpt_compl_refresh(void)
 	    cb = get_callback_if_cpt_func(p, cpt_sources_index);
 	    if (cb)
 	    {
-		compl_curr_match = remove_old_matches();
+		remove_old_matches();
 		ret = get_userdefined_compl_info(curwin->w_cursor.col, cb,
 			&startcol);
 		if (ret == FAIL)
