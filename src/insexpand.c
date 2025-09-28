@@ -2511,7 +2511,10 @@ ins_compl_new_leader(void)
 	save_w_wrow = curwin->w_wrow;
 	save_w_leftcol = curwin->w_leftcol;
 	compl_restarting = TRUE;
-	compl_autocomplete = ins_compl_has_autocomplete();
+	if (ins_compl_has_autocomplete())
+	    ins_compl_enable_autocomplete();
+	else
+	    compl_autocomplete = FALSE;
 	if (ins_complete(Ctrl_N, FALSE) == FAIL)
 	    compl_cont_status = 0;
 	compl_restarting = FALSE;
@@ -3100,8 +3103,7 @@ ins_compl_prep(int c)
     if (ctrl_x_mode_not_defined_yet()
 			   || (ctrl_x_mode_normal() && !compl_started))
     {
-	compl_get_longest = (get_cot_flags() & COT_LONGEST)
-	    && !ins_compl_has_autocomplete();
+	compl_get_longest = (get_cot_flags() & COT_LONGEST);
 	compl_used_match = TRUE;
     }
 
@@ -7388,6 +7390,7 @@ ins_compl_enable_autocomplete(void)
 {
 #ifdef ELAPSED_FUNC
     compl_autocomplete = TRUE;
+    compl_get_longest = FALSE;
 #endif
 }
 
