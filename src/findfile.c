@@ -2779,7 +2779,7 @@ simplify_filename(char_u *filename)
     }
     start = p;	    // remember start after "c:/" or "/" or "///"
     p_end = p + STRLEN(p);
-#ifdef UNIX
+# ifdef UNIX
     // Posix says that "//path" is unchanged but "///path" is "/path".
     if (start > filename + 2)
     {
@@ -2787,7 +2787,7 @@ simplify_filename(char_u *filename)
 	p_end -= (size_t)(p - (filename + 1));
 	start = p = filename + 1;
     }
-#endif
+# endif
 
     do
     {
