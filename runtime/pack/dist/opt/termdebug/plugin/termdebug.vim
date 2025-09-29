@@ -657,16 +657,17 @@ def StartDebug_prompt(dict: dict<any>)
   var gdb_args = get(dict, 'gdb_args', [])
   var proc_args = get(dict, 'proc_args', [])
 
-  # Add -quiet to avoid the intro message causing a hit-enter prompt.
-  gdb_cmd += ['-quiet']
+  # directly communicate via mi2. This option must precede any -iex options for proper
+  # interpretation.
+  gdb_cmd += ['--interpreter=mi2']
   # Disable pagination, it causes everything to stop at the gdb, needs to be run early
-  gdb_cmd += ['-iex', 'set pagination off']
+  gdb_cmd += ['-iex', '"set pagination off"']
   # Interpret commands while the target is running.  This should usually only
   # be exec-interrupt, since many commands don't work properly while the
   # target is running (so execute during startup).
-  gdb_cmd += ['-iex', 'set mi-async on']
-  # directly communicate via mi2
-  gdb_cmd += ['--interpreter=mi2']
+  gdb_cmd += ['-iex', '"set mi-async on"']
+  # Add -quiet to avoid the intro message causing a hit-enter prompt.
+  gdb_cmd += ['-quiet']
 
   # Adding arguments requested by the user
   gdb_cmd += gdb_args
