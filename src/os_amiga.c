@@ -1768,3 +1768,31 @@ mch_setenv(char *var, char *value, int x UNUSED)
 	return 0;   // success
     return -1;	    // failure
 }
+
+/*
+ * Fill the buffer 'buf' with 'len' random bytes.
+ * Returns FAIL if RANDOM: is not available or something went wrong.
+ */
+    int
+mch_get_random(char_u *buf, int len)
+{
+    struct Process *proc = (struct Process *) FindTask(0L);
+    APTR win = proc->pr_WindowPtr;
+
+    // Don't show requester if RANDOM: doesn't exist
+    proc->pr_WindowPtr = (APTR) -1L;
+
+    BPTR fh = Open("RANDOM:", MODE_OLDFILE);
+
+    proc->pr_WindowPtr = win;
+
+    int status;
+
+    if (!fh || Read(fh, buf, len) != len)
+	status = FAIL;
+    else
+	status = OK;
+
+    Close(fh);
+    return status;
+}
