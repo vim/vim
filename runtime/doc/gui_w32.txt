@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 9.1.  Last change: 2025 Aug 06
+*gui_w32.txt*   For Vim version 9.1.  Last change: 2025 Sep 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -488,4 +488,12 @@ VIM_KEYCODE_TRANS_STRATEGY can be set to the desired value ("experimental" or
         set VIM_KEYCODE_TRANS_STRATEGY=experimental
         gvim.exe
 <
+
+Title Bar's Behaviour			    *gui-w32-title-bar-behaviour*
+
+The color of the gVim title bar (sometimes also called the caption bar) is
+treated as part of the application's background.  Starting with Windows 11,
+it follows the background color defined by |hl-Normal|, so it matches the
+background of the current colorscheme.
+
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
