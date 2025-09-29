@@ -420,7 +420,7 @@ func Test_CompleteDoneDict()
   au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemDict(0)
 
   set complete=.,F<SID>CompleteDone_CompleteFuncDict
-  execute "normal a\<C-N>\<C-Y>"
+  execute "normal dda\<C-N>\<C-Y>"
   set complete&
 
   call assert_equal(['one', 'two'], v:completed_item[ 'user_data' ])
@@ -473,7 +473,7 @@ func Test_CompleteDoneDictNoUserData()
   let s:called_completedone = 0
 
   set complete=.,F<SID>CompleteDone_CompleteFuncDictNoUserData
-  execute "normal a\<C-N>\<C-Y>"
+  execute "normal dda\<C-N>\<C-Y>"
   set complete&
 
   call assert_equal('', v:completed_item[ 'user_data' ])

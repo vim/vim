@@ -3599,7 +3599,16 @@ expand_by_function(int type, char_u *base, callback_T *cb)
     // Insert mode in another buffer.
     ++textlock;
 
+    // Suppress flushing of the output buffer. Without this, deleted text from
+    // ins_compl_delete() may briefly appear on screen, causing flicker (the
+    // typed character disappears and is redrawn) when the LSP server responds
+    // slowly. The LSP client may call sleep(), which indirectly triggers
+    // out_flush().
+    ++no_flush;
+
     retval = call_callback(cb, 0, &rettv, 2, args);
+
+    --no_flush;
 
     // Call a function, which returns a list or dict.
     if (retval == OK)
@@ -6091,7 +6100,6 @@ find_next_completion_match(
     int		compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
     string_T	*leader;
 
-
     while (--todo >= 0)
     {
 	if (compl_shows_dir_forward() && compl_shown_match->cp_next != NULL)
@@ -6201,7 +6209,7 @@ find_next_completion_match(
  *
  * Note that this function may be called recursively once only.  First with
  * "allow_get_expansion" TRUE, which calls ins_compl_get_exp(), which in turn
- * calls this function with "allow_get_expansion" FALSE.
+ * calls this with "allow_get_expansion" FALSE (via ins_compl_check_keys()).
  */
     static int
 ins_compl_next(
