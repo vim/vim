@@ -831,6 +831,11 @@ set_option_default(
 	// The default value is not insecure.
 	flagsp = insecure_flag(opt_idx, opt_flags);
 	*flagsp = *flagsp & ~P_INSECURE;
+	if (both)
+	{
+	    flagsp = insecure_flag(opt_idx, OPT_LOCAL);
+	    *flagsp = *flagsp & ~P_INSECURE;
+	}
     }
 
 #ifdef FEAT_EVAL
@@ -2781,22 +2786,34 @@ did_set_option(
     int	    value_checked)  // value was checked to be safe, no need to set the
 			    // P_INSECURE flag.
 {
-    long_u	*p;
+    long_u	*flagsp;
+    long_u	*flagsp_local = NULL;
+    int		both = (opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0;
 
     options[opt_idx].flags |= P_WAS_SET;
 
     // When an option is set in the sandbox, from a modeline or in secure mode
     // set the P_INSECURE flag.  Otherwise, if a new value is stored reset the
     // flag.
-    p = insecure_flag(opt_idx, opt_flags);
+    flagsp = insecure_flag(opt_idx, opt_flags);
+    if (both)
+	flagsp_local = insecure_flag(opt_idx, OPT_LOCAL);
     if (!value_checked && (secure
 #ifdef HAVE_SANDBOX
 	    || sandbox != 0
 #endif
 	    || (opt_flags & OPT_MODELINE)))
-	*p = *p | P_INSECURE;
+    {
+	*flagsp = *flagsp | P_INSECURE;
+	if (flagsp_local != NULL)
+	    *flagsp_local = *flagsp_local | P_INSECURE;
+    }
     else if (new_value)
-	*p = *p & ~P_INSECURE;
+    {
+	*flagsp = *flagsp & ~P_INSECURE;
+	if (flagsp_local != NULL)
+	    *flagsp_local = *flagsp_local & ~P_INSECURE;
+    }
 }
 
 /*
