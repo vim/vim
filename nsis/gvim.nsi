@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2025-09-04
+# Last Change:	2025-09-06
 #
 
-Unicode true
+Unicode true  ; !include defaults to UTF-8 after Unicode True since 3.0 Alpha 2
 
 # WARNING: if you make changes to this script, look out for $0 to be valid,
 # because uninstall deletes most files in $0.
@@ -72,7 +73,7 @@ Unicode true
   !define INCLUDE_LIBGCC 1
 !endif
 
-!include gvim_version.nsh	# for version number
+!include .\gvim_version.nsh	; for version numbers
 
 # Definition of Patch for Vim.
 !ifndef PATCHLEVEL
@@ -91,36 +92,42 @@ SetCompressorDictSize 64
 SetDatablockOptimize on
 
 !if ${HAVE_UPX}
-  !packhdr temp.dat "upx --best --compress-icons=1 temp.dat"
+  !packhdr temp.dat "upx.exe --best --compress-icons=1 temp.dat"
 !endif
 
 RequestExecutionLevel highest
 ManifestDPIAware true
+# https://github.com/NSIS-Dev/nsis/blob/691211035c2aaaebe8fbca48ee02d4de93594a52/Docs/src/attributes.but#L292
+ManifestDPIAwareness "PerMonitorV2,System"
+ManifestSupportedOS \
+    {35138b9a-5d96-4fbd-8e2d-a2440225f93a} /* WinNT 6.1 */ \
+    {4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38} /* WinNT 6.2 */ \
+    {1f676c76-80e1-4239-95bb-83d0f6d0da78} /* WinNT 6.3 */ \
+    {8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a} /* WinNT 10/11 */
 
-!define PRODUCT		"Vim ${VER_MAJOR}.${VER_MINOR}"
+!define PRODUCT         "Vim ${VER_MAJOR}.${VER_MINOR}"
 !define UNINST_REG_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall"
 !define UNINST_REG_KEY_VIM  "${UNINST_REG_KEY}\${PRODUCT}"
 
 !if ${WIN64}
+  !define BIT 64
+# This adds '\Vim' to the user choice automagically.  The actual value is
+# obtained below with CheckOldVim.
+  !define DEFAULT_INSTDIR "$PROGRAMFILES64\Vim"
   !if ${ARM64}
     Name "${PRODUCT} (ARM64)"
   !else
     Name "${PRODUCT} (x64)"
   !endif
 !else
+  !define BIT 32
+  !define DEFAULT_INSTDIR "$PROGRAMFILES\Vim"
   Name "${PRODUCT}"
 !endif
 
 OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
-
-# This adds '\Vim' to the user choice automagically.  The actual value is
-# obtained below with CheckOldVim.
-!if ${WIN64}
-  !define DEFAULT_INSTDIR "$PROGRAMFILES64\Vim"
-!else
-  !define DEFAULT_INSTDIR "$PROGRAMFILES\Vim"
-!endif
 InstallDir ${DEFAULT_INSTDIR}
+BrandingText "Vim - the text editor"
 
 # Types of installs we can perform:
 InstType $(str_type_typical)
@@ -132,33 +139,30 @@ SilentInstall normal
 ##########################################################
 # Version resources
 
-VIProductVersion "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "Vim"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The Vim Project"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "Vim"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (C) 1996"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" \
+VIFileVersion ${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0
+VIProductVersion ${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0
+VIAddVersionKey /LANG=0 "ProductName" "Vim"
+VIAddVersionKey /LANG=0 "CompanyName" "The Vim Project"
+VIAddVersionKey /LANG=0 "LegalTrademarks" "Vim"
+VIAddVersionKey /LANG=0 "LegalCopyright" "Copyright (C) 1996"
+VIAddVersionKey /LANG=0 "FileDescription" \
     "Vi Improved - A Text Editor"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" \
+VIAddVersionKey /LANG=0 "ProductVersion" \
+    "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
+VIAddVersionKey /LANG=0 "FileVersion" \
     "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
 
 ##########################################################
 # including headers
 
-!include "Library.nsh"		# for DLL install
+!include "Library.nsh"		; for DLL install
 !include "LogicLib.nsh"
-!include "MUI2.nsh"
+!include "MUI2.nsh"		; new user interface
 !include "nsDialogs.nsh"
-!include "Sections.nsh"
+!include "Sections.nsh"		; for section control
 !include "x64.nsh"
 
-!include .\auxiliary.nsh	# helper file
-
-!if ${WIN64}
-  !define BIT 64
-!else
-  !define BIT 32
-!endif
+!include .\auxiliary.nsh	; helper file
 
 ##########################################################
 # MUI2 settings
@@ -194,16 +198,11 @@ VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" \
 !define MUI_FINISHPAGE_SHOWREADME_TEXT		$(str_show_readme)
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION	LaunchApplication
 
-# General custom functions for MUI2:
-#!define MUI_CUSTOMFUNCTION_ABORT   VimOnUserAbort
-#!define MUI_CUSTOMFUNCTION_UNABORT un.VimOnUserAbort
-
-# Installer pages
+# Installer pages:
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE $(page_lic_file)
 !insertmacro MUI_PAGE_COMPONENTS
 Page custom SetCustom ValidateCustom
-#!define MUI_PAGE_CUSTOMFUNCTION_LEAVE VimFinalCheck
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
@@ -211,7 +210,6 @@ Page custom SetCustom ValidateCustom
 
 # Uninstaller pages:
 !insertmacro MUI_UNPAGE_CONFIRM
-#!define MUI_PAGE_CUSTOMFUNCTION_LEAVE un.VimCheckRunning
 !insertmacro MUI_UNPAGE_COMPONENTS
 !insertmacro MUI_UNPAGE_INSTFILES
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
@@ -225,13 +223,13 @@ Page custom SetCustom ValidateCustom
 
 # Include support for other languages:
 !if ${HAVE_MULTI_LANG}
-  !include "lang\portuguesebr.nsi"
   !include "lang\danish.nsi"
   !include "lang\dutch.nsi"
   !include "lang\german.nsi"
   !include "lang\greek.nsi"
   !include "lang\italian.nsi"
   !include "lang\japanese.nsi"
+  !include "lang\portuguesebr.nsi"
   !include "lang\russian.nsi"
   !include "lang\serbian.nsi"
   !include "lang\simpchinese.nsi"
@@ -269,11 +267,11 @@ Function CheckOldVim
   ${EndIf}
 
   ClearErrors
-  StrCpy $0 ""	# Installed directory
-  StrCpy $R0 0	# Sub-key index
-  StrCpy $R1 ""	# Sub-key
+  StrCpy $0 ""   ; Installed directory
+  StrCpy $R0 0   ; Sub-key index
+  StrCpy $R1 ""  ; Sub-key
   ${Do}
-    # Eumerate the sub-key:
+    # Enumerate the sub-key:
     EnumRegKey $R1 HKLM ${UNINST_REG_KEY} $R0
 
     # Stop if no more sub-key:
@@ -308,7 +306,7 @@ Function CheckOldVim
     Push $R2
     call GetParent
     call GetParent
-    Pop $0  # Vim directory
+    Pop $0  ; Vim directory
     ${ExitDo}
 
   ${Loop}
@@ -320,12 +318,17 @@ Function CheckOldVim
   Pop $R2
   Pop $R1
   Pop $R0
-  Exch $0  # put $0 on top of stack, restore $0 to original value
+  Exch $0  ; put $0 on top of stack, restore $0 to original value
 FunctionEnd
 
 Function LaunchApplication
   SetOutPath $0
-  ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\$(vim_readme_file)"'
+  !if ${HAVE_NLS}
+    ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" \
+	'-R "$0\$(vim_readme_file)"'
+  !else
+    ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\README.txt"'
+  !endif
 FunctionEnd
 
 ##########################################################
@@ -350,11 +353,11 @@ Section "$(str_section_old_ver)" id_section_old_ver
       # It seems that the old version is still remaining.
       # TODO: Should we show a warning and run the uninstaller again?
 
-      ${ExitDo}	# Just ignore for now.
+      ${ExitDo}  ; Just ignore for now.
     ${EndIf}
   ${Loop}
   Delete $TEMP\install.exe
-  Delete $TEMP\vimini.ini   # install.exe creates this, but we don't need it.
+  Delete $TEMP\vimini.ini   ; install.exe creates this, but we don't need it.
 
   # We may have been put to the background when uninstall did something.
   BringToFront
@@ -580,15 +583,21 @@ SectionGroupEnd
 	  $INSTDIR\vim${VER_MAJOR}${VER_MINOR}\README.$lng_usr.txt
       Delete $INSTDIR\README.*.txt
     !endif
+    StrCpy $R7 0
     !if /FileExists "..\lang\LICENSE.??.txt"
       File ..\lang\LICENSE.??.txt
-      !if /FileExists "..\lang\LICENSE.??_??.txt"
-	File ..\lang\LICENSE.??_??.txt
-      !endif
-      CopyFiles /SILENT /FILESONLY $INSTDIR\LICENSE.$lng_usr.txt \
-	  $INSTDIR\vim${VER_MAJOR}${VER_MINOR}\LICENSE.$lng_usr.txt
-      Delete $INSTDIR\LICENSE.*.txt
+      IntOp $R7 $R7 + 1
     !endif
+    !if /FileExists "..\lang\LICENSE.??_??.txt"
+      File ..\lang\LICENSE.??_??.txt
+      IntOp $R7 $R7 + 1
+    !endif
+    IntCmp $R7 0 notcpy notcpy cpy
+    cpy:
+    CopyFiles /SILENT /FILESONLY $INSTDIR\LICENSE.$lng_usr.txt \
+	$INSTDIR\vim${VER_MAJOR}${VER_MINOR}\LICENSE.$lng_usr.txt
+    Delete $INSTDIR\LICENSE.*.txt
+    notcpy:
 
     SetOutPath $0\lang
     File /r /x Makefile ${VIMRT}\lang\*.*
@@ -597,9 +606,9 @@ SectionGroupEnd
 	"${GETTEXT}\gettext${BIT}\libintl-8.dll" "$0\libintl-8.dll" "$0"
     !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 	"${GETTEXT}\gettext${BIT}\libiconv-2.dll" "$0\libiconv-2.dll" "$0"
+    # Install libgcc_s_sjlj-1.dll only if it is needed.
     !if ${INCLUDE_LIBGCC}
       !if /FileExists "${GETTEXT}\gettext${BIT}\libgcc_s_sjlj-1.dll"
-	# Install libgcc_s_sjlj-1.dll only if it is needed.
 	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 	    "${GETTEXT}\gettext${BIT}\libgcc_s_sjlj-1.dll" \
 	    "$0\libgcc_s_sjlj-1.dll" "$0"
@@ -630,9 +639,9 @@ SectionGroupEnd
       !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 	  "${GETTEXT}\gettext32\libiconv-2.dll" \
 	  "$0\GvimExt32\libiconv-2.dll" "$0\GvimExt32"
+      # Install libgcc_s_sjlj-1.dll only if it is needed.
       !if ${INCLUDE_LIBGCC}
 	!if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
-	    # Install libgcc_s_sjlj-1.dll only if it is needed.
 	    !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 		"${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll" \
 		"$0\GvimExt32\libgcc_s_sjlj-1.dll" "$0\GvimExt32"
@@ -832,7 +841,7 @@ Function SetCustom
     StrCpy $4 1
   ${ElseIf} $vim_compat_stat == "vi"
     StrCpy $4 0
-  ${Else} # default
+  ${Else} ; default
     StrCpy $4 3
   ${EndIf}
   ${NSD_CB_SetSelectionIndex} $vim_nsd_compat $4
@@ -850,7 +859,7 @@ Function SetCustom
 
   ${If} $vim_keymap_stat == "windows"
     StrCpy $4 1
-  ${Else} # default
+  ${Else} ; default
     StrCpy $4 0
   ${EndIf}
   ${NSD_CB_SetSelectionIndex} $vim_nsd_keymap $4
@@ -871,7 +880,7 @@ Function SetCustom
     StrCpy $4 2
   ${ElseIf} $vim_mouse_stat == "windows"
     StrCpy $4 1
-  ${Else} # default
+  ${Else} ; default
     StrCpy $4 0
   ${EndIf}
   ${NSD_CB_SetSelectionIndex} $vim_nsd_mouse $4
