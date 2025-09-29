@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 28
+*builtin.txt*	For Vim version 9.1.  Last change: 2025 Sep 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3008,6 +3008,9 @@ expand({string} [, {nosuf} [, {list}]])				*expand()*
 			:t		tail (last path component only)
 			:r		root (one extension removed)
 			:e		extension only
+
+		More modifiers are supported, for the full list see
+		|filename-modifiers|.
 
 		Example: >
 			:let &tags = expand("%:p:h") .. "/tags"
