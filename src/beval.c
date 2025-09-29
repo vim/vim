@@ -235,7 +235,6 @@ bexpr_eval(
 {
     win_T	*cw;
     long	winnr = 0;
-    buf_T	*save_curbuf;
     int		use_sandbox;
     static char_u  *result = NULL;
     size_t	len;
@@ -254,15 +253,8 @@ bexpr_eval(
     set_vim_var_string(VV_BEVAL_TEXT, text, -1);
     vim_free(text);
 
-    /*
-     * Temporarily change the curbuf, so that we can determine whether
-     * the buffer-local balloonexpr option was set insecurely.
-     */
-    save_curbuf = curbuf;
-    curbuf = wp->w_buffer;
-    use_sandbox = was_set_insecurely((char_u *)"balloonexpr",
-				    *curbuf->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
-    curbuf = save_curbuf;
+    use_sandbox = was_set_insecurely(wp, (char_u *)"balloonexpr",
+			    *wp->w_buffer->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
     if (use_sandbox)
 	++sandbox;
     ++textlock;
