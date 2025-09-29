@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2025-09-03
+# Last Change:	2025-09-04
 #
 
 Unicode true
@@ -81,14 +81,21 @@ Unicode true
 
 # ----------- No configurable settings below this line -----------
 
-!include "Library.nsh"		# for DLL install
-!include "LogicLib.nsh"
-!include "MUI2.nsh"
-!include "nsDialogs.nsh"
-!include "Sections.nsh"
-!include "x64.nsh"
+##########################################################
+# Installer Attributes, Including headers, Plugins and etc. 
 
-!include .\auxiliary.nsh	# helper file
+CRCCheck force
+
+SetCompressor /SOLID lzma
+SetCompressorDictSize 64
+SetDatablockOptimize on
+
+!if ${HAVE_UPX}
+  !packhdr temp.dat "upx --best --compress-icons=1 temp.dat"
+!endif
+
+RequestExecutionLevel highest
+ManifestDPIAware true
 
 !define PRODUCT		"Vim ${VER_MAJOR}.${VER_MINOR}"
 !define UNINST_REG_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -103,17 +110,49 @@ Unicode true
 !else
   Name "${PRODUCT}"
 !endif
-OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
-CRCCheck force
-SetCompressor /SOLID lzma
-SetCompressorDictSize 64
-ManifestDPIAware true
-SetDatablockOptimize on
-RequestExecutionLevel highest
 
-!if ${HAVE_UPX}
-  !packhdr temp.dat "upx --best --compress-icons=1 temp.dat"
+OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
+
+# This adds '\Vim' to the user choice automagically.  The actual value is
+# obtained below with CheckOldVim.
+!if ${WIN64}
+  !define DEFAULT_INSTDIR "$PROGRAMFILES64\Vim"
+!else
+  !define DEFAULT_INSTDIR "$PROGRAMFILES\Vim"
 !endif
+InstallDir ${DEFAULT_INSTDIR}
+
+# Types of installs we can perform:
+InstType $(str_type_typical)
+InstType $(str_type_minimal)
+InstType $(str_type_full)
+
+SilentInstall normal
+
+##########################################################
+# Version resources
+
+VIProductVersion "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "Vim"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The Vim Project"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "Vim"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (C) 1996"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" \
+    "Vi Improved - A Text Editor"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" \
+    "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
+
+##########################################################
+# including headers
+
+!include "Library.nsh"		# for DLL install
+!include "LogicLib.nsh"
+!include "MUI2.nsh"
+!include "nsDialogs.nsh"
+!include "Sections.nsh"
+!include "x64.nsh"
+
+!include .\auxiliary.nsh	# helper file
 
 !if ${WIN64}
   !define BIT 64
@@ -154,22 +193,6 @@ RequestExecutionLevel highest
 !define MUI_FINISHPAGE_SHOWREADME
 !define MUI_FINISHPAGE_SHOWREADME_TEXT		$(str_show_readme)
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION	LaunchApplication
-
-# This adds '\Vim' to the user choice automagically.  The actual value is
-# obtained below with CheckOldVim.
-!if ${WIN64}
-  !define DEFAULT_INSTDIR "$PROGRAMFILES64\Vim"
-!else
-  !define DEFAULT_INSTDIR "$PROGRAMFILES\Vim"
-!endif
-InstallDir ${DEFAULT_INSTDIR}
-
-# Types of installs we can perform:
-InstType $(str_type_typical)
-InstType $(str_type_minimal)
-InstType $(str_type_full)
-
-SilentInstall normal
 
 # General custom functions for MUI2:
 #!define MUI_CUSTOMFUNCTION_ABORT   VimOnUserAbort
@@ -217,18 +240,6 @@ Page custom SetCustom ValidateCustom
 !endif
 
 ##########################################################
-# Version resources
-
-VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "Vim"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The Vim Project"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "Vim"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (C) 1996"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" \
-    "Vi Improved - A Text Editor"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" \
-    "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
-VIProductVersion "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
-
 # Global variables
 Var vim_dialog
 Var vim_nsd_compat
@@ -238,6 +249,7 @@ Var vim_compat_stat
 Var vim_keymap_stat
 Var vim_mouse_stat
 
+##########################################################
 # Reserve files
 ReserveFile ${VIMSRC}\installw32.exe
 
@@ -317,6 +329,8 @@ Function LaunchApplication
 FunctionEnd
 
 ##########################################################
+# Installer Functions and Sections
+
 Section "$(str_section_old_ver)" id_section_old_ver
   SectionIn 1 2 3 RO
 
