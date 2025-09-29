@@ -1981,7 +1981,6 @@ PRO_AUTO = \
 	vim9type.pro \
 	viminfo.pro \
 	wayland.pro \
-	winclip.pro \
 	window.pro \
 	$(ALL_GUI_PRO) \
 	$(TCL_PRO)
