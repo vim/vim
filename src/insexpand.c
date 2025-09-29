@@ -3599,11 +3599,11 @@ expand_by_function(int type, char_u *base, callback_T *cb)
     // Insert mode in another buffer.
     ++textlock;
 
-    // Suppress flushing of the output buffer. Without this, deleted text from
-    // ins_compl_delete() may briefly appear on screen, causing flicker (the
-    // typed character disappears and is redrawn) when the LSP server responds
-    // slowly. The LSP client may call sleep(), which indirectly triggers
-    // out_flush().
+    // Suppress flushing of the output buffer.
+    // Without this, text deleted by ins_compl_delete() may briefly vanish,
+    // causing flicker (typed chars disappear and are redrawn) when a user
+    // func runs slowly (e.g. an LSP server). Such funcs may call ':sleep',
+    // which indirectly triggers out_flush().
     ++no_flush;
 
     retval = call_callback(cb, 0, &rettv, 2, args);
