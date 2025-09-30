@@ -355,6 +355,7 @@ $quote	eval.txt	/*$quote*
 'go'	options.txt	/*'go'*
 'go-!'	options.txt	/*'go-!'*
 'go-A'	options.txt	/*'go-A'*
+'go-C'	options.txt	/*'go-C'*
 'go-F'	options.txt	/*'go-F'*
 'go-L'	options.txt	/*'go-L'*
 'go-M'	options.txt	/*'go-M'*
@@ -8223,6 +8224,7 @@ gui-w32-cmdargs	gui_w32.txt	/*gui-w32-cmdargs*
 gui-w32-dialogs	gui_w32.txt	/*gui-w32-dialogs*
 gui-w32-printing	gui_w32.txt	/*gui-w32-printing*
 gui-w32-start	gui_w32.txt	/*gui-w32-start*
+gui-w32-title-bar	gui_w32.txt	/*gui-w32-title-bar*
 gui-w32-various	gui_w32.txt	/*gui-w32-various*
 gui-w32-windowid	gui_w32.txt	/*gui-w32-windowid*
 gui-w32s	os_win32.txt	/*gui-w32s*
@@ -8416,6 +8418,8 @@ hl-TabPanelFill	syntax.txt	/*hl-TabPanelFill*
 hl-TabPanelSel	syntax.txt	/*hl-TabPanelSel*
 hl-Terminal	syntax.txt	/*hl-Terminal*
 hl-Title	syntax.txt	/*hl-Title*
+hl-TitleBar	syntax.txt	/*hl-TitleBar*
+hl-TitleBarNC	syntax.txt	/*hl-TitleBarNC*
 hl-ToolbarButton	gui.txt	/*hl-ToolbarButton*
 hl-ToolbarLine	gui.txt	/*hl-ToolbarLine*
 hl-Tooltip	syntax.txt	/*hl-Tooltip*

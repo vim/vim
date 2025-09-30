@@ -488,4 +488,18 @@ VIM_KEYCODE_TRANS_STRATEGY can be set to the desired value ("experimental" or
         set VIM_KEYCODE_TRANS_STRATEGY=experimental
         gvim.exe
 <
+
+Title Bar						*gui-w32-title-bar*
+
+Starting with Windows 11, you can customize the gVim title bar (also known as
+the caption bar) by enabling the |'go-C'| option.
+
+Once enabled, the appearance is controlled by two highlighting groups:
+1. |hl-TitleBar|   -- Sets the color of the title bar for the active window.
+2. |hl-TitleBarNC| -- Sets the color of the title bar for inactive windows.
+
+To use the system's default title bar colors, set highlighting groups to `NONE`:
+	hi TitleBar guibg=NONE guifg=NONE
+	hi TitleBarNC guibg=NONE guifg=NONE
+
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

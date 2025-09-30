@@ -256,6 +256,10 @@ static char *(highlight_init_both[]) = {
     "Cursor guibg=fg guifg=bg",
     "lCursor guibg=fg guifg=bg", // should be different, but what?
 #endif
+#ifdef FEAT_GUI_MSWIN
+    "TitleBar guibg=bg guifg=fg",
+    "TitleBarNC guibg=NONE guifg=NONE",
+#endif
     "default link QuickFixLine Search",
     "default link CursorLineSign SignColumn",
     "default link CursorLineFold FoldColumn",
@@ -817,6 +821,10 @@ highlight_reset_all(void)
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_X11)
     gui_mch_def_colors();
 # endif
+# ifdef FEAT_GUI_MSWIN
+    if (gui.in_use)
+	gui_mch_set_titlebar_colors();
+# endif
 # ifdef FEAT_GUI_X11
 #  ifdef FEAT_MENU
 
@@ -1272,6 +1280,8 @@ highlight_set_guifg(
 	int	is_menu_group UNUSED,
 	int	is_scrollbar_group UNUSED,
 	int	is_tooltip_group UNUSED,
+	int	is_titlebar_group UNUSED,
+	int	is_titlebarnc_group UNUSED,
 	int	*do_colors UNUSED,
 	int	init)
 {
@@ -1305,6 +1315,18 @@ highlight_set_guifg(
 	    did_change = TRUE;
 	}
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+#  ifdef FEAT_GUI_MSWIN
+	if (is_titlebar_group && gui.title_fg_pixel != i)
+	{
+	    gui.title_fg_pixel = i;
+	    *do_colors = TRUE;
+	}
+	if (is_titlebarnc_group && gui.titlenc_fg_pixel != i)
+	{
+	    gui.titlenc_fg_pixel = i;
+	    *do_colors = TRUE;
+	}
+#  endif
 #  ifdef FEAT_GUI_X11
 	if (is_menu_group && gui.menu_fg_pixel != i)
 	{
@@ -1341,6 +1363,8 @@ highlight_set_guibg(
 	int	is_menu_group UNUSED,
 	int	is_scrollbar_group UNUSED,
 	int	is_tooltip_group UNUSED,
+	int	is_titlebar_group UNUSED,
+	int	is_titlebarnc_group UNUSED,
 	int	*do_colors UNUSED,
 	int	init)
 {
@@ -1374,6 +1398,18 @@ highlight_set_guibg(
 	    did_change = TRUE;
 	}
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+#  ifdef FEAT_GUI_MSWIN
+	if (is_titlebar_group && gui.title_bg_pixel != i)
+	{
+	    gui.title_bg_pixel = i;
+	    *do_colors = TRUE;
+	}
+	if (is_titlebarnc_group && gui.titlenc_bg_pixel != i)
+	{
+	    gui.titlenc_bg_pixel = i;
+	    *do_colors = TRUE;
+	}
+#  endif
 #  ifdef FEAT_GUI_X11
 	if (is_menu_group && gui.menu_bg_pixel != i)
 	{
@@ -1551,6 +1587,13 @@ do_highlight(
     int		dolink = FALSE;
     int		error = FALSE;
     int		is_normal_group = FALSE;	// "Normal" group
+#ifdef FEAT_GUI_MSWIN
+    int		is_titlebar_group = FALSE;	// "TitleBar" group
+    int		is_titlebarnc_group = FALSE;	// "TitleBarNC" group
+#else
+# define is_titlebar_group 0
+# define is_titlebarnc_group 0
+#endif
 #ifdef FEAT_GUI_X11
     int		is_menu_group = FALSE;		// "Menu" group
     int		is_scrollbar_group = FALSE;	// "Scrollbar" group
@@ -1668,6 +1711,12 @@ do_highlight(
 
     if (STRCMP(HL_TABLE()[idx].sg_name_u, "NORMAL") == 0)
 	is_normal_group = TRUE;
+#ifdef FEAT_GUI_MSWIN
+    else if (STRCMP(HL_TABLE()[idx].sg_name_u, "TITLEBAR") == 0)
+	is_titlebar_group = TRUE;
+    else if (STRCMP(HL_TABLE()[idx].sg_name_u, "TITLEBARNC") == 0)
+	is_titlebarnc_group = TRUE;
+#endif
 #ifdef FEAT_GUI_X11
     else if (STRCMP(HL_TABLE()[idx].sg_name_u, "MENU") == 0)
 	is_menu_group = TRUE;
@@ -1808,8 +1857,9 @@ do_highlight(
 	    {
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
 		if (highlight_set_guifg(idx, arg, is_menu_group,
-					  is_scrollbar_group, is_tooltip_group,
-							     &do_colors, init))
+			    is_scrollbar_group, is_tooltip_group,
+			    is_titlebar_group, is_titlebarnc_group,
+			    &do_colors, init))
 		    did_change = TRUE;
 #endif
 	    }
@@ -1818,6 +1868,7 @@ do_highlight(
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
 		if (highlight_set_guibg(idx, arg, is_menu_group,
 			    is_scrollbar_group, is_tooltip_group,
+			    is_titlebar_group, is_titlebarnc_group,
 			    &do_colors, init))
 		    did_change = TRUE;
 #endif
@@ -1879,6 +1930,18 @@ do_highlight(
 	    control_console_color_rgb();
 #endif
 	}
+#ifdef FEAT_GUI_MSWIN
+	else if (is_titlebar_group)
+	{
+	    if (gui.in_use && do_colors)
+		gui_mch_set_titlebar_colors();
+	}
+	else if (is_titlebarnc_group)
+	{
+	    if (gui.in_use && do_colors)
+		gui_mch_set_titlebar_colors();
+	}
+#endif
 #ifdef FEAT_GUI_X11
 # ifdef FEAT_MENU
 	else if (is_menu_group)
@@ -2052,8 +2115,8 @@ highlight_clear(int idx)
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
 /*
  * Set the normal foreground and background colors according to the "Normal"
- * highlighting group.  For X11 also set "Menu", "Scrollbar", and
- * "Tooltip" colors.
+ * highlighting group.  For X11 also set "Menu", "Scrollbar" and "Tooltip"
+ * colors.  For MS-Windows also set "TitleBar" and "TitleBarNC" colors.
  */
     void
 set_normal_colors(void)
@@ -2070,6 +2133,22 @@ set_normal_colors(void)
 	    gui_mch_new_colors();
 	    set_must_redraw(UPD_CLEAR);
 	}
+#  ifdef FEAT_GUI_MSWIN
+	if (set_group_colors((char_u *)"TitleBar",
+				 &gui.title_fg_pixel, &gui.title_bg_pixel,
+				 FALSE, FALSE, FALSE))
+	{
+	    gui_mch_set_titlebar_colors();
+	    set_must_redraw(UPD_CLEAR);
+	}
+	if (set_group_colors((char_u *)"TitleBarNC",
+				 &gui.titlenc_fg_pixel, &gui.titlenc_bg_pixel,
+				 FALSE, FALSE, FALSE))
+	{
+	    gui_mch_set_titlebar_colors();
+	    set_must_redraw(UPD_CLEAR);
+	}
+#  endif
 #  ifdef FEAT_GUI_X11
 	if (set_group_colors((char_u *)"Menu",
 			     &gui.menu_fg_pixel, &gui.menu_bg_pixel,
@@ -2132,7 +2211,8 @@ set_normal_colors(void)
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
- * Set the colors for "Normal", "Menu", "Tooltip" or "Scrollbar".
+ * Set the colors for "Normal", "Menu", "TitleBar", "TitleBarNC", "Tooltip" or
+ * "Scrollbar".
  */
     static int
 set_group_colors(
