@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		Vim help file
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
-" Last Change:		2025 Sep 27
+" Last Change:		2025 Sep 29
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
@@ -52,6 +52,15 @@ for [s:lang, s:syntax] in g:help_example_languages->items()
         \ $'contains=@helpExampleHighlight_{s:lang} keepend'
 endfor
 unlet! s:lang s:syntax
+
+if has_key(g:help_example_languages, "vim9")
+  " for example at :help vim9-mix
+  syn region vim9LegacyHeader_HelpExample
+	\ start=+" legacy Vim script comments may go here+
+	\ end="^\ze\s*vim9s\%[cript]\>"
+	\ contains=@vimLegacyTop,vimComment,vimLineComment
+  syn cluster helpExampleHighlight_vim9 add=vim9LegacyHeader_HelpExample
+endif
 
 if has("ebcdic")
   syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar
