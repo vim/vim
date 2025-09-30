@@ -2772,7 +2772,7 @@ out_flush(void)
 {
     int	    len;
 
-    if (no_flush > 0 || out_pos == 0)
+    if (out_pos == 0)
 	return;
 
     // set out_pos to 0 before ui_write, to avoid recursiveness

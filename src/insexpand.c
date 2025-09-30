@@ -3601,17 +3601,7 @@ expand_by_function(int type, char_u *base, callback_T *cb)
     // Insert mode in another buffer.
     ++textlock;
 
-    // Suppress flushing of the output buffer. Without this, text removed
-    // temporarily by ins_compl_delete() is flushed to the terminal and shown
-    // as deleted, only to be redrawn later. This causes visible flicker (typed
-    // chars disappear and reappear) when a user func (e.g. an LSP server)
-    // responds slowly. Such funcs may call sleep(), which indirectly triggers
-    // out_flush(). We want deleted text to remain visible.
-    ++no_flush;
-
     retval = call_callback(cb, 0, &rettv, 2, args);
-
-    --no_flush;
 
     // Call a function, which returns a list or dict.
     if (retval == OK)
@@ -6103,6 +6093,7 @@ find_next_completion_match(
     int		compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
     string_T	*leader;
 
+
     while (--todo >= 0)
     {
 	if (compl_shows_dir_forward() && compl_shown_match->cp_next != NULL)
@@ -6212,7 +6203,7 @@ find_next_completion_match(
  *
  * Note that this function may be called recursively once only.  First with
  * "allow_get_expansion" TRUE, which calls ins_compl_get_exp(), which in turn
- * calls this with "allow_get_expansion" FALSE (via ins_compl_check_keys()).
+ * calls this function with "allow_get_expansion" FALSE.
  */
     static int
 ins_compl_next(
