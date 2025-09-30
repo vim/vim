@@ -36,7 +36,7 @@ Indianapolis IN 46220 USA
 1. Filename Convention					*mac-filename*
 
 Starting with Vim version 7 you can just use the unix path separators with
-Vim. In order to determine if the specified filename is relative to the
+Vim.  In order to determine if the specified filename is relative to the
 current folder or absolute (i.e. relative to the "Desktop"), the following
 algorithm is used:
 

@@ -35,10 +35,10 @@ longer exists for recent versions of NetBeans but the protocol was developed
 in such a way that any IDE can use it to integrate Vim.
 
 The NetBeans protocol of Vim is a text based communication protocol, over a
-classical TCP socket. There is no dependency on Java or NetBeans. Any language
-or environment providing a socket interface can control Vim using this
-protocol. There are existing implementations in C, C++, Python and Java. The
-name NetBeans is kept today for historical reasons.
+classical TCP socket.  There is no dependency on Java or NetBeans.  Any
+language or environment providing a socket interface can control Vim using
+this protocol.  There are existing implementations in C, C++, Python and Java.
+The name NetBeans is kept today for historical reasons.
 
 Active project using the NetBeans protocol of Vim:
 - Eclim, (dead link) eclim.org/
@@ -252,7 +252,7 @@ environment variable "__NETBEANS_SOCKET" is used or the default 3219.
 environment variable "__NETBEANS_VIM_PASSWORD" is used or "changeme".
 
 Vim will initiate a socket connection (client side) to the specified host and
-port upon startup. The password will be sent with the AUTH event when the
+port upon startup.  The password will be sent with the AUTH event when the
 connection has been established.
 
 
@@ -262,7 +262,7 @@ connection has been established.
 The communication between the Vim Controller and Vim uses plain text
 messages.  This protocol was first designed to work with the external editor
 module of NetBeans.  Later it was extended to work with Agide (A-A-P GUI IDE,
-see http://www.a-a-p.org) and then with other IDE. The extensions are marked
+see http://www.a-a-p.org) and then with other IDE.  The extensions are marked
 with "version 2.1".
 
 Version 2.2 of the protocol has several minor changes which should only affect
@@ -285,7 +285,7 @@ mechanism.
 Netbeans messages are processed when Vim is idle, waiting for user input.
 When Vim is run in non-interactive mode, for example when running an automated
 test case that sources a Vim script, the idle loop may not be called often
-enough. In that case, insert |:sleep| commands in the Vim script. The |:sleep|
+enough.  In that case, insert |:sleep| commands in the Vim script.  The |:sleep|
 command does invoke Netbeans messages processing.
 
 6.1 Kinds of messages		|nb-messages|
@@ -442,7 +442,7 @@ editFile pathname
 		Normal way for the IDE to tell the editor to edit a file.
 
 		You must set a bufId different of 0 with this command to
-		assign a bufId to the buffer. It will trigger an event
+		assign a bufId to the buffer.  It will trigger an event
 		fileOpened with a bufId of 0 but the buffer has been assigned.
 
 		If the IDE is going to pass the file text to the editor use
@@ -470,8 +470,8 @@ initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
 insertDone starteol readonly
 		Sent by Vim Controller to tell Vim an initial file insert is
 		done.  This triggers a read message being printed.  If
-		"starteol" is "F" then the last line doesn't have a EOL. If
-		"readonly" is "T" then the file is marked as readonly. Prior
+		"starteol" is "F" then the last line doesn't have a EOL.  If
+		"readonly" is "T" then the file is marked as readonly.  Prior
 		to version 2.3, no read messages were displayed after opening
 		a file.  New in version 2.3.
 
@@ -862,7 +862,7 @@ These errors occur when a message violates the protocol:
 			':echo has("netbeans_enabled")'
 
 							*:nbclose*
-:nbc[lose]		Close the current NetBeans session. Remove all placed
+:nbc[lose]		Close the current NetBeans session.  Remove all placed
 			signs.
 
 							*:nbkey*
@@ -871,7 +871,7 @@ These errors occur when a message violates the protocol:
 			command, this command can be used to generate a hotkey
 			message to the Vim Controller.
 			This command can also be used to pass any text to the
-			Vim  Controller. It is used by Pyclewn, for example,
+			Vim  Controller.  It is used by Pyclewn, for example,
 			to build the complete set of gdb commands as Vim user
 			commands.
 			The events newDotAndMark, keyCommand and keyAtPos are
@@ -885,7 +885,7 @@ NUL bytes are not possible.  For editor -> IDE they will appear as NL
 characters.  For IDE -> editor they cannot be inserted.
 
 A NetBeans session may be initiated with Vim running in a terminal, and
-continued later in a GUI environment after running the |:gui| command. In this
+continued later in a GUI environment after running the |:gui| command.  In this
 case, the highlighting defined for the NetBeans annotations may be cleared
 when the ":gui" command sources .gvimrc and this file loads a colorscheme
 that runs the command ":highlight clear".
@@ -935,14 +935,14 @@ version of NetBeans.
 
 10.1. Downloading NetBeans			*netbeans-download*
 
-The NetBeans IDE is available for download from netbeans.org.  You can download
-a released version, download sources, or use CVS to download the current
-source tree.  If you choose to download sources, follow directions from
-netbeans.org on building NetBeans.
+The NetBeans IDE is available for download from netbeans.org.  You can
+download a released version, download sources, or use CVS to download the
+current source tree.  If you choose to download sources, follow directions
+from netbeans.org on building NetBeans.
 
 Depending on the version of NetBeans you download, you may need to do further
-work to get the required External Editor module.  This is the module which lets
-NetBeans work with gvim (or xemacs :-).  See (dead link)
+work to get the required External Editor module.  This is the module which
+lets NetBeans work with gvim (or xemacs :-).  See (dead link)
 externaleditor.netbeans.org
 for details on downloading this module if your NetBeans release does not have
 it.
