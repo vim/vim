@@ -3945,7 +3945,8 @@ function s:NetrwBrowseChgDir(islocal, newdir, cursor, ...)
         " NetrwBrowseChgDir: go up one directory {{{3
         " --------------------------------------
 
-        let dirname = netrw#fs#Dirname(dirname)
+        " The following regexps expect '/' as path separator
+        let dirname = substitute(netrw#fs#AbsPath(dirname), '\\', '/', 'ge') . '/'
 
         if w:netrw_liststyle == s:TREELIST && exists("w:netrw_treedict")
             " force a refresh
