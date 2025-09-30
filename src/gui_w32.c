@@ -1635,7 +1635,7 @@ gui_mch_new_colors(void)
     if (pDwmSetWindowAttribute == NULL)
 	return;
 
-    if (win11_or_later)
+    if (win11_or_later && vim_strchr(p_go, GO_CAPTION) != NULL)
     {
 	const COLORREF captionColor = gui.back_pixel;
 	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,

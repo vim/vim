@@ -494,6 +494,6 @@ Title Bar's Behaviour			    *gui-w32-title-bar-behaviour*
 The color of the gVim title bar (sometimes also called the caption bar) is
 treated as part of the application's background.  Starting with Windows 11,
 it follows the background color defined by |hl-Normal|, so it matches the
-background of the current colorscheme.
+background of the current colorscheme. This behaviour is controlled by |'go-C'|.
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

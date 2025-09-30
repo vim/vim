@@ -662,7 +662,7 @@ func Test_set_guioptions()
   if has('win32')
     " Default Value
     set guioptions&
-    call assert_equal('egmrLtT', &guioptions)
+    call assert_equal('egmrLtTC', &guioptions)
 
   else
     " Default Value
