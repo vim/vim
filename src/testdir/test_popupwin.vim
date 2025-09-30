@@ -3683,6 +3683,7 @@ func Test_popupmenu_info_border()
   call term_sendkeys(buf, "\<Esc>")
   call term_sendkeys(buf, ":set pumheight=3\<CR>")
   call term_sendkeys(buf, "cc\<C-X>\<C-U>")
+  call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_6', {})
 
   " Hide the info popup, cycle through buffers, make sure it didn't get
@@ -3692,6 +3693,7 @@ func Test_popupmenu_info_border()
   call term_sendkeys(buf, ":bn\<CR>")
   call term_sendkeys(buf, ":bn\<CR>")
   call term_sendkeys(buf, "otest text test text\<C-X>\<C-U>")
+  call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_7', {})
 
   " Test that when the option is changed the popup changes.

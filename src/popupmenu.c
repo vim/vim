@@ -182,8 +182,8 @@ set_pum_width_aligned_with_cursor(int width, int available_width)
 }
 
 /*
- * Calculate horizontal placement for popup menu for insert-mode completion.
- * Sets pum_col and pum_width based on cursor position and available space.
+ * Calculate horizontal placement for popup menu. Sets pum_col and pum_width
+ * based on cursor position and available space.
  */
     static void
 pum_compute_horizontal_placement(int cursor_col)
