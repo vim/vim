@@ -4483,10 +4483,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*'go-c'*
 	  'c'	Use console dialogs instead of popup dialogs for simple
 		choices.
-								*'go-C'*
-	  'C'	Use |hl-Normal| control the colour of the title bar if available.
-		Currently only works for MS-Windows.
-		See |gui-w32-title-bar-behaviour| for more information.
 								*'go-d'*
 	  'd'	Use dark theme variant if available.  Currently only works for
 		GTK+ GUI.

@@ -355,7 +355,6 @@ $quote	eval.txt	/*$quote*
 'go'	options.txt	/*'go'*
 'go-!'	options.txt	/*'go-!'*
 'go-A'	options.txt	/*'go-A'*
-'go-C'	options.txt	/*'go-C'*
 'go-F'	options.txt	/*'go-F'*
 'go-L'	options.txt	/*'go-L'*
 'go-M'	options.txt	/*'go-M'*
@@ -8418,6 +8417,7 @@ hl-TabPanelFill	syntax.txt	/*hl-TabPanelFill*
 hl-TabPanelSel	syntax.txt	/*hl-TabPanelSel*
 hl-Terminal	syntax.txt	/*hl-Terminal*
 hl-Title	syntax.txt	/*hl-Title*
+hl-TitleBar	syntax.txt	/*hl-TitleBar*
 hl-ToolbarButton	gui.txt	/*hl-ToolbarButton*
 hl-ToolbarLine	gui.txt	/*hl-ToolbarLine*
 hl-Tooltip	syntax.txt	/*hl-Tooltip*
