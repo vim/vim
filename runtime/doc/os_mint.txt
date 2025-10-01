@@ -5,7 +5,7 @@
 
 
 							*MiNT* *Atari*
-The Atari MiNT support was removed with patch 8.2.1215. It probably didn't
+The Atari MiNT support was removed with patch 8.2.1215.  It probably didn't
 work at that time, since the code was old and not maintained.
 
 
