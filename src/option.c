@@ -46,9 +46,9 @@ static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
 #if defined(FEAT_EVAL) || defined(PROTO)
-static long_u *insecure_flag(int opt_idx, int opt_flags);
+static long_u *insecure_flag(win_T *wp, int opt_idx, int opt_flags);
 #else
-# define insecure_flag(opt_idx, opt_flags) (&options[opt_idx].flags)
+# define insecure_flag(wp, opt_idx, opt_flags) (&options[opt_idx].flags)
 #endif
 static char *set_bool_option(int opt_idx, char_u *varp, int value, int opt_flags);
 static char *set_num_option(int opt_idx, char_u *varp, long value, char *errbuf, size_t errbuflen, int opt_flags);
@@ -829,8 +829,13 @@ set_option_default(
 	}
 
 	// The default value is not insecure.
-	flagsp = insecure_flag(opt_idx, opt_flags);
+	flagsp = insecure_flag(curwin, opt_idx, opt_flags);
 	*flagsp = *flagsp & ~P_INSECURE;
+	if (both)
+	{
+	    flagsp = insecure_flag(curwin, opt_idx, OPT_LOCAL);
+	    *flagsp = *flagsp & ~P_INSECURE;
+	}
     }
 
 #ifdef FEAT_EVAL
@@ -2135,7 +2140,7 @@ do_set_option_string(
 #endif
 
     {
-	long_u	*p = insecure_flag(opt_idx, opt_flags);
+	long_u	*p = insecure_flag(curwin, opt_idx, opt_flags);
 	int	secure_saved = secure;
 
 	// When an option is set in the sandbox, from a modeline or in secure
@@ -2781,22 +2786,34 @@ did_set_option(
     int	    value_checked)  // value was checked to be safe, no need to set the
 			    // P_INSECURE flag.
 {
-    long_u	*p;
+    long_u	*flagsp;
+    long_u	*flagsp_local = NULL;
+    int		both = (opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0;
 
     options[opt_idx].flags |= P_WAS_SET;
 
     // When an option is set in the sandbox, from a modeline or in secure mode
     // set the P_INSECURE flag.  Otherwise, if a new value is stored reset the
     // flag.
-    p = insecure_flag(opt_idx, opt_flags);
+    flagsp = insecure_flag(curwin, opt_idx, opt_flags);
+    if (both)
+	flagsp_local = insecure_flag(curwin, opt_idx, OPT_LOCAL);
     if (!value_checked && (secure
 #ifdef HAVE_SANDBOX
 	    || sandbox != 0
 #endif
 	    || (opt_flags & OPT_MODELINE)))
-	*p = *p | P_INSECURE;
+    {
+	*flagsp = *flagsp | P_INSECURE;
+	if (flagsp_local != NULL)
+	    *flagsp_local = *flagsp_local | P_INSECURE;
+    }
     else if (new_value)
-	*p = *p & ~P_INSECURE;
+    {
+	*flagsp = *flagsp & ~P_INSECURE;
+	if (flagsp_local != NULL)
+	    *flagsp_local = *flagsp_local & ~P_INSECURE;
+    }
 }
 
 /*
@@ -3055,14 +3072,14 @@ set_term_option_alloced(char_u **p)
  * Return -1 for an unknown option.
  */
     int
-was_set_insecurely(char_u *opt, int opt_flags)
+was_set_insecurely(win_T *wp, char_u *opt, int opt_flags)
 {
     int	    idx = findoption(opt);
     long_u  *flagp;
 
     if (idx >= 0)
     {
-	flagp = insecure_flag(idx, opt_flags);
+	flagp = insecure_flag(wp, idx, opt_flags);
 	return (*flagp & P_INSECURE) != 0;
     }
     internal_error("was_set_insecurely()");
@@ -3076,28 +3093,38 @@ was_set_insecurely(char_u *opt, int opt_flags)
  * the option is used.
  */
     static long_u *
-insecure_flag(int opt_idx, int opt_flags)
+insecure_flag(win_T *wp, int opt_idx, int opt_flags)
 {
     if (opt_flags & OPT_LOCAL)
 	switch ((int)options[opt_idx].indir)
 	{
-	    case PV_WRAP:	return &curwin->w_p_wrap_flags;
+	    case PV_WRAP:	return &wp->w_p_wrap_flags;
 #ifdef FEAT_STL_OPT
-	    case PV_STL:	return &curwin->w_p_stl_flags;
+	    case PV_STL:	return &wp->w_p_stl_flags;
 #endif
 #ifdef FEAT_EVAL
 # ifdef FEAT_FOLDING
-	    case PV_FDE:	return &curwin->w_p_fde_flags;
-	    case PV_FDT:	return &curwin->w_p_fdt_flags;
+	    case PV_FDE:	return &wp->w_p_fde_flags;
+	    case PV_FDT:	return &wp->w_p_fdt_flags;
 # endif
 # ifdef FEAT_BEVAL
-	    case PV_BEXPR:	return &curbuf->b_p_bexpr_flags;
+	    case PV_BEXPR:	return &wp->w_buffer->b_p_bexpr_flags;
 # endif
-	    case PV_INDE:	return &curbuf->b_p_inde_flags;
-	    case PV_FEX:	return &curbuf->b_p_fex_flags;
+	    case PV_INDE:	return &wp->w_buffer->b_p_inde_flags;
+	    case PV_FEX:	return &wp->w_buffer->b_p_fex_flags;
 # ifdef FEAT_FIND_ID
-	    case PV_INEX:	return &curbuf->b_p_inex_flags;
+	    case PV_INEX:	return &wp->w_buffer->b_p_inex_flags;
 # endif
+#endif
+	}
+    else
+	// For global value of window-local options, use flags in w_allbuf_opt.
+	switch ((int)options[opt_idx].indir)
+	{
+	    case PV_WRAP:	return &wp->w_allbuf_opt.wo_wrap_flags;
+#if defined(FEAT_EVAL) && defined(FEAT_FOLDING)
+	    case PV_FDE:	return &wp->w_allbuf_opt.wo_fde_flags;
+	    case PV_FDT:	return &wp->w_allbuf_opt.wo_fdt_flags;
 #endif
 	}
 
@@ -7122,6 +7149,15 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #endif
 #ifdef FEAT_QUICKFIX
     to->wo_lhi = from->wo_lhi;
+#endif
+
+    to->wo_wrap_flags = from->wo_wrap_flags;
+#ifdef FEAT_STL_OPT
+    to->wo_stl_flags = from->wo_stl_flags;
+#endif
+#ifdef FEAT_EVAL
+    to->wo_fde_flags = from->wo_fde_flags;
+    to->wo_fdt_flags = from->wo_fdt_flags;
 #endif
 
 #ifdef FEAT_EVAL

@@ -465,7 +465,7 @@ starts_with_percent_and_bang(tabpanel_T *pargs)
 
 #ifdef FEAT_EVAL
     // if "fmt" was set insecurely it needs to be evaluated in the sandbox
-    int	use_sandbox = was_set_insecurely(opt_name, opt_scope);
+    int	use_sandbox = was_set_insecurely(curwin, opt_name, opt_scope);
 
     // When the format starts with "%!" then evaluate it as an expression and
     // use the result as the actual format string.

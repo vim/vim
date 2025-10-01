@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 28
+*options.txt*	For Vim version 9.1.  Last change: 2025 Sep 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3709,7 +3709,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	command to find the illegal byte sequence.
 	WRONG VALUES:			WHAT'S WRONG:
 		latin1,utf-8		"latin1" will always be used
-		utf-8,ucs-bom,latin1	BOM won't be recognized in an utf-8
+		utf-8,ucs-bom,latin1	BOM won't be recognized in a utf-8
 					file
 		cp1250,latin1		"cp1250" will always be used
 	If 'fileencodings' is empty, 'fileencoding' is not modified.

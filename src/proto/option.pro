@@ -18,7 +18,7 @@ void set_options_bin(int oldval, int newval, int opt_flags);
 void check_options(void);
 int get_term_opt_idx(char_u **p);
 int set_term_option_alloced(char_u **p);
-int was_set_insecurely(char_u *opt, int opt_flags);
+int was_set_insecurely(win_T *wp, char_u *opt, int opt_flags);
 void redraw_titles(void);
 int valid_name(char_u *val, char *allowed);
 void set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx);

@@ -8223,6 +8223,7 @@ gui-w32-cmdargs	gui_w32.txt	/*gui-w32-cmdargs*
 gui-w32-dialogs	gui_w32.txt	/*gui-w32-dialogs*
 gui-w32-printing	gui_w32.txt	/*gui-w32-printing*
 gui-w32-start	gui_w32.txt	/*gui-w32-start*
+gui-w32-title-bar-behaviour	gui_w32.txt	/*gui-w32-title-bar-behaviour*
 gui-w32-various	gui_w32.txt	/*gui-w32-various*
 gui-w32-windowid	gui_w32.txt	/*gui-w32-windowid*
 gui-w32s	os_win32.txt	/*gui-w32s*

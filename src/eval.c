@@ -1020,7 +1020,7 @@ eval_foldexpr(win_T *wp, int *cp)
     varnumber_T	retval;
     char_u	*s;
     sctx_T	saved_sctx = current_sctx;
-    int		use_sandbox = was_set_insecurely((char_u *)"foldexpr",
+    int		use_sandbox = was_set_insecurely(wp, (char_u *)"foldexpr",
 								    OPT_LOCAL);
 
     arg = skipwhite(wp->w_p_fde);
