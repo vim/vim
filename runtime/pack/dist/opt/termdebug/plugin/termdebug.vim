@@ -700,7 +700,10 @@ def StartDebug_prompt(dict: dict<any>)
     if gdb_cmd[0] =~? remote_pattern
       var gdb_pos = indexof(gdb_cmd, $'v:val =~? "^{GetCommand()[-1]}"')
       if gdb_pos > 0
+        # strip debugger call
         term_cmd = gdb_cmd[0 : gdb_pos - 1]
+        # create a devoted tty slave device and link to stdin/stdout
+        term_cmd += ['socat', '-d', '-d', '-', 'PTY,raw,echo=0']
       endif
     endif
   endif
@@ -710,7 +713,7 @@ def StartDebug_prompt(dict: dict<any>)
     # Try open terminal twice because sync with gdbjob may not succeed
     # the first time (docker daemon for example)
     var trials: number = 2
-    var pty = null_string
+    var pty: string = null_string
 
     while trials > 0
 
@@ -733,14 +736,16 @@ def StartDebug_prompt(dict: dict<any>)
       if term_cmd is null
         pty = job_info(term_getjob(ptybufnr))['tty_out']
       else
+        # If we are not using socat maybe is a shell:
         # Retrieve remote pty value iteratively as above with gdb term
+        var interact = indexof(term_cmd, 'v:val =~? "^socat"') < 0
+
         var line = null_string
         for j in range(5)
-          term_sendkeys(ptybufnr, "clear\<CR>")
-          if !pty
-            term_sendkeys(ptybufnr, "tty\<CR>")
-          else
+          if pty != null
             break
+          elseif interact
+            term_sendkeys(ptybufnr, "tty\<CR>")
           endif
 
           for i in range(0, term_getsize(ptybufnr)[0])
@@ -751,6 +756,12 @@ def StartDebug_prompt(dict: dict<any>)
             endif
             term_wait(ptybufnr, 100)
           endfor # i
+
+          # Clear the terminal window
+          if interact
+            term_sendkeys(ptybufnr, "clear\<CR>")
+          endif
+
         endfor # j
       endif
 
