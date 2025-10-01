@@ -1304,7 +1304,7 @@ static struct vimoption options[] =
 # if defined(UNIX)
 			    {(char_u *)"aegimrLtT", (char_u *)0L}
 # else
-			    {(char_u *)"egmrLtTC", (char_u *)0L}
+			    {(char_u *)"egmrLtT", (char_u *)0L}
 # endif
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,

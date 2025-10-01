@@ -4430,7 +4430,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	empty string to disable ligatures.
 
 						*'guioptions'* *'go'*
-'guioptions' 'go'	string	(default "egmrLtTC"   (MS-Windows,
+'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
 					   "t" is removed in |defaults.vim|),
 					 "aegimrLtT" (GTK and Motif),
 					 )
@@ -4484,8 +4484,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'c'	Use console dialogs instead of popup dialogs for simple
 		choices.
 								*'go-C'*
-	  'C'	Use |hl-Normal| control the colour of the caption bar if
-		available.  Currently only works for MS-Windows.
+	  'C'	Use |hl-Normal| control the colour of the title bar if available.
+		Currently only works for MS-Windows.
+		See |gui-w32-title-bar-behaviour| for more information.
 								*'go-d'*
 	  'd'	Use dark theme variant if available.  Currently only works for
 		GTK+ GUI.
