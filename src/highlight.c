@@ -257,7 +257,7 @@ static char *(highlight_init_both[]) = {
     "lCursor guibg=fg guifg=bg", // should be different, but what?
 #endif
 #ifdef FEAT_GUI_MSWIN
-    "TitleBar guibg=#EBF6F7 guifg=#000000",
+    "TitleBar guibg=#000000 guifg=#000000", // use the system's default behavior
 #endif
     "default link QuickFixLine Search",
     "default link CursorLineSign SignColumn",

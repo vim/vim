@@ -1617,7 +1617,10 @@ load_dwm_func(void)
 extern BOOL win11_or_later; // this is in os_win32.c
 
 /*
- * Set TitleBar's color
+ * Set TitleBar's color. Handle hi-TitleBar.
+ *
+ * if "TitleBar guibg=#000000 guifg=#000000" reset the window back to using the
+ * system's default behavior for the border color.
  */
     void
 gui_mch_new_titlebar_colors(void)
@@ -1627,10 +1630,14 @@ gui_mch_new_titlebar_colors(void)
 
     if (win11_or_later)
     {
-	const guicolor_T captionColor = gui.title_bg_pixel;
+	guicolor_T captionColor = gui.title_bg_pixel;
+	guicolor_T textColor = gui.title_fg_pixel;
+
+	if (captionColor == 0 && textColor == 0)
+	    captionColor = textColor = 0xFFFFFFFF;
+
 	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
 		&captionColor, sizeof(captionColor));
-	const guicolor_T textColor = gui.title_fg_pixel;
 	pDwmSetWindowAttribute(s_hwnd, DWMWA_TEXT_COLOR,
 		&textColor, sizeof(textColor));
     }
