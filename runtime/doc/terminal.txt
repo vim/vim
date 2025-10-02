@@ -1635,19 +1635,47 @@ interrupt the running program.  But after using the MI command
 "continue" being used for the `:Continue` command, instead of using the
 communication channel.
 
-Remote Debugging ~
+
+Remote debugging ~
 							*termdebug-remote*
 One of the main issues of remote debugging is the access to the debuggee's
 source files. The plugin can profit from system and vim's networking
 capabilities to workaround this.
+						*termdebug-remote-example*
+The |termdebug-example| can be replicated by running the `gdb` debugger and the
+Vim debuggee on a remote Linux machine accessible via `ssh`.
+
+- Build Vim as explained in the local example.
+
+- Set up |termdebug_use_prompt|: >
+    :let g:termdebug_config = {}
+    :let g:termdebug_config['use_prompt'] = v:true
+
+- Specify the command line to run the remote `gdb` instance: >
+    :let g:termdebug_config['command'] = ['ssh', 'hostname', 'gdb']
+<  Explaining `ssh` is beyond the scope of this example, but notice the command
+  line can be greatly simplified by specifying the user, keys and other options
+  into the `$HOME/.ssh/config` file.
+
+- Provide a hint for translating remote paths into |netrw| paths: >
+    :let g:termdebug_config['substitute_path'] = { '/': 'scp://hostname//' }
+
+- Load the termdebug plugin and start debugging Vim: >
+    :packadd termdebug
+    :Termdebug vim
+
+You now have the same three windows of the local example and can follow the
+very same steps. The only difference is that the source windows displays a
+netrw buffer instead of a local one.
+
 						*termdebug-substitute-path*
 Use the `g:termdebug_config['substitute_path']` entry to map remote to local
-files using the same strategy that gdb's `substitute-path` command.
+files using the same strategy that gdb's `substitute-path` command uses.
 For example:
 - Use |netrw| to access files remoting via ssh: >
     let g:termdebug_config['command'] = ['ssh', 'hostname', 'gdb']
     let g:termdebug_config['substitute_path'] = { '/': 'scp://hostname//' }
-< Note: that first is specified the remote machine root path and later
+< Note: that the key specifies the remote machine root path and the value
   the local one.
 - Use Windows' `UNC` paths to access `WSL2` sources: >
     let g:termdebug_config['command'] = ['wsl', 'gdb']
@@ -1660,11 +1688,15 @@ For example:
 The plugin "program window" is linked to `gdb` using `pty slave devices`.
 Those must be local to the `gdb` instance, thus remote debugging only works
 on `prompt mode` (see |termdebug_use_prompt|).
-In this mode any `ssh` or `wsl` command would be detected and a similar command
-used to launch a remote `tty` terminal session and connect it to `gdb`.
+In this mode any `ssh` or `wsl` command would be detected and a similar
+command would be used to launch `socat` in a remote `tty` terminal session
+and connect it to `gdb`.
+If `socat` is not available a plain remote terminal would be used as
+fallback.
+The next session shows how to override this default behaviour.
 
 						*termdebug-remote-window*
-In order to use another remote terminal clients, set "remote_window" entry
+In order to use another remote terminal client, set "remote_window" entry
 in g:termdebug_config variable before invoking `:Termdebug`. For example: >
     let g:termdebug_config['use_prompt'] = v:true
     let g:termdebug_config['command'] = ['docker', 'run', '-i',

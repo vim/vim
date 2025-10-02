@@ -702,8 +702,15 @@ def StartDebug_prompt(dict: dict<any>)
       if gdb_pos > 0
         # strip debugger call
         term_cmd = gdb_cmd[0 : gdb_pos - 1]
-        # create a devoted tty slave device and link to stdin/stdout
-        term_cmd += ['socat', '-d', '-d', '-', 'PTY,raw,echo=0']
+        # roundtrip to check if socat is available on the remote side
+        silent call system(join(term_cmd, ' ') .. ' socat -h')
+        if v:shell_error
+          Echowarn('Install socat on the remote machine for a program window better experience')
+        else
+          # create a devoted tty slave device and link to stdin/stdout
+          term_cmd += ['socat', '-d', '-d', '-', 'PTY,raw,echo=0']
+        endif
+        ch_log($'launching program windows as "{join(term_cmd)}"')
       endif
     endif
   endif
