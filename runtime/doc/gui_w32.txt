@@ -492,13 +492,10 @@ VIM_KEYCODE_TRANS_STRATEGY can be set to the desired value ("experimental" or
 Title Bar						*gui-w32-title-bar*
 
 Starting with Windows 11, the color of the gVim title bar (also known as the
-caption bar) follows the |hl-TitleBar| highlighting group.
+caption bar) follows the |hl-TitleBar| highlighting group.  And use |'go-C'| to
+enable it.
 
-By default, it is set to:
->
-    hi TitleBar guibg=NONE guifg=NONE
-<
-This setting resets the window to use the system's default behavior for the
-border color.
+When |'go-C'| is on, you can set `hi TitleBar guibg=NONE guifg=NONE` to resets
+the window to use the system's default behavior for the border color.
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

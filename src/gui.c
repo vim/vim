@@ -3491,6 +3491,10 @@ gui_init_which_components(char_u *oldval UNUSED)
 #ifdef FEAT_GUI_TABLINE
     int		using_tabline;
 #endif
+#ifdef FEAT_GUI_MSWIN
+    static int	prev_titlebar = -1;
+    int		using_titlebar = FALSE;
+#endif
 #if defined(FEAT_MENU)
     static int	prev_tearoff = -1;
     int		using_tearoff = FALSE;
@@ -3560,6 +3564,11 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    case GO_GREY:
 		// make menu's have grey items, ignored here
 		break;
+#ifdef FEAT_GUI_MSWIN
+	    case GO_TITLEBAR:
+		using_titlebar = TRUE;
+		break;
+#endif
 #ifdef FEAT_TOOLBAR
 	    case GO_TOOLBAR:
 		using_toolbar = TRUE;
@@ -3580,6 +3589,14 @@ gui_init_which_components(char_u *oldval UNUSED)
 
     need_set_size = 0;
     fix_size = FALSE;
+
+#ifdef FEAT_GUI_MSWIN
+    if (using_titlebar != prev_titlebar)
+    {
+	gui_mch_new_titlebar_colors();
+	prev_titlebar = using_titlebar;
+    }
+#endif
 
 #ifdef FEAT_GUI_DARKTHEME
     if (using_dark_theme != prev_dark_theme)
