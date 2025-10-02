@@ -16,7 +16,6 @@ Directory
 ErrorMsg
 FoldColumn
 Folded
-GuiTitleBar
 Ignore
 IncSearch
 lCursor
@@ -52,6 +51,7 @@ TabLineFill
 TabLineSel
 Terminal
 Title
+TitleBar
 TOhtmlProgress
 TOhtml-progress-color
 ToolbarButton

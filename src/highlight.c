@@ -257,7 +257,7 @@ static char *(highlight_init_both[]) = {
     "lCursor guibg=fg guifg=bg", // should be different, but what?
 #endif
 #ifdef FEAT_GUI_MSWIN
-    "GuiTitleBar guibg=NONE guifg=NONE", // use the system's default behavior
+    "TitleBar guibg=NONE guifg=NONE", // use the system's default behavior
 #endif
     "default link QuickFixLine Search",
     "default link CursorLineSign SignColumn",
@@ -1575,7 +1575,7 @@ do_highlight(
     int		error = FALSE;
     int		is_normal_group = FALSE;	// "Normal" group
 #ifdef FEAT_GUI_MSWIN
-    int		is_titlebar_group = FALSE;	// "GuiTitleBar" group
+    int		is_titlebar_group = FALSE;	// "TitleBar" group
 #else
 # define is_titlebar_group 0
 #endif
@@ -1697,7 +1697,7 @@ do_highlight(
     if (STRCMP(HL_TABLE()[idx].sg_name_u, "NORMAL") == 0)
 	is_normal_group = TRUE;
 #ifdef FEAT_GUI_MSWIN
-    else if (STRCMP(HL_TABLE()[idx].sg_name_u, "GUITITLEBAR") == 0)
+    else if (STRCMP(HL_TABLE()[idx].sg_name_u, "TITLEBAR") == 0)
 	is_titlebar_group = TRUE;
 #endif
 #ifdef FEAT_GUI_X11
@@ -2092,7 +2092,7 @@ highlight_clear(int idx)
 /*
  * Set the normal foreground and background colors according to the "Normal"
  * highlighting group.  For X11 also set "Menu", "Scrollbar", and "Tooltip"
- * colors.  For MS-Windows also set "GuiTitleBar" colors.
+ * colors.  For MS-Windows also set "TitleBar" colors.
  */
     void
 set_normal_colors(void)
@@ -2110,7 +2110,7 @@ set_normal_colors(void)
 	    set_must_redraw(UPD_CLEAR);
 	}
 #  ifdef FEAT_GUI_MSWIN
-	if (set_group_colors((char_u *)"GuiTitleBar",
+	if (set_group_colors((char_u *)"TitleBar",
 				 &gui.title_fg_pixel, &gui.title_bg_pixel,
 				 FALSE, FALSE, FALSE))
 	{
@@ -2180,7 +2180,7 @@ set_normal_colors(void)
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
- * Set the colors for "Normal", "Menu", "GuiTitleBar", "Tooltip" or "Scrollbar".
+ * Set the colors for "Normal", "Menu", "TitleBar", "Tooltip" or "Scrollbar".
  */
     static int
 set_group_colors(
