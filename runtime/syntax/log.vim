@@ -59,7 +59,6 @@ syn match logDuration '\(^\|\s\)\@<=\d\+\s*[mn]\?[ywdhms]\(\s\|$\)\@='
 " Entities
 "---------------------------------------------------------------------------
 syn match logUrl        'http[s]\?:\/\/\S\+'
-syn match logDomain     '\(^\|\W\)\@<=[[:alnum:]-]\+\(\.[[:alnum:]-]\+\)\+\(\W\|$\)\@='
 syn match logUUID       '\w\{8}-\w\{4}-\w\{4}-\w\{4}-\w\{12}'
 syn match logMD5        '\<[a-z0-9]\{32}\>'
 syn match logIPV4       '\<\d\{1,3}\(\.\d\{1,3}\)\{3}\>'
@@ -124,7 +123,6 @@ hi def link logTimeZone Identifier
 hi def link logDuration Identifier
 
 hi def link logUrl Underlined
-hi def link logDomain Label
 hi def link logUUID Label
 hi def link logMD5 Label
 hi def link logIPV4 Label
