@@ -1619,7 +1619,7 @@ extern BOOL win11_or_later; // this is in os_win32.c
 /*
  * Set GuiTitleBar's color. Handle hi-GuiTitleBar.
  *
- * if "GuiTitleBar guibg=#000000 guifg=#000000" reset the window back to using the
+ * if "GuiTitleBar guibg=NONE guifg=NONE" reset the window back to using the
  * system's default behavior for the border color.
  */
     void
@@ -1633,8 +1633,10 @@ gui_mch_new_titlebar_colors(void)
 	guicolor_T captionColor = gui.title_bg_pixel;
 	guicolor_T textColor = gui.title_fg_pixel;
 
-	if (captionColor == 0 && textColor == 0)
-	    captionColor = textColor = 0xFFFFFFFF;
+	if (captionColor == INVALCOLOR)
+	    captionColor = 0xFFFFFFFF;
+	if (textColor == INVALCOLOR)
+	    textColor = 0xFFFFFFFF;
 
 	pDwmSetWindowAttribute(s_hwnd, DWMWA_CAPTION_COLOR,
 		&captionColor, sizeof(captionColor));

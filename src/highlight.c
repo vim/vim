@@ -257,7 +257,7 @@ static char *(highlight_init_both[]) = {
     "lCursor guibg=fg guifg=bg", // should be different, but what?
 #endif
 #ifdef FEAT_GUI_MSWIN
-    "GuiTitleBar guibg=#000000 guifg=#000000", // use the system's default behavior
+    "GuiTitleBar guibg=NONE guifg=NONE", // use the system's default behavior
 #endif
     "default link QuickFixLine Search",
     "default link CursorLineSign SignColumn",
@@ -2112,7 +2112,7 @@ set_normal_colors(void)
 #  ifdef FEAT_GUI_MSWIN
 	if (set_group_colors((char_u *)"GuiTitleBar",
 				 &gui.title_fg_pixel, &gui.title_bg_pixel,
-				 FALSE, TRUE, FALSE))
+				 FALSE, FALSE, FALSE))
 	{
 	    gui_mch_new_titlebar_colors();
 	    set_must_redraw(UPD_CLEAR);

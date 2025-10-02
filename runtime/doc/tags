@@ -8368,6 +8368,7 @@ hl-EndOfBuffer	syntax.txt	/*hl-EndOfBuffer*
 hl-ErrorMsg	syntax.txt	/*hl-ErrorMsg*
 hl-FoldColumn	syntax.txt	/*hl-FoldColumn*
 hl-Folded	syntax.txt	/*hl-Folded*
+hl-GuiTitleBar	syntax.txt	/*hl-GuiTitleBar*
 hl-Ignore	syntax.txt	/*hl-Ignore*
 hl-IncSearch	syntax.txt	/*hl-IncSearch*
 hl-LineNr	syntax.txt	/*hl-LineNr*
@@ -8417,7 +8418,6 @@ hl-TabPanelFill	syntax.txt	/*hl-TabPanelFill*
 hl-TabPanelSel	syntax.txt	/*hl-TabPanelSel*
 hl-Terminal	syntax.txt	/*hl-Terminal*
 hl-Title	syntax.txt	/*hl-Title*
-hl-TitleBar	syntax.txt	/*hl-TitleBar*
 hl-ToolbarButton	gui.txt	/*hl-ToolbarButton*
 hl-ToolbarLine	gui.txt	/*hl-ToolbarLine*
 hl-Tooltip	syntax.txt	/*hl-Tooltip*

@@ -496,7 +496,7 @@ caption bar) follows the |hl-GuiTitleBar| highlighting group.
 
 By default, it is set to:
 >
-    hi GuiTitleBar guibg=#000000 guifg=#000000
+    hi GuiTitleBar guibg=NONE guifg=NONE
 <
 This setting resets the window to use the system's default behavior for the
 border color.
