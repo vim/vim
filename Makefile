@@ -105,7 +105,7 @@ MINOR = 1
 # - Update Vim version number.  For a test version in: src/version.h,
 #   READMEdir/Contents, MAJOR/MINOR above, VIMMAJOR and VIMMINOR in
 #   src/Makefile, README.txt, README.md, src/README.md, READMEdir/README*.txt,
-#   runtime/doc/*.txt and make nsis/gvim_version.nsh.
+#   runtime/doc/*.txt.
 #   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.manifest.
 # - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, Lua, Cscope and
 #   "huge" features.  Add MZscheme if you can make it work.
@@ -410,7 +410,7 @@ amisrc: dist prepare
 	mv dist/vim$(VERSION)src.tar.gz dist/vim$(VERSION)src.tgz
 
 # MS-DOS sources
-dossrc: dist dist/$(COMMENT_SRC) license nsis/gvim_version.nsh
+dossrc: dist dist/$(COMMENT_SRC) license
 	-rm -rf dist/vim$(VERSION)src.zip
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -423,7 +423,6 @@ dossrc: dist dist/$(COMMENT_SRC) license nsis/gvim_version.nsh
 		$(SRC_DOS_UNIX) \
 		lang/LICENSE.*.txt \
 		lang/README.*.txt \
-		nsis/gvim_version.nsh \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
@@ -431,9 +430,6 @@ dossrc: dist dist/$(COMMENT_SRC) license nsis/gvim_version.nsh
 
 license:
 	cd nsis && $(MAKE) -f Makefile $@
-
-nsis/gvim_version.nsh: Makefile
-	cd nsis && $(MAKE) -f Makefile $(@F)
 
 dosrt: dist dist/$(COMMENT_RT) dosrt_files
 	-rm -rf dist/vim$(VERSION)rt.zip
