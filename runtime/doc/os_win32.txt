@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 9.1.  Last change: 2025 Sep 25
+*os_win32.txt*  For Vim version 9.1.  Last change: 2025 Oct 01
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -24,8 +24,7 @@ The 32 bit version also runs on 64 bit MS-Windows systems.
 7. Installation package		|win32-installer|
 8. Win32 mini FAQ		|win32-faq|
 
-Additionally, there are a number of common Win32 and DOS items in
-|os_dos.txt|:
+Additionally, there are a number of common Win32 and DOS items in |os_dos.txt|:
 File locations			|dos-locations|
 Using backslashes		|dos-backslash|
 Standard mappings		|dos-standard-mappings|

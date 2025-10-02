@@ -1133,9 +1133,6 @@ EXTERN int	secure INIT(= FALSE);
 				// allowed, e.g. when sourcing .exrc or .vimrc
 				// in current directory
 
-EXTERN int	no_flush INIT(= 0);
-				// non-zero to prevent flushing output buffer
-
 EXTERN int	textlock INIT(= 0);
 				// non-zero when changing text and jumping to
 				// another window or editing another buffer is
