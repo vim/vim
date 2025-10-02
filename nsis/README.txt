@@ -108,3 +108,5 @@ Variables and their values available for building the installer (not mandatory):
 			    Example "X=OutFile MyVim.exe;XPMode on"
     "MKNSIS=<dir>"	— the directory where the "makensis.exe" program is
 			    located.
+
+Note: for icons used in the installer, see the README.txt in the icons.zip
