@@ -1617,9 +1617,9 @@ load_dwm_func(void)
 extern BOOL win11_or_later; // this is in os_win32.c
 
 /*
- * Set TitleBar's color. Handle hi-TitleBar.
+ * Set GuiTitleBar's color. Handle hi-GuiTitleBar.
  *
- * if "TitleBar guibg=#000000 guifg=#000000" reset the window back to using the
+ * if "GuiTitleBar guibg=#000000 guifg=#000000" reset the window back to using the
  * system's default behavior for the border color.
  */
     void

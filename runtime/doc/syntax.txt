@@ -5960,6 +5960,10 @@ VertSplit	Column separating vertically split windows.
 Folded		Line used for closed folds.
 							*hl-FoldColumn*
 FoldColumn	'foldcolumn'
+							*hl-GuiTitleBar*
+GuiTitleBar	Gui title bar (sometimes also called the caption bar).
+		Only MS-Windows Gui supports this.  See |gui-w32-title-bar|.
+		Only guibg and guifg highlight arguments have effect here.
 							*hl-SignColumn*
 SignColumn	Column where |signs| are displayed.
 							*hl-IncSearch*
@@ -6092,10 +6096,6 @@ TabPanelSel	TabPanel, active tab page label.
 Terminal	|terminal| window (see |terminal-size-color|).
 							*hl-Title*
 Title		Titles for output from ":set all", ":autocmd" etc.
-							*hl-TitleBar*
-TitleBar	Gui title bar (sometimes also called the caption bar).
-		Only MS-Windows Gui supports this. See |gui-w32-title-bar|.
-		Only guibg and guifg highlight arguments have effect here.
 							*hl-Visual*
 Visual		Visual mode selection.
 							*hl-VisualNOS*

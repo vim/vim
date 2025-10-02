@@ -257,7 +257,7 @@ static char *(highlight_init_both[]) = {
     "lCursor guibg=fg guifg=bg", // should be different, but what?
 #endif
 #ifdef FEAT_GUI_MSWIN
-    "TitleBar guibg=#000000 guifg=#000000", // use the system's default behavior
+    "GuiTitleBar guibg=#000000 guifg=#000000", // use the system's default behavior
 #endif
     "default link QuickFixLine Search",
     "default link CursorLineSign SignColumn",
@@ -822,9 +822,7 @@ highlight_reset_all(void)
 # endif
 # ifdef FEAT_GUI_MSWIN
     if (gui.in_use)
-    {
 	gui_mch_new_titlebar_colors();
-    }
 # endif
 # ifdef FEAT_GUI_X11
 #  ifdef FEAT_MENU
@@ -1577,7 +1575,7 @@ do_highlight(
     int		error = FALSE;
     int		is_normal_group = FALSE;	// "Normal" group
 #ifdef FEAT_GUI_MSWIN
-    int		is_titlebar_group = FALSE;	// "TitleBar" group
+    int		is_titlebar_group = FALSE;	// "GuiTitleBar" group
 #else
 # define is_titlebar_group 0
 #endif
@@ -1699,7 +1697,7 @@ do_highlight(
     if (STRCMP(HL_TABLE()[idx].sg_name_u, "NORMAL") == 0)
 	is_normal_group = TRUE;
 #ifdef FEAT_GUI_MSWIN
-    else if (STRCMP(HL_TABLE()[idx].sg_name_u, "TITLEBAR") == 0)
+    else if (STRCMP(HL_TABLE()[idx].sg_name_u, "GUITITLEBAR") == 0)
 	is_titlebar_group = TRUE;
 #endif
 #ifdef FEAT_GUI_X11
@@ -2094,7 +2092,7 @@ highlight_clear(int idx)
 /*
  * Set the normal foreground and background colors according to the "Normal"
  * highlighting group.  For X11 also set "Menu", "Scrollbar", and "Tooltip"
- * colors.  For MS-Windows also set "TitleBar" colors.
+ * colors.  For MS-Windows also set "GuiTitleBar" colors.
  */
     void
 set_normal_colors(void)
@@ -2112,7 +2110,7 @@ set_normal_colors(void)
 	    set_must_redraw(UPD_CLEAR);
 	}
 #  ifdef FEAT_GUI_MSWIN
-	if (set_group_colors((char_u *)"TitleBar",
+	if (set_group_colors((char_u *)"GuiTitleBar",
 				 &gui.title_fg_pixel, &gui.title_bg_pixel,
 				 FALSE, TRUE, FALSE))
 	{
@@ -2182,7 +2180,7 @@ set_normal_colors(void)
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
- * Set the colors for "Normal", "Menu", "TitleBar", "Tooltip" or "Scrollbar".
+ * Set the colors for "Normal", "Menu", "GuiTitleBar", "Tooltip" or "Scrollbar".
  */
     static int
 set_group_colors(
