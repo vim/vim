@@ -1985,3 +1985,16 @@ pum_make_popup(char_u *path_name, int use_mouse_pos)
 	pum_show_popupmenu(menu);
 }
 #endif
+
+/*
+ * Get the underlying character and redraw with shadow highlight
+ */
+    void
+put_shadow_char(int row, int col)
+{
+    char_u  buf[MB_MAXBYTES + 1];
+    int	    attr = highlight_attr[HLF_PMS];
+
+    screen_getbytes(row, col, buf, NULL);
+    screen_putchar((*mb_ptr2char)(buf), row, col, attr);
+}

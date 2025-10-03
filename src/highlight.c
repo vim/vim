@@ -300,6 +300,8 @@ static char *(highlight_init_light[]) = {
 #endif
     CENT("PmenuThumb ctermbg=Black",
 	 "PmenuThumb ctermbg=Black guibg=Black"),
+    CENT("PmenuShadow ctermbg=Black ctermfg=DarkGrey",
+	 "PmenuShadow ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
     CENT("Pmenu ctermbg=LightMagenta ctermfg=Black",
 	 "Pmenu ctermbg=LightMagenta ctermfg=Black guibg=LightMagenta"),
     CENT("PmenuSel ctermbg=LightGrey ctermfg=Black",
@@ -391,6 +393,8 @@ static char *(highlight_init_dark[]) = {
 #endif
     CENT("PmenuThumb ctermbg=White",
 	 "PmenuThumb ctermbg=White guibg=White"),
+    CENT("PmenuShadow ctermbg=Black ctermfg=DarkGrey",
+	 "PmenuShadow ctermbg=Black ctermfg=DarkGrey guibg=Black guifg=DarkGrey"),
     CENT("Pmenu ctermbg=Magenta ctermfg=Black",
 	 "Pmenu ctermbg=Magenta ctermfg=Black guibg=Magenta"),
     CENT("PmenuSel ctermbg=Black ctermfg=DarkGrey",
