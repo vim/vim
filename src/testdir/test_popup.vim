@@ -842,7 +842,7 @@ func Test_popup_position()
                 123
   END
   call writefile(lines, 'Xtest', 'D')
-  let buf = RunVimInTerminal('Xtest', {})
+  let buf = RunVimInTerminal('Xtest', {'cols': 75})
   call term_sendkeys(buf, ":vsplit\<CR>")
 
   " default pumwidth in left window: overlap in right window
@@ -971,10 +971,24 @@ func Test_mouse_popup_position()
   call VerifyScreenDump(buf, 'Test_mouse_popup_position_01', {})
   call term_sendkeys(buf, "\<Esc>")
 
+  call term_sendkeys(buf, ":set pumborder=double,margin,shadow\<CR>")
+  call term_sendkeys(buf, ":call Trigger(45)\<CR>")
+  call TermWait(buf, 30)
+  call VerifyScreenDump(buf, 'Test_mouse_popup_position_02', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, ":set pumborder=\<CR>")
+
   if has('rightleft')
     call term_sendkeys(buf, ":set rightleft\<CR>")
     call term_sendkeys(buf, ":call Trigger(50 + 1 - 45)\<CR>")
-    call VerifyScreenDump(buf, 'Test_mouse_popup_position_02', {})
+    call VerifyScreenDump(buf, 'Test_mouse_popup_position_03', {})
+
+    call term_sendkeys(buf, ":set pumborder=ascii,margin,shadow\<CR>")
+    call term_sendkeys(buf, ":call Trigger(50 + 1 - 45)\<CR>")
+    call TermWait(buf, 30)
+    call VerifyScreenDump(buf, 'Test_mouse_popup_position_04', {})
+    call term_sendkeys(buf, ":set pumborder=\<CR>")
+
     call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
   endif
 
@@ -2292,6 +2306,83 @@ func Test_popup_complete_cmdwin_preview()
   set omnifunc=CompleteWithPreview
   call feedkeys("q:if\<C-X>\<C-O>\<C-N>\<ESC>\<CR>", 'tx!')
   set omnifunc&
+endfunc
+
+func Test_popup_border()
+  CheckScreendump
+
+  let lines =<< trim END
+    123456789_123456789_123456789_a
+    123456789_123456789_123456789_b
+
+  END
+  call writefile(lines, 'Xtest', 'D')
+  let buf = RunVimInTerminal('Xtest', {'cols': 75})
+
+  func TestPumPosition(buf, spaces, dumpfile)
+    call term_sendkeys(a:buf, $"GS{repeat(' ', a:spaces)}1\<C-N>")
+    call TermWait(a:buf, 10)
+    call VerifyScreenDump(a:buf, a:dumpfile, {'rows': 8})
+    call term_sendkeys(a:buf, "\<Esc>u")
+  endfunc
+
+  func TestPumPositionStart(buf, spaces, dumpfile)
+    call term_sendkeys(a:buf, ":set pumborder=double\<CR>")
+    call TestPumPosition(a:buf, a:spaces, a:dumpfile)
+    call term_sendkeys(a:buf, ":set pumborder=double,margin\<CR>")
+    call TestPumPosition(a:buf, a:spaces, $'{a:dumpfile}_m')
+  endfunc
+
+  " pum starts at the edge
+  for space_count in [0, 1, 2, 5]
+    call TestPumPositionStart(buf, space_count,
+          \ $'Test_popup_border_start_{space_count}')
+  endfor
+
+  if has('rightleft')
+    call term_sendkeys(buf, ":set rightleft\<CR>")
+    for space_count in [0, 1, 2, 5]
+      call TestPumPositionStart(buf, space_count,
+            \ $'Test_popup_border_start_rtl_{space_count}')
+    endfor
+    call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
+  endif
+
+  " pum ends at the edge
+  call term_sendkeys(buf, ":vsplit\<CR>")
+  call term_sendkeys(buf, "\<C-W>l")
+  for i in range(2)
+    let rtl = ''
+    if i == 1 && has('rightleft')
+      call term_sendkeys(buf, "\<C-W>h")
+      call term_sendkeys(buf, ":set rightleft\<CR>")
+      let rtl = 'rtl_'
+    endif
+
+    call term_sendkeys(buf, ":set pumborder=double\<CR>")
+    for space_count in [5, 6, 20, 21, 22]
+      call TestPumPosition(buf, space_count,
+            \ $'Test_popup_border_end_{rtl}{space_count}')
+    endfor
+
+    call term_sendkeys(buf, ":set pumborder=double,margin\<CR>")
+    for space_count in [4, 5, 19, 20, 21]
+      call TestPumPosition(buf, space_count,
+            \ $'Test_popup_border_end_{rtl}m_{space_count}')
+    endfor
+
+    call term_sendkeys(buf, ":set pumborder=double,margin,shadow\<CR>")
+    for space_count in [2, 3, 17, 18, 19]
+      call TestPumPosition(buf, space_count,
+            \ $'Test_popup_border_end_{rtl}m_s_{space_count}')
+    endfor
+
+    if i == 1 && has('rightleft')
+      call term_sendkeys(buf, "\<Esc>:set norightleft\<CR>")
+    endif
+  endfor
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

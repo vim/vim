@@ -6024,6 +6024,11 @@ PmenuMatch	Popup menu: Matched text in normal item. Applied in
 							*hl-PmenuMatchSel*
 PmenuMatchSel	Popup menu: Matched text in selected item. Applied in
 		combination with |hl-PmenuSel|.
+							*hl-PmenuBorder*
+PmenuBorder	Popup menu: Border characters.
+		Linked to |hl-Pmenu| by default.
+							*hl-PmenuShadow*
+PmenuShadow	Popup menu: Used for shadow.
 							*hl-ComplMatchIns*
 ComplMatchIns	Matched text of the currently inserted completion.
 							*hl-PreInsert*

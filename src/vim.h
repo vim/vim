@@ -1574,6 +1574,8 @@ typedef enum
     , HLF_PSX	    // popup menu selected item "menu" (extra text)
     , HLF_PSB	    // popup menu scrollbar
     , HLF_PST	    // popup menu scrollbar thumb
+    , HLF_PMB	    // popup menu border
+    , HLF_PMS	    // popup menu shadow
     , HLF_TP	    // tabpage line
     , HLF_TPS	    // tabpage line selected
     , HLF_TPF	    // tabpage line filler
@@ -1597,7 +1599,7 @@ typedef enum
 		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', 't', 'v', 'V', \
 		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', 'E', '-', '>', \
 		  'B', 'P', 'R', 'L', \
-		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', \
+		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', 'j', 'H', \
 		  '*', '#', '_', '!', '.', 'o', 'q', \
 		  'z', 'Z', 'g', \
 		  '%', '^', '&', 'I'}

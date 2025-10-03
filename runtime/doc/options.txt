@@ -4679,7 +4679,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     =:PmenuSel, k:PmenuMatch,<:PmenuMatchSel,
 				     [:PmenuKind,]:PmenuKindSel,
 				     {:PmenuExtra,}:PmenuExtraSel,
-				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
+				     x:PmenuSbar,X:PmenuThumb,j:PmenuBorder,
+				     H:PmenuShadow,*:TabLine,
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
 				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
 				     z:StatusLineTerm,Z:StatusLineTermNC,
@@ -4746,6 +4747,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-PmenuThumb|	 X  popup menu scrollbar thumb
 	|hl-PmenuMatch|	 k  popup menu matched text
 	|hl-PmenuMatchSel| <  popup menu matched text in selected line
+	|hl-PmenuBorder|   j  popup menu border characters
+	|hl-PmenuShadow|   H  popup menu shadow
 	|hl-PreInsert|	 I  text inserted when "preinsert" is in 'completeopt'
 
 	The display modes are:
@@ -6782,6 +6785,40 @@ A jump table for the options with a short description can be found at |Q_op|.
 'prompt'		boolean	(default on)
 			global
 	When on a ":" prompt is used in Ex mode.
+
+						*'pumborder'* *'pb'*
+'pumborder' 'pb'	number	(default 0)
+			global
+	Defines a border and optional decorations for the popup menu in
+	completion.  The value is a comma-separated list of keywords.
+
+	Border styles (at most one):
+	"single"	use thin box-drawing characters
+	"double"	use double-line box-drawing characters
+	"round"		use rounded corners
+	"ascii"		use ASCII characters (-, |, +)
+	"custom:X;X;X;X;X;X;X;X"
+			use eight characters separated by semicolons, in the
+			order: top, right, bottom, left,
+			topleft, topright, botright, botleft
+
+	Additional flags:
+	"margin"	adds one-cell spacing inside the left and right border
+	"shadow"	draws a shadow at the right and bottom edges
+
+	Highlight groups:
+	|hl-PmenuBorder|	used for the border characters
+	|hl-PmenuShadow|	used for the shadow
+
+	Examples: >
+		:set pumborder=single
+		:set pumborder=double,margin,shadow
+		:set pumborder=custom:─;│;─;│;┌;┐;┘;└,shadow
+<
+	Border styles using box-drawing characters ("single", "double",
+	"round") are only available when |'encoding'| is "utf-8" and
+	|'ambiwidth'| is "single".  "margin" requires a border style.
+	See also: |ins-completion-menu|.
 
 						*'pumheight'* *'ph'*
 'pumheight' 'ph'	number	(default 0)
