@@ -1,4 +1,4 @@
-*usr_04.txt*	For Vim version 9.1.  Last change: 2021 Feb 22
+*usr_04.txt*	For Vim version 9.1.  Last change: 2025 Oct 3
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -280,8 +280,8 @@ move the cursor to where you want to put the line and use the "p" (put)
 command.  The line is inserted on the line below the cursor.
 
 	a line		a line	      a line
-	line 2	  dd	line 3	  p   line 3
-	line 3			      line 2
+	line 2	  dd	line 3	      line 3
+	line 3			  p   line 2
 
 Because you deleted an entire line, the "p" command placed the text line below
 the cursor.  If you delete part of a line (a word, for instance), the "p"
